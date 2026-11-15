@@ -1039,8 +1039,16 @@ def from_heartbeat(hb: dict, now=None, lm: dict | None = None, goals_data: dict 
 
 def site_block(data: dict, state: dict | None = None, now=None) -> dict:
     """tools/build_web_dashboard.py: the board of data.json (live.pc = the PC heartbeat the cloud read; accounts, goals,
-    second, extras.two_week; the cloud brain when the PC one is old)."""
+    second, extras.two_week; the cloud brain when the PC one is old).
+    Hidden bots (engine/hidden_bots.py, dashboard_view.json, default ["blitz"]): this is the last helper the site build calls
+    before it writes data.json and home.json, so it also takes them out of `data` itself (in place: home.json is made of the
+    same parts) and stamps data["hidden_bots"]; the board it returns is scrubbed and stamped too."""
     now = int(now or time.time())
+    from . import hidden_bots as _hb
+    hide = _hb.hidden()
+    if isinstance(data, dict):
+        _hb.scrub_inplace(data, hide)
+        _hb.stamp(data, hide)
     live = _d(_d(data).get("live"))
     pc = dict(_d(live.get("pc")))
     st = _d(state)
@@ -1057,7 +1065,7 @@ def site_block(data: dict, state: dict | None = None, now=None) -> dict:
            "heartbeat": {"t": _i(pc.get("t")), "ok": True}, "where": "cloud", "cloud_ledger": live.get("ledger"), "n_trades": 40}
     out = build(inp, now)
     out["brain_src"] = "PC bot" if brain is pb and pb else "cloud paper twin"
-    return _json_safe(out)
+    return _hb.publish(_json_safe(out), hide)
 
 
 def main(argv=None) -> int:

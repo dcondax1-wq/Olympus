@@ -759,6 +759,10 @@ class _KillClearsAutostart:
 
 
 app.add_middleware(_KillClearsAutostart)
+# hidden bots (owner 2026-11-15, dashboard_view.json "hidden_bots", default ["blitz"]): GET /api/* JSON answers go out
+# without them (engine/hidden_bots.py); the bot itself keeps running on paper; /api/next/blitz* answer as before
+from engine.hidden_bots import ScrubMiddleware as _HideBots
+app.add_middleware(_HideBots)
 WATCHDOG = _wd.Watchdog(BOT, send=_autostart_alert, keepawake=_ka.KEEPAWAKE)
 AUTOUPDATE = _au.DailyUpdater(BOT)       # owner opt-in: python -m engine.autoupdate --enable
 HEARTBEAT = _hb.Heartbeat(BOT, log=lambda t: print(t, flush=True))   # pushes "I'm alive" to the heartbeat branch (LE_HEARTBEAT=1)

@@ -423,6 +423,14 @@ GOOD = {"version": "abc1234", "selftest": {"t": int(ts(2026, 11, 1, 15, 32)), "o
 
 def t_readiness():
     now = ts(2026, 11, 1, 17, 30)
+    from engine import hidden_bots           # hidden (default since 2026-11-15): no BLITZ line, the rest as before
+    hidden_bots.FORCE = ("blitz",)
+    try:
+        hl = R.build(GOOD, now)["lines"]
+    finally:
+        hidden_bots.FORCE = ()               # the pinned checks below: BLITZ shown (dashboard_view.json "hidden_bots": [])
+    check("readiness: BLITZ hidden -> no BLITZ line, both accounts kept", not any("BLITZ" in x for x in hl)
+          and any(x.startswith("Zlarior 50K") for x in hl) and any(x.startswith("ATLAS 25K") for x in hl), hl)
     r = R.build(GOOD, now)
     L = r["lines"]
     check("readiness: all good -> 'Ready for Monday'", r["title"] == "Ready for Monday" and r["level"] == "good" and not r["problems"], r)

@@ -190,6 +190,12 @@ def enabled(c: dict | None = None) -> bool:
 
 def push_on(c: dict | None = None) -> bool:
     c = cfg() if c is None else c
+    try:                                   # hidden on the dashboard (engine/hidden_bots.py, owner 2026-11-15): recorded only, silent
+        from . import hidden_bots
+        if hidden_bots.is_hidden("blitz"):
+            return False
+    except Exception:
+        pass
     return c.get("push") is True
 
 

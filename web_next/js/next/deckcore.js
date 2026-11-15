@@ -15,6 +15,9 @@
 (function () {
   'use strict';
   const V = 1;
+  // hidden bots (owner 2026-11-15, dashboard_view.json -> window.OLY_HIDDEN): a hidden BLITZ is not drawn
+  const HIDB = () => !!(globalThis.OLY_HIDDEN && globalThis.OLY_HIDDEN.has('blitz'));
+  const BOTK = () => ['lit', 'atlas'].concat(HIDB() ? [] : ['blitz']);
   const BOT = { lit: { name: 'Zlarior', c: '#4f9bff', dll: 1000 }, atlas: { name: 'ATLAS', c: '#ff9a3d', dll: 600 }, blitz: { name: 'BLITZ', c: '#b388ff', dll: 600 }, sys: { name: 'System', c: '#94a3b8' } };
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const ok = (v) => typeof v === 'number' && Number.isFinite(v);
@@ -41,7 +44,7 @@
   // ------------------------------------------------------------------ accounts on the board (Zlarior, ATLAS, BLITZ)
   function accounts(M) {
     const B = obj(M.board) || {}, out = [];
-    for (const k of ['lit', 'atlas', 'blitz']) {
+    for (const k of BOTK()) {
       let a = obj(B[k]);
       if (!a && k === 'blitz') a = arr(B.accounts).find((x) => x && key(x.id || x.name) === 'blitz') || null;
       if (!a && k === 'blitz' && obj(M.acc) && obj(M.acc.eval)) { const e = M.acc.eval; a = { id: 'blitz', name: 'BLITZ', room: e.room, balance: e.balance, today_pnl: M.acc.day_pnl, dll: 600, position: M.acc.open, to_target: e.to_target, session: e.session, badge: M.acc.kind === 'LIVE' ? 'LIVE' : M.acc.kind }; }
@@ -96,7 +99,7 @@
         ev.push({ bot: 'lit', a: etTime(d, 120), z: etTime(d, zl), label: `Zlarior entries ${'02:00'}-${zl === 930 ? '15:30' : String(Math.floor(zl / 60)).padStart(2, '0') + ':' + String(zl % 60).padStart(2, '0')} ET` });
         ATLAS_W.forEach(([nm, a, z, noMon]) => { if (noMon && w === 1) return; ev.push({ bot: 'atlas', a: etTime(d, a), z: etTime(d, Math.min(z, ec != null ? ec - 15 : z)), label: `ATLAS ${nm} ${String(Math.floor(a / 60)).padStart(2, '0')}:${String(a % 60).padStart(2, '0')}-${String(Math.floor(z / 60)).padStart(2, '0')}:${String(z % 60).padStart(2, '0')} ET` }); });
         const ck = BLITZ_CHECKS.filter((c) => ec == null || c < ec - 15);
-        if (ck.length) ev.push({ bot: 'blitz', a: etTime(d, ck[0]), z: etTime(d, ck[ck.length - 1]), ticks: ck.map((c) => etTime(d, c)), label: `BLITZ checks ${ck.length === 10 ? '11:00, 11:30 … 15:30' : ck.length + ' checks'} ET` });
+        if (ck.length && !HIDB()) ev.push({ bot: 'blitz', a: etTime(d, ck[0]), z: etTime(d, ck[ck.length - 1]), ticks: ck.map((c) => etTime(d, c)), label: `BLITZ checks ${ck.length === 10 ? '11:00, 11:30 … 15:30' : ck.length + ' checks'} ET` });
         ev.push({ bot: 'sys', t: etTime(d, ec != null ? ec - 5 : 955), label: ec != null ? `Early close: flat by ${String(Math.floor((ec - 5) / 60)).padStart(2, '0')}:${String((ec - 5) % 60).padStart(2, '0')} ET (CME halt ${String(Math.floor(ec / 60)).padStart(2, '0')}:${String(ec % 60).padStart(2, '0')})` : 'Every bot flat by 15:55 ET', kind: ec != null ? 'warn' : '' });
         ev.push({ bot: 'sys', t: etTime(d, 1020), label: 'CME daily halt 17:00-18:00 ET' });
       }
@@ -112,7 +115,7 @@
     const lane = (b, label) => { const L = E.filter((e) => e.bot === b && e.a != null); return `<div class="dk-lane" style="--c:${(BOT[b] || BOT.sys).c}"><span>${esc(label)}</span><div>${L.map((e) => `<i class="seg" style="left:${P(e.a).toFixed(2)}%;width:${Math.max(0.6, P(e.z) - P(e.a)).toFixed(2)}%" title="${esc(e.label)}"></i>${arr(e.ticks).map((t) => t >= now && t <= now + W ? `<i class="tick" style="left:${P(t).toFixed(2)}%"></i>` : '').join('')}`).join('')}</div></div>`; };
     const pts = E.filter((e) => e.t != null);
     const hours = []; for (let h = 0; h <= 24; h += 6) hours.push(`<span style="left:${(h / 24 * 100).toFixed(1)}%">${h ? hm(now + h * 3600) : 'now'}</span>`);
-    const track = `<div class="dk-track">${lane('lit', 'Zlarior')}${lane('atlas', 'ATLAS')}${lane('blitz', 'BLITZ')}
+    const track = `<div class="dk-track">${lane('lit', 'Zlarior')}${lane('atlas', 'ATLAS')}${HIDB() ? '' : lane('blitz', 'BLITZ')}
       <div class="dk-lane pts"><span>Events</span><div>${pts.map((e) => `<i class="pt ${e.kind || ''}" style="left:${P(e.t).toFixed(2)}%" title="${esc(e.label)}"></i>`).join('')}</div></div><div class="dk-hrs">${hours.join('')}</div></div>`;
     const ds = E.find((e) => e.dst);
     const dstNote = ds ? `<p class="dk-note"><b>Clock change ${esc(dlbl(ds.t))}:</b> US clocks go ${esc(ds.dst.way)} 1 hour at 02:00. Every time here and in the bot is New York time (ET), so the windows stay the same ET times${ds.dst.way === 'back' ? '; until then London is 4 hours ahead of New York (the UK changed on Oct 25)' : ''}.</p>` : '';
@@ -171,7 +174,7 @@
       const g = vals.filter((v) => v > 0).length, r = vals.filter((v) => v < 0).length, tot = vals.reduce((s, v) => s + v, 0);
       return `<div class="dk-cal" style="--c:${BOT[k].c}"><div class="dk-cal-h">${tag(k)}<span>${vals.length ? `${g} green · ${r} red · <b class="${cls(tot)}">${usd(tot, true)}</b>` : 'no real trade yet'}</span></div><div class="dk-cal-g"><div class="dk-wd"><i>M</i><i>T</i><i>W</i><i>T</i><i>F</i></div>${cells}</div></div>`;
     };
-    return card('cal', 'Real P&L calendar', 'real fills only · last 6 weeks', `<div class="dk-cals">${grid('lit')}${grid('atlas')}${grid('blitz')}</div><p class="dk-mut">Each square is one trading day; brighter = a bigger $ day. Paper and backtest trades are never in here.</p>`);
+    return card('cal', 'Real P&L calendar', 'real fills only · last 6 weeks', `<div class="dk-cals">${grid('lit')}${grid('atlas')}${HIDB() ? '' : grid('blitz')}</div><p class="dk-mut">Each square is one trading day; brighter = a bigger $ day. Paper and backtest trades are never in here.</p>`);
   }
 
   // 5. trade journal (trades + Mind reviews + Holodeck links)
@@ -198,17 +201,17 @@
     const B = obj(M.board) || {}, out = [];
     arr(B.lines).forEach((l) => l && out.push({ t: n(B.t) || M.now, bot: key(l.acct || (/atlas|blitz|lit/.test(String(l.kind)) ? l.kind : 'sys')), level: l.level === 'bad' ? 'bad' : l.level === 'warn' ? 'warn' : 'good', text: l.text, src: 'board' }));
     arr(obj(B.health) && B.health.items).forEach((h) => { if (h && (h.ok === false || h.warn)) out.push({ t: n(h.t) || n(B.t) || M.now, bot: 'sys', level: h.ok === false ? 'bad' : 'warn', text: `${h.label}: ${h.value || ''}${h.fix ? ' · ' + h.fix : ''}`, src: 'health' }); });
-    for (const k of ['lit', 'atlas', 'blitz']) arr(obj(B[k]) && B[k].blocks).forEach((g) => g && out.push({ t: n(B.t) || M.now, bot: k, level: 'warn', text: `${g.label || g.key || 'blocked'}${g.fix ? ': ' + g.fix : ''}`, src: 'guard' }));
+    for (const k of BOTK()) arr(obj(B[k]) && B[k].blocks).forEach((g) => g && out.push({ t: n(B.t) || M.now, bot: k, level: 'warn', text: `${g.label || g.key || 'blocked'}${g.fix ? ': ' + g.fix : ''}`, src: 'guard' }));
     arr(obj(M.mind) && M.mind.alerts).forEach((a) => a && out.push({ t: n(a.t) || M.now, bot: key(a.bot), level: /bad|red|crit|high/.test(String(a.level)) ? 'bad' : /warn|amber|med/.test(String(a.level)) ? 'warn' : 'good', text: a.text, src: 'mind' }));
     if (obj(M.acc) && M.acc.paused) out.push({ t: n(M.acc.paused.t) || M.now, bot: 'blitz', level: 'bad', text: 'BLITZ paused by the performance contract: ' + (M.acc.paused.why || ''), src: 'account C' });
     arr(obj(M.lv) && M.lv.narrator).slice(0, 30).forEach((x) => x && out.push({ t: n(x.t) || M.now, bot: key(x.strat || x.bot), level: x.level === 'bad' || x.important ? 'warn' : 'good', text: x.text || x.title || '', src: 'feed' }));
-    return out.filter((x) => x.text).sort((a, b) => b.t - a.t);
+    return out.filter((x) => x.text && !(x.bot === 'blitz' && HIDB())).sort((a, b) => b.t - a.t);
   }
   function inbox(M, o) {
     const mute = st.get(MUTE_K, {}), I = inboxItems(M), f = (o && o.filter) || st.get('le.deck.inf', 'all');
     const shown = I.filter((x) => !mute[x.bot] && (f === 'all' || x.level === f));
     const cnt = (b) => I.filter((x) => x.bot === b).length;
-    const chips = ['lit', 'atlas', 'blitz', 'sys'].map((b) => `<button type="button" class="dk-mute ${mute[b] ? 'off' : ''}" data-dk-mute="${b}" aria-pressed="${!mute[b]}" style="--c:${BOT[b].c}"><i></i>${esc(BOT[b].name)} <em>${cnt(b)}</em></button>`).join('');
+    const chips = BOTK().concat(['sys']).map((b) => `<button type="button" class="dk-mute ${mute[b] ? 'off' : ''}" data-dk-mute="${b}" aria-pressed="${!mute[b]}" style="--c:${BOT[b].c}"><i></i>${esc(BOT[b].name)} <em>${cnt(b)}</em></button>`).join('');
     const fl = [['all', 'All'], ['bad', 'Red'], ['warn', 'Amber']].map(([v, l]) => `<button type="button" data-dk-f="${v}" aria-pressed="${f === v}">${l}</button>`).join('');
     return card('inbox', 'Notification center', `${I.filter((x) => x.level === 'bad').length} red · ${I.filter((x) => x.level === 'warn').length} amber`,
       `<div class="dk-mutes" role="group" aria-label="Mute per bot (this device only)">${chips}</div><div class="dk-fl" role="group" aria-label="Filter">${fl}</div>

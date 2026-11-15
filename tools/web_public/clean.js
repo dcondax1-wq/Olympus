@@ -379,8 +379,10 @@
       if (!GROUPS.some((g) => g.id === 'lit')) GROUPS.push({ id: 'lit', label: 'Zlarior', icon: 'zlarior', pages: zPages });
       // BLITZ, the scalper (2026-10-29): its own tab; the page itself is blitz.js (loaded after this file)
       const bzDesc = 'BLITZ, the scalper, on its own 25K: today, brain, trades, results, rules, go live';
-      if (!GROUPS.some((g) => g.id === 'blitz')) GROUPS.push({ id: 'blitz', label: 'BLITZ', icon: 'blitz', pages: [['blitz', 'BLITZ', 'blitz', bzDesc]] });
-      if (!PAGES.blitz) PAGES.blitz = { id: 'blitz', label: 'BLITZ', icon: 'blitz', desc: bzDesc, group: 'blitz' };
+      // hidden bots (owner 2026-11-15, dashboard_view.json via window.OLY_HIDDEN): no BLITZ tab; #/blitz still opens its page
+      const bzHidden = !!(window.OLY_HIDDEN && window.OLY_HIDDEN.has('blitz'));
+      if (!bzHidden && !GROUPS.some((g) => g.id === 'blitz')) GROUPS.push({ id: 'blitz', label: 'BLITZ', icon: 'blitz', pages: [['blitz', 'BLITZ', 'blitz', bzDesc]] });
+      if (!PAGES.blitz) PAGES.blitz = { id: 'blitz', label: 'BLITZ', icon: 'blitz', desc: bzDesc, group: bzHidden ? 'system' : 'blitz' };
       const order = ['today', 'lit', 'atlas', 'blitz', 'money', 'system'];
       GROUPS.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
       const LBL = { today: ['Home', 'home'], lit: ['Zlarior', 'zlarior'], atlas: ['ATLAS', 'atlas'], blitz: ['BLITZ', 'blitz'], money: ['Money', 'wallet'], system: ['More', 'modules'] };

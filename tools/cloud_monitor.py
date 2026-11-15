@@ -1504,10 +1504,11 @@ def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, f
     if second is not None:                    # second strategies, paper only (engine/second.py)
         from engine import second as _second
         L += _second.readme_lines(second, money)
-    if blitz and not blitz.get("error"):      # BLITZ, the scalper PAPER shadow (engine/blitz.py)
+    if blitz and not blitz.get("error"):      # BLITZ, the scalper PAPER shadow (engine/blitz.py); hidden = not in the README
         try:
-            from engine import blitz as _blz
-            L += _blz.readme_lines(blitz)
+            from engine import blitz as _blz, hidden_bots as _hbz
+            if not _hbz.is_hidden("blitz"):
+                L += _blz.readme_lines(blitz)
         except Exception as e:
             print("BLITZ readme failed:", e.__class__.__name__, e)
     model = (lm or {}).get("model", "engine")

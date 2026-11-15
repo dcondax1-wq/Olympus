@@ -433,7 +433,7 @@ def part_f():
             names.add(nd.id)
         elif isinstance(nd, ast.Attribute):
             names.add(nd.attr)
-    allowed = {"__future__:annotations", "datetime", "json", "os", "warnings", "zoneinfo:ZoneInfo", "numpy", "pandas", "sys", ".:push"}
+    allowed = {"__future__:annotations", "datetime", "json", "os", "warnings", "zoneinfo:ZoneInfo", "numpy", "pandas", "sys", ".:push", ".:hidden_bots"}   # hidden_bots: push_on only (read-only switch)
     check("f. engine/blitz.py imports only the standard library, numpy / pandas and engine/push (cloud notices text only)",
           mods <= allowed, sorted(mods - allowed))
     hit = sorted(names & FORBID_NAMES)

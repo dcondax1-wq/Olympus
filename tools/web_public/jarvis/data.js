@@ -104,12 +104,38 @@ export function whenLine(d = new Date()) {
 
 // ------------------------------------------------------------------------------------------------ live.json: the NQ bots
 const L = { j: null, at: 0, okAt: 0, err: null, busy: null, apiUntil: 0 };
+// Hidden bots (owner 2026-11-15: "Zlarior and ATLAS only for now"): the switch is dashboard_view.json "hidden_bots" in the repo
+// (engine/hidden_bots.py, default ["blitz"]); the builders take those bots out of every published file and stamp "hidden_bots", and every
+// page asks window.OLY_HIDDEN.has(bot) before it draws a bot. The last list a file carried is kept (localStorage oly.hiddenBots) so the
+// next open starts with it; nothing known = ["blitz"]. Idempotent (the same block sits in jarvis/data.js, jarvis/brain.js, web_next routes.js).
+(function () {
+  if (typeof window === 'undefined' || window.OLY_HIDDEN) return;
+  var AL = { scalp: 'blitz', account_c: 'blitz', acct_c: 'blitz', acctc: 'blitz', pc_blitz: 'blitz', 'strategy 3': 'blitz', s3: 'blitz' };
+  var L = ['blitz'];
+  try { var s = localStorage.getItem('oly.hiddenBots'); if (s) { var a = JSON.parse(s); if (Array.isArray(a)) L = a.map(function (x) { return String(x).toLowerCase(); }); } } catch (e) {}
+  function key(b) { b = String(b == null ? '' : b).trim().toLowerCase(); return AL[b] || (/^blitz/.test(b) ? 'blitz' : b); }
+  function mark() { try { var r = document.documentElement; if (H.has('blitz')) r.setAttribute('data-hide-blitz', ''); else r.removeAttribute('data-hide-blitz'); } catch (e) {} }
+  var H = { list: L,
+    has: function (b) { return H.list.indexOf(key(b)) >= 0; },
+    keep: function (arr) { return (arr || []).filter(function (b) { return !H.has(b); }); },
+    seen: function (j) {
+      var v = j && (Array.isArray(j.hidden_bots) ? j.hidden_bots : j.board && Array.isArray(j.board.hidden_bots) ? j.board.hidden_bots : null);
+      if (!v) return;
+      H.list = v.map(function (x) { return String(x).toLowerCase(); });
+      try { localStorage.setItem('oly.hiddenBots', JSON.stringify(H.list)); } catch (e) {}
+      mark();
+    } };
+  window.OLY_HIDDEN = H; mark();
+})();
+// hidden bots (owner 2026-11-15, dashboard_view.json -> window.OLY_HIDDEN, jarvis/index.html): a hidden BLITZ is never read
+const HIDB = () => !!(globalThis.OLY_HIDDEN && globalThis.OLY_HIDDEN.has('blitz'));
 function slim(j) {                          // what Jarvis needs, also kept for an offline start
+  if (j && globalThis.OLY_HIDDEN) globalThis.OLY_HIDDEN.seen(j);
   const b = (j && j.board) || {};
   // BLITZ: the board's card while account C is on, else live.json's own "blitz" (an "off" card while account C is off)
-  const bz = b.blitz && !b.blitz.error ? b.blitz : j && j.blitz && !j.blitz.error ? j.blitz : null;
+  const bz = HIDB() ? null : b.blitz && !b.blitz.error ? b.blitz : j && j.blitz && !j.blitz.error ? j.blitz : null;
   const num = (x) => (x == null || x === '' || !Number.isFinite(+x) ? null : +x);
-  const trades = (Array.isArray(b.trades) ? b.trades : []).slice(-8).map((x) => x && ({ acct: x.acct, side: x.side, qty: x.qty, exit: x.exit, usd: num(x.usd), r: num(x.r),
+  const trades = (Array.isArray(b.trades) ? b.trades : []).filter((x) => !(x && x.acct === 'blitz' && HIDB())).slice(-8).map((x) => x && ({ acct: x.acct, side: x.side, qty: x.qty, exit: x.exit, usd: num(x.usd), r: num(x.r),
     entry_t: x.entry_t, exit_t: x.exit_t, open: !!x.open, day: x.day })).filter(Boolean);
   const health = (b.health && Array.isArray(b.health.items) ? b.health.items : []).slice(0, 8).map((x) => x && ({ key: x.key, label: x.label, value: x.value, ok: x.ok, warn: !!x.warn, detail: x.detail })).filter(Boolean);
   const lines = (Array.isArray(b.lines) ? b.lines : []).slice(0, 4).map((x) => x && ({ level: x.level, text: x.text })).filter((x) => x && x.text);
@@ -305,7 +331,7 @@ function plannerDayOf(d) {
 // ------------------------------------------------------------------------------------------------ the apps (fallback for apps.js)
 export const KALSHI_URL = '../kalshi/';   // the Kalshi page (tools/web_public/kalshi/): the bot's kalshi.json
 export const BUILT_IN = [
-  { id: 'zenith', name: 'Zenith', sub: 'NQ bots · Zlarior · ATLAS · BLITZ', url: '../', icon: '../icons/icon-192.png?v=p111030', builtIn: true },
+  { id: 'zenith', name: 'Zenith', sub: 'NQ bots · Zlarior · ATLAS', url: '../', icon: '../icons/icon-192.png?v=p111030', builtIn: true },
   { id: 'planner', name: 'Planner', sub: 'Calendar, tasks and projects', url: '../planner/', icon: '../planner/icon-192.png', builtIn: true },
   { id: 'kalshi', name: 'Kalshi', sub: 'Kalshi bot · its own server', url: KALSHI_URL, glyph: 'K', builtIn: true },
 ];
@@ -569,7 +595,7 @@ function systemOf(f) {
   };
   rows.push(bot('lit', 'Zlarior', '50K eval', v && v.lit, true));
   rows.push(bot('atlas', 'ATLAS', '25K', v && v.atlas, false));
-  rows.push(bot('blitz', 'BLITZ', '25K', v && v.blitz, false));
+  if (!HIDB()) rows.push(bot('blitz', 'BLITZ', '25K', v && v.blitz, false));
   // the Kalshi bot (its own server)
   const k = isObj(f.kalshi) ? f.kalshi : null, ks = txt(f.kalshiState);
   const kr = { id: 'kalshi', name: 'Kalshi', sub: 'its own server', app: 'kalshi', level: '', value: '—', text: '', todo: '' };

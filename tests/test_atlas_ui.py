@@ -179,6 +179,7 @@ def part_c(shots):
         with sync_playwright() as p:
             b = _launch(p)
             pg = b.new_page(viewport={"width": 390, "height": 844}, device_scale_factor=2, is_mobile=True, has_touch=True)
+            pg.add_init_script("try { localStorage.setItem('oly.hiddenBots', '[]'); } catch (e) {}")   # BLITZ shown for these pinned checks (hidden by default since 2026-11-15)
             errs = []
             pg.on("pageerror", lambda e: errs.append(str(e)[:200]))
             pg.on("console", lambda m: errs.append("console: " + m.text[:200]) if m.type == "error" and "Failed to load resource" not in m.text

@@ -381,6 +381,7 @@ document.addEventListener('DOMContentLoaded', () => { window.__states = [];
 
 def new_page(br, width=390, sw=False, boot=False, voice=False, height=844, news=False, **kw):
     ctx = br.new_context(viewport={"width": width, "height": height}, device_scale_factor=2, service_workers="allow" if sw else "block", **kw)
+    ctx.add_init_script("try { localStorage.setItem('oly.hiddenBots', '[]'); } catch (e) {}")   # BLITZ shown for these pinned checks (hidden by default since 2026-11-15: tests.test_hidden_bots / test_blitz_tab)
     kal = kalshi_feed()
     feeds(ctx, kal)
     if not boot:                                   # the boot screen plays once per launch: skipped where it is not the subject

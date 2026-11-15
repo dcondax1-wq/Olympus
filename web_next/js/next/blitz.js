@@ -73,6 +73,11 @@ function every(id, ms, fn) { clearInterval(timers[id]); timers[id] = setInterval
 // ------------------------------------------------------------------ BLITZ
 async function drawBlitz() {
   const el = $('#page-blitz'); if (!el) return;
+  // hidden bots (owner 2026-11-15, dashboard_view.json -> window.OLY_HIDDEN): an old link to this page says where BLITZ is
+  if (globalThis.OLY_HIDDEN && globalThis.OLY_HIDDEN.has('blitz')) {
+    el.innerHTML = '<div class="card"><b>BLITZ is hidden for now</b><p class="muted">Only Zlarior and ATLAS are on the dashboard. BLITZ still runs on paper on this PC (never routed, no pushes); it comes back with one switch (dashboard_view.json "hidden_bots").</p></div>';
+    return;
+  }
   try { await allCores(); } catch (e) { el.innerHTML = `<div class="banner warn">${esc(e.message)}</div>`; return; }
   const S = await sources(true);
   const part = store.get('nx.bzPart', 'today');

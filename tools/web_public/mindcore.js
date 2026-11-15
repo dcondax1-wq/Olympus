@@ -13,6 +13,9 @@
 (function () {
   'use strict';
   const V = 1;
+  // hidden bots (owner 2026-11-15, dashboard_view.json -> window.OLY_HIDDEN): a hidden BLITZ is not drawn
+  const HIDB = () => !!(globalThis.OLY_HIDDEN && globalThis.OLY_HIDDEN.has('blitz'));
+  const BOTK = () => ['lit', 'atlas'].concat(HIDB() ? [] : ['blitz']);
   const BOTS = { lit: { name: 'Zlarior', c: '#4f9bff' }, atlas: { name: 'ATLAS', c: '#ff9a3d' }, blitz: { name: 'BLITZ', c: '#b388ff' } };
   const KEY = (b) => { const s = String(b || '').toLowerCase(); return s === 'scalp' || s === 'blitz' ? 'blitz' : s === 'second' || s === 'atlas' || s === 'b' ? 'atlas' : s === 'zlarior' || s === 'lit' ? 'lit' : s; };
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -110,7 +113,7 @@
       : C != null ? `<p class="mn-mut">Calibration: ${esc(val(C))}</p>` : '';
     const dt = Q.daytype ? `<p class="mn-mut">Day type: ${esc(val(Q.daytype))}</p>` : '';
     return `<section class="mn-card"><div class="mn-h"><h3>Mind IQ</h3><span class="mn-meta">what it remembers</span></div>
-      <div class="mn-tiles">${['lit', 'atlas', 'blitz'].map((k) => `<div style="--c:${col(k)}"><span>${esc(name(k))}</span><b>${esc(val(S[k] != null ? S[k] : S[k === 'blitz' ? 'scalp' : k]))}</b><em>setups stored</em></div>`).join('')}</div>${cal}${dt}</section>`;
+      <div class="mn-tiles">${BOTK().map((k) => `<div style="--c:${col(k)}"><span>${esc(name(k))}</span><b>${esc(val(S[k] != null ? S[k] : S[k === 'blitz' ? 'scalp' : k]))}</b><em>setups stored</em></div>`).join('')}</div>${cal}${dt}</section>`;
   }
 
   function bot(m, b, o) {
@@ -121,7 +124,7 @@
   function home(m, o) {
     if (!has(m)) return '';
     const R = obj(m.regime), P = obj(m.plans) || {};
-    const lines = ['lit', 'atlas', 'blitz'].map((k) => { const p = pick(m, 'plans', k); return p && p.headline ? `<li style="--c:${col(k)}">${tag(k)}<span>${esc(p.headline)}</span></li>` : ''; }).join('');
+    const lines = BOTK().map((k) => { const p = pick(m, 'plans', k); return p && p.headline ? `<li style="--c:${col(k)}">${tag(k)}<span>${esc(p.headline)}</span></li>` : ''; }).join('');
     const al = arr(m.alerts).slice().sort((x, y) => (n(y.t) || 0) - (n(x.t) || 0))[0];
     const rv = arr(m.reviews).slice().sort((x, y) => (n(y.t) || 0) - (n(x.t) || 0))[0];
     const go = o && typeof o.go === 'function' ? o.go('mind') : '';
@@ -134,7 +137,7 @@
   }
   function page(m, o) {
     if (!has(m)) return `<div class="mn-wrap"><section class="mn-card"><div class="mn-h"><h3>Mind</h3></div><p class="mn-mut">The Mind has not reported yet. It shows each bot's game plan, similar past setups, A-F trade reviews and research ideas once the PC sends them.</p></section></div>`;
-    const per = ['lit', 'atlas', 'blitz'].map((k) => planCard(pick(m, 'plans', k), k) + simCard(pick(m, 'similar', k), k)).join('');
+    const per = BOTK().map((k) => planCard(pick(m, 'plans', k), k) + simCard(pick(m, 'similar', k), k)).join('');
     return `<div class="mn-wrap mn-page"><div class="mn-title"><span class="mn-logo" aria-hidden="true"></span><b>Mind</b><span>what every bot plans, remembers and learns · read-only</span></div>
       ${obj(m.regime) ? `<section class="mn-card">${regime(m)}</section>` : ''}${per}${reviews(m, null, o, 10)}${proposals(m, null, 10)}${alerts(m, null, 12)}${iq(m)}</div>`;
   }

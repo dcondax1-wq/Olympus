@@ -50,11 +50,16 @@ export function accountView(key, a) {
   const loss = num(st.avg_loss) || num(a.risk), mll = num(ev.mll) || P.mll, room = num(ev.room);
   return { ...base, has: true, mll, room: room == null ? null : Math.max(0, Math.min(mll, room)), risk: loss ? Math.abs(loss) : P.risk, est: !loss };
 }
+// hidden bots (owner 2026-11-15, dashboard_view.json, engine/hidden_bots.py): the real home.json says "hidden_bots" (top or
+// board); a hidden BLITZ has no card (the DEMO keeps its three)
+const hiddenIn = (h, k) => { const o = h && typeof h === 'object' ? h : {}, b = o.board && typeof o.board === 'object' ? o.board : {};
+  const L = Array.isArray(o.hidden_bots) ? o.hidden_bots : Array.isArray(b.hidden_bots) ? b.hidden_bots : [];
+  return L.map(String).includes(k); };
 export function buildAccounts(home, fixture) {
   const list = isObj(home) && Array.isArray(home.accounts) ? home.accounts : [], found = {};
   for (const a of list) { const k = matchKey(a); if (k && !found[k] && !a.error) found[k] = a; }
   const real = Object.keys(found).length > 0, fx = isObj(fixture) && Array.isArray(fixture.accounts) ? fixture.accounts : [];
-  return { demo: !real, accounts: ORDER.map((k) => (real ? accountView(k, found[k]) : accountView(k, fx.find((x) => x && x.key === k) || null))) };
+  return { demo: !real, accounts: ORDER.filter((k) => !(real && k === 'blitz' && hiddenIn(home, 'blitz'))).map((k) => (real ? accountView(k, found[k]) : accountView(k, fx.find((x) => x && x.key === k) || null))) };
 }
 /** the risk donut: every account's max loss as a share of all of them (the money that can be lost on the evals). Accounts with no numbers still count at their plan's max loss. */
 export function riskSlices(accts) {

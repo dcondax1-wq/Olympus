@@ -179,7 +179,7 @@ function addForm(d) {
   return `<div class="st-add"><h4>Add an account</h4><div class="st-grid four">
     <label>NinjaTrader Name<input id="stAName" list="stNames" autocomplete="off" placeholder="exactly as NinjaTrader shows it"></label>
     <label>Plan<span class="st-seg" data-seg="plan"><button type="button" class="on" data-v="builder50k">Builder 50K</button><button type="button" data-v="builder25k">Builder 25K</button></span></label>
-    <label>Bot<span class="st-seg" data-seg="strategy"><button type="button" class="on" data-v="zlarior">Zlarior</button><button type="button" data-v="atlas">ATLAS</button><button type="button" data-v="blitz">BLITZ</button></span></label>
+    <label>Bot<span class="st-seg" data-seg="strategy"><button type="button" class="on" data-v="zlarior">Zlarior</button><button type="button" data-v="atlas">ATLAS</button>${(globalThis.OLY_HIDDEN && globalThis.OLY_HIDDEN.has('blitz')) ? '' : '<button type="button" data-v="blitz">BLITZ</button>'}</span></label>
     <label>Start day<input id="stAStart" type="date" value="${esc(d.accounts?.today || '')}"></label></div>
     <div class="st-acts"><button type="button" class="btn primary sm" data-do="add" ${dis}>Add</button><span class="muted">Never armed here: arming is the Start list's last step.</span></div></div>`;
 }
@@ -301,7 +301,7 @@ function draw() {
     <div class="card nx-glass cc-card st-accts"><div class="card-h"><h3>Accounts</h3><div class="card-tools">${d.running ? chip('bot running: stop it to add or remove', 'warn') : ''}</div></div>
       ${rows.length ? rows.map((r) => acctRow(r, d)).join('') : '<div class="pc-empty"><b>No accounts yet</b><span>Add the 50K for Zlarior and the 25K for ATLAS.</span></div>'}
       ${addForm(d)}</div>
-    ${blitzCard(d)}`;
+    ${(globalThis.OLY_HIDDEN && globalThis.OLY_HIDDEN.has('blitz')) ? '' : blitzCard(d)}`;   // hidden bots (owner 2026-11-15): no BLITZ · 25K card while BLITZ is hidden
   if (keep.lit != null && $('#stLit')) $('#stLit').value = keep.lit;
   if (keep.atlas != null && $('#stAtlas')) $('#stAtlas').value = keep.atlas;
   if (keep.phrase && $('#stPhrase')) { $('#stPhrase').value = keep.phrase; armBtn(); }
@@ -325,7 +325,7 @@ async function load(fresh = false) {
     const d = await r.json();
     if (!r.ok || d.error) throw new Error(d.error || 'HTTP ' + r.status);
     P.d = d; P.offline = 0;
-    if (d.blitz?.on) await loadCpf(fresh); else P.cpf = null;
+    if (d.blitz?.on && !(globalThis.OLY_HIDDEN && globalThis.OLY_HIDDEN.has('blitz'))) await loadCpf(fresh); else P.cpf = null;
   } catch (e) {
     P.offline += 1;
     if (!P.d) { const el = $('#page-start'); if (el) el.innerHTML = `<div class="card nx-glass cc-card"><div class="pc-empty"><b>Bot server not reachable</b><span>${esc(e.message)}. It may be restarting: this page tries again.</span></div></div>`; }

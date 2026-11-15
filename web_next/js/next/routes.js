@@ -1,3 +1,26 @@
+// Hidden bots (owner 2026-11-15: "Zlarior and ATLAS only for now"): the switch is dashboard_view.json "hidden_bots" in the repo
+// (engine/hidden_bots.py, default ["blitz"]); the builders take those bots out of every published file and stamp "hidden_bots", and every
+// page asks window.OLY_HIDDEN.has(bot) before it draws a bot. The last list a file carried is kept (localStorage oly.hiddenBots) so the
+// next open starts with it; nothing known = ["blitz"]. Idempotent (the same block sits in jarvis/data.js, jarvis/brain.js, web_next routes.js).
+(function () {
+  if (typeof window === 'undefined' || window.OLY_HIDDEN) return;
+  var AL = { scalp: 'blitz', account_c: 'blitz', acct_c: 'blitz', acctc: 'blitz', pc_blitz: 'blitz', 'strategy 3': 'blitz', s3: 'blitz' };
+  var L = ['blitz'];
+  try { var s = localStorage.getItem('oly.hiddenBots'); if (s) { var a = JSON.parse(s); if (Array.isArray(a)) L = a.map(function (x) { return String(x).toLowerCase(); }); } } catch (e) {}
+  function key(b) { b = String(b == null ? '' : b).trim().toLowerCase(); return AL[b] || (/^blitz/.test(b) ? 'blitz' : b); }
+  function mark() { try { var r = document.documentElement; if (H.has('blitz')) r.setAttribute('data-hide-blitz', ''); else r.removeAttribute('data-hide-blitz'); } catch (e) {} }
+  var H = { list: L,
+    has: function (b) { return H.list.indexOf(key(b)) >= 0; },
+    keep: function (arr) { return (arr || []).filter(function (b) { return !H.has(b); }); },
+    seen: function (j) {
+      var v = j && (Array.isArray(j.hidden_bots) ? j.hidden_bots : j.board && Array.isArray(j.board.hidden_bots) ? j.board.hidden_bots : null);
+      if (!v) return;
+      H.list = v.map(function (x) { return String(x).toLowerCase(); });
+      try { localStorage.setItem('oly.hiddenBots', JSON.stringify(H.list)); } catch (e) {}
+      mark();
+    } };
+  window.OLY_HIDDEN = H; mark();
+})();
 // Information architecture of the redesigned dashboard.
 // Top level (2026-10-25 PM): Home · Zlarior · ATLAS · Results · All tools (+ Settings, Advanced folded). Each bot has its
 // own page with sections (BOTS below); every other page lives under Results (tab strip) or All tools (tile grid). Page
@@ -219,3 +242,14 @@ TITLES.pro = PRO.label;
 // Fleet (js/next/fleet.js, 2026-10-30): copy trading to the follower accounts (engine/fleet.py, GET /api/next/fleet)
 export const FLEET = { id: 'fleet', label: 'Fleet', icon: 'modules', desc: 'Copy trading: every follower account (prop firms, Sim, your LIVE account), room the firm\'s way, today, slippage vs the lead, rule warnings, the firm rules' };
 MODULES.push(FLEET); TITLES.fleet = FLEET.label;   // All tools > More (a tile), Ctrl K
+
+// hidden bots (owner 2026-11-15, dashboard_view.json -> window.OLY_HIDDEN, web_next/index.html; engine/hidden_bots.py): a hidden
+// BLITZ leaves the sidebar, the Bots section and Ctrl K; #/blitz still opens its page (which says it is hidden, on paper)
+export const BLITZ_HIDDEN = !!(globalThis.OLY_HIDDEN && globalThis.OLY_HIDDEN.has('blitz'));
+if (BLITZ_HIDDEN) {
+  const drop = (a) => { const i = Array.isArray(a) ? a.indexOf('blitz') : -1; if (i >= 0) a.splice(i, 1); };
+  MAIN_SECTIONS.forEach((s) => drop(s[1]));
+  GROUPS.forEach((g) => { drop(g.ids); (g.sections || []).forEach((s) => drop(s.ids)); });
+  const t = TOP.findIndex((p) => p.id === 'blitz'); if (t >= 0) TOP.splice(t, 1);
+  drop(TABS);
+}

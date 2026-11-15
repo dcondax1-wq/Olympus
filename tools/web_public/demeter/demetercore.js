@@ -69,11 +69,16 @@ export function accountView(key, a, rules) {
     locked: !!ev.locked, today: num(pnl.today) != null ? num(pnl.today) : num(ev.today) || 0, week: num(pnl.week) || 0, progress: Math.max(0, Math.min(1, num(ev.progress) || 0)), toTarget: num(ev.to_target),
     dll: num(ev.dll) || L.dll, dllUsed: num(ev.dll_used) || 0, risk: loss ? Math.abs(loss) : P.risk, win: win ? Math.abs(win) : P.win, est: !loss, status: str(ev.clock_text || ev.status, 140) };
 }
+// hidden bots (owner 2026-11-15, dashboard_view.json, engine/hidden_bots.py): the real home.json says "hidden_bots" (top or
+// board); a hidden BLITZ has no card (the DEMO keeps its three)
+const hiddenIn = (h, k) => { const o = h && typeof h === 'object' ? h : {}, b = o.board && typeof o.board === 'object' ? o.board : {};
+  const L = Array.isArray(o.hidden_bots) ? o.hidden_bots : Array.isArray(b.hidden_bots) ? b.hidden_bots : [];
+  return L.map(String).includes(k); };
 export function buildAccounts(home, rules, fixture) {
   const list = isObj(home) && Array.isArray(home.accounts) ? home.accounts : [], found = {};
   for (const a of list) { const k = matchKey(a); if (k && !found[k] && !a.error) found[k] = a; }
   const real = Object.keys(found).length > 0, fx = isObj(fixture) && Array.isArray(fixture.accounts) ? fixture.accounts : [];
-  return { demo: !real, accounts: ORDER.map((k) => {
+  return { demo: !real, accounts: ORDER.filter((k) => !(real && k === 'blitz' && hiddenIn(home, 'blitz'))).map((k) => {
     if (real) return accountView(k, found[k], rules);
     const f = fx.find((x) => x.key === k); return f ? { ...accountView(k, null, rules), ...f, has: true, demo: true } : accountView(k, null, rules);
   }) };

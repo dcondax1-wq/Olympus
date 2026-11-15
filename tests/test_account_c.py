@@ -1197,6 +1197,10 @@ def part13():
 
 def main():
     quick = "--quick" in sys.argv
+    # account C's own contract with BLITZ shown (dashboard_view.json "hidden_bots": []): hidden (the default since 2026-11-15)
+    # its paper / Sim pushes are silent, tests.test_hidden_bots checks that
+    from engine import hidden_bots
+    hidden_bots.FORCE = ()
     for name, fn in (("1", part1), ("3", part3), ("3b", part3b), ("4", part4), ("5", part5), ("6", part6), ("7", part7), ("8", part8), ("10", part10),
                      ("11", part11), ("12", part12), ("13", part13)):
         try:

@@ -3,6 +3,29 @@
 // code, now a deferred file: the page paints its skeleton first, this runs before the other deferred scripts (document order), and the service
 // worker keeps it like every other ?v= file. Bump ?v= in index.html when this file changes.
 'use strict';
+// Hidden bots (owner 2026-11-15: "Zlarior and ATLAS only for now"): the switch is dashboard_view.json "hidden_bots" in the repo
+// (engine/hidden_bots.py, default ["blitz"]); the builders take those bots out of every published file and stamp "hidden_bots", and every
+// page asks window.OLY_HIDDEN.has(bot) before it draws a bot. The last list a file carried is kept (localStorage oly.hiddenBots) so the
+// next open starts with it; nothing known = ["blitz"]. Idempotent (the same block sits in jarvis/data.js, jarvis/brain.js, web_next routes.js).
+(function () {
+  if (typeof window === 'undefined' || window.OLY_HIDDEN) return;
+  var AL = { scalp: 'blitz', account_c: 'blitz', acct_c: 'blitz', acctc: 'blitz', pc_blitz: 'blitz', 'strategy 3': 'blitz', s3: 'blitz' };
+  var L = ['blitz'];
+  try { var s = localStorage.getItem('oly.hiddenBots'); if (s) { var a = JSON.parse(s); if (Array.isArray(a)) L = a.map(function (x) { return String(x).toLowerCase(); }); } } catch (e) {}
+  function key(b) { b = String(b == null ? '' : b).trim().toLowerCase(); return AL[b] || (/^blitz/.test(b) ? 'blitz' : b); }
+  function mark() { try { var r = document.documentElement; if (H.has('blitz')) r.setAttribute('data-hide-blitz', ''); else r.removeAttribute('data-hide-blitz'); } catch (e) {} }
+  var H = { list: L,
+    has: function (b) { return H.list.indexOf(key(b)) >= 0; },
+    keep: function (arr) { return (arr || []).filter(function (b) { return !H.has(b); }); },
+    seen: function (j) {
+      var v = j && (Array.isArray(j.hidden_bots) ? j.hidden_bots : j.board && Array.isArray(j.board.hidden_bots) ? j.board.hidden_bots : null);
+      if (!v) return;
+      H.list = v.map(function (x) { return String(x).toLowerCase(); });
+      try { localStorage.setItem('oly.hiddenBots', JSON.stringify(H.list)); } catch (e) {}
+      mark();
+    } };
+  window.OLY_HIDDEN = H; mark();
+})();
 // ===================================================================== icons (same set as web_next/js/next/icons.js, plus the Lab ones)
 const P = {
   today: '<path d="M3 12h3l3-8 4 16 3-8h5"/>',
@@ -3407,6 +3430,7 @@ async function load(manual = false) {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     dataTag = r.headers.get('x-le-cache') ? '' : tagOf(r);       // a copy from the saved cache (offline) never stands for the live file
     const nd = await r.json(), changed = !D || nd.built !== D.built, first = !D;
+    if (window.OLY_HIDDEN) window.OLY_HIDDEN.seen(nd);   // hidden bots (dashboard_view.json, engine/hidden_bots.py)
     D = nd; if (window.LIVE) window.LIVE.apply(D);   // the PC's live.json (live.js) over the cloud's data.json
     status(); actBadge(); if (pushSupport() && Notification.permission === 'granted') pushEnsure(false).catch(() => null);
     if (first) subBar(PAGE, groupOf(PAGE));        // detail pages show previous / next once the lists are known
@@ -3531,6 +3555,7 @@ addEventListener('scroll', () => { if (!pxQ) { pxQ = true; requestAnimationFrame
 
 // home.json: the Home screen's small first-paint file (same build as data.json); data.json follows at once
 window.HOMEP = fetch('home.json?t=' + Date.now(), { cache: 'no-store' }).then((r) => (r.ok ? r.json() : null)).then((j) => {
+  if (j && window.OLY_HIDDEN) window.OLY_HIDDEN.seen(j);
   if (j && !D) { window.HOMEJ = j; if (window.LIVE) window.LIVE.apply(j); if (window.HUB && PAGE === 'today') { render(true); splashDone(); } }
   return j;
 }).catch(() => null);

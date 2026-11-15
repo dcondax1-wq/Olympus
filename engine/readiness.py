@@ -168,6 +168,12 @@ def build(f: dict, now) -> dict:
         sw_txt += ": press Run on the dashboard before 18:00 ET"
     b = f.get("board") if isinstance(f.get("board"), dict) else {}
     acc = [account_line("Zlarior 50K", b.get("lit")), account_line("ATLAS 25K", b.get("atlas")), blitz_line(f.get("blitz"))]
+    try:                                   # hidden bots (engine/hidden_bots.py, owner 2026-11-15): no BLITZ line while it is hidden
+        from . import hidden_bots
+        if hidden_bots.is_hidden("blitz"):
+            acc = acc[:2]
+    except Exception:
+        pass
     nl = news_lines(f.get("events"), days)
     cl = calendar_lines(days)
     dn = dst_note(now)

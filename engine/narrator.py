@@ -166,6 +166,12 @@ def push_prefs(path: str | None = None) -> dict:
                 out[k] = bool(v)
     except Exception:
         pass
+    try:                                   # hidden on the dashboard (engine/hidden_bots.py, owner 2026-11-15): BLITZ paper is silent
+        from . import hidden_bots
+        if hidden_bots.is_hidden("blitz"):
+            out["blitz"] = False
+    except Exception:
+        pass
     return out
 
 

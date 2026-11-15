@@ -57,6 +57,8 @@ export async function api(path, body) {
   const r = await fetch(path, opt);
   const j = await r.json();
   if (!r.ok || j.error) throw new Error(j.error || r.statusText);
+  // hidden bots (owner 2026-11-15): the server stamps "hidden_bots" on GET answers (engine/hidden_bots.ScrubMiddleware)
+  try { if (globalThis.OLY_HIDDEN && j && typeof j === 'object') globalThis.OLY_HIDDEN.seen(j); } catch { /* optional */ }
   return j;
 }
 

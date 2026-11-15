@@ -526,7 +526,8 @@ export class Space extends View {
       _ray.set(cam.position, _w.copy(s.pos).sub(cam.position).normalize()); _sph.set(E, 1.0);
       const hit = _ray.intersectSphere(_sph, _p), behind = hit && hit.distanceTo(cam.position) < s.pos.distanceTo(cam.position) - 0.05;
       const x = (_v.x * 0.5 + 0.5) * w, y = (-_v.y * 0.5 + 0.5) * h, off = _v.z > 1 || x < 8 || x > w - 8 || y < 8 || y > h - 8;
-      const hide = behind || off || (s.state === 'off' && s.key !== 'scalp');
+      // hidden bots (owner 2026-11-15, window.OLY_HIDDEN): a hidden BLITZ keeps its satellite off and its 'paper' tag hidden
+      const hide = behind || off || (s.state === 'off' && (s.key !== 'scalp' || !!(globalThis.OLY_HIDDEN && globalThis.OLY_HIDDEN.has('blitz'))));
       if (hide !== s.labHid) { d.classList.toggle('hid', hide); s.labHid = hide; }
       if (!hide) d.style.transform = `translate3d(${(x + 12).toFixed(1)}px, ${(y - 9).toFixed(1)}px, 0)`;
     }

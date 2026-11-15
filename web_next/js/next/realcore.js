@@ -60,13 +60,15 @@
   const short = (n) => { const s = String(n || ''); const m = s.match(/(\d{3,})$/); return m ? '…' + m[1].slice(-4) : s; };
 
   // ---------------------------------------------------------------- data helpers
-  const accOf = (B, k) => (B && B[k] && !B[k].error ? B[k] : null);
+  // hidden bots (owner 2026-11-15, dashboard_view.json -> window.OLY_HIDDEN): a hidden BLITZ has no card, slot or filter
+  const HIDB = () => !!(globalThis.OLY_HIDDEN && globalThis.OLY_HIDDEN.has('blitz'));
+  const accOf = (B, k) => (k === 'blitz' && HIDB() ? null : B && B[k] && !B[k].error ? B[k] : null);
   // the real accounts on the board: Zlarior + ATLAS, and BLITZ once its own 25K (account C, engine/account_c.py) is on
   const AKS = (B) => ['lit', 'atlas'].concat(accOf(B, 'blitz') ? ['blitz'] : []);
   const pageOf = (k) => (k === 'lit' ? 'zlarior' : k === 'atlas' ? 'atlas' : 'mission');
   function realRows(B) {
     const R = B && B.real && Array.isArray(B.real.trades) ? B.real.trades : (B && Array.isArray(B.trades) ? B.trades.filter((r) => r.src === 'live') : []);
-    return R.slice().sort((x, y) => (+x.entry_t || 0) - (+y.entry_t || 0));
+    return R.filter((r) => !(r && r.acct === 'blitz' && HIDB())).sort((x, y) => (+x.entry_t || 0) - (+y.entry_t || 0));
   }
   const today = (B) => (B && B.today) || etDay(nowS());
   const checksOf = (B, k) => ((B && B.real && B.real.checks) || []).filter((c) => !k || c.acct === k);
@@ -250,7 +252,7 @@
       <div class="rc-hd"><div><div class="rc-eyeb">Today · real accounts</div><h2>${esc(new Date(today(B) + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }))}</h2></div>
         <span class="rc-age ${age != null && age > 900 ? 'warn' : ''}">data <b data-bd-age="${esc(B.data_t || '')}">${age != null ? esc(dur(age)) : '—'}</b> old · real $ only</span></div>
       ${checkBanners(B)}
-      <div class="rc-grid">${card(B, 'lit', o)}${card(B, 'atlas', o)}${accOf(B, 'blitz') ? card(B, 'blitz', o) : slot3(o)}</div>
+      <div class="rc-grid">${card(B, 'lit', o)}${card(B, 'atlas', o)}${accOf(B, 'blitz') ? card(B, 'blitz', o) : HIDB() ? '' : slot3(o)}</div>
       <div class="rc-ban ${C.k}"><i></i><span><b>LIT vs ATLAS:</b> ${esc(C.t)}</span></div>
       ${eventsCard(B)}
     </section>`;

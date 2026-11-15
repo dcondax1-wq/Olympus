@@ -75,7 +75,10 @@
 
   // ------------------------------------------------------------------ the BLITZ tab
   const PARTS = BU.PARTS.map((p) => p[0]);
+  // hidden bots (owner 2026-11-15, dashboard_view.json -> window.OLY_HIDDEN): no BLITZ tab; an old #/blitz link says where it is
+  const HIDB = () => !!(window.OLY_HIDDEN && window.OLY_HIDDEN.has('blitz'));
   VIEWS.blitz = live('blitz', (el) => {
+    if (HIDB()) { el.innerHTML = '<div class="card"><b>BLITZ is hidden for now</b><p class="mut">Only Zlarior and ATLAS are on the dashboard. BLITZ still runs on paper on the PC (never routed, no pushes); it comes back with one switch.</p></div>'; return; }
     const part = typeof ARG !== 'undefined' && PARTS.includes(ARG) ? ARG : 'today';
     const M = bModel();
     el.innerHTML = BU.page(M, part, { go, mind: part === 'brain' && MU ? MU.bot(mind(), 'blitz', { go }) : '', pics: part === 'trades' ? pics() : '' });
@@ -83,7 +86,7 @@
     if (part === 'trades' && window.TradePics && window.TradePics.settle) { try { window.TradePics.settle(el); } catch (e) { /* pictures are optional */ } }
   });
   const desc = 'BLITZ, the scalper, on its own 25K: today, brain, trades, results, rules, go live';
-  PAGES.blitz = Object.assign(PAGES.blitz || {}, { id: 'blitz', label: 'BLITZ', icon: 'blitz', desc, group: 'blitz' });
+  PAGES.blitz = Object.assign(PAGES.blitz || {}, { id: 'blitz', label: 'BLITZ', icon: 'blitz', desc, group: HIDB() ? 'system' : 'blitz' });
   if (typeof P !== 'undefined' && !P.blitz) P.blitz = '<path d="M13.5 2.5L5 13.5h6l-1.5 8 8.5-11h-6z"/>';
   if (typeof SCENE !== 'undefined') SCENE.blitz = 'eval';
   if (typeof ALIAS !== 'undefined') Object.assign(ALIAS, { scalp: 'blitz', scalper: 'blitz', strategy3: 'blitz', bot3: 'blitz', acctc: 'blitz', account_c: 'blitz' });
@@ -156,7 +159,7 @@
       [['blitz', 'BLITZ tab', 'BLITZ, the scalper, in its own tab: today\'s noise band, the day filter, signals, the open position with $ at the stop, account C, brain, trades, results vs the research band, the kill switch, rules, go live'],
         ['mind', 'Mind', 'Each bot\'s if-then game plan, similar past setups, A-F trade reviews and research ideas (once the bot sends them)'],
         ['deck', 'Trader\'s deck', 'Risk meter on all accounts, the next 24 h with the clock change, eval odds from today\'s balance, real P&L calendar, trade journal, notification center with a mute per bot'],
-      ].reverse().forEach(([go_, name, line]) => FL.unshift({ group: 'BLITZ, Mind & Trader\'s deck', name, line: line + '.', go: go_, isNew: true }));
+      ].filter(([g_]) => !(g_ === 'blitz' && HIDB())).reverse().forEach(([go_, name, line]) => FL.unshift({ group: 'BLITZ, Mind & Trader\'s deck', name, line: line + '.', go: go_, isNew: true }));
       window.Features.count = FL.length; window.Features.newCount = FL.filter((f) => f.isNew).length;
     }
   } catch (e) { /* the list is optional */ }

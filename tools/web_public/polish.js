@@ -18,6 +18,9 @@
   const nowS = () => Date.now() / 1000;
   const okN = (v) => typeof v === 'number' && Number.isFinite(v);
   const calm = () => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches || store.get('motion', true) === false; } catch (e) { return false; } };
+  // hidden bots (owner 2026-11-15, dashboard_view.json -> window.OLY_HIDDEN): a hidden BLITZ is not drawn
+  const HIDB = () => !!(globalThis.OLY_HIDDEN && globalThis.OLY_HIDDEN.has('blitz'));
+  const BOTK = () => ['lit', 'atlas'].concat(HIDB() ? [] : ['blitz']);
   const BOTG = { lit: 'lit', atlas: 'atlas', blitz: 'blitz' };
   // full-screen app pages (their own canvas, camera and fixed labels): no card entrance on their root
   const NO_ENTER = new Set(['today', 'holo', 'liveview']);
@@ -290,7 +293,7 @@
   function botDots(T) {
     let As = [];
     try { const M = model(); As = M.board && window.MissionUI ? window.MissionUI.accounts(M) : []; } catch (e) { As = []; }
-    for (const k of ['lit', 'atlas', 'blitz']) {
+    for (const k of BOTK()) {
       const a = T.querySelector(`a[data-t="${k}"]`); if (!a) continue;
       const A = As.find((x) => x.key === k);
       const st = !A || A.placeholder ? '' : A.pos ? 'trade' : A.blocks && A.blocks.length ? 'blocked' : A.armed ? 'armed' : '';
@@ -342,9 +345,9 @@
     blitz: [['Today', 'blitz'], ['Brain', 'blitz/brain'], ['Trades', 'blitz/trades'], ['Results', 'blitz/results'], ['Rules', 'blitz/rules']] };
   function palItems() {
     const out = [], seen = new Set();
-    for (const [b, L] of Object.entries(SECS)) for (const [s, id] of L) { out.push({ id, t: `${SU.NAME[b]} · ${s}`, d: `${SU.NAME[b]}'s ${s.toLowerCase()}`, k: 'bot', bot: b }); seen.add(id); }
+    for (const [b, L] of Object.entries(SECS)) for (const [s, id] of L) { if (b === 'blitz' && HIDB()) { seen.add(id); continue; } out.push({ id, t: `${SU.NAME[b]} · ${s}`, d: `${SU.NAME[b]}'s ${s.toLowerCase()}`, k: 'bot', bot: b }); seen.add(id); }
     for (const id of Object.keys(PAGES)) {
-      const p = PAGES[id]; if (!p || seen.has(id)) continue;
+      const p = PAGES[id]; if (!p || seen.has(id) || (id === 'blitz' && HIDB())) continue;
       const G = (typeof GROUPS !== 'undefined' ? GROUPS : []).find((g) => g.id === p.group);
       out.push({ id, t: p.label, d: p.desc || '', g: G ? G.label : '', k: 'page' });
     }
@@ -525,12 +528,12 @@
     const G = 'Calm & clear (Oct 30)';
     if (!FL || FL.some((f) => f.group === G)) return;
     [['today', 'Status bar', 'One line on top of Home says if everything is OK right now (PC, NinjaTrader, feed, each bot, the next window, alerts); a tap opens every line with its fix'],
-      ['today', 'The three accounts', 'Zlarior, ATLAS and BLITZ as one card each: eval ring, $ to the target, room, today\'s real $, a sparkline, the day in one line'],
+      ['today', 'The three accounts', 'Zlarior and ATLAS as one card each: eval ring, $ to the target, room, today\'s real $, a sparkline, the day in one line'],
       ['today', 'What matters now', 'Open trades, since you last looked, the next window, the next big news, the last real trade'],
       ['today', 'NQ now', 'The price between its nearest levels, with the VIX band'],
       ['today', 'This week', 'Real trades against each bot\'s goal, Mon-Fri'],
       ['today', 'Sunday open', 'Weekends: the CME reopen, the clock change, what each bot does first'],
-      ['lit', 'One order on every bot', 'Today · Brain · Trades · Results · Rules on Zlarior, ATLAS and BLITZ, with "why no trade yet" under the account card'],
+      ['lit', 'One order on every bot', 'Today · Brain · Trades · Results · Rules on Zlarior and ATLAS, with "why no trade yet" under the account card'],
       ['real', 'Money = real money', 'Real results · Accounts today · Eval timeline; the research $ pages are under More > Money planning'],
       ['system', 'Search everything', 'The magnifier in the header (or "/"): pages, each bot\'s sections and the live numbers'],
       ['settings', 'Motion and intro', 'Smooth page and tab transitions, a short intro once a day (Skip), all off with Settings > Motion or reduced motion'],

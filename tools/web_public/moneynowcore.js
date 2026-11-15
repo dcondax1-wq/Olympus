@@ -93,7 +93,8 @@
     const by = {};
     for (const a of As) if (a && a.key && !by[a.key]) by[a.key] = a;
     const bot = botLine(M);
-    const rows = ROWS.filter((d) => d.always || (by[d.key] && !by[d.key].placeholder)).map((d) => rowOf(d, by[d.key], M, bot));
+    const rows = ROWS.filter((d) => !(d.key === 'blitz' && globalThis.OLY_HIDDEN && globalThis.OLY_HIDDEN.has('blitz'))) // hidden bots (owner 2026-11-15)
+      .filter((d) => d.always || (by[d.key] && !by[d.key].placeholder)).map((d) => rowOf(d, by[d.key], M, bot));
     let edge = bot.edge === 'idle' ? 'good' : bot.edge;
     for (const r of rows) edge = worst(edge, r.edge);
     const t = okN(+obj(M.board).data_t) ? +obj(M.board).data_t : null;

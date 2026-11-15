@@ -288,9 +288,13 @@ def live_json(F, case):
             "mind": F["mind_c"]}
 
 
-def phone_ctx(br, F, lvp, case, errs, seen=None):
+def phone_ctx(br, F, lvp, case, errs, seen=None, hidden=None):
     ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2, is_mobile=True, has_touch=True)
     ctx.clock.install(time=F["T"])     # Python Playwright: a number is seconds
+    # hidden bots (owner 2026-11-15, dashboard_view.json): BLITZ is hidden by default; these checks are BLITZ's own UI, so the
+    # page is told it is shown (the last list a published file carried, localStorage oly.hiddenBots); hidden=False = the default
+    if hidden is not False:
+        ctx.add_init_script("try { localStorage.setItem('oly.hiddenBots', %s); } catch (e) {}" % json.dumps(json.dumps(hidden or [])))
     if seen is not None:
         ctx.add_init_script(f"try {{ localStorage.setItem('le.deck.seen', JSON.stringify({{ t: {seen} }})); }} catch (e) {{}}")
     pg = ctx.new_page()
@@ -333,7 +337,20 @@ def part_c(F, tmp, shots):
             pg.click("#moInstX")
             pg.wait_for_timeout(500)
         tabs = pg.eval_on_selector_all("#tabs a", "els => els.map(e => { const r = e.getBoundingClientRect(), s = e.querySelector('span'); return [s.textContent.trim(), Math.round(r.width), Math.round(r.height), s.scrollWidth <= s.clientWidth + 1]; })")
-        check("c. phone bottom bar = Home · Zlarior · ATLAS · BLITZ · Money · More", [t[0] for t in tabs] == ["Home", "Zlarior", "ATLAS", "BLITZ", "Money", "More"], tabs)
+        check("c. phone bottom bar (BLITZ shown: hidden_bots []) = Home · Zlarior · ATLAS · BLITZ · Money · More", [t[0] for t in tabs] == ["Home", "Zlarior", "ATLAS", "BLITZ", "Money", "More"], tabs)
+        # the default (owner 2026-11-15): BLITZ hidden -> no BLITZ tab, no BLITZ account card, #/blitz says it is hidden
+        hctx, hpg = phone_ctx(br, F, lvp, "off", errs, seen=F["T"] - 4 * 3600, hidden=False)
+        hpg.goto(base + "?fxoff#/today")
+        hpg.wait_for_selector(".su-acct", timeout=30000)
+        hpg.wait_for_timeout(1200)
+        htabs = hpg.eval_on_selector_all("#tabs a", "els => els.map(e => e.querySelector('span').textContent.trim())")
+        hcards = hpg.eval_on_selector_all("#page .su-acct", "els => els.map(e => e.dataset.bot)")
+        check("c. hidden (default): bottom bar Home · Zlarior · ATLAS · Money · More, Home cards Zlarior + ATLAS only",
+              htabs == ["Home", "Zlarior", "ATLAS", "Money", "More"] and "blitz" not in hcards and "lit" in hcards, (htabs, hcards))
+        hpg.evaluate("() => { location.hash = '#/blitz'; }")
+        hpg.wait_for_timeout(900)
+        check("c. hidden (default): an old #/blitz link says BLITZ is hidden and still on paper", "BLITZ is hidden for now" in hpg.inner_text("#page"))
+        hctx.close()
         check("c. six tabs fit 390 px: each >= 44 x 44 px, every label readable (not clipped)", all(t[1] >= 44 and t[2] >= 44 and t[3] for t in tabs), tabs)
         # 2026-10-30 (night 3, layout deliberately changed): the status bar, then Zlarior · ATLAS · BLITZ account cards
         check("c. Home: the status bar first, then the three account cards (Zlarior, ATLAS, BLITZ)", pg.evaluate(
@@ -440,7 +457,7 @@ def part_c(F, tmp, shots):
         e3 = []
         ctx = br.new_context(viewport={"width": 844, "height": 390}, device_scale_factor=2, is_mobile=True, has_touch=True)
         ctx.clock.install(time=F["T"])
-        ctx.add_init_script("try { localStorage.setItem('le.theme', JSON.stringify('light')); } catch (e) {}")
+        ctx.add_init_script("try { localStorage.setItem('le.theme', JSON.stringify('light')); localStorage.setItem('oly.hiddenBots', '[]'); } catch (e) {}")
         pg = ctx.new_page()
         pg.on("pageerror", lambda e: e3.append(str(e)[:200]))
         lj = json.dumps(live_json(F, "armed"), default=str)
@@ -501,6 +518,8 @@ def part_d(F, shots):
     from starlette.routing import Route
     from starlette.responses import JSONResponse
     board_api.board_view = lambda bot, now=None: copy.deepcopy(F["board"])
+    from engine import hidden_bots          # BLITZ's own UI: shown (hidden_bots []) by the server and the page
+    hidden_bots.FORCE = ()
     lv = copy.deepcopy(F["lv"])
     liveview_api.view = lambda bot, tf="1m", now=None, narr=None, n_feed=100: copy.deepcopy(lv)
     try:                                     # the real route (before the fixture answers it): the card + the Start page slot, no phrase
@@ -530,7 +549,7 @@ def part_d(F, shots):
         pg = ctx.new_page()
         errs = []
         pg.on("pageerror", lambda e: errs.append(f"pc pageerror: {str(e)[:240]}"))
-        pg.add_init_script("localStorage.setItem('page', 'cc'); localStorage.setItem('le.deck.seen', JSON.stringify({ t: %d }));" % (F["T"] - 7200))
+        pg.add_init_script("localStorage.setItem('page', 'cc'); localStorage.setItem('oly.hiddenBots', '[]'); localStorage.setItem('le.deck.seen', JSON.stringify({ t: %d }));" % (F["T"] - 7200))
         pg.goto(base + "/?fxoff", wait_until="domcontentloaded")
         pg.wait_for_function("() => window.LE && window.LE.go", timeout=60000)
         pg.wait_for_timeout(2500)

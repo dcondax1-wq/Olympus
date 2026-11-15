@@ -66,13 +66,18 @@ export function accountView(key, a, rules) {
 }
 
 /** the three accounts, in order. Real accounts first; demo = true when none of the three is in home.json (the fixture's rows are used, labelled). */
+// hidden bots (owner 2026-11-15, dashboard_view.json, engine/hidden_bots.py): the real home.json says "hidden_bots" (top or
+// board); a hidden BLITZ has no card (the DEMO keeps its three)
+const hiddenIn = (h, k) => { const o = h && typeof h === 'object' ? h : {}, b = o.board && typeof o.board === 'object' ? o.board : {};
+  const L = Array.isArray(o.hidden_bots) ? o.hidden_bots : Array.isArray(b.hidden_bots) ? b.hidden_bots : [];
+  return L.map(String).includes(k); };
 export function buildAccounts(home, fixture, rules) {
   const list = isObj(home) && Array.isArray(home.accounts) ? home.accounts : [];
   const found = {};
   for (const a of list) { const k = matchKey(a); if (k && !found[k] && !a.error) found[k] = a; }
   const real = Object.keys(found).length > 0;
   const fx = isObj(fixture) && Array.isArray(fixture.accounts) ? fixture.accounts : [];
-  return { demo: !real, accounts: ORDER.map((k) => {
+  return { demo: !real, accounts: ORDER.filter((k) => !(real && k === 'blitz' && hiddenIn(home, 'blitz'))).map((k) => {
     if (real) return accountView(k, found[k], rules);
     const f = fx.find((x) => x && x.key === k); const v = accountView(k, f || null, rules); return f ? { ...v, demo: true } : v;
   }) };

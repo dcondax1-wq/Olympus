@@ -2096,7 +2096,7 @@ function kalshiAlerts() {                              // the owner's "🌌 +$1.
 // The owner (2026-11-01): "a way to access each thing, so calendar, kalshi, Jarvis, and my nq bot and eventually other stuff, make
 // a really cool way to change between stuff". One orb over every mode: tap = a live card per app, swipe = the next app, hold = the
 // ring. Without it (absent or broken) the bar's chips and Zenith mode's own control switch as before.
-const NX_NAMES = { home: ['JARVIS', 'Your assistant'], zenith: ['NQ BOT', 'Zenith · Zlarior · ATLAS · BLITZ'],
+const NX_NAMES = { home: ['JARVIS', 'Your assistant'], zenith: ['NQ BOT', 'Zenith · Zlarior · ATLAS'],
   planner: ['CALENDAR', 'Planner · your day'], kalshi: ['KALSHI', 'Kalshi bot · its own server'] };
 const nxApps = () => apps().map((a) => { const n = NX_NAMES[a.id]; return { id: a.id, name: a.name, label: n ? n[0] : a.name, sub: n ? n[1] : (a.sub || ''), icon: a.icon || '', glyph: a.glyph || '', group: a.group || '', accent: a.accent || '', off: notOnSite(a) }; });
 // the apps in their groups (apps.js byGroup: Jarvis, TRADING, LIFE, MONEY, MORE); null without apps.js (one plain list)
@@ -2229,7 +2229,7 @@ function fallbackBrain({ getFacts }) {
     // "how's blitz", "blitz room" ...: BLITZ alone; otherwise every account
     const onlyBz = /\bblitz\b/.test(q) && !/\b(zlarior|atlas|bots|all)\b/.test(q);
     const bz = v && v.blitz, bzOff = bz && (bz.off || bz.room == null);
-    const bzWhy = () => (bz ? `BLITZ: ${bz.off ? 'account C is off on the PC (paper only until its own 25K is set up)' : 'its eval is ' + (bz.status || 'not reporting')}.` : 'BLITZ: no account C card in the live feed yet.');
+    const bzWhy = () => (globalThis.OLY_HIDDEN && globalThis.OLY_HIDDEN.has('blitz') ? 'BLITZ is hidden for now (only Zlarior and ATLAS are shown): it still runs on paper on the PC, never routed.' : bz ? `BLITZ: ${bz.off ? 'account C is off on the PC (paper only until its own 25K is set up)' : 'its eval is ' + (bz.status || 'not reporting')}.` : 'BLITZ: no account C card in the live feed yet.');
     const pick = (lit, atl, blz) => (onlyBz ? [blz || bzWhy()] : [lit, atl, blz]).filter(Boolean).join('\n');
     if (/\b(room|floor|drawdown|max loss)\b/.test(q)) {
       if (!v) return need();
@@ -2276,7 +2276,7 @@ function fallbackBrain({ getFacts }) {
   async function briefing() {
     const F = getFacts(), v = F.live, k = F.kalshi, p = F.planner, lines = [`${D.greeting(F.now)}. ${F.market.text}${F.market.next ? ' (' + F.market.next.text.toLowerCase() + ')' : ''}.`];
     if (v && v.verdict && v.verdict.label) lines.push(`Bots: ${v.verdict.label}.`);
-    const accts = v ? [['Zlarior', v.lit], ['ATLAS', v.atlas], ['BLITZ', v.blitz]].filter((x) => x[1] && x[1].room != null) : [];
+    const accts = v ? [['Zlarior', v.lit], ['ATLAS', v.atlas], ['BLITZ', v.blitz]].filter((x) => !(x[0] === 'BLITZ' && globalThis.OLY_HIDDEN && globalThis.OLY_HIDDEN.has('blitz'))).filter((x) => x[1] && x[1].room != null) : [];
     if (accts.length) lines.push(accts.map(([n, x]) => `${n} today ${usd(x.today_pnl, true)}, room ${usd(x.room)}`).join('; ') + '.');
     if (k) lines.push(`Kalshi: today ${usd2(k.today_pnl, true)}, balance ${usd2(k.balance)}.`);
     if (p) lines.push(p.ev.length || p.tasks.length ? `Today: ${p.ev.length} ${p.ev.length === 1 ? 'event' : 'events'}${p.ev[0] ? ' starting with ' + p.ev[0].title : ''}, ${p.tasks.length} open ${p.tasks.length === 1 ? 'task' : 'tasks'}.` : 'Nothing on your plan today.');
