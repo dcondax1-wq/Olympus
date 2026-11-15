@@ -1,0 +1,42 @@
+{
+  "id": "demo-casamarina",
+  "name": "Casa Marina Kitchen",
+  "trade": "restaurant",
+  "city": "St. Petersburg, FL",
+  "phone": "(727) 555-0123",
+  "email": "hola@casamarina.example",
+  "site_url": "https://casamarina.example",
+  "demo_url": "",
+  "status": "demo",
+  "package": "site + chat + reviews",
+  "setup_usd": 0,
+  "monthly_usd": 0,
+  "notes": "FAKE client for the B4 demos and tests (fixtures only, 555 numbers, .example domain).",
+  "chat": {
+    "preset": "restaurant",
+    "brand_color": "#b45309",
+    "timezone": "America/New_York",
+    "hours": {"mon": "closed", "tue": "11:30-14:30, 17:00-22:00", "wed": "11:30-14:30, 17:00-22:00", "thu": "11:30-14:30, 17:00-22:00",
+              "fri": "11:30-14:30, 17:00-23:00", "sat": "10:00-23:00", "sun": "10:00-21:00"},
+    "closed_dates": {"2026-12-25": "Christmas Day"},
+    "booking_url": "https://casamarina.example/reserve",
+    "booking_label": "Reserve a table",
+    "menu_url": "https://casamarina.example/menu",
+    "address": "88 Harbor Walk, St. Petersburg, FL 33701",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=88+Harbor+Walk+St+Petersburg+FL",
+    "directions": "Street parking on 2nd Ave, or the city garage one block north (first hour free).",
+    "payments": ["all major cards", "cash", "Apple Pay", "Google Pay"],
+    "prices_note": "Mains are $16-34; the full menu with prices is online.",
+    "facts": {
+      "delivery": "Yes, we deliver through DoorDash and Uber Eats within about 5 miles.",
+      "happy_hour": "Happy hour is Tuesday to Friday, 3-6 pm at the bar: $5 margaritas and half-price tapas.",
+      "outdoor": "Yes! Our patio faces the water and well-behaved dogs are welcome out there.",
+      "dress_code": "No dress code, come as you are."
+    }
+  },
+  "review": {
+    "google_review_url": "https://g.page/r/DEMO-casamarina/review",
+    "page_url": "https://casamarina.example/review/",
+    "owner_name": "Lucia"
+  }
+}

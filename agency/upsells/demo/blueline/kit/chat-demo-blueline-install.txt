@@ -1,0 +1,14 @@
+Front-desk chat for BlueLine Plumbing & Air (demo-blueline)
+
+1. Upload chat-demo-blueline.js to the site's main folder.
+2. Paste these lines just before </body> on every page (or the site's shared footer):
+
+<script src="/chat-demo-blueline.js" defer></script>
+<!-- Front-desk chat: the lead form Netlify needs to see once (hidden; the chat sends to it). Paste anywhere inside <body>. -->
+<form name="frontdesk-chat" data-netlify="true" netlify-honeypot="bot-field" hidden>
+  <input type="text" name="name"><input type="tel" name="phone"><textarea name="need"></textarea>
+  <input type="text" name="page"><textarea name="chat"></textarea><input type="text" name="bot-field">
+</form>
+
+3. Deploy, then send one test lead from the chat: it shows up in Netlify under Forms > frontdesk-chat.
+   (Netlify: Site configuration > Notifications > Form submission notifications, to get each lead by email.)

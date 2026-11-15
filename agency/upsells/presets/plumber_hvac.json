@@ -1,0 +1,54 @@
+{
+  "preset": "plumber_hvac",
+  "label": "Plumber / HVAC",
+  "trades": ["plumber", "plumbing", "hvac", "heating", "cooling", "air conditioning", "ac repair", "heating and cooling", "plumbing and hvac", "plumber/hvac"],
+  "chips": ["emergency", "estimate", "area", "book", "response", "licensed"],
+  "off": [],
+  "greeting": "Hi! I'm the virtual front desk for {name}. Tell me what's going on (a leak, no heat, no AC...) or tap a question below.",
+  "after_hours": "Our office is closed and opens {next_open}. Emergency? Tap the emergency line. Or leave your name, number and the problem and we'll call you first thing.",
+  "facts": {
+    "emergency": "If water is pouring, shut off your main water valve first (where the water line enters the house). Then call us right away: {emergency_phone}.",
+    "gas": "Safety first: if you smell gas or a carbon monoxide alarm goes off, leave now. Don't touch switches; call 911 or the gas company from outside. Then call us: {phone}.",
+    "estimates": "You get the price before any work starts, no surprises. Tell me what's going on and we'll send a quote.",
+    "maintenance": "A yearly tune-up keeps your system running longer and catches problems early. Ask us for a maintenance visit.",
+    "brands": "We work on all major brands. Tell us the brand and model so we bring the right parts.",
+    "response_time": "Most days we can come the same day or the next. Leave your details and we'll call with the first open time."
+  },
+  "intents": [
+    {"id": "emergency", "chip": "Emergency?", "a": "{emergency}", "act": ["emergency", "lead"],
+     "keys": ["emergency", "urgent", "asap", "burst", "flood", "leak", "water everywhere", "no heat", "no hot water", "no ac", "no air", "not cooling",
+              "not heating", "broken:0.6", "overflow", "backed up", "sewage", "24 7", "after hours", "right now", "frozen pipe", "gushing", "spraying", "help:0.5"]},
+    {"id": "gas", "a": "{gas}", "act": ["call"],
+     "keys": ["smell gas", "gas smell", "smells like gas", "gas leak", "rotten egg", "carbon monoxide", "co alarm", "co detector", "gas:0.5"]},
+    {"id": "estimate", "chip": "Free estimate?", "a": "{estimates}", "act": ["lead", "call"],
+     "keys": ["estimate", "free estimate", "quote", "inspection:0.6", "come look", "take a look", "diagnostic", "trip charge", "service call", "service fee",
+              "how much will it cost", "ballpark"]},
+    {"id": "licensed", "chip": "Licensed & insured?", "a": "{license}", "act": ["call"],
+     "keys": ["license", "insured", "insurance", "bonded", "certified", "background check", "legit"]},
+    {"id": "warranty", "a": "{warranty}", "act": ["call"], "keys": ["warranty", "guarantee", "guaranty", "stand behind"]},
+    {"id": "financing", "a": "{financing}", "act": ["lead"], "keys": ["financing", "finance", "payment plan", "monthly payment", "pay over time", "pay monthly"]},
+    {"id": "maintenance", "a": "{maintenance}", "act": ["book", "lead"],
+     "keys": ["maintenance", "tune up", "service plan", "membership", "check up", "annual", "yearly", "seasonal", "filter"]},
+    {"id": "brands", "a": "{brands}", "act": ["lead"],
+     "keys": ["brand", "carrier", "trane", "lennox", "rheem", "goodman", "bosch", "navien", "rinnai", "ao smith", "kohler", "moen", "daikin", "model"]},
+    {"id": "response", "chip": "How soon can you come?", "a": "{response_time}", "act": ["lead", "call"],
+     "keys": ["how soon", "how fast", "same day", "today:0.6", "when can you come", "come out today", "eta", "quickly", "soonest", "send someone", "technician"]}
+  ],
+  "sample": {
+    "brand_color": "#1d4ed8",
+    "timezone": "America/New_York",
+    "hours": {"weekdays": "7:30-18:00", "sat": "8:00-14:00", "sun": "closed"},
+    "services": [
+      {"name": "Service call / diagnostic", "price": "$89 (waived if we do the repair)", "keys": ["trip charge"]},
+      {"name": "Drain cleaning", "price": "from $149", "keys": ["drain", "clog", "unclog"]},
+      {"name": "Water heater repair & install", "price": "repair from $199, new tank from $1,450 installed", "keys": ["water heater", "tankless", "hot water"]},
+      {"name": "Leak repair", "price": "from $175", "keys": ["fix a leak", "pipe repair", "repipe"]},
+      {"name": "Toilet & faucet repair", "price": "from $129", "keys": ["toilet", "faucet", "sink", "disposal"]},
+      {"name": "AC repair", "price": "from $129 + parts", "keys": ["ac", "air conditioner", "hvac"]},
+      {"name": "Furnace & heat pump repair", "price": "from $129 + parts", "keys": ["furnace", "heat pump", "heater", "thermostat"]}
+    ],
+    "area": {"text": "FILL: the towns you serve", "towns": [], "zips": []},
+    "payments": ["all major cards", "cash", "check"],
+    "booking_label": "Book a visit"
+  }
+}

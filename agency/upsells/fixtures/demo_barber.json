@@ -1,0 +1,48 @@
+{
+  "id": "demo-harborline",
+  "name": "Harborline Barber Co.",
+  "trade": "barber",
+  "city": "Tampa, FL",
+  "phone": "(813) 555-0142",
+  "email": "hello@harborline.example",
+  "site_url": "https://harborline.example",
+  "demo_url": "",
+  "status": "demo",
+  "package": "site + chat + reviews",
+  "setup_usd": 0,
+  "monthly_usd": 0,
+  "notes": "FAKE client for the B4 demos and tests (fixtures only, 555 numbers, .example domain).",
+  "chat": {
+    "preset": "barber",
+    "brand_color": "#0f766e",
+    "timezone": "America/New_York",
+    "hours": {"mon": "closed", "tue": "9:00-19:00", "wed": "9:00-19:00", "thu": "9:00-19:00", "fri": "9:00-20:00", "sat": "8:00-17:00", "sun": "10:00-15:00"},
+    "closed_dates": {"2026-11-26": "Thanksgiving", "2026-12-25": "Christmas Day", "2027-01-01": "New Year's Day"},
+    "booking_url": "https://harborline.example/book",
+    "booking_label": "Book online",
+    "address": "214 Bayview Ave, Tampa, FL 33606",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=214+Bayview+Ave+Tampa+FL",
+    "directions": "Free parking behind the shop: turn in on Oak St. We're two doors down from the coffee shop.",
+    "payments": ["cash", "all major cards", "Apple Pay", "Google Pay"],
+    "prices_note": "Every cut ends with a hot towel and a neck shave.",
+    "services": [
+      {"name": "Classic cut", "price": "$30", "time": "30 min", "keys": ["haircut", "cut", "trim"]},
+      {"name": "Skin fade", "price": "$35", "time": "45 min", "keys": ["fade", "taper"]},
+      {"name": "Cut + beard", "price": "$45", "time": "45 min", "keys": ["cut and beard", "combo"]},
+      {"name": "Beard trim", "price": "$15", "time": "15 min", "keys": ["beard"]},
+      {"name": "Hot towel shave", "price": "$35", "time": "30 min", "keys": ["shave", "straight razor"]},
+      {"name": "Kids' cut (12 and under)", "price": "$22", "time": "30 min", "keys": ["kids cut", "child cut"]},
+      {"name": "Lineup", "price": "$15", "time": "15 min", "keys": ["line up", "edge up", "shape up"]}
+    ],
+    "facts": {
+      "gift_cards": "Yes! Gift cards come in any amount. Grab one at the front desk or call {phone}.",
+      "discounts": "Seniors (65+), students and military get $5 off any cut, Tuesday to Thursday. Just show your ID."
+    }
+  },
+  "review": {
+    "google_review_url": "https://g.page/r/DEMO-harborline/review",
+    "page_url": "https://harborline.example/review/",
+    "owner_name": "Marcus",
+    "form_name": "review-feedback"
+  }
+}

@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>BlueLine Plumbing &amp; Air · Brandon, FL (demo)</title>
+<style>
+:root{--f:#1d4ed8;--i:#ffffff;--a:#1d4ed8;--s:#e4eafa}
+*{box-sizing:border-box}body{margin:0;font:17px/1.55 Georgia,"Times New Roman",serif;color:#1f2430;background:#fbfaf7}
+.demo{background:#111827;color:#fff;font:600 12px/1.4 system-ui,sans-serif;text-align:center;padding:6px 10px;letter-spacing:.02em}
+header{background:var(--f);color:var(--i);padding:22px 20px 34px}
+.brand{font:800 21px/1.2 system-ui,-apple-system,sans-serif}
+.hero h1{font-size:34px;line-height:1.1;margin:22px 0 10px}
+.hero p{margin:0 0 18px;opacity:.92;font-size:18px}
+.cta{display:inline-block;background:var(--i);color:var(--f);font:700 16px system-ui,sans-serif;padding:13px 20px;border-radius:12px;text-decoration:none;margin:0 8px 8px 0}
+.cta.ghost{background:transparent;color:var(--i);border:2px solid var(--i)}
+main{max-width:760px;margin:0 auto;padding:8px 20px 120px}
+section{margin:28px 0}h2{font:800 20px/1.2 system-ui,sans-serif;margin:0 0 12px;color:var(--a)}
+.svc{list-style:none;margin:0;padding:0;border-top:1px solid #e5e2da}.svc li{display:flex;justify-content:space-between;gap:14px;padding:11px 0;border-bottom:1px solid #e5e2da}
+.hours li{margin:2px 0}.hours{padding-left:18px}
+.rev{background:var(--s);border-radius:16px;padding:18px}.rev a{color:var(--a);font-weight:700}
+footer{text-align:center;color:#6b7280;font:14px system-ui,sans-serif;padding:20px}
+</style>
+</head>
+<body>
+<div class="demo">DEMO SITE: a fake business made to show the agency's add-ons. Nothing here is real.</div>
+<header>
+  <div class="brand">BlueLine Plumbing &amp; Air</div>
+  <div class="hero"><h1>Plumbing and AC repair, done right the first time.</h1><p>Brandon, FL · <a href="tel:+18135550177" style="color:inherit">(813) 555-0177</a></p>
+  <a class="cta" href="https://blueline.example/book">Book a visit</a><a class="cta ghost" href="tel:+18135550177">Call us</a></div>
+</header>
+<main>
+  <section><h2>Services &amp; prices</h2><ul class="svc"><li><span>Service call</span><b>$89 (waived if we do the repair)</b></li><li><span>Drain cleaning</span><b>from $149</b></li><li><span>Water heaters</span><b>from $199; new tank from $1,450 installed</b></li><li><span>Leak repair</span><b>from $175</b></li><li><span>Toilet &amp; faucet repair</span><b>from $129</b></li><li><span>AC repair</span><b>from $129 + parts</b></li></ul></section>
+  <section><h2>Hours</h2><ul class="hours"><li>Mon–Fri 7:30 am–6 pm</li><li>Sat 8 am–2 pm</li><li>Sun closed</li></ul></section>
+  <section><h2>Find us</h2><p>Serving Brandon, Tampa, Riverview, Valrico and nearby</p></section>
+  <section class="rev"><h2>Been here?</h2><p>Tell us how we did: <a href="review/">leave a review</a>. Good or bad, we read every one.</p></section>
+</main>
+<footer>© BlueLine Plumbing &amp; Air (demo) · Questions? Tap the chat bubble.</footer>
+<!-- frontdesk-chat:start -->
+<script src="chat-demo-blueline.js" defer></script>
+<!-- Front-desk chat: the lead form Netlify needs to see once (hidden; the chat sends to it). Paste anywhere inside <body>. -->
+<form name="frontdesk-chat" data-netlify="true" netlify-honeypot="bot-field" hidden>
+  <input type="text" name="name"><input type="tel" name="phone"><textarea name="need"></textarea>
+  <input type="text" name="page"><textarea name="chat"></textarea><input type="text" name="bot-field">
+</form>
+<!-- frontdesk-chat:end -->
+</body>
+</html>

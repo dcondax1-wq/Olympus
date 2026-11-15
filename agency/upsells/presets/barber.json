@@ -1,0 +1,55 @@
+{
+  "preset": "barber",
+  "label": "Barber shop",
+  "trades": ["barber", "barbers", "barbershop", "barber shop", "men's grooming", "mens grooming", "hair salon", "salon"],
+  "chips": ["hours", "prices", "walkins", "book", "dir", "pay"],
+  "off": ["area"],
+  "greeting": "Hey! I'm the virtual front desk for {name}. Ask me about hours, prices, walk-ins or booking, or tap a question below.",
+  "after_hours": "We're closed right now and open {next_open}. You can book online any time, or leave your name and number and we'll text you back.",
+  "facts": {
+    "walkins": "Walk-ins are welcome whenever a chair is free. Booking ahead locks in your time, especially Fridays and Saturdays.",
+    "duration": "Most cuts take about 30 minutes; a fade or a cut with a beard trim takes about 45.",
+    "kids": "Yes! We cut kids of all ages and we're patient with first haircuts. Kids' cuts are on the price list.",
+    "cancel": "No problem, just let us know as early as you can so someone else can take the chair: call or text {phone}.",
+    "staff": "Yes, you can pick your barber when you book online, or ask for them by name when you call.",
+    "gift_cards": "Ask us about gift cards: call {phone} or ask at the front desk next time you're in.",
+    "products": "We use and sell pro styling products. Ask your barber what suits your hair.",
+    "discounts": "Ask us about current deals: call or text {phone}.",
+    "hair_types": "We cut all hair types and lengths. Tell your barber the look you want, or bring a photo."
+  },
+  "intents": [
+    {"id": "walkins", "chip": "Walk-ins?", "a": "{walkins}", "act": ["book", "call"],
+     "keys": ["walk in", "walk ins", "walkin", "without appointment", "no appointment", "need an appointment", "just show up", "drop in", "wait", "how busy", "busy",
+              "line", "first come"]},
+    {"id": "duration", "chip": "How long does it take?", "a": "{duration}", "act": ["book"],
+     "keys": ["how long", "how much time", "take long", "minutes", "duration", "quick"]},
+    {"id": "kids", "chip": "Kids' cuts", "a": "{kids}", "act": ["book"],
+     "keys": ["kid", "child", "children", "son", "daughter", "boy", "toddler", "baby", "first haircut", "teen"]},
+    {"id": "cancel", "a": "{cancel}", "act": ["call", "text"],
+     "keys": ["cancel", "reschedule", "running late", "late:0.6", "no show", "change my appointment", "move my appointment", "missed"]},
+    {"id": "staff", "a": "{staff}", "act": ["book"],
+     "keys": ["barber", "who cuts", "stylist", "staff", "team", "specific barber", "same barber", "my barber", "favorite barber"]},
+    {"id": "gift", "a": "{gift_cards}", "act": ["call"], "keys": ["gift card", "gift certificate", "voucher", "gift"]},
+    {"id": "products", "a": "{products}", "keys": ["product", "pomade", "wax", "gel", "shampoo", "beard oil", "sell", "buy"]},
+    {"id": "discount", "a": "{discounts}", "act": ["call", "text"],
+     "keys": ["discount", "student", "military", "senior", "veteran", "deal", "coupon", "promo", "special:0.6", "cheaper"]},
+    {"id": "hairtypes", "a": "{hair_types}", "act": ["book"],
+     "keys": ["women", "ladies", "long hair", "curly", "textured", "afro", "hair type", "thick hair", "girl", "wavy"]}
+  ],
+  "sample": {
+    "brand_color": "#0f766e",
+    "timezone": "America/New_York",
+    "hours": {"mon": "closed", "tue": "9:00-19:00", "wed": "9:00-19:00", "thu": "9:00-19:00", "fri": "9:00-20:00", "sat": "8:00-17:00", "sun": "10:00-15:00"},
+    "services": [
+      {"name": "Classic cut", "price": "$30", "time": "30 min", "keys": ["haircut", "cut", "trim"]},
+      {"name": "Skin fade", "price": "$35", "time": "45 min", "keys": ["fade", "taper"]},
+      {"name": "Cut + beard", "price": "$45", "time": "45 min", "keys": ["cut and beard", "combo"]},
+      {"name": "Beard trim", "price": "$15", "time": "15 min", "keys": ["beard"]},
+      {"name": "Hot towel shave", "price": "$35", "time": "30 min", "keys": ["shave", "straight razor"]},
+      {"name": "Kids' cut (12 and under)", "price": "$22", "time": "30 min", "keys": ["kids cut"]},
+      {"name": "Lineup", "price": "$15", "time": "15 min", "keys": ["line up", "edge up", "shape up"]}
+    ],
+    "payments": ["cash", "all major cards", "Apple Pay", "Google Pay"],
+    "booking_label": "Book online"
+  }
+}
