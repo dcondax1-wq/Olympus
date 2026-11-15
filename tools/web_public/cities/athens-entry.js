@@ -9,10 +9,10 @@ export async function openAthens() {
   import('./people-talk.js').then((m) => m.loadKit()).catch(() => null);   // the shared People kit, optional: villagers talk through it when it is there
   const [{ Nest }, { buildWorld }, { loadFiles }] = await Promise.all([import('./athens-nest.js?v=q6d'), import('./athens-world.js'), import('./athens-villages.js')]);
   if (!document.querySelector('link[data-athens-css]')) {
-    const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = new URL('./athens.css?v=t1', import.meta.url).href; l.dataset.athensCss = '1'; document.head.append(l);
+    const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = new URL('./athens.css?v=t2', import.meta.url).href; l.dataset.athensCss = '1'; document.head.append(l);
     await new Promise((r) => { l.onload = l.onerror = r; setTimeout(r, 1500); });
   }
-  if (!document.querySelector('link[data-athens-nest]')) { const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = new URL('./athens-nest.css?v=n1', import.meta.url).href; l.dataset.athensNest = '1'; document.head.append(l); }
+  if (!document.querySelector('link[data-athens-nest]')) { const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = new URL('./athens-nest.css?v=n2', import.meta.url).href; l.dataset.athensNest = '1'; document.head.append(l); }
   const q = new URLSearchParams(location.search), lite = !!(O() && O().lite && O().lite()), tier = q.get('q') === 'low' || lite ? 'low' : q.get('q') === 'ultra' ? 'ultra' : 'high';
   const reduced0 = !!(O() && O().reduced && O().reduced()), ui = new AthensUI(undefined, { onClose: closeAthens, reduced: reduced0, first: q.get('first') === '0' ? false : q.get('first') === '1' ? true : undefined }).mount();
   session = { ui, scene: null, raf: 0, last: 0, closed: false };
@@ -60,7 +60,7 @@ function addButtons() {
   if (!document.querySelector('.athens-fab')) document.body.append(mk('athens-fab'));
 }
 function boot() {
-  if (!document.querySelector('link[data-athens-btn]')) { const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = new URL('./athens-btn.css?v=t1', import.meta.url).href; l.dataset.athensBtn = '1'; document.head.append(l); }
+  if (!document.querySelector('link[data-athens-btn]')) { const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = new URL('./athens-btn.css?v=t2', import.meta.url).href; l.dataset.athensBtn = '1'; document.head.append(l); }
   addButtons();
   if (location.hash === '#athens' || new URLSearchParams(location.search).get('athens') === '1') openAthens();
 }

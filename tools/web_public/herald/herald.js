@@ -248,7 +248,7 @@ let peopleAsked = false;
 function loadPeople() {
   if (window.OLYMPUS_PEOPLE || peopleAsked) return;
   peopleAsked = true;
-  const s = document.createElement('script'); s.type = 'module'; s.src = '../olympus/people.js?v=p2';
+  const s = document.createElement('script'); s.type = 'module'; s.src = '../olympus/people.js?v=p3';
   s.addEventListener('load', () => { S.people = 'loaded'; if (S.ed && window.OLYMPUS_PEOPLE) renderBoxes(S.ed); });
   s.addEventListener('error', () => { S.people = 'missing'; });                 // no kit: initials stay
   document.body.appendChild(s);

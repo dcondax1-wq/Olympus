@@ -38,8 +38,8 @@
 .polis-cf-shaft { flex: 1 1 auto; margin: 0 auto; width: 66%; min-height: 8px;
   clip-path: polygon(5% 0, 95% 0, 100% 100%, 0 100%);
   background:
-    linear-gradient(90deg, rgba(var(--oly-th-n5-rgb, 40, 32, 22), .5) 0%, rgba(var(--oly-th-n39-rgb, 255, 252, 244), .05) 30%, rgba(255, 255, 255, .22) 42%, rgba(0, 0, 0, 0) 58%, rgba(var(--oly-th-n5-rgb, 40, 32, 22), .55) 100%),
-    repeating-linear-gradient(90deg, rgba(var(--oly-th-n8-rgb, 60, 50, 36), .32) 0, rgba(255, 255, 255, .14) 1.2px, rgba(255, 255, 255, 0) 2.4px, rgba(var(--oly-th-n8-rgb, 60, 50, 36), .2) 3.4px),
+    linear-gradient(90deg, rgba(var(--oly-th-n5-rgb, 40, 32, 22), .5) 0%, rgba(var(--oly-th-n39-rgb, 255, 252, 244), .05) 30%, rgba(var(--oly-th-n37-rgb, 255, 255, 255), .22) 42%, rgba(0, 0, 0, 0) 58%, rgba(var(--oly-th-n5-rgb, 40, 32, 22), .55) 100%),
+    repeating-linear-gradient(90deg, rgba(var(--oly-th-n8-rgb, 60, 50, 36), .32) 0, rgba(var(--oly-th-n37-rgb, 255, 255, 255), .14) 1.2px, rgba(var(--oly-th-n37-rgb, 255, 255, 255), 0) 2.4px, rgba(var(--oly-th-n8-rgb, 60, 50, 36), .2) 3.4px),
     var(--polis-marble-light) center / 180px 180px, var(--oly-th-n34, #e6ddcd); }
 .polis-order-doric .polis-cf-shaft { width: 70%; }
 .polis-order-corinthian .polis-cf-shaft { width: 62%; }
@@ -48,7 +48,7 @@
 /* ---------- 3. inscriptions: letters cut into marble, or gilded; numbers turn into Greek numerals on hover / tap */
 .polis-plaque { position: relative; border-radius: 8px; padding: 14px 18px 12px; color: var(--oly-th-n7, #3a3025);
   background: linear-gradient(180deg, rgba(var(--oly-th-n39-rgb, 255, 252, 245), .4), rgba(var(--oly-th-n16-rgb, 120, 104, 84), .18)), var(--polis-marble-light) center / 240px 240px, var(--oly-th-n35, #e9e1d2);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7), inset 0 -2px 4px rgba(var(--oly-th-n7-rgb, 60, 45, 30), .28), inset 0 0 0 1px rgba(var(--oly-th-n12-rgb, 90, 76, 58), .25), 0 6px 18px rgba(0, 0, 0, .35); }
+  box-shadow: inset 0 1px 0 rgba(var(--oly-th-n37-rgb, 255, 255, 255), .7), inset 0 -2px 4px rgba(var(--oly-th-n7-rgb, 60, 45, 30), .28), inset 0 0 0 1px rgba(var(--oly-th-n12-rgb, 90, 76, 58), .25), 0 6px 18px rgba(0, 0, 0, .35); }
 .polis-inscribed { font-family: var(--oly-th-display, 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif); font-weight: 600; text-transform: uppercase; letter-spacing: .09em; line-height: 1.15; }
 .polis-cut, .polis-plaque .polis-inscribed:not(.polis-plaque) {
   display: inline-block; line-height: 1.15em; color: var(--oly-th-n12, #5a4e40); background-image: linear-gradient(180deg, var(--oly-th-n6, #2f271e) 0%, var(--oly-th-n10, #4f4335) 45%, var(--oly-th-n19, #8b7d69) 78%, var(--oly-th-n25, #b3a68f) 100%);

@@ -25,7 +25,7 @@ function blocks(rows,color,metric,onPick){
 export function openDistrictWorld({spec,dataset,cities=[],resolveCity,onExit}={}){
   if(!spec||!dataset)return null;
   let dialog=document.querySelector('.district-world');if(dialog)dialog.remove();
-  const link=document.querySelector('link[data-city-district-style]');if(!link){const l=document.createElement('link');l.rel='stylesheet';l.href=new URL('./district-world.css?v=d1',import.meta.url).href;l.dataset.cityDistrictStyle='1';document.head.append(l);}
+  const link=document.querySelector('link[data-city-district-style]');if(!link){const l=document.createElement('link');l.rel='stylesheet';l.href=new URL('./district-world.css?v=d2',import.meta.url).href;l.dataset.cityDistrictStyle='1';document.head.append(l);}
   dialog=el('dialog','district-world');dialog.setAttribute('aria-label','Explore cities inside cities');
   const scroller=el('div','dw-scroll'),bar=el('header','dw-bar'),crumbs=el('nav','dw-crumbs');crumbs.setAttribute('aria-label','City breadcrumbs');
   const back=button('← Atlas','dw-back',exit);bar.append(back,el('span','dw-brand','OLYMPUS / CITIES INSIDE CITIES'));dialog.append(bar,scroller);document.body.append(dialog);

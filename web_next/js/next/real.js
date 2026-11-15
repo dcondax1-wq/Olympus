@@ -14,7 +14,7 @@ function loadReal() {
   if (RP) return RP;
   RP = new Promise((res, rej) => {
     const s = document.createElement('script');
-    s.src = new URL('./realcore.js?v=3', import.meta.url).href;   // v3 (2026-10-29): BLITZ's own 25K as a third real card; v2 (2026-10-28): the 3D / glass look
+    s.src = new URL('./realcore.js?v=4', import.meta.url).href;   // v3 (2026-10-29): BLITZ's own 25K as a third real card; v2 (2026-10-28): the 3D / glass look
     s.onload = () => res(); s.onerror = () => { RP = null; rej(new Error('realcore.js did not load')); };
     document.head.appendChild(s);
   });

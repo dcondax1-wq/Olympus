@@ -184,6 +184,9 @@
   }
   window.addEventListener('storage', function (e) {
     if (e.key !== 'olympus.theme') return;
+    // 2026-11-14 (team T2): 'olympus.theme' holds a look's id now; olympus/themes.js repaints this page itself. Only the old token
+    // objects ('{...}') are this hook's: an id must not clear the engine's data-oly-theme
+    if (!e.newValue || e.newValue.charAt(0) !== '{') return;
     var v = null;
     try { v = e.newValue && e.newValue.charAt(0) === '{' ? JSON.parse(e.newValue) : null; } catch (_) { v = null; }
     applyTheme(v);

@@ -319,6 +319,68 @@ cards and bars (its own palette), Kalshi's background a little (its `--bg` blend
   +$ green, -$ red) and Mix (Trader / Luxury / Clean combos, a row per district and This Gate). Jarvis's Look sheet and Settings
   list every theme from the same data and write the same keys.
 
+### Look QA: the looks locked down (2026-11-14, team T2; owner: "really lock down on the themes"; evidence `docs/shots/themes_v2/`)
+- **The matrix, automated.** `tools/theme_shots.py --qa` puts every look (the 32, Agora included) on every page that matters: the home, the
+  nine hubs, the dashboard's six tabs (Home, Zlarior, ATLAS, BLITZ, Money, More), Jarvis, NQ, Aegis, Helios, Kalshi, Mint, Oikos, Ledger,
+  Planner, Polis, Cities, Symposium at 390 x 844, and the home + dashboard at 1440 x 900. The look is picked the owner's way
+  (`OLYMPUS_THEMES.set`) in one tab, so each page also opens right after another look. `tools/theme_qa.js` measures in the page: every visible
+  text node against the layers really under it (colours, gradient stops, translucency, the parents' opacity), checked again on the
+  screenshot's own pixels for the two first screens (AA 4.5:1, large text 3:1); AGORA's literal colours still on screen (colour, background,
+  borders, outline, SVG fill / stroke, shadows, gradients, `::before` / `::after`, the scrollbar, `::selection`); +$ in green and -$ in red;
+  the status bar (`theme-color`) against the page top; the first painted frame; a keyboard Tab's focus ring (3:1); on NQ, Mint and My Money
+  the Go to sheet, a toast and a sheet. `--live` checks the storage event (another tab picks a look: every open page repaints, no reload),
+  `--mixcheck` the mix (a look per hub on each hub page and an app filed under it). `--table <before> <after>` writes `qa.md`: look x page,
+  pass / fixed / known issue; an issue the default has on the same page is the default's own (listed apart: the default stays byte for byte).
+- **No flash.** A page whose engine arrives after its first frame (the Gate, the hubs, the dashboard, Jarvis, Kalshi) carries the FIRST PAINT
+  function of `themes.js` in its `<head>`, letter for letter: it works out the look THIS page gets (app > hub > one look) and paints the
+  engine's copy of it, `olympus.theme.look.<page|stage>.<id>`. The engine writes that copy on every apply and, for every look in use (the
+  one look + each look of the mix), on every pick (`set` / `setMix`), and drops the copies of looks no longer used. The old per-page copy
+  could be a look behind (picked on the Gate, the hub's copy still the last one) or missing (Kalshi had none): both flashed.
+- **Light means light everywhere.** Every app on the matrix is checked in light (`<html data-oly-light>`: Aegis, Mint, Oikos, Ledger, Planner,
+  Polis, Cities, Symposium join NQ and Helios) and Kalshi takes the page palette, so Ivory or Stocks Light no longer leaves half the apps
+  AGORA-dark. Their sheets are tokenized (`aegis.css`, `mint.css`, `oikos.css`, `ledger.css`, `planner.css`, `cities/world.css`,
+  `cities/agora-cities.css`, `symposium.css`, `olympus/people.css`, `settings.css`, `olympus.css` past its tokens), and so is the CSS the
+  dashboard injects from scripts (`statuscore.js`, `realcore.js`, `blitzcore.js`, `zenithcore.js`, `sessioncore.js`, `deckcore.js`,
+  `mindcore.js`, `moneynowcore.js`, `boardcore.js`, `liveview.js/.css`, `holo.css`, `mission.css`, `more.js`, `hub.js`, `goals.js`,
+  `features.js`) and Jarvis's `assist-ui.js`; Jarvis's light-scheme rules (written for Athena) read the light look's slots. ATLAS's orange is
+  its identity, like a bot's colour: never tokenized (`KEEP` in the tokenizer), never a leftover.
+- **New slots, every look.** AGORA's aegean blue is a family of its own (`info` #4b7a99 / `infot` #7fa7c2, `tools/theme_tokenize.py`):
+  each look paints them readable on its own page. `--oly-th-ring` is the keyboard focus ring (the look's accent, >= 3:1 on its page and
+  panels; `olympus.css`, `a11y.css`, the Gate, the hubs). A light look's shadows are soft and ink-tinted (`--oly-th-shadow`, `-e1..e3` behind
+  `--ag-shadow`, `--ag-e1..e3`), never AGORA's black .35. **The ink floor**: every slot AGORA writes text in (n20 and up, a8+, g8+, r9+,
+  warn) is nudged until it reads 4.5:1 on the look's page, panels and raised panels (a blend between two reference colours could land a
+  hair short on a light look). The extra values are checked against each look's own surfaces in the engine itself.
+- **Each look coherent on every page.** The style layer now dresses the plain app cards too (`main#app .card / .hero`: Ledger), Kalshi
+  has its own layer, the sheets and toasts take the look's corners, the picker marks the look on now under a style look too.
+- **3D.** The hero scenes (`olympus/hero-stage.js`: NQ, Aegis, Helios, Mint ...) lean their painted sky, fog and light toward the look by its
+  `mix` (`lean()`, live on a change, back on the default); Ledger's vault and the Symposium hall hook `OLYMPUS.themeScene`.
+- **Picker v2 (the Gate's Look row).** The look on now in a card at the top (its swatch, name, mood) with **Surprise me** (a random look,
+  previewed, with Another / Cancel); a search by name or mood; a **Favourites** row (the star on the preview bar; `olympus.theme.fav`, this
+  phone); the four groups. **Press and hold** a swatch (or rest the mouse on it) to see that look on the page before picking it
+  (`OLYMPUS_THEMES.preview(id)`: painted on this page only, nothing stored; `previewing()`); a bar at the thumb says Use it / Favourite /
+  Cancel. The swatch on now carries an "On" mark. Every target is 44 px+, one hand at 375 px.
+- **For P2 (speed): no blur.** The frosted looks (Glass Aurora, Sunset, Vapor Soft) blur behind every card. `OLYMPUS_THEMES.noblur(true)`
+  (stored for every page: `localStorage['olympus.theme.noblur'] = '1'`, or `<html data-oly-noblur>` before the engine applies) paints the
+  same cards as one solid colour, the card's glass composited once over the page: the look stays, the blur pass goes. Off by default.
+- **What the after run found, fixed.** Light looks: the paper-shadow account cards keep full ink (their .88 dimming took the muted ink under
+  AA), BLITZ's muted labels take one step stronger ink, the Money tab's cards cast soft ink shadows (the space theme's black ones shaded the
+  next title out of AA), the space sky's black title halo is dropped, Polis's district buttons stay solid over the 3D scene. Every look:
+  Kalshi's chosen chip in full ink; the deep fills (g4 / r4) carry the ink laid on them (Nord's and Wall Street's calendar days); the
+  dashboard's Zenith core (`zenithcore.js`) leaves a look the engine paints to its slots: Glass Aurora, Marble White and Ocean share their
+  names with old kit themes whose token sets covered the look's accent (Marble's focus rings and crumbs were 1.4:1). The picker's hover
+  preview needs a real hover (after a pick, the redraw put another swatch under the resting mouse and previewed it).
+- **Shared renderers stay twins.** The dashboard scripts tokenized here (`blitzcore`, `boardcore`, `deckcore`, `mindcore`, `moneynowcore`,
+  `realcore`, `statuscore`, `zenithcore`, `liveview.css`, `mission.css`) are copied byte for byte to `web_next` (the PC app paints no slot,
+  so every one shows its old literal there), their PC references bumped.
+- **The numbers (2026-11-15, `docs/shots/themes_v2/qa.md`).** 32 looks x 30 pages = 960 cells. Before: 218 clean (a first frame in the
+  wrong look 404, AGORA colours left 376, text under AA 107, no visible focus ring 27, +$ / -$ in the wrong colour 7). After: 960 clean
+  (218 pass, 742 fixed, 0 known). The live switch repaints 23 / 23 open pages, the mix reaches 18 / 18 hub pages and apps. The default's
+  own issues stay (it is byte for byte as before) and are listed apart: the dashboard's 3D badge, ATLAS's PAPER pill, BLITZ's NOT RUNNING
+  chip, the Money tab's muted labels, the Kalshi City link, the More tab's search field ring. How it measures: the page is measured, shot,
+  then measured again (a text that moved meanwhile is left out of that screenshot); below the two measured screens only a text on one
+  certain background counts; a look's own painted colours (also inside its gradients) are never leftovers; art (3D, portraits, Polis's clay)
+  and identity colours (ATLAS's orange, the bots' colours) are left alone.
+
 ## Oracle and Odeon overhaul (2026-11-04, owner: "apps look Play-Doh / blank, a ton of features and effects")
 
 Both apps already ran on the render core (ACES, environment light, bloom, MSAA) with marble, gold and neon from `materials.js`. This pass adds

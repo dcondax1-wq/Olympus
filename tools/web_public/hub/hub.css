@@ -18,7 +18,7 @@ body { font: 400 1rem/1.45 var(--ag-sans); -webkit-font-smoothing: antialiased; 
 button { font: inherit; color: inherit; }
 a { color: inherit; }
 svg { flex: none; }
-:focus-visible { outline: 2px solid var(--ag-gold); outline-offset: 2px; }
+:focus-visible { outline: 2px solid var(--oly-th-ring, var(--ag-gold)); outline-offset: 2px; }
 [hidden] { display: none !important; }
 
 .hb-main { max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px;

@@ -58,7 +58,7 @@ def main():
     # Ares, Fates and Hephaestus use the shared per-app glossary.js (glossary-core.js); the lite layer is for Oracle, which has none.
     # Two glossary layers on one page would underline every word twice, so no page may load both.
     check("a. glossary-lite.js is loaded (deferred, one line) in Oracle and no page loads both glossary layers",
-          '<script src="../olympus/glossary-lite.js?v=g1" defer></script>' in pages["oracle"]
+          '<script src="../olympus/glossary-lite.js?v=g2" defer></script>' in pages["oracle"]
           and not any("glossary-lite.js" in h and "glossary.js" in h for h in pages.values())
           and all("glossary.js" in pages[a] for a in ("ares", "fates", "hephaestus")))
     check("a. Safari 16 safe (no lookbehind, ?., ??, .at()) and no network", not re.search(r"\(\?<[=!]|\?\?|\.at\(|[\w)\]]\?\.[A-Za-z_$]|fetch\(|XMLHttpRequest", js))

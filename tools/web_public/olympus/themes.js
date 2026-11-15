@@ -16,6 +16,28 @@
  * Every theme carries every token in TOKENS (tests/test_olympus_themes.py checks it). The 3D tints: fog / sky / emissive / bloom,
  * mixed into each app's own scene colours by 'mix' (0 = the app's colours untouched), and 'harmony' = how far an app's identity
  * colour leans toward the theme accent (0 = untouched). So the default theme (mix 0, harmony 0, no inline vars) changes nothing.
+ *
+ * FIRST PAINT (2026-11-14, team T2 "lock down the looks": no flash of AGORA, nor of the look picked before). A page whose engine arrives after
+ * its first frame (the Gate, the hubs, the dashboard, Jarvis, Kalshi: themes.js async or deferred) carries this exact function inline in its
+ * <head>, called with its page id and its place, e.g. ('gate', 'page'). It works out the look THIS page gets (the mix: app > hub > the one
+ * look, as lookFor does) and paints the engine's copy of that look ('olympus.theme.look.<place>.<id>', written on every apply and, for every
+ * look in use, on every pick), so the first frame already wears it; the engine repaints the same values when it arrives. The pages that load
+ * themes.js + olympus.js synchronously in their <head> (every kit app) need nothing: they are painted before their first frame anyway.
+ * tests/test_olympus_themes.py checks that each page's copy is this text, letter for letter.
+ * FIRST PAINT >>>
+(function (P, W) { try {
+  var d = document.documentElement, ls = window.localStorage, g = ls.getItem('olympus.theme') || 'agora', m = JSON.parse(ls.getItem('olympus.themeMix') || 'null'), on = [], k;
+  if (g === 'olympus' && ls.getItem('olympus.theme.v') !== '2') g = 'agora';
+  if (m) { var dd = (m.of && m.of[P]) || (P === 'today' ? 'trading' : ''); g = (m.app && m.app[P]) || (dd && m.district && m.district[dd]) || g; }
+  var c = g === 'agora' ? null : JSON.parse(ls.getItem('olympus.theme.look.' + W + '.' + g) || 'null');
+  if (!c || !c.vars) return;
+  for (k in c.vars) { d.style.setProperty(k, c.vars[k]); on.push(k); }
+  if (c.jarvis && P === 'jarvis') for (k in c.jarvis) { d.style.setProperty(k, c.jarvis[k]); on.push(k); }
+  d.setAttribute('data-oly-theme', g); d.setAttribute('data-oly-scheme', c.scheme === 'light' ? 'light' : 'dark'); if (c.style) d.setAttribute('data-oly-style', c.style);
+  window.__olyPaint = on;
+  var mt = document.querySelector('meta[name="theme-color"]'); if (mt && c.meta) { mt.setAttribute('data-oly-own', mt.getAttribute('content') || ''); mt.setAttribute('content', c.meta); }
+} catch (e) { return; } })
+ * <<< FIRST PAINT
  */
 (function () {
   'use strict';
@@ -91,6 +113,9 @@
   /** a style theme: o = { id, name, tag, scheme, c: colours, s: style, stage: dark colours for the pages that stay dark (light themes only) } */
   function look(o) {
     var c = o.c, L = o.scheme === 'light', s = o.s, R = rampFrom(c, L), n = R.n, acc = c.accent;
+    // each colour of the page's gradient and the cards as they show over it (Glass Aurora's teal and violet light, Sunset's ember ...): the ink floor
+    // keeps every text slot readable on all of them, not only on the plain page colour (slots())
+    R.surf = []; (String(s.page || '').match(/#[0-9a-fA-F]{6}/g) || []).forEach(function (st) { R.surf.push(st, solidCard(s.card || c.card, st)); });
     var dark2 = L ? mix(acc, '#000000', 0.25) : mix(acc, c.bg, 0.35), c3 = L ? mix(acc, '#000000', 0.2) : R.a.hi;
     var t = mk({ id: o.id, name: o.name, tag: o.tag, scheme: o.scheme, group: o.group, light: L, ramp: R, stage: o.stage ? rampFrom(o.stage, false) : null,
       feel: { radius: s.radius, radiusS: s.radiusS || s.radius, radiusL: s.radiusL || s.radius, display: s.title, num: s.num || null },
@@ -173,7 +198,7 @@
        Neo Brutal's pink text on yellow (pink stays the button), Carbon Red's red text, Sunset's lower sky darkened) */
     look({ id: 'aurora', group: 'dark', name: 'Glass Aurora', tag: 'Frosted glass · violet and teal light', scheme: 'dark',
       c: { bg: '#0d1020', card: 'rgba(255, 255, 255, .07)', line: 'rgba(255, 255, 255, .16)', text: '#f5f6ff', soft: '#dcdff2', muted: '#c3c7e2', accent: '#9ad8ff', up: '#3ccf7a', down: '#ff7b72' },
-      s: { page: 'radial-gradient(120% 60% at 10% 0%, #33256a 0%, transparent 60%), radial-gradient(100% 60% at 100% 30%, #0b4f55 0%, transparent 55%), linear-gradient(180deg, #0b0b1a, #0d1020)',
+      s: { page: 'radial-gradient(120% 60% at 10% 0%, #2c2060 0%, transparent 60%), radial-gradient(100% 60% at 100% 30%, #0a424a 0%, transparent 55%), linear-gradient(180deg, #0b0b1a, #0d1020)',
         border: '1px solid rgba(255, 255, 255, .16)', radius: '24px', radiusS: '18px', radiusL: '28px', shadow: '0 10px 30px rgba(0, 0, 0, .35)', blur: 'blur(18px) saturate(140%)',
         title: SANS, weight: '700', btn: 'linear-gradient(90deg, #7c6cff, #3fd1d1)', btnFg: '#0b0b1a' } }),
     look({ id: 'amber', group: 'bold', name: 'Amber', tag: 'Amber on black · a trading screen · all caps', scheme: 'dark',
@@ -420,7 +445,67 @@
     var out = {}, f, g, n, s;
     for (f in GRID) { g = GRID[f]; n = Math.round((g[1] - g[0]) / g[2]); for (s = 0; s <= n; s++) out[f + s] = at(R[f], f, g[0] + s * g[2]); }
     out.warn = R.warn;
+    /* the ink floor (2026-11-14, team T2 "lock down the looks"): every slot AGORA writes text in (n20 and up: muted, soft, text; a8 and up: the
+     * golds; g7 and up: gains; r8 and up: losses; warn) stays AA (4.5:1) on the look's page, panels and raised panels, on its gradient's
+     * colours (a style look's cards over each stop) and on the gold-tinted cards; and those tinted surfaces (a0-a4: the gold-tinted cards and
+     * headers, g0-g3 / r0-r3: the gain / loss chips) stay far enough from the muted text to carry it. A blend between two reference colours can
+     * fall a little short on a light look (AGORA's #9a8f7d sits just under its muted, so on Ivory it lands just above it) and a monochrome look
+     * (Amber: its text IS its accent) tints its cards too bright: such a slot is nudged (its hue kept) until it reads. One that reads is left.
+     * The deep fills (g4 / r4) carry the full ink written on them the same way. */
+    // INK: 4.5:1 and a little headroom, for the tints a card or a chip lays over these surfaces (a warn row, a gain chip, a glass card)
+    var INK = 4.75, page = [out.n3, out.n4, out.n5, out.n7].concat(R.surf || []);
+    for (s = 20; s <= 40; s++) out['n' + s] = readable(out['n' + s], page, INK);
+    var muted = [out.n24];
+    for (s = 0; s <= 4; s++) { out['a' + s] = readable(out['a' + s], muted, 4.5); if (s <= 3) { out['g' + s] = readable(out['g' + s], muted, 4.5); out['r' + s] = readable(out['r' + s], muted, 4.5); } }
+    var two = [out.n3, out.n4, out.a1, out.a3].concat(R.surf || []);
+    for (s = 7; s <= 15; s++) { out['g' + s] = readable(out['g' + s], two, INK); if (s >= 8) { out['a' + s] = readable(out['a' + s], two, INK); out['r' + s] = readable(out['r' + s], two, INK); } }
+    out.warn = readable(out.warn, two, INK);
+    // the deep fills (g4 / r4: a Kalshi calendar day laid at .58 over a panel, its number in full ink) carry that ink (Nord's pale sage did not)
+    out.g4 = carries(out.g4, out.n37, out.n4, 0.58, INK);
+    out.r4 = carries(out.r4, out.n37, out.n4, 0.58, INK);
     return out;
+  }
+  /** a fill c laid at alpha a over 'under', with 'ink' written on it: c made darker (light ink) or lighter (dark ink), its hue kept, in small
+   * steps until the ink reads min:1 on the blend. One that carries it is left. */
+  function carries(c, ink, under, a, min) {
+    var h = hsl(c), down = relLum(ink) > 0.4, l = h[2], out = c;
+    for (var step = 0; step < 44 && contrastOf(ink, mix(under, out, a)) < min; step++) {
+      l = down ? Math.max(0, l - 0.025) : Math.min(1, l + 0.025);
+      out = fromHsl(h[0], h[1], l);
+    }
+    return out;
+  }
+  function relLum(c) { var x = rgbOf(c), s = 0, wt = [0.2126, 0.7152, 0.0722]; for (var q = 0; q < 3; q++) { var v = x[q] / 255; s += wt[q] * (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)); } return s; }
+  function contrastOf(a, b) { var x = relLum(a), y = relLum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); }
+  /** c made lighter (on dark surfaces) or darker (on light ones), its hue kept, in small steps until it reaches min:1 on every surface */
+  function readable(c, bgs, min) {
+    var h = hsl(c), dark = relLum(bgs[0]) < 0.25, l = h[2], out = c, step, q, ok;
+    for (step = 0; step < 44; step++) {
+      for (ok = true, q = 0; q < bgs.length; q++) if (contrastOf(out, bgs[q]) < min) { ok = false; break; }
+      if (ok) return out;
+      l = dark ? Math.min(1, l + 0.025) : Math.max(0, l - 0.025);
+      out = fromHsl(h[0], h[1], l);
+    }
+    return out;
+  }
+  /* the extra slots (2026-11-14, team T2 "lock down the looks"): AGORA's aegean blue (information: --oly-th-info the fill, --oly-th-infot the text,
+   * the tokenizer's 'info' family), the shadows a light look needs (AGORA's are black: --oly-th-shadow, --oly-th-e1..e3, softer and ink-tinted)
+   * and the keyboard focus ring (--oly-th-ring: the look's own accent, >= 3:1 on its page and panels). Every value is checked against the look's
+   * own surfaces here, so a look can never get an unreadable info line or an invisible ring. */
+  function extras(R, t, sl) {
+    var light = relLum(sl.n3) > 0.35, o = {}, surf = [sl.n3, sl.n4, sl.n5, sl.n7].concat(R.surf || []);
+    var it = readable(light ? '#2b5f86' : '#7fa7c2', surf, 4.6), fi = readable(light ? '#3d78a4' : '#4b7a99', [sl.n3, sl.n4].concat(R.surf || []), 3);
+    o['--oly-th-info'] = fi; o['--oly-th-info-rgb'] = rgbOf(fi).join(', ');
+    o['--oly-th-infot'] = it; o['--oly-th-infot-rgb'] = rgbOf(it).join(', ');
+    o['--oly-th-ring'] = readable(sl.a8, [sl.n3, sl.n4, sl.n5], 3);
+    if (light) {
+      var ink = rgbOf(sl.n37).join(', ');
+      o['--oly-th-shadow'] = '0 6px 18px rgba(' + ink + ', .10)';
+      o['--oly-th-e1'] = '0 1px 0 rgba(255, 255, 255, .5) inset, 0 1px 2px rgba(' + ink + ', .08), 0 2px 6px rgba(' + ink + ', .06)';
+      o['--oly-th-e2'] = '0 1px 0 rgba(255, 255, 255, .5) inset, 0 1px 2px rgba(' + ink + ', .08), 0 6px 16px rgba(' + ink + ', .08), 0 14px 32px rgba(' + ink + ', .06)';
+      o['--oly-th-e3'] = '0 1px 0 rgba(255, 255, 255, .5) inset, 0 2px 4px rgba(' + ink + ', .10), 0 12px 28px rgba(' + ink + ', .12), 0 28px 60px rgba(' + ink + ', .10)';
+    } else o['--oly-th-shadow'] = String(t.shadow || '0 6px 18px rgba(0, 0, 0, .35)');
+    return o;
   }
   // A choice saved before AGORA (2026-11-09) may be 'olympus' only because that used to be the default (Jarvis wrote it when a Jarvis colour
   // was picked): it reads as the default (AGORA) until the owner picks a theme again; every pick after that is marked (VKEY) and wins.
@@ -444,7 +529,9 @@
     var a = m.app && m.app[p], dd = (m.of && m.of[p]) || (p === 'today' ? 'trading' : ''), ds = dd && m.district && m.district[dd];
     return by[a] ? a : by[ds] ? ds : g;
   }
-  function effective() { return lookFor(pageId(), readMix(), stored()); }
+  // PREVIEW (2026-11-14, team T2: the Gate's picker): a look shown on this page only, nothing stored (a long-press or a hover on a swatch)
+  var previewId = null;
+  function effective() { return previewId || lookFor(pageId(), readMix(), stored()); }
   function tokens(id, where) {
     var t = theme(id), out = {}, k;
     for (k in t.tokens) out[k] = t.tokens[k];
@@ -453,37 +540,78 @@
     return out;
   }
 
-  // the names a page's own first-paint copy painted before this script arrived (Jarvis's <head>: 'olympus.theme.paint')
+  // the names a page's own first-paint copy painted before this script arrived (the <head> copies: Jarvis, the Gate, the hubs, the dashboard, Kalshi)
   var where = null, cur = null, painted = (window.__olyPaint && window.__olyPaint.slice) ? window.__olyPaint.slice() : [];
-  var PAINT_KEY = 'olympus.theme.paint';
+  var PAINT_KEY = 'olympus.theme.paint', LOOK_KEY = 'olympus.theme.look', NOBLUR_KEY = 'olympus.theme.noblur';
+  /* NO BLUR (2026-11-14, team T2 with P2 "speed"): a look whose cards are frosted glass (Glass Aurora, Sunset, Vapor Soft: backdrop-filter blur)
+   * costs a blur pass per card. noblur(true) (or <html data-oly-noblur>, or localStorage 'olympus.theme.noblur' = '1') paints the same cards
+   * without the blur: each card's glass composited once over the page colour (--oly-th-card-bg solid, --oly-th-card-blur none). The look
+   * stays; only the frost goes. Off by default. */
+  function noBlur() { return get(NOBLUR_KEY) === '1' || !!(root.hasAttribute && root.hasAttribute('data-oly-noblur')); }
+  /** what a look paints on <html> for a place ('page' | 'stage'), computed, nothing touched: { id, scheme, meta, style, vars, jarvis } */
+  function paintOf(id, w, ramp) {
+    var t = tokens(id, w), th = theme(id), vars = {}, k, styled = false;
+    for (k in CSS) vars['--oly-' + CSS[k]] = String(t[k]);
+    vars['--oly-tone-rgb'] = rgbOf(t.accent).join(', ');
+    vars['--oly-glow-rgb'] = rgbOf(t.glow).join(', ');
+    vars['color-scheme'] = t.scheme;
+    if (ramp !== false) {
+      // the reach ramp (every tokenized stylesheet), the feel (radius, heading / number fonts), the extra slots (info blue, shadows, the focus ring)
+      var R = rampOf(th, w), sl = slots(R), fe = th.feel, ex = extras(R, t, sl);
+      for (k in sl) { vars['--oly-th-' + k] = sl[k]; vars['--oly-th-' + k + '-rgb'] = rgbOf(sl[k]).join(', '); }
+      for (k in ex) vars[k] = ex[k];
+      if (fe) for (k in FEEL) if (fe[k]) vars[FEEL[k]] = fe[k];
+      // a style theme's surfaces, titles and button (not on a light theme's dark stage: those pages keep the kit's own shapes)
+      var sty = th.style;
+      if (sty && !(w === 'stage' && th.stageRamp)) {
+        for (k in STYLE) vars['--oly-th-' + STYLE[k]] = sty[k];
+        if (sty.blur && sty.blur !== 'none' && noBlur()) { vars['--oly-th-card-blur'] = 'none'; vars['--oly-th-card-bg'] = solidCard(sty.card, sl.n3); }
+        styled = true;
+      }
+    }
+    var j = th.jarvis, jv = null;
+    if (j && w === 'page') { jv = {}; for (k = 0; k < JARVIS.length; k++) jv['--' + JARVIS[k]] = j[JARVIS[k]]; }
+    return { id: id, scheme: t.scheme, meta: t.themeColor, style: styled ? id : '', vars: vars, jarvis: jv };
+  }
+  // a frosted card (a translucent colour or a gradient of them) as the solid colour it shows over the page
+  function solidCard(c, bg) { var m = String(c).match(/rgba?\([^)]*\)|#[0-9a-fA-F]{6}/g); return m && m.length ? solid(m[0], bg) : bg; }
+  /* the look's copy for the <head>s (2026-11-14, T2: no flash of the wrong look): 'olympus.theme.look.<where>.<id>' = paintOf(id, where), written
+   * whenever a look is applied and, for every look in use (the one look + each look of the mix), whenever the owner picks; a page whose engine
+   * loads after its first frame (the Gate, the hubs, the dashboard, Jarvis, Kalshi) paints the copy of the look IT gets (FIRST PAINT above). */
+  function putLook(w, id, P) { if (id !== DEFAULT) put(LOOK_KEY + '.' + w + '.' + id, JSON.stringify({ id: id, scheme: P.scheme, meta: P.meta, style: P.style, vars: P.vars, jarvis: P.jarvis })); }
+  function inUse() {
+    var u = {}, m = readMix(), k; u[stored()] = 1;
+    if (m) { for (k in (m.district || {})) if (by[m.district[k]]) u[m.district[k]] = 1; for (k in (m.app || {})) if (by[m.app[k]]) u[m.app[k]] = 1; }
+    return u;
+  }
+  function cacheLooks() {
+    var u = inUse(), ws = ['page', 'stage'], id, q;
+    for (id in u) if (id !== DEFAULT) for (q = 0; q < ws.length; q++) putLook(ws[q], id, paintOf(id, ws[q]));
+    try {                                                       // the copies of looks no longer in use go (a few KB each)
+      var drop = [];
+      for (q = 0; q < localStorage.length; q++) { var key = localStorage.key(q); if (key && key.indexOf(LOOK_KEY + '.') === 0 && !u[key.split('.').pop()]) drop.push(key); }
+      for (q = 0; q < drop.length; q++) del(drop[q]);
+    } catch (e) { /* private mode */ }
+  }
   /** paints <html>: the default theme writes nothing (the stylesheets' own values = today's look) */
   function apply(w, opts) {
     where = w || where || 'stage';
-    var id = effective(), t = tokens(id, where), st = root.style, k, j = theme(id).jarvis, styled = false;
+    var id = effective(), t = tokens(id, where), st = root.style, k, styled = false;
     for (k = 0; k < painted.length; k++) st.removeProperty(painted[k]);
     painted = [];
     var paint = function (name, v) { st.setProperty(name, v); painted.push(name); };
     if (id !== DEFAULT) {
-      for (k in CSS) paint('--oly-' + CSS[k], String(t[k]));
-      paint('--oly-tone-rgb', rgbOf(t.accent).join(', '));
-      paint('--oly-glow-rgb', rgbOf(t.glow).join(', '));
-      paint('color-scheme', t.scheme);
-      // the reach ramp (every tokenized stylesheet) and the feel (radius, heading / number fonts); opts.ramp = false keeps a page's own look
-      if (!opts || opts.ramp === undefined || (typeof opts.ramp === 'function' ? opts.ramp(t, id) : opts.ramp)) {
-        var sl = slots(rampOf(theme(id), where)), fe = theme(id).feel;
-        for (k in sl) { paint('--oly-th-' + k, sl[k]); paint('--oly-th-' + k + '-rgb', rgbOf(sl[k]).join(', ')); }
-        if (fe) for (k in FEEL) if (fe[k]) paint(FEEL[k], fe[k]);
-        // a style theme's surfaces, titles and button (not on a light theme's dark stage: those pages keep the kit's own shapes)
-        var sty = theme(id).style;
-        if (sty && !(where === 'stage' && theme(id).stageRamp)) { for (k in STYLE) paint('--oly-th-' + STYLE[k], sty[k]); styled = true; }
-      }
-      // a copy of the shared part, for a page's <head> to paint before this script arrives (the Gate, the dashboard: 'olympus.theme.paint.<where>')
-      var gen = {};
-      for (k = 0; k < painted.length; k++) gen[painted[k]] = st.getPropertyValue(painted[k]);
-      put(PAINT_KEY + '.' + where + '.' + pageId(), JSON.stringify({ id: id, scheme: t.scheme, meta: t.themeColor, style: styled ? id : '', vars: gen }));
-      if (opts && opts.jarvis && j && where === 'page') for (k = 0; k < JARVIS.length; k++) paint('--' + JARVIS[k], j[JARVIS[k]]);
+      // opts.ramp = false keeps a page's own look (Zenith's own light mode): the tokens only
+      var ramp = !opts || opts.ramp === undefined || (typeof opts.ramp === 'function' ? opts.ramp(t, id) : opts.ramp);
+      var P = paintOf(id, where, ramp);
+      for (k in P.vars) paint(k, P.vars[k]);
+      styled = !!P.style;
+      if (ramp && !previewId) putLook(where, id, P);
+      // the older per-page copy (a <head> cached before 2026-11-14 still reads it); a preview is never copied
+      if (!previewId) put(PAINT_KEY + '.' + where + '.' + pageId(), JSON.stringify({ id: id, scheme: P.scheme, meta: P.meta, style: P.style, vars: P.vars }));
+      if (opts && opts.jarvis && P.jarvis) for (k in P.jarvis) paint(k, P.jarvis[k]);
       if (opts && typeof opts.extra === 'function') { var x = opts.extra(t, id) || {}; for (k in x) if (x[k] != null) paint(k, String(x[k])); }
-    } else { del(PAINT_KEY + '.' + where + '.' + pageId()); }
+    } else if (!previewId) { del(PAINT_KEY + '.' + where + '.' + pageId()); }
     if (styled) root.setAttribute('data-oly-style', id); else root.removeAttribute('data-oly-style');
     root.setAttribute('data-oly-theme', id);
     root.setAttribute('data-oly-scheme', t.scheme);
@@ -495,7 +623,7 @@
       if (m0) m0.setAttribute('content', m0.getAttribute('data-oly-own'));
     }
     // a copy of what was painted, for a page that paints before this script loads (Jarvis's <head>, which never waits on it)
-    if (opts && opts.cache) {
+    if (opts && opts.cache && !previewId) {
       var vars = {};
       for (k = 0; k < painted.length; k++) vars[painted[k]] = st.getPropertyValue(painted[k]);
       if (id === DEFAULT) del(PAINT_KEY); else put(PAINT_KEY, JSON.stringify({ id: id, scheme: t.scheme, meta: t.themeColor, style: styled ? id : '', vars: vars }));
@@ -555,16 +683,36 @@
     /** one look for everything: the global look, and the mix cleared */
     set: function (id) {
       if (!by[id]) id = DEFAULT;
+      previewId = null;
       put(KEY, id); put(VKEY, '2'); del(MIXKEY);
+      cacheLooks();                                            // every page's <head> can wear the new look from its first frame
       if (effective() !== cur && where) { apply(where, applyOpts); emit(); }
       return id;
     },
     /** the mix: getMix() = { district, app, of } or null; setMix(m) stores it (null clears it) and repaints this page if its look changed */
     getMix: readMix,
     setMix: function (m) {
+      previewId = null;
       if (m && typeof m === 'object') put(MIXKEY, JSON.stringify({ district: m.district || {}, app: m.app || {}, of: m.of || {} })); else del(MIXKEY);
+      cacheLooks();
       if (effective() !== cur && where) { apply(where, applyOpts); emit(); }
       return readMix();
+    },
+    /** show a look on THIS page only, nothing stored (the picker's long-press / hover); preview(null) puts the chosen look back.
+     *  previewing() = the id shown, or null. A pick (set / setMix) ends any preview. */
+    preview: function (id) {
+      var was = previewId;
+      previewId = id && by[id] ? id : null;
+      if (previewId !== was && where && effective() !== cur) { apply(where, applyOpts); emit(); }
+      return previewId;
+    },
+    previewing: function () { return previewId; },
+    /** what a look paints for a place, computed (the <head> copy): paintOf(id, 'page' | 'stage') -> { id, scheme, meta, style, vars, jarvis } */
+    paintOf: function (id, w) { return paintOf(by[id] ? id : DEFAULT, w || where || 'stage'); },
+    /** the frosted-glass cards without their blur (P2's cheap path): noblur() = on?, noblur(true | false) = set it for every page (stored) */
+    noblur: function (v) {
+      if (v !== undefined) { if (v) put(NOBLUR_KEY, '1'); else del(NOBLUR_KEY); cacheLooks(); if (where) { apply(where, applyOpts); emit(); } }
+      return noBlur();
     },
     /** the look a page would get: lookFor('nq') with the stored mix and global look */
     lookFor: function (p, m) { return lookFor(p, m === undefined ? readMix() : m, stored()); },
@@ -576,6 +724,7 @@
   // another tab or the Jarvis frame around this app changed the theme
   window.addEventListener('storage', function (e) {
     if (e.key === GRAIN_KEY || e.key === null) grain();
+    if (e.key === NOBLUR_KEY && where && cur !== DEFAULT) { apply(where, applyOpts); emit(); return; }
     if (e.key !== KEY && e.key !== MIXKEY && e.key !== null) return;
     if (effective() !== cur && where) { apply(where, applyOpts); emit(); }
   });

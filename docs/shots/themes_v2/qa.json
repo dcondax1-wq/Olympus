@@ -1,0 +1,4873 @@
+{
+"after": {
+"agora": {
+"aegis": [],
+"cities": [],
+"dash-atlas": [
+"text"
+],
+"dash-blitz": [
+"text"
+],
+"dash-desk": [
+"text"
+],
+"dash-home": [
+"text"
+],
+"dash-money": [
+"text"
+],
+"dash-more": [
+"focus"
+],
+"dash-zlarior": [],
+"helios": [],
+"home": [],
+"home-desk": [],
+"hub-bots": [],
+"hub-jarvis": [],
+"hub-kalshi": [],
+"hub-money": [],
+"hub-plan": [],
+"hub-research": [],
+"hub-settings": [],
+"hub-today": [],
+"hub-worlds": [],
+"jarvis": [],
+"kalshi": [
+"text"
+],
+"ledger": [],
+"mint": [],
+"nq": [],
+"oikos": [],
+"planner": [],
+"polis": [],
+"symposium": []
+},
+"amber": {
+"aegis": [],
+"cities": [],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [],
+"dash-home": [],
+"dash-money": [],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [],
+"home": [],
+"home-desk": [],
+"hub-bots": [],
+"hub-jarvis": [],
+"hub-kalshi": [],
+"hub-money": [],
+"hub-plan": [],
+"hub-research": [],
+"hub-settings": [],
+"hub-today": [],
+"hub-worlds": [],
+"jarvis": [],
+"kalshi": [],
+"ledger": [],
+"mint": [],
+"nq": [],
+"oikos": [],
+"planner": [],
+"polis": [],
+"symposium": []
+},
+"aurora": {
+"aegis": [],
+"cities": [],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [],
+"dash-home": [],
+"dash-money": [],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [],
+"home": [],
+"home-desk": [],
+"hub-bots": [],
+"hub-jarvis": [],
+"hub-kalshi": [],
+"hub-money": [],
+"hub-plan": [],
+"hub-research": [],
+"hub-settings": [],
+"hub-today": [],
+"hub-worlds": [],
+"jarvis": [],
+"kalshi": [],
+"ledger": [],
+"mint": [],
+"nq": [],
+"oikos": [],
+"planner": [],
+"polis": [],
+"symposium": []
+},
+"brutal": {
+"aegis": [],
+"cities": [],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [],
+"dash-home": [],
+"dash-money": [],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [],
+"home": [],
+"home-desk": [],
+"hub-bots": [],
+"hub-jarvis": [],
+"hub-kalshi": [],
+"hub-money": [],
+"hub-plan": [],
+"hub-research": [],
+"hub-settings": [],
+"hub-today": [],
+"hub-worlds": [],
+"jarvis": [],
+"kalshi": [],
+"ledger": [],
+"mint": [],
+"nq": [],
+"oikos": [],
+"planner": [],
+"polis": [],
+"symposium": []
+},
+"bullion": {
+"aegis": [],
+"cities": [],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [],
+"dash-home": [],
+"dash-money": [],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [],
+"home": [],
+"home-desk": [],
+"hub-bots": [],
+"hub-jarvis": [],
+"hub-kalshi": [],
+"hub-money": [],
+"hub-plan": [],
+"hub-research": [],
+"hub-settings": [],
+"hub-today": [],
+"hub-worlds": [],
+"jarvis": [],
+"kalshi": [],
+"ledger": [],
+"mint": [],
+"nq": [],
+"oikos": [],
+"planner": [],
+"polis": [],
+"symposium": []
+},
+"carbon": {
+"aegis": [],
+"cities": [],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [],
+"dash-home": [],
+"dash-money": [],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [],
+"home": [],
+"home-desk": [],
+"hub-bots": [],
+"hub-jarvis": [],
+"hub-kalshi": [],
+"hub-money": [],
+"hub-plan": [],
+"hub-research": [],
+"hub-settings": [],
+"hub-today": [],
+"hub-worlds": [],
+"jarvis": [],
+"kalshi": [],
+"ledger": [],
+"mint": [],
+"nq": [],
+"oikos": [],
+"planner": [],
+"polis": [],
+"symposium": []
+},
+"carbonred": {
+"aegis": [],
+"cities": [],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [],
+"dash-home": [],
+"dash-money": [],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [],
+"home": [],
+"home-desk": [],
+"hub-bots": [],
+"hub-jarvis": [],
+"hub-kalshi": [],
+"hub-money": [],
+"hub-plan": [],
+"hub-research": [],
+"hub-settings": [],
+"hub-today": [],
+"hub-worlds": [],
+"jarvis": [],
+"kalshi": [],
+"ledger": [],
+"mint": [],
+"nq": [],
+"oikos": [],
+"planner": [],
+"polis": [],
+"symposium": []
+},
+"cyber": {
+"aegis": [],
+"cities": [],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [],
+"dash-home": [],
+"dash-money": [],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [],
+"home": [],
+"home-desk": [],
+"hub-bots": [],
+"hub-jarvis": [],
+"hub-kalshi": [],
+"hub-money": [],
+"hub-plan": [],
+"hub-research": [],
+"hub-settings": [],
+"hub-today": [],
+"hub-worlds": [],
+"jarvis": [],
+"kalshi": [],
+"ledger": [],
+"mint": [],
+"nq": [],
+"oikos": [],
+"planner": [],
+"polis": [],
+"symposium": []
+},
+"deco": {
+"aegis": [],
+"cities": [],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [],
+"dash-home": [],
+"dash-money": [],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [],
+"home": [],
+"home-desk": [],
+"hub-bots": [],
+"hub-jarvis": [],
+"hub-kalshi": [],
+"hub-money": [],
+"hub-plan": [],
+"hub-research": [],
+"hub-settings": [],
+"hub-today": [],
+"hub-worlds": [],
+"jarvis": [],
+"kalshi": [],
+"ledger": [],
+"mint": [],
+"nq": [],
+"oikos": [],
+"planner": [],
+"polis": [],
+"symposium": []
+},
+"desert": {
+"aegis": [],
+"cities": [],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [],
+"dash-home": [],
+"dash-money": [],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [],
+"home": [],
+"home-desk": [],
+"hub-bots": [],
+"hub-jarvis": [],
+"hub-kalshi": [],
+"hub-money": [],
+"hub-plan": [],
+"hub-research": [],
+"hub-settings": [],
+"hub-today": [],
+"hub-worlds": [],
+"jarvis": [],
+"kalshi": [],
+"ledger": [],
+"mint": [],
+"nq": [],
+"oikos": [],
+"planner": [],
+"polis": [],
+"symposium": []
+},
+"editorial": {
+"aegis": [],
+"cities": [],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [],
+"dash-home": [],
+"dash-money": [],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [],
+"home": [],
+"home-desk": [],
+"hub-bots": [],
+"hub-jarvis": [],
+"hub-kalshi": [],
+"hub-money": [],
+"hub-plan": [],
+"hub-research": [],
+"hub-settings": [],
+"hub-today": [],
+"hub-worlds": [],
+"jarvis": [],
+"kalshi": [],
+"ledger": [],
+"mint": [],
+"nq": [],
+"oikos": [],
+"planner": [],
+"polis": [],
+"symposium": []
+},
+"forest": {
+"aegis": [],
+"cities": [],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [],
+"dash-home": [],
+"dash-money": [],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [],
+"home": [],
+"home-desk": [],
+"hub-bots": [],
+"hub-jarvis": [],
+"hub-kalshi": [],
+"hub-money": [],
+"hub-plan": [],
+"hub-research": [],
+"hub-settings": [],
+"hub-today": [],
+"hub-worlds": [],
+"jarvis": [],
+"kalshi": [],
+"ledger": [],
+"mint": [],
+"nq": [],
+"oikos": [],
+"planner": [],
+"polis": [],
+"symposium": []
+},
+"ivory": {
+"aegis": [],
+"cities": [],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [],
+"dash-home": [],
+"dash-money": [],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [],
+"home": [],
+"home-desk": [],
+"hub-bots": [],
+"hub-jarvis": [],
+"hub-kalshi": [],
+"hub-money": [],
+"hub-plan": [],
+"hub-research": [],
+"hub-settings": [],
+"hub-today": [],
+"hub-worlds": [],
+"jarvis": [],
+"kalshi": [],
+"ledger": [],
+"mint": [],
+"nq": [],
+"oikos": [],
+"planner": [],
+"polis": [],
+"symposium": []
+},
+"lime": {
+"aegis": [],
+"cities": [],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [],
+"dash-home": [],
+"dash-money": [],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [],
+"home": [],
+"home-desk": [],
+"hub-bots": [],
+"hub-jarvis": [],
+"hub-kalshi": [],
+"hub-money": [],
+"hub-plan": [],
+"hub-research": [],
+"hub-settings": [],
+"hub-today": [],
+"hub-worlds": [],
+"jarvis": [],
+"kalshi": [],
+"ledger": [],
+"mint": [],
+"nq": [],
+"oikos": [],
+"planner": [],
+"polis": [],
+"symposium": []
+},
+"marble": {
+"aegis": [],
+"cities": [],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [],
+"dash-home": [],
+"dash-money": [],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [],
+"home": [],
+"home-desk": [],
+"hub-bots": [],
+"hub-jarvis": [],
+"hub-kalshi": [],
+"hub-money": [],
+"hub-plan": [],
+"hub-research": [],
+"hub-settings": [],
+"hub-today": [],
+"hub-worlds": [],
+"jarvis": [],
+"kalshi": [],
+"ledger": [],
+"mint": [],
+"nq": [],
+"oikos": [],
+"planner": [],
+"polis": [],
+"symposium": []
+},
+"midnight": {
+"aegis": [],
+"cities": [],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [],
+"dash-home": [],
+"dash-money": [],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [],
+"home": [],
+"home-desk": [],
+"hub-bots": [],
+"hub-jarvis": [],
+"hub-kalshi": [],
+"hub-money": [],
+"hub-plan": [],
+"hub-research": [],
+"hub-settings": [],
+"hub-today": [],
+"hub-worlds": [],
+"jarvis": [],
+"kalshi": [],
+"ledger": [],
+"mint": [],
+"nq": [],
+"oikos": [],
+"planner": [],
+"polis": [],
+"symposium": []
+},
+"monoblack": {
+"aegis": [],
+"cities": [],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [],
+"dash-home": [],
+"dash-money": [],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [],
+"home": [],
+"home-desk": [],
+"hub-bots": [],
+"hub-jarvis": [],
+"hub-kalshi": [],
+"hub-money": [],
+"hub-plan": [],
+"hub-research": [],
+"hub-settings": [],
+"hub-today": [],
+"hub-worlds": [],
+"jarvis": [],
+"kalshi": [],
+"ledger": [],
+"mint": [],
+"nq": [],
+"oikos": [],
+"planner": [],
+"polis": [],
+"symposium": []
+},
+"monowhite": {
+"aegis": [],
+"cities": [],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [],
+"dash-home": [],
+"dash-money": [],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [],
+"home": [],
+"home-desk": [],
+"hub-bots": [],
+"hub-jarvis": [],
+"hub-kalshi": [],
+"hub-money": [],
+"hub-plan": [],
+"hub-research": [],
+"hub-settings": [],
+"hub-today": [],
+"hub-worlds": [],
+"jarvis": [],
+"kalshi": [],
+"ledger": [],
+"mint": [],
+"nq": [],
+"oikos": [],
+"planner": [],
+"polis": [],
+"symposium": []
+},
+"noir": {
+"aegis": [],
+"cities": [],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [],
+"dash-home": [],
+"dash-money": [],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [],
+"home": [],
+"home-desk": [],
+"hub-bots": [],
+"hub-jarvis": [],
+"hub-kalshi": [],
+"hub-money": [],
+"hub-plan": [],
+"hub-research": [],
+"hub-settings": [],
+"hub-today": [],
+"hub-worlds": [],
+"jarvis": [],
+"kalshi": [],
+"ledger": [],
+"mint": [],
+"nq": [],
+"oikos": [],
+"planner": [],
+"polis": [],
+"symposium": []
+},
+"nord": {
+"aegis": [],
+"cities": [],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [],
+"dash-home": [],
+"dash-money": [],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [],
+"home": [],
+"home-desk": [],
+"hub-bots": [],
+"hub-jarvis": [],
+"hub-kalshi": [],
+"hub-money": [],
+"hub-plan": [],
+"hub-research": [],
+"hub-settings": [],
+"hub-today": [],
+"hub-worlds": [],
+"jarvis": [],
+"kalshi": [],
+"ledger": [],
+"mint": [],
+"nq": [],
+"oikos": [],
+"planner": [],
+"polis": [],
+"symposium": []
+},
+"ocean": {
+"aegis": [],
+"cities": [],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [],
+"dash-home": [],
+"dash-money": [],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [],
+"home": [],
+"home-desk": [],
+"hub-bots": [],
+"hub-jarvis": [],
+"hub-kalshi": [],
+"hub-money": [],
+"hub-plan": [],
+"hub-research": [],
+"hub-settings": [],
+"hub-today": [],
+"hub-worlds": [],
+"jarvis": [],
+"kalshi": [],
+"ledger": [],
+"mint": [],
+"nq": [],
+"oikos": [],
+"planner": [],
+"polis": [],
+"symposium": []
+},
+"paperdark": {
+"aegis": [],
+"cities": [],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [],
+"dash-home": [],
+"dash-money": [],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [],
+"home": [],
+"home-desk": [],
+"hub-bots": [],
+"hub-jarvis": [],
+"hub-kalshi": [],
+"hub-money": [],
+"hub-plan": [],
+"hub-research": [],
+"hub-settings": [],
+"hub-today": [],
+"hub-worlds": [],
+"jarvis": [],
+"kalshi": [],
+"ledger": [],
+"mint": [],
+"nq": [],
+"oikos": [],
+"planner": [],
+"polis": [],
+"symposium": []
+},
+"rosegold": {
+"aegis": [],
+"cities": [],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [],
+"dash-home": [],
+"dash-money": [],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [],
+"home": [],
+"home-desk": [],
+"hub-bots": [],
+"hub-jarvis": [],
+"hub-kalshi": [],
+"hub-money": [],
+"hub-plan": [],
+"hub-research": [],
+"hub-settings": [],
+"hub-today": [],
+"hub-worlds": [],
+"jarvis": [],
+"kalshi": [],
+"ledger": [],
+"mint": [],
+"nq": [],
+"oikos": [],
+"planner": [],
+"polis": [],
+"symposium": []
+},
+"royal": {
+"aegis": [],
+"cities": [],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [],
+"dash-home": [],
+"dash-money": [],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [],
+"home": [],
+"home-desk": [],
+"hub-bots": [],
+"hub-jarvis": [],
+"hub-kalshi": [],
+"hub-money": [],
+"hub-plan": [],
+"hub-research": [],
+"hub-settings": [],
+"hub-today": [],
+"hub-worlds": [],
+"jarvis": [],
+"kalshi": [],
+"ledger": [],
+"mint": [],
+"nq": [],
+"oikos": [],
+"planner": [],
+"polis": [],
+"symposium": []
+},
+"solarized": {
+"aegis": [],
+"cities": [],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [],
+"dash-home": [],
+"dash-money": [],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [],
+"home": [],
+"home-desk": [],
+"hub-bots": [],
+"hub-jarvis": [],
+"hub-kalshi": [],
+"hub-money": [],
+"hub-plan": [],
+"hub-research": [],
+"hub-settings": [],
+"hub-today": [],
+"hub-worlds": [],
+"jarvis": [],
+"kalshi": [],
+"ledger": [],
+"mint": [],
+"nq": [],
+"oikos": [],
+"planner": [],
+"polis": [],
+"symposium": []
+},
+"stocks": {
+"aegis": [],
+"cities": [],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [],
+"dash-home": [],
+"dash-money": [],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [],
+"home": [],
+"home-desk": [],
+"hub-bots": [],
+"hub-jarvis": [],
+"hub-kalshi": [],
+"hub-money": [],
+"hub-plan": [],
+"hub-research": [],
+"hub-settings": [],
+"hub-today": [],
+"hub-worlds": [],
+"jarvis": [],
+"kalshi": [],
+"ledger": [],
+"mint": [],
+"nq": [],
+"oikos": [],
+"planner": [],
+"polis": [],
+"symposium": []
+},
+"sunset": {
+"aegis": [],
+"cities": [],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [],
+"dash-home": [],
+"dash-money": [],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [],
+"home": [],
+"home-desk": [],
+"hub-bots": [],
+"hub-jarvis": [],
+"hub-kalshi": [],
+"hub-money": [],
+"hub-plan": [],
+"hub-research": [],
+"hub-settings": [],
+"hub-today": [],
+"hub-worlds": [],
+"jarvis": [],
+"kalshi": [],
+"ledger": [],
+"mint": [],
+"nq": [],
+"oikos": [],
+"planner": [],
+"polis": [],
+"symposium": []
+},
+"swiss": {
+"aegis": [],
+"cities": [],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [],
+"dash-home": [],
+"dash-money": [],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [],
+"home": [],
+"home-desk": [],
+"hub-bots": [],
+"hub-jarvis": [],
+"hub-kalshi": [],
+"hub-money": [],
+"hub-plan": [],
+"hub-research": [],
+"hub-settings": [],
+"hub-today": [],
+"hub-worlds": [],
+"jarvis": [],
+"kalshi": [],
+"ledger": [],
+"mint": [],
+"nq": [],
+"oikos": [],
+"planner": [],
+"polis": [],
+"symposium": []
+},
+"terminal": {
+"aegis": [],
+"cities": [],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [],
+"dash-home": [],
+"dash-money": [],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [],
+"home": [],
+"home-desk": [],
+"hub-bots": [],
+"hub-jarvis": [],
+"hub-kalshi": [],
+"hub-money": [],
+"hub-plan": [],
+"hub-research": [],
+"hub-settings": [],
+"hub-today": [],
+"hub-worlds": [],
+"jarvis": [],
+"kalshi": [],
+"ledger": [],
+"mint": [],
+"nq": [],
+"oikos": [],
+"planner": [],
+"polis": [],
+"symposium": []
+},
+"vapor": {
+"aegis": [],
+"cities": [],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [],
+"dash-home": [],
+"dash-money": [],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [],
+"home": [],
+"home-desk": [],
+"hub-bots": [],
+"hub-jarvis": [],
+"hub-kalshi": [],
+"hub-money": [],
+"hub-plan": [],
+"hub-research": [],
+"hub-settings": [],
+"hub-today": [],
+"hub-worlds": [],
+"jarvis": [],
+"kalshi": [],
+"ledger": [],
+"mint": [],
+"nq": [],
+"oikos": [],
+"planner": [],
+"polis": [],
+"symposium": []
+},
+"wallstreet": {
+"aegis": [],
+"cities": [],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [],
+"dash-home": [],
+"dash-money": [],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [],
+"home": [],
+"home-desk": [],
+"hub-bots": [],
+"hub-jarvis": [],
+"hub-kalshi": [],
+"hub-money": [],
+"hub-plan": [],
+"hub-research": [],
+"hub-settings": [],
+"hub-today": [],
+"hub-worlds": [],
+"jarvis": [],
+"kalshi": [],
+"ledger": [],
+"mint": [],
+"nq": [],
+"oikos": [],
+"planner": [],
+"polis": [],
+"symposium": []
+},
+"zen": {
+"aegis": [],
+"cities": [],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [],
+"dash-home": [],
+"dash-money": [],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [],
+"home": [],
+"home-desk": [],
+"hub-bots": [],
+"hub-jarvis": [],
+"hub-kalshi": [],
+"hub-money": [],
+"hub-plan": [],
+"hub-research": [],
+"hub-settings": [],
+"hub-today": [],
+"hub-worlds": [],
+"jarvis": [],
+"kalshi": [],
+"ledger": [],
+"mint": [],
+"nq": [],
+"oikos": [],
+"planner": [],
+"polis": [],
+"symposium": []
+}
+},
+"before": {
+"agora": {
+"aegis": [],
+"cities": [],
+"dash-atlas": [
+"text"
+],
+"dash-blitz": [
+"text"
+],
+"dash-desk": [
+"text"
+],
+"dash-home": [
+"text"
+],
+"dash-money": [
+"text"
+],
+"dash-more": [
+"focus"
+],
+"dash-zlarior": [],
+"helios": [],
+"home": [],
+"home-desk": [],
+"hub-bots": [],
+"hub-jarvis": [],
+"hub-kalshi": [],
+"hub-money": [],
+"hub-plan": [],
+"hub-research": [],
+"hub-settings": [],
+"hub-today": [],
+"hub-worlds": [],
+"jarvis": [],
+"kalshi": [
+"text"
+],
+"ledger": [],
+"mint": [],
+"nq": [],
+"oikos": [],
+"planner": [],
+"polis": [],
+"symposium": []
+},
+"amber": {
+"aegis": [
+"left"
+],
+"cities": [
+"left"
+],
+"dash-atlas": [],
+"dash-blitz": [
+"text"
+],
+"dash-desk": [
+"first",
+"left"
+],
+"dash-home": [
+"first",
+"left"
+],
+"dash-money": [
+"left",
+"text"
+],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [
+"left"
+],
+"home": [
+"first"
+],
+"home-desk": [
+"first"
+],
+"hub-bots": [],
+"hub-jarvis": [
+"first"
+],
+"hub-kalshi": [
+"first"
+],
+"hub-money": [],
+"hub-plan": [
+"first"
+],
+"hub-research": [
+"first"
+],
+"hub-settings": [],
+"hub-today": [
+"first"
+],
+"hub-worlds": [
+"first"
+],
+"jarvis": [
+"first",
+"left",
+"text"
+],
+"kalshi": [
+"first"
+],
+"ledger": [
+"left"
+],
+"mint": [
+"left"
+],
+"nq": [],
+"oikos": [
+"left"
+],
+"planner": [
+"left"
+],
+"polis": [],
+"symposium": [
+"left"
+]
+},
+"aurora": {
+"aegis": [
+"left"
+],
+"cities": [
+"left"
+],
+"dash-atlas": [
+"text"
+],
+"dash-blitz": [],
+"dash-desk": [
+"first",
+"left"
+],
+"dash-home": [
+"first",
+"left"
+],
+"dash-money": [
+"left"
+],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [
+"left"
+],
+"home": [
+"first",
+"text"
+],
+"home-desk": [
+"first"
+],
+"hub-bots": [
+"first"
+],
+"hub-jarvis": [
+"first"
+],
+"hub-kalshi": [
+"first"
+],
+"hub-money": [
+"first"
+],
+"hub-plan": [
+"first"
+],
+"hub-research": [
+"first"
+],
+"hub-settings": [
+"first"
+],
+"hub-today": [
+"first"
+],
+"hub-worlds": [
+"first"
+],
+"jarvis": [
+"first",
+"left"
+],
+"kalshi": [
+"first"
+],
+"ledger": [
+"left"
+],
+"mint": [
+"left"
+],
+"nq": [],
+"oikos": [
+"left"
+],
+"planner": [
+"left"
+],
+"polis": [],
+"symposium": [
+"left"
+]
+},
+"brutal": {
+"aegis": [
+"left"
+],
+"cities": [
+"left"
+],
+"dash-atlas": [],
+"dash-blitz": [
+"text"
+],
+"dash-desk": [
+"first",
+"left",
+"text"
+],
+"dash-home": [
+"first",
+"left",
+"text"
+],
+"dash-money": [
+"left",
+"text"
+],
+"dash-more": [
+"text"
+],
+"dash-zlarior": [
+"text"
+],
+"helios": [
+"focus",
+"left"
+],
+"home": [
+"first"
+],
+"home-desk": [
+"first"
+],
+"hub-bots": [
+"first"
+],
+"hub-jarvis": [
+"first"
+],
+"hub-kalshi": [],
+"hub-money": [],
+"hub-plan": [
+"first"
+],
+"hub-research": [
+"first"
+],
+"hub-settings": [
+"first"
+],
+"hub-today": [],
+"hub-worlds": [
+"first"
+],
+"jarvis": [
+"first",
+"left",
+"money"
+],
+"kalshi": [
+"first"
+],
+"ledger": [
+"left"
+],
+"mint": [
+"left"
+],
+"nq": [
+"focus"
+],
+"oikos": [
+"left"
+],
+"planner": [
+"left"
+],
+"polis": [],
+"symposium": [
+"left"
+]
+},
+"bullion": {
+"aegis": [
+"left"
+],
+"cities": [
+"left"
+],
+"dash-atlas": [],
+"dash-blitz": [
+"text"
+],
+"dash-desk": [
+"first",
+"left"
+],
+"dash-home": [
+"first",
+"left"
+],
+"dash-money": [
+"left"
+],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [
+"left"
+],
+"home": [
+"first"
+],
+"home-desk": [
+"first"
+],
+"hub-bots": [
+"first"
+],
+"hub-jarvis": [
+"first"
+],
+"hub-kalshi": [
+"first"
+],
+"hub-money": [
+"first"
+],
+"hub-plan": [
+"first"
+],
+"hub-research": [
+"first"
+],
+"hub-settings": [
+"first"
+],
+"hub-today": [
+"first"
+],
+"hub-worlds": [
+"first"
+],
+"jarvis": [
+"first",
+"left"
+],
+"kalshi": [
+"first"
+],
+"ledger": [
+"left"
+],
+"mint": [
+"left"
+],
+"nq": [],
+"oikos": [
+"left"
+],
+"planner": [
+"left"
+],
+"polis": [],
+"symposium": [
+"left"
+]
+},
+"carbon": {
+"aegis": [
+"left"
+],
+"cities": [
+"left"
+],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [
+"first",
+"left"
+],
+"dash-home": [
+"first",
+"left"
+],
+"dash-money": [
+"left"
+],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [
+"left"
+],
+"home": [
+"first"
+],
+"home-desk": [
+"first"
+],
+"hub-bots": [
+"first"
+],
+"hub-jarvis": [
+"first"
+],
+"hub-kalshi": [
+"first"
+],
+"hub-money": [
+"first"
+],
+"hub-plan": [
+"first"
+],
+"hub-research": [
+"first"
+],
+"hub-settings": [
+"first"
+],
+"hub-today": [
+"first"
+],
+"hub-worlds": [
+"first"
+],
+"jarvis": [
+"first",
+"left"
+],
+"kalshi": [
+"first"
+],
+"ledger": [
+"left"
+],
+"mint": [
+"left"
+],
+"nq": [],
+"oikos": [
+"left"
+],
+"planner": [
+"left"
+],
+"polis": [],
+"symposium": [
+"left"
+]
+},
+"carbonred": {
+"aegis": [
+"left"
+],
+"cities": [
+"left",
+"text"
+],
+"dash-atlas": [],
+"dash-blitz": [
+"text"
+],
+"dash-desk": [
+"first",
+"left"
+],
+"dash-home": [
+"first",
+"left"
+],
+"dash-money": [
+"left",
+"text"
+],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [
+"left"
+],
+"home": [
+"first"
+],
+"home-desk": [
+"first"
+],
+"hub-bots": [
+"first"
+],
+"hub-jarvis": [
+"first"
+],
+"hub-kalshi": [
+"first"
+],
+"hub-money": [],
+"hub-plan": [
+"first"
+],
+"hub-research": [
+"first"
+],
+"hub-settings": [
+"first"
+],
+"hub-today": [
+"first"
+],
+"hub-worlds": [],
+"jarvis": [
+"first",
+"left",
+"money"
+],
+"kalshi": [
+"first"
+],
+"ledger": [
+"left"
+],
+"mint": [
+"left"
+],
+"nq": [],
+"oikos": [
+"left"
+],
+"planner": [
+"left"
+],
+"polis": [
+"text"
+],
+"symposium": [
+"left"
+]
+},
+"cyber": {
+"aegis": [
+"left"
+],
+"cities": [
+"left"
+],
+"dash-atlas": [],
+"dash-blitz": [
+"text"
+],
+"dash-desk": [
+"first",
+"left"
+],
+"dash-home": [
+"first",
+"left"
+],
+"dash-money": [
+"left"
+],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [
+"left"
+],
+"home": [
+"first"
+],
+"home-desk": [
+"first"
+],
+"hub-bots": [],
+"hub-jarvis": [
+"first"
+],
+"hub-kalshi": [
+"first"
+],
+"hub-money": [
+"first"
+],
+"hub-plan": [
+"first"
+],
+"hub-research": [
+"first"
+],
+"hub-settings": [
+"first"
+],
+"hub-today": [
+"first"
+],
+"hub-worlds": [
+"first"
+],
+"jarvis": [
+"first",
+"left"
+],
+"kalshi": [
+"first"
+],
+"ledger": [
+"left"
+],
+"mint": [
+"left"
+],
+"nq": [],
+"oikos": [
+"left"
+],
+"planner": [
+"left"
+],
+"polis": [],
+"symposium": [
+"left"
+]
+},
+"deco": {
+"aegis": [
+"left"
+],
+"cities": [
+"left"
+],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [
+"first",
+"left"
+],
+"dash-home": [
+"first",
+"left"
+],
+"dash-money": [
+"left"
+],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [
+"left"
+],
+"home": [
+"first"
+],
+"home-desk": [
+"first"
+],
+"hub-bots": [],
+"hub-jarvis": [
+"first"
+],
+"hub-kalshi": [],
+"hub-money": [
+"first"
+],
+"hub-plan": [
+"first"
+],
+"hub-research": [
+"first"
+],
+"hub-settings": [],
+"hub-today": [],
+"hub-worlds": [],
+"jarvis": [
+"first",
+"left"
+],
+"kalshi": [
+"first"
+],
+"ledger": [
+"left"
+],
+"mint": [
+"left"
+],
+"nq": [],
+"oikos": [
+"left"
+],
+"planner": [
+"left"
+],
+"polis": [
+"text"
+],
+"symposium": [
+"left"
+]
+},
+"desert": {
+"aegis": [
+"left"
+],
+"cities": [
+"left",
+"text"
+],
+"dash-atlas": [
+"text"
+],
+"dash-blitz": [
+"text"
+],
+"dash-desk": [
+"first",
+"left",
+"text"
+],
+"dash-home": [
+"first",
+"left",
+"text"
+],
+"dash-money": [
+"left",
+"text"
+],
+"dash-more": [],
+"dash-zlarior": [
+"text"
+],
+"helios": [
+"focus",
+"left"
+],
+"home": [
+"first"
+],
+"home-desk": [
+"first"
+],
+"hub-bots": [
+"first"
+],
+"hub-jarvis": [
+"first"
+],
+"hub-kalshi": [
+"first"
+],
+"hub-money": [],
+"hub-plan": [
+"first"
+],
+"hub-research": [],
+"hub-settings": [
+"first"
+],
+"hub-today": [
+"first"
+],
+"hub-worlds": [
+"first"
+],
+"jarvis": [
+"first",
+"left",
+"money",
+"text"
+],
+"kalshi": [
+"first"
+],
+"ledger": [
+"left"
+],
+"mint": [
+"left"
+],
+"nq": [
+"focus"
+],
+"oikos": [
+"left"
+],
+"planner": [
+"left"
+],
+"polis": [],
+"symposium": [
+"left"
+]
+},
+"editorial": {
+"aegis": [
+"left"
+],
+"cities": [
+"left",
+"text"
+],
+"dash-atlas": [],
+"dash-blitz": [
+"text"
+],
+"dash-desk": [
+"first",
+"left",
+"text"
+],
+"dash-home": [
+"first",
+"left",
+"text"
+],
+"dash-money": [
+"left",
+"text"
+],
+"dash-more": [
+"text"
+],
+"dash-zlarior": [
+"text"
+],
+"helios": [
+"focus",
+"left",
+"text"
+],
+"home": [
+"first"
+],
+"home-desk": [
+"first"
+],
+"hub-bots": [],
+"hub-jarvis": [],
+"hub-kalshi": [],
+"hub-money": [
+"first"
+],
+"hub-plan": [
+"first"
+],
+"hub-research": [],
+"hub-settings": [
+"first"
+],
+"hub-today": [],
+"hub-worlds": [
+"first"
+],
+"jarvis": [
+"first",
+"left",
+"money",
+"text"
+],
+"kalshi": [
+"first"
+],
+"ledger": [
+"left"
+],
+"mint": [
+"left"
+],
+"nq": [
+"focus"
+],
+"oikos": [
+"left"
+],
+"planner": [
+"left"
+],
+"polis": [],
+"symposium": [
+"left"
+]
+},
+"forest": {
+"aegis": [
+"left"
+],
+"cities": [
+"left"
+],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [
+"first",
+"left"
+],
+"dash-home": [
+"first",
+"left"
+],
+"dash-money": [
+"left",
+"text"
+],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [
+"left"
+],
+"home": [
+"first"
+],
+"home-desk": [
+"first"
+],
+"hub-bots": [
+"first"
+],
+"hub-jarvis": [
+"first"
+],
+"hub-kalshi": [
+"first"
+],
+"hub-money": [
+"first"
+],
+"hub-plan": [
+"first"
+],
+"hub-research": [
+"first"
+],
+"hub-settings": [
+"first"
+],
+"hub-today": [
+"first"
+],
+"hub-worlds": [
+"first"
+],
+"jarvis": [
+"first",
+"left"
+],
+"kalshi": [
+"first"
+],
+"ledger": [
+"left"
+],
+"mint": [
+"left"
+],
+"nq": [],
+"oikos": [
+"left"
+],
+"planner": [
+"left"
+],
+"polis": [],
+"symposium": [
+"left"
+]
+},
+"ivory": {
+"aegis": [
+"left"
+],
+"cities": [
+"left"
+],
+"dash-atlas": [
+"text"
+],
+"dash-blitz": [
+"text"
+],
+"dash-desk": [
+"first",
+"left",
+"text"
+],
+"dash-home": [
+"first",
+"left",
+"text"
+],
+"dash-money": [
+"left",
+"text"
+],
+"dash-more": [
+"text"
+],
+"dash-zlarior": [
+"text"
+],
+"helios": [
+"focus",
+"left",
+"text"
+],
+"home": [
+"first"
+],
+"home-desk": [
+"first"
+],
+"hub-bots": [],
+"hub-jarvis": [],
+"hub-kalshi": [
+"first"
+],
+"hub-money": [
+"first"
+],
+"hub-plan": [
+"first"
+],
+"hub-research": [
+"first"
+],
+"hub-settings": [],
+"hub-today": [
+"first"
+],
+"hub-worlds": [
+"first"
+],
+"jarvis": [
+"first",
+"left"
+],
+"kalshi": [
+"first"
+],
+"ledger": [
+"left"
+],
+"mint": [
+"left"
+],
+"nq": [
+"focus"
+],
+"oikos": [
+"left"
+],
+"planner": [
+"left"
+],
+"polis": [],
+"symposium": [
+"left"
+]
+},
+"lime": {
+"aegis": [
+"left"
+],
+"cities": [
+"left"
+],
+"dash-atlas": [],
+"dash-blitz": [
+"text"
+],
+"dash-desk": [
+"first",
+"left"
+],
+"dash-home": [
+"first",
+"left"
+],
+"dash-money": [
+"left",
+"text"
+],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [
+"left"
+],
+"home": [
+"first"
+],
+"home-desk": [
+"first"
+],
+"hub-bots": [
+"first"
+],
+"hub-jarvis": [
+"first"
+],
+"hub-kalshi": [
+"first"
+],
+"hub-money": [
+"first"
+],
+"hub-plan": [
+"first"
+],
+"hub-research": [
+"first"
+],
+"hub-settings": [
+"first"
+],
+"hub-today": [],
+"hub-worlds": [
+"first"
+],
+"jarvis": [
+"first",
+"left"
+],
+"kalshi": [
+"first"
+],
+"ledger": [
+"left"
+],
+"mint": [
+"left"
+],
+"nq": [],
+"oikos": [
+"left"
+],
+"planner": [
+"left"
+],
+"polis": [],
+"symposium": [
+"left"
+]
+},
+"marble": {
+"aegis": [
+"left"
+],
+"cities": [
+"left"
+],
+"dash-atlas": [
+"focus"
+],
+"dash-blitz": [
+"focus",
+"text"
+],
+"dash-desk": [
+"first",
+"left",
+"text"
+],
+"dash-home": [
+"first",
+"focus",
+"left",
+"text"
+],
+"dash-money": [
+"focus",
+"left",
+"text"
+],
+"dash-more": [
+"focus"
+],
+"dash-zlarior": [
+"focus",
+"text"
+],
+"helios": [
+"focus",
+"left"
+],
+"home": [
+"first"
+],
+"home-desk": [
+"first"
+],
+"hub-bots": [
+"first"
+],
+"hub-jarvis": [
+"first"
+],
+"hub-kalshi": [
+"first"
+],
+"hub-money": [
+"first"
+],
+"hub-plan": [
+"first"
+],
+"hub-research": [
+"first"
+],
+"hub-settings": [
+"first"
+],
+"hub-today": [
+"first"
+],
+"hub-worlds": [
+"first"
+],
+"jarvis": [
+"first",
+"left"
+],
+"kalshi": [
+"first"
+],
+"ledger": [
+"left"
+],
+"mint": [
+"left"
+],
+"nq": [
+"focus"
+],
+"oikos": [
+"left"
+],
+"planner": [
+"left"
+],
+"polis": [],
+"symposium": [
+"left"
+]
+},
+"midnight": {
+"aegis": [
+"left"
+],
+"cities": [
+"left"
+],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [
+"first",
+"left"
+],
+"dash-home": [
+"first",
+"left"
+],
+"dash-money": [
+"left"
+],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [
+"left"
+],
+"home": [
+"first"
+],
+"home-desk": [
+"first"
+],
+"hub-bots": [
+"first"
+],
+"hub-jarvis": [],
+"hub-kalshi": [],
+"hub-money": [],
+"hub-plan": [
+"first"
+],
+"hub-research": [
+"first"
+],
+"hub-settings": [
+"first"
+],
+"hub-today": [
+"first"
+],
+"hub-worlds": [
+"first"
+],
+"jarvis": [
+"first",
+"left"
+],
+"kalshi": [
+"first"
+],
+"ledger": [
+"left"
+],
+"mint": [
+"left"
+],
+"nq": [],
+"oikos": [
+"left"
+],
+"planner": [
+"left"
+],
+"polis": [
+"text"
+],
+"symposium": [
+"left"
+]
+},
+"monoblack": {
+"aegis": [
+"left"
+],
+"cities": [
+"left"
+],
+"dash-atlas": [],
+"dash-blitz": [
+"text"
+],
+"dash-desk": [
+"first",
+"left"
+],
+"dash-home": [
+"first",
+"left"
+],
+"dash-money": [
+"left"
+],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [
+"left"
+],
+"home": [
+"first"
+],
+"home-desk": [
+"first"
+],
+"hub-bots": [],
+"hub-jarvis": [
+"first"
+],
+"hub-kalshi": [
+"first"
+],
+"hub-money": [],
+"hub-plan": [
+"first"
+],
+"hub-research": [],
+"hub-settings": [
+"first"
+],
+"hub-today": [],
+"hub-worlds": [
+"first"
+],
+"jarvis": [
+"first",
+"left"
+],
+"kalshi": [
+"first"
+],
+"ledger": [
+"left"
+],
+"mint": [
+"left"
+],
+"nq": [],
+"oikos": [
+"left"
+],
+"planner": [
+"left"
+],
+"polis": [],
+"symposium": [
+"left"
+]
+},
+"monowhite": {
+"aegis": [
+"left"
+],
+"cities": [
+"left"
+],
+"dash-atlas": [],
+"dash-blitz": [
+"text"
+],
+"dash-desk": [
+"first",
+"left",
+"text"
+],
+"dash-home": [
+"first",
+"left",
+"text"
+],
+"dash-money": [
+"left"
+],
+"dash-more": [],
+"dash-zlarior": [
+"text"
+],
+"helios": [
+"focus",
+"left",
+"text"
+],
+"home": [
+"first"
+],
+"home-desk": [
+"first"
+],
+"hub-bots": [
+"first"
+],
+"hub-jarvis": [
+"first"
+],
+"hub-kalshi": [
+"first"
+],
+"hub-money": [
+"first"
+],
+"hub-plan": [
+"first"
+],
+"hub-research": [
+"first"
+],
+"hub-settings": [
+"first"
+],
+"hub-today": [
+"first"
+],
+"hub-worlds": [
+"first"
+],
+"jarvis": [
+"first",
+"left"
+],
+"kalshi": [
+"first"
+],
+"ledger": [
+"left"
+],
+"mint": [
+"left"
+],
+"nq": [
+"focus"
+],
+"oikos": [
+"left"
+],
+"planner": [
+"left"
+],
+"polis": [],
+"symposium": [
+"left"
+]
+},
+"noir": {
+"aegis": [
+"left"
+],
+"cities": [
+"left"
+],
+"dash-atlas": [],
+"dash-blitz": [
+"text"
+],
+"dash-desk": [
+"first",
+"left"
+],
+"dash-home": [
+"first",
+"left"
+],
+"dash-money": [
+"left"
+],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [
+"left"
+],
+"home": [
+"first"
+],
+"home-desk": [
+"first"
+],
+"hub-bots": [
+"first"
+],
+"hub-jarvis": [
+"first"
+],
+"hub-kalshi": [
+"first"
+],
+"hub-money": [
+"first"
+],
+"hub-plan": [
+"first"
+],
+"hub-research": [],
+"hub-settings": [
+"first"
+],
+"hub-today": [],
+"hub-worlds": [
+"first"
+],
+"jarvis": [
+"first",
+"left"
+],
+"kalshi": [
+"first"
+],
+"ledger": [
+"left"
+],
+"mint": [
+"left"
+],
+"nq": [],
+"oikos": [
+"left"
+],
+"planner": [
+"left"
+],
+"polis": [],
+"symposium": [
+"left"
+]
+},
+"nord": {
+"aegis": [
+"left"
+],
+"cities": [
+"left"
+],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [
+"first",
+"left"
+],
+"dash-home": [
+"first",
+"left"
+],
+"dash-money": [
+"left",
+"text"
+],
+"dash-more": [],
+"dash-zlarior": [
+"text"
+],
+"helios": [
+"left"
+],
+"home": [
+"first"
+],
+"home-desk": [
+"first"
+],
+"hub-bots": [
+"first"
+],
+"hub-jarvis": [
+"first"
+],
+"hub-kalshi": [
+"first"
+],
+"hub-money": [
+"first"
+],
+"hub-plan": [
+"first"
+],
+"hub-research": [
+"first"
+],
+"hub-settings": [],
+"hub-today": [
+"first"
+],
+"hub-worlds": [
+"first"
+],
+"jarvis": [
+"first",
+"left",
+"text"
+],
+"kalshi": [
+"first"
+],
+"ledger": [
+"left"
+],
+"mint": [
+"left",
+"text"
+],
+"nq": [],
+"oikos": [
+"left",
+"text"
+],
+"planner": [
+"left"
+],
+"polis": [
+"text"
+],
+"symposium": [
+"left"
+]
+},
+"ocean": {
+"aegis": [
+"left"
+],
+"cities": [
+"left"
+],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [
+"first",
+"left"
+],
+"dash-home": [
+"first",
+"left"
+],
+"dash-money": [
+"left"
+],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [
+"left"
+],
+"home": [
+"first"
+],
+"home-desk": [
+"first"
+],
+"hub-bots": [
+"first"
+],
+"hub-jarvis": [],
+"hub-kalshi": [
+"first"
+],
+"hub-money": [
+"first"
+],
+"hub-plan": [
+"first"
+],
+"hub-research": [
+"first"
+],
+"hub-settings": [
+"first"
+],
+"hub-today": [],
+"hub-worlds": [
+"first"
+],
+"jarvis": [
+"first",
+"left"
+],
+"kalshi": [
+"first"
+],
+"ledger": [
+"left"
+],
+"mint": [
+"left"
+],
+"nq": [],
+"oikos": [
+"left"
+],
+"planner": [
+"left"
+],
+"polis": [],
+"symposium": [
+"left"
+]
+},
+"paperdark": {
+"aegis": [
+"left"
+],
+"cities": [
+"left",
+"text"
+],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [
+"first",
+"left"
+],
+"dash-home": [
+"first",
+"left"
+],
+"dash-money": [
+"left",
+"text"
+],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [
+"left"
+],
+"home": [
+"first"
+],
+"home-desk": [
+"first"
+],
+"hub-bots": [
+"first"
+],
+"hub-jarvis": [],
+"hub-kalshi": [
+"first"
+],
+"hub-money": [
+"first"
+],
+"hub-plan": [
+"first"
+],
+"hub-research": [
+"first"
+],
+"hub-settings": [
+"first"
+],
+"hub-today": [
+"first"
+],
+"hub-worlds": [
+"first"
+],
+"jarvis": [
+"first",
+"left"
+],
+"kalshi": [
+"first"
+],
+"ledger": [
+"left"
+],
+"mint": [
+"left"
+],
+"nq": [],
+"oikos": [
+"left"
+],
+"planner": [
+"left"
+],
+"polis": [],
+"symposium": [
+"left"
+]
+},
+"rosegold": {
+"aegis": [
+"left"
+],
+"cities": [
+"left",
+"text"
+],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [
+"first",
+"left"
+],
+"dash-home": [
+"first",
+"left"
+],
+"dash-money": [
+"left"
+],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [
+"left"
+],
+"home": [
+"first"
+],
+"home-desk": [
+"first"
+],
+"hub-bots": [],
+"hub-jarvis": [
+"first"
+],
+"hub-kalshi": [
+"first"
+],
+"hub-money": [],
+"hub-plan": [
+"first"
+],
+"hub-research": [
+"first"
+],
+"hub-settings": [
+"first"
+],
+"hub-today": [
+"first"
+],
+"hub-worlds": [
+"first"
+],
+"jarvis": [
+"first",
+"left"
+],
+"kalshi": [
+"first"
+],
+"ledger": [
+"left"
+],
+"mint": [
+"left"
+],
+"nq": [],
+"oikos": [
+"left"
+],
+"planner": [
+"left"
+],
+"polis": [],
+"symposium": [
+"left"
+]
+},
+"royal": {
+"aegis": [
+"left"
+],
+"cities": [
+"left"
+],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [
+"first",
+"left"
+],
+"dash-home": [
+"first",
+"left"
+],
+"dash-money": [
+"left"
+],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [
+"left"
+],
+"home": [
+"first"
+],
+"home-desk": [
+"first"
+],
+"hub-bots": [
+"first"
+],
+"hub-jarvis": [
+"first"
+],
+"hub-kalshi": [],
+"hub-money": [
+"first"
+],
+"hub-plan": [
+"first"
+],
+"hub-research": [
+"first"
+],
+"hub-settings": [
+"first"
+],
+"hub-today": [
+"first"
+],
+"hub-worlds": [
+"first"
+],
+"jarvis": [
+"first",
+"left"
+],
+"kalshi": [
+"first"
+],
+"ledger": [
+"left"
+],
+"mint": [
+"left"
+],
+"nq": [],
+"oikos": [
+"left"
+],
+"planner": [
+"left"
+],
+"polis": [],
+"symposium": [
+"left"
+]
+},
+"solarized": {
+"aegis": [
+"left"
+],
+"cities": [
+"left"
+],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [
+"first",
+"left"
+],
+"dash-home": [
+"first",
+"left"
+],
+"dash-money": [
+"left",
+"text"
+],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [
+"left",
+"text"
+],
+"home": [
+"first"
+],
+"home-desk": [
+"first"
+],
+"hub-bots": [
+"first"
+],
+"hub-jarvis": [
+"first"
+],
+"hub-kalshi": [
+"first"
+],
+"hub-money": [
+"first"
+],
+"hub-plan": [
+"first"
+],
+"hub-research": [
+"first"
+],
+"hub-settings": [
+"first"
+],
+"hub-today": [
+"first"
+],
+"hub-worlds": [
+"first"
+],
+"jarvis": [
+"first",
+"left"
+],
+"kalshi": [
+"first"
+],
+"ledger": [
+"left"
+],
+"mint": [
+"left"
+],
+"nq": [],
+"oikos": [
+"left"
+],
+"planner": [
+"left"
+],
+"polis": [
+"text"
+],
+"symposium": [
+"left"
+]
+},
+"stocks": {
+"aegis": [
+"left"
+],
+"cities": [
+"left"
+],
+"dash-atlas": [],
+"dash-blitz": [
+"text"
+],
+"dash-desk": [
+"first",
+"left",
+"text"
+],
+"dash-home": [
+"first",
+"left",
+"text"
+],
+"dash-money": [
+"left",
+"text"
+],
+"dash-more": [],
+"dash-zlarior": [
+"text"
+],
+"helios": [
+"focus",
+"left",
+"text"
+],
+"home": [
+"first"
+],
+"home-desk": [
+"first"
+],
+"hub-bots": [
+"first"
+],
+"hub-jarvis": [
+"first"
+],
+"hub-kalshi": [
+"first"
+],
+"hub-money": [],
+"hub-plan": [
+"first"
+],
+"hub-research": [
+"first"
+],
+"hub-settings": [
+"first"
+],
+"hub-today": [],
+"hub-worlds": [
+"first"
+],
+"jarvis": [
+"first",
+"left"
+],
+"kalshi": [
+"first"
+],
+"ledger": [
+"left"
+],
+"mint": [
+"left"
+],
+"nq": [
+"focus"
+],
+"oikos": [
+"left"
+],
+"planner": [
+"left"
+],
+"polis": [],
+"symposium": [
+"left"
+]
+},
+"sunset": {
+"aegis": [
+"left"
+],
+"cities": [
+"focus",
+"left"
+],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [
+"first",
+"left"
+],
+"dash-home": [
+"first",
+"left"
+],
+"dash-money": [
+"left"
+],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [
+"left"
+],
+"home": [
+"first"
+],
+"home-desk": [
+"first"
+],
+"hub-bots": [
+"first"
+],
+"hub-jarvis": [
+"first"
+],
+"hub-kalshi": [],
+"hub-money": [
+"first"
+],
+"hub-plan": [
+"first"
+],
+"hub-research": [
+"first"
+],
+"hub-settings": [
+"first"
+],
+"hub-today": [
+"first"
+],
+"hub-worlds": [
+"first"
+],
+"jarvis": [
+"first",
+"left",
+"money"
+],
+"kalshi": [
+"first"
+],
+"ledger": [
+"left"
+],
+"mint": [
+"left"
+],
+"nq": [],
+"oikos": [
+"left"
+],
+"planner": [
+"left"
+],
+"polis": [
+"text"
+],
+"symposium": [
+"left"
+]
+},
+"swiss": {
+"aegis": [
+"left"
+],
+"cities": [
+"left",
+"text"
+],
+"dash-atlas": [],
+"dash-blitz": [
+"text"
+],
+"dash-desk": [
+"first",
+"left",
+"text"
+],
+"dash-home": [
+"first",
+"left",
+"text"
+],
+"dash-money": [
+"left",
+"text"
+],
+"dash-more": [],
+"dash-zlarior": [
+"text"
+],
+"helios": [
+"focus",
+"left",
+"text"
+],
+"home": [
+"first"
+],
+"home-desk": [
+"first"
+],
+"hub-bots": [],
+"hub-jarvis": [
+"first"
+],
+"hub-kalshi": [
+"first"
+],
+"hub-money": [
+"first"
+],
+"hub-plan": [
+"first"
+],
+"hub-research": [
+"first"
+],
+"hub-settings": [
+"first"
+],
+"hub-today": [],
+"hub-worlds": [
+"first"
+],
+"jarvis": [
+"first",
+"left",
+"money",
+"text"
+],
+"kalshi": [
+"first"
+],
+"ledger": [
+"left"
+],
+"mint": [
+"left"
+],
+"nq": [
+"focus"
+],
+"oikos": [
+"left"
+],
+"planner": [
+"left"
+],
+"polis": [
+"text"
+],
+"symposium": [
+"left"
+]
+},
+"terminal": {
+"aegis": [
+"left"
+],
+"cities": [
+"left"
+],
+"dash-atlas": [],
+"dash-blitz": [
+"text"
+],
+"dash-desk": [
+"first",
+"left"
+],
+"dash-home": [
+"first",
+"left"
+],
+"dash-money": [
+"left"
+],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [
+"left"
+],
+"home": [
+"first"
+],
+"home-desk": [
+"first"
+],
+"hub-bots": [],
+"hub-jarvis": [],
+"hub-kalshi": [],
+"hub-money": [],
+"hub-plan": [
+"first"
+],
+"hub-research": [
+"first"
+],
+"hub-settings": [
+"first"
+],
+"hub-today": [
+"first"
+],
+"hub-worlds": [],
+"jarvis": [
+"first",
+"left"
+],
+"kalshi": [
+"first"
+],
+"ledger": [
+"left"
+],
+"mint": [
+"left"
+],
+"nq": [],
+"oikos": [
+"left"
+],
+"planner": [
+"left"
+],
+"polis": [],
+"symposium": [
+"left"
+]
+},
+"vapor": {
+"aegis": [
+"left"
+],
+"cities": [
+"left",
+"text"
+],
+"dash-atlas": [
+"text"
+],
+"dash-blitz": [
+"text"
+],
+"dash-desk": [
+"first",
+"left",
+"text"
+],
+"dash-home": [
+"first",
+"left",
+"text"
+],
+"dash-money": [
+"left",
+"text"
+],
+"dash-more": [
+"text"
+],
+"dash-zlarior": [
+"text"
+],
+"helios": [
+"focus",
+"left",
+"text"
+],
+"home": [
+"first"
+],
+"home-desk": [
+"first"
+],
+"hub-bots": [
+"first"
+],
+"hub-jarvis": [
+"first"
+],
+"hub-kalshi": [],
+"hub-money": [
+"first"
+],
+"hub-plan": [
+"first"
+],
+"hub-research": [
+"first"
+],
+"hub-settings": [
+"first"
+],
+"hub-today": [
+"first"
+],
+"hub-worlds": [
+"first"
+],
+"jarvis": [
+"first",
+"left"
+],
+"kalshi": [
+"first"
+],
+"ledger": [
+"left"
+],
+"mint": [
+"left"
+],
+"nq": [
+"focus"
+],
+"oikos": [
+"left"
+],
+"planner": [
+"left"
+],
+"polis": [],
+"symposium": [
+"left"
+]
+},
+"wallstreet": {
+"aegis": [
+"left"
+],
+"cities": [
+"left"
+],
+"dash-atlas": [],
+"dash-blitz": [],
+"dash-desk": [
+"first",
+"left"
+],
+"dash-home": [
+"first",
+"left"
+],
+"dash-money": [
+"left"
+],
+"dash-more": [],
+"dash-zlarior": [],
+"helios": [
+"left"
+],
+"home": [
+"first"
+],
+"home-desk": [
+"first"
+],
+"hub-bots": [
+"first"
+],
+"hub-jarvis": [],
+"hub-kalshi": [
+"first"
+],
+"hub-money": [],
+"hub-plan": [
+"first"
+],
+"hub-research": [
+"first"
+],
+"hub-settings": [
+"first"
+],
+"hub-today": [],
+"hub-worlds": [],
+"jarvis": [
+"first",
+"left"
+],
+"kalshi": [
+"first"
+],
+"ledger": [
+"left"
+],
+"mint": [
+"left"
+],
+"nq": [],
+"oikos": [
+"left"
+],
+"planner": [
+"left"
+],
+"polis": [],
+"symposium": [
+"left"
+]
+},
+"zen": {
+"aegis": [
+"left"
+],
+"cities": [
+"left",
+"text"
+],
+"dash-atlas": [
+"left"
+],
+"dash-blitz": [
+"left",
+"text"
+],
+"dash-desk": [
+"first",
+"left",
+"text"
+],
+"dash-home": [
+"first",
+"left",
+"text"
+],
+"dash-money": [
+"left",
+"text"
+],
+"dash-more": [
+"left",
+"text"
+],
+"dash-zlarior": [
+"left",
+"text"
+],
+"helios": [
+"focus",
+"left",
+"text"
+],
+"home": [
+"first"
+],
+"home-desk": [
+"first"
+],
+"hub-bots": [],
+"hub-jarvis": [
+"first"
+],
+"hub-kalshi": [
+"first"
+],
+"hub-money": [
+"first"
+],
+"hub-plan": [
+"first"
+],
+"hub-research": [],
+"hub-settings": [],
+"hub-today": [],
+"hub-worlds": [],
+"jarvis": [
+"first",
+"left",
+"money",
+"text"
+],
+"kalshi": [
+"first"
+],
+"ledger": [
+"left"
+],
+"mint": [
+"left"
+],
+"nq": [
+"focus"
+],
+"oikos": [
+"left"
+],
+"planner": [
+"left"
+],
+"polis": [
+"text"
+],
+"symposium": [
+"left"
+]
+}
+},
+"page_checks_after": {
+"live": {
+"aegis": {
+"after": [
+"ivory",
+"rgb(13, 20, 35)",
+"rgb(249, 247, 241)"
+],
+"back": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"ok": true
+},
+"cities": {
+"after": [
+"ivory",
+"rgb(13, 20, 35)",
+"rgb(249, 247, 241)"
+],
+"back": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"ok": true
+},
+"dash-home": {
+"after": [
+"ivory",
+"rgb(247, 244, 238)",
+"rgba(0, 0, 0, 0)"
+],
+"back": [
+"midnight",
+"rgb(7, 12, 21)",
+"rgba(0, 0, 0, 0)"
+],
+"before": [
+"midnight",
+"rgb(7, 12, 21)",
+"rgba(0, 0, 0, 0)"
+],
+"ok": true
+},
+"helios": {
+"after": [
+"ivory",
+"rgb(249, 247, 241)",
+"rgb(249, 247, 241)"
+],
+"back": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"ok": true
+},
+"home": {
+"after": [
+"ivory",
+"rgb(249, 247, 241)",
+"rgb(249, 247, 241)"
+],
+"back": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"ok": true
+},
+"hub-bots": {
+"after": [
+"ivory",
+"rgb(249, 247, 241)",
+"rgb(249, 247, 241)"
+],
+"back": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"ok": true
+},
+"hub-jarvis": {
+"after": [
+"ivory",
+"rgb(249, 247, 241)",
+"rgb(249, 247, 241)"
+],
+"back": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"ok": true
+},
+"hub-kalshi": {
+"after": [
+"ivory",
+"rgb(249, 247, 241)",
+"rgb(249, 247, 241)"
+],
+"back": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"ok": true
+},
+"hub-money": {
+"after": [
+"ivory",
+"rgb(249, 247, 241)",
+"rgb(249, 247, 241)"
+],
+"back": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"ok": true
+},
+"hub-plan": {
+"after": [
+"ivory",
+"rgb(249, 247, 241)",
+"rgb(249, 247, 241)"
+],
+"back": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"ok": true
+},
+"hub-research": {
+"after": [
+"ivory",
+"rgb(249, 247, 241)",
+"rgb(249, 247, 241)"
+],
+"back": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"ok": true
+},
+"hub-settings": {
+"after": [
+"ivory",
+"rgb(249, 247, 241)",
+"rgb(249, 247, 241)"
+],
+"back": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"ok": true
+},
+"hub-today": {
+"after": [
+"ivory",
+"rgb(249, 247, 241)",
+"rgb(249, 247, 241)"
+],
+"back": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"ok": true
+},
+"hub-worlds": {
+"after": [
+"ivory",
+"rgb(249, 247, 241)",
+"rgb(249, 247, 241)"
+],
+"back": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"ok": true
+},
+"jarvis": {
+"after": [
+"ivory",
+"rgb(247, 244, 238)",
+"rgb(247, 244, 238)"
+],
+"back": [
+"midnight",
+"rgb(11, 18, 32)",
+"rgb(11, 18, 32)"
+],
+"before": [
+"midnight",
+"rgb(11, 18, 32)",
+"rgb(11, 18, 32)"
+],
+"ok": true
+},
+"kalshi": {
+"after": [
+"ivory",
+"rgb(249, 247, 241)",
+"rgb(249, 247, 241)"
+],
+"back": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"ok": true
+},
+"ledger": {
+"after": [
+"ivory",
+"rgb(249, 247, 241)",
+"rgb(249, 247, 241)"
+],
+"back": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"ok": true
+},
+"mint": {
+"after": [
+"ivory",
+"rgb(13, 20, 35)",
+"rgb(249, 247, 241)"
+],
+"back": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"ok": true
+},
+"nq": {
+"after": [
+"ivory",
+"rgb(249, 247, 241)",
+"rgb(249, 247, 241)"
+],
+"back": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"ok": true
+},
+"oikos": {
+"after": [
+"ivory",
+"rgb(249, 247, 241)",
+"rgb(249, 247, 241)"
+],
+"back": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"ok": true
+},
+"planner": {
+"after": [
+"ivory",
+"rgb(249, 247, 241)",
+"rgb(249, 247, 241)"
+],
+"back": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"ok": true
+},
+"polis": {
+"after": [
+"ivory",
+"rgb(249, 247, 241)",
+"rgb(249, 247, 241)"
+],
+"back": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"ok": true
+},
+"symposium": {
+"after": [
+"ivory",
+"rgb(13, 20, 35)",
+"rgb(249, 247, 241)"
+],
+"back": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"ok": true
+}
+},
+"mix": {
+"bots:app": {
+"filed": "bots",
+"got": "terminal",
+"ok": true,
+"page": "nq",
+"url": "nq/?demo=1",
+"want": "terminal"
+},
+"bots:hub": {
+"filed": "bots",
+"got": "terminal",
+"ok": true,
+"page": "hub-bots",
+"url": "hub/index.html?h=bots",
+"want": "terminal"
+},
+"jarvis:app": {
+"filed": "jarvis",
+"got": "royal",
+"ok": true,
+"page": "jarvis",
+"url": "jarvis/",
+"want": "royal"
+},
+"jarvis:hub": {
+"filed": "jarvis",
+"got": "royal",
+"ok": true,
+"page": "hub-jarvis",
+"url": "hub/index.html?h=jarvis",
+"want": "royal"
+},
+"kalshi:app": {
+"filed": "kalshi",
+"got": "stocks",
+"ok": true,
+"page": "kalshi",
+"url": "kalshi/",
+"want": "stocks"
+},
+"kalshi:hub": {
+"filed": "kalshi",
+"got": "stocks",
+"ok": true,
+"page": "hub-kalshi",
+"url": "hub/index.html?h=kalshi",
+"want": "stocks"
+},
+"money:app": {
+"filed": "money",
+"got": "ivory",
+"ok": true,
+"page": "mint",
+"url": "mint/?demo=1",
+"want": "ivory"
+},
+"money:hub": {
+"filed": "money",
+"got": "ivory",
+"ok": true,
+"page": "hub-money",
+"url": "hub/index.html?h=money",
+"want": "ivory"
+},
+"plan:app": {
+"filed": "plan",
+"got": "forest",
+"ok": true,
+"page": "planner",
+"url": "planner/?demo=1",
+"want": "forest"
+},
+"plan:hub": {
+"filed": "plan",
+"got": "forest",
+"ok": true,
+"page": "hub-plan",
+"url": "hub/index.html?h=plan",
+"want": "forest"
+},
+"research:app": {
+"filed": "jarvis",
+"got": "royal",
+"ok": true,
+"page": "symposium",
+"url": "symposium/?demo=1",
+"want": "royal"
+},
+"research:hub": {
+"filed": "research",
+"got": "nord",
+"ok": true,
+"page": "hub-research",
+"url": "hub/index.html?h=research",
+"want": "nord"
+},
+"settings:app": {
+"filed": "settings",
+"got": "zen",
+"ok": true,
+"page": "settings",
+"url": "settings/",
+"want": "zen"
+},
+"settings:hub": {
+"filed": "settings",
+"got": "zen",
+"ok": true,
+"page": "hub-settings",
+"url": "hub/index.html?h=settings",
+"want": "zen"
+},
+"today:app": {
+"filed": "today",
+"got": "amber",
+"ok": true,
+"page": "helios",
+"url": "helios/?demo=1",
+"want": "amber"
+},
+"today:hub": {
+"filed": "today",
+"got": "amber",
+"ok": true,
+"page": "hub-today",
+"url": "hub/index.html?h=today",
+"want": "amber"
+},
+"worlds:app": {
+"filed": "worlds",
+"got": "aurora",
+"ok": true,
+"page": "cities",
+"url": "cities/?demo=1",
+"want": "aurora"
+},
+"worlds:hub": {
+"filed": "worlds",
+"got": "aurora",
+"ok": true,
+"page": "hub-worlds",
+"url": "hub/index.html?h=worlds",
+"want": "aurora"
+}
+}
+},
+"page_checks_before": {
+"live": {
+"aegis": {
+"after": [
+"ivory",
+"rgb(13, 20, 35)",
+"rgb(24, 21, 17)"
+],
+"back": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"ok": true
+},
+"cities": {
+"after": [
+"ivory",
+"rgb(13, 20, 35)",
+"rgb(20, 17, 14)"
+],
+"back": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(20, 17, 14)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(20, 17, 14)"
+],
+"ok": false
+},
+"dash-home": {
+"after": [
+"ivory",
+"rgb(247, 244, 238)",
+"rgba(0, 0, 0, 0)"
+],
+"back": [
+"midnight",
+"rgb(7, 12, 21)",
+"rgba(0, 0, 0, 0)"
+],
+"before": [
+"midnight",
+"rgb(7, 12, 21)",
+"rgba(0, 0, 0, 0)"
+],
+"ok": true
+},
+"helios": {
+"after": [
+"ivory",
+"rgb(249, 247, 241)",
+"rgb(249, 247, 241)"
+],
+"back": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"ok": true
+},
+"home": {
+"after": [
+"ivory",
+"rgb(249, 247, 241)",
+"rgb(249, 247, 241)"
+],
+"back": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"ok": true
+},
+"hub-bots": {
+"after": [
+"ivory",
+"rgb(249, 247, 241)",
+"rgb(249, 247, 241)"
+],
+"back": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"ok": true
+},
+"hub-jarvis": {
+"after": [
+"ivory",
+"rgb(249, 247, 241)",
+"rgb(249, 247, 241)"
+],
+"back": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"ok": true
+},
+"hub-kalshi": {
+"after": [
+"ivory",
+"rgb(249, 247, 241)",
+"rgb(249, 247, 241)"
+],
+"back": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"ok": true
+},
+"hub-money": {
+"after": [
+"ivory",
+"rgb(249, 247, 241)",
+"rgb(249, 247, 241)"
+],
+"back": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"ok": true
+},
+"hub-plan": {
+"after": [
+"ivory",
+"rgb(249, 247, 241)",
+"rgb(249, 247, 241)"
+],
+"back": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"ok": true
+},
+"hub-research": {
+"after": [
+"ivory",
+"rgb(249, 247, 241)",
+"rgb(249, 247, 241)"
+],
+"back": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"ok": true
+},
+"hub-settings": {
+"after": [
+"ivory",
+"rgb(249, 247, 241)",
+"rgb(249, 247, 241)"
+],
+"back": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"ok": true
+},
+"hub-today": {
+"after": [
+"ivory",
+"rgb(249, 247, 241)",
+"rgb(249, 247, 241)"
+],
+"back": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"ok": true
+},
+"hub-worlds": {
+"after": [
+"ivory",
+"rgb(249, 247, 241)",
+"rgb(249, 247, 241)"
+],
+"back": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"ok": true
+},
+"jarvis": {
+"after": [
+"ivory",
+"rgb(247, 244, 238)",
+"rgb(247, 244, 238)"
+],
+"back": [
+"midnight",
+"rgb(11, 18, 32)",
+"rgb(11, 18, 32)"
+],
+"before": [
+"midnight",
+"rgb(11, 18, 32)",
+"rgb(11, 18, 32)"
+],
+"ok": true
+},
+"kalshi": {
+"after": [
+"ivory",
+"rgb(24, 21, 17)",
+"rgb(24, 21, 17)"
+],
+"back": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"ok": true
+},
+"ledger": {
+"after": [
+"ivory",
+"rgb(24, 21, 17)",
+"rgb(21, 18, 15)"
+],
+"back": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(21, 18, 15)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(21, 18, 15)"
+],
+"ok": true
+},
+"mint": {
+"after": [
+"ivory",
+"rgb(13, 20, 35)",
+"rgb(24, 21, 17)"
+],
+"back": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"ok": true
+},
+"nq": {
+"after": [
+"ivory",
+"rgb(249, 247, 241)",
+"rgb(249, 247, 241)"
+],
+"back": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"ok": true
+},
+"oikos": {
+"after": [
+"ivory",
+"rgb(24, 21, 17)",
+"rgb(24, 21, 17)"
+],
+"back": [
+"midnight",
+"rgb(24, 21, 17)",
+"rgb(13, 20, 35)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"ok": true
+},
+"planner": {
+"after": [
+"ivory",
+"rgb(24, 21, 17)",
+"rgb(24, 21, 17)"
+],
+"back": [
+"midnight",
+"rgb(24, 21, 17)",
+"rgb(13, 20, 35)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"ok": true
+},
+"polis": {
+"after": [
+"ivory",
+"rgb(24, 21, 17)",
+"rgb(24, 21, 17)"
+],
+"back": [
+"midnight",
+"rgb(24, 21, 17)",
+"rgb(13, 20, 35)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"ok": true
+},
+"symposium": {
+"after": [
+"ivory",
+"rgb(24, 21, 17)",
+"rgb(24, 21, 17)"
+],
+"back": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"before": [
+"midnight",
+"rgb(13, 20, 35)",
+"rgb(13, 20, 35)"
+],
+"ok": true
+}
+},
+"mix": {
+"bots:app": {
+"filed": "bots",
+"got": "terminal",
+"ok": true,
+"page": "nq",
+"url": "nq/?demo=1",
+"want": "terminal"
+},
+"bots:hub": {
+"filed": "bots",
+"got": "terminal",
+"ok": true,
+"page": "hub-bots",
+"url": "hub/index.html?h=bots",
+"want": "terminal"
+},
+"jarvis:app": {
+"filed": "jarvis",
+"got": "royal",
+"ok": true,
+"page": "jarvis",
+"url": "jarvis/",
+"want": "royal"
+},
+"jarvis:hub": {
+"filed": "jarvis",
+"got": "royal",
+"ok": true,
+"page": "hub-jarvis",
+"url": "hub/index.html?h=jarvis",
+"want": "royal"
+},
+"kalshi:app": {
+"filed": "kalshi",
+"got": "stocks",
+"ok": true,
+"page": "kalshi",
+"url": "kalshi/",
+"want": "stocks"
+},
+"kalshi:hub": {
+"filed": "kalshi",
+"got": "stocks",
+"ok": true,
+"page": "hub-kalshi",
+"url": "hub/index.html?h=kalshi",
+"want": "stocks"
+},
+"money:app": {
+"filed": "money",
+"got": "ivory",
+"ok": true,
+"page": "mint",
+"url": "mint/?demo=1",
+"want": "ivory"
+},
+"money:hub": {
+"filed": "money",
+"got": "ivory",
+"ok": true,
+"page": "hub-money",
+"url": "hub/index.html?h=money",
+"want": "ivory"
+},
+"plan:app": {
+"filed": "plan",
+"got": "forest",
+"ok": true,
+"page": "planner",
+"url": "planner/?demo=1",
+"want": "forest"
+},
+"plan:hub": {
+"filed": "plan",
+"got": "forest",
+"ok": true,
+"page": "hub-plan",
+"url": "hub/index.html?h=plan",
+"want": "forest"
+},
+"research:app": {
+"filed": "jarvis",
+"got": "royal",
+"ok": true,
+"page": "symposium",
+"url": "symposium/?demo=1",
+"want": "royal"
+},
+"research:hub": {
+"filed": "research",
+"got": "nord",
+"ok": true,
+"page": "hub-research",
+"url": "hub/index.html?h=research",
+"want": "nord"
+},
+"settings:app": {
+"filed": "settings",
+"got": "zen",
+"ok": true,
+"page": "settings",
+"url": "settings/",
+"want": "zen"
+},
+"settings:hub": {
+"filed": "settings",
+"got": "zen",
+"ok": true,
+"page": "hub-settings",
+"url": "hub/index.html?h=settings",
+"want": "zen"
+},
+"today:app": {
+"filed": "today",
+"got": "amber",
+"ok": true,
+"page": "helios",
+"url": "helios/?demo=1",
+"want": "amber"
+},
+"today:hub": {
+"filed": "today",
+"got": "amber",
+"ok": true,
+"page": "hub-today",
+"url": "hub/index.html?h=today",
+"want": "amber"
+},
+"worlds:app": {
+"filed": "worlds",
+"got": "aurora",
+"ok": true,
+"page": "cities",
+"url": "cities/?demo=1",
+"want": "aurora"
+},
+"worlds:hub": {
+"filed": "worlds",
+"got": "aurora",
+"ok": true,
+"page": "hub-worlds",
+"url": "hub/index.html?h=worlds",
+"want": "aurora"
+}
+}
+}
+}

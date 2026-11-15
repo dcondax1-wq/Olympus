@@ -17,11 +17,11 @@
 <!-- ERGASTERION (OLYMPUS, AGORA look, 2026-11-10): the AI agent factory where you can see, first person, what every worker is doing, and what was learned from it. Outside the front door is the Builders' camp (builders.json: the build agents working right now, joined with git by the builder). Reads only published JSON (../home.json, ../money/index.json, the public kalshi.json feed, ../cronos/status.json, ../prometheus/forge.json, ../hephaestus/data.json and its own queue.json built by tools/ergasterion_build.py) and fixture.json (DEMO, never blank).
      Read only, paper only: it sends nothing and starts nothing. Text only through textContent / createElementNS. ergasterioncore.js = the pure rules (node-tested); ergasterion.js = the page; floor.js = the optional 3D floor (a separate module, so a device without WebGL keeps the flat plan). -->
 <script>(function () { var d = document.documentElement; try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
-<link rel="stylesheet" href="../olympus/olympus.css?v=o5">
+<link rel="stylesheet" href="../olympus/olympus.css?v=o6">
 <link rel="stylesheet" href="../olympus/agora.css?v=a4">
 <script src="../olympus/quiet-net.js?v=q6a"></script>
-<script src="../olympus/themes.js?v=o5"></script>
-<script src="../olympus/olympus.js?v=o6" data-app="ergasterion"></script>
+<script src="../olympus/themes.js?v=o6"></script>
+<script src="../olympus/olympus.js?v=o7" data-app="ergasterion"></script>
 <script src="../olympus/intro-app.js?v=i5" defer></script>
 <script src="../olympus/a11y.js" defer></script>
 <script src="../olympus/agora-ui.js?v=2" defer></script>
@@ -173,7 +173,7 @@
   <p class="foot" id="foot">Ergasterion reads the site's own published files and sends nothing. It never starts a worker, never trades and never moves money: paper and suggestions only. A lamp is honest: green ran recently, blue is quiet, amber is old or missing data, red failed, grey is sample data. Every lesson is a sentence lifted from a file, with that file named.</p>
 </main>
 <!-- the shared people kit (docs/PERSONA_API.md) is optional: without it Ergasterion uses its own built-in chat card -->
-<script type="module" src="../olympus/people.js?v=p2"></script>
+<script type="module" src="../olympus/people.js?v=p3"></script>
 <script type="module" src="floorload.js?v=a5"></script>
 <script type="module" src="ergasterion.js?v=r7"></script>
 </body>

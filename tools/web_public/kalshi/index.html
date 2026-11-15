@@ -23,13 +23,27 @@
 <script>(function () { var d = document.documentElement; d.setAttribute('data-theme', 'kalshi');
   /* inside Jarvis (a frame under its bar) the notch is Jarvis's: no second top inset */
   try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
-<link rel="stylesheet" href="kalshi.css?v=k26">
+<link rel="stylesheet" href="kalshi.css?v=k27">
 <!-- OLYMPUS theme (../olympus/themes.js, key 'olympus.theme', picked on the Gate's Look row or in Jarvis's Look sheet): every colour of
-     kalshi.css reads a theme slot with its AGORA colour as the fallback (tools/theme_tokenize.py), on the 'stage' palette (dark by design:
-     a light theme gives its dark variant here). Async, never waited on; the default paints nothing (today's look). -->
+     kalshi.css reads a theme slot with its AGORA colour as the fallback (tools/theme_tokenize.py), on the full 'page' palette since
+     2026-11-14 (team T2: a light look is light here too, like everywhere). The <head> paints the engine's copy of the look before the first
+     frame (themes.js FIRST PAINT); the engine itself is async, never waited on; the default paints nothing (today's look). -->
+<script>/* the OLYMPUS look from the first frame (olympus/themes.js FIRST PAINT: the look Kalshi gets, from the engine's copy) */
+(function (P, W) { try {
+  var d = document.documentElement, ls = window.localStorage, g = ls.getItem('olympus.theme') || 'agora', m = JSON.parse(ls.getItem('olympus.themeMix') || 'null'), on = [], k;
+  if (g === 'olympus' && ls.getItem('olympus.theme.v') !== '2') g = 'agora';
+  if (m) { var dd = (m.of && m.of[P]) || (P === 'today' ? 'trading' : ''); g = (m.app && m.app[P]) || (dd && m.district && m.district[dd]) || g; }
+  var c = g === 'agora' ? null : JSON.parse(ls.getItem('olympus.theme.look.' + W + '.' + g) || 'null');
+  if (!c || !c.vars) return;
+  for (k in c.vars) { d.style.setProperty(k, c.vars[k]); on.push(k); }
+  if (c.jarvis && P === 'jarvis') for (k in c.jarvis) { d.style.setProperty(k, c.jarvis[k]); on.push(k); }
+  d.setAttribute('data-oly-theme', g); d.setAttribute('data-oly-scheme', c.scheme === 'light' ? 'light' : 'dark'); if (c.style) d.setAttribute('data-oly-style', c.style);
+  window.__olyPaint = on;
+  var mt = document.querySelector('meta[name="theme-color"]'); if (mt && c.meta) { mt.setAttribute('data-oly-own', mt.getAttribute('content') || ''); mt.setAttribute('content', c.meta); }
+} catch (e) { return; } })('kalshi', 'page');</script>
 <script>(function () {
-  function go() { var T = window.OLYMPUS_THEMES; if (T) T.apply('stage', { meta: true }); }
-  var s = document.createElement('script'); s.src = '../olympus/themes.js?v=o5'; s.async = true; s.onload = go; document.head.appendChild(s);
+  function go() { var T = window.OLYMPUS_THEMES; if (T) T.apply('page', { meta: true }); }
+  var s = document.createElement('script'); s.src = '../olympus/themes.js?v=o6'; s.async = true; s.onload = go; document.head.appendChild(s);
 })();</script>
 </head>
 <body>
@@ -54,7 +68,7 @@
 </main>
 <script src="../olympus/quiet-net.js?v=q6a" data-fresh="raw:kalshi-feed,api:kalshi-feed,site:kalshi.json"></script>
 <script src="../olympus/gate-nav.js?v=g3" defer></script><!-- the way back to the Gate + Go to (olympus/gate-nav.js) -->
-<script src="kfx.js?v=k25"></script>
-<script src="kalshi.js?v=k25"></script>
+<script src="kfx.js?v=k26"></script>
+<script src="kalshi.js?v=k27"></script>
 </body>
 </html>

@@ -11,7 +11,7 @@ import { generate, validateSpec, Picker, evalExpr, parseExpr } from './generator
 import { mountWorld } from './world.js?v=w3';
 import { cityRoutes } from './routes.js?v=r3';
 import { cityResultPage, planCityNetwork } from './network-layout.js?v=n1';
-import { openDistrictWorld } from './district-world.js?v=d2';
+import { openDistrictWorld } from './district-world.js?v=d3';
 import { insight } from './insight.js';
 import { randomSpec, seedDataset, newSeed, cleanSeed } from './procedural.js';
 import { AgoraMap } from './agoramap.js?v=g5';

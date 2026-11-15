@@ -79,7 +79,9 @@ function itemRow(o) {
   for (const a of o.actions || []) li.appendChild(a);
   return li;
 }
-const catColor = (id) => (C.CATS.find((c) => c.id === id) || C.CATS[6]).color;
+// a category's colour follows the OLYMPUS look (2026-11-14, team T2): its AGORA colour is the fallback, so the default is unchanged
+const CAT_SLOT = { '#c8a24a': 'a8', '#4b7a99': 'info', '#9c6b3c': 'a5', '#7f8a52': 'g6', '#c96a4a': 'r8', '#e0b060': 'warn', '#9a8f7d': 'n22' };
+const catColor = (id) => { const c = (C.CATS.find((x) => x.id === id) || C.CATS[6]).color; return CAT_SLOT[c] ? `var(--oly-th-${CAT_SLOT[c]}, ${c})` : c; };
 const projName = (id) => { const p = S.state.projects.find((x) => x.id === id); return p ? p.name : ''; };
 function taskMeta(t) {
   const bits = [];
@@ -527,7 +529,7 @@ function dayStrip(day) {
   w.setAttribute('aria-label', `The day from 00:00 to 24:00. ${bl.length ? 'Bots may enter 02:00 to 15:30. ' : ''}${evs.length} timed item${evs.length === 1 ? '' : 's'}.`);
   const pc = (hm) => (C.hmMins(hm) / 1440) * 100;
   for (const b of bl) { if (b.id === 'asia' || b.id === 'break') continue; const s = h('i', 'seg-' + b.tone); s.style.left = pc(b.from) + '%'; s.style.width = Math.max(1, pc(b.to) - pc(b.from)) + '%'; s.title = b.label; w.appendChild(s); }
-  for (const a of evs) { const t = h('b', 'tick-' + a.kind); t.style.left = pc(a.start) + '%'; t.style.background = a.kind === 'event' ? catColor(a.cat) : '#cfc4b2'; w.appendChild(t); }
+  for (const a of evs) { const t = h('b', 'tick-' + a.kind); t.style.left = pc(a.start) + '%'; t.style.background = a.kind === 'event' ? catColor(a.cat) : 'var(--oly-th-n30, #cfc4b2)'; w.appendChild(t); }
   const wrap = h('div', 'stripwrap'); wrap.appendChild(w);
   const lab = h('div', 'striplab'); for (const x of ['00', '06', '12', '18', '24']) lab.appendChild(h('span', '', x)); wrap.appendChild(lab);
   if (day === S.today) { const n = C.sessionState(nowDate()); const m = h('em', 'nowmark'); m.style.left = (n.mins / 1440) * 100 + '%'; w.appendChild(m); }

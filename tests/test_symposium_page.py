@@ -30,8 +30,8 @@ def test_static():
     check("a. the page: the hall first, then new faces, then six tabs (Meet, Round table, Stand-up, Debate, Requests, Me), each a real tab with its panel",
           html.index('id="hallCard"') < html.index('id="newCard"') < html.index('id="tabs"') and all(f'id="tab-{t}"' in html and f'id="p-{t}"' in html and f'aria-controls="p-{t}"' in html for t in ("meet", "table", "standup", "debate", "requests", "me"))
           and html.count('role="tab"') == 6 and html.count('role="tabpanel"') == 6)
-    check("a. the people come from the shared kit (olympus/people.js?v=p2) and its stylesheet; the 3D hall is optional (hallload.js) and uses the render core, three r160 and people3d.js",
-          "from '../olympus/people.js?v=p2'" in js and "../olympus/people.css?v=p2" in html and 'src="hallload.js' in html and "../olympus/render.js" in hall and "../jarvis/three.module.min.js" in hall and "../olympus/people3d.js" in hall
+    check("a. the people come from the shared kit (olympus/people.js?v=p3) and its stylesheet; the 3D hall is optional (hallload.js) and uses the render core, three r160 and people3d.js",
+          "from '../olympus/people.js?v=p3'" in js and "../olympus/people.css?v=p3" in html and 'src="hallload.js' in html and "../olympus/render.js" in hall and "../jarvis/three.module.min.js" in hall and "../olympus/people3d.js" in hall
           and "figureInstanced" in hall)
     check("a. the 3D hall is calm: bloom <= .25, no neon colours, warm background and fog; LITE or no WebGL keeps the portrait wall", re.search(r"strength: 0\.(0\d|1\d|2[0-5]?)\b", hall) is not None and not AK.BANNED_LOOK.search(hall)
           and "'low' || q === 'off'" in hall and not re.search(r"#(?:0ff|00f|f0f|0f0)\b|#00ffff|#ff00ff", hall, re.I) and 'html[data-oly-lite="1"] .stage { display: none; }' in css)

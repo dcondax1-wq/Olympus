@@ -71,7 +71,7 @@ const at = {}, ls = {};
 const root = { style: { setProperty(k, v) { st[k] = v; }, removeProperty(k) { delete st[k]; }, getPropertyValue(k) { return st[k] || ''; } },
   setAttribute(k, v) { at[k] = v; }, getAttribute(k) { return k in at ? at[k] : null; }, removeAttribute(k) { delete at[k]; } };
 vm.runInNewContext(fs.readFileSync(process.argv[1], 'utf8'), { window: w, location: { pathname: '/nq/' }, document: { documentElement: root, body: null, addEventListener() {}, querySelector() { return null; } },
-  localStorage: { getItem(k) { return k in ls ? ls[k] : null; }, setItem(k, v) { ls[k] = String(v); }, removeItem(k) { delete ls[k]; } } });
+  localStorage: { getItem(k) { return k in ls ? ls[k] : null; }, setItem(k, v) { ls[k] = String(v); }, removeItem(k) { delete ls[k]; }, key(i) { return Object.keys(ls)[i]; }, get length() { return Object.keys(ls).length; } } });
 const T = w.OLYMPUS_THEMES;
 // the mix: app beats district beats the one look
 ls['olympus.theme'] = 'midnight'; ls['olympus.theme.v'] = '2';
@@ -81,7 +81,22 @@ T.apply('page'); mixed.style = at['data-oly-style'] || null; mixed.case = st['--
 T.set('ivory'); mixed.afterSet = [T.id(), 'olympus.themeMix' in ls, at['data-oly-style'] || null];
 T.set('agora'); mixed.afterDefault = [Object.keys(st).filter((k) => k.indexOf('--oly-th-') === 0).length, at['data-oly-style'] || null];
 const slots = {}; T.list().forEach((t) => { slots[t.id] = { page: T.slots(t.id, 'page'), stage: T.slots(t.id, 'stage') }; });
-process.stdout.write(JSON.stringify({ TOKENS: T.TOKENS, JARVIS: T.JARVIS, GRID: T.GRID, STYLE: T.STYLE, plain: T.plain().map((t) => t.id), mixed, slots,
+// T2 (2026-11-14): the extra slots of every look (info blue, ring, shadows), the <head> copies a pick writes, the preview, no-blur
+const pick = (o, ks) => { const r = {}; ks.forEach((k) => { r[k] = o[k]; }); return r; };
+const EXK = ['--oly-th-info', '--oly-th-infot', '--oly-th-ring', '--oly-th-shadow', '--oly-th-e1', '--oly-th-n3', '--oly-th-n4', '--oly-th-n5', '--oly-th-n7', '--oly-th-card-bg', '--oly-th-card-blur'];
+const extras = {}; T.list().forEach((t) => { extras[t.id] = { page: pick(T.paintOf(t.id, 'page').vars, EXK), stage: pick(T.paintOf(t.id, 'stage').vars, EXK) }; });
+const lookKeys = () => Object.keys(ls).filter((k) => k.indexOf('olympus.theme.look.') === 0).sort();
+const t2 = {};
+T.set('midnight'); t2.afterSet = lookKeys();
+T.setMix({ district: { bots: 'amber', money: 'stocks' }, app: { gate: 'aurora' }, of: { nq: 'bots' } }); t2.afterMix = lookKeys();
+T.set('ivory'); t2.afterOne = lookKeys();
+T.apply('page'); const before = st['--oly-th-n3'];
+t2.preview = [T.preview('carbon'), at['data-oly-theme'], st['--oly-th-n3'] !== before, ls['olympus.theme'], lookKeys().indexOf('olympus.theme.look.page.carbon') < 0];
+t2.previewEnd = [T.preview(null), at['data-oly-theme'], st['--oly-th-n3'] === before];
+T.noblur(true); const nb = T.paintOf('aurora', 'page').vars; t2.noblur = [nb['--oly-th-card-blur'], nb['--oly-th-card-bg']]; T.noblur(false);
+t2.blur = T.paintOf('aurora', 'page').vars['--oly-th-card-blur'];
+T.set('agora'); t2.afterDefault = lookKeys();
+process.stdout.write(JSON.stringify({ TOKENS: T.TOKENS, JARVIS: T.JARVIS, GRID: T.GRID, STYLE: T.STYLE, plain: T.plain().map((t) => t.id), mixed, slots, extras, t2,
   groups: T.groups().map((g) => [g.id, g.themes.map((t) => t.id)]),
   styles: T.list().map((t) => [t.id, t.style || null, t.feel || null]), list: T.list(), stage: T.list().map((t) => T.tokens(t.id, 'stage')),
   mix0: T.mix('#7fe9ff', '#ff0000', 0), mixN: T.mix(0x02030a, '#ff0000', 0), harm0: T.harmonise('#ffcf5a', '#4da3ff', 0) }));
@@ -172,7 +187,7 @@ def test_static(data):
         test_reach_data(data)
     for app in APPS:
         html = read(WEB, app, "index.html")
-        i_th, i_js = html.find('<script src="../olympus/themes.js?v=o5"></script>'), html.find(f'../olympus/olympus.js?v=o6" data-app="{app}"')
+        i_th, i_js = html.find('<script src="../olympus/themes.js?v=o6"></script>'), html.find(f'../olympus/olympus.js?v=o7" data-app="{app}"')
         check(f"a. {app}: loads the theme engine just before the kit", 0 < i_th < i_js, (i_th, i_js))
     for app in THREE_APPS:
         code = "".join(read(p) for p in glob.glob(os.path.join(WEB, app, "*.js")))
@@ -181,10 +196,10 @@ def test_static(data):
               or ("onTheme(" in code and ("applyTheme" in code or "setAccent" in code)))   # 2026-11-03 day: the apps' own hooks
     jv = read(WEB, "jarvis", "index.html")
     check("a. Jarvis: the engine loads async (never part of the start), the <head> paints its copy, the Look sheet has the tiles",
-          '<script src="../olympus/themes.js?v=o5" id="olyThemesJs" async></script>' in jv and "g('olympus.theme.paint')" in jv
+          '<script src="../olympus/themes.js?v=o6" id="olyThemesJs" async></script>' in jv and "('jarvis', 'page');" in jv
           and 'id="olyThemes"' in jv and "function setOlyTheme(" in jv and "t.apply('page', { jarvis: true, cache: true })" in jv)
     check("a. Zenith and Kalshi load the engine (async) and apply the tokens on their own surfaces",
-          "s.src = 'olympus/themes.js?v=o5'" in read(WEB, "index.html") and "s.src = '../olympus/themes.js?v=o5'" in read(WEB, "kalshi", "index.html"))
+          "s.src = 'olympus/themes.js?v=o6'" in read(WEB, "index.html") and "s.src = '../olympus/themes.js?v=o6'" in read(WEB, "kalshi", "index.html"))
 
 
 # ------------------------------------------------------------------ b. contrast
@@ -505,7 +520,12 @@ import theme_tokenize as TOK  # noqa: E402
 
 TOKENIZED = ["olympus/agora.css", "olympus/agora-apps.css", "gate/gate.css", "gate/index.html", "index.html", "zenith.css", "zenith_agora.css", "polish.css",
              "nq/nq.css", "helios/helios.css", "polis/polis.css", "olympus/polis.css", "jarvis/jarvis.css", "jarvis/home3d.css", "kalshi/kalshi.css",
-             "olympus/gate-nav.js", "launcher.js", "olympus/polis-life.js", "jarvis/switcher.js", "jarvis/copilot-card.js", "hub/hub.css", "hub/index.html"]
+             "olympus/gate-nav.js", "launcher.js", "olympus/polis-life.js", "jarvis/switcher.js", "jarvis/copilot-card.js", "hub/hub.css", "hub/index.html",
+             # T2 (2026-11-14, "lock down the looks"): every app on the QA matrix, the dashboard's injected sheets, the kit's own
+             "aegis/aegis.css", "mint/mint.css", "oikos/oikos.css", "ledger/ledger.css", "planner/planner.css", "cities/world.css", "cities/agora-cities.css",
+             "symposium/symposium.css", "olympus/people.css", "settings/settings.css", "olympus/olympus.css", "holo.css", "mission.css", "liveview.css",
+             "statuscore.js", "realcore.js", "blitzcore.js", "zenithcore.js", "sessioncore.js", "moneynowcore.js", "boardcore.js",
+             "liveview.js", "jarvis/assist-ui.js", "goals.js", "features.js", "more.js", "hub.js", "olympus/glossary-lite.js"]
 LAYER = "style themes (olympus/themes.js 'style', 2026-11-14)"
 
 
@@ -737,8 +757,11 @@ def test_same_as_before(br):
     o_raw, o_now = (f"http://127.0.0.1:{s.server_address[1]}" for s in (raw, norm))
     DUMPS = """() => { const P = ['color', 'background-color', 'background-image', 'border-top-color', 'border-bottom-color', 'border-top-left-radius', 'box-shadow', 'font-family', 'font-weight', 'text-transform', 'letter-spacing', 'outline-color', 'fill', 'stroke'];
         const out = []; for (const e of [document.documentElement, ...document.querySelectorAll('body, body *')]) { if (e.closest('svg') && e.tagName !== 'svg') continue; const cs = getComputedStyle(e);
-          out.push(e.tagName + '.' + (typeof e.className === 'string' ? e.className : '') + '|' + P.map((k) => cs.getPropertyValue(k)).join('|')); } return out; }"""
-    for name, path in (("gate", "/gate/" + GATE_Q), ("nq", "/nq/?demo=1"), ("helios", "/helios/?demo=1"), ("polis", "/polis/?demo=1"), ("kalshi", "/kalshi/"), ("dashboard", "/"), ("jarvis", "/jarvis/")):
+          const own = [...e.childNodes].filter((n) => n.nodeType === 3).map((n) => n.nodeValue).join('').trim().replace(/\\s+/g, ' ').replace(/[|]/g, '/').slice(0, 24);
+          out.push(e.tagName + '.' + (typeof e.className === 'string' ? e.className : '') + '\\u0001' + own + '|' + P.map((k) => cs.getPropertyValue(k)).join('|')); } return out; }"""
+    for name, path in (("gate", "/gate/" + GATE_Q), ("nq", "/nq/?demo=1"), ("helios", "/helios/?demo=1"), ("polis", "/polis/?demo=1"), ("kalshi", "/kalshi/"), ("dashboard", "/"), ("jarvis", "/jarvis/"),
+                       ("hub", "/hub/index.html?h=money"), ("aegis", "/aegis/?demo=1"), ("mint", "/mint/?demo=1"), ("oikos", "/oikos/?demo=1"), ("ledger", "/ledger/?demo=1"),
+                       ("planner", "/planner/?demo=1"), ("cities", "/cities/?demo=1"), ("symposium", "/symposium/?demo=1"), ("settings", "/settings/")):
         res = []
         for origin in (o_raw, o_now):
             ctx = br.new_context(viewport={"width": 390, "height": 844}, is_mobile=True, has_touch=True, service_workers="block", reduced_motion="reduce")
@@ -753,19 +776,208 @@ def test_same_as_before(br):
             except Exception as e:
                 res.append(["error: " + str(e)[:200]])
             ctx.close()
-        def group(rows):                         # element kind (tag.class) -> the set of computed looks it has (a page that loads cards late may differ in count)
+        def group(rows, own):                    # element kind (tag.class) [+ its own text] -> the set of computed looks it has
             g = {}
             for r in rows:
                 k, _, v = r.partition("|")
-                g.setdefault(k, set()).add(v)
+                kind, _, txt = k.partition("\x01")
+                g.setdefault((kind, txt) if own else kind, set()).add(v)
             return g
-        ga, gb = group(res[0]), group(res[1])
-        both = [k for k in ga if k in gb]
-        diff = {k: (sorted(ga[k] - gb[k])[:1], sorted(gb[k] - ga[k])[:1]) for k in both if ga[k] != gb[k]}
+        ka, kb = group(res[0], False), group(res[1], False)
+        both = [k for k in ka if k in kb]
+        # each element against the same element on the other page (its kind and its own text): a card that arrives late on one page only (a page
+        # that loads cards late differs in count) is no difference; elements without text of their own are compared by kind, as before
+        ga, gb = group(res[0], True), group(res[1], True)
+        diff = {k[0] + (" '" + k[1] + "'" if k[1] else ""): (sorted(ga[k] - gb[k])[:1], sorted(gb[k] - ga[k])[:1]) for k in ga if k in gb and ga[k] != gb[k]}
         check(f"c. {name}: on the default, every kind of element computes the same colours / borders / shadows / fonts / radius as the page with every slot replaced by its AGORA literal ({len(both)} kinds, {len(res[1])} elements)",
-              len(both) > 20 and len(both) >= 0.9 * max(len(ga), len(gb)) and not diff, {"kinds": (len(ga), len(gb), len(both)), "diff": dict(list(diff.items())[:2])})
+              len(both) > 20 and len(both) >= 0.9 * max(len(ka), len(kb)) and not diff, {"kinds": (len(ka), len(kb), len(both)), "diff": dict(list(diff.items())[:2])})
     raw.shutdown()
     norm.shutdown()
+
+
+# ------------------------------------------------------------------ t2. lock down the looks (2026-11-14, team T2): no flash, every page, the picker, QA
+FIRST_PAGES = [("gate/index.html", "('gate', 'page');"), ("hub/index.html", "(document.documentElement.getAttribute('data-oly-page') || 'hub', 'page');"),
+               ("index.html", "('today', (function () {"), ("jarvis/index.html", "('jarvis', 'page');"), ("kalshi/index.html", "('kalshi', 'page');")]
+LIGHT_APPS = ["nq", "helios", "aegis", "mint", "oikos", "ledger", "planner", "polis", "cities", "symposium"]
+
+
+def test_t2_static(data):
+    js = read(KIT, "themes.js")
+    m = re.search(r"FIRST PAINT >>>\n(.*?)\n \* <<< FIRST PAINT", js, re.S)
+    snip = m.group(1) if m else "?"
+    bad = [p for p, call in FIRST_PAGES if snip + call not in read(WEB, p)]
+    check("t2. the pages whose engine arrives after their first frame (the Gate, the hubs, the dashboard, Jarvis, Kalshi) carry themes.js's FIRST PAINT "
+          "copy letter for letter, called with their page id: the look they get is on the first frame", m and not bad, bad)
+    light = [a for a in LIGHT_APPS if "data-oly-light" not in read(WEB, a, "index.html").split(">", 2)[1]]
+    check("t2. every app on the look QA matrix is checked in light (<html data-oly-light>): a light look is light on every page, not dark on half of them",
+          not light, light)
+    kal = read(WEB, "kalshi", "index.html")
+    check("t2. Kalshi takes the full page palette (a light look is light there too) and its old token hook no longer clears the engine's data-oly-theme",
+          "T.apply('page', { meta: true })" in kal and "e.newValue.charAt(0) !== '{'" in read(WEB, "kalshi", "kfx.js"))
+    hs = read(KIT, "hero-stage.js")
+    check("t2. the hero scenes (olympus/hero-stage.js: NQ, Aegis, Helios, Mint ...) lean their painted sky, fog and light toward the look (lean(), O.onTheme, back on the default)",
+          "export function lean(pal, t)" in hs and "O.onTheme((t) => paintPal(lean(appSky, t)))" in hs and "olympus:theme-default" in hs)
+    if not data:
+        return
+    low = {}
+    for tid in PLAIN[1:] + STYLED + OLD[1:]:
+        for where in ("page", "stage"):
+            x = data["extras"][tid][where]
+            surf = [x[k] for k in ("--oly-th-n3", "--oly-th-n4", "--oly-th-n5", "--oly-th-n7")]
+            for k, need, on in (("--oly-th-infot", 4.5, surf), ("--oly-th-info", 3, surf[:2]), ("--oly-th-ring", 3, surf[:3])):
+                v = min(contrast(x[k], s) for s in on)
+                if v < need:
+                    low[f"{tid}/{where} {k}"] = round(v, 2)
+    check(f"t2. the extra slots read on every look ({len(PLAIN) - 1 + len(STYLED) + len(OLD) - 1} x page / stage): the info blue (text 4.5:1, fill 3:1) and the keyboard focus ring "
+          "(3:1) on the page, the panels and the raised panels", not low, low)
+    lightsh = [t for t in LIGHT if t != "athena" and "rgba(0, 0, 0, .35)" in data["extras"][t]["page"]["--oly-th-shadow"]]
+    check("t2. a light look's shadows are soft and ink-tinted (--oly-th-shadow / --oly-th-e1..e3), never AGORA's black .35", not lightsh and all(
+        data["extras"][t]["page"]["--oly-th-e1"] for t in LIGHT if t != "athena"), lightsh)
+    t2 = data["t2"]
+    key = lambda w, i: f"olympus.theme.look.{w}.{i}"     # noqa: E731
+    check("t2. a pick writes the <head> copy of every look in use (page + stage): one look -> its two, a mix -> each of its looks + the one look, a new pick drops the rest, the default keeps none",
+          t2["afterSet"] == [key("page", "midnight"), key("stage", "midnight")]
+          and t2["afterMix"] == sorted(key(w, i) for w in ("page", "stage") for i in ("amber", "aurora", "midnight", "stocks"))
+          and t2["afterOne"] == [key("page", "ivory"), key("stage", "ivory")] and t2["afterDefault"] == [], t2)
+    check("t2. preview(id) shows a look on this page only (painted, nothing stored, no copy written) and preview(null) puts the chosen look back",
+          t2["preview"] == ["carbon", "carbon", True, "ivory", True] and t2["previewEnd"] == [None, "ivory", True], (t2["preview"], t2["previewEnd"]))
+    check("t2. noblur(true) (P2's cheap path): a frosted look keeps its cards, as one solid colour without the blur pass; off again, the frost is back",
+          t2["noblur"][0] == "none" and re.fullmatch(r"#[0-9a-f]{6}", t2["noblur"][1] or "") and "blur(" in t2["blur"], t2)
+
+
+def pick_on(p, origin, look, where="/hub/index.html?h=settings"):
+    """the owner's way: OLYMPUS_THEMES.set on a page of the site (here a hub page, which loads the engine in its <head>)"""
+    p.goto(origin + where, wait_until="load")
+    p.wait_for_function("() => !!window.OLYMPUS_THEMES", timeout=30000)
+    p.evaluate("(id) => window.OLYMPUS_THEMES.set(id)", look)
+
+
+def look_page(br, origin, set_id, url, init="", size=(390, 844)):
+    """a tab where the owner picked set_id, then opened url"""
+    ctx = br.new_context(viewport={"width": size[0], "height": size[1]}, device_scale_factor=1, is_mobile=True, has_touch=True, service_workers="block", reduced_motion="reduce")
+    ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith(origin) else r.abort())
+    ctx.add_init_script("try { sessionStorage.setItem('jarvis.booted', '1'); localStorage.setItem('jarvis.seen', JSON.stringify('j9')); localStorage.setItem('jarvis.intro', 'off');"
+                        " localStorage.setItem('olympus.intro', 'off'); } catch (e) {}" + init)
+    p = ctx.new_page()
+    p.set_default_timeout(60000)
+    errs: list = []
+    p.on("pageerror", lambda e: errs.append(str(e)))
+    pick_on(p, origin, set_id)
+    if url:
+        p.goto(origin + url, wait_until="load")
+    return ctx, p, errs
+
+
+FIRST_JS = """(() => { const rec = window.__t2first = { first: null }; requestAnimationFrame(() => { const r = document.documentElement;
+  rec.first = { theme: r.getAttribute('data-oly-theme'), bg: getComputedStyle(r).backgroundColor, body: document.body ? getComputedStyle(document.body).backgroundColor : '' }; }); })();"""
+
+
+def test_first_frame(br, origin):
+    """every page wears the look from its first frame, also right after the owner picked another one (the copy a page keeps of its last look is stale)"""
+    for name, path in (("gate", "/gate/" + GATE_Q), ("hub", "/hub/index.html?h=money"), ("dashboard", "/"), ("jarvis", "/jarvis/"), ("kalshi", "/kalshi/"), ("nq", "/nq/?demo=1")):
+        ctx, p, errs = look_page(br, origin, "ivory", path, FIRST_JS)
+        try:
+            p.wait_for_function("() => document.documentElement.getAttribute('data-oly-theme') === 'ivory'", timeout=30000)
+            p.wait_for_timeout(500)                                     # the page keeps its copy of Ivory
+            pick_on(p, origin, "midnight")                               # then the owner picks Midnight elsewhere
+            p.goto(origin + path, wait_until="load")
+            p.wait_for_function("() => document.documentElement.getAttribute('data-oly-theme') === 'midnight'", timeout=30000)
+            first = p.evaluate("() => window.__t2first.first")
+            check(f"t2. {name}: right after a new pick (Ivory -> Midnight) the very first frame already wears Midnight, not AGORA nor the look before",
+                  first and first["theme"] == "midnight", first)
+        except Exception as e:
+            check(f"t2. {name}: first frame", False, e)
+        ctx.close()
+
+
+def test_picker(br, origin):
+    ctx, p, errs = look_page(br, origin, "agora", "/gate/" + GATE_Q, size=(375, 812))
+    try:
+        gate_ready(p)
+        p.evaluate("() => OLYMPUS_THEMES.set('midnight')")
+        p.wait_for_timeout(300)
+        now = p.evaluate("""() => { const n = document.getElementById('lookNow'); return { name: n && n.querySelector('b').textContent, on: [...document.querySelectorAll('#looks .g-sw .g-swon')].map((x) => x.parentNode.dataset.themeId),
+            checked: [...document.querySelectorAll('#looks .g-sw[aria-checked="true"]')].map((x) => x.dataset.themeId), sx: document.documentElement.scrollWidth - innerWidth,
+            small: [...document.querySelectorAll('#lookSec button, #lookSec input')].filter((b) => b.offsetParent && b.getBoundingClientRect().height < 44).map((b) => b.id || b.className) }; }""")
+        check("t2. the picker at 375 px: the look on now in a card at the top (Midnight), its swatch marked 'On' and checked, every button and the search 44 px+, no sideways scroll",
+              now["name"] == "Midnight" and now["on"] == ["midnight"] and now["checked"] == ["midnight"] and now["sx"] <= 0 and not now["small"], now)
+        p.fill("#lookQ", "navy")
+        p.wait_for_timeout(150)
+        found = p.evaluate("() => [...document.querySelectorAll('#looks .g-sw')].map((b) => b.dataset.themeId)")
+        p.fill("#lookQ", "zzzz")
+        p.wait_for_timeout(150)
+        none = p.evaluate("() => [document.querySelectorAll('#looks .g-sw').length, !!document.querySelector('#looks .g-lknone')]")
+        p.fill("#lookQ", "")
+        check("t2. search by name or mood: 'navy' finds Midnight and Royal; a word no look has says so (no empty grid)", "midnight" in found and "royal" in found and len(found) < 8 and none == [0, True], (found, none))
+        p.dispatch_event('#looks .g-sw[data-theme-id="ivory"]', "pointerdown", {"pointerType": "touch", "button": 0, "isPrimary": True})
+        p.wait_for_timeout(600)
+        pv = p.evaluate("""() => ({ theme: document.documentElement.dataset.olyTheme, stored: localStorage.getItem('olympus.theme'), bar: !document.getElementById('lookBar').hidden,
+            text: document.getElementById('lookBar').textContent, previewing: OLYMPUS_THEMES.previewing() })""")
+        p.dispatch_event('#looks .g-sw[data-theme-id="ivory"]', "pointerup", {"pointerType": "touch", "button": 0, "isPrimary": True})
+        check("t2. press and hold a swatch (Ivory): the page shows Ivory at once, nothing stored ('olympus.theme' still midnight), the bar at the thumb says it is a preview",
+              pv["theme"] == "ivory" and pv["stored"] == "midnight" and pv["bar"] and "Preview: Ivory" in pv["text"] and pv["previewing"] == "ivory", pv)
+        p.click("#lookBar .g-lkstar")
+        p.wait_for_timeout(150)
+        fav = p.evaluate("() => [JSON.parse(localStorage.getItem('olympus.theme.fav') || '[]'), [...document.querySelectorAll('#looks .g-lookg')].map((h) => h.textContent)[0]]")
+        p.click("#lookUse")
+        p.wait_for_timeout(250)
+        used = p.evaluate("() => [localStorage.getItem('olympus.theme'), document.documentElement.dataset.olyTheme, document.getElementById('lookBar').hidden, OLYMPUS_THEMES.previewing()]")
+        check("t2. the star keeps it in a Favourites row (first, this phone); Use it picks it for everything and closes the bar",
+              fav[0] == ["ivory"] and fav[1] == "Favourites" and used == ["ivory", "ivory", True, None], (fav, used))
+        p.click("#lookSurprise")
+        p.wait_for_timeout(250)
+        sp = p.evaluate("() => [OLYMPUS_THEMES.previewing(), localStorage.getItem('olympus.theme'), document.getElementById('lookBar').textContent]")
+        p.click("#lookBar button:last-child")
+        p.wait_for_timeout(200)
+        back = p.evaluate("() => [OLYMPUS_THEMES.previewing(), document.documentElement.dataset.olyTheme, localStorage.getItem('olympus.theme')]")
+        check("t2. Surprise me previews a look picked at random (never the one on now), with Another / Cancel; Cancel puts Ivory back, nothing stored",
+              sp[0] and sp[0] != "ivory" and sp[1] == "ivory" and "Surprise:" in sp[2] and "Another" in sp[2] and back == [None, "ivory", "ivory"], (sp, back))
+        p.evaluate("() => OLYMPUS_THEMES.set('agora')")
+        check("t2. the picker: no console error", not real(errs), real(errs)[:3])
+    except Exception as e:
+        check("t2. the picker", False, e)
+    ctx.close()
+
+
+QA_SAMPLE = [("gate", "/gate/" + GATE_Q), ("hub-money", "/hub/index.html?h=money"), ("nq", "/nq/?demo=1"), ("mint", "/mint/?demo=1"), ("ledger", "/ledger/?demo=1"), ("kalshi", "/kalshi/")]
+QA_LOOKS = ["midnight", "ivory", "aurora", "brutal"]
+
+
+def test_look_qa(br, origin):
+    """tools/theme_qa.js on a sample (6 pages x 4 looks, against the default), judged exactly as the matrix's table (theme_shots.look_issues): no
+    AGORA colour left, no text under AA that the default does not have too, +$ green / -$ red, the status bar, a keyboard ring that shows.
+    The whole matrix: tools/theme_shots.py --qa (docs/shots/themes_v2/qa.md)."""
+    sys.path.insert(0, os.path.join(ROOT, "tools"))
+    import theme_shots as TS
+    src = read(ROOT, "tools", "theme_qa.js")
+    ag = TS.agora_palette()
+    base = {}
+    for look in ["agora"] + QA_LOOKS:
+        ctx, p, errs = look_page(br, origin, look, None)
+        for name, path in QA_SAMPLE:
+            try:
+                p.goto(origin + path, wait_until="load")
+                p.wait_for_function("() => document.documentElement.hasAttribute('data-oly-theme')", timeout=30000)
+                p.wait_for_timeout(1800)
+                shot = os.path.join(SHOT_TMP, f"qa-{look}-{name}.png")
+                rep = TS.measure(p, src, {"agora": ag if look != "agora" else [], "max": 20}, shot)
+                fails, _ = TS.pixel_check(shot, rep["texts"], 390, 844)
+                p.keyboard.press("Tab")
+                ring = p.evaluate("() => window.__olyQA.focus()")
+                res = {"view": "phone", "lowPx": fails, "lowBelow": [r for r in rep["low"] if r.get("top") is None and r["box"][1] >= 844 and not r.get("unsure")],
+                       "left": rep["left"], "money": rep["money"], "focus": [ring] if ring else [], "canvases": rep.get("canvases") or [], "meta": rep["meta"], "sx": rep["sx"]}
+                if look == "agora":
+                    base[name] = res
+                    continue
+                iss = TS.look_issues(res, base.get(name, {}))
+                check(f"t2. {look} on {name}: no AGORA colour left, no text under AA the default does not have too, +$ / -$ in green / red, the status bar follows, the focus ring shows (3:1)",
+                      rep["theme"] == look and not iss, iss)
+            except Exception as e:
+                check(f"t2. {look} on {name}: QA", False, e)
+        ctx.close()
+
+
+SHOT_TMP = os.environ.get("OLY_QA_TMP") or os.path.join(__import__("tempfile").gettempdir(), "olympus_t2_qa")   # (a long TMPDIR breaks Chromium's sockets: never set TMPDIR for it)
 
 
 def main():
@@ -773,6 +985,7 @@ def main():
     test_static(data)
     test_contrast(data)
     test_slot_contrast(data)
+    test_t2_static(data)
     try:
         from playwright.sync_api import sync_playwright
     except ImportError:
@@ -780,7 +993,8 @@ def main():
         return
     srv, origin = serve()
     shots = sys.argv[sys.argv.index("--shots") + 1] if "--shots" in sys.argv else None
-    only = [a for a in sys.argv[1:] if a in APPS or a in ("jarvis", "default", "zenith", "gate", "reach", "same")]
+    only = [a for a in sys.argv[1:] if a in APPS or a in ("jarvis", "default", "zenith", "gate", "reach", "same", "first", "picker", "qa")]
+    os.makedirs(SHOT_TMP, exist_ok=True)
     with sync_playwright() as pw:
         br = launch(pw)
         if "--regen" in sys.argv:
@@ -804,6 +1018,12 @@ def main():
             test_reach(br, origin)
         if not only or "same" in only:
             test_same_as_before(br)
+        if not only or "first" in only:
+            test_first_frame(br, origin)
+        if not only or "picker" in only:
+            test_picker(br, origin)
+        if not only or "qa" in only:
+            test_look_qa(br, origin)
         br.close()
     srv.shutdown()
 

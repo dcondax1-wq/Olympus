@@ -21,7 +21,7 @@ let spec3d = null;
 let kitP = null;
 export function loadKit(base = import.meta.url, ms = 1500) {
   if (!kitP) kitP = Promise.all([
-    typeof window !== 'undefined' && window.OLYMPUS_PEOPLE ? Promise.resolve(true) : import(new URL('../olympus/people.js?v=p2', base).href).then(() => true, () => false),
+    typeof window !== 'undefined' && window.OLYMPUS_PEOPLE ? Promise.resolve(true) : import(new URL('../olympus/people.js?v=p3', base).href).then(() => true, () => false),
     loadLook(base),
   ]).then(async ([k, l]) => { const K = kit(); if (K && typeof K.ready === 'function') { try { await K.ready(); } catch (e) { /* the kit's own fallback */ } } return { kit: !!K || k, look: l }; });
   return Promise.race([kitP, new Promise((r) => setTimeout(() => r({ kit: !!kit(), look: !!spec3d, late: true }), ms))]);

@@ -15,7 +15,7 @@ import { $, esc, store } from '../util.js';
 import { boardData } from './board.js';
 import { charts } from './pics.js';
 
-const V = 1;
+const V = 2;
 const ensureSec = (id, txt, after) => {
   if (document.getElementById('page-' + id)) return;
   const ref = document.getElementById('page-' + after) || document.querySelector('section.page');

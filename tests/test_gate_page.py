@@ -64,16 +64,16 @@ def test_static():
           and html.count("<h1") == 1 and 'role="status"' in html and 'aria-live="polite"' in html and 'role="dialog"' not in html)
     check("a. one base-path line: gate/ -> '../', the site root (olympus-live.html) -> ''; agora.css + gate.css, then themes, the catalog, hub-status and gate.js load from GATE_BASE, in order (async = false)",
           r"/\/gate\/(index\.html)?$/.test(p) ? '../' : ''" in html and "window.GATE_BASE = b" in html and "b + 'gate/gate.css?v=g5'" in html and "b + 'olympus/agora.css" in html
-          and "['olympus/themes.js?v=o5', 'pc_feed.js?v=pf1', 'olympus/gate-catalog.js?v=me1', 'olympus/hub-status.js?v=h2', 'gate/gate.js?v=g5']" in html and "s.async = false" in html)
+          and "['olympus/themes.js?v=o6', 'pc_feed.js?v=pf1', 'olympus/gate-catalog.js?v=me1', 'olympus/hub-status.js?v=h2', 'gate/gate.js?v=g5']" in html and "s.async = false" in html)
     tiles = re.findall(r'class="g-hub[^"]*" data-hub="(\w+)" data-to="hub/index.html\?h=(\w+)"', html)
     check("a. the hub tiles are plain links in the page (they work even if gate.js fails), in the owner's order: Today (wide) first, Me (wide) second ... Settings & Help last",
           [t[0] for t in tiles] == HUBS and all(a == b for a, b in tiles) and 'class="g-hub g-wide" data-hub="today"' in html and 'class="g-hub g-wide" data-hub="me"' in html and html.count('class="g-hline"') == len(HUBS))
     check("a. the Workshop link at the bottom opens Settings & Help > Workshop; no lab is linked from the page itself; no Trading / Money / Life district doors",
           'data-to="hub/index.html?h=settings&amp;t=workshop"' in html and not re.search(r"href=\"[^\"]*lab", html) and "g-door" not in html and "data-district" not in html)
     check("a. the Look row (2026-11-14, themes): near the bottom (after the search and Recent, before the footer), a radio group filled by gate.js from OLYMPUS_THEMES.groups();"
-          " One look / Mix tabs; the theme engine loads first, and the <head> paints the engine's copy ('olympus.theme.paint.page') before the first frame",
+          " One look / Mix tabs; the theme engine loads first, and the <head> paints the engine's copy of the look the Gate gets (themes.js FIRST PAINT, 'olympus.theme.look.page.<id>') before the first frame",
           html.index('id="q"') < html.index('id="recentSec"') < html.index('id="lookSec"') < html.index('class="g-foot"') and 'role="radiogroup"' in html and "T.groups()" in js and "T.set(id)" in js
-          and "T.setMix(" in js and "T.apply('page', { meta: true })" in js and "'olympus.theme.paint.page.gate'" in html and ".g-swatches" in css and 'id="lookTab2"' in html)
+          and "T.setMix(" in js and "T.apply('page', { meta: true })" in js and "('gate', 'page');" in html and "'olympus.theme.look.' + W + '.' + g" in html and ".g-swatches" in css and 'id="lookTab2"' in html)
     check("a. the Mix follows the nine hubs: its rows are the catalog's hubs (C.hubs) + This Gate, each app maps to its hub, each hub page (data-oly-page hub-<id>) to its hub,"
           " the combos (written per v1 district) reach every hub through its legacy district, and a mix saved per district reads as its hubs",
           "(C && (C.hubs || C.districts))" in js and "o['hub-' + P[q][0]] = P[q][0]" in js and "c[k] || c[legacyOf(k)]" in js and "dist[legacyOf(k)]" in js)

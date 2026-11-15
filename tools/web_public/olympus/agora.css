@@ -11,9 +11,9 @@
   --ag-s0: var(--oly-th-n3, #14110e); --ag-s1: var(--oly-th-n4, #1b1713); --ag-s2: var(--oly-th-n4, #221d17); --ag-s3: var(--oly-th-n6, #2b241d); --ag-s4: var(--oly-th-n7, #332b22);      /* surfaces, low to high */
   --ag-line-soft: rgba(var(--oly-th-n37-rgb, 243, 236, 224), .07); --ag-line-gold: rgba(var(--oly-th-a8-rgb, 200, 162, 74), .32);
   --ag-text: var(--oly-th-n37, #f3ece0); --ag-soft: var(--oly-th-n30, #cfc4b2); --ag-muted: var(--oly-th-n24, #a89c88);                                     /* muted: 5.1:1 even on --ag-s4 */
-  --ag-gold: var(--oly-th-a8, #c8a24a); --ag-gold-hi: var(--oly-th-a10, #dcbd6e); --ag-bronze: var(--oly-th-a5, #9c6b3c); --ag-olive: var(--oly-th-g6, #7f8a52); --ag-terra: var(--oly-th-r8, #c96a4a); --ag-aegean: #4b7a99; --ag-sun: var(--oly-th-warn, #e0b060);
-  --ag-olive-text: var(--oly-th-g8, #a0ac6e); --ag-terra-text: var(--oly-th-r10, #e08a6b); --ag-aegean-text: #7fa7c2;                   /* text-safe ink (fills keep the base colours) */
-  --ag-gold-rgb: var(--oly-th-a8-rgb, 200, 162, 74); --ag-olive-rgb: var(--oly-th-g6-rgb, 127, 138, 82); --ag-terra-rgb: var(--oly-th-r8-rgb, 201, 106, 74); --ag-sun-rgb: var(--oly-th-warn-rgb, 224, 176, 96); --ag-aegean-rgb: 75, 122, 153;
+  --ag-gold: var(--oly-th-a8, #c8a24a); --ag-gold-hi: var(--oly-th-a10, #dcbd6e); --ag-bronze: var(--oly-th-a5, #9c6b3c); --ag-olive: var(--oly-th-g6, #7f8a52); --ag-terra: var(--oly-th-r8, #c96a4a); --ag-aegean: var(--oly-th-info, #4b7a99); --ag-sun: var(--oly-th-warn, #e0b060);
+  --ag-olive-text: var(--oly-th-g8, #a0ac6e); --ag-terra-text: var(--oly-th-r10, #e08a6b); --ag-aegean-text: var(--oly-th-infot, #7fa7c2);                   /* text-safe ink (fills keep the base colours) */
+  --ag-gold-rgb: var(--oly-th-a8-rgb, 200, 162, 74); --ag-olive-rgb: var(--oly-th-g6-rgb, 127, 138, 82); --ag-terra-rgb: var(--oly-th-r8-rgb, 201, 106, 74); --ag-sun-rgb: var(--oly-th-warn-rgb, 224, 176, 96); --ag-aegean-rgb: var(--oly-th-info-rgb, 75, 122, 153);
   --ag-on-gold: var(--oly-th-n3, #1b1610);
   /* type: serif display, system sans body, rounded tabular numbers. rem based (dynamic type / browser text size follow) */
   --ag-serif: var(--oly-th-display, 'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif);
@@ -35,10 +35,10 @@
   /* shape */
   --ag-radius: var(--oly-th-radius, 16px); --ag-radius-s: var(--oly-th-radius-s, 12px); --ag-radius-l: var(--oly-th-radius-l, 22px); --ag-radius-xs: 8px;
   /* elevation: layered, warm-dark, never a glow */
-  --ag-shadow: 0 6px 18px rgba(0,0,0,.35);
-  --ag-e1: 0 1px 0 rgba(var(--oly-th-a15-rgb, 255,240,214),.04) inset, 0 1px 2px rgba(0,0,0,.30), 0 2px 6px rgba(0,0,0,.18);
-  --ag-e2: 0 1px 0 rgba(var(--oly-th-a15-rgb, 255,240,214),.05) inset, 0 1px 2px rgba(0,0,0,.32), 0 6px 16px rgba(0,0,0,.26), 0 14px 32px rgba(0,0,0,.18);
-  --ag-e3: 0 1px 0 rgba(var(--oly-th-a15-rgb, 255,240,214),.06) inset, 0 2px 4px rgba(0,0,0,.34), 0 12px 28px rgba(0,0,0,.34), 0 28px 60px rgba(0,0,0,.30);
+  --ag-shadow: var(--oly-th-shadow, 0 6px 18px rgba(0,0,0,.35));
+  --ag-e1: var(--oly-th-e1, 0 1px 0 rgba(var(--oly-th-a15-rgb, 255,240,214),.04) inset, 0 1px 2px rgba(0,0,0,.30), 0 2px 6px rgba(0,0,0,.18));
+  --ag-e2: var(--oly-th-e2, 0 1px 0 rgba(var(--oly-th-a15-rgb, 255,240,214),.05) inset, 0 1px 2px rgba(0,0,0,.32), 0 6px 16px rgba(0,0,0,.26), 0 14px 32px rgba(0,0,0,.18));
+  --ag-e3: var(--oly-th-e3, 0 1px 0 rgba(var(--oly-th-a15-rgb, 255,240,214),.06) inset, 0 2px 4px rgba(0,0,0,.34), 0 12px 28px rgba(0,0,0,.34), 0 28px 60px rgba(0,0,0,.30));
   /* motion: one curve, three speeds (200-350 ms) */
   --ag-ease: cubic-bezier(.2,.8,.2,1); --ag-ease-io: cubic-bezier(.65,0,.35,1);
   --ag-d1: 200ms; --ag-d2: 260ms; --ag-d3: 340ms; --ag-stagger: 45ms;
@@ -372,9 +372,11 @@ html[data-oly-lite="1"] .ag-appbar, html[data-oly-lite="1"] .ag-tabbar { -webkit
    colour-only themes never set the attribute, so nothing here applies to them. */
 html[data-oly-style] { background: var(--oly-th-page-bg) fixed var(--oly-th-n3); }
 html[data-oly-style] body, html[data-oly-style] body.agora { background: transparent !important; }
-html[data-oly-style] :is(.ag-card, .ag-stat) { background: var(--oly-th-card-bg) !important; border: var(--oly-th-card-border) !important; box-shadow: var(--oly-th-card-shadow) !important;
+html[data-oly-style] :is(.ag-card, .ag-stat, main#app :is(.card, .hero):not(.ag-card)) { background: var(--oly-th-card-bg) !important; border: var(--oly-th-card-border) !important; box-shadow: var(--oly-th-card-shadow) !important;
   border-radius: var(--oly-th-radius) !important;
   -webkit-backdrop-filter: var(--oly-th-card-blur); backdrop-filter: var(--oly-th-card-blur); }
 html[data-oly-style] :is(h1, h2, h3, .ag-title, .ag-display, .ag-h2, .ag-h3) { font-weight: var(--oly-th-title-weight) !important; text-transform: var(--oly-th-title-case); letter-spacing: var(--oly-th-title-track) !important;
   font-style: var(--oly-th-title-style); }
 html[data-oly-style] .ag-btn.primary { background: var(--oly-th-btn-bg) !important; color: var(--oly-th-btn-fg) !important; border: var(--oly-th-btn-border) !important; box-shadow: none !important; }
+html[data-oly-style] .ag-sheet { border-radius: var(--oly-th-radius-l, var(--oly-th-radius)) var(--oly-th-radius-l, var(--oly-th-radius)) 0 0; }
+html[data-oly-style] .ag-toast { border-radius: var(--oly-th-radius-s, var(--oly-th-radius)); }

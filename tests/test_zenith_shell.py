@@ -142,7 +142,7 @@ def part_c(tmp, shots):
         H = pg.evaluate("""() => { const h = document.querySelector('#page > .pl-home'), z = h.querySelector('.pl-hi .zn-hi');
           return { kids: [...h.children].map(c => c.className.split(' ')[0]).slice(0, 4), money: [...z.querySelectorAll('.zn-m b')].map(b => b.textContent),
             labels: [...z.querySelectorAll('.zn-m em')].map(e => e.textContent), cv: !!z.querySelector('.zn-rib canvas'), h: Math.round(z.getBoundingClientRect().height),
-            accent: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() }; }""")
+            accent: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(), a8: getComputedStyle(document.documentElement).getPropertyValue('--oly-th-a8').trim() }; }""")
         check("c. Home: money first in the greeting: Today · This month · Eval P&L in $, the ribbon canvas; the Home order kept",
               H["kids"] == ["pl-hi", "su-bar", "su-accts", "pl-now"] and H["labels"] == ["Today", "This month", "Eval P&L"] and all("$" in m for m in H["money"]) and H["cv"] and H["h"] < 160, H)
         pg.wait_for_selector(".pl-hi > #mnCard", timeout=15000)
@@ -157,7 +157,10 @@ def part_c(tmp, shots):
         check("c. Zenith Home: each row reads 'Drawdown left $X of $max loss' (not days), today's $, what the bot waits for and its status; every row is a 44 px tap",
               MN["txt"].count("Drawdown left") == MN["rows"] and MN["txt"].count("max loss") >= MN["rows"] and "10 days" not in MN["txt"] and "next" in MN["txt"].lower() and "Bot " in MN["txt"]
               and all(h >= 44 for h in MN["taps"]) and "NaN" not in MN["txt"] and "undefined" not in MN["txt"], MN)
-        check("c. an Olympus theme in localStorage ('aurora') recolours Zenith's accent through the one token writer", H["accent"].lower() == "#2fd3c0", H["accent"])
+        # 2026-11-14 (team T2): 'aurora' is now the OLYMPUS look Glass Aurora, painted by olympus/themes.js through its slots; the old kit's
+        # token set of the same name (#2fd3c0) no longer covers it (the node part still checks the old kit's mapping where no engine runs)
+        check("c. an OLYMPUS look in localStorage ('aurora' = Glass Aurora) recolours Zenith's accent: the look's own accent slot, not the old kit's",
+              H["a8"].startswith("#") and H["accent"].lower() == H["a8"].lower() and H["accent"].lower() != "#2fd3c0", (H["accent"], H["a8"]))
         sh(pg, "zenith_home.png")
         # the breadcrumb + the hero that repeated the title
         pg.evaluate("() => { location.hash = '#/perf'; }")

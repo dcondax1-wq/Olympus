@@ -41,7 +41,7 @@ const tick = (ok) => ok === true ? '<b class="lv-ok">✓</b>' : ok === false ? '
 // ------------------------------------------------------------------ page section + stylesheet (no index.html change)
 function ensure() {
   if (!document.querySelector('link[data-lv]')) {
-    const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = new URL('../../css/liveview.css?v=3', import.meta.url).href; l.dataset.lv = '1';
+    const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = new URL('../../css/liveview.css?v=4', import.meta.url).href; l.dataset.lv = '1';
     document.head.appendChild(l);
   }
   if (document.getElementById('page-' + ID)) return;

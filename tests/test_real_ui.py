@@ -129,8 +129,8 @@ def part_e():
           'id="ccReal"' in cc and 'id="ccSafe"' in cc and "fillRealHome().catch" in cc and "cc-evals" in cc and "realcore.js?v=" in real)
     check("e. PC real.js only GETs (through board.js)", "method: 'POST'" not in real and "fetch(" not in real)
     pidx, psw, sw = rd("tools", "web_public", "index.html"), rd("tools", "web_public", "sw.js"), rd("web_next", "sw.js")
-    check("e. phone: real.js loads after board.js; boardcore v2 / tradepics v2", 'src="real.js?v=' in pidx and pidx.index("board.js?v=") < pidx.index("real.js?v=")
-          and "boardcore.js?v=2" in rd("tools", "web_public", "board.js") and "tradepics.js?v=3" in pidx)
+    check("e. phone: real.js loads after board.js; boardcore v3 (T2 2026-11-14: its CSS reads the look's slots) / tradepics v2", 'src="real.js?v=' in pidx and pidx.index("board.js?v=") < pidx.index("real.js?v=")
+          and "boardcore.js?v=3" in rd("tools", "web_public", "board.js") and "tradepics.js?v=3" in pidx)
     check("e. caches bumped: phone le-public-v40+, PC le-shell-next-v23+",
           int(re.search(r"le-public-v(\d+)", psw).group(1)) >= 40 and int(re.search(r"le-shell-next-v(\d+)", sw).group(1)) >= 23)
     tp, bc = rd("web_next", "js", "next", "tradepics.js"), rd("web_next", "js", "next", "boardcore.js")
