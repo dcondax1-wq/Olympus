@@ -317,7 +317,9 @@ def part_a():
     check("a. reduced motion respected, animations pause while hidden, dark before the stylesheet loads",
           "prefers-reduced-motion" in css and ".paused" in css and "visibilitychange" in page and "html,body{background:#14110e" in page.replace(" ", ""))
     check("a. the AGORA look (2026-11-10): ONE theme, Agora, whatever an old copy saved; its tokens (#14110e, gold #c8a24a / bronze #9c6b3c / #e0b060, ivory #f3ece0 / #9a8f7d); the neon themes, the HUD ring, the grid floor, the globe and the scanlines are gone",
-          "d.setAttribute('data-theme', 'agora')" in page and all(x in css for x in ("--bg: #14110e", "--c: #c8a24a", "--c2: #9c6b3c", "--c3: #e0b060", "--txt: #f3ece0", "--mut: #9a8f7d", 'data-theme="agora"'))
+          "d.setAttribute('data-theme', 'agora')" in page and 'data-theme="agora"' in css
+          # 2026-11-14 (team T2, the 32 looks): each Agora token is a look slot whose fallback is the Agora value (the default stays byte-identical)
+          and all(re.search(re.escape(k) + r": (?:var\(--oly-th-[\w-]+, )?" + re.escape(v), css) for k, v in (("--bg", "#14110e"), ("--c", "#c8a24a"), ("--c2", "#9c6b3c"), ("--c3", "#e0b060"), ("--txt", "#f3ece0"), ("--mut", "#9a8f7d")))
           and not any(x in css for x in ('data-theme="reactor', 'data-theme="eclipse"', 'data-theme="tokyo"', 'data-theme="aurora"', '.hudring', '.bgglobe', '.floor {', '.scan {', 'glowT', '#a855f7', '#22d3ee'))
           and 'class="hudring"' not in page and 'id="bgglobe"' not in page and 'class="scan"' not in page and "rawSet('jtheme', k)" in page)
     check("a. no Orbitron / Rajdhani is loaded (the woff2 files stay on disk), a serif heading font, no clipped corners; the old fonts keep their licence file",

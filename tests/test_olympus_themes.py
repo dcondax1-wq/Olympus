@@ -623,8 +623,9 @@ def gate_ready(p):
     p.wait_for_timeout(300)
 
 
-MIX_ROWS = ["Today", "Bots & Evals", "Kalshi", "My Money", "Plan & Day", "Research", "Jarvis", "Worlds", "Settings & Help", "This Gate"]
-TRADER_HUBS = {"today": "amber", "bots": "amber", "kalshi": "stocks", "money": "stocks", "plan": "forest", "research": "amber", "jarvis": "forest", "worlds": "aurora", "settings": "forest"}
+# 2026-11-14: the Me hub (team ME1, a page hub: health, cards, home) has its own Mix row and takes Plan & Day's look in the combos
+MIX_ROWS = ["Today", "Me", "Bots & Evals", "Kalshi", "My Money", "Plan & Day", "Research", "Jarvis", "Worlds", "Settings & Help", "This Gate"]
+TRADER_HUBS = {"today": "amber", "me": "forest", "bots": "amber", "kalshi": "stocks", "money": "stocks", "plan": "forest", "research": "amber", "jarvis": "forest", "worlds": "aurora", "settings": "forest"}
 
 
 def test_gate_look(br, origin):
@@ -657,7 +658,7 @@ def test_gate_look(br, origin):
     mx = p.evaluate("""() => ({ combos: [...document.querySelectorAll('.g-combo')].map((b) => b.dataset.combo), rows: [...document.querySelectorAll('.g-mixrow .g-mixh b')].map((b) => b.textContent),
         minis: document.querySelectorAll('.g-mixrow')[0].querySelectorAll('.g-mini').length, one: document.getElementById('looks').hidden,
         h: Math.min(...[...document.querySelectorAll('.g-mini, .g-combo, #lookTab1, #lookTab2')].map((b) => b.getBoundingClientRect().height)) })""")
-    check(f"g. Mix: three ready-made combos (Trader, Luxury, Clean), a row per hub (IA v2: the nine hubs) and this Gate, each with 'Same' + the {len(PLAIN + STYLED)} looks; targets 44 px+",
+    check(f"g. Mix: three ready-made combos (Trader, Luxury, Clean), a row per hub (IA v2: the nine hubs + Me) and this Gate, each with 'Same' + the {len(PLAIN + STYLED)} looks; targets 44 px+",
           mx["combos"] == ["trader", "luxury", "clean"] and mx["rows"] == MIX_ROWS and mx["minis"] == 1 + len(PLAIN + STYLED) and mx["one"] and mx["h"] >= 44, mx)
     p.click('.g-combo[data-combo="trader"]')
     p.wait_for_timeout(250)
