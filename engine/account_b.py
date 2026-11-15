@@ -11,6 +11,12 @@ The block: "account_b": null (default = off, the bot is exactly today's) or
                              (= tools/atlas.q_variant); a member not listed trades at 1.0
     "min_room": 200          stuck = room under this many $ (replaces MIN_ROOM = $100 for this account): no new trade,
                              push "buy a new one"
+  optional (zombie-eval rule, research/writeups/2026-11-15-atlas-deep.md, BUILT BUT OFF: absent = exactly today's):
+    "eval_min_room": 200     the EVAL stage's stuck line only (the funded stage keeps min_room / $100): an eval with
+                             less room than this is given up ("buy a new one", $43) instead of idling for weeks
+    "last_bullet": 0.8       eval "need" size says 0 micros because one micro's stop-out does not fit its share of a
+                             low room: 1 micro when that full stop-out (stop + 2 ticks, $1.90) fits this share of the
+                             room, then the soft-daily-loss guard (= tools/atlas_deep.py "last_bullet")
   optional: "prior_pnl" ($ on the account before the bot traded it), "armed": false (a REAL, non-Sim account also needs
   "armed": true, the LIVE phrase typed at the bot's start and NINJATRADER_LIVE=1: engine/ninjatrader._live_gate; the bot
   never sets any of that).
@@ -250,6 +256,18 @@ def normalize(ab: dict | None, scfg: dict | None = None, lit_account: str | None
             out["problem"] = out["problem"] or f"min_room {ab.get('min_room')!r} must be a number of $ (0-1000)"
         else:
             out["min_room"] = float(mr)
+    if "eval_min_room" in ab:
+        mr = _num(ab.get("eval_min_room"))
+        if mr is None or not 0.0 <= mr <= 1000.0:
+            out["problem"] = out["problem"] or f"eval_min_room {ab.get('eval_min_room')!r} must be a number of $ (0-1000)"
+        else:
+            out["eval_min_room"] = float(mr)
+    if ab.get("last_bullet") is not None:
+        lb = _num(ab.get("last_bullet"))
+        if lb is None or not 0.0 < lb <= 1.0:
+            out["problem"] = out["problem"] or f"last_bullet {ab.get('last_bullet')!r} must be a share of the room in (0, 1]"
+        else:
+            out["last_bullet"] = float(lb)
     out["keys"] = [k for k in keys if isinstance(S.get(k), dict) and S[k].get("on", True) and not S[k].get("cloud_only")]
     # the stage (2026-10-26): "eval" (absent = the eval, exactly as before) or "funded" (python -m engine.account_b --to-funded)
     stage = str(ab.get("stage") or "eval").strip().lower()
@@ -307,8 +325,12 @@ def is_funded(spec: dict | None) -> bool:
 
 
 def min_room(spec: dict | None) -> float:
-    """The stuck threshold of this account: spec "min_room" (account_b "min_room", ATLAS v2, off by default) else MIN_ROOM."""
-    v = (spec or {}).get("min_room")
+    """The stuck threshold of this account: in the eval stage spec "eval_min_room" (zombie-eval rule, off by default) if
+    set, else spec "min_room" (account_b "min_room", ATLAS v2, off by default), else MIN_ROOM."""
+    s = spec or {}
+    if s.get("eval_min_room") is not None and not is_funded(s):
+        return float(s["eval_min_room"])
+    v = s.get("min_room")
     return float(v) if v is not None else MIN_ROOM
 
 
@@ -384,7 +406,24 @@ def qty(spec: dict, trade: dict, state: dict | None, base: dict | None = None, k
                    state=dict(state), max_micros=maxq, learning=None)
     r = _weighted({"qty": min(maxq, int(r.get("qty") or 0)), "reasons": list(r.get("reasons") or []), "lock": r.get("lock")},
                   weight(spec, key))
+    if int(r.get("qty") or 0) <= 0 and spec.get("last_bullet") is not None:
+        r = last_bullet(r, float(risk), float(spec["last_bullet"]), state)
     return dll_guard(r, float(risk), R, state)
+
+
+def last_bullet(r: dict, risk: float, share: float, state: dict) -> dict:
+    """Zombie-eval rule (account_b "last_bullet", off by default): the need size said 0 micros on a low room; 1 micro when
+    its full stop-out (stop + 2 ticks of slippage, $1.90 round trip, as dll_guard) fits `share` x the room. The soft daily
+    loss guard runs after it. Never more than 1 micro."""
+    from . import sizing as SZ
+    room = _num(state.get("room"))
+    if room is None or room <= 0:
+        return r
+    loss1 = (float(risk) + SZ.TW_DLL_SLIP) * SZ.TW_PV + SZ.TW_COMM
+    if loss1 > float(share) * float(room):
+        return r
+    return {**r, "qty": 1, "reasons": list(r.get("reasons") or []) +
+            [f"last bullet: 1 micro, its full stop-out ${loss1:,.0f} fits {share:.0%} of the ${float(room):,.0f} room"]}
 
 
 def funded_cfg(spec: dict, base: dict | None = None) -> dict:
