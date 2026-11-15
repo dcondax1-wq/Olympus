@@ -1513,6 +1513,13 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   `python -m engine.ninjatrader --selftest` (55 checks, incl. cancel-pending entries, partial exit fills and the CME early-close flat (5 min before the halt; entries stop 15 min before) added 2026-10-18; `LE_BarFeed.cs` also writes `le_feed\MNQ_1m.csv` for LIT, not yet compiled on a real install). Setup for a non-coder: `ninjatrader/SETUP.md`. Known gap: the
   Tradovate adapter never received breakeven moves or non-TIME exits (the NinjaTrader flags `route_all_exits`,
   `route_stop_moves` fix it; apply the same to Tradovate before ever using it).
+- **S1 robustness pass (2026-11-15, `engine/ninjatrader.py`, self-test 78):** (1) a bracket file NinjaTrader took but
+  never reported (no stop report 30 s after the bracket while the entry's report is there, `nt_bracket_report_s`) ->
+  alert + CLOSEPOSITION + blind CANCEL of the bracket ids (never re-placed under new ids; skipped after an NT restart);
+  (2) write-ahead: the legs are saved before the entry file goes out (a crash in between restores the leg, its fill gets
+  the stop / target); (3) `_protect` never sends stop / target ids NinjaTrader already reports (crash after the bracket
+  file); (4) hard cap `nt_max_entries_day` 8 entry files per account per trading day (persisted), independent of the
+  bot's guards.
 - **No-chart mode: the LE_Feed add-on (2026-11-02, `ninjatrader/LE_Feed.cs`, NOT yet compiled on a real install):** a
   NinjaScript AddOn (`Custom\AddOns`) that writes LE_BarFeed's exact files with no chart (BarsRequest 5m 30 days + 1m 21
   days on "CME US Index Futures ETH", closed bars only, same trim / temp-swap; MarketData for `<ROOT>_1m_open.csv`;

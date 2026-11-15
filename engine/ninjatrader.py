@@ -99,6 +99,7 @@ _PRICE = re.compile(r"^\d+(\.\d+)?$")        # "use decimals not commas (1212.25
 _ID = re.compile(r"^[A-Za-z0-9_-]{1,64}$")   # ours: ids double as outgoing file names, so keep them file-name safe
 
 # order states (NinjaTrader 8 "Order State Definitions"; the file spelling is normalised: upper case, no spaces)
+MAX_ENTRIES_DAY = 8                      # entry files per account per trading day, whatever the strategy (BLITZ max is 6)
 FILLED, PARTFILLED = "FILLED", "PARTFILLED"
 DEAD = {"CANCELLED", "CANCELED", "REJECTED"}
 LIVE_STATES = {"INITIALIZED", "SUBMITTED", "ACCEPTED", "TRIGGERPENDING", "WORKING", "CHANGEPENDING", "CHANGESUBMITTED",
@@ -896,6 +897,10 @@ class NinjaTraderAdapter:
         self._outside_flat: dict = {}
         self._cont_warned = None
         self.watch: list = []                          # retired legs with an order that may still fill (late add / slow cancel)
+        # S1 2026-11-15: entry files sent this trading day, a hard cap independent of the bot's own guards (dup_entry,
+        # account B's 2 a day, BLITZ's 6 a day): a looping bug can never fire entry after entry. nt_max_entries_day, default 8
+        self.entries_day: dict = {"day": None, "n": 0}
+        self.max_entries_day = int(cfg.get("nt_max_entries_day", MAX_ENTRIES_DAY))
         # NinjaTrader restart (it wipes outgoing\\ when it starts): a position file / an order file of an open bracket we had
         # seen that is gone again. Never read as flat: new entries / adds are refused and the owner is alerted until the
         # position file is written again or the owner confirms (python -m engine.ninjatrader --confirm-reset)
@@ -1468,6 +1473,13 @@ class NinjaTraderAdapter:
         if self.state_problem and not self._state_problem_resolved():
             return {"ok": False, "error": "REFUSED: " + self.state_problem["text"] + ": no new entry until NinjaTrader shows the "
                                                      "account FLAT or you run python -m engine.ninjatrader --confirm-reset"}
+        day = _trading_day(self.clock())
+        if self.entries_day.get("day") != day:
+            self.entries_day = {"day": day, "n": 0}
+        if self.entries_day["n"] >= self.max_entries_day:
+            self._risk(f"{self.entries_day['n']} entries already sent on {self.account} this trading day (hard cap "
+                       f"{self.max_entries_day}): entry refused. A bug repeating entries? Check the Live page log.", alert=True)
+            return {"ok": False, "error": f"REFUSED: {self.max_entries_day} entries already sent today on {self.account} (hard cap)"}
         insts = self._instruments()
         plan = [(insts["mini"], sp["minis"], "N"), (insts["micro"], sp["micros"], "M")]
         plan = [x for x in plan if x[1] > 0]
@@ -1491,14 +1503,20 @@ class NinjaTraderAdapter:
                          "entry_id": base + "E", "stop_id": base + "S", "target_id": base + "T", "oco": base + "O",
                          "status": "entry_sent", "filled": 0, "fill_px": None, "fill_mtime": None, "bracket_qty": 0, "stop0": stop,
                          "sent_at": self.clock(), "ref": float(ref) if ref else None})
+        # S1 2026-11-15, write-ahead: the legs are saved BEFORE the entry file goes out, so a crash between the order file
+        # and the state save restores an "entry_sent" leg (the next tick finds its fill and places the stop / target)
+        # instead of a position no bracket of the bot explains
+        self.legs = legs
+        self.entries_day["n"] += 1                     # counted before the file goes out (a crash right after still counts)
+        self._save()
         r = self._send_lines([place_line(self.account, lg["instrument"], side, lg["qty"], "MARKET", order_id=lg["entry_id"])
                               for lg in legs], "ENTRY")
         if not r["ok"]:
+            self.legs = []
             if r.get("withdrawn"):
                 self.withdrawn += [{"entry_id": lg["entry_id"], "leg": lg, "t": self.clock()} for lg in legs]
             self._save()
             return {"ok": False, "adapter": self.name, "account": self.account, "error": r["error"], "oif": r.get("file")}
-        self.legs = legs
         self._save()
         self._wait(lambda: all(self._entry_settled(lg) for lg in legs), self.fill_wait)
         out, errors = [], []
@@ -1619,6 +1637,14 @@ class NinjaTraderAdapter:
         """Stop (STOPMARKET) + target (LIMIT) as one OCO pair for the filled quantity."""
         q = lg["filled"]
         opp = "SELL" if lg["side"] == "BUY" else "BUY"
+        if lg["status"] != "unprotected" and (self.read_order(lg["stop_id"]) is not None or self.read_order(lg["target_id"]) is not None):
+            # S1 2026-11-15: this bracket already reached NinjaTrader (a crash after the bracket file, before the state
+            # save): never send the same ids twice; the regular tick manages it (and resizes it to the filled quantity)
+            lg["status"] = "protected"     # bracket_qty stays as saved (0 = unknown): the tick resizes both legs to the fill
+            lg.setdefault("bracket_at", self.clock())
+            self._log("system", f"NinjaTrader: the stop/target of {lg['instrument']} were already at NinjaTrader: not sent again")
+            self._save()
+            return {"ok": True, "stop": lg["stop"], "target": lg["target"], "note": "bracket already placed"}
         lines = [place_line(self.account, lg["instrument"], opp, q, "STOPMARKET", stop=lg["stop"], oco=lg["oco"], order_id=lg["stop_id"]),
                  place_line(self.account, lg["instrument"], opp, q, "LIMIT", limit=lg["target"], oco=lg["oco"], order_id=lg["target_id"])]
         r = self._send_lines(lines, "BRACKET")
@@ -1630,6 +1656,7 @@ class NinjaTraderAdapter:
             return {"ok": False, "error": "bracket not delivered: " + str(r.get("error"))}
         lg["bracket_qty"] = q
         lg["status"] = "protected"
+        lg["bracket_at"] = self.clock()
         self._wait(lambda: self.read_order(lg["stop_id"]) is not None and self.read_order(lg["target_id"]) is not None, self.verify_wait)
         s, t = self.read_order(lg["stop_id"]), self.read_order(lg["target_id"])
         bad = [f"{name} {st['state']}" for name, st in (("stop", s), ("target", t)) if st and st["state"] == "REJECTED"]
@@ -2225,6 +2252,7 @@ class NinjaTraderAdapter:
                                "did not come back: check in NinjaTrader's Orders tab that both are still working (the bot keeps "
                                "managing the trade and routes its exit).", alert=True)
             lg["seen_ids"] = [oid for oid in (lg["entry_id"], lg["stop_id"], lg["target_id"]) if self.read_order(oid) is not None]
+            lg["after_reset"] = True       # a working order NinjaTrader does not re-report is not "never placed"
 
     def _tick_withdrawn(self, now):
         keep = []
@@ -2353,6 +2381,8 @@ class NinjaTraderAdapter:
                        "cancelled/rejected outside the bot: flattening (never hold without both legs)", alert=True)
             self._close([lg], why="bracket leg lost")
             return
+        if s is None and self._bracket_never_reported(lg, st, now):
+            return
         if self._flat_since(lg["instrument"], (lg.get("fill_mtime") or 0) + 0.001):
             seen = self._outside_flat.get(lg["entry_id"], 0) + 1
             self._outside_flat[lg["entry_id"]] = seen
@@ -2362,6 +2392,33 @@ class NinjaTraderAdapter:
                 self._log("risk", f"NinjaTrader: {lg['instrument']} was closed outside the bot; leftover orders cancelled: {ids or 'none'}")
         else:
             self._outside_flat.pop(lg["entry_id"], None)
+
+    def _bracket_never_reported(self, lg, st, now) -> bool:
+        """S1 robustness (2026-11-15): the bracket file was picked up (deleted from incoming) but NinjaTrader never wrote a
+        report for the STOP (it read the file empty / dropped it: the 2026-10-20 rehearsal's 94 naked minutes). The
+        entry's own report is there, so NinjaTrader's outgoing works: the stop order does not exist. After
+        nt_bracket_report_s (30 s) the position is flattened (CLOSEPOSITION also cancels working orders) and the stop /
+        target ids are cancelled blind (a CANCEL of an unknown id is harmless); never re-placed under new ids, which could
+        double the exit if the old ones were only slow. Not while NinjaTrader's reports were reset (a restart rewrites
+        nothing for orders already working) or for a stop report that was seen before (the reset logic owns that).
+        True = handled this tick."""
+        if self.nt_reset or lg.get("after_reset") or st is None or lg["stop_id"] in (lg.get("seen_ids") or []):
+            return False
+        if any(lg["stop_id"] in n for n in self._listing()):
+            return False                       # a report is there (only unreadable / unparsable right now): not missing
+        p = self.position_for(lg["instrument"])
+        if p is not None and p["side"] == "FLAT" and (p.get("mtime") or 0) >= (lg.get("fill_mtime") or 0):
+            return False                       # flat: the closed-outside-the-bot logic below retires it
+        since = lg.setdefault("bracket_at", now)           # a leg restored from an older state file: count from now
+        if now - float(since) < float(self.cfg.get("nt_bracket_report_s", 30.0)):
+            return False
+        self._risk(f"the STOP of the open {lg['side']} {lg['filled']} {lg['instrument']} was never reported by NinjaTrader "
+                   f"{now - float(since):.0f}s after the bracket was sent (order {lg['stop_id']} missing in outgoing while the "
+                   "entry's report is there): the position may have NO stop at the broker. Flattening now (never hold "
+                   "without a stop). Check NinjaTrader Orders + Positions.", alert=True)
+        self._close([lg], why="stop never reported")
+        self._send_lines([cancel_line(lg["stop_id"]), cancel_line(lg["target_id"])], "CANCEL (bracket never reported)")
+        return True
 
     def _tick_flat_time(self, now):
         e = _et(now)
@@ -2391,7 +2448,8 @@ class NinjaTraderAdapter:
             return
         blob = {"version": 1, "day": _trading_day(self.clock()), "account": self.account, "saved_at": int(self.clock()),
                 "legs": self.legs, "withdrawn": self.withdrawn, "watch": self.watch, "killed": self.killed,
-                "seen_pos": self.seen_pos, "nt_reset": self.nt_reset, "state_problem": self.state_problem}
+                "seen_pos": self.seen_pos, "nt_reset": self.nt_reset, "state_problem": self.state_problem,
+                "entries_day": self.entries_day}
         try:
             os.makedirs(os.path.dirname(self.state_path), exist_ok=True)
             tmp = self.state_path + ".tmp"
@@ -2439,6 +2497,9 @@ class NinjaTraderAdapter:
         self.seen_pos = {k: v for k, v in (s.get("seen_pos") or {}).items() if isinstance(v, dict)}
         self.nt_reset = s.get("nt_reset") if isinstance(s.get("nt_reset"), dict) else None
         self.state_problem = s.get("state_problem") if isinstance(s.get("state_problem"), dict) else None
+        ed = s.get("entries_day")
+        if isinstance(ed, dict) and ed.get("day") == s.get("day"):
+            self.entries_day = {"day": ed.get("day"), "n": int(ed.get("n") or 0)}
 
     def status(self) -> dict:
         fs = self.folder_status()
@@ -3011,6 +3072,7 @@ class _FakeNT:
         self.hold_market = False            # accept market orders without filling them (a slow / thin market)
         self.slow_cancel = False            # CANCEL leaves the order CANCELPENDING (it can still fill)
         self.fill_on_change = False         # a CHANGE that makes a working order marketable fills it (the add proof)
+        self.drop_types = set()             # order types taken but never created / reported (a file read empty, dropped)
         self._held: list = []
         self._write("Tradovate.txt", "CONNECTED")
 
@@ -3082,6 +3144,8 @@ class _FakeNT:
             return
         f = line.split(";")
         cmd = f[0]
+        if cmd == "PLACE" and f[5] in self.drop_types:
+            return
         if cmd == "PLACE":
             oid = f[10]
             o = {"account": f[1], "instrument": f[2], "action": f[3], "qty": int(f[4]), "type": f[5], "limit": float(f[6] or 0),
@@ -3168,7 +3232,7 @@ def selftest(verbose=True) -> bool:
 
         def make(cfg_extra=None, nt=fake):
             cfg = {"adapter": "ninjatrader", "sym": "NQ", "armed": True, "nt_folder": folder, "params": {"max_micros": 40, "flat_mod": 955},
-                   "nt_state_path": os.path.join(tmp, "nt_state.json"), "nt_audit_log": os.path.join(tmp, "oif.log"), **(cfg_extra or {})}
+                   "nt_max_entries_day": 999, "nt_state_path": os.path.join(tmp, "nt_state.json"), "nt_audit_log": os.path.join(tmp, "oif.log"), **(cfg_extra or {})}
             ad = NinjaTraderAdapter(cfg, clock=lambda: now[0])
             ad._sleep = lambda s: (nt.process(), now.__setitem__(0, now[0] + s))
             ad._alert_fn = alerts.append
@@ -3359,6 +3423,80 @@ def selftest(verbose=True) -> bool:
         ad.tick()
         check("freeze, then closed by hand: no stop/target is placed afterwards (they would be naked)",
               not ad.legs and len(fake.files) == k and ad.history[-1]["closed"] == "closed while unprotected")
+        # ---- 11a. S1 2026-11-15: the bracket file is picked up but dropped (no stop report ever): flattened, never naked
+        fake.drop_types = {"STOPMARKET", "LIMIT"}
+        r = ad.send({"sym": "NQ", "side": "buy", "qty": 1, "stop": 25000, "target": 25040, "entry": 25020, "entry_t": T + 6900})
+        fake.drop_types = set()
+        lg = ad.legs[0] if ad.legs else {}
+        silent = lg.get("status") == "protected" and lg.get("stop_id") not in fake.orders
+        ad.tick()
+        early = bool(ad.legs) and ad.position_for("MNQ 12-26")["side"] == "LONG"
+        now[0] += 31
+        k = len(fake.files)
+        ad.tick()
+        check("bracket dropped by NinjaTrader (no stop report 30 s after the fill): alert + CLOSEPOSITION + blind CANCEL of "
+              "the bracket ids; untouched before 30 s",
+              silent and early and not ad.legs and ad.position_for("MNQ 12-26")["side"] == "FLAT"
+              and "CLOSEPOSITION;Sim101;MNQ 12-26;;;;;;;;;;" in lines_since(k)
+              and f"CANCEL;;;;;;;;;;{lg.get('stop_id')};;" in lines_since(k) and any("never reported" in a for a in alerts),
+              f"silent={silent} early={early} legs={len(ad.legs)} lines={lines_since(k)}")
+        # ---- 11a2. S1 2026-11-15: a crash right after an order file (before the state save) never leaves a naked position
+        class _Crash(Exception):
+            pass
+
+        def _crash_after(label_want, _orig=ad._send_lines):
+            def f(lines, label):
+                r_ = _orig(lines, label)
+                if label == label_want:
+                    raise _Crash(label)
+                return r_
+            return f
+        ad._send_lines = _crash_after("ENTRY")
+        try:
+            ad.place_bracket({"sym": "NQ", "side": "buy", "qty": 1, "stop": 25000, "target": 25040, "entry": 25020, "entry_t": T + 6950})
+        except _Crash:
+            pass
+        del ad._send_lines
+        ad3 = make()
+        lg3 = ad3.legs[0] if ad3.legs else {}
+        ad3.tick()
+        n_stop = sum(1 for _, ls in fake.files for ln in ls if lg3.get("stop_id") and lg3["stop_id"] in ln and ln.startswith("PLACE"))
+        check("crash after the entry file, before the state save: the restarted adapter finds the leg (write-ahead), sees "
+              "the fill and places the stop + target once",
+              lg3.get("status") == "protected" and fake.orders.get(lg3.get("stop_id"), {}).get("state") == "WORKING" and n_stop == 1,
+              f"legs={len(ad3.legs)} status={lg3.get('status')} n_stop={n_stop}")
+        ad3.send({"sym": "NQ", "side": "exit", "reason": "TIME", "entry_t": T + 6950})
+        ad._restore()
+        ad._send_lines = _crash_after("BRACKET")
+        try:
+            ad.place_bracket({"sym": "NQ", "side": "buy", "qty": 1, "stop": 25000, "target": 25040, "entry": 25020, "entry_t": T + 6970})
+        except _Crash:
+            pass
+        del ad._send_lines
+        ad3 = make()
+        lg3 = ad3.legs[0] if ad3.legs else {}
+        k = len(fake.files)
+        ad3.tick()
+        ad3.tick()
+        n_stop = sum(1 for _, ls in fake.files for ln in ls if lg3.get("stop_id") and lg3["stop_id"] in ln and ln.startswith("PLACE"))
+        check("crash after the bracket file, before the state save: the restarted adapter never sends the stop / target ids "
+              "twice (one PLACE each), the leg is protected and the bracket sized to the fill",
+              lg3.get("status") == "protected" and n_stop == 1 and lg3.get("bracket_qty") == 1
+              and fake.orders.get(lg3.get("stop_id"), {}).get("state") == "WORKING",
+              f"status={lg3.get('status')} n_stop={n_stop} bq={lg3.get('bracket_qty')} lines={lines_since(k)}")
+        ad3.send({"sym": "NQ", "side": "exit", "reason": "TIME", "entry_t": T + 6970})
+        ad._restore()
+        # ---- 11a3. S1 2026-11-15: the per-day entry cap, independent of the bot's guards (persisted over a restart)
+        ad.max_entries_day = ad.entries_day["n"]
+        k = len(fake.files)
+        r = ad.send({"sym": "NQ", "side": "buy", "qty": 1, "stop": 25000, "target": 25040, "entry": 25020, "entry_t": T + 6990})
+        ad_r = make({"nt_max_entries_day": ad.entries_day["n"]})
+        r2 = ad_r.send({"sym": "NQ", "side": "buy", "qty": 1, "stop": 25000, "target": 25040, "entry": 25020, "entry_t": T + 6995})
+        check("entry cap: past nt_max_entries_day entries on the trading day the entry is refused (no file), also after a "
+              "restart (the count is in the state file)",
+              not r["ok"] and "hard cap" in r["error"] and not r2["ok"] and "hard cap" in r2["error"] and len(fake.files) == k
+              and ad_r.entries_day["n"] > 1, f"{r.get('error')} / {r2.get('error')} n={ad_r.entries_day}")
+        ad.max_entries_day = 999
         # ---- 11b. order states from the LIT report ch.27: CANCEL PENDING and partial exit fills
         fake.hold_market, fake.slow_cancel = True, True
         r = ad.send({"sym": "NQ", "side": "buy", "qty": 2, "stop": 25000, "target": 25040, "entry": 25020, "entry_t": T + 7200})
