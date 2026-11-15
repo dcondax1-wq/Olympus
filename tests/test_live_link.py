@@ -698,7 +698,7 @@ function run(pathname, apiOk) {
   const calls = [];
   const els = {};
   const mk = (id) => els[id] || (els[id] = { id, hidden: false, textContent: '', className: '', style: {}, children: [], attrs: {},
-    setAttribute(k, v) { this.attrs[k] = v; }, getAttribute(k) { return this.attrs[k]; }, appendChild(c) { this.children.push(c); return c; },
+    setAttribute(k, v) { this.attrs[k] = v; }, removeAttribute(k) { delete this.attrs[k]; }, getAttribute(k) { return this.attrs[k]; }, appendChild(c) { this.children.push(c); return c; },
     removeChild() {}, addEventListener() {}, querySelector() { return null; }, querySelectorAll() { return []; }, get firstChild() { return null; }, focus() {} });
   const document = { readyState: 'complete', documentElement: { className: '' }, head: mk('head'), getElementById: mk,
     createElement: (t) => mk('_' + t + Math.random()), createElementNS: (n, t) => mk('_' + t + Math.random()), createTextNode: (t) => ({ t }),
