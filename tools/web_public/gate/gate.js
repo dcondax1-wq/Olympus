@@ -11,12 +11,15 @@
  * - GATE_BASE ('' at the site root as olympus-live.html, '../' at gate/) prefixes every link. Apps missing from a partial copy are marked "not in this link".
  * - Served from the PC (/site/, the private Tailscale link, docs/LIVE_DASHBOARD.md): "Right now" reads the bot's own /api/site/live.json
  *   over home.json (pc_feed.js overlayHome) and refreshes every minute. Any other copy never asks it.
- * Text only through textContent / createElementNS. Storage: 'gate.recent.v1' (ids) and 'gate.now.v1' (the last numbers seen), both in try / catch;
+ * - NAV v3 (2026-11-15, docs/OLYMPUS_NAV.md): ONE big search first (C.findAll: page hubs, plain actions, apps, hub tabs), Pinned (the owner's favourites,
+ *   'gate.pins.v1', a star on every search row and in the A to Z sheet), Your six (one tap, with a live line each), Recent (last 6), the hubs, and the
+ *   All apps A to Z sheet (gate/#az: a filter box, big rows, a letter per group, a star to pin).
+ * Text only through textContent / createElementNS. Storage: 'gate.recent.v1' (ids), 'gate.pins.v1' (ids) and 'gate.now.v1' (the last numbers seen), all in try / catch;
  * 'planner.today.v1' is read only (the Planner writes it). */
 (function () {
   'use strict';
   var d = document, w = window, C = w.OLYMPUS_GATE || null, base = w.GATE_BASE || '';
-  var LS_RECENT = 'gate.recent.v1', LS_NOW = 'gate.now.v1', LS_PLAN = 'planner.today.v1', STALE_S = 6 * 3600, FRESH_S = 20 * 60;
+  var LS_RECENT = 'gate.recent.v1', LS_PINS = 'gate.pins.v1', LS_NOW = 'gate.now.v1', LS_PLAN = 'planner.today.v1', STALE_S = 6 * 3600, FRESH_S = 20 * 60;
   var NS = 'http://www.w3.org/2000/svg';
   var S = { list: !!C, now: null, nowDone: false, probe: {}, probes: 0, extra: null, hubs: {} };
   var Q = (function () { var o = {}, s = (w.location.search || '').replace(/^\?/, ''); if (!s) return o; s.split('&').forEach(function (kv) { var p = kv.split('='); if (p[0]) { try { o[decodeURIComponent(p[0])] = decodeURIComponent((p[1] || '').replace(/\+/g, ' ')); } catch (e) { /* skip */ } } }); return o; })();
@@ -47,6 +50,25 @@
   function iconOf(a) { return /\/$/.test(a.path) ? base + a.path + 'icon.svg' : null; }
   function recentIds() { var r = lsGet(LS_RECENT); return r instanceof Array ? r.filter(function (x) { return typeof x === 'string'; }) : []; }
   function remember(id) { var r = recentIds().filter(function (x) { return x !== id; }); r.unshift(id); lsSet(LS_RECENT, r.slice(0, 8)); }
+  function pinIds() { var r = lsGet(LS_PINS); return r instanceof Array ? r.filter(function (x) { return typeof x === 'string' && (!C || C.byId(x)); }) : []; }
+  function isPinned(id) { return pinIds().indexOf(id) >= 0; }
+  function togglePin(id) { var r = pinIds(), i = r.indexOf(id); if (i >= 0) r.splice(i, 1); else r.push(id); lsSet(LS_PINS, r.slice(0, 12)); drawPins(); syncStars(); }
+  /* a star next to a row: pin or unpin that app (44 x 44, aria-pressed) */
+  function star(a) {
+    var b = el('button', 'g-star'), on = isPinned(a.id); b.type = 'button'; b.setAttribute('data-pin', a.id);
+    b.setAttribute('aria-pressed', String(on)); b.setAttribute('aria-label', (on ? 'Unpin ' : 'Pin ') + a.label);
+    b.textContent = on ? '\u2605' : '\u2606';
+    b.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); togglePin(a.id); });
+    return b;
+  }
+  function syncStars() {
+    var bs = d.querySelectorAll('button.g-star[data-pin]'), P = pinIds();
+    for (var i = 0; i < bs.length; i++) {
+      var id = bs[i].getAttribute('data-pin'), on = P.indexOf(id) >= 0, a = C && C.byId(id);
+      bs[i].setAttribute('aria-pressed', String(on)); bs[i].textContent = on ? '\u2605' : '\u2606'; if (a) bs[i].setAttribute('aria-label', (on ? 'Unpin ' : 'Pin ') + a.label);
+    }
+  }
+  function withStar(r, a) { var w2 = el('div', 'g-rowp'); w2.appendChild(r); w2.appendChild(star(a)); return w2; }
 
   function chevron() { var s = sv('svg', { 'class': 'g-chev', viewBox: '0 0 16 16', 'aria-hidden': 'true' }); s.appendChild(sv('path', { d: 'M6 3l5 5-5 5' })); return s; }
   function icon(a) {
@@ -88,7 +110,7 @@
   function drawRecent() {
     var box = $('recent'), sec = $('recentSec'); if (!box || !sec || !C) return;
     clear(box);
-    var list = recentIds().map(C.byId).filter(function (a) { return a && a.section !== 'workshop'; }).slice(0, 4);
+    var list = recentIds().map(C.byId).filter(function (a) { return a && a.section !== 'workshop'; }).slice(0, 6);
     sec.hidden = !list.length;
     list.forEach(function (a) {
       var c = el('a', 'g-chip'); c.href = hrefOf(a); c.setAttribute('data-app', a.id);
@@ -99,19 +121,124 @@
     });
   }
 
+  function chips(box, list) {
+    list.forEach(function (a) {
+      var c = el('a', 'g-chip'); c.href = hrefOf(a); c.setAttribute('data-app', a.id);
+      var ic = icon(a); ic.className += ' g-chipico';
+      c.appendChild(ic); c.appendChild(el('span', '', a.label));
+      c.addEventListener('click', function () { remember(a.id); });
+      box.appendChild(c);
+    });
+  }
+  /* Pinned: the owner's favourites, at the top (under the search); hidden until he pins one */
+  function drawPins() {
+    var box = $('pins'), sec = $('pinSec'); if (!box || !sec || !C) return;
+    clear(box);
+    var list = pinIds().map(C.byId).filter(Boolean);
+    sec.hidden = !list.length;
+    chips(box, list);
+  }
+
+  /* ------------------------------------------------------------------------------------------ Your six: one tap, one live line each */
+  function drawQuick() {
+    var HS = w.OLYMPUS_HUB_STATUS, N = S.N, X = S.extra || {}, set = function (id, text, lvl) {
+      var a = d.querySelector('#quick .g-q[data-app="' + id + '"] .g-qline'); if (!a || !text) return; a.textContent = text; a.className = 'g-qline' + (lvl ? ' ' + lvl : '');
+    };
+    if (S.now && S.now.state === 'none') set('nq', 'No bot numbers here', 'bad');
+    else if (N && S.now) {
+      var rooms = (N.accts || []).map(function (a) { return money(a.room); }).join(' / ');
+      set('nq', S.now.label + (S.now.state === 'on' || S.now.state === 'quiet' ? ' · today ' + moneyS(N.today) : ''), S.now.state === 'on' ? 'ok' : S.now.state === 'quiet' || S.now.state === 'stopped' ? 'warn' : 'bad');
+      if (rooms) set('aegis', rooms + ' left', '');
+    }
+    if (!HS) return;
+    var ctx = { N: N, K: X.K, M: X.M, P: X.P, cards: X.cards || {} }, L;
+    if (N && !N.win) N.win = nextWindow({}, nowS());
+    L = HS.hubLine('today', ctx); if (L && L.text && N) set('compass', L.text.split(' · ')[0], L.lvl);
+    if (X.M && X.M.has) { L = HS.hubLine('money', ctx); set('ledger', 'Month ' + moneyS(X.M.month) + ' · all ' + moneyS(X.M.all), L && L.lvl); }
+    if (X.P && X.P.has) { L = HS.hubLine('plan', ctx); if (L) set('planner', L.text.split(' · ')[0], ''); }
+    if (X.K && X.K.has) set('kalshi', (X.K.balance != null ? money(X.K.balance) : 'Bot on') + (X.K.today != null ? ' · today ' + moneyS(X.K.today) : ''), X.K.today != null && X.K.today < 0 ? 'warn' : 'ok');
+  }
+
+  /* ------------------------------------------------------------------------------------------ All apps A to Z (gate/#az): one sheet, big rows, a star to pin */
+  var AZ = { el: null, opener: null, open: false };
+  function buildAZ() {
+    var scrim = el('div', 'g-azscrim'), sh = el('section', 'g-azsheet');
+    sh.setAttribute('role', 'dialog'); sh.setAttribute('aria-modal', 'true'); sh.setAttribute('aria-labelledby', 'azH'); sh.id = 'azSheet';
+    var head = el('div', 'g-azhead'), h = el('h2', '', 'All apps A to Z'); h.id = 'azH';
+    var close = el('button', 'g-btn g-azclose', 'Close'); close.type = 'button'; close.id = 'azClose';
+    head.appendChild(h); head.appendChild(close);
+    var box = el('div', 'g-search'), inp = el('input'); inp.type = 'search'; inp.id = 'azQ';
+    inp.placeholder = 'Filter: type a few letters'; inp.autocomplete = 'off'; inp.setAttribute('autocapitalize', 'off'); inp.setAttribute('spellcheck', 'false'); inp.setAttribute('aria-label', 'Filter the list of apps');
+    var sic = sv('svg', { viewBox: '0 0 24 24', 'aria-hidden': 'true' }); sic.appendChild(sv('circle', { cx: '10.5', cy: '10.5', r: '6.5' })); sic.appendChild(sv('path', { d: 'M15.5 15.5 21 21' }));
+    box.appendChild(sic); box.appendChild(inp);
+    var tip = el('p', 'g-hint g-aztip', 'Tap the star to pin an app to the top of Home.');
+    var body = el('div', 'g-azbody'); body.id = 'azList';
+    sh.appendChild(head); sh.appendChild(box); sh.appendChild(tip); sh.appendChild(body);
+    d.body.appendChild(scrim); d.body.appendChild(sh);
+    close.addEventListener('click', closeAZ); scrim.addEventListener('click', closeAZ);
+    inp.addEventListener('input', fillAZ);
+    d.addEventListener('keydown', function (e) {
+      if (!AZ.open) return;
+      if (e.key === 'Escape' || e.key === 'Esc') { e.preventDefault(); closeAZ(); return; }
+      if (e.key !== 'Tab') return;
+      var f = sh.querySelectorAll('a[href], button, input'); if (!f.length) return;
+      if (e.shiftKey && d.activeElement === f[0]) { e.preventDefault(); f[f.length - 1].focus(); } else if (!e.shiftKey && d.activeElement === f[f.length - 1]) { e.preventDefault(); f[0].focus(); }
+    });
+    AZ.el = { scrim: scrim, sh: sh, inp: inp, body: body, close: close };
+  }
+  function fillAZ() {
+    var body = AZ.el.body, q = C.norm(AZ.el.inp.value || ''), letter = '', list = null, n = 0; clear(body);
+    C.az().forEach(function (a) {
+      if (q && C.norm(a.label + ' ' + a.name + ' ' + a.line + ' ' + a.words).indexOf(q) < 0) return;
+      var L = a.section === 'workshop' ? 'Workshop' : C.norm(a.label).charAt(0).toUpperCase();
+      if (/[0-9]/.test(L)) L = '#';
+      if (L !== letter) { letter = L; body.appendChild(el('h3', 'g-azl', L)); list = el('div', 'g-list g-azlist'); body.appendChild(list); }
+      list.appendChild(withStar(row(a), a)); n++;
+    });
+    if (!n) body.appendChild(el('p', 'g-empty', 'No app matches "' + AZ.el.inp.value + '".'));
+  }
+  function openAZ(opener) {
+    if (!C || !C.az) return false;
+    if (!AZ.el) buildAZ();
+    if (AZ.open) return true;
+    AZ.open = true; AZ.opener = opener || null; AZ.el.inp.value = ''; fillAZ();
+    AZ.el.scrim.hidden = false; AZ.el.sh.hidden = false; d.documentElement.className += ' g-locked';
+    try { AZ.el.close.focus({ preventScroll: true }); } catch (e) { AZ.el.close.focus(); }
+    return true;
+  }
+  function closeAZ() {
+    if (!AZ.open) return;
+    AZ.open = false; AZ.el.scrim.hidden = true; AZ.el.sh.hidden = true;
+    d.documentElement.className = d.documentElement.className.replace(/\s*g-locked/g, '');
+    if (/#az$/.test(w.location.hash || '')) { try { w.history.replaceState(null, '', w.location.pathname + w.location.search); } catch (e) { /* fine */ } }
+    drawPins();
+    if (AZ.opener && AZ.opener.focus) { try { AZ.opener.focus({ preventScroll: true }); } catch (e) { AZ.opener.focus(); } }
+  }
+
   /* ------------------------------------------------------------------------------------------ search */
+  function plainRow(href, label, line, where, glyph, attr, val) {
+    var r = el('a', 'g-row'); r.href = href; r.setAttribute(attr, val);
+    var t = el('span', 'g-txt'), ic = el('span', 'g-ico', glyph); ic.setAttribute('aria-hidden', 'true');
+    t.appendChild(el('b', '', label)); t.appendChild(el('small', '', line)); t.appendChild(el('span', 'g-where', where));
+    r.appendChild(ic); r.appendChild(t); r.appendChild(chevron()); return r;
+  }
   function drawResults() {
     var box = $('results'), q = ($('q').value || '').replace(/^\s+|\s+$/g, ''); clear(box);
     if (!q || !C) return;
-    var hits = C.find(q, 8), hubs = C.findHubs ? C.findHubs(q) : [];
-    if (!hits.length && !hubs.length) { box.appendChild(el('p', 'g-empty', 'Nothing found for "' + q + '". Try a plain word like money, risk or news.')); return; }
-    hubs.forEach(function (h) {   // a page hub (Me) has no app of its own: "health", "wifi", "cards" find the hub itself
-      var r = el('a', 'g-row'); r.href = base + 'hub/index.html?h=' + h.id; r.setAttribute('data-hub', h.id);
-      var t = el('span', 'g-txt'), ic = el('span', 'g-ico', h.name.charAt(0)); ic.setAttribute('aria-hidden', 'true');
-      t.appendChild(el('b', '', h.name)); t.appendChild(el('small', '', h.line)); t.appendChild(el('span', 'g-where', 'a hub'));
-      r.appendChild(ic); r.appendChild(t); r.appendChild(chevron()); box.appendChild(r);
+    var F = C.findAll ? C.findAll(q, 8) : { hubs: C.findHubs ? C.findHubs(q) : [], actions: [], apps: C.find(q, 8), tabs: [] };
+    if (!F.apps.length && !F.hubs.length && !F.actions.length && !F.tabs.length) { box.appendChild(el('p', 'g-empty', 'Nothing found for "' + q + '". Try a plain word like money, risk or news, or open All apps A to Z.')); return; }
+    F.hubs.forEach(function (h) {   // a page hub (Me) has no app of its own: "health", "wifi", "cards" find the hub itself
+      box.appendChild(plainRow(base + 'hub/index.html?h=' + h.id, h.name, h.line, 'a hub', h.name.charAt(0), 'data-hub', h.id));
     });
-    hits.forEach(function (a) { box.appendChild(row(a)); });
+    F.actions.forEach(function (x) {   // a plain thing to do ("Drawdown left", "Change the look", "All apps A to Z")
+      var r = plainRow(base + x.path, x.label, x.line, 'a shortcut', '\u203a', 'data-act', x.id);
+      if (x.id === 'act-az') r.addEventListener('click', function (e) { if (openAZ(r)) e.preventDefault(); });
+      box.appendChild(r);
+    });
+    F.apps.forEach(function (a) { box.appendChild(withStar(row(a), a)); });
+    F.tabs.forEach(function (t) {   // a hub tab ("Bots & Evals > Risk"): every app for that job, best first
+      box.appendChild(plainRow(base + t.path, t.label, t.line, 'a hub tab', '\u2261', 'data-tab', t.id));
+    });
   }
 
   /* ------------------------------------------------------------------------------------------ Right now */
@@ -275,12 +402,14 @@
       var c = lsGet(LS_NOW);
       if (c && c.N) { c.N.saved = c.saved; c.N.win = null; c.N.has = true; drawNow(c.N, 'cache'); } else drawNow({ accts: [], today: 0, pcT: null, pcAge: null, has: false }, 'none');
       drawHubs(S.now && S.now.from === 'cache' ? c.N : { has: false, accts: [], win: null }, true);
+      drawQuick();
       S.nowDone = true; return;
     }
     getTruth(function (T) {
       var N = summarize(home, T);
       drawNow(N, over ? 'pc' : 'live');
       drawHubs(N, true);
+      drawQuick();
       var keep = { pcT: N.pcT, pcAge: N.pcAge, running: N.running, accts: N.accts, today: N.today };
       lsSet(LS_NOW, { saved: nowS(), N: keep });
       S.nowDone = true;
@@ -556,21 +685,26 @@
       $('q').addEventListener('input', drawResults);
       $('q').addEventListener('keydown', function (e) {
         if (e.key !== 'Enter') return;
-        var first = $('results').querySelector('a.g-row'); if (!first) return;
-        e.preventDefault(); if (first.getAttribute('data-app')) remember(first.getAttribute('data-app')); w.location.href = first.href;
+        var first = $('results').querySelector('a.g-row[data-app]') || $('results').querySelector('a.g-row'); if (!first) return;
+        e.preventDefault(); if (first.getAttribute('data-app')) remember(first.getAttribute('data-app')); if (first.getAttribute('data-act') === 'act-az' && openAZ()) return; w.location.href = first.href;
       });
       if (Q.q) { $('q').value = Q.q; drawResults(); }
-      drawRecent();
+      drawRecent(); drawPins();
       drawHubs(null, false);
+      var qs = d.querySelectorAll('#quick .g-q[data-app]');
+      for (var qi = 0; qi < qs.length; qi++) (function (a) { a.addEventListener('click', function () { remember(a.getAttribute('data-app')); }); })(qs[qi]);
+      [$('azBtn'), $('azWide')].forEach(function (b) { if (b) b.addEventListener('click', function (e) { if (openAZ(b)) e.preventDefault(); }); });
+      if (/#az$/.test(w.location.hash || '')) openAZ();
+      w.addEventListener('hashchange', function () { if (/#az$/.test(w.location.hash || '')) openAZ(); });
     } else {
       $('findHint').textContent = 'The app list did not load. The hubs above still open every app.';
       $('q').disabled = true;
     }
-    w.addEventListener('pageshow', function (e) { if (e.persisted) drawRecent(); });
+    w.addEventListener('pageshow', function (e) { if (e.persisted) { drawRecent(); drawPins(); } });
     loadNow();
     if (ON_PC && w.setInterval) w.setInterval(function () { if (d.visibilityState !== 'hidden') loadNow(); }, LIVE_EVERY_MS);
   }
 
-  w.GATE = { ready: function () { return S.nowDone; }, state: S, hrefOf: hrefOf, base: base };
+  w.GATE = { ready: function () { return S.nowDone; }, state: S, hrefOf: hrefOf, base: base, openAZ: openAZ, closeAZ: closeAZ, pins: pinIds };
   if (d.readyState === 'loading') d.addEventListener('DOMContentLoaded', boot); else boot();
 })();

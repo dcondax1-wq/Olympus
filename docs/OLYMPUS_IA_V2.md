@@ -230,6 +230,7 @@ Also shown here (they live in another hub): Trade replays (`odeon`), Meet your w
 | The hub page | `tools/web_public/hub/` (`index.html`, `hub.js`, `hub.css`, `icon.svg`) | `tests/test_hubs.py` (c) |
 | Breadcrumbs + Go to (hubs first) | `tools/web_public/olympus/gate-nav.js` (v=g3 after the theme merge); `olympus/agora-ui.js` (v=2) adds it to every AGORA app | `tests/test_gate_page.py` (c), `tests/test_hubs.py` (c) |
 | Screenshots at 390 x 844 | `docs/shots/ia_v2/` | read back by eye |
+| NAV v3 (2026-11-15): one search for apps, tabs and shortcuts, Pinned, Your six, Recent 6, All apps A to Z | see `docs/OLYMPUS_NAV.md` | `tests/test_gate_page.py` |
 
 **Theme mix.** The theme engine's per-district "mix" should key on the hub: the catalog's `districts` are now the nine hubs (`C.mixOf(appId)` = the app's
 hub id), the hub page sets `<html data-oly-district="<hub>">`, and each home tile carries `data-hub`. Each hub keeps a `legacy` field (trading / money /
