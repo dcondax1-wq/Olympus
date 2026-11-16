@@ -89,6 +89,11 @@ export async function loadSources(opts) {
   await Promise.all(Object.keys(KFILES).map(async (k) => { const j = await getJson(fetchFn, base + KFILES[k]); if (j) { S[k] = j; S.at[k] = now; } }));
   await Promise.all(Object.keys(XFILES).map(async (k) => { const j = await getJson(fetchFn, base + XFILES[k]); if (j) { S[k] = j; S.at[k] = now; } }));
   await Promise.all(Object.keys(FILES).map(async (k) => { const j = await getJson(fetchFn, base + FILES[k]); if (j) { S[k] = j; S.at[k] = now; } }));
+  // SYNC (night A 2026-11-16): home.json through olympus/truth.js like the Gate, the hubs, Aegis and Helios: the PC feed laid over when it is
+  // newer (withPcFeed), then the canonical account rows (canonHome), so every Jarvis answer says the same drawdown / today's $ / balance
+  if (isObj(S.home) && !o.raw) {
+    try { const T = await import('../olympus/truth.js'); S.home = T.canonHome(await T.withPcFeed(S.home), now / 1000); } catch (_) { /* raw home.json */ }
+  }
   return S;
 }
 export const PEOPLE_FILE = '../olympus/people.json';               // the roster of the People kit (docs/PERSONA_API.md), when it is built

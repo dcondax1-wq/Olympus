@@ -165,7 +165,20 @@ export function refreshLive() {
           if (r.ok) j = await r.json(); else if (r.status === 403 || r.status === 429) L.apiUntil = Date.now() + 15 * 60e3;
         } catch (_) { /* fall back to raw */ }
       }
-      if (!j) { const r = await get(URLS.liveRaw + '?t=' + Math.floor(Date.now() / 60000), { cache: 'no-cache' }); if (r.ok) j = await r.json(); else throw new Error('live feed ' + r.status); }
+      let gerr = null;
+      if (!j) { try { const r = await get(URLS.liveRaw + '?t=' + Math.floor(Date.now() / 60000), { cache: 'no-cache' }); if (r.ok) j = await r.json(); else gerr = new Error('live feed ' + r.status); } catch (e2) { gerr = e2; } }
+      // SYNC (night A 2026-11-16): the PC feed (../pc_feed.js, the ntfy report tools/pc_report.py posts every 15 min, what the Gate, the hubs
+      // and Zenith lay over home.json) wins when it is newer, so Jarvis says the same drawdown / today's $ / data age as every other page,
+      // also when the PC runs without GitHub (then live.json on GitHub stays old)
+      const F = globalThis.PC_FEED;
+      if (F && typeof F.fetchLatest === 'function' && typeof F.toLive === 'function') {
+        try {
+          const lite = await Promise.race([F.fetchLatest({ feedUrl: '../status_feed.json', fetch: get }), new Promise((r) => setTimeout(() => r(null), 4000))]);
+          const base = j || L.j;
+          if (lite && (+lite.t || 0) > (+((base && base.pc) || {}).t || +(base || {}).t || 0)) { j = { ...(base || {}), ...F.toLive(lite, base && base.board), src: 'pc_feed' }; gerr = null; }
+        } catch (_) { /* the GitHub copy stays */ }
+      }
+      if (!j && gerr) throw gerr;
       if (j && typeof j === 'object' && (!L.j || (+j.t || 0) >= (+L.j.t || 0))) { L.j = j; L.okAt = Date.now(); L.err = null; LS.set('jarvis.lastLive', { t: j.t, board: slim(j) }); }
     } catch (e) { L.err = String((e && e.message) || e); }
     L.at = Date.now(); L.busy = null;

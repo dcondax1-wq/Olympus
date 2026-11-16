@@ -21,6 +21,12 @@
   var d = document.documentElement, g = function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } };
   var s = function (k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { /* private mode */ } };
   d.setAttribute('data-theme', 'agora');   // one theme since 2026-11-10 (an old saved neon theme is ignored)
+  // Classic Jarvis (night A 2026-11-16, "bring back our Jarvis we had"): the old violet HUD as an opt-in look ('jarvis.look' = 'classic',
+  // ⋯ → Look → Jarvis look); its own sheet classic.css, loaded only then, so the AGORA default stays byte-identical. Under the default OLYMPUS theme only.
+  if (g('jarvis.look') === 'classic' && (g('olympus.theme') || 'agora') === 'agora') {
+    d.setAttribute('data-jlook', 'classic');
+    var cl = document.createElement('link'); cl.rel = 'stylesheet'; cl.id = 'jclassic'; cl.href = 'classic.css?v=c1'; document.head.appendChild(cl);
+  }
   // the OLYMPUS look (../olympus/themes.js, key 'olympus.theme'; the engine loads after the start, async, never waited on, and repaints):
   // its colours and Jarvis's palette from the first frame, from the engine's copy of the look Jarvis gets (themes.js FIRST PAINT)
 (function (P, W) { try {
@@ -105,6 +111,9 @@ window.addEventListener('error', function (e) {
      async: the file lives in ../olympus/, outside Jarvis's worker, so its saved copy cannot answer for it; a blocking tag made a slow
      network hold the whole start one more round trip (6-12 s). A fetch before it arrives is just one real try, as before quiet-net. -->
 <script src="../olympus/quiet-net.js?v=q6a" data-fresh="raw:kalshi-feed,api:kalshi-feed,site:kalshi.json" async></script>
+<!-- the PC feed (night A sync): the bots' numbers straight from the PC (ntfy, tools/pc_report.py), the same feed the Gate, the hubs and Zenith use;
+     data.js lays it over live.json when it is newer. Small, deferred (runs before the module), never waited on by the start. -->
+<script src="../pc_feed.js?v=n1" defer></script>
 <script src="../olympus/themes.js?v=o6" id="olyThemesJs" async></script>
 <script src="../olympus/sfx.js?v=s4" id="olySfxJs" async></script>
 <style>.booted #bootfx{display:none}
@@ -1140,6 +1149,9 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
 <div class="sheet" id="look" hidden role="dialog" aria-modal="true" aria-labelledby="lookT">
   <div class="sheet-in">
     <h2 id="lookT">Look</h2>
+    <h3>Jarvis look</h3>
+    <div class="seg3" id="jlookSeg" role="group" aria-label="Jarvis look"><button type="button" data-jlook-k="agora">AGORA</button><button type="button" data-jlook-k="classic">Classic Jarvis</button></div>
+    <p class="note" id="jlookNote">Classic Jarvis: the violet HUD you had first (black, violet glow, Orbitron titles, the violet core). AGORA is marble and gold. Only Jarvis changes.</p>
     <h3>OLYMPUS theme</h3>
     <div class="othemes" id="olyThemes" role="group" aria-label="OLYMPUS theme: Jarvis and every app"></div>
     <p class="note" id="olyNote">The whole system: Jarvis now, and each app the next time it opens.</p>
@@ -1523,7 +1535,27 @@ const TH = () => window.OLYMPUS_THEMES || null;
 const olyDefault = () => (TH() && TH().DEFAULT) || 'agora';
 const olyId = () => (TH() ? TH().id() : root.dataset.olyTheme || olyDefault());
 const olyOn = () => olyId() !== olyDefault();
+// Classic Jarvis (night A 2026-11-16): the old violet HUD, Jarvis only ('jarvis.look'; classic.css is fetched the first time it is picked)
+const jlook = () => (root.dataset.jlook === 'classic' ? 'classic' : 'agora');
+function classicSheet() {
+  if (document.getElementById('jclassic')) return;
+  const l = document.createElement('link'); l.rel = 'stylesheet'; l.id = 'jclassic'; l.href = 'classic.css?v=c1';
+  l.addEventListener('load', () => { readColors(); if (core && typeof core.setTheme === 'function') safe(() => core.setTheme(coreTheme())); });
+  document.head.appendChild(l);
+}
+function setJLook(k) {
+  const on = k === 'classic';
+  rawSet('jarvis.look', on ? 'classic' : null);
+  if (on) { if (olyOn() && TH()) TH().set(olyDefault()); classicSheet(); root.dataset.jlook = 'classic'; } else delete root.dataset.jlook;
+  const mt = document.querySelector('meta[name="theme-color"]');
+  if (mt && !olyOn()) mt.setAttribute('content', on ? '#000000' : homeTint());
+  readColors();
+  if (core && typeof core.setTheme === 'function') safe(() => core.setTheme(coreTheme()));
+  window.dispatchEvent(new Event('jtheme'));
+  renderLook(); sfx('tap');
+}
 function olyRefresh() {
+  if (olyOn() && root.dataset.jlook) { delete root.dataset.jlook; rawSet('jarvis.look', null); }   // a whole-system theme replaces Classic
   readColors();
   if (core && typeof core.setTheme === 'function') safe(() => core.setTheme(coreTheme()));
   if (active === 'home') setTint(homeTint());
@@ -1793,6 +1825,7 @@ const hexMix = (a, b, t) => { const p = (h) => { const m = /^#([0-9a-f]{6})$/i.e
 const coreTheme = () => {
   const tint = window.__jarvisModeTint;
   if (tint) { const t = themeColors(); return { ...t, c: hexMix(t.c, tint, 0.3), c3: hexMix(t.c3, tint, 0.55), tint: hexMix(t.tint, tint, 0.25) }; }
+  if (root.dataset.jlook === 'classic' && !olyOn()) return 'eclipse';     // Classic Jarvis: the old violet core
   return CORE_KEYS.includes(root.dataset.theme) && !olyOn() ? root.dataset.theme : themeColors();
 };
 window.addEventListener('jarvis:mode', () => { if (core && typeof core.setTheme === 'function') safe(() => core.setTheme(coreTheme())); });
@@ -2139,7 +2172,8 @@ function nxStatus(id) {
     level: ['ok', 'warn', 'bad'].includes(st.level) ? st.level : '' };
 }
 // the orb steps aside while a sheet or the ⋯ keys are open, and while the keyboard is up
-const NX_COVER = ['#sheet', '#settings', '#look', '#voice', '#palette', '#more'];
+// night A 2026-11-16: + the AI key sheet and the Obsidian sheet (the orb sat over the key screen's Test / Save buttons on a phone)
+const NX_COVER = ['#sheet', '#settings', '#look', '#voice', '#palette', '#more', '#keySheet', '#obsSheet'];
 function nxCover() {
   if (!nx) return;
   const ae = document.activeElement, typing = !!ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName);
@@ -2420,6 +2454,15 @@ async function ask(text, voice = false) {
   const t = String(text || '').trim();
   if (!t) return;
   if (/^(what'?s|whats) new\??$/i.test(t)) { say('me', t); whatsNew(); return; }
+  // Classic Jarvis by voice / typing (night A 2026-11-16): "bring back the old Jarvis", "classic look", "violet look" / "agora look", "marble look"
+  const lk = /\b(classic|old|original|violet|purple)\s+(jarvis|look|hud|theme)\b|\bbring back (the )?old (jarvis|look)\b/i.test(t) ? 'classic'
+    : /\b(agora|marble|gold|new)\s+(look|theme)\b/i.test(t) ? 'agora' : '';
+  if (lk) {
+    say('me', t); setJLook(lk);
+    const m = lk === 'classic' ? 'Classic Jarvis is back: the violet HUD. Say "agora look" to switch back.' : 'AGORA look: marble and gold. Say "classic Jarvis" for the violet HUD.';
+    say('j', m); if (S.speakOn()) speak(m, voice); else setState('idle');
+    return;
+  }
   const { r, quiet } = await answer(t, voice);
   if (!quiet && S.speakOn()) speak(r.speak || r.text, voice); else setState('idle');     // every answer said while her voice is on
   if (r.open) openSoon(r.route && typeof r.open === 'string' ? { id: r.open, route: r.route } : r.open);
@@ -2711,6 +2754,7 @@ function paletteItems() {
   const items = apps().map((a) => ({ label: `Open ${a.name}`, tag: 'mode', run: () => show(a.id) }));
   items.push({ label: 'Briefing', tag: 'jarvis', run: () => briefing() }, { label: "What's new", tag: 'jarvis', run: () => whatsNew() });
   items.push({ label: 'Play the OLYMPUS intro', tag: 'look', run: () => playIntro() }, { label: "Today's timeline", tag: 'jarvis', run: () => showToday() });
+  items.push({ label: 'Look: Classic Jarvis (the old violet HUD)', tag: 'look', run: () => setJLook('classic') }, { label: 'Look: AGORA (marble and gold)', tag: 'look', run: () => setJLook('agora') });
   for (const t of THEMES) items.push({ label: `Theme: ${t[1]}`, tag: 'look', run: () => setTheme(t[0]) });
   if (TH()) for (const t of TH().list()) items.push({ label: `OLYMPUS theme: ${t.name}`, tag: 'look', run: () => setOlyTheme(t.id) });
   for (const c of CORE_DESIGNS) items.push({ label: `Core: ${c[1]}`, tag: 'look', run: () => setCoreDesign(c[0]) });
@@ -2879,6 +2923,7 @@ function olyTiles() {
 function renderLook() {
   if ($('#look').hidden) return;
   $('#olyThemes').innerHTML = olyTiles();
+  for (const b of $('#jlookSeg').children) b.setAttribute('aria-pressed', String(b.dataset.jlookK === jlook()));
   $('#setGrain').checked = !!(TH() && TH().grain());
   $('#olyNote').textContent = olyOn() ? `${(TH() && TH().get(olyId()).name) || 'This theme'} colours Jarvis and every app. Jarvis colour below goes back to the OLYMPUS default.`
     : 'The whole system: Jarvis now, and each app the next time it opens. Jarvis colour below tunes the default.';
@@ -2899,6 +2944,7 @@ function renderLook() {
 function openLook() { closeSheets(); closeMore(); $('#look').hidden = false; renderLook(); }
 $('#lookX').addEventListener('click', () => { $('#look').hidden = true; });
 $('#olySfxJs').addEventListener('load', renderLook); // if the owner opens Look while the async sound kit is still loading
+$('#jlookSeg').addEventListener('click', (e) => { const b = e.target.closest('[data-jlook-k]'); if (b) setJLook(b.dataset.jlookK); });
 $('#themes').addEventListener('click', (e) => { const b = e.target.closest('[data-theme-k]'); if (b) setTheme(b.dataset.themeK); });
 $('#olyThemes').addEventListener('click', (e) => { const b = e.target.closest('[data-oly-k]'); if (b) setOlyTheme(b.dataset.olyK); });
 $('#setGrain').addEventListener('change', () => { if (TH()) TH().grain($('#setGrain').checked); });
