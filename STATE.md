@@ -14,7 +14,10 @@ Updated 2026-11-15 ~23:45 ET (night teams A-E merged).
 
 ## Waiting on the owner
 - Obsidian (optional, 1 min on the PC): python tools/obsidian_sync.py --setup "C:\path\to\your\vault" (docs/OBSIDIAN_SYNC.md).
-- Tonight 19:00 ET: newest zip in Downloads -> SETUP_EVERYTHING.bat -> GitHub sign-in, Netlify key, YES + live phrase.
+- Yes/no (W1 2026-11-16): make the backtest use the same 1m bars as the live bot (branch night-w1-clean1m 94b955a)? Live orders
+  unchanged; backtest Jan-Jun $33,901 -> $33,171 (PF 4.98 -> 4.85); Jul-Oct + 2021-25 identical; live == backtest 120/120. On yes:
+  merge, refresh STRATEGY.md / research/lit/final_results.json headline numbers.
+- To load tonight's fixes before Friday: when both bots are flat, STOP BOT then START BOT.
 - Kalshi pause sentence in the kalshi-server chat (if not done).
 - Yes/no: lock the PC bot page to his own devices (Tailscale only; anyone on home WiFi can reach Stop today).
 - Yes/no: delete ~7 GB of old test leftovers in the container (python tools/disk_clean.py --apply; blocked for Claude by the safety check).
