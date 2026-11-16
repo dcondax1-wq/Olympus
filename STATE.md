@@ -13,6 +13,8 @@ Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7;
 | Phone dashboard | Netlify site moonlit-scone-08afe5 (private). Updates itself once the owner pastes a Netlify key at tonight's setup |
 
 ## Waiting on the owner
+- ONE PAGE for accounts (2026-11-16, owner: "trading is getting very confusing"): Business -> My Accounts
+  (tools/web_public/business/accounts.html). Plan in business/accounts.json: KEEP IT CURRENT on every account / plan change.
 - Obsidian (optional, 1 min on the PC): python tools/obsidian_sync.py --setup "C:\path\to\your\vault" (docs/OBSIDIAN_SYNC.md).
 - Yes/no (W1 2026-11-16): make the backtest use the same 1m bars as the live bot (branch night-w1-clean1m 94b955a)? Live orders
   unchanged; backtest Jan-Jun $33,901 -> $33,171 (PF 4.98 -> 4.85); Jul-Oct + 2021-25 identical; live == backtest 120/120. On yes:
