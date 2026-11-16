@@ -1,0 +1,3192 @@
+{
+ "date": "2026-11-16",
+ "n": 1000,
+ "spans": {
+  "H1": [
+   "2026-01-01",
+   "2026-06-30"
+  ],
+  "H2": [
+   "2026-07-01",
+   "2026-10-16"
+  ],
+  "REF": [
+   "2021-11-01",
+   "2025-12-31"
+  ]
+ },
+ "mixes": {
+  "LIT + ATLAS": {
+   "H1": {
+    "eval": {
+     "p10": 5.2,
+     "f10": 0.0,
+     "p60": 97.2,
+     "f60": 1.0,
+     "pass_med": 22.0
+    },
+    "funded": {
+     "per_month": 6269,
+     "lost_6m": 0.0,
+     "first_med": 6.0,
+     "no_pay": 2.1
+    },
+    "slot": {
+     "net_m": 5022,
+     "net_p10_m": 1595,
+     "p_none_pays": 2.3,
+     "p_pay_by_21": 15.5,
+     "p_pay_by_32": 46.1,
+     "first_any_med": 34.0,
+     "first_each_med": 34.0,
+     "dd_med": -1813,
+     "dd_p10": -1998,
+     "fees_6m": 95,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.01
+    },
+    "plain": {
+     "trades": 184,
+     "tpw": 7.19,
+     "win": 55.4,
+     "pf": 3.12,
+     "net": 72901,
+     "per_month": 11960,
+     "max_dd": -3017,
+     "win_days_pw": 2.46
+    }
+   },
+   "H2": {
+    "eval": {
+     "p10": 9.2,
+     "f10": 0.0,
+     "p60": 94.8,
+     "f60": 2.3,
+     "pass_med": 21.0
+    },
+    "funded": {
+     "per_month": 2884,
+     "lost_6m": 0.0,
+     "first_med": 10.0,
+     "no_pay": 6.8
+    },
+    "slot": {
+     "net_m": 2301,
+     "net_p10_m": 268,
+     "p_none_pays": 7.6,
+     "p_pay_by_21": 12.6,
+     "p_pay_by_32": 36.8,
+     "first_any_med": 37.0,
+     "first_each_med": 37.0,
+     "dd_med": -1816,
+     "dd_p10": -2058,
+     "fees_6m": 96,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.03
+    },
+    "plain": {
+     "trades": 86,
+     "tpw": 5.51,
+     "win": 53.5,
+     "pf": 2.74,
+     "net": 27304,
+     "per_month": 7351,
+     "max_dd": -2480,
+     "win_days_pw": 2.24
+    }
+   },
+   "REF": {
+    "eval": {
+     "p10": 1.1,
+     "f10": 2.9,
+     "p60": 19.2,
+     "f60": 68.0,
+     "pass_med": 29.0
+    },
+    "funded": {
+     "per_month": 251,
+     "lost_6m": 0.0,
+     "first_med": 7.0,
+     "no_pay": 64.3
+    },
+    "slot": {
+     "net_m": 63,
+     "net_p10_m": -78,
+     "p_none_pays": 82.2,
+     "p_pay_by_21": 0.9,
+     "p_pay_by_32": 2.7,
+     "first_any_med": 66.0,
+     "first_each_med": 66.0,
+     "dd_med": -3205,
+     "dd_p10": -6245,
+     "fees_6m": 273,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 2.9
+    },
+    "plain": {
+     "trades": 1505,
+     "tpw": 6.99,
+     "win": 42.9,
+     "pf": 1.07,
+     "net": 24948,
+     "per_month": 486,
+     "max_dd": -37025,
+     "win_days_pw": 1.72
+    }
+   }
+  },
+  "ATLAS + BLITZ": {
+   "H1": {
+    "eval": {
+     "p10": 6.0,
+     "f10": 0.0,
+     "p60": 96.8,
+     "f60": 1.5,
+     "pass_med": 20.0
+    },
+    "funded": {
+     "per_month": 4627,
+     "lost_6m": 0.0,
+     "first_med": 8.0,
+     "no_pay": 2.8
+    },
+    "slot": {
+     "net_m": 3736,
+     "net_p10_m": 1020,
+     "p_none_pays": 2.8,
+     "p_pay_by_21": 15.5,
+     "p_pay_by_32": 45.8,
+     "first_any_med": 34.0,
+     "first_each_med": 34.0,
+     "dd_med": -1800,
+     "dd_p10": -1998,
+     "fees_6m": 96,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.02
+    },
+    "plain": {
+     "trades": 321,
+     "tpw": 12.54,
+     "win": 55.5,
+     "pf": 2.34,
+     "net": 49126,
+     "per_month": 8060,
+     "max_dd": -2169,
+     "win_days_pw": 2.54
+    }
+   },
+   "H2": {
+    "eval": {
+     "p10": 8.4,
+     "f10": 0.0,
+     "p60": 88.2,
+     "f60": 1.4,
+     "pass_med": 24.0
+    },
+    "funded": {
+     "per_month": 2499,
+     "lost_6m": 0.0,
+     "first_med": 14.0,
+     "no_pay": 3.1
+    },
+    "slot": {
+     "net_m": 1785,
+     "net_p10_m": 130,
+     "p_none_pays": 8.5,
+     "p_pay_by_21": 8.1,
+     "p_pay_by_32": 25.2,
+     "first_any_med": 46.0,
+     "first_each_med": 46.0,
+     "dd_med": -1681,
+     "dd_p10": -1960,
+     "fees_6m": 96,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.02
+    },
+    "plain": {
+     "trades": 152,
+     "tpw": 9.74,
+     "win": 56.6,
+     "pf": 2.41,
+     "net": 18817,
+     "per_month": 5066,
+     "max_dd": -2420,
+     "win_days_pw": 2.05
+    }
+   },
+   "REF": {
+    "eval": {
+     "p10": 1.7,
+     "f10": 2.7,
+     "p60": 25.8,
+     "f60": 66.2,
+     "pass_med": 25.5
+    },
+    "funded": {
+     "per_month": 216,
+     "lost_6m": 0.0,
+     "first_med": 7.0,
+     "no_pay": 68.5
+    },
+    "slot": {
+     "net_m": 74,
+     "net_p10_m": -78,
+     "p_none_pays": 80.7,
+     "p_pay_by_21": 1.6,
+     "p_pay_by_32": 3.8,
+     "first_any_med": 65.0,
+     "first_each_med": 65.0,
+     "dd_med": -2881,
+     "dd_p10": -5951,
+     "fees_6m": 266,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 2.83
+    },
+    "plain": {
+     "trades": 2835,
+     "tpw": 13.16,
+     "win": 45.6,
+     "pf": 1.07,
+     "net": 29230,
+     "per_month": 570,
+     "max_dd": -27789,
+     "win_days_pw": 1.66
+    }
+   }
+  },
+  "LIT + BLITZ": {
+   "H1": {
+    "eval": {
+     "p10": 2.4,
+     "f10": 0.0,
+     "p60": 78.2,
+     "f60": 7.8,
+     "pass_med": 28.0
+    },
+    "funded": {
+     "per_month": 2676,
+     "lost_6m": 0.0,
+     "first_med": 13.0,
+     "no_pay": 5.2
+    },
+    "slot": {
+     "net_m": 1736,
+     "net_p10_m": 47,
+     "p_none_pays": 10.0,
+     "p_pay_by_21": 2.3,
+     "p_pay_by_32": 14.5,
+     "first_any_med": 52.0,
+     "first_each_med": 52.0,
+     "dd_med": -1829,
+     "dd_p10": -2144,
+     "fees_6m": 102,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.08
+    },
+    "plain": {
+     "trades": 297,
+     "tpw": 11.6,
+     "win": 57.2,
+     "pf": 2.41,
+     "net": 38717,
+     "per_month": 6352,
+     "max_dd": -4503,
+     "win_days_pw": 2.27
+    }
+   },
+   "H2": {
+    "eval": {
+     "p10": 5.8,
+     "f10": 0.0,
+     "p60": 90.3,
+     "f60": 2.6,
+     "pass_med": 25.0
+    },
+    "funded": {
+     "per_month": 2491,
+     "lost_6m": 0.0,
+     "first_med": 14.0,
+     "no_pay": 6.5
+    },
+    "slot": {
+     "net_m": 1795,
+     "net_p10_m": 285,
+     "p_none_pays": 6.5,
+     "p_pay_by_21": 3.9,
+     "p_pay_by_32": 18.6,
+     "first_any_med": 48.0,
+     "first_each_med": 48.0,
+     "dd_med": -1626,
+     "dd_p10": -1994,
+     "fees_6m": 97,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.03
+    },
+    "plain": {
+     "trades": 146,
+     "tpw": 9.36,
+     "win": 54.8,
+     "pf": 2.39,
+     "net": 19047,
+     "per_month": 5128,
+     "max_dd": -2144,
+     "win_days_pw": 1.79
+    }
+   },
+   "REF": {
+    "eval": {
+     "p10": 0.2,
+     "f10": 0.7,
+     "p60": 21.0,
+     "f60": 55.6,
+     "pass_med": 35.0
+    },
+    "funded": {
+     "per_month": 157,
+     "lost_6m": 0.0,
+     "first_med": 17.0,
+     "no_pay": 67.3
+    },
+    "slot": {
+     "net_m": 3,
+     "net_p10_m": -63,
+     "p_none_pays": 87.6,
+     "p_pay_by_21": 0.0,
+     "p_pay_by_32": 0.5,
+     "first_any_med": 77.0,
+     "first_each_med": 77.0,
+     "dd_med": -2635,
+     "dd_p10": -5036,
+     "fees_6m": 229,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 2.43
+    },
+    "plain": {
+     "trades": 2352,
+     "tpw": 10.92,
+     "win": 50.9,
+     "pf": 1.03,
+     "net": 8204,
+     "per_month": 160,
+     "max_dd": -20290,
+     "win_days_pw": 1.63
+    }
+   }
+  },
+  "LIT + Asia(LIT size) + ATLAS": {
+   "H1": {
+    "eval": {
+     "p10": 10.7,
+     "f10": 0.0,
+     "p60": 95.9,
+     "f60": 3.0,
+     "pass_med": 19.0
+    },
+    "funded": {
+     "per_month": 5653,
+     "lost_6m": 9.4,
+     "first_med": 5.0,
+     "no_pay": 4.3
+    },
+    "slot": {
+     "net_m": 4847,
+     "net_p10_m": 1149,
+     "p_none_pays": 3.4,
+     "p_pay_by_21": 20.7,
+     "p_pay_by_32": 55.4,
+     "first_any_med": 30.0,
+     "first_each_med": 30.0,
+     "dd_med": -1950,
+     "dd_p10": -2181,
+     "fees_6m": 105,
+     "lost_6m": 7.3,
+     "gaveup": 0.0,
+     "evals": 1.12
+    },
+    "plain": {
+     "trades": 225,
+     "tpw": 8.79,
+     "win": 55.6,
+     "pf": 2.85,
+     "net": 75039,
+     "per_month": 12311,
+     "max_dd": -3514,
+     "win_days_pw": 2.5
+    }
+   },
+   "H2": {
+    "eval": {
+     "p10": 21.8,
+     "f10": 0.0,
+     "p60": 98.8,
+     "f60": 0.8,
+     "pass_med": 16.0
+    },
+    "funded": {
+     "per_month": 3442,
+     "lost_6m": 2.0,
+     "first_med": 8.0,
+     "no_pay": 5.1
+    },
+    "slot": {
+     "net_m": 2958,
+     "net_p10_m": 541,
+     "p_none_pays": 5.7,
+     "p_pay_by_21": 23.1,
+     "p_pay_by_32": 56.4,
+     "first_any_med": 29.0,
+     "first_each_med": 29.0,
+     "dd_med": -1868,
+     "dd_p10": -2024,
+     "fees_6m": 96,
+     "lost_6m": 1.6,
+     "gaveup": 0.0,
+     "evals": 1.02
+    },
+    "plain": {
+     "trades": 109,
+     "tpw": 6.99,
+     "win": 54.1,
+     "pf": 2.58,
+     "net": 31469,
+     "per_month": 8472,
+     "max_dd": -1896,
+     "win_days_pw": 2.56
+    }
+   },
+   "REF": {
+    "eval": {
+     "p10": 1.4,
+     "f10": 7.1,
+     "p60": 15.5,
+     "f60": 79.6,
+     "pass_med": 23.0
+    },
+    "funded": {
+     "per_month": 196,
+     "lost_6m": 27.3,
+     "first_med": 5.0,
+     "no_pay": 68.2
+    },
+    "slot": {
+     "net_m": 36,
+     "net_p10_m": -94,
+     "p_none_pays": 84.7,
+     "p_pay_by_21": 0.7,
+     "p_pay_by_32": 2.4,
+     "first_any_med": 66.0,
+     "first_each_med": 66.0,
+     "dd_med": -4274,
+     "dd_p10": -7855,
+     "fees_6m": 363,
+     "lost_6m": 9.9,
+     "gaveup": 0.0,
+     "evals": 3.86
+    },
+    "plain": {
+     "trades": 1679,
+     "tpw": 7.79,
+     "win": 42.9,
+     "pf": 1.02,
+     "net": 8391,
+     "per_month": 164,
+     "max_dd": -48499,
+     "win_days_pw": 1.75
+    }
+   }
+  },
+  "LIT + Asia $300 + ATLAS": {
+   "H1": {
+    "eval": {
+     "p10": 7.5,
+     "f10": 0.1,
+     "p60": 96.8,
+     "f60": 1.7,
+     "pass_med": 20.0
+    },
+    "funded": {
+     "per_month": 6270,
+     "lost_6m": 0.0,
+     "first_med": 6.0,
+     "no_pay": 2.5
+    },
+    "slot": {
+     "net_m": 5133,
+     "net_p10_m": 1550,
+     "p_none_pays": 3.1,
+     "p_pay_by_21": 17.9,
+     "p_pay_by_32": 52.0,
+     "first_any_med": 31.0,
+     "first_each_med": 31.0,
+     "dd_med": -1885,
+     "dd_p10": -2075,
+     "fees_6m": 97,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.03
+    },
+    "plain": {
+     "trades": 225,
+     "tpw": 8.79,
+     "win": 55.6,
+     "pf": 2.98,
+     "net": 74496,
+     "per_month": 12222,
+     "max_dd": -3293,
+     "win_days_pw": 2.46
+    }
+   },
+   "H2": {
+    "eval": {
+     "p10": 13.9,
+     "f10": 0.0,
+     "p60": 98.2,
+     "f60": 0.8,
+     "pass_med": 19.0
+    },
+    "funded": {
+     "per_month": 3745,
+     "lost_6m": 0.0,
+     "first_med": 9.0,
+     "no_pay": 2.0
+    },
+    "slot": {
+     "net_m": 3035,
+     "net_p10_m": 1002,
+     "p_none_pays": 3.0,
+     "p_pay_by_21": 18.7,
+     "p_pay_by_32": 49.0,
+     "first_any_med": 32.0,
+     "first_each_med": 32.0,
+     "dd_med": -1638,
+     "dd_p10": -1978,
+     "fees_6m": 95,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.01
+    },
+    "plain": {
+     "trades": 109,
+     "tpw": 6.99,
+     "win": 54.1,
+     "pf": 2.64,
+     "net": 29613,
+     "per_month": 7973,
+     "max_dd": -1896,
+     "win_days_pw": 2.5
+    }
+   },
+   "REF": {
+    "eval": {
+     "p10": 1.1,
+     "f10": 4.7,
+     "p60": 15.4,
+     "f60": 76.5,
+     "pass_med": 27.0
+    },
+    "funded": {
+     "per_month": 233,
+     "lost_6m": 0.0,
+     "first_med": 6.0,
+     "no_pay": 65.4
+    },
+    "slot": {
+     "net_m": 42,
+     "net_p10_m": -94,
+     "p_none_pays": 85.3,
+     "p_pay_by_21": 0.6,
+     "p_pay_by_32": 1.9,
+     "first_any_med": 63.0,
+     "first_each_med": 63.0,
+     "dd_med": -3803,
+     "dd_p10": -7137,
+     "fees_6m": 322,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 3.43
+    },
+    "plain": {
+     "trades": 1679,
+     "tpw": 7.79,
+     "win": 42.9,
+     "pf": 1.04,
+     "net": 15344,
+     "per_month": 299,
+     "max_dd": -43280,
+     "win_days_pw": 1.72
+    }
+   }
+  },
+  "ATLAS + sh_asia + sh_trend": {
+   "H1": {
+    "eval": {
+     "p10": 10.4,
+     "f10": 0.0,
+     "p60": 98.3,
+     "f60": 0.7,
+     "pass_med": 19.0
+    },
+    "funded": {
+     "per_month": 5426,
+     "lost_6m": 0.0,
+     "first_med": 8.0,
+     "no_pay": 0.5
+    },
+    "slot": {
+     "net_m": 4408,
+     "net_p10_m": 2100,
+     "p_none_pays": 0.5,
+     "p_pay_by_21": 18.2,
+     "p_pay_by_32": 53.0,
+     "first_any_med": 31.0,
+     "first_each_med": 31.0,
+     "dd_med": -1675,
+     "dd_p10": -1907,
+     "fees_6m": 94,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.0
+    },
+    "plain": {
+     "trades": 176,
+     "tpw": 6.88,
+     "win": 58.5,
+     "pf": 2.76,
+     "net": 48546,
+     "per_month": 7964,
+     "max_dd": -1816,
+     "win_days_pw": 2.34
+    }
+   },
+   "H2": {
+    "eval": {
+     "p10": 6.2,
+     "f10": 0.1,
+     "p60": 86.3,
+     "f60": 7.1,
+     "pass_med": 21.0
+    },
+    "funded": {
+     "per_month": 2530,
+     "lost_6m": 0.0,
+     "first_med": 12.0,
+     "no_pay": 7.0
+    },
+    "slot": {
+     "net_m": 1908,
+     "net_p10_m": 85,
+     "p_none_pays": 9.2,
+     "p_pay_by_21": 7.7,
+     "p_pay_by_32": 27.6,
+     "first_any_med": 41.0,
+     "first_each_med": 41.0,
+     "dd_med": -1781,
+     "dd_p10": -2080,
+     "fees_6m": 104,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.1
+    },
+    "plain": {
+     "trades": 109,
+     "tpw": 6.99,
+     "win": 59.6,
+     "pf": 2.36,
+     "net": 18446,
+     "per_month": 4966,
+     "max_dd": -1913,
+     "win_days_pw": 2.44
+    }
+   },
+   "REF": {
+    "eval": {
+     "p10": 2.5,
+     "f10": 2.9,
+     "p60": 41.1,
+     "f60": 51.5,
+     "pass_med": 25.0
+    },
+    "funded": {
+     "per_month": 303,
+     "lost_6m": 0.0,
+     "first_med": 9.0,
+     "no_pay": 60.5
+    },
+    "slot": {
+     "net_m": 185,
+     "net_p10_m": -63,
+     "p_none_pays": 68.1,
+     "p_pay_by_21": 2.3,
+     "p_pay_by_32": 6.2,
+     "first_any_med": 57.0,
+     "first_each_med": 57.0,
+     "dd_med": -2135,
+     "dd_p10": -4560,
+     "fees_6m": 196,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 2.08
+    },
+    "plain": {
+     "trades": 1868,
+     "tpw": 8.67,
+     "win": 46.6,
+     "pf": 1.17,
+     "net": 63730,
+     "per_month": 1243,
+     "max_dd": -18953,
+     "win_days_pw": 1.97
+    }
+   }
+  },
+  "LIT + sh_asia + sh_trend": {
+   "H1": {
+    "eval": {
+     "p10": 4.3,
+     "f10": 0.0,
+     "p60": 81.2,
+     "f60": 3.4,
+     "pass_med": 28.0
+    },
+    "funded": {
+     "per_month": 2977,
+     "lost_6m": 0.0,
+     "first_med": 14.0,
+     "no_pay": 3.2
+    },
+    "slot": {
+     "net_m": 1986,
+     "net_p10_m": 344,
+     "p_none_pays": 6.5,
+     "p_pay_by_21": 4.7,
+     "p_pay_by_32": 19.3,
+     "first_any_med": 51.0,
+     "first_each_med": 51.0,
+     "dd_med": -1696,
+     "dd_p10": -2025,
+     "fees_6m": 99,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.05
+    },
+    "plain": {
+     "trades": 152,
+     "tpw": 5.94,
+     "win": 62.5,
+     "pf": 3.08,
+     "net": 38137,
+     "per_month": 6257,
+     "max_dd": -3548,
+     "win_days_pw": 2.19
+    }
+   },
+   "H2": {
+    "eval": {
+     "p10": 7.0,
+     "f10": 0.3,
+     "p60": 89.3,
+     "f60": 6.5,
+     "pass_med": 22.0
+    },
+    "funded": {
+     "per_month": 2590,
+     "lost_6m": 0.0,
+     "first_med": 12.0,
+     "no_pay": 7.6
+    },
+    "slot": {
+     "net_m": 1965,
+     "net_p10_m": 204,
+     "p_none_pays": 7.6,
+     "p_pay_by_21": 5.8,
+     "p_pay_by_32": 27.1,
+     "first_any_med": 42.0,
+     "first_each_med": 42.0,
+     "dd_med": -1831,
+     "dd_p10": -2281,
+     "fees_6m": 102,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.08
+    },
+    "plain": {
+     "trades": 103,
+     "tpw": 6.6,
+     "win": 57.3,
+     "pf": 2.33,
+     "net": 18676,
+     "per_month": 5028,
+     "max_dd": -2333,
+     "win_days_pw": 2.12
+    }
+   },
+   "REF": {
+    "eval": {
+     "p10": 0.4,
+     "f10": 0.6,
+     "p60": 42.9,
+     "f60": 37.0,
+     "pass_med": 32.0
+    },
+    "funded": {
+     "per_month": 350,
+     "lost_6m": 0.0,
+     "first_med": 20.0,
+     "no_pay": 48.8
+    },
+    "slot": {
+     "net_m": 162,
+     "net_p10_m": -47,
+     "p_none_pays": 66.4,
+     "p_pay_by_21": 0.3,
+     "p_pay_by_32": 2.0,
+     "first_any_med": 69.0,
+     "first_each_med": 69.0,
+     "dd_med": -1996,
+     "dd_p10": -3487,
+     "fees_6m": 159,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.69
+    },
+    "plain": {
+     "trades": 1385,
+     "tpw": 6.43,
+     "win": 55.9,
+     "pf": 1.21,
+     "net": 42704,
+     "per_month": 833,
+     "max_dd": -10457,
+     "win_days_pw": 2.08
+    }
+   }
+  },
+  "ATLAS + BLITZ + sh_asia": {
+   "H1": {
+    "eval": {
+     "p10": 14.5,
+     "f10": 0.0,
+     "p60": 98.2,
+     "f60": 1.6,
+     "pass_med": 16.0
+    },
+    "funded": {
+     "per_month": 5666,
+     "lost_6m": 0.0,
+     "first_med": 7.0,
+     "no_pay": 0.8
+    },
+    "slot": {
+     "net_m": 4775,
+     "net_p10_m": 2178,
+     "p_none_pays": 0.7,
+     "p_pay_by_21": 25.6,
+     "p_pay_by_32": 63.8,
+     "first_any_med": 28.0,
+     "first_each_med": 28.0,
+     "dd_med": -1733,
+     "dd_p10": -1903,
+     "fees_6m": 95,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.01
+    },
+    "plain": {
+     "trades": 359,
+     "tpw": 14.02,
+     "win": 56.8,
+     "pf": 2.35,
+     "net": 53281,
+     "per_month": 8741,
+     "max_dd": -2568,
+     "win_days_pw": 2.7
+    }
+   },
+   "H2": {
+    "eval": {
+     "p10": 14.4,
+     "f10": 0.1,
+     "p60": 83.6,
+     "f60": 8.5,
+     "pass_med": 20.0
+    },
+    "funded": {
+     "per_month": 2628,
+     "lost_6m": 0.0,
+     "first_med": 11.0,
+     "no_pay": 8.4
+    },
+    "slot": {
+     "net_m": 1982,
+     "net_p10_m": -16,
+     "p_none_pays": 12.0,
+     "p_pay_by_21": 12.4,
+     "p_pay_by_32": 31.2,
+     "first_any_med": 41.0,
+     "first_each_med": 41.0,
+     "dd_med": -1857,
+     "dd_p10": -2188,
+     "fees_6m": 108,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.15
+    },
+    "plain": {
+     "trades": 192,
+     "tpw": 12.31,
+     "win": 56.8,
+     "pf": 2.2,
+     "net": 20882,
+     "per_month": 5622,
+     "max_dd": -3122,
+     "win_days_pw": 2.69
+    }
+   },
+   "REF": {
+    "eval": {
+     "p10": 3.8,
+     "f10": 6.3,
+     "p60": 33.4,
+     "f60": 63.2,
+     "pass_med": 22.0
+    },
+    "funded": {
+     "per_month": 257,
+     "lost_6m": 0.0,
+     "first_med": 7.0,
+     "no_pay": 65.4
+    },
+    "slot": {
+     "net_m": 127,
+     "net_p10_m": -78,
+     "p_none_pays": 73.6,
+     "p_pay_by_21": 2.7,
+     "p_pay_by_32": 6.8,
+     "first_any_med": 54.0,
+     "first_each_med": 54.0,
+     "dd_med": -2456,
+     "dd_p10": -5690,
+     "fees_6m": 248,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 2.64
+    },
+    "plain": {
+     "trades": 3315,
+     "tpw": 15.39,
+     "win": 46.9,
+     "pf": 1.09,
+     "net": 45710,
+     "per_month": 891,
+     "max_dd": -27235,
+     "win_days_pw": 1.92
+    }
+   }
+  }
+ },
+ "groups": {
+  "2x identical (LIT + ATLAS)": {
+   "H1": {
+    "net_m": 10044,
+    "net_p10_m": 3189,
+    "p_none_pays": 2.3,
+    "p_pay_by_21": 15.5,
+    "p_pay_by_32": 46.1,
+    "first_any_med": 34.0,
+    "first_each_med": 34.0,
+    "dd_med": -3627,
+    "dd_p10": -3997,
+    "fees_6m": 190,
+    "lost_6m": 0.0,
+    "gaveup": 0.0,
+    "evals": 2.03
+   },
+   "H2": {
+    "net_m": 4602,
+    "net_p10_m": 536,
+    "p_none_pays": 7.6,
+    "p_pay_by_21": 12.6,
+    "p_pay_by_32": 36.8,
+    "first_any_med": 37.0,
+    "first_each_med": 37.0,
+    "dd_med": -3631,
+    "dd_p10": -4115,
+    "fees_6m": 193,
+    "lost_6m": 0.0,
+    "gaveup": 0.0,
+    "evals": 2.05
+   },
+   "REF": {
+    "net_m": 125,
+    "net_p10_m": -157,
+    "p_none_pays": 82.2,
+    "p_pay_by_21": 0.9,
+    "p_pay_by_32": 2.7,
+    "first_any_med": 66.0,
+    "first_each_med": 66.0,
+    "dd_med": -6411,
+    "dd_p10": -12491,
+    "fees_6m": 546,
+    "lost_6m": 0.0,
+    "gaveup": 0.0,
+    "evals": 5.8
+   }
+  },
+  "2x: LIT + ATLAS | ATLAS + BLITZ": {
+   "H1": {
+    "net_m": 8758,
+    "net_p10_m": 3763,
+    "p_none_pays": 0.2,
+    "p_pay_by_21": 24.4,
+    "p_pay_by_32": 62.2,
+    "first_any_med": 29.0,
+    "first_each_med": 34.0,
+    "dd_med": -3158,
+    "dd_p10": -3724,
+    "fees_6m": 192,
+    "lost_6m": 0.0,
+    "gaveup": 0.0,
+    "evals": 2.04
+   },
+   "H2": {
+    "net_m": 4086,
+    "net_p10_m": 1241,
+    "p_none_pays": 1.6,
+    "p_pay_by_21": 17.0,
+    "p_pay_by_32": 45.5,
+    "first_any_med": 34.0,
+    "first_each_med": 41.0,
+    "dd_med": -2653,
+    "dd_p10": -3563,
+    "fees_6m": 193,
+    "lost_6m": 0.0,
+    "gaveup": 0.0,
+    "evals": 2.05
+   },
+   "REF": {
+    "net_m": 137,
+    "net_p10_m": -141,
+    "p_none_pays": 70.2,
+    "p_pay_by_21": 1.7,
+    "p_pay_by_32": 5.1,
+    "first_any_med": 64.0,
+    "first_each_med": 65.0,
+    "dd_med": -5803,
+    "dd_p10": -10503,
+    "fees_6m": 539,
+    "lost_6m": 0.0,
+    "gaveup": 0.0,
+    "evals": 5.74
+   }
+  },
+  "2x: LIT + ATLAS | LIT + BLITZ": {
+   "H1": {
+    "net_m": 6758,
+    "net_p10_m": 2630,
+    "p_none_pays": 0.7,
+    "p_pay_by_21": 16.2,
+    "p_pay_by_32": 50.8,
+    "first_any_med": 32.0,
+    "first_each_med": 41.0,
+    "dd_med": -2724,
+    "dd_p10": -3593,
+    "fees_6m": 197,
+    "lost_6m": 0.0,
+    "gaveup": 0.0,
+    "evals": 2.1
+   },
+   "H2": {
+    "net_m": 4096,
+    "net_p10_m": 1062,
+    "p_none_pays": 1.7,
+    "p_pay_by_21": 14.5,
+    "p_pay_by_32": 42.4,
+    "first_any_med": 35.0,
+    "first_each_med": 42.0,
+    "dd_med": -2828,
+    "dd_p10": -3750,
+    "fees_6m": 194,
+    "lost_6m": 0.0,
+    "gaveup": 0.0,
+    "evals": 2.06
+   },
+   "REF": {
+    "net_m": 65,
+    "net_p10_m": -125,
+    "p_none_pays": 74.0,
+    "p_pay_by_21": 0.9,
+    "p_pay_by_32": 2.8,
+    "first_any_med": 70.0,
+    "first_each_med": 70.0,
+    "dd_med": -5035,
+    "dd_p10": -9044,
+    "fees_6m": 501,
+    "lost_6m": 0.0,
+    "gaveup": 0.0,
+    "evals": 5.33
+   }
+  },
+  "2x: LIT + ATLAS | ATLAS + sh_asia + sh_trend": {
+   "H1": {
+    "net_m": 9430,
+    "net_p10_m": 4328,
+    "p_none_pays": 0.2,
+    "p_pay_by_21": 26.1,
+    "p_pay_by_32": 63.6,
+    "first_any_med": 28.0,
+    "first_each_med": 32.0,
+    "dd_med": -3165,
+    "dd_p10": -3688,
+    "fees_6m": 189,
+    "lost_6m": 0.0,
+    "gaveup": 0.0,
+    "evals": 2.02
+   },
+   "H2": {
+    "net_m": 4209,
+    "net_p10_m": 1249,
+    "p_none_pays": 1.4,
+    "p_pay_by_21": 17.0,
+    "p_pay_by_32": 46.3,
+    "first_any_med": 33.0,
+    "first_each_med": 39.0,
+    "dd_med": -2890,
+    "dd_p10": -3761,
+    "fees_6m": 200,
+    "lost_6m": 0.0,
+    "gaveup": 0.0,
+    "evals": 2.13
+   },
+   "REF": {
+    "net_m": 248,
+    "net_p10_m": -125,
+    "p_none_pays": 61.1,
+    "p_pay_by_21": 2.4,
+    "p_pay_by_32": 7.6,
+    "first_any_med": 57.0,
+    "first_each_med": 59.0,
+    "dd_med": -4860,
+    "dd_p10": -8799,
+    "fees_6m": 468,
+    "lost_6m": 0.0,
+    "gaveup": 0.0,
+    "evals": 4.98
+   }
+  },
+  "3x identical (LIT + ATLAS)": {
+   "H1": {
+    "net_m": 15066,
+    "net_p10_m": 4784,
+    "p_none_pays": 2.3,
+    "p_pay_by_21": 15.5,
+    "p_pay_by_32": 46.1,
+    "first_any_med": 34.0,
+    "first_each_med": 34.0,
+    "dd_med": -5440,
+    "dd_p10": -5995,
+    "fees_6m": 286,
+    "lost_6m": 0.0,
+    "gaveup": 0.0,
+    "evals": 3.04
+   },
+   "H2": {
+    "net_m": 6903,
+    "net_p10_m": 805,
+    "p_none_pays": 7.6,
+    "p_pay_by_21": 12.6,
+    "p_pay_by_32": 36.8,
+    "first_any_med": 37.0,
+    "first_each_med": 37.0,
+    "dd_med": -5447,
+    "dd_p10": -6173,
+    "fees_6m": 289,
+    "lost_6m": 0.0,
+    "gaveup": 0.0,
+    "evals": 3.08
+   },
+   "REF": {
+    "net_m": 188,
+    "net_p10_m": -235,
+    "p_none_pays": 82.2,
+    "p_pay_by_21": 0.9,
+    "p_pay_by_32": 2.7,
+    "first_any_med": 66.0,
+    "first_each_med": 66.0,
+    "dd_med": -9616,
+    "dd_p10": -18736,
+    "fees_6m": 818,
+    "lost_6m": 0.0,
+    "gaveup": 0.0,
+    "evals": 8.71
+   }
+  },
+  "3x: LIT + ATLAS | ATLAS + BLITZ | LIT + BLITZ": {
+   "H1": {
+    "net_m": 10494,
+    "net_p10_m": 4472,
+    "p_none_pays": 0.0,
+    "p_pay_by_21": 24.8,
+    "p_pay_by_32": 64.5,
+    "first_any_med": 28.0,
+    "first_each_med": 38.0,
+    "dd_med": -3922,
+    "dd_p10": -5041,
+    "fees_6m": 293,
+    "lost_6m": 0.0,
+    "gaveup": 0.0,
+    "evals": 3.12
+   },
+   "H2": {
+    "net_m": 5881,
+    "net_p10_m": 1973,
+    "p_none_pays": 0.7,
+    "p_pay_by_21": 18.2,
+    "p_pay_by_32": 48.1,
+    "first_any_med": 33.0,
+    "first_each_med": 43.0,
+    "dd_med": -3562,
+    "dd_p10": -4825,
+    "fees_6m": 290,
+    "lost_6m": 0.0,
+    "gaveup": 0.0,
+    "evals": 3.08
+   },
+   "REF": {
+    "net_m": 139,
+    "net_p10_m": -204,
+    "p_none_pays": 63.8,
+    "p_pay_by_21": 1.7,
+    "p_pay_by_32": 5.2,
+    "first_any_med": 67.0,
+    "first_each_med": 69.0,
+    "dd_med": -7434,
+    "dd_p10": -13583,
+    "fees_6m": 768,
+    "lost_6m": 0.0,
+    "gaveup": 0.0,
+    "evals": 8.17
+   }
+  },
+  "3x: LIT + ATLAS | LIT + Asia + ATLAS | ATLAS + BLITZ": {
+   "H1": {
+    "net_m": 13605,
+    "net_p10_m": 5411,
+    "p_none_pays": 0.1,
+    "p_pay_by_21": 31.2,
+    "p_pay_by_32": 71.0,
+    "first_any_med": 26.0,
+    "first_each_med": 32.0,
+    "dd_med": -4817,
+    "dd_p10": -5646,
+    "fees_6m": 297,
+    "lost_6m": 2.4,
+    "gaveup": 0.0,
+    "evals": 3.15
+   },
+   "H2": {
+    "net_m": 7044,
+    "net_p10_m": 2770,
+    "p_none_pays": 0.3,
+    "p_pay_by_21": 31.0,
+    "p_pay_by_32": 67.8,
+    "first_any_med": 27.0,
+    "first_each_med": 36.0,
+    "dd_med": -3449,
+    "dd_p10": -4486,
+    "fees_6m": 289,
+    "lost_6m": 0.5,
+    "gaveup": 0.0,
+    "evals": 3.07
+   },
+   "REF": {
+    "net_m": 172,
+    "net_p10_m": -235,
+    "p_none_pays": 65.5,
+    "p_pay_by_21": 2.0,
+    "p_pay_by_32": 6.2,
+    "first_any_med": 63.0,
+    "first_each_med": 65.0,
+    "dd_med": -9621,
+    "dd_p10": -16888,
+    "fees_6m": 902,
+    "lost_6m": 3.3,
+    "gaveup": 0.0,
+    "evals": 9.6
+   }
+  },
+  "3x: LIT + ATLAS | ATLAS + sh | LIT + BLITZ": {
+   "H1": {
+    "net_m": 11166,
+    "net_p10_m": 5385,
+    "p_none_pays": 0.2,
+    "p_pay_by_21": 26.7,
+    "p_pay_by_32": 67.3,
+    "first_any_med": 28.0,
+    "first_each_med": 37.0,
+    "dd_med": -3812,
+    "dd_p10": -4818,
+    "fees_6m": 291,
+    "lost_6m": 0.0,
+    "gaveup": 0.0,
+    "evals": 3.1
+   },
+   "H2": {
+    "net_m": 6004,
+    "net_p10_m": 2248,
+    "p_none_pays": 0.3,
+    "p_pay_by_21": 18.7,
+    "p_pay_by_32": 50.2,
+    "first_any_med": 32.0,
+    "first_each_med": 42.0,
+    "dd_med": -3618,
+    "dd_p10": -4973,
+    "fees_6m": 298,
+    "lost_6m": 0.0,
+    "gaveup": 0.0,
+    "evals": 3.17
+   },
+   "REF": {
+    "net_m": 250,
+    "net_p10_m": -172,
+    "p_none_pays": 55.2,
+    "p_pay_by_21": 2.4,
+    "p_pay_by_32": 7.7,
+    "first_any_med": 59.0,
+    "first_each_med": 64.0,
+    "dd_med": -6281,
+    "dd_p10": -11170,
+    "fees_6m": 697,
+    "lost_6m": 0.0,
+    "gaveup": 0.0,
+    "evals": 7.42
+   }
+  },
+  "3x: LIT + ATLAS | ATLAS + BLITZ + sh_asia | LIT + sh": {
+   "H1": {
+    "net_m": 11783,
+    "net_p10_m": 5937,
+    "p_none_pays": 0.0,
+    "p_pay_by_21": 34.5,
+    "p_pay_by_32": 75.3,
+    "first_any_med": 25.0,
+    "first_each_med": 35.0,
+    "dd_med": -3791,
+    "dd_p10": -4823,
+    "fees_6m": 289,
+    "lost_6m": 0.0,
+    "gaveup": 0.0,
+    "evals": 3.07
+   },
+   "H2": {
+    "net_m": 6248,
+    "net_p10_m": 1989,
+    "p_none_pays": 0.5,
+    "p_pay_by_21": 23.1,
+    "p_pay_by_32": 55.5,
+    "first_any_med": 30.0,
+    "first_each_med": 40.0,
+    "dd_med": -4128,
+    "dd_p10": -5542,
+    "fees_6m": 306,
+    "lost_6m": 0.0,
+    "gaveup": 0.0,
+    "evals": 3.25
+   },
+   "REF": {
+    "net_m": 351,
+    "net_p10_m": -172,
+    "p_none_pays": 46.3,
+    "p_pay_by_21": 3.1,
+    "p_pay_by_32": 9.9,
+    "first_any_med": 60.0,
+    "first_each_med": 64.5,
+    "dd_med": -6131,
+    "dd_p10": -10862,
+    "fees_6m": 680,
+    "lost_6m": 0.0,
+    "gaveup": 0.0,
+    "evals": 7.23
+   }
+  }
+ },
+ "asia": {
+  "LIT + ATLAS (base)": {
+   "H1": {
+    "eval": {
+     "p10": 5.2,
+     "f10": 0.0,
+     "p60": 97.2,
+     "f60": 1.0,
+     "pass_med": 22.0
+    },
+    "funded": {
+     "per_month": 6269,
+     "lost_6m": 0.0,
+     "first_med": 6.0,
+     "no_pay": 2.1
+    },
+    "slot": {
+     "net_m": 5022,
+     "net_p10_m": 1595,
+     "p_none_pays": 2.3,
+     "p_pay_by_21": 15.5,
+     "p_pay_by_32": 46.1,
+     "first_any_med": 34.0,
+     "first_each_med": 34.0,
+     "dd_med": -1813,
+     "dd_p10": -1998,
+     "fees_6m": 95,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.01
+    },
+    "plain": {
+     "trades": 184,
+     "tpw": 7.19,
+     "win": 55.4,
+     "pf": 3.12,
+     "net": 72901,
+     "per_month": 11960,
+     "max_dd": -3017,
+     "win_days_pw": 2.46
+    }
+   },
+   "H2": {
+    "eval": {
+     "p10": 9.2,
+     "f10": 0.0,
+     "p60": 94.8,
+     "f60": 2.3,
+     "pass_med": 21.0
+    },
+    "funded": {
+     "per_month": 2884,
+     "lost_6m": 0.0,
+     "first_med": 10.0,
+     "no_pay": 6.8
+    },
+    "slot": {
+     "net_m": 2301,
+     "net_p10_m": 268,
+     "p_none_pays": 7.6,
+     "p_pay_by_21": 12.6,
+     "p_pay_by_32": 36.8,
+     "first_any_med": 37.0,
+     "first_each_med": 37.0,
+     "dd_med": -1816,
+     "dd_p10": -2058,
+     "fees_6m": 96,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.03
+    },
+    "plain": {
+     "trades": 86,
+     "tpw": 5.51,
+     "win": 53.5,
+     "pf": 2.74,
+     "net": 27304,
+     "per_month": 7351,
+     "max_dd": -2480,
+     "win_days_pw": 2.24
+    }
+   },
+   "REF": {
+    "eval": {
+     "p10": 1.1,
+     "f10": 2.9,
+     "p60": 19.2,
+     "f60": 68.0,
+     "pass_med": 29.0
+    },
+    "funded": {
+     "per_month": 251,
+     "lost_6m": 0.0,
+     "first_med": 7.0,
+     "no_pay": 64.3
+    },
+    "slot": {
+     "net_m": 63,
+     "net_p10_m": -78,
+     "p_none_pays": 82.2,
+     "p_pay_by_21": 0.9,
+     "p_pay_by_32": 2.7,
+     "first_any_med": 66.0,
+     "first_each_med": 66.0,
+     "dd_med": -3205,
+     "dd_p10": -6245,
+     "fees_6m": 273,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 2.9
+    },
+    "plain": {
+     "trades": 1505,
+     "tpw": 6.99,
+     "win": 42.9,
+     "pf": 1.07,
+     "net": 24948,
+     "per_month": 486,
+     "max_dd": -37025,
+     "win_days_pw": 1.72
+    }
+   }
+  },
+  "LIT + Asia(LIT size) + ATLAS": {
+   "H1": {
+    "eval": {
+     "p10": 10.7,
+     "f10": 0.0,
+     "p60": 95.9,
+     "f60": 3.0,
+     "pass_med": 19.0
+    },
+    "funded": {
+     "per_month": 5653,
+     "lost_6m": 9.4,
+     "first_med": 5.0,
+     "no_pay": 4.3
+    },
+    "slot": {
+     "net_m": 4847,
+     "net_p10_m": 1149,
+     "p_none_pays": 3.4,
+     "p_pay_by_21": 20.7,
+     "p_pay_by_32": 55.4,
+     "first_any_med": 30.0,
+     "first_each_med": 30.0,
+     "dd_med": -1950,
+     "dd_p10": -2181,
+     "fees_6m": 105,
+     "lost_6m": 7.3,
+     "gaveup": 0.0,
+     "evals": 1.12
+    },
+    "plain": {
+     "trades": 225,
+     "tpw": 8.79,
+     "win": 55.6,
+     "pf": 2.85,
+     "net": 75039,
+     "per_month": 12311,
+     "max_dd": -3514,
+     "win_days_pw": 2.5
+    }
+   },
+   "H2": {
+    "eval": {
+     "p10": 21.8,
+     "f10": 0.0,
+     "p60": 98.8,
+     "f60": 0.8,
+     "pass_med": 16.0
+    },
+    "funded": {
+     "per_month": 3442,
+     "lost_6m": 2.0,
+     "first_med": 8.0,
+     "no_pay": 5.1
+    },
+    "slot": {
+     "net_m": 2958,
+     "net_p10_m": 541,
+     "p_none_pays": 5.7,
+     "p_pay_by_21": 23.1,
+     "p_pay_by_32": 56.4,
+     "first_any_med": 29.0,
+     "first_each_med": 29.0,
+     "dd_med": -1868,
+     "dd_p10": -2024,
+     "fees_6m": 96,
+     "lost_6m": 1.6,
+     "gaveup": 0.0,
+     "evals": 1.02
+    },
+    "plain": {
+     "trades": 109,
+     "tpw": 6.99,
+     "win": 54.1,
+     "pf": 2.58,
+     "net": 31469,
+     "per_month": 8472,
+     "max_dd": -1896,
+     "win_days_pw": 2.56
+    }
+   },
+   "REF": {
+    "eval": {
+     "p10": 1.4,
+     "f10": 7.1,
+     "p60": 15.5,
+     "f60": 79.6,
+     "pass_med": 23.0
+    },
+    "funded": {
+     "per_month": 196,
+     "lost_6m": 27.3,
+     "first_med": 5.0,
+     "no_pay": 68.2
+    },
+    "slot": {
+     "net_m": 36,
+     "net_p10_m": -94,
+     "p_none_pays": 84.7,
+     "p_pay_by_21": 0.7,
+     "p_pay_by_32": 2.4,
+     "first_any_med": 66.0,
+     "first_each_med": 66.0,
+     "dd_med": -4274,
+     "dd_p10": -7855,
+     "fees_6m": 363,
+     "lost_6m": 9.9,
+     "gaveup": 0.0,
+     "evals": 3.86
+    },
+    "plain": {
+     "trades": 1679,
+     "tpw": 7.79,
+     "win": 42.9,
+     "pf": 1.02,
+     "net": 8391,
+     "per_month": 164,
+     "max_dd": -48499,
+     "win_days_pw": 1.75
+    }
+   }
+  },
+  "LIT + Asia $300 + ATLAS": {
+   "H1": {
+    "eval": {
+     "p10": 7.5,
+     "f10": 0.1,
+     "p60": 96.8,
+     "f60": 1.7,
+     "pass_med": 20.0
+    },
+    "funded": {
+     "per_month": 6270,
+     "lost_6m": 0.0,
+     "first_med": 6.0,
+     "no_pay": 2.5
+    },
+    "slot": {
+     "net_m": 5133,
+     "net_p10_m": 1550,
+     "p_none_pays": 3.1,
+     "p_pay_by_21": 17.9,
+     "p_pay_by_32": 52.0,
+     "first_any_med": 31.0,
+     "first_each_med": 31.0,
+     "dd_med": -1885,
+     "dd_p10": -2075,
+     "fees_6m": 97,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.03
+    },
+    "plain": {
+     "trades": 225,
+     "tpw": 8.79,
+     "win": 55.6,
+     "pf": 2.98,
+     "net": 74496,
+     "per_month": 12222,
+     "max_dd": -3293,
+     "win_days_pw": 2.46
+    }
+   },
+   "H2": {
+    "eval": {
+     "p10": 13.9,
+     "f10": 0.0,
+     "p60": 98.2,
+     "f60": 0.8,
+     "pass_med": 19.0
+    },
+    "funded": {
+     "per_month": 3745,
+     "lost_6m": 0.0,
+     "first_med": 9.0,
+     "no_pay": 2.0
+    },
+    "slot": {
+     "net_m": 3035,
+     "net_p10_m": 1002,
+     "p_none_pays": 3.0,
+     "p_pay_by_21": 18.7,
+     "p_pay_by_32": 49.0,
+     "first_any_med": 32.0,
+     "first_each_med": 32.0,
+     "dd_med": -1638,
+     "dd_p10": -1978,
+     "fees_6m": 95,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.01
+    },
+    "plain": {
+     "trades": 109,
+     "tpw": 6.99,
+     "win": 54.1,
+     "pf": 2.64,
+     "net": 29613,
+     "per_month": 7973,
+     "max_dd": -1896,
+     "win_days_pw": 2.5
+    }
+   },
+   "REF": {
+    "eval": {
+     "p10": 1.1,
+     "f10": 4.7,
+     "p60": 15.4,
+     "f60": 76.5,
+     "pass_med": 27.0
+    },
+    "funded": {
+     "per_month": 233,
+     "lost_6m": 0.0,
+     "first_med": 6.0,
+     "no_pay": 65.4
+    },
+    "slot": {
+     "net_m": 42,
+     "net_p10_m": -94,
+     "p_none_pays": 85.3,
+     "p_pay_by_21": 0.6,
+     "p_pay_by_32": 1.9,
+     "first_any_med": 63.0,
+     "first_each_med": 63.0,
+     "dd_med": -3803,
+     "dd_p10": -7137,
+     "fees_6m": 322,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 3.43
+    },
+    "plain": {
+     "trades": 1679,
+     "tpw": 7.79,
+     "win": 42.9,
+     "pf": 1.04,
+     "net": 15344,
+     "per_month": 299,
+     "max_dd": -43280,
+     "win_days_pw": 1.72
+    }
+   }
+  },
+  "Asia(LIT size) in the eval only": {
+   "H1": {
+    "eval": {
+     "p10": 10.7,
+     "f10": 0.0,
+     "p60": 95.9,
+     "f60": 3.0,
+     "pass_med": 19.0
+    },
+    "funded": {
+     "per_month": 6269,
+     "lost_6m": 0.0,
+     "first_med": 6.0,
+     "no_pay": 2.1
+    },
+    "slot": {
+     "net_m": 5180,
+     "net_p10_m": 1799,
+     "p_none_pays": 2.8,
+     "p_pay_by_21": 20.9,
+     "p_pay_by_32": 55.3,
+     "first_any_med": 30.0,
+     "first_each_med": 30.0,
+     "dd_med": -1830,
+     "dd_p10": -1999,
+     "fees_6m": 98,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.04
+    },
+    "plain": {
+     "trades": 184,
+     "tpw": 7.19,
+     "win": 55.4,
+     "pf": 3.12,
+     "net": 72901,
+     "per_month": 11960,
+     "max_dd": -3017,
+     "win_days_pw": 2.46
+    }
+   },
+   "H2": {
+    "eval": {
+     "p10": 21.8,
+     "f10": 0.0,
+     "p60": 98.8,
+     "f60": 0.8,
+     "pass_med": 16.0
+    },
+    "funded": {
+     "per_month": 2884,
+     "lost_6m": 0.0,
+     "first_med": 10.0,
+     "no_pay": 6.8
+    },
+    "slot": {
+     "net_m": 2454,
+     "net_p10_m": 261,
+     "p_none_pays": 7.2,
+     "p_pay_by_21": 20.5,
+     "p_pay_by_32": 51.9,
+     "first_any_med": 31.0,
+     "first_each_med": 31.0,
+     "dd_med": -1826,
+     "dd_p10": -2049,
+     "fees_6m": 95,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.01
+    },
+    "plain": {
+     "trades": 86,
+     "tpw": 5.51,
+     "win": 53.5,
+     "pf": 2.74,
+     "net": 27304,
+     "per_month": 7351,
+     "max_dd": -2480,
+     "win_days_pw": 2.24
+    }
+   },
+   "REF": {
+    "eval": {
+     "p10": 1.4,
+     "f10": 7.1,
+     "p60": 15.5,
+     "f60": 79.6,
+     "pass_med": 23.0
+    },
+    "funded": {
+     "per_month": 251,
+     "lost_6m": 0.0,
+     "first_med": 7.0,
+     "no_pay": 64.3
+    },
+    "slot": {
+     "net_m": 50,
+     "net_p10_m": -94,
+     "p_none_pays": 82.9,
+     "p_pay_by_21": 0.8,
+     "p_pay_by_32": 2.5,
+     "first_any_med": 67.0,
+     "first_each_med": 67.0,
+     "dd_med": -4098,
+     "dd_p10": -7808,
+     "fees_6m": 343,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 3.65
+    },
+    "plain": {
+     "trades": 1505,
+     "tpw": 6.99,
+     "win": 42.9,
+     "pf": 1.07,
+     "net": 24948,
+     "per_month": 486,
+     "max_dd": -37025,
+     "win_days_pw": 1.72
+    }
+   }
+  }
+ },
+ "give": {
+  "never (today)": {
+   "H1": {
+    "net_m": 5022,
+    "net_p10_m": 1595,
+    "p_none_pays": 2.3,
+    "p_pay_by_21": 15.5,
+    "p_pay_by_32": 46.1,
+    "first_any_med": 34.0,
+    "first_each_med": 34.0,
+    "dd_med": -1813,
+    "dd_p10": -1998,
+    "fees_6m": 95,
+    "lost_6m": 0.0,
+    "gaveup": 0.0,
+    "evals": 1.01
+   },
+   "H2": {
+    "net_m": 2301,
+    "net_p10_m": 268,
+    "p_none_pays": 7.6,
+    "p_pay_by_21": 12.6,
+    "p_pay_by_32": 36.8,
+    "first_any_med": 37.0,
+    "first_each_med": 37.0,
+    "dd_med": -1816,
+    "dd_p10": -2058,
+    "fees_6m": 96,
+    "lost_6m": 0.0,
+    "gaveup": 0.0,
+    "evals": 1.03
+   },
+   "REF": {
+    "net_m": 63,
+    "net_p10_m": -78,
+    "p_none_pays": 82.2,
+    "p_pay_by_21": 0.9,
+    "p_pay_by_32": 2.7,
+    "first_any_med": 66.0,
+    "first_each_med": 66.0,
+    "dd_med": -3205,
+    "dd_p10": -6245,
+    "fees_6m": 273,
+    "lost_6m": 0.0,
+    "gaveup": 0.0,
+    "evals": 2.9
+   }
+  },
+  "room < $500": {
+   "H1": {
+    "net_m": 5045,
+    "net_p10_m": 1670,
+    "p_none_pays": 2.3,
+    "p_pay_by_21": 15.5,
+    "p_pay_by_32": 46.2,
+    "first_any_med": 34.0,
+    "first_each_med": 34.0,
+    "dd_med": -1814,
+    "dd_p10": -1999,
+    "fees_6m": 99,
+    "lost_6m": 0.0,
+    "gaveup": 0.05,
+    "evals": 1.05
+   },
+   "H2": {
+    "net_m": 2313,
+    "net_p10_m": 302,
+    "p_none_pays": 7.2,
+    "p_pay_by_21": 12.6,
+    "p_pay_by_32": 36.8,
+    "first_any_med": 37.0,
+    "first_each_med": 37.0,
+    "dd_med": -1818,
+    "dd_p10": -2097,
+    "fees_6m": 102,
+    "lost_6m": 0.0,
+    "gaveup": 0.08,
+    "evals": 1.08
+   },
+   "REF": {
+    "net_m": 55,
+    "net_p10_m": -110,
+    "p_none_pays": 82.7,
+    "p_pay_by_21": 0.9,
+    "p_pay_by_32": 2.8,
+    "first_any_med": 62.0,
+    "first_each_med": 62.0,
+    "dd_med": -3291,
+    "dd_p10": -6652,
+    "fees_6m": 349,
+    "lost_6m": 0.0,
+    "gaveup": 2.71,
+    "evals": 3.71
+   }
+  },
+  "room < $800": {
+   "H1": {
+    "net_m": 5059,
+    "net_p10_m": 1684,
+    "p_none_pays": 2.3,
+    "p_pay_by_21": 15.7,
+    "p_pay_by_32": 47.0,
+    "first_any_med": 33.0,
+    "first_each_med": 33.0,
+    "dd_med": -1814,
+    "dd_p10": -1998,
+    "fees_6m": 108,
+    "lost_6m": 0.0,
+    "gaveup": 0.15,
+    "evals": 1.15
+   },
+   "H2": {
+    "net_m": 2320,
+    "net_p10_m": 268,
+    "p_none_pays": 7.1,
+    "p_pay_by_21": 12.7,
+    "p_pay_by_32": 37.3,
+    "first_any_med": 36.0,
+    "first_each_med": 36.0,
+    "dd_med": -1819,
+    "dd_p10": -2078,
+    "fees_6m": 110,
+    "lost_6m": 0.0,
+    "gaveup": 0.17,
+    "evals": 1.18
+   },
+   "REF": {
+    "net_m": 44,
+    "net_p10_m": -141,
+    "p_none_pays": 79.9,
+    "p_pay_by_21": 1.1,
+    "p_pay_by_32": 3.1,
+    "first_any_med": 62.0,
+    "first_each_med": 62.0,
+    "dd_med": -3341,
+    "dd_p10": -6976,
+    "fees_6m": 463,
+    "lost_6m": 0.0,
+    "gaveup": 3.93,
+    "evals": 4.93
+   }
+  },
+  "room < $1,000": {
+   "H1": {
+    "net_m": 5071,
+    "net_p10_m": 1719,
+    "p_none_pays": 2.2,
+    "p_pay_by_21": 15.8,
+    "p_pay_by_32": 47.9,
+    "first_any_med": 33.0,
+    "first_each_med": 33.0,
+    "dd_med": -1815,
+    "dd_p10": -1999,
+    "fees_6m": 118,
+    "lost_6m": 0.0,
+    "gaveup": 0.26,
+    "evals": 1.25
+   },
+   "H2": {
+    "net_m": 2318,
+    "net_p10_m": 207,
+    "p_none_pays": 7.3,
+    "p_pay_by_21": 12.7,
+    "p_pay_by_32": 37.8,
+    "first_any_med": 36.0,
+    "first_each_med": 36.0,
+    "dd_med": -1821,
+    "dd_p10": -2061,
+    "fees_6m": 121,
+    "lost_6m": 0.0,
+    "gaveup": 0.29,
+    "evals": 1.29
+   },
+   "REF": {
+    "net_m": 20,
+    "net_p10_m": -172,
+    "p_none_pays": 81.5,
+    "p_pay_by_21": 1.2,
+    "p_pay_by_32": 3.2,
+    "first_any_med": 60.0,
+    "first_each_med": 60.0,
+    "dd_med": -3405,
+    "dd_p10": -7151,
+    "fees_6m": 582,
+    "lost_6m": 0.0,
+    "gaveup": 5.19,
+    "evals": 6.19
+   }
+  },
+  "session > 30": {
+   "H1": {
+    "net_m": 4786,
+    "net_p10_m": 1196,
+    "p_none_pays": 3.3,
+    "p_pay_by_21": 15.5,
+    "p_pay_by_32": 46.1,
+    "first_any_med": 34.0,
+    "first_each_med": 34.0,
+    "dd_med": -1800,
+    "dd_p10": -1998,
+    "fees_6m": 130,
+    "lost_6m": 0.0,
+    "gaveup": 0.38,
+    "evals": 1.39
+   },
+   "H2": {
+    "net_m": 2221,
+    "net_p10_m": 72,
+    "p_none_pays": 9.6,
+    "p_pay_by_21": 12.6,
+    "p_pay_by_32": 36.8,
+    "first_any_med": 36.0,
+    "first_each_med": 36.0,
+    "dd_med": -1806,
+    "dd_p10": -2048,
+    "fees_6m": 130,
+    "lost_6m": 0.0,
+    "gaveup": 0.37,
+    "evals": 1.38
+   },
+   "REF": {
+    "net_m": 15,
+    "net_p10_m": -94,
+    "p_none_pays": 87.4,
+    "p_pay_by_21": 0.9,
+    "p_pay_by_32": 2.7,
+    "first_any_med": 59.0,
+    "first_each_med": 59.0,
+    "dd_med": -3457,
+    "dd_p10": -6261,
+    "fees_6m": 404,
+    "lost_6m": 0.0,
+    "gaveup": 1.78,
+    "evals": 4.29
+   }
+  },
+  "session > 45": {
+   "H1": {
+    "net_m": 4979,
+    "net_p10_m": 1573,
+    "p_none_pays": 2.8,
+    "p_pay_by_21": 15.5,
+    "p_pay_by_32": 46.1,
+    "first_any_med": 34.0,
+    "first_each_med": 34.0,
+    "dd_med": -1810,
+    "dd_p10": -1998,
+    "fees_6m": 104,
+    "lost_6m": 0.0,
+    "gaveup": 0.09,
+    "evals": 1.1
+   },
+   "H2": {
+    "net_m": 2274,
+    "net_p10_m": 113,
+    "p_none_pays": 8.6,
+    "p_pay_by_21": 12.6,
+    "p_pay_by_32": 36.8,
+    "first_any_med": 36.5,
+    "first_each_med": 36.5,
+    "dd_med": -1814,
+    "dd_p10": -2063,
+    "fees_6m": 106,
+    "lost_6m": 0.0,
+    "gaveup": 0.11,
+    "evals": 1.13
+   },
+   "REF": {
+    "net_m": 44,
+    "net_p10_m": -78,
+    "p_none_pays": 83.9,
+    "p_pay_by_21": 0.9,
+    "p_pay_by_32": 2.7,
+    "first_any_med": 63.0,
+    "first_each_med": 63.0,
+    "dd_med": -3261,
+    "dd_p10": -6268,
+    "fees_6m": 320,
+    "lost_6m": 0.0,
+    "gaveup": 0.63,
+    "evals": 3.4
+   }
+  },
+  "30%-rule need > $4,000": {
+   "H1": {
+    "net_m": 5059,
+    "net_p10_m": 1684,
+    "p_none_pays": 2.2,
+    "p_pay_by_21": 15.7,
+    "p_pay_by_32": 47.0,
+    "first_any_med": 33.0,
+    "first_each_med": 33.0,
+    "dd_med": -1814,
+    "dd_p10": -1999,
+    "fees_6m": 100,
+    "lost_6m": 0.0,
+    "gaveup": 0.06,
+    "evals": 1.07
+   },
+   "H2": {
+    "net_m": 2317,
+    "net_p10_m": 289,
+    "p_none_pays": 7.4,
+    "p_pay_by_21": 12.7,
+    "p_pay_by_32": 37.5,
+    "first_any_med": 36.0,
+    "first_each_med": 36.0,
+    "dd_med": -1818,
+    "dd_p10": -2063,
+    "fees_6m": 102,
+    "lost_6m": 0.0,
+    "gaveup": 0.06,
+    "evals": 1.08
+   },
+   "REF": {
+    "net_m": 65,
+    "net_p10_m": -110,
+    "p_none_pays": 80.7,
+    "p_pay_by_21": 1.0,
+    "p_pay_by_32": 3.1,
+    "first_any_med": 62.0,
+    "first_each_med": 62.0,
+    "dd_med": -3148,
+    "dd_p10": -6536,
+    "fees_6m": 353,
+    "lost_6m": 0.0,
+    "gaveup": 1.74,
+    "evals": 3.76
+   }
+  },
+  "30%-rule need > $3,000": {
+   "H1": {
+    "net_m": 5126,
+    "net_p10_m": 1684,
+    "p_none_pays": 2.2,
+    "p_pay_by_21": 17.4,
+    "p_pay_by_32": 50.9,
+    "first_any_med": 32.0,
+    "first_each_med": 32.0,
+    "dd_med": -1818,
+    "dd_p10": -1998,
+    "fees_6m": 197,
+    "lost_6m": 0.0,
+    "gaveup": 1.1,
+    "evals": 2.1
+   },
+   "H2": {
+    "net_m": 2337,
+    "net_p10_m": 258,
+    "p_none_pays": 7.0,
+    "p_pay_by_21": 13.7,
+    "p_pay_by_32": 40.6,
+    "first_any_med": 34.5,
+    "first_each_med": 34.5,
+    "dd_med": -1829,
+    "dd_p10": -2098,
+    "fees_6m": 279,
+    "lost_6m": 0.0,
+    "gaveup": 1.96,
+    "evals": 2.97
+   },
+   "REF": {
+    "net_m": -55,
+    "net_p10_m": -407,
+    "p_none_pays": 77.1,
+    "p_pay_by_21": 1.2,
+    "p_pay_by_32": 3.8,
+    "first_any_med": 59.0,
+    "first_each_med": 59.0,
+    "dd_med": -3051,
+    "dd_p10": -6935,
+    "fees_6m": 1207,
+    "lost_6m": 0.0,
+    "gaveup": 11.37,
+    "evals": 12.84
+   }
+  }
+ },
+ "pol": {
+  "all above buffer, daily (today)": {
+   "H1": {
+    "funded": {
+     "per_month": 6269,
+     "lost_6m": 0.0,
+     "first_med": 6.0,
+     "no_pay": 2.1
+    },
+    "slot": {
+     "net_m": 5022,
+     "net_p10_m": 1595,
+     "p_none_pays": 2.3,
+     "p_pay_by_21": 15.5,
+     "p_pay_by_32": 46.1,
+     "first_any_med": 34.0,
+     "first_each_med": 34.0,
+     "dd_med": -1813,
+     "dd_p10": -1998,
+     "fees_6m": 95,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.01
+    }
+   },
+   "H2": {
+    "funded": {
+     "per_month": 2884,
+     "lost_6m": 0.0,
+     "first_med": 10.0,
+     "no_pay": 6.8
+    },
+    "slot": {
+     "net_m": 2301,
+     "net_p10_m": 268,
+     "p_none_pays": 7.6,
+     "p_pay_by_21": 12.6,
+     "p_pay_by_32": 36.8,
+     "first_any_med": 37.0,
+     "first_each_med": 37.0,
+     "dd_med": -1816,
+     "dd_p10": -2058,
+     "fees_6m": 96,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.03
+    }
+   },
+   "REF": {
+    "funded": {
+     "per_month": 251,
+     "lost_6m": 0.0,
+     "first_med": 7.0,
+     "no_pay": 64.3
+    },
+    "slot": {
+     "net_m": 63,
+     "net_p10_m": -78,
+     "p_none_pays": 82.2,
+     "p_pay_by_21": 0.9,
+     "p_pay_by_32": 2.7,
+     "first_any_med": 66.0,
+     "first_each_med": 66.0,
+     "dd_med": -3205,
+     "dd_p10": -6245,
+     "fees_6m": 273,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 2.9
+    }
+   }
+  },
+  "keep $500 cushion": {
+   "H1": {
+    "funded": {
+     "per_month": 7222,
+     "lost_6m": 0.0,
+     "first_med": 7.0,
+     "no_pay": 2.2
+    },
+    "slot": {
+     "net_m": 5666,
+     "net_p10_m": 2191,
+     "p_none_pays": 2.4,
+     "p_pay_by_21": 13.1,
+     "p_pay_by_32": 43.2,
+     "first_any_med": 35.0,
+     "first_each_med": 35.0,
+     "dd_med": -2128,
+     "dd_p10": -2480,
+     "fees_6m": 95,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.01
+    }
+   },
+   "H2": {
+    "funded": {
+     "per_month": 3375,
+     "lost_6m": 0.0,
+     "first_med": 12.0,
+     "no_pay": 7.2
+    },
+    "slot": {
+     "net_m": 2641,
+     "net_p10_m": 238,
+     "p_none_pays": 8.7,
+     "p_pay_by_21": 9.6,
+     "p_pay_by_32": 32.4,
+     "first_any_med": 39.0,
+     "first_each_med": 39.0,
+     "dd_med": -2036,
+     "dd_p10": -2499,
+     "fees_6m": 96,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.03
+    }
+   },
+   "REF": {
+    "funded": {
+     "per_month": 266,
+     "lost_6m": 0.0,
+     "first_med": 8.0,
+     "no_pay": 67.5
+    },
+    "slot": {
+     "net_m": 64,
+     "net_p10_m": -78,
+     "p_none_pays": 84.1,
+     "p_pay_by_21": 0.7,
+     "p_pay_by_32": 2.1,
+     "first_any_med": 65.0,
+     "first_each_med": 65.0,
+     "dd_med": -3205,
+     "dd_p10": -6245,
+     "fees_6m": 273,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 2.9
+    }
+   }
+  },
+  "keep $1,000 cushion": {
+   "H1": {
+    "funded": {
+     "per_month": 7735,
+     "lost_6m": 0.0,
+     "first_med": 8.0,
+     "no_pay": 2.2
+    },
+    "slot": {
+     "net_m": 6014,
+     "net_p10_m": 2722,
+     "p_none_pays": 2.4,
+     "p_pay_by_21": 12.1,
+     "p_pay_by_32": 41.2,
+     "first_any_med": 35.0,
+     "first_each_med": 35.0,
+     "dd_med": -2405,
+     "dd_p10": -2951,
+     "fees_6m": 95,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.01
+    }
+   },
+   "H2": {
+    "funded": {
+     "per_month": 3659,
+     "lost_6m": 0.0,
+     "first_med": 14.0,
+     "no_pay": 7.4
+    },
+    "slot": {
+     "net_m": 2824,
+     "net_p10_m": 278,
+     "p_none_pays": 8.9,
+     "p_pay_by_21": 6.7,
+     "p_pay_by_32": 29.2,
+     "first_any_med": 42.0,
+     "first_each_med": 42.0,
+     "dd_med": -2213,
+     "dd_p10": -2950,
+     "fees_6m": 96,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.03
+    }
+   },
+   "REF": {
+    "funded": {
+     "per_month": 271,
+     "lost_6m": 0.0,
+     "first_med": 9.0,
+     "no_pay": 70.6
+    },
+    "slot": {
+     "net_m": 63,
+     "net_p10_m": -78,
+     "p_none_pays": 85.7,
+     "p_pay_by_21": 0.6,
+     "p_pay_by_32": 1.9,
+     "first_any_med": 66.0,
+     "first_each_med": 66.0,
+     "dd_med": -3277,
+     "dd_p10": -6245,
+     "fees_6m": 273,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 2.9
+    }
+   }
+  },
+  "keep $2,000 cushion": {
+   "H1": {
+    "funded": {
+     "per_month": 8188,
+     "lost_6m": 0.0,
+     "first_med": 10.0,
+     "no_pay": 2.3
+    },
+    "slot": {
+     "net_m": 6290,
+     "net_p10_m": 3224,
+     "p_none_pays": 2.6,
+     "p_pay_by_21": 9.7,
+     "p_pay_by_32": 37.0,
+     "first_any_med": 37.5,
+     "first_each_med": 37.5,
+     "dd_med": -2663,
+     "dd_p10": -3648,
+     "fees_6m": 95,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.01
+    }
+   },
+   "H2": {
+    "funded": {
+     "per_month": 3871,
+     "lost_6m": 0.0,
+     "first_med": 18.0,
+     "no_pay": 7.8
+    },
+    "slot": {
+     "net_m": 2918,
+     "net_p10_m": 229,
+     "p_none_pays": 9.0,
+     "p_pay_by_21": 3.8,
+     "p_pay_by_32": 21.4,
+     "first_any_med": 45.5,
+     "first_each_med": 45.5,
+     "dd_med": -2397,
+     "dd_p10": -3544,
+     "fees_6m": 96,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.03
+    }
+   },
+   "REF": {
+    "funded": {
+     "per_month": 269,
+     "lost_6m": 0.0,
+     "first_med": 13.0,
+     "no_pay": 74.8
+    },
+    "slot": {
+     "net_m": 54,
+     "net_p10_m": -78,
+     "p_none_pays": 88.4,
+     "p_pay_by_21": 0.3,
+     "p_pay_by_32": 1.3,
+     "first_any_med": 73.0,
+     "first_each_med": 73.0,
+     "dd_med": -3694,
+     "dd_p10": -6245,
+     "fees_6m": 273,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 2.9
+    }
+   }
+  },
+  "weekly, all above buffer": {
+   "H1": {
+    "funded": {
+     "per_month": 7119,
+     "lost_6m": 0.0,
+     "first_med": 10.0,
+     "no_pay": 2.2
+    },
+    "slot": {
+     "net_m": 5517,
+     "net_p10_m": 2199,
+     "p_none_pays": 2.3,
+     "p_pay_by_21": 9.3,
+     "p_pay_by_32": 38.1,
+     "first_any_med": 36.0,
+     "first_each_med": 36.0,
+     "dd_med": -1998,
+     "dd_p10": -2872,
+     "fees_6m": 95,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.01
+    }
+   },
+   "H2": {
+    "funded": {
+     "per_month": 3163,
+     "lost_6m": 0.0,
+     "first_med": 15.0,
+     "no_pay": 7.2
+    },
+    "slot": {
+     "net_m": 2479,
+     "net_p10_m": 194,
+     "p_none_pays": 8.1,
+     "p_pay_by_21": 6.7,
+     "p_pay_by_32": 28.9,
+     "first_any_med": 41.0,
+     "first_each_med": 41.0,
+     "dd_med": -1974,
+     "dd_p10": -2553,
+     "fees_6m": 96,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.03
+    }
+   },
+   "REF": {
+    "funded": {
+     "per_month": 265,
+     "lost_6m": 0.0,
+     "first_med": 10.0,
+     "no_pay": 67.9
+    },
+    "slot": {
+     "net_m": 62,
+     "net_p10_m": -78,
+     "p_none_pays": 84.4,
+     "p_pay_by_21": 0.3,
+     "p_pay_by_32": 2.1,
+     "first_any_med": 67.0,
+     "first_each_med": 67.0,
+     "dd_med": -3301,
+     "dd_p10": -6245,
+     "fees_6m": 273,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 2.9
+    }
+   }
+  },
+  "fixed $1,000 requests": {
+   "H1": {
+    "funded": {
+     "per_month": 3934,
+     "lost_6m": 0.0,
+     "first_med": 7.0,
+     "no_pay": 2.2
+    },
+    "slot": {
+     "net_m": 2998,
+     "net_p10_m": 1784,
+     "p_none_pays": 2.4,
+     "p_pay_by_21": 13.1,
+     "p_pay_by_32": 43.2,
+     "first_any_med": 35.0,
+     "first_each_med": 35.0,
+     "dd_med": -2634,
+     "dd_p10": -4106,
+     "fees_6m": 95,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.01
+    }
+   },
+   "H2": {
+    "funded": {
+     "per_month": 2952,
+     "lost_6m": 0.0,
+     "first_med": 12.0,
+     "no_pay": 7.2
+    },
+    "slot": {
+     "net_m": 2232,
+     "net_p10_m": 284,
+     "p_none_pays": 8.7,
+     "p_pay_by_21": 9.6,
+     "p_pay_by_32": 32.4,
+     "first_any_med": 39.0,
+     "first_each_med": 39.0,
+     "dd_med": -2291,
+     "dd_p10": -3538,
+     "fees_6m": 96,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.03
+    }
+   },
+   "REF": {
+    "funded": {
+     "per_month": 202,
+     "lost_6m": 0.0,
+     "first_med": 8.0,
+     "no_pay": 67.5
+    },
+    "slot": {
+     "net_m": 28,
+     "net_p10_m": -78,
+     "p_none_pays": 84.1,
+     "p_pay_by_21": 0.7,
+     "p_pay_by_32": 2.1,
+     "first_any_med": 65.0,
+     "first_each_med": 65.0,
+     "dd_med": -3622,
+     "dd_p10": -6491,
+     "fees_6m": 273,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 2.9
+    }
+   }
+  }
+ },
+ "cap": {
+  "30% size guard (today)": {
+   "H1": {
+    "eval": {
+     "p10": 5.2,
+     "f10": 0.0,
+     "p60": 97.2,
+     "f60": 1.0,
+     "pass_med": 22.0
+    },
+    "slot": {
+     "net_m": 5022,
+     "net_p10_m": 1595,
+     "p_none_pays": 2.3,
+     "p_pay_by_21": 15.5,
+     "p_pay_by_32": 46.1,
+     "first_any_med": 34.0,
+     "first_each_med": 34.0,
+     "dd_med": -1813,
+     "dd_p10": -1998,
+     "fees_6m": 95,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.01
+    }
+   },
+   "H2": {
+    "eval": {
+     "p10": 9.2,
+     "f10": 0.0,
+     "p60": 94.8,
+     "f60": 2.3,
+     "pass_med": 21.0
+    },
+    "slot": {
+     "net_m": 2301,
+     "net_p10_m": 268,
+     "p_none_pays": 7.6,
+     "p_pay_by_21": 12.6,
+     "p_pay_by_32": 36.8,
+     "first_any_med": 37.0,
+     "first_each_med": 37.0,
+     "dd_med": -1816,
+     "dd_p10": -2058,
+     "fees_6m": 96,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.03
+    }
+   },
+   "REF": {
+    "eval": {
+     "p10": 1.1,
+     "f10": 2.9,
+     "p60": 19.2,
+     "f60": 68.0,
+     "pass_med": 29.0
+    },
+    "slot": {
+     "net_m": 63,
+     "net_p10_m": -78,
+     "p_none_pays": 82.2,
+     "p_pay_by_21": 0.9,
+     "p_pay_by_32": 2.7,
+     "first_any_med": 66.0,
+     "first_each_med": 66.0,
+     "dd_med": -3205,
+     "dd_p10": -6245,
+     "fees_6m": 273,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 2.9
+    }
+   }
+  },
+  "none": {
+   "H1": {
+    "eval": {
+     "p10": 1.9,
+     "f10": 3.1,
+     "p60": 77.8,
+     "f60": 12.3,
+     "pass_med": 31.0
+    },
+    "slot": {
+     "net_m": 4307,
+     "net_p10_m": 1173,
+     "p_none_pays": 2.9,
+     "p_pay_by_21": 4.6,
+     "p_pay_by_32": 21.0,
+     "first_any_med": 45.0,
+     "first_each_med": 45.0,
+     "dd_med": -1968,
+     "dd_p10": -3251,
+     "fees_6m": 106,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.12
+    }
+   },
+   "H2": {
+    "eval": {
+     "p10": 1.2,
+     "f10": 1.6,
+     "p60": 68.3,
+     "f60": 10.9,
+     "pass_med": 36.0
+    },
+    "slot": {
+     "net_m": 1781,
+     "net_p10_m": -16,
+     "p_none_pays": 10.7,
+     "p_pay_by_21": 1.7,
+     "p_pay_by_32": 9.9,
+     "first_any_med": 59.0,
+     "first_each_med": 59.0,
+     "dd_med": -1883,
+     "dd_p10": -2755,
+     "fees_6m": 106,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.13
+    }
+   },
+   "REF": {
+    "eval": {
+     "p10": 0.1,
+     "f10": 20.1,
+     "p60": 4.8,
+     "f60": 82.4,
+     "pass_med": 40.0
+    },
+    "slot": {
+     "net_m": -23,
+     "net_p10_m": -125,
+     "p_none_pays": 91.6,
+     "p_pay_by_21": 0.0,
+     "p_pay_by_32": 0.2,
+     "first_any_med": 84.5,
+     "first_each_med": 84.5,
+     "dd_med": -7063,
+     "dd_p10": -11492,
+     "fees_6m": 423,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 4.5
+    }
+   }
+  },
+  "guard + stop day at +$500": {
+   "H1": {
+    "eval": {
+     "p10": 5.2,
+     "f10": 0.0,
+     "p60": 96.7,
+     "f60": 1.0,
+     "pass_med": 22.0
+    },
+    "slot": {
+     "net_m": 4995,
+     "net_p10_m": 1616,
+     "p_none_pays": 2.5,
+     "p_pay_by_21": 14.8,
+     "p_pay_by_32": 45.1,
+     "first_any_med": 34.0,
+     "first_each_med": 34.0,
+     "dd_med": -1813,
+     "dd_p10": -1998,
+     "fees_6m": 95,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.01
+    }
+   },
+   "H2": {
+    "eval": {
+     "p10": 9.2,
+     "f10": 0.0,
+     "p60": 94.9,
+     "f60": 2.3,
+     "pass_med": 21.0
+    },
+    "slot": {
+     "net_m": 2302,
+     "net_p10_m": 274,
+     "p_none_pays": 7.5,
+     "p_pay_by_21": 12.6,
+     "p_pay_by_32": 36.9,
+     "first_any_med": 37.0,
+     "first_each_med": 37.0,
+     "dd_med": -1817,
+     "dd_p10": -2060,
+     "fees_6m": 97,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.03
+    }
+   },
+   "REF": {
+    "eval": {
+     "p10": 1.1,
+     "f10": 2.9,
+     "p60": 18.9,
+     "f60": 68.2,
+     "pass_med": 29.0
+    },
+    "slot": {
+     "net_m": 58,
+     "net_p10_m": -78,
+     "p_none_pays": 83.0,
+     "p_pay_by_21": 0.9,
+     "p_pay_by_32": 2.8,
+     "first_any_med": 66.0,
+     "first_each_med": 66.0,
+     "dd_med": -3249,
+     "dd_p10": -6305,
+     "fees_6m": 274,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 2.91
+    }
+   }
+  },
+  "guard + stop day at +$700": {
+   "H1": {
+    "eval": {
+     "p10": 5.2,
+     "f10": 0.0,
+     "p60": 97.2,
+     "f60": 1.0,
+     "pass_med": 22.0
+    },
+    "slot": {
+     "net_m": 5022,
+     "net_p10_m": 1595,
+     "p_none_pays": 2.3,
+     "p_pay_by_21": 15.5,
+     "p_pay_by_32": 46.1,
+     "first_any_med": 34.0,
+     "first_each_med": 34.0,
+     "dd_med": -1813,
+     "dd_p10": -1998,
+     "fees_6m": 95,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.01
+    }
+   },
+   "H2": {
+    "eval": {
+     "p10": 9.2,
+     "f10": 0.0,
+     "p60": 94.8,
+     "f60": 2.3,
+     "pass_med": 21.0
+    },
+    "slot": {
+     "net_m": 2301,
+     "net_p10_m": 268,
+     "p_none_pays": 7.6,
+     "p_pay_by_21": 12.6,
+     "p_pay_by_32": 36.8,
+     "first_any_med": 37.0,
+     "first_each_med": 37.0,
+     "dd_med": -1816,
+     "dd_p10": -2058,
+     "fees_6m": 96,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.03
+    }
+   },
+   "REF": {
+    "eval": {
+     "p10": 1.1,
+     "f10": 2.9,
+     "p60": 19.1,
+     "f60": 68.1,
+     "pass_med": 29.0
+    },
+    "slot": {
+     "net_m": 60,
+     "net_p10_m": -78,
+     "p_none_pays": 82.7,
+     "p_pay_by_21": 0.9,
+     "p_pay_by_32": 2.7,
+     "first_any_med": 66.0,
+     "first_each_med": 66.0,
+     "dd_med": -3205,
+     "dd_p10": -6235,
+     "fees_6m": 273,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 2.9
+    }
+   }
+  },
+  "stop day at +$700 only": {
+   "H1": {
+    "eval": {
+     "p10": 2.1,
+     "f10": 3.1,
+     "p60": 79.3,
+     "f60": 13.8,
+     "pass_med": 29.0
+    },
+    "slot": {
+     "net_m": 4395,
+     "net_p10_m": 1219,
+     "p_none_pays": 3.0,
+     "p_pay_by_21": 4.7,
+     "p_pay_by_32": 23.4,
+     "first_any_med": 44.0,
+     "first_each_med": 44.0,
+     "dd_med": -1965,
+     "dd_p10": -3207,
+     "fees_6m": 107,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.14
+    }
+   },
+   "H2": {
+    "eval": {
+     "p10": 1.2,
+     "f10": 1.6,
+     "p60": 69.0,
+     "f60": 11.6,
+     "pass_med": 36.0
+    },
+    "slot": {
+     "net_m": 1796,
+     "net_p10_m": 63,
+     "p_none_pays": 9.8,
+     "p_pay_by_21": 1.7,
+     "p_pay_by_32": 9.4,
+     "first_any_med": 59.0,
+     "first_each_med": 59.0,
+     "dd_med": -1896,
+     "dd_p10": -2771,
+     "fees_6m": 107,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.14
+    }
+   },
+   "REF": {
+    "eval": {
+     "p10": 0.1,
+     "f10": 20.2,
+     "p60": 4.8,
+     "f60": 85.0,
+     "pass_med": 40.5
+    },
+    "slot": {
+     "net_m": -28,
+     "net_p10_m": -125,
+     "p_none_pays": 91.9,
+     "p_pay_by_21": 0.1,
+     "p_pay_by_32": 0.3,
+     "first_any_med": 79.0,
+     "first_each_med": 79.0,
+     "dd_med": -7152,
+     "dd_p10": -11484,
+     "fees_6m": 450,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 4.79
+    }
+   }
+  },
+  "loose guard (balance-aware)": {
+   "H1": {
+    "eval": {
+     "p10": 6.0,
+     "f10": 0.0,
+     "p60": 97.3,
+     "f60": 1.0,
+     "pass_med": 21.0
+    },
+    "slot": {
+     "net_m": 5067,
+     "net_p10_m": 1626,
+     "p_none_pays": 2.3,
+     "p_pay_by_21": 17.7,
+     "p_pay_by_32": 48.4,
+     "first_any_med": 33.0,
+     "first_each_med": 33.0,
+     "dd_med": -1815,
+     "dd_p10": -1999,
+     "fees_6m": 95,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.01
+    }
+   },
+   "H2": {
+    "eval": {
+     "p10": 9.3,
+     "f10": 0.0,
+     "p60": 94.8,
+     "f60": 2.4,
+     "pass_med": 21.0
+    },
+    "slot": {
+     "net_m": 2308,
+     "net_p10_m": 274,
+     "p_none_pays": 7.5,
+     "p_pay_by_21": 12.9,
+     "p_pay_by_32": 37.6,
+     "first_any_med": 37.0,
+     "first_each_med": 37.0,
+     "dd_med": -1816,
+     "dd_p10": -2061,
+     "fees_6m": 96,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 1.03
+    }
+   },
+   "REF": {
+    "eval": {
+     "p10": 1.1,
+     "f10": 2.9,
+     "p60": 19.1,
+     "f60": 68.0,
+     "pass_med": 28.0
+    },
+    "slot": {
+     "net_m": 57,
+     "net_p10_m": -78,
+     "p_none_pays": 83.2,
+     "p_pay_by_21": 1.0,
+     "p_pay_by_32": 2.6,
+     "first_any_med": 65.0,
+     "first_each_med": 65.0,
+     "dd_med": -3279,
+     "dd_p10": -6235,
+     "fees_6m": 274,
+     "lost_6m": 0.0,
+     "gaveup": 0.0,
+     "evals": 2.92
+    }
+   }
+  }
+ },
+ "verdict": {
+  "1 2x: LIT + ATLAS | ATLAS + BLITZ": false,
+  "1 2x: LIT + ATLAS | LIT + BLITZ": false,
+  "1 2x: LIT + ATLAS | ATLAS + sh_asia + sh_trend": false,
+  "1 3x: LIT + ATLAS | ATLAS + BLITZ | LIT + BLITZ": false,
+  "1 3x: LIT + ATLAS | LIT + Asia + ATLAS | ATLAS + BLITZ": false,
+  "1 3x: LIT + ATLAS | ATLAS + sh | LIT + BLITZ": false,
+  "1 3x: LIT + ATLAS | ATLAS + BLITZ + sh_asia | LIT + sh": false,
+  "2 LIT + Asia(LIT size) + ATLAS": false,
+  "2 LIT + Asia $300 + ATLAS": true,
+  "2 Asia(LIT size) in the eval only": true,
+  "3a room < $500": true,
+  "3a room < $800": true,
+  "3a room < $1,000": true,
+  "3a session > 30": false,
+  "3a session > 45": false,
+  "3a 30%-rule need > $4,000": true,
+  "3a 30%-rule need > $3,000": true,
+  "3b keep $500 cushion": true,
+  "3b keep $1,000 cushion": true,
+  "3b keep $2,000 cushion": true,
+  "3b weekly, all above buffer": true,
+  "3b fixed $1,000 requests": false,
+  "3c none": false,
+  "3c guard + stop day at +$500": false,
+  "3c guard + stop day at +$700": false,
+  "3c stop day at +$700 only": false,
+  "3c loose guard (balance-aware)": true
+ }
+}

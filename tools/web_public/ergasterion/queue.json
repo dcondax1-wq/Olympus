@@ -1,6 +1,6 @@
 {
  "v": 2,
- "asof": "2026-11-15",
+ "asof": "2026-11-16",
  "note": "Built from handoff/QUEUE.md, research/writeups, research/runs, the Archive index, the Mind's proposals and git (when present) by tools/ergasterion_build.py. Plain text only; nothing here is a trade.",
  "queue": {
   "total": 67,
@@ -190,8 +190,22 @@
   ]
  },
  "writeups": {
-  "count": 158,
+  "count": 160,
   "latest": [
+   {
+    "date": "2026-11-16",
+    "title": "More strategies on ONE MFFU account - LIT + ATLAS (+ BLITZ) on the Builder 50K and on a Rapid EOD 50K",
+    "status": "promising",
+    "summary": "Stored LIT (live), ATLAS (live EMA + MACD + S/R, never opposite LIT) and BLITZ (account C, never opposite LIT / ATLAS) trades were merged onto one account.",
+    "file": "research/writeups/stack-one-account-2026-11-16.md"
+   },
+   {
+    "date": "2026-11-16",
+    "title": "Rapid EOD 50K levers - different mixes per account, the Asia slot, give-up / withdrawal / day-cap rules",
+    "status": "mixed",
+    "summary": "Not adopted on money (fails H1), a risk choice for the owner.",
+    "file": "research/writeups/rapid-levers-2026-11-16.md"
+   },
    {
     "date": "2026-11-15",
     "title": "S2 edge (2026-11-15) - six things other NQ / prop bots use that LIT had not tested (holiday-thin days, contra…",
@@ -261,20 +275,6 @@
     "status": "rejected",
     "summary": "95% range = cluster bootstrap (one cluster = one settle time / one settle day).",
     "file": "research/writeups/kalshi-edge-2026-11-13.md"
-   },
-   {
-    "date": "2026-11-13",
-    "title": "Eval guard (2026-11-13) - from today's room, risking 80% of it fails Zlarior's eval 4 times in 10; 40% is wor…",
-    "status": "proposal",
-    "summary": "Two-week 80% from here passes Zlarior in 2 weeks 35/40% of the time but fails it 41/42% of the time and is worth $2,617 / $2,697 per eval.",
-    "file": "research/writeups/eval-guard-2026-11-13.md"
-   },
-   {
-    "date": "2026-11-13",
-    "title": "Same edge, more markets (Team E3, 2026-11-13). LIT and ATLAS on ES (MES) and in other session slots, as a 2nd…",
-    "status": "rejected",
-    "summary": "Owner - \"Find every edge in trading ... build bots that will make me money ... think like a millionaire.\" MFFU's 3 funded slots are full, so the money question is a second, weakly correlated signal stream with similar e…",
-    "file": "research/writeups/es-and-sessions-2026-11-13.md"
    }
   ]
  },
@@ -369,6 +369,20 @@
   "BLITZ on its own 25K, \"like a person\" (2026-10-29, blitz-25k.md, tools/blitz25k_.py, runs blitz25k_, pick"
  ],
  "learnings": [
+  {
+   "d": "2026-11-16",
+   "who": "atlas",
+   "text": "Stored LIT (live), ATLAS (live EMA + MACD + S/R, never opposite LIT) and BLITZ (account C, never opposite LIT / ATLAS) trades were merged onto one account.",
+   "src": "research/writeups/stack-one-account-2026-11-16.md",
+   "kind": "promising"
+  },
+  {
+   "d": "2026-11-16",
+   "who": "dev",
+   "text": "Not adopted on money (fails H1), a risk choice for the owner.",
+   "src": "research/writeups/rapid-levers-2026-11-16.md",
+   "kind": "mixed"
+  },
   {
    "d": "2026-11-15",
    "who": "dev",
@@ -844,23 +858,24 @@
    "text": "Owner (2026-10-23) - \"a strategy that trades 2+ times a week, high-quality setups, with high probability and high profit.\" Four mean-reversion families that should have high win rates by construction (a close target aft…",
    "src": "research/writeups/hq-reversion.md",
    "kind": "rejected"
-  },
-  {
-   "d": "2026-10-23",
-   "who": "lit",
-   "text": "No exit raises the win rate without losing money.",
-   "src": "research/writeups/hq-lit.md",
-   "kind": "adopt-candidate"
-  },
-  {
-   "d": "2026-10-23",
-   "who": "dev",
-   "text": "Owner (2026-10-23) - \"a strategy that trades 2+ times a week, high-quality setups, with high probability and high profit.\" Tested as a trend-continuation family, the opposite of LIT's reversal.",
-   "src": "research/writeups/hq-continuation.md",
-   "kind": "rejected"
   }
  ],
  "lessons": [
+  {
+   "text": "Not adopted on money (fails H1), a risk choice for the owner.",
+   "cat": "process",
+   "who": "dev",
+   "d": "2026-11-16",
+   "kind": "mixed",
+   "strength": 1,
+   "merged": 1,
+   "sources": [
+    {
+     "src": "research/writeups/rapid-levers-2026-11-16.md",
+     "d": "2026-11-16"
+    }
+   ]
+  },
   {
    "text": "No single fact has a bin that loses in both halves; 425 two-fact loser cells picked on Jan-Jun keep losing in Jul-Oct 88 times against 95 expected by chance.",
    "cat": "NQ strategy",
@@ -1789,25 +1804,6 @@
      "d": "2026-10-20"
     }
    ]
-  },
-  {
-   "text": "Four ideas never tested on LIT were scored by the LIT rule (2026 only, pick on Jan-Jun, check on Jul-Oct; adopt only if both halves gain net $ AND MFFU 50K 2-week passes under the live sizing, two_week then safe_eval, $…",
-   "cat": "NQ strategy",
-   "who": "lit",
-   "d": "2026-10-19",
-   "kind": "adopt-candidate",
-   "strength": 2,
-   "merged": 1,
-   "sources": [
-    {
-     "src": "research/writeups/lit-bias-discretion.md",
-     "d": "2026-10-20"
-    },
-    {
-     "src": "research/writeups/lit-big-ideas.md",
-     "d": "2026-10-19"
-    }
-   ]
   }
  ],
  "changed": [
@@ -1909,6 +1905,22 @@
   }
  ],
  "events": [
+  {
+   "t": 1794830400,
+   "who": "dev",
+   "kind": "writeup",
+   "ok": true,
+   "text": "Write-up (mixed): Rapid EOD 50K levers - different mixes per account, the Asia slot, give-up / withdrawal / day-cap rules",
+   "src": "research/writeups/rapid-levers-2026-11-16.md"
+  },
+  {
+   "t": 1794830400,
+   "who": "atlas",
+   "kind": "writeup",
+   "ok": true,
+   "text": "Write-up (promising): More strategies on ONE MFFU account - LIT + ATLAS (+ BLITZ) on the Builder 50K and on a Rapid EOD 50K",
+   "src": "research/writeups/stack-one-account-2026-11-16.md"
+  },
   {
    "t": 1794763500,
    "who": "dev",
@@ -3904,7 +3916,7 @@
  ],
  "pipeline": {
   "src": "archive/index.json",
-  "built": "2026-11-15",
+  "built": "2026-11-16",
   "counts": {
    "ideas": 2344,
    "testing": 534,
@@ -4158,49 +4170,49 @@
   {
    "name": "CBOE_vol_1d.csv",
    "last": "2026-09-17",
-   "days": 59,
+   "days": 60,
    "file": "data/CBOE_vol_1d.csv"
   },
   {
    "name": "ES_15m.csv",
    "last": "2026-10-16",
-   "days": 30,
+   "days": 31,
    "file": "data/ES_15m.csv"
   },
   {
    "name": "ES_1d.csv",
    "last": "2026-10-16",
-   "days": 30,
+   "days": 31,
    "file": "data/ES_1d.csv"
   },
   {
    "name": "ES_1h.csv",
    "last": "2026-10-16",
-   "days": 30,
+   "days": 31,
    "file": "data/ES_1h.csv"
   },
   {
    "name": "ES_5m.csv",
    "last": "2026-10-16",
-   "days": 30,
+   "days": 31,
    "file": "data/ES_5m.csv"
   },
   {
    "name": "GEX_1d.csv",
    "last": "2026-10-16",
-   "days": 30,
+   "days": 31,
    "file": "data/GEX_1d.csv"
   },
   {
    "name": "NQ_15m.csv",
    "last": "2026-10-16",
-   "days": 30,
+   "days": 31,
    "file": "data/NQ_15m.csv"
   },
   {
    "name": "NQ_1d.csv",
    "last": "2026-10-16",
-   "days": 30,
+   "days": 31,
    "file": "data/NQ_1d.csv"
   }
  ],
@@ -4257,166 +4269,121 @@
   "available": true,
   "commits": [
    {
-    "t": 1794795629,
-    "s": "olympus_render static: ignore comments when hunting CDN URLs (GLTFLoader's example path)"
+    "t": 1794827296,
+    "s": "Study: LIT + ATLAS (+ BLITZ) on one MFFU account (Builder 50K, Rapid EOD 50K), paper only"
    },
    {
-    "t": 1794795602,
-    "s": "Safari lint green: 16px inputs (herald, agency call, polis-lab), 100dvh twins, -webkit-user-select (helios);…"
+    "t": 1794825089,
+    "s": "STATE: MFFU only; help-center account limits; Rapid EOD next"
    },
    {
-    "t": 1794795405,
-    "s": "NEW_APPS_WIRING: exact six rows for harmonia, helios, ergasterion, business (as wired); test_wire_new_apps 39…"
+    "t": 1794823364,
+    "s": "STATE: why the first payout takes ~2 months (funded sizing sweep)"
    },
    {
-    "t": 1794795337,
-    "s": "test_dst: compare the phone/PC JS ET time code, not whole files (PC copy has the AGORA palette on purpose)"
+    "t": 1794819529,
+    "s": "STATE: night W2 merged, bot checks green"
    },
    {
-    "t": 1794793330,
-    "s": "QUICK_ARM.bat: SETUP_EVERYTHING with no optional questions (LE_SE_QUICK skips the dashboard key and the phone…"
+    "t": 1794819177,
+    "s": "Jarvis apps: ASCII escapes for glyphs; checks follow AGORA colours and the live Planner card"
    },
    {
-    "t": 1794785402,
-    "s": "STATE: learning loop built"
+    "t": 1794818961,
+    "s": "Jarvis worker v45 for night W2 fixes; hub test pin"
    },
    {
-    "t": 1794785397,
-    "s": "Merge LEARN: nightly self-learning loop on the PC (refresh, drift, 2 queued experiments a night, gated propos…"
+    "t": 1794817230,
+    "s": "Merge branch 'night-w2' into claude/clever-heisenberg-51zwcr"
    },
    {
-    "t": 1794785378,
-    "s": "LEARN: nightly self-learning loop on the PC (research only)"
+    "t": 1794815512,
+    "s": "phone e2e: the junk run reopens Jarvis every round: a request the navigation cancels (ERR_ABORTED) is not a f…"
    },
    {
-    "t": 1794784804,
-    "s": "Save usage: one-page CLAUDE.md (old brief kept word for word at the end of CLAUDE_REFERENCE), STATE.md, tests…"
+    "t": 1794812739,
+    "s": "STATE: backtest-uses-live-bars decision waiting on the owner; restart to load tonight's fixes"
    },
    {
-    "t": 1794780309,
-    "s": "Merge FX: 3D quality fixes (Jarvis bar, Kalshi City signs, Data City chips, intro film), intros for Kalshi an…"
+    "t": 1794812595,
+    "s": "phone e2e: the Kalshi page's own 3 s limit on its HEAD check of ../kalshicity/ (and a slow worker script fetc…"
    },
    {
-    "t": 1794780265,
-    "s": "Team FX: quality sweep, intros for Kalshi and Bridge, 3D touches on the Gate and hubs"
+    "t": 1794811795,
+    "s": "phone e2e: any request a dashboard had in flight when the switch lets it go is cancelled (ERR_ABORTED), not f…"
    },
    {
-    "t": 1794780222,
-    "s": "Wire Business: Jarvis Money, olympus APPS, build tuple, site worker v103, jarvis-v42, catalog row, icons, 84…"
+    "t": 1794811459,
+    "s": "test_jarvis_home: the MSAA check scrolls the 3D core into view (it sits below the AGORA home's first screen a…"
    },
    {
-    "t": 1794780055,
-    "s": "Merge BIZ: one price list, Business page (7 models, next step, $ ranges, 7-day checklist), AGENCY_DAY.bat, pr…"
+    "t": 1794811223,
+    "s": "test_jarvis_core: listening red is measured red over green (AGORA bronze idle already has more red over blue…"
    },
    {
-    "t": 1794780032,
-    "s": "Business page: test hook, 44 px checklist ticks, Chromium checks (54/54)"
+    "t": 1794809555,
+    "s": "phone e2e: the PC feed pointer (status_feed.json, read async at every Jarvis start since night A) cancelled b…"
    },
    {
-    "t": 1794778801,
-    "s": "NAV wiring: site worker v102; test_live_link's fake element has removeAttribute (68/68)"
+    "t": 1794809394,
+    "s": "phone e2e: the test site gets kalshicity/scan.json + forward.json as the Kalshi City workflow publishes them;…"
    },
    {
-    "t": 1794778779,
-    "s": "Merge NAV v3: one big search on the Gate (apps, hub tabs, shortcuts), Pinned, Your six, Recent, All apps A to…"
+    "t": 1794809299,
+    "s": "Trade watch: ATLAS backtest twin + LIT 1m cleaner vs live research"
    },
    {
-    "t": 1794778762,
-    "s": "NAV v3: gate.css NAV block above the style-theme layer; drawQuick safe without querySelector; screenshots doc…"
+    "t": 1794809142,
+    "s": "add_planner.sh keeps the Planner's status card (planner/jarvis.json) when planner-backup has none"
    },
    {
-    "t": 1794777813,
-    "s": "NAV v3: one search for apps, hub tabs and shortcuts; Pinned, Your six, Recent 6, All apps A to Z sheet; Go to…"
+    "t": 1794809086,
+    "s": "Jarvis search index rebuilt (Agency and Business were missing: test_jarvis_skills --check red)"
    },
    {
-    "t": 1794777281,
-    "s": "Business: one price list, Business page, AGENCY_DAY.bat, listing kit, 7-day launch"
+    "t": 1794809012,
+    "s": "test_arena_citadel: a street is its top face now (2 triangles): the exact route budget is 112 x 2 = 224 (was…"
    },
    {
-    "t": 1794774157,
-    "s": "Wire BLITZ hiding: Zenith app text Zlarior · ATLAS, apps lists, workers v101 / jarvis-v41 / le-shell-next-v39"
+    "t": 1794808955,
+    "s": "OLYMPUS_PERF: the night W2 budget fixes (oracle, arena, datacity, cities) and the lesson"
    },
    {
-    "t": 1794774085,
-    "s": "Merge H-BLITZ: BLITZ hidden on every dashboard and silent (switch dashboard_view.json hidden_bots), engine an…"
+    "t": 1794808912,
+    "s": "Night W2: phone e2e reds at the cause, 3D perf budgets back under on phones"
    },
    {
-    "t": 1794773679,
-    "s": "Hidden BLITZ: keep the app cores pure (home.json hidden_bots), PC report test"
+    "t": 1794805775,
+    "s": "Pin: assets/ in the site worker's OTHER_APPS (zenith_mode)"
    },
    {
-    "t": 1794773278,
-    "s": "ATLAS zombie-eval rule ON (owner 'Fix atlas' 2026-11-15): eval gives up under $200 of room, 1-micro last shot…"
+    "t": 1794804680,
+    "s": "Merge night-d: test gate 1 red - 0 (Jarvis worker caches every file the page loads), stale pins and indexes f…"
    },
    {
-    "t": 1794772986,
-    "s": "Hide BLITZ on the AGORA pages too: main.js, nq, helios, gate apps, scoreboard"
+    "t": 1794804019,
+    "s": "Merge night-a: Classic Jarvis look, one truth for bot numbers, Obsidian sync, cleaner Gate + Jarvis bar; wire…"
    },
    {
-    "t": 1794772805,
-    "s": "test_rehearsal_blitz: show BLITZ in its sandbox (dashboard_view.json [])"
+    "t": 1794802619,
+    "s": "Jarvis: cleaner top bar (the daily few: NQ, Aegis, Ledger, Business, Helios, Planner, Kalshi + orb favourites…"
    }
   ],
   "branches": [
    {
     "name": "claude/clever-heisenberg-51zwcr",
-    "t": 1794793330,
-    "s": "QUICK_ARM.bat: SETUP_EVERYTHING with no optional questions (LE_SE_QUICK skips the dashboard key and…"
+    "t": 1794827296,
+    "s": "Study: LIT + ATLAS (+ BLITZ) on one MFFU account (Builder 50K, Rapid EOD 50K), paper only"
    },
    {
-    "name": "worktree-agent-ada41a54d2b503fa6",
-    "t": 1794772312,
-    "s": "test_rehearsal_blitz: show BLITZ in its sandbox (dashboard_view.json [])"
+    "name": "worktree-agent-a3e33d9c8808ae729",
+    "t": 1794827296,
+    "s": "Study: LIT + ATLAS (+ BLITZ) on one MFFU account (Builder 50K, Rapid EOD 50K), paper only"
    },
    {
-    "name": "worktree-agent-a31d4187b1b72eefd",
-    "t": 1794763458,
-    "s": "ATLAS deep edge: loser autopsy + 29 variants; zombie-eval rule built OFF (adopt-candidate)"
-   },
-   {
-    "name": "worktree-agent-adb3eb8c01d26780a",
-    "t": 1794760586,
-    "s": "E-LIT deep edge: why LIT loses, H1 vs H2, missed setups, 16 structural skip rules; none adopted"
-   },
-   {
-    "name": "worktree-agent-aab5e82949140d45a",
-    "t": 1794759872,
-    "s": "NinjaTrader route: flatten a bracket NT never reported, write-ahead entry state, no duplicate brack…"
-   },
-   {
-    "name": "worktree-agent-a8e5a984f9f6a6a77",
-    "t": 1794758499,
-    "s": "S2 edge: six new LIT ideas from other NQ/prop bots (28 versions), one lead (easy-target size), noth…"
-   },
-   {
-    "name": "worktree-agent-a3b8ea28fe42bac49",
-    "t": 1794701656,
-    "s": "Agency content: posts and client reports find the CRM file the agency saves (clients.json, crm.json…"
-   },
-   {
-    "name": "worktree-agent-aff90ae6be481d179",
-    "t": 1794696971,
-    "s": "Q2 privacy 5/5: docs/PRIVACY.md (who can see what, the 3 settings to keep), the map row, run_area \"…"
-   },
-   {
-    "name": "worktree-agent-a7073aa38d4e453e0",
-    "t": 1794691644,
-    "s": "docs/SETUP_EVERYTHING.md: honest limit: not run on a Windows PC yet"
-   },
-   {
-    "name": "worktree-agent-ad7021b18b229bf89",
-    "t": 1794690832,
-    "s": "ADD_ACCOUNT.md: Lucid / FundedNext rows from the 2026-11-14 re-read, Bulenox row (on hold), pointer…"
-   },
-   {
-    "name": "worktree-agent-a11959c973bc4b2d7",
-    "t": 1794688416,
-    "s": "Money machines: wire the gigs to the agency teams' real tools (B1 build_site, B3 grade.py, B4 make_…"
-   },
-   {
-    "name": "worktree-agent-a912ef96d13e0f672",
-    "t": 1794687350,
-    "s": "pc_report: one odd fill review never stops the 15-minute report run (the status and the other alert…"
+    "name": "worktree-agent-aba496e75416be08a",
+    "t": 1794827296,
+    "s": "Study: LIT + ATLAS (+ BLITZ) on one MFFU account (Builder 50K, Rapid EOD 50K), paper only"
    }
   ]
  }

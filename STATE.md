@@ -46,6 +46,10 @@ Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7;
   ATLAS's own funded accounts against MFFU's limits; `--held <plan>=0` when one ended. MFFU copy trading: allowed (help center).
 
 ## Recent findings (don't redo)
+- Rapid EOD levers (2026-11-16, `rapid-levers-2026-11-16.md`, `tools/money/rapid_levers.py`): keep $1,000 in the funded Rapid
+  (take only above $3,100) = $6,014 / $2,824 vs $5,022 / $2,301 a month (H1/H2), first payout 2-4 sessions later: candidate,
+  owner yes/no. Different mixes per account: less $ (2x: -$500/mo H2) but "no account pays in 6m" 7.6% -> 1.4-1.6% (owner
+  choice). Asia slot $300: small 2026 plus, worse 2021-25, not built. Give-up/re-buy and day caps: no (keep the 30% guard).
 - Stack on ONE account (2026-11-16, `stack-one-account-2026-11-16.md`, `tools/money/stack_one_account.py`): Builder 50K, LIT eval then
   LIT + ATLAS $500 once funded: first payout 26/23.5 -> 17/15 sessions, account $779/$753 -> $1,202/$1,205 a month (H1/H2), 2021-25 ~$0.
   ATLAS in the eval too: faster pass but more 2-week fails (2021-25 20% vs 0.6%) = rejected. Rapid EOD + ATLAS: eval 40 -> 22 sessions

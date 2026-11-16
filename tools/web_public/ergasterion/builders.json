@@ -1,10 +1,10 @@
 {
  "v": 1,
  "asof": "2026-11-11T01:10:00Z",
- "source": "git",
+ "source": "file",
  "base": "agora-release",
- "newest_t": 1794377525,
- "note": "The build agents from handoff/agents_now.json, joined with git at build time (commits not yet in the release, files, folders, what was merged).",
+ "newest_t": 0,
+ "note": "The build agents from handoff/agents_now.json: job lines only, git was not available at build time, so there is no live activity.",
  "agents": [
   {
    "id": "b1",
@@ -12,41 +12,16 @@
    "name": "Theme finisher",
    "job": "One calm AGORA look in every app; a unique accent per app",
    "area": "design",
-   "live": true,
-   "merged": true,
+   "live": false,
+   "merged": false,
    "ahead": 0,
    "files": 0,
    "folders": [],
    "commits": [],
-   "last_t": 1794327247,
-   "shipped": [
-    {
-     "t": 1794327247,
-     "s": "trial merge of theme audit (jarvis files kept from agora-release)"
-    },
-    {
-     "t": 1794322971,
-     "s": "AGORA audit doc"
-    },
-    {
-     "t": 1794322915,
-     "s": "AGORA audit: keep zenith-mode.js legacy default (test_zenith_mode asserts it)"
-    },
-    {
-     "t": 1794322874,
-     "s": "AGORA audit: tree to the AGORA palette (1 files)"
-    },
-    {
-     "t": 1794322874,
-     "s": "AGORA audit: settings to the AGORA palette (1 files)"
-    },
-    {
-     "t": 1794322874,
-     "s": "AGORA audit: prometheus to the AGORA palette (1 files)"
-    }
-   ],
-   "shipped_n": 1,
-   "note": "merged into the release"
+   "last_t": 0,
+   "shipped": [],
+   "shipped_n": 0,
+   "note": "job only, no live activity"
   },
   {
    "id": "b2",
@@ -54,16 +29,16 @@
    "name": "Jarvis home",
    "job": "A clean, beautiful Jarvis first screen with a golden-hour courtyard",
    "area": "jarvis",
-   "live": true,
+   "live": false,
    "merged": false,
    "ahead": 0,
    "files": 0,
    "folders": [],
    "commits": [],
-   "last_t": 1794377525,
+   "last_t": 0,
    "shipped": [],
    "shipped_n": 0,
-   "note": "from git: its branch against the release"
+   "note": "job only, no live activity"
   },
   {
    "id": "b3",
@@ -71,45 +46,16 @@
    "name": "Jarvis brain",
    "job": "Search everything, follow-up questions, briefings, tours",
    "area": "jarvis",
-   "live": true,
-   "merged": true,
+   "live": false,
+   "merged": false,
    "ahead": 0,
    "files": 0,
    "folders": [],
    "commits": [],
-   "last_t": 1794363233,
-   "shipped": [
-    {
-     "t": 1794363233,
-     "s": "Jarvis brain v3: talk to the people (OLYMPUS_PEOPLE kit when present, else builders.json / agents-now.json + the Sympos…"
-    },
-    {
-     "t": 1794359539,
-     "s": "Jarvis brain v3: 'what are the agents working on' (ergasterion/builders.json, else the bundled jarvis/agents-now.json,…"
-    },
-    {
-     "t": 1794358265,
-     "s": "Jarvis brain v3: safety tightened (notes, searches, 'the live feed', 'short answers' are not orders), wiring notes"
-    },
-    {
-     "t": 1794358131,
-     "s": "Jarvis brain v3: tests.test_jarvis_skills grows (builders, v3 node tests), docs/JARVIS_API.md v2 + wiring"
-    },
-    {
-     "t": 1794358066,
-     "s": "Jarvis brain v3: node tests (60 search queries, 25 dialogue scripts, 50+ refused phrasings, briefing, explain, tours, J…"
-    },
-    {
-     "t": 1794363024,
-     "s": "docs/PERSONA_API.md: the People kit contract (talk to any worker)"
-    },
-    {
-     "t": 1794359239,
-     "s": "handoff/agents_now.json: the build agents and their jobs (for Ergasterion's builders hall)"
-    }
-   ],
-   "shipped_n": 2,
-   "note": "merged into the release"
+   "last_t": 0,
+   "shipped": [],
+   "shipped_n": 0,
+   "note": "job only, no live activity"
   },
   {
    "id": "b4",
@@ -117,41 +63,16 @@
    "name": "Hellas",
    "job": "A world of 200+ cities built from the real research data",
    "area": "cities",
-   "live": true,
-   "merged": true,
+   "live": false,
+   "merged": false,
    "ahead": 0,
    "files": 0,
    "folders": [],
    "commits": [],
-   "last_t": 1794366079,
-   "shipped": [
-    {
-     "t": 1794366079,
-     "s": "Wire colosseum; worker v80"
-    },
-    {
-     "t": 1794366025,
-     "s": "Colosseum: full suite 104/104 (static, node, browser 390x844 + 375x667), fresh screenshots, Home Screen icons"
-    },
-    {
-     "t": 1794366024,
-     "s": "Wire pinakes; build step for its catalogue; worker v79"
-    },
-    {
-     "t": 1794364436,
-     "s": "Colosseum: no script tag for the not-yet-existing people.js (it raised the kit's could-not-load banner); wiring names i…"
-    },
-    {
-     "t": 1794363088,
-     "s": "PERSONA_API: people look like friendly console-avatar characters; people3d figure API; owner's own character"
-    },
-    {
-     "t": 1794363024,
-     "s": "docs/PERSONA_API.md: the People kit contract (talk to any worker)"
-    }
-   ],
-   "shipped_n": 4,
-   "note": "merged into the release"
+   "last_t": 0,
+   "shipped": [],
+   "shipped_n": 0,
+   "note": "job only, no live activity"
   },
   {
    "id": "b5",
@@ -159,45 +80,16 @@
    "name": "Ergasterion",
    "job": "The agent factory: watch every worker and what it learned",
    "area": "factory",
-   "live": true,
-   "merged": true,
+   "live": false,
+   "merged": false,
    "ahead": 0,
    "files": 0,
    "folders": [],
    "commits": [],
-   "last_t": 1794365040,
-   "shipped": [
-    {
-     "t": 1794365040,
-     "s": "Ergasterion tests: Talk prompt checked from the queue's west side, facing compared modulo a turn"
-    },
-    {
-     "t": 1794364720,
-     "s": "Ergasterion: wiring note for people ids and the optional kit"
-    },
-    {
-     "t": 1794363508,
-     "s": "Ergasterion people step 4: tests for the fallback chat, the stubbed kit path, the Talk prompt and facing"
-    },
-    {
-     "t": 1794363418,
-     "s": "Ergasterion people step 3 (WIP): talk to anyone (shared kit when loaded, built-in six-question chat otherwise), faces,…"
-    },
-    {
-     "t": 1794363324,
-     "s": "Ergasterion people step 2 (WIP): cartoon persons instead of marble statues, wave / talk / cheer / slump, turn to face y…"
-    },
-    {
-     "t": 1794363088,
-     "s": "PERSONA_API: people look like friendly console-avatar characters; people3d figure API; owner's own character"
-    },
-    {
-     "t": 1794363024,
-     "s": "docs/PERSONA_API.md: the People kit contract (talk to any worker)"
-    }
-   ],
-   "shipped_n": 4,
-   "note": "merged into the release"
+   "last_t": 0,
+   "shipped": [],
+   "shipped_n": 0,
+   "note": "job only, no live activity"
   },
   {
    "id": "b6",
@@ -205,16 +97,16 @@
    "name": "NQ bot",
    "job": "The NQ page and the kit that updates the PC's bot folder",
    "area": "trading",
-   "live": true,
+   "live": false,
    "merged": false,
    "ahead": 0,
    "files": 0,
    "folders": [],
    "commits": [],
-   "last_t": 1794362441,
+   "last_t": 0,
    "shipped": [],
    "shipped_n": 0,
-   "note": "from git: its branch against the release"
+   "note": "job only, no live activity"
   },
   {
    "id": "b7",
@@ -222,41 +114,16 @@
    "name": "Pinakes",
    "job": "A browser for every table of data OLYMPUS has",
    "area": "data",
-   "live": true,
-   "merged": true,
+   "live": false,
+   "merged": false,
    "ahead": 0,
    "files": 0,
    "folders": [],
    "commits": [],
-   "last_t": 1794364174,
-   "shipped": [
-    {
-     "t": 1794364174,
-     "s": "Pinakes: narrower grid columns so a phone shows three or four fields at once"
-    },
-    {
-     "t": 1794362472,
-     "s": "Pinakes test: grid screenshot"
-    },
-    {
-     "t": 1794362458,
-     "s": "Pinakes: brighter marble, taller drawers, bigger labels on the cabinet; research span test"
-    },
-    {
-     "t": 1794361498,
-     "s": "Pinakes test: phone-view screenshots helper"
-    },
-    {
-     "t": 1794361473,
-     "s": "Pinakes test: read CSV downloads without newline translation; Show more until done"
-    },
-    {
-     "t": 1794360309,
-     "s": "Pinakes test: viewport screenshots when AGORA_SHOTS is set"
-    }
-   ],
-   "shipped_n": 1,
-   "note": "merged into the release"
+   "last_t": 0,
+   "shipped": [],
+   "shipped_n": 0,
+   "note": "job only, no live activity"
   },
   {
    "id": "b8",
@@ -264,41 +131,16 @@
    "name": "Kalshi team C",
    "job": "Hunting for a real Kalshi edge in weather and index markets",
    "area": "research",
-   "live": true,
-   "merged": true,
+   "live": false,
+   "merged": false,
    "ahead": 0,
    "files": 0,
    "folders": [],
    "commits": [],
-   "last_t": 1794372566,
-   "shipped": [
-    {
-     "t": 1794372566,
-     "s": "Kalshi edge C: final results, no edge found; writeup and edge_rules_C.json"
-    },
-    {
-     "t": 1794372511,
-     "s": "Kalshi edge C: other-series + econ descriptive results"
-    },
-    {
-     "t": 1794372501,
-     "s": "Kalshi edge C: weather results on Jun-Nov data (0 carried)"
-    },
-    {
-     "t": 1794371972,
-     "s": "WIP saved by lead after the usage-limit stop"
-    },
-    {
-     "t": 1794367318,
-     "s": "Kalshi edge C: weather main backfilled to June"
-    },
-    {
-     "t": 1794366186,
-     "s": "Kalshi edge C: weather backfill progress"
-    }
-   ],
-   "shipped_n": 1,
-   "note": "merged into the release"
+   "last_t": 0,
+   "shipped": [],
+   "shipped_n": 0,
+   "note": "job only, no live activity"
   },
   {
    "id": "b9",
@@ -306,29 +148,16 @@
    "name": "Colosseum",
    "job": "A 3D arena where two strategies duel on real numbers",
    "area": "arena",
-   "live": true,
-   "merged": true,
+   "live": false,
+   "merged": false,
    "ahead": 0,
    "files": 0,
    "folders": [],
    "commits": [],
-   "last_t": 1794363088,
-   "shipped": [
-    {
-     "t": 1794363088,
-     "s": "PERSONA_API: people look like friendly console-avatar characters; people3d figure API; owner's own character"
-    },
-    {
-     "t": 1794363024,
-     "s": "docs/PERSONA_API.md: the People kit contract (talk to any worker)"
-    },
-    {
-     "t": 1794359239,
-     "s": "handoff/agents_now.json: the build agents and their jobs (for Ergasterion's builders hall)"
-    }
-   ],
-   "shipped_n": 2,
-   "note": "merged into the release"
+   "last_t": 0,
+   "shipped": [],
+   "shipped_n": 0,
+   "note": "job only, no live activity"
   },
   {
    "id": "b10",
@@ -336,16 +165,16 @@
    "name": "Fixer",
    "job": "Fixing the broken tests and phone-layout bugs in old apps",
    "area": "quality",
-   "live": true,
+   "live": false,
    "merged": false,
    "ahead": 0,
    "files": 0,
    "folders": [],
    "commits": [],
-   "last_t": 1794376596,
+   "last_t": 0,
    "shipped": [],
    "shipped_n": 0,
-   "note": "from git: its branch against the release"
+   "note": "job only, no live activity"
   }
  ]
 }
