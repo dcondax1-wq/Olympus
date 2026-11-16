@@ -429,8 +429,8 @@ def part_e():
         print("[SKIP] e. web app math in Chromium: no playwright here")
     cat = json.load(open(os.path.join(ROOT, "money_machines", "products", "catalog.json"), encoding="utf-8"))
     pr = cat["products"]
-    check("e. the catalogue: the built tracker + 4 more products (built by team D2, tests.test_digital_products), each with price, effort, platforms and a source",
-          len(pr) == 5 and pr[0]["id"] == "prop-eval-tracker" and all(p["status"] in ("built", "planned") for p in pr)
+    check("e. the catalogue: the built tracker + 7 more products (team D2: tests.test_digital_products; night B: tests.test_money_door), each with price, effort, platforms and a source",
+          len(pr) == 8 and pr[0]["id"] == "prop-eval-tracker" and all(p["status"] in ("built", "planned") for p in pr)
           and all(p["price_usd"] > 0 and p["platforms"] and "effort_h" in p and (p.get("source") or p.get("files")) for p in pr))
     tmp = tempfile.mkdtemp(prefix="mm_zip_")
     try:

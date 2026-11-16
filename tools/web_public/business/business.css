@@ -58,6 +58,8 @@ svg text { font-family: var(--ag-sans); }
 
 /* THE ONE MONEY PLACE (night team B, 2026-11-16) */
 .door { border-color: var(--oly-th-n9, #4a3d28); }
+.links { display: flex; flex-wrap: wrap; gap: 6px; }
+.links a { display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--ag-line); color: var(--ag-soft); text-decoration: none; font-size: 13px; }
 .moves ol, .item ol { margin: 0; padding: 0; display: grid; gap: 4px; list-style: none; }
 #app .moves, #app .item { overflow: visible; }
 .acct { padding: 10px 0; border-top: 1px solid var(--ag-line); display: grid; gap: 6px; }

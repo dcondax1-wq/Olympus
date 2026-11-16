@@ -1,6 +1,6 @@
 # STATE (read first in every chat, update at the end; owner's words in quotes)
 
-Updated 2026-11-15 ~16:30 ET.
+Updated 2026-11-15 ~16:30 ET (money lines 2026-11-16 night B).
 
 ## Live
 | What | State |
@@ -18,7 +18,8 @@ Updated 2026-11-15 ~16:30 ET.
 - Yes/no: lock the PC bot page to his own devices (Tailscale only; anyone on home WiFi can reach Stop today).
 - Yes/no: delete ~7 GB of old test leftovers in the container (python tools/disk_clean.py --apply; blocked for Claude by the safety check).
 - Account #4: buy after the first MFFU payout (docs/ACCOUNT_4.md; another MFFU 50K = easiest, LucidPro 50K = second firm).
-- Business: fill agency/config.json (name, city, phone, address), then AGENCY_DAY.bat; list the 5 products (docs/BUSINESS_LISTING_KIT.md). $0 earned so far.
+- Business: fill agency/config.json (name, city, phone, address), then AGENCY_DAY.bat; list the 8 products, the 4 trading ones first (docs/BUSINESS_LISTING_KIT.md). $0 earned so far.
+- Money (2026-11-16 night B): the Business page is the ONE money place (every dollar, this week's money moves, payout planner, ready-to-upload tick lists, ideas, costs; docs/BUSINESS.md). New: 3 products (bundle $29, risk calculator $12, rules cheat sheet $7), 2 new models (AI training tasks, paid website tests). Plan (ESTIMATE): first payout ~late Dec ($1,200 LIT / $600 ATLAS to you), account #4 the day it is in the bank.
 
 ## Built, waiting for the PC
 - Nightly self-learning loop is built (engine/learn_loop.py, research/learn_queue.json, docs/LEARN_LOOP.md): starts on the PC by itself after tonight; first cloud run rejected all 8 seed ideas.

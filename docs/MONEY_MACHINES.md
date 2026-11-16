@@ -195,7 +195,19 @@ third-party brand names (81 names checked in every file and the listing text, so
 app name), no income, result, ranking or pass promises, neutral file metadata, the "made with the help of AI tools" line (Etsy), real reviews
 only, "Ad" disclosure taught, the agreement marked NOT LEGAL ADVICE in the file, the licence and the listing, the trading risk line.
 
-**One upload sheet for all five:** `docs/BUSINESS_LISTING_KIT.md` (`python -m money_machines.products.listing_kit`; status of every model: `docs/BUSINESS.md`).
+### Built: three more for evaluation traders (night team B, 2026-11-16; `money_machines/products/build_prop_kit.py`, tests `tests.test_money_door`)
+
+| Product | Price | You keep (Payhip / Gumroad / Etsy) | What the buyer gets |
+|---|---|---|---|
+| **Prop Trader Bundle** (`prop_bundle/`) | $29 | $26.41 / $24.46 / $25.79 | the eval tracker + the trader planner + the two below in one zip ($50 of parts) |
+| **Eval Risk Calculator** (`risk_calculator/`) | $12 | $10.75 / $9.65 / $10.41 | one spreadsheet: room left, daily room, size follows the stop, losses in a row, a 10-loss streak table (fixed size vs a share of what is left), 12 futures by ticker |
+| **Prop Eval Rules Explained** (`rules_guide/`) | $7 | $6.15 / $5.30 / $5.88 | an 8-page cheat sheet (Letter + A4): max-loss types and the lock, daily limits, consistency (the one formula), payout rules, the rules people miss, a compare-before-you-buy worksheet, a pre-session checklist |
+
+Upload zips: `python -m money_machines.products.build_prop_kit --zip` (or `build_all --zip`, now 8 zips). Firm-neutral, tickers only (index and
+exchange names are trademarks), examples marked "Example only", the calculator's stored results equal the Python math. List the 4 trading
+products first: the owner trades these evals, so the Eval Journal account and his own experience are the one audience he already has.
+
+**One upload sheet for all eight:** `docs/BUSINESS_LISTING_KIT.md` (`python -m money_machines.products.listing_kit`; status of every model: `docs/BUSINESS.md`).
 
 **List them (owner, about 15 minutes each):** 1. Run the zip command above. 2. On Payhip: New product > Digital download, upload the zip,
 paste title, description and FAQ from `shop/listing.md`, add the 3 `cover_*.jpg`, set the price. 3. Add the shop link to the right
