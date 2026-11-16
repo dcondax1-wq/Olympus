@@ -403,8 +403,16 @@ def session_a(br, GPU, GPU_COUNT):
     check("i. every orb has a live status badge (a check, a dot, an ! or a dash) and a title with its numbers", sat["n"] >= 3 and sat["sb"] == sat["n"] and sat["t"] in ("✓", "•", "!", "–") and len(sat["title"]) > 3, sat)
     dock = p.evaluate("() => { const d = document.querySelector('#dock'), c = getComputedStyle(d); const b = getComputedStyle(d, '::before'); return { bf: c.backdropFilter || c.webkitBackdropFilter, line: b.content, h: getComputedStyle(document.querySelector('.jconst')).pointerEvents }; }")
     check("i. the dock is a solid marble bar (AGORA 2026-11-10: no glass blur, no sheen line) and the constellation canvas never takes a tap", (not dock["bf"] or dock["bf"] == "none") and dock["line"] in ("none", "normal") and dock["h"] == "none", dock)
+    # the 3D core sits below the first screen of the AGORA home (y ~1,500 at 390 x 844) and gives its buffers back while it is off
+    # screen (perf v2, 32bd9e8: core-visual.js sleeps the render core); scrolled into view it draws with its MSAA buffers again
+    p.evaluate("() => { const c = document.querySelector('.jcore'); if (c) c.scrollIntoView({ block: 'center' }); }")
+    try:
+        p.wait_for_function("() => window.__gpu().msaa >= 2", timeout=20000)
+    except Exception:
+        pass
     g = p.evaluate(GPU)
     check("i. still ONE multisampled composer (the core's two MSAA buffers; the backdrop has none) after home3d.js joined", g["msaa"] == 2, g)
+    p.evaluate("() => window.scrollTo(0, 0)")
     # the world follows the clock and the VIX
     res = {}
     for name, et, vix in (("dawn", (6, 30), None), ("noon", (12, 0), 14), ("dusk", (17, 30), 20), ("night", (22, 0), 25), ("storm", (22, 0), 31)):
