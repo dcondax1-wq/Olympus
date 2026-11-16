@@ -31,7 +31,7 @@ html.framed #app { padding-top: 12px; }
 .row { display: flex; justify-content: space-between; align-items: center; gap: 10px; } .row h2 { margin: 0; }
 details > summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-weight: 600; color: var(--ag-soft); }
 .fld { display: grid; gap: 4px; min-width: 0; font-size: 13px; color: var(--ag-soft); }
-textarea { width: 100%; min-height: 44px; padding: 10px 12px; border-radius: var(--ag-radius-s, 12px); border: 1px solid var(--ag-line); background: #211c16; color: var(--ag-text); font: 500 14px/1.4 var(--ag-sans); resize: vertical; }
+textarea { width: 100%; min-height: 44px; padding: 10px 12px; border-radius: var(--ag-radius-s, 12px); border: 1px solid var(--ag-line); background: #211c16; color: var(--ag-text); font: 500 16px/1.4 var(--ag-sans); resize: vertical; }
 .foot { margin: 4px 0 0; font-size: 12px; color: var(--ag-muted); }
 
 /* HERALD: the newsstand */

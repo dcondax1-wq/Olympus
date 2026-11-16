@@ -157,6 +157,10 @@ def lint():
         for m in re.finditer(r"(?<![\w.])(localStorage|sessionStorage)\.(getItem|setItem|removeItem)\(", code):
             line_start = code.rfind("\n", 0, m.start()) + 1
             ctx = code[max(0, line_start - 300):m.end() + 200]
+            # safe(() => localStorage.getItem(k), d): a call handed to a helper of the same file whose body is a try
+            w = re.search(r"(\w+)\(\s*\(\)\s*=>\s*$", code[max(0, m.start() - 60):m.start()])
+            if w and re.search(r"(?:const|let|var)\s+%s\s*=\s*\([^)]*\)\s*=>\s*\{\s*try\b|function\s+%s\s*\([^)]*\)\s*\{\s*try\b" % (w.group(1), w.group(1)), code):
+                continue
             if not re.search(r"try\s*\{|catch\s*\(|catch\s*\{|=>\s*\{?\s*try|function\s+\w+\([^)]*\)\s*\{\s*try", ctx) and "try" not in code[max(0, m.start() - 120):m.start()]:
                 ls_bad.append((rel, code[line_start:line_start + 110].strip()))
     check("lint: every localStorage / sessionStorage call sits in a try (it throws in a private window and with site data blocked)", not ls_bad, ls_bad[:8])
@@ -255,6 +259,10 @@ def lint_more():
         code = strip_comments(txt)
         for m in re.finditer(r"(?<![\w$])(\w+(?:\.\w+)*)\.play\(\)", code):
             if re.search(r"(speechSynthesis|player|game|anim|timeline|tl|gsap|clip|action|mixer|scrub|loop|ticker|sim|demo|film)", m.group(1), re.I) and not re.search(r"audio|video|\bel\b|\ba\b|snd|sound|media|voice|tone", m.group(1), re.I):
+                continue
+            # a three.js AnimationAction (x = mixer.clipAction(...), or x = (st.)actions[...]) is not media: its .play() never rejects
+            nm = re.escape(m.group(1).split(".")[-1])
+            if re.search(r"\b%s\s*=\s*[^;\n]*\.clipAction\(" % nm, code) or ("clipAction(" in code and re.search(r"\b%s\s*=\s*[^;\n]*\bactions?\b" % nm, code)):
                 continue
             after = code[m.end():m.end() + 160]
             before = code[max(0, m.start() - 60):m.start()]
