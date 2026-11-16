@@ -925,8 +925,11 @@ class Rehearsal:
         while True:
             v = self.server.get("/api/next/pc/execution") or {}
             rows = [r for r in v.get("rows") or [] if r.get("day") == day]
-            if (rows and (not killed or rows[0].get("live_exit_kind"))) or _real_time() > t_end:
-                break                                # killed: until the audit has seen the kill-switch exit too
+            # killed: until the audit has seen the kill-switch exit too; a normal exit: until the broker's exit fill is priced
+            # (--fast ends the day 20 min after the exit, often before the 60 s audit thread has read NinjaTrader's fill)
+            priced = bool(rows) and (rows[0].get("exit_src") != "model (broker close not priced)" or not rows[0].get("live_exit_kind"))
+            if (rows and (rows[0].get("live_exit_kind") if killed else priced)) or _real_time() > t_end:
+                break
             _real_sleep(3)
         if not bt:
             check(f"{day} execution tracker: no trade, no missed / extra row", not [r for r in rows if r.get("status") in ("missed", "extra")],

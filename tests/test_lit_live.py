@@ -3,7 +3,7 @@ backtest (tools/lit_final.py run = engine/lit.py run_x on the whole history), on
 
     python -X utf8 -m tests.test_lit_live              # day-end replay of 2026 + intraday polls on every trade day
     python -X utf8 -m tests.test_lit_live --days       # day-end replay only (~1 min)
-    python -X utf8 -m tests.test_lit_live --quick      # the gate's quick mode: day-end replay + intraday polls on every 8th trade day + LiveBot
+    python -X utf8 -m tests.test_lit_live --quick      # the gate's quick mode: day-end replay + polls on every 24th trade day + LiveBot on 1 session
     python -X utf8 -m tests.test_lit_live --w20        # also: the engine's plain 20-day window (shows why LIT needs more)
     python -X utf8 -m tests.test_lit_live --days --bot  # day-end replay + the LiveBot (paper) check only
     python -X utf8 -m tests.test_lit_live --final       # the lit_final params instead of live_model.json "lit" (loss pack on)
@@ -53,8 +53,8 @@ from engine.sizing import LIVE_COMM  # noqa: E402
 
 ET = ZoneInfo("America/New_York")
 OUT = os.path.join(ROOT, "research", "lit", "live_check.json")
-QUICK_EVERY = 8          # --quick (the release gate, tests/run_gate.py --fast): day-end replay of every 2026 session + intraday polls on
-                         # every 8th trade day + the LiveBot sessions; a few minutes instead of the full run
+QUICK_EVERY = 24         # --quick (the release gate, tests/run_gate.py --fast): day-end replay of every 2026 session + intraday polls on
+QUICK_BOT = ("2026-10-06",)  # every 24th trade day + the LiveBot on one session (a 15-minute cut, decided on a 1m close): ~3-4 min
 # Days where the live loop cannot match the backtest by design (reported, not failed):
 KNOWN = {"2026-04-03": "Good Friday (09:15 close): the backtest runs the day on 5m bars because its 1m file misses 6 windows "
                        "after the entry (96.7% < 97% day cover, a whole-day look-ahead); at 04:02 the live loop has every 1m "
@@ -355,6 +355,8 @@ def main():
     # ---- 3. the PC paper bot itself (engine/live.py LiveBot + PaperAdapter) on LIT, fed bar by bar
     if "--bot" in sys.argv or ("--days" not in sys.argv and "--nobot" not in sys.argv):
         bs = next((a.split("=", 1)[1].split(",") for a in sys.argv if a.startswith("--bot-sessions=")), None)
+        if bs is None and "--quick" in sys.argv:
+            bs = QUICK_BOT                                         # --quick: one October session, a 16-minute trade
         out["bot"] = bot_replay(P, by_day, tuple(bs)) if bs else bot_replay(P, by_day)
         b = out["bot"]
         print(f"LiveBot (paper) on LIT, sessions {b['sessions']}: {b['polls']} polls, routed entries {b['entries_ok']}/{b['want']} "
