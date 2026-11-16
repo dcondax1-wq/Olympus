@@ -1687,7 +1687,10 @@ def part_i(br, S, base):
                 a = ask(p, "what's on today")
                 check(f"i. ... and 'what's on today' still answers ({what})", len(a.strip()) > 0, a[:120])
             p.evaluate("(kv) => { for (const k of Object.keys(kv)) localStorage.removeItem(k); }", kv)
-        no_errors(ph, m, "junk on the phone", allow=(r"/favicon\.ico",))   # the manifest opened as a page asks for one
+        # the manifest opened as a page asks for a favicon; this run reopens Jarvis every round, so whatever the last page still had on
+        # its way (a module, the PC feed pointer, a card) is cancelled by the navigation (ERR_ABORTED: seen on olympus/materials.js,
+        # fx-cine.js, three-addons/*); a 404 or a dropped connection still fails
+        no_errors(ph, m, "junk on the phone", allow=(r"/favicon\.ico", r" failed net::ERR_ABORTED$"))
         # a real tap (Playwright checks that nothing covers the card) on every card of the Jarvis screen
         p.goto(jarvis_url(base), wait_until="commit")
         wait_ready(p)
