@@ -1,0 +1,3542 @@
+{
+ "date": "2026-11-16",
+ "n": 1000,
+ "n_grid": 300,
+ "start_day": "2026-11-17",
+ "zlarior": {
+  "room": 1145.0,
+  "to_go": 3687.0,
+  "session": 20
+ },
+ "atlas": {
+  "room": 822.0,
+  "to_go": 1678.0,
+  "session": 20
+ },
+ "spans": {
+  "H1": [
+   "2026-01-01",
+   "2026-06-30"
+  ],
+  "H2": [
+   "2026-07-01",
+   "2026-10-16"
+  ],
+  "REF": [
+   "2021-11-01",
+   "2025-12-31"
+  ]
+ },
+ "lever2": {
+  "H1": {
+   "ATLAS own 25K": {
+    "pass60": 99.2,
+    "pass_med": 12.0,
+    "pass_p10": 41.5,
+    "first_pay_med": 35.0,
+    "first_pay_date": "2027-01-06",
+    "no_pay_6m": 3.3,
+    "net_m": 599,
+    "owner_m": 606,
+    "fees_6m": 42.5,
+    "evals": 1.99,
+    "pays": 4.59
+   },
+   "LIT 25K copy": {
+    "pass60": 86.9,
+    "pass_med": 12.0,
+    "pass_p10": 45.6,
+    "first_pay_med": 45.0,
+    "first_pay_date": "2027-01-20",
+    "no_pay_6m": 14.4,
+    "net_m": 346,
+    "owner_m": 359,
+    "fees_6m": 78.9,
+    "evals": 1.25,
+    "pays": 2.72,
+    "eval": {
+     "p10": 47.6,
+     "f10": 0.0,
+     "p60": 87.3,
+     "f60": 2.6,
+     "pass_med": 9.0
+    },
+    "plain": {
+     "trades": 80,
+     "tpw": 3.12,
+     "win": 58.8,
+     "pf": 3.71,
+     "net": 14406,
+     "per_month": 2363,
+     "max_dd": -1353,
+     "win_days_pw": 1.84
+    },
+    "corr_vs_atlas": 0.1,
+    "both_no_pay": 0.3,
+    "pair_first_pay_med": 30.0,
+    "pair_net_m": 945
+   },
+   "LIT + ATLAS $250": {
+    "pass60": 95.1,
+    "pass_med": 7.0,
+    "pass_p10": 64.1,
+    "first_pay_med": 28.0,
+    "first_pay_date": "2026-12-24",
+    "no_pay_6m": 8.2,
+    "net_m": 618,
+    "owner_m": 636,
+    "fees_6m": 110.4,
+    "evals": 1.75,
+    "pays": 4.78,
+    "eval": {
+     "p10": 63.8,
+     "f10": 0.6,
+     "p60": 92.4,
+     "f60": 4.5,
+     "pass_med": 6.0
+    },
+    "plain": {
+     "trades": 184,
+     "tpw": 7.19,
+     "win": 55.4,
+     "pf": 3.21,
+     "net": 32767,
+     "per_month": 5376,
+     "max_dd": -1284,
+     "win_days_pw": 2.42
+    },
+    "corr_vs_atlas": 0.61,
+    "both_no_pay": 0.6,
+    "pair_first_pay_med": 26.0,
+    "pair_net_m": 1217
+   },
+   "ATLAS + BLITZ $150": {
+    "pass60": 99.5,
+    "pass_med": 7.0,
+    "pass_p10": 69.7,
+    "first_pay_med": 27.0,
+    "first_pay_date": "2026-12-23",
+    "no_pay_6m": 4.4,
+    "net_m": 664,
+    "owner_m": 687,
+    "fees_6m": 139.3,
+    "evals": 2.21,
+    "pays": 5.21,
+    "eval": {
+     "p10": 66.9,
+     "f10": 3.7,
+     "p60": 88.6,
+     "f60": 11.3,
+     "pass_med": 6.0
+    },
+    "plain": {
+     "trades": 321,
+     "tpw": 12.54,
+     "win": 55.5,
+     "pf": 2.35,
+     "net": 24234,
+     "per_month": 3976,
+     "max_dd": -1005,
+     "win_days_pw": 2.58
+    },
+    "corr_vs_atlas": 0.82,
+    "both_no_pay": 0.8,
+    "pair_first_pay_med": 27.0,
+    "pair_net_m": 1262
+   },
+   "LIT + Asia slot": {
+    "pass60": 90.3,
+    "pass_med": 11.0,
+    "pass_p10": 48.2,
+    "first_pay_med": 39.0,
+    "first_pay_date": "2027-01-12",
+    "no_pay_6m": 14.2,
+    "net_m": 385,
+    "owner_m": 400,
+    "fees_6m": 92.0,
+    "evals": 1.46,
+    "pays": 3.03,
+    "eval": {
+     "p10": 50.0,
+     "f10": 0.0,
+     "p60": 84.6,
+     "f60": 7.7,
+     "pass_med": 8.0
+    },
+    "plain": {
+     "trades": 125,
+     "tpw": 4.88,
+     "win": 58.4,
+     "pf": 2.86,
+     "net": 15461,
+     "per_month": 2537,
+     "max_dd": -1260,
+     "win_days_pw": 1.99
+    },
+    "corr_vs_atlas": 0.08,
+    "both_no_pay": 0.5,
+    "pair_first_pay_med": 29.0,
+    "pair_net_m": 984
+   },
+   "LIT eval; funded + ATLAS $250": {
+    "pass60": 86.9,
+    "pass_med": 12.0,
+    "pass_p10": 45.6,
+    "first_pay_med": 33.0,
+    "first_pay_date": "2027-01-04",
+    "no_pay_6m": 9.7,
+    "net_m": 553,
+    "owner_m": 570,
+    "fees_6m": 104.1,
+    "evals": 1.65,
+    "pays": 4.28,
+    "eval": {
+     "p10": 47.6,
+     "f10": 0.0,
+     "p60": 87.3,
+     "f60": 2.6,
+     "pass_med": 9.0
+    },
+    "plain": {
+     "trades": 184,
+     "tpw": 7.19,
+     "win": 55.4,
+     "pf": 3.21,
+     "net": 32767,
+     "per_month": 5376,
+     "max_dd": -1284,
+     "win_days_pw": 2.42
+    },
+    "corr_vs_atlas": 0.52,
+    "both_no_pay": 0.8,
+    "pair_first_pay_med": 28.0,
+    "pair_net_m": 1151
+   },
+   "2nd ATLAS copy": {
+    "pass60": 99.7,
+    "pass_med": 7.0,
+    "pass_p10": 67.5,
+    "first_pay_med": 30.0,
+    "first_pay_date": "2026-12-29",
+    "no_pay_6m": 3.7,
+    "net_m": 614,
+    "owner_m": 636,
+    "fees_6m": 132.5,
+    "evals": 2.1,
+    "pays": 4.83,
+    "eval": {
+     "p10": 64.3,
+     "f10": 11.7,
+     "p60": 82.3,
+     "f60": 17.6,
+     "pass_med": 6.0
+    },
+    "plain": {
+     "trades": 104,
+     "tpw": 4.06,
+     "win": 52.9,
+     "pf": 2.92,
+     "net": 18362,
+     "per_month": 3012,
+     "max_dd": -1062,
+     "win_days_pw": 1.91
+    },
+    "corr_vs_atlas": 0.92,
+    "both_no_pay": 2.3,
+    "pair_first_pay_med": 30.0,
+    "pair_net_m": 1213
+   }
+  },
+  "H2": {
+   "ATLAS own 25K": {
+    "pass60": 91.7,
+    "pass_med": 25.0,
+    "pass_p10": 14.9,
+    "first_pay_med": 56.0,
+    "first_pay_date": "2027-02-04",
+    "no_pay_6m": 10.1,
+    "net_m": 381,
+    "owner_m": 383,
+    "fees_6m": 13.5,
+    "evals": 1.31,
+    "pays": 2.9
+   },
+   "LIT 25K copy": {
+    "pass60": 83.5,
+    "pass_med": 11.0,
+    "pass_p10": 46.7,
+    "first_pay_med": 44.0,
+    "first_pay_date": "2027-01-19",
+    "no_pay_6m": 23.3,
+    "net_m": 298,
+    "owner_m": 311,
+    "fees_6m": 79.4,
+    "evals": 1.26,
+    "pays": 2.38,
+    "eval": {
+     "p10": 47.2,
+     "f10": 0.0,
+     "p60": 82.8,
+     "f60": 1.7,
+     "pass_med": 8.0
+    },
+    "plain": {
+     "trades": 40,
+     "tpw": 2.56,
+     "win": 50.0,
+     "pf": 3.0,
+     "net": 6615,
+     "per_month": 1781,
+     "max_dd": -902,
+     "win_days_pw": 1.28
+    },
+    "corr_vs_atlas": -0.02,
+    "both_no_pay": 2.5,
+    "pair_first_pay_med": 41.0,
+    "pair_net_m": 679
+   },
+   "LIT + ATLAS $250": {
+    "pass60": 89.5,
+    "pass_med": 9.0,
+    "pass_p10": 56.5,
+    "first_pay_med": 30.0,
+    "first_pay_date": "2026-12-29",
+    "no_pay_6m": 14.4,
+    "net_m": 511,
+    "owner_m": 529,
+    "fees_6m": 106.4,
+    "evals": 1.69,
+    "pays": 4.01,
+    "eval": {
+     "p10": 55.8,
+     "f10": 0.0,
+     "p60": 85.8,
+     "f60": 6.1,
+     "pass_med": 8.0
+    },
+    "plain": {
+     "trades": 86,
+     "tpw": 5.51,
+     "win": 53.5,
+     "pf": 2.77,
+     "net": 11871,
+     "per_month": 3196,
+     "max_dd": -1052,
+     "win_days_pw": 2.18
+    },
+    "corr_vs_atlas": 0.49,
+    "both_no_pay": 2.9,
+    "pair_first_pay_med": 32.0,
+    "pair_net_m": 892
+   },
+   "ATLAS + BLITZ $150": {
+    "pass60": 98.0,
+    "pass_med": 10.0,
+    "pass_p10": 51.7,
+    "first_pay_med": 37.0,
+    "first_pay_date": "2027-01-08",
+    "no_pay_6m": 7.6,
+    "net_m": 518,
+    "owner_m": 536,
+    "fees_6m": 106.4,
+    "evals": 1.69,
+    "pays": 4.05,
+    "eval": {
+     "p10": 49.8,
+     "f10": 1.6,
+     "p60": 89.3,
+     "f60": 9.1,
+     "pass_med": 9.0
+    },
+    "plain": {
+     "trades": 152,
+     "tpw": 9.74,
+     "win": 56.6,
+     "pf": 2.04,
+     "net": 7734,
+     "per_month": 2082,
+     "max_dd": -1079,
+     "win_days_pw": 2.12
+    },
+    "corr_vs_atlas": 0.84,
+    "both_no_pay": 3.8,
+    "pair_first_pay_med": 38.0,
+    "pair_net_m": 899
+   },
+   "LIT + Asia slot": {
+    "pass60": 93.0,
+    "pass_med": 8.0,
+    "pass_p10": 55.3,
+    "first_pay_med": 32.0,
+    "first_pay_date": "2026-12-31",
+    "no_pay_6m": 11.1,
+    "net_m": 526,
+    "owner_m": 545,
+    "fees_6m": 109.6,
+    "evals": 1.74,
+    "pays": 4.13,
+    "eval": {
+     "p10": 54.7,
+     "f10": 0.0,
+     "p60": 86.9,
+     "f60": 6.9,
+     "pass_med": 7.0
+    },
+    "plain": {
+     "trades": 64,
+     "tpw": 4.1,
+     "win": 53.1,
+     "pf": 2.66,
+     "net": 8671,
+     "per_month": 2334,
+     "max_dd": -848,
+     "win_days_pw": 1.54
+    },
+    "corr_vs_atlas": -0.05,
+    "both_no_pay": 1.0,
+    "pair_first_pay_med": 31.0,
+    "pair_net_m": 907
+   },
+   "LIT eval; funded + ATLAS $250": {
+    "pass60": 83.5,
+    "pass_med": 11.0,
+    "pass_p10": 46.7,
+    "first_pay_med": 34.0,
+    "first_pay_date": "2027-01-05",
+    "no_pay_6m": 18.7,
+    "net_m": 456,
+    "owner_m": 472,
+    "fees_6m": 100.5,
+    "evals": 1.59,
+    "pays": 3.58,
+    "eval": {
+     "p10": 47.2,
+     "f10": 0.0,
+     "p60": 82.8,
+     "f60": 1.7,
+     "pass_med": 8.0
+    },
+    "plain": {
+     "trades": 86,
+     "tpw": 5.51,
+     "win": 53.5,
+     "pf": 2.77,
+     "net": 11871,
+     "per_month": 3196,
+     "max_dd": -1052,
+     "win_days_pw": 2.18
+    },
+    "corr_vs_atlas": 0.36,
+    "both_no_pay": 2.5,
+    "pair_first_pay_med": 34.0,
+    "pair_net_m": 837
+   },
+   "2nd ATLAS copy": {
+    "pass60": 94.5,
+    "pass_med": 12.0,
+    "pass_p10": 47.2,
+    "first_pay_med": 46.0,
+    "first_pay_date": "2027-01-21",
+    "no_pay_6m": 8.6,
+    "net_m": 409,
+    "owner_m": 425,
+    "fees_6m": 90.5,
+    "evals": 1.44,
+    "pays": 3.21,
+    "eval": {
+     "p10": 44.0,
+     "f10": 6.1,
+     "p60": 84.2,
+     "f60": 13.0,
+     "pass_med": 10.0
+    },
+    "plain": {
+     "trades": 46,
+     "tpw": 2.95,
+     "win": 56.5,
+     "pf": 2.55,
+     "net": 5256,
+     "per_month": 1415,
+     "max_dd": -876,
+     "win_days_pw": 1.47
+    },
+    "corr_vs_atlas": 0.93,
+    "both_no_pay": 6.2,
+    "pair_first_pay_med": 46.0,
+    "pair_net_m": 790
+   }
+  },
+  "REF": {
+   "ATLAS own 25K": {
+    "pass60": 81.2,
+    "pass_med": 28.0,
+    "pass_p10": 14.6,
+    "first_pay_med": 52.0,
+    "first_pay_date": "2027-01-29",
+    "no_pay_6m": 79.4,
+    "net_m": 21,
+    "owner_m": 40,
+    "fees_6m": 112.5,
+    "evals": 3.62,
+    "pays": 0.31
+   },
+   "LIT 25K copy": {
+    "pass60": 32.1,
+    "pass_med": 36.0,
+    "pass_p10": 11.5,
+    "first_pay_med": 69.0,
+    "first_pay_date": "2027-02-23",
+    "no_pay_6m": 94.1,
+    "net_m": -12,
+    "owner_m": 8,
+    "fees_6m": 120.6,
+    "evals": 1.91,
+    "pays": 0.07,
+    "eval": {
+     "p10": 10.6,
+     "f10": 0.0,
+     "p60": 27.8,
+     "f60": 31.5,
+     "pass_med": 14.0
+    },
+    "plain": {
+     "trades": 511,
+     "tpw": 2.37,
+     "win": 53.6,
+     "pf": 1.02,
+     "net": 908,
+     "per_month": 18,
+     "max_dd": -9113,
+     "win_days_pw": 1.27
+    },
+    "corr_vs_atlas": 0.08,
+    "both_no_pay": 75.3,
+    "pair_first_pay_med": 55.0,
+    "pair_net_m": 9
+   },
+   "LIT + ATLAS $250": {
+    "pass60": 59.4,
+    "pass_med": 33.0,
+    "pass_p10": 21.1,
+    "first_pay_med": 59.0,
+    "first_pay_date": "2027-02-09",
+    "no_pay_6m": 87.7,
+    "net_m": -8,
+    "owner_m": 21,
+    "fees_6m": 175.1,
+    "evals": 2.78,
+    "pays": 0.16,
+    "eval": {
+     "p10": 20.2,
+     "f10": 5.4,
+     "p60": 28.2,
+     "f60": 69.5,
+     "pass_med": 6.0
+    },
+    "plain": {
+     "trades": 1505,
+     "tpw": 6.99,
+     "win": 42.9,
+     "pf": 1.07,
+     "net": 11301,
+     "per_month": 220,
+     "max_dd": -17544,
+     "win_days_pw": 1.71
+    },
+    "corr_vs_atlas": 0.45,
+    "both_no_pay": 74.0,
+    "pair_first_pay_med": 52.0,
+    "pair_net_m": 13
+   },
+   "ATLAS + BLITZ $150": {
+    "pass60": 88.3,
+    "pass_med": 17.0,
+    "pass_p10": 34.0,
+    "first_pay_med": 41.0,
+    "first_pay_date": "2027-01-14",
+    "no_pay_6m": 77.9,
+    "net_m": 9,
+    "owner_m": 45,
+    "fees_6m": 213.3,
+    "evals": 3.38,
+    "pays": 0.34,
+    "eval": {
+     "p10": 25.1,
+     "f10": 37.1,
+     "p60": 30.5,
+     "f60": 69.0,
+     "pass_med": 6.0
+    },
+    "plain": {
+     "trades": 2835,
+     "tpw": 13.16,
+     "win": 45.6,
+     "pf": 1.07,
+     "net": 14158,
+     "per_month": 276,
+     "max_dd": -12278,
+     "win_days_pw": 1.67
+    },
+    "corr_vs_atlas": 0.66,
+    "both_no_pay": 68.9,
+    "pair_first_pay_med": 47.0,
+    "pair_net_m": 30
+   },
+   "LIT + Asia slot": {
+    "pass60": 39.4,
+    "pass_med": 41.0,
+    "pass_p10": 11.4,
+    "first_pay_med": 73.5,
+    "first_pay_date": "2027-03-02",
+    "no_pay_6m": 95.0,
+    "net_m": -21,
+    "owner_m": 7,
+    "fees_6m": 166.7,
+    "evals": 2.65,
+    "pays": 0.06,
+    "eval": {
+     "p10": 9.9,
+     "f10": 1.0,
+     "p60": 22.5,
+     "f60": 63.1,
+     "pass_med": 13.0
+    },
+    "plain": {
+     "trades": 694,
+     "tpw": 3.22,
+     "win": 51.3,
+     "pf": 0.92,
+     "net": -5821,
+     "per_month": -113,
+     "max_dd": -11753,
+     "win_days_pw": 1.4
+    },
+    "corr_vs_atlas": 0.07,
+    "both_no_pay": 76.1,
+    "pair_first_pay_med": 52.0,
+    "pair_net_m": 0
+   },
+   "LIT eval; funded + ATLAS $250": {
+    "pass60": 32.1,
+    "pass_med": 36.0,
+    "pass_p10": 11.5,
+    "first_pay_med": 48.5,
+    "first_pay_date": "2027-01-25",
+    "no_pay_6m": 92.4,
+    "net_m": -7,
+    "owner_m": 13,
+    "fees_6m": 120.6,
+    "evals": 1.91,
+    "pays": 0.1,
+    "eval": {
+     "p10": 10.6,
+     "f10": 0.0,
+     "p60": 27.8,
+     "f60": 31.5,
+     "pass_med": 14.0
+    },
+    "plain": {
+     "trades": 1505,
+     "tpw": 6.99,
+     "win": 42.9,
+     "pf": 1.07,
+     "net": 11301,
+     "per_month": 220,
+     "max_dd": -17544,
+     "win_days_pw": 1.71
+    },
+    "corr_vs_atlas": 0.13,
+    "both_no_pay": 74.8,
+    "pair_first_pay_med": 50.5,
+    "pair_net_m": 14
+   },
+   "2nd ATLAS copy": {
+    "pass60": 84.9,
+    "pass_med": 19.0,
+    "pass_p10": 31.3,
+    "first_pay_med": 46.0,
+    "first_pay_date": "2027-01-21",
+    "no_pay_6m": 78.1,
+    "net_m": 5,
+    "owner_m": 40,
+    "fees_6m": 210.5,
+    "evals": 3.34,
+    "pays": 0.31,
+    "eval": {
+     "p10": 23.0,
+     "f10": 52.0,
+     "p60": 27.1,
+     "f60": 72.7,
+     "pass_med": 5.0
+    },
+    "plain": {
+     "trades": 994,
+     "tpw": 4.61,
+     "win": 37.3,
+     "pf": 1.08,
+     "net": 10393,
+     "per_month": 203,
+     "max_dd": -11403,
+     "win_days_pw": 1.38
+    },
+    "corr_vs_atlas": 0.76,
+    "both_no_pay": 73.0,
+    "pair_first_pay_med": 48.0,
+    "pair_net_m": 26
+   }
+  }
+ },
+ "lever3": {
+  "H1": {
+   "LIT alone | ask $1,500 (today) | no day stop": {
+    "per_month": 929,
+    "first_med": 26.0,
+    "first_p75": 42.0,
+    "no_pay_6m": 5.5,
+    "lost_6m": 0.0,
+    "payouts": 3.51,
+    "paid_6m": 5573
+   },
+   "LIT alone | ask $500 asap | no day stop": {
+    "per_month": 926,
+    "first_med": 26.0,
+    "first_p75": 42.0,
+    "no_pay_6m": 5.5,
+    "lost_6m": 0.0,
+    "payouts": 3.56,
+    "paid_6m": 5556
+   },
+   "LIT alone | ask $1,000 | no day stop": {
+    "per_month": 929,
+    "first_med": 26.0,
+    "first_p75": 42.0,
+    "no_pay_6m": 5.5,
+    "lost_6m": 0.0,
+    "payouts": 3.53,
+    "paid_6m": 5573
+   },
+   "LIT alone | ask $2,000 (cap) | no day stop": {
+    "per_month": 926,
+    "first_med": 28.0,
+    "first_p75": 45.0,
+    "no_pay_6m": 5.7,
+    "lost_6m": 0.0,
+    "payouts": 3.47,
+    "paid_6m": 5558
+   },
+   "LIT alone | cycle-timed | no day stop": {
+    "per_month": 927,
+    "first_med": 26.0,
+    "first_p75": 42.0,
+    "no_pay_6m": 5.5,
+    "lost_6m": 0.0,
+    "payouts": 3.53,
+    "paid_6m": 5560
+   },
+   "LIT + ATLAS $500 | ask $1,500 (today) | no day stop": {
+    "per_month": 1232,
+    "first_med": 17.0,
+    "first_p75": 26.0,
+    "no_pay_6m": 3.7,
+    "lost_6m": 0.0,
+    "payouts": 4.62,
+    "paid_6m": 7395
+   },
+   "LIT + ATLAS $500 | ask $1,500 (today) | best-day stop $500": {
+    "per_month": 1208,
+    "first_med": 16.0,
+    "first_p75": 25.25,
+    "no_pay_6m": 4.8,
+    "lost_6m": 0.0,
+    "payouts": 4.54,
+    "paid_6m": 7251
+   },
+   "LIT + ATLAS $500 | ask $1,500 (today) | best-day stop $1,000": {
+    "per_month": 1218,
+    "first_med": 16.0,
+    "first_p75": 25.0,
+    "no_pay_6m": 4.4,
+    "lost_6m": 0.0,
+    "payouts": 4.57,
+    "paid_6m": 7310
+   },
+   "LIT + ATLAS $500 | ask $500 asap | no day stop": {
+    "per_month": 1231,
+    "first_med": 17.0,
+    "first_p75": 26.0,
+    "no_pay_6m": 3.7,
+    "lost_6m": 0.0,
+    "payouts": 4.62,
+    "paid_6m": 7389
+   },
+   "LIT + ATLAS $500 | ask $500 asap | best-day stop $500": {
+    "per_month": 1207,
+    "first_med": 16.0,
+    "first_p75": 25.0,
+    "no_pay_6m": 4.8,
+    "lost_6m": 0.0,
+    "payouts": 4.54,
+    "paid_6m": 7243
+   },
+   "LIT + ATLAS $500 | ask $500 asap | best-day stop $1,000": {
+    "per_month": 1217,
+    "first_med": 16.0,
+    "first_p75": 25.0,
+    "no_pay_6m": 4.4,
+    "lost_6m": 0.0,
+    "payouts": 4.58,
+    "paid_6m": 7302
+   },
+   "LIT + ATLAS $500 | ask $1,000 | no day stop": {
+    "per_month": 1232,
+    "first_med": 17.0,
+    "first_p75": 26.0,
+    "no_pay_6m": 3.7,
+    "lost_6m": 0.0,
+    "payouts": 4.62,
+    "paid_6m": 7392
+   },
+   "LIT + ATLAS $500 | ask $1,000 | best-day stop $500": {
+    "per_month": 1208,
+    "first_med": 16.0,
+    "first_p75": 25.0,
+    "no_pay_6m": 4.8,
+    "lost_6m": 0.0,
+    "payouts": 4.54,
+    "paid_6m": 7246
+   },
+   "LIT + ATLAS $500 | ask $1,000 | best-day stop $1,000": {
+    "per_month": 1217,
+    "first_med": 16.0,
+    "first_p75": 25.0,
+    "no_pay_6m": 4.4,
+    "lost_6m": 0.0,
+    "payouts": 4.58,
+    "paid_6m": 7304
+   },
+   "LIT + ATLAS $500 | ask $2,000 (cap) | no day stop": {
+    "per_month": 1233,
+    "first_med": 17.0,
+    "first_p75": 27.0,
+    "no_pay_6m": 3.7,
+    "lost_6m": 0.0,
+    "payouts": 4.62,
+    "paid_6m": 7395
+   },
+   "LIT + ATLAS $500 | ask $2,000 (cap) | best-day stop $500": {
+    "per_month": 1210,
+    "first_med": 17.0,
+    "first_p75": 26.0,
+    "no_pay_6m": 4.8,
+    "lost_6m": 0.0,
+    "payouts": 4.54,
+    "paid_6m": 7259
+   },
+   "LIT + ATLAS $500 | ask $2,000 (cap) | best-day stop $1,000": {
+    "per_month": 1219,
+    "first_med": 16.0,
+    "first_p75": 25.25,
+    "no_pay_6m": 4.4,
+    "lost_6m": 0.0,
+    "payouts": 4.57,
+    "paid_6m": 7317
+   },
+   "LIT + ATLAS $500 | cycle-timed | no day stop": {
+    "per_month": 1231,
+    "first_med": 17.0,
+    "first_p75": 26.0,
+    "no_pay_6m": 3.7,
+    "lost_6m": 0.0,
+    "payouts": 4.62,
+    "paid_6m": 7389
+   },
+   "LIT + ATLAS $500 | cycle-timed | best-day stop $500": {
+    "per_month": 1207,
+    "first_med": 16.0,
+    "first_p75": 25.0,
+    "no_pay_6m": 4.8,
+    "lost_6m": 0.0,
+    "payouts": 4.54,
+    "paid_6m": 7242
+   },
+   "LIT + ATLAS $500 | cycle-timed | best-day stop $1,000": {
+    "per_month": 1217,
+    "first_med": 16.0,
+    "first_p75": 25.0,
+    "no_pay_6m": 4.4,
+    "lost_6m": 0.0,
+    "payouts": 4.58,
+    "paid_6m": 7302
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | ask $1,500 (today) | no day stop": {
+    "per_month": 1257,
+    "first_med": 15.0,
+    "first_p75": 23.0,
+    "no_pay_6m": 3.8,
+    "lost_6m": 0.0,
+    "payouts": 4.72,
+    "paid_6m": 7544
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | ask $1,500 (today) | best-day stop $500": {
+    "per_month": 1241,
+    "first_med": 14.0,
+    "first_p75": 22.0,
+    "no_pay_6m": 4.8,
+    "lost_6m": 0.0,
+    "payouts": 4.66,
+    "paid_6m": 7444
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | ask $1,500 (today) | best-day stop $1,000": {
+    "per_month": 1252,
+    "first_med": 14.0,
+    "first_p75": 22.0,
+    "no_pay_6m": 4.4,
+    "lost_6m": 0.0,
+    "payouts": 4.71,
+    "paid_6m": 7513
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | ask $500 asap | no day stop": {
+    "per_month": 1254,
+    "first_med": 14.0,
+    "first_p75": 23.0,
+    "no_pay_6m": 3.8,
+    "lost_6m": 0.0,
+    "payouts": 4.72,
+    "paid_6m": 7523
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | ask $500 asap | best-day stop $500": {
+    "per_month": 1236,
+    "first_med": 14.0,
+    "first_p75": 22.0,
+    "no_pay_6m": 4.8,
+    "lost_6m": 0.0,
+    "payouts": 4.66,
+    "paid_6m": 7416
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | ask $500 asap | best-day stop $1,000": {
+    "per_month": 1242,
+    "first_med": 14.0,
+    "first_p75": 21.0,
+    "no_pay_6m": 4.4,
+    "lost_6m": 0.0,
+    "payouts": 4.69,
+    "paid_6m": 7453
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | ask $1,000 | no day stop": {
+    "per_month": 1255,
+    "first_med": 14.0,
+    "first_p75": 23.0,
+    "no_pay_6m": 3.8,
+    "lost_6m": 0.0,
+    "payouts": 4.72,
+    "paid_6m": 7530
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | ask $1,000 | best-day stop $500": {
+    "per_month": 1237,
+    "first_med": 14.0,
+    "first_p75": 22.0,
+    "no_pay_6m": 4.8,
+    "lost_6m": 0.0,
+    "payouts": 4.66,
+    "paid_6m": 7424
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | ask $1,000 | best-day stop $1,000": {
+    "per_month": 1247,
+    "first_med": 14.0,
+    "first_p75": 21.0,
+    "no_pay_6m": 4.4,
+    "lost_6m": 0.0,
+    "payouts": 4.7,
+    "paid_6m": 7485
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | ask $2,000 (cap) | no day stop": {
+    "per_month": 1260,
+    "first_med": 15.0,
+    "first_p75": 23.0,
+    "no_pay_6m": 3.8,
+    "lost_6m": 0.0,
+    "payouts": 4.73,
+    "paid_6m": 7562
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | ask $2,000 (cap) | best-day stop $500": {
+    "per_month": 1245,
+    "first_med": 15.0,
+    "first_p75": 22.0,
+    "no_pay_6m": 4.8,
+    "lost_6m": 0.0,
+    "payouts": 4.67,
+    "paid_6m": 7469
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | ask $2,000 (cap) | best-day stop $1,000": {
+    "per_month": 1254,
+    "first_med": 14.0,
+    "first_p75": 22.0,
+    "no_pay_6m": 4.4,
+    "lost_6m": 0.0,
+    "payouts": 4.7,
+    "paid_6m": 7526
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | cycle-timed | no day stop": {
+    "per_month": 1254,
+    "first_med": 14.0,
+    "first_p75": 23.0,
+    "no_pay_6m": 3.8,
+    "lost_6m": 0.0,
+    "payouts": 4.72,
+    "paid_6m": 7523
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | cycle-timed | best-day stop $500": {
+    "per_month": 1236,
+    "first_med": 14.0,
+    "first_p75": 22.0,
+    "no_pay_6m": 4.8,
+    "lost_6m": 0.0,
+    "payouts": 4.66,
+    "paid_6m": 7417
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | cycle-timed | best-day stop $1,000": {
+    "per_month": 1244,
+    "first_med": 14.0,
+    "first_p75": 21.0,
+    "no_pay_6m": 4.4,
+    "lost_6m": 0.0,
+    "payouts": 4.7,
+    "paid_6m": 7467
+   },
+   "_plain": {
+    "LIT alone": {
+     "trades": 80,
+     "tpw": 3.12,
+     "win": 58.8,
+     "pf": 3.49,
+     "net": 31246,
+     "per_month": 5126,
+     "max_dd": -3271,
+     "win_days_pw": 1.84
+    },
+    "LIT + ATLAS $500": {
+     "trades": 184,
+     "tpw": 7.19,
+     "win": 55.4,
+     "pf": 3.12,
+     "net": 72901,
+     "per_month": 11960,
+     "max_dd": -3017,
+     "win_days_pw": 2.46
+    },
+    "LIT + ATLAS $500 + BLITZ $300": {
+     "trades": 401,
+     "tpw": 15.66,
+     "win": 56.1,
+     "pf": 2.63,
+     "net": 80372,
+     "per_month": 13186,
+     "max_dd": -2950,
+     "win_days_pw": 2.89
+    }
+   }
+  },
+  "H2": {
+   "LIT alone | ask $1,500 (today) | no day stop": {
+    "per_month": 915,
+    "first_med": 23.5,
+    "first_p75": 40.0,
+    "no_pay_6m": 7.2,
+    "lost_6m": 0.0,
+    "payouts": 3.47,
+    "paid_6m": 5488
+   },
+   "LIT alone | ask $500 asap | no day stop": {
+    "per_month": 913,
+    "first_med": 23.0,
+    "first_p75": 40.0,
+    "no_pay_6m": 7.1,
+    "lost_6m": 0.0,
+    "payouts": 3.48,
+    "paid_6m": 5480
+   },
+   "LIT alone | ask $1,000 | no day stop": {
+    "per_month": 914,
+    "first_med": 23.0,
+    "first_p75": 40.0,
+    "no_pay_6m": 7.1,
+    "lost_6m": 0.0,
+    "payouts": 3.48,
+    "paid_6m": 5485
+   },
+   "LIT alone | ask $2,000 (cap) | no day stop": {
+    "per_month": 907,
+    "first_med": 26.0,
+    "first_p75": 43.0,
+    "no_pay_6m": 7.5,
+    "lost_6m": 0.0,
+    "payouts": 3.4,
+    "paid_6m": 5445
+   },
+   "LIT alone | cycle-timed | no day stop": {
+    "per_month": 914,
+    "first_med": 23.0,
+    "first_p75": 40.0,
+    "no_pay_6m": 7.1,
+    "lost_6m": 0.0,
+    "payouts": 3.48,
+    "paid_6m": 5483
+   },
+   "LIT + ATLAS $500 | ask $1,500 (today) | no day stop": {
+    "per_month": 1214,
+    "first_med": 15.0,
+    "first_p75": 24.0,
+    "no_pay_6m": 5.3,
+    "lost_6m": 0.0,
+    "payouts": 4.58,
+    "paid_6m": 7282
+   },
+   "LIT + ATLAS $500 | ask $1,500 (today) | best-day stop $500": {
+    "per_month": 1213,
+    "first_med": 15.0,
+    "first_p75": 23.0,
+    "no_pay_6m": 5.5,
+    "lost_6m": 0.0,
+    "payouts": 4.58,
+    "paid_6m": 7278
+   },
+   "LIT + ATLAS $500 | ask $1,500 (today) | best-day stop $1,000": {
+    "per_month": 1214,
+    "first_med": 15.0,
+    "first_p75": 23.75,
+    "no_pay_6m": 5.4,
+    "lost_6m": 0.0,
+    "payouts": 4.58,
+    "paid_6m": 7283
+   },
+   "LIT + ATLAS $500 | ask $500 asap | no day stop": {
+    "per_month": 1202,
+    "first_med": 14.0,
+    "first_p75": 23.0,
+    "no_pay_6m": 5.3,
+    "lost_6m": 0.0,
+    "payouts": 4.58,
+    "paid_6m": 7210
+   },
+   "LIT + ATLAS $500 | ask $500 asap | best-day stop $500": {
+    "per_month": 1201,
+    "first_med": 14.0,
+    "first_p75": 23.0,
+    "no_pay_6m": 5.5,
+    "lost_6m": 0.0,
+    "payouts": 4.58,
+    "paid_6m": 7205
+   },
+   "LIT + ATLAS $500 | ask $500 asap | best-day stop $1,000": {
+    "per_month": 1202,
+    "first_med": 14.0,
+    "first_p75": 23.0,
+    "no_pay_6m": 5.4,
+    "lost_6m": 0.0,
+    "payouts": 4.59,
+    "paid_6m": 7210
+   },
+   "LIT + ATLAS $500 | ask $1,000 | no day stop": {
+    "per_month": 1207,
+    "first_med": 15.0,
+    "first_p75": 24.0,
+    "no_pay_6m": 5.3,
+    "lost_6m": 0.0,
+    "payouts": 4.58,
+    "paid_6m": 7242
+   },
+   "LIT + ATLAS $500 | ask $1,000 | best-day stop $500": {
+    "per_month": 1207,
+    "first_med": 14.0,
+    "first_p75": 23.0,
+    "no_pay_6m": 5.5,
+    "lost_6m": 0.0,
+    "payouts": 4.58,
+    "paid_6m": 7240
+   },
+   "LIT + ATLAS $500 | ask $1,000 | best-day stop $1,000": {
+    "per_month": 1207,
+    "first_med": 14.0,
+    "first_p75": 23.0,
+    "no_pay_6m": 5.4,
+    "lost_6m": 0.0,
+    "payouts": 4.58,
+    "paid_6m": 7242
+   },
+   "LIT + ATLAS $500 | ask $2,000 (cap) | no day stop": {
+    "per_month": 1219,
+    "first_med": 16.0,
+    "first_p75": 25.0,
+    "no_pay_6m": 5.3,
+    "lost_6m": 0.0,
+    "payouts": 4.57,
+    "paid_6m": 7312
+   },
+   "LIT + ATLAS $500 | ask $2,000 (cap) | best-day stop $500": {
+    "per_month": 1221,
+    "first_med": 16.0,
+    "first_p75": 24.0,
+    "no_pay_6m": 5.5,
+    "lost_6m": 0.0,
+    "payouts": 4.58,
+    "paid_6m": 7323
+   },
+   "LIT + ATLAS $500 | ask $2,000 (cap) | best-day stop $1,000": {
+    "per_month": 1221,
+    "first_med": 16.0,
+    "first_p75": 25.0,
+    "no_pay_6m": 5.4,
+    "lost_6m": 0.0,
+    "payouts": 4.58,
+    "paid_6m": 7326
+   },
+   "LIT + ATLAS $500 | cycle-timed | no day stop": {
+    "per_month": 1202,
+    "first_med": 14.0,
+    "first_p75": 23.0,
+    "no_pay_6m": 5.3,
+    "lost_6m": 0.0,
+    "payouts": 4.58,
+    "paid_6m": 7211
+   },
+   "LIT + ATLAS $500 | cycle-timed | best-day stop $500": {
+    "per_month": 1201,
+    "first_med": 14.0,
+    "first_p75": 23.0,
+    "no_pay_6m": 5.5,
+    "lost_6m": 0.0,
+    "payouts": 4.58,
+    "paid_6m": 7205
+   },
+   "LIT + ATLAS $500 | cycle-timed | best-day stop $1,000": {
+    "per_month": 1202,
+    "first_med": 14.0,
+    "first_p75": 23.0,
+    "no_pay_6m": 5.4,
+    "lost_6m": 0.0,
+    "payouts": 4.59,
+    "paid_6m": 7210
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | ask $1,500 (today) | no day stop": {
+    "per_month": 1242,
+    "first_med": 13.0,
+    "first_p75": 21.0,
+    "no_pay_6m": 4.5,
+    "lost_6m": 0.0,
+    "payouts": 4.67,
+    "paid_6m": 7451
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | ask $1,500 (today) | best-day stop $500": {
+    "per_month": 1240,
+    "first_med": 13.0,
+    "first_p75": 21.0,
+    "no_pay_6m": 4.4,
+    "lost_6m": 0.0,
+    "payouts": 4.68,
+    "paid_6m": 7438
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | ask $1,500 (today) | best-day stop $1,000": {
+    "per_month": 1234,
+    "first_med": 13.0,
+    "first_p75": 21.0,
+    "no_pay_6m": 4.6,
+    "lost_6m": 0.0,
+    "payouts": 4.66,
+    "paid_6m": 7404
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | ask $500 asap | no day stop": {
+    "per_month": 1236,
+    "first_med": 13.0,
+    "first_p75": 21.0,
+    "no_pay_6m": 4.5,
+    "lost_6m": 0.0,
+    "payouts": 4.67,
+    "paid_6m": 7414
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | ask $500 asap | best-day stop $500": {
+    "per_month": 1225,
+    "first_med": 13.0,
+    "first_p75": 21.0,
+    "no_pay_6m": 4.4,
+    "lost_6m": 0.0,
+    "payouts": 4.67,
+    "paid_6m": 7350
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | ask $500 asap | best-day stop $1,000": {
+    "per_month": 1222,
+    "first_med": 13.0,
+    "first_p75": 20.0,
+    "no_pay_6m": 4.6,
+    "lost_6m": 0.0,
+    "payouts": 4.66,
+    "paid_6m": 7334
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | ask $1,000 | no day stop": {
+    "per_month": 1238,
+    "first_med": 13.0,
+    "first_p75": 21.0,
+    "no_pay_6m": 4.5,
+    "lost_6m": 0.0,
+    "payouts": 4.67,
+    "paid_6m": 7431
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | ask $1,000 | best-day stop $500": {
+    "per_month": 1231,
+    "first_med": 13.0,
+    "first_p75": 21.0,
+    "no_pay_6m": 4.4,
+    "lost_6m": 0.0,
+    "payouts": 4.67,
+    "paid_6m": 7387
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | ask $1,000 | best-day stop $1,000": {
+    "per_month": 1226,
+    "first_med": 13.0,
+    "first_p75": 20.0,
+    "no_pay_6m": 4.6,
+    "lost_6m": 0.0,
+    "payouts": 4.66,
+    "paid_6m": 7358
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | ask $2,000 (cap) | no day stop": {
+    "per_month": 1250,
+    "first_med": 14.0,
+    "first_p75": 22.0,
+    "no_pay_6m": 4.5,
+    "lost_6m": 0.0,
+    "payouts": 4.69,
+    "paid_6m": 7502
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | ask $2,000 (cap) | best-day stop $500": {
+    "per_month": 1249,
+    "first_med": 14.0,
+    "first_p75": 22.0,
+    "no_pay_6m": 4.4,
+    "lost_6m": 0.0,
+    "payouts": 4.68,
+    "paid_6m": 7494
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | ask $2,000 (cap) | best-day stop $1,000": {
+    "per_month": 1247,
+    "first_med": 14.0,
+    "first_p75": 22.0,
+    "no_pay_6m": 4.6,
+    "lost_6m": 0.0,
+    "payouts": 4.68,
+    "paid_6m": 7482
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | cycle-timed | no day stop": {
+    "per_month": 1236,
+    "first_med": 13.0,
+    "first_p75": 21.0,
+    "no_pay_6m": 4.5,
+    "lost_6m": 0.0,
+    "payouts": 4.67,
+    "paid_6m": 7414
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | cycle-timed | best-day stop $500": {
+    "per_month": 1225,
+    "first_med": 13.0,
+    "first_p75": 21.0,
+    "no_pay_6m": 4.4,
+    "lost_6m": 0.0,
+    "payouts": 4.67,
+    "paid_6m": 7350
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | cycle-timed | best-day stop $1,000": {
+    "per_month": 1222,
+    "first_med": 13.0,
+    "first_p75": 20.0,
+    "no_pay_6m": 4.6,
+    "lost_6m": 0.0,
+    "payouts": 4.66,
+    "paid_6m": 7334
+   },
+   "_plain": {
+    "LIT alone": {
+     "trades": 40,
+     "tpw": 2.56,
+     "win": 50.0,
+     "pf": 2.71,
+     "net": 13767,
+     "per_month": 3707,
+     "max_dd": -2228,
+     "win_days_pw": 1.28
+    },
+    "LIT + ATLAS $500": {
+     "trades": 86,
+     "tpw": 5.51,
+     "win": 53.5,
+     "pf": 2.74,
+     "net": 27304,
+     "per_month": 7351,
+     "max_dd": -2480,
+     "win_days_pw": 2.24
+    },
+    "LIT + ATLAS $500 + BLITZ $300": {
+     "trades": 192,
+     "tpw": 12.31,
+     "win": 55.2,
+     "pf": 2.52,
+     "net": 32584,
+     "per_month": 8773,
+     "max_dd": -2480,
+     "win_days_pw": 2.5
+    }
+   }
+  },
+  "REF": {
+   "LIT alone | ask $1,500 (today) | no day stop": {
+    "per_month": 66,
+    "first_med": 43.0,
+    "first_p75": 72.75,
+    "no_pay_6m": 79.4,
+    "lost_6m": 0.0,
+    "payouts": 0.25,
+    "paid_6m": 393
+   },
+   "LIT alone | ask $500 asap | no day stop": {
+    "per_month": 66,
+    "first_med": 43.0,
+    "first_p75": 72.0,
+    "no_pay_6m": 79.1,
+    "lost_6m": 0.0,
+    "payouts": 0.26,
+    "paid_6m": 397
+   },
+   "LIT alone | ask $1,000 | no day stop": {
+    "per_month": 66,
+    "first_med": 43.0,
+    "first_p75": 72.25,
+    "no_pay_6m": 79.2,
+    "lost_6m": 0.0,
+    "payouts": 0.26,
+    "paid_6m": 397
+   },
+   "LIT alone | ask $2,000 (cap) | no day stop": {
+    "per_month": 61,
+    "first_med": 45.5,
+    "first_p75": 73.0,
+    "no_pay_6m": 81.4,
+    "lost_6m": 0.0,
+    "payouts": 0.23,
+    "paid_6m": 365
+   },
+   "LIT alone | cycle-timed | no day stop": {
+    "per_month": 66,
+    "first_med": 43.0,
+    "first_p75": 72.0,
+    "no_pay_6m": 79.1,
+    "lost_6m": 0.0,
+    "payouts": 0.26,
+    "paid_6m": 395
+   },
+   "LIT + ATLAS $500 | ask $1,500 (today) | no day stop": {
+    "per_month": 76,
+    "first_med": 21.0,
+    "first_p75": 35.0,
+    "no_pay_6m": 80.9,
+    "lost_6m": 0.0,
+    "payouts": 0.28,
+    "paid_6m": 455
+   },
+   "LIT + ATLAS $500 | ask $1,500 (today) | best-day stop $500": {
+    "per_month": 68,
+    "first_med": 21.0,
+    "first_p75": 33.5,
+    "no_pay_6m": 82.5,
+    "lost_6m": 0.0,
+    "payouts": 0.26,
+    "paid_6m": 408
+   },
+   "LIT + ATLAS $500 | ask $1,500 (today) | best-day stop $1,000": {
+    "per_month": 68,
+    "first_med": 20.0,
+    "first_p75": 33.0,
+    "no_pay_6m": 82.7,
+    "lost_6m": 0.0,
+    "payouts": 0.26,
+    "paid_6m": 406
+   },
+   "LIT + ATLAS $500 | ask $500 asap | no day stop": {
+    "per_month": 76,
+    "first_med": 21.0,
+    "first_p75": 35.0,
+    "no_pay_6m": 80.5,
+    "lost_6m": 0.0,
+    "payouts": 0.29,
+    "paid_6m": 457
+   },
+   "LIT + ATLAS $500 | ask $500 asap | best-day stop $500": {
+    "per_month": 69,
+    "first_med": 21.0,
+    "first_p75": 33.0,
+    "no_pay_6m": 82.0,
+    "lost_6m": 0.0,
+    "payouts": 0.26,
+    "paid_6m": 411
+   },
+   "LIT + ATLAS $500 | ask $500 asap | best-day stop $1,000": {
+    "per_month": 68,
+    "first_med": 20.0,
+    "first_p75": 31.75,
+    "no_pay_6m": 82.2,
+    "lost_6m": 0.0,
+    "payouts": 0.26,
+    "paid_6m": 409
+   },
+   "LIT + ATLAS $500 | ask $1,000 | no day stop": {
+    "per_month": 76,
+    "first_med": 21.0,
+    "first_p75": 35.0,
+    "no_pay_6m": 80.6,
+    "lost_6m": 0.0,
+    "payouts": 0.29,
+    "paid_6m": 457
+   },
+   "LIT + ATLAS $500 | ask $1,000 | best-day stop $500": {
+    "per_month": 68,
+    "first_med": 21.0,
+    "first_p75": 33.0,
+    "no_pay_6m": 82.1,
+    "lost_6m": 0.0,
+    "payouts": 0.26,
+    "paid_6m": 411
+   },
+   "LIT + ATLAS $500 | ask $1,000 | best-day stop $1,000": {
+    "per_month": 68,
+    "first_med": 20.0,
+    "first_p75": 32.0,
+    "no_pay_6m": 82.3,
+    "lost_6m": 0.0,
+    "payouts": 0.26,
+    "paid_6m": 409
+   },
+   "LIT + ATLAS $500 | ask $2,000 (cap) | no day stop": {
+    "per_month": 75,
+    "first_med": 21.0,
+    "first_p75": 37.0,
+    "no_pay_6m": 81.2,
+    "lost_6m": 0.0,
+    "payouts": 0.28,
+    "paid_6m": 451
+   },
+   "LIT + ATLAS $500 | ask $2,000 (cap) | best-day stop $500": {
+    "per_month": 67,
+    "first_med": 21.0,
+    "first_p75": 34.5,
+    "no_pay_6m": 82.9,
+    "lost_6m": 0.0,
+    "payouts": 0.25,
+    "paid_6m": 403
+   },
+   "LIT + ATLAS $500 | ask $2,000 (cap) | best-day stop $1,000": {
+    "per_month": 67,
+    "first_med": 21.0,
+    "first_p75": 33.0,
+    "no_pay_6m": 83.1,
+    "lost_6m": 0.0,
+    "payouts": 0.25,
+    "paid_6m": 402
+   },
+   "LIT + ATLAS $500 | cycle-timed | no day stop": {
+    "per_month": 76,
+    "first_med": 21.0,
+    "first_p75": 35.0,
+    "no_pay_6m": 80.5,
+    "lost_6m": 0.0,
+    "payouts": 0.29,
+    "paid_6m": 457
+   },
+   "LIT + ATLAS $500 | cycle-timed | best-day stop $500": {
+    "per_month": 69,
+    "first_med": 21.0,
+    "first_p75": 33.0,
+    "no_pay_6m": 82.0,
+    "lost_6m": 0.0,
+    "payouts": 0.26,
+    "paid_6m": 411
+   },
+   "LIT + ATLAS $500 | cycle-timed | best-day stop $1,000": {
+    "per_month": 68,
+    "first_med": 20.0,
+    "first_p75": 31.75,
+    "no_pay_6m": 82.2,
+    "lost_6m": 0.0,
+    "payouts": 0.26,
+    "paid_6m": 409
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | ask $1,500 (today) | no day stop": {
+    "per_month": 78,
+    "first_med": 19.0,
+    "first_p75": 31.0,
+    "no_pay_6m": 81.1,
+    "lost_6m": 0.0,
+    "payouts": 0.29,
+    "paid_6m": 471
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | ask $1,500 (today) | best-day stop $500": {
+    "per_month": 70,
+    "first_med": 18.0,
+    "first_p75": 31.0,
+    "no_pay_6m": 83.1,
+    "lost_6m": 0.0,
+    "payouts": 0.27,
+    "paid_6m": 422
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | ask $1,500 (today) | best-day stop $1,000": {
+    "per_month": 74,
+    "first_med": 19.0,
+    "first_p75": 31.0,
+    "no_pay_6m": 82.2,
+    "lost_6m": 0.0,
+    "payouts": 0.28,
+    "paid_6m": 442
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | ask $500 asap | no day stop": {
+    "per_month": 78,
+    "first_med": 19.0,
+    "first_p75": 31.0,
+    "no_pay_6m": 80.8,
+    "lost_6m": 0.0,
+    "payouts": 0.3,
+    "paid_6m": 470
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | ask $500 asap | best-day stop $500": {
+    "per_month": 71,
+    "first_med": 18.0,
+    "first_p75": 30.5,
+    "no_pay_6m": 82.9,
+    "lost_6m": 0.0,
+    "payouts": 0.27,
+    "paid_6m": 425
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | ask $500 asap | best-day stop $1,000": {
+    "per_month": 74,
+    "first_med": 18.0,
+    "first_p75": 31.0,
+    "no_pay_6m": 81.7,
+    "lost_6m": 0.0,
+    "payouts": 0.29,
+    "paid_6m": 446
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | ask $1,000 | no day stop": {
+    "per_month": 78,
+    "first_med": 19.0,
+    "first_p75": 31.0,
+    "no_pay_6m": 81.0,
+    "lost_6m": 0.0,
+    "payouts": 0.3,
+    "paid_6m": 471
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | ask $1,000 | best-day stop $500": {
+    "per_month": 71,
+    "first_med": 18.0,
+    "first_p75": 30.75,
+    "no_pay_6m": 83.0,
+    "lost_6m": 0.0,
+    "payouts": 0.27,
+    "paid_6m": 425
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | ask $1,000 | best-day stop $1,000": {
+    "per_month": 74,
+    "first_med": 19.0,
+    "first_p75": 31.0,
+    "no_pay_6m": 82.0,
+    "lost_6m": 0.0,
+    "payouts": 0.28,
+    "paid_6m": 445
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | ask $2,000 (cap) | no day stop": {
+    "per_month": 78,
+    "first_med": 19.0,
+    "first_p75": 31.0,
+    "no_pay_6m": 81.2,
+    "lost_6m": 0.0,
+    "payouts": 0.29,
+    "paid_6m": 469
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | ask $2,000 (cap) | best-day stop $500": {
+    "per_month": 69,
+    "first_med": 18.0,
+    "first_p75": 31.0,
+    "no_pay_6m": 83.5,
+    "lost_6m": 0.0,
+    "payouts": 0.26,
+    "paid_6m": 416
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | ask $2,000 (cap) | best-day stop $1,000": {
+    "per_month": 73,
+    "first_med": 19.0,
+    "first_p75": 31.0,
+    "no_pay_6m": 82.6,
+    "lost_6m": 0.0,
+    "payouts": 0.27,
+    "paid_6m": 437
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | cycle-timed | no day stop": {
+    "per_month": 78,
+    "first_med": 19.0,
+    "first_p75": 31.0,
+    "no_pay_6m": 80.8,
+    "lost_6m": 0.0,
+    "payouts": 0.3,
+    "paid_6m": 470
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | cycle-timed | best-day stop $500": {
+    "per_month": 71,
+    "first_med": 18.0,
+    "first_p75": 30.5,
+    "no_pay_6m": 82.9,
+    "lost_6m": 0.0,
+    "payouts": 0.27,
+    "paid_6m": 425
+   },
+   "LIT + ATLAS $500 + BLITZ $300 | cycle-timed | best-day stop $1,000": {
+    "per_month": 74,
+    "first_med": 18.0,
+    "first_p75": 31.0,
+    "no_pay_6m": 81.7,
+    "lost_6m": 0.0,
+    "payouts": 0.29,
+    "paid_6m": 446
+   },
+   "_plain": {
+    "LIT alone": {
+     "trades": 511,
+     "tpw": 2.37,
+     "win": 53.6,
+     "pf": 1.02,
+     "net": 1961,
+     "per_month": 38,
+     "max_dd": -19725,
+     "win_days_pw": 1.27
+    },
+    "LIT + ATLAS $500": {
+     "trades": 1505,
+     "tpw": 6.99,
+     "win": 42.9,
+     "pf": 1.07,
+     "net": 24948,
+     "per_month": 486,
+     "max_dd": -37025,
+     "win_days_pw": 1.72
+    },
+    "LIT + ATLAS $500 + BLITZ $300": {
+     "trades": 3346,
+     "tpw": 15.53,
+     "win": 46.9,
+     "pf": 1.06,
+     "net": 31191,
+     "per_month": 608,
+     "max_dd": -33476,
+     "win_days_pw": 1.83
+    }
+   }
+  }
+ },
+ "lever3_pick": {
+  "LIT alone": {
+   "base": "LIT alone | ask $1,500 (today) | no day stop",
+   "fastest_h1": "LIT alone | ask $1,500 (today) | no day stop",
+   "fastest_beats_today_both": false,
+   "checks": {
+    "H1": false,
+    "H2": false
+   },
+   "richest_h1": "LIT alone | ask $1,500 (today) | no day stop",
+   "richest_beats_today_both": false,
+   "checks_rich": {
+    "H1": false,
+    "H2": false
+   }
+  },
+  "LIT + ATLAS $500": {
+   "base": "LIT + ATLAS $500 | ask $1,500 (today) | no day stop",
+   "fastest_h1": "LIT + ATLAS $500 | ask $2,000 (cap) | best-day stop $1,000",
+   "fastest_beats_today_both": false,
+   "checks": {
+    "H1": false,
+    "H2": false
+   },
+   "richest_h1": "LIT + ATLAS $500 | ask $2,000 (cap) | no day stop",
+   "richest_beats_today_both": false,
+   "checks_rich": {
+    "H1": true,
+    "H2": false
+   }
+  },
+  "LIT + ATLAS $500 + BLITZ $300": {
+   "base": "LIT + ATLAS $500 + BLITZ $300 | ask $1,500 (today) | no day stop",
+   "fastest_h1": "LIT + ATLAS $500 + BLITZ $300 | ask $1,000 | no day stop",
+   "fastest_beats_today_both": false,
+   "checks": {
+    "H1": false,
+    "H2": false
+   },
+   "richest_h1": "LIT + ATLAS $500 + BLITZ $300 | ask $2,000 (cap) | no day stop",
+   "richest_beats_today_both": false,
+   "checks_rich": {
+    "H1": true,
+    "H2": false
+   }
+  }
+ },
+ "lever3_chain": {
+  "H1": {
+   "today: LIT eval, funded LIT alone, ask $1,500": {
+    "pass60": 90.3,
+    "pass_med": 19.0,
+    "pass_p10": 25.3,
+    "first_pay_med": 53.0,
+    "first_pay_date": "2027-02-01",
+    "no_pay_6m": 8.9,
+    "net_m": 739,
+    "owner_m": 746,
+    "fees_6m": 41.3,
+    "evals": 1.45,
+    "pays": 2.82
+   },
+   "LIT eval, funded + ATLAS $500, ask $1,500": {
+    "pass60": 90.3,
+    "pass_med": 19.0,
+    "pass_p10": 25.3,
+    "first_pay_med": 41.0,
+    "first_pay_date": "2027-01-14",
+    "no_pay_6m": 5.2,
+    "net_m": 1142,
+    "owner_m": 1155,
+    "fees_6m": 77.4,
+    "evals": 1.84,
+    "pays": 4.34
+   },
+   "+ fresh 50K eval now (parallel), funded LIT alone": {
+    "pass60": 94.2,
+    "pass_med": 12.0,
+    "pass_p10": 46.1,
+    "first_pay_med": 46.5,
+    "first_pay_date": "2027-01-21",
+    "no_pay_6m": 7.8,
+    "net_m": 777,
+    "owner_m": 798,
+    "fees_6m": 126.4,
+    "evals": 2.38,
+    "pays": 3.02
+   },
+   "+ fresh 50K eval now (parallel), funded + ATLAS $500": {
+    "pass60": 94.2,
+    "pass_med": 12.0,
+    "pass_p10": 46.1,
+    "first_pay_med": 33.0,
+    "first_pay_date": "2027-01-04",
+    "no_pay_6m": 5.1,
+    "net_m": 1197,
+    "owner_m": 1224,
+    "fees_6m": 164.4,
+    "evals": 2.79,
+    "pays": 4.6
+   },
+   "+ fresh 50K eval now (parallel), funded + ATLAS $500 + BLITZ $300": {
+    "pass60": 94.2,
+    "pass_med": 12.0,
+    "pass_p10": 46.1,
+    "first_pay_med": 31.0,
+    "first_pay_date": "2026-12-30",
+    "no_pay_6m": 4.6,
+    "net_m": 1308,
+    "owner_m": 1338,
+    "fees_6m": 178.5,
+    "evals": 2.94,
+    "pays": 5.03
+   },
+   "LIT eval, funded LIT + ATLAS $500, ask $2,000 (cap), best-day stop $1,000": {
+    "pass60": 90.3,
+    "pass_med": 19.0,
+    "pass_p10": 25.3,
+    "first_pay_med": 41.0,
+    "first_pay_date": "2027-01-14",
+    "no_pay_6m": 6.2,
+    "net_m": 1144,
+    "owner_m": 1158,
+    "fees_6m": 80.2,
+    "evals": 1.87,
+    "pays": 4.34
+   },
+   "LIT eval, funded LIT + ATLAS $500 + BLITZ $300, ask $1,000, no day stop": {
+    "pass60": 90.3,
+    "pass_med": 19.0,
+    "pass_p10": 25.3,
+    "first_pay_med": 38.5,
+    "first_pay_date": "2027-01-11",
+    "no_pay_6m": 5.4,
+    "net_m": 1242,
+    "owner_m": 1257,
+    "fees_6m": 90.2,
+    "evals": 1.98,
+    "pays": 4.73
+   }
+  },
+  "H2": {
+   "today: LIT eval, funded LIT alone, ask $1,500": {
+    "pass60": 88.5,
+    "pass_med": 21.0,
+    "pass_p10": 24.9,
+    "first_pay_med": 50.0,
+    "first_pay_date": "2027-01-27",
+    "no_pay_6m": 11.0,
+    "net_m": 709,
+    "owner_m": 717,
+    "fees_6m": 44.9,
+    "evals": 1.49,
+    "pays": 2.72
+   },
+   "LIT eval, funded + ATLAS $500, ask $1,500": {
+    "pass60": 88.5,
+    "pass_med": 21.0,
+    "pass_p10": 24.9,
+    "first_pay_med": 40.0,
+    "first_pay_date": "2027-01-13",
+    "no_pay_6m": 7.1,
+    "net_m": 1152,
+    "owner_m": 1166,
+    "fees_6m": 88.8,
+    "evals": 1.97,
+    "pays": 4.41
+   },
+   "+ fresh 50K eval now (parallel), funded LIT alone": {
+    "pass60": 92.1,
+    "pass_med": 11.0,
+    "pass_p10": 48.1,
+    "first_pay_med": 44.0,
+    "first_pay_date": "2027-01-19",
+    "no_pay_6m": 9.2,
+    "net_m": 754,
+    "owner_m": 775,
+    "fees_6m": 126.2,
+    "evals": 2.38,
+    "pays": 2.94
+   },
+   "+ fresh 50K eval now (parallel), funded + ATLAS $500": {
+    "pass60": 92.1,
+    "pass_med": 11.0,
+    "pass_p10": 48.1,
+    "first_pay_med": 33.0,
+    "first_pay_date": "2027-01-04",
+    "no_pay_6m": 7.2,
+    "net_m": 1206,
+    "owner_m": 1235,
+    "fees_6m": 174.4,
+    "evals": 2.9,
+    "pays": 4.67
+   },
+   "+ fresh 50K eval now (parallel), funded + ATLAS $500 + BLITZ $300": {
+    "pass60": 92.1,
+    "pass_med": 11.0,
+    "pass_p10": 48.1,
+    "first_pay_med": 30.0,
+    "first_pay_date": "2026-12-29",
+    "no_pay_6m": 5.7,
+    "net_m": 1347,
+    "owner_m": 1378,
+    "fees_6m": 184.2,
+    "evals": 3.01,
+    "pays": 5.19
+   },
+   "LIT eval, funded LIT + ATLAS $500, ask $2,000 (cap), best-day stop $1,000": {
+    "pass60": 88.5,
+    "pass_med": 21.0,
+    "pass_p10": 24.9,
+    "first_pay_med": 42.0,
+    "first_pay_date": "2027-01-15",
+    "no_pay_6m": 7.3,
+    "net_m": 1154,
+    "owner_m": 1169,
+    "fees_6m": 88.9,
+    "evals": 1.97,
+    "pays": 4.38
+   },
+   "LIT eval, funded LIT + ATLAS $500 + BLITZ $300, ask $1,000, no day stop": {
+    "pass60": 88.5,
+    "pass_med": 21.0,
+    "pass_p10": 24.9,
+    "first_pay_med": 38.0,
+    "first_pay_date": "2027-01-11",
+    "no_pay_6m": 6.1,
+    "net_m": 1272,
+    "owner_m": 1289,
+    "fees_6m": 100.3,
+    "evals": 2.09,
+    "pays": 4.88
+   }
+  },
+  "REF": {
+   "today: LIT eval, funded LIT alone, ask $1,500": {
+    "pass60": 29.8,
+    "pass_med": 61.0,
+    "pass_p10": 3.3,
+    "first_pay_med": 88.0,
+    "first_pay_date": "2027-03-22",
+    "no_pay_6m": 92.5,
+    "net_m": -5,
+    "owner_m": 21,
+    "fees_6m": 154.8,
+    "evals": 2.69,
+    "pays": 0.08
+   },
+   "LIT eval, funded + ATLAS $500, ask $1,500": {
+    "pass60": 29.8,
+    "pass_med": 61.0,
+    "pass_p10": 3.3,
+    "first_pay_med": 75.0,
+    "first_pay_date": "2027-03-03",
+    "no_pay_6m": 92.5,
+    "net_m": -1,
+    "owner_m": 25,
+    "fees_6m": 154.8,
+    "evals": 2.69,
+    "pays": 0.09
+   },
+   "+ fresh 50K eval now (parallel), funded LIT alone": {
+    "pass60": 39.5,
+    "pass_med": 46.0,
+    "pass_p10": 11.7,
+    "first_pay_med": 77.0,
+    "first_pay_date": "2027-03-05",
+    "no_pay_6m": 90.7,
+    "net_m": -9,
+    "owner_m": 26,
+    "fees_6m": 211.6,
+    "evals": 3.31,
+    "pays": 0.1
+   },
+   "+ fresh 50K eval now (parallel), funded + ATLAS $500": {
+    "pass60": 39.5,
+    "pass_med": 46.0,
+    "pass_p10": 11.7,
+    "first_pay_med": 53.0,
+    "first_pay_date": "2027-02-01",
+    "no_pay_6m": 90.2,
+    "net_m": -2,
+    "owner_m": 33,
+    "fees_6m": 211.6,
+    "evals": 3.31,
+    "pays": 0.12
+   },
+   "+ fresh 50K eval now (parallel), funded + ATLAS $500 + BLITZ $300": {
+    "pass60": 39.5,
+    "pass_med": 46.0,
+    "pass_p10": 11.7,
+    "first_pay_med": 52.0,
+    "first_pay_date": "2027-01-29",
+    "no_pay_6m": 89.6,
+    "net_m": 1,
+    "owner_m": 37,
+    "fees_6m": 211.6,
+    "evals": 3.31,
+    "pays": 0.14
+   },
+   "LIT eval, funded LIT + ATLAS $500, ask $2,000 (cap), best-day stop $1,000": {
+    "pass60": 29.8,
+    "pass_med": 61.0,
+    "pass_p10": 3.3,
+    "first_pay_med": 77.0,
+    "first_pay_date": "2027-03-05",
+    "no_pay_6m": 92.5,
+    "net_m": -1,
+    "owner_m": 25,
+    "fees_6m": 154.8,
+    "evals": 2.69,
+    "pays": 0.09
+   },
+   "LIT eval, funded LIT + ATLAS $500 + BLITZ $300, ask $1,000, no day stop": {
+    "pass60": 29.8,
+    "pass_med": 61.0,
+    "pass_p10": 3.3,
+    "first_pay_med": 66.5,
+    "first_pay_date": "2027-02-18",
+    "no_pay_6m": 91.8,
+    "net_m": 2,
+    "owner_m": 28,
+    "fees_6m": 154.8,
+    "evals": 2.69,
+    "pays": 0.1
+   }
+  }
+ },
+ "lever1": {
+  "zlarior": {
+   "H1": {
+    "continue": {
+     "pass60": 90.3,
+     "pass_med": 19.0,
+     "pass_p10": 25.3,
+     "first_pay_med": 53.0,
+     "first_pay_date": "2027-02-01",
+     "no_pay_6m": 8.9,
+     "net_m": 739,
+     "owner_m": 746,
+     "fees_6m": 41.3,
+     "evals": 1.45,
+     "pays": 2.82
+    },
+    "+ fresh eval now": {
+     "pass60": 94.2,
+     "pass_med": 12.0,
+     "pass_p10": 46.1,
+     "first_pay_med": 46.5,
+     "first_pay_date": "2027-01-21",
+     "no_pay_6m": 7.8,
+     "net_m": 777,
+     "owner_m": 798,
+     "fees_6m": 126.4,
+     "evals": 2.38,
+     "pays": 3.02
+    },
+    "restart fresh (drop the hole)": {
+     "pass60": 94.5,
+     "pass_med": 12.0,
+     "pass_p10": 46.2,
+     "first_pay_med": 46.0,
+     "first_pay_date": "2027-01-21",
+     "no_pay_6m": 7.7,
+     "net_m": 779,
+     "owner_m": 800,
+     "fees_6m": 127.1,
+     "evals": 1.38,
+     "pays": 3.03
+    },
+    "rescue room 25%": {
+     "pass60": 80.9,
+     "pass_med": 26.0,
+     "pass_p10": 17.4,
+     "first_pay_med": 59.0,
+     "first_pay_date": "2027-02-09",
+     "no_pay_6m": 12.9,
+     "net_m": 671,
+     "owner_m": 675,
+     "fees_6m": 24.4,
+     "evals": 1.27,
+     "pays": 2.55
+    },
+    "rescue room 30%": {
+     "pass60": 84.6,
+     "pass_med": 23.0,
+     "pass_p10": 22.2,
+     "first_pay_med": 56.0,
+     "first_pay_date": "2027-02-04",
+     "no_pay_6m": 11.5,
+     "net_m": 696,
+     "owner_m": 701,
+     "fees_6m": 29.6,
+     "evals": 1.32,
+     "pays": 2.65
+    },
+    "rescue room 55%": {
+     "pass60": 94.0,
+     "pass_med": 15.0,
+     "pass_p10": 35.9,
+     "first_pay_med": 47.0,
+     "first_pay_date": "2027-01-22",
+     "no_pay_6m": 8.3,
+     "net_m": 777,
+     "owner_m": 786,
+     "fees_6m": 55.3,
+     "evals": 1.6,
+     "pays": 2.97
+    },
+    "rescue room 70%": {
+     "pass60": 94.9,
+     "pass_med": 12.0,
+     "pass_p10": 44.2,
+     "first_pay_med": 46.0,
+     "first_pay_date": "2027-01-21",
+     "no_pay_6m": 7.0,
+     "net_m": 796,
+     "owner_m": 806,
+     "fees_6m": 62.9,
+     "evals": 1.69,
+     "pays": 3.05
+    },
+    "_hole_eval": {
+     "p10": 29.0,
+     "f10": 3.7,
+     "p60": 76.0,
+     "f60": 19.9,
+     "pass_med": 14.0
+    },
+    "_fresh_eval": {
+     "p10": 48.5,
+     "f10": 0.5,
+     "p60": 86.7,
+     "f60": 9.9,
+     "pass_med": 9.0
+    },
+    "_hole_eval rescue room 25%": {
+     "p10": 18.3,
+     "f10": 0.0,
+     "p60": 79.9,
+     "f60": 1.2,
+     "pass_med": 20.0
+    },
+    "_hole_eval rescue room 30%": {
+     "p10": 25.5,
+     "f10": 0.3,
+     "p60": 80.5,
+     "f60": 6.0,
+     "pass_med": 18.0
+    },
+    "_hole_eval rescue room 55%": {
+     "p10": 36.1,
+     "f10": 18.4,
+     "p60": 66.5,
+     "f60": 33.4,
+     "pass_med": 10.0
+    },
+    "_hole_eval rescue room 70%": {
+     "p10": 41.5,
+     "f10": 27.1,
+     "p60": 61.6,
+     "f60": 38.4,
+     "pass_med": 7.0
+    }
+   },
+   "H2": {
+    "continue": {
+     "pass60": 88.5,
+     "pass_med": 21.0,
+     "pass_p10": 24.9,
+     "first_pay_med": 50.0,
+     "first_pay_date": "2027-01-27",
+     "no_pay_6m": 11.0,
+     "net_m": 709,
+     "owner_m": 717,
+     "fees_6m": 44.9,
+     "evals": 1.49,
+     "pays": 2.72
+    },
+    "+ fresh eval now": {
+     "pass60": 92.1,
+     "pass_med": 11.0,
+     "pass_p10": 48.1,
+     "first_pay_med": 44.0,
+     "first_pay_date": "2027-01-19",
+     "no_pay_6m": 9.2,
+     "net_m": 754,
+     "owner_m": 775,
+     "fees_6m": 126.2,
+     "evals": 2.38,
+     "pays": 2.94
+    },
+    "restart fresh (drop the hole)": {
+     "pass60": 92.5,
+     "pass_med": 11.0,
+     "pass_p10": 48.1,
+     "first_pay_med": 44.0,
+     "first_pay_date": "2027-01-19",
+     "no_pay_6m": 9.6,
+     "net_m": 753,
+     "owner_m": 774,
+     "fees_6m": 126.2,
+     "evals": 1.38,
+     "pays": 2.94
+    },
+    "rescue room 25%": {
+     "pass60": 73.4,
+     "pass_med": 31.0,
+     "pass_p10": 8.9,
+     "first_pay_med": 62.0,
+     "first_pay_date": "2027-02-12",
+     "no_pay_6m": 16.5,
+     "net_m": 602,
+     "owner_m": 606,
+     "fees_6m": 24.4,
+     "evals": 1.27,
+     "pays": 2.31
+    },
+    "rescue room 30%": {
+     "pass60": 79.1,
+     "pass_med": 26.5,
+     "pass_p10": 17.7,
+     "first_pay_med": 56.0,
+     "first_pay_date": "2027-02-04",
+     "no_pay_6m": 14.4,
+     "net_m": 646,
+     "owner_m": 651,
+     "fees_6m": 28.7,
+     "evals": 1.31,
+     "pays": 2.48
+    },
+    "rescue room 55%": {
+     "pass60": 93.7,
+     "pass_med": 15.0,
+     "pass_p10": 37.2,
+     "first_pay_med": 44.0,
+     "first_pay_date": "2027-01-19",
+     "no_pay_6m": 9.9,
+     "net_m": 755,
+     "owner_m": 765,
+     "fees_6m": 59.1,
+     "evals": 1.64,
+     "pays": 2.9
+    },
+    "rescue room 70%": {
+     "pass60": 94.5,
+     "pass_med": 14.0,
+     "pass_p10": 40.9,
+     "first_pay_med": 43.0,
+     "first_pay_date": "2027-01-18",
+     "no_pay_6m": 9.7,
+     "net_m": 766,
+     "owner_m": 777,
+     "fees_6m": 64.8,
+     "evals": 1.71,
+     "pays": 2.95
+    },
+    "_hole_eval": {
+     "p10": 25.3,
+     "f10": 2.4,
+     "p60": 73.9,
+     "f60": 21.2,
+     "pass_med": 15.0
+    },
+    "_fresh_eval": {
+     "p10": 48.2,
+     "f10": 0.4,
+     "p60": 84.5,
+     "f60": 11.1,
+     "pass_med": 8.0
+    },
+    "_hole_eval rescue room 25%": {
+     "p10": 8.6,
+     "f10": 0.0,
+     "p60": 72.4,
+     "f60": 0.8,
+     "pass_med": 24.0
+    },
+    "_hole_eval rescue room 30%": {
+     "p10": 16.0,
+     "f10": 0.0,
+     "p60": 76.2,
+     "f60": 7.3,
+     "pass_med": 21.0
+    },
+    "_hole_eval rescue room 55%": {
+     "p10": 34.6,
+     "f10": 19.1,
+     "p60": 62.8,
+     "f60": 36.8,
+     "pass_med": 10.0
+    },
+    "_hole_eval rescue room 70%": {
+     "p10": 37.2,
+     "f10": 29.7,
+     "p60": 58.6,
+     "f60": 41.4,
+     "pass_med": 8.0
+    }
+   },
+   "REF": {
+    "continue": {
+     "pass60": 29.8,
+     "pass_med": 61.0,
+     "pass_p10": 3.3,
+     "first_pay_med": 88.0,
+     "first_pay_date": "2027-03-22",
+     "no_pay_6m": 92.5,
+     "net_m": -5,
+     "owner_m": 21,
+     "fees_6m": 154.8,
+     "evals": 2.69,
+     "pays": 0.08
+    },
+    "+ fresh eval now": {
+     "pass60": 39.5,
+     "pass_med": 46.0,
+     "pass_p10": 11.7,
+     "first_pay_med": 77.0,
+     "first_pay_date": "2027-03-05",
+     "no_pay_6m": 90.7,
+     "net_m": -9,
+     "owner_m": 26,
+     "fees_6m": 211.6,
+     "evals": 3.31,
+     "pays": 0.1
+    },
+    "restart fresh (drop the hole)": {
+     "pass60": 40.3,
+     "pass_med": 45.0,
+     "pass_p10": 11.7,
+     "first_pay_med": 78.0,
+     "first_pay_date": "2027-03-08",
+     "no_pay_6m": 90.6,
+     "net_m": -9,
+     "owner_m": 27,
+     "fees_6m": 211.7,
+     "evals": 2.31,
+     "pays": 0.1
+    },
+    "rescue room 25%": {
+     "pass60": 11.1,
+     "pass_med": 80.0,
+     "pass_p10": 0.0,
+     "first_pay_med": 100.0,
+     "first_pay_date": "2027-04-07",
+     "no_pay_6m": 95.5,
+     "net_m": -9,
+     "owner_m": 12,
+     "fees_6m": 127.1,
+     "evals": 2.38,
+     "pays": 0.05
+    },
+    "rescue room 30%": {
+     "pass60": 18.5,
+     "pass_med": 74.0,
+     "pass_p10": 1.0,
+     "first_pay_med": 90.0,
+     "first_pay_date": "2027-03-24",
+     "no_pay_6m": 94.7,
+     "net_m": -8,
+     "owner_m": 15,
+     "fees_6m": 138.6,
+     "evals": 2.51,
+     "pays": 0.06
+    },
+    "rescue room 55%": {
+     "pass60": 42.4,
+     "pass_med": 45.0,
+     "pass_p10": 6.4,
+     "first_pay_med": 69.5,
+     "first_pay_date": "2027-02-24",
+     "no_pay_6m": 91.0,
+     "net_m": -1,
+     "owner_m": 26,
+     "fees_6m": 161.6,
+     "evals": 2.76,
+     "pays": 0.1
+    },
+    "rescue room 70%": {
+     "pass60": 47.2,
+     "pass_med": 36.0,
+     "pass_p10": 10.1,
+     "first_pay_med": 75.0,
+     "first_pay_date": "2027-03-03",
+     "no_pay_6m": 89.2,
+     "net_m": 3,
+     "owner_m": 30,
+     "fees_6m": 162.4,
+     "evals": 2.77,
+     "pays": 0.12
+    },
+    "_hole_eval": {
+     "p10": 3.2,
+     "f10": 5.0,
+     "p60": 15.3,
+     "f60": 70.9,
+     "pass_med": 20.0
+    },
+    "_fresh_eval": {
+     "p10": 11.4,
+     "f10": 0.5,
+     "p60": 29.9,
+     "f60": 55.7,
+     "pass_med": 14.0
+    },
+    "_hole_eval rescue room 25%": {
+     "p10": 0.6,
+     "f10": 0.0,
+     "p60": 9.8,
+     "f60": 20.2,
+     "pass_med": 34.0
+    },
+    "_hole_eval rescue room 30%": {
+     "p10": 1.2,
+     "f10": 0.2,
+     "p60": 12.2,
+     "f60": 43.7,
+     "pass_med": 27.5
+    },
+    "_hole_eval rescue room 55%": {
+     "p10": 4.7,
+     "f10": 23.4,
+     "p60": 16.9,
+     "f60": 80.3,
+     "pass_med": 17.0
+    },
+    "_hole_eval rescue room 70%": {
+     "p10": 7.0,
+     "f10": 44.0,
+     "p60": 18.2,
+     "f60": 81.3,
+     "pass_med": 13.0
+    }
+   }
+  },
+  "atlas": {
+   "H1": {
+    "continue": {
+     "pass60": 99.2,
+     "pass_med": 12.0,
+     "pass_p10": 41.5,
+     "first_pay_med": 35.0,
+     "first_pay_date": "2027-01-06",
+     "no_pay_6m": 3.3,
+     "net_m": 599,
+     "owner_m": 606,
+     "fees_6m": 42.5,
+     "evals": 1.99,
+     "pays": 4.59
+    },
+    "+ fresh eval now": {
+     "pass60": 99.6,
+     "pass_med": 7.0,
+     "pass_p10": 65.4,
+     "first_pay_med": 31.0,
+     "first_pay_date": "2026-12-30",
+     "no_pay_6m": 3.5,
+     "net_m": 617,
+     "owner_m": 632,
+     "fees_6m": 86.0,
+     "evals": 3.0,
+     "pays": 4.79
+    },
+    "restart fresh (drop the hole)": {
+     "pass60": 99.7,
+     "pass_med": 7.0,
+     "pass_p10": 67.5,
+     "first_pay_med": 30.0,
+     "first_pay_date": "2026-12-29",
+     "no_pay_6m": 3.7,
+     "net_m": 621,
+     "owner_m": 636,
+     "fees_6m": 90.4,
+     "evals": 2.1,
+     "pays": 4.83
+    },
+    "rescue safe cap 20%": {
+     "pass60": 97.9,
+     "pass_med": 18.0,
+     "pass_p10": 24.6,
+     "first_pay_med": 40.0,
+     "first_pay_date": "2027-01-13",
+     "no_pay_6m": 3.4,
+     "net_m": 576,
+     "owner_m": 582,
+     "fees_6m": 34.3,
+     "evals": 1.8,
+     "pays": 4.41
+    },
+    "rescue safe cap 50%": {
+     "pass60": 99.4,
+     "pass_med": 9.0,
+     "pass_p10": 55.8,
+     "first_pay_med": 32.0,
+     "first_pay_date": "2026-12-31",
+     "no_pay_6m": 4.0,
+     "net_m": 618,
+     "owner_m": 627,
+     "fees_6m": 56.7,
+     "evals": 2.32,
+     "pays": 4.76
+    },
+    "rescue need size kept (two_week to 80)": {
+     "pass60": 99.5,
+     "pass_med": 8.0,
+     "pass_p10": 61.6,
+     "first_pay_med": 30.0,
+     "first_pay_date": "2026-12-29",
+     "no_pay_6m": 4.2,
+     "net_m": 624,
+     "owner_m": 632,
+     "fees_6m": 50.7,
+     "evals": 2.18,
+     "pays": 4.8
+    },
+    "rescue no last bullet": {
+     "pass60": 96.2,
+     "pass_med": 14.0,
+     "pass_p10": 37.9,
+     "first_pay_med": 37.0,
+     "first_pay_date": "2027-01-08",
+     "no_pay_6m": 4.1,
+     "net_m": 576,
+     "owner_m": 583,
+     "fees_6m": 38.6,
+     "evals": 1.9,
+     "pays": 4.42
+    },
+    "_hole_eval": {
+     "p10": 37.9,
+     "f10": 6.1,
+     "p60": 82.6,
+     "f60": 17.1,
+     "pass_med": 12.0
+    },
+    "_fresh_eval": {
+     "p10": 64.3,
+     "f10": 11.7,
+     "p60": 82.3,
+     "f60": 17.6,
+     "pass_med": 6.0
+    },
+    "_hole_eval rescue safe cap 20%": {
+     "p10": 23.3,
+     "f10": 1.0,
+     "p60": 90.8,
+     "f60": 7.4,
+     "pass_med": 17.0
+    },
+    "_hole_eval rescue safe cap 50%": {
+     "p10": 45.1,
+     "f10": 25.9,
+     "p60": 62.6,
+     "f60": 37.4,
+     "pass_med": 6.0
+    },
+    "_hole_eval rescue need size kept (two_week to 80)": {
+     "p10": 55.9,
+     "f10": 16.3,
+     "p60": 75.1,
+     "f60": 24.9,
+     "pass_med": 7.0
+    },
+    "_hole_eval rescue no last bullet": {
+     "p10": 37.6,
+     "f10": 1.1,
+     "p60": 83.1,
+     "f60": 14.7,
+     "pass_med": 12.0
+    }
+   },
+   "H2": {
+    "continue": {
+     "pass60": 91.7,
+     "pass_med": 25.0,
+     "pass_p10": 14.9,
+     "first_pay_med": 56.0,
+     "first_pay_date": "2027-02-04",
+     "no_pay_6m": 10.1,
+     "net_m": 381,
+     "owner_m": 383,
+     "fees_6m": 13.5,
+     "evals": 1.31,
+     "pays": 2.9
+    },
+    "+ fresh eval now": {
+     "pass60": 94.4,
+     "pass_med": 13.0,
+     "pass_p10": 46.6,
+     "first_pay_med": 47.0,
+     "first_pay_date": "2027-01-22",
+     "no_pay_6m": 8.8,
+     "net_m": 412,
+     "owner_m": 421,
+     "fees_6m": 58.8,
+     "evals": 2.37,
+     "pays": 3.19
+    },
+    "restart fresh (drop the hole)": {
+     "pass60": 94.5,
+     "pass_med": 12.0,
+     "pass_p10": 47.2,
+     "first_pay_med": 46.0,
+     "first_pay_date": "2027-01-21",
+     "no_pay_6m": 8.6,
+     "net_m": 414,
+     "owner_m": 425,
+     "fees_6m": 61.8,
+     "evals": 1.44,
+     "pays": 3.21
+    },
+    "rescue safe cap 20%": {
+     "pass60": 91.0,
+     "pass_med": 29.0,
+     "pass_p10": 8.3,
+     "first_pay_med": 59.0,
+     "first_pay_date": "2027-02-09",
+     "no_pay_6m": 9.4,
+     "net_m": 372,
+     "owner_m": 374,
+     "fees_6m": 10.4,
+     "evals": 1.24,
+     "pays": 2.84
+    },
+    "rescue safe cap 50%": {
+     "pass60": 93.8,
+     "pass_med": 21.0,
+     "pass_p10": 21.0,
+     "first_pay_med": 51.0,
+     "first_pay_date": "2027-01-28",
+     "no_pay_6m": 9.1,
+     "net_m": 396,
+     "owner_m": 400,
+     "fees_6m": 25.3,
+     "evals": 1.59,
+     "pays": 3.03
+    },
+    "rescue need size kept (two_week to 80)": {
+     "pass60": 96.7,
+     "pass_med": 13.0,
+     "pass_p10": 40.8,
+     "first_pay_med": 45.0,
+     "first_pay_date": "2027-01-20",
+     "no_pay_6m": 8.1,
+     "net_m": 430,
+     "owner_m": 434,
+     "fees_6m": 24.0,
+     "evals": 1.56,
+     "pays": 3.29
+    },
+    "rescue no last bullet": {
+     "pass60": 80.2,
+     "pass_med": 28.0,
+     "pass_p10": 15.0,
+     "first_pay_med": 59.0,
+     "first_pay_date": "2027-02-09",
+     "no_pay_6m": 15.6,
+     "net_m": 342,
+     "owner_m": 345,
+     "fees_6m": 17.6,
+     "evals": 1.41,
+     "pays": 2.62
+    },
+    "_hole_eval": {
+     "p10": 13.0,
+     "f10": 0.2,
+     "p60": 84.0,
+     "f60": 9.8,
+     "pass_med": 23.0
+    },
+    "_fresh_eval": {
+     "p10": 44.0,
+     "f10": 6.1,
+     "p60": 84.2,
+     "f60": 13.0,
+     "pass_med": 10.0
+    },
+    "_hole_eval rescue safe cap 20%": {
+     "p10": 6.4,
+     "f10": 0.0,
+     "p60": 86.4,
+     "f60": 4.8,
+     "pass_med": 27.0
+    },
+    "_hole_eval rescue safe cap 50%": {
+     "p10": 20.3,
+     "f10": 6.8,
+     "p60": 65.6,
+     "f60": 33.5,
+     "pass_med": 16.0
+    },
+    "_hole_eval rescue need size kept (two_week to 80)": {
+     "p10": 37.3,
+     "f10": 10.3,
+     "p60": 74.4,
+     "f60": 25.3,
+     "pass_med": 10.0
+    },
+    "_hole_eval rescue no last bullet": {
+     "p10": 13.0,
+     "f10": 0.0,
+     "p60": 70.1,
+     "f60": 15.2,
+     "pass_med": 21.0
+    }
+   },
+   "REF": {
+    "continue": {
+     "pass60": 81.2,
+     "pass_med": 28.0,
+     "pass_p10": 14.6,
+     "first_pay_med": 52.0,
+     "first_pay_date": "2027-01-29",
+     "no_pay_6m": 79.4,
+     "net_m": 21,
+     "owner_m": 40,
+     "fees_6m": 112.5,
+     "evals": 3.62,
+     "pays": 0.31
+    },
+    "+ fresh eval now": {
+     "pass60": 84.1,
+     "pass_med": 22.0,
+     "pass_p10": 28.1,
+     "first_pay_med": 47.0,
+     "first_pay_date": "2027-01-22",
+     "no_pay_6m": 78.8,
+     "net_m": 17,
+     "owner_m": 40,
+     "fees_6m": 137.3,
+     "evals": 4.19,
+     "pays": 0.31
+    },
+    "restart fresh (drop the hole)": {
+     "pass60": 84.9,
+     "pass_med": 19.0,
+     "pass_p10": 31.3,
+     "first_pay_med": 46.0,
+     "first_pay_date": "2027-01-21",
+     "no_pay_6m": 78.1,
+     "net_m": 16,
+     "owner_m": 40,
+     "fees_6m": 143.7,
+     "evals": 3.34,
+     "pays": 0.31
+    },
+    "rescue safe cap 20%": {
+     "pass60": 70.2,
+     "pass_med": 37.0,
+     "pass_p10": 7.9,
+     "first_pay_med": 63.0,
+     "first_pay_date": "2027-02-15",
+     "no_pay_6m": 79.9,
+     "net_m": 18,
+     "owner_m": 36,
+     "fees_6m": 106.4,
+     "evals": 3.47,
+     "pays": 0.28
+    },
+    "rescue safe cap 50%": {
+     "pass60": 84.0,
+     "pass_med": 20.0,
+     "pass_p10": 24.7,
+     "first_pay_med": 45.0,
+     "first_pay_date": "2027-01-20",
+     "no_pay_6m": 78.2,
+     "net_m": 21,
+     "owner_m": 41,
+     "fees_6m": 117.9,
+     "evals": 3.74,
+     "pays": 0.31
+    },
+    "rescue need size kept (two_week to 80)": {
+     "pass60": 85.1,
+     "pass_med": 19.0,
+     "pass_p10": 28.2,
+     "first_pay_med": 43.0,
+     "first_pay_date": "2027-01-18",
+     "no_pay_6m": 78.1,
+     "net_m": 24,
+     "owner_m": 42,
+     "fees_6m": 107.2,
+     "evals": 3.49,
+     "pays": 0.32
+    },
+    "rescue no last bullet": {
+     "pass60": 80.3,
+     "pass_med": 30.0,
+     "pass_p10": 13.0,
+     "first_pay_med": 52.0,
+     "first_pay_date": "2027-01-29",
+     "no_pay_6m": 80.6,
+     "net_m": 18,
+     "owner_m": 37,
+     "fees_6m": 114.2,
+     "evals": 3.66,
+     "pays": 0.29
+    },
+    "_hole_eval": {
+     "p10": 11.7,
+     "f10": 29.1,
+     "p60": 20.2,
+     "f60": 79.6,
+     "pass_med": 9.0
+    },
+    "_fresh_eval": {
+     "p10": 23.0,
+     "f10": 52.0,
+     "p60": 27.1,
+     "f60": 72.7,
+     "pass_med": 5.0
+    },
+    "_hole_eval rescue safe cap 20%": {
+     "p10": 6.8,
+     "f10": 8.8,
+     "p60": 21.9,
+     "f60": 71.3,
+     "pass_med": 19.0
+    },
+    "_hole_eval rescue safe cap 50%": {
+     "p10": 13.1,
+     "f10": 68.2,
+     "p60": 15.5,
+     "f60": 84.5,
+     "pass_med": 4.0
+    },
+    "_hole_eval rescue need size kept (two_week to 80)": {
+     "p10": 17.6,
+     "f10": 62.4,
+     "p60": 21.9,
+     "f60": 78.1,
+     "pass_med": 6.0
+    },
+    "_hole_eval rescue no last bullet": {
+     "p10": 11.1,
+     "f10": 21.3,
+     "p60": 19.5,
+     "f60": 80.4,
+     "pass_med": 9.0
+    }
+   }
+  },
+  "plain": {
+   "H1": {
+    "LIT ($500 a trade)": {
+     "trades": 80,
+     "tpw": 3.12,
+     "win": 58.8,
+     "pf": 3.49,
+     "net": 31246,
+     "per_month": 5126,
+     "max_dd": -3271,
+     "win_days_pw": 1.84
+    },
+    "ATLAS ($250 a trade)": {
+     "trades": 104,
+     "tpw": 4.06,
+     "win": 52.9,
+     "pf": 2.92,
+     "net": 18362,
+     "per_month": 3012,
+     "max_dd": -1062,
+     "win_days_pw": 1.91
+    }
+   },
+   "H2": {
+    "LIT ($500 a trade)": {
+     "trades": 40,
+     "tpw": 2.56,
+     "win": 50.0,
+     "pf": 2.71,
+     "net": 13767,
+     "per_month": 3707,
+     "max_dd": -2228,
+     "win_days_pw": 1.28
+    },
+    "ATLAS ($250 a trade)": {
+     "trades": 46,
+     "tpw": 2.95,
+     "win": 56.5,
+     "pf": 2.55,
+     "net": 5256,
+     "per_month": 1415,
+     "max_dd": -876,
+     "win_days_pw": 1.47
+    }
+   },
+   "REF": {
+    "LIT ($500 a trade)": {
+     "trades": 511,
+     "tpw": 2.37,
+     "win": 53.6,
+     "pf": 1.02,
+     "net": 1961,
+     "per_month": 38,
+     "max_dd": -19725,
+     "win_days_pw": 1.27
+    },
+    "ATLAS ($250 a trade)": {
+     "trades": 994,
+     "tpw": 4.61,
+     "win": 37.3,
+     "pf": 1.08,
+     "net": 10393,
+     "per_month": 203,
+     "max_dd": -11403,
+     "win_days_pw": 1.38
+    }
+   }
+  },
+  "grid50": [
+   {
+    "room": 300,
+    "to_go": 3000,
+    "H1": {
+     "cont_fp": 56.0,
+     "par_fp": 46.0,
+     "cont_m": 682,
+     "par_m": 771,
+     "cont_nopay": 13.0,
+     "par_nopay": 8.4
+    },
+    "H2": {
+     "cont_fp": 54.0,
+     "par_fp": 44.0,
+     "cont_m": 676,
+     "par_m": 750,
+     "cont_nopay": 12.0,
+     "par_nopay": 9.6
+    },
+    "pays": true
+   },
+   {
+    "room": 300,
+    "to_go": 3687,
+    "H1": {
+     "cont_fp": 57.0,
+     "par_fp": 46.0,
+     "cont_m": 672,
+     "par_m": 771,
+     "cont_nopay": 14.0,
+     "par_nopay": 8.4
+    },
+    "H2": {
+     "cont_fp": 55.0,
+     "par_fp": 44.0,
+     "cont_m": 665,
+     "par_m": 750,
+     "cont_nopay": 12.4,
+     "par_nopay": 9.6
+    },
+    "pays": true
+   },
+   {
+    "room": 300,
+    "to_go": 4200,
+    "H1": {
+     "cont_fp": 58.0,
+     "par_fp": 46.0,
+     "cont_m": 664,
+     "par_m": 771,
+     "cont_nopay": 14.2,
+     "par_nopay": 8.4
+    },
+    "H2": {
+     "cont_fp": 56.0,
+     "par_fp": 44.0,
+     "cont_m": 658,
+     "par_m": 749,
+     "cont_nopay": 12.2,
+     "par_nopay": 9.6
+    },
+    "pays": true
+   },
+   {
+    "room": 600,
+    "to_go": 2500,
+    "H1": {
+     "cont_fp": 52.0,
+     "par_fp": 46.0,
+     "cont_m": 722,
+     "par_m": 772,
+     "cont_nopay": 10.8,
+     "par_nopay": 8.6
+    },
+    "H2": {
+     "cont_fp": 51.0,
+     "par_fp": 44.0,
+     "cont_m": 705,
+     "par_m": 749,
+     "cont_nopay": 10.6,
+     "par_nopay": 9.4
+    },
+    "pays": true
+   },
+   {
+    "room": 600,
+    "to_go": 3000,
+    "H1": {
+     "cont_fp": 53.0,
+     "par_fp": 46.0,
+     "cont_m": 709,
+     "par_m": 772,
+     "cont_nopay": 11.8,
+     "par_nopay": 8.6
+    },
+    "H2": {
+     "cont_fp": 52.0,
+     "par_fp": 44.0,
+     "cont_m": 695,
+     "par_m": 749,
+     "cont_nopay": 12.2,
+     "par_nopay": 9.6
+    },
+    "pays": true
+   },
+   {
+    "room": 600,
+    "to_go": 3687,
+    "H1": {
+     "cont_fp": 55.0,
+     "par_fp": 46.0,
+     "cont_m": 689,
+     "par_m": 771,
+     "cont_nopay": 12.8,
+     "par_nopay": 8.6
+    },
+    "H2": {
+     "cont_fp": 54.0,
+     "par_fp": 44.0,
+     "cont_m": 670,
+     "par_m": 748,
+     "cont_nopay": 14.0,
+     "par_nopay": 9.8
+    },
+    "pays": true
+   },
+   {
+    "room": 600,
+    "to_go": 4200,
+    "H1": {
+     "cont_fp": 56.0,
+     "par_fp": 46.0,
+     "cont_m": 683,
+     "par_m": 771,
+     "cont_nopay": 13.2,
+     "par_nopay": 8.6
+    },
+    "H2": {
+     "cont_fp": 57.0,
+     "par_fp": 44.0,
+     "cont_m": 653,
+     "par_m": 748,
+     "cont_nopay": 15.0,
+     "par_nopay": 9.8
+    },
+    "pays": true
+   },
+   {
+    "room": 900,
+    "to_go": 2500,
+    "H1": {
+     "cont_fp": 52.0,
+     "par_fp": 47.0,
+     "cont_m": 748,
+     "par_m": 774,
+     "cont_nopay": 8.8,
+     "par_nopay": 7.8
+    },
+    "H2": {
+     "cont_fp": 49.5,
+     "par_fp": 44.0,
+     "cont_m": 722,
+     "par_m": 753,
+     "cont_nopay": 10.0,
+     "par_nopay": 9.0
+    },
+    "pays": true
+   },
+   {
+    "room": 900,
+    "to_go": 3000,
+    "H1": {
+     "cont_fp": 53.0,
+     "par_fp": 46.5,
+     "cont_m": 729,
+     "par_m": 772,
+     "cont_nopay": 9.8,
+     "par_nopay": 8.0
+    },
+    "H2": {
+     "cont_fp": 51.0,
+     "par_fp": 44.0,
+     "cont_m": 708,
+     "par_m": 750,
+     "cont_nopay": 10.2,
+     "par_nopay": 9.2
+    },
+    "pays": true
+   },
+   {
+    "room": 900,
+    "to_go": 3687,
+    "H1": {
+     "cont_fp": 53.0,
+     "par_fp": 46.0,
+     "cont_m": 712,
+     "par_m": 772,
+     "cont_nopay": 11.0,
+     "par_nopay": 8.2
+    },
+    "H2": {
+     "cont_fp": 53.0,
+     "par_fp": 44.0,
+     "cont_m": 688,
+     "par_m": 750,
+     "cont_nopay": 11.6,
+     "par_nopay": 9.4
+    },
+    "pays": true
+   },
+   {
+    "room": 1145,
+    "to_go": 2500,
+    "H1": {
+     "cont_fp": 49.0,
+     "par_fp": 46.0,
+     "cont_m": 763,
+     "par_m": 772,
+     "cont_nopay": 8.6,
+     "par_nopay": 8.6
+    },
+    "H2": {
+     "cont_fp": 48.0,
+     "par_fp": 44.0,
+     "cont_m": 744,
+     "par_m": 753,
+     "cont_nopay": 8.2,
+     "par_nopay": 9.0
+    },
+    "pays": true
+   },
+   {
+    "room": 1145,
+    "to_go": 3000,
+    "H1": {
+     "cont_fp": 52.0,
+     "par_fp": 46.0,
+     "cont_m": 745,
+     "par_m": 771,
+     "cont_nopay": 9.0,
+     "par_nopay": 8.2
+    },
+    "H2": {
+     "cont_fp": 50.0,
+     "par_fp": 44.0,
+     "cont_m": 728,
+     "par_m": 751,
+     "cont_nopay": 9.6,
+     "par_nopay": 9.4
+    },
+    "pays": true
+   },
+   {
+    "room": 1145,
+    "to_go": 3687,
+    "H1": {
+     "cont_fp": 53.0,
+     "par_fp": 46.0,
+     "cont_m": 728,
+     "par_m": 769,
+     "cont_nopay": 9.4,
+     "par_nopay": 8.4
+    },
+    "H2": {
+     "cont_fp": 52.0,
+     "par_fp": 44.0,
+     "cont_m": 704,
+     "par_m": 751,
+     "cont_nopay": 10.8,
+     "par_nopay": 9.4
+    },
+    "pays": true
+   },
+   {
+    "room": 1500,
+    "to_go": 1500,
+    "H1": {
+     "cont_fp": 42.0,
+     "par_fp": 42.0,
+     "cont_m": 827,
+     "par_m": 808,
+     "cont_nopay": 7.0,
+     "par_nopay": 7.2
+    },
+    "H2": {
+     "cont_fp": 41.0,
+     "par_fp": 41.0,
+     "cont_m": 804,
+     "par_m": 781,
+     "cont_nopay": 7.6,
+     "par_nopay": 8.2
+    },
+    "pays": false
+   },
+   {
+    "room": 1500,
+    "to_go": 2500,
+    "H1": {
+     "cont_fp": 48.0,
+     "par_fp": 46.0,
+     "cont_m": 789,
+     "par_m": 778,
+     "cont_nopay": 7.6,
+     "par_nopay": 8.0
+    },
+    "H2": {
+     "cont_fp": 44.0,
+     "par_fp": 44.0,
+     "cont_m": 764,
+     "par_m": 751,
+     "cont_nopay": 8.6,
+     "par_nopay": 9.4
+    },
+    "pays": false
+   },
+   {
+    "room": 1500,
+    "to_go": 3000,
+    "H1": {
+     "cont_fp": 48.0,
+     "par_fp": 46.0,
+     "cont_m": 775,
+     "par_m": 772,
+     "cont_nopay": 8.8,
+     "par_nopay": 8.6
+    },
+    "H2": {
+     "cont_fp": 47.0,
+     "par_fp": 44.0,
+     "cont_m": 744,
+     "par_m": 750,
+     "cont_nopay": 9.6,
+     "par_nopay": 9.4
+    },
+    "pays": false
+   }
+  ],
+  "grid25": [
+   {
+    "room": 250,
+    "to_go": 1300,
+    "H1": {
+     "cont_fp": 32.0,
+     "par_fp": 30.0,
+     "cont_m": 608,
+     "par_m": 620,
+     "cont_nopay": 3.8,
+     "par_nopay": 3.8
+    },
+    "H2": {
+     "cont_fp": 50.0,
+     "par_fp": 46.0,
+     "cont_m": 404,
+     "par_m": 410,
+     "cont_nopay": 9.4,
+     "par_nopay": 9.4
+    },
+    "pays": true
+   },
+   {
+    "room": 250,
+    "to_go": 1678,
+    "H1": {
+     "cont_fp": 33.0,
+     "par_fp": 30.0,
+     "cont_m": 602,
+     "par_m": 620,
+     "cont_nopay": 4.2,
+     "par_nopay": 3.8
+    },
+    "H2": {
+     "cont_fp": 52.0,
+     "par_fp": 47.0,
+     "cont_m": 397,
+     "par_m": 409,
+     "cont_nopay": 9.6,
+     "par_nopay": 9.4
+    },
+    "pays": true
+   },
+   {
+    "room": 250,
+    "to_go": 2100,
+    "H1": {
+     "cont_fp": 34.0,
+     "par_fp": 30.0,
+     "cont_m": 598,
+     "par_m": 620,
+     "cont_nopay": 3.8,
+     "par_nopay": 3.8
+    },
+    "H2": {
+     "cont_fp": 54.0,
+     "par_fp": 47.0,
+     "cont_m": 385,
+     "par_m": 409,
+     "cont_nopay": 10.4,
+     "par_nopay": 9.4
+    },
+    "pays": true
+   },
+   {
+    "room": 400,
+    "to_go": 1300,
+    "H1": {
+     "cont_fp": 33.0,
+     "par_fp": 30.0,
+     "cont_m": 606,
+     "par_m": 620,
+     "cont_nopay": 3.4,
+     "par_nopay": 3.6
+    },
+    "H2": {
+     "cont_fp": 51.0,
+     "par_fp": 46.0,
+     "cont_m": 399,
+     "par_m": 414,
+     "cont_nopay": 10.2,
+     "par_nopay": 8.8
+    },
+    "pays": true
+   },
+   {
+    "room": 400,
+    "to_go": 1678,
+    "H1": {
+     "cont_fp": 34.0,
+     "par_fp": 30.0,
+     "cont_m": 598,
+     "par_m": 620,
+     "cont_nopay": 3.2,
+     "par_nopay": 3.6
+    },
+    "H2": {
+     "cont_fp": 55.0,
+     "par_fp": 47.0,
+     "cont_m": 384,
+     "par_m": 411,
+     "cont_nopay": 10.8,
+     "par_nopay": 9.2
+    },
+    "pays": true
+   },
+   {
+    "room": 400,
+    "to_go": 2100,
+    "H1": {
+     "cont_fp": 37.0,
+     "par_fp": 30.0,
+     "cont_m": 586,
+     "par_m": 620,
+     "cont_nopay": 3.2,
+     "par_nopay": 3.6
+    },
+    "H2": {
+     "cont_fp": 59.5,
+     "par_fp": 47.0,
+     "cont_m": 362,
+     "par_m": 409,
+     "cont_nopay": 12.0,
+     "par_nopay": 9.4
+    },
+    "pays": true
+   },
+   {
+    "room": 600,
+    "to_go": 900,
+    "H1": {
+     "cont_fp": 31.0,
+     "par_fp": 29.0,
+     "cont_m": 622,
+     "par_m": 626,
+     "cont_nopay": 3.4,
+     "par_nopay": 3.4
+    },
+    "H2": {
+     "cont_fp": 47.0,
+     "par_fp": 45.0,
+     "cont_m": 422,
+     "par_m": 425,
+     "cont_nopay": 8.4,
+     "par_nopay": 8.2
+    },
+    "pays": true
+   },
+   {
+    "room": 600,
+    "to_go": 1300,
+    "H1": {
+     "cont_fp": 34.0,
+     "par_fp": 30.0,
+     "cont_m": 607,
+     "par_m": 622,
+     "cont_nopay": 3.2,
+     "par_nopay": 3.6
+    },
+    "H2": {
+     "cont_fp": 52.0,
+     "par_fp": 47.0,
+     "cont_m": 398,
+     "par_m": 416,
+     "cont_nopay": 8.2,
+     "par_nopay": 8.6
+    },
+    "pays": true
+   },
+   {
+    "room": 600,
+    "to_go": 1678,
+    "H1": {
+     "cont_fp": 36.0,
+     "par_fp": 30.0,
+     "cont_m": 596,
+     "par_m": 618,
+     "cont_nopay": 3.2,
+     "par_nopay": 4.0
+    },
+    "H2": {
+     "cont_fp": 56.0,
+     "par_fp": 47.0,
+     "cont_m": 377,
+     "par_m": 408,
+     "cont_nopay": 10.8,
+     "par_nopay": 9.2
+    },
+    "pays": true
+   },
+   {
+    "room": 822,
+    "to_go": 900,
+    "H1": {
+     "cont_fp": 31.0,
+     "par_fp": 29.0,
+     "cont_m": 625,
+     "par_m": 625,
+     "cont_nopay": 3.2,
+     "par_nopay": 3.6
+    },
+    "H2": {
+     "cont_fp": 47.0,
+     "par_fp": 45.0,
+     "cont_m": 425,
+     "par_m": 425,
+     "cont_nopay": 8.4,
+     "par_nopay": 8.4
+    },
+    "pays": true
+   },
+   {
+    "room": 822,
+    "to_go": 1300,
+    "H1": {
+     "cont_fp": 33.0,
+     "par_fp": 30.0,
+     "cont_m": 610,
+     "par_m": 618,
+     "cont_nopay": 3.6,
+     "par_nopay": 4.0
+    },
+    "H2": {
+     "cont_fp": 51.5,
+     "par_fp": 47.0,
+     "cont_m": 395,
+     "par_m": 411,
+     "cont_nopay": 9.6,
+     "par_nopay": 9.2
+    },
+    "pays": true
+   },
+   {
+    "room": 822,
+    "to_go": 1678,
+    "H1": {
+     "cont_fp": 35.0,
+     "par_fp": 30.0,
+     "cont_m": 599,
+     "par_m": 618,
+     "cont_nopay": 3.4,
+     "par_nopay": 3.8
+    },
+    "H2": {
+     "cont_fp": 56.0,
+     "par_fp": 47.0,
+     "cont_m": 377,
+     "par_m": 404,
+     "cont_nopay": 10.8,
+     "par_nopay": 9.2
+    },
+    "pays": true
+   }
+  ]
+ }
+}
