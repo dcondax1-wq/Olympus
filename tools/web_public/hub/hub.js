@@ -303,7 +303,11 @@
       jobs++;
       HS.getJSON(base + 'home.json').then(function (home) {
         if (!home || typeof home !== 'object') { S.N = { has: false, accts: [], win: HS.nextWindow({}, t) }; one(); return; }
-        HS.getTruth(base, function (T) { S.N = HS.summarize(home, T, t); one(); });
+        HS.getTruth(base, function (T) {
+          S.N = HS.summarize(home, T, t); one();
+          // SYNC (night A 2026-11-16): the PC's ntfy report over home.json when newer (truth.withPcFeed, the same rule as the Gate, NQ and Jarvis)
+          if (T && typeof T.withPcFeed === 'function') T.withPcFeed(home).then(function (h2) { if (h2 && h2 !== home) { S.N = HS.summarize(h2, T, nowS()); if (S.done) drawNow(); } }, function () {});
+        });
       });
     }
     one();

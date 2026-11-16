@@ -406,13 +406,21 @@
       S.nowDone = true; return;
     }
     getTruth(function (T) {
-      var N = summarize(home, T);
-      drawNow(N, over ? 'pc' : 'live');
-      drawHubs(N, true);
-      drawQuick();
-      var keep = { pcT: N.pcT, pcAge: N.pcAge, running: N.running, accts: N.accts, today: N.today };
-      lsSet(LS_NOW, { saved: nowS(), N: keep });
-      S.nowDone = true;
+      var paint = function (h, fromPc) {
+        var N = summarize(h, T);
+        drawNow(N, fromPc ? 'pc' : 'live');
+        drawHubs(N, true);
+        drawQuick();
+        var keep = { pcT: N.pcT, pcAge: N.pcAge, running: N.running, accts: N.accts, today: N.today };
+        lsSet(LS_NOW, { saved: nowS(), N: keep });
+        S.nowDone = true;
+      };
+      paint(home, !!over);
+      /* SYNC (night A 2026-11-16): the PC's ntfy report laid over home.json when newer (truth.withPcFeed, the rule NQ, Aegis, Helios and
+         Jarvis use), so the Gate never shows an older drawdown than the apps; drawn first from home.json, again only when the feed is newer */
+      if (!over && T && typeof T.withPcFeed === 'function') {
+        T.withPcFeed(home).then(function (h2) { if (h2 && h2 !== home) paint(h2, true); }, function () { /* home.json stays */ });
+      }
     });
   }
 

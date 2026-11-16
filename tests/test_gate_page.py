@@ -33,7 +33,7 @@ CAT = os.path.join(AK.WEB, "olympus", "gate-catalog.js")
 NAV = os.path.join(AK.WEB, "olympus", "gate-nav.js")
 TEN = ("nq", "helios", "aegis", "mint", "polis", "symposium", "ergasterion", "cities", "kalshi", "herald")
 LABS = {"agora-lab", "env-lab", "fx-lab", "sfx-lab", "people-lab", "polis-lab", "polis-life-lab", "render-lab"}
-HUBS = ["today", "me", "bots", "kalshi", "money", "plan", "research", "jarvis", "worlds", "settings"]     # + Me (2026-11-14, docs/ME_HUB.md)
+HUBS = ["bots", "money", "today", "me", "plan", "jarvis", "research", "kalshi", "worlds", "settings"]     # + Me (2026-11-14, docs/ME_HUB.md)
 NOW = "2026-11-12T15:00:00Z"            # Thursday 10:00 New York: the LIT window is open
 NOW_S = int(datetime(2026, 11, 12, 15, 0, tzinfo=timezone.utc).timestamp())
 
@@ -64,10 +64,10 @@ def test_static():
           and html.count("<h1") == 1 and 'role="status"' in html and 'aria-live="polite"' in html and 'role="dialog"' not in html)
     check("a. one base-path line: gate/ -> '../', the site root (olympus-live.html) -> ''; agora.css + gate.css, then themes, the catalog, hub-status and gate.js load from GATE_BASE, in order (async = false)",
           r"/\/gate\/(index\.html)?$/.test(p) ? '../' : ''" in html and "window.GATE_BASE = b" in html and "b + 'gate/gate.css?v=g7'" in html and "b + 'olympus/agora.css" in html
-          and "['olympus/themes.js?v=o6', 'pc_feed.js?v=pf1', 'olympus/gate-catalog.js?v=nv1', 'olympus/hub-status.js?v=h2', 'gate/gate.js?v=g7']" in html and "s.async = false" in html)
+          and "['olympus/themes.js?v=o6', 'pc_feed.js?v=pf1', 'olympus/gate-catalog.js?v=nv1', 'olympus/hub-status.js?v=h2', 'gate/gate.js?v=g8']" in html and "s.async = false" in html)
     tiles = re.findall(r'class="g-hub[^"]*" data-hub="(\w+)" data-to="hub/index.html\?h=(\w+)"', html)
-    check("a. the hub tiles are plain links in the page (they work even if gate.js fails), in the owner's order: Today (wide) first, Me (wide) second ... Settings & Help last",
-          [t[0] for t in tiles] == HUBS and all(a == b for a, b in tiles) and 'class="g-hub g-wide" data-hub="today"' in html and 'class="g-hub g-wide" data-hub="me"' in html and html.count('class="g-hline"') == len(HUBS))
+    check("a. the hub tiles are plain links in the page (they work even if gate.js fails), in the owner's order (night A 2026-11-16): Bots & Evals (wide) and My Money (wide) first, Kalshi and Worlds near the end, Settings & Help last",
+          [t[0] for t in tiles] == HUBS and all(a == b for a, b in tiles) and 'class="g-hub g-wide" data-hub="bots"' in html and 'class="g-hub g-wide" data-hub="money"' in html and html.count('class="g-hline"') == len(HUBS))
     check("a. the Workshop link at the bottom opens Settings & Help > Workshop; no lab is linked from the page itself; no Trading / Money / Life district doors",
           'data-to="hub/index.html?h=settings&amp;t=workshop"' in html and not re.search(r"href=\"[^\"]*lab", html) and "g-door" not in html and "data-district" not in html)
     check("a. the Look row (2026-11-14, themes): near the bottom (after the search and Recent, before the footer), a radio group filled by gate.js from OLYMPUS_THEMES.groups();"
@@ -297,14 +297,15 @@ def test_page():
             check("c. each fact is a tap to the app with the detail: drawdown -> Aegis, today -> NQ, the window -> Kairos",
                   go == ["/aegis/index.html", "/aegis/index.html", "/nq/index.html", "/kairos/index.html"], go)
             tiles = p.evaluate("() => [...document.querySelectorAll('.g-hub')].map((a) => [a.dataset.hub, a.href.replace(location.origin, ''), a.querySelector('.g-hline').textContent, a.querySelector('.g-hcount').textContent])")
-            check("c. the hub tiles open hub/?h=<hub> (1 tap) with their app counts (15 + 16 + 3 + 13 + 5 + 8 + 4 + 8 + 12 = 84, Agency + Business included; Me: its 8 areas)",
+            check("c. the hub tiles open hub/?h=<hub> (1 tap) with their app counts (16 + 13 + 15 + 5 + 4 + 8 + 3 + 8 + 12 = 84, Agency + Business included; Me: its 8 areas)",
                   [t[0] for t in tiles] == HUBS and all(t[1] == f"/hub/index.html?h={t[0]}" for t in tiles)
-                  and sum(int(t[3].split()[0]) for t in tiles if t[0] != "me") == 84 and tiles[0][3] == "15 apps" and tiles[1][3] == "8 areas", tiles)
+                  and sum(int(t[3].split()[0]) for t in tiles if t[0] != "me") == 84 and tiles[0][3] == "16 apps" and tiles[1][3] == "13 apps" and tiles[3][3] == "8 areas", tiles)
             lines = {t[0]: t[2] for t in tiles}
             check("c. live hub lines: Bots & Evals '2 evals active, $1,420 / $900 left', Today 'Trade window open until 15:30 ET', Kalshi 'No Kalshi numbers yet' (no feed here)",
                   lines["bots"] == "2 evals active, $1,420 / $900 left" and lines["today"].startswith("Trade window open until 15:30 ET") and lines["kalshi"] == "No Kalshi numbers yet", lines)
             t = AK.taps(p)
-            check("c. every tap target >= 44 x 44, no sideways scroll, Jarvis's corner free at the end, no console error, nothing off the origin",
+            off = [u for u in off if not u.startswith("https://ntfy.sh/")]     # night A sync: the PC feed (status_feed.json's public topic), like NQ / Aegis
+            check("c. every tap target >= 44 x 44, no sideways scroll, Jarvis's corner free at the end, no console error, nothing off the origin but the PC feed",
                   not t and AK.no_sideways(p) and not AK.corner(p) and not errs and not off, (t[:4], AK.corner(p), errs[:3], off[:3]))
             p.evaluate("() => window.scrollTo(0, 0)")
             vis = p.evaluate("() => { const r = (s) => document.querySelector(s).getBoundingClientRect(); return [r('#q').top, r('#q').bottom, r('#now').bottom, r('#quick').top]; }")
