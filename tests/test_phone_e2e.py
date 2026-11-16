@@ -276,8 +276,12 @@ def add_planner(src, base):
         if "could not fetch planner-backup" in out and os.path.isfile(os.path.join(pl, "planner", "index.html")):
             # what the script does with a clone: planner/ is planner-backup (the overlay's tools/web_public/planner goes, as the
             # script's rm -rf + cp at publish), from the cached clone, with its add-ons applied here
+            card = os.path.join(base, "planner", "jarvis.json")
+            card = open(card, "rb").read() if os.path.isfile(card) else None
             shutil.rmtree(os.path.join(base, "planner"), ignore_errors=True)
             link_tree(os.path.join(pl, "planner"), os.path.join(base, "planner"))
+            if card is not None and not os.path.exists(os.path.join(base, "planner", "jarvis.json")):
+                open(os.path.join(base, "planner", "jarvis.json"), "wb").write(card)       # the script keeps the shell's card too
             return planner_addons(src, base)
         try:
             return json.load(open(os.path.join(base, "planner", "addons.json")))
