@@ -1,8 +1,8 @@
 {
  "v": 1,
  "name": "Ergasterion lessons",
- "asof": "2026-11-11",
- "say": "This week we wrote down 2 lessons. The strongest (3 files agree): No edge found. None of them beat the noise bar on the training data, so none was carried forward. What changed our mind: One pocket looked real (and replicated across two assets) until I ran it on two months of data it had never seen: it vanished.",
+ "asof": "2026-11-15",
+ "say": "This week we wrote down 6 lessons. The strongest (3 files agree): No edge found. None of them beat the noise bar on the training data, so none was carried forward. What changed our mind: Uncorrelated, but it does not hold in 2021-25 and passes evals too slowly.",
  "week": [
   {
    "text": "No edge found. None of them beat the noise bar on the training data, so none was carried forward.",
@@ -24,6 +24,43 @@
     "research/writeups/kalshi_edge_C.md",
     "research/writeups/kalshi_edge_B.md",
     "research/writeups/kalshi_edge_A.md"
+   ]
+  },
+  {
+   "text": "No single fact has a bin that loses in both halves; 425 two-fact loser cells picked on Jan-Jun keep losing in Jul-Oct 88 times against 95 expected by chance.",
+   "cat": "NQ strategy",
+   "d": "2026-11-15",
+   "strength": 2,
+   "sources": [
+    "research/writeups/2026-11-15-lit-deep.md",
+    "research/writeups/lit-retail-entries.md"
+   ]
+  },
+  {
+   "text": "Six ideas that systematic NQ / prop bots use and that Tested and rejected plus the LIT idea rounds 1-3 had not covered, 28 versions on the exact live LIT trades (re-walk == run lit_live), CME NQ futures, true 1m bars in…",
+   "cat": "NQ strategy",
+   "d": "2026-11-15",
+   "strength": 1,
+   "sources": [
+    "research/writeups/2026-11-15-s2-edge.md"
+   ]
+  },
+  {
+   "text": "Two-week 80% from here passes Zlarior in 2 weeks 35/40% of the time but fails it 41/42% of the time and is worth $2,617 / $2,697 per eval.",
+   "cat": "NQ strategy",
+   "d": "2026-11-13",
+   "strength": 1,
+   "sources": [
+    "research/writeups/eval-guard-2026-11-13.md"
+   ]
+  },
+  {
+   "text": "Each hypothesis was written before the run, with a new angle against the rejected list.",
+   "cat": "NQ strategy",
+   "d": "2026-11-13",
+   "strength": 1,
+   "sources": [
+    "research/writeups/nq-new-strategies-2026-11-13.md"
    ]
   }
  ],
@@ -62,6 +99,16 @@
    ]
   },
   {
+   "text": "No single fact has a bin that loses in both halves; 425 two-fact loser cells picked on Jan-Jun keep losing in Jul-Oct 88 times against 95 expected by chance.",
+   "cat": "NQ strategy",
+   "d": "2026-11-15",
+   "strength": 2,
+   "sources": [
+    "research/writeups/2026-11-15-lit-deep.md",
+    "research/writeups/lit-retail-entries.md"
+   ]
+  },
+  {
    "text": "(1m for 2026, 5m for 2021-25), costs in ($1.90 a micro, 1 tick on every market and stop fill, limits only when traded through, every same-bar tie booked against us), picked on 2026 Jan-Jun, checked on Jul-Oct, 2021-25 o…",
    "cat": "NQ strategy",
    "d": "2026-10-28",
@@ -69,6 +116,16 @@
    "sources": [
     "research/writeups/scalp-momentum.md",
     "research/writeups/lit-gap-audit.md"
+   ]
+  },
+  {
+   "text": "Only 10 of 141 add money in both halves (about 12 expected by chance) and none of those reaches 3 trades a week in Jul-Oct without raising the eval fail rate.",
+   "cat": "NQ strategy",
+   "d": "2026-10-21",
+   "strength": 2,
+   "sources": [
+    "research/writeups/2026-11-15-lit-deep.md",
+    "research/writeups/lit-retail-entries.md"
    ]
   },
   {
@@ -82,35 +139,23 @@
    ]
   },
   {
-   "text": "At the same $ a trade it wins Jan-Jun and loses Jul-Oct: winners win less often (23% to 13%) because many turn into breakeven scratches, and 2021-25 loses money.",
+   "text": "Six ideas that systematic NQ / prop bots use and that Tested and rejected plus the LIT idea rounds 1-3 had not covered, 28 versions on the exact live LIT trades (re-walk == run lit_live), CME NQ futures, true 1m bars in…",
    "cat": "NQ strategy",
-   "d": "2026-10-18",
-   "strength": 2,
-   "sources": [
-    "research/writeups/lit-tight-stops-size.md",
-    "research/writeups/lit-all-hours.md"
-   ]
-  },
-  {
-   "text": "Run all three accounts at once (LIT 50K, ATLAS 25K, BLITZ 25K): buying all three on day 1 beats every staggered order, and the fees are only $198. - Then: LIT on the 50K second: the biggest total ($6,549 in 12 months) b…",
-   "cat": "money",
-   "d": "2026-11-04",
+   "d": "2026-11-15",
    "strength": 1,
    "sources": [
-    "research/writeups/2026-11-04_money_roadmap.md"
-   ]
-  },
-  {
-   "text": "Part A closes the open items from the Plutus fix - lit_funded_firms.py rerun with today's live trades and the live presets (eval room 0.8, funded 60% / = $1,500 / winner = $2,000), the Builder 25K row refreshed, BLITZ g…",
-   "cat": "NQ strategy",
-   "d": "2026-11-04",
-   "strength": 1,
-   "sources": [
-    "research/writeups/2026-11-04_lit_ideas_round3.md"
+    "research/writeups/2026-11-15-s2-edge.md"
    ]
   }
  ],
  "changed": [
+  {
+   "text": "Uncorrelated, but it does not hold in 2021-25 and passes evals too slowly.",
+   "was": "",
+   "cat": "NQ strategy",
+   "d": "2026-11-13",
+   "source": "research/writeups/es-and-sessions-2026-11-13.md"
+  },
   {
    "text": "One pocket looked real (and replicated across two assets) until I ran it on two months of data it had never seen: it vanished.",
    "was": "",
@@ -145,19 +190,12 @@
    "cat": "NQ strategy",
    "d": "2026-10-30",
    "source": "research/writeups/discretion-score-2026-10-30.md"
-  },
-  {
-   "text": "A lead that did not hold: the other way round, years of memory and a later period as the check:",
-   "was": "",
-   "cat": "NQ strategy",
-   "d": "2026-10-29",
-   "source": "research/writeups/mind.md"
   }
  ],
  "counts": {
-  "NQ strategy": 47,
+  "NQ strategy": 48,
   "Kalshi": 2,
-  "money": 3,
+  "money": 2,
   "process": 8,
   "app": 0
  },

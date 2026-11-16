@@ -1,3 +1,10 @@
+---
+title: Kalshi edge, team A (calibration / base rate): NO EDGE FOUND
+family: kalshi
+date: 2026-11-10
+status: rejected - no edge found (calibration / base rate)
+---
+
 # Kalshi edge, team A (calibration / base rate): NO EDGE FOUND
 
 2026-11-10. Research only: Kalshi's public market-data API (no key, read only), no order, the live bot and `engine/` untouched.

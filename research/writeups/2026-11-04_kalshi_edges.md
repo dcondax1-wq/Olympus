@@ -1,3 +1,10 @@
+---
+title: Kalshi Edge v2: why it loses, and what (if anything) works
+family: kalshi
+date: 2026-11-04
+status: finding - the Kalshi bot loses to the fee; suggestions only, the bot untouched
+---
+
 # Kalshi Edge v2: why it loses, and what (if anything) works
 
 2026-11-04. Research only. No Kalshi API call, no order, no secret, the bot untouched. Data: the public feed

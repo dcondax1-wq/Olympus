@@ -3,7 +3,7 @@
  "asof": "2026-11-11T01:10:00Z",
  "source": "git",
  "base": "agora-release",
- "newest_t": 1794376609,
+ "newest_t": 1794377525,
  "note": "The build agents from handoff/agents_now.json, joined with git at build time (commits not yet in the release, files, folders, what was merged).",
  "agents": [
   {
@@ -56,57 +56,11 @@
    "area": "jarvis",
    "live": true,
    "merged": false,
-   "ahead": 13,
-   "files": 29,
-   "folders": [
-    {
-     "name": "docs/shots",
-     "n": 17
-    },
-    {
-     "name": "tools/web_public/jarvis",
-     "n": 7
-    },
-    {
-     "name": "tests",
-     "n": 4
-    },
-    {
-     "name": "docs",
-     "n": 1
-    }
-   ],
-   "commits": [
-    {
-     "t": 1794376350,
-     "s": "Jarvis home v2: numbers in the timeline and project cards wrap on a 320 px phone"
-    },
-    {
-     "t": 1794375843,
-     "s": "docs: Jarvis home v2 wiring (worker bump only)"
-    },
-    {
-     "t": 1794372500,
-     "s": "Jarvis home v2: next chip never cut on a 320 px phone; hub gutter check follows the v2 layout (edge-to-edge courtyard)"
-    },
-    {
-     "t": 1794362790,
-     "s": "Jarvis home v2: 3D doorways always readable (lamplit marble, golden-hour haze), browser test fixes"
-    },
-    {
-     "t": 1794361593,
-     "s": "Jarvis home v2: after screenshots (three sizes, first run with the orb hint, no data, below the fold)"
-    },
-    {
-     "t": 1794360363,
-     "s": "Jarvis home v2: tighter first screen (three whole tiles at 390x844 and 375x667), first after shots"
-    },
-    {
-     "t": 1794358595,
-     "s": "tests: test_jarvis_home_v2 (browser: first screen at three sizes, no overlap, orb hint once, states, pull to refresh, r…"
-    }
-   ],
-   "last_t": 1794376350,
+   "ahead": 0,
+   "files": 0,
+   "folders": [],
+   "commits": [],
+   "last_t": 1794377525,
    "shipped": [],
    "shipped_n": 0,
    "note": "from git: its branch against the release"
@@ -353,54 +307,12 @@
    "job": "A 3D arena where two strategies duel on real numbers",
    "area": "arena",
    "live": true,
-   "merged": false,
-   "ahead": 9,
-   "files": 7,
-   "folders": [
-    {
-     "name": "tests",
-     "n": 2
-    },
-    {
-     "name": "docs",
-     "n": 1
-    },
-    {
-     "name": "tools",
-     "n": 1
-    },
-    {
-     "name": "tools/web_public/colosseum",
-     "n": 1
-    }
-   ],
-   "commits": [
-    {
-     "t": 1794376609,
-     "s": "RELEASE_CHECK: the veil and intro rules, own temp folder, expected warnings"
-    },
-    {
-     "t": 1794376577,
-     "s": "Colosseum: tell the kit the page is ready so the loading veil lifts at once (found by site_smoke); static test"
-    },
-    {
-     "t": 1794376071,
-     "s": "Pinakes, Symposium: tell the kit the page is ready (OLYMPUS.ready()) so the loading veil lifts at once instead of after…"
-    },
-    {
-     "t": 1794376034,
-     "s": "site_smoke: time the kit's loading veil; a veil left to its 12 s safety lift is a failure (40/40)"
-    },
-    {
-     "t": 1794374623,
-     "s": "site_smoke: a stuck intro is its own failure; a short plain-text page is not blank; first content measured before the i…"
-    },
-    {
-     "t": 1794366322,
-     "s": "docs/RELEASE_CHECK.md: the five commands before a zip"
-    }
-   ],
-   "last_t": 1794376609,
+   "merged": true,
+   "ahead": 0,
+   "files": 0,
+   "folders": [],
+   "commits": [],
+   "last_t": 1794363088,
    "shipped": [
     {
      "t": 1794363088,
@@ -416,7 +328,7 @@
     }
    ],
    "shipped_n": 2,
-   "note": "from git: its branch against the release"
+   "note": "merged into the release"
   },
   {
    "id": "b10",
@@ -426,60 +338,10 @@
    "area": "quality",
    "live": true,
    "merged": false,
-   "ahead": 22,
-   "files": 37,
-   "folders": [
-    {
-     "name": "tests",
-     "n": 9
-    },
-    {
-     "name": "tools/web_public/datacity",
-     "n": 4
-    },
-    {
-     "name": "tools/web_public/kalshi",
-     "n": 4
-    },
-    {
-     "name": "tools/web_public/cities",
-     "n": 3
-    }
-   ],
-   "commits": [
-    {
-     "t": 1794376596,
-     "s": "QA_NIGHT Round 3: final numbers (datacity 193/194, kalshicity and nemesis open with the evidence)"
-    },
-    {
-     "t": 1794374448,
-     "s": "QA_NIGHT Round 3: before/after table and what is left"
-    },
-    {
-     "t": 1794373812,
-     "s": "Nemesis: a tap no longer lands on a jumped scene (the idle sway is folded in when a finger lands and restarts from 0),…"
-    },
-    {
-     "t": 1794373446,
-     "s": "Kalshi City: the live line stays one line (a clamp, not a cut); two lines made the card taller and pushed the sound chi…"
-    },
-    {
-     "t": 1794372804,
-     "s": "Restore research/handoff screenshots the test runs rewrote (they are not part of the fixes)"
-    },
-    {
-     "t": 1794372576,
-     "s": "Kalshi page: the section bar's glide lands the heading just under the bar where it really is after the glide (the page…"
-    },
-    {
-     "t": 1794372531,
-     "s": "Odeon test: its own accent is now AGORA gold (OWN_ACCENT), not the old blue"
-    },
-    {
-     "t": 1794365833,
-     "s": "Kalshi page: numbers are fitted again after the odometer splits the digits (the balance was cut while rolling at 430 px…"
-    }
-   ],
+   "ahead": 0,
+   "files": 0,
+   "folders": [],
+   "commits": [],
    "last_t": 1794376596,
    "shipped": [],
    "shipped_n": 0,

@@ -1,3 +1,10 @@
+---
+title: Kalshi edge, team B (structure and behaviour): NO EDGE FOUND
+family: kalshi
+date: 2026-11-10
+status: rejected - no edge found (structure and behaviour)
+---
+
 # Kalshi edge, team B (structure and behaviour): NO EDGE FOUND
 
 2026-11-10. Paper research only: no order, no key, no bot code touched. Scripts, data and results are in `research/kalshi_edge_B/`.

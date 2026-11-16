@@ -1,3 +1,10 @@
+---
+title: Kalshi edge, team K3 (arbitrage, economic releases, late resolution): NO EDGE FOUND
+family: kalshi
+date: 2026-11-13
+status: rejected - no edge found (arbitrage, economic releases, late resolution)
+---
+
 # Kalshi edge, team K3 (arbitrage, economic releases, late resolution): NO EDGE FOUND
 
 2026-11-13. Research only, paper only. Kalshi's public market-data API (no key, GET only, about 3-4 requests a second),

@@ -7,9 +7,9 @@ tool after adding a write-up. Every write-up's runs are in `research/runs/<id>.j
 |---|---:|
 | [Adopt-candidates (some are live now: see CLAUDE.md / STRATEGY.md)](#adopt-candidate) | 38 |
 | [Promising leads](#promising) | 19 |
-| [Findings](#finding) | 19 |
-| [Rejected](#rejected) | 44 |
-| [Reference / info](#info) | 38 |
+| [Findings](#finding) | 21 |
+| [Rejected](#rejected) | 49 |
+| [Reference / info](#info) | 31 |
 
 <a id="adopt-candidate"></a>
 ## Adopt-candidates (some are live now: see CLAUDE.md / STRATEGY.md)
@@ -85,6 +85,8 @@ tool after adding a write-up. Every write-up's runs are in `research/runs/<id>.j
 
 | Date | Write-up | Family | Verdict | Runs |
 |---|---|---|---|---:|
+| 2026-11-04 | [Money roadmap: the next 12 months (2026-11-04)](2026-11-04_money_roadmap.md) | product | finding - 12-month money roadmap for the three accounts (display only, nothing live changed)<br><sub></sub> | 0 |
+| 2026-11-04 | [Kalshi Edge v2: why it loses, and what (if anything) works](2026-11-04_kalshi_edges.md) | kalshi | finding - the Kalshi bot loses to the fee; suggestions only, the bot untouched<br><sub></sub> | 0 |
 | 2026-10-29 | [Mind - a thinking layer for Zlarior, ATLAS and BLITZ (similar-setup memory, regime and…](mind.md) | other | finding - read-only; similar-setup memory does NOT predict outcomes out of sample (shown as context only);…<br><sub>Owner (2026-10-29) - "Give it a brain that's very smart. Can think for itself." engine/mind.py remembers every historical setup of each bot (631 Zlarior, 1,129 ATLAS,…</sub> | 2 |
 | 2026-10-23 | [STOP-HUNT audit - trying to break the Asia resweep hunt and the trend inducement hunt](stophunt-audit.md) | other | finding<br><sub>An adversarial check of the two stop-hunt leads (stophunt.md) before anyone trusts them, 7 checks. The code is honest. An independent rewrite reproduces every trade…</sub> | 2 |
 | 2026-10-22 | [Second strategies on LIT's account - the PC route (built, OFF) and what the live rules…](second-route.md) | other | finding<br><sub>Owner's order (2026-10-22) - "add this to this account, I want the bot to search for both". The PC bot can now trade the second strategies (EMA London pullback, MACD…</sub> | 2 |
@@ -111,7 +113,12 @@ tool after adding a write-up. Every write-up's runs are in `research/runs/<id>.j
 | Date | Write-up | Family | Verdict | Runs |
 |---|---|---|---|---:|
 | 2026-11-15 | [LIT deep edge (2026-11-15) - why LIT loses, why Jul-Oct made less than Jan-Jun, the…](2026-11-15-lit-deep.md) | other | rejected - nothing adopted; the diagnosis says the losers have no shared structure and Jul-Oct is the…<br><sub>Owner 2026-11-15 "look deeper for edges". Past the S2 size tilts. (1) Every 2026 live LIT trade broken down by 44 setup facts (level swept, sweep depth, inducements,…</sub> | 9 |
+| 2026-11-13 | [Kalshi edge, team K3 (arbitrage, economic releases, late resolution): NO EDGE FOUND](kalshi-edge-K3-2026-11-13.md) | kalshi | rejected - no edge found (arbitrage, economic releases, late resolution)<br><sub></sub> | 0 |
+| 2026-11-13 | [Kalshi edges, team K1 (2026-11-13): NO EDGE FOUND](kalshi-edge-2026-11-13.md) | kalshi | rejected - no edge found (team K1)<br><sub></sub> | 0 |
 | 2026-11-13 | [Same edge, more markets (Team E3, 2026-11-13). LIT and ATLAS on ES (MES) and in other…](es-and-sessions-2026-11-13.md) | other | rejected (no adopt-candidate, no paper lead). LIT on ES loses in 2026 H1 and in 2025 even before costs;…<br><sub>Owner - "Find every edge in trading ... build bots that will make me money ... think like a millionaire." MFFU's 3 funded slots are full, so the money question is a…</sub> | 7 |
+| 2026-11-11 | [Kalshi edge, team C (weather, economics, daily index, other daily series): NO EDGE FOUND](kalshi_edge_C.md) | kalshi | rejected - no edge found (weather, economics, daily index, other daily series)<br><sub></sub> | 0 |
+| 2026-11-10 | [Kalshi edge, team B (structure and behaviour): NO EDGE FOUND](kalshi_edge_B.md) | kalshi | rejected - no edge found (structure and behaviour)<br><sub></sub> | 0 |
+| 2026-11-10 | [Kalshi edge, team A (calibration / base rate): NO EDGE FOUND](kalshi_edge_A.md) | kalshi | rejected - no edge found (calibration / base rate)<br><sub></sub> | 0 |
 | 2026-11-03 | [DAPHNE strategy-tree search (2026-11-03) - 1.13 million rule combinations on plain NQ…](2026-11-03-strategy-tree.md) | other | rejected (research lens, nothing adopted) - 31 of 80 best rules hold out of sample vs 25 and 28 when the…<br><sub>The owner's TikTok "it likes moves" tree, built our own way on real CME NQ1! bars. 80 root rules (prior-day, overnight, Asia, London and opening-range highs and lows;…</sub> | 2 |
 | 2026-11-03 | [PROMETHEUS - a genetic algorithm evolves the live LIT's ten knobs on 2026 H1; does…](2026-11-03-prometheus.md) | other | rejected - nothing to switch (every seed's champion loses money on 2026 H2 and 2021-25 against live LIT)<br><sub>A seeded genetic algorithm (24 creatures x 20 generations, 5 independent seeds, 1,875 distinct variants) evolved ten numeric knobs of the live LIT (live_model_lit.json…</sub> | 5 |
 | 2026-10-31 | [BLITZ in-day streak size (2026-10-31 evening) - size the day's next BLITZ trade by how…](blitz-streak-size-2026-10-31.md) | risk | rejected (no change, no switch) - the H1 pick, half size on the trade after a same-day BLITZ loss, adds $0 /…<br><sub>Eval size of the day's next BLITZ trade by the previous one's result (x m_loss after a same-day loss, x m_win after a win, on top of the later-break size; 7 cells, pick…</sub> | 2 |
@@ -191,13 +198,6 @@ tool after adding a write-up. Every write-up's runs are in `research/runs/<id>.j
 | 2026-10-18 | [LIT learning loop - how the bot learns from its losses, what it may change, and what it…](lit-learning-loop.md) | other | info<br><sub>Every finished LIT trade now goes into a journal (data/lit_journal.jsonl) with its 50 entry facts, the outcome, MFE/MAE and a loss cause code. Every Sunday a review…</sub> | 3 |
 | 2026-10-18 | [LIT launch audit - is anything missing for day trading? (2026-10-18)](lit-launch-audit.md) | other | info<br><sub>End-to-end launch check of the LIT bot before the 18:00 ET Sunday open. Real MFFU eval at 21:00 ET - go only after the five checks in section 0 (Sim101 round trip on…</sub> | 1 |
 | 2026-10-17 | [Stress tests of the locked strategy: costs, price feed, worst start, size rounding,…](stress-tests.md) | other | info<br><sub>The locked strategy survives 2-tick slippage or doubled commission (2021-25 still +$13-14k, PF 1.21-1.22) but 3 ticks plus doubled commission takes 58% of its 2021-25…</sub> | 9 |
-| - | [Kalshi edge, team C (weather, economics, daily index, other daily series): NO EDGE FOUND](kalshi_edge_C.md) | - | info<br><sub></sub> | 0 |
-| - | [Kalshi edge, team B (structure and behaviour): NO EDGE FOUND](kalshi_edge_B.md) | - | info<br><sub></sub> | 0 |
-| - | [Kalshi edge, team A (calibration / base rate): NO EDGE FOUND](kalshi_edge_A.md) | - | info<br><sub></sub> | 0 |
-| - | [Kalshi edge, team K3 (arbitrage, economic releases, late resolution): NO EDGE FOUND](kalshi-edge-K3-2026-11-13.md) | - | info<br><sub></sub> | 0 |
-| - | [Kalshi edges, team K1 (2026-11-13): NO EDGE FOUND](kalshi-edge-2026-11-13.md) | - | info<br><sub></sub> | 0 |
-| - | [Money roadmap: the next 12 months (2026-11-04)](2026-11-04_money_roadmap.md) | - | info<br><sub></sub> | 0 |
-| - | [Kalshi Edge v2: why it loses, and what (if anything) works](2026-11-04_kalshi_edges.md) | - | info<br><sub></sub> | 0 |
 
 ## LIT notes (research/lit)
 
