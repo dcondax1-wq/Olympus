@@ -1,6 +1,6 @@
 # STATE (read first in every chat, update at the end; owner's words in quotes)
 
-Updated 2026-11-16 night (teams B money, E prop plan).
+Updated 2026-11-16 night (teams A dashboard/Jarvis/Obsidian, B money, C bot alerts, E prop plan).
 
 ## Live
 | What | State |
@@ -13,6 +13,7 @@ Updated 2026-11-16 night (teams B money, E prop plan).
 | Phone dashboard | Netlify site moonlit-scone-08afe5 (private). Updates itself once the owner pastes a Netlify key at tonight's setup |
 
 ## Waiting on the owner
+- Obsidian (optional, 1 min on the PC): python tools/obsidian_sync.py --setup "C:\path\to\your\vault" (docs/OBSIDIAN_SYNC.md).
 - Tonight 19:00 ET: newest zip in Downloads -> SETUP_EVERYTHING.bat -> GitHub sign-in, Netlify key, YES + live phrase.
 - Kalshi pause sentence in the kalshi-server chat (if not done).
 - Yes/no: lock the PC bot page to his own devices (Tailscale only; anyone on home WiFi can reach Stop today).
@@ -25,6 +26,10 @@ Updated 2026-11-16 night (teams B money, E prop plan).
 - Money (2026-11-16 night B): the Business page is the ONE money place (every dollar, this week's money moves, payout planner, ready-to-upload tick lists, ideas, costs; docs/BUSINESS.md). New: 3 products (bundle $29, risk calculator $12, rules cheat sheet $7), 2 new models (AI training tasks, paid website tests). Plan (ESTIMATE): first payout ~late Dec ($1,200 LIT / $600 ATLAS to you), account #4 the day it is in the bank.
 
 ## Built, waiting for the PC
+- Obsidian living sync (tools/obsidian_sync.py, docs/OBSIDIAN_SYNC.md): the PC report writes <vault>/OLYMPUS/Sync every 15 min (bots' day, trades + pictures,
+  nightly learning, business checklist, STATE). Needs ONE line on the PC: python tools/obsidian_sync.py --setup "<vault folder>".
+- Jarvis: Classic Jarvis look back (violet HUD, opt-in: ⋯ → Look → Jarvis look, or say "classic Jarvis"); AGORA stays default. Jarvis, the Gate
+  and the hubs now all take the PC's ntfy report when newer (same drawdown / today's $ / age as NQ, Aegis, Zenith). Gate leads with Bots + Money.
 - Nightly self-learning loop is built (engine/learn_loop.py, research/learn_queue.json, docs/LEARN_LOOP.md): starts on the PC by itself after tonight; first cloud run rejected all 8 seed ideas.
 
 ## Prop money plan (team E, 2026-11-16; research/lab/payout_plan.json, Business page card)

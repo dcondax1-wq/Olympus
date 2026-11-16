@@ -25,6 +25,11 @@ briefs, three "what do I do now" pages, three risk views, three money plans, two
 
 ## The nine hubs
 
+**Home order since 2026-11-16 (night A, owner: "lead with money and the two bots"):** Bots & Evals (wide), My Money (wide), Today, Me, Plan & Day,
+Jarvis, Research, Kalshi (paused), Worlds (3D, for fun), Settings & Help (+ the Workshop: labs and test pages). Same order on the hub pages'
+"Other hubs" list (olympus/gate-catalog.js HUBS). Jarvis's top bar holds only the daily few (NQ, Aegis, Ledger, Business, Helios, Planner,
+Kalshi + the orb's favourites + added dashboards); every other app is under "All apps" (the orb).
+
 | Hub | The question it answers | Tabs (one per job) | Apps | Live line on the home tile |
 |---|---|---|---|---|
 | **Today** | What is happening, and what do I do now? | Do now · Morning brief · News and market | 15 | the trade window + my shift |

@@ -29,8 +29,8 @@ H = os.path.join(AK.WEB, "hub")
 CAT = os.path.join(AK.WEB, "olympus", "gate-catalog.js")
 HSJ = os.path.join(AK.WEB, "olympus", "hub-status.js")
 NAV = os.path.join(AK.WEB, "olympus", "gate-nav.js")
-HUBS = ["today", "me", "bots", "kalshi", "money", "plan", "research", "jarvis", "worlds", "settings"]     # + Me (2026-11-14, a page hub: tests/test_me_hub.py)
-NAMES = ["Today", "Me", "Bots & Evals", "Kalshi", "My Money", "Plan & Day", "Research", "Jarvis", "Worlds", "Settings & Help"]
+HUBS = ["bots", "money", "today", "me", "plan", "jarvis", "research", "kalshi", "worlds", "settings"]     # + Me (2026-11-14, a page hub: tests/test_me_hub.py)
+NAMES = ["Bots & Evals", "My Money", "Today", "Me", "Plan & Day", "Jarvis", "Research", "Kalshi", "Worlds", "Settings & Help"]
 NOW = "2026-11-12T15:00:00Z"            # Thursday 10:00 New York: the LIT window is open
 N_APPS = 84                              # 82 + Agency (2026-11-14) + Business (2026-11-15)
 NOW_S = int(datetime(2026, 11, 12, 15, 0, tzinfo=timezone.utc).timestamp())
@@ -55,7 +55,7 @@ def test_static():
           all(os.path.isfile(os.path.join(H, n)) for n in names) and os.path.isfile(HSJ) and os.path.isfile(os.path.join(AK.ROOT, "docs", "OLYMPUS_IA_V2.md")))
     html, js, css, hs, nav, cat = (AK.read(p) for p in (os.path.join(H, "index.html"), os.path.join(H, "hub.js"), os.path.join(H, "hub.css"), HSJ, NAV, CAT))
     order = ["../olympus/agora.css?v=a4", "hub.css?v=h3", "me.css?v=m2", "../olympus/themes.js?v=o6", "../olympus/gate-catalog.js?v=nv1", "../olympus/hub-status.js?v=h2",
-             '../olympus/gate-nav.js?v=g4" data-app="hub" defer', "me.js?v=m2", "hub.js?v=h3"]
+             '../olympus/gate-nav.js?v=g4" data-app="hub" defer', "me.js?v=m2", "hub.js?v=h4"]
     pos = [html.find(x) for x in order]
     check("a. the page loads agora.css, hub.css, me.css, the theme engine, the catalog, hub-status, gate-nav (data-app=hub, deferred), me.js (the Me hub) and hub.js, in that order, all in <head>",
           all(p >= 0 for p in pos) and pos == sorted(pos) and max(pos) < html.index("</head>"), dict(zip(order, pos)))
@@ -261,7 +261,8 @@ def test_page():
                     if shots and i == 0:
                         AK.shot(p, f"hub-{hid}")
                 t = AK.taps(p)
-                check(f"c. {name}: every tap >= 44 px, no sideways scroll, Jarvis's corner free, no console error, nothing off the origin",
+                off = [u for u in off if not u.startswith("https://ntfy.sh/")]     # night A sync: the PC feed (status_feed.json's public topic), like NQ / Aegis
+                check(f"c. {name}: every tap >= 44 px, no sideways scroll, Jarvis's corner free, no console error, nothing off the origin but the PC feed",
                       not t and AK.no_sideways(p) and not AK.corner(p) and not errs and not off, (t[:4], AK.corner(p), errs[:3], off[:2]))
                 ctx.close()
             want = {("/index.html" if a["path"] == "" else "/" + a["path"] + ("index.html" if a["path"].endswith("/") else "")) for a in apps.values()}

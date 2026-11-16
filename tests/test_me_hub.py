@@ -163,14 +163,14 @@ def test_static():
           and all(sel.strip().startswith(("@", "html", ".me-", "}")) or not sel.strip() for sel in re.findall(r"(?m)^([^{}\n]+)\{", re.sub(r"/\*.*?\*/", "", css, flags=re.S))))
     check("a. the hub page loads me.css after hub.css and me.js (deferred) before hub.js; a Me chip in the plain hub list",
           hub_html.index('href="hub.css?v=h3"') < hub_html.index('href="me.css?v=m2"') < hub_html.index("</head>")
-          and hub_html.index('<script src="me.js?v=m2" defer></script>') < hub_html.index('<script src="hub.js?v=h3" defer></script>') and 'data-hub="me" href="index.html?h=me"' in hub_html)
+          and hub_html.index('<script src="me.js?v=m2" defer></script>') < hub_html.index('<script src="hub.js?v=h4" defer></script>') and 'data-hub="me" href="index.html?h=me"' in hub_html)
     check("a. hub.js hands a PAGE hub (page: 'me') to OLYMPUS_ME_PAGE.mount (no tabs), with the Me icon",
           "if (H.page)" in hub_js and "MP.mount(panel, { base: base, now: nowS, hub: H, done:" in hub_js and "me: ['M20 6.5" in hub_js)
     check("a. the catalog: the hub 'me' (Me, its question, page 'me', 8 areas, no apps, legacy life for old themes), findHubs; the hub-status line meOf",
           "id: 'me', name: 'Me', q: 'How am I doing — money, health, home?'" in cat and "page: 'me'" in cat and "findHubs: findHubs" in cat
           and "function meOf(doc, t)" in hs and "case 'me':" in hs)
-    check("a. the home: the Me tile (wide, second, a plain link to hub/?h=me), its line from the private me/me.json, its size ('8 areas') and the search finds page hubs",
-          gate_html.index('data-hub="today"') < gate_html.index('class="g-hub g-wide" data-hub="me" data-to="hub/index.html?h=me"') < gate_html.index('data-hub="bots"')
+    check("a. the home: the Me tile (after Bots, Money and Today since night A 2026-11-16, a plain link to hub/?h=me), its line from the private me/me.json, its size ('8 areas') and the search finds page hubs",
+          gate_html.index('data-hub="today"') < gate_html.index('class="g-hub" data-hub="me" data-to="hub/index.html?h=me"') < gate_html.index('data-hub="plan"')
           and "getJSON(base + 'me/me.json')" in gate_js and "H.size || plural(H.count, 'app')" in gate_js and "C.findHubs ? C.findHubs(q) : []" in gate_js and "ME: X.ME" in gate_js)
     check("a. gate-nav: Go to shows a hub's size (the Me hub: its areas, not '0 apps') and loads the catalog ?v=me1", "h.size || (h.count + ' apps')" in nav and "gate-catalog.js?v=nv1" in nav)
     pr = AK.read(os.path.join(ROOT, "tools", "pc_report.py"))
@@ -700,9 +700,9 @@ def test_node():
         return
     O = json.loads(r.stdout)
     m = O["me"]
-    check("i. the catalog: hub 'me' (Me, 'How am I doing — money, health, home?'), second after Today, a page hub with 8 areas and no apps ('8 areas'), no tabs, legacy life, see Oikos / Planner / Argo",
+    check("i. the catalog: hub 'me' (Me, 'How am I doing — money, health, home?'), after Bots, Money and Today (night A 2026-11-16), a page hub with 8 areas and no apps ('8 areas'), no tabs, legacy life, see Oikos / Planner / Argo",
           m["name"] == "Me" and m["q"] == "How am I doing — money, health, home?" and m["page"] == "me" and m["count"] == 0 and m["size"] == "8 areas" and len(m["areas"]) == 8
-          and m["layout"] == [] and m["legacy"] == "life" and m["see"] == ["oikos", "planner", "argo"] and O["order"][:2] == ["today", "me"], m)
+          and m["layout"] == [] and m["legacy"] == "life" and m["see"] == ["oikos", "planner", "argo"] and O["order"][:4] == ["bots", "money", "today", "me"], m)
     check("i. the search finds the Me hub by its words (health, wifi, credit card, birthday, 'sleep steps'), never for Kalshi", O["find"] == [["me"], ["me"], ["me"], ["me"], [], ["me"]], O["find"])
     check("i. the home's Me line: the 3 first tiles in short words with the worst level; 3 days old = the age and warn; no file = a plain line, no number",
           O["line"]["text"] == " · ".join(t["short"] for t in doc["tiles"][:3]) and O["line"]["text"].endswith(" left · 7,000 steps · New device") and O["line"]["lvl"] == "warn" and O["lineOld"]["text"].endswith("(3 d ago)") and O["lineOld"]["lvl"] == "warn"
@@ -817,8 +817,8 @@ def test_page():
             p.wait_for_function("window.GATE && window.GATE.ready()", timeout=60000)
             p.wait_for_timeout(400)
             g = p.evaluate("() => { const t = document.querySelector('.g-hub[data-hub=me]'); return [t.className, t.querySelector('.g-hline').textContent, t.querySelector('.g-hcount').textContent, t.getAttribute('href')]; }")
-            check("j. the home: the Me tile (wide, second) reads '$... left · 7,000 steps · New device' from the PC's file, '8 areas', and opens hub/?h=me",
-                  "g-wide" in g[0] and g[1] == " · ".join(t["short"] for t in doc["tiles"][:3]) and g[2] == "8 areas" and g[3].endswith("hub/index.html?h=me"), g)
+            check("j. the home: the Me tile (fourth since night A 2026-11-16) reads '$... left · 7,000 steps · New device' from the PC's file, '8 areas', and opens hub/?h=me",
+                  "g-hub" in g[0] and g[1] == " · ".join(t["short"] for t in doc["tiles"][:3]) and g[2] == "8 areas" and g[3].endswith("hub/index.html?h=me"), g)
             p.fill("#q", "health")
             p.wait_for_timeout(200)
             first = p.evaluate("() => { const a = document.querySelector('#results a.g-row'); return a ? [a.dataset.hub, a.querySelector('b').textContent] : null; }")

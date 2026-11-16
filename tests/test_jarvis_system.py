@@ -286,9 +286,10 @@ def main() -> int:
           isinstance(mn["q0"], (int, float)) and mn["q0"] > 0 and mn["q1"] == 0 and mn["raw1"] == 0 and mn["mm"] == mn["stored"]["lit"] and set(mn["stored"]) == {"lit", "atlas"}
           and mn["facts"] == mn["stored"] and mn["same"] == 0, mn)
     k = O["kalshi"]
-    check("e. Kalshi not linked (404): one request per page load, then none; grey 'NOT LINKED' with the planned step; kalshiRetry() asks again",
-          k["first"] == 1 and k["after"] == 0 and k["state"] == "waiting" and k["backedOff"] and k["row"]["value"] == "NOT LINKED" and k["row"]["level"] == ""
-          and "planned" in k["row"]["text"] and k["retry"] == 1, k)
+    # since 8e61ac1 the same-origin ../kalshi.json is asked first and GitHub raw second: one try per page load = at most 2 requests
+    check("e. Kalshi not linked (404): one try per page load (same-origin, then GitHub), then none; grey 'NOT LINKED' with the planned step; kalshiRetry() asks again",
+          1 <= k["first"] <= 2 and k["after"] == 0 and k["state"] == "waiting" and k["backedOff"] and k["row"]["value"] == "NOT LINKED" and k["row"]["level"] == ""
+          and "planned" in k["row"]["text"] and 1 <= k["retry"] <= 2, k)
     p0, p1 = O["planner0"], O["planner1"]
     check("f. the Planner not linked on this phone: one clear grey line (NOT LINKED, open it once), no error", p0["day"] is None and p0["row"]["value"] == "NOT LINKED"
           and p0["row"]["level"] == "" and "open the Planner once on this phone" in p0["row"]["text"] and not p0["linked"], p0)

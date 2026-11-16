@@ -5,6 +5,12 @@ phone Jarvis (tools/web_public/jarvis/) follows it: the Reactor/Eclipse violet H
 core (core-visual.js, ported from the old reactor scene), the HUD panels, the command bar and the ⋯ menu. PC-only features
 (wake word, double clap, look at my screen, CPU/RAM gauges, the kill switch, mail) are left out on the phone.
 
+**Night A 2026-11-16 ("bring back our Jarvis we had"):** the violet HUD is back as an opt-in look, **Classic Jarvis**: ⋯ → Look →
+Jarvis look → Classic Jarvis, or say "classic Jarvis" / "bring back the old Jarvis" ("agora look" switches back). Black + Eclipse violet
+`#a855f7 / #7c3aed / #c084fc`, Orbitron titles, Rajdhani text, glowing capital labels, the violet core (the sheet's --c colours). Its own sheet
+`tools/web_public/jarvis/classic.css`, loaded only when picked (`localStorage 'jarvis.look' = 'classic'`), so AGORA stays the default and
+byte-identical. Picking any OLYMPUS theme turns Classic off.
+
 ---
 
 

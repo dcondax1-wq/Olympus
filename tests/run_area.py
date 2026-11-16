@@ -32,7 +32,7 @@ CPUS = os.cpu_count() or 1
 # the area map (CLAUDE_REFERENCE "One chat": the tests to run per thing); fast and node-only suites first, the slow browser ones last
 AREAS = {
     "jarvis": ["jarvis_system", "jarvis_assistant", "jarvis_obsidian", "jarvis_modes", "jarvis_brain", "jarvis_tools", "jarvis_apps", "jarvis_core",
-               "jarvis_voice", "jarvis_talk", "jarvis_bots", "jarvis_engines", "jarvis_transitions", "jarvis_home", "jarvis_hub", "phone_e2e"],
+               "jarvis_voice", "jarvis_talk", "jarvis_bots", "jarvis_engines", "jarvis_transitions", "sync_truth", "jarvis_classic", "jarvis_home", "jarvis_hub", "phone_e2e"],
     "olympus": ["olympus_sfx", "sfx_engine", "sfx_lab", "olympus_fx", "olympus_kit", "olympus_render", "olympus_themes", "app_intro", "oracle_page", "odeon_page", "fates", "arena",
                 "argus_page", "ares_page", "athena_page", "chronos_page", "forum_page", "hephaestus_page", "hermes", "labyrinth_page", "nemesis_page",
                 "plutus_page", "prometheus", "tyche_page", "pantheon", "mind_page", "datacity"],
@@ -41,7 +41,7 @@ AREAS = {
     "cities": ["cities_page", "kalshicity_page", "datacity"],
     "nq": ["lit_live", "no_yahoo", "risk_invariants", "mffu_rules", "guards", "sizing_caps", "second", "eval_lifecycle", "live_board", "live_publish", "heartbeat",
            "lit_scale_in", "lit_learn", "learn_loop"],
-    "pc": ["autoupdate_source", "autorun", "update_from_zip", "pc_publish", "public_build_privacy", "bots_back", "report_keeper", "setup_everything", "calendar_sync", "me_hub", "live_link", "roll_now", "pc_guard", "launch_kit", "second_backup", "clean_pc", "clean_storage", "lite", "win_scripts", "fresh_start", "pc_health", "pc_selftest", "pc_silent", "pc_command_center", "one_time_setup"],
+    "pc": ["autoupdate_source", "obsidian_sync", "autorun", "update_from_zip", "pc_publish", "public_build_privacy", "bots_back", "report_keeper", "setup_everything", "calendar_sync", "me_hub", "live_link", "roll_now", "pc_guard", "launch_kit", "second_backup", "clean_pc", "clean_storage", "lite", "win_scripts", "fresh_start", "pc_health", "pc_selftest", "pc_silent", "pc_command_center", "one_time_setup"],
     "agency": ["agency", "agency_billing", "cold_calls", "agency_storefront", "agency_upsells", "biz_models"],
     "privacy": ["public_build_privacy", "private_link", "repo_secrets"],       # team Q2 2026-11-14, docs/PRIVACY.md
     "money": ["money_machines", "digital_products", "money_door", "payout_plan"],

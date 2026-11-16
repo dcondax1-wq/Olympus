@@ -2,6 +2,9 @@
 
 Jarvis reads your Obsidian vault, answers from it and adds to it (only after you say yes). Free. Phone first.
 
+**New (2026-11-16): the PC writes into the vault by itself** every 15 minutes: the bots' day, each trade with its picture, the nightly
+learning, your business checklist and STATE, in `OLYMPUS/Sync/` (one setup line: docs/OBSIDIAN_SYNC.md).
+
 ## Set it up (once, about 5 minutes)
 
 First, in Obsidian: Settings → Community plugins → Browse → install **Git** and turn it on.

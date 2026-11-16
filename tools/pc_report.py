@@ -1067,6 +1067,13 @@ def main(argv=None) -> int:
             _ll.maybe_run(say=(lambda *_: None) if a.quiet else print)
         except Exception:
             pass
+        # Obsidian living sync (tools/obsidian_sync.py, docs/OBSIDIAN_SYNC.md): the bots' day, trades + pictures, research, business,
+        # STATE into <vault>/OLYMPUS/Sync, only once you set a vault (data/obsidian_sync.json); at most every 10 min; soft
+        try:
+            from tools import obsidian_sync as _obs
+            _obs.maybe_run(say=(lambda *_: None) if a.quiet else print)
+        except Exception:
+            pass
     return 0
 
 
