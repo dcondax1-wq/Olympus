@@ -20,7 +20,8 @@ test('Arena citadel has deterministic full and LITE districts and disposes clean
   assert.ok(arcs.instanceMatrix.array.every(Number.isFinite));
   assert.ok(arcs.geometry.index.count / 3 * arcs.count <= 432, 'bounded skybridge triangles');
   assert.ok(routes.instanceMatrix.array.every(Number.isFinite));
-  assert.equal(routes.geometry.index.count / 3 * routes.count, 1344, 'bounded route triangle budget');
+  // a street is its top face since 2026-11-16 (2 triangles, was a 12-triangle box 0.045 high): the budget is now 112 x 2
+  assert.equal(routes.geometry.index.count / 3 * routes.count, 224, 'bounded route triangle budget');
   const towers = group.children.find((x) => x.isInstancedMesh && x.count === 176 && x.instanceColor);
   assert.ok(towers);
   for (let i = 0; i < 176; i++) if (i % 3 === 2) {
