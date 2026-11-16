@@ -1,6 +1,6 @@
 # STATE (read first in every chat, update at the end; owner's words in quotes)
 
-Updated 2026-11-15 ~23:45 ET (night teams A-E merged).
+Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7; bot checks green: lit_live --quick OK, NT selftest OK, ATLAS 47/47).
 
 ## Live
 | What | State |
@@ -53,6 +53,11 @@ Updated 2026-11-15 ~23:45 ET (night teams A-E merged).
   missing 6 files + 3 version bumps (lead's file), and test_lit_oif 117/120 = a real finding (the research 1m cleaner drops genuine
   windows on 2026-03-23 / 05-05 that the live feed sees: live would enter differently there; changing it changes the backtest, so
   it needs a proper strategy check). After adding research runs / write-ups: `python tools/refresh_indexes.py`.
+
+- Night W2 (2026-11-16): phone e2e 268/268, olympus_kit perf budgets green (phone Oracle city sparser), Jarvis worker v45,
+  test_jarvis_apps 95/95. Still red, old: cities_page 6, datacity phone overview 67 vs 60 calls, oracle_page dead-export check
+  vs ?v= imports, planner .oly-home 36 px, test_jarvis_hub 260/262 (intro timing, same on 321db96). Netlify phone site ships
+  the AGORA Planner without a worker (blank offline inside Jarvis; GitHub Pages site fine) - not fixed.
 
 ## How to work cheaply
 python tests/smoke.py (2 min) -> touched area's tests -> python tools/ship.py. At most 2-3 helpers. No new apps unless they make money.
