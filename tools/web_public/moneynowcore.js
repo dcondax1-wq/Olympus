@@ -136,7 +136,11 @@
     const go = typeof o.go === 'function' ? o.go : (p) => (where === 'pc' ? `data-goto="${p}"` : `data-go="${p}"`);
     let txt = mo.bot.text;
     if (mo.age != null && !/check-in|weekend|stopped|quiet/.test(txt) && mo.bot.edge === 'good') txt += ` · checked in ${ago(mo.age, M && M.now)}`;
-    const on = mo.rows.filter((r) => r.have && (/^Armed/.test(r.status.text) || /^In a trade/.test(r.status.text))).map((r) => r.name);
+    // armed = the account trades for real (the board's badge LIVE: armed with the live phrase) or has a setup armed / a trade open.
+    // Was: only a setup waiting counted, so a LIVE ARMED bot with no pending setup showed "Nothing armed" (owner screenshot 2026-11-16)
+    const B = obj(obj(M).board);
+    const liveArmed = (r) => mo.bot.edge !== 'bad' && /LIVE|REAL/i.test(String(obj(B[r.key]).badge || ''));
+    const on = mo.rows.filter((r) => r.have && (liveArmed(r) || /^Armed/.test(r.status.text) || /^In a trade/.test(r.status.text))).map((r) => r.name);
     const arm = on.length ? `Armed: ${on.join(', ')}` : (mo.rows.some((r) => r.have) ? 'Nothing armed' : `Armed: ${NP}`);
     return `<a class="mn-line ${cls(mo.bot.edge)}" ${go(where === 'pc' ? 'cc' : 'lit')} role="link" tabindex="0" data-mnline="1"><i class="mn-dot" aria-hidden="true"></i><b>${esc(txt)}</b><span>${esc(arm)}</span></a>`;
   }

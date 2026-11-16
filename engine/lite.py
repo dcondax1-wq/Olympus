@@ -158,7 +158,8 @@ def write(on: bool, path: str | None = None, hist_days: int | None = None) -> di
     tmp = p + ".tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(cur, fh, indent=1)
-    os.replace(tmp, p)
+    from .fsutil import replace as _rep         # retried: a Windows / OneDrive lock (tests.test_selfheal)
+    _rep(tmp, p)
     return cur
 
 
