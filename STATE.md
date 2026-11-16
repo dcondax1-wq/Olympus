@@ -46,6 +46,12 @@ Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7;
   ATLAS's own funded accounts against MFFU's limits; `--held <plan>=0` when one ended. MFFU copy trading: allowed (help center).
 
 ## Recent findings (don't redo)
+- Builder levers (2026-11-16, `builder-levers-2026-11-16.md`, `tools/money/builder_levers.py --z-room --z-togo --a-room --a-togo`):
+  a FRESH Builder 50K now next to Zlarior's hole (both trade, first pass kept) = first payout 53/50 -> 46.5/44 sessions
+  (~Feb 1 -> ~Jan 20), +$38/+$45 a month after the $91.80; pays whenever room < ~$1,200. ATLAS + fresh 25K ($43): 35/56 -> 31/47.
+  With ATLAS $500 on the funded 50K too: ~Jan 4. Rescue sizes (bigger/smaller) rejected (18-30% 2-week fails / slower).
+  2nd Builder 25K: LIT eval then + ATLAS $250 funded = $553/$456 vs LIT copy $346/$298, 1st payout 33/34 vs 45/44.
+  Payout ask $500/$1,000/$2,000/cycle-timed and a best-day day stop: no gain in both halves (keep ask $1,500). Owner yes/no.
 - Stack on ONE account (2026-11-16, `stack-one-account-2026-11-16.md`, `tools/money/stack_one_account.py`): Builder 50K, LIT eval then
   LIT + ATLAS $500 once funded: first payout 26/23.5 -> 17/15 sessions, account $779/$753 -> $1,202/$1,205 a month (H1/H2), 2021-25 ~$0.
   ATLAS in the eval too: faster pass but more 2-week fails (2021-25 20% vs 0.6%) = rejected. Rapid EOD + ATLAS: eval 40 -> 22 sessions
