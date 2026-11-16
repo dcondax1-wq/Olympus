@@ -245,6 +245,23 @@ def overlay(src, base):
         n += len(os.listdir(os.path.join(base, "money"))) if os.path.isdir(os.path.join(base, "money")) else 0
     except Exception as e:  # noqa: BLE001
         note(f"(money/: the build's sample copy could not be made: {e})")
+    # kalshicity/scan.json + forward.json: the Kalshi City workflow publishes them next to the site (.github/workflows/kalshicity.yml,
+    # tools/kalshi_scan.py / kalshi_forward.py); made here the same way from the stub feed (the cached clone predates them)
+    kc = os.path.join(base, "kalshicity")
+    if os.path.isdir(kc):
+        try:
+            with tempfile.TemporaryDirectory() as ktmp:
+                feed = os.path.join(ktmp, "kalshi.json")
+                with open(feed, "w", encoding="utf-8") as fh:
+                    json.dump(kalshi_json(), fh)
+                for tool, name in (("kalshi_scan.py", "scan.json"), ("kalshi_forward.py", "forward.json")):
+                    for f in os.listdir(kc):                      # own copies: never write through a link into the cache
+                        if f.startswith(name.split(".")[0]) and os.path.isfile(os.path.join(kc, f)):
+                            os.unlink(os.path.join(kc, f))
+                    subprocess.run([sys.executable, os.path.join(src, "tools", tool), "--feed", feed, "--out", os.path.join(kc, name)],
+                                   capture_output=True, text=True, timeout=120, cwd=src)
+        except Exception as e:  # noqa: BLE001
+            note(f"(kalshicity/: scan / forward could not be made: {e})")
     icons = os.path.join(src, "web", "icons")
     for name in ("icon-192.png", "icon-512.png", "icon-maskable-512.png", "apple-touch-icon.png", "icon.svg"):
         if os.path.exists(os.path.join(icons, name)):
@@ -698,7 +715,7 @@ class Phone:
 
     def since(self, m, allow=()):
         errs = [e for e in self.errs[m[0]:] if not any(re.search(a, e[1] + " " + e[2]) for a in allow)]
-        bad = [b for b in self.bad[m[1]:] if not any(re.search(a, str(b[1]) + " " + str(b[0])) for a in allow)]
+        bad = [b for b in self.bad[m[1]:] if not any(re.search(a, str(b[1]) + " " + str(b[0]) + " " + str(b[2])) for a in allow)]
         return errs, bad
 
     def close(self):
@@ -1122,7 +1139,7 @@ def clear_http_cache(phone, p):
 
 # the OLYMPUS apps' live cards (Jarvis's apps.js, 2026-11-03): a jarvis.json request ends aborted when the page moves on (the
 # junk run reopens Jarvis every second) or after its 5 s limit (the slow network); by design, never a failure. A 404 still is.
-STATUS_ABORTED = r"/jarvis\.json\?jt=\d+ failed$"
+STATUS_ABORTED = r"/jarvis\.json\?jt=\d+ failed( |$)"
 
 
 def no_errors(phone, m, label, allow=()):
@@ -1391,7 +1408,9 @@ def part_c(br, S, base, ph):
             go_home(p)
         except Exception:
             pass
-    no_errors(ph, m, "switching Jarvis / Zenith / Planner / Kalshi")
+    # Zenith's 8.7 MB data.json still on its way when the test lets Zenith go (its frame removed: "one dashboard alive") is cancelled
+    # by the browser (net::ERR_ABORTED): that is the switch working, not a failed request
+    no_errors(ph, m, "switching Jarvis / Zenith / Planner / Kalshi", allow=(r"/data\.json failed net::ERR_ABORTED",))
     return p
 
 
