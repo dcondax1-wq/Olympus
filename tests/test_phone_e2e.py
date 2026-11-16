@@ -1409,9 +1409,10 @@ def part_c(br, S, base, ph):
             go_home(p)
         except Exception:
             pass
-    # Zenith's 8.7 MB data.json still on its way when the test lets Zenith go (its frame removed: "one dashboard alive") is cancelled
-    # by the browser (net::ERR_ABORTED): that is the switch working, not a failed request
-    no_errors(ph, m, "switching Jarvis / Zenith / Planner / Kalshi", allow=(r"/data\.json failed net::ERR_ABORTED",))
+    # a dashboard let go here (its frame removed: "one dashboard alive") has its requests still on their way cancelled by the browser
+    # (net::ERR_ABORTED: Zenith's 8.7 MB data.json, Kalshi's HEAD check of ../kalshicity/): that is the switch working, not a
+    # failed request; a 404 or a dropped connection still fails
+    no_errors(ph, m, "switching Jarvis / Zenith / Planner / Kalshi", allow=(r" failed net::ERR_ABORTED$",))
     return p
 
 
