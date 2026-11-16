@@ -39,14 +39,34 @@ python -X utf8 -m engine.fleet --add --id b25a --lead zlarior --plan mffu_builde
 
 Account #4 (the LucidPro 50K, when to buy it and the 3 steps): `docs/ACCOUNT_4.md`.
 
+## A second MFFU 50K (re-read 2026-11-16)
+
+MFFU's help center: copying between **your own** MFFU accounts is allowed, but MFFU funds only **one Builder 50K per
+person** at a time (2 Builder 25K; at most 5 sim-funded accounts in all). So a second Builder 50K can run and pass its eval
+next to Zlarior, but MFFU will not fund it while Zlarior's funded Builder 50K is active. It only pays once Zlarior's funded
+account has ended (lost, or moved to live after 5 payouts). For more money now, the next account is a LucidPro 50K (`docs/ACCOUNT_4.md`).
+
+The one line (Sim Name first; a real Name is saved NOT armed):
+
+```
+python -X utf8 -m engine.fleet --add --id mffu50b --lead zlarior --plan mffu_builder_50k --account "<Name>" --start today
+```
+
+The bot then counts Zlarior's own funded account: `--to-funded mffu50b` is refused while Zlarior holds the funded 50K. When
+it has ended: `python -X utf8 -m engine.fleet --held mffu_builder_50k=0`, then `--to-funded`. Tested on Sim:
+`python -X utf8 -m tests.test_fleet_mffu`. The payout plan (when to buy #3, #4 from the payouts): the Business page,
+`python -X utf8 tools/money/payout_plan.py`.
+
 See a profile: `python -X utf8 -m engine.copy_accounts --show mffu_builder_50k` (`--stage funded`).
 What is still missing: `python -X utf8 -m engine.copy_accounts --unfilled`.
 
 ## Honest limits
 
-- MFFU has not confirmed in writing that copying between your own accounts is allowed: ask support first.
+- MFFU's help center (read through web search 2026-11-16) allows copy trading across your own MFFU accounts; MFFU gives no
+  help or reset for a copier mistake. A one-line written yes from support is still the safest record.
 - Lucid allows bots and trade copiers in its help center; it bans opposite positions across your accounts AND other
   firms' accounts (the bot never does that).
-- How many funded accounts MFFU allows in total is not verified (per plan: 1 Builder 50K, 2 Builder 25K).
+- MFFU funded accounts: 1 Builder 50K, 2 Builder 25K, 5 in all (3 once you hold a 100K / 150K). The Builder page's headline
+  says "one active Builder account per user": a conflict with the 25K table, ask support before a second funded 25K.
 - Copies are tested on replays and Sim, not yet on a real second account.
 - Long on one account and short on another is never allowed (MFFU rule across all your accounts).

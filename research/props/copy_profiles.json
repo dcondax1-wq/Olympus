@@ -61,8 +61,8 @@
  },
  "accounts": {
   "mffu": {
-   "max_funded_total": {"v": null, "verified": false, "date": "2026-11-13", "src": ["research/writeups/uprisk.md", "research/props/firm_rules.json plans.mffu_builder_*.funded.max_active"], "n": "per plan verified: 1 funded Builder 50K + 2 funded Builder 25K (enforced through max_active); one help article says up to 5 sim-funded in all: ask support before a 4th"},
-   "max_eval_active": {"v": null, "verified": false, "date": "2026-11-13", "n": "not found"}
+   "max_funded_total": {"v": 5, "verified": true, "date": "2026-11-16", "src": ["https://help.myfundedfutures.com/en/articles/11802636-traders-evaluation-simplified"], "n": "up to 5 active sim-funded accounts at once while you hold only 25K / 50K sizes (any mix); 3 in all once any 100K / 150K is held. Per plan on top: 1 funded Builder 50K, 2 funded Builder 25K (max_active)"},
+   "max_eval_active": {"v": null, "verified": false, "date": "2026-11-16", "n": "third-party pages say 10 open evaluations; not found on MFFU's own pages"}
   },
   "lucid": {
    "max_funded_total": {"v": 5, "verified": true, "date": "2026-11-14", "src": ["https://support.lucidtrading.com/en/articles/11404617-maximum-number-of-accounts"], "n": "up to 5 active funded accounts per household across every Lucid product (3 LucidDirect = 2 LucidPro), up to 10 active evals, at most 10 eval + funded together"},

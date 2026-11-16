@@ -44,7 +44,8 @@ AREAS = {
     "pc": ["autoupdate_source", "autorun", "update_from_zip", "pc_publish", "public_build_privacy", "bots_back", "setup_everything", "calendar_sync", "me_hub", "live_link", "roll_now", "pc_guard", "launch_kit", "second_backup", "clean_pc", "clean_storage", "lite", "win_scripts", "fresh_start", "pc_health", "pc_selftest", "pc_silent", "pc_command_center", "one_time_setup"],
     "agency": ["agency", "agency_billing", "cold_calls", "agency_storefront", "agency_upsells", "biz_models"],
     "privacy": ["public_build_privacy", "private_link", "repo_secrets"],       # team Q2 2026-11-14, docs/PRIVACY.md
-    "money": ["money_machines", "digital_products", "money_door"],
+    "money": ["money_machines", "digital_products", "money_door", "payout_plan"],
+    "fleet": ["fleet_mffu", "copy_accounts", "firms", "fleet"],                 # team E 2026-11-16: copy accounts + firm rules
 }
 SLOW = {"jarvis_hub", "phone_e2e", "olympus_kit", "olympus_themes", "olympus_render", "zenith_mode", "ui_polish", "datacity", "jarvis_home"}
 

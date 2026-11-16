@@ -1,6 +1,6 @@
 # STATE (read first in every chat, update at the end; owner's words in quotes)
 
-Updated 2026-11-15 ~16:30 ET (money lines 2026-11-16 night B).
+Updated 2026-11-16 night (teams B money, E prop plan).
 
 ## Live
 | What | State |
@@ -17,12 +17,23 @@ Updated 2026-11-15 ~16:30 ET (money lines 2026-11-16 night B).
 - Kalshi pause sentence in the kalshi-server chat (if not done).
 - Yes/no: lock the PC bot page to his own devices (Tailscale only; anyone on home WiFi can reach Stop today).
 - Yes/no: delete ~7 GB of old test leftovers in the container (python tools/disk_clean.py --apply; blocked for Claude by the safety check).
-- Account #4: buy after the first MFFU payout (docs/ACCOUNT_4.md; another MFFU 50K = easiest, LucidPro 50K = second firm).
+- Next account: a LucidPro 50K copy of Zlarior, bought from the first payout (docs/ACCOUNT_4.md). NOT a second MFFU 50K:
+  MFFU funds only one Builder 50K a person (help center, re-read 2026-11-16). Then one more Lucid copy per payout (plan below).
+- Ask MFFU support once (one line, in writing): "Builder page says one active Builder account per user: can I hold a funded
+  Builder 50K and a funded Builder 25K at once?" (Zlarior + ATLAS both funded depends on it).
 - Business: fill agency/config.json (name, city, phone, address), then AGENCY_DAY.bat; list the 8 products, the 4 trading ones first (docs/BUSINESS_LISTING_KIT.md). $0 earned so far.
 - Money (2026-11-16 night B): the Business page is the ONE money place (every dollar, this week's money moves, payout planner, ready-to-upload tick lists, ideas, costs; docs/BUSINESS.md). New: 3 products (bundle $29, risk calculator $12, rules cheat sheet $7), 2 new models (AI training tasks, paid website tests). Plan (ESTIMATE): first payout ~late Dec ($1,200 LIT / $600 ATLAS to you), account #4 the day it is in the bank.
 
 ## Built, waiting for the PC
 - Nightly self-learning loop is built (engine/learn_loop.py, research/learn_queue.json, docs/LEARN_LOOP.md): starts on the PC by itself after tonight; first cloud run rejected all 8 seed ideas.
+
+## Prop money plan (team E, 2026-11-16; research/lab/payout_plan.json, Business page card)
+- H2 replay, $ to the owner after fees: 2 accounts $1,050/mo year 1 ($1,200 months 7-12), 3 $1,630 ($2,130), 4 $2,100
+  ($2,980), 6 $2,780 ($4,290). Worst month = fees only (-$227 to -$446). About 4 months in 10 still pay $0 even at 6
+  accounts (one signal, correlation ~0.94). 2021-25 (no edge): about $0. Zlarior: pass about Dec 8, first payout about
+  Jan 29 ($1,600 to him), #3 about Feb 3, #4 Mar 24, #5 Apr 29, #6 May 21.
+- Fleet: `--plan mffu_builder_50k` copy is one command and Sim-tested (tests.test_fleet_mffu); the guards count Zlarior's /
+  ATLAS's own funded accounts against MFFU's limits; `--held <plan>=0` when one ended. MFFU copy trading: allowed (help center).
 
 ## Recent findings (don't redo)
 - LIT: no new edge (S2 sizing tilts, E-LIT 16 skip rules + missed setups). H2 weaker = lower VIX + wider stops, not a broken edge.

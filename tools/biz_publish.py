@@ -239,6 +239,47 @@ def moves(tr: dict, models: list, rd: list) -> list:
     return out[:7]
 
 
+PROP_PLAN = os.path.join(ROOT, "research", "lab", "payout_plan.json")     # tools/money/payout_plan.py (team E, 2026-11-16)
+PROP_SPAN = "H2"                                                           # quote the check half (Jul-Oct 2026)
+
+
+def prop_plan(sample: bool = False, path: str | None = None) -> dict | None:
+    """The prop accounts' payout plan (tools/money/payout_plan.py): $ a month at 2 / 3 / 4 / 6 accounts, the worst month, when
+    Zlarior can pass and pay, when to buy #3, #4 ... from the payouts. sample (the committed, public fixture) = the research
+    table only: no eval state, no dates (those stay in the PC's own business.json, which the public build removes)."""
+    d = _read(path or PROP_PLAN)
+    if not isinstance(d, dict) or PROP_SPAN not in (d.get("spans") or {}):
+        return None
+    sp = d["spans"][PROP_SPAN]
+    ref = (d["spans"].get("REF") or {}).get("plans") or {}
+    rows = []
+    for n, p in sorted((sp.get("plans") or {}).items(), key=lambda x: int(x[0])):
+        rows.append({"accounts": int(n), "usd_month_y1": p.get("usd_month_y1"), "usd_month_m7_12": p.get("usd_month_m7_12"),
+                     "month_worst": p.get("month_worst"), "months_no_income_pct": p.get("months_no_income_m7_12_pct"),
+                     "y1_p10": p.get("y1_p10"), "ref_usd_month": (ref.get(n) or {}).get("usd_month_y1")})
+    na = d.get("new_account") or {}
+    out = {"label": "ESTIMATE", "span": "Jul-Oct 2026 replay (the check half)", "source": "tools/money/payout_plan.py -> research/lab/payout_plan.json",
+           "table": rows, "new_account": {"plan": na.get("plan"), "price": na.get("price")},
+           "rules": ["Buy the next account only from a payout that reached your bank: one new account per payout, and only when "
+                     "the payout money holds two of its price (one to buy, one kept for a re-buy).",
+                     "MFFU funds only ONE Builder 50K a person: account #3 and up are LucidPro 50K copies of Zlarior (Lucid allows 5 funded).",
+                     "Stop rule: at most 2 re-buys from your own pocket ($183.60); past that stop and rethink.",
+                     "Prop money: you can lose only the fees, never more; a bad week inside an account is the firm's money."],
+           "notes": ["Every account copies the SAME Zlarior signal (daily correlation about 0.94): a bad week hits all of them at once, "
+                     "so more accounts multiply the good months AND the empty ones.",
+                     "Backtest of 2026 (where LIT works); on 2021-25 (no edge) the same plan makes about $0 a month. Nothing is promised.",
+                     "ATLAS's $ is the stored research estimate (a different bot), added from month 3."]}
+    if not sample:
+        z = sp.get("zlarior") or {}
+        six = (sp.get("plans") or {}).get("6") or {}
+        out["state"] = {"zlarior": d.get("zlarior_state"), "atlas": {k: (d.get("atlas") or {}).get(k) for k in ("room", "to_go", "plan", "asof")}}
+        out["zlarior"] = {k: z.get(k) for k in ("pass_10", "fail_10", "pass_earliest", "pass_median", "first_payout_earliest",
+                                                "first_payout_median", "first_payout_in_bank_median", "first_payout_usd_median")}
+        out["buy"] = [{"n": k, **v} for k, v in (six.get("buy") or {}).items()]
+        out["built"] = d.get("built")
+    return out
+
+
 def build(sample: bool = False, now: dt.datetime | None = None) -> dict:
     now = now or dt.datetime.now(dt.timezone.utc)
     st = {} if sample else local_state()
@@ -257,7 +298,7 @@ def build(sample: bool = False, now: dt.datetime | None = None) -> dict:
     return extra | {"v": 1, "kind": "business", "asof": now.isoformat(timespec="seconds"), "label": "ESTIMATE", "sample": sample, "demo": sample,
             "note": "EXAMPLE, not real: the plan with no progress from the PC yet (DEMO)." if sample else "Your PC's progress; $ ranges are estimates from the teams' docs.",
             "total": tot, "models": models, "progress": {k: v for k, v in st.items() if k != "agency_placeholders"} if st else {},
-            "prices": prices(), "week": WEEK, "rules": RULES}
+            "prices": prices(), "week": WEEK, "rules": RULES, **({"prop": pp} if (pp := prop_plan(sample)) else {})}
 
 
 def write(doc: dict, path: str | None = None) -> str:

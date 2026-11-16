@@ -194,11 +194,111 @@ def firm_limits(firm_id: str) -> dict:
     return out
 
 
+LEAD_PLAN = {"builder25k": "mffu_builder_25k", "builder50k": "mffu_builder_50k"}   # the leads' own plans (account_b / c names)
+ZLARIOR_PLAN = "mffu_builder_50k"           # Zlarior trades its own MFFU Builder 50K (CLAUDE.md)
+
+
+def _plan_id(x) -> str | None:
+    s = str(x or "").strip().lower()
+    if not s:
+        return None
+    return LEAD_PLAN.get(s.replace(" ", "").replace("_", ""), s if "_" in s else None)
+
+
+def lead_held(bot) -> dict:
+    """The funded accounts the owner's own bots hold OUTSIDE the fleet, by plan (2026-11-16, team E): Zlarior's account in
+    LIT's funded mode (MFFU Builder 50K), ATLAS / BLITZ in their funded stage (their plan), the extra accounts in mode
+    funded. MFFU allows ONE funded Builder 50K per person (help center, re-read 2026-11-16): a funded follower on that plan
+    must count Zlarior's own funded account. {plan id: n}; nothing known = {}."""
+    out: dict = {}
+
+    def add(plan):
+        if plan:
+            out[plan] = out.get(plan, 0) + 1
+    try:
+        ls = getattr(bot, "_lit_sizing", None) or {}
+        cfg = getattr(bot, "cfg", None) or {}
+        if str((cfg.get("lit_sizing") or {}).get("mode") or ls.get("mode") or "").lower() == "funded":
+            add(_plan_id(cfg.get("lit_plan")) or ZLARIOR_PLAN)
+        for key in ("acct_b", "acct_c"):
+            o = getattr(bot, key, None)
+            sp = getattr(o, "spec", None) or {}
+            if o is not None and str(sp.get("stage") or "").lower() == "funded":
+                add(_plan_id(sp.get("plan")))
+        for a in list(getattr(getattr(bot, "accts", None), "accounts", None) or []):
+            if getattr(a, "mode", None) == "funded":
+                add(_plan_id((a.spec or {}).get("plan_id") or (a.spec or {}).get("preset")))
+    except Exception:
+        pass
+    return out
+
+
+def held_from_files(root: str | None = None) -> dict:
+    """lead_held() for the command line (no running bot): live_model.json lit_sizing mode, data/account_b.json and
+    data/account_c.json "stage". Read only; a missing file = not held."""
+    r = root or ROOT
+    out: dict = {}
+    try:
+        with open(os.path.join(r, "live_model.json"), encoding="utf-8") as fh:
+            ls = json.load(fh).get("lit_sizing") or {}
+        if str(ls.get("mode") or "").lower() == "funded":
+            out[ZLARIOR_PLAN] = 1
+    except Exception:
+        pass
+    for fn, dflt in (("account_b.json", "builder50k"), ("account_c.json", "builder25k")):
+        try:
+            with open(os.path.join(r, "data", fn), encoding="utf-8") as fh:
+                b = json.load(fh)
+            if isinstance(b, dict) and str(b.get("stage") or "").lower() == "funded":
+                pl = _plan_id(b.get("plan") or dflt)
+                if pl:
+                    out[pl] = out.get(pl, 0) + 1
+        except Exception:
+            pass
+    return out
+
+
+def held_funded(fleet_cfg: dict | None, derived: dict | None) -> dict:
+    """The owner's funded accounts outside the fleet: the bots' own (derived) overlaid by data/fleet.json "held_funded"
+    (the owner's word wins per plan, e.g. {"mffu_builder_50k": 0} once Zlarior's funded account has ended)."""
+    man = (fleet_cfg or {}).get("held_funded")
+    return {**(derived or {}), **(man if isinstance(man, dict) else {})}
+
+
+def _firm_of(plan: str):
+    return (firms.profile(plan, "funded") or base_profile(plan, "funded") or {}).get("firm_id")
+
+
+def slot_full(plan: str, held: dict, funded_specs=()) -> str | None:
+    """Why one more funded account on this plan breaks the firm's account limit (None = it fits). The command line's check
+    at --add / --to-funded (the running bot checks again before every entry: slot_problem). funded_specs = the fleet's
+    other funded followers (their "plan")."""
+    P = firms.profile(plan, "funded") or base_profile(plan, "funded")
+    if not P:
+        return None
+    firm = P.get("firm_id")
+    n_plan = int(_num(held.get(plan), 0) or 0)
+    n_firm = sum(int(_num(v, 0) or 0) for k, v in held.items() if _firm_of(k) == firm)
+    for sp in funded_specs:
+        if _firm_of(str(sp.get("plan") or "")) == firm:
+            n_firm += 1
+            n_plan += sp.get("plan") == plan
+    mx = _num(P.get("max_active"))
+    if mx is not None and n_plan + 1 > mx:
+        return (f"{P.get('firm')} allows {int(mx)} funded {P.get('plan')} per person and {n_plan} is already held "
+                "(your own bots' funded accounts count)")
+    tot = firm_limits(firm).get("max_funded_total")
+    if tot is not None and n_firm + 1 > tot:
+        return f"{P.get('firm')} allows {int(tot)} funded accounts per person and {n_firm} are already held"
+    return None
+
+
 def slot_problem(follower, fleet) -> str | None:
-    """A funded follower over the firm's account limit (the first ones in data/fleet.json keep their slot)."""
+    """A funded follower over the firm's account limit (the first ones in data/fleet.json keep their slot). The leads' own
+    funded accounts count (lead_held, 2026-11-16) unless data/fleet.json "held_funded" names that plan (the owner's word)."""
     if follower.stage != "funded" or not follower.profile:
         return None
-    held = (getattr(fleet, "cfg", None) or {}).get("held_funded") or {}
+    held = held_funded(getattr(fleet, "cfg", None), lead_held(getattr(fleet, "bot", None)))
     plan, firm = follower.spec.get("plan"), follower.profile.get("firm_id")
     n_plan = int(_num(held.get(plan), 0) or 0)
     n_firm = sum(int(_num(v, 0) or 0) for k, v in held.items() if (firms.profile(k, "funded") or base_profile(k, "funded") or {}).get("firm_id") == firm)
