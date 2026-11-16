@@ -3,6 +3,8 @@ from data/NQ_1m.csv + data/NQ_5m.csv, a fake NinjaTrader that fills the order fi
 
     python -X utf8 -m tests.test_rehearsal                 # every rehearsal day (~10 sessions, see DAYS), ~1 h on one core
     python -X utf8 -m tests.test_rehearsal --days=2026-08-28,2026-09-02 [--jobs=5] [--fast] [--keep]
+    python -X utf8 -m tests.test_rehearsal --quick        # 3 days (target, stop-out, kill switch), --fast, in parallel: fits a 30-min budget
+    python -X utf8 -m tests.test_rehearsal --split=2/4    # the 2nd quarter of the days (run the 4 parts one after another, or on 4 cores)
 
 What it does (Paper / Sim101 only; no real account is ever armed, the live phrase is never written anywhere):
   sandbox    a temp copy of the code (engine, tools, tests, web, server.py, live_model.json exactly as committed) with its own
@@ -53,7 +55,8 @@ if ROOT not in sys.path:
 ET = ZoneInfo("America/New_York")
 TICK = 0.25
 LIMIT_S = 10.0
-OUT = os.path.join(ROOT, "research", "lit", "rehearsal.json")
+OUT = os.path.join(ROOT, "research", "lit", "rehearsal.json")              # the full run only (tracked)
+OUT_PARTIAL = os.path.join(ROOT, "scratch", "results", "rehearsal_partial.json")   # --quick / --split / --days (gitignored)
 CLOCK_SLOTS = 8          # base, real_at, cap, poll_done (virtual t of the last finished poll), poll_n, pos_open, busy, spare
 _real_time = time.time
 _real_sleep = time.sleep
@@ -72,6 +75,7 @@ DAYS = [
     ("2026-09-23", "server RESTART mid-trade (Sim auto-resume)"),
 ]
 KILL_DAY, RESTART_DAY = "2026-09-09", "2026-09-23"
+QUICK_DAYS = ("2026-08-25", "2026-08-28", KILL_DAY)     # --quick: a target, a stop-out and HOLD TO KILL mid-trade
 KILL_AFTER_MIN, RESTART_AFTER_MIN = 12, 6
 
 RESULTS = []
@@ -1027,6 +1031,10 @@ def main(argv):
         return cloud(*argv[1:4])
     days = DAYS
     jobs, part = 1, None
+    if "--quick" in argv:                    # the full run takes ~1 h on one core and hit the helpers' time limit (2026-11-16)
+        days = [d for d in DAYS if d[0] in QUICK_DAYS]
+        jobs = max(1, min(len(days), (os.cpu_count() or 1) - 1))
+        argv = [a for a in argv if a != "--quick"] + (["--fast"] if "--fast" not in argv else [])
     for a in argv:
         if a.startswith("--days="):
             want = a.split("=", 1)[1].split(",")
@@ -1035,6 +1043,12 @@ def main(argv):
             jobs = int(a.split("=", 1)[1])
         if a.startswith("--part="):
             part = a.split("=", 1)[1]
+        if a.startswith("--split="):         # k/n: every n-th day starting at the k-th (1-based)
+            k, n = (int(x) for x in a.split("=", 1)[1].split("/"))
+            days = [d for i, d in enumerate(days) if i % n == k - 1]
+    global OUT
+    if [d[0] for d in days] != [d[0] for d in DAYS]:
+        OUT = OUT_PARTIAL                    # a partial run never overwrites the full run's tracked result file
     if jobs > 1:
         return run_parallel(days, jobs, argv)
     rh = Rehearsal(days, keep="--keep" in argv, fast="--fast" in argv)
