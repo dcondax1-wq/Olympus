@@ -88,11 +88,8 @@ def _write_json(path, obj, indent=None):
     tmp = path + ".tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(obj, fh, indent=indent, default=str, separators=None if indent else (",", ":"))
-    try:
-        from .fsutil import replace as _rep       # retried: Windows / OneDrive lock a file a moment
-        _rep(tmp, path)
-    except Exception:
-        os.replace(tmp, path)
+    from .fsutil import replace as _rep           # retried: Windows / OneDrive lock a file a moment (raises after ~2 s)
+    _rep(tmp, path)
 
 
 def _append(path, obj):

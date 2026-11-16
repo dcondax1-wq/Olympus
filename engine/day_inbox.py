@@ -313,7 +313,8 @@ def snapshot(env=None, now_s: float | None = None) -> dict:
     p = os.path.join(dd, "inbox.json")
     with open(p + ".tmp", "w", encoding="utf-8") as fh:
         json.dump(snap, fh, ensure_ascii=False)
-    os.replace(p + ".tmp", p)
+    from .fsutil import replace as _fs_replace       # retried: Windows / OneDrive lock the target a moment
+    _fs_replace(p + ".tmp", p)
     try:
         os.chmod(p, 0o600)
     except OSError:

@@ -40,11 +40,8 @@ def _write(path: str, data: bytes):
     tmp = path + ".tmp"
     with open(tmp, "wb") as fh:
         fh.write(data)
-    try:
-        from .fsutil import replace as _r
-        _r(tmp, path)
-    except Exception:
-        os.replace(tmp, path)
+    from .fsutil import replace as _r             # retried: Windows / OneDrive lock a file a moment (raises after ~2 s)
+    _r(tmp, path)
 
 
 def local_push(payload: dict, files: dict | None = None, dest: str | None = None, **_kw) -> dict:
