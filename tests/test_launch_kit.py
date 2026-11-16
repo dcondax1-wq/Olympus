@@ -830,7 +830,7 @@ def page_static():
     check("5. launch.js: reads only /api/site/launch.json and gate/launch_day.json; draws only when the page path starts with /site/",
           "API = '/api/site/launch.json'" in js and "base + 'gate/launch_day.json'" in js and "ON_PC = /^\\/site\\//.test(" in js and "if (!ON_PC) return;" in js)
     check("5. gate/index.html loads launch.js only under /site/ (any other copy never downloads it), after gate.js",
-          "if (!/^\\/site\\//.test(location.pathname || '')) return;" in html and html.index("'gate/gate.js?v=g4'") < html.index("gate/launch.js?v=l1"))
+          "if (!/^\\/site\\//.test(location.pathname || '')) return;" in html and html.index("'gate/gate.js?v=") < html.index("gate/launch.js?v="))
     check("5. launch.css: colours only through the AGORA tokens (no literal colour), tabular numbers, 44 px summaries",
           not re.search(r"#[0-9a-fA-F]{3,6}\b|rgb\(\s*\d", css) and "tabular-nums" in css and "min-height: 44px" in css)
 

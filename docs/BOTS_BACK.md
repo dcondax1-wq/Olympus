@@ -11,6 +11,7 @@
 | GitHub pushes | off (no more errors) |
 | Phone pushes | back: trade opened / closed with $, FEED STALE, bot down, NinjaTrader closed |
 | Site status | every 15 min from the PC (free ntfy.sh), once the site has the wiring below |
+| Self-healing (2026-11-16) | the bot server itself re-installs the report task when it is missing and runs the report when the task is 20+ min late (`engine/report_keeper.py`); trade watch pushes a live trade that differs from its backtest twin (missed entry, slipped fill, missing / misplaced stop: `tools/trade_watch.py`). Tests: `tests.test_report_keeper` |
 
 ## Why
 The GitHub account was suspended on 2026-11-08. The bots (LIT / ATLAS / BLITZ, paper / Sim through NinjaTrader 8 on the main PC)
