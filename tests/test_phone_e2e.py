@@ -1139,7 +1139,8 @@ def clear_http_cache(phone, p):
 
 # the OLYMPUS apps' live cards (Jarvis's apps.js, 2026-11-03): a jarvis.json request ends aborted when the page moves on (the
 # junk run reopens Jarvis every second) or after its 5 s limit (the slow network); by design, never a failure. A 404 still is.
-STATUS_ABORTED = r"/jarvis\.json\?jt=\d+ failed( |$)"
+# The same for the PC feed's pointer status_feed.json (night A 2026-11-16, jarvis/data.js + olympus/truth.js: read async at every start).
+STATUS_ABORTED = r"/jarvis\.json\?jt=\d+ failed( |$)|/status_feed\.json failed net::ERR_ABORTED"
 
 
 def no_errors(phone, m, label, allow=()):
