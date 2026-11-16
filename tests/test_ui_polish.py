@@ -128,6 +128,10 @@ out.mnOld = MN.model({ now: F.now, where: 'phone', board: Object.assign(cp(F.b3)
 out.mnEvil = MN.html(mk((b) => { b.lit.name = '<img src=x onerror=1>'; b.lit.waiting = '"><script>1</script>'; b.lit.position = null; }), { where: 'phone' });
 out.lnPc = MN.line(M3, { where: 'pc' }); out.lnStop = MN.line(Object.assign(mk(() => {}), { board: Object.assign(cp(F.b3), { running: false }) }), { where: 'pc' });
 out.lnNone = MN.line({}, { where: 'pc' }); out.lnEvil = MN.line(mk((b) => { b.lit.name = '<img src=x onerror=1>'; }), { where: 'pc' }); out.lnArmed = MN.model(M3).rows.filter((r) => /^(Armed|In a trade)/.test(r.status.text)).map((r) => r.name);
+const idle = (b) => { for (const k of ['lit', 'atlas', 'blitz']) if (b[k]) { b[k].position = null; b[k].stage = null; b[k].members = []; } };
+out.lnLive = MN.line(mk((b) => { idle(b); b.lit.badge = 'LIVE'; if (b.atlas) b.atlas.badge = 'LIVE'; }), { where: 'pc' });
+out.lnPaper = MN.line(mk((b) => { idle(b); for (const k of ['lit', 'atlas', 'blitz']) if (b[k]) b[k].badge = 'SIM'; }), { where: 'pc' });
+out.lnLiveStop = MN.line(mk((b) => { idle(b); b.lit.badge = 'LIVE'; b.running = false; }), { where: 'pc' });
 for (const g of [null, {}, { board: 5 }, { board: { lit: 'x', health: { items: 3 } } }, { board: { lit: { room: 'x', mll: {}, today_pnl: [], position: 5 } }, now: 'n' }]) {
   try { MN.model(g); MN.html(g); MN.html(g, { where: 'pc' }); MN.line(g); MN.line(g, { where: 'phone' }); } catch (e) { out.bad++; out.err = String(e.stack).slice(0, 300); }
 }
@@ -231,6 +235,10 @@ def part_b(tmp):
     check("b. status strip: a stopped bot is red, no board at all still says something plain ('not published yet'), never blank / undefined / NaN",
           'class="mn-line r"' in o["lnStop"] and "Bot stopped" in o["lnStop"] and "not published yet" in ltxt(o["lnNone"]) and not re.search(r"undefined|NaN|null", o["lnNone"] + o["lnStop"]), (ltxt(o["lnStop"]), ltxt(o["lnNone"])))
     check("b. status strip: text from the board never becomes markup", "<img" not in o["lnEvil"])
+    check("b. status strip: a LIVE armed account with no setup waiting says Armed (was 'Nothing armed' next to LIVE ARMED, 2026-11-16); "
+          "Sim / paper with nothing waiting says Nothing armed; a stopped bot never claims armed",
+          "Armed: Zlarior" in ltxt(o["lnLive"]) and "Nothing armed" not in ltxt(o["lnLive"]) and "Nothing armed" in ltxt(o["lnPaper"])
+          and "Armed: Zlarior" not in ltxt(o["lnLiveStop"]), (ltxt(o["lnLive"]), ltxt(o["lnPaper"]), ltxt(o["lnLiveStop"])))
     # --- Today's session (SessionDay): the modes follow the ET clock, the sentence and the countdown follow the mode
     sd = o["sd"]
     want = {"early": "before", "plan": "plan", "open": "open", "late": "late", "flat": "flat", "over": "over", "friover": "over", "sat": "weekend", "sun": "weekend", "holiday": "open", "eveholiday": "over"}

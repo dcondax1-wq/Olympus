@@ -385,6 +385,12 @@ def gather(now=None, root: str = ROOT, env=None, http=None, port=PORT_DEFAULT, f
     except Exception as e:
         snap["fills"] = []
         snap["fills_error"] = f"{e.__class__.__name__}: {str(e)[:120]}"
+    try:                                    # live vs the backtest twin (tools/trade_watch.py, read-only: fill_audit's report.json)
+        from tools import trade_watch
+        snap["watch"] = trade_watch.flags(root, now)
+    except Exception as e:
+        snap["watch"] = []
+        snap["watch_error"] = f"{e.__class__.__name__}: {str(e)[:120]}"
     return snap
 
 
@@ -715,6 +721,19 @@ def events(state: dict, snap: dict) -> tuple:
                              "tags": "rotating_light"})
         except Exception:
             continue
+    # live vs the backtest twin (tools/trade_watch.py): a missed entry, a slipped fill, a missing / misplaced stop; once, high
+    for w in snap.get("watch") or []:
+        try:
+            key = str(w["key"])
+            if key in st["seen"]:
+                continue
+            st["seen"][key] = now
+            if not st["seeded"] or now - int(num(w.get("t")) or 0) > OLD_EVENT_S:
+                continue
+            msgs.append({"key": key, "title": str(w.get("title") or "Trade watch")[:120], "body": str(w.get("body") or "")[:600],
+                         "priority": "high", "tags": "rotating_light"})
+        except Exception:
+            continue
     cond = conditions(snap)
     for code, text in cond.items():
         c = st["cond"].get(code)
@@ -876,6 +895,41 @@ def log_line(work, rec):
         pass
 
 
+LOCK_STALE_S = 600
+
+
+def run_lock(work: str, now=None):
+    """One report at a time (the 15-minute task and the bot server's keeper, engine/report_keeper.py, can both start one):
+    the lock file's path when taken, None when another run holds it. A lock older than LOCK_STALE_S (a crashed run) is taken over."""
+    now = int(now or time.time())
+    os.makedirs(work, exist_ok=True)
+    p = os.path.join(work, "run.lock")
+    for _ in range(2):
+        try:
+            fd = os.open(p, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            with os.fdopen(fd, "w") as fh:
+                fh.write(str(now))
+            return p
+        except FileExistsError:
+            try:
+                if now - int(os.path.getmtime(p)) <= LOCK_STALE_S:
+                    return None
+                os.remove(p)
+            except OSError:
+                return None
+        except OSError:
+            return None
+    return None
+
+
+def run_unlock(p):
+    if p:
+        try:
+            os.remove(p)
+        except OSError:
+            pass
+
+
 def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, now=None, root: str = ROOT, port=PORT_DEFAULT,
              feed_problem=None, say=print, feed_path: str | None = None) -> dict:
     os.makedirs(work, exist_ok=True)
@@ -920,7 +974,7 @@ def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, n
         else:
             rec["errors"].append("alert: " + why)
             # not sent: forget it so the next run tries again (conditions keep their state; a trade key is retried)
-            if m["key"].startswith(("open:", "close:", "fill:")):
+            if m["key"].startswith(("open:", "close:", "fill:", "watch:")):
                 for k in m.get("keys") or [m["key"]]:
                     new_state["seen"].pop(k, None)
             elif m["key"].startswith("guard:"):
@@ -972,7 +1026,15 @@ def main(argv=None) -> int:
         snap = gather(port=a.port)
         print(card_text(card(snap, cfg, read_json(os.path.join(a.work, "last.json"), {}) or {})))
         return 0
-    rec = run_once(work=a.work, dry=a.dry_run, port=a.port)
+    lk = None if a.dry_run else run_lock(a.work)
+    if not a.dry_run and lk is None:
+        if not a.quiet:
+            print("  [OK]  another report run is busy right now (the 15-minute task or the bot server): nothing to do")
+        return 0
+    try:
+        rec = run_once(work=a.work, dry=a.dry_run, port=a.port)
+    finally:
+        run_unlock(lk)
     if not a.quiet:
         print(card_text(rec["card"]))
         for e in rec.get("errors") or []:

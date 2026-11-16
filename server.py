@@ -780,6 +780,10 @@ from engine import pc_health as _pch
 # and the 17:30 ET readiness push (engine/pc_selftest.py, engine/readiness.py); LE_PC_WATCH=0 = off
 PCWATCH = _pch.Watcher(BOT)
 _pch.WATCHER = PCWATCH
+from engine import report_keeper as _rk
+# the phone report keeper (engine/report_keeper.py): re-installs the 15-minute task OlympusPCReport when it is missing and runs
+# tools/pc_report.py itself when the task is late (ntfy status + trade pushes); read-only towards the bot (LE_REPORT_KEEPER=0 = off)
+REPORT_KEEPER = _rk.Keeper()
 
 
 def _open_nt():
@@ -907,6 +911,10 @@ def _autostart_startup():
     EXEC_AUDIT.start()
     AUTOUPDATE.start()                   # daily check in the CME halt + hourly outside trading time; nothing until --enable
     PCWATCH.start()                      # PC health + Sunday self-test / readiness (engine/pc_health.py; off in a dev / test server)
+    try:
+        REPORT_KEEPER.start()            # the phone report even without its Windows task (engine/report_keeper.py; off in a dev / test server)
+    except Exception as e:
+        print(f"[report keeper] off: {e.__class__.__name__}: {e}", flush=True)
 
 
 app.router.add_event_handler("startup", _autostart_startup)

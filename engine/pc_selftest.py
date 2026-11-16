@@ -98,6 +98,7 @@ SUITES = (
     {"key": "eval_fix", "label": "Refused-order days voided", "argv": _m("tests.test_eval_fix"), "timeout": 60},
     {"key": "fsutil", "label": "Windows-safe state saves", "argv": _m("tests.test_fsutil"), "timeout": 30},
     {"key": "account_names", "label": "Account names", "argv": _m("tests.test_account_rename"), "timeout": 30},
+    {"key": "report_keeper", "label": "Phone report keeper + trade watch", "argv": _m("tests.test_report_keeper"), "timeout": 60},
 )
 # Measured and left out (sandbox, 2026-10-30): test_dst --quick 49 s (the timezone check below covers the PC side),
 # test_acctb_not_placed and test_lit_oif > 400 s (live-loop replays; nt_route covers never-placed), test_win_scripts
@@ -113,7 +114,7 @@ MEASURED_S = {"server_import": 1.0, "nt_route": 0.8, "sizing": 0.3, "no_yahoo": 
               "eval_life": 10.2, "autoupdate": 6.5, "risk": 3.0, "start_api": 2.5, "calendar": 2.2, "sizing_caps": 1.6,
               "launch": 1.6, "nt_outgoing": 1.3, "nt_accounts": 3.2, "selfheal": 1.3, "ops": 1.2, "run_switch": 1.1, "new_accounts": 1.1,
               "start_bot": 0.9, "roll_guard": 0.9, "broker_balance": 0.9, "mffu_rules": 0.8, "push": 0.8, "eval_fix": 0.7,
-              "fsutil": 0.1, "account_names": 0.1}
+              "fsutil": 0.1, "account_names": 0.1, "report_keeper": 1.0}
 WORKERS = 2                     # suites at once (each a below-normal-priority child; the bot is flat when this runs)
 
 

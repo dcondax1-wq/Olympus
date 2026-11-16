@@ -41,7 +41,7 @@ AREAS = {
     "cities": ["cities_page", "kalshicity_page", "datacity"],
     "nq": ["lit_live", "no_yahoo", "risk_invariants", "mffu_rules", "guards", "sizing_caps", "second", "eval_lifecycle", "live_board", "live_publish", "heartbeat",
            "lit_scale_in", "lit_learn", "learn_loop"],
-    "pc": ["autoupdate_source", "autorun", "update_from_zip", "pc_publish", "public_build_privacy", "bots_back", "setup_everything", "calendar_sync", "me_hub", "live_link", "roll_now", "pc_guard", "launch_kit", "second_backup", "clean_pc", "clean_storage", "lite", "win_scripts", "fresh_start", "pc_health", "pc_selftest", "pc_silent", "pc_command_center", "one_time_setup"],
+    "pc": ["autoupdate_source", "autorun", "update_from_zip", "pc_publish", "public_build_privacy", "bots_back", "report_keeper", "setup_everything", "calendar_sync", "me_hub", "live_link", "roll_now", "pc_guard", "launch_kit", "second_backup", "clean_pc", "clean_storage", "lite", "win_scripts", "fresh_start", "pc_health", "pc_selftest", "pc_silent", "pc_command_center", "one_time_setup"],
     "agency": ["agency", "agency_billing", "cold_calls", "agency_storefront", "agency_upsells", "biz_models"],
     "privacy": ["public_build_privacy", "private_link", "repo_secrets"],       # team Q2 2026-11-14, docs/PRIVACY.md
     "money": ["money_machines", "digital_products"],
