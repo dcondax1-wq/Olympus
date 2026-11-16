@@ -440,9 +440,9 @@ def part_e_shell(br, shell, oa, shots):
         os.makedirs(shots, exist_ok=True)
         p.screenshot(path=os.path.join(shots, "jarvis_app_cards.png"))
     check("e. inside Jarvis at phone width: no sideways scroll, the cards fit the gutter", out["w"][0] <= out["w"][1] and out["right"] <= 390 - 15.5, out)
-    check("e. the Jarvis look: its card panel, green pill, green / red deltas, 3 kpis in a row (2 when 2)",
-          out["bg"] == "rgb(27, 27, 31)" and out["pill"] == "pill ok" and out["pillText"] == "On track \u00b7 2 min ago" and out["up"] == "rgb(70, 215, 154)"
-          and out["down"] == "rgb(255, 107, 127)" and out["kv"] == 3 and out["kv2"] == 2 and "jx-stale" in out["staleCls"] and out["open"] == oa + "/clip/#today", out)
+    check("e. the Jarvis look (AGORA bronze since e02d070): its card panel, green pill, green / red deltas, 3 kpis in a row (2 when 2)",
+          out["bg"] == "rgb(29, 25, 20)" and out["pill"] == "pill ok" and out["pillText"] == "On track \u00b7 2 min ago" and out["up"] == "rgb(171, 181, 104)"
+          and out["down"] == "rgb(207, 132, 110)" and out["kv"] == 3 and out["kv2"] == 2 and "jx-stale" in out["staleCls"] and out["open"] == oa + "/clip/#today", out)
     p.click("#cards .jx-card[data-app='x-clip']")
     p.wait_for_timeout(700)
     check("e. tapping the card opens its app inside Jarvis (the page's own data-app switch)",
@@ -523,7 +523,7 @@ def part_f(p, harness, oa, ob, tmp):
     check("f. an older file than the card kept (a CDN copy) does not replace it", s4 and s4["t"] == now - 29 * 60, s4)
 
     LOG.clear()
-    z = p.evaluate("() => Promise.all([A.appStatus('zenith'), A.appStatus({id: 'planner', url: '../planner/'}), A.appStatus(A.getApp('ascend')), A.appStatus('nope'), A.appStatus(null)])")
+    z = p.evaluate("() => Promise.all([A.appStatus('zenith'), A.appStatus({id: 'kalshi', url: '../kalshi/'}), A.appStatus(A.getApp('ascend')), A.appStatus('nope'), A.appStatus(null)])")
     check("f. built-ins (they have their own cards), the hidden Ascend, unknown apps: null, nothing fetched", z == [None] * 5 and not LOG, (z, LOG))
     put(f"{tmp}/clip/jarvis.json", card("Clip", t=now))
     LOG.clear()
@@ -617,10 +617,10 @@ def part_i(p, harness, oa, tmp):
     t = p.evaluate("""() => ({ rows: A.BUILT_INS.map((b) => ({ id: b.id, name: b.name, group: b.group, accent: b.accent, url: b.url, live: b.live })),
         groups: A.GROUPS.map((g) => g.id), order: A.listApps().map((a) => a.id + ':' + a.group) })""")
     rows = {r["id"]: r for r in t["rows"]}
-    check("i. one table: Data City, Mind and Daphne built in (names, group, colour, ../<id>/, live card) next to Zenith, the Planner, Kalshi",
+    check("i. one table: Data City, Mind and Daphne built in (names, group, colour, ../<id>/, live card) next to Zenith, Kalshi and the Planner (live card since af40226)",
           all(rows.get(i, {}).get("name") == n and rows[i]["group"] == g and rows[i]["url"] == f"../{i}/" and rows[i]["live"] is True
               and re.fullmatch(r"#[0-9a-f]{6}", rows[i]["accent"] or "") for i, n, g in (("datacity", "Data City", "trading"), ("mind", "Mind", "life"), ("tree", "Daphne", "trading")))
-          and rows["zenith"]["live"] is False and rows["planner"]["live"] is False and rows["kalshi"]["live"] is False
+          and rows["zenith"]["live"] is False and rows["planner"]["live"] is True and rows["kalshi"]["live"] is False
           and t["groups"] == ["trading", "life", "money", "more"] and all(r["group"] in t["groups"] for r in t["rows"]), t["rows"])
     ranks = [t["groups"].index(x.split(":")[1]) for x in t["order"]]
     check("i. listApps by group (TRADING, LIFE, MONEY), each group in the table's order", ranks == sorted(ranks)
