@@ -92,7 +92,7 @@ def fake_nt_folder(tmp, account="MFFUEVAL123"):
         with open(os.path.join(f, "le_feed", f"MNQ_{m}m.csv"), "w") as fh:
             fh.write("time,open,high,low,close,volume\n")
             for i in range(400, -1, -1):
-                if market_open(last - i * s):                   # no bars in the 17:00 ET halt / weekend
+                if market_open(last - i * s) or i == 0:          # no bars in the 17:00 ET halt / weekend; the newest bar always (fresh at any wall time)
                     fh.write(f"{last - i * s},25000,25002,24998,25001,10\n")
     return f
 
@@ -367,7 +367,17 @@ def perf_checks(tmp, check):
              "live_pnl": 585.0, "slip_usd": -15.0, "exec_usd": -15.0},
             {"status": "missed", "day": "2026-10-21", "entry_t": ts(2026, 10, 21, 9, 50), "bt_pnl": -300.0, "missed_usd": -300.0, "reason": "feed stale"}]})
         UP.pc_hook({"t": ts(2026, 10, 20, 9, 40), "running": True, "health": {"feed": {"market_open": True, "age_1m_s": 20}}})
-        r = cl.get("/api/next/perf")
+        # the Status view shows the last 30 days before NOW: freeze its clock on Wed 2026-10-21 so the 10-20 sample stays in view
+        # whatever the real date (it fell out of the window from 2026-11-19 on)
+        import types as _types
+        from engine import perf as _PERF
+        real_time = _PERF.time
+        _PERF.time = _types.SimpleNamespace(**{k: getattr(real_time, k) for k in dir(real_time) if not k.startswith("__")})
+        _PERF.time.time = lambda: float(ts(2026, 10, 21, 12, 0))
+        try:
+            r = cl.get("/api/next/perf")
+        finally:
+            _PERF.time = real_time
         d = r.json()
         check("perf 200: every block", r.status_code == 200 and all(k in d for k in ("range", "exec", "exit", "robust", "months", "status", "lookahead")), r.text[:200])
         ex = d.get("exec") or {}
