@@ -21,10 +21,12 @@ Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7;
 - Kalshi pause sentence in the kalshi-server chat (if not done).
 - Yes/no: lock the PC bot page to his own devices (Tailscale only; anyone on home WiFi can reach Stop today).
 - Yes/no: delete ~7 GB of old test leftovers in the container (python tools/disk_clean.py --apply; blocked for Claude by the safety check).
-- Next account: a LucidPro 50K copy of Zlarior, bought from the first payout (docs/ACCOUNT_4.md). NOT a second MFFU 50K:
-  MFFU funds only one Builder 50K a person (help center, re-read 2026-11-16). Then one more Lucid copy per payout (plan below).
-- Ask MFFU support once (one line, in writing): "Builder page says one active Builder account per user: can I hold a funded
-  Builder 50K and a funded Builder 25K at once?" (Zlarior + ATLAS both funded depends on it).
+- MFFU ONLY ("We stick with MFFU", 2026-11-16). Help center limits: max 5 sim-funded (25K/50K sizes), Builder 1x50K + 2x25K,
+  Rapid EOD 3x50K, 10 evals. So Zlarior 50K + ATLAS 25K funded together is ALLOWED (support question answered). Next buys:
+  Rapid EOD 50K (code FIFTYOFF/CLUB at checkout, ~$94): +$660/mo each on Jul-Oct trades but its eval takes ~2 months (30% best-day
+  rule, LIT ~0.8 winners/week), first payout ~14 sessions after funding, daily payouts, 90%, funded news ban (-2/+2 min Tier-1).
+  Rapid (intraday floor) rejected: loses funded 16-22% in 6 months. Builder 25K #2: +$286/mo, cheap ($63/$43). Detail:
+  research/writeups/lit-mffu-rapid-stack.md. Fleet presets exist (engine/multi_account mffu_rapid_eod_50k); Sim-test before arming.
 - Business: fill agency/config.json (name, city, phone, address), then AGENCY_DAY.bat; list the 8 products, the 4 trading ones first (docs/BUSINESS_LISTING_KIT.md). $0 earned so far.
 - Money (2026-11-16 night B): the Business page is the ONE money place (every dollar, this week's money moves, payout planner, ready-to-upload tick lists, ideas, costs; docs/BUSINESS.md). New: 3 products (bundle $29, risk calculator $12, rules cheat sheet $7), 2 new models (AI training tasks, paid website tests). Plan (ESTIMATE): first payout ~late Dec ($1,200 LIT / $600 ATLAS to you), account #4 the day it is in the bank.
 
