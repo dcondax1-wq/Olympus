@@ -342,7 +342,7 @@ def part3():
         cal = (items.get("calendar") or {}).get("detail") or ""
         ev = (items.get("eval") or {}).get("detail") or ""
         check(f"go-live check at Sun 19:00 EST: calendar '{cal[:70]}', eval '{ev[:60]}'", "Mon Nov 02" in cal and "normal session" in cal
-              and "session 1 of 10" in ev, {k: (v.get("state"), v.get("detail")[:80]) for k, v in items.items()})
+              and "first session 2026-11-02" in ev and "drawdown left $1,000.00 of $1,000" in ev, {k: (v.get("state"), v.get("detail")[:80]) for k, v in items.items()})
         bz = json.load(open(os.path.join(repo, "data", "blitz_state.json"), encoding="utf-8")) if os.path.exists(os.path.join(repo, "data", "blitz_state.json")) else {}
         from engine import blitz as BZ
         stx = BZ.state_text(bz, int(vc.now())) if bz else {}

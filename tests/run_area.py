@@ -46,6 +46,10 @@ AREAS = {
     "privacy": ["public_build_privacy", "private_link", "repo_secrets"],       # team Q2 2026-11-14, docs/PRIVACY.md
     "money": ["money_machines", "digital_products"],
 }
+# suites too long for one budget run BY PARTS, each its own row and budget (night team D 2026-11-16: the whole kit walk, every app +
+# power + tiers + more in one browser, is the longest browser suite); a part is "<suite>:<label>" = python -m tests.test_<suite> <args>
+PARTS = {"olympus_kit": [("a", ["datacity", "mind", "tree"]), ("b", ["oracle", "odeon", "fates"]), ("c", ["hermes", "prometheus", "tyche"]),
+                         ("power", ["power", "tiers"]), ("more", ["more"])]}
 SLOW = {"jarvis_hub", "phone_e2e", "olympus_kit", "olympus_themes", "olympus_render", "zenith_mode", "ui_polish", "datacity", "jarvis_home"}
 
 
@@ -95,9 +99,9 @@ def count(text: str):
     return ok, bad
 
 
-def run_one(name: str, budget: float, env: dict) -> dict:
+def run_one(name: str, budget: float, env: dict, args=()) -> dict:
     t0 = time.time()
-    p = subprocess.Popen([sys.executable, "-X", "utf8", "-m", f"tests.test_{name}"], cwd=ROOT, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+    p = subprocess.Popen([sys.executable, "-X", "utf8", "-m", f"tests.test_{name.split(':')[0]}", *args], cwd=ROOT, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                          text=True, errors="replace", start_new_session=True)
     state = ""
     try:
@@ -174,13 +178,15 @@ def main(argv=None) -> int:
             rows.append({"suite": n, "passed": 0, "failed": 0, "seconds": 0, "state": "SKIP (machine too loaded)", "exit": None, "tail": "", "fails": []})
             print(f"  {n}: SKIP, machine too loaded (load {load1():.0f})", flush=True)
             continue
-        r = run_one(n, a.budget * (3 if n in SLOW else 1), env)
-        if g:
-            r["note"] = "ran loaded" if g == "loaded" else g
-        rows.append(r)
-        print(f"  {n}: {r['state']} {r['passed']} ok / {r['failed']} bad in {r['seconds']}s", flush=True)
-        for f in r["fails"][:3]:
-            print("     " + f, flush=True)
+        for label, args in PARTS.get(n, [("", [])]):
+            nm = f"{n}:{label}" if label else n
+            r = run_one(nm, a.budget * (3 if n in SLOW else 1), env, args)
+            if g:
+                r["note"] = "ran loaded" if g == "loaded" else g
+            rows.append(r)
+            print(f"  {nm}: {r['state']} {r['passed']} ok / {r['failed']} bad in {r['seconds']}s", flush=True)
+            for f in r["fails"][:3]:
+                print("     " + f, flush=True)
     out = os.path.join(ROOT, "scratch", "results")
     os.makedirs(out, exist_ok=True)
     md = table(rows)
