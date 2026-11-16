@@ -44,6 +44,11 @@ Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7;
   ATLAS's own funded accounts against MFFU's limits; `--held <plan>=0` when one ended. MFFU copy trading: allowed (help center).
 
 ## Recent findings (don't redo)
+- Why the first payout is ~2 months (2026-11-16, owner asked): the planner's MFFU rules match the help center ($2,100 buffer +
+  $500 min, 50% best day, 2 days). Time = eval still $3,687 to go (Nov 7 numbers, stale) ~3 weeks + funded needs $2,600 above
+  start = ~24 sessions (12-16 trade days; LIT 2.46 trades/week). Funded sizing sweep (60/80% room, $1,500/$2,000 max, win caps
+  $1,300-$2,600): first payout 22-36 sessions, no faster; holds (consistency/line) ~0. Only real speed-up: start the next
+  account NOW instead of from the payout (FundedNext Rapid Daily: daily payouts, ~17 sessions after funding; needs FN's written OK).
 - LIT: no new edge (S2 sizing tilts, E-LIT 16 skip rules + missed setups). H2 weaker = lower VIX + wider stops, not a broken edge.
 - ATLAS: only the zombie-eval rule helped (+$60/month); filters/trend/overlap rejected.
 - Safety S1: missing-stop close, save-before-send, no duplicate bracket after crash, 8 entries/day cap (all merged).
