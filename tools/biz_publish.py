@@ -40,30 +40,43 @@ MODELS = [
                       "Answer every message the same day"],
      "usd_m1": [0, 100], "usd_m3": [0, 400], "hours": [6, 10],
      "why": "New sellers often wait weeks for the first order. Fiverr keeps 20% ($120 order pays $96)."},
-    {"id": "products", "name": "Digital products", "rank": 3, "doc": "docs/BUSINESS_LISTING_KIT.md",
-     "what": "5 finished downloads (eval tracker $17, site templates $24, social kit $14, agency kit $19, trader planner $14).",
-     "built": ["All 5 products, upload zips, 6 covers each", "Title, description, tags, FAQ per product", "One listing kit for every shop"],
-     "first_dollar": ["Free Payhip account (lowest fee)", "Upload the 5 zips with their covers (about 15 min each)", "A link to the shop from an Instagram bio"],
+    {"id": "ai_training", "name": "AI training tasks", "rank": 3, "doc": "money_machines/money_door.json",
+     "what": "Rate and write answers for AI companies on the PC, in your own words (new, researched 2026-11-16).",
+     "built": ["Starter kit: where to apply, the assessment, the honest rules, the tax set-aside", "Ranked against 5 other ideas with sources"],
+     "first_dollar": ["Apply to 2 AI-training sites with your real name", "Pass the assessment (30-90 min, your own words: AI use is banned)",
+                      "1-2 hours on weekday evenings when work is offered"],
+     "usd_m1": [0, 400], "usd_m3": [0, 500], "hours": [3, 5],
+     "why": "About $15-30 an hour when there is work; hours are never guaranteed and some applicants get none."},
+    {"id": "products", "name": "Digital products", "rank": 4, "doc": "docs/BUSINESS_LISTING_KIT.md",
+     "what": "8 finished downloads: prop trader bundle $29, eval tracker $17, risk calculator $12, rules cheat sheet $7, trader planner $14, site templates $24, social kit $14, agency kit $19.",
+     "built": ["All 8 products, upload zips, 6 covers each", "Title, description, tags, FAQ per product", "One listing kit for every shop"],
+     "first_dollar": ["Free Payhip account (lowest fee)", "Upload the 8 zips with their covers (about 15 min each; the 4 trading ones first)", "A link to the shop from an Instagram bio"],
      "usd_m1": [0, 50], "usd_m3": [0, 100], "hours": [1, 2],
      "why": "Expect 0-10 sales a month per product until a social account or search sends buyers."},
-    {"id": "insta_local", "name": "Instagram: local business tips", "rank": 4, "doc": "docs/MONEY_MACHINES.md",
+    {"id": "user_testing", "name": "Paid website tests", "rank": 5, "doc": "money_machines/money_door.json",
+     "what": "Test websites and apps while you think out loud, 20 minutes at a time (new, researched 2026-11-16).",
+     "built": ["Starter kit: sign-up, the practice test, the honest screener rule, payouts"],
+     "first_dollar": ["Sign up on 2 tester sites, real details", "Do the practice test well (it decides if you get tests)", "Take the tests that honestly fit you"],
+     "usd_m1": [0, 60], "usd_m3": [0, 120], "hours": [1, 2],
+     "why": "About $10 for a 20-minute test; a new tester often gets only a few a week; PayPal about 14 days later."},
+    {"id": "insta_local", "name": "Instagram: local business tips", "rank": 6, "doc": "docs/MONEY_MACHINES.md",
      "what": "A tips account for local owners that sends them to the agency's free website check.",
      "built": ["30-day plan with captions and images", "Posting sheet for the free Meta scheduler", "Optional API poster (dry run by default)"],
      "first_dollar": ["New Instagram, switched to Professional", "Schedule the 30 posts in Meta Business Suite (free, about 15 min a week)",
                       "It pays only through agency clients it brings"],
      "usd_m1": [0, 0], "usd_m3": [0, 100], "hours": [2, 3],
      "why": "Plan for 100-1,000 followers in 3 months; the money is the agency clients it brings."},
-    {"id": "insta_eval", "name": "Instagram: the eval journal", "rank": 5, "doc": "docs/MONEY_MACHINES.md",
+    {"id": "insta_eval", "name": "Instagram: the eval journal", "rank": 7, "doc": "docs/MONEY_MACHINES.md",
      "what": "Trading routines (never results) that link the eval tracker; later disclosed affiliate links.",
      "built": ["30-day plan with captions and images", "The risk line and Ad rules built in"],
      "first_dollar": ["Second Instagram, Professional account", "Schedule the 30 posts", "The eval tracker link in the bio"],
      "usd_m1": [0, 0], "usd_m3": [0, 30], "hours": [2, 3],
      "why": "Strict rules: no profits, passes or signals; every paid link starts with Ad."},
-    {"id": "rank_rent", "name": "Rank-and-rent sites", "rank": 6, "doc": "docs/MONEY_MACHINES.md",
+    {"id": "rank_rent", "name": "Rank-and-rent sites", "rank": 8, "doc": "docs/MONEY_MACHINES.md",
      "what": "A site for one trade in one town, ranked, then rented to a local business.", "paused": True,
      "built": ["Research and a 6-month plan only"], "first_dollar": ["A $12 domain (not free: your call)", "3-12 months to rank", "A tenant"],
      "usd_m1": [0, 0], "usd_m3": [0, 0], "hours": [0, 0], "why": "The slowest machine: start only once the agency and gigs run."},
-    {"id": "kalshi", "name": "Kalshi", "rank": 7, "doc": "docs/KALSHI_STOP_LIST.md", "paused": True,
+    {"id": "kalshi", "name": "Kalshi", "rank": 9, "doc": "docs/KALSHI_STOP_LIST.md", "paused": True,
      "what": "Prediction-market bot.", "built": ["Bot, Kalshi City page, edge research"], "first_dollar": ["Paused: no proven edge"],
      "usd_m1": [0, 0], "usd_m3": [0, 0], "hours": [0, 0], "why": "Paused until research shows an edge. Nothing to do."},
 ]
@@ -74,7 +87,7 @@ WEEK = [
                                                          "Double-click AGENCY_DAY.bat again: 3 demo sites, the call list and TODAY.txt"]},
     {"day": 2, "title": "First calls (1 hour)", "tasks": ["Drop the 3 site folders on app.netlify.com/drop, press Publish", "Call 10 owners from Call today, by hand, 10:00-12:00 or 14:00-16:00",
                                                        "Mark every call on the card (Contacted, Call back, Do not contact)"]},
-    {"day": 3, "title": "Shop + gigs (1 hour)", "tasks": ["Payhip: upload the 5 products with docs/BUSINESS_LISTING_KIT.md (zips: RUN_MONEY or python -m money_machines.products.build_all --zip)",
+    {"day": 3, "title": "Shop + gigs (1 hour)", "tasks": ["Payhip: upload the 8 products with docs/BUSINESS_LISTING_KIT.md (zips: RUN_MONEY or python -m money_machines.products.build_all --zip)",
                                                        "Fiverr: publish the logo and Google-profile gigs (docs/GIG_PACK.md)", "Make one Stripe payment link per plan, paste them in the billing kit"]},
     {"day": 4, "title": "Calls + Instagram (1 hour)", "tasks": ["AGENCY_DAY.bat, then 10 more calls", "New Instagram (Professional); schedule the first week in Meta Business Suite",
                                                               "Put the shop link in the bio"]},
@@ -134,9 +147,96 @@ def next_action(m: dict, st: dict) -> str:
             return "Double-click AGENCY_DAY.bat: today's leads, 3 demo sites, the call list."
         return f"Call {min(10, st.get('call_list') or st.get('leads') or 10)} owners from Call today (by hand, business hours)."
     if m["id"] == "products":
-        return "Upload the 5 zips to a free Payhip shop (docs/BUSINESS_LISTING_KIT.md)." if st.get("product_zips") else \
-            "Make the 5 zips (python -m money_machines.products.build_all --zip), then upload them to Payhip."
+        return "Upload the 8 zips to a free Payhip shop, the 4 trading ones first (docs/BUSINESS_LISTING_KIT.md)." if st.get("product_zips") else \
+            "Make the 8 zips (python -m money_machines.products.build_all --zip), then upload them to Payhip, the 4 trading ones first."
     return m["first_dollar"][0]
+
+
+# ------------------------------------------------------------------------------------------------ the ONE money place (night team B, 2026-11-16)
+DOOR = os.path.join(ROOT, "money_machines", "money_door.json")
+FIXTURE_DAY = "2026-11-16"                    # the DEMO's fixed "today" (the committed fixture never changes by itself)
+HOME = os.environ.get("BIZ_HOME_JSON") or os.path.join(ROOT, "tools", "web_public", "home.json")
+
+
+def door() -> dict:
+    return _read(DOOR) or {}
+
+
+def trading(sample: bool, today: str) -> dict:
+    """the payout plan (engine/payout_plan.py): the PC's built home.json when there is one, else the DEMO accounts"""
+    from engine import payout_plan as PP
+    accts = [] if sample else PP.accounts_from_home(_read(HOME))
+    doc = PP.plan(accts or PP.DEMO, today)
+    doc["demo"] = not accts
+    return doc
+
+
+def costs() -> dict:
+    c = door().get("costs") or {}
+    bought = [{"what": str(x["what"]), "usd": round(float(x["usd"]), 2), "kind": x.get("kind", "")} for x in c.get("bought") or []]
+    subs = [{"what": str(x["what"]), "usd_month": round(float(x.get("usd_month") or 0), 2)} for x in c.get("subscriptions") or []]
+    return {"bought": bought, "spent": round(sum(x["usd"] for x in bought), 2), "subscriptions": subs,
+            "monthly": round(sum(x["usd_month"] for x in subs), 2), "next_buys": c.get("next_buys") or [], "note": c.get("note", "")}
+
+
+SHOP_STEPS = ["On the PC: python -m money_machines.products.build_all --zip (makes every zip in money_machines/out/products/)",
+              "payhip.com (free plan) > Products > Add new > Digital download"]
+
+
+def ready() -> list:
+    """everything Claude finished that only needs the owner's upload / publish click, each with its tick list"""
+    lk = _read(os.path.join(ROOT, "money_machines", "products", "listing_kit.json")) or {}
+    trading_first = {"prop-trader-bundle": 0, "prop-eval-tracker": 1, "eval-risk-calculator": 2, "eval-rules-explained": 3, "trader-routine-planner": 4}
+    out = []
+    for p in sorted(lk.get("products") or [], key=lambda p: trading_first.get(p["id"], 9)):
+        shop = os.path.dirname((p.get("covers_wide") or ["money_machines/products/x/shop/c"])[0])
+        out.append({"id": p["id"], "kind": "product", "name": p["name"].split(":")[0], "usd": p["price_usd"], "minutes": 15,
+                    "where": "Payhip (free), then Gumroad / Etsy", "file": f"money_machines/out/products/{p['zip']}",
+                    "steps": SHOP_STEPS + [f"Upload {p['zip']}", f"Paste the title, description and FAQ from {shop}/listing.md",
+                                           f"Add the 3 wide covers from {shop}/", f"Price ${p['price_usd']:g}, then Publish"]})
+    gp = _read(os.path.join(ROOT, "money_machines", "gig_pack.json")) or {}
+    starts = [g for g in gp.get("gigs") or [] if g.get("start_here")][:4]
+    if starts:
+        out.append({"id": "fiverr-gigs", "kind": "gigs", "name": f"Fiverr: {len(starts)} ready gigs", "usd": float(starts[0]["packages"][0]["price"]), "minutes": 60,
+                    "where": "Fiverr (free; it keeps 20%)", "file": "docs/GIG_PACK.md",
+                    "steps": ["fiverr.com > Become a seller, your real name; finish the ID + selfie check on the phone (14 days)"] +
+                             [f"Create a gig: paste '{g['title'][:60]}...' with its tags, packages (${g['packages'][0]['price']}-{g['packages'][-1]['price']}) and FAQ from docs/GIG_PACK.md"
+                              for g in starts[:2]] + ["Add 3 pictures (docs/shots/money_machines/brand_kit_concepts.jpg for the logo gig), Publish",
+                                                    "Answer every message the same day (Claude drafts, you send)"]})
+    out.append({"id": "content-30d", "kind": "content", "name": "Two 30-day Instagram plans", "usd": 0.0, "minutes": 30, "where": "Meta Business Suite (free)",
+                "file": "money_machines/plans/", "steps": ["On the PC: python -m money_machines.content_plan --all --render (the images + posting sheet)",
+                                                           "New Instagram, switch to Professional", "Meta Business Suite > Planner: schedule week 1 from the posting sheet",
+                                                           "Shop link in the bio once the products are up"]})
+    out.append({"id": "demo-sites", "kind": "sites", "name": "Demo websites to sell", "usd": 499.0, "minutes": 30, "where": "Netlify Drop (free)",
+                "file": "agency/out/", "steps": ["Double-click AGENCY_DAY.bat (fill agency/config.json the first time)",
+                                                  "Drop each site folder on app.netlify.com/drop, press Publish", "Call the owners on Call today, by hand, business hours"]})
+    return out
+
+
+def ideas() -> dict:
+    d = door()
+    return {**(d.get("ideas") or {}), "kits": d.get("kits") or {}}
+
+
+def moves(tr: dict, models: list, rd: list) -> list:
+    """this week's money moves: at most 7, the fastest money first; each with minutes and the $ it can bring (ESTIMATE)"""
+    first = tr.get("first") or {}
+    a4 = tr.get("account4") or {}
+    out = [{"id": "m-evals", "what": f"Let Zlarior and ATLAS trade every session; check the eval room each evening (first payout about {first.get('bank', '-')}).",
+            "minutes": 5, "usd": [0, float(first.get("to_you") or 0)], "where": "Business > Trading money"}]
+    prod = [r for r in rd if r["kind"] == "product"]
+    if prod:
+        out.append({"id": "m-shop-trading", "what": "Upload the 4 trading products to a free Payhip shop (bundle $29, tracker $17, calculator $12, cheat sheet $7).",
+                    "minutes": 60, "usd": [0, 100], "where": "Business > Ready to upload"})
+    out.append({"id": "m-ai-apply", "what": "Apply to 2 AI-training sites and take the assessment (your own words).", "minutes": 90, "usd": [0, 400], "where": "AI training tasks"})
+    out.append({"id": "m-fiverr", "what": "Publish the logo and Google-profile gigs on Fiverr (texts are ready).", "minutes": 60, "usd": [0, 100], "where": "Business > Ready to upload"})
+    out.append({"id": "m-agency", "what": "AGENCY_DAY.bat, then 10 calls by hand (one Starter sale = $499 + $49 a month).", "minutes": 75, "usd": [0, 548], "where": "Website agency"})
+    if len(prod) > 4:
+        out.append({"id": "m-shop-rest", "what": f"Upload the other {len(prod) - 4} products (site templates, social kit, agency kit, planner).", "minutes": 60, "usd": [0, 50],
+                    "where": "Business > Ready to upload"})
+    out.append({"id": "m-account4", "what": f"Account #4: not yet. Buy the LucidPro 50K about {a4.get('buy_on') or 'after the first payout'} (money in the bank first).",
+                "minutes": 0, "usd": [0, 0], "where": "Business > Trading money"})
+    return out[:7]
 
 
 def build(sample: bool = False, now: dt.datetime | None = None) -> dict:
@@ -150,7 +250,11 @@ def build(sample: bool = False, now: dt.datetime | None = None) -> dict:
     live = [m for m in models if not m["paused"]]
     tot = {k: [sum(m[k][0] for m in live), sum(m[k][1] for m in live)] for k in ("usd_m1", "usd_m3", "hours")}
     tot["real_usd_month"] = round(sum(m["real_usd_month"] for m in models), 2)
-    return {"v": 1, "kind": "business", "asof": now.isoformat(timespec="seconds"), "label": "ESTIMATE", "sample": sample, "demo": sample,
+    tr = trading(sample, FIXTURE_DAY if sample else now.date().isoformat())
+    rd = ready()
+    extra = {"trading": tr, "costs": costs(), "ready": rd, "ideas": ideas(), "moves": moves(tr, models, rd),
+             "door_rules": door().get("rules") or []}
+    return extra | {"v": 1, "kind": "business", "asof": now.isoformat(timespec="seconds"), "label": "ESTIMATE", "sample": sample, "demo": sample,
             "note": "EXAMPLE, not real: the plan with no progress from the PC yet (DEMO)." if sample else "Your PC's progress; $ ranges are estimates from the teams' docs.",
             "total": tot, "models": models, "progress": {k: v for k, v in st.items() if k != "agency_placeholders"} if st else {},
             "prices": prices(), "week": WEEK, "rules": RULES}

@@ -109,7 +109,7 @@ def plan_account(a: dict, today: str) -> dict:
     r = {"name": name, "plan": plan, "label": P["label"], "stage": stage, "room": round(room, 2), "price": X["price"],
          "request": req, "to_you": round(req * P["split"], 2), "funded_month": X["funded_month"]}
     if room <= 0 or status in ("failed", "breached", "lost"):
-        return {**r, "state": "lost", "text": f"{name}: the eval is gone. Buy a new {P['label']} eval (${X['price']:.2f}) when you want it back."}
+        return {**r, "state": "lost", "text": f"{name}: the eval is gone. Buy a new {P['label']} eval at ${X['price']:.2f} when you want it back."}
     if stage == "funded":
         to_ask = max(0.0, goal - _num(a.get("profit")))
         n = max(int(P["cycle_days"]), int(math.ceil(to_ask / P["typical_day"]))) if to_ask > 0 else 0

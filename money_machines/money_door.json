@@ -1,0 +1,76 @@
+{
+ "v": 1,
+ "kind": "money-door",
+ "asof": "2026-11-16",
+ "about": "The ONE money place (night team B, 2026-11-16): costs, the researched new ideas and the 2 new starter kits, read by tools/biz_publish.py into the Business page. Edit the costs here when you buy something (owner's real prices only). Every $ is an ESTIMATE range, not a promise.",
+ "costs": {
+  "bought": [
+   {"what": "MFFU Builder 50K eval (Zlarior / LIT)", "usd": 91.80, "kind": "eval"},
+   {"what": "MFFU Builder 25K eval (ATLAS)", "usd": 63.00, "kind": "eval"},
+   {"what": "MFFU 25K eval (BLITZ, paper / hidden)", "usd": 43.00, "kind": "eval"}
+  ],
+  "subscriptions": [],
+  "note": "Evals from research/props/roadmap.json paid_already ($197.80). No monthly subscription is on the money plan: every business account is a free plan. Add a line here if you start paying for one (name, $ a month).",
+  "next_buys": [
+   {"what": "LucidPro 50K (account #4, copies Zlarior)", "usd": [120, 135], "when": "the day the first MFFU payout is in your bank (docs/ACCOUNT_4.md)"},
+   {"what": "A new MFFU eval after a failed one", "usd": [63, 91.80], "when": "only if an eval fails (25K $63, 50K $91.80 at your prices)"},
+   {"what": "Etsy listing fee (only if you list there)", "usd": [0.20, 1.60], "when": "$0.20 per listing; Payhip and Gumroad cost $0 up front"}
+  ]
+ },
+ "ideas": {
+  "searched": "2026-11-16",
+  "how": "Ranked by $ an hour, then the time to the first dollar, for a non-coder with a PC and Claude. Numbers are the search engine's reading of blogs and aggregators (most have affiliate interests): treat them as rough.",
+  "rows": [
+   {"rank": 1, "id": "ai_training", "name": "AI training tasks (rating and writing for AI companies)", "usd_hour": [15, 30], "first_dollar": "1-3 weeks (application + assessment)",
+    "month": [0, 500], "risk": "No guaranteed hours; projects come and go; many applicants are never given work; pay per task on some sites. Using an AI to do the tasks is banned and gets the account closed.",
+    "fits": "Your own time at the PC, in English; no selling, no audience. Claude can only help you prepare the application, never do the tasks.", "model": true,
+    "sources": ["https://www.ziprecruiter.com/Jobs/Remote-Annotation", "https://jobright.ai/blog/data-annotation-jobs-guide/", "https://breakingeven.online/blog/how-much-do-ai-training-platforms-actually-pay"]},
+   {"rank": 2, "id": "user_testing", "name": "Paid website and app tests (record your screen and voice)", "usd_hour": [15, 30], "first_dollar": "2-3 weeks (a practice test, then PayPal about 14 days after a test)",
+    "month": [0, 120], "risk": "Few tests a week for a new tester; you must match the screener; a 20-minute test pays about $10, flat-rate sites $5.", "fits": "A PC with a microphone, 20 minutes at a time, nothing to build.", "model": true,
+    "sources": ["https://www.finder.com/make-money-online/how-to-earn-money-user-testing", "https://cleverx.com/blog/user-testing-platforms-pay-per-test-2026/"]},
+   {"rank": 3, "id": "ai_gigs", "name": "AI set-up and automation gigs for small businesses (Fiverr)", "usd_hour": [10, 40], "first_dollar": "2-8 weeks (new sellers wait for the first order)",
+    "month": [0, 400], "risk": "Crowded; Fiverr keeps 20%; the client must be told AI is used. Fiverr's own index: AI automation +136%, prompt work +76%.", "fits": "Builds on the 8 ready gigs (docs/GIG_PACK.md); Claude drafts, you check and send.", "model": false,
+    "sources": ["https://www.fiverr.com/resources/guides/reports/freelancing-and-future-of-work-statistics", "https://www.entrepreneur.com/business-news/the-top-10-ways-small-businesses-are-using-ai-right-now-according-to-fiverr-data"]},
+   {"rank": 4, "id": "prop_affiliate", "name": "Disclosed prop-firm affiliate links (the eval journal, the product shop page)", "usd_hour": [0, 20], "first_dollar": "1-3 months (needs an audience)",
+    "month": [0, 100], "risk": "Needs followers first; 'Ad' on every link (FTC); no results or pass claims; firm rules on affiliates differ. Reported rates 5-25% of the eval fee, often recurring (vendor blogs, unverified).", "fits": "You already trade these evals and have the eval journal plan.", "model": false,
+    "sources": ["https://track360.io/blog/prop-firm-affiliate-commission-rates-benchmark-2026", "https://track360.io/blog/best-prop-firm-affiliate-programs-2026-operator-teardown"]},
+   {"rank": 5, "id": "more_templates", "name": "More spreadsheet / printable templates (Etsy, Payhip)", "usd_hour": [0, 15], "first_dollar": "1-3 months",
+    "month": [0, 100], "risk": "Most template sellers make little; volume comes from many listings and search; Etsy charges $0.20 a listing.", "fits": "Claude builds them; you upload (the 8 products are the start).", "model": false,
+    "sources": ["https://dev.to/fermainpariz/how-to-make-money-selling-notion-templates-in-2026-realistic-guide-5g09", "https://fungies.io/?p=40583"]},
+   {"rank": 6, "id": "print_on_demand", "name": "Print on demand (shirts, mugs with your designs)", "usd_hour": [0, 10], "first_dollar": "1-6 months",
+    "month": [0, 200], "risk": "Most stores fail; 6-12 months to profit in the guides; ads cost money. Not recommended now.", "fits": "Low fit: design-heavy, slow.", "model": false,
+    "sources": ["https://www.artomate.app/blog/etsy-print-on-demand-side-hustle-2026-earnings-how-to-start", "https://app.unilink.us/blog/side-hustle-ideas-2026"]}
+  ]
+ },
+ "kits": {
+  "ai_training": {
+   "title": "AI training tasks: starter kit",
+   "steps": [
+    "Pick 2 well-known sites that pay for AI rating / writing work (search 'AI training jobs remote'); read their own pay and rules page first",
+    "Apply with your real name; take the assessment in one quiet sitting (30-90 min); write in your own words",
+    "Never pay to apply or to 'unlock' work: real sites pay you, never the other way",
+    "When work comes: 1-2 hours on weekday evenings, after the market closes; log hours and $ in the Ledger",
+    "Set aside 25-30% for taxes (you are a contractor: no tax is taken out)"
+   ],
+   "rules": ["Do the tasks yourself: using an AI to answer AI-training tasks is banned and ends the account", "One account per person, your real identity", "Keep task content private (they sign you to confidentiality)"],
+   "money": "About $15-30 an hour for general English tasks when work is there (ZipRecruiter average $27.67 for remote annotation); hours are never guaranteed."
+  },
+  "user_testing": {
+   "title": "Paid website tests: starter kit",
+   "steps": [
+    "Sign up on 2 tester sites with your real details; do the practice test well (it decides if you get tests)",
+    "Have a quiet room, a working microphone and the PC ready; tests appear in the site's feed with the pay shown first",
+    "Think out loud: say what you see, what you expect and what confuses you; that is the whole job",
+    "Take only tests whose screener honestly fits you (lying gets the account closed)",
+    "PayPal pays about 14 days after a test; log each test in the Ledger"
+   ],
+   "rules": ["Honest screener answers only", "Never share the sites' or clients' private content", "Never pay to join"],
+   "money": "About $10 for a 20-minute recorded test ($5 flat on some sites, $30-120 for rare live interviews); a new tester often gets only a few a week."
+  }
+ },
+ "rules": [
+  "Nothing here posts, emails, uploads or calls by itself: you press every button.",
+  "Every $ is an ESTIMATE range from research, not income; 'real' is only what the ledger recorded.",
+  "No paid services: every account on this page is a free plan (Etsy's $0.20 listing fee is the one optional cost)."
+ ]
+}

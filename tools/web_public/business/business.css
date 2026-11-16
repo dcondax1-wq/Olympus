@@ -55,5 +55,21 @@ svg text { font-family: var(--ag-sans); }
 .chk input:focus-visible + span::before { outline: 2px solid var(--ag-gold); outline-offset: 2px; }
 .chk input:checked + span { text-decoration: line-through; color: var(--ag-muted); }
 #app .week { overflow: visible; }
+
+/* THE ONE MONEY PLACE (night team B, 2026-11-16) */
+.door { border-color: var(--oly-th-n9, #4a3d28); }
+.moves ol, .item ol { margin: 0; padding: 0; display: grid; gap: 4px; list-style: none; }
+#app .moves, #app .item { overflow: visible; }
+.acct { padding: 10px 0; border-top: 1px solid var(--ag-line); display: grid; gap: 6px; }
+.acct:first-child { border-top: 0; padding-top: 0; }
+.acct .kv { grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); }
+.acct h3, .item h3 { margin: 0; font-size: 16px; }
+.item { border-top: 1px solid var(--ag-line); }
+.item summary { min-height: 44px; display: flex; align-items: center; justify-content: space-between; gap: 10px; cursor: pointer; font-weight: 700; }
+.item summary .pr { font-family: var(--ag-num); color: var(--ag-gold); flex: none; }
+.item summary[data-done="1"] .nm { text-decoration: line-through; color: var(--ag-muted); }
+.item ul { margin: 6px 0; padding-left: 18px; font-size: 14px; color: var(--ag-soft); }
+.item > ol > li:not(:has(label)) { font-size: 14px; color: var(--ag-soft); padding: 2px 0; }
+#ideas td:first-child { width: 46%; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 html[data-oly-lite="1"] .ag-card { box-shadow: none; }

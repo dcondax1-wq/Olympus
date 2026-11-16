@@ -37,13 +37,13 @@ WEBD = os.path.join(AK.WEB, APP)
 
 
 def test_page():
-    AK.static_kit(APP, NAME, reads=("./business.json",), storage="ls")
+    AK.static_kit(APP, NAME, reads=("./business.json", "../home.json"), storage="ls")
     js = AK.read(os.path.join(WEBD, "business.js"))
     check("a. the only browser storage is the 7-day ticks under one key (business.week.v1), wrapped in try / catch",
           js.count("localStorage.") == 2 and "business.week.v1" in js and js.count("try {") >= 3 and not re.search(r"sessionStorage|indexedDB", js))
     fx = json.load(open(os.path.join(WEBD, "fixture.json"), encoding="utf-8"))
-    check("a. the fixture: kind business, ESTIMATE, sample + demo, no local progress, 7 models, 7 days",
-          fx["kind"] == "business" and fx["label"] == "ESTIMATE" and fx["sample"] and fx["demo"] and fx["progress"] == {} and len(fx["models"]) == 7 and len(fx["week"]) == 7)
+    check("a. the fixture: kind business, ESTIMATE, sample + demo, no local progress, 9 models, 7 days",
+          fx["kind"] == "business" and fx["label"] == "ESTIMATE" and fx["sample"] and fx["demo"] and fx["progress"] == {} and len(fx["models"]) == 9 and len(fx["week"]) == 7)
     import biz_publish as BP
     fresh = BP.build(sample=True)
     fresh["asof"] = fx["asof"]
@@ -126,8 +126,8 @@ def test_publish():
     import biz_publish as BP
     d = BP.build(sample=True)
     live = [m for m in d["models"] if not m["paused"]]
-    check("d. 7 models, 2 paused (rank-and-rent, Kalshi), each with a next step, a first-dollar list and ranges low <= high",
-          len(d["models"]) == 7 and {m["id"] for m in d["models"] if m["paused"]} == {"rank_rent", "kalshi"}
+    check("d. 9 models, 2 paused (rank-and-rent, Kalshi), each with a next step, a first-dollar list and ranges low <= high",
+          len(d["models"]) == 9 and {m["id"] for m in d["models"] if m["paused"]} == {"rank_rent", "kalshi"}
           and all(m["next"] and m["first_dollar"] and m["usd_m1"][0] <= m["usd_m1"][1] and m["usd_m3"][0] <= m["usd_m3"][1] for m in d["models"]))
     check("d. the totals are the sums of the models that are not paused",
           all(d["total"][k] == [sum(m[k][0] for m in live), sum(m[k][1] for m in live)] for k in ("usd_m1", "usd_m3", "hours")), d["total"])
@@ -213,9 +213,9 @@ def test_browser():
         with AK.browser() as br:
             ctx, p, errs, seen, off = AK.page(br, origin)
             AK.open_app(p, origin, APP)
-            check("c. DEMO: the tag, the month-3 range, 7 model cards, 7 table rows, 21 ticks, the 3 prices",
-                  p.is_visible("#demo") and p.inner_text("#heroM3") == "$0-2,630 a month" and p.locator("#models > section").count() == 7
-                  and p.locator("#tbl tbody tr").count() == 7 and p.locator("#week input").count() == 21 and "Starter" in p.inner_text("#prices"), p.inner_text("#status"))
+            check("c. DEMO: the tag, the month-3 range, 9 model cards, 9 table rows, 21 ticks, the 3 prices",
+                  p.is_visible("#demo") and p.inner_text("#heroM3") == "$0-3,250 a month" and p.locator("#models > section").count() == 9
+                  and p.locator("#tbl tbody tr").count() == 9 and p.locator("#week input").count() == 21 and "Starter" in p.inner_text("#prices"), p.inner_text("#status"))
             p.locator("#week input").first.scroll_into_view_if_needed()
             p.locator("#week input").first.dispatch_event("click")   # the AGORA app bar can sit over the row while scrolling
             p.reload()

@@ -1,5 +1,6 @@
-// BUSINESS page (ES module): reads ./business.json (the PC's own, tools/biz_publish.py) else ./fixture.json (DEMO). Sends nothing.
-import * as C from './businesscore.js';
+// BUSINESS page (ES module): reads ./business.json (the PC's own, tools/biz_publish.py) else ./fixture.json (DEMO), and ../home.json (the
+// published evals) for the payout plan (businesscore.planPayouts = engine/payout_plan.py). Sends nothing. The ONE money place (2026-11-16).
+import * as C from './businesscore.js?v=2';
 
 const $ = (id) => document.getElementById(id);
 const KEY = 'business.week.v1';
@@ -56,7 +57,7 @@ function render(doc) {
   for (const p of doc.prices) kv(pr, p.name, C.priceLine(p));
 
   const ticks = loadTicks(); const wk = $('week'); wk.textContent = '';
-  const count = () => { const n = Object.values(ticks).filter(Boolean).length; $('weekPill').textContent = `${n} done`; };
+  const count = () => { const n = Object.entries(ticks).filter(([k, v]) => v && /^d\d/.test(k)).length; $('weekPill').textContent = `${n} done`; };
   for (const d of doc.week) {
     wk.appendChild(h('h3', '', `Day ${d.day}: ${d.title}`));
     const ol = h('ol');
@@ -69,13 +70,126 @@ function render(doc) {
     wk.appendChild(ol);
   }
   count();
-  const ru = $('rules'); ru.textContent = ''; for (const r of doc.rules) ru.appendChild(h('li', '', r));
+  const ru = $('rules'); ru.textContent = ''; for (const r of [...doc.rules, ...(doc.x.door_rules || [])]) ru.appendChild(h('li', '', r));
+  renderDoor(doc, ticks);
+}
+
+// a tick box bound to the one tick store (key prefix: m = a money move, r = a ready-to-upload step)
+function tick(ticks, key, text, onChange) {
+  const li = h('li'), lab = h('label', 'chk'), cb = document.createElement('input');
+  cb.type = 'checkbox'; cb.checked = !!ticks[key];
+  cb.onchange = () => { ticks[key] = cb.checked; saveTicks(ticks); if (onChange) onChange(); };
+  lab.appendChild(cb); lab.appendChild(h('span', '', text)); li.appendChild(lab);
+  return li;
+}
+
+function renderDoor(doc, ticks) {
+  const X = doc.x;
+  const plan = doc.livePlan || X.trading;
+  const S = C.summary(doc, plan, X.costs);
+  const dl = $('door'); dl.textContent = '';
+  kv(dl, 'Trading: first payout to you', S.firstPayout);
+  kv(dl, 'Trading: funded, all accounts', S.funded);
+  if (plan && plan.funded_month_with_4) kv(dl, 'With account #4', `${C.money(plan.funded_month_with_4)} a month`);
+  kv(dl, 'Business models by month 3', S.business);
+  kv(dl, 'Spent so far (evals)', S.spent);
+  kv(dl, 'Real income so far', S.real);
+
+  const mv = $('moves'); mv.textContent = '';
+  const mcount = () => { $('movesPill').textContent = `${X.moves.filter((m) => ticks['m:' + m.id]).length} of ${X.moves.length} done`; };
+  for (const m of X.moves) {
+    const extra = [m.minutes ? `${m.minutes} min` : '', m.usd[1] ? `up to ${C.money(m.usd[1])}` : ''].filter(Boolean).join(', ');
+    mv.appendChild(tick(ticks, 'm:' + m.id, extra ? `${m.what} (${extra})` : m.what, mcount));
+  }
+  mcount();
+
+  const tr = $('trade'); tr.textContent = '';
+  $('tradeSrc').textContent = doc.livePlan ? 'your evals' : (plan && plan.demo ? 'DEMO evals' : 'plan');
+  $('tradeSrc').className = `pill ${doc.livePlan ? 'ok' : 'warn'}`;
+  if (!plan || !plan.accounts.length) tr.appendChild(h('p', 'note', 'No eval to plan from yet.'));
+  for (const a of (plan ? plan.accounts : [])) {
+    const box = h('div', 'acct');
+    const row = h('div', 'row'); row.appendChild(h('h3', '', a.name)); row.appendChild(h('span', `pill ${a.state === 'lost' ? 'bad' : 'ok'}`, a.state === 'lost' ? 'gone' : a.label || a.state));
+    box.appendChild(row);
+    const d2 = h('dl', 'kv');
+    if (a.state !== 'lost') {
+      if (a.pass_typical) kv(d2, 'Passes about', `${a.pass_typical} (slow ${a.pass_slow})`);
+      kv(d2, 'First payout request', `${a.payout_typical} (slow ${a.payout_slow})`);
+      kv(d2, 'Ask / to you (80%)', `${C.money(a.request)} / ${C.money(a.to_you)}`);
+      kv(d2, 'In your bank about', a.bank_typical || '-');
+      kv(d2, 'Funded, a month', C.money(a.funded_month));
+      kv(d2, 'Room left now', C.money(a.room));
+    }
+    box.appendChild(d2);
+    if (a.state === 'lost') box.appendChild(h('p', 'note', a.text));
+    tr.appendChild(box);
+  }
+  $('acct4').textContent = plan && plan.account4 ? plan.account4.text : '';
+
+  const rd = $('ready'); rd.textContent = '';
+  let all = 0, done = 0;
+  for (const r of X.ready) {
+    const d = h('details', 'item'); const sm = h('summary');
+    sm.appendChild(h('span', 'nm', r.name)); sm.appendChild(h('span', 'pr', r.usd ? C.money(r.usd) : 'free'));
+    d.appendChild(sm);
+    d.appendChild(h('p', 'note', `${r.where}. About ${r.minutes} min. File: ${r.file}`));
+    const ol = h('ol');
+    const recount = () => { const n = r.steps.filter((_, i) => ticks[`r:${r.id}:${i}`]).length; sm.dataset.done = n === r.steps.length ? '1' : '0'; readyCount(); };
+    r.steps.forEach((t, i) => { all += 1; if (ticks[`r:${r.id}:${i}`]) done += 1; ol.appendChild(tick(ticks, `r:${r.id}:${i}`, t, recount)); });
+    d.appendChild(ol); rd.appendChild(d);
+    sm.dataset.done = r.steps.every((_, i) => ticks[`r:${r.id}:${i}`]) ? '1' : '0';
+  }
+  function readyCount() {
+    const fin = X.ready.filter((r) => r.steps.length && r.steps.every((_, i) => ticks[`r:${r.id}:${i}`])).length;
+    $('readyPill').textContent = `${fin} of ${X.ready.length} live`;
+  }
+  readyCount();
+
+  const I = X.ideas;
+  $('ideasHow').textContent = `${I.how}${I.searched ? ` Searched ${I.searched}.` : ''}`;
+  const ib = $('ideas').querySelector('tbody'); ib.textContent = '';
+  for (const r of I.rows) {
+    const t = h('tr');
+    t.appendChild(h('td', '', `${r.rank}. ${r.name}${r.model ? ' (new model)' : ''}`));
+    t.appendChild(h('td', 'n', C.range(r.usd_hour)));
+    t.appendChild(h('td', 'n', C.range(r.month)));
+    t.appendChild(h('td', '', r.first_dollar));
+    ib.appendChild(t);
+  }
+  const kb = $('kits'); kb.textContent = '';
+  for (const r of I.rows) {
+    const k = I.kits[r.id];
+    const d = h('details', 'item'); const sm = h('summary');
+    sm.appendChild(h('span', 'nm', k ? k.title : `${r.name}: the risk`)); d.appendChild(sm);
+    d.appendChild(h('p', 'note', `Risk: ${r.risk}`));
+    d.appendChild(h('p', 'note', `Fits you: ${r.fits}`));
+    if (k) {
+      const ol = h('ol'); for (const s of k.steps) ol.appendChild(h('li', '', s)); d.appendChild(ol);
+      const ul = h('ul'); for (const s of k.rules) ul.appendChild(h('li', '', s)); d.appendChild(ul);
+      d.appendChild(h('p', 'note', k.money));
+    }
+    kb.appendChild(d);
+  }
+
+  const cs = $('costs'); cs.textContent = '';
+  for (const b of X.costs.bought) kv(cs, b.what, C.money(b.usd));
+  for (const b of X.costs.subscriptions) kv(cs, b.what, `${C.money(b.usd_month)} a month`);
+  kv(cs, 'Spent so far', C.money(X.costs.spent));
+  kv(cs, 'Subscriptions', X.costs.monthly ? `${C.money(X.costs.monthly)} a month` : 'none');
+  $('costNote').textContent = X.costs.note;
+  const nb = $('nextBuys'); nb.textContent = '';
+  for (const b of X.costs.next_buys) nb.appendChild(h('li', '', `Next buy: ${b.what}, ${C.range(b.usd)}: ${b.when}`));
 }
 
 (async function main() {
-  const own = C.clean(await getJSON('./business.json'));
-  const doc = own || C.clean(await getJSON('./fixture.json'));
+  const ownRaw = await getJSON('./business.json');
+  const own = C.clean(ownRaw);
+  const raw = own ? ownRaw : await getJSON('./fixture.json');
+  const doc = own || C.clean(raw);
   if (!doc) { $('status').textContent = 'No business data yet: run python tools/biz_publish.py on the PC.'; READY = true; return; }
+  doc.x = C.cleanExtra(raw);
+  const accts = C.accountsFromHome(await getJSON('../home.json'));          // the published evals: the plan follows them live
+  doc.livePlan = accts.length ? C.planPayouts(accts, C.localDay(new Date())) : null;
   render(doc);
   READY = true;
 })();

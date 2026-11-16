@@ -28,7 +28,7 @@
 <script src="../olympus/gate-nav.js?v=g3" defer></script>
 <script src="../olympus/sfx.js?v=s4" defer></script>
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#c8a24a'); r.setProperty('--oly-accent-rgb', '200, 162, 74'); })();</script>
-<link rel="stylesheet" href="business.css?v=1">
+<link rel="stylesheet" href="business.css?v=2">
 </head>
 <body>
 <main id="app">
@@ -37,6 +37,30 @@
     <div class="tags"><span id="demo" class="tag demo" hidden>DEMO</span></div>
   </header>
   <p id="status" class="note" role="status" aria-live="polite">Loading...</p>
+
+  <section class="ag-card card door" aria-labelledby="doorH">
+    <div class="row"><h2 id="doorH">Every dollar, one place</h2><span class="pill warn">ESTIMATE</span></div>
+    <dl class="kv" id="door"></dl>
+    <p class="note" id="doorNote">Trading = your evals (from the published home file); business = the models below; costs = what you paid.</p>
+  </section>
+
+  <section class="ag-card card moves" aria-labelledby="movesH">
+    <div class="row"><h2 id="movesH">This week's money moves</h2><span class="pill" id="movesPill">0 done</span></div>
+    <ol id="moves"></ol>
+  </section>
+
+  <section class="ag-card card" aria-labelledby="tradeH">
+    <div class="row"><h2 id="tradeH">Trading money</h2><span class="pill" id="tradeSrc">plan</span></div>
+    <div id="trade"></div>
+    <p class="lead" id="acct4"></p>
+    <p class="note">Typical pace from the research, never a promise: an eval can fail, the slow date is about twice the sessions, the bank date assumes about 4 business days after the request.</p>
+  </section>
+
+  <section class="ag-card card" aria-labelledby="readyH">
+    <div class="row"><h2 id="readyH">Ready to upload</h2><span class="pill ok" id="readyPill">-</span></div>
+    <p class="note">Claude finished these. Each needs only your click; tick the steps as you go (this phone only). Nothing uploads or posts by itself.</p>
+    <div id="ready"></div>
+  </section>
 
   <section class="ag-card card" id="hero" aria-labelledby="heroH">
     <div class="row"><h2 id="heroH">All models together</h2><span class="pill warn">ESTIMATE</span></div>
@@ -52,6 +76,20 @@
   </section>
 
   <section id="models" aria-label="The models"></section>
+
+  <section class="ag-card card" aria-labelledby="ideasH">
+    <div class="row"><h2 id="ideasH">New money ideas, ranked</h2><span class="pill info" id="ideasPill">researched</span></div>
+    <p class="note" id="ideasHow"></p>
+    <table class="tbl" id="ideas"><thead><tr><th>Idea</th><th class="n">$ / hour</th><th class="n">$ / month</th><th>First $</th></tr></thead><tbody></tbody></table>
+    <div id="kits"></div>
+  </section>
+
+  <section class="ag-card card" aria-labelledby="costH">
+    <h2 id="costH">Costs</h2>
+    <dl class="kv" id="costs"></dl>
+    <p class="note" id="costNote"></p>
+    <ul class="note" id="nextBuys"></ul>
+  </section>
 
   <section class="ag-card card" aria-labelledby="priceH">
     <h2 id="priceH">Website prices (one source: agency/config.json)</h2>
@@ -70,6 +108,6 @@
 
   <p class="foot">Business reads one published file and sends nothing. Paper only: it never trades, posts, emails or calls.</p>
 </main>
-<script type="module" src="business.js?v=1"></script>
+<script type="module" src="business.js?v=2"></script>
 </body>
 </html>
