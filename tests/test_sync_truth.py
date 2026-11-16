@@ -68,14 +68,14 @@ const A = T.accountsOf(h1), ag = T.agesOf(h1, NOW);
 out.truth = { lit: A.lit.room, atlas: A.atlas.room, litToday: A.lit.today, atlasToday: A.atlas.today, litBal: A.lit.balance, pcT: ag.pc.t };
 // b / c. Jarvis data.js
 const D = await import(pathToFileURL(path.join(WP, 'jarvis/data.js')).href + '?a');
-await D.refreshLive();
+await D.refreshLive(); await D.pcFeedReady();
 let v = D.liveView();
 out.jarvisFeed = { lit: v.lit && v.lit.room, atlas: v.atlas && v.atlas.room, litToday: v.lit && v.lit.today_pnl, t: v.raw && v.raw.pc && v.raw.pc.t, trades: (v.trades || []).length, blitz: v.blitz };
 const D2 = await import(pathToFileURL(path.join(WP, 'jarvis/data.js')).href + '?b');
 liveBody = { ...ghLive, t: NOW, pc: { t: NOW }, board: { ...ghLive.board, t: NOW, data_t: NOW, lit: { ...ghLive.board.lit, room: 1100 } } };
-await D2.refreshLive(); v = D2.liveView(); out.jarvisNewerGh = { lit: v.lit && v.lit.room };
+await D2.refreshLive(); await D2.pcFeedReady(); v = D2.liveView(); out.jarvisNewerGh = { lit: v.lit && v.lit.room };
 const D3 = await import(pathToFileURL(path.join(WP, 'jarvis/data.js')).href + '?c');
-useFeed = false; liveBody = ghLive; await D3.refreshLive(); v = D3.liveView(); out.jarvisNoFeed = { lit: v.lit && v.lit.room, err: v.err };
+useFeed = false; liveBody = ghLive; await D3.refreshLive(); await D3.pcFeedReady(); v = D3.liveView(); out.jarvisNoFeed = { lit: v.lit && v.lit.room, err: v.err };
 useFeed = true;
 // d. jdata
 const J = await import(pathToFileURL(path.join(WP, 'jarvis/jdata.js')).href);
@@ -116,8 +116,8 @@ def main() -> int:
           "T.accountsOf(" in gate and "T.agesOf(" in gate and "T.accountsOf(" in hs and "overlayHome" in gate)
     check("f. BLITZ hidden in Jarvis's board", j["blitz"] is None, j)
     jdx = open(os.path.join(WP, "jarvis", "index.html"), encoding="utf-8").read()
-    check("f. Jarvis loads the PC feed (deferred, before its module)", '<script src="../pc_feed.js?v=n1" defer></script>' in jdx
-          and jdx.index("../pc_feed.js") < jdx.index("import * as D from './data.js'"))
+    check("f. Jarvis loads the PC feed async (never holds the start on a slow network) and reads afresh when it lands",
+          '<script src="../pc_feed.js?v=n1" id="pcFeedJs" async></script>' in jdx and "s.addEventListener('load', () => safe(() => D.refreshLive()))" in jdx)
     n, ok = len(RES), sum(RES)
     print(f"sync truth: {ok}/{n} " + ("ALL PASS" if ok == n else "FAILED"))
     return 0 if ok == n else 1

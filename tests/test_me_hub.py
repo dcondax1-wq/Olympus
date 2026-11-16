@@ -700,9 +700,9 @@ def test_node():
         return
     O = json.loads(r.stdout)
     m = O["me"]
-    check("i. the catalog: hub 'me' (Me, 'How am I doing — money, health, home?'), second after Today, a page hub with 8 areas and no apps ('8 areas'), no tabs, legacy life, see Oikos / Planner / Argo",
+    check("i. the catalog: hub 'me' (Me, 'How am I doing — money, health, home?'), after Bots, Money and Today (night A 2026-11-16), a page hub with 8 areas and no apps ('8 areas'), no tabs, legacy life, see Oikos / Planner / Argo",
           m["name"] == "Me" and m["q"] == "How am I doing — money, health, home?" and m["page"] == "me" and m["count"] == 0 and m["size"] == "8 areas" and len(m["areas"]) == 8
-          and m["layout"] == [] and m["legacy"] == "life" and m["see"] == ["oikos", "planner", "argo"] and O["order"][:2] == ["today", "me"], m)
+          and m["layout"] == [] and m["legacy"] == "life" and m["see"] == ["oikos", "planner", "argo"] and O["order"][:4] == ["bots", "money", "today", "me"], m)
     check("i. the search finds the Me hub by its words (health, wifi, credit card, birthday, 'sleep steps'), never for Kalshi", O["find"] == [["me"], ["me"], ["me"], ["me"], [], ["me"]], O["find"])
     check("i. the home's Me line: the 3 first tiles in short words with the worst level; 3 days old = the age and warn; no file = a plain line, no number",
           O["line"]["text"] == " · ".join(t["short"] for t in doc["tiles"][:3]) and O["line"]["text"].endswith(" left · 7,000 steps · New device") and O["line"]["lvl"] == "warn" and O["lineOld"]["text"].endswith("(3 d ago)") and O["lineOld"]["lvl"] == "warn"
@@ -817,8 +817,8 @@ def test_page():
             p.wait_for_function("window.GATE && window.GATE.ready()", timeout=60000)
             p.wait_for_timeout(400)
             g = p.evaluate("() => { const t = document.querySelector('.g-hub[data-hub=me]'); return [t.className, t.querySelector('.g-hline').textContent, t.querySelector('.g-hcount').textContent, t.getAttribute('href')]; }")
-            check("j. the home: the Me tile (wide, second) reads '$... left · 7,000 steps · New device' from the PC's file, '8 areas', and opens hub/?h=me",
-                  "g-wide" in g[0] and g[1] == " · ".join(t["short"] for t in doc["tiles"][:3]) and g[2] == "8 areas" and g[3].endswith("hub/index.html?h=me"), g)
+            check("j. the home: the Me tile (fourth since night A 2026-11-16) reads '$... left · 7,000 steps · New device' from the PC's file, '8 areas', and opens hub/?h=me",
+                  "g-hub" in g[0] and g[1] == " · ".join(t["short"] for t in doc["tiles"][:3]) and g[2] == "8 areas" and g[3].endswith("hub/index.html?h=me"), g)
             p.fill("#q", "health")
             p.wait_for_timeout(200)
             first = p.evaluate("() => { const a = document.querySelector('#results a.g-row'); return a ? [a.dataset.hub, a.querySelector('b').textContent] : null; }")

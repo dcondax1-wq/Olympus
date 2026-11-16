@@ -154,6 +154,28 @@ function slim(j) {                          // what Jarvis needs, also kept for 
     trades, health, lines, level: b.level || null, price: num(j && j.price), last_signal: (j && j.last_signal) || null, pc_health,
     progress: isObj(b.progress) ? b.progress : null, money: j && isObj(j.money) && !j.money.error ? j.money : null, mind, learn };
 }
+// SYNC (night A 2026-11-16): the PC feed (../pc_feed.js, the ntfy report tools/pc_report.py posts every 15 min, what the Gate, the hubs and
+// Zenith lay over home.json) wins when it is newer, so Jarvis says the same drawdown / today's $ / data age as every other page, also when
+// the PC runs without GitHub (then live.json on GitHub stays old). Runs after each GitHub read; one at a time; 4 s at most.
+let feedBusy = null;
+function pcFeedOver() {
+  const F = globalThis.PC_FEED;
+  if (feedBusy || !F || typeof F.fetchLatest !== 'function' || typeof F.toLive !== 'function') return feedBusy;
+  feedBusy = (async () => {
+    try {
+      const lite = await Promise.race([F.fetchLatest({ feedUrl: '../status_feed.json', fetch: get }), new Promise((r) => setTimeout(() => r(null), 4000))]);
+      const base = L.j;
+      if (lite && (+lite.t || 0) > (+((base && base.pc) || {}).t || +(base || {}).t || 0)) {
+        L.j = { ...(base || {}), ...F.toLive(lite, base && base.board), src: 'pc_feed' }; L.okAt = Date.now(); L.err = null;
+        LS.set('jarvis.lastLive', { t: L.j.t, board: slim(L.j) });
+        emit('live');
+      }
+    } catch (_) { /* the GitHub copy stays */ }
+    feedBusy = null;
+  })();
+  return feedBusy;
+}
+export const pcFeedReady = () => feedBusy || Promise.resolve();
 export function refreshLive() {
   if (L.busy) return L.busy;
   L.busy = (async () => {
@@ -167,22 +189,13 @@ export function refreshLive() {
       }
       let gerr = null;
       if (!j) { try { const r = await get(URLS.liveRaw + '?t=' + Math.floor(Date.now() / 60000), { cache: 'no-cache' }); if (r.ok) j = await r.json(); else gerr = new Error('live feed ' + r.status); } catch (e2) { gerr = e2; } }
-      // SYNC (night A 2026-11-16): the PC feed (../pc_feed.js, the ntfy report tools/pc_report.py posts every 15 min, what the Gate, the hubs
-      // and Zenith lay over home.json) wins when it is newer, so Jarvis says the same drawdown / today's $ / data age as every other page,
-      // also when the PC runs without GitHub (then live.json on GitHub stays old)
-      const F = globalThis.PC_FEED;
-      if (F && typeof F.fetchLatest === 'function' && typeof F.toLive === 'function') {
-        try {
-          const lite = await Promise.race([F.fetchLatest({ feedUrl: '../status_feed.json', fetch: get }), new Promise((r) => setTimeout(() => r(null), 4000))]);
-          const base = j || L.j;
-          if (lite && (+lite.t || 0) > (+((base && base.pc) || {}).t || +(base || {}).t || 0)) { j = { ...(base || {}), ...F.toLive(lite, base && base.board), src: 'pc_feed' }; gerr = null; }
-        } catch (_) { /* the GitHub copy stays */ }
-      }
-      if (!j && gerr) throw gerr;
       if (j && typeof j === 'object' && (!L.j || (+j.t || 0) >= (+L.j.t || 0))) { L.j = j; L.okAt = Date.now(); L.err = null; LS.set('jarvis.lastLive', { t: j.t, board: slim(j) }); }
+      else if (!j && gerr && !globalThis.PC_FEED) throw gerr;
+      else if (!j && gerr) L.err = String(gerr.message || gerr);
     } catch (e) { L.err = String((e && e.message) || e); }
     L.at = Date.now(); L.busy = null;
     emit('live');
+    pcFeedOver();                                   // then the PC feed, never holding the GitHub answer up
   })();
   return L.busy;
 }
