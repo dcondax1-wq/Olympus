@@ -56,6 +56,12 @@ def read(p):
         return fh.read()
 
 
+def code_only(src):
+    """the code without whole-line // comments and /* */ blocks (three's GLTFLoader explains resource paths with an example URL in a comment)"""
+    src = re.sub(r"/\*.*?\*/", "", src, flags=re.S)
+    return "\n".join(ln for ln in src.splitlines() if not ln.lstrip().startswith("//"))
+
+
 def test_static():
     three = read(os.path.join(WEB, "jarvis", "three.module.min.js"))
     rev = re.search(r'const \w+="(\d+)"', three)
@@ -64,7 +70,7 @@ def test_static():
     check("a. the vendored addons are three 0.160.0 (the same version)", pkg == "three@0.160.0", pkg)
     bad = []
     for f in sorted(glob.glob(os.path.join(ADDONS, "*.js"))):
-        for spec in re.findall(r"from\s+'([^']+)'", read(f)):
+        for spec in re.findall(r"from\s+'([^']+)'", code_only(read(f))):
             if spec != "../../jarvis/three.module.min.js" and not re.fullmatch(r"\./\w+\.js", spec):
                 bad.append((os.path.basename(f), spec))
     check("a. every addon imports only ../../jarvis/three.module.min.js or a sibling", not bad, bad)
@@ -72,7 +78,7 @@ def test_static():
         specs = re.findall(r"from\s+'([^']+)'", read(os.path.join(KIT, name)))
         check(f"a. {name} imports only site-relative paths", specs and all(s.startswith(".") for s in specs), specs)
     urls = [f for f in glob.glob(os.path.join(KIT, "**", "*.*"), recursive=True)
-            if f.endswith((".js", ".html")) and re.search(r"(?:import|from|src=|href=)[^\n]{0,8}['\"]https?://", read(f))]
+            if f.endswith((".js", ".html")) and re.search(r"(?:import|from|src=|href=)[^\n]{0,8}['\"]https?://", code_only(read(f)))]
     check("a. no external URL is loaded by the kit (no CDN)", not urls, urls)
     build = read(os.path.join(ROOT, "tools", "build_web_dashboard.py"))
     check("a. the site build publishes the app folders' subfolders (olympus/three-addons/)",
