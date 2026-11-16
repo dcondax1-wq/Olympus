@@ -64,8 +64,12 @@ def main() -> int:
         charts = os.path.join(tmp, "charts")
         wj(os.path.join(charts, "index.json"), {"strategies": {"lit": [{"tid": "t1", "entry_t": t1, "side": "long", "qty": 3, "entry": 21000.25,
                                                                          "stop": 20990, "target": 21080, "exit": 21071, "usd": 212.5, "r": 2.1, "exit_kind": "target"}],
-                                                               "blitz": [{"tid": "b1", "entry_t": t1, "side": "long"}]}})
+                                                               "blitz": [{"tid": "b1", "entry_t": t1, "side": "long"}],
+                                                               "lit_asia": [{"tid": "s1", "entry_t": t1 + 1800, "side": "long", "usd": 99}],
+                                                               "ema_lon_vix": [{"tid": "a1", "entry_t": t1 + 630, "side": "short"}, {"tid": "a2", "entry_t": t1 + 2400, "side": "long"}]}})
         wt(os.path.join(charts, "lit", "t1.png"), "PNG" * 50)
+        wt(os.path.join(charts, "ema_lon_vix", "a1.png"), "PNG" * 40)
+        wt(os.path.join(charts, "ema_lon_vix", "a2.png"), "PNG" * 40)
         wt(os.path.join(tmp, "latest.md"), f"# Learning night {day}\n\nNo new edge. Contact me at owner@example.com, token: ghp_abcdefghijklmnopqrstuvwxyz123456\n")
         biz = os.path.join(tmp, "biz")
         wj(os.path.join(biz, "business.json"), {"kind": "business", "models": [{"id": "agency", "name": "Website agency", "next": "Fill agency/config.json",
@@ -85,6 +89,11 @@ def main() -> int:
         tn = [f for f in files if os.sep + "Trades" + os.sep in f]
         check("a. a trade note per shown trade (Zlarior with its picture, ATLAS from the board), none for BLITZ", len(tn) == 2 and not any("BLITZ" in f for f in files)
               and os.path.isfile(os.path.join(base, "Pictures", f"{day} Zlarior {OS.et_of(t1).strftime('%H%M')}.png")), tn)
+        hm_a = OS.et_of(t1 + 600).strftime('%H%M')
+        an = open(os.path.join(base, "Trades", f"{day} ATLAS {hm_a}.md"), encoding="utf-8").read()
+        bad_hm = (OS.et_of(t1 + 2400).strftime('%H%M'), OS.et_of(t1 + 1800).strftime('%H%M'))
+        check("a. ATLAS's real trade gets the picture drawn for it; a paper shadow (LIT+Asia, an ATLAS member alone) gets no note",
+              f"![[{day} ATLAS {hm_a}.png]]" in an and not any(h in f for f in tn for h in bad_hm), (an[-200:], tn))
         dn = open(os.path.join(base, "Days", f"Bots {day}.md"), encoding="utf-8").read()
         check("b. day note: Zlarior $1,145 of $2,000, ATLAS $822 of $1,000, today's $ and balances", "| Zlarior 50K | $1,145 of $2,000 | +$212 | $51,145 |" in dn
               and "| ATLAS 25K | $822 of $1,000 | -$40 | $24,822 |" in dn and "Both bots today: +$172" in dn, dn[:600])

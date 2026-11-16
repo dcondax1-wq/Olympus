@@ -164,21 +164,32 @@ def save_cfg(cfg: dict, path=CFG_PATH):
 
 
 # ------------------------------------------------------------------------------------------------ the notes (pure: text in, text out)
+# the trade pictures' strategy keys (engine/trade_chart.STRATS): the 50K's own LIT trades are 'lit'; ATLAS's strategies draw under their
+# own keys (also as paper shadows), so an ATLAS picture is used only when it matches one of ATLAS's real trades on the board
+CHART_LIT = ("lit",)
+CHART_ATLAS = ("ema_lon_vix", "macd_sweep", "atlas", "acct_b", "second")
+
+
 def trade_rows(live: dict, charts_ix: dict, day: str, hide: set, charts: str = CHARTS) -> list:
     """the day's trades of the shown bots: [{bot, name, hhmm, side, qty, entry, stop, target, exit, usd, r, open, how, pic, note}]"""
-    out, seen = [], set()
+    out, seen, atlas_pics = [], set(), []
     for key, rows in ((charts_ix or {}).get("strategies") or {}).items():
-        b = bot_of(key)
+        k = str(key).lower()
+        b = "lit" if k in CHART_LIT else "atlas" if (k in CHART_ATLAS or k.startswith("atlas")) else None
         if not b or b in hide:
             continue
         for r in rows or []:
-            if not isinstance(r, dict):
+            if not isinstance(r, dict) or r.get("src") == "paper":
                 continue
             t = et_of(r.get("entry_t"))
             if not t or t.strftime("%Y-%m-%d") != day:
                 continue
-            out.append(_trade(b, r, t, os.path.join(charts, key, str(r.get("tid") or "") + ".png") if r.get("tid") else None))
-            seen.add((b, int(num(r.get("entry_t")) or 0)))
+            pic = os.path.join(charts, key, str(r.get("tid") or "") + ".png") if r.get("tid") else None
+            if b == "atlas":                                     # only beside a real ATLAS trade (below)
+                atlas_pics.append((_secs(r.get("entry_t")), pic))
+                continue
+            out.append(_trade(b, r, t, pic))
+            seen.add((b, _secs(r.get("entry_t"))))
     board = (live or {}).get("board") or {}
     for r in board.get("trades") or []:
         if not isinstance(r, dict):
@@ -189,14 +200,19 @@ def trade_rows(live: dict, charts_ix: dict, day: str, hide: set, charts: str = C
         t = et_of(r.get("entry_t"))
         if not t or t.strftime("%Y-%m-%d") != day:
             continue
-        et_s = int(num(r.get("entry_t")) or 0)
-        if et_s > 1e12:
-            et_s //= 1000
+        et_s = _secs(r.get("entry_t"))
         if any(bb == b and abs(s - et_s) < 120 for bb, s in seen):
             continue
-        out.append(_trade(b, r, t, None))
+        pic = next((pp for s, pp in atlas_pics if abs(s - et_s) < 120), None) if b == "atlas" else None
+        out.append(_trade(b, r, t, pic))
+        seen.add((b, et_s))
     out.sort(key=lambda x: x["hhmm"])
     return out
+
+
+def _secs(v) -> int:
+    x = int(num(v) or 0)
+    return x // 1000 if x > 1e12 else x
 
 
 def _trade(b, r, t, pic):
