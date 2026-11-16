@@ -6,7 +6,7 @@
 // ctx = { scene, camera, rc, boss (the Group), bossLight (PointLight) }. Everything is optional: any failure leaves the plain scene.
 import * as S from '../olympus/scenery.js';
 import * as AT from '../olympus/fx-atmos.js';
-import { createCitadel } from './citadel.js?v=c3';  // bounded night districts and skybridges
+import { createCitadel } from './citadel.js?v=c4';  // bounded night districts and skybridges
 
 const { THREE } = S;
 const TAU = Math.PI * 2;

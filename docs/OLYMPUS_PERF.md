@@ -59,6 +59,13 @@ power). **oracle (79 draws/s) and datacity (242) keep drawing at Off**; tyche ke
 (datacity 36 MB is the one close to it); layouts per frame <= 1.25. `python -X utf8 -m tests.test_olympus_kit more` runs the new apps, `power`
 the power layer. Daphne's budget was 0 (no three.js when written); it is now 68 calls / 8,500 triangles. Re-measured after the own-loop pass: athena 62 / 8,000, cities 10 / 80,000 (grew with its new districts), kalshicity 90 / 24,000, ares 50 / 7,800.
 
+2026-11-16 (night W2), back under budget without raising one: **oracle** 94k -> ~15k triangles on the HD phone (its 11-05 night city:
+slabs drawn as their top face, window fins as one two-sided face, boxes without floors, a per-pixel sky gradient on a 16x8 dome; a phone keeps
+every 6th tower / 7th block, square roofs; desktop keeps the whole city) and 2.0 -> 1.0 layouts/frame (innerWidth read on resize only);
+**arena** 88k -> 70k (the citadel's strips / caps / streets as faces); **datacity** phone-high 264k -> 231k (caps `fullTris`: the full-detail
+tiles stop at 36k triangles, the city grows with the data); **cities** 54 -> 0 calls on the map front screen (render.js resets
+`renderer.info` after the PMREM environment bake: it is not a frame). Lesson: a new decorative city goes in with its phone cost measured.
+
 ### Verified: the step-down works in every app
 
 Every 3D app above reported pixel ratio 1.5 at `jfx=high` under SwiftShader, i.e. the render core's tier policy / `adapt()` stepped it down to LITE by

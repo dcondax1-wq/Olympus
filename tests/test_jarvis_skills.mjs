@@ -71,6 +71,8 @@ const PH = [
   ['what can you do', 'help_skills'],
 ];
 let nPh = 0;
+// "how" is one letter from "show": a question must never be read as "show ..." (phone QA 2026-11-16: "How are the bots?" opened Zenith)
+for (const t of ['How are the bots?', 'how are the bots doing', 'how is zenith']) { const r = R.route(t, { apps }); check('route: not a switch: ' + t, !r || r.intent !== 'navigate', r ? r.intent : 'null'); }
 for (const [t, want] of PH) { nPh++; const r = R.route(t, { apps }); check('route: ' + t, r && r.intent === want, r ? r.intent : 'null'); }
 check('at least 60 phrasings', nPh >= 60, String(nPh));
 // things that are not for the skills: the brain's other rules and the weather must not be hijacked

@@ -209,7 +209,15 @@ export class Skyline {
     // never more than MAX_FULL tiles in full (the nearest ones): a hard ceiling on draw calls and triangles whatever the camera does
     const order = this._o || (this._o = this.tiles.map((_, k) => k));
     order.sort((a, b) => dists[a] - dists[b]);
-    const full = new Set(order.slice(0, C.maxFull).filter((k) => dists[k] < lod));
+    // and (a phone, caps fullTris) never more full-detail triangles than its budget: the city grows with the data, the phone does not
+    const full = new Set(), capT = C.fullTris || Infinity;
+    let tris = 0;
+    for (const k of order.slice(0, C.maxFull)) {
+      if (!(dists[k] < lod)) continue;
+      const m = this.tiles[k].mesh, g = m.geometry, n = (g.index ? g.index.count : g.attributes.position.count) / 3 * m.count;
+      if (full.size && tris + n > capT) break;
+      full.add(k); tris += n;
+    }
     this.tiles.forEach((rec, k) => {
       const t = rec.tile, dist = dists[k], detail = full.has(k), rich = detail && dist < C.rich;
       if (detail !== rec.detail || this.lodDirty) {

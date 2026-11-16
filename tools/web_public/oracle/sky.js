@@ -103,11 +103,13 @@ export class Sky {
 
   buildDome() {
     const T = this.T;
-    this.dome = new T.Mesh(new T.SphereGeometry(300, 32, 16), new T.ShaderMaterial({
+    // the gradient is worked out per pixel from the direction (vD normalized in the fragment), so a coarse sphere draws the same sky:
+    // 16 x 8 (224 triangles) instead of 32 x 16 (960), part of the phone budget (2026-11-16)
+    this.dome = new T.Mesh(new T.SphereGeometry(300, 16, 8), new T.ShaderMaterial({
       side: T.BackSide, depthWrite: false, fog: false,
       uniforms: { uTop: { value: new T.Color(0x2b2436) }, uHor: { value: new T.Color(0x6a4a30) } },
-      vertexShader: 'varying float vY; void main(){ vY = normalize(position).y; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
-      fragmentShader: 'uniform vec3 uTop; uniform vec3 uHor; varying float vY; void main(){ gl_FragColor = vec4(mix(uHor, uTop, smoothstep(-0.15, 0.6, vY)), 1.0); }',
+      vertexShader: 'varying vec3 vD; void main(){ vD = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
+      fragmentShader: 'uniform vec3 uTop; uniform vec3 uHor; varying vec3 vD; void main(){ float vY = normalize(vD).y; gl_FragColor = vec4(mix(uHor, uTop, smoothstep(-0.15, 0.6, vY)), 1.0); }',
     }));
     this.g.add(this.dome);
   }

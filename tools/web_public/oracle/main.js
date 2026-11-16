@@ -8,7 +8,7 @@
 import * as THREE from '../jarvis/three.module.min.js';
 import { fetchLive, fetchSite, normalize, loadProphecy, FRESH_S } from './data.js?v=ofst1';
 import { loadDemo, docAt, span, todayFx } from './demo.js';
-import { Scene } from './scene.js?v=phone-horizon-2';
+import { Scene } from './scene.js?v=oracle-phone-budget-2';
 import { FallbackCity } from './fallback.js?v=oracle-fallback-honesty-1';
 import { Hud, usd } from './hud.js';
 import { Ladder } from './ladder.js';

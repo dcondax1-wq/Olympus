@@ -5,6 +5,8 @@
 //          fireflies, a pixel ratio of at most 1.5
 //          (farAlt: above this camera height the small details nobody can see from the overview are not drawn: heralds, billboards, rail pylons,
 //          sign poles, cranes; lmLod: the temple and the Pharos beyond this distance)
+//          (fullTris: the full-detail tiles near the camera stop at this many triangles, nearest first, whatever maxFull says: the city
+//          grows with every run published, and the close-up of the densest district went from 223k to 264k triangles by 2026-11-16)
 //   lite   the LITE tier (OLYMPUS low / off), exactly what it always was
 // profileOf(level, phone, saver): low/off = lite; phones at high/ultra use the still-3D phone budget; desktop ultra stays full. ?phone=0 forces full.
 export const PROFILES = {
@@ -12,7 +14,7 @@ export const PROFILES = {
           outskirts: 2600, townTowers: 576, pulses: 34, drops: 7000, flow: 1600, stars: 1800, oldCars: 1500, fog: 3, shells: 8, spark: 1, lmLod: 0, farAlt: 0, dpr: 1.75,
           kit: { godGroups: 2, lens: true, aurora: true, fireflies: true, lightning: true } },
   phone: { cars: 160, flyers: 28, airships: 0, trains: [2, 4], ships: 5, cranes: 4, signs: 1, boards: 2, mirrors: 1, mirrorNear: 60, maxFull: 7, lod: 125, rich: 0,
-           outskirts: 800, townTowers: 384, pulses: 12, drops: 3000, flow: 600, stars: 700, oldCars: 0, fog: 1, shells: 3, spark: 0.5, lmLod: 330, farAlt: 150, dpr: 1.5,
+           outskirts: 800, townTowers: 384, pulses: 12, drops: 3000, flow: 600, stars: 700, oldCars: 0, fog: 1, shells: 3, spark: 0.5, lmLod: 330, farAlt: 150, dpr: 1.5, fullTris: 36000,
            kit: { godGroups: 1, lens: false, aurora: false, fireflies: false, lightning: true } },
   lite: { cars: 160, flyers: 28, airships: 3, trains: [1, 6], ships: 4, cranes: 8, signs: 2, boards: 4, mirrors: 0, mirrorNear: 0, maxFull: 12, lod: 125, rich: 0,
           outskirts: 900, townTowers: 240, pulses: 11, drops: 1800, flow: 420, stars: 450, oldCars: 420, fog: 1, shells: 8, spark: 1, lmLod: 0, farAlt: 0, dpr: 1.5,

@@ -358,9 +358,13 @@ def run_browser(url, shots):
         check("c. every state looks different from every other", min(x for _, _, x in pairs) > 0.05, [(a, b, round(x, 3)) for a, b, x in pairs])
         al, li, idl = sig["alert"], sig["listening"], sig["idle"]
         check("c. alert is red / amber (red well above blue)", al["r"] > 1.25 * al["b"] and al["r"] > al["g"], {k: round(al[k]) for k in "rgb"})
+        # red against green: AGORA's bronze idle (#9c6b3c) already has more red over blue than the listening red (255, 77, 109) has,
+        # so red / blue (the violet-era measure) no longer tells them apart; red / green does (bronze 1.5, the red 3.3)
         check("c. listening turns the core red (old Jarvis): centre redder than at idle",
-              li["cr"] / (li["cb"] + 1) > 1.15 * idl["cr"] / (idl["cb"] + 1), (round(li["cr"]), round(li["cb"]), round(idl["cr"]), round(idl["cb"])))
-        check("c. idle is the owner's violet (blue and red over green)", idl["b"] > idl["g"] and idl["r"] > idl["g"], {k: round(idl[k]) for k in "rgb"})
+              li["cr"] / (li["cg"] + 1) > 1.15 * idl["cr"] / (idl["cg"] + 1), (round(li["cr"]), round(li["cg"]), round(idl["cr"]), round(idl["cg"])))
+        # AGORA (e02d070, 2026-11-10): the core's default (its 'eclipse' key) is bronze #9c6b3c / gold #c9a06a; the old violet is Classic
+        # Jarvis, given by classic.css through setTheme (index.html coreTheme), not the core's default
+        check("c. idle is AGORA bronze (red over green over blue)", idl["r"] > idl["g"] > idl["b"], {k: round(idl[k]) for k in "rgb"})
         p.evaluate("core.setState('idle'); core.setTheme({c: '#4fe3ff', c2: '#0284c7', c3: '#9d8cff', tint: '#e6fbff'})")
         p.wait_for_timeout(400)
         ice = shot_sig(p)

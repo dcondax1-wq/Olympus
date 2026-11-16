@@ -2,6 +2,13 @@
 import * as THREE from '../jarvis/three.module.min.js';
 
 const TAU = Math.PI * 2;
+// a box without its floor face (BoxGeometry groups: 0 +x, 1 -x, 2 +y, 3 -y, 4 +z, 5 -z) and a flat top face
+function noFloor(g) {
+  const idx = g.index.array, keep = [];
+  for (const gr of g.groups) if (gr.materialIndex !== 3) for (let i = gr.start; i < gr.start + gr.count; i++) keep.push(idx[i]);
+  g.setIndex(keep); g.clearGroups(); return g;
+}
+const topFace = () => new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
 const seed = (n) => { let x = Math.sin(n * 127.1 + 31.7) * 43758.5453; return x - Math.floor(x); };
 
 export function createCitadel(scene, lite = false) {
@@ -18,9 +25,13 @@ export function createCitadel(scene, lite = false) {
   group.add(ground);
 
   const N = 176, WINDOWS = 8;
-  const towers = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), towerMat, N);
-  const windows = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), windowMat, N * WINDOWS);
-  const cap = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), edgeMat, N);
+  // the same city in fewer triangles (phone budget 2026-11-16, tests/test_olympus_kit.py arena 75,000): a tower has no floor face
+  // (10 triangles, not 12), a window strip (0.055 deep) is its lit face only and a cap / a street (a quarter of a unit thick) its top
+  // face only (2, not 12): about 17,000 triangles fewer, the same picture
+  const towers = new THREE.InstancedMesh(noFloor(new THREE.BoxGeometry(1, 1, 1)), towerMat, N);
+  windowMat.side = THREE.DoubleSide;
+  const windows = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), windowMat, N * WINDOWS);
+  const cap = new THREE.InstancedMesh(topFace(), edgeMat, N);
   const mat = new THREE.Matrix4(), pos = new THREE.Vector3(), quat = new THREE.Quaternion(), scale = new THREE.Vector3();
   const tint = new THREE.Color();
   for (let i = 0; i < N; i++) {
@@ -37,14 +48,14 @@ export function createCitadel(scene, lite = false) {
     mat.compose(pos, quat, scale); towers.setMatrixAt(i, mat);
     tint.set(i % 7 === 0 ? '#4b5231' : i % 3 === 0 ? '#b0763c' : '#514639');
     towers.setColorAt(i, tint);
-    pos.y = height + 0.16; scale.set(width + 0.3, 0.26, depth + 0.3);
+    pos.y = height + 0.29; scale.set(width + 0.3, 1, depth + 0.3);              // the 0.26 cap's top face
     mat.compose(pos, quat, scale); cap.setMatrixAt(i, mat);
     for (let j = 0; j < WINDOWS; j++) {
       // A vertical illuminated spine faces the Arena; the windows make depth legible at phone scale.
       const y = 2 + (j + 0.5) * (height - 2) / WINDOWS;
       const faceR = r - depth / 2 - 0.03;
       pos.set(Math.cos(a) * faceR, y, Math.sin(a) * faceR);
-      scale.set(width * 0.57, 0.13 + seed(i * 7 + j) * 0.13, 0.055);
+      scale.set(width * 0.57, 0.13 + seed(i * 7 + j) * 0.13, 1);                // the strip's lit face
       mat.compose(pos, quat, scale); windows.setMatrixAt(i * WINDOWS + j, mat);
       windows.setColorAt(i * WINDOWS + j, tint.set(i % 7 === 0 ? '#9bab63' : i % 3 === 0 ? '#e0a060' : '#e0a060'));
     }
@@ -66,15 +77,15 @@ export function createCitadel(scene, lite = false) {
   // One batched luminous street circuit ties the inner, middle and outer districts together.
   // A complete 16-sided circuit and all radial links come first, so LITE still has continuous routes.
   const ROUTES = 112, LITE_ROUTES = 64;
-  const routes = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1),
+  const routes = new THREE.InstancedMesh(topFace(),
     new THREE.MeshBasicMaterial({ color: '#f3ece0', toneMapped: false }), ROUTES);
   const routeTint = new THREE.Color(), radii = [44, 58, 72], routeHeight = 0.16;
   let routeIndex = 0;
   function route(x0, z0, x1, z1, color) {
     const dx = x1 - x0, dz = z1 - z0;
-    pos.set((x0 + x1) / 2, routeHeight, (z0 + z1) / 2);
+    pos.set((x0 + x1) / 2, routeHeight + 0.0225, (z0 + z1) / 2);                 // the street's top face
     quat.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.atan2(dx, dz));
-    scale.set(0.17, 0.045, Math.hypot(dx, dz));
+    scale.set(0.17, 1, Math.hypot(dx, dz));
     mat.compose(pos, quat, scale); routes.setMatrixAt(routeIndex, mat);
     routes.setColorAt(routeIndex++, routeTint.set(color));
   }

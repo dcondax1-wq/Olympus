@@ -43,8 +43,12 @@ if git clone -q --depth 40 -b planner-backup "$repo" "$tmp/src" 2>/dev/null \
     fi
   done
   printf '{"v":1,"applied":[%s],"skipped":[%s]}\n' "${applied%,}" "${skipped%,}" > "$tmp/src/planner/addons.json"
+  # the status card Jarvis reads for its Planner tile (tools/web_public/planner/jarvis.json, jarvis/apps.js "live"): kept when
+  # planner-backup has none, or every Jarvis open asked for a file that was gone (a 404; phone QA 2026-11-16)
+  card=""; [ -f "$site/planner/jarvis.json" ] && card="$(cat "$site/planner/jarvis.json")"
   rm -rf "$site/planner"
   cp -r "$tmp/src/planner" "$site/planner"
+  [ -n "$card" ] && [ ! -f "$site/planner/jarvis.json" ] && printf '%s' "$card" > "$site/planner/jarvis.json"
   rm -rf "$site/planner/.git"
   find "$site/planner" -type l -delete 2>/dev/null
   echo "planner: added to $site ($(du -sk "$site/planner" | cut -f1) KB; add-ons:${applied%,}${skipped:+; skipped:${skipped%,}})"

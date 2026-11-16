@@ -3,10 +3,10 @@
 // sky.js around it). setWorld(w) when the data changes; frame(nowT) every animation frame.
 import { createRenderer } from '../olympus/render.js';
 import { Market, Y_MAX } from './layers.js';
-import { Arena } from './arena.js?v=phone-horizon-2';
+import { Arena } from './arena.js?v=oracle-phone-budget-4';
 import { Temple } from './temple.js';
-import { Polis } from './polis.js?v=oracle-night-foreground-1';
-import { Sky, weatherOf, fitPoints } from './sky.js?v=oracle-night-foreground-1';
+import { Polis } from './polis.js?v=oracle-phone-budget-3';
+import { Sky, weatherOf, fitPoints } from './sky.js?v=oracle-phone-budget-2';
 import { newSweeps } from './data.js';
 
 const EL = [-0.12, 0.95];

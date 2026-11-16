@@ -381,6 +381,9 @@ export function createRenderer(opts) {
     if (extEnv) { scene.environment = extEnv; if (o.background) scene.background = extEnv; return; }
     if (o.env === 'none') return;
     envTex = makeEnvironment(renderer, o.env, palette(theme, o.tint));
+    // the bake (PMREM: the room drawn into six cube faces) is not a frame: with autoReset off its draws stayed in renderer.info, so a
+    // page that never draws a frame (the Cities map front screen) reported the bake as its frame (54 calls) in OLYMPUS.stats()
+    renderer.info.reset();
     scene.environment = envTex;
     if (o.background) scene.background = envTex;
   }
