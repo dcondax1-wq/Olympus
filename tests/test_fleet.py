@@ -893,10 +893,10 @@ def ui_checks(tmp):
     except Exception as e:
         out = {"error": f"node not available: {e}"}
     ph = (out.get("phone") or {}).get("html") or ""
-    check("phone page: registered (#/fleet, System group) and renders a card per follower with LIVE / PAPER, room, today",
+    check("phone page: registered (#/fleet, System group) and renders a card per follower with LIVE / PAPER, drawdown left (eval) or daily stop left (live), today",
           (out.get("phone") or {}).get("registered") and (out.get("phone") or {}).get("grouped") and "Lucid 50K" in ph and "My live" in ph
-          and "Room to floor" in ph and "LONG" in ph, out.get("error") or ph[:300])
-    check("phone page off: the 3 steps, no card", "Add an account" in (out.get("phone_off") or "") and "Room to floor" not in (out.get("phone_off") or ""))
+          and "Drawdown left" in ph and "Daily stop left" in ph and "LONG" in ph, out.get("error") or ph[:300])
+    check("phone page off: the 3 steps, no card", "Add an account" in (out.get("phone_off") or "") and "Drawdown left" not in (out.get("phone_off") or ""))
     pc = out.get("pc") or ""
     check("PC page renders the accounts, the firm rules table (owner's price only) and the add steps",
           "Lucid 50K" in pc and "Firm rules" in pc and "Add an account" in pc and "nx-glass" in pc, out.get("error") or pc[:300])

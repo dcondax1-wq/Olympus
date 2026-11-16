@@ -8,7 +8,7 @@
     other options: --gate N (wait for load < N, default 2 x cpus) --gate-wait SEC (default 300) --no-retry --out DIR --budget-scale X
 
 What runs: first the engine / PC core (CORE below, no browser: run_gate, writeups_index, wire_new_apps, selfheal, dst, pcdash_api,
-account_c, lit_oif, fleet, lit_live, rehearsal, dst_sunday; --fast runs dst / lit_live / rehearsal in their --quick form and leaves lit_oif and
+account_c, lit_oif, fleet, lit_live, rehearsal, dst_sunday; --fast runs dst / fleet / lit_live / rehearsal in their --quick form and leaves lit_oif and
 dst_sunday to the full gate), then jarvis_shell, apps_list, safari_lint, olympus a11y / sfx / kit (static + power + tiers) / themes / render, the Jarvis hub BY PARTS
 (tests/hub_parts.py: static, a, b, missing, c, look, switcher, olympus, system, intro), the Jarvis assistant / tools / modes / brain / obsidian /
 talk / voice / engines suites, phone_e2e, Zenith (mode / shell / pro / pages), kalshi_page, and every per-app page test: tests/test_*_page.py
@@ -51,7 +51,7 @@ KNOWN_APPS = ["arena", "fates", "hermes", "pantheon", "prometheus", "datacity", 
 # (name = tests/test_<name>.py, full-run args, --fast form ("same" / None / [args]), budget s): the engine / PC core, no browser
 CORE = [("run_gate", [], "same", 120), ("writeups_index", [], "same", 120), ("wire_new_apps", [], "same", 180), ("selfheal", [], "same", 180),
         ("dst", [], ["--quick"], 900), ("pcdash_api", [], "same", 300), ("account_c", [], "same", 600), ("lit_oif", [], None, 3600),
-        ("fleet", [], "same", 600), ("lit_live", [], ["--quick"], 3600), ("rehearsal", [], ["--quick"], 5400), ("dst_sunday", [], None, 1500)]
+        ("fleet", [], ["--quick"], 1500), ("lit_live", [], ["--quick"], 3600), ("rehearsal", [], ["--quick"], 5400), ("dst_sunday", [], None, 1500)]
 HUB = [("static", 120), ("a", 900), ("b", 900), ("missing", 1200), ("c", 1500), ("look", 1200), ("switcher", 1200), ("olympus", 1200), ("system", 900), ("intro", 1500)]
 
 
