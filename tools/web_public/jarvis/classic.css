@@ -2,7 +2,7 @@
    The old violet HUD (docs/JARVIS_OLD_LOOK.md: Eclipse #a855f7 / #7c3aed / #c084fc on black, Orbitron titles, Rajdhani text, glowing
    capital labels) as a selectable Jarvis look: ⋯ → Look → Jarvis look → Classic (or Settings → Look) (localStorage 'jarvis.look' = 'classic').
    AGORA stays the default; picking any OLYMPUS theme turns Classic off. The palette below also sets the AGORA slots (--oly-th-*)
-   that Jarvis's sheets read, so every card, sheet and chip turns violet, not only the accents. The 3D core reads 'eclipse' (VIOLET). */
+   that Jarvis's sheets read, so every card, sheet and chip turns violet, not only the accents. The 3D core takes these violet --c / --c2 / --c3 / --tint (index.html coreTheme). */
 @font-face { font-family: "Orbitron"; src: url("orbitron.woff2") format("woff2"); font-weight: 400 900; font-display: swap; }
 @font-face { font-family: "Rajdhani"; src: url("rajdhani-400.woff2") format("woff2"); font-weight: 400; font-display: swap; }
 @font-face { font-family: "Rajdhani"; src: url("rajdhani-500.woff2") format("woff2"); font-weight: 500; font-display: swap; }

@@ -1825,7 +1825,7 @@ const hexMix = (a, b, t) => { const p = (h) => { const m = /^#([0-9a-f]{6})$/i.e
 const coreTheme = () => {
   const tint = window.__jarvisModeTint;
   if (tint) { const t = themeColors(); return { ...t, c: hexMix(t.c, tint, 0.3), c3: hexMix(t.c3, tint, 0.55), tint: hexMix(t.tint, tint, 0.25) }; }
-  if (root.dataset.jlook === 'classic' && !olyOn()) return 'eclipse';     // Classic Jarvis: the old violet core
+  if (root.dataset.jlook === 'classic' && !olyOn()) return themeColors();   // Classic Jarvis: the violet of classic.css (the core's own 'eclipse' key is bronze since the AGORA audit)
   return CORE_KEYS.includes(root.dataset.theme) && !olyOn() ? root.dataset.theme : themeColors();
 };
 window.addEventListener('jarvis:mode', () => { if (core && typeof core.setTheme === 'function') safe(() => core.setTheme(coreTheme())); });

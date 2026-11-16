@@ -3,8 +3,8 @@
   a. static: classic.css is its own sheet, every rule under html:root[data-jlook="classic"] (the AGORA default never reads it), the old
      palette (#a855f7 / #7c3aed / #c084fc on black), Orbitron + Rajdhani from the files in jarvis/; jarvis.css keeps no violet / techno font
   b. static: the first paint adds data-jlook + the sheet only for 'jarvis.look' = 'classic' under the default OLYMPUS theme; the Look sheet's
-     Jarvis look switch (AGORA / Classic Jarvis), the palette entries and the voice phrases; the 3D core gets 'eclipse'
-  c. Chromium (phone size): saved Classic -> violet from the first paint, the core key 'eclipse'; AGORA -> gold again and the choice cleared;
+     Jarvis look switch (AGORA / Classic Jarvis), the palette entries and the voice phrases; the 3D core gets the violet of classic.css
+  c. Chromium (phone size): saved Classic -> violet from the first paint; AGORA -> gold again and the choice cleared;
      Classic again from the Look sheet; "classic Jarvis" typed in the command bar switches it; picking another OLYMPUS theme turns Classic off;
      no page error
 
@@ -50,7 +50,7 @@ def part_static():
           and "cl.href = 'classic.css?v=c1'" in head and "d.setAttribute('data-theme', 'agora')" in head)
     check("b. the Look sheet: Jarvis look AGORA / Classic Jarvis; palette entries; the voice phrases; the core key",
           'id="jlookSeg"' in page and 'data-jlook-k="classic"' in page and 'data-jlook-k="agora"' in page and "function setJLook(k)" in page
-          and "Look: Classic Jarvis" in page and "bring back (the )?old (jarvis|look)" in page and "if (root.dataset.jlook === 'classic' && !olyOn()) return 'eclipse';" in page)
+          and "Look: Classic Jarvis" in page and "bring back (the )?old (jarvis|look)" in page and "if (root.dataset.jlook === 'classic' && !olyOn()) return themeColors();" in page)
     check("b. any OLYMPUS theme replaces Classic", "if (olyOn() && root.dataset.jlook) { delete root.dataset.jlook; rawSet('jarvis.look', null); }" in page)
 
 
