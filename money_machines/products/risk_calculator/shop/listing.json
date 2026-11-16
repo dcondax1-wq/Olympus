@@ -1,0 +1,179 @@
+{
+ "id": "eval-risk-calculator",
+ "version": "1.0",
+ "price_usd": 12,
+ "top": "Eval-Risk-Calculator",
+ "zip": "eval_risk_calculator_v1.0.zip",
+ "title": "Prop Firm Eval Risk Calculator Spreadsheet: Position Size From Your Stop, Drawdown Room, Daily Limit, Losing Streak Table (Futures)",
+ "short": "Size every trade from its stop and your room left. A spreadsheet for futures evaluation traders: contracts, losses in a row, daily room.",
+ "description": [
+  "The fastest way to end an evaluation is a size that the room left can't carry. This spreadsheet does the arithmetic before the trade.",
+  "WHAT YOU GET",
+  "- Calculator: type your balance, max-loss level, daily limit, stop and instrument; read the contracts, the loss if stopped and how many stops in a row the room survives",
+  "- Daily room: never risk more than today's limit still allows",
+  "- Losing streak table: 10 losses at a fixed size against sizing from what is left, side by side",
+  "- Instruments: $ per point and per tick for 12 common futures (micro and full size)",
+  "- A status line: OK, CAREFUL, DAILY LIMIT, BREACHED",
+  "HOW IT HELPS",
+  "- Size follows the stop: a wider stop gives fewer contracts, never a bigger loss",
+  "- Works with static, end-of-day trailing and intraday trailing rules: you type the level your platform shows",
+  "WHAT IT IS NOT",
+  "- No signals, no strategy, no advice. It does arithmetic on your own numbers and promises no results.",
+  "- Not affiliated with any broker, exchange, prop firm or trading platform.",
+  "Pairs with my Prop Eval Tracker and the Prop Eval Rules Explained cheat sheet (or get all of them in the Prop Trader Bundle).",
+  "Instant download. Made with the help of AI tools; designed, checked and supported by me.",
+  "Trading involves substantial risk of loss and is not suitable for everyone. No results are shown or promised."
+ ],
+ "tags_etsy": [
+  "position size",
+  "risk calculator",
+  "prop firm",
+  "futures trading",
+  "trading spreadsheet",
+  "day trading",
+  "drawdown tracker",
+  "risk management",
+  "trading tools",
+  "funded trader",
+  "eval calculator",
+  "trader gift",
+  "trading template"
+ ],
+ "faq": [
+  [
+   "Is this financial advice?",
+   "No. It does arithmetic on the numbers you type. It gives no trade ideas and makes no predictions."
+  ],
+  [
+   "Which rules does it work with?",
+   "Any: you type your max loss, the level your platform shows today and your daily limit."
+  ],
+  [
+   "Which markets?",
+   "Futures with a fixed $ per point; 12 common contracts are listed and you can add your own."
+  ],
+  [
+   "What do I need?",
+   "Any spreadsheet app that opens .xlsx, including free online ones (import the file)."
+  ],
+  [
+   "Will it help me pass?",
+   "No tool can promise that. It shows the size your own numbers allow; results depend on you and the market."
+  ],
+  [
+   "Does it connect to my platform?",
+   "No. You type your numbers. Nothing is sent anywhere."
+  ]
+ ],
+ "refund": "Digital download: files can't be returned, but if something does not work as described, message me within 14 days and I will fix it or refund you.",
+ "price_reasoning": "$12: a forex position-size calculator spreadsheet sells for about GBP 15 on Gumroad and prop-firm rule-math spreadsheets are sold on Payhip, while free single-purpose web calculators exist. Ours adds the daily room, the losing-streak table and the status for futures evaluations, in one file the buyer owns, so $12 is fair for a new shop; $9 if views don't turn into sales.",
+ "comparables": [
+  {
+   "what": "Excel position size calculator (editable spreadsheet)",
+   "price": "GBP 15",
+   "where": "Gumroad",
+   "url": "https://unbiasedtrading.gumroad.com/l/hnzAG",
+   "seen": "2026-11-16"
+  },
+  {
+   "what": "Prop-firm rule math spreadsheet + documentation (daily loss, drawdown models)",
+   "price": "price not shown in the search",
+   "where": "Payhip",
+   "url": "https://payhip.com/b/dQkV3",
+   "seen": "2026-11-16"
+  },
+  {
+   "what": "Prop firm position size calculator (web page)",
+   "price": "free",
+   "where": "a trading-journal site",
+   "url": "https://onetradejournal.com/tools/prop-firm-position-size-calculator",
+   "seen": "2026-11-16"
+  },
+  {
+   "what": "Position sizing worksheet template",
+   "price": "free",
+   "where": "a journal-template site",
+   "url": "https://journalplus.co/templates/position-sizing-worksheet",
+   "seen": "2026-11-16"
+  }
+ ],
+ "image_notes": [
+  "the calculator",
+  "the losing streak table",
+  "what it answers",
+  "square 1",
+  "square 2",
+  "square 3"
+ ],
+ "rules": [
+  "Never show profits, P&L screenshots, win rates or 'pass your evaluation' wording in the listing, pictures or tags.",
+  "No firm, broker, exchange, index or platform names (tickers only); keep the risk line at the end of the description.",
+  "Gumroad reviews trading-related products more closely: keep the education-only wording.",
+  "Etsy: 'I did', digital download; the description says AI tools helped."
+ ],
+ "files": [
+  "Eval_Risk_Calculator.xlsx",
+  "LICENSE.txt",
+  "README.txt"
+ ],
+ "net_per_sale_usd": {
+  "Payhip (free plan)": 10.75,
+  "Gumroad": 9.65,
+  "Etsy": 10.41
+ },
+ "fee_table": [
+  {
+   "platform": "Payhip (free plan)",
+   "fees": "5% + card fees (Stripe/PayPal, about 2.9% + $0.30)",
+   "fee_usd": 1.25,
+   "net_usd": 10.75,
+   "fee_pct": 10.4
+  },
+  {
+   "platform": "Gumroad",
+   "fees": "10% + $0.50 per sale + card fees (30% on sales its Discover page brings)",
+   "fee_usd": 2.35,
+   "net_usd": 9.65,
+   "fee_pct": 19.6
+  },
+  {
+   "platform": "Etsy",
+   "fees": "$0.20 listing + 6.5% transaction + 3% + $0.25 processing (US); Offsite Ads 12-15% only on sales they bring",
+   "fee_usd": 1.59,
+   "net_usd": 10.41,
+   "fee_pct": 13.2
+  }
+ ],
+ "covers": [
+  {
+   "file": "cover_1.jpg",
+   "width": 1280,
+   "height": 720
+  },
+  {
+   "file": "cover_2.jpg",
+   "width": 1280,
+   "height": 720
+  },
+  {
+   "file": "cover_3.jpg",
+   "width": 1280,
+   "height": 720
+  },
+  {
+   "file": "cover_1_square.jpg",
+   "width": 2000,
+   "height": 2000
+  },
+  {
+   "file": "cover_2_square.jpg",
+   "width": 2000,
+   "height": 2000
+  },
+  {
+   "file": "cover_3_square.jpg",
+   "width": 2000,
+   "height": 2000
+  }
+ ]
+}

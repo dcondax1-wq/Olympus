@@ -389,8 +389,8 @@ def part_g():
 def part_h():
     cat = json.load(open(os.path.join(ROOT, "money_machines", "products", "catalog.json"), encoding="utf-8"))
     pr = cat["products"]
-    check("h. the catalogue: 5 built products (the tracker + these 4), each with price, files, the zip command and platforms",
-          len(pr) == 5 and all(p["status"] == "built" for p in pr) and all(p.get("build", "").endswith("--zip") and p.get("files") and p["price_usd"] > 0 and p["platforms"] for p in pr)
+    check("h. the catalogue: 8 built products (the tracker + these 4 + the 3 of build_prop_kit, tests.test_money_door), each with price, files, the zip command and platforms",
+          len(pr) == 8 and all(p["status"] == "built" for p in pr) and all(p.get("build", "").endswith("--zip") and p.get("files") and p["price_usd"] > 0 and p["platforms"] for p in pr)
           and {p["id"] for p in pr} >= set(CATALOG_ID.values()))
     folded = {f["id"] for f in cat.get("folded", [])}
     check("h. the two weaker ideas are folded in with a reason (Google-profile checklist, review request kit -> the agency kit)",
@@ -413,8 +413,8 @@ def part_h():
         r = subprocess.run([sys.executable, "-S", "-c", code], cwd=ROOT, capture_output=True, text=True, timeout=300,
                            env=dict(os.environ, MONEY_MACHINES_OUT=tmp))
         made = sorted(os.listdir(os.path.join(tmp, "products"))) if os.path.isdir(os.path.join(tmp, "products")) else []
-        check("h. the one owner command works with the standard library only (python -S): build_all --zip makes all 5 zips",
-              r.returncode == 0 and len(made) == 5, (r.returncode, made, r.stderr[-400:]))
+        check("h. the one owner command works with the standard library only (python -S): build_all --zip makes all 8 zips",
+              r.returncode == 0 and len(made) == 8, (r.returncode, made, r.stderr[-400:]))
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     tracked = subprocess.run(["git", "ls-files", "money_machines/out"], cwd=ROOT, capture_output=True, text=True).stdout.strip()

@@ -1,0 +1,190 @@
+{
+ "id": "prop-trader-bundle",
+ "version": "1.0",
+ "price_usd": 29,
+ "top": "Prop-Trader-Bundle",
+ "zip": "prop_trader_bundle_v1.0.zip",
+ "title": "Prop Firm Trader Bundle: Eval Tracker + Risk Calculator + Rules Cheat Sheet + Daily Routine Planner (Spreadsheets + Printable PDF)",
+ "short": "Four tools for evaluation traders in one download: track the rules, size from the stop, read the rule book, keep a routine.",
+ "description": [
+  "Everything an evaluation trader needs on paper and in a spreadsheet, in one download, for less than the four separately.",
+  "WHAT YOU GET",
+  "- Prop Eval Tracker: drawdown left, daily limit, consistency, target, the next trade's size (spreadsheet + offline web page)",
+  "- Eval Risk Calculator: size follows the stop, losses in a row, a losing-streak table",
+  "- Prop Eval Rules Explained: the rule types in plain words, a compare-before-you-buy worksheet, a pre-session checklist (Letter + A4)",
+  "- Trader's Daily Routine Planner: 16 printable pages (Letter + A4) + a spreadsheet journal",
+  "WHAT IT IS NOT",
+  "- No signals, no strategy, no advice; it organises your own rules and numbers and promises no results.",
+  "- Not affiliated with any broker, exchange, prop firm or trading platform.",
+  "Instant download. Made with the help of AI tools; designed, checked and supported by me.",
+  "Trading involves substantial risk of loss and is not suitable for everyone. No results are shown or promised."
+ ],
+ "tags_etsy": [
+  "prop firm",
+  "trading bundle",
+  "trading journal",
+  "position size",
+  "futures trading",
+  "day trading",
+  "trader planner",
+  "drawdown tracker",
+  "risk management",
+  "funded trader",
+  "trading spreadsheet",
+  "trader gift",
+  "trading printable"
+ ],
+ "faq": [
+  [
+   "What is inside?",
+   "Four products: the Prop Eval Tracker, the Eval Risk Calculator, Prop Eval Rules Explained and the Trader's Daily Routine Planner."
+  ],
+  [
+   "Is this financial advice?",
+   "No. The tools organise your own rules and numbers. They give no trade ideas and make no predictions."
+  ],
+  [
+   "What do I need?",
+   "Any spreadsheet app that opens .xlsx (free online ones too), a browser for the offline page, a PDF reader for the printables."
+  ],
+  [
+   "Which rules does it work with?",
+   "Any: you type your own rule book's numbers."
+  ],
+  [
+   "Will it help me pass?",
+   "No tool can promise that. It helps you follow your own rules; results depend on you and the market."
+  ],
+  [
+   "Can I buy the parts alone?",
+   "Yes, each is sold separately; the bundle costs less than the four together."
+  ]
+ ],
+ "refund": "Digital download: files can't be returned, but if something does not work as described, message me within 14 days and I will fix it or refund you.",
+ "price_reasoning": "$29 for $50 of parts (17 + 12 + 7 + 14): bundles of a journal and a prop tracker list at about EUR 39, single prop trackers at about $17-22 and printable workbooks up to $29.99. A bundle under $30 is the natural upsell from the $7 cheat sheet; try $25 if it does not sell.",
+ "comparables": [
+  {
+   "what": "Prop firm challenge tracker spreadsheet",
+   "price": "about $16.68 (sale from $22.24)",
+   "where": "Etsy",
+   "url": "https://www.etsy.com/listing/4606983180",
+   "seen": "2026-11-14"
+  },
+  {
+   "what": "Printable trading workbook: daily, weekly, monthly review",
+   "price": "$29.99",
+   "where": "Payhip",
+   "url": "https://payhip.com/b/3sMFc",
+   "seen": "2026-11-14"
+  },
+  {
+   "what": "Excel position size calculator",
+   "price": "GBP 15",
+   "where": "Gumroad",
+   "url": "https://unbiasedtrading.gumroad.com/l/hnzAG",
+   "seen": "2026-11-16"
+  },
+  {
+   "what": "Trading journal spreadsheets (range across listings, most $9-25)",
+   "price": "about $1 to $80",
+   "where": "Etsy",
+   "url": "https://www.etsy.com/listing/1461681856",
+   "seen": "2026-11-14"
+  }
+ ],
+ "image_notes": [
+  "the four tools",
+  "what is inside",
+  "the price of the parts",
+  "square 1",
+  "square 2",
+  "square 3"
+ ],
+ "rules": [
+  "Never show profits, P&L screenshots, win rates or 'pass your evaluation' wording in the listing, pictures or tags.",
+  "No firm, broker, exchange, index or platform names (tickers only); keep the risk line at the end of the description.",
+  "Gumroad reviews trading-related products more closely: keep the education-only wording.",
+  "Etsy: 'I did', digital download; the description says AI tools helped."
+ ],
+ "files": [
+  "1_Prop_Eval_Tracker/How_to_use.pdf",
+  "1_Prop_Eval_Tracker/LICENSE.txt",
+  "1_Prop_Eval_Tracker/Prop_Eval_Tracker.xlsx",
+  "1_Prop_Eval_Tracker/README.txt",
+  "1_Prop_Eval_Tracker/prop_eval_tracker.html",
+  "2_Trader_Routine_Planner/LICENSE.txt",
+  "2_Trader_Routine_Planner/README.txt",
+  "2_Trader_Routine_Planner/Trader_Journal.xlsx",
+  "2_Trader_Routine_Planner/Trader_Planner_A4.pdf",
+  "2_Trader_Routine_Planner/Trader_Planner_Letter.pdf",
+  "3_Eval_Risk_Calculator/Eval_Risk_Calculator.xlsx",
+  "3_Eval_Risk_Calculator/LICENSE.txt",
+  "3_Eval_Risk_Calculator/README.txt",
+  "4_Prop_Eval_Rules_Explained/LICENSE.txt",
+  "4_Prop_Eval_Rules_Explained/Prop_Eval_Rules_Explained_A4.pdf",
+  "4_Prop_Eval_Rules_Explained/Prop_Eval_Rules_Explained_Letter.pdf",
+  "4_Prop_Eval_Rules_Explained/README.txt",
+  "LICENSE.txt",
+  "README.txt"
+ ],
+ "net_per_sale_usd": {
+  "Payhip (free plan)": 26.41,
+  "Gumroad": 24.46,
+  "Etsy": 25.79
+ },
+ "fee_table": [
+  {
+   "platform": "Payhip (free plan)",
+   "fees": "5% + card fees (Stripe/PayPal, about 2.9% + $0.30)",
+   "fee_usd": 2.59,
+   "net_usd": 26.41,
+   "fee_pct": 8.9
+  },
+  {
+   "platform": "Gumroad",
+   "fees": "10% + $0.50 per sale + card fees (30% on sales its Discover page brings)",
+   "fee_usd": 4.54,
+   "net_usd": 24.46,
+   "fee_pct": 15.7
+  },
+  {
+   "platform": "Etsy",
+   "fees": "$0.20 listing + 6.5% transaction + 3% + $0.25 processing (US); Offsite Ads 12-15% only on sales they bring",
+   "fee_usd": 3.21,
+   "net_usd": 25.79,
+   "fee_pct": 11.1
+  }
+ ],
+ "covers": [
+  {
+   "file": "cover_1.jpg",
+   "width": 1280,
+   "height": 720
+  },
+  {
+   "file": "cover_2.jpg",
+   "width": 1280,
+   "height": 720
+  },
+  {
+   "file": "cover_3.jpg",
+   "width": 1280,
+   "height": 720
+  },
+  {
+   "file": "cover_1_square.jpg",
+   "width": 2000,
+   "height": 2000
+  },
+  {
+   "file": "cover_2_square.jpg",
+   "width": 2000,
+   "height": 2000
+  },
+  {
+   "file": "cover_3_square.jpg",
+   "width": 2000,
+   "height": 2000
+  }
+ ]
+}

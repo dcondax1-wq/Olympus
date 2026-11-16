@@ -1,41 +1,163 @@
 {
- "v": 2,
+ "v": 3,
  "kind": "digital-products",
- "asof": "2026-11-14",
- "note": "All 5 products are built (team F1: the eval tracker; team D2: the other 4). Prices are inside what similar listings showed on 2026-11-14 (each product's shop/listing.md has the comparables, the reasoning and the fee table; docs/MONEY_MACHINES.md section 3). Sales estimates are guesses for a shop with no audience yet: most listings sell little until a social account or search traffic sends buyers.",
+ "asof": "2026-11-16",
+ "note": "All 8 products are built (team F1: the eval tracker; team D2: 4 more; night team B 2026-11-16: the risk calculator, the rules cheat sheet and the bundle). Prices are inside what similar listings showed on 2026-11-14 (each product's shop/listing.md has the comparables, the reasoning and the fee table; docs/MONEY_MACHINES.md section 3). Sales estimates are guesses for a shop with no audience yet: most listings sell little until a social account or search traffic sends buyers.",
  "products": [
-  {"id": "prop-eval-tracker", "status": "built", "name": "Prop Eval Tracker (Excel + Google Sheets + offline web app)", "price_usd": 17,
-   "platforms": ["Payhip", "Gumroad", "Etsy"], "effort_h": 0, "files": "money_machines/products/eval_tracker/",
-   "build": "python -m money_machines.products.build_eval_tracker --zip", "sales_month_est": "0-10",
+  {
+   "id": "prop-eval-tracker",
+   "status": "built",
+   "name": "Prop Eval Tracker (Excel + Google Sheets + offline web app)",
+   "price_usd": 17,
+   "platforms": [
+    "Payhip",
+    "Gumroad",
+    "Etsy"
+   ],
+   "effort_h": 0,
+   "files": "money_machines/products/eval_tracker/",
+   "build": "python -m money_machines.products.build_eval_tracker --zip",
+   "sales_month_est": "0-10",
    "comparables": "Etsy prop-firm challenge tracker about $16.68 (sale from $22.24); trading journals $9.90-35; a journal + prop tracker bundle EUR 39",
-   "risk": "Trading niche: no performance claims, no firm names; Gumroad reviews trading content more closely."},
-  {"id": "local-site-templates", "status": "built", "name": "5 one-page website templates for local businesses + an offline no-code Site Editor + a publish guide", "price_usd": 24,
-   "platforms": ["Etsy", "Gumroad", "Payhip"], "effort_h": 0.3, "files": "money_machines/products/site_templates/",
-   "build": "python -m money_machines.products.build_site_templates --zip", "sales_month_est": "0-8",
+   "risk": "Trading niche: no performance claims, no firm names; Gumroad reviews trading content more closely."
+  },
+  {
+   "id": "local-site-templates",
+   "status": "built",
+   "name": "5 one-page website templates for local businesses + an offline no-code Site Editor + a publish guide",
+   "price_usd": 24,
+   "platforms": [
+    "Etsy",
+    "Gumroad",
+    "Payhip"
+   ],
+   "effort_h": 0.3,
+   "files": "money_machines/products/site_templates/",
+   "build": "python -m money_machines.products.build_site_templates --zip",
+   "sales_month_est": "0-8",
    "source": "the agency demo-site look (team B1's palettes, art and icons, CC0) rebuilt as a template pack with its own renderer and editor",
    "comparables": "single one-page HTML templates $1-20 (Gumroad $1/$12, Getly $19.99, Etsy about $5); Etsy trade website templates about $6-97",
-   "risk": "Many buyers look for website-builder templates instead of HTML: the editor and the free-hosting guide answer that; no ranking promises."},
-  {"id": "social-post-pack", "status": "built", "name": "30-day social media kit for local businesses: offline Post Maker (30 editable designs, 3 sizes), 150 captions, the plan", "price_usd": 14,
-   "platforms": ["Etsy", "Gumroad", "Payhip"], "effort_h": 0.3, "files": "money_machines/products/social_kit/",
-   "build": "python -m money_machines.products.build_social_kit --zip", "sales_month_est": "0-10",
+   "risk": "Many buyers look for website-builder templates instead of HTML: the editor and the free-hosting guide answer that; no ranking promises."
+  },
+  {
+   "id": "social-post-pack",
+   "status": "built",
+   "name": "30-day social media kit for local businesses: offline Post Maker (30 editable designs, 3 sizes), 150 captions, the plan",
+   "price_usd": 14,
+   "platforms": [
+    "Etsy",
+    "Gumroad",
+    "Payhip"
+   ],
+   "effort_h": 0.3,
+   "files": "money_machines/products/social_kit/",
+   "build": "python -m money_machines.products.build_social_kit --zip",
+   "sales_month_est": "0-10",
    "source": "upgraded from the planned '60 templates + 120 captions': a canvas Post Maker (no design-app account needed) + 150 hand-written captions",
    "comparables": "30-day small-business kits $9 (Getly), $12-15 (Gumroad), $19.50 (Payhip); Etsy trade post packs about $5-15",
-   "risk": "Crowded and many buyers expect a design-app version; we sell the no-account editor and the captions instead."},
-  {"id": "agency-starter-kit", "status": "built", "name": "First clients agency starter kit: outreach scripts, discovery call, proposal, service agreement (not legal advice), onboarding, honest reviews, checklists, tracker, invoice", "price_usd": 19,
-   "platforms": ["Etsy", "Gumroad", "Payhip"], "effort_h": 0.3, "files": "money_machines/products/agency_kit/",
-   "build": "python -m money_machines.products.build_agency_kit --zip", "sales_month_est": "0-8",
+   "risk": "Crowded and many buyers expect a design-app version; we sell the no-account editor and the captions instead."
+  },
+  {
+   "id": "agency-starter-kit",
+   "status": "built",
+   "name": "First clients agency starter kit: outreach scripts, discovery call, proposal, service agreement (not legal advice), onboarding, honest reviews, checklists, tracker, invoice",
+   "price_usd": 19,
+   "platforms": [
+    "Etsy",
+    "Gumroad",
+    "Payhip"
+   ],
+   "effort_h": 0.3,
+   "files": "money_machines/products/agency_kit/",
+   "build": "python -m money_machines.products.build_agency_kit --zip",
+   "sales_month_est": "0-8",
    "source": "the agency kit's own know-how (pitch, billing, review booster, gig checklists) written as editable documents",
    "comparables": "Etsy developer and onboarding bundles $7.49-$16.73; Payhip kit $17; Gumroad up to $49; a pro contract pack $89",
-   "risk": "Legal templates: marked NOT LEGAL ADVICE in the file, the licence and the listing; no client or income promises."},
-  {"id": "trader-routine-planner", "status": "built", "name": "Trader's daily routine planner: 16 printable pages (Letter + A4) + a spreadsheet journal; process only, no signals", "price_usd": 14,
-   "platforms": ["Payhip", "Gumroad", "Etsy"], "effort_h": 0.3, "files": "money_machines/products/trader_planner/",
-   "build": "python -m money_machines.products.build_trader_planner --zip", "sales_month_est": "0-8",
+   "risk": "Legal templates: marked NOT LEGAL ADVICE in the file, the licence and the listing; no client or income promises."
+  },
+  {
+   "id": "trader-routine-planner",
+   "status": "built",
+   "name": "Trader's daily routine planner: 16 printable pages (Letter + A4) + a spreadsheet journal; process only, no signals",
+   "price_usd": 14,
+   "platforms": [
+    "Payhip",
+    "Gumroad",
+    "Etsy"
+   ],
+   "effort_h": 0.3,
+   "files": "money_machines/products/trader_planner/",
+   "build": "python -m money_machines.products.build_trader_planner --zip",
+   "sales_month_est": "0-8",
    "source": "the Eval Journal account's routines (education only) as a planner; pairs with the eval tracker (a $25 bundle later)",
    "comparables": "printable trading journals $9.89 (Gumroad) to $29.99 (Payhip); a 1-page checklist CHF 7 (Whop); Etsy journal spreadsheets mostly $9-25",
-   "risk": "Trading niche: no results, signals or firm names; the risk line on every listing."}
+   "risk": "Trading niche: no results, signals or firm names; the risk line on every listing."
+  },
+  {
+   "id": "eval-risk-calculator",
+   "status": "built",
+   "name": "Eval Risk Calculator: size follows the stop, room and daily room, losses in a row, a losing-streak table (spreadsheet)",
+   "price_usd": 12,
+   "platforms": [
+    "Payhip",
+    "Gumroad",
+    "Etsy"
+   ],
+   "effort_h": 0.3,
+   "files": "money_machines/products/risk_calculator/",
+   "build": "python -m money_machines.products.build_prop_kit --zip",
+   "sales_month_est": "0-8",
+   "source": "the bots' own sizing rule (size follows the stop) as a stand-alone spreadsheet; the math is tested against LibreOffice's recalculation",
+   "comparables": "an Excel position-size calculator GBP 15 (Gumroad); prop-firm rule-math spreadsheets on Payhip; many free web calculators",
+   "risk": "Free calculators exist: the losing-streak table and daily room are the reason to pay. No firm names, no results."
+  },
+  {
+   "id": "eval-rules-explained",
+   "status": "built",
+   "name": "Prop Eval Rules Explained: 8-page cheat sheet (Letter + A4) with a compare-before-you-buy worksheet and a pre-session checklist",
+   "price_usd": 7,
+   "platforms": [
+    "Payhip",
+    "Gumroad",
+    "Etsy"
+   ],
+   "effort_h": 0.3,
+   "files": "money_machines/products/rules_guide/",
+   "build": "python -m money_machines.products.build_prop_kit --zip",
+   "sales_month_est": "0-10",
+   "source": "the rule research behind the bots (drawdown types, daily limits, consistency, payouts), firm-neutral",
+   "comparables": "a firm-specific playbook + cheat sheet $27; free blog explanations",
+   "risk": "Low price, mostly the door to the calculator, tracker and bundle; rules change, so it names no firm and has a worksheet instead."
+  },
+  {
+   "id": "prop-trader-bundle",
+   "status": "built",
+   "name": "Prop Trader Bundle: eval tracker + risk calculator + rules cheat sheet + routine planner in one zip",
+   "price_usd": 29,
+   "platforms": [
+    "Payhip",
+    "Gumroad",
+    "Etsy"
+   ],
+   "effort_h": 0.2,
+   "files": "money_machines/products/prop_bundle/",
+   "build": "python -m money_machines.products.build_prop_kit --zip",
+   "sales_month_est": "0-5",
+   "source": "the four trading products packed together ($50 of parts)",
+   "comparables": "journal + prop tracker bundles about EUR 39; single prop trackers $17-22; printable workbooks up to $29.99",
+   "risk": "Same buyers as the parts: list it last, as the upsell."
+  }
  ],
  "folded": [
-  {"id": "gbp-checklist-kit", "into": "agency-starter-kit", "why": "A $9 checklist is thin (Google's own help pages cover it) and the fixed fees eat ~10% of a $9 sale; as the 'local listing set-up' checklist in 07_Service_Checklists.docx it adds value to a $19 kit."},
-  {"id": "review-request-kit", "into": "agency-starter-kit", "why": "An $11 review kit carries the most misuse risk (incentives, gating) for little price; as 06_Reviews_and_Referrals.docx it ships with the FTC rules and honest scripts inside a bigger kit."}
+  {
+   "id": "gbp-checklist-kit",
+   "into": "agency-starter-kit",
+   "why": "A $9 checklist is thin (Google's own help pages cover it) and the fixed fees eat ~10% of a $9 sale; as the 'local listing set-up' checklist in 07_Service_Checklists.docx it adds value to a $19 kit."
+  },
+  {
+   "id": "review-request-kit",
+   "into": "agency-starter-kit",
+   "why": "An $11 review kit carries the most misuse risk (incentives, gating) for little price; as 06_Reviews_and_Referrals.docx it ships with the FTC rules and honest scripts inside a bigger kit."
+  }
  ]
 }

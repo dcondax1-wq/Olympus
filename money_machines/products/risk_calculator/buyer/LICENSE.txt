@@ -1,0 +1,11 @@
+EVAL RISK CALCULATOR v1.0: LICENCE
+
+You may use and edit this spreadsheet for your own trading records on your own devices. You may not resell, share, upload or give
+away the file or edited copies of it.
+
+It does arithmetic on the numbers you type: it is not financial advice, gives no trade ideas or signals, predicts nothing and does
+not promise any result. It is not affiliated with any broker, exchange, prop firm or trading platform. Always check your own rule
+book: the calculator only knows what you type. Trading involves substantial risk of loss and is not suitable for everyone.
+
+Provided as is, without warranty of any kind. If something does not work as described, message the seller through the shop where
+you bought this within 14 days and we will help you or refund you.

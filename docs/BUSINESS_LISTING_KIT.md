@@ -11,6 +11,9 @@ bio or search sends buyers.
 | 30-day social media kit for local businesses | $14 | $12.59 / $11.39 / $12.22 | `local_social_media_kit_v1.0.zip` | 0-10 |
 | First clients agency starter kit | $19 | $17.20 / $15.75 / $16.75 | `first_clients_agency_kit_v1.0.zip` | 0-8 |
 | Trader's daily routine planner | $14 | $12.59 / $11.39 / $12.22 | `trader_routine_planner_v1.0.zip` | 0-8 |
+| Eval Risk Calculator | $12 | $10.75 / $9.65 / $10.41 | `eval_risk_calculator_v1.0.zip` | 0-8 |
+| Prop Eval Rules Explained | $7 | $6.15 / $5.30 / $5.88 | `prop_eval_rules_explained_v1.0.zip` | 0-10 |
+| Prop Trader Bundle | $29 | $26.41 / $24.46 / $25.79 | `prop_trader_bundle_v1.0.zip` | 0-5 |
 
 ## Step 1: make the 5 zips (PC, 1 minute)
 
@@ -324,6 +327,166 @@ Trading involves substantial risk of loss and is not suitable for everyone. No r
 **Refund line:** Digital download: files can't be returned, but if something does not work as described, message me within 14 days and I will fix it or refund you.
 
 **Watch out:** Trading niche: no results, signals or firm names; the risk line on every listing.
+
+### Prop Firm Eval Risk Calculator Spreadsheet: Position Size From Your Stop, Drawdown Room, Daily Limit, Losing Streak Table (Futures)
+
+- **Price:** $12
+- **Zip:** `money_machines/out/products/eval_risk_calculator_v1.0.zip` (made by `python -m money_machines.products.build_prop_kit --zip`)
+- **Wide covers (Payhip, Gumroad):** `money_machines/products/risk_calculator/shop/cover_1.jpg`, `money_machines/products/risk_calculator/shop/cover_2.jpg`, `money_machines/products/risk_calculator/shop/cover_3.jpg`
+- **Square covers (Etsy):** `money_machines/products/risk_calculator/shop/cover_1_square.jpg`, `money_machines/products/risk_calculator/shop/cover_2_square.jpg`, `money_machines/products/risk_calculator/shop/cover_3_square.jpg`
+- **Etsy tags (13):** position size, risk calculator, prop firm, futures trading, trading spreadsheet, day trading, drawdown tracker, risk management, trading tools, funded trader, eval calculator, trader gift, trading template
+- **Full listing with the price reasoning and fee table:** `money_machines/products/risk_calculator/shop/listing.md`
+
+**Short line:** Size every trade from its stop and your room left. A spreadsheet for futures evaluation traders: contracts, losses in a row, daily room.
+
+**Description:**
+
+The fastest way to end an evaluation is a size that the room left can't carry. This spreadsheet does the arithmetic before the trade.
+
+WHAT YOU GET
+
+- Calculator: type your balance, max-loss level, daily limit, stop and instrument; read the contracts, the loss if stopped and how many stops in a row the room survives
+
+- Daily room: never risk more than today's limit still allows
+
+- Losing streak table: 10 losses at a fixed size against sizing from what is left, side by side
+
+- Instruments: $ per point and per tick for 12 common futures (micro and full size)
+
+- A status line: OK, CAREFUL, DAILY LIMIT, BREACHED
+
+HOW IT HELPS
+
+- Size follows the stop: a wider stop gives fewer contracts, never a bigger loss
+
+- Works with static, end-of-day trailing and intraday trailing rules: you type the level your platform shows
+
+WHAT IT IS NOT
+
+- No signals, no strategy, no advice. It does arithmetic on your own numbers and promises no results.
+
+- Not affiliated with any broker, exchange, prop firm or trading platform.
+
+Pairs with my Prop Eval Tracker and the Prop Eval Rules Explained cheat sheet (or get all of them in the Prop Trader Bundle).
+
+Instant download. Made with the help of AI tools; designed, checked and supported by me.
+
+Trading involves substantial risk of loss and is not suitable for everyone. No results are shown or promised.
+
+**FAQ:**
+
+- **Is this financial advice?** No. It does arithmetic on the numbers you type. It gives no trade ideas and makes no predictions.
+- **Which rules does it work with?** Any: you type your max loss, the level your platform shows today and your daily limit.
+- **Which markets?** Futures with a fixed $ per point; 12 common contracts are listed and you can add your own.
+- **What do I need?** Any spreadsheet app that opens .xlsx, including free online ones (import the file).
+- **Will it help me pass?** No tool can promise that. It shows the size your own numbers allow; results depend on you and the market.
+- **Does it connect to my platform?** No. You type your numbers. Nothing is sent anywhere.
+
+**Refund line:** Digital download: files can't be returned, but if something does not work as described, message me within 14 days and I will fix it or refund you.
+
+**Watch out:** Free calculators exist: the losing-streak table and daily room are the reason to pay. No firm names, no results.
+
+### Prop Firm Evaluation Rules Explained Cheat Sheet PDF: Trailing Drawdown, Daily Loss, Consistency, Payouts + Compare Worksheet
+
+- **Price:** $7
+- **Zip:** `money_machines/out/products/prop_eval_rules_explained_v1.0.zip` (made by `python -m money_machines.products.build_prop_kit --zip`)
+- **Wide covers (Payhip, Gumroad):** `money_machines/products/rules_guide/shop/cover_1.jpg`, `money_machines/products/rules_guide/shop/cover_2.jpg`, `money_machines/products/rules_guide/shop/cover_3.jpg`
+- **Square covers (Etsy):** `money_machines/products/rules_guide/shop/cover_1_square.jpg`, `money_machines/products/rules_guide/shop/cover_2_square.jpg`, `money_machines/products/rules_guide/shop/cover_3_square.jpg`
+- **Etsy tags (13):** prop firm, trading cheat sheet, trailing drawdown, futures trading, day trading, trading guide pdf, funded trader, risk management, trading checklist, trader printable, evaluation rules, trading education, consistency rule
+- **Full listing with the price reasoning and fee table:** `money_machines/products/rules_guide/shop/listing.md`
+
+**Short line:** The rules that end most evaluations, in plain words: trailing drawdown types, daily limits, consistency, payouts and a compare worksheet.
+
+**Description:**
+
+Static, end-of-day trailing or intraday trailing? Hard or soft daily limit? A consistency rule on the pass or on the payout? These decide how much room you really have.
+
+WHAT YOU GET
+
+- 8 printable pages in US Letter and A4
+
+- The three max-loss types and the lock, with one worked table showing how the same trades leave different room
+
+- Daily loss limits: hard or soft, closed or open trades, from the start or from the best balance; size follows the stop
+
+- Consistency rules with the one formula for the profit you still need
+
+- Payout rules: buffer, minimum days, first request, minimum and maximum, split, what changes after a payout
+
+- The rules people miss: caps, news windows, flat-by times, inactivity, hedging, automation, fees
+
+- A compare-before-you-buy worksheet and a pre-session checklist with if-then plans
+
+WHAT IT IS NOT
+
+- It names no firm and is not affiliated with any broker, exchange, prop firm or trading platform. Rules change: your own rule book always wins.
+
+- No signals, no strategy, no advice; examples use made-up round numbers and are marked Example only.
+
+Instant download. Made with the help of AI tools; written, checked and supported by me.
+
+Trading involves substantial risk of loss and is not suitable for everyone. No results are shown or promised.
+
+**FAQ:**
+
+- **Which firms does it cover?** None by name. It explains the common rule types so you can read any rule book, and has a worksheet to fill from yours.
+- **Is it up to date?** The rule types are general; numbers change by firm and over time, so the worksheet is filled from your own rule pages.
+- **Is this financial advice?** No. It is education about rule types, with made-up examples. It gives no trade ideas.
+- **Which paper sizes?** US Letter and A4. Print at 100% (actual size).
+- **Will it help me pass?** No guide can promise that. It helps you understand the rules before you trade them.
+- **Is there a spreadsheet?** Not in this one: the Eval Risk Calculator and the Prop Eval Tracker are the spreadsheets (all four are in the Prop Trader Bundle).
+
+**Refund line:** Digital download: files can't be returned, but if something does not work as described, message me within 14 days and I will fix it or refund you.
+
+**Watch out:** Low price, mostly the door to the calculator, tracker and bundle; rules change, so it names no firm and has a worksheet instead.
+
+### Prop Firm Trader Bundle: Eval Tracker + Risk Calculator + Rules Cheat Sheet + Daily Routine Planner (Spreadsheets + Printable PDF)
+
+- **Price:** $29
+- **Zip:** `money_machines/out/products/prop_trader_bundle_v1.0.zip` (made by `python -m money_machines.products.build_prop_kit --zip`)
+- **Wide covers (Payhip, Gumroad):** `money_machines/products/prop_bundle/shop/cover_1.jpg`, `money_machines/products/prop_bundle/shop/cover_2.jpg`, `money_machines/products/prop_bundle/shop/cover_3.jpg`
+- **Square covers (Etsy):** `money_machines/products/prop_bundle/shop/cover_1_square.jpg`, `money_machines/products/prop_bundle/shop/cover_2_square.jpg`, `money_machines/products/prop_bundle/shop/cover_3_square.jpg`
+- **Etsy tags (13):** prop firm, trading bundle, trading journal, position size, futures trading, day trading, trader planner, drawdown tracker, risk management, funded trader, trading spreadsheet, trader gift, trading printable
+- **Full listing with the price reasoning and fee table:** `money_machines/products/prop_bundle/shop/listing.md`
+
+**Short line:** Four tools for evaluation traders in one download: track the rules, size from the stop, read the rule book, keep a routine.
+
+**Description:**
+
+Everything an evaluation trader needs on paper and in a spreadsheet, in one download, for less than the four separately.
+
+WHAT YOU GET
+
+- Prop Eval Tracker: drawdown left, daily limit, consistency, target, the next trade's size (spreadsheet + offline web page)
+
+- Eval Risk Calculator: size follows the stop, losses in a row, a losing-streak table
+
+- Prop Eval Rules Explained: the rule types in plain words, a compare-before-you-buy worksheet, a pre-session checklist (Letter + A4)
+
+- Trader's Daily Routine Planner: 16 printable pages (Letter + A4) + a spreadsheet journal
+
+WHAT IT IS NOT
+
+- No signals, no strategy, no advice; it organises your own rules and numbers and promises no results.
+
+- Not affiliated with any broker, exchange, prop firm or trading platform.
+
+Instant download. Made with the help of AI tools; designed, checked and supported by me.
+
+Trading involves substantial risk of loss and is not suitable for everyone. No results are shown or promised.
+
+**FAQ:**
+
+- **What is inside?** Four products: the Prop Eval Tracker, the Eval Risk Calculator, Prop Eval Rules Explained and the Trader's Daily Routine Planner.
+- **Is this financial advice?** No. The tools organise your own rules and numbers. They give no trade ideas and make no predictions.
+- **What do I need?** Any spreadsheet app that opens .xlsx (free online ones too), a browser for the offline page, a PDF reader for the printables.
+- **Which rules does it work with?** Any: you type your own rule book's numbers.
+- **Will it help me pass?** No tool can promise that. It helps you follow your own rules; results depend on you and the market.
+- **Can I buy the parts alone?** Yes, each is sold separately; the bundle costs less than the four together.
+
+**Refund line:** Digital download: files can't be returned, but if something does not work as described, message me within 14 days and I will fix it or refund you.
+
+**Watch out:** Same buyers as the parts: list it last, as the upsell.
 
 ## The rules (keep them)
 

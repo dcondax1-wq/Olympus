@@ -154,7 +154,7 @@ def test_listing_kit():
     from money_machines.products import listing_kit as LK
     ps = LK.products()
     cat = json.load(open(os.path.join(ROOT, "money_machines", "products", "catalog.json"), encoding="utf-8"))
-    check("e. all 5 catalog products are in the kit, at the catalog's prices", [p["id"] for p in ps] == [c["id"] for c in cat["products"]] and
+    check("e. all 8 catalog products are in the kit, at the catalog's prices", [p["id"] for p in ps] == [c["id"] for c in cat["products"]] and
           all(p["price_usd"] == float(c["price_usd"]) for p, c in zip(ps, cat["products"])))
     check("e. nothing missing: title, description, zip, 5+ tags, wide and square covers on disk", not LK.problems(ps), LK.problems(ps))
     check("e. docs/BUSINESS_LISTING_KIT.md is up to date (rerun python -m money_machines.products.listing_kit)",

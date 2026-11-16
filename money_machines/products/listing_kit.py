@@ -18,7 +18,8 @@ ROOT = os.path.dirname(os.path.dirname(HERE))
 DOC = os.path.join(ROOT, "docs", "BUSINESS_LISTING_KIT.md")
 JSON_OUT = os.path.join(HERE, "listing_kit.json")
 FOLDER = {"prop-eval-tracker": "eval_tracker", "local-site-templates": "site_templates", "social-post-pack": "social_kit",
-          "agency-starter-kit": "agency_kit", "trader-routine-planner": "trader_planner"}
+          "agency-starter-kit": "agency_kit", "trader-routine-planner": "trader_planner", "eval-risk-calculator": "risk_calculator",
+          "eval-rules-explained": "rules_guide", "prop-trader-bundle": "prop_bundle"}
 ZIP_FALLBACK = {"prop-eval-tracker": "prop_eval_tracker_v1.0.zip"}
 
 SHOPS = [
