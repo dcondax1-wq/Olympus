@@ -1830,7 +1830,11 @@ def part_j(br, S, base):
             check("j. Kalshi not connected yet: the page offers a preview with sample data", False, body)
         else:
             note("(this Kalshi page has no sample-data preview: skipped)")
-        no_errors(ph, m, "Kalshi waiting + preview", allow=(r"kalshi\.json",))   # the 404 of a feed not published yet
+        # the 404 of a feed not published yet; the page's HEAD check of ../kalshicity/ stops itself after 3 s (kalshi.js city()) and a
+        # busy box can take longer (ERR_ABORTED, by design); the worker's register() then may meet the same slow network (Chromium's
+        # "unknown error ... fetching the script": a network failure; a missing sw.js would be "a bad HTTP response code (404)")
+        no_errors(ph, m, "Kalshi waiting + preview", allow=(r"kalshi\.json", r"/kalshicity/ failed net::ERR_ABORTED$",
+                                                            r"An unknown error occurred when fetching the script"))
     finally:
         CTL.kalshi = "published"
         ph.close()
