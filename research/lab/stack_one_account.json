@@ -1,0 +1,1914 @@
+{
+ "date": "2026-11-16",
+ "n": 1000,
+ "spans": {
+  "H1": [
+   "2026-01-01",
+   "2026-06-30"
+  ],
+  "H2": [
+   "2026-07-01",
+   "2026-10-16"
+  ],
+  "REF": [
+   "2021-11-01",
+   "2025-12-31"
+  ]
+ },
+ "builder": {
+  "LIT alone": {
+   "H1": {
+    "plain": {
+     "trades": 80,
+     "tpw": 3.12,
+     "win": 58.8,
+     "pf": 3.49,
+     "net": 31246,
+     "per_month": 5126,
+     "max_dd": -3271,
+     "win_days_pw": 1.84
+    },
+    "eval": {
+     "p10": 47.5,
+     "f10": 0.8,
+     "p60": 85.3,
+     "f60": 11.2,
+     "pass_med": 9.0,
+     "max_risk": 794
+    },
+    "funded": {
+     "per_month": 929,
+     "lost_6m": 0.0,
+     "first_med": 26.0,
+     "any_pay": 94.5,
+     "payouts": 3.51
+    },
+    "slot": {
+     "net_m": 779,
+     "owner_m": 800,
+     "fees_6m": 127.1,
+     "p_neg": 7.7,
+     "p_no_pay": 7.7,
+     "evals": 1.38,
+     "first_pay_med": 46.0,
+     "pays": 3.03
+    }
+   },
+   "H2": {
+    "plain": {
+     "trades": 40,
+     "tpw": 2.56,
+     "win": 50.0,
+     "pf": 2.71,
+     "net": 13767,
+     "per_month": 3707,
+     "max_dd": -2228,
+     "win_days_pw": 1.28
+    },
+    "eval": {
+     "p10": 47.3,
+     "f10": 0.2,
+     "p60": 83.5,
+     "f60": 11.9,
+     "pass_med": 9.0,
+     "max_risk": 794
+    },
+    "funded": {
+     "per_month": 915,
+     "lost_6m": 0.0,
+     "first_med": 23.5,
+     "any_pay": 92.8,
+     "payouts": 3.47
+    },
+    "slot": {
+     "net_m": 753,
+     "owner_m": 774,
+     "fees_6m": 126.2,
+     "p_neg": 9.6,
+     "p_no_pay": 9.6,
+     "evals": 1.38,
+     "first_pay_med": 44.0,
+     "pays": 2.94
+    }
+   },
+   "REF": {
+    "plain": {
+     "trades": 511,
+     "tpw": 2.37,
+     "win": 53.6,
+     "pf": 1.02,
+     "net": 1961,
+     "per_month": 38,
+     "max_dd": -19725,
+     "win_days_pw": 1.27
+    },
+    "eval": {
+     "p10": 11.7,
+     "f10": 0.6,
+     "p60": 29.8,
+     "f60": 55.1,
+     "pass_med": 14.0,
+     "max_risk": 799
+    },
+    "funded": {
+     "per_month": 66,
+     "lost_6m": 0.0,
+     "first_med": 43.0,
+     "any_pay": 20.6,
+     "payouts": 0.25
+    },
+    "slot": {
+     "net_m": -9,
+     "owner_m": 27,
+     "fees_6m": 211.7,
+     "p_neg": 90.6,
+     "p_no_pay": 90.6,
+     "evals": 2.31,
+     "first_pay_med": 78.0,
+     "pays": 0.1
+    }
+   }
+  },
+  "LIT + ATLAS $250": {
+   "H1": {
+    "plain": {
+     "trades": 184,
+     "tpw": 7.19,
+     "win": 55.4,
+     "pf": 3.25,
+     "net": 49608,
+     "per_month": 8139,
+     "max_dd": -2525,
+     "win_days_pw": 2.15
+    },
+    "eval": {
+     "p10": 61.0,
+     "f10": 2.5,
+     "p60": 90.5,
+     "f60": 9.3,
+     "pass_med": 7.0,
+     "max_risk": 794
+    },
+    "funded": {
+     "per_month": 1240,
+     "lost_6m": 0.0,
+     "first_med": 17.0,
+     "any_pay": 98.3,
+     "payouts": 4.67
+    },
+    "slot": {
+     "net_m": 1280,
+     "owner_m": 1308,
+     "fees_6m": 166.9,
+     "p_neg": 2.4,
+     "p_no_pay": 2.4,
+     "evals": 1.82,
+     "first_pay_med": 29.0,
+     "pays": 4.93
+    }
+   },
+   "H2": {
+    "plain": {
+     "trades": 86,
+     "tpw": 5.51,
+     "win": 53.5,
+     "pf": 2.66,
+     "net": 19023,
+     "per_month": 5122,
+     "max_dd": -2003,
+     "win_days_pw": 2.12
+    },
+    "eval": {
+     "p10": 53.2,
+     "f10": 0.8,
+     "p60": 88.8,
+     "f60": 10.6,
+     "pass_med": 8.0,
+     "max_risk": 804
+    },
+    "funded": {
+     "per_month": 1179,
+     "lost_6m": 0.0,
+     "first_med": 17.0,
+     "any_pay": 96.3,
+     "payouts": 4.47
+    },
+    "slot": {
+     "net_m": 1173,
+     "owner_m": 1200,
+     "fees_6m": 166.1,
+     "p_neg": 5.7,
+     "p_no_pay": 5.7,
+     "evals": 1.81,
+     "first_pay_med": 32.0,
+     "pays": 4.56
+    }
+   },
+   "REF": {
+    "plain": {
+     "trades": 1505,
+     "tpw": 6.99,
+     "win": 42.9,
+     "pf": 1.05,
+     "net": 12354,
+     "per_month": 241,
+     "max_dd": -25295,
+     "win_days_pw": 1.65
+    },
+    "eval": {
+     "p10": 17.6,
+     "f10": 14.0,
+     "p60": 32.0,
+     "f60": 67.5,
+     "pass_med": 9.0,
+     "max_risk": 895
+    },
+    "funded": {
+     "per_month": 93,
+     "lost_6m": 0.0,
+     "first_med": 22.0,
+     "any_pay": 24.7,
+     "payouts": 0.36
+    },
+    "slot": {
+     "net_m": 12,
+     "owner_m": 57,
+     "fees_6m": 269.9,
+     "p_neg": 83.1,
+     "p_no_pay": 83.1,
+     "evals": 2.94,
+     "first_pay_med": 56.0,
+     "pays": 0.22
+    }
+   }
+  },
+  "LIT + ATLAS $500": {
+   "H1": {
+    "plain": {
+     "trades": 184,
+     "tpw": 7.19,
+     "win": 55.4,
+     "pf": 3.12,
+     "net": 72901,
+     "per_month": 11960,
+     "max_dd": -3017,
+     "win_days_pw": 2.46
+    },
+    "eval": {
+     "p10": 66.0,
+     "f10": 3.1,
+     "p60": 88.7,
+     "f60": 11.3,
+     "pass_med": 5.0,
+     "max_risk": 794
+    },
+    "funded": {
+     "per_month": 1232,
+     "lost_6m": 0.0,
+     "first_med": 17.0,
+     "any_pay": 96.3,
+     "payouts": 4.62
+    },
+    "slot": {
+     "net_m": 1329,
+     "owner_m": 1358,
+     "fees_6m": 174.9,
+     "p_neg": 4.0,
+     "p_no_pay": 4.0,
+     "evals": 1.91,
+     "first_pay_med": 27.0,
+     "pays": 5.1
+    }
+   },
+   "H2": {
+    "plain": {
+     "trades": 86,
+     "tpw": 5.51,
+     "win": 53.5,
+     "pf": 2.74,
+     "net": 27304,
+     "per_month": 7351,
+     "max_dd": -2480,
+     "win_days_pw": 2.24
+    },
+    "eval": {
+     "p10": 62.0,
+     "f10": 1.6,
+     "p60": 89.2,
+     "f60": 10.3,
+     "pass_med": 6.0,
+     "max_risk": 804
+    },
+    "funded": {
+     "per_month": 1214,
+     "lost_6m": 0.0,
+     "first_med": 15.0,
+     "any_pay": 94.7,
+     "payouts": 4.58
+    },
+    "slot": {
+     "net_m": 1347,
+     "owner_m": 1377,
+     "fees_6m": 179.7,
+     "p_neg": 5.8,
+     "p_no_pay": 5.8,
+     "evals": 1.96,
+     "first_pay_med": 27.0,
+     "pays": 5.21
+    }
+   },
+   "REF": {
+    "plain": {
+     "trades": 1505,
+     "tpw": 6.99,
+     "win": 42.9,
+     "pf": 1.07,
+     "net": 24948,
+     "per_month": 486,
+     "max_dd": -37025,
+     "win_days_pw": 1.72
+    },
+    "eval": {
+     "p10": 22.4,
+     "f10": 20.1,
+     "p60": 30.4,
+     "f60": 69.6,
+     "pass_med": 5.0,
+     "max_risk": 1035
+    },
+    "funded": {
+     "per_month": 76,
+     "lost_6m": 0.0,
+     "first_med": 21.0,
+     "any_pay": 19.1,
+     "payouts": 0.28
+    },
+    "slot": {
+     "net_m": 8,
+     "owner_m": 56,
+     "fees_6m": 286.5,
+     "p_neg": 84.1,
+     "p_no_pay": 84.1,
+     "evals": 3.12,
+     "first_pay_med": 56.0,
+     "pays": 0.21
+    }
+   }
+  },
+  "LIT + BLITZ $150": {
+   "H1": {
+    "plain": {
+     "trades": 297,
+     "tpw": 11.6,
+     "win": 57.2,
+     "pf": 2.77,
+     "net": 37119,
+     "per_month": 6090,
+     "max_dd": -3905,
+     "win_days_pw": 2.19
+    },
+    "eval": {
+     "p10": 48.8,
+     "f10": 1.7,
+     "p60": 82.3,
+     "f60": 15.8,
+     "pass_med": 8.0,
+     "max_risk": 794
+    },
+    "funded": {
+     "per_month": 943,
+     "lost_6m": 0.0,
+     "first_med": 24.0,
+     "any_pay": 93.8,
+     "payouts": 3.56
+    },
+    "slot": {
+     "net_m": 804,
+     "owner_m": 826,
+     "fees_6m": 135.1,
+     "p_neg": 8.0,
+     "p_no_pay": 8.0,
+     "evals": 1.47,
+     "first_pay_med": 42.5,
+     "pays": 3.13
+    }
+   },
+   "H2": {
+    "plain": {
+     "trades": 146,
+     "tpw": 9.36,
+     "win": 54.8,
+     "pf": 2.34,
+     "net": 16245,
+     "per_month": 4374,
+     "max_dd": -2047,
+     "win_days_pw": 1.73
+    },
+    "eval": {
+     "p10": 50.6,
+     "f10": 0.7,
+     "p60": 89.7,
+     "f60": 8.1,
+     "pass_med": 9.0,
+     "max_risk": 794
+    },
+    "funded": {
+     "per_month": 1054,
+     "lost_6m": 0.0,
+     "first_med": 22.0,
+     "any_pay": 95.5,
+     "payouts": 3.98
+    },
+    "slot": {
+     "net_m": 929,
+     "owner_m": 951,
+     "fees_6m": 133.6,
+     "p_neg": 4.6,
+     "p_no_pay": 4.6,
+     "evals": 1.46,
+     "first_pay_med": 40.0,
+     "pays": 3.6
+    }
+   },
+   "REF": {
+    "plain": {
+     "trades": 2352,
+     "tpw": 10.92,
+     "win": 50.9,
+     "pf": 1.03,
+     "net": 5727,
+     "per_month": 112,
+     "max_dd": -19267,
+     "win_days_pw": 1.6
+    },
+    "eval": {
+     "p10": 11.8,
+     "f10": 2.6,
+     "p60": 31.0,
+     "f60": 61.0,
+     "pass_med": 15.0,
+     "max_risk": 799
+    },
+    "funded": {
+     "per_month": 72,
+     "lost_6m": 0.0,
+     "first_med": 40.0,
+     "any_pay": 22.3,
+     "payouts": 0.28
+    },
+    "slot": {
+     "net_m": -3,
+     "owner_m": 36,
+     "fees_6m": 231.9,
+     "p_neg": 87.3,
+     "p_no_pay": 87.3,
+     "evals": 2.53,
+     "first_pay_med": 80.0,
+     "pays": 0.14
+    }
+   }
+  },
+  "LIT + BLITZ $300": {
+   "H1": {
+    "plain": {
+     "trades": 297,
+     "tpw": 11.6,
+     "win": 57.2,
+     "pf": 2.41,
+     "net": 38717,
+     "per_month": 6352,
+     "max_dd": -4503,
+     "win_days_pw": 2.27
+    },
+    "eval": {
+     "p10": 52.5,
+     "f10": 2.4,
+     "p60": 82.3,
+     "f60": 16.3,
+     "pass_med": 7.0,
+     "max_risk": 794
+    },
+    "funded": {
+     "per_month": 1062,
+     "lost_6m": 0.0,
+     "first_med": 19.0,
+     "any_pay": 92.4,
+     "payouts": 4.01
+    },
+    "slot": {
+     "net_m": 1004,
+     "owner_m": 1031,
+     "fees_6m": 159.5,
+     "p_neg": 8.3,
+     "p_no_pay": 8.3,
+     "evals": 1.74,
+     "first_pay_med": 36.0,
+     "pays": 3.9
+    }
+   },
+   "H2": {
+    "plain": {
+     "trades": 146,
+     "tpw": 9.36,
+     "win": 54.8,
+     "pf": 2.39,
+     "net": 19047,
+     "per_month": 5128,
+     "max_dd": -2144,
+     "win_days_pw": 1.79
+    },
+    "eval": {
+     "p10": 54.1,
+     "f10": 0.9,
+     "p60": 89.8,
+     "f60": 8.7,
+     "pass_med": 8.0,
+     "max_risk": 794
+    },
+    "funded": {
+     "per_month": 1134,
+     "lost_6m": 0.0,
+     "first_med": 18.0,
+     "any_pay": 94.2,
+     "payouts": 4.29
+    },
+    "slot": {
+     "net_m": 1107,
+     "owner_m": 1133,
+     "fees_6m": 156.6,
+     "p_neg": 5.4,
+     "p_no_pay": 5.4,
+     "evals": 1.71,
+     "first_pay_med": 34.0,
+     "pays": 4.3
+    }
+   },
+   "REF": {
+    "plain": {
+     "trades": 2352,
+     "tpw": 10.92,
+     "win": 50.9,
+     "pf": 1.03,
+     "net": 8204,
+     "per_month": 160,
+     "max_dd": -20290,
+     "win_days_pw": 1.63
+    },
+    "eval": {
+     "p10": 13.8,
+     "f10": 5.0,
+     "p60": 31.3,
+     "f60": 64.5,
+     "pass_med": 12.5,
+     "max_risk": 860
+    },
+    "funded": {
+     "per_month": 79,
+     "lost_6m": 0.0,
+     "first_med": 29.0,
+     "any_pay": 21.9,
+     "payouts": 0.3
+    },
+    "slot": {
+     "net_m": 1,
+     "owner_m": 44,
+     "fees_6m": 256.9,
+     "p_neg": 86.2,
+     "p_no_pay": 86.2,
+     "evals": 2.8,
+     "first_pay_med": 68.0,
+     "pays": 0.17
+    }
+   }
+  },
+  "LIT + ATLAS $250 + BLITZ $150": {
+   "H1": {
+    "plain": {
+     "trades": 401,
+     "tpw": 15.66,
+     "win": 56.1,
+     "pf": 2.82,
+     "net": 55480,
+     "per_month": 9102,
+     "max_dd": -2525,
+     "win_days_pw": 2.58
+    },
+    "eval": {
+     "p10": 61.6,
+     "f10": 3.2,
+     "p60": 89.2,
+     "f60": 10.8,
+     "pass_med": 6.5,
+     "max_risk": 794
+    },
+    "funded": {
+     "per_month": 1244,
+     "lost_6m": 0.0,
+     "first_med": 17.0,
+     "any_pay": 97.9,
+     "payouts": 4.68
+    },
+    "slot": {
+     "net_m": 1322,
+     "owner_m": 1351,
+     "fees_6m": 174.2,
+     "p_neg": 2.3,
+     "p_no_pay": 2.3,
+     "evals": 1.9,
+     "first_pay_med": 29.0,
+     "pays": 5.09
+    }
+   },
+   "H2": {
+    "plain": {
+     "trades": 192,
+     "tpw": 12.31,
+     "win": 55.2,
+     "pf": 2.39,
+     "net": 21501,
+     "per_month": 5789,
+     "max_dd": -1995,
+     "win_days_pw": 2.37
+    },
+    "eval": {
+     "p10": 56.0,
+     "f10": 1.2,
+     "p60": 91.0,
+     "f60": 8.7,
+     "pass_med": 8.0,
+     "max_risk": 804
+    },
+    "funded": {
+     "per_month": 1224,
+     "lost_6m": 0.0,
+     "first_med": 15.0,
+     "any_pay": 96.7,
+     "payouts": 4.63
+    },
+    "slot": {
+     "net_m": 1303,
+     "owner_m": 1331,
+     "fees_6m": 172.7,
+     "p_neg": 4.9,
+     "p_no_pay": 4.9,
+     "evals": 1.88,
+     "first_pay_med": 30.0,
+     "pays": 5.05
+    }
+   },
+   "REF": {
+    "plain": {
+     "trades": 3346,
+     "tpw": 15.53,
+     "win": 46.9,
+     "pf": 1.05,
+     "net": 16120,
+     "per_month": 314,
+     "max_dd": -23626,
+     "win_days_pw": 1.77
+    },
+    "eval": {
+     "p10": 17.8,
+     "f10": 17.4,
+     "p60": 32.2,
+     "f60": 67.5,
+     "pass_med": 9.0,
+     "max_risk": 895
+    },
+    "funded": {
+     "per_month": 100,
+     "lost_6m": 0.0,
+     "first_med": 21.0,
+     "any_pay": 25.4,
+     "payouts": 0.38
+    },
+    "slot": {
+     "net_m": 14,
+     "owner_m": 60,
+     "fees_6m": 278.8,
+     "p_neg": 82.5,
+     "p_no_pay": 82.5,
+     "evals": 3.04,
+     "first_pay_med": 54.0,
+     "pays": 0.23
+    }
+   }
+  },
+  "LIT + ATLAS $500 + BLITZ $300": {
+   "H1": {
+    "plain": {
+     "trades": 401,
+     "tpw": 15.66,
+     "win": 56.1,
+     "pf": 2.63,
+     "net": 80372,
+     "per_month": 13186,
+     "max_dd": -2950,
+     "win_days_pw": 2.89
+    },
+    "eval": {
+     "p10": 67.9,
+     "f10": 4.2,
+     "p60": 88.2,
+     "f60": 11.8,
+     "pass_med": 5.0,
+     "max_risk": 794
+    },
+    "funded": {
+     "per_month": 1257,
+     "lost_6m": 0.0,
+     "first_med": 15.0,
+     "any_pay": 96.2,
+     "payouts": 4.72
+    },
+    "slot": {
+     "net_m": 1484,
+     "owner_m": 1516,
+     "fees_6m": 189.4,
+     "p_neg": 4.1,
+     "p_no_pay": 4.1,
+     "evals": 2.06,
+     "first_pay_med": 25.0,
+     "pays": 5.69
+    }
+   },
+   "H2": {
+    "plain": {
+     "trades": 192,
+     "tpw": 12.31,
+     "win": 55.2,
+     "pf": 2.52,
+     "net": 32584,
+     "per_month": 8773,
+     "max_dd": -2480,
+     "win_days_pw": 2.5
+    },
+    "eval": {
+     "p10": 68.0,
+     "f10": 1.9,
+     "p60": 91.1,
+     "f60": 8.7,
+     "pass_med": 6.0,
+     "max_risk": 804
+    },
+    "funded": {
+     "per_month": 1242,
+     "lost_6m": 0.0,
+     "first_med": 13.0,
+     "any_pay": 95.5,
+     "payouts": 4.67
+    },
+    "slot": {
+     "net_m": 1567,
+     "owner_m": 1598,
+     "fees_6m": 189.5,
+     "p_neg": 3.9,
+     "p_no_pay": 3.9,
+     "evals": 2.06,
+     "first_pay_med": 25.0,
+     "pays": 6.02
+    }
+   },
+   "REF": {
+    "plain": {
+     "trades": 3346,
+     "tpw": 15.53,
+     "win": 46.9,
+     "pf": 1.06,
+     "net": 31191,
+     "per_month": 608,
+     "max_dd": -33476,
+     "win_days_pw": 1.83
+    },
+    "eval": {
+     "p10": 22.2,
+     "f10": 27.6,
+     "p60": 29.6,
+     "f60": 70.4,
+     "pass_med": 5.0,
+     "max_risk": 1035
+    },
+    "funded": {
+     "per_month": 78,
+     "lost_6m": 0.0,
+     "first_med": 19.0,
+     "any_pay": 18.9,
+     "payouts": 0.29
+    },
+    "slot": {
+     "net_m": 10,
+     "owner_m": 62,
+     "fees_6m": 311.7,
+     "p_neg": 83.5,
+     "p_no_pay": 83.5,
+     "evals": 3.4,
+     "first_pay_med": 51.0,
+     "pays": 0.23
+    }
+   }
+  },
+  "LIT eval; funded + ATLAS $500": {
+   "H1": {
+    "plain": {
+     "trades": 184,
+     "tpw": 7.19,
+     "win": 55.4,
+     "pf": 3.12,
+     "net": 72901,
+     "per_month": 11960,
+     "max_dd": -3017,
+     "win_days_pw": 2.46
+    },
+    "eval": {
+     "p10": 47.5,
+     "f10": 0.8,
+     "p60": 85.3,
+     "f60": 11.2,
+     "pass_med": 9.0,
+     "max_risk": 794
+    },
+    "funded": {
+     "per_month": 1232,
+     "lost_6m": 0.0,
+     "first_med": 17.0,
+     "any_pay": 96.3,
+     "payouts": 4.62
+    },
+    "slot": {
+     "net_m": 1202,
+     "owner_m": 1229,
+     "fees_6m": 165.3,
+     "p_neg": 4.7,
+     "p_no_pay": 4.7,
+     "evals": 1.8,
+     "first_pay_med": 34.0,
+     "pays": 4.62
+    }
+   },
+   "H2": {
+    "plain": {
+     "trades": 86,
+     "tpw": 5.51,
+     "win": 53.5,
+     "pf": 2.74,
+     "net": 27304,
+     "per_month": 7351,
+     "max_dd": -2480,
+     "win_days_pw": 2.24
+    },
+    "eval": {
+     "p10": 47.3,
+     "f10": 0.2,
+     "p60": 83.5,
+     "f60": 11.9,
+     "pass_med": 9.0,
+     "max_risk": 794
+    },
+    "funded": {
+     "per_month": 1214,
+     "lost_6m": 0.0,
+     "first_med": 15.0,
+     "any_pay": 94.7,
+     "payouts": 4.58
+    },
+    "slot": {
+     "net_m": 1205,
+     "owner_m": 1234,
+     "fees_6m": 174.3,
+     "p_neg": 7.1,
+     "p_no_pay": 7.1,
+     "evals": 1.9,
+     "first_pay_med": 33.0,
+     "pays": 4.67
+    }
+   },
+   "REF": {
+    "plain": {
+     "trades": 1505,
+     "tpw": 6.99,
+     "win": 42.9,
+     "pf": 1.07,
+     "net": 24948,
+     "per_month": 486,
+     "max_dd": -37025,
+     "win_days_pw": 1.72
+    },
+    "eval": {
+     "p10": 11.7,
+     "f10": 0.6,
+     "p60": 29.8,
+     "f60": 55.1,
+     "pass_med": 14.0,
+     "max_risk": 799
+    },
+    "funded": {
+     "per_month": 76,
+     "lost_6m": 0.0,
+     "first_med": 21.0,
+     "any_pay": 19.1,
+     "payouts": 0.28
+    },
+    "slot": {
+     "net_m": -1,
+     "owner_m": 35,
+     "fees_6m": 211.7,
+     "p_neg": 89.7,
+     "p_no_pay": 89.7,
+     "evals": 2.31,
+     "first_pay_med": 54.0,
+     "pays": 0.13
+    }
+   }
+  },
+  "LIT eval; funded + ATLAS $500 + BLITZ $300": {
+   "H1": {
+    "plain": {
+     "trades": 401,
+     "tpw": 15.66,
+     "win": 56.1,
+     "pf": 2.63,
+     "net": 80372,
+     "per_month": 13186,
+     "max_dd": -2950,
+     "win_days_pw": 2.89
+    },
+    "eval": {
+     "p10": 47.5,
+     "f10": 0.8,
+     "p60": 85.3,
+     "f60": 11.2,
+     "pass_med": 9.0,
+     "max_risk": 794
+    },
+    "funded": {
+     "per_month": 1257,
+     "lost_6m": 0.0,
+     "first_med": 15.0,
+     "any_pay": 96.2,
+     "payouts": 4.72
+    },
+    "slot": {
+     "net_m": 1313,
+     "owner_m": 1343,
+     "fees_6m": 179.3,
+     "p_neg": 4.2,
+     "p_no_pay": 4.2,
+     "evals": 1.95,
+     "first_pay_med": 31.0,
+     "pays": 5.05
+    }
+   },
+   "H2": {
+    "plain": {
+     "trades": 192,
+     "tpw": 12.31,
+     "win": 55.2,
+     "pf": 2.52,
+     "net": 32584,
+     "per_month": 8773,
+     "max_dd": -2480,
+     "win_days_pw": 2.5
+    },
+    "eval": {
+     "p10": 47.3,
+     "f10": 0.2,
+     "p60": 83.5,
+     "f60": 11.9,
+     "pass_med": 9.0,
+     "max_risk": 794
+    },
+    "funded": {
+     "per_month": 1242,
+     "lost_6m": 0.0,
+     "first_med": 13.0,
+     "any_pay": 95.5,
+     "payouts": 4.67
+    },
+    "slot": {
+     "net_m": 1347,
+     "owner_m": 1378,
+     "fees_6m": 184.2,
+     "p_neg": 5.7,
+     "p_no_pay": 5.7,
+     "evals": 2.01,
+     "first_pay_med": 30.0,
+     "pays": 5.19
+    }
+   },
+   "REF": {
+    "plain": {
+     "trades": 3346,
+     "tpw": 15.53,
+     "win": 46.9,
+     "pf": 1.06,
+     "net": 31191,
+     "per_month": 608,
+     "max_dd": -33476,
+     "win_days_pw": 1.83
+    },
+    "eval": {
+     "p10": 11.7,
+     "f10": 0.6,
+     "p60": 29.8,
+     "f60": 55.1,
+     "pass_med": 14.0,
+     "max_risk": 799
+    },
+    "funded": {
+     "per_month": 78,
+     "lost_6m": 0.0,
+     "first_med": 19.0,
+     "any_pay": 18.9,
+     "payouts": 0.29
+    },
+    "slot": {
+     "net_m": 2,
+     "owner_m": 37,
+     "fees_6m": 211.7,
+     "p_neg": 89.4,
+     "p_no_pay": 89.4,
+     "evals": 2.31,
+     "first_pay_med": 52.0,
+     "pays": 0.14
+    }
+   }
+  }
+ },
+ "rapid_eod": {
+  "LIT alone": {
+   "H1": {
+    "plain": {
+     "trades": 80,
+     "tpw": 3.12,
+     "win": 58.8,
+     "pf": 3.49,
+     "net": 31246,
+     "per_month": 5126,
+     "max_dd": -3271,
+     "win_days_pw": 1.84
+    },
+    "eval": {
+     "p10": 0.7,
+     "f10": 0.0,
+     "p60": 43.4,
+     "f60": 0.5,
+     "pass_med": 40.0,
+     "max_risk": 388
+    },
+    "funded": {
+     "per_month": 2082,
+     "lost_6m": 0.0,
+     "first_med": 19.0,
+     "any_pay": 96.9,
+     "payouts": 10.41
+    },
+    "slot": {
+     "net_m": 815,
+     "owner_m": 830,
+     "fees_6m": 95.3,
+     "p_neg": 28.8,
+     "p_no_pay": 28.8,
+     "evals": 1.01,
+     "first_pay_med": 78.0,
+     "pays": 4.18
+    }
+   },
+   "H2": {
+    "plain": {
+     "trades": 40,
+     "tpw": 2.56,
+     "win": 50.0,
+     "pf": 2.71,
+     "net": 13767,
+     "per_month": 3707,
+     "max_dd": -2228,
+     "win_days_pw": 1.28
+    },
+    "eval": {
+     "p10": 0.0,
+     "f10": 0.0,
+     "p60": 65.5,
+     "f60": 0.7,
+     "pass_med": 38.0,
+     "max_risk": 361
+    },
+    "funded": {
+     "per_month": 1525,
+     "lost_6m": 0.0,
+     "first_med": 19.0,
+     "any_pay": 90.9,
+     "payouts": 7.46
+    },
+    "slot": {
+     "net_m": 799,
+     "owner_m": 815,
+     "fees_6m": 96.3,
+     "p_neg": 22.7,
+     "p_no_pay": 22.7,
+     "evals": 1.02,
+     "first_pay_med": 71.0,
+     "pays": 4.0
+    }
+   },
+   "REF": {
+    "plain": {
+     "trades": 511,
+     "tpw": 2.37,
+     "win": 53.6,
+     "pf": 1.02,
+     "net": 1961,
+     "per_month": 38,
+     "max_dd": -19725,
+     "win_days_pw": 1.27
+    },
+    "eval": {
+     "p10": 0.1,
+     "f10": 0.0,
+     "p60": 4.0,
+     "f60": 14.3,
+     "pass_med": 46.0,
+     "max_risk": 552
+    },
+    "funded": {
+     "per_month": 131,
+     "lost_6m": 0.0,
+     "first_med": 28.0,
+     "any_pay": 32.2,
+     "payouts": 0.75
+    },
+    "slot": {
+     "net_m": -18,
+     "owner_m": 6,
+     "fees_6m": 142.9,
+     "p_neg": 98.0,
+     "p_no_pay": 98.0,
+     "evals": 1.52,
+     "first_pay_med": 89.5,
+     "pays": 0.04
+    }
+   }
+  },
+  "LIT + ATLAS $250": {
+   "H1": {
+    "plain": {
+     "trades": 184,
+     "tpw": 7.19,
+     "win": 55.4,
+     "pf": 3.25,
+     "net": 49608,
+     "per_month": 8139,
+     "max_dd": -2525,
+     "win_days_pw": 2.15
+    },
+    "eval": {
+     "p10": 2.5,
+     "f10": 0.0,
+     "p60": 93.8,
+     "f60": 0.9,
+     "pass_med": 27.0,
+     "max_risk": 388
+    },
+    "funded": {
+     "per_month": 4991,
+     "lost_6m": 0.0,
+     "first_med": 9.0,
+     "any_pay": 99.1,
+     "payouts": 20.88
+    },
+    "slot": {
+     "net_m": 3591,
+     "owner_m": 3607,
+     "fees_6m": 95.2,
+     "p_neg": 1.5,
+     "p_no_pay": 1.5,
+     "evals": 1.01,
+     "first_pay_med": 42.0,
+     "pays": 15.09
+    }
+   },
+   "H2": {
+    "plain": {
+     "trades": 86,
+     "tpw": 5.51,
+     "win": 53.5,
+     "pf": 2.66,
+     "net": 19023,
+     "per_month": 5122,
+     "max_dd": -2003,
+     "win_days_pw": 2.12
+    },
+    "eval": {
+     "p10": 2.4,
+     "f10": 0.0,
+     "p60": 92.6,
+     "f60": 1.5,
+     "pass_med": 27.0,
+     "max_risk": 361
+    },
+    "funded": {
+     "per_month": 2423,
+     "lost_6m": 0.0,
+     "first_med": 14.0,
+     "any_pay": 94.4,
+     "payouts": 13.71
+    },
+    "slot": {
+     "net_m": 1758,
+     "owner_m": 1774,
+     "fees_6m": 95.0,
+     "p_neg": 7.2,
+     "p_no_pay": 7.2,
+     "evals": 1.01,
+     "first_pay_med": 48.0,
+     "pays": 10.09
+    }
+   },
+   "REF": {
+    "plain": {
+     "trades": 1505,
+     "tpw": 6.99,
+     "win": 42.9,
+     "pf": 1.05,
+     "net": 12354,
+     "per_month": 241,
+     "max_dd": -25295,
+     "win_days_pw": 1.65
+    },
+    "eval": {
+     "p10": 0.3,
+     "f10": 1.2,
+     "p60": 14.3,
+     "f60": 60.7,
+     "pass_med": 36.5,
+     "max_risk": 552
+    },
+    "funded": {
+     "per_month": 220,
+     "lost_6m": 0.0,
+     "first_med": 12.0,
+     "any_pay": 37.1,
+     "payouts": 1.13
+    },
+    "slot": {
+     "net_m": 22,
+     "owner_m": 62,
+     "fees_6m": 243.1,
+     "p_neg": 88.2,
+     "p_no_pay": 88.2,
+     "evals": 2.59,
+     "first_pay_med": 71.0,
+     "pays": 0.31
+    }
+   }
+  },
+  "LIT + ATLAS $500": {
+   "H1": {
+    "plain": {
+     "trades": 184,
+     "tpw": 7.19,
+     "win": 55.4,
+     "pf": 3.12,
+     "net": 72901,
+     "per_month": 11960,
+     "max_dd": -3017,
+     "win_days_pw": 2.46
+    },
+    "eval": {
+     "p10": 5.2,
+     "f10": 0.0,
+     "p60": 97.2,
+     "f60": 1.0,
+     "pass_med": 22.0,
+     "max_risk": 431
+    },
+    "funded": {
+     "per_month": 6269,
+     "lost_6m": 0.0,
+     "first_med": 6.0,
+     "any_pay": 97.9,
+     "payouts": 20.21
+    },
+    "slot": {
+     "net_m": 5022,
+     "owner_m": 5038,
+     "fees_6m": 95.2,
+     "p_neg": 2.3,
+     "p_no_pay": 2.3,
+     "evals": 1.01,
+     "first_pay_med": 34.0,
+     "pays": 16.23
+    }
+   },
+   "H2": {
+    "plain": {
+     "trades": 86,
+     "tpw": 5.51,
+     "win": 53.5,
+     "pf": 2.74,
+     "net": 27304,
+     "per_month": 7351,
+     "max_dd": -2480,
+     "win_days_pw": 2.24
+    },
+    "eval": {
+     "p10": 9.2,
+     "f10": 0.0,
+     "p60": 94.8,
+     "f60": 2.3,
+     "pass_med": 21.0,
+     "max_risk": 436
+    },
+    "funded": {
+     "per_month": 2884,
+     "lost_6m": 0.0,
+     "first_med": 10.0,
+     "any_pay": 93.2,
+     "payouts": 15.12
+    },
+    "slot": {
+     "net_m": 2301,
+     "owner_m": 2317,
+     "fees_6m": 96.4,
+     "p_neg": 7.6,
+     "p_no_pay": 7.6,
+     "evals": 1.03,
+     "first_pay_med": 37.0,
+     "pays": 12.18
+    }
+   },
+   "REF": {
+    "plain": {
+     "trades": 1505,
+     "tpw": 6.99,
+     "win": 42.9,
+     "pf": 1.07,
+     "net": 24948,
+     "per_month": 486,
+     "max_dd": -37025,
+     "win_days_pw": 1.72
+    },
+    "eval": {
+     "p10": 1.1,
+     "f10": 2.9,
+     "p60": 19.2,
+     "f60": 68.0,
+     "pass_med": 29.0,
+     "max_risk": 552
+    },
+    "funded": {
+     "per_month": 251,
+     "lost_6m": 0.0,
+     "first_med": 7.0,
+     "any_pay": 35.7,
+     "payouts": 0.93
+    },
+    "slot": {
+     "net_m": 63,
+     "owner_m": 108,
+     "fees_6m": 272.8,
+     "p_neg": 82.2,
+     "p_no_pay": 82.2,
+     "evals": 2.9,
+     "first_pay_med": 66.0,
+     "pays": 0.41
+    }
+   }
+  },
+  "LIT + ATLAS $250 + BLITZ $150": {
+   "H1": {
+    "plain": {
+     "trades": 401,
+     "tpw": 15.66,
+     "win": 56.1,
+     "pf": 2.82,
+     "net": 55480,
+     "per_month": 9102,
+     "max_dd": -2525,
+     "win_days_pw": 2.58
+    },
+    "eval": {
+     "p10": 4.2,
+     "f10": 0.0,
+     "p60": 94.4,
+     "f60": 1.5,
+     "pass_med": 25.5,
+     "max_risk": 388
+    },
+    "funded": {
+     "per_month": 5040,
+     "lost_6m": 0.0,
+     "first_med": 8.0,
+     "any_pay": 98.6,
+     "payouts": 20.68
+    },
+    "slot": {
+     "net_m": 3733,
+     "owner_m": 3749,
+     "fees_6m": 95.8,
+     "p_neg": 2.2,
+     "p_no_pay": 2.2,
+     "evals": 1.02,
+     "first_pay_med": 39.0,
+     "pays": 15.41
+    }
+   },
+   "H2": {
+    "plain": {
+     "trades": 192,
+     "tpw": 12.31,
+     "win": 55.2,
+     "pf": 2.39,
+     "net": 21501,
+     "per_month": 5789,
+     "max_dd": -1995,
+     "win_days_pw": 2.37
+    },
+    "eval": {
+     "p10": 5.3,
+     "f10": 0.0,
+     "p60": 95.4,
+     "f60": 0.9,
+     "pass_med": 24.0,
+     "max_risk": 361
+    },
+    "funded": {
+     "per_month": 2933,
+     "lost_6m": 0.0,
+     "first_med": 12.0,
+     "any_pay": 95.6,
+     "payouts": 15.64
+    },
+    "slot": {
+     "net_m": 2230,
+     "owner_m": 2246,
+     "fees_6m": 95.0,
+     "p_neg": 5.2,
+     "p_no_pay": 5.2,
+     "evals": 1.01,
+     "first_pay_med": 41.0,
+     "pays": 12.01
+    }
+   },
+   "REF": {
+    "plain": {
+     "trades": 3346,
+     "tpw": 15.53,
+     "win": 46.9,
+     "pf": 1.05,
+     "net": 16120,
+     "per_month": 314,
+     "max_dd": -23626,
+     "win_days_pw": 1.77
+    },
+    "eval": {
+     "p10": 0.5,
+     "f10": 1.8,
+     "p60": 18.4,
+     "f60": 63.1,
+     "pass_med": 32.0,
+     "max_risk": 552
+    },
+    "funded": {
+     "per_month": 230,
+     "lost_6m": 0.0,
+     "first_med": 12.0,
+     "any_pay": 38.6,
+     "payouts": 1.18
+    },
+    "slot": {
+     "net_m": 41,
+     "owner_m": 84,
+     "fees_6m": 256.5,
+     "p_neg": 84.4,
+     "p_no_pay": 84.3,
+     "evals": 2.73,
+     "first_pay_med": 73.0,
+     "pays": 0.42
+    }
+   }
+  },
+  "LIT + ATLAS $500 + BLITZ $300": {
+   "H1": {
+    "plain": {
+     "trades": 401,
+     "tpw": 15.66,
+     "win": 56.1,
+     "pf": 2.63,
+     "net": 80372,
+     "per_month": 13186,
+     "max_dd": -2950,
+     "win_days_pw": 2.89
+    },
+    "eval": {
+     "p10": 13.1,
+     "f10": 0.0,
+     "p60": 97.0,
+     "f60": 2.6,
+     "pass_med": 17.0,
+     "max_risk": 431
+    },
+    "funded": {
+     "per_month": 7013,
+     "lost_6m": 0.0,
+     "first_med": 6.0,
+     "any_pay": 98.2,
+     "payouts": 23.5
+    },
+    "slot": {
+     "net_m": 5857,
+     "owner_m": 5873,
+     "fees_6m": 97.0,
+     "p_neg": 2.2,
+     "p_no_pay": 2.2,
+     "evals": 1.03,
+     "first_pay_med": 28.0,
+     "pays": 19.71
+    }
+   },
+   "H2": {
+    "plain": {
+     "trades": 192,
+     "tpw": 12.31,
+     "win": 55.2,
+     "pf": 2.52,
+     "net": 32584,
+     "per_month": 8773,
+     "max_dd": -2480,
+     "win_days_pw": 2.5
+    },
+    "eval": {
+     "p10": 20.3,
+     "f10": 0.0,
+     "p60": 96.9,
+     "f60": 1.9,
+     "pass_med": 17.0,
+     "max_risk": 436
+    },
+    "funded": {
+     "per_month": 3897,
+     "lost_6m": 0.0,
+     "first_med": 9.0,
+     "any_pay": 95.1,
+     "payouts": 18.91
+    },
+    "slot": {
+     "net_m": 3265,
+     "owner_m": 3281,
+     "fees_6m": 96.2,
+     "p_neg": 6.9,
+     "p_no_pay": 6.9,
+     "evals": 1.02,
+     "first_pay_med": 30.0,
+     "pays": 15.97
+    }
+   },
+   "REF": {
+    "plain": {
+     "trades": 3346,
+     "tpw": 15.53,
+     "win": 46.9,
+     "pf": 1.06,
+     "net": 31191,
+     "per_month": 608,
+     "max_dd": -33476,
+     "win_days_pw": 1.83
+    },
+    "eval": {
+     "p10": 2.2,
+     "f10": 7.6,
+     "p60": 23.4,
+     "f60": 73.4,
+     "pass_med": 22.0,
+     "max_risk": 552
+    },
+    "funded": {
+     "per_month": 240,
+     "lost_6m": 0.0,
+     "first_med": 6.0,
+     "any_pay": 34.4,
+     "payouts": 0.9
+    },
+    "slot": {
+     "net_m": 84,
+     "owner_m": 136,
+     "fees_6m": 315.7,
+     "p_neg": 78.6,
+     "p_no_pay": 78.6,
+     "evals": 3.36,
+     "first_pay_med": 58.0,
+     "pays": 0.54
+    }
+   }
+  },
+  "LIT eval; funded + ATLAS $500": {
+   "H1": {
+    "plain": {
+     "trades": 184,
+     "tpw": 7.19,
+     "win": 55.4,
+     "pf": 3.12,
+     "net": 72901,
+     "per_month": 11960,
+     "max_dd": -3017,
+     "win_days_pw": 2.46
+    },
+    "eval": {
+     "p10": 0.7,
+     "f10": 0.0,
+     "p60": 43.4,
+     "f60": 0.5,
+     "pass_med": 40.0,
+     "max_risk": 388
+    },
+    "funded": {
+     "per_month": 6269,
+     "lost_6m": 0.0,
+     "first_med": 6.0,
+     "any_pay": 97.9,
+     "payouts": 20.21
+    },
+    "slot": {
+     "net_m": 2797,
+     "owner_m": 2813,
+     "fees_6m": 95.3,
+     "p_neg": 17.6,
+     "p_no_pay": 17.6,
+     "evals": 1.01,
+     "first_pay_med": 70.0,
+     "pays": 9.12
+    }
+   },
+   "H2": {
+    "plain": {
+     "trades": 86,
+     "tpw": 5.51,
+     "win": 53.5,
+     "pf": 2.74,
+     "net": 27304,
+     "per_month": 7351,
+     "max_dd": -2480,
+     "win_days_pw": 2.24
+    },
+    "eval": {
+     "p10": 0.0,
+     "f10": 0.0,
+     "p60": 65.5,
+     "f60": 0.7,
+     "pass_med": 38.0,
+     "max_risk": 361
+    },
+    "funded": {
+     "per_month": 2884,
+     "lost_6m": 0.0,
+     "first_med": 10.0,
+     "any_pay": 93.2,
+     "payouts": 15.12
+    },
+    "slot": {
+     "net_m": 1657,
+     "owner_m": 1673,
+     "fees_6m": 96.3,
+     "p_neg": 14.0,
+     "p_no_pay": 14.0,
+     "evals": 1.02,
+     "first_pay_med": 61.0,
+     "pays": 8.77
+    }
+   },
+   "REF": {
+    "plain": {
+     "trades": 1505,
+     "tpw": 6.99,
+     "win": 42.9,
+     "pf": 1.07,
+     "net": 24948,
+     "per_month": 486,
+     "max_dd": -37025,
+     "win_days_pw": 1.72
+    },
+    "eval": {
+     "p10": 0.1,
+     "f10": 0.0,
+     "p60": 4.0,
+     "f60": 14.3,
+     "pass_med": 46.0,
+     "max_risk": 552
+    },
+    "funded": {
+     "per_month": 251,
+     "lost_6m": 0.0,
+     "first_med": 7.0,
+     "any_pay": 35.7,
+     "payouts": 0.93
+    },
+    "slot": {
+     "net_m": -1,
+     "owner_m": 22,
+     "fees_6m": 142.9,
+     "p_neg": 95.8,
+     "p_no_pay": 95.8,
+     "evals": 1.52,
+     "first_pay_med": 82.0,
+     "pays": 0.08
+    }
+   }
+  }
+ },
+ "verdict": {
+  "builder: LIT + ATLAS $250": {
+   "beats_lit_alone_both_halves": false,
+   "checks": {
+    "H1": {
+     "more_money": true,
+     "payout_no_later": true,
+     "no_more_2wk_fails": false
+    },
+    "H2": {
+     "more_money": true,
+     "payout_no_later": true,
+     "no_more_2wk_fails": false
+    }
+   }
+  },
+  "builder: LIT + ATLAS $500": {
+   "beats_lit_alone_both_halves": false,
+   "checks": {
+    "H1": {
+     "more_money": true,
+     "payout_no_later": true,
+     "no_more_2wk_fails": false
+    },
+    "H2": {
+     "more_money": true,
+     "payout_no_later": true,
+     "no_more_2wk_fails": false
+    }
+   }
+  },
+  "builder: LIT + BLITZ $150": {
+   "beats_lit_alone_both_halves": false,
+   "checks": {
+    "H1": {
+     "more_money": true,
+     "payout_no_later": true,
+     "no_more_2wk_fails": false
+    },
+    "H2": {
+     "more_money": true,
+     "payout_no_later": true,
+     "no_more_2wk_fails": true
+    }
+   }
+  },
+  "builder: LIT + BLITZ $300": {
+   "beats_lit_alone_both_halves": false,
+   "checks": {
+    "H1": {
+     "more_money": true,
+     "payout_no_later": true,
+     "no_more_2wk_fails": false
+    },
+    "H2": {
+     "more_money": true,
+     "payout_no_later": true,
+     "no_more_2wk_fails": false
+    }
+   }
+  },
+  "builder: LIT + ATLAS $250 + BLITZ $150": {
+   "beats_lit_alone_both_halves": false,
+   "checks": {
+    "H1": {
+     "more_money": true,
+     "payout_no_later": true,
+     "no_more_2wk_fails": false
+    },
+    "H2": {
+     "more_money": true,
+     "payout_no_later": true,
+     "no_more_2wk_fails": false
+    }
+   }
+  },
+  "builder: LIT + ATLAS $500 + BLITZ $300": {
+   "beats_lit_alone_both_halves": false,
+   "checks": {
+    "H1": {
+     "more_money": true,
+     "payout_no_later": true,
+     "no_more_2wk_fails": false
+    },
+    "H2": {
+     "more_money": true,
+     "payout_no_later": true,
+     "no_more_2wk_fails": false
+    }
+   }
+  },
+  "builder: LIT eval; funded + ATLAS $500": {
+   "beats_lit_alone_both_halves": true,
+   "checks": {
+    "H1": {
+     "more_money": true,
+     "payout_no_later": true,
+     "no_more_2wk_fails": true
+    },
+    "H2": {
+     "more_money": true,
+     "payout_no_later": true,
+     "no_more_2wk_fails": true
+    }
+   }
+  },
+  "builder: LIT eval; funded + ATLAS $500 + BLITZ $300": {
+   "beats_lit_alone_both_halves": true,
+   "checks": {
+    "H1": {
+     "more_money": true,
+     "payout_no_later": true,
+     "no_more_2wk_fails": true
+    },
+    "H2": {
+     "more_money": true,
+     "payout_no_later": true,
+     "no_more_2wk_fails": true
+    }
+   }
+  },
+  "rapid_eod: LIT + ATLAS $250": {
+   "beats_lit_alone_both_halves": true,
+   "checks": {
+    "H1": {
+     "more_money": true,
+     "payout_no_later": true,
+     "no_more_2wk_fails": true
+    },
+    "H2": {
+     "more_money": true,
+     "payout_no_later": true,
+     "no_more_2wk_fails": true
+    }
+   }
+  },
+  "rapid_eod: LIT + ATLAS $500": {
+   "beats_lit_alone_both_halves": true,
+   "checks": {
+    "H1": {
+     "more_money": true,
+     "payout_no_later": true,
+     "no_more_2wk_fails": true
+    },
+    "H2": {
+     "more_money": true,
+     "payout_no_later": true,
+     "no_more_2wk_fails": true
+    }
+   }
+  },
+  "rapid_eod: LIT + ATLAS $250 + BLITZ $150": {
+   "beats_lit_alone_both_halves": true,
+   "checks": {
+    "H1": {
+     "more_money": true,
+     "payout_no_later": true,
+     "no_more_2wk_fails": true
+    },
+    "H2": {
+     "more_money": true,
+     "payout_no_later": true,
+     "no_more_2wk_fails": true
+    }
+   }
+  },
+  "rapid_eod: LIT + ATLAS $500 + BLITZ $300": {
+   "beats_lit_alone_both_halves": true,
+   "checks": {
+    "H1": {
+     "more_money": true,
+     "payout_no_later": true,
+     "no_more_2wk_fails": true
+    },
+    "H2": {
+     "more_money": true,
+     "payout_no_later": true,
+     "no_more_2wk_fails": true
+    }
+   }
+  },
+  "rapid_eod: LIT eval; funded + ATLAS $500": {
+   "beats_lit_alone_both_halves": true,
+   "checks": {
+    "H1": {
+     "more_money": true,
+     "payout_no_later": true,
+     "no_more_2wk_fails": true
+    },
+    "H2": {
+     "more_money": true,
+     "payout_no_later": true,
+     "no_more_2wk_fails": true
+    }
+   }
+  }
+ }
+}
