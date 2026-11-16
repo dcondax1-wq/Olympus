@@ -142,6 +142,9 @@ def save_file(d: dict, path: str | None = None):
     rows = [{k: v for k, v in r.items() if k != "confirm" and not (isinstance(v, str) and v.strip() == phrase)}
             for r in (d.get("accounts") or [])]
     out = {"v": VERSION, "kill": d.get("kill") is True, "accounts": rows}
+    hf = d.get("held_funded")                 # the owner's funded accounts outside the fleet (kept across every CLI save)
+    if isinstance(hf, dict) and hf:
+        out["held_funded"] = {str(k): int(_num(v, 0) or 0) for k, v in hf.items() if _num(v) is not None}
     os.makedirs(os.path.dirname(path), exist_ok=True)
     tmp = path + ".tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
@@ -1281,16 +1284,20 @@ class Fleet:
 
     def warnings(self) -> list:
         """Fleet-level rule warnings: more funded followers of one plan than the firm allows a person (MFFU: 1 Builder 50K,
-        2 Builder 25K, verified), and the owner's own leads on the same plan are not counted here (the Start page has them)."""
+        2 Builder 25K, verified). 2026-11-16: the owner's own leads' funded accounts on the same plan count too
+        (copy_accounts.lead_held, e.g. Zlarior's funded Builder 50K), unless data/fleet.json held_funded says otherwise."""
         out, n = [], {}
         for f in self.followers:
             if f.stage == "funded" and f.problem is None:
                 n[f.spec.get("plan")] = n.get(f.spec.get("plan"), 0) + 1
+        held = CA.held_funded(self.cfg, CA.lead_held(self.bot))
         for plan, k in sorted(n.items()):
             P = firms.profile(plan, "funded") or {}
             mx = _num(P.get("max_active"))
-            if mx is not None and k > mx:
-                out.append(f"{P.get('label')}: {k} funded followers, the firm allows {int(mx)} per person")
+            h = int(_num(held.get(plan), 0) or 0)
+            if mx is not None and k + h > mx:
+                out.append(f"{P.get('label')}: {k} funded followers" + (f" + {h} of your own bots'" if h else "")
+                           + f", the firm allows {int(mx)} per person")
         return out
 
     def hb_block(self, now=None) -> dict:
@@ -1504,6 +1511,14 @@ def _status_lines(path) -> list:
     return out
 
 
+HELD_ROOT = None          # tests: the folder whose live_model.json / data/account_b|c.json say which leads are funded
+
+
+def _held(d: dict) -> dict:
+    """The owner's funded accounts outside the fleet for the command line: the bots' files + data/fleet.json held_funded."""
+    return CA.held_funded(d, CA.held_from_files(HELD_ROOT))
+
+
 def _parser():
     import argparse
     ap = argparse.ArgumentParser(prog="python -X utf8 -m engine.fleet", description="copy trading: the owner's follower accounts (data/fleet.json)")
@@ -1521,6 +1536,7 @@ def _parser():
     ap.add_argument("--now", type=float, help=argparse.SUPPRESS)
     ap.add_argument("--to-funded")
     ap.add_argument("--payout", nargs=2, metavar=("ID", "DAY=USD"))
+    ap.add_argument("--held", metavar="PLAN=N", help="funded accounts on a plan you hold outside the fleet (your word wins)")
     ap.add_argument("--dry-run", metavar="DAY")
     ap.add_argument("--preflight", metavar="ID", help="read-only checks before you arm / trust a follower")
     ap.add_argument("--id")
@@ -1601,6 +1617,11 @@ def run(argv=None, inp=None) -> tuple:
         P = profile_of(n) or {}
         for w in P.get("warn") or []:
             say("  ! " + w)
+        if not live:                              # 2026-11-16: will the firm fund it next to your other funded accounts?
+            full = CA.slot_full(a.plan, _held(d), [x for x in rows if x is not r and x.get("stage") == "funded"])
+            if full:
+                say(f"  ! funded later: {full}. This copy can run and pass its eval, but the firm will not fund it while that "
+                    "account is active (the bot blocks it then; it frees when the other funded account ends).")
         msg = (f"saved {a.id}: {n['label']} follows {LEAD_NAMES[n['lead']]} on {P.get('label')} ({n['stage']}), "
                f"{'NOT armed' if n['label'] in ('REAL', 'LIVE') else 'no arming needed'}.")
         if a.arm != a.id:
@@ -1657,6 +1678,11 @@ def run(argv=None, inp=None) -> tuple:
         r = find(a.to_funded)
         if r is None or not a.start:
             return fail("--to-funded <id> needs --start <first funded session> (and --account \"<funded Name>\" when it changes)")
+        if r.get("plan") != "live" and r.get("stage") != "funded":
+            full = CA.slot_full(str(r.get("plan") or ""), _held(d), [x for x in rows if x is not r and x.get("stage") == "funded"])
+            if full:
+                return fail(f"NOT switched: {full}. If that other funded account has ended, say so first: "
+                            f"python -X utf8 -m engine.fleet --held {r.get('plan')}=0")
         r["eval_account"] = r.get("nt_account")
         if a.account:
             r["nt_account"] = a.account
@@ -1674,6 +1700,13 @@ def run(argv=None, inp=None) -> tuple:
                          "It resumes by itself next session.")
         r.pop("stop_day", None)
         return saved(f"{i} resumed today.")
+    if a.held:
+        pl, _, nv = a.held.partition("=")
+        pl = pl.strip()
+        if _num(nv) is None or _num(nv) < 0 or (firms.profile(pl, "funded") or CA.base_profile(pl, "funded")) is None:
+            return fail("--held <plan>=<n>: how many funded accounts on that plan you hold outside the fleet (e.g. mffu_builder_50k=0)")
+        d.setdefault("held_funded", {})[pl] = int(_num(nv))
+        return saved(f"held outside the fleet: {int(_num(nv))} funded {pl} (your word wins over what the bots' files say).")
     if a.payout:
         i, dv = a.payout
         r = find(i)

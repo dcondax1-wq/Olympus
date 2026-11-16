@@ -1,8 +1,8 @@
 {
  "v": 1,
- "searched": "2026-11-14",
- "by": "team A4 (account #4 ready), research/writeups/account-4-2026-11-14.md",
- "how_to_read": "The newest firm research, applied LAST by tools/build_firm_rules.py (it replaces the older values of research/lit/prop_firms.json and research/props/firms.json for these plans and firms). Same value format: {\"v\", \"verified\", \"date\", \"src\", \"n\"}. verified true = the firm's OWN help-center / plan page (support.lucidtrading.com, helpfutures.fundednext.com, fundednext.com), read through web search on 2026-11-14: the pages themselves are DNS-blocked from this machine, so every value is the search engine's reading of the firm's page. verified false = a third-party page, a conflict between the firm's own pages, or a rule the firm's page leaves open. Prices stay null in firm_rules.json (only the owner's real MFFU prices are stored as values); the price notes carry the list prices and the codes seen, unconfirmed until checkout. Bulenox (a placeholder firm) is filled in research/props/copy_profiles.json, not here.",
+ "searched": "2026-11-14; MFFU + re-check 2026-11-16",
+ "by": "team A4 (account #4 ready), research/writeups/account-4-2026-11-14.md; team E 2026-11-16 (scale the prop money): MFFU account limits, copy trading, payout re-check; Lucid / FundedNext re-check",
+ "how_to_read": "The newest firm research, applied LAST by tools/build_firm_rules.py (it replaces the older values of research/lit/prop_firms.json and research/props/firms.json for these plans and firms). Same value format: {\"v\", \"verified\", \"date\", \"src\", \"n\"}. verified true = the firm's OWN help-center / plan page (support.lucidtrading.com, helpfutures.fundednext.com, fundednext.com), read through web search on 2026-11-14: the pages themselves are DNS-blocked from this machine, so every value is the search engine's reading of the firm's page. verified false = a third-party page, a conflict between the firm's own pages, or a rule the firm's page leaves open. Prices stay null in firm_rules.json (only the owner's real MFFU prices are stored as values); the price notes carry the list prices and the codes seen, unconfirmed until checkout. Bulenox (a placeholder firm) is filled in research/props/copy_profiles.json, not here. 2026-11-16 (team E): MFFU's own help center (help.myfundedfutures.com, DNS-blocked here too) read through web search: copy trading between your OWN accounts is allowed (article 10771500), 1 funded Builder 50K and 2 funded Builder 25K per person, at most 5 sim-funded accounts in all while you hold only 25K / 50K sizes (3 once any 100K / 150K is held). Payout, consistency and news values unchanged from 2026-10-18.",
  "sources": {
   "luc_pro_eval": "https://support.lucidtrading.com/en/articles/12890029-lucidpro-evaluation-account",
   "luc_pro_dd": "https://support.lucidtrading.com/en/articles/12890136-lucidpro-drawdown",
@@ -52,7 +52,16 @@
   "fn_bots": "https://helpfutures.fundednext.com/en/articles/14298560-is-the-usage-of-automated-trading-systems-eas-and-bots-allowed-in-fundednext-futures",
   "fn_platforms": "https://fundednext.com/general-rules/futures/trading-platforms",
   "fn_promo": "https://helpfutures.fundednext.com/en/articles/16295692-fundednext-futures-rapid-daily-rapid-pro-up-to-50-discount-offer",
-  "fn_price_rapid": "https://propscope.net/en/funded-next/"
+  "fn_price_rapid": "https://propscope.net/en/funded-next/",
+  "mffu_copy": "https://help.myfundedfutures.com/en/articles/10771500-copy-trading-at-myfundedfutures",
+  "mffu_b50": "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
+  "mffu_b25": "https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look",
+  "mffu_builder_page": "https://myfundedfutures.com/plans/builder",
+  "mffu_eval_simple": "https://help.myfundedfutures.com/en/articles/11802636-traders-evaluation-simplified",
+  "mffu_fairplay": "https://help.myfundedfutures.com/en/articles/8444599-fair-play-and-prohibited-trading-practices",
+  "mffu_news": "https://help.myfundedfutures.com/en/articles/8230009-news-trading-policy",
+  "mffu_x_copier": "https://x.com/MyFundedFutures/status/1817807673179676787",
+  "fn_promo_2026_11": "https://helpfutures.fundednext.com/en/articles/16295692-fundednext-futures-rapid-daily-rapid-pro-up-discount-offer"
  },
  "firms": {
   "lucid": {
@@ -70,7 +79,11 @@
    "flat_by": {"v": "16:10", "verified": true, "date": "2026-11-14", "src": ["fn_hours"], "n": "trading 17:00-15:10 CT; open positions closed at 15:10 CT (16:10 ET); half days: flatten yourself before the early close"},
    "ninjatrader": {"v": true, "verified": true, "date": "2026-11-14", "src": ["fn_platforms"], "n": "Tradovate, NinjaTrader or TradingView"},
    "inactivity_days": {"v": 30, "verified": true, "date": "2026-11-14", "src": ["fn_inact"], "n": "30 calendar days with no trade: the account is breached"},
-   "hold": {"v": "FundedNext's bot rule asks for no identical trades across accounts: copy the LIT signal there only after FundedNext says yes in writing, then clear this hold", "verified": false, "date": "2026-11-14", "src": ["fn_faq", "fn_copy"], "n": "the owner's hold (engine/firms.check blocks new entries while it is set): clear it per account with rules {\"hold\": \"none\"} once the written yes is in"}
+   "hold": {"v": "FundedNext's bot rule asks for no identical trades across accounts: copy the LIT signal there only after FundedNext says yes in writing, then clear this hold", "verified": false, "date": "2026-11-14", "src": ["fn_faq", "fn_copy"], "n": "the owner's hold (engine/firms.check blocks new entries while it is set): clear it per account with rules {\"hold\": \"none\"} once the written yes is in. 2026-11-16 re-check: FundedNext's copy policy article now says copying your OWN trades between your FundedNext accounts and other firms is allowed (same verified owner), but its terms still ban mirroring without written approval and its FAQ still flags identical trades: the hold stays until the written yes. RAPID code (FundedNext's own page, from 2026-11-05): Rapid Daily 50K $149.99 for a new user"}
+  },
+  "mffu": {
+   "copy_trading": {"v": "allowed", "verified": true, "date": "2026-11-16", "src": ["mffu_copy", "mffu_x_copier", "mffu_fairplay"], "n": "MFFU's help center: copy trading is allowed across all MFFU account types (Tradesyncer is its preferred copier; your own software is fine). Only YOUR OWN accounts: copying another person or a group is banned (fair play). MFFU gives no help, support or reset for a copier mistake. A same-signal copy does not help a consistency rule"},
+   "bots": {"v": "allowed", "verified": true, "date": "2026-11-16", "src": ["mffu_fairplay", "mffu_b50"], "n": "automation allowed when it runs your own parameters and you oversee it; high-frequency trading and tools that exploit simulated fills are banned. Some third-party pages still say 'semi-automated only' (older text): be at the PC or on the phone while it trades"}
   }
  },
  "plans": {
@@ -198,6 +211,17 @@
     "first_wait_days": {"v": "none", "verified": true, "date": "2026-11-14", "src": ["fn_rd_elig"]}
    },
    "notes": ["rules re-read 2026-11-14 from FundedNext's own help center", "payout cap conflict ($1,200 vs a rising cap)", "bot rule: no identical trades across accounts (FAQ) vs own-account copying allowed (copy policy): a written yes first (hold)"]
+  },
+  "mffu_builder_50k": {
+   "funded": {
+    "max_active": {"v": 1, "verified": true, "date": "2026-11-16", "src": ["mffu_b50", "mffu_builder_page"], "n": "only ONE sim-funded Builder 50K per person at a time. A second Builder 50K can run and pass its eval, but MFFU will not fund it while Zlarior's funded Builder 50K is active. After a breach a new one can start the next trading day; after the 5th payout the account moves to live"}
+   },
+   "notes": ["price: list (coupons 40-50% off are common)", "funded.dll set from research/lit/mffu_rules.json on 2026-10-18; results not re-simulated (rerun: python tools/lit_prop_firms.py all)", "2026-11-16 re-check (team E): buffer $2,100, first payout $500 above it after 2 traded days, $500-$2,000 a request, best day <= 50% of the cycle at payout time, 80% to you, 5 payouts then live; news unrestricted on Builder. Same as 2026-10-18."]
+  },
+  "mffu_builder_25k": {
+   "funded": {
+    "max_active": {"v": 2, "verified": true, "date": "2026-11-16", "src": ["mffu_b25", "mffu_builder_page"], "n": "up to 2 sim-funded Builder 25K per person (help center + the plan page's table). The Builder page's headline says 'one active Builder account per user': a conflict, ask support before a second funded 25K"}
+   }
   }
  }
 }

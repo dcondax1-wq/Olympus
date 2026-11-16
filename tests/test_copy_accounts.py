@@ -101,13 +101,14 @@ def profile_checks():
     check("firm_rules.json wins over a placeholder of the same id (none collide today)",
           not set(d["plans"]) & set((FM.load().get("plans") or {})))
     uf = dict(CA.unfilled())
-    check("--unfilled lists the placeholder fields still to fill (from the firm research)", "dd_amount" in uf.get("new_firm_50k", [])
-          and "accounts.max_funded_total" in uf.get("firm mffu", []), uf)
-    check("firm account limits: Lucid 5 funded + 10 evals (verified 2026-11-14), FundedNext 5 (verified), MFFU firm total unknown, "
+    check("--unfilled lists the placeholder fields still to fill (from the firm research); MFFU's firm total is filled (2026-11-16)",
+          "dd_amount" in uf.get("new_firm_50k", []) and "firm mffu" not in uf, uf)
+    check("firm account limits: Lucid 5 funded + 10 evals (verified 2026-11-14), FundedNext 5 (verified), MFFU 5 sim-funded (verified 2026-11-16), "
           "Bulenox 3 (the smaller reading)",
           CA.firm_limits("lucid")["max_funded_total"] == 5 and CA.firm_limits("lucid")["verified"]["max_funded_total"] is True
           and CA.firm_limits("lucid")["max_eval_active"] == 10 and CA.firm_limits("fundednext")["max_funded_total"] == 5
-          and CA.firm_limits("mffu")["max_funded_total"] is None and CA.firm_limits("bulenox")["max_funded_total"] == 3)
+          and CA.firm_limits("mffu")["max_funded_total"] == 5 and CA.firm_limits("mffu")["verified"]["max_funded_total"] is True
+          and CA.firm_limits("bulenox")["max_funded_total"] == 3)
     lp, lf = CA.tighten("lucid_pro_50k", "eval"), CA.tighten("lucid_pro_50k", "funded")
     check("LucidPro 50K eval from Lucid's own help center (verified 2026-11-14): $3,000 target, $2,000 EOD locking at +$100, $1,200 soft "
           "daily (the daily-loss-on version), 40 micros, no consistency, 1 day, news allowed",
