@@ -201,6 +201,27 @@ def b_day(H, day, plan, label, sizing="need", prior=0.0, expect_hedge=False, exp
     recon = [r for r in led + B.ledger if r.get("reason") == "RECONCILE"]
     check(f"{label}: no error, no RECONCILE flatten, no DESYNC, no account B error", not errors and not recon and not b.health.get("desync")
           and not [x for x in logs if "account B failed" in x], (errors[:3], recon[:2], [x for x in logs if "account B failed" in x][:2]))
+    # trade watch (night W1 2026-11-16): every research signal B saw and did not route carries B's own reason ("held"), and the
+    # ATLAS twin of tools/trade_watch.py (engine/second.run on the same bars) finds no mismatch on a day traded like the research
+    held_hm = {hm(int(k)) for k in B.held}
+    nb = [r["entry"] for r in rows if not r["routed"] and r["why"] != "B busy"]
+    check(f"{label}: trade watch: each blocked B signal has its reason in B's state ({len(nb)})", all(x in held_hm for x in nb),
+          (nb, sorted(held_hm)))
+    from tools import trade_watch as TW
+    wr = tempfile.mkdtemp(prefix="le_tw_")
+    try:
+        os.makedirs(os.path.join(wr, "data"))
+        with open(os.path.join(wr, "data", "live_state_acctb.json"), "w", encoding="utf-8") as fh:
+            json.dump(B.blob(), fh, default=str)
+        with open(os.path.join(wr, "data", "account_b.json"), "w", encoding="utf-8") as fh:
+            json.dump({"account_b": {"account": B.name, "strategies": list(B.spec["keys"])}}, fh)
+        fl = TW.atlas_flags(wr, at(day, 16, 10))
+    finally:
+        shutil.rmtree(wr, ignore_errors=True)
+    # the fake Sim102 fills at the bot's mark (the last close), not at the 5m open the research fills at, so a "slip" here is
+    # the harness's fill model; a missed entry or a stop off the twin would be a real live != backtest difference
+    check(f"{label}: trade watch: the ATLAS twin finds no missed entry and no stop mismatch on B's day",
+          not [f for f in fl if f["code"] != "slip"], fl)
     info = b.second_route_info() or {}
     abv = info.get("account_b") or {}
     check(f"{label}: heartbeat / dashboards show '{B.label}' with its eval tracker", abv.get("label") == "ATLAS Sim102"

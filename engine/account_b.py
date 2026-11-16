@@ -535,6 +535,8 @@ class AccountB:
         self.seen: set = set()
         self.lock = None                  # {"day", "reason"}: no new entry today
         self.notified: list = []          # push keys already sent (pass / fail / stuck)
+        self.held: dict = {}              # str(5m open) -> {"key", "why"}: a member's signal B saw and did not route, and why
+                                          # (tools/trade_watch.py: a twin entry with a reason here is not a mismatch)
         self.notes: dict = {}
         self.view = None
         self.view_key = None
@@ -1016,6 +1018,7 @@ class AccountB:
         self.seen.add(("probe", tb))
         px, est = self.mark(sym, now, bar_t=tb)
         if px is None:
+            self._hold(tb, None, "no price for the open")
             return
         cols = ["time", "open", "high", "low", "close", "volume"]
         bar = pd.DataFrame([{"time": tb, "open": px, "high": px, "low": px, "close": px, "volume": 1.0}])
@@ -1085,6 +1088,7 @@ class AccountB:
                 why = self.guard(act, tb, now)
             if why:
                 self.log("risk", f"{head} NOT routed on account B: {why}")
+                self._hold(tb, k, why)
                 if why_bar:
                     return                                # an account-level block: no member trades this bar
                 continue
@@ -1114,6 +1118,17 @@ class AccountB:
             self._drop_unplaced(tb, rr, now)
         else:
             self._unconfirmed(tb, rr)
+
+    def _hold(self, tb, key, why):
+        """Remember why a signal at this 5m open was not routed (read-only for tools/trade_watch.py; never affects trading)."""
+        try:
+            with self.mx:
+                self.held.setdefault(str(int(tb)), {"key": key, "why": str(why)[:160]})
+                if len(self.held) > 200:
+                    for k in sorted(self.held, key=int)[:-200]:
+                        self.held.pop(k, None)
+        except Exception:
+            pass
 
     def _c_yield(self, d, tb, sym, now, px=None):
         """Account C (BLITZ, engine/account_c.py; priority LIT > ATLAS > BLITZ): C holding the other side is closed at market
@@ -1600,7 +1615,8 @@ class AccountB:
             out = {"v": VERSION, "account": self.name, "plan": self.spec["plan"], "eval_start": self.spec.get("eval_start"),
                    "saved_at": int(self.clock()), "ledger": self.ledger[-400:], "closes": list(self.closes),
                    "prov": {str(k): v for k, v in self.prov.items()}, "open_t": self.open_t,
-                   "seen": [list(x) for x in list(self.seen)[-600:]], "lock": self.lock, "notified": self.notified[-50:]}
+                   "seen": [list(x) for x in sorted(self.seen, key=_seen_t)[-600:]], "lock": self.lock, "notified": self.notified[-50:],
+                   "held": dict(self.held)}
             if self.funded():
                 out.update(stage="funded", funded_start=(self.spec.get("funded") or {}).get("start"))
             return out
@@ -1633,12 +1649,21 @@ class AccountB:
         self.open_t = b.get("open_t")
         self.seen = {tuple(x) for x in b.get("seen") or []}
         self.notified = list(b.get("notified") or [])
+        self.held = dict(b.get("held") or {}) if isinstance(b.get("held"), dict) else {}
         lk = b.get("lock")
         self.lock = lk if lk and lk.get("day") == trading_day(self.clock()) else None
         if self.open_t is not None:
             pv = self.prov.get(int(self.open_t)) or {}
             self.log("system", f"restored: open {pv.get('short') or pv.get('key')} {'LONG' if pv.get('dir') == 1 else 'SHORT'} "
                                f"{pv.get('qty')} MNQ from {_et(int(self.open_t)):%H:%M} ET (managed to its exit)")
+
+
+def _seen_t(x) -> int:
+    """A seen entry's time (its first epoch-seconds field), so a save keeps the NEWEST 600 (a set's order is arbitrary)."""
+    try:
+        return next((int(v) for v in x[1:] if isinstance(v, (int, float)) and not isinstance(v, bool) and v > 1e9), 0)
+    except Exception:
+        return 0
 
 
 def _answer(r: dict) -> dict:
