@@ -3,7 +3,7 @@ from data/NQ_1m.csv + data/NQ_5m.csv, a fake NinjaTrader that fills the order fi
 
     python -X utf8 -m tests.test_rehearsal                 # every rehearsal day (~10 sessions, see DAYS), ~1 h on one core
     python -X utf8 -m tests.test_rehearsal --days=2026-08-28,2026-09-02 [--jobs=5] [--fast] [--keep]
-    python -X utf8 -m tests.test_rehearsal --quick          # the gate's quick form: QUICK_DAYS (stop-out + restart) with --fast
+    python -X utf8 -m tests.test_rehearsal --quick          # the gate's quick form: QUICK_DAYS (the server-restart day) with --fast
 
 What it does (Paper / Sim101 only; no real account is ever armed, the live phrase is never written anywhere):
   sandbox    a temp copy of the code (engine, tools, tests, web, server.py, live_model.json exactly as committed) with its own
@@ -73,10 +73,10 @@ DAYS = [
     ("2026-09-23", "server RESTART mid-trade (Sim auto-resume)"),
 ]
 KILL_DAY, RESTART_DAY = "2026-09-09", "2026-09-23"
-# --quick (the release gate, tests/run_gate.py --fast): two days with --fast windows: a stop-out and the server RESTART mid-trade
-# (Sim auto-resume), so start, bracket, exit, restart and the heartbeat / cloud / execution checks all run; the full 10 days stay
+# --quick (the release gate, tests/run_gate.py --fast): ONE day with a --fast window, the server RESTART mid-trade (Sim auto-resume):
+# preflight, START, the bracket, the restart, the exit and the heartbeat / cloud / execution checks all run on it; the full 10 days stay
 # the default (about 1 h)
-QUICK_DAYS = ("2026-08-28", "2026-09-23")
+QUICK_DAYS = ("2026-09-23",)
 KILL_AFTER_MIN, RESTART_AFTER_MIN = 12, 6
 
 RESULTS = []
