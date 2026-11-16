@@ -1,6 +1,6 @@
 # STATE (read first in every chat, update at the end; owner's words in quotes)
 
-Updated 2026-11-16 night (teams A dashboard/Jarvis/Obsidian, B money, C bot alerts, E prop plan).
+Updated 2026-11-15 ~23:45 ET (night teams A-E merged).
 
 ## Live
 | What | State |
@@ -44,6 +44,12 @@ Updated 2026-11-16 night (teams A dashboard/Jarvis/Obsidian, B money, C bot aler
 - LIT: no new edge (S2 sizing tilts, E-LIT 16 skip rules + missed setups). H2 weaker = lower VIX + wider stops, not a broken edge.
 - ATLAS: only the zombie-eval rule helped (+$60/month); filters/trend/overlap rejected.
 - Safety S1: missing-stop close, save-before-send, no duplicate bracket after crash, 8 entries/day cap (all merged).
+
+- Test gate (night team D, 2026-11-16, branch night-d): `run_gate.py --fast` now also runs the engine / PC core first (dst, pcdash,
+  account_c, fleet, lit_live --quick, rehearsal --quick ...). All old reds fixed except two that need others: jarvis/sw.js SHELL is
+  missing 6 files + 3 version bumps (lead's file), and test_lit_oif 117/120 = a real finding (the research 1m cleaner drops genuine
+  windows on 2026-03-23 / 05-05 that the live feed sees: live would enter differently there; changing it changes the backtest, so
+  it needs a proper strategy check). After adding research runs / write-ups: `python tools/refresh_indexes.py`.
 
 ## How to work cheaply
 python tests/smoke.py (2 min) -> touched area's tests -> python tools/ship.py. At most 2-3 helpers. No new apps unless they make money.

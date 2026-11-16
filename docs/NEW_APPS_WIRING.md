@@ -699,3 +699,34 @@ its own `./my_leads.json` (the owner's batch, written on his PC by `RUN_AGENCY.b
 8. Optional: `agency` in `tools/make_app_icons.py` APPS and `tests/test_new_app_icons.py` APPS (the PNG icons are already in the folder), `python tools/olympus_map_build.py`.
 9. Tests after wiring: `tests.test_agency`, `tests.test_apps_list`, `tests.test_gate_page`, `tests.test_hubs`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`,
    `tests.test_app_intro`, `tests.test_wire_new_apps`, `tests.test_zenith_mode`, `tests.test_jarvis_hub`, then `python -X utf8 tests/run_gate.py --fast`.
+
+---
+# The exact six rows of HARMONIA, HELIOS, ERGASTERION and BUSINESS (all wired; tests.test_wire_new_apps compares them with tools/new_apps.json)
+
+## Harmonia
+1. `jarvis/apps.js` BUILT_INS: `app('harmonia', 'Harmonia', 'money', '#c8a24a', 'The balance: what leans on the NQ bots, and what is left', { glyph: 'H' }),`
+2. `olympus/olympus.js`: APPS `harmonia: ['Harmonia', 'H', '#c8a24a'],` and AMBIENT `harmonia: 'coins',`
+3. `tools/build_web_dashboard.py` app tuple: `"harmonia"`.  4. `sw.js` OTHER_APPS: `'harmonia/'`.
+5. `olympus/intro-app.js` FLAVOUR: `harmonia: ['bars', 'Weigh it up', 'tap'],`
+6. `jarvis/transitions.js` REGISTRY: `harmonia: { kind: 'waves', ms: 1000 },`
+
+## Helios
+1. `jarvis/apps.js` BUILT_INS: `app('helios', 'Helios', 'trading', '#c8a24a', 'The morning briefing: today, drawdown, deals, plan', { glyph: 'S' }),`
+2. `olympus/olympus.js`: APPS `helios: ['Helios', 'S', '#c8a24a'],` and AMBIENT `helios: 'chimes',`
+3. `tools/build_web_dashboard.py` app tuple: `"helios"`.  4. `sw.js` OTHER_APPS: `'helios/'`.
+5. `olympus/intro-app.js` FLAVOUR: `helios: ['rings', 'Rise and plan', 'tick'],`
+6. `jarvis/transitions.js` REGISTRY: `helios: { kind: 'sunburst', ms: 1000 },`
+
+## Ergasterion
+1. `jarvis/apps.js` BUILT_INS: `app('ergasterion', 'Ergasterion', 'trading', '#c8a24a', 'The workshop: every AI worker, what it does and learns', { glyph: 'E' }),`
+2. `olympus/olympus.js`: APPS `ergasterion: ['Ergasterion', 'E', '#c8a24a'],` and AMBIENT `ergasterion: 'chimes',`
+3. `tools/build_web_dashboard.py` app tuple: `"ergasterion"`.  4. `sw.js` OTHER_APPS: `'ergasterion/'`.
+5. `olympus/intro-app.js` FLAVOUR: `ergasterion: ['columns', 'Walk the workshop', 'tap'],`
+6. `jarvis/transitions.js` REGISTRY: `ergasterion: { kind: 'columns', ms: 1000, n: 5 },`
+
+## Business
+1. `jarvis/apps.js` BUILT_INS: `app('business', 'Business', 'money', '#c8a24a', 'Every money model: next step, what is missing, $ estimate', { glyph: 'B' }),`
+2. `olympus/olympus.js`: APPS `business: ['Business', 'B', '#c8a24a'],` and AMBIENT `business: 'coins',`
+3. `tools/build_web_dashboard.py` app tuple: `"business"`.  4. `sw.js` OTHER_APPS: `'business/'`.
+5. `olympus/intro-app.js` FLAVOUR: `business: ['columns', 'Count the ventures', 'tap'],`
+6. `jarvis/transitions.js` REGISTRY: `business: { kind: 'columns', ms: 1000, n: 5 },`

@@ -74,6 +74,11 @@ def main():
     check("the rerun command is exact", G.rerun_cmd("jarvis_hub:c", False) == "python -X utf8 tests/run_gate.py --only jarvis_hub:c")
 
     out = tempfile.mkdtemp(prefix="gate_t_")
+    # main() runs on two tiny passing stand-ins under the real names: this test checks the runner (table, GO line, --resume),
+    # not whether today's real jarvis_shell / apps_list are green (the gate itself reports those)
+    real_plan = G.plan
+    ok_suite = lambda nm: {"name": nm, "argv": ["-c", "print('[PASS] x')"], "fast": ["-c", "print('[PASS] x')"], "budget": 60, "kind": "static"}
+    G.plan = lambda: [ok_suite("jarvis_shell"), ok_suite("apps_list")]
     try:
         rc = G.main(["--fast", "--gate", "0", "--only", "jarvis_shell,apps_list", "--out", out])
         j = json.load(open(os.path.join(out, "gate.json"), encoding="utf-8"))
@@ -84,6 +89,7 @@ def main():
         check("--resume: suites that PASSed in the last gate.json are not run again (marked resumed)", rc == 0 and all(r.get("resumed") for r in j2["rows"]), j2["rows"])
         check("--only with a name nothing matches: exit 2, nothing run", G.main(["--only", "nope_nothing", "--out", out]) == 2)
     finally:
+        G.plan = real_plan
         shutil.rmtree(out, ignore_errors=True)
     n = sum(RES)
     print(f"\nrun_gate: {n}/{len(RES)} " + ("ALL PASS" if n == len(RES) else "FAILED"))

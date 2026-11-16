@@ -1,3 +1,10 @@
+---
+title: Kalshi edges, team K1 (2026-11-13): NO EDGE FOUND
+family: kalshi
+date: 2026-11-13
+status: rejected - no edge found (team K1)
+---
+
 # Kalshi edges, team K1 (2026-11-13): NO EDGE FOUND
 
 Research only. Kalshi's public market-data API (no key, GET only, about 3 requests a second), the repo's CME futures

@@ -1,3 +1,10 @@
+---
+title: Kalshi edge, team C (weather, economics, daily index, other daily series): NO EDGE FOUND
+family: kalshi
+date: 2026-11-11
+status: rejected - no edge found (weather, economics, daily index, other daily series)
+---
+
 # Kalshi edge, team C (weather, economics, daily index, other daily series): NO EDGE FOUND
 
 2026-11-11. Research only. It used Kalshi's public market-data API (no key, read only), the free archived NWS forecasts from the Iowa Environmental Mesonet, and the repo's own ES/NQ futures bars. No orders were placed. The live bot, the server, the keys and `engine/` were not touched. Sibyl is unchanged because nothing passed, so there is nothing to feed it.

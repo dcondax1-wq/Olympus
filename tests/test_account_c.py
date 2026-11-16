@@ -1123,7 +1123,7 @@ def part13():
         check("13. ... not armed = red with the Arm BLITZ fix; bot not running = red; the rest green",
               st["armed"]["state"] == "bad" and "Arm BLITZ" in st["armed"]["fix"] and st["bot"]["state"] == "bad"
               and all(st[k]["state"] == "good" for k in ("config", "own", "nt", "visible", "allow", "sim", "size", "hedge", "contract", "calendar", "feed"))
-              and st["eval"]["state"] == "good" and "session 1 of 10" in st["eval"]["detail"], {k: (v["state"], v["detail"][:60]) for k, v in st.items()})
+              and st["eval"]["state"] == "good" and "first session 2026-11-02" in st["eval"]["detail"] and "drawdown left $1,000.00 of $1,000" in st["eval"]["detail"], {k: (v["state"], v["detail"][:60]) for k, v in st.items()})
         check(f"13. ... first trade's size at the fresh 25K's room: {st['size']['detail'][:90]}", "3 micros at a 60-pt stop" in st["size"]["detail"]
               and "20" in st["size"]["detail"], st["size"])
         check(f"13. ... the calendar names the DST change: {st['calendar']['detail'][:110]}", "clocks go back" in st["calendar"]["detail"]

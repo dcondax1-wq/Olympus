@@ -3,8 +3,7 @@ from data/NQ_1m.csv + data/NQ_5m.csv, a fake NinjaTrader that fills the order fi
 
     python -X utf8 -m tests.test_rehearsal                 # every rehearsal day (~10 sessions, see DAYS), ~1 h on one core
     python -X utf8 -m tests.test_rehearsal --days=2026-08-28,2026-09-02 [--jobs=5] [--fast] [--keep]
-    python -X utf8 -m tests.test_rehearsal --quick        # 3 days (target, stop-out, kill switch), --fast, in parallel: fits a 30-min budget
-    python -X utf8 -m tests.test_rehearsal --split=2/4    # the 2nd quarter of the days (run the 4 parts one after another, or on 4 cores)
+    python -X utf8 -m tests.test_rehearsal --quick          # the gate's quick form: QUICK_DAYS (the server-restart day) with --fast
 
 What it does (Paper / Sim101 only; no real account is ever armed, the live phrase is never written anywhere):
   sandbox    a temp copy of the code (engine, tools, tests, web, server.py, live_model.json exactly as committed) with its own
@@ -55,8 +54,7 @@ if ROOT not in sys.path:
 ET = ZoneInfo("America/New_York")
 TICK = 0.25
 LIMIT_S = 10.0
-OUT = os.path.join(ROOT, "research", "lit", "rehearsal.json")              # the full run only (tracked)
-OUT_PARTIAL = os.path.join(ROOT, "scratch", "results", "rehearsal_partial.json")   # --quick / --split / --days (gitignored)
+OUT = os.path.join(ROOT, "research", "lit", "rehearsal.json")
 CLOCK_SLOTS = 8          # base, real_at, cap, poll_done (virtual t of the last finished poll), poll_n, pos_open, busy, spare
 _real_time = time.time
 _real_sleep = time.sleep
@@ -75,7 +73,10 @@ DAYS = [
     ("2026-09-23", "server RESTART mid-trade (Sim auto-resume)"),
 ]
 KILL_DAY, RESTART_DAY = "2026-09-09", "2026-09-23"
-QUICK_DAYS = ("2026-08-25", "2026-08-28", KILL_DAY)     # --quick: a target, a stop-out and HOLD TO KILL mid-trade
+# --quick (the release gate, tests/run_gate.py --fast): ONE day with a --fast window, the server RESTART mid-trade (Sim auto-resume):
+# preflight, START, the bracket, the restart, the exit and the heartbeat / cloud / execution checks all run on it; the full 10 days stay
+# the default (about 1 h)
+QUICK_DAYS = ("2026-09-23",)
 KILL_AFTER_MIN, RESTART_AFTER_MIN = 12, 6
 
 RESULTS = []
@@ -924,8 +925,11 @@ class Rehearsal:
         while True:
             v = self.server.get("/api/next/pc/execution") or {}
             rows = [r for r in v.get("rows") or [] if r.get("day") == day]
-            if (rows and (not killed or rows[0].get("live_exit_kind"))) or _real_time() > t_end:
-                break                                # killed: until the audit has seen the kill-switch exit too
+            # killed: until the audit has seen the kill-switch exit too; a normal exit: until the broker's exit fill is priced
+            # (--fast ends the day 20 min after the exit, often before the 60 s audit thread has read NinjaTrader's fill)
+            priced = bool(rows) and (rows[0].get("exit_src") != "model (broker close not priced)" or not rows[0].get("live_exit_kind"))
+            if (rows and (rows[0].get("live_exit_kind") if killed else priced)) or _real_time() > t_end:
+                break
             _real_sleep(3)
         if not bt:
             check(f"{day} execution tracker: no trade, no missed / extra row", not [r for r in rows if r.get("status") in ("missed", "extra")],
@@ -1031,16 +1035,10 @@ def main(argv):
         return cloud(*argv[1:4])
     days = DAYS
     jobs, part = 1, None
-    if "--quick" in argv:                    # the full run takes ~1 h on one core and hit the helpers' time limit (2026-11-16)
+    if "--quick" in argv:
         days = [d for d in DAYS if d[0] in QUICK_DAYS]
-        jobs = max(1, min(len(days), (os.cpu_count() or 1) - 1))
-        try:                                 # a busy box starves the bot's 2 s poll (an entry routed 16 s late fails the 10 s check):
-            if os.getloadavg()[0] / (os.cpu_count() or 1) > 1.0:   # then the days run one after another
-                jobs = 1
-                print("--quick: the machine is busy (load above 1 per core): the 3 days run one after another", flush=True)
-        except (OSError, AttributeError):
-            pass
-        argv = [a for a in argv if a != "--quick"] + (["--fast"] if "--fast" not in argv else [])
+        argv = [a for a in argv if a != "--quick"] + ["--fast"]
+        part = os.path.join(tempfile.gettempdir(), "le_rehearsal_quick.json")      # never overwrites research/lit/rehearsal.json
     for a in argv:
         if a.startswith("--days="):
             want = a.split("=", 1)[1].split(",")
@@ -1049,12 +1047,6 @@ def main(argv):
             jobs = int(a.split("=", 1)[1])
         if a.startswith("--part="):
             part = a.split("=", 1)[1]
-        if a.startswith("--split="):         # k/n: every n-th day starting at the k-th (1-based)
-            k, n = (int(x) for x in a.split("=", 1)[1].split("/"))
-            days = [d for i, d in enumerate(days) if i % n == k - 1]
-    global OUT
-    if [d[0] for d in days] != [d[0] for d in DAYS]:
-        OUT = OUT_PARTIAL                    # a partial run never overwrites the full run's tracked result file
     if jobs > 1:
         return run_parallel(days, jobs, argv)
     rh = Rehearsal(days, keep="--keep" in argv, fast="--fast" in argv)

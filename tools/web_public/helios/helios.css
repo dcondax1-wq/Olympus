@@ -73,7 +73,7 @@ html[data-oly-lite="1"] .ag-card { box-shadow: none; }
 .item .row { align-items: flex-start; }
 .plain { margin: 0; padding-left: 20px; display: grid; gap: 8px; font-size: 14px; color: var(--ag-soft); } .plain li::marker { color: var(--ag-bronze); }
 details > summary { min-height: 44px; }
-.text { margin: 0; padding: 10px 12px; white-space: pre-wrap; overflow-wrap: anywhere; font: 500 13px/1.45 var(--ag-sans); color: var(--ag-soft); background: var(--oly-th-n4, #211c16); border: 1px solid var(--ag-line); border-radius: 12px; user-select: all; }
+.text { margin: 0; padding: 10px 12px; white-space: pre-wrap; overflow-wrap: anywhere; font: 500 13px/1.45 var(--ag-sans); color: var(--ag-soft); background: var(--oly-th-n4, #211c16); border: 1px solid var(--ag-line); border-radius: 12px; -webkit-user-select: all; user-select: all; }
 @media (prefers-reduced-motion: reduce) { .stage canvas { transition: none; } }
 html[data-oly-lite="1"] .stage { background: var(--oly-th-n5, #2a2118); }
 /* the page ends 176px above the bottom so Jarvis keeps its corner */

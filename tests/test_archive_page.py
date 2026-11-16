@@ -71,7 +71,11 @@ def test_static():
           bool(row) and row["group"] == "trading" and re.match(r"^#[0-9a-f]{6}$", row["accent"]) and row["glyph"] and len(row["description"]) < 80 and row["ambient"] and row["flavour"][0] in scenes and len(row["flavour"]) == 3 and row["transition"]["kind"] and row["transition"]["ms"], row)
     wiring = AK.read(os.path.join(AK.ROOT, "docs", "NEW_APPS_WIRING.md"))
     check("a. the wiring section for the lead is in docs/NEW_APPS_WIRING.md and names the exact build line (python tools/archive_build.py)", re.search(r"^# .*ARCHIVE", wiring, re.M) is not None and "python tools/archive_build.py" in wiring)
-    check("a. the app's own files are untouched elsewhere: no sw.js / apps.js / olympus.js / build-script edit names the archive yet", "archive" not in AK.read(os.path.join(AK.WEB, "sw.js")).lower().replace("archive: previous", ""), None)
+    # the lead has wired it since (2026-11-1x): the worker keeps archive/ in OTHER_APPS and does NOT precache the big runs-*.json shards
+    sw = AK.read(os.path.join(AK.WEB, "sw.js"))
+    other = re.search(r"OTHER_APPS\s*=\s*\[([^\]]*)\]", sw)
+    check("a. wired by the lead: sw.js OTHER_APPS has 'archive/' and never precaches archive/runs-*.json (about 540 KB)",
+          bool(other) and "'archive/'" in other.group(1) and not re.search(r"archive/runs-\d", sw), other and other.group(1)[-200:])
 
 
 HARNESS = r"""

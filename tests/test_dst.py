@@ -374,8 +374,16 @@ def t_static():
                                             "web_next/js/tradechart.js", "tools/web_public/tradechart.js")]
     texts = [open(p, encoding="utf-8").read() for p in srcs]
     fixed_js = [p for p, s in zip(srcs, texts) if re.search(r"getTime\(\)\s*-\s*4\s*\*\s*3600|catch\s*\{\s*return\s*-4\s*\*\s*3600", s)]
-    check("phone / PC JS: no fixed -4 h fallback left (litkit.js, tradechart.js; phone and PC copies identical)",
-          not fixed_js and texts[0] == texts[1] and texts[2] == texts[3], fixed_js)
+    # the phone and PC copies differ on purpose elsewhere (PC: AGORA palette 2026-11-10; phone: real-eval card, -webkit- twins), so
+    # what must match is the ET time code itself: litkit.js ETF .. etEpoch, tradechart.js usEtOff .. etOffset
+    def tz_block(s, start, last):
+        i = s.find(start)
+        j = s.find("\n}", s.find("function " + last + "(", i))
+        return s[i:j] if i >= 0 and j > i else None
+    lk = [tz_block(t, "const ETF", "etEpoch") for t in texts[:2]]
+    tc = [tz_block(t, "function usEtOff", "etOffset") for t in texts[2:]]
+    check("phone / PC JS: no fixed -4 h fallback left (litkit.js, tradechart.js; phone and PC copies' ET time code identical)",
+          not fixed_js and lk[0] and lk[0] == lk[1] and tc[0] and tc[0] == tc[1], fixed_js or ["ET time code differs between web_next/js and tools/web_public"])
     if not node:
         check("node not installed: the JS US-rule check skipped", True)
         return

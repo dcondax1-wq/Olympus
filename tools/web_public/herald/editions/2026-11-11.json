@@ -2,7 +2,7 @@
  "v": 1,
  "date": "2026-11-11",
  "number": 1,
- "built": "2026-11-11T01:10:00Z",
+ "built": "2026-11-15T00:00:00Z",
  "demo": false,
  "masthead": {
   "title": "The Olympus Herald",
@@ -328,56 +328,73 @@
   {
    "id": "archive",
    "kicker": "Research",
-   "headline": "Archive: 94 adopted, 1,665 rejected",
+   "headline": "Archive: 98 adopted, 1,712 rejected",
    "standfirst": "What the research library holds and its newest batch.",
    "body": [
-    "The Archive now holds 2,273 research runs: 94 adopted, 1,665 rejected and 514 still open.",
-    "The newest batch in the index is stamped 26-11-04: 9 runs kept there, 9 open.",
-    "Still open, from the LIT research family: LIT ideas night: base.",
+    "The Archive now holds 2,344 research runs: 98 adopted, 1,712 rejected and 534 still open.",
+    "The newest batch in the index is stamped 26-11-15: 7 runs kept there, 1 adopted, 6 open.",
+    "Adopted, from the risk family: ATLAS zombie-eval rule: give an eval up under $200 of room + 1 micro 'last bull…",
+    "Still open, from the LIT research family: LIT deep edge (2026-11-15): base.",
     "On the rejected shelf, so nobody redoes it: Published models as taught.",
-    "143 write-ups explain the results in plain language."
+    "158 write-ups explain the results in plain language."
    ],
    "facts": [
     {
-     "t": "2,273",
+     "t": "2,344",
      "src": "archive/index.json",
      "at": "counts/runs",
-     "raw": 2273
+     "raw": 2344
     },
     {
-     "t": "94",
+     "t": "98",
      "src": "archive/index.json",
      "at": "counts/adopted",
-     "raw": 94
+     "raw": 98
     },
     {
-     "t": "1,665",
+     "t": "1,712",
      "src": "archive/index.json",
      "at": "counts/rejected",
-     "raw": 1665
+     "raw": 1712
     },
     {
-     "t": "514",
+     "t": "534",
      "src": "archive/index.json",
      "at": "counts/open",
-     "raw": 514
+     "raw": 534
     },
     {
-     "t": "26-11-04",
+     "t": "26-11-15",
      "src": "archive/index.json",
      "quote": true
     },
     {
-     "t": "9",
+     "t": "7",
      "src": "archive/index.json",
      "calc": "count of runs in the index with the newest built stamp",
-     "raw": 9
+     "raw": 7
     },
     {
-     "t": "9",
+     "t": "1",
+     "src": "archive/index.json",
+     "calc": "count of those with verdict adopted",
+     "raw": 1
+    },
+    {
+     "t": "6",
      "src": "archive/index.json",
      "calc": "count of those with verdict open",
-     "raw": 9
+     "raw": 6
+    },
+    {
+     "t": "risk",
+     "src": "archive/index.json",
+     "quote": true
+    },
+    {
+     "t": "ATLAS zombie-eval rule: give an eval up under $200 of room + 1 micro 'last bull…",
+     "src": "archive/index.json",
+     "quote": true
     },
     {
      "t": "LIT research",
@@ -385,7 +402,7 @@
      "quote": true
     },
     {
-     "t": "LIT ideas night: base",
+     "t": "LIT deep edge (2026-11-15): base",
      "src": "archive/index.json",
      "quote": true
     },
@@ -395,22 +412,22 @@
      "quote": true
     },
     {
-     "t": "143",
+     "t": "158",
      "src": "archive/index.json",
      "at": "counts/writeups",
-     "raw": 143
+     "raw": 158
     },
     {
-     "t": "94",
+     "t": "98",
      "src": "archive/index.json",
      "at": "counts/adopted",
-     "raw": 94
+     "raw": 98
     },
     {
-     "t": "1,665",
+     "t": "1,712",
      "src": "archive/index.json",
      "at": "counts/rejected",
-     "raw": 1665
+     "raw": 1712
     }
    ],
    "sources": [
@@ -539,9 +556,9 @@
    "body": [
     "The build queue holds 67 tasks: 67 open and 0 done.",
     "First in line (P0): cities/ renders almost nothing after 30 s (only 160 characters of text, a few dots, no labels, no cards). It is the worst app. Find why (console, fet…",
-    "The research shelf now counts 146 write-ups.",
-    "The newest lesson on file, dated 2026-11-11, reads: No edge found. None of them beat the noise bar on the training data, so none was carried forward.",
-    "It was filed under \"rejected\" and comes from research/writeups/kalshi_edge_C.md."
+    "The research shelf now counts 158 write-ups.",
+    "The newest lesson on file, dated 2026-11-15, reads: Six ideas that systematic NQ / prop bots use and that Tested and rejected plus the LIT idea rounds 1-3 had not covered, 28 versions on the exact live LIT trades (re-walk == run lit_live), CME NQ futu…",
+    "It was filed under \"adopt-candidate\" and comes from research/writeups/2026-11-15-s2-edge.md."
    ],
    "facts": [
     {
@@ -573,28 +590,28 @@
      "quote": true
     },
     {
-     "t": "146",
+     "t": "158",
      "src": "ergasterion/queue.json",
      "at": "writeups/count",
-     "raw": 146
+     "raw": 158
     },
     {
-     "t": "2026-11-11",
+     "t": "2026-11-15",
      "src": "ergasterion/queue.json",
      "quote": true
     },
     {
-     "t": "No edge found. None of them beat the noise bar on the training data, so none was carried forward.",
+     "t": "Six ideas that systematic NQ / prop bots use and that Tested and rejected plus the LIT idea rounds 1-3 had not covered, 28 versions on the exact live LIT trades (re-walk == run lit_live), CME NQ futu…",
      "src": "ergasterion/queue.json",
      "quote": true
     },
     {
-     "t": "rejected",
+     "t": "adopt-candidate",
      "src": "ergasterion/queue.json",
      "quote": true
     },
     {
-     "t": "research/writeups/kalshi_edge_C.md",
+     "t": "research/writeups/2026-11-15-s2-edge.md",
      "src": "ergasterion/queue.json",
      "quote": true
     }
@@ -677,8 +694,8 @@
    "article": "kalshi-stop"
   },
   {
-   "value": "2,273",
-   "label": "Archive: 94 adopted, 1,665 rejected",
+   "value": "2,344",
+   "label": "Archive: 98 adopted, 1,712 rejected",
    "src": "archive/index.json",
    "article": "archive"
   },
@@ -918,6 +935,7 @@
  ],
  "apps": [
   "aegis",
+  "agency",
   "apollo",
   "arbiter",
   "archive",
@@ -928,6 +946,7 @@
   "athena",
   "atlas",
   "bridge",
+  "business",
   "chronos",
   "chrysos",
   "cities",
@@ -978,6 +997,7 @@
   "planner",
   "plutus",
   "pnyx",
+  "polis",
   "prometheus",
   "pythia",
   "settings",
@@ -989,68 +1009,7 @@
   "zenith"
  ],
  "press": {
-  "available": true,
-  "shipped": [
-   {
-    "who": "Jarvis home",
-    "id": "builder:a43a2dae",
-    "t": 1794377525,
-    "text": "Jarvis home v2: the NQ bot cards stack below the fold (nothing past the right edge)"
-   },
-   {
-    "who": "Colosseum",
-    "id": "builder:a9fa9fcc",
-    "t": 1794376609,
-    "text": "RELEASE_CHECK: the veil and intro rules, own temp folder, expected warnings"
-   },
-   {
-    "who": "Fixer",
-    "id": "builder:aa54c210",
-    "t": 1794376596,
-    "text": "QA_NIGHT Round 3: final numbers (datacity 193/194, kalshicity and nemesis open with the evidence)"
-   },
-   {
-    "who": "Pinakes",
-    "id": "builder:afc68d30",
-    "t": 1794375382,
-    "text": "Pinakes: catalogue rebuilt with the Herald's tables"
-   },
-   {
-    "who": "Hellas",
-    "id": "builder:a802da40",
-    "t": 1794373071,
-    "text": "tests: Hellas screenshots retry once and never abort the run (a picture is evidence, not a check)"
-   },
-   {
-    "who": "Theme finisher",
-    "id": "builder:a8fa04fb",
-    "t": 1794372592,
-    "text": "docs/AGORA_AUDIT.md: the one-theme pass, per-app table (before / after / test / baseline), accent table, rendered scan"
-   },
-   {
-    "who": "Kalshi team C",
-    "id": "builder:aa29a7de",
-    "t": 1794372566,
-    "text": "Kalshi edge C: final results, no edge found; writeup and edge_rules_C.json"
-   },
-   {
-    "who": "Ergasterion",
-    "id": "builder:a1d36b03",
-    "t": 1794365040,
-    "text": "Ergasterion tests: Talk prompt checked from the queue's west side, facing compared modulo a turn"
-   },
-   {
-    "who": "Jarvis brain",
-    "id": "builder:ab25b5ae",
-    "t": 1794363233,
-    "text": "Jarvis brain v3: talk to the people (OLYMPUS_PEOPLE kit when present, else builders.json / agents-now.json + the Symposium line), 24 phrasings; agent…"
-   },
-   {
-    "who": "NQ bot",
-    "id": "builder:a545b014",
-    "t": 1794362441,
-    "text": "test_zenith_nq: the stale case also blocks the old phone live feed (20/20 in the browser)"
-   }
-  ]
+  "available": false,
+  "shipped": []
  }
 }

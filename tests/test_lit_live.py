@@ -3,6 +3,7 @@ backtest (tools/lit_final.py run = engine/lit.py run_x on the whole history), on
 
     python -X utf8 -m tests.test_lit_live              # day-end replay of 2026 + intraday polls on every trade day
     python -X utf8 -m tests.test_lit_live --days       # day-end replay only (~1 min)
+    python -X utf8 -m tests.test_lit_live --quick      # the gate's quick mode: day-end replay + polls on every 24th trade day + LiveBot on 1 session
     python -X utf8 -m tests.test_lit_live --w20        # also: the engine's plain 20-day window (shows why LIT needs more)
     python -X utf8 -m tests.test_lit_live --days --bot  # day-end replay + the LiveBot (paper) check only
     python -X utf8 -m tests.test_lit_live --final       # the lit_final params instead of live_model.json "lit" (loss pack on)
@@ -52,6 +53,8 @@ from engine.sizing import LIVE_COMM  # noqa: E402
 
 ET = ZoneInfo("America/New_York")
 OUT = os.path.join(ROOT, "research", "lit", "live_check.json")
+QUICK_EVERY = 24         # --quick (the release gate, tests/run_gate.py --fast): day-end replay of every 2026 session + intraday polls on
+QUICK_BOT = ("2026-10-06",)  # every 24th trade day + the LiveBot on one session (a 15-minute cut, decided on a 1m close): ~3-4 min
 # Days where the live loop cannot match the backtest by design (reported, not failed):
 KNOWN = {"2026-04-03": "Good Friday (09:15 close): the backtest runs the day on 5m bars because its 1m file misses 6 windows "
                        "after the entry (96.7% < 97% day cover, a whole-day look-ahead); at 04:02 the live loop has every 1m "
@@ -255,6 +258,8 @@ def main():
         bad, lags, seen_open, never = [], [], 0, []
         enter = {"seen": 0, "days": 0, "match": 0, "differs": [], "est_days": 0, "est_qty_differs": [], "est_target_differs": 0}
         only = next((a.split("=", 1)[1].split(",") for a in sys.argv if a.startswith("--only=")), None)
+        if only is None and "--quick" in sys.argv:
+            only = sorted(by_day)[::QUICK_EVERY]                   # --quick: every QUICK_EVERY-th trade day (spread over the year)
         for d, want in sorted(by_day.items()):
             if only and d not in only:
                 continue
@@ -350,6 +355,8 @@ def main():
     # ---- 3. the PC paper bot itself (engine/live.py LiveBot + PaperAdapter) on LIT, fed bar by bar
     if "--bot" in sys.argv or ("--days" not in sys.argv and "--nobot" not in sys.argv):
         bs = next((a.split("=", 1)[1].split(",") for a in sys.argv if a.startswith("--bot-sessions=")), None)
+        if bs is None and "--quick" in sys.argv:
+            bs = QUICK_BOT                                         # --quick: one October session, a 16-minute trade
         out["bot"] = bot_replay(P, by_day, tuple(bs)) if bs else bot_replay(P, by_day)
         b = out["bot"]
         print(f"LiveBot (paper) on LIT, sessions {b['sessions']}: {b['polls']} polls, routed entries {b['entries_ok']}/{b['want']} "
@@ -357,8 +364,9 @@ def main():
               f"errors {len(b['errors'])}, mean poll {b['poll_ms']} ms, entry routed {b['entry_route_delay_s']} s after the "
               f"backtest's fill-bar open (polls 3 s after the minute)", flush=True)
     out["seconds"] = round(time.time() - t_all)
-    with open(OUT, "w", encoding="utf-8") as fh:
-        json.dump(out, fh, indent=1, default=str)
+    if "--quick" not in sys.argv:                                  # the quick run never overwrites the full result
+        with open(OUT, "w", encoding="utf-8") as fh:
+            json.dump(out, fh, indent=1, default=str)
     ok = out["day_end"]["matched_exits_and_pnl"] == len(REF) and not out["day_end"]["n_extra"] and \
         (not out.get("intraday") or not out["intraday"]["n_differences"]) and (not out.get("bot") or out["bot"]["ok"]) and \
         (not out.get("phantom") or not out["phantom"]["n_bad"])

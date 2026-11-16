@@ -7,7 +7,9 @@
     python -X utf8 tests/run_gate.py --list          the suites and what each runs
     other options: --gate N (wait for load < N, default 2 x cpus) --gate-wait SEC (default 300) --no-retry --out DIR --budget-scale X
 
-What runs: jarvis_shell, apps_list, safari_lint, olympus a11y / sfx / kit (static + power + tiers) / themes / render, the Jarvis hub BY PARTS
+What runs: first the engine / PC core (CORE below, no browser: run_gate, writeups_index, wire_new_apps, selfheal, dst, pcdash_api,
+account_c, lit_oif, fleet, lit_live, rehearsal, dst_sunday; --fast runs dst / account_c / fleet / lit_live / rehearsal in their --quick form and leaves lit_oif and
+dst_sunday to the full gate), then jarvis_shell, apps_list, safari_lint, olympus a11y / sfx / kit (static + power + tiers) / themes / render, the Jarvis hub BY PARTS
 (tests/hub_parts.py: static, a, b, missing, c, look, switcher, olympus, system, intro), the Jarvis assistant / tools / modes / brain / obsidian /
 talk / voice / engines suites, phone_e2e, Zenith (mode / shell / pro / pages), kalshi_page, and every per-app page test: tests/test_*_page.py
 found on disk plus the known app suites that exist (arena, fates, hermes, pantheon, prometheus, datacity ...). Nothing is hardcoded in a
@@ -46,6 +48,10 @@ TO_RX = re.compile(r"TimeoutError|Timeout \d+ms exceeded|Target (?:page, context
 # per-app suites that are not named test_*_page.py but are an app's own test
 KNOWN_APPS = ["arena", "fates", "hermes", "pantheon", "prometheus", "datacity", "app_intro", "olympus_fx", "oracle_odeon_fx", "ui_polish", "jarvis_bots",
               "jarvis_kalshi", "space_ui", "atlas_ui", "blitz_tab", "agency", "me_hub"]
+# (name = tests/test_<name>.py, full-run args, --fast form ("same" / None / [args]), budget s): the engine / PC core, no browser
+CORE = [("run_gate", [], "same", 120), ("writeups_index", [], "same", 120), ("wire_new_apps", [], "same", 180), ("selfheal", [], "same", 180),
+        ("dst", [], ["--quick"], 900), ("pcdash_api", [], "same", 300), ("account_c", [], ["--quick"], 1500), ("lit_oif", [], None, 3600),
+        ("fleet", [], ["--quick"], 1500), ("lit_live", [], ["--quick"], 3600), ("rehearsal", [], ["--quick"], 5400), ("dst_sunday", [], None, 1500)]
 HUB = [("static", 120), ("a", 900), ("b", 900), ("missing", 1200), ("c", 1500), ("look", 1200), ("switcher", 1200), ("olympus", 1200), ("system", 900), ("intro", 1500)]
 
 
@@ -79,6 +85,10 @@ def plan() -> list:
             f = None
         S.append({"name": name, "argv": a, "fast": f, "budget": budget, "kind": kind})
 
+    # the engine / PC core (night team D, 2026-11-16): no browser, clock-proof; --fast runs the quick form of the slow ones
+    # (dst --quick, lit_live --quick, rehearsal --quick); a full gate runs them whole. Order: cheapest first.
+    for nm, args, fast, b in CORE:
+        add(nm, "test_" + nm, args, fast=fast, budget=b, kind="static")
     add("jarvis_shell", "test_jarvis_shell", budget=120, kind="static")
     add("apps_list", "test_apps_list", fast=["--static"], budget=600)
     add("safari_lint", "test_safari_smoke", ["--lint"], budget=600, kind="static")

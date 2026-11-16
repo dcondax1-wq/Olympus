@@ -818,7 +818,7 @@ def test_inbox():
         shutil.rmtree(tmp, ignore_errors=True)
     src = open(os.path.join(ROOT, "engine", "day_inbox.py"), encoding="utf-8").read()
     imports = sorted(set(re.findall(r"^\s*(?:from|import) ([\w.]+)", src, re.M)))
-    check("j. day_inbox imports nothing of the bots (only the stdlib, fastapi and live_site)", all(m in ("__future__", "datetime", "hashlib", "json", "os", "re", "threading", "time", "fastapi", "fastapi.responses", "zoneinfo", "engine") for m in imports)
+    check("j. day_inbox imports nothing of the bots (only the stdlib, fastapi, live_site and the stdlib-only fsutil.replace)", all(m in (".fsutil", "__future__", "datetime", "hashlib", "json", "os", "re", "threading", "time", "fastapi", "fastapi.responses", "zoneinfo", "engine") for m in imports)
           and "live_site" in src and not re.search(r"\b(ninjatrader|lit_live|live_model|arm|order)\w*\(", src), imports)
     srv = open(os.path.join(ROOT, "server.py"), encoding="utf-8").read()
     check("j. server.py installs day_inbox right after the live site, inside try/except (a failure only disables the inbox)",

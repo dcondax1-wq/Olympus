@@ -16,7 +16,7 @@
 <script src="polis.js?v=p1"></script>
 <style>
   html, body { margin: 0; }
-  body { min-height: 100vh; padding-bottom: calc(48px + env(safe-area-inset-bottom)); overflow-x: hidden; }
+  body { min-height: 100vh; min-height: 100dvh; padding-bottom: calc(48px + env(safe-area-inset-bottom)); overflow-x: hidden; }
   * { box-sizing: border-box; }
   .hero { position: relative; padding: calc(28px + env(safe-area-inset-top)) 16px 30px; overflow: hidden; }
   .hero-in { max-width: 980px; margin: 0 auto; display: grid; gap: 14px; justify-items: start; }
@@ -57,7 +57,7 @@
   table.attic td.a { color: #e2c47a; font-family: var(--ag-serif); font-size: 15px; }
   table.attic td.g { color: var(--ag-soft); font-family: var(--ag-serif); }
   .field { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 12px 0 4px; }
-  .field input[type=date] { min-height: 44px; padding: 0 12px; border-radius: 12px; border: 1px solid var(--ag-line); background: var(--ag-panel); color: var(--ag-text); font: 500 15px var(--ag-sans); color-scheme: dark; }
+  .field input[type=date] { min-height: 44px; padding: 0 12px; border-radius: 12px; border: 1px solid var(--ag-line); background: var(--ag-panel); color: var(--ag-text); font: 500 16px var(--ag-sans); color-scheme: dark; }
   .out { color: var(--ag-text); font: 600 16px var(--ag-serif); }
   .dialwrap { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); align-items: center; }
   .legend { display: grid; gap: 8px; font: 400 14px/1.35 var(--ag-sans); color: var(--ag-soft); }

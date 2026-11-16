@@ -1,3 +1,10 @@
+---
+title: Money roadmap: the next 12 months (2026-11-04)
+family: product
+date: 2026-11-04
+status: finding - 12-month money roadmap for the three accounts (display only, nothing live changed)
+---
+
 # Money roadmap: the next 12 months (2026-11-04)
 
 Research and display only. Nothing live was touched. Numbers: `tools/money_roadmap.py` -> `research/props/roadmap.json` (3,000 sampled 12-month paths per half). Two versions of every number: **Jan-Jun 2026 (H1)** and **Jul-Oct 2026 (H2)**. **H2 is the conservative one: quote H2.**
