@@ -4277,6 +4277,14 @@
   "available": true,
   "commits": [
    {
+    "t": 1794847252,
+    "s": "Merge builder levers study"
+   },
+   {
+    "t": 1794847211,
+    "s": "Study: MFFU Builder levers (parallel fresh eval, 2nd Builder 25K mix, funded payout policy), paper only"
+   },
+   {
     "t": 1794846411,
     "s": "Study: Rapid EOD levers (decorrelated accounts, Asia slot, give-up / withdrawal / day-cap rules), paper only"
    },
@@ -4367,26 +4375,18 @@
    {
     "t": 1794805775,
     "s": "Pin: assets/ in the site worker's OTHER_APPS (zenith_mode)"
-   },
-   {
-    "t": 1794804680,
-    "s": "Merge night-d: test gate 1 red - 0 (Jarvis worker caches every file the page loads), stale pins and indexes f…"
-   },
-   {
-    "t": 1794804019,
-    "s": "Merge night-a: Classic Jarvis look, one truth for bot numbers, Obsidian sync, cleaner Gate + Jarvis bar; wire…"
    }
   ],
   "branches": [
    {
+    "name": "claude/clever-heisenberg-51zwcr",
+    "t": 1794847252,
+    "s": "Merge builder levers study"
+   },
+   {
     "name": "worktree-agent-aba496e75416be08a",
     "t": 1794847211,
     "s": "Study: MFFU Builder levers (parallel fresh eval, 2nd Builder 25K mix, funded payout policy), paper…"
-   },
-   {
-    "name": "claude/clever-heisenberg-51zwcr",
-    "t": 1794846411,
-    "s": "Study: Rapid EOD levers (decorrelated accounts, Asia slot, give-up / withdrawal / day-cap rules), p…"
    },
    {
     "name": "worktree-agent-a3e33d9c8808ae729",
