@@ -1034,6 +1034,12 @@ def main(argv):
     if "--quick" in argv:                    # the full run takes ~1 h on one core and hit the helpers' time limit (2026-11-16)
         days = [d for d in DAYS if d[0] in QUICK_DAYS]
         jobs = max(1, min(len(days), (os.cpu_count() or 1) - 1))
+        try:                                 # a busy box starves the bot's 2 s poll (an entry routed 16 s late fails the 10 s check):
+            if os.getloadavg()[0] / (os.cpu_count() or 1) > 1.0:   # then the days run one after another
+                jobs = 1
+                print("--quick: the machine is busy (load above 1 per core): the 3 days run one after another", flush=True)
+        except (OSError, AttributeError):
+            pass
         argv = [a for a in argv if a != "--quick"] + (["--fast"] if "--fast" not in argv else [])
     for a in argv:
         if a.startswith("--days="):
