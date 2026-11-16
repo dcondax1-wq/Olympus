@@ -847,7 +847,11 @@ if ($script:ServerDown) { Start-Server; $script:ServerDown = $false }
 Header 'STEP 1c of 3' 'Your dashboard site updates itself'
 $pubTool = JP $Root 'tools\pc_publish.py'
 $pubTask = JP $Root 'scripts\publish_nq.ps1'
-if (-not (Site-Ready)) {
+if ($env:LE_SE_QUICK -eq '1') {
+    # QUICK_ARM.bat (owner 2026-11-15, "make it easier"): no question here; SETUP_EVERYTHING.bat later adds the key
+    Say 'SKIP' 'Quick mode: the dashboard key is for later (double-click SETUP_EVERYTHING.bat any evening).'
+    $script:S1c = 'skipped: quick mode'
+} elseif (-not (Site-Ready)) {
     Say 'SKIP' 'This code cannot set up the dashboard site yet (a newer code zip brings it).'
     $script:S1c = 'skipped: this code cannot do it yet'
 } elseif ((Netlify-Saved) -and (Task-Exists 'OlympusPublishNQ')) {
@@ -902,7 +906,10 @@ if (-not (Site-Ready)) {
 # ================================================================================================ 2 the phone link
 Header 'STEP 2 of 3' 'Your phone dashboard (private link)'
 $url = Link-IfOn
-if ($url) {
+if ($env:LE_SE_QUICK -eq '1' -and -not $url) {
+    Say 'SKIP' 'Quick mode: the phone link is for later (double-click SETUP_EVERYTHING.bat any evening).'
+    $script:S2 = 'skipped: quick mode'
+} elseif ($url) {
     Say 'OK' 'Already done: the private link is on (only your own devices can open it).'
     $script:S2 = "already on: $url"
 } else {
