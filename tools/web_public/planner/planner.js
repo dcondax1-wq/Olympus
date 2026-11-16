@@ -830,8 +830,11 @@ async function boot() {
   const at = q.get('at'); if (at) { const d = new Date(at); if (Number.isFinite(d.getTime())) S.fixedNow = d; }
   S.today = C.etParts(nowDate()).day; S.day = S.today; S.cal.day = S.today;
   const saved = S.forced ? { state: null, from: [] } : loadSaved();
+  // your day (day.json) and the phone inbox are served only by the PC's private link (/site/..., engine/live_site.py): on the public site
+  // they never exist, and asking was a 404 in the console on every open (phone QA 2026-11-16); missing = "connect your calendars", as before
+  const onPc = /^\/site\//.test(location.pathname);
   const [ev, home, dayf, inb] = await Promise.all([S.forced ? null : getJSON('../pythia/events.json'), S.forced ? null : getJSON('../home.json'),
-    S.forced ? null : getJSON('../day/day.json'), S.forced ? null : getJSON('../day/inbox.json')]);
+    S.forced || !onPc ? null : getJSON('../day/day.json'), S.forced || !onPc ? null : getJSON('../day/inbox.json')]);
   S.home = home;
   S.day0 = S.forced ? Day.norm(Day.demo(nowDate().getTime())) : Day.norm(dayf);
   S.inbox = Day.inboxItems(inb);

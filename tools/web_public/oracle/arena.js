@@ -7,9 +7,12 @@
 import { heatRows } from './heat.js';
 import { kindOf } from './glow.js';
 import * as M from '../olympus/materials.js';
+import { isPhone } from './polis.js?v=oracle-phone-budget-3';
 
 const FLOOR_Y = -11.7;                              // under the column's foot (the column spans +/- 10.5)
 const R_RADAR = 26, R_COL = 58, N_COL = 14;
+const WIDE = { on: typeof window !== 'undefined' && window.innerWidth > 600 };
+if (typeof window !== 'undefined') window.addEventListener('resize', () => { WIDE.on = window.innerWidth > 600; }, { passive: true });
 const MAX_BLIPS = 24;
 
 const RADAR_VS = 'varying vec2 vP; void main(){ vP = position.xy; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }';
@@ -68,11 +71,11 @@ export class Arena {
 
     // the omphalos: the navel stone the column stands on, with a gold ring
     const stone = M.marble({ color: '#e4ded4', vein: '#706854', gold: true, scale: 0.9, roughness: 0.25 });
-    const dome = new T.Mesh(new T.SphereGeometry(2.6, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2).scale(1, 0.42, 1), stone);
+    const dome = new T.Mesh(new T.SphereGeometry(2.6, 32, isPhone() ? 8 : 16, 0, Math.PI * 2, 0, Math.PI / 2).scale(1, 0.42, 1), stone);
     dome.position.y = FLOOR_Y;
     const step = new T.Mesh(new T.CylinderGeometry(3.6, 3.9, 0.5, 48), stone);
     step.position.y = FLOOR_Y + 0.25;
-    this.ring = new T.Mesh(new T.TorusGeometry(3.3, 0.07, 10, 96), M.neon({ color: '#ebb653', intensity: 3.2, fog: true }));
+    this.ring = new T.Mesh(new T.TorusGeometry(3.3, 0.07, 6, 96), M.neon({ color: '#ebb653', intensity: 3.2, fog: true }));
     this.ring.rotation.x = Math.PI / 2; this.ring.position.y = FLOOR_Y + 0.58;
     g.add(step, dome, this.ring);
 
@@ -121,7 +124,8 @@ export class Arena {
   frame(t, cometPos, px) {
     // On narrow screens the distant crown projects as a bright stripe over price levels.
     // Keep the columns, and reveal the crown again on wider viewports.
-    this.entab.visible = window.innerWidth > 600;
+    // (the width is read on a resize only: innerWidth read in the frame forced a layout every frame, 2 layouts a frame in the demo)
+    this.entab.visible = WIDE.on;
     this.radarU.uSweep.value = this.reduced ? 1.2 : (t * (Math.PI * 2) / 6) % (Math.PI * 2);
     this.blipU.uPx.value = px || 1;
     if (cometPos) this.lamp.position.set(cometPos.x * 1.6, cometPos.y, cometPos.z * 1.6);

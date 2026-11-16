@@ -248,9 +248,12 @@ export function findDistrict(text) {
 
 const VERBS = ['open', 'show', 'launch', 'display', 'navigate', 'visit'];
 /** "opn pythia" -> "open pythia": a typo in the first word of a command */
+// real words one letter from a verb are never typos: "how are the bots" is a question, not "show are the bots" (phone QA 2026-11-16:
+// it answered "Opening Zenith.")
+const NOT_TYPOS = ['how'];
 function fixVerb(q) {
   const i = q.indexOf(' '), w = i < 0 ? q : q.slice(0, i);
-  if (w.length < 3 || VERBS.indexOf(w) >= 0) return q;
+  if (w.length < 3 || VERBS.indexOf(w) >= 0 || NOT_TYPOS.indexOf(w) >= 0) return q;
   const v = VERBS.find((x) => lev(x, w, 1) <= 1);
   return v ? v + (i < 0 ? '' : q.slice(i)) : q;
 }

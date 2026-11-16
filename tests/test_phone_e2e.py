@@ -230,6 +230,21 @@ def overlay(src, base):
                 os.unlink(dst)
             with open(dst, "w", encoding="utf-8") as fh:
                 json.dump({"v": 1, "file": "kalshi_status_vm.py", "sha256": digest}, fh)
+    # money/*.json: the site build always publishes the money machines' sample output (tools/build_web_dashboard.py: money_engine.py
+    # --fixture + money_publish.py), so money/index.json is on every published site (Jarvis, Mint, Cities read it)
+    try:
+        mdir = os.path.join(base, "money")
+        for f in (os.listdir(mdir) if os.path.isdir(mdir) else []):      # own copies: never write through a link into the cache
+            if os.path.isfile(os.path.join(mdir, f)):
+                os.unlink(os.path.join(mdir, f))
+        with tempfile.TemporaryDirectory() as mtmp:
+            subprocess.run([sys.executable, os.path.join(src, "tools", "money_engine.py"), "--fixture", "--out", mtmp],
+                           capture_output=True, text=True, timeout=180, cwd=src)
+            subprocess.run([sys.executable, os.path.join(src, "tools", "money_publish.py"), "--site", base, "--src", mtmp, "--quiet"],
+                           capture_output=True, text=True, timeout=60, cwd=src)
+        n += len(os.listdir(os.path.join(base, "money"))) if os.path.isdir(os.path.join(base, "money")) else 0
+    except Exception as e:  # noqa: BLE001
+        note(f"(money/: the build's sample copy could not be made: {e})")
     icons = os.path.join(src, "web", "icons")
     for name in ("icon-192.png", "icon-512.png", "icon-maskable-512.png", "apple-touch-icon.png", "icon.svg"):
         if os.path.exists(os.path.join(icons, name)):
@@ -249,9 +264,21 @@ def add_planner(src, base):
     planner/addons.json); without that script, planner-backup with tools/planner_patches applied here."""
     script = os.path.join(src, "scripts", "add_planner.sh")
     if os.path.exists(script):
-        r = subprocess.run(["bash", script, base], capture_output=True, text=True, timeout=300, cwd=src)
+        # planner-backup from the clone this test already keeps (ensure_clone, refreshed with the site): the script's own
+        # network clone needs GitHub access the box may not have, and then the Planner was published without its add-ons
+        env = dict(os.environ)
+        pl = os.path.join(ARGS.cache, "planner")
+        if os.path.isdir(os.path.join(pl, ".git")):
+            env["PLANNER_REPO"] = "file://" + pl
+        r = subprocess.run(["bash", script, base], capture_output=True, text=True, timeout=300, cwd=src, env=env)
         out = (r.stdout + r.stderr).strip()
         note("scripts/add_planner.sh: " + (out.splitlines()[-1][:200] if out else f"exit {r.returncode}"))
+        if "could not fetch planner-backup" in out and os.path.isfile(os.path.join(pl, "planner", "index.html")):
+            # what the script does with a clone: planner/ is planner-backup (the overlay's tools/web_public/planner goes, as the
+            # script's rm -rf + cp at publish), from the cached clone, with its add-ons applied here
+            shutil.rmtree(os.path.join(base, "planner"), ignore_errors=True)
+            link_tree(os.path.join(pl, "planner"), os.path.join(base, "planner"))
+            return planner_addons(src, base)
         try:
             return json.load(open(os.path.join(base, "planner", "addons.json")))
         except Exception:
@@ -384,6 +411,10 @@ LIVE = {"v": 1, "kind": "le-live", "t": 0,
                   "blitz": {"id": "blitz", "name": "BLITZ", "plan": "MFFU Builder 25K", "badge": "SIM", "balance": 25112.3, "floor": 24500.0,
                             "room": 612.3, "to_target": 1387.7, "today_pnl": 95.25, "week_pnl": 140.0, "status": "open", "off": False,
                             "trades_today": 2, "waiting": "Waiting for the 14:30 check."}}}     # = tests/test_jarvis_hub.py LIVE
+# BLITZ is hidden (dashboard_view.json hidden_bots, 2026-11-15): the PC's publish scrubs it out of live.json and stamps the list
+# (engine/hidden_bots.py via engine/live_publish), so the feed the phone gets has no BLITZ row
+LIVE["board"].pop("blitz", None)
+LIVE["hidden_bots"] = ["blitz"]
 
 
 def kalshi_json():
@@ -536,6 +567,26 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         if CTL.mode == "slow" and hit:
             time.sleep(CTL.slow_s)
         self._site = True
+        if path == BASE + "kalshi.json" and CTL.kalshi == "published":
+            # the site's own copy: since 8e61ac1 (2026-11-10) the PC's publish puts the Kalshi feed next to the pages
+            # (tools/pc_publish.py) and jarvis/data.js reads ../kalshi.json first, GitHub raw only as the fallback
+            with CTL.lock:
+                CTL.hits.append((path, 200))
+            return self.send_bytes(200, json.dumps(kalshi_json()).encode(), "application/json; charset=utf-8")
+        if path == BASE + "home.json" and os.path.exists(self.translate_path(self.path)):
+            # home.json as the publish builds it from the PC's live numbers (engine/live_board.py: home.json "board"): the same
+            # accounts as the live.json stub, fresh. The cached clone's home.json is days old, and since night A (2026-11-16) every
+            # Jarvis answer reads the accounts through home.json (olympus/truth.js), so it gave other numbers than the stub's
+            try:
+                h = json.load(open(self.translate_path(self.path), encoding="utf-8"))
+                now = int(time.time())
+                h["board"] = {**(h.get("board") if isinstance(h.get("board"), dict) else {}), **LIVE["board"], "data_t": now - 120}
+                h["t"] = now - 120
+                with CTL.lock:
+                    CTL.hits.append((path, 200))
+                return self.send_bytes(200, json.dumps(h).encode(), "application/json; charset=utf-8")
+            except Exception:
+                pass
         fs = self.translate_path(self.path)
         if not os.path.exists(fs) and CTL.lazy and path.startswith(BASE):
             CTL.lazy(path[len(BASE):])
@@ -610,7 +661,8 @@ class Phone:
         opts.update(kw)
         self.dev = dev
         self.ctx = br.new_context(**opts)
-        self.ctx.add_init_script("try { localStorage.setItem('oly.hiddenBots', '[]'); } catch (e) {}")   # BLITZ shown for these pinned checks (hidden by default since 2026-11-15: tests.test_hidden_bots / test_blitz_tab)
+        # the phone as the owner has it: BLITZ hidden (the default since 2026-11-15, and the published feeds say so); this used to
+        # un-hide it (oly.hiddenBots = []) to keep the old BLITZ checks, which now check that it stays hidden
         self.ctx.add_init_script(RAF_COUNT)
         self.ctx.add_init_script(READY_INIT)     # window.__qaReady: when the Jarvis screen can be used
         self.errs = []                # (kind, text, where)
@@ -760,9 +812,11 @@ def strip(frames, n=14):
     return " ".join(out[:n])
 
 
-def not_white(p, label, light_ok=False):
-    """The dominant color is not white. light_ok (an app whose own look is light, the Planner): only a blank page fails."""
-    s = shot(p, label)
+def not_white(p, label, light_ok=False, cdp=None):
+    """The dominant color is not white. light_ok (an app whose own look is light, the Planner): only a blank page fails.
+    cdp: what the screen shows right now (Page.captureScreenshot); Playwright's own screenshot first waits for the page's web
+    fonts, which on the slow network (SLOW_S a file) took longer than its 15 s limit, so the check never ran (2026-11-16)"""
+    s = cdp_shot(cdp, p, label) if cdp is not None else shot(p, label)
     bad = s["white"] >= 0.97 if light_ok else s["is_white"]
     return check(f"not {'blank ' if light_ok else ''}white: {label}", not bad, f"dominant {s['dom']} ({s['dom_share']:.0%}), "
                  f"{s['white']:.0%} near-white pixels, {s['file'] or ''}"), s
@@ -815,6 +869,12 @@ RAF_COUNT = """(() => { if (window.top !== window || !/\\/jarvis\\//.test(locati
 
 def raf_rate(p, ms=1500):
     """Animation frames a second the Jarvis page asks for right now (None when it never animates at all)."""
+    # an app's opening transition (jarvis/transitions.js, one shot of 0.6-1.1 s, by design) is not Jarvis's own loop: it is let
+    # finish first (it ran inside the 1.5 s window and read as 18.6 frames/s "while the Planner shows", phone QA 2026-11-16)
+    for _ in range(20):
+        if not _ev(p, "!!((window.__jarvisTransitions || {}).active || (window.__jarvisPortal || {}).active)"):
+            break
+        p.wait_for_timeout(150)
     a = _ev(p, "window.__qaRaf")
     if a is None or a is False:
         return None
@@ -1334,14 +1394,16 @@ def part_c(br, S, base, ph):
 def part_d(p, ph):
     m = ph.mark()
     n0 = frames_alive(p)
-    qa = [("How are the bots?", ["RUNNING", "$1,106", "ATLAS", "BLITZ"], []),
-          ("how much room do I have", ["$1,106", "$750", "$612"], []),
-          ("how far to target", ["$3,726", "$1,750", "$1,388"], []),
-          ("today's p&l", ["+$213", "+$95"], []),
-          ("how's blitz", ["BLITZ", "$612", "$1,388"], ["Opening", "Zlarior"]),
+    # BLITZ is hidden (owner 2026-11-15 "Zlarior and ATLAS only for now", dashboard_view.json hidden_bots, 046355e): its numbers
+    # ($612 room, $1,388 to target, +$95 today) are left out of every answer, and asked by name Jarvis says it is hidden
+    qa = [("How are the bots?", ["RUNNING", "$1,106", "ATLAS"], ["Opening", "$612"]),
+          ("how much room do I have", ["$1,106", "$750"], ["$612"]),
+          ("how far to target", ["$3,726", "$1,750"], ["$1,388"]),
+          ("today's p&l", ["+$213"], ["+$95"]),
+          ("how's blitz", ["BLITZ", "hidden", "paper"], ["Opening", "$612"]),
           ("how's kalshi", ["$512.34", "+$18.50"], ["Opening"]),
           ("is the market open", ["NQ market"], []),
-          ("help", ["open planner"], [])]
+          ("help", ["Open any app", "the planner"], [])]     # the help is the skills table now (jarvis/skills.js helpReply: "take me to the planner")
     for q, want, never in qa:
         a = ask(p, q)
         check(f"d. '{q}' -> {', '.join(want)}", all(w in a for w in want) and not any(n in a for n in never), a[:300])
@@ -1425,7 +1487,7 @@ def part_e(br, S, base, ph):
         check(f"e. slow network: Jarvis is interactive from its saved copy in under {lim:.1f} s", 0 < ia < lim * 1000, f"interactive {ia} ms")
         if done:
             p.wait_for_timeout(300)
-            not_white(p, "Jarvis on a slow network")
+            not_white(p, "Jarvis on a slow network", cdp=cdp)
         # 2. Zenith inside Jarvis while Zenith's files are slow (not Jarvis's: the local server speaks HTTP/1.1, six
         # connections a host, where GitHub Pages' HTTP/2 would not queue Zenith behind Jarvis's own slow requests)
         CTL.set("slow", BASE, exclude=(BASE + "jarvis/",))
@@ -1588,8 +1650,11 @@ def part_i(br, S, base):
                 # drawn in software at 3x, can hold the page's main thread for seconds after Jarvis started (2026-11-03)
                 wait_ready(p, 60000)
                 p.wait_for_function(JARVIS_HOME, timeout=10000)
-                ok = p.locator("#cards [data-app]").count() >= 3
-                why = f"started at {_ev(p, 'window.__jarvisReadyMs')} ms, {p.locator('#cards [data-app]').count()} cards"
+                # the Jarvis screen's app cards: Zenith's and Kalshi's in #cards (the two the shell draws), the Planner's with every
+                # other built-in app that has its own live card (jarvis/apps.js live: true) in the OLYMPUS grid (#olyApps)
+                got = p.evaluate("[...new Set([...document.querySelectorAll('#home [data-app]')].map((e) => e.dataset.app))]")
+                ok = len(got) >= 3 and all(a in got for a in ("zenith", "planner", "kalshi"))
+                why = f"started at {_ev(p, 'window.__jarvisReadyMs')} ms, apps on the Jarvis screen: {got[:12]}"
             except Exception as e:
                 ok, why = False, str(e).splitlines()[0][:160]
             check(f"i. junk on the phone ({what}) does not stop Jarvis", ok, why)
@@ -1772,8 +1837,11 @@ def part_h(br, S, base):
         p.goto(jarvis_url(base), wait_until="commit")
         p.wait_for_function(JARVIS_HOME, timeout=15000)
         newtxt = open(os.path.join(S["new"], REPO, "jarvis", "index.html"), encoding="utf-8").read()
-        ids_new = set(re.findall(r'\bid="([\w-]+)"', newtxt))
-        ids_old = set(re.findall(r'\bid="([\w-]+)"', open(os.path.join(S["pub"], REPO, "jarvis", "index.html"), encoding="utf-8").read()))
+        # the page's own markup only: an id inside a <script> template (#allB, the bar's "All apps" since d5601ce) is drawn later by the
+        # script, so it cannot tell at JARVIS_HOME which page is shown
+        markup = lambda t: re.sub(r"<script\b[^>]*>.*?</script>", "", t, flags=re.S | re.I)
+        ids_new = set(re.findall(r'\bid="([\w-]+)"', markup(newtxt)))
+        ids_old = set(re.findall(r'\bid="([\w-]+)"', markup(open(os.path.join(S["pub"], REPO, "jarvis", "index.html"), encoding="utf-8").read())))
         # ids only in the new page; the start note's (#boot*) go once Jarvis is up, so they cannot tell which page is shown
         only_new = [i for i in sorted(ids_new - ids_old) if not i.startswith("boot")]
         if only_new:                                   # the old worker answers the page from the network: the new page at once

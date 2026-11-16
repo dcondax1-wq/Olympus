@@ -177,6 +177,7 @@ const CSS = `
 .nx-fb .nx-fl small{font:500 12px -apple-system,system-ui,sans-serif;color:var(--oly-th-n30, #cfc4b2);margin-left:6px}
 .nx-map h3 .nx-hn{font:500 12px -apple-system,system-ui,sans-serif;color:var(--oly-th-n22, #9a8f7d);margin-left:8px}
 .nx-qb img{width:26px;height:26px;border-radius:7px;object-fit:cover}
+.nx-qb[data-nx="home"]{position:sticky;left:0;right:0;z-index:1}
 .nx-qb.now{border-color:var(--oly-th-warn, #e0b060);box-shadow: 0 4px 14px rgba(0,0,0,.32)}
 .nx-qb .nx-mini{width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 50% 45%,var(--oly-th-n37, #f3ece0) 0,var(--oly-th-n37, #f3ede1) 18%,var(--oly-th-a8, #c8a24a) 46%,var(--oly-th-a2, #533e28) 100%)}
 .nx-sys{position:relative;display:flex;align-items:center;gap:10px;margin:8px 16px 0;padding:8px 12px;min-height:46px;box-sizing:border-box;border-radius:14px;

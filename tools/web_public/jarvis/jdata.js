@@ -24,6 +24,11 @@ export const KFILES = { kalshiEdges: '../kalshicity/edges.json', kalshiLog: '../
 // (missing on the public site: the cards leave the Work line out and the household answers say: I don't have that)
 // health = your Apple Watch days (tools/me_health.py, the Me hub's me/health.json): also served only on the PC's own link
 export const XFILES = { fatesCard: '../fates/jarvis.json', day: '../day/day.json', household: '../money/household.json', health: '../me/health.json' };
+// the PC's private link serves the site under /site/ (engine/live_site.py; the Gate's ON_PC test): only there are day / household /
+// health asked for. On the public site they never exist, so asking was a 404 in the console on every Jarvis start (phone QA 2026-11-16).
+// No page (node tests) = ask for everything; opts.private overrides.
+export const PRIVATE_X = ['day', 'household', 'health'];
+export const onPrivateLink = () => typeof location === 'undefined' || !location || /^\/site\//.test(String(location.pathname || ''));
 export const STALE_H = { home: 36, odeon: 72, money: 6, pythia: 24 * 14, rules: 24 * 30 };
 const FETCH_MS = 8000;
 
@@ -87,7 +92,8 @@ export async function loadSources(opts) {
   if (!fetchFn) return S;
   const base = typeof o.base === 'string' ? o.base : '';
   await Promise.all(Object.keys(KFILES).map(async (k) => { const j = await getJson(fetchFn, base + KFILES[k]); if (j) { S[k] = j; S.at[k] = now; } }));
-  await Promise.all(Object.keys(XFILES).map(async (k) => { const j = await getJson(fetchFn, base + XFILES[k]); if (j) { S[k] = j; S.at[k] = now; } }));
+  const priv = typeof o.private === 'boolean' ? o.private : onPrivateLink();
+  await Promise.all(Object.keys(XFILES).filter((k) => priv || !PRIVATE_X.includes(k)).map(async (k) => { const j = await getJson(fetchFn, base + XFILES[k]); if (j) { S[k] = j; S.at[k] = now; } }));
   await Promise.all(Object.keys(FILES).map(async (k) => { const j = await getJson(fetchFn, base + FILES[k]); if (j) { S[k] = j; S.at[k] = now; } }));
   // SYNC (night A 2026-11-16): home.json through olympus/truth.js like the Gate, the hubs, Aegis and Helios: the PC feed laid over when it is
   // newer (withPcFeed), then the canonical account rows (canonHome), so every Jarvis answer says the same drawdown / today's $ / balance
