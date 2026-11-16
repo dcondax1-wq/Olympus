@@ -1,0 +1,439 @@
+{
+ "built": "2026-11-16 02:34",
+ "tool": "tools/money/payout_plan.py",
+ "n": 400,
+ "start": "2026-11-17",
+ "zlarior_state": {
+  "room": 1145.0,
+  "to_go": 3687.0,
+  "session": 20,
+  "price": 91.8,
+  "plan": "MFFU Builder 50K",
+  "asof": "2026-11-07"
+ },
+ "atlas": {
+  "room": 822.0,
+  "to_go": 1678.0,
+  "price": 43.0,
+  "plan": "MFFU Builder 25K",
+  "asof": "2026-11-07",
+  "usd_month": {
+   "H1": 568.0,
+   "H2": 382.0,
+   "REF": -2.0
+  },
+  "from_month": 3,
+  "pass_2wk": {
+   "H1": 57.3,
+   "H2": 34.5
+  },
+  "src": "research/writeups/eval-guard-2026-11-13.md, research/lab/rd_money.json"
+ },
+ "new_account": {
+  "plan": "LucidPro 50K copy of Zlarior",
+  "price": 134.4
+ },
+ "rules": {
+  "land_sessions": 3,
+  "buy_when_bank": 268.8,
+  "one_buy_per_payout": true,
+  "pocket_cap": 183.6,
+  "max_lucid_funded": 5,
+  "mffu_builder50k_funded": 1
+ },
+ "spans": {
+  "H1": {
+   "plans": {
+    "2": {
+     "accounts": 2,
+     "usd_month_y1": 1258,
+     "usd_month_m7_12": 1417,
+     "month_p10": 0,
+     "month_worst": -227,
+     "months_negative_pct": 3.2,
+     "months_no_income_pct": 59.8,
+     "months_no_income_m7_12_pct": 56.6,
+     "stopped_pct": 0.5,
+     "y1_total": 15097,
+     "y1_p10": 8880,
+     "pocket_mean": 21.57,
+     "pocket_p90": 91.8,
+     "pocket_max": 183.6,
+     "buy": {}
+    },
+    "3": {
+     "accounts": 3,
+     "usd_month_y1": 1839,
+     "usd_month_m7_12": 2341,
+     "month_p10": 0,
+     "month_worst": -227,
+     "months_negative_pct": 3.8,
+     "months_no_income_pct": 53.6,
+     "months_no_income_m7_12_pct": 45.8,
+     "stopped_pct": 0.5,
+     "y1_total": 22065,
+     "y1_p10": 10243,
+     "pocket_mean": 21.57,
+     "pocket_p90": 91.8,
+     "pocket_max": 183.6,
+     "buy": {
+      "#3": {
+       "pct_12m": 93.8,
+       "p25": "2027-01-13",
+       "median": "2027-02-05",
+       "p75": "2027-03-15"
+      }
+     }
+    },
+    "4": {
+     "accounts": 4,
+     "usd_month_y1": 2309,
+     "usd_month_m7_12": 3177,
+     "month_p10": 0,
+     "month_worst": -312,
+     "months_negative_pct": 4.5,
+     "months_no_income_pct": 51.6,
+     "months_no_income_m7_12_pct": 42.2,
+     "stopped_pct": 0.5,
+     "y1_total": 27708,
+     "y1_p10": 9973,
+     "pocket_mean": 21.57,
+     "pocket_p90": 91.8,
+     "pocket_max": 183.6,
+     "buy": {
+      "#3": {
+       "pct_12m": 93.8,
+       "p25": "2027-01-13",
+       "median": "2027-02-05",
+       "p75": "2027-03-15"
+      },
+      "#4": {
+       "pct_12m": 92.2,
+       "p25": "2027-02-19",
+       "median": "2027-03-24",
+       "p75": "2027-05-04"
+      }
+     }
+    },
+    "6": {
+     "accounts": 6,
+     "usd_month_y1": 2980,
+     "usd_month_m7_12": 4452,
+     "month_p10": 0,
+     "month_worst": -446,
+     "months_negative_pct": 5.4,
+     "months_no_income_pct": 50.4,
+     "months_no_income_m7_12_pct": 39.9,
+     "stopped_pct": 0.5,
+     "y1_total": 35763,
+     "y1_p10": 9801,
+     "pocket_mean": 21.57,
+     "pocket_p90": 91.8,
+     "pocket_max": 183.6,
+     "buy": {
+      "#3": {
+       "pct_12m": 93.8,
+       "p25": "2027-01-13",
+       "median": "2027-02-05",
+       "p75": "2027-03-15"
+      },
+      "#4": {
+       "pct_12m": 92.2,
+       "p25": "2027-02-19",
+       "median": "2027-03-24",
+       "p75": "2027-05-04"
+      },
+      "#5": {
+       "pct_12m": 90.5,
+       "p25": "2027-03-18",
+       "median": "2027-04-23",
+       "p75": "2027-06-07"
+      },
+      "#6": {
+       "pct_12m": 87.2,
+       "p25": "2027-04-07",
+       "median": "2027-05-17",
+       "p75": "2027-06-30"
+      }
+     }
+    }
+   },
+   "zlarior": {
+    "pass_10": 25.5,
+    "fail_10": 1.8,
+    "pass_ever": 79.8,
+    "first_eval_failed": 20.2,
+    "pass_earliest": "2026-11-23",
+    "pass_median": "2026-12-08",
+    "first_payout_pct_12m": 93.8,
+    "first_payout_earliest": "2026-12-23",
+    "first_payout_median": "2027-02-02",
+    "first_payout_in_bank_median": "2027-02-05",
+    "first_payout_usd_median": 1600,
+    "first_payout_usd_p10": 1404
+   }
+  },
+  "H2": {
+   "plans": {
+    "2": {
+     "accounts": 2,
+     "usd_month_y1": 1049,
+     "usd_month_m7_12": 1202,
+     "month_p10": 0,
+     "month_worst": -227,
+     "months_negative_pct": 3.7,
+     "months_no_income_pct": 59.8,
+     "months_no_income_m7_12_pct": 54.4,
+     "stopped_pct": 0.2,
+     "y1_total": 12586,
+     "y1_p10": 5328,
+     "pocket_mean": 26.62,
+     "pocket_p90": 91.8,
+     "pocket_max": 183.6,
+     "buy": {}
+    },
+    "3": {
+     "accounts": 3,
+     "usd_month_y1": 1628,
+     "usd_month_m7_12": 2130,
+     "month_p10": 0,
+     "month_worst": -227,
+     "months_negative_pct": 5.1,
+     "months_no_income_pct": 53.1,
+     "months_no_income_m7_12_pct": 42.2,
+     "stopped_pct": 0.2,
+     "y1_total": 19539,
+     "y1_p10": 6640,
+     "pocket_mean": 26.62,
+     "pocket_p90": 91.8,
+     "pocket_max": 183.6,
+     "buy": {
+      "#3": {
+       "pct_12m": 92.5,
+       "p25": "2027-01-13",
+       "median": "2027-02-03",
+       "p75": "2027-03-11"
+      }
+     }
+    },
+    "4": {
+     "accounts": 4,
+     "usd_month_y1": 2098,
+     "usd_month_m7_12": 2977,
+     "month_p10": 0,
+     "month_worst": -312,
+     "months_negative_pct": 6.0,
+     "months_no_income_pct": 51.1,
+     "months_no_income_m7_12_pct": 38.7,
+     "stopped_pct": 0.2,
+     "y1_total": 25180,
+     "y1_p10": 6298,
+     "pocket_mean": 26.62,
+     "pocket_p90": 91.8,
+     "pocket_max": 183.6,
+     "buy": {
+      "#3": {
+       "pct_12m": 92.5,
+       "p25": "2027-01-13",
+       "median": "2027-02-03",
+       "p75": "2027-03-11"
+      },
+      "#4": {
+       "pct_12m": 90.5,
+       "p25": "2027-02-17",
+       "median": "2027-03-23",
+       "p75": "2027-05-06"
+      }
+     }
+    },
+    "6": {
+     "accounts": 6,
+     "usd_month_y1": 2779,
+     "usd_month_m7_12": 4289,
+     "month_p10": 0,
+     "month_worst": -446,
+     "months_negative_pct": 7.1,
+     "months_no_income_pct": 49.6,
+     "months_no_income_m7_12_pct": 35.7,
+     "stopped_pct": 0.2,
+     "y1_total": 33350,
+     "y1_p10": 6298,
+     "pocket_mean": 26.62,
+     "pocket_p90": 91.8,
+     "pocket_max": 183.6,
+     "buy": {
+      "#3": {
+       "pct_12m": 92.5,
+       "p25": "2027-01-13",
+       "median": "2027-02-03",
+       "p75": "2027-03-11"
+      },
+      "#4": {
+       "pct_12m": 90.5,
+       "p25": "2027-02-17",
+       "median": "2027-03-23",
+       "p75": "2027-05-06"
+      },
+      "#5": {
+       "pct_12m": 88.5,
+       "p25": "2027-03-22",
+       "median": "2027-04-29",
+       "p75": "2027-06-11"
+      },
+      "#6": {
+       "pct_12m": 86.5,
+       "p25": "2027-04-12",
+       "median": "2027-05-21",
+       "p75": "2027-07-08"
+      }
+     }
+    }
+   },
+   "zlarior": {
+    "pass_10": 23.8,
+    "fail_10": 1.0,
+    "pass_ever": 76.0,
+    "first_eval_failed": 24.0,
+    "pass_earliest": "2026-11-20",
+    "pass_median": "2026-12-08",
+    "first_payout_pct_12m": 92.5,
+    "first_payout_earliest": "2026-12-22",
+    "first_payout_median": "2027-01-29",
+    "first_payout_in_bank_median": "2027-02-03",
+    "first_payout_usd_median": 1600,
+    "first_payout_usd_p10": 1375
+   }
+  },
+  "REF": {
+   "plans": {
+    "2": {
+     "accounts": 2,
+     "usd_month_y1": 15,
+     "usd_month_m7_12": 26,
+     "month_p10": -92,
+     "month_worst": -227,
+     "months_negative_pct": 11.3,
+     "months_no_income_pct": 98.3,
+     "months_no_income_m7_12_pct": 98.2,
+     "stopped_pct": 36.8,
+     "y1_total": 179,
+     "y1_p10": -204,
+     "pocket_mean": 128.06,
+     "pocket_p90": 183.6,
+     "pocket_max": 183.6,
+     "buy": {}
+    },
+    "3": {
+     "accounts": 3,
+     "usd_month_y1": 13,
+     "usd_month_m7_12": 24,
+     "month_p10": -92,
+     "month_worst": -312,
+     "months_negative_pct": 13.0,
+     "months_no_income_pct": 98.2,
+     "months_no_income_m7_12_pct": 98.1,
+     "stopped_pct": 36.8,
+     "y1_total": 154,
+     "y1_p10": -204,
+     "pocket_mean": 128.06,
+     "pocket_p90": 183.6,
+     "pocket_max": 183.6,
+     "buy": {
+      "#3": {
+       "pct_12m": 15.0,
+       "p25": "2027-03-17",
+       "median": "2027-05-12",
+       "p75": "2027-06-22"
+      }
+     }
+    },
+    "4": {
+     "accounts": 4,
+     "usd_month_y1": 13,
+     "usd_month_m7_12": 24,
+     "month_p10": -92,
+     "month_worst": -312,
+     "months_negative_pct": 13.4,
+     "months_no_income_pct": 98.2,
+     "months_no_income_m7_12_pct": 98.1,
+     "stopped_pct": 36.8,
+     "y1_total": 151,
+     "y1_p10": -204,
+     "pocket_mean": 128.06,
+     "pocket_p90": 183.6,
+     "pocket_max": 183.6,
+     "buy": {
+      "#3": {
+       "pct_12m": 15.0,
+       "p25": "2027-03-17",
+       "median": "2027-05-12",
+       "p75": "2027-06-22"
+      },
+      "#4": {
+       "pct_12m": 4.2,
+       "p25": "2027-06-04",
+       "median": "2027-06-25",
+       "p75": "2027-07-27"
+      }
+     }
+    },
+    "6": {
+     "accounts": 6,
+     "usd_month_y1": 13,
+     "usd_month_m7_12": 24,
+     "month_p10": -92,
+     "month_worst": -312,
+     "months_negative_pct": 13.4,
+     "months_no_income_pct": 98.2,
+     "months_no_income_m7_12_pct": 98.1,
+     "stopped_pct": 36.8,
+     "y1_total": 152,
+     "y1_p10": -204,
+     "pocket_mean": 128.06,
+     "pocket_p90": 183.6,
+     "pocket_max": 183.6,
+     "buy": {
+      "#3": {
+       "pct_12m": 15.0,
+       "p25": "2027-03-17",
+       "median": "2027-05-12",
+       "p75": "2027-06-22"
+      },
+      "#4": {
+       "pct_12m": 4.2,
+       "p25": "2027-06-04",
+       "median": "2027-06-25",
+       "p75": "2027-07-27"
+      },
+      "#5": {
+       "pct_12m": 1.2,
+       "p25": "2027-07-14",
+       "median": "2027-09-14",
+       "p75": "2027-09-21"
+      },
+      "#6": {
+       "pct_12m": 0.5,
+       "p25": "2027-07-27",
+       "median": "2027-08-20",
+       "p75": "2027-09-14"
+      }
+     }
+    }
+   },
+   "zlarior": {
+    "pass_10": 3.5,
+    "fail_10": 5.8,
+    "pass_ever": 17.8,
+    "first_eval_failed": 82.2,
+    "pass_earliest": "2026-11-24",
+    "pass_median": "2026-12-23",
+    "first_payout_pct_12m": 15.0,
+    "first_payout_earliest": "2027-02-10",
+    "first_payout_median": "2027-05-06",
+    "first_payout_in_bank_median": "2027-05-12",
+    "first_payout_usd_median": 1600,
+    "first_payout_usd_p10": 1446
+   }
+  }
+ }
+}

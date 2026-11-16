@@ -21,8 +21,35 @@ export function clean(doc) {
     prices: (Array.isArray(doc.prices) ? doc.prices : []).filter((p) => p && str(p.name, 40)).map((p) => ({ name: str(p.name, 40), setup: +p.setup || 0, monthly: +p.monthly || 0 })),
     week: (Array.isArray(doc.week) ? doc.week : []).filter((d) => d && Number.isFinite(+d.day)).slice(0, 7).map((d) => ({ day: +d.day, title: str(d.title, 80), tasks: list(d.tasks, 6) })),
     rules: list(doc.rules, 8),
+    prop: cleanProp(doc.prop),
   };
 }
+
+const num = (v) => (v === null || v === undefined || v === '' || !Number.isFinite(+v) ? null : +v);
+const day = (v) => (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : null);
+
+// the prop accounts' payout plan (tools/money/payout_plan.py via biz_publish): null when absent or not one
+export function cleanProp(p) {
+  if (!p || typeof p !== 'object' || !Array.isArray(p.table)) return null;
+  const table = p.table.filter((r) => r && Number.isFinite(+r.accounts) && +r.accounts > 0).slice(0, 8).map((r) => ({
+    accounts: +r.accounts, y1: num(r.usd_month_y1), steady: num(r.usd_month_m7_12), worst: num(r.month_worst),
+    empty: num(r.months_no_income_pct), p10: num(r.y1_p10), ref: num(r.ref_usd_month),
+  }));
+  if (!table.length) return null;
+  const z = p.zlarior && typeof p.zlarior === 'object' ? p.zlarior : null;
+  return {
+    span: str(p.span, 80), table, rules: list(p.rules, 6), notes: list(p.notes, 6),
+    plan: str((p.new_account || {}).plan, 60), price: num((p.new_account || {}).price),
+    zlarior: z ? { pass_median: day(z.pass_median), pass_earliest: day(z.pass_earliest), pass_10: num(z.pass_10), fail_10: num(z.fail_10),
+      pay_earliest: day(z.first_payout_earliest), pay_median: day(z.first_payout_median), bank_median: day(z.first_payout_in_bank_median),
+      pay_usd: num(z.first_payout_usd_median) } : null,
+    buy: (Array.isArray(p.buy) ? p.buy : []).filter((x) => x && str(x.n, 4)).slice(0, 6).map((x) => ({
+      n: str(x.n, 4), median: day(x.median), p25: day(x.p25), p75: day(x.p75), pct: num(x.pct_12m) })),
+  };
+}
+
+// "$1,049" / "-$227" / "-"
+export function signed(n) { return n === null || n === undefined ? '-' : (n < 0 ? '-' + money(-n) : money(n)); }
 
 // the first model that is not paused = what to do now
 export function firstAction(doc) {

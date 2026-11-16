@@ -57,3 +57,4 @@ svg text { font-family: var(--ag-sans); }
 #app .week { overflow: visible; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 html[data-oly-lite="1"] .ag-card { box-shadow: none; }
+#propTbl { font-size: 13px; }

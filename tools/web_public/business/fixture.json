@@ -345,5 +345,63 @@
   "Calls by hand, business hours, never a robot or a recording; stop means Do not contact.",
   "Emails need your real name, email and postal address (CAN-SPAM).",
   "Every $ is an ESTIMATE range from the teams' docs, not a promise; 'real' is only what the ledger recorded."
- ]
+ ],
+ "prop": {
+  "label": "ESTIMATE",
+  "span": "Jul-Oct 2026 replay (the check half)",
+  "source": "tools/money/payout_plan.py -> research/lab/payout_plan.json",
+  "table": [
+   {
+    "accounts": 2,
+    "usd_month_y1": 1049,
+    "usd_month_m7_12": 1202,
+    "month_worst": -227,
+    "months_no_income_pct": 54.4,
+    "y1_p10": 5328,
+    "ref_usd_month": 15
+   },
+   {
+    "accounts": 3,
+    "usd_month_y1": 1628,
+    "usd_month_m7_12": 2130,
+    "month_worst": -227,
+    "months_no_income_pct": 42.2,
+    "y1_p10": 6640,
+    "ref_usd_month": 13
+   },
+   {
+    "accounts": 4,
+    "usd_month_y1": 2098,
+    "usd_month_m7_12": 2977,
+    "month_worst": -312,
+    "months_no_income_pct": 38.7,
+    "y1_p10": 6298,
+    "ref_usd_month": 13
+   },
+   {
+    "accounts": 6,
+    "usd_month_y1": 2779,
+    "usd_month_m7_12": 4289,
+    "month_worst": -446,
+    "months_no_income_pct": 35.7,
+    "y1_p10": 6298,
+    "ref_usd_month": 13
+   }
+  ],
+  "new_account": {
+   "plan": "LucidPro 50K copy of Zlarior",
+   "price": 134.4
+  },
+  "rules": [
+   "Buy the next account only from a payout that reached your bank: one new account per payout, and only when the payout money holds two of its price (one to buy, one kept for a re-buy).",
+   "MFFU funds only ONE Builder 50K a person: account #3 and up are LucidPro 50K copies of Zlarior (Lucid allows 5 funded).",
+   "Stop rule: at most 2 re-buys from your own pocket ($183.60); past that stop and rethink.",
+   "Prop money: you can lose only the fees, never more; a bad week inside an account is the firm's money."
+  ],
+  "notes": [
+   "Every account copies the SAME Zlarior signal (daily correlation about 0.94): a bad week hits all of them at once, so more accounts multiply the good months AND the empty ones.",
+   "Backtest of 2026 (where LIT works); on 2021-25 (no edge) the same plan makes about $0 a month. Nothing is promised.",
+   "ATLAS's $ is the stored research estimate (a different bot), added from month 3."
+  ]
+ }
 }

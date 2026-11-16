@@ -70,6 +70,36 @@ function render(doc) {
   }
   count();
   const ru = $('rules'); ru.textContent = ''; for (const r of doc.rules) ru.appendChild(h('li', '', r));
+  renderProp(doc.prop);
+}
+
+// the prop accounts' payout plan card (team E 2026-11-16): the money table, when Zlarior can pass / pay, the buying schedule
+function renderProp(p) {
+  const card = $('prop');
+  card.hidden = !p;
+  if (!p) return;
+  $('propSpan').textContent = p.span || 'replay';
+  const tb = $('propTbl').querySelector('tbody'); tb.textContent = '';
+  for (const r of p.table) {
+    const tr = h('tr');
+    tr.appendChild(h('td', '', `${r.accounts} accounts`));
+    tr.appendChild(h('td', 'n', C.signed(r.y1)));
+    tr.appendChild(h('td', 'n', C.signed(r.steady)));
+    tr.appendChild(h('td', 'n', C.signed(r.worst)));
+    tr.appendChild(h('td', 'n', r.empty === null ? '-' : `${Math.round(r.empty)}%`));
+    tr.appendChild(h('td', 'n', C.signed(r.ref)));
+    tb.appendChild(tr);
+  }
+  const kvs = $('propKv'); kvs.textContent = '';
+  const z = p.zlarior;
+  if (z) {
+    kv(kvs, 'Zlarior passes', z.pass_median ? `about ${z.pass_median} (earliest ${z.pass_earliest || '-'}; ${z.pass_10 ?? '-'}% within 2 weeks, ${z.fail_10 ?? '-'}% fail)` : '-');
+    kv(kvs, 'First payout', z.pay_median ? `about ${z.pay_median}, ${C.money(z.pay_usd)} to you (earliest ${z.pay_earliest || '-'}; in your bank about ${z.bank_median || '-'})` : '-');
+  }
+  for (const b of p.buy) kv(kvs, `Buy ${b.n}`, b.median ? `about ${b.median} (${b.p25 || '-'} to ${b.p75 || '-'})` : 'not within 12 months');
+  if (p.plan) kv(kvs, 'Each new account', `${p.plan}${p.price !== null ? `, ${C.money(p.price)}` : ''}`);
+  const ul = $('propRules'); ul.textContent = '';
+  for (const r of p.rules.concat(p.notes)) ul.appendChild(h('li', '', r));
 }
 
 (async function main() {

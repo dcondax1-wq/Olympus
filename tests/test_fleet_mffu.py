@@ -2,7 +2,7 @@
 
     python -X utf8 -m tests.test_fleet_mffu        (~10 s; temp files only: never data/fleet.json, live_model*.json, NinjaTrader)
 
-The owner's one line (docs/MFFU_SECOND_50K.md):
+The owner's one line (docs/MORE_ACCOUNTS.md, "A second MFFU 50K"):
     python -X utf8 -m engine.fleet --add --id mffu50b --lead zlarior --plan mffu_builder_50k --account "<Name>" --start today
 
 Covers: the add on a Sim Name (no arming, the MFFU rules re-read 2026-11-16: copying your own accounts allowed, 1 funded

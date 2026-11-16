@@ -28,7 +28,7 @@
 <script src="../olympus/gate-nav.js?v=g3" defer></script>
 <script src="../olympus/sfx.js?v=s4" defer></script>
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#c8a24a'); r.setProperty('--oly-accent-rgb', '200, 162, 74'); })();</script>
-<link rel="stylesheet" href="business.css?v=1">
+<link rel="stylesheet" href="business.css?v=2">
 </head>
 <body>
 <main id="app">
@@ -51,6 +51,14 @@
     <table class="tbl" id="tbl"><thead><tr><th>Model</th><th class="n">Month 1</th><th class="n">Month 3</th><th class="n">Hours / week</th></tr></thead><tbody></tbody></table>
   </section>
 
+  <section class="ag-card card" id="prop" aria-labelledby="propH" hidden>
+    <div class="row"><h2 id="propH">Prop accounts: the payout plan</h2><span class="pill warn">ESTIMATE</span></div>
+    <p class="note">From the <span id="propSpan">replay</span>. $ a month to you after fees; the worst month is fees only (you never lose more).</p>
+    <div class="scroll"><table class="tbl" id="propTbl"><thead><tr><th>Accounts</th><th class="n">Year 1</th><th class="n">Months 7-12</th><th class="n">Worst month</th><th class="n">No payout</th><th class="n">2021-25</th></tr></thead><tbody></tbody></table></div>
+    <dl class="kv" id="propKv"></dl>
+    <ul id="propRules" class="note"></ul>
+  </section>
+
   <section id="models" aria-label="The models"></section>
 
   <section class="ag-card card" aria-labelledby="priceH">
@@ -70,6 +78,6 @@
 
   <p class="foot">Business reads one published file and sends nothing. Paper only: it never trades, posts, emails or calls.</p>
 </main>
-<script type="module" src="business.js?v=1"></script>
+<script type="module" src="business.js?v=2"></script>
 </body>
 </html>
