@@ -927,3 +927,14 @@ html[data-oly-style] .card { background: var(--oly-th-card-bg) !important; borde
   border-radius: var(--oly-th-radius) !important; -webkit-backdrop-filter: var(--oly-th-card-blur); backdrop-filter: var(--oly-th-card-blur); }
 html[data-oly-style] :is(.top h1, .card h2) { font-family: var(--oly-th-display, var(--fh)); font-weight: var(--oly-th-title-weight) !important; text-transform: var(--oly-th-title-case);
   letter-spacing: var(--oly-th-title-track) !important; font-style: var(--oly-th-title-style); }
+
+/* ---- "Rewards test (paper)" card (2026-11-17, kalshi.js rewardsLoad): four numbers under the PAUSED note */
+.krw { display: block; margin-top: 8px; }
+.krw[hidden] { display: none; }
+.krw p { margin: 0; }
+.krw-g { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 9px 0 6px; }
+.krw-g div { min-width: 0; }
+.krw-g dt { font-size: 12px; color: var(--txt); opacity: .78; }
+.krw-g dd { margin: 2px 0 0; font: 700 17px/1.2 var(--fh); overflow-wrap: anywhere; }
+.krw-f { font-size: 13px; opacity: .85; margin-top: 4px !important; }
+@media (max-width: 359px) { .krw-g { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

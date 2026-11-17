@@ -1,0 +1,11214 @@
+{
+"when": "2026-11-17T21:24:17+00:00",
+"profiles": {
+"KXRT": {
+"snapshots": 75,
+"markets": 25,
+"valid_pct": 80.0,
+"buckets": {
+"rich": {
+"n": 44,
+"ticks_med": 0.0,
+"ahead_t_med": 22.11884,
+"ahead_t_q25": 5.26897,
+"ahead_t_q75": 45.19667,
+"score_t_med": 36.084556568200654,
+"score_t_mean": 76.61919020212373
+},
+"mid": {
+"n": 58,
+"ticks_med": 0.0,
+"ahead_t_med": 26.743215,
+"ahead_t_q25": 1.24491,
+"ahead_t_q75": 35.180800000000005,
+"score_t_med": 26.7432204461051,
+"score_t_mean": 29.916289456692375
+},
+"cheap": {
+"n": 33,
+"ticks_med": 0,
+"ahead_t_med": 96.93867999999999,
+"ahead_t_q25": 14.43305,
+"ahead_t_q75": 256.02116,
+"score_t_med": 97.7542125,
+"score_t_mean": 176.81965443329784
+}
+}
+},
+"KXPANAMAWEEKLY": {
+"snapshots": 27,
+"markets": 9,
+"valid_pct": 100.0,
+"buckets": {
+"cheap": {
+"n": 18,
+"ticks_med": 0.0,
+"ahead_t_med": 128.18761999999998,
+"ahead_t_q25": 69.79913,
+"ahead_t_q75": 240.67234,
+"score_t_med": 128.62511999999998,
+"score_t_mean": 144.9691609375
+},
+"mid": {
+"n": 21,
+"ticks_med": 1,
+"ahead_t_med": 3.6986,
+"ahead_t_q25": 1.38048,
+"ahead_t_q75": 6.97806,
+"score_t_med": 3.7738384599876404,
+"score_t_mean": 5.002056614913104
+},
+"rich": {
+"n": 15,
+"ticks_med": 1,
+"ahead_t_med": 5.50677,
+"ahead_t_q25": 5.03187,
+"ahead_t_q75": 9.03403,
+"score_t_med": 6.0066400000344595,
+"score_t_mean": 15.909382280599544
+}
+}
+},
+"KXBABELMANDEBWEEKLY": {
+"snapshots": 33,
+"markets": 11,
+"valid_pct": 100.0,
+"buckets": {
+"mid": {
+"n": 33,
+"ticks_med": 0,
+"ahead_t_med": 1.96401,
+"ahead_t_q25": 0.48334,
+"ahead_t_q75": 4.0061,
+"score_t_med": 1.9640100017564743,
+"score_t_mean": 2.488704770464034
+},
+"cheap": {
+"n": 18,
+"ticks_med": 0.5,
+"ahead_t_med": 20.332430000000002,
+"ahead_t_q25": 12.8079,
+"ahead_t_q75": 164.13401000000002,
+"score_t_med": 26.9316904296875,
+"score_t_mean": 91.80704868923611
+},
+"rich": {
+"n": 15,
+"ticks_med": 0,
+"ahead_t_med": 1.88045,
+"ahead_t_q25": 1.51226,
+"ahead_t_q75": 8.26932,
+"score_t_med": 1.8866489843806744,
+"score_t_mean": 6.104463969494208
+}
+}
+},
+"KXART": {
+"snapshots": 75,
+"markets": 25,
+"valid_pct": 100.0,
+"buckets": {
+"cheap": {
+"n": 76,
+"ticks_med": 1.0,
+"ahead_t_med": 1.8111000000000002,
+"ahead_t_q25": 0.565,
+"ahead_t_q75": 4.348,
+"score_t_med": 2.89948337890625,
+"score_t_mean": 4.672402141113281
+},
+"mid": {
+"n": 66,
+"ticks_med": 0.0,
+"ahead_t_med": 1.9184800000000002,
+"ahead_t_q25": 0.43001999999999996,
+"ahead_t_q75": 23.228,
+"score_t_med": 2.5453472265646186,
+"score_t_mean": 12.984226908692538
+},
+"rich": {
+"n": 8,
+"ticks_med": 0.0,
+"ahead_t_med": 7.647,
+"ahead_t_q25": 7.647,
+"ahead_t_q75": 9.1774,
+"score_t_med": 8.08513,
+"score_t_mean": 6.586448750001132
+}
+}
+},
+"KXYTVIEWSW": {
+"snapshots": 75,
+"markets": 25,
+"valid_pct": 78.7,
+"buckets": {
+"cheap": {
+"n": 71,
+"ticks_med": 1,
+"ahead_t_med": 6.2588,
+"ahead_t_q25": 3.673,
+"ahead_t_q75": 8.738,
+"score_t_med": 6.53,
+"score_t_mean": 8.341169996355083
+},
+"mid": {
+"n": 54,
+"ticks_med": 0.0,
+"ahead_t_med": 2.368,
+"ahead_t_q25": 1.47,
+"ahead_t_q75": 2.76208,
+"score_t_med": 2.4770386458587645,
+"score_t_mean": 2.2901042036045065
+},
+"rich": {
+"n": 9,
+"ticks_med": 0,
+"ahead_t_med": 2.601,
+"ahead_t_q25": 1.611,
+"ahead_t_q75": 3.499,
+"score_t_med": 3.032250000000018,
+"score_t_mean": 2.7140833333336594
+}
+}
+},
+"KXFEATURE": {
+"snapshots": 75,
+"markets": 25,
+"valid_pct": 64.0,
+"buckets": {
+"cheap": {
+"n": 48,
+"ticks_med": 0.0,
+"ahead_t_med": 2.276235,
+"ahead_t_q25": 1.9477200000000001,
+"ahead_t_q75": 2.81,
+"score_t_med": 2.276235,
+"score_t_mean": 2.59566
+},
+"rich": {
+"n": 75,
+"ticks_med": 0,
+"ahead_t_med": 60.996010000000005,
+"ahead_t_q25": 14.956,
+"ahead_t_q75": 65.02003,
+"score_t_med": 62.220477710484204,
+"score_t_mean": 55.34961864099827
+}
+}
+},
+"KXEOWEEK": {
+"snapshots": 45,
+"markets": 15,
+"valid_pct": 33.3,
+"buckets": {
+"rich": {
+"n": 39,
+"ticks_med": 0,
+"ahead_t_med": 3.5075,
+"ahead_t_q25": 3.1487,
+"ahead_t_q75": 5.4106499999999995,
+"score_t_med": 5.434154578147549,
+"score_t_mean": 6.701474022933486
+},
+"mid": {
+"n": 12,
+"ticks_med": 0.5,
+"ahead_t_med": 0.7460549999999999,
+"ahead_t_q25": 0.57542,
+"ahead_t_q75": 0.84801,
+"score_t_med": 0.8344573785573244,
+"score_t_mean": 0.8025481177934263
+},
+"cheap": {
+"n": 9,
+"ticks_med": 0,
+"ahead_t_med": 11.90101,
+"ahead_t_q25": 4.585,
+"ahead_t_q75": 17.94011,
+"score_t_med": 12.679135,
+"score_t_mean": 11.892977361111113
+}
+}
+},
+"KXDPRESPRIMARY": {
+"snapshots": 75,
+"markets": 25,
+"valid_pct": 100.0,
+"buckets": {
+"cheap": {
+"n": 72,
+"ticks_med": 0.0,
+"ahead_t_med": 362.0258,
+"ahead_t_q25": 132.463,
+"ahead_t_q75": 720.24,
+"score_t_med": 362.1984875,
+"score_t_mean": 394.73434340006514
+},
+"rich": {
+"n": 69,
+"ticks_med": 0,
+"ahead_t_med": 1.2101199999999999,
+"ahead_t_q25": 0.8015,
+"ahead_t_q75": 2.1641999999999997,
+"score_t_med": 1.6372200000000001,
+"score_t_mean": 1.9016829710316607
+},
+"mid": {
+"n": 9,
+"ticks_med": 0,
+"ahead_t_med": 1.72298,
+"ahead_t_q25": 1.49195,
+"ahead_t_q75": 1.87796,
+"score_t_med": 1.9919500000878954,
+"score_t_mean": 2.069084089197191
+}
+}
+}
+},
+"obs": [
+{
+"k": 0,
+"s": "KXRT",
+"m": "KXRT-IPL-77",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 6.26897,
+"score_t": 12.524726009571292,
+"depth_t": 67.34132000000001
+},
+"no": null,
+"valid": false
+},
+{
+"k": 0,
+"s": "KXRT",
+"m": "KXRT-HUN-72",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.22,
+"ref": 0.19,
+"ticks": 3,
+"ahead_t": 0.8453099999999999,
+"score_t": 0.8565561441421509,
+"depth_t": 54.51355
+},
+"no": {
+"best": 0.73,
+"ref": 0.71,
+"ticks": 2,
+"ahead_t": 0.30656,
+"score_t": 1.4113394321431696,
+"depth_t": 66.30525
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXRT",
+"m": "KXRT-ANG-70",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.2,
+"ref": 0.2,
+"ticks": 0,
+"ahead_t": 31.3798,
+"score_t": 31.380573474578856,
+"depth_t": 82.52981
+},
+"no": {
+"best": 0.79,
+"ref": 0.79,
+"ticks": 0,
+"ahead_t": 100.48353,
+"score_t": 100.88353500000184,
+"depth_t": 134.54654000000002
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXRT",
+"m": "KXRT-IPL-45",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 14.9104,
+"score_t": 15.890150000005857,
+"depth_t": 97.4014
+},
+"no": null,
+"valid": false
+},
+{
+"k": 0,
+"s": "KXRT",
+"m": "KXRT-ANG-80",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.05,
+"ref": 0.05,
+"ticks": 0,
+"ahead_t": 197.72502,
+"score_t": 198.58213999999998,
+"depth_t": 204.15975999999998
+},
+"no": {
+"best": 0.94,
+"ref": 0.94,
+"ticks": 0,
+"ahead_t": 154.10301,
+"score_t": 154.10301500000463,
+"depth_t": 185.21595000000002
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXRT",
+"m": "KXRT-ZER-70",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.3,
+"ref": 0.3,
+"ticks": 0,
+"ahead_t": 33.26901,
+"score_t": 33.369017630282194,
+"depth_t": 72.83602
+},
+"no": {
+"best": 0.69,
+"ref": 0.69,
+"ticks": 0,
+"ahead_t": 28.75301,
+"score_t": 28.771050158357703,
+"depth_t": 68.08516
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXRT",
+"m": "KXRT-HEX-90",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.04,
+"ref": 0.04,
+"ticks": 0,
+"ahead_t": 96.33868,
+"score_t": 97.1542125,
+"depth_t": 100.71193999999998
+},
+"no": {
+"best": 0.95,
+"ref": 0.95,
+"ticks": 0,
+"ahead_t": 159.64806,
+"score_t": 160.14213194905182,
+"depth_t": 241.22852
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXRT",
+"m": "KXRT-JUM-70",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.29,
+"ref": 0.29,
+"ticks": 0,
+"ahead_t": 24.91407,
+"score_t": 24.914942541395128,
+"depth_t": 74.28108
+},
+"no": {
+"best": 0.7,
+"ref": 0.7,
+"ticks": 0,
+"ahead_t": 90.29007,
+"score_t": 90.49007613800562,
+"depth_t": 127.15883
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXRT",
+"m": "KXRT-HUN-70",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.39,
+"ref": 0.36,
+"ticks": 3,
+"ahead_t": 0.3465,
+"score_t": 0.7192841614252096,
+"depth_t": 47.96537
+},
+"no": {
+"best": 0.59,
+"ref": 0.58,
+"ticks": 1,
+"ahead_t": 0.49701999999999996,
+"score_t": 1.2655441112620218,
+"depth_t": 105.74721000000001
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXRT",
+"m": "KXRT-DUNE-80",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.87,
+"ref": 0.87,
+"ticks": 0,
+"ahead_t": 22.11884,
+"score_t": 22.181524696627026,
+"depth_t": 27.408849999999997
+},
+"no": {
+"best": 0.12,
+"ref": 0.12,
+"ticks": 0,
+"ahead_t": 39.38303,
+"score_t": 39.469357753906245,
+"depth_t": 48.91056
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXRT",
+"m": "KXRT-IPL-80",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 35.89339,
+"score_t": 36.086470630335576,
+"depth_t": 62.9579
+},
+"no": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 256.02116,
+"score_t": 256.02116,
+"depth_t": 256.02116
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXRT",
+"m": "KXRT-ZER-65",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.39,
+"ref": 0.39,
+"ticks": 0,
+"ahead_t": 20.016830000000002,
+"score_t": 20.11684444331779,
+"depth_t": 57.402840000000005
+},
+"no": {
+"best": 0.6,
+"ref": 0.6,
+"ticks": 0,
+"ahead_t": 15.350010000000001,
+"score_t": 15.370971078968156,
+"depth_t": 68.84855
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXRT",
+"m": "KXRT-IPL-65",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 41.97726,
+"score_t": 97.93776013261105,
+"depth_t": 264.27247000000006
+},
+"no": null,
+"valid": false
+},
+{
+"k": 0,
+"s": "KXRT",
+"m": "KXRT-FOC-45",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.89,
+"ref": 0.86,
+"ticks": 3,
+"ahead_t": 2.19192,
+"score_t": 4.921498502379071,
+"depth_t": 36.79746
+},
+"no": {
+"best": 0.05,
+"ref": 0.03,
+"ticks": 2,
+"ahead_t": 32.098099999999995,
+"score_t": 58.655625,
+"depth_t": 87.3282
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXRT",
+"m": "KXRT-DUNE-55",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 467.155,
+"score_t": 467.1550000000582,
+"depth_t": 484.82
+},
+"no": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 637.18901,
+"score_t": 637.18901,
+"depth_t": 637.18901
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXRT",
+"m": "KXRT-HUN-45",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 19.75456,
+"score_t": 20.11445764926925,
+"depth_t": 137.09684
+},
+"no": null,
+"valid": false
+},
+{
+"k": 0,
+"s": "KXRT",
+"m": "KXRT-VIO-85",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.05,
+"ref": 0.05,
+"ticks": 0,
+"ahead_t": 8.8062,
+"score_t": 9.670137500000001,
+"depth_t": 19.7162
+},
+"no": {
+"best": 0.94,
+"ref": 0.94,
+"ticks": 0,
+"ahead_t": 39.18001,
+"score_t": 39.30519810566507,
+"depth_t": 297.20873
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXRT",
+"m": "KXRT-IPL-70",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 2.025,
+"score_t": 48.9614621875095,
+"depth_t": 178.85993
+},
+"no": null,
+"valid": false
+},
+{
+"k": 0,
+"s": "KXRT",
+"m": "KXRT-VIO-55",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.87,
+"ref": 0.85,
+"ticks": 2,
+"ahead_t": 0.5087900000000001,
+"score_t": 0.52049443455396,
+"depth_t": 29.88006
+},
+"no": {
+"best": 0.12,
+"ref": 0.07,
+"ticks": 5,
+"ahead_t": 3.5745,
+"score_t": 3.89294640625,
+"depth_t": 8.52007
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXRT",
+"m": "KXRT-ANG-65",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.24,
+"ref": 0.24,
+"ticks": 0,
+"ahead_t": 35.180800000000005,
+"score_t": 35.38084608737946,
+"depth_t": 81.88980000000001
+},
+"no": {
+"best": 0.75,
+"ref": 0.75,
+"ticks": 0,
+"ahead_t": 27.59029,
+"score_t": 27.590295000017587,
+"depth_t": 61.710809999999995
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXRT",
+"m": "KXRT-FUR-65",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 1.6755,
+"score_t": 2.4755588041350576,
+"depth_t": 49.11408
+},
+"no": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 170.76160000000002,
+"score_t": 170.76160000000002,
+"depth_t": 170.76160000000002
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXRT",
+"m": "KXRT-JUM-50",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.68,
+"ref": 0.68,
+"ticks": 0,
+"ahead_t": 25.89612,
+"score_t": 25.89612089218521,
+"depth_t": 57.75259
+},
+"no": {
+"best": 0.31,
+"ref": 0.31,
+"ticks": 0,
+"ahead_t": 53.143730000000005,
+"score_t": 53.34373297096588,
+"depth_t": 83.73182000000001
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXRT",
+"m": "KXRT-VIO-75",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.13,
+"ref": 0.13,
+"ticks": 0,
+"ahead_t": 14.145340000000001,
+"score_t": 23.775800751953124,
+"depth_t": 87.91609
+},
+"no": {
+"best": 0.86,
+"ref": 0.86,
+"ticks": 0,
+"ahead_t": 1.74001,
+"score_t": 1.8297339025891126,
+"depth_t": 36.99984
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXRT",
+"m": "KXRT-DUNE-95",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.2,
+"ref": 0.2,
+"ticks": 0,
+"ahead_t": 57.71725,
+"score_t": 57.74141591331482,
+"depth_t": 110.29205999999999
+},
+"no": {
+"best": 0.79,
+"ref": 0.79,
+"ticks": 0,
+"ahead_t": 29.55749,
+"score_t": 29.55757690036687,
+"depth_t": 75.28343
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXRT",
+"m": "KXRT-WER-65",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.94,
+"ref": 0.94,
+"ticks": 0,
+"ahead_t": 45.19667,
+"score_t": 45.19667381469726,
+"depth_t": 54.14667
+},
+"no": {
+"best": 0.05,
+"ref": 0.05,
+"ticks": 0,
+"ahead_t": 453.35234,
+"score_t": 454.24696,
+"depth_t": 459.07458
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXPANAMAWEEKLY",
+"m": "KXPANAMAWEEKLY-26NOV22-T205",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.07,
+"ref": 0.07,
+"ticks": 0,
+"ahead_t": 40.374,
+"score_t": 41.229578125,
+"depth_t": 43.206
+},
+"no": {
+"best": 0.91,
+"ref": 0.82,
+"ticks": 9,
+"ahead_t": 6.97806,
+"score_t": 6.993688252218827,
+"depth_t": 14.702060000000001
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXPANAMAWEEKLY",
+"m": "KXPANAMAWEEKLY-26NOV22-T200",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.24,
+"ref": 0.22,
+"ticks": 2,
+"ahead_t": 11.34292,
+"score_t": 12.493053527755738,
+"depth_t": 48.66892
+},
+"no": {
+"best": 0.73,
+"ref": 0.69,
+"ticks": 4,
+"ahead_t": 1.3451300000000002,
+"score_t": 1.538321785964966,
+"depth_t": 34.11125
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXPANAMAWEEKLY",
+"m": "KXPANAMAWEEKLY-26NOV22-T185",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.9,
+"ref": 0.89,
+"ticks": 1,
+"ahead_t": 3.0624499999999997,
+"score_t": 3.0624502006500154,
+"depth_t": 32.41645
+},
+"no": {
+"best": 0.09,
+"ref": 0.09,
+"ticks": 0,
+"ahead_t": 69.79913,
+"score_t": 70.09156750000001,
+"depth_t": 74.99013000000001
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXPANAMAWEEKLY",
+"m": "KXPANAMAWEEKLY-26NOV22-T215",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 260.57124,
+"score_t": 260.57124,
+"depth_t": 260.57124
+},
+"no": {
+"best": 0.98,
+"ref": 0.97,
+"ticks": 1,
+"ahead_t": 5.50614,
+"score_t": 6.0066400000344595,
+"depth_t": 42.28114
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXPANAMAWEEKLY",
+"m": "KXPANAMAWEEKLY-26NOV22-T210",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.03,
+"ref": 0.03,
+"ticks": 0,
+"ahead_t": 137.00073999999998,
+"score_t": 137.25073999999998,
+"depth_t": 138.00073999999998
+},
+"no": {
+"best": 0.96,
+"ref": 0.95,
+"ticks": 1,
+"ahead_t": 5.03187,
+"score_t": 5.031870001736917,
+"depth_t": 33.388870000000004
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXPANAMAWEEKLY",
+"m": "KXPANAMAWEEKLY-26NOV22-T220",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 240.67234,
+"score_t": 240.67234,
+"depth_t": 240.67234
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 56.23728,
+"score_t": 56.23728000000047,
+"depth_t": 82.56528
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXPANAMAWEEKLY",
+"m": "KXPANAMAWEEKLY-26NOV22-T190",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.71,
+"ref": 0.7,
+"ticks": 1,
+"ahead_t": 1.67709,
+"score_t": 2.1115250119729705,
+"depth_t": 37.20296
+},
+"no": {
+"best": 0.26,
+"ref": 0.26,
+"ticks": 0,
+"ahead_t": 3.6986,
+"score_t": 3.7738384599876404,
+"depth_t": 35.48953
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXPANAMAWEEKLY",
+"m": "KXPANAMAWEEKLY-26NOV22-T180",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.94,
+"ref": 0.93,
+"ticks": 1,
+"ahead_t": 8.34732,
+"score_t": 8.597689822509341,
+"depth_t": 43.12832
+},
+"no": {
+"best": 0.04,
+"ref": 0.04,
+"ticks": 0,
+"ahead_t": 119.3745,
+"score_t": 119.9995,
+"depth_t": 123.3745
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXPANAMAWEEKLY",
+"m": "KXPANAMAWEEKLY-26NOV22-T195",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.42,
+"ref": 0.41,
+"ticks": 1,
+"ahead_t": 5.97371,
+"score_t": 6.955007085005904,
+"depth_t": 46.39827
+},
+"no": {
+"best": 0.56,
+"ref": 0.55,
+"ticks": 1,
+"ahead_t": 0.65401,
+"score_t": 0.6775281202136125,
+"depth_t": 27.9042
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXBABELMANDEBWEEKLY",
+"m": "KXBABELMANDEBWEEKLY-26NOV22-T190",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.41,
+"ref": 0.41,
+"ticks": 0,
+"ahead_t": 4.0061,
+"score_t": 4.047460213924216,
+"depth_t": 65.19024
+},
+"no": {
+"best": 0.55,
+"ref": 0.55,
+"ticks": 0,
+"ahead_t": 2.24217,
+"score_t": 2.266529375701965,
+"depth_t": 32.71517
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXBABELMANDEBWEEKLY",
+"m": "KXBABELMANDEBWEEKLY-26NOV22-T220",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.02,
+"ref": 0.02,
+"ticks": 0,
+"ahead_t": 164.13401000000002,
+"score_t": 164.68401,
+"depth_t": 165.23401
+},
+"no": {
+"best": 0.97,
+"ref": 0.97,
+"ticks": 0,
+"ahead_t": 8.26932,
+"score_t": 8.272601710147866,
+"depth_t": 35.55832
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXBABELMANDEBWEEKLY",
+"m": "KXBABELMANDEBWEEKLY-26NOV22-T195",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.32,
+"ref": 0.31,
+"ticks": 1,
+"ahead_t": 4.12573,
+"score_t": 4.165623388939574,
+"depth_t": 38.52922
+},
+"no": {
+"best": 0.62,
+"ref": 0.62,
+"ticks": 0,
+"ahead_t": 0.33100999999999997,
+"score_t": 0.7324183044506352,
+"depth_t": 35.37985
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXBABELMANDEBWEEKLY",
+"m": "KXBABELMANDEBWEEKLY-26NOV22-T180",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.65,
+"ref": 0.64,
+"ticks": 1,
+"ahead_t": 2.048,
+"score_t": 2.7512880224100416,
+"depth_t": 61.73532
+},
+"no": {
+"best": 0.32,
+"ref": 0.32,
+"ticks": 0,
+"ahead_t": 0.401,
+"score_t": 0.5175993950112164,
+"depth_t": 30.33823
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXBABELMANDEBWEEKLY",
+"m": "KXBABELMANDEBWEEKLY-26NOV22-T170",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.88,
+"ref": 0.88,
+"ticks": 0,
+"ahead_t": 1.88045,
+"score_t": 1.8866489843806744,
+"depth_t": 57.55812
+},
+"no": {
+"best": 0.1,
+"ref": 0.09,
+"ticks": 1,
+"ahead_t": 12.8079,
+"score_t": 13.0805484375,
+"depth_t": 19.7569
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXBABELMANDEBWEEKLY",
+"m": "KXBABELMANDEBWEEKLY-26NOV22-T230",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 298.683,
+"score_t": 298.683,
+"depth_t": 298.683
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 15.889629999999999,
+"score_t": 17.014649533804853,
+"depth_t": 44.09063
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXBABELMANDEBWEEKLY",
+"m": "KXBABELMANDEBWEEKLY-26NOV22-T200",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.12,
+"ref": 0.12,
+"ticks": 0,
+"ahead_t": 19.357830000000003,
+"score_t": 19.790311171875,
+"depth_t": 31.620060000000002
+},
+"no": {
+"best": 0.87,
+"ref": 0.85,
+"ticks": 2,
+"ahead_t": 1.96401,
+"score_t": 1.9640100041443855,
+"depth_t": 13.26501
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXBABELMANDEBWEEKLY",
+"m": "KXBABELMANDEBWEEKLY-26NOV22-T210",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.08,
+"ref": 0.07,
+"ticks": 1,
+"ahead_t": 4.09567,
+"score_t": 31.747545,
+"depth_t": 61.12267
+},
+"no": {
+"best": 0.91,
+"ref": 0.89,
+"ticks": 2,
+"ahead_t": 1.2362199999999999,
+"score_t": 1.749640527343965,
+"depth_t": 11.79988
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXBABELMANDEBWEEKLY",
+"m": "KXBABELMANDEBWEEKLY-26NOV22-T205",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.11,
+"ref": 0.1,
+"ticks": 1,
+"ahead_t": 21.728080000000002,
+"score_t": 22.115835859375,
+"depth_t": 30.031080000000003
+},
+"no": {
+"best": 0.88,
+"ref": 0.87,
+"ticks": 1,
+"ahead_t": 1.60075,
+"score_t": 1.6174168750000126,
+"depth_t": 13.25309
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXBABELMANDEBWEEKLY",
+"m": "KXBABELMANDEBWEEKLY-26NOV22-T175",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.82,
+"ref": 0.82,
+"ticks": 0,
+"ahead_t": 0.83278,
+"score_t": 1.502121600117858,
+"depth_t": 19.35661
+},
+"no": {
+"best": 0.17,
+"ref": 0.17,
+"ticks": 0,
+"ahead_t": 1.2530999999999999,
+"score_t": 1.5187065887451172,
+"depth_t": 9.67329
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXBABELMANDEBWEEKLY",
+"m": "KXBABELMANDEBWEEKLY-26NOV22-T185",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.47,
+"ref": 0.47,
+"ticks": 0,
+"ahead_t": 6.84814,
+"score_t": 7.410167634440101,
+"depth_t": 50.75372
+},
+"no": {
+"best": 0.51,
+"ref": 0.49,
+"ticks": 2,
+"ahead_t": 0.39747000000000005,
+"score_t": 0.3983563517694661,
+"depth_t": 28.41651
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXART",
+"m": "KXART-PHI19NOV26-900000",
+"target": 1000.0,
+"usd_day": 35.17241379310345,
+"yes": {
+"best": 0.03,
+"ref": 0.02,
+"ticks": 1,
+"ahead_t": 1.7132,
+"score_t": 2.37005,
+"depth_t": 3.0269
+},
+"no": {
+"best": 0.05,
+"ref": 0.02,
+"ticks": 3,
+"ahead_t": 0.33853,
+"score_t": 0.97878,
+"depth_t": 1.61903
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXART",
+"m": "KXART-CHR45A17NOV26-2000000",
+"target": 1000.0,
+"usd_day": 52.94117647058823,
+"yes": {
+"best": 0.13,
+"ref": 0.12,
+"ticks": 1,
+"ahead_t": 18.5685,
+"score_t": 18.9862177734375,
+"depth_t": 28.8045
+},
+"no": {
+"best": 0.79,
+"ref": 0.77,
+"ticks": 2,
+"ahead_t": 2.54457,
+"score_t": 2.6094994531287314,
+"depth_t": 12.290280000000001
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXART",
+"m": "KXART-PICBAI18NOV26-50000000",
+"target": 1000.0,
+"usd_day": 13.846153846153845,
+"yes": {
+"best": 0.35,
+"ref": 0.12,
+"ticks": 23,
+"ahead_t": 0.60297,
+"score_t": 2.6468342578125,
+"depth_t": 17.73997
+},
+"no": {
+"best": 0.59,
+"ref": 0.34,
+"ticks": 25,
+"ahead_t": 1.12011,
+"score_t": 1.1215109123599216,
+"depth_t": 3.09183
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXART",
+"m": "KXART-PHI18NOV26-1000000",
+"target": 1000.0,
+"usd_day": 35.17241379310345,
+"yes": {
+"best": 0.02,
+"ref": 0.01,
+"ticks": 1,
+"ahead_t": 4.274,
+"score_t": 4.274,
+"depth_t": 4.274
+},
+"no": {
+"best": 0.1,
+"ref": 0.09,
+"ticks": 1,
+"ahead_t": 0.54227,
+"score_t": 0.56607859375,
+"depth_t": 1.6322699999999999
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXART",
+"m": "KXART-PHI19NOV26-700000",
+"target": 1000.0,
+"usd_day": 35.17241379310345,
+"yes": {
+"best": 0.03,
+"ref": 0.02,
+"ticks": 1,
+"ahead_t": 1.98221,
+"score_t": 2.4822100000000002,
+"depth_t": 2.9822100000000002
+},
+"no": {
+"best": 0.03,
+"ref": 0.02,
+"ticks": 1,
+"ahead_t": 0.402,
+"score_t": 1.99437,
+"depth_t": 3.58674
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXART",
+"m": "KXART-CHR91320NOV26-500000",
+"target": 1000.0,
+"usd_day": 20.377358490566035,
+"yes": {
+"best": 0.43,
+"ref": 0.43,
+"ticks": 0,
+"ahead_t": 0.242,
+"score_t": 0.7783856422874476,
+"depth_t": 37.799800000000005
+},
+"no": {
+"best": 0.47,
+"ref": 0.47,
+"ticks": 0,
+"ahead_t": 0.85158,
+"score_t": 2.481195000000506,
+"depth_t": 23.38004
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXART",
+"m": "KXART-CHR34B19NOV26-50000000",
+"target": 1000.0,
+"usd_day": 26.34146341463415,
+"yes": {
+"best": 0.18,
+"ref": 0.18,
+"ticks": 0,
+"ahead_t": 9.04042,
+"score_t": 9.04197647277832,
+"depth_t": 30.88742
+},
+"no": {
+"best": 0.77,
+"ref": 0.77,
+"ticks": 0,
+"ahead_t": 23.228,
+"score_t": 24.537695400803052,
+"depth_t": 37.43239
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXART",
+"m": "KXART-PHI18NOV26-500000",
+"target": 1000.0,
+"usd_day": 35.17241379310345,
+"yes": {
+"best": 0.8,
+"ref": 0.79,
+"ticks": 1,
+"ahead_t": 0.52418,
+"score_t": 0.5241800000000071,
+"depth_t": 23.32018
+},
+"no": {
+"best": 0.05,
+"ref": 0.04,
+"ticks": 1,
+"ahead_t": 0.50801,
+"score_t": 0.633635,
+"depth_t": 1.51001
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXART",
+"m": "KXART-KOCHMON20NOV26-24000000",
+"target": 1000.0,
+"usd_day": 27.27272727272727,
+"yes": {
+"best": 0.09,
+"ref": 0.02,
+"ticks": 7,
+"ahead_t": 1.65796,
+"score_t": 2.347855,
+"depth_t": 3.03775
+},
+"no": {
+"best": 0.08,
+"ref": 0.02,
+"ticks": 6,
+"ahead_t": 1.627,
+"score_t": 2.1275,
+"depth_t": 2.628
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXART",
+"m": "KXART-CHR56B19NOV26-1500000",
+"target": 1000.0,
+"usd_day": 26.34146341463415,
+"yes": {
+"best": 0.17,
+"ref": 0.17,
+"ticks": 0,
+"ahead_t": 45.80865,
+"score_t": 46.80872534790039,
+"depth_t": 49.10065
+},
+"no": {
+"best": 0.34,
+"ref": 0.34,
+"ticks": 0,
+"ahead_t": 47.130849999999995,
+"score_t": 47.530850010103336,
+"depth_t": 57.54085
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXART",
+"m": "KXART-PHI17NOV26-250000",
+"target": 1000.0,
+"usd_day": 35.17241379310345,
+"yes": {
+"best": 0.89,
+"ref": 0.88,
+"ticks": 1,
+"ahead_t": 0.452,
+"score_t": 0.4520000000000024,
+"depth_t": 12.254
+},
+"no": {
+"best": 0.05,
+"ref": 0.04,
+"ticks": 1,
+"ahead_t": 0.51,
+"score_t": 0.635625,
+"depth_t": 1.512
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXART",
+"m": "KXART-CHR34B19NOV26-30000000",
+"target": 1000.0,
+"usd_day": 26.34146341463415,
+"yes": {
+"best": 0.91,
+"ref": 0.91,
+"ticks": 0,
+"ahead_t": 9.1774,
+"score_t": 9.177400000003018,
+"depth_t": 40.5674
+},
+"no": {
+"best": 0.08,
+"ref": 0.08,
+"ticks": 0,
+"ahead_t": 20.75871,
+"score_t": 21.4288896875,
+"depth_t": 31.04271
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXART",
+"m": "KXART-PHI17NOV26-650000",
+"target": 1000.0,
+"usd_day": 35.17241379310345,
+"yes": {
+"best": 0.16,
+"ref": 0.01,
+"ticks": 15,
+"ahead_t": 2.56727,
+"score_t": 2.56727,
+"depth_t": 2.56727
+},
+"no": {
+"best": 0.2,
+"ref": 0.08,
+"ticks": 12,
+"ahead_t": 0.46127999999999997,
+"score_t": 0.47881906249999995,
+"depth_t": 1.6572799999999999
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXART",
+"m": "KXART-CHR56B19NOV26-1750000",
+"target": 1000.0,
+"usd_day": 26.34146341463415,
+"yes": {
+"best": 0.2,
+"ref": 0.2,
+"ticks": 0,
+"ahead_t": 8.72066,
+"score_t": 8.940990321502687,
+"depth_t": 51.46431
+},
+"no": {
+"best": 0.74,
+"ref": 0.74,
+"ticks": 0,
+"ahead_t": 0.72334,
+"score_t": 1.3368400000009315,
+"depth_t": 39.90933999999999
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXART",
+"m": "KXART-CHR39A17NOV26-22000000",
+"target": 1000.0,
+"usd_day": 52.94117647058823,
+"yes": {
+"best": 0.14,
+"ref": 0.13,
+"ticks": 1,
+"ahead_t": 0.22002,
+"score_t": 0.28441068359375,
+"depth_t": 11.449539999999999
+},
+"no": {
+"best": 0.64,
+"ref": 0.09,
+"ticks": 55,
+"ahead_t": 0.44592000000000004,
+"score_t": 0.59879890625,
+"depth_t": 10.88092
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXART",
+"m": "KXART-CHR56B19NOV26-2000000",
+"target": 1000.0,
+"usd_day": 26.34146341463415,
+"yes": {
+"best": 0.14,
+"ref": 0.14,
+"ticks": 0,
+"ahead_t": 12.963959999999998,
+"score_t": 12.968376748046873,
+"depth_t": 22.621959999999998
+},
+"no": {
+"best": 0.81,
+"ref": 0.8,
+"ticks": 1,
+"ahead_t": 26.94647,
+"score_t": 27.34647000000093,
+"depth_t": 37.37447
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXART",
+"m": "KXART-CHR39A17NOV26-16000000",
+"target": 1000.0,
+"usd_day": 52.94117647058823,
+"yes": {
+"best": 0.23,
+"ref": 0.23,
+"ticks": 0,
+"ahead_t": 0.2,
+"score_t": 0.2318767909812927,
+"depth_t": 11.030040000000001
+},
+"no": {
+"best": 0.38,
+"ref": 0.09,
+"ticks": 29,
+"ahead_t": 0.38944999999999996,
+"score_t": 0.5442064062499999,
+"depth_t": 10.77383
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXART",
+"m": "KXART-CHR94120NOV26-350000",
+"target": 1000.0,
+"usd_day": 20.377358490566035,
+"yes": {
+"best": 0.38,
+"ref": 0.38,
+"ticks": 0,
+"ahead_t": 22.70405,
+"score_t": 23.10405000142268,
+"depth_t": 43.03705
+},
+"no": {
+"best": 0.49,
+"ref": 0.49,
+"ticks": 0,
+"ahead_t": 0.318,
+"score_t": 0.4041225585938792,
+"depth_t": 12.726
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXART",
+"m": "KXART-PICBAI18NOV26-30000000",
+"target": 1000.0,
+"usd_day": 13.846153846153845,
+"yes": {
+"best": 0.96,
+"ref": 0.6,
+"ticks": 36,
+"ahead_t": 1.29239,
+"score_t": 1.2923900000801523,
+"depth_t": 4.44439
+},
+"no": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 5.002,
+"score_t": 5.002,
+"depth_t": 5.002
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXART",
+"m": "KXART-PHI6NOV26-4000000",
+"target": 1000.0,
+"usd_day": 35.17241379310345,
+"yes": {
+"best": 0.04,
+"ref": 0.04,
+"ticks": 0,
+"ahead_t": 1.0712899999999999,
+"score_t": 2.1188625,
+"depth_t": 5.61558
+},
+"no": {
+"best": 0.06,
+"ref": 0.06,
+"ticks": 0,
+"ahead_t": 1.259,
+"score_t": 1.4930562500000002,
+"depth_t": 2.7618
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXART",
+"m": "KXART-CHR41B19NOV26-3000000",
+"target": 1000.0,
+"usd_day": 26.34146341463415,
+"yes": {
+"best": 0.3,
+"ref": 0.3,
+"ticks": 0,
+"ahead_t": 0.318,
+"score_t": 0.41071287014111874,
+"depth_t": 21.2256
+},
+"no": {
+"best": 0.63,
+"ref": 0.63,
+"ticks": 0,
+"ahead_t": 24.54205,
+"score_t": 24.94205,
+"depth_t": 34.92705
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXART",
+"m": "KXART-PHI11NOV26-2000000",
+"target": 1000.0,
+"usd_day": 35.17241379310345,
+"yes": {
+"best": 0.41,
+"ref": 0.4,
+"ticks": 1,
+"ahead_t": 0.43001999999999996,
+"score_t": 0.4300200000092841,
+"depth_t": 2.57702
+},
+"no": {
+"best": 0.07,
+"ref": 0.06,
+"ticks": 1,
+"ahead_t": 1.51502,
+"score_t": 1.5785574999999998,
+"depth_t": 2.80322
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXART",
+"m": "KXART-CHR71920NOV26-900000",
+"target": 1000.0,
+"usd_day": 20.377358490566035,
+"yes": {
+"best": 0.4,
+"ref": 0.4,
+"ticks": 0,
+"ahead_t": 20.922040000000003,
+"score_t": 20.922040000064722,
+"depth_t": 30.50504
+},
+"no": {
+"best": 0.39,
+"ref": 0.39,
+"ticks": 0,
+"ahead_t": 40.45,
+"score_t": 40.45000000620623,
+"depth_t": 49.986
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXART",
+"m": "KXART-KLILIT18NOV26-130000000",
+"target": 1000.0,
+"usd_day": 13.846153846153845,
+"yes": {
+"best": 0.04,
+"ref": 0.04,
+"ticks": 0,
+"ahead_t": 4.467,
+"score_t": 9.096,
+"depth_t": 14.725
+},
+"no": {
+"best": 0.95,
+"ref": 0.95,
+"ticks": 0,
+"ahead_t": 7.647,
+"score_t": 8.08513,
+"depth_t": 21.204759999999997
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXART",
+"m": "KXART-CHR8A17NOV26-20000000",
+"target": 1000.0,
+"usd_day": 52.94117647058823,
+"yes": {
+"best": 0.66,
+"ref": 0.26,
+"ticks": 40,
+"ahead_t": 0.39759,
+"score_t": 0.3975918833279609,
+"depth_t": 12.07359
+},
+"no": {
+"best": 0.08,
+"ref": 0.05,
+"ticks": 3,
+"ahead_t": 2.59748,
+"score_t": 5.053707500000001,
+"depth_t": 12.673639999999999
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-YOU26NOV22-11.0M",
+"target": 1000.0,
+"usd_day": 12.94953246126048,
+"yes": {
+"best": 0.02,
+"ref": 0.01,
+"ticks": 1,
+"ahead_t": 8.738,
+"score_t": 8.738,
+"depth_t": 8.738
+},
+"no": {
+"best": 0.21,
+"ref": 0.21,
+"ticks": 0,
+"ahead_t": 3.59084,
+"score_t": 3.766340128746033,
+"depth_t": 4.29584
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-DRA26NOV22-11.25M",
+"target": 1000.0,
+"usd_day": 12.949381507164127,
+"yes": {
+"best": 0.51,
+"ref": 0.51,
+"ticks": 0,
+"ahead_t": 2.76208,
+"score_t": 3.3272412500000295,
+"depth_t": 4.56109
+},
+"no": {
+"best": 0.03,
+"ref": null,
+"depth_t": 0.001
+},
+"valid": false
+},
+{
+"k": 0,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-MOR26NOV22-4.5M",
+"target": 1000.0,
+"usd_day": 12.949446201345904,
+"yes": {
+"best": 0.09,
+"ref": 0.08,
+"ticks": 1,
+"ahead_t": 6.925,
+"score_t": 6.9289140625,
+"depth_t": 7.326
+},
+"no": {
+"best": 0.15,
+"ref": 0.14,
+"ticks": 1,
+"ahead_t": 3.673,
+"score_t": 3.6731583251953124,
+"depth_t": 3.778
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-DRA26NOV22-14.25M",
+"target": 1000.0,
+"usd_day": 12.949403071819562,
+"yes": {
+"best": 0.02,
+"ref": 0.02,
+"ticks": 0,
+"ahead_t": 1.43,
+"score_t": 2.08,
+"depth_t": 2.73
+},
+"no": {
+"best": 0.2,
+"ref": 0.2,
+"ticks": 0,
+"ahead_t": 1.47,
+"score_t": 1.4700202808380127,
+"depth_t": 2.632
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-DRA26NOV22-14.5M",
+"target": 1000.0,
+"usd_day": 12.949403071819562,
+"yes": {
+"best": 0.02,
+"ref": 0.01,
+"ticks": 1,
+"ahead_t": 4.623,
+"score_t": 4.623,
+"depth_t": 4.623
+},
+"no": {
+"best": 0.2,
+"ref": 0.2,
+"ticks": 0,
+"ahead_t": 1.47,
+"score_t": 1.4711060428619385,
+"depth_t": 3.622
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-JUS26NOV22-14.25M",
+"target": 1000.0,
+"usd_day": 12.94942463654682,
+"yes": {
+"best": 0.47,
+"ref": 0.47,
+"ticks": 0,
+"ahead_t": 2.709,
+"score_t": 2.70900000000001,
+"depth_t": 3.17
+},
+"no": {
+"best": 0.03,
+"ref": 0.01,
+"ticks": 2,
+"ahead_t": 5.0288,
+"score_t": 5.0288,
+"depth_t": 5.0288
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-BAD26NOV22-25.5M",
+"target": 1000.0,
+"usd_day": 12.949359942580513,
+"yes": {
+"best": 0.36,
+"ref": 0.36,
+"ticks": 0,
+"ahead_t": 3.052,
+"score_t": 3.5211250076531724,
+"depth_t": 6.522
+},
+"no": {
+"best": 0.03,
+"ref": 0.01,
+"ticks": 2,
+"ahead_t": 4.00946,
+"score_t": 4.00946,
+"depth_t": 4.00946
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-KAT26NOV22-16.0M",
+"target": 1000.0,
+"usd_day": 12.94942463654682,
+"yes": {
+"best": 0.25,
+"ref": 0.25,
+"ticks": 0,
+"ahead_t": 2.865,
+"score_t": 2.8650000357627867,
+"depth_t": 3.34
+},
+"no": {
+"best": 0.03,
+"ref": 0.01,
+"ticks": 2,
+"ahead_t": 2.7708000000000004,
+"score_t": 2.7708000000000004,
+"depth_t": 2.7708000000000004
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-KAT26NOV22-21.0M",
+"target": 1000.0,
+"usd_day": 12.94942463654682,
+"yes": {
+"best": 0.02,
+"ref": 0.01,
+"ticks": 1,
+"ahead_t": 5.564,
+"score_t": 5.564,
+"depth_t": 5.564
+},
+"no": {
+"best": 0.2,
+"ref": 0.2,
+"ticks": 0,
+"ahead_t": 1.775,
+"score_t": 1.775004608154297,
+"depth_t": 2.929
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-TAY26NOV22-13.8M",
+"target": 1000.0,
+"usd_day": 12.949489331159542,
+"yes": {
+"best": 0.16,
+"ref": 0.1,
+"ticks": 6,
+"ahead_t": 0.74,
+"score_t": 1.749216796875,
+"depth_t": 7.954
+},
+"no": {
+"best": 0.21,
+"ref": 0.21,
+"ticks": 0,
+"ahead_t": 2.529,
+"score_t": 2.529024307479858,
+"depth_t": 12.74253
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-TAY26NOV22-14.2M",
+"target": 1000.0,
+"usd_day": 12.949489331159542,
+"yes": {
+"best": 0.18,
+"ref": 0.07,
+"ticks": 11,
+"ahead_t": 2.647,
+"score_t": 2.6519375,
+"depth_t": 2.948
+},
+"no": {
+"best": 0.21,
+"ref": 0.2,
+"ticks": 1,
+"ahead_t": 2.425,
+"score_t": 2.425052984237671,
+"depth_t": 13.14
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-TAY26NOV22-13.6M",
+"target": 1000.0,
+"usd_day": 12.949489331159542,
+"yes": {
+"best": 0.35,
+"ref": 0.35,
+"ticks": 0,
+"ahead_t": 3.09,
+"score_t": 3.0900001942459494,
+"depth_t": 26.226
+},
+"no": {
+"best": 0.12,
+"ref": 0.11,
+"ticks": 1,
+"ahead_t": 4.40912,
+"score_t": 4.40931921875,
+"depth_t": 4.51012
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-FUT26NOV22-5.0M",
+"target": 1000.0,
+"usd_day": 12.949403071819562,
+"yes": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 3.499,
+"score_t": 3.4990000000000183,
+"depth_t": 3.96
+},
+"no": null,
+"valid": false
+},
+{
+"k": 0,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-MOR26NOV22-5.75M",
+"target": 1000.0,
+"usd_day": 12.949446201345904,
+"yes": {
+"best": 0.06,
+"ref": 0.06,
+"ticks": 0,
+"ahead_t": 2.443,
+"score_t": 3.4642246875000002,
+"depth_t": 4.96219
+},
+"no": {
+"best": 0.93,
+"ref": 0.79,
+"ticks": 14,
+"ahead_t": 0.9517599999999999,
+"score_t": 0.9517599999999999,
+"depth_t": 1.07476
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-JUS26NOV22-15.0M",
+"target": 1000.0,
+"usd_day": 12.94942463654682,
+"yes": {
+"best": 0.41,
+"ref": 0.4,
+"ticks": 1,
+"ahead_t": 0.852,
+"score_t": 0.8520039367702411,
+"depth_t": 1.259
+},
+"no": {
+"best": 0.03,
+"ref": null,
+"depth_t": 0.121
+},
+"valid": false
+},
+{
+"k": 0,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-WEE26NOV22-20.0M",
+"target": 1000.0,
+"usd_day": 12.949510896174099,
+"yes": {
+"best": 0.1,
+"ref": 0.1,
+"ticks": 0,
+"ahead_t": 3.0,
+"score_t": 3.5010546875,
+"depth_t": 5.42
+},
+"no": {
+"best": 0.03,
+"ref": null,
+"depth_t": 0.101
+},
+"valid": false
+},
+{
+"k": 0,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-DRA26NOV22-13.0M",
+"target": 1000.0,
+"usd_day": 12.949381507164127,
+"yes": {
+"best": 0.02,
+"ref": 0.01,
+"ticks": 1,
+"ahead_t": 26.325,
+"score_t": 26.325,
+"depth_t": 26.325
+},
+"no": {
+"best": 0.03,
+"ref": 0.02,
+"ticks": 1,
+"ahead_t": 16.85,
+"score_t": 16.85,
+"depth_t": 16.85
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-TAY26NOV22-14.9M",
+"target": 1000.0,
+"usd_day": 12.949510896174099,
+"yes": {
+"best": 0.11,
+"ref": 0.02,
+"ticks": 9,
+"ahead_t": 3.54496,
+"score_t": 3.69546,
+"depth_t": 3.84596
+},
+"no": {
+"best": 0.19,
+"ref": 0.18,
+"ticks": 1,
+"ahead_t": 2.767,
+"score_t": 2.7672585678100585,
+"depth_t": 16.902
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-TAY26NOV22-13.2M",
+"target": 1000.0,
+"usd_day": 12.949489331159542,
+"yes": {
+"best": 0.51,
+"ref": 0.51,
+"ticks": 0,
+"ahead_t": 0.582,
+"score_t": 2.1051250000000006,
+"depth_t": 4.293
+},
+"no": {
+"best": 0.03,
+"ref": 0.01,
+"ticks": 2,
+"ahead_t": 6.2588,
+"score_t": 6.2588,
+"depth_t": 6.2588
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-WEE26NOV22-23.0M",
+"target": 1000.0,
+"usd_day": 12.94953246126048,
+"yes": {
+"best": 0.02,
+"ref": 0.01,
+"ticks": 1,
+"ahead_t": 4.623,
+"score_t": 4.623,
+"depth_t": 4.623
+},
+"no": {
+"best": 0.2,
+"ref": 0.2,
+"ticks": 0,
+"ahead_t": 1.47,
+"score_t": 1.470012731552124,
+"depth_t": 2.63
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-WEE26NOV22-25.0M",
+"target": 1000.0,
+"usd_day": 12.94953246126048,
+"yes": {
+"best": 0.02,
+"ref": 0.01,
+"ticks": 1,
+"ahead_t": 6.539,
+"score_t": 6.539,
+"depth_t": 6.539
+},
+"no": {
+"best": 0.2,
+"ref": 0.2,
+"ticks": 0,
+"ahead_t": 1.47,
+"score_t": 1.4700046672821045,
+"depth_t": 2.622
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-BAD26NOV22-23.0M",
+"target": 1000.0,
+"usd_day": 12.949359942580513,
+"yes": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 2.601,
+"score_t": 3.032250000000018,
+"depth_t": 4.971
+},
+"no": null,
+"valid": false
+},
+{
+"k": 0,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-TAY26NOV22-13.5M",
+"target": 1000.0,
+"usd_day": 12.949489331159542,
+"yes": {
+"best": 0.4,
+"ref": 0.4,
+"ticks": 0,
+"ahead_t": 2.368,
+"score_t": 2.538500190846655,
+"depth_t": 24.895
+},
+"no": {
+"best": 0.08,
+"ref": 0.07,
+"ticks": 1,
+"ahead_t": 6.224,
+"score_t": 6.227234375,
+"depth_t": 6.327
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-WEE26NOV22-13.0M",
+"target": 1000.0,
+"usd_day": 12.949510896174099,
+"yes": {
+"best": 0.9,
+"ref": 0.9,
+"ticks": 0,
+"ahead_t": 1.611,
+"score_t": 1.6110000000009312,
+"depth_t": 22.477
+},
+"no": null,
+"valid": false
+},
+{
+"k": 0,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-DRA26NOV22-13.25M",
+"target": 1000.0,
+"usd_day": 12.949381507164127,
+"yes": {
+"best": 0.02,
+"ref": 0.01,
+"ticks": 1,
+"ahead_t": 26.325,
+"score_t": 26.325,
+"depth_t": 26.325
+},
+"no": {
+"best": 0.03,
+"ref": 0.02,
+"ticks": 1,
+"ahead_t": 16.85,
+"score_t": 16.85,
+"depth_t": 16.85
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-IMA",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 2.81,
+"score_t": 2.81,
+"depth_t": 2.81
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 64.09386,
+"score_t": 64.10538353248639,
+"depth_t": 94.25012
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-USH",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 1.5274400000000001,
+"score_t": 1.5274400000000001,
+"depth_t": 1.5274400000000001
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 54.75815,
+"score_t": 54.75815000972728,
+"depth_t": 81.88243000000001
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-PINK",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 2.566,
+"score_t": 2.566,
+"depth_t": 2.566
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 64.97557,
+"score_t": 65.97007838895965,
+"depth_t": 92.03854
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-DAN",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 14.956,
+"score_t": 46.04350693262563,
+"depth_t": 107.72903
+},
+"valid": false
+},
+{
+"k": 0,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-BIG",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 2.693,
+"score_t": 2.693,
+"depth_t": 2.693
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 65.82119999999999,
+"score_t": 65.82120266795145,
+"depth_t": 100.30923
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-BEY",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 7.83004,
+"score_t": 36.0889770713938,
+"depth_t": 92.90583000000001
+},
+"valid": false
+},
+{
+"k": 0,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-NASX",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 1.64773,
+"score_t": 1.64773,
+"depth_t": 1.64773
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 68.37043,
+"score_t": 68.84493001988656,
+"depth_t": 100.00101999999998
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-ARI",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 2.0,
+"score_t": 2.0,
+"depth_t": 2.0
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 63.076269999999994,
+"score_t": 63.076273862382365,
+"depth_t": 94.15403
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-CHA",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 2.81,
+"score_t": 2.81,
+"depth_t": 2.81
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 65.45616,
+"score_t": 65.47370060119673,
+"depth_t": 92.64066
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-SZA",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 8.34797,
+"score_t": 8.826351798527755,
+"depth_t": 34.621739999999996
+},
+"no": null,
+"valid": false
+},
+{
+"k": 0,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-FOO",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 1.79703,
+"score_t": 1.79703,
+"depth_t": 1.79703
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 64.34486,
+"score_t": 64.34486001918775,
+"depth_t": 92.53298
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-KAT",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 2.80747,
+"score_t": 2.80747,
+"depth_t": 2.80747
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 65.02003,
+"score_t": 65.08159407352632,
+"depth_t": 95.97969
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-RIH",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 1.9477200000000001,
+"score_t": 1.9477200000000001,
+"depth_t": 1.9477200000000001
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 77.94494,
+"score_t": 77.94533477090953,
+"depth_t": 107.92457
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-TIM",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": null,
+"depth_t": 0.03463
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 79.88008,
+"score_t": 79.88008002825426,
+"depth_t": 118.93618000000001
+},
+"valid": false
+},
+{
+"k": 0,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-LOG",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 15.87749,
+"score_t": 38.37431500957167,
+"depth_t": 86.6496
+},
+"valid": false
+},
+{
+"k": 0,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-TRI",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 7.87346,
+"score_t": 38.33188318076171,
+"depth_t": 98.73351
+},
+"valid": false
+},
+{
+"k": 0,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-SAM",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 2.79221,
+"score_t": 2.79221,
+"depth_t": 2.79221
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 53.099,
+"score_t": 53.0990058594082,
+"depth_t": 77.291
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-MIL",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 3.16002,
+"score_t": 40.592875276981026,
+"depth_t": 105.04369
+},
+"valid": false
+},
+{
+"k": 0,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-PEA",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 3.1182600000000003,
+"score_t": 3.1182600000000003,
+"depth_t": 3.1182600000000003
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 53.84449,
+"score_t": 53.84450144544601,
+"depth_t": 90.8682
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-COL",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 1.999,
+"score_t": 1.999,
+"depth_t": 1.999
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 60.996010000000005,
+"score_t": 60.996012071563676,
+"depth_t": 89.149
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-BAB",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 6.22743,
+"score_t": 6.22743,
+"depth_t": 6.22743
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 39.517410000000005,
+"score_t": 62.220477710484204,
+"depth_t": 121.72511
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-SHA",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 3.8833200000000003,
+"score_t": 3.8833200000000003,
+"depth_t": 3.8833200000000003
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 62.0565,
+"score_t": 62.33775000972369,
+"depth_t": 91.95459
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-MEG",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 13.10242,
+"score_t": 43.788446483307084,
+"depth_t": 111.55591
+},
+"valid": false
+},
+{
+"k": 0,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-MARO",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 5.43947,
+"score_t": 33.19472554041064,
+"depth_t": 88.66354000000001
+},
+"valid": false
+},
+{
+"k": 0,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-POL",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 1.95095,
+"score_t": 1.95095,
+"depth_t": 1.95095
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 70.69369999999999,
+"score_t": 70.69370245105765,
+"depth_t": 98.97764
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV14-3",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 5.05401,
+"score_t": 5.180577500000015,
+"depth_t": 16.42752
+},
+"valid": false
+},
+{
+"k": 0,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV21-0",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.29,
+"ref": 0.28,
+"ticks": 1,
+"ahead_t": 0.7841,
+"score_t": 0.86545586412251,
+"depth_t": 38.9581
+},
+"no": {
+"best": 0.68,
+"ref": 0.65,
+"ticks": 3,
+"ahead_t": 0.5714199999999999,
+"score_t": 0.5723106255644996,
+"depth_t": 18.02577
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV21-4",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.02,
+"ref": 0.02,
+"ticks": 0,
+"ahead_t": 11.90001,
+"score_t": 12.678635,
+"depth_t": 13.45726
+},
+"no": {
+"best": 0.97,
+"ref": 0.97,
+"ticks": 0,
+"ahead_t": 15.76114,
+"score_t": 16.69919562500002,
+"depth_t": 50.038050000000005
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV14-0",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 2.90554,
+"score_t": 2.9716768750141593,
+"depth_t": 18.11399
+},
+"valid": false
+},
+{
+"k": 0,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV07-4",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 3.48798,
+"score_t": 4.213332500000001,
+"depth_t": 7.34038
+},
+"valid": false
+},
+{
+"k": 0,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV07-2",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 3.1487,
+"score_t": 7.6172675,
+"depth_t": 14.63953
+},
+"valid": false
+},
+{
+"k": 0,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV21-1",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.16,
+"ref": 0.16,
+"ticks": 0,
+"ahead_t": 0.868,
+"score_t": 0.8906873437499999,
+"depth_t": 4.67824
+},
+"no": {
+"best": 0.81,
+"ref": 0.81,
+"ticks": 0,
+"ahead_t": 0.76501,
+"score_t": 0.9396460386192826,
+"depth_t": 26.43518
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV14-1",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 3.5075,
+"score_t": 11.634135006998802,
+"depth_t": 31.861729999999998
+},
+"valid": false
+},
+{
+"k": 0,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV21-2",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.08,
+"ref": 0.08,
+"ticks": 0,
+"ahead_t": 4.31,
+"score_t": 4.42933375,
+"depth_t": 6.22596
+},
+"no": {
+"best": 0.9,
+"ref": 0.9,
+"ticks": 0,
+"ahead_t": 1.66263,
+"score_t": 1.7001300281349496,
+"depth_t": 27.87863
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV07-3",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 3.9794699999999996,
+"score_t": 8.446475,
+"depth_t": 15.28848
+},
+"valid": false
+},
+{
+"k": 0,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV07-0",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 2.18748,
+"score_t": 2.705827856674194,
+"depth_t": 7.32003
+},
+"valid": false
+},
+{
+"k": 0,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV21-3",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.02,
+"ref": 0.02,
+"ticks": 0,
+"ahead_t": 17.941110000000002,
+"score_t": 18.26263,
+"depth_t": 18.58415
+},
+"no": {
+"best": 0.97,
+"ref": 0.97,
+"ticks": 0,
+"ahead_t": 5.4106499999999995,
+"score_t": 5.434404578048829,
+"depth_t": 33.69425
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV07-1",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 6.486020000000001,
+"score_t": 10.669716089477555,
+"depth_t": 17.925690000000003
+},
+"valid": false
+},
+{
+"k": 0,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV14-2",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 5.89591,
+"score_t": 6.433415,
+"depth_t": 19.84691
+},
+"valid": false
+},
+{
+"k": 0,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV14-4",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 3.2849899999999996,
+"score_t": 3.42327625,
+"depth_t": 14.67925
+},
+"valid": false
+},
+{
+"k": 0,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28AZ-MKEL",
+"target": 1000.0,
+"usd_day": 7.150897172747136,
+"yes": {
+"best": 0.074,
+"ref": 0.074,
+"ticks": 0,
+"ahead_t": 60.7795,
+"score_t": 60.9529375,
+"depth_t": 64.3795
+},
+"no": {
+"best": 0.92,
+"ref": 0.92,
+"ticks": 0,
+"ahead_t": 0.7538400000000001,
+"score_t": 0.9100900001300678,
+"depth_t": 80.39384
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28AR-KHAR",
+"target": 1000.0,
+"usd_day": 7.150897172747136,
+"yes": {
+"best": 0.049,
+"ref": 0.049,
+"ticks": 0,
+"ahead_t": 386.871,
+"score_t": 386.996,
+"depth_t": 388.871
+},
+"no": {
+"best": 0.916,
+"ref": 0.916,
+"ticks": 0,
+"ahead_t": 1.45668,
+"score_t": 1.9566800000633855,
+"depth_t": 93.95667999999999
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28AL-PBUT",
+"target": 1000.0,
+"usd_day": 7.150897172747136,
+"yes": {
+"best": 0.066,
+"ref": 0.066,
+"ticks": 0,
+"ahead_t": 117.229,
+"score_t": 143.3048125,
+"depth_t": 172.365
+},
+"no": {
+"best": 0.916,
+"ref": 0.916,
+"ticks": 0,
+"ahead_t": 0.5,
+"score_t": 0.9360000000028491,
+"depth_t": 83.116
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28AZ-AELS",
+"target": 1000.0,
+"usd_day": 7.150897172747136,
+"yes": {
+"best": 0.02,
+"ref": 0.02,
+"ticks": 0,
+"ahead_t": 853.354,
+"score_t": 853.854,
+"depth_t": 854.354
+},
+"no": {
+"best": 0.956,
+"ref": 0.956,
+"ticks": 0,
+"ahead_t": 0.92472,
+"score_t": 1.6372200000000001,
+"depth_t": 82.94872
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28RI-MKEL",
+"target": 1000.0,
+"usd_day": 7.150719623925116,
+"yes": {
+"best": 0.021,
+"ref": 0.021,
+"ticks": 0,
+"ahead_t": 620.737,
+"score_t": 621.237,
+"depth_t": 621.737
+},
+"no": {
+"best": 0.942,
+"ref": 0.942,
+"ticks": 0,
+"ahead_t": 0.8015,
+"score_t": 1.0515000000106558,
+"depth_t": 96.2995
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28IA-GNEW",
+"target": 1000.0,
+"usd_day": 7.150849825532506,
+"yes": {
+"best": 0.13,
+"ref": 0.13,
+"ticks": 0,
+"ahead_t": 16.97976,
+"score_t": 17.0129465234375,
+"depth_t": 21.995759999999997
+},
+"no": {
+"best": 0.84,
+"ref": 0.84,
+"ticks": 0,
+"ahead_t": 1.49195,
+"score_t": 1.9919500000878954,
+"depth_t": 97.76395
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28RI-ABES",
+"target": 1000.0,
+"usd_day": 7.150719623925116,
+"yes": {
+"best": 0.049,
+"ref": 0.049,
+"ticks": 0,
+"ahead_t": 358.17,
+"score_t": 358.26375,
+"depth_t": 360.17
+},
+"no": {
+"best": 0.944,
+"ref": 0.944,
+"ticks": 0,
+"ahead_t": 0.3245,
+"score_t": 0.693625,
+"depth_t": 22.8055
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28WV-WMOO",
+"target": 1000.0,
+"usd_day": 7.150672279061607,
+"yes": {
+"best": 0.02,
+"ref": 0.02,
+"ticks": 0,
+"ahead_t": 778.765,
+"score_t": 779.265,
+"depth_t": 779.765
+},
+"no": {
+"best": 0.936,
+"ref": 0.936,
+"ticks": 0,
+"ahead_t": 2.6093699999999997,
+"score_t": 2.659370000040834,
+"depth_t": 81.95437
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28AK-PBUT",
+"target": 1000.0,
+"usd_day": 7.150909009648761,
+"yes": {
+"best": 0.059,
+"ref": 0.059,
+"ticks": 0,
+"ahead_t": 304.96474,
+"score_t": 305.0929275,
+"depth_t": 309.06674
+},
+"no": {
+"best": 0.94,
+"ref": 0.94,
+"ticks": 0,
+"ahead_t": 1.2460799999999999,
+"score_t": 1.3710799999999999,
+"depth_t": 25.601080000000003
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28ND-JSHA",
+"target": 1000.0,
+"usd_day": 7.1507669694155735,
+"yes": {
+"best": 0.049,
+"ref": 0.049,
+"ticks": 0,
+"ahead_t": 375.884,
+"score_t": 376.009,
+"depth_t": 377.884
+},
+"no": {
+"best": 0.917,
+"ref": 0.917,
+"ticks": 0,
+"ahead_t": 1.5143199999999999,
+"score_t": 2.514320000044253,
+"depth_t": 83.19632
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28CT-RWAR",
+"target": 1000.0,
+"usd_day": 7.150885335884698,
+"yes": {
+"best": 0.039,
+"ref": 0.039,
+"ticks": 0,
+"ahead_t": 406.2782,
+"score_t": 406.8407,
+"depth_t": 407.7157
+},
+"no": {
+"best": 0.94,
+"ref": 0.939,
+"ticks": 0,
+"ahead_t": 2.1641999999999997,
+"score_t": 2.9232000000179594,
+"depth_t": 88.6802
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28SD-PBUT",
+"target": 1000.0,
+"usd_day": 7.150719623925116,
+"yes": {
+"best": 0.059,
+"ref": 0.059,
+"ticks": 0,
+"ahead_t": 286.045,
+"score_t": 286.18075,
+"depth_t": 290.389
+},
+"no": {
+"best": 0.923,
+"ref": 0.923,
+"ticks": 0,
+"ahead_t": 0.8959,
+"score_t": 1.3959000000095012,
+"depth_t": 90.2059
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28WY-RWAR",
+"target": 1000.0,
+"usd_day": 7.150672279061607,
+"yes": {
+"best": 0.052,
+"ref": 0.052,
+"ticks": 0,
+"ahead_t": 132.36106,
+"score_t": 167.97906,
+"depth_t": 204.47206
+},
+"no": {
+"best": 0.931,
+"ref": 0.931,
+"ticks": 0,
+"ahead_t": 2.58171,
+"score_t": 2.6317100000180162,
+"depth_t": 87.14071000000001
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28MI-AELS",
+"target": 1000.0,
+"usd_day": 7.150802478944859,
+"yes": {
+"best": 0.049,
+"ref": 0.049,
+"ticks": 0,
+"ahead_t": 80.365,
+"score_t": 84.02184375,
+"depth_t": 145.591
+},
+"no": {
+"best": 0.924,
+"ref": 0.924,
+"ticks": 0,
+"ahead_t": 3.8840100000000004,
+"score_t": 3.8840100000000004,
+"depth_t": 103.12101
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28WV-KHAR",
+"target": 1000.0,
+"usd_day": 7.150672279061607,
+"yes": {
+"best": 0.05,
+"ref": 0.05,
+"ticks": 0,
+"ahead_t": 364.8816,
+"score_t": 365.133225,
+"depth_t": 368.9076
+},
+"no": {
+"best": 0.91,
+"ref": 0.91,
+"ticks": 0,
+"ahead_t": 2.1052600000000004,
+"score_t": 2.1052600000610093,
+"depth_t": 83.39725999999999
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28IL-ABES",
+"target": 1000.0,
+"usd_day": 7.150837988826815,
+"yes": {
+"best": 0.049,
+"ref": 0.049,
+"ticks": 0,
+"ahead_t": 366.178,
+"score_t": 366.27175,
+"depth_t": 368.178
+},
+"no": {
+"best": 0.94,
+"ref": 0.94,
+"ticks": 0,
+"ahead_t": 1.36648,
+"score_t": 1.616480000010414,
+"depth_t": 80.18448
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28DE-AELS",
+"target": 1000.0,
+"usd_day": 7.150873499061447,
+"yes": {
+"best": 0.02,
+"ref": 0.02,
+"ticks": 0,
+"ahead_t": 863.304,
+"score_t": 863.804,
+"depth_t": 864.304
+},
+"no": {
+"best": 0.96,
+"ref": 0.96,
+"ticks": 0,
+"ahead_t": 0.743,
+"score_t": 0.94,
+"depth_t": 77.555
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28AL-JSHA",
+"target": 1000.0,
+"usd_day": 7.150897172747136,
+"yes": {
+"best": 0.061,
+"ref": 0.061,
+"ticks": 0,
+"ahead_t": 123.188,
+"score_t": 149.34661499999999,
+"depth_t": 178.29273999999998
+},
+"no": {
+"best": 0.915,
+"ref": 0.915,
+"ticks": 0,
+"ahead_t": 0.536,
+"score_t": 2.2770000000306614,
+"depth_t": 93.317
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28TX-AELS",
+"target": 1000.0,
+"usd_day": 7.150707787650463,
+"yes": {
+"best": 0.039,
+"ref": 0.039,
+"ticks": 0,
+"ahead_t": 242.35,
+"score_t": 265.25275,
+"depth_t": 334.461
+},
+"no": {
+"best": 0.937,
+"ref": 0.937,
+"ticks": 0,
+"ahead_t": 1.13088,
+"score_t": 2.1308800000000003,
+"depth_t": 83.79388
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28IA-PBUT",
+"target": 1000.0,
+"usd_day": 7.150849825532506,
+"yes": {
+"best": 0.076,
+"ref": 0.076,
+"ticks": 0,
+"ahead_t": 103.45,
+"score_t": 109.222953125,
+"depth_t": 180.378
+},
+"no": {
+"best": 0.917,
+"ref": 0.89,
+"ticks": 3,
+"ahead_t": 2.2847399999999998,
+"score_t": 2.2847400001160043,
+"depth_t": 95.70174
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28WV-JOSS",
+"target": 1000.0,
+"usd_day": 7.150672279061607,
+"yes": {
+"best": 0.24,
+"ref": 0.24,
+"ticks": 0,
+"ahead_t": 1.87796,
+"score_t": 2.1279625835037232,
+"depth_t": 6.76196
+},
+"no": {
+"best": 0.72,
+"ref": 0.72,
+"ticks": 0,
+"ahead_t": 1.67198,
+"score_t": 1.7969800000200744,
+"depth_t": 22.99298
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28NE-AELS",
+"target": 1000.0,
+"usd_day": 7.1507669694155735,
+"yes": {
+"best": 0.02,
+"ref": 0.02,
+"ticks": 0,
+"ahead_t": 882.221,
+"score_t": 882.721,
+"depth_t": 883.221
+},
+"no": {
+"best": 0.96,
+"ref": 0.96,
+"ticks": 0,
+"ahead_t": 0.8640399999999999,
+"score_t": 1.06854,
+"depth_t": 78.69103999999999
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28NY-GNEW",
+"target": 1000.0,
+"usd_day": 7.150743296591976,
+"yes": {
+"best": 0.13,
+"ref": 0.13,
+"ticks": 0,
+"ahead_t": 17.37604,
+"score_t": 17.440299765625,
+"depth_t": 22.03004
+},
+"no": {
+"best": 0.86,
+"ref": 0.86,
+"ticks": 0,
+"ahead_t": 1.018,
+"score_t": 1.1305,
+"depth_t": 25.672
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28VA-AELS",
+"target": 1000.0,
+"usd_day": 7.150695951414994,
+"yes": {
+"best": 0.02,
+"ref": 0.02,
+"ticks": 0,
+"ahead_t": 720.24,
+"score_t": 720.79,
+"depth_t": 721.34
+},
+"no": {
+"best": 0.931,
+"ref": 0.931,
+"ticks": 0,
+"ahead_t": 2.8218,
+"score_t": 2.8218,
+"depth_t": 79.0928
+},
+"valid": true
+},
+{
+"k": 0,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28MD-AELS",
+"target": 1000.0,
+"usd_day": 7.150814315532992,
+"yes": {
+"best": 0.02,
+"ref": 0.02,
+"ticks": 0,
+"ahead_t": 779.87,
+"score_t": 780.37,
+"depth_t": 780.87
+},
+"no": {
+"best": 0.964,
+"ref": 0.964,
+"ticks": 0,
+"ahead_t": 0.8464299999999999,
+"score_t": 1.17543,
+"depth_t": 20.46643
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXRT",
+"m": "KXRT-IPL-77",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 6.26897,
+"score_t": 12.524726009571292,
+"depth_t": 67.34132000000001
+},
+"no": null,
+"valid": false
+},
+{
+"k": 1,
+"s": "KXRT",
+"m": "KXRT-HUN-72",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.24,
+"ref": 0.17,
+"ticks": 7,
+"ahead_t": 0.264,
+"score_t": 0.4914465113830567,
+"depth_t": 52.53852
+},
+"no": {
+"best": 0.73,
+"ref": 0.71,
+"ticks": 2,
+"ahead_t": 0.30397,
+"score_t": 1.3937502983083307,
+"depth_t": 67.11166
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXRT",
+"m": "KXRT-ANG-70",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.2,
+"ref": 0.2,
+"ticks": 0,
+"ahead_t": 31.3798,
+"score_t": 31.380573535614015,
+"depth_t": 82.53181
+},
+"no": {
+"best": 0.79,
+"ref": 0.79,
+"ticks": 0,
+"ahead_t": 100.48353,
+"score_t": 100.88353500000161,
+"depth_t": 134.61154000000002
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXRT",
+"m": "KXRT-IPL-45",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 14.9104,
+"score_t": 15.890150000005857,
+"depth_t": 97.4014
+},
+"no": null,
+"valid": false
+},
+{
+"k": 1,
+"s": "KXRT",
+"m": "KXRT-ANG-80",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.05,
+"ref": 0.05,
+"ticks": 0,
+"ahead_t": 197.72502,
+"score_t": 198.58213999999998,
+"depth_t": 204.15975999999998
+},
+"no": {
+"best": 0.94,
+"ref": 0.94,
+"ticks": 0,
+"ahead_t": 154.10301,
+"score_t": 154.10301500000287,
+"depth_t": 185.50295
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXRT",
+"m": "KXRT-ZER-70",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.3,
+"ref": 0.3,
+"ticks": 0,
+"ahead_t": 33.26901,
+"score_t": 33.369017630282194,
+"depth_t": 72.83602
+},
+"no": {
+"best": 0.69,
+"ref": 0.69,
+"ticks": 0,
+"ahead_t": 28.75301,
+"score_t": 28.771050158357703,
+"depth_t": 68.08516
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXRT",
+"m": "KXRT-HEX-90",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.04,
+"ref": 0.04,
+"ticks": 0,
+"ahead_t": 96.93867999999999,
+"score_t": 97.7542125,
+"depth_t": 101.31193999999999
+},
+"no": {
+"best": 0.95,
+"ref": 0.95,
+"ticks": 0,
+"ahead_t": 159.64806,
+"score_t": 160.14213194905182,
+"depth_t": 241.22852
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXRT",
+"m": "KXRT-JUM-70",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.29,
+"ref": 0.29,
+"ticks": 0,
+"ahead_t": 24.91407,
+"score_t": 24.914942541395128,
+"depth_t": 74.28108
+},
+"no": {
+"best": 0.7,
+"ref": 0.7,
+"ticks": 0,
+"ahead_t": 90.29007,
+"score_t": 90.49007613803055,
+"depth_t": 126.68283
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXRT",
+"m": "KXRT-HUN-70",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.39,
+"ref": 0.36,
+"ticks": 3,
+"ahead_t": 0.3515,
+"score_t": 0.7240288792500785,
+"depth_t": 47.98941
+},
+"no": {
+"best": 0.58,
+"ref": 0.58,
+"ticks": 0,
+"ahead_t": 0.48558999999999997,
+"score_t": 1.2531453611130154,
+"depth_t": 101.50477000000001
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXRT",
+"m": "KXRT-DUNE-80",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.87,
+"ref": 0.87,
+"ticks": 0,
+"ahead_t": 22.11884,
+"score_t": 22.181524696627026,
+"depth_t": 27.408849999999997
+},
+"no": {
+"best": 0.12,
+"ref": 0.12,
+"ticks": 0,
+"ahead_t": 39.38303,
+"score_t": 39.469357753906245,
+"depth_t": 48.91056
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXRT",
+"m": "KXRT-IPL-80",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 35.89339,
+"score_t": 36.08264250606573,
+"depth_t": 62.810900000000004
+},
+"no": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 256.02116,
+"score_t": 256.02116,
+"depth_t": 256.02116
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXRT",
+"m": "KXRT-ZER-65",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.39,
+"ref": 0.39,
+"ticks": 0,
+"ahead_t": 20.016830000000002,
+"score_t": 20.11684444331779,
+"depth_t": 57.402840000000005
+},
+"no": {
+"best": 0.6,
+"ref": 0.6,
+"ticks": 0,
+"ahead_t": 15.350010000000001,
+"score_t": 15.370971078968156,
+"depth_t": 68.84855
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXRT",
+"m": "KXRT-IPL-65",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 41.97726,
+"score_t": 97.93776013261105,
+"depth_t": 264.27247000000006
+},
+"no": null,
+"valid": false
+},
+{
+"k": 1,
+"s": "KXRT",
+"m": "KXRT-FOC-45",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.89,
+"ref": 0.86,
+"ticks": 3,
+"ahead_t": 2.19192,
+"score_t": 4.921498502348467,
+"depth_t": 36.70746
+},
+"no": {
+"best": 0.05,
+"ref": 0.03,
+"ticks": 2,
+"ahead_t": 32.098099999999995,
+"score_t": 58.655625,
+"depth_t": 87.3282
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXRT",
+"m": "KXRT-DUNE-55",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 467.155,
+"score_t": 467.1550000000582,
+"depth_t": 484.82
+},
+"no": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 637.18901,
+"score_t": 637.18901,
+"depth_t": 637.18901
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXRT",
+"m": "KXRT-HUN-45",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 19.75456,
+"score_t": 20.11445764926925,
+"depth_t": 137.09684
+},
+"no": null,
+"valid": false
+},
+{
+"k": 1,
+"s": "KXRT",
+"m": "KXRT-VIO-85",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.05,
+"ref": 0.05,
+"ticks": 0,
+"ahead_t": 8.8062,
+"score_t": 10.045137500000001,
+"depth_t": 21.2162
+},
+"no": {
+"best": 0.94,
+"ref": 0.94,
+"ticks": 0,
+"ahead_t": 39.18001,
+"score_t": 39.30519810566507,
+"depth_t": 297.20873
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXRT",
+"m": "KXRT-IPL-70",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 2.025,
+"score_t": 48.9614621875095,
+"depth_t": 178.85993
+},
+"no": null,
+"valid": false
+},
+{
+"k": 1,
+"s": "KXRT",
+"m": "KXRT-VIO-55",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.87,
+"ref": 0.85,
+"ticks": 2,
+"ahead_t": 0.5087900000000001,
+"score_t": 0.5204944345538318,
+"depth_t": 32.00306
+},
+"no": {
+"best": 0.12,
+"ref": 0.07,
+"ticks": 5,
+"ahead_t": 2.5155,
+"score_t": 2.97654015625,
+"depth_t": 8.27407
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXRT",
+"m": "KXRT-ANG-65",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.24,
+"ref": 0.24,
+"ticks": 0,
+"ahead_t": 35.180800000000005,
+"score_t": 35.38084609119416,
+"depth_t": 81.8918
+},
+"no": {
+"best": 0.75,
+"ref": 0.75,
+"ticks": 0,
+"ahead_t": 27.59029,
+"score_t": 27.59029500002109,
+"depth_t": 61.62781
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXRT",
+"m": "KXRT-FUR-65",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 1.6755,
+"score_t": 2.4755588041350576,
+"depth_t": 49.11408
+},
+"no": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 170.76160000000002,
+"score_t": 170.76160000000002,
+"depth_t": 170.76160000000002
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXRT",
+"m": "KXRT-JUM-50",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.68,
+"ref": 0.68,
+"ticks": 0,
+"ahead_t": 25.89613,
+"score_t": 25.896135892188834,
+"depth_t": 57.70061
+},
+"no": {
+"best": 0.31,
+"ref": 0.31,
+"ticks": 0,
+"ahead_t": 53.14374,
+"score_t": 53.343747300532826,
+"depth_t": 84.20984
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXRT",
+"m": "KXRT-VIO-75",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.13,
+"ref": 0.13,
+"ticks": 0,
+"ahead_t": 14.145340000000001,
+"score_t": 23.775796845703123,
+"depth_t": 87.90809
+},
+"no": {
+"best": 0.86,
+"ref": 0.86,
+"ticks": 0,
+"ahead_t": 1.74001,
+"score_t": 1.8297924963391663,
+"depth_t": 36.81684
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXRT",
+"m": "KXRT-DUNE-95",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.2,
+"ref": 0.2,
+"ticks": 0,
+"ahead_t": 57.71726,
+"score_t": 57.74143091331482,
+"depth_t": 110.29208
+},
+"no": {
+"best": 0.79,
+"ref": 0.79,
+"ticks": 0,
+"ahead_t": 29.5575,
+"score_t": 29.55759190036687,
+"depth_t": 75.28345
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXRT",
+"m": "KXRT-WER-65",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.94,
+"ref": 0.94,
+"ticks": 0,
+"ahead_t": 45.19667,
+"score_t": 45.19667381469726,
+"depth_t": 52.53167
+},
+"no": {
+"best": 0.05,
+"ref": 0.05,
+"ticks": 0,
+"ahead_t": 453.35234,
+"score_t": 454.24696,
+"depth_t": 459.07458
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXPANAMAWEEKLY",
+"m": "KXPANAMAWEEKLY-26NOV22-T205",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.07,
+"ref": 0.07,
+"ticks": 0,
+"ahead_t": 40.374,
+"score_t": 41.229578125,
+"depth_t": 43.206
+},
+"no": {
+"best": 0.91,
+"ref": 0.82,
+"ticks": 9,
+"ahead_t": 6.97806,
+"score_t": 6.993688244531225,
+"depth_t": 14.20006
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXPANAMAWEEKLY",
+"m": "KXPANAMAWEEKLY-26NOV22-T200",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.24,
+"ref": 0.22,
+"ticks": 2,
+"ahead_t": 11.34292,
+"score_t": 12.493051620407105,
+"depth_t": 48.16892
+},
+"no": {
+"best": 0.73,
+"ref": 0.69,
+"ticks": 4,
+"ahead_t": 1.3431300000000002,
+"score_t": 1.536321489685178,
+"depth_t": 34.45125
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXPANAMAWEEKLY",
+"m": "KXPANAMAWEEKLY-26NOV22-T185",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.9,
+"ref": 0.89,
+"ticks": 1,
+"ahead_t": 3.0624499999999997,
+"score_t": 3.062450125309744,
+"depth_t": 31.93145
+},
+"no": {
+"best": 0.09,
+"ref": 0.09,
+"ticks": 0,
+"ahead_t": 69.79913,
+"score_t": 70.09156750000001,
+"depth_t": 74.99013000000001
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXPANAMAWEEKLY",
+"m": "KXPANAMAWEEKLY-26NOV22-T215",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 260.57124,
+"score_t": 260.57124,
+"depth_t": 260.57124
+},
+"no": {
+"best": 0.98,
+"ref": 0.97,
+"ticks": 1,
+"ahead_t": 5.50614,
+"score_t": 6.0066400000344595,
+"depth_t": 42.22714
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXPANAMAWEEKLY",
+"m": "KXPANAMAWEEKLY-26NOV22-T210",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.03,
+"ref": 0.03,
+"ticks": 0,
+"ahead_t": 137.00073999999998,
+"score_t": 137.25073999999998,
+"depth_t": 138.00073999999998
+},
+"no": {
+"best": 0.96,
+"ref": 0.95,
+"ticks": 1,
+"ahead_t": 5.03187,
+"score_t": 5.031870001504086,
+"depth_t": 32.888870000000004
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXPANAMAWEEKLY",
+"m": "KXPANAMAWEEKLY-26NOV22-T220",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 240.67234,
+"score_t": 240.67234,
+"depth_t": 240.67234
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 56.23728,
+"score_t": 56.23728000000047,
+"depth_t": 82.06528
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXPANAMAWEEKLY",
+"m": "KXPANAMAWEEKLY-26NOV22-T190",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.71,
+"ref": 0.7,
+"ticks": 1,
+"ahead_t": 1.99896,
+"score_t": 1.9989600050544079,
+"depth_t": 36.44596
+},
+"no": {
+"best": 0.26,
+"ref": 0.26,
+"ticks": 0,
+"ahead_t": 3.6906,
+"score_t": 3.7658379831504822,
+"depth_t": 34.98153
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXPANAMAWEEKLY",
+"m": "KXPANAMAWEEKLY-26NOV22-T180",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.94,
+"ref": 0.93,
+"ticks": 1,
+"ahead_t": 8.34732,
+"score_t": 8.597693850829653,
+"depth_t": 43.661319999999996
+},
+"no": {
+"best": 0.04,
+"ref": 0.04,
+"ticks": 0,
+"ahead_t": 119.3745,
+"score_t": 119.9995,
+"depth_t": 123.3745
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXPANAMAWEEKLY",
+"m": "KXPANAMAWEEKLY-26NOV22-T195",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.42,
+"ref": 0.41,
+"ticks": 1,
+"ahead_t": 5.97471,
+"score_t": 6.956007085002266,
+"depth_t": 45.899269999999994
+},
+"no": {
+"best": 0.55,
+"ref": 0.55,
+"ticks": 0,
+"ahead_t": 0.47801,
+"score_t": 0.5015306836901751,
+"depth_t": 27.784200000000002
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXBABELMANDEBWEEKLY",
+"m": "KXBABELMANDEBWEEKLY-26NOV22-T190",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.41,
+"ref": 0.41,
+"ticks": 0,
+"ahead_t": 4.0061,
+"score_t": 4.047427193904685,
+"depth_t": 64.69024
+},
+"no": {
+"best": 0.55,
+"ref": 0.55,
+"ticks": 0,
+"ahead_t": 2.24217,
+"score_t": 2.266529375624665,
+"depth_t": 32.257169999999995
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXBABELMANDEBWEEKLY",
+"m": "KXBABELMANDEBWEEKLY-26NOV22-T220",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.02,
+"ref": 0.02,
+"ticks": 0,
+"ahead_t": 164.13401000000002,
+"score_t": 164.68401,
+"depth_t": 165.23401
+},
+"no": {
+"best": 0.97,
+"ref": 0.97,
+"ticks": 0,
+"ahead_t": 8.26932,
+"score_t": 8.27260159022332,
+"depth_t": 35.05532
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXBABELMANDEBWEEKLY",
+"m": "KXBABELMANDEBWEEKLY-26NOV22-T195",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.32,
+"ref": 0.31,
+"ticks": 1,
+"ahead_t": 4.12573,
+"score_t": 4.165623388939574,
+"depth_t": 38.52922
+},
+"no": {
+"best": 0.62,
+"ref": 0.62,
+"ticks": 0,
+"ahead_t": 0.33100999999999997,
+"score_t": 0.7324183044506352,
+"depth_t": 35.37985
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXBABELMANDEBWEEKLY",
+"m": "KXBABELMANDEBWEEKLY-26NOV22-T180",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.64,
+"ref": 0.64,
+"ticks": 0,
+"ahead_t": 2.027,
+"score_t": 2.7302802022806474,
+"depth_t": 61.21432
+},
+"no": {
+"best": 0.32,
+"ref": 0.32,
+"ticks": 0,
+"ahead_t": 0.379,
+"score_t": 0.4701455668862164,
+"depth_t": 29.99814
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXBABELMANDEBWEEKLY",
+"m": "KXBABELMANDEBWEEKLY-26NOV22-T170",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.88,
+"ref": 0.88,
+"ticks": 0,
+"ahead_t": 1.88045,
+"score_t": 1.8861607031271892,
+"depth_t": 57.08012
+},
+"no": {
+"best": 0.1,
+"ref": 0.09,
+"ticks": 1,
+"ahead_t": 12.8079,
+"score_t": 13.0805484375,
+"depth_t": 19.7569
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXBABELMANDEBWEEKLY",
+"m": "KXBABELMANDEBWEEKLY-26NOV22-T230",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 298.683,
+"score_t": 298.683,
+"depth_t": 298.683
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 15.889629999999999,
+"score_t": 17.014649533804853,
+"depth_t": 44.09063
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXBABELMANDEBWEEKLY",
+"m": "KXBABELMANDEBWEEKLY-26NOV22-T200",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.12,
+"ref": 0.12,
+"ticks": 0,
+"ahead_t": 19.357830000000003,
+"score_t": 19.790311171875,
+"depth_t": 31.620060000000002
+},
+"no": {
+"best": 0.87,
+"ref": 0.85,
+"ticks": 2,
+"ahead_t": 1.96401,
+"score_t": 1.9640100017564743,
+"depth_t": 12.76101
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXBABELMANDEBWEEKLY",
+"m": "KXBABELMANDEBWEEKLY-26NOV22-T210",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.08,
+"ref": 0.07,
+"ticks": 1,
+"ahead_t": 4.09567,
+"score_t": 31.747545,
+"depth_t": 61.12267
+},
+"no": {
+"best": 0.91,
+"ref": 0.89,
+"ticks": 2,
+"ahead_t": 1.2362199999999999,
+"score_t": 1.749152246093965,
+"depth_t": 11.29988
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXBABELMANDEBWEEKLY",
+"m": "KXBABELMANDEBWEEKLY-26NOV22-T205",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.11,
+"ref": 0.1,
+"ticks": 1,
+"ahead_t": 21.728080000000002,
+"score_t": 22.115835859375,
+"depth_t": 30.031080000000003
+},
+"no": {
+"best": 0.88,
+"ref": 0.87,
+"ticks": 1,
+"ahead_t": 1.60075,
+"score_t": 1.6174168750001354,
+"depth_t": 13.04309
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXBABELMANDEBWEEKLY",
+"m": "KXBABELMANDEBWEEKLY-26NOV22-T175",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.82,
+"ref": 0.82,
+"ticks": 0,
+"ahead_t": 0.83278,
+"score_t": 1.5021213533546285,
+"depth_t": 18.57961
+},
+"no": {
+"best": 0.17,
+"ref": 0.17,
+"ticks": 0,
+"ahead_t": 1.2530999999999999,
+"score_t": 1.5184624481201172,
+"depth_t": 9.17329
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXBABELMANDEBWEEKLY",
+"m": "KXBABELMANDEBWEEKLY-26NOV22-T185",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.47,
+"ref": 0.47,
+"ticks": 0,
+"ahead_t": 6.84814,
+"score_t": 7.410167619416704,
+"depth_t": 49.72872
+},
+"no": {
+"best": 0.51,
+"ref": 0.49,
+"ticks": 2,
+"ahead_t": 0.36747,
+"score_t": 0.36835291484614063,
+"depth_t": 26.959509999999998
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXART",
+"m": "KXART-PHI19NOV26-900000",
+"target": 1000.0,
+"usd_day": 35.17241379310345,
+"yes": {
+"best": 0.03,
+"ref": 0.02,
+"ticks": 1,
+"ahead_t": 2.0162,
+"score_t": 4.17305,
+"depth_t": 6.329899999999999
+},
+"no": {
+"best": 0.05,
+"ref": 0.01,
+"ticks": 4,
+"ahead_t": 5.70131,
+"score_t": 5.70131,
+"depth_t": 5.70131
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXART",
+"m": "KXART-CHR45A17NOV26-2000000",
+"target": 1000.0,
+"usd_day": 52.94117647058823,
+"yes": {
+"best": 0.13,
+"ref": 0.12,
+"ticks": 1,
+"ahead_t": 18.5685,
+"score_t": 18.9862177734375,
+"depth_t": 28.8045
+},
+"no": {
+"best": 0.79,
+"ref": 0.77,
+"ticks": 2,
+"ahead_t": 2.54457,
+"score_t": 2.6094994531287314,
+"depth_t": 12.290280000000001
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXART",
+"m": "KXART-PICBAI18NOV26-50000000",
+"target": 1000.0,
+"usd_day": 13.846153846153845,
+"yes": {
+"best": 0.35,
+"ref": 0.12,
+"ticks": 23,
+"ahead_t": 0.60299,
+"score_t": 2.6468542578124996,
+"depth_t": 17.739990000000002
+},
+"no": {
+"best": 0.6,
+"ref": 0.34,
+"ticks": 26,
+"ahead_t": 1.12013,
+"score_t": 1.1216559123599215,
+"depth_t": 3.09285
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXART",
+"m": "KXART-PHI18NOV26-1000000",
+"target": 1000.0,
+"usd_day": 35.17241379310345,
+"yes": {
+"best": 0.02,
+"ref": 0.01,
+"ticks": 1,
+"ahead_t": 4.274,
+"score_t": 4.274,
+"depth_t": 4.274
+},
+"no": {
+"best": 0.1,
+"ref": 0.09,
+"ticks": 1,
+"ahead_t": 0.54227,
+"score_t": 0.56607859375,
+"depth_t": 1.6322699999999999
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXART",
+"m": "KXART-PHI19NOV26-700000",
+"target": 1000.0,
+"usd_day": 35.17241379310345,
+"yes": {
+"best": 0.03,
+"ref": 0.02,
+"ticks": 1,
+"ahead_t": 2.26021,
+"score_t": 4.26021,
+"depth_t": 6.26021
+},
+"no": {
+"best": 0.03,
+"ref": 0.02,
+"ticks": 1,
+"ahead_t": 2.06,
+"score_t": 4.1523699999999995,
+"depth_t": 6.24474
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXART",
+"m": "KXART-CHR91320NOV26-500000",
+"target": 1000.0,
+"usd_day": 20.377358490566035,
+"yes": {
+"best": 0.43,
+"ref": 0.43,
+"ticks": 0,
+"ahead_t": 0.242,
+"score_t": 0.7783856422874476,
+"depth_t": 37.799800000000005
+},
+"no": {
+"best": 0.47,
+"ref": 0.47,
+"ticks": 0,
+"ahead_t": 0.85158,
+"score_t": 2.481195000000506,
+"depth_t": 23.38004
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXART",
+"m": "KXART-CHR34B19NOV26-50000000",
+"target": 1000.0,
+"usd_day": 26.34146341463415,
+"yes": {
+"best": 0.18,
+"ref": 0.18,
+"ticks": 0,
+"ahead_t": 9.04042,
+"score_t": 9.04197532836914,
+"depth_t": 30.81242
+},
+"no": {
+"best": 0.77,
+"ref": 0.77,
+"ticks": 0,
+"ahead_t": 23.228,
+"score_t": 24.537695400803052,
+"depth_t": 37.43239
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXART",
+"m": "KXART-PHI18NOV26-500000",
+"target": 1000.0,
+"usd_day": 35.17241379310345,
+"yes": {
+"best": 0.8,
+"ref": 0.79,
+"ticks": 1,
+"ahead_t": 0.52418,
+"score_t": 0.5241800000000071,
+"depth_t": 23.32018
+},
+"no": {
+"best": 0.05,
+"ref": 0.04,
+"ticks": 1,
+"ahead_t": 0.50801,
+"score_t": 0.633635,
+"depth_t": 1.51001
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXART",
+"m": "KXART-KOCHMON20NOV26-24000000",
+"target": 1000.0,
+"usd_day": 27.27272727272727,
+"yes": {
+"best": 0.09,
+"ref": 0.02,
+"ticks": 7,
+"ahead_t": 2.08496,
+"score_t": 4.278014999999999,
+"depth_t": 6.47107
+},
+"no": {
+"best": 0.08,
+"ref": 0.02,
+"ticks": 6,
+"ahead_t": 1.909,
+"score_t": 3.9095,
+"depth_t": 5.91
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXART",
+"m": "KXART-CHR56B19NOV26-1500000",
+"target": 1000.0,
+"usd_day": 26.34146341463415,
+"yes": {
+"best": 0.17,
+"ref": 0.17,
+"ticks": 0,
+"ahead_t": 45.80865,
+"score_t": 46.80872534790039,
+"depth_t": 49.10065
+},
+"no": {
+"best": 0.34,
+"ref": 0.34,
+"ticks": 0,
+"ahead_t": 47.130849999999995,
+"score_t": 47.530850010103336,
+"depth_t": 57.54085
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXART",
+"m": "KXART-PHI17NOV26-250000",
+"target": 1000.0,
+"usd_day": 35.17241379310345,
+"yes": {
+"best": 0.89,
+"ref": 0.88,
+"ticks": 1,
+"ahead_t": 0.452,
+"score_t": 0.4520000000000024,
+"depth_t": 12.254
+},
+"no": {
+"best": 0.05,
+"ref": 0.04,
+"ticks": 1,
+"ahead_t": 0.51,
+"score_t": 0.635625,
+"depth_t": 1.512
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXART",
+"m": "KXART-CHR34B19NOV26-30000000",
+"target": 1000.0,
+"usd_day": 26.34146341463415,
+"yes": {
+"best": 0.91,
+"ref": 0.91,
+"ticks": 0,
+"ahead_t": 9.1774,
+"score_t": 9.177400000003018,
+"depth_t": 40.5674
+},
+"no": {
+"best": 0.08,
+"ref": 0.08,
+"ticks": 0,
+"ahead_t": 20.75871,
+"score_t": 21.4288896875,
+"depth_t": 31.04271
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXART",
+"m": "KXART-PHI17NOV26-650000",
+"target": 1000.0,
+"usd_day": 35.17241379310345,
+"yes": {
+"best": 0.16,
+"ref": 0.01,
+"ticks": 15,
+"ahead_t": 5.517270000000001,
+"score_t": 5.517270000000001,
+"depth_t": 5.517270000000001
+},
+"no": {
+"best": 0.2,
+"ref": 0.04,
+"ticks": 16,
+"ahead_t": 0.565,
+"score_t": 0.703625,
+"depth_t": 1.619
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXART",
+"m": "KXART-CHR56B19NOV26-1750000",
+"target": 1000.0,
+"usd_day": 26.34146341463415,
+"yes": {
+"best": 0.2,
+"ref": 0.2,
+"ticks": 0,
+"ahead_t": 8.72066,
+"score_t": 8.940990321502687,
+"depth_t": 51.46431
+},
+"no": {
+"best": 0.74,
+"ref": 0.74,
+"ticks": 0,
+"ahead_t": 0.72334,
+"score_t": 1.3368400000009315,
+"depth_t": 39.90933999999999
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXART",
+"m": "KXART-CHR39A17NOV26-22000000",
+"target": 1000.0,
+"usd_day": 52.94117647058823,
+"yes": {
+"best": 0.14,
+"ref": 0.13,
+"ticks": 1,
+"ahead_t": 0.22002,
+"score_t": 0.28441068359375,
+"depth_t": 11.449539999999999
+},
+"no": {
+"best": 0.64,
+"ref": 0.24,
+"ticks": 40,
+"ahead_t": 0.33341000000000004,
+"score_t": 0.33685607174396515,
+"depth_t": 10.823409999999999
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXART",
+"m": "KXART-CHR56B19NOV26-2000000",
+"target": 1000.0,
+"usd_day": 26.34146341463415,
+"yes": {
+"best": 0.14,
+"ref": 0.14,
+"ticks": 0,
+"ahead_t": 12.963959999999998,
+"score_t": 12.968376748046873,
+"depth_t": 22.621959999999998
+},
+"no": {
+"best": 0.81,
+"ref": 0.8,
+"ticks": 1,
+"ahead_t": 26.94647,
+"score_t": 27.34647000000093,
+"depth_t": 37.37447
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXART",
+"m": "KXART-CHR39A17NOV26-16000000",
+"target": 1000.0,
+"usd_day": 52.94117647058823,
+"yes": {
+"best": 0.22,
+"ref": 0.09,
+"ticks": 13,
+"ahead_t": 0.38386000000000003,
+"score_t": 0.5370084375,
+"depth_t": 10.78086
+},
+"no": {
+"best": 0.38,
+"ref": 0.09,
+"ticks": 29,
+"ahead_t": 0.39144999999999996,
+"score_t": 0.5462064062499999,
+"depth_t": 10.77583
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXART",
+"m": "KXART-CHR94120NOV26-350000",
+"target": 1000.0,
+"usd_day": 20.377358490566035,
+"yes": {
+"best": 0.38,
+"ref": 0.38,
+"ticks": 0,
+"ahead_t": 22.70405,
+"score_t": 23.10405000142268,
+"depth_t": 43.03705
+},
+"no": {
+"best": 0.49,
+"ref": 0.49,
+"ticks": 0,
+"ahead_t": 0.318,
+"score_t": 0.4041225585938792,
+"depth_t": 12.726
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXART",
+"m": "KXART-PICBAI18NOV26-30000000",
+"target": 1000.0,
+"usd_day": 13.846153846153845,
+"yes": {
+"best": 0.96,
+"ref": 0.6,
+"ticks": 36,
+"ahead_t": 1.29239,
+"score_t": 1.2923900000801523,
+"depth_t": 4.44439
+},
+"no": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 5.002,
+"score_t": 5.002,
+"depth_t": 5.002
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXART",
+"m": "KXART-PHI6NOV26-4000000",
+"target": 1000.0,
+"usd_day": 35.17241379310345,
+"yes": {
+"best": 0.04,
+"ref": 0.04,
+"ticks": 0,
+"ahead_t": 1.5952899999999999,
+"score_t": 3.1521125000000003,
+"depth_t": 8.24558
+},
+"no": {
+"best": 0.06,
+"ref": 0.06,
+"ticks": 0,
+"ahead_t": 1.259,
+"score_t": 1.68049125,
+"depth_t": 3.51154
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXART",
+"m": "KXART-CHR41B19NOV26-3000000",
+"target": 1000.0,
+"usd_day": 26.34146341463415,
+"yes": {
+"best": 0.3,
+"ref": 0.3,
+"ticks": 0,
+"ahead_t": 0.318,
+"score_t": 0.41071287014111874,
+"depth_t": 21.2256
+},
+"no": {
+"best": 0.63,
+"ref": 0.63,
+"ticks": 0,
+"ahead_t": 24.54205,
+"score_t": 24.94205,
+"depth_t": 34.92705
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXART",
+"m": "KXART-PHI11NOV26-2000000",
+"target": 1000.0,
+"usd_day": 35.17241379310345,
+"yes": {
+"best": 0.41,
+"ref": 0.4,
+"ticks": 1,
+"ahead_t": 0.43001999999999996,
+"score_t": 0.4300200000092841,
+"depth_t": 2.57702
+},
+"no": {
+"best": 0.07,
+"ref": 0.06,
+"ticks": 1,
+"ahead_t": 1.5850199999999999,
+"score_t": 1.8984100000000002,
+"depth_t": 3.8685
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXART",
+"m": "KXART-CHR71920NOV26-900000",
+"target": 1000.0,
+"usd_day": 20.377358490566035,
+"yes": {
+"best": 0.4,
+"ref": 0.4,
+"ticks": 0,
+"ahead_t": 20.922040000000003,
+"score_t": 20.922040000064722,
+"depth_t": 30.50504
+},
+"no": {
+"best": 0.39,
+"ref": 0.39,
+"ticks": 0,
+"ahead_t": 40.45,
+"score_t": 40.45000000620623,
+"depth_t": 49.986
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXART",
+"m": "KXART-KLILIT18NOV26-130000000",
+"target": 1000.0,
+"usd_day": 13.846153846153845,
+"yes": {
+"best": 0.04,
+"ref": 0.04,
+"ticks": 0,
+"ahead_t": 4.467,
+"score_t": 9.096,
+"depth_t": 14.725
+},
+"no": {
+"best": 0.95,
+"ref": 0.95,
+"ticks": 0,
+"ahead_t": 7.647,
+"score_t": 8.08513,
+"depth_t": 21.204759999999997
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXART",
+"m": "KXART-CHR8A17NOV26-20000000",
+"target": 1000.0,
+"usd_day": 52.94117647058823,
+"yes": {
+"best": 0.66,
+"ref": 0.12,
+"ticks": 54,
+"ahead_t": 0.4092,
+"score_t": 0.43882011718749997,
+"depth_t": 11.407200000000001
+},
+"no": {
+"best": 0.08,
+"ref": 0.05,
+"ticks": 3,
+"ahead_t": 2.62748,
+"score_t": 5.4852075000000005,
+"depth_t": 14.256639999999999
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-YOU26NOV22-11.0M",
+"target": 1000.0,
+"usd_day": 12.94953246126048,
+"yes": {
+"best": 0.02,
+"ref": 0.01,
+"ticks": 1,
+"ahead_t": 8.738,
+"score_t": 8.738,
+"depth_t": 8.738
+},
+"no": {
+"best": 0.21,
+"ref": 0.21,
+"ticks": 0,
+"ahead_t": 3.59084,
+"score_t": 4.282090128746033,
+"depth_t": 6.35884
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-DRA26NOV22-11.25M",
+"target": 1000.0,
+"usd_day": 12.949381507164127,
+"yes": {
+"best": 0.51,
+"ref": 0.51,
+"ticks": 0,
+"ahead_t": 2.76208,
+"score_t": 3.3272412500000295,
+"depth_t": 4.56109
+},
+"no": {
+"best": 0.03,
+"ref": null,
+"depth_t": 0.001
+},
+"valid": false
+},
+{
+"k": 1,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-MOR26NOV22-4.5M",
+"target": 1000.0,
+"usd_day": 12.949446201345904,
+"yes": {
+"best": 0.09,
+"ref": 0.08,
+"ticks": 1,
+"ahead_t": 6.925,
+"score_t": 6.9289140625,
+"depth_t": 7.326
+},
+"no": {
+"best": 0.15,
+"ref": 0.14,
+"ticks": 1,
+"ahead_t": 3.673,
+"score_t": 3.6731583251953124,
+"depth_t": 3.778
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-DRA26NOV22-14.25M",
+"target": 1000.0,
+"usd_day": 12.949403071819562,
+"yes": {
+"best": 0.02,
+"ref": 0.02,
+"ticks": 0,
+"ahead_t": 2.218,
+"score_t": 2.868,
+"depth_t": 3.518
+},
+"no": {
+"best": 0.2,
+"ref": 0.2,
+"ticks": 0,
+"ahead_t": 1.47,
+"score_t": 1.4700202808380127,
+"depth_t": 2.632
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-DRA26NOV22-14.5M",
+"target": 1000.0,
+"usd_day": 12.949403071819562,
+"yes": {
+"best": 0.02,
+"ref": 0.01,
+"ticks": 1,
+"ahead_t": 4.623,
+"score_t": 4.623,
+"depth_t": 4.623
+},
+"no": {
+"best": 0.2,
+"ref": 0.2,
+"ticks": 0,
+"ahead_t": 1.47,
+"score_t": 1.4711060428619385,
+"depth_t": 3.622
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-JUS26NOV22-14.25M",
+"target": 1000.0,
+"usd_day": 12.94942463654682,
+"yes": {
+"best": 0.47,
+"ref": 0.47,
+"ticks": 0,
+"ahead_t": 2.675,
+"score_t": 2.67500000000001,
+"depth_t": 3.136
+},
+"no": {
+"best": 0.03,
+"ref": 0.01,
+"ticks": 2,
+"ahead_t": 8.1178,
+"score_t": 8.1178,
+"depth_t": 8.1178
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-BAD26NOV22-25.5M",
+"target": 1000.0,
+"usd_day": 12.949359942580513,
+"yes": {
+"best": 0.36,
+"ref": 0.36,
+"ticks": 0,
+"ahead_t": 3.052,
+"score_t": 3.5211250076531724,
+"depth_t": 6.522
+},
+"no": {
+"best": 0.03,
+"ref": 0.01,
+"ticks": 2,
+"ahead_t": 7.14646,
+"score_t": 7.14646,
+"depth_t": 7.14646
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-KAT26NOV22-16.0M",
+"target": 1000.0,
+"usd_day": 12.94942463654682,
+"yes": {
+"best": 0.25,
+"ref": 0.25,
+"ticks": 0,
+"ahead_t": 2.865,
+"score_t": 2.8650000357627867,
+"depth_t": 3.34
+},
+"no": {
+"best": 0.03,
+"ref": 0.01,
+"ticks": 2,
+"ahead_t": 10.0688,
+"score_t": 10.0688,
+"depth_t": 10.0688
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-KAT26NOV22-21.0M",
+"target": 1000.0,
+"usd_day": 12.94942463654682,
+"yes": {
+"best": 0.02,
+"ref": 0.01,
+"ticks": 1,
+"ahead_t": 5.564,
+"score_t": 5.564,
+"depth_t": 5.564
+},
+"no": {
+"best": 0.2,
+"ref": 0.2,
+"ticks": 0,
+"ahead_t": 1.67,
+"score_t": 1.6700129299163817,
+"depth_t": 2.829
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-TAY26NOV22-13.8M",
+"target": 1000.0,
+"usd_day": 12.949489331159542,
+"yes": {
+"best": 0.17,
+"ref": 0.1,
+"ticks": 7,
+"ahead_t": 0.698,
+"score_t": 1.704091796875,
+"depth_t": 7.912
+},
+"no": {
+"best": 0.21,
+"ref": 0.21,
+"ticks": 0,
+"ahead_t": 2.529,
+"score_t": 2.529024307479858,
+"depth_t": 12.74253
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-TAY26NOV22-14.2M",
+"target": 1000.0,
+"usd_day": 12.949489331159542,
+"yes": {
+"best": 0.18,
+"ref": 0.07,
+"ticks": 11,
+"ahead_t": 2.647,
+"score_t": 2.6519375,
+"depth_t": 2.948
+},
+"no": {
+"best": 0.21,
+"ref": 0.2,
+"ticks": 1,
+"ahead_t": 2.425,
+"score_t": 2.425052984237671,
+"depth_t": 13.14
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-TAY26NOV22-13.6M",
+"target": 1000.0,
+"usd_day": 12.949489331159542,
+"yes": {
+"best": 0.36,
+"ref": 0.35,
+"ticks": 1,
+"ahead_t": 3.103,
+"score_t": 3.1030001942459493,
+"depth_t": 26.239
+},
+"no": {
+"best": 0.13,
+"ref": 0.12,
+"ticks": 1,
+"ahead_t": 2.628,
+"score_t": 3.128159609375,
+"depth_t": 3.72912
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-FUT26NOV22-5.0M",
+"target": 1000.0,
+"usd_day": 12.949403071819562,
+"yes": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 3.499,
+"score_t": 3.4990000000000183,
+"depth_t": 3.96
+},
+"no": null,
+"valid": false
+},
+{
+"k": 1,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-MOR26NOV22-5.75M",
+"target": 1000.0,
+"usd_day": 12.949446201345904,
+"yes": {
+"best": 0.06,
+"ref": 0.06,
+"ticks": 0,
+"ahead_t": 2.443,
+"score_t": 3.4642246875000002,
+"depth_t": 4.96219
+},
+"no": {
+"best": 0.93,
+"ref": 0.79,
+"ticks": 14,
+"ahead_t": 0.9517599999999999,
+"score_t": 0.9517599999999999,
+"depth_t": 1.07476
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-JUS26NOV22-15.0M",
+"target": 1000.0,
+"usd_day": 12.94942463654682,
+"yes": {
+"best": 0.41,
+"ref": 0.4,
+"ticks": 1,
+"ahead_t": 0.852,
+"score_t": 0.8520039367702411,
+"depth_t": 1.259
+},
+"no": {
+"best": 0.03,
+"ref": null,
+"depth_t": 0.121
+},
+"valid": false
+},
+{
+"k": 1,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-WEE26NOV22-20.0M",
+"target": 1000.0,
+"usd_day": 12.949510896174099,
+"yes": {
+"best": 0.1,
+"ref": 0.1,
+"ticks": 0,
+"ahead_t": 6.554,
+"score_t": 7.0550546875,
+"depth_t": 8.974
+},
+"no": {
+"best": 0.03,
+"ref": 0.01,
+"ticks": 2,
+"ahead_t": 6.745,
+"score_t": 6.745,
+"depth_t": 6.745
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-DRA26NOV22-13.0M",
+"target": 1000.0,
+"usd_day": 12.949381507164127,
+"yes": {
+"best": 0.02,
+"ref": 0.01,
+"ticks": 1,
+"ahead_t": 26.325,
+"score_t": 26.325,
+"depth_t": 26.325
+},
+"no": {
+"best": 0.03,
+"ref": 0.02,
+"ticks": 1,
+"ahead_t": 16.85,
+"score_t": 16.85,
+"depth_t": 16.85
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-TAY26NOV22-14.9M",
+"target": 1000.0,
+"usd_day": 12.949510896174099,
+"yes": {
+"best": 0.11,
+"ref": 0.02,
+"ticks": 9,
+"ahead_t": 5.06496,
+"score_t": 6.71546,
+"depth_t": 8.36596
+},
+"no": {
+"best": 0.19,
+"ref": 0.18,
+"ticks": 1,
+"ahead_t": 2.707,
+"score_t": 2.7072585678100585,
+"depth_t": 16.842
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-TAY26NOV22-13.2M",
+"target": 1000.0,
+"usd_day": 12.949489331159542,
+"yes": {
+"best": 0.51,
+"ref": 0.51,
+"ticks": 0,
+"ahead_t": 2.054,
+"score_t": 2.5886250000000004,
+"depth_t": 3.788
+},
+"no": {
+"best": 0.03,
+"ref": 0.01,
+"ticks": 2,
+"ahead_t": 11.9118,
+"score_t": 11.9118,
+"depth_t": 11.9118
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-WEE26NOV22-23.0M",
+"target": 1000.0,
+"usd_day": 12.94953246126048,
+"yes": {
+"best": 0.02,
+"ref": 0.01,
+"ticks": 1,
+"ahead_t": 6.53,
+"score_t": 6.53,
+"depth_t": 6.53
+},
+"no": {
+"best": 0.2,
+"ref": 0.2,
+"ticks": 0,
+"ahead_t": 1.571,
+"score_t": 1.571012731552124,
+"depth_t": 2.731
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-WEE26NOV22-25.0M",
+"target": 1000.0,
+"usd_day": 12.94953246126048,
+"yes": {
+"best": 0.02,
+"ref": 0.01,
+"ticks": 1,
+"ahead_t": 7.55,
+"score_t": 7.55,
+"depth_t": 7.55
+},
+"no": {
+"best": 0.2,
+"ref": 0.2,
+"ticks": 0,
+"ahead_t": 1.57,
+"score_t": 1.5700046672821044,
+"depth_t": 2.722
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-BAD26NOV22-23.0M",
+"target": 1000.0,
+"usd_day": 12.949359942580513,
+"yes": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 2.601,
+"score_t": 3.032250000000018,
+"depth_t": 4.971
+},
+"no": null,
+"valid": false
+},
+{
+"k": 1,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-TAY26NOV22-13.5M",
+"target": 1000.0,
+"usd_day": 12.949489331159542,
+"yes": {
+"best": 0.4,
+"ref": 0.4,
+"ticks": 0,
+"ahead_t": 2.368,
+"score_t": 2.538500190846655,
+"depth_t": 24.895
+},
+"no": {
+"best": 0.08,
+"ref": 0.07,
+"ticks": 1,
+"ahead_t": 6.224,
+"score_t": 6.227234375,
+"depth_t": 6.327
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-WEE26NOV22-13.0M",
+"target": 1000.0,
+"usd_day": 12.949510896174099,
+"yes": {
+"best": 0.9,
+"ref": 0.9,
+"ticks": 0,
+"ahead_t": 1.611,
+"score_t": 1.611000000000946,
+"depth_t": 22.493
+},
+"no": null,
+"valid": false
+},
+{
+"k": 1,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-DRA26NOV22-13.25M",
+"target": 1000.0,
+"usd_day": 12.949381507164127,
+"yes": {
+"best": 0.02,
+"ref": 0.01,
+"ticks": 1,
+"ahead_t": 26.325,
+"score_t": 26.325,
+"depth_t": 26.325
+},
+"no": {
+"best": 0.03,
+"ref": 0.02,
+"ticks": 1,
+"ahead_t": 16.85,
+"score_t": 16.85,
+"depth_t": 16.85
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-IMA",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 2.81,
+"score_t": 2.81,
+"depth_t": 2.81
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 64.09386,
+"score_t": 64.10538353248639,
+"depth_t": 94.25012
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-USH",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 1.5274400000000001,
+"score_t": 1.5274400000000001,
+"depth_t": 1.5274400000000001
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 54.75815,
+"score_t": 54.75815000972728,
+"depth_t": 81.88243000000001
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-PINK",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 2.566,
+"score_t": 2.566,
+"depth_t": 2.566
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 64.97557,
+"score_t": 65.97007838897082,
+"depth_t": 92.04054
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-DAN",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 14.956,
+"score_t": 46.04350693262562,
+"depth_t": 107.71303
+},
+"valid": false
+},
+{
+"k": 1,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-BIG",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 2.092,
+"score_t": 2.092,
+"depth_t": 2.092
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 65.82119999999999,
+"score_t": 65.82120266795145,
+"depth_t": 100.30923
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-BEY",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 7.83004,
+"score_t": 36.0889770713938,
+"depth_t": 92.90583000000001
+},
+"valid": false
+},
+{
+"k": 1,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-NASX",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 1.64773,
+"score_t": 1.64773,
+"depth_t": 1.64773
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 68.37043,
+"score_t": 68.84493001988656,
+"depth_t": 100.00101999999998
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-ARI",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 2.0,
+"score_t": 2.0,
+"depth_t": 2.0
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 63.076269999999994,
+"score_t": 63.076273862382365,
+"depth_t": 94.15403
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-CHA",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 2.81,
+"score_t": 2.81,
+"depth_t": 2.81
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 65.45616,
+"score_t": 65.47370060119673,
+"depth_t": 92.64066
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-SZA",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 8.34797,
+"score_t": 8.845393578770674,
+"depth_t": 34.621739999999996
+},
+"no": null,
+"valid": false
+},
+{
+"k": 1,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-FOO",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 1.79703,
+"score_t": 1.79703,
+"depth_t": 1.79703
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 64.34486,
+"score_t": 64.34486001918775,
+"depth_t": 92.53298
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-KAT",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 2.80747,
+"score_t": 2.80747,
+"depth_t": 2.80747
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 65.02003,
+"score_t": 65.08159407352632,
+"depth_t": 95.97969
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-RIH",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 1.9477200000000001,
+"score_t": 1.9477200000000001,
+"depth_t": 1.9477200000000001
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 77.94494,
+"score_t": 77.94533477090953,
+"depth_t": 107.92457
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-TIM",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": null,
+"depth_t": 0.03463
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 79.88008,
+"score_t": 79.88008002825426,
+"depth_t": 118.93618000000001
+},
+"valid": false
+},
+{
+"k": 1,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-LOG",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 15.87749,
+"score_t": 38.37431500957167,
+"depth_t": 86.6496
+},
+"valid": false
+},
+{
+"k": 1,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-TRI",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 7.87346,
+"score_t": 38.33188318076171,
+"depth_t": 98.73351
+},
+"valid": false
+},
+{
+"k": 1,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-SAM",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 2.16221,
+"score_t": 2.16221,
+"depth_t": 2.16221
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 53.099,
+"score_t": 53.0990058594082,
+"depth_t": 77.291
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-MIL",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 3.16002,
+"score_t": 40.592875276981026,
+"depth_t": 105.04369
+},
+"valid": false
+},
+{
+"k": 1,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-PEA",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 2.39026,
+"score_t": 2.39026,
+"depth_t": 2.39026
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 53.84449,
+"score_t": 53.84450144544601,
+"depth_t": 90.8682
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-COL",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 1.999,
+"score_t": 1.999,
+"depth_t": 1.999
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 60.996010000000005,
+"score_t": 60.996012071563676,
+"depth_t": 89.149
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-BAB",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 6.22743,
+"score_t": 6.22743,
+"depth_t": 6.22743
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 39.517410000000005,
+"score_t": 62.220477710484204,
+"depth_t": 121.72511
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-SHA",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 3.8833200000000003,
+"score_t": 3.8833200000000003,
+"depth_t": 3.8833200000000003
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 62.0565,
+"score_t": 62.33775000972369,
+"depth_t": 91.95459
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-MEG",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 13.10242,
+"score_t": 43.788446483307084,
+"depth_t": 111.55591
+},
+"valid": false
+},
+{
+"k": 1,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-MARO",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 5.43947,
+"score_t": 33.19472554041064,
+"depth_t": 88.66354000000001
+},
+"valid": false
+},
+{
+"k": 1,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-POL",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 1.95095,
+"score_t": 1.95095,
+"depth_t": 1.95095
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 70.69369999999999,
+"score_t": 70.69370245105765,
+"depth_t": 98.97764
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV14-3",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 5.05401,
+"score_t": 5.180577500000015,
+"depth_t": 16.42752
+},
+"valid": false
+},
+{
+"k": 1,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV21-0",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.29,
+"ref": 0.28,
+"ticks": 1,
+"ahead_t": 0.7271,
+"score_t": 0.8034549104481936,
+"depth_t": 38.3911
+},
+"no": {
+"best": 0.68,
+"ref": 0.65,
+"ticks": 3,
+"ahead_t": 0.57542,
+"score_t": 0.5763106253148389,
+"depth_t": 17.99677
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV21-4",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.02,
+"ref": 0.02,
+"ticks": 0,
+"ahead_t": 11.90101,
+"score_t": 12.679635000000001,
+"depth_t": 13.458260000000001
+},
+"no": {
+"best": 0.97,
+"ref": 0.97,
+"ticks": 0,
+"ahead_t": 15.76014,
+"score_t": 16.697945625000017,
+"depth_t": 49.71705
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV14-0",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 2.90554,
+"score_t": 2.9716768750141593,
+"depth_t": 18.11399
+},
+"valid": false
+},
+{
+"k": 1,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV07-4",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 3.48798,
+"score_t": 4.213332500000001,
+"depth_t": 7.34038
+},
+"valid": false
+},
+{
+"k": 1,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV07-2",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 3.1487,
+"score_t": 7.6172675,
+"depth_t": 14.63953
+},
+"valid": false
+},
+{
+"k": 1,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV21-1",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.16,
+"ref": 0.16,
+"ticks": 0,
+"ahead_t": 0.515,
+"score_t": 0.6772527050781251,
+"depth_t": 5.202439999999999
+},
+"no": {
+"best": 0.81,
+"ref": 0.81,
+"ticks": 0,
+"ahead_t": 0.84801,
+"score_t": 1.022853538619281,
+"depth_t": 26.34282
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV14-1",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 3.5075,
+"score_t": 11.634135006998802,
+"depth_t": 31.861729999999998
+},
+"valid": false
+},
+{
+"k": 1,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV21-2",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.08,
+"ref": 0.08,
+"ticks": 0,
+"ahead_t": 4.585,
+"score_t": 4.89158375,
+"depth_t": 7.24996
+},
+"no": {
+"best": 0.9,
+"ref": 0.9,
+"ticks": 0,
+"ahead_t": 1.6496300000000002,
+"score_t": 1.687380225068696,
+"depth_t": 27.80463
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV07-3",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 3.9794699999999996,
+"score_t": 8.446475,
+"depth_t": 15.28848
+},
+"valid": false
+},
+{
+"k": 1,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV07-0",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 2.18748,
+"score_t": 2.705827856674194,
+"depth_t": 7.32003
+},
+"valid": false
+},
+{
+"k": 1,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV21-3",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.02,
+"ref": 0.02,
+"ticks": 0,
+"ahead_t": 17.94011,
+"score_t": 18.26163,
+"depth_t": 18.58315
+},
+"no": {
+"best": 0.97,
+"ref": 0.97,
+"ticks": 0,
+"ahead_t": 5.40965,
+"score_t": 5.434154578147549,
+"depth_t": 33.80125
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV07-1",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 6.486020000000001,
+"score_t": 10.669716089477555,
+"depth_t": 17.925690000000003
+},
+"valid": false
+},
+{
+"k": 1,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV14-2",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 5.89591,
+"score_t": 6.433415,
+"depth_t": 19.84691
+},
+"valid": false
+},
+{
+"k": 1,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV14-4",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 3.2849899999999996,
+"score_t": 3.42327625,
+"depth_t": 14.67925
+},
+"valid": false
+},
+{
+"k": 1,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28AZ-MKEL",
+"target": 1000.0,
+"usd_day": 7.150897172747136,
+"yes": {
+"best": 0.074,
+"ref": 0.074,
+"ticks": 0,
+"ahead_t": 60.7795,
+"score_t": 60.9529375,
+"depth_t": 64.3795
+},
+"no": {
+"best": 0.92,
+"ref": 0.92,
+"ticks": 0,
+"ahead_t": 0.7538400000000001,
+"score_t": 0.9100900000723258,
+"depth_t": 80.14583999999999
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28AR-KHAR",
+"target": 1000.0,
+"usd_day": 7.150897172747136,
+"yes": {
+"best": 0.049,
+"ref": 0.049,
+"ticks": 0,
+"ahead_t": 386.871,
+"score_t": 386.996,
+"depth_t": 388.871
+},
+"no": {
+"best": 0.916,
+"ref": 0.916,
+"ticks": 0,
+"ahead_t": 1.41096,
+"score_t": 1.9109600000376576,
+"depth_t": 93.46896000000001
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28AL-PBUT",
+"target": 1000.0,
+"usd_day": 7.150897172747136,
+"yes": {
+"best": 0.066,
+"ref": 0.066,
+"ticks": 0,
+"ahead_t": 189.474,
+"score_t": 189.95525,
+"depth_t": 193.499
+},
+"no": {
+"best": 0.916,
+"ref": 0.916,
+"ticks": 0,
+"ahead_t": 0.5,
+"score_t": 0.9360000000019396,
+"depth_t": 82.615
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28AZ-AELS",
+"target": 1000.0,
+"usd_day": 7.150897172747136,
+"yes": {
+"best": 0.02,
+"ref": 0.02,
+"ticks": 0,
+"ahead_t": 853.354,
+"score_t": 853.854,
+"depth_t": 854.354
+},
+"no": {
+"best": 0.956,
+"ref": 0.956,
+"ticks": 0,
+"ahead_t": 0.92472,
+"score_t": 1.6372200000000001,
+"depth_t": 82.45572
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28RI-MKEL",
+"target": 1000.0,
+"usd_day": 7.150719623925116,
+"yes": {
+"best": 0.021,
+"ref": 0.021,
+"ticks": 0,
+"ahead_t": 620.737,
+"score_t": 621.237,
+"depth_t": 621.737
+},
+"no": {
+"best": 0.942,
+"ref": 0.942,
+"ticks": 0,
+"ahead_t": 0.8015,
+"score_t": 1.0515000000056791,
+"depth_t": 95.7535
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28IA-GNEW",
+"target": 1000.0,
+"usd_day": 7.150849825532506,
+"yes": {
+"best": 0.13,
+"ref": 0.13,
+"ticks": 0,
+"ahead_t": 16.97976,
+"score_t": 17.4442004296875,
+"depth_t": 22.803759999999997
+},
+"no": {
+"best": 0.84,
+"ref": 0.84,
+"ticks": 0,
+"ahead_t": 1.49195,
+"score_t": 1.9919500000424937,
+"depth_t": 97.47595
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28RI-ABES",
+"target": 1000.0,
+"usd_day": 7.150719623925116,
+"yes": {
+"best": 0.049,
+"ref": 0.049,
+"ticks": 0,
+"ahead_t": 358.17,
+"score_t": 358.26375,
+"depth_t": 360.17
+},
+"no": {
+"best": 0.944,
+"ref": 0.944,
+"ticks": 0,
+"ahead_t": 0.33341000000000004,
+"score_t": 0.7025350000000001,
+"depth_t": 22.26541
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28WV-WMOO",
+"target": 1000.0,
+"usd_day": 7.150672279061607,
+"yes": {
+"best": 0.02,
+"ref": 0.02,
+"ticks": 0,
+"ahead_t": 778.765,
+"score_t": 779.265,
+"depth_t": 779.765
+},
+"no": {
+"best": 0.936,
+"ref": 0.936,
+"ticks": 0,
+"ahead_t": 2.72007,
+"score_t": 2.770070000027214,
+"depth_t": 81.83107000000001
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28AK-PBUT",
+"target": 1000.0,
+"usd_day": 7.150909009648761,
+"yes": {
+"best": 0.059,
+"ref": 0.059,
+"ticks": 0,
+"ahead_t": 304.96474,
+"score_t": 305.0929275,
+"depth_t": 309.06674
+},
+"no": {
+"best": 0.94,
+"ref": 0.94,
+"ticks": 0,
+"ahead_t": 1.2460799999999999,
+"score_t": 1.3710799999999999,
+"depth_t": 25.56108
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28ND-JSHA",
+"target": 1000.0,
+"usd_day": 7.1507669694155735,
+"yes": {
+"best": 0.049,
+"ref": 0.049,
+"ticks": 0,
+"ahead_t": 375.884,
+"score_t": 376.009,
+"depth_t": 377.884
+},
+"no": {
+"best": 0.917,
+"ref": 0.917,
+"ticks": 0,
+"ahead_t": 1.5143199999999999,
+"score_t": 2.514320000023531,
+"depth_t": 82.64332
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28CT-RWAR",
+"target": 1000.0,
+"usd_day": 7.150885335884698,
+"yes": {
+"best": 0.039,
+"ref": 0.039,
+"ticks": 0,
+"ahead_t": 406.2782,
+"score_t": 406.8407,
+"depth_t": 407.7157
+},
+"no": {
+"best": 0.94,
+"ref": 0.939,
+"ticks": 0,
+"ahead_t": 2.1641999999999997,
+"score_t": 2.9232000000106835,
+"depth_t": 88.1802
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28SD-PBUT",
+"target": 1000.0,
+"usd_day": 7.150719623925116,
+"yes": {
+"best": 0.059,
+"ref": 0.059,
+"ticks": 0,
+"ahead_t": 286.045,
+"score_t": 286.18075,
+"depth_t": 290.389
+},
+"no": {
+"best": 0.923,
+"ref": 0.923,
+"ticks": 0,
+"ahead_t": 0.8959,
+"score_t": 1.3959000000050992,
+"depth_t": 89.64689999999999
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28WY-RWAR",
+"target": 1000.0,
+"usd_day": 7.150672279061607,
+"yes": {
+"best": 0.052,
+"ref": 0.052,
+"ticks": 0,
+"ahead_t": 132.463,
+"score_t": 168.081,
+"depth_t": 204.574
+},
+"no": {
+"best": 0.931,
+"ref": 0.931,
+"ticks": 0,
+"ahead_t": 2.72171,
+"score_t": 2.771710000010915,
+"depth_t": 87.03671
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28MI-AELS",
+"target": 1000.0,
+"usd_day": 7.150802478944859,
+"yes": {
+"best": 0.049,
+"ref": 0.049,
+"ticks": 0,
+"ahead_t": 80.365,
+"score_t": 84.02184375,
+"depth_t": 145.591
+},
+"no": {
+"best": 0.924,
+"ref": 0.924,
+"ticks": 0,
+"ahead_t": 3.8840100000000004,
+"score_t": 3.8840100000000004,
+"depth_t": 102.62101
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28WV-KHAR",
+"target": 1000.0,
+"usd_day": 7.150672279061607,
+"yes": {
+"best": 0.05,
+"ref": 0.05,
+"ticks": 0,
+"ahead_t": 364.8816,
+"score_t": 365.133225,
+"depth_t": 368.9076
+},
+"no": {
+"best": 0.91,
+"ref": 0.91,
+"ticks": 0,
+"ahead_t": 1.98196,
+"score_t": 1.9819600000448274,
+"depth_t": 83.13496
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28IL-ABES",
+"target": 1000.0,
+"usd_day": 7.150837988826815,
+"yes": {
+"best": 0.049,
+"ref": 0.049,
+"ticks": 0,
+"ahead_t": 366.178,
+"score_t": 366.27175,
+"depth_t": 368.178
+},
+"no": {
+"best": 0.94,
+"ref": 0.94,
+"ticks": 0,
+"ahead_t": 1.36648,
+"score_t": 1.6164800000048842,
+"depth_t": 80.03847999999999
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28DE-AELS",
+"target": 1000.0,
+"usd_day": 7.150873499061447,
+"yes": {
+"best": 0.02,
+"ref": 0.02,
+"ticks": 0,
+"ahead_t": 863.304,
+"score_t": 863.804,
+"depth_t": 864.304
+},
+"no": {
+"best": 0.96,
+"ref": 0.96,
+"ticks": 0,
+"ahead_t": 0.743,
+"score_t": 0.94,
+"depth_t": 77.555
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28AL-JSHA",
+"target": 1000.0,
+"usd_day": 7.150897172747136,
+"yes": {
+"best": 0.061,
+"ref": 0.061,
+"ticks": 0,
+"ahead_t": 250.28,
+"score_t": 250.883115,
+"depth_t": 254.27374
+},
+"no": {
+"best": 0.915,
+"ref": 0.915,
+"ticks": 0,
+"ahead_t": 0.536,
+"score_t": 2.277000000018496,
+"depth_t": 92.898
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28TX-AELS",
+"target": 1000.0,
+"usd_day": 7.150707787650463,
+"yes": {
+"best": 0.039,
+"ref": 0.039,
+"ticks": 0,
+"ahead_t": 242.35,
+"score_t": 265.25275,
+"depth_t": 334.461
+},
+"no": {
+"best": 0.937,
+"ref": 0.937,
+"ticks": 0,
+"ahead_t": 1.16956,
+"score_t": 2.16956,
+"depth_t": 83.27556
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28IA-PBUT",
+"target": 1000.0,
+"usd_day": 7.150849825532506,
+"yes": {
+"best": 0.076,
+"ref": 0.076,
+"ticks": 0,
+"ahead_t": 103.45,
+"score_t": 109.454203125,
+"depth_t": 180.8405
+},
+"no": {
+"best": 0.917,
+"ref": 0.89,
+"ticks": 3,
+"ahead_t": 2.2847399999999998,
+"score_t": 2.2847400000517433,
+"depth_t": 95.47574
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28WV-JOSS",
+"target": 1000.0,
+"usd_day": 7.150672279061607,
+"yes": {
+"best": 0.24,
+"ref": 0.24,
+"ticks": 0,
+"ahead_t": 1.755,
+"score_t": 2.005002109527588,
+"depth_t": 6.142
+},
+"no": {
+"best": 0.72,
+"ref": 0.72,
+"ticks": 0,
+"ahead_t": 1.72298,
+"score_t": 1.8479800000114306,
+"depth_t": 22.54598
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28NE-AELS",
+"target": 1000.0,
+"usd_day": 7.1507669694155735,
+"yes": {
+"best": 0.02,
+"ref": 0.02,
+"ticks": 0,
+"ahead_t": 882.221,
+"score_t": 882.721,
+"depth_t": 883.221
+},
+"no": {
+"best": 0.96,
+"ref": 0.96,
+"ticks": 0,
+"ahead_t": 0.8640399999999999,
+"score_t": 1.06854,
+"depth_t": 78.69103999999999
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28NY-GNEW",
+"target": 1000.0,
+"usd_day": 7.150743296591976,
+"yes": {
+"best": 0.13,
+"ref": 0.13,
+"ticks": 0,
+"ahead_t": 17.55604,
+"score_t": 17.620299765625,
+"depth_t": 22.21004
+},
+"no": {
+"best": 0.86,
+"ref": 0.86,
+"ticks": 0,
+"ahead_t": 1.26724,
+"score_t": 1.32974,
+"depth_t": 25.521240000000002
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28VA-AELS",
+"target": 1000.0,
+"usd_day": 7.150695951414994,
+"yes": {
+"best": 0.02,
+"ref": 0.02,
+"ticks": 0,
+"ahead_t": 720.24,
+"score_t": 720.79,
+"depth_t": 721.34
+},
+"no": {
+"best": 0.931,
+"ref": 0.931,
+"ticks": 0,
+"ahead_t": 2.8218,
+"score_t": 2.8218,
+"depth_t": 78.5928
+},
+"valid": true
+},
+{
+"k": 1,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28MD-AELS",
+"target": 1000.0,
+"usd_day": 7.150814315532992,
+"yes": {
+"best": 0.02,
+"ref": 0.02,
+"ticks": 0,
+"ahead_t": 779.87,
+"score_t": 780.37,
+"depth_t": 780.87
+},
+"no": {
+"best": 0.964,
+"ref": 0.964,
+"ticks": 0,
+"ahead_t": 0.79,
+"score_t": 1.119,
+"depth_t": 20.21
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXRT",
+"m": "KXRT-IPL-77",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 5.26897,
+"score_t": 11.524726009571292,
+"depth_t": 66.34132000000001
+},
+"no": null,
+"valid": false
+},
+{
+"k": 2,
+"s": "KXRT",
+"m": "KXRT-HUN-72",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.23,
+"ref": 0.16,
+"ticks": 7,
+"ahead_t": 0.207,
+"score_t": 0.27642618682861325,
+"depth_t": 52.1646
+},
+"no": {
+"best": 0.73,
+"ref": 0.71,
+"ticks": 2,
+"ahead_t": 0.24558,
+"score_t": 2.32865878845235,
+"depth_t": 77.07238000000001
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXRT",
+"m": "KXRT-ANG-70",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.2,
+"ref": 0.2,
+"ticks": 0,
+"ahead_t": 19.871,
+"score_t": 19.871773535614015,
+"depth_t": 71.02301
+},
+"no": {
+"best": 0.79,
+"ref": 0.79,
+"ticks": 0,
+"ahead_t": 100.48353,
+"score_t": 100.88353500000161,
+"depth_t": 134.61154000000002
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXRT",
+"m": "KXRT-IPL-45",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 13.9104,
+"score_t": 14.890150000005857,
+"depth_t": 96.4014
+},
+"no": null,
+"valid": false
+},
+{
+"k": 2,
+"s": "KXRT",
+"m": "KXRT-ANG-80",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.05,
+"ref": 0.05,
+"ticks": 0,
+"ahead_t": 197.72502,
+"score_t": 198.58213999999998,
+"depth_t": 204.15975999999998
+},
+"no": {
+"best": 0.94,
+"ref": 0.94,
+"ticks": 0,
+"ahead_t": 154.10301,
+"score_t": 154.10301500000287,
+"depth_t": 185.50295
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXRT",
+"m": "KXRT-ZER-70",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.3,
+"ref": 0.3,
+"ticks": 0,
+"ahead_t": 33.26901,
+"score_t": 33.369017630282194,
+"depth_t": 72.83602
+},
+"no": {
+"best": 0.69,
+"ref": 0.69,
+"ticks": 0,
+"ahead_t": 28.75301,
+"score_t": 28.771050158357703,
+"depth_t": 68.08516
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXRT",
+"m": "KXRT-HEX-90",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.04,
+"ref": 0.04,
+"ticks": 0,
+"ahead_t": 101.93867999999999,
+"score_t": 102.7542125,
+"depth_t": 106.31193999999999
+},
+"no": {
+"best": 0.95,
+"ref": 0.95,
+"ticks": 0,
+"ahead_t": 154.64806,
+"score_t": 155.14213194905182,
+"depth_t": 236.22852
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXRT",
+"m": "KXRT-JUM-70",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.29,
+"ref": 0.29,
+"ticks": 0,
+"ahead_t": 24.914080000000002,
+"score_t": 24.91495254139513,
+"depth_t": 74.28108999999999
+},
+"no": {
+"best": 0.7,
+"ref": 0.7,
+"ticks": 0,
+"ahead_t": 90.29007,
+"score_t": 90.49007613803055,
+"depth_t": 126.68283
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXRT",
+"m": "KXRT-HUN-70",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.4,
+"ref": 0.36,
+"ticks": 4,
+"ahead_t": 0.23027,
+"score_t": 0.6104010984883597,
+"depth_t": 47.65414
+},
+"no": {
+"best": 0.58,
+"ref": 0.58,
+"ticks": 0,
+"ahead_t": 0.43331000000000003,
+"score_t": 1.2050646070140578,
+"depth_t": 115.77031
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXRT",
+"m": "KXRT-DUNE-80",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.87,
+"ref": 0.87,
+"ticks": 0,
+"ahead_t": 21.87726,
+"score_t": 21.939944696627023,
+"depth_t": 27.16727
+},
+"no": {
+"best": 0.12,
+"ref": 0.12,
+"ticks": 0,
+"ahead_t": 38.76439,
+"score_t": 38.850717753906245,
+"depth_t": 48.29192
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXRT",
+"m": "KXRT-IPL-80",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 34.89439,
+"score_t": 35.07760343751586,
+"depth_t": 61.2779
+},
+"no": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 256.02216,
+"score_t": 256.02216,
+"depth_t": 256.02216
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXRT",
+"m": "KXRT-ZER-65",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.39,
+"ref": 0.39,
+"ticks": 0,
+"ahead_t": 20.016830000000002,
+"score_t": 20.11684444331779,
+"depth_t": 57.402840000000005
+},
+"no": {
+"best": 0.6,
+"ref": 0.6,
+"ticks": 0,
+"ahead_t": 15.350010000000001,
+"score_t": 15.370971078968156,
+"depth_t": 68.84855
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXRT",
+"m": "KXRT-IPL-65",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 40.97726,
+"score_t": 96.93776013261105,
+"depth_t": 263.27247000000006
+},
+"no": null,
+"valid": false
+},
+{
+"k": 2,
+"s": "KXRT",
+"m": "KXRT-FOC-45",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.9,
+"ref": 0.85,
+"ticks": 5,
+"ahead_t": 10.60551,
+"score_t": 10.816157476228238,
+"depth_t": 41.32772
+},
+"no": {
+"best": 0.06,
+"ref": 0.03,
+"ticks": 3,
+"ahead_t": 15.16651,
+"score_t": 41.239035,
+"depth_t": 68.42661
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXRT",
+"m": "KXRT-DUNE-55",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 467.155,
+"score_t": 467.1550000000582,
+"depth_t": 484.82
+},
+"no": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 637.18901,
+"score_t": 637.18901,
+"depth_t": 637.18901
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXRT",
+"m": "KXRT-HUN-45",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 19.75456,
+"score_t": 20.11445764926925,
+"depth_t": 137.09684
+},
+"no": null,
+"valid": false
+},
+{
+"k": 2,
+"s": "KXRT",
+"m": "KXRT-VIO-85",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.05,
+"ref": 0.05,
+"ticks": 0,
+"ahead_t": 8.966190000000001,
+"score_t": 10.2051275,
+"depth_t": 21.37619
+},
+"no": {
+"best": 0.94,
+"ref": 0.94,
+"ticks": 0,
+"ahead_t": 39.22401,
+"score_t": 39.249198105665066,
+"depth_t": 296.45273
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXRT",
+"m": "KXRT-IPL-70",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 1.025,
+"score_t": 47.9614621875095,
+"depth_t": 177.85993
+},
+"no": null,
+"valid": false
+},
+{
+"k": 2,
+"s": "KXRT",
+"m": "KXRT-VIO-55",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.89,
+"ref": 0.85,
+"ticks": 4,
+"ahead_t": 1.24491,
+"score_t": 1.2514930936568975,
+"depth_t": 30.95518
+},
+"no": {
+"best": 0.1,
+"ref": 0.07,
+"ticks": 3,
+"ahead_t": 2.0491800000000002,
+"score_t": 2.3954470312500002,
+"depth_t": 6.86597
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXRT",
+"m": "KXRT-ANG-65",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.24,
+"ref": 0.24,
+"ticks": 0,
+"ahead_t": 35.26081,
+"score_t": 35.660856091194155,
+"depth_t": 82.37181
+},
+"no": {
+"best": 0.75,
+"ref": 0.75,
+"ticks": 0,
+"ahead_t": 27.89846,
+"score_t": 27.89846500002157,
+"depth_t": 62.001979999999996
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXRT",
+"m": "KXRT-FUR-65",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 1.6755,
+"score_t": 2.4755588041350576,
+"depth_t": 49.11408
+},
+"no": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 170.76160000000002,
+"score_t": 170.76160000000002,
+"depth_t": 170.76160000000002
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXRT",
+"m": "KXRT-JUM-50",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.68,
+"ref": 0.68,
+"ticks": 0,
+"ahead_t": 25.89614,
+"score_t": 25.89614589219261,
+"depth_t": 57.95262
+},
+"no": {
+"best": 0.31,
+"ref": 0.31,
+"ticks": 0,
+"ahead_t": 49.14374,
+"score_t": 49.34374729357398,
+"depth_t": 80.54284
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXRT",
+"m": "KXRT-VIO-75",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.13,
+"ref": 0.13,
+"ticks": 0,
+"ahead_t": 14.43305,
+"score_t": 23.905696845703126,
+"depth_t": 86.77705999999999
+},
+"no": {
+"best": 0.86,
+"ref": 0.86,
+"ticks": 0,
+"ahead_t": 1.74001,
+"score_t": 1.8297338682568909,
+"depth_t": 36.802839999999996
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXRT",
+"m": "KXRT-DUNE-95",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.2,
+"ref": 0.2,
+"ticks": 0,
+"ahead_t": 57.71726,
+"score_t": 57.74143091331482,
+"depth_t": 110.29208
+},
+"no": {
+"best": 0.79,
+"ref": 0.79,
+"ticks": 0,
+"ahead_t": 29.55749,
+"score_t": 29.55758190036715,
+"depth_t": 75.36044
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXRT",
+"m": "KXRT-WER-65",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.94,
+"ref": 0.94,
+"ticks": 0,
+"ahead_t": 45.19667,
+"score_t": 45.19667381469726,
+"depth_t": 52.468669999999996
+},
+"no": {
+"best": 0.05,
+"ref": 0.05,
+"ticks": 0,
+"ahead_t": 453.35234,
+"score_t": 454.24696,
+"depth_t": 459.07458
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXPANAMAWEEKLY",
+"m": "KXPANAMAWEEKLY-26NOV22-T205",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.07,
+"ref": 0.07,
+"ticks": 0,
+"ahead_t": 40.374,
+"score_t": 41.229578125,
+"depth_t": 43.206
+},
+"no": {
+"best": 0.91,
+"ref": 0.82,
+"ticks": 9,
+"ahead_t": 7.57266,
+"score_t": 7.588286192224095,
+"depth_t": 14.32166
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXPANAMAWEEKLY",
+"m": "KXPANAMAWEEKLY-26NOV22-T200",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.24,
+"ref": 0.22,
+"ticks": 2,
+"ahead_t": 11.352469999999999,
+"score_t": 12.502601620407104,
+"depth_t": 48.178470000000004
+},
+"no": {
+"best": 0.73,
+"ref": 0.69,
+"ticks": 4,
+"ahead_t": 1.38048,
+"score_t": 1.5740439896851783,
+"depth_t": 34.46858
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXPANAMAWEEKLY",
+"m": "KXPANAMAWEEKLY-26NOV22-T185",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.9,
+"ref": 0.89,
+"ticks": 1,
+"ahead_t": 3.2363000000000004,
+"score_t": 3.2363002075641543,
+"depth_t": 33.212300000000006
+},
+"no": {
+"best": 0.09,
+"ref": 0.09,
+"ticks": 0,
+"ahead_t": 69.79913,
+"score_t": 70.09156750000001,
+"depth_t": 74.99013000000001
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXPANAMAWEEKLY",
+"m": "KXPANAMAWEEKLY-26NOV22-T215",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 260.57124,
+"score_t": 260.57124,
+"depth_t": 260.57124
+},
+"no": {
+"best": 0.98,
+"ref": 0.97,
+"ticks": 1,
+"ahead_t": 6.00369,
+"score_t": 6.504190000034458,
+"depth_t": 42.72469
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXPANAMAWEEKLY",
+"m": "KXPANAMAWEEKLY-26NOV22-T210",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.03,
+"ref": 0.03,
+"ticks": 0,
+"ahead_t": 137.00073999999998,
+"score_t": 137.25073999999998,
+"depth_t": 138.00073999999998
+},
+"no": {
+"best": 0.96,
+"ref": 0.95,
+"ticks": 1,
+"ahead_t": 5.50677,
+"score_t": 5.506770000491739,
+"depth_t": 33.356770000000004
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXPANAMAWEEKLY",
+"m": "KXPANAMAWEEKLY-26NOV22-T220",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 240.67234,
+"score_t": 240.67234,
+"depth_t": 240.67234
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 56.23728,
+"score_t": 56.23728000000047,
+"depth_t": 82.22128
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXPANAMAWEEKLY",
+"m": "KXPANAMAWEEKLY-26NOV22-T190",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.71,
+"ref": 0.7,
+"ticks": 1,
+"ahead_t": 2.91452,
+"score_t": 2.9145200050544076,
+"depth_t": 37.36152
+},
+"no": {
+"best": 0.26,
+"ref": 0.26,
+"ticks": 0,
+"ahead_t": 3.7866,
+"score_t": 3.938989982471466,
+"depth_t": 35.08137
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXPANAMAWEEKLY",
+"m": "KXPANAMAWEEKLY-26NOV22-T180",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.94,
+"ref": 0.93,
+"ticks": 1,
+"ahead_t": 9.03403,
+"score_t": 9.284329998292744,
+"depth_t": 43.73203
+},
+"no": {
+"best": 0.04,
+"ref": 0.04,
+"ticks": 0,
+"ahead_t": 119.3745,
+"score_t": 119.9995,
+"depth_t": 123.3745
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXPANAMAWEEKLY",
+"m": "KXPANAMAWEEKLY-26NOV22-T195",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.42,
+"ref": 0.41,
+"ticks": 1,
+"ahead_t": 6.25356,
+"score_t": 7.234857085002266,
+"depth_t": 46.17812
+},
+"no": {
+"best": 0.55,
+"ref": 0.55,
+"ticks": 0,
+"ahead_t": 0.47801,
+"score_t": 0.5015306836901751,
+"depth_t": 27.784200000000002
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXBABELMANDEBWEEKLY",
+"m": "KXBABELMANDEBWEEKLY-26NOV22-T190",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.41,
+"ref": 0.41,
+"ticks": 0,
+"ahead_t": 4.1155,
+"score_t": 4.157959349232482,
+"depth_t": 64.79963
+},
+"no": {
+"best": 0.55,
+"ref": 0.55,
+"ticks": 0,
+"ahead_t": 2.33582,
+"score_t": 2.3601793771587865,
+"depth_t": 32.44782
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXBABELMANDEBWEEKLY",
+"m": "KXBABELMANDEBWEEKLY-26NOV22-T220",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.02,
+"ref": 0.02,
+"ticks": 0,
+"ahead_t": 164.13401000000002,
+"score_t": 164.68401,
+"depth_t": 165.23401
+},
+"no": {
+"best": 0.97,
+"ref": 0.97,
+"ticks": 0,
+"ahead_t": 8.26932,
+"score_t": 8.272601402528297,
+"depth_t": 34.93332
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXBABELMANDEBWEEKLY",
+"m": "KXBABELMANDEBWEEKLY-26NOV22-T195",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.32,
+"ref": 0.31,
+"ticks": 1,
+"ahead_t": 4.32447,
+"score_t": 4.364363388939574,
+"depth_t": 38.727959999999996
+},
+"no": {
+"best": 0.62,
+"ref": 0.62,
+"ticks": 0,
+"ahead_t": 0.436,
+"score_t": 0.7767383044917151,
+"depth_t": 35.3755
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXBABELMANDEBWEEKLY",
+"m": "KXBABELMANDEBWEEKLY-26NOV22-T180",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.64,
+"ref": 0.64,
+"ticks": 0,
+"ahead_t": 2.0441,
+"score_t": 2.7473796183479697,
+"depth_t": 59.64342
+},
+"no": {
+"best": 0.32,
+"ref": 0.32,
+"ticks": 0,
+"ahead_t": 0.48334,
+"score_t": 0.5712180668862163,
+"depth_t": 30.076340000000002
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXBABELMANDEBWEEKLY",
+"m": "KXBABELMANDEBWEEKLY-26NOV22-T170",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.88,
+"ref": 0.88,
+"ticks": 0,
+"ahead_t": 1.9419000000000002,
+"score_t": 1.957447265627189,
+"depth_t": 57.16849
+},
+"no": {
+"best": 0.1,
+"ref": 0.09,
+"ticks": 1,
+"ahead_t": 12.8094,
+"score_t": 13.0820484375,
+"depth_t": 19.7584
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXBABELMANDEBWEEKLY",
+"m": "KXBABELMANDEBWEEKLY-26NOV22-T230",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 298.683,
+"score_t": 298.683,
+"depth_t": 298.683
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 15.889629999999999,
+"score_t": 17.01488979532977,
+"depth_t": 44.316629999999996
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXBABELMANDEBWEEKLY",
+"m": "KXBABELMANDEBWEEKLY-26NOV22-T200",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.12,
+"ref": 0.12,
+"ticks": 0,
+"ahead_t": 19.33398,
+"score_t": 19.766461171874997,
+"depth_t": 31.59621
+},
+"no": {
+"best": 0.87,
+"ref": 0.85,
+"ticks": 2,
+"ahead_t": 1.93501,
+"score_t": 1.935010001328066,
+"depth_t": 12.54101
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXBABELMANDEBWEEKLY",
+"m": "KXBABELMANDEBWEEKLY-26NOV22-T210",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.08,
+"ref": 0.07,
+"ticks": 1,
+"ahead_t": 9.20331,
+"score_t": 34.41407,
+"depth_t": 61.04985
+},
+"no": {
+"best": 0.9,
+"ref": 0.89,
+"ticks": 1,
+"ahead_t": 1.20782,
+"score_t": 1.7184056250005346,
+"depth_t": 11.082690000000001
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXBABELMANDEBWEEKLY",
+"m": "KXBABELMANDEBWEEKLY-26NOV22-T205",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.11,
+"ref": 0.1,
+"ticks": 1,
+"ahead_t": 21.30703,
+"score_t": 21.694785859375003,
+"depth_t": 29.610030000000002
+},
+"no": {
+"best": 0.88,
+"ref": 0.87,
+"ticks": 1,
+"ahead_t": 1.51226,
+"score_t": 1.52267687500051,
+"depth_t": 12.83862
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXBABELMANDEBWEEKLY",
+"m": "KXBABELMANDEBWEEKLY-26NOV22-T175",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.82,
+"ref": 0.82,
+"ticks": 0,
+"ahead_t": 0.73653,
+"score_t": 1.444371353354458,
+"depth_t": 18.58636
+},
+"no": {
+"best": 0.17,
+"ref": 0.17,
+"ticks": 0,
+"ahead_t": 1.2381,
+"score_t": 1.502888073120117,
+"depth_t": 9.13991
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXBABELMANDEBWEEKLY",
+"m": "KXBABELMANDEBWEEKLY-26NOV22-T185",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.47,
+"ref": 0.47,
+"ticks": 0,
+"ahead_t": 6.88429,
+"score_t": 7.4377276194167035,
+"depth_t": 49.69615
+},
+"no": {
+"best": 0.51,
+"ref": 0.49,
+"ticks": 2,
+"ahead_t": 0.37872,
+"score_t": 0.3796030238019761,
+"depth_t": 26.97376
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXART",
+"m": "KXART-PHI19NOV26-900000",
+"target": 1000.0,
+"usd_day": 35.17241379310345,
+"yes": {
+"best": 0.03,
+"ref": 0.02,
+"ticks": 1,
+"ahead_t": 2.0782,
+"score_t": 4.23505,
+"depth_t": 6.3919
+},
+"no": {
+"best": 0.05,
+"ref": 0.01,
+"ticks": 4,
+"ahead_t": 5.70131,
+"score_t": 5.70131,
+"depth_t": 5.70131
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXART",
+"m": "KXART-CHR45A17NOV26-2000000",
+"target": 1000.0,
+"usd_day": 52.94117647058823,
+"yes": {
+"best": 0.13,
+"ref": 0.12,
+"ticks": 1,
+"ahead_t": 18.5685,
+"score_t": 18.9862177734375,
+"depth_t": 28.8045
+},
+"no": {
+"best": 0.79,
+"ref": 0.77,
+"ticks": 2,
+"ahead_t": 2.54457,
+"score_t": 2.6094994531287314,
+"depth_t": 12.290280000000001
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXART",
+"m": "KXART-PICBAI18NOV26-50000000",
+"target": 1000.0,
+"usd_day": 13.846153846153845,
+"yes": {
+"best": 0.35,
+"ref": 0.12,
+"ticks": 23,
+"ahead_t": 0.60299,
+"score_t": 2.6468542578124996,
+"depth_t": 17.739990000000002
+},
+"no": {
+"best": 0.61,
+"ref": 0.34,
+"ticks": 27,
+"ahead_t": 1.12013,
+"score_t": 1.1216571623599216,
+"depth_t": 3.09293
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXART",
+"m": "KXART-PHI18NOV26-1000000",
+"target": 1000.0,
+"usd_day": 35.17241379310345,
+"yes": {
+"best": 0.02,
+"ref": 0.01,
+"ticks": 1,
+"ahead_t": 4.274,
+"score_t": 4.274,
+"depth_t": 4.274
+},
+"no": {
+"best": 0.1,
+"ref": 0.09,
+"ticks": 1,
+"ahead_t": 0.8915299999999999,
+"score_t": 1.07402359375,
+"depth_t": 2.61627
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXART",
+"m": "KXART-PHI19NOV26-700000",
+"target": 1000.0,
+"usd_day": 35.17241379310345,
+"yes": {
+"best": 0.03,
+"ref": 0.02,
+"ticks": 1,
+"ahead_t": 2.25821,
+"score_t": 4.25821,
+"depth_t": 6.25821
+},
+"no": {
+"best": 0.03,
+"ref": 0.02,
+"ticks": 1,
+"ahead_t": 2.06,
+"score_t": 4.1523699999999995,
+"depth_t": 6.24474
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXART",
+"m": "KXART-CHR91320NOV26-500000",
+"target": 1000.0,
+"usd_day": 20.377358490566035,
+"yes": {
+"best": 0.43,
+"ref": 0.43,
+"ticks": 0,
+"ahead_t": 0.242,
+"score_t": 0.7783856422874476,
+"depth_t": 37.799800000000005
+},
+"no": {
+"best": 0.47,
+"ref": 0.47,
+"ticks": 0,
+"ahead_t": 0.85158,
+"score_t": 2.481195000000506,
+"depth_t": 23.38004
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXART",
+"m": "KXART-CHR34B19NOV26-50000000",
+"target": 1000.0,
+"usd_day": 26.34146341463415,
+"yes": {
+"best": 0.18,
+"ref": 0.18,
+"ticks": 0,
+"ahead_t": 9.04042,
+"score_t": 9.04197532836914,
+"depth_t": 30.81242
+},
+"no": {
+"best": 0.77,
+"ref": 0.77,
+"ticks": 0,
+"ahead_t": 23.228,
+"score_t": 24.537695400803052,
+"depth_t": 37.43239
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXART",
+"m": "KXART-PHI18NOV26-500000",
+"target": 1000.0,
+"usd_day": 35.17241379310345,
+"yes": {
+"best": 0.8,
+"ref": 0.79,
+"ticks": 1,
+"ahead_t": 0.52418,
+"score_t": 0.5241800000000071,
+"depth_t": 23.32018
+},
+"no": {
+"best": 0.05,
+"ref": 0.04,
+"ticks": 1,
+"ahead_t": 1.00801,
+"score_t": 1.669725,
+"depth_t": 4.298730000000001
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXART",
+"m": "KXART-KOCHMON20NOV26-24000000",
+"target": 1000.0,
+"usd_day": 27.27272727272727,
+"yes": {
+"best": 0.09,
+"ref": 0.02,
+"ticks": 7,
+"ahead_t": 2.08496,
+"score_t": 4.278014999999999,
+"depth_t": 6.47107
+},
+"no": {
+"best": 0.07,
+"ref": 0.03,
+"ticks": 4,
+"ahead_t": 0.27065,
+"score_t": 2.1669,
+"depth_t": 6.06365
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXART",
+"m": "KXART-CHR56B19NOV26-1500000",
+"target": 1000.0,
+"usd_day": 26.34146341463415,
+"yes": {
+"best": 0.17,
+"ref": 0.17,
+"ticks": 0,
+"ahead_t": 45.80865,
+"score_t": 46.80872534790039,
+"depth_t": 49.10065
+},
+"no": {
+"best": 0.34,
+"ref": 0.34,
+"ticks": 0,
+"ahead_t": 47.53085,
+"score_t": 47.530850010103336,
+"depth_t": 57.14085
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXART",
+"m": "KXART-PHI17NOV26-250000",
+"target": 1000.0,
+"usd_day": 35.17241379310345,
+"yes": {
+"best": 0.08,
+"ref": 0.04,
+"ticks": 4,
+"ahead_t": 0.7234700000000001,
+"score_t": 0.8624700000000001,
+"depth_t": 1.77947
+},
+"no": {
+"best": 0.06,
+"ref": 0.01,
+"ticks": 5,
+"ahead_t": 4.348,
+"score_t": 4.348,
+"depth_t": 4.348
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXART",
+"m": "KXART-CHR34B19NOV26-30000000",
+"target": 1000.0,
+"usd_day": 26.34146341463415,
+"yes": {
+"best": 0.91,
+"ref": 0.91,
+"ticks": 0,
+"ahead_t": 9.1774,
+"score_t": 9.177400000003018,
+"depth_t": 40.5674
+},
+"no": {
+"best": 0.08,
+"ref": 0.08,
+"ticks": 0,
+"ahead_t": 20.75871,
+"score_t": 21.4288896875,
+"depth_t": 31.04271
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXART",
+"m": "KXART-PHI17NOV26-650000",
+"target": 1000.0,
+"usd_day": 35.17241379310345,
+"yes": {
+"best": 0.03,
+"ref": 0.01,
+"ticks": 2,
+"ahead_t": 4.2661999999999995,
+"score_t": 4.2661999999999995,
+"depth_t": 4.2661999999999995
+},
+"no": {
+"best": 0.19,
+"ref": 0.01,
+"ticks": 18,
+"ahead_t": 4.333,
+"score_t": 4.333,
+"depth_t": 4.333
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXART",
+"m": "KXART-CHR56B19NOV26-1750000",
+"target": 1000.0,
+"usd_day": 26.34146341463415,
+"yes": {
+"best": 0.2,
+"ref": 0.2,
+"ticks": 0,
+"ahead_t": 8.72066,
+"score_t": 8.940990321502687,
+"depth_t": 51.46431
+},
+"no": {
+"best": 0.74,
+"ref": 0.74,
+"ticks": 0,
+"ahead_t": 0.72334,
+"score_t": 1.3368400000009315,
+"depth_t": 39.90933999999999
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXART",
+"m": "KXART-CHR39A17NOV26-22000000",
+"target": 1000.0,
+"usd_day": 52.94117647058823,
+"yes": {
+"best": 0.14,
+"ref": 0.13,
+"ticks": 1,
+"ahead_t": 0.22202,
+"score_t": 0.28641068359375,
+"depth_t": 11.45154
+},
+"no": {
+"best": 0.64,
+"ref": 0.24,
+"ticks": 40,
+"ahead_t": 0.26800999999999997,
+"score_t": 0.26814967525959016,
+"depth_t": 10.90501
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXART",
+"m": "KXART-CHR56B19NOV26-2000000",
+"target": 1000.0,
+"usd_day": 26.34146341463415,
+"yes": {
+"best": 0.14,
+"ref": 0.14,
+"ticks": 0,
+"ahead_t": 12.963959999999998,
+"score_t": 13.368376748046874,
+"depth_t": 23.42196
+},
+"no": {
+"best": 0.81,
+"ref": 0.8,
+"ticks": 1,
+"ahead_t": 26.94647,
+"score_t": 27.34647000000093,
+"depth_t": 37.37447
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXART",
+"m": "KXART-CHR39A17NOV26-16000000",
+"target": 1000.0,
+"usd_day": 52.94117647058823,
+"yes": {
+"best": 0.22,
+"ref": 0.19,
+"ticks": 3,
+"ahead_t": 0.2506,
+"score_t": 0.32246655120849604,
+"depth_t": 11.6057
+},
+"no": {
+"best": 0.39,
+"ref": 0.09,
+"ticks": 30,
+"ahead_t": 0.35657,
+"score_t": 0.51151390625,
+"depth_t": 10.74695
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXART",
+"m": "KXART-CHR94120NOV26-350000",
+"target": 1000.0,
+"usd_day": 20.377358490566035,
+"yes": {
+"best": 0.38,
+"ref": 0.38,
+"ticks": 0,
+"ahead_t": 22.70405,
+"score_t": 23.10405000142268,
+"depth_t": 43.03705
+},
+"no": {
+"best": 0.49,
+"ref": 0.49,
+"ticks": 0,
+"ahead_t": 0.318,
+"score_t": 0.4041225585938792,
+"depth_t": 12.726
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXART",
+"m": "KXART-PICBAI18NOV26-30000000",
+"target": 1000.0,
+"usd_day": 13.846153846153845,
+"yes": {
+"best": 0.96,
+"ref": 0.6,
+"ticks": 36,
+"ahead_t": 1.29239,
+"score_t": 1.2923900000801531,
+"depth_t": 4.48439
+},
+"no": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 5.002,
+"score_t": 5.002,
+"depth_t": 5.002
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXART",
+"m": "KXART-PHI6NOV26-4000000",
+"target": 1000.0,
+"usd_day": 35.17241379310345,
+"yes": {
+"best": 0.04,
+"ref": 0.04,
+"ticks": 0,
+"ahead_t": 1.5952899999999999,
+"score_t": 3.1521125000000003,
+"depth_t": 8.24558
+},
+"no": {
+"best": 0.06,
+"ref": 0.06,
+"ticks": 0,
+"ahead_t": 1.019,
+"score_t": 1.44049125,
+"depth_t": 3.27154
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXART",
+"m": "KXART-CHR41B19NOV26-3000000",
+"target": 1000.0,
+"usd_day": 26.34146341463415,
+"yes": {
+"best": 0.3,
+"ref": 0.3,
+"ticks": 0,
+"ahead_t": 0.318,
+"score_t": 0.41071287014111874,
+"depth_t": 21.2256
+},
+"no": {
+"best": 0.63,
+"ref": 0.63,
+"ticks": 0,
+"ahead_t": 24.54205,
+"score_t": 24.94205,
+"depth_t": 34.92705
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXART",
+"m": "KXART-PHI11NOV26-2000000",
+"target": 1000.0,
+"usd_day": 35.17241379310345,
+"yes": {
+"best": 0.41,
+"ref": 0.4,
+"ticks": 1,
+"ahead_t": 0.43001999999999996,
+"score_t": 0.4300200000092841,
+"depth_t": 2.57702
+},
+"no": {
+"best": 0.07,
+"ref": 0.06,
+"ticks": 1,
+"ahead_t": 1.5850199999999999,
+"score_t": 1.8984100000000002,
+"depth_t": 3.8685
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXART",
+"m": "KXART-CHR71920NOV26-900000",
+"target": 1000.0,
+"usd_day": 20.377358490566035,
+"yes": {
+"best": 0.4,
+"ref": 0.4,
+"ticks": 0,
+"ahead_t": 20.922040000000003,
+"score_t": 20.922040000064722,
+"depth_t": 30.50504
+},
+"no": {
+"best": 0.39,
+"ref": 0.39,
+"ticks": 0,
+"ahead_t": 40.45,
+"score_t": 40.45000000620623,
+"depth_t": 49.986
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXART",
+"m": "KXART-KLILIT18NOV26-130000000",
+"target": 1000.0,
+"usd_day": 13.846153846153845,
+"yes": {
+"best": 0.04,
+"ref": 0.04,
+"ticks": 0,
+"ahead_t": 4.467,
+"score_t": 9.096,
+"depth_t": 14.725
+},
+"no": {
+"best": 0.95,
+"ref": 0.95,
+"ticks": 0,
+"ahead_t": 7.647,
+"score_t": 8.08513,
+"depth_t": 21.204759999999997
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXART",
+"m": "KXART-CHR8A17NOV26-20000000",
+"target": 1000.0,
+"usd_day": 52.94117647058823,
+"yes": {
+"best": 0.67,
+"ref": 0.15,
+"ticks": 52,
+"ahead_t": 0.35361000000000004,
+"score_t": 0.3606340478515625,
+"depth_t": 12.91961
+},
+"no": {
+"best": 0.08,
+"ref": 0.05,
+"ticks": 3,
+"ahead_t": 2.59748,
+"score_t": 5.454207500000001,
+"depth_t": 14.224639999999999
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-YOU26NOV22-11.0M",
+"target": 1000.0,
+"usd_day": 12.94953246126048,
+"yes": {
+"best": 0.02,
+"ref": 0.01,
+"ticks": 1,
+"ahead_t": 8.738,
+"score_t": 8.738,
+"depth_t": 8.738
+},
+"no": {
+"best": 0.21,
+"ref": 0.21,
+"ticks": 0,
+"ahead_t": 3.59084,
+"score_t": 4.281590128746033,
+"depth_t": 6.35784
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-DRA26NOV22-11.25M",
+"target": 1000.0,
+"usd_day": 12.949381507164127,
+"yes": {
+"best": 0.51,
+"ref": 0.51,
+"ticks": 0,
+"ahead_t": 2.76208,
+"score_t": 3.3272412500000295,
+"depth_t": 4.56109
+},
+"no": {
+"best": 0.03,
+"ref": null,
+"depth_t": 0.001
+},
+"valid": false
+},
+{
+"k": 2,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-MOR26NOV22-4.5M",
+"target": 1000.0,
+"usd_day": 12.949446201345904,
+"yes": {
+"best": 0.09,
+"ref": 0.08,
+"ticks": 1,
+"ahead_t": 6.925,
+"score_t": 6.9289140625,
+"depth_t": 7.326
+},
+"no": {
+"best": 0.15,
+"ref": 0.14,
+"ticks": 1,
+"ahead_t": 3.673,
+"score_t": 3.6731583251953124,
+"depth_t": 3.778
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-DRA26NOV22-14.25M",
+"target": 1000.0,
+"usd_day": 12.949403071819562,
+"yes": {
+"best": 0.02,
+"ref": 0.02,
+"ticks": 0,
+"ahead_t": 2.218,
+"score_t": 2.868,
+"depth_t": 3.518
+},
+"no": {
+"best": 0.2,
+"ref": 0.2,
+"ticks": 0,
+"ahead_t": 1.57,
+"score_t": 1.5700202808380126,
+"depth_t": 2.732
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-DRA26NOV22-14.5M",
+"target": 1000.0,
+"usd_day": 12.949403071819562,
+"yes": {
+"best": 0.02,
+"ref": 0.01,
+"ticks": 1,
+"ahead_t": 4.623,
+"score_t": 4.623,
+"depth_t": 4.623
+},
+"no": {
+"best": 0.2,
+"ref": 0.2,
+"ticks": 0,
+"ahead_t": 1.57,
+"score_t": 1.5711059722900391,
+"depth_t": 3.73
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-JUS26NOV22-14.25M",
+"target": 1000.0,
+"usd_day": 12.94942463654682,
+"yes": {
+"best": 0.47,
+"ref": 0.47,
+"ticks": 0,
+"ahead_t": 2.7,
+"score_t": 2.70000000000001,
+"depth_t": 3.161
+},
+"no": {
+"best": 0.03,
+"ref": 0.01,
+"ticks": 2,
+"ahead_t": 8.1178,
+"score_t": 8.1178,
+"depth_t": 8.1178
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-BAD26NOV22-25.5M",
+"target": 1000.0,
+"usd_day": 12.949359942580513,
+"yes": {
+"best": 0.36,
+"ref": 0.36,
+"ticks": 0,
+"ahead_t": 3.052,
+"score_t": 3.5211250076531724,
+"depth_t": 6.522
+},
+"no": {
+"best": 0.03,
+"ref": 0.01,
+"ticks": 2,
+"ahead_t": 7.14646,
+"score_t": 7.14646,
+"depth_t": 7.14646
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-KAT26NOV22-16.0M",
+"target": 1000.0,
+"usd_day": 12.94942463654682,
+"yes": {
+"best": 0.25,
+"ref": 0.25,
+"ticks": 0,
+"ahead_t": 2.865,
+"score_t": 2.8650000357627867,
+"depth_t": 3.34
+},
+"no": {
+"best": 0.03,
+"ref": 0.01,
+"ticks": 2,
+"ahead_t": 10.0688,
+"score_t": 10.0688,
+"depth_t": 10.0688
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-KAT26NOV22-21.0M",
+"target": 1000.0,
+"usd_day": 12.94942463654682,
+"yes": {
+"best": 0.02,
+"ref": 0.01,
+"ticks": 1,
+"ahead_t": 5.564,
+"score_t": 5.564,
+"depth_t": 5.564
+},
+"no": {
+"best": 0.2,
+"ref": 0.2,
+"ticks": 0,
+"ahead_t": 1.47,
+"score_t": 1.4700129299163818,
+"depth_t": 2.629
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-TAY26NOV22-13.8M",
+"target": 1000.0,
+"usd_day": 12.949489331159542,
+"yes": {
+"best": 0.17,
+"ref": 0.1,
+"ticks": 7,
+"ahead_t": 0.698,
+"score_t": 1.547591796875,
+"depth_t": 7.599
+},
+"no": {
+"best": 0.21,
+"ref": 0.21,
+"ticks": 0,
+"ahead_t": 2.529,
+"score_t": 2.529024307479858,
+"depth_t": 12.74253
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-TAY26NOV22-14.2M",
+"target": 1000.0,
+"usd_day": 12.949489331159542,
+"yes": {
+"best": 0.18,
+"ref": 0.07,
+"ticks": 11,
+"ahead_t": 2.647,
+"score_t": 2.6519375,
+"depth_t": 2.948
+},
+"no": {
+"best": 0.21,
+"ref": 0.2,
+"ticks": 1,
+"ahead_t": 2.425,
+"score_t": 2.425052984237671,
+"depth_t": 13.14
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-TAY26NOV22-13.6M",
+"target": 1000.0,
+"usd_day": 12.949489331159542,
+"yes": {
+"best": 0.37,
+"ref": 0.36,
+"ticks": 1,
+"ahead_t": 1.688,
+"score_t": 2.128000097119249,
+"depth_t": 25.703
+},
+"no": {
+"best": 0.13,
+"ref": 0.12,
+"ticks": 1,
+"ahead_t": 2.628,
+"score_t": 3.128159609375,
+"depth_t": 3.72912
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-FUT26NOV22-5.0M",
+"target": 1000.0,
+"usd_day": 12.949403071819562,
+"yes": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 3.499,
+"score_t": 3.4990000000000183,
+"depth_t": 3.96
+},
+"no": null,
+"valid": false
+},
+{
+"k": 2,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-MOR26NOV22-5.75M",
+"target": 1000.0,
+"usd_day": 12.949446201345904,
+"yes": {
+"best": 0.06,
+"ref": 0.06,
+"ticks": 0,
+"ahead_t": 2.443,
+"score_t": 3.4642246875000002,
+"depth_t": 4.96219
+},
+"no": {
+"best": 0.93,
+"ref": 0.79,
+"ticks": 14,
+"ahead_t": 0.9517599999999999,
+"score_t": 0.9517599999999999,
+"depth_t": 1.07476
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-JUS26NOV22-15.0M",
+"target": 1000.0,
+"usd_day": 12.94942463654682,
+"yes": {
+"best": 0.41,
+"ref": 0.4,
+"ticks": 1,
+"ahead_t": 0.852,
+"score_t": 0.8520039367702411,
+"depth_t": 1.259
+},
+"no": {
+"best": 0.03,
+"ref": null,
+"depth_t": 0.121
+},
+"valid": false
+},
+{
+"k": 2,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-WEE26NOV22-20.0M",
+"target": 1000.0,
+"usd_day": 12.949510896174099,
+"yes": {
+"best": 0.1,
+"ref": 0.1,
+"ticks": 0,
+"ahead_t": 6.554,
+"score_t": 7.0550546875,
+"depth_t": 8.974
+},
+"no": {
+"best": 0.03,
+"ref": 0.01,
+"ticks": 2,
+"ahead_t": 9.795,
+"score_t": 9.795,
+"depth_t": 9.795
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-DRA26NOV22-13.0M",
+"target": 1000.0,
+"usd_day": 12.949381507164127,
+"yes": {
+"best": 0.02,
+"ref": 0.01,
+"ticks": 1,
+"ahead_t": 26.325,
+"score_t": 26.325,
+"depth_t": 26.325
+},
+"no": {
+"best": 0.03,
+"ref": 0.02,
+"ticks": 1,
+"ahead_t": 16.85,
+"score_t": 16.85,
+"depth_t": 16.85
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-TAY26NOV22-14.9M",
+"target": 1000.0,
+"usd_day": 12.949510896174099,
+"yes": {
+"best": 0.11,
+"ref": 0.02,
+"ticks": 9,
+"ahead_t": 5.06496,
+"score_t": 6.71546,
+"depth_t": 8.36596
+},
+"no": {
+"best": 0.19,
+"ref": 0.19,
+"ticks": 0,
+"ahead_t": 1.648,
+"score_t": 1.9811292839050294,
+"depth_t": 16.449
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-TAY26NOV22-13.2M",
+"target": 1000.0,
+"usd_day": 12.949489331159542,
+"yes": {
+"best": 0.51,
+"ref": 0.51,
+"ticks": 0,
+"ahead_t": 2.057,
+"score_t": 2.5916250000000005,
+"depth_t": 3.791
+},
+"no": {
+"best": 0.03,
+"ref": 0.01,
+"ticks": 2,
+"ahead_t": 11.9118,
+"score_t": 11.9118,
+"depth_t": 11.9118
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-WEE26NOV22-23.0M",
+"target": 1000.0,
+"usd_day": 12.94953246126048,
+"yes": {
+"best": 0.02,
+"ref": 0.01,
+"ticks": 1,
+"ahead_t": 6.53,
+"score_t": 6.53,
+"depth_t": 6.53
+},
+"no": {
+"best": 0.2,
+"ref": 0.2,
+"ticks": 0,
+"ahead_t": 1.571,
+"score_t": 1.571012731552124,
+"depth_t": 2.731
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-WEE26NOV22-25.0M",
+"target": 1000.0,
+"usd_day": 12.94953246126048,
+"yes": {
+"best": 0.02,
+"ref": 0.01,
+"ticks": 1,
+"ahead_t": 8.472,
+"score_t": 8.472,
+"depth_t": 8.472
+},
+"no": {
+"best": 0.2,
+"ref": 0.2,
+"ticks": 0,
+"ahead_t": 1.57,
+"score_t": 1.5700046672821044,
+"depth_t": 2.722
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-BAD26NOV22-23.0M",
+"target": 1000.0,
+"usd_day": 12.949359942580513,
+"yes": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 2.601,
+"score_t": 3.032250000000018,
+"depth_t": 4.971
+},
+"no": null,
+"valid": false
+},
+{
+"k": 2,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-TAY26NOV22-13.5M",
+"target": 1000.0,
+"usd_day": 12.949489331159542,
+"yes": {
+"best": 0.4,
+"ref": 0.4,
+"ticks": 0,
+"ahead_t": 2.368,
+"score_t": 2.538500190846655,
+"depth_t": 24.895
+},
+"no": {
+"best": 0.08,
+"ref": 0.07,
+"ticks": 1,
+"ahead_t": 6.224,
+"score_t": 6.227234375,
+"depth_t": 6.327
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-WEE26NOV22-13.0M",
+"target": 1000.0,
+"usd_day": 12.949510896174099,
+"yes": {
+"best": 0.9,
+"ref": 0.9,
+"ticks": 0,
+"ahead_t": 1.611,
+"score_t": 1.611000000000946,
+"depth_t": 22.493
+},
+"no": null,
+"valid": false
+},
+{
+"k": 2,
+"s": "KXYTVIEWSW",
+"m": "KXYTVIEWSW-DRA26NOV22-13.25M",
+"target": 1000.0,
+"usd_day": 12.949381507164127,
+"yes": {
+"best": 0.02,
+"ref": 0.01,
+"ticks": 1,
+"ahead_t": 26.325,
+"score_t": 26.325,
+"depth_t": 26.325
+},
+"no": {
+"best": 0.03,
+"ref": 0.02,
+"ticks": 1,
+"ahead_t": 16.85,
+"score_t": 16.85,
+"depth_t": 16.85
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-IMA",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 2.81,
+"score_t": 2.81,
+"depth_t": 2.81
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 64.09386,
+"score_t": 64.10538353248639,
+"depth_t": 94.25012
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-USH",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 1.5274400000000001,
+"score_t": 1.5274400000000001,
+"depth_t": 1.5274400000000001
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 54.75815,
+"score_t": 54.75815000972728,
+"depth_t": 81.88243000000001
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-PINK",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 2.566,
+"score_t": 2.566,
+"depth_t": 2.566
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 64.97557,
+"score_t": 65.97007838897082,
+"depth_t": 92.04054
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-DAN",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 14.956,
+"score_t": 46.04350693262562,
+"depth_t": 107.71303
+},
+"valid": false
+},
+{
+"k": 2,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-BIG",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 1.511,
+"score_t": 1.511,
+"depth_t": 1.511
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 65.82119999999999,
+"score_t": 65.82120266795145,
+"depth_t": 100.30923
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-BEY",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 7.83004,
+"score_t": 36.0889770713938,
+"depth_t": 92.90583000000001
+},
+"valid": false
+},
+{
+"k": 2,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-NASX",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 1.64773,
+"score_t": 1.64773,
+"depth_t": 1.64773
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 68.37043,
+"score_t": 68.84493001988656,
+"depth_t": 100.00101999999998
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-ARI",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 2.0,
+"score_t": 2.0,
+"depth_t": 2.0
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 63.076269999999994,
+"score_t": 63.076273862382365,
+"depth_t": 94.15403
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-CHA",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 2.81,
+"score_t": 2.81,
+"depth_t": 2.81
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 65.45616,
+"score_t": 65.47370060119673,
+"depth_t": 92.64066
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-SZA",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 8.34797,
+"score_t": 8.826351645939864,
+"depth_t": 34.621739999999996
+},
+"no": null,
+"valid": false
+},
+{
+"k": 2,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-FOO",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 1.79703,
+"score_t": 1.79703,
+"depth_t": 1.79703
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 64.34486,
+"score_t": 64.34486001918775,
+"depth_t": 92.53298
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-KAT",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 2.80747,
+"score_t": 2.80747,
+"depth_t": 2.80747
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 65.02003,
+"score_t": 65.08159407352632,
+"depth_t": 95.97969
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-RIH",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 1.9477200000000001,
+"score_t": 1.9477200000000001,
+"depth_t": 1.9477200000000001
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 77.94494,
+"score_t": 77.94533477090953,
+"depth_t": 107.92457
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-TIM",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": null,
+"depth_t": 0.03463
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 79.88008,
+"score_t": 79.88008002825426,
+"depth_t": 118.93618000000001
+},
+"valid": false
+},
+{
+"k": 2,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-LOG",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 15.87749,
+"score_t": 38.37431500957167,
+"depth_t": 86.6496
+},
+"valid": false
+},
+{
+"k": 2,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-TRI",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 7.87346,
+"score_t": 38.33188318076171,
+"depth_t": 98.73351
+},
+"valid": false
+},
+{
+"k": 2,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-SAM",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 2.79221,
+"score_t": 2.79221,
+"depth_t": 2.79221
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 53.099,
+"score_t": 53.0990058594082,
+"depth_t": 77.291
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-MIL",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 3.16002,
+"score_t": 40.592875276981026,
+"depth_t": 105.04369
+},
+"valid": false
+},
+{
+"k": 2,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-PEA",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 3.1182600000000003,
+"score_t": 3.1182600000000003,
+"depth_t": 3.1182600000000003
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 53.84449,
+"score_t": 53.84450144544601,
+"depth_t": 90.8682
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-COL",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 1.999,
+"score_t": 1.999,
+"depth_t": 1.999
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 60.996010000000005,
+"score_t": 60.996012071563676,
+"depth_t": 89.149
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-BAB",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 6.22743,
+"score_t": 6.22743,
+"depth_t": 6.22743
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 39.517410000000005,
+"score_t": 62.220477710484204,
+"depth_t": 121.72511
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-SHA",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 3.8833200000000003,
+"score_t": 3.8833200000000003,
+"depth_t": 3.8833200000000003
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 62.0565,
+"score_t": 62.33775000972369,
+"depth_t": 91.95459
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-MEG",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 13.10242,
+"score_t": 43.788446483307084,
+"depth_t": 111.55591
+},
+"valid": false
+},
+{
+"k": 2,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-MARO",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 5.43947,
+"score_t": 33.19472554041064,
+"depth_t": 88.66354000000001
+},
+"valid": false
+},
+{
+"k": 2,
+"s": "KXFEATURE",
+"m": "KXFEATURE-26GTA6-POL",
+"target": 1000.0,
+"usd_day": 14.285714285714286,
+"yes": {
+"best": 0.01,
+"ref": 0.01,
+"ticks": 0,
+"ahead_t": 1.95095,
+"score_t": 1.95095,
+"depth_t": 1.95095
+},
+"no": {
+"best": 0.98,
+"ref": 0.98,
+"ticks": 0,
+"ahead_t": 70.69369999999999,
+"score_t": 70.69370245105765,
+"depth_t": 98.97764
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV14-3",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 5.05401,
+"score_t": 5.180577500000015,
+"depth_t": 16.42752
+},
+"valid": false
+},
+{
+"k": 2,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV21-0",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.29,
+"ref": 0.28,
+"ticks": 1,
+"ahead_t": 0.7271,
+"score_t": 0.8034588929921389,
+"depth_t": 38.8621
+},
+"no": {
+"best": 0.68,
+"ref": 0.65,
+"ticks": 3,
+"ahead_t": 0.57542,
+"score_t": 0.5763106253148389,
+"depth_t": 17.96177
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV21-4",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.02,
+"ref": 0.02,
+"ticks": 0,
+"ahead_t": 11.90101,
+"score_t": 12.679135,
+"depth_t": 13.45726
+},
+"no": {
+"best": 0.97,
+"ref": 0.97,
+"ticks": 0,
+"ahead_t": 15.76014,
+"score_t": 16.696617500000006,
+"depth_t": 49.06405
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV14-0",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 2.9055500000000003,
+"score_t": 2.9716868750141594,
+"depth_t": 18.114
+},
+"valid": false
+},
+{
+"k": 2,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV07-4",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 3.48798,
+"score_t": 4.213332500000001,
+"depth_t": 7.48938
+},
+"valid": false
+},
+{
+"k": 2,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV07-2",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 3.1487,
+"score_t": 7.6172675,
+"depth_t": 14.63953
+},
+"valid": false
+},
+{
+"k": 2,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV21-1",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.16,
+"ref": 0.16,
+"ticks": 0,
+"ahead_t": 0.867,
+"score_t": 0.879982705078125,
+"depth_t": 5.25444
+},
+"no": {
+"best": 0.81,
+"ref": 0.81,
+"ticks": 0,
+"ahead_t": 0.84801,
+"score_t": 1.022853538619281,
+"depth_t": 26.34282
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV14-1",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 3.5075100000000003,
+"score_t": 11.634145006998818,
+"depth_t": 32.056740000000005
+},
+"valid": false
+},
+{
+"k": 2,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV21-2",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.08,
+"ref": 0.08,
+"ticks": 0,
+"ahead_t": 4.585,
+"score_t": 4.89158375,
+"depth_t": 7.24996
+},
+"no": {
+"best": 0.9,
+"ref": 0.9,
+"ticks": 0,
+"ahead_t": 1.64863,
+"score_t": 1.6863800000008298,
+"depth_t": 27.69463
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV07-3",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 3.9794699999999996,
+"score_t": 8.446475,
+"depth_t": 15.28848
+},
+"valid": false
+},
+{
+"k": 2,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV07-0",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 2.18748,
+"score_t": 2.705827856674194,
+"depth_t": 7.32003
+},
+"valid": false
+},
+{
+"k": 2,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV21-3",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": {
+"best": 0.02,
+"ref": 0.02,
+"ticks": 0,
+"ahead_t": 17.941110000000002,
+"score_t": 18.26263,
+"depth_t": 18.58415
+},
+"no": {
+"best": 0.97,
+"ref": 0.97,
+"ticks": 0,
+"ahead_t": 5.40965,
+"score_t": 5.43415000051083,
+"depth_t": 33.50125
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV07-1",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 6.486020000000001,
+"score_t": 10.669716089477555,
+"depth_t": 17.925690000000003
+},
+"valid": false
+},
+{
+"k": 2,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV14-2",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 5.89592,
+"score_t": 6.433425000000015,
+"depth_t": 20.037920000000003
+},
+"valid": false
+},
+{
+"k": 2,
+"s": "KXEOWEEK",
+"m": "KXEOWEEK-26NOV14-4",
+"target": 1000.0,
+"usd_day": 100.0,
+"yes": null,
+"no": {
+"best": 0.99,
+"ref": 0.99,
+"ticks": 0,
+"ahead_t": 3.2849899999999996,
+"score_t": 3.42327625,
+"depth_t": 14.67925
+},
+"valid": false
+},
+{
+"k": 2,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28AZ-MKEL",
+"target": 1000.0,
+"usd_day": 7.150897172747136,
+"yes": {
+"best": 0.074,
+"ref": 0.074,
+"ticks": 0,
+"ahead_t": 60.7795,
+"score_t": 60.9529375,
+"depth_t": 64.3795
+},
+"no": {
+"best": 0.92,
+"ref": 0.92,
+"ticks": 0,
+"ahead_t": 0.7538400000000001,
+"score_t": 0.9100900000723258,
+"depth_t": 80.14583999999999
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28AR-KHAR",
+"target": 1000.0,
+"usd_day": 7.150897172747136,
+"yes": {
+"best": 0.049,
+"ref": 0.049,
+"ticks": 0,
+"ahead_t": 389.391,
+"score_t": 389.516,
+"depth_t": 391.391
+},
+"no": {
+"best": 0.916,
+"ref": 0.916,
+"ticks": 0,
+"ahead_t": 1.41096,
+"score_t": 1.9109600000376576,
+"depth_t": 93.46896000000001
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28AL-PBUT",
+"target": 1000.0,
+"usd_day": 7.150897172747136,
+"yes": {
+"best": 0.066,
+"ref": 0.066,
+"ticks": 0,
+"ahead_t": 199.474,
+"score_t": 199.95525,
+"depth_t": 203.499
+},
+"no": {
+"best": 0.916,
+"ref": 0.916,
+"ticks": 0,
+"ahead_t": 0.5,
+"score_t": 0.9360000000019396,
+"depth_t": 79.426
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28AZ-AELS",
+"target": 1000.0,
+"usd_day": 7.150897172747136,
+"yes": {
+"best": 0.02,
+"ref": 0.02,
+"ticks": 0,
+"ahead_t": 853.354,
+"score_t": 853.854,
+"depth_t": 854.354
+},
+"no": {
+"best": 0.956,
+"ref": 0.956,
+"ticks": 0,
+"ahead_t": 0.92472,
+"score_t": 1.6372200000000001,
+"depth_t": 82.45572
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28RI-MKEL",
+"target": 1000.0,
+"usd_day": 7.150719623925116,
+"yes": {
+"best": 0.021,
+"ref": 0.021,
+"ticks": 0,
+"ahead_t": 621.737,
+"score_t": 622.237,
+"depth_t": 622.737
+},
+"no": {
+"best": 0.942,
+"ref": 0.942,
+"ticks": 0,
+"ahead_t": 1.0685,
+"score_t": 1.3185000000060212,
+"depth_t": 96.0675
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28IA-GNEW",
+"target": 1000.0,
+"usd_day": 7.150849825532506,
+"yes": {
+"best": 0.13,
+"ref": 0.13,
+"ticks": 0,
+"ahead_t": 16.97976,
+"score_t": 17.4442004296875,
+"depth_t": 22.803759999999997
+},
+"no": {
+"best": 0.84,
+"ref": 0.84,
+"ticks": 0,
+"ahead_t": 1.49195,
+"score_t": 1.9919500000424937,
+"depth_t": 97.47595
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28RI-ABES",
+"target": 1000.0,
+"usd_day": 7.150719623925116,
+"yes": {
+"best": 0.049,
+"ref": 0.049,
+"ticks": 0,
+"ahead_t": 359.17,
+"score_t": 359.26375,
+"depth_t": 361.17
+},
+"no": {
+"best": 0.944,
+"ref": 0.944,
+"ticks": 0,
+"ahead_t": 0.40841000000000005,
+"score_t": 0.7775350000000001,
+"depth_t": 22.38941
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28WV-WMOO",
+"target": 1000.0,
+"usd_day": 7.150672279061607,
+"yes": {
+"best": 0.02,
+"ref": 0.02,
+"ticks": 0,
+"ahead_t": 779.765,
+"score_t": 780.265,
+"depth_t": 780.765
+},
+"no": {
+"best": 0.936,
+"ref": 0.936,
+"ticks": 0,
+"ahead_t": 3.8360700000000003,
+"score_t": 3.8860700000272135,
+"depth_t": 82.94707000000001
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28AK-PBUT",
+"target": 1000.0,
+"usd_day": 7.150909009648761,
+"yes": {
+"best": 0.059,
+"ref": 0.059,
+"ticks": 0,
+"ahead_t": 304.96474,
+"score_t": 305.0929275,
+"depth_t": 309.06674
+},
+"no": {
+"best": 0.94,
+"ref": 0.94,
+"ticks": 0,
+"ahead_t": 1.19208,
+"score_t": 1.31708,
+"depth_t": 25.507080000000002
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28ND-JSHA",
+"target": 1000.0,
+"usd_day": 7.1507669694155735,
+"yes": {
+"best": 0.049,
+"ref": 0.049,
+"ticks": 0,
+"ahead_t": 375.884,
+"score_t": 376.009,
+"depth_t": 377.884
+},
+"no": {
+"best": 0.917,
+"ref": 0.917,
+"ticks": 0,
+"ahead_t": 1.5143199999999999,
+"score_t": 2.514320000023531,
+"depth_t": 82.64332
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28CT-RWAR",
+"target": 1000.0,
+"usd_day": 7.150885335884698,
+"yes": {
+"best": 0.039,
+"ref": 0.039,
+"ticks": 0,
+"ahead_t": 406.2782,
+"score_t": 406.8407,
+"depth_t": 407.7157
+},
+"no": {
+"best": 0.94,
+"ref": 0.939,
+"ticks": 0,
+"ahead_t": 2.1641999999999997,
+"score_t": 2.9232000000106835,
+"depth_t": 88.1802
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28SD-PBUT",
+"target": 1000.0,
+"usd_day": 7.150719623925116,
+"yes": {
+"best": 0.059,
+"ref": 0.059,
+"ticks": 0,
+"ahead_t": 287.045,
+"score_t": 287.18075,
+"depth_t": 291.389
+},
+"no": {
+"best": 0.923,
+"ref": 0.923,
+"ticks": 0,
+"ahead_t": 1.1999000000000002,
+"score_t": 1.6999000000054556,
+"depth_t": 89.9999
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28WY-RWAR",
+"target": 1000.0,
+"usd_day": 7.150672279061607,
+"yes": {
+"best": 0.052,
+"ref": 0.052,
+"ticks": 0,
+"ahead_t": 133.463,
+"score_t": 169.081,
+"depth_t": 205.574
+},
+"no": {
+"best": 0.931,
+"ref": 0.931,
+"ticks": 0,
+"ahead_t": 3.49071,
+"score_t": 3.5407100000075395,
+"depth_t": 87.79471000000001
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28MI-AELS",
+"target": 1000.0,
+"usd_day": 7.150802478944859,
+"yes": {
+"best": 0.049,
+"ref": 0.049,
+"ticks": 0,
+"ahead_t": 80.365,
+"score_t": 84.02184375,
+"depth_t": 145.591
+},
+"no": {
+"best": 0.924,
+"ref": 0.924,
+"ticks": 0,
+"ahead_t": 3.8840100000000004,
+"score_t": 3.8840100000000004,
+"depth_t": 102.62101
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28WV-KHAR",
+"target": 1000.0,
+"usd_day": 7.150672279061607,
+"yes": {
+"best": 0.05,
+"ref": 0.05,
+"ticks": 0,
+"ahead_t": 365.8816,
+"score_t": 366.133225,
+"depth_t": 369.9076
+},
+"no": {
+"best": 0.91,
+"ref": 0.91,
+"ticks": 0,
+"ahead_t": 2.57896,
+"score_t": 2.578960000044827,
+"depth_t": 83.73196
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28IL-ABES",
+"target": 1000.0,
+"usd_day": 7.150837988826815,
+"yes": {
+"best": 0.049,
+"ref": 0.049,
+"ticks": 0,
+"ahead_t": 366.178,
+"score_t": 366.27175,
+"depth_t": 368.178
+},
+"no": {
+"best": 0.94,
+"ref": 0.94,
+"ticks": 0,
+"ahead_t": 1.36648,
+"score_t": 1.6164800000065431,
+"depth_t": 80.09548
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28DE-AELS",
+"target": 1000.0,
+"usd_day": 7.150873499061447,
+"yes": {
+"best": 0.02,
+"ref": 0.02,
+"ticks": 0,
+"ahead_t": 863.304,
+"score_t": 863.804,
+"depth_t": 864.304
+},
+"no": {
+"best": 0.96,
+"ref": 0.96,
+"ticks": 0,
+"ahead_t": 0.743,
+"score_t": 0.94,
+"depth_t": 77.555
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28AL-JSHA",
+"target": 1000.0,
+"usd_day": 7.150897172747136,
+"yes": {
+"best": 0.061,
+"ref": 0.061,
+"ticks": 0,
+"ahead_t": 250.28,
+"score_t": 250.883115,
+"depth_t": 254.27374
+},
+"no": {
+"best": 0.915,
+"ref": 0.915,
+"ticks": 0,
+"ahead_t": 0.536,
+"score_t": 2.277000000018496,
+"depth_t": 89.709
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28TX-AELS",
+"target": 1000.0,
+"usd_day": 7.150707787650463,
+"yes": {
+"best": 0.039,
+"ref": 0.039,
+"ticks": 0,
+"ahead_t": 243.35,
+"score_t": 266.25275,
+"depth_t": 335.461
+},
+"no": {
+"best": 0.937,
+"ref": 0.937,
+"ticks": 0,
+"ahead_t": 1.51864,
+"score_t": 2.5186400000000004,
+"depth_t": 83.67464
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28IA-PBUT",
+"target": 1000.0,
+"usd_day": 7.150849825532506,
+"yes": {
+"best": 0.076,
+"ref": 0.076,
+"ticks": 0,
+"ahead_t": 103.45,
+"score_t": 109.454203125,
+"depth_t": 180.8405
+},
+"no": {
+"best": 0.917,
+"ref": 0.89,
+"ticks": 3,
+"ahead_t": 2.2847399999999998,
+"score_t": 2.2847400000517433,
+"depth_t": 95.47574
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28WV-JOSS",
+"target": 1000.0,
+"usd_day": 7.150672279061607,
+"yes": {
+"best": 0.24,
+"ref": 0.24,
+"ticks": 0,
+"ahead_t": 2.291,
+"score_t": 2.541002109527588,
+"depth_t": 6.678
+},
+"no": {
+"best": 0.72,
+"ref": 0.72,
+"ticks": 0,
+"ahead_t": 2.20198,
+"score_t": 2.3269800000114307,
+"depth_t": 23.02498
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28NE-AELS",
+"target": 1000.0,
+"usd_day": 7.1507669694155735,
+"yes": {
+"best": 0.02,
+"ref": 0.02,
+"ticks": 0,
+"ahead_t": 882.221,
+"score_t": 882.721,
+"depth_t": 883.221
+},
+"no": {
+"best": 0.96,
+"ref": 0.96,
+"ticks": 0,
+"ahead_t": 0.82804,
+"score_t": 1.03254,
+"depth_t": 78.65504
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28NY-GNEW",
+"target": 1000.0,
+"usd_day": 7.150743296591976,
+"yes": {
+"best": 0.13,
+"ref": 0.13,
+"ticks": 0,
+"ahead_t": 17.55604,
+"score_t": 17.620299765625,
+"depth_t": 22.21004
+},
+"no": {
+"best": 0.86,
+"ref": 0.86,
+"ticks": 0,
+"ahead_t": 1.2101199999999999,
+"score_t": 1.2726199999999999,
+"depth_t": 25.464119999999998
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28VA-AELS",
+"target": 1000.0,
+"usd_day": 7.150695951414994,
+"yes": {
+"best": 0.02,
+"ref": 0.02,
+"ticks": 0,
+"ahead_t": 721.24,
+"score_t": 721.79,
+"depth_t": 722.34
+},
+"no": {
+"best": 0.931,
+"ref": 0.931,
+"ticks": 0,
+"ahead_t": 3.8178,
+"score_t": 3.8178,
+"depth_t": 79.5888
+},
+"valid": true
+},
+{
+"k": 2,
+"s": "KXDPRESPRIMARY",
+"m": "KXDPRESPRIMARY-28MD-AELS",
+"target": 1000.0,
+"usd_day": 7.150814315532992,
+"yes": {
+"best": 0.02,
+"ref": 0.02,
+"ticks": 0,
+"ahead_t": 779.87,
+"score_t": 780.37,
+"depth_t": 780.87
+},
+"no": {
+"best": 0.964,
+"ref": 0.964,
+"ticks": 0,
+"ahead_t": 0.79,
+"score_t": 1.119,
+"depth_t": 20.21
+},
+"valid": true
+}
+]
+}

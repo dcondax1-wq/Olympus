@@ -219,6 +219,9 @@ def build(hb_payload: dict, now=None, lm: dict | None = None, hb_last: dict | No
     ph = pc_health_summary(hb.get("pc_health"), now)     # CPU / RAM / disk / NinjaTrader lines for Jarvis's System view
     if ph is not None:
         out["pc_health"] = ph
+    kr = kalshi_rewards_card(now)                        # the Kalshi page's "Rewards test (paper)" card (< 1 KB; absent when not running)
+    if kr is not None:
+        out["kalshi_rewards"] = kr
     out = scrub(out, _phrases())
     try:                                # hidden bots (engine/hidden_bots.py, dashboard_view.json; default ["blitz"]): off the phone
         from . import hidden_bots
@@ -226,6 +229,30 @@ def build(hb_payload: dict, now=None, lm: dict | None = None, hb_last: dict | No
     except Exception:
         pass
     return fit(out)
+
+
+KALSHI_REWARDS_PUB = os.path.join(ROOT, "data", "kalshi_rewards", "summary.json")
+KALSHI_REWARDS_KEYS = ("v", "kind", "paper_only", "started", "updated", "days", "reward", "fill_pnl", "net", "fills", "markets",
+                       "capital", "per100_day", "series")
+
+
+def kalshi_rewards_card(now=None, path: str | None = None) -> dict | None:
+    """The Kalshi rewards PAPER test's public summary (tools/kalshi_rewards_paper.py public_summary, written by its PC child into
+    data/kalshi_rewards/summary.json): only its known keys, only when it is under 2 days old. None otherwise. Never raises."""
+    try:
+        with open(path or KALSHI_REWARDS_PUB, encoding="utf-8") as fh:
+            d = json.load(fh)
+        if not isinstance(d, dict) or d.get("kind") != "kalshi_rewards_pub" or d.get("paper_only") is not True:
+            return None
+        if int(now or time.time()) - os.path.getmtime(path or KALSHI_REWARDS_PUB) > 2 * 86400:
+            return None
+        out = {k: d.get(k) for k in KALSHI_REWARDS_KEYS if k in d}
+        if isinstance(out.get("series"), dict):
+            out["series"] = {str(k)[:24]: {"reward": (v or {}).get("reward"), "fill_pnl": (v or {}).get("fill_pnl")}
+                             for k, v in list(out["series"].items())[:8] if isinstance(v, dict)}
+        return out if len(json.dumps(out)) < 1500 else None
+    except Exception:
+        return None
 
 
 PC_HEALTH_LEVEL = {"green": "ok", "amber": "warn", "red": "bad"}

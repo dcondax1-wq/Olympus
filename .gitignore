@@ -240,3 +240,7 @@ research/kalshi_edge_K5/paper/rewards_paper.json
 # the Board (engine/board_events.py, docs/BOARD.md): the PC's event log stays local; shared.jsonl (Claude -> bot) ships with the repo
 data/board/*
 !data/board/shared.jsonl
+# Kalshi rewards paper on the PC (tools/kalshi_rewards_paper.py maybe_run): ledger, public summary, run token, log
+data/kalshi_rewards/
+# Kalshi rewards backtest: public tape cache (research/kalshi_rewards_bt/harvest.py)
+research/kalshi_rewards_bt/cache/

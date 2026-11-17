@@ -23,7 +23,7 @@
 <script>(function () { var d = document.documentElement; d.setAttribute('data-theme', 'kalshi');
   /* inside Jarvis (a frame under its bar) the notch is Jarvis's: no second top inset */
   try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
-<link rel="stylesheet" href="kalshi.css?v=k27">
+<link rel="stylesheet" href="kalshi.css?v=k29">
 <!-- OLYMPUS theme (../olympus/themes.js, key 'olympus.theme', picked on the Gate's Look row or in Jarvis's Look sheet): every colour of
      kalshi.css reads a theme slot with its AGORA colour as the fallback (tools/theme_tokenize.py), on the full 'page' palette since
      2026-11-14 (team T2: a light look is light here too, like everywhere). The <head> paints the engine's copy of the look before the first
@@ -61,6 +61,7 @@
     </button>
   </header>
   <div class="note" id="kpaused" role="note" style="border-color: rgba(var(--warn-rgb), .5)"><p><b style="color: var(--warn)">PAUSED</b> The Kalshi bot is paused: it places no real bets (no edge worth money found yet). The rewards test runs on paper only: pretend orders, $0 at risk.</p></div>
+  <section class="note krw" id="krw" aria-label="Rewards test (paper)" hidden></section>
   <nav class="secnav" id="secnav" aria-label="Sections" hidden>
     <button type="button" data-go="today">Today</button><button type="button" data-go="edge">Edge</button><button type="button" data-go="perf">Performance</button><button type="button" data-go="alerts">Alerts <b></b></button>
   </nav>
@@ -71,6 +72,6 @@
 <script src="../olympus/gate-nav.js?v=g4" defer></script><!-- the way back to the Gate + Go to (olympus/gate-nav.js) -->
 <script src="../olympus/intro-app.js?v=i7" data-app="kalshi" data-name="Kalshi" data-glyph="K" data-color="#8fa07a" defer></script><!-- the app intro without the kit (olympus/intro-app.js) -->
 <script src="kfx.js?v=k26"></script>
-<script src="kalshi.js?v=k27"></script>
+<script src="kalshi.js?v=k29"></script>
 </body>
 </html>

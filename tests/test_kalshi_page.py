@@ -235,6 +235,8 @@ def site(tmp):
         FONTS.append(os.path.basename(f))
     with open(os.path.join(base, "kalshi", "kit.json"), "w", encoding="utf-8") as f:     # written by the site build
         f.write(KIT_JSON)
+    with open(os.path.join(base, "status_feed.json"), "w", encoding="utf-8") as f:       # the PC's public status topic (a stub host here)
+        json.dump({"ntfy": "https://ntfy.invalid", "topic": "olympus-test-status"}, f)
     with open(os.path.join(base, "host.html"), "w", encoding="utf-8") as f:             # Jarvis-like: a bar below the notch, the page framed
         f.write('<!doctype html><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">'
                 '<style>html,body{margin:0;height:100%;background:#000}.bar{height:calc(52px + env(safe-area-inset-top,0px))}'
@@ -445,9 +447,9 @@ def run_browser(url, tmp):
     with sync_playwright() as pw:
         exe = next(iter(sorted(glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome"))), None)
         br = pw.chromium.launch(**({"executable_path": exe} if exe else {}))
-        if "--only=guard" in sys.argv or "--only=whatif" in sys.argv or "--only=scan" in sys.argv or "--only=risk" in sys.argv:   # one card, for a quick run
+        if "--only=guard" in sys.argv or "--only=whatif" in sys.argv or "--only=scan" in sys.argv or "--only=risk" in sys.argv or "--only=rewards" in sys.argv:   # one card, for a quick run
             (part_guard if "--only=guard" in sys.argv else part_scan if "--only=scan" in sys.argv else part_risk if "--only=risk" in sys.argv
-             else part_whatif)(br, url, tmp)
+             else part_rewards if "--only=rewards" in sys.argv else part_whatif)(br, url, tmp)
             br.close()
             return
         ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2)
@@ -1135,6 +1137,7 @@ def run_browser(url, tmp):
         part_risk(br, url, tmp)
         part_whatif(br, url, tmp)
         part_scan(br, url, tmp)
+        part_rewards(br, url, tmp)
         br.close()
 
 
@@ -2054,6 +2057,84 @@ def part_scan(br, url, tmp):
 def KW_usd(x):
     v = round(abs(x) + 1e-9, 2)
     return ("−" if x < 0 and v else "+" if v else "") + f"${v:,.2f}"
+
+
+def part_rewards(br, url, tmp):
+    """'Rewards test (paper)' (2026-11-17, kalshi.js rewardsLoad): under the PAUSED note, $ earned / fill $ / net / days of the paper
+    rewards test; rewards.json (the site's dated copy + the backtest line) first, the PC's ntfy status post (key kalshi_rewards) when newer;
+    hidden when neither is readable; text only (escaped); inside the 16 px gutters at 375 px; GET only."""
+    page_url = url + "kalshi/"
+    copy = json.load(open(os.path.join(KS, "rewards.json"), encoding="utf-8"))
+    ctx = br.new_context(viewport={"width": 375, "height": 812}, device_scale_factor=2)
+    ctx.route("https://raw.githubusercontent.com/**", feed)
+    ctx.route("https://api.github.com/**", feed)
+    R = {"own": "file", "ntfy": None, "asked": []}
+
+    def own(route):
+        if R["own"] == "file":
+            return route.continue_()
+        if R["own"] == "404":
+            return route.fulfill(status=404, body="no")
+        return route.fulfill(status=200, content_type="application/json", body=R["own"])
+
+    def ntfy(route):
+        R["asked"].append(route.request.url)
+        if R["ntfy"] is None:
+            return route.abort()
+        return route.fulfill(status=200, content_type="application/x-ndjson", body=R["ntfy"])
+    ctx.route("**/kalshi/rewards.json", own)
+    ctx.route("https://ntfy.invalid/**", ntfy)
+    p = ctx.new_page()
+    p.set_default_timeout(60000)
+    errs, posts = [], []
+    p.on("pageerror", lambda e: errs.append(str(e)))
+    p.on("console", lambda m: errs.append(m.text) if m.type == "error" and not re.search(r"Failed to load resource|net::ERR", m.text) else None)
+    p.on("request", lambda r: posts.append(r.method) if r.method not in ("GET", "HEAD") else None)
+    FEED["mode"] = "404"
+
+    def open_(wait=True):
+        p.goto(page_url)
+        if wait:
+            p.wait_for_selector("#krw:not([hidden])", timeout=20000)
+    try:
+        check("rw0. the site has rewards.json: a paper-only copy (kind kalshi_rewards_pub) and a backtest line",
+              isinstance(copy.get("paper"), dict) and copy["paper"].get("kind") == "kalshi_rewards_pub" and copy["paper"].get("paper_only") is True
+              and isinstance(copy.get("backtest"), dict) and bool(copy["backtest"].get("text")), str(copy)[:200])
+        open_()
+        t = p.inner_text("#krw")
+        check("rw1. the card is under the PAUSED note: 'Rewards test (paper)', Earned, Fills, Net, Days, '$0 at risk', 'saved copy', the backtest line",
+              p.evaluate("document.querySelector('#kpaused').nextElementSibling.id") == "krw" and "Rewards test (paper)" in t
+              and all(w in t for w in ("Earned", "Fills", "Net", "Days", "$0 at risk", "saved copy", "Backtest (30 days)")), t[:300])
+        check("rw1. the numbers are the copy's ($ earned, fill $)", ("$%.2f" % copy["paper"]["reward"]) in t, t[:200])
+        pc = dict(copy["paper"], reward=12.34, fill_pnl=-2.5, net=9.84, days=3.2, updated="2099-01-01T00:00:00+00:00", fills=7)
+        msg = {"kind": "le-live", "t": 1, "kalshi_rewards": pc}
+        R["ntfy"] = json.dumps({"event": "message", "time": 1, "message": json.dumps(msg)}) + "\n" + '{"event":"keepalive"}\n'
+        open_()
+        p.wait_for_function("document.querySelector('#krw').textContent.indexOf('from the PC') >= 0", timeout=20000)
+        t = p.inner_text("#krw")
+        check("rw2. the PC's newer status post wins: $12.34 earned, -$2.50 fills, +$9.84 net, 3.2 days, 7 fills, 'from the PC'",
+              all(w in t for w in ("$12.34", "−$2.50", "+$9.84", "3.2", "7 fills", "from the PC")), t[:300])
+        check("rw2. the status topic is read from ../status_feed.json (ntfy poll, GET)", any("/olympus-test-status/json?poll=1" in u for u in R["asked"]), R["asked"][:2])
+        bad = dict(copy, paper=dict(copy["paper"], reward="<img src=x onerror=window.__pwn=1>"),
+                   backtest={"text": "<script>window.__pwn=1</script>bad"})
+        R["own"], R["ntfy"] = json.dumps(bad), None
+        p.goto(page_url)
+        p.wait_for_timeout(1500)
+        check("rw3. junk numbers or markup: no script runs, the card hides or shows text only",
+              p.evaluate("!window.__pwn && !document.querySelector('#krw img, #krw script')"), "")
+        R["own"] = "404"
+        p.goto(page_url)
+        p.wait_for_timeout(1500)
+        check("rw4. no copy and no PC post: the card stays hidden (never an empty box)", p.evaluate("document.querySelector('#krw').hidden"), "")
+        R["own"], R["ntfy"] = "file", None
+        open_()
+        m = p.evaluate("""() => { const W = window.innerWidth, de = document.documentElement, e = document.getElementById('krw'), r = e.getBoundingClientRect();
+            const cut = [...e.querySelectorAll('dd, dt, p')].filter((x) => x.scrollWidth > x.clientWidth + 1).length;
+            return [de.scrollWidth <= de.clientWidth, r.left >= 15.5 && r.right <= W - 15.5, cut]; }""")
+        check("rw5. 375 px: no sideways scroll, the card inside the 16 px gutters, no number cut off", m[0] and m[1] and m[2] == 0, m)
+        check("rw6. no page errors, GET only", not errs and not posts, (errs[:3], posts[:3]))
+    finally:
+        ctx.close()
 
 
 def main():

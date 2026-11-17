@@ -393,6 +393,11 @@ def gather(now=None, root: str = ROOT, env=None, http=None, port=PORT_DEFAULT, f
     except Exception as e:
         snap["watch"] = []
         snap["watch_error"] = f"{e.__class__.__name__}: {str(e)[:120]}"
+    try:                                    # the Kalshi rewards PAPER card (tools/kalshi_rewards_paper.py public summary, < 1 KB)
+        from engine import live_publish as _lpk
+        snap["kalshi_rewards"] = _lpk.kalshi_rewards_card(now, os.path.join(root, "data", "kalshi_rewards", "summary.json"))
+    except Exception:
+        snap["kalshi_rewards"] = None
     return snap
 
 
@@ -498,6 +503,8 @@ def lite(snap: dict, max_bytes: int = MAX_STATUS_BYTES) -> dict:
         out["brd"] = board_events.status_block()
     except Exception:  # noqa: BLE001
         pass
+    if isinstance(snap.get("kalshi_rewards"), dict):   # the Kalshi page's "Rewards test (paper)" card (tools/kalshi_rewards_paper.py)
+        out["kalshi_rewards"] = snap["kalshi_rewards"]
     out = {k: v for k, v in out.items() if v is not None}
     # too big: drop the least needed parts first
     def _gcut(o, n):                     # the Brain page's glance (engine/brain_glance.py): fewer log lines / levels first
@@ -506,7 +513,7 @@ def lite(snap: dict, max_bytes: int = MAX_STATUS_BYTES) -> dict:
         if g:
             brain_glance.fit(g, n)
     # the glance is cut (then left out) before the Board's events; the Board's events go before the accounts block
-    steps = [lambda o: _d(o.get("board")).pop("lines", None),
+    steps = [lambda o: o.pop("kalshi_rewards", None), lambda o: _d(o.get("board")).pop("lines", None),
              lambda o: _d(o.get("brd")).__setitem__("ev", _d(o.get("brd")).get("ev", [])[:2]) if o.get("brd") else None,
              lambda o: _gcut(o, 1000), lambda o: _gcut(o, 600),
              lambda o: _d(o.get("brd")).__setitem__("ev", []) if o.get("brd") else None,
@@ -1116,6 +1123,13 @@ def main(argv=None) -> int:
         try:
             from tools import obsidian_sync as _obs
             _obs.maybe_run(say=(lambda *_: None) if a.quiet else print)
+        except Exception:
+            pass
+        # Kalshi rewards PAPER test (tools/kalshi_rewards_paper.py, owner 2026-11-17): keeps one detached low-priority child running
+        # (public Kalshi data, GET only, never an order); ledger + public summary in data/kalshi_rewards/; LE_KALSHI_REWARDS=0 = off; soft
+        try:
+            from tools import kalshi_rewards_paper as _krp
+            _krp.maybe_run(say=(lambda *_: None) if a.quiet else print)
         except Exception:
             pass
     return 0
