@@ -70,13 +70,14 @@
   async function main() {
     const plan = (await getJSON('accounts.json')) || { accounts: [], decisions: [], rules: [] };
     const home = await getJSON('../home.json');
-    let accounts = isObj(home) ? home.accounts : null, src = isObj(home) ? 'site' : '', t = 0;
+    let accounts = isObj(home) ? home.accounts : null, src = isObj(home) ? 'site' : '', t = 0, lite = null;
     try {
       if (window.PC_FEED) {
-        const lite = await window.PC_FEED.fetchLatest({});
+        lite = await window.PC_FEED.fetchLatest({});
         if (isObj(lite) && Array.isArray(lite.accounts) && lite.accounts.length) { accounts = lite.accounts; src = 'pc'; t = +lite.t || 0; }
       }
     } catch (e) { /* plan only */ }
+    try { if (window.PAYOUT_CARD) window.PAYOUT_CARD.mount($('coach'), { plan, home, lite, title: 'Payouts' }); } catch (e) { /* the coach never breaks the page */ }
     const live = liveRows(accounts, isObj(home) ? home.second : null);
     const used = new Set();
     const list = $('list'); list.textContent = '';
