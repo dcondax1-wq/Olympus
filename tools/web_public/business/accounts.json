@@ -11,7 +11,7 @@
    "stage": "eval",
    "status": "live",
    "bots": "Zlarior only (eval). Once funded: Zlarior + ATLAS + BLITZ (if you say yes)",
-   "next": "Pass: make $3,000. Never fall $2,000 below your best day's close",
+   "next": "Balance $49,192.78 (owner, Nov 17): about $3,807 to pass, about $1,025 of room left (if the floor is still $48,168). Room under $1,200: a fresh Builder 50K next to it is the faster horse",
    "payout": "about early Jan (with ATLAS once funded)",
    "usd_month": "$1,200",
    "cost": "paid"
@@ -21,11 +21,11 @@
    "match": "builder25k",
    "name": "ATLAS",
    "plan": "MFFU Builder 25K",
-   "stage": "eval",
+   "stage": "passed",
    "status": "live",
    "bots": "ATLAS",
-   "next": "Pass: make $1,500. Max loss $1,000",
-   "payout": "after it passes",
+   "next": "Balance $26,946.10 (owner, Nov 17) = +$1,946, over the $1,500 target: PASSED. MFFU locks a passed eval (orders say Limit 0) until the funded account is issued. Send me the new funded account name",
+   "payout": "funded 25K: first payout after $1,100 buffer + $250 min, 2 days, best day under half",
    "usd_month": "$380",
    "cost": "paid"
   },
