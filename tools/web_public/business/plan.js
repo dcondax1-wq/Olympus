@@ -30,7 +30,7 @@
   }
 
   function fan(rows) {
-    const svg = $('fan'), NS = 'http://www.w3.org/2000/svg', W = 340, H = 190, L = 8, R = 62, T = 12, B = 24;
+    const svg = $('fan'), NS = 'http://www.w3.org/2000/svg', W = 340, H = 190, L = 8, R = 100, T = 12, B = 24;
     while (svg.firstChild) svg.removeChild(svg.firstChild);
     const pts = [{ lo: 0, mid: 0, hi: 0 }].concat(rows.map((r) => ({ lo: r.cum_net_p10, mid: r.cum_net_p50, hi: r.cum_net_p90 })));
     const ymax = Math.max(1, ...pts.map((p) => p.hi)), ymin = Math.min(0, ...pts.map((p) => p.lo));
@@ -71,7 +71,7 @@
       tr.appendChild(el('td', null, mlabel(r.month, i, rows.length)));
       tr.appendChild(el('td', 'n', usd(r.cash_mean)));
       tr.appendChild(el('td', 'n', usd(r.net_mean)));
-      tr.appendChild(el('td', 'n', usd(r.cum_net_p10) + ' / ' + usd(r.cum_net_p50) + ' / ' + usd(r.cum_net_p90)));
+      const td = el('td', 'n', usd(r.cum_net_p50)); td.appendChild(el('div', 'note', usd(r.cum_net_p10) + ' to ' + usd(r.cum_net_p90))); tr.appendChild(td);
       tb.appendChild(tr);
     });
     const box = $('acc'); box.textContent = '';
