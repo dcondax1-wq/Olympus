@@ -64,12 +64,12 @@ function acctCard(a) {
   const card = h('article', 'ag-card card acct'); card.dataset.key = a.key;
   const top = h('div', 'acct-top'), t = h('div'); t.appendChild(h('h3', '', a.name)); t.appendChild(h('p', 'note', `${a.size} · ${a.label}${a.demo ? ' · example' : ''}`));
   const hl = C.health(a), pill = h('span', 'pill ' + (hl.level === 'off' ? '' : hl.level), hl.text); top.append(t, pill); card.appendChild(top);
-  if (!a.has) { card.appendChild(h('p', 'lead', 'No numbers yet. Hestia shows this account the moment the bot reports it.')); return card; }
+  if (!a.has) { card.appendChild(h('p', 'lead', 'No numbers yet. They show up as soon as the bot reports.')); return card; }
   if (a.room != null) {
     card.appendChild(h('p', 'dd ag-num', C.drawdownLine(a.room, a.mll)));
     const f = Math.max(0, Math.min(1, a.room / a.mll)), bar = h('div', 'ag-bar ' + (f < 0.25 ? 'red' : f < 0.5 ? 'amber' : 'green')), i = h('i'); i.style.width = Math.round(f * 100) + '%'; bar.appendChild(i);
     bar.setAttribute('role', 'img'); bar.setAttribute('aria-label', `${Math.round(f * 100)} percent of the max loss is left`); card.appendChild(bar);
-  } else card.appendChild(h('p', 'lead', a.stage === 'funded' ? 'Funded account: the payout rules apply, see Demeter.' : 'Drawdown not reported yet.'));
+  } else card.appendChild(h('p', 'lead', a.stage === 'funded' ? 'Funded account: payout rules apply. Demeter shows the payout dates.' : 'Room left not reported yet.'));
   const kv = h('dl', 'kv'); const row = (k, v, cls) => { kv.appendChild(h('dt', '', k)); const dd = h('dd', cls || '', v); kv.appendChild(dd); };
   row('Today', C.both(a.today, a.risk, a.est), sign(a.today));
   if (a.stage === 'eval' && a.toTarget != null) row('To the target', `${C.money(a.toTarget)} of ${C.money(a.target)}`);

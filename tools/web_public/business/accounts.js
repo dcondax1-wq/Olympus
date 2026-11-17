@@ -51,15 +51,15 @@
         const done = Math.max(0, Math.min(1, (target - live.to_target) / target));
         const bar = el('div', 'bar'); const i = el('i'); i.style.width = Math.round(done * 100) + '%'; bar.appendChild(i);
         c.appendChild(bar);
-        rows.push(['To pass', usd(live.to_target) + ' to go']);
+        rows.push(['To pass', usd(live.to_target) + ' more profit']);
       }
-      if (live.room != null) rows.push(['Room left', usd(live.room) + ' of ' + usd(mll)]);
+      if (live.room != null) rows.push(['Room left', usd(live.room) + ' of ' + usd(mll) + ' (lose it all = account ends)']);
       if (live.balance != null) rows.push(['Balance', usd(live.balance)]);
       if (live.today != null) rows.push(['Today', usd(live.today)]);
-      if (live.session != null) rows.push(['Day', String(live.session)]);
+      if (live.session != null) rows.push(['Trading day', '#' + String(live.session)]);
     }
     rows.push(['Bots on it', a.bots || '-']);
-    rows.push(['Next', a.next || '-']);
+    rows.push(['Next step', a.next || '-']);
     rows.push(['First payout', a.payout || '-']);
     rows.push(['$ a month', (a.usd_month || '-') + ' (estimate)']);
     rows.push(['Cost', a.cost || '-']);
@@ -90,8 +90,8 @@
     }
     const n = (s) => (plan.accounts || []).filter((a) => a.status === s).length;
     const cost = (plan.accounts || []).filter((a) => a.status !== 'live').map((a) => { const m = String(a.cost || '').match(/\d+(\.\d+)?/); return m ? +m[0] : null; }).filter((v) => v != null);
-    kv($('sum'), [['Running now', String(n('live'))], ['To buy now', String(n('buying'))], ['Later (after MFFU says yes)', String(n('waiting'))],
-                  ['Cost of the new ones', cost.length ? '~' + usd(cost.reduce((x, y) => x + y, 0)) : '-'], ['Plan updated', plan.updated || '-']]);
+    kv($('sum'), [['Running now', String(n('live'))], ['To buy now', String(n('buying'))], ['Later (if MFFU says yes)', String(n('waiting'))],
+                  ['Cost to buy the new ones', cost.length ? '~' + usd(cost.reduce((x, y) => x + y, 0)) : '-'], ['Plan updated', plan.updated || '-']]);
     const dec = $('dec'); dec.textContent = '';
     for (const d of plan.decisions || []) dec.appendChild(el('li', null, d));
     kv($('rules'), (plan.rules || []).map((r) => [r[0], r[1]]));
@@ -99,7 +99,7 @@
     $('foot').textContent = plan.note || '';
     const age = t ? Math.max(0, Math.round((Date.now() / 1000 - t) / 60)) : null;
     $('status').textContent = src === 'pc' ? 'Live numbers from your PC, ' + (age < 1 ? 'just now' : age + ' min ago') + '.'
-      : src === 'site' ? 'Live numbers from the last published update (your PC has not reported here yet).' : 'Plan only: no live numbers yet.';
+      : src === 'site' ? 'Numbers from the last site update. Your PC has not reported here yet.' : 'Plan only. No live numbers yet.';
   }
   main();
 })();

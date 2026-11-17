@@ -18,13 +18,13 @@ function kv(dl, k, v) { dl.appendChild(h('dt', '', k)); dl.appendChild(h('dd', '
 
 function render(doc) {
   $('demo').hidden = !doc.sample;
-  $('status').textContent = doc.sample ? 'DEMO: example plan, no progress from your PC yet. Run AGENCY_DAY.bat on the PC to see yours.' : `Updated ${doc.asof.replace('T', ' ').slice(0, 16)}.`;
+  $('status').textContent = doc.sample ? 'Example numbers (DEMO), not yours yet. To see yours: run AGENCY_DAY.bat on the PC.' : `Updated ${doc.asof.replace('T', ' ').slice(0, 16)}.`;
   $('heroM3').textContent = `${C.range(doc.total.usd_m3)} a month`;
-  $('heroText').textContent = `In month 3, all models together (estimate). Do now: ${C.firstAction(doc)}`;
+  $('heroText').textContent = `Estimate for month 3, all side work together. Do next: ${C.firstAction(doc)}`;
   const kvs = $('heroKv'); kvs.textContent = '';
   kv(kvs, 'Month 1', `${C.range(doc.total.usd_m1)} a month`);
   kv(kvs, 'Your hours', `${doc.total.hours[0]}-${doc.total.hours[1]} a week`);
-  kv(kvs, 'Real so far', `${C.money(doc.total.real)} a month`);
+  kv(kvs, 'Real money so far', `${C.money(doc.total.real)} a month`);
 
   const tb = $('tbl').querySelector('tbody'); tb.textContent = '';
   for (const m of doc.models) {
@@ -44,10 +44,10 @@ function render(doc) {
     s.appendChild(h('p', 'lead', m.what));
     s.appendChild(h('p', 'next', `Next: ${m.next}`));
     if (!m.paused) {
-      s.appendChild(h('p', 'note', 'Before the first dollar:'));
+      s.appendChild(h('p', 'note', 'Still needed before the first $:'));
       const ul = h('ul'); for (const x of m.first_dollar) ul.appendChild(h('li', '', x)); s.appendChild(ul);
     }
-    const d = h('details'); d.appendChild(h('summary', '', `Built (${m.built.length})`));
+    const d = h('details'); d.appendChild(h('summary', '', `Already built (${m.built.length})`));
     const ub = h('ul'); for (const x of m.built) ub.appendChild(h('li', '', x)); d.appendChild(ub); s.appendChild(d);
     s.appendChild(h('p', 'note', `${m.why} More: ${m.doc}`));
     box.appendChild(s);
@@ -89,12 +89,12 @@ function renderDoor(doc, ticks) {
   const plan = doc.livePlan || X.trading;
   const S = C.summary(doc, plan, X.costs);
   const dl = $('door'); dl.textContent = '';
-  kv(dl, 'Trading: first payout to you', S.firstPayout);
-  kv(dl, 'Trading: funded, all accounts', S.funded);
-  if (plan && plan.funded_month_with_4) kv(dl, 'With account #4', `${C.money(plan.funded_month_with_4)} a month`);
-  kv(dl, 'Business models by month 3', S.business);
+  kv(dl, 'First trading payout to you', S.firstPayout);
+  kv(dl, 'Once funded, all accounts', S.funded);
+  if (plan && plan.funded_month_with_4) kv(dl, 'With a 4th account', `${C.money(plan.funded_month_with_4)} a month`);
+  kv(dl, 'Side work by month 3', S.business);
   kv(dl, 'Spent so far (evals)', S.spent);
-  kv(dl, 'Real income so far', S.real);
+  kv(dl, 'Real money in so far', S.real);
 
   const mv = $('moves'); mv.textContent = '';
   const mcount = () => { $('movesPill').textContent = `${X.moves.filter((m) => ticks['m:' + m.id]).length} of ${X.moves.length} done`; };
@@ -107,7 +107,7 @@ function renderDoor(doc, ticks) {
   const tr = $('trade'); tr.textContent = '';
   $('tradeSrc').textContent = doc.livePlan ? 'your evals' : (plan && plan.demo ? 'DEMO evals' : 'plan');
   $('tradeSrc').className = `pill ${doc.livePlan ? 'ok' : 'warn'}`;
-  if (!plan || !plan.accounts.length) tr.appendChild(h('p', 'note', 'No eval to plan from yet.'));
+  if (!plan || !plan.accounts.length) tr.appendChild(h('p', 'note', 'No eval running yet, so no dates.'));
   for (const a of (plan ? plan.accounts : [])) {
     const box = h('div', 'acct');
     const row = h('div', 'row'); row.appendChild(h('h3', '', a.name)); row.appendChild(h('span', `pill ${a.state === 'lost' ? 'bad' : 'ok'}`, a.state === 'lost' ? 'gone' : a.label || a.state));
@@ -115,11 +115,11 @@ function renderDoor(doc, ticks) {
     const d2 = h('dl', 'kv');
     if (a.state !== 'lost') {
       if (a.pass_typical) kv(d2, 'Passes about', `${a.pass_typical} (slow ${a.pass_slow})`);
-      kv(d2, 'First payout request', `${a.payout_typical} (slow ${a.payout_slow})`);
-      kv(d2, 'Ask / to you (80%)', `${C.money(a.request)} / ${C.money(a.to_you)}`);
+      kv(d2, 'Ask for the first payout', `${a.payout_typical} (slow ${a.payout_slow})`);
+      kv(d2, 'You ask / you get (80%)', `${C.money(a.request)} / ${C.money(a.to_you)}`);
       kv(d2, 'In your bank about', a.bank_typical || '-');
-      kv(d2, 'Funded, a month', C.money(a.funded_month));
-      kv(d2, 'Room left now', C.money(a.room));
+      kv(d2, 'Once funded, a month', C.money(a.funded_month));
+      kv(d2, 'Room before it fails', C.money(a.room));
     }
     box.appendChild(d2);
     if (a.state === 'lost') box.appendChild(h('p', 'note', a.text));
@@ -133,7 +133,7 @@ function renderDoor(doc, ticks) {
     const d = h('details', 'item'); const sm = h('summary');
     sm.appendChild(h('span', 'nm', r.name)); sm.appendChild(h('span', 'pr', r.usd ? C.money(r.usd) : 'free'));
     d.appendChild(sm);
-    d.appendChild(h('p', 'note', `${r.where}. About ${r.minutes} min. File: ${r.file}`));
+    d.appendChild(h('p', 'note', `Where: ${r.where}. Takes about ${r.minutes} min. File: ${r.file}`));
     const ol = h('ol');
     const recount = () => { const n = r.steps.filter((_, i) => ticks[`r:${r.id}:${i}`]).length; sm.dataset.done = n === r.steps.length ? '1' : '0'; readyCount(); };
     r.steps.forEach((t, i) => { all += 1; if (ticks[`r:${r.id}:${i}`]) done += 1; ol.appendChild(tick(ticks, `r:${r.id}:${i}`, t, recount)); });
@@ -176,10 +176,10 @@ function renderDoor(doc, ticks) {
   for (const b of X.costs.bought) kv(cs, b.what, C.money(b.usd));
   for (const b of X.costs.subscriptions) kv(cs, b.what, `${C.money(b.usd_month)} a month`);
   kv(cs, 'Spent so far', C.money(X.costs.spent));
-  kv(cs, 'Subscriptions', X.costs.monthly ? `${C.money(X.costs.monthly)} a month` : 'none');
+  kv(cs, 'Monthly bills', X.costs.monthly ? `${C.money(X.costs.monthly)} a month` : 'none');
   $('costNote').textContent = X.costs.note;
   const nb = $('nextBuys'); nb.textContent = '';
-  for (const b of X.costs.next_buys) nb.appendChild(h('li', '', `Next buy: ${b.what}, ${C.range(b.usd)}: ${b.when}`));
+  for (const b of X.costs.next_buys) nb.appendChild(h('li', '', `Next to buy: ${b.what}, ${C.range(b.usd)}. When: ${b.when}`));
 }
 
 // the prop accounts' payout plan card (team E 2026-11-16): the money table, when Zlarior can pass / pay, the buying schedule
@@ -216,7 +216,7 @@ function renderProp(p) {
   const own = C.clean(ownRaw);
   const raw = own ? ownRaw : await getJSON('./fixture.json');
   const doc = own || C.clean(raw);
-  if (!doc) { $('status').textContent = 'No business data yet: run python tools/biz_publish.py on the PC.'; READY = true; return; }
+  if (!doc) { $('status').textContent = 'No numbers yet. On the PC, run: python tools/biz_publish.py'; READY = true; return; }
   doc.x = C.cleanExtra(raw);
   const accts = C.accountsFromHome(await getJSON('../home.json'));          // the published evals: the plan follows them live
   doc.livePlan = accts.length ? C.planPayouts(accts, C.localDay(new Date())) : null;

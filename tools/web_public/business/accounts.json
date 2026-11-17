@@ -1,7 +1,7 @@
 {
  "v": 1,
  "updated": "2026-11-17",
- "note": "The lead keeps this file current (STATE.md is the source). Live numbers come from your PC when it reports; the rest is the plan. Every $ a month is an ESTIMATE from the Jul-Oct 2026 trades after fees; on 2021-25 it is about $0.",
+ "note": "Live numbers come from your PC. The rest is the plan. Every $ a month is an ESTIMATE from the Jul-Oct 2026 trades, after fees. In the 2021-25 test it made about $0, so treat it as a maybe.",
  "accounts": [
   {
    "key": "zlarior",
@@ -11,7 +11,7 @@
    "stage": "eval",
    "status": "live",
    "bots": "Zlarior only (eval). Once funded: Zlarior + ATLAS + BLITZ (if you say yes)",
-   "next": "Pass: $3,000 profit, never $2,000 below the best close",
+   "next": "Pass: make $3,000. Never fall $2,000 below your best day's close",
    "payout": "about early Jan (with ATLAS once funded)",
    "usd_month": "$1,200",
    "cost": "paid"
@@ -24,7 +24,7 @@
    "stage": "eval",
    "status": "live",
    "bots": "ATLAS",
-   "next": "Pass: $1,500 profit, $1,000 max loss",
+   "next": "Pass: make $1,500. Max loss $1,000",
    "payout": "after it passes",
    "usd_month": "$380",
    "cost": "paid"
@@ -36,9 +36,9 @@
    "stage": "eval",
    "status": "buying",
    "bots": "Zlarior + ATLAS from day one (passes in ~4-5 weeks instead of ~2 months)",
-   "next": "Buy it (40% code), send me the account name",
+   "next": "Buy it with the 40% code, then send me the account name",
    "payout": "eval ~4-5 weeks, then daily; first payout about mid-late Jan",
-   "usd_month": "$2,800 (keep $1,000 in; realistic: about half)",
+   "usd_month": "$2,800 best case (keep $1,000 in); about half is more likely",
    "cost": "~$94"
   },
   {
@@ -77,15 +77,15 @@
  "rules": [
   [
    "Builder 50K",
-   "Pass $3,000. Max loss $2,000 (follows your best close). Funded: first payout after $2,600 profit, best day under half, 80% to you."
+   "Pass: make $3,000. Max loss $2,000, measured from your best close. Funded: first payout after $2,600 profit; no single day may be half of it; you keep 80%."
   ],
   [
    "Builder 25K",
-   "Pass $1,500. Max loss $1,000. Funded: same idea at half size."
+   "Pass: make $1,500. Max loss $1,000. Funded: same rules at half the size."
   ],
   [
    "Rapid EOD 50K",
-   "Pass $3,000, best day under 30%, 4 days min. Funded: daily payouts after $2,100, 90% to you, flat 2 min around CPI / jobs / FOMC."
+   "Pass: make $3,000 in at least 4 days; no single day over 30% of it. Funded: payouts every day after $2,100; you keep 90%; no open trade 2 min before and after big news (CPI, jobs, Fed)."
   ]
  ]
 }

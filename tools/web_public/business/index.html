@@ -28,59 +28,64 @@
 <script src="../olympus/gate-nav.js?v=g3" defer></script>
 <script src="../olympus/sfx.js?v=s4" defer></script>
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#c8a24a'); r.setProperty('--oly-accent-rgb', '200, 162, 74'); })();</script>
-<link rel="stylesheet" href="business.css?v=3">
+<link rel="stylesheet" href="business.css?v=4">
 </head>
 <body>
 <main id="app">
   <header class="top">
-    <div class="brand"><img src="icon.svg" alt="" width="44" height="44"><div><h1 class="ag-title">Business</h1><p class="sub">Every money model: next step and money</p></div></div>
+    <div class="brand"><img src="icon.svg" alt="" width="44" height="44"><div><h1 class="ag-title">Business</h1><p class="sub">Your money: what comes in, what to do next</p></div></div>
     <div class="tags"><span id="demo" class="tag demo" hidden>DEMO</span></div>
   </header>
   <p id="status" class="note" role="status" aria-live="polite">Loading...</p>
-  <a class="ag-card card" href="accounts.html" style="display:block;min-height:44px;text-decoration:none"><div class="row"><h2>My Accounts &rarr;</h2><span class="pill ok">evals</span></div><p class="note">Every eval and funded account: live room and target, which bots trade it, what to buy next, what waits on you.</p></a>
+  <nav class="doors" aria-label="Business pages">
+    <a class="ag-card card door2" href="accounts.html"><h2>My Accounts &rarr;</h2><p class="note">Each eval: $ to pass, $ room left, what to buy next.</p></a>
+    <a class="ag-card card door2" href="taxes.html"><h2>Taxes &rarr;</h2><p class="note">What to set aside, and when to pay.</p></a>
+    <a class="ag-card card door2" href="security.html"><h2>Security &rarr;</h2><p class="note">Lock your accounts in 7 steps.</p></a>
+    <a class="ag-card card door2" href="schedule.html"><h2>Work week &rarr;</h2><p class="note">When to check the PC, review, ask for payouts.</p></a>
+  </nav>
 
   <section class="ag-card card door" aria-labelledby="doorH">
-    <div class="row"><h2 id="doorH">Every dollar, one place</h2><span class="pill warn">ESTIMATE</span></div>
+    <div class="row"><h2 id="doorH">Your money at a glance</h2><span class="pill warn">ESTIMATE</span></div>
     <dl class="kv" id="door"></dl>
-    <p class="note" id="doorNote">Trading = your evals (from the published home file); business = the models below; costs = what you paid.</p>
+    <p class="note" id="doorNote">Trading = your prop accounts. Business = your side work. Costs = what you paid. All future $ are estimates.</p>
     <nav class="links" aria-label="The other money pages"><a href="../ledger/">Ledger: real money</a><a href="../hera/">Hera: 12-month plan</a><a href="../plutus/">Plutus: payouts</a><a href="../oikos/">Oikos: household</a><a href="../pnyx/">Pnyx: risk</a><a href="../agency/">Agency: calls</a></nav>
   </section>
 
   <section class="ag-card card moves" aria-labelledby="movesH">
-    <div class="row"><h2 id="movesH">This week's money moves</h2><span class="pill" id="movesPill">0 done</span></div>
+    <div class="row"><h2 id="movesH">Do this week</h2><span class="pill" id="movesPill">0 done</span></div>
     <ol id="moves"></ol>
   </section>
 
   <section class="ag-card card" aria-labelledby="tradeH">
-    <div class="row"><h2 id="tradeH">Trading money</h2><span class="pill" id="tradeSrc">plan</span></div>
+    <div class="row"><h2 id="tradeH">Trading: when the money comes</h2><span class="pill" id="tradeSrc">plan</span></div>
     <div id="trade"></div>
     <p class="lead" id="acct4"></p>
-    <p class="note">Typical pace from the research, never a promise: an eval can fail, the slow date is about twice the sessions, the bank date assumes about 4 business days after the request.</p>
+    <p class="note">Estimate from past trades, not a promise. An eval can fail. "Slow" means it takes about twice as long. Money reaches your bank about 4 business days after you ask.</p>
   </section>
 
   <section class="ag-card card" aria-labelledby="readyH">
-    <div class="row"><h2 id="readyH">Ready to upload</h2><span class="pill ok" id="readyPill">-</span></div>
-    <p class="note">Claude finished these. Each needs only your click; tick the steps as you go (this phone only). Nothing uploads or posts by itself.</p>
+    <div class="row"><h2 id="readyH">Ready for you to upload</h2><span class="pill ok" id="readyPill">-</span></div>
+    <p class="note">Claude made these. Each one only needs your click. Tick the steps as you go (saved on this phone). Nothing posts by itself.</p>
     <div id="ready"></div>
   </section>
 
   <section class="ag-card card" id="hero" aria-labelledby="heroH">
-    <div class="row"><h2 id="heroH">All models together</h2><span class="pill warn">ESTIMATE</span></div>
+    <div class="row"><h2 id="heroH">Side work, all together</h2><span class="pill warn">ESTIMATE</span></div>
     <p class="big ag-num" id="heroM3">-</p>
     <p class="lead" id="heroText"></p>
     <dl class="kv" id="heroKv"></dl>
-    <p class="note">An estimate is not income. "Real" is only money your billing ledger recorded.</p>
+    <p class="note">An estimate is not income. "Real" means money that actually came in.</p>
   </section>
 
   <section class="ag-card card" aria-labelledby="tblH">
-    <h2 id="tblH">Status</h2>
-    <table class="tbl" id="tbl"><thead><tr><th>Model</th><th class="n">Month 1</th><th class="n">Month 3</th><th class="n">Hours / week</th></tr></thead><tbody></tbody></table>
+    <h2 id="tblH">Each idea: $ a month (estimate)</h2>
+    <table class="tbl" id="tbl"><thead><tr><th>Idea</th><th class="n">Month 1</th><th class="n">Month 3</th><th class="n">Hours / week</th></tr></thead><tbody></tbody></table>
   </section>
 
   <section class="ag-card card" id="prop" aria-labelledby="propH" hidden>
-    <div class="row"><h2 id="propH">Prop accounts: the payout plan</h2><span class="pill warn">ESTIMATE</span></div>
-    <p class="note">From the <span id="propSpan">replay</span>. $ a month to you after fees; the worst month is fees only (you never lose more).</p>
-    <div class="scroll"><table class="tbl" id="propTbl"><thead><tr><th>Accounts</th><th class="n">Year 1</th><th class="n">Months 7-12</th><th class="n">Worst month</th><th class="n">No payout</th><th class="n">2021-25</th></tr></thead><tbody></tbody></table></div>
+    <div class="row"><h2 id="propH">Prop accounts: $ to you a month</h2><span class="pill warn">ESTIMATE</span></div>
+    <p class="note">From a replay of past trades (<span id="propSpan">replay</span>). $ a month to you after fees. A bad month costs only the fees, never more.</p>
+    <div class="scroll"><table class="tbl" id="propTbl"><thead><tr><th>Accounts</th><th class="n">Year 1</th><th class="n">Months 7-12</th><th class="n">Worst month</th><th class="n">Months with $0</th><th class="n">2021-25</th></tr></thead><tbody></tbody></table></div>
     <dl class="kv" id="propKv"></dl>
     <ul id="propRules" class="note"></ul>
   </section>
@@ -88,35 +93,35 @@
   <section id="models" aria-label="The models"></section>
 
   <section class="ag-card card" aria-labelledby="ideasH">
-    <div class="row"><h2 id="ideasH">New money ideas, ranked</h2><span class="pill info" id="ideasPill">researched</span></div>
+    <div class="row"><h2 id="ideasH">New money ideas, best first</h2><span class="pill info" id="ideasPill">researched</span></div>
     <p class="note" id="ideasHow"></p>
     <table class="tbl" id="ideas"><thead><tr><th>Idea</th><th class="n">$ / hour</th><th class="n">$ / month</th><th>First $</th></tr></thead><tbody></tbody></table>
     <div id="kits"></div>
   </section>
 
   <section class="ag-card card" aria-labelledby="costH">
-    <h2 id="costH">Costs</h2>
+    <h2 id="costH">What you spent</h2>
     <dl class="kv" id="costs"></dl>
     <p class="note" id="costNote"></p>
     <ul class="note" id="nextBuys"></ul>
   </section>
 
   <section class="ag-card card" aria-labelledby="priceH">
-    <h2 id="priceH">Website prices (one source: agency/config.json)</h2>
+    <h2 id="priceH">Website prices you charge</h2>
     <dl class="kv" id="prices"></dl>
   </section>
 
   <section class="ag-card card week" aria-labelledby="weekH">
-    <div class="row"><h2 id="weekH">7-day launch</h2><span class="pill" id="weekPill">0 done</span></div>
+    <div class="row"><h2 id="weekH">7-day start plan</h2><span class="pill" id="weekPill">0 done</span></div>
     <div id="week"></div>
   </section>
 
   <section class="ag-card card" aria-labelledby="rulesH">
-    <h2 id="rulesH">House rules</h2>
+    <h2 id="rulesH">Rules we keep</h2>
     <ul id="rules" class="note"></ul>
   </section>
 
-  <p class="foot">Business reads one published file and sends nothing. Paper only: it never trades, posts, emails or calls.</p>
+  <p class="foot">This page only reads. It never trades, posts, emails or calls anyone.</p>
 </main>
 <script type="module" src="business.js?v=2"></script>
 </body>

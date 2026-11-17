@@ -145,8 +145,8 @@ export function botNext(sess, position, live) {
     closed: 'The market is closed. The bot sleeps and wakes when the market opens.',
     break: 'Daily break. The bot waits for the market to reopen at 18:00 ET.',
     overnight: 'The bot sleeps until 02:00 ET, then starts watching the key levels.',
-    london: 'The bot is watching for a sweep of a key level. If it finds one it enters by itself, with the stop and the target set.',
-    ny: 'The bot keeps watching until 15:30 ET. Most trades come in the London morning, so New York is usually quiet.',
+    london: 'The bot watches for price to run past a key high or low and snap back. If it sees that, it enters by itself with the stop and target set.',
+    ny: 'The bot keeps watching until 15:30 ET. Most trades come early (02:00 to 08:00 ET), so the afternoon is usually quiet.',
     winddown: 'No new trades after 15:30 ET. Anything still open is closed at 15:55.',
     flat: 'Everything should be flat now. MFFU needs the accounts flat by 16:10 ET.',
   }[sess.id];
@@ -172,11 +172,11 @@ export function advice(m) {
   }
   const dl = A.filter((a) => a.dll && a.dllUsed / a.dll >= 0.8);
   if (dl.length) return { level: 'warn', title: `${dl[0].name}: daily loss nearly used`, why: `${moneyS(-dl[0].dllUsed)} today of a ${money(dl[0].dll)} daily limit. The account pauses itself at the limit.`, doNow: 'No manual trades today. Resume tomorrow.' };
-  if (m.position) return { level: 'info', title: 'A trade is open', why: 'The stop and the target are set. Moving them is the most expensive habit; the journal shows it.', doNow: 'Leave it alone.' };
+  if (m.position) return { level: 'info', title: 'A trade is open', why: 'The stop and the target are set. Moving them by hand has cost money before.', doNow: 'Leave it alone.' };
   if (sess.id === 'closed' || sess.id === 'break') return { level: 'info', title: 'Nothing to do', why: `${sess.label}. ${sess.nextLabel ? 'Next: ' + sess.nextLabel + ' in ' + duration(sess.mins) + '.' : ''}`, doNow: 'Rest. Check back later.' };
   if (sess.id === 'overnight') return { level: 'info', title: 'Sleep. The bot starts at 02:00', why: `The bot starts watching in ${duration(Math.max(0, (sess.et.mod < 120 ? 120 : 1560) - sess.et.mod))}. No account is in danger.`, doNow: 'Nothing. Check the first thing after your coffee.' };
-  if (sess.id === 'winddown' || sess.id === 'flat') return { level: 'warn', title: 'Check that you are flat', why: 'No new entries now; the bot closes everything at 15:55 and MFFU needs flat by 16:10.', doNow: 'Look once at the positions, then close the laptop.' };
-  return { level: 'ok', title: 'Leave the bot alone', why: `The bot is watching and ${A.length ? 'every account is at a safe distance' : 'waiting for numbers'}. Entries stop at 15:30 ET.`, doNow: 'Nothing. Interfering costs money; the journal shows it.' };
+  if (sess.id === 'winddown' || sess.id === 'flat') return { level: 'warn', title: 'Check that you are flat', why: 'No new entries now; the bot closes everything at 15:55 and MFFU needs flat by 16:10.', doNow: 'Look once: no open trade? Then you are done for the day.' };
+  return { level: 'ok', title: 'Leave the bot alone', why: `The bot is watching and ${A.length ? 'every account is at a safe distance' : 'waiting for numbers'}. Entries stop at 15:30 ET.`, doNow: 'Nothing. Touching it by hand has cost money before.' };
 }
 
 // ------------------------------------------------------------------------------------------------ the bot's trades (odeon/trades.json)
