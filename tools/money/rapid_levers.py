@@ -256,7 +256,7 @@ class Rapid(SOA.Rapid):
         if isinstance(p, tuple) and p[0] == "fixed":
             avail = float(p[1]) if self.bal - R["buffer"] >= float(p[1]) else 0.0
         since = self.bal - self.cyc_start if self.pays else self.bal
-        if avail >= R["pay_min"] and since >= R["pay_min"] - 1e-9:
+        if avail >= R["pay_min"] and since >= R.get("since", R["pay_min"]) - 1e-9:   # since: the 25K's $250 rule
             amt = round(min(cap, avail), 2)
             self.pays.append(amt)
             self.bal -= amt
