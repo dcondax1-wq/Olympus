@@ -30,6 +30,7 @@
 
   // --- the per-app flavour: [scene, tagline, first sound]
   var FLAVOUR = {
+    board: ['columns', 'Read the board', 'tick'],
     business: ['columns', 'Count the ventures', 'tap'],
     trading: ['bars', 'Every trade, every day', 'tick'],
     agency: ['columns', 'Open the shop', 'tap'],

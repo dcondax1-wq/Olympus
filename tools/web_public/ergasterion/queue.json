@@ -190,7 +190,7 @@
   ]
  },
  "writeups": {
-  "count": 168,
+  "count": 169,
   "latest": [
    {
     "date": "2026-11-17",
@@ -236,6 +236,13 @@
    },
    {
     "date": "2026-11-17",
+    "title": "ATLAS's funded Builder 25K - ATLAS alone vs LIT + ATLAS $250 on the same account",
+    "status": "candidate",
+    "summary": "Funded 25K (MFFU Builder 25K funded rules = engine/funded_life builder25k - $1,000 EOD trailing, payouts above the $1,100 buffer, $250 min / $1,000 max, 80%, 50% consistency, 2 days a cycle, 5 payouts), a fresh funded s…",
+    "file": "research/writeups/funded25-lit-atlas-2026-11-17.md"
+   },
+   {
+    "date": "2026-11-17",
     "title": "\"Edge stopped working\" switch - cut size when LIT's / ATLAS's own record drifts below expectation, restore on…",
     "status": "rejected",
     "summary": "In 2021-25 they halve the failed Builder evals (55% - 28% within 60 sessions) and cut fees ($212 - $166 per 6 months), but the payouts fall by the same amount: the Builder still makes -$7 instead of -$9 a m…",
@@ -268,13 +275,6 @@
     "status": "adopt-candidate",
     "summary": "Six ideas that systematic NQ / prop bots use and that Tested and rejected plus the LIT idea rounds 1-3 had not covered, 28 versions on the exact live LIT trades (re-walk == run lit_live), CME NQ futures, true 1m bars in…",
     "file": "research/writeups/2026-11-15-s2-edge.md"
-   },
-   {
-    "date": "2026-11-15",
-    "title": "LIT deep edge (2026-11-15) - why LIT loses, why Jul-Oct made less than Jan-Jun, the setups it skipped, and 16…",
-    "status": "rejected",
-    "summary": "No single fact has a bin that loses in both halves; 425 two-fact loser cells picked on Jan-Jun keep losing in Jul-Oct 88 times against 95 expected by chance.",
-    "file": "research/writeups/2026-11-15-lit-deep.md"
    }
   ]
  },
@@ -382,6 +382,13 @@
    "text": "The four that look best on paper (pre-FOMC, RSI(2), 12-month trend, overnight drift) all hold positions overnight, which MFFU does not allow (flat by 16:10 ET), and every one of them lost money in 2026 H2 or in 2021-25.",
    "src": "research/writeups/public-strategies-2026-11-17.md",
    "kind": "rejected"
+  },
+  {
+   "d": "2026-11-17",
+   "who": "atlas",
+   "text": "Funded 25K (MFFU Builder 25K funded rules = engine/funded_life builder25k - $1,000 EOD trailing, payouts above the $1,100 buffer, $250 min / $1,000 max, 80%, 50% consistency, 2 days a cycle, 5 payouts), a fresh funded s…",
+   "src": "research/writeups/funded25-lit-atlas-2026-11-17.md",
+   "kind": "candidate"
   },
   {
    "d": "2026-11-17",
@@ -851,13 +858,6 @@
    "text": "An adversarial check of the two stop-hunt leads (stophunt.md) before anyone trusts them, 7 checks.",
    "src": "research/writeups/stophunt-audit.md",
    "kind": "finding"
-  },
-  {
-   "d": "2026-10-23",
-   "who": "dev",
-   "text": "None is real on NQ 2021-26 - 2 of 31 pass a 5% placebo test in 2021-24 (luck alone gives about 1.6), none survives the family-wise check, and both fade out of sample.",
-   "src": "research/writeups/quant-anomalies.md",
-   "kind": "rejected"
   }
  ],
  "lessons": [
@@ -1948,6 +1948,14 @@
    "ok": true,
    "text": "Write-up (rejected): \"Edge stopped working\" switch - cut size when LIT's / ATLAS's own record drifts below expectation, restore on…",
    "src": "research/writeups/drift-switch-2026-11-17.md"
+  },
+  {
+   "t": 1794916800,
+   "who": "atlas",
+   "kind": "writeup",
+   "ok": true,
+   "text": "Write-up (candidate): ATLAS's funded Builder 25K - ATLAS alone vs LIT + ATLAS $250 on the same account",
+   "src": "research/writeups/funded25-lit-atlas-2026-11-17.md"
   },
   {
    "t": 1794830400,
@@ -4321,6 +4329,38 @@
   "available": true,
   "commits": [
    {
+    "t": 1794948170,
+    "s": "night-ui: Prometheus flame + Verdict, Settings Jarvis card, Daphne hold rate"
+   },
+   {
+    "t": 1794946547,
+    "s": "Fix pre-existing reds (night-reds) + olympus.css o7 and cache bumps"
+   },
+   {
+    "t": 1794946389,
+    "s": "Merge branch 'night-reds' into claude/clever-heisenberg-51zwcr"
+   },
+   {
+    "t": 1794946369,
+    "s": "night-reds: fix old test reds at the cause"
+   },
+   {
+    "t": 1794943293,
+    "s": "Phone caches: le-public-v107, jarvis-v46, kalshi-k28 and ?v= bumps for today's plainer words (tools/bump_vers…"
+   },
+   {
+    "t": 1794943091,
+    "s": "Merge branch 'night-words2' into claude/clever-heisenberg-51zwcr"
+   },
+   {
+    "t": 1794943063,
+    "s": "Words wave 2: update ledger pins to the new labels; Kalshi PAUSED note no longer uses .note.warn (kept for th…"
+   },
+   {
+    "t": 1794942907,
+    "s": "Kalshi rewards paper: 4h snapshot"
+   },
+   {
     "t": 1794942650,
     "s": "Merge branch 'night-w-cmd' into claude/clever-heisenberg-51zwcr"
    },
@@ -4353,6 +4393,10 @@
     "s": "Merge branch 'night-rapid' into claude/clever-heisenberg-51zwcr"
    },
    {
+    "t": 1794936309,
+    "s": "Plainer words, wave 2: Aegis, Chrysos, Oikos, Ledger, Money card, Kalshi (PAUSED banner), ATLAS, Live View"
+   },
+   {
     "t": 1794935428,
     "s": "Merge branch 'night-work' into claude/clever-heisenberg-51zwcr"
    },
@@ -4383,49 +4427,13 @@
    {
     "t": 1794933298,
     "s": "Merge branch 'night-pub' into claude/clever-heisenberg-51zwcr"
-   },
-   {
-    "t": 1794933298,
-    "s": "Kalshi rewards paper: ledger update"
-   },
-   {
-    "t": 1794933281,
-    "s": "Research: famous published strategies on NQ (22 cells) - none holds, nothing adopted"
-   },
-   {
-    "t": 1794932832,
-    "s": "Kalshi rewards paper: ledger update"
-   },
-   {
-    "t": 1794928454,
-    "s": "Kalshi rewards paper: first ledger snapshot"
-   },
-   {
-    "t": 1794928428,
-    "s": "Kalshi rewards paper tester (GET only, never an order): virtual two-sided reward-reference bids, conservative…"
-   },
-   {
-    "t": 1794927972,
-    "s": "Kalshi K5: slow public-number markets and liquidity rewards - no taker edge, one weak paper rule, rewards lead"
-   },
-   {
-    "t": 1794885983,
-    "s": "Kalshi K4: cross-venue Polymarket, sports favourite-longshot, crypto slices - no edge"
-   },
-   {
-    "t": 1794877490,
-    "s": "Record drift switch and rule-native results"
-   },
-   {
-    "t": 1794877490,
-    "s": "Merge branch 'worktree-agent-a494b96448fe9ec52' into claude/clever-heisenberg-51zwcr"
    }
   ],
   "branches": [
    {
     "name": "claude/clever-heisenberg-51zwcr",
-    "t": 1794942650,
-    "s": "Merge branch 'night-w-cmd' into claude/clever-heisenberg-51zwcr"
+    "t": 1794950734,
+    "s": "Merge branch 'night-notify' into claude/clever-heisenberg-51zwcr"
    },
    {
     "name": "worktree-agent-a689a38b3eb808860",

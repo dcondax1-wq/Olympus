@@ -1,0 +1,202 @@
+{
+ "date": "2026-11-17",
+ "why": "25K eval passed ($26,946.10 on 2026-11-17)",
+ "n": 600,
+ "spans": {
+  "H1": [
+   "2026-01-01",
+   "2026-06-30"
+  ],
+  "H2": [
+   "2026-07-01",
+   "2026-10-16"
+  ],
+  "REF": [
+   "2021-11-01",
+   "2025-12-31"
+  ]
+ },
+ "overlap": {
+  "atlas_skipped_lit_open": 38,
+  "atlas_closed_for_lit": 84
+ },
+ "rows": {
+  "H1": {
+   "ATLAS alone (today)": {
+    "per_month": 592,
+    "first_med": 18.0,
+    "first_p75": 28.75,
+    "no_pay_6m": 5.0,
+    "lost_6m": 0.0,
+    "payouts": 4.48,
+    "paid_6m": 3554,
+    "plain_250": {
+     "trades": 104,
+     "tpw": 4.06,
+     "win": 52.9,
+     "pf": 2.92,
+     "net": 18362,
+     "per_month": 3012,
+     "max_dd": -1062,
+     "win_days_pw": 1.91
+    }
+   },
+   "LIT + ATLAS $250": {
+    "per_month": 599,
+    "first_med": 14.0,
+    "first_p75": 22.0,
+    "no_pay_6m": 7.5,
+    "lost_6m": 0.0,
+    "payouts": 4.51,
+    "paid_6m": 3594,
+    "plain_250": {
+     "trades": 176,
+     "tpw": 6.88,
+     "win": 55.7,
+     "pf": 3.07,
+     "net": 26816,
+     "per_month": 4399,
+     "max_dd": -1108,
+     "win_days_pw": 2.5
+    }
+   },
+   "LIT + ATLAS (both preset)": {
+    "per_month": 628,
+    "first_med": 13.0,
+    "first_p75": 20.0,
+    "no_pay_6m": 4.2,
+    "lost_6m": 0.0,
+    "payouts": 4.75,
+    "paid_6m": 3766,
+    "plain_250": {
+     "trades": 176,
+     "tpw": 6.88,
+     "win": 55.7,
+     "pf": 3.07,
+     "net": 26816,
+     "per_month": 4399,
+     "max_dd": -1108,
+     "win_days_pw": 2.5
+    }
+   }
+  },
+  "H2": {
+   "ATLAS alone (today)": {
+    "per_month": 497,
+    "first_med": 26.0,
+    "first_p75": 38.0,
+    "no_pay_6m": 5.5,
+    "lost_6m": 0.0,
+    "payouts": 3.77,
+    "paid_6m": 2983,
+    "plain_250": {
+     "trades": 46,
+     "tpw": 2.95,
+     "win": 56.5,
+     "pf": 2.55,
+     "net": 5256,
+     "per_month": 1415,
+     "max_dd": -876,
+     "win_days_pw": 1.47
+    }
+   },
+   "LIT + ATLAS $250": {
+    "per_month": 529,
+    "first_med": 18.0,
+    "first_p75": 28.0,
+    "no_pay_6m": 12.2,
+    "lost_6m": 0.0,
+    "payouts": 4.0,
+    "paid_6m": 3174,
+    "plain_250": {
+     "trades": 86,
+     "tpw": 5.51,
+     "win": 51.2,
+     "pf": 2.64,
+     "net": 11056,
+     "per_month": 2977,
+     "max_dd": -1202,
+     "win_days_pw": 2.12
+    }
+   },
+   "LIT + ATLAS (both preset)": {
+    "per_month": 568,
+    "first_med": 14.0,
+    "first_p75": 22.0,
+    "no_pay_6m": 10.5,
+    "lost_6m": 0.0,
+    "payouts": 4.29,
+    "paid_6m": 3406,
+    "plain_250": {
+     "trades": 86,
+     "tpw": 5.51,
+     "win": 51.2,
+     "pf": 2.64,
+     "net": 11056,
+     "per_month": 2977,
+     "max_dd": -1202,
+     "win_days_pw": 2.12
+    }
+   }
+  },
+  "REF": {
+   "ATLAS alone (today)": {
+    "per_month": 48,
+    "first_med": 17.0,
+    "first_p75": 28.5,
+    "no_pay_6m": 78.2,
+    "lost_6m": 0.0,
+    "payouts": 0.37,
+    "paid_6m": 290,
+    "plain_250": {
+     "trades": 994,
+     "tpw": 4.61,
+     "win": 37.3,
+     "pf": 1.08,
+     "net": 10393,
+     "per_month": 203,
+     "max_dd": -11403,
+     "win_days_pw": 1.38
+    }
+   },
+   "LIT + ATLAS $250": {
+    "per_month": 35,
+    "first_med": 20.0,
+    "first_p75": 37.0,
+    "no_pay_6m": 81.8,
+    "lost_6m": 0.0,
+    "payouts": 0.27,
+    "paid_6m": 211,
+    "plain_250": {
+     "trades": 1485,
+     "tpw": 6.89,
+     "win": 44.4,
+     "pf": 1.02,
+     "net": 4028,
+     "per_month": 79,
+     "max_dd": -18101,
+     "win_days_pw": 1.75
+    }
+   },
+   "LIT + ATLAS (both preset)": {
+    "per_month": 41,
+    "first_med": 14.0,
+    "first_p75": 22.0,
+    "no_pay_6m": 79.0,
+    "lost_6m": 0.0,
+    "payouts": 0.32,
+    "paid_6m": 248,
+    "plain_250": {
+     "trades": 1485,
+     "tpw": 6.89,
+     "win": 44.4,
+     "pf": 1.02,
+     "net": 4028,
+     "per_month": 79,
+     "max_dd": -18101,
+     "win_days_pw": 1.75
+    }
+   }
+  }
+ }
+}

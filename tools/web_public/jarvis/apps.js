@@ -137,6 +137,7 @@ export const BUILT_INS = Object.freeze([
   app('agency', 'Agency', 'money', '#d08c4a', 'Website agency: leads, demo sites, calls and the $ pipeline', { glyph: '\u0395' }),
   app('business', 'Business', 'money', '#c8a24a', 'Every money model: next step, what is missing, $ estimate', { glyph: 'B' }),
   app('trading', 'Trading', 'trading', '#c8a24a', 'Every trade: today, calendar, stats, payout rules', { glyph: 'T' }),
+  app('board', 'Board', 'trading', '#c8a24a', 'What the bot, you and Claude know: accounts, events, notes', { glyph: '▤' }),
   app('clio', 'Clio', 'trading', '#d8c9a8', 'The research library: every study in plain words', { glyph: '\u039a' }),
   app('atlas', 'Atlas', 'life', '#efc979', 'A fast map of every Olympus dashboard', { glyph: '\u25c8' }),
   app('athena', 'Athena', 'life', '#7f8a52', 'The library: strategy, rules, quiz', { glyph: '\ud83e\udd89' }),

@@ -19,6 +19,7 @@ Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7;
 | Notifications | Built: $-first alerts (notify_settings.json) + cloud PC-SILENT check. Cloud monitor runs from `main`, not updated since Nov 7, so not live yet |
 
 Rules: MFFU ONLY ("We stick with MFFU"). Limits: max 5 sim-funded, Builder 1x50K + 2x25K, Rapid EOD 3x50K, 10 evals; Zlarior 50K + ATLAS 25K funded together ALLOWED. Funded news ban (-2/+2 min Tier-1) on Rapid.
+- night-bot 2026-11-17: ATLAS 25K PASSED ($26,946.10; Zlarior 50K $49,192.78). Funded 25K: LIT + ATLAS $250 = 1st payout 14/18 vs 18/26 sessions, $599/$529 vs $592/$497 a month, but no-payout-6m 7.5/12.2% vs 5.0/5.5%, 2021-25 a bit worse: owner yes/no; built OFF (engine/lit25.py, docs/LIT25_FUNDED.md; new funded Name: `python -X utf8 -m engine.lit25 --funded "<Name>" --start <day>`). PC silent: PC_DOCTOR.bat (docs/PC_DOCTOR.md); likely cause = report task OlympusPCReport never installed + auto-update never connected (BOTS_BACK's credential.interactive=never blocked the sign-in; fixed in autoupdate.fetch_interactive); heartbeat branch silent on purpose (GitHub suspended 11-08).
 
 ## Waiting on the owner (newest first)
 1. PC has not reported since 2026-11-07: restart/check it (fix first; nothing new reaches the PC until it does).

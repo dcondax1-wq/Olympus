@@ -78,6 +78,7 @@ export const REGISTRY = {
   agency:     { kind: 'tiles',         ms: 800 },
   business:   { kind: 'columns',       ms: 1000, n: 5 },
   trading:    { kind: 'chart',         ms: 800 },
+  board:      { kind: 'tiles',         ms: 800 },
   clio:       { kind: 'scroll',        ms: 600 },
   atlas:      { kind: 'sunburst',      ms: 900 },
   observatory:{ kind: 'sunburst',      ms: 950 },

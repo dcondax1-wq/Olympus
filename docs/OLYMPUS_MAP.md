@@ -10,6 +10,7 @@ Data: apps only read published JSON (and bundled `fixture.json` / demo fallbacks
 |---|---|---|---|---|---|
 | Archive (`archive`) | Market | trading | The library of everything we ever tested, searchable | `fixture.json`, `index.json` | `tests.test_archive_page` |
 | Ares (`ares`) | Market | trading | The war room: GO, WAIT or HALT | `../data.json`, `jarvis.json`, `rules.json`, `../home.json` | `tests.test_ares_page` |
+| Board (`board`) | Market | trading | What the bot, you and Claude know: accounts | `board.json`, `../business/accounts.json`, `fixture.json` | `tests.test_board` |
 | Chronos (`chronos`) | Market | trading | Time and the session clock | `../odeon/trades.json`, `fixture.json` | `tests.test_chronos_page` |
 | Cities (`cities`) | Market | trading | A world of city islands | `fixture.json` | `tests.test_cities_page` |
 | Colosseum (`colosseum`) | Market | trading | Where strategies fight: seven rounds on real stored | `extra.json`, `fixture.json`, `../archive/index.json`, `../home.json` | `tests.test_colosseum_page` |
@@ -27,7 +28,8 @@ Data: apps only read published JSON (and bundled `fixture.json` / demo fallbacks
 | Pheme (`pheme`) | Market | trading | The word on the street: releases, and NQ's | `fixture.json`, `stats.json` | `tests.test_pheme_page` |
 | Pinakes (`pinakes`) | Market | trading | The catalogue: browse and query every table OLYMPUS | `catalog.json`, `fixture.json`, `pinakes-views.json` | `tests.test_pinakes_page` |
 | Pythia (`pythia`) | Market | trading | The risk calendar: the next 14 days, and | `fixture.json`, `events.json`, `../home.json` | `tests.test_pythia_page` |
-| Zenith (`zenith`) | Market | trading | NQ bots · Zlarior · ATLAS · BLITZ | data.json, home.json, live.json (the bot feeds) | `tests.test_zenith_mode` |
+| Trading (`trading`) | Market | trading | Every trade: today, calendar, stats, payout rules | `../home.json`, `fixture.json`, `trades.json`, `../ledger/rules.json`, `../business/accounts.json` | `tests.test_trading_page` |
+| Zenith (`zenith`) | Market | trading | NQ bots · Zlarior · ATLAS | data.json, home.json, live.json (the bot feeds) | `tests.test_zenith_mode` |
 | Clio (`clio`) | Research | trading | The research library: every study in plain words | `fixture.json`, `../writeups/index.json`, `../data.json` | `tests.test_clio_page` |
 | Data City (`datacity`) | Research | trading | Every combo tested, as a city | `fixture.json`, `city.json`, `jarvis.json`, `../data.json`, `../pantheon/pantheon.json` | `tests.test_datacity` |
 | Fates (`fates`) | Research | trading | Pass odds for each eval | `fixture.json` | `tests.test_fates` |
@@ -38,7 +40,9 @@ Data: apps only read published JSON (and bundled `fixture.json` / demo fallbacks
 | Prometheus (`prometheus`) | Research | trading | The Forge: strategies tested | `jarvis.json`, `forge.json` | `tests.test_prometheus` |
 | Daphne (`tree`) | Research | trading | The strategy tree search | `jarvis.json`, `tree.json` | `tests.test_strategytree` |
 | Aegis (`aegis`) | Money | trading | Risk guard: drawdown left, a full-stop what-if, when | `fixture.json`, `../home.json`, `../ledger/rules.json` | `tests.test_aegis_page` |
+| Agency (`agency`) | Money | money | Website agency: leads, demo sites, calls and the | `fixture.json`, `my_leads.json`, `leads.json`, `callrules.json`, `callscript.json`, ... | `tests.test_agency` |
 | Arbiter (`arbiter`) | Money | money | Paper-only spreads and funding: net yearly return after | `fixture.json`, `../money/arbiter.json` | `tests.test_arbiter_page` |
+| Business (`business`) | Money | money | Every money model: next step, what is missing | `accounts.json`, `../home.json`, `business.json`, `fixture.json`, `work.json` | `tests.test_business` |
 | Chrysos (`chrysos`) | Money | money | Prop-firm fleet planner: fees against payouts, break-even (estimate) | `fixture.json`, `../money/chrysos.json` | `tests.test_chrysos_page` |
 | Demeter (`demeter`) | Money | trading | Account health: drawdown dials, payout rules | `fixture.json`, `../home.json`, `../ledger/rules.json`, `../plutus/roadmap.json` | `tests.test_demeter_page` |
 | Dionysus (`dionysus`) | Money | money | The Kalshi desk: guard, what-if, scan. Suggestions only | `fixture.json`, `../kalshicity/edges.json`, `../kalshicity/whatif.json` | `tests.test_dionysus_page` |
@@ -80,7 +84,7 @@ Data: apps only read published JSON (and bundled `fixture.json` / demo fallbacks
 | Polis (`polis`) | Life | life | The city of OLYMPUS: every app a building | `../olympus/polis.json`, `../olympus/polis-demo.json`, `fixture.json`, `../home.json`, `../kalshi.json`, ... | `tests.test_polis_page` |
 | Symposium (`symposium`) | Life | life | Meet everyone who works for you, and talk | `fixture.json` | `tests.test_symposium_page` |
 
-71 apps. Rebuild the registry list after editing `jarvis/apps.js` or `olympus.js`: `python tools/apps_list_build.py`; recount: `python tools/apps_list_build.py --check`.
+75 apps. Rebuild the registry list after editing `jarvis/apps.js` or `olympus.js`: `python tools/apps_list_build.py`; recount: `python tools/apps_list_build.py --check`.
 
 ## Where the organizing code lives
 
