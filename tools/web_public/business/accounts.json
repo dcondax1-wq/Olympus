@@ -25,9 +25,19 @@
    "status": "live",
    "bots": "ATLAS",
    "next": "Balance $26,946.10 (owner, Nov 17) = +$1,946, over the $1,500 target: PASSED. MFFU locks a passed eval (orders say Limit 0) until the funded account is issued. Send me the new funded account name",
-   "payout": "funded 25K: first payout after $1,100 buffer + $250 min, 2 days, best day under half",
+   "payout": "funded 25K: ask for the full $1,000 once the balance is $27,100 (2 traded days, best day under half); first ask about mid-Dec",
    "usd_month": "$380",
-   "cost": "paid"
+   "cost": "paid",
+   "funded": {
+    "as_of": "2026-11-17",
+    "balance": null,
+    "cycle_start_balance": 25000,
+    "best_day": 0,
+    "cycle_days": 0,
+    "first_trade": null,
+    "last_trade": null,
+    "payouts_n": 0
+   }
   },
   {
    "key": "rapid1",

@@ -1,0 +1,613 @@
+{
+ "date": "2026-11-17",
+ "n": 600,
+ "start": "2026-11-19",
+ "spans": {
+  "H1": [
+   "2026-01-01",
+   "2026-06-30"
+  ],
+  "H2": [
+   "2026-07-01",
+   "2026-10-16"
+  ],
+  "REF": [
+   "2021-11-01",
+   "2025-12-31"
+  ]
+ },
+ "overlap": {
+  "atlas_skipped_lit_open": 38,
+  "atlas_closed_for_lit": 84
+ },
+ "policies": {
+  "today: ask at $750": {
+   "ask": 750.0
+  },
+  "asap: $250": {
+   "ask": 250.0
+  },
+  "ask at $500": {
+   "ask": 500.0
+  },
+  "ask at $1,000 (max)": {
+   "ask": 1000.0
+  },
+  "cushion $300": {
+   "ask": 250.0,
+   "cushion": 300.0
+  },
+  "cushion $500": {
+   "ask": 250.0,
+   "cushion": 500.0
+  },
+  "consistency <= 40%": {
+   "ask": 250.0,
+   "cons": 0.4
+  },
+  "cycle-timed": {
+   "ask": null,
+   "cycle": "cycle25"
+  }
+ },
+ "rows": {
+  "H1": {
+   "ATLAS alone (today)": {
+    "today: ask at $750": {
+     "per_month": 592,
+     "first_med": 18.0,
+     "first_p75": 28.75,
+     "first_amt_med": 1000,
+     "no_pay_6m": 5.0,
+     "lost_6m": 5.7,
+     "payouts": 4.48,
+     "paid_6m": 3554,
+     "first_date": "2026-12-14"
+    },
+    "asap: $250": {
+     "per_month": 581,
+     "first_med": 17.0,
+     "first_p75": 26.0,
+     "first_amt_med": 987,
+     "no_pay_6m": 4.8,
+     "lost_6m": 6.0,
+     "payouts": 4.5,
+     "paid_6m": 3483,
+     "first_date": "2026-12-11"
+    },
+    "ask at $500": {
+     "per_month": 585,
+     "first_med": 17.0,
+     "first_p75": 27.0,
+     "first_amt_med": 1000,
+     "no_pay_6m": 5.0,
+     "lost_6m": 6.0,
+     "payouts": 4.49,
+     "paid_6m": 3508,
+     "first_date": "2026-12-11"
+    },
+    "ask at $1,000 (max)": {
+     "per_month": 594,
+     "first_med": 20.0,
+     "first_p75": 30.0,
+     "first_amt_med": 1000,
+     "no_pay_6m": 5.0,
+     "lost_6m": 5.3,
+     "payouts": 4.46,
+     "paid_6m": 3565,
+     "first_date": "2026-12-16"
+    },
+    "cushion $300": {
+     "per_month": 565,
+     "first_med": 17.0,
+     "first_p75": 27.0,
+     "first_amt_med": 723,
+     "no_pay_6m": 5.0,
+     "lost_6m": 5.3,
+     "payouts": 4.51,
+     "paid_6m": 3392,
+     "first_date": "2026-12-11"
+    },
+    "cushion $500": {
+     "per_month": 554,
+     "first_med": 18.0,
+     "first_p75": 28.75,
+     "first_amt_med": 616,
+     "no_pay_6m": 5.0,
+     "lost_6m": 5.0,
+     "payouts": 4.51,
+     "paid_6m": 3322,
+     "first_date": "2026-12-14"
+    },
+    "consistency <= 40%": {
+     "per_month": 556,
+     "first_med": 21.0,
+     "first_p75": 31.75,
+     "first_amt_med": 1000,
+     "no_pay_6m": 5.0,
+     "lost_6m": 5.0,
+     "payouts": 4.19,
+     "paid_6m": 3334,
+     "first_date": "2026-12-17"
+    },
+    "cycle-timed": {
+     "per_month": 581,
+     "first_med": 17.0,
+     "first_p75": 26.0,
+     "first_amt_med": 993,
+     "no_pay_6m": 5.0,
+     "lost_6m": 6.0,
+     "payouts": 4.49,
+     "paid_6m": 3487,
+     "first_date": "2026-12-11"
+    }
+   },
+   "LIT + ATLAS $250": {
+    "today: ask at $750": {
+     "per_month": 599,
+     "first_med": 14.0,
+     "first_p75": 22.0,
+     "first_amt_med": 1000,
+     "no_pay_6m": 7.5,
+     "lost_6m": 8.8,
+     "payouts": 4.51,
+     "paid_6m": 3594,
+     "first_date": "2026-12-08"
+    },
+    "asap: $250": {
+     "per_month": 595,
+     "first_med": 14.0,
+     "first_p75": 21.0,
+     "first_amt_med": 1000,
+     "no_pay_6m": 7.5,
+     "lost_6m": 8.8,
+     "payouts": 4.51,
+     "paid_6m": 3572,
+     "first_date": "2026-12-08"
+    },
+    "ask at $500": {
+     "per_month": 597,
+     "first_med": 14.0,
+     "first_p75": 22.0,
+     "first_amt_med": 1000,
+     "no_pay_6m": 7.5,
+     "lost_6m": 8.8,
+     "payouts": 4.51,
+     "paid_6m": 3583,
+     "first_date": "2026-12-08"
+    },
+    "ask at $1,000 (max)": {
+     "per_month": 602,
+     "first_med": 15.0,
+     "first_p75": 23.0,
+     "first_amt_med": 1000,
+     "no_pay_6m": 7.5,
+     "lost_6m": 8.5,
+     "payouts": 4.52,
+     "paid_6m": 3615,
+     "first_date": "2026-12-09"
+    },
+    "cushion $300": {
+     "per_month": 588,
+     "first_med": 14.0,
+     "first_p75": 22.0,
+     "first_amt_med": 1000,
+     "no_pay_6m": 7.5,
+     "lost_6m": 8.5,
+     "payouts": 4.52,
+     "paid_6m": 3525,
+     "first_date": "2026-12-08"
+    },
+    "cushion $500": {
+     "per_month": 580,
+     "first_med": 14.0,
+     "first_p75": 22.0,
+     "first_amt_med": 1000,
+     "no_pay_6m": 7.5,
+     "lost_6m": 8.3,
+     "payouts": 4.53,
+     "paid_6m": 3481,
+     "first_date": "2026-12-08"
+    },
+    "consistency <= 40%": {
+     "per_month": 575,
+     "first_med": 19.0,
+     "first_p75": 26.0,
+     "first_amt_med": 1000,
+     "no_pay_6m": 7.5,
+     "lost_6m": 8.0,
+     "payouts": 4.33,
+     "paid_6m": 3448,
+     "first_date": "2026-12-15"
+    },
+    "cycle-timed": {
+     "per_month": 595,
+     "first_med": 14.0,
+     "first_p75": 21.0,
+     "first_amt_med": 1000,
+     "no_pay_6m": 7.5,
+     "lost_6m": 8.8,
+     "payouts": 4.51,
+     "paid_6m": 3572,
+     "first_date": "2026-12-08"
+    }
+   }
+  },
+  "H2": {
+   "ATLAS alone (today)": {
+    "today: ask at $750": {
+     "per_month": 497,
+     "first_med": 26.0,
+     "first_p75": 38.0,
+     "first_amt_med": 1000,
+     "no_pay_6m": 5.5,
+     "lost_6m": 7.3,
+     "payouts": 3.77,
+     "paid_6m": 2983,
+     "first_date": "2026-12-24"
+    },
+    "asap: $250": {
+     "per_month": 487,
+     "first_med": 24.0,
+     "first_p75": 35.0,
+     "first_amt_med": 960,
+     "no_pay_6m": 5.2,
+     "lost_6m": 7.3,
+     "payouts": 3.81,
+     "paid_6m": 2923,
+     "first_date": "2026-12-22"
+    },
+    "ask at $500": {
+     "per_month": 493,
+     "first_med": 25.0,
+     "first_p75": 37.0,
+     "first_amt_med": 1000,
+     "no_pay_6m": 5.3,
+     "lost_6m": 7.7,
+     "payouts": 3.78,
+     "paid_6m": 2958,
+     "first_date": "2026-12-23"
+    },
+    "ask at $1,000 (max)": {
+     "per_month": 498,
+     "first_med": 28.0,
+     "first_p75": 42.0,
+     "first_amt_med": 1000,
+     "no_pay_6m": 6.2,
+     "lost_6m": 6.3,
+     "payouts": 3.74,
+     "paid_6m": 2991,
+     "first_date": "2026-12-29"
+    },
+    "cushion $300": {
+     "per_month": 473,
+     "first_med": 25.0,
+     "first_p75": 37.0,
+     "first_amt_med": 734,
+     "no_pay_6m": 5.3,
+     "lost_6m": 7.0,
+     "payouts": 3.79,
+     "paid_6m": 2835,
+     "first_date": "2026-12-23"
+    },
+    "cushion $500": {
+     "per_month": 458,
+     "first_med": 26.0,
+     "first_p75": 38.0,
+     "first_amt_med": 577,
+     "no_pay_6m": 5.5,
+     "lost_6m": 6.0,
+     "payouts": 3.79,
+     "paid_6m": 2745,
+     "first_date": "2026-12-24"
+    },
+    "consistency <= 40%": {
+     "per_month": 423,
+     "first_med": 29.0,
+     "first_p75": 42.0,
+     "first_amt_med": 1000,
+     "no_pay_6m": 6.0,
+     "lost_6m": 6.5,
+     "payouts": 3.25,
+     "paid_6m": 2540,
+     "first_date": "2026-12-30"
+    },
+    "cycle-timed": {
+     "per_month": 487,
+     "first_med": 24.0,
+     "first_p75": 35.0,
+     "first_amt_med": 960,
+     "no_pay_6m": 5.2,
+     "lost_6m": 7.3,
+     "payouts": 3.81,
+     "paid_6m": 2924,
+     "first_date": "2026-12-22"
+    }
+   },
+   "LIT + ATLAS $250": {
+    "today: ask at $750": {
+     "per_month": 529,
+     "first_med": 18.0,
+     "first_p75": 28.0,
+     "first_amt_med": 1000,
+     "no_pay_6m": 12.2,
+     "lost_6m": 15.3,
+     "payouts": 4.0,
+     "paid_6m": 3174,
+     "first_date": "2026-12-14"
+    },
+    "asap: $250": {
+     "per_month": 515,
+     "first_med": 16.0,
+     "first_p75": 25.5,
+     "first_amt_med": 1000,
+     "no_pay_6m": 12.2,
+     "lost_6m": 15.5,
+     "payouts": 4.02,
+     "paid_6m": 3091,
+     "first_date": "2026-12-10"
+    },
+    "ask at $500": {
+     "per_month": 524,
+     "first_med": 17.0,
+     "first_p75": 26.5,
+     "first_amt_med": 1000,
+     "no_pay_6m": 12.2,
+     "lost_6m": 15.5,
+     "payouts": 4.0,
+     "paid_6m": 3144,
+     "first_date": "2026-12-11"
+    },
+    "ask at $1,000 (max)": {
+     "per_month": 535,
+     "first_med": 20.0,
+     "first_p75": 29.0,
+     "first_amt_med": 1000,
+     "no_pay_6m": 12.3,
+     "lost_6m": 14.5,
+     "payouts": 4.01,
+     "paid_6m": 3211,
+     "first_date": "2026-12-16"
+    },
+    "cushion $300": {
+     "per_month": 515,
+     "first_med": 17.0,
+     "first_p75": 27.0,
+     "first_amt_med": 892,
+     "no_pay_6m": 12.2,
+     "lost_6m": 14.3,
+     "payouts": 4.05,
+     "paid_6m": 3087,
+     "first_date": "2026-12-11"
+    },
+    "cushion $500": {
+     "per_month": 510,
+     "first_med": 18.0,
+     "first_p75": 28.0,
+     "first_amt_med": 783,
+     "no_pay_6m": 12.2,
+     "lost_6m": 13.5,
+     "payouts": 4.06,
+     "paid_6m": 3061,
+     "first_date": "2026-12-14"
+    },
+    "consistency <= 40%": {
+     "per_month": 476,
+     "first_med": 22.0,
+     "first_p75": 32.0,
+     "first_amt_med": 1000,
+     "no_pay_6m": 12.7,
+     "lost_6m": 14.7,
+     "payouts": 3.62,
+     "paid_6m": 2858,
+     "first_date": "2026-12-18"
+    },
+    "cycle-timed": {
+     "per_month": 515,
+     "first_med": 16.0,
+     "first_p75": 25.5,
+     "first_amt_med": 1000,
+     "no_pay_6m": 12.2,
+     "lost_6m": 15.5,
+     "payouts": 4.02,
+     "paid_6m": 3092,
+     "first_date": "2026-12-10"
+    }
+   }
+  },
+  "REF": {
+   "ATLAS alone (today)": {
+    "today: ask at $750": {
+     "per_month": 48,
+     "first_med": 17.0,
+     "first_p75": 28.5,
+     "first_amt_med": 1000,
+     "no_pay_6m": 78.2,
+     "lost_6m": 93.2,
+     "payouts": 0.37,
+     "paid_6m": 290,
+     "first_date": "2026-12-11"
+    },
+    "asap: $250": {
+     "per_month": 49,
+     "first_med": 16.0,
+     "first_p75": 26.0,
+     "first_amt_med": 1000,
+     "no_pay_6m": 77.2,
+     "lost_6m": 93.0,
+     "payouts": 0.39,
+     "paid_6m": 293,
+     "first_date": "2026-12-10"
+    },
+    "ask at $500": {
+     "per_month": 49,
+     "first_med": 16.0,
+     "first_p75": 26.0,
+     "first_amt_med": 1000,
+     "no_pay_6m": 77.3,
+     "lost_6m": 93.2,
+     "payouts": 0.38,
+     "paid_6m": 293,
+     "first_date": "2026-12-10"
+    },
+    "ask at $1,000 (max)": {
+     "per_month": 47,
+     "first_med": 20.0,
+     "first_p75": 31.0,
+     "first_amt_med": 1000,
+     "no_pay_6m": 79.5,
+     "lost_6m": 93.0,
+     "payouts": 0.35,
+     "paid_6m": 283,
+     "first_date": "2026-12-16"
+    },
+    "cushion $300": {
+     "per_month": 45,
+     "first_med": 16.5,
+     "first_p75": 26.5,
+     "first_amt_med": 800,
+     "no_pay_6m": 77.3,
+     "lost_6m": 91.7,
+     "payouts": 0.39,
+     "paid_6m": 267,
+     "first_date": "2026-12-10"
+    },
+    "cushion $500": {
+     "per_month": 40,
+     "first_med": 17.0,
+     "first_p75": 28.5,
+     "first_amt_med": 644,
+     "no_pay_6m": 78.2,
+     "lost_6m": 92.0,
+     "payouts": 0.38,
+     "paid_6m": 243,
+     "first_date": "2026-12-11"
+    },
+    "consistency <= 40%": {
+     "per_month": 37,
+     "first_med": 22.0,
+     "first_p75": 35.0,
+     "first_amt_med": 1000,
+     "no_pay_6m": 81.8,
+     "lost_6m": 91.5,
+     "payouts": 0.28,
+     "paid_6m": 219,
+     "first_date": "2026-12-18"
+    },
+    "cycle-timed": {
+     "per_month": 49,
+     "first_med": 16.0,
+     "first_p75": 26.0,
+     "first_amt_med": 1000,
+     "no_pay_6m": 77.2,
+     "lost_6m": 93.0,
+     "payouts": 0.39,
+     "paid_6m": 293,
+     "first_date": "2026-12-10"
+    }
+   },
+   "LIT + ATLAS $250": {
+    "today: ask at $750": {
+     "per_month": 35,
+     "first_med": 20.0,
+     "first_p75": 37.0,
+     "first_amt_med": 1000,
+     "no_pay_6m": 81.8,
+     "lost_6m": 91.3,
+     "payouts": 0.27,
+     "paid_6m": 211,
+     "first_date": "2026-12-16"
+    },
+    "asap: $250": {
+     "per_month": 35,
+     "first_med": 20.0,
+     "first_p75": 37.0,
+     "first_amt_med": 1000,
+     "no_pay_6m": 81.7,
+     "lost_6m": 91.3,
+     "payouts": 0.27,
+     "paid_6m": 211,
+     "first_date": "2026-12-16"
+    },
+    "ask at $500": {
+     "per_month": 35,
+     "first_med": 20.0,
+     "first_p75": 37.0,
+     "first_amt_med": 1000,
+     "no_pay_6m": 81.7,
+     "lost_6m": 91.3,
+     "payouts": 0.27,
+     "paid_6m": 211,
+     "first_date": "2026-12-16"
+    },
+    "ask at $1,000 (max)": {
+     "per_month": 35,
+     "first_med": 21.5,
+     "first_p75": 37.0,
+     "first_amt_med": 1000,
+     "no_pay_6m": 82.3,
+     "lost_6m": 91.5,
+     "payouts": 0.26,
+     "paid_6m": 208,
+     "first_date": "2026-12-17"
+    },
+    "cushion $300": {
+     "per_month": 34,
+     "first_med": 20.0,
+     "first_p75": 37.0,
+     "first_amt_med": 1000,
+     "no_pay_6m": 81.7,
+     "lost_6m": 91.5,
+     "payouts": 0.27,
+     "paid_6m": 206,
+     "first_date": "2026-12-16"
+    },
+    "cushion $500": {
+     "per_month": 33,
+     "first_med": 20.0,
+     "first_p75": 37.0,
+     "first_amt_med": 1000,
+     "no_pay_6m": 81.8,
+     "lost_6m": 91.2,
+     "payouts": 0.27,
+     "paid_6m": 201,
+     "first_date": "2026-12-16"
+    },
+    "consistency <= 40%": {
+     "per_month": 22,
+     "first_med": 30.5,
+     "first_p75": 47.25,
+     "first_amt_med": 1000,
+     "no_pay_6m": 86.7,
+     "lost_6m": 89.7,
+     "payouts": 0.17,
+     "paid_6m": 132,
+     "first_date": "2026-12-31"
+    },
+    "cycle-timed": {
+     "per_month": 35,
+     "first_med": 20.0,
+     "first_p75": 37.0,
+     "first_amt_med": 1000,
+     "no_pay_6m": 81.7,
+     "lost_6m": 91.3,
+     "payouts": 0.27,
+     "paid_6m": 211,
+     "first_date": "2026-12-16"
+    }
+   }
+  }
+ },
+ "pick": {
+  "ATLAS alone (today)": {
+   "h1_pick": "ask at $1,000 (max)",
+   "h2_holds": true,
+   "adopt": "ask at $1,000 (max)"
+  },
+  "LIT + ATLAS $250": {
+   "h1_pick": "ask at $1,000 (max)",
+   "h2_holds": true,
+   "adopt": "ask at $1,000 (max)"
+  }
+ }
+}

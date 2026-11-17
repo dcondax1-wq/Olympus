@@ -102,6 +102,7 @@
     let lite = null;
     try { if (!demo && window.PC_FEED) lite = await window.PC_FEED.fetchLatest({}); } catch (e) { /* none */ }
     draw(M.pick({ site, lite, plan, fixture, demo }, nowS()));
+    try { if (window.PAYOUT_CARD && !demo) window.PAYOUT_CARD.mount($('payouts'), { plan, lite, title: 'Payouts', titleClass: 'sect' }); } catch (e) { /* never the page */ }
   }
 
   window.BOARD = { load, last: null };
