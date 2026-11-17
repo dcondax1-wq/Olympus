@@ -1,6 +1,6 @@
 {
  "v": 2,
- "asof": "2026-11-16",
+ "asof": "2026-11-17",
  "note": "Built from handoff/QUEUE.md, research/writeups, research/runs, the Archive index, the Mind's proposals and git (when present) by tools/ergasterion_build.py. Plain text only; nothing here is a trade.",
  "queue": {
   "total": 67,
@@ -190,8 +190,15 @@
   ]
  },
  "writeups": {
-  "count": 161,
+  "count": 162,
   "latest": [
+   {
+    "date": "2026-11-17",
+    "title": "Rule-native search - pick by \"days to the first payout\" and \"P(no payout in 6 months)\" instead of PF / net $…",
+    "status": "mostly",
+    "summary": "MFFU pays on winning days (Rapid EOD eval best day = 30%, funded daily above $2,100; Builder funded best day = 50%, $2,600 above start).",
+    "file": "research/writeups/rule-native-2026-11-17.md"
+   },
    {
     "date": "2026-11-16",
     "title": "More strategies on ONE MFFU account - LIT + ATLAS (+ BLITZ) on the Builder 50K and on a Rapid EOD 50K",
@@ -268,13 +275,6 @@
     "status": "adopt-candidate",
     "summary": "Each account = the uprisk engine (MFFU Builder eval on the live two_week sizing, 2 sessions of paperwork, Sim Funded on the live funded preset, 80% payouts, lost or 5 payouts then the next eval), all accounts on the sam…",
     "file": "research/writeups/millionaire-plan-2026-11-13.md"
-   },
-   {
-    "date": "2026-11-13",
-    "title": "Kalshi edge, team K3 (arbitrage, economic releases, late resolution): NO EDGE FOUND",
-    "status": "rejected",
-    "summary": "95% ranges are cluster bootstraps (by event, or by day for weather).",
-    "file": "research/writeups/kalshi-edge-K3-2026-11-13.md"
    }
   ]
  },
@@ -369,6 +369,13 @@
   "BLITZ on its own 25K, \"like a person\" (2026-10-29, blitz-25k.md, tools/blitz25k_.py, runs blitz25k_, pick"
  ],
  "learnings": [
+  {
+   "d": "2026-11-17",
+   "who": "dev",
+   "text": "MFFU pays on winning days (Rapid EOD eval best day = 30%, funded daily above $2,100; Builder funded best day = 50%, $2,600 above start).",
+   "src": "research/writeups/rule-native-2026-11-17.md",
+   "kind": "mostly"
+  },
   {
    "d": "2026-11-16",
    "who": "atlas",
@@ -851,13 +858,6 @@
    "text": "Only one passes the rule - \"equal within 1 tick counts as swept\" (H1 +$346, H2 +$677, 2021-25 +$4.3k, eval path unchanged) - and it is too thin to adopt: one H1 trade, its 2-tick neighbour loses $4.1k in H1, bootstrap p…",
    "src": "research/writeups/lit-supplement.md",
    "kind": "rejected"
-  },
-  {
-   "d": "2026-10-23",
-   "who": "lit",
-   "text": "A simpler LIT without the weekly stop, the 1.5R floor, the 15:55 flat and the BE costs holds up as well (H1 +$34.9k, H2 +$9.6k, eval 2-week 57.1/6.7 and 52.2/0.0).",
-   "src": "research/writeups/lit-ablation.md",
-   "kind": "adopt-candidate"
   }
  ],
  "lessons": [
@@ -1905,6 +1905,14 @@
   }
  ],
  "events": [
+  {
+   "t": 1794916800,
+   "who": "dev",
+   "kind": "writeup",
+   "ok": true,
+   "text": "Write-up (mostly): Rule-native search - pick by \"days to the first payout\" and \"P(no payout in 6 months)\" instead of PF / net $…",
+   "src": "research/writeups/rule-native-2026-11-17.md"
+  },
   {
    "t": 1794830400,
    "who": "dev",
@@ -3924,7 +3932,7 @@
  ],
  "pipeline": {
   "src": "archive/index.json",
-  "built": "2026-11-16",
+  "built": "2026-11-17",
   "counts": {
    "ideas": 2344,
    "testing": 534,
@@ -4178,49 +4186,49 @@
   {
    "name": "CBOE_vol_1d.csv",
    "last": "2026-09-17",
-   "days": 60,
+   "days": 61,
    "file": "data/CBOE_vol_1d.csv"
   },
   {
    "name": "ES_15m.csv",
    "last": "2026-10-16",
-   "days": 31,
+   "days": 32,
    "file": "data/ES_15m.csv"
   },
   {
    "name": "ES_1d.csv",
    "last": "2026-10-16",
-   "days": 31,
+   "days": 32,
    "file": "data/ES_1d.csv"
   },
   {
    "name": "ES_1h.csv",
    "last": "2026-10-16",
-   "days": 31,
+   "days": 32,
    "file": "data/ES_1h.csv"
   },
   {
    "name": "ES_5m.csv",
    "last": "2026-10-16",
-   "days": 31,
+   "days": 32,
    "file": "data/ES_5m.csv"
   },
   {
    "name": "GEX_1d.csv",
    "last": "2026-10-16",
-   "days": 31,
+   "days": 32,
    "file": "data/GEX_1d.csv"
   },
   {
    "name": "NQ_15m.csv",
    "last": "2026-10-16",
-   "days": 31,
+   "days": 32,
    "file": "data/NQ_15m.csv"
   },
   {
    "name": "NQ_1d.csv",
    "last": "2026-10-16",
-   "days": 31,
+   "days": 32,
    "file": "data/NQ_1d.csv"
   }
  ],
@@ -4276,6 +4284,18 @@
  "git": {
   "available": true,
   "commits": [
+   {
+    "t": 1794873972,
+    "s": "Plan: one Rapid EOD (LIT + ATLAS, keep $1,000)"
+   },
+   {
+    "t": 1794865468,
+    "s": "My Accounts page: every eval and funded account, live room / target, bots on it, plan, decisions"
+   },
+   {
+    "t": 1794847261,
+    "s": "Refresh indexes"
+   },
    {
     "t": 1794847252,
     "s": "Merge builder levers study"
@@ -4363,25 +4383,23 @@
    {
     "t": 1794809012,
     "s": "test_arena_citadel: a street is its top face now (2 triangles): the exact route budget is 112 x 2 = 224 (was…"
-   },
-   {
-    "t": 1794808955,
-    "s": "OLYMPUS_PERF: the night W2 budget fixes (oracle, arena, datacity, cities) and the lesson"
-   },
-   {
-    "t": 1794808912,
-    "s": "Night W2: phone e2e reds at the cause, 3D perf budgets back under on phones"
-   },
-   {
-    "t": 1794805775,
-    "s": "Pin: assets/ in the site worker's OTHER_APPS (zenith_mode)"
    }
   ],
   "branches": [
    {
     "name": "claude/clever-heisenberg-51zwcr",
-    "t": 1794847252,
-    "s": "Merge builder levers study"
+    "t": 1794874285,
+    "s": "STATE: owner wants shorter replies"
+   },
+   {
+    "name": "worktree-agent-a494b96448fe9ec52",
+    "t": 1794874285,
+    "s": "STATE: owner wants shorter replies"
+   },
+   {
+    "name": "worktree-agent-aeab192451326547c",
+    "t": 1794873972,
+    "s": "Plan: one Rapid EOD (LIT + ATLAS, keep $1,000)"
    },
    {
     "name": "worktree-agent-aba496e75416be08a",
