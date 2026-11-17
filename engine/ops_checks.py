@@ -1304,6 +1304,12 @@ def backup_due(state: dict, now) -> bool:
     return not blackout and now - last > 26 * 3600
 
 
+def calendar_due(state: dict, now) -> bool:
+    """The official news calendar refresh: once a day after 16:35 ET (after the backup), any day."""
+    e = _et(now)
+    return e.hour * 60 + e.minute >= 16 * 60 + 35 and state.get("last_calendar_day") != e.date().isoformat()
+
+
 def backlog_notices(state: dict, now, runner=None) -> list:
     """Sunday: re-check the research watch-list once per ISO week (tools/backlog_recheck.py, ~10-90 s; result in
     logs/backlog_check.json) and return a notice for each lead that crossed its adopt bar (key per lead + data version, so
@@ -1453,6 +1459,16 @@ def tick(now=None, ctx=None, state=None, sender=None, state_path: str = STATE_PA
             if b.get("ok"):
                 state["last_backup_t"], state["last_backup_files"] = int(now), b.get("files")
             out.append({"key": "backup", **b, "logs": r})
+        if do_backup and real and calendar_due(state, now):
+            state["last_calendar_day"] = _et(now).date().isoformat()      # once a day, even when every source fails
+            try:                       # official Tier-1 calendar (engine/news_official.py): a failed source keeps its rows
+                from . import news_official
+                cal = news_official.refresh(log=lambda *a: None)
+                ops_log(f"calendar {cal['ok']}/{len(news_official.SOURCES)} sources OK, events.csv "
+                        f"{'updated' if cal['changed'] else 'unchanged'} (+{len(cal['added'])} / -{len(cal['removed'])})")
+                out.append({"key": "calendar", "ok": cal["ok"], "changed": cal["changed"]})
+            except Exception as e:
+                ops_log(f"calendar refresh failed: {e.__class__.__name__}: {scrub(str(e), 120)}")
     finally:
         state["last_tick_t"] = int(now)
         save_state(state, state_path)

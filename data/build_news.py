@@ -6,6 +6,8 @@ Sources
   FOMC decisions: https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm  (statement 14:00 ET, presser 14:30 ET)
 Optional: data/news/user_events.csv (date,time_et,event[,impact]) is merged in (e.g. a calendar you exported elsewhere).
 python build_news.py
+NOTE: this rebuilds events.csv from the lists below and drops every row added since; the future Tier-1 rows come from
+engine/news_official.py (official BLS / Fed pages, run once a day by the PC ops task): run it right after this.
 """
 import os
 import re

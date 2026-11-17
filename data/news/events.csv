@@ -197,32 +197,14 @@ date,time_et,event,impact,source
 2026-09-16,14:00,FOMC rate decision + projections,high,federalreserve.gov
 2026-09-16,14:30,FOMC press conference,high,federalreserve.gov
 2026-10-02,08:30,Non-Farm Payrolls (jobs report),high,bls.gov
-2026-10-28,14:00,FOMC rate decision,high,federalreserve.gov
-2026-10-28,14:30,FOMC press conference,high,federalreserve.gov
-2026-12-09,14:00,FOMC rate decision + projections,high,federalreserve.gov
-2026-12-09,14:30,FOMC press conference,high,federalreserve.gov
-2027-01-27,14:00,FOMC rate decision,high,federalreserve.gov
-2027-01-27,14:30,FOMC press conference,high,federalreserve.gov
-2027-03-17,14:00,FOMC rate decision + projections,high,federalreserve.gov
-2027-03-17,14:30,FOMC press conference,high,federalreserve.gov
-2027-04-28,14:00,FOMC rate decision,high,federalreserve.gov
-2027-04-28,14:30,FOMC press conference,high,federalreserve.gov
-2027-06-09,14:00,FOMC rate decision + projections,high,federalreserve.gov
-2027-06-09,14:30,FOMC press conference,high,federalreserve.gov
-2027-07-28,14:00,FOMC rate decision,high,federalreserve.gov
-2027-07-28,14:30,FOMC press conference,high,federalreserve.gov
-2027-09-15,14:00,FOMC rate decision + projections,high,federalreserve.gov
-2027-09-15,14:30,FOMC press conference,high,federalreserve.gov
-2027-10-27,14:00,FOMC rate decision,high,federalreserve.gov
-2027-10-27,14:30,FOMC press conference,high,federalreserve.gov
-2027-12-08,14:00,FOMC rate decision + projections,high,federalreserve.gov
-2027-12-08,14:30,FOMC press conference,high,federalreserve.gov
 2026-10-22,08:30,Unemployment Claims,medium,dol.gov
 2026-10-23,09:45,S&P Global Flash PMIs,medium,spglobal.com
 2026-10-23,10:00,UMich Consumer Sentiment (final Oct),medium,sca.isr.umich.edu
 2026-10-27,08:30,Durable Goods Orders,medium,census.gov
 2026-10-27,10:00,CB Consumer Confidence,high,conference-board.org
 2026-10-27,10:00,New Home Sales,medium,census.gov
+2026-10-28,14:00,FOMC rate decision,high,federalreserve.gov
+2026-10-28,14:30,FOMC press conference,high,federalreserve.gov
 2026-10-29,08:30,GDP Q3 advance estimate,high,bea.gov
 2026-10-29,08:30,Personal Income & Outlays / Core PCE (Sep),high,bea.gov
 2026-10-29,08:30,Unemployment Claims,medium,dol.gov
@@ -237,15 +219,70 @@ date,time_et,event,impact,source
 2026-11-10,08:30,CPI (consumer inflation),high,bls.gov
 2026-11-12,08:30,Unemployment Claims,medium,dol.gov
 2026-11-13,08:30,PPI (producer inflation),high,bls.gov
-2026-11-18,14:00,Fed meeting minutes (Oct 27-28),high,federalreserve.gov
-2026-12-04,08:30,Non-Farm Payrolls (jobs report),high,MFFU T1 news calendar 2026 (help center)
-2026-12-10,08:30,CPI (consumer inflation),high,MFFU T1 news calendar 2026 (help center)
-2026-12-30,14:00,FOMC minutes (Dec meeting),high,MFFU T1 news calendar 2026 (help center)
-2027-02-17,14:00,FOMC minutes (Jan meeting),high,federalreserve.gov (3 weeks after the meeting; derived)
-2027-04-07,14:00,FOMC minutes (Mar meeting),high,federalreserve.gov (3 weeks after the meeting; derived)
-2027-05-19,14:00,FOMC minutes (Apr meeting),high,federalreserve.gov (3 weeks after the meeting; derived)
-2027-06-30,14:00,FOMC minutes (Jun meeting),high,federalreserve.gov (3 weeks after the meeting; derived)
-2027-08-18,14:00,FOMC minutes (Jul meeting),high,federalreserve.gov (3 weeks after the meeting; derived)
-2027-10-06,14:00,FOMC minutes (Sep meeting),high,federalreserve.gov (3 weeks after the meeting; derived)
-2027-11-17,14:00,FOMC minutes (Oct meeting),high,federalreserve.gov (3 weeks after the meeting; derived)
-2027-12-29,14:00,FOMC minutes (Dec meeting),high,federalreserve.gov (3 weeks after the meeting; derived)
+2026-11-18,14:00,FOMC minutes (Oct meeting),high,"federalreserve.gov FOMC calendar (fetched 2026-11-17; 3 weeks after the meeting, derived)"
+2026-12-04,08:30,Non-Farm Payrolls (jobs report),high,bls.gov release schedule (fetched 2026-11-17)
+2026-12-09,14:00,FOMC rate decision + projections,high,federalreserve.gov FOMC calendar (fetched 2026-11-17)
+2026-12-09,14:30,FOMC press conference,high,federalreserve.gov FOMC calendar (fetched 2026-11-17)
+2026-12-10,08:30,CPI (consumer inflation),high,bls.gov release schedule (fetched 2026-11-17)
+2026-12-15,08:30,PPI (producer inflation),medium,bls.gov release schedule (fetched 2026-11-17)
+2026-12-30,14:00,FOMC minutes (Dec meeting),high,"federalreserve.gov FOMC calendar (fetched 2026-11-17; 3 weeks after the meeting, derived)"
+2027-01-08,08:30,Non-Farm Payrolls (jobs report),high,bls.gov release schedule (fetched 2026-11-17)
+2027-01-13,08:30,CPI (consumer inflation),high,bls.gov release schedule (fetched 2026-11-17)
+2027-01-14,08:30,PPI (producer inflation),medium,bls.gov release schedule (fetched 2026-11-17)
+2027-01-27,14:00,FOMC rate decision,high,federalreserve.gov FOMC calendar (fetched 2026-11-17)
+2027-01-27,14:30,FOMC press conference,high,federalreserve.gov FOMC calendar (fetched 2026-11-17)
+2027-02-05,08:30,Non-Farm Payrolls (jobs report),high,bls.gov release schedule (fetched 2026-11-17)
+2027-02-11,08:30,CPI (consumer inflation),high,bls.gov release schedule (fetched 2026-11-17)
+2027-02-12,08:30,PPI (producer inflation),medium,bls.gov release schedule (fetched 2026-11-17)
+2027-02-17,14:00,FOMC minutes (Jan meeting),high,"federalreserve.gov FOMC calendar (fetched 2026-11-17; 3 weeks after the meeting, derived)"
+2027-03-05,08:30,Non-Farm Payrolls (jobs report),high,bls.gov release schedule (fetched 2026-11-17)
+2027-03-10,08:30,CPI (consumer inflation),high,bls.gov release schedule (fetched 2026-11-17)
+2027-03-12,08:30,PPI (producer inflation),medium,bls.gov release schedule (fetched 2026-11-17)
+2027-03-17,14:00,FOMC rate decision,high,federalreserve.gov FOMC calendar (fetched 2026-11-17)
+2027-03-17,14:30,FOMC press conference,high,federalreserve.gov FOMC calendar (fetched 2026-11-17)
+2027-04-02,08:30,Non-Farm Payrolls (jobs report),high,bls.gov release schedule (fetched 2026-11-17)
+2027-04-07,14:00,FOMC minutes (Mar meeting),high,"federalreserve.gov FOMC calendar (fetched 2026-11-17; 3 weeks after the meeting, derived)"
+2027-04-13,08:30,CPI (consumer inflation),high,bls.gov release schedule (fetched 2026-11-17)
+2027-04-14,08:30,PPI (producer inflation),medium,bls.gov release schedule (fetched 2026-11-17)
+2027-04-28,14:00,FOMC rate decision,high,federalreserve.gov FOMC calendar (fetched 2026-11-17)
+2027-04-28,14:30,FOMC press conference,high,federalreserve.gov FOMC calendar (fetched 2026-11-17)
+2027-05-07,08:30,Non-Farm Payrolls (jobs report),high,bls.gov release schedule (fetched 2026-11-17)
+2027-05-12,08:30,CPI (consumer inflation),high,bls.gov release schedule (fetched 2026-11-17)
+2027-05-13,08:30,PPI (producer inflation),medium,bls.gov release schedule (fetched 2026-11-17)
+2027-05-19,14:00,FOMC minutes (Apr meeting),high,"federalreserve.gov FOMC calendar (fetched 2026-11-17; 3 weeks after the meeting, derived)"
+2027-06-04,08:30,Non-Farm Payrolls (jobs report),high,bls.gov release schedule (fetched 2026-11-17)
+2027-06-09,14:00,FOMC rate decision,high,federalreserve.gov FOMC calendar (fetched 2026-11-17)
+2027-06-09,14:30,FOMC press conference,high,federalreserve.gov FOMC calendar (fetched 2026-11-17)
+2027-06-10,08:30,CPI (consumer inflation),high,bls.gov release schedule (fetched 2026-11-17)
+2027-06-11,08:30,PPI (producer inflation),medium,bls.gov release schedule (fetched 2026-11-17)
+2027-06-30,14:00,FOMC minutes (Jun meeting),high,"federalreserve.gov FOMC calendar (fetched 2026-11-17; 3 weeks after the meeting, derived)"
+2027-07-02,08:30,Non-Farm Payrolls (jobs report),high,bls.gov release schedule (fetched 2026-11-17)
+2027-07-14,08:30,CPI (consumer inflation),high,bls.gov release schedule (fetched 2026-11-17)
+2027-07-15,08:30,PPI (producer inflation),medium,bls.gov release schedule (fetched 2026-11-17)
+2027-07-28,14:00,FOMC rate decision,high,federalreserve.gov FOMC calendar (fetched 2026-11-17)
+2027-07-28,14:30,FOMC press conference,high,federalreserve.gov FOMC calendar (fetched 2026-11-17)
+2027-08-06,08:30,Non-Farm Payrolls (jobs report),high,bls.gov release schedule (fetched 2026-11-17)
+2027-08-10,08:30,PPI (producer inflation),medium,bls.gov release schedule (fetched 2026-11-17)
+2027-08-11,08:30,CPI (consumer inflation),high,bls.gov release schedule (fetched 2026-11-17)
+2027-08-18,14:00,FOMC minutes (Jul meeting),high,"federalreserve.gov FOMC calendar (fetched 2026-11-17; 3 weeks after the meeting, derived)"
+2027-09-03,08:30,Non-Farm Payrolls (jobs report),high,bls.gov release schedule (fetched 2026-11-17)
+2027-09-10,08:30,PPI (producer inflation),medium,bls.gov release schedule (fetched 2026-11-17)
+2027-09-14,08:30,CPI (consumer inflation),high,bls.gov release schedule (fetched 2026-11-17)
+2027-09-15,14:00,FOMC rate decision,high,federalreserve.gov FOMC calendar (fetched 2026-11-17)
+2027-09-15,14:30,FOMC press conference,high,federalreserve.gov FOMC calendar (fetched 2026-11-17)
+2027-10-06,14:00,FOMC minutes (Sep meeting),high,"federalreserve.gov FOMC calendar (fetched 2026-11-17; 3 weeks after the meeting, derived)"
+2027-10-08,08:30,Non-Farm Payrolls (jobs report),high,bls.gov release schedule (fetched 2026-11-17)
+2027-10-14,08:30,CPI (consumer inflation),high,bls.gov release schedule (fetched 2026-11-17)
+2027-10-15,08:30,PPI (producer inflation),medium,bls.gov release schedule (fetched 2026-11-17)
+2027-10-27,14:00,FOMC rate decision,high,federalreserve.gov FOMC calendar (fetched 2026-11-17)
+2027-10-27,14:30,FOMC press conference,high,federalreserve.gov FOMC calendar (fetched 2026-11-17)
+2027-11-05,08:30,Non-Farm Payrolls (jobs report),high,bls.gov release schedule (fetched 2026-11-17)
+2027-11-10,08:30,CPI (consumer inflation),high,bls.gov release schedule (fetched 2026-11-17)
+2027-11-12,08:30,PPI (producer inflation),medium,bls.gov release schedule (fetched 2026-11-17)
+2027-11-17,14:00,FOMC minutes (Oct meeting),high,"federalreserve.gov FOMC calendar (fetched 2026-11-17; 3 weeks after the meeting, derived)"
+2027-11-17,14:00,FOMC rate decision,high,federalreserve.gov FOMC calendar (fetched 2026-11-17)
+2027-11-17,14:30,FOMC press conference,high,federalreserve.gov FOMC calendar (fetched 2026-11-17)
+2027-12-03,08:30,Non-Farm Payrolls (jobs report),high,bls.gov release schedule (fetched 2026-11-17)
+2027-12-08,14:00,FOMC minutes (Nov meeting),high,"federalreserve.gov FOMC calendar (fetched 2026-11-17; 3 weeks after the meeting, derived)"
+2027-12-10,08:30,CPI (consumer inflation),high,bls.gov release schedule (fetched 2026-11-17)
+2027-12-15,08:30,PPI (producer inflation),medium,bls.gov release schedule (fetched 2026-11-17)
