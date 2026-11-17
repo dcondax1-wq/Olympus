@@ -1,0 +1,952 @@
+{
+ "result": {
+  "h2_sessions": 78,
+  "starts": 78,
+  "passed": 67,
+  "failed_or_stuck": 0,
+  "unfinished": 11,
+  "median_sessions_to_pass": 20,
+  "from_jul1": {
+   "status": "passed",
+   "sessions": 25,
+   "day": "2026-08-04",
+   "balance": 53132.3,
+   "trades": {
+    "LIT": 9,
+    "ATLAS": 11
+   }
+  },
+  "funded_from_jul1": {
+   "status": "funded",
+   "payouts": [
+    [
+     "2026-07-24",
+     1358.0
+    ],
+    [
+     "2026-07-30",
+     854.0
+    ],
+    [
+     "2026-08-04",
+     1341.0
+    ],
+    [
+     "2026-08-06",
+     800.0
+    ],
+    [
+     "2026-08-07",
+     1631.0
+    ],
+    [
+     "2026-09-09",
+     1248.0
+    ],
+    [
+     "2026-09-10",
+     1177.0
+    ],
+    [
+     "2026-10-01",
+     1194.0
+    ],
+    [
+     "2026-10-02",
+     1535.0
+    ],
+    [
+     "2026-10-07",
+     972.0
+    ],
+    [
+     "2026-10-13",
+     1316.0
+    ],
+    [
+     "2026-10-14",
+     1158.0
+    ]
+   ],
+   "paid": 14584.0,
+   "to_owner_90pct": 13125.6,
+   "per_month_to_owner": 3533.82,
+   "first_payout_session": 18,
+   "trades": {
+    "LIT": 40,
+    "ATLAS": 46
+   }
+  }
+ },
+ "evals": [
+  {
+   "status": "passed",
+   "sessions": 25,
+   "day": "2026-08-04",
+   "balance": 53132.3,
+   "trades": {
+    "LIT": 9,
+    "ATLAS": 11
+   },
+   "start": "2026-07-01"
+  },
+  {
+   "status": "passed",
+   "sessions": 24,
+   "day": "2026-08-04",
+   "balance": 53132.3,
+   "trades": {
+    "LIT": 9,
+    "ATLAS": 11
+   },
+   "start": "2026-07-02"
+  },
+  {
+   "status": "passed",
+   "sessions": 23,
+   "day": "2026-08-04",
+   "balance": 53457.5,
+   "trades": {
+    "LIT": 8,
+    "ATLAS": 11
+   },
+   "start": "2026-07-03"
+  },
+  {
+   "status": "passed",
+   "sessions": 22,
+   "day": "2026-08-04",
+   "balance": 53509.3,
+   "trades": {
+    "LIT": 7,
+    "ATLAS": 11
+   },
+   "start": "2026-07-06"
+  },
+  {
+   "status": "passed",
+   "sessions": 18,
+   "day": "2026-07-30",
+   "balance": 53050.38,
+   "trades": {
+    "LIT": 5,
+    "ATLAS": 9
+   },
+   "start": "2026-07-07"
+  },
+  {
+   "status": "passed",
+   "sessions": 17,
+   "day": "2026-07-30",
+   "balance": 53139.18,
+   "trades": {
+    "LIT": 4,
+    "ATLAS": 9
+   },
+   "start": "2026-07-08"
+  },
+  {
+   "status": "passed",
+   "sessions": 16,
+   "day": "2026-07-30",
+   "balance": 53139.18,
+   "trades": {
+    "LIT": 4,
+    "ATLAS": 9
+   },
+   "start": "2026-07-09"
+  },
+  {
+   "status": "passed",
+   "sessions": 15,
+   "day": "2026-07-30",
+   "balance": 53139.18,
+   "trades": {
+    "LIT": 4,
+    "ATLAS": 9
+   },
+   "start": "2026-07-10"
+  },
+  {
+   "status": "passed",
+   "sessions": 14,
+   "day": "2026-07-30",
+   "balance": 53446.98,
+   "trades": {
+    "LIT": 4,
+    "ATLAS": 8
+   },
+   "start": "2026-07-13"
+  },
+  {
+   "status": "passed",
+   "sessions": 13,
+   "day": "2026-07-30",
+   "balance": 53446.98,
+   "trades": {
+    "LIT": 4,
+    "ATLAS": 8
+   },
+   "start": "2026-07-14"
+  },
+  {
+   "status": "passed",
+   "sessions": 12,
+   "day": "2026-07-30",
+   "balance": 53446.88,
+   "trades": {
+    "LIT": 3,
+    "ATLAS": 8
+   },
+   "start": "2026-07-15"
+  },
+  {
+   "status": "passed",
+   "sessions": 11,
+   "day": "2026-07-30",
+   "balance": 53446.68,
+   "trades": {
+    "LIT": 3,
+    "ATLAS": 7
+   },
+   "start": "2026-07-16"
+  },
+  {
+   "status": "passed",
+   "sessions": 10,
+   "day": "2026-07-30",
+   "balance": 53552.08,
+   "trades": {
+    "LIT": 2,
+    "ATLAS": 7
+   },
+   "start": "2026-07-17"
+  },
+  {
+   "status": "passed",
+   "sessions": 9,
+   "day": "2026-07-30",
+   "balance": 53552.08,
+   "trades": {
+    "LIT": 2,
+    "ATLAS": 7
+   },
+   "start": "2026-07-20"
+  },
+  {
+   "status": "passed",
+   "sessions": 11,
+   "day": "2026-08-04",
+   "balance": 53516.7,
+   "trades": {
+    "LIT": 2,
+    "ATLAS": 9
+   },
+   "start": "2026-07-21"
+  },
+  {
+   "status": "passed",
+   "sessions": 12,
+   "day": "2026-08-06",
+   "balance": 53544.6,
+   "trades": {
+    "LIT": 2,
+    "ATLAS": 9
+   },
+   "start": "2026-07-22"
+  },
+  {
+   "status": "passed",
+   "sessions": 12,
+   "day": "2026-08-07",
+   "balance": 53473.58,
+   "trades": {
+    "LIT": 1,
+    "ATLAS": 10
+   },
+   "start": "2026-07-23"
+  },
+  {
+   "status": "passed",
+   "sessions": 11,
+   "day": "2026-08-07",
+   "balance": 53556.38,
+   "trades": {
+    "LIT": 1,
+    "ATLAS": 9
+   },
+   "start": "2026-07-24"
+  },
+  {
+   "status": "passed",
+   "sessions": 22,
+   "day": "2026-08-25",
+   "balance": 53103.88,
+   "trades": {
+    "LIT": 7,
+    "ATLAS": 13
+   },
+   "start": "2026-07-27"
+  },
+  {
+   "status": "passed",
+   "sessions": 21,
+   "day": "2026-08-25",
+   "balance": 53103.88,
+   "trades": {
+    "LIT": 7,
+    "ATLAS": 13
+   },
+   "start": "2026-07-28"
+  },
+  {
+   "status": "passed",
+   "sessions": 20,
+   "day": "2026-08-25",
+   "balance": 53103.88,
+   "trades": {
+    "LIT": 7,
+    "ATLAS": 13
+   },
+   "start": "2026-07-29"
+  },
+  {
+   "status": "passed",
+   "sessions": 19,
+   "day": "2026-08-25",
+   "balance": 53103.78,
+   "trades": {
+    "LIT": 7,
+    "ATLAS": 12
+   },
+   "start": "2026-07-30"
+  },
+  {
+   "status": "passed",
+   "sessions": 30,
+   "day": "2026-09-10",
+   "balance": 53033.58,
+   "trades": {
+    "LIT": 14,
+    "ATLAS": 18
+   },
+   "start": "2026-07-31"
+  },
+  {
+   "status": "passed",
+   "sessions": 29,
+   "day": "2026-09-10",
+   "balance": 53033.58,
+   "trades": {
+    "LIT": 14,
+    "ATLAS": 18
+   },
+   "start": "2026-08-03"
+  },
+  {
+   "status": "passed",
+   "sessions": 28,
+   "day": "2026-09-10",
+   "balance": 53140.38,
+   "trades": {
+    "LIT": 13,
+    "ATLAS": 18
+   },
+   "start": "2026-08-04"
+  },
+  {
+   "status": "passed",
+   "sessions": 40,
+   "day": "2026-09-29",
+   "balance": 53258.4,
+   "trades": {
+    "LIT": 19,
+    "ATLAS": 24
+   },
+   "start": "2026-08-05"
+  },
+  {
+   "status": "passed",
+   "sessions": 39,
+   "day": "2026-09-29",
+   "balance": 53258.2,
+   "trades": {
+    "LIT": 19,
+    "ATLAS": 23
+   },
+   "start": "2026-08-06"
+  },
+  {
+   "status": "passed",
+   "sessions": 40,
+   "day": "2026-10-01",
+   "balance": 53185.9,
+   "trades": {
+    "LIT": 20,
+    "ATLAS": 22
+   },
+   "start": "2026-08-07"
+  },
+  {
+   "status": "passed",
+   "sessions": 40,
+   "day": "2026-10-02",
+   "balance": 53300.94,
+   "trades": {
+    "LIT": 21,
+    "ATLAS": 22
+   },
+   "start": "2026-08-10"
+  },
+  {
+   "status": "passed",
+   "sessions": 39,
+   "day": "2026-10-02",
+   "balance": 53328.88,
+   "trades": {
+    "LIT": 21,
+    "ATLAS": 20
+   },
+   "start": "2026-08-11"
+  },
+  {
+   "status": "passed",
+   "sessions": 37,
+   "day": "2026-10-01",
+   "balance": 53039.08,
+   "trades": {
+    "LIT": 19,
+    "ATLAS": 19
+   },
+   "start": "2026-08-12"
+  },
+  {
+   "status": "passed",
+   "sessions": 36,
+   "day": "2026-10-01",
+   "balance": 53333.58,
+   "trades": {
+    "LIT": 18,
+    "ATLAS": 18
+   },
+   "start": "2026-08-13"
+  },
+  {
+   "status": "passed",
+   "sessions": 35,
+   "day": "2026-10-01",
+   "balance": 53191.88,
+   "trades": {
+    "LIT": 17,
+    "ATLAS": 17
+   },
+   "start": "2026-08-14"
+  },
+  {
+   "status": "passed",
+   "sessions": 34,
+   "day": "2026-10-01",
+   "balance": 53320.28,
+   "trades": {
+    "LIT": 16,
+    "ATLAS": 17
+   },
+   "start": "2026-08-17"
+  },
+  {
+   "status": "passed",
+   "sessions": 33,
+   "day": "2026-10-01",
+   "balance": 53361.68,
+   "trades": {
+    "LIT": 16,
+    "ATLAS": 16
+   },
+   "start": "2026-08-18"
+  },
+  {
+   "status": "passed",
+   "sessions": 33,
+   "day": "2026-10-02",
+   "balance": 53356.28,
+   "trades": {
+    "LIT": 17,
+    "ATLAS": 16
+   },
+   "start": "2026-08-19"
+  },
+  {
+   "status": "passed",
+   "sessions": 31,
+   "day": "2026-10-01",
+   "balance": 53123.98,
+   "trades": {
+    "LIT": 15,
+    "ATLAS": 15
+   },
+   "start": "2026-08-20"
+  },
+  {
+   "status": "passed",
+   "sessions": 30,
+   "day": "2026-10-01",
+   "balance": 53123.98,
+   "trades": {
+    "LIT": 15,
+    "ATLAS": 15
+   },
+   "start": "2026-08-21"
+  },
+  {
+   "status": "passed",
+   "sessions": 29,
+   "day": "2026-10-01",
+   "balance": 53123.98,
+   "trades": {
+    "LIT": 15,
+    "ATLAS": 15
+   },
+   "start": "2026-08-24"
+  },
+  {
+   "status": "passed",
+   "sessions": 28,
+   "day": "2026-10-01",
+   "balance": 53123.98,
+   "trades": {
+    "LIT": 15,
+    "ATLAS": 15
+   },
+   "start": "2026-08-25"
+  },
+  {
+   "status": "passed",
+   "sessions": 28,
+   "day": "2026-10-02",
+   "balance": 53274.98,
+   "trades": {
+    "LIT": 15,
+    "ATLAS": 16
+   },
+   "start": "2026-08-26"
+  },
+  {
+   "status": "passed",
+   "sessions": 29,
+   "day": "2026-10-06",
+   "balance": 53499.68,
+   "trades": {
+    "LIT": 16,
+    "ATLAS": 17
+   },
+   "start": "2026-08-27"
+  },
+  {
+   "status": "passed",
+   "sessions": 25,
+   "day": "2026-10-01",
+   "balance": 53025.98,
+   "trades": {
+    "LIT": 13,
+    "ATLAS": 12
+   },
+   "start": "2026-08-28"
+  },
+  {
+   "status": "passed",
+   "sessions": 24,
+   "day": "2026-10-01",
+   "balance": 53025.88,
+   "trades": {
+    "LIT": 12,
+    "ATLAS": 12
+   },
+   "start": "2026-08-31"
+  },
+  {
+   "status": "passed",
+   "sessions": 23,
+   "day": "2026-10-01",
+   "balance": 53261.38,
+   "trades": {
+    "LIT": 12,
+    "ATLAS": 10
+   },
+   "start": "2026-09-01"
+  },
+  {
+   "status": "passed",
+   "sessions": 23,
+   "day": "2026-10-02",
+   "balance": 53091.58,
+   "trades": {
+    "LIT": 12,
+    "ATLAS": 11
+   },
+   "start": "2026-09-02"
+  },
+  {
+   "status": "passed",
+   "sessions": 22,
+   "day": "2026-10-02",
+   "balance": 53299.38,
+   "trades": {
+    "LIT": 11,
+    "ATLAS": 11
+   },
+   "start": "2026-09-03"
+  },
+  {
+   "status": "passed",
+   "sessions": 21,
+   "day": "2026-10-02",
+   "balance": 53299.38,
+   "trades": {
+    "LIT": 11,
+    "ATLAS": 11
+   },
+   "start": "2026-09-04"
+  },
+  {
+   "status": "passed",
+   "sessions": 20,
+   "day": "2026-10-02",
+   "balance": 53366.78,
+   "trades": {
+    "LIT": 10,
+    "ATLAS": 11
+   },
+   "start": "2026-09-07"
+  },
+  {
+   "status": "passed",
+   "sessions": 19,
+   "day": "2026-10-02",
+   "balance": 53345.18,
+   "trades": {
+    "LIT": 9,
+    "ATLAS": 11
+   },
+   "start": "2026-09-08"
+  },
+  {
+   "status": "passed",
+   "sessions": 18,
+   "day": "2026-10-02",
+   "balance": 53345.18,
+   "trades": {
+    "LIT": 9,
+    "ATLAS": 11
+   },
+   "start": "2026-09-09"
+  },
+  {
+   "status": "passed",
+   "sessions": 19,
+   "day": "2026-10-06",
+   "balance": 53500.78,
+   "trades": {
+    "LIT": 10,
+    "ATLAS": 12
+   },
+   "start": "2026-09-10"
+  },
+  {
+   "status": "passed",
+   "sessions": 19,
+   "day": "2026-10-07",
+   "balance": 53118.94,
+   "trades": {
+    "LIT": 11,
+    "ATLAS": 12
+   },
+   "start": "2026-09-11"
+  },
+  {
+   "status": "passed",
+   "sessions": 18,
+   "day": "2026-10-07",
+   "balance": 53064.64,
+   "trades": {
+    "LIT": 11,
+    "ATLAS": 11
+   },
+   "start": "2026-09-14"
+  },
+  {
+   "status": "passed",
+   "sessions": 17,
+   "day": "2026-10-07",
+   "balance": 53231.44,
+   "trades": {
+    "LIT": 10,
+    "ATLAS": 11
+   },
+   "start": "2026-09-15"
+  },
+  {
+   "status": "passed",
+   "sessions": 16,
+   "day": "2026-10-07",
+   "balance": 53379.04,
+   "trades": {
+    "LIT": 9,
+    "ATLAS": 10
+   },
+   "start": "2026-09-16"
+  },
+  {
+   "status": "passed",
+   "sessions": 14,
+   "day": "2026-10-06",
+   "balance": 53367.64,
+   "trades": {
+    "LIT": 7,
+    "ATLAS": 8
+   },
+   "start": "2026-09-17"
+  },
+  {
+   "status": "passed",
+   "sessions": 13,
+   "day": "2026-10-06",
+   "balance": 53367.64,
+   "trades": {
+    "LIT": 7,
+    "ATLAS": 8
+   },
+   "start": "2026-09-18"
+  },
+  {
+   "status": "passed",
+   "sessions": 12,
+   "day": "2026-10-06",
+   "balance": 53367.54,
+   "trades": {
+    "LIT": 6,
+    "ATLAS": 8
+   },
+   "start": "2026-09-21"
+  },
+  {
+   "status": "passed",
+   "sessions": 9,
+   "day": "2026-10-02",
+   "balance": 53044.44,
+   "trades": {
+    "LIT": 3,
+    "ATLAS": 6
+   },
+   "start": "2026-09-22"
+  },
+  {
+   "status": "passed",
+   "sessions": 8,
+   "day": "2026-10-02",
+   "balance": 53149.14,
+   "trades": {
+    "LIT": 3,
+    "ATLAS": 5
+   },
+   "start": "2026-09-23"
+  },
+  {
+   "status": "passed",
+   "sessions": 9,
+   "day": "2026-10-06",
+   "balance": 53032.3,
+   "trades": {
+    "LIT": 4,
+    "ATLAS": 7
+   },
+   "start": "2026-09-24"
+  },
+  {
+   "status": "passed",
+   "sessions": 13,
+   "day": "2026-10-13",
+   "balance": 53201.5,
+   "trades": {
+    "LIT": 7,
+    "ATLAS": 10
+   },
+   "start": "2026-09-25"
+  },
+  {
+   "status": "passed",
+   "sessions": 12,
+   "day": "2026-10-13",
+   "balance": 53201.3,
+   "trades": {
+    "LIT": 7,
+    "ATLAS": 9
+   },
+   "start": "2026-09-28"
+  },
+  {
+   "status": "passed",
+   "sessions": 11,
+   "day": "2026-10-13",
+   "balance": 53145.5,
+   "trades": {
+    "LIT": 7,
+    "ATLAS": 7
+   },
+   "start": "2026-09-29"
+  },
+  {
+   "status": "passed",
+   "sessions": 11,
+   "day": "2026-10-14",
+   "balance": 53442.68,
+   "trades": {
+    "LIT": 8,
+    "ATLAS": 7
+   },
+   "start": "2026-09-30"
+  },
+  {
+   "status": "passed",
+   "sessions": 10,
+   "day": "2026-10-14",
+   "balance": 53442.68,
+   "trades": {
+    "LIT": 8,
+    "ATLAS": 7
+   },
+   "start": "2026-10-01"
+  },
+  {
+   "status": "open",
+   "sessions": 11,
+   "day": "2026-10-16",
+   "pays": [],
+   "first_pay_session": null,
+   "trades": {
+    "LIT": 7,
+    "ATLAS": 7
+   },
+   "start": "2026-10-02"
+  },
+  {
+   "status": "open",
+   "sessions": 10,
+   "day": "2026-10-16",
+   "pays": [],
+   "first_pay_session": null,
+   "trades": {
+    "LIT": 6,
+    "ATLAS": 6
+   },
+   "start": "2026-10-05"
+  },
+  {
+   "status": "open",
+   "sessions": 9,
+   "day": "2026-10-16",
+   "pays": [],
+   "first_pay_session": null,
+   "trades": {
+    "LIT": 5,
+    "ATLAS": 6
+   },
+   "start": "2026-10-06"
+  },
+  {
+   "status": "open",
+   "sessions": 8,
+   "day": "2026-10-16",
+   "pays": [],
+   "first_pay_session": null,
+   "trades": {
+    "LIT": 4,
+    "ATLAS": 4
+   },
+   "start": "2026-10-07"
+  },
+  {
+   "status": "open",
+   "sessions": 7,
+   "day": "2026-10-16",
+   "pays": [],
+   "first_pay_session": null,
+   "trades": {
+    "LIT": 3,
+    "ATLAS": 3
+   },
+   "start": "2026-10-08"
+  },
+  {
+   "status": "open",
+   "sessions": 6,
+   "day": "2026-10-16",
+   "pays": [],
+   "first_pay_session": null,
+   "trades": {
+    "LIT": 2,
+    "ATLAS": 3
+   },
+   "start": "2026-10-09"
+  },
+  {
+   "status": "open",
+   "sessions": 5,
+   "day": "2026-10-16",
+   "pays": [],
+   "first_pay_session": null,
+   "trades": {
+    "LIT": 2,
+    "ATLAS": 2
+   },
+   "start": "2026-10-12"
+  },
+  {
+   "status": "open",
+   "sessions": 4,
+   "day": "2026-10-16",
+   "pays": [],
+   "first_pay_session": null,
+   "trades": {
+    "LIT": 2,
+    "ATLAS": 2
+   },
+   "start": "2026-10-13"
+  },
+  {
+   "status": "open",
+   "sessions": 3,
+   "day": "2026-10-16",
+   "pays": [],
+   "first_pay_session": null,
+   "trades": {
+    "LIT": 1,
+    "ATLAS": 0
+   },
+   "start": "2026-10-14"
+  },
+  {
+   "status": "open",
+   "sessions": 2,
+   "day": "2026-10-16",
+   "pays": [],
+   "first_pay_session": null,
+   "trades": {
+    "LIT": 0,
+    "ATLAS": 0
+   },
+   "start": "2026-10-15"
+  },
+  {
+   "status": "open",
+   "sessions": 1,
+   "day": "2026-10-16",
+   "pays": [],
+   "first_pay_session": null,
+   "trades": {
+    "LIT": 0,
+    "ATLAS": 0
+   },
+   "start": "2026-10-16"
+  }
+ ]
+}

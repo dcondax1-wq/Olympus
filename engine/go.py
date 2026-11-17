@@ -594,6 +594,13 @@ def step_arm(cfg, phrase, dry=False, open_page=True) -> int:
         return 1
     rb = arm_b(cfg["atlas"])
     print(f"     25K (ATLAS): {'armed' if rb.get('ok') else 'NOT armed: ' + str(rb.get('error'))[:160]}")
+    try:                                   # the Rapid EOD (engine/rapid.py): armed only here, after the typed phrase
+        from . import rapid
+        rr = rapid.arm(phrase)
+        if not rr.get("off"):
+            print(f"     Rapid EOD (LIT + ATLAS): {'armed ' + str(rr.get('account')) if rr.get('ok') else 'NOT armed: ' + str(rr.get('error'))[:160]}")
+    except Exception as e:
+        print(f"     Rapid EOD: NOT armed ({e.__class__.__name__}: {e})")
     from . import ninjatrader
     wm = ["--write-mode", cfg["write_mode"]] if cfg.get("write_mode") else []
     rc = ninjatrader.main(["--start", "--account", cfg["lit"], "--confirm", phrase, *wm])

@@ -13,6 +13,7 @@ Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7;
 | Phone dashboard | Netlify site moonlit-scone-08afe5 (private). Updates itself once the owner pastes a Netlify key at tonight's setup |
 
 ## Waiting on the owner
+- Rapid EOD 50K READY, OFF (night-rapid): LIT + ATLAS on one account; owner pastes ONE line (docs/RAPID_EOD_SETUP.md) then START BOT + phrase. Jul-Oct live-code replay: pass median 20 sessions, 0 fails.
 - Owner 2026-11-17: "be simple and to the point. You send too much info." Replies: a few lines, one small table max.
 - Owner 2026-11-17: ONE Rapid EOD 50K only ("I'll stick with 1 rapid"): LIT + ATLAS $500 from day one, 30% best-day guard,
   funded keep $1,000 above the buffer. PC has not reported since 2026-11-07 (heartbeat branch, ntfy empty): fix first.

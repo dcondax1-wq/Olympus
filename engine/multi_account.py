@@ -116,13 +116,19 @@ PRESETS = {
         "note": "HELD (MFFU has not said it may sit next to a Builder 50K). Eval 50% best-day rule; funded intraday trailing "
                 "floor, Tier-1 news banned; the firm has no daily loss (dll = the bot's own soft $1,000)"},
     "mffu_rapid_eod_50k": {
+        # READY, OFF (owner 2026-11-17: "I'll stick with 1 rapid"): runs only once data/rapid.json names the NinjaTrader
+        # account (engine/rapid.py: LIT + ATLAS on this one account, docs/RAPID_EOD_SETUP.md); never armed by the bot.
+        # Sizing = research/writeups/stack-one-account-2026-11-16.md / rapid-levers-2026-11-16.md: the eval = LIT's live
+        # two_week (live_model.json lit_sizing, no override), funded = the uprisk 50K rule (60% of the room, <= $1,500,
+        # a winner <= $2,000); the firm has no daily loss (dll = the bot's own soft $1,000).
         "firm": "MFFU", "plan": "Rapid EOD 50K",
         "rules": {"start": 50000.0, "target": 3000.0, "mll": 2000.0, "lock": 100.0, "dll": 1000.0, "max_micros": 30,
-                  "trail": "eod", "best_day": 0.3, "news_ban": "funded"},
-        "sizing": {"two_week": {"room_f": 0.4, "max_usd": 600.0}, "after_mode": "safe_eval", "safe_cap": 0.4,
-                   "funded": {"pct": 0.6, "pct_min_usd": 100, "pct_max_usd": 1200, "ref": 20, "wk": True, "room_f": None,
-                              "max_win": None, "slip_ticks": 2, "skip_breach": True}},
-        "note": "HELD as Rapid. Eval 30% best-day rule (4 days), EOD floor; funded Tier-1 news banned"},
+                  "trail": "eod", "best_day": 0.3, "min_days": 4, "news_ban": "funded"},
+        "sizing": {"funded": {"pct": 0.6, "pct_min_usd": 100, "pct_max_usd": 1500, "ref": 20, "wk": True, "room_f": None,
+                              "max_win": 2000, "slip_ticks": 2, "skip_breach": True}},
+        "note": "Rapid EOD 50K (engine/rapid.py): eval $3,000, $2,000 EOD trailing floor, a day <= 30% of the profit (the bot "
+                "keeps a winning day under 30% x $3,000 x 0.95), 4 days; funded: Tier-1 news flat -2/+2 min, daily payouts "
+                "above the $2,100 buffer, $500 min, keep $1,000 more in the account"},
     "paper_50k": {
         "firm": "Paper", "plan": "50K rules (no broker)",
         "rules": {"start": 50000.0, "target": 3000.0, "mll": 2000.0, "lock": 100.0, "dll": 1000.0, "max_micros": 40,
@@ -221,6 +227,8 @@ def normalize(spec: dict, primary: dict | None = None, seen_ids=(), seen_names=(
            "eval_prior_pnl": float(_num(s.get("eval_prior_pnl"), 0.0)), "eval_anchor": s.get("eval_anchor"),
            "funded": dict(s.get("funded") or {}),
            "lit_sizing": dict(s.get("lit_sizing") or {}), "problem": None}
+    if s.get("lane"):
+        out["lane"] = str(s.get("lane"))     # "rapid": LIT's lane of the Rapid EOD (engine/rapid.py: ATLAS shares the account)
     pre = PRESETS.get(out["preset"])
     out["firm"] = str(s.get("firm") or (pre or {}).get("firm") or "")
     out["plan"] = str(s.get("plan") or (pre or {}).get("plan") or "")
@@ -454,13 +462,24 @@ class Account:
         f = self.spec.get("funded") or {}
         return str((f.get("start") if self.mode == "funded" else None) or self.spec.get("eval_start") or "")
 
+    def shared(self):
+        """The other strategy on this SAME account (engine/rapid.RapidAtlas: ATLAS on the Rapid EOD), or None."""
+        if self.spec.get("lane") != "rapid":
+            return None
+        return getattr(getattr(self.router, "bot", None), "acct_r", None)
+
+    def all_closes(self) -> list:
+        """This account's closes + the shared strategy's (one balance, one floor, one day P&L)."""
+        sh = self.shared()
+        return list(self.closes) + [list(c) for c in (getattr(sh, "closes", None) or [])]
+
     def day_pnl(self, day: str) -> float:
-        return round(sum(float(p) for d, _, p, *_ in self.closes if d == day), 2)
+        return round(sum(float(p) for d, _, p, *_ in self.all_closes() if d == day), 2)
 
     def eval_days(self) -> dict:
         start = self.start_day()
         days = {}
-        for d, _, p, *_ in self.closes:
+        for d, _, p, *_ in self.all_closes():
             if not start or d >= start:
                 days[d] = round(days.get(d, 0.0) + float(p), 2)
         if self.spec.get("eval_prior_pnl"):
@@ -505,7 +524,7 @@ class Account:
             return None
 
     def state(self, today: str, mode: str | None = None, raw: bool = False):
-        st = sizing_state(mode or self.mode, [(d, t, p) for d, t, p, *_ in self.closes], today, self.start_day() or None,
+        st = sizing_state(mode or self.mode, [(d, t, p) for d, t, p, *_ in self.all_closes()], today, self.start_day() or None,
                           self.rules, prior=float(self.spec.get("eval_prior_pnl") or 0.0),
                           payouts=(self.spec.get("funded") or {}).get("payouts"), n_today=self.entries_today(today),
                           anchor=self.anchor())
@@ -747,7 +766,28 @@ class Account:
             fl = getattr(self.router.bot, "fleet", None)           # engine/fleet.py (off = None): no hedge vs a follower
             why = why or (fl.opposite_open(1 if ent["dir"] == 1 else -1) if fl is not None else None)
             q = 0 if why else self.qty_for(ent, now)
-            if why or not q:
+            if q and not why and self.shared() is not None:
+                # one account, two strategies (engine/rapid.py): LIT has priority. ATLAS holding a position here (either
+                # side) is closed at market FIRST; LIT routes only once that close is CONFIRMED flat, tried again on
+                # every poll until LIT's entry deadline (live.LIT_MAX_LATE_S after its fill bar opened), then skipped
+                ok = False
+                try:
+                    ok = self.shared().yield_to_lit(1 if ent["dir"] == 1 else -1, sym, now, px=ent.get("entry"), any_side=True)
+                except Exception as e:
+                    self.log("error", f"ATLAS close on this account failed: {e.__class__.__name__}: {e}")
+                if not ok:
+                    from .live import LIT_MAX_LATE_S
+                    if now - int(ent["entry_t"]) <= LIT_MAX_LATE_S:
+                        self.seen.discard(("entry", ent["entry_t"]))
+                        self.log("risk", f"entry at {_et(ent['entry_t']):%H:%M} ET waits: ATLAS's close on this account is not "
+                                         "confirmed yet (tried again next poll)")
+                        q = -1
+                    else:
+                        why = "ATLAS's close on this account was not confirmed before LIT's entry deadline (HEDGE BLOCKED)"
+                        q = 0
+            if q == -1:
+                pass
+            elif why or not q:
                 self.blocked.add(ent["entry_t"])
                 self.log("risk", f"entry at {_et(ent['entry_t']):%H:%M} ET NOT routed on this account: "
                                  + (why or "; ".join((self.last_size or {}).get("reasons", [])[-2:]) or "size 0"))
