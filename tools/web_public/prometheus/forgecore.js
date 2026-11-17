@@ -252,7 +252,7 @@ export class Forge {
     const d = this.d, V = d.verdict, H = d.honesty || {}, L = this.live, seeds = d.seeds || [];
     const real = seeds.filter((s) => s.real).length;
     return {
-      liveBest: !d.proposal, title: d.proposal ? 'A candidate to review' : 'Live LIT is still best',
+      liveBest: !d.proposal, title: d.proposal ? 'A candidate to review' : 'Live LIT still best',
       h1: V.h1_gain_pm, h2: V.h2_gain_pm, kept: V.survive_pct, liveH2: L.h2.pm, liveH1: L.h1.pm, real, seeds: seeds.length,
       checked: H.genomes_checked, beatBoth: H.beat_live_both_pm, lo5: V.boot && V.boot.lo5, hi95: V.boot && V.boot.hi95,
     };

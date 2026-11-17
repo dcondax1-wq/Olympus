@@ -149,8 +149,8 @@ function renderVerdict() {
   const held = r.best.holds, chance = C.beatsChance(h), te = r.best.test || {};
   $('verdict').className = 'verdict ' + (chance ? 'ok' : 'no');
   set('verdict', `<b class="vt">${chance ? 'Beats chance' : 'Chance level'}</b>` +
-    `<span>${real.hold}/${real.best_rules} best rules hold out of sample (${real.hold_pct}%)` +
-    (plc.length ? ` · shuffled conditions ${plc.map((p) => p + '%').join(' / ')}` : '') + `</span>` +
+    `<span class="hr">Holds up ${real.hold_pct}% of the time on new data (${real.hold}/${real.best_rules} best rules)` +
+    (plc.length ? ` · random rules ${plc.map((p) => p + '%').join(' / ')}` : '') + `</span>` +
     `<span>This root: <b class="${held ? 'pos' : 'neg'}">${held ? 'holds' : 'fails'}</b> · ` +
     (te.n ? `unseen ${C.usd(te.mean)} a trade on ${te.n} trades` : 'no test trades') + `</span>`);
 }

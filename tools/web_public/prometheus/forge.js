@@ -325,13 +325,49 @@ class Arena {
     const aspect = w / h, half = THREE.MathUtils.degToRad(this.camera.fov / 2);
     this.dist = THREE.MathUtils.clamp((ARENA_R + 1.2) / (Math.tan(half) * Math.min(1, aspect)) * 0.7, 12, 40);
     this.rc.resize();
+    this.fit();
+  }
+
+  /** the open band between the top bar and the dock (px): the arena is framed inside it, so no flame sits under the HUD */
+  setBand(top, bottom) {
+    const b = [Math.max(0, top | 0), Math.min(innerHeight, bottom | 0)];
+    if (this.band && b[0] === this.band[0] && b[1] === this.band[1]) return;
+    this.band = b;
+    this.fit();
+  }
+
+  // pull the camera back until the arena (rim + the back flames' tops) fits the band; on a roomy screen keep the width fit
+  fit() {
+    this.zoom = 1;
+    for (let i = 0; i < 3; i++) {
+      this.placeCamera();
+      const s = this.arenaSpan(), room = this.bandH() * 0.94;
+      if (!(s.h > room)) break;
+      this.zoom = Math.min(1.8, this.zoom * s.h / room);
+    }
     this.placeCamera();
   }
 
+  bandH() { const b = this.band || [0, innerHeight]; return Math.max(120, b[1] - b[0]); }
+
+  /** the arena's screen top (the far rim, flame height) and bottom (the near rim), without the band offset */
+  arenaSpan() {
+    const c = this.camera, h = innerHeight, fx = -Math.cos(this.az), fz = -Math.sin(this.az), R = ARENA_R + 1.2;
+    c.updateMatrixWorld(); c.updateProjectionMatrix();
+    const y = (x, yy, z) => (1 - new THREE.Vector3(x, yy, z).project(c).y) / 2 * h;
+    const top = y(fx * R, 3.2, fz * R), bot = y(-fx * R, 0, -fz * R);
+    return { top, bot, h: bot - top };
+  }
+
   placeCamera() {
-    const d = this.dist, el = this.el;
-    this.camera.position.set(Math.cos(this.az) * Math.cos(el) * d, Math.sin(el) * d + 0.5, Math.sin(this.az) * Math.cos(el) * d);
-    this.camera.lookAt(0, -0.9, 0);
+    const d = this.dist * (this.zoom || 1), el = this.el, c = this.camera, w = innerWidth, h = innerHeight;
+    c.position.set(Math.cos(this.az) * Math.cos(el) * d, Math.sin(el) * d + 0.5, Math.sin(this.az) * Math.cos(el) * d);
+    c.lookAt(0, -0.9, 0);
+    if (!this.band) return;
+    c.clearViewOffset();
+    const s = this.arenaSpan(), b = this.band;
+    const dy = Math.round((b[0] + b[1]) / 2 - (s.top + s.bot) / 2);     // shift the picture so the arena sits mid-band
+    if (dy) c.setViewOffset(w, h, 0, -dy, w, h);
   }
 
   bindPointer() {
@@ -519,8 +555,8 @@ function renderBanner() {
   el.className = 'banner ' + (v.liveBest ? 'ok' : 'cand');
   $('bn-t').textContent = v.title;
   const yr = typeof v.h2 === 'number' ? v.h2 * 12 : null;
-  $('bn-s').innerHTML = `On new data (Jul-Oct) the best variant earns <b class="${v.h2 > 0 ? 'up' : 'down'}">${esc(FMT.dUsd(v.h2))}</b> a month against live's <b>${esc(FMT.usd(v.liveH2))}</b>` +
-    (yr != null ? `: <b class="${yr > 0 ? 'up' : 'down'}">${esc(FMT.dUsd(yr))}</b> a year` : '') + `. On the data it trained on it showed <b>${esc(FMT.dUsd(v.h1))}</b> a month. ${v.real} of ${v.seeds} runs hold up.`;
+  $('bn-s').innerHTML = `New data (H2): best variant <b class="${v.h2 > 0 ? 'up' : 'down'}">${esc(FMT.dUsd(v.h2))}</b>/mo vs live's <b>${esc(FMT.usd(v.liveH2))}</b>` +
+    (yr != null ? ` (<b class="${yr > 0 ? 'up' : 'down'}">${esc(FMT.dUsd(yr))}</b>/yr)` : '') + `. Trained on (H1): <b>${esc(FMT.dUsd(v.h1))}</b>/mo. ${v.real} of ${v.seeds} runs hold up.`;
 }
 
 function openTruth() {
@@ -664,6 +700,7 @@ function measureBars() {
   const r = document.documentElement.style;
   r.setProperty('--hud-b', Math.round($('hud').getBoundingClientRect().bottom) + 'px');
   r.setProperty('--dock-h', Math.round(innerHeight - $('dock').getBoundingClientRect().top) + 'px');
+  STATE.arena?.setBand($('hud').getBoundingClientRect().bottom, $('dock').getBoundingClientRect().top);
 }
 
 // ------------------------------------------------------------------------------------------------ OLYMPUS themes

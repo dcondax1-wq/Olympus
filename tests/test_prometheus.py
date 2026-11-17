@@ -434,9 +434,9 @@ def _upgrade_checks(p):
     check(f"g. the arena runs on the OLYMPUS render core: high = scene + bloom + finish, low = scene + finish ({tiers})",
           tiers == {"high": ["scene", "bloom", "finish"], "low": ["scene", "finish"]}, tiers)
     bt, bs = p.inner_text("#bn-t"), p.inner_text("#bn-s")
-    want = "LIVE LIT STILL BEST" if not d["proposal"] else "A CANDIDATE TO REVIEW"
+    want = "LIVE LIT STILL BEST" if not d["proposal"] else "A CANDIDATE TO REVIEW"   # AGORA: sentence case on screen, no CSS uppercase
     check("f. the verdict banner: the honest title with the H1 -> H2 numbers and live's H2 $/mo",
-          bt == want and f"${live['h2']['pm']:,}" in bs and "H1" in bs and "H2" in bs and p.is_visible("#banner"), (bt, bs))
+          bt.upper() == want and f"${live['h2']['pm']:,}" in bs and "H1" in bs and "H2" in bs and p.is_visible("#banner"), (bt, bs))
     p.click("#linBtn")
     p.wait_for_timeout(300)
     n = sum(len(g) for g in d["gens"])

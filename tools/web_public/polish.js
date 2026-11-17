@@ -240,7 +240,7 @@
     if (!el || TOC_SKIP.has(PAGE) || document.documentElement.scrollHeight < innerHeight * 3) return;
     const W = el.clientWidth, seen = new Set(), H = [];
     for (const h of el.querySelectorAll('h3')) {
-      if (H.length >= 14 || h.closest('.pl-bot, .su-bar, details:not([open]), .sheet-wrap')) continue;
+      if (H.length >= 14 || h.closest('.pl-bot, .su-bar, details:not([open]), .sheet-wrap, #zcCard[data-where="jarvis"]')) continue;
       const card = h.closest('.card, section, [class*="-card"], [class*="card "]') || h.parentElement;
       if (!card || card.offsetParent === null || card.getBoundingClientRect().width < W * 0.6) continue;
       const first = card.querySelector('h3'); if (first !== h) continue;      // one chip per card: its first heading
@@ -262,7 +262,9 @@
       const card = h.closest('.card, section, [class*="-card"]') || h;
       if (!calm()) { card.classList.remove('pl-flash'); void card.offsetWidth; card.classList.add('pl-flash'); setTimeout(() => card.classList.remove('pl-flash'), 1300); }
     });
-    const at = [...el.children].filter((c) => c.matches('.mo-strip, .pl-bot')).pop();
+    let at = [...el.children].filter((c) => c.matches('.mo-strip, .pl-bot')).pop();
+    // Settings: the page title, then (inside Jarvis) the Inside Jarvis card with its Back button, then the contents list
+    if (PAGE === 'settings') for (let n = at ? at.nextElementSibling : el.firstElementChild; n && n.matches('header.hero, #zcCard[data-where="jarvis"]'); n = n.nextElementSibling) at = n;
     if (at) at.after(box); else el.prepend(box);
   }
   // keyboard: an <a data-go> without href is no tab stop by itself; give it one, Enter / Space opens it (read-only links)
