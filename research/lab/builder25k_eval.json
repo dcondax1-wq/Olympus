@@ -1,0 +1,2302 @@
+{
+ "date": "2026-11-17",
+ "n": 1000,
+ "start_day": "2026-11-18",
+ "base": "live 50K rule (40% room to s80)",
+ "spans": {
+  "H1": [
+   "2026-01-01",
+   "2026-06-30"
+  ],
+  "H2": [
+   "2026-07-01",
+   "2026-10-16"
+  ],
+  "REF": [
+   "2021-11-01",
+   "2025-12-31"
+  ]
+ },
+ "eval": {
+  "H1": {
+   "preset today (50% room to s10, then safe 30%)": {
+    "p10": 52.8,
+    "f10": 1.6,
+    "p60": 81.0,
+    "f60": 1.6,
+    "pass_med": 6.0,
+    "med_all": 9.0
+   },
+   "live 50K rule (40% room to s80)": {
+    "p10": 47.6,
+    "f10": 0.0,
+    "p60": 87.3,
+    "f60": 2.6,
+    "pass_med": 9.0,
+    "med_all": 12.0
+   },
+   "room 30%": {
+    "p10": 39.0,
+    "f10": 0.0,
+    "p60": 87.6,
+    "f60": 0.0,
+    "pass_med": 12.0,
+    "med_all": 15.0
+   },
+   "room 35%": {
+    "p10": 44.7,
+    "f10": 0.0,
+    "p60": 87.2,
+    "f60": 0.9,
+    "pass_med": 10.0,
+    "med_all": 13.0
+   },
+   "room 45%": {
+    "p10": 48.9,
+    "f10": 0.4,
+    "p60": 85.3,
+    "f60": 6.6,
+    "pass_med": 8.0,
+    "med_all": 11.0
+   },
+   "room 50%": {
+    "p10": 52.8,
+    "f10": 1.6,
+    "p60": 84.4,
+    "f60": 10.8,
+    "pass_med": 7.0,
+    "med_all": 9.0
+   },
+   "room 55%": {
+    "p10": 53.3,
+    "f10": 4.2,
+    "p60": 82.2,
+    "f60": 15.2,
+    "pass_med": 6.0,
+    "med_all": 9.0
+   },
+   "room 60%": {
+    "p10": 53.7,
+    "f10": 6.0,
+    "p60": 80.4,
+    "f60": 18.6,
+    "pass_med": 6.0,
+    "med_all": 9.0
+   },
+   "room 50% + cap $150": {
+    "p10": 10.8,
+    "f10": 0.0,
+    "p60": 80.5,
+    "f60": 4.7,
+    "pass_med": 25.0,
+    "med_all": 30.0
+   },
+   "room 50% + cap $200": {
+    "p10": 29.2,
+    "f10": 0.1,
+    "p60": 88.3,
+    "f60": 5.9,
+    "pass_med": 16.0,
+    "med_all": 18.0
+   },
+   "room 50% + cap $250": {
+    "p10": 37.1,
+    "f10": 0.5,
+    "p60": 85.1,
+    "f60": 8.6,
+    "pass_med": 12.0,
+    "med_all": 15.0
+   },
+   "room 50% + cap $300": {
+    "p10": 41.0,
+    "f10": 0.8,
+    "p60": 84.5,
+    "f60": 9.9,
+    "pass_med": 11.0,
+    "med_all": 14.0
+   },
+   "room 50% + cap $400": {
+    "p10": 53.3,
+    "f10": 1.5,
+    "p60": 85.1,
+    "f60": 9.9,
+    "pass_med": 7.0,
+    "med_all": 9.0
+   },
+   "room 60% + cap $300": {
+    "p10": 41.3,
+    "f10": 4.8,
+    "p60": 81.9,
+    "f60": 17.2,
+    "pass_med": 10.0,
+    "med_all": 13.0
+   },
+   "room 60% + cap $400": {
+    "p10": 54.0,
+    "f10": 5.6,
+    "p60": 81.5,
+    "f60": 17.8,
+    "pass_med": 6.0,
+    "med_all": 9.0
+   },
+   "first-hit 60% then 40%": {
+    "p10": 47.5,
+    "f10": 0.0,
+    "p60": 86.7,
+    "f60": 2.8,
+    "pass_med": 9.0,
+    "med_all": 12.0
+   },
+   "first-hit 60% then 30%": {
+    "p10": 41.5,
+    "f10": 0.0,
+    "p60": 87.0,
+    "f60": 0.0,
+    "pass_med": 11.0,
+    "med_all": 14.0
+   },
+   "first-hit 50% then 35%": {
+    "p10": 45.1,
+    "f10": 0.0,
+    "p60": 86.9,
+    "f60": 0.9,
+    "pass_med": 10.0,
+    "med_all": 13.0
+   },
+   "first-hit 50% then 40%": {
+    "p10": 47.5,
+    "f10": 0.0,
+    "p60": 86.8,
+    "f60": 2.8,
+    "pass_med": 9.0,
+    "med_all": 12.0
+   },
+   "first-hit 2 trades 50% then 40%": {
+    "p10": 47.5,
+    "f10": 0.0,
+    "p60": 85.9,
+    "f60": 3.0,
+    "pass_med": 9.0,
+    "med_all": 12.0
+   },
+   "LIT 40% + ATLAS $250 at 20%": {
+    "p10": 61.0,
+    "f10": 0.1,
+    "p60": 93.0,
+    "f60": 1.5,
+    "pass_med": 7.0,
+    "med_all": 7.0
+   },
+   "LIT 40% + ATLAS $250 at 30%": {
+    "p10": 64.2,
+    "f10": 0.6,
+    "p60": 92.4,
+    "f60": 4.5,
+    "pass_med": 6.0,
+    "med_all": 7.0
+   },
+   "LIT 50% + ATLAS $250 at 20%": {
+    "p10": 61.6,
+    "f10": 1.5,
+    "p60": 89.2,
+    "f60": 9.1,
+    "pass_med": 6.0,
+    "med_all": 7.0
+   }
+  },
+  "H2": {
+   "preset today (50% room to s10, then safe 30%)": {
+    "p10": 50.1,
+    "f10": 0.5,
+    "p60": 73.7,
+    "f60": 0.5,
+    "pass_med": 5.0,
+    "med_all": 10.0
+   },
+   "live 50K rule (40% room to s80)": {
+    "p10": 47.2,
+    "f10": 0.0,
+    "p60": 82.8,
+    "f60": 1.7,
+    "pass_med": 8.0,
+    "med_all": 12.0
+   },
+   "room 30%": {
+    "p10": 27.7,
+    "f10": 0.0,
+    "p60": 80.7,
+    "f60": 0.0,
+    "pass_med": 15.0,
+    "med_all": 20.0
+   },
+   "room 35%": {
+    "p10": 42.5,
+    "f10": 0.0,
+    "p60": 82.8,
+    "f60": 0.2,
+    "pass_med": 10.0,
+    "med_all": 14.0
+   },
+   "room 45%": {
+    "p10": 48.0,
+    "f10": 0.4,
+    "p60": 80.4,
+    "f60": 9.1,
+    "pass_med": 7.0,
+    "med_all": 12.0
+   },
+   "room 50%": {
+    "p10": 50.1,
+    "f10": 0.5,
+    "p60": 81.0,
+    "f60": 11.1,
+    "pass_med": 7.0,
+    "med_all": 10.0
+   },
+   "room 55%": {
+    "p10": 52.1,
+    "f10": 4.3,
+    "p60": 78.7,
+    "f60": 18.0,
+    "pass_med": 5.0,
+    "med_all": 10.0
+   },
+   "room 60%": {
+    "p10": 52.8,
+    "f10": 6.2,
+    "p60": 77.9,
+    "f60": 20.8,
+    "pass_med": 5.0,
+    "med_all": 10.0
+   },
+   "room 50% + cap $150": {
+    "p10": 3.7,
+    "f10": 0.0,
+    "p60": 69.9,
+    "f60": 4.6,
+    "pass_med": 30.0,
+    "med_all": 40.0
+   },
+   "room 50% + cap $200": {
+    "p10": 10.4,
+    "f10": 0.0,
+    "p60": 82.5,
+    "f60": 7.3,
+    "pass_med": 22.0,
+    "med_all": 26.0
+   },
+   "room 50% + cap $250": {
+    "p10": 31.8,
+    "f10": 0.0,
+    "p60": 85.8,
+    "f60": 7.5,
+    "pass_med": 14.0,
+    "med_all": 16.0
+   },
+   "room 50% + cap $300": {
+    "p10": 34.6,
+    "f10": 0.3,
+    "p60": 82.0,
+    "f60": 9.8,
+    "pass_med": 13.0,
+    "med_all": 16.0
+   },
+   "room 50% + cap $400": {
+    "p10": 49.8,
+    "f10": 0.1,
+    "p60": 81.6,
+    "f60": 10.4,
+    "pass_med": 7.0,
+    "med_all": 11.0
+   },
+   "room 60% + cap $300": {
+    "p10": 34.6,
+    "f10": 1.4,
+    "p60": 79.2,
+    "f60": 18.4,
+    "pass_med": 12.0,
+    "med_all": 16.0
+   },
+   "room 60% + cap $400": {
+    "p10": 50.8,
+    "f10": 6.5,
+    "p60": 78.0,
+    "f60": 20.2,
+    "pass_med": 6.0,
+    "med_all": 10.0
+   },
+   "first-hit 60% then 40%": {
+    "p10": 45.7,
+    "f10": 0.0,
+    "p60": 81.1,
+    "f60": 1.9,
+    "pass_med": 8.0,
+    "med_all": 13.0
+   },
+   "first-hit 60% then 30%": {
+    "p10": 38.0,
+    "f10": 0.0,
+    "p60": 79.0,
+    "f60": 0.0,
+    "pass_med": 11.5,
+    "med_all": 18.0
+   },
+   "first-hit 50% then 35%": {
+    "p10": 46.3,
+    "f10": 0.0,
+    "p60": 82.1,
+    "f60": 0.0,
+    "pass_med": 8.0,
+    "med_all": 13.0
+   },
+   "first-hit 50% then 40%": {
+    "p10": 47.6,
+    "f10": 0.0,
+    "p60": 81.4,
+    "f60": 1.7,
+    "pass_med": 7.0,
+    "med_all": 12.0
+   },
+   "first-hit 2 trades 50% then 40%": {
+    "p10": 48.4,
+    "f10": 0.0,
+    "p60": 81.1,
+    "f60": 2.0,
+    "pass_med": 7.0,
+    "med_all": 11.0
+   },
+   "LIT 40% + ATLAS $250 at 20%": {
+    "p10": 55.6,
+    "f10": 0.0,
+    "p60": 88.0,
+    "f60": 1.5,
+    "pass_med": 8.0,
+    "med_all": 9.0
+   },
+   "LIT 40% + ATLAS $250 at 30%": {
+    "p10": 56.2,
+    "f10": 0.0,
+    "p60": 85.8,
+    "f60": 6.1,
+    "pass_med": 7.0,
+    "med_all": 9.0
+   },
+   "LIT 50% + ATLAS $250 at 20%": {
+    "p10": 60.3,
+    "f10": 1.3,
+    "p60": 85.0,
+    "f60": 8.9,
+    "pass_med": 5.0,
+    "med_all": 8.0
+   }
+  },
+  "REF": {
+   "preset today (50% room to s10, then safe 30%)": {
+    "p10": 14.3,
+    "f10": 2.0,
+    "p60": 25.7,
+    "f60": 10.7,
+    "pass_med": 9.0,
+    "med_all": null
+   },
+   "live 50K rule (40% room to s80)": {
+    "p10": 10.6,
+    "f10": 0.0,
+    "p60": 27.8,
+    "f60": 31.5,
+    "pass_med": 14.0,
+    "med_all": null
+   },
+   "room 30%": {
+    "p10": 5.2,
+    "f10": 0.0,
+    "p60": 22.5,
+    "f60": 4.3,
+    "pass_med": 20.0,
+    "med_all": null
+   },
+   "room 35%": {
+    "p10": 7.3,
+    "f10": 0.0,
+    "p60": 25.7,
+    "f60": 15.5,
+    "pass_med": 18.0,
+    "med_all": null
+   },
+   "room 45%": {
+    "p10": 12.2,
+    "f10": 0.9,
+    "p60": 28.8,
+    "f60": 48.2,
+    "pass_med": 13.0,
+    "med_all": null
+   },
+   "room 50%": {
+    "p10": 14.3,
+    "f10": 2.0,
+    "p60": 29.7,
+    "f60": 55.9,
+    "pass_med": 11.0,
+    "med_all": null
+   },
+   "room 55%": {
+    "p10": 15.6,
+    "f10": 4.6,
+    "p60": 31.6,
+    "f60": 61.7,
+    "pass_med": 11.0,
+    "med_all": null
+   },
+   "room 60%": {
+    "p10": 16.4,
+    "f10": 7.5,
+    "p60": 32.3,
+    "f60": 63.6,
+    "pass_med": 10.0,
+    "med_all": null
+   },
+   "room 50% + cap $150": {
+    "p10": 0.1,
+    "f10": 0.0,
+    "p60": 8.8,
+    "f60": 27.9,
+    "pass_med": 39.5,
+    "med_all": null
+   },
+   "room 50% + cap $200": {
+    "p10": 1.4,
+    "f10": 0.0,
+    "p60": 20.1,
+    "f60": 45.2,
+    "pass_med": 31.0,
+    "med_all": null
+   },
+   "room 50% + cap $250": {
+    "p10": 4.4,
+    "f10": 0.6,
+    "p60": 26.5,
+    "f60": 52.6,
+    "pass_med": 23.0,
+    "med_all": null
+   },
+   "room 50% + cap $300": {
+    "p10": 6.5,
+    "f10": 1.4,
+    "p60": 27.9,
+    "f60": 55.5,
+    "pass_med": 18.0,
+    "med_all": null
+   },
+   "room 50% + cap $400": {
+    "p10": 12.0,
+    "f10": 2.4,
+    "p60": 30.0,
+    "f60": 55.6,
+    "pass_med": 13.0,
+    "med_all": null
+   },
+   "room 60% + cap $300": {
+    "p10": 6.7,
+    "f10": 3.2,
+    "p60": 30.0,
+    "f60": 62.2,
+    "pass_med": 19.0,
+    "med_all": null
+   },
+   "room 60% + cap $400": {
+    "p10": 13.3,
+    "f10": 5.5,
+    "p60": 32.3,
+    "f60": 63.4,
+    "pass_med": 13.0,
+    "med_all": null
+   },
+   "first-hit 60% then 40%": {
+    "p10": 13.0,
+    "f10": 0.3,
+    "p60": 28.9,
+    "f60": 32.5,
+    "pass_med": 12.0,
+    "med_all": null
+   },
+   "first-hit 60% then 30%": {
+    "p10": 9.6,
+    "f10": 0.0,
+    "p60": 24.5,
+    "f60": 5.1,
+    "pass_med": 15.0,
+    "med_all": null
+   },
+   "first-hit 50% then 35%": {
+    "p10": 9.4,
+    "f10": 0.0,
+    "p60": 27.1,
+    "f60": 16.5,
+    "pass_med": 15.0,
+    "med_all": null
+   },
+   "first-hit 50% then 40%": {
+    "p10": 11.8,
+    "f10": 0.1,
+    "p60": 28.3,
+    "f60": 32.1,
+    "pass_med": 13.0,
+    "med_all": null
+   },
+   "first-hit 2 trades 50% then 40%": {
+    "p10": 13.0,
+    "f10": 0.2,
+    "p60": 28.0,
+    "f60": 32.3,
+    "pass_med": 12.0,
+    "med_all": null
+   },
+   "LIT 40% + ATLAS $250 at 20%": {
+    "p10": 17.7,
+    "f10": 1.1,
+    "p60": 28.6,
+    "f60": 52.4,
+    "pass_med": 8.0,
+    "med_all": null
+   },
+   "LIT 40% + ATLAS $250 at 30%": {
+    "p10": 20.6,
+    "f10": 5.4,
+    "p60": 28.3,
+    "f60": 69.4,
+    "pass_med": 6.0,
+    "med_all": null
+   },
+   "LIT 50% + ATLAS $250 at 20%": {
+    "p10": 19.1,
+    "f10": 5.5,
+    "p60": 28.3,
+    "f60": 66.0,
+    "pass_med": 7.0,
+    "med_all": null
+   }
+  }
+ },
+ "seat": {
+  "H1": {
+   "preset today (50% room to s10, then safe 30%)": {
+    "pass60": 83.9,
+    "pass_med": 8.0,
+    "pass_p10": 51.6,
+    "first_pay_med": 32.0,
+    "first_pay_date": "2027-01-04",
+    "no_pay_6m": 14.9,
+    "net_m": 531,
+    "owner_m": 547,
+    "fees_6m": 100.5,
+    "evals": 1.59,
+    "pays": 4.11
+   },
+   "live 50K rule (40% room to s80)": {
+    "pass60": 86.9,
+    "pass_med": 12.0,
+    "pass_p10": 45.6,
+    "first_pay_med": 33.0,
+    "first_pay_date": "2027-01-05",
+    "no_pay_6m": 9.7,
+    "net_m": 553,
+    "owner_m": 570,
+    "fees_6m": 104.1,
+    "evals": 1.65,
+    "pays": 4.28
+   },
+   "room 30%": {
+    "pass60": 86.4,
+    "pass_med": 15.0,
+    "pass_p10": 37.6,
+    "first_pay_med": 37.0,
+    "first_pay_date": "2027-01-11",
+    "no_pay_6m": 11.2,
+    "net_m": 525,
+    "owner_m": 542,
+    "fees_6m": 100.1,
+    "evals": 1.59,
+    "pays": 4.07
+   },
+   "room 35%": {
+    "pass60": 85.8,
+    "pass_med": 13.0,
+    "pass_p10": 43.2,
+    "first_pay_med": 34.0,
+    "first_pay_date": "2027-01-06",
+    "no_pay_6m": 10.8,
+    "net_m": 543,
+    "owner_m": 560,
+    "fees_6m": 102.1,
+    "evals": 1.62,
+    "pays": 4.21
+   },
+   "room 45%": {
+    "pass60": 89.3,
+    "pass_med": 11.0,
+    "pass_p10": 47.7,
+    "first_pay_med": 33.0,
+    "first_pay_date": "2027-01-05",
+    "no_pay_6m": 8.9,
+    "net_m": 566,
+    "owner_m": 584,
+    "fees_6m": 108.7,
+    "evals": 1.73,
+    "pays": 4.39
+   },
+   "room 50%": {
+    "pass60": 91.7,
+    "pass_med": 9.0,
+    "pass_p10": 51.6,
+    "first_pay_med": 32.0,
+    "first_pay_date": "2027-01-04",
+    "no_pay_6m": 8.2,
+    "net_m": 578,
+    "owner_m": 597,
+    "fees_6m": 113.3,
+    "evals": 1.8,
+    "pays": 4.48
+   },
+   "room 55%": {
+    "pass60": 93.0,
+    "pass_med": 9.0,
+    "pass_p10": 52.9,
+    "first_pay_med": 32.0,
+    "first_pay_date": "2027-01-04",
+    "no_pay_6m": 8.3,
+    "net_m": 586,
+    "owner_m": 606,
+    "fees_6m": 118.3,
+    "evals": 1.88,
+    "pays": 4.55
+   },
+   "room 60%": {
+    "pass60": 95.5,
+    "pass_med": 9.0,
+    "pass_p10": 53.5,
+    "first_pay_med": 32.0,
+    "first_pay_date": "2027-01-04",
+    "no_pay_6m": 6.8,
+    "net_m": 602,
+    "owner_m": 622,
+    "fees_6m": 124.7,
+    "evals": 1.98,
+    "pays": 4.68
+   },
+   "room 50% + cap $150": {
+    "pass60": 80.8,
+    "pass_med": 29.0,
+    "pass_p10": 9.9,
+    "first_pay_med": 53.0,
+    "first_pay_date": "2027-02-02",
+    "no_pay_6m": 9.7,
+    "net_m": 465,
+    "owner_m": 481,
+    "fees_6m": 95.4,
+    "evals": 1.51,
+    "pays": 3.62
+   },
+   "room 50% + cap $200": {
+    "pass60": 91.1,
+    "pass_med": 18.0,
+    "pass_p10": 26.3,
+    "first_pay_med": 40.0,
+    "first_pay_date": "2027-01-14",
+    "no_pay_6m": 7.9,
+    "net_m": 537,
+    "owner_m": 555,
+    "fees_6m": 105.4,
+    "evals": 1.67,
+    "pays": 4.17
+   },
+   "room 50% + cap $250": {
+    "pass60": 90.8,
+    "pass_med": 15.0,
+    "pass_p10": 34.4,
+    "first_pay_med": 37.0,
+    "first_pay_date": "2027-01-11",
+    "no_pay_6m": 8.2,
+    "net_m": 548,
+    "owner_m": 566,
+    "fees_6m": 109.2,
+    "evals": 1.73,
+    "pays": 4.25
+   },
+   "room 50% + cap $300": {
+    "pass60": 90.4,
+    "pass_med": 14.0,
+    "pass_p10": 39.4,
+    "first_pay_med": 36.0,
+    "first_pay_date": "2027-01-08",
+    "no_pay_6m": 9.5,
+    "net_m": 552,
+    "owner_m": 571,
+    "fees_6m": 111.6,
+    "evals": 1.77,
+    "pays": 4.29
+   },
+   "room 50% + cap $400": {
+    "pass60": 91.9,
+    "pass_med": 9.0,
+    "pass_p10": 52.1,
+    "first_pay_med": 33.0,
+    "first_pay_date": "2027-01-05",
+    "no_pay_6m": 7.7,
+    "net_m": 580,
+    "owner_m": 599,
+    "fees_6m": 113.3,
+    "evals": 1.8,
+    "pays": 4.5
+   },
+   "room 60% + cap $300": {
+    "pass60": 93.9,
+    "pass_med": 14.0,
+    "pass_p10": 39.4,
+    "first_pay_med": 36.0,
+    "first_pay_date": "2027-01-08",
+    "no_pay_6m": 8.3,
+    "net_m": 567,
+    "owner_m": 587,
+    "fees_6m": 119.8,
+    "evals": 1.9,
+    "pays": 4.41
+   },
+   "room 60% + cap $400": {
+    "pass60": 96.2,
+    "pass_med": 9.0,
+    "pass_p10": 54.0,
+    "first_pay_med": 31.0,
+    "first_pay_date": "2026-12-31",
+    "no_pay_6m": 6.9,
+    "net_m": 604,
+    "owner_m": 625,
+    "fees_6m": 124.0,
+    "evals": 1.97,
+    "pays": 4.69
+   },
+   "first-hit 60% then 40%": {
+    "pass60": 86.5,
+    "pass_med": 12.0,
+    "pass_p10": 45.6,
+    "first_pay_med": 33.0,
+    "first_pay_date": "2027-01-05",
+    "no_pay_6m": 10.0,
+    "net_m": 551,
+    "owner_m": 568,
+    "fees_6m": 104.0,
+    "evals": 1.65,
+    "pays": 4.27
+   },
+   "first-hit 60% then 30%": {
+    "pass60": 86.4,
+    "pass_med": 14.0,
+    "pass_p10": 41.0,
+    "first_pay_med": 36.0,
+    "first_pay_date": "2027-01-08",
+    "no_pay_6m": 10.7,
+    "net_m": 535,
+    "owner_m": 552,
+    "fees_6m": 100.4,
+    "evals": 1.59,
+    "pays": 4.15
+   },
+   "first-hit 50% then 35%": {
+    "pass60": 85.5,
+    "pass_med": 13.0,
+    "pass_p10": 43.8,
+    "first_pay_med": 34.0,
+    "first_pay_date": "2027-01-06",
+    "no_pay_6m": 10.6,
+    "net_m": 545,
+    "owner_m": 562,
+    "fees_6m": 102.1,
+    "evals": 1.62,
+    "pays": 4.22
+   },
+   "first-hit 50% then 40%": {
+    "pass60": 86.6,
+    "pass_med": 12.0,
+    "pass_p10": 45.6,
+    "first_pay_med": 33.0,
+    "first_pay_date": "2027-01-05",
+    "no_pay_6m": 10.0,
+    "net_m": 551,
+    "owner_m": 569,
+    "fees_6m": 104.0,
+    "evals": 1.65,
+    "pays": 4.27
+   },
+   "first-hit 2 trades 50% then 40%": {
+    "pass60": 86.5,
+    "pass_med": 12.0,
+    "pass_p10": 45.8,
+    "first_pay_med": 33.0,
+    "first_pay_date": "2027-01-05",
+    "no_pay_6m": 10.2,
+    "net_m": 548,
+    "owner_m": 565,
+    "fees_6m": 104.1,
+    "evals": 1.65,
+    "pays": 4.25
+   },
+   "LIT 40% + ATLAS $250 at 20%": {
+    "pass60": 93.9,
+    "pass_med": 7.0,
+    "pass_p10": 62.6,
+    "first_pay_med": 28.0,
+    "first_pay_date": "2026-12-28",
+    "no_pay_6m": 9.1,
+    "net_m": 605,
+    "owner_m": 622,
+    "fees_6m": 107.9,
+    "evals": 1.71,
+    "pays": 4.68
+   },
+   "LIT 40% + ATLAS $250 at 30%": {
+    "pass60": 95.2,
+    "pass_med": 7.0,
+    "pass_p10": 64.6,
+    "first_pay_med": 27.0,
+    "first_pay_date": "2026-12-24",
+    "no_pay_6m": 8.2,
+    "net_m": 618,
+    "owner_m": 636,
+    "fees_6m": 110.4,
+    "evals": 1.75,
+    "pays": 4.78
+   },
+   "LIT 50% + ATLAS $250 at 20%": {
+    "pass60": 96.1,
+    "pass_med": 7.0,
+    "pass_p10": 63.9,
+    "first_pay_med": 28.0,
+    "first_pay_date": "2026-12-28",
+    "no_pay_6m": 7.6,
+    "net_m": 616,
+    "owner_m": 635,
+    "fees_6m": 112.7,
+    "evals": 1.79,
+    "pays": 4.77
+   }
+  },
+  "H2": {
+   "preset today (50% room to s10, then safe 30%)": {
+    "pass60": 74.6,
+    "pass_med": 7.0,
+    "pass_p10": 51.1,
+    "first_pay_med": 30.0,
+    "first_pay_date": "2026-12-30",
+    "no_pay_6m": 30.2,
+    "net_m": 414,
+    "owner_m": 429,
+    "fees_6m": 92.0,
+    "evals": 1.46,
+    "pays": 3.25
+   },
+   "live 50K rule (40% room to s80)": {
+    "pass60": 83.5,
+    "pass_med": 11.0,
+    "pass_p10": 46.7,
+    "first_pay_med": 34.0,
+    "first_pay_date": "2027-01-06",
+    "no_pay_6m": 18.7,
+    "net_m": 456,
+    "owner_m": 472,
+    "fees_6m": 100.5,
+    "evals": 1.59,
+    "pays": 3.58
+   },
+   "room 30%": {
+    "pass60": 79.7,
+    "pass_med": 19.0,
+    "pass_p10": 27.1,
+    "first_pay_med": 39.0,
+    "first_pay_date": "2027-01-13",
+    "no_pay_6m": 19.2,
+    "net_m": 425,
+    "owner_m": 441,
+    "fees_6m": 95.7,
+    "evals": 1.52,
+    "pays": 3.34
+   },
+   "room 35%": {
+    "pass60": 82.3,
+    "pass_med": 14.0,
+    "pass_p10": 40.6,
+    "first_pay_med": 35.0,
+    "first_pay_date": "2027-01-07",
+    "no_pay_6m": 18.1,
+    "net_m": 451,
+    "owner_m": 467,
+    "fees_6m": 98.0,
+    "evals": 1.56,
+    "pays": 3.54
+   },
+   "room 45%": {
+    "pass60": 83.1,
+    "pass_med": 11.0,
+    "pass_p10": 47.2,
+    "first_pay_med": 33.0,
+    "first_pay_date": "2027-01-05",
+    "no_pay_6m": 19.1,
+    "net_m": 457,
+    "owner_m": 475,
+    "fees_6m": 104.9,
+    "evals": 1.67,
+    "pays": 3.6
+   },
+   "room 50%": {
+    "pass60": 88.9,
+    "pass_med": 10.0,
+    "pass_p10": 51.1,
+    "first_pay_med": 32.0,
+    "first_pay_date": "2027-01-04",
+    "no_pay_6m": 16.4,
+    "net_m": 485,
+    "owner_m": 503,
+    "fees_6m": 109.7,
+    "evals": 1.74,
+    "pays": 3.81
+   },
+   "room 55%": {
+    "pass60": 91.9,
+    "pass_med": 9.0,
+    "pass_p10": 53.1,
+    "first_pay_med": 32.0,
+    "first_pay_date": "2027-01-04",
+    "no_pay_6m": 13.8,
+    "net_m": 504,
+    "owner_m": 523,
+    "fees_6m": 116.7,
+    "evals": 1.85,
+    "pays": 3.96
+   },
+   "room 60%": {
+    "pass60": 94.1,
+    "pass_med": 9.0,
+    "pass_p10": 53.8,
+    "first_pay_med": 32.0,
+    "first_pay_date": "2027-01-04",
+    "no_pay_6m": 12.3,
+    "net_m": 518,
+    "owner_m": 538,
+    "fees_6m": 121.2,
+    "evals": 1.92,
+    "pays": 4.07
+   },
+   "room 50% + cap $150": {
+    "pass60": 71.8,
+    "pass_med": 37.0,
+    "pass_p10": 2.6,
+    "first_pay_med": 56.0,
+    "first_pay_date": "2027-02-05",
+    "no_pay_6m": 18.7,
+    "net_m": 375,
+    "owner_m": 390,
+    "fees_6m": 90.3,
+    "evals": 1.43,
+    "pays": 2.96
+   },
+   "room 50% + cap $200": {
+    "pass60": 82.0,
+    "pass_med": 25.0,
+    "pass_p10": 11.0,
+    "first_pay_med": 46.0,
+    "first_pay_date": "2027-01-22",
+    "no_pay_6m": 16.6,
+    "net_m": 426,
+    "owner_m": 443,
+    "fees_6m": 98.7,
+    "evals": 1.57,
+    "pays": 3.35
+   },
+   "room 50% + cap $250": {
+    "pass60": 87.8,
+    "pass_med": 16.0,
+    "pass_p10": 29.0,
+    "first_pay_med": 38.0,
+    "first_pay_date": "2027-01-12",
+    "no_pay_6m": 15.9,
+    "net_m": 471,
+    "owner_m": 488,
+    "fees_6m": 103.4,
+    "evals": 1.64,
+    "pays": 3.69
+   },
+   "room 50% + cap $300": {
+    "pass60": 84.6,
+    "pass_med": 15.0,
+    "pass_p10": 32.8,
+    "first_pay_med": 37.5,
+    "first_pay_date": "2027-01-12",
+    "no_pay_6m": 16.4,
+    "net_m": 456,
+    "owner_m": 474,
+    "fees_6m": 106.8,
+    "evals": 1.7,
+    "pays": 3.59
+   },
+   "room 50% + cap $400": {
+    "pass60": 88.6,
+    "pass_med": 10.0,
+    "pass_p10": 49.5,
+    "first_pay_med": 33.0,
+    "first_pay_date": "2027-01-05",
+    "no_pay_6m": 16.3,
+    "net_m": 481,
+    "owner_m": 499,
+    "fees_6m": 108.0,
+    "evals": 1.71,
+    "pays": 3.78
+   },
+   "room 60% + cap $300": {
+    "pass60": 90.4,
+    "pass_med": 16.0,
+    "pass_p10": 33.3,
+    "first_pay_med": 38.0,
+    "first_pay_date": "2027-01-12",
+    "no_pay_6m": 12.9,
+    "net_m": 480,
+    "owner_m": 499,
+    "fees_6m": 115.2,
+    "evals": 1.83,
+    "pays": 3.78
+   },
+   "room 60% + cap $400": {
+    "pass60": 94.4,
+    "pass_med": 10.0,
+    "pass_p10": 50.2,
+    "first_pay_med": 33.0,
+    "first_pay_date": "2027-01-05",
+    "no_pay_6m": 12.9,
+    "net_m": 508,
+    "owner_m": 528,
+    "fees_6m": 118.8,
+    "evals": 1.89,
+    "pays": 4.0
+   },
+   "first-hit 60% then 40%": {
+    "pass60": 82.2,
+    "pass_med": 11.0,
+    "pass_p10": 46.0,
+    "first_pay_med": 34.0,
+    "first_pay_date": "2027-01-06",
+    "no_pay_6m": 19.7,
+    "net_m": 450,
+    "owner_m": 467,
+    "fees_6m": 101.7,
+    "evals": 1.61,
+    "pays": 3.54
+   },
+   "first-hit 60% then 30%": {
+    "pass60": 79.3,
+    "pass_med": 16.0,
+    "pass_p10": 37.1,
+    "first_pay_med": 37.0,
+    "first_pay_date": "2027-01-11",
+    "no_pay_6m": 20.6,
+    "net_m": 434,
+    "owner_m": 450,
+    "fees_6m": 96.7,
+    "evals": 1.53,
+    "pays": 3.41
+   },
+   "first-hit 50% then 35%": {
+    "pass60": 80.6,
+    "pass_med": 12.0,
+    "pass_p10": 45.0,
+    "first_pay_med": 34.0,
+    "first_pay_date": "2027-01-06",
+    "no_pay_6m": 18.7,
+    "net_m": 454,
+    "owner_m": 471,
+    "fees_6m": 98.8,
+    "evals": 1.57,
+    "pays": 3.56
+   },
+   "first-hit 50% then 40%": {
+    "pass60": 81.9,
+    "pass_med": 11.0,
+    "pass_p10": 46.7,
+    "first_pay_med": 34.0,
+    "first_pay_date": "2027-01-06",
+    "no_pay_6m": 19.7,
+    "net_m": 450,
+    "owner_m": 467,
+    "fees_6m": 101.9,
+    "evals": 1.62,
+    "pays": 3.53
+   },
+   "first-hit 2 trades 50% then 40%": {
+    "pass60": 81.3,
+    "pass_med": 10.0,
+    "pass_p10": 48.4,
+    "first_pay_med": 33.0,
+    "first_pay_date": "2027-01-05",
+    "no_pay_6m": 20.0,
+    "net_m": 450,
+    "owner_m": 467,
+    "fees_6m": 102.1,
+    "evals": 1.62,
+    "pays": 3.54
+   },
+   "LIT 40% + ATLAS $250 at 20%": {
+    "pass60": 89.7,
+    "pass_med": 9.0,
+    "pass_p10": 56.4,
+    "first_pay_med": 30.0,
+    "first_pay_date": "2026-12-30",
+    "no_pay_6m": 15.2,
+    "net_m": 504,
+    "owner_m": 521,
+    "fees_6m": 102.7,
+    "evals": 1.63,
+    "pays": 3.95
+   },
+   "LIT 40% + ATLAS $250 at 30%": {
+    "pass60": 89.5,
+    "pass_med": 9.0,
+    "pass_p10": 56.7,
+    "first_pay_med": 30.0,
+    "first_pay_date": "2026-12-30",
+    "no_pay_6m": 14.3,
+    "net_m": 511,
+    "owner_m": 529,
+    "fees_6m": 106.4,
+    "evals": 1.69,
+    "pays": 4.01
+   },
+   "LIT 50% + ATLAS $250 at 20%": {
+    "pass60": 91.6,
+    "pass_med": 7.0,
+    "pass_p10": 61.9,
+    "first_pay_med": 29.0,
+    "first_pay_date": "2026-12-29",
+    "no_pay_6m": 13.1,
+    "net_m": 523,
+    "owner_m": 542,
+    "fees_6m": 110.4,
+    "evals": 1.75,
+    "pays": 4.1
+   }
+  },
+  "REF": {
+   "preset today (50% room to s10, then safe 30%)": {
+    "pass60": 26.2,
+    "pass_med": 11.0,
+    "pass_p10": 16.1,
+    "first_pay_med": 38.0,
+    "first_pay_date": "2027-01-12",
+    "no_pay_6m": 93.9,
+    "net_m": -4,
+    "owner_m": 10,
+    "fees_6m": 83.6,
+    "evals": 1.33,
+    "pays": 0.08
+   },
+   "live 50K rule (40% room to s80)": {
+    "pass60": 32.1,
+    "pass_med": 36.0,
+    "pass_p10": 11.5,
+    "first_pay_med": 48.5,
+    "first_pay_date": "2027-01-26",
+    "no_pay_6m": 92.4,
+    "net_m": -7,
+    "owner_m": 13,
+    "fees_6m": 120.6,
+    "evals": 1.91,
+    "pays": 0.1
+   },
+   "room 30%": {
+    "pass60": 22.4,
+    "pass_med": 43.0,
+    "pass_p10": 5.6,
+    "first_pay_med": 54.0,
+    "first_pay_date": "2027-02-03",
+    "no_pay_6m": 94.6,
+    "net_m": -9,
+    "owner_m": 9,
+    "fees_6m": 107.4,
+    "evals": 1.7,
+    "pays": 0.07
+   },
+   "room 35%": {
+    "pass60": 26.7,
+    "pass_med": 43.0,
+    "pass_p10": 7.7,
+    "first_pay_med": 55.5,
+    "first_pay_date": "2027-02-05",
+    "no_pay_6m": 93.4,
+    "net_m": -7,
+    "owner_m": 11,
+    "fees_6m": 112.1,
+    "evals": 1.78,
+    "pays": 0.09
+   },
+   "room 45%": {
+    "pass60": 38.9,
+    "pass_med": 41.0,
+    "pass_p10": 13.7,
+    "first_pay_med": 55.5,
+    "first_pay_date": "2027-02-05",
+    "no_pay_6m": 90.6,
+    "net_m": -7,
+    "owner_m": 15,
+    "fees_6m": 133.4,
+    "evals": 2.12,
+    "pays": 0.12
+   },
+   "room 50%": {
+    "pass60": 45.4,
+    "pass_med": 38.5,
+    "pass_p10": 16.1,
+    "first_pay_med": 65.0,
+    "first_pay_date": "2027-02-18",
+    "no_pay_6m": 89.6,
+    "net_m": -7,
+    "owner_m": 17,
+    "fees_6m": 146.2,
+    "evals": 2.32,
+    "pays": 0.13
+   },
+   "room 55%": {
+    "pass60": 51.7,
+    "pass_med": 40.0,
+    "pass_p10": 17.7,
+    "first_pay_med": 59.0,
+    "first_pay_date": "2027-02-10",
+    "no_pay_6m": 88.8,
+    "net_m": -8,
+    "owner_m": 18,
+    "fees_6m": 158.5,
+    "evals": 2.52,
+    "pays": 0.14
+   },
+   "room 60%": {
+    "pass60": 55.8,
+    "pass_med": 36.0,
+    "pass_p10": 18.4,
+    "first_pay_med": 54.5,
+    "first_pay_date": "2027-02-03",
+    "no_pay_6m": 87.4,
+    "net_m": -7,
+    "owner_m": 21,
+    "fees_6m": 166.6,
+    "evals": 2.64,
+    "pays": 0.16
+   },
+   "room 50% + cap $150": {
+    "pass60": 10.1,
+    "pass_med": 81.0,
+    "pass_p10": 0.0,
+    "first_pay_med": 88.0,
+    "first_pay_date": "2027-03-23",
+    "no_pay_6m": 95.9,
+    "net_m": -14,
+    "owner_m": 6,
+    "fees_6m": 121.7,
+    "evals": 1.93,
+    "pays": 0.05
+   },
+   "room 50% + cap $200": {
+    "pass60": 19.5,
+    "pass_med": 63.0,
+    "pass_p10": 1.2,
+    "first_pay_med": 76.5,
+    "first_pay_date": "2027-03-05",
+    "no_pay_6m": 92.2,
+    "net_m": -11,
+    "owner_m": 12,
+    "fees_6m": 137.0,
+    "evals": 2.17,
+    "pays": 0.09
+   },
+   "room 50% + cap $250": {
+    "pass60": 31.1,
+    "pass_med": 53.0,
+    "pass_p10": 4.6,
+    "first_pay_med": 64.0,
+    "first_pay_date": "2027-02-17",
+    "no_pay_6m": 92.7,
+    "net_m": -12,
+    "owner_m": 12,
+    "fees_6m": 142.1,
+    "evals": 2.25,
+    "pays": 0.09
+   },
+   "room 50% + cap $300": {
+    "pass60": 36.7,
+    "pass_med": 48.0,
+    "pass_p10": 7.0,
+    "first_pay_med": 67.0,
+    "first_pay_date": "2027-02-22",
+    "no_pay_6m": 92.0,
+    "net_m": -11,
+    "owner_m": 14,
+    "fees_6m": 147.5,
+    "evals": 2.34,
+    "pays": 0.1
+   },
+   "room 50% + cap $400": {
+    "pass60": 41.8,
+    "pass_med": 43.0,
+    "pass_p10": 12.9,
+    "first_pay_med": 70.5,
+    "first_pay_date": "2027-02-25",
+    "no_pay_6m": 90.2,
+    "net_m": -9,
+    "owner_m": 16,
+    "fees_6m": 148.6,
+    "evals": 2.36,
+    "pays": 0.12
+   },
+   "room 60% + cap $300": {
+    "pass60": 42.5,
+    "pass_med": 49.0,
+    "pass_p10": 7.1,
+    "first_pay_med": 66.0,
+    "first_pay_date": "2027-02-19",
+    "no_pay_6m": 91.7,
+    "net_m": -14,
+    "owner_m": 14,
+    "fees_6m": 166.0,
+    "evals": 2.63,
+    "pays": 0.1
+   },
+   "room 60% + cap $400": {
+    "pass60": 51.6,
+    "pass_med": 41.0,
+    "pass_p10": 13.8,
+    "first_pay_med": 56.0,
+    "first_pay_date": "2027-02-05",
+    "no_pay_6m": 88.1,
+    "net_m": -8,
+    "owner_m": 20,
+    "fees_6m": 169.0,
+    "evals": 2.68,
+    "pays": 0.15
+   },
+   "first-hit 60% then 40%": {
+    "pass60": 33.6,
+    "pass_med": 39.0,
+    "pass_p10": 13.6,
+    "first_pay_med": 46.0,
+    "first_pay_date": "2027-01-22",
+    "no_pay_6m": 92.3,
+    "net_m": -7,
+    "owner_m": 13,
+    "fees_6m": 120.8,
+    "evals": 1.92,
+    "pays": 0.1
+   },
+   "first-hit 60% then 30%": {
+    "pass60": 24.7,
+    "pass_med": 41.0,
+    "pass_p10": 10.2,
+    "first_pay_med": 50.0,
+    "first_pay_date": "2027-01-28",
+    "no_pay_6m": 94.7,
+    "net_m": -8,
+    "owner_m": 10,
+    "fees_6m": 105.3,
+    "evals": 1.67,
+    "pays": 0.07
+   },
+   "first-hit 50% then 35%": {
+    "pass60": 28.1,
+    "pass_med": 40.0,
+    "pass_p10": 11.0,
+    "first_pay_med": 50.0,
+    "first_pay_date": "2027-01-28",
+    "no_pay_6m": 92.9,
+    "net_m": -6,
+    "owner_m": 12,
+    "fees_6m": 112.2,
+    "evals": 1.78,
+    "pays": 0.09
+   },
+   "first-hit 50% then 40%": {
+    "pass60": 34.2,
+    "pass_med": 37.0,
+    "pass_p10": 13.1,
+    "first_pay_med": 46.0,
+    "first_pay_date": "2027-01-22",
+    "no_pay_6m": 91.9,
+    "net_m": -7,
+    "owner_m": 14,
+    "fees_6m": 121.1,
+    "evals": 1.92,
+    "pays": 0.1
+   },
+   "first-hit 2 trades 50% then 40%": {
+    "pass60": 35.0,
+    "pass_med": 36.0,
+    "pass_p10": 14.3,
+    "first_pay_med": 46.0,
+    "first_pay_date": "2027-01-22",
+    "no_pay_6m": 91.9,
+    "net_m": -7,
+    "owner_m": 13,
+    "fees_6m": 121.1,
+    "evals": 1.92,
+    "pays": 0.1
+   },
+   "LIT 40% + ATLAS $250 at 20%": {
+    "pass60": 43.1,
+    "pass_med": 36.0,
+    "pass_p10": 17.8,
+    "first_pay_med": 67.0,
+    "first_pay_date": "2027-02-22",
+    "no_pay_6m": 90.9,
+    "net_m": -8,
+    "owner_m": 16,
+    "fees_6m": 141.8,
+    "evals": 2.25,
+    "pays": 0.12
+   },
+   "LIT 40% + ATLAS $250 at 30%": {
+    "pass60": 59.8,
+    "pass_med": 32.0,
+    "pass_p10": 21.2,
+    "first_pay_med": 59.0,
+    "first_pay_date": "2027-02-10",
+    "no_pay_6m": 87.7,
+    "net_m": -8,
+    "owner_m": 21,
+    "fees_6m": 174.3,
+    "evals": 2.77,
+    "pays": 0.16
+   },
+   "LIT 50% + ATLAS $250 at 20%": {
+    "pass60": 53.2,
+    "pass_med": 34.0,
+    "pass_p10": 20.2,
+    "first_pay_med": 55.0,
+    "first_pay_date": "2027-02-04",
+    "no_pay_6m": 89.5,
+    "net_m": -10,
+    "owner_m": 18,
+    "fees_6m": 167.3,
+    "evals": 2.65,
+    "pays": 0.14
+   }
+  }
+ },
+ "cap": {
+  "H1": {
+   "live 50K rule (40% room to s80)": {
+    "lit_signals": 3899,
+    "lit_traded": 3090,
+    "skip_1micro": 809,
+    "skip_room700": 0,
+    "cap20": 0,
+    "cap20_lost": 0,
+    "bind_need": 1405,
+    "bind_room": 1685,
+    "bind_dll": 0,
+    "bind_usd": 0,
+    "bind_other": 0,
+    "cap20_pct_of_signals": 0.0,
+    "skip_pct_of_signals": 20.7,
+    "skip_room700_pct": 0.0,
+    "bind_pct": {
+     "need": 45.5,
+     "room": 54.5,
+     "dll": 0.0,
+     "usd": 0.0,
+     "other": 0.0
+    },
+    "cap20_avg_micros_lost": 0.0
+   },
+   "preset today (50% room to s10, then safe 30%)": {
+    "lit_signals": 4101,
+    "lit_traded": 2667,
+    "skip_1micro": 1434,
+    "skip_room700": 0,
+    "cap20": 0,
+    "cap20_lost": 0,
+    "bind_need": 804,
+    "bind_room": 442,
+    "bind_dll": 0,
+    "bind_usd": 0,
+    "bind_other": 1421,
+    "cap20_pct_of_signals": 0.0,
+    "skip_pct_of_signals": 35.0,
+    "skip_room700_pct": 0.0,
+    "bind_pct": {
+     "need": 30.1,
+     "room": 16.6,
+     "dll": 0.0,
+     "usd": 0.0,
+     "other": 53.3
+    },
+    "cap20_avg_micros_lost": 0.0
+   },
+   "room 50%": {
+    "lit_signals": 3107,
+    "lit_traded": 2510,
+    "skip_1micro": 597,
+    "skip_room700": 0,
+    "cap20": 0,
+    "cap20_lost": 0,
+    "bind_need": 1334,
+    "bind_room": 1176,
+    "bind_dll": 0,
+    "bind_usd": 0,
+    "bind_other": 0,
+    "cap20_pct_of_signals": 0.0,
+    "skip_pct_of_signals": 19.2,
+    "skip_room700_pct": 0.0,
+    "bind_pct": {
+     "need": 53.1,
+     "room": 46.9,
+     "dll": 0.0,
+     "usd": 0.0,
+     "other": 0.0
+    },
+    "cap20_avg_micros_lost": 0.0
+   },
+   "room 60%": {
+    "lit_signals": 2479,
+    "lit_traded": 2112,
+    "skip_1micro": 367,
+    "skip_room700": 0,
+    "cap20": 0,
+    "cap20_lost": 0,
+    "bind_need": 1291,
+    "bind_room": 821,
+    "bind_dll": 0,
+    "bind_usd": 0,
+    "bind_other": 0,
+    "cap20_pct_of_signals": 0.0,
+    "skip_pct_of_signals": 14.8,
+    "skip_room700_pct": 0.0,
+    "bind_pct": {
+     "need": 61.1,
+     "room": 38.9,
+     "dll": 0.0,
+     "usd": 0.0,
+     "other": 0.0
+    },
+    "cap20_avg_micros_lost": 0.0
+   },
+   "room 50% + cap $300": {
+    "lit_signals": 3788,
+    "lit_traded": 3129,
+    "skip_1micro": 659,
+    "skip_room700": 0,
+    "cap20": 0,
+    "cap20_lost": 0,
+    "bind_need": 1504,
+    "bind_room": 883,
+    "bind_dll": 0,
+    "bind_usd": 742,
+    "bind_other": 0,
+    "cap20_pct_of_signals": 0.0,
+    "skip_pct_of_signals": 17.4,
+    "skip_room700_pct": 0.0,
+    "bind_pct": {
+     "need": 48.1,
+     "room": 28.2,
+     "dll": 0.0,
+     "usd": 23.7,
+     "other": 0.0
+    },
+    "cap20_avg_micros_lost": 0.0
+   },
+   "first-hit 60% then 40%": {
+    "lit_signals": 3969,
+    "lit_traded": 3117,
+    "skip_1micro": 852,
+    "skip_room700": 0,
+    "cap20": 0,
+    "cap20_lost": 0,
+    "bind_need": 1441,
+    "bind_room": 1676,
+    "bind_dll": 0,
+    "bind_usd": 0,
+    "bind_other": 0,
+    "cap20_pct_of_signals": 0.0,
+    "skip_pct_of_signals": 21.5,
+    "skip_room700_pct": 0.0,
+    "bind_pct": {
+     "need": 46.2,
+     "room": 53.8,
+     "dll": 0.0,
+     "usd": 0.0,
+     "other": 0.0
+    },
+    "cap20_avg_micros_lost": 0.0
+   },
+   "first-hit 50% then 40%": {
+    "lit_signals": 3966,
+    "lit_traded": 3129,
+    "skip_1micro": 837,
+    "skip_room700": 0,
+    "cap20": 0,
+    "cap20_lost": 0,
+    "bind_need": 1444,
+    "bind_room": 1685,
+    "bind_dll": 0,
+    "bind_usd": 0,
+    "bind_other": 0,
+    "cap20_pct_of_signals": 0.0,
+    "skip_pct_of_signals": 21.1,
+    "skip_room700_pct": 0.0,
+    "bind_pct": {
+     "need": 46.1,
+     "room": 53.9,
+     "dll": 0.0,
+     "usd": 0.0,
+     "other": 0.0
+    },
+    "cap20_avg_micros_lost": 0.0
+   },
+   "LIT 40% + ATLAS $250 at 20%": {
+    "lit_signals": 2686,
+    "lit_traded": 1959,
+    "skip_1micro": 701,
+    "skip_room700": 0,
+    "cap20": 0,
+    "cap20_lost": 0,
+    "bind_need": 874,
+    "bind_room": 1085,
+    "bind_dll": 0,
+    "bind_usd": 0,
+    "bind_other": 0,
+    "cap20_pct_of_signals": 0.0,
+    "skip_pct_of_signals": 26.1,
+    "skip_room700_pct": 0.0,
+    "bind_pct": {
+     "need": 44.6,
+     "room": 55.4,
+     "dll": 0.0,
+     "usd": 0.0,
+     "other": 0.0
+    },
+    "cap20_avg_micros_lost": 0.0
+   }
+  },
+  "H2": {
+   "live 50K rule (40% room to s80)": {
+    "lit_signals": 3421,
+    "lit_traded": 2287,
+    "skip_1micro": 1134,
+    "skip_room700": 0,
+    "cap20": 0,
+    "cap20_lost": 0,
+    "bind_need": 913,
+    "bind_room": 1374,
+    "bind_dll": 0,
+    "bind_usd": 0,
+    "bind_other": 0,
+    "cap20_pct_of_signals": 0.0,
+    "skip_pct_of_signals": 33.1,
+    "skip_room700_pct": 0.0,
+    "bind_pct": {
+     "need": 39.9,
+     "room": 60.1,
+     "dll": 0.0,
+     "usd": 0.0,
+     "other": 0.0
+    },
+    "cap20_avg_micros_lost": 0.0
+   },
+   "preset today (50% room to s10, then safe 30%)": {
+    "lit_signals": 3856,
+    "lit_traded": 2043,
+    "skip_1micro": 1813,
+    "skip_room700": 0,
+    "cap20": 0,
+    "cap20_lost": 0,
+    "bind_need": 567,
+    "bind_room": 469,
+    "bind_dll": 0,
+    "bind_usd": 0,
+    "bind_other": 1007,
+    "cap20_pct_of_signals": 0.0,
+    "skip_pct_of_signals": 47.0,
+    "skip_room700_pct": 0.0,
+    "bind_pct": {
+     "need": 27.8,
+     "room": 23.0,
+     "dll": 0.0,
+     "usd": 0.0,
+     "other": 49.3
+    },
+    "cap20_avg_micros_lost": 0.0
+   },
+   "room 50%": {
+    "lit_signals": 2708,
+    "lit_traded": 1999,
+    "skip_1micro": 709,
+    "skip_room700": 0,
+    "cap20": 0,
+    "cap20_lost": 0,
+    "bind_need": 915,
+    "bind_room": 1084,
+    "bind_dll": 0,
+    "bind_usd": 0,
+    "bind_other": 0,
+    "cap20_pct_of_signals": 0.0,
+    "skip_pct_of_signals": 26.2,
+    "skip_room700_pct": 0.0,
+    "bind_pct": {
+     "need": 45.8,
+     "room": 54.2,
+     "dll": 0.0,
+     "usd": 0.0,
+     "other": 0.0
+    },
+    "cap20_avg_micros_lost": 0.0
+   },
+   "room 60%": {
+    "lit_signals": 1824,
+    "lit_traded": 1538,
+    "skip_1micro": 286,
+    "skip_room700": 0,
+    "cap20": 0,
+    "cap20_lost": 0,
+    "bind_need": 867,
+    "bind_room": 671,
+    "bind_dll": 0,
+    "bind_usd": 0,
+    "bind_other": 0,
+    "cap20_pct_of_signals": 0.0,
+    "skip_pct_of_signals": 15.7,
+    "skip_room700_pct": 0.0,
+    "bind_pct": {
+     "need": 56.4,
+     "room": 43.6,
+     "dll": 0.0,
+     "usd": 0.0,
+     "other": 0.0
+    },
+    "cap20_avg_micros_lost": 0.0
+   },
+   "room 50% + cap $300": {
+    "lit_signals": 3413,
+    "lit_traded": 2665,
+    "skip_1micro": 748,
+    "skip_room700": 0,
+    "cap20": 0,
+    "cap20_lost": 0,
+    "bind_need": 1084,
+    "bind_room": 572,
+    "bind_dll": 0,
+    "bind_usd": 1009,
+    "bind_other": 0,
+    "cap20_pct_of_signals": 0.0,
+    "skip_pct_of_signals": 21.9,
+    "skip_room700_pct": 0.0,
+    "bind_pct": {
+     "need": 40.7,
+     "room": 21.5,
+     "dll": 0.0,
+     "usd": 37.9,
+     "other": 0.0
+    },
+    "cap20_avg_micros_lost": 0.0
+   },
+   "first-hit 60% then 40%": {
+    "lit_signals": 3456,
+    "lit_traded": 2280,
+    "skip_1micro": 1176,
+    "skip_room700": 0,
+    "cap20": 0,
+    "cap20_lost": 0,
+    "bind_need": 977,
+    "bind_room": 1303,
+    "bind_dll": 0,
+    "bind_usd": 0,
+    "bind_other": 0,
+    "cap20_pct_of_signals": 0.0,
+    "skip_pct_of_signals": 34.0,
+    "skip_room700_pct": 0.0,
+    "bind_pct": {
+     "need": 42.9,
+     "room": 57.1,
+     "dll": 0.0,
+     "usd": 0.0,
+     "other": 0.0
+    },
+    "cap20_avg_micros_lost": 0.0
+   },
+   "first-hit 50% then 40%": {
+    "lit_signals": 3384,
+    "lit_traded": 2235,
+    "skip_1micro": 1149,
+    "skip_room700": 0,
+    "cap20": 0,
+    "cap20_lost": 0,
+    "bind_need": 921,
+    "bind_room": 1314,
+    "bind_dll": 0,
+    "bind_usd": 0,
+    "bind_other": 0,
+    "cap20_pct_of_signals": 0.0,
+    "skip_pct_of_signals": 34.0,
+    "skip_room700_pct": 0.0,
+    "bind_pct": {
+     "need": 41.2,
+     "room": 58.8,
+     "dll": 0.0,
+     "usd": 0.0,
+     "other": 0.0
+    },
+    "cap20_avg_micros_lost": 0.0
+   },
+   "LIT 40% + ATLAS $250 at 20%": {
+    "lit_signals": 2821,
+    "lit_traded": 1850,
+    "skip_1micro": 964,
+    "skip_room700": 0,
+    "cap20": 0,
+    "cap20_lost": 0,
+    "bind_need": 770,
+    "bind_room": 1080,
+    "bind_dll": 0,
+    "bind_usd": 0,
+    "bind_other": 0,
+    "cap20_pct_of_signals": 0.0,
+    "skip_pct_of_signals": 34.2,
+    "skip_room700_pct": 0.0,
+    "bind_pct": {
+     "need": 41.6,
+     "room": 58.4,
+     "dll": 0.0,
+     "usd": 0.0,
+     "other": 0.0
+    },
+    "cap20_avg_micros_lost": 0.0
+   }
+  },
+  "REF": {
+   "live 50K rule (40% room to s80)": {
+    "lit_signals": 6078,
+    "lit_traded": 4277,
+    "skip_1micro": 1801,
+    "skip_room700": 0,
+    "cap20": 0,
+    "cap20_lost": 0,
+    "bind_need": 1064,
+    "bind_room": 3213,
+    "bind_dll": 0,
+    "bind_usd": 0,
+    "bind_other": 0,
+    "cap20_pct_of_signals": 0.0,
+    "skip_pct_of_signals": 29.6,
+    "skip_room700_pct": 0.0,
+    "bind_pct": {
+     "need": 24.9,
+     "room": 75.1,
+     "dll": 0.0,
+     "usd": 0.0,
+     "other": 0.0
+    },
+    "cap20_avg_micros_lost": 0.0
+   },
+   "preset today (50% room to s10, then safe 30%)": {
+    "lit_signals": 6417,
+    "lit_traded": 3904,
+    "skip_1micro": 2513,
+    "skip_room700": 0,
+    "cap20": 0,
+    "cap20_lost": 0,
+    "bind_need": 637,
+    "bind_room": 631,
+    "bind_dll": 0,
+    "bind_usd": 0,
+    "bind_other": 2636,
+    "cap20_pct_of_signals": 0.0,
+    "skip_pct_of_signals": 39.2,
+    "skip_room700_pct": 0.0,
+    "bind_pct": {
+     "need": 16.3,
+     "room": 16.2,
+     "dll": 0.0,
+     "usd": 0.0,
+     "other": 67.5
+    },
+    "cap20_avg_micros_lost": 0.0
+   },
+   "room 50%": {
+    "lit_signals": 4457,
+    "lit_traded": 3420,
+    "skip_1micro": 1037,
+    "skip_room700": 0,
+    "cap20": 0,
+    "cap20_lost": 0,
+    "bind_need": 1140,
+    "bind_room": 2280,
+    "bind_dll": 0,
+    "bind_usd": 0,
+    "bind_other": 0,
+    "cap20_pct_of_signals": 0.0,
+    "skip_pct_of_signals": 23.3,
+    "skip_room700_pct": 0.0,
+    "bind_pct": {
+     "need": 33.3,
+     "room": 66.7,
+     "dll": 0.0,
+     "usd": 0.0,
+     "other": 0.0
+    },
+    "cap20_avg_micros_lost": 0.0
+   },
+   "room 60%": {
+    "lit_signals": 3401,
+    "lit_traded": 2963,
+    "skip_1micro": 438,
+    "skip_room700": 0,
+    "cap20": 0,
+    "cap20_lost": 0,
+    "bind_need": 1271,
+    "bind_room": 1683,
+    "bind_dll": 9,
+    "bind_usd": 0,
+    "bind_other": 0,
+    "cap20_pct_of_signals": 0.0,
+    "skip_pct_of_signals": 12.9,
+    "skip_room700_pct": 0.0,
+    "bind_pct": {
+     "need": 42.9,
+     "room": 56.8,
+     "dll": 0.3,
+     "usd": 0.0,
+     "other": 0.0
+    },
+    "cap20_avg_micros_lost": 0.0
+   },
+   "room 50% + cap $300": {
+    "lit_signals": 4893,
+    "lit_traded": 4042,
+    "skip_1micro": 851,
+    "skip_room700": 0,
+    "cap20": 0,
+    "cap20_lost": 0,
+    "bind_need": 1108,
+    "bind_room": 1559,
+    "bind_dll": 0,
+    "bind_usd": 1375,
+    "bind_other": 0,
+    "cap20_pct_of_signals": 0.0,
+    "skip_pct_of_signals": 17.4,
+    "skip_room700_pct": 0.0,
+    "bind_pct": {
+     "need": 27.4,
+     "room": 38.6,
+     "dll": 0.0,
+     "usd": 34.0,
+     "other": 0.0
+    },
+    "cap20_avg_micros_lost": 0.0
+   },
+   "first-hit 60% then 40%": {
+    "lit_signals": 5918,
+    "lit_traded": 4113,
+    "skip_1micro": 1805,
+    "skip_room700": 0,
+    "cap20": 0,
+    "cap20_lost": 0,
+    "bind_need": 1091,
+    "bind_room": 3016,
+    "bind_dll": 6,
+    "bind_usd": 0,
+    "bind_other": 0,
+    "cap20_pct_of_signals": 0.0,
+    "skip_pct_of_signals": 30.5,
+    "skip_room700_pct": 0.0,
+    "bind_pct": {
+     "need": 26.5,
+     "room": 73.3,
+     "dll": 0.1,
+     "usd": 0.0,
+     "other": 0.0
+    },
+    "cap20_avg_micros_lost": 0.0
+   },
+   "first-hit 50% then 40%": {
+    "lit_signals": 5984,
+    "lit_traded": 4179,
+    "skip_1micro": 1805,
+    "skip_room700": 0,
+    "cap20": 0,
+    "cap20_lost": 0,
+    "bind_need": 1098,
+    "bind_room": 3081,
+    "bind_dll": 0,
+    "bind_usd": 0,
+    "bind_other": 0,
+    "cap20_pct_of_signals": 0.0,
+    "skip_pct_of_signals": 30.2,
+    "skip_room700_pct": 0.0,
+    "bind_pct": {
+     "need": 26.3,
+     "room": 73.7,
+     "dll": 0.0,
+     "usd": 0.0,
+     "other": 0.0
+    },
+    "cap20_avg_micros_lost": 0.0
+   },
+   "LIT 40% + ATLAS $250 at 20%": {
+    "lit_signals": 4729,
+    "lit_traded": 2635,
+    "skip_1micro": 2088,
+    "skip_room700": 0,
+    "cap20": 0,
+    "cap20_lost": 0,
+    "bind_need": 437,
+    "bind_room": 2198,
+    "bind_dll": 0,
+    "bind_usd": 0,
+    "bind_other": 0,
+    "cap20_pct_of_signals": 0.0,
+    "skip_pct_of_signals": 44.2,
+    "skip_room700_pct": 0.0,
+    "bind_pct": {
+     "need": 16.6,
+     "room": 83.4,
+     "dll": 0.0,
+     "usd": 0.0,
+     "other": 0.0
+    },
+    "cap20_avg_micros_lost": 0.0
+   }
+  }
+ },
+ "stops": {
+  "H1": {
+   "n": 80,
+   "stop_p10": 21.9,
+   "stop_med": 44.2,
+   "stop_p90": 73.1,
+   "stop_max": 83.2,
+   "days_2plus_lit": 0,
+   "lit_days": 80,
+   "micros20_risk_usd_at_med": 1818
+  },
+  "H2": {
+   "n": 40,
+   "stop_p10": 30.0,
+   "stop_med": 51.6,
+   "stop_p90": 80.3,
+   "stop_max": 84.0,
+   "days_2plus_lit": 0,
+   "lit_days": 40,
+   "micros20_risk_usd_at_med": 2113
+  },
+  "REF": {
+   "n": 511,
+   "stop_p10": 19.5,
+   "stop_med": 38.2,
+   "stop_p90": 69.2,
+   "stop_max": 88.2,
+   "days_2plus_lit": 0,
+   "lit_days": 511,
+   "micros20_risk_usd_at_med": 1578
+  }
+ },
+ "configs": {
+  "preset today (50% room to s10, then safe 30%)": {},
+  "live 50K rule (40% room to s80)": {
+   "two_week": {
+    "room_f": 0.4,
+    "max_usd": null
+   },
+   "two_week_until": 80,
+   "after_mode": "safe_eval",
+   "safe_cap": 0.6
+  },
+  "room 30%": {
+   "two_week": {
+    "room_f": 0.3,
+    "max_usd": null
+   },
+   "two_week_until": 80,
+   "after_mode": "safe_eval",
+   "safe_cap": 0.6
+  },
+  "room 35%": {
+   "two_week": {
+    "room_f": 0.35,
+    "max_usd": null
+   },
+   "two_week_until": 80,
+   "after_mode": "safe_eval",
+   "safe_cap": 0.6
+  },
+  "room 45%": {
+   "two_week": {
+    "room_f": 0.45,
+    "max_usd": null
+   },
+   "two_week_until": 80,
+   "after_mode": "safe_eval",
+   "safe_cap": 0.6
+  },
+  "room 50%": {
+   "two_week": {
+    "room_f": 0.5,
+    "max_usd": null
+   },
+   "two_week_until": 80,
+   "after_mode": "safe_eval",
+   "safe_cap": 0.6
+  },
+  "room 55%": {
+   "two_week": {
+    "room_f": 0.55,
+    "max_usd": null
+   },
+   "two_week_until": 80,
+   "after_mode": "safe_eval",
+   "safe_cap": 0.6
+  },
+  "room 60%": {
+   "two_week": {
+    "room_f": 0.6,
+    "max_usd": null
+   },
+   "two_week_until": 80,
+   "after_mode": "safe_eval",
+   "safe_cap": 0.6
+  },
+  "room 50% + cap $150": {
+   "two_week": {
+    "room_f": 0.5,
+    "max_usd": 300.0
+   },
+   "two_week_until": 80,
+   "after_mode": "safe_eval",
+   "safe_cap": 0.6
+  },
+  "room 50% + cap $200": {
+   "two_week": {
+    "room_f": 0.5,
+    "max_usd": 400.0
+   },
+   "two_week_until": 80,
+   "after_mode": "safe_eval",
+   "safe_cap": 0.6
+  },
+  "room 50% + cap $250": {
+   "two_week": {
+    "room_f": 0.5,
+    "max_usd": 500.0
+   },
+   "two_week_until": 80,
+   "after_mode": "safe_eval",
+   "safe_cap": 0.6
+  },
+  "room 50% + cap $300": {
+   "two_week": {
+    "room_f": 0.5,
+    "max_usd": 600.0
+   },
+   "two_week_until": 80,
+   "after_mode": "safe_eval",
+   "safe_cap": 0.6
+  },
+  "room 50% + cap $400": {
+   "two_week": {
+    "room_f": 0.5,
+    "max_usd": 800.0
+   },
+   "two_week_until": 80,
+   "after_mode": "safe_eval",
+   "safe_cap": 0.6
+  },
+  "room 60% + cap $300": {
+   "two_week": {
+    "room_f": 0.6,
+    "max_usd": 600.0
+   },
+   "two_week_until": 80,
+   "after_mode": "safe_eval",
+   "safe_cap": 0.6
+  },
+  "room 60% + cap $400": {
+   "two_week": {
+    "room_f": 0.6,
+    "max_usd": 800.0
+   },
+   "two_week_until": 80,
+   "after_mode": "safe_eval",
+   "safe_cap": 0.6
+  },
+  "first-hit 60% then 40%": {
+   "two_week": {
+    "room_f": 0.4,
+    "max_usd": null
+   },
+   "two_week_until": 80,
+   "after_mode": "safe_eval",
+   "safe_cap": 0.6
+  },
+  "first-hit 60% then 30%": {
+   "two_week": {
+    "room_f": 0.3,
+    "max_usd": null
+   },
+   "two_week_until": 80,
+   "after_mode": "safe_eval",
+   "safe_cap": 0.6
+  },
+  "first-hit 50% then 35%": {
+   "two_week": {
+    "room_f": 0.35,
+    "max_usd": null
+   },
+   "two_week_until": 80,
+   "after_mode": "safe_eval",
+   "safe_cap": 0.6
+  },
+  "first-hit 50% then 40%": {
+   "two_week": {
+    "room_f": 0.4,
+    "max_usd": null
+   },
+   "two_week_until": 80,
+   "after_mode": "safe_eval",
+   "safe_cap": 0.6
+  },
+  "first-hit 2 trades 50% then 40%": {
+   "two_week": {
+    "room_f": 0.4,
+    "max_usd": null
+   },
+   "two_week_until": 80,
+   "after_mode": "safe_eval",
+   "safe_cap": 0.6
+  },
+  "LIT 40% + ATLAS $250 at 20%": {
+   "two_week": {
+    "room_f": 0.4,
+    "max_usd": null
+   },
+   "two_week_until": 80,
+   "after_mode": "safe_eval",
+   "safe_cap": 0.6
+  },
+  "LIT 40% + ATLAS $250 at 30%": {
+   "two_week": {
+    "room_f": 0.4,
+    "max_usd": null
+   },
+   "two_week_until": 80,
+   "after_mode": "safe_eval",
+   "safe_cap": 0.6
+  },
+  "LIT 50% + ATLAS $250 at 20%": {
+   "two_week": {
+    "room_f": 0.5,
+    "max_usd": null
+   },
+   "two_week_until": 80,
+   "after_mode": "safe_eval",
+   "safe_cap": 0.6
+  }
+ }
+}
