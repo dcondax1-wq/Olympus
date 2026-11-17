@@ -52,6 +52,7 @@ Rules: MFFU ONLY ("We stick with MFFU"). Limits: max 5 sim-funded, Builder 1x50K
 
 ## Recent findings (don't redo)
 - 2026-11-17 LIT walk-forward re-tuning (refit monthly/quarterly): REJECTED; 2022-25 +$511/mo vs $16 but noise (mostly 2025), 2026 -$11k/-$3k a half; 2023 loses at all 27 settings. `lit-walkforward-2026-11-17.md`
+- 2026-11-17 LIT regime sizing (gamma / VIX / VXN-VIX / VIX term / prior range, 124 cells): REJECTED, flat size stays. `lit-regime-sizing-2026-11-17.md`
 - 2026-11-17 LIT smart entries: 31 rules, NONE better in both halves; today's entry stays. `research/writeups/lit-smart-entries-2026-11-17.md`
 - 2026-11-17 Famous public strategies: 22 cells, none holds; LIT the only strategy. `public-strategies-2026-11-17.md`
 - 2026-11-17 Rule-native layer: no change (only Rapid + BLITZ $300 3/day passes, post hoc, paper lead). `rule-native-2026-11-17.md`
