@@ -77,12 +77,13 @@ PRESETS = {
         "rules": {"start": 25000.0, "target": 1500.0, "mll": 1000.0, "lock": 100.0, "dll": 600.0, "max_micros": 20,
                   "scale": 0.5, "trail": "eod", "best_day": None, "news_ban": False, "min_room": 100.0},
         # research/writeups/lit-builder-25k.md (picked on H1 2026): 50% of the room (not 60%), no weekly stop, the day
-        # guard on the 25K's own $ limits, safe_eval at 30% of the room after session 10
-        "sizing": {"two_week": {"base": "need", "need_buf": 1.0, "room_f": 0.5, "wk": False, "dll_cap": True,
+        # guard on the 25K's own $ limits. 2026-11-17 (research/writeups/builder25k-eval-sizing-2026-11-17.md): 40% of the room to
+        # session 80 then safe_eval 60% (= the owner-approved 50K rule): median 12 sessions, 0% 2-week fails; the old 50%/s10/30% left 17-25% stuck
+        "sizing": {"two_week": {"base": "need", "need_buf": 1.0, "room_f": 0.4, "wk": False, "dll_cap": True,
                                 "stop_at_target": True, "max_usd": None, "press_at": None, "press_mult": 1.0, "press_room": None,
                                 "protect_over": None, "protect_keep": 0.0},
                    "guard": {"target": 1500.0, "dll": 600.0, "max_micros": 20},
-                   "two_week_until": 10, "after_mode": "safe_eval", "safe_cap": 0.3, "eval_ref_stop": 25.0, "fast_ref_stop": 40.0,
+                   "two_week_until": 80, "after_mode": "safe_eval", "safe_cap": 0.6, "eval_ref_stop": 25.0, "fast_ref_stop": 40.0,
                    "plan": {"start": 25000.0, "target": 1500.0, "mll": 1000.0, "lock": 25100.0, "dll": 600.0},
                    "funded": {"pct": 0.6, "pct_min_usd": 50, "pct_max_usd": 750, "ref": 20, "wk": True, "room_f": None,
                               "max_win": 1000, "slip_ticks": 2, "skip_breach": True}},

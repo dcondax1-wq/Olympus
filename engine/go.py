@@ -601,6 +601,12 @@ def step_arm(cfg, phrase, dry=False, open_page=True) -> int:
             print(f"     Rapid EOD (LIT + ATLAS): {'armed ' + str(rr.get('account')) if rr.get('ok') else 'NOT armed: ' + str(rr.get('error'))[:160]}")
     except Exception as e:
         print(f"     Rapid EOD: NOT armed ({e.__class__.__name__}: {e})")
+    try:                                   # accounts added with engine.accounts (engine/account_cli.py): armed only here
+        from . import account_cli
+        for ln in account_cli.arm(phrase):
+            print(f"     {ln}")
+    except Exception as e:
+        print(f"     Added accounts: NOT armed ({e.__class__.__name__}: {e})")
     from . import ninjatrader
     wm = ["--write-mode", cfg["write_mode"]] if cfg.get("write_mode") else []
     rc = ninjatrader.main(["--start", "--account", cfg["lit"], "--confirm", phrase, *wm])
@@ -614,6 +620,12 @@ def step_arm(cfg, phrase, dry=False, open_page=True) -> int:
         return 1
     print(f"\n [OK] Zlarior trades the 50K {cfg['lit']} · ATLAS trades the 25K {cfg['atlas']} (checked in the running bot)")
     ninjatrader.main(["--enable-auto-resume", "--account", cfg["lit"], "--confirm", phrase, *wm])
+    try:                                   # and each armed account added with engine.accounts resumes with it
+        from . import account_cli
+        for ln in account_cli.resume_optin(phrase):
+            print(f"     {ln}")
+    except Exception:
+        pass
     startup_shortcuts()
     print("\n Launch checklist (the bot unlocks entries by itself once everything reconciles):")
     lines, red = [], None

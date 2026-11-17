@@ -1,4 +1,5 @@
 """Accounts page data: what the PC bot did on each account it trades, for the phone app's Accounts page.
+(Also the owner's one line per new account: `python -X utf8 -m engine.accounts add|list|remove|status`, engine/account_cli.py.)
 
 Two halves:
   pc_activity(bot)          PC side. A compact, secret-free picture of the PC bot's routed activity, sent in the heartbeat
@@ -953,3 +954,14 @@ def verdict_notice(v: dict, pc: dict | None, now) -> dict:
             + (f", account {acct.get('name')} ({acct.get('label')})" if acct.get("name") else "")
             + (". A POSITION IS OPEN: check NinjaTrader now." if pos else ". Check the PC and NinjaTrader."))
     return push.text_payload("Cloud", "pc", title, body, key=f"pc_verdict:{v.get('code')}:{now}", t=now, url="#/accounts")
+
+
+def main(argv=None) -> int:
+    """python -X utf8 -m engine.accounts add | list | remove | status: one pasted line per new MFFU account (engine/account_cli.py,
+    docs/NEW_ACCOUNT.md). Never arms."""
+    from .account_cli import main as _main
+    return _main(argv)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
