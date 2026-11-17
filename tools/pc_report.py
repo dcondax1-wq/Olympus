@@ -465,7 +465,8 @@ def lite(snap: dict, max_bytes: int = MAX_STATUS_BYTES) -> dict:
     out = {"v": 1, "kind": "le-live", "lite": True, "src": "pc_report", "t": snap.get("hb_t"), "every_s": L.get("every_s") or hb.get("every_s"),
            "host": L.get("host") or hb.get("host"), "model_state": L.get("model_state"), "price": L.get("price"), "day_pnl": L.get("day_pnl"),
            "pc_verdict": verdict_now(snap, L.get("pc_verdict")),
-           "pc": {k: pc.get(k) for k in ("running", "adapter", "position", "model_state", "host", "model", "present", "t", "age_s", "silent", "every_s")
+           "pc": {k: pc.get(k) for k in ("running", "adapter", "position", "model_state", "host", "model", "present", "t", "age_s", "silent", "every_s",
+                                         "glance")
                   if pc.get(k) is not None} if pc else {"present": False},
            "reporter": {"t": snap["t"], "server": bool(snap.get("server")), "nt": snap.get("nt"), "market_open": snap.get("market_open"),
                         "mode": snap.get("mode"), "hb_src": snap.get("hb_src"), "problems": sorted(conditions(snap))}}
@@ -491,11 +492,17 @@ def lite(snap: dict, max_bytes: int = MAX_STATUS_BYTES) -> dict:
         out["accounts"] = accts
     out = {k: v for k, v in out.items() if v is not None}
     # too big: drop the least needed parts first
-    steps = [lambda o: _d(o.get("board")).pop("lines", None), lambda o: o.pop("accounts", None),
+    def _gcut(o, n):                     # the Brain page's glance (engine/brain_glance.py): fewer log lines / levels first
+        from engine import brain_glance
+        g = _d(_d(o.get("pc")).get("glance"))
+        if g:
+            brain_glance.fit(g, n)
+    steps = [lambda o: _d(o.get("board")).pop("lines", None), lambda o: _gcut(o, 1100), lambda o: o.pop("accounts", None),
+             lambda o: _gcut(o, 700),
              lambda o: _d(o.get("board")).__setitem__("trades", _d(o.get("board")).get("trades", [])[:1]) if o.get("board") else None,
              lambda o: [_d(_d(o.get("board")).get(k)).pop("waiting", None) for k in ("lit", "atlas", "blitz")],
              lambda o: [_d(_d(o.get("board")).get(k)).pop("window", None) for k in ("atlas", "blitz")],
-             lambda o: _d(o.get("board")).pop("trades", None)]
+             lambda o: _d(o.get("board")).pop("trades", None), lambda o: _d(o.get("pc")).pop("glance", None)]
     for st in steps:
         if _size(out) <= max_bytes:
             break

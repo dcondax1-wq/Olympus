@@ -13,6 +13,9 @@ future bar, fit its size budgets and stay read-only.
 3. No look-ahead: the Brain at time t built from the full files equals the one built from files cut at t.
 4. Sizes: full < 120 KB, phone cut < 16 KB on every replayed session; heartbeat / live.json carry it under 64 KB.
 5. The thought log persists to data/brain-like JSONL and reads back; the API routes answer and are GET only.
+6. Glance (engine/brain_glance.py, the phone Brain page's "All bots" tab): Zlarior + ATLAS (+ Rapid EOD only when its lane
+   is set up), never BLITZ; an armed setup shows its trigger; $ risk / $ target of the open trade; under its byte budget and
+   inside the PC's 15-minute status (tools/pc_report.lite, < 3,900 bytes); read-only; never raises.
 """
 from __future__ import annotations
 
@@ -261,6 +264,73 @@ def keep_is_readonly(days):
     check(f"lit_live.run(keep=) changes nothing ({len(days)} sessions)", not bad, bad)
 
 
+def glance_checks(REF):
+    """engine/brain_glance.py: what the phone's All-bots tab shows (a replayed Brain on the heartbeat fixture of test_live_publish)."""
+    import copy
+    from engine import brain_glance as G, live_publish as lp
+    from tests.test_live_publish import hb_payload, account_c_block
+    from tools import pc_report as R
+    t_arm, b_arm = None, None
+    for tr in [t for t in REF if t["day"] == "2026-10-13"][:1]:
+        for t in range(int(tr["entry_t"]) - 3 * 3600, int(tr["entry_t"]) + 1, 300):
+            b = brain.replay("2026-10-13", t + 3)
+            if (b.get("stage") or {}).get("key") in ("limit", "cisd1m"):
+                t_arm, b_arm = t + 3, b
+                break
+    check("glance: a replayed 2026-10-13 poll with a LIT limit armed was found", b_arm is not None)
+    if b_arm is None:
+        return
+    hb = hb_payload(t_arm)
+    hb["brain"] = brain.compact(b_arm)
+    hb["account_c"] = account_c_block(t_arm)
+    hb["blitz"] = {"label": "BLITZ (paper shadow)", "eval": {"room": 900}}
+    before = copy.deepcopy(hb)
+    p = lp.build(hb, t_arm)
+    g = (p.get("pc") or {}).get("glance") or {}
+    ids = [b.get("id") for b in g.get("bots") or []]
+    check("glance: in live.json pc.glance, bots Zlarior + ATLAS only (no BLITZ, no Rapid EOD while it is off)", ids == ["lit", "atlas"]
+          and "blitz" not in json.dumps(g).lower(), ids)
+    L = (g.get("bots") or [{}])[0]
+    check("glance: Zlarior on + armed + LIVE, the stage, what it waits for", L.get("on") is True and L.get("armed") is True and L.get("mode") == "LIVE"
+          and L.get("stage") and L.get("wait"), L)
+    arm = L.get("arm") or []
+    check("glance: the armed setup says what triggers it (limit price, then the 1m close)", arm and any("comes back to" in a.get("trig", "")
+          or "1-minute close" in a.get("trig", "") for a in arm), arm)
+    lv = L.get("lv") or []
+    check("glance: the nearest levels (label, price, points away; at most 3 above + 3 below)", 0 < len(lv) <= 6
+          and all(isinstance(r[0], str) and isinstance(r[1], float) for r in lv), lv)
+    check("glance: the last thought-log lines (newest first, at most 4)", 0 < len(L.get("log") or []) <= 4, L.get("log"))
+    pos = L.get("pos") or {}
+    check("glance: the open trade with $ risk and $ target (29.75 pts x $2 x 6 = $357; 120.25 pts = $1,443)",
+          pos.get("risk_usd") == 357 and pos.get("tgt_usd") == 1443 and pos.get("side") == "SHORT", pos)
+    check("glance: today's $ and the room left (with the max loss) from the board card", L.get("room") is not None and L.get("mll") == 2000, L)
+    check("glance: under its byte budget", G.size(g) <= G.MAX_BYTES, G.size(g))
+    check("glance: read-only (the heartbeat payload is not changed)", hb == before)
+    # Rapid EOD shows only when its lane is set up
+    hb2 = copy.deepcopy(before)
+    hb2["acct"]["accounts"] = [{"id": "rapid", "name": "Rapid", "plan_rules": {"start": 50000.0, "mll": 2000.0},
+                                "eval": {"days": {"2026-10-12": 300.0}, "anchor": {"floor": 48100.0}}, "day_pnl": -40.0, "running": True,
+                                "account": {"label": "SIM"}}]
+    hb2["health"]["accounts"] = [{"id": "rapid", "enabled": True, "armed": False, "label": "SIM", "day_pnl": -40.0}]
+    g2 = G.build(hb2, (lp.build(hb2, t_arm).get("board")))
+    rp = next((b for b in g2.get("bots") or [] if b.get("id") == "rapid"), None)
+    check("glance: Rapid EOD appears when its lane is set up (today -$40, room $50,300 - $48,100 = $2,200 of $2,000)",
+          rp is not None and rp.get("day") == -40 and rp.get("room") == 2200 and rp.get("mll") == 2000 and rp.get("on") is True, rp)
+    # long texts are cut to fit
+    hb3 = copy.deepcopy(before)
+    for r in hb3["brain"].get("log") or []:
+        r["text"] = "x " * 300
+    g3 = G.build(hb3, None)
+    check("glance: long thought lines are cut to fit the budget", G.size(g3) <= G.MAX_BYTES, G.size(g3))
+    # the PC's 15-minute status carries it and still fits
+    snap = {"t": t_arm, "hb": hb, "hb_t": t_arm - 60, "server": True, "nt": True, "market_open": True, "entry_hours": True, "mode": "LIVE",
+            "live": p}
+    lt = R.lite(snap)
+    check("glance: on the PC's 15-minute status (pc.glance) and the status still fits 3,900 bytes",
+          (lt.get("pc") or {}).get("glance", {}).get("bots") and R._size(lt) <= R.MAX_STATUS_BYTES, R._size(lt))
+    check("glance: never raises on junk", G.build(None) is None and isinstance(G.build({"brain": "x", "second": 3, "acct": []}), dict))
+
+
 def main() -> int:
     quick = "--quick" in sys.argv
     t0 = time.time()
@@ -274,6 +344,7 @@ def main() -> int:
     no_lookahead([("2026-10-13", 4, 0), ("2026-10-13", 5, 47), ("2026-10-13", 6, 4), ("2026-10-09", 10, 30), ("2026-10-16", 15, 20)])
     keep_is_readonly([("2026-10-13", 16, 0), ("2026-10-13", 6, 10), ("2026-10-12", 16, 0)])
     log_and_transport()
+    glance_checks(REF)
     ok = all(RES)
     print(f"bot brain: {sum(RES)}/{len(RES)}", "ALL PASS" if ok else "FAILED", f"({time.time() - t0:.0f} s)")
     return 0 if ok else 1

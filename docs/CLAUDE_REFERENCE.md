@@ -874,6 +874,17 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   phone: Home → Bot Brain + Home tile (`tools/web_public/brain.js`) from `live.pc.brain` (heartbeat + live.json, `brain.compact`
   < 16 KB), else the cloud's `live.brain`. Tests: `python -X utf8 -m tests.test_brain [--quick]` (filled = backtest trades
   on every 2026 day, rejected = the engine's rule, no look-ahead, sizes); screenshots `tests/shots_brain.py`.
+  - **All bots tab (2026-11-17, default; "a whole brain page where I see what's going on"):** `engine/brain_glance.py` builds one
+    small block per bot (Zlarior, ATLAS, Rapid EOD only when its lane is set up; never BLITZ): on/armed/mode, today's $ + room,
+    waiting for, last decision + why no trade, open trade $ risk / $ target, setups armed + trigger, nearest levels, last 4 thoughts
+    (< 1.7 KB). Rides on live.json `pc.glance` (engine/live_publish) and the PC's 15-minute ntfy status (tools/pc_report.lite, trimmed
+    first). Phone `brain.js` renders it with createElement + textContent; "PC last reported X min ago", red over 20 min. Tests:
+    test_brain part 6, test_live_publish, `tests.shots_brain --phone-demo` (browser, under the lock).
+  - **Fast brain (2026-11-17):** engine/lit.py fractals / _anchor / bars_1m / week ids vectorized, buildups on plain lists,
+    candidates' leg low precomputed + CISD per extreme cached; lit_live.feed_1m without a groupby; lit_live keeps the last market +
+    setups while the 5m window is byte-identical (`_MC`, `LE_LIT_CACHE=0` = off). Decisions unchanged: test_lit_live (cache on vs off
+    part) and an old-vs-new replay of every Market array / candidate. lit_live.run ~320 -> ~118 ms on a new 5m bar, ~38 ms average
+    on minute polls.
 - **Performance page (2026-10-21, competitor-features #6/7/9/11-14, read-only, `lit-robust.md`):** PC Data > Performance,
   phone Money > Performance (one renderer `tools/web_public/perfcore.js` = `web_next/js/next/perfcore.js`, view
   `engine/perf.py`, `/api/next/perf`, data.json `perf`). Range = `engine/health_band.py` (H2 bootstrap of lit_live, rebuild
