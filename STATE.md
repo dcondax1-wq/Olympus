@@ -93,3 +93,4 @@ Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7;
 
 ## How to work cheaply
 python tests/smoke.py (2 min) -> touched area's tests -> python tools/ship.py. At most 2-3 helpers. No new apps unless they make money.
+- 2026-11-17 KALSHI REWARDS PAPER running (owner: "try kalshi rewards in paper"): tools/kalshi_rewards_paper.py, ledger research/kalshi_edge_K5/paper/rewards_paper.json; 9 rewarded markets (RT/Panama/Babel), virtual bids both sides at the reward reference, conservative back-of-queue fills. GET only, never an order. Runs in the cloud container (2h chunks); first read ~2.3 $/market-day. Judge after a few days: reward minus fill losses.
