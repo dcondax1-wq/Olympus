@@ -25,3 +25,10 @@ Rules that save usage:
 - Never run tests.test_win_scripts. Browser suites only under `flock -w 2400 /tmp/olympus_browser.lock`.
 - `bump_versions --check` without `--base` reports old unrelated changes: always pass `--base`.
 - Reply to the owner: one small table, at most 3 steps (CLAUDE.md).
+
+## Wiring a new app (lead only)
+apps.js BUILT_INS `app(...)` row, olympus.js APPS + AMBIENT, root sw.js OTHER_APPS (+ tests/test_zenith_mode.py pin),
+build tuple in tools/build_web_dashboard.py, then `python tools/apps_list_build.py`.
+Gotcha (2026-11-17): bump_versions mis-bumps launcher.js's apps-list ?v= (wrote o5). Set BOTH launcher.js copies to
+`apps-list.js?v=lN` by hand (byte-identical), bump `launcher.js?v=` in tools/web_public/index.html, web_next/index.html,
+web_next/sw.js ASSETS + SHELL, and the pins in tests/test_apps_list.py. Then tests.test_apps_list must be 33/33.
