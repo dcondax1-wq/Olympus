@@ -630,6 +630,11 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   ones that look best hold overnight (MFFU: flat by 16:10) and lost in H2. LIT corr ~0 but no money. Nothing adopted.
 - **Drift switch (2026-11-17, `drift-switch-2026-11-17.md`, `tools/money/drift_switch.py`):** cut LIT to paper/half after a rolling
   loss (51 versions): 0 pass; never fires in 2026; 2021-25 fewer failed evals but same less payout; no better than random cuts.
+- **Walk-forward re-tuning (2026-11-17, `lit-walkforward-2026-11-17.md`, `tools/lit_wf_retune.py`, `research/lit/wf_retune.json`):**
+  re-fit disp 0.7/0.8/0.9 x BE 1R/1.5R/off x bank 5/8/12R (27) every month / quarter on the trailing 6 / 12 months (8 versions),
+  OOS 2022-05..2026-10. Main (monthly, 12 mo, net-DD): 2022-25 +$23.1k vs static +$0.7k (1.3 s.e., +$26k is 2025 alone, 2023/24
+  worse; beats random re-picks 93.5%, others 44-83%); 2026 H1 -$11.0k, H2 -$3.0k; all 8 lose both 2026 halves. 2023 loses at all
+  27 settings: the bad years are regime, not knobs. (2026-only anchored version: `tools/lit_walkforward.py`, also lost.)
 - **Rule-native layer (2026-11-17, `rule-native-2026-11-17.md`):** 2nd target / 1R / scalp / profit lock: no sooner payout.
   Lead only: BLITZ max 3/day on the Rapid (chance-level by count; 2021-25 2-week eval fails 2.9% -> 6.0%). Watch on paper.
 - Published models as taught: ICT 2022, Silver Bullet, Mech/IFVG, continuation, ATM 5m/1m with a sharp V (0.2–1.5 trades/wk,
