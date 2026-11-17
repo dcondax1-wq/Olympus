@@ -623,6 +623,11 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   phone Today page. The MFFU Builder 50K is the right plan; best-day-rule plans (Topstep etc.) would take 2-17 months.
 
 ## Tested and rejected (don't redo without a new idea)
+- **New-strategy hunt (2026-11-17, `new-strategy-hunt-2026-11-17.md`, `tools/new_hunt.py`, `research/second/new_hunt.json`):** 354 cells,
+  5m RTH, $500 a trade, structure stops: lunch-box squeeze -> PM break (any / WITH / AGAINST the AM trend = the 14:00-15:30
+  continuation), failed auction at the prior value-area edge (5m-built profile), Dalton 80% rule, London 02:00->09:30 extension
+  fade at the NY open. 0 hold H1/H2/2025/2021-24 vs 3.7 with coin-flip sides; no 2-4/wk cell with H1 PF >= 1.2. WITH-trend PM
+  break: 71/72 cells positive 2021-24, 0/72 in 2026 H1. D80 / London fade PF 1.3-1.5 in 2021-25 but lose Jul-Oct, ~1/wk. Corr LIT ~0.
 - **Market-regime warning features (2026-11-17, `edge-health-2026-11-17.md`, `tools/edge_health.py`):** VIX, RTH range %, overnight share, trend efficiency, sweep reclaim (40-session means) as a 2026-vs-2021-25 light: only overnight share separates (BA 0.94) and it is a yearly drift that calls 2022 (LIT's good year) bad and precedes a worse LIT in 2021-25. Kept: the light from LIT's own last 40 sessions (warning only).
 - **Famous published strategies (2026-11-17, `public-strategies-2026-11-17.md`, `tools/pub_strats.py`):** 22 cells as
   published + MFFU-legal day versions: Gao intraday momentum (wrong sign 2021-25, t -2.2), pre-FOMC drift (2021-25 only),
