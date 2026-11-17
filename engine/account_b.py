@@ -90,6 +90,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PLANS = {
     "builder50k": {"preset": "mffu_builder_50k", "label": "MFFU Builder 50K", "safe_usd": 300.0, "price": 91.80},
     "builder25k": {"preset": "mffu_builder_25k", "label": "MFFU Builder 25K", "safe_usd": 150.0, "price": 63.00},
+    # ATLAS on the MFFU Rapid EOD 50K next to LIT (engine/rapid.py RapidAtlas sizes it: $500 / 30% of the room)
+    "rapideod50k": {"preset": "mffu_rapid_eod_50k", "label": "MFFU Rapid EOD 50K", "safe_usd": 500.0, "price": 94.00},
 }
 SIZINGS = ("need", "safe")
 MAX_PER_DAY = 2
@@ -924,6 +926,11 @@ class AccountB:
                     return h
             except Exception:
                 pass
+        ar = getattr(b, "acct_r", None)                # engine/rapid.py (off = None): ATLAS on the Rapid EOD holds the other side
+        if ar is not None and ar is not self and ar.open_t is not None:
+            pv = ar.prov.get(int(ar.open_t)) or {}
+            if int(pv.get("dir") or 0) == -d:
+                return f"ATLAS on the Rapid EOD holds a {side(-d)} position"
         fl = getattr(b, "fleet", None)                 # engine/fleet.py (off = None): a Zlarior follower holds the other side
         if fl is not None:
             try:
@@ -1076,7 +1083,7 @@ class AccountB:
             sz = {"qty": 0, "reasons": []}
             if not why:
                 try:
-                    sz = qty(self.spec, {"risk_pts": risk, "tgt_pts": tgt}, self.eval_state(now), base=getattr(self.bot, "_lit_sizing", None), key=k)
+                    sz = self.size({"risk_pts": risk, "tgt_pts": tgt}, self.eval_state(now), k)
                 except Exception as e:
                     sz = {"qty": 0, "reasons": [f"sizing failed ({e.__class__.__name__}: {e}): not traded"]}
                 self.last_size = {"qty": sz["qty"], "key": k, "reasons": [str(x)[:120] for x in sz["reasons"]][-6:], "t": int(now)}
@@ -1118,6 +1125,10 @@ class AccountB:
             self._drop_unplaced(tb, rr, now)
         else:
             self._unconfirmed(tb, rr)
+
+    def size(self, trade: dict, state, key=None) -> dict:
+        """Micros for one entry (module qty(); engine/rapid.RapidAtlas sizes its own way)."""
+        return qty(self.spec, trade, state, base=getattr(self.bot, "_lit_sizing", None), key=key)
 
     def _hold(self, tb, key, why):
         """Remember why a signal at this 5m open was not routed (read-only for tools/trade_watch.py; never affects trading)."""
