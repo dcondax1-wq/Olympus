@@ -715,6 +715,31 @@ class Account:
                 stop = r.get("stop")
         return stop
 
+    def _drop_unplaced(self, now):
+        """The Rapid's LIT lane (review 2026-11-17): an entry NinjaTrader refused ("Limit 0", max order quantity...) that
+        provably never became a position (engine/ninjatrader.entry_never_placed, as ATLAS / LIT use it) is not a trade:
+        flat, no exit routed and no P&L booked on the shared book (the model's trade still runs on Zlarior)."""
+        if self.spec.get("lane") != "rapid" or self.open_t is None:
+            return
+        try:
+            et_ = int(self.open_t)
+            r = next((r for r in reversed(self.ledger) if r.get("side") in ("buy", "sell") and r.get("entry_t") == et_), None)
+            res = (r or {}).get("result")
+            from .ninjatrader import entry_never_placed
+            if not entry_never_placed(self.adapter, et_, res, now=now):
+                return
+            self.open_t, self.open_qty = None, None
+            self.blocked.add(et_)
+            self.provisional.pop(et_, None)
+            with self.mx:
+                self.closes = [c for c in self.closes if not (len(c) > 3 and int(c[3]) == et_)]
+            self.log("risk", f"entry at {_et(et_):%H:%M} ET was NOT PLACED on {self.spec.get('nt_account')}: "
+                             f"{str((res or {}).get('error') or 'no OK from NinjaTrader')[:160]}. Nothing open on this account; "
+                             "no P&L booked for it")
+            self.router.save()
+        except Exception as e:
+            self.log("error", f"not-placed check failed: {e.__class__.__name__}: {e}")
+
     def _mark_pnl(self, pos, st):
         """$ of this account's open position closed at market now (the bot's last price, 1 tick of slippage, commission);
         None = unknown. A NEWS FLAT / TIME SAFETY close is booked at this, not $0 (review 2026-11-17: a $0 booking overstated
@@ -772,8 +797,8 @@ class Account:
                 and pos is not None and pos.get("entry_t") == self.open_t:
             self.log("risk", f"SAFETY FLATTEN: {e:%H:%M} ET is past the flat time and the model still shows the position")
             self._flatten(sym, "TIME SAFETY", self.open_t, pnl=self._mark_pnl(pos, st))
-        if self.open_t is not None and self.open_t not in self.flattened and self.in_news(now, post=0) is not None:
-            r = self.in_news(now, post=0)
+        if self.open_t is not None and self.open_t not in self.flattened and self.in_news(now) is not None:
+            r = self.in_news(now)                   # -2 / +2 min: a trade still held after the release is closed too
             self.log("risk", f"NEWS FLAT: Tier-1 release at {_et(r):%H:%M} ET (funded news ban): flattening this account")
             self._flatten(sym, "NEWS FLAT", self.open_t, pnl=self._mark_pnl(pos, st))
         ent = pos or en
@@ -824,6 +849,7 @@ class Account:
                     self.router.notify_entry(self, ent, q, sym, rr)
         if pos and self.open_t == pos.get("entry_t") and getattr(self.adapter, "route_stop_moves", False):
             self._stop_move(pos, sym)
+        self._drop_unplaced(now)
         for tr in res["trades"]:
             if tr["exit_t"] < start - secs or ("exit", tr["entry_t"]) in self.seen:
                 continue

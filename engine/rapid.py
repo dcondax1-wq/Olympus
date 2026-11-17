@@ -431,7 +431,7 @@ class RapidAtlas(AB.AccountB):
 
     def tick(self, df5, df1, sym, now):
         try:
-            if self.open_t is not None and self.news_at(int(now), post=0) is not None:
+            if self.open_t is not None and self.news_at(int(now)) is not None:      # -2 / +2 min (held into it: closed)
                 pv = self.prov.get(int(self.open_t)) or {}
                 if not ((pv.get("closing") or {}) and not pv["closing"].get("done")):
                     self.flatten(int(self.open_t), "NEWS FLAT", sym, now)

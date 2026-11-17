@@ -180,8 +180,44 @@ def review_checks(tmp, clock, b, fb):
         row = next((c for c in FL_.closes if len(c) > 3 and c[3] == et_), None)
         check("g. funded NEWS FLAT: LIT's lane flat and booked at the market (not $0)",
               FL_.open_t is None and row is not None and abs(float(row[2]) - want) < 0.01, (row, want))
+        # held INTO the release (e.g. a restart inside the window): closed in the 2 minutes after it too
+        clock.t = rel + 30
+        et2 = T0 + 200
+        fb.state = {"model": "lit", "position": pos_at(et2), "price": 25000.0, "lit": {}}
+        FL_.open_t, FL_.open_qty = et2, 5
+        FL_.seen.add(("entry", et2))
+        fb._route_signals({"trades": [], "events": []}, "NQ", int(clock.t), 300)
+        check("g. funded: LIT's lane still open 30 s after the release -> NEWS FLAT", FL_.open_t is None and et2 in FL_.flattened)
+        FA = fb.acct_r
+        FA.open_t = et2
+        FA.prov[et2] = {"key": "macd_sweep", "short": "MACD", "qty": 2, "dir": 1, "entry": 25000.0, "stop": 24990.0,
+                        "target": 25030.0, "t": et2, "risk_pts": 10.0, "day": DAY}
+        FA.ledger.append({"t": et2, "sym": "NQ", "side": "buy", "qty": 2, "entry_t": et2, "result": {"ok": True}})
+        FA.tick(None, None, "NQ", int(clock.t))
+        check("g. funded: ATLAS still open 30 s after the release -> NEWS FLAT",
+              FA.open_t is None and any(r.get("reason") == "NEWS FLAT" for r in FA.ledger if r.get("side") == "exit"))
     finally:
         MA.tier1_releases = old
+    # LIT's lane entry refused by NinjaTrader ("Limit 0"): never a position, so its model P&L is NOT booked on the Rapid
+    clock.t = T0 + 290
+    b4 = make_bot(os.path.join(tmp, "b4"), clock, {"account": "Sim108", "eval_start": DAY, "armed": False})
+    L4, A4 = lane(b4), b4.acct_r
+    L4.open_t, L4.open_qty = T0, 5
+    L4.seen.add(("entry", T0))
+    L4.ledger.append({"t": T0 + 3, "sym": "NQ", "side": "buy", "qty": 5, "entry_t": T0,
+                      "result": {"ok": False, "error": "order rejected: Limit 0"}})
+    clock.t = T0 + 605
+    b4.state = {"model": "lit", "position": None, "lit": {}}
+    tr = {**pos_at(T0), "exit_t": T0 + 600, "exit": 25220.0, "pnl": 2000.0, "exit_reason": "TARGET", "day": DAY}
+    b4._route_signals({"trades": [tr], "events": []}, "NQ", int(clock.t), 300)
+    check("g. LIT lane entry rejected ('Limit 0'): flat, no exit routed, $0 booked on the Rapid's book",
+          L4.open_t is None and not L4.closes and A4.day_pnl(DAY) == 0.0
+          and not [r for r in L4.ledger if r.get("side") == "exit"], (L4.open_t, L4.closes, L4.ledger[-1:]))
+    check("g. ... and ATLAS is free again on that account", A4.lit_opposite(1) is None, A4.lit_opposite(1))
+    L4.ledger.append({"t": T0 + 900, "sym": "NQ", "side": "buy", "qty": 5, "entry_t": T0 + 900, "result": {"ok": True}})
+    L4.open_t, L4.open_qty = T0 + 900, 5
+    L4._drop_unplaced(int(clock.t))
+    check("g. an entry NinjaTrader took (ok) is never dropped", L4.open_t == T0 + 900)
     # the Rapid's Name = ATLAS's 25K account: neither lane trades
     b3.acct_b = SimpleNamespace(name="Sim107", open_t=None)
     b3._start_rapid()
