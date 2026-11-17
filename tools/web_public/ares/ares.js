@@ -280,7 +280,7 @@ async function loadSite() {
 
 async function main() {
   addEventListener('error', (e) => S.errors.push(String(e.message || e)));
-  S.rules = await loadRules('rules.json?v=r1');
+  S.rules = await loadRules('rules.json?v=r2');
   loadState();
   $('demo').hidden = S.rules.src === 'file';
   bind(); route(); update(); initDesk(S, update, save);

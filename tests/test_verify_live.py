@@ -51,7 +51,7 @@ def w(p, data):
 
 APPS = [{"id": "zenith", "path": "", "live": False}, {"id": "alpha", "path": "alpha/", "live": True}, {"id": "beta", "path": "beta/", "live": False}, {"id": "gamma", "path": "gamma/", "live": True}]
 PAGE = ('<!doctype html><html><head><meta name="viewport" content="width=device-width, viewport-fit=cover"><link rel="manifest" href="manifest.webmanifest">'
-        '<link rel="apple-touch-icon" href="touch.png"><link rel="stylesheet" href="../olympus/olympus.css?v=o6"><script src="../olympus/olympus.js?v=o7" data-app="{id}"></script></head><body>{id}</body></html>')
+        '<link rel="apple-touch-icon" href="touch.png"><link rel="stylesheet" href="../olympus/olympus.css?v=o7"><script src="../olympus/olympus.js?v=o7" data-app="{id}"></script></head><body>{id}</body></html>')
 MAN = {"name": "x", "short_name": "x", "start_url": "./", "scope": "./", "display": "standalone", "icons": [{"src": "i192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
                                                                                                           {"src": "i512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}]}
 
