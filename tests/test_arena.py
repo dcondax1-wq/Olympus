@@ -367,7 +367,7 @@ def part_f():
     css = open(os.path.join(PAGE, "arena.css"), encoding="utf-8").read()
     js = {n: open(os.path.join(PAGE, n), encoding="utf-8").read() for n in os.listdir(PAGE) if n.endswith(".js")}
     check("f. the kit first (olympus.css + olympus.js data-app=arena), viewport-fit=cover, theme-color, dark",
-          '<link rel="stylesheet" href="../olympus/olympus.css' in html and 'src="../olympus/olympus.js?v=o7" data-app="arena"' in html
+          '<link rel="stylesheet" href="../olympus/olympus.css' in html and 'src="../olympus/olympus.js?v=o8" data-app="arena"' in html
           and "viewport-fit=cover" in html and 'name="theme-color" content="#14110e"' in html and 'content="dark"' in html)
     check("f. no CDN, no outside script or font: every src / href is local", not re.search(r'(src|href)="https?://', html)
           and not any(re.search(r"import[^;]*['\"]https?://", s) for s in js.values()))

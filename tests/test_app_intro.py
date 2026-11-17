@@ -25,7 +25,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 WEB = os.path.join(ROOT, "tools", "web_public")
 KIT = os.path.join(WEB, "olympus")
-INCLUDE = '<script src="../olympus/intro-app.js?v=i5" defer></script>'
+INCLUDE = '<script src="../olympus/intro-app.js?v=i6" defer></script>'
 KNOWN_UNWIRED = {"cities", "kalshicity"}      # load the kit, built by another job (2026-11-04): they add the one line; bridge / kalshi / pc do not load the kit at
 RES: list = []
 
