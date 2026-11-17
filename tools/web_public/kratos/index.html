@@ -31,11 +31,11 @@
 <body>
 <main id="app">
   <header class="top">
-    <div class="brand"><img src="icon.svg" alt="" width="44" height="44"><div><h1 class="ag-title">Kratos</h1><p class="sub">The discipline score</p></div></div>
+    <div class="brand"><img src="icon.svg" alt="" width="44" height="44"><div><h1 class="ag-title">Kratos</h1><p class="sub">Did you follow the plan? A 0-100 score for each day</p></div></div>
     <div class="tags"><span id="demo" class="tag demo" hidden>DEMO</span><span id="lite" class="tag" hidden>LITE</span></div>
   </header>
   <p id="status" class="note" role="status" aria-live="polite">Loading...</p>
-  <p class="warn" id="warn">A mirror, not a judge. Parts that cannot be seen in the data count 70% and are marked as an estimate.</p>
+  <p class="warn" id="warn">A mirror, not a judge. 100 = plan, stop and size all followed. Parts the data cannot see count 70% and say ESTIMATE.</p>
 
   <section class="ag-card card hero" aria-labelledby="dayH">
     <div class="row"><h2 id="dayH">Your day</h2><span class="pill" id="pill">...</span></div>
@@ -78,7 +78,7 @@
     <ul class="plain" id="how"></ul>
   </section>
 
-  <p class="foot" id="foot">Kratos reads the site's own trades and the ratings you made in Mnemosyne on this phone (it never writes them) and sends nothing. It changes nothing in the bot. Every dollar is shown with its R (1R = the trade's planned risk; a ~ means the risk is an estimate). The score is an estimate from the data, not a verdict on you.</p>
+  <p class="foot" id="foot">Kratos reads the site's own trades and the ratings you made in Mnemosyne on this phone (it never writes them) and sends nothing. It changes nothing in the bot. Every $ sits next to its R (1R = the $ risked on that trade; ~ = estimated). The score is an estimate, not a verdict on you.</p>
 </main>
 <script type="module" src="columnload.js?v=a1"></script>
 <script type="module" src="kratos.js?v=q6c"></script>

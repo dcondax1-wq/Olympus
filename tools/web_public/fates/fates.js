@@ -57,7 +57,7 @@ function renderHud() {
     el.querySelector('.v').textContent = t.value;
     el.querySelector('.s').textContent = t.sub;
   }
-  $('sub').textContent = h.title;
+  $('sub').textContent = h.title + (h.mode === 'money' ? ' · $ to you (estimate)' : ' · odds it passes (estimate)');
   renderStory(h);
   // the caption: the legend + the one caveat that matters (the live strip already says where the eval stands)
   $('cap').innerHTML = '<span class="k g">gold</span> pass · <span class="k r">red</span> fail · <span class="k v">stone</span> still open · tap a thread' +

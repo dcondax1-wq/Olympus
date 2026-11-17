@@ -710,7 +710,7 @@ async function main() {
   STATE.forge = F;
   $('demo').hidden = !F.demo;
   if (F.demo) $('sub').textContent = 'Prometheus: demo data (forge.json not found)';
-  else $('sub').textContent = `Prometheus: ${F.nGens} rounds of ${F.d.pop} · scored on Jan-Jun 2026 only`;
+  else $('sub').textContent = `Breeds new LIT versions: ${F.nGens} rounds, picked on Jan-Jun 2026`;
   const sl = $('gen');
   sl.max = String(F.nGens - 1);
   sl.addEventListener('input', () => { setPlaying(false); setGen(Number(sl.value)); });
