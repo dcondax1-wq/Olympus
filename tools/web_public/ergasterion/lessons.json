@@ -2,7 +2,7 @@
  "v": 1,
  "name": "Ergasterion lessons",
  "asof": "2026-11-17",
- "say": "This week we wrote down 11 lessons. The strongest (3 files agree): No edge found. None of them beat the noise bar on the training data, so none was carried forward. What changed our mind: Uncorrelated, but it does not hold in 2021-25 and passes evals too slowly.",
+ "say": "This week we wrote down 12 lessons. The strongest (3 files agree): No edge found. None of them beat the noise bar on the training data, so none was carried forward. What changed our mind: Uncorrelated, but it does not hold in 2021-25 and passes evals too slowly.",
  "week": [
   {
    "text": "No edge found. None of them beat the noise bar on the training data, so none was carried forward.",
@@ -72,12 +72,12 @@
    ]
   },
   {
-   "text": "Not adopted on money (fails H1), a risk choice for the owner.",
-   "cat": "process",
-   "d": "2026-11-16",
+   "text": "None is better in both halves.",
+   "cat": "NQ strategy",
+   "d": "2026-11-17",
    "strength": 1,
    "sources": [
-    "research/writeups/rapid-levers-2026-11-16.md"
+    "research/writeups/lit-smart-entries-2026-11-17.md"
    ]
   }
  ],
