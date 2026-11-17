@@ -3,7 +3,7 @@
  "kind": "kalshi_rewards_paper",
  "paper_only": true,
  "started": "2026-11-17T15:13:38+00:00",
- "updated": "2026-11-17T16:26:38+00:00",
+ "updated": "2026-11-17T16:34:38+00:00",
  "series": [
   "KXRT",
   "KXPANAMAWEEKLY",
@@ -14,10 +14,10 @@
   "KXRT-JUM-65": {
    "s": "KXRT",
    "t": "KXRT-JUM-65",
-   "reward": 0.03357819606385881,
-   "snaps": 73,
-   "valid": 73,
-   "secs": 4380.0148067474365,
+   "reward": 0.03696202650689043,
+   "snaps": 81,
+   "valid": 81,
+   "secs": 4860.01637172699,
    "yes": {
     "p": 0.39,
     "q": 200.0,
@@ -48,17 +48,17 @@
    },
    "fee_type": "quadratic",
    "seen": [],
-   "last_ts": 1794932798.8767605,
+   "last_ts": 1794933278.8783255,
    "mid": 0.395,
-   "prev_t": 1794932798.8767605
+   "prev_t": 1794933278.8783255
   },
   "KXRT-HEX-70": {
    "s": "KXRT",
    "t": "KXRT-HEX-70",
-   "reward": 0.059713455105225785,
-   "snaps": 73,
-   "valid": 73,
-   "secs": 4380.0148067474365,
+   "reward": 0.06446690147121019,
+   "snaps": 81,
+   "valid": 81,
+   "secs": 4860.01637172699,
    "yes": {
     "p": 0.35,
     "q": 200.0,
@@ -89,17 +89,17 @@
    },
    "fee_type": "quadratic",
    "seen": [],
-   "last_ts": 1794932798.8767605,
+   "last_ts": 1794933278.8783255,
    "mid": 0.36,
-   "prev_t": 1794932798.8767605
+   "prev_t": 1794933278.8783255
   },
   "KXRT-DUNE-87": {
    "s": "KXRT",
    "t": "KXRT-DUNE-87",
-   "reward": 0.45498449368872157,
-   "snaps": 73,
-   "valid": 73,
-   "secs": 4380.0148067474365,
+   "reward": 0.5058066000333528,
+   "snaps": 81,
+   "valid": 81,
+   "secs": 4860.01637172699,
    "yes": {
     "p": 0.5,
     "q": 200.0,
@@ -130,17 +130,17 @@
    },
    "fee_type": "quadratic",
    "seen": [],
-   "last_ts": 1794932798.8767605,
+   "last_ts": 1794933278.8783255,
    "mid": 0.535,
-   "prev_t": 1794932798.8767605
+   "prev_t": 1794933278.8783255
   },
   "KXPANAMAWEEKLY-26NOV22-T215": {
    "s": "KXPANAMAWEEKLY",
    "t": "KXPANAMAWEEKLY-26NOV22-T215",
-   "reward": 0.010072908741462728,
-   "snaps": 73,
-   "valid": 73,
-   "secs": 4380.0148067474365,
+   "reward": 0.011174306394201142,
+   "snaps": 81,
+   "valid": 81,
+   "secs": 4860.01637172699,
    "yes": {
     "p": 0.01,
     "q": 200.0,
@@ -171,17 +171,17 @@
    },
    "fee_type": "quadratic",
    "seen": [],
-   "last_ts": 1794932798.8767605,
+   "last_ts": 1794933278.8783255,
    "mid": 0.01500000000000001,
-   "prev_t": 1794932798.8767605
+   "prev_t": 1794933278.8783255
   },
   "KXPANAMAWEEKLY-26NOV22-T185": {
    "s": "KXPANAMAWEEKLY",
    "t": "KXPANAMAWEEKLY-26NOV22-T185",
-   "reward": 0.03255398447949563,
-   "snaps": 73,
-   "valid": 73,
-   "secs": 4380.0148067474365,
+   "reward": 0.03604920740834391,
+   "snaps": 81,
+   "valid": 81,
+   "secs": 4860.01637172699,
    "yes": {
     "p": 0.88,
     "q": 200.0,
@@ -212,17 +212,17 @@
    },
    "fee_type": "quadratic",
    "seen": [],
-   "last_ts": 1794932798.8767605,
+   "last_ts": 1794933278.8783255,
    "mid": 0.905,
-   "prev_t": 1794932798.8767605
+   "prev_t": 1794933278.8783255
   },
   "KXPANAMAWEEKLY-26NOV22-T205": {
    "s": "KXPANAMAWEEKLY",
    "t": "KXPANAMAWEEKLY-26NOV22-T205",
-   "reward": 0.028854531660103655,
-   "snaps": 73,
-   "valid": 73,
-   "secs": 4380.0148067474365,
+   "reward": 0.03190994197649633,
+   "snaps": 81,
+   "valid": 81,
+   "secs": 4860.01637172699,
    "yes": {
     "p": 0.04,
     "q": 200.0,
@@ -253,17 +253,17 @@
    },
    "fee_type": "quadratic",
    "seen": [],
-   "last_ts": 1794932798.8767605,
+   "last_ts": 1794933278.8783255,
    "mid": 0.045000000000000026,
-   "prev_t": 1794932798.8767605
+   "prev_t": 1794933278.8783255
   },
   "KXBABELMANDEBWEEKLY-26NOV22-T210": {
    "s": "KXBABELMANDEBWEEKLY",
    "t": "KXBABELMANDEBWEEKLY-26NOV22-T210",
-   "reward": 0.03347583083592258,
-   "snaps": 73,
-   "valid": 73,
-   "secs": 4380.0148067474365,
+   "reward": 0.03711764576210579,
+   "snaps": 81,
+   "valid": 81,
+   "secs": 4860.01637172699,
    "yes": {
     "p": 0.05,
     "q": 200.0,
@@ -294,17 +294,17 @@
    },
    "fee_type": "quadratic",
    "seen": [],
-   "last_ts": 1794932798.8767605,
+   "last_ts": 1794933278.8783255,
    "mid": 0.05500000000000003,
-   "prev_t": 1794932798.8767605
+   "prev_t": 1794933278.8783255
   },
   "KXBABELMANDEBWEEKLY-26NOV22-T170": {
    "s": "KXBABELMANDEBWEEKLY",
    "t": "KXBABELMANDEBWEEKLY-26NOV22-T170",
-   "reward": 0.21049659476501795,
-   "snaps": 73,
-   "valid": 73,
-   "secs": 4380.0148067474365,
+   "reward": 0.23871881054021182,
+   "snaps": 81,
+   "valid": 81,
+   "secs": 4860.01637172699,
    "yes": {
     "p": 0.88,
     "q": 200.0,
@@ -335,17 +335,17 @@
    },
    "fee_type": "quadratic",
    "seen": [],
-   "last_ts": 1794932798.8767605,
+   "last_ts": 1794933278.8783255,
    "mid": 0.885,
-   "prev_t": 1794932798.8767605
+   "prev_t": 1794933278.8783255
   },
   "KXBABELMANDEBWEEKLY-26NOV22-T220": {
    "s": "KXBABELMANDEBWEEKLY",
    "t": "KXBABELMANDEBWEEKLY-26NOV22-T220",
-   "reward": 0.011897903527254082,
-   "snaps": 73,
-   "valid": 73,
-   "secs": 4380.0148067474365,
+   "reward": 0.013180737679493746,
+   "snaps": 81,
+   "valid": 81,
+   "secs": 4860.01637172699,
    "yes": {
     "p": 0.02,
     "q": 200.0,
@@ -376,34 +376,34 @@
    },
    "fee_type": "quadratic",
    "seen": [],
-   "last_ts": 1794932798.8767605,
+   "last_ts": 1794933278.8783255,
    "mid": 0.025000000000000015,
-   "prev_t": 1794932798.8767605
+   "prev_t": 1794933278.8783255
   }
  },
  "totals": {
-  "reward": 0.88,
+  "reward": 0.98,
   "fills_pnl": 0.0,
-  "net": 0.88,
-  "market_hours": 11.0,
+  "net": 0.98,
+  "market_hours": 12.2,
   "capital_now": 1732.0,
-  "net_per_market_day": 1.92,
+  "net_per_market_day": 1.93,
   "by_series": {
    "KXRT": {
     "markets": 3,
-    "reward": 0.55,
+    "reward": 0.61,
     "fills_pnl": 0.0,
     "valid_pct": 100
    },
    "KXPANAMAWEEKLY": {
     "markets": 3,
-    "reward": 0.07,
+    "reward": 0.08,
     "fills_pnl": 0.0,
     "valid_pct": 100
    },
    "KXBABELMANDEBWEEKLY": {
     "markets": 3,
-    "reward": 0.26,
+    "reward": 0.29,
     "fills_pnl": 0.0,
     "valid_pct": 100
    }
