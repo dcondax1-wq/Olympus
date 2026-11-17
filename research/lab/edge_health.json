@@ -1,0 +1,2272 @@
+{
+ "v": 1,
+ "built": "2026-11-17T21:42:47+00:00",
+ "today": "2026-11-17",
+ "what": "Edge health: a WARNING light for LIT, not a trading switch. Paper research; changes no bot.",
+ "freshness": {
+  "rows": {
+   "data/NQ_1m.csv (TradingView)": "2026-10-16 15:59 ET",
+   "data/NQ_5m.csv (TradingView)": "2026-10-16 15:55 ET",
+   "data/ES_5m.csv (TradingView)": "2026-10-16 15:55 ET",
+   "PC NinjaTrader bars 1m (heartbeat)": "2026-11-06 16:59 ET",
+   "PC NinjaTrader bars 5m (heartbeat)": "2026-11-06 16:55 ET",
+   "VIX (data/VIX_1d.csv)": "2026-10-16",
+   "VIX (with CBOE)": "2026-11-16"
+  },
+  "export_end": "2026-10-16",
+  "bars_end": "2026-11-06",
+  "today": "2026-11-17",
+  "sessions_missing": 6
+ },
+ "basis_shift": {
+  "5m": 0.0,
+  "1m": 0.0
+ },
+ "sessions_after_export": 15,
+ "fresh_days_1m": {
+  "2026-10-19": false,
+  "2026-10-20": false,
+  "2026-10-21": false,
+  "2026-10-22": false,
+  "2026-10-23": false,
+  "2026-10-26": false,
+  "2026-10-27": false,
+  "2026-10-28": false,
+  "2026-10-29": false,
+  "2026-10-30": false,
+  "2026-11-02": false,
+  "2026-11-03": false,
+  "2026-11-04": true,
+  "2026-11-05": true,
+  "2026-11-06": true
+ },
+ "fresh_trades": [
+  {
+   "day": "2026-10-26",
+   "exit": "BE",
+   "r": 0.004,
+   "pnl": 0.6,
+   "qty": 1,
+   "risk_pts": 78.0
+  },
+  {
+   "day": "2026-10-27",
+   "exit": "STOP",
+   "r": -1.014,
+   "pnl": -140.9,
+   "qty": 1,
+   "risk_pts": 69.5
+  },
+  {
+   "day": "2026-10-29",
+   "exit": "BE",
+   "r": 0.004,
+   "pnl": 0.6,
+   "qty": 1,
+   "risk_pts": 76.75
+  }
+ ],
+ "pc_backtest_fresh": [
+  {
+   "day": "2026-10-26",
+   "status": "missed",
+   "note": "the backtest traded BE +0.01R; the bot did not"
+  },
+  {
+   "day": "2026-10-27",
+   "status": "missed",
+   "note": "the backtest traded STOP -1.00R; the bot did not"
+  },
+  {
+   "day": "2026-10-28",
+   "status": "missed",
+   "note": "the backtest traded STOP -1.01R; the bot did not"
+  },
+  {
+   "day": "2026-11-03",
+   "status": "missed",
+   "note": "the backtest traded TIME +0.21R; the bot did not"
+  }
+ ],
+ "lit": {
+  "run": "lit_live settings (live_model.json lit), engine/lit.run_x",
+  "last_day": "2026-11-06",
+  "windows": {
+   "20": {
+    "now": {
+     "n": 5,
+     "tpw": 1.25,
+     "win": 80.0,
+     "pf": 26.61,
+     "usd_month": 3789,
+     "r_sum": 8.28,
+     "r_avg": 1.656
+    },
+    "dist": {
+     "tpw": {
+      "2021-25": {
+       "p10": 1.5,
+       "median": 2.25,
+       "p90": 3.2,
+       "n": 1053
+      },
+      "2026 H1": {
+       "p10": 2.5,
+       "median": 3.25,
+       "p90": 4.0,
+       "n": 128
+      },
+      "2026 H2": {
+       "p10": 1.75,
+       "median": 2.25,
+       "p90": 3.25,
+       "n": 93
+      }
+     },
+     "win": {
+      "2021-25": {
+       "p10": 33.3,
+       "median": 54.5,
+       "p90": 77.8,
+       "n": 1053
+      },
+      "2026 H1": {
+       "p10": 39.67,
+       "median": 59.15,
+       "p90": 79.02,
+       "n": 128
+      },
+      "2026 H2": {
+       "p10": 33.3,
+       "median": 50.0,
+       "p90": 66.7,
+       "n": 93
+      }
+     },
+     "pf": {
+      "2021-25": {
+       "p10": 0.01,
+       "median": 0.96,
+       "p90": 3.93,
+       "n": 1053
+      },
+      "2026 H1": {
+       "p10": 1.38,
+       "median": 4.23,
+       "p90": 16.28,
+       "n": 128
+      },
+      "2026 H2": {
+       "p10": 0.81,
+       "median": 2.05,
+       "p90": 7.99,
+       "n": 93
+      }
+     },
+     "usd_month": {
+      "2021-25": {
+       "p10": -2766.0,
+       "median": -44.0,
+       "p90": 3076.6,
+       "n": 1053
+      },
+      "2026 H1": {
+       "p10": 1001.6,
+       "median": 6081.5,
+       "p90": 9152.0,
+       "n": 128
+      },
+      "2026 H2": {
+       "p10": -240.0,
+       "median": 1708.0,
+       "p90": 7041.0,
+       "n": 93
+      }
+     },
+     "r_avg": {
+      "2021-25": {
+       "p10": -0.56,
+       "median": -0.06,
+       "p90": 0.66,
+       "n": 1053
+      },
+      "2026 H1": {
+       "p10": -0.1,
+       "median": 0.76,
+       "p90": 2.04,
+       "n": 128
+      },
+      "2026 H2": {
+       "p10": -0.38,
+       "median": 0.61,
+       "p90": 1.64,
+       "n": 93
+      }
+     }
+    },
+    "now_rank_in_2026": {
+     "pf": 98,
+     "usd_month": 37
+    },
+    "now_rank_in_2021_25": {
+     "pf": 97,
+     "usd_month": 95
+    }
+   },
+   "40": {
+    "now": {
+     "n": 20,
+     "tpw": 2.5,
+     "win": 55.0,
+     "pf": 3.84,
+     "usd_month": 3440,
+     "r_sum": 18.69,
+     "r_avg": 0.934
+    },
+    "dist": {
+     "tpw": {
+      "2021-25": {
+       "p10": 1.88,
+       "median": 2.38,
+       "p90": 2.88,
+       "n": 1033
+      },
+      "2026 H1": {
+       "p10": 2.75,
+       "median": 3.25,
+       "p90": 3.75,
+       "n": 128
+      },
+      "2026 H2": {
+       "p10": 1.88,
+       "median": 2.5,
+       "p90": 3.0,
+       "n": 93
+      }
+     },
+     "win": {
+      "2021-25": {
+       "p10": 36.4,
+       "median": 53.8,
+       "p90": 71.4,
+       "n": 1033
+      },
+      "2026 H1": {
+       "p10": 49.49,
+       "median": 57.4,
+       "p90": 69.72,
+       "n": 128
+      },
+      "2026 H2": {
+       "p10": 42.26,
+       "median": 54.2,
+       "p90": 60.72,
+       "n": 93
+      }
+     },
+     "pf": {
+      "2021-25": {
+       "p10": 0.13,
+       "median": 1.1,
+       "p90": 2.95,
+       "n": 1033
+      },
+      "2026 H1": {
+       "p10": 2.75,
+       "median": 3.91,
+       "p90": 7.56,
+       "n": 128
+      },
+      "2026 H2": {
+       "p10": 1.34,
+       "median": 2.85,
+       "p90": 4.8,
+       "n": 93
+      }
+     },
+     "usd_month": {
+      "2021-25": {
+       "p10": -2008.4,
+       "median": 177.0,
+       "p90": 2093.4,
+       "n": 1033
+      },
+      "2026 H1": {
+       "p10": 2829.4,
+       "median": 4807.5,
+       "p90": 7441.8,
+       "n": 128
+      },
+      "2026 H2": {
+       "p10": 404.0,
+       "median": 1864.0,
+       "p90": 4424.4,
+       "n": 93
+      }
+     },
+     "r_avg": {
+      "2021-25": {
+       "p10": -0.43,
+       "median": -0.0,
+       "p90": 0.53,
+       "n": 1033
+      },
+      "2026 H1": {
+       "p10": 0.35,
+       "median": 0.69,
+       "p90": 1.37,
+       "n": 128
+      },
+      "2026 H2": {
+       "p10": 0.02,
+       "median": 0.54,
+       "p90": 1.12,
+       "n": 93
+      }
+     }
+    },
+    "now_rank_in_2026": {
+     "pf": 45,
+     "usd_month": 18
+    },
+    "now_rank_in_2021_25": {
+     "pf": 95,
+     "usd_month": 100
+    }
+   },
+   "60": {
+    "now": {
+     "n": 29,
+     "tpw": 2.42,
+     "win": 58.6,
+     "pf": 4.34,
+     "usd_month": 3545,
+     "r_sum": 30.92,
+     "r_avg": 1.066
+    },
+    "dist": {
+     "tpw": {
+      "2021-25": {
+       "p10": 2.0,
+       "median": 2.42,
+       "p90": 2.75,
+       "n": 1013
+      },
+      "2026 H1": {
+       "p10": 2.81,
+       "median": 3.08,
+       "p90": 3.42,
+       "n": 128
+      },
+      "2026 H2": {
+       "p10": 2.08,
+       "median": 2.5,
+       "p90": 2.98,
+       "n": 93
+      }
+     },
+     "win": {
+      "2021-25": {
+       "p10": 36.7,
+       "median": 55.2,
+       "p90": 68.0,
+       "n": 1013
+      },
+      "2026 H1": {
+       "p10": 48.3,
+       "median": 59.5,
+       "p90": 65.8,
+       "n": 128
+      },
+      "2026 H2": {
+       "p10": 45.88,
+       "median": 53.1,
+       "p90": 59.86,
+       "n": 93
+      }
+     },
+     "pf": {
+      "2021-25": {
+       "p10": 0.34,
+       "median": 1.08,
+       "p90": 2.55,
+       "n": 1013
+      },
+      "2026 H1": {
+       "p10": 2.76,
+       "median": 4.07,
+       "p90": 5.86,
+       "n": 128
+      },
+      "2026 H2": {
+       "p10": 1.61,
+       "median": 2.89,
+       "p90": 3.9,
+       "n": 93
+      }
+     },
+     "usd_month": {
+      "2021-25": {
+       "p10": -1528.0,
+       "median": 173.0,
+       "p90": 1482.6,
+       "n": 1013
+      },
+      "2026 H1": {
+       "p10": 3638.3,
+       "median": 4620.0,
+       "p90": 6510.3,
+       "n": 128
+      },
+      "2026 H2": {
+       "p10": 809.2,
+       "median": 2386.0,
+       "p90": 3426.0,
+       "n": 93
+      }
+     },
+     "r_avg": {
+      "2021-25": {
+       "p10": -0.33,
+       "median": 0.0,
+       "p90": 0.39,
+       "n": 1013
+      },
+      "2026 H1": {
+       "p10": 0.44,
+       "median": 0.73,
+       "p90": 1.08,
+       "n": 128
+      },
+      "2026 H2": {
+       "p10": 0.21,
+       "median": 0.52,
+       "p90": 0.87,
+       "n": 93
+      }
+     }
+    },
+    "now_rank_in_2026": {
+     "pf": 55,
+     "usd_month": 7
+    },
+    "now_rank_in_2021_25": {
+     "pf": 99,
+     "usd_month": 100
+    }
+   }
+  },
+  "at_export_end": {
+   "day": "2026-10-16",
+   "20": {
+    "n": 13,
+    "tpw": 3.25,
+    "win": 61.5,
+    "pf": 6.87,
+    "usd_month": 7948,
+    "r_sum": 22.75,
+    "r_avg": 1.75
+   },
+   "40": {
+    "n": 25,
+    "tpw": 3.12,
+    "win": 60.0,
+    "pf": 4.8,
+    "usd_month": 5469,
+    "r_sum": 32.93,
+    "r_avg": 1.317
+   },
+   "60": {
+    "n": 32,
+    "tpw": 2.67,
+    "win": 53.1,
+    "pf": 3.17,
+    "usd_month": 3158,
+    "r_sum": 27.86,
+    "r_avg": 0.871
+   }
+  }
+ },
+ "atlas": {
+  "run": "atlas_deep_zombie",
+  "last_day": "2026-10-16",
+  "windows": {
+   "20": {
+    "now": {
+     "n": 12,
+     "tpw": 3.0,
+     "win": 66.7,
+     "pf": 2.87,
+     "usd_month": 1382,
+     "r_sum": 8.74,
+     "r_avg": 0.728
+    },
+    "dist": {
+     "tpw": {
+      "2021-25": {
+       "p10": 3.75,
+       "median": 4.5,
+       "p90": 5.5,
+       "n": 1053
+      },
+      "2026 H1": {
+       "p10": 3.25,
+       "median": 4.25,
+       "p90": 4.75,
+       "n": 128
+      },
+      "2026 H2": {
+       "p10": 1.75,
+       "median": 3.0,
+       "p90": 3.75,
+       "n": 78
+      }
+     },
+     "win": {
+      "2021-25": {
+       "p10": 23.5,
+       "median": 37.5,
+       "p90": 50.0,
+       "n": 1053
+      },
+      "2026 H1": {
+       "p10": 38.2,
+       "median": 52.6,
+       "p90": 66.7,
+       "n": 128
+      },
+      "2026 H2": {
+       "p10": 31.89,
+       "median": 55.9,
+       "p90": 65.02,
+       "n": 78
+      }
+     },
+     "pf": {
+      "2021-25": {
+       "p10": 0.28,
+       "median": 1.03,
+       "p90": 2.26,
+       "n": 1053
+      },
+      "2026 H1": {
+       "p10": 1.19,
+       "median": 2.85,
+       "p90": 5.24,
+       "n": 128
+      },
+      "2026 H2": {
+       "p10": 0.55,
+       "median": 2.62,
+       "p90": 7.45,
+       "n": 78
+      }
+     },
+     "usd_month": {
+      "2021-25": {
+       "p10": -1879.0,
+       "median": 79.0,
+       "p90": 2394.0,
+       "n": 1053
+      },
+      "2026 H1": {
+       "p10": 426.2,
+       "median": 3086.5,
+       "p90": 6181.1,
+       "n": 128
+      },
+      "2026 H2": {
+       "p10": -566.0,
+       "median": 1446.0,
+       "p90": 4784.1,
+       "n": 78
+      }
+     },
+     "r_avg": {
+      "2021-25": {
+       "p10": -0.45,
+       "median": 0.01,
+       "p90": 0.75,
+       "n": 1053
+      },
+      "2026 H1": {
+       "p10": -0.1,
+       "median": 0.79,
+       "p90": 1.63,
+       "n": 128
+      },
+      "2026 H2": {
+       "p10": -0.07,
+       "median": 0.61,
+       "p90": 1.89,
+       "n": 78
+      }
+     }
+    },
+    "now_rank_in_2026": {
+     "pf": 52,
+     "usd_month": 22
+    },
+    "now_rank_in_2021_25": {
+     "pf": 95,
+     "usd_month": 78
+    }
+   },
+   "40": {
+    "now": {
+     "n": 24,
+     "tpw": 3.0,
+     "win": 58.3,
+     "pf": 1.41,
+     "usd_month": 411,
+     "r_sum": 7.96,
+     "r_avg": 0.332
+    },
+    "dist": {
+     "tpw": {
+      "2021-25": {
+       "p10": 4.0,
+       "median": 4.5,
+       "p90": 5.38,
+       "n": 1033
+      },
+      "2026 H1": {
+       "p10": 3.71,
+       "median": 4.25,
+       "p90": 4.75,
+       "n": 128
+      },
+      "2026 H2": {
+       "p10": 2.46,
+       "median": 3.0,
+       "p90": 3.38,
+       "n": 78
+      }
+     },
+     "win": {
+      "2021-25": {
+       "p10": 27.8,
+       "median": 37.1,
+       "p90": 47.1,
+       "n": 1033
+      },
+      "2026 H1": {
+       "p10": 35.9,
+       "median": 49.3,
+       "p90": 61.1,
+       "n": 128
+      },
+      "2026 H2": {
+       "p10": 50.0,
+       "median": 52.2,
+       "p90": 58.3,
+       "n": 78
+      }
+     },
+     "pf": {
+      "2021-25": {
+       "p10": 0.51,
+       "median": 1.07,
+       "p90": 1.84,
+       "n": 1033
+      },
+      "2026 H1": {
+       "p10": 1.39,
+       "median": 2.86,
+       "p90": 3.52,
+       "n": 128
+      },
+      "2026 H2": {
+       "p10": 1.4,
+       "median": 2.8,
+       "p90": 5.39,
+       "n": 78
+      }
+     },
+     "usd_month": {
+      "2021-25": {
+       "p10": -1339.0,
+       "median": 163.0,
+       "p90": 1674.2,
+       "n": 1033
+      },
+      "2026 H1": {
+       "p10": 880.0,
+       "median": 3070.0,
+       "p90": 4243.3,
+       "n": 128
+      },
+      "2026 H2": {
+       "p10": 411.0,
+       "median": 2248.0,
+       "p90": 4291.3,
+       "n": 78
+      }
+     },
+     "r_avg": {
+      "2021-25": {
+       "p10": -0.34,
+       "median": 0.04,
+       "p90": 0.49,
+       "n": 1033
+      },
+      "2026 H1": {
+       "p10": 0.03,
+       "median": 0.8,
+       "p90": 1.16,
+       "n": 128
+      },
+      "2026 H2": {
+       "p10": 0.28,
+       "median": 0.89,
+       "p90": 1.87,
+       "n": 78
+      }
+     }
+    },
+    "now_rank_in_2026": {
+     "pf": 11,
+     "usd_month": 3
+    },
+    "now_rank_in_2021_25": {
+     "pf": 72,
+     "usd_month": 59
+    }
+   },
+   "60": {
+    "now": {
+     "n": 39,
+     "tpw": 3.25,
+     "win": 59.0,
+     "pf": 2.26,
+     "usd_month": 1271,
+     "r_sum": 17.45,
+     "r_avg": 0.447
+    },
+    "dist": {
+     "tpw": {
+      "2021-25": {
+       "p10": 4.08,
+       "median": 4.5,
+       "p90": 5.25,
+       "n": 1013
+      },
+      "2026 H1": {
+       "p10": 3.67,
+       "median": 4.33,
+       "p90": 4.67,
+       "n": 128
+      },
+      "2026 H2": {
+       "p10": 2.75,
+       "median": 2.92,
+       "p90": 3.42,
+       "n": 78
+      }
+     },
+     "win": {
+      "2021-25": {
+       "p10": 30.2,
+       "median": 37.0,
+       "p90": 45.1,
+       "n": 1013
+      },
+      "2026 H1": {
+       "p10": 35.8,
+       "median": 50.45,
+       "p90": 57.7,
+       "n": 128
+      },
+      "2026 H2": {
+       "p10": 48.57,
+       "median": 52.9,
+       "p90": 58.59,
+       "n": 78
+      }
+     },
+     "pf": {
+      "2021-25": {
+       "p10": 0.58,
+       "median": 1.09,
+       "p90": 1.62,
+       "n": 1013
+      },
+      "2026 H1": {
+       "p10": 1.45,
+       "median": 2.54,
+       "p90": 3.4,
+       "n": 128
+      },
+      "2026 H2": {
+       "p10": 2.14,
+       "median": 3.51,
+       "p90": 4.73,
+       "n": 78
+      }
+     },
+     "usd_month": {
+      "2021-25": {
+       "p10": -1065.6,
+       "median": 209.0,
+       "p90": 1300.6,
+       "n": 1013
+      },
+      "2026 H1": {
+       "p10": 1014.3,
+       "median": 2815.0,
+       "p90": 3958.5,
+       "n": 128
+      },
+      "2026 H2": {
+       "p10": 1333.0,
+       "median": 3296.0,
+       "p90": 4416.7,
+       "n": 78
+      }
+     },
+     "r_avg": {
+      "2021-25": {
+       "p10": -0.25,
+       "median": 0.06,
+       "p90": 0.37,
+       "n": 1013
+      },
+      "2026 H1": {
+       "p10": 0.15,
+       "median": 0.72,
+       "p90": 1.14,
+       "n": 128
+      },
+      "2026 H2": {
+       "p10": 0.59,
+       "median": 1.2,
+       "p90": 1.51,
+       "n": 78
+      }
+     }
+    },
+    "now_rank_in_2026": {
+     "pf": 35,
+     "usd_month": 19
+    },
+    "now_rank_in_2021_25": {
+     "pf": 100,
+     "usd_month": 89
+    }
+   }
+  }
+ },
+ "light": {
+  "how": "LIT's own last 40 sessions, R a week; cuts from 2021-25 only (GREEN above its best-10% line, RED at or below its median); checked on 2026 H2",
+  "cuts": {
+   "green_above_r_week": 1.16,
+   "red_at_or_below_r_week": -0.0,
+   "sessions": 40
+  },
+  "now": {
+   "day": "2026-11-06",
+   "light": "GREEN",
+   "r_week": 2.34
+  },
+  "rates": {
+   "2021-25": {
+    "GREEN": 10.4,
+    "AMBER": 39.5,
+    "RED": 50.1,
+    "n": 1033
+   },
+   "2026 H1": {
+    "GREEN": 89.8,
+    "AMBER": 10.2,
+    "RED": 0.0,
+    "n": 128
+   },
+   "2026 H2": {
+    "GREEN": 54.8,
+    "AMBER": 36.6,
+    "RED": 8.6,
+    "n": 93
+   }
+  },
+  "false_alarm_h2_red_pct": 8.6,
+  "h2_not_green_pct": 45.2,
+  "red_runs": {
+   "2021-25": {
+    "stretches": 23,
+    "longest": 79
+   },
+   "2026 H1": {
+    "stretches": 0,
+    "longest": 0
+   },
+   "2026 H2": {
+    "stretches": 1,
+    "longest": 8
+   }
+  },
+  "forward_by_light": {
+   "2021-25": {
+    "RED": {
+     "avg_r_next": 0.041,
+     "usd_month_next": 153,
+     "days": 518
+    },
+    "AMBER": {
+     "avg_r_next": 0.104,
+     "usd_month_next": 510,
+     "days": 408
+    },
+    "GREEN": {
+     "avg_r_next": -0.052,
+     "usd_month_next": -156,
+     "days": 107
+    }
+   },
+   "2026 H1": {
+    "AMBER": {
+     "avg_r_next": 1.151,
+     "usd_month_next": 6828,
+     "days": 13
+    },
+    "GREEN": {
+     "avg_r_next": 0.637,
+     "usd_month_next": 3529,
+     "days": 115
+    }
+   },
+   "2026 H2": {
+    "GREEN": {
+     "avg_r_next": 0.668,
+     "usd_month_next": 2126,
+     "days": 20
+    },
+    "AMBER": {
+     "avg_r_next": 0.73,
+     "usd_month_next": 2545,
+     "days": 25
+    },
+    "RED": {
+     "avg_r_next": 1.145,
+     "usd_month_next": 4646,
+     "days": 8
+    }
+   }
+  },
+  "series": [
+   {
+    "day": "2026-01-02",
+    "light": "AMBER",
+    "r_week": 0.28
+   },
+   {
+    "day": "2026-01-05",
+    "light": "AMBER",
+    "r_week": 0.55
+   },
+   {
+    "day": "2026-01-06",
+    "light": "GREEN",
+    "r_week": 1.38
+   },
+   {
+    "day": "2026-01-07",
+    "light": "GREEN",
+    "r_week": 2.13
+   },
+   {
+    "day": "2026-01-08",
+    "light": "GREEN",
+    "r_week": 2.13
+   },
+   {
+    "day": "2026-01-09",
+    "light": "GREEN",
+    "r_week": 1.56
+   },
+   {
+    "day": "2026-01-12",
+    "light": "GREEN",
+    "r_week": 1.56
+   },
+   {
+    "day": "2026-01-13",
+    "light": "GREEN",
+    "r_week": 1.5
+   },
+   {
+    "day": "2026-01-14",
+    "light": "GREEN",
+    "r_week": 1.37
+   },
+   {
+    "day": "2026-01-15",
+    "light": "GREEN",
+    "r_week": 1.24
+   },
+   {
+    "day": "2026-01-16",
+    "light": "GREEN",
+    "r_week": 1.17
+   },
+   {
+    "day": "2026-01-19",
+    "light": "AMBER",
+    "r_week": 1.04
+   },
+   {
+    "day": "2026-01-20",
+    "light": "AMBER",
+    "r_week": 0.91
+   },
+   {
+    "day": "2026-01-21",
+    "light": "AMBER",
+    "r_week": 0.91
+   },
+   {
+    "day": "2026-01-22",
+    "light": "GREEN",
+    "r_week": 1.72
+   },
+   {
+    "day": "2026-01-23",
+    "light": "GREEN",
+    "r_week": 1.72
+   },
+   {
+    "day": "2026-01-26",
+    "light": "GREEN",
+    "r_week": 1.72
+   },
+   {
+    "day": "2026-01-27",
+    "light": "GREEN",
+    "r_week": 1.72
+   },
+   {
+    "day": "2026-01-28",
+    "light": "GREEN",
+    "r_week": 1.72
+   },
+   {
+    "day": "2026-01-29",
+    "light": "GREEN",
+    "r_week": 1.66
+   },
+   {
+    "day": "2026-01-30",
+    "light": "GREEN",
+    "r_week": 1.58
+   },
+   {
+    "day": "2026-02-02",
+    "light": "GREEN",
+    "r_week": 2.36
+   },
+   {
+    "day": "2026-02-03",
+    "light": "GREEN",
+    "r_week": 2.35
+   },
+   {
+    "day": "2026-02-04",
+    "light": "GREEN",
+    "r_week": 2.36
+   },
+   {
+    "day": "2026-02-05",
+    "light": "GREEN",
+    "r_week": 2.35
+   },
+   {
+    "day": "2026-02-06",
+    "light": "GREEN",
+    "r_week": 2.35
+   },
+   {
+    "day": "2026-02-09",
+    "light": "GREEN",
+    "r_week": 2.35
+   },
+   {
+    "day": "2026-02-10",
+    "light": "GREEN",
+    "r_week": 2.35
+   },
+   {
+    "day": "2026-02-11",
+    "light": "GREEN",
+    "r_week": 2.36
+   },
+   {
+    "day": "2026-02-12",
+    "light": "GREEN",
+    "r_week": 2.35
+   },
+   {
+    "day": "2026-02-13",
+    "light": "GREEN",
+    "r_week": 3.06
+   },
+   {
+    "day": "2026-02-16",
+    "light": "GREEN",
+    "r_week": 3.05
+   },
+   {
+    "day": "2026-02-17",
+    "light": "GREEN",
+    "r_week": 2.51
+   },
+   {
+    "day": "2026-02-18",
+    "light": "GREEN",
+    "r_week": 2.51
+   },
+   {
+    "day": "2026-02-19",
+    "light": "GREEN",
+    "r_week": 2.51
+   },
+   {
+    "day": "2026-02-20",
+    "light": "GREEN",
+    "r_week": 2.65
+   },
+   {
+    "day": "2026-02-23",
+    "light": "GREEN",
+    "r_week": 2.78
+   },
+   {
+    "day": "2026-02-24",
+    "light": "GREEN",
+    "r_week": 2.78
+   },
+   {
+    "day": "2026-02-25",
+    "light": "GREEN",
+    "r_week": 2.65
+   },
+   {
+    "day": "2026-02-26",
+    "light": "GREEN",
+    "r_week": 2.6
+   },
+   {
+    "day": "2026-02-27",
+    "light": "GREEN",
+    "r_week": 2.47
+   },
+   {
+    "day": "2026-03-02",
+    "light": "GREEN",
+    "r_week": 2.19
+   },
+   {
+    "day": "2026-03-03",
+    "light": "GREEN",
+    "r_week": 1.24
+   },
+   {
+    "day": "2026-03-04",
+    "light": "AMBER",
+    "r_week": 0.42
+   },
+   {
+    "day": "2026-03-05",
+    "light": "AMBER",
+    "r_week": 0.42
+   },
+   {
+    "day": "2026-03-06",
+    "light": "AMBER",
+    "r_week": 0.41
+   },
+   {
+    "day": "2026-03-09",
+    "light": "AMBER",
+    "r_week": 0.54
+   },
+   {
+    "day": "2026-03-10",
+    "light": "AMBER",
+    "r_week": 0.6
+   },
+   {
+    "day": "2026-03-11",
+    "light": "AMBER",
+    "r_week": 0.73
+   },
+   {
+    "day": "2026-03-12",
+    "light": "AMBER",
+    "r_week": 0.86
+   },
+   {
+    "day": "2026-03-13",
+    "light": "AMBER",
+    "r_week": 0.81
+   },
+   {
+    "day": "2026-03-16",
+    "light": "GREEN",
+    "r_week": 1.39
+   },
+   {
+    "day": "2026-03-17",
+    "light": "GREEN",
+    "r_week": 1.51
+   },
+   {
+    "day": "2026-03-18",
+    "light": "GREEN",
+    "r_week": 2.51
+   },
+   {
+    "day": "2026-03-19",
+    "light": "GREEN",
+    "r_week": 1.71
+   },
+   {
+    "day": "2026-03-20",
+    "light": "GREEN",
+    "r_week": 1.71
+   },
+   {
+    "day": "2026-03-23",
+    "light": "GREEN",
+    "r_week": 2.41
+   },
+   {
+    "day": "2026-03-24",
+    "light": "GREEN",
+    "r_week": 2.41
+   },
+   {
+    "day": "2026-03-25",
+    "light": "GREEN",
+    "r_week": 2.41
+   },
+   {
+    "day": "2026-03-26",
+    "light": "GREEN",
+    "r_week": 2.47
+   },
+   {
+    "day": "2026-03-27",
+    "light": "GREEN",
+    "r_week": 3.31
+   },
+   {
+    "day": "2026-03-30",
+    "light": "GREEN",
+    "r_week": 2.54
+   },
+   {
+    "day": "2026-03-31",
+    "light": "GREEN",
+    "r_week": 2.5
+   },
+   {
+    "day": "2026-04-01",
+    "light": "GREEN",
+    "r_week": 2.85
+   },
+   {
+    "day": "2026-04-02",
+    "light": "GREEN",
+    "r_week": 2.85
+   },
+   {
+    "day": "2026-04-03",
+    "light": "GREEN",
+    "r_week": 2.73
+   },
+   {
+    "day": "2026-04-06",
+    "light": "GREEN",
+    "r_week": 2.73
+   },
+   {
+    "day": "2026-04-07",
+    "light": "GREEN",
+    "r_week": 2.73
+   },
+   {
+    "day": "2026-04-08",
+    "light": "GREEN",
+    "r_week": 2.72
+   },
+   {
+    "day": "2026-04-09",
+    "light": "GREEN",
+    "r_week": 2.85
+   },
+   {
+    "day": "2026-04-10",
+    "light": "GREEN",
+    "r_week": 2.15
+   },
+   {
+    "day": "2026-04-13",
+    "light": "GREEN",
+    "r_week": 2.47
+   },
+   {
+    "day": "2026-04-14",
+    "light": "GREEN",
+    "r_week": 2.6
+   },
+   {
+    "day": "2026-04-15",
+    "light": "GREEN",
+    "r_week": 2.6
+   },
+   {
+    "day": "2026-04-16",
+    "light": "GREEN",
+    "r_week": 2.73
+   },
+   {
+    "day": "2026-04-17",
+    "light": "GREEN",
+    "r_week": 3.72
+   },
+   {
+    "day": "2026-04-20",
+    "light": "GREEN",
+    "r_week": 3.72
+   },
+   {
+    "day": "2026-04-21",
+    "light": "GREEN",
+    "r_week": 3.59
+   },
+   {
+    "day": "2026-04-22",
+    "light": "GREEN",
+    "r_week": 3.6
+   },
+   {
+    "day": "2026-04-23",
+    "light": "GREEN",
+    "r_week": 3.72
+   },
+   {
+    "day": "2026-04-24",
+    "light": "GREEN",
+    "r_week": 3.85
+   },
+   {
+    "day": "2026-04-27",
+    "light": "GREEN",
+    "r_week": 3.85
+   },
+   {
+    "day": "2026-04-28",
+    "light": "GREEN",
+    "r_week": 3.94
+   },
+   {
+    "day": "2026-04-29",
+    "light": "GREEN",
+    "r_week": 4.01
+   },
+   {
+    "day": "2026-04-30",
+    "light": "GREEN",
+    "r_week": 4.01
+   },
+   {
+    "day": "2026-05-01",
+    "light": "GREEN",
+    "r_week": 4.74
+   },
+   {
+    "day": "2026-05-04",
+    "light": "GREEN",
+    "r_week": 4.74
+   },
+   {
+    "day": "2026-05-05",
+    "light": "GREEN",
+    "r_week": 4.62
+   },
+   {
+    "day": "2026-05-06",
+    "light": "GREEN",
+    "r_week": 4.62
+   },
+   {
+    "day": "2026-05-07",
+    "light": "GREEN",
+    "r_week": 4.55
+   },
+   {
+    "day": "2026-05-08",
+    "light": "GREEN",
+    "r_week": 4.54
+   },
+   {
+    "day": "2026-05-11",
+    "light": "GREEN",
+    "r_week": 3.96
+   },
+   {
+    "day": "2026-05-12",
+    "light": "GREEN",
+    "r_week": 3.91
+   },
+   {
+    "day": "2026-05-13",
+    "light": "GREEN",
+    "r_week": 2.78
+   },
+   {
+    "day": "2026-05-14",
+    "light": "GREEN",
+    "r_week": 2.78
+   },
+   {
+    "day": "2026-05-15",
+    "light": "GREEN",
+    "r_week": 2.78
+   },
+   {
+    "day": "2026-05-18",
+    "light": "GREEN",
+    "r_week": 2.08
+   },
+   {
+    "day": "2026-05-19",
+    "light": "GREEN",
+    "r_week": 2.08
+   },
+   {
+    "day": "2026-05-20",
+    "light": "GREEN",
+    "r_week": 2.08
+   },
+   {
+    "day": "2026-05-21",
+    "light": "GREEN",
+    "r_week": 2.08
+   },
+   {
+    "day": "2026-05-22",
+    "light": "GREEN",
+    "r_week": 1.31
+   },
+   {
+    "day": "2026-05-25",
+    "light": "GREEN",
+    "r_week": 1.24
+   },
+   {
+    "day": "2026-05-26",
+    "light": "GREEN",
+    "r_week": 2.28
+   },
+   {
+    "day": "2026-05-27",
+    "light": "GREEN",
+    "r_week": 2.47
+   },
+   {
+    "day": "2026-05-28",
+    "light": "GREEN",
+    "r_week": 2.47
+   },
+   {
+    "day": "2026-05-29",
+    "light": "GREEN",
+    "r_week": 2.6
+   },
+   {
+    "day": "2026-06-01",
+    "light": "GREEN",
+    "r_week": 2.6
+   },
+   {
+    "day": "2026-06-02",
+    "light": "GREEN",
+    "r_week": 2.47
+   },
+   {
+    "day": "2026-06-03",
+    "light": "GREEN",
+    "r_week": 2.47
+   },
+   {
+    "day": "2026-06-04",
+    "light": "GREEN",
+    "r_week": 3.27
+   },
+   {
+    "day": "2026-06-05",
+    "light": "GREEN",
+    "r_week": 3.27
+   },
+   {
+    "day": "2026-06-08",
+    "light": "GREEN",
+    "r_week": 2.96
+   },
+   {
+    "day": "2026-06-09",
+    "light": "GREEN",
+    "r_week": 2.96
+   },
+   {
+    "day": "2026-06-10",
+    "light": "GREEN",
+    "r_week": 2.96
+   },
+   {
+    "day": "2026-06-11",
+    "light": "GREEN",
+    "r_week": 2.96
+   },
+   {
+    "day": "2026-06-12",
+    "light": "GREEN",
+    "r_week": 1.96
+   },
+   {
+    "day": "2026-06-15",
+    "light": "GREEN",
+    "r_week": 1.96
+   },
+   {
+    "day": "2026-06-16",
+    "light": "GREEN",
+    "r_week": 1.96
+   },
+   {
+    "day": "2026-06-17",
+    "light": "GREEN",
+    "r_week": 2.09
+   },
+   {
+    "day": "2026-06-18",
+    "light": "GREEN",
+    "r_week": 2.09
+   },
+   {
+    "day": "2026-06-19",
+    "light": "GREEN",
+    "r_week": 2.26
+   },
+   {
+    "day": "2026-06-22",
+    "light": "GREEN",
+    "r_week": 2.26
+   },
+   {
+    "day": "2026-06-23",
+    "light": "GREEN",
+    "r_week": 2.31
+   },
+   {
+    "day": "2026-06-24",
+    "light": "GREEN",
+    "r_week": 2.18
+   },
+   {
+    "day": "2026-06-25",
+    "light": "GREEN",
+    "r_week": 2.18
+   },
+   {
+    "day": "2026-06-26",
+    "light": "GREEN",
+    "r_week": 1.45
+   },
+   {
+    "day": "2026-06-29",
+    "light": "GREEN",
+    "r_week": 1.45
+   },
+   {
+    "day": "2026-06-30",
+    "light": "GREEN",
+    "r_week": 1.57
+   },
+   {
+    "day": "2026-07-01",
+    "light": "GREEN",
+    "r_week": 1.57
+   },
+   {
+    "day": "2026-07-02",
+    "light": "GREEN",
+    "r_week": 1.51
+   },
+   {
+    "day": "2026-07-03",
+    "light": "GREEN",
+    "r_week": 1.59
+   },
+   {
+    "day": "2026-07-06",
+    "light": "GREEN",
+    "r_week": 1.59
+   },
+   {
+    "day": "2026-07-07",
+    "light": "GREEN",
+    "r_week": 1.6
+   },
+   {
+    "day": "2026-07-08",
+    "light": "GREEN",
+    "r_week": 1.73
+   },
+   {
+    "day": "2026-07-09",
+    "light": "GREEN",
+    "r_week": 1.73
+   },
+   {
+    "day": "2026-07-10",
+    "light": "GREEN",
+    "r_week": 1.73
+   },
+   {
+    "day": "2026-07-13",
+    "light": "GREEN",
+    "r_week": 1.73
+   },
+   {
+    "day": "2026-07-14",
+    "light": "GREEN",
+    "r_week": 1.73
+   },
+   {
+    "day": "2026-07-15",
+    "light": "GREEN",
+    "r_week": 1.73
+   },
+   {
+    "day": "2026-07-16",
+    "light": "GREEN",
+    "r_week": 1.6
+   },
+   {
+    "day": "2026-07-17",
+    "light": "GREEN",
+    "r_week": 1.6
+   },
+   {
+    "day": "2026-07-20",
+    "light": "GREEN",
+    "r_week": 2.13
+   },
+   {
+    "day": "2026-07-21",
+    "light": "AMBER",
+    "r_week": 1.13
+   },
+   {
+    "day": "2026-07-22",
+    "light": "AMBER",
+    "r_week": 0.84
+   },
+   {
+    "day": "2026-07-23",
+    "light": "AMBER",
+    "r_week": 0.84
+   },
+   {
+    "day": "2026-07-24",
+    "light": "AMBER",
+    "r_week": 0.84
+   },
+   {
+    "day": "2026-07-27",
+    "light": "AMBER",
+    "r_week": 0.84
+   },
+   {
+    "day": "2026-07-28",
+    "light": "AMBER",
+    "r_week": 0.97
+   },
+   {
+    "day": "2026-07-29",
+    "light": "AMBER",
+    "r_week": 0.96
+   },
+   {
+    "day": "2026-07-30",
+    "light": "AMBER",
+    "r_week": 0.16
+   },
+   {
+    "day": "2026-07-31",
+    "light": "AMBER",
+    "r_week": 0.16
+   },
+   {
+    "day": "2026-08-03",
+    "light": "AMBER",
+    "r_week": 0.03
+   },
+   {
+    "day": "2026-08-04",
+    "light": "AMBER",
+    "r_week": 0.03
+   },
+   {
+    "day": "2026-08-05",
+    "light": "AMBER",
+    "r_week": 0.03
+   },
+   {
+    "day": "2026-08-06",
+    "light": "AMBER",
+    "r_week": 0.03
+   },
+   {
+    "day": "2026-08-07",
+    "light": "AMBER",
+    "r_week": 0.03
+   },
+   {
+    "day": "2026-08-10",
+    "light": "AMBER",
+    "r_week": 0.03
+   },
+   {
+    "day": "2026-08-11",
+    "light": "AMBER",
+    "r_week": 0.03
+   },
+   {
+    "day": "2026-08-12",
+    "light": "AMBER",
+    "r_week": 0.03
+   },
+   {
+    "day": "2026-08-13",
+    "light": "RED",
+    "r_week": -0.09
+   },
+   {
+    "day": "2026-08-14",
+    "light": "RED",
+    "r_week": -0.4
+   },
+   {
+    "day": "2026-08-17",
+    "light": "RED",
+    "r_week": -0.4
+   },
+   {
+    "day": "2026-08-18",
+    "light": "RED",
+    "r_week": -0.4
+   },
+   {
+    "day": "2026-08-19",
+    "light": "RED",
+    "r_week": -0.4
+   },
+   {
+    "day": "2026-08-20",
+    "light": "RED",
+    "r_week": -0.4
+   },
+   {
+    "day": "2026-08-21",
+    "light": "RED",
+    "r_week": -0.4
+   },
+   {
+    "day": "2026-08-24",
+    "light": "RED",
+    "r_week": -0.4
+   },
+   {
+    "day": "2026-08-25",
+    "light": "AMBER",
+    "r_week": 0.1
+   },
+   {
+    "day": "2026-08-26",
+    "light": "AMBER",
+    "r_week": 0.29
+   },
+   {
+    "day": "2026-08-27",
+    "light": "AMBER",
+    "r_week": 0.42
+   },
+   {
+    "day": "2026-08-28",
+    "light": "AMBER",
+    "r_week": 0.47
+   },
+   {
+    "day": "2026-08-31",
+    "light": "AMBER",
+    "r_week": 0.6
+   },
+   {
+    "day": "2026-09-01",
+    "light": "GREEN",
+    "r_week": 1.25
+   },
+   {
+    "day": "2026-09-02",
+    "light": "GREEN",
+    "r_week": 1.17
+   },
+   {
+    "day": "2026-09-03",
+    "light": "GREEN",
+    "r_week": 1.17
+   },
+   {
+    "day": "2026-09-04",
+    "light": "AMBER",
+    "r_week": 1.04
+   },
+   {
+    "day": "2026-09-07",
+    "light": "AMBER",
+    "r_week": 1.09
+   },
+   {
+    "day": "2026-09-08",
+    "light": "AMBER",
+    "r_week": 1.09
+   },
+   {
+    "day": "2026-09-09",
+    "light": "GREEN",
+    "r_week": 1.6
+   },
+   {
+    "day": "2026-09-10",
+    "light": "GREEN",
+    "r_week": 1.73
+   },
+   {
+    "day": "2026-09-11",
+    "light": "GREEN",
+    "r_week": 1.73
+   },
+   {
+    "day": "2026-09-14",
+    "light": "AMBER",
+    "r_week": 1.15
+   },
+   {
+    "day": "2026-09-15",
+    "light": "AMBER",
+    "r_week": 1.02
+   },
+   {
+    "day": "2026-09-16",
+    "light": "AMBER",
+    "r_week": 0.64
+   },
+   {
+    "day": "2026-09-17",
+    "light": "AMBER",
+    "r_week": 0.64
+   },
+   {
+    "day": "2026-09-18",
+    "light": "AMBER",
+    "r_week": 0.64
+   },
+   {
+    "day": "2026-09-21",
+    "light": "AMBER",
+    "r_week": 0.51
+   },
+   {
+    "day": "2026-09-22",
+    "light": "AMBER",
+    "r_week": 0.51
+   },
+   {
+    "day": "2026-09-23",
+    "light": "GREEN",
+    "r_week": 1.22
+   },
+   {
+    "day": "2026-09-24",
+    "light": "AMBER",
+    "r_week": 1.09
+   },
+   {
+    "day": "2026-09-25",
+    "light": "AMBER",
+    "r_week": 1.09
+   },
+   {
+    "day": "2026-09-28",
+    "light": "GREEN",
+    "r_week": 1.23
+   },
+   {
+    "day": "2026-09-29",
+    "light": "GREEN",
+    "r_week": 1.23
+   },
+   {
+    "day": "2026-09-30",
+    "light": "GREEN",
+    "r_week": 1.37
+   },
+   {
+    "day": "2026-10-01",
+    "light": "GREEN",
+    "r_week": 2.06
+   },
+   {
+    "day": "2026-10-02",
+    "light": "GREEN",
+    "r_week": 2.49
+   },
+   {
+    "day": "2026-10-05",
+    "light": "GREEN",
+    "r_week": 2.36
+   },
+   {
+    "day": "2026-10-06",
+    "light": "GREEN",
+    "r_week": 2.43
+   },
+   {
+    "day": "2026-10-07",
+    "light": "GREEN",
+    "r_week": 2.7
+   },
+   {
+    "day": "2026-10-08",
+    "light": "GREEN",
+    "r_week": 2.7
+   },
+   {
+    "day": "2026-10-09",
+    "light": "GREEN",
+    "r_week": 2.83
+   },
+   {
+    "day": "2026-10-12",
+    "light": "GREEN",
+    "r_week": 2.83
+   },
+   {
+    "day": "2026-10-13",
+    "light": "GREEN",
+    "r_week": 3.52
+   },
+   {
+    "day": "2026-10-14",
+    "light": "GREEN",
+    "r_week": 4.12
+   },
+   {
+    "day": "2026-10-15",
+    "light": "GREEN",
+    "r_week": 4.12
+   },
+   {
+    "day": "2026-10-16",
+    "light": "GREEN",
+    "r_week": 4.12
+   },
+   {
+    "day": "2026-10-19",
+    "light": "GREEN",
+    "r_week": 4.12
+   },
+   {
+    "day": "2026-10-20",
+    "light": "GREEN",
+    "r_week": 3.62
+   },
+   {
+    "day": "2026-10-21",
+    "light": "GREEN",
+    "r_week": 3.43
+   },
+   {
+    "day": "2026-10-22",
+    "light": "GREEN",
+    "r_week": 3.43
+   },
+   {
+    "day": "2026-10-23",
+    "light": "GREEN",
+    "r_week": 3.43
+   },
+   {
+    "day": "2026-10-26",
+    "light": "GREEN",
+    "r_week": 3.43
+   },
+   {
+    "day": "2026-10-27",
+    "light": "GREEN",
+    "r_week": 2.69
+   },
+   {
+    "day": "2026-10-28",
+    "light": "GREEN",
+    "r_week": 2.77
+   },
+   {
+    "day": "2026-10-29",
+    "light": "GREEN",
+    "r_week": 2.77
+   },
+   {
+    "day": "2026-10-30",
+    "light": "GREEN",
+    "r_week": 2.9
+   },
+   {
+    "day": "2026-11-02",
+    "light": "GREEN",
+    "r_week": 2.85
+   },
+   {
+    "day": "2026-11-03",
+    "light": "GREEN",
+    "r_week": 2.85
+   },
+   {
+    "day": "2026-11-04",
+    "light": "GREEN",
+    "r_week": 2.34
+   },
+   {
+    "day": "2026-11-05",
+    "light": "GREEN",
+    "r_week": 2.34
+   },
+   {
+    "day": "2026-11-06",
+    "light": "GREEN",
+    "r_week": 2.34
+   }
+  ]
+ },
+ "market": {
+  "features": {
+   "vix": "VIX (prior close)",
+   "rth_rng": "RTH range, % of price",
+   "on_share": "overnight share of the day's range",
+   "er": "RTH trend efficiency (1 = straight line, 0 = chop)",
+   "reclaim": "prior-day high/low swept then closed back inside"
+  },
+  "mean_of_sessions": 40,
+  "cuts": {
+   "vix": {
+    "cut": 15.7447,
+    "side": "above",
+    "ba_pick": 0.624,
+    "kept": "False"
+   },
+   "rth_rng": {
+    "cut": 1.193,
+    "side": "above",
+    "ba_pick": 0.672,
+    "kept": "False"
+   },
+   "on_share": {
+    "cut": 0.6078,
+    "side": "above",
+    "ba_pick": 0.936,
+    "kept": "True"
+   },
+   "er": {
+    "cut": 0.1439,
+    "side": "below",
+    "ba_pick": 0.604,
+    "kept": "False"
+   },
+   "reclaim": {
+    "cut": 0.3824,
+    "side": "below",
+    "ba_pick": 0.589,
+    "kept": "False"
+   }
+  },
+  "kept": [
+   "on_share"
+  ],
+  "rates": {
+   "2021-25": {
+    "GREEN": 9.5,
+    "AMBER": 0.0,
+    "RED": 90.5,
+    "n": 1007
+   },
+   "2026 H1": {
+    "GREEN": 96.7,
+    "AMBER": 0.0,
+    "RED": 3.3,
+    "n": 123
+   },
+   "2026 H2": {
+    "GREEN": 100.0,
+    "AMBER": 0.0,
+    "RED": 0.0,
+    "n": 91
+   }
+  },
+  "forward_by_light": {
+   "2021-25": {
+    "RED": {
+     "avg_r_next": 0.066,
+     "usd_month_next": 268,
+     "days": 911
+    },
+    "GREEN": {
+     "avg_r_next": -0.036,
+     "usd_month_next": 154,
+     "days": 96
+    }
+   },
+   "2026 H1": {
+    "GREEN": {
+     "avg_r_next": 0.707,
+     "usd_month_next": 3917,
+     "days": 119
+    },
+    "RED": {
+     "avg_r_next": 0.437,
+     "usd_month_next": 3204,
+     "days": 4
+    }
+   },
+   "2026 H2": {
+    "GREEN": {
+     "avg_r_next": 0.787,
+     "usd_month_next": 2713,
+     "days": 51
+    }
+   }
+  },
+  "tracks_edge": false,
+  "used_for_light": false,
+  "by_half_year": {
+   "2021 H2": {
+    "vix": 19.187,
+    "rth_rng": 1.195,
+    "on_share": 0.505,
+    "er": 0.151,
+    "reclaim": 0.404
+   },
+   "2022 H1": {
+    "vix": 26.271,
+    "rth_rng": 2.094,
+    "on_share": 0.554,
+    "er": 0.153,
+    "reclaim": 0.367
+   },
+   "2022 H2": {
+    "vix": 24.994,
+    "rth_rng": 1.694,
+    "on_share": 0.575,
+    "er": 0.145,
+    "reclaim": 0.36
+   },
+   "2023 H1": {
+    "vix": 18.643,
+    "rth_rng": 1.278,
+    "on_share": 0.549,
+    "er": 0.138,
+    "reclaim": 0.352
+   },
+   "2023 H2": {
+    "vix": 15.23,
+    "rth_rng": 1.074,
+    "on_share": 0.544,
+    "er": 0.133,
+    "reclaim": 0.455
+   },
+   "2024 H1": {
+    "vix": 13.87,
+    "rth_rng": 1.009,
+    "on_share": 0.575,
+    "er": 0.123,
+    "reclaim": 0.438
+   },
+   "2024 H2": {
+    "vix": 17.324,
+    "rth_rng": 1.309,
+    "on_share": 0.569,
+    "er": 0.129,
+    "reclaim": 0.413
+   },
+   "2025 H1": {
+    "vix": 21.175,
+    "rth_rng": 1.737,
+    "on_share": 0.62,
+    "er": 0.126,
+    "reclaim": 0.406
+   },
+   "2025 H2": {
+    "vix": 16.892,
+    "rth_rng": 1.102,
+    "on_share": 0.58,
+    "er": 0.134,
+    "reclaim": 0.449
+   },
+   "2026 H1": {
+    "vix": 19.382,
+    "rth_rng": 1.495,
+    "on_share": 0.65,
+    "er": 0.132,
+    "reclaim": 0.393
+   },
+   "2026 H2": {
+    "vix": 16.534,
+    "rth_rng": 1.337,
+    "on_share": 0.7,
+    "er": 0.122,
+    "reclaim": 0.375
+   }
+  },
+  "now_values": {
+   "vix": 16.9958,
+   "rth_rng": 1.3885,
+   "on_share": 0.678,
+   "er": 0.1351,
+   "reclaim": 0.3611
+  },
+  "now": {
+   "day": "2026-11-06",
+   "light": "GREEN",
+   "like_2026": 1,
+   "of": 1
+  },
+  "verdict": "NOT used: overnight share of the day's range separates 2021-25 from 2026 H1, but inside 2021-25 its 2026-like (GREEN) days were followed by a WORSE LIT than its RED days (-0.036 vs 0.066 R a trade over the next 40 sessions): it marks the calendar (a slow rise every year), not the edge."
+ },
+ "card": {
+  "light": "GREEN",
+  "line": "Edge health: GREEN · last 40 sessions PF 3.84 vs 2026 H1 3.91 · data to Nov 6",
+  "data_to": "2026-11-06",
+  "sessions_missing": 6,
+  "pf40": 3.84,
+  "usd_month40": 3440,
+  "tpw40": 2.5,
+  "r_week40": 2.34,
+  "pf40_2026_h1": 3.91,
+  "pf40_2021_25": 1.1,
+  "false_alarm_h2_pct": 8.6,
+  "market_features_used": false,
+  "export": "TradingView CME_MINI:NQ1! 1-minute chart (all hours, B-ADJ off), Export chart data from Oct 16 to today, save in data/tv_exports/, then: python data/import_futures.py csv NQ data/tv_exports/<file>.csv (5m and ES1! 5m the same way). Or start the PC bot: its heartbeat pushes the NinjaTrader bars.",
+  "note": "A warning, not a switch: the bots trade the same either way. GREEN = LIT's last 40 sessions look like 2026, RED = like 2021-25 (about $0). Past weeks do not forecast the next ones; it says what the market has been."
+ }
+}
