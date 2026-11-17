@@ -226,3 +226,6 @@ research/learn/
 # Obsidian living sync: the vault path on this PC (tools/obsidian_sync.py)
 data/obsidian_sync.json
 data/obsidian_sync.json.tmp
+
+# Kalshi rewards paper: live ledger changes every minute (snapshot committed as rewards_paper_snapshot.json)
+research/kalshi_edge_K5/paper/rewards_paper.json
