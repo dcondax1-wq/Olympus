@@ -10,7 +10,9 @@ the repo's own engine code (read-only use: engine/live_publish.build, engine/go.
               broker account ids cut to the last 4 digits, no folder, no email (public(), tools/site_privacy.py, docs/PRIVACY.md). Its "t" is the bot's own
               heartbeat time (never "now"), so an old report always looks old; "reporter" says what this PC saw just now.
   3. alerts   phone pushes on YOUR private ntfy topic (made here once, kept in %USERPROFILE%\\.olympus\\ntfy.json, never in the
-              repo): trade opened and trade closed per account (Zlarior 50K, ATLAS 25K, BLITZ 25K; entry: side, micros, entry /
+              repo), $ first (engine/notify.py, notify_settings.json: per type on / off, quiet hours): trade opened
+              "Zlarior 50K SHORT opened | risk $368 | target +$1,432", closed "Zlarior 50K closed +$605 | day +$605 | room $1,750"
+              per account (Zlarior 50K, ATLAS 25K, BLITZ 25K; entry: side, micros, entry /
               stop / target, $ risk at the stop and its share of the drawdown left; exit: how it ended, +/- $ and R, drawdown
               left, today's $; a trade that opened and closed between two runs gets one push with both), FEED STALE, bot down,
               NinjaTrader closed, and "back to normal". Once per event; a problem repeats at most every 3 hours. The first run
@@ -584,9 +586,17 @@ def _r_of(t) -> float | None:
     return round(u / rk, 2) if (rk and u is not None) else None
 
 
+def target_usd(p) -> float | None:
+    """$ the trade makes at its target, costs in: micros x target distance x $2 - $1.90 a micro."""
+    q, pts = num(_d(p).get("qty")), _pts(_d(p).get("target"), _d(p).get("entry"))
+    if not q or pts is None:
+        return None
+    return round(q * (pts * USD_PT - COMM_MICRO), 2)
+
+
 def _entry_text(p, card, closed=False) -> str:
-    """'SHORT 6 micros at 25,100.25, stop 25,130.00 (29.75 pts), target 24,980.00 (120.25 pts). Risk $369 if stopped (costs
-    in), 32% of the $1,145 drawdown left.' (an open position without a stop says so; the fill check pushes it apart)"""
+    """'SHORT 6 micros at 25,100.25, stop 25,130.00 (29.75 pts), target 24,980.00 (120.25 pts). Risk $368 if stopped (costs
+    in), 32% of the $1,145 room left.' (an open position without a stop says so; the fill check pushes it apart)"""
     q = p.get("qty")
     sp, tp = _pts(p.get("entry"), p.get("stop")), _pts(p.get("target"), p.get("entry"))
     rk = risk_usd(p)
@@ -595,41 +605,46 @@ def _entry_text(p, card, closed=False) -> str:
     return (f"{side} {q if q is not None else '?'} micros at {_px(p.get('entry'))}"
             + (f", stop {_px(p.get('stop'))} ({sp:.2f} pts)" if sp is not None else "" if closed else ", NO STOP in the report")
             + (f", target {_px(p.get('target'))} ({tp:.2f} pts)" if tp is not None else "") + ". "
-            + (f"Risk {money(rk)} if stopped (costs in)" + (f", {rk / room * 100:.0f}% of the {money(room)} drawdown left" if room else "") + "."
+            + (f"Risk {money(rk)} if stopped (costs in)" + (f", {rk / room * 100:.0f}% of the {money(room)} room left" if room else "") + "."
                if rk is not None else ""))
 
 
 def _exit_text(t, card) -> str:
-    """'TARGET at 24,980.00, +$1,203 (+3.4R), Thu 10:42 ET. Drawdown left $2,000 of $2,000. Today +$1,203.'"""
+    """'TARGET at 24,980.00, +$1,203 (+3.4R), Thu 10:42 ET. Room left $2,000 of $2,000.'"""
     c = _d(card)
     r = _r_of(t)
     return (f"{str(t.get('exit') or 'exit').upper()}" + (f" at {_px(t.get('exit_px'))}" if num(t.get("exit_px")) is not None else "")
             + f", {signed_money(t.get('usd'))}" + (f" ({r:+.1f}R)" if r is not None else "") + f", {et_text(t.get('exit_t') or t.get('entry_t'))}. "
-            + (f"Drawdown left {money(c.get('room'))} of {money(c.get('mll'))}. " if num(c.get("room")) is not None else "")
-            + (f"Today {signed_money(c.get('today_pnl'))}." if num(c.get("today_pnl")) is not None else ""))
+            + (f"Room left {money(c.get('room'))} of {money(c.get('mll'))}." if num(c.get("room")) is not None else ""))
 
 
 def _open_event(acct, p, snap=None, card=None) -> dict:
-    """The entry push: side, micros, entry / stop / target, the $ risk and its share of the drawdown left, the account."""
-    side, q = str(p.get("side") or "").upper(), p.get("qty")
+    """The entry push, $ first (owner 2026-11-17): 'Zlarior 50K SHORT opened | risk $368 | target +$1,432', then the prices,
+    the risk's share of the room left and the account in the body."""
+    side = str(p.get("side") or "").upper()
+    rk, tg = risk_usd(p), target_usd(p)
+    title = " | ".join([f"{_label(acct, card)} {side} opened".replace("  ", " ")] + ([f"risk {money(rk)}"] if rk is not None else [])
+                       + ([f"target {signed_money(tg)}"] if tg is not None else []))
     body = f"{_entry_text(p, card)} {et_text(p.get('entry_t'))}. {_kind_note(acct, card, snap)}"
     return {"key": f"open:{acct}:{int(num(p['entry_t']))}", "t": int(num(p["entry_t"])), "acct": acct, "entry_t": int(num(p["entry_t"])),
-            "title": f"{_label(acct, card)} trade opened: {side} {q if q is not None else ''} micros".strip(), "body": " ".join(body.split())}
+            "title": title, "body": " ".join(body.split())}
 
 
 def _close_event(acct, t, snap=None, card=None) -> dict:
-    """The exit push: +/- $ and R, how it ended, the drawdown left and today's $ of the account. "both" is the one push for a
-    trade that opened and closed between two report runs (its entry and its exit in one message)."""
-    r = _r_of(t)
-    rs = f" ({r:+.1f}R)" if r is not None else ""
+    """The exit push, $ first: 'Zlarior 50K closed +$605 | day +$605 | room $1,750' (the trade's $, the account's $ today, the
+    room left), how it ended and R in the body. "both" is the one push for a trade that opened and closed between two report
+    runs (its entry and its exit in one message)."""
+    c = _d(card)
     side = str(t.get("side") or "").upper()
     kind = _kind_note(acct, card, snap)
+    title = " | ".join([f"{_label(acct, card)} closed {signed_money(t.get('usd'))}"]
+                       + ([f"day {signed_money(c.get('today_pnl'))}"] if num(c.get("today_pnl")) is not None else [])
+                       + ([f"room {money(c.get('room'))}"] if num(c.get("room")) is not None else []))
     body = f"{side} {t.get('qty') or ''} micros: {_exit_text(t, card)} {kind}"
     both = f"Opened {et_text(t.get('entry_t'))}: {_entry_text(t, card, closed=True)} Closed: {_exit_text(t, card)} {kind}"
     et_ = int(num(t["entry_t"]))
     return {"key": f"close:{acct}:{et_}", "t": int(num(t.get("exit_t")) or et_), "acct": acct, "entry_t": et_, "pair": f"open:{acct}:{et_}",
-            "title": f"{_label(acct, card)} trade closed {signed_money(t.get('usd'))}{rs}", "body": " ".join(body.split()),
-            "both": " ".join(both.split())}
+            "title": title, "body": " ".join(body.split()), "both": " ".join(both.split())}
 
 
 def _fill_note(review) -> str:
@@ -764,6 +779,13 @@ def events(state: dict, snap: dict) -> tuple:
     if len(st["seen"]) > SEEN_KEEP:
         for k in sorted(st["seen"], key=st["seen"].get)[: len(st["seen"]) - SEEN_KEEP]:
             st["seen"].pop(k, None)
+    # notify_settings.json (engine/notify.py): a type switched off is dropped (its key stays seen: it never comes later), in
+    # quiet hours a trade / ordinary push arrives without sound; PC silent, room low and problems keep ringing
+    try:
+        from engine import notify
+        msgs = notify.apply(msgs, now)
+    except Exception:
+        pass
     return st, msgs
 
 

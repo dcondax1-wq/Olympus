@@ -10,14 +10,17 @@ LE_BarFeed contract file. It never blocks, places, changes or cancels an order, 
   daily loss      today's loss (realized + the open trade's unrealized) at 70% of the account's daily loss limit, once a day.
   quiet bot       no trade for 5+ calendar days (normal: 2-4 a week; MFFU can close an eval after 7), once a day in the
                   daytime. Feed and bot silence were already pushed by pc_report (FEED STALE after 5 min, bot down after 15).
-  day summary     16:05 ET on CME trading days (first report run 16:05-16:59): $ today, trades, drawdown left per account.
+  milestones      eval progress 25 / 50 / 75 / 100% of the profit target (notify_settings.json milestones_pct), once per level.
+  day summary     16:15 ET on CME trading days (daily_summary_at, first report run up to 16:59): $ today, $ to pass, room left per
+                  account, tomorrow's big US news (engine/notify.news_line).
   ready           01:35-01:59 ET on CME trading days (tools/launch_card.ready_push, Monday launch kit 2026-11-14): every bot's
                   mode (LIVE armed / Sim / paper) and drawdown left, the bot, NinjaTrader and the feed; "Ready for 02:00 ET"
                   is a silent (low) push at night, "NOT ready" (what is wrong + its one action) a high one.
 Numbers come only from a fresh heartbeat (<= 15 min); the day summary says plainly when the last one is older.
 
 guard(state, snap, roll_state=None) -> (new state, [push]); state = {"sent": {key: t}}. Each key is sent once; pc_report
-forgets a key whose push failed, so the next run tries it again. Quiet hours 23:00-07:00 ET for ordinary pushes (they wait);
+forgets a key whose push failed, so the next run tries it again. Quiet hours (notify_settings.json, default 23:00-07:00 ET) for
+ordinary pushes (they wait);
 high-priority ones (75% drawdown, daily loss near) go out at any hour, the roll's late alarm from 01:40 ET (before LIT's
 02:00 window). Tests: tests/test_pc_guard.py (accounts, summary), tests/test_roll_now.py (roll).
 """
@@ -43,9 +46,22 @@ def _mod(now: int) -> int:
     return e.hour * 60 + e.minute
 
 
+def _settings() -> dict:
+    try:
+        from engine import notify
+        return notify.settings()
+    except Exception:
+        return {}
+
+
 def quiet(now: int) -> bool:
-    m = _mod(now)
-    return m >= QUIET_FROM or m < QUIET_TO
+    """Quiet hours from notify_settings.json (default 23:00-07:00 ET, the old QUIET_FROM / QUIET_TO)."""
+    try:
+        from engine import notify
+        return notify.quiet(now)
+    except Exception:
+        m = _mod(now)
+        return m >= QUIET_FROM or m < QUIET_TO
 
 
 # ------------------------------------------------------------------------------------------------ contract roll
@@ -71,7 +87,7 @@ DLL_NEAR = 0.70
 QUIET_DAYS = 5
 MFFU_IDLE_DAYS = 7
 HB_FRESH_S = 900
-SUMMARY_FROM, SUMMARY_TO = 16 * 60 + 5, 17 * 60       # 16:05 up to the 17:00 CME break (4 report runs); later = skipped
+SUMMARY_FROM, SUMMARY_TO = 16 * 60 + 15, 17 * 60      # notify_settings.json daily_summary_at (16:15) up to the 17:00 CME break
 BOTS = ("lit", "atlas", "blitz")
 
 
@@ -136,36 +152,85 @@ def dd_used(c: dict):
     return max(0.0, min(1.0, 1.0 - room / mll))
 
 
+def dd_levels() -> tuple:
+    v = _settings().get("room_low_used_pct")
+    return tuple(sorted(x / 100.0 for x in v)) if isinstance(v, list) and v else DD_LEVELS
+
+
+def goal_levels() -> tuple:
+    v = _settings().get("milestones_pct")
+    return tuple(sorted(int(x) for x in v)) if isinstance(v, list) else (25, 50, 75, 100)
+
+
+def milestone_pushes(k: str, c: dict, snap: dict, sent: dict, now: int) -> list:
+    """Eval progress (owner 2026-11-17): 25 / 50 / 75 / 100% of the profit target made, once per level per eval (only the
+    highest new level: 0 -> 60% is one push). Never re-armed: a level said once is not said again after a loss."""
+    try:
+        from engine import notify
+        pr = notify.progress(c)
+    except Exception:
+        pr = None
+    if not pr:
+        return []
+    made, goal, pct = pr
+    tag = str(c.get("eval_start") or "-")
+    name = label(k, c)
+    for lvl in sorted(goal_levels(), reverse=True):
+        key = f"{PREFIX}goal:{k}:{tag}:{lvl}"
+        if pct + 1e-9 < lvl:
+            continue
+        if key in sent:
+            return []
+        for lower in goal_levels():
+            if lower < lvl:
+                sent.setdefault(f"{PREFIX}goal:{k}:{tag}:{lower}", now)
+        room = _f(c.get("room"))
+        tail = (f" Room left {money(room)} of {money(c.get('mll'))}." if room is not None else "") + f" ({kind_word(k, c, snap)})"
+        if lvl >= 100:
+            return [{"key": key, "title": f"{name}: profit target reached ({money(goal)})",
+                     "body": f"{signed(made)} made of the {money(goal)} target. Check MFFU for the pass (its other rules still count).{tail}",
+                     "priority": "high", "tags": "tada"}]
+        return [{"key": key, "title": f"{name}: {lvl}% of the target made ({money(made)} of {money(goal)})",
+                 "body": f"{money(goal - made)} to pass.{tail}", "priority": "default", "tags": "chart_with_upwards_trend"}]
+    return []
+
+
 def account_pushes(snap: dict, sent: dict, now: int) -> list:
-    """Drawdown 50 / 75 %, daily loss near, quiet bot. Mutates `sent` only to re-arm a drawdown level."""
+    """Room used 50 / 75 % ("room getting low"), eval progress 25 / 50 / 75 / 100 %, daily loss near, quiet bot. Mutates
+    `sent` only to re-arm a drawdown level and to mark lower milestone levels as said."""
     if snap.get("hb_age") is None or snap["hb_age"] > HB_FRESH_S:
         return []
     out = []
     day = trading_day(now)
+    levels = dd_levels()
     for k, c in cards(snap):
         name = label(k, c)
         status = str(c.get("status") or "open")
         live_eval = status not in ("passed", "failed", "lost", "graduated", "stuck")
         tag = str(c.get("eval_start") or "-")
         used = dd_used(c)
+        if status not in ("failed", "lost", "stuck"):
+            out += milestone_pushes(k, c, snap, sent, now)
         if used is not None and live_eval:
-            keys = {lvl: f"{PREFIX}dd:{k}:{tag}:{int(lvl * 100)}" for lvl in DD_LEVELS}
-            for lvl in DD_LEVELS:
+            keys = {lvl: f"{PREFIX}dd:{k}:{tag}:{int(round(lvl * 100))}" for lvl in levels}
+            for lvl in levels:
                 if used < lvl - DD_REARM:
                     sent.pop(keys[lvl], None)
-            for lvl in sorted(DD_LEVELS, reverse=True):          # only the highest new level: 0 -> 80% is one push
+            for lvl in sorted(levels, reverse=True):              # only the highest new level: 0 -> 80% is one push
                 key = keys[lvl]
                 if used >= lvl and key not in sent:
-                    for lower in DD_LEVELS:
+                    for lower in levels:
                         if lower < lvl:
                             sent.setdefault(keys[lower], now)
                     left = _f(c.get("room"))
+                    low = lvl >= 0.75 or lvl == max(levels)
                     body = (f"{name} ({kind_word(k, c, snap)}): {used * 100:.0f}% of the drawdown used. Left {money(left)} of "
                             f"{money(c.get('mll'))}" + (f", balance {money(c.get('balance'))}, floor {money(c.get('floor'))}"
                                                         if _f(c.get("balance")) is not None and _f(c.get("floor")) is not None else "")
                             + f". Today {signed(c.get('today_pnl'))}. The bot sizes from the room by itself; this alert changes nothing.")
-                    out.append({"key": key, "title": f"{name}: {int(lvl * 100)}% of the drawdown used", "body": body,
-                                "priority": "high" if lvl >= 0.75 else "default", "tags": "warning"})
+                    title = (f"{name}: room getting low, {money(left)} left of {money(c.get('mll'))}" if low
+                             else f"{name}: {int(round(lvl * 100))}% of the room used, {money(left)} left")
+                    out.append({"key": key, "title": title, "body": body, "priority": "high" if low else "default", "tags": "warning"})
                     break
         dll = _f(c.get("dll"))
         if dll and live_eval:
@@ -197,10 +262,16 @@ def account_pushes(snap: dict, sent: dict, now: int) -> list:
 
 
 def day_summary(snap: dict, now: int) -> list:
-    """The 16:05 ET push: $ today, trades and drawdown left per account (CME trading days only)."""
+    """The day summary after the close (notify_settings.json daily_summary_at, 16:15 ET, up to the 17:00 CME break; CME
+    trading days only): per account $ today, $ to pass and the room left, then tomorrow's big US news."""
     e = dt.datetime.fromtimestamp(int(now), ET)
     m = e.hour * 60 + e.minute
-    if e.weekday() >= 5 or not (SUMMARY_FROM <= m < SUMMARY_TO):
+    try:
+        from engine import notify
+        frm = notify.hm_min(_settings().get("daily_summary_at"), SUMMARY_FROM)
+    except Exception:
+        notify, frm = None, SUMMARY_FROM
+    if e.weekday() >= 5 or not (frm <= m < SUMMARY_TO):
         return []
     try:
         from engine import cme_calendar
@@ -209,25 +280,30 @@ def day_summary(snap: dict, now: int) -> list:
     except Exception:
         pass
     key = f"{PREFIX}day:{e.date().isoformat()}"
+    try:
+        news = " " + notify.news_line(now) if notify else ""
+    except Exception:
+        news = ""
     cs = cards(snap)
     age = snap.get("hb_age")
     if not cs:
         why = "the bot has not reported" if age is None else f"no account numbers in the last report ({int(age) // 60} min ago)"
-        return [{"key": key, "title": f"Day {e:%a %b %d}: no numbers", "body": f"No day summary: {why}. Double-click STATUS.bat on the PC.",
+        return [{"key": key, "title": f"Day {e:%a %b %d}: no numbers", "body": f"No day summary: {why}. Double-click STATUS.bat on the PC.{news}",
                  "priority": "default", "tags": "memo"}]
     lines, tot = [], 0.0
     for k, c in cs:
         t = _f(c.get("today_pnl"))
         tot += t or 0.0
-        n = c.get("trades_today")
         room = _f(c.get("room"))
-        lines.append(f"{label(k, c)}: {signed(t)}" + (f", {int(n)} trade{'s' if int(n) != 1 else ''}" if isinstance(n, (int, float)) else "")
-                     + (f", drawdown left {money(room)} of {money(c.get('mll'))}" if room is not None else "")
-                     + (f", {money(c.get('to_target'))} to target" if _f(c.get("to_target")) is not None and _f(c.get("to_target")) > 0 else "")
+        tt = _f(c.get("to_target"))
+        lines.append(f"{label(k, c)}: {signed(t)} today"
+                     + (f", {money(tt)} to pass" if tt is not None and tt > 0 else ", target reached" if tt is not None else "")
+                     + (f", room {money(room)} of {money(c.get('mll'))}" if room is not None else "")
                      + ("" if real(k, c, snap) else " (Sim / paper)"))
     stale = age is None or age > HB_FRESH_S
     head = f"Day {e:%a %b %d}: {signed(tot)}" + (" (last report old)" if stale else "")
-    body = "; ".join(lines) + "." + (f" These are the numbers of the last report, {int(age) // 60} min ago." if stale and age is not None else "")
+    body = ("; ".join(lines) + "." + (f" These are the numbers of the last report, {int(age) // 60} min ago." if stale and age is not None else "")
+            + news)
     return [{"key": key, "title": head, "body": body, "priority": "default", "tags": "memo"}]
 
 
