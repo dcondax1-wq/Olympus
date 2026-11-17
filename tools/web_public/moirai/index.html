@@ -32,13 +32,13 @@
 <body>
 <main id="app">
   <header class="top">
-    <div class="brand"><img src="icon.svg" alt="" width="44" height="44"><div><h1 class="ag-title">Moirai</h1><p class="sub">The three fates of an eval</p></div></div>
+    <div class="brand"><img src="icon.svg" alt="" width="44" height="44"><div><h1 class="ag-title">Moirai</h1><p class="sub">Pass, fail or still going: one eval played 1,000 times. Move the sliders.</p></div></div>
     <div class="tags"><span class="tag demo">SIMULATION</span><span id="lite" class="tag" hidden>LITE</span></div>
   </header>
   <p id="status" class="note" role="status" aria-live="polite">Loading...</p>
 
   <section class="ag-card card hero" aria-labelledby="fateH">
-    <div class="row"><h2 id="fateH">The three threads</h2><span class="pill info" id="runPill">...</span></div>
+    <div class="row"><h2 id="fateH">Pass, fail, still going</h2><span class="pill info" id="runPill">...</span></div>
     <div class="stage"><canvas id="loom" width="640" height="560" role="img" aria-label="A marble spindle with three threads: olive for pass, terracotta for bust, gold for still open. A thread is as thick as its chance."></canvas><svg id="loomFallback" class="fallback" viewBox="0 0 120 100" role="img" aria-label="Three bars: pass, bust and still open" hidden></svg></div>
     <div class="tiles" id="fates"></div>
     <p class="lead" id="headline"></p>
@@ -99,7 +99,7 @@
   </section>
 
   <section class="ag-card card" aria-labelledby="cashH">
-    <h2 id="cashH">What the odds are worth</h2>
+    <h2 id="cashH">What the odds are worth in $ (estimate)</h2>
     <dl class="kv" id="cash"></dl>
     <p class="note" id="cashNote"></p>
   </section>

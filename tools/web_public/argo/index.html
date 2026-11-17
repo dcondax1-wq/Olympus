@@ -32,13 +32,13 @@
 <body>
 <main id="app">
   <header class="top">
-    <div class="brand"><img src="icon.svg" alt="" width="44" height="44"><div><h1 class="ag-title">Argo</h1><p class="sub">The voyage</p></div></div>
+    <div class="brand"><img src="icon.svg" alt="" width="44" height="44"><div><h1 class="ag-title">Argo</h1><p class="sub">Your money goals: how close you are, and the next step</p></div></div>
     <div class="tags"><span id="demo" class="tag demo" hidden>DEMO</span><span id="lite" class="tag" hidden>LITE</span></div>
   </header>
   <p id="status" class="note" role="status" aria-live="polite">Loading...</p>
 
   <section class="ag-card card hero" aria-labelledby="heroH">
-    <div class="row"><h2 id="heroH">Next island</h2><span class="pill" id="count">...</span></div>
+    <div class="row"><h2 id="heroH">Next goal</h2><span class="pill" id="count">...</span></div>
     <p class="selt" id="nextName"></p>
     <p class="big ag-num" id="nextPct"></p>
     <div id="nextBar" class="ag-bar green" role="img"><i></i></div>
@@ -53,29 +53,29 @@
   </section>
 
   <section class="ag-card card" aria-labelledby="mapH">
-    <h2 id="mapH">The sea map</h2>
+    <h2 id="mapH">All your goals</h2>
     <div id="map" class="map"></div>
-    <p class="note">Tap an island. Gold flag: reached. The ship sits on the way to the next one.</p>
+    <p class="note">Each island is one goal. Tap one to see what it takes. Gold flag = done.</p>
   </section>
 
   <section class="ag-card card" id="isle" aria-labelledby="isleH">
-    <div class="row"><h2 id="isleH">This island</h2><span class="pill" id="selPill">...</span></div>
+    <div class="row"><h2 id="isleH">This goal</h2><span class="pill" id="selPill">...</span></div>
     <p class="selt" id="selName"></p>
     <div id="selBar" class="ag-bar green" role="img"><i></i></div>
     <p class="when" id="selNums"></p>
     <div class="why"><h3>What it takes</h3><p id="selTakes"></p></div>
-    <div class="why"><h3>When, honestly</h3><p id="selEta"></p><p class="note" id="selRange"></p></div>
+    <div class="why"><h3>When (estimate)</h3><p id="selEta"></p><p class="note" id="selRange"></p></div>
     <div class="why"><h3>Next 3 actions</h3><ol class="plain" id="selActs"></ol></div>
   </section>
 
   <section class="ag-card card" aria-labelledby="ladH">
-    <h2 id="ladH">The ladder</h2>
+    <h2 id="ladH">Goals in order</h2>
     <div id="ladder" class="list"></div>
   </section>
 
   <section class="ag-card card" aria-labelledby="edH">
-    <h2 id="edH">Your goals</h2>
-    <p class="note">They are yours and stay in this browser. Progress is always computed from published numbers, never typed in.</p>
+    <h2 id="edH">Change your goals</h2>
+    <p class="note">Saved on this phone only. Progress comes from real numbers, never typed in.</p>
     <div id="goalsEdit" class="list"></div>
     <h3 class="sub3">Add a goal</h3>
     <div class="flds">
@@ -93,7 +93,7 @@
     </details>
   </section>
 
-  <p class="foot" id="foot">Argo reads the site's own published files and keeps only your goals in this browser. It sends nothing and never trades. A date is shown only when at least 2 full months of real payouts exist, and always as a range: fastest, base and slowest month. It is an estimate, not a promise.</p>
+  <p class="foot" id="foot">Argo only reads; it sends nothing and never trades. A date shows only after 2 full months of real payouts, as a range (fast, normal, slow). An estimate, not a promise.</p>
 </main>
 <script type="module" src="argo.js?v=a1"></script>
 </body>

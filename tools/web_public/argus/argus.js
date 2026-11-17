@@ -115,7 +115,7 @@ function paint() {
   $('vline').textContent = (S.offline && R.hasData ? 'Offline, as of ' + hm(S.asOf) + '. ' : '') + v.line;
   $('fixN').textContent = String(R.fix.length);
   $('offtag').hidden = !S.offline;
-  $('sub').textContent = !R.hasData ? 'No dashboard data yet.' : S.offline ? `Offline. Showing what I saw at ${hm(S.asOf)}.` : `${R.eyes.length} lights, ${N_EYES} eyes, checked ${hm(nowS())}.`;
+  $('sub').textContent = !R.hasData ? 'No dashboard data yet.' : S.offline ? `Offline. Showing what I saw at ${hm(S.asOf)}.` : `${R.eyes.length} checks on the bots, PC and data, ${hm(nowS())}. Fix the top one first.`;
   $('p-fix').innerHTML = R.fix.length ? R.fix.map(row).join('') : `<p class="empty">${R.hasData ? 'Nothing to fix. Every light that matters is green.' : 'Waiting for data.'}</p>${R.hasData ? '' : '<a class="demobtn" role="button" href="?demo=1">See it with demo data</a>'}`;
   try { renderHero($('p-fix'), R); } catch (e) { S.errors.push('hero: ' + ((e && e.message) || e)); }
   const groups = {}; for (const e of R.eyes) (groups[e.group] = groups[e.group] || []).push(e);
