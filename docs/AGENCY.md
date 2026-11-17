@@ -82,6 +82,7 @@ client (bill it to them), Netlify Personal $9 a month once you pass about 20 dep
 | Netlify Free | 300 credits a month; a deploy costs 15 (about 20 a month); forms free and unlimited; at zero every site pauses | netlify.com/pricing, docs.netlify.com |
 | Cloudflare Pages Free | drag and drop a zip or folder; 500 builds a month | developers.cloudflare.com |
 Every line with its link is in `agency/pricing.json`.
+Re-checked 2026-11-17: Starter sits at the bottom of the one-page freelancer range ($500-$1,500), Growth under the 5-page range ($1,500-$5,000; try $1,299 after 3 clients), a Google profile fix sells for $50-$200 on Fiverr and $300-$800 locally ($149 in person). The first $1,000 plan: Business -> More Work, `research/writeups/more-work-2026-11-17.md`.
 
 ## Honest limits
 - **OpenStreetMap is volunteer-made and thin on trades.** Fort Collins: 51% of places have a phone, 63% a website, 49% hours, 76% a street
@@ -116,7 +117,7 @@ Every line with its link is in `agency/pricing.json`.
 | Lead finder | `agency/leads.py`, `osm.py` (Overpass + Nominatim, or an extract file), `audit.py` (site check), `categories.py`, `hours.py`, `agency/suppress.txt` (do not contact) | `python -m agency.leads --city "Fort Collins, CO"` (`--extract FILE.osm.gz`) |
 | Site generator | `agency/build_site.py`, `agency/templates/` (8 looks: studio, bloom, pro, table, clinic, garage, fresh, pulse; `trades.json` = the words) | `python -m agency.build_site --leads FILE --id ID` (`--all-templates`, `--pages 3`, `--final --url`) |
 | Self-check | `agency/sitecheck.py` | `python -m agency.sitecheck <site folder>` |
-| Pitch kit | `agency/pitch.py`, `agency/templates/pitch/` | `python -m agency.pitch --leads FILE --id ID` |
+| Pitch kit (one-pager, email, phone opener, `short.txt` = walk-in / DM / follow-up) | `agency/pitch.py`, `agency/templates/pitch/` | `python -m agency.pitch --leads FILE --id ID` |
 | Money | `agency/pricing.json` (research + funnel guesses), `agency/money.py` | `python -m agency.money` |
 | The day's batch | `agency/run.py`, `RUN_AGENCY.bat` | `python -m agency.run` |
 | Agency page | `tools/web_public/agency/` (reads `my_leads.json` = your batch, gitignored, then the committed sample `leads.json`, then `fixture.json` = DEMO; notes in `localStorage['agency.crm.v1']`); data by `agency/publish.py` (`--fixture` rebuilds the DEMO) | wiring: docs/NEW_APPS_WIRING.md "Wiring AGENCY" |

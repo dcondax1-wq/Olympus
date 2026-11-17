@@ -433,6 +433,12 @@ def test_pitch():
     check("c. the phone sheet: dial by hand (no auto-dialer), a voicemail line, four answers (have a site / price / send me / not interested -> Do not contact)",
           "never an auto-dialer" in ph and "VOICEMAIL" in ph and all(q in ph for q in ('"We already have a website."', '"How much?"', '"Send me something."', '"Not interested."'))
           and "Do not contact" in ph and "(970) 555-0177" in ph)
+    sh = k2["short_scripts"]
+    check("c. the short scripts: a walk-in (under 100 words, shows the preview, leaves the page), a DM under 60 words with the demo link, one follow-up with the price, then stop",
+          len(k2["walk_in"].split()) <= 100 and "free preview" in k2["walk_in"] and "leave this page" in k2["walk_in"] and "$599" in k2["walk_in"]
+          and len(k2["dm"].split()) <= 60 and "joes-barber-co-demo.netlify.app" in k2["dm"] and k2["dm"].rstrip().endswith("?")
+          and "$599 to start" in k2["follow_up"] and "Sam Rivera" in k2["follow_up"] and all(x in sh for x in ("WALK IN", "DIRECT MESSAGE", "FOLLOW-UP", "then stop"))
+          and not re.search(r"YOUR (NAME|AGENCY)", sh), sh[:400])
     pg = SC.Page()
     pg.feed(k2["html"])
     pg.close()
@@ -450,7 +456,7 @@ def test_pitch():
           (plan["avg_setup"], plan["avg_monthly"]) == (799.0, 66.0) and four["months_to_goal"] == 8 and plan["pace"]["new_per_month"] == 4 and plan["pace"]["dials"] == 128
           and plan["care_clients_for_goal_alone"] == 76, (plan["avg_setup"], plan["avg_monthly"], four, plan["pace"]))
     pr = M.load_pricing()
-    check("c. the pricing research lists its sources with links and the date it was read", pr["checked"] == "2026-11-14" and len(pr["market"]) >= 8
+    check("c. the pricing research lists its sources with links and the date it was read", pr["checked"] == "2026-11-17" and len(pr["market"]) >= 8
           and all(x["url"].startswith("https://") and x["source"] for x in pr["market"] + pr["hosting"] + pr["rules"]))
     os.remove(os.environ["AGENCY_CONFIG"])
     raw = open(os.path.join(ROOT, "RUN_AGENCY.bat"), "rb").read()
