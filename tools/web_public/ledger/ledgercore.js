@@ -21,7 +21,7 @@ export const KINDS = {
 export const KIND_ORDER = ['expense', 'fee', 'payout_in', 'payout_req', 'reset', 'activation', 'income', 'deposit', 'withdrawal', 'tax'];
 export const EXPENSE_CATS = ['Data feeds', 'VPS / Azure', 'Subscriptions', 'Voice keys', 'Mini PC / hardware', 'Other'];
 export const EVERY = ['week', 'month', 'year'];
-export const DEFAULTS = { taxPct: 25 };
+export const DEFAULTS = { taxPct: 30 };  // 30% = the Business Taxes page rule (business/taxes.html)
 
 const isObj = (x) => !!x && typeof x === 'object' && !Array.isArray(x);
 const arr = (x) => (Array.isArray(x) ? x : []);

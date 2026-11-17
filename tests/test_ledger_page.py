@@ -211,7 +211,7 @@ def part_b():
     check("b. export / import: a round trip gives the same entries and settings; merging adds only new ids (0 from your own export); a partly bad file adds the good entry and counts the rest as skipped; a non-JSON or non-Ledger file is refused with a message",
           e["ok"] and e["added"] == 8 and e["same"] and e["mergedAdded"] == 0 and e["partial"] == [1, 2] and e["errs"][0][0] is False and "not JSON" in e["errs"][0][1] and e["errs"][1][0] is False and e["errs"][2][0] is False and e["hasApp"] == "ledger", e)
     check("b. junk in, safe out: bad JSON, null, a wrong shape, duplicate ids and a 999% tax rate give a clean state (rate capped at 60); the edits are pure (add, update, remove; refused changes return null; the original is untouched)",
-          js["ls"] == [[0, 25], [0, 25], [0, 25], [1, 60]] and js["edits"] == {"added": 1, "updated": 20, "removed": 0, "badAdd": None, "badUp": None, "badUp2": None, "badRm": None, "orig": 10}, (js["ls"], js["edits"]))
+          js["ls"] == [[0, 30], [0, 30], [0, 30], [1, 60]] and js["edits"] == {"added": 1, "updated": 20, "removed": 0, "badAdd": None, "badUp": None, "badUp2": None, "badRm": None, "orig": 10}, (js["ls"], js["edits"]))
     dm = js["demo"]
     check("b. the demo fixture works out (example numbers): net, income, costs, a Kalshi result from its balance, a payout still pending, and 'paid back'", dm["pending"] == 900 and dm["income"] == 1280 and dm["kal"] == 28.4 and dm["be"] in ("paid", "on_track") and dm["net"] > 0, dm)
     check("b. number words: $1,234.50, -$5.00, +$5.00, -$5.00, $0.00 for zero, '-' for nothing, month names; repeating costs per month (12 + 120/12 + 6 x 52/12 = 48; one-offs and income do not count)",
@@ -439,12 +439,12 @@ def run_browser():
             check("c. the calendar's previous-month button moves to Oct 2026", "Oct 2026" in p.inner_text("#p-cash"), p.inner_text("#p-cash")[:120])
             p.click("#t-tax")
             tx = p.inner_text("#p-tax")
-            check("c. Taxes: the year's income, costs and net, the 25% set-aside (nothing set aside while the year is below zero), by quarter, 'Not tax advice' with the disclaimer, the CSV and tax-payment buttons",
+            check("c. Taxes: the year's income, costs and net, the 30% set-aside (nothing set aside while the year is below zero), by quarter, 'Not tax advice' with the disclaimer, the CSV and tax-payment buttons",
                   "TAX SET-ASIDE, 2026" in tx.upper() and "Still to set aside" in tx and "$0.00" in tx and "NOT tax advice" in tx and "Download CSV for my accountant" in tx and "Q4" in tx, tx[:300])
-            p.fill("#taxPct", "30")
+            p.fill("#taxPct", "35")
             p.dispatch_event("#taxPct", "change")
-            p.wait_for_function("(() => { const v = localStorage.getItem('ledger.v1'); return v && JSON.parse(v).settings.taxPct === 30; })()")
-            check("c. changing the rate to 30% is kept on the phone and shown", "Set aside (30%)" in p.inner_text("#p-tax") and ls(p)["settings"]["taxPct"] == 30)
+            p.wait_for_function("(() => { const v = localStorage.getItem('ledger.v1'); return v && JSON.parse(v).settings.taxPct === 35; })()")
+            check("c. changing the rate to 35% is kept on the phone and shown", "Set aside (35%)" in p.inner_text("#p-tax") and ls(p)["settings"]["taxPct"] == 35)
             ctx.close()
 
             # ---- 4. export / import / CSV, persistence, clear + undo
@@ -468,7 +468,7 @@ def run_browser():
                 p.click("[data-act=csv]")
             csv_txt = open(dc.value.path(), encoding="utf-8").read()
             check("c. Export JSON downloads a file with every entry and the settings (v1, app ledger); CSV downloads a header and one signed row per dated entry (fee -91.8, payout 800, tax)",
-                  exp["app"] == "ledger" and len(exp["entries"]) == 3 and exp["settings"]["taxPct"] == 25 and dj.value.suggested_filename == "ledger-2026-11-04.json" and csv_txt.startswith("date,type,category,account,amount_usd,direction,source,recurring,note\n")
+                  exp["app"] == "ledger" and len(exp["entries"]) == 3 and exp["settings"]["taxPct"] == 30 and dj.value.suggested_filename == "ledger-2026-11-04.json" and csv_txt.startswith("date,type,category,account,amount_usd,direction,source,recurring,note\n")
                   and "2026-10-18,Eval fee,Eval fees,general,-91.8,out,you" in csv_txt and "2026-11-02,Payout received,Payouts,general,800,in,you" in csv_txt and "Tax paid" in csv_txt and dc.value.suggested_filename == "ledger-2026-11-04.csv", (exp["entries"][:1], csv_txt[:300]))
             after = p.evaluate("() => JSON.parse(localStorage.getItem('ledger.v1'))")
             import datetime as _dt
@@ -479,7 +479,7 @@ def run_browser():
             except ValueError:
                 pass
             check("c. tapping Export JSON writes `lastExport` (an ISO time, just now) into the ledger.v1 state so Compass can see it; before the export there was none; the CSV button does not set it; the entries are untouched",
-                  "lastExport" not in before and fresh and len(after["entries"]) == 3 and after["settings"]["taxPct"] == 25, (before.keys(), after.get("lastExport")))
+                  "lastExport" not in before and fresh and len(after["entries"]) == 3 and after["settings"]["taxPct"] == 30, (before.keys(), after.get("lastExport")))
             p.reload()
             p.wait_for_function("document.body.dataset.ready === '1'", timeout=240000)
             check("c. a reload keeps the ledger (3 entries, net $703.20 = 800 - 91.80 - 0 tax is not a cost... $708.20)", st(p)["entries"] == 3 and net(p) == "$708.20" and not st(p)["demo"], (st(p), net(p)))

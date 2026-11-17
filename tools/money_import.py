@@ -1174,7 +1174,7 @@ def oikos_ledger(ledger: dict, rules_doc: dict, today: str, living=None, saved=N
         opts["em_saved"] = r2(max(0.0, saved))
     firms = sorted({e["acct"] for e in ents if e["acct"].startswith("prop_")})
     return {"v": 1, "app": "ledger", "source": "money_import", "exported": today, "note": "Built from your bank exports by tools/money_import.py (category level, no merchant names).",
-            "settings": {"taxPct": 25}, "opts": opts, "accounts": [{"id": f, "name": f[5:].replace("_", " ").title() + " (prop firm)"} for f in firms], "entries": ents}
+            "settings": {"taxPct": 30}, "opts": opts, "accounts": [{"id": f, "name": f[5:].replace("_", " ").title() + " (prop firm)"} for f in firms], "entries": ents}
 
 
 # ------------------------------------------------------------------------------------------------ the table

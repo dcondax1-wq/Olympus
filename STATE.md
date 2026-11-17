@@ -32,6 +32,8 @@ Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7;
   rule, LIT ~0.8 winners/week), first payout ~14 sessions after funding, daily payouts, 90%, funded news ban (-2/+2 min Tier-1).
   Rapid (intraday floor) rejected: loses funded 16-22% in 6 months. Builder 25K #2: +$286/mo, cheap ($63/$43). Detail:
   research/writeups/lit-mffu-rapid-stack.md. Fleet presets exist (engine/multi_account mffu_rapid_eod_50k); Sim-test before arming.
+- Taxes (2026-11-17, "study taxes"): Business -> Taxes page (tools/web_public/business/taxes.html; the lead adds its card to business/index.html).
+  Rule: move 30% of every payout to a tax pot (Oikos + Ledger defaults now 30%, were 25%). Next federal estimated payment Jan 15, 2027. Education, not advice: research/writeups/taxes-2026-11-17.md.
 - Business: fill agency/config.json (name, city, phone, address), then AGENCY_DAY.bat; list the 8 products, the 4 trading ones first (docs/BUSINESS_LISTING_KIT.md). $0 earned so far.
 - Money (2026-11-16 night B): the Business page is the ONE money place (every dollar, this week's money moves, payout planner, ready-to-upload tick lists, ideas, costs; docs/BUSINESS.md). New: 3 products (bundle $29, risk calculator $12, rules cheat sheet $7), 2 new models (AI training tasks, paid website tests). Plan (ESTIMATE): first payout ~late Dec ($1,200 LIT / $600 ATLAS to you), account #4 the day it is in the bank.
 

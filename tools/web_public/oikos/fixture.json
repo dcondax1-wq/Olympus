@@ -1,6 +1,6 @@
 {"v":1,"app":"ledger","demo":true,"note":"EXAMPLE numbers, not real: a made-up household ledger so OIKOS is never empty. Days are offsets from today.",
 "accounts":[{"id":"demo50k","name":"Example eval 50K"},{"id":"demo25k","name":"Example eval 25K"},{"id":"demoB","name":"Example eval 50K (second try)"},{"id":"demoC","name":"Example eval 25K (never paid)"}],
-"settings":{"taxPct":25},"opts":{"em_saved":1800,"living":2500},
+"settings":{"taxPct":30},"opts":{"em_saved":1800,"living":2500},
 "entries":[
 {"id":"s01","off":-120,"kind":"fee","amount":91.8,"cat":"Eval fees","acct":"demo50k","note":"Example eval fee"},
 {"id":"s02","off":-110,"kind":"fee","amount":43,"cat":"Eval fees","acct":"demo25k","note":"Example eval fee"},

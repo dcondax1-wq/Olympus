@@ -174,8 +174,8 @@ def test_page():
             ctx, p, errs, seen, off = AK.page(br, origin)
             AK.open_app(p, origin, APP, f"?demo=1&today={TODAY}")
             d = p.evaluate(SIDE)
-            check("c. DEMO: the chip, the example note, the scanner's headline, the same worst leak first, 4 accounts, 25% tax, 4 buckets, 3 scenarios and a chart with 2 lines",
-                  d[0] is False and "EXAMPLE numbers" in d[1] and d[2] == oikos.headline(pa)["text"] and d[4][0] == "Resets that did not pay back: Example eval 50K (second try)" and d[5] == 4 and d[6] == "Set aside 25% of net profit" and d[7] == 4
+            check("c. DEMO: the chip, the example note, the scanner's headline, the same worst leak first, 4 accounts, 30% tax, 4 buckets, 3 scenarios and a chart with 2 lines",
+                  d[0] is False and "EXAMPLE numbers" in d[1] and d[2] == oikos.headline(pa)["text"] and d[4][0] == "Resets that did not pay back: Example eval 50K (second try)" and d[5] == 4 and d[6] == "Set aside 30% of net profit" and d[7] == 4
                   and d[8] == ["Conservative", "Base", "Optimistic"] and d[9] == 2, d)
             check("c. the amphora pill says how full the buckets are, as the scanner computes it", d[3] == f"{int(pa['fill'] * 100 + 0.5)}% full", (d[3], pa["fill"]))
             sc = p.evaluate("() => { const s = window.OIKOS.scene(); return s ? [s.coins(), s.capacity(), s.fill(), window.OIKOS.S.sceneMode, !document.querySelector('#amph').hidden, document.querySelector('#amphFallback').hasAttribute('hidden')] : [0, 0, 0, window.OIKOS.S.sceneMode, !document.querySelector('#amph').hidden, document.querySelector('#amphFallback').hasAttribute('hidden')]; }")

@@ -5,7 +5,7 @@
 export const KINDS = { fee: -1, reset: -1, activation: -1, expense: -1, payout_in: 1, payout_req: 0, income: 1, deposit: 0, withdrawal: 0, tax: 0 };
 export const LABELS = { fee: 'Eval fee', reset: 'Reset', activation: 'Activation fee', expense: 'Expense', payout_in: 'Payout received', payout_req: 'Payout requested', income: 'Other income', deposit: 'Deposit', withdrawal: 'Withdrawal', tax: 'Tax paid' };
 export const EVERY = ['week', 'month', 'year'];
-export const DEFAULTS = { tax: 0.25, emergency: 0.25, reinvest: 0.20, living: 2500, em_months: 3, em_saved: 0, cap: 6, proj_re: 0.5, months: 12, account_cost: 0 };
+export const DEFAULTS = { tax: 0.30, emergency: 0.25, reinvest: 0.20, living: 2500, em_months: 3, em_saved: 0, cap: 6, proj_re: 0.5, months: 12, account_cost: 0 };
 export const SCEN = [['conservative', 0.5], ['base', 1.0], ['optimistic', 1.5]];
 export const DEFAULT_ACCOUNT_COST = 91.8;
 export const NOTE_TAX = 'Not tax advice. A generic set-aside percentage; ask an accountant what applies to you.';
@@ -58,7 +58,7 @@ export function normalize(raw, today) {
   let o = raw;
   if (typeof o === 'string') { try { o = JSON.parse(o); } catch (_) { o = null; } }
   if (Array.isArray(o)) o = { entries: o };
-  const out = { entries: [], settings: { taxPct: 25 }, accounts: {}, skipped: 0, demo: false, note: '', opts: {} };
+  const out = { entries: [], settings: { taxPct: 30 }, accounts: {}, skipped: 0, demo: false, note: '', opts: {} };
   if (!isObj(o) || !Array.isArray(o.entries)) return out;
   const seen = new Set();
   o.entries.slice(0, 5000).forEach((e, i) => {
@@ -98,7 +98,7 @@ export function mergeOpts(o) {
 
 // ------------------------------------------------------------------ the leaks
 export function analyze(ledger, today, opts) {
-  const o = mergeOpts({ tax: (ledger.settings.taxPct != null ? ledger.settings.taxPct : 25) / 100, ...(ledger.opts || {}), ...(opts || {}) });
+  const o = mergeOpts({ tax: (ledger.settings.taxPct != null ? ledger.settings.taxPct : 30) / 100, ...(ledger.opts || {}), ...(opts || {}) });
   const ex = expand(ledger.entries, today), d90 = addDays(today, -90), d365 = addDays(today, -365), mkey = today.slice(0, 7);
   const tot = (kinds, since) => r2(ex.filter((e) => kinds.indexOf(e.kind) >= 0 && (since == null || e.date > since)).reduce((s, e) => s + e.amount, 0));
   const COST = ['fee', 'reset', 'activation', 'expense'], INC = ['payout_in', 'income'];

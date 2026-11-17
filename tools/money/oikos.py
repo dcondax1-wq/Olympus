@@ -33,7 +33,7 @@ KINDS = {  # kind -> direction (-1 costs, +1 income, 0 not in net)
 }
 EVERY = ("week", "month", "year")
 NOT_ACCOUNTS = ("general", "kalshi", "")
-DEFAULTS = {"tax": 0.25, "emergency": 0.25, "reinvest": 0.20, "living": 2500.0, "em_months": 3.0, "em_saved": 0.0, "cap": 6, "proj_re": 0.5, "months": 12, "account_cost": 0.0}
+DEFAULTS = {"tax": 0.30, "emergency": 0.25, "reinvest": 0.20, "living": 2500.0, "em_months": 3.0, "em_saved": 0.0, "cap": 6, "proj_re": 0.5, "months": 12, "account_cost": 0.0}
 SCEN = (("conservative", 0.5), ("base", 1.0), ("optimistic", 1.5))
 DEFAULT_ACCOUNT_COST = 91.8      # the owner's real Builder 50K price, used only when the ledger has no eval fee
 NOTE_TAX = "Not tax advice. A generic set-aside percentage; ask an accountant what applies to you."
@@ -143,7 +143,7 @@ def normalize(raw, today):
             raw = None
     if isinstance(raw, list):
         raw = {"entries": raw}
-    out = {"entries": [], "settings": {"taxPct": 25.0}, "accounts": {}, "skipped": 0, "demo": False, "note": "", "opts": {}}
+    out = {"entries": [], "settings": {"taxPct": 30.0}, "accounts": {}, "skipped": 0, "demo": False, "note": "", "opts": {}}
     if not isinstance(raw, dict) or not isinstance(raw.get("entries"), list):
         return out
     seen = set()
@@ -230,7 +230,7 @@ def merge_opts(o):
 
 # ----------------------------------------------------------------------------- the leaks
 def analyze(ledger, today, opts=None):
-    want = {"tax": ledger["settings"].get("taxPct", 25.0) / 100}
+    want = {"tax": ledger["settings"].get("taxPct", 30.0) / 100}
     want.update(ledger.get("opts") or {})
     want.update(opts or {})
     o = merge_opts(want)
@@ -490,7 +490,7 @@ def main(argv=None):
     ap.add_argument("--fixture", action="store_true", help="use the bundled sample ledger")
     ap.add_argument("--ledger", help="a Ledger app JSON export")
     ap.add_argument("--today", help="YYYY-MM-DD (default: today, UTC)")
-    ap.add_argument("--tax", type=float, help="tax set-aside percent (default: the ledger's setting, 25)")
+    ap.add_argument("--tax", type=float, help="tax set-aside percent (default: the ledger's setting, 30)")
     ap.add_argument("--selftest", action="store_true")
     ns = ap.parse_args(argv)
     if ns.selftest:
