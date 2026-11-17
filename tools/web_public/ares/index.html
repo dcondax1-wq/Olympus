@@ -35,7 +35,7 @@
 <div id="nogl" class="nogl" hidden>3D is not available here. Everything works below.</div>
 <header class="hud">
   <div class="title"><h1>ARES</h1><span class="tag" id="demo" hidden>OFFLINE RULES</span><span class="tag live" id="livetag" hidden>LIVE ACCOUNT</span></div>
-  <p class="sub" id="sub">The war room. Size follows the stop.</p>
+  <p class="sub" id="sub">Check a trade before you take it: type entry and stop, get GO, WAIT or HALT and the $ at risk.</p>
   <div class="dd" id="dd" role="img" data-tone="calm"><span class="ddk">DRAWDOWN LEFT</span><b class="ddv"></b><span class="ddb"><i></i></span></div>
 </header>
 <section class="sheet" id="sheet" aria-live="polite">
@@ -46,9 +46,9 @@
     </div>
     <div class="grid2">
       <label>Entry<input id="entry" inputmode="decimal" autocomplete="off" placeholder="21500.00"></label>
-      <label>Stop (beyond the sweep)<input id="stop" inputmode="decimal" autocomplete="off" placeholder="21480.00"></label>
+      <label>Stop (1 tick past the sweep high/low)<input id="stop" inputmode="decimal" autocomplete="off" placeholder="21480.00"></label>
     </div>
-    <label class="slide">Risk this much of the room left: <b id="riskPctV">40%</b>
+    <label class="slide">Risk this much of the $ room left: <b id="riskPctV">40%</b>
       <input id="riskPct" type="range" min="10" max="90" step="5" value="40"></label>
     <div class="out" id="out"></div>
     <section class="plus" aria-label="The money maths">

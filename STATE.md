@@ -42,6 +42,7 @@ Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7;
 - Money (2026-11-16 night B): the Business page is the ONE money place (every dollar, this week's money moves, payout planner, ready-to-upload tick lists, ideas, costs; docs/BUSINESS.md). New: 3 products (bundle $29, risk calculator $12, rules cheat sheet $7), 2 new models (AI training tasks, paid website tests). Plan (ESTIMATE): first payout ~late Dec ($1,200 LIT / $600 ATLAS to you), account #4 the day it is in the bank.
 
 ## Built, waiting for the PC
+- Plain words, MARKET apps (2026-11-17 night-w-market): every Market app's first line now says what it is for and what to do, in $ (Archive, Ares, Chronos, Cities, Colosseum, Compass, Delphi, Ergasterion, Forum, Helios, Kairos, Kronos, NQ, Odeon, Oracle, Pantheon, Pheme, Pinakes, Pythia); NQ no longer says "three bots" / BLITZ.
 - Obsidian living sync (tools/obsidian_sync.py, docs/OBSIDIAN_SYNC.md): the PC report writes <vault>/OLYMPUS/Sync every 15 min (bots' day, trades + pictures,
   nightly learning, business checklist, STATE). Needs ONE line on the PC: python tools/obsidian_sync.py --setup "<vault folder>".
 - Jarvis: Classic Jarvis look back (violet HUD, opt-in: ⋯ → Look → Jarvis look, or say "classic Jarvis"); AGORA stays default. Jarvis, the Gate

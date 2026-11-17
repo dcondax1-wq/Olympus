@@ -31,12 +31,12 @@
 <body>
 <main id="app">
   <header class="top">
-    <div class="brand"><img src="icon.svg" alt="" width="44" height="44"><div><h1 class="ag-title">Archive</h1><p class="sub">Everything we ever tested</p></div></div>
+    <div class="brand"><img src="icon.svg" alt="" width="44" height="44"><div><h1 class="ag-title">Archive</h1><p class="sub">Every idea we tested and the $ it made or lost. Search here before testing anything again.</p></div></div>
     <div class="tags"><span id="demo" class="tag demo" hidden>DEMO</span><span id="lite" class="tag" hidden>LITE</span></div>
   </header>
   <p id="status" class="note" role="status" aria-live="polite">Loading...</p>
   <section class="ag-card card hero" aria-labelledby="heroH">
-    <h2 id="heroH">The library</h2>
+    <h2 id="heroH">What we tested</h2>
     <p class="lead big" id="head"></p>
     <div class="tiles" id="tiles"></div>
     <div class="ballbox">
@@ -47,7 +47,7 @@
     <p class="banner">History only. The Archive shows what was tested and how it came out, with the number of trades behind every result. It predicts nothing and changes nothing the bots do.</p>
   </section>
   <section class="ag-card card" aria-labelledby="findH">
-    <h2 id="findH">Find a run</h2>
+    <h2 id="findH">Find a test</h2>
     <label class="field"><span class="note">Search by idea, name or family</span><input id="q" type="search" inputmode="search" autocomplete="off" enterkeyhint="search" placeholder="Try: wider stop at night, breakeven, VIX"></label>
     <div id="redo" class="redo" role="alert" hidden></div>
     <div class="seg" id="verdicts" role="group" aria-label="Verdict"></div>
@@ -56,7 +56,7 @@
     <label class="field"><span class="note">Sort</span><select id="sort"></select></label>
     <details class="nums"><summary>Filter by the numbers</summary>
       <div class="grid2">
-        <label class="field"><span class="note">PF at least</span><input id="min_pf" type="number" inputmode="decimal" step="0.1" placeholder="1.5"></label>
+        <label class="field"><span class="note">PF (win $ / loss $) at least</span><input id="min_pf" type="number" inputmode="decimal" step="0.1" placeholder="1.5"></label>
         <label class="field"><span class="note">Net $ at least</span><input id="min_net" type="number" inputmode="numeric" step="500" placeholder="5000"></label>
         <label class="field"><span class="note">$ a month at least</span><input id="min_pm" type="number" inputmode="numeric" step="100" placeholder="1000"></label>
         <label class="field"><span class="note">Trades a week at least</span><input id="min_tpw" type="number" inputmode="decimal" step="0.5" placeholder="2"></label>

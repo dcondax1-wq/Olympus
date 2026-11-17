@@ -589,7 +589,7 @@ function hud(d) {
     const m = DESK.dayMove(d, lv, false);
     if (m.pts != null) { $('glance').hidden = false; $('glance').innerHTML = `A normal day moves NQ about <b>${Math.round(m.pts)} points</b>: <b>±$${Math.round(m.mnq).toLocaleString('en-US')}</b> per micro.`; }
   } catch (_) { /* no estimate */ }
-  $('sub').textContent = d.demo ? 'Demo data (pantheon.json not found)' : `Eight free data gods · built ${d.built}`;
+  $('sub').textContent = d.demo ? 'Demo data: the real file is not built yet' : `Free market data in plain words · built ${d.built}`;
   $('vline').innerHTML = `${esc(c.text)}${c.caution ? ' <b>' + esc(c.caution) + '</b>' : ''}`;
   $('strip').innerHTML = d.gods.map((g) => `<button type="button" class="god" data-key="${esc(g.key)}" style="--c:${esc(g.color)}" aria-label="${esc(g.name)}: ${esc(g.title)}, ${esc(chipValue(g))}">
     <span class="n">${esc(g.name)}</span><span class="v">${esc(chipValue(g))}</span></button>`).join('');
