@@ -809,6 +809,14 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   no single-fact bin loses in both halves; 425 two-fact H1 loser cells -> 88 lose again in H2 vs 95 by chance. H2 vs H1 =
   18% fewer trades/mo, 12% less R a trade (lower VIX, wider stops), 18% less $ per R; low-VIX trades +0.77R in both halves.
 
+- **Smart entries (2026-11-17, `lit-smart-entries-2026-11-17.md`, `tools/lit_smart_entries.py`, 31 cells, grid
+  `research/lit/smart_entries.json`; eval two_week room_f 0.4 to session 80):** same setups, other ways in. Pullback limit
+  (candle 50% / 1m CISD level, 3 / 5 min, then market) only when the 1m CISD candle ran > 0.14 / 0.25R or is > 0.22 / 0.27R
+  tall (16): H2 $2,670 -> $225-1,236/mo (closer BE + 15-min check scratch the H2 winners). 1m CISD OR a 1m BOS: +$1,778 /
+  -$787, eval -$877 / +$2,069. CISD AND BOS / close above the zone / inside the swept level / 2+ down candles / strong close /
+  close above the last high (7): Jan-Jun -$1.6k to -$24k. Wait 5-15 min for proof (4): -$8k to -$26k a half. Half now +
+  half at minute 5 / 15 inside the same $ risk (3): -$8.7-10.1k / -$2.9-4.8k, eval 2-week pass 44.5 -> 15%. None passes.
+  Wide-stop half size and an entry-quality score were not re-run (already rejected above).
 - **Learn loop first night (2026-11-15, `docs/LEARN_LOOP.md`, queue `research/learn_queue.json`):** Zlarior size x1.25 on low dealer
   gamma / after a tight Asia range / on a many-times-touched or an old swept level / on a fast fill after the CISD, x0.75 the day after
   a VIX jump; ATLAS x1.25 after Zlarior was stopped on the other side, x0.5 on a two-way day: all 8 rejected (best: old level +$138 /
