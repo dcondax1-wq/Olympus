@@ -1,0 +1,412 @@
+{
+ "v": 1,
+ "kind": "kalshi_rewards_paper",
+ "paper_only": true,
+ "started": "2026-11-17T15:13:38+00:00",
+ "updated": "2026-11-17T15:13:38+00:00",
+ "series": [
+  "KXRT",
+  "KXPANAMAWEEKLY",
+  "KXBABELMANDEBWEEKLY"
+ ],
+ "picked_at": 1794928418.8619537,
+ "markets": {
+  "KXRT-JUM-65": {
+   "s": "KXRT",
+   "t": "KXRT-JUM-65",
+   "reward": 0.0,
+   "snaps": 0,
+   "valid": 0,
+   "secs": 0.0,
+   "yes": {
+    "p": 0.39,
+    "q": 200.0,
+    "queue": 13775.0,
+    "pos": 0.0,
+    "cost": 0.0,
+    "fees": 0.0,
+    "fills": 0
+   },
+   "no": {
+    "p": 0.6,
+    "q": 200.0,
+    "queue": 46339.01,
+    "pos": 0.0,
+    "cost": 0.0,
+    "fees": 0.0,
+    "fills": 0
+   },
+   "result": "",
+   "settled": null,
+   "mark": 0.0,
+   "active": true,
+   "prog": {
+    "usd_sec": 0.0011574074074074073,
+    "target": 1000.0,
+    "df": 0.5,
+    "end": "2026-11-18T05:00:00Z"
+   },
+   "fee_type": "quadratic",
+   "seen": [],
+   "last_ts": 1794928418.8619537,
+   "mid": 0.395,
+   "prev_t": 1794928418.8619537
+  },
+  "KXRT-HEX-70": {
+   "s": "KXRT",
+   "t": "KXRT-HEX-70",
+   "reward": 0.0,
+   "snaps": 0,
+   "valid": 0,
+   "secs": 0.0,
+   "yes": {
+    "p": 0.35,
+    "q": 200.0,
+    "queue": 12555.52,
+    "pos": 0.0,
+    "cost": 0.0,
+    "fees": 0.0,
+    "fills": 0
+   },
+   "no": {
+    "p": 0.63,
+    "q": 200.0,
+    "queue": 26181.0,
+    "pos": 0.0,
+    "cost": 0.0,
+    "fees": 0.0,
+    "fills": 0
+   },
+   "result": "",
+   "settled": null,
+   "mark": 0.0,
+   "active": true,
+   "prog": {
+    "usd_sec": 0.0011574074074074073,
+    "target": 1000.0,
+    "df": 0.5,
+    "end": "2026-11-18T05:00:00Z"
+   },
+   "fee_type": "quadratic",
+   "seen": [],
+   "last_ts": 1794928418.8619537,
+   "mid": 0.36,
+   "prev_t": 1794928418.8619537
+  },
+  "KXRT-DUNE-87": {
+   "s": "KXRT",
+   "t": "KXRT-DUNE-87",
+   "reward": 0.0,
+   "snaps": 0,
+   "valid": 0,
+   "secs": 0.0,
+   "yes": {
+    "p": 0.5,
+    "q": 200.0,
+    "queue": 1985.56,
+    "pos": 0.0,
+    "cost": 0.0,
+    "fees": 0.0,
+    "fills": 0
+   },
+   "no": {
+    "p": 0.46,
+    "q": 200.0,
+    "queue": 1122.0,
+    "pos": 0.0,
+    "cost": 0.0,
+    "fees": 0.0,
+    "fills": 0
+   },
+   "result": "",
+   "settled": null,
+   "mark": 0.0,
+   "active": true,
+   "prog": {
+    "usd_sec": 0.0011574074074074073,
+    "target": 1000.0,
+    "df": 0.5,
+    "end": "2026-11-18T05:00:00Z"
+   },
+   "fee_type": "quadratic",
+   "seen": [],
+   "last_ts": 1794928418.8619537,
+   "mid": 0.53,
+   "prev_t": 1794928418.8619537
+  },
+  "KXPANAMAWEEKLY-26NOV22-T215": {
+   "s": "KXPANAMAWEEKLY",
+   "t": "KXPANAMAWEEKLY-26NOV22-T215",
+   "reward": 0.0,
+   "snaps": 0,
+   "valid": 0,
+   "secs": 0.0,
+   "yes": {
+    "p": 0.01,
+    "q": 200.0,
+    "queue": 191000.0,
+    "pos": 0.0,
+    "cost": 0.0,
+    "fees": 0.0,
+    "fills": 0
+   },
+   "no": {
+    "p": 0.96,
+    "q": 200.0,
+    "queue": 2340.5,
+    "pos": 0.0,
+    "cost": 0.0,
+    "fees": 0.0,
+    "fills": 0
+   },
+   "result": "",
+   "settled": null,
+   "mark": 0.0,
+   "active": true,
+   "prog": {
+    "usd_sec": 0.0011574074074074073,
+    "target": 1000.0,
+    "df": 0.5,
+    "end": "2026-11-18T05:00:00Z"
+   },
+   "fee_type": "quadratic",
+   "seen": [],
+   "last_ts": 1794928418.8619537,
+   "mid": 0.01500000000000001,
+   "prev_t": 1794928418.8619537
+  },
+  "KXPANAMAWEEKLY-26NOV22-T185": {
+   "s": "KXPANAMAWEEKLY",
+   "t": "KXPANAMAWEEKLY-26NOV22-T185",
+   "reward": 0.0,
+   "snaps": 0,
+   "valid": 0,
+   "secs": 0.0,
+   "yes": {
+    "p": 0.86,
+    "q": 200.0,
+    "queue": 578.3,
+    "pos": 0.0,
+    "cost": 0.0,
+    "fees": 0.0,
+    "fills": 0
+   },
+   "no": {
+    "p": 0.09,
+    "q": 200.0,
+    "queue": 55000.0,
+    "pos": 0.0,
+    "cost": 0.0,
+    "fees": 0.0,
+    "fills": 0
+   },
+   "result": "",
+   "settled": null,
+   "mark": 0.0,
+   "active": true,
+   "prog": {
+    "usd_sec": 0.0011574074074074073,
+    "target": 1000.0,
+    "df": 0.5,
+    "end": "2026-11-18T05:00:00Z"
+   },
+   "fee_type": "quadratic",
+   "seen": [],
+   "last_ts": 1794928418.8619537,
+   "mid": 0.905,
+   "prev_t": 1794928418.8619537
+  },
+  "KXPANAMAWEEKLY-26NOV22-T205": {
+   "s": "KXPANAMAWEEKLY",
+   "t": "KXPANAMAWEEKLY-26NOV22-T205",
+   "reward": 0.0,
+   "snaps": 0,
+   "valid": 0,
+   "secs": 0.0,
+   "yes": {
+    "p": 0.04,
+    "q": 200.0,
+    "queue": 55000.0,
+    "pos": 0.0,
+    "cost": 0.0,
+    "fees": 0.0,
+    "fills": 0
+   },
+   "no": {
+    "p": 0.76,
+    "q": 200.0,
+    "queue": 2239.0,
+    "pos": 0.0,
+    "cost": 0.0,
+    "fees": 0.0,
+    "fills": 0
+   },
+   "result": "",
+   "settled": null,
+   "mark": 0.0,
+   "active": true,
+   "prog": {
+    "usd_sec": 0.0011574074074074073,
+    "target": 1000.0,
+    "df": 0.5,
+    "end": "2026-11-18T05:00:00Z"
+   },
+   "fee_type": "quadratic",
+   "seen": [],
+   "last_ts": 1794928418.8619537,
+   "mid": 0.045000000000000026,
+   "prev_t": 1794928418.8619537
+  },
+  "KXBABELMANDEBWEEKLY-26NOV22-T210": {
+   "s": "KXBABELMANDEBWEEKLY",
+   "t": "KXBABELMANDEBWEEKLY-26NOV22-T210",
+   "reward": 0.0,
+   "snaps": 0,
+   "valid": 0,
+   "secs": 0.0,
+   "yes": {
+    "p": 0.05,
+    "q": 200.0,
+    "queue": 59399.0,
+    "pos": 0.0,
+    "cost": 0.0,
+    "fees": 0.0,
+    "fills": 0
+   },
+   "no": {
+    "p": 0.94,
+    "q": 200.0,
+    "queue": 401.53,
+    "pos": 0.0,
+    "cost": 0.0,
+    "fees": 0.0,
+    "fills": 0
+   },
+   "result": "",
+   "settled": null,
+   "mark": 0.0,
+   "active": true,
+   "prog": {
+    "usd_sec": 0.0011574074074074073,
+    "target": 1000.0,
+    "df": 0.5,
+    "end": "2026-11-18T05:00:00Z"
+   },
+   "fee_type": "quadratic",
+   "seen": [],
+   "last_ts": 1794928418.8619537,
+   "mid": 0.05500000000000003,
+   "prev_t": 1794928418.8619537
+  },
+  "KXBABELMANDEBWEEKLY-26NOV22-T170": {
+   "s": "KXBABELMANDEBWEEKLY",
+   "t": "KXBABELMANDEBWEEKLY-26NOV22-T170",
+   "reward": 0.0,
+   "snaps": 0,
+   "valid": 0,
+   "secs": 0.0,
+   "yes": {
+    "p": 0.88,
+    "q": 200.0,
+    "queue": 1129.0,
+    "pos": 0.0,
+    "cost": 0.0,
+    "fees": 0.0,
+    "fills": 0
+   },
+   "no": {
+    "p": 0.11,
+    "q": 200.0,
+    "queue": 229.0,
+    "pos": 0.0,
+    "cost": 0.0,
+    "fees": 0.0,
+    "fills": 0
+   },
+   "result": "",
+   "settled": null,
+   "mark": 0.0,
+   "active": true,
+   "prog": {
+    "usd_sec": 0.0011574074074074073,
+    "target": 1000.0,
+    "df": 0.5,
+    "end": "2026-11-18T05:00:00Z"
+   },
+   "fee_type": "quadratic",
+   "seen": [],
+   "last_ts": 1794928418.8619537,
+   "mid": 0.885,
+   "prev_t": 1794928418.8619537
+  },
+  "KXBABELMANDEBWEEKLY-26NOV22-T220": {
+   "s": "KXBABELMANDEBWEEKLY",
+   "t": "KXBABELMANDEBWEEKLY-26NOV22-T220",
+   "reward": 0.0,
+   "snaps": 0,
+   "valid": 0,
+   "secs": 0.0,
+   "yes": {
+    "p": 0.02,
+    "q": 200.0,
+    "queue": 158217.0,
+    "pos": 0.0,
+    "cost": 0.0,
+    "fees": 0.0,
+    "fills": 0
+   },
+   "no": {
+    "p": 0.94,
+    "q": 200.0,
+    "queue": 8039.87,
+    "pos": 0.0,
+    "cost": 0.0,
+    "fees": 0.0,
+    "fills": 0
+   },
+   "result": "",
+   "settled": null,
+   "mark": 0.0,
+   "active": true,
+   "prog": {
+    "usd_sec": 0.0011574074074074073,
+    "target": 1000.0,
+    "df": 0.5,
+    "end": "2026-11-18T05:00:00Z"
+   },
+   "fee_type": "quadratic",
+   "seen": [],
+   "last_ts": 1794928418.8619537,
+   "mid": 0.025000000000000015,
+   "prev_t": 1794928418.8619537
+  }
+ },
+ "totals": {
+  "reward": 0.0,
+  "fills_pnl": 0.0,
+  "net": 0.0,
+  "market_hours": 0.0,
+  "capital_now": 1718.0,
+  "net_per_market_day": null,
+  "by_series": {
+   "KXRT": {
+    "markets": 3,
+    "reward": 0.0,
+    "fills_pnl": 0.0,
+    "valid_pct": 0
+   },
+   "KXPANAMAWEEKLY": {
+    "markets": 3,
+    "reward": 0.0,
+    "fills_pnl": 0.0,
+    "valid_pct": 0
+   },
+   "KXBABELMANDEBWEEKLY": {
+    "markets": 3,
+    "reward": 0.0,
+    "fills_pnl": 0.0,
+    "valid_pct": 0
+   }
+  }
+ }
+}
