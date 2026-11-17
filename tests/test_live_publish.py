@@ -171,6 +171,19 @@ def pc_health_checks(now, lm, p_none):
           all(lp.pc_health_summary(x) is None for x in (None, {}, "x", 5, {"lines": "x"})) and isinstance(lp.pc_health_summary({"lines": [None, 3, {"key": "cpu"}], "t": "junk"}), dict))
     big = lp.build({**hb_payload(now, n_trades=60), "pc_health": hb["pc_health"]}, now, lm=lm)
     check("pc_health: still under 64 KB with 60 trades", len(json.dumps(big, separators=(",", ":"))) < lp.MAX_BYTES)
+    # the Kalshi rewards PAPER card (tools/kalshi_rewards_paper.py public summary -> live.json "kalshi_rewards")
+    import tempfile
+    kd = tempfile.mkdtemp()
+    kp = os.path.join(kd, "summary.json")
+    with open(kp, "w", encoding="utf-8") as f:
+        json.dump({"v": 1, "kind": "kalshi_rewards_pub", "paper_only": True, "days": 1.5, "reward": 3.2, "fill_pnl": -1.1, "net": 2.1,
+                   "series": {"KXRT": {"reward": 2, "fill_pnl": 0, "junk": "C:\\Users\\me"}}, "path": "C:\\Users\\me"}, f)
+    kr = lp.kalshi_rewards_card(path=kp)
+    check("kalshi_rewards: the paper card keeps only its own keys ($ earned, fill $, net, days, per series)",
+          kr and kr["net"] == 2.1 and kr["days"] == 1.5 and "path" not in kr and kr["series"] == {"KXRT": {"reward": 2, "fill_pnl": 0}}, kr)
+    os.utime(kp, (now - 3 * 86400, now - 3 * 86400))
+    check("kalshi_rewards: an old (> 2 days) or missing or junk summary is left out",
+          lp.kalshi_rewards_card(now=now, path=kp) is None and lp.kalshi_rewards_card(path=kp + ".none") is None, "")
 
 
 def main(argv=None) -> int:

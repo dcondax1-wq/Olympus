@@ -17,6 +17,16 @@ The honest verdict is rewards - fill losses. The fill model is the weak spot: re
   python tools/kalshi_rewards_paper.py --loop 360 --gap 60     6 hours, one cycle a minute (network: api.elections.kalshi.com)
   python tools/kalshi_rewards_paper.py --summary               the ledger's table, no network
   python tools/kalshi_rewards_paper.py --selftest              offline checks with a stub API
+
+24/7 on the PC (owner 2026-11-17): tools/pc_report.py (the 15-minute task OlympusPCReport) calls maybe_run(), which keeps ONE
+detached, low-priority child running `--loop 720 --gap 60` (about 12 h, then it ends and the next hook starts a fresh one, so an
+update is picked up) with the ledger in data/kalshi_rewards/rewards_paper.json (gitignored) and a tiny PUBLIC summary in
+data/kalshi_rewards/summary.json (no tickers, no PC name, no path: $ earned, fill $, net, days) that engine/live_publish.py puts
+in live.json as "kalshi_rewards" for the Kalshi page. A child that is not writing (ledger older than 15 min) is replaced; the
+replaced one sees the new token in run.json and stops. ON by default (read-only, public data); off: LE_KALSHI_REWARDS=0 or a file
+data/kalshi_rewards/OFF. It stops starting after the program's end (Jan 2, 2027).
+  python tools/kalshi_rewards_paper.py --pc-status             what the PC hook would do now (no start)
+  python tools/kalshi_rewards_paper.py --site-copy             the Kalshi page's dated copy (tools/web_public/kalshi/rewards.json)
 """
 from __future__ import annotations
 
@@ -39,6 +49,10 @@ SERIES = ["KXRT", "KXPANAMAWEEKLY", "KXBABELMANDEBWEEKLY"]
 PER_SERIES = 3          # markets watched per series
 DT_CAP = 120.0          # seconds of reward credited per snapshot at most
 RESELECT = 3600         # re-pick markets every hour
+PC_DIR = os.path.join(ROOT, "data", "kalshi_rewards")   # gitignored
+PC_LOOPS = 720          # one child = about 12 h of 60 s cycles
+STALE_S = 900           # a child whose ledger is older than this is replaced
+PROGRAM_END = dt.datetime(2027, 1, 2, tzinfo=dt.timezone.utc).timestamp()
 
 
 def T(s):
@@ -305,6 +319,124 @@ def summary(led):
         t.get("net", 0), t.get("market_hours", 0), t.get("net_per_market_day"), t.get("capital_now")))
 
 
+# ---------------------------------------------------------------- the PC's 24/7 run (tools/pc_report.py hook)
+def public_summary(led):
+    """the tiny PUBLIC card (no tickers, no PC name, no path): what the Kalshi page shows."""
+    t = led.get("totals") or {}
+    ms = list((led.get("markets") or {}).values())
+    try:
+        days = (T(led["updated"]) - T(led["started"])) / 86400.0
+    except (KeyError, TypeError, ValueError):
+        days = 0.0
+    cap = F(t.get("capital_now"))
+    capd = cap * days if days > 0.04 else 0.0             # $ parked x days (from an hour on)
+    return {"v": 1, "kind": "kalshi_rewards_pub", "paper_only": True, "started": led.get("started"), "updated": led.get("updated"),
+            "days": round(max(days, 0.0), 2), "reward": round(F(t.get("reward")), 2), "fill_pnl": round(F(t.get("fills_pnl")), 2),
+            "net": round(F(t.get("net")), 2), "fills": int(sum(m["yes"]["fills"] + m["no"]["fills"] for m in ms)),
+            "markets": len([m for m in ms if m.get("active")]), "capital": round(cap or 0.0),
+            "per100_day": round(100 * F(t.get("net")) / capd, 2) if capd > 0 else None,
+            "series": {s: {"reward": b.get("reward"), "fill_pnl": b.get("fills_pnl")} for s, b in (t.get("by_series") or {}).items()}}
+
+
+def _read(path, default=None):
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return default
+
+
+def pc_paths(pc_dir=PC_DIR):
+    return {"out": os.path.join(pc_dir, "rewards_paper.json"), "pub": os.path.join(pc_dir, "summary.json"),
+            "run": os.path.join(pc_dir, "run.json"), "off": os.path.join(pc_dir, "OFF"), "log": os.path.join(pc_dir, "run.log")}
+
+
+def pc_guard(now=None, env=None, pc_dir=PC_DIR):
+    """(start?, why) for the PC hook. Never raises."""
+    e = os.environ if env is None else env
+    now = time.time() if now is None else now
+    P = pc_paths(pc_dir)
+    if str(e.get("LE_KALSHI_REWARDS", "1")).strip() == "0":
+        return False, "off (LE_KALSHI_REWARDS=0)"
+    if os.path.exists(P["off"]):
+        return False, "off (data/kalshi_rewards/OFF)"
+    if now >= PROGRAM_END:
+        return False, "the rewards program has ended"
+    try:
+        age = now - os.path.getmtime(P["out"])
+    except OSError:
+        age = None
+    run = _read(P["run"], {}) or {}
+    if age is not None and age < STALE_S:
+        return False, "running (ledger %d s old)" % age
+    if now - F(run.get("t")) < STALE_S:
+        return False, "starting (spawned %d s ago)" % (now - F(run.get("t")))
+    return True, "not running" if age is None else "ledger %d min old" % (age // 60)
+
+
+def pc_spawn(token, pc_dir=PC_DIR):
+    """the detached, low-priority child with no window (it outlives the 15-minute task)."""
+    import subprocess
+    P = pc_paths(pc_dir)
+    os.makedirs(pc_dir, exist_ok=True)
+    log = open(P["log"], "a", encoding="utf-8")
+    cmd = [sys.executable, "-X", "utf8", os.path.abspath(__file__), "--loop", str(PC_LOOPS), "--gap", "60", "--out", P["out"],
+           "--pub", P["pub"], "--token", token, "--run", P["run"]]
+    kw = {"cwd": ROOT, "stdout": log, "stderr": log, "stdin": subprocess.DEVNULL}
+    if os.name == "nt":
+        base = 0x00004000 | 0x08000000 | 0x00000200          # BELOW_NORMAL | CREATE_NO_WINDOW | NEW_PROCESS_GROUP
+        try:
+            return subprocess.Popen(cmd, creationflags=base | 0x01000000, **kw).pid   # + BREAKAWAY_FROM_JOB
+        except OSError:
+            return subprocess.Popen(cmd, creationflags=base, **kw).pid
+    kw["start_new_session"] = True
+    return subprocess.Popen(cmd, **kw).pid
+
+
+def maybe_run(say=print, env=None, now=None, pc_dir=PC_DIR, spawn_fn=None):
+    """tools/pc_report.py's 15-minute hook: keep one paper child running. Never raises; returns the new pid or None."""
+    try:
+        e = os.environ if env is None else env
+        if e.get("LE_PR_NO_NET") == "1" and spawn_fn is None:
+            return None                                   # the PC report's tests: never start a real child
+        now = time.time() if now is None else now
+        ok, why = pc_guard(now, e, pc_dir)
+        if not ok:
+            return None
+        token = "%d-%d" % (int(now), os.getpid())
+        P = pc_paths(pc_dir)
+        os.makedirs(pc_dir, exist_ok=True)
+        save(P["run"], {"token": token, "t": int(now), "why": why})   # an older child sees the new token and stops
+        pid = (spawn_fn or pc_spawn)(token, pc_dir)
+        if pid:
+            say("  [OK]  Kalshi rewards paper test started (paper only, public data, pid %s)" % pid)
+        return pid
+    except Exception as ex:  # noqa: BLE001
+        say("  [..] Kalshi rewards paper skipped: %s: %s" % (ex.__class__.__name__, str(ex)[:120]))
+        return None
+
+
+SITE_COPY = os.path.join(ROOT, "tools", "web_public", "kalshi", "rewards.json")
+HEADLINE = os.path.join(ROOT, "research", "kalshi_rewards_bt", "headline.json")
+
+
+def site_copy(led, path=SITE_COPY, headline=HEADLINE):
+    """the Kalshi page's own dated copy (tools/web_public/kalshi/rewards.json): this ledger's public summary + the backtest line.
+    Run by hand (it is a committed file), never by the PC child."""
+    bt = _read(headline, None)
+    d = {"v": 1, "kind": "kalshi_rewards_site", "paper": public_summary(led),
+         "backtest": {k: bt.get(k) for k in ("text", "per100_first15", "per100_last15", "verdict", "date")} if isinstance(bt, dict) else None}
+    save(path, d)
+    return d
+
+
+def still_mine(run_path, token):
+    if not run_path or not token:
+        return True
+    r = _read(run_path, None)
+    return not isinstance(r, dict) or r.get("token") in (None, token)
+
+
 # ---------------------------------------------------------------- selftest
 class Stub:
     def __init__(self):
@@ -350,11 +482,30 @@ def selftest():
     st.trades, st.res = [], "no"
     cycle(st, led, 2e9 + 240)
     assert abs(m["settled"] - (-39.0)) < 1e-9 and not m["active"]; ok += 1
+    pub = public_summary(led)
+    assert pub["kind"] == "kalshi_rewards_pub" and pub["paper_only"] and abs(pub["fill_pnl"] - (-117.0)) < 1e-9 and pub["fills"] == 3 and pub["series"]["KXRT"]["fill_pnl"] == -39.0
+    assert not any(k in json.dumps(pub) for k in ("KXRT-A", ROOT, "\\Users")); ok += 1
+    tmp = tempfile.mkdtemp()
+    got = []
+    sp = lambda tok, d: got.append(tok) or 4242      # noqa: E731
+    assert maybe_run(say=lambda *_: None, env={"LE_KALSHI_REWARDS": "0"}, now=2e9 - 1e7, pc_dir=tmp, spawn_fn=sp) is None and not got
+    assert maybe_run(say=lambda *_: None, env={}, now=time.time(), pc_dir=tmp, spawn_fn=sp) == 4242 and len(got) == 1
+    assert maybe_run(say=lambda *_: None, env={}, now=time.time() + 60, pc_dir=tmp, spawn_fn=sp) is None   # just spawned
+    P = pc_paths(tmp)
+    save(P["out"], led)
+    assert maybe_run(say=lambda *_: None, env={}, now=time.time() + STALE_S + 5, pc_dir=tmp, spawn_fn=sp) == 4242 and len(got) == 2
+    assert not still_mine(P["run"], got[0]) and still_mine(P["run"], got[1]); ok += 1
+    os.utime(P["out"])
+    assert maybe_run(say=lambda *_: None, env={}, now=time.time() + 30, pc_dir=tmp, spawn_fn=sp) is None   # ledger fresh
+    open(P["off"], "w").close()
+    assert pc_guard(time.time() + 9 * STALE_S, {}, tmp)[0] is False
+    assert pc_guard(PROGRAM_END + 1, {}, tempfile.mkdtemp())[0] is False
+    assert maybe_run(say=lambda *_: None, env={"LE_PR_NO_NET": "1"}, pc_dir=tempfile.mkdtemp()) is None; ok += 1
     src = open(os.path.abspath(__file__), encoding="utf-8").read()
     for bad in ("/portfolio/", "KALSHI-ACCESS", "data="):
         assert src.count(bad) == 1, bad      # only this list mentions it
     ok += 1
-    print("kalshi_rewards_paper selftest: %d/9 ALL PASS" % ok)
+    print("kalshi_rewards_paper selftest: %d/12 ALL PASS" % ok)
 
 
 def main():
@@ -364,18 +515,35 @@ def main():
     ap.add_argument("--gap", type=float, default=60.0)
     ap.add_argument("--summary", action="store_true")
     ap.add_argument("--selftest", action="store_true")
+    ap.add_argument("--pub", help="also write the tiny public summary here after every cycle")
+    ap.add_argument("--token", help="(PC hook) this child's token; it stops when run.json names another")
+    ap.add_argument("--run", help="(PC hook) the run.json holding the current token")
+    ap.add_argument("--pc-status", action="store_true", help="what the PC hook would do now (starts nothing)")
+    ap.add_argument("--site-copy", action="store_true", help="write tools/web_public/kalshi/rewards.json from --out (by hand)")
     a = ap.parse_args()
     if a.selftest:
         return selftest()
+    if a.site_copy:
+        d = site_copy(load(a.out))
+        print("wrote", os.path.relpath(SITE_COPY, ROOT), json.dumps(d)[:300])
+        return None
+    if a.pc_status:
+        print("PC hook:", pc_guard())
+        return summary(load(pc_paths()["out"]))
     led = load(a.out)
     if a.summary:
         return summary(led)
     net = Net()
     for k in range(a.loop):
         t0 = time.time()
+        if not still_mine(a.run, a.token):
+            print("a newer run took over: stopping", flush=True)
+            break
         try:
             cycle(net, led, t0)
             save(a.out, led)
+            if a.pub:
+                save(a.pub, public_summary(led))
         except Exception as e:  # noqa: BLE001  (one bad cycle never kills the run)
             print("cycle error:", repr(e), file=sys.stderr, flush=True)
         if k < a.loop - 1:

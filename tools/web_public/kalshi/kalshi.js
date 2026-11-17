@@ -1361,6 +1361,54 @@
     if (el) { const t = document.createElement('div'); t.innerHTML = fwdStrip(); if (t.firstElementChild) el.replaceWith(t.firstElementChild); }
   }
 
+  // ---- "Rewards test (paper)" (owner 2026-11-17): tools/kalshi_rewards_paper.py keeps pretend two-sided orders on Kalshi's paid-liquidity markets.
+  // Its numbers: the PC's 15-minute status post (ntfy topic of ../status_feed.json, key kalshi_rewards, tools/pc_report.py lite) when that is newer,
+  // else rewards.json in this folder (a dated copy + the 30-day backtest line, research/writeups/kalshi-rewards-backtest-2026-11-17.md). $0 at risk.
+  const RW = { j: null, src: '', bt: null };
+  const rwUsd = (x, sign) => { const v = num(x); return v == null ? '–' : (v < -0.004 ? '−' : sign && v > 0.004 ? '+' : '') + '$' + Math.abs(v).toFixed(2); };
+  function rwOk(j) { return isObj(j) && j.kind === 'kalshi_rewards_pub' && j.paper_only === true && num(j.reward) != null; }
+  function rwHtml() {
+    const j = RW.j, bt = RW.bt;
+    if (!rwOk(j)) return '';
+    const d = num(j.days), up = Date.parse(j.updated || ''), when = Number.isFinite(up) ? new Date(up).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '';
+    const cell = (t, v, c) => `<div><dt>${t}</dt><dd class="${c || ''}">${v}</dd></div>`;
+    const per = num(j.per100_day);
+    return '<p><b>Rewards test (paper)</b> Pretend orders that earn Kalshi\'s liquidity rewards. $0 at risk, nothing is placed.</p>'
+      + '<dl class="krw-g">' + cell('Earned', esc(rwUsd(j.reward)), cls(j.reward)) + cell('Fills', esc(rwUsd(j.fill_pnl, true)), cls(j.fill_pnl))
+      + cell('Net', esc(rwUsd(j.net, true)), cls(j.net)) + cell('Days', d == null ? '–' : esc(d < 1 ? d.toFixed(1) : String(Math.round(d * 10) / 10))) + '</dl>'
+      + `<p class="krw-f">${per != null ? esc(rwUsd(per, true)) + ' a day per $100 parked · ' : ''}${esc(fmtN(num(j.fills) || 0))} fill${num(j.fills) === 1 ? '' : 's'}`
+      + `${when ? ' · ' + esc(when) : ''} · ${RW.src === 'pc' ? 'from the PC' : 'saved copy'}</p>`
+      + (isObj(bt) && bt.text ? `<p class="krw-f">Backtest (30 days): ${esc(String(bt.text).slice(0, 220))}</p>` : '');
+  }
+  function rwShow() {
+    const el = $('#krw');
+    if (!el) return;
+    const h = rwHtml();
+    el.innerHTML = h;
+    el.hidden = !h;
+  }
+  async function rwGet(url, ms, text) {
+    let ac = null, tm = 0;
+    try { ac = new AbortController(); tm = setTimeout(() => ac.abort(), ms); } catch (_) { ac = null; }
+    try { const r = await fetch(url, { cache: 'no-cache', signal: ac ? ac.signal : undefined }); if (!r || !r.ok) return null; return text ? await r.text() : await r.json(); } catch (_) { return null; } finally { clearTimeout(tm); }
+  }
+  async function rewardsLoad() {
+    const own = await rwGet('rewards.json', 4000);
+    if (isObj(own)) { RW.bt = isObj(own.backtest) ? own.backtest : null; if (rwOk(own.paper)) { RW.j = own.paper; RW.src = 'copy'; } }
+    rwShow();
+    const feed = await rwGet('../status_feed.json', 3000);
+    if (!isObj(feed) || !/^[A-Za-z0-9_-]{1,64}$/.test(String(feed.topic || '')) || !/^https:\/\//.test(String(feed.ntfy || 'https://ntfy.sh'))) return;
+    const txt = await rwGet(String(feed.ntfy || 'https://ntfy.sh').replace(/\/+$/, '') + '/' + encodeURIComponent(feed.topic) + '/json?poll=1&since=12h', 5000, true);
+    let best = null;
+    for (const line of String(txt || '').split('\n')) {
+      let m = null, x = null;
+      try { m = JSON.parse(line); x = JSON.parse(m.message); } catch (_) { continue; }
+      const kr = isObj(x) && x.kind === 'le-live' ? x.kalshi_rewards : null;
+      if (rwOk(kr) && (!best || String(kr.updated || '') >= String(best.updated || ''))) best = kr;
+    }
+    if (best && (!RW.j || String(best.updated || '') >= String(RW.j.updated || ''))) { RW.j = best; RW.src = 'pc'; rwShow(); }
+  }
+
   function whatifHtml(k, v) {
     const m = whatifModel(k, v), head = '<div class="card-h"><h2>If you change the bot</h2></div><p class="wi-lab">A backtest of past bets · suggestions only · nothing here places or changes a bet</p>';
     if (!m.enough) return `<section class="card whatif" id="sec-whatif">${head}<p class="muted">${esc(m.recommend)}</p>${fwdStrip()}</section>`;
@@ -2107,5 +2155,6 @@
   city();
   fwd();
   scanLoad();
+  rewardsLoad();
   offline();
 })();

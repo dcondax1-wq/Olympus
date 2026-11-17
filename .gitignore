@@ -235,3 +235,7 @@ data/obsidian_sync.json.tmp
 
 # Kalshi rewards paper: live ledger changes every minute (snapshot committed as rewards_paper_snapshot.json)
 research/kalshi_edge_K5/paper/rewards_paper.json
+# Kalshi rewards paper on the PC (tools/kalshi_rewards_paper.py maybe_run): ledger, public summary, run token, log
+data/kalshi_rewards/
+# Kalshi rewards backtest: public tape cache (research/kalshi_rewards_bt/harvest.py)
+research/kalshi_rewards_bt/cache/

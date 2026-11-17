@@ -1,0 +1,10 @@
+{
+ "date": "2026-11-17",
+ "per100_first15": 0.33,
+ "per100_last15": -0.22,
+ "guard_first15": 0.58,
+ "guard_last15": 0.13,
+ "verdict": "not positive in both halves",
+ "series": 8,
+ "text": "+$0.33 / -$0.22 a day per $100 parked (first / last 15 days, 8 series); with the 5c pause +$0.58 / +$0.13. Not positive in both halves."
+}
