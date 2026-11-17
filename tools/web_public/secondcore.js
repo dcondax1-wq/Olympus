@@ -39,7 +39,7 @@
     const st = s || {};
     const [lab, col] = STAGE[st.stage] || ['—', C.mut];
     return `<div class="sc-state" style="border-color:${col}"><span class="sc-pill" style="background:${col}">${esc(lab)}</span>
-      <b>${esc(st.text || 'No run yet: the cloud / PC bot fills this in its next run.')}</b>
+      <b>${esc(st.text || 'Nothing yet: it fills in after the bot\'s next run.')}</b>
       <em>${st.day ? 'Session ' + esc(st.day) : ''}${st.window ? ' · entries ' + esc(st.window) : ''}${src ? ' · from the ' + esc(src) : ''}</em></div>`;
   }
   function btTable(bt, lab) {
@@ -250,7 +250,7 @@
         return;
       }
       const nR = L.filter((s) => s.route).length;
-      el.innerHTML = `<div class="sc-banner"><b>ATLAS brain.</b> ${nR ? `${nR} routed to the account next to LIT (LIT first, one position at a time, max 2 trades a day); the rest paper.` : 'All paper: nothing here is traded.'} Each card: what it waits for and every rule in the engine's order (✓ passed · ✗ failed: the first ✗ is why there is no trade · · not decided yet).${data.src ? ' Source: ' + esc(data.src) + (data.t ? ' · ' + hm(data.t) + ' ET' : '') + '.' : ''}</div>`
+      el.innerHTML = `<div class="sc-banner"><b>ATLAS brain.</b> ${nR ? `${nR} routed to the account next to LIT (LIT first, one position at a time, max 2 trades a day); the rest paper.` : 'All paper: practice only, $0 at risk.'} Each card: what it waits for and every rule in the engine's order (✓ passed · ✗ failed: the first ✗ is why there is no trade · · not decided yet).${data.src ? ' Source: ' + esc(data.src) + (data.t ? ' · ' + hm(data.t) + ' ET' : '') + '.' : ''}</div>`
         + acctB(data.account_b) + L.map(brainCard).join('');
     } catch (e) { el.innerHTML = `<div class="sc-card"><b>The ATLAS brain failed to draw</b><p class="sc-note">${esc(String(e && e.message || e))}</p></div>`; }
   }
@@ -288,7 +288,7 @@
     const keys = members(S, live);
     const routed = ((S && S.strategies) || []).filter((x) => keys.includes(x.key) && routeOf(x, live).on);
     if (routed.length) return { mode: 'ROUTED', lvl: 'acc', text: routeOf(routed[0], live).label, ab: null, plan: "LIT's account" };
-    return { mode: 'PAPER', lvl: 'warn', text: 'Paper: nothing is traded yet', ab: null, plan: 'MFFU Builder 25K (not bought yet)' };
+    return { mode: 'PAPER', lvl: 'warn', text: 'Paper: practice only, no real orders yet', ab: null, plan: 'MFFU Builder 25K (not bought yet)' };
   }
   // every trade of the members (cloud ledger + the PC's live cut), newest first
   function allTrades(S, live, keys) {
@@ -330,7 +330,7 @@
   const NCOL = [['n', 'Trades', n0], ['tpw', '/week', (v) => n0(v, 2)], ['win', 'Win', pctF], ['pf', 'PF', (v) => n0(v, 2)],
     ['net', 'Net $', usd, 1], ['per_month', '$/month', usd, 1], ['dd', 'Max DD', usd]];
   const ECOL = [['p10', 'Pass 2 wk', pctF], ['f10', 'Fail 2 wk', pctF], ['p20', 'Pass 1 mo', pctF], ['f20', 'Fail 1 mo', pctF], ['dead10', 'Undecided 2 wk', pctF],
-    ['pass_med', 'Sessions to pass (median)', (v) => n0(v, 1)], ['ev_eval_3m', '$ per eval (3 mo)', usd, 1]];
+    ['pass_med', 'Trading days to pass (typical, estimate)', (v) => n0(v, 1)], ['ev_eval_3m', '$ per eval (3 mo)', usd, 1]];
   const ORDER = ['H1', 'H2', '2026', '2025', '2021-24', '2021-25'];
   const plabel = (k) => ({ H1: '2026 H1 (picked)', H2: '2026 H2 (check)' })[k] || k;
   function periods(o) {
@@ -380,7 +380,7 @@
       const sc = S.scorecard || {}, scb = sc.account_b;
       const hero = `<div class="sc-card at-hero" style="border-color:${col}"><div class="sc-eyebrow" style="color:${col}">${esc(name)} · ${esc(st.plan)} · ${per.map((s) => esc(s.short || s.key)).join(' + ')}</div>
         <div class="at-top"><div><span class="sc-pill" style="background:${col}">${esc(st.mode)}</span><h3 class="at-h">${esc(st.text)}</h3>
-          <p class="sc-note">${esc(A.summary || 'The second strategy: three research setups pooled on their own 25K eval account, next to LIT on the 50K. Then we scale.')}</p></div>
+          <p class="sc-note">${esc(A.summary || 'Bot 2: three setups that trade their own 25K eval, next to Zlarior (LIT) on the 50K. Pass both, then add accounts.')}</p></div>
           <div class="at-day"><span>Today${st.ab ? '' : ' (paper)'}</span><b class="${cl(M.dayUsd)}">${usd(M.dayUsd)}</b><em>${n0(M.today.length)} trade${M.today.length === 1 ? '' : 's'} · week ${usd(M.weekUsd)}</em></div></div>
         <p class="sc-note at-lit"><b>With LIT:</b> never opposite to LIT and LIT first (no ATLAS entry against an open or arming LIT trade; LIT entering the other way closes ATLAS first). Max 2 ATLAS trades a day, one position.</p></div>`;
       const evCard = st.ab ? acctB(st.ab) : `<div class="sc-card"><div class="sc-eyebrow" style="color:${C.warn}">25K eval · not started</div><h3>MFFU Builder 25K: not bought yet</h3>
@@ -475,7 +475,7 @@
       ${brainIn(b)}
       <div class="sc-stats"><div class="sc-stat"><span>Paper trades</span><b>${n0(p.n)}</b><em>${n0(p.wins)} winners</em></div>
         <div class="sc-stat"><span>Paper $ ($500 risk)</span><b class="${cl(p.usd)}">${usd(p.usd)}</b><em>since the ledger started</em></div></div>
-      ${scoreBox(s.scorecard, 'Go / no-go (its own 2026 H2 range)')}
+      ${scoreBox(s.scorecard, 'Ready for real money? (vs its late-2026 test)')}
       <details ${rows.length ? 'open' : ''}><summary><b>Paper trades</b></summary>${trades(rows)}</details>
       <details><summary><b>Rules in plain words</b></summary><ol class="sc-rules">${(s.rules || []).map((r) => `<li>${esc(r)}</li>`).join('')}</ol></details>
       <details><summary><b>Research numbers</b> ($500 a trade, costs in)</summary>${numTable(bt.own, NCOL) || '<p class="sc-note">—</p>'}

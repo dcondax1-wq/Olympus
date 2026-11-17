@@ -125,7 +125,7 @@
     }).join('');
     return `<section class="mn-card ${cls(mo.edge)}" id="mnCard" aria-label="Money now">
       <header class="mn-h"><h3>Money now</h3><span class="mn-bot ${cls(mo.bot.edge)}">${esc(mo.bot.text)}</span></header>${rows}
-      <footer class="mn-f">Room before MFFU closes the account = balance minus the max-loss floor. Updated ${esc(mo.age != null ? ago(mo.age, M && M.now) : NP)}.</footer></section>`;
+      <footer class="mn-f">Drawdown left = $ you can still lose before MFFU closes the account. Updated ${esc(mo.age != null ? ago(mo.age, M && M.now) : NP)}.</footer></section>`;
   }
 
   // the one-line strip (sticky on the PC dashboard): bot state, last check-in age, which bots are armed. Never blank: a missing field says so.

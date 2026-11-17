@@ -33,7 +33,7 @@
 <body>
 <main id="app">
   <header class="top">
-    <div class="brand"><img src="icon.svg" alt="" width="44" height="44"><div><h1 class="ag-title">Aegis</h1><p class="sub">The shield: how much loss is left</p></div></div>
+    <div class="brand"><img src="icon.svg" alt="" width="44" height="44"><div><h1 class="ag-title">Aegis</h1><p class="sub">How many $ you can still lose before an eval fails</p></div></div>
     <div class="tags"><span id="demo" class="tag demo" hidden>DEMO</span><span id="lite" class="tag" hidden>LITE</span></div>
   </header>
   <p id="status" class="note" role="status" aria-live="polite">Loading...</p>
@@ -45,7 +45,7 @@
   </section>
 
   <section class="ag-card card hero" aria-labelledby="shieldH">
-    <div class="row"><h2 id="shieldH">The shield</h2><span class="pill" id="pill">...</span></div>
+    <div class="row"><h2 id="shieldH">$ you can still lose</h2><span class="pill" id="pill">...</span></div>
     <div class="stage">
       <canvas id="stage" aria-label="A bronze shield with a gold rim. The rim is the drawdown you still have: it shrinks as the max loss is used." role="img"></canvas>
       <svg id="flat" class="flat" viewBox="0 0 200 230" role="img" aria-label="A bronze shield with a gold rim that shrinks as the max loss is used"></svg>
@@ -56,7 +56,7 @@
   </section>
 
   <section class="ag-card card" aria-labelledby="ifH">
-    <h2 id="ifH">If the next trade is a full stop</h2>
+    <h2 id="ifH">If the next trade loses the full stop</h2>
     <div class="stopbox">
       <button class="btn step" id="riskDown" type="button" aria-label="Stop 25 dollars smaller">-25</button>
       <label class="fld big"><span>Dollars lost at the stop</span><input id="risk" type="number" inputmode="decimal" min="1" max="20000" step="5"></label>
@@ -68,23 +68,23 @@
   </section>
 
   <section class="ag-card card" aria-labelledby="lockH">
-    <h2 id="lockH">When to stop for the day</h2>
-    <p class="note">A suggestion list from the live numbers. Aegis only warns: the bot and you decide.</p>
+    <h2 id="lockH">When to stop trading today</h2>
+    <p class="note">Suggestions from the live numbers. Aegis only warns; you and the bot decide.</p>
     <ul class="locks" id="locks"></ul>
   </section>
 
   <section class="ag-card card" aria-labelledby="allH">
-    <h2 id="allH">All three shields</h2>
+    <h2 id="allH">Every account</h2>
     <ul class="cards" id="all"></ul>
   </section>
   <section class="pl-place" data-polis-life="grove" aria-label="The olive grove: one tree per account" hidden></section>
 
   <section class="ag-card card" aria-labelledby="rulesH">
-    <h2 id="rulesH">The rules in plain words</h2>
+    <h2 id="rulesH">The prop firm rules, plain</h2>
     <ul class="plain" id="rules"></ul>
   </section>
 
-  <p class="foot" id="foot">Aegis reads the site's own files and sends nothing. It is a warning tool: it never places, changes or blocks an order. Every dollar of risk is shown with its R (1R = the loss of one full stop; a ~ means the stop is an estimate). Rules: MFFU's pages as checked on 2026-10-18; re-check before a payout.</p>
+  <p class="foot" id="foot">Aegis only reads and warns. It never places, changes or blocks an order. Risk shows $ first, then R (1R = one full stop lost; ~ = estimate). Rules from MFFU's site, checked 2026-10-18; re-check before asking for a payout.</p>
 </main>
 <!-- QA round 6: the 3D loads after the first paint, and not at all on LITE (olympus/lazy3d.js) -->
 <script src="../olympus/lazy3d.js?v=l1" data-src="shieldload.js?v=a1" data-skip="lite" data-event="aegis-shield" defer></script>

@@ -408,7 +408,7 @@ def run_browser():
             ready(p, "?today=2026-11-04")
             s = st(p)
             check("c. with the site's accounts file: not DEMO, two AUTO fees at the owner's real prices ($91.80 on 18 Oct, $43 on 26 Oct, not home.json's $99 / $63), the Kalshi result from the bot's own total (-$81.77), net -$216.57",
-                  not s["demo"] and s["auto"] == 2 and net(p) == "-$216.57" and "filled in from the site" in p.inner_text("#p-over").lower() and raw_hits, (s, net(p)))
+                  not s["demo"] and s["auto"] == 2 and net(p) == "-$216.57" and "added for you from the site" in p.inner_text("#p-over").lower() and raw_hits, (s, net(p)))
             if shots:
                 p.screenshot(path=os.path.join(shots, "ledger-real.png"), full_page=True)
             p.click("#t-acct")
@@ -636,7 +636,7 @@ def part_roadmap_browser(rm):
             txt = p.inner_text("#planCheck") if p.locator("#planCheck").count() else ""
             check("r. with the Money plan file: the break-even tracker shows 'Expected vs actual cash so far this year', conservative first, Jan-Jun second, then the actual",
                   p.locator("#planCheckHead").count() == 1 and "so far this year" in p.inner_text("#planCheckHead") and rm["first_session"] in p.inner_text("#planCheckHead")
-                  and txt.index("conservative") < txt.index("Jan-Jun") < txt.index("Actual") and money(exp2) in txt and money(exp1) in txt and "+$417" in txt, txt)
+                  and txt.index("cautious") < txt.index("hopeful") < txt.index("Real cash") and money(exp2) in txt and money(exp1) in txt and "+$417" in txt, txt)
             check("r. ... and a plain sentence about where he stands (the page says one of the four sentences)", any(s in p.inner_text("#planCheckMsg") for s in (
                 "at or above the Jan-Jun plan", "at or above the conservative plan", "inside its normal range", "below the worst 1 in 10")), p.inner_text("#planCheckMsg"))
             check("r. ... inside the Break-even tracker card, no errors", p.evaluate("!!document.querySelector('#planCheckHead').closest('article.card') && document.querySelector('#planCheckHead').closest('article.card').querySelector('h2').textContent") == "Break-even tracker" and not p.errs, p.errs[:3])

@@ -59,11 +59,11 @@
         <span>${esc(g.bot)} · ${usd(g.usd_month_each)}/mo each${g.count > 1 ? ' · ' + usd(g.usd_month) + '/mo' : ''}</span></div>
         <div class="mg-pills">${pills}</div>${notes.map((x) => `<p class="mg-note">${esc(x)}</p>`).join('')}<p class="mg-cap">${esc(g.cap)}</p></div>`;
     }).join('');
-    return `<div class="mg-sec">The stack <span>${S.funded} of ${S.of} funded · ${S.bought} bought</span></div>
+    return `<div class="mg-sec">Your prop accounts <span>${S.funded} of ${S.of} funded · ${S.bought} bought</span></div>
       <div class="mg-stack">${groups}</div>
-      <div class="mg-kpis"><div><span>Funded now</span><b>${usd(S.usd_month_now)}<i>/mo</i></b></div>
-        <div><span>All ${S.of} funded (plan pace)</span><b>${usd(S.usd_month_all)}<i>/mo</i></b></div>
-        <div><span>In a 2021-25-like year</span><b>${usd(S.usd_month_ref_all)}<i>/mo</i></b></div></div>`;
+      <div class="mg-kpis"><div><span>Paying you now (estimate)</span><b>${usd(S.usd_month_now)}<i>/mo</i></b></div>
+        <div><span>If all ${S.of} pass (estimate)</span><b>${usd(S.usd_month_all)}<i>/mo</i></b></div>
+        <div><span>In a weak year like 2021-25</span><b>${usd(S.usd_month_ref_all)}<i>/mo</i></b></div></div>`;
   }
   function monthGoal(g, compact) {
     const parts = g.parts || [];

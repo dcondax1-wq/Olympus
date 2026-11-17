@@ -66,8 +66,8 @@ const acctName = (id) => { const k = S.model.known.find((a) => a.id === id); ret
 /** the Money plan lines inside the break-even tracker: expected cash so far (conservative first, Jan-Jun second) against the cash that really moved */
 function planCheck(rv) {
   const demo = S.demo, id = 'planCheck';
-  const rows = kv([['Expected so far, conservative (Jul-Oct)', C.money(rv.expected, 0), ''], ['Expected so far, Jan-Jun', C.money(rv.expectedJanJun, 0), 'dim'],
-    demo ? ['Actual cash so far', 'add your first entry', 'dim'] : ['Actual cash so far (payouts received less eval fees and resets)', C.moneyS(rv.actual, 0), sign(rv.actual)]]);
+  const rows = kv([['Plan said by now, cautious (estimate)', C.money(rv.expected, 0), ''], ['Plan said by now, hopeful (estimate)', C.money(rv.expectedJanJun, 0), 'dim'],
+    demo ? ['Actual cash so far', 'add your first entry', 'dim'] : ['Real cash so far (payouts in, minus fees and resets)', C.moneyS(rv.actual, 0), sign(rv.actual)]]);
   rows.id = id;
   const msg = h('p', demo || rv.state === 'before' ? '' : 'strong', demo ? 'These are example numbers, so the plan check waits for your own entries.' : rv.verdict);
   msg.id = 'planCheckMsg';
@@ -113,7 +113,7 @@ function snapCard(m, t) {
 }
 /** the Scoreboard (2026-11-13): the site's money/scoreboard.json (tools/money_scoreboard.py) = every money source in one place, read only, with ages */
 function scoreCard() {
-  const v = SB.view(S.score, Date.now() / 1000), title = 'Scoreboard: every money source';
+  const v = SB.view(S.score, Date.now() / 1000), title = 'Every money source, in real $';
   if (!v.ok) { const c = card(title, h('p', '', v.text)); c.id = 'score'; return c; }
   const tile = (x) => { const d = h('div', 'snapt'); d.append(h('span', 'ag-cap', x.k), h('b', 'ag-money ' + x.cls, x.v), h('small', 'ag-cap', x.note)); return d; };
   const grid = h('div', 'snap'); grid.append(...v.tiles.map(tile));
@@ -125,7 +125,7 @@ function scoreCard() {
     li.append(k, val); src.append(li);
   }
   const notes = v.bySource.filter((r) => r[3]).map((r) => h('p', '', `${r[0]}: ${r[3]}`));
-  const c = card(title, h('p', 'strong', 'Every source the site knows, in real cash. Paper P&L and estimates are shown, never counted.'), grid,
+  const c = card(title, h('p', 'strong', 'Only real cash counts here. Paper (practice) results and estimates are shown but not added in.'), grid,
     kv(v.rows), h('p', '', v.nextText),
     h('h3', '', 'By source (cash)'), kv(v.bySource.map((r) => [r[0], r[1], r[2]])), ...notes,
     v.paper.length ? h('h3', '', 'On paper (not cash)') : null, v.paper.length ? kv(v.paper) : null,
@@ -144,7 +144,7 @@ function overView() {
     ['Eval fees', C.money(-(t.byKind.fee || 0)), 'neg'], ['Resets and activation', C.money(-((t.byKind.reset || 0) + (t.byKind.activation || 0))), 'neg'],
     ['Expenses', C.money(-(t.byKind.expense || 0)), 'neg'], k.basis !== 'none' ? ['Kalshi result', C.moneyS(k.result), sign(k.result)] : null,
     ['Net profit', C.moneyS(t.net), sign(t.net), 'tot'],
-  ]), h('p', '', 'Only money that really moved counts. A payout you requested but have not received is pending. Simulated eval profit is performance, not cash.'),
+  ]), h('p', '', 'Only money that really moved counts. A payout asked for but not in your bank yet is pending. Eval profit is not cash until MFFU pays it.'),
   t.pending > 0 ? h('p', 'strong', `Pending payouts: ${C.money(t.pending)} requested, not received yet.`) : null));
   const paid = t.costs > 0 ? Math.max(0, Math.min(1, (t.income + Math.max(0, t.kalshiAll)) / t.costs)) : 1;
   const bar = h('div', 'bar'), fill = h('i'); fill.style.width = pct0(paid); bar.append(fill);
@@ -170,7 +170,7 @@ function overView() {
       const hide = h('button', 'btn sm', 'Not mine'); hide.type = 'button'; hide.dataset.act = 'hide'; hide.dataset.key = a.key;
       bt.append(keep, hide); row.append(tt, bt); li.append(row); ul.append(li);
     }
-    out.push(card('Filled in from the site', h('p', '', 'The site already knows these accounts and your real eval prices. They count now; Keep makes one yours (you can then edit it), Not mine hides it.'), ul));
+    out.push(card('Added for you from the site', h('p', '', 'The site knows these accounts and your real prices, so they count already. Keep = make it yours (then edit). Not mine = hide it.'), ul));
   }
   const up = C.upcoming(S.st.entries, m.today, 30);
   if (up.length) out.push(card('Coming up (30 days)', kv(up.slice(0, 6).map((e) => [`${e.date} · ${e.note || e.cat}`, C.money(C.KINDS[e.kind].dir < 0 ? -e.amount : e.amount), C.KINDS[e.kind].dir < 0 ? 'neg' : 'pos']))));
@@ -204,7 +204,7 @@ function barsChart(rows) {
   const W = 340, H = 170, padL = 6, padB = 22, n = rows.length, bw = (W - padL * 2) / n;
   const up = rows.map((r) => r.income + Math.max(0, r.kalshi)), dn = rows.map((r) => r.costs + Math.max(0, -r.kalshi)), cum = rows.map((r) => r.cum);
   const hi = Math.max(1, ...up, ...cum), lo = Math.min(0, ...cum, ...dn.map((x) => -x)), sc = (v) => 8 + (hi - v) / (hi - lo || 1) * (H - padB - 14);
-  const svg = sv('svg', { class: 'chart', viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Monthly money in, money out and the running total' });
+  const svg = sv('svg', { class: 'chart', viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Each month: $ in, $ out, running total' });
   svg.append(sv('line', { x1: padL, x2: W - padL, y1: sc(0), y2: sc(0), stroke: 'rgba(255,255,255,.25)', 'stroke-width': 1 }));
   rows.forEach((r, i) => {
     const x = padL + i * bw + bw * 0.18, w = bw * 0.64;
@@ -221,7 +221,7 @@ function heatChart(map, today) {
   const wd = (new Date(today + 'T12:00:00Z').getUTCDay() + 6) % 7;                     // Monday = 0
   const start = C.addDays(today, -(weeks * 7 - 1) + (6 - wd));
   const max = Math.max(1, ...Object.values(map).map((v) => Math.abs(v)));
-  const svg = sv('svg', { class: 'chart', viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Cash flow by day, green in and red out' });
+  const svg = sv('svg', { class: 'chart', viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Each day: green = more in, red = more out' });
   for (let w = 0; w < weeks; w++) for (let d = 0; d < 7; d++) {
     const date = C.addDays(start, w * 7 + d);
     if (date > today) continue;

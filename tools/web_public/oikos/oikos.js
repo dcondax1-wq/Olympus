@@ -61,7 +61,7 @@ function renderHero(a) {
   const hl = C.headline(a);
   $('headline').textContent = hl.text;
   $('fillPill').textContent = `${C.pct(a.fill)} full`; $('fillPill').className = 'pill ' + (a.fill >= 0.75 ? 'ok' : a.fill >= 0.25 ? 'warn' : 'info');
-  $('fillNote').textContent = 'The amphora fills as the four buckets fill: tax set-aside, emergency fund, pay yourself and the next account. Gold in the vase is money that has a job.';
+  $('fillNote').textContent = 'The vase fills as the four pots fill: tax, emergency fund, pay yourself, next account. Gold = money that already has a job.';
   if (S.scene) S.scene.set(a.fill); else drawFallback(a.fill);
 }
 function renderLeaks(a) {

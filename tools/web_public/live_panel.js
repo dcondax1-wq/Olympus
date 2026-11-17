@@ -179,7 +179,7 @@ function chartRec(TC, t, D, live) {
 function mountChart(TC, box, t, D, live) {
   if (!box) return;
   const b5 = bars5(D), b1 = bars1(D);
-  if (!covers(b5, t.entry_t) && !covers(b1, t.entry_t)) { box.innerHTML = '<div class="lp-note">The chart draws once the cloud’s recent bars cover the entry (next cloud run).</div>'; return; }
+  if (!covers(b5, t.entry_t) && !covers(b1, t.entry_t)) { box.innerHTML = '<div class="lp-note">The chart shows once the cloud has prices for this trade (next cloud run).</div>'; return; }
   try {
     const rec = chartRec(TC, t, D, live);
     TC.mount(box, rec, { tf: rec._bars1.length && covers(b1, t.entry_t) ? '1m' : '5m' });

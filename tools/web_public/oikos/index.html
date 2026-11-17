@@ -32,13 +32,13 @@
 <body>
 <main id="app">
   <header class="top">
-    <div class="brand"><img src="icon.svg" alt="" width="44" height="44"><div><h1 class="ag-title">Oikos</h1><p class="sub">The household: keep more of what is made</p></div></div>
+    <div class="brand"><img src="icon.svg" alt="" width="44" height="44"><div><h1 class="ag-title">Oikos</h1><p class="sub">Home money: what to set aside, save and spend</p></div></div>
     <div class="tags"><span id="demo" class="tag demo" hidden>DEMO</span><span id="lite" class="tag" hidden>LITE</span></div>
   </header>
   <p id="status" class="note" role="status" aria-live="polite">Loading...</p>
 
   <section class="ag-card card hero" aria-labelledby="amphH">
-    <div class="row"><h2 id="amphH">The amphora</h2><span class="pill" id="fillPill">...</span></div>
+    <div class="row"><h2 id="amphH">Money with a job</h2><span class="pill" id="fillPill">...</span></div>
     <div class="stage"><canvas id="amph" width="640" height="560" role="img" aria-label="A marble amphora that fills with gold coins as your buckets fill"></canvas><svg id="amphFallback" class="fallback" viewBox="0 0 120 150" role="img" aria-label="A marble amphora filled to the level of your buckets" hidden></svg></div>
     <p class="lead" id="headline"></p>
     <p class="note" id="fillNote"></p>
@@ -74,25 +74,25 @@
   </section>
 
   <section class="ag-card card" aria-labelledby="leakH">
-    <div class="row"><h2 id="leakH">Where it leaks</h2><span class="pill" id="leakPill">...</span></div>
-    <p class="note">Sorted worst first. Each line is an estimate from what you recorded. Every dollar is shown; the score is 0 (fine) to 100 (act now).</p>
+    <div class="row"><h2 id="leakH">Where money leaks</h2><span class="pill" id="leakPill">...</span></div>
+    <p class="note">Worst first. Each line is an estimate from what you entered. Score: 0 = fine, 100 = fix it now.</p>
     <ul class="leaks" id="leaks"></ul>
   </section>
 
   <section class="ag-card card" aria-labelledby="acctH">
-    <h2 id="acctH">Did each account pay for itself?</h2>
+    <h2 id="acctH">Did each prop account pay for itself?</h2>
     <table class="lad"><caption class="note">Cost = fees, resets and activation. Paid back = payouts received.</caption><thead><tr><th scope="col">Account</th><th scope="col">Cost</th><th scope="col">Paid back</th><th scope="col">Result</th></tr></thead><tbody id="acctRows"></tbody></table>
   </section>
 
   <section class="ag-card card" aria-labelledby="taxH">
-    <h2 id="taxH">Tax set-aside</h2>
+    <h2 id="taxH">Put aside for tax</h2>
     <label class="fld"><span id="taxLabel">Set aside 30% of net profit</span><input id="tax" type="range" min="0" max="50" step="1" value="30" aria-label="Tax set-aside percent"></label>
     <dl class="kv" id="taxKv"></dl>
     <p class="note" id="taxNote"></p>
   </section>
 
   <section class="ag-card card" aria-labelledby="bktH">
-    <h2 id="bktH">The buckets</h2>
+    <h2 id="bktH">Where each month's profit goes</h2>
     <p class="note" id="bktNote"></p>
     <label class="fld"><span id="emLabel">Emergency fund gets 25% of a month's profit</span><input id="em" type="range" min="0" max="60" step="1" value="25" aria-label="Emergency fund percent"></label>
     <label class="fld"><span id="reLabel">Next account gets 20%</span><input id="re" type="range" min="0" max="60" step="1" value="20" aria-label="Next account percent"></label>
@@ -108,7 +108,7 @@
   </section>
 
   <section class="ag-card card" aria-labelledby="prjH">
-    <h2 id="prjH">Reinvest or withdraw?</h2>
+    <h2 id="prjH">Buy more accounts or take the cash?</h2>
     <p class="note" id="prjNote"></p>
     <div class="seg" id="scen" role="group" aria-label="Scenario"></div>
     <label class="fld"><span id="prLabel">Reinvest 50% of what is left after tax</span><input id="pr" type="range" min="0" max="100" step="5" value="50" aria-label="Share reinvested"></label>
@@ -126,7 +126,7 @@
     <p class="note" id="prjWarn"></p>
   </section>
 
-  <p class="foot" id="foot">Oikos reads the Ledger's export and sends nothing. It is a planning tool: it never places an order, moves money or changes the bot. Every figure is an estimate from the entries you recorded; the projector is not a promise and a bad month can cut every account at once. The tax line is a generic percentage and is not tax advice. Your own sliders and an imported ledger stay on this phone.</p>
+  <p class="foot" id="foot">Oikos only reads and plans. It never trades, moves money or changes the bot. Every $ is an estimate from what you entered, not a promise; one bad month can fail every account at once. The tax % is a rule of thumb, not tax advice. Your sliders and imports stay on this phone.</p>
 </main>
 <script type="module" src="oikos.js?v=a1"></script>
 <script type="module" src="household.js?v=h1"></script>

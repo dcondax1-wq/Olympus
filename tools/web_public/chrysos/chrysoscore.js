@@ -5,10 +5,10 @@
 export const CASES = ['stress', 'conservative', 'base', 'optimistic'];
 export const CASE_WORD = { stress: 'Stress', conservative: 'Cautious', base: 'Middle', optimistic: 'Hopeful' };
 export const CASE_SAY = {
-  stress: 'Stress, what if I am wrong: the whole cohort fails its eval twice in a row (all fees paid three times), then trades like the 2021-25 reference line, which earned almost nothing.',
-  conservative: 'Cautious: all copies fail their first eval together and are bought again, then pay 40% of the tested amount; every third month is as weak as the worst real month of 2026.',
-  base: 'Middle: the stored H2-2026 results as they are.',
-  optimistic: 'Hopeful: the headline payout rate and the best test run. Do not plan on it.',
+  stress: 'Stress (bot does badly): every account fails its eval twice in a row (you pay all fees three times), then earns like 2021-25, almost nothing.',
+  conservative: 'Cautious: every account fails its first eval and is bought again, then pays 40% of what tests showed; every third month is as bad as the worst month of 2026.',
+  base: 'Middle: the test results from the second half of 2026, as they are.',
+  optimistic: 'Hopeful: the best test run and the firm\'s advertised payout rate. Do not plan on it.',
 };
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
