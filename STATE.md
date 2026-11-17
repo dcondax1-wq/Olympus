@@ -13,6 +13,8 @@ Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7;
 | Phone dashboard | Netlify site moonlit-scone-08afe5 (private). Updates itself once the owner pastes a Netlify key at tonight's setup |
 
 ## Waiting on the owner
+- Owner 2026-11-17: ONE Rapid EOD 50K only ("I'll stick with 1 rapid"): LIT + ATLAS $500 from day one, 30% best-day guard,
+  funded keep $1,000 above the buffer. PC has not reported since 2026-11-07 (heartbeat branch, ntfy empty): fix first.
 - ONE PAGE for accounts (2026-11-16, owner: "trading is getting very confusing"): Business -> My Accounts
   (tools/web_public/business/accounts.html). Plan in business/accounts.json: KEEP IT CURRENT on every account / plan change.
 - Obsidian (optional, 1 min on the PC): python tools/obsidian_sync.py --setup "C:\path\to\your\vault" (docs/OBSIDIAN_SYNC.md).
