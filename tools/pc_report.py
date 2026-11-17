@@ -506,10 +506,11 @@ def lite(snap: dict, max_bytes: int = MAX_STATUS_BYTES) -> dict:
         if g:
             brain_glance.fit(g, n)
     # the glance is cut (then left out) before the Board's events; the Board's events go before the accounts block
-    steps = [lambda o: _d(o.get("board")).pop("lines", None), lambda o: _gcut(o, 1000), lambda o: _gcut(o, 600),
-             lambda o: _d(o.get("pc")).pop("glance", None),
+    steps = [lambda o: _d(o.get("board")).pop("lines", None),
              lambda o: _d(o.get("brd")).__setitem__("ev", _d(o.get("brd")).get("ev", [])[:2]) if o.get("brd") else None,
+             lambda o: _gcut(o, 1000), lambda o: _gcut(o, 600),
              lambda o: _d(o.get("brd")).__setitem__("ev", []) if o.get("brd") else None,
+             lambda o: _d(o.get("pc")).pop("glance", None),
              lambda o: o.pop("brd", None),
              lambda o: o.pop("accounts", None),
              lambda o: _d(o.get("board")).__setitem__("trades", _d(o.get("board")).get("trades", [])[:1]) if o.get("board") else None,
