@@ -586,6 +586,16 @@ def _fleet(bot):
         return {"error": f"{e.__class__.__name__}: {e}"[:200]}
 
 
+def _life(bot):
+    """The "life" block (engine/lifecycle.hb_block, < 1.5 KB): each routed account's MFFU stage + the last 3 events. None
+    before the bot saw an account (the key is then left out). Never raises."""
+    try:
+        from engine import lifecycle
+        return lifecycle.hb_block(bot)
+    except Exception:
+        return None
+
+
 def _exec():
     """The "exec" block (engine/fill_audit.heartbeat_block: slippage / missed / extra $ against the backtest). Never raises."""
     try:
@@ -755,6 +765,7 @@ class Heartbeat:
                 **_alerts_plus(self.bot),       # "rules" (PC-vs-cloud fingerprint) + "crit" (critical conditions, engine/alerts_plus.py)
                 **_opt("account_c", _account_c(self.bot)),   # BLITZ's own account (engine/account_c.py): only when it is on
                 **_opt("fleet", _fleet(self.bot)),           # the follower accounts (engine/fleet.py): only when configured
+                **_opt("life", _life(self.bot)),             # MFFU stage per account (engine/lifecycle.py): once one is seen
                 **_opt("mind", _mind(self.bot)),             # Mind (engine/mind.py, read-only): only once it has computed
                 **_opt("selftest", _selftest()),             # PC self-test (engine/pc_selftest.py): only after its first run
                 **_opt("pc_health", _pc_health())}           # PC health watchdog (engine/pc_health.py): once it has sampled

@@ -350,7 +350,8 @@ def entry_never_placed(adapter, entry_t, res, now=None) -> bool:
     fill, no leg of the adapter is open / pending for it (legs + this process's retired history), and NinjaTrader shows no
     position on the order contracts. An answer with a leg still working ("fill not reported yet") counts only once the
     adapter retired that leg unfilled. Anything unclear = False (kept, managed and booked as before). Used by LIT
-    (engine/live.py) and account B (engine/account_b.py)."""
+    (engine/live.py) and account B (engine/account_b.py). A rejection with MFFU's risk-desk text ("maximum order quantity",
+    "Limit: 0", a risk rule) is a LOCKED account, not a bug: locked_reject() below, engine/lifecycle.py."""
     if not isinstance(res, dict) or res.get("ok") is not False:
         return False
     rl = [x for x in res.get("legs") or [] if isinstance(x, dict)]
@@ -371,6 +372,65 @@ def entry_never_placed(adapter, entry_t, res, now=None) -> bool:
     except Exception:
         pass
     return True
+
+
+# A LOCKED account, not a bug (2026-11-17): ATLAS's Builder 25K passed ($26,946.10 vs $26,500) and MFFU locked it; every
+# order came back "Your maximum order quantity has been met... Limit: 0 Current: 1. Scope: MNQ Rule #3787". The risk desk's
+# text is only in NinjaTrader's Log (the order file just says REJECTED). engine/lifecycle.py stands that account down
+# (no retries), keeps the others trading and pushes once.
+LOCK_RE = re.compile(r"maximum order quantity|\blimit:\s*0\b|\brule\s*#\s*\d+|\brisk rule|account (is )?(locked|disabled|suspended|"
+                     r"closed|liquidat\w*)|trading (is )?(disabled|locked|halted|not allowed)|auto[- ]?liquidat|liquidat\w* only|"
+                     r"max(imum)? (position|contracts?)( size)? (has been |is )?(met|reached|exceeded)", re.I)
+
+
+def lock_reason(text) -> str | None:
+    """The risk desk's refusal in a broker / NinjaTrader text ("...Limit: 0 Current: 1. Scope: MNQ Rule #3787"), one line of at
+    most 200 characters around it; None for anything else (a plain REJECTED, a connection problem, the bot's own REFUSED)."""
+    s = re.sub(r"\s+", " ", str(text or "")).strip()
+    if not s or s.upper().startswith("REFUSED"):
+        return None
+    m = LOCK_RE.search(s)
+    if not m:
+        return None
+    a = max(0, m.start() - 90)
+    return (("..." if a else "") + s[a:a + 200]).strip()
+
+
+def nt_reject_text(adapter, entry_t) -> str | None:
+    """NinjaTrader's Log (the newest 3 log.*.txt) rejecting an order of this entry (LE<entry_t>) with a risk-desk text: that
+    text (lock_reason), else None. Read-only, never raises."""
+    try:
+        import glob as _glob
+        folder = getattr(adapter, "folder", None)
+        if not folder or not entry_t:
+            return None
+        tag = f"LE{int(entry_t)}"
+        fs = sorted(_glob.glob(os.path.join(folder, "log", "log.*.txt")), key=os.path.getmtime)[-3:]
+        for f in reversed(fs):
+            with open(f, encoding="utf-8", errors="replace") as fh:
+                for ln in fh:
+                    if tag in ln and "reject" in ln.lower():
+                        why = lock_reason(ln)
+                        if why:
+                            return why
+    except Exception:
+        return None
+    return None
+
+
+def locked_reject(adapter, entry_t, res, now=None) -> str | None:
+    """The risk desk's text when this entry's NOT-OK answer is an account lock (MFFU "maximum order quantity" / "Limit: 0" /
+    a risk rule) AND it provably never became a position (entry_never_placed); else None (a normal rejection = a bug or a
+    broker problem, handled as before)."""
+    if not isinstance(res, dict) or res.get("ok") is not False:
+        return None
+    why = res.get("locked") or lock_reason(res.get("error")) or nt_reject_text(adapter, entry_t)
+    if not why:
+        return None
+    try:
+        return why if entry_never_placed(adapter, entry_t, res, now=now) else None
+    except Exception:
+        return None
 
 
 NO_TRACE_S = 600
@@ -1519,7 +1579,7 @@ class NinjaTraderAdapter:
             return {"ok": False, "adapter": self.name, "account": self.account, "error": r["error"], "oif": r.get("file")}
         self._save()
         self._wait(lambda: all(self._entry_settled(lg) for lg in legs), self.fill_wait)
-        out, errors = [], []
+        out, errors, locked = [], [], None
         for lg in legs:
             st = self.read_order(lg["entry_id"])
             self._note_fill(lg, st)
@@ -1538,7 +1598,9 @@ class NinjaTraderAdapter:
                     errors.append(f"{lg['instrument']}: {res.get('error')}")
             elif st and st["state"] in DEAD:
                 lg["status"] = "rejected"
-                errors.append(f"{lg['instrument']}: entry {st['state']}")
+                why = nt_reject_text(self, ts) if st["state"] == "REJECTED" else None    # an MFFU lock: engine/lifecycle.py
+                locked = locked or why
+                errors.append(f"{lg['instrument']}: entry {st['state']}" + (f" ({why})" if why else ""))
                 out.append({"instrument": lg["instrument"], "qty": lg["qty"], "ok": False, "state": st["state"]})
             else:
                 lg["status"] = "pending"
@@ -1549,7 +1611,7 @@ class NinjaTraderAdapter:
         self._save()
         ok = not errors
         return {"ok": ok, "adapter": self.name, "account": self.account, "env": self.env, "side": side,
-                "legs": out, **({} if ok else {"error": "; ".join(errors)})}
+                "legs": out, **({} if ok else {"error": "; ".join(errors)}), **({"locked": locked} if locked else {})}
 
     def _fill_gap(self, lg):
         """The roll guard's backstop: pts between the entry fill and the chart price the stop / target were computed on
@@ -3398,6 +3460,20 @@ def selftest(verbose=True) -> bool:
         r = ad.send({"sym": "NQ", "side": "buy", "qty": 1, "stop": 25000, "target": 25040, "entry": 25020, "entry_t": T + 4800})
         check("entry REJECTED: no stop/target sent, ok False, nothing tracked", not r["ok"] and "REJECTED" in r["error"] and not ad.legs
               and fake.files[-1][1][0].split(";")[5] == "MARKET")
+        # an MFFU LOCK (2026-11-17, ATLAS's passed 25K): the order file says REJECTED, NinjaTrader's Log has the risk desk's text
+        fake.reject = {"MARKET"}
+        os.makedirs(os.path.join(folder, "log"), exist_ok=True)
+        with open(os.path.join(folder, "log", "log.20261021.00000.txt"), "w", encoding="utf-8") as fh:
+            fh.write(f"2026-10-21 10:06:00:000|1|4|Order='LE{int(T + 4860)}abcdE/Sim101' Name='LE{int(T + 4860)}abcdE' New state='Rejected' "
+                     "Instrument='MNQ 12-26' Action='Buy' Native error='Your maximum order quantity has been met. Please contact "
+                     "support. Limit: 0 Current: 1. Scope: MNQ Rule #3787'\n")
+        r = ad.send({"sym": "NQ", "side": "buy", "qty": 1, "stop": 25000, "target": 25040, "entry": 25020, "entry_t": T + 4860})
+        lk = locked_reject(ad, T + 4860, r, now=now[0])
+        check("entry REJECTED by MFFU's risk desk (Limit: 0, Rule #3787): answer carries 'locked', locked_reject() says so; "
+              "a plain REJECTED / the bot's REFUSED are not a lock",
+              not r["ok"] and "Limit: 0" in str(r.get("locked")) and lk and "Rule #3787" in lk and not ad.legs
+              and lock_reason("MNQ 12-26: entry REJECTED") is None and lock_reason("REFUSED: kill switch is engaged") is None
+              and locked_reject(ad, T + 4800, {"ok": False, "error": "MNQ 12-26: entry REJECTED"}, now=now[0]) is None, r)
         fake.reject = {"STOPMARKET"}
         k = len(fake.files)
         r = ad.send({"sym": "NQ", "side": "buy", "qty": 1, "stop": 25000, "target": 25040, "entry": 25020, "entry_t": T + 5400})

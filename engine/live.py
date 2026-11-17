@@ -836,6 +836,7 @@ class LiveBot:
             self._note_error(f"adapter {getattr(self.adapter, 'name', '?')} send failed: {e}")
         self.ledger.append({"t": int(self.clock()), **action, "result": res})
         self._log("order", f"{action['side'].upper()} {action.get('qty', '')} {action['sym']} -> {res.get('ok')}", result=res)
+        self._life_routed(action, res)
         self._save_state()
         return res
 
@@ -1343,6 +1344,7 @@ class LiveBot:
         self._route_signals(res, sym, now, secs)
         self.health["lit_ms"] = int((time.perf_counter() - t0) * 1000)   # poll start -> LIT decided and routed
         self._guards_tick(now)
+        self._life_tick(now)
         self._alerts_tick(now)
         self.health["poll_ms"] = int((time.perf_counter() - t0) * 1000)
         self.health["last_ok_poll"] = now
@@ -2845,7 +2847,11 @@ class LiveBot:
             self._note_error(f"hedge alert push failed: {e}")
 
     def _guard_entry(self, ent, q, sym, now):
-        """A reason not to route this entry (order sanity, duplicate, daily loss, clock, news, calendar), else None."""
+        """A reason not to route this entry (order sanity, duplicate, daily loss, clock, news, calendar, the account's MFFU
+        lifecycle: passed / failed / locked / MFFU flat time), else None."""
+        lb = self._life_block(now)
+        if lb:
+            return lb
         try:
             from . import guards
             return guards.entry_block(self, ent, self._entry_action(ent, q, sym), q, now)
@@ -2867,6 +2873,38 @@ class LiveBot:
             guards.tick(self, now)
         except Exception as e:
             self._note_error(f"guards failed: {e.__class__.__name__}: {e}")
+
+    # ------------------------------------------------------------------ MFFU account lifecycle (engine/lifecycle.py)
+    def _life_block(self, now):
+        """LIT's own account stood down (passed / failed / locked by MFFU) or MFFU's flat time: no entry. Fails open."""
+        try:
+            from . import lifecycle
+            return lifecycle.block(self, "lit", now)
+        except Exception:
+            return None
+
+    def _life_routed(self, action, res):
+        """A refused entry with MFFU's risk-desk text ("maximum order quantity", "Limit: 0"): LIT's account LOCKED."""
+        if action.get("side") not in ("buy", "sell") or (res or {}).get("ok") is not False:
+            return
+        try:
+            from . import lifecycle
+            ev = lifecycle.after_route(self, "lit", "Zlarior 50K", self.adapter, action, res,
+                                       acct=self.cfg.get("nt_account") or getattr(self.adapter, "account", None))
+            if ev:
+                self._log("risk", f"{ev['title']}: {ev['body']}")
+        except Exception as e:
+            self._note_error(f"lifecycle failed: {e.__class__.__name__}: {e}")
+
+    def _life_tick(self, now):
+        """Every poll (throttled inside): every routed account's stage (eval / passed / failed / locked / funded / payout
+        ready / lost), one push + board event per change. Never raises."""
+        try:
+            from . import lifecycle
+            for ev in lifecycle.tick(self, now):
+                self._log("risk", f"{ev['title']}: {ev['body']}")
+        except Exception as e:
+            self._note_error(f"lifecycle failed: {e.__class__.__name__}: {e}")
 
     def _alerts_tick(self, now):
         """After routing: the "LIT setup armed" / "Setup expired" pushes (engine/alerts_plus.py). Real bot only; read-only
@@ -3064,6 +3102,10 @@ class LiveBot:
             what = (f"{strategy + ' ' if strategy else ''}{'LONG' if pos.get('dir') == 1 else 'SHORT'} {qty} MNQ at "
                     f"{_et(et_):%H:%M} ET")
             acct = self._push_account()
+            from . import lifecycle as _lc
+            if _lc.is_stood_down(self, "lit"):
+                self._log("risk", f"{what} not placed ({err}): the account is stood down (engine/lifecycle.py pushed it)")
+                return
             if self._entry_never_placed(et_):
                 title, body = (f"{acct}: order NOT placed", f"{what} did not go in ({err}). Nothing is open, no money at risk; "
                                                             "the bot keeps looking for its next setup.")

@@ -749,6 +749,21 @@ def events(state: dict, snap: dict) -> tuple:
                          "priority": "high", "tags": "rotating_light"})
         except Exception:
             continue
+    # MFFU account lifecycle (engine/lifecycle.py, the heartbeat "life" block): PASSED / LOCKED / FAILED / LOST / PAYOUT READY,
+    # once each, at any hour (the account is stood down; the owner sends Claude the new account name)
+    for e in _d(_d(snap.get("hb")).get("life")).get("ev") or []:
+        try:
+            key = str(e["push"])
+            if key in st["seen"]:
+                continue
+            st["seen"][key] = now
+            if not st["seeded"] or now - int(num(e.get("t")) or 0) > OLD_EVENT_S:
+                continue
+            pay = e.get("stage") == "payout_ready"
+            msgs.append({"key": key, "title": str(e.get("title") or "Account")[:120], "body": str(e.get("body") or "")[:600],
+                         "priority": "default" if pay else "high", "tags": "moneybag" if pay else "rotating_light"})
+        except Exception:
+            continue
     cond = conditions(snap)
     for code, text in cond.items():
         c = st["cond"].get(code)
