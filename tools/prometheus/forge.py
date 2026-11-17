@@ -34,7 +34,7 @@ OUT_DIR = os.path.join(ROOT, "research", "prometheus")
 PAGE_DIR = os.path.join(ROOT, "tools", "web_public", "prometheus")
 SEEDS = (7, 11, 23, 42, 101)          # 7 = the primary run shown on the page
 MAX_PAGE_BYTES = 1_000_000
-THEME = "#120806"
+THEME = "#14110e"     # the AGORA forge (ae740a55): the page theme-color and the Jarvis card agree
 REAL_MARGIN_PCT = 10.0                # "a real margin" on H2: +10% $ per month, a bootstrap 5th percentile above 0, eval speed not worse
 
 

@@ -293,7 +293,7 @@ def run_browser():
             check("c. a real tap on the 3D figure opens ITS autopsy (the raycast picked the right one), the figure is marked, the camera drifts to it", s["sel"] == target["id"] and s["scene"]["selected"] == target["id"], (s["sel"], target["id"]))
             body = p.inner_text("#sheetBody")
             check("c. the autopsy answers in plain words: plan or rule break, the stop, the size against the room, the time of day, the twin, what happened, habits, one lesson",
-                  p.locator(".rows li").count() == 7 and all(x in body for x in ("PLAN OR RULE BREAK?", "STOP BEYOND THE SWEEP EXTREME?", "SIZE AGAINST THE ROOM", "TIME OF DAY", "WHAT THE TWIN / BACKTEST SAYS", "WHAT HAPPENED", "HABITS", "ONE LESSON"))
+                  p.locator(".rows li").count() == 7 and all(x in body.upper() for x in ("PLAN OR RULE BREAK?", "STOP BEYOND THE SWEEP EXTREME?", "SIZE AGAINST THE ROOM", "TIME OF DAY", "WHAT THE TWIN / BACKTEST SAYS", "WHAT HAPPENED", "HABITS", "ONE LESSON"))
                   and "Not recorded: the site has no sweep extreme for this trade (the stop is 29987.5, 42.5 pts from the entry)" in body and "the bot's twin took 8" in body and "Smaller than the bot" in body and "03:43" in body, body[:600])
             check("c. the verdict badge and who took it: your real trade, plan with a flag (heavy size, 37% of the room), a lesson written", "PLAN, WITH A LEAK" in body and "Your trade on the 50K (real)" in body and "heavy size" in body and p.locator(".lesson p").inner_text().startswith("Next time"), body[:300])
             ov = p.evaluate(GEOM)

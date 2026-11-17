@@ -162,7 +162,7 @@ def part_c():
     check("c. assert_h1 refuses an H2 row", raised)
     L = out[0]
     check("c. live genome on H1 = run lit_live's H1 (80 trades, +$33,901, PF 4.98)", (L["n"], L["net"], L["pf"]) == (80, 33901, 4.98), L)
-    check("c. live genome on the H1 eval path = 2-week pass/fail 57.1 / 1.7 (lit_adv_manage.evals)", (L["p10"], L["f10"]) == (57.1, 1.7), L)
+    check("c. live genome on the H1 eval path = 2-week pass/fail 44.5 / 0.0 (lit_adv_manage.evals; owner sizing two_week room_f 0.4 since 2026-11-14, was 57.1 / 1.7 at 0.8)", (L["p10"], L["f10"]) == (44.5, 0.0), L)
     ref = FT.Fitness(persist=False)
     check("c. the live strategy scores fitness 1.0", abs(ref(G.live_genome())[0] - 1.0) < 1e-9)
     check("c. eval_cfg(live) == lit_adv_manage.CFG (the live eval sizing)", FT.eval_cfg(G.live_genome()) == A.CFG)
@@ -233,6 +233,8 @@ def _site(with_data=True):
         shutil.copy(os.path.join(ROOT, "tools", "web_public", "jarvis", f), os.path.join(base, "jarvis", f))
     shutil.copytree(PAGE, os.path.join(base, "prometheus"))
     shutil.copytree(os.path.join(ROOT, "tools", "web_public", "olympus"), os.path.join(base, "olympus"))   # the OLYMPUS kit
+    from tests.olympus_money_kit import link_assets
+    link_assets(base)                                 # the built site's assets/ (the kit's sounds, ui.ogg ...): no 404 on the first tap
     if not with_data:
         for f in ("forge.json", "jarvis.json"):
             p = os.path.join(base, "prometheus", f)

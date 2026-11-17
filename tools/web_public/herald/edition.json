@@ -2,7 +2,7 @@
  "v": 1,
  "date": "2026-11-11",
  "number": 1,
- "built": "2026-11-15T00:00:00Z",
+ "built": "2026-11-17T00:00:00Z",
  "demo": false,
  "masthead": {
   "title": "The Olympus Herald",
@@ -335,8 +335,8 @@
     "The newest batch in the index is stamped 26-11-15: 7 runs kept there, 1 adopted, 6 open.",
     "Adopted, from the risk family: ATLAS zombie-eval rule: give an eval up under $200 of room + 1 micro 'last bull…",
     "Still open, from the LIT research family: LIT deep edge (2026-11-15): base.",
-    "On the rejected shelf, so nobody redoes it: Published models as taught.",
-    "158 write-ups explain the results in plain language."
+    "On the rejected shelf, so nobody redoes it: Famous published strategies.",
+    "168 write-ups explain the results in plain language."
    ],
    "facts": [
     {
@@ -407,15 +407,15 @@
      "quote": true
     },
     {
-     "t": "Published models as taught",
+     "t": "Famous published strategies",
      "src": "archive/index.json",
      "quote": true
     },
     {
-     "t": "158",
+     "t": "168",
      "src": "archive/index.json",
      "at": "counts/writeups",
-     "raw": 158
+     "raw": 168
     },
     {
      "t": "98",
@@ -556,9 +556,9 @@
    "body": [
     "The build queue holds 67 tasks: 67 open and 0 done.",
     "First in line (P0): cities/ renders almost nothing after 30 s (only 160 characters of text, a few dots, no labels, no cards). It is the worst app. Find why (console, fet…",
-    "The research shelf now counts 158 write-ups.",
-    "The newest lesson on file, dated 2026-11-15, reads: Six ideas that systematic NQ / prop bots use and that Tested and rejected plus the LIT idea rounds 1-3 had not covered, 28 versions on the exact live LIT trades (re-walk == run lit_live), CME NQ futu…",
-    "It was filed under \"adopt-candidate\" and comes from research/writeups/2026-11-15-s2-edge.md."
+    "The research shelf now counts 168 write-ups.",
+    "The newest lesson on file, dated 2026-11-17, reads: MFFU pays on winning days (Rapid EOD eval best day = 30%, funded daily above $2,100; Builder funded best day = 50%, $2,600 above start).",
+    "It was filed under \"mostly\" and comes from research/writeups/rule-native-2026-11-17.md."
    ],
    "facts": [
     {
@@ -590,28 +590,28 @@
      "quote": true
     },
     {
-     "t": "158",
+     "t": "168",
      "src": "ergasterion/queue.json",
      "at": "writeups/count",
-     "raw": 158
+     "raw": 168
     },
     {
-     "t": "2026-11-15",
+     "t": "2026-11-17",
      "src": "ergasterion/queue.json",
      "quote": true
     },
     {
-     "t": "Six ideas that systematic NQ / prop bots use and that Tested and rejected plus the LIT idea rounds 1-3 had not covered, 28 versions on the exact live LIT trades (re-walk == run lit_live), CME NQ futu…",
+     "t": "MFFU pays on winning days (Rapid EOD eval best day = 30%, funded daily above $2,100; Builder funded best day = 50%, $2,600 above start).",
      "src": "ergasterion/queue.json",
      "quote": true
     },
     {
-     "t": "adopt-candidate",
+     "t": "mostly",
      "src": "ergasterion/queue.json",
      "quote": true
     },
     {
-     "t": "research/writeups/2026-11-15-s2-edge.md",
+     "t": "research/writeups/rule-native-2026-11-17.md",
      "src": "ergasterion/queue.json",
      "quote": true
     }

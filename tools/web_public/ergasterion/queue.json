@@ -190,14 +190,56 @@
   ]
  },
  "writeups": {
-  "count": 162,
+  "count": 168,
   "latest": [
+   {
+    "date": "2026-11-17",
+    "title": "Taxes for a prop-firm trader (US, 2026 rules): study notes, 2026-11-17",
+    "status": "",
+    "summary": "",
+    "file": "research/writeups/taxes-2026-11-17.md"
+   },
    {
     "date": "2026-11-17",
     "title": "Rule-native search - pick by \"days to the first payout\" and \"P(no payout in 6 months)\" instead of PF / net $…",
     "status": "mostly",
     "summary": "MFFU pays on winning days (Rapid EOD eval best day = 30%, funded daily above $2,100; Builder funded best day = 50%, $2,600 above start).",
     "file": "research/writeups/rule-native-2026-11-17.md"
+   },
+   {
+    "date": "2026-11-17",
+    "title": "Famous published strategies on CME NQ - none beats LIT, none passes an MFFU eval in a way we can trust",
+    "status": "rejected",
+    "summary": "The four that look best on paper (pre-FOMC, RSI(2), 12-month trend, overnight drift) all hold positions overnight, which MFFU does not allow (flat by 16:10 ET), and every one of them lost money in 2026 H2 or in 2021-25.",
+    "file": "research/writeups/public-strategies-2026-11-17.md"
+   },
+   {
+    "date": "2026-11-17",
+    "title": "More work next to the bots (2026-11-17)",
+    "status": "",
+    "summary": "",
+    "file": "research/writeups/more-work-2026-11-17.md"
+   },
+   {
+    "date": "2026-11-17",
+    "title": "Kalshi edge, team K5 (answer partly public before close, slow niche markets, liquidity rewards)",
+    "status": "rejected",
+    "summary": "",
+    "file": "research/writeups/kalshi-edge-K5-2026-11-17.md"
+   },
+   {
+    "date": "2026-11-17",
+    "title": "Kalshi edge, team K4 (cross-venue Polymarket, sports, 15-min crypto slices): NO EDGE FOUND",
+    "status": "rejected",
+    "summary": "",
+    "file": "research/writeups/kalshi-edge-K4-2026-11-17.md"
+   },
+   {
+    "date": "2026-11-17",
+    "title": "\"Edge stopped working\" switch - cut size when LIT's / ATLAS's own record drifts below expectation, restore on…",
+    "status": "rejected",
+    "summary": "In 2021-25 they halve the failed Builder evals (55% - 28% within 60 sessions) and cut fees ($212 - $166 per 6 months), but the payouts fall by the same amount: the Builder still makes -$7 instead of -$9 a m…",
+    "file": "research/writeups/drift-switch-2026-11-17.md"
    },
    {
     "date": "2026-11-16",
@@ -233,52 +275,34 @@
     "status": "rejected",
     "summary": "No single fact has a bin that loses in both halves; 425 two-fact loser cells picked on Jan-Jun keep losing in Jul-Oct 88 times against 95 expected by chance.",
     "file": "research/writeups/2026-11-15-lit-deep.md"
-   },
-   {
-    "date": "2026-11-15",
-    "title": "ATLAS deep edge (2026-11-15) - the losers are not in the trades but in the account; a \"zombie-eval rule\" lift…",
-    "status": "adopt-candidate",
-    "summary": "Baseline of ATLAS as it runs on the Builder 25K today (account-B rules, fees at the owner's $43), a loser autopsy of its 2026 and 2021-25 trades (member, side, hour, weekday, VIX, stop in points / ATR / vs the member's…",
-    "file": "research/writeups/2026-11-15-atlas-deep.md"
-   },
-   {
-    "date": "2026-11-14",
-    "title": "Prop-firm affiliate income (2026-11-14) - $500 a month takes about 35-45 referred purchases every month; most…",
-    "status": "info",
-    "summary": "What MyFundedFutures, Lucid, Topstep, Apex, FundedNext and Tradeify pay affiliates (commission, cookie, payout terms), their rules on self-referral and on using your own results, and the FTC rules for affiliate links.",
-    "file": "research/writeups/affiliate-income-2026-11-14.md"
-   },
-   {
-    "date": "2026-11-14",
-    "title": "Account #4 (A4, 2026-11-14) - a LucidPro 50K that copies Zlarior is the same bet twice - it passes and fails…",
-    "status": "adopt-candidate",
-    "summary": "Lucid's, FundedNext's and Bulenox's rules were re-read from the firms' own help centers (search readings 2026-11-14; their pages are DNS-blocked here) into the guard's data (research/props/firm_research.json, copy_profi…",
-    "file": "research/writeups/account-4-2026-11-14.md"
-   },
-   {
-    "date": "2026-11-13",
-    "title": "New NQ strategies for more eval accounts (Team E2, 2026-11-13). Seven new families, one real but small edge (…",
-    "status": "rejected",
-    "summary": "Each hypothesis was written before the run, with a new angle against the rejected list.",
-    "file": "research/writeups/nq-new-strategies-2026-11-13.md"
-   },
-   {
-    "date": "2026-11-13",
-    "title": "NQ edge sprint (2026-11-13) - the eval guard halves dead evals at the same money; the rest is chance or alrea…",
-    "status": "adopt-candidate",
-    "summary": "Seven ideas written down before testing, ~40 versions, scored on the owner's money (the whole MFFU account slot - eval, funded, payouts, net of every eval bought) and eval speed (2-week pass / fail), CME NQ1! futures, c…",
-    "file": "research/writeups/nq-edge-2026-11-13.md"
-   },
-   {
-    "date": "2026-11-13",
-    "title": "The millionaire plan (M1, 2026-11-13) - from prop-firm evals to $1M. In a market like Jul-Oct 2026, 10 LIT ac…",
-    "status": "adopt-candidate",
-    "summary": "Each account = the uprisk engine (MFFU Builder eval on the live two_week sizing, 2 sessions of paperwork, Sim Funded on the live funded preset, 80% payouts, lost or 5 payouts then the next eval), all accounts on the sam…",
-    "file": "research/writeups/millionaire-plan-2026-11-13.md"
    }
   ]
  },
  "rejected": [
+  {
+   "date": "2026-11-17",
+   "title": "Famous published strategies on CME NQ - none beats LIT, none passes an MFFU eval in a way we can trust",
+   "file": "research/writeups/public-strategies-2026-11-17.md",
+   "summary": "The four that look best on paper (pre-FOMC, RSI(2), 12-month trend, overnight drift) all hold positions overnight, which MFFU does not allow (flat by 16:10 ET), and every one of them lost money in 2026 H2 or in 2021-25."
+  },
+  {
+   "date": "2026-11-17",
+   "title": "Kalshi edge, team K5 (answer partly public before close, slow niche markets, liquidity rewards)",
+   "file": "research/writeups/kalshi-edge-K5-2026-11-17.md",
+   "summary": ""
+  },
+  {
+   "date": "2026-11-17",
+   "title": "Kalshi edge, team K4 (cross-venue Polymarket, sports, 15-min crypto slices): NO EDGE FOUND",
+   "file": "research/writeups/kalshi-edge-K4-2026-11-17.md",
+   "summary": ""
+  },
+  {
+   "date": "2026-11-17",
+   "title": "\"Edge stopped working\" switch - cut size when LIT's / ATLAS's own record drifts below expectation, restore on…",
+   "file": "research/writeups/drift-switch-2026-11-17.md",
+   "summary": "In 2021-25 they halve the failed Builder evals (55% - 28% within 60 sessions) and cut fees ($212 - $166 per 6 months), but the payouts fall by the same amount: the Builder still makes -$7 instead of -$9 a m…"
+  },
   {
    "date": "2026-11-15",
    "title": "LIT deep edge (2026-11-15) - why LIT loses, why Jul-Oct made less than Jan-Jun, the setups it skipped, and 16…",
@@ -326,33 +350,12 @@
    "title": "Kalshi edge, team A (calibration / base rate): NO EDGE FOUND",
    "file": "research/writeups/kalshi_edge_A.md",
    "summary": "No edge found. Out of the 38 cells that were big enough to test (and 7 pre-written textbook ideas), none beat the noise on training data, and none is positive with a confidence interval above zero on the held-out last 14 days."
-  },
-  {
-   "date": "2026-11-04",
-   "title": "Second strategies night - ATLAS and BLITZ on the 25K accounts (72 new versions, none beats today), how they c…",
-   "file": "research/writeups/2026-11-04_second_strategies_night.md",
-   "summary": "ATLAS (EMA + MACD + S/R) and BLITZ (noise-area scalp) re-tested for the 25K accounts with 43 BLITZ and 29 ATLAS versions (stop multiple, entry window, daily loss cap, trades a day, hold time, breakeven, trail, day filte…"
-  },
-  {
-   "date": "2026-11-04",
-   "title": "LIT ideas round 3 (48 versions of 10 new ideas - quarterly / monthly / weekly levels, inside day, overnight-r…",
-   "file": "research/writeups/2026-11-04_lit_ideas_round3.md",
-   "summary": "Part A closes the open items from the Plutus fix - lit_funded_firms.py rerun with today's live trades and the live presets (eval room 0.8, funded 60% / = $1,500 / winner = $2,000), the Builder 25K row refreshed, BLITZ g…"
-  },
-  {
-   "date": "2026-11-04",
-   "title": "LIT ideas round 2 - scale-in again (bootstrap by session, best trades removed in steps) and six more new idea…",
-   "file": "research/writeups/2026-11-04_lit_ideas_round2.md",
-   "summary": "Scale-in at LIT size re-measured with a bootstrap over sessions and over weeks and with only the best 1, 2 or 3 trades removed."
-  },
-  {
-   "date": "2026-11-04",
-   "title": "LIT ideas night - 16 new ideas (165 versions) on the live LIT - partials and stair stops, a second cut check,…",
-   "file": "research/writeups/2026-11-04_lit_ideas_night.md",
-   "summary": "No management change (partials, stair stops, stale exits, news exits, a later cut) and no entry-window or per-session change holds in both halves."
   }
  ],
  "rejected_ref": [
+  "Famous published strategies (2026-11-17, public-strategies-2026-11-17.md, tools/pub_strats.py): 22 cells as",
+  "Drift switch (2026-11-17, drift-switch-2026-11-17.md, tools/money/drift_switch.py): cut LIT to paper/half after a rolling",
+  "Rule-native layer (2026-11-17, rule-native-2026-11-17.md): 2nd target / 1R / scalp / profit lock: no sooner payout.",
   "Published models as taught: ICT 2022, Silver Bullet, Mech/IFVG, continuation, ATM 5m/1m with a sharp V (0.2–1.5 trades/wk,",
   "92 confluences; 6 daily-bias methods; grade/confidence sizing; partials and trails.",
   "Fixed 10–15 pt stops: wicked out, lose money. Structural stops are rarely ≤15 pts.",
@@ -363,10 +366,7 @@
   "B-holds (2026-10-27, b-holds-vs-lit-priority.md, tools/bholds.py, runs bholds_): while ATLAS (account B) holds a trade, skip",
   "The owner's LIT Complete Report (2026-10-18, research/writeups/lit-report-tests.md, tools/lit_report.py, runs lit_rep_):",
   "LIT studies of 2026-10-18/19 (none adopted unless noted; write-ups in research/writeups/): HTF confluences (75,",
-  "Reversal exits after the first live trade (2026-10-28, lit-reversal-exit.md, tools/lit_rev_exit.py, runs lit_rev_):",
-  "Diversifier search (2026-10-26, diversifier-search.md, tools/div_search.py / div_stack.py, runs div_): the",
-  "Payout / eval mechanics (2026-10-26, payout-policy.md, eval-cost.md): ask line $1,000 / $2,000 vs $1,500,",
-  "BLITZ on its own 25K, \"like a person\" (2026-10-29, blitz-25k.md, tools/blitz25k_.py, runs blitz25k_, pick"
+  "Reversal exits after the first live trade (2026-10-28, lit-reversal-exit.md, tools/lit_rev_exit.py, runs lit_rev_):"
  ],
  "learnings": [
   {
@@ -375,6 +375,20 @@
    "text": "MFFU pays on winning days (Rapid EOD eval best day = 30%, funded daily above $2,100; Builder funded best day = 50%, $2,600 above start).",
    "src": "research/writeups/rule-native-2026-11-17.md",
    "kind": "mostly"
+  },
+  {
+   "d": "2026-11-17",
+   "who": "dev",
+   "text": "The four that look best on paper (pre-FOMC, RSI(2), 12-month trend, overnight drift) all hold positions overnight, which MFFU does not allow (flat by 16:10 ET), and every one of them lost money in 2026 H2 or in 2021-25.",
+   "src": "research/writeups/public-strategies-2026-11-17.md",
+   "kind": "rejected"
+  },
+  {
+   "d": "2026-11-17",
+   "who": "atlas",
+   "text": "In 2021-25 they halve the failed Builder evals (55% - 28% within 60 sessions) and cut fees ($212 - $166 per 6 months), but the payouts fall by the same amount: the Builder still makes -$7 instead of -$9 a m…",
+   "src": "research/writeups/drift-switch-2026-11-17.md",
+   "kind": "rejected"
   },
   {
    "d": "2026-11-16",
@@ -844,23 +858,88 @@
    "text": "None is real on NQ 2021-26 - 2 of 31 pass a 5% placebo test in 2021-24 (luck alone gives about 1.6), none survives the family-wise check, and both fade out of sample.",
    "src": "research/writeups/quant-anomalies.md",
    "kind": "rejected"
-  },
-  {
-   "d": "2026-10-23",
-   "who": "dev",
-   "text": "Result - the models do rank wins a little better than chance over the whole walk-forward (LIT AUC 0.60, ATLAS 0.67, permutation p 0.01), but almost all of it is mechanical - the R:R to the target alone (a far target is…",
-   "src": "research/writeups/meta-labeling.md",
-   "kind": "rejected"
-  },
-  {
-   "d": "2026-10-23",
-   "who": "lit",
-   "text": "Only one passes the rule - \"equal within 1 tick counts as swept\" (H1 +$346, H2 +$677, 2021-25 +$4.3k, eval path unchanged) - and it is too thin to adopt: one H1 trade, its 2-tick neighbour loses $4.1k in H1, bootstrap p…",
-   "src": "research/writeups/lit-supplement.md",
-   "kind": "rejected"
   }
  ],
  "lessons": [
+  {
+   "text": "In 2021-25 they halve the failed Builder evals (55% - 28% within 60 sessions) and cut fees ($212 - $166 per 6 months), but the payouts fall by the same amount: the Builder still makes -$7 instead of -$9 a m…",
+   "cat": "NQ strategy",
+   "who": "atlas",
+   "d": "2026-11-17",
+   "kind": "rejected",
+   "strength": 2,
+   "merged": 1,
+   "sources": [
+    {
+     "src": "research/writeups/drift-switch-2026-11-17.md",
+     "d": "2026-11-17"
+    },
+    {
+     "src": "research/writeups/eval-game.md",
+     "d": "2026-10-17"
+    }
+   ]
+  },
+  {
+   "text": "The four that look best on paper (pre-FOMC, RSI(2), 12-month trend, overnight drift) all hold positions overnight, which MFFU does not allow (flat by 16:10 ET), and every one of them lost money in 2026 H2 or in 2021-25.",
+   "cat": "process",
+   "who": "dev",
+   "d": "2026-11-17",
+   "kind": "rejected",
+   "strength": 1,
+   "merged": 1,
+   "sources": [
+    {
+     "src": "research/writeups/public-strategies-2026-11-17.md",
+     "d": "2026-11-17"
+    }
+   ]
+  },
+  {
+   "text": "Tested and rejected: Rule-native layer (2026-11-17, rule-native-2026-11-17.md): 2nd target / 1R / scalp / profit lock: no sooner payout.",
+   "cat": "NQ strategy",
+   "who": "dev",
+   "d": "2026-11-17",
+   "kind": "rejected",
+   "strength": 1,
+   "merged": 1,
+   "sources": [
+    {
+     "src": "docs/CLAUDE_REFERENCE.md",
+     "d": "2026-11-17"
+    }
+   ]
+  },
+  {
+   "text": "Tested and rejected: Famous published strategies (2026-11-17, public-strategies-2026-11-17.md, tools/pub_strats.py): 22 cells as",
+   "cat": "process",
+   "who": "dev",
+   "d": "2026-11-17",
+   "kind": "rejected",
+   "strength": 1,
+   "merged": 1,
+   "sources": [
+    {
+     "src": "docs/CLAUDE_REFERENCE.md",
+     "d": "2026-11-17"
+    }
+   ]
+  },
+  {
+   "text": "Tested and rejected: Drift switch (2026-11-17, drift-switch-2026-11-17.md, tools/money/drift_switch.py): cut LIT to paper/half after a rolling",
+   "cat": "NQ strategy",
+   "who": "dev",
+   "d": "2026-11-17",
+   "kind": "rejected",
+   "strength": 1,
+   "merged": 1,
+   "sources": [
+    {
+     "src": "docs/CLAUDE_REFERENCE.md",
+     "d": "2026-11-17"
+    }
+   ]
+  },
   {
    "text": "Not adopted on money (fails H1), a risk choice for the owner.",
    "cat": "process",
@@ -1212,21 +1291,6 @@
    ]
   },
   {
-   "text": "Tested and rejected: BLITZ on its own 25K, \"like a person\" (2026-10-29, blitz-25k.md, tools/blitz25k_.py, runs blitz25k_, pick",
-   "cat": "NQ strategy",
-   "who": "blitz",
-   "d": "2026-10-29",
-   "kind": "rejected",
-   "strength": 1,
-   "merged": 1,
-   "sources": [
-    {
-     "src": "docs/CLAUDE_REFERENCE.md",
-     "d": "2026-10-29"
-    }
-   ]
-  },
-  {
    "text": "(1m for 2026, 5m for 2021-25), costs in ($1.90 a micro, 1 tick on every market and stop fill, limits only when traded through, every same-bar tie booked against us), picked on 2026 Jan-Jun, checked on Jul-Oct, 2021-25 o…",
    "cat": "NQ strategy",
    "who": "dev",
@@ -1376,36 +1440,6 @@
    "sources": [
     {
      "src": "research/writeups/atlas-funded.md",
-     "d": "2026-10-26"
-    }
-   ]
-  },
-  {
-   "text": "Tested and rejected: Payout / eval mechanics (2026-10-26, payout-policy.md, eval-cost.md): ask line $1,000 / $2,000 vs $1,500,",
-   "cat": "NQ strategy",
-   "who": "dev",
-   "d": "2026-10-26",
-   "kind": "rejected",
-   "strength": 1,
-   "merged": 1,
-   "sources": [
-    {
-     "src": "docs/CLAUDE_REFERENCE.md",
-     "d": "2026-10-26"
-    }
-   ]
-  },
-  {
-   "text": "Tested and rejected: Diversifier search (2026-10-26, diversifier-search.md, tools/div_search.py / div_stack.py, runs div_): the",
-   "cat": "process",
-   "who": "dev",
-   "d": "2026-10-26",
-   "kind": "rejected",
-   "strength": 1,
-   "merged": 1,
-   "sources": [
-    {
-     "src": "docs/CLAUDE_REFERENCE.md",
      "d": "2026-10-26"
     }
    ]
@@ -1758,52 +1792,6 @@
      "d": "2026-10-21"
     }
    ]
-  },
-  {
-   "text": "(1) It does not warn before a trade: there is no push when a setup arms, and nothing logs t…",
-   "cat": "process",
-   "who": "dev",
-   "d": "2026-10-21",
-   "kind": "research",
-   "strength": 1,
-   "merged": 1,
-   "sources": [
-    {
-     "src": "research/writeups/competitor-features.md",
-     "d": "2026-10-21"
-    }
-   ]
-  },
-  {
-   "text": "2,520 context variants were tested on today's live LIT trades and on the adopt-candidate combo (t_check + scale_in + be_off).",
-   "cat": "NQ strategy",
-   "who": "lit",
-   "d": "2026-10-20",
-   "kind": "rejected",
-   "strength": 5,
-   "merged": 5,
-   "sources": [
-    {
-     "src": "research/writeups/lit-market-context.md",
-     "d": "2026-10-20"
-    },
-    {
-     "src": "research/writeups/lit-gap-audit.md",
-     "d": "2026-10-20"
-    },
-    {
-     "src": "research/writeups/lit-bias-discretion.md",
-     "d": "2026-10-20"
-    },
-    {
-     "src": "research/writeups/lit-batch3b.md",
-     "d": "2026-10-20"
-    },
-    {
-     "src": "research/writeups/lit-batch3a.md",
-     "d": "2026-10-20"
-    }
-   ]
   }
  ],
  "changed": [
@@ -1907,11 +1895,59 @@
  "events": [
   {
    "t": 1794916800,
+   "who": "kalshi",
+   "kind": "writeup",
+   "ok": true,
+   "text": "Write-up (rejected): Kalshi edge, team K5 (answer partly public before close, slow niche markets, liquidity rewards)",
+   "src": "research/writeups/kalshi-edge-K5-2026-11-17.md"
+  },
+  {
+   "t": 1794916800,
+   "who": "kalshi",
+   "kind": "writeup",
+   "ok": true,
+   "text": "Write-up (rejected): Kalshi edge, team K4 (cross-venue Polymarket, sports, 15-min crypto slices): NO EDGE FOUND",
+   "src": "research/writeups/kalshi-edge-K4-2026-11-17.md"
+  },
+  {
+   "t": 1794916800,
+   "who": "dev",
+   "kind": "writeup",
+   "ok": true,
+   "text": "Write-up: Taxes for a prop-firm trader (US, 2026 rules): study notes, 2026-11-17",
+   "src": "research/writeups/taxes-2026-11-17.md"
+  },
+  {
+   "t": 1794916800,
+   "who": "dev",
+   "kind": "writeup",
+   "ok": true,
+   "text": "Write-up: More work next to the bots (2026-11-17)",
+   "src": "research/writeups/more-work-2026-11-17.md"
+  },
+  {
+   "t": 1794916800,
+   "who": "dev",
+   "kind": "writeup",
+   "ok": true,
+   "text": "Write-up (rejected): Famous published strategies on CME NQ - none beats LIT, none passes an MFFU eval in a way we can trust",
+   "src": "research/writeups/public-strategies-2026-11-17.md"
+  },
+  {
+   "t": 1794916800,
    "who": "dev",
    "kind": "writeup",
    "ok": true,
    "text": "Write-up (mostly): Rule-native search - pick by \"days to the first payout\" and \"P(no payout in 6 months)\" instead of PF / net $…",
    "src": "research/writeups/rule-native-2026-11-17.md"
+  },
+  {
+   "t": 1794916800,
+   "who": "atlas",
+   "kind": "writeup",
+   "ok": true,
+   "text": "Write-up (rejected): \"Edge stopped working\" switch - cut size when LIT's / ATLAS's own record drifts below expectation, restore on…",
+   "src": "research/writeups/drift-switch-2026-11-17.md"
   },
   {
    "t": 1794830400,
@@ -4285,121 +4321,126 @@
   "available": true,
   "commits": [
    {
-    "t": 1794873972,
-    "s": "Plan: one Rapid EOD (LIT + ATLAS, keep $1,000)"
+    "t": 1794942650,
+    "s": "Merge branch 'night-w-cmd' into claude/clever-heisenberg-51zwcr"
    },
    {
-    "t": 1794865468,
-    "s": "My Accounts page: every eval and funded account, live room / target, bots on it, plan, decisions"
+    "t": 1794942502,
+    "s": "Plainer first screens: Command + Research apps and the Jarvis hub"
    },
    {
-    "t": 1794847261,
-    "s": "Refresh indexes"
+    "t": 1794941686,
+    "s": "Merge branch 'night-w-life' into claude/clever-heisenberg-51zwcr"
    },
    {
-    "t": 1794847252,
-    "s": "Merge builder levers study"
+    "t": 1794939906,
+    "s": "Merge branch 'night-w-market' into claude/clever-heisenberg-51zwcr"
    },
    {
-    "t": 1794847211,
-    "s": "Study: MFFU Builder levers (parallel fresh eval, 2nd Builder 25K mix, funded payout policy), paper only"
+    "t": 1794938219,
+    "s": "MARKET apps: plain first lines (what it is for, what to do, in $); NQ drops 'three bots'/BLITZ wording"
    },
    {
-    "t": 1794846411,
-    "s": "Study: Rapid EOD levers (decorrelated accounts, Asia slot, give-up / withdrawal / day-cap rules), paper only"
+    "t": 1794937441,
+    "s": "Plain first lines on 23 Money + Life apps: what it is for, what to tap, $ and ESTIMATE labels; Kalshi says pa…"
    },
    {
-    "t": 1794827296,
-    "s": "Study: LIT + ATLAS (+ BLITZ) on one MFFU account (Builder 50K, Rapid EOD 50K), paper only"
+    "t": 1794937078,
+    "s": "Rapid EOD ready (accounts page), Kalshi rewards snapshot"
    },
    {
-    "t": 1794825089,
-    "s": "STATE: MFFU only; help-center account limits; Rapid EOD next"
+    "t": 1794936498,
+    "s": "Merge branch 'night-rapid' into claude/clever-heisenberg-51zwcr"
    },
    {
-    "t": 1794823364,
-    "s": "STATE: why the first payout takes ~2 months (funded sizing sweep)"
+    "t": 1794935428,
+    "s": "Merge branch 'night-work' into claude/clever-heisenberg-51zwcr"
    },
    {
-    "t": 1794819529,
-    "s": "STATE: night W2 merged, bot checks green"
+    "t": 1794935413,
+    "s": "More work: ranked side incomes page, agency short scripts (walk-in, DM, follow-up), pricing re-check, first $…"
    },
    {
-    "t": 1794819177,
-    "s": "Jarvis apps: ASCII escapes for glyphs; checks follow AGORA colours and the live Planner card"
+    "t": 1794935238,
+    "s": "Rapid EOD 50K ready but OFF: LIT + ATLAS on one account, one line to turn on"
    },
    {
-    "t": 1794818961,
-    "s": "Jarvis worker v45 for night W2 fixes; hub test pin"
+    "t": 1794934575,
+    "s": "Merge branch 'night-pages' into claude/clever-heisenberg-51zwcr"
    },
    {
-    "t": 1794817230,
-    "s": "Merge branch 'night-w2' into claude/clever-heisenberg-51zwcr"
+    "t": 1794934559,
+    "s": "Business: Security checklist + Work week pages, 4 doors; plainer words on Business, My Accounts, Hestia, Plan…"
    },
    {
-    "t": 1794815512,
-    "s": "phone e2e: the junk run reopens Jarvis every round: a request the navigation cancels (ERR_ABORTED) is not a f…"
+    "t": 1794934409,
+    "s": "Business Taxes page: payouts, deductions, quarterly dates, 30% set-aside; Oikos + Ledger default 30%"
    },
    {
-    "t": 1794812739,
-    "s": "STATE: backtest-uses-live-bars decision waiting on the owner; restart to load tonight's fixes"
+    "t": 1794933672,
+    "s": "Kalshi rewards paper: live ledger gitignored, committed snapshot instead"
    },
    {
-    "t": 1794812595,
-    "s": "phone e2e: the Kalshi page's own 3 s limit on its HEAD check of ../kalshicity/ (and a slow worker script fetc…"
+    "t": 1794933298,
+    "s": "Merge branch 'night-pub' into claude/clever-heisenberg-51zwcr"
    },
    {
-    "t": 1794811795,
-    "s": "phone e2e: any request a dashboard had in flight when the switch lets it go is cancelled (ERR_ABORTED), not f…"
+    "t": 1794933298,
+    "s": "Kalshi rewards paper: ledger update"
    },
    {
-    "t": 1794811459,
-    "s": "test_jarvis_home: the MSAA check scrolls the 3D core into view (it sits below the AGORA home's first screen a…"
+    "t": 1794933281,
+    "s": "Research: famous published strategies on NQ (22 cells) - none holds, nothing adopted"
    },
    {
-    "t": 1794811223,
-    "s": "test_jarvis_core: listening red is measured red over green (AGORA bronze idle already has more red over blue…"
+    "t": 1794932832,
+    "s": "Kalshi rewards paper: ledger update"
    },
    {
-    "t": 1794809555,
-    "s": "phone e2e: the PC feed pointer (status_feed.json, read async at every Jarvis start since night A) cancelled b…"
+    "t": 1794928454,
+    "s": "Kalshi rewards paper: first ledger snapshot"
    },
    {
-    "t": 1794809394,
-    "s": "phone e2e: the test site gets kalshicity/scan.json + forward.json as the Kalshi City workflow publishes them;…"
+    "t": 1794928428,
+    "s": "Kalshi rewards paper tester (GET only, never an order): virtual two-sided reward-reference bids, conservative…"
    },
    {
-    "t": 1794809299,
-    "s": "Trade watch: ATLAS backtest twin + LIT 1m cleaner vs live research"
+    "t": 1794927972,
+    "s": "Kalshi K5: slow public-number markets and liquidity rewards - no taker edge, one weak paper rule, rewards lead"
    },
    {
-    "t": 1794809142,
-    "s": "add_planner.sh keeps the Planner's status card (planner/jarvis.json) when planner-backup has none"
+    "t": 1794885983,
+    "s": "Kalshi K4: cross-venue Polymarket, sports favourite-longshot, crypto slices - no edge"
    },
    {
-    "t": 1794809086,
-    "s": "Jarvis search index rebuilt (Agency and Business were missing: test_jarvis_skills --check red)"
+    "t": 1794877490,
+    "s": "Record drift switch and rule-native results"
    },
    {
-    "t": 1794809012,
-    "s": "test_arena_citadel: a street is its top face now (2 triangles): the exact route budget is 112 x 2 = 224 (was…"
+    "t": 1794877490,
+    "s": "Merge branch 'worktree-agent-a494b96448fe9ec52' into claude/clever-heisenberg-51zwcr"
    }
   ],
   "branches": [
    {
     "name": "claude/clever-heisenberg-51zwcr",
-    "t": 1794874285,
-    "s": "STATE: owner wants shorter replies"
+    "t": 1794942650,
+    "s": "Merge branch 'night-w-cmd' into claude/clever-heisenberg-51zwcr"
+   },
+   {
+    "name": "worktree-agent-a689a38b3eb808860",
+    "t": 1794885983,
+    "s": "Kalshi K4: cross-venue Polymarket, sports favourite-longshot, crypto slices - no edge"
    },
    {
     "name": "worktree-agent-a494b96448fe9ec52",
-    "t": 1794874285,
-    "s": "STATE: owner wants shorter replies"
+    "t": 1794877473,
+    "s": "Research: drift switch (cut size when LIT/ATLAS record drifts) - rejected, 0/51 pass, chance-level"
    },
    {
     "name": "worktree-agent-aeab192451326547c",
-    "t": 1794873972,
-    "s": "Plan: one Rapid EOD (LIT + ATLAS, keep $1,000)"
+    "t": 1794874929,
+    "s": "Research: rule-native search (days to 1st payout, P(no payout)) on Rapid EOD + Builder 50K, paper o…"
    },
    {
     "name": "worktree-agent-aba496e75416be08a",

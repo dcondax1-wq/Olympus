@@ -48,8 +48,8 @@ MUST = [
     ("STRATEGY.md", "**15-minute check**"),
     ("STRATEGY.md", "limit order at the CISD level"),
     ("STRATEGY.md", "closes more than 0.3R under water"),
-    ("CLAUDE.md", "PF 2.91, +$9,919"),
-    ("CLAUDE.md", "PF 4.19, +$43,820"),
+    ("docs/CLAUDE_REFERENCE.md", "PF 2.91, +$9,919"),      # the headline moved from CLAUDE.md to its reference (one-page brief, 2026-11-15)
+    ("docs/CLAUDE_REFERENCE.md", "PF 4.19, +$43,820"),
     ("CLAUDE.md", "Paper only"),
     ("docs/CLAUDE_REFERENCE.md", "## Tested and rejected"),
     ("research/writeups/2026-11-04_kalshi_edges.md", "| Why is it negative? |"),

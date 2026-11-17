@@ -188,13 +188,30 @@ def browser():
         yield br
 
 
+def status_feed_prefix():
+    """The one sanctioned outside address: the public PC status topic of status_feed.json (pc_feed.js polls it; docs/PRIVACY.md:
+    'The status topic is public on purpose'). Returns '<ntfy>/<topic>/' or '' when the file is missing or odd."""
+    try:
+        with open(os.path.join(WEB, "status_feed.json"), encoding="utf-8") as f:
+            feed = json.load(f)
+        base, topic = str(feed.get("ntfy") or "").rstrip("/"), str(feed.get("topic") or "")
+    except (OSError, ValueError, AttributeError):
+        return ""
+    return f"{base}/{topic}/" if base.startswith("https://") and re.fullmatch(r"[A-Za-z0-9_-]{16,}", topic) else ""
+
+
+def is_status_feed(u):
+    pre = status_feed_prefix()
+    return bool(pre) and u.startswith(pre)
+
+
 def page(br, origin, w=390, h=844, reduced=False, lite=False, storage=None, mock=None):
     ctx = br.new_context(viewport={"width": w, "height": h}, device_scale_factor=2, is_mobile=True, has_touch=True, reduced_motion="reduce" if reduced else "no-preference", accept_downloads=True)
     init = "try { localStorage.setItem('jfx', '%s'); } catch (e) {}" % ("low" if lite else "high")
     for k, v in (storage or {}).items():
         init += " try { localStorage.setItem(%s, %s); } catch (e) {}" % (json.dumps(k), json.dumps(v))
     ctx.add_init_script(init)
-    seen, off, mocked = [], [], []
+    seen, off, mocked, feed = [], [], [], []
 
     def route(r):
         u = r.request.url
@@ -204,7 +221,10 @@ def page(br, origin, w=390, h=844, reduced=False, lite=False, storage=None, mock
                 r.fulfill(status=200, content_type="application/json", headers={"Access-Control-Allow-Origin": "*"}, body=body)
                 return
         if not u.startswith(origin):
-            off.append(u)
+            if is_status_feed(u):
+                feed.append(u)          # the sanctioned public PC status feed (docs/PRIVACY.md), still aborted: never reached
+            else:
+                off.append(u)
             r.abort()
         else:
             seen.append(u)
@@ -215,6 +235,7 @@ def page(br, origin, w=390, h=844, reduced=False, lite=False, storage=None, mock
     p.on("pageerror", lambda e: errs.append(str(e)))
     p.on("console", lambda m: errs.append(m.text) if m.type == "error" and "Failed to load resource" not in m.text and "net::ERR" not in m.text else None)
     p.mocked = mocked
+    p.feed = feed
     return ctx, p, errs, seen, off
 
 

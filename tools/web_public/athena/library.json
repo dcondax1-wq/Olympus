@@ -16,12 +16,16 @@
   "research/writeups/2026-11-03-money-plan.md",
   "research/writeups/2026-11-03-night-rnd.md",
   "research/writeups/2026-11-04_kalshi_edges.md",
+  "research/writeups/2026-11-15-atlas-deep.md",
+  "research/writeups/2026-11-15-s2-edge.md",
+  "research/writeups/account-4-2026-11-14.md",
   "research/writeups/atlas-blitz-edge-2026-10-30.md",
   "research/writeups/atlas-edge-2026-10-30b.md",
   "research/writeups/atlas-funded.md",
   "research/writeups/atlas-v2.md",
   "research/writeups/atlas.md",
   "research/writeups/bias-filters.md",
+  "research/writeups/builder-levers-2026-11-16.md",
   "research/writeups/calendar-effects.md",
   "research/writeups/cross-market-context.md",
   "research/writeups/diversifier-search.md",
@@ -50,6 +54,7 @@
   "research/writeups/loss-anatomy.md",
   "research/writeups/loss-cut-eval-pass.md",
   "research/writeups/management.md",
+  "research/writeups/millionaire-plan-2026-11-13.md",
   "research/writeups/mind.md",
   "research/writeups/mnq-vs-nq-feed.md",
   "research/writeups/monte-carlo-evals.md",
@@ -69,6 +74,7 @@
   "research/writeups/second-route.md",
   "research/writeups/second-sr.md",
   "research/writeups/sizing-caps.md",
+  "research/writeups/stack-one-account-2026-11-16.md",
   "research/writeups/stophunt-audit.md",
   "research/writeups/stophunt.md",
   "research/writeups/trade-construction-summary.md",
@@ -731,7 +737,7 @@
    "tags": [
     "rejected"
    ],
-   "title": "The graveyard: 19 lists of dead ends",
+   "title": "The graveyard: 29 lists of dead ends",
    "short": "Many ideas were tested properly and dropped. Before you suggest a new strategy idea, search here first.",
    "body": [
     "Do not redo it unless you have a genuinely new idea.",
@@ -2411,6 +2417,65 @@
    ]
   },
   {
+   "id": "l-2026-11-15-atlas-deep",
+   "kind": "learned",
+   "tags": [
+    "learned"
+   ],
+   "title": "ATLAS deep edge (2026-11-15)",
+   "short": "Team E-ATLAS.",
+   "body": [
+    "Worth adopting (the owner decides), 2026-11-15.",
+    "Baseline of ATLAS as it runs on the Builder 25K today (account-B rules, fees at the owner's $43), a loser autopsy of its 2026 and 2021-25 trades (member, side, hour, weekday, VIX, stop in points / ATR / vs the member's own median, target R, daily trend, LIT's day, the members' paper day, nth signal, exit), then 8...",
+    "Main finding - in 2026 half of ATLAS's signals are never traded (H1 58 of 112, H2 26 of 51, worth +48R / +13R at a fixed risk) because an eval with a low room sizes to 0 micros and idles for weeks (\"zombie\"); today ATLAS trades 2.11 / 1.60 times a week on the account and only 48% / 38% of weeks have 2+ trades.",
+    "The zombie-eval rule (give an eval up under $200 of room, and on a low room trade 1 micro when its full stop-out fits 80% of the room) - owner $ a month on the whole 25K slot $639 / $459 / $16 vs $579 / $394 / $11 (H1 / H2 / 2021-25), 2-week pass 67.2 / 43.5 vs 65.5 / 43.5, 3.95 / 2.95 trades a week (weeks 2+ 96% /...",
+    "All 13 lifecycle variants lift the slot in both halves (a plateau with a clear mechanism, not a selection). No trade filter survives - the one that passes the slot test (skip ATLAS after LIT won the other side) moves 4 H2 trades worth -0.05R and random skips of the same size pass the 2026 test in 6.7% of draws.",
+    "Words used here: [[atr]], [[micro]]."
+   ],
+   "src": [
+    "research/writeups/2026-11-15-atlas-deep.md"
+   ]
+  },
+  {
+   "id": "l-2026-11-15-s2-edge",
+   "kind": "learned",
+   "tags": [
+    "learned"
+   ],
+   "title": "S2 edge (2026-11-15)",
+   "short": "Six ideas that systematic NQ / prop bots use and that Tested and rejected plus the LIT idea rounds 1-3 had not covered, 28 versions on the exact live LIT trades (re-walk == run litlive), CME NQ futures, true 1m bars in 2026, costs in.",
+   "body": [
+    "A promising lead, paper first, 2026-11-15.",
+    "Picked on Jan-Jun 2026, checked on Jul-Oct 2026, 2021-25 a reference only. Money three ways - LIT size rule, the MFFU 50K eval path at today's sizing (twoweek, roomf 0.4, kept past session 10) and the funded 50K.",
+    "Calendar rules (holiday-thin days, the roll window, OpEx week / day, quad witching, turn of the month) and NQ-vs-ES relative strength never gain in both halves or are chance. Sweeps of the day's own extreme gain in Jan-Jun only.",
+    "Target reachability (target points / (5m ATR x sqrt(5m bars left to 15:55))) easiest third x1.25 gains +$4,079 / +$1,021 at the LIT size and +$2,724 / +$660 on the eval path, 2-week pass / fail unchanged, funded +$12 / +$19 a month, shuffle p 0.067 / 0.093; but the easy trades that do NOT also have a tight stop add...",
+    "Paper only, nothing switched.",
+    "Words used here: [[atr]]."
+   ],
+   "src": [
+    "research/writeups/2026-11-15-s2-edge.md"
+   ]
+  },
+  {
+   "id": "l-account-4-2026-11-14",
+   "kind": "learned",
+   "tags": [
+    "learned"
+   ],
+   "title": "Account #4 (A4, 2026-11-14)",
+   "short": "Team A4. Lucid's, FundedNext's and Bulenox's rules were re-read from the firms' own help centers (search readings 2026-11-14; their pages are DNS-blocked here) into the guard's data (research/props/firmresearch.json, copyprofiles.json).",
+   "body": [
+    "Worth adopting (the owner decides), 2026-11-14.",
+    "Every rule now maps to a profile field the fleet guard enforces; the missing ones were added OFF by default (contract scaling by profit, a written-yes hold, payout readiness, inactivity, an optional payout best-day cap).",
+    "Then LIT on its own MFFU Builder 50K plus a copy on a LucidPro 50K was played under each firm's own rules on the 2026 trades (costs in, both accounts on the same paths).",
+    "The copy is a clone - 2-week pass / fail 47.3 / 0.2% (H2), median 9 sessions, the same outcome as the MFFU eval on 100% of paths - and it pays $4,454 per $134 eval (H2) and $808 a month on its own over 6 months; with Zlarior funded the pair makes $1,750 a month (H2; $1,759 H1; 2021-25 +$65 with 70% of paths losing).",
+    "Daily correlation 0.94: one bad week hits both. Keep both on today's live sizing (every alternative tested was worse or within noise). LucidFlex fails the 3-week rule; FundedNext and Bulenox stay on hold until each says yes in writing."
+   ],
+   "src": [
+    "research/writeups/account-4-2026-11-14.md"
+   ]
+  },
+  {
    "id": "l-atlas-blitz-edge-2026-10-30",
    "kind": "learned",
    "tags": [
@@ -2518,6 +2583,25 @@
    ],
    "src": [
     "research/writeups/bias-filters.md"
+   ]
+  },
+  {
+   "id": "l-builder-levers-2026-11-16",
+   "kind": "learned",
+   "tags": [
+    "learned"
+   ],
+   "title": "Three MFFU Builder levers for money sooner",
+   "short": "Same trades, costs, sizing and Monte Carlo paths as stack-one-account (LIT live twoweek / UP50, ATLAS account-B need size + zombie rule, BLITZ account C; 1,000 paths of 126 sessions per half, 5-session blocks).",
+   "body": [
+    "Worth adopting (the owner decides), 2026-11-16.",
+    "1) EVAL RESCUE - Zlarior's hole ($1,145 room, $3,687 to go, 2026-11-07 numbers) passes at a median 14-15 sessions (2-week pass 25-29%); a fresh 50K passes at 8-9 (48%).",
+    "Buying a fresh Builder 50K now and running both on the same signal (first pass kept) moves the first funded payout from 53 / 50 to 46.5 / 44 sessions (about Feb 1 / Jan 27 -> Jan 21 / Jan 19) and the seat from $739 / $709 to $777 / $754 a month after the extra $91.80.",
+    "It pays at every hole with room <= $1,145 tested and not at room $1,500. ATLAS 25K the same way ($43) - 35 / 56 -> 31 / 47 sessions, $599 / $381 -> $617 / $412. Rescue sizings - bigger (55-70% of the room) pass sooner but fail 18-30% of hole evals in 2 weeks; smaller (25-30%) are slower: rejected.",
+    "2) The second Builder 25K - LIT eval then LIT + ATLAS $250 funded gives the first payout in 33 / 34 sessions and $553 / $456 a month vs the LIT 25K copy's 45 / 44 and $346 / $298, daily correlation with ATLAS's own 25K 0.52 / 0.36; ATLAS + BLITZ is as rich in H1 but 0.82-0.84 alike to ATLAS's 25K and fails 37% of..."
+   ],
+   "src": [
+    "research/writeups/builder-levers-2026-11-16.md"
    ]
   },
   {
@@ -3047,6 +3131,25 @@
    ]
   },
   {
+   "id": "l-millionaire-plan-2026-11-13",
+   "kind": "learned",
+   "tags": [
+    "learned"
+   ],
+   "title": "The millionaire plan (M1, 2026-11-13)",
+   "short": "Each account = the uprisk engine (MFFU Builder eval on the live twoweek sizing, 2 sessions of paperwork, Sim Funded on the live funded preset, 80% payouts, lost or 5 payouts then the next eval), all accounts on the same market path (copies are one...",
+   "body": [
+    "Worth adopting (the owner decides), 2026-11-13.",
+    "H2, year 1, $ a month after every eval fee - 1 account $874, 3 (the MFFU cap) $1,629, 5 $3,221, 10 $6,886; the ladder (3, then 5 at the first payout, then 10 at $10K net) $4,903, then $8,457 a month in years 2-3, $100K after a median 18 months. $1M from prop payouts alone - 36% of H2 paths in 10 years, 0% in 5.",
+    "With a personal futures account (seeded with $25K once $30K is kept after tax, LIT at 1% of the account a trade) - $1M after a median 52 months (85% within 5 years); in a 2021-25 market 0%.",
+    "REF - every fleet loses a little (1 account +$5, 10 accounts -$148 a month) and keeps buying evals - $4.6K to $57K of eval cash at the 95th percentile; the stop rule caps that at $459 (1 account) to $4,603 (10).",
+    "Firm prices and codes checked on the web 2026-11-13 (sources below; the firms' own pages cannot be opened from this machine, so every price is unconfirmed until checkout)."
+   ],
+   "src": [
+    "research/writeups/millionaire-plan-2026-11-13.md"
+   ]
+  },
+  {
    "id": "l-mind",
    "kind": "learned",
    "tags": [
@@ -3399,6 +3502,25 @@
    ],
    "src": [
     "research/writeups/sizing-caps.md"
+   ]
+  },
+  {
+   "id": "l-stack-one-account-2026-11-16",
+   "kind": "learned",
+   "tags": [
+    "learned"
+   ],
+   "title": "More strategies on ONE MFFU account",
+   "short": "Stored LIT (live), ATLAS (live EMA + MACD + S/R, never opposite LIT) and BLITZ (account C, never opposite LIT / ATLAS) trades were merged onto one account.",
+   "body": [
+    "A promising lead, paper first, 2026-11-16.",
+    "LIT keeps its live size. Each added trade risks min($ cap, 30% of the room, the soft daily loss left), so one full stop-out never goes past the $1,000 soft daily loss. Costs are in, and every mix runs on the same Monte Carlo paths as LIT alone.",
+    "Builder 50K - ATLAS $500 on the FUNDED account only (the eval stays LIT alone) moves the first funded payout from 26 / 23.5 to 17 / 15 sessions (Jan-Jun / Jul-Oct) and the 6-month account from $779 / $753 to $1,202 / $1,205 a month after fees. Adding BLITZ $300 too gives 15 / 13 sessions and $1,313 / $1,347.",
+    "Putting ATLAS in the eval passes faster (median 5-6 sessions instead of 9) but fails more evals in 2 weeks (3.1% / 1.6% vs 0.8% / 0.2%; 2021-25 20% vs 0.6%). Rapid EOD 50K - LIT + ATLAS $500 halves the slow 30%-rule eval (median 22 / 21 sessions instead of 40 / 38). That is still about a month, not 2 weeks.",
+    "The account pays $5,022 / $2,301 a month instead of $815 / $799. In 2021-25 every mix makes about $0 a month."
+   ],
+   "src": [
+    "research/writeups/stack-one-account-2026-11-16.md"
    ]
   },
   {
