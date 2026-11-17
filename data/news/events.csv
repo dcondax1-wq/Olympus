@@ -238,3 +238,14 @@ date,time_et,event,impact,source
 2026-11-12,08:30,Unemployment Claims,medium,dol.gov
 2026-11-13,08:30,PPI (producer inflation),high,bls.gov
 2026-11-18,14:00,Fed meeting minutes (Oct 27-28),high,federalreserve.gov
+2026-12-04,08:30,Non-Farm Payrolls (jobs report),high,MFFU T1 news calendar 2026 (help center)
+2026-12-10,08:30,CPI (consumer inflation),high,MFFU T1 news calendar 2026 (help center)
+2026-12-30,14:00,FOMC minutes (Dec meeting),high,MFFU T1 news calendar 2026 (help center)
+2027-02-17,14:00,FOMC minutes (Jan meeting),high,federalreserve.gov (3 weeks after the meeting; derived)
+2027-04-07,14:00,FOMC minutes (Mar meeting),high,federalreserve.gov (3 weeks after the meeting; derived)
+2027-05-19,14:00,FOMC minutes (Apr meeting),high,federalreserve.gov (3 weeks after the meeting; derived)
+2027-06-30,14:00,FOMC minutes (Jun meeting),high,federalreserve.gov (3 weeks after the meeting; derived)
+2027-08-18,14:00,FOMC minutes (Jul meeting),high,federalreserve.gov (3 weeks after the meeting; derived)
+2027-10-06,14:00,FOMC minutes (Sep meeting),high,federalreserve.gov (3 weeks after the meeting; derived)
+2027-11-17,14:00,FOMC minutes (Oct meeting),high,federalreserve.gov (3 weeks after the meeting; derived)
+2027-12-29,14:00,FOMC minutes (Dec meeting),high,federalreserve.gov (3 weeks after the meeting; derived)

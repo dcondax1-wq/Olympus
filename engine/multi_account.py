@@ -137,7 +137,13 @@ PRESETS = {
 }
 DEFAULT_PRESET = "mffu_builder_50k"
 BEST_DAY_MARGIN = 0.95          # a best-day rule is met with 5% to spare (research: the first winner pays <= 95% of the cap)
-NEWS_PRE_S, NEWS_POST_S = 120, 120
+# MFFU news policy (help center 2026-11-17): flat AND no working order from 2 min before to 2 min after a Tier-1 release
+# (8:30 -> flat by 8:28:00, reopen after 8:32:00). The bot flattens from 3 min before (a market close needs a poll + a
+# fill) and re-enters only 2.5 min after (rules audit 2026-11-17; was 120 / 120 = right on MFFU's edge).
+NEWS_PRE_S, NEWS_POST_S = 180, 150
+# A month whose CPI or jobs report is missing from the calendar (the official file stops at 2026-12; 2027 comes from the
+# weekly feed): from this day on, 08:30 ET of every weekday counts as a Tier-1 release (fails CLOSED, a few minutes a day).
+T1_FALLBACK_FROM = "2026-11-17"
 ADAPTER_FACTORY = None          # tests: (account, adapter cfg) -> adapter (a simulated NinjaTrader); None = engine/live.ADAPTERS
 
 
@@ -377,7 +383,14 @@ def primary_state(bot, mode: str):
     return sizing_state(mode, closes, today, bot.eval_start() or None, rules, prior=prior, payouts=payouts, anchor=anc)
 
 
-_NEWS = {"key": None, "rel": {}}
+_NEWS = {"key": None, "rel": {}, "cpi": set(), "nfp": set()}
+
+
+def _is_jobs(ev: str) -> bool:
+    """The US jobs report: the official file's "Non-Farm Payrolls", the weekly feed's "Non-Farm Employment Change" (not ADP's),
+    MFFU's "U.S. Employment Report"."""
+    return ("Non-Farm Payrolls" in ev or ("Non-Farm Employment Change" in ev and "ADP" not in ev)
+            or "Employment Report" in ev or "Employment Situation" in ev)
 
 
 def tier1_releases(day: str) -> list:
@@ -388,15 +401,35 @@ def tier1_releases(day: str) -> list:
         evs = news.historical_events(("high",))
         key = (len(evs), evs[-1]["t"] if evs else 0)
         if _NEWS["key"] != key:
-            rel = {}
+            rel, cpi, nfp = {}, set(), set()
             for e in evs:
                 ev = str(e.get("event") or "")
-                if ("CPI" in ev and "PPI" not in ev) or "Non-Farm Payrolls" in ev or ev.startswith("FOMC") or "minutes" in ev.lower():
+                is_cpi, is_nfp = "CPI" in ev and "PPI" not in ev, _is_jobs(ev)
+                if is_cpi or is_nfp or ev.startswith("FOMC") or "minutes" in ev.lower():
                     rel.setdefault(str(e["date"]), set()).add(int(e["t"]))
-            _NEWS.update(key=key, rel=rel)
-        return sorted(_NEWS["rel"].get(day, ()))
+                if is_cpi:
+                    cpi.add(str(e["date"])[:7])
+                if is_nfp:
+                    nfp.add(str(e["date"])[:7])
+            _NEWS.update(key=key, rel=rel, cpi=cpi, nfp=nfp)
+        out = set(_NEWS["rel"].get(day, ()))
+        if str(day) >= T1_FALLBACK_FROM and (str(day)[:7] not in _NEWS["cpi"] or str(day)[:7] not in _NEWS["nfp"]):
+            out |= _fallback_830(day)
+        return sorted(out)
     except Exception:
-        return []
+        return sorted(_fallback_830(day)) if str(day) >= T1_FALLBACK_FROM else []
+
+
+def _fallback_830(day: str) -> set:
+    """08:30 ET of a weekday (the CPI / jobs report time) when that month's release is not in the calendar."""
+    try:
+        d = _dt.date.fromisoformat(str(day)[:10])
+        if d.weekday() >= 5:
+            return set()
+        from zoneinfo import ZoneInfo
+        return {int(_dt.datetime(d.year, d.month, d.day, 8, 30, tzinfo=ZoneInfo("America/New_York")).timestamp())}
+    except Exception:
+        return set()
 
 
 # ---------------------------------------------------------------------------------------------------------------- account

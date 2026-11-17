@@ -61,7 +61,10 @@ def data_checks():
           and e50["dd_type"]["v"] == "eod" and e50["lock"]["v"] == 100.0 and e50["dll"]["v"] == 1000.0
           and e50["dll_type"]["v"] == "soft" and e50["max_micros"]["v"] == 40 and e50["max_minis"]["v"] == 4
           and all(e50[k]["verified"] for k in ("dll", "dll_type", "max_micros", "lock")), e50)
-    check("MFFU 50K min days is a conflict in the rulebook: not verified", P["mffu_builder_50k"]["eval"]["min_days"]["verified"] is False)
+    md = M["builder_50k"]["eval"]["min_trading_days_eval"]      # 2026-11-17 help center re-check: 1 day, confirmed (was a conflict)
+    check("MFFU 50K min days: 1, verified exactly when the rulebook says confirmed",
+          P["mffu_builder_50k"]["eval"]["min_days"]["v"] == 1
+          and P["mffu_builder_50k"]["eval"]["min_days"]["verified"] is (md.get("status") == "confirmed"), P["mffu_builder_50k"]["eval"]["min_days"])
     e25 = P["mffu_builder_25k"]
     check("MFFU 25K verified: $1,500 target, $1,000 EOD, $600 soft DLL, 20 micros; payouts $250-$1,000, buffer $1,100, 50% best day",
           e25["eval"]["target"]["v"] == 1500 and e25["eval"]["dd_amount"]["v"] == 1000 and e25["eval"]["dll"]["v"] == 600

@@ -302,8 +302,8 @@ def mffu_overlay(prof: dict, M: dict, plan: str):
         E["max_micros"] = F(int(v["micros"]), ok, s, d)
         v, ok, s, d, n = _m(b, "consistency_eval")
         E["consistency"] = F("none", ok, s, d, "no best-day rule in the Builder eval")
-        E["min_days"] = F(1, False, ["mffu_rules.json builder_50k.eval.min_trading_days_eval"], "2026-10-18",
-                          "1 per the help guides, the plan page says 2 (conflict)")
+        E["min_days"] = F(1, True, ["https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look"],
+                          "2026-11-17", "1 day (help center re-check 2026-11-17; was a conflict)")
         E["news"] = F("none", True, ["mffu_rules.json builder_50k.eval.news_trading"], "2026-10-18", "Builder: unrestricted")
         fu = b["funded"]
         ok, s, d = fu.get("status") == "confirmed", list(fu.get("source") or []), fu.get("checked") or "2026-10-26"

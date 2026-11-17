@@ -9,6 +9,7 @@ Paper bots, temp files, made-up / Sim names only: nothing routed to a real Ninja
   c. never two positions: ATLAS blocked while LIT holds / enters; LIT entering closes ATLAS first (any side), then routes
   d. the 30% best-day cap on both lanes (on the combined day), ATLAS $500 / 30% of the room, pass needs 4 days + 30%
   e. funded: Tier-1 news ban on ATLAS (LIT's lane has the preset's), payout advice keeps $1,000 above the $2,100 buffer
+  g. MFFU rules audit 2026-11-17: news window -3/+2.5 min, 08:30 fallback, jobs-report name, 7-day inactivity, no hedge vs a lane (live._route)
 """
 from __future__ import annotations
 
@@ -130,6 +131,54 @@ def same_account_sim(tmp):
             pass
 
 
+def rules_audit(tmp):
+    """g. MFFU rules audit 2026-11-17 (research/writeups/mffu-rules-audit-2026-11-17.md): the jobs report under the weekly
+    feed's name, the 08:30 fallback for a month the calendar does not cover, the 7-day inactivity warning on the Rapid's
+    shared book, LIT never routed while an extra account (the Rapid's LIT lane) still holds the other side."""
+    from engine import news
+    check("g. jobs report: the feed's 'Non-Farm Employment Change' counts, ADP's does not",
+          MA._is_jobs("Non-Farm Employment Change") and MA._is_jobs("Non-Farm Payrolls (jobs report)")
+          and not MA._is_jobs("ADP Non-Farm Employment Change") and not MA._is_jobs("Employment Cost Index Q3"))
+    old_h, old_n = news.historical_events, dict(MA._NEWS)
+    ev = lambda d, hm, name: {"t": int(dt.datetime.fromisoformat(f"{d}T{hm}").replace(tzinfo=ET).timestamp()), "date": d,
+                              "time_et": hm, "event": name, "impact": "high"}
+    news.historical_events = lambda impacts=("high",): [ev("2026-10-02", "08:30", "Non-Farm Payrolls (jobs report)"),
+                                                         ev("2026-12-04", "08:30", "Non-Farm Payrolls (jobs report)"),
+                                                         ev("2026-12-10", "08:30", "CPI (consumer inflation)"),
+                                                         ev("2027-01-08", "08:30", "Non-Farm Employment Change")]
+    MA._NEWS["key"] = None
+    try:
+        hm = lambda day: [dt.datetime.fromtimestamp(x, ET).strftime("%H:%M") for x in MA.tier1_releases(day)]
+        check("g. December covered (jobs + CPI known): no extra window on a plain day", hm("2026-12-15") == [], hm("2026-12-15"))
+        check("g. January 2027 CPI unknown: 08:30 of every weekday is treated as Tier-1 (fails closed)",
+              hm("2027-01-05") == ["08:30"] and hm("2027-01-09") == [] and hm("2027-01-08") == ["08:30"], (hm("2027-01-05"), hm("2027-01-09")))
+        check("g. before the audit day nothing changes (research replays)", hm("2026-10-15") == [], hm("2026-10-15"))
+    finally:
+        news.historical_events = old_h
+        MA._NEWS.clear()
+        MA._NEWS.update(old_n)
+        MA._NEWS["key"] = None
+    clock = Clock(ts(2026, 10, 20, 10, 0))
+    b = make_bot(os.path.join(tmp, "g"), clock, {"account": "Sim107", "eval_start": "2026-10-14"})
+    A, L = b.acct_r, lane(b)
+    sent = []
+    A._push_text = lambda title, body, key: sent.append(title)
+    A._idle_check(clock.t, "open")
+    check("g. inactivity: 6 days without a trade on the Rapid -> one push", len(sent) == 1 and "6 days" in sent[0], sent)
+    A._idle_check(clock.t, "open")
+    check("g. inactivity: once a day", len(sent) == 1, sent)
+    L.closes.append(["2026-10-19", ts(2026, 10, 19, 11, 0), 120.0, ts(2026, 10, 19, 10, 0)])
+    check("g. inactivity: LIT's lane trade counts for the whole account", A.idle_days(clock.t) == 1, A.idle_days(clock.t))
+    T1 = ts(2026, 10, 20, 9, 40)
+    L.open_t = T1
+    L.ledger.append({"side": "sell", "qty": 3, "entry_t": T1, "t": T1})
+    res = b._route({"sym": "NQ", "side": "buy", "qty": 1, "stop": 24990.0, "target": 25100.0, "entry": 25000.0,
+                    "entry_t": ts(2026, 10, 20, 10, 0)})
+    check("g. LIT's own account refuses a LONG while the Rapid's LIT lane still holds a SHORT (no hedge across accounts)",
+          res.get("ok") is False and "hedging" in str(res.get("error")), res)
+    L.open_t = None
+
+
 def main() -> int:
     tmp = tempfile.mkdtemp(prefix="rapid_")
     os.environ["LE_LIT_LEARNING"] = os.path.join(tmp, "no_learning.json")
@@ -240,7 +289,11 @@ def main() -> int:
             g = FA.guard({"sym": "NQ", "side": "buy", "qty": 1, "stop": 1.0, "target": 2.0, "entry": 1.5, "entry_t": rel - 60},
                          rel - 60, rel - 60)
             check("e. funded: ATLAS entry inside -2/+2 min of a Tier-1 release refused", bool(g) and "news" in g, g)
-            check("e. funded: outside the window no news block", FA.news_at(rel - 400) is None and FA.news_at(rel + 121) is None)
+            check("e. funded: outside the window no news block", FA.news_at(rel - 400) is None and FA.news_at(rel + 151) is None)
+            # MFFU (help center 2026-11-17): flat by 8:28:00, reopen after 8:32:00 -> the bot flattens from -3:00 and waits +2:30
+            check("e. funded: flat from 3 min before (MFFU's 2-min edge has a minute to spare)",
+                  FA.news_at(rel - 180, post=0) == rel and FA.news_at(rel - 181, post=0) is None, FA.news_at(rel - 180, post=0))
+            check("e. funded: no entry until 2.5 min after", FA.news_at(rel + 149) == rel and FA.news_at(rel + 150) is None)
             check("e. eval: no news ban (MFFU allows news in the eval)", A.news_at(rel) is None)
         finally:
             MA.tier1_releases = old
@@ -255,6 +308,7 @@ def main() -> int:
         s3 = FA.size({"risk_pts": 10.0, "tgt_pts": 20.0}, FA._state_raw(T0))
         check("e. funded ATLAS: $500 risk, no best-day cap", s3["qty"] == 22, s3)
         same_account_sim(tmp)
+        rules_audit(tmp)
     finally:
         MA.ADAPTER_FACTORY = None
         shutil.rmtree(tmp, ignore_errors=True)

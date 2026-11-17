@@ -20,6 +20,36 @@ Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7;
 
 Rules: MFFU ONLY ("We stick with MFFU"). Limits: max 5 sim-funded, Builder 1x50K + 2x25K, Rapid EOD 3x50K, 10 evals; Zlarior 50K + ATLAS 25K funded together ALLOWED. Funded news ban (-2/+2 min Tier-1) on Rapid.
 - night-bot 2026-11-17: ATLAS 25K PASSED ($26,946.10; Zlarior 50K $49,192.78). Funded 25K: LIT + ATLAS $250 = 1st payout 14/18 vs 18/26 sessions, $599/$529 vs $592/$497 a month, but no-payout-6m 7.5/12.2% vs 5.0/5.5%, 2021-25 a bit worse: owner yes/no; built OFF (engine/lit25.py, docs/LIT25_FUNDED.md; new funded Name: `python -X utf8 -m engine.lit25 --funded "<Name>" --start <day>`). PC silent: PC_DOCTOR.bat (docs/PC_DOCTOR.md); likely cause = report task OlympusPCReport never installed + auto-update never connected (BOTS_BACK's credential.interactive=never blocked the sign-in; fixed in autoupdate.fetch_interactive); heartbeat branch silent on purpose (GitHub suspended 11-08).
+- MFFU rules re-checked 2026-11-17 (night-rules, research/writeups/mffu-rules-audit-2026-11-17.md): nothing voids money; fixed Rapid funded news window (-3/+2.5 min, Dec CPI/jobs added) + 7-day inactivity push on ATLAS/Rapid; copy trading on own accounts ALLOWED; Rapid EOD 50K now $275 list / $165 with CLUB (not ~$94); missing: 2% price-limit rule (stand aside on a 5% crash day).
+- Rapid EOD 50K READY, OFF (night-rapid): LIT + ATLAS on one account; owner pastes ONE line (docs/RAPID_EOD_SETUP.md) then START BOT + phrase. Jul-Oct live-code replay: pass median 20 sessions, 0 fails.
+- Owner 2026-11-17: "be simple and to the point. You send too much info." Replies: a few lines, one small table max.
+- Owner 2026-11-17: ONE Rapid EOD 50K only ("I'll stick with 1 rapid"): LIT + ATLAS $500 from day one, 30% best-day guard,
+  funded keep $1,000 above the buffer. PC has not reported since 2026-11-07 (heartbeat branch, ntfy empty): fix first.
+- ONE PAGE for accounts (2026-11-16, owner: "trading is getting very confusing"): Business -> My Accounts
+  (tools/web_public/business/accounts.html). Plan in business/accounts.json: KEEP IT CURRENT on every account / plan change.
+- Obsidian (optional, 1 min on the PC): python tools/obsidian_sync.py --setup "C:\path\to\your\vault" (docs/OBSIDIAN_SYNC.md).
+- Yes/no (W1 2026-11-16): make the backtest use the same 1m bars as the live bot (branch night-w1-clean1m 94b955a)? Live orders
+  unchanged; backtest Jan-Jun $33,901 -> $33,171 (PF 4.98 -> 4.85); Jul-Oct + 2021-25 identical; live == backtest 120/120. On yes:
+  merge, refresh STRATEGY.md / research/lit/final_results.json headline numbers.
+- To load tonight's fixes before Friday: when both bots are flat, STOP BOT then START BOT.
+- Kalshi pause sentence in the kalshi-server chat (if not done).
+- Yes/no: lock the PC bot page to his own devices (Tailscale only; anyone on home WiFi can reach Stop today).
+- Yes/no: delete ~7 GB of old test leftovers in the container (python tools/disk_clean.py --apply; blocked for Claude by the safety check).
+- MFFU ONLY ("We stick with MFFU", 2026-11-16). Help center limits: max 5 sim-funded (25K/50K sizes), Builder 1x50K + 2x25K,
+  Rapid EOD 3x50K, 10 evals. So Zlarior 50K + ATLAS 25K funded together is ALLOWED (support question answered). Next buys:
+  Rapid EOD 50K (code FIFTYOFF/CLUB at checkout, ~$94): +$660/mo each on Jul-Oct trades but its eval takes ~2 months (30% best-day
+  rule, LIT ~0.8 winners/week), first payout ~14 sessions after funding, daily payouts, 90%, funded news ban (-2/+2 min Tier-1).
+  Rapid (intraday floor) rejected: loses funded 16-22% in 6 months. Builder 25K #2: +$286/mo, cheap ($63/$43). Detail:
+  research/writeups/lit-mffu-rapid-stack.md. Fleet presets exist (engine/multi_account mffu_rapid_eod_50k); Sim-test before arming.
+- Taxes (2026-11-17, "study taxes"): Business -> Taxes page (tools/web_public/business/taxes.html; the lead adds its card to business/index.html).
+  Rule: move 30% of every payout to a tax pot (Oikos + Ledger defaults now 30%, were 25%). Next federal estimated payment Jan 15, 2027. Education, not advice: research/writeups/taxes-2026-11-17.md.
+- More work (2026-11-17, "find more work"): Business -> More Work page (tools/web_public/business/work.html; the lead adds its card to business/index.html).
+  Ranked: 1 agency websites ($500-$2,000/mo by month 2-3), 2 Google profile fix $149 ($150-$600/mo), 3 small freelance jobs ($300-$1,000/mo by month 3-6); DoorDash = floor. First $1,000 plan: 15 contacts a weekday. research/writeups/more-work-2026-11-17.md.
+- Business: fill agency/config.json (name, city, phone, address), then AGENCY_DAY.bat; list the 8 products, the 4 trading ones first (docs/BUSINESS_LISTING_KIT.md). $0 earned so far.
+- Words wave 2 (2026-11-17 night-words2): plainer $-first words on Aegis, Chrysos, Oikos (tax stays 30%), Ledger, phone Money card, Kalshi (new PAUSED banner: no real bets, rewards test on paper), ATLAS page, Live View. Text only, no logic changed.
+- Business pages (2026-11-17 night-pages): new Security tick list (business/security.html, never asks for a password) and Work week (business/schedule.html: PC checks 08:45 / 12:00 / 16:15 ET, Fri 16:30 review + payout check, tax dates, side-work blocks, one-tap phone calendar file); 4 doors on Business; plainer words on Business, My Accounts, Hestia, Planner, Zenith menu. Owner: do the Security list once (~1 hour).
+- Plain words (2026-11-17 night-w-life): first line of 23 Money + Life apps now says what the app is for and what to tap, in $ (estimates labelled); Kalshi apps say "paused"; Tyche title tag fixed. Text only, ids kept.
+- Money (2026-11-16 night B): the Business page is the ONE money place (every dollar, this week's money moves, payout planner, ready-to-upload tick lists, ideas, costs; docs/BUSINESS.md). New: 3 products (bundle $29, risk calculator $12, rules cheat sheet $7), 2 new models (AI training tasks, paid website tests). Plan (ESTIMATE): first payout ~late Dec ($1,200 LIT / $600 ATLAS to you), account #4 the day it is in the bank.
 
 ## Waiting on the owner (newest first)
 1. PC has not reported since 2026-11-07: restart/check it (fix first; nothing new reaches the PC until it does).

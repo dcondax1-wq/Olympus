@@ -108,6 +108,7 @@ FUNDED_KEYS = ("stage", "funded_start", "funded_balance", "payouts", "eval_accou
 PAYOUT_CMD = "python -X utf8 -m engine.account_b --payout {day}={amount}"
 FUNDED_CMD = 'python -X utf8 -m engine.account_b --to-funded --account "<funded Name>" --start <first funded day>'
 STOP_STATUSES = ("passed", "failed", "stuck", "lost", "graduated")   # eval / funded statuses: no new entry on B
+IDLE_LIMIT, IDLE_WARN = 7, 5      # MFFU inactivity: 7 calendar days without a trade; warn from day 5 (rules audit 2026-11-17)
 
 
 def _et(ts):
@@ -838,9 +839,51 @@ class AccountB:
                 "dll": float(R["dll"]), "max_micros": int(R["max_micros"]), "plan": self.spec["plan_label"],
                 "price": PLANS[self.spec["plan"]]["price"], "eval_account": F.get("eval_account"), "funded": t}
 
+    def all_closes(self) -> list:
+        """Every routed close on this NinjaTrader account ([day, exit_t, pnl, entry_t]); engine/rapid adds LIT's lane."""
+        return list(self.closes)
+
+    def idle_days(self, now) -> int | None:
+        """Calendar days (ET) since the last traded day on this account (or since the eval / funded start without one)."""
+        start = (self.spec.get("funded") or {}).get("start") if self.funded() else self.spec.get("eval_start")
+        days = [str(c[0]) for c in self.all_closes() if c and (not start or str(c[0]) >= str(start))]
+        last = max(days) if days else start
+        if not last:
+            return None
+        try:
+            return max(0, (_et(now).date() - _dt.date.fromisoformat(str(last)[:10])).days)
+        except ValueError:
+            return None
+
+    def _idle_check(self, now, status=None):
+        """MFFU inactivity (help center 2026-11-17): no trade for 7 calendar days -> the account can be closed; on a sim-funded
+        account ALL its profits are forfeited. One push a day from day IDLE_WARN on (rules audit 2026-11-17)."""
+        n = self.idle_days(now)
+        if n is None or n < IDLE_WARN:
+            return
+        key = f"acctb:idle:{trading_day(now)}:{self.name}"
+        if key in self.notified:
+            return
+        if status is None:
+            status = self.eval_view(now).get("status")
+        if status in STOP_STATUSES:
+            return
+        self.notified.append(key)
+        left = IDLE_LIMIT - n
+        title = f"{self.label}: no trade for {n} days"
+        body = (f"MFFU can close an account after {IDLE_LIMIT} days without a trade" + (" and a funded one loses ALL its profits"
+                if self.funded() else "") + ". Place 1 MNQ by hand on this account (in and out, a few dollars) "
+                + (f"within {left} day{'s' if left != 1 else ''}." if left > 0 else "TODAY."))
+        self.log("risk", f"{title}: {body}")
+        self._push_text(title, body, key)
+
     def _lifecycle(self, now):
         """Pass / fail / stuck: one push each (key per eval start). Funded stage: the payout tracker's pushes (PAYOUT READY,
-        consistency, lost, 5 payouts), each once."""
+        consistency, lost, 5 payouts), each once. Both: the 7-day inactivity warning."""
+        try:
+            self._idle_check(now)                         # cheap until day 5 (the eval view only then)
+        except Exception as e:
+            self.log("error", f"inactivity check failed: {e.__class__.__name__}: {e}")
         if self.funded():
             return self._funded_lifecycle(now)
         ev = self.eval_view(now)
