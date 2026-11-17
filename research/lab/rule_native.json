@@ -1,0 +1,6424 @@
+{
+ "date": "2026-11-17",
+ "n": 1000,
+ "spans": {
+  "H1": [
+   "2026-01-01",
+   "2026-06-30"
+  ],
+  "H2": [
+   "2026-07-01",
+   "2026-10-16"
+  ],
+  "REF": [
+   "2021-11-01",
+   "2025-12-31"
+  ]
+ },
+ "results": {
+  "rapid": {
+   "base": {
+    "v": {
+     "name": "base",
+     "fam": "base",
+     "kind": "rapid",
+     "scope": "both",
+     "layer": null
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 22.0,
+      "p60": 97.2,
+      "p10": 5.2,
+      "f10": 0.0
+     },
+     "rule": {
+      "first_med_s": 36.0,
+      "first_med_days": 50,
+      "p_no_pay": 2.4,
+      "p_pay_30d": 12.1,
+      "per_month": 6014
+     },
+     "plain": {
+      "trades": 184,
+      "tpw": 7.19,
+      "win": 56.0,
+      "pf": 3.21,
+      "net": 73801,
+      "per_month": 12108,
+      "max_dd": -3017,
+      "win_days_pw": 2.46
+     },
+     "part_hits": 0
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 21.0,
+      "p60": 94.8,
+      "p10": 9.2,
+      "f10": 0.0
+     },
+     "rule": {
+      "first_med_s": 44.0,
+      "first_med_days": 62,
+      "p_no_pay": 8.9,
+      "p_pay_30d": 6.7,
+      "per_month": 2824
+     },
+     "plain": {
+      "trades": 86,
+      "tpw": 5.51,
+      "win": 52.3,
+      "pf": 2.33,
+      "net": 21246,
+      "per_month": 5720,
+      "max_dd": -2480,
+      "win_days_pw": 2.18
+     },
+     "part_hits": 0
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 29.0,
+      "p60": 19.2,
+      "p10": 1.1,
+      "f10": 2.9
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 85.7,
+      "p_pay_30d": 0.6,
+      "per_month": 63
+     },
+     "plain": {
+      "trades": 1503,
+      "tpw": 6.98,
+      "win": 42.7,
+      "pf": 1.07,
+      "net": 27469,
+      "per_month": 536,
+      "max_dd": -35190,
+      "win_days_pw": 1.73
+     },
+     "part_hits": 0
+    },
+    "secs": 10
+   },
+   "LIT alone": {
+    "v": {
+     "name": "LIT alone",
+     "fam": "ref",
+     "kind": "rapid",
+     "scope": "both",
+     "layer": null
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 40.0,
+      "p60": 43.4,
+      "p10": 0.7,
+      "f10": 0.0
+     },
+     "rule": {
+      "first_med_s": 102.0,
+      "first_med_days": 143,
+      "p_no_pay": 34.7,
+      "p_pay_30d": 0.5,
+      "per_month": 815
+     },
+     "plain": {
+      "trades": 80,
+      "tpw": 3.12,
+      "win": 58.8,
+      "pf": 3.63,
+      "net": 32004,
+      "per_month": 5251,
+      "max_dd": -3271,
+      "win_days_pw": 1.84
+     },
+     "part_hits": 0
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 38.0,
+      "p60": 65.5,
+      "p10": 0.0,
+      "f10": 0.0
+     },
+     "rule": {
+      "first_med_s": 90.0,
+      "first_med_days": 126,
+      "p_no_pay": 27.1,
+      "p_pay_30d": 0.0,
+      "per_month": 806
+     },
+     "plain": {
+      "trades": 40,
+      "tpw": 2.56,
+      "win": 47.5,
+      "pf": 2.26,
+      "net": 10526,
+      "per_month": 2834,
+      "max_dd": -2228,
+      "win_days_pw": 1.22
+     },
+     "part_hits": 0
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 46.0,
+      "p60": 4.0,
+      "p10": 0.1,
+      "f10": 0.0
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 98.7,
+      "p_pay_30d": 0.0,
+      "per_month": -20
+     },
+     "plain": {
+      "trades": 510,
+      "tpw": 2.37,
+      "win": 53.3,
+      "pf": 1.06,
+      "net": 6388,
+      "per_month": 125,
+      "max_dd": -20124,
+      "win_days_pw": 1.26
+     },
+     "part_hits": 0
+    },
+    "secs": 12
+   },
+   "A LIT 50% at 1R, everywhere": {
+    "v": {
+     "name": "A LIT 50% at 1R, everywhere",
+     "fam": "A",
+     "kind": "rapid",
+     "scope": "both",
+     "layer": null
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 20.0,
+      "p60": 97.2,
+      "p10": 6.9,
+      "f10": 0.0
+     },
+     "rule": {
+      "first_med_s": 35.0,
+      "first_med_days": 49,
+      "p_no_pay": 2.0,
+      "p_pay_30d": 12.6,
+      "per_month": 5551
+     },
+     "plain": {
+      "trades": 184,
+      "tpw": 7.19,
+      "win": 56.0,
+      "pf": 2.85,
+      "net": 61868,
+      "per_month": 10150,
+      "max_dd": -2590,
+      "win_days_pw": 2.5
+     },
+     "part_hits": 47
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 21.0,
+      "p60": 84.4,
+      "p10": 8.8,
+      "f10": 0.2
+     },
+     "rule": {
+      "first_med_s": 51.0,
+      "first_med_days": 71,
+      "p_no_pay": 12.6,
+      "p_pay_30d": 4.7,
+      "per_month": 1989
+     },
+     "plain": {
+      "trades": 86,
+      "tpw": 5.51,
+      "win": 53.5,
+      "pf": 2.04,
+      "net": 16343,
+      "per_month": 4400,
+      "max_dd": -2278,
+      "win_days_pw": 2.24
+     },
+     "part_hits": 20
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 28.0,
+      "p60": 20.1,
+      "p10": 0.9,
+      "f10": 4.5
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 85.6,
+      "p_pay_30d": 0.6,
+      "per_month": 68
+     },
+     "plain": {
+      "trades": 1503,
+      "tpw": 6.98,
+      "win": 43.0,
+      "pf": 1.08,
+      "net": 29621,
+      "per_month": 578,
+      "max_dd": -31370,
+      "win_days_pw": 1.77
+     },
+     "part_hits": 260
+    },
+    "secs": 10
+   },
+   "A LIT 50% at 1R, eval only": {
+    "v": {
+     "name": "A LIT 50% at 1R, eval only",
+     "fam": "A",
+     "kind": "rapid",
+     "scope": "eval",
+     "layer": null
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 20.0,
+      "p60": 97.2,
+      "p10": 6.9,
+      "f10": 0.0
+     },
+     "rule": {
+      "first_med_s": 34.0,
+      "first_med_days": 48,
+      "p_no_pay": 2.1,
+      "p_pay_30d": 14.4,
+      "per_month": 6186
+     },
+     "plain": {
+      "trades": 184,
+      "tpw": 7.19,
+      "win": 55.4,
+      "pf": 2.78,
+      "net": 61149,
+      "per_month": 10032,
+      "max_dd": -2590,
+      "win_days_pw": 2.46
+     },
+     "part_hits": 47
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 21.0,
+      "p60": 84.4,
+      "p10": 8.8,
+      "f10": 0.2
+     },
+     "rule": {
+      "first_med_s": 47.0,
+      "first_med_days": 66,
+      "p_no_pay": 9.7,
+      "p_pay_30d": 6.5,
+      "per_month": 2713
+     },
+     "plain": {
+      "trades": 86,
+      "tpw": 5.51,
+      "win": 53.5,
+      "pf": 2.32,
+      "net": 20781,
+      "per_month": 5595,
+      "max_dd": -2278,
+      "win_days_pw": 2.24
+     },
+     "part_hits": 20
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 28.0,
+      "p60": 20.1,
+      "p10": 0.9,
+      "f10": 4.5
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 85.4,
+      "p_pay_30d": 0.6,
+      "per_month": 72
+     },
+     "plain": {
+      "trades": 1505,
+      "tpw": 6.99,
+      "win": 42.9,
+      "pf": 1.08,
+      "net": 28895,
+      "per_month": 563,
+      "max_dd": -33242,
+      "win_days_pw": 1.75
+     },
+     "part_hits": 261
+    },
+    "secs": 11
+   },
+   "A LIT 50% at 2R, everywhere": {
+    "v": {
+     "name": "A LIT 50% at 2R, everywhere",
+     "fam": "A",
+     "kind": "rapid",
+     "scope": "both",
+     "layer": null
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 20.5,
+      "p60": 96.9,
+      "p10": 6.6,
+      "f10": 0.1
+     },
+     "rule": {
+      "first_med_s": 34.0,
+      "first_med_days": 48,
+      "p_no_pay": 2.1,
+      "p_pay_30d": 13.2,
+      "per_month": 5635
+     },
+     "plain": {
+      "trades": 184,
+      "tpw": 7.19,
+      "win": 56.0,
+      "pf": 2.91,
+      "net": 63876,
+      "per_month": 10480,
+      "max_dd": -3017,
+      "win_days_pw": 2.54
+     },
+     "part_hits": 27
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 21.0,
+      "p60": 91.1,
+      "p10": 9.3,
+      "f10": 0.0
+     },
+     "rule": {
+      "first_med_s": 46.0,
+      "first_med_days": 64,
+      "p_no_pay": 8.8,
+      "p_pay_30d": 5.1,
+      "per_month": 2462
+     },
+     "plain": {
+      "trades": 86,
+      "tpw": 5.51,
+      "win": 53.5,
+      "pf": 2.2,
+      "net": 18930,
+      "per_month": 5097,
+      "max_dd": -2060,
+      "win_days_pw": 2.31
+     },
+     "part_hits": 15
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 28.0,
+      "p60": 20.0,
+      "p10": 1.1,
+      "f10": 3.8
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 85.5,
+      "p_pay_30d": 0.6,
+      "per_month": 67
+     },
+     "plain": {
+      "trades": 1503,
+      "tpw": 6.98,
+      "win": 42.9,
+      "pf": 1.09,
+      "net": 31866,
+      "per_month": 621,
+      "max_dd": -31089,
+      "win_days_pw": 1.75
+     },
+     "part_hits": 127
+    },
+    "secs": 10
+   },
+   "A LIT 50% at 2R, eval only": {
+    "v": {
+     "name": "A LIT 50% at 2R, eval only",
+     "fam": "A",
+     "kind": "rapid",
+     "scope": "eval",
+     "layer": null
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 20.5,
+      "p60": 96.9,
+      "p10": 6.6,
+      "f10": 0.1
+     },
+     "rule": {
+      "first_med_s": 34.0,
+      "first_med_days": 48,
+      "p_no_pay": 2.3,
+      "p_pay_30d": 14.6,
+      "per_month": 6171
+     },
+     "plain": {
+      "trades": 184,
+      "tpw": 7.19,
+      "win": 55.4,
+      "pf": 2.84,
+      "net": 63157,
+      "per_month": 10362,
+      "max_dd": -3017,
+      "win_days_pw": 2.54
+     },
+     "part_hits": 27
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 21.0,
+      "p60": 91.1,
+      "p10": 9.3,
+      "f10": 0.0
+     },
+     "rule": {
+      "first_med_s": 45.0,
+      "first_med_days": 63,
+      "p_no_pay": 10.2,
+      "p_pay_30d": 6.2,
+      "per_month": 2775
+     },
+     "plain": {
+      "trades": 86,
+      "tpw": 5.51,
+      "win": 53.5,
+      "pf": 2.49,
+      "net": 23367,
+      "per_month": 6291,
+      "max_dd": -2060,
+      "win_days_pw": 2.31
+     },
+     "part_hits": 15
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 28.0,
+      "p60": 20.0,
+      "p10": 1.1,
+      "f10": 3.8
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 85.9,
+      "p_pay_30d": 0.6,
+      "per_month": 67
+     },
+     "plain": {
+      "trades": 1505,
+      "tpw": 6.99,
+      "win": 42.9,
+      "pf": 1.08,
+      "net": 30806,
+      "per_month": 601,
+      "max_dd": -32301,
+      "win_days_pw": 1.75
+     },
+     "part_hits": 127
+    },
+    "secs": 10
+   },
+   "A LIT 50% at 3R, everywhere": {
+    "v": {
+     "name": "A LIT 50% at 3R, everywhere",
+     "fam": "A",
+     "kind": "rapid",
+     "scope": "both",
+     "layer": null
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 21.0,
+      "p60": 97.0,
+      "p10": 4.0,
+      "f10": 0.1
+     },
+     "rule": {
+      "first_med_s": 35.0,
+      "first_med_days": 49,
+      "p_no_pay": 1.9,
+      "p_pay_30d": 11.0,
+      "per_month": 5709
+     },
+     "plain": {
+      "trades": 184,
+      "tpw": 7.19,
+      "win": 56.0,
+      "pf": 2.99,
+      "net": 66523,
+      "per_month": 10914,
+      "max_dd": -3017,
+      "win_days_pw": 2.46
+     },
+     "part_hits": 20
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 22.0,
+      "p60": 92.7,
+      "p10": 9.3,
+      "f10": 0.0
+     },
+     "rule": {
+      "first_med_s": 45.0,
+      "first_med_days": 63,
+      "p_no_pay": 6.3,
+      "p_pay_30d": 5.2,
+      "per_month": 2787
+     },
+     "plain": {
+      "trades": 86,
+      "tpw": 5.51,
+      "win": 53.5,
+      "pf": 2.32,
+      "net": 20826,
+      "per_month": 5607,
+      "max_dd": -1896,
+      "win_days_pw": 2.31
+     },
+     "part_hits": 11
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 28.0,
+      "p60": 20.4,
+      "p10": 1.1,
+      "f10": 3.4
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 83.9,
+      "p_pay_30d": 0.7,
+      "per_month": 78
+     },
+     "plain": {
+      "trades": 1503,
+      "tpw": 6.98,
+      "win": 42.8,
+      "pf": 1.1,
+      "net": 37161,
+      "per_month": 725,
+      "max_dd": -29308,
+      "win_days_pw": 1.79
+     },
+     "part_hits": 82
+    },
+    "secs": 11
+   },
+   "A LIT 50% at 3R, eval only": {
+    "v": {
+     "name": "A LIT 50% at 3R, eval only",
+     "fam": "A",
+     "kind": "rapid",
+     "scope": "eval",
+     "layer": null
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 21.0,
+      "p60": 97.0,
+      "p10": 4.0,
+      "f10": 0.1
+     },
+     "rule": {
+      "first_med_s": 35.0,
+      "first_med_days": 49,
+      "p_no_pay": 2.5,
+      "p_pay_30d": 11.8,
+      "per_month": 6088
+     },
+     "plain": {
+      "trades": 184,
+      "tpw": 7.19,
+      "win": 55.4,
+      "pf": 2.91,
+      "net": 65623,
+      "per_month": 10766,
+      "max_dd": -3017,
+      "win_days_pw": 2.46
+     },
+     "part_hits": 20
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 22.0,
+      "p60": 92.7,
+      "p10": 9.3,
+      "f10": 0.0
+     },
+     "rule": {
+      "first_med_s": 45.0,
+      "first_med_days": 63,
+      "p_no_pay": 9.1,
+      "p_pay_30d": 5.4,
+      "per_month": 2790
+     },
+     "plain": {
+      "trades": 86,
+      "tpw": 5.51,
+      "win": 53.5,
+      "pf": 2.62,
+      "net": 25414,
+      "per_month": 6842,
+      "max_dd": -1896,
+      "win_days_pw": 2.31
+     },
+     "part_hits": 11
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 28.0,
+      "p60": 20.4,
+      "p10": 1.1,
+      "f10": 3.4
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 85.3,
+      "p_pay_30d": 0.7,
+      "per_month": 72
+     },
+     "plain": {
+      "trades": 1505,
+      "tpw": 6.99,
+      "win": 42.9,
+      "pf": 1.1,
+      "net": 35719,
+      "per_month": 696,
+      "max_dd": -30322,
+      "win_days_pw": 1.78
+     },
+     "part_hits": 82
+    },
+    "secs": 11
+   },
+   "A LIT 33% at 2R, everywhere": {
+    "v": {
+     "name": "A LIT 33% at 2R, everywhere",
+     "fam": "A",
+     "kind": "rapid",
+     "scope": "both",
+     "layer": null
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 21.0,
+      "p60": 97.1,
+      "p10": 4.7,
+      "f10": 0.1
+     },
+     "rule": {
+      "first_med_s": 35.0,
+      "first_med_days": 49,
+      "p_no_pay": 2.3,
+      "p_pay_30d": 10.8,
+      "per_month": 5750
+     },
+     "plain": {
+      "trades": 184,
+      "tpw": 7.19,
+      "win": 56.0,
+      "pf": 3.01,
+      "net": 67184,
+      "per_month": 11022,
+      "max_dd": -3017,
+      "win_days_pw": 2.54
+     },
+     "part_hits": 27
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 22.0,
+      "p60": 89.5,
+      "p10": 7.9,
+      "f10": 0.0
+     },
+     "rule": {
+      "first_med_s": 47.0,
+      "first_med_days": 66,
+      "p_no_pay": 8.8,
+      "p_pay_30d": 4.7,
+      "per_month": 2548
+     },
+     "plain": {
+      "trades": 86,
+      "tpw": 5.51,
+      "win": 53.5,
+      "pf": 2.25,
+      "net": 19702,
+      "per_month": 5304,
+      "max_dd": -2200,
+      "win_days_pw": 2.24
+     },
+     "part_hits": 15
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 28.0,
+      "p60": 18.7,
+      "p10": 1.0,
+      "f10": 3.8
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 86.8,
+      "p_pay_30d": 0.6,
+      "per_month": 66
+     },
+     "plain": {
+      "trades": 1503,
+      "tpw": 6.98,
+      "win": 42.9,
+      "pf": 1.08,
+      "net": 30400,
+      "per_month": 593,
+      "max_dd": -32456,
+      "win_days_pw": 1.75
+     },
+     "part_hits": 127
+    },
+    "secs": 11
+   },
+   "A LIT 33% at 2R, eval only": {
+    "v": {
+     "name": "A LIT 33% at 2R, eval only",
+     "fam": "A",
+     "kind": "rapid",
+     "scope": "eval",
+     "layer": null
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 21.0,
+      "p60": 97.1,
+      "p10": 4.7,
+      "f10": 0.1
+     },
+     "rule": {
+      "first_med_s": 35.0,
+      "first_med_days": 49,
+      "p_no_pay": 2.5,
+      "p_pay_30d": 11.5,
+      "per_month": 6099
+     },
+     "plain": {
+      "trades": 184,
+      "tpw": 7.19,
+      "win": 55.4,
+      "pf": 2.93,
+      "net": 66405,
+      "per_month": 10895,
+      "max_dd": -3017,
+      "win_days_pw": 2.5
+     },
+     "part_hits": 27
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 22.0,
+      "p60": 89.5,
+      "p10": 7.9,
+      "f10": 0.0
+     },
+     "rule": {
+      "first_med_s": 46.0,
+      "first_med_days": 64,
+      "p_no_pay": 9.9,
+      "p_pay_30d": 5.1,
+      "per_month": 2739
+     },
+     "plain": {
+      "trades": 86,
+      "tpw": 5.51,
+      "win": 53.5,
+      "pf": 2.57,
+      "net": 24680,
+      "per_month": 6645,
+      "max_dd": -2200,
+      "win_days_pw": 2.24
+     },
+     "part_hits": 15
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 28.0,
+      "p60": 18.7,
+      "p10": 1.0,
+      "f10": 3.8
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 87.4,
+      "p_pay_30d": 0.6,
+      "per_month": 62
+     },
+     "plain": {
+      "trades": 1505,
+      "tpw": 6.99,
+      "win": 42.9,
+      "pf": 1.08,
+      "net": 28853,
+      "per_month": 563,
+      "max_dd": -33875,
+      "win_days_pw": 1.74
+     },
+     "part_hits": 127
+    },
+    "secs": 11
+   },
+   "B ATLAS half at 1R": {
+    "v": {
+     "name": "B ATLAS half at 1R",
+     "fam": "B",
+     "kind": "rapid",
+     "scope": "both",
+     "layer": null
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 22.0,
+      "p60": 94.7,
+      "p10": 5.9,
+      "f10": 0.1
+     },
+     "rule": {
+      "first_med_s": 39.0,
+      "first_med_days": 55,
+      "p_no_pay": 3.3,
+      "p_pay_30d": 9.0,
+      "per_month": 4226
+     },
+     "plain": {
+      "trades": 184,
+      "tpw": 7.19,
+      "win": 56.0,
+      "pf": 2.77,
+      "net": 56116,
+      "per_month": 9206,
+      "max_dd": -3225,
+      "win_days_pw": 2.38
+     },
+     "part_hits": 60
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 20.0,
+      "p60": 96.3,
+      "p10": 9.6,
+      "f10": 0.1
+     },
+     "rule": {
+      "first_med_s": 43.0,
+      "first_med_days": 60,
+      "p_no_pay": 7.3,
+      "p_pay_30d": 5.0,
+      "per_month": 2573
+     },
+     "plain": {
+      "trades": 86,
+      "tpw": 5.51,
+      "win": 52.3,
+      "pf": 2.23,
+      "net": 18484,
+      "per_month": 4977,
+      "max_dd": -2480,
+      "win_days_pw": 2.18
+     },
+     "part_hits": 28
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 27.0,
+      "p60": 15.4,
+      "p10": 1.0,
+      "f10": 2.5
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 91.7,
+      "p_pay_30d": 0.2,
+      "per_month": 4
+     },
+     "plain": {
+      "trades": 1503,
+      "tpw": 6.98,
+      "win": 43.8,
+      "pf": 1.03,
+      "net": 10403,
+      "per_month": 203,
+      "max_dd": -32349,
+      "win_days_pw": 1.82
+     },
+     "part_hits": 478
+    },
+    "secs": 10
+   },
+   "B ATLAS fixed 1R": {
+    "v": {
+     "name": "B ATLAS fixed 1R",
+     "fam": "B",
+     "kind": "rapid",
+     "scope": "both",
+     "layer": null
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 26.0,
+      "p60": 72.6,
+      "p10": 3.4,
+      "f10": 0.2
+     },
+     "rule": {
+      "first_med_s": 62.0,
+      "first_med_days": 87,
+      "p_no_pay": 13.6,
+      "p_pay_30d": 2.9,
+      "per_month": 1893
+     },
+     "plain": {
+      "trades": 184,
+      "tpw": 7.19,
+      "win": 58.2,
+      "pf": 2.22,
+      "net": 38430,
+      "per_month": 6305,
+      "max_dd": -3458,
+      "win_days_pw": 2.27
+     },
+     "part_hits": 0
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 23.0,
+      "p60": 90.2,
+      "p10": 2.0,
+      "f10": 0.0
+     },
+     "rule": {
+      "first_med_s": 51.0,
+      "first_med_days": 71,
+      "p_no_pay": 9.3,
+      "p_pay_30d": 1.3,
+      "per_month": 1969
+     },
+     "plain": {
+      "trades": 86,
+      "tpw": 5.51,
+      "win": 54.7,
+      "pf": 2.05,
+      "net": 15722,
+      "per_month": 4233,
+      "max_dd": -2480,
+      "win_days_pw": 2.05
+     },
+     "part_hits": 0
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 23.5,
+      "p60": 13.8,
+      "p10": 0.8,
+      "f10": 4.6
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 93.0,
+      "p_pay_30d": 0.1,
+      "per_month": -27
+     },
+     "plain": {
+      "trades": 1503,
+      "tpw": 6.98,
+      "win": 50.4,
+      "pf": 0.98,
+      "net": -6664,
+      "per_month": -130,
+      "max_dd": -29926,
+      "win_days_pw": 1.94
+     },
+     "part_hits": 0
+    },
+    "secs": 10
+   },
+   "C + BLITZ $300 first a day, live exit": {
+    "v": {
+     "name": "C + BLITZ $300 first a day, live exit",
+     "fam": "C",
+     "kind": "rapid",
+     "scope": "both",
+     "layer": "BLITZ"
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 20.0,
+      "p60": 97.1,
+      "p10": 7.1,
+      "f10": 0.0
+     },
+     "rule": {
+      "first_med_s": 34.0,
+      "first_med_days": 48,
+      "p_no_pay": 3.0,
+      "p_pay_30d": 14.3,
+      "per_month": 6051
+     },
+     "plain": {
+      "trades": 244,
+      "tpw": 9.53,
+      "win": 54.9,
+      "pf": 2.99,
+      "net": 75011,
+      "per_month": 12307,
+      "max_dd": -3321,
+      "win_days_pw": 2.7
+     },
+     "layer": {
+      "trades": 60,
+      "tpw": 2.34,
+      "win": 51.7,
+      "pf": 1.29,
+      "net": 1210,
+      "per_month": 199,
+      "max_dd": -1987,
+      "win_days_pw": 1.21
+     },
+     "part_hits": 0
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 20.0,
+      "p60": 94.0,
+      "p10": 12.4,
+      "f10": 0.0
+     },
+     "rule": {
+      "first_med_s": 43.0,
+      "first_med_days": 60,
+      "p_no_pay": 8.4,
+      "p_pay_30d": 9.5,
+      "per_month": 2945
+     },
+     "plain": {
+      "trades": 114,
+      "tpw": 7.31,
+      "win": 50.9,
+      "pf": 2.25,
+      "net": 22269,
+      "per_month": 5995,
+      "max_dd": -2480,
+      "win_days_pw": 2.31
+     },
+     "layer": {
+      "trades": 28,
+      "tpw": 1.79,
+      "win": 46.4,
+      "pf": 1.57,
+      "net": 1022,
+      "per_month": 275,
+      "max_dd": -813,
+      "win_days_pw": 0.83
+     },
+     "part_hits": 0
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 26.0,
+      "p60": 20.9,
+      "p10": 1.6,
+      "f10": 3.9
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 86.1,
+      "p_pay_30d": 0.6,
+      "per_month": 62
+     },
+     "plain": {
+      "trades": 2004,
+      "tpw": 9.3,
+      "win": 44.8,
+      "pf": 1.06,
+      "net": 26112,
+      "per_month": 509,
+      "max_dd": -32192,
+      "win_days_pw": 1.8
+     },
+     "layer": {
+      "trades": 501,
+      "tpw": 2.33,
+      "win": 51.1,
+      "pf": 0.97,
+      "net": -1357,
+      "per_month": -26,
+      "max_dd": -6968,
+      "win_days_pw": 1.19
+     },
+     "part_hits": 0
+    },
+    "secs": 10
+   },
+   "C + BLITZ $300 first a day, fixed 1R": {
+    "v": {
+     "name": "C + BLITZ $300 first a day, fixed 1R",
+     "fam": "C",
+     "kind": "rapid",
+     "scope": "both",
+     "layer": "BLITZ"
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 21.0,
+      "p60": 97.3,
+      "p10": 6.2,
+      "f10": 0.0
+     },
+     "rule": {
+      "first_med_s": 34.0,
+      "first_med_days": 48,
+      "p_no_pay": 3.3,
+      "p_pay_30d": 13.2,
+      "per_month": 6059
+     },
+     "plain": {
+      "trades": 244,
+      "tpw": 9.53,
+      "win": 55.3,
+      "pf": 3.0,
+      "net": 75006,
+      "per_month": 12306,
+      "max_dd": -3361,
+      "win_days_pw": 2.7
+     },
+     "layer": {
+      "trades": 60,
+      "tpw": 2.34,
+      "win": 53.3,
+      "pf": 1.29,
+      "net": 1205,
+      "per_month": 198,
+      "max_dd": -1777,
+      "win_days_pw": 1.25
+     },
+     "part_hits": 0
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 20.0,
+      "p60": 93.8,
+      "p10": 11.1,
+      "f10": 0.0
+     },
+     "rule": {
+      "first_med_s": 43.0,
+      "first_med_days": 60,
+      "p_no_pay": 8.5,
+      "p_pay_30d": 9.8,
+      "per_month": 2932
+     },
+     "plain": {
+      "trades": 114,
+      "tpw": 7.31,
+      "win": 50.9,
+      "pf": 2.24,
+      "net": 22090,
+      "per_month": 5947,
+      "max_dd": -2480,
+      "win_days_pw": 2.31
+     },
+     "layer": {
+      "trades": 28,
+      "tpw": 1.79,
+      "win": 46.4,
+      "pf": 1.47,
+      "net": 843,
+      "per_month": 227,
+      "max_dd": -674,
+      "win_days_pw": 0.83
+     },
+     "part_hits": 0
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 26.0,
+      "p60": 22.1,
+      "p10": 1.4,
+      "f10": 3.6
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 85.9,
+      "p_pay_30d": 0.6,
+      "per_month": 69
+     },
+     "plain": {
+      "trades": 2004,
+      "tpw": 9.3,
+      "win": 45.2,
+      "pf": 1.07,
+      "net": 28685,
+      "per_month": 559,
+      "max_dd": -31699,
+      "win_days_pw": 1.81
+     },
+     "layer": {
+      "trades": 501,
+      "tpw": 2.33,
+      "win": 52.5,
+      "pf": 1.03,
+      "net": 1215,
+      "per_month": 24,
+      "max_dd": -4872,
+      "win_days_pw": 1.22
+     },
+     "part_hits": 0
+    },
+    "secs": 11
+   },
+   "C + BLITZ $300 first a day, fixed 0.5R": {
+    "v": {
+     "name": "C + BLITZ $300 first a day, fixed 0.5R",
+     "fam": "C",
+     "kind": "rapid",
+     "scope": "both",
+     "layer": "BLITZ"
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 21.0,
+      "p60": 98.0,
+      "p10": 5.0,
+      "f10": 0.0
+     },
+     "rule": {
+      "first_med_s": 35.0,
+      "first_med_days": 49,
+      "p_no_pay": 3.6,
+      "p_pay_30d": 11.5,
+      "per_month": 6040
+     },
+     "plain": {
+      "trades": 244,
+      "tpw": 9.53,
+      "win": 57.8,
+      "pf": 3.06,
+      "net": 74958,
+      "per_month": 12298,
+      "max_dd": -3475,
+      "win_days_pw": 2.81
+     },
+     "layer": {
+      "trades": 60,
+      "tpw": 2.34,
+      "win": 63.3,
+      "pf": 1.39,
+      "net": 1157,
+      "per_month": 190,
+      "max_dd": -1533,
+      "win_days_pw": 1.48
+     },
+     "part_hits": 0
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 21.0,
+      "p60": 94.4,
+      "p10": 9.9,
+      "f10": 0.0
+     },
+     "rule": {
+      "first_med_s": 43.5,
+      "first_med_days": 61,
+      "p_no_pay": 8.7,
+      "p_pay_30d": 7.9,
+      "per_month": 2861
+     },
+     "plain": {
+      "trades": 114,
+      "tpw": 7.31,
+      "win": 54.4,
+      "pf": 2.25,
+      "net": 21699,
+      "per_month": 5842,
+      "max_dd": -2480,
+      "win_days_pw": 2.44
+     },
+     "layer": {
+      "trades": 28,
+      "tpw": 1.79,
+      "win": 60.7,
+      "pf": 1.31,
+      "net": 452,
+      "per_month": 122,
+      "max_dd": -651,
+      "win_days_pw": 1.09
+     },
+     "part_hits": 0
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 27.0,
+      "p60": 21.6,
+      "p10": 1.4,
+      "f10": 3.6
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 85.4,
+      "p_pay_30d": 0.5,
+      "per_month": 69
+     },
+     "plain": {
+      "trades": 2004,
+      "tpw": 9.3,
+      "win": 48.5,
+      "pf": 1.07,
+      "net": 30301,
+      "per_month": 591,
+      "max_dd": -35288,
+      "win_days_pw": 1.87
+     },
+     "layer": {
+      "trades": 501,
+      "tpw": 2.33,
+      "win": 65.7,
+      "pf": 1.09,
+      "net": 2832,
+      "per_month": 55,
+      "max_dd": -4579,
+      "win_days_pw": 1.53
+     },
+     "part_hits": 0
+    },
+    "secs": 10
+   },
+   "C + BLITZ $300 max 2 a day, live exit": {
+    "v": {
+     "name": "C + BLITZ $300 max 2 a day, live exit",
+     "fam": "C",
+     "kind": "rapid",
+     "scope": "both",
+     "layer": "BLITZ"
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 18.0,
+      "p60": 97.3,
+      "p10": 10.8,
+      "f10": 0.1
+     },
+     "rule": {
+      "first_med_s": 31.0,
+      "first_med_days": 43,
+      "p_no_pay": 3.0,
+      "p_pay_30d": 18.7,
+      "per_month": 6539
+     },
+     "plain": {
+      "trades": 294,
+      "tpw": 11.48,
+      "win": 55.4,
+      "pf": 2.91,
+      "net": 78148,
+      "per_month": 12821,
+      "max_dd": -2951,
+      "win_days_pw": 2.77
+     },
+     "layer": {
+      "trades": 110,
+      "tpw": 4.3,
+      "win": 54.5,
+      "pf": 1.59,
+      "net": 4347,
+      "per_month": 713,
+      "max_dd": -1646,
+      "win_days_pw": 1.17
+     },
+     "part_hits": 0
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 21.0,
+      "p60": 92.8,
+      "p10": 11.1,
+      "f10": 0.0
+     },
+     "rule": {
+      "first_med_s": 44.0,
+      "first_med_days": 62,
+      "p_no_pay": 10.5,
+      "p_pay_30d": 7.5,
+      "per_month": 2739
+     },
+     "plain": {
+      "trades": 137,
+      "tpw": 8.78,
+      "win": 48.9,
+      "pf": 2.09,
+      "net": 21459,
+      "per_month": 5777,
+      "max_dd": -2480,
+      "win_days_pw": 2.31
+     },
+     "layer": {
+      "trades": 51,
+      "tpw": 3.27,
+      "win": 43.1,
+      "pf": 1.06,
+      "net": 212,
+      "per_month": 57,
+      "max_dd": -1218,
+      "win_days_pw": 0.83
+     },
+     "part_hits": 0
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 23.0,
+      "p60": 21.3,
+      "p10": 1.9,
+      "f10": 5.0
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 84.5,
+      "p_pay_30d": 1.1,
+      "per_month": 72
+     },
+     "plain": {
+      "trades": 2423,
+      "tpw": 11.25,
+      "win": 45.6,
+      "pf": 1.06,
+      "net": 27854,
+      "per_month": 543,
+      "max_dd": -32864,
+      "win_days_pw": 1.81
+     },
+     "layer": {
+      "trades": 920,
+      "tpw": 4.27,
+      "win": 50.4,
+      "pf": 1.0,
+      "net": 385,
+      "per_month": 7,
+      "max_dd": -8717,
+      "win_days_pw": 1.06
+     },
+     "part_hits": 0
+    },
+    "secs": 11
+   },
+   "C + BLITZ $300 max 3 a day, live exit": {
+    "v": {
+     "name": "C + BLITZ $300 max 3 a day, live exit",
+     "fam": "C",
+     "kind": "rapid",
+     "scope": "both",
+     "layer": "BLITZ"
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 17.0,
+      "p60": 97.9,
+      "p10": 11.3,
+      "f10": 0.1
+     },
+     "rule": {
+      "first_med_s": 30.0,
+      "first_med_days": 42,
+      "p_no_pay": 2.6,
+      "p_pay_30d": 19.7,
+      "per_month": 6836
+     },
+     "plain": {
+      "trades": 333,
+      "tpw": 13.01,
+      "win": 54.7,
+      "pf": 2.8,
+      "net": 78644,
+      "per_month": 12903,
+      "max_dd": -2770,
+      "win_days_pw": 2.81
+     },
+     "layer": {
+      "trades": 149,
+      "tpw": 5.82,
+      "win": 53.0,
+      "pf": 1.48,
+      "net": 4843,
+      "per_month": 795,
+      "max_dd": -1258,
+      "win_days_pw": 1.25
+     },
+     "part_hits": 0
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 19.0,
+      "p60": 94.5,
+      "p10": 14.5,
+      "f10": 0.0
+     },
+     "rule": {
+      "first_med_s": 41.0,
+      "first_med_days": 57,
+      "p_no_pay": 9.5,
+      "p_pay_30d": 10.3,
+      "per_month": 3137
+     },
+     "plain": {
+      "trades": 156,
+      "tpw": 10.0,
+      "win": 52.6,
+      "pf": 2.16,
+      "net": 23382,
+      "per_month": 6295,
+      "max_dd": -2480,
+      "win_days_pw": 2.24
+     },
+     "layer": {
+      "trades": 70,
+      "tpw": 4.49,
+      "win": 52.9,
+      "pf": 1.51,
+      "net": 2135,
+      "per_month": 575,
+      "max_dd": -1318,
+      "win_days_pw": 0.96
+     },
+     "part_hits": 0
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 23.0,
+      "p60": 22.1,
+      "p10": 1.8,
+      "f10": 6.0
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 84.8,
+      "p_pay_30d": 1.5,
+      "per_month": 68
+     },
+     "plain": {
+      "trades": 2770,
+      "tpw": 12.86,
+      "win": 46.2,
+      "pf": 1.06,
+      "net": 30389,
+      "per_month": 593,
+      "max_dd": -33696,
+      "win_days_pw": 1.82
+     },
+     "layer": {
+      "trades": 1267,
+      "tpw": 5.88,
+      "win": 50.3,
+      "pf": 1.03,
+      "net": 2919,
+      "per_month": 57,
+      "max_dd": -10504,
+      "win_days_pw": 1.07
+     },
+     "part_hits": 0
+    },
+    "secs": 11
+   },
+   "C + BLITZ $300 every signal (ref, >8/wk)": {
+    "v": {
+     "name": "C + BLITZ $300 every signal (ref, >8/wk)",
+     "fam": "Cref",
+     "kind": "rapid",
+     "scope": "both",
+     "layer": "BLITZ"
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 17.0,
+      "p60": 97.0,
+      "p10": 13.1,
+      "f10": 0.0
+     },
+     "rule": {
+      "first_med_s": 29.0,
+      "first_med_days": 41,
+      "p_no_pay": 2.2,
+      "p_pay_30d": 21.5,
+      "per_month": 7104
+     },
+     "plain": {
+      "trades": 401,
+      "tpw": 15.66,
+      "win": 56.1,
+      "pf": 2.68,
+      "net": 81171,
+      "per_month": 13317,
+      "max_dd": -2950,
+      "win_days_pw": 2.89
+     },
+     "layer": {
+      "trades": 217,
+      "tpw": 8.48,
+      "win": 56.2,
+      "pf": 1.49,
+      "net": 7370,
+      "per_month": 1209,
+      "max_dd": -1506,
+      "win_days_pw": 1.37
+     },
+     "part_hits": 0
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 17.0,
+      "p60": 96.9,
+      "p10": 20.3,
+      "f10": 0.0
+     },
+     "rule": {
+      "first_med_s": 35.0,
+      "first_med_days": 49,
+      "p_no_pay": 7.5,
+      "p_pay_30d": 15.2,
+      "per_month": 3863
+     },
+     "plain": {
+      "trades": 192,
+      "tpw": 12.31,
+      "win": 54.7,
+      "pf": 2.23,
+      "net": 26619,
+      "per_month": 7167,
+      "max_dd": -2480,
+      "win_days_pw": 2.44
+     },
+     "layer": {
+      "trades": 106,
+      "tpw": 6.79,
+      "win": 56.6,
+      "pf": 1.96,
+      "net": 5373,
+      "per_month": 1447,
+      "max_dd": -1198,
+      "win_days_pw": 1.09
+     },
+     "part_hits": 0
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 22.0,
+      "p60": 23.4,
+      "p10": 2.2,
+      "f10": 7.6
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 82.8,
+      "p_pay_30d": 1.4,
+      "per_month": 85
+     },
+     "plain": {
+      "trades": 3333,
+      "tpw": 15.47,
+      "win": 46.8,
+      "pf": 1.06,
+      "net": 33982,
+      "per_month": 663,
+      "max_dd": -35398,
+      "win_days_pw": 1.88
+     },
+     "layer": {
+      "trades": 1830,
+      "tpw": 8.5,
+      "win": 50.2,
+      "pf": 1.04,
+      "net": 6512,
+      "per_month": 127,
+      "max_dd": -10916,
+      "win_days_pw": 1.01
+     },
+     "part_hits": 0
+    },
+    "secs": 11
+   },
+   "D add-on lock at +$300": {
+    "v": {
+     "name": "D add-on lock at +$300",
+     "fam": "D",
+     "kind": "rapid",
+     "scope": "both",
+     "layer": null
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 22.0,
+      "p60": 96.7,
+      "p10": 5.2,
+      "f10": 0.0
+     },
+     "rule": {
+      "first_med_s": 38.0,
+      "first_med_days": 53,
+      "p_no_pay": 3.4,
+      "p_pay_30d": 10.6,
+      "per_month": 5039
+     },
+     "plain": {
+      "trades": 184,
+      "tpw": 7.19,
+      "win": 56.0,
+      "pf": 3.21,
+      "net": 73801,
+      "per_month": 12108,
+      "max_dd": -3017,
+      "win_days_pw": 2.46
+     },
+     "part_hits": 0
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 21.0,
+      "p60": 95.1,
+      "p10": 9.2,
+      "f10": 0.0
+     },
+     "rule": {
+      "first_med_s": 43.0,
+      "first_med_days": 60,
+      "p_no_pay": 7.7,
+      "p_pay_30d": 7.0,
+      "per_month": 3038
+     },
+     "plain": {
+      "trades": 86,
+      "tpw": 5.51,
+      "win": 52.3,
+      "pf": 2.33,
+      "net": 21246,
+      "per_month": 5720,
+      "max_dd": -2480,
+      "win_days_pw": 2.18
+     },
+     "part_hits": 0
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 29.0,
+      "p60": 19.1,
+      "p10": 1.1,
+      "f10": 2.9
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 88.0,
+      "p_pay_30d": 0.4,
+      "per_month": 37
+     },
+     "plain": {
+      "trades": 1503,
+      "tpw": 6.98,
+      "win": 42.7,
+      "pf": 1.07,
+      "net": 27469,
+      "per_month": 536,
+      "max_dd": -35190,
+      "win_days_pw": 1.73
+     },
+     "part_hits": 0
+    },
+    "secs": 10
+   },
+   "D add-on lock at +$600": {
+    "v": {
+     "name": "D add-on lock at +$600",
+     "fam": "D",
+     "kind": "rapid",
+     "scope": "both",
+     "layer": null
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 22.0,
+      "p60": 97.2,
+      "p10": 5.2,
+      "f10": 0.0
+     },
+     "rule": {
+      "first_med_s": 37.0,
+      "first_med_days": 52,
+      "p_no_pay": 2.9,
+      "p_pay_30d": 10.9,
+      "per_month": 5225
+     },
+     "plain": {
+      "trades": 184,
+      "tpw": 7.19,
+      "win": 56.0,
+      "pf": 3.21,
+      "net": 73801,
+      "per_month": 12108,
+      "max_dd": -3017,
+      "win_days_pw": 2.46
+     },
+     "part_hits": 0
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 21.0,
+      "p60": 94.9,
+      "p10": 9.2,
+      "f10": 0.0
+     },
+     "rule": {
+      "first_med_s": 43.0,
+      "first_med_days": 60,
+      "p_no_pay": 8.2,
+      "p_pay_30d": 6.9,
+      "per_month": 2985
+     },
+     "plain": {
+      "trades": 86,
+      "tpw": 5.51,
+      "win": 52.3,
+      "pf": 2.33,
+      "net": 21246,
+      "per_month": 5720,
+      "max_dd": -2480,
+      "win_days_pw": 2.18
+     },
+     "part_hits": 0
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 29.0,
+      "p60": 19.1,
+      "p10": 1.1,
+      "f10": 2.9
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 87.9,
+      "p_pay_30d": 0.4,
+      "per_month": 37
+     },
+     "plain": {
+      "trades": 1503,
+      "tpw": 6.98,
+      "win": 42.7,
+      "pf": 1.07,
+      "net": 27469,
+      "per_month": 536,
+      "max_dd": -35190,
+      "win_days_pw": 1.73
+     },
+     "part_hits": 0
+    },
+    "secs": 9
+   },
+   "alone: BLITZ $300 first a day, fixed 1R": {
+    "v": {
+     "name": "alone: BLITZ $300 first a day, fixed 1R",
+     "fam": "alone",
+     "kind": "rapid",
+     "scope": "both",
+     "layer": "BLITZ"
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 55.0,
+      "p60": 0.1,
+      "p10": 0.0,
+      "f10": 0.0
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 100.0,
+      "p_pay_30d": 0.0,
+      "per_month": -16
+     },
+     "plain": {
+      "trades": 60,
+      "tpw": 2.34,
+      "win": 53.3,
+      "pf": 1.29,
+      "net": 1205,
+      "per_month": 198,
+      "max_dd": -1777,
+      "win_days_pw": 1.25
+     },
+     "layer": {
+      "trades": 60,
+      "tpw": 2.34,
+      "win": 53.3,
+      "pf": 1.29,
+      "net": 1205,
+      "per_month": 198,
+      "max_dd": -1777,
+      "win_days_pw": 1.25
+     },
+     "part_hits": 0
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 55.0,
+      "p60": 0.1,
+      "p10": 0.0,
+      "f10": 0.0
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 100.0,
+      "p_pay_30d": 0.0,
+      "per_month": -16
+     },
+     "plain": {
+      "trades": 28,
+      "tpw": 1.79,
+      "win": 46.4,
+      "pf": 1.47,
+      "net": 843,
+      "per_month": 227,
+      "max_dd": -674,
+      "win_days_pw": 0.83
+     },
+     "layer": {
+      "trades": 28,
+      "tpw": 1.79,
+      "win": 46.4,
+      "pf": 1.47,
+      "net": 843,
+      "per_month": 227,
+      "max_dd": -674,
+      "win_days_pw": 0.83
+     },
+     "part_hits": 0
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 45.0,
+      "p60": 0.3,
+      "p10": 0.0,
+      "f10": 0.0
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 100.0,
+      "p_pay_30d": 0.0,
+      "per_month": -17
+     },
+     "plain": {
+      "trades": 501,
+      "tpw": 2.33,
+      "win": 52.5,
+      "pf": 1.03,
+      "net": 1215,
+      "per_month": 24,
+      "max_dd": -4872,
+      "win_days_pw": 1.22
+     },
+     "layer": {
+      "trades": 501,
+      "tpw": 2.33,
+      "win": 52.5,
+      "pf": 1.03,
+      "net": 1215,
+      "per_month": 24,
+      "max_dd": -4872,
+      "win_days_pw": 1.22
+     },
+     "part_hits": 0
+    },
+    "secs": 3
+   },
+   "alone: ATLAS $500": {
+    "v": {
+     "name": "alone: ATLAS $500",
+     "fam": "alone",
+     "kind": "rapid",
+     "scope": "both",
+     "layer": "ATLAS"
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 27.0,
+      "p60": 93.8,
+      "p10": 0.7,
+      "f10": 0.0
+     },
+     "rule": {
+      "first_med_s": 47.0,
+      "first_med_days": 66,
+      "p_no_pay": 3.2,
+      "p_pay_30d": 2.3,
+      "per_month": 3690
+     },
+     "plain": {
+      "trades": 104,
+      "tpw": 4.06,
+      "win": 53.8,
+      "pf": 2.96,
+      "net": 41797,
+      "per_month": 6857,
+      "max_dd": -2385,
+      "win_days_pw": 1.91
+     },
+     "layer": {
+      "trades": 104,
+      "tpw": 4.06,
+      "win": 53.8,
+      "pf": 2.96,
+      "net": 41797,
+      "per_month": 6857,
+      "max_dd": -2385,
+      "win_days_pw": 1.91
+     },
+     "part_hits": 0
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 31.0,
+      "p60": 77.2,
+      "p10": 1.4,
+      "f10": 0.0
+     },
+     "rule": {
+      "first_med_s": 80.0,
+      "first_med_days": 112,
+      "p_no_pay": 25.7,
+      "p_pay_30d": 0.5,
+      "per_month": 1030
+     },
+     "plain": {
+      "trades": 46,
+      "tpw": 2.95,
+      "win": 56.5,
+      "pf": 2.4,
+      "net": 10720,
+      "per_month": 2886,
+      "max_dd": -1964,
+      "win_days_pw": 1.54
+     },
+     "layer": {
+      "trades": 46,
+      "tpw": 2.95,
+      "win": 56.5,
+      "pf": 2.4,
+      "net": 10720,
+      "per_month": 2886,
+      "max_dd": -1964,
+      "win_days_pw": 1.54
+     },
+     "part_hits": 0
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 32.0,
+      "p60": 19.4,
+      "p10": 0.8,
+      "f10": 0.3
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 88.8,
+      "p_pay_30d": 0.5,
+      "per_month": 45
+     },
+     "plain": {
+      "trades": 993,
+      "tpw": 4.61,
+      "win": 37.3,
+      "pf": 1.08,
+      "net": 21082,
+      "per_month": 411,
+      "max_dd": -23336,
+      "win_days_pw": 1.38
+     },
+     "layer": {
+      "trades": 993,
+      "tpw": 4.61,
+      "win": 37.3,
+      "pf": 1.08,
+      "net": 21082,
+      "per_month": 411,
+      "max_dd": -23336,
+      "win_days_pw": 1.38
+     },
+     "part_hits": 0
+    },
+    "secs": 2
+   }
+  },
+  "builder": {
+   "base": {
+    "v": {
+     "name": "base",
+     "fam": "base",
+     "kind": "builder",
+     "scope": "both",
+     "layer": null
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 9.0,
+      "p60": 85.3,
+      "p10": 47.5,
+      "f10": 0.8
+     },
+     "rule": {
+      "first_med_s": 35.0,
+      "first_med_days": 49,
+      "p_no_pay": 4.7,
+      "p_pay_30d": 21.0,
+      "per_month": 1202
+     },
+     "plain": {
+      "trades": 184,
+      "tpw": 7.19,
+      "win": 55.4,
+      "pf": 3.12,
+      "net": 72901,
+      "per_month": 11960,
+      "max_dd": -3017,
+      "win_days_pw": 2.46
+     },
+     "part_hits": 0
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 9.0,
+      "p60": 83.5,
+      "p10": 47.3,
+      "f10": 0.2
+     },
+     "rule": {
+      "first_med_s": 35.0,
+      "first_med_days": 49,
+      "p_no_pay": 7.1,
+      "p_pay_30d": 22.1,
+      "per_month": 1205
+     },
+     "plain": {
+      "trades": 86,
+      "tpw": 5.51,
+      "win": 53.5,
+      "pf": 2.74,
+      "net": 27304,
+      "per_month": 7351,
+      "max_dd": -2480,
+      "win_days_pw": 2.24
+     },
+     "part_hits": 0
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 14.0,
+      "p60": 29.8,
+      "p10": 11.7,
+      "f10": 0.6
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 89.7,
+      "p_pay_30d": 0.9,
+      "per_month": -1
+     },
+     "plain": {
+      "trades": 1505,
+      "tpw": 6.99,
+      "win": 42.9,
+      "pf": 1.07,
+      "net": 24948,
+      "per_month": 486,
+      "max_dd": -37025,
+      "win_days_pw": 1.72
+     },
+     "part_hits": 0
+    },
+    "secs": 8
+   },
+   "LIT alone": {
+    "v": {
+     "name": "LIT alone",
+     "fam": "ref",
+     "kind": "builder",
+     "scope": "both",
+     "layer": null
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 9.0,
+      "p60": 85.3,
+      "p10": 47.5,
+      "f10": 0.8
+     },
+     "rule": {
+      "first_med_s": 49.0,
+      "first_med_days": 69,
+      "p_no_pay": 7.7,
+      "p_pay_30d": 11.2,
+      "per_month": 779
+     },
+     "plain": {
+      "trades": 80,
+      "tpw": 3.12,
+      "win": 58.8,
+      "pf": 3.49,
+      "net": 31246,
+      "per_month": 5126,
+      "max_dd": -3271,
+      "win_days_pw": 1.84
+     },
+     "part_hits": 0
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 9.0,
+      "p60": 83.5,
+      "p10": 47.3,
+      "f10": 0.2
+     },
+     "rule": {
+      "first_med_s": 48.0,
+      "first_med_days": 67,
+      "p_no_pay": 9.6,
+      "p_pay_30d": 11.4,
+      "per_month": 753
+     },
+     "plain": {
+      "trades": 40,
+      "tpw": 2.56,
+      "win": 50.0,
+      "pf": 2.71,
+      "net": 13767,
+      "per_month": 3707,
+      "max_dd": -2228,
+      "win_days_pw": 1.28
+     },
+     "part_hits": 0
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 14.0,
+      "p60": 29.8,
+      "p10": 11.7,
+      "f10": 0.6
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 90.6,
+      "p_pay_30d": 0.3,
+      "per_month": -9
+     },
+     "plain": {
+      "trades": 511,
+      "tpw": 2.37,
+      "win": 53.6,
+      "pf": 1.02,
+      "net": 1961,
+      "per_month": 38,
+      "max_dd": -19725,
+      "win_days_pw": 1.27
+     },
+     "part_hits": 0
+    },
+    "secs": 9
+   },
+   "A LIT 50% at 1R, everywhere": {
+    "v": {
+     "name": "A LIT 50% at 1R, everywhere",
+     "fam": "A",
+     "kind": "builder",
+     "scope": "both",
+     "layer": null
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 26.0,
+      "p60": 74.8,
+      "p10": 6.8,
+      "f10": 0.8
+     },
+     "rule": {
+      "first_med_s": 56.0,
+      "first_med_days": 78,
+      "p_no_pay": 6.8,
+      "p_pay_30d": 1.6,
+      "per_month": 944
+     },
+     "plain": {
+      "trades": 184,
+      "tpw": 7.19,
+      "win": 55.4,
+      "pf": 2.78,
+      "net": 61149,
+      "per_month": 10032,
+      "max_dd": -2590,
+      "win_days_pw": 2.46
+     },
+     "part_hits": 47
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 25.0,
+      "p60": 67.4,
+      "p10": 6.5,
+      "f10": 0.1
+     },
+     "rule": {
+      "first_med_s": 66.0,
+      "first_med_days": 92,
+      "p_no_pay": 15.5,
+      "p_pay_30d": 1.3,
+      "per_month": 776
+     },
+     "plain": {
+      "trades": 86,
+      "tpw": 5.51,
+      "win": 53.5,
+      "pf": 2.32,
+      "net": 20781,
+      "per_month": 5595,
+      "max_dd": -2278,
+      "win_days_pw": 2.24
+     },
+     "part_hits": 20
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 37.0,
+      "p60": 15.3,
+      "p10": 0.2,
+      "f10": 0.5
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 93.3,
+      "p_pay_30d": 0.0,
+      "per_month": -10
+     },
+     "plain": {
+      "trades": 1505,
+      "tpw": 6.99,
+      "win": 42.9,
+      "pf": 1.08,
+      "net": 28895,
+      "per_month": 563,
+      "max_dd": -33242,
+      "win_days_pw": 1.75
+     },
+     "part_hits": 261
+    },
+    "secs": 11
+   },
+   "A LIT 50% at 1R, funded only": {
+    "v": {
+     "name": "A LIT 50% at 1R, funded only",
+     "fam": "A",
+     "kind": "builder",
+     "scope": "funded",
+     "layer": null
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 9.0,
+      "p60": 85.3,
+      "p10": 47.5,
+      "f10": 0.8
+     },
+     "rule": {
+      "first_med_s": 36.0,
+      "first_med_days": 50,
+      "p_no_pay": 3.5,
+      "p_pay_30d": 18.5,
+      "per_month": 1182
+     },
+     "plain": {
+      "trades": 184,
+      "tpw": 7.19,
+      "win": 55.4,
+      "pf": 2.78,
+      "net": 61149,
+      "per_month": 10032,
+      "max_dd": -2590,
+      "win_days_pw": 2.46
+     },
+     "part_hits": 47
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 9.0,
+      "p60": 83.5,
+      "p10": 47.3,
+      "f10": 0.2
+     },
+     "rule": {
+      "first_med_s": 41.0,
+      "first_med_days": 57,
+      "p_no_pay": 8.4,
+      "p_pay_30d": 15.0,
+      "per_month": 1028
+     },
+     "plain": {
+      "trades": 86,
+      "tpw": 5.51,
+      "win": 53.5,
+      "pf": 2.32,
+      "net": 20781,
+      "per_month": 5595,
+      "max_dd": -2278,
+      "win_days_pw": 2.24
+     },
+     "part_hits": 20
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 14.0,
+      "p60": 29.8,
+      "p10": 11.7,
+      "f10": 0.6
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 89.1,
+      "p_pay_30d": 1.0,
+      "per_month": 2
+     },
+     "plain": {
+      "trades": 1505,
+      "tpw": 6.99,
+      "win": 42.9,
+      "pf": 1.08,
+      "net": 28895,
+      "per_month": 563,
+      "max_dd": -33242,
+      "win_days_pw": 1.75
+     },
+     "part_hits": 261
+    },
+    "secs": 10
+   },
+   "A LIT 50% at 2R, everywhere": {
+    "v": {
+     "name": "A LIT 50% at 2R, everywhere",
+     "fam": "A",
+     "kind": "builder",
+     "scope": "both",
+     "layer": null
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 22.0,
+      "p60": 77.8,
+      "p10": 13.8,
+      "f10": 0.6
+     },
+     "rule": {
+      "first_med_s": 51.0,
+      "first_med_days": 71,
+      "p_no_pay": 6.7,
+      "p_pay_30d": 4.9,
+      "per_month": 1012
+     },
+     "plain": {
+      "trades": 184,
+      "tpw": 7.19,
+      "win": 55.4,
+      "pf": 2.84,
+      "net": 63157,
+      "per_month": 10362,
+      "max_dd": -3017,
+      "win_days_pw": 2.54
+     },
+     "part_hits": 27
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 18.0,
+      "p60": 78.0,
+      "p10": 22.1,
+      "f10": 0.1
+     },
+     "rule": {
+      "first_med_s": 49.0,
+      "first_med_days": 69,
+      "p_no_pay": 9.5,
+      "p_pay_30d": 7.5,
+      "per_month": 989
+     },
+     "plain": {
+      "trades": 86,
+      "tpw": 5.51,
+      "win": 53.5,
+      "pf": 2.49,
+      "net": 23367,
+      "per_month": 6291,
+      "max_dd": -2060,
+      "win_days_pw": 2.31
+     },
+     "part_hits": 15
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 31.5,
+      "p60": 23.0,
+      "p10": 1.6,
+      "f10": 0.5
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 91.9,
+      "p_pay_30d": 0.0,
+      "per_month": -6
+     },
+     "plain": {
+      "trades": 1505,
+      "tpw": 6.99,
+      "win": 42.9,
+      "pf": 1.08,
+      "net": 30806,
+      "per_month": 601,
+      "max_dd": -32301,
+      "win_days_pw": 1.75
+     },
+     "part_hits": 127
+    },
+    "secs": 11
+   },
+   "A LIT 50% at 2R, funded only": {
+    "v": {
+     "name": "A LIT 50% at 2R, funded only",
+     "fam": "A",
+     "kind": "builder",
+     "scope": "funded",
+     "layer": null
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 9.0,
+      "p60": 85.3,
+      "p10": 47.5,
+      "f10": 0.8
+     },
+     "rule": {
+      "first_med_s": 35.0,
+      "first_med_days": 49,
+      "p_no_pay": 4.0,
+      "p_pay_30d": 19.5,
+      "per_month": 1201
+     },
+     "plain": {
+      "trades": 184,
+      "tpw": 7.19,
+      "win": 55.4,
+      "pf": 2.84,
+      "net": 63157,
+      "per_month": 10362,
+      "max_dd": -3017,
+      "win_days_pw": 2.54
+     },
+     "part_hits": 27
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 9.0,
+      "p60": 83.5,
+      "p10": 47.3,
+      "f10": 0.2
+     },
+     "rule": {
+      "first_med_s": 38.0,
+      "first_med_days": 53,
+      "p_no_pay": 6.9,
+      "p_pay_30d": 17.8,
+      "per_month": 1126
+     },
+     "plain": {
+      "trades": 86,
+      "tpw": 5.51,
+      "win": 53.5,
+      "pf": 2.49,
+      "net": 23367,
+      "per_month": 6291,
+      "max_dd": -2060,
+      "win_days_pw": 2.31
+     },
+     "part_hits": 15
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 14.0,
+      "p60": 29.8,
+      "p10": 11.7,
+      "f10": 0.6
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 89.6,
+      "p_pay_30d": 1.1,
+      "per_month": 0
+     },
+     "plain": {
+      "trades": 1505,
+      "tpw": 6.99,
+      "win": 42.9,
+      "pf": 1.08,
+      "net": 30806,
+      "per_month": 601,
+      "max_dd": -32301,
+      "win_days_pw": 1.75
+     },
+     "part_hits": 127
+    },
+    "secs": 10
+   },
+   "A LIT 50% at 3R, everywhere": {
+    "v": {
+     "name": "A LIT 50% at 3R, everywhere",
+     "fam": "A",
+     "kind": "builder",
+     "scope": "both",
+     "layer": null
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 19.0,
+      "p60": 81.2,
+      "p10": 20.6,
+      "f10": 0.7
+     },
+     "rule": {
+      "first_med_s": 47.0,
+      "first_med_days": 66,
+      "p_no_pay": 6.7,
+      "p_pay_30d": 8.5,
+      "per_month": 1059
+     },
+     "plain": {
+      "trades": 184,
+      "tpw": 7.19,
+      "win": 55.4,
+      "pf": 2.91,
+      "net": 65623,
+      "per_month": 10766,
+      "max_dd": -3017,
+      "win_days_pw": 2.46
+     },
+     "part_hits": 20
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 15.0,
+      "p60": 83.9,
+      "p10": 30.4,
+      "f10": 0.1
+     },
+     "rule": {
+      "first_med_s": 41.5,
+      "first_med_days": 58,
+      "p_no_pay": 5.6,
+      "p_pay_30d": 11.0,
+      "per_month": 1110
+     },
+     "plain": {
+      "trades": 86,
+      "tpw": 5.51,
+      "win": 53.5,
+      "pf": 2.62,
+      "net": 25414,
+      "per_month": 6842,
+      "max_dd": -1896,
+      "win_days_pw": 2.31
+     },
+     "part_hits": 11
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 26.0,
+      "p60": 29.2,
+      "p10": 4.2,
+      "f10": 0.5
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 89.2,
+      "p_pay_30d": 0.1,
+      "per_month": 3
+     },
+     "plain": {
+      "trades": 1505,
+      "tpw": 6.99,
+      "win": 42.9,
+      "pf": 1.1,
+      "net": 35719,
+      "per_month": 696,
+      "max_dd": -30322,
+      "win_days_pw": 1.78
+     },
+     "part_hits": 82
+    },
+    "secs": 10
+   },
+   "A LIT 50% at 3R, funded only": {
+    "v": {
+     "name": "A LIT 50% at 3R, funded only",
+     "fam": "A",
+     "kind": "builder",
+     "scope": "funded",
+     "layer": null
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 9.0,
+      "p60": 85.3,
+      "p10": 47.5,
+      "f10": 0.8
+     },
+     "rule": {
+      "first_med_s": 35.0,
+      "first_med_days": 49,
+      "p_no_pay": 4.3,
+      "p_pay_30d": 19.7,
+      "per_month": 1201
+     },
+     "plain": {
+      "trades": 184,
+      "tpw": 7.19,
+      "win": 55.4,
+      "pf": 2.91,
+      "net": 65623,
+      "per_month": 10766,
+      "max_dd": -3017,
+      "win_days_pw": 2.46
+     },
+     "part_hits": 20
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 9.0,
+      "p60": 83.5,
+      "p10": 47.3,
+      "f10": 0.2
+     },
+     "rule": {
+      "first_med_s": 36.0,
+      "first_med_days": 50,
+      "p_no_pay": 5.0,
+      "p_pay_30d": 20.3,
+      "per_month": 1185
+     },
+     "plain": {
+      "trades": 86,
+      "tpw": 5.51,
+      "win": 53.5,
+      "pf": 2.62,
+      "net": 25414,
+      "per_month": 6842,
+      "max_dd": -1896,
+      "win_days_pw": 2.31
+     },
+     "part_hits": 11
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 14.0,
+      "p60": 29.8,
+      "p10": 11.7,
+      "f10": 0.6
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 88.3,
+      "p_pay_30d": 1.0,
+      "per_month": 3
+     },
+     "plain": {
+      "trades": 1505,
+      "tpw": 6.99,
+      "win": 42.9,
+      "pf": 1.1,
+      "net": 35719,
+      "per_month": 696,
+      "max_dd": -30322,
+      "win_days_pw": 1.78
+     },
+     "part_hits": 82
+    },
+    "secs": 9
+   },
+   "A LIT 33% at 2R, everywhere": {
+    "v": {
+     "name": "A LIT 33% at 2R, everywhere",
+     "fam": "A",
+     "kind": "builder",
+     "scope": "both",
+     "layer": null
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 17.5,
+      "p60": 81.7,
+      "p10": 23.2,
+      "f10": 0.7
+     },
+     "rule": {
+      "first_med_s": 46.0,
+      "first_med_days": 64,
+      "p_no_pay": 5.0,
+      "p_pay_30d": 10.0,
+      "per_month": 1080
+     },
+     "plain": {
+      "trades": 184,
+      "tpw": 7.19,
+      "win": 55.4,
+      "pf": 2.93,
+      "net": 66405,
+      "per_month": 10895,
+      "max_dd": -3017,
+      "win_days_pw": 2.5
+     },
+     "part_hits": 27
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 16.0,
+      "p60": 81.2,
+      "p10": 26.1,
+      "f10": 0.3
+     },
+     "rule": {
+      "first_med_s": 43.0,
+      "first_med_days": 60,
+      "p_no_pay": 7.2,
+      "p_pay_30d": 9.4,
+      "per_month": 1071
+     },
+     "plain": {
+      "trades": 86,
+      "tpw": 5.51,
+      "win": 53.5,
+      "pf": 2.57,
+      "net": 24680,
+      "per_month": 6645,
+      "max_dd": -2200,
+      "win_days_pw": 2.24
+     },
+     "part_hits": 15
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 26.0,
+      "p60": 25.8,
+      "p10": 3.2,
+      "f10": 0.5
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 91.7,
+      "p_pay_30d": 0.1,
+      "per_month": -5
+     },
+     "plain": {
+      "trades": 1505,
+      "tpw": 6.99,
+      "win": 42.9,
+      "pf": 1.08,
+      "net": 28853,
+      "per_month": 563,
+      "max_dd": -33875,
+      "win_days_pw": 1.74
+     },
+     "part_hits": 127
+    },
+    "secs": 10
+   },
+   "A LIT 33% at 2R, funded only": {
+    "v": {
+     "name": "A LIT 33% at 2R, funded only",
+     "fam": "A",
+     "kind": "builder",
+     "scope": "funded",
+     "layer": null
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 9.0,
+      "p60": 85.3,
+      "p10": 47.5,
+      "f10": 0.8
+     },
+     "rule": {
+      "first_med_s": 35.0,
+      "first_med_days": 49,
+      "p_no_pay": 4.2,
+      "p_pay_30d": 19.2,
+      "per_month": 1199
+     },
+     "plain": {
+      "trades": 184,
+      "tpw": 7.19,
+      "win": 55.4,
+      "pf": 2.93,
+      "net": 66405,
+      "per_month": 10895,
+      "max_dd": -3017,
+      "win_days_pw": 2.5
+     },
+     "part_hits": 27
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 9.0,
+      "p60": 83.5,
+      "p10": 47.3,
+      "f10": 0.2
+     },
+     "rule": {
+      "first_med_s": 36.5,
+      "first_med_days": 51,
+      "p_no_pay": 6.3,
+      "p_pay_30d": 19.9,
+      "per_month": 1157
+     },
+     "plain": {
+      "trades": 86,
+      "tpw": 5.51,
+      "win": 53.5,
+      "pf": 2.57,
+      "net": 24680,
+      "per_month": 6645,
+      "max_dd": -2200,
+      "win_days_pw": 2.24
+     },
+     "part_hits": 15
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 14.0,
+      "p60": 29.8,
+      "p10": 11.7,
+      "f10": 0.6
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 89.7,
+      "p_pay_30d": 0.9,
+      "per_month": -1
+     },
+     "plain": {
+      "trades": 1505,
+      "tpw": 6.99,
+      "win": 42.9,
+      "pf": 1.08,
+      "net": 28853,
+      "per_month": 563,
+      "max_dd": -33875,
+      "win_days_pw": 1.74
+     },
+     "part_hits": 127
+    },
+    "secs": 8
+   },
+   "B ATLAS half at 1R": {
+    "v": {
+     "name": "B ATLAS half at 1R",
+     "fam": "B",
+     "kind": "builder",
+     "scope": "both",
+     "layer": null
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 9.0,
+      "p60": 85.3,
+      "p10": 47.5,
+      "f10": 0.8
+     },
+     "rule": {
+      "first_med_s": 34.0,
+      "first_med_days": 48,
+      "p_no_pay": 3.4,
+      "p_pay_30d": 23.2,
+      "per_month": 1246
+     },
+     "plain": {
+      "trades": 184,
+      "tpw": 7.19,
+      "win": 55.4,
+      "pf": 2.72,
+      "net": 55287,
+      "per_month": 9070,
+      "max_dd": -3225,
+      "win_days_pw": 2.38
+     },
+     "part_hits": 60
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 9.0,
+      "p60": 83.5,
+      "p10": 47.3,
+      "f10": 0.2
+     },
+     "rule": {
+      "first_med_s": 34.0,
+      "first_med_days": 48,
+      "p_no_pay": 6.7,
+      "p_pay_30d": 22.1,
+      "per_month": 1254
+     },
+     "plain": {
+      "trades": 86,
+      "tpw": 5.51,
+      "win": 53.5,
+      "pf": 2.56,
+      "net": 23134,
+      "per_month": 6228,
+      "max_dd": -2480,
+      "win_days_pw": 2.24
+     },
+     "part_hits": 28
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 14.0,
+      "p60": 29.8,
+      "p10": 11.7,
+      "f10": 0.6
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 88.1,
+      "p_pay_30d": 1.1,
+      "per_month": 2
+     },
+     "plain": {
+      "trades": 1505,
+      "tpw": 6.99,
+      "win": 43.8,
+      "pf": 1.02,
+      "net": 6579,
+      "per_month": 128,
+      "max_dd": -33775,
+      "win_days_pw": 1.8
+     },
+     "part_hits": 478
+    },
+    "secs": 9
+   },
+   "B ATLAS fixed 1R": {
+    "v": {
+     "name": "B ATLAS fixed 1R",
+     "fam": "B",
+     "kind": "builder",
+     "scope": "both",
+     "layer": null
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 9.0,
+      "p60": 85.3,
+      "p10": 47.5,
+      "f10": 0.8
+     },
+     "rule": {
+      "first_med_s": 41.0,
+      "first_med_days": 57,
+      "p_no_pay": 9.6,
+      "p_pay_30d": 14.9,
+      "per_month": 965
+     },
+     "plain": {
+      "trades": 184,
+      "tpw": 7.19,
+      "win": 58.2,
+      "pf": 2.18,
+      "net": 37672,
+      "per_month": 6181,
+      "max_dd": -3458,
+      "win_days_pw": 2.27
+     },
+     "part_hits": 0
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 9.0,
+      "p60": 83.5,
+      "p10": 47.3,
+      "f10": 0.2
+     },
+     "rule": {
+      "first_med_s": 39.0,
+      "first_med_days": 55,
+      "p_no_pay": 8.7,
+      "p_pay_30d": 16.8,
+      "per_month": 1062
+     },
+     "plain": {
+      "trades": 86,
+      "tpw": 5.51,
+      "win": 55.8,
+      "pf": 2.28,
+      "net": 18963,
+      "per_month": 5105,
+      "max_dd": -2480,
+      "win_days_pw": 2.12
+     },
+     "part_hits": 0
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 14.0,
+      "p60": 29.8,
+      "p10": 11.7,
+      "f10": 0.6
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 91.3,
+      "p_pay_30d": 0.3,
+      "per_month": -5
+     },
+     "plain": {
+      "trades": 1505,
+      "tpw": 6.99,
+      "win": 50.4,
+      "pf": 0.96,
+      "net": -11790,
+      "per_month": -230,
+      "max_dd": -30913,
+      "win_days_pw": 1.93
+     },
+     "part_hits": 0
+    },
+    "secs": 11
+   },
+   "C + BLITZ $300 first a day, live exit": {
+    "v": {
+     "name": "C + BLITZ $300 first a day, live exit",
+     "fam": "C",
+     "kind": "builder",
+     "scope": "both",
+     "layer": "BLITZ"
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 9.0,
+      "p60": 85.3,
+      "p10": 47.5,
+      "f10": 0.8
+     },
+     "rule": {
+      "first_med_s": 35.0,
+      "first_med_days": 49,
+      "p_no_pay": 5.8,
+      "p_pay_30d": 22.6,
+      "per_month": 1206
+     },
+     "plain": {
+      "trades": 244,
+      "tpw": 9.53,
+      "win": 54.5,
+      "pf": 2.92,
+      "net": 74111,
+      "per_month": 12159,
+      "max_dd": -3321,
+      "win_days_pw": 2.7
+     },
+     "layer": {
+      "trades": 60,
+      "tpw": 2.34,
+      "win": 51.7,
+      "pf": 1.29,
+      "net": 1210,
+      "per_month": 199,
+      "max_dd": -1987,
+      "win_days_pw": 1.21
+     },
+     "part_hits": 0
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 9.0,
+      "p60": 83.5,
+      "p10": 47.3,
+      "f10": 0.2
+     },
+     "rule": {
+      "first_med_s": 34.0,
+      "first_med_days": 48,
+      "p_no_pay": 7.2,
+      "p_pay_30d": 23.2,
+      "per_month": 1212
+     },
+     "plain": {
+      "trades": 114,
+      "tpw": 7.31,
+      "win": 51.8,
+      "pf": 2.62,
+      "net": 28327,
+      "per_month": 7626,
+      "max_dd": -2480,
+      "win_days_pw": 2.37
+     },
+     "layer": {
+      "trades": 28,
+      "tpw": 1.79,
+      "win": 46.4,
+      "pf": 1.57,
+      "net": 1022,
+      "per_month": 275,
+      "max_dd": -813,
+      "win_days_pw": 0.83
+     },
+     "part_hits": 0
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 14.0,
+      "p60": 29.8,
+      "p10": 11.7,
+      "f10": 0.6
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 90.7,
+      "p_pay_30d": 0.8,
+      "per_month": -4
+     },
+     "plain": {
+      "trades": 2007,
+      "tpw": 9.32,
+      "win": 44.9,
+      "pf": 1.06,
+      "net": 23316,
+      "per_month": 455,
+      "max_dd": -35710,
+      "win_days_pw": 1.76
+     },
+     "layer": {
+      "trades": 502,
+      "tpw": 2.33,
+      "win": 51.0,
+      "pf": 0.96,
+      "net": -1632,
+      "per_month": -32,
+      "max_dd": -6968,
+      "win_days_pw": 1.19
+     },
+     "part_hits": 0
+    },
+    "secs": 10
+   },
+   "C + BLITZ $300 first a day, fixed 1R": {
+    "v": {
+     "name": "C + BLITZ $300 first a day, fixed 1R",
+     "fam": "C",
+     "kind": "builder",
+     "scope": "both",
+     "layer": "BLITZ"
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 9.0,
+      "p60": 85.3,
+      "p10": 47.5,
+      "f10": 0.8
+     },
+     "rule": {
+      "first_med_s": 35.0,
+      "first_med_days": 49,
+      "p_no_pay": 4.9,
+      "p_pay_30d": 21.9,
+      "per_month": 1216
+     },
+     "plain": {
+      "trades": 244,
+      "tpw": 9.53,
+      "win": 54.9,
+      "pf": 2.93,
+      "net": 74106,
+      "per_month": 12158,
+      "max_dd": -3361,
+      "win_days_pw": 2.7
+     },
+     "layer": {
+      "trades": 60,
+      "tpw": 2.34,
+      "win": 53.3,
+      "pf": 1.29,
+      "net": 1205,
+      "per_month": 198,
+      "max_dd": -1777,
+      "win_days_pw": 1.25
+     },
+     "part_hits": 0
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 9.0,
+      "p60": 83.5,
+      "p10": 47.3,
+      "f10": 0.2
+     },
+     "rule": {
+      "first_med_s": 35.0,
+      "first_med_days": 49,
+      "p_no_pay": 7.6,
+      "p_pay_30d": 22.5,
+      "per_month": 1199
+     },
+     "plain": {
+      "trades": 114,
+      "tpw": 7.31,
+      "win": 51.8,
+      "pf": 2.61,
+      "net": 28148,
+      "per_month": 7578,
+      "max_dd": -2480,
+      "win_days_pw": 2.37
+     },
+     "layer": {
+      "trades": 28,
+      "tpw": 1.79,
+      "win": 46.4,
+      "pf": 1.47,
+      "net": 843,
+      "per_month": 227,
+      "max_dd": -674,
+      "win_days_pw": 0.83
+     },
+     "part_hits": 0
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 14.0,
+      "p60": 29.8,
+      "p10": 11.7,
+      "f10": 0.6
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 89.8,
+      "p_pay_30d": 0.7,
+      "per_month": -2
+     },
+     "plain": {
+      "trades": 2007,
+      "tpw": 9.32,
+      "win": 45.2,
+      "pf": 1.06,
+      "net": 25889,
+      "per_month": 505,
+      "max_dd": -34557,
+      "win_days_pw": 1.77
+     },
+     "layer": {
+      "trades": 502,
+      "tpw": 2.33,
+      "win": 52.4,
+      "pf": 1.02,
+      "net": 941,
+      "per_month": 18,
+      "max_dd": -4872,
+      "win_days_pw": 1.22
+     },
+     "part_hits": 0
+    },
+    "secs": 10
+   },
+   "C + BLITZ $300 first a day, fixed 0.5R": {
+    "v": {
+     "name": "C + BLITZ $300 first a day, fixed 0.5R",
+     "fam": "C",
+     "kind": "builder",
+     "scope": "both",
+     "layer": "BLITZ"
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 9.0,
+      "p60": 85.3,
+      "p10": 47.5,
+      "f10": 0.8
+     },
+     "rule": {
+      "first_med_s": 35.0,
+      "first_med_days": 49,
+      "p_no_pay": 5.2,
+      "p_pay_30d": 21.8,
+      "per_month": 1204
+     },
+     "plain": {
+      "trades": 244,
+      "tpw": 9.53,
+      "win": 57.4,
+      "pf": 2.99,
+      "net": 74058,
+      "per_month": 12150,
+      "max_dd": -3475,
+      "win_days_pw": 2.81
+     },
+     "layer": {
+      "trades": 60,
+      "tpw": 2.34,
+      "win": 63.3,
+      "pf": 1.39,
+      "net": 1157,
+      "per_month": 190,
+      "max_dd": -1533,
+      "win_days_pw": 1.48
+     },
+     "part_hits": 0
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 9.0,
+      "p60": 83.5,
+      "p10": 47.3,
+      "f10": 0.2
+     },
+     "rule": {
+      "first_med_s": 35.0,
+      "first_med_days": 49,
+      "p_no_pay": 7.5,
+      "p_pay_30d": 22.0,
+      "per_month": 1201
+     },
+     "plain": {
+      "trades": 114,
+      "tpw": 7.31,
+      "win": 55.3,
+      "pf": 2.62,
+      "net": 27756,
+      "per_month": 7473,
+      "max_dd": -2480,
+      "win_days_pw": 2.5
+     },
+     "layer": {
+      "trades": 28,
+      "tpw": 1.79,
+      "win": 60.7,
+      "pf": 1.31,
+      "net": 452,
+      "per_month": 122,
+      "max_dd": -651,
+      "win_days_pw": 1.09
+     },
+     "part_hits": 0
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 14.0,
+      "p60": 29.8,
+      "p10": 11.7,
+      "f10": 0.6
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 89.0,
+      "p_pay_30d": 0.8,
+      "per_month": 1
+     },
+     "plain": {
+      "trades": 2007,
+      "tpw": 9.32,
+      "win": 48.5,
+      "pf": 1.07,
+      "net": 27505,
+      "per_month": 536,
+      "max_dd": -37718,
+      "win_days_pw": 1.84
+     },
+     "layer": {
+      "trades": 502,
+      "tpw": 2.33,
+      "win": 65.5,
+      "pf": 1.08,
+      "net": 2557,
+      "per_month": 50,
+      "max_dd": -4579,
+      "win_days_pw": 1.53
+     },
+     "part_hits": 0
+    },
+    "secs": 9
+   },
+   "C + BLITZ $300 max 2 a day, live exit": {
+    "v": {
+     "name": "C + BLITZ $300 max 2 a day, live exit",
+     "fam": "C",
+     "kind": "builder",
+     "scope": "both",
+     "layer": "BLITZ"
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 9.0,
+      "p60": 85.3,
+      "p10": 47.5,
+      "f10": 0.8
+     },
+     "rule": {
+      "first_med_s": 34.0,
+      "first_med_days": 48,
+      "p_no_pay": 4.6,
+      "p_pay_30d": 23.3,
+      "per_month": 1269
+     },
+     "plain": {
+      "trades": 294,
+      "tpw": 11.48,
+      "win": 55.1,
+      "pf": 2.85,
+      "net": 77248,
+      "per_month": 12674,
+      "max_dd": -3218,
+      "win_days_pw": 2.73
+     },
+     "layer": {
+      "trades": 110,
+      "tpw": 4.3,
+      "win": 54.5,
+      "pf": 1.59,
+      "net": 4347,
+      "per_month": 713,
+      "max_dd": -1646,
+      "win_days_pw": 1.17
+     },
+     "part_hits": 0
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 9.0,
+      "p60": 83.5,
+      "p10": 47.3,
+      "f10": 0.2
+     },
+     "rule": {
+      "first_med_s": 35.0,
+      "first_med_days": 49,
+      "p_no_pay": 8.4,
+      "p_pay_30d": 22.6,
+      "per_month": 1158
+     },
+     "plain": {
+      "trades": 137,
+      "tpw": 8.78,
+      "win": 49.6,
+      "pf": 2.42,
+      "net": 27517,
+      "per_month": 7408,
+      "max_dd": -2480,
+      "win_days_pw": 2.37
+     },
+     "layer": {
+      "trades": 51,
+      "tpw": 3.27,
+      "win": 43.1,
+      "pf": 1.06,
+      "net": 212,
+      "per_month": 57,
+      "max_dd": -1218,
+      "win_days_pw": 0.83
+     },
+     "part_hits": 0
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 14.0,
+      "p60": 29.8,
+      "p10": 11.7,
+      "f10": 0.6
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 89.7,
+      "p_pay_30d": 0.7,
+      "per_month": -2
+     },
+     "plain": {
+      "trades": 2426,
+      "tpw": 11.26,
+      "win": 45.7,
+      "pf": 1.05,
+      "net": 24374,
+      "per_month": 475,
+      "max_dd": -36839,
+      "win_days_pw": 1.76
+     },
+     "layer": {
+      "trades": 921,
+      "tpw": 4.28,
+      "win": 50.3,
+      "pf": 0.99,
+      "net": -574,
+      "per_month": -11,
+      "max_dd": -9401,
+      "win_days_pw": 1.06
+     },
+     "part_hits": 0
+    },
+    "secs": 11
+   },
+   "C + BLITZ $300 max 3 a day, live exit": {
+    "v": {
+     "name": "C + BLITZ $300 max 3 a day, live exit",
+     "fam": "C",
+     "kind": "builder",
+     "scope": "both",
+     "layer": "BLITZ"
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 9.0,
+      "p60": 85.3,
+      "p10": 47.5,
+      "f10": 0.8
+     },
+     "rule": {
+      "first_med_s": 34.0,
+      "first_med_days": 48,
+      "p_no_pay": 4.6,
+      "p_pay_30d": 23.2,
+      "per_month": 1283
+     },
+     "plain": {
+      "trades": 333,
+      "tpw": 13.01,
+      "win": 54.7,
+      "pf": 2.75,
+      "net": 77845,
+      "per_month": 12771,
+      "max_dd": -3142,
+      "win_days_pw": 2.85
+     },
+     "layer": {
+      "trades": 149,
+      "tpw": 5.82,
+      "win": 53.7,
+      "pf": 1.49,
+      "net": 4944,
+      "per_month": 811,
+      "max_dd": -1157,
+      "win_days_pw": 1.29
+     },
+     "part_hits": 0
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 9.0,
+      "p60": 83.5,
+      "p10": 47.3,
+      "f10": 0.2
+     },
+     "rule": {
+      "first_med_s": 34.0,
+      "first_med_days": 48,
+      "p_no_pay": 7.3,
+      "p_pay_30d": 24.0,
+      "per_month": 1214
+     },
+     "plain": {
+      "trades": 156,
+      "tpw": 10.0,
+      "win": 53.2,
+      "pf": 2.48,
+      "net": 29440,
+      "per_month": 7926,
+      "max_dd": -2480,
+      "win_days_pw": 2.31
+     },
+     "layer": {
+      "trades": 70,
+      "tpw": 4.49,
+      "win": 52.9,
+      "pf": 1.51,
+      "net": 2135,
+      "per_month": 575,
+      "max_dd": -1318,
+      "win_days_pw": 0.96
+     },
+     "part_hits": 0
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 14.0,
+      "p60": 29.8,
+      "p10": 11.7,
+      "f10": 0.6
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 89.9,
+      "p_pay_30d": 0.7,
+      "per_month": -2
+     },
+     "plain": {
+      "trades": 2775,
+      "tpw": 12.88,
+      "win": 46.2,
+      "pf": 1.06,
+      "net": 26821,
+      "per_month": 523,
+      "max_dd": -34933,
+      "win_days_pw": 1.79
+     },
+     "layer": {
+      "trades": 1270,
+      "tpw": 5.9,
+      "win": 50.1,
+      "pf": 1.02,
+      "net": 1873,
+      "per_month": 37,
+      "max_dd": -10792,
+      "win_days_pw": 1.06
+     },
+     "part_hits": 0
+    },
+    "secs": 10
+   },
+   "C + BLITZ $300 every signal (ref, >8/wk)": {
+    "v": {
+     "name": "C + BLITZ $300 every signal (ref, >8/wk)",
+     "fam": "Cref",
+     "kind": "builder",
+     "scope": "both",
+     "layer": "BLITZ"
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 9.0,
+      "p60": 85.3,
+      "p10": 47.5,
+      "f10": 0.8
+     },
+     "rule": {
+      "first_med_s": 33.0,
+      "first_med_days": 46,
+      "p_no_pay": 4.2,
+      "p_pay_30d": 24.0,
+      "per_month": 1313
+     },
+     "plain": {
+      "trades": 401,
+      "tpw": 15.66,
+      "win": 56.1,
+      "pf": 2.63,
+      "net": 80372,
+      "per_month": 13186,
+      "max_dd": -2950,
+      "win_days_pw": 2.89
+     },
+     "layer": {
+      "trades": 217,
+      "tpw": 8.48,
+      "win": 56.7,
+      "pf": 1.5,
+      "net": 7471,
+      "per_month": 1226,
+      "max_dd": -1506,
+      "win_days_pw": 1.37
+     },
+     "part_hits": 0
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 9.0,
+      "p60": 83.5,
+      "p10": 47.3,
+      "f10": 0.2
+     },
+     "rule": {
+      "first_med_s": 32.0,
+      "first_med_days": 45,
+      "p_no_pay": 5.7,
+      "p_pay_30d": 26.3,
+      "per_month": 1347
+     },
+     "plain": {
+      "trades": 192,
+      "tpw": 12.31,
+      "win": 55.2,
+      "pf": 2.52,
+      "net": 32584,
+      "per_month": 8773,
+      "max_dd": -2480,
+      "win_days_pw": 2.5
+     },
+     "layer": {
+      "trades": 106,
+      "tpw": 6.79,
+      "win": 56.6,
+      "pf": 1.93,
+      "net": 5280,
+      "per_month": 1422,
+      "max_dd": -1198,
+      "win_days_pw": 1.09
+     },
+     "part_hits": 0
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 14.0,
+      "p60": 29.8,
+      "p10": 11.7,
+      "f10": 0.6
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 89.4,
+      "p_pay_30d": 0.8,
+      "per_month": 2
+     },
+     "plain": {
+      "trades": 3346,
+      "tpw": 15.53,
+      "win": 46.9,
+      "pf": 1.06,
+      "net": 31191,
+      "per_month": 608,
+      "max_dd": -33476,
+      "win_days_pw": 1.83
+     },
+     "layer": {
+      "trades": 1841,
+      "tpw": 8.55,
+      "win": 50.1,
+      "pf": 1.04,
+      "net": 6243,
+      "per_month": 122,
+      "max_dd": -11101,
+      "win_days_pw": 1.0
+     },
+     "part_hits": 0
+    },
+    "secs": 10
+   },
+   "D add-on lock at +$300": {
+    "v": {
+     "name": "D add-on lock at +$300",
+     "fam": "D",
+     "kind": "builder",
+     "scope": "both",
+     "layer": null
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 9.0,
+      "p60": 85.3,
+      "p10": 47.5,
+      "f10": 0.8
+     },
+     "rule": {
+      "first_med_s": 36.0,
+      "first_med_days": 50,
+      "p_no_pay": 5.3,
+      "p_pay_30d": 20.9,
+      "per_month": 1158
+     },
+     "plain": {
+      "trades": 184,
+      "tpw": 7.19,
+      "win": 55.4,
+      "pf": 3.12,
+      "net": 72901,
+      "per_month": 11960,
+      "max_dd": -3017,
+      "win_days_pw": 2.46
+     },
+     "part_hits": 0
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 9.0,
+      "p60": 83.5,
+      "p10": 47.3,
+      "f10": 0.2
+     },
+     "rule": {
+      "first_med_s": 34.0,
+      "first_med_days": 48,
+      "p_no_pay": 6.2,
+      "p_pay_30d": 23.7,
+      "per_month": 1254
+     },
+     "plain": {
+      "trades": 86,
+      "tpw": 5.51,
+      "win": 53.5,
+      "pf": 2.74,
+      "net": 27304,
+      "per_month": 7351,
+      "max_dd": -2480,
+      "win_days_pw": 2.24
+     },
+     "part_hits": 0
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 14.0,
+      "p60": 29.8,
+      "p10": 11.7,
+      "f10": 0.6
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 90.1,
+      "p_pay_30d": 1.1,
+      "per_month": -2
+     },
+     "plain": {
+      "trades": 1505,
+      "tpw": 6.99,
+      "win": 42.9,
+      "pf": 1.07,
+      "net": 24948,
+      "per_month": 486,
+      "max_dd": -37025,
+      "win_days_pw": 1.72
+     },
+     "part_hits": 0
+    },
+    "secs": 9
+   },
+   "D add-on lock at +$600": {
+    "v": {
+     "name": "D add-on lock at +$600",
+     "fam": "D",
+     "kind": "builder",
+     "scope": "both",
+     "layer": null
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 9.0,
+      "p60": 85.3,
+      "p10": 47.5,
+      "f10": 0.8
+     },
+     "rule": {
+      "first_med_s": 35.0,
+      "first_med_days": 49,
+      "p_no_pay": 5.0,
+      "p_pay_30d": 20.9,
+      "per_month": 1165
+     },
+     "plain": {
+      "trades": 184,
+      "tpw": 7.19,
+      "win": 55.4,
+      "pf": 3.12,
+      "net": 72901,
+      "per_month": 11960,
+      "max_dd": -3017,
+      "win_days_pw": 2.46
+     },
+     "part_hits": 0
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 9.0,
+      "p60": 83.5,
+      "p10": 47.3,
+      "f10": 0.2
+     },
+     "rule": {
+      "first_med_s": 34.0,
+      "first_med_days": 48,
+      "p_no_pay": 6.6,
+      "p_pay_30d": 23.5,
+      "per_month": 1245
+     },
+     "plain": {
+      "trades": 86,
+      "tpw": 5.51,
+      "win": 53.5,
+      "pf": 2.74,
+      "net": 27304,
+      "per_month": 7351,
+      "max_dd": -2480,
+      "win_days_pw": 2.24
+     },
+     "part_hits": 0
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 14.0,
+      "p60": 29.8,
+      "p10": 11.7,
+      "f10": 0.6
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 90.2,
+      "p_pay_30d": 1.1,
+      "per_month": -3
+     },
+     "plain": {
+      "trades": 1505,
+      "tpw": 6.99,
+      "win": 42.9,
+      "pf": 1.07,
+      "net": 24948,
+      "per_month": 486,
+      "max_dd": -37025,
+      "win_days_pw": 1.72
+     },
+     "part_hits": 0
+    },
+    "secs": 9
+   },
+   "alone: BLITZ $300 first a day, fixed 1R": {
+    "v": {
+     "name": "alone: BLITZ $300 first a day, fixed 1R",
+     "fam": "alone",
+     "kind": "builder",
+     "scope": "both",
+     "layer": "BLITZ"
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 55.0,
+      "p60": 0.1,
+      "p10": 0.0,
+      "f10": 0.0
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 100.0,
+      "p_pay_30d": 0.0,
+      "per_month": -15
+     },
+     "plain": {
+      "trades": 60,
+      "tpw": 2.34,
+      "win": 53.3,
+      "pf": 1.29,
+      "net": 1205,
+      "per_month": 198,
+      "max_dd": -1777,
+      "win_days_pw": 1.25
+     },
+     "layer": {
+      "trades": 60,
+      "tpw": 2.34,
+      "win": 53.3,
+      "pf": 1.29,
+      "net": 1205,
+      "per_month": 198,
+      "max_dd": -1777,
+      "win_days_pw": 1.25
+     },
+     "part_hits": 0
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 55.0,
+      "p60": 0.1,
+      "p10": 0.0,
+      "f10": 0.0
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 100.0,
+      "p_pay_30d": 0.0,
+      "per_month": -15
+     },
+     "plain": {
+      "trades": 28,
+      "tpw": 1.79,
+      "win": 46.4,
+      "pf": 1.47,
+      "net": 843,
+      "per_month": 227,
+      "max_dd": -674,
+      "win_days_pw": 0.83
+     },
+     "layer": {
+      "trades": 28,
+      "tpw": 1.79,
+      "win": 46.4,
+      "pf": 1.47,
+      "net": 843,
+      "per_month": 227,
+      "max_dd": -674,
+      "win_days_pw": 0.83
+     },
+     "part_hits": 0
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 45.0,
+      "p60": 0.3,
+      "p10": 0.0,
+      "f10": 0.0
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 100.0,
+      "p_pay_30d": 0.0,
+      "per_month": -16
+     },
+     "plain": {
+      "trades": 502,
+      "tpw": 2.33,
+      "win": 52.4,
+      "pf": 1.02,
+      "net": 941,
+      "per_month": 18,
+      "max_dd": -4872,
+      "win_days_pw": 1.22
+     },
+     "layer": {
+      "trades": 502,
+      "tpw": 2.33,
+      "win": 52.4,
+      "pf": 1.02,
+      "net": 941,
+      "per_month": 18,
+      "max_dd": -4872,
+      "win_days_pw": 1.22
+     },
+     "part_hits": 0
+    },
+    "secs": 2
+   },
+   "alone: ATLAS $500": {
+    "v": {
+     "name": "alone: ATLAS $500",
+     "fam": "alone",
+     "kind": "builder",
+     "scope": "both",
+     "layer": "ATLAS"
+    },
+    "H1": {
+     "eval": {
+      "pass_med": 10.0,
+      "p60": 92.6,
+      "p10": 47.8,
+      "f10": 0.0
+     },
+     "rule": {
+      "first_med_s": 39.0,
+      "first_med_days": 55,
+      "p_no_pay": 4.2,
+      "p_pay_30d": 16.7,
+      "per_month": 1034
+     },
+     "plain": {
+      "trades": 104,
+      "tpw": 4.06,
+      "win": 52.9,
+      "pf": 2.91,
+      "net": 41655,
+      "per_month": 6834,
+      "max_dd": -2385,
+      "win_days_pw": 1.91
+     },
+     "layer": {
+      "trades": 104,
+      "tpw": 4.06,
+      "win": 52.9,
+      "pf": 2.91,
+      "net": 41655,
+      "per_month": 6834,
+      "max_dd": -2385,
+      "win_days_pw": 1.91
+     },
+     "part_hits": 0
+    },
+    "H2": {
+     "eval": {
+      "pass_med": 17.0,
+      "p60": 86.5,
+      "p10": 24.9,
+      "f10": 0.0
+     },
+     "rule": {
+      "first_med_s": 59.0,
+      "first_med_days": 83,
+      "p_no_pay": 13.9,
+      "p_pay_30d": 4.0,
+      "per_month": 659
+     },
+     "plain": {
+      "trades": 46,
+      "tpw": 2.95,
+      "win": 56.5,
+      "pf": 2.77,
+      "net": 13537,
+      "per_month": 3645,
+      "max_dd": -1964,
+      "win_days_pw": 1.54
+     },
+     "layer": {
+      "trades": 46,
+      "tpw": 2.95,
+      "win": 56.5,
+      "pf": 2.77,
+      "net": 13537,
+      "per_month": 3645,
+      "max_dd": -1964,
+      "win_days_pw": 1.54
+     },
+     "part_hits": 0
+    },
+    "REF": {
+     "eval": {
+      "pass_med": 9.0,
+      "p60": 28.4,
+      "p10": 16.4,
+      "f10": 3.5
+     },
+     "rule": {
+      "first_med_s": null,
+      "first_med_days": null,
+      "p_no_pay": 87.2,
+      "p_pay_30d": 1.2,
+      "per_month": 1
+     },
+     "plain": {
+      "trades": 994,
+      "tpw": 4.61,
+      "win": 37.3,
+      "pf": 1.09,
+      "net": 22987,
+      "per_month": 448,
+      "max_dd": -23599,
+      "win_days_pw": 1.39
+     },
+     "layer": {
+      "trades": 994,
+      "tpw": 4.61,
+      "win": 37.3,
+      "pf": 1.09,
+      "net": 22987,
+      "per_month": 448,
+      "max_dd": -23599,
+      "win_days_pw": 1.39
+     },
+     "part_hits": 0
+    },
+    "secs": 3
+   }
+  }
+ },
+ "noise": {
+  "rapid": [
+   {
+    "H1": {
+     "first_med_s": 37.0,
+     "first_med_days": 52,
+     "p_no_pay": 3.6,
+     "p_pay_30d": 11.1,
+     "per_month": 5931
+    },
+    "H2": {
+     "first_med_s": 43.0,
+     "first_med_days": 60,
+     "p_no_pay": 8.3,
+     "p_pay_30d": 6.4,
+     "per_month": 2825
+    },
+    "REF": {
+     "first_med_s": null,
+     "first_med_days": null,
+     "p_no_pay": 87.1,
+     "p_pay_30d": 0.2,
+     "per_month": 58
+    }
+   },
+   {
+    "H1": {
+     "first_med_s": 35.0,
+     "first_med_days": 49,
+     "p_no_pay": 2.7,
+     "p_pay_30d": 12.1,
+     "per_month": 5958
+    },
+    "H2": {
+     "first_med_s": 44.0,
+     "first_med_days": 62,
+     "p_no_pay": 6.5,
+     "p_pay_30d": 6.1,
+     "per_month": 2854
+    },
+    "REF": {
+     "first_med_s": null,
+     "first_med_days": null,
+     "p_no_pay": 85.6,
+     "p_pay_30d": 0.6,
+     "per_month": 65
+    }
+   }
+  ],
+  "builder": [
+   {
+    "H1": {
+     "first_med_s": 38.0,
+     "first_med_days": 53,
+     "p_no_pay": 6.7,
+     "p_pay_30d": 19.2,
+     "per_month": 1165
+    },
+    "H2": {
+     "first_med_s": 35.0,
+     "first_med_days": 49,
+     "p_no_pay": 6.0,
+     "p_pay_30d": 24.3,
+     "per_month": 1219
+    },
+    "REF": {
+     "first_med_s": null,
+     "first_med_days": null,
+     "p_no_pay": 88.7,
+     "p_pay_30d": 0.6,
+     "per_month": 4
+    }
+   },
+   {
+    "H1": {
+     "first_med_s": 33.0,
+     "first_med_days": 46,
+     "p_no_pay": 5.6,
+     "p_pay_30d": 23.8,
+     "per_month": 1200
+    },
+    "H2": {
+     "first_med_s": 36.0,
+     "first_med_days": 50,
+     "p_no_pay": 5.6,
+     "p_pay_30d": 22.1,
+     "per_month": 1205
+    },
+    "REF": {
+     "first_med_s": null,
+     "first_med_days": null,
+     "p_no_pay": 90.4,
+     "p_pay_30d": 0.8,
+     "per_month": 1
+    }
+   }
+  ]
+ },
+ "noise_band": {
+  "rapid": {
+   "H1": {
+    "first": 2.0,
+    "nopay": 1.2000000000000002
+   },
+   "H2": {
+    "first": 1.0,
+    "nopay": 2.4000000000000004
+   }
+  },
+  "builder": {
+   "H1": {
+    "first": 5.0,
+    "nopay": 2.0
+   },
+   "H2": {
+    "first": 1.0,
+    "nopay": 1.5
+   }
+  }
+ },
+ "verdict": {
+  "rapid: LIT alone": {
+   "pass": false,
+   "h1_win": false,
+   "h2_win": false,
+   "checks": {
+    "H1": {
+     "earlier": false,
+     "no_pay_ok": false,
+     "money_ok": false
+    },
+    "H2": {
+     "earlier": false,
+     "no_pay_ok": false,
+     "money_ok": false
+    },
+    "REF": {
+     "trades_not_losing": true,
+     "slot_ok": false
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": 55.21,
+     "first_se": 0.99,
+     "nopay_diff": 32.3,
+     "nopay_se": 1.54,
+     "earlier_2se": false
+    },
+    "H2": {
+     "first_diff_s": 37.58,
+     "first_se": 1.0,
+     "nopay_diff": 18.2,
+     "nopay_se": 1.43,
+     "earlier_2se": false
+    },
+    "REF": {
+     "first_diff_s": 7.74,
+     "first_se": 0.72,
+     "nopay_diff": 13.0,
+     "nopay_se": 1.13,
+     "earlier_2se": false
+    }
+   },
+   "paired_earlier_both": false
+  },
+  "rapid: A LIT 50% at 1R, everywhere": {
+   "pass": false,
+   "h1_win": false,
+   "h2_win": false,
+   "checks": {
+    "H1": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "H2": {
+     "earlier": false,
+     "no_pay_ok": false,
+     "money_ok": false
+    },
+    "REF": {
+     "trades_not_losing": true,
+     "slot_ok": true
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": -1.78,
+     "first_se": 0.53,
+     "nopay_diff": -0.4,
+     "nopay_se": 0.51,
+     "earlier_2se": true
+    },
+    "H2": {
+     "first_diff_s": 8.65,
+     "first_se": 0.65,
+     "nopay_diff": 3.7,
+     "nopay_se": 0.9,
+     "earlier_2se": false
+    },
+    "REF": {
+     "first_diff_s": 0.36,
+     "first_se": 0.59,
+     "nopay_diff": -0.1,
+     "nopay_se": 0.98,
+     "earlier_2se": false
+    }
+   },
+   "paired_earlier_both": false
+  },
+  "rapid: A LIT 50% at 1R, eval only": {
+   "pass": false,
+   "h1_win": false,
+   "h2_win": false,
+   "checks": {
+    "H1": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "H2": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "REF": {
+     "trades_not_losing": true,
+     "slot_ok": true
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": -2.9,
+     "first_se": 0.5,
+     "nopay_diff": -0.3,
+     "nopay_se": 0.46,
+     "earlier_2se": true
+    },
+    "H2": {
+     "first_diff_s": 3.05,
+     "first_se": 0.52,
+     "nopay_diff": 0.8,
+     "nopay_se": 0.71,
+     "earlier_2se": false
+    },
+    "REF": {
+     "first_diff_s": 0.18,
+     "first_se": 0.53,
+     "nopay_diff": -0.3,
+     "nopay_se": 0.92,
+     "earlier_2se": false
+    }
+   },
+   "paired_earlier_both": false
+  },
+  "rapid: A LIT 50% at 2R, everywhere": {
+   "pass": false,
+   "h1_win": false,
+   "h2_win": false,
+   "checks": {
+    "H1": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "H2": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": false
+    },
+    "REF": {
+     "trades_not_losing": true,
+     "slot_ok": true
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": -1.92,
+     "first_se": 0.43,
+     "nopay_diff": -0.3,
+     "nopay_se": 0.39,
+     "earlier_2se": true
+    },
+    "H2": {
+     "first_diff_s": 2.21,
+     "first_se": 0.46,
+     "nopay_diff": -0.1,
+     "nopay_se": 0.69,
+     "earlier_2se": false
+    },
+    "REF": {
+     "first_diff_s": 0.0,
+     "first_se": 0.52,
+     "nopay_diff": -0.2,
+     "nopay_se": 0.92,
+     "earlier_2se": false
+    }
+   },
+   "paired_earlier_both": false
+  },
+  "rapid: A LIT 50% at 2R, eval only": {
+   "pass": false,
+   "h1_win": false,
+   "h2_win": false,
+   "checks": {
+    "H1": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "H2": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "REF": {
+     "trades_not_losing": true,
+     "slot_ok": true
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": -2.59,
+     "first_se": 0.42,
+     "nopay_diff": -0.1,
+     "nopay_se": 0.39,
+     "earlier_2se": true
+    },
+    "H2": {
+     "first_diff_s": 1.17,
+     "first_se": 0.4,
+     "nopay_diff": 1.3,
+     "nopay_se": 0.54,
+     "earlier_2se": false
+    },
+    "REF": {
+     "first_diff_s": 0.14,
+     "first_se": 0.45,
+     "nopay_diff": 0.2,
+     "nopay_se": 0.86,
+     "earlier_2se": false
+    }
+   },
+   "paired_earlier_both": false
+  },
+  "rapid: A LIT 50% at 3R, everywhere": {
+   "pass": false,
+   "h1_win": false,
+   "h2_win": false,
+   "checks": {
+    "H1": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "H2": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "REF": {
+     "trades_not_losing": true,
+     "slot_ok": true
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": -0.94,
+     "first_se": 0.45,
+     "nopay_diff": -0.5,
+     "nopay_se": 0.44,
+     "earlier_2se": true
+    },
+    "H2": {
+     "first_diff_s": -0.12,
+     "first_se": 0.45,
+     "nopay_diff": -2.6,
+     "nopay_se": 0.74,
+     "earlier_2se": false
+    },
+    "REF": {
+     "first_diff_s": -1.14,
+     "first_se": 0.52,
+     "nopay_diff": -1.8,
+     "nopay_se": 0.86,
+     "earlier_2se": true
+    }
+   },
+   "paired_earlier_both": false
+  },
+  "rapid: A LIT 50% at 3R, eval only": {
+   "pass": false,
+   "h1_win": false,
+   "h2_win": false,
+   "checks": {
+    "H1": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "H2": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "REF": {
+     "trades_not_losing": true,
+     "slot_ok": true
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": -1.16,
+     "first_se": 0.43,
+     "nopay_diff": 0.1,
+     "nopay_se": 0.41,
+     "earlier_2se": true
+    },
+    "H2": {
+     "first_diff_s": 0.75,
+     "first_se": 0.37,
+     "nopay_diff": 0.2,
+     "nopay_se": 0.53,
+     "earlier_2se": false
+    },
+    "REF": {
+     "first_diff_s": -0.45,
+     "first_se": 0.45,
+     "nopay_diff": -0.4,
+     "nopay_se": 0.76,
+     "earlier_2se": false
+    }
+   },
+   "paired_earlier_both": false
+  },
+  "rapid: A LIT 33% at 2R, everywhere": {
+   "pass": false,
+   "h1_win": false,
+   "h2_win": false,
+   "checks": {
+    "H1": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "H2": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "REF": {
+     "trades_not_losing": true,
+     "slot_ok": true
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": -0.98,
+     "first_se": 0.44,
+     "nopay_diff": -0.1,
+     "nopay_se": 0.41,
+     "earlier_2se": true
+    },
+    "H2": {
+     "first_diff_s": 2.95,
+     "first_se": 0.46,
+     "nopay_diff": -0.1,
+     "nopay_se": 0.76,
+     "earlier_2se": false
+    },
+    "REF": {
+     "first_diff_s": 0.48,
+     "first_se": 0.46,
+     "nopay_diff": 1.1,
+     "nopay_se": 0.79,
+     "earlier_2se": false
+    }
+   },
+   "paired_earlier_both": false
+  },
+  "rapid: A LIT 33% at 2R, eval only": {
+   "pass": false,
+   "h1_win": false,
+   "h2_win": false,
+   "checks": {
+    "H1": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "H2": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "REF": {
+     "trades_not_losing": true,
+     "slot_ok": true
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": -1.35,
+     "first_se": 0.44,
+     "nopay_diff": 0.1,
+     "nopay_se": 0.41,
+     "earlier_2se": true
+    },
+    "H2": {
+     "first_diff_s": 2.34,
+     "first_se": 0.4,
+     "nopay_diff": 1.0,
+     "nopay_se": 0.6,
+     "earlier_2se": false
+    },
+    "REF": {
+     "first_diff_s": 0.66,
+     "first_se": 0.42,
+     "nopay_diff": 1.7,
+     "nopay_se": 0.75,
+     "earlier_2se": false
+    }
+   },
+   "paired_earlier_both": false
+  },
+  "rapid: B ATLAS half at 1R": {
+   "pass": false,
+   "h1_win": false,
+   "h2_win": false,
+   "checks": {
+    "H1": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": false
+    },
+    "H2": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "REF": {
+     "trades_not_losing": true,
+     "slot_ok": false
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": 3.94,
+     "first_se": 0.59,
+     "nopay_diff": 0.9,
+     "nopay_se": 0.62,
+     "earlier_2se": false
+    },
+    "H2": {
+     "first_diff_s": -1.92,
+     "first_se": 0.58,
+     "nopay_diff": -1.6,
+     "nopay_se": 0.71,
+     "earlier_2se": true
+    },
+    "REF": {
+     "first_diff_s": 3.79,
+     "first_se": 0.61,
+     "nopay_diff": 6.0,
+     "nopay_se": 0.98,
+     "earlier_2se": false
+    }
+   },
+   "paired_earlier_both": false
+  },
+  "rapid: B ATLAS fixed 1R": {
+   "pass": false,
+   "h1_win": false,
+   "h2_win": false,
+   "checks": {
+    "H1": {
+     "earlier": false,
+     "no_pay_ok": false,
+     "money_ok": false
+    },
+    "H2": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": false
+    },
+    "REF": {
+     "trades_not_losing": false,
+     "slot_ok": false
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": 27.67,
+     "first_se": 0.95,
+     "nopay_diff": 11.2,
+     "nopay_se": 1.1,
+     "earlier_2se": false
+    },
+    "H2": {
+     "first_diff_s": 6.79,
+     "first_se": 0.84,
+     "nopay_diff": 0.4,
+     "nopay_se": 0.93,
+     "earlier_2se": false
+    },
+    "REF": {
+     "first_diff_s": 4.37,
+     "first_se": 0.76,
+     "nopay_diff": 7.3,
+     "nopay_se": 1.2,
+     "earlier_2se": false
+    }
+   },
+   "paired_earlier_both": false
+  },
+  "rapid: C + BLITZ $300 first a day, live exit": {
+   "pass": false,
+   "h1_win": false,
+   "h2_win": false,
+   "checks": {
+    "H1": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "H2": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "REF": {
+     "trades_not_losing": false,
+     "slot_ok": true,
+     "layer_2_8_wk": false
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": -1.53,
+     "first_se": 0.5,
+     "nopay_diff": 0.6,
+     "nopay_se": 0.55,
+     "earlier_2se": true
+    },
+    "H2": {
+     "first_diff_s": -1.41,
+     "first_se": 0.52,
+     "nopay_diff": -0.5,
+     "nopay_se": 0.7,
+     "earlier_2se": true
+    },
+    "REF": {
+     "first_diff_s": 0.34,
+     "first_se": 0.57,
+     "nopay_diff": 0.4,
+     "nopay_se": 1.03,
+     "earlier_2se": false
+    }
+   },
+   "paired_earlier_both": true
+  },
+  "rapid: C + BLITZ $300 first a day, fixed 1R": {
+   "pass": false,
+   "h1_win": false,
+   "h2_win": false,
+   "checks": {
+    "H1": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "H2": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "REF": {
+     "trades_not_losing": true,
+     "slot_ok": true,
+     "layer_2_8_wk": false
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": -0.98,
+     "first_se": 0.52,
+     "nopay_diff": 0.9,
+     "nopay_se": 0.57,
+     "earlier_2se": false
+    },
+    "H2": {
+     "first_diff_s": -1.58,
+     "first_se": 0.5,
+     "nopay_diff": -0.4,
+     "nopay_se": 0.66,
+     "earlier_2se": true
+    },
+    "REF": {
+     "first_diff_s": -0.06,
+     "first_se": 0.65,
+     "nopay_diff": 0.2,
+     "nopay_se": 1.14,
+     "earlier_2se": false
+    }
+   },
+   "paired_earlier_both": false
+  },
+  "rapid: C + BLITZ $300 first a day, fixed 0.5R": {
+   "pass": false,
+   "h1_win": false,
+   "h2_win": false,
+   "checks": {
+    "H1": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "H2": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "REF": {
+     "trades_not_losing": true,
+     "slot_ok": true,
+     "layer_2_8_wk": false
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": -0.62,
+     "first_se": 0.5,
+     "nopay_diff": 1.2,
+     "nopay_se": 0.53,
+     "earlier_2se": false
+    },
+    "H2": {
+     "first_diff_s": -0.77,
+     "first_se": 0.49,
+     "nopay_diff": -0.2,
+     "nopay_se": 0.63,
+     "earlier_2se": false
+    },
+    "REF": {
+     "first_diff_s": -0.28,
+     "first_se": 0.63,
+     "nopay_diff": -0.3,
+     "nopay_se": 1.09,
+     "earlier_2se": false
+    }
+   },
+   "paired_earlier_both": false
+  },
+  "rapid: C + BLITZ $300 max 2 a day, live exit": {
+   "pass": false,
+   "h1_win": true,
+   "h2_win": false,
+   "checks": {
+    "H1": {
+     "earlier": true,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "H2": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "REF": {
+     "trades_not_losing": true,
+     "slot_ok": true,
+     "layer_2_8_wk": true
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": -4.94,
+     "first_se": 0.56,
+     "nopay_diff": 0.6,
+     "nopay_se": 0.55,
+     "earlier_2se": true
+    },
+    "H2": {
+     "first_diff_s": 1.15,
+     "first_se": 0.6,
+     "nopay_diff": 1.6,
+     "nopay_se": 0.79,
+     "earlier_2se": false
+    },
+    "REF": {
+     "first_diff_s": -1.25,
+     "first_se": 0.79,
+     "nopay_diff": -1.2,
+     "nopay_se": 1.22,
+     "earlier_2se": false
+    }
+   },
+   "paired_earlier_both": false
+  },
+  "rapid: C + BLITZ $300 max 3 a day, live exit": {
+   "pass": true,
+   "h1_win": true,
+   "h2_win": true,
+   "checks": {
+    "H1": {
+     "earlier": true,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "H2": {
+     "earlier": true,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "REF": {
+     "trades_not_losing": true,
+     "slot_ok": true,
+     "layer_2_8_wk": true
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": -6.21,
+     "first_se": 0.58,
+     "nopay_diff": 0.2,
+     "nopay_se": 0.55,
+     "earlier_2se": true
+    },
+    "H2": {
+     "first_diff_s": -2.12,
+     "first_se": 0.67,
+     "nopay_diff": 0.6,
+     "nopay_se": 0.86,
+     "earlier_2se": true
+    },
+    "REF": {
+     "first_diff_s": -1.19,
+     "first_se": 0.76,
+     "nopay_diff": -0.9,
+     "nopay_se": 1.2,
+     "earlier_2se": false
+    }
+   },
+   "paired_earlier_both": true
+  },
+  "rapid: C + BLITZ $300 every signal (ref, >8/wk)": {
+   "pass": false,
+   "h1_win": true,
+   "h2_win": true,
+   "checks": {
+    "H1": {
+     "earlier": true,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "H2": {
+     "earlier": true,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "REF": {
+     "trades_not_losing": true,
+     "slot_ok": true,
+     "layer_2_8_wk": false
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": -6.79,
+     "first_se": 0.65,
+     "nopay_diff": -0.2,
+     "nopay_se": 0.63,
+     "earlier_2se": true
+    },
+    "H2": {
+     "first_diff_s": -8.16,
+     "first_se": 0.74,
+     "nopay_diff": -1.4,
+     "nopay_se": 0.89,
+     "earlier_2se": true
+    },
+    "REF": {
+     "first_diff_s": -2.61,
+     "first_se": 0.82,
+     "nopay_diff": -2.9,
+     "nopay_se": 1.27,
+     "earlier_2se": true
+    }
+   },
+   "paired_earlier_both": true
+  },
+  "rapid: D add-on lock at +$300": {
+   "pass": false,
+   "h1_win": false,
+   "h2_win": false,
+   "checks": {
+    "H1": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": false
+    },
+    "H2": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "REF": {
+     "trades_not_losing": true,
+     "slot_ok": false
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": 2.82,
+     "first_se": 0.36,
+     "nopay_diff": 1.0,
+     "nopay_se": 0.42,
+     "earlier_2se": false
+    },
+    "H2": {
+     "first_diff_s": -2.01,
+     "first_se": 0.28,
+     "nopay_diff": -1.2,
+     "nopay_se": 0.4,
+     "earlier_2se": true
+    },
+    "REF": {
+     "first_diff_s": 1.24,
+     "first_se": 0.35,
+     "nopay_diff": 2.3,
+     "nopay_se": 0.6,
+     "earlier_2se": false
+    }
+   },
+   "paired_earlier_both": false
+  },
+  "rapid: D add-on lock at +$600": {
+   "pass": false,
+   "h1_win": false,
+   "h2_win": false,
+   "checks": {
+    "H1": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": false
+    },
+    "H2": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "REF": {
+     "trades_not_losing": true,
+     "slot_ok": false
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": 1.66,
+     "first_se": 0.26,
+     "nopay_diff": 0.5,
+     "nopay_se": 0.26,
+     "earlier_2se": false
+    },
+    "H2": {
+     "first_diff_s": -1.32,
+     "first_se": 0.22,
+     "nopay_diff": -0.7,
+     "nopay_se": 0.3,
+     "earlier_2se": true
+    },
+    "REF": {
+     "first_diff_s": 1.26,
+     "first_se": 0.32,
+     "nopay_diff": 2.2,
+     "nopay_se": 0.52,
+     "earlier_2se": false
+    }
+   },
+   "paired_earlier_both": false
+  },
+  "rapid: alone: BLITZ $300 first a day, fixed 1R": {
+   "pass": false,
+   "h1_win": false,
+   "h2_win": false,
+   "checks": {
+    "H1": {
+     "earlier": false,
+     "no_pay_ok": false,
+     "money_ok": false
+    },
+    "H2": {
+     "earlier": false,
+     "no_pay_ok": false,
+     "money_ok": false
+    },
+    "REF": {
+     "trades_not_losing": true,
+     "slot_ok": false,
+     "layer_2_8_wk": false
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": 85.78,
+     "first_se": 0.7,
+     "nopay_diff": 97.6,
+     "nopay_se": 0.48,
+     "earlier_2se": false
+    },
+    "H2": {
+     "first_diff_s": 74.24,
+     "first_se": 0.97,
+     "nopay_diff": 91.1,
+     "nopay_se": 0.9,
+     "earlier_2se": false
+    },
+    "REF": {
+     "first_diff_s": 8.13,
+     "first_se": 0.73,
+     "nopay_diff": 14.3,
+     "nopay_se": 1.11,
+     "earlier_2se": false
+    }
+   },
+   "paired_earlier_both": false
+  },
+  "rapid: alone: ATLAS $500": {
+   "pass": false,
+   "h1_win": false,
+   "h2_win": false,
+   "checks": {
+    "H1": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": false
+    },
+    "H2": {
+     "earlier": false,
+     "no_pay_ok": false,
+     "money_ok": false
+    },
+    "REF": {
+     "trades_not_losing": true,
+     "slot_ok": true,
+     "layer_2_8_wk": true
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": 12.47,
+     "first_se": 0.75,
+     "nopay_diff": 0.8,
+     "nopay_se": 0.69,
+     "earlier_2se": false
+    },
+    "H2": {
+     "first_diff_s": 31.09,
+     "first_se": 1.1,
+     "nopay_diff": 16.8,
+     "nopay_se": 1.5,
+     "earlier_2se": false
+    },
+    "REF": {
+     "first_diff_s": 2.15,
+     "first_se": 0.64,
+     "nopay_diff": 3.1,
+     "nopay_se": 1.15,
+     "earlier_2se": false
+    }
+   },
+   "paired_earlier_both": false
+  },
+  "builder: LIT alone": {
+   "pass": false,
+   "h1_win": false,
+   "h2_win": false,
+   "checks": {
+    "H1": {
+     "earlier": false,
+     "no_pay_ok": false,
+     "money_ok": false
+    },
+    "H2": {
+     "earlier": false,
+     "no_pay_ok": false,
+     "money_ok": false
+    },
+    "REF": {
+     "trades_not_losing": true,
+     "slot_ok": true
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": 13.03,
+     "first_se": 0.85,
+     "nopay_diff": 3.0,
+     "nopay_se": 0.94,
+     "earlier_2se": false
+    },
+    "H2": {
+     "first_diff_s": 11.23,
+     "first_se": 0.79,
+     "nopay_diff": 2.5,
+     "nopay_se": 0.95,
+     "earlier_2se": false
+    },
+    "REF": {
+     "first_diff_s": 2.13,
+     "first_se": 0.76,
+     "nopay_diff": 0.9,
+     "nopay_se": 1.11,
+     "earlier_2se": false
+    }
+   },
+   "paired_earlier_both": false
+  },
+  "builder: A LIT 50% at 1R, everywhere": {
+   "pass": false,
+   "h1_win": false,
+   "h2_win": false,
+   "checks": {
+    "H1": {
+     "earlier": false,
+     "no_pay_ok": false,
+     "money_ok": false
+    },
+    "H2": {
+     "earlier": false,
+     "no_pay_ok": false,
+     "money_ok": false
+    },
+    "REF": {
+     "trades_not_losing": true,
+     "slot_ok": true
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": 19.03,
+     "first_se": 0.85,
+     "nopay_diff": 2.1,
+     "nopay_se": 1.0,
+     "earlier_2se": false
+    },
+    "H2": {
+     "first_diff_s": 26.28,
+     "first_se": 0.87,
+     "nopay_diff": 8.4,
+     "nopay_se": 1.17,
+     "earlier_2se": false
+    },
+    "REF": {
+     "first_diff_s": 4.04,
+     "first_se": 0.7,
+     "nopay_diff": 3.6,
+     "nopay_se": 1.04,
+     "earlier_2se": false
+    }
+   },
+   "paired_earlier_both": false
+  },
+  "builder: A LIT 50% at 1R, funded only": {
+   "pass": false,
+   "h1_win": false,
+   "h2_win": false,
+   "checks": {
+    "H1": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "H2": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": false
+    },
+    "REF": {
+     "trades_not_losing": true,
+     "slot_ok": true
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": 0.42,
+     "first_se": 0.37,
+     "nopay_diff": -1.2,
+     "nopay_se": 0.6,
+     "earlier_2se": false
+    },
+    "H2": {
+     "first_diff_s": 4.9,
+     "first_se": 0.42,
+     "nopay_diff": 1.3,
+     "nopay_se": 0.62,
+     "earlier_2se": false
+    },
+    "REF": {
+     "first_diff_s": 0.14,
+     "first_se": 0.35,
+     "nopay_diff": -0.6,
+     "nopay_se": 0.55,
+     "earlier_2se": false
+    }
+   },
+   "paired_earlier_both": false
+  },
+  "builder: A LIT 50% at 2R, everywhere": {
+   "pass": false,
+   "h1_win": false,
+   "h2_win": false,
+   "checks": {
+    "H1": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": false
+    },
+    "H2": {
+     "earlier": false,
+     "no_pay_ok": false,
+     "money_ok": false
+    },
+    "REF": {
+     "trades_not_losing": true,
+     "slot_ok": true
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": 14.19,
+     "first_se": 0.79,
+     "nopay_diff": 2.0,
+     "nopay_se": 0.9,
+     "earlier_2se": false
+    },
+    "H2": {
+     "first_diff_s": 12.19,
+     "first_se": 0.72,
+     "nopay_diff": 2.4,
+     "nopay_se": 0.89,
+     "earlier_2se": false
+    },
+    "REF": {
+     "first_diff_s": 2.81,
+     "first_se": 0.7,
+     "nopay_diff": 2.2,
+     "nopay_se": 1.03,
+     "earlier_2se": false
+    }
+   },
+   "paired_earlier_both": false
+  },
+  "builder: A LIT 50% at 2R, funded only": {
+   "pass": false,
+   "h1_win": false,
+   "h2_win": false,
+   "checks": {
+    "H1": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "H2": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "REF": {
+     "trades_not_losing": true,
+     "slot_ok": true
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": 0.04,
+     "first_se": 0.33,
+     "nopay_diff": -0.7,
+     "nopay_se": 0.56,
+     "earlier_2se": false
+    },
+    "H2": {
+     "first_diff_s": 2.17,
+     "first_se": 0.32,
+     "nopay_diff": -0.2,
+     "nopay_se": 0.51,
+     "earlier_2se": false
+    },
+    "REF": {
+     "first_diff_s": 0.17,
+     "first_se": 0.31,
+     "nopay_diff": -0.1,
+     "nopay_se": 0.48,
+     "earlier_2se": false
+    }
+   },
+   "paired_earlier_both": false
+  },
+  "builder: A LIT 50% at 3R, everywhere": {
+   "pass": false,
+   "h1_win": false,
+   "h2_win": false,
+   "checks": {
+    "H1": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": false
+    },
+    "H2": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "REF": {
+     "trades_not_losing": true,
+     "slot_ok": true
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": 10.99,
+     "first_se": 0.77,
+     "nopay_diff": 2.0,
+     "nopay_se": 0.89,
+     "earlier_2se": false
+    },
+    "H2": {
+     "first_diff_s": 5.14,
+     "first_se": 0.67,
+     "nopay_diff": -1.5,
+     "nopay_se": 0.83,
+     "earlier_2se": false
+    },
+    "REF": {
+     "first_diff_s": 0.91,
+     "first_se": 0.7,
+     "nopay_diff": -0.5,
+     "nopay_se": 1.08,
+     "earlier_2se": false
+    }
+   },
+   "paired_earlier_both": false
+  },
+  "builder: A LIT 50% at 3R, funded only": {
+   "pass": false,
+   "h1_win": false,
+   "h2_win": false,
+   "checks": {
+    "H1": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "H2": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "REF": {
+     "trades_not_losing": true,
+     "slot_ok": true
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": 0.11,
+     "first_se": 0.32,
+     "nopay_diff": -0.4,
+     "nopay_se": 0.49,
+     "earlier_2se": false
+    },
+    "H2": {
+     "first_diff_s": -0.09,
+     "first_se": 0.29,
+     "nopay_diff": -2.1,
+     "nopay_se": 0.5,
+     "earlier_2se": false
+    },
+    "REF": {
+     "first_diff_s": -0.5,
+     "first_se": 0.32,
+     "nopay_diff": -1.4,
+     "nopay_se": 0.53,
+     "earlier_2se": false
+    }
+   },
+   "paired_earlier_both": false
+  },
+  "builder: A LIT 33% at 2R, everywhere": {
+   "pass": false,
+   "h1_win": false,
+   "h2_win": false,
+   "checks": {
+    "H1": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": false
+    },
+    "H2": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": false
+    },
+    "REF": {
+     "trades_not_losing": true,
+     "slot_ok": true
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": 8.75,
+     "first_se": 0.68,
+     "nopay_diff": 0.3,
+     "nopay_se": 0.79,
+     "earlier_2se": false
+    },
+    "H2": {
+     "first_diff_s": 7.61,
+     "first_se": 0.65,
+     "nopay_diff": 0.1,
+     "nopay_se": 0.74,
+     "earlier_2se": false
+    },
+    "REF": {
+     "first_diff_s": 2.18,
+     "first_se": 0.68,
+     "nopay_diff": 2.0,
+     "nopay_se": 1.0,
+     "earlier_2se": false
+    }
+   },
+   "paired_earlier_both": false
+  },
+  "builder: A LIT 33% at 2R, funded only": {
+   "pass": false,
+   "h1_win": false,
+   "h2_win": false,
+   "checks": {
+    "H1": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "H2": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "REF": {
+     "trades_not_losing": true,
+     "slot_ok": true
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": -0.08,
+     "first_se": 0.28,
+     "nopay_diff": -0.5,
+     "nopay_se": 0.5,
+     "earlier_2se": false
+    },
+    "H2": {
+     "first_diff_s": 0.85,
+     "first_se": 0.27,
+     "nopay_diff": -0.8,
+     "nopay_se": 0.47,
+     "earlier_2se": false
+    },
+    "REF": {
+     "first_diff_s": 0.15,
+     "first_se": 0.24,
+     "nopay_diff": 0.0,
+     "nopay_se": 0.4,
+     "earlier_2se": false
+    }
+   },
+   "paired_earlier_both": false
+  },
+  "builder: B ATLAS half at 1R": {
+   "pass": false,
+   "h1_win": false,
+   "h2_win": false,
+   "checks": {
+    "H1": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "H2": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "REF": {
+     "trades_not_losing": true,
+     "slot_ok": true
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": -1.12,
+     "first_se": 0.39,
+     "nopay_diff": -1.3,
+     "nopay_se": 0.61,
+     "earlier_2se": true
+    },
+    "H2": {
+     "first_diff_s": -0.81,
+     "first_se": 0.39,
+     "nopay_diff": -0.4,
+     "nopay_se": 0.6,
+     "earlier_2se": true
+    },
+    "REF": {
+     "first_diff_s": -0.95,
+     "first_se": 0.48,
+     "nopay_diff": -1.6,
+     "nopay_se": 0.72,
+     "earlier_2se": false
+    }
+   },
+   "paired_earlier_both": true
+  },
+  "builder: B ATLAS fixed 1R": {
+   "pass": false,
+   "h1_win": false,
+   "h2_win": false,
+   "checks": {
+    "H1": {
+     "earlier": false,
+     "no_pay_ok": false,
+     "money_ok": false
+    },
+    "H2": {
+     "earlier": false,
+     "no_pay_ok": false,
+     "money_ok": false
+    },
+    "REF": {
+     "trades_not_losing": false,
+     "slot_ok": true
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": 8.47,
+     "first_se": 0.72,
+     "nopay_diff": 4.9,
+     "nopay_se": 0.88,
+     "earlier_2se": false
+    },
+    "H2": {
+     "first_diff_s": 4.34,
+     "first_se": 0.56,
+     "nopay_diff": 1.6,
+     "nopay_se": 0.73,
+     "earlier_2se": false
+    },
+    "REF": {
+     "first_diff_s": 1.5,
+     "first_se": 0.7,
+     "nopay_diff": 1.6,
+     "nopay_se": 0.98,
+     "earlier_2se": false
+    }
+   },
+   "paired_earlier_both": false
+  },
+  "builder: C + BLITZ $300 first a day, live exit": {
+   "pass": false,
+   "h1_win": false,
+   "h2_win": false,
+   "checks": {
+    "H1": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "H2": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "REF": {
+     "trades_not_losing": false,
+     "slot_ok": true,
+     "layer_2_8_wk": false
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": 0.45,
+     "first_se": 0.44,
+     "nopay_diff": 1.1,
+     "nopay_se": 0.64,
+     "earlier_2se": false
+    },
+    "H2": {
+     "first_diff_s": 0.01,
+     "first_se": 0.32,
+     "nopay_diff": 0.1,
+     "nopay_se": 0.5,
+     "earlier_2se": false
+    },
+    "REF": {
+     "first_diff_s": 0.82,
+     "first_se": 0.36,
+     "nopay_diff": 1.0,
+     "nopay_se": 0.51,
+     "earlier_2se": false
+    }
+   },
+   "paired_earlier_both": false
+  },
+  "builder: C + BLITZ $300 first a day, fixed 1R": {
+   "pass": false,
+   "h1_win": false,
+   "h2_win": false,
+   "checks": {
+    "H1": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "H2": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "REF": {
+     "trades_not_losing": true,
+     "slot_ok": true,
+     "layer_2_8_wk": false
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": -0.0,
+     "first_se": 0.41,
+     "nopay_diff": 0.2,
+     "nopay_se": 0.62,
+     "earlier_2se": false
+    },
+    "H2": {
+     "first_diff_s": 0.36,
+     "first_se": 0.33,
+     "nopay_diff": 0.5,
+     "nopay_se": 0.5,
+     "earlier_2se": false
+    },
+    "REF": {
+     "first_diff_s": 0.37,
+     "first_se": 0.37,
+     "nopay_diff": 0.1,
+     "nopay_se": 0.54,
+     "earlier_2se": false
+    }
+   },
+   "paired_earlier_both": false
+  },
+  "builder: C + BLITZ $300 first a day, fixed 0.5R": {
+   "pass": false,
+   "h1_win": false,
+   "h2_win": false,
+   "checks": {
+    "H1": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "H2": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "REF": {
+     "trades_not_losing": true,
+     "slot_ok": true,
+     "layer_2_8_wk": false
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": 0.15,
+     "first_se": 0.38,
+     "nopay_diff": 0.5,
+     "nopay_se": 0.59,
+     "earlier_2se": false
+    },
+    "H2": {
+     "first_diff_s": 0.41,
+     "first_se": 0.3,
+     "nopay_diff": 0.4,
+     "nopay_se": 0.42,
+     "earlier_2se": false
+    },
+    "REF": {
+     "first_diff_s": -0.0,
+     "first_se": 0.37,
+     "nopay_diff": -0.7,
+     "nopay_se": 0.52,
+     "earlier_2se": false
+    }
+   },
+   "paired_earlier_both": false
+  },
+  "builder: C + BLITZ $300 max 2 a day, live exit": {
+   "pass": false,
+   "h1_win": false,
+   "h2_win": false,
+   "checks": {
+    "H1": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "H2": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "REF": {
+     "trades_not_losing": false,
+     "slot_ok": true,
+     "layer_2_8_wk": true
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": -0.7,
+     "first_se": 0.48,
+     "nopay_diff": -0.1,
+     "nopay_se": 0.67,
+     "earlier_2se": false
+    },
+    "H2": {
+     "first_diff_s": 1.32,
+     "first_se": 0.37,
+     "nopay_diff": 1.3,
+     "nopay_se": 0.52,
+     "earlier_2se": false
+    },
+    "REF": {
+     "first_diff_s": 0.16,
+     "first_se": 0.39,
+     "nopay_diff": 0.0,
+     "nopay_se": 0.57,
+     "earlier_2se": false
+    }
+   },
+   "paired_earlier_both": false
+  },
+  "builder: C + BLITZ $300 max 3 a day, live exit": {
+   "pass": false,
+   "h1_win": false,
+   "h2_win": false,
+   "checks": {
+    "H1": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "H2": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "REF": {
+     "trades_not_losing": true,
+     "slot_ok": true,
+     "layer_2_8_wk": true
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": -1.24,
+     "first_se": 0.45,
+     "nopay_diff": -0.1,
+     "nopay_se": 0.66,
+     "earlier_2se": true
+    },
+    "H2": {
+     "first_diff_s": -0.42,
+     "first_se": 0.41,
+     "nopay_diff": 0.2,
+     "nopay_se": 0.57,
+     "earlier_2se": false
+    },
+    "REF": {
+     "first_diff_s": 0.36,
+     "first_se": 0.39,
+     "nopay_diff": 0.2,
+     "nopay_se": 0.57,
+     "earlier_2se": false
+    }
+   },
+   "paired_earlier_both": false
+  },
+  "builder: C + BLITZ $300 every signal (ref, >8/wk)": {
+   "pass": false,
+   "h1_win": false,
+   "h2_win": true,
+   "checks": {
+    "H1": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "H2": {
+     "earlier": true,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "REF": {
+     "trades_not_losing": true,
+     "slot_ok": true,
+     "layer_2_8_wk": false
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": -2.28,
+     "first_se": 0.48,
+     "nopay_diff": -0.5,
+     "nopay_se": 0.62,
+     "earlier_2se": true
+    },
+    "H2": {
+     "first_diff_s": -2.9,
+     "first_se": 0.5,
+     "nopay_diff": -1.4,
+     "nopay_se": 0.6,
+     "earlier_2se": true
+    },
+    "REF": {
+     "first_diff_s": -0.21,
+     "first_se": 0.42,
+     "nopay_diff": -0.3,
+     "nopay_se": 0.61,
+     "earlier_2se": false
+    }
+   },
+   "paired_earlier_both": true
+  },
+  "builder: D add-on lock at +$300": {
+   "pass": false,
+   "h1_win": false,
+   "h2_win": false,
+   "checks": {
+    "H1": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "H2": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "REF": {
+     "trades_not_losing": true,
+     "slot_ok": true
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": 1.15,
+     "first_se": 0.24,
+     "nopay_diff": 0.6,
+     "nopay_se": 0.35,
+     "earlier_2se": false
+    },
+    "H2": {
+     "first_diff_s": -1.58,
+     "first_se": 0.26,
+     "nopay_diff": -0.9,
+     "nopay_se": 0.36,
+     "earlier_2se": true
+    },
+    "REF": {
+     "first_diff_s": 0.06,
+     "first_se": 0.29,
+     "nopay_diff": 0.4,
+     "nopay_se": 0.45,
+     "earlier_2se": false
+    }
+   },
+   "paired_earlier_both": false
+  },
+  "builder: D add-on lock at +$600": {
+   "pass": false,
+   "h1_win": false,
+   "h2_win": false,
+   "checks": {
+    "H1": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "H2": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": true
+    },
+    "REF": {
+     "trades_not_losing": true,
+     "slot_ok": true
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": 0.81,
+     "first_se": 0.22,
+     "nopay_diff": 0.3,
+     "nopay_se": 0.3,
+     "earlier_2se": false
+    },
+    "H2": {
+     "first_diff_s": -1.02,
+     "first_se": 0.23,
+     "nopay_diff": -0.5,
+     "nopay_se": 0.3,
+     "earlier_2se": true
+    },
+    "REF": {
+     "first_diff_s": 0.12,
+     "first_se": 0.28,
+     "nopay_diff": 0.5,
+     "nopay_se": 0.44,
+     "earlier_2se": false
+    }
+   },
+   "paired_earlier_both": false
+  },
+  "builder: alone: BLITZ $300 first a day, fixed 1R": {
+   "pass": false,
+   "h1_win": false,
+   "h2_win": false,
+   "checks": {
+    "H1": {
+     "earlier": false,
+     "no_pay_ok": false,
+     "money_ok": false
+    },
+    "H2": {
+     "earlier": false,
+     "no_pay_ok": false,
+     "money_ok": false
+    },
+    "REF": {
+     "trades_not_losing": true,
+     "slot_ok": true,
+     "layer_2_8_wk": false
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": 82.98,
+     "first_se": 0.93,
+     "nopay_diff": 95.3,
+     "nopay_se": 0.67,
+     "earlier_2se": false
+    },
+    "H2": {
+     "first_diff_s": 81.09,
+     "first_se": 1.02,
+     "nopay_diff": 92.9,
+     "nopay_se": 0.81,
+     "earlier_2se": false
+    },
+    "REF": {
+     "first_diff_s": 6.95,
+     "first_se": 0.72,
+     "nopay_diff": 10.3,
+     "nopay_se": 0.96,
+     "earlier_2se": false
+    }
+   },
+   "paired_earlier_both": false
+  },
+  "builder: alone: ATLAS $500": {
+   "pass": false,
+   "h1_win": false,
+   "h2_win": false,
+   "checks": {
+    "H1": {
+     "earlier": false,
+     "no_pay_ok": true,
+     "money_ok": false
+    },
+    "H2": {
+     "earlier": false,
+     "no_pay_ok": false,
+     "money_ok": false
+    },
+    "REF": {
+     "trades_not_losing": true,
+     "slot_ok": true,
+     "layer_2_8_wk": true
+    }
+   },
+   "paired": {
+    "H1": {
+     "first_diff_s": 2.73,
+     "first_se": 1.15,
+     "nopay_diff": -0.5,
+     "nopay_se": 0.91,
+     "earlier_2se": false
+    },
+    "H2": {
+     "first_diff_s": 21.45,
+     "first_se": 1.32,
+     "nopay_diff": 6.8,
+     "nopay_se": 1.26,
+     "earlier_2se": false
+    },
+    "REF": {
+     "first_diff_s": -0.9,
+     "first_se": 0.94,
+     "nopay_diff": -2.5,
+     "nopay_se": 1.33,
+     "earlier_2se": false
+    }
+   },
+   "paired_earlier_both": false
+  }
+ },
+ "chance": {
+  "rapid": {
+   "tested": 18,
+   "h1_winners": 3,
+   "also_h2": 2,
+   "coin_flip_expect": 1.5,
+   "h2_winners_any": 2,
+   "paired_earlier_h1": 12,
+   "paired_earlier_both": 3
+  },
+  "builder": {
+   "tested": 18,
+   "h1_winners": 0,
+   "also_h2": 0,
+   "coin_flip_expect": 0.0,
+   "h2_winners_any": 1,
+   "paired_earlier_h1": 3,
+   "paired_earlier_both": 2
+  }
+ }
+}

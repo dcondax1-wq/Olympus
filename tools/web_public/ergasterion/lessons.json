@@ -1,24 +1,13 @@
 {
  "v": 1,
  "name": "Ergasterion lessons",
- "asof": "2026-11-16",
- "say": "This week we wrote down 7 lessons. The strongest (3 files agree): No edge found. None of them beat the noise bar on the training data, so none was carried forward. What changed our mind: Uncorrelated, but it does not hold in 2021-25 and passes evals too slowly.",
+ "asof": "2026-11-17",
+ "say": "This week we wrote down 6 lessons. The strongest (3 files agree): No edge found. None of them beat the noise bar on the training data, so none was carried forward. What changed our mind: Uncorrelated, but it does not hold in 2021-25 and passes evals too slowly.",
  "week": [
   {
    "text": "No edge found. None of them beat the noise bar on the training data, so none was carried forward.",
    "cat": "Kalshi",
    "d": "2026-11-11",
-   "strength": 3,
-   "sources": [
-    "research/writeups/kalshi_edge_C.md",
-    "research/writeups/kalshi_edge_B.md",
-    "research/writeups/kalshi_edge_A.md"
-   ]
-  },
-  {
-   "text": "None gives an edge that survives fees, a held-out block and a second asset.",
-   "cat": "Kalshi",
-   "d": "2026-11-10",
    "strength": 3,
    "sources": [
     "research/writeups/kalshi_edge_C.md",

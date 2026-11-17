@@ -50,6 +50,9 @@ Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7;
   ATLAS's own funded accounts against MFFU's limits; `--held <plan>=0` when one ended. MFFU copy trading: allowed (help center).
 
 ## Recent findings (don't redo)
+- Rule-native search (2026-11-17, `rule-native-2026-11-17.md`, `tools/money/rule_native.py`): 36 variants scored on days to 1st payout +
+  P(no payout 6m). LIT 2nd target / ATLAS 1R / high-win scalp / add-on profit lock: no faster in both halves (cut $). Only pass: Rapid +
+  BLITZ $300 max 3/day (50/62 -> 42/57 days, +$822/+$313/mo) but cap post hoc, 2021-25 2-wk eval fails 2.9 -> 6.0%: paper lead only.
 - Rapid EOD levers (2026-11-16, `rapid-levers-2026-11-16.md`, `tools/money/rapid_levers.py`): keep $1,000 in the funded Rapid
   (take only above $3,100) = $6,014 / $2,824 vs $5,022 / $2,301 a month (H1/H2), first payout 2-4 sessions later: candidate,
   owner yes/no. Different mixes per account: less $ (2x: -$500/mo H2) but "no account pays in 6m" 7.6% -> 1.4-1.6% (owner
