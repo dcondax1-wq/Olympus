@@ -13,6 +13,7 @@ Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7;
 | Phone dashboard | Netlify site moonlit-scone-08afe5 (private). Updates itself once the owner pastes a Netlify key at tonight's setup |
 
 ## Waiting on the owner
+- MFFU rules re-checked 2026-11-17 (night-rules, research/writeups/mffu-rules-audit-2026-11-17.md): nothing voids money; fixed Rapid funded news window (-3/+2.5 min, Dec CPI/jobs added) + 7-day inactivity push on ATLAS/Rapid; copy trading on own accounts ALLOWED; Rapid EOD 50K now $275 list / $165 with CLUB (not ~$94); missing: 2% price-limit rule (stand aside on a 5% crash day).
 - Rapid EOD 50K READY, OFF (night-rapid): LIT + ATLAS on one account; owner pastes ONE line (docs/RAPID_EOD_SETUP.md) then START BOT + phrase. Jul-Oct live-code replay: pass median 20 sessions, 0 fails.
 - Owner 2026-11-17: "be simple and to the point. You send too much info." Replies: a few lines, one small table max.
 - Owner 2026-11-17: ONE Rapid EOD 50K only ("I'll stick with 1 rapid"): LIT + ATLAS $500 from day one, 30% best-day guard,

@@ -391,10 +391,14 @@ class RapidAtlas(AB.AccountB):
                 return f"ATLAS's 25K holds a {'SHORT' if d == 1 else 'LONG'} position"
         return None
 
-    def news_at(self, now, pre=120, post=120):
+    def news_at(self, now, pre=None, post=None):
+        """A Tier-1 release whose window holds `now` (funded only): flat from 3 min before, no entry until 2.5 min after
+        (engine/multi_account NEWS_PRE_S / NEWS_POST_S: MFFU's -2/+2 min with a margin)."""
         if not self.funded():
             return None
         from . import multi_account as MA
+        pre = MA.NEWS_PRE_S if pre is None else pre
+        post = MA.NEWS_POST_S if post is None else post
         for r in MA.tier1_releases(AB.trading_day(now)):
             if r - pre <= now < r + post:
                 return r
@@ -403,7 +407,7 @@ class RapidAtlas(AB.AccountB):
     def guard(self, act, entry_t, now):
         r = self.news_at(int(now))
         if r is not None:
-            return f"GUARD funded news ban: Tier-1 release at {AB._et(r):%H:%M} ET (flat -2/+2 min)"
+            return f"GUARD funded news ban: Tier-1 release at {AB._et(r):%H:%M} ET (MFFU flat -2/+2 min; the bot -3/+2.5)"
         return super().guard(act, entry_t, now)
 
     def tick(self, df5, df1, sym, now):
