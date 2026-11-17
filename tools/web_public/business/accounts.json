@@ -36,7 +36,7 @@
    "stage": "eval",
    "status": "buying",
    "bots": "Zlarior + ATLAS from day one (passes in ~4-5 weeks instead of ~2 months)",
-   "next": "Buy it with the 40% code, then send me the account name",
+   "next": "Buy it (40% code). The bot is READY: send me the account name, or paste the one line in docs/RAPID_EOD_SETUP.md",
    "payout": "eval ~4-5 weeks, then daily; first payout about mid-late Jan",
    "usd_month": "$2,800 best case (keep $1,000 in); about half is more likely",
    "cost": "~$94"
