@@ -70,7 +70,267 @@
    "diff_usd": -318.0,
    "max_trade_usd": -17.0
   },
-  "seconds": 47
+  "seconds": 75
  },
- "seconds": 51
+ "intraday": {
+  "trade_days": 120,
+  "polls": 9923,
+  "differences": [],
+  "n_differences": 0,
+  "known_differences": {
+   "2026-04-03": {
+    "polls": 29,
+    "why": "Good Friday (09:15 close): the backtest runs the day on 5m bars because its 1m file misses 6 windows after the entry (96.7% < 97% day cover, a whole-day look-ahead); at 04:02 the live loop has every 1m bar so far, enters on 1m (24,716.75, 3 micros, 3 min earlier than the backtest's 5m fill at 24,714.25, 4 micros) and only switches to the backtest's trade once the day's cover drops.",
+    "first": {
+     "day": "2026-04-03",
+     "now": 1775203320,
+     "what": "enter-now entry differs",
+     "got": [
+      1775203320,
+      1,
+      24750.25,
+      24703.75,
+      25000.75,
+      3
+     ],
+     "want": [
+      1775203500,
+      1,
+      24747.75,
+      24703.75,
+      25000.75,
+      4
+     ]
+    }
+   }
+  },
+  "polls_with_matching_open_position": 3388,
+  "trade_never_seen_open_or_closed": [],
+  "enter_now": {
+   "seen": 119,
+   "days": 119,
+   "match": 118,
+   "differs": [],
+   "est_days": 119,
+   "est_qty_differs": [
+    [
+     "2026-01-02",
+     32,
+     34
+    ],
+    [
+     "2026-01-06",
+     27,
+     26
+    ],
+    [
+     "2026-01-07",
+     17,
+     16
+    ],
+    [
+     "2026-01-14",
+     11,
+     10
+    ],
+    [
+     "2026-02-13",
+     11,
+     12
+    ],
+    [
+     "2026-02-25",
+     16,
+     17
+    ],
+    [
+     "2026-03-04",
+     1,
+     2
+    ],
+    [
+     "2026-03-16",
+     2,
+     3
+    ],
+    [
+     "2026-03-18",
+     10,
+     11
+    ],
+    [
+     "2026-04-03",
+     3,
+     4
+    ],
+    [
+     "2026-04-15",
+     9,
+     8
+    ],
+    [
+     "2026-04-17",
+     26,
+     27
+    ],
+    [
+     "2026-04-21",
+     5,
+     6
+    ],
+    [
+     "2026-04-29",
+     23,
+     27
+    ],
+    [
+     "2026-05-26",
+     9,
+     8
+    ],
+    [
+     "2026-06-04",
+     3,
+     4
+    ],
+    [
+     "2026-06-17",
+     18,
+     20
+    ],
+    [
+     "2026-06-19",
+     13,
+     14
+    ],
+    [
+     "2026-06-25",
+     4,
+     3
+    ],
+    [
+     "2026-07-14",
+     8,
+     7
+    ],
+    [
+     "2026-07-20",
+     4,
+     5
+    ],
+    [
+     "2026-08-03",
+     11,
+     12
+    ],
+    [
+     "2026-08-11",
+     4,
+     3
+    ],
+    [
+     "2026-08-12",
+     28,
+     27
+    ],
+    [
+     "2026-08-26",
+     3,
+     2
+    ],
+    [
+     "2026-10-08",
+     7,
+     6
+    ]
+   ],
+   "est_target_differs": 17
+  },
+  "delay_entry_to_first_poll_min": {
+   "median": 0.0,
+   "max": 2.0,
+   "within_1_min": 119,
+   "within_5_min": 120
+  },
+  "seconds": 1610
+ },
+ "cache": {
+  "polls": 100,
+  "n_bad": 0,
+  "bad": [],
+  "hits": 78,
+  "seconds": 19
+ },
+ "bot": {
+  "sessions": [
+   "2026-10-13",
+   "2026-10-14",
+   "2026-10-15"
+  ],
+  "polls": 1265,
+  "want": 2,
+  "entries_ok": 2,
+  "exits_ok": 2,
+  "entry_route_delay_s": [
+   3,
+   3
+  ],
+  "extra": 0,
+  "not_routed": [],
+  "errors": [],
+  "rows": [
+   {
+    "entry": 1791885780,
+    "want": [
+     -1,
+     11,
+     "TARGET",
+     3163.6
+    ],
+    "research_pnl": 3169.1,
+    "routed_entry": {
+     "side": "sell",
+     "qty": 11,
+     "stop": 30773.75,
+     "target": 30602.75,
+     "t": 1791885783
+    },
+    "routed_exit": {
+     "reason": "TARGET",
+     "pnl": 3163.6,
+     "t": 1791898383
+    }
+   },
+   {
+    "entry": 1791969840,
+    "want": [
+     -1,
+     1,
+     "TARGET",
+     578.98
+    ],
+    "research_pnl": 579.48,
+    "routed_entry": {
+     "side": "sell",
+     "qty": 1,
+     "stop": 30862.0,
+     "target": 30495.5,
+     "t": 1791969843
+    },
+    "routed_exit": {
+     "reason": "TARGET",
+     "pnl": 578.98,
+     "t": 1791986283
+    }
+   }
+  ],
+  "last_model_state": "LIT: market closed (next session 18:00 ET; entries 02:00-15:30 ET)",
+  "poll_ms": 452,
+  "modify_routes": 0,
+  "states_seen": [
+   "LIT: market closed (next session 18:00 E"
+  ],
+  "ok": true
+ },
+ "seconds": 2305
 }

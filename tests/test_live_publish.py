@@ -196,6 +196,10 @@ def main(argv=None) -> int:
               p["price"] == 25070.5 and p["last_signal"]["level"] == "PDH" and p["heartbeat"] == {"t": int(now) - 30, "ok": True}
               and p["pc"]["health"]["feed"]["age_1m_s"] == 12 and p["pc"]["t"] == int(now) and p["pc"]["present"] and not p["pc"]["silent"])
         check("payload: the raw acct / exec / push key blocks stay out of pc", all(k not in p["pc"] for k in ("acct", "exec", "push_pk")))
+        gl = p["pc"].get("glance") or {}
+        check("payload: pc.glance for the Brain page (engine/brain_glance.py): Zlarior + ATLAS, the open trade's $ risk / $ target, small",
+              [b.get("id") for b in gl.get("bots") or []] == ["lit", "atlas"] and gl["bots"][0].get("pos", {}).get("risk_usd") == 357
+              and gl["bots"][0]["pos"].get("tgt_usd") == 1443 and len(json.dumps(gl)) < 2500, gl)
         # ------------------------------------------------------------------ secrets
         check("secrets: no confirm phrase anywhere", LIVE_PHRASE not in blob)
         check("secrets: no token / password-like key, no token value", "ghp_SECRET" not in blob and '"token"' not in blob)

@@ -198,6 +198,14 @@ def build(hb_payload: dict, now=None, lm: dict | None = None, hb_last: dict | No
         out["board"] = bd
     except Exception as e:
         out["board"] = {"error": f"{e.__class__.__name__}: {str(e)[:120]}"}
+    try:                                # the Brain page's per-bot glance (engine/brain_glance.py, < 1.7 KB; never BLITZ)
+        from . import brain_glance
+        bd0 = out.get("board") if isinstance(out.get("board"), dict) and "error" not in out["board"] else None
+        g = brain_glance.build(hb, bd0, now=now)
+        if g and not g.get("error"):
+            pc["glance"] = g
+    except Exception:
+        pass
     bz = blitz_block(hb, now, out.get("board"))       # BLITZ on account C, same keys as board.lit / board.atlas (None on failure)
     if bz is not None and not bz.get("off") and isinstance(out.get("board"), dict) and "error" not in out["board"] \
             and not isinstance(out["board"].get("blitz"), dict):

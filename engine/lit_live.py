@@ -24,6 +24,10 @@ back to 5m execution exactly as the backtest does. Paper only: this module never
 from __future__ import annotations
 
 import datetime as dt
+import hashlib
+import json
+import os
+import threading
 from zoneinfo import ZoneInfo
 
 import numpy as np
@@ -128,17 +132,21 @@ def feed_1m(df1: pd.DataFrame, t_from: int) -> Bars | None:
         return None
     d["b"] = d["time"] // 300 * 300
     rows = []
-    for b, g in d.groupby("b", sort=True):
-        if len(g) < 5:
-            last_min = int(g["time"].max())
-            have = set(int(x) for x in g["time"])
-            prev = None
-            for m in range(b, min(b + 300, last_min + 60), 60):
-                if m in have:
-                    prev = g[g["time"] == m].iloc[0]
-                elif prev is not None:
-                    c = float(prev["close"])
-                    rows.append({"time": m, "open": c, "high": c, "low": c, "close": c, "volume": 0.0, "b": b})
+    # only the 5m windows with fewer than 5 minutes need a look (2026-11-17 "fast brain": found with numpy instead of a pandas
+    # groupby over every window; the same rows in the same order as before)
+    tv, bv, cv = d["time"].to_numpy(), d["b"].to_numpy(), d["close"].to_numpy()
+    ub, st, cnt = np.unique(bv, return_index=True, return_counts=True)
+    for b, a, nb in zip(ub[cnt < 5].tolist(), st[cnt < 5].tolist(), cnt[cnt < 5].tolist()):
+        gt, gc = tv[a:a + nb], cv[a:a + nb]
+        last_min = int(gt.max())
+        have = {int(x): y for x, y in zip(gt.tolist(), gc)}
+        prev = None
+        for m in range(b, min(b + 300, last_min + 60), 60):
+            if m in have:
+                prev = have[m]
+            elif prev is not None:
+                c = float(prev)
+                rows.append({"time": m, "open": c, "high": c, "low": c, "close": c, "volume": 0.0, "b": b})
     if rows:
         d = pd.concat([d, pd.DataFrame(rows)]).sort_values("time")
     return from_frame("NQ", "1m", d.drop(columns="b"))
@@ -187,14 +195,20 @@ def run(df5: pd.DataFrame, params: dict | None = None, one_min=None, now: int | 
         pv = _forming_5m(w, src, tol, forming, int(now))
         if pv is not None:
             w = pd.concat([w, pd.DataFrame([pv])], ignore_index=True)
-    b5 = from_frame(sym, "5m", w)
-    M = lit.Market(bars=b5, extra_boxes=P.get("extra_boxes") or [])
-    M.n_closed = n_closed if len(b5) == n_closed + 1 else M.n
-    # all_hours (research/writeups/lit-all-hours.md, lit-more-entries.md; off = today): setups on the whole trading day
-    C = lit.candidates(M, ref=P["ref"], evening=True) if P.get("all_hours") else lit.candidates(M, ref=P["ref"])
-    if P.get("retail"):                  # retail-tool entries (engine/lit_retail.py; off = None = today's LIT)
-        from engine import lit_retail
-        C = lit_retail.apply(M, C, P)
+    mk = _market_key(w, P, n_closed, sym) if not P.get("retail") else None
+    hit = _market_get(mk)
+    if hit is not None:                  # the same 5m window as the last poll (the PC polls every minute): same market, same setups
+        M, C = hit
+    else:
+        b5 = from_frame(sym, "5m", w)
+        M = lit.Market(bars=b5, extra_boxes=P.get("extra_boxes") or [])
+        M.n_closed = n_closed if len(b5) == n_closed + 1 else M.n
+        # all_hours (research/writeups/lit-all-hours.md, lit-more-entries.md; off = today): setups on the whole trading day
+        C = lit.candidates(M, ref=P["ref"], evening=True) if P.get("all_hours") else lit.candidates(M, ref=P["ref"])
+        if P.get("retail"):                  # retail-tool entries (engine/lit_retail.py; off = None = today's LIT)
+            from engine import lit_retail
+            C = lit_retail.apply(M, C, P)
+        _market_put(mk, M, C)
     B5 = lit.bars_5m(M) if M.n_closed == M.n else lit.closed_bars(lit.bars_5m(M), M.n_closed)
     B1 = None
     if src is not None and len(src):
@@ -216,6 +230,54 @@ def run(df5: pd.DataFrame, params: dict | None = None, one_min=None, now: int | 
     if R.get("learn_error"):
         out["learn_error"] = R["learn_error"]
     return out
+
+
+# ------------------------------------------------------------------------------------------------ the market cache
+# 2026-11-17 ("very fast processing for the brain"): the PC polls every minute, but the 5m window (closed bars + the forming
+# bar's open) only changes once per 5 minutes. The LIT market and its setups are a pure function of that window, the
+# params and the VIX / VXN closes, so the last one is kept and reused while all of them are byte-identical (one entry;
+# LE_LIT_CACHE=0 turns it off). Nothing downstream writes to the market or the setups (tests/test_lit_live.py and the
+# poll-by-poll replay check it: every decision is the same with or without the cache).
+_MC_LOCK = threading.Lock()
+_MC = {"key": None, "val": None, "hits": 0, "misses": 0}
+
+
+def _market_key(w: pd.DataFrame, P: dict, n_closed: int, sym: str):
+    if os.environ.get("LE_LIT_CACHE", "1") == "0":
+        return None
+    try:
+        h = hashlib.blake2b(digest_size=20)
+        for col in ("time", "open", "high", "low", "close", "volume"):
+            a = np.ascontiguousarray(w[col].to_numpy())
+            h.update(col.encode() + str(a.dtype).encode() + str(a.shape).encode())
+            h.update(a.tobytes())
+        h.update(json.dumps(P, sort_keys=True, default=str).encode())
+        h.update(f"{n_closed}|{sym}".encode())
+        for nm in ("VIX", "VXN"):
+            dd, cc = lit._vix(nm)
+            h.update(f"{nm}|{len(dd)}|{dd[0] if dd else ''}|{dd[-1] if dd else ''}".encode())
+            h.update(np.ascontiguousarray(cc).tobytes())
+        return h.digest()
+    except Exception:
+        return None
+
+
+def _market_get(key):
+    if key is None:
+        return None
+    with _MC_LOCK:
+        if _MC["key"] == key:
+            _MC["hits"] += 1
+            return _MC["val"]
+        _MC["misses"] += 1
+    return None
+
+
+def _market_put(key, M, C):
+    if key is None:
+        return
+    with _MC_LOCK:
+        _MC["key"], _MC["val"] = key, (M, C)
 
 
 def _forming_5m(w: pd.DataFrame, src, tol, forming, now: int):

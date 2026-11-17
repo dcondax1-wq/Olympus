@@ -23,6 +23,8 @@ backtest (tools/lit_final.py run = engine/lit.py run_x on the whole history), on
    target, micros); the same poll without the forming bar's open reports how often the estimate would size differently.
 3. LiveBot: engine/live.py itself (PaperAdapter, frozen clock, bars revealed as they close, raw 1m file read like a feed) on
    three October sessions: every backtest trade must be routed once (side, micros, stop, target) and exited once (reason, $).
+4. Market cache (engine/lit_live._MC: the market + setups reused while the 5m window is byte-identical): minute polls around
+   two entries and a quiet stretch with the cache on and off (LE_LIT_CACHE=0) must give byte-identical results.
 Results -> research/lit/live_check.json. One process.
 
 The $ compared (2026-10-26): the research ledger (tools/lit_final.run = engine/lit.py run_x) books lit.COMM, $1.40 a micro
@@ -352,6 +354,29 @@ def main():
                           "seconds": round(time.time() - t0)}
         print(f"phantom check: {n_p} minute polls on {len(pick)} sessions without a trade {pick}: {len(ph_bad)} positions / entries / "
               f"trades shown (setups armed on {ph_pending} polls) in {out['phantom']['seconds']}s", flush=True)
+    # ---- 2c. the market cache (engine/lit_live._MC, 2026-11-17 "fast brain"): minute polls around 2 entries and a quiet
+    # stretch, with the cache on and off (LE_LIT_CACHE=0): every state, trade, event and day must be byte-identical
+    if "--days" not in sys.argv:
+        t0 = time.time()
+        tds = sorted(by_day)
+        spans = [(int(by_day[d][0]["entry_t"]) - 1200, int(by_day[d][0]["entry_t"]) + 900) for d in (tds[len(tds) // 3], tds[-1])]
+        spans.append((at(tds[-1], 3, 0), at(tds[-1], 3, 30)))
+        n_c, c_bad = 0, []
+        h0 = lit_live._MC["hits"]
+        for a0, a1 in spans:
+            for now in range(a0 - a0 % 60 + 3, a1, 60):
+                on = json.dumps(poll(now), sort_keys=True, default=str)
+                os.environ["LE_LIT_CACHE"] = "0"
+                try:
+                    off = json.dumps(poll(now), sort_keys=True, default=str)
+                finally:
+                    os.environ.pop("LE_LIT_CACHE", None)
+                n_c += 1
+                if on != off:
+                    c_bad.append(now)
+        out["cache"] = {"polls": n_c, "n_bad": len(c_bad), "bad": c_bad[:10], "hits": lit_live._MC["hits"] - h0, "seconds": round(time.time() - t0)}
+        print(f"market cache: {n_c} minute polls with the cache on vs off: {len(c_bad)} differ ({out['cache']['hits']} cache hits) "
+              f"in {out['cache']['seconds']}s", flush=True)
     # ---- 3. the PC paper bot itself (engine/live.py LiveBot + PaperAdapter) on LIT, fed bar by bar
     if "--bot" in sys.argv or ("--days" not in sys.argv and "--nobot" not in sys.argv):
         bs = next((a.split("=", 1)[1].split(",") for a in sys.argv if a.startswith("--bot-sessions=")), None)
@@ -369,7 +394,7 @@ def main():
             json.dump(out, fh, indent=1, default=str)
     ok = out["day_end"]["matched_exits_and_pnl"] == len(REF) and not out["day_end"]["n_extra"] and \
         (not out.get("intraday") or not out["intraday"]["n_differences"]) and (not out.get("bot") or out["bot"]["ok"]) and \
-        (not out.get("phantom") or not out["phantom"]["n_bad"])
+        (not out.get("phantom") or not out["phantom"]["n_bad"]) and (not out.get("cache") or (not out["cache"]["n_bad"] and out["cache"]["hits"] > 0))
     print("OK" if ok else "DIFFERENCES (see research/lit/live_check.json)")
     sys.exit(0 if ok else 1)
 

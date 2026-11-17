@@ -83,14 +83,21 @@ def vectors(o, h, l, c, v, n=10):
 
 def fractals(h, l, k=2):
     """Swing high at j: h[j] > the k highs before and >= the k after (confirmed at j+k). Same for lows."""
+    # vectorized (2026-11-17 "fast brain"): the same comparisons on the same floats as the old per-bar loop
+    h = np.asarray(h, dtype=float); l = np.asarray(l, dtype=float)
     n = len(h)
-    fh = np.zeros(n, bool); fl = np.zeros(n, bool)
-    for j in range(k, n - k):
-        if h[j] > h[j - k:j].max() and h[j] >= h[j + 1:j + k + 1].max():
-            fh[j] = True
-        if l[j] < l[j - k:j].min() and l[j] <= l[j + 1:j + k + 1].min():
-            fl[j] = True
-    return np.flatnonzero(fh), np.flatnonzero(fl)
+    if n - k <= k:
+        return np.flatnonzero(np.zeros(n, bool)), np.flatnonzero(np.zeros(n, bool))
+    m = n - 2 * k
+    hp = np.max(np.stack([h[k - i:k - i + m] for i in range(1, k + 1)]), axis=0)
+    hn = np.max(np.stack([h[k + i:k + i + m] for i in range(1, k + 1)]), axis=0)
+    lp = np.min(np.stack([l[k - i:k - i + m] for i in range(1, k + 1)]), axis=0)
+    ln = np.min(np.stack([l[k + i:k + i + m] for i in range(1, k + 1)]), axis=0)
+    hc, lc = h[k:n - k], l[k:n - k]
+    with np.errstate(invalid="ignore"):
+        fh = (hc > hp) & (hc >= hn)
+        fl = (lc < lp) & (lc <= ln)
+    return np.flatnonzero(fh) + k, np.flatnonzero(fl) + k
 
 
 def buildups(h, l, fh, fl, at, tol_atr=0.15, tol_min=1.5, lookback=288, k=2):
@@ -98,23 +105,27 @@ def buildups(h, l, fh, fl, at, tol_atr=0.15, tol_min=1.5, lookback=288, k=2):
     apart, with every bar between them above the lower one (price came back to the same level and held). Level = the lower
     low (sell-side resting liquidity); known when the second fractal confirms (j+k). Mirror for highs.
     Returns list of (side, price, known_index)."""
+    # 2026-11-17 "fast brain": plain Python floats / lists instead of numpy scalars (same values, same order, same result)
     out = []
-    for side, idx, arr in (("low", fl, l), ("high", fh, h)):
+    hL, lL = np.asarray(h, dtype=float).tolist(), np.asarray(l, dtype=float).tolist()
+    atL = np.asarray(at, dtype=float).tolist()
+    for side, idx, arr in (("low", fl, lL), ("high", fh, hL)):
         recent = collections.deque()
-        for j in idx:
+        for j in np.asarray(idx).tolist():
             while recent and j - recent[0] > lookback:
                 recent.popleft()
-            tol = max(tol_min, tol_atr * at[j])
+            tol = max(tol_min, tol_atr * atL[j])
+            aj = arr[j]
             for kk in reversed(recent):
-                if j - kk < 3 or abs(arr[j] - arr[kk]) > tol:
+                if j - kk < 3 or abs(aj - arr[kk]) > tol:
                     continue
                 if side == "low":
-                    lev = min(arr[j], arr[kk])
-                    if l[kk + 1:j].min() > lev:
+                    lev = min(aj, arr[kk])
+                    if min(lL[kk + 1:j]) > lev:
                         out.append(("low", float(lev), int(j + k))); break
                 else:
-                    lev = max(arr[j], arr[kk])
-                    if h[kk + 1:j].max() < lev:
+                    lev = max(aj, arr[kk])
+                    if max(hL[kk + 1:j]) < lev:
                         out.append(("high", float(lev), int(j + k))); break
             recent.append(j)
     out.sort(key=lambda x: x[2])
@@ -207,11 +218,14 @@ class Market:
         self.open_1000 = _anchor(o, di, mod, 600)
         self.open_22 = _anchor(o, di, mod, 1320)
         # weekly open: first bar of the trading week (ISO week of the trading date)
-        dts = pd.to_datetime(self.dates)
+        # one date parse per trading day, not per bar (2026-11-17 "fast brain"; the same ids)
+        ud, inv = np.unique(self.dates, return_inverse=True)
+        inv = inv.ravel()
+        dts = pd.to_datetime(ud)
         iso = dts.isocalendar()
-        self.week_id = (iso["year"].values.astype(np.int64) * 100 + iso["week"].values.astype(np.int64))
+        self.week_id = (iso["year"].values.astype(np.int64) * 100 + iso["week"].values.astype(np.int64))[inv]
         self.open_wk = _ffill_group(o, self.week_id)
-        self.month_id = (dts.year.values * 100 + dts.month.values).astype(np.int64)
+        self.month_id = (dts.year.values * 100 + dts.month.values).astype(np.int64)[inv]
 
     # ---- per-day context
     def _context(self):
@@ -328,21 +342,37 @@ def _ffill_group(o, g):
 
 def _anchor(o, di, mod, at):
     """Open of the first bar at/after ET minute `at` inside each trading day (evening anchors >= 1080), nan before."""
+    # vectorized (2026-11-17 "fast brain"); same values as the old per-bar loop: a run of equal di is one day, the first
+    # bar of it meeting cond with a real open sets the value from that bar on
+    o = np.asarray(o, dtype=float)
     n = len(o)
     out = np.full(n, np.nan)
+    if not n:
+        return out
     evening = at >= 1080
-    cond = (mod >= at) if evening else ((mod >= at) & (mod < 1080))
-    cur_day, val = -1, np.nan
-    for i in range(n):
-        if di[i] != cur_day:
-            cur_day, val = di[i], np.nan
-        if np.isnan(val) and cond[i]:
-            val = o[i]
-        out[i] = val
+    cond = np.asarray((mod >= at) if evening else ((mod >= at) & (mod < 1080)), bool) & ~np.isnan(o)
+    di = np.asarray(di)
+    starts = np.r_[0, np.flatnonzero(di[1:] != di[:-1]) + 1]
+    grp = np.repeat(np.arange(len(starts)), np.diff(np.r_[starts, n]))
+    cand = np.where(cond, np.arange(n), n)
+    first = np.minimum.reduceat(cand, starts)[grp]
+    on = np.arange(n) >= first
+    out[on] = o[first[on]]
     return out
 
 
 # ------------------------------------------------------------------------------------------------ setup detector
+def _leg_low(lo_d, leg):
+    """Index of the leg extreme (np.argmin, first lowest) of lo_d[i - leg:i + 1] for every bar i >= leg (i itself below)."""
+    lo_d = np.asarray(lo_d)
+    n = len(lo_d)
+    out = np.arange(n, dtype=np.int64)
+    if n > leg:
+        w = np.lib.stride_tricks.sliding_window_view(lo_d, leg + 1)
+        out[leg:] = np.arange(n - leg, dtype=np.int64) + w.argmin(axis=1)
+    return out
+
+
 def _first_breach(lo_d, start, end, lev):
     """First index in (start, end) where the direction-space low trades below lev; end if none."""
     if start + 1 >= end:
@@ -400,6 +430,7 @@ def candidates(M: Market, leg=24, sweep_win=24, ref_back=36, ind_back=36, t_from
     o, h, l, c, mod, at = M.o, M.h, M.l, M.c, M.mod, M.atr
     out = []
     last_k = len(M.days) - 1
+    roll, cz_cache = {}, {}          # per direction: the leg-low index of every bar, the CISD level of every extreme seen
     for k, (date, s, e) in enumerate(M.days):
         x = M.ctx[k]
         # a day needs 50+ bars (skips stub days). evening: the live loop's last day is still forming (from 18:00 it has
@@ -427,15 +458,27 @@ def candidates(M: Market, leg=24, sweep_win=24, ref_back=36, ind_back=36, t_from
                 j = int(np.argmax(seg)) if len(seg) else 0
                 tb.append(st + 1 + j if len(seg) and seg[j] else seg_end)
             last_e = -1
-            for i in range(s + (6 if evening else leg), e - 1):
-                if evening:
-                    if (mod[i] - 1080) % 1440 >= (t_to - 1080) % 1440:
-                        continue
-                elif not (t_from <= mod[i] < t_to) or mod[i] >= 1080:
-                    continue
-                a = max(i - leg, s) if (evening and i < s + leg) else i - leg
-                ee = a + int(np.argmin(lo_d[a:i + 1]))
-                if ee == i or ee == last_e:
+            # 2026-11-17 "fast brain": the bars that pass the time filter and whose leg extreme is not the bar itself are
+            # picked in one vectorized step (the leg low from the rolling window), and the CISD level is computed once per
+            # extreme; every check below is the old one, in the old order, on the same numbers
+            i0 = s + (6 if evening else leg)
+            I = np.arange(i0, e - 1)
+            if not len(I):
+                continue
+            mI = mod[I]
+            tm = ((mI - 1080) % 1440 < (t_to - 1080) % 1440) if evening else ((t_from <= mI) & (mI < t_to) & (mI < 1080))
+            if d not in roll:
+                roll[d] = _leg_low(lo_d, leg)
+            EE = roll[d][np.minimum(I, len(roll[d]) - 1)] if len(roll[d]) else np.zeros(len(I), np.int64)
+            if evening:
+                early_i = I < s + leg
+                for q in np.flatnonzero(early_i & tm):
+                    a = max(int(I[q]) - leg, s)
+                    EE[q] = a + int(np.argmin(lo_d[a:int(I[q]) + 1]))
+            go = tm & (EE != I)
+            cz_of = cz_cache.setdefault(d, {})
+            for i, ee in zip(I[go].tolist(), EE[go].tolist()):
+                if ee == last_e:
                     continue
                 if ref == "frac":
                     jj = bisect.bisect_left(swing_hi, ee) - 1
@@ -443,7 +486,9 @@ def candidates(M: Market, leg=24, sweep_win=24, ref_back=36, ind_back=36, t_from
                         continue
                     j = int(swing_hi[jj]); rp = float(hi_d[j])
                 elif ref == "cisd":
-                    cz = _cisd_level(c_d, o_d, ee)
+                    if ee not in cz_of:
+                        cz_of[ee] = _cisd_level(c_d, o_d, ee)
+                    cz = cz_of[ee]
                     if cz is None:
                         continue
                     rp, j = cz
@@ -907,25 +952,34 @@ def bars_1m(M: Market, cover=0.97, src=None, tol=None, tail=False):
     shift = np.zeros(len(t5))
     n5 = getattr(M, "n_closed", M.n)        # engine/lit_live.py early mode: M ends with the forming 5m bar (not checked)
     last5 = int(M.t[n5 - 1]) if n5 else -1
-    for a, z in zip(starts, ends):
-        j = j5c[a]
-        if tail and t5[a] > last5:
-            keep[a:z] = True        # the forming 5m bar: nothing to check against yet
-            continue
-        if z - a != 5 or not ok[a]:
-            continue
-        dd = np.array([b.o[a] - M.o[j], b.c[z - 1] - M.c[j], b.h[a:z].max() - M.h[j], b.l[a:z].min() - M.l[j]])
-        if np.abs(dd - dd[0]).max() < 0.01:
-            keep[a:z] = True
-            shift[a:z] = dd[0] if abs(dd[0]) >= 0.01 else 0.0
-        elif tol is not None and np.abs(dd).max() <= tol:
-            keep[a:z] = True
+    if len(t5):
+        # one vectorized pass over every 5m window (2026-11-17 "fast brain"; the same arithmetic on the same floats as the
+        # old per-window loop): the forming window kept as is; a full window (5 bars, its 5m bar in M) kept when its four
+        # prices differ from the 5m bar by one constant (shifted by it), or all within tol
+        A, Z = starts, ends
+        J = j5c[A]
+        tailm = (t5[A] > last5) if tail else np.zeros(len(A), bool)
+        elig = ~tailm & (Z - A == 5) & ok[A]
+        with np.errstate(invalid="ignore"):
+            dd = np.stack([b.o[A] - M.o[J], b.c[Z - 1] - M.c[J], np.maximum.reduceat(b.h, A) - M.h[J],
+                           np.minimum.reduceat(b.l, A) - M.l[J]])
+            same = elig & (np.abs(dd - dd[0]).max(axis=0) < 0.01)
+            near = (elig & ~same & (np.abs(dd).max(axis=0) <= tol)) if tol is not None else np.zeros(len(A), bool)
+            sg = np.where(same, np.where(np.abs(dd[0]) >= 0.01, dd[0], 0.0), 0.0)
+        L = Z - A
+        keep = np.repeat(tailm | same | near, L)
+        shift = np.repeat(sg, L).astype(float)
     if tail and len(ix_tail := np.flatnonzero(keep & (t5 > last5))):
         shift[ix_tail] = shift[np.flatnonzero(keep & (t5 <= last5))[-1]] if (keep & (t5 <= last5)).any() else 0.0
     ix = np.flatnonzero(keep)
     sh = shift[ix]
     dmap = {d: k for k, (d, s, e) in enumerate(M.days)}
-    day = np.array([dmap.get(x, -1) for x in np.asarray(b.date_str)[ix]])
+    if len(ix) and getattr(b, "tday", None) is not None:   # one lookup per trading day, not per bar (a trading day has one date text)
+        u, first, inv = np.unique(np.asarray(b.tday)[ix], return_index=True, return_inverse=True)
+        ds = [b.date_str[int(ix[f])] for f in first]
+        day = np.array([dmap.get(x, -1) for x in ds], dtype=np.int64)[inv.ravel()]
+    else:
+        day = np.array([dmap.get(x, -1) for x in np.asarray(b.date_str)[ix]])
     cnt = np.bincount(day[day >= 0], minlength=len(M.days))
     full = {k for k, (d, s, e) in enumerate(M.days) if cnt[k] >= cover * 5 * (min(e, n5) - s)}
     return XBars(b.t[ix], b.o[ix] - sh, b.h[ix] - sh, b.l[ix] - sh, b.c[ix] - sh, b.mod[ix], day, 60, full)
