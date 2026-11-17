@@ -309,7 +309,7 @@ async function main() {
   S.lib = await loadLibrary('library.json?v=a2');
   S.ix = indexOf(S.lib); S.byId = Object.fromEntries(S.lib.entries.map((e) => [e.id, e]));
   $('demo').hidden = S.lib.src === 'file';
-  $('sub').textContent = `${S.lib.entries.length} entries in plain words. Works offline.`;
+  $('sub').textContent = `${S.lib.entries.length} short notes on your strategy and rules. Tap a shelf to read, or take the quiz.`;
   S.plus = createPlus({ lib: S.lib, ix: S.ix, byId: S.byId, colorOf, tagOf, toast, sfx, badges });
   const dr = await loadJson('drills.json?v=a1');
   S.train = createTrain({ root: $('train'), lib: S.lib, byId: S.byId, colorOf, tagOf, toast, sfx, badges: () => badges(), quick: () => { startQuiz(); show('quiz'); }, drills: TRAIN.validDrills(dr) ? dr : TRAIN.sampleDrills() });
