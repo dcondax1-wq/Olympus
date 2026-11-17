@@ -51,6 +51,7 @@ Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7;
   ATLAS's own funded accounts against MFFU's limits; `--held <plan>=0` when one ended. MFFU copy trading: allowed (help center).
 
 ## Recent findings (don't redo)
+- 2026-11-17 Kalshi K5 (`kalshi-edge-K5-2026-11-17.md`): slow 'public number' markets (gas, TSA week, YouTube views, Truth Social, App/Spotify #1): no taker edge worth money; gas nowcast -45%, Spotify persistence -24%. One weak paper rule (late favourite when the answer is public, +4.4%/$1 test but -1.3% train, ~$3/mo) in `research/lab/kalshi_live_candidate.json`, nothing armed. Rewards program (ends Jan 1 2027, ~$106k/day): RT / Panama / Babel-el-Mandeb makers net +3% to +7% per $1 filled incl. pool; est. +$150-470/mo on 3 markets but needs real resting orders (owner's call, Kalshi still paused).
 - 2026-11-17 Kalshi K4 (`kalshi-edge-K4-2026-11-17.md`): NO EDGE. Copying Polymarket on 15-min crypto loses ~7-9%/$1 (a +18-32% version was lookahead, caught by a live check); sports favourites +1.8% test, range incl. 0; longshots -43%; 854 crypto coin x hour slices = luck. Kalshi stays paused, no paper rule.
 - 2026-11-17: drift switch REJECTED; rule-native layer: no change (BLITZ 3/day on Rapid = paper lead only).
 - Rule-native search (2026-11-17, `rule-native-2026-11-17.md`, `tools/money/rule_native.py`): 36 variants scored on days to 1st payout +

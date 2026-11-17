@@ -1,0 +1,70 @@
+{"KXYTVIEWSW": {"markets": 2694, "with_candles": 2692, "units": 1143, "train_units": 638, "test_units": 505, "train_events": 88, "test_events": 54}, "KXTRUTHSOCIAL": {"markets": 383, "with_candles": 382, "units": 110, "train_units": 48, "test_units": 62, "train_events": 9, "test_events": 5}, "KXTRUTHSOCIALD": {"markets": 333, "with_candles": 325, "units": 183, "train_units": 26, "test_units": 157, "train_events": 7, "test_events": 15}, "KXTSAW": {"markets": 1624, "with_candles": 1473, "units": 1096, "train_units": 607, "test_units": 489, "train_events": 85, "test_events": 47}, "KXAAAGASD_gasfit": [0.7721950781193249, 0.01706191469198708, 157], "KXAAAGASD": {"markets": 4154, "with_candles": 4153, "units": 5195, "train_units": 3568, "test_units": 1627, "train_events": 156, "test_events": 78}, "KXAAAGASW_gasfit": [0.7721950781193249, 0.01706191469198708, 157], "KXAAAGASW": {"markets": 1129, "with_candles": 1129, "units": 1632, "train_units": 1179, "test_units": 453, "train_events": 63, "test_events": 11}, "KXAAAGASM_gasfit": [0.7721950781193249, 0.01706191469198708, 157], "KXAAAGASM": {"markets": 490, "with_candles": 481, "units": 387, "train_units": 338, "test_units": 49, "train_events": 22, "test_events": 2}, "KXAPPRANKFREE": {"markets": 793, "with_candles": 793, "units": 733, "train_units": 609, "test_units": 124, "train_events": 113, "test_events": 19}, "KXSPOTIFYD": {"markets": 3255, "with_candles": 3175, "units": 4195, "train_units": 3032, "test_units": 1163, "train_events": 241, "test_events": 127}, "KXNETFLIXRANKSHOW": {"markets": 961, "with_candles": 922, "units": 489, "train_units": 296, "test_units": 193, "train_events": 41, "test_events": 27}}
+cells scored 79 bar t 3.22
+TOP TRAIN
+   ['KXYTVIEWSW', 24, 'fav', [0.95, 0.985]] n   59 edge   +2.2% [  +2.0,   +2.3] t +29.09 win 1.000 /mo   26.4 streak 0
+   ['KXYTVIEWSW', 12, 'fav', [0.95, 0.985]] n   30 edge   +2.1% [  +1.9,   +2.3] t +21.86 win 1.000 /mo   15.1 streak 0
+   ['KXAAAGASW', 16, 'fav', [0.95, 0.985]] n   33 edge   +3.2% [  +2.9,   +3.5] t +20.68 win 1.000 /mo    5.3 streak 0
+   ['KXAAAGASW', 8, 'fav', [0.95, 0.985]] n   48 edge   +2.8% [  +2.6,   +3.1] t +20.62 win 1.000 /mo    2.2 streak 0
+   ['KXTSAW', 8, 'fav', [0.95, 0.985]] n   49 edge   +2.8% [  +2.5,   +3.1] t +20.42 win 1.000 /mo    2.5 streak 0
+   ['KXTSAW', 3, 'fav', [0.95, 0.985]] n   49 edge   +3.0% [  +2.7,   +3.3] t +18.93 win 1.000 /mo    2.4 streak 0
+   ['KXSPOTIFYD', 8, 'persist', [0.95, 0.985]] n   41 edge   +3.2% [  +2.8,   +3.5] t +18.62 win 1.000 /mo    3.7 streak 0
+   ['KXAAAGASW', 2, 'fav', [0.95, 0.985]] n   36 edge   +3.1% [  +2.7,   +3.5] t +15.60 win 1.000 /mo    1.6 streak 0
+   ['KXAAAGASW', 40, 'fav', [0.95, 0.985]] n   54 edge   +2.9% [  +2.6,   +3.4] t +14.72 win 1.000 /mo    4.2 streak 0
+   ['KXAAAGASD', 2, 'fav', [0.95, 0.985]] n  220 edge   +1.9% [  +0.5,   +2.9] t +2.89 win 0.991 /mo   40.8 streak 1
+   ['KXAAAGASD', 8, 'fav', [0.95, 0.985]] n  215 edge   +1.9% [  +0.4,   +2.9] t +2.81 win 0.991 /mo   42.4 streak 1
+   ['KXAAAGASD', 2, 'fav', [0.9, 0.95]] n  110 edge   +3.0% [  -1.9,   +6.8] t +1.38 win 0.955 /mo   21.3 streak 1
+CARRIED
+   ['KXYTVIEWSW', 24, 'fav', [0.95, 0.985]] TRAIN n   59 edge   +2.2% [  +2.0,   +2.3] t +29.09 win 1.000 /mo   26.4 streak 0 
+      TEST  n   32 edge   -0.8% [  -9.1,   +2.8] t -0.23 win 0.969 /mo   32.3 streak 1
+   ['KXYTVIEWSW', 12, 'fav', [0.95, 0.985]] TRAIN n   30 edge   +2.1% [  +1.9,   +2.3] t +21.86 win 1.000 /mo   15.1 streak 0 
+      TEST  n   10 edge   +2.3% [  +1.8,   +3.1] t +6.64 win 1.000 /mo   10.8 streak 0
+   ['KXAAAGASW', 16, 'fav', [0.95, 0.985]] TRAIN n   33 edge   +3.2% [  +2.9,   +3.5] t +20.68 win 1.000 /mo    5.3 streak 0 
+      TEST  n   21 edge   +3.2% [  +2.5,   +3.6] t +10.60 win 1.000 /mo    8.3 streak 0
+   ['KXAAAGASW', 8, 'fav', [0.95, 0.985]] TRAIN n   48 edge   +2.8% [  +2.6,   +3.1] t +20.62 win 1.000 /mo    2.2 streak 0 
+      TEST  n   12 edge   +2.7% [  +2.2,   +3.2] t +9.90 win 1.000 /mo    6.5 streak 0
+   ['KXTSAW', 8, 'fav', [0.95, 0.985]] TRAIN n   49 edge   +2.8% [  +2.5,   +3.1] t +20.42 win 1.000 /mo    2.5 streak 0 
+      TEST  n   42 edge   +2.5% [  +2.2,   +2.9] t +13.99 win 1.000 /mo    3.8 streak 0
+   ['KXTSAW', 3, 'fav', [0.95, 0.985]] TRAIN n   49 edge   +3.0% [  +2.7,   +3.3] t +18.93 win 1.000 /mo    2.4 streak 0 
+      TEST  n   34 edge   +2.8% [  +2.5,   +3.1] t +18.93 win 1.000 /mo    3.1 streak 0
+   ['KXSPOTIFYD', 8, 'persist', [0.95, 0.985]] TRAIN n   41 edge   +3.2% [  +2.8,   +3.5] t +18.62 win 1.000 /mo    3.7 streak 0 
+      TEST  n   18 edge   -2.6% [ -14.4,   +3.6] t -0.45 win 0.944 /mo    3.0 streak 1
+   ['KXAAAGASW', 2, 'fav', [0.95, 0.985]] TRAIN n   36 edge   +3.1% [  +2.7,   +3.5] t +15.60 win 1.000 /mo    1.6 streak 0 
+      TEST  n   16 edge   +3.1% [  +2.6,   +3.6] t +10.39 win 1.000 /mo    8.7 streak 0
+   ['KXAAAGASW', 40, 'fav', [0.95, 0.985]] TRAIN n   54 edge   +2.9% [  +2.6,   +3.4] t +14.72 win 1.000 /mo    4.2 streak 0 
+      TEST  n   20 edge   +2.9% [  +2.5,   +3.2] t +15.37 win 1.000 /mo    8.7 streak 0
+PREREG
+   ['KXYTVIEWSW', 12, 'fav', [0.8, 0.985]] 
+      TRAIN n   31 edge   +2.8% [  +2.0,   +4.5] t +4.03 win 1.000 /mo   15.6 streak 0 
+      TEST  n   13 edge   +3.5% [  +2.3,   +5.1] t +4.40 win 1.000 /mo   14.1 streak 0
+   ['KXTRUTHSOCIAL', 5, 'fav', [0.8, 0.985]] 
+      TRAIN n    6 edge   +2.3% [  +1.8,   +2.8] t +8.47 win 1.000 /mo    1.1 streak 0 
+      TEST  n    7 edge   +9.4% [  +5.9,  +13.9] t +4.78 win 1.000 /mo    7.0 streak 0
+   ['KXTRUTHSOCIALD', 1, 'fav', [0.8, 0.985]] 
+      TRAIN n    3 edge  -31.1% [ -47.6,   +1.8] t +0.00 win 0.667 /mo   10.1 streak 1 
+      TEST  n   15 edge   +4.6% [  +3.0,   +6.8] t +4.18 win 1.000 /mo   17.5 streak 0
+   ['KXTSAW', 8, 'fav', [0.8, 0.985]] 
+      TRAIN n   92 edge   -1.3% [  -6.6,   +4.1] t -0.46 win 0.924 /mo    4.7 streak 1 
+      TEST  n   64 edge   +4.2% [  +0.7,   +6.8] t +2.54 win 0.984 /mo    5.8 streak 1
+   ['KXAPPRANKFREE', 1, 'fav', [0.8, 0.985]] 
+      TRAIN n   33 edge   -3.1% [ -15.9,   +3.6] t -0.50 win 0.939 /mo    3.9 streak 2 
+      TEST  n   11 edge   +3.0% [  +2.5,   +3.6] t +11.08 win 1.000 /mo    4.2 streak 0
+   ['KXSPOTIFYD', 4, 'persist', [0.03, 0.985]] 
+      TRAIN n  103 edge  -18.1% [ -29.6,   -6.2] t -3.07 win 0.718 /mo    7.9 streak 4 
+      TEST  n   49 edge  -23.6% [ -38.8,   -8.0] t -2.93 win 0.673 /mo    7.4 streak 2
+   ['KXAAAGASD', 8, 'model', [0.03, 0.985]] 
+      TRAIN n  544 edge  -55.3% [ -68.4,  -39.1] t -7.57 win 0.145 /mo  101.5 streak 29 
+      TEST  n  275 edge  -44.5% [ -70.1,  -11.4] t -2.98 win 0.131 /mo   99.5 streak 28
+   ['KXAAAGASW', 8, 'model', [0.03, 0.985]] 
+      TRAIN n   64 edge  -67.0% [ -92.3,  -29.5] t -4.00 win 0.094 /mo   12.1 streak 24 
+      TEST  n   33 edge  -75.0% [-100.0,  -56.2] t -9.06 win 0.091 /mo   13.0 streak 15
+CONTROL test
+   KXYTVIEWSW n  505 edge  -78.4% [ -84.4,  -71.5] t -23.26 win 0.186 /mo  508.3 streak 39
+   KXTRUTHSOCIAL n   62 edge  -10.3% [ -49.7,  +68.2] t -0.33 win 0.484 /mo   44.5 streak 2
+   KXTRUTHSOCIALD n  157 edge  -44.7% [ -51.1,  -33.6] t -10.38 win 0.459 /mo  164.3 streak 3
+   KXTSAW n  489 edge  -40.6% [ -46.2,  -33.3] t -12.06 win 0.464 /mo   43.3 streak 7
+   KXAAAGASD n 1129 edge  -17.9% [ -31.2,   -2.1] t -2.35 win 0.485 /mo  408.4 streak 6
+   KXAAAGASW n  309 edge  -34.4% [ -41.2,  -28.6] t -10.01 win 0.489 /mo  121.9 streak 3
+   KXAAAGASM n   40 edge  -44.9% [ -48.8,  -39.0] t +0.00 win 0.475 /mo   32.0 streak 3
+   KXAPPRANKFREE n   75 edge  -53.1% [ -59.5,  -49.0] t -20.96 win 0.453 /mo   23.3 streak 4
+   KXSPOTIFYD n  827 edge  -27.8% [ -41.0,  -11.6] t -3.69 win 0.452 /mo  116.4 streak 6
+   KXNETFLIXRANKSHOW n  193 edge  -19.5% [ -53.0,  +34.4] t -0.79 win 0.461 /mo   23.9 streak 5

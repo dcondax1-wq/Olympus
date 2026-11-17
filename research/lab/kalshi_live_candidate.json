@@ -1,0 +1,22 @@
+{
+  "name": "K5 late favourite when the answer is mostly public",
+  "status": "PAPER ONLY - weak candidate. Never armed, no live switch. Train half was -1.3% per $1 (range -5.1% to +2.3%); test half +4.4% (+2.2% to +6.0%; exact worst case +1.0%). Needs 3 months of paper before any talk of money.",
+  "source": "research/writeups/kalshi-edge-K5-2026-11-17.md, research/kalshi_edge_K5/study.py PREREG 'fav' cells, results_pooled.json",
+  "date": "2026-11-17",
+  "side_rule": "buy the side (YES at the yes ask, or NO at 1 - yes bid) whose taker price is in the band; never both sides of one market",
+  "price_band": [0.80, 0.985],
+  "max_spread": 0.06,
+  "size_usd_per_bet": 10,
+  "fee": "0.07 x C x p x (1-p), rounded up to the cent on the whole order",
+  "one_bet_per_market": true,
+  "rules": [
+    {"series": "KXYTVIEWSW", "decide_hours_before_close": 12, "why": "the counted week ended about a day earlier; YouTube Charts daily views are public"},
+    {"series": "KXTRUTHSOCIAL", "decide_hours_before_close": 5, "why": "the counted week already ended; the posts are public"},
+    {"series": "KXTRUTHSOCIALD", "decide_hours_before_close": 1, "why": "11 pm ET: most of the day's posts are public"},
+    {"series": "KXTSAW", "decide_hours_before_close": 8, "why": "Sunday afternoon: Monday to Saturday TSA numbers are already published"},
+    {"series": "KXAPPRANKFREE", "decide_hours_before_close": 1, "why": "one hour before the 10 am ET snapshot; Apple's live Top Free chart is public"}
+  ],
+  "expected_from_test_half": {"bets_per_month": 7.3, "edge_per_dollar": 0.044, "usd_per_month_at_10": 3.2, "win_rate": 0.991, "max_losing_streak": 1},
+  "kill_rule": "stop the paper log if 2 losses come in the first 40 paper bets (break-even loss rate is about 5%)",
+  "tracker_note": "tools/kalshi_paper.py does not read this file yet; a lead must wire it (helpers do not). Rules are frozen as written here."
+}

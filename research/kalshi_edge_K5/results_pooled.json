@@ -1,0 +1,178 @@
+{
+ "train": {
+  "n": 165,
+  "edge": -0.012790950291805514,
+  "lo": -0.051235264362087994,
+  "hi": 0.02332460101491243,
+  "t": -0.6259081439837609,
+  "win": 0.9393939393939394,
+  "trades_month": 5.129052873759107,
+  "usd_month_3": -0.19681638105688487,
+  "usd_month_10": -0.6560546035229495,
+  "max_lose_streak": 2,
+  "losses": 10,
+  "loss_rate_upper95": 0.10063280829818483,
+  "edge_at_loss_upper": -0.050919446313506464,
+  "breakeven_loss": 0.049904132231404885,
+  "series": [
+   "KXAPPRANKFREE",
+   "KXTRUTHSOCIAL",
+   "KXTRUTHSOCIALD",
+   "KXTSAW",
+   "KXYTVIEWSW"
+  ],
+  "events": 118
+ },
+ "test": {
+  "n": 110,
+  "edge": 0.04392846429398878,
+  "lo": 0.022420847888490098,
+  "hi": 0.059895282008798796,
+  "t": 4.37881401672932,
+  "win": 0.990909090909091,
+  "trades_month": 7.291371084114781,
+  "usd_month_3": 0.9608962029682752,
+  "usd_month_10": 3.202987343227584,
+  "max_lose_streak": 1,
+  "losses": 1,
+  "loss_rate_upper95": 0.042399046957119,
+  "edge_at_loss_upper": 0.00957994566064398,
+  "breakeven_loss": 0.04935220385674932,
+  "series": [
+   "KXAPPRANKFREE",
+   "KXTRUTHSOCIAL",
+   "KXTRUTHSOCIALD",
+   "KXTSAW",
+   "KXYTVIEWSW"
+  ],
+  "events": 63
+ },
+ "carried_exact": [
+  {
+   "cell": [
+    "KXYTVIEWSW",
+    24,
+    "fav",
+    [
+     0.95,
+     0.985
+    ]
+   ],
+   "n": 32,
+   "losses": 1,
+   "loss_upper95": 0.13984946027422604
+  },
+  {
+   "cell": [
+    "KXYTVIEWSW",
+    12,
+    "fav",
+    [
+     0.95,
+     0.985
+    ]
+   ],
+   "n": 10,
+   "losses": 0,
+   "loss_upper95": 0.2588655508930523
+  },
+  {
+   "cell": [
+    "KXAAAGASW",
+    16,
+    "fav",
+    [
+     0.95,
+     0.985
+    ]
+   ],
+   "n": 21,
+   "losses": 0,
+   "loss_upper95": 0.13294591102652337
+  },
+  {
+   "cell": [
+    "KXAAAGASW",
+    8,
+    "fav",
+    [
+     0.95,
+     0.985
+    ]
+   ],
+   "n": 12,
+   "losses": 0,
+   "loss_upper95": 0.2209221919455559
+  },
+  {
+   "cell": [
+    "KXTSAW",
+    8,
+    "fav",
+    [
+     0.95,
+     0.985
+    ]
+   ],
+   "n": 42,
+   "losses": 0,
+   "loss_upper95": 0.06884260784039492
+  },
+  {
+   "cell": [
+    "KXTSAW",
+    3,
+    "fav",
+    [
+     0.95,
+     0.985
+    ]
+   ],
+   "n": 34,
+   "losses": 0,
+   "loss_upper95": 0.08433964335062545
+  },
+  {
+   "cell": [
+    "KXSPOTIFYD",
+    8,
+    "persist",
+    [
+     0.95,
+     0.985
+    ]
+   ],
+   "n": 18,
+   "losses": 1,
+   "loss_upper95": 0.23766091507463977
+  },
+  {
+   "cell": [
+    "KXAAAGASW",
+    2,
+    "fav",
+    [
+     0.95,
+     0.985
+    ]
+   ],
+   "n": 16,
+   "losses": 0,
+   "loss_upper95": 0.17074972298248098
+  },
+  {
+   "cell": [
+    "KXAAAGASW",
+    40,
+    "fav",
+    [
+     0.95,
+     0.985
+    ]
+   ],
+   "n": 20,
+   "losses": 0,
+   "loss_upper95": 0.13910834066826525
+  }
+ ]
+}
