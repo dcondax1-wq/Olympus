@@ -2,7 +2,7 @@
  "v": 1,
  "name": "Ergasterion lessons",
  "asof": "2026-11-17",
- "say": "This week we wrote down 11 lessons. The strongest (3 files agree): No edge found. None of them beat the noise bar on the training data, so none was carried forward. What changed our mind: Uncorrelated, but it does not hold in 2021-25 and passes evals too slowly.",
+ "say": "This week we wrote down 13 lessons. The strongest (3 files agree): No edge found. None of them beat the noise bar on the training data, so none was carried forward. What changed our mind: Uncorrelated, but it does not hold in 2021-25 and passes evals too slowly.",
  "week": [
   {
    "text": "No edge found. None of them beat the noise bar on the training data, so none was carried forward.",
@@ -45,6 +45,15 @@
    ]
   },
   {
+   "text": "Tested and rejected: Walk-forward re-tuning (2026-11-17, lit-walkforward-2026-11-17.md, tools/lit_wf_retune.py, research/lit/wf_retune.json):",
+   "cat": "NQ strategy",
+   "d": "2026-11-17",
+   "strength": 1,
+   "sources": [
+    "docs/CLAUDE_REFERENCE.md"
+   ]
+  },
+  {
    "text": "Tested and rejected: Rule-native layer (2026-11-17, rule-native-2026-11-17.md): 2nd target / 1R / scalp / profit lock: no sooner payout.",
    "cat": "NQ strategy",
    "d": "2026-11-17",
@@ -69,15 +78,6 @@
    "strength": 1,
    "sources": [
     "docs/CLAUDE_REFERENCE.md"
-   ]
-  },
-  {
-   "text": "Not adopted on money (fails H1), a risk choice for the owner.",
-   "cat": "process",
-   "d": "2026-11-16",
-   "strength": 1,
-   "sources": [
-    "research/writeups/rapid-levers-2026-11-16.md"
    ]
   }
  ],
@@ -154,7 +154,7 @@
    ]
   },
   {
-   "text": "Tested and rejected: Rule-native layer (2026-11-17, rule-native-2026-11-17.md): 2nd target / 1R / scalp / profit lock: no sooner payout.",
+   "text": "Tested and rejected: Walk-forward re-tuning (2026-11-17, lit-walkforward-2026-11-17.md, tools/lit_wf_retune.py, research/lit/wf_retune.json):",
    "cat": "NQ strategy",
    "d": "2026-11-17",
    "strength": 1,
