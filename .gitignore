@@ -235,3 +235,6 @@ data/obsidian_sync.json.tmp
 
 # Kalshi rewards paper: live ledger changes every minute (snapshot committed as rewards_paper_snapshot.json)
 research/kalshi_edge_K5/paper/rewards_paper.json
+# the Board (engine/board_events.py, docs/BOARD.md): the PC's event log stays local; shared.jsonl (Claude -> bot) ships with the repo
+data/board/*
+!data/board/shared.jsonl

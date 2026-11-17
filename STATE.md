@@ -2,6 +2,9 @@
 
 Updated 2026-11-17. Older detail and superseded lines: docs/STATE_HISTORY.md (full previous STATE.md verbatim, 2026-11-16 snapshot).
 Owner wants SHORT replies ("be simple and to the point. You send too much info."): a few lines, one small table max.
+**Start every chat:** 1. `python tools/board.py read` (accounts, newest events, owner notes not answered, PC last report / STALE;
+docs/BOARD.md). 2. Read this file. 3. Answer owner notes with `python tools/board.py note "..." --answers all`.
+Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7; bot checks green: lit_live --quick OK, NT selftest OK, ATLAS 47/47).
 
 ## Live now
 | What | State |
@@ -30,6 +33,15 @@ Rules: MFFU ONLY ("We stick with MFFU"). Limits: max 5 sim-funded, Builder 1x50K
 10. To load fixes: when both bots are flat, STOP BOT then START BOT. Kalshi pause sentence in the kalshi-server chat (if not done).
 11. Owner yes/no, older (details in history): Builder levers (fresh 50K / 2nd 25K), Rapid $1,000 keep, stack-on-one-account.
 - Trading page (2026-11-17 night-trading, tools/web_public/trading/, wired 2026-11-17): today per account + 16:10 ET flat clock, Mon-Fri calendar of daily $, last 30 trades (-> Odeon replay), 2026 H1 vs H2 stats, 50%/30% payout rules check, hour/weekday bars, live vs twin, equity curve, "order rejected (Limit 0)" help; every number says LIVE / PAPER / BACKTEST + "Last live data: <date>". Data: python tools/trading_export.py (rerun after new trades; --check). Test: tests/run_area.py trading.
+## Built, waiting for the PC
+- Board (2026-11-17 night-board, "a communication board so you and the bot know what's happening"): one event log the bot (engine/board_events.emit, heartbeat "board", ntfy "brd", /site/board/), you (Board page note box / POST /inbox/board) and Claude (tools/board.py read / note) all share; new Board app (tools/web_public/board/, lead wires it). ATLAS pass + lock recorded.
+- Phone alerts v2 (2026-11-17 night-notify): $-first trade / milestone / room-low / 16:15 summary pushes, one settings file notify_settings.json; cloud PC-SILENT check every monitor run (20 min, 1 push + 1 reminder after 2 h). Owner: add GitHub secret LE_NTFY_TOPIC = your ntfy alert topic (else it posts to the public status topic).
+- Plain words, MARKET apps (2026-11-17 night-w-market): every Market app's first line now says what it is for and what to do, in $ (Archive, Ares, Chronos, Cities, Colosseum, Compass, Delphi, Ergasterion, Forum, Helios, Kairos, Kronos, NQ, Odeon, Oracle, Pantheon, Pheme, Pinakes, Pythia); NQ no longer says "three bots" / BLITZ.
+- Obsidian living sync (tools/obsidian_sync.py, docs/OBSIDIAN_SYNC.md): the PC report writes <vault>/OLYMPUS/Sync every 15 min (bots' day, trades + pictures,
+  nightly learning, business checklist, STATE). Needs ONE line on the PC: python tools/obsidian_sync.py --setup "<vault folder>".
+- Jarvis: Classic Jarvis look back (violet HUD, opt-in: ⋯ → Look → Jarvis look, or say "classic Jarvis"); AGORA stays default. Jarvis, the Gate
+  and the hubs now all take the PC's ntfy report when newer (same drawdown / today's $ / age as NQ, Aegis, Zenith). Gate leads with Bots + Money.
+- Nightly self-learning loop is built (engine/learn_loop.py, research/learn_queue.json, docs/LEARN_LOOP.md): starts on the PC by itself after tonight; first cloud run rejected all 8 seed ideas.
 
 ## Next for Claude
 - Update this file and keep "My Accounts" (business/accounts.html, plan in business/accounts.json) current on every account / plan change.

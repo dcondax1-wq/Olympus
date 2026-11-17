@@ -458,7 +458,8 @@ def verdict_now(snap: dict, base: dict | None) -> dict | None:
 def lite(snap: dict, max_bytes: int = MAX_STATUS_BYTES) -> dict:
     """The live.json the site reads (tools/web_public/live.js LIVE.apply, board.js, truth.js), cut to under max_bytes:
     kind "le-live", lite True, t = the bot's own heartbeat time (None when the PC bot never reported), pc, pc_verdict,
-    board.lit / atlas / blitz cards + the last trades, accounts (no trade lists), reporter (what this PC saw at reporter.t).
+    board.lit / atlas / blitz cards + the last trades, accounts (no trade lists), reporter (what this PC saw at reporter.t),
+    brd (the Board's tiny cut, engine/board_events.status_block: account stage / balance / room / to pass, newest events).
     It goes to a PUBLIC topic: public() takes out the PC name, logins, broker account ids and folders (tests.test_public_build_privacy e)."""
     L = snap.get("live") if isinstance(snap.get("live"), dict) else {}
     pc = _d(L.get("pc"))
@@ -491,9 +492,17 @@ def lite(snap: dict, max_bytes: int = MAX_STATUS_BYTES) -> dict:
                       "eval": ev, "pnl": a.get("pnl"), "running": a.get("running"), "trades": [], "days": []})
     if accts:
         out["accounts"] = accts
+    try:                                           # the Board's tiny cut (engine/board_events.status_block: events + account rows)
+        from engine import board_events
+        out["brd"] = board_events.status_block()
+    except Exception:  # noqa: BLE001
+        pass
     out = {k: v for k, v in out.items() if v is not None}
     # too big: drop the least needed parts first
-    steps = [lambda o: _d(o.get("board")).pop("lines", None), lambda o: o.pop("accounts", None),
+    steps = [lambda o: _d(o.get("board")).pop("lines", None), lambda o: _d(o.get("brd")).__setitem__("ev", _d(o.get("brd")).get("ev", [])[:2]) if o.get("brd") else None,
+             lambda o: _d(o.get("brd")).__setitem__("ev", []) if o.get("brd") else None,
+             lambda o: o.pop("brd", None),
+             lambda o: o.pop("accounts", None),
              lambda o: _d(o.get("board")).__setitem__("trades", _d(o.get("board")).get("trades", [])[:1]) if o.get("board") else None,
              lambda o: [_d(_d(o.get("board")).get(k)).pop("waiting", None) for k in ("lit", "atlas", "blitz")],
              lambda o: [_d(_d(o.get("board")).get(k)).pop("window", None) for k in ("atlas", "blitz")],
@@ -505,12 +514,15 @@ def lite(snap: dict, max_bytes: int = MAX_STATUS_BYTES) -> dict:
         out["trimmed"] = True
     if _size(out) > max_bytes:                     # last resort: the essentials only
         bb = _d(out.get("board"))
+        brd = _d(out.get("brd"))
         out = {"v": 1, "kind": "le-live", "lite": True, "src": "pc_report", "t": out.get("t"), "trimmed": True, "pc": out.get("pc"),
                "pc_verdict": {k: _d(out.get("pc_verdict")).get(k) for k in ("code", "label", "level")},
                "reporter": out.get("reporter"),
                "board": {"t": bb.get("t"), "data_t": bb.get("data_t"),
                          **{k: {x: _d(bb.get(k)).get(x) for x in ("id", "name", "room", "mll", "balance", "today_pnl", "status")}
                             for k in ("lit", "atlas", "blitz") if bb.get(k)}}}
+        if brd:                                    # the Board's account rows (and its newest event) still go: an eval pass is news
+            out["brd"] = {"t": brd.get("t"), "ac": brd.get("ac"), "ev": (brd.get("ev") or [])[:1], "on": brd.get("on")}
     return public(out)
 
 
