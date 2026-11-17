@@ -64,6 +64,40 @@ Rules: MFFU ONLY ("We stick with MFFU"). Limits: max 5 sim-funded, Builder 1x50K
 - 2026-11-16 Rapid EOD levers: keep $1,000 in funded Rapid = $6,014 / $2,824 a month (H1/H2). `rapid-levers-2026-11-16.md`
 - 2026-11-16 Builder levers / stack on one account / MFFU stack: `builder-levers-2026-11-16.md`, `stack-one-account-2026-11-16.md`, `lit-mffu-rapid-stack.md`
 (All in research/writeups/. Older findings in docs/STATE_HISTORY.md: LIT no new edge, ATLAS only zombie rule, Safety S1 merged.)
+- 2026-11-17 edge health (`edge-health-2026-11-17.md`, `tools/edge_health.py` -> research/lab/edge_health.json, Business card data `edge`): light GREEN (LIT last 40 sessions to Nov 6: 2.3R/wk, PF 3.84, ~$3,440/mo vs 2026 H1 PF 3.91) but fading (Oct 19-Nov 6: 3-4 trades, ~-1.5R); Jul-Oct false alarm (RED) 8.6%; no market feature works as a warning (overnight share only marks the calendar). Data: TradingView to Oct 16, PC bars to Nov 6, 6 sessions missing: owner exports NQ1! 1m from Oct 16. Card for the lead: business.json `edge.line`.
+- 2026-11-17 smart entries (`lit-smart-entries-2026-11-17.md`, `tools/lit_smart_entries.py`): 31 new entry rules on the same LIT setups (conditional pullback limits, 1m CISD + BOS / strong close / reclaim combos, wait 5-15 min for proof, half now + half at minute 15): NONE better in both halves (pullback limits cut Jul-Oct to $225-1,236/mo of $2,670; staged halves 2-week pass 44.5 -> 15%). Today's entry stays; nothing changed.
+- 2026-11-17 night-ui: Prometheus arena framed between the top bar and the dock + shorter money banner (live flame tappable, Verdict opens); Settings in Jarvis: title, Inside Jarvis card, then "On this page"; Daphne banner shows "Holds up X% of the time on new data" again. Data City still 3 red (clear-night 706k tris > 700k, phone far view 68 calls vs < 60 needs a real draw-call merge, LITE towers check order-dependent). sw.js CACHE bumped to v109 by bump_versions.
+- 2026-11-17 night-reds: old test reds fixed at the cause: stale data rebuilt with each app's own builder (Archive, Ergasterion, Pinakes, Herald, Ares rules = room_f 0.4, Athena, Prometheus forge, Colosseum card); test sites now carry assets/ (ui.ogg 404s); the public PC status feed is the one allowed outside address in AK.page; home seal no longer shrinks under 44 px; Arena SVG without innerHTML; Nemesis view strip lets taps through. Still red: Daphne verdict hides its hold-rate line (design call), Prometheus money banner covers the live flame. Needs sw.js CACHE bump (lead).
+- 2026-11-17 night-w-cmd: plainer first screens (one line: what it is for + what to do, $ and ESTIMATE labels) on Argo, Argus, Bridge, Inbox, Kratos, Settings, Stoa, Clio, Daphne, Data City, Fates, Hephaestus, Moirai, Nemesis, Observatory, Prometheus and the Jarvis hub. Words only; ids/classes/data keys unchanged.
+- 2026-11-17 famous public strategies (`public-strategies-2026-11-17.md`, `tools/pub_strats.py`): Gao, pre-FOMC, turn of month, overnight drift, Connors RSI(2), trend following 12m / 20-60d, Crabel NR7: 22 cells, NONE holds in 2021-25 + both 2026 halves; best-looking ones need overnight holds (MFFU forbids) and lost in H2. LIT stays the only strategy.
+- 2026-11-17 Kalshi K5 (`kalshi-edge-K5-2026-11-17.md`): slow 'public number' markets (gas, TSA week, YouTube views, Truth Social, App/Spotify #1): no taker edge worth money; gas nowcast -45%, Spotify persistence -24%. One weak paper rule (late favourite when the answer is public, +4.4%/$1 test but -1.3% train, ~$3/mo) in `research/lab/kalshi_live_candidate.json`, nothing armed. Rewards program (ends Jan 1 2027, ~$106k/day): RT / Panama / Babel-el-Mandeb makers net +3% to +7% per $1 filled incl. pool; est. +$150-470/mo on 3 markets but needs real resting orders (owner's call, Kalshi still paused).
+- 2026-11-17 Kalshi K4 (`kalshi-edge-K4-2026-11-17.md`): NO EDGE. Copying Polymarket on 15-min crypto loses ~7-9%/$1 (a +18-32% version was lookahead, caught by a live check); sports favourites +1.8% test, range incl. 0; longshots -43%; 854 crypto coin x hour slices = luck. Kalshi stays paused, no paper rule.
+- 2026-11-17: drift switch REJECTED; rule-native layer: no change (BLITZ 3/day on Rapid = paper lead only).
+- Rule-native search (2026-11-17, `rule-native-2026-11-17.md`, `tools/money/rule_native.py`): 36 variants scored on days to 1st payout +
+  P(no payout 6m). LIT 2nd target / ATLAS 1R / high-win scalp / add-on profit lock: no faster in both halves (cut $). Only pass: Rapid +
+  BLITZ $300 max 3/day (50/62 -> 42/57 days, +$822/+$313/mo) but cap post hoc, 2021-25 2-wk eval fails 2.9 -> 6.0%: paper lead only.
+- Rapid EOD levers (2026-11-16, `rapid-levers-2026-11-16.md`, `tools/money/rapid_levers.py`): keep $1,000 in the funded Rapid
+  (take only above $3,100) = $6,014 / $2,824 vs $5,022 / $2,301 a month (H1/H2), first payout 2-4 sessions later: candidate,
+  owner yes/no. Different mixes per account: less $ (2x: -$500/mo H2) but "no account pays in 6m" 7.6% -> 1.4-1.6% (owner
+  choice). Asia slot $300: small 2026 plus, worse 2021-25, not built. Give-up/re-buy and day caps: no (keep the 30% guard).
+- Builder levers (2026-11-16, `builder-levers-2026-11-16.md`, `tools/money/builder_levers.py --z-room --z-togo --a-room --a-togo`):
+  a FRESH Builder 50K now next to Zlarior's hole (both trade, first pass kept) = first payout 53/50 -> 46.5/44 sessions
+  (~Feb 1 -> ~Jan 20), +$38/+$45 a month after the $91.80; pays whenever room < ~$1,200. ATLAS + fresh 25K ($43): 35/56 -> 31/47.
+  With ATLAS $500 on the funded 50K too: ~Jan 4. Rescue sizes (bigger/smaller) rejected (18-30% 2-week fails / slower).
+  2nd Builder 25K: LIT eval then + ATLAS $250 funded = $553/$456 vs LIT copy $346/$298, 1st payout 33/34 vs 45/44.
+  Payout ask $500/$1,000/$2,000/cycle-timed and a best-day day stop: no gain in both halves (keep ask $1,500). Owner yes/no.
+- Stack on ONE account (2026-11-16, `stack-one-account-2026-11-16.md`, `tools/money/stack_one_account.py`): Builder 50K, LIT eval then
+  LIT + ATLAS $500 once funded: first payout 26/23.5 -> 17/15 sessions, account $779/$753 -> $1,202/$1,205 a month (H1/H2), 2021-25 ~$0.
+  ATLAS in the eval too: faster pass but more 2-week fails (2021-25 20% vs 0.6%) = rejected. Rapid EOD + ATLAS: eval 40 -> 22 sessions
+  (still ~1 month). Owner yes/no needed; nothing built live.
+- Why the first payout is ~2 months (2026-11-16, owner asked): the planner's MFFU rules match the help center ($2,100 buffer +
+  $500 min, 50% best day, 2 days). Time = eval still $3,687 to go (Nov 7 numbers, stale) ~3 weeks + funded needs $2,600 above
+  start = ~24 sessions (12-16 trade days; LIT 2.46 trades/week). Funded sizing sweep (60/80% room, $1,500/$2,000 max, win caps
+  $1,300-$2,600): first payout 22-36 sessions, no faster; holds (consistency/line) ~0. Only real speed-up: start the next
+  account NOW instead of from the payout (FundedNext Rapid Daily: daily payouts, ~17 sessions after funding; needs FN's written OK).
+- LIT: no new edge (S2 sizing tilts, E-LIT 16 skip rules + missed setups). H2 weaker = lower VIX + wider stops, not a broken edge.
+- ATLAS: only the zombie-eval rule helped (+$60/month); filters/trend/overlap rejected.
+- Safety S1: missing-stop close, save-before-send, no duplicate bracket after crash, 8 entries/day cap (all merged).
 
 ## Known reds / environment notes
 - Data City 3 red (706k tris > 700k, phone far view 68 calls vs < 60, LITE towers order-dependent); Daphne verdict hides hold-rate line (design call); Prometheus money banner covers live flame.

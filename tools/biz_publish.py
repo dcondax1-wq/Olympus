@@ -280,6 +280,21 @@ def prop_plan(sample: bool = False, path: str | None = None) -> dict | None:
     return out
 
 
+EDGE = os.path.join(ROOT, "research", "lab", "edge_health.json")         # tools/edge_health.py (2026-11-17)
+
+
+def edge(path: str | None = None) -> dict | None:
+    """The edge-health card (tools/edge_health.py): is LIT's market still the 2026 kind? A warning, not a switch. Research
+    numbers only (no account state), so the public fixture carries it as is."""
+    d = _read(path or EDGE)
+    c = (d or {}).get("card") if isinstance(d, dict) else None
+    if not isinstance(c, dict) or not c.get("line"):
+        return None
+    keep = ("light", "line", "data_to", "sessions_missing", "pf40", "usd_month40", "tpw40", "pf40_2026_h1", "pf40_2021_25",
+            "false_alarm_h2_pct", "export", "note")
+    return {k: c.get(k) for k in keep} | {"source": "tools/edge_health.py -> research/lab/edge_health.json", "built": d.get("built")}
+
+
 def build(sample: bool = False, now: dt.datetime | None = None) -> dict:
     now = now or dt.datetime.now(dt.timezone.utc)
     st = {} if sample else local_state()
@@ -298,7 +313,8 @@ def build(sample: bool = False, now: dt.datetime | None = None) -> dict:
     return extra | {"v": 1, "kind": "business", "asof": now.isoformat(timespec="seconds"), "label": "ESTIMATE", "sample": sample, "demo": sample,
             "note": "EXAMPLE, not real: the plan with no progress from the PC yet (DEMO)." if sample else "Your PC's progress; $ ranges are estimates from the teams' docs.",
             "total": tot, "models": models, "progress": {k: v for k, v in st.items() if k != "agency_placeholders"} if st else {},
-            "prices": prices(), "week": WEEK, "rules": RULES, **({"prop": pp} if (pp := prop_plan(sample)) else {})}
+            "prices": prices(), "week": WEEK, "rules": RULES, **({"prop": pp} if (pp := prop_plan(sample)) else {}),
+            **({"edge": eg} if (eg := edge()) else {})}
 
 
 def write(doc: dict, path: str | None = None) -> str:
