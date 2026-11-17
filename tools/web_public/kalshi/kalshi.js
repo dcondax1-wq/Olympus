@@ -1397,8 +1397,8 @@
     if (isObj(own)) { RW.bt = isObj(own.backtest) ? own.backtest : null; if (rwOk(own.paper)) { RW.j = own.paper; RW.src = 'copy'; } }
     rwShow();
     const feed = await rwGet('../status_feed.json', 3000);
-    if (!isObj(feed) || !/^[A-Za-z0-9_-]{1,64}$/.test(String(feed.topic || '')) || !/^https:\/\//.test(String(feed.ntfy || 'https://ntfy.sh'))) return;
-    const txt = await rwGet(String(feed.ntfy || 'https://ntfy.sh').replace(/\/+$/, '') + '/' + encodeURIComponent(feed.topic) + '/json?poll=1&since=12h', 5000, true);
+    if (!isObj(feed) || !/^[A-Za-z0-9_-]{1,64}$/.test(String(feed.topic || '')) || !/^https:\/\/[A-Za-z0-9.-]+\/?$/.test(String(feed.ntfy || ''))) return;   // the host comes from the site's own status_feed.json
+    const txt = await rwGet(String(feed.ntfy).replace(/\/+$/, '') + '/' + encodeURIComponent(feed.topic) + '/json?poll=1&since=12h', 5000, true);
     let best = null;
     for (const line of String(txt || '').split('\n')) {
       let m = null, x = null;
