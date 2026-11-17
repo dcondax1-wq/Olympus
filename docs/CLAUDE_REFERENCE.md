@@ -623,6 +623,11 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   phone Today page. The MFFU Builder 50K is the right plan; best-day-rule plans (Topstep etc.) would take 2-17 months.
 
 ## Tested and rejected (don't redo without a new idea)
+- **Famous published strategies (2026-11-17, `public-strategies-2026-11-17.md`, `tools/pub_strats.py`):** 22 cells as
+  published + MFFU-legal day versions: Gao intraday momentum (wrong sign 2021-25, t -2.2), pre-FOMC drift (2021-25 only),
+  turn of the month (2026 only; day-trade version = random days, placebo p 0.12-0.24), overnight drift, Connors RSI(2),
+  12-month and 20/60-day time-series momentum, Crabel NR7 / NR4 / NR7-ID. None holds in 2021-25 + both 2026 halves; the
+  ones that look best hold overnight (MFFU: flat by 16:10) and lost in H2. LIT corr ~0 but no money. Nothing adopted.
 - **Drift switch (2026-11-17, `drift-switch-2026-11-17.md`, `tools/money/drift_switch.py`):** cut LIT to paper/half after a rolling
   loss (51 versions): 0 pass; never fires in 2026; 2021-25 fewer failed evals but same less payout; no better than random cuts.
 - **Rule-native layer (2026-11-17, `rule-native-2026-11-17.md`):** 2nd target / 1R / scalp / profit lock: no sooner payout.
