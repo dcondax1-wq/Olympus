@@ -1,0 +1,54 @@
+{
+ "note": "engine/news_official.py: official Tier-1 calendar (MFFU T1 = FOMC, minutes, jobs report, CPI); a failed source keeps its old rows",
+ "sources": {
+  "bls_cpi": {
+   "coverage": [
+    "2026-12-10",
+    "2027-12-10"
+   ],
+   "error": null,
+   "fetched": "2026-11-17",
+   "ok": true,
+   "rows": 13,
+   "tried": "2026-11-17",
+   "url": "https://www.bls.gov/schedule/news_release/cpi.htm"
+  },
+  "bls_empsit": {
+   "coverage": [
+    "2026-12-04",
+    "2027-12-03"
+   ],
+   "error": null,
+   "fetched": "2026-11-17",
+   "ok": true,
+   "rows": 13,
+   "tried": "2026-11-17",
+   "url": "https://www.bls.gov/schedule/news_release/empsit.htm"
+  },
+  "bls_ppi": {
+   "coverage": [
+    "2026-12-15",
+    "2027-12-15"
+   ],
+   "error": null,
+   "fetched": "2026-11-17",
+   "ok": true,
+   "rows": 13,
+   "tried": "2026-11-17",
+   "url": "https://www.bls.gov/schedule/news_release/ppi.htm"
+  },
+  "fed_fomc": {
+   "coverage": [
+    "2026-11-18",
+    "2027-12-08"
+   ],
+   "error": null,
+   "fetched": "2026-11-17",
+   "ok": true,
+   "rows": 28,
+   "tried": "2026-11-17",
+   "url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+  }
+ },
+ "updated": "2026-11-17"
+}
