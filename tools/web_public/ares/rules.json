@@ -62,7 +62,7 @@
   "stop_min_pts": 8,
   "stop_max_pts": 80,
   "max_trades_day": 1,
-  "room_f_eval": 0.8,
+  "room_f_eval": 0.4,
   "room_f_funded": 0.6,
   "note": "LIT: 1 trade a day, entries 02:00-15:30 ET, stop 8-80 pts"
  },

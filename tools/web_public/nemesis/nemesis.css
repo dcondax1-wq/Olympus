@@ -40,6 +40,8 @@ html[data-noscene] body { background: radial-gradient(ellipse at 50% 60%, #2c251
 .verdict .live[hidden] { display: none; }
 
 .pills { display: flex; gap: 6px; }
+#ui > .pills { pointer-events: none; }   /* the strip itself lets taps through to the arena (a figure behind its empty part); its buttons take them */
+.pills button { pointer-events: auto; }
 .pills button { min-height: 44px; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--oly-line); background: rgba(19, 16, 13, .74); font: 700 12px/1 var(--oly-ui); letter-spacing: .01em;
   -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
 .pills button[aria-pressed="true"] { border-color: rgba(var(--n-acc-rgb), .8); box-shadow: none; color: var(--n-acc); }

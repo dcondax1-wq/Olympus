@@ -1,6 +1,6 @@
 """NQ, "the NQ bots, right now" (tools/web_public/nq/, AGORA look, 2026-11-11): one page built for trust. Per bot (Zlarior / LIT 50K, ATLAS 25K, BLITZ 25K) the status with the
 exact age of the last report, drawdown left, the day's P&L in $ with R, the eval progress; the last 10 trades with the rule that closed each; the plan in one sentence; the backtest
-facts with dates; an honest banner when the PC is silent and the five steps that bring reporting back (howto.json = docs/NQ_BOT_BACK.md).
+facts with dates; an honest banner when the PC is silent and the three steps that bring reporting back (howto.json = docs/NQ_BOT_BACK.md).
 
   a. static: the files, the kit lines, the AGORA look, read-only, the Jarvis card, the manifest, the DEMO fixture, the 3D module is separate and optional, howto.json matches the doc
   b. the rules in node (nqcore.js): the three statuses and their ages, the 20-minute flame, drawdown / P&L / progress lines, the trades and their closing rules, the plan, the facts, the banner, junk input
@@ -239,7 +239,7 @@ def test_page():
                   and len(b["dd"]) == 3 and "No flame burns" in b["note"] and "(the last report)" in b["dt"][0] and "not known while the PC is silent" in b["planNote"], b)
             p.locator("#bannerBtn").click()
             p.wait_for_timeout(300)
-            check("c. the banner's button opens the same five steps; the veil closes it", p.evaluate("() => !document.querySelector('#sheet').hidden && document.querySelectorAll('#sheetBody .steps li').length === 5"))
+            check("c. the banner's button opens the same three steps (howto.json, owner 2026-11-12: BOTS_BACK); the veil closes it", p.evaluate("() => !document.querySelector('#sheet').hidden && document.querySelectorAll('#sheetBody .steps li').length === 3"))
             p.mouse.click(195, 30)
             p.wait_for_timeout(150)
             check("c. a tap on the veil closes the sheet; no console error", p.evaluate("() => document.querySelector('#sheet').hidden") and not errs, errs[:2])

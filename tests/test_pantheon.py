@@ -344,6 +344,8 @@ def _site(tmp, name, with_data):
         if os.path.exists(os.path.join(ROOT, "tools", "web_public", "jarvis", f)):
             shutil.copy(os.path.join(ROOT, "tools", "web_public", "jarvis", f), os.path.join(base, "jarvis", f))
     shutil.copytree(os.path.join(ROOT, "tools", "web_public", "olympus"), os.path.join(base, "olympus"))
+    from tests.olympus_money_kit import link_assets
+    link_assets(base)                                 # the built site's assets/ (the kit's sounds, ui.ogg ...): no 404 on the first tap
     if not with_data:
         for f in ("pantheon.json", "jarvis.json"):
             os.remove(os.path.join(base, "pantheon", f))

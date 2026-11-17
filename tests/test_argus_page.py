@@ -437,7 +437,7 @@ def part_c(tmp):
                 p = ctx.new_page()
                 p.on("pageerror", lambda e, e2=e2: e2.append(str(e)))
                 p.on("console", lambda m, e2=e2: e2.append(m.text) if m.type == "error" else None)
-                p.goto(ok_url + Q)
+                p.goto(ok_url + Q + "&gpu=1")          # ?gpu=1: lift the software-GL cap (high / ultra held to LITE on SwiftShader), as tests.test_olympus_kit
                 wait_ready(p)
                 got = p.evaluate("[window.__argus.fx, window.__argus.passes.length]")
                 check(f"c. OLYMPUS.fx() = {fx}: the render core runs {passes} pass(es) per frame, all 100 eyes still there, no errors", got == [fx, passes] and p.evaluate("window.__argus.levels.length") == 100 and not e2, (got, e2[:2]))

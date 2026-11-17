@@ -573,6 +573,12 @@ def run_browser(base, other_base):
             z.click("[data-bd-csv]")
         check("e. download inside Jarvis: the live board's Export CSV saves a file", dl.value.suggested_filename.endswith(".csv"), dl.value.suggested_filename)
         ctx.grant_permissions(["notifications"], origin=origin)
+        # headless Chromium has no notification backend: the grant shows in navigator.permissions ('granted') but Notification.permission
+        # stays 'denied'. Mirror ONLY a real grant into Notification.permission in this test's frame, as a phone that allowed them reads it;
+        # the app's code path is untouched.
+        z.evaluate("""async () => { const q = await navigator.permissions.query({ name: 'notifications' });
+          if (q.state === 'granted' && Notification.permission !== 'granted') Object.defineProperty(Notification, 'permission', { configurable: true, get: () => 'granted' });
+          return q.state; }""")
         ps = z.evaluate("""async () => { D.live.push = { vapid_public: 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U' };
           const r = await pushEnsure(false); const reg = await navigator.serviceWorker.getRegistration(); const sub = reg ? await reg.pushManager.getSubscription() : null;
           return { state: r && r.state, sub: !!sub, perm: Notification.permission }; }""")

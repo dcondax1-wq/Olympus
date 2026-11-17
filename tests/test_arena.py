@@ -583,7 +583,7 @@ def run_browser():
 
             # ---- 2b. the HD tier: the render core's three passes (scene, bloom, finish)
             ctx, p = page([cur], quality="high")
-            ready(p)
+            ready(p, base + "?gpu=1")       # ?gpu=1: lift the software-GL cap (high / ultra held to LITE on SwiftShader), as tests.test_olympus_kit
             p.wait_for_function("ARENA.state().scene && ARENA.state().scene.drawn > 0", timeout=180000)
             sc = st(p)["scene"]
             check("g. the HD tier (high): the render core draws 3 passes (scene, bloom, finish), no errors", sc["quality"] == "high" and sc["passes"] == 3 and not p.errs, (sc, p.errs))

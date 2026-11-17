@@ -333,8 +333,8 @@ def test_page():
             check(f"page: the tree grows, leaves on the surviving branches ({st['leaves']})", st["leaves"] > 0, st)
             v = pg.inner_text("#verdict")
             check("page: the verdict banner on top: beats chance or chance level, the hold rate, this root holds / fails",
-                  ("BEATS CHANCE" if chance_beaten else "CHANCE LEVEL") in v and f"{real['hold']}/{real['best_rules']}" in v
-                  and ("HOLDS" if st["held"] else "FAILS") in v, v)
+                  ("BEATS CHANCE" if chance_beaten else "CHANCE LEVEL") in v.upper() and f"{real['hold']}/{real['best_rules']}" in v
+                  and ("HOLDS" if st["held"] else "FAILS") in v.upper(), v)   # AGORA: sentence case on screen, no CSS uppercase
             pg.screenshot(path=os.path.join(PAGE_SHOTS, "01_grown_train.png"))
             pg.click('.lens [data-lens="test"]')
             pg.wait_for_timeout(350)
@@ -383,8 +383,14 @@ def test_page():
             a = pg.evaluate("() => [window.__daphne.state.themeHook, getComputedStyle(document.documentElement).getPropertyValue('--bg').trim(), window.__daphne.state.bg]")
             pg.evaluate("() => window.__onTheme({ bg: '#123456', accent: '#46ff9a', mix: 1, harmony: 0 })")
             b = pg.evaluate("() => [getComputedStyle(document.documentElement).getPropertyValue('--bg').trim(), window.__daphne.state.bg]")
-            check("page: OLYMPUS themes: theme() applied at start (bg blended by the theme's mix), onTheme follows every change",
-                  a == ["theme", "#02080d", "#02080d"] and b == ["#123456", "#123456"], (a, b))
+            # the expected start bg = the page's own bg (OWN in tree/app.js: the AGORA palette since 2026-11-10, was the phosphor dark that
+            # gave #02080d) blended into the stub theme's #000814 by its mix 0.5, the same rounding as app.js mixHex
+            import math
+            import re as _re
+            own = _re.search(r"const OWN = \{ bg: '(#[0-9a-fA-F]{6})'", open(os.path.join(ROOT, "tools", "web_public", "tree", "app.js"), encoding="utf-8").read()).group(1)
+            want = "#" + "".join("%02x" % math.floor(x + (y - x) * 0.5 + 0.5) for x, y in zip(*[[int(h[i:i + 2], 16) for i in (1, 3, 5)] for h in (own, "#000814")]))
+            check(f"page: OLYMPUS themes: theme() applied at start (bg blended by the theme's mix: {want}), onTheme follows every change",
+                  a == ["theme", want, want] and b == ["#123456", "#123456"], (a, b))
             ctx.close()
             ctx = br.new_context(viewport={"width": 390, "height": 844}, reduced_motion="reduce")
             ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith("http://127.0.0.1") else r.abort())
@@ -412,7 +418,8 @@ def test_page():
             pg.wait_for_timeout(300)
             bt = pg.inner_text("#best")
             check("page: BEST tab: the best branch of the whole search in plain words, with its money and HOLDS / FAILS",
-                  "BEST BRANCH OF THE WHOLE SEARCH" in bt and "Take the level trade, but only when" in bt and ("HOLDS" in bt or "FAILS" in bt) and "TEST $/TRADE" in bt, bt[:200])
+                  # AGORA Daphne (3e10975f): sentence case, "Unseen, per trade" (was TEST $/TRADE)
+                  "BEST BRANCH OF THE WHOLE SEARCH" in bt.upper() and "Take the level trade, but only when" in bt and ("HOLDS" in bt.upper() or "FAILS" in bt.upper()) and "UNSEEN, PER TRADE" in bt.upper(), bt[:200])
             check("page: BEST tab: the count of top rules that hold and the dead ends that fade", "hold out of sample" in bt and "dead ends" in bt, bt[-200:])
             check("page: on ?q=off the render-core overlay stands down (the plain 2D tree)", pg.evaluate("window.__daphne.glow") in (None,) or pg.evaluate("window.__daphne.glow.on") is False)
             ctx.close()

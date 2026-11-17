@@ -492,6 +492,8 @@ def _site(tmp, mode, plugin=False):
     for f in ["three.module.min.js"] + glob.glob(os.path.join(os.path.dirname(PAGE), "jarvis", "*.woff2")):
         shutil.copy(os.path.join(os.path.dirname(PAGE), "jarvis", os.path.basename(f)), os.path.join(tmp, mode, "jarvis"))
     shutil.copytree(os.path.join(os.path.dirname(PAGE), "olympus"), os.path.join(tmp, mode, "olympus"))
+    from tests.olympus_money_kit import link_assets
+    link_assets(os.path.join(tmp, mode))              # the built site's assets/ (the kit's sounds, ui.ogg ...): no 404 on the first tap
     with open(os.path.join(tmp, mode, "data.json"), "w", encoding="utf-8") as fh:      # the dashboard's LIT state: price + today's untaken levels (the Market now card)
         json.dump({"live": {"price": 25000.0, "last_run": "2026-11-03 10:00", "levels": [
             {"price": 24970.0, "side": "L", "label": "PDL"}, {"price": 24985.0, "side": "L", "label": "London low"},
