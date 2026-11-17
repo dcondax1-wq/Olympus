@@ -71,11 +71,12 @@ def accounts():
     st, m = run({}, snap(t, {"lit": lit(room=900.0), "atlas": atlas()}))
     check("50% of the drawdown used (room $900 of $2,000 = 55%): one push for Zlarior, ATLAS untouched",
           keys(m) == ["guard:dd:lit:2026-11-02:50"] and "55% of the drawdown used" in m[0]["body"] and "$900 of $2,000" in m[0]["body"]
-          and m[0]["title"] == "Zlarior 50K: 50% of the drawdown used" and "real account" in m[0]["body"], m)
+          and m[0]["title"] == "Zlarior 50K: 50% of the room used, $900 left" and "real account" in m[0]["body"], m)
     st, m = run(st, snap(t + 900, {"lit": lit(room=1000.0), "atlas": atlas()}))
     check("not again 15 minutes later", m == [], m)
     st, m = run(st, snap(t + 1800, {"lit": lit(room=480.0), "atlas": atlas()}))
-    check("75%: its own push, high priority", keys(m) == ["guard:dd:lit:2026-11-02:75"] and m[0]["priority"] == "high", m)
+    check("75%: its own push, high priority, 'room getting low, $480 left of $2,000'", keys(m) == ["guard:dd:lit:2026-11-02:75"] and m[0]["priority"] == "high"
+          and m[0]["title"] == "Zlarior 50K: room getting low, $480 left of $2,000", m)
     st, m = run(st, snap(t + 2700, {"lit": lit(room=1900.0), "atlas": atlas()}))
     check("back to 5% used: nothing pushed, both levels re-armed", m == [] and not [k for k in st["sent"] if ":dd:lit:" in k], st)
     st, m = run(st, snap(t + 3600, {"lit": lit(room=900.0), "atlas": atlas()}))
@@ -133,17 +134,18 @@ def accounts():
 
 # ============================================================================================== day summary
 def summary():
-    day = at(2026, 11, 16, 16, 10)          # Monday
+    day = at(2026, 11, 16, 16, 20)          # Monday, after the 16:15 summary time
     cards = {"lit": lit(today_pnl=420.0, trades_today=1, room=1800.0), "atlas": atlas(today_pnl=-110.0, trades_today=2, room=890.0)}
     st, m = run({}, snap(day, cards))
     d = [x for x in m if ":day:" in x["key"]]
-    check("16:10 ET Monday: one day summary, total +$310, $ / trades / drawdown left per account",
+    check("16:20 ET Monday: one day summary, total +$310, $ today / $ to pass / room per account, tomorrow's news",
           [x["key"] for x in d] == ["guard:day:2026-11-16"] and d[0]["title"] == "Day Mon Nov 16: +$310"
-          and "Zlarior 50K: +$420, 1 trade, drawdown left $1,800 of $2,000" in d[0]["body"]
-          and "ATLAS 25K: -$110, 2 trades, drawdown left $890 of $1,000" in d[0]["body"] and "(Sim / paper)" in d[0]["body"], d)
+          and "Zlarior 50K: +$420 today, $3,000 to pass, room $1,800 of $2,000" in d[0]["body"]
+          and "ATLAS 25K: -$110 today, $1,500 to pass, room $890 of $1,000" in d[0]["body"] and "(Sim / paper)" in d[0]["body"]
+          and "Tomorrow (Tue):" in d[0]["body"], d)
     _s, m = run(st, snap(day + 900, cards))
     check("once a day", not [x for x in m if ":day:" in x["key"]], m)
-    for label, t in (("15:55 ET", at(2026, 11, 16, 15, 55)), ("17:02 ET (CME break: too late)", at(2026, 11, 16, 17, 2)), ("Saturday", at(2026, 11, 21, 16, 10)),
+    for label, t in (("15:55 ET", at(2026, 11, 16, 15, 55)), ("16:10 ET (before 16:15)", at(2026, 11, 16, 16, 10)), ("17:02 ET (CME break: too late)", at(2026, 11, 16, 17, 2)), ("Saturday", at(2026, 11, 21, 16, 10)),
                      ("Christmas Day (CME closed)", at(2026, 12, 25, 16, 10))):
         _s, m = run({}, snap(t, cards))
         check(f"no summary at {label}", not [x for x in m if ":day:" in x["key"]], (label, m))
@@ -176,23 +178,23 @@ def reporter():
         b.run(h, now)
         check("reporter: first run records only (no guard push)", not h.posts(cfg["topic"]), [c["h"] for c in h.posts()])
         hb2 = copy.deepcopy(hb)
-        hb2["t"] = now + 3900 - 60
+        hb2["t"] = now + 4800 - 60
         hb2["account_c"]["eval"].update(room=420.0, balance=24730.0, floor=24310.0, today=-580.0)
         hb2["account_c"]["day_pnl"] = -430.0
         b.hb(hb2)
         h = FakeHTTP()
-        b.run(h, now + 3900)                   # 16:05 ET
+        b.run(h, now + 4800)                   # 16:20 ET
         titles = [c["h"].get("Title", "") for c in h.posts(cfg["topic"])]
         bodies = {c["h"].get("Title", ""): c["body"] for c in h.posts(cfg["topic"])}
-        check("reporter at 16:05 ET: BLITZ 58% drawdown, its daily loss near ($430 of $600) and the day summary, from the real board",
-              "BLITZ 25K: 50% of the drawdown used" in titles and any(t.startswith("BLITZ 25K: daily loss limit near") for t in titles)
+        check("reporter at 16:20 ET: BLITZ 58% drawdown, its daily loss near ($430 of $600) and the day summary, from the real board",
+              any(t.startswith("BLITZ 25K: 50% of the room used") for t in titles) and any(t.startswith("BLITZ 25K: daily loss limit near") for t in titles)
               and any(t.startswith("Day Mon Nov 16:") for t in titles), titles)
         day = next(v for k, v in bodies.items() if k.startswith("Day "))
-        check("day summary names Zlarior and BLITZ with $ and drawdown left", "Zlarior 50K:" in day and "BLITZ 25K: -$430" in day
-              and "drawdown left $420 of $1,000" in day, day)
+        check("day summary names Zlarior and BLITZ with $ today and the room left", "Zlarior 50K:" in day and "BLITZ 25K: -$430 today" in day
+              and "room $420 of $1,000" in day, day)
         check("every push title is ASCII (HTTP header)", all(all(ord(ch) < 128 for ch in t) for t in titles), titles)
         h = FakeHTTP()
-        b.run(h, now + 4800)
+        b.run(h, now + 5700)
         check("reporter: nothing repeated on the next run", not [c for c in h.posts(cfg["topic"]) if "guard" in c["body"] or "drawdown" in c["body"]],
               [c["h"] for c in h.posts(cfg["topic"])])
         state = json.load(open(os.path.join(b.work, "state.json"), encoding="utf-8"))

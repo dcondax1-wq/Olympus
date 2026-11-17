@@ -67,4 +67,5 @@ and the Me hub's files (`me.json`, its cards / home / health-history kinds) are 
 - Public site: anything new the build writes passes `tools/site_privacy.scrub` (the build's last step). Never add `household`, `agency`, `cards`, `health` or `day` to `tools/money_publish.KEEP`.
 - PC link: a private route asks `engine/live_site.private_why(client, headers)` first. Health / cards JSON goes in `data/day/` or `money_out/` (both private routes), never a site folder.
 - Public status topic: `tools/pc_report.lite()` ends with `public()`.
+- Cloud PC-silent alert (`tools/pc_silent_check.py`): to the private topic only through the secret LE_NTFY_TOPIC (never printed); its fallback on the public status topic is plain text with no $, names or ids (`tests.test_notify` d).
 - Tests: `python -X utf8 -m tests.test_public_build_privacy` (`--fast` without the full build), `tests.test_private_link`, `tests.test_repo_secrets` (`--state <state.json>` for the real account ids, `--history` for the history).

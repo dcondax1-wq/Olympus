@@ -1,0 +1,20 @@
+{
+  "_help": "Phone alerts (engine/notify.py, docs/NOTIFICATIONS.md). true = on, false = off. Times are New York (ET). In quiet hours ordinary alerts arrive WITHOUT sound (summaries and milestones wait for the end); the kinds in ring_in_quiet_hours still ring.",
+  "alerts": {
+    "trade_opened": true,
+    "trade_closed": true,
+    "eval_milestones": true,
+    "room_low": true,
+    "daily_summary": true,
+    "pc_silent": true,
+    "problems": true,
+    "other": true
+  },
+  "quiet_hours": {"from": "23:00", "to": "07:00"},
+  "ring_in_quiet_hours": ["pc_silent", "room_low", "problems"],
+  "milestones_pct": [25, 50, 75, 100],
+  "room_low_used_pct": [50, 75],
+  "daily_summary_at": "16:15",
+  "pc_silent_after_min": 20,
+  "pc_silent_remind_after_min": 120
+}

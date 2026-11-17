@@ -49,6 +49,26 @@ minutes after the fill (GitHub can add a few minutes). The PC bot's arrive a few
 
 Paper only, as always: notifications never place or change an order.
 
+## ntfy alerts, short and $ first (2026-11-17)
+
+One settings file: `notify_settings.json` (repo root): each type on / off, quiet hours (default 23:00-07:00 ET: no sound, except
+PC silent, room low and problems), milestones, summary time. Code: `engine/notify.py`; tests: `python -X utf8 -m tests.test_notify`.
+
+| When | Example |
+|---|---|
+| trade opened | `Zlarior 50K SHORT opened \| risk $368 \| target +$1,432` |
+| trade closed | `Zlarior 50K closed +$605 \| day +$605 \| room $1,750` |
+| eval progress (25 / 50 / 75 / 100%) | `Zlarior 50K: 50% of the target made ($1,500 of $3,000)` |
+| room low (50 / 75% used) | `ATLAS 25K: room getting low, $250 left of $1,000` |
+| 16:15 ET day summary | `Day Mon Nov 16: +$310` / `Zlarior 50K: +$420 today, $2,580 to pass, room $1,800 of $2,000; ... Tomorrow (Tue): CPI m/m 08:30.` |
+| **PC silent** (the cloud, PC off is fine) | `Your PC stopped reporting at 09:14 ET. Check it: STOP BOT, START BOT.` once, one reminder after 2 h, `PC reporting again` when back |
+
+The PC silent check is a step of the cloud monitor (`tools/pc_silent_check.py`, every run: about every 30 min on weekdays
+01:30-16:00 ET). It reads the heartbeat branch and the PC's posts on the status topic; silent = neither is newer than 20 min.
+It pushes to your private ntfy topic when the GitHub secret **LE_NTFY_TOPIC** holds it (GitHub -> Settings -> Secrets and
+variables -> Actions -> New secret, the topic name your ntfy app follows); without it the plain alert (no $, no names, no ids)
+goes to the public status topic.
+
 ---
 
 ## Setup: tap Allow (that is all)

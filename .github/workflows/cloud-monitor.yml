@@ -86,6 +86,7 @@ jobs:
             /live_model.json
             /live_model_engine.json
             /live_model_lit.json
+            /notify_settings.json
             /second_model.json
             /data/NQ_rolls.json
             /research/second/*.json
@@ -147,6 +148,25 @@ jobs:
           python-version: "3.12"
           cache: pip
           cache-dependency-path: requirements-cloud.txt
+
+      # PC SILENT (owner 2026-11-17: the PC had not reported since 2026-11-07 and nobody noticed). Its own step, stdlib only,
+      # before the install and the paper monitor, so it works when they fail and with the PC off. Last sign of life = the
+      # newest of the heartbeat branch and the PC's posts on the ntfy status topic; older than 20 min in market hours ->
+      # "Your PC stopped reporting at HH:MM ET. Check it: STOP BOT, START BOT." once, one reminder after 2 h, "reporting
+      # again" when back (engine/notify.py, notify_settings.json). To your private ntfy topic when the secret LE_NTFY_TOPIC
+      # holds it, else (plain text, no names / ids / $) to the public status topic. State: dash/pc_silent.json.
+      - name: PC silent check (push when the PC stopped reporting)
+        if: steps.guard.outputs.go == '1'
+        timeout-minutes: 4
+        continue-on-error: true
+        env:
+          LE_NTFY_TOPIC: ${{ secrets.LE_NTFY_TOPIC }}
+        run: |
+          mkdir -p dash
+          if git fetch -q --depth 1 origin dashboard 2>/dev/null; then
+            git show FETCH_HEAD:pc_silent.json > dash/pc_silent.json 2>/dev/null || rm -f dash/pc_silent.json
+          fi
+          python tools/pc_silent_check.py --out dash || true
 
       - name: Install
         if: steps.guard.outputs.go == '1'

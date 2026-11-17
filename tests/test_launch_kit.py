@@ -107,12 +107,13 @@ def alerts():
     b2["lit"]["position"] = dict(pos)
     st, m = run_events(st, snap_of(now, b2))
     tm = trade_msgs(m)
-    check("1. Zlarior entry: one push on the next report run, high priority, title 'Zlarior 50K trade opened: SHORT 6 micros'",
-          len(tm) == 1 and tm[0]["title"] == "Zlarior 50K trade opened: SHORT 6 micros" and tm[0]["priority"] == "high", tm)
+    check("1. Zlarior entry: one push on the next report run, high priority, $ first: 'Zlarior 50K SHORT opened | risk $368 | target +$1,432'",
+          len(tm) == 1 and tm[0]["title"] == "Zlarior 50K SHORT opened | risk $368 | target +$1,432" and tm[0]["priority"] == "high", tm)
+    check("1. the $ target is micros x target distance x $2 - $1.90 a micro (6 x 120.25 x 2 - 11.40 = $1,431.60)", R.target_usd(pos) == 1431.6, R.target_usd(pos))
     body = tm[0]["body"] if tm else ""
     check("1. entry body: side, micros, entry, stop (pts), target (pts), $ risk at the stop with costs, its share of the drawdown left, the account",
           "SHORT 6 micros at 25,100.25" in body and "stop 25,130.00 (29.75 pts)" in body and "target 24,980.00 (120.25 pts)" in body
-          and "Risk $368 if stopped (costs in), 32% of the $1,145 drawdown left" in body and "Real account (you armed it)" in body, body)
+          and "Risk $368 if stopped (costs in), 32% of the $1,145 room left" in body and "Real account (you armed it)" in body, body)
     check("1. the $ risk is micros x stop distance x $2 + $1.90 a micro (6 x 29.75 x 2 + 6 x 1.90 = $368.40)", R.risk_usd(pos) == 368.4, R.risk_usd(pos))
     st, m = run_events(st, snap_of(now + 900, b2))
     check("1. the same open position is not pushed again", not trade_msgs(m), m)
@@ -123,11 +124,11 @@ def alerts():
                      "stop": 25130.0, "target": 24980.0, "exit_px": 24980.0, "exit": "TARGET", "usd": 605.0, "r": 1.64}]
     st, m = run_events(st, snap_of(now + 1800, b3))
     tm = trade_msgs(m)
-    check("1. Zlarior exit: one push 'Zlarior 50K trade closed +$605 (+1.6R)', default priority",
-          len(tm) == 1 and tm[0]["title"] == "Zlarior 50K trade closed +$605 (+1.6R)" and tm[0]["priority"] == "default", tm)
+    check("1. Zlarior exit: one push, $ first: 'Zlarior 50K closed +$605 | day +$605 | room $1,750', default priority",
+          len(tm) == 1 and tm[0]["title"] == "Zlarior 50K closed +$605 | day +$605 | room $1,750" and tm[0]["priority"] == "default", tm)
     body = tm[0]["body"] if tm else ""
     check("1. exit body: how it ended at which price, +/- $ and R, drawdown left of the max loss, today's $, the account",
-          "SHORT 6 micros: TARGET at 24,980.00, +$605 (+1.6R)" in body and "Drawdown left $1,750 of $2,000" in body and "Today +$605" in body
+          "SHORT 6 micros: TARGET at 24,980.00, +$605 (+1.6R)" in body and "Room left $1,750 of $2,000" in body
           and "Real account" in body, body)
     # ---- a trade that opened and closed between two runs: ONE push with the entry and the exit
     et2 = now + 2000
@@ -139,9 +140,9 @@ def alerts():
     tm = trade_msgs(m)
     body = tm[0]["body"] if tm else ""
     check("1. opened and closed between two runs: one push, its keys both recorded, with the entry (side, micros, stop, target, risk) and the exit (-$, R from the stop, drawdown left)",
-          len(tm) == 1 and tm[0]["title"] == "Zlarior 50K trade closed -$310 (-1.0R)" and tm[0]["keys"] == [f"close:lit:{et2}", f"open:lit:{et2}"]
+          len(tm) == 1 and tm[0]["title"] == "Zlarior 50K closed -$310 | day +$300 | room $1,445" and tm[0]["keys"] == [f"close:lit:{et2}", f"open:lit:{et2}"]
           and body.startswith("Opened Mon ") and "LONG 5 micros at 25,010.00, stop 24,980.00 (30.00 pts), target 25,110.00 (100.00 pts)" in body
-          and "Risk $310 if stopped" in body and "Closed: STOP at 24,980.00, -$310 (-1.0R)" in body and "Drawdown left $1,445 of $2,000" in body, tm)
+          and "Risk $310 if stopped" in body and "Closed: STOP at 24,980.00, -$310 (-1.0R)" in body and "Room left $1,445 of $2,000" in body, tm)
     check("1. R is worked out from the stop when the row has none (-$309.50 / $309.50 = -1.0R)", R._r_of(b4["trades"][0]) == -1.0, R._r_of(b4["trades"][0]))
     st, m = run_events(st, snap_of(now + 3600, b4))
     check("1. nothing repeated on the next run", not trade_msgs(m), m)
@@ -158,8 +159,8 @@ def alerts():
                      "qty": 2, "entry": 25060.0, "exit": "TARGET", "usd": 140.0}] + b4["trades"]
     st, m = run_events(st, snap_of(now + 4500, b5))
     tm = trade_msgs(m)
-    check("1. ATLAS entry on its real 25K: 'ATLAS 25K trade opened: LONG 3 micros', risk $186 of the $822 left, 'Real account'",
-          [x["title"] for x in tm] == ["ATLAS 25K trade opened: LONG 3 micros"] and "Risk $186 if stopped (costs in), 23% of the $822 drawdown left" in tm[0]["body"]
+    check("1. ATLAS entry on its real 25K: 'ATLAS 25K LONG opened | risk $186 | target +$414', 23% of the $822 left, 'Real account'",
+          [x["title"] for x in tm] == ["ATLAS 25K LONG opened | risk $186 | target +$414"] and "Risk $186 if stopped (costs in), 23% of the $822 room left" in tm[0]["body"]
           and "Real account." in tm[0]["body"], tm)
     check("1. ATLAS's paper member trade (EMA, src paper) is not pushed while account B trades", not [x for x in tm if "EMA" in x["body"] or "SHORT 2" in x["body"]], tm)
     # ---- ATLAS without an account: its paper rows are its only trades (as before), said as paper
@@ -174,7 +175,7 @@ def alerts():
                                                                                     "stop": 25092.0, "target": 25056.0}), "trades": []}
     _s, m = run_events({"seen": {}, "cond": {}, "seeded": True}, snap_of(now + 6100, b7))
     tm = trade_msgs(m)
-    check("1. BLITZ on Sim: 'BLITZ 25K trade opened: SHORT 4 micros', 'Sim account.'", [x["title"] for x in tm] == ["BLITZ 25K trade opened: SHORT 4 micros"]
+    check("1. BLITZ on Sim: 'BLITZ 25K SHORT opened | risk $104 | target +$184', 'Sim account.'", [x["title"] for x in tm] == ["BLITZ 25K SHORT opened | risk $104 | target +$184"]
           and "Sim account." in tm[0]["body"], tm)
     allm = [x for x in trade_msgs(m)]
     check("1. every trade push title is ASCII (an HTTP header) and under 120 characters", all(ascii_ok(x["title"]) and len(x["title"]) <= 120 for x in allm), allm)
@@ -213,9 +214,9 @@ def alerts_retry():
         b.hb(hb2)
         h = FakeHTTP()
         b.run(h, now + 1800)
-        ps = [c for c in h.posts(cfg["topic"]) if "trade" in c["h"].get("Title", "")]
+        ps = [c for c in h.posts(cfg["topic"]) if " closed " in c["h"].get("Title", "") or " opened" in c["h"].get("Title", "")]
         check("1. ... and sent once on the next run, through the real board (Zlarior 50K, +$354, +3.0R, entry and exit in one push)",
-              len(ps) == 1 and ps[0]["h"]["Title"] == "Zlarior 50K trade closed +$354 (+3.0R)" and "Opened " in ps[0]["body"]
+              len(ps) == 1 and ps[0]["h"]["Title"].startswith("Zlarior 50K closed +$354 | day ") and "(+3.0R)" in ps[0]["body"] and "Opened " in ps[0]["body"]
               and "LONG 3 micros at 25,010.00, stop 24,990.00 (20.00 pts)" in ps[0]["body"] and "Closed: TARGET at 25,070.00" in ps[0]["body"], ps)
     finally:
         b.cleanup()
@@ -462,7 +463,7 @@ def fills_report():
         check("2. reporter: the flags of the new trade are pushed, high priority: wrong size and entry slippage (4 ticks)",
               sorted(c["h"]["Title"] for c in fl) == ["Zlarior 50K fill check: entry slippage", "Zlarior 50K fill check: wrong size"]
               and all(c["h"].get("Priority") == "high" for c in fl), [c["h"] for c in ps])
-        op = by.get("Zlarior 50K trade opened: SHORT 6 micros")
+        op = next((c for t, c in by.items() if str(t).startswith("Zlarior 50K SHORT opened | risk ")), None)
         check("2. reporter: the entry push ends with the fill check's flags ('see the separate alert')", op is not None
               and "Fill check: wrong size; entry slippage (separate alert)." in op["body"], [c["body"] for c in ps])
         check("2. reporter: every push header is ASCII", all(ascii_ok(v) for c in ps for v in c["h"].values()), [c["h"] for c in ps])
