@@ -2391,6 +2391,11 @@ class LiveBot:
             lane = _rp.lane_spec(self._rapid_blk, self.cfg)
             cfg = {**self.cfg, "accounts": [r for r in (self.cfg.get("accounts") or []) if isinstance(r, dict)
                                             and r.get("id") != lane["id"] and r.get("nt_account") != lane["nt_account"]] + [lane]}
+        try:                                            # LIT on ATLAS's funded 25K (engine/lit25.py, OFF: no data/lit25.json)
+            from . import lit25 as _l25
+            cfg = _l25.add_lane(self, cfg)
+        except Exception as e:
+            self._note_error(f"LIT on the 25K NOT started: {e.__class__.__name__}: {e}")
         if not cfg.get("accounts"):
             return
         try:

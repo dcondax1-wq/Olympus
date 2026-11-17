@@ -463,7 +463,11 @@ class Account:
         return str((f.get("start") if self.mode == "funded" else None) or self.spec.get("eval_start") or "")
 
     def shared(self):
-        """The other strategy on this SAME account (engine/rapid.RapidAtlas: ATLAS on the Rapid EOD), or None."""
+        """The other strategy on this SAME account (engine/rapid.RapidAtlas: ATLAS on the Rapid EOD; engine/lit25.SharedAtlas:
+        ATLAS on its funded 25K), or None."""
+        if self.spec.get("lane") == "lit25":
+            ab = getattr(getattr(self.router, "bot", None), "acct_b", None)
+            return ab if getattr(ab, "shared_lane", None) == "lit25" and getattr(ab, "name", None) == self.spec.get("nt_account") else None
         if self.spec.get("lane") != "rapid":
             return None
         return getattr(getattr(self.router, "bot", None), "acct_r", None)

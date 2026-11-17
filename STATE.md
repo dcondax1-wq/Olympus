@@ -13,6 +13,7 @@ Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7;
 | Phone dashboard | Netlify site moonlit-scone-08afe5 (private). Updates itself once the owner pastes a Netlify key at tonight's setup |
 
 ## Waiting on the owner
+- night-bot 2026-11-17: ATLAS 25K PASSED ($26,946.10; Zlarior 50K $49,192.78). Funded 25K: LIT + ATLAS $250 = 1st payout 14/18 vs 18/26 sessions, $599/$529 vs $592/$497 a month, but no-payout-6m 7.5/12.2% vs 5.0/5.5%, 2021-25 a bit worse: owner yes/no; built OFF (engine/lit25.py, docs/LIT25_FUNDED.md; new funded Name: `python -X utf8 -m engine.lit25 --funded "<Name>" --start <day>`). PC silent: PC_DOCTOR.bat (docs/PC_DOCTOR.md); likely cause = report task OlympusPCReport never installed + auto-update never connected (BOTS_BACK's credential.interactive=never blocked the sign-in; fixed in autoupdate.fetch_interactive); heartbeat branch silent on purpose (GitHub suspended 11-08).
 - Rapid EOD 50K READY, OFF (night-rapid): LIT + ATLAS on one account; owner pastes ONE line (docs/RAPID_EOD_SETUP.md) then START BOT + phrase. Jul-Oct live-code replay: pass median 20 sessions, 0 fails.
 - Owner 2026-11-17: "be simple and to the point. You send too much info." Replies: a few lines, one small table max.
 - Owner 2026-11-17: ONE Rapid EOD 50K only ("I'll stick with 1 rapid"): LIT + ATLAS $500 from day one, 30% best-day guard,

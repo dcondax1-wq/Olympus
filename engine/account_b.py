@@ -1743,7 +1743,13 @@ def build(bot, ab: dict | None, **kw):
     except Exception:
         lit_acct = None
     spec = normalize(ab, lit_account=lit_acct)
-    return AccountB(bot, spec, **kw).start() if spec else None
+    cls = AccountB
+    try:                                   # LIT's lane on this same funded account (engine/lit25.py, OFF by default)
+        from . import lit25
+        cls = lit25.atlas_class(bot, spec) or AccountB
+    except Exception:
+        cls = AccountB
+    return cls(bot, spec, **kw).start() if spec else None
 
 
 # ---------------------------------------------------------------------------------------------------------------- switch

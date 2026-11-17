@@ -41,11 +41,11 @@ AREAS = {
     "cities": ["cities_page", "kalshicity_page", "datacity"],
     "nq": ["lit_live", "no_yahoo", "risk_invariants", "mffu_rules", "guards", "sizing_caps", "second", "eval_lifecycle", "live_board", "live_publish", "heartbeat",
            "lit_scale_in", "lit_learn", "learn_loop"],
-    "pc": ["autoupdate_source", "obsidian_sync", "autorun", "update_from_zip", "pc_publish", "public_build_privacy", "bots_back", "report_keeper", "trade_watch_atlas", "setup_everything", "calendar_sync", "me_hub", "live_link", "roll_now", "pc_guard", "launch_kit", "second_backup", "clean_pc", "clean_storage", "lite", "win_scripts", "fresh_start", "pc_health", "pc_selftest", "pc_silent", "pc_command_center", "one_time_setup"],
+    "pc": ["autoupdate_source", "pc_doctor", "obsidian_sync", "autorun", "update_from_zip", "pc_publish", "public_build_privacy", "bots_back", "report_keeper", "trade_watch_atlas", "setup_everything", "calendar_sync", "me_hub", "live_link", "roll_now", "pc_guard", "launch_kit", "second_backup", "clean_pc", "clean_storage", "lite", "win_scripts", "fresh_start", "pc_health", "pc_selftest", "pc_silent", "pc_command_center", "one_time_setup"],
     "agency": ["agency", "agency_billing", "cold_calls", "agency_storefront", "agency_upsells", "biz_models"],
     "privacy": ["public_build_privacy", "private_link", "repo_secrets"],       # team Q2 2026-11-14, docs/PRIVACY.md
     "money": ["money_machines", "digital_products", "money_door", "payout_plan", "biz_models", "business_pages"],
-    "fleet": ["fleet_mffu", "copy_accounts", "firms", "fleet", "rapid"],                 # team E 2026-11-16: copy accounts + firm rules
+    "fleet": ["fleet_mffu", "copy_accounts", "firms", "fleet", "rapid", "lit25"],                 # team E 2026-11-16: copy accounts + firm rules
 }
 # suites too long for one budget run BY PARTS, each its own row and budget (night team D 2026-11-16: the whole kit walk, every app +
 # power + tiers + more in one browser, is the longest browser suite); a part is "<suite>:<label>" = python -m tests.test_<suite> <args>

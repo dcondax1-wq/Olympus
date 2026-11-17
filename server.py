@@ -990,6 +990,17 @@ def health_ping():
               "bot_running": bool(BOT.running), "heartbeat": HEARTBEAT.status(), "live_publish": LIVEPUB.status()})
 
 
+@app.get("/api/pc/doctor")
+def pc_doctor_api(text: int = 0):
+    """PC DOCTOR (tools/pc_doctor.py, PC_DOCTOR.bat): why the phone hears nothing from this PC, link by link. Read-only;
+    never shows the private alert topic, a login or an account id. ?text=1 = the same card as plain text."""
+    from tools import pc_doctor as _pd
+    r = _pd.run(ping={"ok": True, "bot_running": bool(BOT.running), "heartbeat": HEARTBEAT.status()})
+    if text:
+        return Response(_pd.card_text(r), media_type="text/plain; charset=utf-8")
+    return J(r)
+
+
 @app.get("/api/health/watchdog")
 def health_watchdog():
     st = WATCHDOG.status()

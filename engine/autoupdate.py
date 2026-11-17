@@ -507,8 +507,13 @@ def fetch_interactive(sh, src: dict, timeout: float = 900) -> tuple:
     (the URL carries the account name, so it asks for that account, not another one saved on this PC). (code, words)."""
     env = {k: v for k, v in os.environ.items() if k not in ("GIT_TERMINAL_PROMPT", "GCM_INTERACTIVE")}
     env.update({"PYTHONIOENCODING": "utf-8", "LE_HEARTBEAT": "0", "LE_NO_AUTOSTART": "1"})
+    # BOTS_BACK.bat (and GO_LIVE_EVAL / SETUP_EVERYTHING step 3 through it) sets credential.interactive=never in this folder's
+    # git config: Git Credential Manager then refuses to open its sign-in window ("user interactivity has been disabled")
+    # and the one-time connect fails as "backup not reachable" (night-bot 2026-11-17, tools/pc_doctor.py). This one fetch
+    # overrides it for itself only (the folder setting stays: the heartbeat and the background checks never prompt).
     try:
-        r = subprocess.run([generated_files.git_exe(), "fetch", src["remote"], src["branch"]], cwd=sh.cwd, env=env,
+        r = subprocess.run([generated_files.git_exe(), "-c", "credential.interactive=auto", "fetch", src["remote"], src["branch"]],
+                           cwd=sh.cwd, env=env,
                            timeout=timeout)
         return r.returncode, ""
     except subprocess.TimeoutExpired:
