@@ -1012,17 +1012,31 @@ def weekly_notice(view: dict, state: dict, checks: list, now) -> dict:
     return _payload("week", f"Week {mon:%b %d}-{fri:%b %d}", body, f"ops:week:{iso}", now)
 
 
+def _idle_squeeze(now, n) -> dict | None:
+    """engine/cme_calendar.idle_plan when a holiday leaves at most 1 CME session before the 7-day mark, else None."""
+    if n is None:
+        return None
+    try:
+        from . import cme_calendar as CC
+        p = CC.idle_plan(_et(now).date() - dt.timedelta(days=int(n)), now, PLAN["inactivity_days"])
+        return p if p["squeeze"] else None
+    except Exception:
+        return None
+
+
 def inactivity_notice(view: dict, now) -> dict | None:
     ev = view.get("eval") or {}
     if not view.get("is_live") or ev.get("status") in ("passed", "failed"):
         return None
     n = days_since_trade(view, now, ev.get("start"))
-    if n is None or n < PLAN["warn_days"]:
+    sq = _idle_squeeze(now, n)                 # a holiday week: at most 1 CME session left before the 7-day mark (cme_calendar)
+    if n is None or (n < PLAN["warn_days"] and not sq):
         return None
     left = PLAN["inactivity_days"] - n
     title = f"No trade for {n} days (MFFU closes an account at {PLAN['inactivity_days']})"
     body = ("Place 1 MNQ by hand today (in and out, a few dollars), or let the min-days 1-micro trade run. "
-            + (f"{left} day{'s' if left != 1 else ''} left." if left > 0 else "Do it today."))
+            + (f"{left} day{'s' if left != 1 else ''} left." if left > 0 else "Do it today.")
+            + (f" Holiday week: the last CME session before the 7-day mark is {sq['last_session']}." if sq and sq.get("last_session") else ""))
     return _payload("idle", title, body, f"ops:idle:{trading_day(now)}", now)
 
 

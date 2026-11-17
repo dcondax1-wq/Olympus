@@ -27,6 +27,10 @@ holiday: re-check them then (tests/test_holidays.py prints the calendar this fil
 
 The 2026-11 -> 2027-01 dates the bot meets: Thu 2026-11-26 halt 13:00, Fri 11-27 13:15, Thu 12-24 13:15, Fri 12-25 closed,
 Thu 12-31 full day, Fri 2027-01-01 closed, Mon 2027-01-18 (MLK) 13:00, Mon 02-15 (Presidents) 13:00.
+Re-checked 2026-11-17 (night-hol): cmegroup.com still answers 503 to the cloud; third-party schedules agree on Thu 11-26
+12:00 CT, Thu 12-24 12:15 CT, Fri 12-25 closed; Fri 11-27 12:15 CT from one (another says "around 12:00 CT": unconfirmed,
+the bars 2021-2025 all show 12:15 CT); 12-31 full day / 2027-01-01 closed are the bars' and the rule's, not yet CME-confirmed.
+tests/test_holiday_replay.py replays these days on Sim adapters for every routed lane. idle_plan(): the 7-day rule vs holidays.
 """
 from __future__ import annotations
 
@@ -170,6 +174,35 @@ def route_limits(day, flat_mod: int = 955) -> dict:
     account it routes (engine/ninjatrader._flat_today / _tick_flat_time)."""
     return {"closed": full_closure(day), "halt": early_close(day), "entry_cut": entry_cut(day, flat_mod),
             "flat": flat_cut(day, flat_mod)}
+
+
+IDLE_LIMIT = 7                  # MFFU inactivity: 7 calendar days without a trade (research/lit/mffu_rules.json)
+
+
+def idle_plan(last_day, now, limit: int = IDLE_LIMIT) -> dict:
+    """MFFU's inactivity rule vs the CME calendar (2026-11-17, night-hol). `last_day` = the last traded date (or the eval
+    start). The safe deadline is the 6th calendar day after it (MFFU: "no trade for 7 consecutive calendar days"; day 7
+    itself is read as too late, the cautious way). Returns {"deadline", "sessions_left": CME sessions from now's trading
+    date to the deadline that can still take a trade (today only while its session is not over: before the halt / the
+    MFFU 16:10 flat), "last_session" (None = none left), "holiday": a closure or early close lies in that stretch,
+    "squeeze": holiday and at most 1 session left = warn now, not only from day 5 (Thanksgiving / Christmas / New Year
+    weeks: e.g. last trade Mon 2026-12-21 -> only Thu 12-24, a half day, is left)}."""
+    last = _date(last_day)
+    deadline = last + dt.timedelta(days=max(1, int(limit)) - 1)
+    t = int(now)
+    e = dt.datetime.fromtimestamp(t, ET)
+    start = trading_date(t)
+    m = e.hour * 60 + e.minute
+    sess, hol, d = [], False, start
+    while d <= deadline:
+        if d.weekday() < 5:
+            if full_closure(d) or early_close(d) is not None:
+                hol = True
+            if not full_closure(d) and (d != start or m >= 1080 or (not halted(t) and m < flat_cut(d, 970))):
+                sess.append(d)
+        d += dt.timedelta(days=1)
+    return {"deadline": deadline.isoformat(), "sessions_left": len(sess), "last_session": sess[-1].isoformat() if sess else None,
+            "holiday": hol, "squeeze": hol and len(sess) <= 1}
 
 
 def calendar(start, days: int = 60) -> list:

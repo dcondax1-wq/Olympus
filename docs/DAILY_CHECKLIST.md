@@ -29,6 +29,28 @@ The older icons (LE START BOT, LE UPDATE, LE DASHBOARD, LE HEALTH CHECK) are gon
 | eval passed / failed | what to do next |
 | a week + a day before a roll | switch the NinjaTrader chart to the new contract (steps in the notice) |
 
+## Holiday plan (Nov 2026 - Jan 2027)
+MFFU does **not** flatten you at a CME early close: a position still open at the halt = the account **fails**. The bot
+(every account: Zlarior, ATLAS, the Rapid, extra accounts, BLITZ) stops new entries 15 min before the halt and is flat
+5 min before it. Times ET (CT = ET - 1 h).
+
+| Day | CME (equity futures) | Bot: last entry / flat |
+|---|---|---|
+| Thu Nov 26 Thanksgiving | halts 13:00 (12:00 CT), reopens 18:00 | 12:44 / 12:55 |
+| Fri Nov 27 | early close 13:15 (12:15 CT) | 12:59 / 13:10 |
+| Thu Dec 24 Christmas Eve | early close 13:15 (12:15 CT), reopens Sun 18:00 | 12:59 / 13:10 |
+| Fri Dec 25 Christmas | closed | no trading |
+| Thu Dec 31 | normal day | normal / 15:55 |
+| Fri Jan 1 New Year's Day | closed | no trading |
+| Mon Jan 18 MLK | halts 13:00 | 12:44 / 12:55 |
+
+- [ ] Don't trade by hand after the bot's last entry time on these days. Never hold anything at 13:00 / 13:15.
+- [ ] About a week before (Nov 19, Dec 17): check MFFU's holiday email/notice. If it shows an EARLIER close than this table,
+      tell Claude the same day.
+- [ ] 7-day rule: on holiday weeks the phone warns early when only 1 session is left (e.g. no trade since Mon Dec 21 means
+      warned Thu Dec 24 morning; Fri is closed). Then place 1 MNQ by hand before 12:59.
+- Check it yourself: `python -m engine.cme_calendar 2026-11-20`. Proof: `python -X utf8 -m tests.test_holiday_replay`.
+
 ---
 
 ## Night before (before 01:45 ET)

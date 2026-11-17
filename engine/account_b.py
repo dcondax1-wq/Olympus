@@ -859,7 +859,15 @@ class AccountB:
         """MFFU inactivity (help center 2026-11-17): no trade for 7 calendar days -> the account can be closed; on a sim-funded
         account ALL its profits are forfeited. One push a day from day IDLE_WARN on (rules audit 2026-11-17)."""
         n = self.idle_days(now)
-        if n is None or n < IDLE_WARN:
+        sq = None
+        if n is not None and n < IDLE_WARN:     # a holiday week: at most 1 CME session left before day 7 (cme_calendar.idle_plan)
+            try:
+                from . import cme_calendar as CC
+                sq = CC.idle_plan(_et(now).date() - _dt.timedelta(days=int(n)), now, IDLE_LIMIT)
+                sq = sq if sq["squeeze"] else None
+            except Exception:
+                sq = None
+        if n is None or (n < IDLE_WARN and not sq):
             return
         key = f"acctb:idle:{trading_day(now)}:{self.name}"
         if key in self.notified:
@@ -873,7 +881,8 @@ class AccountB:
         title = f"{self.label}: no trade for {n} days"
         body = (f"MFFU can close an account after {IDLE_LIMIT} days without a trade" + (" and a funded one loses ALL its profits"
                 if self.funded() else "") + ". Place 1 MNQ by hand on this account (in and out, a few dollars) "
-                + (f"within {left} day{'s' if left != 1 else ''}." if left > 0 else "TODAY."))
+                + (f"within {left} day{'s' if left != 1 else ''}." if left > 0 else "TODAY.")
+                + (f" Holiday week: the last CME session before day {IDLE_LIMIT} is {sq['last_session']}." if sq and sq.get("last_session") else ""))
         self.log("risk", f"{title}: {body}")
         self._push_text(title, body, key)
 
