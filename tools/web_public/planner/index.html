@@ -28,16 +28,17 @@
 <script src="../olympus/agora-ui.js?v=2" defer></script>
 <script src="../olympus/sfx.js?v=s4" defer></script>
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#7fa7c2'); r.setProperty('--oly-accent-rgb', '127, 167, 194'); })();</script>
-<link rel="stylesheet" href="planner.css?v=b3">
+<link rel="stylesheet" href="planner.css?v=b4">
 </head>
 <body>
 <main id="app">
   <header class="top">
-    <div class="brand"><img src="icon.svg" alt="" width="44" height="44"><div><h1 class="ag-title">Planner</h1><p class="sub" id="sub">Your day, week and projects</p></div></div>
+    <div class="brand"><img src="icon.svg" alt="" width="44" height="44"><div><h1 class="ag-title">Planner</h1><p class="sub" id="sub">Your day and week: what to do, and when</p></div></div>
     <div class="tags"><span id="demo" class="tag demo" hidden>DEMO</span><span id="lite" class="tag" hidden>LITE</span><canvas id="scene" width="84" height="84" aria-hidden="true"></canvas></div>
   </header>
   <p id="status" class="note" role="status" aria-live="polite">Loading...</p>
   <ul id="remindBar" class="remind" aria-label="Reminders" hidden></ul>
+  <a class="ag-card card weeklink" href="../business/schedule.html"><b>My work week &rarr;</b><span class="note">When to check the PC, the Friday review, payouts, taxes.</span></a>
   <section class="ag-card card" id="demoBar" aria-labelledby="demoH" hidden>
     <h2 id="demoH">This is an example plan</h2>
     <p class="lead" id="demoNote">Example plan, not real.</p>
@@ -51,7 +52,7 @@
       <button type="button" class="ag-chip" data-kind="task" aria-pressed="false">Task</button>
       <button type="button" class="ag-chip" data-kind="event" aria-pressed="false">Event</button>
     </div>
-    <p class="note" id="qPrev" aria-live="polite">A time or "every ..." makes an event, otherwise a task. Try "every Sunday weekly review".</p>
+    <p class="note" id="qPrev" aria-live="polite">With a time or "every ..." it goes on the calendar; without, it is a to-do. Try "every Friday 16:30 weekly review".</p>
   </form>
   <div class="ag-tabs" role="tablist" aria-label="Planner views" id="tabs">
     <button type="button" class="ag-tab" role="tab" id="tab-today" data-tab="today" aria-controls="p-today" aria-selected="true">Today</button>
@@ -210,7 +211,7 @@
     </section>
   </section>
 
-  <p class="foot" id="foot">Planner keeps your plan on this phone only (nothing is sent anywhere) and works offline. Times are New York time: entries 02:00 to 15:30, the bot is flat at 15:55, MFFU needs you flat by 16:10. Paper and eval only: the bot never goes live for you.</p>
+  <p class="foot" id="foot">Your plan stays on this phone only and works offline. Times are New York time. The bot can enter 02:00 to 15:30, closes everything at 15:55, and MFFU needs no open trade after 16:10.</p>
 </main>
 
 <div id="sheet" class="sheet" hidden>

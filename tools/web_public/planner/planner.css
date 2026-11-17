@@ -176,3 +176,7 @@ html[data-oly-lite="1"] .sheet-card { animation: none; }
 #app .row .btn.small { min-width: 0; padding: 0 10px; background: transparent; border-color: transparent; box-shadow: none; color: var(--ag-gold); font-size: 13px; }
 #app .win { border-color: rgba(var(--oly-th-n37-rgb, 243, 236, 224), .07); border-left-width: 3px; }
 #app .botbox { border-color: rgba(var(--oly-th-n37-rgb, 243, 236, 224), .07); }
+
+/* the work-week link (2026-11-17): opens business/schedule.html */
+.weeklink { display: grid; gap: 2px; min-height: 44px; padding: 10px 14px; text-decoration: none; color: inherit; }
+.weeklink b { color: var(--ag-gold, #c8a24a); }

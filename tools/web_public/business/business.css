@@ -76,3 +76,9 @@ svg text { font-family: var(--ag-sans); }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 html[data-oly-lite="1"] .ag-card { box-shadow: none; }
 #propTbl { font-size: 13px; }
+
+/* the page doors (2026-11-17): My Accounts / Taxes / Security / Work week, two a row on a phone */
+.doors { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.door2 { display: grid; gap: 4px; min-height: 44px; padding: 12px 14px; text-decoration: none; color: inherit; align-content: start; }
+.door2 h2 { margin: 0; font-size: 16px; color: var(--ag-gold); }
+.door2 .note { font-size: 12px; }

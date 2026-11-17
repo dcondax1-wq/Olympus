@@ -35,6 +35,7 @@ Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7;
 - Taxes (2026-11-17, "study taxes"): Business -> Taxes page (tools/web_public/business/taxes.html; the lead adds its card to business/index.html).
   Rule: move 30% of every payout to a tax pot (Oikos + Ledger defaults now 30%, were 25%). Next federal estimated payment Jan 15, 2027. Education, not advice: research/writeups/taxes-2026-11-17.md.
 - Business: fill agency/config.json (name, city, phone, address), then AGENCY_DAY.bat; list the 8 products, the 4 trading ones first (docs/BUSINESS_LISTING_KIT.md). $0 earned so far.
+- Business pages (2026-11-17 night-pages): new Security tick list (business/security.html, never asks for a password) and Work week (business/schedule.html: PC checks 08:45 / 12:00 / 16:15 ET, Fri 16:30 review + payout check, tax dates, side-work blocks, one-tap phone calendar file); 4 doors on Business; plainer words on Business, My Accounts, Hestia, Planner, Zenith menu. Owner: do the Security list once (~1 hour).
 - Money (2026-11-16 night B): the Business page is the ONE money place (every dollar, this week's money moves, payout planner, ready-to-upload tick lists, ideas, costs; docs/BUSINESS.md). New: 3 products (bundle $29, risk calculator $12, rules cheat sheet $7), 2 new models (AI training tasks, paid website tests). Plan (ESTIMATE): first payout ~late Dec ($1,200 LIT / $600 ATLAS to you), account #4 the day it is in the bank.
 
 ## Built, waiting for the PC
