@@ -497,12 +497,13 @@ def lite(snap: dict, max_bytes: int = MAX_STATUS_BYTES) -> dict:
         g = _d(_d(o.get("pc")).get("glance"))
         if g:
             brain_glance.fit(g, n)
-    steps = [lambda o: _d(o.get("board")).pop("lines", None), lambda o: _gcut(o, 1100), lambda o: o.pop("accounts", None),
-             lambda o: _gcut(o, 700),
+    # the glance is cut (then left out) before the older parts go: the phone falls back to the board cards for $ / room / trade
+    steps = [lambda o: _d(o.get("board")).pop("lines", None), lambda o: _gcut(o, 1000), lambda o: _gcut(o, 600),
+             lambda o: _d(o.get("pc")).pop("glance", None), lambda o: o.pop("accounts", None),
              lambda o: _d(o.get("board")).__setitem__("trades", _d(o.get("board")).get("trades", [])[:1]) if o.get("board") else None,
              lambda o: [_d(_d(o.get("board")).get(k)).pop("waiting", None) for k in ("lit", "atlas", "blitz")],
              lambda o: [_d(_d(o.get("board")).get(k)).pop("window", None) for k in ("atlas", "blitz")],
-             lambda o: _d(o.get("board")).pop("trades", None), lambda o: _d(o.get("pc")).pop("glance", None)]
+             lambda o: _d(o.get("board")).pop("trades", None)]
     for st in steps:
         if _size(out) <= max_bytes:
             break

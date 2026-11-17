@@ -270,6 +270,12 @@ def fit(g: dict, max_bytes: int = MAX_BYTES) -> dict:
             for k in ("why", "wait"):
                 if isinstance(b.get(k), str):
                     b[k] = _t(b[k], 80)
+    if size(g) > max_bytes:              # the essentials only: on / armed, $ today, room, the open trade's $, what it waits for
+        for b in g.get("bots") or []:
+            b.pop("what", None)
+            b.pop("why", None)
+            if isinstance(b.get("pos"), dict):
+                b["pos"] = {k: v for k, v in b["pos"].items() if k in ("side", "qty", "risk_usd", "tgt_usd", "now_usd")}
     return g
 
 
