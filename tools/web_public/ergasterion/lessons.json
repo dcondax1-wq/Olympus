@@ -2,7 +2,7 @@
  "v": 1,
  "name": "Ergasterion lessons",
  "asof": "2026-11-17",
- "say": "This week we wrote down 13 lessons. The strongest (3 files agree): No edge found. None of them beat the noise bar on the training data, so none was carried forward. What changed our mind: Uncorrelated, but it does not hold in 2021-25 and passes evals too slowly.",
+ "say": "This week we wrote down 14 lessons. The strongest (3 files agree): No edge found. None of them beat the noise bar on the training data, so none was carried forward. What changed our mind: Uncorrelated, but it does not hold in 2021-25 and passes evals too slowly.",
  "week": [
   {
    "text": "No edge found. None of them beat the noise bar on the training data, so none was carried forward.",
@@ -63,8 +63,8 @@
    ]
   },
   {
-   "text": "Tested and rejected: Famous published strategies (2026-11-17, public-strategies-2026-11-17.md, tools/pub_strats.py): 22 cells as",
-   "cat": "process",
+   "text": "Tested and rejected: Market-regime warning features (2026-11-17, edge-health-2026-11-17.md, tools/edge_health.py): VIX, RTH range %, overnight share, trend efficiency, sweep reclaim (40-session means) as a 2026…",
+   "cat": "NQ strategy",
    "d": "2026-11-17",
    "strength": 1,
    "sources": [
@@ -72,8 +72,8 @@
    ]
   },
   {
-   "text": "Tested and rejected: Drift switch (2026-11-17, drift-switch-2026-11-17.md, tools/money/drift_switch.py): cut LIT to paper/half after a rolling",
-   "cat": "NQ strategy",
+   "text": "Tested and rejected: Famous published strategies (2026-11-17, public-strategies-2026-11-17.md, tools/pub_strats.py): 22 cells as",
+   "cat": "process",
    "d": "2026-11-17",
    "strength": 1,
    "sources": [
@@ -135,16 +135,6 @@
    ]
   },
   {
-   "text": "Only 10 of 141 add money in both halves (about 12 expected by chance) and none of those reaches 3 trades a week in Jul-Oct without raising the eval fail rate.",
-   "cat": "NQ strategy",
-   "d": "2026-10-21",
-   "strength": 2,
-   "sources": [
-    "research/writeups/2026-11-15-lit-deep.md",
-    "research/writeups/lit-retail-entries.md"
-   ]
-  },
-  {
    "text": "The four that look best on paper (pre-FOMC, RSI(2), 12-month trend, overnight drift) all hold positions overnight, which MFFU does not allow (flat by 16:10 ET), and every one of them lost money in 2026 H2 or in 2021-25.",
    "cat": "process",
    "d": "2026-11-17",
@@ -155,6 +145,15 @@
   },
   {
    "text": "Tested and rejected: Walk-forward re-tuning (2026-11-17, lit-walkforward-2026-11-17.md, tools/lit_wf_retune.py, research/lit/wf_retune.json):",
+   "cat": "NQ strategy",
+   "d": "2026-11-17",
+   "strength": 1,
+   "sources": [
+    "docs/CLAUDE_REFERENCE.md"
+   ]
+  },
+  {
+   "text": "Tested and rejected: Rule-native layer (2026-11-17, rule-native-2026-11-17.md): 2nd target / 1R / scalp / profit lock: no sooner payout.",
    "cat": "NQ strategy",
    "d": "2026-11-17",
    "strength": 1,

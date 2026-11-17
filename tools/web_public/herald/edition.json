@@ -335,8 +335,8 @@
     "The newest batch in the index is stamped 26-11-15: 7 runs kept there, 1 adopted, 6 open.",
     "Adopted, from the risk family: ATLAS zombie-eval rule: give an eval up under $200 of room + 1 micro 'last bull…",
     "Still open, from the LIT research family: LIT deep edge (2026-11-15): base.",
-    "On the rejected shelf, so nobody redoes it: Famous published strategies.",
-    "168 write-ups explain the results in plain language."
+    "On the rejected shelf, so nobody redoes it: Market-regime warning features.",
+    "173 write-ups explain the results in plain language."
    ],
    "facts": [
     {
@@ -407,15 +407,15 @@
      "quote": true
     },
     {
-     "t": "Famous published strategies",
+     "t": "Market-regime warning features",
      "src": "archive/index.json",
      "quote": true
     },
     {
-     "t": "168",
+     "t": "173",
      "src": "archive/index.json",
      "at": "counts/writeups",
-     "raw": 168
+     "raw": 173
     },
     {
      "t": "98",
@@ -556,7 +556,7 @@
    "body": [
     "The build queue holds 67 tasks: 67 open and 0 done.",
     "First in line (P0): cities/ renders almost nothing after 30 s (only 160 characters of text, a few dots, no labels, no cards). It is the worst app. Find why (console, fet…",
-    "The research shelf now counts 168 write-ups.",
+    "The research shelf now counts 173 write-ups.",
     "The newest lesson on file, dated 2026-11-17, reads: MFFU pays on winning days (Rapid EOD eval best day = 30%, funded daily above $2,100; Builder funded best day = 50%, $2,600 above start).",
     "It was filed under \"mostly\" and comes from research/writeups/rule-native-2026-11-17.md."
    ],
@@ -590,10 +590,10 @@
      "quote": true
     },
     {
-     "t": "168",
+     "t": "173",
      "src": "ergasterion/queue.json",
      "at": "writeups/count",
-     "raw": 168
+     "raw": 173
     },
     {
      "t": "2026-11-17",
@@ -945,6 +945,7 @@
   "argus",
   "athena",
   "atlas",
+  "board",
   "bridge",
   "business",
   "chronos",
@@ -1004,6 +1005,7 @@
   "sibyl",
   "stoa",
   "symposium",
+  "trading",
   "tree",
   "tyche",
   "zenith"
