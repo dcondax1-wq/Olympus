@@ -178,7 +178,7 @@ html.lv-lock, html.lv-lock body { overflow: hidden; }`;
         </div>
       </header>
       <div class="lv-banner" id="lvBan" hidden></div>
-      <div class="lv-turn" aria-hidden="true">Turn your phone sideways for the biggest chart</div>
+      <div class="lv-turn" aria-hidden="true">Turn your phone sideways for a bigger chart</div>
       <div class="lv-main ${L.think ? '' : 'nothink'}" id="lvMain">
         <div class="lv-chartwrap" id="lvWrap"><canvas id="lvCv" aria-label="Live NQ chart"></canvas><canvas id="lvFx" aria-hidden="true"></canvas>
           <div class="lv-ohlc mono" id="lvOhlc"></div><div class="lv-legend" id="lvLeg"></div><div class="lv-note" id="lvNote" hidden></div>
@@ -350,11 +350,11 @@ html.lv-lock, html.lv-lock body { overflow: hidden; }`;
     L.root.querySelectorAll('[data-lv-on="structure"]').forEach((b) => { b.hidden = !d.structure; });
     q('#lvLeg').innerHTML = ['lit', 'atlas', 'scalp'].filter((k) => L.on[k] && !(k === 'scalp' && HIDB())).map((k) => {
       const s = (d.strategies || {})[k] || {};
-      const what = k === 'lit' ? 'levels · setup · position' : k === 'atlas' ? 'EMA 21 / 50 · S/R · plans · position' : (s.placeholder ? 'not running yet' : 'band · signals · PAPER position');
+      const what = k === 'lit' ? 'levels · next setup · open trade' : k === 'atlas' ? 'EMA 21 / 50 · S/R · plans · position' : (s.placeholder ? 'not running yet' : 'band · signals · PAPER position');
       return `<span style="--c:${col(k)}"><i></i>${esc(k === 'scalp' ? 'BLITZ (paper)' : s.name || NAMES[k])} <em>${esc(what)}</em></span>`;
     }).join('');
     const note = q('#lvNote');
-    const msg = !d.bars.length ? 'No bars yet: the chart fills in once the bot has its NinjaTrader bars.' : '';
+    const msg = !d.bars.length ? 'No price data yet: the chart fills in once the PC sends NinjaTrader prices.' : '';
     note.hidden = !msg; note.textContent = msg;
     fx(true);
     loop();
@@ -401,7 +401,7 @@ html.lv-lock, html.lv-lock body { overflow: hidden; }`;
       const dr = p.dir || (p.side === 'LONG' ? 1 : -1);
       if (p.stop != null && p.entry != null) lines.push(`stop ${fmtPx(p.stop)} = <b class="lv-no">${fmtUsd((p.stop - p.entry) * dr * 2 * n)}</b>`);
       if (p.target != null && p.entry != null) lines.push(`target ${fmtPx(p.target)} = <b class="lv-ok">${fmtUsd((p.target - p.entry) * dr * 2 * n)}</b>`);
-    } else lines.push('<span class="lv-muted">model trade, not routed on an account: no real size</span>');
+    } else lines.push('<span class="lv-muted">practice trade only: no account, no real $</span>');
     return `<div class="lv-pos" style="--c:${color}">${lines.map((x) => `<div>${x}</div>`).join('')}</div>`;
   }
   function think() {
@@ -416,7 +416,7 @@ html.lv-lock, html.lv-lock body { overflow: hidden; }`;
       out.push(`<article class="lv-card" style="--c:${col('lit')}"><header><i></i><b>Zlarior</b><span class="lv-pill">${esc((t.stage && t.stage.label) || '—')}${t.stage && t.stage.n ? ` · ${t.stage.n}/10` : ''}</span></header>
         ${lit.error ? `<p class="lv-no">${esc(lit.error)}</p>` : ''}
         ${stepper(t.stages)}
-        <p class="lv-head">${esc(t.headline || 'Waiting for the first Brain snapshot')}</p>
+        <p class="lv-head">${esc(t.headline || 'Waiting for the bot\'s first read of the market')}</p>
         ${t.detail && t.detail !== t.headline ? `<p class="lv-muted small">${esc(t.detail)}</p>` : ''}
         <div class="lv-chips">${(t.distance || []).map((x) => `<span class="lv-chip"><b class="mono">${fmtPx(x.pts)}</b> pts ${esc(x.label)}</span>`).join('')}
           ${t.stop_preview ? `<span class="lv-chip">stop would be <b class="mono">${fmtPx(t.stop_preview)}</b> pts</span>` : ''}</div>
@@ -489,7 +489,7 @@ html.lv-lock, html.lv-lock body { overflow: hidden; }`;
     if (sig !== L.tickSig) {
       L.tickSig = sig;
       const strip = tk.map(item).join('');
-      q('#lvTickR').innerHTML = strip ? strip + strip : '<span class="lv-tk"><b>The bot is quiet</b> nothing important yet today</span>';
+      q('#lvTickR').innerHTML = strip ? strip + strip : '<span class="lv-tk"><b>The bot is quiet</b> nothing to act on yet today</span>';
       q('#lvTickR').style.animationDuration = `${Math.max(30, tk.length * 9)}s`;
     }
     if (fresh || !L.seen) L.seen = newest;
@@ -524,7 +524,7 @@ html.lv-lock, html.lv-lock body { overflow: hidden; }`;
     L.tick = setInterval(() => { if (!active()) { clearInterval(L.tick); L.tick = null; return; } countdowns(); }, 1000);
   }
   VIEWS[ID] = view;
-  PAGES[ID] = { id: ID, label: 'Live View', icon: 'chart', desc: 'One big live chart: Zlarior, ATLAS and BLITZ in their own colours, what each bot is thinking, full screen', group: 'chart' };
+  PAGES[ID] = { id: ID, label: 'Live View', icon: 'chart', desc: 'One big live chart: each bot in its own colour, what it waits for, full screen', group: 'chart' };
   const G = typeof GROUPS !== 'undefined' ? GROUPS.find((g) => g.id === 'chart') : null;
   if (G && !G.pages.some((p) => p[0] === ID)) G.pages.unshift([ID, 'Live View', 'chart', PAGES[ID].desc]);
   if (typeof SCENE !== 'undefined') SCENE[ID] = 'chart';
@@ -539,7 +539,7 @@ html.lv-lock, html.lv-lock body { overflow: hidden; }`;
         if (el.querySelector('.lv-home')) return;
         const b = document.createElement('button');
         b.type = 'button'; b.className = 'card lv-home'; b.dataset.go = ID;
-        b.innerHTML = `<span class="lv-home-i">${typeof icon === 'function' ? icon('chart') : ''}</span><span class="lv-home-t"><b>Live View</b><em>Big live chart · what each bot is thinking · full screen</em></span><span class="lv-home-go">Open ›</span>`;
+        b.innerHTML = `<span class="lv-home-i">${typeof icon === 'function' ? icon('chart') : ''}</span><span class="lv-home-t"><b>Live View</b><em>Big live chart · what each bot waits for · full screen</em></span><span class="lv-home-go">Open ›</span>`;
         const at = el.querySelector('.cl-plan') || el.querySelector('.cl-heroes');   // under the account cards + today's plan (they stay first)
         if (at) at.after(b); else el.insertBefore(b, el.firstChild);
       } catch (e) { console.warn('live view home button', e); }

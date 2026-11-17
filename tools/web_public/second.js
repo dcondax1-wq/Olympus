@@ -25,7 +25,7 @@
   function view(el) {
     const S = (HD() && HD().second) || null;
     el.innerHTML = (typeof head === 'function' ? head('Strategy 2 · 25K', 'ATLAS',
-      'EMA + MACD + S/R on its own 25K, next to Zlarior on the 50K: status, brain, go / no-go, trades, rules, backtest') : '<h2>ATLAS</h2>') + '<div id="atRoot"></div>';
+      'The 25K bot: is it on, $ today, $ left to pass, what it waits for, its trades and rules') : '<h2>ATLAS</h2>') + '<div id="atRoot"></div>';
     const root = el.querySelector('#atRoot');
     if (!window.SecondUI || !window.SecondUI.atlas) { root.innerHTML = '<div class="card">secondcore.js did not load.</div>'; return; }
     window.SecondUI.atlas(root, S, { live: liveCut(), brain: brainOf(), charts: chartsOf() });

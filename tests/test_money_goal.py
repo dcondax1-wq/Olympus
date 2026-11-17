@@ -386,10 +386,10 @@ require(process.argv[1]);
 const M = JSON.parse(require('fs').readFileSync(process.argv[2], 'utf8'));
 const U = window.MoneyUI;
 const c = U.card(M, { where: 'phone' }), g = U.goals(M, { compact: true }), f = U.form(M);
-const out = { title: c.includes('Road to $10K / Stingray 3LT'), next: c.includes('Next') && c.includes('Buy '), stack: c.includes('The stack') && c.includes('LucidPro 50K'),
-  mygoals: c.lastIndexOf('My goals') > c.indexOf('The stack'), m: c.includes('$10K month by February 2027') && c.includes('mg-seg jobs') && c.includes('mg-seg kalshi'),
+const out = { title: c.includes('Road to $10K / Stingray 3LT'), next: c.includes('Next') && c.includes('Buy '), stack: c.includes('Your prop accounts') && c.includes('LucidPro 50K'),
+  mygoals: c.lastIndexOf('My goals') > c.indexOf('Your prop accounts'), m: c.includes('$10K month by February 2027') && c.includes('mg-seg jobs') && c.includes('mg-seg kalshi'),
   car: c.includes('2024 Stingray 3LT before I turn 19 (Feb 22, 2027)') && c.includes('stretch $46K') && c.includes('goal $38K') && c.includes('behind by'),
-  z06: c.includes('C8 Z06') && c.includes('no date'), compact: g.includes('compact') && !g.includes('The stack'),
+  z06: c.includes('C8 Z06') && c.includes('no date'), compact: g.includes('compact') && !g.includes('Your prop accounts'),
   form: f.includes('data-mg-save="savings"') && f.includes('data-mg-save="month"') && f.includes('data-mg-save="settings"') && f.includes('mgCStretch'),
   pick: U.pick({ t: 1, goals: [] }, { t: 2, goals: [] }).t === 2 && U.pick({ t: 3, goals: [] }, { error: 'x' }).t === 3,
   err: U.card({ error: 'boom' }).includes('boom'), none: U.card(null).includes('no data'),
