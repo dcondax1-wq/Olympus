@@ -51,6 +51,7 @@ Updated 2026-11-16 ~04:00 ET (night teams A-E + W1 + W2 merged, shipped beaafb7;
   ATLAS's own funded accounts against MFFU's limits; `--held <plan>=0` when one ended. MFFU copy trading: allowed (help center).
 
 ## Recent findings (don't redo)
+- 2026-11-17: drift switch REJECTED; rule-native layer: no change (BLITZ 3/day on Rapid = paper lead only).
 - Rule-native search (2026-11-17, `rule-native-2026-11-17.md`, `tools/money/rule_native.py`): 36 variants scored on days to 1st payout +
   P(no payout 6m). LIT 2nd target / ATLAS 1R / high-win scalp / add-on profit lock: no faster in both halves (cut $). Only pass: Rapid +
   BLITZ $300 max 3/day (50/62 -> 42/57 days, +$822/+$313/mo) but cap post hoc, 2021-25 2-wk eval fails 2.9 -> 6.0%: paper lead only.
