@@ -130,6 +130,66 @@ def same_account_sim(tmp):
             pass
 
 
+def review_checks(tmp, clock, b, fb):
+    """g. review 2026-11-17: a lane's unconfirmed NinjaTrader close still holds the account; LIT sizes after ATLAS's close is
+    booked; a funded NEWS FLAT is booked at the market, not $0; the Rapid's Name is never ATLAS's 25K."""
+    from types import SimpleNamespace
+    from engine.sizing import LIVE_COMM
+    L, A = lane(b), b.acct_r
+    saved_t, saved_state = clock.t, b.state
+    L.open_t, A.open_t = None, None
+    b.state = {"model": "lit", "position": None, "lit": {}}
+    L.adapter.legs = [{"status": "closing", "dir": 1, "entry_t": T0 - 600}]
+    check("g. LIT's lane model flat but its CLOSEPOSITION unconfirmed: ATLAS blocked (either side)",
+          bool(A.lit_opposite(1)) and bool(A.lit_opposite(-1)), A.lit_opposite(-1))
+    del L.adapter.legs
+    A.adapter.legs = [{"status": "closing", "dir": 1, "entry_t": T0 - 600}]
+    check("g. ATLAS's model flat but its close unconfirmed: LIT on this account waits (any side)",
+          A.yield_to_lit(1, "NQ", int(clock.t), any_side=True) is False)
+    check("g. ... and Zlarior waits only for the opposite side",
+          A.yield_to_lit(1, "NQ", int(clock.t)) is True and A.yield_to_lit(-1, "NQ", int(clock.t)) is False)
+    del A.adapter.legs
+    # LIT sizes after ATLAS's HEDGE close is booked: +$752 on ATLAS leaves no best-day room for LIT's 200-pt winner
+    clock.t = T0 + 290
+    b3 = make_bot(os.path.join(tmp, "b3"), clock, {"account": "Sim107", "eval_start": DAY, "armed": False})
+    L3, A3 = lane(b3), b3.acct_r
+    tb = T0 - 900
+    A3.open_t = tb
+    A3.prov[tb] = {"key": "macd_sweep", "short": "MACD", "qty": 20, "dir": 1, "entry": 25000.0, "stop": 24990.0,
+                   "target": 25030.0, "t": tb, "risk_pts": 10.0, "day": DAY}
+    A3.ledger.append({"t": tb, "sym": "NQ", "side": "buy", "qty": 20, "entry_t": tb, "result": {"ok": True}})
+    clock.t = T0 + 305
+    b3.state = {"model": "lit", "position": pos_at(T0), "lit": {}}
+    b3._route_signals({"trades": [], "events": []}, "NQ", int(clock.t), 300)
+    check("g. ATLAS closed +$752 first, then LIT re-sized on the combined day: best-day cap -> not routed",
+          A3.open_t is None and A3.day_pnl(DAY) > 700 and not [r for r in L3.ledger if r.get("side") in ("buy", "sell")]
+          and T0 in L3.blocked, (A3.day_pnl(DAY), L3.ledger, L3.last_size))
+    # funded NEWS FLAT on LIT's lane: booked at the market
+    FL_ = lane(fb)
+    rel = T0 + 600
+    old = MA.tier1_releases
+    MA.tier1_releases = lambda day: [rel]
+    try:
+        clock.t = rel - 60
+        et_ = T0 - 300
+        fb.state = {"model": "lit", "position": pos_at(et_), "price": 25000.0, "lit": {}}
+        FL_.open_t, FL_.open_qty = et_, 5
+        FL_.seen.add(("entry", et_))
+        fb._route_signals({"trades": [], "events": []}, "NQ", int(clock.t), 300)
+        want = round(5 * ((25000.0 - 25020.0 - 0.25) * 2.0 - float(LIVE_COMM)), 2)
+        row = next((c for c in FL_.closes if len(c) > 3 and c[3] == et_), None)
+        check("g. funded NEWS FLAT: LIT's lane flat and booked at the market (not $0)",
+              FL_.open_t is None and row is not None and abs(float(row[2]) - want) < 0.01, (row, want))
+    finally:
+        MA.tier1_releases = old
+    # the Rapid's Name = ATLAS's 25K account: neither lane trades
+    b3.acct_b = SimpleNamespace(name="Sim107", open_t=None)
+    b3._start_rapid()
+    check("g. Rapid Name = ATLAS's 25K: ATLAS lane off, LIT's lane refused", b3.acct_r is None and bool(L3.problem), L3.problem)
+    b3.acct_b = None
+    clock.t, b.state = saved_t, saved_state
+
+
 def main() -> int:
     tmp = tempfile.mkdtemp(prefix="rapid_")
     os.environ["LE_LIT_LEARNING"] = os.path.join(tmp, "no_learning.json")
@@ -254,6 +314,7 @@ def main() -> int:
         check("e. funded tracker on the shared book: request $600 today", fv["ready"] and fv["request"] == 600.0, fv)
         s3 = FA.size({"risk_pts": 10.0, "tgt_pts": 20.0}, FA._state_raw(T0))
         check("e. funded ATLAS: $500 risk, no best-day cap", s3["qty"] == 22, s3)
+        review_checks(tmp, clock, b, fb)
         same_account_sim(tmp)
     finally:
         MA.ADAPTER_FACTORY = None

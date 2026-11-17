@@ -2375,6 +2375,15 @@ class LiveBot:
             if self.accts is None or not any(a.spec.get("lane") == "rapid" for a in self.accts.accounts):
                 self._log("risk", "Rapid EOD: LIT's lane did not start, so ATLAS does not trade it either")
                 return
+            nm = str(blk.get("account") or "").strip()
+            ab = getattr(self, "acct_b", None)
+            if ab is not None and str(getattr(ab, "name", "") or "").strip() == nm:
+                # review 2026-11-17: the Rapid's Name must never be ATLAS's 25K (set_account checks it once; this at every start)
+                for a in self.accts.accounts:
+                    if a.spec.get("lane") == "rapid":
+                        a.problem = f"{nm} is ATLAS's 25K account: the Rapid EOD needs its own (python -m engine.rapid --account)"
+                self._note_error(f"Rapid EOD NOT started: {nm} is ATLAS's 25K account")
+                return
             self.acct_r = _rp.build_atlas(self, blk)
         except Exception as e:
             self.acct_r = None

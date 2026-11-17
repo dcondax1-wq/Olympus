@@ -268,6 +268,22 @@ def payout_advice(balance: float, start: float = 50000.0, paid_days=(), today: s
             "to_next": round(max(0.0, keep + PAY_MIN - float(balance)), 2)}
 
 
+def _open_leg(ad, d=None):
+    """The first NinjaTrader leg of adapter `ad` still open / pending / closing (direction d, any side when None); None =
+    none (the paper adapter has no legs). Both lanes trade ONE account: a lane whose model already shows flat while its
+    CLOSEPOSITION is not confirmed yet still holds that account (review 2026-11-17)."""
+    legs = getattr(ad, "legs", None) if ad is not None else None
+    if not isinstance(legs, list) or not legs:
+        return None
+    from .ninjatrader import OPEN_STATUSES
+    for lg in legs:
+        if isinstance(lg, dict) and lg.get("status") in OPEN_STATUSES:
+            ld = int(lg.get("dir") or (1 if str(lg.get("side") or "").upper() == "BUY" else -1))
+            if d is None or ld == d:
+                return lg
+    return None
+
+
 class RapidAtlas(AB.AccountB):
     """ATLAS on the Rapid EOD (LiveBot.acct_r): account B's code on the SAME NinjaTrader account as LIT's lane."""
 
@@ -377,6 +393,13 @@ class RapidAtlas(AB.AccountB):
         ln = self.lane()
         if ln is not None and ln.open_t is not None:
             return "LIT holds a trade on this account"
+        if ln is not None:
+            try:
+                lg = _open_leg(getattr(ln, "adapter", None))
+            except Exception:
+                return "LIT's lane: NinjaTrader state unreadable (fails closed)"
+            if lg:
+                return f"LIT's lane still shows a {lg.get('status')} bracket at NinjaTrader (not confirmed flat)"
         if st.get("position"):
             return "LIT is in a trade"
         if st.get("enter_now"):
@@ -425,11 +448,11 @@ class RapidAtlas(AB.AccountB):
             except Exception:
                 pass
             if self.open_t is None:
-                return True
+                return self._legs_clear(d, any_side)
             et_ = int(self.open_t)
             pv = self.prov.get(et_) or {}
             if not any_side and int(pv.get("dir") or 0) != -d:
-                return True
+                return self._legs_clear(d, any_side)
             cl = pv.get("closing")
             if cl and not cl.get("done"):
                 self.settle_closing(sym, now)
@@ -438,7 +461,15 @@ class RapidAtlas(AB.AccountB):
                                  f"{self.name} is closed at market first (LIT has priority)")
                 if self.flatten(et_, "HEDGE", sym, now, px=_num(px)):
                     pv["final"] = True
-            return self.open_t is None or int(self.open_t) != et_
+            return (self.open_t is None or int(self.open_t) != et_) and self._legs_clear(d, any_side)
+
+    def _legs_clear(self, d: int, any_side: bool) -> bool:
+        """ATLAS's NinjaTrader book shows no leg still open / closing (any side on this account, else the side opposite d):
+        a model exit whose CLOSEPOSITION is unconfirmed is still a position here. A read error fails closed."""
+        try:
+            return _open_leg(self.adapter, None if any_side else -d) is None
+        except Exception:
+            return False
 
     # ---- funded payouts (Rapid EOD: daily, above the buffer, $500 min, keep $1,000 more)
     def funded_view(self, now=None) -> dict:

@@ -715,6 +715,23 @@ class Account:
                 stop = r.get("stop")
         return stop
 
+    def _mark_pnl(self, pos, st):
+        """$ of this account's open position closed at market now (the bot's last price, 1 tick of slippage, commission);
+        None = unknown. A NEWS FLAT / TIME SAFETY close is booked at this, not $0 (review 2026-11-17: a $0 booking overstated
+        the room on a funded account with the news ban)."""
+        try:
+            if not pos or pos.get("entry_t") != self.open_t or not self.open_qty:
+                return None
+            px = _num((st or {}).get("price"))
+            if px is None or pos.get("entry") is None:
+                return None
+            from . import lit as _lit
+            from .sizing import LIVE_COMM
+            d = 1 if int(pos.get("dir") or 1) == 1 else -1
+            return round(int(self.open_qty) * ((d * (float(px) - float(pos["entry"])) - 0.25) * _lit.PV - float(LIVE_COMM)), 2)
+        except Exception:
+            return None
+
     def _flatten(self, sym, reason, entry_t, pnl=None):
         self.flattened.add(entry_t)
         act = {"sym": sym, "side": "exit", "qty": self.open_qty, "reason": reason, "entry_t": entry_t}
@@ -722,6 +739,8 @@ class Account:
             act["pnl"] = pnl
         self.route(act)
         self.open_t = None
+        if pnl is not None and reason in ("NEWS FLAT", "TIME SAFETY") and ("entry", entry_t) in self.seen:
+            self._close(entry_t, self.router.clock(), pnl, self.router.clock(), reason)   # the model's later exit: a no-op
 
     def process(self, ctx: dict):
         try:
@@ -752,11 +771,11 @@ class Account:
         if self.open_t is not None and e.hour * 60 + e.minute >= ctx["flat_mod"] + 3 and self.open_t not in self.flattened \
                 and pos is not None and pos.get("entry_t") == self.open_t:
             self.log("risk", f"SAFETY FLATTEN: {e:%H:%M} ET is past the flat time and the model still shows the position")
-            self._flatten(sym, "TIME SAFETY", self.open_t)
+            self._flatten(sym, "TIME SAFETY", self.open_t, pnl=self._mark_pnl(pos, st))
         if self.open_t is not None and self.open_t not in self.flattened and self.in_news(now, post=0) is not None:
             r = self.in_news(now, post=0)
             self.log("risk", f"NEWS FLAT: Tier-1 release at {_et(r):%H:%M} ET (funded news ban): flattening this account")
-            self._flatten(sym, "NEWS FLAT", self.open_t)
+            self._flatten(sym, "NEWS FLAT", self.open_t, pnl=self._mark_pnl(pos, st))
         ent = pos or en
         if ent and ent["entry_t"] >= start - secs and ("entry", ent["entry_t"]) not in self.seen:
             self.seen.add(("entry", ent["entry_t"]))
@@ -771,6 +790,7 @@ class Account:
                 # side) is closed at market FIRST; LIT routes only once that close is CONFIRMED flat, tried again on
                 # every poll until LIT's entry deadline (live.LIT_MAX_LATE_S after its fill bar opened), then skipped
                 ok = False
+                had = getattr(self.shared(), "open_t", None) is not None
                 try:
                     ok = self.shared().yield_to_lit(1 if ent["dir"] == 1 else -1, sym, now, px=ent.get("entry"), any_side=True)
                 except Exception as e:
@@ -785,6 +805,8 @@ class Account:
                     else:
                         why = "ATLAS's close on this account was not confirmed before LIT's entry deadline (HEDGE BLOCKED)"
                         q = 0
+                elif had:
+                    q = self.qty_for(ent, now)     # ATLAS's close is booked now: size on the book after it (day $, room)
             if q == -1:
                 pass
             elif why or not q:
