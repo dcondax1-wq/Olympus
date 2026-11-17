@@ -3,7 +3,7 @@
 phone, email, postal address, prices). Nothing is ever sent or dialled from here: you send and call yourself.
 
     python -m agency.pitch --leads agency/demo/fort-collins/leads.json --id n12212932147
-    -> <out>/<slug>/pitch/pitch.html (print it or send it as a PDF), email.txt, phone.txt, pitch.json
+    -> <out>/<slug>/pitch/pitch.html (print it or send it as a PDF), email.txt, phone.txt, short.txt (walk-in, DM, follow-up), pitch.json
 
 CAN-SPAM (FTC, it covers business-to-business email too): a true From line and subject, a clear line saying it is an
 ad, your valid postal address, and an easy opt-out ("reply no thanks") that you honour within 10 business days and that
@@ -98,6 +98,39 @@ def voicemail(ctx: dict) -> str:
             f"You can see it at {url}. If you like it, call me back at {ctx['phone']}. Thanks!")
 
 
+def walk_in(ctx: dict) -> str:
+    """The walk-in script (about 30 s): go in a quiet hour, ask for the owner, show the preview on your phone, leave the one-pager."""
+    return (f"Hi, is the owner in? ... Hi, I'm {ctx['your_name']}, I make websites for local businesses here in {ctx['city']}. "
+            f"I noticed {ctx['problem_short']}, so I built {ctx['name']} a free preview. Can I show you on my phone? It takes 30 seconds. "
+            f"[Show it: tap-to-call, hours, directions.] If you like it, it's ${ctx['setup']} to make it yours and ${ctx['monthly']} a month. "
+            f"{ctx['terms']} I'll leave this page with the link. Can I check back with you in two days?")
+
+
+def dm(ctx: dict) -> str:
+    """A short Facebook / Instagram / Google message (under 60 words). Send it only to the business's own page, by hand, once."""
+    url = re.sub(r"^https?://", "", ctx["demo_url"]).rstrip("/")
+    return (f"Hi! I'm {ctx['your_name']}, a local web designer in {ctx['city']}. I noticed {ctx['problem_short']}, so I made {ctx['name']} "
+            f"a free preview website: {url}. No cost to look. If you like it, I can make it yours this week. Want the details?")
+
+
+def follow_up(ctx: dict) -> str:
+    """The one follow-up, 2-3 days after they agreed to see the link (by the way they asked for: text, email or a call). Then stop."""
+    url = re.sub(r"^https?://", "", ctx["demo_url"]).rstrip("/")
+    return (f"Hi, it's {ctx['your_name']} from {ctx['agency']}. Did you get a chance to look at the preview for {ctx['name']} ({url})? "
+            f"I can switch it on with your own logo and photos in 2 days: ${ctx['setup']} to start, ${ctx['monthly']} a month, cancel any time. "
+            f"Want me to go ahead, or should I take it down?")
+
+
+def short_scripts(ctx: dict) -> str:
+    return "\n".join([
+        f"SHORT SCRIPTS for {ctx['name']} ({ctx['trade']}, {ctx['city']})",
+        "Honest rules: one message, one follow-up, then stop. Never a robot, never a text to someone who did not ask. Stop at once if they say stop.",
+        "", f"WALK IN (about 30 seconds; a quiet hour such as 2-4 pm, never at the lunch rush)", walk_in(ctx),
+        "", "DIRECT MESSAGE (their own Facebook / Instagram / Google page, by hand, once)", dm(ctx),
+        "", "FOLLOW-UP (2-3 days after they said 'send it'; the way they asked: text, email or call)", follow_up(ctx),
+        "", "AFTER: no answer to the follow-up = mark Lost and move on. A yes = mark Won with the price.", ""])
+
+
 def words(text: str) -> int:
     return len(text.split())
 
@@ -182,7 +215,8 @@ def kit(lead: dict, cfg: dict, demo_url: str, palette=None) -> dict:
     ready = CFG.sender_ready(cfg)
     op = opener(ctx)
     return {"ready": ready, "subject": subject(ctx), "email": email_text(ctx, ready), "opener": op, "opener_words": words(op), "voicemail": voicemail(ctx),
-            "phone_script": phone_text(ctx), "html": pitch_html(lead, ctx, cfg, ready, palette), "package": ctx["package_id"],
+            "phone_script": phone_text(ctx), "walk_in": walk_in(ctx), "dm": dm(ctx), "follow_up": follow_up(ctx),
+            "short_scripts": short_scripts(ctx), "html": pitch_html(lead, ctx, cfg, ready, palette), "package": ctx["package_id"],
             "setup": float(CFG.package(cfg, ctx["package_id"]).get("setup", 0)), "monthly": float(CFG.package(cfg, ctx["package_id"]).get("monthly", 0)),
             "problem": ctx["problem_code"], "problem_short": ctx["problem_short"]}
 
@@ -190,10 +224,10 @@ def kit(lead: dict, cfg: dict, demo_url: str, palette=None) -> dict:
 def write_kit(lead: dict, cfg: dict, demo_url: str, out_dir: str, palette=None) -> dict:
     k = kit(lead, cfg, demo_url, palette)
     d = ensure_dir(os.path.join(out_dir, lead["slug"], "pitch"))
-    for name, key in (("pitch.html", "html"), ("email.txt", "email"), ("phone.txt", "phone_script")):
+    for name, key in (("pitch.html", "html"), ("email.txt", "email"), ("phone.txt", "phone_script"), ("short.txt", "short_scripts")):
         with open(os.path.join(d, name), "w", encoding="utf-8", newline="\n") as fh:
             fh.write(k[key])
-    meta = {x: k[x] for x in ("ready", "subject", "opener", "opener_words", "voicemail", "package", "setup", "monthly", "problem", "problem_short")}
+    meta = {x: k[x] for x in ("ready", "subject", "opener", "opener_words", "voicemail", "walk_in", "dm", "follow_up", "package", "setup", "monthly", "problem", "problem_short")}
     meta.update({"lead_id": lead["id"], "name": lead["name"], "demo_url": demo_url})
     with open(os.path.join(d, "pitch.json"), "w", encoding="utf-8") as fh:
         json.dump(meta, fh, ensure_ascii=False, indent=1)
