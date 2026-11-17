@@ -15,7 +15,7 @@ function core() {
   if (window.SecondUI && window.SecondUI.atlas) return Promise.resolve();
   if (!loading) loading = new Promise((ok, bad) => {
     const s = document.createElement('script');
-    s.src = new URL('./secondcore.js?v=8', import.meta.url).href;
+    s.src = new URL('./secondcore.js?v=9', import.meta.url).href;
     s.onload = () => ok(); s.onerror = () => { loading = null; bad(new Error('secondcore.js did not load')); };
     document.head.appendChild(s);
   });

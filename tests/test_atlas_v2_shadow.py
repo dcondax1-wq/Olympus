@@ -353,7 +353,7 @@ def part_f():
               o.get("card") and o.get("n") and o.get("never") and o.get("ev") and not o.get("fail") and o.get("v") == 8, o)
     idx = open(os.path.join(ROOT, "tools", "web_public", "index.html"), encoding="utf-8").read()
     sw = open(os.path.join(ROOT, "tools", "web_public", "sw.js"), encoding="utf-8").read()
-    check("f. phone loads secondcore.js?v=8, service worker cache le-public-v31 or later", "secondcore.js?v=8" in idx
+    check("f. phone loads secondcore.js?v=9, service worker cache le-public-v31 or later", "secondcore.js?v=9" in idx
           and int(__import__("re").search(r"le-public-v(\d+)", sw).group(1)) >= 31)
 
 
