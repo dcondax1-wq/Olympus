@@ -136,6 +136,7 @@ export const BUILT_INS = Object.freeze([
   app('polis', 'Polis', 'life', '#e0b060', 'The city of OLYMPUS: every app a building under the real New York sky', { glyph: '\u03a0\u03bb' }),
   app('agency', 'Agency', 'money', '#d08c4a', 'Website agency: leads, demo sites, calls and the $ pipeline', { glyph: '\u0395' }),
   app('business', 'Business', 'money', '#c8a24a', 'Every money model: next step, what is missing, $ estimate', { glyph: 'B' }),
+  app('trading', 'Trading', 'trading', '#c8a24a', 'Every trade: today, calendar, stats, payout rules', { glyph: 'T' }),
   app('clio', 'Clio', 'trading', '#d8c9a8', 'The research library: every study in plain words', { glyph: '\u039a' }),
   app('atlas', 'Atlas', 'life', '#efc979', 'A fast map of every Olympus dashboard', { glyph: '\u25c8' }),
   app('athena', 'Athena', 'life', '#7f8a52', 'The library: strategy, rules, quiz', { glyph: '\ud83e\udd89' }),

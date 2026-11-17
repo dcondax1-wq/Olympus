@@ -72,6 +72,7 @@
   {"id": "polis", "name": "Polis", "glyph": "\u03a0\u03bb", "colour": "#e0b060", "group": "life", "groupName": "Life", "purpose": "The city of OLYMPUS: every app a building under the real New York sky", "path": "polis/", "live": true},
   {"id": "agency", "name": "Agency", "glyph": "\u0395", "colour": "#d08c4a", "group": "money", "groupName": "Money", "purpose": "Website agency: leads, demo sites, calls and the $ pipeline", "path": "agency/", "live": true},
   {"id": "business", "name": "Business", "glyph": "B", "colour": "#c8a24a", "group": "money", "groupName": "Money", "purpose": "Every money model: next step, what is missing, $ estimate", "path": "business/", "live": true},
+  {"id": "trading", "name": "Trading", "glyph": "T", "colour": "#c8a24a", "group": "trading", "groupName": "Trading", "purpose": "Every trade: today, calendar, stats, payout rules", "path": "trading/", "live": true},
   {"id": "clio", "name": "Clio", "glyph": "\u039a", "colour": "#d8c9a8", "group": "trading", "groupName": "Trading", "purpose": "The research library: every study in plain words", "path": "clio/", "live": true},
   {"id": "atlas", "name": "Atlas", "glyph": "\u25c8", "colour": "#efc979", "group": "life", "groupName": "Life", "purpose": "A fast map of every Olympus dashboard", "path": "atlas/", "live": true},
   {"id": "athena", "name": "Athena", "glyph": "\ud83e\udd89", "colour": "#7f8a52", "group": "life", "groupName": "Life", "purpose": "The library: strategy, rules, quiz", "path": "athena/", "live": true},

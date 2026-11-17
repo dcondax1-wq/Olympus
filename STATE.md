@@ -29,6 +29,7 @@ Rules: MFFU ONLY ("We stick with MFFU"). Limits: max 5 sim-funded, Builder 1x50K
 9. Optional: Obsidian sync, 1 min on the PC: python tools/obsidian_sync.py --setup "C:\path\to\your\vault" (docs/OBSIDIAN_SYNC.md).
 10. To load fixes: when both bots are flat, STOP BOT then START BOT. Kalshi pause sentence in the kalshi-server chat (if not done).
 11. Owner yes/no, older (details in history): Builder levers (fresh 50K / 2nd 25K), Rapid $1,000 keep, stack-on-one-account.
+- Trading page (2026-11-17 night-trading, tools/web_public/trading/, wired 2026-11-17): today per account + 16:10 ET flat clock, Mon-Fri calendar of daily $, last 30 trades (-> Odeon replay), 2026 H1 vs H2 stats, 50%/30% payout rules check, hour/weekday bars, live vs twin, equity curve, "order rejected (Limit 0)" help; every number says LIVE / PAPER / BACKTEST + "Last live data: <date>". Data: python tools/trading_export.py (rerun after new trades; --check). Test: tests/run_area.py trading.
 
 ## Next for Claude
 - Update this file and keep "My Accounts" (business/accounts.html, plan in business/accounts.json) current on every account / plan change.
