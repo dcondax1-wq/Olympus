@@ -179,6 +179,102 @@ def rules_audit(tmp):
     L.open_t = None
 
 
+def review_checks(tmp, clock, b, fb):
+    """g. review 2026-11-17: a lane's unconfirmed NinjaTrader close still holds the account; LIT sizes after ATLAS's close is
+    booked; a funded NEWS FLAT is booked at the market, not $0; the Rapid's Name is never ATLAS's 25K."""
+    from types import SimpleNamespace
+    from engine.sizing import LIVE_COMM
+    L, A = lane(b), b.acct_r
+    saved_t, saved_state = clock.t, b.state
+    L.open_t, A.open_t = None, None
+    b.state = {"model": "lit", "position": None, "lit": {}}
+    L.adapter.legs = [{"status": "closing", "dir": 1, "entry_t": T0 - 600}]
+    check("g. LIT's lane model flat but its CLOSEPOSITION unconfirmed: ATLAS blocked (either side)",
+          bool(A.lit_opposite(1)) and bool(A.lit_opposite(-1)), A.lit_opposite(-1))
+    del L.adapter.legs
+    A.adapter.legs = [{"status": "closing", "dir": 1, "entry_t": T0 - 600}]
+    check("g. ATLAS's model flat but its close unconfirmed: LIT on this account waits (any side)",
+          A.yield_to_lit(1, "NQ", int(clock.t), any_side=True) is False)
+    check("g. ... and Zlarior waits only for the opposite side",
+          A.yield_to_lit(1, "NQ", int(clock.t)) is True and A.yield_to_lit(-1, "NQ", int(clock.t)) is False)
+    del A.adapter.legs
+    # LIT sizes after ATLAS's HEDGE close is booked: +$752 on ATLAS leaves no best-day room for LIT's 200-pt winner
+    clock.t = T0 + 290
+    b3 = make_bot(os.path.join(tmp, "b3"), clock, {"account": "Sim107", "eval_start": DAY, "armed": False})
+    L3, A3 = lane(b3), b3.acct_r
+    tb = T0 - 900
+    A3.open_t = tb
+    A3.prov[tb] = {"key": "macd_sweep", "short": "MACD", "qty": 20, "dir": 1, "entry": 25000.0, "stop": 24990.0,
+                   "target": 25030.0, "t": tb, "risk_pts": 10.0, "day": DAY}
+    A3.ledger.append({"t": tb, "sym": "NQ", "side": "buy", "qty": 20, "entry_t": tb, "result": {"ok": True}})
+    clock.t = T0 + 305
+    b3.state = {"model": "lit", "position": pos_at(T0), "lit": {}}
+    b3._route_signals({"trades": [], "events": []}, "NQ", int(clock.t), 300)
+    check("g. ATLAS closed +$752 first, then LIT re-sized on the combined day: best-day cap -> not routed",
+          A3.open_t is None and A3.day_pnl(DAY) > 700 and not [r for r in L3.ledger if r.get("side") in ("buy", "sell")]
+          and T0 in L3.blocked, (A3.day_pnl(DAY), L3.ledger, L3.last_size))
+    # funded NEWS FLAT on LIT's lane: booked at the market
+    FL_ = lane(fb)
+    rel = T0 + 600
+    old = MA.tier1_releases
+    MA.tier1_releases = lambda day: [rel]
+    try:
+        clock.t = rel - 60
+        et_ = T0 - 300
+        fb.state = {"model": "lit", "position": pos_at(et_), "price": 25000.0, "lit": {}}
+        FL_.open_t, FL_.open_qty = et_, 5
+        FL_.seen.add(("entry", et_))
+        fb._route_signals({"trades": [], "events": []}, "NQ", int(clock.t), 300)
+        want = round(5 * ((25000.0 - 25020.0 - 0.25) * 2.0 - float(LIVE_COMM)), 2)
+        row = next((c for c in FL_.closes if len(c) > 3 and c[3] == et_), None)
+        check("g. funded NEWS FLAT: LIT's lane flat and booked at the market (not $0)",
+              FL_.open_t is None and row is not None and abs(float(row[2]) - want) < 0.01, (row, want))
+        # held INTO the release (e.g. a restart inside the window): closed in the 2 minutes after it too
+        clock.t = rel + 30
+        et2 = T0 + 200
+        fb.state = {"model": "lit", "position": pos_at(et2), "price": 25000.0, "lit": {}}
+        FL_.open_t, FL_.open_qty = et2, 5
+        FL_.seen.add(("entry", et2))
+        fb._route_signals({"trades": [], "events": []}, "NQ", int(clock.t), 300)
+        check("g. funded: LIT's lane still open 30 s after the release -> NEWS FLAT", FL_.open_t is None and et2 in FL_.flattened)
+        FA = fb.acct_r
+        FA.open_t = et2
+        FA.prov[et2] = {"key": "macd_sweep", "short": "MACD", "qty": 2, "dir": 1, "entry": 25000.0, "stop": 24990.0,
+                        "target": 25030.0, "t": et2, "risk_pts": 10.0, "day": DAY}
+        FA.ledger.append({"t": et2, "sym": "NQ", "side": "buy", "qty": 2, "entry_t": et2, "result": {"ok": True}})
+        FA.tick(None, None, "NQ", int(clock.t))
+        check("g. funded: ATLAS still open 30 s after the release -> NEWS FLAT",
+              FA.open_t is None and any(r.get("reason") == "NEWS FLAT" for r in FA.ledger if r.get("side") == "exit"))
+    finally:
+        MA.tier1_releases = old
+    # LIT's lane entry refused by NinjaTrader ("Limit 0"): never a position, so its model P&L is NOT booked on the Rapid
+    clock.t = T0 + 290
+    b4 = make_bot(os.path.join(tmp, "b4"), clock, {"account": "Sim108", "eval_start": DAY, "armed": False})
+    L4, A4 = lane(b4), b4.acct_r
+    L4.open_t, L4.open_qty = T0, 5
+    L4.seen.add(("entry", T0))
+    L4.ledger.append({"t": T0 + 3, "sym": "NQ", "side": "buy", "qty": 5, "entry_t": T0,
+                      "result": {"ok": False, "error": "order rejected: Limit 0"}})
+    clock.t = T0 + 605
+    b4.state = {"model": "lit", "position": None, "lit": {}}
+    tr = {**pos_at(T0), "exit_t": T0 + 600, "exit": 25220.0, "pnl": 2000.0, "exit_reason": "TARGET", "day": DAY}
+    b4._route_signals({"trades": [tr], "events": []}, "NQ", int(clock.t), 300)
+    check("g. LIT lane entry rejected ('Limit 0'): flat, no exit routed, $0 booked on the Rapid's book",
+          L4.open_t is None and not L4.closes and A4.day_pnl(DAY) == 0.0
+          and not [r for r in L4.ledger if r.get("side") == "exit"], (L4.open_t, L4.closes, L4.ledger[-1:]))
+    check("g. ... and ATLAS is free again on that account", A4.lit_opposite(1) is None, A4.lit_opposite(1))
+    L4.ledger.append({"t": T0 + 900, "sym": "NQ", "side": "buy", "qty": 5, "entry_t": T0 + 900, "result": {"ok": True}})
+    L4.open_t, L4.open_qty = T0 + 900, 5
+    L4._drop_unplaced(int(clock.t))
+    check("g. an entry NinjaTrader took (ok) is never dropped", L4.open_t == T0 + 900)
+    # the Rapid's Name = ATLAS's 25K account: neither lane trades
+    b3.acct_b = SimpleNamespace(name="Sim107", open_t=None)
+    b3._start_rapid()
+    check("g. Rapid Name = ATLAS's 25K: ATLAS lane off, LIT's lane refused", b3.acct_r is None and bool(L3.problem), L3.problem)
+    b3.acct_b = None
+    clock.t, b.state = saved_t, saved_state
+
+
 def main() -> int:
     tmp = tempfile.mkdtemp(prefix="rapid_")
     os.environ["LE_LIT_LEARNING"] = os.path.join(tmp, "no_learning.json")
@@ -307,6 +403,7 @@ def main() -> int:
         check("e. funded tracker on the shared book: request $600 today", fv["ready"] and fv["request"] == 600.0, fv)
         s3 = FA.size({"risk_pts": 10.0, "tgt_pts": 20.0}, FA._state_raw(T0))
         check("e. funded ATLAS: $500 risk, no best-day cap", s3["qty"] == 22, s3)
+        review_checks(tmp, clock, b, fb)
         same_account_sim(tmp)
         rules_audit(tmp)
     finally:
