@@ -13,7 +13,7 @@ B=$(git rev-parse HEAD)
 git merge --no-edit night-<x>                 # conflict? keep BOTH sides (STATE.md, tests/run_area.py lists)
 python tools/bump_versions.py --apply --base $B && python tools/bump_versions.py --check --base $B
 timeout 600 python tests/smoke.py | tail -1    # known env red: none now (8/8 since 2026-11-17)
-git checkout -- data/GEX_1d.csv 2>/dev/null    # smoke rewrites it; never commit it
+git checkout -- data/GEX_1d.csv tools/web_hub_snapshot.json 2>/dev/null    # smoke rewrites it (and tools/web_hub_snapshot.json); never commit them
 git add -A tools tests web_next && git commit -q -m "<what>" (+ trailers)   # only if bump wrote files
 python tools/ship.py --no-tests | tail -1      # pushes GitHub + backup olympus/pc
 git worktree remove --force .claude/worktrees/<x>
