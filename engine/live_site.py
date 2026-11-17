@@ -21,6 +21,8 @@ into a proxy to http://127.0.0.1:8766, inside the owner's tailnet only, never Fu
                          health.json (tools/me_health.py: the Apple Watch Shortcut + the Health export), home.json (tools/me_home.py:
                          WiFi speed, outages, devices, this PC). PRIVATE like day/: only data/me/ (LE_ME_DIR), only this route,
                          never a site folder, never PUBLISH_NQ / Netlify / GitHub Pages; 404 with a plain reason until it is made
+  /site/board/board.json the Board (engine/board_events.site_json, docs/BOARD.md): every account's stage / balance / room / to pass,
+                         the newest events, owner notes not answered, built live from data/board + data/inbox/board.jsonl (public pass)
   GET /api/site/live.json  the bot's live.json (engine/live_publish.build of the running bot: kind "le-live", pc, pc_verdict,
                          board, accounts), at most 15 s old; the Gate's "Right now" card reads it
   GET /api/site/status   what this serves: which site folder and how old, live on / off, the Kalshi and money sources
@@ -524,6 +526,12 @@ def r_site(rel: str, request: Request):
         if why and os.path.splitext(low[len("money/"):])[0] in PRIVATE_MONEY:
             return _J({"ok": False, "error": why}, 403)
         # anyone else gets the build's public (sample) copy below, like the Netlify site
+    if rel == "board/board.json":                         # the Board, live from this PC's files (engine/board_events.site_json)
+        try:
+            from engine import board_events
+            return _J(board_events.site_json(), headers={"X-Olympus-Source": "live"})
+        except Exception as e:  # noqa: BLE001
+            return _J({"ok": False, "error": f"the board could not be built ({e.__class__.__name__})"}, 503)
     if rel.startswith("day/"):
         name = rel[len("day/"):]
         p = day_file(name)

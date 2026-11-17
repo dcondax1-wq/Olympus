@@ -643,6 +643,24 @@
         "ms": 1000,
         "n": 5
       }
+    },
+    {
+      "id": "board",
+      "name": "Board",
+      "group": "trading",
+      "accent": "#c8a24a",
+      "description": "What the bot, you and Claude know: accounts, events, notes",
+      "glyph": "▤",
+      "ambient": "scroll",
+      "flavour": [
+        "columns",
+        "Read the board",
+        "tick"
+      ],
+      "transition": {
+        "kind": "tiles",
+        "ms": 800
+      }
     }
   ],
   "pending": [],

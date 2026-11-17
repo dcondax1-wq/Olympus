@@ -25,7 +25,9 @@ heartbeat.json: {"t": unix seconds, "running": bot running, "adapter": paper|nin
                               performance scorecard, open trade, today's rows, P&L per day; ~4 KB; key absent when off),
                  "selftest": the PC self-test's last result (engine/pc_selftest.hb_block; key absent before the first run),
                  "pc_health": CPU / RAM / disk / NinjaTrader / bot memory / OneDrive / clock / poll lines, green / amber / red
-                              (engine/pc_health.hb_block; key absent before the first sample)}
+                              (engine/pc_health.hb_block; key absent before the first sample),
+                 "board": the Board (engine/board_events.hb_block: every account's stage / balance / room / to pass / locked, the
+                          newest events, owner notes not answered; public, <= 6 KB; docs/BOARD.md)}
 Every beat also writes the payload to logs/heartbeat_last.json (local, gitignored) for HEALTH_CHECK and the ops task.
 
 No Yahoo (engine/pcbars.py, owner 2026-10-19): next to heartbeat.json the commit carries the PC's NinjaTrader bars,
@@ -623,6 +625,16 @@ def _ai(bot):
         return None
 
 
+def _board(bot):
+    """The Board (engine/board_events.hb_block: account rows, newest events, open owner notes; privacy-passed, <= 6 KB; also notes
+    bot_started / bot_stopped). Never raises."""
+    try:
+        from . import board_events
+        return board_events.hb_block(bot)
+    except Exception:
+        return None
+
+
 def _alerts_plus(bot):
     """{"rules", "crit"} (engine/alerts_plus.hb_block). Never raises."""
     try:
@@ -757,7 +769,8 @@ class Heartbeat:
                 **_opt("fleet", _fleet(self.bot)),           # the follower accounts (engine/fleet.py): only when configured
                 **_opt("mind", _mind(self.bot)),             # Mind (engine/mind.py, read-only): only once it has computed
                 **_opt("selftest", _selftest()),             # PC self-test (engine/pc_selftest.py): only after its first run
-                **_opt("pc_health", _pc_health())}           # PC health watchdog (engine/pc_health.py): once it has sampled
+                **_opt("pc_health", _pc_health()),           # PC health watchdog (engine/pc_health.py): once it has sampled
+                **_opt("board", _board(self.bot))}           # the Board (engine/board_events.hb_block): public, <= 6 KB
 
     def beat(self) -> dict:
         """One heartbeat: bars + payload + push, the result kept in self.last / logs/heartbeat_last.json. One at a time (a

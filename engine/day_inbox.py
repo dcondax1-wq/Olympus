@@ -10,7 +10,8 @@ data/day/inbox.json that the Planner reads at /site/day/inbox.json (it adds each
 starts, stops, arms, sizes or routes a bot, never touches a setting, never reads or sends a secret, never calls out. Shared shape
 with the money inbox (team X1): POST /inbox/{kind}; a kind is one entry of KINDS (register() adds one, e.g. "money"), every kind
 writes only its own file. Built in: "day" (above) and "health" (team ME1, docs/ME_HUB.md: the iPhone Shortcut "Health to PC" posts
-one evening summary of Apple Health; validate_health is strict: known fields, numbers in human ranges, a date in the last 10 days).
+one evening summary of Apple Health; validate_health is strict: known fields, numbers in human ranges, a date in the last 10 days)
+and "board" (2026-11-17, docs/BOARD.md: an owner note on the Board both the bot and Claude read; data/inbox/board.jsonl).
 
 Safety: the read-only guard of engine/live_site.py lets a proxied POST through ONLY for /inbox/<a registered kind>, and only once
 install() ran; a Tailscale Funnel (internet) request is still refused; the route takes a post only from the PC itself or through the
@@ -253,8 +254,20 @@ def say_health(rec: dict) -> str:
     return f"Saved your health for {rec.get('date')}: {head}. The Me hub updates within 15 minutes."
 
 
-KINDS = {"day": validate_day, "health": validate_health}
-SAYS = {"health": say_health}
+def validate_board(body, now_s: float) -> tuple[dict | None, str]:
+    """the "board" kind (engine/board_events.py, 2026-11-17): an owner note for the bot AND Claude ("ATLAS passed", "Zlarior
+    49,192.78", "new funded name ends 1234"). A typed balance updates the account's row on the board, marked owner, typed, date."""
+    from engine import board_events
+    return board_events.validate_owner(body, now_s)
+
+
+def say_board(rec: dict) -> str:
+    from engine import board_events
+    return board_events.say_owner(rec)
+
+
+KINDS = {"day": validate_day, "health": validate_health, "board": validate_board}
+SAYS = {"health": say_health, "board": say_board}
 
 
 def register(kind: str, validate, say=None) -> None:
