@@ -6,17 +6,26 @@ live vs backtest twin, the equity curve and the "Why was my order rejected?" car
   a. static: the files and the AGORA kit, read only, the section order, the help card's three reasons, no BLITZ, trades.json is current (tools/trading_export.py --check)
   b. the rules in node (tradingcore.js) on the real trades.json: LIT H1 / H2 = the research file's numbers, the calendar, the MFFU clock, the rules check, twins, junk input
   c. Chromium at 390 x 844 and 320 x 640 (under the browser lock): a 10-day-old home.json, the banner, the calendar arrows and a day sheet, the filters, the Odeon link,
-     DEMO mode, taps >= 44 px, no sideways scroll, no console error, nothing off the site
-    python -X utf8 -m tests.test_trading_page            (--static: parts a and b only)
+     DEMO mode, taps >= 44 px, no sideways scroll, no console error, nothing off the site; at 390 px also LIVE per account: a fresh ntfy feed (tests/net_stub with
+     an ext post) + a data-branch trades.json -> the Account filter, the LIVE table, the replay link / "Replay after tonight's data upload"
+  d. LIVE trades first-class (offline fixtures, 2026-11-18): the PC's ext post (engine/feed_trades "at" + board_trades with src, tools/pc_report.split, pc_feed merge),
+     the data branch's day folders (tools/live_trades -> tools/trading_export per account, a4 = last 4 only; tools/odeon_export reels on that day's bars),
+     graceful without the branch, and the page core (feedRows / merge / liveStats / pick by account) in node
+    python -X utf8 -m tests.test_trading_page            (--static: parts a, b and d only)
 """
 from __future__ import annotations
 
+import datetime as dt
+import gzip
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 import time
+from zoneinfo import ZoneInfo
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from tests import agora_kit as AK  # noqa: E402
@@ -152,6 +161,198 @@ def test_rules():
     check("b. junk input never throws and never shows a row", all(j == [0, 0, 0, 0, 2, 2, 0] for j in o["junk"]), o["junk"])
 
 
+# ------------------------------------------------------------------------------------------------ d. LIVE trades per account (fixtures)
+ET = ZoneInfo("America/New_York")
+DAY1, DAY2 = "2026-11-17", "2026-11-18"
+FULL_A, FULL_B = "MFFUEVBLDR000071234", "MFFUEVBLDR000075678"      # fake broker names: only their last 4 may ever show
+
+
+def ts(day, hh, mm):
+    return int(dt.datetime.fromisoformat(f"{day}T{hh:02d}:{mm:02d}:00").replace(tzinfo=ET).timestamp())
+
+
+def ledger_rows():
+    """what engine/datapipe.day_trades writes (already scrubbed: account names -> ...1234): Zlarior 50K + 25K #2 on the same signal, a refused
+    entry, ATLAS's account B live, ATLAS paper, BLITZ and a sim row that must never show"""
+    e1, e2 = ts(DAY1, 9, 45), ts(DAY2, 11, 0)
+    ok = lambda a: {"ok": True, "adapter": "ninjatrader", "account": a}  # noqa: E731
+    return [
+        {"t": e1 + 5, "side": "buy", "qty": 3, "entry_t": e1, "entry": 21003.0, "stop": 20990.0, "target": 21030.0, "result": ok("...1234"), "src": "main", "bot": "zlarior", "acct": "zlarior", "mode": "live"},
+        {"t": e1 + 900, "side": "exit", "qty": 3, "entry_t": e1, "reason": "TARGET", "pnl": 156.3, "exit_t": e1 + 900, "result": {"ok": True}, "src": "main", "bot": "zlarior", "acct": "zlarior", "mode": "live"},
+        {"t": e1 + 6, "side": "buy", "qty": 1, "entry_t": e1, "entry": 21003.0, "stop": 20990.0, "target": 21030.0, "result": ok("...5678"), "src": "accounts/b25k_2", "bot": "zlarior", "acct": "b25k_2", "mode": "live"},
+        {"t": e1 + 901, "side": "exit", "qty": 1, "entry_t": e1, "reason": "TARGET", "pnl": 52.1, "exit_t": e1 + 900, "result": {"ok": True}, "src": "accounts/b25k_2", "bot": "zlarior", "acct": "b25k_2", "mode": "live"},
+        {"t": e1 + 1000, "side": "sell", "qty": 2, "entry_t": e1 + 990, "result": {"ok": False, "error": "order refused for account ...1234: Limit 0"}, "src": "main", "bot": "zlarior", "acct": "zlarior", "mode": "live"},
+        {"t": e2 + 3, "side": "sell", "qty": 2, "entry_t": e2, "entry": 21050.0, "stop": 21060.0, "target": 21020.0, "strategy": "EMA", "result": ok("...9012"), "src": "acctb", "bot": "atlas", "acct": "atlas", "mode": "live"},
+        {"t": e2 + 600, "side": "exit", "qty": 2, "entry_t": e2, "reason": "STOP", "pnl": -41.0, "exit_t": e2 + 600, "strategy": "EMA", "result": {"ok": True}, "src": "acctb", "bot": "atlas", "acct": "atlas", "mode": "live"},
+        {"t": e2 + 60, "side": "buy", "qty": 1, "entry_t": e2 + 60, "entry": 21040.0, "stop": 21030.0, "result": {"ok": True, "adapter": "paper"}, "src": "atlas_v2", "bot": "atlas_v2", "acct": "atlas_v2", "mode": "paper"},
+        {"t": e2 + 700, "side": "exit", "qty": 1, "entry_t": e2 + 60, "reason": "TARGET", "pnl": 80.0, "src": "atlas_v2", "bot": "atlas_v2", "acct": "atlas_v2", "mode": "paper"},
+        {"t": e2 + 70, "side": "buy", "qty": 1, "entry_t": e2 + 70, "entry": 21040.0, "stop": 21030.0, "result": ok("...3333"), "src": "acctc", "bot": "blitz", "acct": "blitz", "mode": "live"},
+        {"t": e2 + 800, "side": "exit", "qty": 1, "entry_t": e2 + 70, "reason": "TARGET", "pnl": 90.0, "src": "acctc", "bot": "blitz", "acct": "blitz", "mode": "live"},
+        {"t": e2 + 80, "side": "buy", "qty": 1, "entry_t": e2 + 80, "entry": 21040.0, "stop": 21030.0, "result": {"ok": True, "adapter": "ninjatrader", "account": "Sim101"}, "src": "main", "bot": "zlarior", "acct": "zlarior", "mode": "sim"},
+        {"t": e2 + 900, "side": "exit", "qty": 1, "entry_t": e2 + 80, "reason": "TARGET", "pnl": 70.0, "src": "main", "bot": "zlarior", "acct": "zlarior", "mode": "sim"}]
+
+
+def make_pc_days(root):
+    """data/pc_days as tools/data_pull.py leaves it: DAY1 with the PC's MNQ 1m bars (so its trades can be replayed), DAY2 without bars yet"""
+    rows = ledger_rows()
+    for day in (DAY1, DAY2):
+        d = os.path.join(root, day)
+        os.makedirs(os.path.join(d, "bars"), exist_ok=True)
+        lo, hi = ts(day, 0, 0) - 6 * 3600, ts(day, 17, 0)
+        mine = [r for r in rows if lo <= int(r["entry_t"]) < hi]
+        with open(os.path.join(d, "trades.jsonl.gz"), "wb") as fh:
+            fh.write(gzip.compress("".join(json.dumps(r) + "\n" for r in mine).encode(), mtime=0))
+        with open(os.path.join(d, "manifest.json"), "w") as fh:
+            json.dump({"day": day, "files": {}}, fh)
+    e1 = ts(DAY1, 9, 45)
+    lines = ["time,open,high,low,close,volume"]
+    for i in range(-150, 60):                      # 07:15-10:45 ET: flat near 21000, a climb to 21036 from the entry to the target
+        t = e1 + i * 60
+        c = 21000.0 if i < 0 else min(21036.0, 21003.0 + i * 2.4)
+        lines.append(f"{t},{c - 0.5},{c + 1.0},{c - 1.0},{c},10")
+    with open(os.path.join(root, DAY1, "bars", "MNQ_1m.csv.gz"), "wb") as fh:
+        fh.write(gzip.compress(("\n".join(lines) + "\n").encode(), mtime=0))
+
+
+def feed_posts(now):
+    """the PC's two ntfy posts of one run (tools/pc_report.split: ext first, then the core) as an ntfy /json?poll=1 answer"""
+    from engine import feed_trades as FT
+    from tools import pc_report as PR
+    e1 = now - 3 * 3600
+    L = {"accounts": [
+        {"id": "mffu50k_eval", "kind": "eval", "source": "pc", "broker_account": FULL_A, "trades": [
+            {"entry_t": e1, "exit_t": e1 + 900, "side": "LONG", "qty": 3, "entry": 21003.0, "stop": 20990.0, "target": 21030.0, "exit": "TARGET", "pnl": 156.3, "r": 1.99}]},
+        {"id": "b25k_2", "kind": "eval", "source": "pc", "broker_account": FULL_B, "trades": [
+            {"entry_t": e1, "exit_t": e1 + 900, "side": "LONG", "qty": 1, "entry": 21003.0, "stop": 20990.0, "target": 21030.0, "exit": "TARGET", "pnl": 52.1, "r": 2.0}],
+         "position": {"entry_t": e1 + 5400, "side": "SHORT", "qty": 1, "entry": 21060.0, "stop": 21070.0, "target": 21020.0}},
+        {"id": "acct_c", "kind": "eval", "source": "pc_blitz", "trades": [{"entry_t": e1, "exit_t": e1 + 60, "side": "LONG", "pnl": 5}]},
+        {"id": "cloud_paper", "kind": "paper", "source": "cloud", "trades": [{"entry_t": e1, "exit_t": e1 + 60, "side": "LONG", "pnl": 7}]}],
+        "board": {"data_t": now - 100, "trades": [
+            {"acct": "lit", "src": "live", "key": "lit", "entry_t": e1, "exit_t": e1 + 900, "side": "LONG", "qty": 3, "exit": "TARGET", "usd": 156.3, "r": 1.99},
+            {"acct": "atlas", "src": "live", "key": "ema_lon_vix", "member": "EMA", "entry_t": e1 + 3600, "exit_t": e1 + 4000, "side": "SHORT", "qty": 2, "exit": "STOP", "usd": -41.0, "r": -1.02},
+            {"acct": "atlas", "src": "paper", "key": "macd_sweep", "member": "MACD", "entry_t": e1 + 7000, "exit_t": e1 + 7300, "side": "LONG", "usd": 310.0, "exit": "TARGET"}]}}
+    out = {"v": 1, "kind": "le-live", "lite": True, "src": "pc_report", "t": now - 120, "reporter": {"t": now - 60, "server": True}, "pc": {"present": True, "t": now - 120},
+           "board": {"t": now - 100, "data_t": now - 100, "lit": {"name": "Zlarior", "balance": 49313.54, "room": 1145.34, "mll": 2000, "today_pnl": 156.3},
+                     "trades": [{k: t.get(k) for k in PR.TRADE_KEYS if t.get(k) is not None} for t in L["board"]["trades"]]},
+           "at": FT.compact(L)}
+    core, exts = PR.split(out)
+    lines = [json.dumps({"event": "message", "time": now - 61, "message": json.dumps(e)}) for e in exts]
+    lines.append(json.dumps({"event": "message", "time": now - 60, "message": json.dumps(core)}))
+    return "\n".join(lines) + "\n", core, exts
+
+
+def live_bundle(tmp):
+    """(trades.json bundle, odeon bundle) built from the fixture data branch (the real exporters, pc_days pointed at the fixture)"""
+    from tools import odeon_export as OE, trading_export as TE
+    pcd = os.path.join(tmp, "pc_days")
+    make_pc_days(pcd)
+    ob = OE.build(1, 1, cloud=False, pc_days=pcd)
+    op = os.path.join(tmp, "odeon.json")
+    OE.write(ob, op)
+    old = TE.ODEON
+    TE.ODEON = op
+    try:
+        return TE.build(pcd), ob
+    finally:
+        TE.ODEON = old
+
+
+LIVE_HARNESS = r"""
+const fs = require('fs');
+const F = require(process.argv[3]);
+import(process.argv[2]).then((C) => {
+  const o = {}, file = JSON.parse(fs.readFileSync(process.argv[4], 'utf8')), nd = fs.readFileSync(process.argv[5], 'utf8'), now = +process.argv[6];
+  const lite = F.parseLatest(nd);
+  o.lite = [!!lite, !!(lite && lite.at), lite && lite.board && Array.isArray(lite.board.trades) ? lite.board.trades.length : -1];
+  const fr = C.feedRows(lite, now);
+  o.feed = fr.map((r) => [r.src, r.ak || '', r.bot, r.open, r.a4 || '', r.usd]).sort();
+  o.stale = C.feedRows(lite, now + 40 * 3600).length;
+  const rows = C.merge(file, null, lite, now);
+  const live = rows.filter((r) => r.src === 'live');
+  o.live = live.map((r) => [r.ak, r.day, r.bot, r.usd, r.a4 || '', !!r.odeon, r.open]).sort();
+  o.accts = C.liveAccounts(rows).map((a) => [a.k, a.name, a.n, a.a4]);
+  o.stats = C.liveStats(rows, now).map((a) => [a.k, a.s.n, a.s.net]);
+  o.pick = [C.pick(rows, { src: 'live', acct: 'z25k2' }).length, C.pick(rows, { src: 'live' }).length, C.pick(rows, { src: 'backtest', acct: 'z25k2' }).length];
+  o.views = C.recent(rows, { src: 'live' }, 30).map((v) => [v.who, v.odeon ? 'reel' : v.replayLater]);
+  o.paper = rows.filter((r) => r.src === 'paper' && r.feed).map((r) => [r.bot, r.m, r.usd]);
+  o.blitz = JSON.stringify(rows).toLowerCase().includes('blitz');
+  o.keys = [C.acctKey('mffu50k_eval'), C.acctKey('b25k_2'), C.acctKey('atlas'), C.acctKey('rapid_25k'), C.acctKey('acct_c'), C.acctKey('', 'ATLAS'), C.acctKey('<x>')];
+  o.rules = C.rulesCheck({}, rows, {}, {}).accounts.map((a) => a.days);
+  console.log(JSON.stringify(o));
+}).catch((e) => { console.error(e); process.exit(1); });
+"""
+
+
+def test_live():
+    from tools import live_trades as LT, trading_export as TE
+    tmp = tempfile.mkdtemp(prefix="trading-live-")
+    try:
+        # 1. the PC side: the "at" block + board_trades with src in the ext post, through the privacy pass, merged back by pc_feed
+        now = ts(DAY2, 12, 30)
+        nd, core, exts = feed_posts(now)
+        x = {k: v for e in exts for k, v in (e.get("x") or {}).items()}
+        allp = json.dumps([core] + exts)
+        check("d. PC ext post: 'at' = every real account's last trades (50K, 25K #2, ATLAS from the board), BLITZ / cloud paper never; board_trades keep src",
+              [a["id"] for a in x["at"]["a"]] == ["mffu50k_eval", "b25k_2", "atlas"] and "at" not in core and {t.get("src") for t in x["board_trades"]} == {"live", "paper"}
+              and "acct_c" not in allp and "cloud_paper" not in allp, x.get("at"))
+        check("d. PC ext post: the broker accounts show their last 4 digits only, every post under 3,900 bytes",
+              FULL_A not in allp and FULL_B not in allp and [a.get("l4") for a in x["at"]["a"][:2]] == ["1234", "5678"]
+              and all(len(json.dumps(p)) < 3900 for p in [core] + exts), [len(json.dumps(p)) for p in [core] + exts])
+        from tools import pc_feed as PF
+        m = PF.merge(core, exts)
+        check("d. pc_feed.merge lays 'at' top level and board_trades back into board.trades (the JS twin does the same)", isinstance(m.get("at"), dict)
+              and len(m["board"]["trades"]) == 3, m.get("board"))
+        # 2. the data branch: per-account rows, last 4 only, refused / paper / sim / BLITZ left out
+        paired = LT.pair(ledger_rows())
+        check("d. data branch: closed LIVE trades per account (Zlarior 50K + 25K #2 on the same signal, ATLAS funded); refused, paper, sim, BLITZ left out",
+              sorted((t["ak"], t["bot"], t["usd"], t["a4"]) for t in paired) == [("atlas25f", "ATLAS", -41.0, "9012"), ("z25k2", "LIT", 52.1, "5678"), ("z50k", "LIT", 156.3, "1234")]
+              and next(t for t in paired if t["ak"] == "atlas25f")["m"] == "EMA" and next(t for t in paired if t["ak"] == "z50k")["x"] == 21029.05, paired)
+        tb, ob = live_bundle(tmp)
+        lv = [t for t in tb["trades"] if t["src"] == "live"]
+        reels = {t["id"]: t for t in ob["trades"] if t.get("ak")}
+        dl = [t for t in lv if t.get("ak") in ("z50k", "z25k2", "atlas25f") and t["day"] >= DAY1]
+        check("d. trades.json: the data branch's LIVE rows per account (ak / an / a4), one id each, the old heartbeat row kept; accts + data_branch say what is in",
+              sorted((t["ak"], t["an"], t["a4"]) for t in dl) == [("atlas25f", "ATLAS funded 25K", "9012"), ("z25k2", "Zlarior 25K #2", "5678"), ("z50k", "Zlarior 50K", "1234")]
+              and len({t["id"] for t in lv}) == len(lv) and any(t["day"] == "2026-10-28" for t in lv)
+              and tb["accts"]["z25k2"]["n"] == 1 and tb["data_branch"]["days"] == 2 and tb["data_branch"]["bars"] == [DAY1], (dl, tb.get("accts"), tb.get("data_branch")))
+        check("d. Odeon: a live trade whose day has bars gets a reel per account (real.<account>...); the day without bars has none -> the page says replay later",
+              sorted(reels) == [f"real.z25k2.{DAY1}_0945_long", f"real.z50k.{DAY1}_0945_long"] and all(len(r["bars"]["c"]) > 60 for r in reels.values())
+              and next(t for t in dl if t["ak"] == "z25k2")["odeon"] == f"real.z25k2.{DAY1}_0945_long" and next(t for t in dl if t["ak"] == "atlas25f")["odeon"] is None, (sorted(reels), [(t["ak"], t["odeon"]) for t in dl]))
+        bundle_txt = TE.dump(tb)
+        check("d. privacy: no full broker account name and no balance key in trades.json or the reels", FULL_A not in bundle_txt and FULL_B not in bundle_txt
+              and '"balance"' not in bundle_txt and FULL_A not in json.dumps(ob) and FULL_B not in json.dumps(ob))
+        # 3. graceful: no data branch yet (today) = the same trades.json as before
+        check("d. no data branch yet: trades.json builds the same as without it (no crash, no live rows invented)",
+              TE.dump(TE.build(os.path.join(tmp, "missing"))) == AK.read(os.path.join(D, "trades.json")) and LT.load(os.path.join(tmp, "missing")) == [])
+        # 4. the page core: feed rows (fresh only), merge per account, dedupe against the file and the board copy
+        fp, np_ = os.path.join(tmp, "trades.json"), os.path.join(tmp, "feed.ndjson")
+        with open(fp, "w") as fh:
+            fh.write(bundle_txt)
+        with open(np_, "w") as fh:
+            fh.write(nd)
+        feedjs = os.path.join(tmp, "pc_feed.cjs")
+        shutil.copy(os.path.join(AK.WEB, "pc_feed.js"), feedjs)
+        o = AK.node(APP, LIVE_HARNESS, feedjs, fp, np_, now)
+        if o is None:
+            check("d. node tests skipped: no node", True)
+            return
+        if "_error" in o:
+            check("d. the live node harness runs", False, o["_error"])
+            return
+        check("d. page: the fresh feed gives LIVE rows per account (50K, 25K #2 + its open trade, ATLAS) and the ATLAS paper member stays PAPER; a 40-hour-old feed gives none",
+              o["lite"] == [True, True, 3] and ["live", "z25k2", "LIT", True, "5678", 0] in o["feed"] and ["paper", "", "ATLAS", False, "", 310] in o["feed"]
+              and sum(1 for f in o["feed"] if f[0] == "live" and f[1] == "z50k") == 2 and o["stale"] == 0, o["feed"])
+        check("d. page: merge = one row per trade and account (the feed's copy of a file trade is not counted twice; two accounts on one signal = two rows); BLITZ nowhere",
+              sorted(a[0] for a in o["accts"]) == ["atlas25f", "z25k2", "z50k"] and [a[2] for a in o["accts"]] == [3, 2, 2] and not o["blitz"], (o["accts"], o["live"]))
+        check("d. page: per-account picks and stats; the Today / rules cards stay on the bot's own account (50K: 3 days traded)",
+              o["pick"][0] == 2 and o["pick"][1] == 7 and o["pick"][2] > 0 and o["stats"][0][0] == "z50k" and o["rules"][0] == 3, (o["pick"], o["stats"], o["rules"]))
+        check("d. page: a LIVE trade says its account with the last 4 ('Zlarior 25K #2 ...5678 · LIT'); with bars it opens its reel, else 'Replay after tonight's data upload'",
+              ["Zlarior 25K #2 ...5678 · LIT", "reel"] in o["views"] and any(v[1] == "Replay after tonight's data upload" and v[0].startswith("ATLAS funded 25K ...9012") for v in o["views"]), o["views"])
+        check("d. account keys: PC ids -> z50k / z25k2 / atlas25f / rapid25; BLITZ and junk -> none", o["keys"] == ["z50k", "z25k2", "atlas25f", "rapid25", None, "atlas25f", None], o["keys"])
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
 def home_json(age_s):
     now = int(time.time())
     t = now - age_s
@@ -210,6 +411,40 @@ def test_browser():
                 check(f"c. {w}px: no console error, nothing requested off the site", not errs and not off, (errs[:3], off[:3]))
                 AK.shot(p, f"trading-{w}")
                 ctx.close()
+            # LIVE per account at 390 px: the data-branch trades.json + a fresh PC feed (tests/net_stub answers ntfy with the PC's ext + core posts)
+            from tests import net_stub as NS
+            tmp = tempfile.mkdtemp(prefix="trading-live-b-")
+            try:
+                tb, _ob = live_bundle(tmp)
+                from tools import trading_export as TE
+                srv2, origin2 = AK.serve({"/home.json": home_json(10 * 86400), f"/{APP}/trades.json": TE.dump(tb)})
+                try:
+                    nd, _c, _e = feed_posts(int(time.time()))
+                    ctx, p, errs, seen, off = AK.page(br, origin2, w=390, h=844)
+                    NS.stub(ctx, nd)
+                    AK.open_app(p, origin2, APP)
+                    p.wait_for_function("() => window.TRADING.S.lite && document.querySelectorAll('#liveStats tr[data-acct]').length >= 3", timeout=20000, polling=300)
+                    st = p.evaluate("""() => ({ box: !document.getElementById('fAcctBox').hidden, acc: [...document.querySelectorAll('#fAcct button')].map((b) => b.textContent),
+                        rows: [...document.querySelectorAll('#liveStats tr[data-acct]')].map((r) => r.dataset.acct), later: [...document.querySelectorAll('#trades .later')].map((x) => x.textContent),
+                        links: [...document.querySelectorAll('#trades a.tlink')].map((a) => a.getAttribute('href')), banner: document.getElementById('banner').dataset.level, src: window.TRADING.S.src,
+                        text: document.body.innerText })""")
+                    check("c. 390px LIVE per account: the Account filter (Zlarior 50K / 25K #2 / ATLAS funded 25K), the LIVE table, a fresh feed turns the banner green",
+                          st["box"] and st["src"] == "live" and any(x.startswith("Zlarior 25K #2") for x in st["acc"]) and st["rows"] == ["z50k", "z25k2", "atlas25f"] and st["banner"] == "ok"
+                          and "blitz" not in st["text"].lower() and FULL_A not in st["text"] and FULL_B not in st["text"], {k: v for k, v in st.items() if k != "text"})
+                    p.click("#fAcct button[data-k=z25k2]")
+                    p.wait_for_timeout(250)
+                    one = p.evaluate("() => ({ who: [...document.querySelectorAll('#trades .tl b')].map((b) => b.textContent), links: [...document.querySelectorAll('#trades a.tlink')].map((a) => a.getAttribute('href')) })")
+                    check("c. 390px: one account shows only its trades; its uploaded day opens the reel, a trade without bars says 'Replay after tonight's data upload'",
+                          one["who"] and all(w.startswith("Zlarior 25K #2") for w in one["who"]) and f"../odeon/#reel=real.z25k2.{DAY1}_0945_long" in one["links"]
+                          and "Replay after tonight's data upload" in st["later"], (one, st["later"]))
+                    check("c. 390px LIVE: taps >= 44 px, no sideways scroll, no console error, nothing off the site (ntfy answered by the stub)",
+                          AK.no_sideways(p) and not AK.taps(p) and not errs and not off, (AK.taps(p), errs[:3], off[:3]))
+                    AK.shot(p, "trading-live-390")
+                    ctx.close()
+                finally:
+                    srv2.shutdown()
+            finally:
+                shutil.rmtree(tmp, ignore_errors=True)
             ctx, p, errs, seen, off = AK.page(br, origin, w=390, h=844)
             AK.open_app(p, origin, APP, "?demo=1")
             st = p.evaluate("() => ({ demo: !document.getElementById('demo').hidden, today: document.getElementById('todaySrc').textContent, open: document.querySelector('#accts .acct[data-bot=ATLAS]').innerText })")
@@ -222,6 +457,7 @@ def test_browser():
 if __name__ == "__main__":
     test_static()
     test_rules()
+    test_live()
     if "--static" not in sys.argv:
         test_browser()
     AK.finish()

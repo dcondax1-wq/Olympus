@@ -70,9 +70,10 @@
     for (const a of later) lt.appendChild(el('li', null, a.name + ' · ' + (a.plan || '') + ' · not bought yet'));
     $('laterBox').hidden = !later.length;
     const w = $('waiting'); clear(w);
-    for (const x of b.waiting || []) w.appendChild(el('li', null, x));
+    const plan = window.DECIDE && window.DECIDE.ok !== false ? [] : (b.waiting || []); // the Decide card above shows the decisions
+    for (const x of plan) w.appendChild(el('li', null, x));
     for (const n of b.open_notes || []) w.appendChild(el('li', 'note-open', 'Your note, not answered yet: ' + (n.text || '')));
-    $('waitBox').hidden = !(b.waiting || []).length && !(b.open_notes || []).length;
+    $('waitBox').hidden = !plan.length && !(b.open_notes || []).length;
     const f = $('feed'); clear(f);
     const evs = (b.events || []).filter((e) => !/blitz/i.test(String(e.acct || ''))).slice(0, 40);
     for (const e of evs) f.appendChild(feedItem(e));

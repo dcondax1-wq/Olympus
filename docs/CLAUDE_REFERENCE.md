@@ -15,6 +15,12 @@
 > - Hosting: `docs/HOSTING.md` (`docs/HOSTING_OPTIONS.md`). Pages: Business (`tools/web_public/business/`, `docs/BUSINESS.md`), Trading (`tools/web_public/trading/`), Board, Brain (`brain.js`, Bot Brain). App map: `docs/OLYMPUS_MAP.md`.
 > - Research write-ups: `research/writeups/` (index `INDEX.md`); rejected ideas `docs/TESTED_AND_REJECTED.md`; learn loop `docs/LEARN_LOOP.md`.
 > - Landing a helper branch (night-*): skill `.claude/skills/land-helper/SKILL.md`.
+> - New 2026-11-18 (night, one line each): `engine/onboard.py` (one-tap new/upgraded account on the Start page), `engine/lifecycle.py` (eval -> funded -> payout steps), `engine/board_events.py` + `tools/board.py` (Board events; `board.py read` = owner notes), `engine/datapipe.py` + `tools/data_pull.py` (PC days -> backup branch `data` -> Claude), `engine/zeus_review.py` (nightly self-review), `tools/zeus_lab.py` (ZEUS Lab ideas, asks first).
+> - Safety/risk (advice unless a switch is on): `engine/circuit_breaker.py` (live vs backtest twin gap), `engine/msg_throttle.py` (runaway orders; `--block-on`), `engine/phone_safety.py` (/safety/ pause/flatten, Tailscale only), `engine/audit_trail.py` (who did what timeline).
+> - Data/feeds: `engine/news_official.py` (Tier-1 calendar -> events.csv), `engine/feed_trades.py` (live trades per account for Trading), `engine/mffu_view.py` (MFFU-style cards), `engine/payout_coach.py` (when to ask for a payout), `engine/brain_glance.py` (Brain page blocks), `engine/lit_markets.py` (LIT on MGC/MCL/M2K, `docs/OTHER_MARKETS.md`).
+> - PC reporting + checks: `tools/pc_feed.py` (reads the PC's core + ext ntfy posts), `tools/weekly_review.py` (Friday -> `business/week.json`), `tools/morning_brief.py` (07:30 ET push), `tools/edge_health.py` + `tools/edge_pc.py` (edge light), `tools/rehearse_day.py` (paper full-day rehearsal).
+> - Pages: `tools/web_public/business/` (mffu, goals, plan, week, lab, taxes, security, schedule, work), `hub/zeus.html`, `hub/help.html` (How do I, `help.json`), `hub/doors.html`, `board/` (+ Decide card), `trading/` (live trades).
+> - Owner .bat files: `ADD_ACCOUNT.bat`, `CLOUDFLARE_SETUP.bat` (`scripts/cloudflare_setup.ps1`), `PC_DOCTOR.bat` (`docs/PC_DOCTOR.md`).
 > - Tests: `python tests/smoke.py`, then `python tests/run_area.py <area>`.
 > Moved out of CLAUDE.md on 2026-10-24 so it is not loaded into every message. CLAUDE.md keeps the hard rules and an index;
 > read the section you need here. Keep this file current when you change what a section describes.

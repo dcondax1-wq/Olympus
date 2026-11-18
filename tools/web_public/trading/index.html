@@ -30,7 +30,7 @@
 <script src="../olympus/gate-nav.js?v=g5" defer></script>
 <link rel="prefetch" href="../olympus/sfx.js?v=s4" as="script"><!-- the sound engine (32 KB gzipped) is not in the deferred chain the page waits on: olympus.js loads it after the page has loaded (its sound bed) or on the first cue -->
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#c8a24a'); r.setProperty('--oly-accent-rgb', '200, 162, 74'); })();</script>
-<link rel="stylesheet" href="trading.css?v=1">
+<link rel="stylesheet" href="trading.css?v=2">
 </head>
 <body>
 <main id="app">
@@ -58,6 +58,7 @@
   <section class="ag-card card filters" id="filterCard" aria-label="What to show">
     <div class="fgroup"><p class="flabel">Bot</p><div class="seg" id="fBot" role="group" aria-label="Bot"></div></div>
     <div class="fgroup"><p class="flabel">Data</p><div class="seg" id="fSrc" role="group" aria-label="Data source"></div></div>
+    <div class="fgroup" id="fAcctBox" hidden><p class="flabel">Account</p><div class="seg" id="fAcct" role="group" aria-label="LIVE account"></div></div>
     <p class="note" id="srcNote"></p>
   </section>
 
@@ -81,7 +82,10 @@
   </section>
 
   <section class="ag-card card" id="statsCard" aria-labelledby="statsH">
-    <div class="row"><h2 id="statsH">4. Stats per bot: 2026 H1 vs H2</h2><span class="pill warn">Backtest, not a promise</span></div>
+    <div class="row"><h2 id="statsH">4. Stats: LIVE per account, then 2026 H1 vs H2</h2><span class="pill warn">Backtest, not a promise</span></div>
+    <h3 class="sub3">LIVE per account</h3>
+    <div id="liveStats" class="livestats"></div>
+    <h3 class="sub3">Backtest per bot</h3>
     <p class="note">H1 = Jan-Jun 2026 (LIT's settings were picked on it). H2 = Jul on (the check). Costs are in.</p>
     <div id="stats" class="stats"></div>
   </section>
@@ -125,7 +129,7 @@
     <p class="lead">How to tell which: if it is between 16:10 and 18:00 ET, wait for 18:00 ET and try again. If it still says Limit 0 after 18:00 ET, open the MFFU dashboard and read the account's status (Active, Failed, Passed or Pending activation).</p>
   </section>
 
-  <p class="foot" id="foot">Trading reads the site's own published files and sends nothing. It cannot start, stop or change a bot, and it never places an order. LIVE = the PC's real MFFU eval trades; PAPER = the cloud's practice twin; BACKTEST = a replay of the rules on past NQ futures bars, not money made. 1R = the $ one trade risks.</p>
+  <p class="foot" id="foot">Trading reads the site's own published files and sends nothing. It cannot start, stop or change a bot, and it never places an order. LIVE = the PC's real MFFU trades per account (Zlarior 50K, Zlarior 25K #2, ATLAS funded 25K, later the Rapid 25K; last 4 digits only), from the daily upload and the PC's 15-minute report; PAPER = the cloud's practice twin; BACKTEST = a replay of the rules on past NQ futures bars, not money made. 1R = the $ one trade risks.</p>
 </main>
 
 <div class="veil" id="veil" hidden></div>
@@ -134,6 +138,6 @@
   <div class="sheetbody" id="sheetBody"></div>
 </section>
 <script src="../edge_chip.js?v=1"></script>
-<script type="module" src="trading.js?v=1"></script>
+<script type="module" src="trading.js?v=2"></script>
 </body>
 </html>

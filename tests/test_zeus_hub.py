@@ -78,8 +78,9 @@ def part_a():
           "PC_FEED.fetchLatest" in js and "'../board/board.json'" in js and "'../business/accounts.json'" in js and "BM.pick(" in js and "MM.cards(" in js
           and "'../pythia/events.json'" in js)
     order = [m for m in re.findall(r'<script src="([^"?]+)', html)]
-    check("a. scripts: pc_feed, payoutcoach, mffumodel, boardmodel (after mffumodel), edge_chip, zeus.js last",
-          order == ["../pc_feed.js", "../business/payoutcoach.js", "../business/mffumodel.js", "../board/boardmodel.js", "../edge_chip.js", "zeus.js"], order)
+    check("a. scripts: pc_feed, payoutcoach, mffumodel, boardmodel (after mffumodel), edge_chip, the Decide card, zeus.js last",
+          order == ["../pc_feed.js", "../business/payoutcoach.js", "../business/mffumodel.js", "../board/boardmodel.js", "../edge_chip.js",
+                    "../business/decide.js", "zeus.js"], order)
     check("a. the ZEUS edge chip mounts here (data-edge-chip, ../edge.json)", 'id="edgeChip" data-edge-chip data-edge-src="../edge.json"' in html)
     hrefs = re.findall(r'class="zs-btn"(?: id="\w+")? href="([^"]+)"', html)
     want = ["../business/mffu.html", "../trading/", "../index.html#/brain", "../board/", "../business/lab.html", "../business/accounts.html#coach", "../business/week.html"]

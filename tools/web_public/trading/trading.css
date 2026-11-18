@@ -137,3 +137,9 @@ html.sheet-open, html.sheet-open body { overflow: hidden; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 html[data-oly-lite="1"] .ag-card, html[data-oly-lite="1"] .banner { box-shadow: none; }
 html[data-oly-lite="1"] .sheet { animation: none; }
+/* LIVE per account (2026-11-18): the account filter wraps 2 a row; the LIVE table; "replay after tonight's upload" */
+#fAcct { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.st.live th:first-child { width: 32%; }
+.st.live td, .st.live th { font-size: 12px; }
+.livestats { margin-bottom: 10px; }
+.later { color: var(--ag-muted); font-style: italic; }

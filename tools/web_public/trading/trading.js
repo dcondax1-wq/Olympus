@@ -1,6 +1,8 @@
 // TRADING page (ES module): every trade in one place. Reads ./trades.json (tools/trading_export.py), ../home.json (+ the PC's 15-minute feed via olympus/truth.js),
 // ../ledger/rules.json, ../business/accounts.json and ./fixture.json (DEMO, never blank). Read only: it sends nothing and keeps nothing. Text only through textContent /
-// createElementNS. window.TRADING is the test hook. ?demo=1 = the example; ?src=live|paper|backtest and ?bot=LIT|ATLAS open on that filter; ?month=2026-10 on that month.
+// createElementNS. window.TRADING is the test hook. ?demo=1 = the example; ?src=live|paper|backtest and ?bot=LIT|ATLAS open on that filter; ?month=2026-10 on that month;
+// ?acct=z25k2 opens LIVE on one account. LIVE rows per account: trades.json (the PC's data branch, tools/trading_export.py) + the PC's 15-minute ntfy feed
+// (../pc_feed.js: board_trades + "at", read here once per refresh, used for trades only while it is fresh: C.feedRows).
 import * as C from './tradingcore.js';
 import * as T from '../olympus/truth.js';
 
@@ -10,7 +12,7 @@ const NS = 'http://www.w3.org/2000/svg';
 function h(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = String(text); return e; }
 function sv(tag, attrs, text) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (text != null) e.textContent = String(text); return e; }
 const clear = (el) => { while (el.firstChild) el.removeChild(el.firstChild); };
-const S = { file: null, home: null, rules: null, biz: null, fixture: null, demo: false, forced: false, rows: [], bot: 'all', src: 'backtest', month: '', ready: false, sheet: false, last: null };
+const S = { file: null, home: null, lite: null, rules: null, biz: null, fixture: null, demo: false, forced: false, rows: [], bot: 'all', src: 'backtest', acct: 'all', month: '', ready: false, sheet: false, last: null };
 
 async function getJSON(url, ms) {
   const ac = typeof AbortController === 'function' ? new AbortController() : null, timer = ac ? setTimeout(() => ac.abort(), ms || 6000) : 0;
@@ -24,14 +26,31 @@ function agesToTimes(x, nowS) {
   walk(f); return f;
 }
 const nowS = () => Math.floor(Date.now() / 1000);
-
+/** the PC's ntfy feed (../pc_feed.js, the same file and version olympus/truth.js loads): the lite status, or null. Never throws, ~3 s at most. */
+let feedLib = null;
+function loadFeedLib() {
+  if (window.PC_FEED) return Promise.resolve(window.PC_FEED);
+  if (!feedLib) feedLib = new Promise((res) => { try { const sc = document.createElement('script'); sc.src = '../pc_feed.js?v=n2'; sc.async = true; sc.onload = () => res(window.PC_FEED || null); sc.onerror = () => res(null); document.head.appendChild(sc); } catch (_) { res(null); } });
+  return feedLib;
+}
+async function withFeed(home) {
+  try {
+    const F = await loadFeedLib(); if (!F) return home;
+    const lite = await Promise.race([F.fetchLatest({ feedUrl: '../status_feed.json' }), new Promise((r) => setTimeout(() => r(null), 3000))]);
+    if (!lite) return home;
+    S.lite = lite;
+    // the numbers go through overlayHome (as truth.js does); the trades come in through C.feedRows (fresh feeds only, per account)
+    const noTrades = { ...lite, board: lite.board && typeof lite.board === 'object' ? { ...lite.board, trades: undefined } : lite.board };
+    return home && typeof home === 'object' ? F.overlayHome(home, noTrades) : home;
+  } catch (_) { return home; }
+}
 function model() {
   const real = !S.forced && S.file && Array.isArray(S.file.trades) && S.file.trades.length > 0;
   S.demo = !real;
   const file = real ? S.file : (S.fixture && S.fixture.trades) || { trades: [] };
   const home = real ? S.home : agesToTimes(S.fixture && S.fixture.home, nowS());
   S.view = { file, home: home && typeof home === 'object' ? home : null };
-  S.rows = C.merge(file, S.view.home);
+  S.rows = C.merge(file, S.view.home, real ? S.lite : null, nowS());
   S.A = S.view.home ? T.accountsOf(S.view.home) : {};
   S.ages = S.view.home ? T.agesOf(S.view.home, nowS()) : null;
 }
@@ -76,16 +95,22 @@ function seg(box, items, cur, onPick) {
   }
 }
 function renderFilters() {
-  const n = C.counts(S.rows);
+  const n = C.counts(S.rows), LA = C.liveAccounts(S.rows);
   seg($('fBot'), [{ k: 'all', label: 'Both' }, { k: 'LIT', label: 'Zlarior' }, { k: 'ATLAS', label: 'ATLAS' }], S.bot, (k) => { S.bot = k; S.month = ''; renderFiltered(); renderFilters(); });
   seg($('fSrc'), ['live', 'paper', 'backtest'].map((k) => ({ k, label: `${C.SRC[k]} ${n[k]}` })), S.src, (k) => { S.src = k; S.month = ''; renderFiltered(); renderFilters(); });
-  $('srcNote').textContent = `${C.SRC_WORDS[S.src]}. Applies to the calendar, the trades, the edges and the curve.`;
+  if (S.acct !== 'all' && !LA.some((a) => a.k === S.acct)) S.acct = 'all';
+  const showAcct = S.src === 'live' && LA.length > 0;
+  $('fAcctBox').hidden = !showAcct;
+  if (showAcct) seg($('fAcct'), [{ k: 'all', label: `All ${LA.reduce((x, a) => x + a.n, 0)}` }].concat(LA.map((a) => ({ k: a.k, label: `${a.name} ${a.n}` }))), S.acct, (k) => { S.acct = k; S.month = ''; renderFiltered(); renderFilters(); });
+  $('srcNote').textContent = `${C.SRC_WORDS[S.src]}. Applies to the calendar, the trades, the edges and the curve.${S.src === 'live' ? ' LIVE = every real account: the daily upload plus the PC\'s 15-minute report.' : ''}`;
 }
-const srcTag = () => `${C.SRC[S.src]}${S.bot === 'all' ? '' : ' · ' + (S.bot === 'LIT' ? 'Zlarior' : 'ATLAS')}`;
+const curAcct = () => (S.src === 'live' ? S.acct : 'all');
+const F = () => ({ bot: S.bot, src: S.src, acct: curAcct() });
+const srcTag = () => `${C.SRC[S.src]}${S.bot === 'all' ? '' : ' · ' + (S.bot === 'LIT' ? 'Zlarior' : 'ATLAS')}${curAcct() === 'all' ? '' : ' · ' + C.acctName(curAcct())}`;
 
 // ------------------------------------------------------------------------------------------------ calendar
 function renderCal() {
-  const R = C.pick(S.rows, { bot: S.bot, src: S.src }), M = C.months(R);
+  const R = C.pick(S.rows, F()), M = C.months(R);
   if (!S.month || !M.includes(S.month)) S.month = M.length ? M[M.length - 1] : '';
   const i = M.indexOf(S.month);
   $('calSrc').textContent = srcTag();
@@ -110,7 +135,7 @@ function renderCal() {
 }
 function shortUsd(v) { const a = Math.abs(v), s = v < -0.5 ? '-' : v > 0.5 ? '+' : ''; return a >= 1000 ? `${s}${(a / 1000).toFixed(a >= 10000 ? 0 : 1)}k` : `${s}${Math.round(a)}`; }
 function stepMonth(d) {
-  const M = C.months(C.pick(S.rows, { bot: S.bot, src: S.src })), i = M.indexOf(S.month), j = i + d;
+  const M = C.months(C.pick(S.rows, F())), i = M.indexOf(S.month), j = i + d;
   if (j < 0 || j >= M.length) return; S.month = M[j]; renderCal(); say(`${C.monthLabel(S.month)}.`);
 }
 
@@ -124,19 +149,40 @@ function tradeItem(v) {
   r.appendChild(h('b', v.sign, v.usd)); r.appendChild(h('span', 'note', `${v.r}${v.exit ? ' · ' + v.exit : ''}`));
   const tag = h('span', 'pill src', v.src); tag.dataset.src = v.srcKey; r.appendChild(tag);
   if (v.odeon) r.appendChild(h('span', 'note replay', 'Replay ›'));
+  else if (v.replayLater) r.appendChild(h('span', 'note later', v.replayLater));
   inner.appendChild(l); inner.appendChild(r); li.appendChild(inner);
   return li;
 }
 function renderTrades() {
   const list = $('trades'); clear(list);
-  const V = C.recent(S.rows, { bot: S.bot, src: S.src }, 30);
+  const V = C.recent(S.rows, F(), 30);
   $('tradesSrc').textContent = srcTag();
-  $('tradesNote').textContent = V.length ? `The last ${V.length} ${C.SRC[S.src]} trades, newest first. A trade with "Replay" opens in Odeon.` : `No ${C.SRC[S.src]} trades for this choice yet.`;
+  $('tradesNote').textContent = V.length ? `The last ${V.length} ${C.SRC[S.src]} trades, newest first. A trade with "Replay" opens in Odeon.${S.src === 'live' ? ' A LIVE trade can be replayed once its day\'s bars are uploaded (after 17:05 ET).' : ''}` : `No ${C.SRC[S.src]} trades for this choice yet.`;
   for (const v of V) list.appendChild(tradeItem(v));
 }
 
 // ------------------------------------------------------------------------------------------------ stats, rules, edges, twins, curve
+function renderLiveStats() {
+  const box = $('liveStats'); clear(box);
+  const L = C.liveStats(S.rows, nowS());
+  if (!L.length) { box.appendChild(h('p', 'note', 'No LIVE trade in the files yet.')); return; }
+  const tbl = h('table', 'st live'), head = h('tr');
+  for (const t of ['Account', 'Trades', 'Net', 'Win', 'PF', 'Today']) head.appendChild(h('th', '', t));
+  tbl.appendChild(h('thead')).appendChild(head);
+  const body = h('tbody');
+  for (const a of L) {
+    const tr = h('tr'); tr.dataset.acct = a.k;
+    tr.appendChild(h('th', '', `${a.name}${a.a4 ? ' ...' + a.a4 : ''}`)); tr.appendChild(h('td', '', String(a.s.n)));
+    tr.appendChild(h('td', a.s.net > 0.5 ? 'pos' : a.s.net < -0.5 ? 'neg' : '', C.moneyS(a.s.net))); tr.appendChild(h('td', '', a.s.n ? `${a.s.win}%` : '-'));
+    tr.appendChild(h('td', '', a.s.n ? C.pfText(a.s.pf) : '-')); tr.appendChild(h('td', '', a.todayN ? C.moneyS(a.today) : '-'));
+    body.appendChild(tr);
+  }
+  tbl.appendChild(body); box.appendChild(tbl);
+  const n = L.reduce((x, a) => x + a.s.n, 0);
+  box.appendChild(h('p', 'note', `LIVE = the real MFFU accounts (last 4 digits only). ${n} ${n === 1 ? 'trade' : 'trades'} so far: too few to judge an edge; the backtest below is the yardstick.`));
+}
 function renderStats() {
+  renderLiveStats();
   const box = $('stats'); clear(box);
   const H = C.halves(C.pick(S.rows, { bot: 'all', src: 'backtest' }));
   if (!H.length) { box.appendChild(h('p', 'note', 'No backtest trades in the file.')); return; }
@@ -192,7 +238,7 @@ function bars(box, list, labelOf) {
   }
 }
 function renderEdge() {
-  const R = C.pick(S.rows, { bot: S.bot, src: S.src });
+  const R = C.pick(S.rows, F());
   $('edgeSrc').textContent = srcTag();
   bars($('hours'), C.hours(R), (x) => x.label);
   bars($('wdays'), C.weekdays(R), (x) => x.label);
@@ -212,7 +258,7 @@ function renderTwins() {
 }
 function renderEquity() {
   const svg = $('eq'); clear(svg);
-  const eq = C.equity(C.pick(S.rows, { bot: S.bot, src: S.src })), g = C.equityPath(eq, 320, 150, 8), leg = $('eqLeg'); clear(leg);
+  const eq = C.equity(C.pick(S.rows, F())), g = C.equityPath(eq, 320, 150, 8), leg = $('eqLeg'); clear(leg);
   $('eqSrc').textContent = srcTag();
   if (!g.paths.length) { svg.appendChild(sv('text', { x: 160, y: 78, 'text-anchor': 'middle', class: 'eqt' }, 'No trades for this choice')); return; }
   svg.appendChild(sv('line', { x1: 8, x2: 312, y1: g.zero.toFixed(1), y2: g.zero.toFixed(1), class: 'eqz' }));
@@ -227,7 +273,7 @@ function renderEquity() {
 
 // ------------------------------------------------------------------------------------------------ the day sheet
 function openDay(day, from) {
-  const D = C.daily(C.pick(S.rows, { bot: S.bot, src: S.src }))[day]; if (!D) return;
+  const D = C.daily(C.pick(S.rows, F()))[day]; if (!D) return;
   S.last = from || null; S.sheet = true;
   $('sheetH').textContent = `${C.longDay(day)}: ${C.moneyS(D.usd)}`;
   const body = $('sheetBody'); clear(body);
@@ -249,6 +295,7 @@ function render() {
   model();
   $('demo').hidden = !S.demo;
   if (!S.srcPicked) { S.src = C.defaultSrc(S.rows); S.srcPicked = true; }
+  if (S.acct !== 'all' && !S.srcPicked2) { S.srcPicked2 = true; if (C.liveAccounts(S.rows).some((a) => a.k === S.acct)) S.src = 'live'; }
   renderBanner(); renderToday(); renderFilters(); renderFiltered(); renderStats(); renderRules(); renderTwins();
   const n = C.counts(S.rows);
   say(`${S.live.head} ${n.live} live, ${n.paper} paper and ${n.backtest} backtest trades.${S.demo ? ' Example numbers, not real.' : ''}`);
@@ -257,7 +304,7 @@ function render() {
 }
 async function refresh() {
   if (S.forced || document.hidden) return;
-  const home = await T.withPcFeed(await getJSON('../home.json'));
+  const home = await withFeed(await getJSON('../home.json'));
   if (home) S.home = home;
   render();
 }
@@ -265,6 +312,7 @@ async function boot() {
   const q = new URLSearchParams(location.search); S.forced = q.get('demo') === '1';
   if (C.SRC[q.get('src')]) { S.src = q.get('src'); S.srcPicked = true; }
   if (q.get('bot') === 'LIT' || q.get('bot') === 'ATLAS') S.bot = q.get('bot');
+  if (/^[a-z0-9_]{2,24}$/.test(q.get('acct') || '')) S.acct = q.get('acct');
   if (/^\d{4}-\d{2}$/.test(q.get('month') || '')) S.month = q.get('month');
   $('calPrev').addEventListener('click', () => stepMonth(-1)); $('calNext').addEventListener('click', () => stepMonth(1));
   let x0 = null, y0 = null;
@@ -275,7 +323,7 @@ async function boot() {
   const [fx, file, home, rules, biz] = await Promise.all([getJSON('./fixture.json'), S.forced ? null : getJSON('./trades.json'), S.forced ? null : getJSON('../home.json'), getJSON('../ledger/rules.json'), getJSON('../business/accounts.json')]);
   S.fixture = fx; S.file = file; S.home = home; S.rules = rules; S.biz = biz;
   render();
-  if (home) T.withPcFeed(home).then((hm) => { if (hm !== home && !S.forced) { S.home = hm; render(); } });
+  if (!S.forced) withFeed(home).then((hm) => { if ((hm !== home || S.lite) && !S.forced) { S.home = hm || S.home; render(); } });
   setInterval(() => { if (!document.hidden) { renderBanner(); renderToday(); } }, 60000);
   setInterval(refresh, 5 * 60000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });

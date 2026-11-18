@@ -279,10 +279,25 @@ def validate_owner(body, now_s: float):
     acct = key_of(body.get("acct") or "")
     if acct:
         rec["acct"] = acct
+    dec, ans = str(body.get("decision") or "").strip().lower(), str(body.get("answer") or "").strip().lower()
+    if dec or ans:  # a tap on the Decide card (business/decide.js): an answer for Claude, never a setting by itself
+        if not _DECISION_RX.fullmatch(dec) or ans not in DECISION_ANSWERS:
+            return None, "a decision needs an id (2-40 letters, digits, _ or -) and an answer: yes, no or later"
+        rec["decision"], rec["answer"] = dec, ans
     return rec, ""
 
 
+# the Decide card (tools/web_public/business/decide.js + decisions.json, Claude keeps the list): a tap posts
+# {"text": "Decide <id>: YES - <question>", "decision": id, "answer": yes|no|later}. Its text is never read as a balance /
+# stage / account (a question like "keep $1,000 in each Rapid" must not set the Rapid row to $1,000), and it changes nothing live.
+DECISION_ANSWERS = ("yes", "no", "later")
+_DECISION_RX = re.compile(r"[a-z0-9][a-z0-9_-]{1,39}")
+
+
 def say_owner(rec: dict) -> str:
+    if rec.get("decision"):
+        return (f"Saved your {str(rec.get('answer') or '').upper()} on \"{rec['decision']}\". Claude reads it next session and applies it by the rules; "
+                "nothing live changes by itself.")
     p = owner_parse(rec.get("text") or "")
     bits = []
     if p.get("balance") is not None:
@@ -300,7 +315,8 @@ def _inbox_events(path: str, plan_accounts=None) -> list:
         text = clean(r.get("text"))
         if not text:
             continue
-        p = owner_parse(text, plan_accounts)
+        dec = str(r.get("decision") or "")
+        p = {"decision": dec, "answer": str(r.get("answer") or "")} if dec else owner_parse(text, plan_accounts)
         acct = key_of(r.get("acct") or p.pop("acct", "") or "")
         p.pop("acct", None)
         ev = {"id": "o" + str(r.get("id") or hashlib.sha1(text.encode()).hexdigest()[:11]), "t": int(_f(r.get("t")) or 0),
