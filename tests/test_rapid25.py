@@ -10,6 +10,8 @@ Paper bots, temp files, Sim / made-up names only: nothing routed to a real Ninja
   d. the floor: $1,000 EOD trailing in the eval; funded after the first payout locked at start + $100
   e. never two positions on the account; a NinjaTrader reject is not booked
   f. funded: Tier-1 news ban (ATLAS refused + flattened, LIT's lane news on); payouts above $1,100 + $500 kept in
+  g. the OFF-by-default "bank at the room" option (research/writeups/rapid25-lit-lane-2026-11-18.md): 1 micro with its exit
+     limit at the day's 30% room when the guard says 0; eval + 25K only; booked at the bank when the model went through it
 """
 from __future__ import annotations
 
@@ -96,6 +98,81 @@ def cli_checks(tmp):
             os.environ.pop("NINJATRADER_FOLDER", None)
         else:
             os.environ["NINJATRADER_FOLDER"] = env_keep
+
+
+def bank_checks(tmp, clock):
+    """g. engine/rapid.lit_bank + the LIT lane's bank (OFF unless data/rapid.json "lit_bank": true on a 25K)."""
+    bk = rapid.lit_bank(25020.0, 1, 30.0, 200.0, 327.5)
+    check("g. lit_bank: $327.50 of room, long from 25,020 -> 1 micro, exit 25,184.50 (+164.5 pts, $327.10 after $1.90)",
+          bk and (bk["qty"], bk["pts"], bk["px"], bk["usd"]) == (1, 164.5, 25184.5, 327.1), bk)
+    bs = rapid.lit_bank(25020.0, -1, 30.0, 200.0, 327.5)
+    check("g. lit_bank: a short banks below the entry", bs and bs["px"] == 24855.5, bs)
+    check("g. lit_bank: none when the bank < 1R, not nearer than the target, or no room left",
+          rapid.lit_bank(25020.0, 1, 200.0, 1200.0, 327.5) is None and rapid.lit_bank(25020.0, 1, 30.0, 150.0, 327.5) is None
+          and rapid.lit_bank(25020.0, 1, 30.0, 200.0, 0.0) is None and rapid.lit_bank(None, 1, 30.0, 200.0, 300.0) is None)
+    check("g. bank_pnl: the model went 1 tick through the bank -> the bank's $; else the model's $ (never above the bank)",
+          rapid.bank_pnl(bk, 1, 5.5, 30.0, 398.1) == (327.1, True) and rapid.bank_pnl(bk, 1, 5.49, 30.0, -62.4) == (-62.4, False)
+          and rapid.bank_pnl(bk, 1, None, 30.0, 10.0) == (10.0, False))
+    off = rapid.lane_spec(blk25())
+    on = rapid.lane_spec(blk25(lit_bank=True))
+    f50 = rapid.lane_spec(blk25(lit_bank=True, plan="mffu_rapid_eod_50k"))
+    check("g. OFF by default; on only with lit_bank true on the 25K (never the 50K)",
+          "lit_bank" not in off and on.get("lit_bank") is True and "lit_bank" not in f50, (off, on, f50))
+    check("g. normalize keeps lit_bank only on the Rapid lane",
+          MA.normalize({**on, "id": "rapid"}).get("lit_bank") is True
+          and "lit_bank" not in MA.normalize({"id": "x", "name": "x", "preset": P25, "lit_bank": True}))
+
+    clock.t = T0 + 290
+    b = make_bot(os.path.join(tmp, "g1"), clock, blk25(account="Sim211", lit_bank=True))
+    L, A = lane(b), b.acct_r
+    A.closes.append([DAY, T0 - 1800, 100.0, T0 - 2000])            # ATLAS +$100 today: room $327.50, 1 micro's target $398
+    p = pos_at(T0, target=25220.0)
+    q = L.qty_for(p, T0 + 300)
+    check("g. on: the guard says 0 -> 1 micro banked at the room (was: skip)",
+          q == 1 and L.bank.get(T0, {}).get("px") == 25184.5 and any("banked" in x for x in L.last_size["reasons"]), L.last_size)
+    clock.t = T0 + 305
+    b.state = {"model": "lit", "position": p, "lit": {}}
+    b._route_signals({"trades": [], "events": []}, "NQ", int(clock.t), 300)
+    ent = [r for r in L.ledger if r.get("side") == "buy"]
+    check("g. routed: 1 micro, the bracket's target = the bank price, the stop unchanged",
+          ent and ent[-1]["qty"] == 1 and ent[-1]["target"] == 25184.5 and ent[-1]["stop"] == 24990.0, ent[-1:])
+    bl = L.blob(DAY)
+    L2 = lane(make_bot(os.path.join(tmp, "g1b"), clock, blk25(account="Sim211", lit_bank=True)))
+    L2.restore(bl, DAY)
+    check("g. a restart keeps the bank of the open trade", L2.bank.get(T0, {}).get("px") == 25184.5, L2.bank)
+    clock.t = T0 + 3600
+    b.state = {"model": "lit", "position": None, "lit": {}}
+    tr = {**p, "exit_t": T0 + 3500, "exit_price": 25220.0, "pnl": 13 * 398.1, "pnl_r": 6.6, "exit_reason": "TARGET",
+          "mfe": 6.7, "day": DAY, "comm_rt": 1.9}
+    b._route_signals({"trades": [tr], "events": []}, "NQ", int(clock.t), 300)
+    check("g. the model reached its target: booked $327.10 at the bank (not $398), the day stays <= $427",
+          L.closes and abs(L.closes[-1][2] - 327.1) < 0.01 and A.day_pnl(DAY) <= 427.5 and T0 not in L.bank, (L.closes, A.day_pnl(DAY)))
+    xs = [r for r in L.ledger if r.get("side") == "exit"]
+    check("g. paper exit reason BANK", xs and xs[-1]["reason"].startswith("BANK"), xs[-1:])
+
+    clock.t = T0 + 290
+    b2 = make_bot(os.path.join(tmp, "g2"), clock, blk25(account="Sim212", lit_bank=True))
+    L2, A2 = lane(b2), b2.acct_r
+    A2.closes.append([DAY, T0 - 1800, 100.0, T0 - 2000])
+    clock.t = T0 + 305
+    b2.state = {"model": "lit", "position": p, "lit": {}}
+    b2._route_signals({"trades": [], "events": []}, "NQ", int(clock.t), 300)
+    clock.t = T0 + 3600
+    b2.state = {"model": "lit", "position": None, "lit": {}}
+    trs = {**p, "exit_t": T0 + 3500, "exit_price": 24989.75, "pnl": 13 * -62.4, "pnl_r": -1.0, "exit_reason": "STOP",
+           "mfe": 2.0, "day": DAY, "comm_rt": 1.9}
+    b2._route_signals({"trades": [trs], "events": []}, "NQ", int(clock.t), 300)
+    check("g. never reached the bank: the model's own 1-micro $ (a stop-out -$62.40)",
+          L2.closes and abs(L2.closes[-1][2] + 62.4) < 0.01, L2.closes)
+
+    clock.t = T0 + 290
+    b3 = make_bot(os.path.join(tmp, "g3"), clock, blk25(account="Sim213"))
+    L3, A3 = lane(b3), b3.acct_r
+    A3.closes.append([DAY, T0 - 1800, 100.0, T0 - 2000])
+    check("g. OFF (today): the same trade is skipped, nothing banked", L3.qty_for(p, T0 + 300) == 0 and not L3.bank, L3.last_size)
+    L.mode = "funded"
+    check("g. funded: no bank (no best-day rule there)", L._bank_for(p, 300.0) is None)
+    L.mode = "two_week"
 
 
 def main() -> int:
@@ -277,6 +354,7 @@ def main() -> int:
               lf and lf["start"] == 25000.0 and lf["kind"] == "funded", lf)
         sx = rapid.status(p=fp)
         check("status(): the 25K's balance and target", sx["on"] and "target $26,500" in sx["text"] and "Rapid EOD 25K" in sx["text"], sx)
+        bank_checks(os.path.join(tmp, "bank"), clock)
         cli_checks(os.path.join(tmp, "cli"))
     finally:
         MA.ADAPTER_FACTORY = None
