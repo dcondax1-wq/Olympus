@@ -2123,6 +2123,9 @@ def part_rewards(br, url, tmp):
         check("rw7. links to Kalshi City, Dionysus and Sibyl, and 'What would turn it back on' (100+ paper bets, 4+ weeks, 95% range above $0)",
               hub[2] == ["../kalshicity/", "../dionysus/", "../sibyl/"] and "What would turn it back on" in hub[3] and "100+ settled bets" in hub[3]
               and "95% range above $0" in hub[3], hub[2])
+        kk = p.inner_text("#kk1")
+        check("k1a. no PC numbers: the K1 card says plainly it is not running yet / not arriving, and the status line says so",
+              "K1 rules test (paper)" in kk and "No numbers yet" in kk and "next update" in kk and "K1 rules (not running yet)" in k0, (kk[:200], k0[:200]))
         check("rw7. 375 px: the home inside the 16 px gutters, every link row at least 44 px tall, nothing cut off", hub[4] and hub[5] == 0 and hub[6] == 0, hub[4:])
         pc = dict(copy["paper"], reward=12.34, fill_pnl=-2.5, net=9.84, days=3.2, updated="2099-01-01T00:00:00+00:00", fills=7)
         msg = {"kind": "le-live", "t": 1, "kalshi_rewards": pc}
@@ -2142,6 +2145,14 @@ def part_rewards(br, url, tmp):
         open_()
         p.wait_for_function("document.querySelector('#krw').textContent.indexOf('$23.45') >= 0", timeout=20000)
         check("rw2. the split status (core + le-live-ext post): the ext's newer rewards card wins ($23.45)", "$23.45" in p.inner_text("#krw"))
+        k1c = {"kind": "kalshi_k1_pub", "paper_only": True, "updated": "2099-02-01T00:00:00Z", "days": 2.5, "sig": 14, "set": 6, "net": -0.8, "pu": -0.123}
+        R["ntfy"] = json.dumps({"event": "message", "time": 1, "message": json.dumps({"kind": "le-live-ext", "t": 2, "part": 0, "of": 1, "x": {"kalshi_k1": k1c}})}) + "\n"
+        open_()
+        p.wait_for_function("document.querySelector('#kk1').textContent.indexOf('Signals') >= 0", timeout=20000)
+        kt = p.inner_text("#kk1")
+        check("k1b. the PC's ext post fills the K1 card: Signals 14, Settled 6, Net -$0.80, 2.5 Days, -$0.12 per $1, 'from the PC', age shown",
+              all(w in kt for w in ("14", "6", "−$0.80", "2.5", "−$0.12 per $1", "from the PC", "updated")) and "K1 rules (−$0.80 over 2.5 days)" in p.inner_text("#kpaused"), kt[:300])
+        R["ntfy"] = None
         bad = dict(copy, paper=dict(copy["paper"], reward="<img src=x onerror=window.__pwn=1>"),
                    backtest={"text": "<script>window.__pwn=1</script>bad"})
         R["own"], R["ntfy"] = json.dumps(bad), None

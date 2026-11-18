@@ -59,7 +59,7 @@ MAX_STATUS_BYTES = 3900          # ntfy turns a message over 4,096 bytes into a 
 EXT_KIND = "le-live-ext"
 EXT_PARTS = 2                    # at most 2 ext posts a run (ntfy.sh free: a few hundred messages a day per IP)
 EXT_EVERY_S = 1740               # the ext goes every 2nd 15-minute run (29 min), or at once when its news changed (ext_hash)
-EXT_ORDER = ("brd", "life", "mf", "board_trades", "learn", "lab", "glance", "kalshi_rewards")
+EXT_ORDER = ("brd", "life", "mf", "board_trades", "learn", "lab", "glance", "kalshi_rewards", "kalshi_k1")
 CORE_KEYS = ("eh", "v", "kind", "lite", "src", "t", "every_s", "host", "model_state", "price", "day_pnl", "pc_verdict", "pc", "reporter",
              "board", "accounts", "trimmed")
 BRD_BYTES = 1200
@@ -410,6 +410,11 @@ def gather(now=None, root: str = ROOT, env=None, http=None, port=PORT_DEFAULT, f
         snap["kalshi_rewards"] = _lpk.kalshi_rewards_card(now, os.path.join(root, "data", "kalshi_rewards", "summary.json"))
     except Exception:
         snap["kalshi_rewards"] = None
+    try:                                    # the Kalshi K1 rules PAPER card (tools/kalshi_paper.py public summary, <= 200 bytes)
+        from tools import kalshi_paper as _kp
+        snap["kalshi_k1"] = _kp.read_card(os.path.join(root, "data", "kalshi_k1", "summary.json"), now)
+    except Exception:
+        snap["kalshi_k1"] = None
     try:                                    # ZEUS edge light (tools/edge_pc.py: the PC's daily edge_health --pc result, <= 120 bytes)
         from tools import edge_pc as _ep
         snap["eh"] = _ep.read_tiny(os.path.join(root, "data", "edge", "tiny.json"), now=now)
@@ -532,6 +537,8 @@ def full(snap: dict) -> dict:
     if isinstance(snap.get("kalshi_rewards"), dict):   # the Kalshi page's "Rewards test (paper)" card (tools/kalshi_rewards_paper.py)
         # only what the card reads (~180 bytes, no per-series rows); it rides an ext post (EXT_ORDER)
         out["kalshi_rewards"] = {k: snap["kalshi_rewards"].get(k) for k in KALSHI_RW_LITE if snap["kalshi_rewards"].get(k) is not None}
+    if isinstance(snap.get("kalshi_k1"), dict):        # the Kalshi page's "K1 rules (paper)" card (tools/kalshi_paper.py), <= 200 bytes, ext post
+        out["kalshi_k1"] = snap["kalshi_k1"]
     if isinstance(snap.get("eh"), dict):     # the ZEUS edge chip (tools/edge_pc.read_tiny, <= 120 bytes; tools/web_public/edge_chip.js)
         out["eh"] = snap["eh"]
     for k in ("learn", "lab"):                     # the learning loop / ZEUS Lab notes when the reporter's snapshot has them
@@ -1296,6 +1303,13 @@ def main(argv=None) -> int:
         try:
             from tools import kalshi_rewards_paper as _krp
             _krp.maybe_run(say=(lambda *_: None) if a.quiet else print)
+        except Exception:
+            pass
+        # Kalshi K1 rules PAPER test (tools/kalshi_paper.py: weather lock + NQ hourly model; public data, GET only, never an order);
+        # same pattern: one detached child, ledger + public summary in data/kalshi_k1/; LE_KALSHI_K1=0 = off; soft
+        try:
+            from tools import kalshi_paper as _kp1
+            _kp1.maybe_run(say=(lambda *_: None) if a.quiet else print)
         except Exception:
             pass
     return 0

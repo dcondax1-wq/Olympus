@@ -257,3 +257,5 @@ research/kalshi_rewards_bt/cache/
 
 # the PC's daily edge-health run (tools/edge_health.py --pc): tiny.json = the PC status "eh"
 data/edge/
+# Kalshi K1 paper on the PC (tools/kalshi_paper.py maybe_run): ledger, public summary, run token, log
+data/kalshi_k1/
