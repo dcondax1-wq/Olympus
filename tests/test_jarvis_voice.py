@@ -269,8 +269,10 @@ def run_main(br, url):
           s.get("core") is not None and p.evaluate("document.getElementById('coreSlot').children.length") == 0, (s.get("core"), home_core))
     check("c. the button labels the voice", p.inner_text("#vmVoice").lower().startswith("voice: ava"), p.inner_text("#vmVoice"))
     # the mic analyser (asked inside the tile's tap) and the core reacting to it while listening
-    wait_phase(p, "listening", 8000)
-    p.wait_for_function(f"{VMS}.mic && {VMS}.micLive", timeout=8000)
+    # listening after the greeting: seen in the phase history (2026-11-18: on a loaded machine, 2 fps, the 'once' recognizer's whole turn
+    # - listening, thinking, speaking, listening again - can pass between two polls of the current phase)
+    p.wait_for_function("window.__phases.includes('listening')", timeout=15000)
+    p.wait_for_function(f"{VMS}.mic && {VMS}.micLive", timeout=15000)
     lv = []
     for _ in range(12):
         lv.append(vm(p).get("level", 0))

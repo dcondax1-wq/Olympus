@@ -415,7 +415,9 @@ def part_e_shell(br, shell, oa, shots):
     p.evaluate("(u) => import('./apps.js').then((A) => A.addApp({name: 'Clip', url: u}))", oa + "/clip/")
     p.reload()
     p.wait_for_selector("#cards .card")
-    check("e. today's Jarvis page shows an app added through apps.js (mirrored into jarvis.extra)", "Clip" in p.inner_text("#apps"), p.inner_text("#apps"))
+    # the Classic look (the default since 2026-11-18) writes the bar's names in capitals (CSS text-transform): CLIP on screen, Clip in the page
+    check("e. today's Jarvis page shows an app added through apps.js (mirrored into jarvis.extra)",
+          "clip" in p.inner_text("#apps").lower() and p.locator("#apps [data-app='x-clip']").count() == 1, p.inner_text("#apps"))
     now = int(time.time())
     good = {"app": "x-clip", "appName": "Clip", "name": "Ascend", "sub": "127.0.0.1", "status": {"level": "ok", "label": "On track"},
             "kpis": [{"label": "This week", "value": "4 of 5", "delta": "+1", "trend": "up"}, {"label": "Streak", "value": "12 days"},
@@ -434,15 +436,19 @@ def part_e_shell(br, shell, oa, shots):
                 right: Math.max(n.getBoundingClientRect().right, m.getBoundingClientRect().right), pill: n.querySelector('.pill').className,
                 pillText: n.querySelector('.pill').textContent, up: col('.jx-delta.up'), down: col('.jx-delta.down'), bg: getComputedStyle(n).backgroundColor,
                 kv: getComputedStyle(n.querySelector('.kv')).gridTemplateColumns.split(' ').length, kv2: getComputedStyle(m.querySelector('.kv')).gridTemplateColumns.split(' ').length,
-                staleCls: m.className, open: n.getAttribute('data-open'), h: Math.round(n.getBoundingClientRect().height)};
+                staleCls: m.className, open: n.getAttribute('data-open'), h: Math.round(n.getBoundingClientRect().height), look: document.documentElement.dataset.jlook || 'agora'};
     }""", [good, stale])
     if shots:
         os.makedirs(shots, exist_ok=True)
         p.screenshot(path=os.path.join(shots, "jarvis_app_cards.png"))
     check("e. inside Jarvis at phone width: no sideways scroll, the cards fit the gutter", out["w"][0] <= out["w"][1] and out["right"] <= 390 - 15.5, out)
-    check("e. the Jarvis look (AGORA bronze since e02d070): its card panel, green pill, green / red deltas, 3 kpis in a row (2 when 2)",
-          out["bg"] == "rgb(29, 25, 20)" and out["pill"] == "pill ok" and out["pillText"] == "On track \u00b7 2 min ago" and out["up"] == "rgb(171, 181, 104)"
-          and out["down"] == "rgb(207, 132, 110)" and out["kv"] == 3 and out["kv2"] == 2 and "jx-stale" in out["staleCls"] and out["open"] == oa + "/clip/#today", out)
+    # the look's own colours: Classic Jarvis (violet on black, the default since night-home 2026-11-18: --pr 12,10,20, --ok #4ade80, red #ff6b85),
+    # AGORA bronze (e02d070) only when AGORA is picked ('jarvis.look' = 'agora')
+    cols = {"classic": ("rgb(11, 10, 16)", "rgb(74, 222, 128)", "rgb(255, 107, 133)"), "agora": ("rgb(29, 25, 20)", "rgb(171, 181, 104)", "rgb(207, 132, 110)")}
+    want = cols.get(out["look"])
+    check("e. the Jarvis look (Classic by default; AGORA bronze when picked): its card panel, green pill, green / red deltas, 3 kpis in a row (2 when 2)",
+          out["look"] == "classic" and want and out["bg"] == want[0] and out["pill"] == "pill ok" and out["pillText"] == "On track \u00b7 2 min ago" and out["up"] == want[1]
+          and out["down"] == want[2] and out["kv"] == 3 and out["kv2"] == 2 and "jx-stale" in out["staleCls"] and out["open"] == oa + "/clip/#today", out)
     p.click("#cards .jx-card[data-app='x-clip']")
     p.wait_for_timeout(700)
     check("e. tapping the card opens its app inside Jarvis (the page's own data-app switch)",
