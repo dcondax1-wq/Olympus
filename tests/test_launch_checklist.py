@@ -231,7 +231,7 @@ def phone_model_checks():
     node = shutil.which("node")
     if not node:
         # the PC has no Node.js (owner screenshot 2026-11-16): the phone-page JS check is skipped with a note, never a FAIL
-        print("[SKIP] node not found: the phone-page JS checks were skipped (Python checks above still ran)")
+        print("[SKIP] optional: install Node.js (nodejs.org, free) for the phone-page JS check; the Python checks above ran")
         return
     f, h = good_facts(), good_health()
     lc = {**LC.checklist(f, h, True, NOW), "facts": f}

@@ -527,6 +527,10 @@ def cloud_ref(cwd: str = ROOT, prev: dict | None = None, run=None) -> dict | Non
         r = subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, timeout=timeout)
         return r.returncode, r.stdout
     try:
+        if run is None:
+            from . import nogithub
+            if nogithub.active():            # GitHub-free mode: origin is gone (2026-11-08), nothing to ask
+                return None
         code, outp = sh(["ls-remote", "origin", "refs/heads/dashboard"], 30)
         if code or not outp.strip():
             return None

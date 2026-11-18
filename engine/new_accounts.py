@@ -142,6 +142,32 @@ def log_names(folder: str | None = None) -> list:
         return []
 
 
+TARGET = {"zlarior": 53000.0, "atlas": 26500.0}  # MFFU Builder 50K / 25K start + profit target: a balance there = a passed eval
+
+
+def finished(name: str, balance, s: dict, b: dict | None = None) -> str | None:
+    """Why a Name is an old account of ours, not a new one (None = could be new): an eval whose pass / fail this bot saw
+    (outcomes), ATLAS's passed eval kept as "eval_account", or a balance at the eval's target (MFFU's new accounts start
+    at exactly $25,000 / $50,000; 2026-11-18: the passed, locked ATLAS 25K at $26,946 was offered as "New account")."""
+    if name in (s.get("outcomes") or {}):
+        return f"its eval {s['outcomes'][name]}"
+    try:
+        if b is None:
+            from . import go
+            b = go._b()
+        if name == str((b or {}).get("eval_account") or "").strip():
+            return "ATLAS's passed eval"
+    except Exception:
+        pass
+    try:
+        v = float(balance)
+    except (TypeError, ValueError):
+        return None
+    if v >= TARGET["zlarior"] or TARGET["atlas"] <= v < SIZE_SPLIT:
+        return "a passed eval (balance at the target)"
+    return None
+
+
 def candidates(folder: str | None = None, path: str | None = None, names=None, role_of=None, now=None) -> list:
     """[{"name", "balance", "src", "roles", "first_seen"}] of NinjaTrader Names no bot uses yet."""
     from . import go
@@ -157,7 +183,7 @@ def candidates(folder: str | None = None, path: str | None = None, names=None, r
     now = int(time.time() if now is None else now)
     for r in names:
         n = str(r.get("name") or "").strip()
-        if not n or n in skip or role_of(n):
+        if not n or n in skip or role_of(n) or finished(n, r.get("balance"), s):
             continue
         seen.setdefault(n, now)
         out.append({"name": n, "balance": r.get("balance"), "src": r.get("src"), "roles": fits(r.get("balance")),

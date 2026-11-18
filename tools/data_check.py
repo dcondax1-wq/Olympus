@@ -237,6 +237,12 @@ def summary(rep=None, data=DATA):
     lvl = BAD if rep["n_fix"] else WARN if rep["n_warn"] else OK
     bad = [f"{f['file']} {i['what']}" for f in rep["files"] for i in f["items"] if i["level"] != OK] + \
           [i["what"] for i in rep["cross"] if i["level"] != OK]
+    off = [i for f in rep["files"] for i in f["items"] if i["level"] != OK] + [i for i in rep["cross"] if i["level"] != OK]
+    if lvl == WARN and off and all(i.get("what") == "freshness" for i in off):
+        # 2026-11-18: only old (no defect): a note, not a daily yellow line. These files feed the backtests and warm-ups; the bot
+        # trades on live NinjaTrader bars. The coming data pipe refreshes them by itself.
+        return "info", (f"NQ data files end {nq.get('last', '?')} (backtests and warm-up; the bot trades on live NinjaTrader bars). "
+                        "The automatic refresh (data pipe) is coming: nothing to do")
     txt = (f"NQ 5m {nq.get('first', '?')} -> {nq.get('last', '?')}, 1m to {one.get('last', '?')}; "
            + (f"{rep['n_fix']} to fix, {rep['n_warn']} to look at: {', '.join(bad[:4])}" if bad else "every check clean"))
     return lvl, txt

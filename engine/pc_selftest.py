@@ -245,6 +245,7 @@ def child_env(tmp: str, base: dict | None = None) -> dict:
     for k in ("LE_OPS_PUSH", "LE_NARRATOR_PUSH", "LE_AUTOUPDATE", "LE_CLOUD"):   # the suites set / expect their own
         env.pop(k, None)
     env.update({"TMP": tmp, "TEMP": tmp, "TMPDIR": tmp, "NINJATRADER_FOLDER": nt, "LE_SELFTEST_CHILD": "1",
+                "LE_BOARD_DIR": os.path.join(tmp, "board"), "LE_INBOX_DIR": os.path.join(tmp, "inbox"),   # never the real board
                 "LE_HEARTBEAT": "0", "LE_NO_AUTOSTART": "1", "LE_PREWARM": "0", "PYTHONIOENCODING": "utf-8", "PYTHONUTF8": "1",
                 "GIT_TERMINAL_PROMPT": "0", "GCM_INTERACTIVE": "never"})
     return env
@@ -307,6 +308,10 @@ def run_suite(s: dict, tmp_root: str, cwd: str = ROOT, python: str = sys.executa
            "n_fail": len(_FAIL_RX.findall(out))}
     if not ok:
         row["why"] = why_failed(out, r.get("code"), r.get("timed_out"), s.get("timeout"))
+    else:                                   # a passed suite's optional extra ("[SKIP] optional: install Node.js ...")
+        m = re.search(r"\[SKIP\] (optional: [^\r\n]{0,140})", out)
+        if m:
+            row["note"] = m.group(1)
     return row
 
 
@@ -588,7 +593,8 @@ def _render(res: dict) -> str:
     out = [f"PC self-test ({res.get('mode')}, version {res.get('version')}): {summary_line(res)}"]
     for r in res.get("rows") or []:
         tag = "PASS" if r["ok"] else "SKIP" if r["ok"] is None else "FAIL"
-        out.append(f"  [{tag}] {r['label']:<42} {r.get('s', 0):>6} s" + (f"  {r.get('why')}" if r["ok"] is not True else ""))
+        out.append(f"  [{tag}] {r['label']:<42} {r.get('s', 0):>6} s" + (f"  {r.get('why')}" if r["ok"] is not True else
+                                                                          f"  ({r['note']})" if r.get("note") else ""))
     if res.get("known"):
         out.append(f"  (failing before this update too, not held: {', '.join(res['known'])})")
     return "\n".join(out)

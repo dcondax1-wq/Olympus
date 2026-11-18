@@ -103,6 +103,11 @@ def t_weekend():
     a2.send({"side": "exit", "reason": "x", "entry_t": int(w2.now[0]) - 3})
 
 
+def _gz(p) -> bytes:
+    with gzip.open(p) as fh:                  # closed at once: Windows cannot delete the temp folder around an open file
+        return fh.read()
+
+
 def t_disk(tmp):
     print("3. disk growth", flush=True)
     from engine import ops_checks as OC, pcbars
@@ -116,14 +121,15 @@ def t_disk(tmp):
             with gzip.open(p, "wb") as fh:
                 fh.write(b"{}\n")
         else:
-            open(p, "w").write('{"t": 1}\n')
+            with open(p, "wb") as fh:          # bytes: Windows text mode would write \r\n (the PC self-test's red line 2026-11-18)
+                fh.write(b'{"t": 1}\n')
         os.utime(p, (now - age_d * 86400,) * 2)
     r = OC.rotate_logs(L, now=now)
     have = sorted(os.listdir(nar))
     check("narrator feeds: today's kept, the 4-day-old one gzipped (readable), the 150-day-old .gz deleted, the 80-day-old kept",
           r.get("narrator", {}).get("gzipped") == 1 and r["narrator"]["deleted"] == 1
           and have == ["2026-08-01.jsonl.gz", "2026-10-24.jsonl.gz", "2026-10-28.jsonl"]
-          and gzip.open(os.path.join(nar, "2026-10-24.jsonl.gz")).read() == b'{"t": 1}\n', (r, have))
+          and _gz(os.path.join(nar, "2026-10-24.jsonl.gz")) == b'{"t": 1}\n', (r, have))
     check("NinjaTrader bar archive capped (1m 40 days, 5m 120 days)", pcbars.ARCHIVE_KEEP_DAYS == {"1m": 40, "5m": 120})
 
 

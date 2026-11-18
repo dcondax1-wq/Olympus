@@ -166,6 +166,15 @@ def main():
         check("Start page: one line per new Name in its own function (newAcctLine / wireNewAcct), confirm before the tap, "
               "'Not for the bot', no arming", "function newAcctLine(d)" in js and "function wireNewAcct(el)" in js
               and "data-na-use" in js and "Not for the bot" in js and "post('newacct'" in js and "post('arm'" not in js.split("function newAcctLine")[1].split("function draw")[0])
+        # 2026-11-18: the passed, locked ATLAS 25K ($26,946) was offered as "New account ...: use it for ATLAS / BLITZ?"
+        st2 = os.path.join(tmp, "na2.json")
+        json.dump({"outcomes": {"OLDFAIL": "failed"}}, open(st2, "w"))
+        rows = [{"name": "PASSED25", "balance": 26946.10}, {"name": "PASSED50", "balance": 53400.0}, {"name": "OLDFAIL", "balance": 24100.0},
+                {"name": "OLDEVAL", "balance": 25000.0}, {"name": "FRESH25", "balance": 25000.0}, {"name": "FRESH50", "balance": 50000.0},
+                {"name": "NOBAL", "balance": None}]
+        got = [c["name"] for c in NA.candidates(None, st2, names=rows, role_of=lambda n: None)]
+        check("a passed eval (balance at the target), a finished eval of ours, ATLAS's kept eval: never offered as new; fresh ones are",
+              got == ["OLDEVAL", "FRESH25", "FRESH50", "NOBAL"] and NA.finished("OLDEVAL", 25000.0, {}, {"eval_account": "OLDEVAL"}), got)
     finally:
         for k, v in keep.items():
             setattr(G, k, v)

@@ -275,7 +275,8 @@ class Book:
             tmp = self.path + ".tmp"
             with open(tmp, "w", encoding="utf-8") as fh:
                 json.dump({"v": VERSION, "rows": self.rows, "events": self.events[-10:]}, fh, indent=1, sort_keys=True)
-            os.replace(tmp, self.path)
+            from .fsutil import replace as _fs_replace   # retried on a Windows / OneDrive lock
+            _fs_replace(tmp, self.path)
         except Exception:
             pass
 

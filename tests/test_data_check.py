@@ -49,7 +49,19 @@ def main():
         shutil.rmtree(tmp, ignore_errors=True)
     c = ops_checks.check_data(lambda: ("fix", "NQ_5m.csv order"))
     check("HEALTH_CHECK line: fix level + the fix text", c["level"] == ops_checks.BAD and "data_check" in c["fix"], c)
-    check("HEALTH_CHECK line on the real data", ops_checks.check_data()["level"] in (ops_checks.OK, ops_checks.WARN))
+    check("HEALTH_CHECK line on the real data", ops_checks.check_data()["level"] in (ops_checks.OK, ops_checks.WARN, ops_checks.INFO))
+    # 2026-11-18: files that are only old (no defect) -> a quiet note pointing at the data pipe, not a daily yellow line
+    fresh_only = {"n_fix": 0, "n_warn": 1, "cross": [],
+                  "files": [{"file": "NQ_5m.csv", "first": "2021-01-04", "last": "2026-10-16",
+                             "items": [{"level": DC.WARN, "what": "freshness", "text": "last bar 2026-10-16 (33 days ago)"}]},
+                            {"file": "NQ_1m.csv", "last": "2026-10-16", "items": []}]}
+    lv, txt = DC.summary(fresh_only)
+    c = ops_checks.check_data(lambda: (lv, txt))
+    check("only old data files -> INFO (not WARN), no fix step, says the data pipe is coming",
+          lv == "info" and c["level"] == ops_checks.INFO and not c["fix"] and "data pipe" in c["text"] and "2026-10-16" in c["text"], c)
+    gap = {**fresh_only, "files": [{**fresh_only["files"][0], "items": fresh_only["files"][0]["items"]
+                                    + [{"level": DC.WARN, "what": "gaps", "text": "x"}]}, fresh_only["files"][1]]}
+    check("old + a real defect -> still WARN", DC.summary(gap)[0] == DC.WARN)
     print(f"data_check: {sum(R)}/{len(R)} {'ALL PASS' if all(R) else 'FAIL'}")
     return 0 if all(R) else 1
 

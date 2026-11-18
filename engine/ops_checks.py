@@ -43,6 +43,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 import time
 import urllib.error
 import urllib.request
@@ -187,6 +188,7 @@ ERRORS = [
      "If it repeats, send the HEALTH CHECK screen to Claude."),
 ]
 _ERR_RX = [(re.compile(p, re.I), what, fix) for _k, p, what, fix in ERRORS]
+_HB_WHAT = next(w for k, _p, w, _f in ERRORS if k == "heartbeat")
 FIX = {k: fix for k, _p, _w, fix in ERRORS}
 
 
@@ -475,7 +477,9 @@ def check_data(summary=None) -> dict:
         lvl, txt = summary()
     except Exception as e:
         return _c("data", "Data files", SKIP, f"could not check ({e.__class__.__name__})")
-    lv = {"ok": OK, "warn": WARN, "fix": BAD}.get(lvl, WARN)
+    lv = {"ok": OK, "warn": WARN, "fix": BAD, "info": INFO}.get(lvl, WARN)
+    if lv == INFO:       # only old: backtests + warm-up (the bot trades on live NinjaTrader bars); the data pipe refreshes them
+        return _c("data", "Data files", INFO, txt)
     return _c("data", "Data files", lv, txt, "Run python -X utf8 tools/data_check.py for the details; a bad file comes back with "
               "a fresh TradingView export (tools/grab_tv_export.py).")
 
@@ -555,7 +559,7 @@ def check_windows_update(now, reg=_reg, key_exists=_reg_key_exists, is_windows=N
 def check_onedrive(folder: str) -> dict:
     if "onedrive" in folder.lower():
         return _c("onedrive", "OneDrive", WARN, "the NinjaTrader folder is inside OneDrive (syncing can lock order files)",
-                  "OneDrive > Settings > Sync and backup > Manage back up: turn off Documents (or pause syncing on trading days).")
+                  "Click the OneDrive cloud by the clock > gear > Settings > Sync and backup > Manage back up > turn Documents off.")
     return _c("onedrive", "OneDrive", OK, "NinjaTrader folder is not synced by OneDrive")
 
 
@@ -612,6 +616,13 @@ def check_versions(run=_run) -> list:
         try:
             __import__(mod)
         except Exception:
+            if mod == "tzdata":
+                try:                      # tzdata only matters where the system has no time-zone database (Windows)
+                    from zoneinfo import ZoneInfo
+                    ZoneInfo("America/New_York")
+                    continue
+                except Exception:
+                    pass
             miss.append(mod)
     out.append(_c("packages", "Python packages", BAD if miss else OK, ("missing: " + ", ".join(miss)) if miss else "installed",
                   FIX["module"]))
@@ -663,8 +674,20 @@ def check_server(ping: dict | None) -> list:
     return out
 
 
-def check_heartbeat(ping: dict | None, hb: dict, now) -> dict:
+def _github_free() -> bool:
+    try:
+        from . import nogithub
+        return nogithub.active()
+    except Exception:
+        return False
+
+
+def check_heartbeat(ping: dict | None, hb: dict, now, github_free: bool | None = None) -> dict:
     h = (ping or {}).get("heartbeat") or {}
+    if github_free is None:
+        github_free = _github_free()
+    if github_free:
+        return _check_heartbeat_local(ping, h, hb, now)
     if ping is not None and not h.get("enabled"):
         return _c("heartbeat", "Heartbeat to the cloud", WARN, "off: the phone and the cloud can't see this PC",
                   "Start the bot with START DASHBOARD / run_bot.ps1 (it turns the heartbeat on).")
@@ -680,15 +703,42 @@ def check_heartbeat(ping: dict | None, hb: dict, now) -> dict:
                   tr["fix"] if tr else FIX["heartbeat"])
     if age > 20 * 60:
         return _c("heartbeat", "Heartbeat to the cloud", WARN, f"last push {age // 60} min ago", "Restart the bot: STOP BOT, then START DASHBOARD.")
+    return _frozen(h, now, age, "Heartbeat to the cloud") or _c("heartbeat", "Heartbeat to the cloud", OK, f"last push {age // 60} min ago")
+
+
+def _check_heartbeat_local(ping, h: dict, hb: dict, now) -> dict:
+    """GitHub-free mode (engine/nogithub.py; the GitHub account is gone since 2026-11-08): the heartbeat is written on this PC
+    (logs/pc_hb) and the phone gets its reports by ntfy (tools/pc_report.py). A GitHub push result is never red here."""
+    name = "Heartbeat (on this PC)"
+    if ping is not None and not h.get("enabled"):
+        return _c("heartbeat", name, WARN, "off: the phone reports have nothing new to send",
+                  "Start the bot with START DASHBOARD / run_bot.ps1 (it turns the heartbeat on).")
+    last = h.get("last") or (hb.get("_push") or {})
+    at = last.get("at") or hb.get("_saved_t")
+    if not at:
+        return _c("heartbeat", name, INFO, "no heartbeat written yet (the first one comes 5 min after the bot starts)")
+    age = int(now - float(at))
+    if not last.get("local"):
+        return _c("heartbeat", name, INFO, "GitHub is off on purpose (account gone); the running bot switches to the local "
+                  "heartbeat by itself; phone reports go by ntfy")
+    if last.get("ok") is False:
+        return _c("heartbeat", name, WARN, f"could not write the local heartbeat {age // 60} min ago: {scrub(last.get('error'), 80)}",
+                  "Run HEALTH CHECK again in 10 min; if it stays, STOP BOT then START DASHBOARD.")
+    if age > 20 * 60:
+        return _c("heartbeat", name, WARN, f"last written {age // 60} min ago", "Restart the bot: STOP BOT, then START DASHBOARD.")
+    return _frozen(h, now, age, name) or _c("heartbeat", name, OK, f"written {age // 60} min ago (GitHub-free: phone reports by ntfy)")
+
+
+def _frozen(h: dict, now, age: int, name: str) -> dict | None:
     fz = (h.get("health") or {}).get("frozen") if isinstance(h.get("health"), dict) else None
     if isinstance(fz, dict) and fz.get("to") and now - float(fz["to"]) < 24 * 3600 and float(fz.get("s") or 0) >= 15 * 60:
         # engine/heartbeat.py noticed the whole process stood still (2026-10-25/26: the Surface slept 22:43 -> 05:17 ET)
         s = int(fz["s"])
-        return _c("heartbeat", "Heartbeat to the cloud", WARN,
+        return _c("heartbeat", name, WARN,
                   f"last push {age // 60} min ago, but the PC was asleep {s // 3600} h {s % 3600 // 60} min "
                   f"({_et(fz['from']):%a %H:%M} -> {_et(fz['to']):%H:%M} ET): no bars, no trades, no heartbeat then",
                   "Settings > System > Power: Sleep 'Never' when plugged in; Control Panel > Power Options > lid: 'Do nothing'.")
-    return _c("heartbeat", "Heartbeat to the cloud", OK, f"last push {age // 60} min ago")
+    return None
 
 
 def _hb_fresh(hb: dict, now, max_age=15 * 60) -> bool:
@@ -731,8 +781,12 @@ def check_backup(state: dict, now) -> dict:
     return _c("backup", "Backup", OK, f"last backup {_et(t):%a %H:%M} ET ({state.get('last_backup_files', '?')} files)")
 
 
-def check_logs(rows: list) -> list:
+def check_logs(rows: list, github_free: bool | None = None) -> list:
     out = []
+    if github_free is None:
+        github_free = _github_free()
+    if github_free:      # old GitHub heartbeat failures from before the switch: GitHub is off on purpose, not a problem
+        rows = [r for r in rows if r.get("what") != _HB_WHAT]
     for r in rows[:4]:
         out.append(_c("log", "Log: " + r["what"].split(":")[0][:40], WARN, f"{r['count']}x today, last: {r['last'][:90]}", r["fix"]))
     if not rows:
@@ -1555,7 +1609,9 @@ def after_update() -> int:
         from .autoupdate import TESTS
     except Exception:
         TESTS = ()
-    env = {**os.environ, "PYTHONIOENCODING": "utf-8", "LE_HEARTBEAT": "0", "LE_NO_AUTOSTART": "1"}
+    bd = tempfile.mkdtemp(prefix="le_upd_board_")            # the tests never write the real board (fake "bot started" events)
+    env = {**os.environ, "PYTHONIOENCODING": "utf-8", "LE_HEARTBEAT": "0", "LE_NO_AUTOSTART": "1",
+           "LE_BOARD_DIR": os.path.join(bd, "board"), "LE_INBOX_DIR": os.path.join(bd, "inbox")}
     for args in TESTS:
         try:
             r = subprocess.run([sys.executable, *args], cwd=ROOT, capture_output=True, text=True, timeout=600, env=env,
@@ -1570,6 +1626,7 @@ def after_update() -> int:
             fails += 1
             tr = translate(out) or {"fix": "Send this screen to Claude."}
             print(f"{r}[FIX ]{z} self-test {name} FAILED\n       -> {tr['fix']}")
+    shutil.rmtree(bd, ignore_errors=True)
     checks = run_checks(gather())
     print(render(checks, color))
     return 1 if fails or summary(checks)["bad"] else 0

@@ -220,17 +220,29 @@ def main() -> int:
         s = oc.check_server({"ok": True, "uptime_s": 600, "bot_running": False})
         check("server up, bot stopped -> FIX: press Start", s[0]["level"] == oc.OK and s[1]["level"] == oc.BAD and "Start" in s[1]["fix"], s)
         ping = {"ok": True, "uptime_s": 600, "bot_running": True, "heartbeat": {"enabled": True, "last": {"at": now - 120, "ok": True}}}
-        check("heartbeat pushed 2 min ago -> OK", oc.check_heartbeat(ping, {}, now)["level"] == oc.OK)
-        c = oc.check_heartbeat({**ping, "heartbeat": {"enabled": True, "last": {"at": now - 120, "ok": False, "error": "Authentication failed"}}}, {}, now)
+        check("heartbeat pushed 2 min ago -> OK", oc.check_heartbeat(ping, {}, now, github_free=False)["level"] == oc.OK)
+        c = oc.check_heartbeat({**ping, "heartbeat": {"enabled": True, "last": {"at": now - 120, "ok": False, "error": "Authentication failed"}}}, {}, now, github_free=False)
         check("heartbeat push failed -> FIX: git sign-in", c["level"] == oc.BAD and "sign in" in c["fix"], c)
-        check("heartbeat off -> WARN", oc.check_heartbeat({**ping, "heartbeat": {"enabled": False}}, {}, now)["level"] == oc.WARN)
+        check("heartbeat off -> WARN", oc.check_heartbeat({**ping, "heartbeat": {"enabled": False}}, {}, now, github_free=False)["level"] == oc.WARN)
         slept = {"enabled": True, "last": {"at": now - 120, "ok": True},
                  "health": {"frozen": {"from": int(now) - 8 * 3600, "to": int(now) - 2 * 3600 + 240, "s": 6 * 3600 - 240}}}
-        c = oc.check_heartbeat({**ping, "heartbeat": slept}, {}, now)
+        c = oc.check_heartbeat({**ping, "heartbeat": slept}, {}, now, github_free=False)
         check("heartbeat OK but the PC was asleep last night (heartbeat health.frozen) -> WARN with the power-settings fix",
               c["level"] == oc.WARN and "asleep 5 h 56 min" in c["text"] and "Sleep 'Never'" in c["fix"], c)
         old = {**slept, "health": {"frozen": {"from": int(now) - 50 * 3600, "to": int(now) - 30 * 3600, "s": 20 * 3600}}}
-        check("a freeze older than a day no longer warns", oc.check_heartbeat({**ping, "heartbeat": old}, {}, now)["level"] == oc.OK)
+        check("a freeze older than a day no longer warns", oc.check_heartbeat({**ping, "heartbeat": old}, {}, now, github_free=False)["level"] == oc.OK)
+        # GitHub-free mode (2026-11-18: the account is gone; the PC writes its heartbeat locally, phone reports by ntfy): never red
+        loc = {"enabled": True, "last": {"at": now - 120, "ok": True, "local": True}}
+        c = oc.check_heartbeat({**ping, "heartbeat": loc}, {}, now, github_free=True)
+        check("GitHub-free: a local heartbeat 2 min ago -> OK", c["level"] == oc.OK and "on this PC" in c["name"], c)
+        c = oc.check_heartbeat({**ping, "heartbeat": {"enabled": True, "last": {"at": now - 120, "ok": False,
+                                                                                 "error": "unable to access: account suspended"}}}, {}, now, github_free=True)
+        check("GitHub-free: an old failed GitHub push -> INFO (not red, no 'git fetch' fix)", c["level"] == oc.INFO and not c["fix"], c)
+        c = oc.check_heartbeat({**ping, "heartbeat": {**slept, "last": {**slept["last"], "local": True}}}, {}, now, github_free=True)
+        check("GitHub-free: the PC-asleep warning still shows", c["level"] == oc.WARN and "asleep" in c["text"], c)
+        hrow = {"what": oc._HB_WHAT, "fix": "x", "count": 22, "last": "[heartbeat] push failed: suspended"}
+        check("GitHub-free: old '[heartbeat] push failed' log lines are not listed; with GitHub on they are",
+              oc.check_logs([hrow], github_free=True)[0]["level"] == oc.OK and oc.check_logs([hrow], github_free=False)[0]["level"] == oc.WARN)
         check("account LIVE -> OK", oc.check_account(hb(now), now)[0]["level"] == oc.OK)
         c = oc.check_account(hb(now, "SIM"), now)
         check("account Sim -> WARN 'not your eval'", c[0]["level"] == oc.WARN and "not your eval" in c[0]["text"], c)
@@ -412,7 +424,13 @@ def main() -> int:
         bot = SimpleNamespace(cfg={"adapter": "paper"}, adapter=None, health={}, state={}, ledger=[], running=True, started_at=None)
         hbo = heartbeat.Heartbeat(bot, last_path=lp)
         pl = hbo.payload()
-        check("heartbeat payload carries the small 'ops' block", isinstance(pl.get("ops"), dict) and len(json.dumps(pl["ops"])) < 600, pl.get("ops"))
+        ob = pl.get("ops") if isinstance(pl.get("ops"), dict) else {}
+        wt = ob.get("watch") or {}
+        # the rule-page / discount-code watcher part depends on this PC's own logs (8 codes + 3 changes, bounded): measured apart
+        # (2026-11-18: on the owner's PC the whole block passed 600 bytes with real codes; the self-test went red, nothing broken)
+        check("heartbeat payload carries the small 'ops' block", isinstance(pl.get("ops"), dict)
+              and len(json.dumps({k: v for k, v in ob.items() if k != "watch"})) < 600
+              and len(wt.get("codes") or []) <= 8 and len(wt.get("changes") or []) <= 3, pl.get("ops"))
         heartbeat.save_last(pl, {"ok": True, "commit": "abc"}, lp)
         got = oc.hb_last(lp)
         check("heartbeat_last.json written + read back (payload, push result)", got.get("running") is True and got["_push"]["ok"] is True, got.get("_push"))
