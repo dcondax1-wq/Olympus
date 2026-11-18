@@ -56,9 +56,9 @@ def settings():
     try:
         s = N.settings(os.path.join(tmp, "none.json"))
         imp = {k for k, v in s["alerts"].items() if v}
-        check("a. no file: the defaults ('important only': trade results, pass/fail/locked/payout, daily summary, PC silent; "
+        check("a. no file: the defaults ('important only': trade results, pass/fail/locked/payout, daily summary, PC silent, problems; "
               "quiet 23:00-07:00, summary 16:15, silent after 20 min, reminder 2 h)",
-              imp == {"trade_closed", "account_status", "daily_summary", "pc_silent"} and s["quiet_hours"] == {"from": "23:00", "to": "07:00"} and s["daily_summary_at"] == "16:15"
+              imp == {"trade_closed", "account_status", "daily_summary", "pc_silent", "problems"} and s["quiet_hours"] == {"from": "23:00", "to": "07:00"} and s["daily_summary_at"] == "16:15"
               and s["pc_silent_after_min"] == 20 and s["pc_silent_remind_after_min"] == 120, s)
         p = os.path.join(tmp, "s.json")
         with open(p, "w") as fh:
@@ -88,8 +88,8 @@ def settings():
     every = [{"key": k, "priority": "default"} for k in kinds]
     kept = [m["key"] for m in N.apply(every, at(2026, 11, 17, 10, 0), N.merge({}))]
     check("a. 'important only' defaults: trade results, target reached, PASSED / LOCKED / payout READY, the day summary, PC silent "
-          "are kept; trade opened, 25-75 %, room low, problems, other are dropped",
-          kept == ["close:atlas:2", "guard:day:2026-11-16", "guard:goal:lit:2026-11-02:100", "life:passed:atlas:a",
+          "+ problems (bot down, fill size) are kept; trade opened, 25-75 %, room low, other are dropped",
+          kept == ["close:atlas:2", "guard:day:2026-11-16", "cond:bot_down:1", "fill:lit:1:size", "guard:goal:lit:2026-11-02:100", "life:passed:atlas:a",
                    "life:locked:atlas:a", "life:payout_ready:x:f50:abc:2026-11-13", "pc_silent:2026-11-16:1"], kept)
     night, day = at(2026, 11, 17, 3, 10), at(2026, 11, 17, 10, 0)
     check("a. quiet hours over midnight: 03:10 and 23:30 quiet, 07:00 and 10:00 not", N.quiet(night, S) and N.quiet(at(2026, 11, 17, 23, 30), S)
