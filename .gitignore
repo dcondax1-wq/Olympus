@@ -252,3 +252,6 @@ data/board/*
 data/kalshi_rewards/
 # Kalshi rewards backtest: public tape cache (research/kalshi_rewards_bt/harvest.py)
 research/kalshi_rewards_bt/cache/
+
+# the PC's daily edge-health run (tools/edge_health.py --pc): tiny.json = the PC status "eh"
+data/edge/

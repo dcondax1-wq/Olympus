@@ -44,6 +44,8 @@
     <p class="btitle" id="bannerTitle">Last live data: loading...</p>
     <p class="btext" id="bannerText"></p>
   </section>
+  <!-- ZEUS edge chip (../edge_chip.js): LIT + ATLAS last 40 sessions vs 2026, from the PC status (pc_feed.js via truth.js) or ../edge.json -->
+  <div id="zeusEdge" data-edge-chip data-edge-src="../edge.json" data-edge-feed></div>
 
   <section class="ag-card card" id="todayCard" aria-labelledby="todayH">
     <h2 id="todayH">1. Today</h2>
@@ -131,6 +133,7 @@
   <div class="row sheethead"><h2 id="sheetH">The day</h2><button type="button" class="btn" id="sheetClose" aria-label="Close the day">Close</button></div>
   <div class="sheetbody" id="sheetBody"></div>
 </section>
+<script src="../edge_chip.js?v=1"></script>
 <script type="module" src="trading.js?v=1"></script>
 </body>
 </html>

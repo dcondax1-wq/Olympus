@@ -6,6 +6,8 @@ It changes nothing in the bots and never touches live_model*.json. It answers on
   python tools/edge_health.py                 # -> research/lab/edge_health.json (+ the Business card via tools/biz_publish.py)
   python tools/edge_health.py --fetch         # first refresh VIX (CBOE's own daily file, free) and the heartbeat branch bars
   python tools/edge_health.py --print         # the plain table only
+  python tools/edge_health.py --pc            # the PC's daily run (tools/pc_report.py starts it after 17:00 ET): data/edge/tiny.json
+                                              # -> the PC status key "eh" (<= 120 bytes); the cloud run writes tools/web_public/edge.json
 
 What it does
  1. Data freshness: newest bar of data/NQ_1m / NQ_5m / ES_5m (TradingView NQ1!/ES1! exports), of the PC's NinjaTrader bars
@@ -19,6 +21,10 @@ What it does
     prior-day sweep reclaim rate), each a 40-session mean. Each feature's cut is picked on 2021-25 (no edge) vs 2026 H1
     (edge) only; the features that separate them well are kept; the light is checked on 2026 H2 (never used to pick) and the
     false-alarm rate there is reported. GREEN = all kept features look like 2026, RED = none or only a minority, AMBER between.
+ 4. ATLAS (2026-11-18): the same light on ATLAS's own last 40 sessions at a FIXED size (R-PF, R a week; the eval's need size
+    distorts its $ PF: research/writeups/atlas-revive-2026-11-17.md), cuts from ATLAS's own 2021-25.
+ 5. Where the owner sees it: tools/web_public/edge_chip.js (Board, Trading, MFFU view) reads the PC status "eh" (fresh bars,
+    the PC's daily --pc run) or else tools/web_public/edge.json (this cloud run), whichever is newer.
 """
 from __future__ import annotations
 
@@ -37,9 +43,11 @@ import pandas as pd
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
+from tools.edge_pc import PC_DIR, PC_TINY, TINY_MAX, _bytes, _write_json  # noqa: E402  (the PC side, no pandas: tools/edge_pc.py)
 
 DATA = os.path.join(ROOT, "data")
 OUT = os.path.join(ROOT, "research", "lab", "edge_health.json")
+SITE = os.path.join(ROOT, "tools", "web_public", "edge.json")                # the chip's cloud copy (edge_chip.js)
 CACHE = os.path.join(ROOT, "research", "runs", "_cache", "edge")          # gitignored
 CBOE_VIX = "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv"
 ATLAS_RUN = "atlas_deep_zombie"
@@ -211,8 +219,10 @@ def window_stats(T, sess, n):
         pnl = np.array([t["pnl"] for t in L], float)
         r = np.array([t["r"] for t in L], float)
         gw, gl = pnl[pnl > 0].sum(), -pnl[pnl < 0].sum()
+        rw, rl_ = r[r > 0].sum(), -r[r < 0].sum()
         out[sess[e]] = {"n": len(L), "tpw": round(len(L) / (n / 5), 2), "win": round(100 * float((pnl > 0).mean()), 1) if len(L) else None,
                         "pf": round(float(gw / gl), 2) if gl > 0 else (99.0 if gw > 0 else None),
+                        "pf_r": round(float(rw / rl_), 2) if rl_ > 0 else (99.0 if rw > 0 else None),
                         "usd_month": round(float(pnl.sum()) / (n / 21)), "r_sum": round(float(r.sum()), 2),
                         "r_avg": round(float(r.mean()), 3) if len(L) else None}
     return out
@@ -230,7 +240,7 @@ def dist(W, key):
     for sp in SPANS:
         v = np.array([w[key] for d, w in W.items() if _span_of(d) == sp and w[key] is not None], float)
         if len(v):
-            v = np.minimum(v, 20.0) if key == "pf" else v
+            v = np.minimum(v, 20.0) if key in ("pf", "pf_r") else v
             out[sp] = {"p10": round(float(np.percentile(v, 10)), 2), "median": round(float(np.median(v)), 2),
                        "p90": round(float(np.percentile(v, 90)), 2), "n": int(len(v))}
     return out
@@ -248,7 +258,7 @@ def edge_block(T, sess, last_day):
     for n in WINDOWS:
         W = window_stats(T, sess, n)
         cur = W.get(last_day) or {}
-        out[str(n)] = {"now": cur, "dist": {k: dist(W, k) for k in ("tpw", "win", "pf", "usd_month", "r_avg")},
+        out[str(n)] = {"now": cur, "dist": {k: dist(W, k) for k in ("tpw", "win", "pf", "pf_r", "usd_month", "r_avg")},
                        "now_rank_in_2026": {k: pct_rank({d: w for d, w in W.items()}, k, cur.get(k), "2026 H1") for k in ("pf", "usd_month")},
                        "now_rank_in_2021_25": {k: pct_rank(W, k, cur.get(k), "2021-25") for k in ("pf", "usd_month")}}
     return out
@@ -422,9 +432,9 @@ def _md(day):
     return dt.date.fromisoformat(day).strftime("%b %-d")
 
 
-def build(fetch_vix=False, today=None):
+def build(fetch_vix=False, today=None, fetch_git=None):
     today = today or dt.date.today().isoformat()
-    hb = heartbeat_bars(fetch_vix)
+    hb = heartbeat_bars(fetch_vix if fetch_git is None else fetch_git)
     vix = vix_frame(fetch_vix)
     fr = freshness(hb, vix, today)
     xdir, shifts = extended_dir(hb, vix)
@@ -477,6 +487,18 @@ def build(fetch_vix=False, today=None):
                       "red_runs": {sp: red_runs(EL, sp) for sp in SPANS}, "forward_by_light": e_fwd,
                       "series": [x for x in EL if x["day"] >= "2026-01-01"]},
             "market": market}
+    # ATLAS the same way (2026-11-18): its own last 40 sessions, FIXED-SIZE R (each trade's pnl / its risk: the eval's need size
+    # put 4-6 micros on some losers and 1-2 on winners, so its $ PF says little; research/writeups/atlas-revive-2026-11-17.md)
+    AL, acuts = edge_light(AT, asess)
+    a_rates = light_rates(AL)
+    a40 = atlas_edge["40"]
+    full["atlas"]["light"] = {"how": "ATLAS's own last 40 sessions, R a week at a fixed size; cuts from ATLAS's 2021-25 only (GREEN above "
+                                     "its best-10% line, RED at or below its median)", "cuts": acuts, "now": AL[-1], "rates": a_rates,
+                              "red_runs": {sp: red_runs(AL, sp) for sp in SPANS}}
+    full["atlas"]["card"] = {"light": AL[-1]["light"], "data_to": asess[-1], "pf_r40": a40["now"].get("pf_r"),
+                             "pf_r40_2026_h1": (a40["dist"]["pf_r"].get("2026 H1") or {}).get("median"),
+                             "pf_r40_2021_25": (a40["dist"]["pf_r"].get("2021-25") or {}).get("median"),
+                             "r_week40": AL[-1]["r_week"], "tpw40": a40["now"].get("tpw"), "usd_pf40_eval_sized": a40["now"].get("pf")}
     w40 = lit_edge["40"]
     pf_now, pf_26 = w40["now"].get("pf"), (w40["dist"]["pf"].get("2026 H1") or {}).get("median")
     usd_now = w40["now"].get("usd_month")
@@ -489,8 +511,37 @@ def build(fetch_vix=False, today=None):
                                "save in data/tv_exports/, then: python data/import_futures.py csv NQ data/tv_exports/<file>.csv "
                                "(5m and ES1! 5m the same way). Or start the PC bot: its heartbeat pushes the NinjaTrader bars."),
                     "note": "A warning, not a switch: the bots trade the same either way. GREEN = LIT's last 40 sessions look like 2026, "
-                            "RED = like 2021-25 (about $0). Past weeks do not forecast the next ones; it says what the market has been."}
+                            "RED = like 2021-25 (about $0). Past weeks do not forecast the next ones; it says what the market has been.",
+                    "atlas": full["atlas"]["card"]}
+    full["tiny"] = tiny(full)
     return full
+
+
+# ------------------------------------------------------------------------------------------------ the tiny result (PC status, site)
+LETTER = {"GREEN": "G", "AMBER": "A", "RED": "R"}
+
+
+def tiny(full: dict, t: int | None = None) -> dict:
+    """The <= 120-byte result the PC status ("eh") and tools/web_public/edge.json carry:
+    {"d": LIT data to, "z": [light, PF last 40, 2026 H1 median PF], "a": [light, R-PF last 40, 2026 H1 median R-PF, ATLAS data to],
+     "t": built (epoch s)}. Light = G / A / R. tools/web_public/edge_chip.js reads it."""
+    c = full.get("card") or {}
+    a = c.get("atlas") or {}
+    r1 = lambda v: round(float(v), 1) if isinstance(v, (int, float)) else None
+    out = {"d": c.get("data_to"), "z": [LETTER.get(c.get("light"), "?"), r1(c.get("pf40")), r1(c.get("pf40_2026_h1"))]}
+    if a:
+        out["a"] = [LETTER.get(a.get("light"), "?"), r1(a.get("pf_r40")), r1(a.get("pf_r40_2026_h1")), a.get("data_to")]
+    out["t"] = int(t if t is not None else dt.datetime.fromisoformat(full["built"]).timestamp()) if full.get("built") else int(t or 0)
+    assert _bytes(out) <= TINY_MAX, out
+    return out
+
+
+def write_site(full: dict, path: str | None = None) -> None:
+    """tools/web_public/edge.json: the cloud's copy (the tiny result + the lines the chip shows), the fallback when the PC is quiet."""
+    o = {"v": 1, "kind": "le-edge", "src": "tools/edge_health.py", "built": full.get("built"), "eh": full.get("tiny")}
+    with open(path or SITE, "w", encoding="utf-8") as fh:
+        json.dump(o, fh, ensure_ascii=False, indent=1)
+        fh.write("\n")
 
 
 def table(d):
@@ -515,6 +566,10 @@ def table(d):
     lines.append(f"Edge light cuts {lg['cuts']} now {lg['now']}")
     lines.append(f"  rates {lg['rates']}  red runs {lg['red_runs']}")
     lines.append(f"  next-40 LIT by edge light {lg['forward_by_light']}")
+    al = d["atlas"].get("light") or {}
+    lines.append(f"ATLAS edge light (fixed-size R) cuts {al.get('cuts')} now {al.get('now')} card {d['atlas'].get('card')}")
+    lines.append(f"  rates {al.get('rates')}  red runs {al.get('red_runs')}")
+    lines.append(f"Tiny ({_bytes(d['tiny'])} bytes): {json.dumps(d['tiny'], separators=(',', ':'))}")
     lines.append(f"PC backtest (fresh weeks): {d['pc_backtest_fresh']}")
     lines.append(f"Fresh trades after the export: {d['fresh_trades']}")
     return "\n".join(lines)
@@ -526,12 +581,29 @@ def main(argv=None):
     ap.add_argument("--today", default=None)
     ap.add_argument("--out", default=OUT)
     ap.add_argument("--print", action="store_true", dest="show")
+    ap.add_argument("--pc", action="store_true", help="the PC's daily run (pc_report hook): VIX from CBOE, the PC's own bars, "
+                                                     "-> data/edge/ (tiny.json = the status 'eh'); no git")
+    ap.add_argument("--no-site", action="store_true", help="do not write tools/web_public/edge.json")
     a = ap.parse_args(argv)
+    if a.pc:
+        try:                                                 # research only, low priority: never in the bot's way
+            os.nice(10) if os.name != "nt" else None
+        except Exception:  # noqa: BLE001
+            pass
+        print(dt.datetime.now().isoformat(timespec="seconds"), "edge health (PC daily run)", flush=True)
+        d = build(fetch_vix=True, today=a.today, fetch_git=False)
+        os.makedirs(PC_DIR, exist_ok=True)
+        _write_json(os.path.join(PC_DIR, "edge_health.json"), d, indent=1)
+        _write_json(PC_TINY, d["tiny"], separators=(",", ":"))
+        print(d["card"]["line"], "| tiny", json.dumps(d["tiny"], separators=(",", ":")), flush=True)
+        return 0
     d = build(a.fetch, a.today)
     if not a.show:
         os.makedirs(os.path.dirname(a.out), exist_ok=True)
         with open(a.out, "w", encoding="utf-8") as fh:
             json.dump(d, fh, ensure_ascii=False, indent=1, default=str)
+        if not a.no_site and a.out == OUT:
+            write_site(d)
     print(table(d))
     return 0
 

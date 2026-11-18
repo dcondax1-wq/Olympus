@@ -129,6 +129,7 @@
     const [plan, board, home] = await Promise.all([getJSON('accounts.json'), getJSON('../board/board.json'), getJSON('../home.json')]);
     let lite = null;
     try { if (window.PC_FEED) lite = await window.PC_FEED.fetchLatest({}); } catch (e) { /* none */ }
+    try { if (window.EDGE_CHIP) window.EDGE_CHIP.update(lite); } catch (e) { /* never the page */ }
     const now = nowS();
     const cs = M.cards({ lite, home, plan, board, coach: window.PAYOUT_COACH, today: todayET() }, now);
     const list = $('list'); list.textContent = '';

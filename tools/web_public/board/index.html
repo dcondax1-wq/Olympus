@@ -47,6 +47,8 @@
   </header>
   <section id="silent" class="silent" role="alert" hidden><b>PC SILENT</b><p id="silentText"></p></section>
   <p id="pcLine" class="pcline" role="status" aria-live="polite"></p>
+  <!-- ZEUS edge chip (../edge_chip.js): LIT + ATLAS last 40 sessions vs 2026; board.js hands it the PC status -->
+  <div id="edgeChip" data-edge-chip data-edge-src="../edge.json"></div>
   <h2 class="sect">Accounts</h2>
   <p class="hint"><a href="../business/mffu.html">My accounts (MFFU view) &rarr;</a> every account the way MFFU shows it: dates, floor, target, days, payout.</p>
   <div id="accounts" class="accounts"></div>
@@ -65,7 +67,8 @@
 <script src="../business/payoutcoach.js?v=1"></script>
 <script src="../business/payoutcard.js?v=1"></script>
 <script src="../business/mffumodel.js?v=1"></script>
+<script src="../edge_chip.js?v=1"></script>
 <script src="boardmodel.js?v=b2"></script>
-<script src="board.js?v=b4"></script>
+<script src="board.js?v=b5"></script>
 </body>
 </html>
