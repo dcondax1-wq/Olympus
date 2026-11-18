@@ -80,9 +80,16 @@ def main():
                 gap = h - dock[3]
                 check(f"c. {tag}: the dock sits {gap} px above the edge (8 px, or the home-bar safe area less 16 px: no empty band); no sideways scroll",
                       gap == (max(8, inset - 16)) and sw <= w, (dock, sw))
-                for _ in range(3):                                     # the demo cards may still grow the page: scroll to its end again
-                    p.evaluate("document.getElementById('home').scrollTop = 1e6")
-                    p.wait_for_timeout(500)
+                # the demo cards may still grow the page and the scroll may glide: keep asking for the end until the scroller is
+                # really there (scrollTop at its max) and has stayed there with the same height for 3 polls (a real end, not a guess)
+                try:
+                    p.wait_for_function("""(() => { const s = document.getElementById('home'), k = s.scrollHeight + ':' + s.scrollTop;
+                        const atEnd = s.scrollTop >= s.scrollHeight - s.clientHeight - 1;
+                        window.__endN = atEnd && window.__endK === k ? (window.__endN || 0) + 1 : 0; window.__endK = k;
+                        if (!atEnd) s.scrollTop = 1e6;
+                        return window.__endN >= 3; })()""", timeout=30000, polling=250)
+                except Exception as e:
+                    print("[note] the scroller never settled at its end:", str(e)[:120])
                 foot, home, chip = p.evaluate(R, "#home .hfoot"), p.evaluate(R, "#home"), p.evaluate(R, "#next")
                 check(f"c. {tag}: scrolled to the end, the footer ends inside the scroller, above the chip row and the dock",
                       foot and home and foot[3] <= home[3] and home[3] <= chip[1] and home[3] <= dock[1], (foot, home, chip, dock))
