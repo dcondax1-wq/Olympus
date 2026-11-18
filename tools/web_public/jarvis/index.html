@@ -3110,13 +3110,27 @@ function tiltStep() {
   $('#stage').style.transform = tiltOn ? `perspective(800px) rotateY(${(cgx * 8).toFixed(2)}deg) rotateX(${(-cgy * 6).toFixed(2)}deg)` : '';
   if (tiltOn && (Math.abs(tgx - cgx) > .002 || Math.abs(tgy - cgy) > .002)) tiltRaf = requestAnimationFrame(tiltStep);
 }
-async function setTilt(on) {
-  if (on) {
+// boot = the page opening with Tilt saved on. iPhone Safari (and Chromium since 2026) asks for motion access only from a tap, so the
+// page no longer asks while it opens: that refusal saved Tilt OFF on every open (2026-11-18 night-jgreen). Tilt stays on, the lean
+// works at once where access is already given, and the owner's first tap asks; only a real "Don't allow" then turns it off.
+async function setTilt(on, boot) {
+  if (on && !boot) {
     try { const DOE = window.DeviceOrientationEvent; if (DOE && typeof DOE.requestPermission === 'function' && (await DOE.requestPermission()) !== 'granted') { toast('Motion access was not allowed. iPhone: Settings, Safari, Motion & Orientation Access.', 'TILT'); on = false; } } catch (_) { on = false; }
   }
-  rawSet('jp3dtilt', on ? '1' : '0'); tiltOn = on;
+  if (!boot) rawSet('jp3dtilt', on ? '1' : '0');
+  tiltOn = on;
   if (on) window.addEventListener('deviceorientation', onOrient, { passive: true }); else { window.removeEventListener('deviceorientation', onOrient); $('#stage').style.transform = ''; }
+  if (on && boot) tiltAskOnTap();
   renderMore();
+}
+function tiltAskOnTap() {
+  const DOE = window.DeviceOrientationEvent;
+  if (!DOE || typeof DOE.requestPermission !== 'function') return;
+  window.addEventListener('click', async () => {
+    if (!tiltOn) return;
+    let r = ''; try { r = await DOE.requestPermission(); } catch (_) { r = ''; }
+    if (r === 'denied') { toast('Motion access was not allowed. iPhone: Settings, Safari, Motion & Orientation Access.', 'TILT'); setTilt(false); }
+  }, { once: true, capture: true });
 }
 
 // ------------------------------------------------------------------ effects: stars, the hologram globe, tap ripples, scan sweeps, press glare, auto-low
@@ -3453,7 +3467,7 @@ safe(renderBar);
 safe(renderSugs);
 safe(renderMore);
 safe(setupMic);
-if (S.tilt()) safe(() => setTilt(true));
+if (S.tilt()) safe(() => setTilt(true, true));
 if (location.hash) history.replaceState(null, '', location.pathname + location.search);
 try { show('home'); } catch (_) { /* the screen still shows; the next refresh draws what is missing */ }
 safe(boot);

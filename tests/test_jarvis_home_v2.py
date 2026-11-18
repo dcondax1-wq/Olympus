@@ -158,8 +158,8 @@ def run():
                 check(f"a. {sz}: every tap on the first screen is 44 px or more, every button has a name, one h1; VoiceOver order = greeting, status, the sentence, the three tiles, then the sections",
                       not m["small"] and m["unnamed"] == 0 and m["h1"] == 1 and m["order"][:6] == ["hello", "sysbar", "heroNow", "t-bots", "t-money", "t-today"]
                       and m["order"][6:] == ["hcT", "hcB", "hcD", "secTalkH", "secDayH", "secSysH", "secAppsH"], (m["small"], m["unnamed"], m["order"]))
-                check(f"a. {sz}: the tiles in plain words: 'Drawdown left $1,240 of $1,500 max loss', the Mint estimate with its range, the window now and the next event; demo is labelled",
-                      "Drawdown left $1,240 of $1,500 max loss" in m["tileText"][0] and "$1,495" in m["tileText"][1] and "estimate" in m["tileText"][1] and "Range −$42 to $2,547" in m["tileText"][1]
+                check(f"a. {sz}: the tiles in plain words: 'Drawdown left $1,240 of $1,500 max loss', the Mint figure with its range, labelled 'sample' (demo = Mint's example numbers, not an estimate of your money; a live Mint figure says 'estimate'), the window now and the next event; demo is labelled",
+                      "Drawdown left $1,240 of $1,500 max loss" in m["tileText"][0] and "$1,495" in m["tileText"][1] and "sample" in m["tileText"][1] and "estimate" not in m["tileText"][1] and "Range −$42 to $2,547" in m["tileText"][1]
                       and "London entries" in m["tileText"][2] and "Next:" in m["tileText"][2] and m["state"] == "Example numbers (demo). Nothing here is real.", (m["tileText"], m["state"]))
                 sel = ["#hello", ".hero .hsub", "#heroNow > span", "#hfirst .t-bots .t-k", "#hfirst .t-bots .t-s", "#hfirst .t-money .t-l"] + ([".dgate[data-district=research] span"] if m["parts"].get("court") else [])
                 cr = contrast_over_scene(p, sel)

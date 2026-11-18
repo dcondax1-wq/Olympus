@@ -469,24 +469,26 @@ def test_chromium():
 
         # ---- B: Tilt on = the camera leans; off = it does not
         ctx, p, errs = opened(br, ORIGIN, "high", (12, 0), tilt=True, said=False)
-        p.evaluate("() => window.dispatchEvent(new DeviceOrientationEvent('deviceorientation', { gamma: 25, beta: 60 }))")
+        # a phone sends deviceorientation all the time (~60 a second): send it on every poll, not once (one early event can come before
+        # home3d.js listens). 2026-11-18 night-jgreen: this was red on main for a REAL bug: Chromium now has requestPermission like iPhone
+        # Safari, and the page asked for motion access while it opened (no tap = refused) and saved Tilt OFF on every open (index.html setTilt)
         try:
-            p.wait_for_function("() => __jarvisBackdrop.ext.state.home.parallax.x > 0.5", timeout=90000)
+            p.wait_for_function("() => { window.dispatchEvent(new DeviceOrientationEvent('deviceorientation', { gamma: 25, beta: 60 })); const h = window.__jarvisBackdrop && __jarvisBackdrop.ext && __jarvisBackdrop.ext.state.home; return !!h && h.parallax.x > 0.5; }", timeout=90000, polling=250)
             f0 = p.evaluate("() => __jarvisBackdrop.frames")
             p.wait_for_function("(f) => __jarvisBackdrop.frames > f + 2", arg=f0, timeout=90000)
         except Exception:
             pass
-        t1 = p.evaluate("() => ({ px: __jarvisBackdrop.ext.state.home.parallax.x, cx: __jarvisBackdrop.ext.camera.position.x - Math.sin(0) , cam: __jarvisBackdrop.ext.cam.x, src: __jarvisBackdrop.ext.state.home.parallax.src })")
+        t1 = p.evaluate("() => ({ px: __jarvisBackdrop.ext.state.home.parallax.x, cx: __jarvisBackdrop.ext.camera.position.x - Math.sin(0) , cam: __jarvisBackdrop.ext.cam.x, src: __jarvisBackdrop.ext.state.home.parallax.src, saved: localStorage.getItem('jp3dtilt') })")
         ctx.close()
         ctx, p, errs2 = opened(br, ORIGIN, "high", (12, 0), tilt=False, said=False)
-        p.evaluate("() => window.dispatchEvent(new DeviceOrientationEvent('deviceorientation', { gamma: 25, beta: 60 }))")
+        p.wait_for_function("() => !!(window.__jarvisBackdrop && __jarvisBackdrop.ext && __jarvisBackdrop.ext.state.home)", timeout=90000)
         f0 = p.evaluate("() => __jarvisBackdrop.frames")
         try:
-            p.wait_for_function("(f) => __jarvisBackdrop.frames > f + 6", arg=f0, timeout=90000)
+            p.wait_for_function("(f) => { window.dispatchEvent(new DeviceOrientationEvent('deviceorientation', { gamma: 25, beta: 60 })); return __jarvisBackdrop.frames > f + 6; }", arg=f0, timeout=90000, polling=250)
         except Exception:
             pass
         t2 = p.evaluate("() => ({ px: __jarvisBackdrop.ext.state.home.parallax.x, src: __jarvisBackdrop.ext.state.home.parallax.src })")
-        check("i. parallax: with Tilt on the phone's lean moves the camera (DeviceOrientation); with Tilt off it does nothing", t1["px"] > 0.5 and t1["src"] == "gyro" and t1["cam"] > 0.7 and t2["px"] == 0 and t2["src"] == "", (t1, t2))
+        check("i. parallax: with Tilt on the phone's lean moves the camera (DeviceOrientation) and Tilt is still saved on after the page opened; with Tilt off it does nothing", t1["saved"] == "1" and t1["px"] > 0.5 and t1["src"] == "gyro" and t1["cam"] > 0.7 and t2["px"] == 0 and t2["src"] == "", (t1, t2))
         ctx.close()
 
         # ---- C: LITE
