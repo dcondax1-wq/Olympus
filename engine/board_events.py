@@ -42,7 +42,8 @@ PLAN_PATH = os.path.join(ROOT, "tools", "web_public", "business", "accounts.json
 EVENTS, SHARED, INBOX = "events.jsonl", "shared.jsonl", "board.jsonl"
 KINDS = ("eval_passed", "eval_failed", "account_locked", "order_rejected", "payout_ready", "payout_requested", "balance",
          "bot_started", "bot_stopped", "pc_silent", "owner_note", "claude_note", "plan_changed",
-         "daily_review")                 # daily_review: the ZEUS nightly self-review (engine/zeus_review.py), one a day
+         "daily_review",                 # daily_review: the ZEUS nightly self-review (engine/zeus_review.py), one a day
+         "brief")                        # brief: the 07:30 ET ZEUS morning brief (tools/morning_brief.py), one a day
 LOUD = {"eval_passed", "eval_failed", "account_locked", "order_rejected", "payout_ready", "pc_silent"}
 MAX_TEXT = 300
 MAX_DATA = 2000

@@ -13,6 +13,9 @@ LE_BarFeed contract file. It never blocks, places, changes or cancels an order, 
   milestones      eval progress 25 / 50 / 75 / 100% of the profit target (notify_settings.json milestones_pct), once per level.
   day summary     16:15 ET on CME trading days (daily_summary_at, first report run up to 16:59): $ today, $ to pass, room left per
                   account, tomorrow's big US news (engine/notify.news_line).
+  morning brief   07:30 ET on CME trading days (notify_settings.json morning_brief_at, up to 09:30; tools/morning_brief.py): ONE
+                  4-line ZEUS push (PC ok?, each account $ / to pass / to payout, overnight + today's hours + news, edge + needs you)
+                  and one Board event "brief"; key guard:brief:<day>, so a restart never repeats it.
   ready           01:35-01:59 ET on CME trading days (tools/launch_card.ready_push, Monday launch kit 2026-11-14): every bot's
                   mode (LIVE armed / Sim / paper) and drawdown left, the bot, NinjaTrader and the feed; "Ready for 02:00 ET"
                   is a silent (low) push at night, "NOT ready" (what is wrong + its one action) a high one.
@@ -323,6 +326,11 @@ def guard(state: dict | None, snap: dict, roll_state=None) -> tuple:
         pass
     try:
         cands += day_summary(snap, now)
+    except Exception:
+        pass
+    try:                     # the 07:30 ET ZEUS morning brief (tools/morning_brief.py, read-only): once a day, + one Board event
+        from tools import morning_brief
+        cands += morning_brief.pushes(snap, st["sent"], now)
     except Exception:
         pass
     try:                     # the 01:45 ET "ready for 02:00" push (tools/launch_card.py, read-only): silent when all is well

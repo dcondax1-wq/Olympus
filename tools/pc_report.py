@@ -1237,6 +1237,8 @@ def main(argv=None) -> int:
         if not a.quiet:
             print("  [OK]  another report run is busy right now (the 15-minute task or the bot server): nothing to do")
         return 0
+    if not a.dry_run:                  # the real report run: the morning brief may post its one Board event (tools/morning_brief.py)
+        os.environ["LE_PC_REPORT"] = "1"
     try:
         rec = run_once(work=a.work, dry=a.dry_run, port=a.port)
     finally:
