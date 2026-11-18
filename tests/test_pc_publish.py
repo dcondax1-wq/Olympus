@@ -466,6 +466,10 @@ def main() -> int:
               (sorted(out_set), kept))
         check("...the dashboard's own home.json (no private kind) still goes: only the Me hub's home-check file (kind olympus-home) is kept out",
               "home.json" in out_set and "x/home.json" not in out_set)
+        cf_set, kept_cf = PP.deploy_set(dsite, dfiles, {"provider": "cloudflare"})
+        check("Cloudflare lite set: the 3D Data City goes out too (Olympus cities on the phone); charts, replays, writeups and the vault stay",
+              kept_cf["lite"] == 4 and any(r.startswith("datacity/") for r in cf_set) and not any(r.startswith(("mind/", "charts/")) for r in cf_set)
+              and not set(kept_cf["private"]) & set(cf_set), (sorted(cf_set), kept_cf))
         full_set, kept_f = PP.deploy_set(dsite, dfiles, {"site_set": "full"})
         check("publish.json site_set 'full': the heavy folders go too, private files still never", kept_f["lite"] == 0 and "charts/c.png" in full_set and "mind/m.json" in full_set
               and not set(kept_f["private"]) & set(full_set) and len(kept_f["private"]) == 8, (sorted(full_set), kept_f))

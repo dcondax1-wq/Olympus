@@ -83,6 +83,9 @@ CF_MAX_FILE, CF_MAX_FILES = 25 * 1024 * 1024, 20000
 SECRET_KEYS = ("token", "access_token", "authorization", "password", "secret")
 # the heavy folders the owner's Netlify Drop zip left out (the upload was too big); they stay on the PC (and its Tailscale link)
 LITE_EXCLUDE = ("charts/", "replays/", "writeups/", "datacity/", "mind/")
+# Cloudflare has no zip limit (450 deploys a month, only changed files upload), so the 3D Data City goes out there too (owner
+# 2026-11-18: Olympus on the phone should have its cities); the trade pictures, research reader and the vault stay on the PC
+LITE_EXCLUDE_CF = ("charts/", "replays/", "writeups/", "mind/")
 # the folders of the Tailscale link's PRIVATE routes (engine/live_site.py: /site/day/, /site/me/): never sent, whatever lands there
 PRIVATE_DIRS = ("day/", "me/")
 SETUP_OK, SETUP_INPUT, SETUP_REFUSED, SETUP_NO_SITE, SETUP_UNREACHABLE = 0, 2, 3, 4, 5       # --setup netlify exit codes
@@ -219,9 +222,10 @@ def deploy_set(site: str, files: dict, cfg: dict) -> tuple[dict, dict]:
     except Exception as e:                             # never send a site that was not checked
         raise ProviderError(f"the privacy check could not run ({e.__class__.__name__}): nothing sent")
     lite = str(cfg.get("site_set") or "lite").lower() != "full"
+    heavy = LITE_EXCLUDE_CF if str(cfg.get("provider") or "").lower() == "cloudflare" else LITE_EXCLUDE
     out, n_lite, private = {}, 0, []
     for rel, h in files.items():
-        if lite and rel.startswith(LITE_EXCLUDE):
+        if lite and rel.startswith(heavy):
             n_lite += 1
             continue
         raw = None
