@@ -126,9 +126,15 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
     def translate_path(self, path):
         p = path.split("?")[0]
-        if p.startswith("/mind/") or p.startswith("/olympus/") or (p.startswith("/jarvis/") and p != "/jarvis/obsidian.js"):
+        if p.startswith("/mind/") or p.startswith("/olympus/") or p.startswith("/assets/audio/") or (p.startswith("/jarvis/") and p != "/jarvis/obsidian.js"):
             return os.path.join(WEB, *p.lstrip("/").split("/"))
         return os.path.join(WEB, "__missing__")
+
+
+def page_net(p):
+    """what the page itself fetched, less the OLYMPUS kit's own UI sound (olympus/sfx.js loads ../assets/audio/ui.ogg|m4a on the first tap
+    since 2026-11-11, a static same-origin file of the site): the page's own promise is no data call, no vault, no beacon"""
+    return [u for u in p.evaluate("window.__net") if not re.fullmatch(r"https?://127\.0\.0\.1:\d+/assets/audio/[\w-]+\.(?:ogg|m4a)", u)]
 
 
 # the fake Jarvis module: the snapshot lives on globalThis.__obs (set by an init script), fire() calls the subscribers
@@ -288,7 +294,7 @@ def demo_cases(br, origin):
         else:
             shot(p, "overview_844.png")
         check(f"b. {tag}: no console errors in demo mode", not real_errors(log), real_errors(log))
-        check(f"i. {tag}: the page itself fetched nothing", p.evaluate("window.__net") == [], p.evaluate("window.__net"))
+        check(f"i. {tag}: the page itself fetched nothing", page_net(p) == [], page_net(p))
         ctx.close()
 
 
@@ -446,7 +452,7 @@ def mock_cases(br, origin):
     check("e. disconnected later: 'Vault offline' with the last brain kept",
           p.evaluate("mind.stats.notes") == MOCK_NOTES + 1 and p.text_content("#mode").strip() == "Vault offline" and p.is_hidden("#demo"), calls)
     check("e. no console errors with the mocked vault", not real_errors(log), real_errors(log))
-    check("i. the page itself fetched nothing (mocked vault)", p.evaluate("window.__net") == [], p.evaluate("window.__net"))
+    check("i. the page itself fetched nothing (mocked vault)", page_net(p) == [], page_net(p))
     ctx.close()
 
 
@@ -1036,7 +1042,7 @@ def overhaul_cases(br, origin):
     p.wait_for_function("mind.focus !== null", timeout=4000)
     check("m. Home: Surprise me flies to a random note", p.is_visible("#card") and p.is_hidden("#panel"))
     check("m. no console errors across every page", not real_errors(log), real_errors(log))
-    check("i. the pages fetched nothing", p.evaluate("window.__net") == [], p.evaluate("window.__net"))
+    check("i. the pages fetched nothing", page_net(p) == [], page_net(p))
     ctx.close()
 
     # a vault that is connected but empty: the demo brain, never a blank sky
