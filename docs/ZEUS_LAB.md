@@ -13,7 +13,8 @@ and changes and adapts if it needs to."
 
 ## The path of one idea
 1. **Registry** `research/lab/zeus_lab/registry.json`: written down before it is judged (kinds `lit_tilt`, `atlas_tilt`,
-   `lit_x`, `parked`). The "Tested and rejected" list is `rejected_forever` (never re-run; `blocks` = a bot + fact).
+   `lit_x`, `atlas_member` = a new ATLAS member judged by `tools/atlas_plus.py`, its stored verdict, every version it
+   searched counted, `parked`). Add one with `zeus_lab.register(entry)` (validated, keeps the file's layout). The "Tested and rejected" list is `rejected_forever` (never re-run; `blocks` = a bot + fact).
 2. **Proof** (every run): the real Zlarior backtest (`tools/lit_edge`, LIT size + live two_week eval path) or ATLAS
    (`tools/atlas_deep`, the real account-B rules), costs in. Picked on 2026 Jan-Jun, checked on Jul-Oct, both better,
    eval fails not up, 2-4 trades a week (LIT), 2021-25 shown (a gate for ATLAS), enough trades changed, the learn loop's
