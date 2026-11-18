@@ -93,10 +93,10 @@ def test_names(tmp):
           nt.same_instrument("MNQ DEC26 Globex", "MNQ 12-26") and not nt.same_instrument("MNQ 03-27 Globex", "MNQ 12-26")
           and not nt.same_instrument("NQ 12-26 Globex", "MNQ 12-26") and not nt.same_instrument("MES 12-26 Globex", "MNQ 12-26"))
     from engine import guards
-    for acct, fname in (("MFFUEVBLDR602936016", "MNQ 12-26 Globex_MFFUEVBLDR602936016_Position.txt"),
+    for acct, fname in (("MFFUEVBLDR000006016", "MNQ 12-26 Globex_MFFUEVBLDR000006016_Position.txt"),
                         ("My Eval 50K", "MNQ 12-26 Globex_My Eval 50K_Position.txt"),
-                        ("MFFUEVBLDR602936016", "MNQ DEC26 Globex_MFFUEVBLDR602936016_Position.txt"),
-                        ("MFFUEVBLDR602936016", "MNQ 1226 Globex_MFFUEVBLDR602936016_Position.txt")):
+                        ("MFFUEVBLDR000006016", "MNQ DEC26 Globex_MFFUEVBLDR000006016_Position.txt"),
+                        ("MFFUEVBLDR000006016", "MNQ 1226 Globex_MFFUEVBLDR000006016_Position.txt")):
         d = os.path.join(tmp, "names", fname.replace(" ", "_"))
         out = os.path.join(d, "outgoing")
         os.makedirs(out, exist_ok=True)

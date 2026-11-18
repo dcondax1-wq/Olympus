@@ -134,8 +134,8 @@ def pwsh_cases(pwsh):
 # ------------------------------------------------------------------------------------------------------------ python
 def board(today="2026-11-04", lit_bal=49313.54, pnl=0.0):
     return {"board": {"today": today,
-                      "lit": {"broker": "MFFUEVBLDR602936016", "balance": lit_bal, "floor": 48168.2, "today_pnl": pnl, "mll": 2000.0},
-                      "atlas": {"broker": "MFFUEVBLDR602936017", "balance": 25351.0, "floor": 24351.0, "today_pnl": 0.0, "mll": 1000.0}}}
+                      "lit": {"broker": "MFFUEVBLDR000006016", "balance": lit_bal, "floor": 48168.2, "today_pnl": pnl, "mll": 2000.0},
+                      "atlas": {"broker": "MFFUEVBLDR000006017", "balance": 25351.0, "floor": 24351.0, "today_pnl": 0.0, "mll": 1000.0}}}
 
 
 def python_cases():
@@ -146,7 +146,7 @@ def python_cases():
     check("anchors: as_of is the previous weekday (Wed 11-04 -> Tue 11-03; Mon 11-09 -> Fri 11-06)",
           lit["as_of"] == "2026-11-03" and EL.anchors_from_board(board("2026-11-09"))[0]["as_of"] == "2026-11-06")
     check("anchors: today's P&L is taken back out of the balance", EL.anchors_from_board(board(pnl=150.0, lit_bal=49463.54))[0]["balance"] == 49313.54)
-    check("anchors: LIT = main account, ATLAS = its own account name", lit["account"] is None and atl["account"] == "MFFUEVBLDR602936017")
+    check("anchors: LIT = main account, ATLAS = its own account name", lit["account"] is None and atl["account"] == "MFFUEVBLDR000006017")
     check("anchors: empty / bad board -> nothing", EL.anchors_from_board({}) == [] and EL.anchors_from_board({"board": {"today": "x"}}) == [])
     td = tempfile.mkdtemp(prefix="le_anchor_")
     try:
@@ -170,7 +170,7 @@ def python_cases():
             builtins.input = old
         EL._ANCHOR_CACHE.clear()
         m = EL.load_anchor(None, path=path)
-        a = EL.load_anchor("MFFUEVBLDR602936017", path=path, main=False)
+        a = EL.load_anchor("MFFUEVBLDR000006017", path=path, main=False)
         check("saved: LIT main anchor and ATLAS by account name read back",
               m == {"as_of": "2026-11-03", "balance": 49313.54, "floor": 48168.2, **({"set_t": m["set_t"]} if m and "set_t" in m else {})}
               and a and a["balance"] == 25351.0 and a["floor"] == 24351.0, (m, a))

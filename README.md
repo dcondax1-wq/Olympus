@@ -144,7 +144,7 @@ trade) and scale only after live results confirm the backtest.
 The server (dashboard + paper bot + trade memory) must never live inside an editor / terminal / AI-tool session: when
 that session closes, the server dies with it. `scripts\run_bot.ps1` is a supervisor that starts `python server.py`,
 restarts it on any exit (back-off 5 s, 15 s, then 60 s), loads `.env.local.ps1` if present (values never printed) and
-serves on **port 8766** (phone over Tailscale: `http://100.95.233.88:8766`). A Task Scheduler task starts the
+serves on **port 8766** (phone over Tailscale: `http://<PC Tailscale IP>:8766`, shown in the Tailscale app). A Task Scheduler task starts the
 supervisor at logon and on unlock. Real-money execution does **not** depend on this PC (that path is the TradingView
 strategy + webhook bridge); this keeps the paper mirror, the dashboard and the memory running.
 

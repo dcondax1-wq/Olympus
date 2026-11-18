@@ -104,6 +104,9 @@ NTFY_EXAMPLES = {"nq-amber-falcon-river-7291"}
 ACCT_ID_RX = re.compile(r"\b([A-Z]{2,16}-?)(\d{6,14})\b")
 FIRMS = ("MFFU", "MYFF", "APEX", "PAAPEX", "LUCID", "LFT", "TOPSTEP", "TSX", "TRADEIFY", "TDY", "TPT", "FNXT", "FUNDEDNEXT", "BLN", "BULENOX",
          "EFF", "ELITE", "TICKTICK", "LEELOO", "TAKEPROFIT", "DTA", "FTMO", "TDV", "TRADOVATE", "RITHMIC", "NINJA", "NT8", "SIMACC")
+# 2026-11-18 (team night-priv): the same ids written in lower case ("mffuevbldr..."), or with letters + digits before the number
+# ("MFFUEVBLD25K..."), slipped past ACCT_ID_RX. A firm prefix only (any case for MFFU), so Kalshi tickers and shas stay out.
+FIRM_ID_RX = re.compile(r"(?<![A-Za-z0-9])((?i:MFFU)[A-Za-z0-9]*?-?|(?:%s)[A-Z0-9]*?-?)(\d{6,14})(?![A-Za-z0-9])" % "|".join(FIRMS))
 USER_PATH_RX = re.compile(r"\b([A-Za-z]:(?:\\\\|\\|/)(?:[Uu]sers|Documents and Settings)(?:\\\\|\\|/))([^\\/\r\n\t\"'<>|:*?%$]{1,64}?)(?=\\|/)|"
                           r"(?<![\w.])(/Users/|/home/)([A-Za-z0-9._-]{1,64})(?=/)")
 GENERIC_USERS = {"<you>", "you", "your", "yourname", "your_name", "your name", "user", "username", "<user>", "<username>", "name", "<name>",
@@ -145,6 +148,18 @@ def acct_kind(letters: str, digits: str) -> str | None:
     if len(w) >= 4 and len(digits) >= 8:
         return "account id"
     return None
+
+
+def acct_matches(text: str):
+    """every broker / account id in a text: [(start, end, prefix, digits, kind)], ACCT_ID_RX and FIRM_ID_RX merged (no overlaps)"""
+    out, spans = [], []
+    for rx in (ACCT_ID_RX, FIRM_ID_RX):
+        for m in rx.finditer(text):
+            k = "broker account" if rx is FIRM_ID_RX else acct_kind(m.group(1), m.group(2))
+            if k and not any(a < m.end() and m.start() < b for a, b in spans):
+                spans.append((m.start(), m.end()))
+                out.append((m.start(), m.end(), m.group(1), m.group(2), k))
+    return sorted(out)
 
 
 def masked(v) -> str:
@@ -230,10 +245,8 @@ def scan_text(text: str, rel: str, canaries=(), binary: bool = False) -> list:
     if ZIP_HINT_RX.search(text):
         for m in STATE_ZIP_RX.finditer(text):
             _add(out, "state + ZIP", rel, m.start(), m.group(0))
-    for m in ACCT_ID_RX.finditer(text):
-        k = acct_kind(m.group(1), m.group(2))
-        if k:
-            _add(out, k, rel, m.start(), m.group(0))
+    for a, b, _p, _d, k in acct_matches(text):
+        _add(out, k, rel, a, text[a:b])
     if "sers" in text or "/home/" in text or "Documents and Settings" in text:
         for m in USER_PATH_RX.finditer(text):
             if not _user_ok(m.group(2) or m.group(4) or ""):
@@ -367,14 +380,14 @@ def state_canaries(state_path: str | None) -> list:
     return out
 
 
-def canaries(state_path: str | None = None, env=None, git: bool = True) -> list:
+def canaries(state_path: str | None = None, env=None, git: bool = True, handles: bool = True) -> list:
     """[(label, value)]: the owner's git names + emails (not the bots', not the site's public GitHub user name), the state's and this
     PC's heartbeat broker account ids, the private ntfy alert topic. Never printed. (This PC's user name is caught in its only public
     form, a folder C:\\Users\\<name>\\, by the folder detector: a bare first name would match the Greek names of the Cities.)"""
     env = os.environ if env is None else env
     out = []
     if git:
-        handles = _public_handles()
+        handles = _public_handles() if handles else set()
         for line in sorted(set(_git("log", "--format=%an%x1f%ae%x1f%cn%x1f%ce").splitlines())):
             for i, v in enumerate(line.split("\x1f")):
                 v = v.strip()
@@ -382,7 +395,7 @@ def canaries(state_path: str | None = None, env=None, git: bool = True) -> list:
                     continue
                 if i % 2:
                     out.append(("a git author email", v))
-                elif " " in v or (v.lower() not in handles and len(v) >= 5):
+                elif " " in v or (handles and v.lower() not in handles and len(v) >= 5):
                     out.append(("a git author name", v))
     home = env.get("OLYMPUS_HOME") or os.path.join(env.get("USERPROFILE") or os.path.expanduser("~"), ".olympus")
     try:
@@ -407,7 +420,30 @@ def canaries(state_path: str | None = None, env=None, git: bool = True) -> list:
 # ------------------------------------------------------------------------------------------------ scrub (the build's last step)
 def mask_account(s: str) -> str:
     """'MFFUEVBLDR123456789' -> 'MFFUEVBLDR…6789': the firm part and the last 4 digits, the way a bank shows a card"""
-    return ACCT_ID_RX.sub(lambda m: (m.group(1) + MASK + m.group(2)[-4:]) if acct_kind(m.group(1), m.group(2)) else m.group(0), s)
+    hits = acct_matches(s)
+    for a, b, pre, digits, _k in reversed(hits):
+        s = s[:a] + pre + MASK + digits[-4:] + s[b:]
+    return s
+
+
+def mask_net(s: str) -> str:
+    """a Tailscale address (100.64-127.x.x) -> '100.x.x.x', a tailnet name -> '<pc>.<tailnet>.ts.net': they map the owner's devices"""
+    if "100." in s:
+        s = TAILSCALE_IP_RX.sub(lambda m: m.group(0) if m.group(0) in SAFE_TAILSCALE_IPS else "100.x.x.x", s)
+    if ".ts.net" in s:
+        s = TAILNET_RX.sub(lambda m: m.group(0) if (m.group(2).lower() in SAFE_TAILNETS or m.group(2).startswith(("your", "<")))
+                           else "<pc>.<tailnet>.ts.net", s)
+    return s
+
+
+def mask_secrets(s: str) -> str:
+    """an API key / token (TOKEN_RX) -> '<key>', the private ntfy alert topic shape -> '<private topic>'"""
+    for _name, lit, rx in TOKEN_RX:
+        if lit in s:
+            s = rx.sub("<key>", s)
+    if "nq-" in s:
+        s = NTFY_TOPIC_RX.sub(lambda m: m.group(0) if m.group(0) in NTFY_EXAMPLES else "<private topic>", s)
+    return s
 
 
 def mask_paths(s: str) -> str:
@@ -445,7 +481,7 @@ def mask_age(s: str) -> str:
 
 def clean_string(s: str, extra=()) -> str:
     """the generic masks first (a broker id keeps its last 4 digits, an email its first letter, no age), then any other canary"""
-    out = mask_age(mask_cards(mask_emails(mask_paths(mask_account(s)))))
+    out = mask_age(mask_cards(mask_emails(mask_paths(mask_account(mask_secrets(mask_net(s)))))))
     for v in extra:
         if v and len(v) >= 4 and v.lower() in out.lower():
             out = re.sub(re.escape(v), "<private>", out, flags=re.I)
@@ -477,7 +513,14 @@ WHO_RX = re.compile(r'"(?:who|author|author_email|committer|email|login|user_log
 
 
 def _hits(text: str) -> int:
-    n = sum(1 for m in ACCT_ID_RX.finditer(text) if acct_kind(m.group(1), m.group(2)))
+    n = len(acct_matches(text))
+    if "100." in text:
+        n += sum(1 for m in TAILSCALE_IP_RX.finditer(text) if m.group(0) not in SAFE_TAILSCALE_IPS)
+    if ".ts.net" in text:
+        n += len(TAILNET_RX.findall(text))
+    n += sum(len(rx.findall(text)) for _n, lit, rx in TOKEN_RX if lit in text)
+    if "nq-" in text:
+        n += sum(1 for m in NTFY_TOPIC_RX.finditer(text) if m.group(0) not in NTFY_EXAMPLES)
     if "sers" in text or "/home/" in text:
         n += sum(1 for m in USER_PATH_RX.finditer(text) if not _user_ok(m.group(2) or m.group(4) or ""))
     if "@" in text:
@@ -493,8 +536,29 @@ LICENSE_RX = re.compile(r"(?i)(^|/)(OFL|LICEN[CS]E|NOTICE|COPYING|AUTHORS)[^/]*$
 STATUS_DROP = ("host", "hostname", "user", "login", "email", "account_name", "broker", "broker_account", "broker_line", "lit_account")
 
 
-def public_status(obj, extra=()):
-    """the dict tools/pc_report.py posts to the PUBLIC ntfy status topic: no PC name, no login, no broker account id, no folder"""
+_STATUS_CAN: dict = {}
+
+
+def status_canaries(ttl: float = 3600.0) -> tuple:
+    """the cheap canaries for every public status / board post (cached an hour): the owner's full git name(s) and email(s), the private
+    ntfy alert topic, this PC's heartbeat broker ids. A free-text line (an owner note, a log line in the Brain glance) can carry them."""
+    import time as _t
+    now = _t.time()
+    if _STATUS_CAN.get("t", 0) + ttl > now:
+        return _STATUS_CAN["v"]
+    try:
+        v = tuple(x for _lb, x in canaries(None, git=True, handles=False) if x and len(x) >= 4)
+    except Exception:  # noqa: BLE001
+        v = ()
+    _STATUS_CAN.update(t=now, v=v)
+    return v
+
+
+def public_status(obj, extra=None):
+    """the dict tools/pc_report.py posts to the PUBLIC ntfy status topic: no PC name, no login, no broker account id, no folder,
+    no tailnet address, no key, no canary (extra=None: status_canaries(); pass () for none)"""
+    if extra is None:
+        extra = status_canaries()
     def drop(o):
         if isinstance(o, dict):
             return {k: drop(v) for k, v in o.items() if str(k).lower() not in STATUS_DROP}

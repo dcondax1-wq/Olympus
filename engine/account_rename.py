@@ -1,6 +1,6 @@
 """Fix the account Names the bot sends when NinjaTrader says they do not exist (2026-10-27: every order of both MFFU
-evals went to "MFFUEVBLD602936016" / "...017"; NinjaTrader's Log: "account does not exist 'MFFUEVBLD602936016'"; its
-Accounts tab shows MFFUEVBLDR602936016 / ...017, with an R after BLD).
+evals went to "MFFUEVBLD…6016" / "...017"; NinjaTrader's Log: "account does not exist 'MFFUEVBLD…6016'"; its
+Accounts tab shows MFFUEVBLDR…6016 / ...017, with an R after BLD).
 
 fix(): run by server.py at its start, before the bot can start. Reads NinjaTrader's logs of the last LOOK_DAYS days
 (<NinjaTrader 8>\\log\\log.*.txt); for every name NinjaTrader called non-existent that matches MFFUEVBLD<digits>, the name

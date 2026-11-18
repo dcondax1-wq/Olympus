@@ -18,7 +18,7 @@ import time
 
 from tests.shots_brain import _launch, _real
 
-L50, L25 = "MFFUEVBLD602936016", "MFFUEVBLD602936017"
+L50, L25 = "MFFUEVBLD000006016", "MFFUEVBLD000006017"
 
 
 def base_status():

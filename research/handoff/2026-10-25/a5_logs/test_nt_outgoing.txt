@@ -1,10 +1,10 @@
 == 1. outgoing position file names
   [PASS] inst_key: 'MNQ 12-26', 'MNQ 12-26 Globex', 'MNQ DEC26 Globex', 'mnq Dec26', 'MNQ 1226 Globex' = MNQ Dec 2026
   [PASS] same_instrument: MNQ DEC26 Globex = MNQ 12-26; MNQ 03-27 / NQ 12-26 / MES 12-26 are not
-  [PASS] account 'MFFUEVBLDR602936016', file 'MNQ 12-26 Globex_MFFUEVBLDR602936016_Position.txt': LONG 3 @ 25020.25 found, other accounts ignored, reconcile net +3
+  [PASS] account 'MFFUEVBLDR…6016', file 'MNQ 12-26 Globex_MFFUEVBLDR…6016_Position.txt': LONG 3 @ 25020.25 found, other accounts ignored, reconcile net +3
   [PASS] account 'My Eval 50K', file 'MNQ 12-26 Globex_My Eval 50K_Position.txt': LONG 3 @ 25020.25 found, other accounts ignored, reconcile net +3
-  [PASS] account 'MFFUEVBLDR602936016', file 'MNQ DEC26 Globex_MFFUEVBLDR602936016_Position.txt': LONG 3 @ 25020.25 found, other accounts ignored, reconcile net +3
-  [PASS] account 'MFFUEVBLDR602936016', file 'MNQ 1226 Globex_MFFUEVBLDR602936016_Position.txt': LONG 3 @ 25020.25 found, other accounts ignored, reconcile net +3
+  [PASS] account 'MFFUEVBLDR…6016', file 'MNQ DEC26 Globex_MFFUEVBLDR…6016_Position.txt': LONG 3 @ 25020.25 found, other accounts ignored, reconcile net +3
+  [PASS] account 'MFFUEVBLDR…6016', file 'MNQ 1226 Globex_MFFUEVBLDR…6016_Position.txt': LONG 3 @ 25020.25 found, other accounts ignored, reconcile net +3
 == 2. NinjaTrader restart with a protected trade open
   [PASS] setup: bracket placed and protected, order files seen
   [PASS] outgoing wiped: reset noticed, ONE alert, the leg stays protected (never read as flat)

@@ -83,9 +83,9 @@ def part_a():
     got = B.order_rejected("atlas", "max order quantity, Limit 0, Scope MNQ")
     check("a. order_rejected on 'Limit 0' logs order_rejected AND account_locked", [g["kind"] for g in got] == ["order_rejected", "account_locked"], got)
     check("a. a plain rejection is only order_rejected", [g["kind"] for g in B.order_rejected("zlarior", "price outside the band")] == ["order_rejected"])
-    pub = B.public({"accounts": [{"name": "MFFUEVBLDR602936017"}], "host": "DESKTOP-ABC", "events": [{"text": "routed to MFFUEVBLDR602936016"}]})
+    pub = B.public({"accounts": [{"name": "MFFUEVBLDR000006017"}], "host": "DESKTOP-ABC", "events": [{"text": "routed to MFFUEVBLDR000006016"}]})
     s = json.dumps(pub)
-    check("a. public(): broker ids cut to the last 4 digits, no PC name", "602936017" not in s and "6017" in s and "602936016" not in s and "DESKTOP-ABC" not in s, s)
+    check("a. public(): broker ids cut to the last 4 digits, no PC name", "000006017" not in s and "6017" in s and "000006016" not in s and "DESKTOP-ABC" not in s, s)
     B.emit("balance", "blitz", "BLITZ balance", {"balance": 25500})
     b = B.build(plan_doc=PLAN, now=NOW)
     check("a. BLITZ (hidden) never on the board: no row, no event", not any(r["key"] == "blitz" for r in b["accounts"])
@@ -206,11 +206,11 @@ def part_d():
     check("d. the ntfy feed alone: PC fresh via ntfy, Zlarior's live card, the pass event", b["pc"]["via"] == "ntfy" and not b["pc"]["stale"]
           and z["balance"] == 49900 and any(e["kind"] == "eval_passed" for e in b["events"]), (b["pc"], z))
     shared = os.environ["LE_BOARD_SHARED"]
-    T.write_note("ATLAS 26,946.10 passed, ends 6017 MFFUEVBLDR602936017", kind="owner_note", acct="atlas", src="owner", via="chat", now=NOW - 50)
+    T.write_note("ATLAS 26,946.10 passed, ends 6017 MFFUEVBLDR000006017", kind="owner_note", acct="atlas", src="owner", via="chat", now=NOW - 50)
     T.write_note("Noted", now=NOW - 40, answers=["x1"])
     rows = B.read_jsonl(shared)
     check("d. note / owner write data/board/shared.jsonl, privacy-cleaned (no full broker id), owner via chat = answered",
-          len(rows) == 2 and rows[0]["src"] == "owner" and "602936017" not in json.dumps(rows) and rows[1]["data"]["answers"] == ["x1"]
+          len(rows) == 2 and rows[0]["src"] == "owner" and "000006017" not in json.dumps(rows) and rows[1]["data"]["answers"] == ["x1"]
           and B.open_notes(rows) == [], rows)
     out = os.path.join(TMP, "pub", "board.json")
     T.publish(T.gather(offline=True, now=NOW), path=out)

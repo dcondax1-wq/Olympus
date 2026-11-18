@@ -1,8 +1,8 @@
 # Morning report, Mon 2026-10-26 06:30 ET
 
 ## Overnight (PC heartbeat 05:25 ET)
-- Bot running since 22:32 ET without a stop (server up 6.9 h): Zlarior armed on the 50K MFFUEVBLD602936016, ATLAS on the
-  25K MFFUEVBLD602936017 (EMA / MACD / S/R routed).
+- Bot running since 22:32 ET without a stop (server up 6.9 h): Zlarior armed on the 50K MFFUEVBLD…6016, ATLAS on the
+  25K MFFUEVBLD…6017 (EMA / MACD / S/R routed).
 - Trades: none. LIT saw no setup (0 setups, 0 signals; waiting for sweep + inducement + CISD, shorts only by the Monday
   rule). ATLAS: EMA does not trade Mondays, MACD's 02:00-05:00 window had no entry, S/R opens 09:30.
 - Blocked: the clock guard ("PC clock 5.2 s ahead", limit 5 s) blocked entries on both accounts all night. No setup was

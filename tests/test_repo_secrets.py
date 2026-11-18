@@ -5,8 +5,9 @@ teams added is gitignored. docs/PRIVACY.md is the plain table; tools/site_privac
                 fake ones on purpose: they check that redaction works)
   b. identity   the owner's git name(s) and email(s) appear in no tracked file; no personal folder (C:\\Users\\<name>\\) outside tests;
                 no age phrase in the public sources (tools/web_public)
-  c. accounts   a real broker account id (this PC's heartbeat, or --state) only in the files that hold it today (the account code,
-                docs/CLAUDE_REFERENCE.md, two research hand-off logs, tests); no broker id at all in tools/web_public or the write-ups
+  c. accounts   a real broker account id (this PC's heartbeat, or --state) in no tracked file (2026-11-18: tests use fakes); no
+                real-looking full MFFU id in any tracked file (any case, MFFUEV... / MFFUSF...; fakes like ...000006016 are fine);
+                no broker id at all in tools/web_public or the write-ups. b also: no Tailscale address / tailnet name outside tests/
   d. ignore     every private path the teams added is gitignored, and no tracked file sits in a private folder
   e. history    (only with --history, ~4 min) no high-confidence key was ever committed, and no private file was ever added
 
@@ -27,8 +28,25 @@ from tools import site_privacy as SP  # noqa: E402
 RES: list = []
 # the files that hold a real broker account id today (2026-11-14). They are not published (the site scrub cuts any id that reaches a
 # page) and an id gives no access, but a NEW file with one fails here: review it, or mask it to the last 4 digits.
-ACCOUNT_FILES_OK = ("engine/account_rename.py", "engine/new_accounts.py", "docs/CLAUDE_REFERENCE.md",
-                    "research/handoff/2026-10-25/a5_logs/test_nt_outgoing.txt", "research/handoff/2026-10-26/MORNING_REPORT.md")
+# 2026-11-18 (night-priv): none any more. The two real ids were cut to "…NNNN" in the docs / code comments / logs and replaced by
+# fakes ending in the same 4 digits in the tests, so tests/ is no longer exempt either.
+ACCOUNT_FILES_OK: tuple = ()
+
+
+def looks_fake(digits: str) -> bool:
+    """a test / doc id's number is an obvious fake: 0000, 1234 or 9999 in it, or only 1-2 different digits (500000001, 000006016,
+    123456789, 55554444). A real MFFU number (9 digits) almost never is; a new real-looking one fails c until it is masked or faked."""
+    return "0000" in digits or "1234" in digits or "9999" in digits or len(set(digits)) <= 2
+
+
+def real_looking_ids(rel: str, t: str) -> list:
+    """firm-prefixed broker ids (any case, MFFUEV... / MFFUSF... / mffu...) with a 7+ digit number that is not an obvious fake"""
+    if "mffu" not in t.lower() and not any(f in t for f in SP.FIRMS):
+        return []
+    return [f"{rel}: {SP.masked(t[a:b])}" for a, b, _p, d, k in SP.acct_matches(t) if k == "broker account" and len(d) >= 7 and not looks_fake(d)]
+
+
+SAFE_NET = {"100.64.0.0"}            # the CGNAT range start in code (engine/live_site.py, server.py), not a device
 # every private path the teams added (where it is written) -> must be gitignored
 PRIVATE_PATHS = ("money_out/household.json", "money_out/agency.json", "money_out/index.json", "money_out_log.txt",          # money import, agency
                  "data/money_rules.json", "data/money_ledger.json", "data/money_report/state.json", "docs/reports/money_week_2026-11-15.md",
@@ -101,7 +119,7 @@ def backup_handle() -> str | None:
 
 
 def scan_tree(files, can_names, can_ids):
-    keys, names, folders, ids_where, web_ids, ages = [], [], [], {}, [], []
+    keys, names, folders, ids_where, web_ids, ages, real_ids, nets = [], [], [], {}, [], [], [], []
     low_names = [(lb, v.lower()) for lb, v in can_names]
     for rel, t in texts(files):
         is_test = rel.startswith("tests/")
@@ -112,6 +130,11 @@ def scan_tree(files, can_names, can_ids):
                     keys += [f"{rel}: {name}" for _m in rx.finditer(t)]
             if any(w in low for w in SP.KEY_WORDS):
                 keys += [f"{rel}: a key / password assignment" for _m in SP.KEY_ASSIGN_RX.finditer(t)]
+            if "100." in t:
+                nets += [f"{rel}: {SP.masked(m.group(0))}" for m in SP.TAILSCALE_IP_RX.finditer(t) if m.group(0) not in SP.SAFE_TAILSCALE_IPS | SAFE_NET]
+            if ".ts.net" in t:
+                nets += [f"{rel}: {SP.masked(m.group(0))}" for m in SP.TAILNET_RX.finditer(t)
+                         if m.group(2).lower() not in SP.SAFE_TAILNETS and not m.group(2).startswith(("your", "<"))]
             if "sers" in t or "/home/" in t:
                 folders += [f"{rel}: {SP.masked(m.group(0))}" for m in SP.USER_PATH_RX.finditer(t) if not SP._user_ok(m.group(2) or m.group(4) or "")]
         names += [f"{rel}: {lb}" for lb, v in low_names if v in low and not (v == backup_handle() and rel in HANDLE_FILES_OK)]
@@ -119,11 +142,12 @@ def scan_tree(files, can_names, can_ids):
             if v in t:
                 ids_where.setdefault(rel, 0)
                 ids_where[rel] += 1
+        real_ids += real_looking_ids(rel, t)
         if rel.startswith(("tools/web_public/", "research/writeups/")):
-            web_ids += [f"{rel}: {SP.masked(m.group(0))}" for m in SP.ACCT_ID_RX.finditer(t) if SP.acct_kind(m.group(1), m.group(2))]
+            web_ids += [f"{rel}: {SP.masked(t[a:b])}" for a, b, _p, _d, _k in SP.acct_matches(t)]
         if rel.startswith("tools/web_public/") and (" turn " in low or "birth" in low):
             ages += [f"{rel}: {SP.masked(m.group(0))}" for m in SP.AGE_RX.finditer(t)]
-    return keys, names, folders, ids_where, web_ids, ages
+    return keys, names, folders, ids_where, web_ids, ages, real_ids, nets
 
 
 def main() -> int:
@@ -139,17 +163,22 @@ def main() -> int:
     can_ids = [(lb, v) for lb, v in can if "broker" in lb]
     print(f"  {len(files)} tracked files; canaries: {len(can_names)} git names / emails, {len(can_ids)} broker ids"
           + ("" if can_ids else " (no heartbeat on this PC and no --state: the real-id part is skipped)"))
-    keys, names, folders, ids_where, web_ids, ages = scan_tree(files, can_names, can_ids)
+    keys, names, folders, ids_where, web_ids, ages, real_ids, nets = scan_tree(files, can_names, can_ids)
     check("a. no API key, token, private key, webhook or password assignment in a tracked file outside tests/", not keys, keys[:8])
     check("b. the owner's git name(s) and email(s) are in no tracked file (git metadata only)", not names, names[:8])
     check("b. no personal folder (C:\\Users\\<name>\\, /Users/<name>/) outside tests/", not folders, folders[:8])
     check("b. no age phrase (with the goal's date it gives the birthday away) in the public sources", not ages, ages[:6])
-    extra = sorted(f for f in ids_where if not (f.startswith("tests/") or f in ACCOUNT_FILES_OK))
+    check("b. no Tailscale address or tailnet name (they map the owner's devices) outside tests/", not nets, nets[:6])
+    extra = sorted(f for f in ids_where if f not in ACCOUNT_FILES_OK)
     if can_ids:
-        check("c. a real broker account id only in the files that hold it today (account code, the reference, two hand-off logs, tests)",
-              not extra, extra[:8])
+        check("c. this PC's real broker account ids are in no tracked file (tests included: they use fakes)", not extra, extra[:8])
     else:
         print("[SKIP] c. no real broker ids known on this machine (run with --state STATE.json)")
+    check("c. no real-looking full MFFU / broker id in any tracked file, tests included (last 4 digits only, or an obvious fake "
+          "such as MFFUEVBLDR000006016)", not real_ids, real_ids[:8])
+    check("c. the id detector sees lower-case and letters+digits ids, and tells fakes from real-looking ones",
+          real_looking_ids("x", "a mffuevbldr" + "602931234" + "x") == [] and len(real_looking_ids("x", "mffuevbldr" + "61829" + "3570 MFFUSFBLD25K" + "71839" + "2465")) == 2
+          and not real_looking_ids("x", "MFFUEVBLDR" + "000006016 MFFUEVRPD500000003 MFFU1234567 KXART-PICBAI18NOV26-50000000"))
     check("c. no broker account id at all in the public sources (tools/web_public) or the research write-ups", not web_ids, web_ids[:6])
     # d. .gitignore
     out = git("check-ignore", "--no-index", "-v", "--non-matching", *PRIVATE_PATHS)

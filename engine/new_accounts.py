@@ -124,7 +124,7 @@ _ACCT_RE = re.compile(r"OnConnectionStatus: account='([^']+)'")
 
 def log_names(folder: str | None = None) -> list:
     """Account Names NinjaTrader's own trace / log lists when a connection comes up ("Cbi.Account.OnConnectionStatus:
-    account='MFFUEVBLDR602936016' ..." for every account of the connection, at each start / reconnect): a new MFFU account
+    account='MFFUEVBLDR…6016' ..." for every account of the connection, at each start / reconnect): a new MFFU account
     shows up here even before it has a position file or a balance row. Sim / Playback accounts left out. Never raises."""
     try:
         from . import nt_log

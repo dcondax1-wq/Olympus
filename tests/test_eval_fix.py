@@ -25,11 +25,11 @@ def main():
     lg = os.path.join(t, "log")
     os.makedirs(lg)
     open(os.path.join(lg, "log.20261027.00000.txt"), "w").write(
-        "2026-10-27 06:12:04:100|3|1|OIF, 'PLACE;MFFUEVBLD602936016;MNQ 12-26;SELL;7;MARKET;0;0;DAY;;LE1793095920W924ME;;' "
-        "account does not exist 'MFFUEVBLD602936016'\n2026-10-27 06:40:06:678|3|1|OIF, 'CLOSEPOSITION;MFFUEVBLD602936016;MNQ 12-26;;' "
-        "account does not exist 'MFFUEVBLD602936016'\n")
+        "2026-10-27 06:12:04:100|3|1|OIF, 'PLACE;MFFUEVBLD000006016;MNQ 12-26;SELL;7;MARKET;0;0;DAY;;LE1793095920W924ME;;' "
+        "account does not exist 'MFFUEVBLD000006016'\n2026-10-27 06:40:06:678|3|1|OIF, 'CLOSEPOSITION;MFFUEVBLD000006016;MNQ 12-26;;' "
+        "account does not exist 'MFFUEVBLD000006016'\n")
     open(os.path.join(lg, "log.20261028.00000.txt"), "w").write(
-        "2026-10-28 04:01:27:342|1|8|Execution='660338100805_1' Instrument='MNQ 12-26' Account='MFFUEVBLDR602936016' Price=29987.75\n")
+        "2026-10-28 04:01:27:342|1|8|Execution='660338100805_1' Instrument='MNQ 12-26' Account='MFFUEVBLDR000006016' Price=29987.75\n")
     days = {"0000-00-00": -100.0, "2026-10-23": 0.0, "2026-10-26": 12.0, "2026-10-27": -965.2, "2026-10-28": -437.0}
     v = E.void_days(days, t)
     check("10-27 (every PLACE refused, nothing filled) is void; 10-28 (a real fill), 10-26 (no log) and the prior are kept",
@@ -57,7 +57,7 @@ def main():
     def mk(adapter):
         B = AB.AccountB.__new__(AB.AccountB)
         B.bot = types.SimpleNamespace(cfg={"adapter": adapter, "nt_folder": t}, clock=lambda: now)
-        B.name, B.label, B.notified, B.mx = "MFFUEVBLDR602936017", "ATLAS 25K", [], threading.RLock()
+        B.name, B.label, B.notified, B.mx = "MFFUEVBLDR000006017", "ATLAS 25K", [], threading.RLock()
         B.closes = [["2026-10-26", 1, 50.0, 11], ["2026-10-27", 2, -310.0, 12], ["2026-10-28", 3, 120.0, 13],
                     ["2026-10-29", 4, -40.0, 14]]
         B.ledger = [{"side": "exit", "entry_t": 12, "pnl": -310.0}, {"side": "exit", "entry_t": 13, "pnl": 120.0}]
