@@ -20,7 +20,7 @@
 html, body { background: var(--ag-night, #14110e); color: var(--ag-text, #f3ece0); margin: 0; }
 body { font: 400 var(--ag-fs-body, .9375rem)/1.45 var(--ag-sans, -apple-system, system-ui, sans-serif); -webkit-text-size-adjust: 100%; }
 .zs-main { max-width: 640px; margin: 0 auto; padding: calc(12px + env(safe-area-inset-top, 0px)) 16px calc(28px + env(safe-area-inset-bottom, 0px)); box-sizing: border-box; }
-.zs-nav { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.zs-nav { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
 .zs-nav a, .zs-nav button { display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 12px; color: var(--ag-soft, #cfc4b2); text-decoration: none;
   border: 1px solid var(--ag-line, #3a3228); background: transparent; font: inherit; cursor: pointer; }
 .zs-title { margin: 14px 0 0; font: 700 var(--ag-fs-h1, 1.875rem)/1.1 var(--ag-serif, Georgia, serif); color: var(--ag-gold-hi, #dcbd6e); letter-spacing: .06em; }
@@ -85,7 +85,7 @@ body { font: 400 var(--ag-fs-body, .9375rem)/1.45 var(--ag-sans, -apple-system, 
 </head>
 <body>
 <main class="zs-main" id="zeus">
-  <nav class="zs-nav" aria-label="Back"><a href="../gate/index.html" aria-label="Back to Home">&#9664; Home</a><a href="doors.html#zeus">All ZEUS apps</a><button type="button" id="refresh" aria-label="Refresh">Refresh</button></nav>
+  <nav class="zs-nav" aria-label="Back"><a href="../gate/index.html" aria-label="Back to Home">&#9664; Home</a><a href="doors.html#zeus">All ZEUS apps</a><a href="help.html" id="helpBtn">Help</a><button type="button" id="refresh" aria-label="Refresh">Refresh</button></nav>
   <h1 class="zs-title">ZEUS</h1>
   <p class="zs-sub">Trading: your accounts, today, and every trading page.</p>
 
