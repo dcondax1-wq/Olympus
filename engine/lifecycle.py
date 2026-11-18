@@ -574,6 +574,24 @@ def rapid_facts(ra, lane, now) -> dict | None:
             "best_day": max(dd.values()) if dd else 0.0, "acct": lane.spec.get("nt_account") or lane.id}
 
 
+def _extra_min_days(a) -> int:
+    """An extra account's minimum days: its rules' "min_days", else the sizer's two_week min_days (default 2: after the
+    target the sizer trades one 1-micro minimum-days trade on a later session; standing down before it would skip it)."""
+    if a.rules.get("min_days"):
+        return int(a.rules["min_days"])
+    try:
+        from . import sizing as SZ
+        tw = (_sizing_of(a) or {}).get("two_week") or {}
+        return int(tw.get("min_days", SZ.TW_DEFAULT["min_days"]) or 1)
+    except Exception:
+        return 2
+
+
+def _sizing_of(a) -> dict:
+    from . import multi_account as MA
+    return MA.sizing_cfg(getattr(a.router, "base_sizing", lambda: {})(), a.spec)
+
+
 def extra_facts(a, now) -> dict | None:
     from . import multi_account as MA
     from . import funded_life as FL
@@ -596,7 +614,7 @@ def extra_facts(a, now) -> dict | None:
     best_rule = _num(R.get("best_day"))
     return {"kind": "eval", "start": start, "target": float(R.get("target") or 3000.0), "balance": bal,
             "real_balance": _cash(a._broker(), a._broker_name(), R), "floor": bal - float(st.get("room") or 0.0),
-            "days_traded": len(dd), "min_days": int(R.get("min_days") or 1), "best_day_rule": best_rule,
+            "days_traded": len(dd), "min_days": _extra_min_days(a), "best_day_rule": best_rule,
             "best_day": max(dd.values()) if dd else 0.0, "acct": a.spec.get("nt_account") or a.id}
 
 

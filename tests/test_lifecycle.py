@@ -236,6 +236,8 @@ def fail_and_payout(tmp):
     bot, pushes, board = make_bot(os.path.join(tmp, "extra"), clock, {"accounts": accts, "account_b": None})
     by = {a.id: a for a in bot.accts.accounts}
     check("d. two extra paper accounts up (a 25K eval, a funded 50K)", set(by) == {"b25", "f50"}, list(by))
+    check("d. an extra eval waits for the sizer's 2nd day (its 1-micro minimum-days trade) before PASSED",
+          LC._extra_min_days(by["b25"]) == 2, LC._extra_min_days(by["b25"]))
     by["b25"].closes = [["2026-11-12", ts(2026, 11, 12, 10, 0), -400.0, 1], ["2026-11-13", ts(2026, 11, 13, 10, 0), -600.0, 2]]
     by["f50"].closes = [["2026-11-10", ts(2026, 11, 10, 10, 0), 1000.0, 3], ["2026-11-12", ts(2026, 11, 12, 10, 0), 900.0, 4],
                         ["2026-11-13", ts(2026, 11, 13, 10, 0), 900.0, 5]]
