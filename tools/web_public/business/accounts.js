@@ -68,7 +68,7 @@
     let src = isObj(home) ? 'site' : '', t = 0, lite = null;
     try {
       if (window.PC_FEED) {
-        lite = await window.PC_FEED.fetchLatest({});
+        lite = await window.PC_FEED.fetchLatest({ feedUrl: '../status_feed.json' });
         if (isObj(lite) && ((Array.isArray(lite.accounts) && lite.accounts.length) || isObj(lite.board))) { src = 'pc'; t = +lite.t || 0; }
       }
     } catch (e) { /* plan only */ }

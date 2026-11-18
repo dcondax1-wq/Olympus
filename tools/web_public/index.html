@@ -7,6 +7,7 @@
 <meta name="color-scheme" content="dark">
 <title>Zenith</title>
 <meta name="description" content="NQ futures paper bot on the LIT strategy: bot status, MFFU eval tracker, trades, replays, backtest results and the research lab. The previous strategy is kept in the Archive.">
+<link rel="preconnect" href="https://ntfy.sh" crossorigin><!-- speed: the PC live line (pc_feed.js -> ntfy.sh) skips its DNS + TLS wait -->
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/svg+xml" href="icons/icon.svg?v=p111031">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=p111031">
@@ -1087,7 +1088,7 @@ a.lnk { color: var(--accent-2); text-decoration: underline; text-decoration-colo
 <div class="space-css" aria-hidden="true"><i class="sc-stars"></i><i class="sc-stars sc-b"></i><i class="sc-mw"></i><i class="sc-sun"></i><i class="sc-moon"></i><i class="sc-earth"></i></div>
 <!-- the intro (2026-10-30): first open of the day only, skippable (tap / any key / Skip), never with reduced motion -->
 <div id="splash" aria-hidden="true"><canvas id="spCv"></canvas><div class="sp-orbs"><i style="--c:#c8a24a;--a0:0deg;--dl:0s"></i><i style="--c:#9c6b3c;--a0:120deg;--dl:.1s"></i><i style="--c:#e0b060;--a0:240deg;--dl:.2s"></i></div>
-  <div class="sp-in"><img src="icons/icon-512.png?v=p111031" alt="">
+  <div class="sp-in"><img src="zenith-icon.webp?v=1" alt="" width="132" height="132" decoding="async">
   <div class="sp-t">Zenith</div><div class="sp-s">Zlarior · ATLAS · NQ futures · read-only</div><div class="sp-line" id="spLine"></div><div class="sp-bar"><i></i></div></div>
   <button type="button" class="sp-skip" id="spSkip">Skip</button></div>
 <div class="app">
@@ -1162,8 +1163,10 @@ a.lnk { color: var(--accent-2); text-decoration: underline; text-decoration-colo
 <script src="zenith_pages.js?v=1" defer></script>
 <script src="zenith_nq.js?v=1" defer></script>
 <script src="embed.js?v=1" defer></script>
-<script src="olympus/polis-life.js?v=pl4" defer></script>
 <script>/* POLIS life on the Zenith home (QA round 6): the herald's banner under the status and the accounts, put back after every live redraw; hidden when the city file has no news */
-addEventListener('DOMContentLoaded', function () { var L = window.OLYMPUS_POLIS_LIFE, pg = document.getElementById('page'); if (L && L.keep && pg) L.keep(pg, 'herald', { label: 'The herald cries the latest news', when: function () { return typeof PAGE !== 'undefined' && PAGE === 'today'; } }); });</script>
+/* speed (2026-11-18): the herald's library (28 KB gzipped) arrives after the page has loaded, never in the deferred chain the first view waits on */
+addEventListener('load', function () { setTimeout(function () { var s = document.createElement('script'); s.src = 'olympus/polis-life.js?v=pl4'; s.async = true;
+  s.onload = function () { var L = window.OLYMPUS_POLIS_LIFE, pg = document.getElementById('page'); if (L && L.keep && pg) L.keep(pg, 'herald', { label: 'The herald cries the latest news', when: function () { return typeof PAGE !== 'undefined' && PAGE === 'today'; } }); };
+  document.head.appendChild(s); }, 0); });</script>
 </body>
 </html>
