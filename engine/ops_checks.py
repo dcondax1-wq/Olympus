@@ -1324,6 +1324,16 @@ def calendar_due(state: dict, now) -> bool:
     return e.hour * 60 + e.minute >= 16 * 60 + 35 and state.get("last_calendar_day") != e.date().isoformat()
 
 
+def weekly_review_due(state: dict, now) -> bool:
+    """ZEUS this week (tools/weekly_review.py): Friday from 16:15 ET (the bot is flat by 15:55; the owner's review is 16:30),
+    or Saturday / Sunday when Friday's was missed; once per ISO week."""
+    e = _et(now)
+    wk = "%d-W%02d" % e.isocalendar()[:2]
+    if state.get("weekly_review_wk") == wk:
+        return False
+    return (e.weekday() == 4 and e.hour * 60 + e.minute >= 16 * 60 + 15) or e.weekday() >= 5
+
+
 def backlog_notices(state: dict, now, runner=None) -> list:
     """Sunday: re-check the research watch-list once per ISO week (tools/backlog_recheck.py, ~10-90 s; result in
     logs/backlog_check.json) and return a notice for each lead that crossed its adopt bar (key per lead + data version, so
@@ -1466,6 +1476,14 @@ def tick(now=None, ctx=None, state=None, sender=None, state_path: str = STATE_PA
             out += alerts_plus.ops_tick(ctx, state, now, lambda p: send(p, state, sender=sender), real)
         except Exception as e:
             ops_log(f"alerts plus failed: {e.__class__.__name__}: {scrub(str(e), 120)}")
+        if do_backup and real and weekly_review_due(state, now):
+            state["weekly_review_wk"] = "%d-W%02d" % _et(now).isocalendar()[:2]   # once a week, even when it fails
+            try:                       # business/week.json + the board event "Weekly review ready" (tools/weekly_review.py)
+                from tools import weekly_review
+                wr = weekly_review.pc_run(now=now, log=ops_log)
+                out.append({"key": "weekly_review", **wr})
+            except Exception as e:
+                ops_log(f"weekly review failed: {e.__class__.__name__}")
         if do_backup and backup_due(state, now):
             b = backup(now=now)
             r = rotate_logs(now=now)
