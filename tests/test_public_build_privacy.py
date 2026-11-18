@@ -314,8 +314,13 @@ def ntfy():
             "accounts": [{"id": "lit", "name": f"MFFU 50K ({b1})", "conn": {"present": True, "host": "PLANT-PC"}, "eval": {"balance": 49313.54, "room": 1145.34}}]}
     snap = {"t": t + 60, "hb": {"host": "PLANT-PC", "running": True}, "hb_t": t, "hb_age": 60, "hb_src": "pc_hb", "server": True, "nt": True,
             "market_open": True, "entry_hours": True, "mode": "LIVE", "live": live}
-    L = PR.lite(snap)
+    snap["hb"]["life"] = {"acc": {f"x:{b1}": {"label": f"Zlarior {b1}", "stage": "eval", "bal": 1}}, "ev": [{"t": t, "stage": "eval", "title": f"on {b1}"}]}
+    L, exts = PR.posts(snap)
     raw = json.dumps(L, ensure_ascii=False)
+    rawx = json.dumps(exts, ensure_ascii=False)
+    check("e. the ext posts (le-live-ext: brd, life, mf, ...) pass the same privacy pass: no PC name, broker id (life keys too), folder, email",
+          exts and "PLANT-PC" not in rawx and b1 not in rawx and F["email"] not in rawx and "Jane Planted" not in rawx
+          and all(len(json.dumps(e, ensure_ascii=False).encode("utf-8")) <= PR.MAX_STATUS_BYTES for e in exts), rawx[:600])
     check("e. the public status has no PC name (host) anywhere", "PLANT-PC" not in raw and '"host"' not in raw, raw[:400])
     check("e. the public status has no full broker id, no personal folder, no email", b1 not in raw and "Jane Planted" not in raw and F["email"] not in raw, raw[:600])
     check("e. the eval numbers the site needs stay (balance, drawdown left, the verdict, the last trade)",

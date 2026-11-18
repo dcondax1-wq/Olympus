@@ -1403,7 +1403,7 @@
     for (const line of String(txt || '').split('\n')) {
       let m = null, x = null;
       try { m = JSON.parse(line); x = JSON.parse(m.message); } catch (_) { continue; }
-      const kr = isObj(x) && x.kind === 'le-live' ? x.kalshi_rewards : null;
+      const kr = !isObj(x) ? null : x.kind === 'le-live' ? x.kalshi_rewards : x.kind === 'le-live-ext' && isObj(x.x) ? x.x.kalshi_rewards : null;   // the old single post or the ext post (2026-11-18 split)
       if (rwOk(kr) && (!best || String(kr.updated || '') >= String(best.updated || ''))) best = kr;
     }
     if (best && (!RW.j || String(best.updated || '') >= String(RW.j.updated || ''))) { RW.j = best; RW.src = 'pc'; rwShow(); }

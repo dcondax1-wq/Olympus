@@ -216,8 +216,24 @@ def reporter():
         check("status: no secret, no confirm phrase, no push key, no local path",
               not re.search(r"ghp_|I ACCEPT|push_pk|BPUBLICKEY|C:\\\\Users|token", raw), re.findall(r"ghp_\w+|push_pk|C:\\\\Users", raw))
         sp = h.posts(feed["topic"])
-        check("status: posted once to the public status topic with priority min, as the plain body",
-              len(sp) == 1 and sp[0]["h"].get("Priority") == "min" and json.loads(sp[0]["body"])["t"] == now - 120, sp)
+        kinds = [json.loads(c["body"]).get("kind") for c in sp]
+        check("status: the core posted once to the public status topic with priority min, as the plain body, LAST (since=latest = the core); "
+              "the ext post(s) just before it",
+              kinds[-1] == "le-live" and kinds.count("le-live") == 1 and 1 <= kinds.count("le-live-ext") <= R.EXT_PARTS
+              and all(c["h"].get("Priority") == "min" for c in sp) and json.loads(sp[-1]["body"])["t"] == now - 120
+              and all(len(c["body"].encode("utf-8")) <= R.MAX_STATUS_BYTES for c in sp), kinds)
+        shutil.copytree(b.work, b.work + ".keep")           # the cadence runs below must not change the later checks' state
+        h2 = FakeHTTP()
+        b.run(h2, now + 900)
+        k2 = [json.loads(c["body"]).get("kind") for c in h2.posts(feed["topic"])]
+        h3 = FakeHTTP()
+        b.run(h3, now + 1800)
+        k3 = [json.loads(c["body"]).get("kind") for c in h3.posts(feed["topic"])]
+        check("status: the ext goes every 2nd run (29 min) when its news is the same; the core every run, carrying xt",
+              k2 == ["le-live"] and k3[-1] == "le-live" and "le-live-ext" in k3
+              and json.loads(h2.posts(feed["topic"])[-1]["body"]).get("xt") == now, (k2, k3))
+        shutil.rmtree(b.work)
+        shutil.move(b.work + ".keep", b.work)
         check("first run with trades: what is there is only recorded (no trade push)", not [c for c in h.posts(cfg["topic"]) if "trade" in c["h"].get("Title", "")],
               h.posts(cfg["topic"]))
         check("a fresh first run with a healthy bot pushes nothing", not h.posts(cfg["topic"]), h.posts(cfg["topic"]))
@@ -557,9 +573,22 @@ const newer = { ...site, live: { pc: { t: lite.t + 100 } } };
 out.notOlder = F.overlayHome(newer, lite) === newer;
 out.mergeSiteNewer = F.mergeBoard({ data_t: lite.t + 10, lit: { room: 7 } }, lite.board).lit.room;
 out.toLive = F.toLive(lite, site.board).board.map;
+// the 2026-11-18 split: a core + its ext post(s) merge into the old single-post shape; old / stale exts and core-owned keys never win
+const rt = lite.reporter.t;
+const ext = (x, part, r) => ({ v: 1, kind: 'le-live-ext', src: 'pc_report', t: lite.t, rt: r, part, of: 2, x });
+const core = { ...lite };
+delete core.brd; delete core.mf;
+const nd2 = [line(ext({ brd: { ev: [[1, 'k', 'atlas', 'old']] }, mf: { a: ['old'] } }, 0, rt - 900), 1),
+  line(ext({ brd: { ev: [[2, 'k', 'atlas', 'new']] }, glance: { bots: ['g'] }, board: { lit: { room: 1 } }, t: 5 }, 0, rt - 30), 2),
+  line(ext({ kalshi_rewards: { net: 2 }, learn: { n: 3 } }, 1, rt - 30), 3), line(ext({ lab: { stale: 1 } }, 2, rt - 3 * 3600), 4),
+  line(core, 5)].join('\n');
+const mg = F.parseLatest(nd2);
+out.split = { brdNew: mg.brd.ev[0][3], mfFromOlder: mg.mf == null, glance: mg.pc.glance.bots[0], room: mg.board.lit.room, t: mg.t, kr: mg.kalshi_rewards.net,
+  learn: mg.learn.n, stale: mg.lab == null, extT: mg.ext_t, coreOnly: F.parseLatest([line(core, 5)].join('\n')).brd == null,
+  old: JSON.stringify(F.parseLatest([line(lite, 3)].join('\n'))) === JSON.stringify(lite), extOnly: F.parseLatest(line(ext({ brd: {} }, 0, rt), 1)) };
 const calls = [];
 const fake = async (u) => { calls.push(u); if (u.endsWith('status_feed.json')) return { ok: true, json: async () => ({ ntfy: 'https://ntfy.sh', topic: 'olympus-nq-status-0123456789abcdef' }) };
-  if (u.includes('since=latest')) return { ok: false, status: 400 }; return { ok: true, text: async () => nd }; };
+  if (u.includes('since=70m')) return { ok: false, status: 400 }; return { ok: true, text: async () => nd }; };
 out.fetched = (await F.fetchLatest({ fetch: fake })) ? (await F.fetchLatest({ fetch: fake })).t : null;
 out.fetchCalls = calls.slice(0, 3);
 out.fetchFail = await F.fetchLatest({ fetch: async () => { throw new Error('offline'); } });
@@ -587,9 +616,15 @@ def node_runs(node):
         lite = json.load(open(lite_path, encoding="utf-8"))
         check("parseLatest: the newest PC status wins, junk / other kinds / t null are ignored", o["parsed"]["t"] == lite["t"] and o["parsed"]["board"]["lit"]["room"] == 2000
               and o["parsedEmpty"] is None, o["parsed"].get("t"))
-        check("feedUrls: since=latest then a 30-minute window; http / odd topics refused",
-              o["urls"] == ["https://ntfy.sh/olympus-nq-status-0123456789abcdef/json?poll=1&since=latest",
-                            "https://ntfy.sh/olympus-nq-status-0123456789abcdef/json?poll=1&since=30m"] and o["badUrls"] == [[], [], []], o["urls"])
+        check("feedUrls: a 70-minute window (core + ext) then since=latest (the core alone); http / odd topics refused",
+              o["urls"] == ["https://ntfy.sh/olympus-nq-status-0123456789abcdef/json?poll=1&since=70m",
+                            "https://ntfy.sh/olympus-nq-status-0123456789abcdef/json?poll=1&since=latest"] and o["badUrls"] == [[], [], []], o["urls"])
+        sp = o["split"]
+        check("split merge: the newest ext per part laid into the core (brd, glance -> pc.glance, kalshi_rewards, learn); per part the "
+              "newest ext wins whole (an older part 0 is not mixed in, so its mf is not used); an ext over 2 h older is ignored; "
+              "ext never overrides core keys (board, t); core alone / the old single post come back as they were; ext alone -> null",
+              sp["brdNew"] == "new" and sp["mfFromOlder"] and sp["glance"] == "g" and sp["room"] == 2000 and sp["t"] == lite["t"] and sp["kr"] == 2
+              and sp["learn"] == 3 and sp["stale"] and sp["extT"] == lite["reporter"]["t"] - 30 and sp["coreOnly"] and sp["old"] and sp["extOnly"] is None, sp)
         h = o["home"]
         check("overlayHome: the PC's numbers over a 5-day-old home.json; the site's map / progress / trades / extra card keys kept; input unchanged",
               h["pcT"] == lite["t"] and h["running"] is True and h["verdict"] == "TRADING" and h["map"] == {"levels": [1, 2]} and h["progress"]
@@ -598,8 +633,8 @@ def node_runs(node):
               o["canon"]["room"] == 2000 and o["canon"]["t"] == lite["t"] and o["canon"]["age"] == 120 and "2 minutes" in o["canon"]["line"], o["canon"])
         check("an older PC status never replaces newer site numbers", o["notOlder"] is True and o["mergeSiteNewer"] == 7)
         check("toLive keeps the site's board sections for board.js", o["toLive"] == {"levels": [1, 2]})
-        check("fetchLatest: status_feed.json, then ntfy (since=latest refused -> the 30-minute window); offline -> null",
-              o["fetched"] == lite["t"] and o["fetchCalls"][0] == "status_feed.json" and "since=latest" in o["fetchCalls"][1] and "since=30m" in o["fetchCalls"][2]
+        check("fetchLatest: status_feed.json, then ntfy (the 70-minute window refused -> since=latest); offline -> null",
+              o["fetched"] == lite["t"] and o["fetchCalls"][0] == "status_feed.json" and "since=70m" in o["fetchCalls"][1] and "since=latest" in o["fetchCalls"][2]
               and o["fetchFail"] is None, o)
     finally:
         b.cleanup()

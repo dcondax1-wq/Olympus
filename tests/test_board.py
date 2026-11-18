@@ -151,10 +151,20 @@ def part_c():
     from tools import pc_report
     snap = {"t": NOW, "hb_t": NOW - 60, "live": {}, "hb": {}, "server": True, "nt": True, "market_open": True, "mode": "paper"}
     try:
-        lt = pc_report.lite(snap)
-        check("c. pc_report.lite carries 'brd' and stays under 3,900 bytes", "brd" in lt and len(json.dumps(lt, separators=(",", ":"))) <= 3900, list(lt))
+        core, exts = pc_report.posts(snap)
+        lt = pc_report.merged(snap)
+        check("c. the PC's status carries 'brd' in its ext post (le-live-ext, merged back), every post under 3,900 bytes",
+              "brd" in lt and "brd" not in core and all(len(json.dumps(x, separators=(",", ":"))) <= 3900 for x in [core, *exts]), list(lt))
+        from tools import board as T
+        msgs = [{"event": "message", "time": NOW, "message": json.dumps(x)} for x in [*exts, core]]
+        nd = "\n".join(json.dumps(m) for m in msgs)
+        got = T.fetch_lite(get=lambda url: (200, nd))
+        old = T.fetch_lite(get=lambda url: (200, json.dumps({"event": "message", "time": NOW, "message": json.dumps(lt)})))
+        check("c. tools/board.py fetch_lite: core + ext merged ('brd' back at the top); the old single post still read as it was",
+              got and got.get("brd") == lt["brd"] and got["t"] == core["t"] and old == lt and T.fetch_lite(get=lambda url: (500, "")) is None,
+              (list(got or {}), list(old or {})))
     except Exception as e:  # noqa: BLE001
-        check("c. pc_report.lite carries 'brd' and stays under 3,900 bytes", False, e)
+        check("c. the PC's status carries 'brd' (ext post) and fetch_lite merges it", False, e)
     try:
         from engine import day_inbox as DI
     except Exception as e:  # noqa: BLE001
