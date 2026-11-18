@@ -47,7 +47,7 @@ AREAS = {
     "money": ["money_machines", "digital_products", "money_door", "payout_plan", "payout_coach", "biz_models", "business_pages", "business_goals"],
     "trading": ["trading_page", "edge_chip"],                                                      # the Trading page (tools/web_public/trading/, 2026-11-17)
     "fleet": ["fleet_mffu", "copy_accounts", "firms", "fleet", "rapid", "rapid25", "news_official", "accounts_cli", "onboard"],                 # team E 2026-11-16: copy accounts + firm rules
-    "board": ["board", "payout_coach", "bots_back", "live_link", "edge_chip"],                                       # night-board 2026-11-17: the Board (docs/BOARD.md)
+    "board": ["board", "payout_coach", "bots_back", "live_link", "edge_chip", "zeus_hub"],                                       # night-board 2026-11-17: the Board (docs/BOARD.md)
 }
 # suites too long for one budget run BY PARTS, each its own row and budget (night team D 2026-11-16: the whole kit walk, every app +
 # power + tiers + more in one browser, is the longest browser suite); a part is "<suite>:<label>" = python -m tests.test_<suite> <args>

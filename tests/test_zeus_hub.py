@@ -1,0 +1,252 @@
+"""ZEUS, the trading door's landing (tools/web_public/hub/zeus.html + zeus.js, 2026-11-18, night-zeushub).
+  a. the page: AGORA look, title ZEUS, no innerHTML / outside address / write, the big buttons point at pages that exist, Safety is an
+     explanation (Tailscale /safety/, never a link), Add an account explains ADD_ACCOUNT.bat + the Start page cards, the footer
+  b. the door: olympus/doors.js zeus.home = hub/zeus.html (both copies equal), homeOf(); hub/doors.js shows the landing link first
+  c. node, the pure part: entry windows (LIT 02:00-15:30; ATLAS MACD / EMA not Mondays / S/R; weekend, Thanksgiving closed, the
+     Nov 27 early close ends entries 13:00; the PC's own window wins), news notes (7 days), PC line (fresh / silent / never),
+     account rows from the real MFFU_MODEL.cards (matched by PC id: the 25K #2 eval on its own row, ATLAS funded = payout text)
+  d. Chromium 390 x 844 (ntfy routed to a fixture): PC reported, 3 account rows with $ + chips + today's $, the edge chip, two window
+     lines, the buttons; a silent feed + stale board copy = the red PC SILENT strip; no sideways scroll, 44 px taps, no page errors
+    python -X utf8 -m tests.test_zeus_hub        (ZEUS_NO_BROWSER=1 skips d; run d only under flock -w 2400 /tmp/olympus_browser.lock)
+"""
+from __future__ import annotations
+
+import functools
+import glob
+import http.server
+import json
+import os
+import re
+import subprocess
+import sys
+import threading
+import time
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+WEB = os.path.join(ROOT, "tools", "web_public")
+HUB = os.path.join(WEB, "hub")
+RES: list = []
+
+
+def check(name, ok, info=""):
+    RES.append(bool(ok))
+    print(("[PASS] " if ok else "[FAIL] ") + name + ("" if ok else f"  -> {str(info)[:400]}"))
+
+
+def rd(*p):
+    with open(os.path.join(*p), encoding="utf-8") as f:
+        return f.read()
+
+
+def node(body):
+    js = json.dumps
+    script = (f"const Z = require({js(os.path.join(HUB, 'zeus.js'))}); const MM = require({js(os.path.join(WEB, 'business', 'mffumodel.js'))});"
+              f"const BM = require({js(os.path.join(WEB, 'board', 'boardmodel.js'))}); const PC = require({js(os.path.join(WEB, 'business', 'payoutcoach.js'))});"
+              f"const D = require({js(os.path.join(WEB, 'olympus', 'doors.js'))}); const out = (x) => console.log('@@' + JSON.stringify(x));\n"
+              "try { " + body + " } catch (e) { console.log('@@' + JSON.stringify({ error: String(e && e.stack || e) })); }")
+    p = subprocess.run(["node", "-e", script], capture_output=True, text=True, timeout=60)
+    m = [ln for ln in p.stdout.splitlines() if ln.startswith("@@")]
+    return json.loads(m[-1][2:]) if m else {"error": (p.stderr or p.stdout)[-400:]}
+
+
+def lite_fixture(now):
+    """A PC core post: Zlarior 50K eval (board card lit + its account row = one account), ATLAS funded 25K, the new 25K #2 eval."""
+    return {"v": 1, "kind": "le-live", "lite": True, "t": now - 240, "reporter": {"t": now - 240},
+            "board": {"t": now - 240, "data_t": now - 240,
+                      "lit": {"name": "Zlarior", "plan": "MFFU Builder 50K", "status": "open", "balance": 49192.78, "floor": 48168.2, "room": 1024.58,
+                              "to_target": 3807.22, "today_pnl": 120.0},
+                      "atlas": {"name": "ATLAS", "plan": "MFFU Builder 25K", "status": "funded", "stage": "funded", "balance": 25080.0, "floor": 24000.0,
+                                "room": 1080.0, "today_pnl": -40.0}},
+            "accounts": [{"id": "mffu50k_eval", "kind": "eval", "name": "Zlarior", "plan": "MFFU Builder 50K",
+                          "eval": {"balance": 49192.78, "floor": 48168.2, "room": 1024.58, "to_target": 3807.22, "today": 120.0}},
+                         {"id": "b25k_2", "kind": "eval", "name": "Zlarior 25K #2", "plan": "MFFU Builder 25K",
+                          "eval": {"balance": 25210.0, "floor": 24000.0, "room": 1210.0, "to_target": 1290.0, "today": 210.0}}],
+            "eh": {"d": "2026-11-17", "z": ["G", 3.8, 3.9], "a": ["G", 1.9, 1.8, "2026-11-17"], "t": now - 3600}}
+
+
+def part_a():
+    html, js = rd(HUB, "zeus.html"), rd(HUB, "zeus.js")
+    check("a. files: hub/zeus.html + hub/zeus.js", os.path.isfile(os.path.join(HUB, "zeus.html")) and os.path.isfile(os.path.join(HUB, "zeus.js")))
+    check("a. AGORA look: data-theme agora, the kit's agora.css, viewport-fit=cover, title ZEUS",
+          'data-theme="agora"' in html and "olympus/agora.css" in html and "viewport-fit=cover" in html and "<title>ZEUS</title>" in html)
+    check("a. text only: no innerHTML / insertAdjacentHTML / document.write / eval, no outside address",
+          not re.search(r"innerHTML|insertAdjacentHTML|document\.write|\beval\(", js) and not re.search(r"https?://", js)
+          and not re.search(r'(src|href)="https?://', html))
+    methods = re.findall(r"method:\s*'([A-Z]+)'", js)
+    check("a. read only: no POST / PUT / DELETE (only GET + one HEAD for the weekly review)", methods == ["HEAD"] and "localStorage" not in js, methods)
+    check("a. data: PC_FEED.fetchLatest + ../board/board.json + ../business/accounts.json, Board pick + MFFU cards, ../pythia/events.json",
+          "PC_FEED.fetchLatest" in js and "'../board/board.json'" in js and "'../business/accounts.json'" in js and "BM.pick(" in js and "MM.cards(" in js
+          and "'../pythia/events.json'" in js)
+    order = [m for m in re.findall(r'<script src="([^"?]+)', html)]
+    check("a. scripts: pc_feed, payoutcoach, mffumodel, boardmodel (after mffumodel), edge_chip, zeus.js last",
+          order == ["../pc_feed.js", "../business/payoutcoach.js", "../business/mffumodel.js", "../board/boardmodel.js", "../edge_chip.js", "zeus.js"], order)
+    check("a. the ZEUS edge chip mounts here (data-edge-chip, ../edge.json)", 'id="edgeChip" data-edge-chip data-edge-src="../edge.json"' in html)
+    hrefs = re.findall(r'class="zs-btn"(?: id="\w+")? href="([^"]+)"', html)
+    want = ["../business/mffu.html", "../trading/", "../index.html#/brain", "../board/", "../business/lab.html", "../business/accounts.html#coach", "../business/week.html"]
+    check("a. the big buttons in order: My accounts (MFFU view), Trades & calendar, Brain, Board, ZEUS Lab, Payouts, Weekly review", hrefs == want, hrefs)
+
+    def exists(h):
+        p = h.split("#")[0].replace("../", "")
+        p = p + "index.html" if p.endswith("/") else p
+        return os.path.isfile(os.path.join(WEB, p))
+    missing = [h for h in want[:-1] if not exists(h)]
+    check("a. every button's page exists (Payouts = accounts.html#coach, the coach card)", not missing and 'id="coach"' in rd(WEB, "business", "accounts.html"), missing)
+    check("a. Weekly review: hidden until business/week.html answers (a HEAD check)", 'id="btnWeek" href="../business/week.html" hidden' in html and "method: 'HEAD'" in js)
+    safety = html[html.index('id="safety"'):html.index('id="addAcct"')]
+    check("a. Safety (pause / flatten) explains the PC's private Tailscale link + /safety/, never a link to it, never arms",
+          "Tailscale" in safety and "/safety/" in safety and "href" not in safety and "never arm" in safety.replace("can never arm", "never arm"), safety[:200])
+    add = html[html.index('id="addAcct"'):]
+    check("a. Add an account explains ADD_ACCOUNT.bat and the Start page cards, added NOT armed", "ADD_ACCOUNT.bat" in add and "Start page" in add and "NOT armed" in add)
+    check("a. the footer: ZEUS = Zlarior (LIT) + ATLAS + the engine", "ZEUS = Zlarior (LIT) + ATLAS + the engine" in html)
+    check("a. top to bottom: Right now (PC + accounts + edge chip), Today, Open (buttons), footer",
+          html.index('id="pc"') < html.index('id="accts"') < html.index('id="edgeChip"') < html.index('id="wins"') < html.index('id="notes"')
+          < html.index('class="zs-btns"') < html.index('class="zs-foot"'))
+
+
+def part_b():
+    a, b = rd(WEB, "olympus", "doors.js"), rd(ROOT, "web_next", "js", "next", "doors.js")
+    check("b. olympus/doors.js = web_next/js/next/doors.js", a == b)
+    r = node("out({ home: D.door('zeus').home, h: D.homeOf('zeus'), m: D.homeOf('money'), n: D.door('zeus').items.length })")
+    check("b. the ZEUS door's home is hub/zeus.html; other doors land on the Doors page", r.get("home") == "hub/zeus.html" and r.get("h") == "hub/zeus.html"
+          and r.get("m") == "hub/doors.html#money" and 5 <= (r.get("n") or 0) <= 8, r)
+    dj = rd(HUB, "doors.js")
+    check("b. the Doors page shows the door's landing first (dr.home -> a big 'Open ZEUS' row)", "if (dr.home)" in dj and "'Open ' + dr.title.split(' ')[0]" in dj
+          and dj.index("if (dr.home)") < dj.index("dr.items.forEach"))
+
+
+def part_c():
+    ev = os.path.join(WEB, "pythia", "events.json")
+    plan = os.path.join(WEB, "business", "accounts.json")
+    now = int(time.time())
+    r = node(f"""
+      const ev = require({json.dumps(ev)}), cal = Z.calendar(ev), T = (s) => Date.parse(s) / 1000;
+      const L = (k, s, lite) => Z.windowLine(k, T(s), cal, lite || null).text;
+      const pcLite = {{ board: {{ lit: {{ window: {{ open: false, open_t: T('2026-11-19T07:00:00Z'), close_t: T('2026-11-19T20:30:00Z') }} }} }} }};
+      out({{ pre: L('lit', '2026-11-18T06:00:00Z'), open: L('lit', '2026-11-18T15:00:00Z'), after: L('lit', '2026-11-18T21:00:00Z'),
+             thx: L('lit', '2026-11-26T15:00:00Z'), early: L('lit', '2026-11-27T17:50:00Z'), sat: L('lit', '2026-11-21T15:00:00Z'),
+             monA: L('atlas', '2026-11-23T08:30:00Z'), tueA: L('atlas', '2026-11-24T10:30:00Z'), lateA: L('atlas', '2026-11-24T17:30:00Z'),
+             pc: Z.windowLine('lit', T('2026-11-18T21:00:00Z'), cal, pcLite), closed: cal.closed['2026-11-26'] === true, ec: cal.early['2026-11-27'],
+             notes: Z.notes(ev, T('2026-11-24T12:00:00Z'), 7), none: Z.notes(null, T('2026-11-24T12:00:00Z'), 7) }});
+    """)
+    check("c. Zlarior: before 02:00 'Next: Today 02:00-15:30', inside 'Open now until 15:30', after 15:30 'Tomorrow'",
+          str(r.get("pre", "")).startswith("Next: Today 02:00-15:30 ET") and str(r.get("open", "")).startswith("Open now: until 15:30 ET")
+          and str(r.get("after", "")).startswith("Next: Tomorrow 02:00-15:30 ET"), r)
+    check("c. Thanksgiving closed -> Fri Nov 27, where the 13:15 early close ends entries at 13:00; Saturday -> Monday",
+          r.get("closed") is True and r.get("ec") == 795 and str(r.get("thx", "")).startswith("Next: Tomorrow 02:00-13:00 ET")
+          and str(r.get("early", "")).startswith("Open now: until 13:00 ET") and str(r.get("sat", "")).startswith("Next: Mon Nov 23 02:00-15:30 ET"), r)
+    check("c. ATLAS: Monday 03:30 = MACD open (EMA skips Mondays), Tuesday 05:30 = EMA open until 09:30, 12:30 = tomorrow's MACD 02:00",
+          str(r.get("monA", "")).startswith("Open now: MACD until 05:00") and str(r.get("tueA", "")).startswith("Open now: EMA until 09:30")
+          and str(r.get("lateA", "")).startswith("Next: Tomorrow MACD 02:00-05:00 ET"), r)
+    pc = r.get("pc") or {}
+    check("c. the PC's own window wins when it sent one ('from your PC')", "from your PC" in str(pc.get("sub")) and "02:00-15:30" in str(pc.get("text")), pc)
+    nt = (r.get("notes") or {}).get("items") or []
+    kinds = [x.get("kind") for x in nt]
+    check("c. notes, next 7 days from Nov 24: Thanksgiving closed + the Nov 27 early close, in day order; no calendar -> null (skipped)",
+          "closed" in kinds and "early" in kinds and [x["day"] for x in nt] == sorted(x["day"] for x in nt) and r.get("none") is None, nt)
+
+    lite = lite_fixture(now)
+    r2 = node(f"""
+      const plan = require({json.dumps(plan)}), lite = {json.dumps(lite)}, now = {now};
+      const cards = MM.cards({{ lite, plan, board: null, coach: PC, today: Z.et(now).day }}, now);
+      const rows = cards.map((c) => Z.acctRow(c, now));
+      const fresh = Z.pcLine(BM, BM.pick({{ lite, plan }}, now), now);
+      const copy = {{ kind: 'olympus-board', src: 'cloud', t: now - 3600, pc: {{ t: now - 10 * 86400 }}, accounts: [] }};
+      const old = Z.pcLine(BM, BM.pick({{ site: copy, plan }}, now), now), never = Z.pcLine(BM, BM.pick({{ plan }}, now), now);
+      out({{ rows, fresh, old, never }});
+    """)
+    rows = {x["key"]: x for x in r2.get("rows") or []}
+    z, a, f = rows.get("zlarior") or {}, rows.get("atlas") or {}, rows.get("fresh25") or {}
+    check("c. rows matched by PC id: Zlarior 50K eval, ATLAS funded, the 25K #2 eval on its OWN row; the Rapid plan (not bought) left out; no BLITZ",
+          set(rows) == {"zlarior", "atlas", "fresh25"} and z.get("balance") == 49192.78 and f.get("balance") == 25210.0 and a.get("balance") == 25080.0, list(rows))
+    check("c. eval rows: '$ to pass' + today's $ (+$120 / +$210); chips Evaluation",
+          z.get("goal") == "$3,807 to pass" and z.get("todayText") == "Today: +$120" and f.get("goal") == "$1,290 to pass" and f.get("todayText") == "Today: +$210"
+          and z.get("cls") == "eval" and z.get("chip") == "Evaluation", (z, f))
+    check("c. ATLAS funded: chip Sim Funded, the payout coach's sentence, today -$40", a.get("cls") == "funded" and a.get("chip") == "Sim Funded"
+          and re.search(r"PAYOUT READY|Not yet|MFFU would pay|Type the balance", str(a.get("goal"))) and a.get("todayText") == "Today: -$40", a)
+    fr, old, nev = r2.get("fresh") or {}, r2.get("old") or {}, r2.get("never") or {}
+    check("c. PC line: 'PC reported 4 min ago' (fresh feed), red PC SILENT on a 10-day-old copy, 'never reported' with nothing",
+          fr.get("text") == "PC reported 4 min ago" and fr.get("silent") is False and old.get("silent") is True and "10 days ago" in str(old.get("text"))
+          and nev.get("silent") is True and "never" in str(nev.get("text")), (fr, old, nev))
+
+
+class Quiet(http.server.SimpleHTTPRequestHandler):
+    def log_message(self, *a):
+        pass
+
+
+def part_d():
+    try:
+        from playwright.sync_api import sync_playwright
+    except Exception as e:  # noqa: BLE001
+        print(f"[SKIP] d. browser (playwright missing: {e})")
+        return
+    srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), functools.partial(Quiet, directory=WEB))
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    base = f"http://127.0.0.1:{srv.server_address[1]}/hub/zeus.html"
+    now = int(time.time())
+    msg = json.dumps({"id": "x1", "time": now - 240, "event": "message", "topic": "t", "message": json.dumps(lite_fixture(now))})
+    stale = {"v": 1, "kind": "olympus-board", "t": now - 3600, "src": "cloud", "pc": {"t": now - 10 * 86400, "via": "heartbeat", "stale": True},
+             "accounts": [], "events": []}
+    try:
+        with sync_playwright() as pw:
+            exe = next(iter(sorted(glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome"))), None)
+            br = pw.chromium.launch(**({"executable_path": exe} if exe else {}))
+            ctx = br.new_context(viewport={"width": 390, "height": 844}, has_touch=True, is_mobile=True)
+            errs: list = []
+            p = ctx.new_page()
+            p.set_default_timeout(30000)
+            p.on("pageerror", lambda e: errs.append(str(e)))
+            p.route("**/ntfy.sh/**", lambda r: r.fulfill(status=200, content_type="application/x-ndjson", body=msg + "\n"))
+            p.goto(base)
+            p.wait_for_function("window.ZEUS_PAGE && window.ZEUS_PAGE.ready")
+            pc = p.evaluate("(() => { const b = document.getElementById('pc'); return { cls: b.className, t: b.textContent }; })()")
+            accts = p.eval_on_selector_all(".zs-acct", "els => els.map(e => ({ k: e.dataset.key, t: e.textContent }))")
+            txt = {a["k"]: a["t"] for a in accts}
+            check("d. 390 px: 'PC reported 4 min ago' (not red), rows Zlarior $49,193 / ATLAS Sim Funded / Zlarior 25K #2 $25,210 with $ to pass + today's $",
+                  "good" in pc["cls"] and "PC reported 4 min ago" in pc["t"] and "$49,193" in txt.get("zlarior", "") and "$3,807 to pass" in txt.get("zlarior", "")
+                  and "Today: +$120" in txt.get("zlarior", "") and "Sim Funded" in txt.get("atlas", "") and "$25,210" in txt.get("fresh25", ""), (pc, accts))
+            edge = p.evaluate("(() => { const e = document.getElementById('edgeChip'); return { hidden: e.hidden, t: e.textContent }; })()")
+            check("d. the ZEUS edge chip shows Zlarior + ATLAS (from the PC's eh)", not edge["hidden"] and "GREEN" in edge["t"] and "ATLAS" in edge["t"], edge)
+            wins = p.eval_on_selector_all(".zs-win", "els => els.map(e => e.textContent)")
+            check("d. Today: two window lines (Zlarior, ATLAS), each 'Open now' or 'Next'",
+                  len(wins) == 2 and wins[0].startswith("Zlarior") and wins[1].startswith("ATLAS") and all(re.search(r"Open now|Next:|No entry window", w) for w in wins), wins)
+            btns = p.eval_on_selector_all(".zs-btn:not([hidden]), .zs-info summary", "els => els.map(e => { const r = e.getBoundingClientRect(); return [e.textContent.trim().split(/\\s{2,}|(?<=[a-z])(?=[A-Z])/)[0], Math.round(r.width), Math.round(r.height)]; })")
+            small = [b for b in btns if b[1] < 44 or b[2] < 44]
+            check("d. the big buttons (6 links + Safety + Add an account; Weekly review hidden: no week.html), every tap >= 44 px",
+                  len(btns) == (8 if not os.path.isfile(os.path.join(WEB, "business", "week.html")) else 9) and not small, (btns, small))
+            p.click("#safety summary")
+            sh = p.evaluate("(() => { const s = document.getElementById('safety'); return { open: s.open, links: s.querySelectorAll('a').length, t: s.textContent }; })()")
+            wide = p.evaluate("document.documentElement.scrollWidth <= window.innerWidth + 1")
+            taps = p.evaluate("[...document.querySelectorAll('.zs-nav a, .zs-nav button')].every((e) => e.getBoundingClientRect().height >= 44)")
+            check("d. Safety opens an explanation (Tailscale, /safety/), no link in it; no sideways scroll; top buttons 44 px",
+                  sh["open"] and sh["links"] == 0 and "/safety/" in sh["t"] and wide and taps, (sh["open"], sh["links"], wide, taps))
+            p2 = ctx.new_page()
+            p2.on("pageerror", lambda e: errs.append(str(e)))
+            p2.route("**/ntfy.sh/**", lambda r: r.fulfill(status=200, body=""))
+            p2.route("**/board/board.json*", lambda r: r.fulfill(status=200, content_type="application/json", body=json.dumps(stale)))
+            p2.goto(base)
+            p2.wait_for_function("window.ZEUS_PAGE && window.ZEUS_PAGE.ready")
+            pc2 = p2.evaluate("(() => { const b = document.getElementById('pc'); return { cls: b.className, t: b.textContent, bg: getComputedStyle(b).backgroundColor, role: b.getAttribute('role') }; })()")
+            n2 = p2.eval_on_selector_all(".zs-acct", "els => els.map(e => e.dataset.key)")
+            check("d. silent feed + 10-day-old board copy: the strip is RED 'PC SILENT: last report 10 days ago' (role alert), plan rows still shown",
+                  "bad" in pc2["cls"] and "PC SILENT" in pc2["t"] and "10 days ago" in pc2["t"] and pc2["role"] == "alert" and pc2["bg"] != "rgba(0, 0, 0, 0)"
+                  and "zlarior" in n2, (pc2, n2))
+            check("d. no page errors", not errs, errs)
+            br.close()
+    finally:
+        srv.shutdown()
+
+
+def main():
+    part_a()
+    part_b()
+    part_c()
+    if not os.environ.get("ZEUS_NO_BROWSER"):
+        part_d()
+    n = sum(RES)
+    print(f"\nzeus_hub: {n}/{len(RES)} " + ("ALL PASS" if n == len(RES) else "FAILED"))
+    return 0 if n == len(RES) else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())
