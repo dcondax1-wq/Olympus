@@ -119,7 +119,7 @@ def part_b():
           not re.search(r"innerHTML|outerHTML|insertAdjacentHTML|document\.write", js))
     check("b. read only: one GET of help.json, no POST, no localStorage, no outside script",
           js.count("fetch(") == 1 and "fetch('help.json" in js and "POST" not in js and "localStorage" not in js
-          and not re.search(r'<script src="https?:', html) and re.findall(r'<script src="([^"]+)"', html) == ["help.js?v=1"], re.findall(r'<script src="([^"]+)"', html))
+          and not re.search(r'<script src="https?:', html) and re.findall(r'<script src="([^"]+)"', html) == ["help.js?v=2"], re.findall(r'<script src="([^"]+)"', html))
     z, dr, biz = rd(HUB, "zeus.html"), rd(HUB, "doors.html"), rd(WEB, "business", "index.html")
     check("b. linked: ZEUS (a Help button), the Doors page (top + bottom), Business (a Help card)",
           '<a href="help.html" id="helpBtn">Help</a>' in z and 'id="helpLink"' in dr and dr.count('href="help.html"') >= 2 and 'href="../hub/help.html"' in biz)

@@ -514,6 +514,13 @@ CF_NO_PROJECT_RX = re.compile(r"(?i)project not found|8000007|could not find pro
 CF_URL_RX = re.compile(r"https://[A-Za-z0-9.-]+\.pages\.dev\b")
 
 
+def cf_prod_url(project: str, deploy_url: str | None = None) -> str:
+    """The production address. Cloudflare adds a suffix when <project>.pages.dev is taken (olympus-dash-3x1.pages.dev); the
+    deploy's own address (https://<hash>.<subdomain>.pages.dev) then carries the real subdomain."""
+    m = re.match(r"^https://[a-z0-9-]+\.([a-z0-9-]+)\.pages\.dev$", str(deploy_url or ""))
+    return f"https://{m.group(1)}.pages.dev" if m else f"https://{project}.pages.dev"
+
+
 def cf_settings(cfg: dict, env=None) -> dict:
     """{"token", "account", "project", "npx"} for Cloudflare Pages. The key only from the environment variable. Raises ProviderError."""
     env = os.environ if env is None else env
@@ -577,7 +584,7 @@ def publish_cloudflare(site: str, files: dict, cfg: dict, env=None, log=print, w
             raise ProviderError("Cloudflare refused the key: make a new one with Cloudflare Pages: Edit (docs/HOSTING.md step 2)")
         raise ProviderError("Cloudflare deploy failed: " + out.strip()[-240:])
     seen = CF_URL_RX.findall(out)
-    url = cfg.get("cf_url") or f"https://{c['project']}.pages.dev"
+    url = cfg.get("cf_url") or cf_prod_url(c["project"], seen[-1] if seen else None)
     return {"url": url, "deploy_url": seen[-1] if seen else None, "bytes": _bytes, "uploaded": n, "method": "wrangler",
             "state": "deployed"}
 
