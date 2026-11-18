@@ -157,3 +157,4 @@ Rules: MFFU ONLY ("We stick with MFFU"). Limits: max 5 sim-funded, Builder 1x50K
 - Accounts: tools/web_public/business/accounts.html; new pages taxes/security/schedule/work in tools/web_public/business/.
 - Learn loop: engine/learn_loop.py, docs/LEARN_LOOP.md. Obsidian: tools/obsidian_sync.py. Writeups: research/writeups/.
 - Full previous STATE.md (prop money plan, all older findings and waves): docs/STATE_HISTORY.md.
+- 2026-11-17 20:30 ET LIVE (PC feed via ntfy, fresh): Zlarior 50K eval $49,193; Zlarior 25K #2 eval (new) $25,000; ATLAS FUNDED 25K $25,000 (LIVE). PC connected to backup auto-update (d31a458 -> f8d2e21). Bug: board.py maps the 25K #2 eval as ATLAS 'locked'.
