@@ -34,6 +34,11 @@ import pandas as pd
 from engine.data import DATA_DIR, load
 
 TICK, PV, COMM, SLIP, MAX_MICROS = 0.25, 2.0, 1.40, 0.25, 40
+# Other markets (research only, docs/OTHER_MARKETS.md): engine/lit_markets.use(spec) swaps TICK / PV / COMM / SLIP / MAX_MICROS,
+# BU_TOL_MIN, VOL_SRC and SESSIONS / SESSION_CLASS for one block and puts them back after it. The values here are NQ / MNQ and
+# the live bot never calls use(), so NQ is unchanged.
+BU_TOL_MIN = 1.5                # build-up liquidity: the smallest "equal highs / lows" tolerance in points (buildups tol_min)
+VOL_SRC: dict = {}              # vol index name ("VIX", "VXN") -> csv path for the target band; {} = data/<name>_1d.csv
 
 # name: (start ET minute, end ET minute exclusive). end <= start means "until midnight" (inside the 18:00 trading day).
 SESSIONS = {
@@ -144,22 +149,22 @@ _VIX_CACHE: dict = {}
 def _vix(name="VIX"):
     """(dates, closes) of data/<name>_1d.csv, cached by file time. The live bot rewrites the file while it runs
     (engine/news.volatility); a read that catches it half-written falls back to the last good copy (or retries)."""
-    path = os.path.join(DATA_DIR, f"{name}_1d.csv")
+    path = VOL_SRC.get(name) or os.path.join(DATA_DIR, f"{name}_1d.csv")
     for attempt in range(3):
         try:
             mt = os.path.getmtime(path)
-            hit = _VIX_CACHE.get(name)
+            hit = _VIX_CACHE.get(path)
             if hit and hit[0] == mt:
                 return hit[1]
             df = pd.read_csv(path)
             out = (list(df["date"].astype(str)), df["close"].values.astype(float))
             if not len(out[0]):
                 raise ValueError("empty")
-            _VIX_CACHE[name] = (mt, out)
+            _VIX_CACHE[path] = (mt, out)
             return out
         except Exception:
-            if name in _VIX_CACHE:
-                return _VIX_CACHE[name][1]
+            if path in _VIX_CACHE:
+                return _VIX_CACHE[path][1]
             import time as _t
             _t.sleep(0.5)
     df = pd.read_csv(path)
@@ -187,7 +192,7 @@ class Market:
         self.atr = atr(self.h, self.l, self.c)
         self.climax, self.above, self.bull = vectors(self.o, self.h, self.l, self.c, self.v)
         self.fh, self.fl = fractals(self.h, self.l)
-        self.bu = buildups(self.h, self.l, self.fh, self.fl, self.atr, tol_atr=tol_atr)
+        self.bu = buildups(self.h, self.l, self.fh, self.fl, self.atr, tol_atr=tol_atr, tol_min=BU_TOL_MIN)
         self._bu_known = [z[2] for z in self.bu]
         self.how = in_how_window(self.dow, self.mod)
         # trading days
@@ -1634,7 +1639,7 @@ def _run_core(M: Market, cands, P, sessions, B1, B5, live, week_hist=None):
             if mi != 1.0:
                 if m * mi > 1.0 and q_.get("cap_usd") and t["qty"]:
                     # a size-up never risks more than cap_usd (full stop + 1 tick + round-trip commission)
-                    loss1 = (t["risk_pts"] + 0.25) * PV + float(q_.get("comm", 1.90))
+                    loss1 = (t["risk_pts"] + SLIP) * PV + float(q_.get("comm", 1.90))
                     qmax = max(t["qty"], int(float(q_["cap_usd"]) / loss1))
                     mi = min(mi, qmax / (t["qty"] * m) + 1e-9)
                 m *= mi
