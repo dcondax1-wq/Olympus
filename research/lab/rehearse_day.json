@@ -1,0 +1,2756 @@
+{
+ "three_accounts": {
+  "run": "2026-11-17 23:09 ET",
+  "quick": false,
+  "passed": 142,
+  "checks": 142,
+  "failed": [],
+  "days": [
+   {
+    "day": "2026-09-07",
+    "label": "early close (Labor Day: CME halts 13:00 ET, like Thanksgiving)",
+    "rapid": false,
+    "polls": 964,
+    "errors": [],
+    "hedges": [],
+    "fill_hedges": [],
+    "sizes": [
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "09:58:03",
+      "side": "sell",
+      "qty": 6,
+      "risk_usd": 377.4,
+      "cap_usd": 409.83,
+      "room": 1024.58
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "09:58:03",
+      "side": "sell",
+      "qty": 4,
+      "risk_usd": 251.6,
+      "cap_usd": 400.0,
+      "room": 1000.0
+     }
+    ],
+    "ntfy_bytes": 3653,
+    "life": {
+     "lit": {
+      "stage": "eval",
+      "label": "Zlarior 50K",
+      "bal": 49322.38
+     },
+     "atlas": {
+      "stage": "funded",
+      "label": "ATLAS 25K",
+      "bal": 25000.0
+     },
+     "x:b25k_2": {
+      "stage": "eval",
+      "label": "Zlarior Builder 25K #2",
+      "bal": 25086.4
+     }
+    },
+    "coach": {
+     "balance": 25000.0,
+     "profit": 0.0,
+     "cycle_days": 0,
+     "best_day": 0.0,
+     "request_today": 0,
+     "need_more": 1350.0,
+     "status": "not_yet",
+     "text": "Not yet: need $1,350 more."
+    },
+    "trades": [
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "09:58:03",
+      "side": "sell",
+      "qty": 6,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "09:58:03",
+      "side": "sell",
+      "qty": 4,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "13:05:03",
+      "side": "exit",
+      "qty": 6,
+      "reason": "TIME",
+      "pnl": 129.6,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "13:05:03",
+      "side": "exit",
+      "qty": 4,
+      "reason": "TIME",
+      "pnl": 86.4,
+      "ok": true,
+      "error": null
+     }
+    ]
+   },
+   {
+    "day": "2026-10-02",
+    "label": "news day (jobs report 08:30)",
+    "rapid": false,
+    "polls": 964,
+    "errors": [],
+    "hedges": [],
+    "fill_hedges": [],
+    "sizes": [
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "03:34:03",
+      "side": "buy",
+      "qty": 3,
+      "risk_usd": 346.2,
+      "cap_usd": 409.83,
+      "room": 1024.58
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "03:34:03",
+      "side": "buy",
+      "qty": 3,
+      "risk_usd": 346.2,
+      "cap_usd": 400.0,
+      "room": 1000.0
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "03:10:03",
+      "side": "buy",
+      "qty": 1,
+      "risk_usd": 113.9,
+      "cap_usd": 600.0,
+      "room": 1000.0
+     }
+    ],
+    "ntfy_bytes": 3780,
+    "life": {
+     "atlas": {
+      "stage": "funded",
+      "label": "ATLAS 25K",
+      "bal": 25386.51
+     },
+     "lit": {
+      "stage": "eval",
+      "label": "Zlarior 50K",
+      "bal": 50347.78
+     },
+     "x:b25k_2": {
+      "stage": "eval",
+      "label": "Zlarior Builder 25K #2",
+      "bal": 26155.0
+     }
+    },
+    "coach": {
+     "balance": 25386.51,
+     "profit": 386.51,
+     "cycle_days": 1,
+     "best_day": 386.51,
+     "request_today": 0,
+     "need_more": 963.49,
+     "status": "not_yet",
+     "text": "Not yet: need $963 more."
+    },
+    "trades": [
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "03:10:03",
+      "side": "buy",
+      "qty": 1,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "03:34:03",
+      "side": "buy",
+      "qty": 3,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "03:34:03",
+      "side": "buy",
+      "qty": 3,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "08:31:03",
+      "side": "exit",
+      "qty": 3,
+      "reason": "TARGET",
+      "pnl": 1155.0,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "08:31:03",
+      "side": "exit",
+      "qty": 3,
+      "reason": "TARGET",
+      "pnl": 1155.0,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "08:35:03",
+      "side": "exit",
+      "qty": 1,
+      "reason": "TARGET",
+      "pnl": 386.51,
+      "ok": true,
+      "error": null
+     }
+    ]
+   },
+   {
+    "day": "2026-10-06",
+    "label": "opposite sides (ATLAS long 04:10, LIT short 04:32)",
+    "rapid": false,
+    "polls": 964,
+    "errors": [],
+    "hedges": [],
+    "fill_hedges": [],
+    "sizes": [
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "04:32:03",
+      "side": "sell",
+      "qty": 5,
+      "risk_usd": 399.5,
+      "cap_usd": 409.83,
+      "room": 1024.58
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "04:32:03",
+      "side": "sell",
+      "qty": 3,
+      "risk_usd": 239.7,
+      "cap_usd": 400.0,
+      "room": 1000.0
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "04:10:03",
+      "side": "buy",
+      "qty": 1,
+      "risk_usd": 120.4,
+      "cap_usd": 600.0,
+      "room": 1000.0
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "10:15:03",
+      "side": "sell",
+      "qty": 5,
+      "risk_usd": 337.0,
+      "cap_usd": 540.6,
+      "room": 940.6
+     }
+    ],
+    "ntfy_bytes": 3723,
+    "life": {
+     "lit": {
+      "stage": "eval",
+      "label": "Zlarior 50K",
+      "bal": 49003.28
+     },
+     "atlas": {
+      "stage": "funded",
+      "label": "ATLAS 25K",
+      "bal": 25576.1
+     },
+     "x:b25k_2": {
+      "stage": "eval",
+      "label": "Zlarior Builder 25K #2",
+      "bal": 24886.3
+     }
+    },
+    "coach": {
+     "balance": 25576.1,
+     "profit": 576.1,
+     "cycle_days": 1,
+     "best_day": 576.1,
+     "request_today": 0,
+     "need_more": 773.9,
+     "status": "not_yet",
+     "text": "Not yet: need $774 more."
+    },
+    "trades": [
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "04:10:03",
+      "side": "buy",
+      "qty": 1,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "04:32:03",
+      "side": "sell",
+      "qty": 5,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "04:32:03",
+      "side": "sell",
+      "qty": 3,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "04:32:03",
+      "side": "exit",
+      "qty": 1,
+      "reason": "HEDGE",
+      "pnl": -59.4,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "04:47:03",
+      "side": "exit",
+      "qty": 5,
+      "reason": "CUT_T15",
+      "pnl": -189.5,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "04:47:03",
+      "side": "exit",
+      "qty": 3,
+      "reason": "CUT_T15",
+      "pnl": -113.7,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "10:15:03",
+      "side": "sell",
+      "qty": 5,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "10:35:03",
+      "side": "exit",
+      "qty": 5,
+      "reason": "TARGET",
+      "pnl": 635.5,
+      "ok": true,
+      "error": null
+     }
+    ]
+   },
+   {
+    "day": "2026-10-07",
+    "label": "LIT long held into the close",
+    "rapid": false,
+    "polls": 964,
+    "errors": [],
+    "hedges": [],
+    "fill_hedges": [],
+    "sizes": [
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "10:10:03",
+      "side": "buy",
+      "qty": 2,
+      "risk_usd": 326.8,
+      "cap_usd": 409.83,
+      "room": 1024.58
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "10:10:03",
+      "side": "buy",
+      "qty": 2,
+      "risk_usd": 326.8,
+      "cap_usd": 400.0,
+      "room": 1000.0
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "09:55:03",
+      "side": "buy",
+      "qty": 1,
+      "risk_usd": 145.4,
+      "cap_usd": 600.0,
+      "room": 1000.0
+     }
+    ],
+    "ntfy_bytes": 3752,
+    "life": {
+     "lit": {
+      "stage": "eval",
+      "label": "Zlarior 50K",
+      "bal": 49908.98
+     },
+     "atlas": {
+      "stage": "funded",
+      "label": "ATLAS 25K",
+      "bal": 25283.1
+     },
+     "x:b25k_2": {
+      "stage": "eval",
+      "label": "Zlarior Builder 25K #2",
+      "bal": 25716.2
+     }
+    },
+    "coach": {
+     "balance": 25283.1,
+     "profit": 283.1,
+     "cycle_days": 1,
+     "best_day": 283.1,
+     "request_today": 0,
+     "need_more": 1066.9,
+     "status": "not_yet",
+     "text": "Not yet: need $1,067 more."
+    },
+    "trades": [
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "09:55:03",
+      "side": "buy",
+      "qty": 1,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "10:10:03",
+      "side": "buy",
+      "qty": 2,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "10:10:03",
+      "side": "buy",
+      "qty": 2,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "11:50:03",
+      "side": "exit",
+      "qty": 1,
+      "reason": "TARGET",
+      "pnl": 283.1,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "15:56:03",
+      "side": "exit",
+      "qty": 2,
+      "reason": "TIME",
+      "pnl": 716.2,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "15:56:03",
+      "side": "exit",
+      "qty": 2,
+      "reason": "TIME",
+      "pnl": 716.2,
+      "ok": true,
+      "error": null
+     }
+    ]
+   },
+   {
+    "day": "2026-10-13",
+    "label": "LIT's big winner",
+    "rapid": false,
+    "polls": 964,
+    "errors": [],
+    "hedges": [],
+    "fill_hedges": [],
+    "sizes": [
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "06:03:03",
+      "side": "sell",
+      "qty": 7,
+      "risk_usd": 387.8,
+      "cap_usd": 409.83,
+      "room": 1024.58
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "06:03:03",
+      "side": "sell",
+      "qty": 6,
+      "risk_usd": 332.4,
+      "cap_usd": 400.0,
+      "room": 1000.0
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "05:45:03",
+      "side": "sell",
+      "qty": 2,
+      "risk_usd": 101.8,
+      "cap_usd": 600.0,
+      "room": 1000.0
+     }
+    ],
+    "ntfy_bytes": 3762,
+    "life": {
+     "atlas": {
+      "stage": "funded",
+      "label": "ATLAS 25K",
+      "bal": 25000.2
+     },
+     "lit": {
+      "stage": "eval",
+      "label": "Zlarior 50K",
+      "bal": 51205.98
+     },
+     "x:b25k_2": {
+      "stage": "eval",
+      "label": "Zlarior Builder 25K #2",
+      "bal": 26725.6
+     }
+    },
+    "coach": {
+     "balance": 25000.2,
+     "profit": 0.2,
+     "cycle_days": 1,
+     "best_day": 0.2,
+     "request_today": 0,
+     "need_more": 1349.8,
+     "status": "not_yet",
+     "text": "Not yet: need $1,350 more."
+    },
+    "trades": [
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "05:45:03",
+      "side": "sell",
+      "qty": 2,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "06:03:03",
+      "side": "sell",
+      "qty": 7,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "06:03:03",
+      "side": "sell",
+      "qty": 6,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "09:33:03",
+      "side": "exit",
+      "qty": 7,
+      "reason": "TARGET",
+      "pnl": 2013.2,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "09:33:03",
+      "side": "exit",
+      "qty": 6,
+      "reason": "TARGET",
+      "pnl": 1725.6,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "09:40:03",
+      "side": "exit",
+      "qty": 2,
+      "reason": "BE",
+      "pnl": 0.2,
+      "ok": true,
+      "error": null
+     }
+    ]
+   },
+   {
+    "day": "2026-10-06",
+    "label": "opposite sides + NinjaTrader picks the funded 25K's orders up 4 min late",
+    "rapid": false,
+    "polls": 964,
+    "errors": [],
+    "hedges": [],
+    "fill_hedges": [],
+    "sizes": [
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "04:32:03",
+      "side": "sell",
+      "qty": 5,
+      "risk_usd": 399.5,
+      "cap_usd": 409.83,
+      "room": 1024.58
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "04:32:03",
+      "side": "sell",
+      "qty": 3,
+      "risk_usd": 239.7,
+      "cap_usd": 400.0,
+      "room": 1000.0
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "04:10:03",
+      "side": "buy",
+      "qty": 1,
+      "risk_usd": 120.4,
+      "cap_usd": 600.0,
+      "room": 1000.0
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "10:15:03",
+      "side": "sell",
+      "qty": 5,
+      "risk_usd": 337.0,
+      "cap_usd": 540.6,
+      "room": 940.6
+     }
+    ],
+    "ntfy_bytes": 3723,
+    "life": {
+     "lit": {
+      "stage": "eval",
+      "label": "Zlarior 50K",
+      "bal": 49003.28
+     },
+     "atlas": {
+      "stage": "funded",
+      "label": "ATLAS 25K",
+      "bal": 25576.1
+     },
+     "x:b25k_2": {
+      "stage": "eval",
+      "label": "Zlarior Builder 25K #2",
+      "bal": 24886.3
+     }
+    },
+    "coach": {
+     "balance": 25576.1,
+     "profit": 576.1,
+     "cycle_days": 1,
+     "best_day": 576.1,
+     "request_today": 0,
+     "need_more": 773.9,
+     "status": "not_yet",
+     "text": "Not yet: need $774 more."
+    },
+    "trades": [
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "04:10:03",
+      "side": "buy",
+      "qty": 1,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "04:32:03",
+      "side": "sell",
+      "qty": 5,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "04:32:03",
+      "side": "sell",
+      "qty": 3,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "04:32:03",
+      "side": "exit",
+      "qty": 1,
+      "reason": "HEDGE",
+      "pnl": -59.4,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "04:47:03",
+      "side": "exit",
+      "qty": 5,
+      "reason": "CUT_T15",
+      "pnl": -189.5,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "04:47:03",
+      "side": "exit",
+      "qty": 3,
+      "reason": "CUT_T15",
+      "pnl": -113.7,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "10:15:03",
+      "side": "sell",
+      "qty": 5,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "10:35:03",
+      "side": "exit",
+      "qty": 5,
+      "reason": "TARGET",
+      "pnl": 635.5,
+      "ok": true,
+      "error": null
+     }
+    ]
+   },
+   {
+    "day": "2026-10-06",
+    "label": "opposite sides with Zlarior's 50K already PASSED (stood down)",
+    "rapid": false,
+    "polls": 964,
+    "errors": [],
+    "hedges": [],
+    "fill_hedges": [],
+    "sizes": [
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "04:32:03",
+      "side": "sell",
+      "qty": 3,
+      "risk_usd": 239.7,
+      "cap_usd": 400.0,
+      "room": 1000.0
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "04:10:03",
+      "side": "buy",
+      "qty": 1,
+      "risk_usd": 120.4,
+      "cap_usd": 600.0,
+      "room": 1000.0
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "10:15:03",
+      "side": "sell",
+      "qty": 5,
+      "risk_usd": 337.0,
+      "cap_usd": 540.6,
+      "room": 940.6
+     }
+    ],
+    "ntfy_bytes": 3803,
+    "life": {
+     "lit": {
+      "stage": "passed",
+      "label": "Zlarior 50K",
+      "bal": null
+     },
+     "atlas": {
+      "stage": "funded",
+      "label": "ATLAS 25K",
+      "bal": 25576.1
+     },
+     "x:b25k_2": {
+      "stage": "eval",
+      "label": "Zlarior Builder 25K #2",
+      "bal": 24886.3
+     }
+    },
+    "coach": {
+     "balance": 25576.1,
+     "profit": 576.1,
+     "cycle_days": 1,
+     "best_day": 576.1,
+     "request_today": 0,
+     "need_more": 773.9,
+     "status": "not_yet",
+     "text": "Not yet: need $774 more."
+    },
+    "trades": [
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "04:10:03",
+      "side": "buy",
+      "qty": 1,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "04:32:03",
+      "side": "sell",
+      "qty": 3,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "04:32:03",
+      "side": "exit",
+      "qty": 1,
+      "reason": "HEDGE",
+      "pnl": -59.4,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "04:47:03",
+      "side": "exit",
+      "qty": 3,
+      "reason": "CUT_T15",
+      "pnl": -113.7,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "10:15:03",
+      "side": "sell",
+      "qty": 5,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "10:35:03",
+      "side": "exit",
+      "qty": 5,
+      "reason": "TARGET",
+      "pnl": 635.5,
+      "ok": true,
+      "error": null
+     }
+    ]
+   },
+   {
+    "day": "2026-10-07",
+    "label": "KILL at 11:00 with LIT long on both evals and ATLAS long on the funded 25K",
+    "rapid": false,
+    "polls": 964,
+    "errors": [],
+    "hedges": [],
+    "fill_hedges": [],
+    "sizes": [
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "10:10:03",
+      "side": "buy",
+      "qty": 2,
+      "risk_usd": 326.8,
+      "cap_usd": 409.83,
+      "room": 1024.58
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "10:10:03",
+      "side": "buy",
+      "qty": 2,
+      "risk_usd": 326.8,
+      "cap_usd": 400.0,
+      "room": 1000.0
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "09:55:03",
+      "side": "buy",
+      "qty": 1,
+      "risk_usd": 145.4,
+      "cap_usd": 600.0,
+      "room": 1000.0
+     }
+    ],
+    "ntfy_bytes": 3639,
+    "life": {
+     "lit": {
+      "stage": "eval",
+      "label": "Zlarior 50K",
+      "bal": 49192.78
+     },
+     "atlas": {
+      "stage": "funded",
+      "label": "ATLAS 25K",
+      "bal": 25077.6
+     },
+     "x:b25k_2": {
+      "stage": "eval",
+      "label": "Zlarior Builder 25K #2",
+      "bal": 25000.0
+     }
+    },
+    "coach": {
+     "balance": 25077.6,
+     "profit": 77.6,
+     "cycle_days": 1,
+     "best_day": 77.6,
+     "request_today": 0,
+     "need_more": 1272.4,
+     "status": "not_yet",
+     "text": "Not yet: need $1,272 more."
+    },
+    "trades": [
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "09:55:03",
+      "side": "buy",
+      "qty": 1,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "10:10:03",
+      "side": "buy",
+      "qty": 2,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "10:10:03",
+      "side": "buy",
+      "qty": 2,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "11:00:03",
+      "side": "exit",
+      "qty": 2,
+      "reason": "KILL SWITCH",
+      "pnl": 118.2,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "11:00:03",
+      "side": "exit",
+      "qty": 2,
+      "reason": "KILL SWITCH",
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "11:00:03",
+      "side": "exit",
+      "qty": 1,
+      "reason": "KILL SWITCH",
+      "pnl": 77.6,
+      "ok": true,
+      "error": null
+     }
+    ]
+   },
+   {
+    "day": "2026-10-13",
+    "label": "phone FLATTEN at 07:30 with LIT short on both evals",
+    "rapid": false,
+    "polls": 964,
+    "errors": [],
+    "hedges": [],
+    "fill_hedges": [],
+    "sizes": [
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "06:03:03",
+      "side": "sell",
+      "qty": 7,
+      "risk_usd": 387.8,
+      "cap_usd": 409.83,
+      "room": 1024.58
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "06:03:03",
+      "side": "sell",
+      "qty": 6,
+      "risk_usd": 332.4,
+      "cap_usd": 400.0,
+      "room": 1000.0
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "05:45:03",
+      "side": "sell",
+      "qty": 2,
+      "risk_usd": 101.8,
+      "cap_usd": 600.0,
+      "room": 1000.0
+     }
+    ],
+    "ntfy_bytes": 3767,
+    "life": {
+     "lit": {
+      "stage": "eval",
+      "label": "Zlarior 50K",
+      "bal": 49192.78
+     },
+     "atlas": {
+      "stage": "funded",
+      "label": "ATLAS 25K",
+      "bal": 25271.2
+     },
+     "x:b25k_2": {
+      "stage": "eval",
+      "label": "Zlarior Builder 25K #2",
+      "bal": 25000.0
+     }
+    },
+    "coach": {
+     "balance": 25271.2,
+     "profit": 271.2,
+     "cycle_days": 1,
+     "best_day": 271.2,
+     "request_today": 0,
+     "need_more": 1078.8,
+     "status": "not_yet",
+     "text": "Not yet: need $1,079 more."
+    },
+    "trades": [
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "05:45:03",
+      "side": "sell",
+      "qty": 2,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "06:03:03",
+      "side": "sell",
+      "qty": 7,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "06:03:03",
+      "side": "sell",
+      "qty": 6,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "07:30:03",
+      "side": "exit",
+      "qty": 7,
+      "reason": "REMOTE FLATTEN",
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "07:30:03",
+      "side": "exit",
+      "qty": 6,
+      "reason": "KILL SWITCH",
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "07:30:03",
+      "side": "exit",
+      "qty": 2,
+      "reason": "KILL SWITCH",
+      "pnl": 271.2,
+      "ok": true,
+      "error": null
+     }
+    ]
+   }
+  ]
+ },
+ "with_rapid": {
+  "run": "2026-11-17 23:20 ET",
+  "quick": false,
+  "passed": 142,
+  "checks": 142,
+  "failed": [],
+  "days": [
+   {
+    "day": "2026-09-07",
+    "label": "early close (Labor Day: CME halts 13:00 ET, like Thanksgiving)",
+    "rapid": true,
+    "polls": 964,
+    "errors": [],
+    "hedges": [],
+    "fill_hedges": [],
+    "sizes": [
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "09:58:03",
+      "side": "sell",
+      "qty": 6,
+      "risk_usd": 377.4,
+      "cap_usd": 409.83,
+      "room": 1024.58
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "09:58:03",
+      "side": "sell",
+      "qty": 4,
+      "risk_usd": 251.6,
+      "cap_usd": 400.0,
+      "room": 1000.0
+     }
+    ],
+    "ntfy_bytes": 3814,
+    "life": {
+     "lit": {
+      "stage": "eval",
+      "label": "Zlarior 50K",
+      "bal": 49322.38
+     },
+     "atlas": {
+      "stage": "funded",
+      "label": "ATLAS 25K",
+      "bal": 25000.0
+     },
+     "rapid": {
+      "stage": "eval",
+      "label": "Rapid EOD 25K",
+      "bal": 25000.0
+     },
+     "x:b25k_2": {
+      "stage": "eval",
+      "label": "Zlarior Builder 25K #2",
+      "bal": 25086.4
+     }
+    },
+    "coach": {
+     "balance": 25000.0,
+     "profit": 0.0,
+     "cycle_days": 0,
+     "best_day": 0.0,
+     "request_today": 0,
+     "need_more": 1350.0,
+     "status": "not_yet",
+     "text": "Not yet: need $1,350 more."
+    },
+    "trades": [
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "09:58:03",
+      "side": "sell",
+      "qty": 6,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "09:58:03",
+      "side": "sell",
+      "qty": 4,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "13:05:03",
+      "side": "exit",
+      "qty": 6,
+      "reason": "TIME",
+      "pnl": 129.6,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "13:05:03",
+      "side": "exit",
+      "qty": 4,
+      "reason": "TIME",
+      "pnl": 86.4,
+      "ok": true,
+      "error": null
+     }
+    ]
+   },
+   {
+    "day": "2026-10-02",
+    "label": "news day (jobs report 08:30)",
+    "rapid": true,
+    "polls": 964,
+    "errors": [],
+    "hedges": [],
+    "fill_hedges": [],
+    "sizes": [
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "03:34:03",
+      "side": "buy",
+      "qty": 3,
+      "risk_usd": 346.2,
+      "cap_usd": 409.83,
+      "room": 1024.58
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "03:34:03",
+      "side": "buy",
+      "qty": 3,
+      "risk_usd": 346.2,
+      "cap_usd": 400.0,
+      "room": 1000.0
+     },
+     {
+      "acct": "Rapid 25K LIT lane",
+      "t": "03:34:03",
+      "side": "buy",
+      "qty": 1,
+      "risk_usd": 115.4,
+      "cap_usd": 400.0,
+      "room": 1000.0
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "03:10:03",
+      "side": "buy",
+      "qty": 1,
+      "risk_usd": 113.9,
+      "cap_usd": 600.0,
+      "room": 1000.0
+     },
+     {
+      "acct": "Rapid 25K ATLAS lane",
+      "t": "03:10:03",
+      "side": "buy",
+      "qty": 1,
+      "risk_usd": 113.9,
+      "cap_usd": 250.0,
+      "room": 1000.0
+     }
+    ],
+    "ntfy_bytes": 3802,
+    "life": {
+     "atlas": {
+      "stage": "funded",
+      "label": "ATLAS 25K",
+      "bal": 25386.51
+     },
+     "lit": {
+      "stage": "eval",
+      "label": "Zlarior 50K",
+      "bal": 50347.78
+     },
+     "rapid": {
+      "stage": "eval",
+      "label": "Rapid EOD 25K",
+      "bal": 25384.1
+     },
+     "x:b25k_2": {
+      "stage": "eval",
+      "label": "Zlarior Builder 25K #2",
+      "bal": 26155.0
+     }
+    },
+    "coach": {
+     "balance": 25386.51,
+     "profit": 386.51,
+     "cycle_days": 1,
+     "best_day": 386.51,
+     "request_today": 0,
+     "need_more": 963.49,
+     "status": "not_yet",
+     "text": "Not yet: need $963 more."
+    },
+    "trades": [
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "03:10:03",
+      "side": "buy",
+      "qty": 1,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Rapid 25K ATLAS lane",
+      "t": "03:10:03",
+      "side": "buy",
+      "qty": 1,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "03:34:03",
+      "side": "buy",
+      "qty": 3,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "03:34:03",
+      "side": "buy",
+      "qty": 3,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Rapid 25K LIT lane",
+      "t": "03:34:03",
+      "side": "buy",
+      "qty": 1,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Rapid 25K ATLAS lane",
+      "t": "03:34:03",
+      "side": "exit",
+      "qty": 1,
+      "reason": "HEDGE",
+      "pnl": -0.9,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "08:31:03",
+      "side": "exit",
+      "qty": 3,
+      "reason": "TARGET",
+      "pnl": 1155.0,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "08:31:03",
+      "side": "exit",
+      "qty": 3,
+      "reason": "TARGET",
+      "pnl": 1155.0,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Rapid 25K LIT lane",
+      "t": "08:31:03",
+      "side": "exit",
+      "qty": 1,
+      "reason": "TARGET",
+      "pnl": 385.0,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "08:35:03",
+      "side": "exit",
+      "qty": 1,
+      "reason": "TARGET",
+      "pnl": 386.51,
+      "ok": true,
+      "error": null
+     }
+    ]
+   },
+   {
+    "day": "2026-10-06",
+    "label": "opposite sides (ATLAS long 04:10, LIT short 04:32)",
+    "rapid": true,
+    "polls": 964,
+    "errors": [],
+    "hedges": [],
+    "fill_hedges": [],
+    "sizes": [
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "04:32:03",
+      "side": "sell",
+      "qty": 5,
+      "risk_usd": 399.5,
+      "cap_usd": 409.83,
+      "room": 1024.58
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "04:32:03",
+      "side": "sell",
+      "qty": 3,
+      "risk_usd": 239.7,
+      "cap_usd": 400.0,
+      "room": 1000.0
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "04:10:03",
+      "side": "buy",
+      "qty": 1,
+      "risk_usd": 120.4,
+      "cap_usd": 600.0,
+      "room": 1000.0
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "10:15:03",
+      "side": "sell",
+      "qty": 5,
+      "risk_usd": 337.0,
+      "cap_usd": 540.6,
+      "room": 940.6
+     },
+     {
+      "acct": "Rapid 25K ATLAS lane",
+      "t": "10:15:03",
+      "side": "sell",
+      "qty": 3,
+      "risk_usd": 202.2,
+      "cap_usd": 250.0,
+      "room": 1000.0
+     }
+    ],
+    "ntfy_bytes": 3744,
+    "life": {
+     "lit": {
+      "stage": "eval",
+      "label": "Zlarior 50K",
+      "bal": 49003.28
+     },
+     "atlas": {
+      "stage": "funded",
+      "label": "ATLAS 25K",
+      "bal": 25576.1
+     },
+     "rapid": {
+      "stage": "eval",
+      "label": "Rapid EOD 25K",
+      "bal": 25381.3
+     },
+     "x:b25k_2": {
+      "stage": "eval",
+      "label": "Zlarior Builder 25K #2",
+      "bal": 24886.3
+     }
+    },
+    "coach": {
+     "balance": 25576.1,
+     "profit": 576.1,
+     "cycle_days": 1,
+     "best_day": 576.1,
+     "request_today": 0,
+     "need_more": 773.9,
+     "status": "not_yet",
+     "text": "Not yet: need $774 more."
+    },
+    "trades": [
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "04:10:03",
+      "side": "buy",
+      "qty": 1,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "04:32:03",
+      "side": "sell",
+      "qty": 5,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "04:32:03",
+      "side": "sell",
+      "qty": 3,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "04:32:03",
+      "side": "exit",
+      "qty": 1,
+      "reason": "HEDGE",
+      "pnl": -59.4,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "04:47:03",
+      "side": "exit",
+      "qty": 5,
+      "reason": "CUT_T15",
+      "pnl": -189.5,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "04:47:03",
+      "side": "exit",
+      "qty": 3,
+      "reason": "CUT_T15",
+      "pnl": -113.7,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "10:15:03",
+      "side": "sell",
+      "qty": 5,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Rapid 25K ATLAS lane",
+      "t": "10:15:03",
+      "side": "sell",
+      "qty": 3,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "10:35:03",
+      "side": "exit",
+      "qty": 5,
+      "reason": "TARGET",
+      "pnl": 635.5,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Rapid 25K ATLAS lane",
+      "t": "10:35:03",
+      "side": "exit",
+      "qty": 3,
+      "reason": "TARGET",
+      "pnl": 381.3,
+      "ok": true,
+      "error": null
+     }
+    ]
+   },
+   {
+    "day": "2026-10-07",
+    "label": "LIT long held into the close",
+    "rapid": true,
+    "polls": 964,
+    "errors": [],
+    "hedges": [],
+    "fill_hedges": [],
+    "sizes": [
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "10:10:03",
+      "side": "buy",
+      "qty": 2,
+      "risk_usd": 326.8,
+      "cap_usd": 409.83,
+      "room": 1024.58
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "10:10:03",
+      "side": "buy",
+      "qty": 2,
+      "risk_usd": 326.8,
+      "cap_usd": 400.0,
+      "room": 1000.0
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "09:55:03",
+      "side": "buy",
+      "qty": 1,
+      "risk_usd": 145.4,
+      "cap_usd": 600.0,
+      "room": 1000.0
+     },
+     {
+      "acct": "Rapid 25K ATLAS lane",
+      "t": "09:55:03",
+      "side": "buy",
+      "qty": 1,
+      "risk_usd": 145.4,
+      "cap_usd": 250.0,
+      "room": 1000.0
+     }
+    ],
+    "ntfy_bytes": 3783,
+    "life": {
+     "lit": {
+      "stage": "eval",
+      "label": "Zlarior 50K",
+      "bal": 49908.98
+     },
+     "atlas": {
+      "stage": "funded",
+      "label": "ATLAS 25K",
+      "bal": 25283.1
+     },
+     "rapid": {
+      "stage": "eval",
+      "label": "Rapid EOD 25K",
+      "bal": 25283.1
+     },
+     "x:b25k_2": {
+      "stage": "eval",
+      "label": "Zlarior Builder 25K #2",
+      "bal": 25716.2
+     }
+    },
+    "coach": {
+     "balance": 25283.1,
+     "profit": 283.1,
+     "cycle_days": 1,
+     "best_day": 283.1,
+     "request_today": 0,
+     "need_more": 1066.9,
+     "status": "not_yet",
+     "text": "Not yet: need $1,067 more."
+    },
+    "trades": [
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "09:55:03",
+      "side": "buy",
+      "qty": 1,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Rapid 25K ATLAS lane",
+      "t": "09:55:03",
+      "side": "buy",
+      "qty": 1,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "10:10:03",
+      "side": "buy",
+      "qty": 2,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "10:10:03",
+      "side": "buy",
+      "qty": 2,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "11:50:03",
+      "side": "exit",
+      "qty": 1,
+      "reason": "TARGET",
+      "pnl": 283.1,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Rapid 25K ATLAS lane",
+      "t": "11:50:03",
+      "side": "exit",
+      "qty": 1,
+      "reason": "TARGET",
+      "pnl": 283.1,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "15:56:03",
+      "side": "exit",
+      "qty": 2,
+      "reason": "TIME",
+      "pnl": 716.2,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "15:56:03",
+      "side": "exit",
+      "qty": 2,
+      "reason": "TIME",
+      "pnl": 716.2,
+      "ok": true,
+      "error": null
+     }
+    ]
+   },
+   {
+    "day": "2026-10-13",
+    "label": "LIT's big winner",
+    "rapid": true,
+    "polls": 964,
+    "errors": [],
+    "hedges": [],
+    "fill_hedges": [],
+    "sizes": [
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "06:03:03",
+      "side": "sell",
+      "qty": 7,
+      "risk_usd": 387.8,
+      "cap_usd": 409.83,
+      "room": 1024.58
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "06:03:03",
+      "side": "sell",
+      "qty": 6,
+      "risk_usd": 332.4,
+      "cap_usd": 400.0,
+      "room": 1000.0
+     },
+     {
+      "acct": "Rapid 25K LIT lane",
+      "t": "06:03:03",
+      "side": "sell",
+      "qty": 1,
+      "risk_usd": 55.4,
+      "cap_usd": 400.0,
+      "room": 1000.0
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "05:45:03",
+      "side": "sell",
+      "qty": 2,
+      "risk_usd": 101.8,
+      "cap_usd": 600.0,
+      "room": 1000.0
+     },
+     {
+      "acct": "Rapid 25K ATLAS lane",
+      "t": "05:45:03",
+      "side": "sell",
+      "qty": 1,
+      "risk_usd": 50.9,
+      "cap_usd": 250.0,
+      "room": 1000.0
+     }
+    ],
+    "ntfy_bytes": 3795,
+    "life": {
+     "atlas": {
+      "stage": "funded",
+      "label": "ATLAS 25K",
+      "bal": 25000.2
+     },
+     "lit": {
+      "stage": "eval",
+      "label": "Zlarior 50K",
+      "bal": 51205.98
+     },
+     "rapid": {
+      "stage": "eval",
+      "label": "Rapid EOD 25K",
+      "bal": 25289.7
+     },
+     "x:b25k_2": {
+      "stage": "eval",
+      "label": "Zlarior Builder 25K #2",
+      "bal": 26725.6
+     }
+    },
+    "coach": {
+     "balance": 25000.2,
+     "profit": 0.2,
+     "cycle_days": 1,
+     "best_day": 0.2,
+     "request_today": 0,
+     "need_more": 1349.8,
+     "status": "not_yet",
+     "text": "Not yet: need $1,350 more."
+    },
+    "trades": [
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "05:45:03",
+      "side": "sell",
+      "qty": 2,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Rapid 25K ATLAS lane",
+      "t": "05:45:03",
+      "side": "sell",
+      "qty": 1,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "06:03:03",
+      "side": "sell",
+      "qty": 7,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "06:03:03",
+      "side": "sell",
+      "qty": 6,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Rapid 25K LIT lane",
+      "t": "06:03:03",
+      "side": "sell",
+      "qty": 1,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Rapid 25K ATLAS lane",
+      "t": "06:03:03",
+      "side": "exit",
+      "qty": 1,
+      "reason": "HEDGE",
+      "pnl": 2.1,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "09:33:03",
+      "side": "exit",
+      "qty": 7,
+      "reason": "TARGET",
+      "pnl": 2013.2,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "09:33:03",
+      "side": "exit",
+      "qty": 6,
+      "reason": "TARGET",
+      "pnl": 1725.6,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Rapid 25K LIT lane",
+      "t": "09:33:03",
+      "side": "exit",
+      "qty": 1,
+      "reason": "TARGET",
+      "pnl": 287.6,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "09:40:03",
+      "side": "exit",
+      "qty": 2,
+      "reason": "BE",
+      "pnl": 0.2,
+      "ok": true,
+      "error": null
+     }
+    ]
+   },
+   {
+    "day": "2026-10-06",
+    "label": "opposite sides + NinjaTrader picks the funded 25K's orders up 4 min late",
+    "rapid": true,
+    "polls": 964,
+    "errors": [],
+    "hedges": [],
+    "fill_hedges": [],
+    "sizes": [
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "04:32:03",
+      "side": "sell",
+      "qty": 5,
+      "risk_usd": 399.5,
+      "cap_usd": 409.83,
+      "room": 1024.58
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "04:32:03",
+      "side": "sell",
+      "qty": 3,
+      "risk_usd": 239.7,
+      "cap_usd": 400.0,
+      "room": 1000.0
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "04:10:03",
+      "side": "buy",
+      "qty": 1,
+      "risk_usd": 120.4,
+      "cap_usd": 600.0,
+      "room": 1000.0
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "10:15:03",
+      "side": "sell",
+      "qty": 5,
+      "risk_usd": 337.0,
+      "cap_usd": 540.6,
+      "room": 940.6
+     },
+     {
+      "acct": "Rapid 25K ATLAS lane",
+      "t": "10:15:03",
+      "side": "sell",
+      "qty": 3,
+      "risk_usd": 202.2,
+      "cap_usd": 250.0,
+      "room": 1000.0
+     }
+    ],
+    "ntfy_bytes": 3744,
+    "life": {
+     "lit": {
+      "stage": "eval",
+      "label": "Zlarior 50K",
+      "bal": 49003.28
+     },
+     "atlas": {
+      "stage": "funded",
+      "label": "ATLAS 25K",
+      "bal": 25576.1
+     },
+     "rapid": {
+      "stage": "eval",
+      "label": "Rapid EOD 25K",
+      "bal": 25381.3
+     },
+     "x:b25k_2": {
+      "stage": "eval",
+      "label": "Zlarior Builder 25K #2",
+      "bal": 24886.3
+     }
+    },
+    "coach": {
+     "balance": 25576.1,
+     "profit": 576.1,
+     "cycle_days": 1,
+     "best_day": 576.1,
+     "request_today": 0,
+     "need_more": 773.9,
+     "status": "not_yet",
+     "text": "Not yet: need $774 more."
+    },
+    "trades": [
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "04:10:03",
+      "side": "buy",
+      "qty": 1,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "04:32:03",
+      "side": "sell",
+      "qty": 5,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "04:32:03",
+      "side": "sell",
+      "qty": 3,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "04:32:03",
+      "side": "exit",
+      "qty": 1,
+      "reason": "HEDGE",
+      "pnl": -59.4,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "04:47:03",
+      "side": "exit",
+      "qty": 5,
+      "reason": "CUT_T15",
+      "pnl": -189.5,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "04:47:03",
+      "side": "exit",
+      "qty": 3,
+      "reason": "CUT_T15",
+      "pnl": -113.7,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "10:15:03",
+      "side": "sell",
+      "qty": 5,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Rapid 25K ATLAS lane",
+      "t": "10:15:03",
+      "side": "sell",
+      "qty": 3,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "10:35:03",
+      "side": "exit",
+      "qty": 5,
+      "reason": "TARGET",
+      "pnl": 635.5,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Rapid 25K ATLAS lane",
+      "t": "10:35:03",
+      "side": "exit",
+      "qty": 3,
+      "reason": "TARGET",
+      "pnl": 381.3,
+      "ok": true,
+      "error": null
+     }
+    ]
+   },
+   {
+    "day": "2026-10-06",
+    "label": "opposite sides with Zlarior's 50K already PASSED (stood down)",
+    "rapid": true,
+    "polls": 964,
+    "errors": [],
+    "hedges": [],
+    "fill_hedges": [],
+    "sizes": [
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "04:32:03",
+      "side": "sell",
+      "qty": 3,
+      "risk_usd": 239.7,
+      "cap_usd": 400.0,
+      "room": 1000.0
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "04:10:03",
+      "side": "buy",
+      "qty": 1,
+      "risk_usd": 120.4,
+      "cap_usd": 600.0,
+      "room": 1000.0
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "10:15:03",
+      "side": "sell",
+      "qty": 5,
+      "risk_usd": 337.0,
+      "cap_usd": 540.6,
+      "room": 940.6
+     },
+     {
+      "acct": "Rapid 25K ATLAS lane",
+      "t": "10:15:03",
+      "side": "sell",
+      "qty": 3,
+      "risk_usd": 202.2,
+      "cap_usd": 250.0,
+      "room": 1000.0
+     }
+    ],
+    "ntfy_bytes": 3692,
+    "life": {
+     "lit": {
+      "stage": "passed",
+      "label": "Zlarior 50K",
+      "bal": null
+     },
+     "atlas": {
+      "stage": "funded",
+      "label": "ATLAS 25K",
+      "bal": 25576.1
+     },
+     "rapid": {
+      "stage": "eval",
+      "label": "Rapid EOD 25K",
+      "bal": 25381.3
+     },
+     "x:b25k_2": {
+      "stage": "eval",
+      "label": "Zlarior Builder 25K #2",
+      "bal": 24886.3
+     }
+    },
+    "coach": {
+     "balance": 25576.1,
+     "profit": 576.1,
+     "cycle_days": 1,
+     "best_day": 576.1,
+     "request_today": 0,
+     "need_more": 773.9,
+     "status": "not_yet",
+     "text": "Not yet: need $774 more."
+    },
+    "trades": [
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "04:10:03",
+      "side": "buy",
+      "qty": 1,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "04:32:03",
+      "side": "sell",
+      "qty": 3,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "04:32:03",
+      "side": "exit",
+      "qty": 1,
+      "reason": "HEDGE",
+      "pnl": -59.4,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "04:47:03",
+      "side": "exit",
+      "qty": 3,
+      "reason": "CUT_T15",
+      "pnl": -113.7,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "10:15:03",
+      "side": "sell",
+      "qty": 5,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Rapid 25K ATLAS lane",
+      "t": "10:15:03",
+      "side": "sell",
+      "qty": 3,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "10:35:03",
+      "side": "exit",
+      "qty": 5,
+      "reason": "TARGET",
+      "pnl": 635.5,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Rapid 25K ATLAS lane",
+      "t": "10:35:03",
+      "side": "exit",
+      "qty": 3,
+      "reason": "TARGET",
+      "pnl": 381.3,
+      "ok": true,
+      "error": null
+     }
+    ]
+   },
+   {
+    "day": "2026-10-07",
+    "label": "KILL at 11:00 with LIT long on both evals and ATLAS long on the funded 25K",
+    "rapid": true,
+    "polls": 964,
+    "errors": [],
+    "hedges": [],
+    "fill_hedges": [],
+    "sizes": [
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "10:10:03",
+      "side": "buy",
+      "qty": 2,
+      "risk_usd": 326.8,
+      "cap_usd": 409.83,
+      "room": 1024.58
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "10:10:03",
+      "side": "buy",
+      "qty": 2,
+      "risk_usd": 326.8,
+      "cap_usd": 400.0,
+      "room": 1000.0
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "09:55:03",
+      "side": "buy",
+      "qty": 1,
+      "risk_usd": 145.4,
+      "cap_usd": 600.0,
+      "room": 1000.0
+     },
+     {
+      "acct": "Rapid 25K ATLAS lane",
+      "t": "09:55:03",
+      "side": "buy",
+      "qty": 1,
+      "risk_usd": 145.4,
+      "cap_usd": 250.0,
+      "room": 1000.0
+     }
+    ],
+    "ntfy_bytes": 3761,
+    "life": {
+     "lit": {
+      "stage": "eval",
+      "label": "Zlarior 50K",
+      "bal": 49192.78
+     },
+     "atlas": {
+      "stage": "funded",
+      "label": "ATLAS 25K",
+      "bal": 25077.6
+     },
+     "rapid": {
+      "stage": "eval",
+      "label": "Rapid EOD 25K",
+      "bal": 25077.6
+     },
+     "x:b25k_2": {
+      "stage": "eval",
+      "label": "Zlarior Builder 25K #2",
+      "bal": 25000.0
+     }
+    },
+    "coach": {
+     "balance": 25077.6,
+     "profit": 77.6,
+     "cycle_days": 1,
+     "best_day": 77.6,
+     "request_today": 0,
+     "need_more": 1272.4,
+     "status": "not_yet",
+     "text": "Not yet: need $1,272 more."
+    },
+    "trades": [
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "09:55:03",
+      "side": "buy",
+      "qty": 1,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Rapid 25K ATLAS lane",
+      "t": "09:55:03",
+      "side": "buy",
+      "qty": 1,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "10:10:03",
+      "side": "buy",
+      "qty": 2,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "10:10:03",
+      "side": "buy",
+      "qty": 2,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "11:00:03",
+      "side": "exit",
+      "qty": 2,
+      "reason": "KILL SWITCH",
+      "pnl": 118.2,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "11:00:03",
+      "side": "exit",
+      "qty": 2,
+      "reason": "KILL SWITCH",
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Rapid 25K LIT lane",
+      "t": "11:00:03",
+      "side": "exit",
+      "qty": null,
+      "reason": "KILL SWITCH",
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "11:00:03",
+      "side": "exit",
+      "qty": 1,
+      "reason": "KILL SWITCH",
+      "pnl": 77.6,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Rapid 25K ATLAS lane",
+      "t": "11:00:03",
+      "side": "exit",
+      "qty": 1,
+      "reason": "KILL SWITCH",
+      "pnl": 77.6,
+      "ok": true,
+      "error": null
+     }
+    ]
+   },
+   {
+    "day": "2026-10-13",
+    "label": "phone FLATTEN at 07:30 with LIT short on both evals",
+    "rapid": true,
+    "polls": 964,
+    "errors": [],
+    "hedges": [],
+    "fill_hedges": [],
+    "sizes": [
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "06:03:03",
+      "side": "sell",
+      "qty": 7,
+      "risk_usd": 387.8,
+      "cap_usd": 409.83,
+      "room": 1024.58
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "06:03:03",
+      "side": "sell",
+      "qty": 6,
+      "risk_usd": 332.4,
+      "cap_usd": 400.0,
+      "room": 1000.0
+     },
+     {
+      "acct": "Rapid 25K LIT lane",
+      "t": "06:03:03",
+      "side": "sell",
+      "qty": 1,
+      "risk_usd": 55.4,
+      "cap_usd": 400.0,
+      "room": 1000.0
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "05:45:03",
+      "side": "sell",
+      "qty": 2,
+      "risk_usd": 101.8,
+      "cap_usd": 600.0,
+      "room": 1000.0
+     },
+     {
+      "acct": "Rapid 25K ATLAS lane",
+      "t": "05:45:03",
+      "side": "sell",
+      "qty": 1,
+      "risk_usd": 50.9,
+      "cap_usd": 250.0,
+      "room": 1000.0
+     }
+    ],
+    "ntfy_bytes": 3795,
+    "life": {
+     "lit": {
+      "stage": "eval",
+      "label": "Zlarior 50K",
+      "bal": 49192.78
+     },
+     "atlas": {
+      "stage": "funded",
+      "label": "ATLAS 25K",
+      "bal": 25271.2
+     },
+     "rapid": {
+      "stage": "eval",
+      "label": "Rapid EOD 25K",
+      "bal": 25002.1
+     },
+     "x:b25k_2": {
+      "stage": "eval",
+      "label": "Zlarior Builder 25K #2",
+      "bal": 25000.0
+     }
+    },
+    "coach": {
+     "balance": 25271.2,
+     "profit": 271.2,
+     "cycle_days": 1,
+     "best_day": 271.2,
+     "request_today": 0,
+     "need_more": 1078.8,
+     "status": "not_yet",
+     "text": "Not yet: need $1,079 more."
+    },
+    "trades": [
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "05:45:03",
+      "side": "sell",
+      "qty": 2,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Rapid 25K ATLAS lane",
+      "t": "05:45:03",
+      "side": "sell",
+      "qty": 1,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "06:03:03",
+      "side": "sell",
+      "qty": 7,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "06:03:03",
+      "side": "sell",
+      "qty": 6,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Rapid 25K LIT lane",
+      "t": "06:03:03",
+      "side": "sell",
+      "qty": 1,
+      "reason": null,
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Rapid 25K ATLAS lane",
+      "t": "06:03:03",
+      "side": "exit",
+      "qty": 1,
+      "reason": "HEDGE",
+      "pnl": 2.1,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 50K (main)",
+      "t": "07:30:03",
+      "side": "exit",
+      "qty": 7,
+      "reason": "REMOTE FLATTEN",
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Zlarior 25K #2 (b25k_2)",
+      "t": "07:30:03",
+      "side": "exit",
+      "qty": 6,
+      "reason": "KILL SWITCH",
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "Rapid 25K LIT lane",
+      "t": "07:30:03",
+      "side": "exit",
+      "qty": 1,
+      "reason": "KILL SWITCH",
+      "pnl": null,
+      "ok": true,
+      "error": null
+     },
+     {
+      "acct": "ATLAS funded 25K (B)",
+      "t": "07:30:03",
+      "side": "exit",
+      "qty": 2,
+      "reason": "KILL SWITCH",
+      "pnl": 271.2,
+      "ok": true,
+      "error": null
+     }
+    ]
+   }
+  ]
+ }
+}
