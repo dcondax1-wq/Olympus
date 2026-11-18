@@ -488,8 +488,25 @@ class Account:
             self.ledger.append({"t": int(self.router.clock()), **action, "result": res})
         self.log("order", f"{action['side'].upper()} {action.get('qty', '')} {action['sym']} -> {res.get('ok')}"
                  + (f" ({res.get('error')})" if res.get("ok") is False and res.get("error") else ""))
+        self._life_routed(action, res)
         self.router.save()
         return res
+
+    # ---- MFFU lifecycle (engine/lifecycle.py): passed / failed / locked = stand down, the other accounts keep trading
+    def life_key(self) -> str:
+        from . import lifecycle
+        return lifecycle.key_of(self)
+
+    def _life_routed(self, action, res):
+        try:
+            from . import lifecycle
+            k = self.life_key()
+            ev = lifecycle.after_route(getattr(self.router, "bot", None), k, lifecycle.label_of(k, self), self.adapter, action, res,
+                                       acct=self.spec.get("nt_account") or self.id)
+            if ev:
+                self.log("risk", f"{ev['title']}: {ev['body']}")
+        except Exception:
+            pass
 
     # ---- P&L / eval
     def start_day(self) -> str:
@@ -622,6 +639,13 @@ class Account:
         dis = self.disabled_reason()
         if dis:
             return f"disabled: {dis}"
+        try:                              # engine/lifecycle.py: passed / failed / locked by MFFU / MFFU flat time
+            from . import lifecycle
+            lb = lifecycle.block(getattr(self.router, "bot", None), self.life_key(), now)
+            if lb:
+                return lb
+        except Exception:
+            pass
         today = trading_day(now)
         if self.lock and self.lock.get("day") == today:
             return f"locked out today: {self.lock['reason']}"

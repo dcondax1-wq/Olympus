@@ -164,8 +164,10 @@ def kind_of(key: str) -> str:
         return "trade_opened"
     if k.startswith("close:"):
         return "trade_closed"
-    if k.startswith("guard:goal:"):
+    if k.startswith(("guard:goal:", "life:payout_ready:")):
         return "eval_milestones"
+    if k.startswith("life:"):                       # engine/lifecycle.py: an account PASSED / FAILED / LOCKED / LOST
+        return "problems"
     if k.startswith(("guard:dd:", "guard:dll:")):
         return "room_low"
     if k.startswith("guard:day:"):

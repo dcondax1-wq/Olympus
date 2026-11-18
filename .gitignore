@@ -139,6 +139,8 @@ data/rapid.json
 data/rapid.json.tmp
 data/lit25.json
 data/lit25.json.tmp
+data/lifecycle.json
+data/lifecycle.json.tmp
 data/live_state_acctr*.json
 data/live_state_acctr*.json.tmp
 data/ninjatrader_state_acctr.json

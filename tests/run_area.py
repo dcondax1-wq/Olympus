@@ -39,7 +39,7 @@ AREAS = {
     "zenith": ["hidden_bots", "zenith_shell", "zenith_pages", "zenith_pro", "zenith_mode", "atlas_ui", "blitz_tab", "planner_addons", "ui_polish", "phone_e2e"],
     "kalshi": ["kalshi_edges", "kalshi_research", "kalshi_publish", "kalshi_guard", "kalshi_vm_update", "kalshi_page", "kalshicity_page"],
     "cities": ["cities_page", "kalshicity_page", "datacity"],
-    "nq": ["lit_live", "no_yahoo", "risk_invariants", "mffu_rules", "holidays", "holiday_replay", "guards", "sizing_caps", "second", "eval_lifecycle", "live_board", "live_publish", "heartbeat",
+    "nq": ["lit_live", "no_yahoo", "risk_invariants", "mffu_rules", "holidays", "holiday_replay", "guards", "sizing_caps", "second", "eval_lifecycle", "lifecycle", "live_board", "live_publish", "heartbeat",
            "lit_scale_in", "lit_learn", "learn_loop"],
     "pc": ["autoupdate_source", "pc_doctor", "obsidian_sync", "autorun", "update_from_zip", "pc_publish", "public_build_privacy", "bots_back", "report_keeper", "trade_watch_atlas", "setup_everything", "calendar_sync", "me_hub", "live_link", "roll_now", "pc_guard", "launch_kit", "second_backup", "clean_pc", "clean_storage", "lite", "win_scripts", "fresh_start", "pc_health", "pc_selftest", "pc_silent", "notify", "pc_command_center", "one_time_setup", "board"],
     "agency": ["agency", "agency_billing", "cold_calls", "agency_storefront", "agency_upsells", "biz_models"],

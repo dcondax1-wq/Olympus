@@ -643,8 +643,28 @@ class AccountB:
             self.ledger = self.ledger[-400:]
         self.log("order", f"{action['side'].upper()} {action.get('qty', '')} {action['sym']} -> {res.get('ok')}"
                  + (f" ({res.get('error')})" if res.get("ok") is False and res.get("error") else ""))
+        self._life_routed(action, res)
         self.save()
         return res
+
+    # ---- MFFU lifecycle (engine/lifecycle.py): passed / failed / locked = stand down, the other accounts keep trading
+    def life_key(self) -> str:
+        from . import lifecycle
+        return lifecycle.key_of(self)
+
+    def life_block(self, now):
+        from . import lifecycle
+        return lifecycle.block(self.bot, self.life_key(), now)
+
+    def _life_routed(self, action, res):
+        try:
+            from . import lifecycle
+            ev = lifecycle.after_route(self.bot, self.life_key(), lifecycle.label_of(self.life_key(), self), self.adapter, action,
+                                       res, acct=self.name)
+            if ev:
+                self.log("risk", f"{ev['title']}: {ev['body']}")
+        except Exception:
+            pass
 
     def adapter_tick(self):
         ad = self.adapter
@@ -904,7 +924,8 @@ class AccountB:
             return
         self.notified.append(key)
         txt = {"passed": (f"{self.label} EVAL PASSED \U0001F389", f"balance ${ev['balance']:,.0f} (target ${ev['target']:,.0f}): no new "
-                                                                   "trade on this eval; request the funded account in the MFFU dashboard, "
+                                                                   "trade on this eval. MFFU locks it until the funded account is "
+                                                                   "issued: send Claude the new account name. Request the funded account in the MFFU dashboard, "
                                                                    "then run the funded switch with its new Name: Start page > Accounts > "
                                                                    f"Passed → funded, or {FUNDED_CMD}. The bot never switches by itself."),
                "failed": (f"{self.label} EVAL FAILED", f"balance ${ev['balance']:,.0f} reached the max-loss floor ${ev['floor']:,.0f}: no "
@@ -1110,6 +1131,8 @@ class AccountB:
             why_bar = self.startup_block(now)
         if not why_bar and getattr(self.bot, "_no_entries_day", None) == trading_day(now):
             why_bar = "the owner flattened remotely today"
+        if not why_bar:
+            why_bar = self.life_block(now)                # engine/lifecycle.py: passed / failed / locked / MFFU flat time
         if not why_bar and self.lock and self.lock.get("day") == day:
             why_bar = f"locked out today: {self.lock['reason']}"
         ev = self.eval_view(now) if not why_bar else {}
@@ -1256,7 +1279,8 @@ class AccountB:
         self.log("risk", f"{what} was NOT PLACED on {self.name}: {err}. Nothing is open on account B; it keeps looking for "
                          "its next setup.")
         key = f"acctb:notplaced:{et_}"
-        if key not in self.notified:
+        from . import lifecycle
+        if key not in self.notified and not lifecycle.is_stood_down(self.bot, self.life_key()):   # LOCKED: its own push
             self.notified.append(key)
             self._push_text(f"{self.label}: order NOT placed",
                             f"{what} did not go in ({err}). Nothing is open on {self.name}, no money at risk. ATLAS keeps "
