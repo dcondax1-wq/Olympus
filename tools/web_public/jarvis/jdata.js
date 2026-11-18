@@ -125,7 +125,9 @@ export function accounts(S) {
   return list.filter((a) => isObj(a) && !a.error).map((a) => {
     const ev = isObj(a.eval) ? a.eval : isObj(a.funded_eval) ? a.funded_eval : {}, pnl = isObj(a.pnl) ? a.pnl : {}, conn = isObj(a.conn) ? a.conn : {};
     return { name: str(a.name || a.id, 40) || 'Account', funded: String(a.kind || '').toLowerCase() === 'funded', balance: num(ev.balance), room: num(ev.room), mll: num(ev.mll), dll: num(ev.dll), dllUsed: num(ev.dll_used) || 0,
-      target: num(ev.target), toTarget: num(ev.to_target), today: num(pnl.today) != null ? num(pnl.today) : num(ev.today), connected: typeof conn.connected === 'boolean' ? conn.connected : null, paused: !!a.paused };
+      target: num(ev.target), toTarget: num(ev.to_target), today: num(pnl.today) != null ? num(pnl.today) : num(ev.today), connected: typeof conn.connected === 'boolean' ? conn.connected : null, paused: !!a.paused,
+      // a paper ledger (the cloud monitor's "Paper (cloud)", BLITZ's paper rows): never a real account (2026-11-18: its low room read like a real emergency)
+      paper: String(a.kind || '').toLowerCase() === 'paper' || String(a.source || '').toLowerCase() === 'cloud' || String(a.badge || '').toUpperCase() === 'PAPER' || /\bcloud\b|^cloud_paper$/i.test(String(a.id || '') + ' ' + String(a.name || '')) };
   });
 }
 export const worstAccount = (accts) => accts.filter((a) => a.room != null && a.mll).sort((x, y) => x.room / x.mll - y.room / y.mll)[0] || null;

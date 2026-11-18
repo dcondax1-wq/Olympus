@@ -357,7 +357,7 @@ function plannerDayOf(d) {
 // ------------------------------------------------------------------------------------------------ the apps (fallback for apps.js)
 export const KALSHI_URL = '../kalshi/';   // the Kalshi page (tools/web_public/kalshi/): the bot's kalshi.json
 export const BUILT_IN = [
-  { id: 'zenith', name: 'Zenith', sub: 'NQ bots · Zlarior · ATLAS', url: '../', icon: '../icons/icon-192.png?v=p111030', builtIn: true },
+  { id: 'zenith', name: 'Zenith', sub: 'NQ bots · Zlarior · ATLAS', url: '../', icon: '../icons/icon-192.png?v=p111031', builtIn: true },
   { id: 'planner', name: 'Planner', sub: 'Calendar, tasks and projects', url: '../planner/', icon: '../planner/icon-192.png', builtIn: true },
   { id: 'kalshi', name: 'Kalshi', sub: 'Kalshi bot · its own server', url: KALSHI_URL, glyph: 'K', builtIn: true },
 ];

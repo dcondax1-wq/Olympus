@@ -10,9 +10,9 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Olympus">
-<link rel="manifest" href="manifest.webmanifest?v=j5">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=j4">
-<link rel="icon" href="icon-192.png?v=j4">
+<link rel="manifest" href="manifest.webmanifest?v=j6">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=j5">
+<link rel="icon" href="icon-192.png?v=j5">
 <!-- dark from the first paint, even before (or without) the stylesheet: never a white screen -->
 <style>html,body{background:#14110e;color:#f3ece0;margin:0}</style>
 <script>
@@ -104,7 +104,7 @@ window.addEventListener('error', function (e) {
   if (!window.__jarvisErr) window.__jarvisErr = String(e.message || 'Script error') + (e.filename ? ' (' + String(e.filename).split('/').pop() + ':' + e.lineno + ')' : '');
 }, true);
 </script>
-<link rel="stylesheet" id="jcss" href="jarvis.css?v=j18">
+<link rel="stylesheet" id="jcss" href="jarvis.css?v=j19">
 <link rel="stylesheet" id="jhome" href="home3d.css?v=h4">
 <!-- quiet-net: data-fresh = Jarvis shows the Kalshi bot, so it asks the Kalshi feed afresh once per load (data.js: "opening Jarvis again
      asks once more: that is how a newly linked bot shows up"); without it a 404 earlier in the session kept it "not connected".
@@ -364,7 +364,13 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     el.appendChild(w);
     var len = LEN[mode] || 0.5;
     if (mode === 'calm') { w.style.opacity = '0'; w.style.transition = 'opacity ' + Math.round(len * 380) + 'ms ease-out'; setTimeout(function () { w.style.opacity = '1'; }, 30); }
-    if (HOLD < 0) setTimeout(function () { fadeOut(Math.round(len * (mode === 'calm' ? 280 : 600)), 'reveal'); }, Math.round(len * (mode === 'calm' ? 720 : 400)));
+    // the hard stop is set again from here (like the film's first frame): a phone whose main thread is busy with Jarvis's own start
+    // fires this timer late, and the old deadline (due by then too) must not cut the fade short (state 'deadline' instead of 'done')
+    if (HOLD < 0) setTimeout(function () {
+      var ms = Math.round(len * (mode === 'calm' ? 280 : 600));
+      clearTimeout(killT); killT = setTimeout(function () { finish('deadline'); }, ms + 1200);
+      fadeOut(ms, 'reveal');
+    }, Math.round(len * (mode === 'calm' ? 720 : 400)));
   }
 
   // ---------------------------------------------------------------- WebGL
@@ -1075,7 +1081,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
       </section>
 
       <footer class="hfoot">
-        <div class="htop"><span class="sdot" id="dot" title="System online"></span><img src="icon-192.png?v=j4" alt="" width="40" height="40"><p class="title">OLYMPUS</p><span class="clock" id="clock">--:--:--</span></div>
+        <div class="htop"><span class="sdot" id="dot" title="System online"></span><img src="icon-192.png?v=j5" alt="" width="40" height="40"><p class="title">OLYMPUS</p><span class="clock" id="clock">--:--:--</span></div>
         <button class="hv-btn" type="button" id="hRefresh" data-hc="refresh"><span id="hUpdated">Not updated yet</span> · Refresh</button>
         <p class="foot">Read only: Jarvis never places a trade. The bots run on their own; Jarvis only shows them.</p>
       </footer>
@@ -3470,6 +3476,33 @@ if (window.visualViewport) {
   const fitDock = () => { const kb = Math.max(0, innerHeight - visualViewport.height - visualViewport.offsetTop); $('#dock').style.transform = kb > 60 ? `translateY(${-Math.round(kb)}px)` : ''; };
   visualViewport.addEventListener('resize', fitDock); visualViewport.addEventListener('scroll', fitDock);
 }
+// A web host's badge (2026-11-18: "Powered by Netlify" sat on the Send and ⋯ keys; the host injects it, it is not ours): when something
+// fixed that is not Jarvis's own sits in the bottom-right corner over the dock's width, the dock (and the chip row, the orb, the scroller's
+// end with it: jarvis.css --dock-b) lifts above it. Looked for at the start, 1.5 s and 5 s later, when the page's children change and on a resize.
+function hostBadge() {
+  const OURS = '#dock, #fab, #next, #nxOrb, .nx-root, .nx-tip, .nx-fan, main, .bar, .sheet, .toast, #toast, .dockfade, #olyIntro, #bootfx, #boot, .bgfx, .hapl';
+  const dock = $('#dock'); if (!dock || root.getAttribute('data-mode') !== 'jarvis') return;
+  const d = dock.getBoundingClientRect(); let lift = 0;
+  for (const dx of [20, 60, 110]) for (const dy of [10, 30]) {
+    const e = document.elementFromPoint(innerWidth - dx, innerHeight - dy);
+    if (!e || e === document.body || e === root || e.closest(OURS)) continue;
+    let f = e; while (f && f !== document.body && getComputedStyle(f).position !== 'fixed') f = f.parentElement;
+    if (!f || f === document.body) continue;
+    const r = f.getBoundingClientRect();
+    if (r.height > 0 && r.height < 160 && r.width < innerWidth * 0.8 && r.left < d.right - 1) lift = Math.max(lift, Math.ceil(innerHeight - r.top) + 6);
+  }
+  const was = root.style.getPropertyValue('--host-lift');
+  const now = lift ? lift + 'px' : '';
+  if (was === now) return;
+  if (now) { root.style.setProperty('--host-lift', now); root.setAttribute('data-host-badge', '1'); } else { root.style.removeProperty('--host-lift'); root.removeAttribute('data-host-badge'); }
+  try { window.dispatchEvent(new Event('resize')); } catch (_) { /* the orb re-slots on the next resize */ }
+}
+safe(() => {
+  let hbT = 0; const later = () => { clearTimeout(hbT); hbT = setTimeout(() => safe(hostBadge), 120); };
+  later(); setTimeout(later, 1500); setTimeout(later, 5000);
+  window.addEventListener('resize', later);
+  new MutationObserver(later).observe(document.body, { childList: true });
+});
 window.__jarvis = { show, ask, facts: D.getFacts, refresh: () => Promise.resolve(D.refresh({ maxAge: 0 })).then(() => { greet(); safe(renderNext); }, () => null), active: () => active, setTheme, setOlyTheme, setFx, state: () => state, core: () => (core && typeof core.stats === 'function' ? safe(() => core.stats()) : null),
   voiceMode: (g) => voiceMode(!!g), vm: () => (vm ? vm.stats() : null), closeVoiceMode: () => { if (vm) vm.close('test'); },
   voice: () => (vo ? vo.stats() : null), talk: (t) => speak(String(t || ''), false),   // for tests and the console; read-only
@@ -3494,7 +3527,7 @@ if ('serviceWorker' in navigator) {
 <script src="./welcome.js?v=w1" defer></script>
 <script type="module" src="./transitions.js?v=t5"></script>
 <script type="module" src="./briefing.js?v=r2"></script>
-<script type="module" src="./home-cards.js?v=hc1"></script>
+<script type="module" src="./home-cards.js?v=hc2"></script>
 <script type="module" src="./copilot-card.js?v=cp2"></script>
 </body>
 </html>

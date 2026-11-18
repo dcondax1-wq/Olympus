@@ -142,7 +142,7 @@ def part_d():
 def part_e():
     page = read(JV, "index.html")
     css = read(JV, "jarvis.css")
-    check("e. index.html: the home cards mount (#htoday + home-cards.js module) and the Jarvis CSS is versioned", 'id="htoday"' in page and 'src="./home-cards.js?v=' in page and "jarvis.css?v=j18" in page)
+    check("e. index.html: the home cards mount (#htoday + home-cards.js module) and the Jarvis CSS is versioned", 'id="htoday"' in page and 'src="./home-cards.js?v=' in page and "jarvis.css?v=j19" in page)
     check("e. the What's new note is a slim banner in the page flow (#wnb, dismissible), not a toast over the top card; toasts sit above the dock",
           "function banner(" in page and "banner('Every app is its own dashboard" in page and ".wnb {" in css and "bottom: calc(var(--stack) + 8px)" in css and "top: auto" in css)
     hc = read(JV, "home-cards.js")
@@ -172,6 +172,20 @@ const live = H.buildHome({ now, api, districtOf, facts: { live: { t: now / 1000 
   events: { events: { events: [{ date: '2026-11-10', time: '14:00', title: 'Fed decision', impact: 'high' }] } } });
 out.live = { hero: live.hero, tiles: live.tiles.map((t) => [t.id, t.lead || '', t.big || t.text, t.tail || '', t.sub, t.tone, t.frac]), needs: live.needs, state: live.state.kind };
 out.tight = [H.tightest([{ room: 1840, mll: 2000, name: 'a' }, { room: 300, mll: 1500, name: 'b' }]).name, H.tightest([]), H.tightest('x')];
+// 2026-11-18: a silent PC (home.json's last report, Nov 7) gives the day and the fix; a paper test never takes the hero
+const nowS = Date.parse('2026-11-18T01:00:00Z'), pcT = Date.parse('2026-11-07T21:40:00Z') / 1000;
+const sil = H.buildHome({ now: nowS, pcT, districtOf, api: { nudges: () => [{ id: 'paper_dd', text: 'Paper test, not real money: $389 of $2,000 practice drawdown left.', tone: 'info', app: 'zenith' }, { id: 'feeds', text: 'Check this phone has signal', tone: 'warn', app: 'zenith' }] } });
+out.silent = { st: [sil.state.kind, sil.state.text, sil.state.since], hero: sil.hero, tile: [sil.tiles[0].text, sil.tiles[0].sub, sil.tiles[0].tone] };
+const po = H.buildHome({ now, facts: { live: { t: now / 1000 - 60 } }, api: { nudges: () => [{ id: 'paper_dd', text: 'Paper test, not real money', tone: 'info', app: 'zenith' }] } });
+out.paperOnly = [po.hero.text, po.hero.more, po.today.items.length];
+out.fresh = H.stateFrom({ now: nowS, pcT: nowS / 1000 - 600 }).kind;
+out.when = [H.whenText(pcT, nowS), H.whenText(now / 1000 - 3600, now), H.whenText(null, now)];
+const N = await import('./nudges.js');
+const acc = (id, name, kind, source, room, mll) => ({ id, name, kind, source, eval: { room, mll } });
+const nl = N.nudges({ home: { accounts: [acc('cloud_paper', 'Paper (cloud)', 'paper', 'cloud', 389, 2000), acc('zlarior', 'Zlarior 50K', 'eval', '', 1025, 2000)] } }, { now: nowS });
+const nl2 = N.nudges({ home: { accounts: [acc('cloud_paper', 'Paper (cloud)', 'paper', 'cloud', 389, 2000), acc('zlarior', 'Zlarior 50K', 'eval', '', 300, 2000)] } }, { now: nowS });
+const nf = (l) => l.filter((x) => x.id !== 'feeds_stale');                       // the fixture has no other published files
+out.nudges = [nf(nl).map((x) => [x.id, x.level, x.text]), nf(nl2).map((x) => [x.id, x.level])];
 out.junk = (() => { const j = H.buildHome({ facts: 'x', snap: 7, money: [], events: 3, kairos: 'k', api: { nudges() { throw new Error('boom'); } }, now: 'later', districtOf: () => { throw new Error('no'); } }); return [j.hero.text, j.tiles.length, j.state.kind, Object.values(j.needs).join('')]; })();
 console.log(JSON.stringify(out));
 """
@@ -183,9 +197,9 @@ console.log(JSON.stringify(out));
           and stt[2][1] == "The bots have not reported yet: your accounts are not affected" and stt[4][1] == "The last bot report is 2 h 5 min old: your accounts are not affected"
           and "2 h 5 min ago" in stt[5][1] and "offline" in stt[1][1].lower(), stt)
     d = o["demo"]
-    check("f. the three tiles, in order: NQ bots (the TIGHTEST account: 'Drawdown left $1,240 of $1,500 max loss'), Money (the Mint estimate with its range, labelled an estimate), Today (the window now and the next event)",
+    check("f. the three tiles, in order: NQ bots (the TIGHTEST account: 'Drawdown left $1,240 of $1,500 max loss'), Money (the Mint estimate with its range; Mint's sample streams labelled 'sample, not real' since 2026-11-18), Today (the window now and the next event)",
           [t[0] for t in d["tiles"]] == ["bots", "money", "today"] and d["tiles"][0][2:5] == ["Drawdown left", "$1,240", "of $1,500 max loss"] and "ATLAS" in d["tiles"][0][5] and "Drawdown left $1,240 of $1,500 max loss" in d["tiles"][0][6]
-          and d["tiles"][1][3] == "$1,495" and "estimate" in d["tiles"][1][4] and "−$42 to $2,547" in d["tiles"][1][5] and "example numbers" in d["tiles"][1][5] and "not income" in d["tiles"][1][6]
+          and d["tiles"][1][3] == "$1,495" and "sample" in d["tiles"][1][4] and "−$42 to $2,547" in d["tiles"][1][5] and "sample, not real" in d["tiles"][1][5] and "not income" in d["tiles"][1][6]
           and d["tiles"][2][3] == "London entries" and "Next:" in d["tiles"][2][5] and [t[1] for t in d["tiles"]] == ["zenith", "mint", "kairos"], d["tiles"])
     check("f. the hero is ONE sentence: the first thing that needs you (with how many more), and the doorways of those districts are marked (demo: Market and Life)",
           d["hero"]["text"].startswith("ATLAS is close to its floor") and d["hero"]["more"] == 1 and d["hero"]["app"] == "zenith" and d["needs"] == {"market": "warn", "research": "", "money": "", "command": "", "life": "warn"} and d["state"] == "demo", (d["hero"], d["needs"]))
@@ -198,6 +212,15 @@ console.log(JSON.stringify(out));
           lv["hero"]["text"] == "Zlarior has $300 of drawdown left" and lv["hero"]["tone"] == "bad" and lv["hero"]["more"] == 3 and lv["needs"] == {"market": "bad", "research": "", "money": "warn", "command": "warn", "life": "warn"}
           and lv["tiles"][0][1:4] == ["Drawdown left", "$300", "of $1,500 max loss"] and lv["tiles"][0][5] == "bad" and abs(lv["tiles"][0][6] - 0.2) < 1e-9 and "example" not in lv["tiles"][1][4]
           and lv["tiles"][2][2] == "New York morning" and "Fed decision" in lv["tiles"][2][4] and lv["state"] == "live", lv)
+    sl = o["silent"]
+    check("f. a PC silent since Nov 7 (home.json's last report, no live feed): the day and the fix in one line, as the hero (over an amber nudge) and on the NQ bots tile",
+          sl["st"] == ["stale", "PC silent since Nov 7: STOP BOT, then START BOT", "Nov 7"] and sl["hero"]["text"] == "PC silent since Nov 7: STOP BOT, then START BOT." and sl["hero"]["tone"] == "warn"
+          and sl["hero"]["more"] == 2 and sl["tile"] == ["No report since Nov 7", "On the PC, tap STOP BOT, then START BOT.", "warn"] and o["fresh"] == "waiting"
+          and o["when"] == ["Nov 7", "today 9:00 AM", ""], (sl, o["fresh"], o["when"]))
+    check("f. a paper test never takes the hero (it waits in '+1 more'); nudges: real accounts first, the cloud paper ledger one calm 'Paper test, not real money' line, never red",
+          o["paperOnly"] == ["Nothing needs you right now.", 1, 1]
+          and o["nudges"][0] == [["paper_dd", "info", "Paper test, not real money: $389 of $2,000 practice drawdown left."]]
+          and o["nudges"][1] == [["dd_low", "bad"], ["paper_dd", "info"]], (o["paperOnly"], o["nudges"]))
     check("f. the tightest account is the one with the least room as a share of its max loss; junk in = plain words out (no throw)", o["tight"] == ["b", None, None] and o["junk"][1] == 3 and o["junk"][0] and o["junk"][2] == "waiting" and o["junk"][3] == "", (o["tight"], o["junk"]))
     page = read(JV, "index.html")
     home = page[page.index('<section class="view" id="home"'):page.index('<section class="view zoff" id="zen"')]
