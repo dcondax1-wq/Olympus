@@ -67,11 +67,12 @@ def part_a():
     check("a. no cold colour in zenith_nq.js, zenith_money.js, zenith.js, zenith.css, polish.css; the accent rgb token is gold (200,162,74; a theme slot's fallback)",
           not any(cold(rd(n)) for n in ("zenith_nq.js", "zenith_money.js", "zenith.js", "zenith.css", "polish.css")) and "--zn-accent-rgb:var(--oly-th-a8-rgb, 200,162,74)" in css and "109,124,255" not in css,
           {n: cold(rd(n))[:3] for n in ("zenith_nq.js", "zenith_money.js", "zenith.js", "zenith.css", "polish.css")})
-    fb = idx[idx.index("function reactorFb("):idx.index("function reactorFb(") + 2600]
-    sp = idx[idx.index("const cv = $('#spCv')"):idx.index("const cv = $('#spCv')") + 3200]
+    src = idx + rd("main.js")             # the page's own script moved out of index.html into main.js (QA round 7)
+    fb = src[src.index("function reactorFb("):src.index("function reactorFb(") + 2600]
+    sp = src[src.index("const cv = $('#spCv')"):src.index("const cv = $('#spCv')") + 3200]
     check("a. the eval arc on Home (reactorFb) and the intro (stars, halo) are re-toned: no cold colour", not cold(fb) and not cold(sp), (cold(fb), cold(sp)))
-    check("a. changed files are re-versioned so a phone does not keep the old copy: zenith_hero.js?v=4, zenith_money.js?v=3, zenith_agora.css?v=a4 (AGORA v2 Home layer)",
-          'src="zenith_hero.js?v=4"' in idx and 'src="zenith_money.js?v=3"' in idx and 'href="zenith_agora.css?v=a4"' in idx)
+    check("a. changed files are re-versioned so a phone does not keep the old copy: zenith_hero.js?v=5, zenith_money.js?v=3, zenith_agora.css?v=a5 (AGORA v2 Home layer)",
+          'src="zenith_hero.js?v=5"' in idx and 'src="zenith_money.js?v=3"' in idx and 'href="zenith_agora.css?v=a5"' in idx)
 
 
 NODE = r"""

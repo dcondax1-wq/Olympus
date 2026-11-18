@@ -17,7 +17,11 @@
   const sUsd = (v) => (okN(v) ? (v < 0 ? '−$' : '+$') + Math.abs(Math.round(v)).toLocaleString('en-US') : '—');
   const cls = (v) => (okN(v) && v > 0 ? 'up' : okN(v) && v < 0 ? 'dn' : '');
   const STATE = { trade: 'In a trade', armed: 'Armed', idle: 'Watching', off: 'Off' };
-  const ST = { sel: null, sig: '', cv: null, pts: null };
+  const ST = { sel: null, sig: '', cv: null, pts: null, open: false };
+  // each bot's pill + the balance chart sit behind one tap (2026-11-18 night-polish: Money now right above already gives each bot's
+  // state and $ today; Home under 3,500 px on a phone); the choice is remembered on this phone
+  const MORE_KEY = 'zh.more';
+  try { ST.open = localStorage.getItem(MORE_KEY) === '1'; } catch (e) { ST.open = false; }
   const MU = () => window.MissionUI;
 
   function model() { try { return window.POLISH && window.POLISH.model ? window.POLISH.model() : null; } catch (e) { return null; } }
@@ -147,8 +151,9 @@
     return `<div class="zh-top"><div class="zh-big"><em>Today · all bots</em><b class="${cls(H.today)}" data-zn-num="zh-today">${sUsd(H.today)}</b>
         <small>${H.trades ? H.trades + (H.trades === 1 ? ' trade' : ' trades') + ' closed or open' : 'No trade yet today'}</small></div>
       <div class="zh-next" data-zh-next></div></div>
-      <div class="zh-bots">${pills}</div>
-      ${H.A ? `<div class="zh-ch-h"><span>${esc(H.A.name)} balance</span>${tabs}</div>
+      <button type="button" class="zh-more" data-zh-more aria-expanded="${ST.open}"><span>${ST.open ? 'Hide each bot + balance chart' : 'Each bot + balance chart'}</span><i class="pl-chev" aria-hidden="true"></i></button>
+      ${ST.open ? `<div class="zh-bots">${pills}</div>` : ''}
+      ${ST.open && H.A ? `<div class="zh-ch-h"><span>${esc(H.A.name)} balance</span>${tabs}</div>
       <div class="zh-chart" role="img" aria-label="${esc(H.A.name)} balance by day with the drawdown floor ${usd(H.A.floor)}"><canvas aria-hidden="true"></canvas><i class="zh-now" aria-hidden="true"></i><div class="zh-read" aria-live="off"></div></div>` : ''}`;
   }
   function nextText(H) {
@@ -168,14 +173,17 @@
     if (!HERO) { HERO = document.createElement('section'); HERO.className = 'zh-hero zh-skel'; HERO.setAttribute('aria-hidden', 'true'); wire(HERO); }
     if (!HERO.classList.contains('zh-skel')) return;
     if (HERO.parentNode !== hi) hi.appendChild(HERO);
-    if (!HERO.firstChild) HERO.innerHTML = '<i class="zh-sk a"></i><i class="zh-sk b"></i><div class="zh-sk-row"><i class="zh-sk c"></i><i class="zh-sk c"></i></div><i class="zh-sk d"></i>';
+    // the shimmer has the shape of the hero that will land (folded = the big number + the one-tap row), so nothing jumps when it does
+    HERO.classList.toggle('zh-sk-open', ST.open);
+    if (!HERO.firstChild) HERO.innerHTML = ST.open ? '<i class="zh-sk a"></i><i class="zh-sk b"></i><div class="zh-sk-row"><i class="zh-sk c"></i><i class="zh-sk c"></i></div><i class="zh-sk d"></i>'
+      : '<i class="zh-sk a"></i><i class="zh-sk b"></i><i class="zh-sk e"></i>';
   }
   function paint(sync) {
     const home = document.querySelector('#page > .pl-home');
     if (!home) { if (HERO) { HERO.remove(); HERO = null; } return; }
     const M = model(), As = M ? accounts(M) : [], H = M ? build(M, As) : null;
     if (!H) { skeleton(home); return; }
-    if (HERO && HERO.classList.contains('zh-skel')) { HERO.classList.remove('zh-skel'); ST.sig = ''; }
+    if (HERO && HERO.classList.contains('zh-skel')) { HERO.classList.remove('zh-skel', 'zh-sk-open'); ST.sig = ''; }
     H0 = H;
     seen = true;
     if (!HERO) { HERO = document.createElement('section'); HERO.className = 'zh-hero'; HERO.setAttribute('aria-label', 'Today'); wire(HERO); }
@@ -187,7 +195,7 @@
     if (HERO.parentNode !== hi) { if (zi) hi.insertBefore(HERO, zi); else hi.appendChild(HERO); }
     else if (zi && HERO.nextElementSibling !== zi) hi.insertBefore(HERO, zi);
     const A = H.A, S = A ? series(A) : null;
-    const sig = JSON.stringify([H.As.map((a) => [a.key, a.state, a.today, a.balance, a.floor, a.placeholder]), ST.sel, S && S.map((p) => p.v)]) + Z.quality();
+    const sig = JSON.stringify([H.As.map((a) => [a.key, a.state, a.today, a.balance, a.floor, a.placeholder]), ST.sel, ST.open, S && S.map((p) => p.v)]) + Z.quality();
     if (sig !== ST.sig) {
       const prev = {};
       HERO.querySelectorAll('[data-zn-num]').forEach((e) => { const p = Z.parse(e.textContent); if (p) prev[e.dataset.znNum] = p.v; });
@@ -220,6 +228,11 @@
   }
   function wire(el) {
     el.addEventListener('click', (e) => {
+      if (e.target.closest && e.target.closest('[data-zh-more]')) {
+        ST.open = !ST.open; ST.sig = '';
+        try { localStorage.setItem(MORE_KEY, ST.open ? '1' : '0'); } catch (err) { /* private mode: this visit only */ }
+        paint(); return;
+      }
       const b = e.target.closest && e.target.closest('[data-zh]'); if (!b) return;
       ST.sel = b.dataset.zh; ST.sig = ''; paint();
     });

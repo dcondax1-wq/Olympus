@@ -54,7 +54,18 @@
 #page.pl-h > .mc-strip { order: 10; } #page.pl-h > .rc-homebox { order: 11; } #page.pl-h > .rc-wrap { order: 12; } #page.pl-h > .bd-homecut { order: 13; }
 #page.pl-h > .cl-launch { order: 14; } #page.pl-h > .bz-home { order: 15; } #page.pl-h > .cl-plan { order: 16; } #page.pl-h > .lv-home { order: 17; }
 #page.pl-h > .hd-home { order: 18; } #page.pl-h > .cl-trade { order: 19; } #page.pl-h > .cl-list { order: 20; } #page.pl-h > .cl-foot { order: 40; }
-#page.pl-h:not(.pl-all) > :not(.pl-home):not(.pl-fold):not(#moInst):not(#moStrip):not(#apBan):not(.cl-foot) { display: none !important; }
+#page.pl-h:not(.pl-all) > :not(.pl-home):not(.pl-fold):not(#moInst):not(#moStrip):not(#apBan):not(.cl-foot):not(.zeus-card) { display: none !important; }
+/* 2026-11-18 night-polish: the ZEUS card (olympus/zeus_core.js, real accounts + "PC reported") is Home's first card, never folded */
+#page.pl-h > .zeus-card { order: -3; }
+/* Money now already says each bot's next step: the account cards drop their own copy of that line while it is there */
+.pl-home:has(#mnCard .mn-row) .su-acct:not(.ph) { grid-template-areas: "h h h" "r m t"; }
+.pl-home:has(#mnCard .mn-row) .su-acct:not(.ph) > .su-line { display: none; }
+.pl-home .su-acct { padding: 14px 16px; row-gap: 8px; }
+/* Today's session card says the next window and the news: What matters now drops its own copy of those two rows while the card is there */
+.pl-home:has(#sdCard .sd-row) .pl-now-r.pl-now-sd { display: none; }
+.pl-home:has(#sdCard .sd-row) .pl-h3 ~ .pl-now-r:not(.pl-now-sd):not(.pl-h3 ~ .pl-now-r:not(.pl-now-sd) ~ *) { border-top: 0; }   /* the first row left has no line above it */
+/* the session card's read-only footer is for the bot pages; Home keeps the rows (every time already says ET) */
+.pl-home #sdCard > .sd-f { display: none; }
 #page.pl-h > .cl-heroes { display: none !important; }      /* the account cards above say the same */
 .pl-home { display: flex; flex-direction: column; min-width: 0; }
 .pl-hi { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; column-gap: 12px; row-gap: 2px; margin: 2px 4px var(--s3); }

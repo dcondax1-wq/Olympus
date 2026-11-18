@@ -45,7 +45,8 @@
   }
   function draw() {
     var b = mount(); if (!b) return;
-    var home = false; try { home = typeof PAGE !== 'undefined' && PAGE === 'today'; } catch (e) { home = false; }
+    // before the router has set PAGE (the first draw, at load) Home is read from the address, so the strip is in place before Home paints
+    var home = false; try { home = typeof PAGE !== 'undefined' && PAGE != null ? PAGE === 'today' : !/^#\/(?!today\b)[a-z]/.test(location.hash); } catch (e) { home = false; }
     var m = model(data(), Date.now() / 1000), s = (home ? 1 : 0) + '|' + (m.banner ? m.level + m.title : '');
     if (s === sig) return; sig = s;
     b.hidden = !home;
@@ -61,5 +62,6 @@
   var pg = document.getElementById('page');
   if (pg && typeof MutationObserver !== 'undefined') new MutationObserver(soon).observe(pg, { childList: true });
   setInterval(draw, 60000);
-  soon();
+  // at once, not 120 ms later: a strip that lands above a Home already on screen pushes the whole page down (a 0.2 layout shift, 2026-11-18)
+  draw();
 })();

@@ -86,11 +86,12 @@
     } catch (e) { /* the digest is optional */ }
     // the next window (or the open one)
     const S = SU.summary(M), nx = S.next;
-    if (nx && nx.t) rows.push(`<a class="pl-now-r" data-go="deck"><i class="pl-now-i">${ic('clock')}</i><span><b>${esc(nx.label)} · ${esc(nx.detail.split(':')[0])}</b><em>${esc(nx.detail.replace(/^[^:]*:\s*/, ''))}</em></span><strong><span class="su-cd" data-su-cd="${Math.round(nx.t)}"></span></strong></a>`);
+    // (pl-now-sd: Today's session card above says the window and the news too; Home hides these two rows while that card is there)
+    if (nx && nx.t) rows.push(`<a class="pl-now-r pl-now-sd" data-go="deck"><i class="pl-now-i">${ic('clock')}</i><span><b>${esc(nx.label)} · ${esc(nx.detail.split(':')[0])}</b><em>${esc(nx.detail.replace(/^[^:]*:\s*/, ''))}</em></span><strong><span class="su-cd" data-su-cd="${Math.round(nx.t)}"></span></strong></a>`);
     // the next high-impact news in 24 h
     const nw = (M.news || []).filter((n) => okN(n.t) && n.t > M.now - 600 && n.t < M.now + 86400 && /high|fomc/i.test(n.impact || 'high')).sort((a, b) => a.t - b.t)[0];
-    rows.push(nw ? `<a class="pl-now-r" data-go="news"><i class="pl-now-i warn">${ic('news')}</i><span><b>${esc(nw.title)}</b><em>${esc(tm(nw.t))} · high-impact news</em></span><strong><span class="su-cd" data-su-cd="${Math.round(nw.t)}"></span></strong></a>`
-      : `<a class="pl-now-r" data-go="news"><i class="pl-now-i">${ic('news')}</i><span><b>No big US news in the next 24 h</b><em>The calendar the bots read</em></span></a>`);
+    rows.push(nw ? `<a class="pl-now-r pl-now-sd" data-go="news"><i class="pl-now-i warn">${ic('news')}</i><span><b>${esc(nw.title)}</b><em>${esc(tm(nw.t))} · high-impact news</em></span><strong><span class="su-cd" data-su-cd="${Math.round(nw.t)}"></span></strong></a>`
+      : `<a class="pl-now-r pl-now-sd" data-go="news"><i class="pl-now-i">${ic('news')}</i><span><b>No big US news in the next 24 h</b><em>The calendar the bots read</em></span></a>`);
     // the last real trade (NinjaTrader fills only)
     const B = M.board || {}, lt = (B.trades || []).filter((t) => t && t.src === 'live' && t.open === false).sort((a, b) => (+b.exit_t || 0) - (+a.exit_t || 0))[0];
     if (lt) {
@@ -114,9 +115,28 @@
     const T = [['liveview', 'Live View', 'chart', 'live chart'], ['holo', 'Holodeck', 'layers', 'fills in 3D'], ['mission', 'Mission', 'radar', 'control'], ['mind', 'Mind', 'brain', 'game plans']];
     return `<nav class="pl-quick" aria-label="Quick">${T.filter(([id]) => PAGES[id]).map(([id, l, i, s]) => `<a data-go="${id}"><i>${ic(i)}</i><b>${l}</b><em>${s}</em></a>`).join('')}</nav>`;
   }
-  const FOLD_NAMES = [['.mc-strip', 'Mission Control'], ['.rc-homebox', 'real accounts in full'], ['.rc-wrap', 'safety'], ['.bd-homecut', 'right now per bot'], ['.cl-launch', 'launch checklist'],
+  const FOLD_NAMES = [['.pl-kept-herald', 'the herald'], ['.mc-strip', 'Mission Control'], ['.rc-homebox', 'real accounts in full'], ['.rc-wrap', 'safety'], ['.bd-homecut', 'right now per bot'], ['.cl-launch', 'launch checklist'],
     ['.bz-home', 'trader\'s deck + Mind'], ['.cl-plan', 'today\'s plan'], ['.cl-list', 'one tap away']];
+  // the ZEUS card (olympus/zeus_core.js, Home's first card) fills in after its own fetches. Until it has its rows and its edge chip it
+  // keeps the height it had last time on this phone (first visit: 240 px), so Home under it does not jump down (2026-11-18 night-polish:
+  // the rows and the chip landing were a 0.24 layout shift)
+  function zeusHold() {
+    const c = document.querySelector('#page > .zeus-card');
+    if (!c || c.__plHold || typeof MutationObserver === 'undefined') return;
+    c.__plHold = true;
+    const done = () => !!c.querySelector('.zeus-row, .zeus-none') && !c.querySelector('.zeus-edge[hidden]');
+    if (done()) return;
+    c.style.minHeight = Math.max(120, Math.min(600, +store.get('pl.zeusH', 240) || 240)) + 'px';
+    let mo = null;
+    const free = () => { if (mo) mo.disconnect(); mo = null; c.style.minHeight = ''; if (done()) store.set('pl.zeusH', Math.round(c.getBoundingClientRect().height)); };
+    mo = new MutationObserver(() => { if (done()) free(); });
+    mo.observe(c, { subtree: true, childList: true, attributes: true, attributeFilter: ['hidden'] });
+    setTimeout(() => { if (mo) free(); }, 8000);
+  }
+  { const pg = document.getElementById('page');     // the card is put in place by index.html at DOMContentLoaded, often before Home's first draw
+    if (pg && typeof MutationObserver !== 'undefined') new MutationObserver(() => { try { zeusHold(); } catch (e) { /* optional */ } }).observe(pg, { childList: true }); }
   function paintHome(el, first) {
+    try { zeusHold(); } catch (e) { /* the card is optional */ }
     el.querySelectorAll(':scope > .pl-home, :scope > .pl-fold').forEach((x) => x.remove());
     const M = model();
     const box = document.createElement('div'); box.className = 'pl-home';

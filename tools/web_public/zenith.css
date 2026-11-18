@@ -183,12 +183,19 @@ header.top .iconbtn::after { content: ""; position: absolute; inset: -4px; borde
 #page.pl-h > .pl-home > .su-accts { order: 1; } #page.pl-h > .pl-home > .su-week { order: 2; } #page.pl-h > .pl-home > .su-bar { order: 3; }
 #page.pl-h > .pl-home > .pl-now { order: 4; } #page.pl-h > .pl-home > .su-mkt { order: 5; } #page.pl-h > .pl-home > .pl-quick { order: 6; }
 /* skeleton: the hero's own size, a slow shimmer (transform only), still on Low / Off / reduced motion */
-.zh-hero.zh-skel { min-height: 410px; display: flex; flex-direction: column; gap: 14px; overflow: hidden; }
+.zh-hero.zh-skel { min-height: 158px; display: flex; flex-direction: column; gap: 14px; overflow: hidden; } .zh-hero.zh-skel.zh-sk-open { min-height: 410px; }
 .zh-hero.zh-skel::after { content: ""; position: absolute; inset: 0; transform: translateX(-100%); background: linear-gradient(100deg, transparent 30%, rgba(var(--oly-th-n37-rgb, 239,238,235),.07) 50%, transparent 70%); pointer-events: none; }
 :root[data-zq="high"] .zh-skel::after, :root[data-zq="ultra"] .zh-skel::after { animation: zh-sweep 1.6s ease-in-out infinite; }
 .zh-sk { display: block; border-radius: 10px; background: rgba(var(--oly-th-n37-rgb, 239,238,235),.06); }
 .zh-sk.a { height: 54px; width: 55%; } .zh-sk.b { height: 24px; width: 38%; } .zh-sk.c { height: 52px; flex: 1; } .zh-sk.d { height: 150px; border-radius: 14px; }
-.zh-sk-row { display: flex; gap: 8px; }
+.zh-sk-row { display: flex; gap: 8px; } .zh-sk.e { height: 44px; border-radius: 12px; }
+/* the one-tap row that opens each bot's pill + the balance chart (2026-11-18 night-polish) */
+.zh-more { all: unset; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; gap: var(--zn-s2); width: 100%; min-height: 44px; margin-top: var(--zn-s3); padding: 0 14px;
+  border-radius: 12px; font: 650 13px/1.2 var(--sans); color: var(--ink-2); cursor: pointer; -webkit-tap-highlight-color: transparent;
+  background: rgba(var(--oly-th-n37-rgb, 239,238,235),.04); border: 1px solid rgba(var(--oly-th-a11-rgb, 205,187,152),.10); }
+.zh-more:focus-visible { outline: 2px solid color-mix(in srgb, var(--accent) 85%, transparent); outline-offset: 2px; }
+.zh-more[aria-expanded="true"] .pl-chev { transform: rotate(225deg); }
+:root[data-theme="light"] .zh-more { background: rgba(47,40,33,.04); border-color: rgba(47,40,33,.14); }
 @keyframes zh-sweep { to { transform: translateX(100%); } }
 /* refresh: the same sweep over the live hero while the data loads */
 .zh-hero.zh-sync::after { content: ""; position: absolute; inset: 0; border-radius: inherit; transform: translateX(-100%); background: linear-gradient(100deg, transparent 30%, rgba(var(--zn-accent-rgb), .12) 50%, transparent 70%); pointer-events: none; }
