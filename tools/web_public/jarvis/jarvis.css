@@ -1066,12 +1066,13 @@ html[data-orb-dock="1"] .nextchip { max-width: calc(100% - 158px); }
 html[data-orb-tip="1"] .fab, html[data-orb-tip="1"] .nextchip { visibility: hidden; }  /* the orb's one-time hint takes their place for 3 s: it never sits over content */
 .toast { transition: opacity .25s ease-out; }
 /* a phone (2026-11-18): the bottom-right 60 px corner stays clear of the dock's keys (a web host's badge sits there: it covered Send and ⋯).
-   While you type (the field focused: the dock rides above the keyboard) the dock takes the full width back and Send shows; an empty,
-   unfocused field needs no Send (the keyboard's own Send key sends too) */
+   While the keyboard is up (.kb, set by index.html's fitDock: the dock rides above it, the corner is the keyboard's) the dock takes the
+   full width back. Send shows once there is something to send (an empty field needs none; the keyboard's own Send key sends too).
+   Nothing changes on focus or blur alone: a key never moves under a finger that is pressing it */
 @media (max-width: 520px) {
   .dock { right: calc(max(8px, env(safe-area-inset-right, 0px)) + 52px); }
-  .dock:focus-within { right: max(8px, env(safe-area-inset-right, 0px)); }
-  .ask:not(:focus-within):has(input:placeholder-shown) .key.send { display: none; }
+  .dock.kb { right: max(8px, env(safe-area-inset-right, 0px)); }
+  .ask:has(input:placeholder-shown) .key.send { display: none; }
 }
 /* ---------------------------------------------------------------- sizes: the courtyard window grows with the screen; a short phone starts at the greeting */
 @media (max-height: 739px) { .court { display: none; } .home-in[data-home="v2"] { --court-h: 0px; } .hero { padding-top: 6px; padding-bottom: 10px; gap: 2px; background: rgba(var(--pr), .90); } .hero-h { font-size: 28px; }

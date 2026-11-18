@@ -107,7 +107,7 @@ window.addEventListener('error', function (e) {
   if (!window.__jarvisErr) window.__jarvisErr = String(e.message || 'Script error') + (e.filename ? ' (' + String(e.filename).split('/').pop() + ':' + e.lineno + ')' : '');
 }, true);
 </script>
-<link rel="stylesheet" id="jcss" href="jarvis.css?v=j20">
+<link rel="stylesheet" id="jcss" href="jarvis.css?v=j21">
 <link rel="stylesheet" id="jhome" href="home3d.css?v=h4">
 <!-- quiet-net: data-fresh = Jarvis shows the Kalshi bot, so it asks the Kalshi feed afresh once per load (data.js: "opening Jarvis again
      asks once more: that is how a newly linked bot shows up"); without it a 404 earlier in the session kept it "not connected".
@@ -3486,7 +3486,7 @@ window.addEventListener('online', () => { renderHead(); D.refresh({ maxAge: 0 })
 window.addEventListener('offline', () => { renderHead(); toast('No connection. Showing the last saved numbers until it is back.', 'OFFLINE'); });
 // the command dock stays above the iPhone keyboard while you type (as the old Jarvis's mobile.js did)
 if (window.visualViewport) {
-  const fitDock = () => { const kb = Math.max(0, innerHeight - visualViewport.height - visualViewport.offsetTop); $('#dock').style.transform = kb > 60 ? `translateY(${-Math.round(kb)}px)` : ''; };
+  const fitDock = () => { const kb = Math.max(0, innerHeight - visualViewport.height - visualViewport.offsetTop); $('#dock').style.transform = kb > 60 ? `translateY(${-Math.round(kb)}px)` : ''; $('#dock').classList.toggle('kb', kb > 60); };
   visualViewport.addEventListener('resize', fitDock); visualViewport.addEventListener('scroll', fitDock);
 }
 // A web host's badge (2026-11-18: "Powered by Netlify" sat on the Send and ⋯ keys; the host injects it, it is not ours): when something

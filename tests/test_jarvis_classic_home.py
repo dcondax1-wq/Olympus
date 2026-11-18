@@ -5,7 +5,8 @@ in the order of 2026-11-06 (f8df6008), and the bottom of the phone screen is fix
   b. the order: the HUD header (J.A.R.V.I.S. title, greeting, the one sentence) -> KALSHI TODAY / NQ BOTS TODAY -> the core -> the tiles
   c. the bottom: the dock sits at most 20 px above the screen's edge (no empty band), the page scrolls fully above it (the footer ends
      above the dock and its row), no sideways scroll
-  d. the bottom-right 60 px corner is free of the dock's keys on a phone; Send shows while typing (the dock takes the full width back)
+  d. the bottom-right 60 px corner is free of the dock's keys on a phone; Send shows once something is typed; nothing moves on focus alone
+     (the full width comes back only while the keyboard is up: .kb from fitDock, not emulated here)
   e. a web host's badge in the corner (as "Powered by Netlify") lifts the dock above it
 Run under the machine's one-browser lock:
     flock -w 2400 /tmp/olympus_browser.lock python -X utf8 -m tests.test_jarvis_classic_home
@@ -79,18 +80,25 @@ def main():
                 gap = h - dock[3]
                 check(f"c. {tag}: the dock sits {gap} px above the edge (8 px, or the home-bar safe area less 16 px: no empty band); no sideways scroll",
                       gap == (max(8, inset - 16)) and sw <= w, (dock, sw))
-                p.evaluate("document.getElementById('home').scrollTop = 1e6")
-                p.wait_for_timeout(500)
+                for _ in range(3):                                     # the demo cards may still grow the page: scroll to its end again
+                    p.evaluate("document.getElementById('home').scrollTop = 1e6")
+                    p.wait_for_timeout(500)
                 foot, home, chip = p.evaluate(R, "#home .hfoot"), p.evaluate(R, "#home"), p.evaluate(R, "#next")
                 check(f"c. {tag}: scrolled to the end, the footer ends inside the scroller, above the chip row and the dock",
                       foot and home and foot[3] <= home[3] and home[3] <= chip[1] and home[3] <= dock[1], (foot, home, chip, dock))
                 keys = [p.evaluate(R, q) for q in ("#mic", "#spk", "#ask .send", "#moreB")]
                 free = all(k is None or k[2] <= w - 60 for k in keys)
                 check(f"d. {tag}: the bottom-right 60 px corner is free of the dock's keys; Send rests while the field is empty", free and keys[2] is None, keys)
+                more0 = p.evaluate(R, "#moreB")
                 p.focus("#q")
                 p.wait_for_timeout(300)
-                d2, send = p.evaluate(R, "#dock"), p.evaluate(R, "#ask .send")
-                check(f"d. {tag}: while typing the dock takes the full width and Send shows", send is not None and d2[2] >= w - 9, (d2, send))
+                more1 = p.evaluate(R, "#moreB")
+                p.fill("#q", "how are my bots")
+                p.wait_for_timeout(200)
+                send = p.evaluate(R, "#ask .send")
+                check(f"d. {tag}: focus alone moves no key (a tap on ⋯ while typing lands on ⋯); Send shows once something is typed",
+                      more0 == more1 and send is not None, (more0, more1, send))
+                p.fill("#q", "")
                 p.evaluate("document.activeElement.blur()")
                 p.evaluate(BADGE)
                 p.wait_for_timeout(1200)
