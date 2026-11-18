@@ -18,6 +18,8 @@ owner's typed I ACCEPT LIVE RISK, checked here and again by engine/go.step_arm a
   POST /api/next/start/setup             launch prep for the saved names (engine/launch_prep)
   POST /api/next/start/sims              the two Sim101 roundtrips (a job: the server is stopped and started again)
   POST /api/next/start/arm               {"confirm": "I ACCEPT LIVE RISK"} arm the 25K, live switch, start, verify (a job)
+  POST /api/next/start/onboard          {"name", "act"} one tap on a new account (engine/onboard.py; added DISARMED)
+  POST /api/next/start/rearm            {"confirm": phrase} "Re-arm now": only when flat, STOP + the START arm step
   POST /api/next/start/accounts/add      {"name", "plan": builder50k|builder25k, "strategy": zlarior|atlas, "start"}
   POST /api/next/start/accounts/remove   {"name"}
   POST /api/next/start/accounts/anchor   {"name", "balance", "floor", "as_of"}
@@ -289,10 +291,37 @@ def _new_accounts(rows=None) -> dict:
     """New MFFU account Names NinjaTrader shows that no bot uses (engine/new_accounts.py): the page's one line. rows = the
     account rows (their eval_status tells a funded account after a pass from a new eval)."""
     try:
-        from . import new_accounts
-        return new_accounts.status(rows=rows)
+        from . import onboard                   # 2026-11-18: the plan read from the Name + balance, one right button
+        return onboard.status(rows=rows)
     except Exception as e:
         return {"new": [], "error": f"{e.__class__.__name__}"}
+
+
+def _flat_reason():
+    from . import autoupdate
+    return autoupdate.bot_flat_reason(_bot())
+
+
+@router.post("/api/next/start/onboard")
+async def r_onboard(request: Request):
+    """One tap on a new account (engine/onboard.do): {"name", "act": add:<plan> | funded:<plan> | move:<eval Name> |
+    dismiss, "start"?}. Same code as `engine.accounts add` / `engine.lit25 --funded`; added DISARMED, never armed here."""
+    d = await _body(request)
+    from . import onboard
+    return _do(request, lambda: onboard.do(d.get("name"), d.get("act"), d.get("start"), stop_fn=_stop_fn(),
+                                           flat_reason=_flat_reason))
+
+
+@router.post("/api/next/start/rearm")
+async def r_rearm(request: Request):
+    """"Re-arm now": {"confirm": the typed phrase}; only when flat: STOP, then the START BOT arm step (engine/onboard.rearm)."""
+    d = await _body(request)
+    from . import onboard
+    phrase = go.typed_phrase(str(d.get("confirm") or ""))
+    if phrase != go.LIVE_PHRASE:            # checked before anything else; step_arm and engine/ninjatrader check it again
+        bad = _local(request)
+        return bad if bad is not None else _J({"ok": False, "error": "Type I ACCEPT LIVE RISK exactly. Nothing is armed."}, 400)
+    return _do(request, lambda: onboard.rearm(phrase, stop_fn=_stop_fn(), flat_reason=_flat_reason))
 
 
 @router.post("/api/next/start/newacct")

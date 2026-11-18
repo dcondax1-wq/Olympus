@@ -23,6 +23,7 @@ START_WRITES = ("/api/next/start/names", "/api/next/start/nt", "/api/next/start/
                 "/api/next/start/arm", "/api/next/start/go", "/api/next/start/resume", "/api/next/start/clock",
                 "/api/next/start/accounts/add", "/api/next/start/accounts/remove",
                 "/api/next/start/accounts/anchor", "/api/next/start/accounts/funded", "/api/next/start/newacct",
+                "/api/next/start/onboard", "/api/next/start/rearm",          # one-tap accounts + Re-arm now (engine/onboard.py)
                 "/api/next/start/blitz", "/api/next/start/blitz/arm",          # BLITZ's own 25K (account C, engine/account_c.py)
                 "/api/next/start/selftest")                                    # "Run self-test" (engine/pc_selftest.py)
 # the Goals page's money form (engine/money_api.py: the owner's savings / jobs / Kalshi figures): PC only as well

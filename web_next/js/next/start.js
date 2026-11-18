@@ -229,29 +229,42 @@ function cpfBlock() {
     <p class="muted">Same check in a console: <code>${esc(v.cmd || 'python -X utf8 -m engine.account_c --preflight')}</code></p></div>`;
 }
 
-// ------------------------------------------------------------------ new MFFU account Names (engine/new_accounts.py)
-// 2026-10-29: after a pass / fail MFFU issues a new account Name; when NinjaTrader shows a Name no bot uses, one line per Name
-// with one tap per role that fits its size. The tap only assigns the Name (POST /api/next/start/newacct): nothing is armed,
-// the next Start trading asks for the live phrase. Kept in these two functions (the BLITZ slot lives elsewhere on the page).
+// ------------------------------------------------------------------ new MFFU account Names (engine/onboard.py, engine/new_accounts.py)
+// 2026-11-18 one tap (owner: 2 accounts "should have taken no longer than 5 mins"): engine/onboard.py reads the plan from the
+// Name (EVBLDR = Builder eval, SFBLDR = funded) and the balance (25K / 50K, passed or fresh) and puts the right button first:
+// "Zlarior trades it", "Zlarior + ATLAS", "Move ATLAS/Zlarior here (funded)", "Not for the bot". The tap (POST
+// /api/next/start/onboard) runs the same code as `engine.accounts add` / `engine.lit25 --funded`: added DISARMED, armed at the
+// next START when the owner types the phrase. "Re-arm now" (POST rearm): only when flat, STOP + START with the typed phrase.
 function newAcctLine(d) {
   const rows = d.new_accounts?.new || [];
-  if (!rows.length) return '';
-  const can = d.local && !d.running;
-  return rows.map((r) => `<div class="st-ro warn st-newacct" style="flex-wrap:wrap">${icon('info')}<span style="flex:1 1 220px;min-width:0">${esc(r.say)}</span>${!d.local ? '' : `<span class="st-acts">
-      ${(r.options || []).map((o) => `<button type="button" class="btn primary sm" data-na-use="${esc(o.act)}" data-label="${esc(o.label)}" data-name="${esc(r.name)}" ${can ? '' : 'disabled title="Stop the bot first"'}>${esc(o.label)}</button>`).join('')}
-      <button type="button" class="btn ghost sm" data-na-no="${esc(r.name)}">Not for the bot</button></span>`}</div>`).join('');
+  const can = d.local && !d.job?.running;
+  const lines = rows.map((r) => `<div class="st-ro warn st-newacct" style="flex-wrap:wrap">${icon('info')}<span style="flex:1 1 220px;min-width:0">${esc(r.say)}<br><small class="muted">${esc(r.armed_note || 'Armed at the next START (you type the phrase).')}</small></span>${!d.local ? '' : `<span class="st-acts">
+      ${(r.options || []).map((o) => o.act === 'dismiss'
+    ? `<button type="button" class="btn ${o.primary ? 'primary' : 'ghost'} sm" data-na-no="${esc(r.name)}">${esc(o.label)}</button>`
+    : `<button type="button" class="btn ${o.primary ? 'primary' : 'ghost'} sm" data-na-use="${esc(o.act)}" data-label="${esc(o.label)}" data-name="${esc(r.name)}" ${can ? '' : 'disabled title="A step is running"'}>${esc(o.label)}</button>`).join('')}</span>`}</div>`).join('');
+  const rearm = d.local && d.running ? `<div class="st-ro st-rearm" style="flex-wrap:wrap">${icon('refresh')}<span style="flex:1 1 220px;min-width:0">Re-arm now: added accounts join only at a START. This stops the bot when it is flat and starts it again with your phrase.</span>
+      <span class="st-acts"><input id="stRearmPhrase" autocomplete="off" spellcheck="false" placeholder="${esc(d.phrase || 'I ACCEPT LIVE RISK')}" style="min-width:160px">
+      <button type="button" class="btn primary sm" data-na-rearm ${can ? '' : 'disabled'}>Re-arm now</button></span></div>` : '';
+  return lines + rearm;
 }
 
 function wireNewAcct(el) {
   el.addEventListener('click', (e) => {
     const u = e.target.closest('[data-na-use]');
     if (u && !u.disabled) {
-      if (!confirm(`${u.dataset.label}: ${u.dataset.name}?\n\nNothing is armed: Start trading runs the setup for it and asks for I ACCEPT LIVE RISK.`)) return;
-      act(() => post('newacct', { name: u.dataset.name, act: u.dataset.naUse }));
+      if (!confirm(`${u.dataset.label}: ${u.dataset.name}?\n\nAdded DISARMED. Armed at the next START (you type the phrase).`)) return;
+      act(() => post('onboard', { name: u.dataset.name, act: u.dataset.naUse }));
       return;
     }
     const n = e.target.closest('[data-na-no]');
-    if (n) act(() => post('newacct', { name: n.dataset.naNo, dismiss: true }));
+    if (n) { act(() => post('newacct', { name: n.dataset.naNo, dismiss: true })); return; }
+    const ra = e.target.closest('[data-na-rearm]');
+    if (ra && !ra.disabled) {
+      const v = $('#stRearmPhrase')?.value || '';
+      if (norm(v) !== norm(P.d?.phrase || 'I ACCEPT LIVE RISK')) { toast('Type the phrase exactly first. Nothing changed.', 5000); return; }
+      if (!confirm('Re-arm now?\n\nOnly if every account is flat: STOP, then START with your phrase (about a minute).')) return;
+      act(() => post('rearm', { confirm: v }), 'Re-arming: STOP then START');
+    }
   });
 }
 
@@ -282,7 +295,7 @@ function draw() {
   const d = P.d;
   if (!el || !d) return;
   const keep = { lit: $('#stLit')?.value, atlas: $('#stAtlas')?.value, phrase: $('#stPhrase')?.value, aname: $('#stAName')?.value,
-    go: $('#stGoPhrase')?.value, cname: $('#stCName')?.value, cphrase: $('#stCPhrase')?.value };
+    go: $('#stGoPhrase')?.value, cname: $('#stCName')?.value, cphrase: $('#stCPhrase')?.value, rearm: $('#stRearmPhrase')?.value };
   const n = d.steps.filter((s) => s.done).length;
   const rows = d.accounts?.rows || [];
   el.innerHTML = `<div class="nx-hero cc-hero st-hero"><div><div class="nx-eyebrow">Start &amp; Accounts</div>
@@ -309,6 +322,7 @@ function draw() {
   if (keep.go && $('#stGoPhrase')) { $('#stGoPhrase').value = keep.go; goBtn(); }
   if (keep.cname != null && $('#stCName')) $('#stCName').value = keep.cname;
   if (keep.cphrase && $('#stCPhrase')) { $('#stCPhrase').value = keep.cphrase; cArmBtn(); }
+  if (keep.rearm && $('#stRearmPhrase')) $('#stRearmPhrase').value = keep.rearm;
 }
 
 function armBtn() { const b = $('#stArmGo'); if (b) b.disabled = $('#stPhrase')?.value !== P.d?.phrase; }
