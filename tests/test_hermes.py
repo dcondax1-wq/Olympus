@@ -224,6 +224,7 @@ def make_site(tmp, w, peers=False, title="Tuesdays pay the most"):
     for f in glob.glob(os.path.join(ROOT, "tools", "web_public", "jarvis", "*.woff2")):
         shutil.copy(f, os.path.join(site, "jarvis"))
     shutil.copytree(os.path.join(ROOT, "tools", "web_public", "olympus"), os.path.join(site, "olympus"))   # the OLYMPUS kit
+    shutil.copytree(os.path.join(ROOT, "tools", "web_public", "assets", "audio"), os.path.join(site, "assets", "audio"))   # the kit's sound files (olympus/sfx.js reads ../assets/audio/)
     if w is not None:
         with open(os.path.join(site, "hermes", "wrapped.json"), "w", encoding="utf-8") as fh:
             fh.write(build.dumps(w))
