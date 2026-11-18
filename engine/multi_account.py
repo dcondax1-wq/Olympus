@@ -130,6 +130,19 @@ PRESETS = {
         "note": "Rapid EOD 50K (engine/rapid.py): eval $3,000, $2,000 EOD trailing floor, a day <= 30% of the profit (the bot "
                 "keeps a winning day under 30% x $3,000 x 0.95), 4 days; funded: Tier-1 news flat -2/+2 min, daily payouts "
                 "above the $2,100 buffer, $500 min, keep $1,000 more in the account"},
+    "mffu_rapid_eod_25k": {
+        # owner 2026-11-18 (buying it tonight): the Rapid EOD 50K's lanes and rules at the 25K's numbers (engine/rapid.py,
+        # research/writeups/rapid-25k-vs-50k-2026-11-17.md, tools/money/rapid25.py "25K, keep $500"): the eval = LIT's live
+        # two_week (no override) on $1,500 / $1,000 / 20 micros with the bot's soft $500 day (the firm has none); funded =
+        # uprisk UP25 (60% of the room, <= $750, a winner <= $1,000).
+        "firm": "MFFU", "plan": "Rapid EOD 25K",
+        "rules": {"start": 25000.0, "target": 1500.0, "mll": 1000.0, "lock": 100.0, "dll": 500.0, "max_micros": 20,
+                  "trail": "eod", "best_day": 0.3, "min_days": 4, "news_ban": "funded"},
+        "sizing": {"funded": {"pct": 0.6, "pct_min_usd": 50, "pct_max_usd": 750, "ref": 20, "wk": True, "room_f": None,
+                              "max_win": 1000, "slip_ticks": 2, "skip_breach": True}},
+        "note": "Rapid EOD 25K (engine/rapid.py): eval $1,500, $1,000 EOD trailing floor, a day <= 30% of the profit (the bot "
+                "keeps a winning day under 30% x $1,500 x 0.95), 4 days, 2 minis / 20 micros; funded: Tier-1 news flat -2/+2 "
+                "min, daily payouts above the $1,100 buffer, $500 min, >= $250 since the last, keep $500 more in the account"},
     "paper_50k": {
         "firm": "Paper", "plan": "50K rules (no broker)",
         "rules": {"start": 50000.0, "target": 3000.0, "mll": 2000.0, "lock": 100.0, "dll": 1000.0, "max_micros": 40,

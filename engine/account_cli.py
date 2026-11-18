@@ -1,6 +1,6 @@
 """One way to add any MFFU account: one pasted line per account (docs/NEW_ACCOUNT.md). Nothing here arms or trades.
 
-    python -X utf8 -m engine.accounts add --plan builder25k|builder50k|rapideod --name "<NinjaTrader Name>" [--bots lit|atlas|lit+atlas]
+    python -X utf8 -m engine.accounts add --plan builder25k|builder50k|rapideod|rapideod25 --name "<NinjaTrader Name>" [--bots lit|atlas|lit+atlas]
                                           [--start yyyy-mm-dd] [--funded]
     python -X utf8 -m engine.accounts list | status | remove --name "<Name>"
 
@@ -12,10 +12,12 @@ What each plan becomes (research/writeups/builder-levers-2026-11-16.md, stack-on
               owner says (--bots lit+atlas records his yes; its lane on a 2nd 25K still has to be wired: told at add time).
               --bots atlas = ATLAS's own 25K (account B), only while ATLAS has none (engine/go.add_account).
   rapideod    LIT + ATLAS on one account: engine/rapid.py (data/rapid.json), ONE Rapid only (owner: "I'll stick with 1 rapid").
+  rapideod25  the Rapid EOD 25K (owner 2026-11-18): the same lanes and rules at the 25K's numbers (engine/rapid.PLANS,
+              research/writeups/rapid-25k-vs-50k-2026-11-17.md); still ONE Rapid at a time (a 50K or a 25K).
 
 Rules on every account:
   * MFFU limits checked at add time (research/lit/mffu_rules.json multi_account): at most 10 evals; at most 5 funded, of
-    which Builder 50K 1, Builder 25K 2, Rapid EOD 50K 3. Sim accounts (Sim101 ...) are never counted.
+    which Builder 50K 1, Builder 25K 2, Rapid EOD 50K 3, Rapid EOD 25K 3 (its own). Sim accounts (Sim101 ...) are never counted.
   * No hedging across accounts (MFFU bans it): every LIT copy is the same side; engine/multi_account.AccountRouter.
     opposite_open refuses an order opposite to any open position on any account, account B / the Rapid's ATLAS never
     take the other side of LIT, and LIT goes first (ATLAS is closed before LIT enters on a shared account).
@@ -41,7 +43,10 @@ PLANS = {
                    "cap": 2, "bots": "lit", "ok": ("lit", "lit+atlas", "atlas"), "id": "b25k", "price": "$63 (CLUB 40% off)"},
     "rapideod": {"preset": "mffu_rapid_eod_50k", "label": "Rapid EOD 50K", "size": "50K", "cap_key": "rapid_eod_50k_sim_funded",
                  "cap": 3, "bots": "lit+atlas", "ok": ("lit+atlas",), "id": "rapid", "price": "$165 with CLUB ($275 list)"},
+    "rapideod25": {"preset": "mffu_rapid_eod_25k", "label": "Rapid EOD 25K", "size": "25K", "cap_key": "rapid_eod_25k_sim_funded",
+                   "cap": 3, "bots": "lit+atlas", "ok": ("lit+atlas",), "id": "rapid", "price": "$97.20 with CLUB ($162 list)"},
 }
+RAPID_PLANS = ("rapideod", "rapideod25")
 MAX_EVALS, MAX_FUNDED = 10, 5
 RULE_LINES = ("No hedging: every account takes the same side (an order opposite to any open position is refused).",
               "LIT first: on a shared account ATLAS is closed before LIT enters, and never trades against LIT.",
@@ -154,7 +159,7 @@ def inventory() -> list:
     except Exception:
         blk = None
     if blk:
-        add(name=blk["account"], plan="rapideod", stage="funded" if blk.get("stage") == "funded" else "eval",
+        add(name=blk["account"], plan="rapideod25" if blk.get("plan") == PLANS["rapideod25"]["preset"] else "rapideod", stage="funded" if blk.get("stage") == "funded" else "eval",
             bots="lit+atlas", role="rapid", id="rapid", armed=blk.get("armed") is True)
     try:
         c = go._c() or {}
@@ -180,7 +185,7 @@ def slots_text(rows=None) -> str:
     s, L = slots(rows), limits()
     return (f"MFFU slots: evals {s['evals']} of {L['evals']} · funded {s['funded']} of {L['funded']} (Builder 50K "
             f"{s['builder50k']}/{L['builder50k']}, Builder 25K {s['builder25k']}/{L['builder25k']}, Rapid EOD "
-            f"{s['rapideod']}/{L['rapideod']})")
+            f"{s['rapideod']}/{L['rapideod']}, Rapid EOD 25K {s['rapideod25']}/{L['rapideod25']})")
 
 
 def limit_problem(plan: str, stage: str, name: str, rows=None) -> str | None:
@@ -232,15 +237,18 @@ def _new_id(plan: str, rows_file: list) -> str:
 def add(plan: str, name: str, bots: str | None = None, start: str | None = None, funded: bool = False) -> dict:
     """The owner's one line. Returns {"ok", "say" | "error", "notes": [...]}; never arms."""
     plan = str(plan or "").lower().replace(" ", "").replace("_", "").replace("-", "")
+    if plan == "rapideod25k":
+        plan = "rapideod25"
     if plan not in PLANS:
-        return {"ok": False, "error": "pick --plan builder25k, builder50k or rapideod"}
+        return {"ok": False, "error": "pick --plan builder25k, builder50k, rapideod or rapideod25"}
     P = PLANS[plan]
     bots = str(bots or P["bots"]).lower().replace(" ", "")
     if bots == "atlas+lit":
         bots = "lit+atlas"
     if bots not in P["ok"]:
         why = {"builder50k": "a Builder 50K is LIT only (the research picked LIT alone on the 50K eval)",
-               "rapideod": "the Rapid EOD runs LIT + ATLAS together (engine/rapid.py)"}.get(plan, "")
+               "rapideod": "the Rapid EOD runs LIT + ATLAS together (engine/rapid.py)",
+               "rapideod25": "the Rapid EOD runs LIT + ATLAS together (engine/rapid.py)"}.get(plan, "")
         return {"ok": False, "error": f"--bots {bots} is not offered for {P['label']}: {why or 'use lit, lit+atlas or atlas'}"}
     name = str(name or "").strip()
     try:
@@ -256,8 +264,8 @@ def add(plan: str, name: str, bots: str | None = None, start: str | None = None,
     s, L = slots(rows), limits()
     if stage == "eval" and not _is_sim(name) and s[plan] >= L[plan]:
         notes.append(f"MFFU already has your {L[plan]} funded {P['label']}: a pass of this eval cannot be activated until one goes")
-    if plan == "rapideod":
-        r = _add_rapid(name, start, funded, rows)
+    if plan in RAPID_PLANS:
+        r = _add_rapid(name, start, funded, rows, plan)
     elif bots == "atlas":
         r = _add_atlas(name, start, funded, rows)
     else:
@@ -309,31 +317,35 @@ def _add_atlas(name, start, funded, rows) -> dict:
     return {"ok": bool(r.get("ok")), "say": (r.get("say") or "") + " It joins at the next START BOT.", "error": r.get("error")}
 
 
-def _add_rapid(name, start, funded, rows) -> dict:
-    rp = _rapid()
+def _add_rapid(name, start, funded, rows, plan="rapideod") -> dict:
+    rp, P = _rapid(), PLANS[plan]
+    lbl = "Rapid EOD" if plan == "rapideod" else P["label"]
     cur = rp.read()
     others = {f"{r['role']} {r['id']}": r["name"] for r in rows if r["role"] != "rapid"}
+    if cur is not None and str(cur.get("plan") or rp.PRESET) != P["preset"]:
+        return {"ok": False, "error": f"the Rapid EOD is already {cur['account']} ({rp.plan_info(cur)['label']}): one Rapid only. "
+                                      f"Remove it first: python -X utf8 -m engine.accounts remove --name \"{cur['account']}\""}
     if funded:
         if cur is None:
-            r = rp.set_account(name, start, others=others, allow=_allow_raise)
+            r = rp.set_account(name, start, others=others, allow=_allow_raise, preset=P["preset"])
             if not r.get("ok"):
                 return {"ok": False, "error": r.get("error")}
         r = rp.to_funded(name, start, others=others, allow=_allow_raise)
         if not r.get("ok"):
             return {"ok": False, "error": r.get("error")}
         return {"ok": True, "notes": [x for x in [r.get("note")] if x],
-                "say": f"[OK] Rapid EOD funded {name} from {start} (LIT + ATLAS), NOT armed. START BOT + you type the phrase."}
+                "say": f"[OK] {lbl} funded {name} from {start} (LIT + ATLAS), NOT armed. START BOT + you type the phrase."}
     if cur is not None and cur["account"] != name and cur.get("stage") != "funded":
         return {"ok": False, "error": f"the Rapid EOD is already {cur['account']} (one Rapid only: \"I'll stick with 1 rapid\"). "
                                       f"Remove it first: python -X utf8 -m engine.accounts remove --name \"{cur['account']}\""}
     if cur is not None and cur.get("stage") == "funded":
         return {"ok": False, "error": f"the Rapid EOD {cur['account']} is funded: one Rapid only (\"I'll stick with 1 rapid\")"}
-    r = rp.set_account(name, start, others=others, allow=_allow_raise)
+    r = rp.set_account(name, start, others=others, allow=_allow_raise, preset=P["preset"])
     if not r.get("ok"):
         return {"ok": False, "error": r.get("error")}
     b = r["block"]
     return {"ok": True, "notes": [x for x in [r.get("note")] if x],
-            "say": f"[OK] Rapid EOD 50K = {b['account']} (LIT + ATLAS), eval from {b['eval_start']}, NOT armed. It joins at the "
+            "say": f"[OK] {P['label']} = {b['account']} (LIT + ATLAS), eval from {b['eval_start']}, NOT armed. It joins at the "
                    "next START BOT (you type I ACCEPT LIVE RISK)."}
 
 
@@ -433,7 +445,7 @@ def status_lines() -> list:
         try:
             if r["role"] == "rapid":
                 line += " | " + _rapid().status()["text"]
-            elif r["plan"] in PLANS and r["plan"] != "rapideod":
+            elif r["plan"] in PLANS and r["plan"] not in RAPID_PLANS:
                 m = go._money(r["name"], PLANS[r["plan"]]["preset"], r["role"] == "main", bals)
                 line += f" | ${float(m['balance']):,.2f}, floor ${float(m['floor']):,.2f} ({m['source']})"
         except Exception:

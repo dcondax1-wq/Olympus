@@ -113,6 +113,11 @@ def limits(plan: str | None) -> dict:
     p = str(plan or "").lower().replace("mffu_", "").replace("_", "")
     if "rapid" in p:
         from . import rapid as R
+        if "25k" in p:                                   # the Rapid EOD 25K (engine/rapid.PLANS)
+            P = R.plan_info("mffu_rapid_eod_25k")
+            return {"start": P["start"], "target": P["target"], "mll": 1000.0, "buffer": P["buffer"], "pay_min": R.PAY_MIN,
+                    "pay_max": None, "split": R.SPLIT, "cons": None, "cycle_days": None, "min_days": R.MIN_DAYS,
+                    "best_day": R.BEST_DAY, "cushion": P["cushion"], "size": "Rapid", "daily": True}
         return {"start": 50000.0, "target": 3000.0, "mll": 2000.0, "buffer": R.BUFFER, "pay_min": R.PAY_MIN, "pay_max": None,
                 "split": R.SPLIT, "cons": None, "cycle_days": None, "min_days": R.MIN_DAYS, "best_day": R.BEST_DAY,
                 "cushion": R.CUSHION, "size": "Rapid", "daily": True}
@@ -461,7 +466,7 @@ def label_of(key: str, obj=None) -> str:
     if key == "lit":
         return "Zlarior 50K"
     if key == "rapid":
-        return "Rapid EOD 50K"
+        return "Rapid EOD 25K" if "25k" in str(((getattr(obj, "spec", None) or {}).get("preset")) or "") else "Rapid EOD 50K"
     if key == "atlas":
         plan = str(((getattr(obj, "spec", None) or {}).get("plan")) or "")
         return "ATLAS " + ("50K" if "50k" in plan else "25K")
@@ -536,7 +541,8 @@ def atlas_facts(ab, now) -> dict | None:
 def rapid_facts(ra, lane, now) -> dict | None:
     """The Rapid EOD 50K (one account, one book): RapidAtlas when on, else the LIT lane (engine/multi_account)."""
     from . import multi_account as MA
-    L = limits("rapideod50k")
+    pre = str(((getattr(ra, "spec", None) or getattr(lane, "spec", None) or {}).get("preset")) or "")
+    L = limits("rapideod25k" if "25k" in pre else "rapideod50k")
     start = float(L["start"])
     today = MA.trading_day(now)
     if ra is not None:
@@ -548,6 +554,9 @@ def rapid_facts(ra, lane, now) -> dict | None:
             pays = (ra.spec.get("funded") or {}).get("payouts") or {}
             p = payout_check(t.get("balance") or 0.0, L, paid_today=today in pays)
             p["habit_ready"] = bool(t.get("ready"))           # RapidAtlas pushes "Rapid EOD: request $X" itself
+            if t.get("since_short") is not None:              # the 25K: MFFU's >= $250 net since the last payout
+                p["checks"].append({"rule": "since", "ok": False, "text": f"{money(t['since_short'])} more since the last payout"})
+                p.update({"ok": False, "amount": 0.0, "to_you": 0.0})
             return {"kind": "funded", "start": start, "balance": t.get("balance"), "floor": ev.get("floor"),
                     "lost": ev.get("status") == "lost", "payout": p, "acct": ra.name, "pushed": ev.get("status") == "lost"}
         dd = {d: v for d, v in ra.days(today).items() if abs(v) > 1e-9}

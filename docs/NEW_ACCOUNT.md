@@ -9,6 +9,7 @@ One pasted line per account. It is added **NOT armed**. Nothing trades until STA
 | Builder 25K | $63 | Zlarior (LIT). ATLAS $250 joins only once it is funded and you say yes |
 | Builder 50K | $91.80 | Zlarior (LIT). Next to Zlarior's eval: whichever passes first is kept |
 | Rapid EOD 50K | $165 ($275 list) | Zlarior + ATLAS together. One Rapid only |
+| Rapid EOD 25K | $97.20 ($162 list) | Zlarior + ATLAS ($250) together, same rules as the 50K at half size. One Rapid only (50K or 25K) |
 
 ## 1. Paste the line
 
@@ -23,6 +24,9 @@ python -X utf8 -m engine.accounts add --plan builder50k --name "PASTE-NAME-HERE"
 ```
 ```
 python -X utf8 -m engine.accounts add --plan rapideod --name "PASTE-NAME-HERE"
+```
+```
+python -X utf8 -m engine.accounts add --plan rapideod25 --name "PASTE-NAME-HERE"
 ```
 
 It says `[OK] ... NOT armed` and how many MFFU slots you use. If MFFU would not allow it (more than 10 evals, more
@@ -45,7 +49,7 @@ One line per account: plan, who trades it, armed or not, balance. Then your MFFU
 
 - Never long on one account and short on another (MFFU bans hedging). Every account takes the same side.
 - Zlarior (LIT) goes first. On a shared account ATLAS is closed before LIT enters.
-- MFFU limits: 10 evals, 5 funded (Builder 50K 1, Builder 25K 2, Rapid EOD 3). Sim accounts never count.
+- MFFU limits: 10 evals, 5 funded (Builder 50K 1, Builder 25K 2, Rapid EOD 50K 3, Rapid EOD 25K 3). Sim accounts never count.
 
 ## Later
 
@@ -53,6 +57,8 @@ One line per account: plan, who trades it, armed or not, balance. Then your MFFU
   `python -X utf8 -m engine.accounts remove --name "EVAL-NAME"`, then
   `python -X utf8 -m engine.accounts add --plan builder25k --funded --start YYYY-MM-DD --name "FUNDED-NAME"`.
   The Rapid keeps its own line: `python -X utf8 -m engine.rapid --to-funded --account "FUNDED-NAME" --start YYYY-MM-DD`.
+- Rapid EOD 25K: eval $1,500 target, $1,000 trailing floor, the bot keeps each day under $427 (MFFU's 30% = $450), 4 days.
+  Funded: flat around big news, payouts above $26,100; the bot tells you to ask only above $26,600 ($500 kept in).
 - ATLAS on a funded 2nd 25K: say yes to Claude. Claude wires it (it is not on yet).
 - Take one off: `python -X utf8 -m engine.accounts remove --name "NAME"`.
 - Test first on Sim: use `Sim102` as the Name (no arming needed, never counted).
