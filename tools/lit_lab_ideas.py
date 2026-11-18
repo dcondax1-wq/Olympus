@@ -23,6 +23,15 @@ Exit ideas (post-fill):
 Size ideas (x m, the Lab's tilt machinery: one rounding with the weekly stop, eval caps after it):
   nr7          {"mult": 1.25}            the session before was the narrowest of the last 7 (Crabel NR7) -> x1.25.
   bu_london    {"mult": 1.25}            the swept level is a build-up (equal highs / lows) AND the entry is in London 02:00-08:00.
+  stagger      {"mult": 0.5}             (night-litplus 2026-11-18, two evals on the same signals) the 50K's side of "alternate":
+                                         every 2nd LIT signal (entry order) at x0.5, the others unchanged. The pair view (the 25K
+                                         takes the other half) is tools/money/lit_two_evals.py.
+Eval ideas (the trades and the LIT size rule unchanged; only the eval sizing moves; night-litplus 2026-11-18):
+  last_bullet  {"share": 0.8, "give_up": 200}   ATLAS's zombie-eval rule (engine/account_b.last_bullet + dll_guard, eval
+                                         give-up) on Zlarior's eval: a 0 from the room share -> 1 micro when its full stop-out fits
+                                         share x the room; an eval under give_up $ of room after a session is given up (= a fail).
+                                         Applied to the Lab's eval path through eval_hook(); the two live evals together:
+                                         tools/money/lit_two_evals.py.
 
     python -X utf8 tools/lit_lab_ideas.py check    # options off == the live trades (exit + points, every trade)
 """
@@ -41,8 +50,9 @@ if ROOT not in sys.path:
 NEWS = os.path.join(ROOT, "data", "news", "events.csv")
 NY_CUT = 569                                   # 09:29 ET (minute of the day)
 EXIT_IDEAS = ("time_stop", "ny_open", "news_out", "stall", "be_close")
-SIZE_IDEAS = ("nr7", "bu_london")
-IDEAS = EXIT_IDEAS + SIZE_IDEAS
+SIZE_IDEAS = ("nr7", "bu_london", "stagger")
+EVAL_IDEAS = ("last_bullet",)
+IDEAS = EXIT_IDEAS + SIZE_IDEAS + EVAL_IDEAS
 LONDON = ("London 02-05", "London late 05-08")
 
 
@@ -58,6 +68,10 @@ def idea_errors(o) -> list:
         return ["ny_open mode must be out or be"]
     if n in SIZE_IDEAS and not (0 <= float(o.get("mult", -1)) <= 1.5):
         return ["mult must be 0..1.5"]
+    if n == "stagger" and not (0 < float(o.get("mult", -1)) < 1):
+        return ["stagger mult must be between 0 and 1"]
+    if n == "last_bullet" and not (0 < float(o.get("share", -1)) <= 1 and float(o.get("give_up", 0) or 0) >= 0):
+        return ["last_bullet needs 0 < share <= 1 and give_up >= 0"]
     return []
 
 
@@ -176,6 +190,9 @@ def size_fn(E, o):
         return lambda t, r: m if str(t["day"]) in days else 1.0
     if o["name"] == "bu_london":
         return lambda t, r: m if r.get("lvl_type") == "build-up" and r.get("session") in LONDON else 1.0
+    if o["name"] == "stagger":
+        order = {int(t["entry_t"]): i for i, t in enumerate(sorted(E.ctx()["T"], key=lambda t: t["entry_t"]))}
+        return lambda t, r: m if order[int(t["entry_t"])] % 2 == 1 else 1.0
     raise ValueError(o["name"])
 
 
@@ -184,6 +201,8 @@ def units(o: dict):
     from tools import lit_edge as E
     if o["name"] in SIZE_IDEAS:
         return E.trades(mfn=size_fn(E, o))
+    if o["name"] in EVAL_IDEAS:
+        return E.trades({})                     # the trades do not change; eval_hook() changes the eval sizing
     c = E.ctx()
     out = []
     for t in c["T"]:
@@ -202,8 +221,11 @@ def units(o: dict):
 
 
 def hits(o: dict, U, U0) -> dict:
-    """Trades the idea touched per span (exit ideas: exit or points changed; size ideas: m != 1)."""
+    """Trades the idea touched per span (exit ideas: exit or points changed; size ideas: m != 1; eval ideas: eval-path
+    trades whose micros changed or that were added / dropped, on the back-to-back 2-week evals of each 2026 half)."""
     from engine import learn_loop as LL
+    if o["name"] in EVAL_IDEAS:
+        return eval_hits(o, U0)
     b = {u["entry_t"]: u for u in U0}
     out = {}
     for u in U:
@@ -213,6 +235,105 @@ def hits(o: dict, U, U0) -> dict:
         if ch:
             sp = LL._span_lit(u["day"])
             out[sp] = out.get(sp, 0) + 1
+    return out
+
+
+# ================================================================================================ eval ideas (night-litplus)
+def run_eval_zombie(seq, by, horizon=20, keep=None, cfg=None, share=None, give_up=None):
+    """tools/lit_edge.run_eval_m exactly + ATLAS's zombie-eval rule: a 0 from the room share -> engine/account_b.last_bullet
+    (1 micro when its full stop-out fits share x the room) + engine/account_b.dll_guard; an eval with less than give_up $ of
+    room after a session is given up (FAIL). share / give_up None = run_eval_m (check())."""
+    from engine import account_b as EAB
+    from engine import lit
+    from engine import sizing as SZ
+    from tools import lit_adv_manage as A
+    from tools import lit_big_ideas as BI
+    PV, SLIP = lit.PV, lit.SLIP
+    cfg = cfg or A.CFG
+    tgt, mll, dll, lockv = A.A50["target"], A.A50["mll"], A.A50["dll"], A.A50["lock"]
+    bal = peak = 0.0
+    floor = -mll
+    for kk, si in enumerate(seq[:horizon]):
+        cum = 0.0
+        for t in by[si]:
+            if cum <= -dll:
+                break
+            st = {"profit": bal, "cum": cum, "room": bal + cum - floor, "session": kk + 1, "n_today": 0}
+            m0 = lit.qty_for(t["risk"])
+            tr = {"risk_pts": t["risk"], "tgt_pts": t["tgt"], "size_mult": 1.0}
+            m = float(t.get("m", 1.0))
+            if abs(m - 1.0) > 1e-9:
+                tr.update(idm_m=m, idm_cap=None, wk_m=1.0)
+            r = SZ.lit_qty(m0, tr, cfg, room=st["room"], state=st, learning=None) if m0 else {"qty": 0, "reasons": []}
+            q = int(r["qty"])
+            if q <= 0 and share and m0:
+                r2 = EAB.last_bullet(r, float(t["risk"]), float(share), st)
+                if int(r2.get("qty") or 0) > 0:
+                    q = int(EAB.dll_guard(r2, float(t["risk"]), {"dll": dll}, st).get("qty") or 0)
+            if q <= 0:
+                continue
+            pnl, low, tot = BI.trade_pnl(t, q, q, st)
+            if cum + low <= -dll:
+                pnl = -dll - cum - SLIP * PV * tot
+                low = pnl
+            rec = {**{k: t[k] for k in ("day", "entry_t", "exit_t", "dir", "exit", "risk", "tgt")}, "qty": tot, "pnl": round(pnl, 2),
+                   "low": round(low, 2), "risk_usd": round(t["risk"] * PV * q, 2)}
+            if bal + cum + low <= floor:
+                if keep is not None:
+                    keep.append(rec)
+                return "FAIL", kk + 1
+            cum += pnl
+            if keep is not None:
+                keep.append(rec)
+        bal += cum
+        if bal <= floor:
+            return "FAIL", kk + 1
+        peak = max(peak, bal)
+        floor = min(max(floor, peak - mll), lockv)
+        if bal >= tgt:
+            return "PASS", kk + 1
+        if give_up and bal - floor < float(give_up):
+            return "FAIL", kk + 1
+    return "OPEN", min(len(seq), horizon)
+
+
+class eval_hook:
+    """with eval_hook(idea): the Lab's eval path (tools/lit_adv_manage.run_eval, = tools/lit_edge.run_eval_m) runs the eval
+    idea's sizing; restored on exit. Any other idea: no change."""
+
+    def __init__(self, o):
+        self.o = o or {}
+        self.keep = None
+
+    def __enter__(self):
+        if self.o.get("name") in EVAL_IDEAS:
+            from tools import lit_adv_manage as A
+            from tools import lit_edge  # noqa: F401  (sets A.run_eval = run_eval_m first)
+            self.keep = A.run_eval
+            sh, gu = float(self.o.get("share", 0.8)), float(self.o.get("give_up") or 0.0) or None
+            A.run_eval = lambda seq, by, horizon=20, keep=None, cfg=None: run_eval_zombie(seq, by, horizon, keep, cfg, sh, gu)
+        return self
+
+    def __exit__(self, *exc):
+        if self.keep is not None:
+            from tools import lit_adv_manage as A
+            A.run_eval = self.keep
+        return False
+
+
+def eval_hits(o: dict, U0) -> dict:
+    """Eval ideas: back-to-back 2-week eval trades (tools/lit_rev_exit.b2b10) whose micros changed, or that were added /
+    dropped, per 2026 half."""
+    from tools import lit_edge as E
+    from tools import lit_rev_exit as R
+    U26 = [u for u in U0 if u["day"] >= "2026"]
+    out = {}
+    for sp in ("H1", "H2"):
+        base = {r["entry_t"]: r["qty"] for r in R.b2b10(U26, sp)[0]}
+        with eval_hook(o):
+            new = {r["entry_t"]: r["qty"] for r in R.b2b10(U26, sp)[0]}
+        out[sp] = sum(1 for k in set(base) | set(new) if base.get(k) != new.get(k))
+    E.ctx()
     return out
 
 
@@ -232,7 +353,17 @@ def check() -> int:
         if r[0] != u0["exit"] or abs(round(r[1], 4) - u0["pts"]) > 1e-6:
             bad += 1
     print(f"check: {len(U0)} trades, {bad} differ from tools/lit_edge (options off)")
-    return 0 if bad == 0 else 1
+    # the eval-idea runner with the rule off == tools/lit_edge.run_eval_m (every start of both 2026 halves, 20 sessions)
+    from tools import lit_adv_manage as A
+    by = A.by_day([u for u in U0 if u["day"] >= "2026"])
+    ev_bad = 0
+    for sp in ("H1", "H2"):
+        a, z = A.span_ix(sp)
+        for i in range(a, z):
+            if run_eval_zombie(list(range(i, z)), by) != E.run_eval_m(list(range(i, z)), by):
+                ev_bad += 1
+    print(f"check: eval runner with the zombie rule off differs on {ev_bad} eval starts")
+    return 0 if bad == 0 and ev_bad == 0 else 1
 
 
 if __name__ == "__main__":
