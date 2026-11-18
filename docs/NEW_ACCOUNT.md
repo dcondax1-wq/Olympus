@@ -1,5 +1,7 @@
 # New MFFU account: 3 steps
 
+**Easiest:** double-click `ADD_ACCOUNT.bat` in the bot folder, type 1-4, paste the account Name. Then STOP BOT / START BOT + the phrase.
+
 One pasted line per account. It is added **NOT armed**. Nothing trades until START BOT and you type the phrase.
 
 | Plan | Price (CLUB code, 40% off) | Who trades it |
