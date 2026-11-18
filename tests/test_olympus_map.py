@@ -31,7 +31,8 @@ def main():
     got = [re.search(r"\(`([a-z0-9_-]+)`\)", l).group(1) for l in rows]
     check(f"b. every app in jarvis/apps.js ({len(ids)}) has exactly one row, none extra", sorted(ids) == sorted(got) and len(set(got)) == len(got), sorted(set(ids) ^ set(got)))
     cells = [[c.strip() for c in l.strip("|").split("|")] for l in rows]
-    check("b. every row has six cells, a district of the five, a group of trading / money / life, a description of at most 8 words", all(len(c) == 6 and c[1] in ("Market", "Research", "Money", "Command", "Life") and c[2] in ("trading", "money", "life") and 0 < len(c[3].split()) <= 8 for c in cells), [c for c in cells if not (len(c) == 6 and c[1] in ("Market", "Research", "Money", "Command", "Life"))][:2])
+    DOORS = ("ZEUS Trading", "Money", "Kalshi", "More")       # the four doors (2026-11-18, olympus/doors.js)
+    check("b. every row has six cells, one of the four doors, a group of trading / money / life, a description of at most 8 words", all(len(c) == 6 and c[1] in DOORS and c[2] in ("trading", "money", "life") and 0 < len(c[3].split()) <= 8 for c in cells), [c for c in cells if not (len(c) == 6 and c[1] in DOORS)][:2])
     mods = []
     for c in cells:
         m = re.search(r"`tests\.(test_\w+)`", c[5])

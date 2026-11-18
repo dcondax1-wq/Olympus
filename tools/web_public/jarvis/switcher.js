@@ -28,8 +28,8 @@
 //   Organize (2026-11-10): a search box (name or plain-words purpose), a MAP button (every app on one screen, group colours), favourites
 //                      (long-press a card / tile, or F: 'jarvis.orb.fav') and recent apps ('jarvis.orb.recent') as their own sections on top.
 //   opts.doc           optional: the document (tests)
-//   Districts (2026-11-10, AGORA): everything is organised by the five districts of the Atlas map: Market, Research, Money, Command, Life (the same ids as
-//                      atlas/atlas.js; districts.js is the shared copy). The cards, chips and map follow them; the hold ring is two steps: hold, slide onto a
+//   Doors (2026-11-18; the five districts of 2026-11-10 before): everything is organised by the four doors: ZEUS Trading, Money, Kalshi, More (the same
+//                      ids as atlas/atlas.js; olympus/doors.js is the source). The cards, chips and map follow them; the hold ring is two steps: hold, slide onto a
 //                      district (or Search), let go, then its apps fan out (tap one; Back; All <district> opens the map there). opts.districts === false = the
 //                      old groups from opts.sections.
 // use(id) counts an app's opens on this phone ('jarvis.orb.use'; the shell calls it on every switch): the hold ring shows the
@@ -44,16 +44,17 @@ const REC_KEY = 'jarvis.orb.recent';       // the last apps opened, newest first
 const FAV_MAX = 12, REC_MAX = 4, PRESS_MS = 520;
 const HOLD_MS = 380;
 const RING_MAX = 4;
-// the five districts (Atlas order, colours and app lists: the same as atlas/atlas.js and districts.js; tests.test_jarvis_home_agora keeps the three equal)
+// the FOUR DOORS (2026-11-18, night-org, docs/ORGANIZATION.md): ZEUS Trading, Money, Kalshi, More. The same ids, colours and app lists as
+// olympus/doors.js (the source) and atlas/atlas.js zones (tests.test_apps_list + tests.test_jarvis_home_agora keep them equal). An app in no list: its
+// group (trading = ZEUS, money = Money), else More. (jarvis/districts.js keeps the five old districts for the home courtyard's doorways only.)
 const DIST = [
-  { id: 'market', title: 'Market', colour: '#c8a24a', ids: ['zenith', 'oracle', 'ares', 'forum', 'chronos', 'cities', 'odeon', 'pantheon', 'delphi', 'kronos'] },
-  { id: 'research', title: 'Research', colour: '#4b7a99', ids: ['datacity', 'observatory', 'tree', 'prometheus', 'hephaestus', 'nemesis', 'clio', 'fates', 'moirai'] },
-  { id: 'money', title: 'Money', colour: '#7f8a52', ids: ['ledger', 'hera', 'plutus', 'pnyx', 'demeter', 'labyrinth', 'kalshi', 'kalshicity', 'tyche', 'dionysus', 'hermes', 'mint', 'mintcity', 'mercury', 'chrysos', 'sibyl', 'oikos', 'arbiter', 'aegis'] },
-  { id: 'command', title: 'Command', colour: '#c96a4a', ids: ['hestia', 'inbox', 'argus', 'bridge', 'settings', 'atlas', 'stoa', 'kratos', 'argo'] },
-  { id: 'life', title: 'Life', colour: '#9c6b3c', ids: ['planner', 'mind', 'arena', 'journal', 'athena', 'apollo', 'lyceum', 'nike', 'epilogue', 'gallery'] },
+  { id: 'zeus', title: 'ZEUS Trading', colour: '#c8a24a', ids: ['zenith', 'nq', 'board', 'trading', 'aegis', 'pnyx', 'demeter', 'labyrinth', 'fates', 'moirai', 'odeon', 'nemesis', 'kronos', 'apollo', 'journal', 'kratos', 'epilogue', 'ares', 'argus', 'oracle', 'pantheon', 'pythia', 'pheme', 'kairos', 'chronos', 'forum', 'delphi'] },
+  { id: 'money', title: 'Money', colour: '#7f8a52', ids: ['business', 'ledger', 'hera', 'plutus', 'chrysos', 'oikos', 'agency', 'mercury', 'mint', 'mintcity', 'harmonia', 'hermes', 'argo', 'arbiter'] },
+  { id: 'kalshi', title: 'Kalshi', colour: '#b5a642', ids: ['kalshi', 'dionysus', 'kalshicity', 'sibyl', 'tyche'] },
+  { id: 'more', title: 'More', colour: '#9c6b3c', ids: ['compass', 'helios', 'herald', 'stoa', 'hestia', 'inbox', 'planner', 'mind', 'arena', 'athena', 'lyceum', 'nike', 'gallery', 'polis', 'symposium', 'ergasterion', 'settings', 'bridge', 'atlas', 'cities', 'datacity', 'observatory', 'tree', 'prometheus', 'hephaestus', 'clio', 'archive', 'pinakes', 'colosseum'] },
 ];
-const DGROUP = { trading: 'market', money: 'money', life: 'life' };
-const distOf = (a) => { const id = a && a.id; for (const d of DIST) if (d.ids.indexOf(id) >= 0) return d.id; return DGROUP[String((a && a.group) || '').toLowerCase()] || 'command'; };
+const DGROUP = { trading: 'zeus', money: 'money' };
+const distOf = (a) => { const id = a && a.id; for (const d of DIST) if (d.ids.indexOf(id) >= 0) return d.id; return DGROUP[String((a && a.group) || '').toLowerCase()] || 'more'; };
 
 const CSS = `
 .nx-orb{position:fixed;z-index:2147483100;width:56px;height:56px;margin:0;padding:0;border:0;background:none;border-radius:50%;
@@ -263,14 +264,14 @@ export function mountSwitcher(opts = {}) {
   // ---------------------------------------------------------------- the orb
   const orb = doc.createElement('button');
   orb.type = 'button'; orb.className = 'nx-orb'; orb.id = 'nxOrb';
-  orb.setAttribute('aria-label', 'Switch apps: tap for all apps, swipe for the next one, hold for the districts');
+  orb.setAttribute('aria-label', 'Switch apps: tap for all apps, swipe for the next one, hold for the four doors');
   orb.innerHTML = '<span class="nx-core"><svg viewBox="0 0 24 24" fill="none" stroke="#f3ece0" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9 12 3.5 21 9zM5.5 11v7M10 11v7M14 11v7M18.5 11v7M3.5 20.5h17"/></svg></span><span class="nx-alert"></span>';      // its two turning rings are ::before / ::after (inside the screen edge)
   const tip = doc.createElement('div'); tip.className = 'nx-tip'; tip.setAttribute('aria-hidden', 'true');
   const fan = doc.createElement('div'); fan.className = 'nx-fan'; fan.innerHTML = '<div class="nx-fs"></div>';
   const rootEl = doc.createElement('div');
   rootEl.className = 'nx-root'; rootEl.id = 'nxRoot'; rootEl.setAttribute('role', 'dialog'); rootEl.setAttribute('aria-modal', 'true');
   rootEl.setAttribute('aria-label', 'Switch apps'); rootEl.setAttribute('aria-hidden', 'true');
-  rootEl.innerHTML = '<div class="nx-head"><div><h2>OLYMPUS</h2><small>Five districts \u00b7 swipe, or hold the orb</small></div>'
+  rootEl.innerHTML = '<div class="nx-head"><div><h2>OLYMPUS</h2><small>Four doors \u00b7 swipe, or hold the orb</small></div>'
     + '<button class="nx-x" type="button" aria-label="Close">×</button></div>'
     + '<div class="nx-find"><input id="nxFind" type="search" autocomplete="off" autocapitalize="off" placeholder="Search every app" aria-label="Search apps by name or what they do">'
     + '<button class="nx-mapb" id="nxMapBtn" type="button" aria-pressed="false" aria-label="Show all apps on one screen">MAP</button></div>'
@@ -284,7 +285,7 @@ export function mountSwitcher(opts = {}) {
   const track = rootEl.querySelector('.nx-track'), row = rootEl.querySelector('.nx-row'), sysEl = rootEl.querySelector('.nx-sys');
   const groupsEl = rootEl.querySelector('.nx-gr'), findEl = rootEl.querySelector('#nxFind'), mapBtn = rootEl.querySelector('#nxMapBtn'), mapEl = rootEl.querySelector('#nxMap');
   let query = '', mapOn = false;
-  const GCOL = { market: '#c8a24a', research: '#4b7a99', money: '#7f8a52', command: '#c96a4a', life: '#9c6b3c', trading: '#c8a24a', fav: '#e0b060', recent: '#9c6b3c' };
+  const GCOL = { zeus: '#c8a24a', kalshi: '#b5a642', more: '#9c6b3c', market: '#c8a24a', research: '#4b7a99', money: '#7f8a52', command: '#c96a4a', life: '#9c6b3c', trading: '#c8a24a', fav: '#e0b060', recent: '#9c6b3c' };
   const favs = () => { const f = lsGet(FAV_KEY, []); return Array.isArray(f) ? f.filter((x) => typeof x === 'string').slice(0, FAV_MAX) : []; };
   const recents = () => { const f = lsGet(REC_KEY, []); return Array.isArray(f) ? f.filter((x) => typeof x === 'string').slice(0, REC_MAX) : []; };
   function toggleFav(id) {
@@ -566,7 +567,7 @@ export function mountSwitcher(opts = {}) {
       b.type = 'button'; b.className = 'nx-fb' + (a.more ? ' more' : '') + (a.dist && !a.more ? ' dist' : '') + (a.search ? ' srch' : '') + (a.back ? ' back' : '');
       if (a.more) { b.dataset.nxMore = '1'; b.dataset.nxDist = a.dist; } else if (a.dist) b.dataset.nxDist = a.dist; else if (a.search) b.dataset.nxSearch = '1'; else if (a.back) b.dataset.nxBack = '1'; else b.dataset.nx = a.id;
       if (a.dist && !a.more) b.style.setProperty('--mc', a.colour);
-      b.setAttribute('aria-label', a.more ? 'All ' + a.title + ' apps' : a.dist ? a.title + ': ' + a.n + ' apps' : a.search ? 'Search every app' : a.back ? 'Back to the districts' : label(a));
+      b.setAttribute('aria-label', a.more ? 'All ' + a.title + ' apps' : a.dist ? a.title + ': ' + a.n + ' apps' : a.search ? 'Search every app' : a.back ? 'Back to the doors' : label(a));
       b.style.left = Math.round(x) + 'px'; b.style.top = Math.round(y) + 'px';
       b.style.setProperty('--fx0', Math.round(cx - x) + 'px'); b.style.setProperty('--fy0', Math.round(cy - y) + 'px');
       b.innerHTML = a.more ? '⋯<span class="nx-fl">All ' + escH(a.title) + '</span>' : a.dist ? `<i>${escH(a.title.charAt(0))}</i><span class="nx-fl">${escH(a.title)}<small>${a.n}</small></span>`

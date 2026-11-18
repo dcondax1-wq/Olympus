@@ -42,7 +42,7 @@ Kalshi + the orb's favourites + added dashboards); every other app is under "All
 | **Worlds** | The 3D places (optional, for fun) | Most visited · Numbers as places | 8 | (static) |
 | **Settings & Help** | Change the look, start the PC, find any app | Settings · Help and every app (A to Z list of all 84) · Workshop | 12 | the current theme |
 
-84 entries (82 + Agency 2026-11-14 + Business 2026-11-15), each in exactly one hub (checked by `tests/test_hubs.py`). A few also appear as "Also useful here, from other hubs" (for example Kalshi City
+86 entries (82 + Agency 2026-11-14 + Business 2026-11-15 + Board and Trading 2026-11-18), each in exactly one hub (checked by `tests/test_hubs.py`). A few also appear as "Also useful here, from other hubs" (for example Kalshi City
 and Tyche on the Kalshi hub, Aegis and NQ on Today), so the 3D views and cross-job tools are one tap from where you need them.
 
 ## The tenth hub: Me (2026-11-14, team ME1, docs/ME_HUB.md)
@@ -108,6 +108,7 @@ Also shown here (they live in another hub): Bots right now (`nq`), Risk guard (`
 | Bots now | Bots right now (NQ, `nq`) | **best** | Is each bot on, drawdown left, the last trades | `../home.json`, `fixture.json`, `howto.json` |
 |  | Full NQ dashboard (Dashboard, `today`) | also | The full NQ dashboard: today, trades, results | data.json, home.json, live.json (the bot feeds) |
 |  | What to fix (Argus, `argus`) | also | The hundred eyes: problems worth fixing | bundled fixture / its own files |
+|  | Live board (Board, `board`) | also | What the bot, you and Claude know: accounts and notes | `board.json`, `../business/accounts.json`, `fixture.json` |
 | Risk | Risk guard (Aegis, `aegis`) | **best** | Drawdown left, and when to stop for the day | `fixture.json`, `../home.json`, `../ledger/rules.json` |
 |  | Rules and risk calculator (Pnyx, `pnyx`) | also | Prop-firm rules, and stop to micros | `fixture.json`, `../home.json`, `../ledger/rules.json` |
 |  | Size your eval (Labyrinth, `labyrinth`) | also | The risk maze: how big to trade | `../odeon/trades.json`, `../home.json`, `fixture.json` |
@@ -117,6 +118,7 @@ Also shown here (they live in another hub): Bots right now (`nq`), Risk guard (`
 | Trades | Trade replays (Odeon, `odeon`) | **best** | Every trade, replayed in 3D | `trades.json` |
 |  | Losing trades (Nemesis, `nemesis`) | also | What went wrong, trade by trade | `../odeon/trades.json`, `../home.json`, `fixture.json` |
 |  | P&L calendar (Kronos, `kronos`) | also | Daily P&L, best weekday and hour | `fixture.json`, `../odeon/trades.json` |
+|  | Every trade (Trading, `trading`) | also | Today's $, the calendar, the stats and the payout rules | `../home.json`, `fixture.json`, `trades.json`, `../ledger/rules.json`, `../business/accounts.json` |
 | Review | Weekly review (Apollo, `apollo`) | **best** | The week's review and one rule for next week | `fixture.json`, `../odeon/trades.json` |
 |  | Trade journal (Mnemosyne, `journal`) | also | A 10-second journal: what your habits cost | `../odeon/trades.json`, `fixture.json`, `mnemosyne-journal.json` |
 |  | Discipline score (Kratos, `kratos`) | also | A 0-100 score a day: plan, stop, size, hours | `fixture.json`, `../odeon/trades.json` |

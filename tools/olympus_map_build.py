@@ -7,7 +7,8 @@
 
 Sources (all in the repo, nothing is typed by hand):
   * tools/web_public/jarvis/apps.js   BUILT_INS rows: app('id', 'Name', 'group', 'accent', 'sub', ...)  -> name, group, description (first 8 words of `sub`)
-  * tools/web_public/atlas/atlas.js   the five districts `zones` (id, title, ids[]); an app in no list falls back like the page does (money -> Money, life -> Life, else Market)
+  * tools/web_public/atlas/atlas.js   the FOUR DOORS `zones` (2026-11-18, = olympus/doors.js: id, title, ids[]); an app in no list falls back like the page does
+                                      (money -> Money, trading -> ZEUS Trading, else More)
   * tools/web_public/<id>/*.js|html   the published JSON files an app reads (getJSON / fetch / load string literals ending .json), then its fixture.json
   * tests/test_<id>_page.py | test_<id>.py | any test_*<id>*.py   the test that covers it, else the kit test
 After editing jarvis/apps.js or the Atlas districts: run this, then `python tools/apps_list_build.py`.
@@ -25,7 +26,7 @@ WEB = os.path.join(ROOT, "tools", "web_public")
 OUT = os.path.join(ROOT, "docs", "OLYMPUS_MAP.md")
 HEAD = """# OLYMPUS map
 
-Every app, in the five districts of the Atlas command center (`tools/web_public/atlas/`). The district is the way you find it; the **group** column is the older registry group (`jarvis/apps.js`: trading / money / life) that the launcher and the Jarvis switcher use. **This file is generated: `python tools/olympus_map_build.py` (do not edit the table by hand; `tests.test_olympus_map` fails when it is stale).**
+Every app, behind one of the FOUR DOORS (ZEUS Trading, Money, Kalshi, More: `tools/web_public/olympus/doors.js`, `docs/ORGANIZATION.md`, 2026-11-18; the same lists as the Atlas command center `tools/web_public/atlas/`). The door is the way you find it (column District); the **group** column is the older registry group (`jarvis/apps.js`: trading / money / life) that the launcher and the Jarvis switcher use. **This file is generated: `python tools/olympus_map_build.py` (do not edit the table by hand; `tests.test_olympus_map` fails when it is stale).**
 
 Finding things: Atlas has search (names and plain words), pinned rooms (long-press a room or tap the star), recent rooms, a "what needs me now" strip and an all-apps-on-one-screen view. The Zenith launcher button and the Jarvis orb have the same search, favourites (long-press a tile), recent apps and a MAP view.
 
@@ -36,6 +37,7 @@ FOOT = """
 
 | Piece | File | Test |
 |---|---|---|
+| The four doors (ZEUS Trading, Money, Kalshi, More: each door's shortcuts in plain words + every app in exactly one door) | `tools/web_public/olympus/doors.js` (= `web_next/js/next/doors.js`); the page `hub/doors.html` + `hub/doors.js`; the Gate's four door tiles; docs/ORGANIZATION.md | `tests.test_apps_list` (part d) |
 | Atlas command center (districts, search, pins, recent, needs-me strip, one-screen map) | `tools/web_public/atlas/` (`atlas.js`, `hub.js`, `atlas.css`) | `node --test tests/test_atlas_standalone_hub.mjs`, `tests/test_atlas_intro.mjs` |
 | Zenith launcher sheet (favourites, search, recent, MAP) | `tools/web_public/launcher.js` = `web_next/js/next/launcher.js` (byte-identical) | `tests.test_apps_list` |
 | Jarvis switcher (search, MAP, favourites, recent) | `tools/web_public/jarvis/switcher.js` | `tests.test_jarvis_hub` (parts n, p, s) |
@@ -78,8 +80,8 @@ def zone_of(app_id, group, zones):
     for zid, title, ids in zones:
         if app_id in ids:
             return title
-    want = "risk" if group == "money" else "life" if group == "life" else "market"
-    return next((t for z, t, _ in zones if z == want), "Market")
+    want = "money" if group == "money" else "zeus" if group == "trading" else "more"
+    return next((t for z, t, _ in zones if z == want), "More")
 
 
 def words8(s):
@@ -160,14 +162,14 @@ def selftest():
     src = "export const BUILT_INS = Object.freeze([\n  app('zenith', 'Zenith', 'trading', '#a855f7', 'NQ bots \\u00b7 Zlarior', { url: '../' }),\n  app('pheme', 'Pheme', 'trading', '#c8a24a', \"The word on the street: releases, and NQ's past moves on them\", { glyph: 'X' }),\n  app('plan', 'Planner', 'life', '#fff', 'Day plan', {}),\n])"
     a = parse_apps(src)
     ck("apps.js rows: ids, names, groups, escaped and double-quoted subs", [x[0] for x in a] == ["zenith", "pheme", "plan"] and a[0][3] == "NQ bots · Zlarior" and a[1][3].startswith("The word on the street") and a[2][2] == "life", a)
-    z = parse_zones("const zones = [\n { id:'market', title:'Market', colour:'#c8a24a', note:'x', ids:['zenith','oracle'] },\n { id:'risk', title:'Money', colour:'#1', note:'y', ids:['hera'] },\n { id:'life', title:'Life', colour:'#2', note:'z', ids:[] }\n];")
-    ck("zones: id, title, ids", z == [("market", "Market", ["zenith", "oracle"]), ("risk", "Money", ["hera"]), ("life", "Life", [])], z)
-    ck("district: listed, else by group (money -> Money, life -> Life, trading -> Market)", zone_of("zenith", "trading", z) == "Market" and zone_of("new", "money", z) == "Money" and zone_of("new", "life", z) == "Life" and zone_of("new", "trading", z) == "Market")
+    z = parse_zones("const zones = [\n { id:'zeus', title:'ZEUS Trading', colour:'#c8a24a', note:'x', ids:['zenith','oracle'] },\n { id:'money', title:'Money', colour:'#1', note:'y', ids:['hera'] },\n { id:'more', title:'More', colour:'#2', note:'z', ids:[] }\n];")
+    ck("zones: id, title, ids", z == [("zeus", "ZEUS Trading", ["zenith", "oracle"]), ("money", "Money", ["hera"]), ("more", "More", [])], z)
+    ck("door: listed, else by group (money -> Money, trading -> ZEUS Trading, life -> More)", zone_of("zenith", "trading", z) == "ZEUS Trading" and zone_of("new", "money", z) == "Money" and zone_of("new", "life", z) == "More" and zone_of("new", "trading", z) == "ZEUS Trading")
     ck("8 words: longer sentences are cut, trailing punctuation dropped, short ones kept", words8("The word on the street: releases, and NQ's past moves on them") == "The word on the street: releases, and NQ's" and words8("Day plan") == "Day plan" and words8("") == "")
     ck("the unknown app has the fallbacks (bundled data, the kit test)", reads_of("zzz-none") == FALLBACK_DATA and test_of("zzz-none") == "covered by `tests.test_olympus_kit`")
     real = build()
     n = len(parse_apps(read(os.path.join(WEB, "jarvis", "apps.js"))))
-    ck("the real map has one row per BUILT_INS app and five districts", real.count("\n| ") >= n and n > 30 and all(f"| {d} |" in real for d in ("Market", "Research", "Money", "Command", "Life")), n)
+    ck("the real map has one row per BUILT_INS app and the four doors", real.count("\n| ") >= n and n > 30 and all(f"| {d} |" in real for d in ("ZEUS Trading", "Money", "Kalshi", "More")), n)
     ck("deterministic", build() == real)
     print(f"\n{'ALL PASS' if not bad else str(len(bad)) + ' FAILED'}")
     return 0 if not bad else 1

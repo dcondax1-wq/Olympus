@@ -32,7 +32,7 @@ NAV = os.path.join(AK.WEB, "olympus", "gate-nav.js")
 HUBS = ["bots", "money", "today", "me", "plan", "jarvis", "research", "kalshi", "worlds", "settings"]     # + Me (2026-11-14, a page hub: tests/test_me_hub.py)
 NAMES = ["Bots & Evals", "My Money", "Today", "Me", "Plan & Day", "Jarvis", "Research", "Kalshi", "Worlds", "Settings & Help"]
 NOW = "2026-11-12T15:00:00Z"            # Thursday 10:00 New York: the LIT window is open
-N_APPS = 84                              # 82 + Agency (2026-11-14) + Business (2026-11-15)
+N_APPS = 86                              # 82 + Agency (2026-11-14) + Business (2026-11-15) + Board, Trading (2026-11-18, night-org)
 NOW_S = int(datetime(2026, 11, 12, 15, 0, tzinfo=timezone.utc).timestamp())
 
 
@@ -54,7 +54,7 @@ def test_static():
     check("a. the files: hub/index.html, hub.js, hub.css, icon.svg, olympus/hub-status.js, docs/OLYMPUS_IA_V2.md",
           all(os.path.isfile(os.path.join(H, n)) for n in names) and os.path.isfile(HSJ) and os.path.isfile(os.path.join(AK.ROOT, "docs", "OLYMPUS_IA_V2.md")))
     html, js, css, hs, nav, cat = (AK.read(p) for p in (os.path.join(H, "index.html"), os.path.join(H, "hub.js"), os.path.join(H, "hub.css"), HSJ, NAV, CAT))
-    order = ["../olympus/agora.css?v=a4", "hub.css?v=h3", "me.css?v=m2", "../olympus/themes.js?v=o6", "../olympus/gate-catalog.js?v=nv1", "../olympus/hub-status.js?v=h2",
+    order = ["../olympus/agora.css?v=a4", "hub.css?v=h3", "me.css?v=m2", "../olympus/themes.js?v=o6", "../olympus/gate-catalog.js?v=nv2", "../olympus/hub-status.js?v=h2",
              '../olympus/gate-nav.js?v=g4" data-app="hub" defer', "me.js?v=m2", "hub.js?v=h4"]
     pos = [html.find(x) for x in order]
     check("a. the page loads agora.css, hub.css, me.css, the theme engine, the catalog, hub-status, gate-nav (data-app=hub, deferred), me.js (the Me hub) and hub.js, in that order, all in <head>",

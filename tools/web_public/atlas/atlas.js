@@ -10,15 +10,17 @@
     { id:'jarvis',name:'Jarvis',glyph:'J',colour:'#e5be83',group:'life',purpose:'Your assistant',path:'jarvis/' }
   ];
   const apps = rows.length ? rows : fallback;
-  // Five districts (2026-11-10, every app has one). Colours are the AGORA ones: gold, aegean, olive, terracotta, bronze.
+  // The FOUR DOORS (2026-11-18, night-org; the five districts of 2026-11-10 before): the same ids, colours and app lists as olympus/doors.js
+  // (tests.test_apps_list + tests.test_jarvis_home_agora keep them equal). Text colours stay readable on the dark cards.
   const zones = [
-    { id:'market', title:'Market', colour:'#c8a24a', note:'Read the tape and the live-facing rooms.', ids:['zenith','oracle','ares','forum','chronos','cities','odeon','pantheon','delphi','kronos'] },
-    { id:'research', title:'Research', colour:'#4b7a99', note:'Ideas, tests, signals and the library of studies.', ids:['datacity','observatory','tree','prometheus','hephaestus','nemesis','clio','fates','moirai'] },
-    { id:'risk', title:'Money', colour:'#7f8a52', note:'Balances, payouts, risk and prediction markets.', ids:['ledger','hera','plutus','pnyx','demeter','labyrinth','kalshi','kalshicity','tyche','dionysus','hermes','mint','mintcity','mercury','chrysos','sibyl','oikos','arbiter','aegis'] },
-    { id:'command', title:'Command', colour:'#c96a4a', note:'Today at home, alerts, links and settings.', ids:['hestia','inbox','argus','bridge','settings','atlas','stoa','kratos','argo'] },
-    { id:'life', title:'Life', colour:'#9c6b3c', note:'Plan the day, learn, review the week.', ids:['planner','mind','arena','journal','athena','apollo','lyceum','nike','epilogue','gallery'] }
+    { id:'zeus', title:'ZEUS Trading', colour:'#c8a24a', note:'Zlarior and ATLAS: accounts, live bots, trades, risk, rules, payouts.', ids:['zenith','nq','board','trading','aegis','pnyx','demeter','labyrinth','fates','moirai','odeon','nemesis','kronos','apollo','journal','kratos','epilogue','ares','argus','oracle','pantheon','pythia','pheme','kairos','chronos','forum','delphi'] },
+    { id:'money', title:'Money', colour:'#7f8a52', note:'Business, taxes, payouts, the fleet plan and the household.', ids:['business','ledger','hera','plutus','chrysos','oikos','agency','mercury','mint','mintcity','harmonia','hermes','argo','arbiter'] },
+    { id:'kalshi', title:'Kalshi', colour:'#b5a642', note:'The Kalshi bot and its edges (paused: paper only).', ids:['kalshi','dionysus','kalshicity','sibyl','tyche'] },
+    { id:'more', title:'More', colour:'#9c6b3c', note:'Research, my day, Jarvis, settings and everything else.', ids:['compass','helios','herald','stoa','hestia','inbox','planner','mind','arena','athena','lyceum','nike','gallery','polis','symposium','ergasterion','settings','bridge','atlas','cities','datacity','observatory','tree','prometheus','hephaestus','clio','archive','pinakes','colosseum'] }
   ];
-  const zoneOf = (a) => zones.find((zone) => zone.ids.includes(a.id)) || zones.find((zone) => zone.id === (a.group === 'money' ? 'risk' : a.group === 'life' ? 'life' : 'market'));
+  // the old district links (#zone=market from Jarvis "open the research district", the home courtyard's doorways) open the door that holds them now
+  const legacy = [{ id:'market', to:'zeus' }, { id:'research', to:'more' }, { id:'risk', to:'money' }, { id:'command', to:'more' }, { id:'life', to:'more' }];
+  const zoneOf = (a) => zones.find((zone) => zone.ids.includes(a.id)) || zones.find((zone) => zone.id === (a.group === 'money' ? 'money' : a.group === 'trading' ? 'zeus' : 'more'));
   const key = 'olympus.atlas.v1';
   let saved = { stars: [], recent: [] };
   function restoreSaved() {
@@ -87,7 +89,8 @@
   const words = (q) => q.split(/\s+/).filter(Boolean);
   const matchesAll = (a, q) => {
     if (!q) return true;
-    const hay = (a.name + ' ' + a.purpose + ' ' + a.id + ' ' + a.group + ' ' + zoneOf(a).title).toLocaleLowerCase();
+    const D = window.OLYMPUS_DOORS;                          // the plain words of olympus/doors.js (payout, taxes, accounts...) when it loaded
+    const hay = (a.name + ' ' + a.purpose + ' ' + a.id + ' ' + a.group + ' ' + zoneOf(a).title + ' ' + (D && D.words ? D.words(a) : '')).toLocaleLowerCase();
     return words(q).every((w) => hay.includes(w));
   };
   function render() {
@@ -199,9 +202,10 @@
     }
   }
   loadNeeds().catch(() => { $('#needsText').textContent = 'Status is not available right now.'; });
-  // Deep link from Jarvis ("open the money district"): #zone=market|research|risk|command|life shows only that district.
+  // Deep link: #zone=zeus|money|kalshi|more shows only that door (the old district ids map through `legacy`).
   function zoneFromHash() {
-    const m = /(?:^#|[&#])zone=([a-z]+)/.exec(location.hash || ''), id = m && zones.some((zn) => zn.id === m[1]) ? m[1] : null;
+    const m0 = /(?:^#|[&#])zone=([a-z]+)/.exec(location.hash || ''), old = m0 && legacy.find((l) => l.id === m0[1]);
+    const m = m0 && old ? [m0[0], old.to] : m0, id = m && zones.some((zn) => zn.id === m[1]) ? m[1] : null;
     if (!id) return;
     filter = id;
     document.querySelectorAll('[data-filter]').forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.filter === id)));

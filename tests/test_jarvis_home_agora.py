@@ -1,6 +1,6 @@
 """Jarvis home, AGORA (2026-11-10): the calm front page, the districts and the courtyard. Static + node only (no browser; the browser side lives in
 tests.test_jarvis_hub and tools/phone_fit_audit.py).
-  a. one set of districts: districts.js = switcher.js DIST = atlas.js zones (same ids, same app lists; Atlas calls Money 'risk')
+  a. the orb and Atlas use the FOUR DOORS (olympus/doors.js = switcher.js DIST = atlas.js zones, 2026-11-18); districts.js keeps the five districts for the home courtyard
   b. no neon / violet / glow / techno left in the Jarvis UI files and the 3D scene (colours, fonts, text-shadow, bloom)
   c. home-data.js: the cards from facts (top 3 nudges, bots with "Drawdown left $X of $max loss", the Mint estimate with its range, the next event),
      never blank with nothing, demo data labelled, junk in -> plain words out
@@ -41,18 +41,19 @@ def node(js):
 
 def part_a():
     d = node("import('./districts.js').then((m) => console.log(JSON.stringify(m.DISTRICTS)))")
+    doors = json.loads(subprocess.run(["node", "-e", "console.log(JSON.stringify(require(process.argv[1]).DOORS))", os.path.join(ROOT, "tools", "web_public", "olympus", "doors.js")],
+                                      capture_output=True, text=True, timeout=60).stdout)
     sw = read(JV, "switcher.js")
     atlas = read(ROOT, "tools", "web_public", "atlas", "atlas.js")
     ok_sw = ok_atlas = True
-    for x in d:
+    for x in doors:            # the four doors (2026-11-18, olympus/doors.js): the orb and Atlas; districts.js stays the home courtyard's five doorways
         m = re.search(r"\{ id: '%s', title: '%s', colour: '%s', ids: \[([^\]]*)\] \}" % (x["id"], x["title"], re.escape(x["colour"])), sw)
         ok_sw = ok_sw and bool(m) and re.findall(r"'([a-z0-9-]+)'", m.group(1)) == x["ids"]
-        aid = "risk" if x["id"] == "money" else x["id"]
-        m2 = re.search(r"\{ id:'%s', title:'%s', colour:'%s'[^\n]*?ids:\[([^\]]*)\]" % (aid, x["title"], re.escape(x["colour"])), atlas)
+        m2 = re.search(r"\{ id:'%s', title:'%s', colour:'%s'[^\n]*?ids:\[([^\]]*)\]" % (x["id"], x["title"], re.escape(x["colour"])), atlas)
         ok_atlas = ok_atlas and bool(m2) and re.findall(r"'([a-z0-9-]+)'", m2.group(1)) == x["ids"]
     check("a. five districts in Atlas order (Market, Research, Money, Command, Life)", [x["title"] for x in d] == ["Market", "Research", "Money", "Command", "Life"], d)
-    check("a. switcher.js DIST equals districts.js (ids, colours, app lists)", ok_sw)
-    check("a. atlas.js zones equal districts.js (Atlas's 'risk' is Money)", ok_atlas)
+    check("a. switcher.js DIST equals the four doors of olympus/doors.js (ZEUS Trading, Money, Kalshi, More: ids, colours, app lists)", ok_sw and [x["title"] for x in doors] == ["ZEUS Trading", "Money", "Kalshi", "More"])
+    check("a. atlas.js zones equal the four doors (old #zone= district links map to their door)", ok_atlas and "const legacy = [" in atlas)
     out = node("""import('./districts.js').then((m) => console.log(JSON.stringify({ a: m.districtOf({ id: 'zenith' }), b: m.districtOf({ id: 'mint' }), c: m.districtOf({ id: 'x-new', group: 'life' }), d: m.districtOf({ id: 'x-new' }),
         e: m.byDistrict([{ id: 'planner' }, { id: 'oracle' }, { id: 'zzz' }]).map((x) => [x.id, x.apps.length]), f: m.searchApps([{ id: 'mint', name: 'Mint', sub: 'money estimate' }, { id: 'oracle', name: 'Oracle' }], 'money est').map((a) => a.id) })))""")
     check("a. districtOf: the Atlas list first, else the app's group, else Command; byDistrict keeps empty districts; searchApps needs every word",
