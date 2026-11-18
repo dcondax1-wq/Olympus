@@ -76,17 +76,42 @@ def fetch_lite(get=None) -> dict | None:
     return best
 
 
-def lite_live(lite: dict | None) -> dict:
-    """{key: {balance, room, to_pass, t}} from the PC's lite board cards."""
+def lite_live(lite: dict | None, plan_accounts=None) -> dict:
+    """{plan key: {balance, room, floor, to_pass, stage, t, name}} from the PC's live numbers: the board cards (lit, atlas) and
+    every PC account of "accounts" (b25k_2 ...). Matched to the plan by the PC id / Name (engine/board_events.plan_key), never
+    by plan size (2026-11-18: the new 25K eval had landed on ATLAS's row). A PC account the plan lacks keeps its own row."""
     out = {}
     lite = B._d(lite)
     bd = B._d(lite.get("board"))
+    pa = plan_accounts if plan_accounts is not None else B.plan().get("accounts")
     t = B._f(bd.get("data_t")) or B._f(bd.get("t")) or B._f(lite.get("t"))
     for ck, key in CARD_KEY.items():
         c = B._d(bd.get(ck))
         if c and B._f(c.get("balance")) is not None:
-            out[key] = {"balance": c.get("balance"), "room": c.get("room"), "to_pass": c.get("to_target"), "t": t,
-                        **({"stage": "funded"} if str(c.get("status") or "").lower() == "funded" else {})}
+            st = str(c.get("status") or "").lower()
+            k = B.plan_key(pa, ck, "") or key
+            out[k] = {"balance": c.get("balance"), "room": c.get("room"), "floor": c.get("floor"), "to_pass": c.get("to_target"), "t": t,
+                      "name": c.get("name"), "plan": c.get("plan"),
+                      "stage": "funded" if st == "funded" or c.get("stage") == "funded" else "failed" if st in ("failed", "lost") else "eval"}
+    at = B._f(lite.get("t")) or t
+    for a in lite.get("accounts") or []:
+        a = B._d(a)
+        if not a.get("id") or a.get("kind") not in ("eval", "funded") or a.get("source") in ("cloud", "pc_blitz") or a.get("id") == "acct_c":
+            continue
+        e = B._d(a.get("eval"))
+        if B._f(e.get("balance")) is None:
+            continue
+        k = B.plan_key(pa, a.get("id"), a.get("name"))
+        lit = B._d(bd.get("lit"))
+        if not k and lit and B._f(lit.get("balance")) == B._f(e.get("balance")) and B._f(lit.get("floor")) == B._f(e.get("floor")):
+            k = B.plan_key(pa, "lit", "") or CARD_KEY["lit"]     # the bot's main account = the lit card (a plan without "pc" ids)
+        k = k or str(a["id"])
+        if k in out:                                         # the board card of the same account (same numbers): keep the card
+            continue
+        st = str(e.get("status") or "").lower()
+        out[k] = {"balance": e.get("balance"), "room": e.get("room"), "floor": e.get("floor"), "to_pass": e.get("to_target"),
+                  "t": B._f(B._d(a.get("conn")).get("t")) or at, "name": a.get("name"), "plan": a.get("plan"),
+                  "stage": "funded" if a.get("kind") == "funded" else "failed" if st == "failed" else "eval"}
     return out
 
 
@@ -115,8 +140,11 @@ def gather(offline: bool = False, hb=None, lite=None, now=None) -> dict:
     for r in pcb.get("accounts") or []:                     # the PC's own rows (its emit()s), as of its heartbeat
         if isinstance(r, dict) and r.get("key") and r.get("src") in ("PC", "PC live") and B._f(r.get("balance")) is not None:
             live[r["key"]] = {**{f: r.get(f) for f in ("balance", "room", "floor", "to_pass")}, "t": r.get("src_t") or hb.get("t")}
-    for k, v in {**live_nt, **lite_live(lite)}.items():
-        if (B._f(v.get("t")) or 0) >= (B._f(B._d(live.get(k)).get("t")) or 0):
+    for k, v in live_nt.items():                            # the PC's own board rows (plan + events on the PC): only where no live card
+        if k not in live and (B._f(v.get("t")) or 0) >= 0:
+            live[k] = {**v, "src": "PC board"}
+    for k, v in lite_live(lite, plan_doc.get("accounts")).items():   # the PC's live account numbers win over both
+        if (B._f(v.get("t")) or 0) >= (B._f(B._d(live.get(k)).get("t")) or 0) or B._d(live.get(k)).get("src") == "PC board":
             live[k] = v
     events = B.merge(published().get("events") or [], ev_hb, ev_nt, B.load(plan_doc=plan_doc))
     hb_t = B._f(hb.get("t")) if hb.get("present") else None
@@ -154,6 +182,10 @@ def lines(board: dict, now=None) -> list:
         stage = r.get("chip") or r.get("stage")
         if r.get("locked") and stage != "locked":
             stage += " + LOCKED"
+        if r.get("plan_only"):
+            stage = "PLAN ONLY (" + str(stage) + ", no PC numbers)"
+        elif r.get("not_in_plan"):
+            stage += " (PC account, not in accounts.json yet)"
         src = r.get("src") or "PLAN"
         if r.get("age_s") is not None:
             src += f", {B.ago(r['age_s'])}"

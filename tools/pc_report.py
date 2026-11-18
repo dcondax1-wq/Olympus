@@ -464,7 +464,8 @@ def lite(snap: dict, max_bytes: int = MAX_STATUS_BYTES) -> dict:
     """The live.json the site reads (tools/web_public/live.js LIVE.apply, board.js, truth.js), cut to under max_bytes:
     kind "le-live", lite True, t = the bot's own heartbeat time (None when the PC bot never reported), pc, pc_verdict,
     board.lit / atlas / blitz cards + the last trades, accounts (no trade lists), reporter (what this PC saw at reporter.t),
-    brd (the Board's tiny cut, engine/board_events.status_block: account stage / balance / room / to pass, newest events).
+    brd (the Board's tiny cut, engine/board_events.status_block: account stage / balance / room / to pass, newest events),
+    mf (the MFFU page's extras per account, engine/mffu_view.compact: start date, trading days, trades, best / worst day, equity).
     It goes to a PUBLIC topic: public() takes out the PC name, logins, broker account ids and folders (tests.test_public_build_privacy e)."""
     L = snap.get("live") if isinstance(snap.get("live"), dict) else {}
     pc = _d(L.get("pc"))
@@ -503,6 +504,13 @@ def lite(snap: dict, max_bytes: int = MAX_STATUS_BYTES) -> dict:
         out["brd"] = board_events.status_block()
     except Exception:  # noqa: BLE001
         pass
+    try:                                           # the MFFU-style account page (engine/mffu_view.py: start, days, trades, best day, equity)
+        from engine import mffu_view
+        mf = mffu_view.compact(L)
+        if mf:
+            out["mf"] = mf
+    except Exception:  # noqa: BLE001
+        pass
     if isinstance(snap.get("kalshi_rewards"), dict):   # the Kalshi page's "Rewards test (paper)" card (tools/kalshi_rewards_paper.py)
         out["kalshi_rewards"] = snap["kalshi_rewards"]
     out = {k: v for k, v in out.items() if v is not None}
@@ -512,13 +520,20 @@ def lite(snap: dict, max_bytes: int = MAX_STATUS_BYTES) -> dict:
         g = _d(_d(o.get("pc")).get("glance"))
         if g:
             brain_glance.fit(g, n)
-    # the glance is cut (then left out) before the Board's events; the Board's events go before the accounts block
+    def _mfcut(o, n):                    # the MFFU page's equity line: 4 points, then none (the block itself goes before "accounts")
+        from engine import mffu_view
+        mffu_view.cut_eq(o.get("mf"), n)
+    # the glance is cut (then left out) before the Board's events; the Board's events go before the accounts block;
+    # the MFFU page's "mf": its equity line is cut after the glance, the rest goes after "brd" and before "accounts"
     steps = [lambda o: o.pop("kalshi_rewards", None), lambda o: _d(o.get("board")).pop("lines", None),
              lambda o: _d(o.get("brd")).__setitem__("ev", _d(o.get("brd")).get("ev", [])[:2]) if o.get("brd") else None,
              lambda o: _gcut(o, 1000), lambda o: _gcut(o, 600),
              lambda o: _d(o.get("brd")).__setitem__("ev", []) if o.get("brd") else None,
              lambda o: _d(o.get("pc")).pop("glance", None),
+             lambda o: _mfcut(o, 4),
              lambda o: o.pop("brd", None),
+             lambda o: _mfcut(o, 0),
+             lambda o: o.pop("mf", None),
              lambda o: o.pop("accounts", None),
              lambda o: _d(o.get("board")).__setitem__("trades", _d(o.get("board")).get("trades", [])[:1]) if o.get("board") else None,
              lambda o: [_d(_d(o.get("board")).get(k)).pop("waiting", None) for k in ("lit", "atlas", "blitz")],

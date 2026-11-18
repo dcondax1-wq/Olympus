@@ -362,6 +362,32 @@ def _rules(plan_name: str):
     return None
 
 
+_NAME_DROP = {"mffu", "builder", "eval", "evaluation", "funded", "next", "account", "the", "sim", "live"}
+
+
+def _name_tokens(name) -> frozenset:
+    return frozenset(w for w in re.findall(r"[a-z0-9#]+", str(name or "").lower()) if w not in _NAME_DROP)
+
+
+def plan_key(plan_accounts, pc_id="", pc_name="") -> str:
+    """The accounts.json key of a PC account: by its PC id (the plan row's "pc" list: "mffu50k_eval", "b25k_2", "lit",
+    "atlas" ...), else by its Name ("Zlarior Builder 25K #2" = "Zlarior 25K #2"). NEVER by plan size (2026-11-18: the new
+    Builder 25K eval landed on ATLAS's row). "" when nothing matches."""
+    pid = str(pc_id or "").strip().lower()
+    accts = [a for a in plan_accounts or [] if isinstance(a, dict) and a.get("key")]
+    if pid:
+        for a in accts:
+            ids = a.get("pc") if isinstance(a.get("pc"), list) else [a.get("pc")] if a.get("pc") else []
+            if pid in {str(x).strip().lower() for x in ids} or pid == str(a["key"]).lower():
+                return str(a["key"])
+    toks = _name_tokens(pc_name)
+    if toks:
+        for a in accts:
+            if _name_tokens(a.get("name")) == toks:
+                return str(a["key"])
+    return ""
+
+
 def _plan_balance(a: dict, plan_doc: dict):
     m = _PLAN_BAL_RX.search(str(a.get("next") or ""))
     if not m:
@@ -384,6 +410,12 @@ def account_rows(events: list, plan_doc: dict, live: dict | None = None, now: fl
         if k and k not in known and k not in hide and k in ALIASES.values():
             accts.append({"key": k, "name": k.upper() if len(k) <= 5 else k.title(), "plan": "", "stage": "eval", "status": "live"})
             known.add(k)
+    for k, lv in live.items():                               # a real PC account the plan does not list yet: its own row
+        k = str(k)
+        if k and k not in known and k not in hide and not re.search(r"blitz|acct_c", k) and _f(_d(lv).get("balance")) is not None:
+            accts.append({"key": k, "name": clean(_d(lv).get("name"), 40) or k, "plan": clean(_d(lv).get("plan"), 40),
+                          "stage": "eval", "status": "live", "not_in_plan": True})
+            known.add(k)
     rows = []
     for a in accts:
         key = str(a["key"])
@@ -392,7 +424,11 @@ def account_rows(events: list, plan_doc: dict, live: dict | None = None, now: fl
         rules = _rules(a.get("plan"))
         row = {"key": key, "name": a.get("name") or key, "plan": a.get("plan") or "", "status": a.get("status") or "",
                "stage": str(a.get("stage") or "eval"), "balance": None, "room": None, "floor": None, "to_pass": None,
-               "locked": False, "last4": None, "src": "PLAN", "src_t": None, "last": None}
+               "locked": False, "last4": None, "src": "PLAN", "src_t": None, "last": None,
+               "pc": [str(x) for x in (a.get("pc") if isinstance(a.get("pc"), list) else [a.get("pc")] if a.get("pc") else [])][:4]}
+        if a.get("not_in_plan"):
+            row["not_in_plan"] = True
+        lock_t = 0
         bal, when = _plan_balance(a, plan_doc)
         if bal is not None:
             row.update(balance=bal, src=f"PLAN (owner, {when})")
@@ -425,6 +461,7 @@ def account_rows(events: list, plan_doc: dict, live: dict | None = None, now: fl
                     row["locked"] = False
             if k == "account_locked" or d.get("locked") is True:
                 row["locked"] = True
+                lock_t = max(lock_t, t)
             if k != "balance" or not row["last"]:
                 row["last"] = {"t": t, "kind": k, "text": clean(e.get("text"), 140), "src": src}
         lv = _d(live.get(key))
@@ -434,7 +471,14 @@ def account_rows(events: list, plan_doc: dict, live: dict | None = None, now: fl
                     row[f] = _f(lv[f])
             if lv.get("stage") in ("eval", "funded"):
                 row["stage"] = lv["stage"] if row["stage"] not in ("passed", "failed") or lv["stage"] == "funded" else row["stage"]
-            row.update(src="PC live", src_t=int(_f(lv.get("t")) or now))
+            elif lv.get("stage") in ("passed", "failed"):
+                row["stage"] = lv["stage"]
+            lt = int(_f(lv.get("t")) or now)
+            if lv.get("stage") in ("eval", "funded") and not lv.get("locked") and lt > lock_t:
+                row["locked"] = False                        # the PC trades it again (a new funded account): an older lock is over
+            elif lv.get("locked"):
+                row["locked"] = True
+            row.update(src=str(lv.get("src") or "PC live"), src_t=lt)
         if rules and row["balance"] is not None and row["stage"] in ("eval", "passed"):
             start, target, mll = rules
             row["target_balance"] = start + target
@@ -448,6 +492,7 @@ def account_rows(events: list, plan_doc: dict, live: dict | None = None, now: fl
         if row["stage"] != "eval":
             row["to_pass"] = 0.0 if row["stage"] == "passed" else None
         row["chip"] = chip(row)
+        row["plan_only"] = row["src"].startswith("PLAN")
         row["age_s"] = int(now - row["src_t"]) if row["src_t"] else None
         rows.append(row)
     return rows

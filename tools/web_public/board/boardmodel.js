@@ -15,6 +15,8 @@
   const num = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : (typeof v === 'string' && v.trim() !== '' && Number.isFinite(+v.replace(/[$,]/g, '')) ? +v.replace(/[$,]/g, '') : null));
   const RULES = [['rapid eod 50k', 50000, 3000], ['builder 50k', 50000, 3000], ['builder 25k', 25000, 1500]];
   const T = (b) => (isObj(b) ? num(b.t) || 0 : 0);
+  // which live numbers belong to which row: by the PC id / Name, never the plan size (../business/mffumodel.js)
+  const MM = root.MFFU_MODEL || (typeof require === 'function' ? require('../business/mffumodel.js') : null);
 
   function ago(s) {
     if (s == null || !Number.isFinite(s)) return 'never';
@@ -53,7 +55,7 @@
         if (toPass <= 0) stage = 'passed';
       }
       const rm = String(a.next || '').match(/\$([\d,]+)\s+of\s+room/i);
-      accounts.push({ key: a.key, name: a.name || a.key, plan: a.plan || '', status: a.status || '', stage, chip: chipOf(stage, bal == null ? a.status : '', false),
+      accounts.push({ key: a.key, name: a.name || a.key, plan: a.plan || '', status: a.status || '', stage, pc: Array.isArray(a.pc) ? a.pc.map(String) : [], plan_only: true, chip: chipOf(stage, bal == null ? a.status : '', false),
                       balance: bal, room: stage === 'eval' && rm ? num(rm[1]) : null, to_pass: stage === 'passed' ? 0 : toPass, locked: false,
                       src: m ? 'PLAN (owner, ' + m[2] + ')' : 'PLAN', src_t: null, last: null, age_s: null });
     }
@@ -61,19 +63,36 @@
              waiting: (Array.isArray(p.decisions) ? p.decisions : []).map(String).slice(0, 8), plan_updated: p.updated || null };
   }
 
-  // lay the PC's tiny ntfy cut over a board: account numbers + newest events
+  // lay the PC's ntfy post over a board: its live account numbers (board cards lit / atlas + accounts, matched by PC id / Name),
+  // then the PC's own board rows (brd: plan + events on the PC) only where no live number came, then the newest events
   function overlayLite(board, lite) {
     const b = JSON.parse(JSON.stringify(board));
     const brd = isObj(lite) && isObj(lite.brd) ? lite.brd : null;
     const t = num(lite && lite.reporter && lite.reporter.t) || num(lite && lite.t) || 0;
     b.pc = { t, age_s: null, via: 'ntfy', stale: false };
+    b.accounts = b.accounts || [];
+    const rows = new Map(b.accounts.map((r) => [r.key, r]));
+    const done = new Set();
+    if (MM && isObj(lite)) {
+      const asPlan = b.accounts.map((r) => ({ key: r.key, name: r.name, pc: r.pc }));
+      for (const l of MM.liveAccounts(lite, null)) {
+        const key = MM.planKey(asPlan, l.id, l.name) || (l.alias ? MM.planKey(asPlan, l.alias, '') : '') || (l.card ? MM.planKey(asPlan, l.card, '') || ({ lit: 'zlarior', atlas: 'atlas' })[l.card] : '') || l.id;
+        if (done.has(key) || /blitz|acct_c/i.test(key)) continue;
+        done.add(key);
+        let r = rows.get(key);
+        if (!r) { r = { key, name: l.name || key, plan: l.plan || '', last: null, not_in_plan: true }; rows.set(key, r); b.accounts.push(r); }
+        let stage = l.stage === 'funded' ? 'funded' : l.stage === 'failed' ? 'failed' : (r.chip === 'PASSED' && l.stage === 'eval' && (l.to_target == null || l.to_target <= 0)) ? 'passed' : 'eval';
+        if (stage === 'eval' && l.to_target != null && l.to_target <= 0) stage = 'passed';
+        Object.assign(r, { stage, chip: chipOf(stage, '', false), balance: l.balance, floor: l.floor, room: stage === 'passed' ? null : l.room,
+                           to_pass: stage === 'funded' ? null : stage === 'passed' ? 0 : l.to_target, locked: false, src: 'PC live (ntfy)', src_t: l.t || t, plan_only: false });
+      }
+    }
     if (!brd) return b;
-    const rows = new Map((b.accounts || []).map((r) => [r.key, r]));
     for (const x of Array.isArray(brd.ac) ? brd.ac : []) {
-      if (!Array.isArray(x) || !x[0] || /blitz/i.test(String(x[0]))) continue;
+      if (!Array.isArray(x) || !x[0] || /blitz/i.test(String(x[0])) || done.has(x[0])) continue;
       const r = rows.get(x[0]) || { key: x[0], name: String(x[0]).toUpperCase(), plan: '', last: null };
-      Object.assign(r, { chip: x[1] || r.chip, balance: num(x[2]), room: num(x[3]), to_pass: num(x[4]), locked: !!x[5], src: 'PC (ntfy)', src_t: num(brd.t) || t });
-      if (!rows.has(x[0])) { rows.set(x[0], r); (b.accounts = b.accounts || []).push(r); }
+      Object.assign(r, { chip: x[1] || r.chip, balance: num(x[2]), room: num(x[3]), to_pass: num(x[4]), locked: !!x[5], src: 'PC board (ntfy)', src_t: num(brd.t) || t, plan_only: false });
+      if (!rows.has(x[0])) { rows.set(x[0], r); b.accounts.push(r); }
     }
     const seen = new Set((b.events || []).map((e) => e.t + '|' + e.kind + '|' + e.acct));
     for (const x of Array.isArray(brd.ev) ? brd.ev : []) {

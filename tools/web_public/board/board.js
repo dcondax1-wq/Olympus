@@ -25,11 +25,11 @@
     c.dataset.key = a.key;
     const top = el('div', 'brow-top');
     top.appendChild(el('h3', null, a.name));
-    const ch = el('span', 'chip chip-' + String(a.chip || 'eval').toLowerCase(), a.chip || 'eval');
+    const ch = el('span', 'chip chip-' + String(a.chip || 'eval').toLowerCase(), (a.plan_only ? 'PLAN · ' : '') + (a.chip || 'eval'));
     top.appendChild(ch);
     if (a.locked && a.chip !== 'locked') top.appendChild(el('span', 'chip chip-locked', 'locked'));
     c.appendChild(top);
-    c.appendChild(el('p', 'brow-plan', a.plan || ''));
+    c.appendChild(el('p', 'brow-plan', (a.plan || '') + (a.plan_only ? ' · PLAN only: no PC numbers yet' : '') + (a.not_in_plan ? ' · on your PC, not in the plan yet' : '')));
     const dl = el('dl', 'nums');
     const kv = (k, v, cls) => { const w = el('div', cls || ''); w.appendChild(el('dt', null, k)); w.appendChild(el('dd', null, v)); dl.appendChild(w); };
     kv('Balance', M.usd(a.balance));

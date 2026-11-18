@@ -188,6 +188,8 @@ def part_d():
                                                            "accounts": []}}
     T.B.plan = lambda path=None: PLAN                                     # the test plan and no published copy, not the repo's
     T.published = lambda: {}
+    T.fetch_lite = lambda get=None: None                                 # fully offline: never the real ntfy feed / heartbeat branch
+    T.fetch_hb = lambda remotes=None: {"present": False, "reason": "test: offline"}
     open(os.path.join(TMP, "inbox", "board.jsonl"), "w").close()
     b = T.gather(offline=False, hb=old, lite=None, now=NOW)
     ls = T.lines(b, now=NOW)
@@ -205,6 +207,7 @@ def part_d():
     z = {r["key"]: r for r in b["accounts"]}["zlarior"]
     check("d. the ntfy feed alone: PC fresh via ntfy, Zlarior's live card, the pass event", b["pc"]["via"] == "ntfy" and not b["pc"]["stale"]
           and z["balance"] == 49900 and any(e["kind"] == "eval_passed" for e in b["events"]), (b["pc"], z))
+    part_d_funded(T)
     shared = os.environ["LE_BOARD_SHARED"]
     T.write_note("ATLAS 26,946.10 passed, ends 6017 MFFUEVBLDR602936017", kind="owner_note", acct="atlas", src="owner", via="chat", now=NOW - 50)
     T.write_note("Noted", now=NOW - 40, answers=["x1"])
@@ -219,6 +222,61 @@ def part_d():
     check("d. STATE.md starts every chat with python tools/board.py read", "python tools/board.py read" in rd(ROOT, "STATE.md")[:600])
     check("d. data/board/shared.jsonl is tracked, events.jsonl ignored", subprocess.run(["git", "check-ignore", "-q", "data/board/events.jsonl"], cwd=ROOT).returncode == 0
           and subprocess.run(["git", "check-ignore", "-q", "data/board/shared.jsonl"], cwd=ROOT).returncode == 1)
+
+
+# the PC feed of 2026-11-18 (trimmed): Zlarior 50K eval (lit card + accounts mffu50k_eval), the NEW Builder 25K eval b25k_2 and
+# ATLAS's FUNDED 25K (board.atlas, status funded), while the PC's own brd still says ATLAS PASSED + locked (an old owner note)
+LITE_FUNDED = {"kind": "le-live", "t": NOW - 60, "reporter": {"t": NOW - 30},
+               "board": {"t": NOW - 60, "data_t": NOW - 60,
+                         "lit": {"id": "lit", "name": "Zlarior", "plan": "MFFU Builder 50K", "balance": 49192.78, "floor": 48168.2, "room": 1024.58,
+                                 "to_target": 3807.22, "status": "open"},
+                         "atlas": {"id": "atlas", "name": "ATLAS", "plan": "MFFU Builder 25K funded", "balance": 25000.0, "floor": 24000.0,
+                                   "room": 1000.0, "to_target": 1850.0, "status": "funded"}},
+               "accounts": [{"id": "mffu50k_eval", "name": "MFFU 50K Eval", "plan": "Builder 50K", "kind": "eval", "source": "pc",
+                             "eval": {"start_balance": 50000.0, "balance": 49192.78, "floor": 48168.2, "room": 1024.58, "to_target": 3807.22, "status": "open"}},
+                            {"id": "b25k_2", "name": "Zlarior Builder 25K #2", "plan": "Builder 25K", "kind": "eval", "source": "pc",
+                             "eval": {"start_balance": 25000.0, "balance": 25000.0, "floor": 24000.0, "room": 1000.0, "to_target": 1500.0, "status": "open"}}],
+               "brd": {"t": NOW - 30, "ac": [["zlarior", "eval", 49193, 1025, 3807, 0], ["atlas", "PASSED", 26946, None, 0, 1]], "ev": [], "on": 0}}
+PLAN_PC = {**PLAN, "accounts": [{**PLAN["accounts"][0], "pc": ["mffu50k_eval", "lit"]},
+                                {**PLAN["accounts"][1], "plan": "MFFU Builder 25K (funded)", "stage": "funded", "pc": ["atlas", "acct_b"],
+                                 "next": "Funded since Nov 17 night"},
+                                PLAN["accounts"][2],
+                                {"key": "fresh25", "name": "Zlarior 25K #2", "plan": "MFFU Builder 25K", "stage": "eval", "status": "live",
+                                 "pc": ["b25k_2"], "match": "builder25k"}]}
+
+
+def part_d_funded(T):
+    """2026-11-18 bug: the new 25K eval (b25k_2) landed on ATLAS's row as "locked" and ATLAS's funded 25K was invisible."""
+    old_plan = T.B.plan
+    owner = B.make("owner_note", "atlas", "ATLAS balance $26,946.10: passed. Account locked: Limit 0", {"balance": 26946.1, "stage": "passed", "locked": True},
+                   src="owner", t=NOW - 3 * 3600)
+    for plan, label in ((PLAN_PC, "plan with pc ids"), (PLAN, "old plan without pc ids")):
+        T.B.plan = lambda path=None, _p=plan: _p
+        b = T.gather(offline=False, hb={"present": False, "reason": "offline"}, lite=LITE_FUNDED, now=NOW)
+        rows = {r["key"]: r for r in b["accounts"]}
+        a = rows.get("atlas") or {}
+        z = rows.get("zlarior") or {}
+        n25 = rows.get("fresh25" if plan is PLAN_PC else "b25k_2") or {}
+        check(f"d. ({label}) ATLAS = its FUNDED 25K, not locked, from the PC (not the 25K eval, not the old owner note)",
+              a.get("stage") == "funded" and a.get("chip") == "funded" and not a.get("locked") and a.get("balance") == 25000 and a.get("src") == "PC live", a)
+        check(f"d. ({label}) the new 25K eval has its OWN row (eval, $25,000, $1,500 to pass)",
+              n25.get("chip") == "eval" and n25.get("balance") == 25000 and n25.get("to_pass") == 1500 and n25.get("src") == "PC live", n25)
+        check(f"d. ({label}) Zlarior 50K once (lit card + mffu50k_eval = one row), no duplicate",
+              z.get("balance") == 49192.78 and "mffu50k_eval" not in rows and sum(1 for r in b["accounts"] if r.get("balance") == 49192.78) == 1, list(rows))
+        txt = "\n".join(T.lines(b, now=NOW))
+        check(f"d. ({label}) read: the plan-only Rapid row says PLAN ONLY", re.search(r"Rapid EOD \| .*PLAN ONLY", txt), txt)
+    b = T.gather(offline=False, hb={"present": False, "reason": "offline"}, lite=LITE_FUNDED, now=NOW)
+    T.B.plan = old_plan
+    # a stale owner-typed row is replaced by fresher PC data; an old feed does not beat a newer owner note
+    open(ev_file(), "a").write(json.dumps(owner) + "\n")
+    b = T.gather(offline=False, hb={"present": False, "reason": "offline"}, lite=LITE_FUNDED, now=NOW)
+    a = {r["key"]: r for r in b["accounts"]}["atlas"]
+    check("d. the owner's older typed 'ATLAS passed, locked' is replaced by the PC's fresher funded numbers", a["balance"] == 25000 and a["stage"] == "funded"
+          and not a["locked"], a)
+    open(ev_file(), "w").close()
+    silent = T.gather(offline=False, hb={"present": False, "reason": "offline"}, lite={**LITE_FUNDED, "t": NOW - 86400, "reporter": {"t": NOW - 86400},
+                                                                                      "board": {**LITE_FUNDED["board"], "t": NOW - 86400, "data_t": NOW - 86400}}, now=NOW)
+    check("d. a day-old feed says STALE, PC SILENT", "PC SILENT" in T.lines(silent, now=NOW)[0], T.lines(silent, now=NOW)[0])
 
 
 def node(body):
