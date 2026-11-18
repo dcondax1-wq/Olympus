@@ -1155,7 +1155,8 @@ def sec_k(br, base, C, days, picks, ids):
             frames(p, 2)
             # aim where the scene looks for a villager (pickNpc: the terrain under its feet + 1.3 m x 2.4 from the city view), project and tap in one go
             # (ui.tap takes page coordinates: it takes the canvas offset off again)
-            p.evaluate("(async () => { const { groundY } = await import('./athens-plan.js'), s = window.__athens.scene, q = s.npcPos[0], v = s.project(q.x, groundY(q.x, q.z) + 1.3 * 2.4, q.z), r = s.canvas.getBoundingClientRect(); window.__athens.ui.tap(v.x + r.left, v.y + r.top); })()")
+            # and our own villager card: the shared people kit takes the talk when it is loaded (that path: the stub check in part l), so it is set aside for this tap
+            p.evaluate("(async () => { const { groundY } = await import('./athens-plan.js'), s = window.__athens.scene, q = s.npcPos[0], v = s.project(q.x, groundY(q.x, q.z) + 1.3 * 2.4, q.z), r = s.canvas.getBoundingClientRect(), had = window.OLYMPUS_PEOPLE; delete window.OLYMPUS_PEOPLE; try { window.__athens.ui.tap(v.x + r.left, v.y + r.top); } finally { if (had) window.OLYMPUS_PEOPLE = had; } })()")
             p.wait_for_timeout(700)
             npc = p.evaluate("document.querySelector('.ath-card').innerText")
             p.screenshot(path=os.path.join(SHOTS, "athens_nest_390x844_villager.png"))
