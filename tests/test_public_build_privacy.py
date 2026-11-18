@@ -353,8 +353,10 @@ def ntfy():
           and all(len(json.dumps(e, ensure_ascii=False).encode("utf-8")) <= PR.MAX_STATUS_BYTES for e in exts), rawx[:600])
     check("e. the public status has no PC name (host) anywhere", "PLANT-PC" not in raw and '"host"' not in raw, raw[:400])
     check("e. the public status has no full broker id, no personal folder, no email", b1 not in raw and "Jane Planted" not in raw and F["email"] not in raw, raw[:600])
+    from tools import pc_feed as _PF
+    _M = _PF.merge(L, exts)                    # the core + ext posts merged back, as the phone reads them
     check("e. the eval numbers the site needs stay (balance, drawdown left, the verdict, the last trade)",
-          L.get("board", {}).get("lit", {}).get("room") == 1145.34 and L.get("pc_verdict", {}).get("code") == "TRADING" and (L.get("board", {}).get("trades") or [{}])[0].get("usd") == 120.0, L)
+          _M.get("board", {}).get("lit", {}).get("room") == 1145.34 and _M.get("pc_verdict", {}).get("code") == "TRADING" and (_M.get("board", {}).get("trades") or [{}])[0].get("usd") == 120.0, _M)
     check("e. still under ntfy's 4 KB message size", len(raw.encode("utf-8")) <= PR.MAX_STATUS_BYTES)
     src = open(os.path.join(ROOT, "tools", "pc_report.py"), encoding="utf-8").read()
     check("e. pc_report posts only lite() (through site_privacy.public_status) to the status topic", "public_status" in src)

@@ -44,8 +44,8 @@
 // v44 (2026-11-16 night A + D): Classic Jarvis look (classic.css?v=c1, only when picked), the PC feed (../pc_feed.js?v=n1), fresh index.html / data.js / jdata.js. Also the files the page loads that were missing (olympus day / env-kit / quiet-net / truth, copilot), backdrop b4, briefing r2, courtyard q6d.
 // v45 (night W2): jdata.js (PC-only files only on /site/), router.js ("how" is not "show"), switcher.js (sticky Jarvis button), ../olympus/render.js (stats reset after the env bake), search-index.json.
 // v46 (2026-11-17): plainer first-screen words in index.html.
-const CACHE = 'jarvis-v50';
-const OLD = ['jarvis-v49', 'jarvis-v48', 'jarvis-v47', 'jarvis-v46', 'jarvis-v45', 'jarvis-v44', 'jarvis-v43', 'jarvis-v42', 'jarvis-v41', 'jarvis-v40', 'jarvis-v39', 'jarvis-v38', 'jarvis-v37', 'jarvis-v36', 'jarvis-v35', 'jarvis-v34', 'jarvis-v33', 'jarvis-v32', 'jarvis-v31', 'jarvis-v30', 'jarvis-v29', 'jarvis-v28', 'jarvis-v27', 'jarvis-v26', 'jarvis-v25', 'jarvis-v24', 'jarvis-v23', 'jarvis-v22', 'jarvis-v21', 'jarvis-v20', 'jarvis-v19', 'jarvis-v18', 'jarvis-v17', 'jarvis-v16', 'jarvis-v15', 'jarvis-v14', 'jarvis-v13', 'jarvis-v12', 'jarvis-v11', 'jarvis-v10', 'jarvis-v9', 'jarvis-v8', 'jarvis-v7', 'jarvis-v6', 'jarvis-v5', 'jarvis-v4'];
+const CACHE = 'jarvis-v51';
+const OLD = ['jarvis-v50', 'jarvis-v49', 'jarvis-v48', 'jarvis-v47', 'jarvis-v46', 'jarvis-v45', 'jarvis-v44', 'jarvis-v43', 'jarvis-v42', 'jarvis-v41', 'jarvis-v40', 'jarvis-v39', 'jarvis-v38', 'jarvis-v37', 'jarvis-v36', 'jarvis-v35', 'jarvis-v34', 'jarvis-v33', 'jarvis-v32', 'jarvis-v31', 'jarvis-v30', 'jarvis-v29', 'jarvis-v28', 'jarvis-v27', 'jarvis-v26', 'jarvis-v25', 'jarvis-v24', 'jarvis-v23', 'jarvis-v22', 'jarvis-v21', 'jarvis-v20', 'jarvis-v19', 'jarvis-v18', 'jarvis-v17', 'jarvis-v16', 'jarvis-v15', 'jarvis-v14', 'jarvis-v13', 'jarvis-v12', 'jarvis-v11', 'jarvis-v10', 'jarvis-v9', 'jarvis-v8', 'jarvis-v7', 'jarvis-v6', 'jarvis-v5', 'jarvis-v4'];
 const NAV_WAIT_MS = 3500;
 const NET_MAX_MS = 9000;
 const SHELL = ['./', './index.html', './manifest.webmanifest?v=j5', './apple-touch-icon.png?v=j4', './icon-192.png?v=j4', './icon-512.png?v=j4',

@@ -560,6 +560,7 @@ def _fit_core(out: dict, max_bytes: int) -> dict:
     steps = [lambda o: _d(o.get("board")).pop("lines", None),
              lambda o: [_d(_d(o.get("board")).get(k)).pop("waiting", None) for k in ("lit", "atlas", "blitz")],
              lambda o: [_d(_d(o.get("board")).get(k)).pop("window", None) for k in ("atlas", "blitz")],
+             lambda o: o.pop("eh", None),            # the edge chip (tiny) goes before the accounts block
              lambda o: o.pop("accounts", None)]
     for st in steps:
         if _size(out) <= max_bytes:

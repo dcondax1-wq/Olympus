@@ -24,7 +24,7 @@ from tools import data_pull as PULL  # noqa: E402
 ET = ZoneInfo("America/New_York")
 RES = []
 DAY, PREV = "2026-11-18", "2026-11-17"
-ACCT_A, ACCT_B = "MFFUEVB50K123456789", "MFFUEVB25K987654321"
+ACCT_A, ACCT_B = "MFFUEVB50K000001234", "MFFUEVB25K000009999"
 
 
 def check(name, ok, detail=""):
@@ -121,7 +121,7 @@ def privacy_checks():
                   "text": "see C:\\Users\\me\\file.txt", "entry": 21000.25, "nt_account": "Sim101"}, names)
     s = json.dumps(o)
     check("a. privacy: account -> last 4, balance + path dropped, Sim101 kept",
-          o["account"] == "...6789" and "balance" not in o and "path" not in o["result"] and o["nt_account"] == "Sim101", o)
+          o["account"] == "...1234" and "balance" not in o and "path" not in o["result"] and o["nt_account"] == "Sim101", o)
     check("a. privacy: names in error text masked (known + look-alike), prices untouched",
           ACCT_A not in s and "MFFUFOO55554444" not in s and "...4444" in s and o["entry"] == 21000.25 and "<path>" in o["text"], s)
 
