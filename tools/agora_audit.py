@@ -75,6 +75,9 @@ def covered_names():
 
 LEAD_FILES = {"apps.js", "apps-list.js", "olympus.js", "sw.js", "build_web_dashboard.py"}   # wired by the lead, reported only
 COVERED = covered_names()
+# the owner's own opt-out looks (reported, never a hard FAIL): a whole sheet that IS a non-AGORA look the owner asked for by name.
+# Data City's neon night is its default again (owner 2026-11-18: "our Data City we had that looked techy"); AGORA stays its option.
+OWNER_LOOKS = {"tools/web_public/datacity/neon-datacity.css"}
 
 
 def apps():
@@ -176,7 +179,8 @@ def static_scan(only=None):
         for fp in files_of(name, path):
             rel = os.path.relpath(fp, ROOT)
             h = scan_file(fp)
-            code = fp.endswith(".js") or fp.endswith(".mjs") or os.path.basename(fp) in COVERED or os.path.basename(fp) in LEAD_FILES
+            code = fp.endswith(".js") or fp.endswith(".mjs") or os.path.basename(fp) in COVERED or os.path.basename(fp) in LEAD_FILES \
+                or os.path.relpath(fp, ROOT).replace(os.sep, "/") in OWNER_LOOKS
             if "theme" in h and not code:
                 pass
             for k, v in h.items():

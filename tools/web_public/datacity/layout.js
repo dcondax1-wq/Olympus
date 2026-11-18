@@ -10,6 +10,7 @@
 import { COLORS, clsRank } from './util.js';
 import { archIndex, familyOf, litOf, steadiness } from './kinds.js';
 import { satellitePlan } from './satellites.js?v=dcgfx1';
+import { NEON } from './look-mode.js';   // the two looks of the Data City (look-mode.js): neon night (default) or AGORA marble
 
 export const LOT = 2.2;              // one lot (world units)
 export const BLOCK = 6;              // lots a block side
@@ -19,7 +20,7 @@ const STREET_W = 2.6;                // a street between two blocks
 const PLAZA_R = 34;                  // the plaza (LIT tower, the discoveries, the billboards)
 const MARGIN = 7;                    // between two districts
 const MONUMENT_RING = 15;
-const hex = (s, d = 0xb2cadc) => (/^#[0-9a-f]{6}$/i.test(s || '') ? parseInt(s.slice(1), 16) : d);
+const hex = (s, d = (NEON ? 0xe9ecf6 : 0xb2cadc)) => (/^#[0-9a-f]{6}$/i.test(s || '') ? parseInt(s.slice(1), 16) : d);
 
 /** Height of a combination's building from its $ per trade per micro (losers are short stubs). */
 export function heightOf(e) {
@@ -75,13 +76,13 @@ function dressBuilding(b, color, D) {
 export function layout(model) {
   const items = [], districts = [], tiles = [], blocks = [], streets = [];
   const secs = model.sections.map((s) => ({ s, list: [...s.items].sort((a, b) => clsRank(a.cls) - clsRank(b.cls) || (b.e || 0) - (a.e || 0)) }));
-  if (model.strategies?.length) secs.push({ s: { key: 'strategies', name: 'STRATEGIES', color: '#dba875', kind: 'towers', blurb: 'The discoveries sized like the bot, with MFFU eval odds' }, list: model.strategies, lot: LOT * 2.4 });
+  if (model.strategies?.length) secs.push({ s: { key: 'strategies', name: 'STRATEGIES', color: (NEON ? '#c9b8ff' : '#dba875'), kind: 'towers', blurb: 'The discoveries sized like the bot, with MFFU eval odds' }, list: model.strategies, lot: LOT * 2.4 });
   const grids = secs.map((x) => cellsOf(x.list.length, x.lot || LOT));
   const spots = pack(grids.map((g) => g.half));
   secs.forEach(({ s, list, lot }, k) => {
     const g = grids[k], { x: cx, z: cz } = spots[k], color = hex(s.color);
     const nb = Math.ceil(g.S / BLOCK), nt = Math.ceil(nb / TILE);
-    const d = { key: s.key, name: s.name, blurb: s.blurb || '', color, css: s.color || '#b2cadc', cx, cz, half: g.half, n: list.length,
+    const d = { key: s.key, name: s.name, blurb: s.blurb || '', color, css: s.color || (NEON ? '#e9ecf6' : '#b2cadc'), cx, cz, half: g.half, n: list.length,
                 kind: s.kind || 'combos', plugin: !!s.plugin, tested: s.tested, fdr: s.fdr, gold: s.gold, tried: s.tried };
     districts.push(d);
     const tileIx = new Map(), blockIx = new Map();
@@ -140,7 +141,7 @@ export function layout(model) {
   if (harbor) {
     for (const s of harbor.ships) { s.d = districts.length; items.push(s); }
     z1 = harbor.z1;
-    districts.push({ key: 'harbor', name: 'HARBOR', blurb: model.harbor.note || '', color: 0xd39556, css: '#d39556', cx: (x0 + x1) / 2, cz: harbor.cz,
+    districts.push({ key: 'harbor', name: 'HARBOR', blurb: model.harbor.note || '', color: (NEON ? 0x3fd8ff : 0xd39556), css: (NEON ? '#3fd8ff' : '#d39556'), cx: (x0 + x1) / 2, cz: harbor.cz,
                      half: Math.min((x1 - x0) / 2, harbor.depth / 2 + 6), n: harbor.ships.length, kind: 'harbor', wide: true, w: x1 - x0 });
   }
   const satellites = satellitePlan(districts, PLAZA_R);

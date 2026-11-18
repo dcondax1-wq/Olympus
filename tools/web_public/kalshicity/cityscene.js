@@ -16,7 +16,7 @@ import { createRenderer } from '../olympus/render.js';
 import * as M from '../olympus/materials.js';
 import { scenery, rng } from './citylayout.js?v=night8';
 import { STATUS_COLOR, dayFactor, etHour, pairOf } from './cityfeed.js';
-import { Rig } from './cityrig.js?v=night4';
+import { Rig } from './cityrig.js?v=night5';
 import { createCityFx } from './cityfx.js?v=night5';
 import { skylinePorts } from './skylineports.js?v=night5';
 import { cityLinks, LINK_SEGMENTS } from './citylinks.js';
@@ -120,6 +120,9 @@ export function createCity(canvas, { O = null, model, layout, sound = () => fals
   const rc = createRenderer({ canvas, scene, camera, env: 'night', tint: '#d8b25a', exposure: 1.15, maxDpr: 1.75, bloom: { strength: 0.28, radius: 0.25, threshold: 1.35 },
     onQuality: (l) => { lite = l === 'low' || l === 'off'; applyTier(); dirty = true; if (qcb) qcb(l); } });
   lite = rc.quality() === 'low' || rc.quality() === 'off';
+  // the look pass (olympus/look.js, 2026-11-18 cities pass): a night grade in the ONE finish pass (0 draw calls); no depth of field (signs stay sharp)
+  let lookFx = null;
+  import('../olympus/look.js').then((L) => { lookFx = L.polish(rc, { grade: 'night', mix: 0.32 }); }).catch(() => {});
   const fxl = createCityFx({ scene, camera, rc, O, sound });
   let skySt = { tw: 0, day: 0, sun: [0, 100, 0], hour: 21 }, hl = [];
 
@@ -642,7 +645,7 @@ export function createCity(canvas, { O = null, model, layout, sound = () => fals
     stats: () => ({ frames, drawn, quality: rc.quality(), passes: rc.passes().length, real: realN, edges: L.edgeCount, lab: (L.labs || []).length, scenery: bMesh ? bMesh.count - realN : 0, cars: cars ? cars.count : 0, orders, buildingsTotal: bMesh ? bMesh.count : 0,
       rain: rain ? rain.visible : false, weather: M0.regime.state, paused: M0.regime.paused, hour: hourOverride != null ? hourOverride : hour, mode: rig.mode, selected, roads: L.roads.length, links: linksMesh?.visible ? Math.min(linkCount, tier.links) : 0, districts: L.districts.length, wards: (L.neighborhoods || []).length,
       fx: fxl.stats(), resizing: L.buildings.filter((b) => b.mode === 3).length, constructing: L.buildings.filter((b) => b.mode === 1).length, crumbling: L.buildings.filter((b) => b.mode === 2).length, draw: rc.stats ? rc.stats() : null }),
-    dispose() { stopped = true; cancelAnimationFrame(raf); fxl.dispose(); disposeWorld(); rc.dispose(); },
+    dispose() { stopped = true; cancelAnimationFrame(raf); fxl.dispose(); if (lookFx) lookFx.dispose(); disposeWorld(); rc.dispose(); },
   };
 }
 

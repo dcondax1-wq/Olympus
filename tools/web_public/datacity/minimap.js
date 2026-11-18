@@ -1,6 +1,7 @@
 // The minimap: every district as a square in its sign colour, the plaza, the harbor, the river, the monorail loop with its stations,
 // the gold ideas (gold dots), the search matches (cyan dots), the watched buildings, and the camera with its view wedge. Redrawn a few times a second (never in the frame loop's hot path); a tap reports the world
 // point and the district under it.
+import { NEON } from './look-mode.js';   // the two looks of the Data City (look-mode.js): neon night (default) or AGORA marble
 const SIZE = 112;            // CSS px
 
 export class Minimap {
@@ -47,7 +48,7 @@ export class Minimap {
     this.t = 0;
     const g = this.g, s = SIZE / this.span;
     g.clearRect(0, 0, SIZE, SIZE);
-    g.fillStyle = 'rgba(24,19,14,.86)';
+    g.fillStyle = (NEON ? 'rgba(6,8,20,.72)' : 'rgba(24,19,14,.86)');
     g.fillRect(0, 0, SIZE, SIZE);
     for (const d of this.L.districts) {
       const [x, y] = this.toMap(d.cx, d.cz), hw = (d.wide ? d.w / 2 : d.half) * s, hh = d.half * s;
@@ -59,13 +60,13 @@ export class Minimap {
     }
     if (this.L.satellites) {
       g.lineWidth = 0.7;
-      g.strokeStyle = 'rgba(216,178,90,.30)';
+      g.strokeStyle = (NEON ? 'rgba(62,216,255,.30)' : 'rgba(216,178,90,.30)');
       for (const link of this.L.satellites.links) {
         if (link.kind !== 'district') continue;
         const [x0, y0] = this.toMap(...link.from), [x1, y1] = this.toMap(...link.to);
         g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke();
       }
-      g.strokeStyle = 'rgba(216,178,90,.62)'; g.lineWidth = 1;
+      g.strokeStyle = (NEON ? 'rgba(62,216,255,.62)' : 'rgba(216,178,90,.62)'); g.lineWidth = 1;
       for (const link of this.L.satellites.links) {
         if (link.kind !== 'ring') continue;
         const [x0, y0] = this.toMap(...link.from), [x1, y1] = this.toMap(...link.to);
@@ -73,12 +74,12 @@ export class Minimap {
       }
       for (const town of this.L.satellites.towns) {
         const [x, y] = this.toMap(town.x, town.z);
-        g.fillStyle = town.accent ? '#a2b16d' : '#d69b60';
+        g.fillStyle = town.accent ? (NEON ? '#45e9a3' : '#a2b16d') : (NEON ? '#ffad4d' : '#d69b60');
         g.beginPath(); g.arc(x, y, town.accent ? 1.7 : 1.15, 0, Math.PI * 2); g.fill();
       }
     }
     if (this.R) {
-      g.strokeStyle = 'rgba(111,160,192,.8)'; g.lineWidth = 2.2; g.lineJoin = 'round';
+      g.strokeStyle = (NEON ? 'rgba(63,170,255,.75)' : 'rgba(111,160,192,.8)'); g.lineWidth = 2.2; g.lineJoin = 'round';
       g.beginPath();
       this.R.river.forEach(([x, z], i) => { const [a, b] = this.toMap(x, z); if (i) g.lineTo(a, b); else g.moveTo(a, b); });
       g.stroke();
@@ -90,15 +91,15 @@ export class Minimap {
       for (const st of this.R.stations) { const [a, b] = this.toMap(st.x, st.z); g.fillRect(a - 1.2, b - 1.2, 2.4, 2.4); }
     }
     const [px, py] = this.toMap(0, 0);
-    g.strokeStyle = 'rgba(216,178,90,.8)'; g.lineWidth = 1;
+    g.strokeStyle = (NEON ? 'rgba(63,216,255,.75)' : 'rgba(216,178,90,.8)'); g.lineWidth = 1;
     g.beginPath(); g.arc(px, py, Math.max(2, this.L.plazaR * s * 0.5), 0, Math.PI * 2); g.stroke();
-    g.fillStyle = '#e4ca8d';
+    g.fillStyle = (NEON ? '#fff0b2' : '#e4ca8d');
     g.beginPath(); g.arc(px, py, 2.2, 0, Math.PI * 2); g.fill();
-    g.fillStyle = '#d39556';
+    g.fillStyle = (NEON ? '#3fd8ff' : '#d39556');
     for (const [x, z] of this.gold) { const [a, b] = this.toMap(x, z); g.beginPath(); g.arc(a, b, 2.2, 0, Math.PI * 2); g.fill(); }
-    g.fillStyle = '#d39556';
+    g.fillStyle = (NEON ? '#3fd8ff' : '#d39556');
     for (const [x, z] of this.hits) { const [a, b] = this.toMap(x, z); g.fillRect(a - 1, b - 1, 2, 2); }
-    g.fillStyle = '#d79e64';
+    g.fillStyle = (NEON ? '#ffd36b' : '#d79e64');
     for (const [x, z] of this.pins) { const [a, b] = this.toMap(x, z); g.fillRect(a - 1.5, b - 1.5, 3, 3); }
     const [cx, cy] = this.toMap(camera.position.x, camera.position.z), [tx, ty] = this.toMap(target.x, target.z);
     const a = Math.atan2(ty - cy, tx - cx), fov = 0.55;

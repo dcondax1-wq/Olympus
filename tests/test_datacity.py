@@ -1110,7 +1110,7 @@ def test_v3_page(shots=None):
             # the card of a building, the menu, hash routes
             mn = pg.evaluate("""(() => { const a = window.__app; document.querySelector('#menuB').click(); const n = document.querySelectorAll('#sheet .mi').length, view = document.querySelector('#sheet').dataset.view;
               location.hash = '#report'; return { n, view }; })()""")
-            check("j. the City menu opens its 10 doors (market now, report, all districts, compare, timeline, fireworks, photo, tour, accessibility, how to read)", mn["n"] == 10 and mn["view"] == "menu", mn)
+            check("j. the City menu opens its 11 doors (market now, report, all districts, compare, timeline, fireworks, photo, tour, accessibility, how to read, the look)", mn["n"] == 11 and mn["view"] == "menu", mn)
             rd = pg.evaluate("(() => { window.__app.showView('read'); return document.querySelector('#sheet').innerText; })()").lower()
             check("j. the read-me explains building types and the windows", all(w in rd for w in ("building types", "windows tell the data", "monorail")))
             check("j. no page errors and no failed requests through all of it", not errs and not failed and not pg.evaluate("window.__city.errors.length"), (errs[:3], failed[:3], pg.evaluate("window.__city.errors")))
@@ -1259,7 +1259,7 @@ def test_v3_demo():
               a.showView('access'); document.querySelector('#ac_calm').click(); out.calm = a.calm;
               return out; }""")
             check("k. ?demo=1 offline: the menu, report with the Council, search, timeline, fireworks, photo and accessibility all work from the fixtures",
-                  r["menu"] == 10 and r["report"] and r["found"] >= 1 and r["tl"] >= 1 and r["gold"] and r["photo"] > 4000 and r["calm"], r)
+                  r["menu"] == 11 and r["report"] and r["found"] >= 1 and r["tl"] >= 1 and r["gold"] and r["photo"] > 4000 and r["calm"], r)
             check("k. ?demo=1 offline: no page errors (the Pantheon line and the kit modules fail soft)", not errs and not pg.evaluate("window.__city.errors.length"), (errs[:3], pg.evaluate("window.__city.errors")))
             br.close()
     finally:

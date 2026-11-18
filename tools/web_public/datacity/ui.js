@@ -4,6 +4,7 @@
 import { $, el, money, pct, num, signed, cssColor, CLASS_TEXT } from './util.js';
 import { FAMILIES, IDEA_FAMILIES } from './kinds.js';
 import { THEMES, themeOf } from './agora.js';
+import { NEON } from './look-mode.js';   // the two looks of the Data City (look-mode.js): neon night (default) or AGORA marble
 
 const NS = 'http://www.w3.org/2000/svg';
 const SPAN_COLS = [['trades', (o) => o.n ?? '–'], ['/wk', (o) => num(o.tpw, 2)], ['win', (o) => pct(o.win)], ['PF', (o) => num(o.pf, 2)],
@@ -101,7 +102,7 @@ export function sparkline(values, label = 'history', h = 56) {
   s.style.height = h + 'px';
   s.append(node('line', { x1: 0, x2: w, y1: y(0), y2: y(0), stroke: 'rgba(255,255,255,.18)', 'stroke-dasharray': '3 3' }),
            node('polyline', { points: values.map((v, i) => `${(i / (values.length - 1)) * w},${y(v)}`).join(' '), fill: 'none',
-                              stroke: values[values.length - 1] >= 0 ? '#9bab62' : '#d1904e', 'stroke-width': 2, 'vector-effect': 'non-scaling-stroke' }));
+                              stroke: values[values.length - 1] >= 0 ? (NEON ? '#39e59a' : '#9bab62') : (NEON ? '#ff6b7f' : '#d1904e'), 'stroke-width': 2, 'vector-effect': 'non-scaling-stroke' }));
   return s;
 }
 
@@ -115,7 +116,7 @@ export function barline(pairs, label = 'per year', h = 56) {
   pairs.forEach(([k, v], i) => {
     const bh = (Math.abs(v || 0) / top) * (h / 2 - 3);
     s.appendChild(node('rect', { x: i * bw + bw * 0.2, width: bw * 0.6, y: v >= 0 ? h / 2 - bh : h / 2, height: Math.max(1, bh), rx: 2,
-                                 fill: v >= 0 ? '#9bab62' : '#d1904e' }));
+                                 fill: v >= 0 ? (NEON ? '#39e59a' : '#9bab62') : (NEON ? '#ff6b7f' : '#d1904e') }));
     const t = node('text', { x: i * bw + bw / 2, y: h + 11, 'text-anchor': 'middle', fill: '#aeb3c6', 'font-size': 10 });
     t.textContent = k;
     s.appendChild(t);
@@ -330,7 +331,7 @@ export function viewToday(body, model, open, layer) {
   body.appendChild(ul);
   if ((model.city.today || []).length) {
     const fired = el('ul', 'list');
-    model.city.today.forEach((x) => listRow(fired, '•', '#d39556', x.lab, `entered ${x.at} ET · ${signed(x.R)} R`, money(x.pnl), () => open(x.id)));
+    model.city.today.forEach((x) => listRow(fired, '•', (NEON ? '#3fd8ff' : '#d39556'), x.lab, `entered ${x.at} ET · ${signed(x.R)} R`, money(x.pnl), () => open(x.id)));
     body.append(el('h3', null, `Top setups that fired on ${model.last_day}`), fired);
   }
 }

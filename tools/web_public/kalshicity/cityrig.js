@@ -130,7 +130,7 @@ export class Rig {
     const k = 1 - Math.pow(0.0015, dt), cam = this.camera, g = this.goal, v = this.view;
     if (this.driver) {
       const s = this.driver(dt);
-      cam.position.lerp(s.pos, Math.min(1, dt * 5)); this.at.lerp(s.look, Math.min(1, dt * 4)); cam.lookAt(this.at);
+      cam.position.lerp(s.pos, 1 - Math.exp(-dt * 5)); this.at.lerp(s.look, 1 - Math.exp(-dt * 4)); cam.lookAt(this.at);   // frame-rate independent glide (same feel at 30 and 120 fps)
       return true;
     }
     let moving = false;
@@ -144,7 +144,8 @@ export class Rig {
       if (f.t >= 1) this.focusTo = null;
       moving = true;
     }
-    if (!this.opts.calm && this.mode === 'orbit' && !this.focusTo && performance.now() - this.lastInput > IDLE_MS) { g.theta += dt * 0.03; moving = true; }
+    const idle = performance.now() - this.lastInput - IDLE_MS;
+    if (!this.opts.calm && this.mode === 'orbit' && !this.focusTo && idle > 0) { const r = Math.min(1, idle / 2500); g.theta += dt * 0.03 * r * r * (3 - 2 * r); moving = true; }   // the idle turn eases in
     const dth = g.theta - v.theta, dph = g.phi - v.phi, dr = g.radius - v.radius;
     v.theta += dth * k; v.phi += dph * k; v.radius += dr * k; v.target.lerp(g.target, k);
     if (Math.abs(dth) + Math.abs(dph) > 1e-4 || Math.abs(dr) > 0.01 || v.target.distanceToSquared(g.target) > 1e-4) moving = true;

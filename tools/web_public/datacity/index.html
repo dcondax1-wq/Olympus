@@ -26,7 +26,7 @@
 :root{--bg:#05060f;--panel:rgba(27,22,17,.86);--line:rgba(255,255,255,.10);--text:#f4f4f6;--sub:#aeb3c6;--gold:#ffc94a;--green:#7f8a52;
 --amber:#ff9f43;--grey:#7c8299;--red:#ff6b7f;--cyan:#8b7259;--violet:#c9a06a;--accent:var(--oly-accent,#8b7259);
 --st:env(safe-area-inset-top,0px);--sr:env(safe-area-inset-right,0px);--sb:env(safe-area-inset-bottom,0px);--sl:env(safe-area-inset-left,0px);
---top-h:132px;--dock-h:44px;--sheet-bottom:168px;-webkit-text-size-adjust:100%}
+--top-h:150px;--dock-h:44px;--sheet-bottom:168px;-webkit-text-size-adjust:100%}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:500 15px/1.35 var(--oly-ui,-apple-system,system-ui,"Segoe UI",Roboto,sans-serif);
 overflow:hidden;overscroll-behavior:none;touch-action:none;color-scheme:dark}
@@ -196,8 +196,21 @@ body.bigtext .sheet{font-size:17px}body.bigtext .sheet .note,body.bigtext .list 
 body.hc{--panel:rgba(0,0,0,.94);--line:rgba(255,255,255,.55);--sub:#e6e9f4}
 body.hc .chip,body.hc .tab{border-color:rgba(255,255,255,.6)}
 :focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+/* phone-fit (2026-11-10/11, moved here from agora-datacity.css 2026-11-18 so BOTH looks keep them): 44 px dock taps, a title that wraps
+   instead of being cut on a 320 px screen, and on a phone held sideways the mini map sits left of Jarvis's bottom-right 80 x 160 px */
+.tab{min-width:44px}
+.top h1{flex:0 1 auto;min-width:0;overflow:visible;white-space:normal}
+@media (orientation:landscape) and (max-height:520px){.mini{right:calc(92px + var(--sr))}}
+/* the purpose line (2026-11-18 cities pass): what the city is, in one line, under the chips */
+.purpose{margin:4px 2px 0;font:500 12px/1.3 var(--oly-ui,inherit);color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+@media (orientation:landscape) and (max-height:520px){.purpose{display:none}}
 </style>
-<link rel="stylesheet" href="./agora-datacity.css?v=g2">
+<link rel="stylesheet" href="./agora-datacity.css?v=g2" id="dcAgoraCss">
+<link rel="stylesheet" href="./neon-datacity.css?v=n1" id="dcNeonCss">
+<script>/* the look before the first paint (look-mode.js): neon night by default, AGORA marble on ?look=agora or the menu's Look */
+(function(){var l='neon';try{var q=new URLSearchParams(location.search).get('look');l=(q==='agora'||q==='neon')?q:(localStorage.getItem('datacity.look')==='agora'?'agora':'neon');}catch(e){}
+document.documentElement.setAttribute('data-dc-look',l);var off=document.getElementById(l==='neon'?'dcAgoraCss':'dcNeonCss');if(off)off.media='not all';
+if(l==='neon'){var m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content','#05060f');}})();</script>
 </head>
 <body>
 <canvas id="c" aria-label="Olympus Data City, a 3D city of NQ research results"></canvas>
@@ -214,6 +227,7 @@ body.hc .chip,body.hc .tab{border-color:rgba(255,255,255,.6)}
     </div>
   </div>
   <div class="chips"><span class="chip clock" id="clock"></span><span id="chips" class="chiprow"></span></div>
+  <p class="purpose" id="purpose" title="Past trades, after costs">Each building is one tested NQ idea: taller = more $ a month</p>
   <nav class="city-network" aria-label="City network">
     <span class="city-network-label">Cities</span>
     <a href="../cities/" aria-label="Open Arenas">Arena</a>
@@ -245,7 +259,7 @@ body.hc .chip,body.hc .tab{border-color:rgba(255,255,255,.6)}
 </nav>
 <div class="caption" id="caption" aria-live="polite"></div>
 <div class="toast" id="toast" role="status"></div>
-<script type="module" src="./city.js?v=dcgfx11"></script>
+<script type="module" src="./city.js?v=dcgfx12"></script>
 <script type="module" src="glossary.js"></script>
 </body>
 </html>

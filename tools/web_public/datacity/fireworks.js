@@ -3,6 +3,7 @@
 // in the vertex shader). launch(x, y, z, colour) is the only verb; the burst height is where the sparks open (a gold tower's roof + 30).
 // A rocket is one point climbing; a burst is 96 points on a sphere (some in a ring), colour fading from white-hot to the shell's colour to ember.
 import * as THREE from '../jarvis/three.module.min.js';
+import { NEON } from './look-mode.js';   // the two looks of the Data City (look-mode.js): neon night (default) or AGORA marble
 
 const SHELLS = 8, PER = 112, LIFE = 4.4, RISE = 1.25;
 
@@ -70,7 +71,7 @@ export class Fireworks {
   }
 
   /** a shell bursting at (x, y, z) in a colour (a hex number); delay seconds from now */
-  launch(x, y, z, color = 0xd39556, delay = 0) {
+  launch(x, y, z, color = (NEON ? 0xffc94a : 0xd39556), delay = 0) {
     this.pending.push({ at: this.t + delay, x, y, z, color });
     this.launched++;
     this.pump();

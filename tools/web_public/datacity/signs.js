@@ -4,6 +4,7 @@
 import * as THREE from '../jarvis/three.module.min.js';
 import { FOG } from './shaders.js';
 import { pick } from './skyline.js';
+import { NEON } from './look-mode.js';   // the two looks of the Data City (look-mode.js): neon night (default) or AGORA marble
 
 const ROW_W = 640, ROW_H = 100;
 
@@ -38,10 +39,10 @@ function drawRow(g, y, text, color) {
   g.beginPath(); g.roundRect ? g.roundRect(14, 14, ROW_W - 28, ROW_H - 28, 22) : g.rect(14, 14, ROW_W - 28, ROW_H - 28); g.fill();
   g.lineWidth = 5; g.strokeStyle = color; g.shadowColor = color; g.shadowBlur = 18;               // the tube frame
   g.beginPath(); g.roundRect ? g.roundRect(14, 14, ROW_W - 28, ROW_H - 28, 22) : g.rect(14, 14, ROW_W - 28, ROW_H - 28); g.stroke();
-  g.font = '800 50px Georgia, Georgia, -apple-system, system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.font = (NEON ? '800 50px Orbitron, Rajdhani, -apple-system, system-ui, sans-serif' : '800 50px Georgia, Georgia, -apple-system, system-ui, sans-serif'); g.textAlign = 'center'; g.textBaseline = 'middle';
   const label = text.split('').join(String.fromCharCode(8202));
   let size = 50;
-  while (g.measureText(label).width > ROW_W - 80 && size > 20) { size -= 3; g.font = `800 ${size}px Georgia, Georgia, -apple-system, system-ui, sans-serif`; }
+  while (g.measureText(label).width > ROW_W - 80 && size > 20) { size -= 3; g.font = `800 ${size}px ${NEON ? 'Orbitron, Rajdhani' : 'Georgia, Georgia'}, -apple-system, system-ui, sans-serif`; }
   g.shadowBlur = 20; g.fillStyle = color; g.fillText(label, ROW_W / 2, ROW_H / 2 + 4);          // coloured glow
   g.shadowBlur = 0; g.lineWidth = 1.6; g.strokeStyle = '#ffffff'; g.strokeText(label, ROW_W / 2, ROW_H / 2 + 4);   // the hot white core of the tube
   g.restore();
@@ -54,7 +55,7 @@ export class Signs {
     this.canvas = document.createElement('canvas');
     this.canvas.width = ROW_W; this.canvas.height = ROW_H * rows;
     this.g = this.canvas.getContext('2d');
-    this.names = ds.map((d) => [d.name, d.css || '#b2cadc']).concat([['DATA CITY', '#daa56f']]);
+    this.names = ds.map((d) => [d.name, d.css || (NEON ? '#e9ecf6' : '#b2cadc')]).concat([['DATA CITY', (NEON ? '#7fe9ff' : '#daa56f')]]);
     this.names.forEach(([t, c], i) => drawRow(this.g, i * ROW_H, t, c));
     this.tex = new THREE.CanvasTexture(this.canvas);
     this.tex.colorSpace = THREE.SRGBColorSpace;
@@ -77,7 +78,7 @@ export class Signs {
     this.mesh = new THREE.InstancedMesh(inst, new THREE.ShaderMaterial({ vertexShader: VS, fragmentShader: FS, transparent: true, depthWrite: false, side: THREE.DoubleSide,
       blending: THREE.AdditiveBlending, uniforms: { ...pick(U, 'uTime', 'uDay', 'uFog', 'uFogD', 'uHaze'), uMap: { value: this.tex } } }), n);
     const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0), poles = new THREE.InstancedMesh(new THREE.BoxGeometry(0.5, 1, 0.5).translate(0, 0.5, 0),
-      new THREE.MeshBasicMaterial({ color: 0x416c8e }), n * 2);
+      new THREE.MeshBasicMaterial({ color: (NEON ? 0x1b2140 : 0x416c8e) }), n * 2);
     boards.forEach((b, i) => {
       rect.set([0, 1 - (b.row + 1) / rows, 1, 1 / rows], i * 4);
       tint.set([1, 1, 1, b.seed], i * 4);

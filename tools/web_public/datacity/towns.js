@@ -6,10 +6,11 @@ import * as SH from './shaders.js';
 import { archUniforms, towerGeo } from './skyline.js';
 import { PROFILES } from './caps.js?v=dcgfx2';
 import { SATELLITE_TOWNS } from './satellites.js?v=dcgfx1';
+import { NEON } from './look-mode.js';   // the two looks of the Data City (look-mode.js): neon night (default) or AGORA marble
 
 const MAX_PER_TOWN = 12;
 const POSITIONS = [[0,0],[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[1,-1],[-1,1],[1,1],[0,-2],[-1,2],[1,2]];
-const PALETTE = [0xd39657, 0xd5995c, 0xd79e64, 0xd29353, 0xd9a26b];
+const PALETTE = [(NEON ? 0xff8737 : 0xd39657), (NEON ? 0xffa243 : 0xd5995c), (NEON ? 0xffbf57 : 0xd79e64), (NEON ? 0xf77e35 : 0xd29353), (NEON ? 0xffd06a : 0xd9a26b)];
 const hash = (n) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453123; return x - Math.floor(x); };
 
 export class SatelliteTowns {
@@ -32,7 +33,7 @@ export class SatelliteTowns {
         const h = rank === 0 ? 10.5 + hash(i + 1) * 4.5 : 2.4 + hash(i * 23 + rank) * 6.2;
         const w = rank === 0 ? 2.0 : 1.2 + hash(i * 11 + rank) * 0.45;
         const accent = town.accent && rank < 5;
-        const hex = accent ? (rank < 3 ? 0x9cac63 : 0x8a7f6e) : PALETTE[Math.floor(hash(i * 31 + rank * 13) * PALETTE.length)];
+        const hex = accent ? (rank < 3 ? (NEON ? 0x38d88a : 0x9cac63) : (NEON ? 0x43dfff : 0x8a7f6e)) : PALETTE[Math.floor(hash(i * 31 + rank * 13) * PALETTE.length)];
         const j = rank * SATELLITE_TOWNS + i;
         m4.makeScale(w, h, w).setPosition(x, 0, z);
         mesh.setMatrixAt(j, m4);

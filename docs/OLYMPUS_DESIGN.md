@@ -428,3 +428,14 @@ inside a catch, so a missing file (offline before a worker lists it) changes not
 | Cities | golden grade, HD tilt-shift depth of field (a city in miniature) | +0 |
 | Jarvis home | HD depth of field on the reactor and temple through the cinema's `focus()` (the grade was already the clock's) | +0 |
 | ATLAS City (CSS 3D) | faces lit from above with a darker foot (ambient occlusion), contact shadows under the capital and plazas, a warm sun halo, haze on the far side of town, a shade at the near edge; the camera glides (0.5 s ease-out, 0.09 s while dragging; none under reduced motion); LITE drops the halo and haze | no WebGL |
+
+## Cities pass (2026-11-18, night-cities; owner: "Data City ... looked techy ... improve all of the cities")
+
+| City | What changed |
+|---|---|
+| Data City | The neon night look (2026-11-07) is the DEFAULT again: `datacity/look-mode.js` (`NEON ? <neon> : <agora>` at every colour the AGORA restyle 157ed041 / a431c444 / 1a39b543 / e2188a20 / 88824c85 changed), `neon-datacity.css` (Orbitron + Rajdhani, navy glass; `tools/agora_audit.py` OWNER_LOOKS), the render core's `bloomMax` .7 for it (AGORA apps stay capped at .25). Menu > "Look: Marble" switches to the AGORA restyle (remembered, `?look=agora`). Night grade (dusk on AGORA) through look.js, a purpose line under the chips. The 2D `map.html` stays AGORA |
+| Kalshi City | night grade (look.js; no depth of field, the signs stay sharp), frame-rate independent camera glide and an idle turn that eases in; on a phone the district switcher and the network tile share one short row (about 90 px more city) |
+| Mint City | on the render core (as Chrysos): ACES finish, MSAA / FXAA tiers, a faint glow on the gold only, golden grade + HD depth of field |
+| Cities | the Enter Hellas / Enter Athens buttons share one row and hide while the loading card shows its own |
+| ATLAS City | unchanged (CSS 3D, its look pass is from night-3d) |
+

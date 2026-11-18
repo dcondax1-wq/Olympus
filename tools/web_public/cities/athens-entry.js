@@ -60,7 +60,7 @@ function addButtons() {
   if (!document.querySelector('.athens-fab')) document.body.append(mk('athens-fab'));
 }
 function boot() {
-  if (!document.querySelector('link[data-athens-btn]')) { const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = new URL('./athens-btn.css?v=t2', import.meta.url).href; l.dataset.athensBtn = '1'; document.head.append(l); }
+  if (!document.querySelector('link[data-athens-btn]')) { const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = new URL('./athens-btn.css?v=t3', import.meta.url).href; l.dataset.athensBtn = '1'; document.head.append(l); }
   addButtons();
   if (location.hash === '#athens' || new URLSearchParams(location.search).get('athens') === '1') openAthens();
 }

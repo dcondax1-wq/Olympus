@@ -9,6 +9,7 @@
 // runs its own tiers (OLYMPUS.fx(): ultra / high / low / off; reduced motion = off) on its one shared frame loop. Without fx-core.js
 // on the page this file does nothing.
 import * as THREE from '../jarvis/three.module.min.js';
+import { NEON } from './look-mode.js';   // the two looks of the Data City (look-mode.js): neon night (default) or AGORA marble
 
 const NAMES = ['godRays', 'lensFlare', 'aurora', 'fireflies', 'lightning'];
 
@@ -72,8 +73,8 @@ export class KitFx {
     for (const n of NAMES) if (!want[n]) this._off(n);
     if (want.godRays) {
       this._on('godRays', () => {
-        const hs = [FX.godRays(this.target, lo({ position: [0, 78, 0], length: 74, intensity: 0.7, spread: 0.16, color: '#9ebcd2', seed: 4 }))];
-        if (sp.temple && kc.godGroups > 1) hs.push(FX.godRays(this.target, lo({ position: [sp.temple.x, 92, sp.temple.z], length: 90, intensity: 0.66, spread: 0.12, color: '#deb081', seed: 9 })));
+        const hs = [FX.godRays(this.target, lo({ position: [0, 78, 0], length: 74, intensity: 0.7, spread: 0.16, color: (NEON ? '#9fe9ff' : '#9ebcd2'), seed: 4 }))];
+        if (sp.temple && kc.godGroups > 1) hs.push(FX.godRays(this.target, lo({ position: [sp.temple.x, 92, sp.temple.z], length: 90, intensity: 0.66, spread: 0.12, color: (NEON ? '#ffe3a0' : '#deb081'), seed: 9 })));
         return { stopped: false, stop() { hs.forEach((x) => x.stop()); this.stopped = true; } };
       });
     }
@@ -82,15 +83,15 @@ export class KitFx {
       if (!this.lastFlare || this.lastFlare.angleTo(d) > 0.06) {
         this._off('lensFlare');
         this.lastFlare = d.clone();
-        this.h.lensFlare = FX.lensFlare(this.target, lo({ position: [d.x * 1300, d.y * 1300, d.z * 1300], color: '#e0b487', camera: this.camera }));
+        this.h.lensFlare = FX.lensFlare(this.target, lo({ position: [d.x * 1300, d.y * 1300, d.z * 1300], color: (NEON ? '#ffe6b0' : '#e0b487'), camera: this.camera }));
       }
     } else this.lastFlare = null;
     if (want.aurora) this._on('aurora', () => FX.aurora(this.target, lo({ position: [0, 150, -1050], width: 1300, height: 260, intensity: 1.0, seed: 3 })));
     if (want.fireflies) {
       this._on('fireflies', () => {
-        const hs = [FX.fireflies(this.target, lo({ center: [sp.temple?.x ?? -160, 3.5, sp.temple?.z ?? 0], box: [110, 9, 110], count: 80, size: 0.9, color: '#abb87b' }))];
+        const hs = [FX.fireflies(this.target, lo({ center: [sp.temple?.x ?? -160, 3.5, sp.temple?.z ?? 0], box: [110, 9, 110], count: 80, size: 0.9, color: (NEON ? '#b8ff5a' : '#abb87b') }))];
         const rv = this.R.river[Math.floor(this.R.river.length / 2)];
-        if (rv) hs.push(FX.fireflies(this.target, lo({ center: [rv[0], 3, rv[1]], box: [90, 7, 90], count: 60, size: 0.9, color: '#daa56f' })));
+        if (rv) hs.push(FX.fireflies(this.target, lo({ center: [rv[0], 3, rv[1]], box: [90, 7, 90], count: 60, size: 0.9, color: (NEON ? '#7fe9ff' : '#daa56f') })));
         return { stopped: false, stop() { hs.forEach((x) => x.stop()); this.stopped = true; } };
       });
     }

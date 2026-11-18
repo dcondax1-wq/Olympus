@@ -11,6 +11,7 @@
 //   SKY_*     the market-clock sky (sun / moon, dusk, overcast, lightning);  FOGL_*  drifting fog layers
 //   RAY_*     god-ray cones (searchlights, sky beams, the search beam);  HOLO_*  holographic billboards
 //   RAIN_*    rain streaks round the camera;  WATER_*  the harbor;  TOWER_*  LIT's tower
+import { NEON } from './look-mode.js';   // the two looks of the Data City (look-mode.js): neon night (default) or AGORA marble
 export const FOG = `
 uniform vec3 uFog; uniform float uFogD; uniform float uHaze;
 float fogAmount(float d, float y){
@@ -68,8 +69,8 @@ ${HASH}
 float h2(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7)) + vSeed*17.0)*43758.5453); }
 vec3 envSky(vec3 d){                                         // the sky the glass reflects (the same palette as the sky dome)
   float h = clamp(d.y, -0.3, 1.0);
-  vec3 top = mix(vec3(0.11,0.10,0.24), vec3(0.22,0.46,0.72), uDay);
-  vec3 hor = mix(vec3(0.48,0.30,0.28), vec3(0.88,0.86,0.76), uDay);
+  vec3 top = mix(vec3(${NEON ? '0.004' : '0.11'},${NEON ? '0.007' : '0.10'},${NEON ? '0.028' : '0.24'}), vec3(${NEON ? '0.14' : '0.22'},${NEON ? '0.40' : '0.46'},${NEON ? '0.86' : '0.72'}), uDay);
+  vec3 hor = mix(vec3(${NEON ? '0.07' : '0.48'},${NEON ? '0.05' : '0.30'},${NEON ? '0.17' : '0.28'}), vec3(${NEON ? '0.70' : '0.88'},${NEON ? '0.83' : '0.86'},${NEON ? '0.96' : '0.76'}), uDay);
   vec3 c = mix(hor, top, smoothstep(0.0, 0.55, h));
   c += vec3(1.0,0.42,0.22) * uDusk * 0.5 * exp(-abs(h)*5.0);
   float s = max(dot(d, normalize(uSun)), 0.0);
@@ -134,7 +135,7 @@ void main(){
   col += vColor * vData.z * (0.5 + 0.5*sin(uTime*3.2 + vSeed*6.0)) * 0.45;
   if (uToday > 0.5) {
     float armed = step(0.5, vState.x) * (1.0 - step(1.5, vState.x));
-    col = col * mix(0.3, 1.0, max(fired, armed)) + vec3(0.95,0.75,0.40) * fired * (0.2 + crown*1.6 + edge*0.6) + vec3(0.55,0.45,0.30) * armed * 0.16;
+    col = col * mix(0.3, 1.0, max(fired, armed)) + vec3(${NEON ? '0.3,' : ''}0.95,${NEON ? '1.0' : '0.75,0.40'}) * fired * (0.2 + crown*1.6 + edge*0.6) + vec3(${NEON ? '0.25,' : ''}0.55,${NEON ? '1.0' : '0.45,0.30'}) * armed * 0.16;
   }
   col += vec3(1.0,0.88,0.45) * step(0.5, vState.y) * (crown*2.4 + edge*0.8 + 0.1);
   col += vec3(1.0,0.8,0.35) * vState.w * (0.5 + 1.6*crown + 0.6*edge + 0.6*win);   // a celebration flash (fireworks over a gold idea)
@@ -178,7 +179,7 @@ void main(){
   vec3 col = mix(vColor*0.16, vColor*0.5 + 0.05, uDay)*diff + side*win*lit*mix(vec3(1.0,0.85,0.6), vColor, 0.45)*mix(1.5, 0.4, uDay);
   col += vColor * side * smoothstep(0.6, 1.0, vY) * 0.35 * (1.0 - uDay*0.5);
   col += vColor * (1.0 - side) * 0.75;
-  if (uToday > 0.5) col = col * mix(0.3, 1.0, step(0.5, vMeta.y)) + vec3(0.95,0.75,0.40) * step(1.5, vMeta.y) * 0.25;
+  if (uToday > 0.5) col = col * mix(0.3, 1.0, step(0.5, vMeta.y)) + vec3(${NEON ? '0.3,' : ''}0.95,${NEON ? '1.0' : '0.75,0.40'}) * step(1.5, vMeta.y) * 0.25;
   col *= mix(1.0, 0.12, vMeta.z);
   col = mix(col, uFog, fogAmount(vFD, vW.y));
   gl_FragColor = vec4(col, 1.0);
@@ -191,7 +192,7 @@ void main(){
   vColor = aColor;
   float p = aPulse > 0.5 ? 0.55 + 0.45*sin(uTime*3.2 + aSeed*6.0) : 1.0;
   float show = aToday < 0.5 ? 1.0 : uToday;                   // the Today halos only show with the layer on
-  if (aToday > 1.5) vColor = vec3(1.0, 0.82, 0.50);
+  if (aToday > 1.5) vColor = vec3(${NEON ? '0.35' : '1.0'}, ${NEON ? '0.95' : '0.82'}, ${NEON ? '1.0' : '0.50'});
   vA = p * show;
   vec4 mv = modelViewMatrix * vec4(position,1.0);
   gl_PointSize = aSize * p * show * uPR * (300.0 / max(1.0, -mv.z));
@@ -255,13 +256,13 @@ void main(){
   vec2 p = vW.xz / 2.2;
   vec2 g = abs(fract(p - 0.5) - 0.5) / fwidth(p);
   float line = 1.0 - min(min(g.x, g.y), 1.0);
-  vec3 base = mix(vec3(0.15,0.125,0.10), vec3(0.58,0.51,0.42), uDay);
+  vec3 base = mix(vec3(${NEON ? '0.010' : '0.15'},${NEON ? '0.013' : '0.125'},${NEON ? '0.034' : '0.10'}), vec3(${NEON ? '0.36' : '0.58'},${NEON ? '0.40' : '0.51'},${NEON ? '0.47' : '0.42'}), uDay);
   float puddle = smoothstep(0.55, 0.75, noise(vW.xz * 0.07)) * uWet;
-  vec3 col = base * (1.0 - puddle*0.5) + line * mix(vec3(0.16,0.11,0.06), vec3(0.18,0.14,0.10), uDay) * 0.5;
+  vec3 col = base * (1.0 - puddle*0.5) + line * mix(vec3(${NEON ? '0.03' : '0.16'},0.11,${NEON ? '0.22' : '0.06'}), vec3(${NEON ? '0.08' : '0.18'},${NEON ? '0.1' : '0.14'},${NEON ? '0.13' : '0.10'}), uDay) * ${NEON ? '0.55' : '0.5'};
   float r = length(vW.xz);
-  col += mix(vec3(0.9,0.62,0.30), vec3(0.22,0.19,0.14), uDay) * 0.22 * exp(-r*0.05);
-  col += vec3(0.85,0.6,0.3) * 0.16 * smoothstep(0.6, 0.0, abs(r - 15.0));
-  col += vec3(0.5,0.4,0.3) * puddle * 0.08;
+  col += mix(${NEON ? 'uAccent*' : 'vec3('}0.9${NEON ? '' : ',0.62,0.30)'}, vec3(${NEON ? '0.15' : '0.22'},${NEON ? '0.2' : '0.19'},${NEON ? '0.25' : '0.14'}), uDay) * ${NEON ? '0.30' : '0.22'} * exp(-r*0.05);
+  col += ${NEON ? 'uAccent' : 'vec3(0.85,0.6,0.3)'} * ${NEON ? '0.22' : '0.16'} * smoothstep(0.6, 0.0, abs(r - 15.0))${NEON ? ' * (0.6 + 0.4*sin(uTime*1.5))' : ''};
+  col += ${NEON ? 'uAccent' : 'vec3(0.5,0.4,0.3)'} * puddle * ${NEON ? '0.10 * (0.6 + 0.4*noise(vW.xz*0.5 + uTime*0.2))' : '0.08'};
   if (uRain > 0.01) {
     vec2 c = floor(vW.xz * 0.8); vec2 f = fract(vW.xz * 0.8) - 0.5;
     float t = fract(uTime * 0.9 + hash(c));
@@ -278,7 +279,7 @@ varying vec3 vW; varying vec2 vUv; varying float vFD;
 ${FOG}
 ${HASH}
 void main(){
-  vec3 col = mix(vec3(0.05,0.04,0.03), vec3(0.30,0.26,0.22), uDay);
+  vec3 col = mix(vec3(${NEON ? '0.016' : '0.05'},${NEON ? '0.02' : '0.04'},${NEON ? '0.05' : '0.03'}), vec3(${NEON ? '' : '0.30,0.26,'}0.22${NEON ? ',0.24,0.28' : ''}), uDay);
   float lane = step(abs(vUv.y - 0.5), 0.02) * step(0.5, fract(vUv.x * 40.0));
   float sheen = noise(vW.xz * 0.35 + vec2(0.0, uTime*0.05)) * uWet;
   col += vec3(1.0, 0.85, 0.5) * lane * 0.35 + uAccent * sheen * 0.16 + vec3(1.0,0.4,0.6) * sheen * 0.05;
@@ -298,8 +299,8 @@ void main(){
   c += vec3(1.0,0.42,0.22) * uDusk * 0.6 * exp(-abs(h)*5.0) * (0.35 + 0.65*pow(s, 3.0));
   c += vec3(0.75,0.25,0.55) * uDusk * 0.25 * exp(-abs(h - 0.15)*7.0);
   c += mix(vec3(1.0,0.7,0.45), vec3(1.0,0.97,0.9), uDay) * (pow(s, 700.0)*3.0 + pow(s, 14.0)*0.22) * step(-0.08, sd.y);
-  c += vec3(1.0,0.90,0.72) * (pow(max(dot(d, -sd), 0.0), 1400.0)*2.5 + pow(max(dot(d, -sd), 0.0), 30.0)*0.05) * (1.0 - uDay);
-  c += vec3(0.85,0.5,0.3) * 0.14 * exp(-abs(h)*7.0) * (1.0 - uDay);
+  c += vec3(${NEON ? '0.85' : '1.0'},${NEON ? '0.9' : '0.90'},${NEON ? '1.0' : '0.72'}) * (pow(max(dot(d, -sd), 0.0), 1400.0)*2.5 + pow(max(dot(d, -sd), 0.0), 30.0)*0.05) * (1.0 - uDay);
+  c += ${NEON ? 'uAccent' : 'vec3(0.85,0.5,0.3)'} * ${NEON ? '0.08' : '0.14'} * exp(-abs(h)*${NEON ? '9.0' : '7.0'}) * (1.0 - uDay);
   vec3 grey = vec3(dot(c, vec3(0.333))) * 0.75 + 0.03;
   c = mix(c, grey, uCloud * 0.75);
   c += vec3(0.65,0.72,1.0) * uFlash * (0.5 + 0.5*smoothstep(-0.1, 0.5, h));
@@ -386,8 +387,8 @@ void main(){
   vec2 p = vW.xz;
   float w = noise(p*0.15 + vec2(uTime*0.15, uTime*0.07)) * 0.6 + noise(p*0.6 - uTime*0.25) * 0.4;
   float streak = pow(noise(vec2(p.x*0.5, p.y*0.05 + uTime*0.3)), 6.0);
-  vec3 col = mix(vec3(0.05,0.11,0.12), vec3(0.18,0.44,0.48), uDay) + vec3(0.05,0.08,0.08) * w;
-  col += uAccent * streak * 0.9 + vec3(1.0,0.74,0.46) * pow(noise(vec2(p.x*0.4 + 9.0, p.y*0.06 - uTime*0.2)), 7.0) * 0.6;
+  vec3 col = mix(vec3(${NEON ? '0.004' : '0.05'},${NEON ? '0.02' : '0.11'},${NEON ? '0.05' : '0.12'}), vec3(${NEON ? '0.12' : '0.18'},${NEON ? '0.3' : '0.44'},${NEON ? '0.45' : '0.48'}), uDay) + vec3(${NEON ? '0.02' : '0.05'},0.08,${NEON ? '0.14' : '0.08'}) * w;
+  col += uAccent * streak * 0.9 + vec3(1.0,${NEON ? '0.4' : '0.74'},${NEON ? '0.55' : '0.46'}) * pow(noise(vec2(p.x*0.4 + 9.0, p.y*0.06 - uTime*0.2)), 7.0) * 0.6;
   gl_FragColor = vec4(mix(col, uFog, fogAmount(vFD, 0.0)), 1.0);
 }`;
 export const TOWER_VS = `attribute vec3 aL; varying vec3 vL; void main(){ vL = aL; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }`;
@@ -396,8 +397,8 @@ uniform float uTime; uniform float uDay; uniform vec3 uAccent; varying vec3 vL;
 void main(){
   float band = smoothstep(0.92, 1.0, fract(vL.y*0.55 - uTime*0.35));
   float rib = smoothstep(0.85, 1.0, abs(sin(atan(vL.z, vL.x)*4.0)));
-  vec3 a = mix(vec3(0.95,0.72,0.38), uAccent, 0.25);
-  vec3 c = vec3(0.30,0.25,0.20) + a*(band*0.35 + rib*0.2) + a*0.10;
-  c = mix(c, c*0.9 + vec3(0.16,0.13,0.09), uDay);
+  vec3 a = mix(vec3(${NEON ? '0.25' : '0.95'},${NEON ? '0.85' : '0.72'},${NEON ? '1.0' : '0.38'}), uAccent, 0.25);
+  vec3 c = vec3(${NEON ? '0.02' : '0.30'},${NEON ? '0.07' : '0.25'},${NEON ? '0.12' : '0.20'}) + a*(band*${NEON ? '0.9' : '0.35'} + rib*${NEON ? '0.35' : '0.2'}) + a*${NEON ? '0.12' : '0.10'};
+  c = mix(c, c*${NEON ? '0.6' : '0.9'} + vec3(${NEON ? '0.1' : '0.16'},${NEON ? '0.2' : '0.13'},${NEON ? '0.3' : '0.09'}), uDay);
   gl_FragColor = vec4(c, 1.0);
 }`;

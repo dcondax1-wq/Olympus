@@ -54,7 +54,7 @@ function fromRow(row, ix, D) {
            fdr: !!(fl & F.fdr), tr: trendOf(fl, F), td: fl & F.fired ? 2 : fl & F.armed ? 1 : 0, compact: true };
 }
 
-const DEFAULT_SECTIONS = { times: ['TIMES', '#c8a24a'], confluences: ['CONFLUENCES', '#b07a45'], while: ['WHILE-STATES', '#cfc4b2'] };
+const DEFAULT_SECTIONS = { times: ['TIMES', (NEON ? '#7fe9ff' : '#c8a24a')], confluences: ['CONFLUENCES', (NEON ? '#ffd36b' : '#b07a45')], while: ['WHILE-STATES', (NEON ? '#e9ecf6' : '#cfc4b2')] };
 
 /** Normalise one plug-in district (see the contract above); null when it is not usable. */
 export function pluginSection(p, i = 0) {
@@ -68,7 +68,7 @@ export function pluginSection(p, i = 0) {
     sp: Array.isArray(x.sp) ? x.sp.filter(Number.isFinite).slice(0, 60) : null,
     e: 60 * (Math.abs(+x.value || 0) / top) * Math.sign(+x.value || 0) }));    // height on the city's $ scale
   return { key, name: String(p.name || key).toUpperCase().slice(0, 24), blurb: String(p.blurb || '').slice(0, 200),
-           color: /^#[0-9a-f]{6}$/i.test(p.color || '') ? p.color : '#daa56f', kind: 'plugin', plugin: true, items,
+           color: /^#[0-9a-f]{6}$/i.test(p.color || '') ? p.color : (NEON ? '#7fe9ff' : '#daa56f'), kind: 'plugin', plugin: true, items,
            tested: items.length, fdr: 0, gold: items.filter((x) => x.cls === 'gold').length };
 }
 
@@ -97,6 +97,7 @@ export function synthRows(D, n) {
 }
 
 import { agoraColor } from './agora.js';
+import { NEON } from './look-mode.js';   // the two looks of the Data City (look-mode.js): neon night (default) or AGORA marble
 
 export function decode(city, plugins = [], synth = 0) {
   const D = city.dict || null;
@@ -118,10 +119,10 @@ export function decode(city, plugins = [], synth = 0) {
   }
   const sections = [];
   const meta = city.sections || Object.entries(DEFAULT_SECTIONS).map(([key, [name, color]]) => ({ key, name, color, kind: 'combos' }));
-  meta.forEach((s, i) => sections.push({ ...s, color: agoraColor(s.key, i), items: [] }));
+  meta.forEach((s, i) => sections.push({ ...s, color: NEON ? (s.color || agoraColor(s.key, i)) : agoraColor(s.key, i), items: [] }));   // neon: the city's own section colours
   const sec = new Map(sections.map((s) => [s.key, s]));
   for (const b of buildings) {
-    if (!sec.has(b.d)) { const s = { key: b.d, name: b.d.toUpperCase(), color: agoraColor(b.d), kind: 'combos', items: [] }; sections.push(s); sec.set(b.d, s); }
+    if (!sec.has(b.d)) { const s = { key: b.d, name: b.d.toUpperCase(), color: NEON ? '#e9ecf6' : agoraColor(b.d), kind: 'combos', items: [] }; sections.push(s); sec.set(b.d, s); }
     sec.get(b.d).items.push(b);
   }
   for (const p of plugins) {
