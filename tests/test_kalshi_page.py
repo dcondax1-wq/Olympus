@@ -1149,6 +1149,7 @@ def part_k(br, url, tmp):
     ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2)
     ctx.route("https://raw.githubusercontent.com/**", feed)
     ctx.route("https://api.github.com/**", feed)
+    ctx.route("https://ntfy.invalid/**", lambda r: r.fulfill(status=200, content_type="application/x-ndjson", body=""))   # the stub status topic: no posts (never a real host)
     q = ctx.new_page()
     errs, bad = [], []
     q.on("pageerror", lambda e: errs.append(str(e)))
@@ -2106,6 +2107,23 @@ def part_rewards(br, url, tmp):
               p.evaluate("document.querySelector('#kpaused').nextElementSibling.id") == "krw" and "Rewards test (paper)" in t
               and all(w in t for w in ("Earned", "Fills", "Net", "Days", "$0 at risk", "saved copy", "Backtest (30 days)")), t[:300])
         check("rw1. the numbers are the copy's ($ earned, fill $)", ("$%.2f" % copy["paper"]["reward"]) in t, t[:200])
+        k0 = p.inner_text("#kpaused")
+        check("rw1. the Kalshi home's status line: 'Kalshi: PAUSED for real money', the rewards net $ over N days, K1 rules",
+              "KALSHI: PAUSED" in k0.upper() and "for real money" in k0 and ("rewards (net +$%.2f over" % copy["paper"]["net"]) in k0 and "K1 rules" in k0, k0[:300])
+        check("rw1. the card shows its age; a saved copy over 1 h old says the PC sent nothing newer (amber)",
+              "updated " in t and "the PC has not sent newer numbers" in t and p.locator("#krw .krw-age.old").count() == 1, t[-200:])
+        hub = p.evaluate("""() => { const h = document.getElementById('khub'), W = window.innerWidth, r = h.getBoundingClientRect();
+            const a = (s) => [...h.querySelectorAll(s + ' a')].map((x) => x.getAttribute('href'));
+            const rows = [...h.querySelectorAll('.kh-l li, .kh-a li')].filter((x) => x.getBoundingClientRect().height < 43.5).length;
+            return [document.getElementById('krw').nextElementSibling.id, a('.kh-l'), a('.kh-a'), h.textContent, r.left >= 15.5 && r.right <= W - 15.5, rows,
+                    [...h.querySelectorAll('*')].filter((x) => x.scrollWidth > x.clientWidth + 1).length]; }""")
+        check("rw7. the Kalshi home under the rewards card: 9 tested ideas each with its verdict and a link to its write-up (Clio)",
+              hub[0] == "khub" and len(hub[1]) == 9 and all(h.startswith("../clio/?q=") for h in hub[1]) and "What we tested and why it's paused" in hub[3]
+              and all(w in hub[3] for w in ("Loses", "No edge", "Too weak", "Paper test")), hub[:2])
+        check("rw7. links to Kalshi City, Dionysus and Sibyl, and 'What would turn it back on' (100+ paper bets, 4+ weeks, 95% range above $0)",
+              hub[2] == ["../kalshicity/", "../dionysus/", "../sibyl/"] and "What would turn it back on" in hub[3] and "100+ settled bets" in hub[3]
+              and "95% range above $0" in hub[3], hub[2])
+        check("rw7. 375 px: the home inside the 16 px gutters, every link row at least 44 px tall, nothing cut off", hub[4] and hub[5] == 0 and hub[6] == 0, hub[4:])
         pc = dict(copy["paper"], reward=12.34, fill_pnl=-2.5, net=9.84, days=3.2, updated="2099-01-01T00:00:00+00:00", fills=7)
         msg = {"kind": "le-live", "t": 1, "kalshi_rewards": pc}
         R["ntfy"] = json.dumps({"event": "message", "time": 1, "message": json.dumps(msg)}) + "\n" + '{"event":"keepalive"}\n'
@@ -2114,6 +2132,9 @@ def part_rewards(br, url, tmp):
         t = p.inner_text("#krw")
         check("rw2. the PC's newer status post wins: $12.34 earned, -$2.50 fills, +$9.84 net, 3.2 days, 7 fills, 'from the PC'",
               all(w in t for w in ("$12.34", "−$2.50", "+$9.84", "3.2", "7 fills", "from the PC")), t[:300])
+        k1 = p.inner_text("#kpaused")
+        check("rw2. the status line follows the PC: 'rewards (net +$9.84 over 3.2 days)'; a fresh post reads 'updated just now', not amber",
+              "rewards (net +$9.84 over 3.2 days)" in k1 and "updated just now" in t and p.locator("#krw .krw-age.old").count() == 0, (k1[:200], t[-120:]))
         check("rw2. the status topic is read from ../status_feed.json (ntfy poll, GET)", any("/olympus-test-status/json?poll=1" in u for u in R["asked"]), R["asked"][:2])
         bad = dict(copy, paper=dict(copy["paper"], reward="<img src=x onerror=window.__pwn=1>"),
                    backtest={"text": "<script>window.__pwn=1</script>bad"})
@@ -2126,6 +2147,7 @@ def part_rewards(br, url, tmp):
         p.goto(page_url)
         p.wait_for_timeout(1500)
         check("rw4. no copy and no PC post: the card stays hidden (never an empty box)", p.evaluate("document.querySelector('#krw').hidden"), "")
+        check("rw4. ... and the status line says 'rewards (no numbers yet)'", "rewards (no numbers yet)" in p.inner_text("#kpaused"), p.inner_text("#kpaused")[:200])
         R["own"], R["ntfy"] = "file", None
         open_()
         m = p.evaluate("""() => { const W = window.innerWidth, de = document.documentElement, e = document.getElementById('krw'), r = e.getBoundingClientRect();

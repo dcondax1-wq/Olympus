@@ -1367,17 +1367,32 @@
   const RW = { j: null, src: '', bt: null };
   const rwUsd = (x, sign) => { const v = num(x); return v == null ? '–' : (v < -0.004 ? '−' : sign && v > 0.004 ? '+' : '') + '$' + Math.abs(v).toFixed(2); };
   function rwOk(j) { return isObj(j) && j.kind === 'kalshi_rewards_pub' && j.paper_only === true && num(j.reward) != null; }
+  // how old the numbers are (the PC child writes every minute, the PC posts every 15 min; over 1 h old = the PC copy is late)
+  function rwAge(j) {
+    const up = Date.parse((j && j.updated) || '');
+    if (!Number.isFinite(up)) return { s: 'age unknown', old: true };
+    const m = Math.max(0, (Date.now() - up) / 60000);
+    const s = m < 2 ? 'just now' : m < 60 ? Math.round(m) + ' min ago' : m < 48 * 60 ? Math.round(m / 60) + ' h ago' : Math.round(m / 1440) + ' days ago';
+    return { s, old: m > 60 };
+  }
+  function rwLine() {                                 // the status line's rewards part (#kpaused-rw)
+    const el = $('#kpaused-rw'), j = RW.j;
+    if (!el) return;
+    if (!rwOk(j)) { el.textContent = 'rewards (no numbers yet)'; return; }
+    const d = num(j.days);
+    el.textContent = `rewards (net ${rwUsd(j.net, true)} over ${d == null ? '?' : d < 1 ? d.toFixed(1) : String(Math.round(d * 10) / 10)} day${d === 1 ? '' : 's'})`;
+  }
   function rwHtml() {
     const j = RW.j, bt = RW.bt;
     if (!rwOk(j)) return '';
-    const d = num(j.days), up = Date.parse(j.updated || ''), when = Number.isFinite(up) ? new Date(up).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '';
+    const d = num(j.days), up = Date.parse(j.updated || ''), when = Number.isFinite(up) ? new Date(up).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '', age = rwAge(j);
     const cell = (t, v, c) => `<div><dt>${t}</dt><dd class="${c || ''}">${v}</dd></div>`;
     const per = num(j.per100_day);
     return '<p><b>Rewards test (paper)</b> Pretend orders that earn Kalshi\'s liquidity rewards. $0 at risk, nothing is placed.</p>'
       + '<dl class="krw-g">' + cell('Earned', esc(rwUsd(j.reward)), cls(j.reward)) + cell('Fills', esc(rwUsd(j.fill_pnl, true)), cls(j.fill_pnl))
       + cell('Net', esc(rwUsd(j.net, true)), cls(j.net)) + cell('Days', d == null ? '–' : esc(d < 1 ? d.toFixed(1) : String(Math.round(d * 10) / 10))) + '</dl>'
       + `<p class="krw-f">${per != null ? esc(rwUsd(per, true)) + ' a day per $100 parked · ' : ''}${esc(fmtN(num(j.fills) || 0))} fill${num(j.fills) === 1 ? '' : 's'}`
-      + `${when ? ' · ' + esc(when) : ''} · ${RW.src === 'pc' ? 'from the PC' : 'saved copy'}</p>`
+      + `${when ? ' · ' + esc(when) : ''} · ${RW.src === 'pc' ? 'from the PC' : 'saved copy'} · <span class="krw-age${age.old ? ' old' : ''}">updated ${esc(age.s)}${age.old ? (RW.src === 'pc' ? ' (late)' : ' (the PC has not sent newer numbers)') : ''}</span></p>`
       + (isObj(bt) && bt.text ? `<p class="krw-f">Backtest (30 days): ${esc(String(bt.text).slice(0, 220))}</p>` : '');
   }
   function rwShow() {
@@ -1386,6 +1401,7 @@
     const h = rwHtml();
     el.innerHTML = h;
     el.hidden = !h;
+    rwLine();
   }
   async function rwGet(url, ms, text) {
     let ac = null, tm = 0;

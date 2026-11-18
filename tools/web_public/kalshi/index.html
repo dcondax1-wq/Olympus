@@ -23,7 +23,7 @@
 <script>(function () { var d = document.documentElement; d.setAttribute('data-theme', 'kalshi');
   /* inside Jarvis (a frame under its bar) the notch is Jarvis's: no second top inset */
   try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
-<link rel="stylesheet" href="kalshi.css?v=k29">
+<link rel="stylesheet" href="kalshi.css?v=k30">
 <!-- OLYMPUS theme (../olympus/themes.js, key 'olympus.theme', picked on the Gate's Look row or in Jarvis's Look sheet): every colour of
      kalshi.css reads a theme slot with its AGORA colour as the fallback (tools/theme_tokenize.py), on the full 'page' palette since
      2026-11-14 (team T2: a light look is light here too, like everywhere). The <head> paints the engine's copy of the look before the first
@@ -60,8 +60,36 @@
       <span>Refresh</span>
     </button>
   </header>
-  <div class="note" id="kpaused" role="note" style="border-color: rgba(var(--warn-rgb), .5)"><p><b style="color: var(--warn)">PAUSED</b> The Kalshi bot is paused: it places no real bets (no edge worth money found yet). The rewards test runs on paper only: pretend orders, $0 at risk.</p></div>
+  <!-- the Kalshi home (owner 2026-11-18, "can't find things"): status line -> the rewards card -> what we tested -> the other Kalshi apps -> the bar -->
+  <div class="note" id="kpaused" role="note" style="border-color: rgba(var(--warn-rgb), .5)"><p><b style="color: var(--warn)">Kalshi: PAUSED</b> for real money. Paper tests running: <span id="kpaused-rw">rewards (no numbers yet)</span>, K1 rules (on the Kalshi server; its results do not reach this page yet). $0 at risk.</p></div>
   <section class="note krw" id="krw" aria-label="Rewards test (paper)" hidden></section>
+  <section class="note khub" id="khub" aria-label="Kalshi home">
+    <h2>What we tested and why it's paused</h2>
+    <ul class="kh-l">
+      <li><a href="../clio/?q=kalshi%20edge%20v2">The bot's own 1,836 bets</a> <span>+$10 before fees, about −$63 after: the fee eats it. <i>Loses</i></span></li>
+      <li><a href="../clio/?q=calibration%20base%20rate">A: odds vs how often things happen</a> <span><i>No edge</i></span></li>
+      <li><a href="../clio/?q=structure%20and%20behaviour">B: market habits</a> <span><i>No edge</i></span></li>
+      <li><a href="../clio/?q=other%20daily%20series">C: weather, economy, daily index</a> <span><i>No edge</i></span></li>
+      <li><a href="../clio/?q=team%20k1">K1: Nasdaq price from NQ futures, weather locks</a> <span>−5.7% per $1 on new data. <i>Loses</i></span></li>
+      <li><a href="../clio/?q=team%20k3">K3: arbitrage, economic releases</a> <span>real but about $0.06 a day. <i>No edge</i></span></li>
+      <li><a href="../clio/?q=team%20k4">K4: copy Polymarket, sports, 15-min crypto</a> <span>−9% per $1. <i>Loses</i></span></li>
+      <li><a href="../clio/?q=team%20k5">K5: late favourites on public-number markets</a> <span>about +$3 a month. <i>Too weak</i></span></li>
+      <li><a href="../clio/?q=liquidity%20rewards">Rewards (paid to rest orders)</a> <span>30-day replay +$0.33 / −$0.22 a day per $100. <i>Paper test</i></span></li>
+    </ul>
+    <h2>Other Kalshi apps</h2>
+    <ul class="kh-a">
+      <li><a href="../kalshicity/">Kalshi City</a> <span>The bot's past bets as a city: which edges made or lost $.</span></li>
+      <li><a href="../dionysus/">Dionysus</a> <span>The Kalshi desk: balance, results, guard, what-if of past bets.</span></li>
+      <li><a href="../sibyl/">Sibyl</a> <span>Today's odds ranked by edge after fees, paper stakes only.</span></li>
+    </ul>
+    <h2>What would turn it back on</h2>
+    <ul class="kh-b">
+      <li>A paper test with 100+ settled bets over 4+ weeks and 20+ days.</li>
+      <li>Net $ positive after fees, at the price it would really pay, and its 95% range above $0.</li>
+      <li>Rewards: net positive in both halves of the paper run (the program ends Jan 1, 2027).</li>
+      <li>Then $3 a bet for 2 weeks before any size change. You decide; Claude never bets.</li>
+    </ul>
+  </section>
   <nav class="secnav" id="secnav" aria-label="Sections" hidden>
     <button type="button" data-go="today">Today</button><button type="button" data-go="edge">Edge</button><button type="button" data-go="perf">Performance</button><button type="button" data-go="alerts">Alerts <b></b></button>
   </nav>
@@ -72,6 +100,6 @@
 <script src="../olympus/gate-nav.js?v=g4" defer></script><!-- the way back to the Gate + Go to (olympus/gate-nav.js) -->
 <script src="../olympus/intro-app.js?v=i7" data-app="kalshi" data-name="Kalshi" data-glyph="K" data-color="#8fa07a" defer></script><!-- the app intro without the kit (olympus/intro-app.js) -->
 <script src="kfx.js?v=k26"></script>
-<script src="kalshi.js?v=k29"></script>
+<script src="kalshi.js?v=k30"></script>
 </body>
 </html>

@@ -50,6 +50,7 @@ WORK_DEFAULT = os.path.join(ROOT, "data", "pc_report")
 STATUS_FEED = os.path.join(ROOT, "tools", "web_public", "status_feed.json")
 NTFY_DEFAULT = "https://ntfy.sh"
 PORT_DEFAULT = int(os.environ.get("PORT") or 8766)
+KALSHI_RW_LITE = ("kind", "paper_only", "updated", "days", "reward", "fill_pnl", "net", "fills", "markets", "per100_day")   # the card's keys
 MAX_STATUS_BYTES = 3900          # ntfy turns a message over 4,096 bytes into a file attachment: stay under it
 HB_STALE_S = 900                 # the bot beats every 5 min: older than 15 min = the bot is not reporting
 BAR_STALE_S = 300                # the last 1-minute bar older than 5 min while the market is open = FEED STALE
@@ -504,7 +505,8 @@ def lite(snap: dict, max_bytes: int = MAX_STATUS_BYTES) -> dict:
     except Exception:  # noqa: BLE001
         pass
     if isinstance(snap.get("kalshi_rewards"), dict):   # the Kalshi page's "Rewards test (paper)" card (tools/kalshi_rewards_paper.py)
-        out["kalshi_rewards"] = snap["kalshi_rewards"]
+        # only what the card reads (~180 bytes, no per-series rows): the full summary was always the first thing trimmed away
+        out["kalshi_rewards"] = {k: snap["kalshi_rewards"].get(k) for k in KALSHI_RW_LITE if snap["kalshi_rewards"].get(k) is not None}
     out = {k: v for k, v in out.items() if v is not None}
     # too big: drop the least needed parts first
     def _gcut(o, n):                     # the Brain page's glance (engine/brain_glance.py): fewer log lines / levels first
@@ -513,11 +515,13 @@ def lite(snap: dict, max_bytes: int = MAX_STATUS_BYTES) -> dict:
         if g:
             brain_glance.fit(g, n)
     # the glance is cut (then left out) before the Board's events; the Board's events go before the accounts block
-    steps = [lambda o: o.pop("kalshi_rewards", None), lambda o: _d(o.get("board")).pop("lines", None),
+    # the Kalshi rewards card goes after the Brain glance (2026-11-18: the real posts were always trimmed, so it never reached the page)
+    steps = [lambda o: _d(o.get("board")).pop("lines", None),
              lambda o: _d(o.get("brd")).__setitem__("ev", _d(o.get("brd")).get("ev", [])[:2]) if o.get("brd") else None,
              lambda o: _gcut(o, 1000), lambda o: _gcut(o, 600),
              lambda o: _d(o.get("brd")).__setitem__("ev", []) if o.get("brd") else None,
              lambda o: _d(o.get("pc")).pop("glance", None),
+             lambda o: o.pop("kalshi_rewards", None),
              lambda o: o.pop("brd", None),
              lambda o: o.pop("accounts", None),
              lambda o: _d(o.get("board")).__setitem__("trades", _d(o.get("board")).get("trades", [])[:1]) if o.get("board") else None,
