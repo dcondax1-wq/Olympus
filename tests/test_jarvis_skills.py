@@ -92,6 +92,15 @@ def main() -> int:
     m3 = re.search(r"(\d+) passed, (\d+) failed", out3)
     if m3:
         print(f"   node v3 unit tests: {m3.group(1)} passed, {m3.group(2)} failed")
+    zs = read(os.path.join(JV, "zeus.js"))
+    check("zeus.js: read only (no fetch, no order, no arming words), Safari 16 safe, wired before the guard", "fetch(" not in zs and "(?<" not in zs and "?." not in zs.replace("?.'", "")
+          and not re.search(r"place_order|armLive|go_live|submitOrder", zs) and 0 < brain.find("zeusAsk(raw0, q0, V)") < brain.find("skills.guard(raw)"))
+    r4 = subprocess.run(["node", os.path.join(ROOT, "tests", "test_jarvis_zeus.mjs")], capture_output=True, text=True, timeout=120, env={**os.environ, "TZ": "America/New_York"})
+    out4 = (r4.stdout + r4.stderr).strip()
+    check("node ZEUS today: the six daily questions from the PC feed, no account id, voice mode hands-free again", r4.returncode == 0, out4[-1500:])
+    m4 = re.search(r"(\d+) passed, (\d+) failed", out4)
+    if m4:
+        print(f"   node ZEUS today tests: {m4.group(1)} passed, {m4.group(2)} failed")
     bad = [n for n, ok, _ in RES if not ok]
     print(f"\njarvis skills: {len(RES) - len(bad)}/{len(RES)} {'ALL PASS' if not bad else 'FAILED: ' + '; '.join(bad)}")
     return 1 if bad else 0

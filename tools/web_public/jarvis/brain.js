@@ -291,6 +291,11 @@ const BOT_FIX = 'Zenith has the details.';
 
 // live: live.json itself, or the shell's slim view of it (lit / atlas / blitz / verdict / lines / price at the top) with the
 // full live.json as .raw (tools/web_public/jarvis/data.js liveView); either way the same view comes out.
+// account ids never reach an answer: the PC's verdict says "routing to MFFUEVBLDR…6016" (night-voice 2026-11-18; zeus.js scrubIds too)
+function noIds(v) {
+  if (!isObj(v) || typeof v.reason !== 'string') return v;
+  return { ...v, reason: v.reason.replace(/\b[A-Z]{3,}[A-Z0-9-]*(?:…|\.\.\.)?\d{3,}\b/g, 'your account').replace(/\b(?:account|acct)\s*#?\s*\d{4,}\b/gi, 'your account') };
+}
 function nqView(live, nowMs) {
   if (!isObj(live)) return null;
   const full = isObj(live.raw) ? live.raw : live;
@@ -300,7 +305,7 @@ function nqView(live, nowMs) {
   const lines0 = arr(b.lines).length ? arr(b.lines) : arr(live.lines);
   return {
     lit: good(b.lit) || good(live.lit), atlas: good(b.atlas) || good(live.atlas), blitz: HIDB() ? null : good(b.blitz) || good(full.blitz) || good(live.blitz),
-    verdict: good(full.pc_verdict) || good(live.verdict) || good(live.pc_verdict), t, running: b.running != null ? b.running : live.running,
+    verdict: noIds(good(full.pc_verdict) || good(live.verdict) || good(live.pc_verdict)), t, running: b.running != null ? b.running : live.running,
     cached: !!live.cached, stale: !!(t && nowMs - t * 1000 > LIVE_STALE_MS), money: good(full.money) || good(live.money),
     lines: lines0.filter((x) => isObj(x) && str(x.text)), level: str(b.level || live.level, 10), progress: good(b.progress) || good(live.progress),
     price: num(full.price) != null ? num(full.price) : num(live.price),
@@ -551,6 +556,15 @@ export function createBrain(opts) {
   // the skills (skills.js, 2026-11-10 JARVIS BRAIN): an offline tool layer over every published file (drawdown, weekdays, deals, events,
   // Sibyl, trades), actions with a "yes" before any write, the owner's memory, and context for smart mode. createBrain({ skills }) passes one
   // in; otherwise it loads its own in a browser (o.skills === false: off). See docs/JARVIS_API.md.
+  // ZEUS today (zeus.js, night-voice 2026-11-18): "how are my accounts", "did ZEUS trade today", "how much to pass", "when is my payout",
+  // "is the PC on", "pause ZEUS" from the PC feed (facts.live.raw), the Board and business/accounts.json. createBrain({ zeus }) passes one
+  // in; otherwise it loads its own in a browser (o.zeus === true: also in node; false: off). Read only: "pause" only says where the button is.
+  let zeus = isObj(o.zeus) && typeof o.zeus.answer === 'function' ? o.zeus : null, zeusWait = null;
+  if (!zeus && o.zeus !== false && (o.zeus === true || typeof location !== 'undefined')) {
+    const getJ = (u) => async () => { try { const r = await doFetch(u, { cache: 'no-cache' }); return r && r.ok ? await r.json() : null; } catch (_) { return null; } };
+    zeusWait = import('./zeus.js').then((m) => { zeus = m.createZeus({ getPlan: getJ('../business/accounts.json'), getBoard: getJ('../board/board.json'), hidden: HIDB }); })
+      .catch(() => null).then(() => { zeusWait = null; });
+  }
   let skills = isObj(o.skills) && typeof o.skills.handle === 'function' ? o.skills : null, skillsWait = null, skillCtx = '', missedSkill = null;
   if (!skills && o.skills !== false && typeof location !== 'undefined' && typeof fetch === 'function') {
     try {
@@ -671,7 +685,9 @@ export function createBrain(opts) {
     const bot = BOT[key], c = card(V, key);
     if (isOff(c, bot)) return offWhy(c, bot);
     const today = usd(c.today_pnl, true), room = usd(c.room), tt = usd(c.to_target), n = num(c.trades_today);
-    return `${labelOf(c, bot)}: today ${today || 'missing'}, room ${room || 'missing'}, ${tt ? tt + ' to target' : 'to target missing'}${n ? `, ${plural(n, 'trade')} today` : ''}.`;
+    // a funded account has no eval target: its card's to_target is the payout line (night-voice 2026-11-18: ATLAS funded said "$1,850 to target")
+    const funded = /funded/i.test(str(c.status, 20) + ' ' + str(c.plan, 60));
+    return `${labelOf(c, bot)}: today ${today || 'missing'}, room ${room || 'missing'}, ${funded ? 'funded (say "when is my payout")' : tt ? tt + ' to target' : 'to target missing'}${n ? `, ${plural(n, 'trade')} today` : ''}.`;
   }
   function botSpeech(V, key, withTarget) {
     const bot = BOT[key], c = card(V, key);
@@ -2182,6 +2198,12 @@ export function createBrain(opts) {
       return { ...x, text: L.join('\n') + '\n' + str(x.brief.tail, 400), speak: first ? [L[0], L[1], L[2], L[5]].join(' ') : x.speak, cards: b.cards, brief: { ...x.brief, lines: L } };
     } catch (_) { return x; }
   }
+  async function zeusAsk(raw, q, V) {
+    try {
+      const x = await zeus.answer(raw, q, V.f && V.f.live, +V.now || Date.now());
+      return x && typeof x.text === 'string' && x.text ? x : null;
+    } catch (_) { return null; }
+  }
   async function earlyAsk(raw, V) {
     try {
       if (!skills || typeof skills.early !== 'function') return null;
@@ -2203,7 +2225,9 @@ export function createBrain(opts) {
     const voice = !!(isObj(opt) && opt.voice);
     let r, mr0 = null;
     try {
-      const raw = String(text == null ? '' : text).slice(0, 600);
+      const raw0 = String(text == null ? '' : text).slice(0, 600), q0 = norm(raw0);
+      // "ZEUS" is the owner's name for the trading system: any other question with it means the bots ("arm zeus" -> refused by the guard)
+      const raw = raw0.replace(/\bzeus'?s?\b/gi, 'the bots');
       if (zrWait) await Promise.race([zrWait, new Promise((ok) => setTimeout(ok, 1500))]);
       const f = await loadFacts();
       const V = view(f);
@@ -2217,6 +2241,7 @@ export function createBrain(opts) {
       else if (/^(hide|mask) (my |the )?(balances?|money|numbers|figures|p&l)$|^privacy (mode )?on$/.test(q)) { setHide(true); r = { text: 'Balances hidden. Say "show my balance" to bring them back.', speak: 'Balances hidden.', control: 'hide_balance', intent: 'control' }; }
       else if (/^(show|unhide|unmask) (my |the )?(balances?|money|numbers|figures|p&l)$|^privacy (mode )?off$/.test(q)) { setHide(false); r = { text: 'Balances visible again.', speak: 'Balances visible again.', control: 'show_balance', intent: 'control' }; }
       else if (MANUAL_RX.test(q)) r = manualTrade(q, V);
+      else if ((zeusWait ? await Promise.race([zeusWait, new Promise((ok) => setTimeout(ok, 1200))]).then(() => zeus) : zeus) && (sr = await zeusAsk(raw0, q0, V))) r = sr;   // ZEUS today (zeus.js)
       else if (skills && typeof skills.guard === 'function' && (sr = safeCall(() => skills.guard(raw)))) { r = sr; bySkill = true; }          // "buy ...", "arm ...", "move my stop": refused in plain words, whatever the wording
       else if (skills && (sr = await earlyAsk(raw, V))) { r = sr; bySkill = true; }           // v3: follow-ups, tours, the briefing, explain, search (skills3.js)
       else if (modes && safeCall(() => modes.parseSwitch(raw))) r = modeReply(modes.parseSwitch(raw), V);

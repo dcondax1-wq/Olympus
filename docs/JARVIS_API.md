@@ -134,17 +134,30 @@ It does not exist until the brain has loaded; `home-data.js` already treats a mi
 
 ## Voice (`voice-mode.js`)
 
-Hold-to-talk is the default on an iPhone / iPad (hands-free stays the default elsewhere). The button `#vmPtt` listens while held and sends on release;
+Hands-free is the default on every phone again (night-voice 2026-11-18, "back to how it was": the 2026-11-06 conversation). On an iPhone /
+iPad the session falls back to hold-to-talk by itself when iOS refuses an automatic listen or hears nothing twice (`shouldFallBack`, not saved;
+`vm.stats().fellBack`). In hold-to-talk the button `#vmPtt` listens while held and sends on release;
 nothing starts listening by itself after an answer; `#vmState` (aria-live) always says what is happening: Listening / Thinking / Speaking /
 Hold the button and talk. Errors are said in plain words (`no-speech`, `network` -> the type-to-talk field, `not-allowed`). Page hide closes the
 mic. The choice is kept in `jarvis.vmPtt` ('1' hold, '0' hands-free).
 
 ```js
 vm.setPtt(true|false)  vm.pttDown()  vm.pttUp()  vm.stats()  // adds { ptt, holding, status }
-import { statusText, isIOS, PTT_KEY } from './voice-mode.js';
+import { statusText, isIOS, PTT_KEY, defaultPtt, shouldFallBack } from './voice-mode.js';
 ```
 
 The voice screen is AGORA (serif title, marble panels, gold and terracotta, sentence-case words, no glow); the 3D core inside it keeps its own colours.
+With the Classic Jarvis look on (`html[data-jlook=classic]`) it is the old violet screen (`voice-classic.js`: `CLASSIC_VM_CSS`, `CLASSIC_SPEC`).
+
+## ZEUS today (`zeus.js`, night-voice 2026-11-18)
+
+ZEUS = the trading system (Zlarior = LIT, ATLAS, the engine). `brain.js` asks `zeus.answer(raw, q, facts.live, nowMs)` right after the
+hide/show and manual-trade switches, before the guard: "how are my accounts", "did ZEUS trade today", "how much to pass", "when is my payout",
+"is the PC on" (only from the PC feed; else the older rule), "pause ZEUS" (says where Pause until tomorrow / LE STOP BOT are; never acts).
+Data: `facts.live.raw` (the PC feed: pc, reporter, board, accounts[]), `../board/board.json` when there is no feed, `../business/accounts.json`
+for names, stages and payout estimates. Intents `zeus_accounts|zeus_traded|zeus_pass|zeus_payout|zeus_pc|zeus_pause`. "zeus" in any other
+question reads as "the bots" ("arm zeus" -> the guard's refusal). Account ids are scrubbed (`scrubIds`; brain.js `noIds` on the PC verdict).
+`createBrain({ zeus: false })` turns it off; `zeus: true` loads it in node. Tests: `tests/test_jarvis_zeus.mjs` (run by test_jarvis_skills).
 
 ## Smart mode (the owner's own brain)
 
