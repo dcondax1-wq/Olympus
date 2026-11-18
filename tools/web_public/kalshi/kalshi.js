@@ -2205,3 +2205,5 @@
   k1Load();
   offline();
 })();
+
+// K1 card: see k1Load
