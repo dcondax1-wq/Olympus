@@ -149,13 +149,14 @@ def part_c(tmp, shots):
         MN = pg.evaluate("""() => { const hi = document.querySelector('#page > .pl-home > .pl-hi'), c = hi.querySelector(':scope > #mnCard');
           const exp = Math.max(2, window.MissionUI.accounts(window.POLISH.model()).filter((a) => a && !a.placeholder).length);
           return { order: [...hi.children].map((e) => e.id || e.className.split(' ')[0] || e.tagName.toLowerCase()), rows: c.querySelectorAll('.mn-row').length, exp,
-            txt: c.innerText.replace(/\\s+/g, ' '), taps: [...c.querySelectorAll('.mn-row')].map((r) => Math.round(r.getBoundingClientRect().height)), top: Math.round(c.getBoundingClientRect().top),
+            txt: c.innerText.replace(/\\s+/g, ' '), rowTxt: [...c.querySelectorAll('.mn-row')].map((r) => r.innerText.replace(/\\s+/g, ' ')), taps: [...c.querySelectorAll('.mn-row')].map((r) => Math.round(r.getBoundingClientRect().height)), top: Math.round(c.getBoundingClientRect().top),
             x: document.documentElement.scrollWidth - innerWidth }; }""")
         i_m = MN["order"].index("mnCard")
         check(f"c. Zenith Home: 'Money now' is the first card, inside the greeting box ahead of the Today hero and the money ribbon ({MN['rows']} account rows = the accounts the board has)",
               i_m == 2 and all(MN["order"].index(k) > i_m for k in ("zn-hi",) if k in MN["order"]) and ("zh-hero" not in MN["order"] or MN["order"].index("zh-hero") > i_m) and MN["rows"] == MN["exp"] and MN["x"] <= 0, MN)
+        # each row on its own (2026-11-17, plain words wave 2, 3521fb9a: the card's footer explains "Drawdown left = ..." too, so a count over the whole card is one more)
         check("c. Zenith Home: each row reads 'Drawdown left $X of $max loss' (not days), today's $, what the bot waits for and its status; every row is a 44 px tap",
-              MN["txt"].count("Drawdown left") == MN["rows"] and MN["txt"].count("max loss") >= MN["rows"] and "10 days" not in MN["txt"] and "next" in MN["txt"].lower() and "Bot " in MN["txt"]
+              len(MN["rowTxt"]) == MN["rows"] and all(t.lower().count("drawdown left") == 1 and "max loss" in t.lower() and "today" in t.lower() and "next" in t.lower() for t in MN["rowTxt"]) and "10 days" not in MN["txt"] and "next" in MN["txt"].lower() and "Bot " in MN["txt"]
               and all(h >= 44 for h in MN["taps"]) and "NaN" not in MN["txt"] and "undefined" not in MN["txt"], MN)
         # 2026-11-14 (team T2): 'aurora' is now the OLYMPUS look Glass Aurora, painted by olympus/themes.js through its slots; the old kit's
         # token set of the same name (#2fd3c0) no longer covers it (the node part still checks the old kit's mapping where no engine runs)
