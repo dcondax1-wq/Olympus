@@ -38,6 +38,8 @@ PRIVATE_PATHS = ("money_out/household.json", "money_out/agency.json", "money_out
                  "data/pc_report/state.json", "data/pc_publish/site/index.html", "data/live_site/site/index.html", "netlify.json",    # reports, publish
                  "ntfy.json", ".olympus/ntfy.json", "calendars.json", "money_inbox/cash.jsonl", "cash.jsonl", "money_keep/sibyl_forward.json",
                  "dash/state.json", "site/data.json", "logs/heartbeat_last.json", "logs/pc_hb/heartbeat.json", "data/alerts.json",    # build, heartbeat
+                 "data/datapipe_pub.git/HEAD", "data/pc_days/2026-11-18/trades.jsonl.gz", "logs/datapipe/ledger_archive.jsonl",   # data pipe
+                 "logs/zeus/latest.json",
                  "data/tv.json", "data/autostart.json", "data/live_state.json", "data/accounts.json", "data/account_b.json", "data/account_c.json",
                  "data/nt_accounts_allow.json", "data/goals_money.json", "data/push.json", "data/push_pc_key.json", "data/memory.db", ".env",
                  ".env.local.ps1", "kalshi.pem", "data/fleet.json", "data/eval_anchor.json", "data/broker_balance.json")

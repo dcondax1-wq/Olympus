@@ -1133,6 +1133,13 @@ def main(argv=None) -> int:
             _ll.maybe_run(say=(lambda *_: None) if a.quiet else print)
         except Exception:
             pass
+        # data pipe + ZEUS daily review (engine/datapipe.py, docs/DATA_PIPE.md): copies the bots' ledger rows every run; after 17:05 ET one
+        # detached child sends the day's NinjaTrader bars, trades, decisions and live-vs-backtest to the backup repo branch `data`; soft
+        try:
+            from engine import datapipe as _dp
+            _dp.maybe_run(say=(lambda *_: None) if a.quiet else print)
+        except Exception:
+            pass
         # Obsidian living sync (tools/obsidian_sync.py, docs/OBSIDIAN_SYNC.md): the bots' day, trades + pictures, research, business,
         # STATE into <vault>/OLYMPUS/Sync, only once you set a vault (data/obsidian_sync.json); at most every 10 min; soft
         try:
