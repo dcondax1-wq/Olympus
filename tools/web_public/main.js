@@ -971,7 +971,7 @@ VIEWS.today = (el) => {
   const todays = (lv.ledger || []).filter(v => v.day === lv.today), dayPnl = todays.reduce((a, v) => a + (v.usd || 0), 0);
   const y = D.results?.periods?.['2026 YTD'], RD = reactorData(), WK = weekData(), LQ = liqData();
   el.innerHTML = `<div id="lpToday" class="lp-slot"></div>
-    <div class="card hero-card"><div class="hero3d" id="tdOrb"><img class="hero-fallback" src="icons/icon-512.png?v=p111030" alt="">
+    <div class="card hero-card"><div class="hero3d" id="tdOrb"><img class="hero-fallback" src="zenith-icon.webp?v=1" alt="" decoding="async">
         <span class="hero-tag">${icon('engine')}LIVE ORACLE · last ${Math.min(12, (lv.bars || []).length)} bars</span></div>
       <div class="state">
         <div><div class="eyebrow">Cloud paper bot · ${esc(stratName())} · ${s.inkz ? esc(s.inkz[2]) + ' live' : s.next ? `${esc(s.next[0])} in ${Math.floor(s.next[1] / 60)}h ${String(s.next[1] % 60).padStart(2, '0')}m` : s.wk ? 'session over' : 'weekend'}</div>
