@@ -100,7 +100,7 @@
   async function load() {
     const [site, plan, fixture] = await Promise.all([demo ? null : getJSON('board.json'), demo ? null : getJSON('../business/accounts.json'), getJSON('fixture.json')]);
     let lite = null;
-    try { if (!demo && window.PC_FEED) lite = await window.PC_FEED.fetchLatest({}); } catch (e) { /* none */ }
+    try { if (!demo && window.PC_FEED) lite = await window.PC_FEED.fetchLatest({ feedUrl: '../status_feed.json' }); } catch (e) { /* none */ }
     draw(M.pick({ site, lite, plan, fixture, demo }, nowS()));
     try { if (window.PAYOUT_CARD && !demo) window.PAYOUT_CARD.mount($('payouts'), { plan, lite, title: 'Payouts', titleClass: 'sect' }); } catch (e) { /* never the page */ }
   }

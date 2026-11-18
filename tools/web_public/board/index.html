@@ -19,7 +19,6 @@
      the PC's ntfy status (../pc_feed.js), ../business/accounts.json (PLAN), ./fixture.json (?demo=1). The Payouts cards = ../business/payoutcard.js. Text only through textContent.
      The one write: the note box posts to /inbox/board (engine/day_inbox.py), which only the PC's private link accepts. BLITZ never shown. -->
 <script>(function () { var d = document.documentElement; try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
-<link rel="preconnect" href="https://ntfy.sh" crossorigin><!-- speed: the PC live line (../pc_feed.js -> ntfy.sh) skips its DNS + TLS wait -->
 <link rel="stylesheet" href="../olympus/olympus.css?v=o7">
 <link rel="stylesheet" href="../olympus/agora.css?v=a4"><link rel="stylesheet" href="../olympus/agora-apps.css?v=g2">
 <script src="../olympus/themes.js?v=o6" defer></script><!-- nothing on this page paints a look with it before the first frame (only a11y.js hooks it): never render-blocking -->
@@ -65,6 +64,6 @@
 <script src="../business/payoutcoach.js?v=1"></script>
 <script src="../business/payoutcard.js?v=1"></script>
 <script src="boardmodel.js?v=b1"></script>
-<script src="board.js?v=b3"></script>
+<script src="board.js?v=b4"></script>
 </body>
 </html>
