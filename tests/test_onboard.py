@@ -147,11 +147,11 @@ def flow(tmp):
     G.bot_running = lambda: False
     st = OB.status(folder=nt)
     by = {r["name"]: r for r in st["new"]}
-    check("status: the 3 new Names (fresh 25K, old passed 25K, funded 25K); the bot's own two and Sim101 not offered",
-          set(by) == {N25, OLD25, SF25}, list(by))
-    check("status: fresh 25K -> 'Zlarior trades it'; old passed -> 'Not for the bot' only; funded -> 'Move ATLAS here (funded)' "
+    check("status: the 2 new Names (fresh 25K, funded 25K); an old passed 25K (night-pcbugs: a passed eval is never offered as new), the bot's own two and Sim101 not offered",
+          set(by) == {N25, SF25}, list(by))
+    check("status: fresh 25K -> 'Zlarior trades it'; old passed -> not offered at all; funded -> 'Move ATLAS here (funded)' "
           "(lifecycle saw ATLAS's eval pass); each line says 'Armed at the next START (you type the phrase)'",
-          prim(by[N25]["options"])["act"] == "add:builder25k" and acts(by[OLD25]["options"]) == ["dismiss"]
+          prim(by[N25]["options"])["act"] == "add:builder25k" and OLD25 not in by
           and prim(by[SF25]["options"])["act"] == f"move:{L25}" and all(r["armed_note"] == OB.ARMED_LATER for r in st["new"]),
           {k: v["options"] for k, v in by.items()})
     # tap 1: the fresh 25K -> engine.accounts add --plan builder25k (an extra LIT account, DISARMED)
