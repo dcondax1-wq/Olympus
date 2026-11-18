@@ -53,6 +53,13 @@ def catalog():
     return json.loads(r.stdout) if r.returncode == 0 else {"_error": r.stderr[-500:]}
 
 
+@functools.lru_cache(maxsize=1)
+def cat_apps():
+    """the catalog's apps (node), so the browser counts follow the source list instead of pinned numbers"""
+    C = catalog() or {}
+    return tuple(C.get("apps") or ())
+
+
 # ------------------------------------------------------------------------------------------------ a. static
 def test_static():
     names = ["index.html", "gate.js", "gate.css", "icon.svg"]
@@ -63,8 +70,8 @@ def test_static():
           '<html lang="en" data-theme="agora" data-oly-page="gate">' in html and "viewport-fit=cover" in html and 'name="theme-color"' in html and 'name="color-scheme" content="dark"' in html
           and html.count("<h1") == 1 and 'role="status"' in html and 'aria-live="polite"' in html and 'role="dialog"' not in html)
     check("a. one base-path line: gate/ -> '../', the site root (olympus-live.html) -> ''; agora.css + gate.css, then themes, the catalog, hub-status and gate.js load from GATE_BASE, in order (async = false)",
-          r"/\/gate\/(index\.html)?$/.test(p) ? '../' : ''" in html and "window.GATE_BASE = b" in html and "b + 'gate/gate.css?v=g8'" in html and "b + 'olympus/agora.css" in html
-          and "['olympus/themes.js?v=o6', 'pc_feed.js?v=pf1', 'olympus/gate-catalog.js?v=nv2', 'olympus/hub-status.js?v=h2', 'gate/gate.js?v=g8']" in html and "s.async = false" in html)
+          r"/\/gate\/(index\.html)?$/.test(p) ? '../' : ''" in html and "window.GATE_BASE = b" in html and "b + 'gate/gate.css?v=g9'" in html and "b + 'olympus/agora.css" in html
+          and "['olympus/themes.js?v=o6', 'pc_feed.js?v=pf1', 'olympus/gate-catalog.js?v=nv3', 'olympus/hub-status.js?v=h2', 'gate/gate.js?v=g8']" in html and "s.async = false" in html)
     tiles = re.findall(r'class="g-hub[^"]*" data-hub="(\w+)" data-to="hub/index.html\?h=(\w+)"', html)
     check("a. the hub tiles are plain links in the page (they work even if gate.js fails), in the owner's order (night A 2026-11-16): Bots & Evals (wide) and My Money (wide) first, Kalshi and Worlds near the end, Settings & Help last",
           [t[0] for t in tiles] == HUBS and all(a == b for a, b in tiles) and 'class="g-hub g-wide" data-hub="bots"' in html and 'class="g-hub g-wide" data-hub="money"' in html and html.count('class="g-hline"') == len(HUBS))
@@ -108,6 +115,7 @@ def test_static():
           "var(--oly-th-n3, #14110e)" in css and "var(--oly-th-a8, #c8a24a)" in css and "--ag-serif" in css and "tabular-nums" in css and not AK.BANNED_LOOK.search(css + js + nav + html.split("-->")[-1]))
     check("a. phone rules in the CSS: taps >= 44 px, safe areas, 176 px clear of Jarvis's corner at the end, reduced motion, LITE, no sideways scroll",
           css.count("min-height: 44px") >= 2 and "safe-area-inset" in css and "176px" in css and "prefers-reduced-motion: reduce" in css and 'data-oly-lite="1"' in css and "overflow-x: hidden" in css)
+    # night-gate: gate-nav.js keeps its catalog URL ?v=nv2 (bumping it re-versions agora-ui.js in ~50 apps); the site worker bump refreshes the catalog on the phone
     check("a. gate-nav: one classic script, nothing when framed (inside Jarvis), the Home link + breadcrumb + 'Go to' (44 px), the catalog from its own folder (apps-list.js as a fallback)",
           "if (framed) return;" in nav and "'Go to'" in nav and "min-height:44px" in nav and "olympus/gate-catalog.js?v=nv2" in nav and "olympus/apps-list.js" in nav and "aria-modal" in nav)
     tagged = {}
@@ -192,8 +200,9 @@ def nav_checks(p, origin):
     p.wait_for_timeout(300)
     az = p.evaluate("() => ({ open: !document.querySelector('#azSheet').hidden, rows: document.querySelectorAll('#azList a.g-row').length, letters: [...document.querySelectorAll('#azList .g-azl')].map((h) => h.textContent),"
                     " first: (document.querySelector('#azList a.g-row') || {}).dataset, h: Math.round(document.querySelector('#azList a.g-row').getBoundingClientRect().height) })")
-    check("c. the A-Z button opens All apps A to Z: every app (83) in big rows (>= 56 px) under a letter each, the labs at the end under Workshop",
-          az["open"] and az["rows"] == 84 and az["letters"][0] in ("1", "#", "A") and az["letters"][-1] == "Workshop" and az["h"] >= 56, az)
+    n_apps = len(cat_apps())       # night-gate: every catalog app, counted from the catalog (was a pinned 84)
+    check(f"c. the A-Z button opens All apps A to Z: every app ({n_apps}) in big rows (>= 56 px) under a letter each, the labs at the end under Workshop",
+          az["open"] and az["rows"] == n_apps and az["letters"][0] in ("1", "#", "A") and az["letters"][-1] == "Workshop" and az["h"] >= 56, az)
     t = AK.taps(p)
     check("c. the A to Z sheet: every tap >= 44 px, no sideways scroll", not t and AK.no_sideways(p), t[:4])
     AK.shot(p, "nav-az")
@@ -298,9 +307,14 @@ def test_page():
             check("c. each fact is a tap to the app with the detail: drawdown -> Aegis, today -> NQ, the window -> Kairos",
                   go == ["/aegis/index.html", "/aegis/index.html", "/nq/index.html", "/kairos/index.html"], go)
             tiles = p.evaluate("() => [...document.querySelectorAll('.g-hub')].map((a) => [a.dataset.hub, a.href.replace(location.origin, ''), a.querySelector('.g-hline').textContent, a.querySelector('.g-hcount').textContent])")
-            check("c. the hub tiles open hub/?h=<hub> (1 tap) with their app counts (16 + 13 + 15 + 5 + 4 + 8 + 3 + 8 + 12 = 84, Agency + Business included; Me: its 8 areas)",
+            # night-gate 2026-11-18: the counts come from the catalog (Board + Trading joined Bots & Evals with the four doors), not pinned numbers
+            per = {}
+            for a in cat_apps():
+                per[a["district"]] = per.get(a["district"], 0) + 1
+            want = {h: f"{per.get(h, 0)} apps" for h in HUBS if h != "me"}
+            check(f"c. the hub tiles open hub/?h=<hub> (1 tap) with each hub's app count from the catalog ({' + '.join(str(per.get(h, 0)) for h in HUBS if h != 'me')} = {len(cat_apps())}; Me: its 8 areas)",
                   [t[0] for t in tiles] == HUBS and all(t[1] == f"/hub/index.html?h={t[0]}" for t in tiles)
-                  and sum(int(t[3].split()[0]) for t in tiles if t[0] != "me") == 84 and tiles[0][3] == "16 apps" and tiles[1][3] == "13 apps" and tiles[3][3] == "8 areas", tiles)
+                  and all(t[3] == want[t[0]] for t in tiles if t[0] != "me") and sum(int(t[3].split()[0]) for t in tiles if t[0] != "me") == len(cat_apps()) and tiles[3][3] == "8 areas", (tiles, want))
             lines = {t[0]: t[2] for t in tiles}
             check("c. live hub lines: Bots & Evals '2 evals active, $1,420 / $900 left', Today 'Trade window open until 15:30 ET', Kalshi 'No Kalshi numbers yet' (no feed here)",
                   lines["bots"] == "2 evals active, $1,420 / $900 left" and lines["today"].startswith("Trade window open until 15:30 ET") and lines["kalshi"] == "No Kalshi numbers yet", lines)

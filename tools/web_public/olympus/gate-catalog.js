@@ -219,7 +219,10 @@
     ['act-pc', 'Start the bot on the PC', 'The steps on your Windows PC', 'pc/index.html', 'start pc windows ninjatrader setup install launch'],
     ['act-workshop', 'Workshop (labs)', 'Test pages for building', 'hub/index.html?h=settings&t=workshop', 'labs lab workshop test build'],
     // the four doors' pages that are not apps (2026-11-18, olympus/doors.js): so the Home search finds them by plain words
-    ['act-doors', 'The four doors', 'ZEUS Trading, Money, Kalshi, More', 'hub/doors.html', 'doors door organized organised start zeus trading money kalshi more everything'],
+    // (2026-11-18 night-gate) the doors row no longer answers 'money' / 'kalshi' / 'trading' / 'zeus': those words open their own apps first (Mint, Ledger, the Kalshi bot)
+    ['act-zeus', 'ZEUS', 'Zlarior + ATLAS: live accounts, today, the big buttons', 'hub/zeus.html', 'zeus trading engine system lit zlarior atlas'],
+    ['act-doors', 'The four doors', 'ZEUS Trading, Money, Kalshi, More', 'hub/doors.html', 'doors door four organized organised everything'],
+    ['act-help', 'How do I...?', 'Plain steps: payout, taxes, restart, pause', 'hub/help.html', 'help how do i faq guide lost stuck steps questions'],
     ['act-accounts', 'My accounts', 'Every eval and funded account on one page', 'business/accounts.html', 'accounts account evals eval funded mffu builder 50k 25k rapid balance pass'],
     ['act-taxes', 'Taxes', 'The 30% tax pot and the next due date', 'business/taxes.html', 'taxes tax irs estimated quarterly pot set aside'],
     ['act-fleet', 'Fleet plan', 'All accounts, 6 months, what to buy next', 'business/plan.html', 'fleet plan accounts buy rapid builder months monte carlo'],

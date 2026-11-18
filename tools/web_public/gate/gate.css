@@ -202,9 +202,9 @@ html[data-oly-lite="1"] .g-hub, html[data-oly-lite="1"] .g-card { box-shadow: no
 .g-q { display: flex; flex-direction: column; justify-content: center; gap: 3px; min-height: 72px; padding: 10px 12px; border-radius: var(--ag-radius-s); border: 1px solid var(--ag-line);
   background: linear-gradient(180deg, var(--ag-s2), var(--ag-s1)); color: var(--ag-text); text-decoration: none; -webkit-touch-callout: none; min-width: 0; }
 .g-q b { font: 600 1.0625rem/1.2 var(--ag-serif); }
-.g-dr { display: flex; flex-direction: column; justify-content: flex-end; gap: 3px; min-height: 84px; padding: 12px; border-radius: var(--ag-radius-s); border: 1px solid var(--ag-line);
+.g-dr { display: flex; flex-direction: column; justify-content: flex-end; gap: 3px; min-height: 72px; padding: 10px 12px; border-radius: var(--ag-radius-s); border: 1px solid var(--ag-line);
   border-top: 4px solid var(--dc, var(--ag-gold)); background: linear-gradient(180deg, var(--ag-s2), var(--ag-s1)); color: var(--ag-text); text-decoration: none; -webkit-touch-callout: none; min-width: 0; }
-.g-dr b { font: 700 1.1875rem/1.15 var(--ag-serif); color: var(--dc, var(--ag-gold)); }     /* the four doors (2026-11-18) */
+.g-dr b { font: 700 1.1875rem/1.15 var(--ag-serif); color: var(--dc, var(--ag-gold)); }     /* the four doors (2026-11-18); night-gate: 10 px padding, the "Four doors" heading and the search hint for screen readers only, so the Right now card and Your six stay on the first phone screen (390 x 844) */
 .g-qline { color: var(--ag-soft); font-size: .8125rem; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow-wrap: anywhere; }
 .g-qline.ok { color: var(--ag-olive-text); } .g-qline.warn { color: var(--ag-sun); } .g-qline.bad { color: var(--ag-terra-text); }
 .g-rowp { display: flex; align-items: stretch; border-top: 1px solid var(--ag-line); }
