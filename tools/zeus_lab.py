@@ -13,8 +13,9 @@ Built on what exists (nothing re-implemented):
   members    kind atlas_member = a NEW ATLAS member (tools/atlas_plus.py, its stored verdict; "cells" = versions searched).
   re-test    the REAL backtests through engine/learn_loop's runners: LIT = tools/lit_edge.evaluate (run lit_live re-walked:
              the LIT size + the live two_week eval path, costs in); ATLAS = tools/atlas_deep.score (the real account-B rules,
-             engine/second.py members). Kinds: lit_tilt / atlas_tilt (the learn-loop rule language) and lit_x (a
-             tools/lit_edge management variant, e.g. the afternoon target cap). On the PC the bars include the newest weeks
+             engine/second.py members). Kinds: lit_tilt / atlas_tilt (the learn-loop rule language), lit_x (a
+             tools/lit_edge management variant, e.g. the afternoon target cap) and lit_idea (tools/lit_lab_ideas: exit
+             rules such as a time stop / NY-open guard / news exit, or two-fact size rules). On the PC the bars include the newest weeks
              (the data pipe), so every night re-tests on more data.
   proof      the project gates (engine/learn_loop.judge_lit / judge_atlas: picked on 2026 Jan-Jun, checked on Jul-Oct, both
              better, eval 2-week fails not up, 2-4 trades a week for LIT, 2021-25 shown (a gate for ATLAS), costs in, enough
@@ -64,7 +65,7 @@ REF_DOC = os.path.join(ROOT, "docs", "TESTED_AND_REJECTED.md")   # moved out of 
 EDGE = os.path.join(ROOT, "research", "lab", "edge_health.json")
 ZEUS_QUEUE = os.path.join(ROOT, "research", "zeus_queue.jsonl")         # night-learn's daily review proposals (tools/data_pull.py)
 VERSION = 1
-RUNNABLE = ("lit_tilt", "atlas_tilt", "lit_x", "atlas_member")
+RUNNABLE = ("lit_tilt", "atlas_tilt", "lit_x", "atlas_member", "lit_idea")
 KINDS = RUNNABLE + ("parked",)
 BOTS = ("lit", "atlas", "kalshi")
 LIT_X_KEYS = ("tgt", "be", "tc", "speed", "slow", "late")
@@ -149,6 +150,11 @@ def load_registry(path: str = REGISTRY) -> tuple:
                 er.append(f"x must be a dict of {LIT_X_KEYS}")
             if e.get("bot") != "lit":
                 er.append("lit_x is for bot lit")
+        if e.get("kind") == "lit_idea":
+            from tools import lit_lab_ideas as LI
+            er += LI.idea_errors(e.get("idea"))
+            if e.get("bot") != "lit":
+                er.append("lit_idea is for bot lit")
         if e.get("kind") == "atlas_member" and (e.get("bot") != "atlas" or not e.get("family")):
             er.append("atlas_member is for bot atlas and needs family (tools/atlas_plus.py)")
         if e.get("kind") == "parked" and not e.get("parked_why"):
@@ -307,7 +313,8 @@ def _lit_deltas(L, L0) -> list:
 
 
 def run_lit(e: dict, C, rules: dict) -> dict:
-    """lit_tilt (a size rule) or lit_x (a management variant) through tools/lit_edge + the learn loop's LIT judge."""
+    """lit_tilt (a size rule), lit_x (a management variant) or lit_idea (tools/lit_lab_ideas: an exit or size idea the rule
+    language cannot say) through tools/lit_edge + the learn loop's LIT judge."""
     from engine import learn_loop as LL
     from tools import lit_edge as E
     o0, U0, L0, s0 = C.lit_base()
@@ -320,21 +327,32 @@ def run_lit(e: dict, C, rules: dict) -> dict:
             if LL.rule_mult(rule, intel.get(int(t["entry_t"]), {})) != 1.0:
                 sp = LL._span_lit(t["day"])
                 hits[sp] = hits.get(sp, 0) + 1
+    elif e["kind"] == "lit_idea":                                               # tools/lit_lab_ideas (exit / size ideas)
+        from tools import lit_lab_ideas as LI
+        rule = None
+        o, U, L = E.evaluate(U=LI.units(e["idea"]))
+        hits = LI.hits(e["idea"], U, U0)
     else:
         rule = None
         o, U, L = E.evaluate(X=e["x"])
         hits = E.changed(L, L0)
+    tilt = e["kind"] == "lit_tilt" or (e["kind"] == "lit_idea" and e["idea"]["name"] in _lit_size_ideas())
     s = E.short(o, o0)
     D = _lit_deltas(L, L0)
     flip = {h: signflip_p([d["usd"] for d in D if span_of(d["day"], "lit") == h], rules["signflip_draws"]) for h in ("H1", "H2")}
     pre = LL.judge_lit(s, s0, hits, None)
     plc = None
-    if e["kind"] == "lit_tilt" and not pre["why"].startswith("too few") and E.gate(s):
+    if tilt and not pre["why"].startswith("too few") and E.gate(s):
         plc = E.placebo(U, L0, n=LL.PLACEBO_N)                                   # the learn loop's size shuffle
-    v = LL.judge_lit(s, s0, hits, plc if e["kind"] == "lit_tilt" else flip) if (plc is not None or e["kind"] == "lit_x") else pre
+    v = LL.judge_lit(s, s0, hits, plc if tilt else flip) if (plc is not None or not tilt) else pre
     return {"rule": rule, "hits": hits, "shuffle": plc, "flip": flip, "head": LL._lit_head(s), "base": LL._lit_head(s0),
             "deltas": D, "proof_ok": v["status"] == "candidate", "why": v["why"], "usd_month_by": v["usd_month_by"],
             "eval_usd_month_by": v.get("eval_usd_month_by")}
+
+
+def _lit_size_ideas():
+    from tools import lit_lab_ideas as LI
+    return LI.SIZE_IDEAS
 
 
 def run_atlas(e: dict, C, rules: dict) -> dict:
