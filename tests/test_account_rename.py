@@ -1,5 +1,5 @@
 """engine/account_rename.py: the Names NinjaTrader says do not exist are corrected in the bot's local files (2026-10-27:
-MFFUEVBLD602936016 / ...017 -> MFFUEVBLDR602936016 / ...017).    python -X utf8 -m tests.test_account_rename (temp only)"""
+MFFUEVBLD000006016 / ...017 -> MFFUEVBLDR000006016 / ...017).    python -X utf8 -m tests.test_account_rename (temp only)"""
 from __future__ import annotations
 
 import json
@@ -13,7 +13,7 @@ sys.path.insert(0, ROOT)
 from engine import account_rename as R  # noqa: E402
 
 RES = []
-OLD50, OLD25, NEW50, NEW25 = "MFFUEVBLD602936016", "MFFUEVBLD602936017", "MFFUEVBLDR602936016", "MFFUEVBLDR602936017"
+OLD50, OLD25, NEW50, NEW25 = "MFFUEVBLD000006016", "MFFUEVBLD000006017", "MFFUEVBLDR000006016", "MFFUEVBLDR000006017"
 
 
 def check(name, ok, info=""):

@@ -1614,7 +1614,7 @@ The long list moved on 2026-11-18 to `docs/TESTED_AND_REJECTED.md` (heading "## 
   `engine/autopilot.py` (Start page writes + hands-off events, 100 - 10 a step, heartbeat `remote.autopilot`;
   `tests/test_autopilot.py` 7). Checked (heartbeat 2026-10-28): NinjaTrader's outgoing folder shows one connection,
   `Simulation=CONNECTED`, and its trace puts both MFFU accounts on that connection ("(Simulation)
-  Cbi.Account.OnConnectionStatus: account='MFFUEVBLDR602936016' ..."), so the DISCONNECTED checks do watch the MFFU
+  Cbi.Account.OnConnectionStatus: account='MFFUEVBLDR…6016' ..."), so the DISCONNECTED checks do watch the MFFU
   accounts' connection.
 - **Execution audit (2026-10-25, `research/handoff/2026-10-25/A5_execution.md`, test `tests/test_nt_exec_audit.py`):** kill is
   account-scoped (CLOSEPOSITION + CANCEL by id) unless the action carries `"scope": "global"` (only `LiveBot.kill_switch`,

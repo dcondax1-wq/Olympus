@@ -194,7 +194,7 @@ def stack_checks():
     check("e. next with nothing bought: buy the MFFU 50K first", c["next"]["kind"] == "buy" and c["next"]["type"] == "lit_b50"
           and c["next"]["text"].startswith("Buy an MFFU Builder 50K eval (about $92)"), c["next"])
     # the owner today: the 50K eval runs (PC), ATLAS's 25K is in its eval (account B), business.json lists the 25K as planned
-    data = {"accounts": [lit_pc()], "second": {"account_b": {"account": "MFFUEVBLD602936017", "eval": {"status": "open", "balance": 25100}}},
+    data = {"accounts": [lit_pc()], "second": {"account_b": {"account": "MFFUEVBLD000006017", "eval": {"status": "open", "balance": 25100}}},
             "scale": {"accounts": [{"id": "mffu_50k", "strategy": "LIT", "type": "lit_b50", "stage": "eval", "src": "business.json"},
                                    {"id": "mffu_25k", "strategy": "ATLAS", "type": "atlas_b25", "stage": "eval", "src": "business.json + account B"}]}}
     c = MG.build(data, None, NOW)

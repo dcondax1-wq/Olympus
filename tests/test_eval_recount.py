@@ -123,7 +123,7 @@ def main():
     nt = os.path.join(TMP, "nt")
     os.makedirs(os.path.join(nt, "log"), exist_ok=True)
     with open(os.path.join(nt, "log", "log.20261028.00000.txt"), "w", encoding="utf-8") as f:
-        f.write("2026-10-28 04:01:26:325|1|32|Order='660338100805/MFFUEVBLDR602936016' Name='' New state='Filled' "
+        f.write("2026-10-28 04:01:26:325|1|32|Order='660338100805/MFFUEVBLDR000006016' Name='' New state='Filled' "
                 "Instrument='MNQ 12-26' Action='Buy' Limit price=0 Stop price=29987.5 Quantity=5 Type='Stop Market' "
                 f"Time in force=DAY Oco='LE{ENTRY_T}M23QMO' Filled=5\n")
     old = NT.default_folder

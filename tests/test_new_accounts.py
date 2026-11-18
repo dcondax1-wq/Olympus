@@ -28,9 +28,9 @@ from engine import account_b as AB  # noqa: E402
 from engine import start_api as S  # noqa: E402
 
 RES = []
-L50, L25 = "MFFUEVBLDR602936016", "MFFUEVBLDR602936017"
-NEW50, NEW25, FUNDED = "MFFUFBLDR700000001", "MFFUEVBLDR602936099", "MFFUFDBLDR700000002"
-LOGONLY = "MFFUEVBLDR602936123"                 # only in the connection trace (no balance row, no position file)
+L50, L25 = "MFFUEVBLDR000006016", "MFFUEVBLDR000006017"
+NEW50, NEW25, FUNDED = "MFFUFBLDR700000001", "MFFUEVBLDR000006099", "MFFUFDBLDR700000002"
+LOGONLY = "MFFUEVBLDR000006123"                 # only in the connection trace (no balance row, no position file)
 
 
 def check(name, ok, info=""):

@@ -74,6 +74,8 @@ def fake():
     d["topic"] = "nq-" + "amber-" + "falcon-" + "river-" + "1234"
     d["broker"] = "MFFUEVBLDR" + "123456789"
     d["broker2"] = "APEX-" + "12345678"
+    d["broker_low"] = "mffuevbldr" + "618293570"                       # 2026-11-18: lower case, and letters + digits before the number
+    d["broker_mix"] = "MFFUSFBLD25K" + "718392465"
     d["path"] = "C:\\" + "Users\\" + "Jane Planted" + "\\Documents\\nq"
     d["path_json"] = "C:\\\\" + "Users\\\\" + "Jane Planted" + "\\\\nq"
     d["tailnet"] = "olympus-pc" + ".tail9f3e2" + ".ts.net"
@@ -107,7 +109,7 @@ def detectors(tmp):
         "state + ZIP": ("zip.md", F["zip"]),
         "token": ("keys.js", f"const a = '{F['ghp']}'; // {F['pem']}\nconst t = '{F['tg']}', n = '{F['nfp']}', k = '{F['skant']}', j = '{F['jwt']}';\n{{{F['assign']}}}"),
         "ntfy topic": ("alerts.json", json.dumps({"topic": F["topic"]})),
-        "broker account": ("acct.json", json.dumps({"lines": [f"trading {F['broker']}", F["broker2"]]})),
+        "broker account": ("acct.json", json.dumps({"lines": [f"trading {F['broker']}", F["broker2"], F["broker_low"], F["broker_mix"]]})),
         "user folder": ("paths.json", '{"log": "' + F["path_json"] + '"}'),
         "tailnet name": ("link.md", f"open https://{F['tailnet']}/site/"),
         "tailscale IP": ("ip.md", f"phone at {F['tsip']}"),
@@ -127,6 +129,8 @@ def detectors(tmp):
         by.setdefault(f["kind"], set()).add(f["file"])
     for kind, (rel, _t) in plant.items():
         check(f"a. the {kind} detector finds its planted value", "plant/" + rel in by.get(kind, set()), sorted(by.get(kind, set())))
+    ids = [f for f in found if f["file"] == "plant/acct.json" and f["kind"] == "broker account"]
+    check("a. the broker detector finds all 4 id shapes (MFFUEVBLDR..., APEX-..., lower-case mffuev..., MFFUSFBLD25K...)", len(ids) == 4, [str(f) for f in ids])
     toks = {f["why"] for f in found if f["kind"] == "token"}
     check("a. the token detector names each planted key (GitHub, private key, Telegram, Netlify, Anthropic, JWT, a password)",
           {"GitHub token", "private key", "Telegram bot token", "Netlify token", "OpenAI / Anthropic key", "JWT", "a key / password assignment"} <= toks, toks)
@@ -220,6 +224,21 @@ def sources():
                 t = open(p, encoding="utf-8", errors="replace").read()
                 bad += [f"{os.path.basename(d)}/{rel}: {f['kind']}" for f in SP.scan_text(t, rel) if f["kind"] in ("user folder", "broker account", "email", "token")]
     check("c. the research write-ups the build publishes hold no personal folder, full broker id, email or key", not bad, bad[:6])
+    # 2026-11-18 (night-priv): the data the site now publishes straight from the repo (board/board.json, trading/trades.json,
+    # business/accounts.json / plan.json / work.json, kalshi, brain, status_feed.json ...): no finding at all, no canary
+    can = [(lb, v) for lb, v in SP.canaries(None, handles=False)]
+    web = os.path.join(ROOT, "tools", "web_public")
+    pub = []
+    for p, rel in SP.iter_files(web):
+        if os.path.splitext(rel)[1].lower() not in (".json", ".md", ".txt", ".csv", ".webmanifest") or rel.startswith("agency/") or SP.LICENSE_RX.search(rel):
+            continue
+        try:
+            txt = open(p, encoding="utf-8", errors="replace").read()
+        except OSError:
+            continue
+        pub += [str(f) for f in SP.scan_text(txt, rel, can) if not allow_reviewed(f)]
+    check("c. the committed public data files (board, trading, business, kalshi, brain, status feed ...) have no private finding or canary",
+          not pub, pub[:8])
 
 
 # ------------------------------------------------------------------------------------------------ d. a planted state through the real build
@@ -314,8 +333,19 @@ def ntfy():
             "accounts": [{"id": "lit", "name": f"MFFU 50K ({b1})", "conn": {"present": True, "host": "PLANT-PC"}, "eval": {"balance": 49313.54, "room": 1145.34}}]}
     snap = {"t": t + 60, "hb": {"host": "PLANT-PC", "running": True}, "hb_t": t, "hb_age": 60, "hb_src": "pc_hb", "server": True, "nt": True,
             "market_open": True, "entry_hours": True, "mode": "LIVE", "live": live}
+    # 2026-11-18 (night-priv): the newer free-text parts of the status (the Brain glance's log lines, the Kalshi rewards card) with
+    # the id shapes and network names the old pass let through: lower case / letters+digits ids, a Tailscale IP, a tailnet name, a key
+    live["pc"]["glance"] = {"v": 1, "bots": [{"id": "lit", "log": [f"route {F['broker_low']}", f"funded {F['broker_mix']}", f"link http://{F['tsip']}:8766",
+                                                                    f"via {F['tailnet']}", f"key {F['ghp']}", f"alerts {F['topic']}"]}]}
+    snap["kalshi_rewards"] = {"v": 1, "text": f"paper on {F['tailnet']} by {F['email']}"}
     L = PR.lite(snap)
     raw = json.dumps(L, ensure_ascii=False)
+    leak = [k for k in ("broker_low", "broker_mix", "tsip", "tailnet", "ghp", "topic") if F[k].lower() in raw.lower()]
+    check("e. no lower-case / letters+digits broker id, Tailscale IP, tailnet name, key or alert topic in the glance / Kalshi card",
+          not leak and SP.MASK + "3570" in raw and SP.MASK + "2465" in raw, (leak, raw[:900]))
+    em = [v for v in SP.status_canaries() if "@" in v]
+    check("e. public_status masks this PC's canaries by default (the owner's git email in a free-text line)",
+          all(v.lower() not in json.dumps(SP.public_status({"note": "from " + v}), ensure_ascii=False).lower() for v in em), len(em))
     check("e. the public status has no PC name (host) anywhere", "PLANT-PC" not in raw and '"host"' not in raw, raw[:400])
     check("e. the public status has no full broker id, no personal folder, no email", b1 not in raw and "Jane Planted" not in raw and F["email"] not in raw, raw[:600])
     check("e. the eval numbers the site needs stay (balance, drawdown left, the verdict, the last trade)",

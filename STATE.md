@@ -99,6 +99,7 @@ Rules: MFFU ONLY ("We stick with MFFU"). Limits: max 5 sim-funded, Builder 1x50K
 - Paper only for Claude: never arm live. After adding research/write-ups run `python tools/refresh_indexes.py`.
 
 ## Recent findings (don't redo)
+- 2026-11-18 privacy audit (night-priv): site build, ntfy status, committed web_public JSON clean; the 2 real MFFU ids were still in tests/docs/a fixture (now fakes / last 4); the public pass now also masks lower-case + MFFUSFBLD25K-style ids, Tailscale IPs, tailnet names, keys, git-email canaries; new checks in `test_repo_secrets` + `test_public_build_privacy`.
 - 2026-11-17 LIT walk-forward re-tuning (refit monthly/quarterly): REJECTED; 2022-25 +$511/mo vs $16 but noise (mostly 2025), 2026 -$11k/-$3k a half; 2023 loses at all 27 settings. `lit-walkforward-2026-11-17.md`
 - 2026-11-17 LIT regime sizing (gamma / VIX / VXN-VIX / VIX term / prior range, 124 cells): REJECTED, flat size stays. `lit-regime-sizing-2026-11-17.md`
 - 2026-11-17 LIT smart entries: 31 rules, NONE better in both halves; today's entry stays. `research/writeups/lit-smart-entries-2026-11-17.md`

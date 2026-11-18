@@ -51,8 +51,11 @@ and the Me hub's files (`me.json`, its cards / home / health-history kinds) are 
 | A web page posting to the money inbox (DNS rebinding) | yes | yes: Host check, stalled clients dropped | `test_private_link` e |
 | Path tricks (.., %2e%2e, backslash, NUL) | no | - | `test_private_link` c |
 | Keys or tokens committed (tree + 3,996 commits) | no (only fake test keys) | - | `test_repo_secrets` a, e |
-| Real broker ids in the repo (account code, tests, 2 logs, the reference) | yes | no: reported (they give no access); new ones fail | `test_repo_secrets` c |
+| Real broker ids in the repo (account code, tests, 2 logs, the reference) | yes | yes 2026-11-18 (row below) | `test_repo_secrets` c |
 | Private paths not gitignored (dash/, site/, data/live_site/, data/health/, data/cards/, key files ...) | yes | yes | `test_repo_secrets` d |
+| Real MFFU ids still in tests / docs / a fixture (2026-11-18) | yes (2 ids, ~90 places) | yes: last 4 digits in docs, fakes (...000006016) in tests | `test_repo_secrets` c |
+| Lower-case / MFFUSFBLD25K-style ids, Tailscale IPs, tailnet names, keys in the status topic free text (Brain glance, Kalshi card) | could pass (none seen live) | yes: `public_status` masks them + the git-email canaries | `test_public_build_privacy` a, e |
+| PC tailnet IP in README, Jarvis tailnet name in a doc | yes | yes: placeholders | `test_repo_secrets` b |
 | The bot's own pages, buttons and the Road to $10K card answer any device on the home WiFi | yes | **no** (the trading server: needs your OK) | - |
 
 ## Honest limits
@@ -61,7 +64,7 @@ and the Me hub's files (`me.json`, its cards / home / health-history kinds) are 
 - The site check knows shapes (numbers, emails, ids, folders, keys). Private text in a brand-new form could slip through; the planted-value test covers the known ones.
 - On the home WiFi the private files are now refused, but the bot server itself (port 8766) still answers any device there: its pages, the
   start / stop / kill buttons and the Road to $10K card (savings, jobs). The fix is one setting, `HOST=127.0.0.1` for the bot server (the Tailscale link keeps working, the phone on the WiFi would use Tailscale too). Not done here: it changes how the bot is reached, so it is the lead's / your call.
-- The PC's tailnet address is in `README.md` and the Jarvis VM's tailnet name in `docs/JARVIS_OLD_LOOK.md`: they only work inside your tailnet (setting 2).
+- The PC's tailnet address and the Jarvis VM's tailnet name are no longer in the repo (2026-11-18): the Tailscale app shows them.
 
 ## For the code (one rule each)
 - Public site: anything new the build writes passes `tools/site_privacy.scrub` (the build's last step). Never add `household`, `agency`, `cards`, `health` or `day` to `tools/money_publish.KEEP`.

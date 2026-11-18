@@ -406,7 +406,7 @@ def main() -> int:
         # `git pull` said "refusing to merge unrelated histories". Then main moves on and changes one of those files again.
         from engine import account_b as AB
         shipped = open(os.path.join(here, "second_model.json"), encoding="utf-8").read()
-        BLOCK = {"account": "MFFUEVBLD602936017", "plan": "builder25k", "eval_start": "2026-10-26",
+        BLOCK = {"account": "MFFUEVBLD000006017", "plan": "builder25k", "eval_start": "2026-10-26",
                  "strategies": ["ema_lon_vix", "macd_sweep", "sr_nyreclaim"], "sizing": "need", "armed": True}
         bare3, dev3 = os.path.join(tmp, "s.git"), os.path.join(tmp, "sdev")
         subprocess.run(["git", "init", "-q", "--bare", "-b", "main", bare3], check=True)

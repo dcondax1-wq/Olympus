@@ -366,8 +366,8 @@ def part8(tmp):
     lf = os.path.join(tmp, "NT8", "log")
     os.makedirs(lf)
     with open(os.path.join(lf, "log.20261027.00000.txt"), "w") as fh:
-        fh.write(f"10/27/2026 6:12:04 AM|ATI|OIF, 'PLACE;MFFUEVBLD602936016;MNQ 12-26;SELL;7;MARKET;0;0;DAY;;LE{t}W924ME;;' "
-                 "account does not exist 'MFFUEVBLD602936016'\n")
+        fh.write(f"10/27/2026 6:12:04 AM|ATI|OIF, 'PLACE;MFFUEVBLD000006016;MNQ 12-26;SELL;7;MARKET;0;0;DAY;;LE{t}W924ME;;' "
+                 "account does not exist 'MFFUEVBLD000006016'\n")
     ad = TraceAdapter(pos=None)
     ad.folder = os.path.join(tmp, "NT8")
     check("8. NinjaTrader's Log: 'account does not exist' for this PLACE -> never placed at once (no position file needed)",
@@ -421,7 +421,7 @@ def part10(tmp):
     d = os.path.join(tmp, "NinjaTrader 8", "log")
     os.makedirs(d)
     with open(os.path.join(d, "log.20261027.00000.txt"), "w", encoding="utf-8") as fh:
-        fh.write("2026-10-27 06:12:05:101|1|64|Order='LE1793095920W924ME/MFFUEVBLD602936016' New state='Rejected' "
+        fh.write("2026-10-27 06:12:05:101|1|64|Order='LE1793095920W924ME/MFFUEVBLD000006016' New state='Rejected' "
                  "Error='Order rejected' Native error='x C:\\Users\\someone\\file.txt'\n"
                  "2026-10-27 06:13:00:000|1|2|Chart refreshed\n2026-10-26 23:00:00:000|1|4|error for bob@mail.com\n"
                  "2026-10-20 01:00:00:000|1|4|old error line\n")

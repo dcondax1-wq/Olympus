@@ -337,7 +337,7 @@ Examples seen: "open liquidity", "hide my balance", "good morning", "mission con
 - **localStorage keys:** `jtheme`, `jtoken`, `jcorestyle`, `jthemematch`, `jp3dtilt`, `jp3dtiltv`, `jm3d`, `jm3dset`, `jambient`, `jnfbanner_off`, `jpush_on`, `ov_wn_seen`.
 
 ### Cloud (Oracle Always Free, Ubuntu 24.04 aarch64, 2 OCPU / 12 GB)
-- **Access:** Tailscale-only HTTPS at `https://jarvis-cloud.tailc45470.ts.net`; public SSH is closed.
+- **Access:** Tailscale-only HTTPS at `https://jarvis-cloud.<tailnet>.ts.net`; public SSH is closed.
 - **Layout:** releases in `/opt/jarvis/releases/<id>` (3 kept), the `current` symlink, venv `/opt/jarvis/venv`, state in `/var/lib/jarvis` (linked into each release), config `/etc/jarvis/jarvis.env`, systemd unit `jarvis` (user `jarvis`) on port 8765.
 - **Timers:** backup at 03:40, health check every 5 minutes.
 - **Deploy:** `cloud/deploy.py` from the PC or `cloud/local_deploy.py` on the server. Both do a secret check, an atomic switch, `/healthz`, and auto-rollback. `cloud/bootstrap.sh` sets up the server.

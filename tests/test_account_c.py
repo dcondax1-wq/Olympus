@@ -952,7 +952,7 @@ def part12():
           and "ac.yield_to(d" in src[i:j])
 
     # f) one account Name for two bots is refused whatever its case (NinjaTrader's position files match it case-blind)
-    s1 = AC.normalize({"account": "mffuevbldr602936016", "plan": "builder25k"}, lit_account="MFFUEVBLDR602936016")
+    s1 = AC.normalize({"account": "mffuevbldr000006016", "plan": "builder25k"}, lit_account="MFFUEVBLDR000006016")
     s2 = AC.normalize({"account": "Mffu25kAtlas ", "plan": "builder25k"}, b_account="MFFU25KATLAS")
     check("12f. LIT's / ATLAS's Name in another case is refused as account C", s1["problem"] and "Zlarior" in s1["problem"]
           and s2["problem"] and "ATLAS" in s2["problem"])
@@ -1109,12 +1109,12 @@ def part13():
     try:
         os.makedirs(os.path.join(tmp, "data"))
         now = BZ.at_et("2026-11-01", 19 * 60)
-        r = PF.check(None, root=tmp, now=now, names=("MFFUEVBLDR602936016", "MFFUEVBLDR602936017"), allowed=set(), nt_names=[],
+        r = PF.check(None, root=tmp, now=now, names=("MFFUEVBLDR000006016", "MFFUEVBLDR000006017"), allowed=set(), nt_names=[],
                      connected=True, feed_problem=None, sim_rt={})
         check("13. preflight with BLITZ off: one red line 'BLITZ's account set' with the Start page fix",
               not r["all_green"] and [i["key"] for i in r["items"]] == ["config"] and "Start page" in r["items"][0]["fix"], r)
         AC.write_local({"account": "MFFUEVBLDR777", "plan": "builder25k", "eval_start": "2026-11-02", "armed": False}, tmp)
-        kw = dict(names=("MFFUEVBLDR602936016", "MFFUEVBLDR602936017"), connected=True, feed_problem=None)
+        kw = dict(names=("MFFUEVBLDR000006016", "MFFUEVBLDR000006017"), connected=True, feed_problem=None)
         r = PF.check(None, root=tmp, now=now, allowed={"MFFUEVBLDR777"}, nt_names=["MFFUEVBLDR777"],
                      sim_rt={"roundtrip": {"t": now - 3600, "ok": True, "account": "Sim101"}}, **kw)
         st = {i["key"]: i for i in r["items"]}
@@ -1139,7 +1139,7 @@ def part13():
         st = {i["key"]: i for i in r["items"]}
         check("13. ... NinjaTrader's account list not exported (no accounts.csv, as on the PC today): the Name line is information "
               "(check it by hand), not a red line", st["visible"]["state"] == "info" and "Accounts tab" in st["visible"]["detail"], st["visible"])
-        AC.write_local({"account": "MFFUEVBLDR602936017", "plan": "builder25k", "eval_start": "2026-11-02"}, tmp)
+        AC.write_local({"account": "MFFUEVBLDR000006017", "plan": "builder25k", "eval_start": "2026-11-02"}, tmp)
         r = PF.check(None, root=tmp, now=now, allowed=set(), nt_names=[], sim_rt={}, **kw)
         st = {i["key"]: i for i in r["items"]}
         check("13. ... ATLAS's own 25K as BLITZ's = red 'Its own account'", st["own"]["state"] == "bad" and "ATLAS" in st["own"]["detail"], st["own"])
@@ -1155,10 +1155,10 @@ def part13():
         from types import SimpleNamespace
         AC.write_local({"account": "MFFUEVBLDR777", "plan": "builder25k", "eval_start": "2026-11-02", "armed": True}, tmp)
         os.remove(PF.sim_path(tmp))
-        rb = SimpleNamespace(running=True, cfg={"adapter": "ninjatrader", "nt_account": "MFFUEVBLDR602936016", "armed": True},
+        rb = SimpleNamespace(running=True, cfg={"adapter": "ninjatrader", "nt_account": "MFFUEVBLDR000006016", "armed": True},
                              health={"nt": {"connected": True}, "feed": {"age_1m_s": 20, "age_5m_s": 100, "stale": False, "market_open": True},
                                      "account": {"armed": True}},
-                             ledger=[{"side": "buy", "t": now - 3600, "result": {"ok": True, "adapter": "ninjatrader", "account": "MFFUEVBLDR602936016"}}],
+                             ledger=[{"side": "buy", "t": now - 3600, "result": {"ok": True, "adapter": "ninjatrader", "account": "MFFUEVBLDR000006016"}}],
                              acct_b=None, acct_c=None, blitz=None, clock=lambda: now)
         old_env = os.environ.get("NINJATRADER_LIVE")
         r = PF.check(rb, root=tmp, now=now, allowed={"MFFUEVBLDR777"}, nt_names=["MFFUEVBLDR777"], sim_rt={}, **kw)

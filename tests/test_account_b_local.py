@@ -29,7 +29,7 @@ from engine import account_b as AB  # noqa: E402
 from engine import second  # noqa: E402
 
 RESULTS = []
-LIT, ATLAS = "MFFUEVBLD602936016", "MFFUEVBLD602936017"
+LIT, ATLAS = "MFFUEVBLD000006016", "MFFUEVBLD000006017"
 BLOCK = {"account": ATLAS, "plan": "builder25k", "eval_start": "2026-10-26",
          "strategies": ["ema_lon_vix", "macd_sweep", "sr_nyreclaim"], "sizing": "need", "armed": True}
 
