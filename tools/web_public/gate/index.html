@@ -47,9 +47,9 @@
   /* perf v2: blocking=render keeps the first paint for the two sheets (a script-inserted sheet does not block it in Chromium: the page painted
      unstyled and then jumped, CLS 0.27 on the phone) */
   var k = d.createElement('link'); k.rel = 'stylesheet'; k.setAttribute('blocking', 'render'); k.href = b + 'olympus/agora.css?v=a4'; h.appendChild(k);
-  var l = d.createElement('link'); l.rel = 'stylesheet'; l.setAttribute('blocking', 'render'); l.href = b + 'gate/gate.css?v=g8'; h.appendChild(l);
+  var l = d.createElement('link'); l.rel = 'stylesheet'; l.setAttribute('blocking', 'render'); l.href = b + 'gate/gate.css?v=g9'; h.appendChild(l);
   var i = d.createElement('link'); i.rel = 'icon'; i.href = b + 'gate/icon.svg'; h.appendChild(i);
-  ['olympus/themes.js?v=o6', 'pc_feed.js?v=pf1', 'olympus/gate-catalog.js?v=nv2', 'olympus/hub-status.js?v=h2', 'gate/gate.js?v=g8'].forEach(function (src) { var s = d.createElement('script'); s.src = b + src; s.async = false; h.appendChild(s); });
+  ['olympus/themes.js?v=o6', 'pc_feed.js?v=pf1', 'olympus/gate-catalog.js?v=nv3', 'olympus/hub-status.js?v=h2', 'gate/gate.js?v=g8'].forEach(function (src) { var s = d.createElement('script'); s.src = b + src; s.async = false; h.appendChild(s); });
 })();</script>
 <script>(function () {   /* the Launch card + first-day checklist (gate/launch.js, docs/LAUNCH_DAY.md): only when the PC serves the site (/site/) */
   if (!/^\/site\//.test(location.pathname || '')) return;
@@ -70,13 +70,13 @@
         <input id="q" type="search" placeholder="Find anything: money, drawdown, news..." autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go" aria-controls="results" aria-describedby="findHint"></div>
       <a class="g-azbtn" id="azBtn" data-to="gate/index.html#az" href="gate/index.html#az" aria-label="All apps A to Z">A–Z</a>
     </div>
-    <p class="g-hint" id="findHint">Apps, hub tabs and things to do, in plain words.</p>
+    <p class="g-hint g-vh" id="findHint">Apps, hub tabs and things to do, in plain words.</p>
     <div class="g-list" id="results" aria-live="polite"></div>
   </section>
 
   <!-- THE FOUR DOORS (2026-11-18, night-org, docs/ORGANIZATION.md, olympus/doors.js): everything lives behind one of these; plain links -->
   <section class="g-four" id="doorsSec" aria-labelledby="doorsH">
-    <h2 class="g-h2" id="doorsH">Four doors</h2>
+    <h2 class="g-h2 g-vh" id="doorsH">Four doors</h2><!-- night-gate: heading for screen readers only (the subtitle names the doors), so Your six stay on the first phone screen -->
     <nav class="g-qgrid" id="doors4" aria-labelledby="doorsH">
       <a class="g-dr" data-door="zeus" data-to="hub/doors.html#zeus" href="hub/doors.html#zeus" style="--dc:#c8a24a"><b>ZEUS Trading</b><small class="g-qline">Accounts, live bots, trades, brain, rules, payouts</small></a>
       <a class="g-dr" data-door="money" data-to="hub/doors.html#money" href="hub/doors.html#money" style="--dc:#a0ac6e"><b>Money</b><small class="g-qline">Business, taxes, payouts, fleet plan, household</small></a>
