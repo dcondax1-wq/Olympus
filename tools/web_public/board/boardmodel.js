@@ -147,6 +147,8 @@
   const LOUD = new Set(['eval_passed', 'eval_failed', 'account_locked', 'order_rejected', 'payout_ready', 'pc_silent']);
   const SRC_WORDS = { bot: 'PC', owner: 'you', claude: 'Claude', plan: 'plan', cloud: 'cloud' };
   KIND_WORDS.weekly_review = 'Weekly review';     // tools/weekly_review.py (Business -> This week)
+  KIND_WORDS.risk_alert = 'Risk alert';           // night-risk: engine/circuit_breaker (live vs twin advice) + engine/msg_throttle
+  LOUD.add('risk_alert');
 
   const api = { STALE_S, pick, planBoard, overlayLite, silent, ago, usd, chipOf, KIND_WORDS, LOUD, SRC_WORDS, num };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

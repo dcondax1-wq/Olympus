@@ -29,7 +29,7 @@ TradersPost bot-failure guide (https://blog.traderspost.io/article/automated-tra
 | 11 | Latency monitoring | HAVE: poll time per stage, 15-min trend, signal-to-route latency per trade | `engine/poll_timing.py`, `engine/pc_health.py`, `engine/fill_audit.py` |
 | 12 | Data-gap detection | HAVE: bar gap alarms, FEED STALE blocks new entries, frozen feed in a trade alarm | `engine/live.py`, `engine/pcbars.py`, `engine/ai_watch.py` |
 | 13 | Rollover handling | HAVE: the order contract switches by date, roll warning, ROLL.bat for the chart | `engine/roll_watch.py`, `engine/ninjatrader.py` nt_instrument |
-| 14 | Equity-curve circuit breaker | PARTIAL: built and OFF (turning it on is a strategy change and needs proof); weekly stop = half size; combined loss guard OFF | `engine/equity_filter.py`, `engine/guards.py` |
+| 14 | Equity-curve circuit breaker | **HAVE (advice, built tonight night-risk)**: live vs backtest twin per strategy, last 10 trades; SIZE DOWN / PAUSE advice to the Board + phone, never acts. The old equity filter (acts on size) stays OFF: a strategy change | `engine/circuit_breaker.py`, `engine/equity_filter.py`, `engine/guards.py` |
 | 15 | Per-strategy attribution | HAVE per account (each live account runs one strategy). PARTIAL for a Rapid with two lanes (not bought) | `tools/trading_export.py`, `engine/fleet.py` |
 | 16 | Paper / live parity checks | HAVE: live loop == backtest 120/120, live vs twin on the Trading page | `tests/test_lit_live.py`, `engine/fill_audit.py` |
 | 17 | Audit log | **HAVE (one timeline built tonight)**. Before: PARTIAL, the facts sat in 5 files | `engine/audit_trail.py`; OIF log, `engine/handsoff.py`, `engine/board_events.py`, `engine/rulelog.py` |
@@ -40,7 +40,7 @@ TradersPost bot-failure guide (https://blog.traderspost.io/article/automated-tra
 | 22 | Clock sync check | HAVE | `engine/ops_checks.py` check_clock, `engine/guards.py` clock_problem |
 | 23 | Alerts that repeat until acknowledged | HAVE | `engine/alerts_plus.py` |
 | 24 | Notification levels | HAVE; **defaults set to "important only" tonight** (owner) | `engine/notify.py`, `notify_settings.json` |
-| 25 | Messaging throttle (runaway orders) | PARTIAL: entries capped 8 a day per account; stop / target changes are not counted (they never add risk) | `engine/ninjatrader.py` |
+| 25 | Messaging throttle (runaway orders) | **HAVE (built tonight night-risk)**: every order file counted per account (burst / day / stop-change loop) = alarm ON; entry block OFF until switched on; entries still capped 8 a day | `engine/msg_throttle.py`, `engine/ninjatrader.py` |
 | 26 | Cancel-on-disconnect | N/A: an exchange / broker feature NinjaTrader's ATI does not offer; the OCO bracket at the broker covers a dead PC | - |
 | 27 | Prop-rule lifecycle (passed / failed / locked stand down) | HAVE | `engine/lifecycle.py` |
 | 28 | Trader-present record (MFFU) | HAVE | `engine/presence.py` |
@@ -68,6 +68,24 @@ TradersPost bot-failure guide (https://blog.traderspost.io/article/automated-tra
 - `python -X utf8 -m engine.audit_trail` (or the "What happened" list on the phone page): phone presses, PC / phone
   stop / kill / flatten / pause, manual trades seen by reconcile, bot started / stopped, orders sent (no account name),
   PASSED / LOCKED, code updates. Read-only, ON.
+
+## Built night-risk (2026-11-18): the 2 partials that protect the MFFU accounts (#14, #25)
+Left PARTIAL on purpose: #6 owner tags and #15 Rapid two-lane attribution (no money at risk). Nothing here changes a strategy decision.
+
+### ZEUS circuit breaker (#14), ADVICE, ON
+- Per strategy (Zlarior from `engine/fill_audit`'s twin rows, ATLAS from account B's ledger vs `tools/trade_watch`'s twin): last 10
+  closed live trades, gap = live R - twin R (each trade clipped to +-2R so one feed freak never trips it alone), $ shown first.
+- gap <= -2R WATCH (Board only), <= -3R **SIZE DOWN** ("half size until explained"), <= -5R **PAUSE** ("phone /safety/ PAUSE + check").
+  Push once per step up (type account_status, key `breaker:`), Board `risk_alert`; back above -1.5R = "back to normal" line.
+- A losing streak the twin also had = OK (normal variance). Missed trades are counted, not added (they lose no money).
+- It never sizes or pauses by itself. Check: `python -X utf8 -m engine.circuit_breaker`. Off: `LE_BREAKER=0`.
+
+### Runaway-order throttle (#25): alarm ON, block OFF
+- Every order file each NinjaTrader adapter writes is counted: > 20 in 60 s, > 150 a CME day, or > 12 stop/target changes on one
+  order = trip: critical alert + Board `risk_alert` + one push (type problems, key `risk:throttle:`). Account shown by last 4.
+- Block (acts on orders, so OFF): `python -X utf8 -m engine.msg_throttle --block-on` -> a tripped account takes no NEW entries / adds
+  until the next CME day or `--reset`. Stops, cancels, closes, flatten and KILL are never throttled.
+- Tests: `python -X utf8 -m tests.test_risk_monitors` (nq + pc areas), `python -m engine.ninjatrader --selftest`.
 
 ## For the lead
 - Link `/safety/` from the Gate or the PC app (apps tables are the lead's).

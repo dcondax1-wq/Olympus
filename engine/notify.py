@@ -187,7 +187,9 @@ def kind_of(key: str) -> str:
         return "daily_summary"
     if k.startswith("guard:brief:"):                # tools/morning_brief.py: the 07:30 ET ZEUS brief
         return "morning_brief"
-    if k.startswith(("cond:", "back:", "fill:", "watch:")):
+    if k.startswith("breaker:"):                    # engine/circuit_breaker: live vs twin SIZE DOWN / PAUSE advice for an account
+        return "account_status"
+    if k.startswith(("cond:", "back:", "fill:", "watch:", "risk:")):    # risk:throttle: engine/msg_throttle runaway orders
         return "problems"
     if k.startswith(("pc_silent:", "pc_back:")):
         return "pc_silent"
