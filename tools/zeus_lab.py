@@ -59,7 +59,7 @@ REGISTRY = os.path.join(LAB_DIR, "registry.json")
 OUT_DIR = os.path.join(LAB_DIR, "out")                                       # gitignored (machine-local)
 PAGE_PUB = os.path.join(ROOT, "tools", "web_public", "business", "lab.json")      # tracked, the published copy
 PAGE_PC = os.path.join(ROOT, "tools", "web_public", "business", "lab_pc.json")    # gitignored, the PC's nightly copy
-REF_DOC = os.path.join(ROOT, "docs", "CLAUDE_REFERENCE.md")
+REF_DOC = os.path.join(ROOT, "docs", "TESTED_AND_REJECTED.md")   # moved out of CLAUDE_REFERENCE.md 2026-11-18
 EDGE = os.path.join(ROOT, "research", "lab", "edge_health.json")
 ZEUS_QUEUE = os.path.join(ROOT, "research", "zeus_queue.jsonl")         # night-learn's daily review proposals (tools/data_pull.py)
 VERSION = 1
@@ -165,11 +165,10 @@ def doc_rejected(path: str = REF_DOC) -> list:
         txt = open(path, encoding="utf-8").read()
     except OSError:
         return []
-    m = re.search(r"^## Tested and rejected.*?$(.*?)^## ", txt, re.S | re.M)
-    if not m:
-        return []
+    m = re.search(r"^## Tested and rejected.*?$(.*?)(?=^## |\Z)", txt, re.S | re.M)
+    body = m.group(1) if m else txt
     out = []
-    for h in re.findall(r"^- \*\*(.+?)\*\*", m.group(1), re.M):
+    for h in re.findall(r"^- \*\*(.+?)\*\*", body, re.M):
         h = re.sub(r"\s*\(.*$", "", h).rstrip(":").strip()
         if h and h not in out:
             out.append(h)
