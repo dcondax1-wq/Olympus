@@ -17,7 +17,7 @@
 <!-- BOARD (2026-11-17, owner: "make a communication board so you and the bot know what's happening"; docs/BOARD.md). boardmodel.js = the pure
      part (which source wins, the PLAN rows, PC silent); board.js = the page. Data: ./board.json (live on the PC, else the published copy),
      the PC's ntfy status (../pc_feed.js), ../business/accounts.json (PLAN), ./fixture.json (?demo=1). The Payouts cards = ../business/payoutcard.js. Text only through textContent.
-     The one write: the note box posts to /inbox/board (engine/day_inbox.py), which only the PC's private link accepts. BLITZ never shown. -->
+     The writes: the note box and the Decide card's Yes / No / Later post to /inbox/board (engine/day_inbox.py), which only the PC's private link accepts. BLITZ never shown. -->
 <script>(function () { var d = document.documentElement; try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
 <link rel="stylesheet" href="../olympus/olympus.css?v=o7">
 <link rel="stylesheet" href="../olympus/agora.css?v=a4"><link rel="stylesheet" href="../olympus/agora-apps.css?v=g2">
@@ -48,6 +48,8 @@
   <p id="pcLine" class="pcline" role="status" aria-live="polite"></p>
   <!-- ZEUS edge chip (../edge_chip.js): LIT + ATLAS last 40 sessions vs 2026; board.js hands it the PC status -->
   <div id="edgeChip" data-edge-chip data-edge-src="../edge.json"></div>
+  <!-- the Decide card (../business/decide.js + decisions.json): Yes / No / Later on the PC link only; a tap = one owner note for Claude, never a live change -->
+  <section id="decide" data-decide data-decide-board="board.json" aria-label="Decide" hidden></section>
   <h2 class="sect">Accounts</h2>
   <p class="hint"><a href="../business/mffu.html">My accounts (MFFU view) &rarr;</a> every account the way MFFU shows it: dates, floor, target, days, payout.</p>
   <div id="accounts" class="accounts"></div>
@@ -68,7 +70,8 @@
 <script src="../business/payoutcard.js?v=1"></script>
 <script src="../business/mffumodel.js?v=1"></script>
 <script src="../edge_chip.js?v=1"></script>
+<script src="../business/decide.js?v=1"></script>
 <script src="boardmodel.js?v=b5"></script>
-<script src="board.js?v=b6"></script>
+<script src="board.js?v=b7"></script>
 </body>
 </html>

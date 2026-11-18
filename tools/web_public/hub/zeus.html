@@ -14,7 +14,7 @@
 <link rel="icon" href="icon.svg">
 <!-- ZEUS (2026-11-18, night-zeushub): the ZEUS Trading door's landing (olympus/doors.js zeus.home; hub/doors.html#zeus opens with a link here).
      Data: the PC's ntfy status (../pc_feed.js), ../board/board.json, ../business/accounts.json, matched like the Board (../board/boardmodel.js +
-     ../business/mffumodel.js), ../edge.json (../edge_chip.js), ../pythia/events.json. Read only: it links to pages and sends nothing. Text only through textContent. -->
+     ../business/mffumodel.js), ../edge.json (../edge_chip.js), ../pythia/events.json. It links to pages; the only write is the Decide card's note (../business/decide.js, PC link only). Text only through textContent. -->
 <link rel="stylesheet" href="../olympus/agora.css?v=a4">
 <style>
 html, body { background: var(--ag-night, #14110e); color: var(--ag-text, #f3ece0); margin: 0; }
@@ -81,6 +81,7 @@ body { font: 400 var(--ag-fs-body, .9375rem)/1.45 var(--ag-sans, -apple-system, 
 <script src="../business/mffumodel.js?v=1" defer></script>
 <script src="../board/boardmodel.js?v=b5" defer></script>
 <script src="../edge_chip.js?v=1" defer></script>
+<script src="../business/decide.js?v=1" defer></script>
 <script src="zeus.js?v=1" defer></script>
 </head>
 <body>
@@ -96,6 +97,9 @@ body { font: 400 var(--ag-fs-body, .9375rem)/1.45 var(--ag-sans, -apple-system, 
     <!-- ZEUS edge chip (../edge_chip.js): Zlarior + ATLAS last 40 sessions vs 2026; zeus.js hands it the PC status -->
     <div id="edgeChip" data-edge-chip data-edge-src="../edge.json"></div>
   </section>
+
+  <!-- the Decide card (../business/decide.js + ../business/decisions.json): Yes / No / Later only on the PC link; a tap = one owner note for Claude -->
+  <section id="decide" data-decide aria-label="Decide" hidden></section>
 
   <section aria-labelledby="hToday">
     <h2 class="zs-h2" id="hToday">Today</h2>
@@ -139,7 +143,7 @@ body { font: 400 var(--ag-fs-body, .9375rem)/1.45 var(--ag-sans, -apple-system, 
   </section>
 
   <p class="zs-stamp" id="stamp"></p>
-  <p class="zs-foot">ZEUS = Zlarior (LIT) + ATLAS + the engine<small>Read only: nothing on this page can trade or change a bot.</small></p>
+  <p class="zs-foot">ZEUS = Zlarior (LIT) + ATLAS + the engine<small>Nothing on this page can trade or change a bot. A Decide answer is only a note for Claude.</small></p>
 </main>
 </body>
 </html>

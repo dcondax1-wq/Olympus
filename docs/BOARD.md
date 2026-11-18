@@ -25,3 +25,15 @@ Account rows start from the plan (`tools/web_public/business/accounts.json`, lab
 else the published copy, else the plan; `?demo=1` shows `fixture.json`. PC silent over 30 min = big red banner.
 
 Tests: `python -X utf8 -m tests.test_board` (BOARD_NO_BROWSER=1 skips the 390 px browser check). Area: `python tests/run_area.py board`.
+
+## Decide card (2026-11-18, night-decide)
+
+Decisions that wait on the owner live in ONE file Claude keeps: `tools/web_public/business/decisions.json` (id, question, why,
+impact $, options yes/no/later, status open/yes/no/later/done, source, applies). `business/decide.js` shows the open ones on the
+Board and the ZEUS page.
+- On the PC link (`/site/...`): Yes / No / Later. A tap posts `{"text": "Decide <id>: YES - <question>", "decision", "answer"}` to
+  `POST /inbox/board` = one owner note (its text is never parsed as a balance / stage). Claude sees it in `python tools/board.py read`
+  ("owner notes not answered" + a DECIDE CARD line), applies it by the CLAUDE.md rules, answers with `board.py note ... --answers <id>`
+  and sets the item's status. A tap never changes a live setting by itself.
+- Public site: "Open on your PC link to answer" + the question; nothing is written.
+- Test: `python -X utf8 -m tests.test_decide` (DECIDE_NO_BROWSER=1 skips the 390 px check), board area.
