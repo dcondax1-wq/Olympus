@@ -1022,7 +1022,7 @@
   "light": "GREEN",
   "line": "Edge health: GREEN · last 40 sessions PF 3.84 vs 2026 H1 3.91 · data to Nov 6",
   "data_to": "2026-11-06",
-  "sessions_missing": 6,
+  "sessions_missing": 7,
   "pf40": 3.84,
   "usd_month40": 3440,
   "tpw40": 2.5,
@@ -1031,7 +1031,17 @@
   "false_alarm_h2_pct": 8.6,
   "export": "TradingView CME_MINI:NQ1! 1-minute chart (all hours, B-ADJ off), Export chart data from Oct 16 to today, save in data/tv_exports/, then: python data/import_futures.py csv NQ data/tv_exports/<file>.csv (5m and ES1! 5m the same way). Or start the PC bot: its heartbeat pushes the NinjaTrader bars.",
   "note": "A warning, not a switch: the bots trade the same either way. GREEN = LIT's last 40 sessions look like 2026, RED = like 2021-25 (about $0). Past weeks do not forecast the next ones; it says what the market has been.",
+  "atlas": {
+   "light": "AMBER",
+   "data_to": "2026-10-16",
+   "pf_r40": 1.89,
+   "pf_r40_2026_h1": 2.83,
+   "pf_r40_2021_25": 1.06,
+   "r_week40": 0.99,
+   "tpw40": 3.0,
+   "usd_pf40_eval_sized": 1.41
+  },
   "source": "tools/edge_health.py -> research/lab/edge_health.json",
-  "built": "2026-11-17T21:42:47+00:00"
+  "built": "2026-11-18T02:10:30+00:00"
  }
 }
