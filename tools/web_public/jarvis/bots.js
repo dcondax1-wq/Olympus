@@ -86,9 +86,15 @@ export function etOf(ms) {
   const p = {};
   for (const x of ETF.formatToParts(new Date(ms))) p[x.type] = x.value;
   const y = +p.year, mo = +p.month, d = +p.day, h = +p.hour % 24, m = +p.minute;
-  return { y, mo, d, h, m, min: h * 60 + m, wd: WDI[p.weekday], dn: Math.round(Date.UTC(y, mo - 1, d) / 864e5), ymd: `${y}-${p2(mo)}-${p2(d)}` };
+  const dn = Math.round(Date.UTC(y, mo - 1, d) / 864e5), ymd = `${y}-${p2(mo)}-${p2(d)}`;
+  // td / tdn: the CME trading day (engine trading_day / cme_calendar.trading_date): 18:00 ET opens the NEXT date's session,
+  // so a 19:00 ET trade is tomorrow's; ymd / dn stay the calendar date (cards, schedules)
+  const tdn = h >= 18 ? dn + 1 : dn;
+  return { y, mo, d, h, m, min: h * 60 + m, wd: WDI[p.weekday], dn, ymd, tdn, td: tdn === dn ? ymd : ymdOfDn(tdn) };
 }
-const ymdOfDn = (dn) => { const x = new Date(dn * 864e5); return `${x.getUTCFullYear()}-${p2(x.getUTCMonth() + 1)}-${p2(x.getUTCDate())}`; };
+function ymdOfDn(dn) { const x = new Date(dn * 864e5); return `${x.getUTCFullYear()}-${p2(x.getUTCMonth() + 1)}-${p2(x.getUTCDate())}`; }
+/** the CME trading day (YYYY-MM-DD) of a moment in ms, same rule as zeus.js tradingDay and the engine */
+export const tradingDay = (ms) => etOf(ms).td;
 /** CME NQ: Sunday 18:00 to Friday 17:00 ET, a halt 17:00-18:00 (exchange holidays are not known here; Argus has the same rule) */
 export function marketOpen(ms) {
   const e = etOf(ms);
@@ -183,7 +189,7 @@ export function snapshot(src, nowMs) {
   const pc = isObj(full.pc) ? full.pc : isObj(liveB.pc) ? liveB.pc : {};
   const verdict = good(full.pc_verdict) || good(liveB.pc_verdict) || good(s.verdict) || null;
   const cards = { lit: good(board.lit) || good(s.lit), atlas: good(board.atlas) || good(s.atlas) };
-  const out = { ok: false, now, cached: !!s.cached, t: null, hb_t: null, hb_age: null, open: marketOpen(now), day: etOf(now).ymd, pc: null, feed: null, bots: {}, trades: [], plan: '', brief: null };
+  const out = { ok: false, now, cached: !!s.cached, t: null, hb_t: null, hb_age: null, open: marketOpen(now), day: etOf(now).td, pc: null, feed: null, bots: {}, trades: [], plan: '', brief: null };
   if (!cards.lit && !cards.atlas) return out;
   out.ok = true;
   out.t = num(full.t) || num(s.t) || num(board.t) || (typeof full.built === 'string' && Number.isFinite(Date.parse(full.built)) ? Date.parse(full.built) / 1000 : null);
@@ -226,7 +232,7 @@ export function snapshot(src, nowMs) {
     if (src2 && b.badge === 'LIVE' && src2 !== 'live') continue;
     const id = tradeId(key, t);
     if (out.trades.some((x) => x.id === id)) continue;
-    out.trades.push({ id, bot: key, day: str(t.day, 10), entry_t: num(t.entry_t), exit_t: num(t.exit_t), side: str(t.side, 10).toUpperCase(), qty: num(t.qty), entry: num(t.entry),
+    out.trades.push({ id, bot: key, day: str(t.day, 10) || (num(t.entry_t) || num(t.exit_t) ? etOf((num(t.entry_t) || num(t.exit_t)) * 1000).td : ''), entry_t: num(t.entry_t), exit_t: num(t.exit_t), side: str(t.side, 10).toUpperCase(), qty: num(t.qty), entry: num(t.entry),
       usd: num(t.usd), r: num(t.r), exit: str(t.exit, 20), open: !!t.open, strategy: str(t.strategy || t.src_key, 20) });
   }
   const lvAll = arr(full.levels).length ? arr(full.levels) : arr(liveB.levels).length ? arr(liveB.levels) : arr(isObj(board.map) ? board.map.levels : null);
@@ -313,7 +319,7 @@ export function diff(prev, cur, now) {
   }
   // --- two losses today: don't revenge trade (a suggestion; nothing is ordered, armed or changed)
   if (!offline) {
-    const lossesOf = (S) => (S ? S.trades.filter((t) => !t.open && t.exit_t && t.usd != null && t.usd < -0.5 && etOf(t.exit_t * 1000).ymd === cur.day) : []);
+    const lossesOf = (S) => (S ? S.trades.filter((t) => !t.open && t.exit_t && t.usd != null && t.usd < -0.5 && etOf(t.exit_t * 1000).td === cur.day) : []);
     const now2 = lossesOf(cur), before = lossesOf(P);
     if (now2.length >= 2 && before.length < 2 && (P || nowS - Math.max(...now2.map((t) => t.exit_t)) < 3 * 3600)) {
       const sum = now2.reduce((s, t) => s + t.usd, 0);
@@ -422,13 +428,13 @@ export function planCard(snap, now) {
 }
 function dayTrades(snap, key, ymd) { return snap.trades.filter((t) => t.bot === key && t.day === ymd && !(t.open && !t.entry_t)); }
 export function recapCard(snap, now) {
-  const e = etOf(now), L = [], say = [e.min >= RECAP_MIN ? 'Recap for today.' : 'So far today.'];
+  const e = etOf(now), L = [], say = [e.td !== e.ymd ? 'So far this session.' : e.min >= RECAP_MIN ? 'Recap for today.' : 'So far today.'];
   if (!snap || !snap.ok) return { id: 'recap:' + e.ymd, kind: 'recap', day: e.ymd, title: 'Recap', lines: ['I cannot see the bots right now, so I have no recap to read.'], say: 'I cannot see the bots right now, so I have no recap to read.', t: Math.floor(now / 1000) };
   let tot = 0, any = false;
   for (const k of ['lit', 'atlas']) {
     const b = snap.bots[k];
     if (!b) continue;
-    const ts = dayTrades(snap, k, e.ymd);
+    const ts = dayTrades(snap, k, e.td);
     const pnl = b.today_pnl != null ? b.today_pnl : ts.reduce((s, t) => s + (t.usd || 0), 0);
     if (b.today_pnl != null) { tot += b.today_pnl; any = true; }
     const wk = b.week && b.week.n != null ? ` Week: ${b.week.n} trade${b.week.n === 1 ? '' : 's'}${b.week.lo != null ? ` (goal ${b.week.lo}-${b.week.hi})` : ''}.` : '';
@@ -613,16 +619,18 @@ export function answer(raw, snap, now, extra) {
     return R(lines(...out), say.join(' '), 'bots_armed');
   }
   if (isTraded) {
-    const out = [], say = [];
+    const out = [], say = [], eve = e.td !== e.ymd, tw = eve ? 'this session (it opened 18:00 ET)' : 'today';   // after 18:00 ET the new session is "today"
     for (const k of keys) {
       const b = snap.bots[k];
       if (!b) { out.push(`${BOT[k].name}: not in the feed.`); continue; }
-      const ts = dayTrades(snap, k, e.ymd), n = Math.max(ts.length, b.trades_today || 0);
+      const ts = dayTrades(snap, k, e.td), n = Math.max(ts.length, b.trades_today || 0);
       if (b.position) { out.push(`${b.name}: yes, it is in a ${b.position.side.toLowerCase()}${b.position.qty ? ' ' + plural(b.position.qty, 'micro') : ''} right now${b.position.unreal != null ? ` (${usd(b.position.unreal, true)} open)` : ''}.`); say.push(`Yes. ${b.name} is in a ${b.position.side.toLowerCase()} trade right now.`); }
-      else if (n > 0) { out.push(`${b.name}: yes, ${plural(n, 'trade')} today${ts.length ? ': ' + ts.map(tradeLine).join('; ') : ''}. Day ${usd(b.today_pnl, true) || 'missing'}.`); say.push(`Yes. ${b.name} traded ${n === 1 ? 'once' : n + ' times'} and the day is ${saySigned(b.today_pnl) || 'missing'}.`); }
+      else if (n > 0) { out.push(`${b.name}: yes, ${plural(n, 'trade')} ${tw}${ts.length ? ': ' + ts.map(tradeLine).join('; ') : ''}. Day ${usd(b.today_pnl, true) || 'missing'}.`); say.push(`Yes. ${b.name} traded ${n === 1 ? 'once' : n + ' times'} and the day is ${saySigned(b.today_pnl) || 'missing'}.`); }
       else {
         const why = b.armed_setup ? 'a setup is armed and waiting' : b.over ? 'it is not trading (' + b.status + ')' : snap.pc.level === 'bad' ? 'the PC is silent' : b.window.open ? 'its window is open and no setup has passed its rules yet' : b.window.mins != null ? `its window opens in ${dur(b.window.mins)}` : 'no setup yet';
-        out.push(`${b.name}: not yet today: ${why}.`); say.push(`Not yet. ${b.name}: ${why}.`);
+        const ds = eve ? dayTrades(snap, k, e.ymd).filter((t) => !t.open) : [];            // the session that closed at 17:00 ET today
+        const dsx = ds.length ? ` The session that closed at 17:00 ET: ${ds.map(tradeLine).join('; ')}, ${usd(ds.reduce((s, t) => s + (t.usd || 0), 0), true)}.` : '';
+        out.push(`${b.name}: not yet ${tw}: ${why}.${dsx}`); say.push(`Not yet${eve ? ' this session' : ''}. ${b.name}: ${why}.${ds.length ? ` Earlier today it traded ${ds.length === 1 ? 'once' : ds.length + ' times'}, ${saySigned(ds.reduce((s, t) => s + (t.usd || 0), 0))}.` : ''}`);
       }
     }
     if (fn) out.push(fn);

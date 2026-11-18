@@ -101,7 +101,10 @@ def main() -> int:
     m4 = re.search(r"(\d+) passed, (\d+) failed", out4)
     if m4:
         print(f"   node ZEUS today tests: {m4.group(1)} passed, {m4.group(2)} failed")
-    bad = [n for n, ok, _ in RES if not ok]
+    r5 = subprocess.run(["node", os.path.join(ROOT, "tests", "test_jarvis_tradeday.mjs")], capture_output=True, text=True, timeout=120, env={**os.environ, "TZ": "America/New_York"})
+    out5 = (r5.stdout + r5.stderr).strip()
+    check("node trading day: 'did we trade today' counts 18:00-24:00 ET trades on the next session (engine rule)", r5.returncode == 0, out5[-1500:])
+    bad =[n for n, ok, _ in RES if not ok]
     print(f"\njarvis skills: {len(RES) - len(bad)}/{len(RES)} {'ALL PASS' if not bad else 'FAILED: ' + '; '.join(bad)}")
     return 1 if bad else 0
 
