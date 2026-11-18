@@ -6,7 +6,7 @@ Every limit below is from memory: **verify on the provider page** before you rel
 |---|---|---|---|
 | **Your Oracle VM** (scp + Caddy or nginx) | Built: `--setup scp`. Zips only the changed files, sends with ssh/scp, unpacks on the server | No deploy limit; the VM is always-free, you run the web server | Best |
 | **Netlify** | Built: `--setup netlify` (digest deploy, only changed files) | About 20 deploys a month on the new free plan (verify on the provider page) | Daily page only |
-| **Cloudflare Pages** (direct upload) | **Not built.** Its upload needs BLAKE3 file hashes, which Python's standard library does not have | Generous deploy count, 500 builds a month applies to Git builds (verify on the provider page) | Would fit, but needs a hashing add-on |
+| **Cloudflare Pages** | Built 2026-11-18, OFF by default: `--setup cloudflare` (Cloudflare's own wrangler via Node.js; docs/HOSTING.md) | Generous deploy count, 500 builds a month applies to Git builds (verify on the provider page) | Would fit, but needs a hashing add-on |
 | **Vercel** (CLI) | Not built. Needs their command-line tool (Node) on the PC | Daily deploy cap on the free plan (verify on the provider page) | Maybe |
 | **Surge** | Not built. Needs their command-line tool (Node) | Free, plain static hosting, no stated deploy cap (verify on the provider page) | Maybe |
 | **A folder** (`--setup folder`) | Built: copies the site to any folder you already sync | Whatever that sync tool allows | Depends |
@@ -14,7 +14,7 @@ Every limit below is from memory: **verify on the provider page** before you rel
 ## What to pick
 - **Fresh numbers every 15 minutes:** your own Oracle VM with `scp`. No limit, no account on a third party.
 - **One page a day, nothing to run:** Netlify.
-- Cloudflare Pages is the next best free host, but it is **not built** because of the BLAKE3 hashes. It can be added later if the VM is not wanted.
+- No Netlify badge, no VM: Cloudflare Pages (docs/HOSTING.md, 3 steps).
 
 ## Set up the Oracle VM (one time)
 1. On the VM: install Caddy (or nginx) and point it at a folder, for example `/var/www/olympus`. Python 3 must be there (it unpacks the upload).

@@ -11,6 +11,10 @@
                         (sends only the files that changed, the site is ~280 MB of mostly unchanging research); method "zip"
                         (the whole site zipped with the files at the zip root, Content-Type application/zip) is the fallback.
                scp      your own Linux server over ssh (Oracle VM + Caddy / nginx): only changed files, no deploy limits
+               cloudflare  Cloudflare Pages (free, no badge; docs/HOSTING.md), OFF unless publish.json says "provider":
+                        "cloudflare". Cloudflare's own `npx wrangler pages deploy` (Node.js on the PC) to the production
+                        branch "main". The key ONLY from the PC's environment variable CLOUDFLARE_API_TOKEN (never a file, never
+                        the repo, never printed); account id from CLOUDFLARE_ACCOUNT_ID or publish.json "cf_account_id".
                none     build only
 What leaves this PC (2026-11-15): the LITE set, the one the owner's Netlify Drop zip carried: the built site without the 5 heavy
 folders (charts/ trade pictures, replays/ trade charts, writeups/ the research reader, datacity/ the 3D city, mind/ the vault),
@@ -29,6 +33,7 @@ stays up, the exit code is 0 unless --strict. Nothing here touches the trading b
                              (Netlify API GET /sites?name=, else every page of the account's sites: its name, *.netlify.app
                              address or own domain). Exit 0 saved, 2 no key / no site given, 3 the key was refused, 4 no such
                              site on that account, 5 Netlify not reachable. The key is never printed, logged or put in a URL.
+  python tools/pc_publish.py --setup cloudflare --cf-project <name> [--cf-account <id>]     publish.json for Cloudflare Pages
   python tools/pc_publish.py --dry-run       build, hash and say what would be sent; sends nothing
 Config (all outside the repo, in %USERPROFILE%\\.olympus\\ or $OLYMPUS_HOME): publish.json {"provider", "folder", "method",
 "min_interval_min", "site_set"}, netlify.json {"site_id", "token", "site_name", "site_url"}. Local files: data/pc_publish/
@@ -67,6 +72,14 @@ UA = "olympus-pc-publish/1"
 # Netlify's new free plan: 300 credits a month and every production deploy costs 15 = about 20 deploys a month (checked
 # 2026-11-10, netlify.com/pricing); at zero the site pauses. Older accounts have no such cap. The guard keeps 2 in reserve.
 DEPLOYS_PER_MONTH_DEFAULT = 18
+# Cloudflare Pages free: 500 builds a month (developers.cloudflare.com/pages/platform/limits, checked 2026-11-18); a direct
+# upload is counted as one to be safe, 50 kept in reserve = 15 a day. The wrangler version is pinned (released 2026-11-02).
+CF_DEPLOYS_PER_MONTH_DEFAULT = 450
+CF_WRANGLER = "wrangler@4.156.2"
+CF_BRANCH = "main"
+CF_PROJECT_RX = re.compile(r"^[a-z0-9][a-z0-9-]{0,56}$")
+CF_TIMEOUT_S = 1800
+CF_MAX_FILE, CF_MAX_FILES = 25 * 1024 * 1024, 20000
 SECRET_KEYS = ("token", "access_token", "authorization", "password", "secret")
 # the heavy folders the owner's Netlify Drop zip left out (the upload was too big); they stay on the PC (and its Tailscale link)
 LITE_EXCLUDE = ("charts/", "replays/", "writeups/", "datacity/", "mind/")
@@ -159,6 +172,9 @@ def load_config(env=None, cdir: str | None = None) -> dict:
             "scp_port": pub.get("scp_port"), "scp_url": pub.get("scp_url"),
             "max_deploys_per_month": int(pub.get("max_deploys_per_month") or DEPLOYS_PER_MONTH_DEFAULT),
             "site_set": str(pub.get("site_set") or "lite").lower(),
+            "cf_project": str(pub.get("cf_project") or "").strip().lower(), "cf_account_id": str(pub.get("cf_account_id") or "").strip(),
+            "cf_url": pub.get("cf_url"),
+            "cf_max_deploys_per_month": int(pub.get("cf_max_deploys_per_month") or CF_DEPLOYS_PER_MONTH_DEFAULT),
             "netlify": {"site_id": str(net.get("site_id") or net.get("siteId") or "").strip(),
                         "token": str(net.get("token") or net.get("access_token") or "").strip()}}
 
@@ -396,8 +412,14 @@ def publish_folder(site: str, files: dict, cfg: dict, **_k) -> dict:
     dest = cfg.get("folder")
     if not dest:
         raise ProviderError('provider "folder" needs a folder: python tools/pc_publish.py --setup folder --folder <path>')
+    sent, n = sync_dir(site, files, dest, os.path.join(dest, ".olympus_manifest.json"))
+    return {"url": None, "bytes": sent, "uploaded": n, "method": "folder", "state": "copied"}
+
+
+def sync_dir(site: str, files: dict, dest: str, mpath: str) -> tuple[int, int]:
+    """Make dest hold exactly `files` (only changed files copied; files this wrote before and the site no longer has removed).
+    The record of what dest holds is mpath. -> (bytes copied, files copied)."""
     os.makedirs(dest, exist_ok=True)
-    mpath = os.path.join(dest, ".olympus_manifest.json")
     old = read_json(mpath, {}) or {}
     sent = n = 0
     for rel, h in files.items():
@@ -416,7 +438,7 @@ def publish_folder(site: str, files: dict, cfg: dict, **_k) -> dict:
         except OSError:
             pass
     write_json(mpath, files)
-    return {"url": None, "bytes": sent, "uploaded": n, "method": "folder", "state": "copied"}
+    return sent, n
 
 
 _REMOTE_UNPACK = (
@@ -488,7 +510,81 @@ def publish_scp(site: str, files: dict, cfg: dict, env=None, log=print, work: st
     return {"url": cfg.get("scp_url"), "bytes": len(blob), "uploaded": len(changed), "method": "scp", "state": "sent"}
 
 
-PROVIDERS = {"netlify": publish_netlify, "folder": publish_folder, "scp": publish_scp}
+CF_NO_PROJECT_RX = re.compile(r"(?i)project not found|8000007|could not find project|does not exist")
+CF_URL_RX = re.compile(r"https://[A-Za-z0-9.-]+\.pages\.dev\b")
+
+
+def cf_settings(cfg: dict, env=None) -> dict:
+    """{"token", "account", "project", "npx"} for Cloudflare Pages. The key only from the environment variable. Raises ProviderError."""
+    env = os.environ if env is None else env
+    token = str(env.get("CLOUDFLARE_API_TOKEN") or "").strip()
+    account = str(env.get("CLOUDFLARE_ACCOUNT_ID") or cfg.get("cf_account_id") or "").strip()
+    project = str(cfg.get("cf_project") or "").strip().lower()
+    if not CF_PROJECT_RX.match(project):
+        raise ProviderError('provider "cloudflare" needs a project name: python tools/pc_publish.py --setup cloudflare --cf-project <name>')
+    if not token:
+        raise ProviderError("no Cloudflare key: set the PC's environment variable CLOUDFLARE_API_TOKEN (docs/HOSTING.md step 2), "
+                            "then restart the publisher")
+    if not re.match(r"^[0-9a-fA-F]{32}$", account):
+        raise ProviderError("no Cloudflare account id: set CLOUDFLARE_ACCOUNT_ID or publish.json cf_account_id (docs/HOSTING.md)")
+    npx = env.get("OLYMPUS_NPX") or shutil.which("npx", path=env.get("PATH"))
+    if not npx:
+        raise ProviderError("Node.js not found (npx): install it free with  winget install OpenJS.NodeJS.LTS  then try again")
+    return {"token": token, "account": account, "project": project, "npx": npx}
+
+
+def publish_cloudflare(site: str, files: dict, cfg: dict, env=None, log=print, work: str | None = None, **_k) -> dict:
+    """Cloudflare Pages through Cloudflare's own `wrangler pages deploy` (pinned version, via npx), to the PRODUCTION branch "main"
+    (a deploy to another branch would only be a preview address). Only the send set goes: it is mirrored into <work>/cf_site
+    (changed files copied, gone files removed) and wrangler uploads only what Cloudflare does not hold yet. The key travels in
+    the child's environment, never on the command line, and every output line is redacted. A missing project is created once
+    (production branch main) and the deploy is tried again."""
+    env = os.environ if env is None else env
+    c = cf_settings(cfg, env)
+    big = [k for k in files if os.path.getsize(os.path.join(site, k.replace("/", os.sep))) > CF_MAX_FILE]
+    if big or len(files) > CF_MAX_FILES:              # Cloudflare Pages free: 25 MiB a file, 20,000 files a site
+        raise ProviderError(f"too big for Cloudflare Pages: {len(files)} files (max {CF_MAX_FILES})"
+                            + (f", over 25 MiB: {', '.join(big[:3])}" if big else ""))
+    w = work or WORK_DEFAULT
+    stage, run_dir = os.path.join(w, "cf_site"), os.path.join(w, "cf_run")     # run_dir: empty, so no stray functions/ folder
+    os.makedirs(run_dir, exist_ok=True)
+    _bytes, n = sync_dir(site, files, stage, os.path.join(w, "cf_manifest.json"))
+    child = {k: v for k, v in env.items() if k not in ("CLOUDFLARE_API_KEY", "CLOUDFLARE_EMAIL")}
+    child.update(CLOUDFLARE_API_TOKEN=c["token"], CLOUDFLARE_ACCOUNT_ID=c["account"], CI="true", WRANGLER_SEND_METRICS="false",
+                 NO_COLOR="1")
+    secrets = [c["token"]]
+
+    def wr(*args, timeout=CF_TIMEOUT_S):
+        try:
+            r = subprocess.run([c["npx"], "--yes", CF_WRANGLER, *args], cwd=run_dir, env=child, capture_output=True, timeout=timeout)
+        except subprocess.TimeoutExpired:
+            raise ProviderError("Cloudflare did not finish in time; the last good site stays up")
+        except OSError as e:
+            raise ProviderError(redact(f"could not start npx ({e.__class__.__name__}: {e})", secrets))
+        out = redact(((r.stdout or b"") + b"\n" + (r.stderr or b"")).decode("utf-8", "replace"), secrets)
+        return r.returncode, out
+
+    deploy = ("pages", "deploy", stage, "--project-name", c["project"], "--branch", CF_BRANCH, "--commit-dirty=true")
+    rc, out = wr(*deploy)
+    if rc and CF_NO_PROJECT_RX.search(out):
+        log(f"[publish] Cloudflare has no project {c['project']} yet: creating it (production branch {CF_BRANCH})")
+        rc2, out2 = wr("pages", "project", "create", c["project"], "--production-branch", CF_BRANCH, timeout=600)
+        if rc2 and "already exists" not in out2.lower():
+            raise ProviderError("Cloudflare would not create the project: " + out2.strip()[-200:])
+        rc, out = wr(*deploy)
+    if rc:
+        if re.search(r"(?i)authentication|10000|unauthori[sz]ed|forbidden|invalid.*token", out):
+            raise ProviderError("Cloudflare refused the key: make a new one with Cloudflare Pages: Edit (docs/HOSTING.md step 2)")
+        raise ProviderError("Cloudflare deploy failed: " + out.strip()[-240:])
+    seen = CF_URL_RX.findall(out)
+    url = cfg.get("cf_url") or f"https://{c['project']}.pages.dev"
+    return {"url": url, "deploy_url": seen[-1] if seen else None, "bytes": _bytes, "uploaded": n, "method": "wrangler",
+            "state": "deployed"}
+
+
+PROVIDERS = {"netlify": publish_netlify, "folder": publish_folder, "scp": publish_scp, "cloudflare": publish_cloudflare}
+BUDGETED = {"netlify": ("Netlify", "max_deploys_per_month", DEPLOYS_PER_MONTH_DEFAULT, "deploys.json"),
+            "cloudflare": ("Cloudflare", "cf_max_deploys_per_month", CF_DEPLOYS_PER_MONTH_DEFAULT, "deploys_cloudflare.json")}
 
 
 # ------------------------------------------------------------------------------------------------ steps
@@ -565,20 +661,23 @@ def step_site(work: str) -> tuple[bool, str]:
     return True, "ok"
 
 
-def deploy_budget(work: str, cfg: dict, now=None) -> tuple[bool, str, dict]:
-    """(allowed, why, counts): Netlify deploys are paced so the month's budget lasts: at most budget / 30 a day (min 1)."""
+def deploy_budget(work: str, cfg: dict, now=None, provider: str = "netlify") -> tuple[bool, str, dict]:
+    """(allowed, why, counts): Netlify / Cloudflare deploys are paced so the month's budget lasts: at most budget / 30 a day
+    (min 1). Each provider has its own counter file and its own budget key."""
     import datetime as dt
+    label, key, default, fname = BUDGETED.get(provider, BUDGETED["netlify"])
     t = dt.datetime.fromtimestamp(now or now_s())
     mk, dk = t.strftime("%Y-%m"), t.strftime("%Y-%m-%d")
-    c = read_json(os.path.join(work, "deploys.json"), {}) or {}
+    c = read_json(os.path.join(work, fname), {}) or {}
     if c.get("month") != mk:
         c = {"month": mk, "n": 0, "days": {}}
-    budget = int(cfg.get("max_deploys_per_month") or DEPLOYS_PER_MONTH_DEFAULT)
+    c["file"] = fname
+    budget = int(cfg.get(key) or default)
     per_day = max(1, budget // 30)
     if c["n"] >= budget:
-        return False, f"Netlify deploy budget used up for {mk} ({c['n']}/{budget}); next month, or raise max_deploys_per_month if your plan allows", c
+        return False, f"{label} deploy budget used up for {mk} ({c['n']}/{budget}); next month, or raise {key} if your plan allows", c
     if c["days"].get(dk, 0) >= per_day:
-        return False, f"today's {per_day} Netlify deploy(s) already used (budget {budget} a month)", c
+        return False, f"today's {per_day} {label} deploy(s) already used (budget {budget} a month)", c
     return True, "ok", c
 
 
@@ -587,7 +686,8 @@ def deploy_count(work: str, c: dict, now=None):
     dk = dt.datetime.fromtimestamp(now or now_s()).strftime("%Y-%m-%d")
     c["n"] = int(c.get("n") or 0) + 1
     c.setdefault("days", {})[dk] = int(c["days"].get(dk, 0)) + 1
-    write_json(os.path.join(work, "deploys.json"), c)
+    fname = c.pop("file", None) or "deploys.json"
+    write_json(os.path.join(work, fname), c)
 
 
 def add_kalshi(site: str, cfg: dict) -> str:
@@ -671,7 +771,7 @@ def run_once(args, env=None, say=print) -> dict:
         cfg["folder"] = args.folder
     prev = read_json(os.path.join(work, "last.json"), {}) or {}
     t0 = time.time()
-    secrets = [cfg["netlify"]["token"]]
+    secrets = [cfg["netlify"]["token"], str(env.get("CLOUDFLARE_API_TOKEN") or "")]
     rec = {"t": now_s(), "ok": False, "provider": cfg["provider"], "method": cfg["method"] if cfg["provider"] == "netlify" else None,
            "last_good_t": prev.get("last_good_t") or (prev.get("t") if prev.get("ok") else None)}
     lock = acquire_lock(work)
@@ -680,7 +780,7 @@ def run_once(args, env=None, say=print) -> dict:
         return rec
     try:
         if cfg["provider"] not in ("none", *PROVIDERS):
-            raise ProviderError(f"unknown provider '{cfg['provider']}' (folder, netlify or none)")
+            raise ProviderError(f"unknown provider '{cfg['provider']}' (folder, netlify, scp, cloudflare or none)")
         if cfg["provider"] == "netlify" and inside_repo(cfg["dir"]):
             raise ProviderError("the Netlify token file must live outside the repo")
         if (args.min_interval or cfg["min_interval_min"]) and not args.force and prev.get("ok") and \
@@ -725,8 +825,8 @@ def run_once(args, env=None, say=print) -> dict:
             rec.update(ok=True, uploaded=0, bytes=0, url=prev.get("url"), skipped_same=True)
             return rec
         counts = None
-        if cfg["provider"] == "netlify":
-            okb, why, counts = deploy_budget(work, cfg)
+        if cfg["provider"] in BUDGETED:
+            okb, why, counts = deploy_budget(work, cfg, provider=cfg["provider"])
             if not okb:                                  # kept for the next allowed run: the old hash stays, so it counts as changed
                 rec.update(ok=True, uploaded=0, bytes=0, url=prev.get("url"), throttled=True, site_hash=prev.get("site_hash"),
                            state_text=rec["state_text"] + "; not sent: " + why)
@@ -800,6 +900,19 @@ def setup(args, env=None) -> int:
         except OSError:
             pass
         pub.update(provider="netlify")
+    elif args.setup == "cloudflare":                  # OFF until this is run; the key stays an environment variable
+        proj = str(getattr(args, "cf_project", None) or "").strip().lower()
+        acct = str(getattr(args, "cf_account", None) or "").strip()
+        if not CF_PROJECT_RX.match(proj):
+            print("[FIX] needs --cf-project <name>: lowercase letters, digits and dashes (it becomes <name>.pages.dev)")
+            return SETUP_INPUT
+        if acct and not re.match(r"^[0-9a-fA-F]{32}$", acct):
+            print("[FIX] --cf-account is the 32-character account id (Cloudflare > Workers & Pages, right side)")
+            return SETUP_INPUT
+        pub.update(provider="cloudflare", cf_project=proj, **({"cf_account_id": acct} if acct else {}))
+        env_ = os.environ if env is None else env
+        if not env_.get("CLOUDFLARE_API_TOKEN"):
+            print("[NOTE] the environment variable CLOUDFLARE_API_TOKEN is not set yet (docs/HOSTING.md step 2)")
     else:
         pub.update(provider="none")
     write_json(os.path.join(d, "publish.json"), pub)
@@ -808,6 +921,8 @@ def setup(args, env=None) -> int:
     except OSError:
         pass
     where = ""
+    if args.setup == "cloudflare":
+        where = f" Site: https://{pub['cf_project']}.pages.dev (after the first publish)."
     if args.setup == "netlify":
         where = f" Site: {extra.get('site_url') or extra.get('site_name') or 'id ' + sid}." if extra else f" Site id {sid}."
     print(f"[OK] publisher set to {args.setup}.{where} Config folder: {d} (outside the repo; the token is never shown)")
@@ -817,7 +932,7 @@ def setup(args, env=None) -> int:
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="Build the NQ state + site on this PC and publish it (no GitHub).")
     ap.add_argument("--work", help="work folder (default data/pc_publish)")
-    ap.add_argument("--provider", choices=["folder", "netlify", "scp", "none"])
+    ap.add_argument("--provider", choices=["folder", "netlify", "scp", "cloudflare", "none"])
     ap.add_argument("--folder")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--force", action="store_true", help="publish even when nothing changed")
@@ -825,7 +940,9 @@ def main(argv=None) -> int:
     ap.add_argument("--min-interval", type=float, default=0, help="skip when the last good publish is younger than N minutes")
     ap.add_argument("--status", action="store_true")
     ap.add_argument("--strict", action="store_true", help="exit 1 when the run failed (default: always 0, a failure is only logged)")
-    ap.add_argument("--setup", choices=["folder", "netlify", "scp", "none"])
+    ap.add_argument("--setup", choices=["folder", "netlify", "scp", "cloudflare", "none"])
+    ap.add_argument("--cf-project", help="--setup cloudflare: the Cloudflare Pages project name (<name>.pages.dev)")
+    ap.add_argument("--cf-account", help="--setup cloudflare: the 32-character account id (or set CLOUDFLARE_ACCOUNT_ID)")
     ap.add_argument("--scp-target")
     ap.add_argument("--scp-dir")
     ap.add_argument("--scp-key")
