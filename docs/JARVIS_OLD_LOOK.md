@@ -11,6 +11,11 @@ Jarvis look → Classic Jarvis, or say "classic Jarvis" / "bring back the old Ja
 `tools/web_public/jarvis/classic.css`, loaded only when picked (`localStorage 'jarvis.look' = 'classic'`), so AGORA stays the default and
 byte-identical. Picking any OLYMPUS theme turns Classic off.
 
+**2026-11-18 (owner: Jarvis "back to how it was"):** Classic Jarvis is the **default** again (AGORA is the opt-in: `localStorage 'jarvis.look' = 'agora'`),
+and the home is in the order of 2026-11-06 (f8df6008): the HUD header (OLYMPUS / J.A.R.V.I.S., greeting, the one sentence), KALSHI TODAY / NQ BOTS TODAY,
+the core with STANDBY and the voice row, then the cards (classic.css flattens AGORA's sections and orders them; the DOM is unchanged). The HUD boot log
+lines are back in Classic. The start is a 1.2 s mark (the gold temple on navy + OLYMPUS); the 10 s film plays only on request.
+
 ---
 
 

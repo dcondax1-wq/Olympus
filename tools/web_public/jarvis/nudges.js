@@ -14,6 +14,7 @@
 //   deal_ending   a dated deal ends within 48 hours      event_soon a high-impact event today or tomorrow (the next one, within 3 days: info)
 //   unrated       trades of the last 14 days without a journal rating        feeds_stale  a published file is older than its limit, or missing
 //   bot_off       an account is not connected             eval_close an eval within 20% of its target
+//   paper_dd      a paper ledger (not a real account) under 25% of its room: info, last (real accounts only in every rule above)
 
 import { accounts, worstAccount, deals, nextEvents, unrated, feedHealth, both, usd, rtxt, asR, srcTag, isObj, num, etParts, daysBetween, usualR } from './jdata.js';
 
@@ -24,7 +25,7 @@ export function nudges(S, opts) {
   const o = isObj(opts) ? opts : {}, now = num(o.now) != null ? o.now : Date.now(), max = num(o.max) != null ? o.max : 3, quiet = new Set(Array.isArray(o.quiet) ? o.quiet : []);
   const out = [], add = (n) => { out.push({ ...n, key: n.id + ':' + (n.sig || '') }); };
   const S0 = isObj(S) ? S : {};
-  const accts = accounts(S0);
+  const all = accounts(S0), accts = all.filter((a) => !a.paper), paper = all.filter((a) => a.paper);   // real accounts first; a paper ledger is a test
 
   // --- risk first
   for (const a of accts) {
@@ -36,6 +37,9 @@ export function nudges(S, opts) {
     const low = w.room / w.mll < 0.25, r = asR(w.room, S0);
     add({ id: 'dd_low', sig: w.name + (low ? ':low' : ':half'), level: low ? 'bad' : 'info', text: `${w.name}: drawdown left ${both(w.room, S0)} of ${usd(w.mll)} max loss.`, why: low ? 'One more big loss could end the eval. Stay small.' : 'Less than half of the room is left. Let the bot run its plan.', ask: 'how much drawdown do I have left', open: 'demeter', usd: w.room, r, src: srcTag(S0, 'home', now).text, score: low ? 95 : 45 });
   }
+  // a paper test low on its practice room: one calm line (never red), last in the list (2026-11-18: "Paper (cloud): drawdown left $389" read like a real emergency)
+  const wp = worstAccount(paper);
+  if (wp && wp.room / wp.mll < 0.25) add({ id: 'paper_dd', sig: wp.name, level: 'info', text: `Paper test, not real money: ${usd(wp.room)} of ${usd(wp.mll)} practice drawdown left.`, why: 'The cloud paper ledger practises the rules; your real accounts are not affected.', ask: 'how much drawdown do I have left', open: 'zenith', usd: wp.room, src: srcTag(S0, 'home', now).text, score: 5 });
   const close = accts.filter((a) => !a.funded && a.target && a.toTarget != null && a.toTarget > 0 && a.toTarget / a.target <= 0.2).sort((x, y) => x.toTarget - y.toTarget)[0];
   if (close) add({ id: 'eval_close', sig: close.name, level: 'info', text: `${close.name} is ${both(close.toTarget, S0)} from its profit target.`, why: 'Close to passing: keep the plan, no extra risk.', ask: 'how far am I from the target', open: 'demeter', usd: close.toTarget, src: srcTag(S0, 'home', now).text, score: 60 });
 

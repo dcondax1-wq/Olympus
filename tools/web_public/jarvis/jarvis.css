@@ -17,8 +17,12 @@
   --fm: var(--oly-th-num, "SF Pro Rounded", -apple-system, system-ui, sans-serif);
   --bar-h: 54px;
   --dock-h: 64px;
+  /* the dock's gap to the screen's bottom edge (2026-11-18, owner: "my screen looks weird"): on an iPhone with a home bar it sits
+     18 px up (the safe area less 16 px: just clear of the home bar, no empty band under it); 8 px elsewhere; and above a web host's
+     badge in the bottom-right corner when one is there (--host-lift, set by index.html's hostBadge(): "Powered by Netlify" is not ours) */
+  --dock-b: max(8px, calc(env(safe-area-inset-bottom, 0px) - 16px), var(--host-lift, 0px));
   /* the fixed stack at the bottom of Jarvis mode: the command dock, and above it the next-event chip and the search button */
-  --stack: calc(var(--dock-h) + 66px + max(8px, env(safe-area-inset-bottom, 0px)));
+  --stack: calc(var(--dock-h) + 66px + var(--dock-b));
   color-scheme: dark;
 }
 
@@ -156,6 +160,7 @@ html[data-vpending="1"]:not([data-state="speaking"]) .vstop::after { content: "T
 .ask .spk.off { color: var(--mut); border-color: rgba(var(--cr), .3); }
 .ask .spk.off .w { display: none; } .ask .spk.off .x { display: inline; }
 @media (max-width: 360px) { .ask .key.send { display: none; } }      /* a small phone: the keyboard's Send key sends */
+
 .state { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 0; font: 600 12px var(--fh); letter-spacing: .02em; padding-left: .5em; color: var(--c3);
   text-shadow: none; text-transform: none; }
 .state::before, .state::after { content: ""; flex: none; width: 64px; height: 1px; background: linear-gradient(90deg, transparent, rgba(var(--cr), .75)); }
@@ -306,7 +311,7 @@ button.panel:active { transform: translateY(1px) scale(.995); }
 
 /* ---------------------------------------------------------------- the floating glass command dock, the ⋯ menu, the search button, the next chip */
 .dock { position: fixed; z-index: 26; left: max(8px, env(safe-area-inset-left, 0px)); right: max(8px, env(safe-area-inset-right, 0px));
-  bottom: max(8px, env(safe-area-inset-bottom, 0px)); padding: 8px; border-radius: 22px;
+  bottom: var(--dock-b); padding: 8px; border-radius: 22px;
   background: linear-gradient(180deg, rgba(var(--pr), .84), rgba(var(--pr), .95)); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
   box-shadow: 0 4px 14px rgba(var(--oly-th-n3-rgb, 21,20,17),.32); }
 html:not([data-mode="jarvis"]) .dock, html:not([data-mode="jarvis"]) .fab, html:not([data-mode="jarvis"]) .nextchip { display: none !important; }
@@ -325,10 +330,10 @@ html:not([data-mode="jarvis"]) .dock, html:not([data-mode="jarvis"]) .fab, html:
 .more .key { width: 100%; padding: 0 4px; font-size: 12px; letter-spacing: .02em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 400px) { .more { grid-template-columns: repeat(2, minmax(0, 1fr)); } }      /* the on / off labels in full on a phone */
 .more .key.on { color: var(--ok); border-color: var(--ok); }
-.fab { position: fixed; z-index: 25; right: max(14px, env(safe-area-inset-right, 0px)); bottom: calc(max(8px, env(safe-area-inset-bottom, 0px)) + var(--dock-h) + 9px);
+.fab { position: fixed; z-index: 25; right: max(14px, env(safe-area-inset-right, 0px)); bottom: calc(var(--dock-b) + var(--dock-h) + 9px);
   width: 48px; height: 48px; border-radius: 50%; border: 1.5px solid var(--c); background: rgba(var(--pr), .85); color: var(--c3); display: grid; place-items: center; padding: 0;
   box-shadow: 0 4px 14px rgba(var(--oly-th-n3-rgb, 21,20,17),.32); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
-.nextchip { position: fixed; z-index: 25; left: max(12px, env(safe-area-inset-left, 0px)); bottom: calc(max(8px, env(safe-area-inset-bottom, 0px)) + var(--dock-h) + 11px);
+.nextchip { position: fixed; z-index: 25; left: max(12px, env(safe-area-inset-left, 0px)); bottom: calc(var(--dock-b) + var(--dock-h) + 11px);
   max-width: calc(100% - 92px); height: 44px; padding: 7px 14px; border-radius: 999px; border: 1px solid rgba(var(--cr), .35); background: rgba(var(--oly-th-n3-rgb, 21,20,17),.72); color: var(--txt);
   font: 500 14px/1.2 var(--fb); letter-spacing: .04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
 .nextchip b { font: 600 12px var(--fh); letter-spacing: .02em; color: var(--c3); margin-right: 6px; }
@@ -973,6 +978,7 @@ html[data-bg3d="on"][data-court="3d"] .court-art { opacity: 0; }                
 .dgate i { flex: none; width: 7px; height: 7px; border-radius: 50%; background: transparent; }
 .dgate[data-need] { color: var(--txt); } .dgate[data-need="warn"] i { background: var(--warn); } .dgate[data-need="bad"] i { background: var(--bad); }
 .dgate:not([data-need]) i { display: none; }
+.jtitle { display: none; }                                         /* the HUD title: Classic Jarvis only (classic.css) */
 .hero-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-width: 0; }
 .hero-h { margin: 0; min-width: 0; font: 600 34px/1.15 var(--fh); letter-spacing: 0; color: var(--txt); }
 .hero .hsub { margin: 0; text-align: left; font: 500 14px/1.4 var(--fb); letter-spacing: 0; color: var(--oly-th-n30, #cfc4b2); }
@@ -1059,7 +1065,15 @@ html[data-orb-dock="1"] .fab { right: calc(max(14px, env(safe-area-inset-right, 
 html[data-orb-dock="1"] .nextchip { max-width: calc(100% - 158px); }
 html[data-orb-tip="1"] .fab, html[data-orb-tip="1"] .nextchip { visibility: hidden; }  /* the orb's one-time hint takes their place for 3 s: it never sits over content */
 .toast { transition: opacity .25s ease-out; }
-
+/* a phone (2026-11-18): the bottom-right 60 px corner stays clear of the dock's keys (a web host's badge sits there: it covered Send and ⋯).
+   While the keyboard is up (.kb, set by index.html's fitDock: the dock rides above it, the corner is the keyboard's) the dock takes the
+   full width back. Send shows once there is something to send (an empty field needs none; the keyboard's own Send key sends too).
+   Nothing changes on focus or blur alone: a key never moves under a finger that is pressing it */
+@media (max-width: 520px) {
+  .dock { right: calc(max(8px, env(safe-area-inset-right, 0px)) + 52px); }
+  .dock.kb { right: max(8px, env(safe-area-inset-right, 0px)); }
+  .ask:has(input:placeholder-shown) .key.send { display: none; }
+}
 /* ---------------------------------------------------------------- sizes: the courtyard window grows with the screen; a short phone starts at the greeting */
 @media (max-height: 739px) { .court { display: none; } .home-in[data-home="v2"] { --court-h: 0px; } .hero { padding-top: 6px; padding-bottom: 10px; gap: 2px; background: rgba(var(--pr), .90); } .hero-h { font-size: 28px; }
   .tile { min-height: 70px; padding-top: 6px; padding-bottom: 7px; } .tiles { gap: 6px; padding-bottom: 8px; } .hero-line { margin-top: 4px; } }

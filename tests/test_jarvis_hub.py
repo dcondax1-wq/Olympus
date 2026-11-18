@@ -238,9 +238,9 @@ def part_a():
               "data.js", "jarvis.css", "OFL.txt") + FONTS:
         check(f"a. jarvis/{f} exists", os.path.exists(os.path.join(JV, f)))
     m = json.load(open(os.path.join(JV, "manifest.webmanifest"), encoding="utf-8"))
-    check("a. manifest: Jarvis, standalone, own scope, black like the old Jarvis, icons j2",
+    check("a. manifest: Jarvis, standalone, own scope, black like the old Jarvis, icons j5 (the gold temple, 2026-11-18)",
           m["name"] == "Olympus" and m["short_name"] == "Olympus" and m["display"] == "standalone" and m["scope"] == "./"
-          and m["theme_color"] == "#14110e" and all(i["src"].endswith("?v=j4") for i in m["icons"]), m)
+          and m["theme_color"] == "#14110e" and all(i["src"].endswith("?v=j5") for i in m["icons"]), m)
     b = open(os.path.join(ROOT, "tools", "build_web_dashboard.py"), encoding="utf-8").read()
     tup = re.search(r'for app in \(([^)]*)\):', b)
     published = set(re.findall(r'"([a-z0-9-]+)"', tup.group(1))) if tup else set()
@@ -1560,8 +1560,8 @@ def part_intro_files():
           and "if (!window.__olyIntro) { var o = document.getElementById('olyIntro'); if (o) o.style.visibility = 'hidden'; } }, 700);" in page
           and "html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}" in page and "z-index:2147483640" in page
           and "@keyframes olyEnd" in page)
-    check("o. the start script picks the version before the first paint: full 10 s / lite 5 s (low tier) / short (the same launch again) / calm (reduce motion) / fade (safe start, unfinished intro) / off (3D Off); none under automation",
-          all(x in page for x in ("im = again ? 'short' : (", "'lite' : 'full'", "im = 'calm'", "im = 'off'", "n > 0 || g('jarvis.intro.run')) im = 'fade'",
+    check("o. the start script picks the version before the first paint: the 1.2 s mark (a new launch, 2026-11-18) / off (the same launch again, 3D Off) / calm (reduce motion) / fade (safe start, unfinished intro); the film only on request; none under automation",
+          all(x in page for x in ("im = again ? 'off' : 'mark';", "im = 'calm'", "im = 'off'", "n > 0 || g('jarvis.intro.run')) im = 'fade'",
                                   "sessionStorage.getItem('jarvis.booted')", "20 * 60 * 1000", "(!navigator.webdriver || fo)", "g('jarvis.intro') !== 'off'")))
     check("o. the film: 10 s full / 5 s lite, six phases (heart, storm, rise, eclipse, word, portal), the sound cues, the logo texture, skip in 60 ms",
           all(x in js for x in ("full: 10, lite: 5", "full: 1, lite: 2", "'heart'", "'storm'", "'rise'", "'eclipse'", "'word'", "'portal'", "[8.68, 'portal']", "[2.35, 'pad']",
@@ -1681,12 +1681,31 @@ def run_intro(br, url):
     home extras that came with it (quick actions, today's timeline, the core's satellites)."""
     wait = lambda p, js, ms=40000: p.wait_for_function(js, timeout=ms)
 
-    # 1. a cold open: the 10 s film in WebGL, Jarvis starting underneath, then it reveals Jarvis and removes itself
-    ctx, p, errs = intro_page(br, url, init=[PHASE_LOG, SFX_KIT])
+    # 0. a cold open (2026-11-18, owner: the entry "looks made in the 2000s"): the 1.2 s mark, no WebGL, then Jarvis
+    ctx, p, errs = intro_page(br, url, init=[SFX_KIT])
+    wait(p, "window.__olyIntro && window.__olyIntro.mode")
+    mk_gl = p.evaluate("!!document.querySelector('#olyIntro canvas')")
+    mk_svg = p.evaluate("!!document.querySelector('#olyIntro .oly-w svg') && /OLYMPUS/.test((document.querySelector('#olyIntro .oly-w b') || {}).textContent || '')")
+    wait(p, INTRO_GONE)
+    ready_slow(p)
+    s = intro_state(p)
+    check("o. a cold open plays the 1.2 s mark: the gold temple and OLYMPUS on navy, no WebGL, it ends by itself (done) and the mic is tappable, no page errors",
+          s["st"]["mode"] == "mark" and s["st"]["q"] == "still" and s["st"]["len"] == 1.3 and s["st"]["state"] == "done" and not mk_gl and mk_svg and p.evaluate(MIC_FREE) and not errs, (s, mk_gl, mk_svg, errs))
+    check("o. the mark remembers the launch (the next start within 20 minutes gets the 0.5 s fade), no in-progress flag left",
+          bool(p.evaluate("localStorage.getItem('jarvis.intro.day')")) and bool(p.evaluate("localStorage.getItem('jarvis.intro.at')")) and p.evaluate("localStorage.getItem('jarvis.intro.run')") is None)
+    p.reload(wait_until="commit")
+    wait(p, "window.__olyIntro && window.__olyIntro.mode")
+    wait(p, INTRO_GONE)
+    s = intro_state(p)
+    check("o. the same launch seen again (an app switch that reloaded the page) gets the 0.5 s fade, never the mark or the film again", s["st"]["mode"] == "off" and s["st"]["state"] == "done", s)
+    ctx.close()
+
+    # 1. the film on request ('jarvis.intro.force' = 'full', as the palette's replay asks for it): the 10 s film in WebGL, Jarvis starting underneath
+    ctx, p, errs = intro_page(br, url, "full", init=[PHASE_LOG, SFX_KIT])
     wait(p, "window.__olyIntro && (window.__olyIntro.frames > 3 || window.__olyIntro.done)")
     wait(p, "window.__olyIntro.n > 0 || window.__olyIntro.done")           # the letters' sparks are built once Orbitron is in (1.8 s at most)
     s = intro_state(p)
-    check("o. a cold open plays the full 10 s version in WebGL (its canvas, the OLYMPUS particles, the logo texture, frames running)",
+    check("o. the film on request plays the full 10 s version in WebGL (its canvas, the OLYMPUS particles, the logo texture, frames running)",
           s["st"]["mode"] == "full" and s["st"]["len"] == 10 and s["st"]["state"] == "playing" and s["st"]["n"] > 0 and p.locator("#olyIntro canvas").count() == 1, s)
     check("o. while it plays it covers the screen (the mic under it), the boot log steps aside",
           p.evaluate(MIC_FREE.replace("closest('#mic')", "closest('#olyIntro')")) and p.locator("#bootfx").count() == 0, s)
@@ -1707,12 +1726,13 @@ def run_intro(br, url):
     vr = p.evaluate("['#mic', '#q'].map((s) => document.querySelector(s).getBoundingClientRect().bottom)")
     check("o. after it, the Ask Jarvis field and the dock mic are on the first 390 x 844 screen (AGORA home: the HANDS-FREE row is below the cards)", all(0 < b <= 844 for b in vr), vr)
 
-    # 2. a later open the same day: the 1 s version
-    p.reload(wait_until="commit")
+    # 2. the 1 s film version on request
+    ctx.close()
+    ctx, p, errs = intro_page(br, url, "short")
     wait(p, "window.__olyIntro && window.__olyIntro.mode")
     wait(p, INTRO_GONE)
     s = intro_state(p)
-    check("o. the same launch seen again (an app switch that reloaded the page) gets the 1 s version, never the film again", s["st"]["mode"] == "short" and s["st"]["state"] == "done" and s["st"]["ms"] <= BK.limit_ms(4500, "intro short"), s)
+    check("o. the 1 s film version (on request) ends by itself", s["st"]["mode"] == "short" and s["st"]["state"] == "done" and s["st"]["ms"] <= BK.limit_ms(4500, "intro short"), s)
 
     # 3. the replay (command palette: Play the OLYMPUS intro)
     ready_slow(p)
@@ -1802,24 +1822,30 @@ def run_intro(br, url):
     check("o. switched off (Look → OLYMPUS intro): none", p.evaluate("!document.documentElement.hasAttribute('data-intro') && !(window.__olyIntro && window.__olyIntro.mode)"), intro_state(p))
     ctx.close()
 
-    # 7b. the low tier gets the 5 s film (same phases at 2x); a new launch an hour after the last gets the film, a restart within 20 minutes the 1 s version
-    ctx, p, errs = intro_page(br, url, extra="localStorage.setItem('jfx', 'low');", init=[PHASE_LOG])
+    # 7b. 3D Low gets the same mark (no WebGL on any phone); the 5 s film (same phases at 2x) on request; a new launch an hour after the last
+    # gets the mark, a restart within 20 minutes the 0.5 s fade
+    ctx, p, errs = intro_page(br, url, extra="localStorage.setItem('jfx', 'low');")
+    wait(p, "window.__olyIntro && window.__olyIntro.mode")
+    wait(p, INTRO_GONE)
+    check("o. 3D Low / a low-end phone: the same 1.2 s mark (no WebGL)", intro_state(p)["st"]["mode"] == "mark" and intro_state(p)["st"]["state"] == "done", intro_state(p))
+    ctx.close()
+    ctx, p, errs = intro_page(br, url, "lite", init=[PHASE_LOG])
     wait(p, "window.__olyIntro && window.__olyIntro.mode")
     wait(p, INTRO_GONE)
     s = intro_state(p)
-    check("o. 3D Low / a low-end phone: the 5 s film (mode lite), the same six phases, ends at ~4.9 s",
+    check("o. the 5 s film (mode lite, on request), the same six phases, ends at ~4.9 s",
           s["st"]["mode"] == "lite" and s["st"]["q"] == "lite" and s["st"]["len"] == 5 and s["st"]["state"] == "done" and 4400 <= s["pr"]["end"] <= 8500
           and p.evaluate("window.__phases") == ["heart", "storm", "rise", "eclipse", "word", "portal"], s)
     ctx.close()
     day = "(() => { const d = new Date(); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); })()"
     ctx, p, errs = intro_page(br, url, extra=f"localStorage.setItem('jarvis.intro.day', {day}); localStorage.setItem('jarvis.intro.at', String(Date.now() - 3600e3));")
     wait(p, "window.__olyIntro && window.__olyIntro.mode")
-    check("o. a new launch an hour after the last one gets the full film", intro_state(p)["st"]["mode"] == "full", intro_state(p))
+    check("o. a new launch an hour after the last one gets the mark", intro_state(p)["st"]["mode"] == "mark", intro_state(p))
     ctx.close()
     ctx, p, errs = intro_page(br, url, extra=f"localStorage.setItem('jarvis.intro.day', {day}); localStorage.setItem('jarvis.intro.at', String(Date.now() - 300e3));")
     wait(p, "window.__olyIntro && window.__olyIntro.mode")
     wait(p, INTRO_GONE)
-    check("o. a start 5 minutes after the last one gets the 1 s version (once per launch)", intro_state(p)["st"]["mode"] == "short", intro_state(p))
+    check("o. a start 5 minutes after the last one gets the 0.5 s fade (once per launch)", intro_state(p)["st"]["mode"] == "off", intro_state(p))
     ctx.close()
     # the logo file never arrives: the drawn stand-in plays, the film still ends by itself, no errors
     ctx, p, errs = intro_page(br, url, "full", init=[PHASE_LOG], abort=r".*/intro-logo\.webp.*")

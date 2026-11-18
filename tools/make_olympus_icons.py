@@ -1,4 +1,7 @@
-"""Rebuild the OLYMPUS / Jarvis PWA icon set from the owner's logo.
+"""LEGACY since 2026-11-18: the Home Screen icon is now the gold temple on navy (web/icons/icon.svg, python tools/icon_temple.py);
+running this puts the old ring-and-peaks logo back on jarvis/*.png.
+
+Rebuild the OLYMPUS / Jarvis PWA icon set from the owner's logo.
 
 Source: tools/web_public/olympus/brand/olympus-logo-source.png (1254x1254, black bg).
 Writes: jarvis/apple-touch-icon.png (180), icon-192.png, icon-512.png, icon-maskable-512.png,
