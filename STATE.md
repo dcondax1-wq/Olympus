@@ -136,6 +136,8 @@ Rules: MFFU ONLY ("We stick with MFFU"). Limits: max 5 sim-funded, Builder 1x50K
 - Last bot checks green (2026-11-16): lit_live --quick OK, NT selftest OK, ATLAS 47/47.
 - Work cheaply: python tests/smoke.py -> touched area -> python tools/ship.py; at most 2-3 helpers.
 
+- Test sweep 2026-11-17 (night-sweep): fixed update_from_zip not taking tracked data/board/shared.jsonl (exact !un-ignore now honoured), added the live-switch row rf40_nowk_tw80 to research/lit/uprisk_eval.json (board odds were empty), and 5 stale test pins (cold_calls kit versions, fresh_start sw, pc_guard BLITZ hidden, pc_health clock).
+
 ## Pointers
 - Money: Business page (docs/BUSINESS.md), payout plan research/lab/payout_plan.json; fleet `--plan mffu_builder_50k` (engine/multi_account).
 - Accounts: tools/web_public/business/accounts.html; new pages taxes/security/schedule/work in tools/web_public/business/.

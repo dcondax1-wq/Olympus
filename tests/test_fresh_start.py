@@ -75,7 +75,7 @@ def static():
     b = read("tools/build_web_dashboard.py")
     check("build: copies pc/ and move_bot.ps1 to the site", 'os.path.join(WEB, "pc")' in b and '"move_bot.ps1"' in b)
     sw = read("tools/web_public/sw.js")
-    check("sw.js untouched by pc/ (plain files, no worker bump)", "'pc/'" not in sw)
+    check("sw.js: pc/ only in the OTHER_APPS list (wired 2026-11-09, cache v63), never in the SHELL precache", all(ln.startswith("const OTHER_APPS") for ln in sw.splitlines() if "'pc/'" in ln) and "'pc/'" in sw)
 
 
 # ------------------------------------------------------------------------------------------------------------- pwsh

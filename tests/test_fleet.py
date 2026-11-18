@@ -706,8 +706,11 @@ def misc_checks(tmp):
     b, fl, ads, notes = make(os.path.join(tmp, "life3"), acc4, now)
     w = fl.api(now)["warnings"]
     check("fleet warning: 2 funded MFFU Builder 50K followers, MFFU allows 1 per person (verified)", w and "allows 1" in w[0], w)
-    check("MFFU profile warns that copying between your own accounts is not confirmed (ask support)",
-          any("copying between your own accounts" in x for x in FM.profile("mffu_builder_50k")["warn"]))
+    # MFFU's help center confirmed copy trading between your own accounts (firm_rules.json copy_trading allowed, verified 2026-11-16):
+    # the "not confirmed" warning is gone for MFFU (it still fires for a firm whose copy_trading is None: engine/firms.py)
+    check("MFFU profile: copying between your own accounts is confirmed allowed, so no 'not confirmed' warning",
+          FM.profile("mffu_builder_50k").get("copy_trading") in ("allowed", "own", "own_accounts")
+          and not any("copying between your own accounts" in x for x in FM.profile("mffu_builder_50k")["warn"]), FM.profile("mffu_builder_50k")["warn"])
 
 
 def cli_checks(tmp):
@@ -757,8 +760,8 @@ def cli_checks(tmp):
     check("--preflight: a firm that bans bots is red (Apex), a paper follower needs no NinjaTrader", st2.get("firm_bot") == "bad" and st2.get("route") == "info", st2)
     run("--add", "--id", "sm", "--lead", "zlarior", "--plan", "mffu_builder_25k", "--account", "Sim115", "--start", "2026-11-02")
     pf3 = FL.preflight("sm", p, env={})
-    check("--preflight a Sim follower: no arming lines; MFFU copy trading not confirmed = WAIT", not any(x["key"] in ("armed", "allow") for x in pf3["lines"])
-          and {x["key"]: x["state"] for x in pf3["lines"]}.get("copy") == "wait", pf3["lines"])
+    check("--preflight a Sim follower: no arming lines; MFFU copy trading confirmed allowed (2026-11-16) = good", not any(x["key"] in ("armed", "allow") for x in pf3["lines"])
+          and {x["key"]: x["state"] for x in pf3["lines"]}.get("copy") == "good", pf3["lines"])
     trades = [{"entry_t": ts("2026-10-13", 9, 35), "exit_t": ts("2026-10-13", 10, 20), "dir": 1, "qty": 20, "entry": 25000.0, "stop": 24980.0,
                "target": 25100.0, "pnl": 20 * (100 * 2 - 1.9), "exit_reason": "TARGET"}]
     cfg = {"accounts": [{"id": "d1", "lead": "zlarior", "plan": "mffu_builder_50k", "start": "2026-10-13"}]}

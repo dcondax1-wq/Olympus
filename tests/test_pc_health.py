@@ -479,7 +479,8 @@ def t_readiness():
     buf = io.StringIO()
     from engine import readiness as RR
     saved = RR.gather
-    RR.gather = lambda bot, now, news_fn=None: dict(GOOD)
+    # main() reads the real clock: a fixed 2026-11-01 self-test aged past 8 days on 2026-11-09 (time bomb), so it is "yesterday" here
+    RR.gather = lambda bot, now, news_fn=None: {**GOOD, "selftest": {**GOOD["selftest"], "t": int(__import__("time").time()) - 86400}}
     try:
         with contextlib.redirect_stdout(buf):
             H.main(["--readiness"])
