@@ -33,6 +33,7 @@
     ['nq', 'nq/', 'NQ', 'Bots right now', 'Is each bot on, drawdown left, the last trades', 'bots', 'bots', 'bots bot status zlarior atlas blitz lit running pc drawdown trades nq ninjatrader', ''],
     ['today', '', 'Dashboard', 'Full NQ dashboard', 'The full NQ dashboard: today, trades, results', 'bots', 'bots', 'dashboard zenith home main board results today nq bot', ''],
     ['argus', 'argus/', 'Argus', 'What to fix', 'The hundred eyes: problems worth fixing', 'bots', 'bots', 'fix problems issues bugs health lights', ''],
+    ['board', 'board/', 'Board', 'Live board', 'What the bot, you and Claude know: accounts and notes', 'bots', 'bots', 'board notes accounts events claude what the bot knows', ''],
     ['aegis', 'aegis/', 'Aegis', 'Risk guard', 'Drawdown left, and when to stop for the day', 'bots', 'risk', 'drawdown risk stop loss max loss limit safe danger shield guard dll mll', ''],
     ['pnyx', 'pnyx/', 'Pnyx', 'Rules and risk calculator', 'Prop-firm rules, and stop to micros', 'bots', 'risk', 'rules calculator micros size contracts stop prop firm', ''],
     ['labyrinth', 'labyrinth/', 'Labyrinth', 'Size your eval', 'The risk maze: how big to trade', 'bots', 'risk', 'size sizing micros contracts risk eval', ''],
@@ -42,6 +43,7 @@
     ['odeon', 'odeon/', 'Odeon', 'Trade replays', 'Every trade, replayed in 3D', 'bots', 'trades', 'trades history replay chart past fills', ''],
     ['nemesis', 'nemesis/', 'Nemesis', 'Losing trades', 'What went wrong, trade by trade', 'bots', 'trades', 'losses losers losing mistakes what went wrong', ''],
     ['kronos', 'kronos/', 'Kronos', 'P&L calendar', 'Daily P&L, best weekday and hour', 'bots', 'trades', 'pnl calendar days money daily', ''],
+    ['trading', 'trading/', 'Trading', 'Every trade', "Today's $, the calendar, the stats and the payout rules", 'bots', 'trades', 'trades trading calendar stats payout payouts rules today pnl', ''],
     ['apollo', 'apollo/', 'Apollo', 'Weekly review', "The week's review and one rule for next week", 'bots', 'review', 'weekly review week lessons rule', ''],
     ['journal', 'journal/', 'Mnemosyne', 'Trade journal', 'A 10-second journal: what your habits cost', 'bots', 'review', 'journal diary notes habits mistakes log mnemosyne', ''],
     ['kratos', 'kratos/', 'Kratos', 'Discipline score', 'A 0-100 score a day: plan, stop, size, hours', 'bots', 'review', 'discipline score rules habits', ''],
@@ -215,7 +217,14 @@
     ['act-micros', 'How many micros for a stop', 'Stop size to contracts', 'pnyx/index.html', 'micros contracts how many stop size calculator mnq'],
     ['act-payout', 'Payouts and fees so far', 'What came in, what went out', 'ledger/index.html', 'payout payouts paid withdraw fees cost profit cash'],
     ['act-pc', 'Start the bot on the PC', 'The steps on your Windows PC', 'pc/index.html', 'start pc windows ninjatrader setup install launch'],
-    ['act-workshop', 'Workshop (labs)', 'Test pages for building', 'hub/index.html?h=settings&t=workshop', 'labs lab workshop test build']
+    ['act-workshop', 'Workshop (labs)', 'Test pages for building', 'hub/index.html?h=settings&t=workshop', 'labs lab workshop test build'],
+    // the four doors' pages that are not apps (2026-11-18, olympus/doors.js): so the Home search finds them by plain words
+    ['act-doors', 'The four doors', 'ZEUS Trading, Money, Kalshi, More', 'hub/doors.html', 'doors door organized organised start zeus trading money kalshi more everything'],
+    ['act-accounts', 'My accounts', 'Every eval and funded account on one page', 'business/accounts.html', 'accounts account evals eval funded mffu builder 50k 25k rapid balance pass'],
+    ['act-taxes', 'Taxes', 'The 30% tax pot and the next due date', 'business/taxes.html', 'taxes tax irs estimated quarterly pot set aside'],
+    ['act-fleet', 'Fleet plan', 'All accounts, 6 months, what to buy next', 'business/plan.html', 'fleet plan accounts buy rapid builder months monte carlo'],
+    ['act-brain', "The bot's brain", 'What the bot is thinking right now', 'index.html#/brain', 'brain thinking setups levels sweep why waiting bot'],
+    ['act-payrules', 'Payout rules check', 'Can I ask for a payout yet', 'trading/index.html#rulesCard', 'payout payouts rules request withdraw consistency best day']
   ].map(function (r) { return Object.freeze({ kind: 'action', id: r[0], label: r[1], line: r[2], path: r[3], words: r[4] }); });
   function allWords(text, toks, min) { for (var i = 0; i < toks.length; i++) { if (toks[i].length < (min || 1) || !wordStarts(text, toks[i])) return false; } return toks.length > 0; }
   function toksOf(q) { return norm(q).split(' ').filter(function (t) { return t.length > 0; }); }

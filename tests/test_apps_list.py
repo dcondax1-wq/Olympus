@@ -7,7 +7,11 @@
      list, in tools/web_public/index.html and web_next/index.html, and in the PC worker's ASSETS with its version bumped; the root worker is
      untouched (it fetches versioned files at run time; olympus/ is not its to cache)
   c. Chromium, the phone dashboard (same origin) and the PC dashboard (127.0.0.1, the public site's URLs): the top-bar button, the glass sheet,
-     the Jarvis button, 27 tiles in Trading / Life / Money, search, recent, status dots from <app>/jarvis.json, Escape / close, LITE
+     the Jarvis button, the tiles in the FOUR DOORS (ZEUS Trading / Money / Kalshi / More, olympus/doors.js, 2026-11-18), the door shortcuts,
+     search by plain words (payout, taxes, accounts, kalshi), recent, status dots from <app>/jarvis.json, Escape / close, LITE
+  d. the four doors (olympus/doors.js = web_next/js/next/doors.js, docs/ORGANIZATION.md): every app of the list in exactly one door, 5-8
+     shortcuts per door with a plain label + the Greek name + a path that exists, the copies in switcher.js / atlas.js equal,
+     and the plain words find the right things
     python -X utf8 -m tests.test_apps_list            (--static: parts a and b)
 """
 from __future__ import annotations
@@ -75,19 +79,62 @@ def test_static():
     check("a. every app marked live has its jarvis.json (the status dot reads it)", not nolive, nolive)
 
     check("b. launcher.js is byte-identical in tools/web_public and web_next/js/next", read(WEB, "launcher.js", mode="rb") == read(NEXT, "js", "next", "launcher.js", mode="rb"))
+    doors_static(ids)
     ph, pc = read(WEB, "index.html"), read(NEXT, "index.html")
     check("b. the phone dashboard has ONE tag, launcher.js (deferred); the list is loaded by the launcher, async, so a slow site never holds Zenith back",
-          '<script src="launcher.js?v=l9" defer></script>' in ph and "apps-list" not in ph and "olympus/apps-list.js?v=l4" in read(WEB, "launcher.js"))
-    check("b. the PC dashboard has ONE tag, js/next/launcher.js (the list comes from js/next/apps-list.js, in the worker's ASSETS)", '<script src="/js/next/launcher.js?v=l9" defer></script>' in pc and "apps-list" not in pc and "/js/next/apps-list.js?v=l4" in read(NEXT, "js", "next", "launcher.js"))
+          '<script src="launcher.js?v=l10" defer></script>' in ph and "apps-list" not in ph and "olympus/apps-list.js?v=l4" in read(WEB, "launcher.js"))
+    check("b. the PC dashboard has ONE tag, js/next/launcher.js (the list comes from js/next/apps-list.js, in the worker's ASSETS)", '<script src="/js/next/launcher.js?v=l10" defer></script>' in pc and "apps-list" not in pc and "/js/next/apps-list.js?v=l4" in read(NEXT, "js", "next", "launcher.js"))
     sw = read(NEXT, "sw.js")
     v = re.search(r"const SHELL = 'le-shell-next-v(\d+)'", sw)
-    check("b. the PC worker caches both files and its version is bumped (v34 or later)", "'/js/next/apps-list.js?v=l4'" in sw and "'/js/next/launcher.js?v=l9'" in sw and v and int(v.group(1)) >= 34)
+    check("b. the PC worker caches both files and its version is bumped (v34 or later)", "'/js/next/apps-list.js?v=l4'" in sw and "'/js/next/launcher.js?v=l10'" in sw and v and int(v.group(1)) >= 34)
     check("b. the root worker is untouched by the launcher (it fetches versioned files at run time; olympus/ is skipped on purpose)", "launcher" not in read(WEB, "sw.js") and "apps-list" not in read(WEB, "sw.js"))
     js = read(WEB, "launcher.js")
     check("b. launcher.js: read-only (no POST, no orders), every storage call in try, Safari 16 safe (no lookbehind, ?., ??, .at())",
           not re.search(r"method:\s*['\"](POST|PUT|DELETE)", js) and not re.search(r"\(\?<[=!]|\?\?|\.at\(|[\w)\]]\?\.[A-Za-z_$]", js) and js.count("localStorage.") == 2 and "try {" in js)
     check("b. launcher.js: the keys oly.launcher.recent / oly.launcher.status, the public site URL for the PC, the status fetch is lazy (only on open)",
           "'oly.launcher.recent'" in js and "'oly.launcher.status'" in js and "https://demetrades2000-coder.github.io/nq-dashboard/" in js and js.index("function loadStatus") < js.index("function open()") and "loadStatus();" in js[js.index("function open()"):])
+
+
+def doors_static(ids):
+    """d. the four doors: one file, every app once, short doors, real paths, the copies equal, the plain words."""
+    check("d. olympus/doors.js is byte-identical in tools/web_public and web_next/js/next (the PC launcher loads its copy)",
+          read(WEB, "olympus", "doors.js", mode="rb") == read(NEXT, "js", "next", "doors.js", mode="rb"))
+    js = r"""const D = require(process.argv[1] + '/olympus/doors.js'), L = require(process.argv[1] + '/olympus/apps-list.js');
+const f = (q) => { const r = D.find(q, L); return { items: r.items.map((x) => x.item.href), apps: r.apps.map((a) => a.id) }; };
+console.log(JSON.stringify({ doors: D.DOORS.map((d) => ({ id: d.id, title: d.title, ids: d.ids, items: d.items })), more: D.doorOf('x-new'),
+  payout: f('payout'), taxes: f('taxes'), accounts: f('accounts'), kalshi: f('kalshi'), brain: f('brain'), drawdown: f('drawdown'), fleet: f('fleet plan') }));"""
+    r = subprocess.run(["node", "-e", js, WEB], capture_output=True, text=True, timeout=60)
+    try:
+        o = json.loads(r.stdout)
+    except ValueError:
+        check("d. doors.js loads in node", False, r.stderr[-400:])
+        return
+    D = o["doors"]
+    check("d. four doors in order: ZEUS Trading, Money, Kalshi, More", [d["title"] for d in D] == ["ZEUS Trading", "Money", "Kalshi", "More"], [d["title"] for d in D])
+    every = [i for d in D for i in d["ids"]]
+    check("d. every app of the list is in exactly one door (a new app lands in More until it is filed)",
+          sorted(every) == sorted(ids) and len(every) == len(set(every)) and o["more"] == "more", (set(ids) ^ set(every), len(every), len(set(every))))
+    def exists(h):
+        path = h.split("#")[0].split("?")[0] or "index.html"
+        full = os.path.join(WEB, path)
+        return os.path.isfile(os.path.join(full, "index.html")) if path.endswith("/") else os.path.isfile(full)
+    bad = [(d["id"], it["href"]) for d in D for it in d["items"] if not exists(it["href"]) and not it["href"].startswith("planner/")]
+    check("d. each door: 5-8 shortcuts, each a plain label + its Greek / page name + a page that exists in the site",
+          all(5 <= len(d["items"]) <= 8 and all(it["label"] and it["greek"] and it["words"] for it in d["items"]) for d in D) and not bad, bad)
+    check("d. plain words: 'payout' finds the payout rules, Ledger and Hera; 'taxes' the Taxes page; 'accounts' My Accounts; 'kalshi' all five Kalshi apps; 'brain' the bot's brain; 'drawdown' Aegis; 'fleet plan' the Fleet Plan",
+          "trading/#rulesCard" in o["payout"]["items"] and {"ledger", "hera"} <= set(o["payout"]["apps"]) and "business/taxes.html" in o["taxes"]["items"]
+          and "business/accounts.html" in o["accounts"]["items"] and {"kalshi", "dionysus", "kalshicity", "sibyl", "tyche"} <= set(o["kalshi"]["apps"])
+          and "index.html#/brain" in o["brain"]["items"] and "aegis" in o["drawdown"]["apps"] and "business/plan.html" in o["fleet"]["items"], o)
+    def ids_of(src, pat):
+        m = re.search(pat, src, re.S)
+        return re.findall(r"\{\s*id:\s*'([a-z]+)'[^}]*?ids:\s*\[([^\]]*)\]", m.group(0)) if m else []
+    want = [(d["id"], d["ids"]) for d in D]
+    for name, src in (("jarvis/switcher.js DIST", read(WEB, "jarvis", "switcher.js")), ("atlas/atlas.js zones", read(WEB, "atlas", "atlas.js"))):   # districts.js = the home courtyard's 5 doorways
+        got = [(i, re.findall(r"'([a-z]+)'", lst)) for i, lst in ids_of(src, r"(?:const DIST = |const zones = )\[.*?\n\s*\];")]
+        check(f"d. {name} is the four doors (same ids, same app lists as olympus/doors.js)", got == want, got)
+    lj = read(WEB, "launcher.js")
+    check("d. the launcher loads doors.js with the list (async; olympus/doors.js on the phone, /js/next/doors.js on the PC) and groups by it",
+          "'olympus/doors.js?v=d1'" in lj and "'/js/next/doors.js?v=d1'" in lj and "D.DOORS.map" in lj and "OLYMPUS_DOORS" in lj)
 
 
 # ------------------------------------------------------------------ c. browser
@@ -150,7 +197,16 @@ def test_phone(br, origin):
     j = p.evaluate("(() => { const a = document.querySelector('.oly-l .oly-jv'); return { href: a.getAttribute('href'), target: a.target, text: a.textContent }; })()")
     check("c. phone: the sheet opens with the big 'Open Olympus (Jarvis)' button (jarvis/, this tab) and all app tiles", S["open"] and not S["pc"] and S["tiles"] == NTILES and j["href"] == "jarvis/" and not j["target"] and "Open Olympus (Jarvis)" in j["text"], (S, j))
     g = p.evaluate("[...document.querySelectorAll('.oly-l section')].map((s) => [s.dataset.group, s.querySelectorAll('.oly-tile').length])")
-    check("c. phone: three groups (Trading, Life, Money) with their apps; Zenith itself is not in it", [x[0] for x in g] == ["trading", "life", "money"] and sum(x[1] for x in g) == NTILES and p.locator('.oly-l .oly-tile[data-app=zenith]').count() == 0, g)
+    check("c. phone: the four doors (ZEUS Trading, Money, Kalshi, More) with their apps; Zenith itself is not in it", [x[0] for x in g] == ["zeus", "money", "kalshi", "more"] and sum(x[1] for x in g) == NTILES and p.locator('.oly-l .oly-tile[data-app=zenith]').count() == 0, g)
+    dk = p.evaluate("[...document.querySelectorAll('.oly-l section[data-group=money] .oly-dk')].map((a) => [a.querySelector('b').textContent, a.getAttribute('href')])")
+    check("c. phone: each door starts with its shortcuts in plain words (Money: Taxes -> business/taxes.html), its heading opens the Doors page",
+          ["Taxes", "business/taxes.html"] in dk and p.evaluate("document.querySelector('.oly-l section[data-group=zeus] h3 a').getAttribute('href')") == "hub/doors.html#zeus", dk)
+    p.fill(".oly-l .oly-sr input", "taxes"); p.wait_for_timeout(150)
+    tx = p.evaluate("[...document.querySelectorAll('.oly-l .oly-dk:not([hidden]), .oly-l .oly-tile:not([hidden])')].map((t) => t.getAttribute('href'))")
+    p.fill(".oly-l .oly-sr input", "payout"); p.wait_for_timeout(150)
+    po = p.evaluate("[...document.querySelectorAll('.oly-l .oly-dk:not([hidden]), .oly-l .oly-tile:not([hidden])')].map((t) => t.getAttribute('href'))")
+    p.fill(".oly-l .oly-sr input", ""); p.wait_for_timeout(100)
+    check("c. phone: search by plain words: 'taxes' shows the Taxes page, 'payout' the payout rules and Ledger", "business/taxes.html" in tx and "trading/#rulesCard" in po and "ledger/" in po, (tx, po))
     t = p.evaluate("(() => { const a = document.querySelector('.oly-l .oly-tile[data-app=oracle]'); return { href: a.getAttribute('href'), name: a.querySelector('b').textContent, purpose: a.querySelector('small').textContent, glyph: a.querySelector('.oly-g').textContent, c: a.style.getPropertyValue('--c') }; })()")
     check("c. phone: a tile = its glyph in its colour, its name and one plain line, and opens <app>/ in this tab", t["href"] == "oracle/" and t["name"] == "Oracle" and t["c"] == "#7fb0a3" and len(t["purpose"]) > 8, t)
     p.wait_for_timeout(4000)

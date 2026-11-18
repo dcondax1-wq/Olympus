@@ -3,7 +3,10 @@
  * (olympus/apps-list.js on the phone, js/next/apps-list.js on the PC) is loaded by this script, async, 4 s after the page is up or when the sheet opens, so a
  * slow site never holds Zenith back (a deferred file would). The list is generated from jarvis/apps.js + olympus/olympus.js by tools/apps_list_build.py (window.OLYMPUS_APPS_LIST).
  *   top      a big "Open Olympus (Jarvis)" button, then a search box and your 4 most recent apps
- *   grid     Trading / Life / Money: each app a tile (its glyph in its own colour, name, one plain line, a status dot)
+ *   grid     the FOUR DOORS (2026-11-18, olympus/doors.js, docs/ORGANIZATION.md): ZEUS Trading / Money / Kalshi / More, each with its few
+ *            shortcuts in plain words (chips: My accounts, Taxes, Bot's brain...) and then its apps as tiles (glyph in its own colour, name,
+ *            one plain line, a status dot); a door's heading opens hub/doors.html#<door>. doors.js is loaded with the list (async); without it
+ *            the old groups Trading / Life / Money. Search: every word of a door's shortcut or an app's plain words (OLYMPUS_DOORS.words).
  *   status   the dot comes from <app>/jarvis.json (fetched only when the sheet opens, 4 at a time, 5 s each, kept 5 min in
  *            localStorage 'oly.launcher.status'): green = running well, amber = needs a look, red = a problem, grey = not updated
  *            for 30 minutes, no dot = the app has no status card. A failed fetch keeps the last dot.
@@ -19,7 +22,8 @@
   var d = document, root = d.documentElement;
   var PUBLIC = (function () { var o = get('oly.public'); if (o && /^https:\/\/[^ ]+\/$/.test(o)) return o; return 'https://demetrades2000-coder.github.io/nq-dashboard/'; })();   // the PC dashboard has no apps of its own: a site address saved as localStorage 'oly.public' overrides the default
   var RECENT_KEY = 'oly.launcher.recent', STATUS_KEY = 'oly.launcher.status', RECENT_MAX = 4, FAV_KEY = 'oly.launcher.fav', FAV_MAX = 12, PRESS_MS = 520, STATUS_TTL = 5 * 60 * 1000, STALE_S = 30 * 60, FETCH_MS = 5000, PARALLEL = 4;
-  var GROUPS = [['trading', 'Trading'], ['life', 'Life'], ['money', 'Money']];
+  var GROUPS = [['trading', 'Trading'], ['life', 'Life'], ['money', 'Money']];   // the old groups: only when olympus/doors.js did not load
+  function doors() { var D = window.OLYMPUS_DOORS; return D && D.DOORS && D.DOORS.length ? D : null; }
   // Every app keeps its registry glyph and receives a small visual signature. These names are presentation only:
   // routes, status, order and the generated app list remain the existing sources of truth.
   var GLYPH_MOTION = { oracle:'scan', odeon:'curtain', fates:'thread', datacity:'rise', tree:'leaf', prometheus:'flame', pantheon:'lightning', ares:'shield', forum:'banner', labyrinth:'maze', argus:'blink', nemesis:'scale', chronos:'tick', hephaestus:'forge', cities:'flight', kalshicity:'flow', journal:'ripple', ledger:'vault', inbox:'letter', settings:'control', bridge:'portal', planner:'calendar', mind:'neuron', arena:'laurel', athena:'owl', kalshi:'market', tyche:'coin', hermes:'wing', plutus:'treasure', atlas:'cartography', observatory:'lens' };
@@ -41,14 +45,15 @@
   // ---------------------------------------------------------------- the list (Zenith itself is not in its own launcher)
   var listState = 'idle', waiters = [];                         // idle | loading | done | failed
   function loadList(cb) {
-    if (window.OLYMPUS_APPS_LIST || listState === 'failed') { if (cb) cb(); return; }
+    if ((window.OLYMPUS_APPS_LIST && (doors() || listState !== 'idle')) || listState === 'failed' || listState === 'done') { if (cb) cb(); return; }
     if (cb) waiters.push(cb);
     if (listState === 'loading') return;
     listState = 'loading';
-    var s = d.createElement('script'), fin = function () { listState = window.OLYMPUS_APPS_LIST ? 'done' : 'failed'; var w = waiters; waiters = []; w.forEach(function (f) { try { f(); } catch (e) { /* */ } }); };
-    s.async = true; s.src = isPC ? '/js/next/apps-list.js?v=l4' : 'olympus/apps-list.js?v=l4';
-    s.onload = fin; s.onerror = fin;
-    (d.head || root).appendChild(s);
+    var left = 0, fin = function () { if (--left > 0) return; listState = window.OLYMPUS_APPS_LIST ? 'done' : 'failed'; var w = waiters; waiters = []; w.forEach(function (f) { try { f(); } catch (e) { /* */ } }); };
+    var add = function (src) { left++; var s = d.createElement('script'); s.async = true; s.src = src; s.onload = fin; s.onerror = fin; (d.head || root).appendChild(s); };
+    if (!window.OLYMPUS_APPS_LIST) add(isPC ? '/js/next/apps-list.js?v=l4' : 'olympus/apps-list.js?v=l4');
+    if (!doors()) add(isPC ? '/js/next/doors.js?v=d1' : 'olympus/doors.js?v=d1');      // the four doors (same file on both sites)
+    if (!left) { left = 1; fin(); }
   }
   function apps() {
     var L = window.OLYMPUS_APPS_LIST;
@@ -143,6 +148,11 @@
     '.oly-l .oly-mb[aria-pressed="true"]{background:var(--oly-th-a8, #c8a24a);color:var(--oly-th-n3, #14110e)}',
     '.oly-l h3{margin:16px 2px 8px;font:700 15px/1.1 var(--oly-th-display, "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif);letter-spacing:.02em;color:var(--gc,var(--oly-th-a11, #e0c27a));border-bottom:1px solid var(--gc,var(--oly-th-a8, #c8a24a));padding-bottom:5px}',
     '.oly-l [data-group=trading]{--gc:var(--oly-th-a8, #c8a24a)}.oly-l [data-group=life]{--gc:#4b7a99}.oly-l [data-group=money]{--gc:var(--oly-th-g6, #7f8a52)}.oly-l .oly-fav{--gc:var(--oly-th-warn, #e0b060)}',
+    '.oly-l [data-group=zeus]{--gc:var(--oly-th-a8, #c8a24a)}.oly-l [data-group=kalshi]{--gc:#c9b94e}.oly-l [data-group=more]{--gc:#d1a06a}.oly-l section[data-group=money]{--gc:#a0ac6e}',
+    '.oly-l h3 a.oly-dh{display:flex;align-items:center;justify-content:space-between;min-height:40px;color:inherit;text-decoration:none}.oly-l h3 a.oly-dh em{font:600 12px -apple-system,system-ui,sans-serif;font-style:normal;color:var(--oly-th-n30, #cfc4b2)}',
+    '.oly-l .oly-dks{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 9px}.oly-l .oly-dk{display:inline-flex;flex-direction:column;justify-content:center;min-height:44px;padding:4px 12px;border-radius:12px;box-sizing:border-box;text-decoration:none;',
+    'color:var(--oly-th-n37, #f3ece0);background:var(--oly-th-n5, #26211b);border:1px solid var(--gc,var(--oly-th-n8, #3a3228))}.oly-l .oly-dk b{font:700 14px/1.15 -apple-system,system-ui,sans-serif}.oly-l .oly-dk small{font-size:11px;line-height:1.2;color:var(--oly-th-n24, #a89c88)}',
+    '.oly-l.map .oly-dks{display:none}',
     '.oly-l .oly-rc{display:flex;gap:8px;overflow-x:auto;padding:2px 0 4px;scrollbar-width:none}.oly-l .oly-rc::-webkit-scrollbar{display:none}',
     '.oly-l .oly-chip{flex:none;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 14px 0 8px;border-radius:999px;border:1px solid var(--oly-th-n8, #3a3228);background:var(--oly-th-n5, #26211b);color:var(--oly-th-n37, #f3ece0);text-decoration:none;font:600 14px -apple-system,system-ui,sans-serif}',
     '.oly-l .oly-chip i,.oly-l .oly-tile .oly-g{display:grid;place-items:center;font-style:normal;border-radius:50%;color:var(--c);background:rgba(var(--cr),.12);border:1.5px solid var(--c)}',
@@ -180,7 +190,7 @@
     var jt = el('span'); jt.appendChild(el('b', '', 'Open Olympus (Jarvis)')); jt.appendChild(el('small', '', 'Talk to Jarvis, switch apps, see everything at once'));
     jv.appendChild(jo); jv.appendChild(jt); jv.appendChild(el('span', 'oly-go', '›'));
     jv.addEventListener('click', function () { close(); });
-    var sr = el('div', 'oly-sr'), inp = el('input'); inp.type = 'search'; inp.placeholder = 'Search apps'; inp.setAttribute('aria-label', 'Search apps'); inp.autocomplete = 'off'; inp.setAttribute('autocapitalize', 'off'); inp.spellcheck = false; inp.enterKeyHint = 'go';
+    var sr = el('div', 'oly-sr'), inp = el('input'); inp.type = 'search'; inp.placeholder = 'Search: payout, taxes, accounts, kalshi'; inp.setAttribute('aria-label', 'Search apps'); inp.autocomplete = 'off'; inp.setAttribute('autocapitalize', 'off'); inp.spellcheck = false; inp.enterKeyHint = 'go';
     inp.addEventListener('input', function () { st.q = inp.value; filter(); });
     inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { var t = sc.querySelector('.oly-tile:not([hidden])'); if (t) t.click(); } });
     sr.appendChild(inp);
@@ -222,7 +232,7 @@
       t.addEventListener('click', function (e) { if (pressed) { pressed = false; e.preventDefault(); e.stopImmediatePropagation(); } }, true);
       t.addEventListener('contextmenu', function (e) { e.preventDefault(); });
       t.addEventListener('keydown', function (e) { if (e.key === 'f' || e.key === 'F') toggleFav(a.id); });
-      t.setAttribute('data-q', (a.name + ' ' + a.purpose + ' ' + a.groupName + ' ' + a.id).toLowerCase());
+      t.setAttribute('data-q', doors() ? doors().words(a) : (a.name + ' ' + a.purpose + ' ' + a.groupName + ' ' + a.id).toLowerCase());
     }
     t.addEventListener('click', function () { touch(a.id); if (isPC) setTimeout(renderRecent, 0); else close(); });
     return t;
@@ -238,14 +248,29 @@
     var frag = [], n = 0;
     var byId = {}; st.apps.forEach(function (a) { byId[a.id] = a; });
     var fv = favs().map(function (id) { return byId[id]; }).filter(Boolean);
-    if (fv.length) {                                           // a div, not a section: the three groups stay Trading / Life / Money
+    if (fv.length) {                                           // a div, not a section: the sections stay the four doors
       var fd = el('div', 'oly-fav'); fd.appendChild(el('h3', '', '\u2605 Favourites'));
       var fg = el('div', 'oly-gr'); fv.forEach(function (a) { fg.appendChild(tile(a, n++, false)); }); fd.appendChild(fg); frag.push(fd);
     }
-    GROUPS.forEach(function (g) {
-      var list = st.apps.filter(function (a) { return a.group === g[0]; });
-      if (!list.length) return;
-      var sec = el('section'); sec.setAttribute('data-group', g[0]); sec.appendChild(el('h3', '', g[1]));
+    var D = doors();
+    (D ? D.DOORS.map(function (x) { return [x.id, x.title, x]; }) : GROUPS).forEach(function (g) {
+      var list = st.apps.filter(function (a) { return D ? D.doorOf(a.id) === g[0] : a.group === g[0]; });
+      if (!list.length && !(g[2] && g[2].items.length)) return;
+      var sec = el('section'); sec.setAttribute('data-group', g[0]);
+      if (g[2]) {                                              // a door: its heading opens the Doors page there, then its shortcuts
+        var h = el('h3'), ha = el('a', 'oly-dh'); ha.href = url('hub/doors.html#' + g[0]); if (isPC) { ha.target = '_blank'; ha.rel = 'noopener'; }
+        ha.appendChild(el('span', '', g[1])); ha.appendChild(el('em', '', 'Open door \u203a')); ha.addEventListener('click', function () { if (!isPC) close(); });
+        h.appendChild(ha); sec.appendChild(h);
+        var ks = el('div', 'oly-dks');
+        g[2].items.forEach(function (it) {
+          var k = el('a', 'oly-dk'); k.href = url(it.href); if (isPC) { k.target = '_blank'; k.rel = 'noopener'; }
+          k.appendChild(el('b', '', it.label)); k.appendChild(el('small', '', it.greek));
+          k.setAttribute('data-q', [it.label, it.greek, it.words, g[1]].join(' ').toLowerCase());
+          k.addEventListener('click', function () { if (it.app) touch(it.app); if (!isPC) close(); });
+          ks.appendChild(k);
+        });
+        sec.appendChild(ks);
+      } else sec.appendChild(el('h3', '', g[1]));
       var gr = el('div', 'oly-gr');
       list.forEach(function (a) { var t = tile(a, n++, false); st.tiles[a.id] = t; gr.appendChild(t); });
       sec.appendChild(gr); frag.push(sec);
@@ -257,11 +282,12 @@
     renderRecent(); filter();
   }
   function filter() {
-    var q = st.q.trim().toLowerCase(), shown = 0;
-    [].forEach.call(els.body.querySelectorAll('.oly-tile'), function (t) { t.hidden = !(!q || t.getAttribute('data-q').indexOf(q) >= 0); });
-    st.apps.forEach(function (a) { if (!st.tiles[a.id].hidden) shown++; });
-    els.body.querySelectorAll('section, .oly-fav').forEach(function (s) { s.hidden = !s.querySelector('.oly-tile:not([hidden])'); });
-    if (st.apps.length) { els.em.hidden = shown > 0; if (!shown) els.em.textContent = 'No app matches "' + st.q.trim().slice(0, 40) + '".'; }
+    var q = st.q.trim().toLowerCase(), ws = q.split(/\s+/).filter(Boolean), shown = 0, keys = 0;
+    var hit = function (n) { var h = n.getAttribute('data-q') || ''; for (var i = 0; i < ws.length; i++) if (h.indexOf(ws[i]) < 0) return false; return true; };   // every word
+    [].forEach.call(els.body.querySelectorAll('.oly-tile, .oly-dk'), function (t) { t.hidden = !(!q || hit(t)); if (!t.hidden && t.className === 'oly-dk') keys++; });
+    st.apps.forEach(function (a) { if (st.tiles[a.id] && !st.tiles[a.id].hidden) shown++; });
+    els.body.querySelectorAll('section, .oly-fav').forEach(function (s) { s.hidden = !s.querySelector('.oly-tile:not([hidden]), .oly-dk:not([hidden])'); });
+    if (st.apps.length) { els.em.hidden = shown + keys > 0; if (!shown && !keys) els.em.textContent = 'No app matches "' + st.q.trim().slice(0, 40) + '".'; }
     renderRecent();
   }
 
@@ -271,7 +297,7 @@
     els.o.classList.toggle('calm', calm());
     render();
     els.o.hidden = false;
-    if (!window.OLYMPUS_APPS_LIST) loadList(function () { if (st.open) { render(); loadStatus(); } });
+    if (!window.OLYMPUS_APPS_LIST || !doors()) loadList(function () { if (st.open) { render(); loadStatus(); } });
     root.style.overflow = 'hidden';
     try { if (window.ZenithFX && ZenithFX.glass && !calm()) ZenithFX.glass(els.pn, '.oly-tile', { deg: 4 }); } catch (e) { /* the plain tiles */ }
     setTimeout(function () { try { els.x.focus(); } catch (e) { /* */ } }, 30);

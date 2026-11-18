@@ -63,8 +63,8 @@ def test_static():
           '<html lang="en" data-theme="agora" data-oly-page="gate">' in html and "viewport-fit=cover" in html and 'name="theme-color"' in html and 'name="color-scheme" content="dark"' in html
           and html.count("<h1") == 1 and 'role="status"' in html and 'aria-live="polite"' in html and 'role="dialog"' not in html)
     check("a. one base-path line: gate/ -> '../', the site root (olympus-live.html) -> ''; agora.css + gate.css, then themes, the catalog, hub-status and gate.js load from GATE_BASE, in order (async = false)",
-          r"/\/gate\/(index\.html)?$/.test(p) ? '../' : ''" in html and "window.GATE_BASE = b" in html and "b + 'gate/gate.css?v=g7'" in html and "b + 'olympus/agora.css" in html
-          and "['olympus/themes.js?v=o6', 'pc_feed.js?v=pf1', 'olympus/gate-catalog.js?v=nv1', 'olympus/hub-status.js?v=h2', 'gate/gate.js?v=g8']" in html and "s.async = false" in html)
+          r"/\/gate\/(index\.html)?$/.test(p) ? '../' : ''" in html and "window.GATE_BASE = b" in html and "b + 'gate/gate.css?v=g8'" in html and "b + 'olympus/agora.css" in html
+          and "['olympus/themes.js?v=o6', 'pc_feed.js?v=pf1', 'olympus/gate-catalog.js?v=nv2', 'olympus/hub-status.js?v=h2', 'gate/gate.js?v=g8']" in html and "s.async = false" in html)
     tiles = re.findall(r'class="g-hub[^"]*" data-hub="(\w+)" data-to="hub/index.html\?h=(\w+)"', html)
     check("a. the hub tiles are plain links in the page (they work even if gate.js fails), in the owner's order (night A 2026-11-16): Bots & Evals (wide) and My Money (wide) first, Kalshi and Worlds near the end, Settings & Help last",
           [t[0] for t in tiles] == HUBS and all(a == b for a, b in tiles) and 'class="g-hub g-wide" data-hub="bots"' in html and 'class="g-hub g-wide" data-hub="money"' in html and html.count('class="g-hline"') == len(HUBS))
@@ -77,8 +77,9 @@ def test_static():
     check("a. the Mix follows the nine hubs: its rows are the catalog's hubs (C.hubs) + This Gate, each app maps to its hub, each hub page (data-oly-page hub-<id>) to its hub,"
           " the combos (written per v1 district) reach every hub through its legacy district, and a mix saved per district reads as its hubs",
           "(C && (C.hubs || C.districts))" in js and "o['hub-' + P[q][0]] = P[q][0]" in js and "c[k] || c[legacyOf(k)]" in js and "dist[legacyOf(k)]" in js)
-    check("a. NAV v3, the order on the page: the big search FIRST (with an A-Z button), Pinned, Right now, Your six, Recent, the hubs (+ All apps A to Z), Look, the footer",
-          html.index('id="q"') < html.index('id="azBtn"') < html.index('id="pinSec"') < html.index('id="now"') < html.index('id="quick"') < html.index('id="recentSec"')
+    check("a. NAV v3 + the four doors (2026-11-18), the order on the page: the big search FIRST (with an A-Z button), the FOUR DOORS (hub/doors.html#zeus|money|kalshi|more), Pinned, Right now, Your six, Recent, the hubs (+ All apps A to Z), Look, the footer",
+          re.findall(r'class="g-dr" data-door="([a-z]+)" data-to="hub/doors.html#\1"', html) == ["zeus", "money", "kalshi", "more"]
+          and html.index('id="q"') < html.index('id="azBtn"') < html.index('id="doorsSec"') < html.index('id="pinSec"') < html.index('id="now"') < html.index('id="quick"') < html.index('id="recentSec"')
           < html.index('id="hubsH"') < html.index('id="azWide"') < html.index('id="lookSec"') < html.index('class="g-foot"'))
     six = re.findall(r'class="g-q" data-app="([a-z]+)" data-to="([a-z]+)/index.html"', html)
     check("a. Your six are plain links in the page (one tap, they work without gate.js): Zlarior / ATLAS (NQ), Today (Compass), Money (Ledger), Drawdown (Aegis), My day (Planner), Kalshi",
@@ -108,7 +109,7 @@ def test_static():
     check("a. phone rules in the CSS: taps >= 44 px, safe areas, 176 px clear of Jarvis's corner at the end, reduced motion, LITE, no sideways scroll",
           css.count("min-height: 44px") >= 2 and "safe-area-inset" in css and "176px" in css and "prefers-reduced-motion: reduce" in css and 'data-oly-lite="1"' in css and "overflow-x: hidden" in css)
     check("a. gate-nav: one classic script, nothing when framed (inside Jarvis), the Home link + breadcrumb + 'Go to' (44 px), the catalog from its own folder (apps-list.js as a fallback)",
-          "if (framed) return;" in nav and "'Go to'" in nav and "min-height:44px" in nav and "olympus/gate-catalog.js?v=nv1" in nav and "olympus/apps-list.js" in nav and "aria-modal" in nav)
+          "if (framed) return;" in nav and "'Go to'" in nav and "min-height:44px" in nav and "olympus/gate-catalog.js?v=nv2" in nav and "olympus/apps-list.js" in nav and "aria-modal" in nav)
     tagged = {}
     for app in TEN:
         h = AK.read(os.path.join(AK.WEB, app, "index.html"))

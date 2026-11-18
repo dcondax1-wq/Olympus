@@ -16,15 +16,16 @@ test('standalone Atlas presents one Olympus command center', () => {
   assert.match(html, /The full directory/);
   assert.match(html, /hub\.js\?v=1/);
   assert.match(html, /atlas\.css\?v=8/);
-  assert.equal((html.match(/data-jump-filter=/g) || []).length, 5);
+  assert.equal((html.match(/data-jump-filter=/g) || []).length, 4);   // the four doors (2026-11-18, olympus/doors.js)
   assert.equal((html.match(/class="command-glass"/g) || []).length, 1);
 });
 
 test('directory keeps every arena discoverable and routes stay in the project', () => {
-  for (const zone of ['market', 'research', 'risk', 'command', 'life']) {
+  for (const zone of ['zeus', 'money', 'kalshi', 'more']) {        // the four doors
     assert.match(atlas, new RegExp(`id:'${zone}'`));
     assert.match(html, new RegExp(`data-filter="${zone}"`));
   }
+  for (const old of ['market', 'research', 'risk', 'command', 'life']) assert.match(atlas, new RegExp(`id:'${old}', to:'`));   // old #zone= links still land
   assert.match(atlas, /const link = \(a\) => '\.\.\/'/);
   const hrefs = [...html.matchAll(/<a[^>]+href="([^"]+)"/g)].map((match) => match[1]);
   assert.ok(hrefs.length >= 7);
