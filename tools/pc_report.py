@@ -53,6 +53,7 @@ WORK_DEFAULT = os.path.join(ROOT, "data", "pc_report")
 STATUS_FEED = os.path.join(ROOT, "tools", "web_public", "status_feed.json")
 NTFY_DEFAULT = "https://ntfy.sh"
 PORT_DEFAULT = int(os.environ.get("PORT") or 8766)
+KALSHI_RW_LITE = ("kind", "paper_only", "updated", "days", "reward", "fill_pnl", "net", "fills", "markets", "per100_day")   # the card's keys
 MAX_STATUS_BYTES = 3900          # ntfy turns a message over 4,096 bytes into a file attachment: stay under it
 # the split (owner 2026-11-18): the core "le-live" post every run, the extras in "le-live-ext" posts (tools/pc_feed.py merges them)
 EXT_KIND = "le-live-ext"
@@ -529,7 +530,8 @@ def full(snap: dict) -> dict:
     except Exception:  # noqa: BLE001
         pass
     if isinstance(snap.get("kalshi_rewards"), dict):   # the Kalshi page's "Rewards test (paper)" card (tools/kalshi_rewards_paper.py)
-        out["kalshi_rewards"] = snap["kalshi_rewards"]
+        # only what the card reads (~180 bytes, no per-series rows); it rides an ext post (EXT_ORDER)
+        out["kalshi_rewards"] = {k: snap["kalshi_rewards"].get(k) for k in KALSHI_RW_LITE if snap["kalshi_rewards"].get(k) is not None}
     if isinstance(snap.get("eh"), dict):     # the ZEUS edge chip (tools/edge_pc.read_tiny, <= 120 bytes; tools/web_public/edge_chip.js)
         out["eh"] = snap["eh"]
     for k in ("learn", "lab"):                     # the learning loop / ZEUS Lab notes when the reporter's snapshot has them
