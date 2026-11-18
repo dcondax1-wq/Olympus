@@ -465,6 +465,8 @@ def code_changes(week: dict) -> dict:
         s = re.sub(r"^(night-[\w-]+|team \w+|[A-Z]\d)\s*[:\-]\s*", "", s)
         s = re.sub(r"\s*\((?:[^()]*?)\)\s*$", "", s) if len(s) > 90 else s
         t = _clean(s, 100)
+        if t.lower().startswith("merge") or "cache bump" in t.lower() or t.lower().startswith(("version bumps", "test_", "state:")):
+            continue                     # merges and housekeeping are not "what changed" for the owner
         if t.lower() in seen:
             continue
         seen.add(t.lower())
