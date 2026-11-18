@@ -20,7 +20,7 @@ import { sweepCount, dayTypeOf, heatHistory, alertsOf } from './insights.js';
 
 const O = window.OLYMPUS || null;          // the OLYMPUS kit (../olympus/olympus.js): one 3D quality for every app, the veil
 const QUALITY_KEY = 'oracle.quality';      // the old per-app key: read only when the kit is missing
-const THEME = '#0d0b07';
+const THEME = '#14110e';
 const SITE_EVERY_S = 300;
 const reduced = O ? O.reduced() : matchMedia('(prefers-reduced-motion: reduce)').matches;
 const forced = new URLSearchParams(location.search).has('demo');

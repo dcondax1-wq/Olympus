@@ -312,7 +312,7 @@ def static_checks():
     unused = []
     for f, s in src.items():
         for name in re.findall(r"^export (?:async )?(?:function|class|const|let) (\w+)", s, re.M):
-            if not any(re.search(r"import \{[^}]*\b" + name + r"\b[^}]*\} from '\./" + re.escape(f[:-3]) + r"\.js'", o)
+            if not any(re.search(r"import \{[^}]*\b" + name + r"\b[^}]*\} from '\./" + re.escape(f[:-3]) + r"\.js(?:\?v=[\w.-]+)?'", o)
                        for g, o in src.items() if g != f):
                 unused.append(f"{f}:{name}")
     check("a. every export is imported by another module (no dead exports)", not unused, unused)
