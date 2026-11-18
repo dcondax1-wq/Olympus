@@ -197,7 +197,7 @@ def mffu_checks(now, lm):
     check("mf: the bot's own ledger -> start date, trading days, trades, wins, best / worst day, equity, last 4 only",
           row.get("sd") == "2026-10-19" and row.get("td") == 2 and row.get("n") == 3 and row.get("w") == 3 and row.get("bd") == ["2026-10-20", 450]
           and row.get("wd") == ["2026-10-19", 300] and row.get("eq") == [0, 300, 750] and row.get("l4") is None and "FAKEEVAL1" not in json.dumps(mf), mf)
-    L["accounts"][0]["broker_account"] = "MFFUEVBLDR602936016"
+    L["accounts"][0]["broker_account"] = "MFFUEVBLDR000006016"
     check("mf: the broker account shows as its last 4 digits only", MV.compact(L)["a"][0].get("l4") == "6016" and "60293" not in json.dumps(MV.compact(L)))
     L["board"]["atlas"] = {"id": "atlas", "balance": 25000.0, "profit": 0.0, "status": "funded", "eval_start": "2026-11-17",
                            "funded": {"cycle_profit": 0, "best_day": 0, "cycle_days": 0, "payouts_n": 0, "max_request": 0}}
