@@ -108,7 +108,7 @@ def part_b(tmp):
     keys = [tuple(s["dials"][k] for k in ids) for s in sel]
     check("b. no two selectable settings share the same dials; the live dials are the live setting; every ref exists", len(set(keys)) == len(keys) and tuple(d["live"][k] for k in ids) == tuple(live["dials"][k] for k in ids)
           and all(s["ref"] is None or any(x["id"] == s["ref"] for x in d["scenarios"]) for s in d["scenarios"]))
-    ref_md = rd(ROOT, "docs", "CLAUDE_REFERENCE.md")
+    ref_md = rd(ROOT, "docs", "TESTED_AND_REJECTED.md")
     check("b. the rejected strip comes from the Tested-and-rejected section of docs/CLAUDE_REFERENCE.md (>= 10 notes, each with a title and a text)",
           len(d["rejected"]) >= 10 and all(r["title"] and r["text"] for r in d["rejected"]) and "## Tested and rejected" in ref_md)
     shipped = json.load(open(os.path.join(PAGE, "data.json"), encoding="utf-8"))

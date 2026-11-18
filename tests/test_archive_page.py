@@ -39,7 +39,7 @@ def test_static():
           len(idx["runs"]) + in_shards + len(idx["skipped"]) == n_raw and n_raw > 2000, (n_raw, len(idx["runs"]), in_shards, idx["skipped"]))
     wu = len(glob.glob(os.path.join(AK.ROOT, "research", "writeups", "*.md"))) - 1
     check("a. the write-ups are the files of research/writeups (INDEX.md aside), each with a slug and a title", abs(len(idx["writeups"]) - wu) <= 6 and all(w["slug"] and w["title"] for w in idx["writeups"]), (len(idx["writeups"]), wu))
-    ref = open(os.path.join(AK.ROOT, "docs", "CLAUDE_REFERENCE.md"), encoding="utf-8").read()
+    ref = open(os.path.join(AK.ROOT, "docs", "TESTED_AND_REJECTED.md"), encoding="utf-8").read()
     sec = ref.split("## Tested and rejected")[1].split("\n## ")[0]
     bullets = len(re.findall(r"^- ", sec, re.M))
     check(f"a. the rejected list has every top-level bullet of 'Tested and rejected' ({bullets}) plus the rejected write-ups", len(idx["rejected"]) >= bullets and any("stops" in x["title"].lower() for x in idx["rejected"]), (len(idx["rejected"]), bullets))

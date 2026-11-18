@@ -186,8 +186,7 @@ def t_queue(tmp):
     check("every kind has its gate written in the queue", all(raw["gates"].get(e["kind"]) for e in Q))
     check("every experiment says how it is judged, when it was registered and why", all(e.get("judged_by") and e.get("registered") and len(e.get("hypothesis", "")) > 40 for e in Q))
     check("cut points are picked on 2026 H1 (h1_q) or are yes/no facts", all(("h1_q" in s) or s["op"] in ("true", "false") for e in Q for s in e["rule"]))
-    rej = open(os.path.join(ROOT, "docs", "CLAUDE_REFERENCE.md"), encoding="utf-8").read()
-    rej = rej[rej.index("## Tested and rejected"):rej.index("## Key commands")]
+    rej = open(os.path.join(ROOT, "docs", "TESTED_AND_REJECTED.md"), encoding="utf-8").read()
     feats = {s["feature"] for e in Q for s in e["rule"]}
     check("no queued fact is one 'Tested and rejected' names as tried", not any(f in rej for f in feats), [f for f in feats if f in rej])
     bad = {"experiments": [{"id": "a", "bot": "lit", "kind": "nope", "rule": [], "title": "t", "hypothesis": "h", "judged_by": "j", "registered": "r"},
