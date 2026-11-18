@@ -32,7 +32,13 @@ os.environ["LE_PR_NO_NET"] = "1"                   # the real HTTP helper refuse
 
 from zoneinfo import ZoneInfo  # noqa: E402
 
+from engine import notify as N  # noqa: E402
 from tools import pc_report as R  # noqa: E402
+
+# the fixture sets its own alert settings: every type ON (the repo's notify_settings.json is "important only", trade_opened off,
+# owner 2026-11-18, and must not decide what these entry-push checks see)
+_ALL_ON = N.merge({"alerts": {k: True for k in N.TYPES}})
+N.settings = lambda path=None: _ALL_ON
 
 ET = ZoneInfo("America/New_York")
 RES: list = []

@@ -79,7 +79,7 @@ def roll_pushes(now: int, roll_state=None) -> list:
         if not late and quiet(now):
             continue
         out.append({"key": PREFIX + m["key"], "title": m["title"], "body": m["body"], "priority": m.get("priority") or "default",
-                    "tags": "warning" if late else "calendar"})
+                    "tags": "warning" if late else "calendar", "kind": "problems"})   # a missed roll = the wrong contract: stays on under "important only"
     return out
 
 
