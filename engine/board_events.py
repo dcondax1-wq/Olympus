@@ -42,7 +42,8 @@ PLAN_PATH = os.path.join(ROOT, "tools", "web_public", "business", "accounts.json
 EVENTS, SHARED, INBOX = "events.jsonl", "shared.jsonl", "board.jsonl"
 KINDS = ("eval_passed", "eval_failed", "account_locked", "order_rejected", "payout_ready", "payout_requested", "balance",
          "bot_started", "bot_stopped", "pc_silent", "owner_note", "claude_note", "plan_changed",
-         "daily_review")                 # daily_review: the ZEUS nightly self-review (engine/zeus_review.py), one a day
+         "daily_review",                 # daily_review: the ZEUS nightly self-review (engine/zeus_review.py), one a day
+         "brief")                        # brief: the 07:30 ET ZEUS morning brief (tools/morning_brief.py), one a day
 LOUD = {"eval_passed", "eval_failed", "account_locked", "order_rejected", "payout_ready", "pc_silent"}
 MAX_TEXT = 300
 MAX_DATA = 2000
@@ -56,6 +57,7 @@ RULES = {"Rapid EOD 50K": (50000.0, 3000.0, 2000.0), "Rapid EOD 25K": (25000.0, 
 SRC_LABEL = {"bot": "PC", "owner": "owner, typed", "claude": "Claude", "plan": "PLAN", "cloud": "cloud"}
 _LOCK = threading.Lock()
 _S: dict = {"running": None}
+KINDS += ("weekly_review",)          # tools/weekly_review.py: "Weekly review ready" (Friday ops task on the PC), once a week
 
 _CTRL = re.compile(r"[\x00-\x1f\x7f<>]")
 _LOCK_RX = re.compile(r"limit\s*0\b|max(imum)?\s+order\s+quantity|account\s+(is\s+)?(locked|disabled|halted)", re.I)

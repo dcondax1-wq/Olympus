@@ -1,16 +1,16 @@
 {
  "v": 1,
- "t": 1794966715,
- "built": "2026-11-18 01:51",
+ "t": 1794974565,
+ "built": "2026-11-18 04:02",
  "data_to": "2026-10-16",
  "where": "cloud",
  "counts": {
-  "rejected": 6,
+  "rejected": 11,
   "parked": 5,
   "blocked": 3
  },
- "cells": 14,
- "p_needed": 0.01429,
+ "cells": 43,
+ "p_needed": 0.00465,
  "rules": {
   "shadow_weeks": 4,
   "min_forward_changed": 2,
@@ -208,6 +208,417 @@
      "p10": 39.1,
      "f10": 0.0,
      "pass_med": 12.0
+    }
+   }
+  },
+  {
+   "id": "atlas_member_ksq",
+   "bot": "atlas",
+   "who": "ATLAS",
+   "title": "ATLAS: new member - 15m Keltner squeeze release",
+   "what": "ATLAS gets a 4th member: trade the first 15m close out of a Keltner squeeze box, stop beyond the breakout bar or box middle, one target.",
+   "source": "research/writeups/atlas-members-2026-11-18.md (tools/atlas_plus.py)",
+   "origin": "claude",
+   "cross_of": null,
+   "registered": "2026-11-18",
+   "status": "rejected",
+   "word": "Rejected",
+   "why": "no Jan-Jun pick: none of its 8 versions made money with PF >= 1.2 on 12+ trades in Jan-Jun (alone, $250 a trade); 0 hold all 4 spans vs 0.0 with coin-flip sides",
+   "needs": null,
+   "shadow": null,
+   "shadow_from": null,
+   "usd_month_by": null,
+   "flip": {
+    "H1": 1.0,
+    "H2": 1.0
+   },
+   "hits": null,
+   "tested": "2026-10-16",
+   "was_shadow": null,
+   "months": {
+    "H1": {
+     "exp": 541.0,
+     "now": 541.0
+    },
+    "H2": {
+     "exp": 353.0,
+     "now": 353.0
+    },
+    "2021-25": {
+     "exp": 34,
+     "now": 34
+    }
+   },
+   "detail": {
+    "H1": {
+     "n": 104,
+     "tpw": 4.06,
+     "pf": 2.92,
+     "net": 18362,
+     "dd": -1062
+    },
+    "H2": {
+     "n": 46,
+     "tpw": 2.95,
+     "pf": 2.55,
+     "net": 5256,
+     "dd": -876
+    },
+    "2025": {
+     "n": 994,
+     "tpw": 4.61,
+     "pf": 1.08,
+     "net": 10393,
+     "dd": -11403
+    },
+    "2021-24": {
+     "n": 994,
+     "tpw": 4.61,
+     "pf": 1.08,
+     "net": 10393,
+     "dd": -11403
+    }
+   },
+   "speed": {
+    "H1": {
+     "p10": null,
+     "f10": null,
+     "pass_med": null
+    },
+    "H2": {
+     "p10": null,
+     "f10": null,
+     "pass_med": null
+    }
+   }
+  },
+  {
+   "id": "atlas_member_odc",
+   "bot": "atlas",
+   "who": "ATLAS",
+   "title": "ATLAS: new member - Opening-drive continuation (1m trigger)",
+   "what": "ATLAS gets a 4th member: after a strong opening drive, enter the pullback's 1m turn in the drive's direction, until 11:00, stop 1 tick beyond the pullback, one target.",
+   "source": "research/writeups/atlas-members-2026-11-18.md (tools/atlas_plus.py)",
+   "origin": "claude",
+   "cross_of": null,
+   "registered": "2026-11-18",
+   "status": "rejected",
+   "word": "Rejected",
+   "why": "Jan-Jun 4.49 trades a week (rule 2-4); Jul-Oct funded -$100 a month; 2021-25 -$2 a month; green days not up in both halves (or more red days with LIT); could be luck: p 0.11822 / 1.0 (needs <= 0.00588)",
+   "needs": null,
+   "shadow": null,
+   "shadow_from": null,
+   "usd_month_by": {
+    "H1": 37,
+    "H2": -100
+   },
+   "flip": {
+    "H1": 0.11822,
+    "H2": 1.0
+   },
+   "hits": null,
+   "tested": "2026-10-16",
+   "was_shadow": null,
+   "months": {
+    "H1": {
+     "exp": 578.0,
+     "now": 541.0
+    },
+    "H2": {
+     "exp": 253.0,
+     "now": 353.0
+    },
+    "2021-25": {
+     "exp": 32,
+     "now": 34
+    }
+   },
+   "detail": {
+    "H1": {
+     "n": 115,
+     "tpw": 4.49,
+     "pf": 2.9,
+     "net": 20093,
+     "dd": -1036
+    },
+    "H2": {
+     "n": 56,
+     "tpw": 3.59,
+     "pf": 1.94,
+     "net": 4675,
+     "dd": -1578
+    },
+    "2025": {
+     "n": 1064,
+     "tpw": 4.94,
+     "pf": 1.05,
+     "net": 7241,
+     "dd": -14925
+    },
+    "2021-24": {
+     "n": 1064,
+     "tpw": 4.94,
+     "pf": 1.05,
+     "net": 7241,
+     "dd": -14925
+    }
+   },
+   "speed": {
+    "H1": {
+     "p10": null,
+     "f10": null,
+     "pass_med": null
+    },
+    "H2": {
+     "p10": null,
+     "f10": null,
+     "pass_med": null
+    }
+   }
+  },
+  {
+   "id": "atlas_member_poc",
+   "bot": "atlas",
+   "who": "ATLAS",
+   "title": "ATLAS: new member - Prior-day POC first touch (own idea)",
+   "what": "ATLAS gets a 4th member: fade the first touch of yesterday's point of control, stop 1 tick beyond the touch bar.",
+   "source": "research/writeups/atlas-members-2026-11-18.md (tools/atlas_plus.py)",
+   "origin": "claude",
+   "cross_of": null,
+   "registered": "2026-11-18",
+   "status": "rejected",
+   "word": "Rejected",
+   "why": "Jan-Jun funded -$20 a month; Jan-Jun 4.38 trades a week (rule 2-4); Jul-Oct funded -$74 a month; 2021-25 -$11 a month; green days not up in both halves (or more red days with LIT); could be luck: p 0.47238 / 0.49063 (needs <= 0.00588)",
+   "needs": null,
+   "shadow": null,
+   "shadow_from": null,
+   "usd_month_by": {
+    "H1": -20,
+    "H2": -74
+   },
+   "flip": {
+    "H1": 0.47238,
+    "H2": 0.49063
+   },
+   "hits": null,
+   "tested": "2026-10-16",
+   "was_shadow": null,
+   "months": {
+    "H1": {
+     "exp": 521.0,
+     "now": 541.0
+    },
+    "H2": {
+     "exp": 279.0,
+     "now": 353.0
+    },
+    "2021-25": {
+     "exp": 23,
+     "now": 34
+    }
+   },
+   "detail": {
+    "H1": {
+     "n": 112,
+     "tpw": 4.38,
+     "pf": 2.68,
+     "net": 18476,
+     "dd": -1244
+    },
+    "H2": {
+     "n": 55,
+     "tpw": 3.53,
+     "pf": 2.07,
+     "net": 5283,
+     "dd": -1401
+    },
+    "2025": {
+     "n": 1127,
+     "tpw": 5.23,
+     "pf": 1.01,
+     "net": 1311,
+     "dd": -15819
+    },
+    "2021-24": {
+     "n": 1127,
+     "tpw": 5.23,
+     "pf": 1.01,
+     "net": 1311,
+     "dd": -15819
+    }
+   },
+   "speed": {
+    "H1": {
+     "p10": null,
+     "f10": null,
+     "pass_med": null
+    },
+    "H2": {
+     "p10": null,
+     "f10": null,
+     "pass_med": null
+    }
+   }
+  },
+  {
+   "id": "atlas_member_pva",
+   "bot": "atlas",
+   "who": "ATLAS",
+   "title": "ATLAS: new member - Prior-day value-area re-entry (80% rule, re-measure)",
+   "what": "ATLAS gets a 4th member: Dalton's 80% rule (open outside yesterday's value area, back inside -> trade to the far edge).",
+   "source": "research/writeups/atlas-members-2026-11-18.md (tools/atlas_plus.py)",
+   "origin": "claude",
+   "cross_of": null,
+   "registered": "2026-11-18",
+   "status": "rejected",
+   "word": "Rejected",
+   "why": "no Jan-Jun pick: none of its 1 versions made money with PF >= 1.2 on 12+ trades in Jan-Jun (alone, $250 a trade); 0 hold all 4 spans vs 0.0 with coin-flip sides",
+   "needs": null,
+   "shadow": null,
+   "shadow_from": null,
+   "usd_month_by": null,
+   "flip": {
+    "H1": 1.0,
+    "H2": 1.0
+   },
+   "hits": null,
+   "tested": "2026-10-16",
+   "was_shadow": null,
+   "months": {
+    "H1": {
+     "exp": 541.0,
+     "now": 541.0
+    },
+    "H2": {
+     "exp": 353.0,
+     "now": 353.0
+    },
+    "2021-25": {
+     "exp": 34,
+     "now": 34
+    }
+   },
+   "detail": {
+    "H1": {
+     "n": 104,
+     "tpw": 4.06,
+     "pf": 2.92,
+     "net": 18362,
+     "dd": -1062
+    },
+    "H2": {
+     "n": 46,
+     "tpw": 2.95,
+     "pf": 2.55,
+     "net": 5256,
+     "dd": -876
+    },
+    "2025": {
+     "n": 994,
+     "tpw": 4.61,
+     "pf": 1.08,
+     "net": 10393,
+     "dd": -11403
+    },
+    "2021-24": {
+     "n": 994,
+     "tpw": 4.61,
+     "pf": 1.08,
+     "net": 10393,
+     "dd": -11403
+    }
+   },
+   "speed": {
+    "H1": {
+     "p10": null,
+     "f10": null,
+     "pass_med": null
+    },
+    "H2": {
+     "p10": null,
+     "f10": null,
+     "pass_med": null
+    }
+   }
+  },
+  {
+   "id": "atlas_member_vwp",
+   "bot": "atlas",
+   "who": "ATLAS",
+   "title": "ATLAS: new member - VWAP pullback with trend",
+   "what": "ATLAS gets a 4th member: buy the first dip to VWAP in an up-trend (sell the first rally in a down-trend), 10:00-14:30, stop 1 tick beyond the last 3 bars, one target.",
+   "source": "research/writeups/atlas-members-2026-11-18.md (tools/atlas_plus.py)",
+   "origin": "claude",
+   "cross_of": null,
+   "registered": "2026-11-18",
+   "status": "rejected",
+   "word": "Rejected",
+   "why": "no Jan-Jun pick: none of its 8 versions made money with PF >= 1.2 on 12+ trades in Jan-Jun (alone, $250 a trade); 0 hold all 4 spans vs 0.0 with coin-flip sides",
+   "needs": null,
+   "shadow": null,
+   "shadow_from": null,
+   "usd_month_by": null,
+   "flip": {
+    "H1": 1.0,
+    "H2": 1.0
+   },
+   "hits": null,
+   "tested": "2026-10-16",
+   "was_shadow": null,
+   "months": {
+    "H1": {
+     "exp": 541.0,
+     "now": 541.0
+    },
+    "H2": {
+     "exp": 353.0,
+     "now": 353.0
+    },
+    "2021-25": {
+     "exp": 34,
+     "now": 34
+    }
+   },
+   "detail": {
+    "H1": {
+     "n": 104,
+     "tpw": 4.06,
+     "pf": 2.92,
+     "net": 18362,
+     "dd": -1062
+    },
+    "H2": {
+     "n": 46,
+     "tpw": 2.95,
+     "pf": 2.55,
+     "net": 5256,
+     "dd": -876
+    },
+    "2025": {
+     "n": 994,
+     "tpw": 4.61,
+     "pf": 1.08,
+     "net": 10393,
+     "dd": -11403
+    },
+    "2021-24": {
+     "n": 994,
+     "tpw": 4.61,
+     "pf": 1.08,
+     "net": 10393,
+     "dd": -11403
+    }
+   },
+   "speed": {
+    "H1": {
+     "p10": null,
+     "f10": null,
+     "pass_med": null
+    },
+    "H2": {
+     "p10": null,
+     "f10": null,
+     "pass_med": null
     }
    }
   },

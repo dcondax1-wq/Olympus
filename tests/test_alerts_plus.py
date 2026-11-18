@@ -352,8 +352,8 @@ def test_cloud_hook():
 
 def test_static():
     lv = read("engine/live.py")
-    check("live.py: _alerts_tick right after _guards_tick (after routing), real bot only",
-          "self._guards_tick(now)\n        self._alerts_tick(now)" in lv and "def _alerts_tick" in lv
+    check("live.py: _alerts_tick after _guards_tick and _life_tick (after routing), real bot only",
+          "self._guards_tick(now)\n        self._life_tick(now)\n        self._alerts_tick(now)" in lv and "def _alerts_tick" in lv
           and "if self.state_path != STATE_PATH:\n            return\n        try:\n            from . import alerts_plus" in lv)
     hb = read("engine/heartbeat.py")
     check("heartbeat payload: rules + crit (engine/alerts_plus.hb_block)", "**_alerts_plus(self.bot)" in hb)

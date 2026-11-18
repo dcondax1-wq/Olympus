@@ -10,9 +10,9 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Olympus">
-<link rel="manifest" href="manifest.webmanifest?v=j5">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=j4">
-<link rel="icon" href="icon-192.png?v=j4">
+<link rel="manifest" href="manifest.webmanifest?v=j6">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=j5">
+<link rel="icon" href="icon-192.png?v=j5">
 <!-- dark from the first paint, even before (or without) the stylesheet: never a white screen -->
 <style>html,body{background:#14110e;color:#f3ece0;margin:0}</style>
 <script>
@@ -21,11 +21,12 @@
   var d = document.documentElement, g = function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } };
   var s = function (k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { /* private mode */ } };
   d.setAttribute('data-theme', 'agora');   // one theme since 2026-11-10 (an old saved neon theme is ignored)
-  // Classic Jarvis (night A 2026-11-16, "bring back our Jarvis we had"): the old violet HUD as an opt-in look ('jarvis.look' = 'classic',
-  // ⋯ → Look → Jarvis look); its own sheet classic.css, loaded only then, so the AGORA default stays byte-identical. Under the default OLYMPUS theme only.
-  if (g('jarvis.look') === 'classic' && (g('olympus.theme') || 'agora') === 'agora') {
+  // Classic Jarvis (night A 2026-11-16, "bring back our Jarvis we had"): the old violet HUD, its own sheet classic.css. THE DEFAULT since
+  // 2026-11-18 (owner: Jarvis "back to how it was"): the look and the home order of 2026-11-06 (f8df6008); AGORA (marble and gold) is the
+  // opt-in now ('jarvis.look' = 'agora', ⋯ → Look → Jarvis look). Under the default OLYMPUS theme only.
+  if (g('jarvis.look') !== 'agora' && (g('olympus.theme') || 'agora') === 'agora') {
     d.setAttribute('data-jlook', 'classic');
-    var cl = document.createElement('link'); cl.rel = 'stylesheet'; cl.id = 'jclassic'; cl.href = 'classic.css?v=c1'; document.head.appendChild(cl);
+    var cl = document.createElement('link'); cl.rel = 'stylesheet'; cl.id = 'jclassic'; cl.href = 'classic.css?v=c2'; document.head.appendChild(cl);
   }
   // the OLYMPUS look (../olympus/themes.js, key 'olympus.theme'; the engine loads after the start, async, never waited on, and repaints):
   // its colours and Jarvis's palette from the first frame, from the engine's copy of the look Jarvis gets (themes.js FIRST PAINT)
@@ -60,21 +61,23 @@
   try {
     var im = '', fo = g('jarvis.intro.force'), now = new Date(), day = now.getFullYear() + '-' + (now.getMonth() + 1) + '-' + now.getDate();
     if (g('jarvis.intro') !== 'off' && (!navigator.webdriver || fo)) {
-      if (fo === 'full' || fo === 'short' || fo === 'fade' || fo === 'off') im = fo;
+      if (fo === 'full' || fo === 'short' || fo === 'fade' || fo === 'off' || fo === 'mark' || fo === 'lite') im = fo;
       else if (d.getAttribute('data-fx') === 'off') im = 'off';
       else if (n > 0 || g('jarvis.intro.run')) im = 'fade';
       else if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) im = 'calm';
       else {
         // once per app launch: the same launch seen again (a reload after an app switch: sessionStorage still has 'jarvis.booted') or a
-        // start within 20 minutes of the last full one gets the 1 s version; a new launch gets the film (5 s on a low-end phone / 3D Low)
+        // start within 20 minutes of the last one gets the 0.5 s fade; a new launch gets the MARK (2026-11-18, owner: the entry screen
+        // "looks made in the 2000s"): 1.2 s, the gold temple on deep navy and OLYMPUS, no WebGL, the same on every phone. The 10 s film
+        // stays one tap away (the command palette: Play the OLYMPUS intro).
         var again = false;
         try { again = !!sessionStorage.getItem('jarvis.booted') || (g('jarvis.intro.day') === day && Date.now() - (parseInt(g('jarvis.intro.at') || '0', 10) || 0) < 20 * 60 * 1000); } catch (e) { /* private mode */ }
-        im = again ? 'short' : (d.getAttribute('data-fx') === 'low' || (navigator.hardwareConcurrency || 8) <= 2 || (navigator.deviceMemory && navigator.deviceMemory <= 2) ? 'lite' : 'full');
+        im = again ? 'off' : 'mark';
       }
     }
     if (im) {
       d.setAttribute('data-intro', im); window.__olyT0 = Date.now();
-      if (im !== 'fade' && im !== 'off') { var pl = document.createElement('link'); pl.rel = 'preload'; pl.as = 'image'; pl.href = 'intro-logo.webp'; document.head.appendChild(pl); }
+      if (im === 'full' || im === 'lite' || im === 'short') { var pl = document.createElement('link'); pl.rel = 'preload'; pl.as = 'image'; pl.href = 'intro-logo.webp'; document.head.appendChild(pl); }
       // the overlay's first deadline on this start's own clock (its CSS deadline only starts once the overlay is styled):
       // the intro not running by 0.7 s = the overlay steps aside
       setTimeout(function () { if (!window.__olyIntro) { var o = document.getElementById('olyIntro'); if (o) o.style.visibility = 'hidden'; } }, 700);
@@ -104,7 +107,7 @@ window.addEventListener('error', function (e) {
   if (!window.__jarvisErr) window.__jarvisErr = String(e.message || 'Script error') + (e.filename ? ' (' + String(e.filename).split('/').pop() + ':' + e.lineno + ')' : '');
 }, true);
 </script>
-<link rel="stylesheet" id="jcss" href="jarvis.css?v=j18">
+<link rel="stylesheet" id="jcss" href="jarvis.css?v=j21">
 <link rel="stylesheet" id="jhome" href="home3d.css?v=h4">
 <!-- quiet-net: data-fresh = Jarvis shows the Kalshi bot, so it asks the Kalshi feed afresh once per load (data.js: "opening Jarvis again
      asks once more: that is how a newly linked bot shows up"); without it a 404 earlier in the session kept it "not connected".
@@ -127,15 +130,19 @@ window.addEventListener('error', function (e) {
 /* the OLYMPUS intro's overlay (the olympus-intro script below it). Built into the page, so it never waits for a file, and it goes
    away by itself: gone by 0.95 s when the script never gets going; the script swaps in its own deadline (olyEnd) and removes the
    overlay when it ends, skips or fails */
-.oly{position:fixed;top:0;left:0;right:0;bottom:0;z-index:2147483640;background:#14110e;display:none;overflow:hidden;-webkit-tap-highlight-color:transparent;touch-action:none;-webkit-user-select:none;user-select:none}
+.oly{position:fixed;top:0;left:0;right:0;bottom:0;z-index:2147483640;background:#04060c;display:none;overflow:hidden;-webkit-tap-highlight-color:transparent;touch-action:none;-webkit-user-select:none;user-select:none}
 html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
 @keyframes olyGo{to{opacity:0;visibility:hidden}}
 @keyframes olyEnd{to{opacity:0;visibility:hidden}}
 .oly canvas{position:absolute;top:0;left:0;width:100%;height:100%;display:block}
-.oly .oly-w{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:radial-gradient(ellipse at 50% 42%,#3a2a1c,#14110e 62%)}
-.oly .oly-w b{font:600 38px/1 "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;letter-spacing:.12em;padding-left:.12em;color:#e0b060;background:linear-gradient(180deg,#f3e3bd,#e0b060 50%,#c8a24a);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.oly .oly-w canvas.oly-l{width:min(78vw,52vh,400px);height:min(78vw,52vh,400px);margin-bottom:-4px}
-.oly .oly-w small{font:500 17px/1 "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;letter-spacing:.04em;color:rgba(243,236,224,.7)}
+.oly .oly-w{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:radial-gradient(120% 75% at 50% 42%,#1a2c55 0%,#0b1430 46%,#04060c 100%)}
+.oly .oly-w svg{width:min(26vw,104px);height:auto;filter:drop-shadow(0 0 18px rgba(226,182,92,.28));animation:olyMk .62s cubic-bezier(.2,.8,.2,1) both}
+.oly .oly-w b{font:600 14px/1 -apple-system,"SF Pro Display",system-ui,"Helvetica Neue",Arial,sans-serif;letter-spacing:.56em;padding-left:.56em;color:#ead39a;animation:olyTx .7s cubic-bezier(.2,.8,.2,1) .18s both}
+.oly .oly-w i{display:block;width:72px;height:1px;background:linear-gradient(90deg,transparent,#e2b65c,transparent);animation:olyLn .7s cubic-bezier(.2,.8,.2,1) .28s both}
+@keyframes olyMk{from{opacity:0;transform:translateY(8px) scale(.9);filter:blur(6px) drop-shadow(0 0 0 rgba(226,182,92,0))}to{opacity:1;transform:none}}
+@keyframes olyTx{from{opacity:0;letter-spacing:.9em}to{opacity:1}}
+@keyframes olyLn{from{opacity:0;transform:scaleX(0)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.oly .oly-w svg,.oly .oly-w b,.oly .oly-w i{animation:none}}
 .oly .oly-skip{position:absolute;left:0;right:0;bottom:calc(22px + env(safe-area-inset-bottom,0px));text-align:center;font:500 14px/1 -apple-system,system-ui,sans-serif;letter-spacing:.02em;color:rgba(243,236,224,.55);pointer-events:none}</style>
 </head>
 <body>
@@ -156,10 +163,11 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
  *   8.7  portal  the camera punches through the ring: the ring grows past the screen and its inside is a hole onto Jarvis
  *
  * Versions (picked before the first paint by the start script in <head>, html[data-intro]):
- *   full   10 s, a new launch (first start, or 20+ minutes after the last one)     lite   5 s, the same film at 2x on a low-end
- *   short  1 s, the same launch seen again (an app switch that reloaded the page): the logo and the portal only        phone / 3D Low
- *   calm   3.5 s, reduce motion: the logo and the word mark fading in and out, nothing moves
- *   fade   0.8 s still word mark (a start after one that did not finish, no WebGL)     off   0.5 s fade (3D effects: Off)
+ *   mark   1.2 s, a new launch (first start, or 20+ minutes after the last one), since 2026-11-18: the gold temple on navy and OLYMPUS,
+ *          no WebGL (the owner: the old entry "looks made in the 2000s"; modern, fast, the same on every phone)
+ *   off    0.5 s, the same launch seen again (an app switch that reloaded the page) and 3D effects Off
+ *   calm   3.5 s, reduce motion: the mark fading in and out, nothing moves       fade   0.8 s (a start after one that did not finish, no WebGL)
+ *   full   10 s film / lite 5 s / short 1 s: only on request now (the command palette's "Play the OLYMPUS intro", 'jarvis.intro.force')
  * Rendered below the screen's resolution (1.5x; 1x on low-end or 3D Low); late frames step the resolution down and a phone under
  * 20 fps cuts to the reveal: never a slideshow. No WebGL: the still version.
  *
@@ -181,7 +189,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
   'use strict';
   var W = window, doc = document, root = doc.documentElement;
   var st = W.__olyIntro = { mode: '', q: '', state: 'idle', frames: 0, ms: 0, err: '', done: false, scale: 0, n: 0, fps: 0, phase: '', cues: [], logo: false };
-  var LEN = { full: 10, lite: 5, short: 1.0, calm: 3.5, fade: 0.8, off: 0.5 };
+  var LEN = { full: 10, lite: 5, short: 1.0, calm: 3.5, fade: 0.8, off: 0.5, mark: 1.3 };
   var RATE = { full: 1, lite: 2, short: 1 };                // the film's clock runs at this multiple of the wall clock
   var ls = function (k, v) {
     try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { /* private mode */ }
@@ -345,26 +353,30 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
   var up = function () { if (holdUp) setTimeout(function () { holdUp = false; }, 80); };
 
   // ---------------------------------------------------------------- the still versions: calm (reduce motion), fade, 3D off, no WebGL
+  // the mark (2026-11-18): the Home Screen icon's temple (web/icons/icon.svg, the same shapes) in gold, OLYMPUS, a hairline. Every still version
+  // uses it: mark 1.2 s (a new launch), calm 3.5 s (reduce motion: opacity only), fade 0.8 s, off 0.5 s. No WebGL, no file to wait for.
+  var MARK = '<svg viewBox="160 200 704 624" aria-hidden="true"><defs><linearGradient id="olyGd" x1="0" y1="226" x2="0" y2="808" gradientUnits="userSpaceOnUse">'
+    + '<stop offset="0" stop-color="#fbe7b0"/><stop offset=".45" stop-color="#e2b65c"/><stop offset="1" stop-color="#b0802f"/></linearGradient></defs><g fill="url(#olyGd)">'
+    + '<path d="M512 226 830 392H194zM512 282 296 362h432z" fill-rule="evenodd"/><rect x="194" y="408" width="636" height="44" rx="6"/>'
+    + '<rect x="245" y="474" width="84" height="22" rx="4"/><rect x="256" y="496" width="62" height="196"/><rect x="395" y="474" width="84" height="22" rx="4"/><rect x="406" y="496" width="62" height="196"/>'
+    + '<rect x="545" y="474" width="84" height="22" rx="4"/><rect x="556" y="496" width="62" height="196"/><rect x="695" y="474" width="84" height="22" rx="4"/><rect x="706" y="496" width="62" height="196"/>'
+    + '<rect x="214" y="712" width="596" height="38" rx="5"/><rect x="174" y="768" width="676" height="40" rx="6"/></g></svg>';
   function still(mode) {
     st.q = 'still';
     var w = doc.createElement('div');
-    w.className = 'oly-w';
-    w.innerHTML = '<b>OLYMPUS</b><small>' + 'Welcome back' + '</small>';
-    if (mode === 'calm') {                                 // the logo from the shared file: the left half (ring) and the right half (peaks), drawn on a canvas
-      var c = doc.createElement('canvas'); c.width = 512; c.height = 512; c.className = 'oly-l';
-      w.insertBefore(c, w.firstChild);
-      var paint = function () {
-        try {
-          var x = c.getContext('2d'); x.globalCompositeOperation = 'lighter';
-          x.drawImage(logoImg, 0, 0, 512, 512, 0, 0, 512, 512); x.drawImage(logoImg, 512, 0, 512, 512, 0, 0, 512, 512);
-        } catch (e) { /* the word mark alone */ }
-      };
-      if (logoImg && logoImg.complete && logoImg.naturalWidth) paint(); else if (logoImg) logoImg.onload = paint;
-    }
+    w.className = 'oly-w oly-' + mode;
+    w.innerHTML = MARK + '<b>OLYMPUS</b><i></i>';
     el.appendChild(w);
     var len = LEN[mode] || 0.5;
+    var hold = mode === 'mark' ? 820 : Math.round(len * (mode === 'calm' ? 720 : 400));        // how long the mark stands
+    var fade = mode === 'mark' ? 360 : Math.round(len * (mode === 'calm' ? 280 : 600));        // then the composited fade onto Jarvis
     if (mode === 'calm') { w.style.opacity = '0'; w.style.transition = 'opacity ' + Math.round(len * 380) + 'ms ease-out'; setTimeout(function () { w.style.opacity = '1'; }, 30); }
-    if (HOLD < 0) setTimeout(function () { fadeOut(Math.round(len * (mode === 'calm' ? 280 : 600)), 'reveal'); }, Math.round(len * (mode === 'calm' ? 720 : 400)));
+    // the hard stop is set again from here (like the film's first frame): a phone whose main thread is busy with Jarvis's own start
+    // fires this timer late, and the old deadline (due by then too) must not cut the fade short (state 'deadline' instead of 'done')
+    if (HOLD < 0) setTimeout(function () {
+      clearTimeout(killT); killT = setTimeout(function () { finish('deadline'); }, fade + 1200);
+      fadeOut(fade, 'reveal');
+    }, hold);
   }
 
   // ---------------------------------------------------------------- WebGL
@@ -895,10 +907,11 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     W.addEventListener('pointerup', up, true); W.addEventListener('pointercancel', up, true);
     doc.addEventListener('keydown', onKey, true);
     doc.addEventListener('visibilitychange', onVis);
-    if (!replay) {
+    if (mode === 'mark') { ls('jarvis.intro.day', dayKey()); ls('jarvis.intro.at', String(Date.now())); }
+    if (!replay && (mode === 'full' || mode === 'lite' || mode === 'short')) {
       var sk = doc.createElement('small'); sk.className = 'oly-skip'; sk.textContent = 'Tap to skip'; el.appendChild(sk);
     }
-    if (mode !== 'fade' && mode !== 'off') {               // the logo file starts loading now (the start script has preloaded it)
+    if (mode === 'full' || mode === 'lite' || mode === 'short') {   // the film's logo file starts loading now (the start script has preloaded it)
       try { logoImg = new Image(); logoImg.src = 'intro-logo.webp'; } catch (e) { logoImg = null; }
     }
     if (mode === 'full' || mode === 'lite' || mode === 'short') {
@@ -979,6 +992,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
           </div>
           <div class="court-rail" role="group" aria-label="The five districts of OLYMPUS"><button class="dgate" type="button" data-district="market" data-app="atlas" data-open="../atlas/?hub=j14#zone=market" aria-label="Market district. Opens the map"><i aria-hidden="true"></i><span>Market</span></button><button class="dgate" type="button" data-district="research" data-app="atlas" data-open="../atlas/?hub=j14#zone=research" aria-label="Research district. Opens the map"><i aria-hidden="true"></i><span>Research</span></button><button class="dgate" type="button" data-district="money" data-app="atlas" data-open="../atlas/?hub=j14#zone=risk" aria-label="Money district. Opens the map"><i aria-hidden="true"></i><span>Money</span></button><button class="dgate" type="button" data-district="command" data-app="atlas" data-open="../atlas/?hub=j14#zone=command" aria-label="Command district. Opens the map"><i aria-hidden="true"></i><span>Command</span></button><button class="dgate" type="button" data-district="life" data-app="atlas" data-open="../atlas/?hub=j14#zone=life" aria-label="Life district. Opens the map"><i aria-hidden="true"></i><span>Life</span></button></div>
         </div>
+        <p class="jtitle" aria-hidden="true"><img src="icon-192.png?v=j5" alt="" width="30" height="30"><span><small>OLYMPUS</small>J.A.R.V.I.S.</span></p>
         <div class="hero-top">
           <h1 class="hero-h" id="hello">Hello</h1>
           <button class="sysbar" type="button" id="sysbar" aria-controls="p-system" title="Every system at a glance"><i class="sdot off" id="sysdot"></i><b id="sysv">CHECKING</b><span id="syst">Every system at a glance</span><span class="sysdots" id="sysdots" aria-hidden="true"></span></button>
@@ -1075,7 +1089,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
       </section>
 
       <footer class="hfoot">
-        <div class="htop"><span class="sdot" id="dot" title="System online"></span><img src="icon-192.png?v=j4" alt="" width="40" height="40"><p class="title">OLYMPUS</p><span class="clock" id="clock">--:--:--</span></div>
+        <div class="htop"><span class="sdot" id="dot" title="System online"></span><img src="icon-192.png?v=j5" alt="" width="40" height="40"><p class="title">OLYMPUS</p><span class="clock" id="clock">--:--:--</span></div>
         <button class="hv-btn" type="button" id="hRefresh" data-hc="refresh"><span id="hUpdated">Not updated yet</span> · Refresh</button>
         <p class="foot">Read only: Jarvis never places a trade. The bots run on their own; Jarvis only shows them.</p>
       </footer>
@@ -1151,7 +1165,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     <h2 id="lookT">Look</h2>
     <h3>Jarvis look</h3>
     <div class="seg3" id="jlookSeg" role="group" aria-label="Jarvis look"><button type="button" data-jlook-k="agora">AGORA</button><button type="button" data-jlook-k="classic">Classic Jarvis</button></div>
-    <p class="note" id="jlookNote">Classic Jarvis: the violet HUD you had first (black, violet glow, Orbitron titles, the violet core). AGORA is marble and gold. Only Jarvis changes.</p>
+    <p class="note" id="jlookNote">Classic Jarvis (the default): the violet HUD you had first (black, violet glow, Orbitron titles, the core up top). AGORA is marble and gold. Only Jarvis changes.</p>
     <h3>OLYMPUS theme</h3>
     <div class="othemes" id="olyThemes" role="group" aria-label="OLYMPUS theme: Jarvis and every app"></div>
     <p class="note" id="olyNote">The whole system: Jarvis now, and each app the next time it opens.</p>
@@ -1541,13 +1555,13 @@ const olyOn = () => olyId() !== olyDefault();
 const jlook = () => (root.dataset.jlook === 'classic' ? 'classic' : 'agora');
 function classicSheet() {
   if (document.getElementById('jclassic')) return;
-  const l = document.createElement('link'); l.rel = 'stylesheet'; l.id = 'jclassic'; l.href = 'classic.css?v=c1';
+  const l = document.createElement('link'); l.rel = 'stylesheet'; l.id = 'jclassic'; l.href = 'classic.css?v=c2';
   l.addEventListener('load', () => { readColors(); if (core && typeof core.setTheme === 'function') safe(() => core.setTheme(coreTheme())); });
   document.head.appendChild(l);
 }
 function setJLook(k) {
   const on = k === 'classic';
-  rawSet('jarvis.look', on ? 'classic' : null);
+  rawSet('jarvis.look', on ? null : 'agora');                        // Classic is the default (2026-11-18): only AGORA is stored
   if (on) { if (olyOn() && TH()) TH().set(olyDefault()); classicSheet(); root.dataset.jlook = 'classic'; } else delete root.dataset.jlook;
   const mt = document.querySelector('meta[name="theme-color"]');
   if (mt && !olyOn()) mt.setAttribute('content', on ? '#000000' : homeTint());
@@ -1557,7 +1571,8 @@ function setJLook(k) {
   renderLook(); sfx('tap');
 }
 function olyRefresh() {
-  if (olyOn() && root.dataset.jlook) { delete root.dataset.jlook; rawSet('jarvis.look', null); }   // a whole-system theme replaces Classic
+  if (olyOn() && root.dataset.jlook) delete root.dataset.jlook;      // a whole-system theme replaces Classic (back with the default theme)
+  else if (!olyOn() && !root.dataset.jlook && raw('jarvis.look') !== 'agora') { classicSheet(); root.dataset.jlook = 'classic'; }
   readColors();
   if (core && typeof core.setTheme === 'function') safe(() => core.setTheme(coreTheme()));
   if (active === 'home') setTint(homeTint());
@@ -3196,8 +3211,12 @@ function boot() {
   try { sessionStorage.setItem('jarvis.booted', '1'); } catch (_) { /* private mode */ }
   if (quick) { el.remove(); bootEnd(); return; }
   const v = safe(() => D.liveView()), k = safe(() => D.kalshiView()), pl = safe(() => D.plannerDay());
-  const lines = ['Opening Olympus', `NQ bots: ${v ? (v.cached ? 'saved copy' : 'linked') : 'connecting'}`, `Kalshi: ${k ? 'ready' : 'connecting'}`,
-    `Planner: ${pl ? 'ready' : 'not linked'}`, `Voice: ${SR && S.voice() ? 'ready' : 'text only'}`, 'Welcome back'];
+  // Classic Jarvis (the default again, 2026-11-18): the HUD boot log as it was (f8df6008); AGORA keeps its plain words
+  const lines = root.dataset.jlook === 'classic'
+    ? ['> CORE ............ ONLINE', `> ZENITH · NQ BOTS  ${v ? (v.cached ? 'CACHED' : 'LINKED') : 'CONNECTING'}`, `> KALSHI FEED ..... ${k ? 'READY' : 'CONNECTING'}`,
+      `> PLANNER ......... ${pl ? 'READY' : 'NOT LINKED'}`, `> VOICE ........... ${SR && S.voice() ? 'READY' : 'TEXT ONLY'}`, 'JARVIS ONLINE']
+    : ['Opening Olympus', `NQ bots: ${v ? (v.cached ? 'saved copy' : 'linked') : 'connecting'}`, `Kalshi: ${k ? 'ready' : 'connecting'}`,
+      `Planner: ${pl ? 'ready' : 'not linked'}`, `Voice: ${SR && S.voice() ? 'ready' : 'text only'}`, 'Welcome back'];
   const log = $('#bootlog');
   let i = 0, done = false;
   const end = () => { if (done) return; done = true; el.classList.add('out'); setTimeout(() => { el.remove(); bootEnd(); }, 360); };
@@ -3467,9 +3486,36 @@ window.addEventListener('online', () => { renderHead(); D.refresh({ maxAge: 0 })
 window.addEventListener('offline', () => { renderHead(); toast('No connection. Showing the last saved numbers until it is back.', 'OFFLINE'); });
 // the command dock stays above the iPhone keyboard while you type (as the old Jarvis's mobile.js did)
 if (window.visualViewport) {
-  const fitDock = () => { const kb = Math.max(0, innerHeight - visualViewport.height - visualViewport.offsetTop); $('#dock').style.transform = kb > 60 ? `translateY(${-Math.round(kb)}px)` : ''; };
+  const fitDock = () => { const kb = Math.max(0, innerHeight - visualViewport.height - visualViewport.offsetTop); $('#dock').style.transform = kb > 60 ? `translateY(${-Math.round(kb)}px)` : ''; $('#dock').classList.toggle('kb', kb > 60); };
   visualViewport.addEventListener('resize', fitDock); visualViewport.addEventListener('scroll', fitDock);
 }
+// A web host's badge (2026-11-18: "Powered by Netlify" sat on the Send and ⋯ keys; the host injects it, it is not ours): when something
+// fixed that is not Jarvis's own sits in the bottom-right corner over the dock's width, the dock (and the chip row, the orb, the scroller's
+// end with it: jarvis.css --dock-b) lifts above it. Looked for at the start, 1.5 s and 5 s later, when the page's children change and on a resize.
+function hostBadge() {
+  const OURS = '#dock, #fab, #next, #nxOrb, .nx-root, .nx-tip, .nx-fan, main, .bar, .sheet, .toast, #toast, .dockfade, #olyIntro, #bootfx, #boot, .bgfx, .hapl';
+  const dock = $('#dock'); if (!dock || root.getAttribute('data-mode') !== 'jarvis') return;
+  const d = dock.getBoundingClientRect(); let lift = 0;
+  for (const dx of [20, 60, 110]) for (const dy of [10, 30]) {
+    const e = document.elementFromPoint(innerWidth - dx, innerHeight - dy);
+    if (!e || e === document.body || e === root || e.closest(OURS)) continue;
+    let f = e; while (f && f !== document.body && getComputedStyle(f).position !== 'fixed') f = f.parentElement;
+    if (!f || f === document.body) continue;
+    const r = f.getBoundingClientRect();
+    if (r.height > 0 && r.height < 160 && r.width < innerWidth * 0.8 && r.left < d.right - 1) lift = Math.max(lift, Math.ceil(innerHeight - r.top) + 6);
+  }
+  const was = root.style.getPropertyValue('--host-lift');
+  const now = lift ? lift + 'px' : '';
+  if (was === now) return;
+  if (now) { root.style.setProperty('--host-lift', now); root.setAttribute('data-host-badge', '1'); } else { root.style.removeProperty('--host-lift'); root.removeAttribute('data-host-badge'); }
+  try { window.dispatchEvent(new Event('resize')); } catch (_) { /* the orb re-slots on the next resize */ }
+}
+safe(() => {
+  let hbT = 0; const later = () => { clearTimeout(hbT); hbT = setTimeout(() => safe(hostBadge), 120); };
+  later(); setTimeout(later, 1500); setTimeout(later, 5000);
+  window.addEventListener('resize', later);
+  new MutationObserver(later).observe(document.body, { childList: true });
+});
 window.__jarvis = { show, ask, facts: D.getFacts, refresh: () => Promise.resolve(D.refresh({ maxAge: 0 })).then(() => { greet(); safe(renderNext); }, () => null), active: () => active, setTheme, setOlyTheme, setFx, state: () => state, core: () => (core && typeof core.stats === 'function' ? safe(() => core.stats()) : null),
   voiceMode: (g) => voiceMode(!!g), vm: () => (vm ? vm.stats() : null), closeVoiceMode: () => { if (vm) vm.close('test'); },
   voice: () => (vo ? vo.stats() : null), talk: (t) => speak(String(t || ''), false),   // for tests and the console; read-only
@@ -3494,7 +3540,7 @@ if ('serviceWorker' in navigator) {
 <script src="./welcome.js?v=w1" defer></script>
 <script type="module" src="./transitions.js?v=t5"></script>
 <script type="module" src="./briefing.js?v=r2"></script>
-<script type="module" src="./home-cards.js?v=hc1"></script>
+<script type="module" src="./home-cards.js?v=hc2"></script>
 <script type="module" src="./copilot-card.js?v=cp2"></script>
 </body>
 </html>

@@ -21,6 +21,7 @@ html, body { background: var(--ag-night, #14110e); color: var(--ag-text, #f3ece0
 body { font: 400 var(--ag-fs-body, .9375rem)/1.45 var(--ag-sans, -apple-system, system-ui, sans-serif); -webkit-text-size-adjust: 100%; }
 .dr-main { max-width: 640px; margin: 0 auto; padding: calc(12px + env(safe-area-inset-top, 0px)) 16px calc(28px + env(safe-area-inset-bottom, 0px)); box-sizing: border-box; }
 .dr-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.dr-top span { display: flex; gap: 8px; }
 .dr-top a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 12px; color: var(--ag-soft, #cfc4b2); text-decoration: none; border: 1px solid var(--ag-line, #3a3228); }
 .dr-title { margin: 14px 0 2px; font: 700 var(--ag-fs-h1, 1.875rem)/1.1 var(--ag-serif, Georgia, serif); color: var(--ag-gold-hi, #dcbd6e); }
 .dr-sub { margin: 0 0 12px; color: var(--ag-soft, #cfc4b2); }
@@ -44,6 +45,8 @@ body { font: 400 var(--ag-fs-body, .9375rem)/1.45 var(--ag-sans, -apple-system, 
 .dr-row b { font: 700 var(--ag-fs-lead, 1.0625rem)/1.2 var(--ag-serif, Georgia, serif); overflow-wrap: anywhere; }
 .dr-row small { color: var(--ag-muted, #a89c88); font-size: var(--ag-fs-foot, .8125rem); }
 .dr-row i { font-style: normal; color: var(--dc, #c8a24a); font-size: 22px; }
+.dr-home { min-height: 68px; margin-bottom: 10px; background: var(--ag-s4, #332b22); border: 1px solid var(--dc, #c8a24a); border-left-width: 5px; }
+.dr-home b { font-size: 1.25rem; color: var(--dc, #c8a24a); }
 .dr-all { margin-top: 14px; }
 .dr-all summary { display: flex; align-items: center; min-height: 48px; padding: 0 14px; border-radius: 14px; cursor: pointer; list-style: none; background: var(--ag-s1, #1b1713);
   border: 1px solid var(--ag-line, #3a3228); color: var(--ag-gold-hi, #dcbd6e); font: 700 var(--ag-fs-body, .9375rem) var(--ag-serif, Georgia, serif); }
@@ -56,12 +59,12 @@ body { font: 400 var(--ag-fs-body, .9375rem)/1.45 var(--ag-sans, -apple-system, 
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 </style>
 <script src="../olympus/apps-list.js?v=o6" defer></script>
-<script src="../olympus/doors.js?v=d1" defer></script>
-<script src="doors.js?v=d1" defer></script>
+<script src="../olympus/doors.js?v=d3" defer></script>
+<script src="doors.js?v=d2" defer></script>
 </head>
 <body>
 <main class="dr-main" id="doors">
-  <nav class="dr-top" aria-label="Back"><a href="../gate/index.html" aria-label="Back to Home">&#9664; Home</a><a href="../atlas/" aria-label="Every app on one map">Map</a></nav>
+  <nav class="dr-top" aria-label="Back"><a href="../gate/index.html" aria-label="Back to Home">&#9664; Home</a><span><a href="help.html" id="helpLink">Help</a><a href="../atlas/" aria-label="Every app on one map">Map</a></span></nav>
   <h1 class="dr-title">Olympus</h1>
   <p class="dr-sub">Four doors. Tap one, or type what you want.</p>
   <div class="dr-find"><label class="sr" for="q" style="position:absolute;left:-9999px">Find anything</label>
@@ -74,7 +77,7 @@ body { font: 400 var(--ag-fs-body, .9375rem)/1.45 var(--ag-sans, -apple-system, 
     <a class="dr-door" data-door="more" href="#more" style="--dc:#d1a06a"><b>More</b><small>Research, my day, Jarvis, settings, the rest</small></a>
   </nav>
   <section id="out" aria-live="polite"></section>
-  <nav class="dr-links" aria-label="Other ways in"><a href="../gate/index.html#az">Every app A to Z</a><a href="../atlas/">The map</a><a href="../gate/index.html">Home</a></nav>
+  <nav class="dr-links" aria-label="Other ways in"><a href="help.html">How do I...? Help</a><a href="../gate/index.html#az">Every app A to Z</a><a href="../atlas/">The map</a><a href="../gate/index.html">Home</a></nav>
   <p class="dr-foot">Read only: nothing here can trade or change a bot.</p>
 </main>
 </body>

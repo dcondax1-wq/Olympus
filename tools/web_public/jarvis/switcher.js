@@ -61,7 +61,8 @@ const CSS = `
   touch-action:none;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;cursor:pointer;
   transition:opacity .25s ease,transform .18s ease;color:var(--oly-th-n37, #f3ece0)}
 .nx-orb .nx-core{position:absolute;inset:7px;border-radius:50%;
-  background:radial-gradient(circle at 38% 32%,var(--oly-th-a14, #f3e3bd) 0,var(--oly-th-warn, #e0b060) 24%,var(--oly-th-a8, #c8a24a) 50%,var(--oly-th-a4, #7a5230) 82%,var(--oly-th-n7, #3a2a1c) 100%);
+  background:radial-gradient(circle at 50% 38%,#2b4377 0,#16264a 55%,#0b1430 100%);   /* the Home Screen icon's navy (web/icons/icon.svg, 2026-11-18) */
+  
   box-shadow: 0 4px 14px rgba(0,0,0,.32)}
 .nx-orb::after{content:"";position:absolute;inset:1px;border-radius:50%;border:1.5px solid rgba(var(--oly-th-warn-rgb, 224,176,96),.55);border-top-color:var(--oly-th-a8, #c8a24a);
   border-bottom-color:rgba(var(--oly-th-a8-rgb, 192,155,80),.35)}
@@ -70,7 +71,7 @@ const CSS = `
 .nx-orb:active,.nx-orb.press{transform:scale(.92)}
 .nx-orb.hide{opacity:0;visibility:hidden;pointer-events:none}
 .nx-orb:focus{outline:none}.nx-orb:focus-visible{outline:2px solid var(--oly-th-warn, #e0b060);outline-offset:3px}
-.nx-orb .nx-core svg{position:absolute;left:50%;top:50%;width:22px;height:22px;margin:-11px 0 0 -11px;opacity:.82;stroke:var(--oly-th-n37, #f3ece0)}
+.nx-orb .nx-core svg{position:absolute;left:50%;top:50%;width:26px;height:26px;margin:-14px 0 0 -13px;fill:#e6bb62}
 .nx-orb.pulse .nx-core{animation:nx-pulse .6s ease}
 @keyframes nx-pulse{50%{transform:scale(.94)}}
 @keyframes nx-spin{to{transform:rotate(360deg)}}
@@ -265,7 +266,7 @@ export function mountSwitcher(opts = {}) {
   const orb = doc.createElement('button');
   orb.type = 'button'; orb.className = 'nx-orb'; orb.id = 'nxOrb';
   orb.setAttribute('aria-label', 'Switch apps: tap for all apps, swipe for the next one, hold for the four doors');
-  orb.innerHTML = '<span class="nx-core"><svg viewBox="0 0 24 24" fill="none" stroke="#f3ece0" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9 12 3.5 21 9zM5.5 11v7M10 11v7M14 11v7M18.5 11v7M3.5 20.5h17"/></svg></span><span class="nx-alert"></span>';      // its two turning rings are ::before / ::after (inside the screen edge)
+  orb.innerHTML = '<span class="nx-core"><svg viewBox="160 200 704 624" aria-hidden="true"><path d="M512 226 830 392H194zM512 282 296 362h432z" fill-rule="evenodd"/><rect x="194" y="408" width="636" height="44" rx="6"/><rect x="245" y="474" width="84" height="22" rx="4"/><rect x="256" y="496" width="62" height="196"/><rect x="395" y="474" width="84" height="22" rx="4"/><rect x="406" y="496" width="62" height="196"/><rect x="545" y="474" width="84" height="22" rx="4"/><rect x="556" y="496" width="62" height="196"/><rect x="695" y="474" width="84" height="22" rx="4"/><rect x="706" y="496" width="62" height="196"/><rect x="214" y="712" width="596" height="38" rx="5"/><rect x="174" y="768" width="676" height="40" rx="6"/></svg></span><span class="nx-alert"></span>';      // its two turning rings are ::before / ::after (inside the screen edge)
   const tip = doc.createElement('div'); tip.className = 'nx-tip'; tip.setAttribute('aria-hidden', 'true');
   const fan = doc.createElement('div'); fan.className = 'nx-fan'; fan.innerHTML = '<div class="nx-fs"></div>';
   const rootEl = doc.createElement('div');

@@ -14,7 +14,7 @@
     { days: WK, start: '08:45', end: '08:55', kind: 'bots', what: 'Before the open', how: 'Open Hestia: did it trade overnight? $ today, $ room left. Anything red: look at the PC.', link: ['Hestia', '../hestia/'] },
     { days: WK, start: '12:00', end: '12:05', kind: 'bots', what: 'Lunch look', how: 'Phone only: a trade open? Room left OK? Then leave it alone.' },
     { days: WK, start: '16:15', end: '16:25', kind: 'bots', what: 'After the close', how: 'No trade open (MFFU needs flat by 16:10). Note today\'s $ in Planner. Done.', link: ['Planner', '../planner/'] },
-    { days: [5], start: '16:30', end: '17:15', kind: 'review', what: 'Friday weekly review', how: 'Trades and $ this week, room left per account. Update My Accounts. Decide next week. The PC updates itself Fri/Sat when flat.', link: ['My Accounts', 'accounts.html'] },
+    { days: [5], start: '16:30', end: '17:15', kind: 'review', what: 'Friday weekly review', how: 'Open ZEUS this week: $ and trades per account, Zlarior and ATLAS vs 2026, next week\'s news days and decisions. The PC builds it from 16:15 ET and updates itself Fri/Sat when flat.', link: ['ZEUS this week', 'week.html'] },
     { days: [5], start: '17:15', end: '17:30', kind: 'money', what: 'Payout check', how: 'A funded account past its payout line? Ask MFFU now (rules below).' },
     { days: [1, 3], start: '10:00', end: '11:30', kind: 'side', what: 'Agency: calls and emails', how: 'Shops are open. Work down the call list.', link: ['Agency', '../agency/'] },
     { days: [2, 4], start: '13:00', end: '15:00', kind: 'side', what: 'Agency: build websites', how: 'Work on demo or paid sites.' },

@@ -1,4 +1,11 @@
 ## Tested and rejected (don't redo without a new idea)
+- **ATLAS new members (2026-11-18, `atlas-members-2026-11-18.md`, `tools/atlas_plus.py`, `research/second/atlas_plus.json`):** 29
+  pre-declared versions, 5m NQ RTH, stop 1 tick beyond structure, 2R or VIX-band target, $250 a trade, costs in: VWAP pullback
+  with trend (8; all lose Jul-Oct), opening-drive continuation on a 1m trigger (8; 2021-25 = 5m proxy), prior-day value-area
+  re-entry = 80% rule re-measure (1; stops too wide for $250), 15m Keltner squeeze (8; 0.1-0.4 a week), prior-day POC first
+  touch (4). 0 hold H1/H2/2025/2021-24 (coin-flip 0). Picks as a 4th member on the funded 25K ($250 / 30% room): opening
+  drive $541/$353 -> $578/$253 a month, no-pay 15 -> 34% Jul-Oct, 4.49/wk; POC $521/$279; with S/R out both ~-$90/mo.
+  ZEUS Lab: atlas_member_* Rejected. Nothing changed.
 - **New-strategy hunt (2026-11-17, `new-strategy-hunt-2026-11-17.md`, `tools/new_hunt.py`, `research/second/new_hunt.json`):** 354 cells,
   5m RTH, $500 a trade, structure stops: lunch-box squeeze -> PM break (any / WITH / AGAINST the AM trend = the 14:00-15:30
   continuation), failed auction at the prior value-area edge (5m-built profile), Dalton 80% rule, London 02:00->09:30 extension

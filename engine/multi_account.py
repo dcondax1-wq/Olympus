@@ -469,6 +469,7 @@ class Account:
         self.lock = None                       # {"day", "reason", "t"}: no new entry today
         self.gaveup: set = set()
         self.last_size = None                  # the last entry's sizing {"qty", "reasons"}
+        self.hedge_wait: set = set()           # LIT entry_t that waited for ATLAS / BLITZ on another account to close (logged once)
         self.mx = threading.RLock()
 
     # ---- plumbing
@@ -885,7 +886,26 @@ class Account:
             fl = getattr(self.router.bot, "fleet", None)           # engine/fleet.py (off = None): no hedge vs a follower
             why = why or (fl.opposite_open(1 if ent["dir"] == 1 else -1) if fl is not None else None)
             q = 0 if why else self.qty_for(ent, now)
-            if q and not why and self.shared() is not None:
+            if q and not why:
+                # night-rehearse 2026-11-18: ATLAS's 25K (account B) / the Rapid's ATLAS / BLITZ on ANOTHER account holding the
+                # other side: this LIT copy waits until that close is confirmed (LiveBot._hedge_clear closes it; begin() starts
+                # it even when the bot's own account is stood down), like the bot's own LIT entry. Was routed at once from this
+                # thread: the 25K #2 went short while ATLAS's funded 25K was still long (MFFU: no long + short across accounts).
+                held = self.router.others_opposite(1 if ent["dir"] == 1 else -1, self)
+                if held:
+                    from .live import LIT_MAX_LATE_S
+                    late = LIT_MAX_LATE_S if str(ent.get("tf") or "") == "1m" else 2 * secs + 60
+                    if now - int(ent["entry_t"]) <= late:
+                        self.seen.discard(("entry", ent["entry_t"]))
+                        if ent["entry_t"] not in self.hedge_wait:
+                            self.hedge_wait.add(ent["entry_t"])
+                            self.log("risk", f"entry at {_et(ent['entry_t']):%H:%M} ET waits: {held} (no long + short across "
+                                             "accounts; tried again next poll)")
+                        q = -1
+                    else:
+                        why = f"HEDGE BLOCKED: {held} and its close was not confirmed before LIT's entry deadline"
+                        q = 0
+            if q and q != -1 and not why and self.shared() is not None:
                 # one account, two strategies (engine/rapid.py): LIT has priority. ATLAS holding a position here (either
                 # side) is closed at market FIRST; LIT routes only once that close is CONFIRMED flat, tried again on
                 # every poll until LIT's entry deadline (live.LIT_MAX_LATE_S after its fill bar opened), then skipped
@@ -1068,6 +1088,47 @@ class AccountRouter:
                     return f"hedging guard: the bot's own account holds a {'LONG' if d == -1 else 'SHORT'} position"
         return None
 
+    def others_opposite(self, d: int, acc=None):
+        """ATLAS's 25K (account B), ATLAS on the Rapid EOD and BLITZ (account C) on ANOTHER NinjaTrader account than `acc`
+        holding (or still closing: open_t stays set until the close is confirmed) the side opposite to d: who, else None.
+        The same account (engine/rapid.py, engine/lit25.py) is the lane's own shared() yield. An unknown side fails closed."""
+        b = self.bot
+        mine = str(((acc.spec if acc is not None else {}) or {}).get("nt_account") or "").strip()
+        same = acc.shared() if acc is not None else None
+        for attr, who in (("acct_b", "ATLAS's 25K"), ("acct_r", "ATLAS on the Rapid EOD"), ("acct_c", "BLITZ (account C)")):
+            o = getattr(b, attr, None)
+            if o is None or o is same or getattr(o, "open_t", None) is None:
+                continue
+            if mine and str(getattr(o, "name", "") or "").strip() == mine:
+                continue
+            try:
+                dd = int(((getattr(o, "prov", None) or {}).get(int(o.open_t)) or {}).get("dir") or 0)
+            except Exception:
+                dd = 0
+            if dd != d:
+                return f"{who} {getattr(o, 'name', '') or ''} holds a {'SHORT' if d == 1 else 'LONG'} position".replace("  ", " ")
+        return None
+
+    def _hedge_first(self, live, ctx):
+        """begin(), on the poll thread before the account threads: a new LIT entry that some account here will take while
+        ATLAS / BLITZ holds the other side on another account -> the bot's own hedge close (LiveBot._hedge_clear: ATLAS /
+        BLITZ closed at market, LIT first) starts now, also when the bot's own account takes no entry (stood down after a
+        pass, its guard). The accounts wait (Account._process) until that close is confirmed. Never raises."""
+        try:
+            st = ctx["state"]
+            ent = st.get("position") or st.get("enter_now")
+            if not ent or self.killed():
+                return
+            d = 1 if ent.get("dir") == 1 else -1
+            if not any(("entry", ent["entry_t"]) not in a.seen and ent["entry_t"] >= ctx["start"] - ctx["secs"]
+                       and not a.entry_block(ctx["now"]) and self.others_opposite(d, a) for a in live):
+                return
+            hc = getattr(self.bot, "_hedge_clear", None)
+            if callable(hc):
+                hc(ent, ctx["sym"], ctx["now"])
+        except Exception as e:
+            self.log("error", f"hedge close for the extra accounts failed: {e.__class__.__name__}: {e}")
+
     def base_sizing(self) -> dict:
         return dict(getattr(self.bot, "_lit_sizing", None) or {})
 
@@ -1185,6 +1246,7 @@ class AccountRouter:
         ctx = {"res": res, "state": dict(self.bot.state or {}), "sym": sym, "now": int(now), "secs": int(secs),
                "start": int(self.bot.started_at or now), "flat_mod": flat_mod, "entry_block": entry_block,
                "fill_bar_seen": getattr(self.bot, "_fill_bar_seen", lambda _t: True)}
+        self._hedge_first(live, ctx)
         if not self.parallel or len(live) == 1 and not self._wants_thread(live[0]):
             for a in live:
                 a.process(ctx)

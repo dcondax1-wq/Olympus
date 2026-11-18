@@ -143,9 +143,10 @@
   const KIND_WORDS = { eval_passed: 'Eval passed', eval_failed: 'Eval failed', account_locked: 'Account locked', order_rejected: 'Order rejected',
                        payout_ready: 'Payout ready', payout_requested: 'Payout requested', balance: 'Balance', bot_started: 'Bot started',
                        bot_stopped: 'Bot stopped', pc_silent: 'PC silent', owner_note: 'You wrote', claude_note: 'Claude', plan_changed: 'Plan changed',
-                       daily_review: 'ZEUS review' };
+                       daily_review: 'ZEUS review', brief: 'Morning brief' };
   const LOUD = new Set(['eval_passed', 'eval_failed', 'account_locked', 'order_rejected', 'payout_ready', 'pc_silent']);
   const SRC_WORDS = { bot: 'PC', owner: 'you', claude: 'Claude', plan: 'plan', cloud: 'cloud' };
+  KIND_WORDS.weekly_review = 'Weekly review';     // tools/weekly_review.py (Business -> This week)
 
   const api = { STALE_S, pick, planBoard, overlayLite, silent, ago, usd, chipOf, KIND_WORDS, LOUD, SRC_WORDS, num };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

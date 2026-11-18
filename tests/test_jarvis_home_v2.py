@@ -44,8 +44,9 @@ def serve():
     return srv, f"http://127.0.0.1:{srv.server_address[1]}"
 
 
-SEEN = "try { sessionStorage.setItem('jarvis.booted', '1'); localStorage.setItem('jarvis.seen', JSON.stringify('j9')); localStorage.setItem('jarvis.orb.tips', '3'); localStorage.setItem('jarvis.tour.seen', '1'); } catch (e) {}"
-FIRST = "try { sessionStorage.setItem('jarvis.booted', '1'); localStorage.setItem('jarvis.intro', JSON.stringify('off')); } catch (e) {}"
+# AGORA's first screen is what this file measures: since 2026-11-18 Classic Jarvis is the default look (tests.test_jarvis_classic_home), so AGORA is picked here
+SEEN = "try { localStorage.setItem('jarvis.look', 'agora'); sessionStorage.setItem('jarvis.booted', '1'); localStorage.setItem('jarvis.seen', JSON.stringify('j9')); localStorage.setItem('jarvis.orb.tips', '3'); localStorage.setItem('jarvis.tour.seen', '1'); } catch (e) {}"
+FIRST = "try { localStorage.setItem('jarvis.look', 'agora'); sessionStorage.setItem('jarvis.booted', '1'); localStorage.setItem('jarvis.intro', JSON.stringify('off')); } catch (e) {}"
 
 MEASURE = r"""() => {
   const R = (q) => { const e = typeof q === 'string' ? document.querySelector(q) : q; if (!e) return null; const cs = getComputedStyle(e); if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity === 0) return null;

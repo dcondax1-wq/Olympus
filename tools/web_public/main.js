@@ -971,7 +971,7 @@ VIEWS.today = (el) => {
   const todays = (lv.ledger || []).filter(v => v.day === lv.today), dayPnl = todays.reduce((a, v) => a + (v.usd || 0), 0);
   const y = D.results?.periods?.['2026 YTD'], RD = reactorData(), WK = weekData(), LQ = liqData();
   el.innerHTML = `<div id="lpToday" class="lp-slot"></div>
-    <div class="card hero-card"><div class="hero3d" id="tdOrb"><img class="hero-fallback" src="icons/icon-512.png?v=p111030" alt="">
+    <div class="card hero-card"><div class="hero3d" id="tdOrb"><img class="hero-fallback" src="icons/icon-512.png?v=p111031" alt="">
         <span class="hero-tag">${icon('engine')}LIVE ORACLE · last ${Math.min(12, (lv.bars || []).length)} bars</span></div>
       <div class="state">
         <div><div class="eyebrow">Cloud paper bot · ${esc(stratName())} · ${s.inkz ? esc(s.inkz[2]) + ' live' : s.next ? `${esc(s.next[0])} in ${Math.floor(s.next[1] / 60)}h ${String(s.next[1] % 60).padStart(2, '0')}m` : s.wk ? 'session over' : 'weekend'}</div>
@@ -3246,7 +3246,7 @@ async function pushFill(cardId) {
   const b = box(); if (!b) return;
   b.querySelector('#puOn')?.addEventListener('click', async () => { try { const r = await pushEnsure(true); toast(r?.state === 'on' ? 'Notifications on' : 'Allowed: the cloud picks this phone up on its next run'); haptic(14); } catch (e) { toast(e.message || String(e), 5200); } pushFill(cardId); });
   b.querySelector('#puTest')?.addEventListener('click', async () => {
-    try { const r = await swReg(); await r.showNotification('LONG · MFFU 50K', { body: 'Entered 4 MNQ (test on this phone)', icon: 'icons/icon-192.png?v=p111030', badge: 'icons/icon-192.png?v=p111030', tag: 'le-local-test', data: { url: '#/activity' } }); toast('Test shown'); } catch (e) { toast(e.message || String(e)); }
+    try { const r = await swReg(); await r.showNotification('LONG · MFFU 50K', { body: 'Entered 4 MNQ (test on this phone)', icon: 'icons/icon-192.png?v=p111031', badge: 'icons/icon-192.png?v=p111031', tag: 'le-local-test', data: { url: '#/activity' } }); toast('Test shown'); } catch (e) { toast(e.message || String(e)); }
   });
   b.querySelector('#puOff')?.addEventListener('click', async () => { try { await pushOff(); toast('Notifications off on this phone'); } catch (e) { toast(e.message || String(e)); } pushFill(cardId); });
 }

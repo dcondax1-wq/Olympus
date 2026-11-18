@@ -48,7 +48,7 @@ function hero(m) {
       + (h.more ? `<button class="hero-more" type="button" data-hc="needs" aria-label="${h.more} more ${h.more === 1 ? 'thing needs' : 'things need'} you: show the list">+${h.more} more</button>` : ''));
   }
   if (hs) {
-    const st = m.state || { kind: 'live', text: '' }, show = st.kind === 'demo' || st.kind === 'offline' || st.kind === 'stale';
+    const st = m.state || { kind: 'live', text: '' }, show = st.kind === 'demo' || st.kind === 'offline' || (st.kind === 'stale' && !(st.fix && m.hero && m.hero.text === st.text + '.'));   // never the hero's own sentence twice
     hs.hidden = !show; hs.className = 'hero-state ' + st.kind; hs.textContent = show ? st.text : '';
   }
 }
@@ -82,8 +82,9 @@ function bots(m) {
   const cards = m.bots.length ? m.bots.map((b) => `<button class="hc-bot" type="button" data-app="${esc(b.app || 'zenith')}" aria-label="${esc(b.name)}: ${esc(drawdownLine(b))}">`
     + `<span class="hc-bh">${dot(b.level)}<b>${esc(b.name)}</b><em>${esc(b.size)}</em></span>${pnlHtml(b.pnl)}<span class="hc-dd">${esc(drawdownLine(b))}</span>`
     + (b.text ? `<span class="hc-sub">${esc(b.text)}</span>` : '') + '</button>').join('')
+    : st.fix && m.online ? `<button class="hc-bot hc-wide" type="button" data-app="zenith"><span class="hc-bh">${dot('warn')}<b>No bot report since ${esc(st.since)}</b></span><span class="hc-sub">On the PC, tap STOP BOT, then START BOT.</span></button>`
     : `<button class="hc-bot hc-wide" type="button" data-app="zenith"><span class="hc-bh">${dot('')}<b>No bot report yet</b></span><span class="hc-sub">${m.online ? 'The bots have not reported yet: your accounts are not affected.' : 'You are offline. The bots keep running on the PC on their own.'}</span></button>`;
-  const age = st.kind === 'stale' || st.kind === 'live' ? `<p class="hc-age ${esc(st.kind)}">${esc(st.text)}</p>` : '';
+  const age = (st.kind === 'stale' && !(st.fix && !m.bots.length)) || st.kind === 'live' ? `<p class="hc-age ${esc(st.kind)}">${esc(st.text)}</p>` : '';
   return `<section class="hc-sec" aria-labelledby="hcB"><h2 id="hcB">NQ bots</h2><div class="hc-strip${m.bots.length > 1 ? '' : ' one'}">${cards}</div>${age}</section>`;
 }
 function day(m) {

@@ -37,6 +37,7 @@ GENERATED = (
     "research/lit/live_check.json", "research/lit/live_timing.json",  # tests the ops checks run
     "research/lit/live_exit_route.json", "research/lit/rehearsal.json",
     "tools/web_hub_snapshot.json",        # tools/build_web_dashboard.py
+    "tools/web_public/business/week.json",   # tools/weekly_review.py (Friday ops task: ZEUS this week)
 )
 
 
