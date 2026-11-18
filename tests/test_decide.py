@@ -50,6 +50,9 @@ def rd(*p):
         return fh.read()
 
 
+N_OPEN = sum(1 for _d in json.loads(open(os.path.join(BIZ, 'decisions.json'), encoding='utf-8').read()).get('items', []) if _d.get('status', 'open') == 'open')
+
+
 def part_a():
     doc = json.loads(rd(BIZ, "decisions.json"))
     items = doc.get("items") or []
@@ -108,7 +111,7 @@ def part_c():
              got: D.answers(ev), b: D.body(it, 'yes'), bad: D.body(it, 'maybe'), len: D.noteText(long, 'later').length }});
     """)
     check("c. onPc: only the /site/ path (the PC's private link)", r.get("pc") is True and r.get("pub") is False and r.get("pub2") is False, r)
-    check("c. openItems: status open (or none) only", r.get("n") == 7 and r.get("closed") == ["a2"], r)
+    check("c. openItems: status open (or none) only", r.get("n") == N_OPEN and r.get("closed") == ["a2"], r)
     g = r.get("got") or {}
     check("c. answers: newest per id from data.decision or the text; claude notes and unknown answers ignored",
           g.get("payout-ping-1000") == {"answer": "yes", "t": 20} and g.get("atlas-on-rapid") == {"answer": "later", "t": 5} and "keep-1000-rapid" not in g, g)
@@ -148,7 +151,7 @@ def part_d():
     from tools import board as T
     b = B.build(events=evs, plan_doc=PLAN, now=NOW + 5)
     ln = [x for x in T.lines(b, now=NOW + 5) if x.startswith("DECIDE CARD")]
-    check("d. board.py read: one DECIDE CARD line with the open count and ids", ln and "7 open" in ln[0] and "payout-ping-1000" in ln[0], ln)
+    check("d. board.py read: one DECIDE CARD line with the open count and ids", ln and f"{N_OPEN} open" in ln[0] and "payout-ping-1000" in ln[0], ln)
 
 
 class Site(http.server.SimpleHTTPRequestHandler):
@@ -201,7 +204,7 @@ def part_e():
               return { n: its.length, btn, h, hidden: document.getElementById('decide').hidden, imp: its[0].querySelector('.dc-imp').textContent,
                        why: its[0].querySelector('.dc-why').textContent, wide: document.documentElement.scrollWidth <= window.innerWidth + 1 }; })()""")
             check("e. ZEUS on the PC link (390 px): 7 decisions, each Yes / No / Later >= 44 px, why + $ impact, no sideways scroll",
-                  r["n"] == 7 and all(b == ["Yes", "No", "Later"] for b in r["btn"]) and r["h"] >= 44 and not r["hidden"] and r["imp"].startswith("$: ")
+                  r["n"] == N_OPEN and all(b == ["Yes", "No", "Later"] for b in r["btn"]) and r["h"] >= 44 and not r["hidden"] and r["imp"].startswith("$: ")
                   and r["why"].startswith("Why: ") and r["wide"], r)
             p.click("#decide .dc-item[data-id='payout-ping-1000'] button[data-ans='yes']")
             p.wait_for_function("document.querySelector(\"#decide .dc-item[data-id='payout-ping-1000'] .dc-sent\")")
@@ -220,7 +223,7 @@ def part_e():
                        off: its.map((i) => (i.querySelector('.dc-off b') || {}).textContent), q: its.length ? its[0].querySelector('.dc-q').textContent : '',
                        wide: document.documentElement.scrollWidth <= window.innerWidth + 1, wait: document.getElementById('waiting').textContent }; })()""")
             check("e. the Board on the public site: 'Open on your PC link to answer' + the exact question, no buttons, nothing posted, no sideways scroll",
-                  r2["n"] == 7 and r2["btns"] == 0 and all(x == "Open on your PC link to answer" for x in r2["off"]) and r2["q"].startswith("Funded 25K: ask for the full $1,000")
+                  r2["n"] == N_OPEN and r2["btns"] == 0 and all(x == "Open on your PC link to answer" for x in r2["off"]) and r2["q"].startswith("Funded 25K: ask for the full $1,000")
                   and len(Site.posts) == 1 and r2["wide"] and "ATLAS trades on" not in r2["wait"], r2)
             check("e. no page errors", not errs, errs)
             br.close()

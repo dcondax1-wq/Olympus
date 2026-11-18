@@ -120,7 +120,7 @@
    "id": "cloud-alerts",
    "question": "Let the cloud watch your PC (a tiny free check every 30 min on the backup GitHub repo) so you get a push if the PC goes silent?",
    "why": "The PC-silent alert is built but needs a cloud runner; the old GitHub account's Actions are off since the suspension. The backup repo's free minutes cover it (~700 of 2,000 a month).",
-   "impact": "Catches a dead PC within 30 min instead of days (it was silent Nov 7-17 unnoticed).",
+   "impact": "$0 (free minutes). Catches a dead PC within 30 min instead of days (it was silent Nov 7-17 unnoticed).",
    "impact_usd": 0,
    "options": [
     "yes",
