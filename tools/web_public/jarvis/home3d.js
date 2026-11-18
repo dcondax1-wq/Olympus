@@ -419,6 +419,9 @@ export function attach(ext) {
   import('../olympus/fx-cine.js').then((C) => {
     home.cine = C.cinema(rc, { time: 'clock', sun: false, bursts: false, birds: lite() ? false : { center: [0, 0, -40], radius: 34, height: 16, size: 0.6, count: 10 },
       fireflies: lite() ? false : { box: [24, 4, 12], center: [0, -1, -6], count: 40 } });
+    // night-3d (2026-11-17): a soft depth of field on HD (cinema's focus is high / ultra only): the reactor and the temple stay sharp, the far
+    // sky, the shafts' tails and the birds fall softly out of focus. It rides the one finish pass: no draw call, LITE untouched.
+    if (!lite() && ext.T && home.cine.focus) home.cine.focus(new ext.T.Vector3(0, 1.6, 0), { r: 0.26, amount: 2.6 });
   }).catch(() => { /* optional */ });
 }
 

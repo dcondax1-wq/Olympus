@@ -1,5 +1,5 @@
 /* ATLAS Strategy City in AGORA (docs/DESIGN_AGORA.md, owner 2026-11-09): a small marble town at dawn. Three columns are the three strategies;
-   the small buildings are scenery only. Warm stone, bronze, gold, olive, terracotta. No neon, no glow, no night sky. CSS 3D only, nothing moves. */
+   the small buildings are scenery only. Warm stone, bronze, gold, olive, terracotta. No neon, no glow, no night sky. CSS 3D only; nothing moves on its own (the camera glides only when moved). */
 :root{color-scheme:dark;--bg:#14110e;--panel:#1d1914;--raise:#26211b;--line:#3a3228;--ink:#f3ece0;--soft:#cfc4b2;--muted:#a39883;--gold:#c8a24a;--gold2:#e0c27a;--bronze:#9c6b3c;--olive:#7f8a52;--terra:#c96a4a;
   --serif:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;--sans:-apple-system,'SF Pro Text',system-ui,'Helvetica Neue',Arial,sans-serif}
 *{box-sizing:border-box}
@@ -118,7 +118,30 @@ main{max-width:900px;margin:auto;padding:0 16px 48px}
 .outpost small{color:var(--muted)}
 .paper-badge{display:inline-block;margin-top:8px;padding:4px 8px;border:1px solid var(--bronze);border-radius:6px;color:var(--gold);font:700 12px var(--sans)}
 @media(min-width:700px){.outposts{grid-template-columns:repeat(3,minmax(0,1fr))}.world{height:540px}.city{transform:translate(-50%,-50%) translate3d(var(--pan,0px),0,var(--zoom,0px)) rotateX(62deg) rotateZ(var(--yaw,-22deg))}}
-*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+/* nothing moves on its own (no animation anywhere); the camera alone glides to where the finger or a button put it (night-3d) */
+*,*::before,*::after{animation:none!important;scroll-behavior:auto!important}
+.city{transition:transform .5s cubic-bezier(.22,.8,.26,1)!important}
+.city.drag{transition:transform .09s linear!important}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 html[data-lite=true] .city-light:nth-child(3n+1),html[data-lite=true] .city-light:nth-child(3n+2){display:none}
 html[data-lite=true] .moon{display:none}
+
+/* night-3d look (2026-11-17): light, shade and air. Still CSS 3D, still nothing ambient moves; every layer below is a static gradient
+   (composited once). The sun sits low behind the moon's corner: faces lit from above and fading to a darker foot (ambient occlusion at
+   the base), soft contact shadows under the capital and the three plazas, a warm halo round the low sun, haze over the far side of town
+   (aerial perspective) and a shade at the near edge. LITE keeps the halo and haze off. */
+.halo{display:block;position:absolute;right:calc(20% - 70px);top:calc(12% - 70px);width:196px;aspect-ratio:1;border-radius:50%;background:radial-gradient(closest-side,rgba(255,226,160,.42),rgba(255,196,120,.14) 55%,transparent)}
+.moon{z-index:1;box-shadow:0 0 0 1px rgba(255,236,190,.5),inset -8px -6px 0 rgba(214,170,110,.35)}
+.world::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;
+  background:linear-gradient(180deg,transparent 0%,transparent 24%,rgba(232,178,112,.2) 36%,transparent 54%,transparent 80%,rgba(20,14,10,.3) 100%)}
+.controls,.mini-map{z-index:2}
+.floor{background:radial-gradient(60% 60% at 46% 52%,transparent 55%,rgba(60,44,28,.22)),repeating-linear-gradient(0deg,#14110e10 0 1px,transparent 1px 45px),repeating-linear-gradient(90deg,#14110e10 0 1px,transparent 1px 45px),radial-gradient(#ddd2bb,#a89a80 78%)}
+.city-light i{background-image:linear-gradient(180deg,rgba(255,246,226,.2),transparent 45%,rgba(46,32,18,.3)),repeating-linear-gradient(90deg,transparent 0 5px,#b8ac95 5px 6px)}
+.city-light .roof{background:linear-gradient(135deg,#efe4cf,var(--c))}
+.tower .face:not(.roof){background:linear-gradient(180deg,rgba(255,246,226,.24),transparent 40%,rgba(46,32,18,.32)),repeating-linear-gradient(90deg,#efe6d3 0 9px,#cfc3aa 10px 12px,#efe6d3 13px 22px)}
+.capital-tower i{background-image:linear-gradient(180deg,rgba(255,246,226,.24),transparent 40%,rgba(46,32,18,.32)),repeating-linear-gradient(90deg,transparent 0 9px,#c9bda4 9px 11px)}
+.capital-core::before{content:"";position:absolute;left:-6px;top:6px;width:150px;height:118px;border-radius:50%;transform:translate(26px,-30px) rotate(-18deg);background:radial-gradient(closest-side,rgba(38,24,12,.5),rgba(38,24,12,.18) 60%,transparent)}
+.plaza{box-shadow:0 10px 22px rgba(38,24,12,.38),inset 0 2px 0 rgba(255,250,236,.55),inset 0 -10px 18px rgba(90,66,40,.25)}
+.district[aria-pressed=true] .plaza{box-shadow:0 0 0 3px var(--c),0 10px 22px rgba(38,24,12,.38),inset 0 2px 0 rgba(255,250,236,.55)}
+html[data-lite=true] .halo,html[data-lite=true] .world::after{display:none}

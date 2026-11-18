@@ -136,6 +136,9 @@ class Hall {
         this.rc = CORE.createRenderer({ canvas, scene: this.scene, camera: this.camera, alpha: true, env: 'night', quality: ['ultra', 'high', 'low', 'off'].includes(quality) ? quality : undefined, exposure: 1.0, autoSize: false, theme: AGORA3D, tint: '#c8a24a',
           maxDpr: this.lite ? 1.5 : 2, bloom: { strength: 0.22, radius: 0.5, threshold: 0.95 }, onQuality: (l) => { this.lite = l === 'low' || l === 'off'; this.resize(); } });
         this.renderer = this.rc.renderer;
+        // night-3d look (olympus/look.js): a golden-hour grade in the finish pass, and on HD a soft depth of field: the council orb and
+        // the ring of gods sharp, the far colonnade and sky soft. No draw call; optional.
+        import('../olympus/look.js').then((L) => { if (this.rc) this.lookFx = L.polish(this.rc, { grade: 'golden', mix: 0.35, focus: { x: 0.5, y: 0.5, r: 0.34, amount: 2.2 } }); }).catch(() => {});
       } catch (_) { this.rc = null; }
     }
     if (!this.rc) {
@@ -144,7 +147,7 @@ class Hall {
       this.renderer.setClearColor(0x000000, 0);
       this.renderer.setPixelRatio(O ? O.dpr(this.lite) : Math.min(devicePixelRatio || 1, this.lite ? 1.5 : 2));
     }
-    this.yaw = Math.PI / 2 + 0.35; this.yawTo = this.yaw; this.pitch = 0.58; this.dist = 16;
+    this.yaw = Math.PI / 2 + 0.35; this.yawTo = this.yaw; this.pitch = 0.58; this.pitchTo = this.pitch; this.dist = 16;
     this.t = 0; this.last = performance.now(); this.frames = []; this.dirty = true; this.idleAt = 0;
     this.tex = { glow: glowTex(), marble: marbleTex(this.lite ? 128 : 256), floor: floorTex(this.lite ? 512 : 1024) };
     this.gods = d.gods;
@@ -431,13 +434,13 @@ class Hall {
 
   input(el) {
     let down = null;
-    el.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, yaw: this.yawTo, pitch: this.pitch, moved: false }; el.setPointerCapture?.(e.pointerId); });
+    el.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, yaw: this.yawTo, pitch: this.pitchTo, moved: false }; el.setPointerCapture?.(e.pointerId); });
     el.addEventListener('pointermove', (e) => {
       if (!down) return;
       const dx = e.clientX - down.x, dy = e.clientY - down.y;
       if (Math.abs(dx) + Math.abs(dy) > 6) down.moved = true;
-      this.yawTo = down.yaw + dx * 0.008; this.pitch = Math.max(0.12, Math.min(0.85, down.pitch + dy * 0.004));
-      if (RM) this.yaw = this.yawTo;
+      this.yawTo = down.yaw + dx * 0.008; this.pitchTo = Math.max(0.12, Math.min(0.85, down.pitch + dy * 0.004));
+      if (RM) { this.yaw = this.yawTo; this.pitch = this.pitchTo; }
       this.idleAt = performance.now(); this.dirty = true;
     });
     el.addEventListener('pointerup', (e) => {
@@ -479,10 +482,12 @@ class Hall {
     const moving = !RM;
     if (moving) {
       this.t += dt;
-      if (!this.sel && now - this.idleAt > 3500) this.yawTo += dt * 0.05;   // a slow idle turn
+      if (!this.sel && now - this.idleAt > 3500) this.yawTo += dt * 0.05 * Math.min(1, (now - this.idleAt - 3500) / 2500) ** 2;   // a slow idle turn that eases in
     }
-    const dy = this.yawTo - this.yaw;
-    if (Math.abs(dy) > 1e-4) { this.yaw += dy * Math.min(1, dt * 4); this.dirty = true; }
+    // night-3d: the camera glides with exponential easing (the same feel at 30 and 120 fps), the tilt too (it used to jump with the finger)
+    const dy = this.yawTo - this.yaw, dp = this.pitchTo - this.pitch, k = 1 - Math.exp(-dt * 6);
+    if (Math.abs(dy) > 1e-4) { this.yaw += dy * k; this.dirty = true; }
+    if (Math.abs(dp) > 1e-4) { this.pitch += dp * k; this.dirty = true; }
     if (!moving && !this.dirty) return;
     this.place();
     this.beamMat.uniforms.uTime.value = this.t; this.orbMat.uniforms.uTime.value = this.t;

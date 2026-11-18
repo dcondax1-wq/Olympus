@@ -390,7 +390,7 @@ void main(){
   col += uAccent * streak * 0.9 + vec3(1.0,0.74,0.46) * pow(noise(vec2(p.x*0.4 + 9.0, p.y*0.06 - uTime*0.2)), 7.0) * 0.6;
   gl_FragColor = vec4(mix(col, uFog, fogAmount(vFD, 0.0)), 1.0);
 }`;
-export const TOWER_VS = `varying vec3 vL; void main(){ vL = position; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }`;
+export const TOWER_VS = `attribute vec3 aL; varying vec3 vL; void main(){ vL = aL; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }`;
 export const TOWER_FS = `
 uniform float uTime; uniform float uDay; uniform vec3 uAccent; varying vec3 vL;
 void main(){

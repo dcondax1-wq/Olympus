@@ -260,6 +260,10 @@ export class Theater {
       grade: { vignette: 0.3, grain: 0.03 } });
     this.renderer = this.rc.renderer;
     this.renderer.setClearColor(FOG, 1);
+    // night-3d look (olympus/look.js): a warm dusk grade in the finish pass, and on HD a soft depth of field: the tape's head (the director
+    // frames it at the centre) stays sharp, the far colonnade and the backdrop melt. No draw call; optional.
+    this.lookFx = null;
+    import('../olympus/look.js').then((L) => { this.lookFx = L.polish(this.rc, { grade: 'dusk', mix: 0.35, focus: { x: 0.5, y: 0.46, r: 0.3, amount: 2.2 } }); }).catch(() => {});
     this.glow = glowTexture();
     this.flash = 0;          // global flash 0..1 (decays)
     this.flashTint = new THREE.Color('#f3ece0');

@@ -76,10 +76,11 @@ document.querySelectorAll('[data-key]').forEach(el=>el.addEventListener('click',
 $('left').addEventListener('click',()=>{camera.yaw-=18;updateCamera();});
 $('right').addEventListener('click',()=>{camera.yaw+=18;updateCamera();});
 $('home').addEventListener('click',()=>{camera={yaw:-22,pan:0,zoom:0};updateCamera();});
-$('scene').addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;pointer={x:e.clientX,y:e.clientY,yaw:camera.yaw,pan:camera.pan};$('scene').setPointerCapture(e.pointerId);});
+$('scene').addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;pointer={x:e.clientX,y:e.clientY,yaw:camera.yaw,pan:camera.pan};$('scene').setPointerCapture(e.pointerId);$('city').classList.add('drag');});
 $('scene').addEventListener('pointermove',e=>{if(!pointer)return;camera.yaw=pointer.yaw+(e.clientX-pointer.x)*.33;camera.pan=Math.max(-85,Math.min(85,pointer.pan+(e.clientY-pointer.y)*.3));updateCamera();});
-$('scene').addEventListener('pointerup',()=>pointer=null);
-$('scene').addEventListener('pointercancel',()=>pointer=null);
+const release=()=>{pointer=null;$('city').classList.remove('drag');};   // after a drag the camera glides again (the buttons and keys ease)
+$('scene').addEventListener('pointerup',release);
+$('scene').addEventListener('pointercancel',release);
 $('scene').addEventListener('keydown',e=>{
  if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A'){camera.yaw-=12;e.preventDefault();}
  else if(e.key==='ArrowRight'||e.key==='d'||e.key==='D'){camera.yaw+=12;e.preventDefault();}

@@ -91,6 +91,10 @@ export class Stage {
       bloom: { strength: 0.2, radius: 0.4, threshold: 0.88 }, grade: { grain: 0.02, vignette: 0.24, aberration: 0, saturation: 1.0 },
       onQuality: (lv) => { this.onTier(lv); } });
     this.renderer = this.rc.renderer;
+    // night-3d look (olympus/look.js): a golden-hour grade in the finish pass, and on HD a gentle tilt-shift depth of field (the middle of the
+    // view sharp, the far skyline and the near street soft: a city in miniature). No draw call; optional.
+    this.lookFx = null;
+    import('../olympus/look.js').then((L) => { this.lookFx = L.polish(this.rc, { grade: 'golden', mix: 0.3, focus: { x: 0.5, y: 0.5, r: 0.3, amount: 2.4 } }); }).catch(() => {});
     this.box5 = unitBox5();
     this.mode = 'hub';
     this.lights = [new THREE.HemisphereLight(0xffd8a8, 0x2a1c10, 0.9), new THREE.DirectionalLight(0xffcf9a, 1.4)];

@@ -4,14 +4,17 @@
 //          airships, 2 trains of 4 cars, one reflected tile, one neon board per district, thinner fireworks, no lens flare / aurora /
 //          fireflies, a pixel ratio of at most 1.5
 //          (farAlt: above this camera height the small details nobody can see from the overview are not drawn: heralds, billboards, rail pylons,
-//          sign poles, cranes; lmLod: the temple and the Pharos beyond this distance)
+//          sign poles, cranes, the harbor pier lines; lmLod: the temple and the Pharos beyond this distance)
 //          (fullTris: the full-detail tiles near the camera stop at this many triangles, nearest first, whatever maxFull says: the city
 //          grows with every run published, and the close-up of the densest district went from 223k to 264k triangles by 2026-11-16)
+//          (full: richTris = the 8-sided near towers stop at this many triangles, nearest first, and fullTris caps every full tile: a clear
+//          night over the densest district drew 13 rich tiles, 706k triangles against the 700k budget, 2026-11-17)
 //   lite   the LITE tier (OLYMPUS low / off), exactly what it always was
 // profileOf(level, phone, saver): low/off = lite; phones at high/ultra use the still-3D phone budget; desktop ultra stays full. ?phone=0 forces full.
 export const PROFILES = {
   full: { cars: 520, flyers: 90, airships: 3, trains: [3, 6], ships: 9, cranes: 8, signs: 2, boards: 4, mirrors: 4, mirrorNear: 100, maxFull: 22, lod: 170, rich: 70,
           outskirts: 2600, townTowers: 576, pulses: 34, drops: 7000, flow: 1600, stars: 1800, oldCars: 1500, fog: 3, shells: 8, spark: 1, lmLod: 0, farAlt: 0, dpr: 1.75,
+          richTris: 220000, fullTris: 400000,
           kit: { godGroups: 2, lens: true, aurora: true, fireflies: true, lightning: true } },
   phone: { cars: 160, flyers: 28, airships: 0, trains: [2, 4], ships: 5, cranes: 4, signs: 1, boards: 2, mirrors: 1, mirrorNear: 60, maxFull: 7, lod: 125, rich: 0,
            outskirts: 800, townTowers: 384, pulses: 12, drops: 3000, flow: 600, stars: 700, oldCars: 0, fog: 1, shells: 3, spark: 0.5, lmLod: 330, farAlt: 150, dpr: 1.5, fullTris: 36000,
