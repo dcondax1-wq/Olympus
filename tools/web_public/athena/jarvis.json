@@ -3,12 +3,12 @@
  "name": "Athena",
  "status": {
   "level": "ok",
-  "label": "190 entries, offline"
+  "label": "192 entries, offline"
  },
  "kpis": [
   {
    "label": "Entries",
-   "value": "190"
+   "value": "192"
   },
   {
    "label": "Words",

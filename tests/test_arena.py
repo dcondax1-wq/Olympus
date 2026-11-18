@@ -499,9 +499,13 @@ def run_browser():
             check("g. the fixture XP jump (level 10 -> 18, Hero -> Demigod) plays the rank-up ceremony: lightning bolts, the gold burst, three shockwave rings, the banner",
                   s["levelups"] == 1 and sc.get("levelups") == 1 and (sc.get("bolts", 0) >= 3 or sc.get("burst")) and sc.get("rings") == 3 and s["banner"] == "Rank up Demigod Level 18"
                   and p.get_attribute("html", "data-levelup") == "1", (sc, s["banner"]))
-            p.wait_for_timeout(3200)
+            try:                                               # the card is timed 2.4 s after the burst (700 ms after load): wait for it, not a guess
+                p.wait_for_function("(() => { const e = document.getElementById('pop'); return !!e && !e.hidden && e.getClientRects().length > 0 && e.textContent.includes('Ceryneian Hind'); })()",
+                                    timeout=20000, polling=100)
+            except Exception:
+                pass
             check("g. the new Labour's card opens after the burst (the Hind, earned since the last visit)",
-                  p.is_visible("#pop") and "Ceryneian Hind" in p.inner_text("#pop"), p.is_visible("#pop"))
+                  p.is_visible("#pop") and "Ceryneian Hind" in p.inner_text("#pop"), (p.is_visible("#pop"), p.inner_text("#pop")[:120] if p.is_visible("#pop") else ""))
             p.click("#popClose")
             p.wait_for_timeout(300)
             p.evaluate("ARENA.hold(true)")                             # the same rank-up frozen at its peak for the picture

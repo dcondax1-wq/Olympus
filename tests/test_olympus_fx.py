@@ -580,7 +580,9 @@ CINE_RUN = """async ([tier, extra]) => {
 
 
 def lum_stats(p):
-    return p.evaluate("""() => { const c = document.getElementById('stage'); __fxLab.rc.render(); const g = document.createElement('canvas'); g.width = 78; g.height = 60;
+    # rc.draw() always draws (rc.render() skips a frame inside the governor's frame gap, and then the WebGL buffer read here is empty:
+    # mean 0 under load); the read is in the same task as the draw, so it sees that frame
+    return p.evaluate("""() => { const c = document.getElementById('stage'), rc = __fxLab.rc; if (rc.draw) rc.draw(); else rc.render(); const g = document.createElement('canvas'); g.width = 78; g.height = 60;
       const x = g.getContext('2d', { willReadFrequently: true }); x.drawImage(c, 0, 0, 78, 60); const d = x.getImageData(0, 0, 78, 60).data; let s = 0, s2 = 0, n = d.length / 4;
       for (let i = 0; i < d.length; i += 4) { const l = (d[i] + d[i + 1] + d[i + 2]) / 3; s += l; s2 += l * l; } const m = s / n; return [m, Math.sqrt(Math.max(0, s2 / n - m * m))]; }""")
 

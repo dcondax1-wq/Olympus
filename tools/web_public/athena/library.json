@@ -26,6 +26,7 @@
   "research/writeups/atlas.md",
   "research/writeups/bias-filters.md",
   "research/writeups/builder-levers-2026-11-16.md",
+  "research/writeups/builder25k-eval-sizing-2026-11-17.md",
   "research/writeups/calendar-effects.md",
   "research/writeups/cross-market-context.md",
   "research/writeups/diversifier-search.md",
@@ -60,6 +61,7 @@
   "research/writeups/monte-carlo-evals.md",
   "research/writeups/moving-averages.md",
   "research/writeups/parameter-robustness.md",
+  "research/writeups/payout-policy-funded25-2026-11-17.md",
   "research/writeups/payout-policy.md",
   "research/writeups/retail-standalone.md",
   "research/writeups/risk-sizing.md",
@@ -737,7 +739,7 @@
    "tags": [
     "rejected"
    ],
-   "title": "The graveyard: 29 lists of dead ends",
+   "title": "The graveyard: 36 lists of dead ends",
    "short": "Many ideas were tested properly and dropped. Before you suggest a new strategy idea, search here first.",
    "body": [
     "Do not redo it unless you have a genuinely new idea.",
@@ -2605,6 +2607,23 @@
    ]
   },
   {
+   "id": "l-builder25k-eval-sizing-2026-11-17",
+   "kind": "learned",
+   "tags": [
+    "learned"
+   ],
+   "title": "Eval sizing for a FRESH MFFU Builder 25K",
+   "short": "23 eval sizings on the exact bot config (engine/multiaccount.sizingcfg of the mffubuilder25k preset + override -> engine/sizing.litqty), 1,000 Monte Carlo paths per span, the same paths as builder-levers.",
+   "body": [
+    "Worth adopting (the owner decides), 2026-11-17.",
+    "Pick on H1 = LIT 40% of the room to session 80 (median 12 sessions to pass, 2-week pass/fail 47.6/0.0%, 60-session fail 2.6%; H2 12, 47.2/0.0, 1.7%), first funded payout ~Jan 5 / Jan 6 (33 / 34 sessions), $553 / $456 a month. Bigger room shares (45-60%) pass 1-3 sessions sooner but 60-session fails jump to 7-21%.",
+    "$ caps $150-$400 are all slower. First-hit does nothing (the first trade is already sized by \"one winner covers $1,500\"). The 20-micro cap never binds (0 of ~68,000 LIT trades sized); the room share and the \"one winner\" size bind."
+   ],
+   "src": [
+    "research/writeups/builder25k-eval-sizing-2026-11-17.md"
+   ]
+  },
+  {
    "id": "l-calendar-effects",
    "kind": "learned",
    "tags": [
@@ -3235,6 +3254,24 @@
    ],
    "src": [
     "research/writeups/parameter-robustness.md"
+   ]
+  },
+  {
+   "id": "l-payout-policy-funded25-2026-11-17",
+   "kind": "learned",
+   "tags": [
+    "learned"
+   ],
+   "title": "Funded Builder 25K payout policy",
+   "short": "ATLAS's 25K eval passed; the funded 25K comes this week.",
+   "body": [
+    "Worth adopting (the owner decides), 2026-11-17.",
+    "8 request policies on the SAME 600 Monte Carlo paths of 126 sessions (tools/money/funded25.py tooling, builderlevers seeds, costs in, the live one-account rule), MFFU Builder 25K sim funded rules (research/lit/mffurules.json - $1,000 EOD trailing, floor locks at start + $100 and sits there after the 1st payout...",
+    "Picked on H1 (2026 Jan-Jun), checked on H2 (Jul-Oct 2026). Ask at the $1,000 max - ATLAS alone $594 / $498 a month vs $592 / $497 with today's $750 line, lost 5.3 / 6.3% vs 5.7 / 7.3%; LIT + ATLAS $250 $602 / $535 vs $599 / $529, lost 8.5 / 14.5% vs 8.8 / 15.3%; 2021-25 a wash ($47 vs $48, $35 vs $35).",
+    "Asap ($250) gets the first payout 1-2 sessions sooner but $4-14 a month less than today's line; a $300 / $500 cushion costs $11-39 a month for at most 1.8 points less lost; waiting for best day <= 40% is the worst ($24-74 a month less)."
+   ],
+   "src": [
+    "research/writeups/payout-policy-funded25-2026-11-17.md"
    ]
   },
   {
