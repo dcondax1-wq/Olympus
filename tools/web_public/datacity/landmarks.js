@@ -226,12 +226,18 @@ export class Landmarks {
     this.group.add(hit);
   }
 
+  /** ONE set of materials for the forum, the quay and the district gates (2026-11-17): they were made per landmark (three golds, three
+   *  stones), so the static merge (one mesh per material) could not join them and the phone's far overview paid ~4 draw calls for it */
+  _civic() {
+    return this.civic || (this.civic = { stone: marble({ gold: true, scale: 1.2 }), pale: marble({ gold: false, color: '#dcd8cf', scale: 1.1 }), gold: gold() });
+  }
+
   // ------------------------------------------------------------------------------------------------ the forum
   _forum() {
     const R = 31.5, N = 56, CH = 6.2;
     const gaps = this.L.districts.filter((d) => d.kind !== 'harbor').map((d) => Math.atan2(d.cz, d.cx));
     const keep = (a) => !gaps.some((q) => Math.abs(Math.atan2(Math.sin(a - q), Math.cos(a - q))) < 0.1);
-    const stone = marble({ gold: true, scale: 1.4 }), pale = marble({ gold: false, color: '#dcd8cf', scale: 1.1 });
+    const stone = this._civic().stone, pale = this._civic().pale;
     const shaft = geo('fshaft', () => { const c = new THREE.CylinderGeometry(0.5, 0.62, CH, 12, 1); c.translate(0, CH / 2, 0); return c; });
     const base = geo('fbase', () => new THREE.BoxGeometry(1.7, 0.4, 1.7)), cap = geo('fcap', () => new THREE.BoxGeometry(1.8, 0.5, 1.8));
     const cols = [], bases = [], caps = [];
@@ -243,7 +249,7 @@ export class Landmarks {
     }
     this.group.add(inst(shaft, stone, cols), inst(base, pale, bases), inst(cap, pale, caps));
     // a gold entablature ring, a neon band under it, a pale floor ring
-    const ring = new THREE.Mesh(geo('fring', () => { const t = new THREE.TorusGeometry(R, 0.55, 8, 96); t.rotateX(Math.PI / 2); return t; }), gold());
+    const ring = new THREE.Mesh(geo('fring', () => { const t = new THREE.TorusGeometry(R, 0.55, 8, 96); t.rotateX(Math.PI / 2); return t; }), this._civic().gold);
     ring.position.y = CH + 1.35; this.group.add(ring);
     const band = new THREE.Mesh(geo('fband', () => { const t = new THREE.TorusGeometry(R, 0.12, 6, 96); t.rotateX(Math.PI / 2); return t; }), this._neon('#daa56f', 1.2));
     band.position.y = CH + 0.7; this.group.add(band);
@@ -270,7 +276,7 @@ export class Landmarks {
   _harbor() {
     const h = this.L.harbor;
     if (!h) return;
-    const stone = marble({ gold: true, scale: 0.8 }), goldM = gold(), pale = marble({ gold: false, color: '#dcd8cf' });
+    const { stone, gold: goldM, pale } = this._civic();
     // the Pharos: a tapering tower in three stages, a glass lantern, two sweeping beams
     const px = h.x1 - 12, pz = h.z0 - 7, g = new THREE.Group();
     g.position.set(px, 0, pz);
@@ -325,7 +331,7 @@ export class Landmarks {
   _gates() {
     const ds = this.L.districts.filter((d) => d.kind !== 'harbor');
     if (!ds.length) return;
-    const stone = marble({ gold: true, scale: 1.3 }), goldM = gold();
+    const { stone, gold: goldM } = this._civic();
     const col = geo('gcol', () => { const c = new THREE.CylinderGeometry(0.75, 0.95, 13, 12, 1); c.translate(0, 6.5, 0); return c; });
     const lin = geo('glin', () => new THREE.BoxGeometry(14, 1.1, 1.8));
     const bar = geo('gbar', () => new THREE.BoxGeometry(12.4, 0.5, 0.3));

@@ -41,6 +41,10 @@ export class Scene {
       grade: { vignette: 0.34, grain: 0.03 } });
     this.renderer = this.rc.renderer;
     this.renderer.setClearColor(0x2a1d14, 1);
+    // night-3d look (olympus/look.js): a dusk grade in the finish pass on every tier, and on HD a soft depth of field round the free band
+    // (the column sharp, the far polis and sky soft). No draw call; optional (the scene is the same without it).
+    this.lookFx = null;
+    import('../olympus/look.js').then((L) => { this.lookFx = L.polish(this.rc, { grade: 'dusk', mix: 0.4, focus: this.focusSpot() }); }).catch(() => {});
     this.rig = { az: -0.55, el: 0.2, zoom: 1, vaz: 0, idle: 0, fit: 40, target: new THREE.Vector3(0, 0.5, 0) };
     this.cam = { right: new THREE.Vector3(1, 0, 0), dir: new THREE.Vector3(0, 0, 1), q: this.camera.quaternion };
     this.map = { center: null, half: 60, y: (p) => ((p - this.map.center) / this.map.half) * Y_MAX };
@@ -78,6 +82,12 @@ export class Scene {
     if (this.polis && this.polis.quality !== tier) this.polis.setQuality(tier);
   }
 
+  /** the sharp spot of the depth of field: the free band's centre, its radius a little inside the band (screen units, height = 1) */
+  focusSpot() {
+    const W = this.canvas.clientWidth || innerWidth, H = this.canvas.clientHeight || innerHeight, b = this.band || { x0: 0, y0: 0, x1: W, y1: H };
+    return { x: (b.x0 + b.x1) / 2 / W, y: (b.y0 + b.y1) / 2 / H, r: Math.max(0.18, 0.42 * Math.min(b.x1 - b.x0, b.y1 - b.y0) / H), amount: 2.4 };
+  }
+
   /** The free part of the screen between the HUD panels ({x0, y0, x1, y1} in CSS px): the scene is centred and fitted there. */
   setBand(b) {
     this.band = b;
@@ -95,6 +105,7 @@ export class Scene {
     this.camera.setViewOffset(W, H, W / 2 - (b.x0 + b.x1) / 2, H / 2 - (b.y0 + b.y1) / 2, W, H);
     this.camera.updateProjectionMatrix();
     this.rig.fit = this.fitDistance(b, W, H);
+    if (this.lookFx) this.lookFx.setFocus(this.focusSpot());
   }
 
   /** The nearest camera distance (default angle) at which the constellation and the clock ring stay inside the band. */
@@ -157,7 +168,10 @@ export class Scene {
       this.rig.idle = 0;
       if (pts.size === 1) {
         const now = performance.now();
-        if (now - lastTap < 300) { this.rig.az = -0.55; this.rig.el = 0.2; this.rig.zoom = 1; this.rig.vaz = 0; }
+        if (now - lastTap < 300) {                     // re-centre: the camera glides back the short way round (frame() eases it)
+          const r = this.rig, d = Math.atan2(Math.sin(r.az + 0.55), Math.cos(r.az + 0.55));
+          r.az -= d; r.el = 0.2; r.zoom = 1; r.vaz = 0;
+        }
         lastTap = now;
       }
     });
@@ -195,15 +209,18 @@ export class Scene {
       this.map.center += (this.goal.center - this.map.center) * k;
       this.map.half += (this.goal.half - this.map.half) * k;
     }
-    // camera: inertia after a drag, then a slow idle orbit
+    // camera: inertia after a drag, then a slow idle orbit that eases in (night-3d: it used to start at full speed after 3 s)
     r.idle += dt;
     if (!this.reduced) {
       r.az += r.vaz;
       r.vaz *= Math.pow(0.04, dt);
-      if (r.idle > 3) r.az += dt * 0.05;
+      if (r.idle > 3) r.az += dt * 0.05 * Math.min(1, (r.idle - 3) / 2.5) ** 2;
     }
-    const d = r.fit * r.zoom;
-    this.camera.position.set(r.target.x + Math.sin(r.az) * Math.cos(r.el) * d, r.target.y + Math.sin(r.el) * d, r.target.z + Math.cos(r.az) * Math.cos(r.el) * d);
+    // what the camera shows glides to the rig's goal (frame-rate independent): a re-centre or a pinch never jumps
+    const v = r.v || (r.v = { az: r.az, el: r.el, zoom: r.zoom }), k = this.reduced ? 1 : 1 - Math.exp(-dt * 9);
+    v.az += (r.az - v.az) * k; v.el += (r.el - v.el) * k; v.zoom += (r.zoom - v.zoom) * k;
+    const d = r.fit * v.zoom;
+    this.camera.position.set(r.target.x + Math.sin(v.az) * Math.cos(v.el) * d, r.target.y + Math.sin(v.el) * d, r.target.z + Math.cos(v.az) * Math.cos(v.el) * d);
     this.camera.lookAt(r.target);
     this.cam.dir.copy(this.camera.position).sub(r.target).setY(0).normalize();
     this.cam.right.set(1, 0, 0).applyQuaternion(this.camera.quaternion).setY(0).normalize();

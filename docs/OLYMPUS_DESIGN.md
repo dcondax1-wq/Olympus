@@ -411,3 +411,20 @@ untouched tree: 133 -> 146 calls, 12,733 -> 13,493 triangles); Odeon +7 calls an
 
 **Tests**: `python -X utf8 -m tests.test_oracle_odeon_fx` (about 4 minutes on software GL; `--only=oracle|odeon`, `--no-browser`) covers
 everything added (43 checks). `test_oracle_page` passes 100/100 and `test_odeon_page`'s static parts pass 18/18 (the first lists the four new modules in `MODULES`); on a box with a load of 50 on 4 cores the browser parts need raised timeouts (every page 3 min, the film waits x5): Oracle's ran green that way, Odeon's film waits (0.17 frames a second, same on the untouched tree) did not finish, so rerun `tests.test_odeon_page` on a quiet machine.
+
+## The look pass (2026-11-17, night-3d; owner: "better graphics and 3D")
+
+One shared module, `olympus/look.js`: `polish(rc, { grade, mix, focus })` puts a colour-grade LUT (every tier with a finish pass) and, on
+ultra / high only, a soft depth of field round the subject into the render core's ONE finish pass. **Zero draw calls**, LITE unchanged
+(no blur, its 2 passes), off unchanged. `damp()` / `ramp()` are frame-rate independent easing for camera rigs. Apps import it dynamically
+inside a catch, so a missing file (offline before a worker lists it) changes nothing.
+
+| App | What changed | Calls / triangles (kit, before -> after) |
+|---|---|---|
+| Data City | clear night over the densest district 706k -> ~650k triangles (8-sided near towers capped at `richTris` 220k, full tiles at `fullTris` 400k, nearest first, counted at the geometry really drawn); phone far overview 67 -> 57 calls (the LIT tower 8 -> 4 draws: one base, one baked shaft + spire + pylons, rings, one two-line sprite; the tower beacon is a point of the glow layer; one shared gold / stone / pale for the forum, quay and gates so the static merge joins them; the DISCOVERIES label and the harbor pier lines hidden from the phone's overview height); the LITE "no 8-sided towers" leak fixed (a camera inside a tile's radius gave a negative distance, so `dist < rich 0` passed) | see the table above |
+| Oracle | dusk grade, HD depth of field centred on the free band between the HUD panels; the camera eases (re-centre the short way round, pinch and tilt glide, the idle orbit fades in) | +0 calls |
+| Odeon | dusk grade, HD depth of field on the tape's head | +0 |
+| Pantheon | golden grade, HD depth of field on the council ring; pitch now eases like the yaw, exponential easing, idle turn fades in | +0 |
+| Cities | golden grade, HD tilt-shift depth of field (a city in miniature) | +0 |
+| Jarvis home | HD depth of field on the reactor and temple through the cinema's `focus()` (the grade was already the clock's) | +0 |
+| ATLAS City (CSS 3D) | faces lit from above with a darker foot (ambient occlusion), contact shadows under the capital and plazas, a warm sun halo, haze on the far side of town, a shade at the near edge; the camera glides (0.5 s ease-out, 0.09 s while dragging; none under reduced motion); LITE drops the halo and haze | no WebGL |

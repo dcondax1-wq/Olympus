@@ -3,13 +3,13 @@
 // the canvas and the billboards' canvases; city.js drives it.
 import * as THREE from '../jarvis/three.module.min.js';
 import { COLORS } from './util.js';
-import * as SH from './shaders.js?v=dcgfx9';
+import * as SH from './shaders.js?v=dcgfx10';
 import { Skyline, pick } from './skyline.js';
 import { Rays, SunRays, FogLayers, Rain, Traffic, Beam, Billboards } from './fx.js';
 import { createRenderer } from '../olympus/render.js';          // the OLYMPUS render core: ACES, MSAA, bloom, the film finish, tiers
 import { Landmarks } from './landmarks.js';
 import { Outskirts } from './outskirts.js?v=dcgfx3';
-import { SatelliteTowns } from './towns.js?v=dcgfx2';
+import { SatelliteTowns } from './towns.js?v=dcgfx3';
 import { Streams } from './streams.js?v=dcgfx2';
 import { routes } from './routes.js';
 import { Cars, Flyers, Airships, Monorail } from './vehicles.js';
@@ -17,7 +17,7 @@ import { River, Ships } from './water.js';
 import { Signs } from './signs.js';
 import { Fireworks } from './fireworks.js';
 import { KitFx } from './kitfx.js';
-import { PROFILES, phoneHint, profileOf } from './caps.js?v=dcgfx1';
+import { PROFILES, phoneHint, profileOf } from './caps.js?v=dcgfx2';
 import { Link } from './links.js';
 
 const FOG = { night: 0x3a2e46, day: 0xc2cfd2, dusk: 0x7a4a52, storm: 0x4c4650 };
@@ -51,6 +51,32 @@ export function textSprite(text, color, size = 1) {
   const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, fog: false }));
   s.userData.redraw = draw;
   s.scale.set(16 * size, 3 * size, 1);
+  s.renderOrder = 10;
+  return s;
+}
+
+/** Several lines of text in ONE sprite (one draw call): lines = [[text, colour, size, y], ...] in world units, as textSprite would place each. */
+export function textSprite2(lines) {
+  const top = Math.max(...lines.map(([, , s, y]) => y + 1.5 * s)), bot = Math.min(...lines.map(([, , s, y]) => y - 1.5 * s)), H = top - bot, W = 16 * Math.max(...lines.map((l) => l[2]));
+  const ppu = 32, c = document.createElement('canvas');               // 32 canvas pixels per world unit, as textSprite (512 px for 16 units)
+  c.width = Math.round(W * ppu); c.height = Math.round(H * ppu);
+  const g = c.getContext('2d'), tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const draw = () => {
+    g.clearRect(0, 0, c.width, c.height);
+    g.textAlign = 'center'; g.textBaseline = 'middle';
+    for (const [text, color, size, y] of lines) {
+      g.font = `800 ${Math.round(44 * size)}px Georgia, Georgia, -apple-system, system-ui, sans-serif`;
+      g.shadowColor = color; g.shadowBlur = 18 * size; g.fillStyle = color;
+      g.fillText(text.split('').join(String.fromCharCode(8202)), c.width / 2, (top - y) * ppu + 2 * size);
+    }
+    tex.needsUpdate = true;
+  };
+  draw();
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, fog: false }));
+  s.userData.redraw = draw;
+  s.scale.set(W, H, 1);
+  s.position.set(0, (top + bot) / 2, 0);
   s.renderOrder = 10;
   return s;
 }
@@ -155,7 +181,7 @@ export class CityScene {
       if (it.kind === 'ship') return;
       if (it.kind !== 'b' || b.cls === 'gold' || it.pulse || b.cls === 'green' || b.td) lit.push(i);
     });
-    const n = lit.length, p = new Float32Array(n * 3), c = new Float32Array(n * 3), size = new Float32Array(n), pulse = new Float32Array(n),
+    const n = lit.length + 1, p = new Float32Array(n * 3), c = new Float32Array(n * 3), size = new Float32Array(n), pulse = new Float32Array(n),
           seed = new Float32Array(n), today = new Float32Array(n), col = new THREE.Color();
     lit.forEach((i, k) => {
       const it = items[i], b = it.b || {};
@@ -168,6 +194,8 @@ export class CityScene {
       seed[k] = golden(i);
       today[k] = always ? 0 : b.td === 2 ? 2 : 1;               // 1 / 2: only with the Today layer on (2 = fired, cyan)
     });
+    // the last point: the LIT tower's cyan beacon (it was its own Points draw)
+    p.set([0, 96, 0], (n - 1) * 3); c.set([0.25, 0.85, 1.0], (n - 1) * 3); size[n - 1] = 42; pulse[n - 1] = 1; seed[n - 1] = 0.2; today[n - 1] = 0;
     this.glowMat = new THREE.ShaderMaterial({ vertexShader: SH.GLOW_VS, fragmentShader: SH.GLOW_FS, uniforms: pick(this.U, 'uTime', 'uPR', 'uDay', 'uToday'),
       transparent: true, depthWrite: false, blending: THREE.AdditiveBlending });
     const glow = points({ position: [p, 3], aColor: [c, 3], aSize: [size, 1], aPulse: [pulse, 1], aSeed: [seed, 1], aToday: [today, 1] }, this.glowMat);
@@ -211,41 +239,35 @@ export class CityScene {
   }
 
   _tower() {
+    // The LIT tower in 4 draw calls (was 8; the phone's far overview is draw-call bound): the stone base (plinth + crown deck, one mesh with
+    // vertex colours), the shaft + spire + eight crown pylons baked into ONE mesh of the tower shader (aL keeps each part's own local
+    // position, so the bands and ribs fall exactly as before), the glowing rings, and ONE two-line name sprite.
     this.tower = new THREE.Group();
     const tm = new THREE.ShaderMaterial({ vertexShader: SH.TOWER_VS, fragmentShader: SH.TOWER_FS, uniforms: pick(this.U, 'uTime', 'uDay', 'uAccent') });
-    const plinth = new THREE.Mesh(new THREE.CylinderGeometry(15, 20, 1.7, 16), new THREE.MeshBasicMaterial({ color: 0xb8a584 }));
-    plinth.position.y = 0.2;
-    const crownDeck = new THREE.Mesh(new THREE.CylinderGeometry(10.2, 13.5, 1.4, 12), new THREE.MeshBasicMaterial({ color: 0xcdbd9a, emissive: 0x3a2e1c }));
-    crownDeck.position.y = 1.6;
-    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(2.4, 5.4, 72, 10, 1), tm);
-    shaft.position.y = 38;
-    const spire = new THREE.Mesh(new THREE.ConeGeometry(2.2, 20, 10), tm);
-    spire.position.y = 84;
-    this.tower.add(plinth, crownDeck, shaft, spire);
-    // Eight crown pylons make the data center read as the city's civic core without inventing metrics.
-    const pylons = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.32, 0.52, 11, 5), tm, 8), pm = new THREE.Matrix4();
+    const M = new THREE.Matrix4(), bake = (g, m, extra) => { const local = g.attributes.position.array.slice(); g.applyMatrix4(m); extra(g, local); return g; };
+    const tint = (hex) => (g) => { const c = new THREE.Color(hex), n = g.attributes.position.count, a = new Float32Array(n * 3);
+      for (let i = 0; i < n; i++) a.set([c.r, c.g, c.b], i * 3); g.setAttribute('color', new THREE.BufferAttribute(a, 3)); };
+    const base = mergeSimple([bake(new THREE.CylinderGeometry(15, 20, 1.7, 16), M.makeTranslation(0, 0.2, 0), tint(0xb8a584)),
+                              bake(new THREE.CylinderGeometry(10.2, 13.5, 1.4, 12), M.makeTranslation(0, 1.6, 0), tint(0xcdbd9a))]);
+    this.tower.add(new THREE.Mesh(base, new THREE.MeshBasicMaterial({ vertexColors: true })));
+    const keep = (g, local) => g.setAttribute('aL', new THREE.BufferAttribute(local, 3));
+    const parts = [bake(new THREE.CylinderGeometry(2.4, 5.4, 72, 10, 1), M.makeTranslation(0, 38, 0), keep),
+                   bake(new THREE.ConeGeometry(2.2, 20, 10), M.makeTranslation(0, 84, 0), keep)];
+    // eight crown pylons make the data center read as the city's civic core without inventing metrics
     for (let i = 0; i < 8; i++) {
-      const a = i * Math.PI / 4, x = Math.cos(a) * 10.8, z = Math.sin(a) * 10.8;
-      pm.makeScale(1.15, 1.5, 1.15).setPosition(x, 8.5, z); pylons.setMatrixAt(i, pm);
+      const a = i * Math.PI / 4;
+      parts.push(bake(new THREE.CylinderGeometry(0.32, 0.52, 11, 5), M.makeScale(1.15, 1.5, 1.15).setPosition(Math.cos(a) * 10.8, 8.5, Math.sin(a) * 10.8), keep));
     }
-    pylons.userData.decor = true;
-    this.tower.add(pylons);
+    this.tower.add(new THREE.Mesh(mergeSimple(parts), tm));
     const ringGeo = [[0.9, 19], [14, 8.2], [37, 6.6], [62, 5.1], [78, 4.2], [94, 3.4]].map(([y, r]) => { const g = new THREE.TorusGeometry(r, y < 2 ? 0.18 : 0.11, 6, 64); g.rotateX(Math.PI / 2); g.translate(0, y, 0); return g; });
     const merged = mergeSimple(ringGeo);
     this.tower.add(new THREE.Mesh(merged, new THREE.MeshBasicMaterial({ color: COLORS.lit, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false })));
-    const name = textSprite('LIT · Zlarior', '#ddac7b', 1.0);
+    const name = textSprite2([['City Capital', '#d79e64', 0.86, 112], ['LIT · Zlarior', '#ddac7b', 1.0, 103]]);
     this.towerName = name;
-    name.position.set(0, 103, 0);
+    this.towerTitle = null;
     this.tower.add(name);
-    const title = textSprite('City Capital', '#d79e64', 0.86);
-    title.position.set(0, 112, 0);
-    this.towerTitle = title;
-    this.tower.add(title);
     this.scene.add(this.tower);
-    const beacon = points({ position: [new Float32Array([0, 96, 0]), 3], aColor: [new Float32Array([0.25, 0.85, 1.0]), 3], aSize: [new Float32Array([42]), 1],
-                            aPulse: [new Float32Array([1]), 1], aSeed: [new Float32Array([0.2]), 1], aToday: [new Float32Array([0]), 1] }, this.glowMat);
-    beacon.renderOrder = 3;
-    this.scene.add(beacon);
+    // the cyan beacon over the tower is one more point of the glow layer (_glow): no draw call of its own
   }
 
   _names() {
@@ -259,6 +281,7 @@ export class CityScene {
     const disc = textSprite('DISCOVERIES', '#ddac7b', 0.8);
     disc.position.set(0, 6, -22);
     this.scene.add(disc);
+    this.nameSprites.push(disc);                     // the phone hides it with the district names when far (one draw call less)
   }
 
   _harbor() {
@@ -275,6 +298,7 @@ export class CityScene {
     const m4 = new THREE.Matrix4();
     for (let k = 0; k < h.piers; k++) { m4.makeScale(h.x1 - h.x0 - 20, 1, 1).setPosition((h.x0 + h.x1) / 2, 0.15, h.z0 + 7 + k * 7 - 2.2); pier.setMatrixAt(k, m4); }
     pier.renderOrder = 2;
+    this.pier = pier;                                  // the phone hides these thin lines from the overview height (render: farAlt)
     this.scene.add(pier);
   }
 
@@ -424,8 +448,8 @@ export class CityScene {
     this.lm.lod(this.camera.position, this.caps);
     if (this.caps.farAlt > 0) {                                  // phone: from the overview height the small details are not drawn (each is a draw call)
       const hi = this.camera.position.y > this.caps.farAlt;
-      for (const o of [this.boards.group, this.rail.furn, this.signs.poles, this.ships.cranes]) if (o) o.visible = !hi;
-    } else for (const o of [this.boards.group, this.rail.furn, this.signs.poles, this.ships.cranes]) if (o && !o.visible) o.visible = true;
+      for (const o of [this.boards.group, this.rail.furn, this.signs.poles, this.ships.cranes, this.pier]) if (o) o.visible = !hi;
+    } else for (const o of [this.boards.group, this.rail.furn, this.signs.poles, this.ships.cranes, this.pier]) if (o && !o.visible) o.visible = true;
     if (this.caps.lmLod > 0) { const cp = this.camera.position; for (const sp of this.nameSprites) sp.visible = Math.hypot(cp.x - sp.position.x, cp.z - sp.position.z) < this.caps.lmLod * 0.8; }       // phone: the name sprites only near (the neon boards say the names too)
     else if (this.nameSprites[0] && !this.nameSprites[0].visible) for (const sp of this.nameSprites) sp.visible = true;
     if (!this.calm) {

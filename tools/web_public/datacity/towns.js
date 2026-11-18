@@ -4,7 +4,7 @@
 import * as THREE from '../jarvis/three.module.min.js';
 import * as SH from './shaders.js';
 import { archUniforms, towerGeo } from './skyline.js';
-import { PROFILES } from './caps.js?v=dcgfx1';
+import { PROFILES } from './caps.js?v=dcgfx2';
 import { SATELLITE_TOWNS } from './satellites.js?v=dcgfx1';
 
 const MAX_PER_TOWN = 12;

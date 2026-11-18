@@ -210,25 +210,35 @@ export class Skyline {
     const order = this._o || (this._o = this.tiles.map((_, k) => k));
     order.sort((a, b) => dists[a] - dists[b]);
     // and (a phone, caps fullTris) never more full-detail triangles than its budget: the city grows with the data, the phone does not
-    const full = new Set(), capT = C.fullTris || Infinity;
-    let tris = 0;
+    // and the 8-sided near towers (66 triangles a building, 30 for the 4-sided) stop at caps.richTris, nearest first: a clear night over the
+    // densest district had 13 tiles inside the rich radius and drew 706k triangles (budget 700k); further tiles keep the 4-sided towers.
+    // Each tile is counted at the geometry it will really draw.
+    const full = new Set(), rich = this._rich || (this._rich = new Set()), capT = C.fullTris || Infinity, capR = C.richTris || Infinity;
+    const triOf = (k, g) => (g.index ? g.index.count : g.attributes.position.count) / 3 * this.tiles[k].mesh.count;
+    let tris = 0, richT = 0;
+    rich.clear();
     for (const k of order.slice(0, C.maxFull)) {
       if (!(dists[k] < lod)) continue;
-      const m = this.tiles[k].mesh, g = m.geometry, n = (g.index ? g.index.count : g.attributes.position.count) / 3 * m.count;
+      // rich 0 (LITE, a phone) means never: dist is negative with the camera inside a tile's radius, so `dist < 0` alone let the 8-sided
+      // towers through on LITE wherever an earlier fly-to had parked the camera over a tile (the test-order leak, 2026-11-17)
+      const nr = triOf(k, this.rich), isRich = C.rich > 0 && dists[k] < C.rich && richT + nr <= capR;
+      const n = isRich ? nr : triOf(k, this.box);
       if (full.size && tris + n > capT) break;
       full.add(k); tris += n;
+      if (isRich) { rich.add(k); richT += nr; }
     }
+    this.fullTris = tris;
     this.tiles.forEach((rec, k) => {
-      const t = rec.tile, dist = dists[k], detail = full.has(k), rich = detail && dist < C.rich;
+      const t = rec.tile, dist = dists[k], detail = full.has(k), isRich = rich.has(k);
       if (detail !== rec.detail || this.lodDirty) {
         rec.detail = detail;
         for (const b of t.blocks) this.impMeta[b * 4 + 3] = detail ? 0 : 1;
         changed = true;
       }
-      rec.mesh.visible = detail && !rich;
-      rec.near.visible = rich;
+      rec.mesh.visible = detail && !isRich;
+      rec.near.visible = isRich;
       rec.mirror.visible = false;
-      if (detail && dist < near) mir.push([dist, rec]);
+      if (detail && near > 0 && dist < near) mir.push([dist, rec]);
     });
     mir.sort((a, b) => a[0] - b[0]);
     for (let k = 0; k < Math.min(C.mirrors, mir.length); k++) mir[k][1].mirror.visible = true;
