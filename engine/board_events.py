@@ -57,6 +57,7 @@ RULES = {"Rapid EOD 50K": (50000.0, 3000.0, 2000.0), "Rapid EOD 25K": (25000.0, 
 SRC_LABEL = {"bot": "PC", "owner": "owner, typed", "claude": "Claude", "plan": "PLAN", "cloud": "cloud"}
 _LOCK = threading.Lock()
 _S: dict = {"running": None}
+KINDS += ("weekly_review",)          # tools/weekly_review.py: "Weekly review ready" (Friday ops task on the PC), once a week
 
 _CTRL = re.compile(r"[\x00-\x1f\x7f<>]")
 _LOCK_RX = re.compile(r"limit\s*0\b|max(imum)?\s+order\s+quantity|account\s+(is\s+)?(locked|disabled|halted)", re.I)

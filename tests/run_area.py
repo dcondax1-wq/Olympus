@@ -44,7 +44,7 @@ AREAS = {
     "pc": ["autoupdate_source", "pc_doctor", "obsidian_sync", "autorun", "update_from_zip", "pc_publish", "pc_publish_cloudflare", "public_build_privacy", "bots_back", "report_keeper", "trade_watch_atlas", "setup_everything", "calendar_sync", "me_hub", "live_link", "roll_now", "pc_guard", "launch_kit", "second_backup", "clean_pc", "clean_storage", "lite", "win_scripts", "fresh_start", "pc_health", "pc_selftest", "pc_silent", "notify", "pc_command_center", "one_time_setup", "board", "phone_safety", "datapipe"],
     "agency": ["agency", "agency_billing", "cold_calls", "agency_storefront", "agency_upsells", "biz_models"],
     "privacy": ["public_build_privacy", "private_link", "repo_secrets", "phone_safety"],       # team Q2 2026-11-14, docs/PRIVACY.md
-    "money": ["money_machines", "digital_products", "money_door", "payout_plan", "payout_coach", "biz_models", "business_pages", "business_goals"],
+    "money": ["money_machines", "digital_products", "money_door", "payout_plan", "payout_coach", "biz_models", "business_pages", "business_goals", "weekly_review"],
     "trading": ["trading_page", "edge_chip"],                                                      # the Trading page (tools/web_public/trading/, 2026-11-17)
     "fleet": ["fleet_mffu", "copy_accounts", "firms", "fleet", "rapid", "rapid25", "news_official", "accounts_cli", "onboard"],                 # team E 2026-11-16: copy accounts + firm rules
     "board": ["board", "payout_coach", "bots_back", "live_link", "edge_chip", "zeus_hub"],                                       # night-board 2026-11-17: the Board (docs/BOARD.md)
