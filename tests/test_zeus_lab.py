@@ -52,15 +52,20 @@ def t_registry():
     check("cross on ATLAS R:R is not blocked", not Z.blocked_by(next(x for x in X if x["id"] == "lit_rr_high_x1.25__on_atlas"), F))
     check("cross keeps the cut rule, maps the bot + kind", vx["kind"] == "lit_tilt" and vx["rule"][0]["value"] == 15 and vx["bot"] == "lit")
     check("parked ones say why", all(e.get("parked_why") for e in E if e["kind"] == "parked"))
+    li = [e for e in E if e["kind"] == "lit_idea"]
+    check("night-labx: 9 lit_idea experiments + the gap tilt registered", len(li) >= 9 and "lit_gap_against_x0.75" in ids, len(li))
     tmp = tempfile.mkdtemp(prefix="zlab_reg_")
     try:
         p = os.path.join(tmp, "r.json")
         json.dump({"experiments": [{"id": "a", "bot": "lit", "kind": "lit_tilt", "title": "t", "what_changes": "w", "registered": "d", "source": "s",
                                     "rule": [{"feature": "vix", "op": "<", "mult": 9}]},
                                    {"id": "b", "bot": "atlas", "kind": "lit_x", "title": "t", "what_changes": "w", "registered": "d", "source": "s", "x": {"zzz": 1}},
-                                   {"id": "c", "bot": "lit", "kind": "parked", "title": "t", "what_changes": "w", "registered": "d", "source": "s"}]}, open(p, "w"))
+                                   {"id": "c", "bot": "lit", "kind": "parked", "title": "t", "what_changes": "w", "registered": "d", "source": "s"},
+                                   {"id": "d", "bot": "lit", "kind": "lit_idea", "title": "t", "what_changes": "w", "registered": "d", "source": "s", "idea": {"name": "nope"}},
+                                   {"id": "e", "bot": "lit", "kind": "lit_idea", "title": "t", "what_changes": "w", "registered": "d", "source": "s", "idea": {"name": "ny_open", "mode": "x"}},
+                                   {"id": "f", "bot": "lit", "kind": "lit_idea", "title": "t", "what_changes": "w", "registered": "d", "source": "s", "idea": {"name": "time_stop", "min": 60, "r": 1.0}}]}, open(p, "w"))
         E2, _, _, errs2 = Z.load_registry(p)
-        check("bad rows left out and named (rule, x keys, parked_why)", not E2 and len(errs2) == 3, errs2)
+        check("bad rows left out and named (rule, x keys, parked_why, lit_idea name / mode)", [e["id"] for e in E2] == ["f"] and len(errs2) == 5, errs2)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     check("CLAUDE_REFERENCE Tested and rejected heads parsed", len(Z.doc_rejected()) >= 10, Z.doc_rejected()[:3])
