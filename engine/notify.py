@@ -3,8 +3,11 @@ report (tools/pc_report.py + tools/pc_guard.py, every 15 min -> your private ntf
 (tools/pc_silent_check.py, a cloud-monitor step) both use it. Read-only: nothing here places, changes or arms anything.
 
 One settings file: notify_settings.json (repo root; a missing or broken file = DEFAULTS, a missing key = its default).
-  alerts               per type on / off: trade_opened, trade_closed, eval_milestones, room_low, daily_summary, pc_silent,
-                       problems (bot down, FEED STALE, NinjaTrader closed, fill check, trade watch), other (roll, quiet bot, ...)
+  alerts               per type on / off: trade_opened, trade_closed, eval_milestones (25/50/75 %), account_status (PASSED,
+                       FAILED, LOCKED, LOST, target reached, payout READY), room_low, daily_summary, pc_silent,
+                       problems (bot down, FEED STALE, NinjaTrader closed, fill check, trade watch), other (roll, quiet bot, ...).
+                       Default (owner 2026-11-18, "important only"): ON = trade_closed, account_status, daily_summary, pc_silent;
+                       the rest OFF
   quiet_hours          ET; inside them trade pushes and ordinary ones arrive without sound (ntfy priority "low"), the guard's
                        summaries / milestones wait for the end; ring_in_quiet_hours kinds keep their sound
   milestones_pct       eval progress pushes (% of the profit target made), once per level per eval
@@ -34,11 +37,15 @@ from zoneinfo import ZoneInfo
 ET = ZoneInfo("America/New_York")
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SETTINGS_PATH = os.path.join(ROOT, "notify_settings.json")
-TYPES = ("trade_opened", "trade_closed", "eval_milestones", "room_low", "daily_summary", "pc_silent", "problems", "other")
+TYPES = ("trade_opened", "trade_closed", "eval_milestones", "account_status", "room_low", "daily_summary", "pc_silent", "problems",
+         "other")
+# owner 2026-11-18: "important only" = trade results, PASSED / FAILED / LOCKED, payout ready, PC silent, the daily summary.
+# Everything else is OFF by default (one line in notify_settings.json turns a type back on).
+IMPORTANT = ("trade_closed", "account_status", "daily_summary", "pc_silent")
 DEFAULTS = {
-    "alerts": {k: True for k in TYPES},
+    "alerts": {k: k in IMPORTANT for k in TYPES},
     "quiet_hours": {"from": "23:00", "to": "07:00"},
-    "ring_in_quiet_hours": ["pc_silent", "room_low", "problems"],
+    "ring_in_quiet_hours": ["pc_silent", "account_status", "room_low", "problems"],
     "milestones_pct": [25, 50, 75, 100],
     "room_low_used_pct": [50, 75],
     "daily_summary_at": "16:15",
@@ -164,10 +171,10 @@ def kind_of(key: str) -> str:
         return "trade_opened"
     if k.startswith("close:"):
         return "trade_closed"
-    if k.startswith(("guard:goal:", "life:payout_ready:")):
-        return "eval_milestones"
-    if k.startswith("life:"):                       # engine/lifecycle.py: an account PASSED / FAILED / LOCKED / LOST
-        return "problems"
+    if k.startswith("life:"):                       # engine/lifecycle.py: PASSED / FAILED / LOCKED / LOST / payout READY
+        return "account_status"
+    if k.startswith("guard:goal:"):                 # tools/pc_guard.py: 25 / 50 / 75 % = progress; 100 % = the target reached
+        return "account_status" if k.rstrip().endswith(":100") else "eval_milestones"
     if k.startswith(("guard:dd:", "guard:dll:")):
         return "room_low"
     if k.startswith("guard:day:"):

@@ -54,6 +54,12 @@ Paper only, as always: notifications never place or change an order.
 One settings file: `notify_settings.json` (repo root): each type on / off, quiet hours (default 23:00-07:00 ET: no sound, except
 PC silent, room low and problems), milestones, summary time. Code: `engine/notify.py`; tests: `python -X utf8 -m tests.test_notify`.
 
+**Default since 2026-11-18 (owner: "important only")**: ON = trade closed (the result), account_status (PASSED, FAILED,
+LOCKED, LOST, target reached, payout READY), the daily summary, PC silent. OFF = trade opened, 25/50/75 % milestones, room low,
+problems (bot down, FEED STALE, NinjaTrader closed), other. Turn one back on with `true` in `notify_settings.json`. The PC
+ops task's critical alerts that repeat until "Got it" (unprotected position, KILL fired, drawdown left, engine/alerts_plus.py)
+do not go through these settings and still ring.
+
 | When | Example |
 |---|---|
 | trade opened | `Zlarior 50K SHORT opened \| risk $368 \| target +$1,432` |
