@@ -59,7 +59,7 @@
         { label: 'Ask Jarvis', greek: 'Jarvis', href: 'jarvis/', app: '', words: 'jarvis ask assistant voice talk' },
         { label: 'Morning brief', greek: 'Helios', href: 'helios/', app: 'helios', words: 'morning brief briefing today plan news' },
         { label: 'Research library', greek: 'Clio', href: 'clio/', app: 'clio', words: 'research studies writeups library tested backtest' },
-        { label: 'Every test', greek: 'Archive', href: 'archive/', app: 'archive', words: 'archive tests strategies tried rejected backtests' },
+        { label: 'Help: how do I...', greek: 'Help', href: 'hub/help.html', app: '', words: 'help how do i questions faq guide lost stuck find steps payout taxes account restart update pause flatten silent holidays kalshi cloudflare address' },
         { label: 'Me: health, home', greek: 'Me hub', href: 'hub/index.html?h=me', app: '', words: 'me health wifi cards home car dates personal' },
         { label: 'Settings', greek: 'Settings', href: 'settings/', app: 'settings', words: 'settings look theme voice storage tour' }
       ],
@@ -76,7 +76,7 @@
     mint: 'side income streams', harmonia: 'balance diversify income', hermes: 'wrapped money story', argo: 'goals savings', arbiter: 'spreads funding paper',
     inbox: 'alerts messages notifications', mind: 'brain vault notes obsidian', athena: 'library strategy rules quiz learn', bridge: 'chatgpt link jobs',
     atlas: 'map all apps every app directory', datacity: 'research data combos tested', prometheus: 'research strategies forge tested', hephaestus: 'research tune dials',
-    tree: 'research strategy tree search', observatory: 'research data health', pinakes: 'tables catalogue data query', colosseum: 'research strategies fight rounds'
+    tree: 'research strategy tree search', archive: 'every test tests strategies tried rejected backtests', observatory: 'research data health', pinakes: 'tables catalogue data query', colosseum: 'research strategies fight rounds'
   };
   var byId = {}, i, j;
   for (i = 0; i < DOORS.length; i++) for (j = 0; j < DOORS[i].ids.length; j++) byId[DOORS[i].ids[j]] = DOORS[i].id;
