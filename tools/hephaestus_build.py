@@ -23,7 +23,7 @@ sys.path.insert(0, ROOT)
 from tools import runlib as rl  # noqa: E402
 
 OUT = os.path.join(ROOT, "tools", "web_public", "hephaestus", "data.json")
-REF_MD = os.path.join(ROOT, "docs", "CLAUDE_REFERENCE.md")
+REF_MD = os.path.join(ROOT, "docs", "TESTED_AND_REJECTED.md")
 
 H1 = ("2026-01-01", "2026-06-30")
 H2 = ("2026-07-01", "2026-12-31")
@@ -94,7 +94,7 @@ def _rejected():
         md = open(REF_MD, encoding="utf-8").read()
     except OSError:
         return []
-    m = re.search(r"^## Tested and rejected.*?\n(.*?)(?=^## )", md, re.S | re.M)
+    m = re.search(r"^## Tested and rejected.*?\n(.*?)(?=^## |\Z)", md, re.S | re.M)
     if not m:
         return []
     out, cur = [], None
@@ -149,7 +149,7 @@ def build():
         "about": "Stored 2026 results of the LIT strategy settings that were really run (research/runs/). The page never runs the strategy.",
         "halves": {"h1": "Jan-Jun 2026 (pick)", "h2": "Jul-Oct 2026 (check)"},
         "dials": DIALS, "live": LIVE, "live_id": "live", "live_note": live_note, "scenarios": scen, "rejected": _rejected(),
-        "sources": sorted({s["run"] for s in scen}) + ["docs/CLAUDE_REFERENCE.md"],
+        "sources": sorted({s["run"] for s in scen}) + ["docs/TESTED_AND_REJECTED.md"],
     }
 
 

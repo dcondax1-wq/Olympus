@@ -32,7 +32,7 @@ import tempfile
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RUNS = os.path.join(ROOT, "research", "runs")
 WRITEUPS = os.path.join(ROOT, "research", "writeups")
-REF = os.path.join(ROOT, "docs", "CLAUDE_REFERENCE.md")
+REF = os.path.join(ROOT, "docs", "TESTED_AND_REJECTED.md")   # the list moved out of CLAUDE_REFERENCE.md (2026-11-18)
 DATA = os.path.join(ROOT, "data")
 OUT = os.path.join(ROOT, "tools", "web_public", "archive")
 INDEX_MAX = 380_000            # bytes: the first load stays under 400 KB
@@ -209,7 +209,7 @@ def rejected_list(ref=REF, slugs=()):
             k = slugify(s)
             if k in slugs and k not in linked:
                 linked.append(k)
-        out.append({"title": clean_text(title, 110), "text": clean_text(raw, 650), "writeups": linked[:4], "src": "docs/CLAUDE_REFERENCE.md"})
+        out.append({"title": clean_text(title, 110), "text": clean_text(raw, 650), "writeups": linked[:4], "src": "docs/TESTED_AND_REJECTED.md"})
     return out
 
 

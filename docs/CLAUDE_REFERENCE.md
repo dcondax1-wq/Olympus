@@ -1,5 +1,21 @@
 # NQ Liquidity Engine: full reference for Claude sessions
 
+> **Contents (line numbers in this file; `sed -n 'START,+80p' docs/CLAUDE_REFERENCE.md`)**
+> One chat / where each thing ships L29 | Hard rules L93 | Live strategy LIT L126 | Second strategies ATLAS/BLITZ L236 | Trade pictures L585
+> AI watch L600 | Previous strategy (shadow) L612 | Rejected ideas summary L641 (full list: `docs/TESTED_AND_REJECTED.md`) | Key commands L651
+> Infrastructure L734 | OLYMPUS apps and tools L1786 | Open work L2048 | Full old brief L2080
+>
+> **Where things are (2026-11-18)** (grep the name here, or open the file)
+> - ZEUS = the trading system: Zlarior = LIT (`engine/lit.py`, `engine/lit_live.py`, `STRATEGY.md`, `live_model.json` = `live_model_lit.json`), ATLAS (`engine/second.py`, `engine/account_b.py`), BLITZ hidden/paper. Sections: Live strategy, Second strategies.
+> - Accounts: `engine/account_cli.py` (add/rename), `engine/rapid.py` (Rapid), `engine/lit25.py` (LIT on a 25K, `docs/LIT25_FUNDED.md`), `ADD_ACCOUNT.bat` + `docs/ADD_ACCOUNT.md` (owner steps).
+> - Lifecycle: `engine/lifecycle.py` (and `engine/eval_life.py`, see Live strategy "Eval lifecycle"); payout coach `engine/payout_coach.py`, `payout_plan.py`, `payout_policy.py`.
+> - Comms board: `engine/board_events.py`, `tools/board.py`, `docs/BOARD.md`, page `tools/web_public/board/`.
+> - Notifications: `notify_settings.json` (what pings the owner), `tools/pc_silent_check.py` (PC went silent alarm).
+> - Auto-update from the backup: `docs/AUTO_UPDATE.md`, `python -m engine.autoupdate --connect` (and `--pull`); branch `pc` of `dcondax1-wq/olympus`.
+> - Hosting: `docs/HOSTING.md` (`docs/HOSTING_OPTIONS.md`). Pages: Business (`tools/web_public/business/`, `docs/BUSINESS.md`), Trading (`tools/web_public/trading/`), Board, Brain (`brain.js`, Bot Brain). App map: `docs/OLYMPUS_MAP.md`.
+> - Research write-ups: `research/writeups/` (index `INDEX.md`); rejected ideas `docs/TESTED_AND_REJECTED.md`; learn loop `docs/LEARN_LOOP.md`.
+> - Landing a helper branch (night-*): skill `.claude/skills/land-helper/SKILL.md`.
+> - Tests: `python tests/smoke.py`, then `python tests/run_area.py <area>`.
 > Moved out of CLAUDE.md on 2026-10-24 so it is not loaded into every message. CLAUDE.md keeps the hard rules and an index;
 > read the section you need here. Keep this file current when you change what a section describes.
 
@@ -622,222 +638,15 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   → cloud state `eval_timing` (verdict go/wait, state warmed/full/stale/cold), README row, flip alert, PC Cold-Streak page,
   phone Today page. The MFFU Builder 50K is the right plan; best-day-rule plans (Topstep etc.) would take 2-17 months.
 
-## Tested and rejected (don't redo without a new idea)
-- **New-strategy hunt (2026-11-17, `new-strategy-hunt-2026-11-17.md`, `tools/new_hunt.py`, `research/second/new_hunt.json`):** 354 cells,
-  5m RTH, $500 a trade, structure stops: lunch-box squeeze -> PM break (any / WITH / AGAINST the AM trend = the 14:00-15:30
-  continuation), failed auction at the prior value-area edge (5m-built profile), Dalton 80% rule, London 02:00->09:30 extension
-  fade at the NY open. 0 hold H1/H2/2025/2021-24 vs 3.7 with coin-flip sides; no 2-4/wk cell with H1 PF >= 1.2. WITH-trend PM
-  break: 71/72 cells positive 2021-24, 0/72 in 2026 H1. D80 / London fade PF 1.3-1.5 in 2021-25 but lose Jul-Oct, ~1/wk. Corr LIT ~0.
-- **Market-regime warning features (2026-11-17, `edge-health-2026-11-17.md`, `tools/edge_health.py`):** VIX, RTH range %, overnight share, trend efficiency, sweep reclaim (40-session means) as a 2026-vs-2021-25 light: only overnight share separates (BA 0.94) and it is a yearly drift that calls 2022 (LIT's good year) bad and precedes a worse LIT in 2021-25. Kept: the light from LIT's own last 40 sessions (warning only).
-- **Famous published strategies (2026-11-17, `public-strategies-2026-11-17.md`, `tools/pub_strats.py`):** 22 cells as
-  published + MFFU-legal day versions: Gao intraday momentum (wrong sign 2021-25, t -2.2), pre-FOMC drift (2021-25 only),
-  turn of the month (2026 only; day-trade version = random days, placebo p 0.12-0.24), overnight drift, Connors RSI(2),
-  12-month and 20/60-day time-series momentum, Crabel NR7 / NR4 / NR7-ID. None holds in 2021-25 + both 2026 halves; the
-  ones that look best hold overnight (MFFU: flat by 16:10) and lost in H2. LIT corr ~0 but no money. Nothing adopted.
-- **Drift switch (2026-11-17, `drift-switch-2026-11-17.md`, `tools/money/drift_switch.py`):** cut LIT to paper/half after a rolling
-  loss (51 versions): 0 pass; never fires in 2026; 2021-25 fewer failed evals but same less payout; no better than random cuts.
-- **Walk-forward re-tuning (2026-11-17, `lit-walkforward-2026-11-17.md`, `tools/lit_wf_retune.py`, `research/lit/wf_retune.json`):**
-  re-fit disp 0.7/0.8/0.9 x BE 1R/1.5R/off x bank 5/8/12R (27) every month / quarter on the trailing 6 / 12 months (8 versions),
-  OOS 2022-05..2026-10. Main (monthly, 12 mo, net-DD): 2022-25 +$23.1k vs static +$0.7k (1.3 s.e., +$26k is 2025 alone, 2023/24
-  worse; beats random re-picks 93.5%, others 44-83%); 2026 H1 -$11.0k, H2 -$3.0k; all 8 lose both 2026 halves. 2023 loses at all
-  27 settings: the bad years are regime, not knobs. (2026-only anchored version: `tools/lit_walkforward.py`, also lost.)
-- **Rule-native layer (2026-11-17, `rule-native-2026-11-17.md`):** 2nd target / 1R / scalp / profit lock: no sooner payout.
-  Lead only: BLITZ max 3/day on the Rapid (chance-level by count; 2021-25 2-week eval fails 2.9% -> 6.0%). Watch on paper.
-- Published models as taught: ICT 2022, Silver Bullet, Mech/IFVG, continuation, ATM 5m/1m with a sharp V (0.2–1.5 trades/wk,
-  PF ~1).
-- 92 confluences; 6 daily-bias methods; grade/confidence sizing; partials and trails.
-- Fixed 10–15 pt stops: wicked out, lose money. Structural stops are rarely ≤15 pts.
-- Target variants: no cap / draw mode / "last real pool" all worse (2026 PF 1.6–2.2 vs 3.48).
-- Re-sweep, inducement, FBOS, RBOS: recorded as engine features `x_resweep`, `x_inducement`, `x_fbos`, `x_rbos`; no edge that
-  held in both periods. "No inducement" looked better, but the sample is thin.
-- The skip-mode cold-streak filter: best PF, but it paused for 14 weeks, which the owner rejected.
-- All variants with numbers: `research/lab/variant_results.json`.
-- **B-holds (2026-10-27, `b-holds-vs-lit-priority.md`, `tools/bholds.py`, runs `bholds_*`):** while ATLAS (account B) holds a trade, skip
-  LIT's opposite entry instead of closing B (HEDGE). Both accounts 2026 +$52.3k -> +$53.6k, 2021-25 -$3.2k -> -$5.0k; ATLAS 25K
-  2-week pass H1 65.5 -> 60.5 (stuck 0.8 -> 3.4); 9 clashes in 2026, 35 in 2021-25. Rejected: LIT priority stays.
-- The owner's LIT Complete Report (2026-10-18, `research/writeups/lit-report-tests.md`, `tools/lit_report.py`, runs `lit_rep_*`):
-  reclaim, confirmation deadline, acceptance, displacement quality (top-quarter close, 1.5-3x median body, FVG), 2+
-  inducements, inducement room, 2+ levels swept, leg premium/discount, double-sided sweep, first obstacle (0.5R = lone spike),
-  continuation / flip 2nd trade, costs inside the $800, Berlin-time London boxes (no 2026 change, 2021-25 +$5.8k): none adopted.
-  The report's ch.21 model makes 0 trades in 2026. Beginner guide: `research/writeups/lit-playbook.md`.
-
-- **LIT studies of 2026-10-18/19 (none adopted unless noted; write-ups in research/writeups/):** HTF confluences (75,
-  chance level, `lit-htf-confluences.md`); order blocks incl. HTF OB entries and the owner's mitigation notes (84,
-  `lit-order-blocks.md`); entry precision (43, today's entry is best, `lit-entry-precision.md`); all-hours / Asia /
-  per-session / re-arm / F-BoS build-up (30, `lit-all-hours.md`); report-2 continuation, sessions, Smart Money Trap,
-  inducement speed/hierarchy (176, `lit-adv-continuation.md`); BE/partials/targets (`lit-adv-management.md`: BE at
-  entry + 1.25 pts is a small candidate); backtest honesty audit (-$500 of $41.7k, `lit-adv-audit-smt.md`); NQ/ES
-  divergence; more setups: ES/MES, 15m/30m/1h, missed fills, looser filters (95, `lit-more-setups.md`); trend-day mode,
-  volatility sizing, news setups (`lit-big-ideas.md`). **Of the three adopt-candidates, two are ON since 2026-10-20**
-  (owner approved; numbers in "Results" above): the 15-minute check (`t_check {"at":15,"x":0.3,"mfe":0.5}`,
-  `lit-loss-learning.md`; route fixed: all 13 2026 cuts routed 2 s after the check-bar close, priced from the forming bar's
-  open, `tests/test_lit_exit_route.py`) and BE + costs (`be_off 1.25`). **Scale-in after BE is OFF** (`"scale_in": null`,
-  `lit-big-ideas.md`; NinjaTrader MARKET add + resize of the one OCO bracket, `add_to_position`, 52/52 2026 adds match the
-  backtest; two safety reviews: safe only after the owner's `--sim-roundtrip-add` on Sim101 (since 2026-10-26 it proves the size itself: step 5 moves the target under the market, it must fill 2 micros and end flat, then prints SCALE-IN READY; `tests/test_sim_add_proof.py`) shows stop + target qty 2 at the
-  right prices). All three on the eval path (run `lit_adopt_all3_eval`): H1 +$53.1k / H2 +$17.3k vs live now +$34.2k /
-  +$9.1k, 2-week pass/fail 58.0/2.5 and 52.2/0.0 (live now 57.1/5.9, 52.2/0.0); scale-in alone makes more in H2 (+$26.0k)
-  but fails more. Thin samples (13 cuts, 52 adds); the cut route is still untested on a real NinjaTrader install (watch the
-  first week on Sim). `idm_size` (inducement-count size) helps the LIT size rule but not the
-  eval path: keep it off for evals (`lit-new-entries.md`). Funded plan: MFFU Builder + LucidPro 50K + FundedNext
-  Rapid Daily 50K (`lit-funded-firms.md`, ~$1,750-2,300/mo for three); one bot can now route to several accounts
-  (`engine/multi_account.py`, off by default, `data/accounts.json`).
-- **Reversal exits after the first live trade (2026-10-28, `lit-reversal-exit.md`, `tools/lit_rev_exit.py`, runs `lit_rev_*`):**
-  exit / BE on a violent reversal once +0.5-0.9R (ATR candles, 2-3 candles, profit giveback), 1m/5m swing trails after
-  +0.5-1R, BE at 0.75/0.9R, stop at the first 1m/5m highs: 103 variants, none better in both 2026 halves (the 2-ATR candle exit
-  after 0.9R: today +$168 vs -$437 but H1 -$9.1k / H2 -$2.3k; first 1m highs H1 +$29k / H2 -$13k PF 0.75). 2026 had 0
-  trades that went 0.9-1R then stopped before 2026-10-28. Nothing changes.
-- **Diversifier search (2026-10-26, `diversifier-search.md`, `tools/div_search.py` / `div_stack.py`, runs `div_*`):** the
-  VXN-normalised initial-balance breakout is dead (0/24 settings positive in all four spans). The noise-area intraday momentum
-  (Zarattini 2024) is REAL as futures trading (paper rule and joint pick `na_vm125_1000_n99_fixed` positive in H1 / H2 / 2025 /
-  2021-24, placebo p 0.007 in 2026, daily corr with LIT ~0) but NOT a prop strategy alone (MFFU eval p10 <= 22%, funded
-  $13-117/mo: 27% winners, 18-23R drawdowns vs the 50% best-day rule and the $2,000 floor). Only as a small add-on on LIT's
-  funded accounts (3-4% of the room, <= $150, never while LIT holds): +$54-83/mo per 50K in 2026, +$7-12 in 2021-25; paper only.
-- **Payout / eval mechanics (2026-10-26, `payout-policy.md`, `eval-cost.md`):** ask line $1,000 / $2,000 vs $1,500,
-  cons_aware, stack payout reserves (cap a month) and pre-buying the next eval at the 4th payout: see the write-ups before
-  redoing. Eval: keeping two_week after session 10 (`two_week_until` 999) is the one change that held in H1, H2 and 2021-25
-  (+$14-21/mo per slot; owner decides, not switched).
-- **BLITZ on its own 25K, "like a person" (2026-10-29, `blitz-25k.md`, `tools/blitz25k_*.py`, runs `blitz25k_*`, pick
-  `research/scalp/blitz_25k_pick.json` = no-change):** as account C (never opposite LIT / ATLAS, closed first; costs $0 in
-  2026, $16/mo at $150 in 2021-25): structure stops (last 1m / 5m swing, the move's low, caps; 45), liquidity targets /
-  partials / swing trails / change-of-character exits / no clock (1,920), opening drive, London band, retest limits, 15m / 1h
-  BOS filters (32), funded-only structure rule: none beats today's rule in H1, H2 and 2021-25. 25K size: 40% of the room,
-  100% from eval session 5 (decided in 2 weeks 71-74% vs 29-41%, same money: slot $270 / $37 / -$40 a month; random
-  directions make the same H2 slot $). The post-hoc 1.0 x ATR / 45 min / no trail variant is worse on LIT's 50K too (H2).
-- **Structure management (2026-10-29, `structure-management.md`, `tools/structure_manage.py` LIT 101 variants, runs
-  `lit_struct_*`; `tools/structure_atlas.py` ATLAS 24, runs `atlas_struct_*`):** with `engine/structure.py` (closed-bar BOS /
-  CHoCH / protected swing / pools): target at the next opposing pool (cap / instead of the band), half off at the first pool,
-  stop to the protected swing after a BOS (1m / 5m / 15m), exit / BE on a CHoCH against after +0.5-2R, 1h / 15m trend skip /
-  size. None beats live LIT in both halves on both sizings (the owner's BE on a 5m CHoCH after +0.75R: H1 -$1,442 / H2 -$775;
-  1h skip: H1 -$15.0k / H2 -$7.5k, ~1 trade a week; runner past the target, lock 75% + 15m trail: H1 +$13.6k / H2 +$956 at
-  the LIT size but two trend days are the gain and the eval path loses, 2-week pass 57 -> 36% H1, rejected). Lead, not
-  switched: 15m structure trail after +1R (H1 +$467 / H2 +$13,
-  eval +$1,019 / +$3,762, one more 2-week fail in H1, 7 trades changed): the advisor's `trail_15m` tally watches it. ATLAS:
-  the 15m protected-swing stop passes the 25K account gates but its trades lose R in every span at a fixed risk (sizing
-  path): rejected; every ATLAS exit / trail loses in 2026. The executors' base = live exactly (LIT 0 mismatches; ATLAS 96%
-  within 0.5 pt, difference method).
-- **ATLAS funded 25K day limit (2026-10-31, `atlas-funded-one-a-day-2026-10-31.md`, `tools/atx_funded_day.py`, runs `atxd_*`):**
-  eval unchanged, funded max 1 a day: slot $ H1 / H2 / 2021-25 $454 / $275 / -$3 a month vs today's $568 / $382 / -$2,
-  below a random-1-a-day control ($541 / $361); the H1 pick max 3 (= max 4) is +$44 H1, $0 H2 on 4 seeds. Keep 2 a day.
-  Funded-only VIX band per member: no member loses in any H1 VIX tercile, so nothing to skip (`atx_funded_vix.json`).
-  Funded half off at 0.75 / 1 / 1.5R + BE runner: H1 slot $336 / $366 / $414 vs $568 (runs `atxd_partial_*`): rejected.
-  Funded re-entry after a stop-out (same setup once more, same direction): slot H1 $404 / H2 $257 / 2021-25 -$15 vs
-  $568 / $382 / -$2, inside a coin-flip-direction control (run `atxd_reentry_1r`): rejected.
-- **ATLAS + BLITZ edge night (2026-10-30, `atlas-blitz-edge-2026-10-30.md`, `tools/ab_edge.py`, runs `ab_*`):**
-  - BLITZ trend-day SIZE (range so far, first-hour range / volume, overnight range / open's place in it, gap, VIX change,
-    2-sigma excursion, VWAP side / distance, held at the previous check, time; 430 tilts): 39 survivors vs 36 on shuffled
-    facts = chance.
-  - BLITZ + a 10:30 check: H1 25K slot $270 -> $54.
-  - BLITZ in-day streak size (2026-10-31, `blitz-streak-size-2026-10-31.md`, `tools/bzx_streak.py`, run `bzx_streak`): eval
-    size x m after a same-day BLITZ loss / win (7 cells, 10 shuffled controls). H1 pick x0.5 after a loss: slot $286 / $53 /
-    -$40 a month vs today $286 / $52 / -$39; 2021-25 no better than shuffled (after-loss trades are the BETTER ones there).
-  - BLITZ cold-streak size on its own last K trades (2026-10-31, same write-up, `tools/bzx_cold.py`, run `bzx_cold`; K 5 / 10
-    / 20, x0.5 / x1.5): H1 pick K 5 x0.5 when cold: slot $288 / $52 / -$40 vs $286 / $52 / -$39; shuffled -$37 in 2021-25.
-  - The later-break size on LIT's funded 50K: neutral.
-  - ATLAS (110, none passes the v2 test): member weights from the member's last 5-20 trades; member agreement; the 2nd
-    trade sized by the 1st's result; LIT copied in as a member (x0.25: both 2026 halves better, 2021-24 -$3.0k vs -$1.4k,
-    and the two accounts become one LIT bet); the NA day-hold as a 4th member (dead evals up); S/R level count / EMA sweep
-    depth / EMA distance as size; London-clock windows in the DST gap weeks (the volume surge does move to 04:00 ET, but
-    EMA / MACD lose there).
-  - The one adopt-candidate is BLITZ's 25K later-break eval size (`research/scalp/blitz_25k_pick_v2.json`): adopted, owner 2026-10-31.
-  - ATLAS paper lead (run `ab_atlas_na_hunts_lead`): the hunts x0.5 + the NA day-hold member x0.5.
-    - More passes a month and more eval-path $ in all four spans: $2,046 / $1,584 / +$47 / +$194 a month vs $1,394 /
-      $547 / -$148 / -$36; 13 of 15 neighbours do the same.
-    - Fails the H1 2-week test: 62.2 / 5.9 vs 65.5 / 0.8.
-- **Zlarior edge night (2026-10-30, `lit-edge-2026-10-30.md`, `tools/lit_edge.py` 190 variants, runs `lit_edge_*`,
-  headline numbers `research/lit/edge_results.json`; LIT size + live two_week eval path + funded 50K $/mo):** target band
-  from NQ's 5/10/20-day range or a VIX/range blend, re-anchored at the entry / midnight open / time left; BE at max or
-  min(1R, k ATR or X pts); 15-minute check threshold in ATR; slow-trade nearer target; pre-registered A+ quality score and 13
-  single-fact / mined size tilts (200-draw placebo; also on the funded path: size-ups -$16..+$16/mo, cuts cost up to
-  -$109/mo); weekly catch-up (looser setup Thu/Fri when < 2 trades: +0.13 tr/wk); re-entry after the 15-minute cut or a BE
-  (30 trades, -3.35R); a 2nd trade a day re-run (H1 -$1.0k..-5.0k); funded $2,000 cap as a take-profit (-$37 / -$70/mo);
-  eval room-cap size + take-profit at the need (H2 2-week pass 33%); eval-only 3-6R bank; need buffer 0.8 / 1.2, clock
-  press, room share by session: all rejected. Thin leads, not switched: afternoon target cap (from 14:00 at most 3R: LIT
-  +$460 / +$311, eval +$606 / +$3,913, 2+1 trades) and lifting the 8R bank after +2R within 15 min (3 trades, funded
-  -$143 / -$52/mo). Room share 0.7: same money, H2 2-week fails 5.8 -> 0.0% but slower passes (owner chose 0.8). Scale-in
-  re-measured: eval +$13.8k / +$14.6k, 2-week pass 58.8 / 59.4%, but H1 fails 1.7 -> 3.4% and on a funded 50K -$149 / +$49
-  a month (adds capped at the $2,000 winner -$22 / +$73). **Adopt-candidate (with the scale-in switch, after the Sim
-  roundtrip): adds on the eval only from eval session 5, none on funded accounts** (run `lit_edge_eval_scale_in_s5`: eval
-  +$38.7k / +$24.9k vs +$34.8k / +$16.3k, 2-week pass/fail 60.5/1.7 and 58.0/5.8 vs 57.1/1.7 and 52.2/5.8, sessions 2-6 and
-  +4 ticks an add all hold; owner $/slot $827 / $815 vs $827 / $804 a month). Needs new code first: `lit_sizing`
-  `scale_in_from_session` / `scale_in_funded` in `engine/live.py _add_qty` + `cloud_monitor.lit_add_usd` (not built).
-
-- **Rapid EOD levers (2026-11-16, `rapid-levers-2026-11-16.md`, `tools/money/rapid_levers.py`):** on LIT + ATLAS $500 Rapid EOD 50K:
-  eval give-up / re-buy (room < $500-1,000, session > 30/45, 30%-rule need > $3-4k: +$12-104/mo = noise, 2021-25 worse),
-  eval day caps (none, stop at +$500/+$700, balance-aware guard: today's 30% size guard is best), Asia slot at LIT size
-  (funded lost 9.4% / 2.0% / 27.3%), fixed $1,000 payout requests, different mixes per account for more $ (identical copies
-  pay more in both halves; different mixes only cut the no-pay risk): rejected. Lead: keep a $1,000 funded cushion.
-- **ATLAS deep edge (2026-11-15, `2026-11-15-atlas-deep.md`, `tools/atlas_deep.py`, 29 variants, slot $ at $43):** loser
-  autopsy (member, side, hour, stop pts / ATR / vs the member's median, target R, daily trend, VIX, LIT's day, the members'
-  paper day) finds no trade bucket that loses in all spans except the known 06:00 / 11:00 hours. Rejected (16 variants):
-  skip / halve after LIT won the other side (slot +$19 / +$29, but 4 H2 trades worth -0.05R; random same-size skips pass
-  the 2026 test 6.7% of draws = chance), same-side retry skip (retries are the best bucket) or x1.25 / x1.5, skip while LIT
-  holds / after LIT won the same side, stop > 1.6x / 2x the member's median, first trades at x0.5 / x0.75 until green, eval
-  weekly brake $400 / $600, daily-trend skip / halve, one signal per side a day. The one keeper is the zombie-eval rule
-  (Second strategies above).
-
-- **DAPHNE strategy-tree search (2026-11-03, `2026-11-03-strategy-tree.md`, `tools/strategytree/`, runs `strategytree_top1` /
-  `_top5`, page `tools/web_public/tree/`):** 80 plain level roots (PDH/PDL, overnight, Asia, London, opening-range high/low;
-  fade = sweep + reclaim, break = 5m close through; 1R / 2R; 60 / 120 min) x up to 5 conditions (vol quintile, gap, open vs
-  yesterday's range, distance from the open, hour, weekday, VWAP side, EMA trend, VIX, OR width; ES agreement skipped: no ES
-  before 2025-04), best-first branch-and-bound, train <= 2024, test 2025-26. 1,127,006 nodes, 54.6% cut by the bound; 31 of 80
-  best rules hold out of sample vs 25 / 28 with shuffled conditions = chance. Every rule trades 0.1-0.5 a week. Nothing
-  adopted; the page is a research lens, paper only.
-- **E2 new NQ strategies (2026-11-13, `nq-new-strategies-2026-11-13.md`, `tools/e2_new_strats.py`, runs `e2_*`):** 7 families,
-  140 variants, 5m RTH, $500 a trade, stops beyond structure: ORB 2nd side after a failed break, PDH/PDL sweep + climax
-  volume (the volume gate makes it worse), NQ/ES relative strength at 10:00 (ES only 2025-04+), gap fade + failed opening
-  drive + volume, VWAP reversion on low-VIX days, late-day break / last-half-hour reversal (the "since 2025" reversal loses
-  in 2021-24), CPI/NFP/FOMC playbook (0.1-0.2 a week). 2 of 140 hold in H1/H2/2025/2021-24 vs 0.75 with coin-flip sides.
-  Paper lead only: G1 gap fade (gap >= 0.1 x 14-day range, 09:30-10:00 range closes in its half away from the gap, stop 1
-  tick beyond the range, 2R): $180 / $496 a month 2026 / 2021-25, PF 1.14 / 1.34, 1.7 a week, corr LIT 0.03; placebo p 0.003
-  over 2021-25 but 0.22 in 2026; the plain gap fade loses; 2026 stops ~145 pts = 1 micro, so its own 25K / 50K passes 0-7%
-  in 2 weeks and the slot is ~$0 a month; on LIT's funded 50K +$23 H1 / -$16 H2. BLITZ gap-aware band (Zarattini) H1 / H2
-  $936 / $771 vs $912 / $577 but 2021-25 -$15 vs +$89; implied-vol band worse: BLITZ unchanged. No new eval account.
-- **E3 same edge, more markets (2026-11-13, `es-and-sessions-2026-11-13.md`, `tools/e3_es_sessions.py`, runs `e3_*`):** live LIT and
-  the 3 ATLAS members unchanged on ES1! as MES (points x 0.28, BE 0.75 ES pts; ES = 5m only, 2025-04+, no 1m, no 2021-24), each on
-  its own MFFU eval. ES LIT H1 -$3.8k / H2 +$12.7k / 2025 -$15.9k (NQ 5m-exec +$6.6k / +$1.5k / -$0.5k), 50K 2-week 27.7/10.9 and
-  44.9/15.9, corr LIT 0.14. ES ATLAS -$6.3k / +$2.2k / -$2.8k (NQ ATLAS +$47.3k / +$12.1k / +$13.0k): positive before costs, but
-  costs are 7-13% of R on ES vs 2.5-5% on NQ (same tick, ~0.19x the points). NQ LIT NY-only slot as its own account +$12.8k /
-  -$1.2k / -$2.6k at 1/wk; ES London / NY slots lose a span. Asia not redone. Nothing adopted; the 2nd stream stays NQ ATLAS.
-
-- **S2 edge (2026-11-15, `2026-11-15-s2-edge.md`, `tools/lit_s2_edge.py` 28 versions, runs `lit_s2_*`, grid
-  `research/lit/s2_edge_grid.json`; eval path at two_week room_f 0.4 kept past session 10):** "what other bots have":
-  holiday-thin days (holiday Globex sessions, the day before / after, early closes, Dec 24 - Jan 2; x0.5 / x0.75 / skip),
-  the contract roll window (5 sessions before the switch to the last trading day; x0.75 / x0.5 / skip), OpEx week / OpEx
-  Friday / quad-witching week / turn of the month, NQ-vs-ES strength from the 18:00 open (lead x1.25 / lag x0.75),
-  sweep of the day's or week's own extreme (x1.25, interior x0.75): none passes (calendar ones lose a half; ES strength
-  and day-extreme are chance in Jul-Oct). Lead, not switched: target reachability (target pts / (5m ATR x sqrt(bars to
-  15:55))) easiest third x1.25: LIT +$4,079 / +$1,021, eval +$2,724 / +$660, 2-week pass/fail unchanged, funded +$12 /
-  +$19/mo, shuffle p 0.067 / 0.093; but easy trades without a tight stop add nothing (= the Nov 4 stop-ATR lead, which at
-  room 0.4 loses $538 of H2 eval money).
-- **E-LIT deep edge (2026-11-15, `2026-11-15-lit-deep.md`, `tools/lit_deep.py`, runs `lit_deep_*`, grid
-  `research/lit/deep_grid.json`; eval two_week room_f 0.4 to session 80):** structural SKIP rules (engine `skip_keys`, the day
-  left free for a later setup), Jan-Jun tercile and q80 cuts, 16 versions: target > 333 / 431 pts, target > 1.05 / 1.22 VIX
-  day-moves, day range so far > 0.80 / 0.92 VIX moves, stop > 0.152 / 0.175 VIX moves, stop > 2.51 / 2.81 x 5m ATR, an
-  opposing level within 0.97R / 0.61R, planned target < 7.46R / 6.13R, deep sweep + big displacement ("breakout"): none
-  passes (best: target > 1.22 VIX moves LIT +$1,602 / +$81 but eval H1 -$2,872); the skipped trades still make +0.3-0.9R
-  and a later setup rarely replaces them; trades fall to 1.2-2.4 a week in H2. Missed-setup census (cap 3 a day, limit / 1m
-  CISD window doubled, 00:00-15:55, min target 1.0R, stop 4-120, Monday rule off): none adds money in H1. Loser structure:
-  no single-fact bin loses in both halves; 425 two-fact H1 loser cells -> 88 lose again in H2 vs 95 by chance. H2 vs H1 =
-  18% fewer trades/mo, 12% less R a trade (lower VIX, wider stops), 18% less $ per R; low-VIX trades +0.77R in both halves.
-
-- **Smart entries (2026-11-17, `lit-smart-entries-2026-11-17.md`, `tools/lit_smart_entries.py`, 31 cells, grid
-  `research/lit/smart_entries.json`; eval two_week room_f 0.4 to session 80):** same setups, other ways in. Pullback limit
-  (candle 50% / 1m CISD level, 3 / 5 min, then market) only when the 1m CISD candle ran > 0.14 / 0.25R or is > 0.22 / 0.27R
-  tall (16): H2 $2,670 -> $225-1,236/mo (closer BE + 15-min check scratch the H2 winners). 1m CISD OR a 1m BOS: +$1,778 /
-  -$787, eval -$877 / +$2,069. CISD AND BOS / close above the zone / inside the swept level / 2+ down candles / strong close /
-  close above the last high (7): Jan-Jun -$1.6k to -$24k. Wait 5-15 min for proof (4): -$8k to -$26k a half. Half now +
-  half at minute 5 / 15 inside the same $ risk (3): -$8.7-10.1k / -$2.9-4.8k, eval 2-week pass 44.5 -> 15%. None passes.
-  Wide-stop half size and an entry-quality score were not re-run (already rejected above).
-- **Regime sizing (2026-11-17, `lit-regime-sizing-2026-11-17.md`, `tools/lit_regime_size.py`, 124 bucket cells, 8 size rules,
-  grid `research/lit/regime_size.json`):** LIT x1.25 / x0.75 by the prior close's regime: GEX sign / level ($bn), VIX level /
-  1-day change, VXN - VIX spread, VIX/VIX3M, prior NQ range percentile, 2-3 buckets each + every 2x2 pair, VIX / spread as a
-  1-year percentile. Jan-Jun splits flip in Jul-Oct (VIX falling +1.09R vs +0.61R H1, +0.14R vs +1.24R H2); H2 sits in one
-  bucket (VIX low, spread high, gamma positive on 38-40 of 40). Only gate-passer VIX/VIX3M high x range: +$37 / +$119/mo,
-  placebo 0.53, 5+2 H2 trades, VIX3M ends 2026-09-17, 2021-25 -$1,089, 2-week pass 44.5 -> 42.0%. None adopted; Rapid not run.
-- **Learn loop first night (2026-11-15, `docs/LEARN_LOOP.md`, queue `research/learn_queue.json`):** Zlarior size x1.25 on low dealer
-  gamma / after a tight Asia range / on a many-times-touched or an old swept level / on a fast fill after the CISD, x0.75 the day after
-  a VIX jump; ATLAS x1.25 after Zlarior was stopped on the other side, x0.5 on a two-way day: all 8 rejected (best: old level +$138 /
-  +$125 a month at the LIT size but eval path Jul-Oct -$34). The loop re-checks them on new bars.
+## Rejected ideas: summary (full verbatim list: `docs/TESTED_AND_REJECTED.md`, read it before proposing any new idea)
+The long list moved on 2026-11-18 to `docs/TESTED_AND_REJECTED.md` (heading "## Tested and rejected"); tools and tests read it there. Families:
+- Entry/model variants: published models as taught (ICT 2022, Silver Bullet, IFVG, ATM), 92 confluences, 6 daily-bias methods, smart entries, LIT report ideas, order blocks, HTF confluences.
+- Stops and targets: fixed 10-15 pt stops, target variants, rule-native layer (2nd target, 1R scalp, profit lock), structure management, reversal exits.
+- Sizing: regime sizing, learn-loop size tilts, drift switch, funded day limits, walk-forward re-tuning, Zlarior/ATLAS/BLITZ "edge nights".
+- Other strategies: BLITZ on its own 25K, ATLAS deep edge, S2 edge, E2 new NQ strategies, E3 ES and sessions, DAPHNE strategy tree, diversifier search, new-strategy hunt.
+- Known public ideas: famous published strategies (Gao momentum, pre-FOMC, turn of month, RSI(2), NR7), market-regime warning features.
+- Account mechanics: B-holds (ATLAS vs LIT priority), payout / eval mechanics, Rapid EOD levers, ATLAS funded 25K day limit.
+- Rule of thumb: a "no" only counts if it failed 2026 Jan-Jun and Jul-Oct and 2021-25; check the write-up named in each bullet before redoing it.
 
 ## Key commands (run from the repo root)
 - **Nightly learning (2026-11-15, `engine/learn_loop.py`, `docs/LEARN_LOOP.md`, test `tests.test_learn_loop`, area nq):** free on the PC

@@ -539,7 +539,7 @@ def build(root=ROOT, with_git=True, out_path=None):
     asof = max(dates) if dates else ""
     open_t = [t for t in q if not t["done"]]
     rejected = [{"date": r["date"], "title": r["title"], "file": r["file"], "summary": r["summary"]} for r in wu if r["status"] == "rejected"][:12]
-    ref = rejected_bullets(read(os.path.join(root, "docs", "CLAUDE_REFERENCE.md")))
+    ref = rejected_bullets(read(os.path.join(root, "docs", "TESTED_AND_REJECTED.md")))
     learnings = []
     for r in wu:
         if r["date"] and r["summary"] and r["status"] not in ("info", ""):
@@ -549,7 +549,7 @@ def build(root=ROOT, with_git=True, out_path=None):
         learnings.append({"d": mind["date"], "who": "mind", "text": o["text"], "src": mind["source"], "kind": "observation"})
     learnings.sort(key=lambda x: (x["d"], x["src"]), reverse=True)
     concl += [x for x in learnings if x["kind"] == "observation"]
-    cands = concl + [{"d": (DATE.search(b) or [""])[0], "who": who_of("", b), "text": "Tested and rejected: " + b, "src": "docs/CLAUDE_REFERENCE.md", "kind": "rejected"} for b in ref]
+    cands = concl + [{"d": (DATE.search(b) or [""])[0], "who": who_of("", b), "text": "Tested and rejected: " + b, "src": "docs/TESTED_AND_REJECTED.md", "kind": "rejected"} for b in ref]
     lessons = distil(cands)
     changed = []
     for r in wu:

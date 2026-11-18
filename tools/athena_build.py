@@ -51,7 +51,7 @@ MUST = [
     ("docs/CLAUDE_REFERENCE.md", "PF 2.91, +$9,919"),      # the headline moved from CLAUDE.md to its reference (one-page brief, 2026-11-15)
     ("docs/CLAUDE_REFERENCE.md", "PF 4.19, +$43,820"),
     ("CLAUDE.md", "Paper only"),
-    ("docs/CLAUDE_REFERENCE.md", "## Tested and rejected"),
+    ("docs/TESTED_AND_REJECTED.md", "## Tested and rejected"),
     ("research/writeups/2026-11-04_kalshi_edges.md", "| Why is it negative? |"),
     ("research/writeups/2026-11-04_kalshi_edges.md", "one loss erases 18 wins"),
 ]
@@ -74,9 +74,10 @@ def limits():
 
 
 def rejected_count():
-    t = rd("docs", "CLAUDE_REFERENCE.md")
+    t = rd("docs", "TESTED_AND_REJECTED.md")
     i = t.index("## Tested and rejected")
-    j = t.index("\n## ", i + 5)
+    j = t.find("\n## ", i + 5)
+    j = len(t) if j < 0 else j
     return len(re.findall(r"^- ", t[i:j], flags=re.M))
 
 
