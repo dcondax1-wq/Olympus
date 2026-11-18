@@ -765,6 +765,13 @@ def run(budget_s: float = BUDGET_S, n_max: int = NIGHT_MAX, out_dir: str = OUT_D
             ran.append(r)
             if write:
                 _write_json(os.path.join(out_dir, "results", f"{e['id']}.json"), r, indent=1)
+        lab = None                          # ZEUS Lab (tools/zeus_lab.py): the registry re-tested on the same bases; LE_LAB=0 = off
+        if runners is None and write and out_dir == OUT_DIR and time.monotonic() - t0 < budget_s:
+            try:
+                from tools import zeus_lab
+                lab = zeus_lab.nightly(C)
+            except Exception as e:  # noqa: BLE001
+                errors.append(f"zeus lab: {e.__class__.__name__}: {e}"[:200])
         h1 = protected_hashes(root)
         ok = h1 == h0
         if not ok:
@@ -777,6 +784,8 @@ def run(budget_s: float = BUDGET_S, n_max: int = NIGHT_MAX, out_dir: str = OUT_D
                 pushed.append({"id": c["id"], "line": line, "sent": bool(sent), "why": why})
         took = time.monotonic() - t0
         S = build_summary(now, took, rf, dr, ran, results, queue, q_errs, ok, pushed, errors)
+        if lab is not None:
+            S["lab"] = lab
         if write:
             st.update(v=VERSION, day=learn_day(now), t=now, results=results, data_key=dkey)
             _write_json(os.path.join(out_dir, "state.json"), st)
