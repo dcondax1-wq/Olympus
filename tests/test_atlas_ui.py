@@ -253,11 +253,12 @@ def part_c(shots):
             check("c. Zlarior tab: no horizontal scroll at 390 px", ov <= 1, ov)
             pg.goto(url + "?fxoff#/brain")
             try:                                             # the Brain page draws after its data: wait for its toggle, not a fixed 1.2 s
-                pg.wait_for_function("(() => { const p = document.getElementById('page'); return !!p && /Zlarior brain/.test(p.innerText) && /ATLAS brain/.test(p.innerText); })()", timeout=30000, polling=200)
+                pg.wait_for_function("(() => { const p = document.getElementById('page'); return !!p && /All bots/.test(p.innerText) && /Zlarior detail/.test(p.innerText) && /ATLAS detail/.test(p.innerText); })()", timeout=30000, polling=200)
             except Exception:
                 pass
             bt = pg.inner_text("#page")
-            check("c. Bot Brain toggle: 'Zlarior brain' / 'ATLAS brain'", "Zlarior brain" in bt and "ATLAS brain" in bt and "Second-strategy" not in bt, bt[:300])
+            check("c. Bot Brain toggle: 'All bots' (the default since 2026-11-17 night-brain) / 'Zlarior detail' / 'ATLAS detail'",
+                  "All bots" in bt and "Zlarior detail" in bt and "ATLAS detail" in bt and "Second-strategy" not in bt, bt[:300])
             pg.goto(url + "?fxoff#/strategy")
             pg.wait_for_timeout(800)
             st = pg.inner_text("#sub")
