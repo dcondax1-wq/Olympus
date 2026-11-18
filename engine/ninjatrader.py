@@ -961,6 +961,13 @@ class NinjaTraderAdapter:
         # account B's 2 a day, BLITZ's 6 a day): a looping bug can never fire entry after entry. nt_max_entries_day, default 8
         self.entries_day: dict = {"day": None, "n": 0}
         self.max_entries_day = int(cfg.get("nt_max_entries_day", MAX_ENTRIES_DAY))
+        # night-risk 2026-11-18: every order file counted (engine/msg_throttle.py): runaway alarm ON; the entry block is OFF until
+        # `python -X utf8 -m engine.msg_throttle --block-on`. Stops / cancels / closes / flatten are never throttled.
+        try:
+            from .msg_throttle import Throttle, path_for
+            self.throttle = None if readonly else Throttle(cfg.get("nt_msg_path") or path_for(self.state_path), self.account, cfg)
+        except Exception:
+            self.throttle = None
         # NinjaTrader restart (it wipes outgoing\\ when it starts): a position file / an order file of an open bracket we had
         # seen that is gone again. Never read as flat: new entries / adds are refused and the owner is alerted until the
         # position file is written again or the owner confirms (python -m engine.ninjatrader --confirm-reset)
@@ -1218,6 +1225,7 @@ class NinjaTraderAdapter:
                         os.close(fd)
                 self._audit(name, lines)
                 self._log("broker", f"NinjaTrader {label} -> {name}: " + " | ".join(lines))
+                self._note_msgs(lines)
                 return {"ok": True, "file": name, "path": path, "lines": list(lines)}
             except FileExistsError as e:         # that name is taken in incoming\: never overwrite it, take a new name
                 err = e
@@ -1234,6 +1242,25 @@ class NinjaTraderAdapter:
         self.last_error = msg
         self._log("error", "NinjaTrader " + msg)
         return {"ok": False, "error": msg}
+
+    def _note_msgs(self, lines):
+        """Count one written order file (engine/msg_throttle); a new trip = critical alert + one Board event. Never raises."""
+        th = getattr(self, "throttle", None)
+        if th is None:
+            return
+        try:
+            rec = th.note(lines, self.clock())
+            if not rec:
+                return
+            from .msg_throttle import say
+            title, body = say(rec)
+            self._risk(f"{title} {body}", alert=True)
+            if self._alert_fn is None and os.path.dirname(os.path.abspath(self.state_path)) == os.path.dirname(STATE_PATH):
+                from .board_events import emit
+                emit("risk_alert", "", f"{title} {body}"[:300], {"what": "throttle", "code": rec["code"], "last4": rec.get("acct4"),
+                                                                 "block": bool(rec.get("block"))})
+        except Exception:
+            pass
 
     def _scope_problem(self, line: str) -> list:
         """Account scope of one OIF line (pre-launch audit 2026-10-25): PLACE / CLOSEPOSITION / REVERSEPOSITION must name this
@@ -1454,6 +1481,10 @@ class NinjaTraderAdapter:
                     return {"ok": False, "error": "REFUSED: kill switch is engaged"}
             except Exception:
                 pass
+            th = getattr(self, "throttle", None)          # engine/msg_throttle: only when its BLOCK is switched on (OFF by default)
+            blk = th.entry_block(self.clock()) if th is not None else None
+            if blk:
+                return {"ok": False, "error": "REFUSED: " + blk}
             e = _et(self.clock())
             mod = e.hour * 60 + e.minute
             cut = self._flat_today(e, entry=True)

@@ -405,6 +405,12 @@ def gather(now=None, root: str = ROOT, env=None, http=None, port=PORT_DEFAULT, f
     except Exception as e:
         snap["watch"] = []
         snap["watch_error"] = f"{e.__class__.__name__}: {str(e)[:120]}"
+    try:                                    # night-risk: ZEUS circuit breaker (live vs twin ADVICE) + the runaway-order throttle trips
+        from engine import circuit_breaker, msg_throttle
+        snap["risk"] = circuit_breaker.flags(root, now) + msg_throttle.flags(root, now)
+    except Exception as e:
+        snap["risk"] = []
+        snap["risk_error"] = f"{e.__class__.__name__}: {str(e)[:120]}"
     try:                                    # the Kalshi rewards PAPER card (tools/kalshi_rewards_paper.py public summary, < 1 KB)
         from engine import live_publish as _lpk
         snap["kalshi_rewards"] = _lpk.kalshi_rewards_card(now, os.path.join(root, "data", "kalshi_rewards", "summary.json"))
@@ -889,7 +895,7 @@ def events(state: dict, snap: dict) -> tuple:
         except Exception:
             continue
     # live vs the backtest twin (tools/trade_watch.py): a missed entry, a slipped fill, a missing / misplaced stop; once, high
-    for w in snap.get("watch") or []:
+    for w in (snap.get("watch") or []) + (snap.get("risk") or []):     # risk: engine/circuit_breaker + engine/msg_throttle
         try:
             key = str(w["key"])
             if key in st["seen"]:

@@ -174,7 +174,8 @@ def atlas_twin(root, days, keys, now, cache_path=None) -> dict:
                         tt.append({"key": k, "short": st.get("short") or k, "entry_t": int(t["entry_t"]), "dir": int(t["dir"]),
                                    "entry": float(t["entry"]), "stop": float(t["stop"]),
                                    "target": None if t.get("target") is None else float(t["target"]),
-                                   "exit_kind": t.get("exit_kind"), "usd": t.get("usd")})
+                                   "exit_kind": t.get("exit_kind"), "usd": t.get("usd"),
+                                   "r": t.get("r"), "qty": t.get("qty")})        # r / qty: engine/circuit_breaker (night-risk)
         out[day] = tt
         cache[day] = {"sig": sig, "trades": tt}
         dirty = True
