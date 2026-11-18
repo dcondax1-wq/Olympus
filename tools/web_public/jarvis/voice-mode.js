@@ -32,6 +32,11 @@
 // for the mic again and loops on "no-speech"). A plain-words status line (#vmState, aria-live) always says what is happening:
 // Listening / Thinking / Speaking / Hold the button to talk. The MODE button switches to hands-free and back; the choice is kept in
 // 'jarvis.vmPtt' ('1' hold, '0' hands-free). Elsewhere the default stays hands-free (the old behaviour). vm.stats() adds { ptt, status }.
+// Back to how it was (night-voice 2026-11-18, owner: "back to how it was: all of it"): hands-free is the default on EVERY phone again,
+// the conversation it was on 2026-11-06 (tap once, she answers out loud and listens again). The iPhone guard stays, automatic: when
+// iOS refuses an automatic listen (after an answer, not inside a tap) or hears nothing twice in a row, this session switches to hold
+// to talk by itself and says so (not saved; the MODE button and 'jarvis.vmPtt' still keep his own choice). vm.stats().fellBack.
+// The Classic Jarvis look (html[data-jlook=classic], classic.css) gets the old 2026-11-06 voice screen too: voice-classic.js.
 // iPhone Safari 16: plain ES2020, no regex lookbehind.
 
 import { voiceScore as ttsScore, bestVoice as ttsBest, voiceChoices as ttsChoices, cleanSpeech, createSpeaker, savedVoiceName, needsPrimer, CFG_KEY, DEFAULTS } from './tts.js';
@@ -45,6 +50,10 @@ export function statusText(phase, ptt, holding) {
   if (phase === 'speaking') return ptt ? 'Speaking. Hold the button to cut in.' : 'Speaking. Tap the circle to cut in.';
   return ptt ? 'Hold the button and talk.' : 'Tap the circle to talk.';
 }
+/** hold to talk at the start? his saved choice ('jarvis.vmPtt'), else hands-free everywhere (the 2026-11-06 behaviour) */
+export const defaultPtt = (saved) => (saved === true || saved === false ? saved : false);
+/** an iPhone's automatic listen failed (refused outside a tap, or nothing heard twice): fall back to hold to talk for the session */
+export const shouldFallBack = (o) => !!(o && o.ios && o.auto && !o.ptt && (o.error === 'not-allowed' || o.error === 'service-not-allowed' || (o.error === 'no-speech' && o.silent >= 2)));
 export const isIOS = (ua, touchPts) => /iPad|iPhone|iPod/.test(String(ua || '')) || (/Macintosh/.test(String(ua || '')) && (touchPts || 0) > 1);
 const SILENT_TURNS = 3;          // turns with nothing heard before voice mode waits for a tap (no endless listening)
 const LISTEN_MAX_MS = 15000;     // one listening turn at most
@@ -161,9 +170,17 @@ function style() {
 .vm[data-motion=off] .vm-frag,.vm[data-motion=off] .vm-jar .w,.vm[data-motion=off] .vm-orb{transition:none;animation:none}
 @media (prefers-reduced-motion: reduce){.vm *{animation:none !important;transition:none !important}}`;
   document.head.appendChild(s);
+  // the Classic Jarvis look's violet screen (voice-classic.js): loaded on its own, so voice mode opens without it (offline, an old cache)
+  import('./voice-classic.js').then((m) => {
+    if (!m || typeof m.CLASSIC_VM_CSS !== 'string' || document.getElementById('vmClassicCss')) return;
+    const c = document.createElement('style'); c.id = 'vmClassicCss'; c.textContent = m.CLASSIC_VM_CSS; document.head.appendChild(c);
+    if (typeof m.CLASSIC_SPEC === 'string') classicSpec = m.CLASSIC_SPEC;
+  }).catch(() => { /* AGORA only */ });
 }
+let classicSpec = '';                                   // the Classic look's waveform colour, once voice-classic.js has loaded
 
 // ------------------------------------------------------------------------------------------------ voice mode
+const classicLook = () => safe(() => document.documentElement.getAttribute('data-jlook') === 'classic', false);
 export function createVoiceMode(deps) {
   const d = deps && typeof deps === 'object' ? deps : {};
   const call = (name, ...a) => { const f = d[name]; return typeof f === 'function' ? safe(() => f(...a), null) : null; };
@@ -176,7 +193,8 @@ export function createVoiceMode(deps) {
   let voices = [], said = { noSR: false }, turns = 0, lastReply = null;
   let holding = false, status = '';
   const savedPtt = (() => { const v = safe(() => localStorage.getItem(PTT_KEY), null); return v === '1' ? true : v === '0' ? false : null; })();
-  let ptt = savedPtt != null ? savedPtt : isIOS(safe(() => navigator.userAgent, ''), safe(() => navigator.maxTouchPoints, 0));
+  const onIOS = isIOS(safe(() => navigator.userAgent, ''), safe(() => navigator.maxTouchPoints, 0));
+  let ptt = defaultPtt(savedPtt), fellBack = false;
   const $ = (s) => (el ? el.querySelector(s) : null);
 
   // ---------------------------------------------------------------- the voice list (iPhone loads it late)
@@ -311,7 +329,7 @@ export function createVoiceMode(deps) {
     const cv = $('#vmSpec'), dpr = Math.min(2, window.devicePixelRatio || 1), px = Math.round(size * 1.18 * dpr);
     cv.width = cv.height = px;
     cv.hidden = !motion;
-    specCol = '#c8a24a';      // gold, the AGORA accent
+    specCol = classicLook() && classicSpec ? classicSpec : '#c8a24a';      // gold, the AGORA accent; the Classic Jarvis look's own (voice-classic.js)
   }
   function paintLevel(v) {
     level = v;
@@ -391,8 +409,13 @@ export function createVoiceMode(deps) {
         : 'Voice input is not available here, so type below and I will answer out loud.', null);
     } else setPhase('idle', 'Type below, or tap End to stop.');
   }
+  function fallBack() {
+    ptt = true; fellBack = true; holding = false; silent = 0;
+    if (rec) { const r0 = rec; rec = null; safe(() => r0.abort ? r0.abort() : r0.stop()); }
+    ++turn; setPhase('idle', ''); paintStatus('This iPhone stopped hands-free listening. Hold the button and talk.');
+  }
   function listen(opt) {
-    const hold = !!(opt && opt.hold);
+    const hold = !!(opt && opt.hold), auto = !!(opt && opt.auto);
     if (!open) return;
     if (!SR || said.blocked) { toTyping(said.blocked ? 'blocked' : ''); return; }
     stopRec(); stopTalk();
@@ -406,7 +429,8 @@ export function createVoiceMode(deps) {
       holding = false;
       if (hold) { setPhase('idle', ''); paintStatus('I did not catch that. Hold the button and try again.'); return; }
       silent++;
-      if (silent < SILENT_TURNS) setTimeout(() => { if (open && my === turn && phase === 'listening') listen(); }, 350);
+      if (shouldFallBack({ ios: onIOS, auto: auto || silent > 1, ptt, error: 'no-speech', silent })) { fallBack(); return; }
+      if (silent < SILENT_TURNS) setTimeout(() => { if (open && my === turn && phase === 'listening') listen({ auto: true }); }, 350);
       else setPhase('idle', 'Tap the circle when you need me. End to stop.');
     };
     try {
@@ -424,7 +448,8 @@ export function createVoiceMode(deps) {
       r.onerror = (e) => {
         if (my !== turn) return;
         const er = e && e.error;
-        if (er === 'not-allowed' || er === 'service-not-allowed') { said.blocked = true; sent = true; rec = null; holding = false; toTyping('blocked'); }
+        if (shouldFallBack({ ios: onIOS, auto, ptt, error: er, silent })) { sent = true; rec = null; fallBack(); }
+        else if (er === 'not-allowed' || er === 'service-not-allowed') { said.blocked = true; sent = true; rec = null; holding = false; toTyping('blocked'); }
         else if (er === 'network') { said.blocked = true; sent = true; rec = null; holding = false; toTyping('blocked'); paintStatus('The speech service is not reachable. Type below instead.'); }
         else if (er === 'no-speech') { paintStatus('I heard nothing. ' + (ptt ? 'Hold the button and talk.' : 'Say it again.')); }
         else if (er === 'audio-capture' && stream) { releaseMic(); micErr = 'busy'; }        // the phone gives the mic to one of them: speech wins
@@ -519,7 +544,7 @@ export function createVoiceMode(deps) {
       s.done = true; clearTimeout(s.watch); revealAll(); speech = null;
       if (typeof after === 'function') { after(); return; }
       if (reply && reply.open) { close('open'); call('openApp', reply); return; }
-      if (SR && !said.blocked && !ptt) setTimeout(() => { if (open && my === turn) listen(); }, 300);
+      if (SR && !said.blocked && !ptt) setTimeout(() => { if (open && my === turn) listen({ auto: true }); }, 300);
       else if (SR && !said.blocked) setPhase('idle', 'Hold the button to talk.');
       else setPhase('idle', 'Type below, or tap End to stop.');
     };
@@ -546,6 +571,7 @@ export function createVoiceMode(deps) {
     if (open) return;
     if (!el) build();
     open = true; sess++; turns = 0; silent = 0; typed = false; said.blocked = false; micErr = '';
+    if (fellBack) { fellBack = false; ptt = defaultPtt(safe(() => { const v = localStorage.getItem(PTT_KEY); return v === '1' ? true : v === '0' ? false : null; }, null)); }
     motion = call('fx') !== 'off' && !call('reduced');
     el.dataset.motion = motion ? 'on' : 'off';
     el.hidden = false;
@@ -579,7 +605,7 @@ export function createVoiceMode(deps) {
     close: (why) => safe(() => close(why)),
     isOpen: () => open,
     setPtt: (v) => safe(() => setPtt(v)), pttDown: () => safe(pttDown), pttUp: () => safe(pttUp),
-    stats: () => ({ ptt, holding, status, open, phase, level: +level.toFixed(3), turns, motion, typing: typed, recognition: !!SR && !said.blocked,
+    stats: () => ({ ptt, fellBack, holding, status, open, phase, level: +level.toFixed(3), turns, motion, typing: typed, recognition: !!SR && !said.blocked,
       mic: !!stream, micLive: !!(stream && stream.getTracks().some((t) => t.readyState === 'live')), micErr, audio: actx ? actx.state : 'closed',
       core: core ? safe(() => (typeof core.stats === 'function' ? core.stats() : 'mounted'), 'mounted') : null, loop: !!raf,
       voice: (voice() || {}).name || '', speaking: !!speech, reply: lastReply ? lastReply.speak || lastReply.text : '' }),

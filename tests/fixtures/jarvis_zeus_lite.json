@@ -1,0 +1,205 @@
+{
+ "v": 1,
+ "kind": "le-live",
+ "lite": true,
+ "src": "pc_report",
+ "t": 1794966285,
+ "every_s": 300,
+ "model_state": "LIT: waiting for London sweep (entries from 02:00 ET)",
+ "price": 27256.0,
+ "day_pnl": 0,
+ "pc_verdict": {
+  "code": "TRADING",
+  "label": "TRADING YOUR EVAL",
+  "level": "good",
+  "reason": "routing to MFFUEVBLDR\u20261234 through NinjaTrader",
+  "in_session": false,
+  "hb_age_s": 0,
+  "t": 1794966285
+ },
+ "pc": {
+  "running": true,
+  "adapter": "ninjatrader",
+  "position": false,
+  "model_state": "LIT: waiting for London sweep (entries from 02:00 ET)",
+  "model": "lit",
+  "present": true,
+  "t": 1794966285,
+  "age_s": 0,
+  "silent": false,
+  "every_s": 300
+ },
+ "reporter": {
+  "t": 1794966300,
+  "server": true,
+  "nt": true,
+  "market_open": true,
+  "mode": "LIVE",
+  "hb_src": "last",
+  "problems": []
+ },
+ "board": {
+  "v": 1,
+  "kind": "le-board",
+  "t": 1794966285,
+  "data_t": 1794966285,
+  "where": "live",
+  "today": "2026-11-18",
+  "running": true,
+  "level": "good",
+  "lit": {
+   "id": "lit",
+   "name": "Zlarior",
+   "plan": "MFFU Builder 50K",
+   "method": "LIT",
+   "badge": "LIVE",
+   "source": "PC bot",
+   "balance": 49192.78,
+   "floor": 48168.2,
+   "room": 1024.58,
+   "mll": 2000.0,
+   "to_target": 3807.22,
+   "target_balance": 53000.0,
+   "profit": -807.22,
+   "today_pnl": 0.0,
+   "week_pnl": -129.4,
+   "status": "open",
+   "session": 23,
+   "sessions": 10,
+   "dll": 1000.0,
+   "dll_used": 0.0,
+   "trades_today": 0,
+   "max_day": 1,
+   "room_frac": 0.5123,
+   "window": {
+    "open": false,
+    "text": "next entry window Wed 02:00-15:30 ET"
+   },
+   "waiting": "Before 02:00 ET (no entries yet): Long setup forming: swept equal lows (2.63 ATR"
+  },
+  "atlas": {
+   "id": "atlas",
+   "name": "ATLAS",
+   "plan": "MFFU Builder 25K funded",
+   "method": "EMA \u00b7 MACD \u00b7 S/R",
+   "badge": "LIVE",
+   "source": "PC bot (account B)",
+   "configured": true,
+   "balance": 25000.0,
+   "floor": 24000.0,
+   "room": 1000.0,
+   "mll": 1000.0,
+   "to_target": 1850.0,
+   "target_balance": 26850.0,
+   "profit": 0.0,
+   "today_pnl": 0.0,
+   "status": "funded",
+   "session": 2,
+   "dll": 600.0,
+   "trades_today": 0,
+   "max_day": 2,
+   "room_frac": 1.0,
+   "window": {
+    "open": false,
+    "text": "next entry window Wed 02:00-05:00 ET"
+   },
+   "waiting": "All 3 members are outside their hours. Next: MACD at Wed 02:00 ET."
+  },
+  "trades": [
+   {
+    "acct": "atlas",
+    "day": "2026-11-17",
+    "entry_t": 1794928500,
+    "exit_t": 1794928800,
+    "side": "LONG",
+    "qty": 4,
+    "exit": "STOP",
+    "r": -1.022,
+    "usd": -441.6,
+    "open": false
+   },
+   {
+    "acct": "atlas",
+    "day": "2026-11-17",
+    "entry_t": 1794921600,
+    "exit_t": 1794930300,
+    "side": "SHORT",
+    "qty": 3,
+    "exit": "TARGET",
+    "r": 6.865,
+    "usd": 2687.84,
+    "open": false
+   },
+   {
+    "acct": "lit",
+    "day": "2026-11-16",
+    "entry_t": 1794827760,
+    "exit_t": 1794830400,
+    "side": "LONG",
+    "qty": 1,
+    "exit": "STOP",
+    "r": -1.007,
+    "usd": -129.4,
+    "open": false
+   }
+  ]
+ },
+ "accounts": [
+  {
+   "id": "mffu50k_eval",
+   "name": "MFFU 50K Eval",
+   "plan": "Builder 50K",
+   "kind": "eval",
+   "eval": {
+    "start_balance": 50000.0,
+    "balance": 49192.78,
+    "profit": -807.22,
+    "to_target": 3807.22,
+    "target_balance": 53000.0,
+    "floor": 48168.2,
+    "room": 1024.58,
+    "mll": 2000.0,
+    "dll": 1000.0,
+    "dll_used": 0.0,
+    "today": 0.0,
+    "session": 23,
+    "status": "open"
+   },
+   "pnl": {
+    "today": 0.0,
+    "week": -129.4,
+    "since_start": -229.4,
+    "traded": -129.4
+   },
+   "trades": []
+  },
+  {
+   "id": "b25k_2",
+   "name": "Zlarior Builder 25K #2",
+   "plan": "Builder 25K",
+   "kind": "eval",
+   "eval": {
+    "start_balance": 25000.0,
+    "balance": 25000.0,
+    "profit": 0.0,
+    "to_target": 1500.0,
+    "target_balance": 26500.0,
+    "floor": 24000.0,
+    "room": 1000.0,
+    "mll": 1000.0,
+    "dll": 600.0,
+    "dll_used": 0.0,
+    "today": 0.0,
+    "session": 1,
+    "status": "open"
+   },
+   "pnl": {
+    "today": 0.0,
+    "week": 0,
+    "since_start": 0,
+    "traded": 0
+   },
+   "trades": []
+  }
+ ]
+}
