@@ -220,18 +220,17 @@
   {
    "id": "cloudflare",
    "q": "Move the phone site to Cloudflare (no badge)",
-   "words": "cloudflare hosting netlify badge site host pages free move dashboard",
-   "where": "dash.cloudflare.com (the key), then the PC",
+   "words": "cloudflare hosting netlify badge site host pages free move dashboard cloudflare_setup bat token account id",
+   "where": "dash.cloudflare.com (the key), then CLOUDFLARE_SETUP.bat in the bot folder on the PC",
    "steps": [
     "dash.cloudflare.com (free) > your picture > Profile > API Tokens > Create Token > Custom token > Account / Cloudflare Pages / Edit > Create. Copy the key and your Account ID (Workers & Pages page).",
-    "At the PC: install Node.js (winget install OpenJS.NodeJS.LTS). Add two User variables: CLOUDFLARE_API_TOKEN = the key, CLOUDFLARE_ACCOUNT_ID = the id. Sign out and back in.",
-    "Run the line below, then python tools/pc_publish.py --force.",
-    "Open https://olympus-dash.pages.dev and add it to your Home Screen. Never paste the key in a chat."
+    "At the PC: Double-click CLOUDFLARE_SETUP.bat. Paste the key (you only see *) and the Account ID. It installs Node.js, saves both in Windows and publishes once.",
+    "It shows the address, normally https://olympus-dash.pages.dev: add it to your Home Screen. A problem shows one [FIX] line. Never paste the key in a chat."
    ],
-   "copy": "python tools/pc_publish.py --setup cloudflare --cf-project olympus-dash",
-   "copy_note": "At the PC, after the two variables are set.",
+   "copy": "CLOUDFLARE_SETUP.bat",
+   "copy_note": "At the PC, in the bot folder: double-click it (no typing).",
    "link": {"href": "https://dash.cloudflare.com/", "label": "Cloudflare dashboard"},
-   "src": "docs/HOSTING.md, tools/pc_publish.py"
+   "src": "docs/HOSTING.md, CLOUDFLARE_SETUP.bat, scripts/cloudflare_setup.ps1"
   },
   {
    "id": "address-check",

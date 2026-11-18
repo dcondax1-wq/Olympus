@@ -38,12 +38,16 @@ removes ids, emails and names (docs/PRIVACY.md).
 1. **Get the key (phone or PC):** dash.cloudflare.com, sign up free > your picture > **Profile** > **API Tokens** >
    **Create Token** > **Custom token** > Permissions: *Account* / *Cloudflare Pages* / *Edit* > **Continue** > **Create**.
    Copy the key. Also copy your **Account ID** (Workers & Pages page, right side). Never paste the key in a chat or the repo.
-2. **On the PC:** install Node.js free with `winget install OpenJS.NodeJS.LTS`. Then open the variables window with
-   `rundll32 sysdm.cpl,EditEnvironmentVariables` and add two **User variables** with **New**: `CLOUDFLARE_API_TOKEN` = the key,
-   `CLOUDFLARE_ACCOUNT_ID` = the account id. The key lives only there. Sign out and back in once.
-3. **Switch on:** `python tools/pc_publish.py --setup cloudflare --cf-project olympus-dash` and then
-   `python tools/pc_publish.py --force`. The site is now at **https://olympus-dash.pages.dev** (pick another name if that one
-   is taken). Add it to your home screen. To go back: `python tools/pc_publish.py --setup netlify --site-name moonlit-scone-08afe5 --token-stdin`.
+2. **On the PC:** Double-click CLOUDFLARE_SETUP.bat (bot folder). It installs Node.js if missing, asks you to paste the key
+   (you only see `*`) and the Account ID, saves both in Windows (user variables, never a file), switches the publisher to
+   Cloudflare and publishes once. Any problem shows one `[FIX]` line; if the first publish fails, Netlify keeps updating.
+3. **Phone:** it prints the address, normally **https://olympus-dash.pages.dev** (Cloudflare adds a suffix if the name is
+   taken). Add it to your home screen. Run it again any time (Enter keeps the saved key). To go back:
+   `python tools/pc_publish.py --setup netlify --site-name moonlit-scone-08afe5 --token-stdin`.
+
+By hand (what the .bat does): `winget install OpenJS.NodeJS.LTS`, user variables `CLOUDFLARE_API_TOKEN` and
+`CLOUDFLARE_ACCOUNT_ID`, then `python tools/pc_publish.py --setup cloudflare --cf-project olympus-dash` and
+`python tools/pc_publish.py --force`. Test: `python -X utf8 -m tests.test_cloudflare_setup` (pc area, static).
 
 How it works: `publish_cloudflare` in `tools/pc_publish.py` copies only the files that go out into `data/pc_publish/cf_site`.
 It then runs Cloudflare's own `npx wrangler@4.156.2 pages deploy` (a pinned version) on the production branch `main`, because
