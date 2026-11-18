@@ -10,6 +10,7 @@ Built on what exists (nothing re-implemented):
   registry   research/lab/zeus_lab/registry.json (tracked): every candidate change for Zlarior (LIT) and ATLAS, written down
              before it is judged, + "rejected_forever" (the CLAUDE_REFERENCE "Tested and rejected" list + the learn loop's
              first 8: NEVER run again; a "blocks" entry stops any experiment on that bot + feature, cross ones too).
+  members    kind atlas_member = a NEW ATLAS member (tools/atlas_plus.py, its stored verdict; "cells" = versions searched).
   re-test    the REAL backtests through engine/learn_loop's runners: LIT = tools/lit_edge.evaluate (run lit_live re-walked:
              the LIT size + the live two_week eval path, costs in); ATLAS = tools/atlas_deep.score (the real account-B rules,
              engine/second.py members). Kinds: lit_tilt / atlas_tilt (the learn-loop rule language) and lit_x (a
@@ -63,7 +64,7 @@ REF_DOC = os.path.join(ROOT, "docs", "TESTED_AND_REJECTED.md")   # moved out of 
 EDGE = os.path.join(ROOT, "research", "lab", "edge_health.json")
 ZEUS_QUEUE = os.path.join(ROOT, "research", "zeus_queue.jsonl")         # night-learn's daily review proposals (tools/data_pull.py)
 VERSION = 1
-RUNNABLE = ("lit_tilt", "atlas_tilt", "lit_x")
+RUNNABLE = ("lit_tilt", "atlas_tilt", "lit_x", "atlas_member")
 KINDS = RUNNABLE + ("parked",)
 BOTS = ("lit", "atlas", "kalshi")
 LIT_X_KEYS = ("tgt", "be", "tc", "speed", "slow", "late")
@@ -148,6 +149,8 @@ def load_registry(path: str = REGISTRY) -> tuple:
                 er.append(f"x must be a dict of {LIT_X_KEYS}")
             if e.get("bot") != "lit":
                 er.append("lit_x is for bot lit")
+        if e.get("kind") == "atlas_member" and (e.get("bot") != "atlas" or not e.get("family")):
+            er.append("atlas_member is for bot atlas and needs family (tools/atlas_plus.py)")
         if e.get("kind") == "parked" and not e.get("parked_why"):
             er.append("a parked experiment needs parked_why")
         if er:
@@ -157,6 +160,43 @@ def load_registry(path: str = REGISTRY) -> tuple:
         if e.get("on", True):
             out.append(e)
     return out, forever, rules, errs
+
+
+def register(e: dict, path: str = REGISTRY, replace: bool = True) -> list:
+    """Write one experiment into the registry (validated the way load_registry reads it). Returns the errors ([] = saved).
+    replace: an experiment with the same id is replaced (its registered date kept)."""
+    R = _read_json(path, None)
+    if not isinstance(R, dict) or not isinstance(R.get("experiments"), list):
+        return ["registry missing or not {experiments: [...]}"]
+    old = next((x for x in R["experiments"] if x.get("id") == e.get("id")), None)
+    if old is not None and not replace:
+        return [f"{e.get('id')}: already registered"]
+    e = {**e, "registered": (old or {}).get("registered") or e.get("registered")}
+    exps = [x for x in R["experiments"] if x.get("id") != e.get("id")] + [e]
+    import tempfile
+    with tempfile.TemporaryDirectory() as td:
+        tp = os.path.join(td, "r.json")
+        _write_json(tp, {**R, "experiments": exps}, indent=1)
+        _, _, _, errs = load_registry(tp)
+    errs = [x for x in errs if x.startswith(f"{e.get('id')}:") or "without an id" in x]
+    if errs:
+        return errs
+    txt = open(path, encoding="utf-8").read()
+    if old is None:                       # keep the hand-kept layout: one new line at the end of "experiments"
+        i = txt.index("[", txt.index('"experiments"'))
+        _, end = json.JSONDecoder().raw_decode(txt[i:])
+        j = i + end - 1                   # the closing "]"
+        k = len(txt[:j].rstrip())
+        new = txt[:k] + ",\n  " + json.dumps(e, ensure_ascii=False) + "\n " + txt[j:]
+        if json.loads(new)["experiments"][-1] == e:
+            tmp = path + ".tmp"
+            with open(tmp, "w", encoding="utf-8") as fh:
+                fh.write(new)
+            os.replace(tmp, path)
+            return []
+    R["experiments"] = exps
+    _write_json(path, R, indent=1)
+    return []
 
 
 def doc_rejected(path: str = REF_DOC) -> list:
@@ -215,8 +255,9 @@ def cross_experiments(exps: list, forever: list) -> list:
 
 
 def cells(exps: list, queue_n: int = 0) -> int:
-    """Cells ever judged in this search: every runnable Lab experiment (cross ones too) + the learn queue."""
-    return sum(1 for e in exps if e.get("kind") in RUNNABLE) + int(queue_n)
+    """Cells ever judged in this search: every runnable Lab experiment (cross ones too) + the learn queue. An atlas_member
+    family counts every version its tool searched ("cells")."""
+    return sum(int(e.get("cells") or 1) if e.get("kind") == "atlas_member" else 1 for e in exps if e.get("kind") in RUNNABLE) + int(queue_n)
 
 
 def p_needed(n_cells: int, alpha: float = 0.2) -> float:
@@ -335,7 +376,17 @@ def atlas_why(h: dict, b: dict) -> str:
     return "; ".join(out)
 
 
+def run_member(e: dict, C, rules: dict) -> dict:
+    """atlas_member: a NEW ATLAS member (tools/atlas_plus.py: alone at $250, coin-flip sides, days vs ATLAS / LIT, then as a
+    member on the funded 25K Monte Carlo at $250 / 30% of the room). Reads that tool's stored verdict
+    (research/second/atlas_plus.json); rerun the tool for new bars. The Lab adds its own sign-flip / many-tests guard."""
+    from tools import atlas_plus as AP
+    return AP.lab_result(e)
+
+
 def run_one(e: dict, C, rules: dict) -> dict:
+    if e["kind"] == "atlas_member":
+        return run_member(e, C, rules)
     return run_atlas(e, C, rules) if e["kind"] == "atlas_tilt" else run_lit(e, C, rules)
 
 

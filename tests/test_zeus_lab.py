@@ -208,6 +208,31 @@ def t_proposals(tmp):
     check("bot proposals: missing queue -> none", Z.bot_proposals(os.path.join(tmp, "none.jsonl")) == [])
 
 
+def t_member(tmp):
+    """kind atlas_member (tools/atlas_plus.py, 2026-11-18): registered families, the stored verdict, cells, register()."""
+    E, F, R, errs = Z.load_registry()
+    M = [e for e in E if e["kind"] == "atlas_member"]
+    check("ATLAS member families registered (VWAP, opening drive, value area, Keltner, POC)",
+          {"atlas_member_vwp", "atlas_member_odc", "atlas_member_pva", "atlas_member_ksq", "atlas_member_poc"} <= {e["id"] for e in M}, [e["id"] for e in M])
+    check("a member family counts every version it searched in the many-tests bar",
+          Z.cells(M) == sum(int(e["cells"]) for e in M) and Z.cells(M) > len(M), Z.cells(M))
+    check("no cross copy of a member", not [x for x in Z.cross_experiments(E, F) if x.get("cross_of", "").startswith("atlas_member_")])
+    r = Z.run_one(next(e for e in M if e["id"] == "atlas_member_odc"), None, RULES)
+    check("member runner: stored verdict with head / base / flip / why", {"proof_ok", "why", "flip", "head", "base", "deltas"} <= set(r)
+          and r["head"]["H1"].get("per_month") is not None, r.get("why"))
+    p = os.path.join(tmp, "reg.json")
+    shutil.copy(Z.REGISTRY, p)
+    before = open(p, encoding="utf-8").read()
+    e = {"id": "zz_member", "bot": "atlas", "kind": "atlas_member", "family": "vwp", "cells": 2, "title": "t", "what_changes": "w",
+         "registered": "2026-11-18", "source": "s"}
+    check("register(): a valid one is saved", Z.register(e, p) == [] and "zz_member" in {x["id"] for x in Z.load_registry(p)[0]})
+    after = open(p, encoding="utf-8").read()
+    check("register(): the hand-kept layout is kept (only lines added)", after.startswith(before[:before.rindex('"experiments"')]) and
+          len(after.splitlines()) - len(before.splitlines()) <= 2)
+    check("register(): a bad one is refused, file unchanged", Z.register({**e, "id": "zz_bad", "family": None}, p) and
+          open(p, encoding="utf-8").read() == after)
+
+
 def t_static():
     src = open(os.path.join(ROOT, "tools", "zeus_lab.py"), encoding="utf-8").read()
     code = re.sub(r'"""[\s\S]*?"""', "", src)
@@ -235,6 +260,7 @@ def main() -> int:
         t_safety(tmp)
         t_run(tmp)
         t_proposals(tmp)
+        t_member(tmp)
         t_static()
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
