@@ -164,8 +164,10 @@ def reporter():
     from tests.test_bots_back import Box, FakeHTTP
     from tests.test_live_publish import account_c_block, hb_payload
     from engine import roll_watch
+    from engine import hidden_bots
     real_fact = roll_watch.fact
     roll_watch.fact = lambda *a, **k: {}
+    hidden_bots.FORCE = ()                 # BLITZ shown (dashboard_view.json hides it since owner 2026-11-15): this part tests the BLITZ guard logic
     b = Box()
     try:
         cfg = b.topic()
@@ -201,6 +203,7 @@ def reporter():
         check("guard keys kept in data/pc_report/state.json", "guard:day:2026-11-16" in state["guard"]["sent"], state.get("guard"))
     finally:
         roll_watch.fact = real_fact
+        hidden_bots.FORCE = None
         b.cleanup()
 
 

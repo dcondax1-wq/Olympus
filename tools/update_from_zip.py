@@ -199,7 +199,11 @@ def ignore_patterns(*texts: str) -> list[str]:
     for text in texts:
         for ln in (text or "").splitlines():
             s = ln.strip()
-            if s and not s.startswith("#") and not s.startswith("!"):        # a "!" (un-ignore) line is skipped: more is protected, never less
+            if s.startswith("!"):                  # an un-ignore line: only an EXACT file path counts (a tracked file inside an ignored folder,
+                q = s[1:].strip().lstrip("/")      # e.g. !data/board/shared.jsonl); a glob or folder un-ignore is skipped: more is protected, never less
+                if q and not q.endswith("/") and not any(c in q for c in "*?[]"):
+                    out.append("!" + q)
+            elif s and not s.startswith("#"):
                 out.append(s)
     return out
 
@@ -244,7 +248,11 @@ def matches(rel: str, patterns) -> str | None:
     parts = rel.split("/")
     prefixes = ["/".join(parts[:i]) for i in range(1, len(parts) + 1)]
     low = [p.lower() for p in prefixes]
+    if rel.lower() in {x[1:].lower() for x in patterns if x.startswith("!")}:       # an exact un-ignored file (see ignore_patterns)
+        return None
     for pat in patterns:
+        if pat.startswith("!"):
+            continue
         dir_only = pat.endswith("/")
         p = pat.rstrip("/").lstrip("/").lower()
         if not p:

@@ -598,6 +598,7 @@ EVAL_VARS = [
     ("rf100_reset10", {"room_f": 1.0, "wk_loss_usd": None, "reset_at": 10}),
     ("today_reset15", {"reset_at": 15}),
     ("rf80_q20", {"room_f": 0.8, "maxq": 20}),
+    ("rf40_nowk_tw80", {"room_f": 0.4, "wk_loss_usd": None, "two_week_until": 80}),   # the live switches since 2026-11-14 (owner "yes 40%")
 ]
 
 
