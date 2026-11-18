@@ -2118,7 +2118,7 @@ def part_rewards(br, url, tmp):
             return [document.getElementById('krw').nextElementSibling.id, a('.kh-l'), a('.kh-a'), h.textContent, r.left >= 15.5 && r.right <= W - 15.5, rows,
                     [...h.querySelectorAll('*')].filter((x) => x.scrollWidth > x.clientWidth + 1).length]; }""")
         check("rw7. the Kalshi home under the rewards card: 9 tested ideas each with its verdict and a link to its write-up (Clio)",
-              hub[0] == "khub" and len(hub[1]) == 9 and all(h.startswith("../clio/?q=") for h in hub[1]) and "What we tested and why it's paused" in hub[3]
+              hub[0] == "kk1" and len(hub[1]) == 9 and all(h.startswith("../clio/?q=") for h in hub[1]) and "What we tested and why it's paused" in hub[3]
               and all(w in hub[3] for w in ("Loses", "No edge", "Too weak", "Paper test")), hub[:2])
         check("rw7. links to Kalshi City, Dionysus and Sibyl, and 'What would turn it back on' (100+ paper bets, 4+ weeks, 95% range above $0)",
               hub[2] == ["../kalshicity/", "../dionysus/", "../sibyl/"] and "What would turn it back on" in hub[3] and "100+ settled bets" in hub[3]
