@@ -536,9 +536,30 @@ def tiny(full: dict, t: int | None = None) -> dict:
     return out
 
 
+def site_bots(full: dict) -> dict:
+    """Per bot, the last-40-session numbers ZEUS answers "trades per week / how is it doing" with (jarvis/zeus.js, 2026-11-18):
+    {"lit"|"atlas": {name, sessions, to, n, tpw, win, pf, pf_r, usd_month, light, basis}}. Read from the run; nothing re-computed."""
+    card = full.get("card") or {}
+    lights = {"lit": card.get("light"), "atlas": (card.get("atlas") or {}).get("light")}
+    basis = {"lit": "backtest of the live settings on the newest bars (LIT size rule)",
+             "atlas": "the stored ATLAS run at eval size (not re-run on the newest bars)"}
+    out = {}
+    for key, name in (("lit", "Zlarior"), ("atlas", "ATLAS")):
+        b = full.get(key) if isinstance(full.get(key), dict) else {}
+        w = (((b.get("windows") or {}).get("40") or {}).get("now")) or {}
+        if not w:
+            continue
+        out[key] = {"name": name, "sessions": 40, "to": b.get("last_day"), "n": w.get("n"), "tpw": w.get("tpw"), "win": w.get("win"),
+                    "pf": w.get("pf"), "pf_r": w.get("pf_r"), "usd_month": w.get("usd_month"), "light": lights.get(key), "basis": basis[key]}
+    return out
+
+
 def write_site(full: dict, path: str | None = None) -> None:
     """tools/web_public/edge.json: the cloud's copy (the tiny result + the lines the chip shows), the fallback when the PC is quiet."""
     o = {"v": 1, "kind": "le-edge", "src": "tools/edge_health.py", "built": full.get("built"), "eh": full.get("tiny")}
+    bots = site_bots(full)
+    if bots:
+        o["bots"] = bots
     with open(path or SITE, "w", encoding="utf-8") as fh:
         json.dump(o, fh, ensure_ascii=False, indent=1)
         fh.write("\n")

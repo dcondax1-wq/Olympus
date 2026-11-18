@@ -559,10 +559,11 @@ export function createBrain(opts) {
   // ZEUS today (zeus.js, night-voice 2026-11-18): "how are my accounts", "did ZEUS trade today", "how much to pass", "when is my payout",
   // "is the PC on", "pause ZEUS" from the PC feed (facts.live.raw), the Board and business/accounts.json. createBrain({ zeus }) passes one
   // in; otherwise it loads its own in a browser (o.zeus === true: also in node; false: off). Read only: "pause" only says where the button is.
+  // night-zask: + "what's trading" (each account -> bot), "trades per week" (../edge.json bots), "health" (edge light + PC age).
   let zeus = isObj(o.zeus) && typeof o.zeus.answer === 'function' ? o.zeus : null, zeusWait = null;
   if (!zeus && o.zeus !== false && (o.zeus === true || typeof location !== 'undefined')) {
     const getJ = (u) => async () => { try { const r = await doFetch(u, { cache: 'no-cache' }); return r && r.ok ? await r.json() : null; } catch (_) { return null; } };
-    zeusWait = import('./zeus.js').then((m) => { zeus = m.createZeus({ getPlan: getJ('../business/accounts.json'), getBoard: getJ('../board/board.json'), hidden: HIDB }); })
+    zeusWait = import('./zeus.js').then((m) => { zeus = m.createZeus({ getPlan: getJ('../business/accounts.json'), getBoard: getJ('../board/board.json'), getEdge: getJ('../edge.json'), hidden: HIDB }); })
       .catch(() => null).then(() => { zeusWait = null; });
   }
   let skills = isObj(o.skills) && typeof o.skills.handle === 'function' ? o.skills : null, skillsWait = null, skillCtx = '', missedSkill = null;

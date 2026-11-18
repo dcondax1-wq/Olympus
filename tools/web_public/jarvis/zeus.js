@@ -9,9 +9,13 @@
 //   "when is my payout"     funded first (the $27,100 / full $1,000 line), then each eval: pass first, then the plan's estimate
 //   "is the PC on"          its last check-in (every 5 min), bot running, NinjaTrader, LIVE / Sim; only from the PC feed
 //   "pause ZEUS"            where the buttons are (Pause until tomorrow / LE STOP BOT); Jarvis never presses them
+// night-zask 2026-11-18 (owner: "what's on what account, what's it trading, average trades/week"):
+//   "what's trading"        each account -> its bot (Zlarior = LIT, ATLAS), stage, balance, room, $ to pass / to the payout line
+//   "trades per week"       per bot, the last 40 sessions: trades/week, win %, PF, $/month (../edge.json "bots", tools/edge_health.py)
+//   "health"                the edge light (the newer of the PC's "eh" and ../edge.json) + "PC reported X min ago"
 // iPhone Safari 16: plain ES2020, no optional chaining, no regex lookbehind.
 //   import { createZeus, kindOf, alias, scrubIds } from './zeus.js';
-//   const z = createZeus({ getPlan: async () => accountsJson | null, getBoard: async () => boardJson | null, hidden: () => bool });
+//   const z = createZeus({ getPlan: async () => accountsJson | null, getBoard: async () => boardJson | null, getEdge: async () => edgeJson | null, hidden: () => bool });
 //   await z.answer(raw, q, live, nowMs) -> { text, speak, intent: 'zeus_*', cards? } | null (not one of the six, or no data for it)
 
 const isObj = (x) => x != null && typeof x === 'object' && !Array.isArray(x);
@@ -66,13 +70,16 @@ export const RX = {
   traded: /\b(?:did|has|have|was) zeus\b[^?]{0,30}\btrad|\bzeus\b[^?]{0,20}\btrades? today\b|\bdid (?:my|the) accounts? trade\b|\bany trades? (?:today|this session|yet)\b/,
   pass: /\bhow much (?:more )?(?:do i need |is left |left |till |until |to go )?(?:to|till|until|before i|before we) pass\b|\bhow much (?:more )?(?:to go )?(?:to|for) (?:the )?(?:eval|evals|target)\b|^(?:how much )?to pass\??$|\bhow far (?:to|from) (?:passing|the pass)\b/,
   payout: /\bwhen(?:'s| is| do i get| will i get| can i get| can i ask for| can i request| will| does)? (?:is )?(?:my |the |our )?(?:first |next )?(?:payout|pay ?day|paid|money out)\b|\b(?:first|next) payout\b|\bpayout (?:date|day|when|soon)\b|^(?:my )?payouts?\??$|\bwhen (?:do|will) (?:i|we) get paid\b/,
+  trading: /\bwhat(?:'s| is| are)? (?:each |my |the )?(?:account|accounts) (?:is |are )?trading\b|\bwhat(?:'s| is| bot is| bots are)? (?:on|running on|trading on) (?:what|which|each|my|the) accounts?\b|\bwhich bots? (?:is |are )?(?:on|trades?|trading|runs?|running)\b|^what(?:'s| is) trading\b|\bwhat bots? (?:are|is) (?:on|running|trading)\b|\bwho(?:'s| is) trading (?:what|which|on)\b|\bwhat(?:'s| is) on (?:what|which|each) account\b|\bwhat(?:'s| is) (?:it|zeus) trading\b|^(?:bots|accounts) (?:and|&) (?:bots|accounts)$/,
+  perf: /\b(?:average |avg |how many )?trades? (?:a |per |each |every |\/ ?)?week\b|\btrades? weekly\b|\bweekly trades\b|\bhow(?:'s| is| are) (?:it|they|zlarior|atlas|lit|zlarior and atlas|both bots)(?: been)? (?:doing|performing|going)\b|\b(?:zlarior|atlas|lit|zeus|bot|bots)(?:'s)? (?:stats|statistics|performance|numbers|win ?rate|win %|pf|profit factor|results|track record)\b|\b(?:stats|performance|win ?rate|win %|profit factor|track record) (?:of|for) (?:zlarior|atlas|lit|zeus|the bots?|each bot)\b|\b(?:\$|dollars?) (?:a|per) month\b[^?]{0,20}\b(?:zlarior|atlas|lit|zeus|bots?)\b|\bhow much (?:does|do|will) (?:zlarior|atlas|lit|zeus|the bots?|it|they) make (?:a|per) month\b/,
+  health: /^(?:zeus |edge |bot |bots |the |system )?health\??$|\bedge (?:health|light|status)\b|^(?:the )?edge\??$|\b(?:zeus|zlarior|atlas|lit)(?:'s)? (?:health|edge)\b|\bhealth of (?:zeus|the edge|the bots?)\b|\bhow (?:healthy|is the edge|'s the edge)\b|\bhow(?:'s| is) (?:the )?edge\b|\bis (?:the |zeus'?s? )?edge (?:ok|okay|alive|still there|good|green|gone|working)\b|\bis zeus healthy\b/,
   pc: /\b(?:is|are) (?:the |my )?(?:pc|computer|surface|bot pc|trading pc|desktop|laptop)\b[^?]{0,20}\b(?:on|up|running|online|alive|awake|working|ok|okay|connected|reporting)\b|^(?:pc|the pc)(?: status| on| online)?\??$|\bpc (?:on|online|status)\b/,
 };
-/** which of the six (or null): rules about rules / where pages are stay with the older answers */
+/** which one (the six + trading / perf / health, or null): rules about rules / where pages are stay with the older answers */
 export function kindOf(q) {
   const s = String(q || '').toLowerCase();
   if (!s || /\brules?\b/.test(s)) return null;
-  for (const k of ['pause', 'pc', 'traded', 'pass', 'payout', 'accounts']) if (RX[k].test(s)) return k;
+  for (const k of ['pause', 'pc', 'health', 'perf', 'trading', 'traded', 'pass', 'payout', 'accounts']) if (RX[k].test(s)) return k;
   return null;
 }
 /** "zeus" in any other question means the bots: "how is zeus", "arm zeus" (refused by the guard), "zeus today" */
@@ -97,7 +104,7 @@ export function rowsOf(live, plan, board, opt) {
     const size = sizeOf(c.plan) || (id === 'lit' ? '50K' : '25K'), stage = stageOf(c), p = planRow(plan, key, size, stage);
     rows.push({ id, key, name: str(c.name, 30) + ' ' + size, size, stage, balance: num(c.balance), today: num(c.today_pnl), room: num(c.room),
       to_pass: stage === 'eval' ? num(c.to_target) : 0, target: num(c.target_balance), trades_today: num(c.trades_today), max_day: num(c.max_day),
-      window: isObj(c.window) ? str(c.window.text, 80) : '', plan: p, src: 'pc' });
+      window: isObj(c.window) ? str(c.window.text, 80) : '', plan: p, src: 'pc', badge: /^(LIVE|SIM)$/i.test(str(c.badge, 8)) ? str(c.badge, 8).toUpperCase() : '' });
   };
   card('lit', 'zlarior', b.lit || (isObj(live) ? live.lit : null));
   card('atlas', 'atlas', b.atlas || (isObj(live) ? live.atlas : null));
@@ -260,6 +267,92 @@ function pauseReply() {
   return { text: PAUSE_TEXT, speak: "I can't pause ZEUS myself. On the PC, open LE START, then the Bot page, and press Pause until tomorrow. To stop it fully, use LE STOP BOT on the desktop.", intent: 'zeus_pause', refused: true };
 }
 
+// ------------------------------------------------------------------------------------------------ what each account trades (night-zask)
+const BOT = { lit: 'Zlarior (LIT)', atlas: 'ATLAS', blitz: 'BLITZ' };
+/** the bot on a row: the PC card it came from, else the plan's "bots" line, else the account's own name; '' = not known */
+export function botOf(r) {
+  if (BOT[r.id]) return BOT[r.id] + (r.badge ? ', ' + r.badge : '');
+  const pb = r.plan ? scrubIds(str(r.plan.bots, 80)) : '';
+  if (pb) return pb.replace(/^Zlarior(?! \(LIT\))/, 'Zlarior (LIT)');
+  const n = str(r.name, 60).toLowerCase();
+  return /zlarior|\blit\b/.test(n) ? 'Zlarior (LIT)' : /atlas/.test(n) ? 'ATLAS' : '';
+}
+function tradingReply(rows, F) {
+  if (!rows.length) return { text: 'I have no account numbers right now: the PC has not reported and the Board is not loaded, so I cannot say which bot is on which account. Open Business → My Accounts.', speak: 'I have no account numbers right now.', intent: 'zeus_trading' };
+  const lines = ['What each account trades (' + ageNote(F) + '):'], say = [];
+  for (const r of rows) {
+    const bot = botOf(r), parts = [usd(r.balance)];
+    if (r.stage === 'eval') { if (r.to_pass != null) parts.push(usd(r.to_pass) + ' to pass'); }
+    else if (r.stage === 'funded') { const pl = payLine(r); if (pl) parts.push(pl.toGo > 0 ? usd(pl.toGo) + ' to the first ' + usd(pl.ask) + ' payout' : 'payout line reached'); }
+    if (r.room != null) parts.push(usd(r.room) + ' room');
+    lines.push(r.name + ' ' + r.stage + ' → ' + (bot || 'bot not reported') + ': ' + parts.join(', ') + '.');
+    say.push(r.name.replace(/#(\d)/, 'number $1') + ' ' + r.stage + ' runs ' + (/zlarior/i.test(bot) ? 'Zlarior' : /atlas/i.test(bot) ? 'ATLAS' : bot ? bot.split(/[,(]/)[0].trim() : 'an unknown bot') + ', at ' + sayUsd(r.balance) + '.');
+  }
+  return { text: lines.join('\n'), speak: say.join(' '), intent: 'zeus_trading', cards: [{ title: 'Accounts and bots', lines: lines.slice(1) }] };
+}
+
+// ------------------------------------------------------------------------------------------------ the edge: per-bot numbers + the light
+const LIGHT = { G: 'GREEN', A: 'AMBER', R: 'RED' };
+const isDay = (d) => typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d);
+const validEh = (eh) => (isObj(eh) && isDay(eh.d) && Array.isArray(eh.z) && eh.z.length >= 3 && LIGHT[eh.z[0]] ? eh : null);
+/** the newer of the PC's "eh" (lite status) and ../edge.json's: the later data day wins, then the later build (same as edge_chip.js pick) */
+export function pickEdge(site, live) {
+  const full = isObj(live) && isObj(live.raw) ? live.raw : isObj(live) ? live : {};
+  const s = validEh(isObj(site) ? site.eh : null), l = validEh(full.eh);
+  if (!s || !l) return l ? { eh: l, src: 'PC' } : s ? { eh: s, src: 'site' } : null;
+  if (l.d !== s.d) return l.d > s.d ? { eh: l, src: 'PC' } : { eh: s, src: 'site' };
+  return (+l.t || 0) >= (+s.t || 0) ? { eh: l, src: 'PC' } : { eh: s, src: 'site' };
+}
+const pf1 = (v) => { const n = num(v); return n == null ? '?' : n >= 20 ? '20+' : (Math.round(n * 10) / 10).toFixed(1); };
+const n1 = (v) => { const n = num(v); return n == null ? '?' : String(Math.round(n * 10) / 10); };
+const md = (d) => (isDay(d) ? MON[+d.slice(5, 7) - 1] + ' ' + (+d.slice(8, 10)) : '?');
+const daysOld = (d, nowMs) => (isDay(d) ? Math.max(0, Math.floor((nowMs - Date.parse(d + 'T21:00:00Z')) / 86400000)) : null);
+const oldNote = (d, nowMs) => { const k = daysOld(d, nowMs); return k != null && k > 7 ? ' (' + k + ' days old)' : ''; };
+function perfReply(edge, nowMs, hidden) {
+  const B = isObj(edge) && isObj(edge.bots) ? edge.bots : null;
+  const bots = B ? ['lit', 'atlas'].concat(hidden ? [] : ['blitz']).map((k) => (isObj(B[k]) ? { k, ...B[k] } : null)).filter(Boolean) : [];
+  if (!bots.length) {
+    const why = !isObj(edge) ? 'the edge file (edge.json) did not load' : 'edge.json has no per-bot numbers yet (on a computer: python tools/edge_health.py)';
+    return { text: 'I have no trades-per-week numbers right now: ' + why + '. I will not guess.', speak: 'I have no trades per week numbers right now, so I will not guess.', intent: 'zeus_perf', missing: true };
+  }
+  const lines = ['Last 40 sessions per bot (about 8 weeks):'], say = [];
+  for (const b of bots) {
+    const nm = b.k === 'lit' ? 'Zlarior (LIT)' : str(b.name, 20) || b.k.toUpperCase();
+    const bits = [n1(b.tpw) + ' trades/week', num(b.win) != null ? Math.round(num(b.win)) + '% win' : 'win % missing', 'PF ' + pf1(b.pf),
+      num(b.usd_month) != null ? 'about ' + usd(b.usd_month) + '/month' + (b.k === 'atlas' ? ' (eval size)' : '') : '$/month missing'];
+    lines.push(nm + ': ' + bits.join(', ') + (b.light ? '. Edge ' + str(b.light, 8) : '') + '. Data to ' + md(b.to) + oldNote(b.to, nowMs) + '.');
+    say.push(nm.replace(/\s*\(LIT\)/, '') + ' takes about ' + n1(b.tpw) + ' trades a week, wins ' + (num(b.win) != null ? Math.round(num(b.win)) + ' percent' : 'an unknown share') + (num(b.usd_month) != null ? ', about ' + sayUsd(b.usd_month) + ' a month' : '') + '.');
+  }
+  const ages = bots.map((b) => daysOld(b.to, nowMs)).filter((k) => k != null), oldest = ages.length ? Math.max.apply(null, ages) : 0;
+  if (oldest > 7) say.push('These numbers are up to ' + oldest + ' days old.');
+  lines.push('These are each bot\'s own rules on real futures bars (Zlarior re-run on the newest bars, ATLAS from its stored run at eval size), not your accounts\' fills. Past weeks do not promise the next ones.');
+  return { text: lines.join('\n'), speak: say.join(' '), intent: 'zeus_perf', cards: [{ title: 'Last 40 sessions', lines: lines.slice(1, -1) }] };
+}
+const LIGHT_MEANS = { GREEN: 'looks like 2026, when it made money', AMBER: 'weaker than 2026 but still positive; nothing changes by itself', RED: 'looks like 2021-25 (about $0); nothing changes by itself, do not buy a new eval' };
+function healthReply(edge, live, F, nowMs) {
+  const p = pickEdge(edge, live), lines = [], say = [];
+  if (p) {
+    const z = p.eh.z, a = Array.isArray(p.eh.a) && LIGHT[p.eh.a[0]] ? p.eh.a : null;
+    lines.push('Zlarior edge: ' + LIGHT[z[0]] + ' (' + LIGHT_MEANS[LIGHT[z[0]]] + '). Last 40 sessions PF ' + pf1(z[1]) + ' vs 2026 ' + pf1(z[2]) + ', data to ' + md(p.eh.d) + oldNote(p.eh.d, nowMs) + '.');
+    say.push('Zlarior edge is ' + LIGHT[z[0]].toLowerCase() + '.');
+    if (a) { lines.push('ATLAS edge: ' + LIGHT[a[0]] + ' (' + LIGHT_MEANS[LIGHT[a[0]]] + '). PF ' + pf1(a[1]) + ' vs 2026 ' + pf1(a[2]) + ' at a fixed size, data to ' + md(a[3]) + oldNote(a[3], nowMs) + '.'); say.push('ATLAS is ' + LIGHT[a[0]].toLowerCase() + '.'); }
+    const old = [p.eh.d].concat(a ? [a[3]] : []).some((d) => (daysOld(d, nowMs) || 0) > 7);
+    if (old) lines.push('The edge data is old: start the PC bot (it sends fresh bars) or export new TradingView NQ1! bars.');
+  } else {
+    lines.push('Edge light: missing (edge.json did not load and the PC sent none).'); say.push('The edge light is missing.');
+  }
+  if (F.feed && F.age != null) {
+    const rep = F.rep || {}, pc = F.pc || {}, mode = str(rep.mode, 12).toUpperCase();
+    const st = F.age > MAYBE_S ? 'silent, check it is on and online' : F.age > FRESH_S ? 'may be asleep or offline' : [pc.running === false ? 'the bot is STOPPED' : 'ZEUS running' + (mode ? ' (' + mode + ')' : ''), rep.nt === false ? 'NinjaTrader NOT connected' : rep.nt === true ? 'NinjaTrader connected' : ''].filter(Boolean).join(', ');
+    lines.push('PC reported ' + ago(F.age) + ': ' + st + '.');
+    say.push('The PC reported ' + sayAgo(F.age) + '.');
+  } else {
+    lines.push('PC: no report loaded (the PC feed is missing' + (F.age != null ? '; the Board is from ' + ago(F.age) : '') + '), so I cannot say if it is on.');
+    say.push('I have no PC report.');
+  }
+  return { text: 'ZEUS health:\n' + lines.join('\n'), speak: say.join(' '), intent: 'zeus_health' };
+}
+
 // ------------------------------------------------------------------------------------------------ the skill
 export function createZeus(opts) {
   const o = isObj(opts) ? opts : {};
@@ -269,18 +362,21 @@ export function createZeus(opts) {
     if (!p) p = Promise.race([Promise.resolve().then(fn), new Promise((ok) => setTimeout(() => ok(null), 2500))]).then((j) => { p = null; if (isObj(j)) { v = j; at = Date.now(); } return v; }, () => { p = null; return v; });
     return p;
   }; };
-  const getPlan = cached(o.getPlan), getBoard = cached(o.getBoard);
+  const getPlan = cached(o.getPlan), getBoard = cached(o.getBoard), getEdge = cached(o.getEdge);
   const hidden = () => { try { return typeof o.hidden === 'function' ? !!o.hidden() : !!(globalThis.OLY_HIDDEN && globalThis.OLY_HIDDEN.has('blitz')); } catch (_) { return true; } };
   async function answer(raw, q, live, nowMs) {
     const k = kindOf(q || raw);
     if (!k) return null;
     const now = num(nowMs) || Date.now();
     if (k === 'pause') return pauseReply();
+    if (k === 'perf') return perfReply(await getEdge(), now, hidden());
     const [plan, board] = await Promise.all([getPlan(), getBoard()]);
     const F = freshness(live, board, now);
     if (k === 'pc') return pcReply(F);
+    if (k === 'health') return healthReply(await getEdge(), live, F, now);
     const rows = rowsOf(live, plan, board, { hidden: hidden() });
     if (k === 'accounts') return accountsReply(rows, F, live);
+    if (k === 'trading') return tradingReply(rows, F);
     if (k === 'pass') return rows.length ? passReply(rows, F) : null;
     if (k === 'payout') return payoutReply(rows, plan, F);
     if (k === 'traded') return F.feed || rows.length ? tradedReply(rows, live, F, now, hidden()) : null;

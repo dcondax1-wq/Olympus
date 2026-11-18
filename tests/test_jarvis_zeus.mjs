@@ -115,6 +115,57 @@ for (const q of ['how are my accounts', 'did zeus trade today', 'how much to pas
   check('brain: zeus false = the older answers', r7.intent !== 'zeus_accounts');
 }
 
+// ---------------------------------------------------------------------------------------------- 3b. night-zask: what's trading, trades per week, health
+{
+  const EDGE = JSON.parse(fs.readFileSync(path.join(WP, 'edge.json'), 'utf8'));
+  const K = [["what's trading", 'trading'], ["what's on what account", 'trading'], ['which bot is on which account', 'trading'], ['what is each account trading', 'trading'], ['what bots are on my accounts', 'trading'],
+    ['trades per week', 'perf'], ['average trades a week', 'perf'], ['how many trades a week', 'perf'], ['trades week', 'perf'], ['how is it doing', 'perf'], ['how is atlas doing', 'perf'], ['zlarior stats', 'perf'], ['win rate of zlarior', 'perf'],
+    ['health', 'health'], ['zeus health', 'health'], ['edge health', 'health'], ['is the edge ok', 'health'], ["how's the edge", 'health']];
+  for (const [q, k] of K) check(`kindOf("${q}") = ${k}`, Z.kindOf(q) === k, Z.kindOf(q));
+  for (const q of ['whats my win rate', 'what is my profit factor', 'how often do i win', 'how am i doing today', 'health check', 'how are the bots', 'how are the bots doing', 'is the kalshi bot running', 'what did i say about trading', 'arm live trading'])
+    check(`kindOf("${q}") = none (other answers keep it)`, Z.kindOf(q) === null, Z.kindOf(q));
+  check('kindOf: "how is zeus doing" stays the accounts answer', Z.kindOf('how is zeus doing') === 'accounts');
+  const ze = Z.createZeus({ getPlan: async () => PLAN, getBoard: async () => null, getEdge: async () => EDGE, hidden: () => true });
+  const t = await ze.answer("what's trading", "what's trading", liveOf(LITE), T0);
+  check('trading: each account -> its bot, stage, balance, $ to pass / payout line, room', t.intent === 'zeus_trading' && /^What each account trades \(PC, 3 min ago\):/.test(t.text)
+    && t.text.includes('Zlarior 50K eval → Zlarior (LIT), LIVE: $49,193, $3,807 to pass, $1,025 room.') && t.text.includes('ATLAS 25K funded → ATLAS, LIVE: $25,000, $2,100 to the first $1,000 payout, $1,000 room.')
+    && t.text.includes('Zlarior 25K #2 eval → Zlarior (LIT)') && /\$1,500 to pass/.test(t.text), t.text);
+  check('trading: spoken short', /Zlarior 50K eval runs Zlarior, at 49,193 dollars/.test(t.speak) && /ATLAS 25K funded runs ATLAS/.test(t.speak), t.speak);
+  const p = await ze.answer('trades per week', 'trades per week', liveOf(LITE), T0);
+  const BL = EDGE.bots.lit, BA = EDGE.bots.atlas;
+  check('perf: per bot, last 40 sessions, trades/week, win %, PF, $/month from edge.json', p.intent === 'zeus_perf' && p.text.includes('Zlarior (LIT): ' + BL.tpw + ' trades/week, ' + Math.round(BL.win) + '% win, PF 3.8, about $3,440/month. Edge GREEN. Data to Nov 6')
+    && p.text.includes('ATLAS: 3 trades/week, 58% win, PF 1.4, about $411/month (eval size). Edge AMBER. Data to Oct 16') && BA.tpw === 3, p.text);
+  check('perf: says how old and what the numbers are (not the accounts\' fills)', /11 days old/.test(p.text) && /not your accounts' fills/.test(p.text) && /up to 32 days old/.test(p.speak), p.text + ' | ' + p.speak);
+  const h = await ze.answer('health', 'health', liveOf(LITE), T0);
+  check('health: the edge light for both bots + "PC reported 3 min ago"', h.intent === 'zeus_health' && /Zlarior edge: GREEN/.test(h.text) && /ATLAS edge: AMBER/.test(h.text) && /PC reported 3 min ago: ZEUS running \(LIVE\), NinjaTrader connected\./.test(h.text) && /The edge data is old/.test(h.text), h.text);
+  const L3 = { ...LITE, eh: { d: '2026-11-17', z: ['R', 0.8, 3.9], a: ['G', 3.1, 2.8, '2026-11-17'], t: LITE.t } };
+  const h2 = await ze.answer('edge health', 'edge health', liveOf(L3), T0);
+  check('health: the PC\'s newer "eh" wins over edge.json', /Zlarior edge: RED/.test(h2.text) && /data to Nov 17\./.test(h2.text) && !/edge data is old/.test(h2.text), h2.text);
+  check('pickEdge: newer day wins, else site', Z.pickEdge(EDGE, liveOf(L3)).src === 'PC' && Z.pickEdge(EDGE, liveOf(LITE)).src === 'site' && Z.pickEdge(null, null) === null);
+  const h3 = await ze.answer('health', 'health', null, T0);
+  check('health with no PC feed: says the PC report is missing (no invented age)', /PC: no report loaded/.test(h3.text) && /Zlarior edge: GREEN/.test(h3.text), h3.text);
+  const zn = Z.createZeus({ getPlan: async () => PLAN, getBoard: async () => null, getEdge: async () => null, hidden: () => true });
+  const m1 = await zn.answer('trades per week', 'trades per week', liveOf(LITE), T0);
+  check('perf with no edge.json: says what is missing, no numbers', m1.missing === true && /edge\.json\) did not load/.test(m1.text) && !/\d+(\.\d)? trades\/week/.test(m1.text), m1.text);
+  const zo = Z.createZeus({ getPlan: async () => PLAN, getBoard: async () => null, getEdge: async () => ({ kind: 'le-edge', eh: EDGE.eh }), hidden: () => true });
+  const m2 = await zo.answer('how is it doing', 'how is it doing', liveOf(LITE), T0);
+  check('perf with an old edge.json (no bots): says so', /no per-bot numbers yet/.test(m2.text), m2.text);
+  const m3 = await zn.answer('health', 'health', liveOf(LITE), T0);
+  check('health with no edge at all: "Edge light: missing", still the PC age', /Edge light: missing/.test(m3.text) && /PC reported 3 min ago/.test(m3.text), m3.text);
+  const empty = await zn.answer("what's trading", "what's trading", null, T0);
+  check('trading with no data: says it has no numbers', /I have no account numbers right now/.test(empty.text), empty.text);
+  check('no new answer shows an account id', [t, p, h, h2, h3, m1, m2, m3].every((r) => !/1234|MFFUEV|b25k_2|mffu50k/.test(r.text + r.speak)));
+  // in the brain: edge.json through its fetch, before the older rules
+  const live = liveOf(LITE);
+  const fm = async (u) => { u = String(u); if (/accounts\.json/.test(u)) return { ok: true, json: async () => PLAN }; if (/edge\.json/.test(u)) return { ok: true, json: async () => EDGE }; return { ok: false, status: 404, json: async () => null }; };
+  const br = B.createBrain({ getFacts: () => ({ now: new Date(T0), market: { open: true, text: 'open' }, live, kalshi: null, apps: [] }), open() {}, now: () => T0, storage: mkStore(), zenithRoutes: false, autoOpen: false, fetch: fm, zeus: true });
+  const b1 = await br.ask('Jarvis, what is trading on which account?'), b2 = await br.ask('average trades per week?'), b3 = await br.ask('health');
+  check('brain: "what is trading on which account" -> zeus_trading', b1.intent === 'zeus_trading', b1.intent + ' ' + b1.text);
+  check('brain: "average trades per week" -> zeus_perf from ../edge.json', b2.intent === 'zeus_perf' && /2\.5 trades\/week/.test(b2.text), b2.intent + ' ' + b2.text);
+  check('brain: "health" -> zeus_health', b3.intent === 'zeus_health' && /PC reported/.test(b3.text), b3.intent + ' ' + b3.text);
+  check('brain.js hands zeus.js ../edge.json', fs.readFileSync(path.join(WP, 'jarvis', 'brain.js'), 'utf8').includes("getEdge: getJ('../edge.json')"));
+}
+
 // ---------------------------------------------------------------------------------------------- 4. voice mode: hands-free again, hold to talk as the iPhone's fallback
 {
   check('voice mode: hands-free by default everywhere (the 2026-11-06 conversation)', V.defaultPtt(null) === false && V.defaultPtt(undefined) === false);
