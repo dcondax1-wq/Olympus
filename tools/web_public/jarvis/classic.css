@@ -39,7 +39,9 @@ html:root[data-jlook="classic"] .btn.solid { box-shadow: 0 0 18px rgba(168,85,24
    Classic is the default look again, and so is its order: the HUD header (OLYMPUS / J.A.R.V.I.S., the greeting and date line, the one
    sentence of what matters, KALSHI TODAY / NQ BOTS TODAY, the system strip), then the core with STANDBY and the voice row, then the
    cards. The DOM is AGORA's (one page, one set of ids): the sections are flattened (display: contents) and put in that order here.
-   No painted courtyard (the AGORA temple banner); the content still ends above the dock (jarvis.css --stack). */
+   No painted courtyard (the AGORA temple banner); the content still ends above the dock (jarvis.css --stack). The flattened
+   sections and system boxes keep the 16 px gutter as a margin (a padding ran each box edge to edge: tests.test_jarvis_hub f);
+   the talk row keeps a padding (its centred lines use auto margins). */
 html:root[data-jlook="classic"] .home-in[data-home="v2"] { --court-h: 0px; }
 html:root[data-jlook="classic"] .court { display: none; }
 html:root[data-jlook="classic"] .home-in[data-home="v2"] > .hbody { display: contents; }
@@ -47,10 +49,10 @@ html:root[data-jlook="classic"] #sec-system { display: contents; }
 html:root[data-jlook="classic"] .home-in[data-home="v2"] > * { order: 10; }
 html:root[data-jlook="classic"] .home-in[data-home="v2"] > .ptr { order: 0; }
 html:root[data-jlook="classic"] .home-in[data-home="v2"] > .hero { order: 1; }
-html:root[data-jlook="classic"] #sec-system > * { order: 10; padding-left: var(--gx); padding-right: var(--gxr); }
+html:root[data-jlook="classic"] #sec-system > * { order: 10; width: auto; margin-left: var(--gx); margin-right: var(--gxr); }
 html:root[data-jlook="classic"] #sec-system > .hpanel { order: 2; }
 html:root[data-jlook="classic"] .home-in[data-home="v2"] > .tiles { order: 4; }
-html:root[data-jlook="classic"] .hbody > :not(#sec-system) { order: 10; padding-left: var(--gx); padding-right: var(--gxr); }
+html:root[data-jlook="classic"] .hbody > :not(#sec-system) { order: 10; width: auto; margin-left: var(--gx); margin-right: var(--gxr); }
 html:root[data-jlook="classic"] .hbody > #sec-talk { display: contents; }
 html:root[data-jlook="classic"] #sec-talk > * { order: 5; padding-left: var(--gx); padding-right: var(--gxr); }
 html:root[data-jlook="classic"] #sec-talk > :is(.stagebox, .vbars, .state, .says, .hint, .vrow, .hint2) { order: 3; }

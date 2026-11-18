@@ -26,7 +26,7 @@
   // opt-in now ('jarvis.look' = 'agora', ⋯ → Look → Jarvis look). Under the default OLYMPUS theme only.
   if (g('jarvis.look') !== 'agora' && (g('olympus.theme') || 'agora') === 'agora') {
     d.setAttribute('data-jlook', 'classic');
-    var cl = document.createElement('link'); cl.rel = 'stylesheet'; cl.id = 'jclassic'; cl.href = 'classic.css?v=c2'; document.head.appendChild(cl);
+    var cl = document.createElement('link'); cl.rel = 'stylesheet'; cl.id = 'jclassic'; cl.href = 'classic.css?v=c3'; document.head.appendChild(cl);
   }
   // the OLYMPUS look (../olympus/themes.js, key 'olympus.theme'; the engine loads after the start, async, never waited on, and repaints):
   // its colours and Jarvis's palette from the first frame, from the engine's copy of the look Jarvis gets (themes.js FIRST PAINT)
@@ -107,7 +107,7 @@ window.addEventListener('error', function (e) {
   if (!window.__jarvisErr) window.__jarvisErr = String(e.message || 'Script error') + (e.filename ? ' (' + String(e.filename).split('/').pop() + ':' + e.lineno + ')' : '');
 }, true);
 </script>
-<link rel="stylesheet" id="jcss" href="jarvis.css?v=j21">
+<link rel="stylesheet" id="jcss" href="jarvis.css?v=j22">
 <link rel="stylesheet" id="jhome" href="home3d.css?v=h4">
 <!-- quiet-net: data-fresh = Jarvis shows the Kalshi bot, so it asks the Kalshi feed afresh once per load (data.js: "opening Jarvis again
      asks once more: that is how a newly linked bot shows up"); without it a 404 earlier in the session kept it "not connected".
@@ -1555,7 +1555,7 @@ const olyOn = () => olyId() !== olyDefault();
 const jlook = () => (root.dataset.jlook === 'classic' ? 'classic' : 'agora');
 function classicSheet() {
   if (document.getElementById('jclassic')) return;
-  const l = document.createElement('link'); l.rel = 'stylesheet'; l.id = 'jclassic'; l.href = 'classic.css?v=c2';
+  const l = document.createElement('link'); l.rel = 'stylesheet'; l.id = 'jclassic'; l.href = 'classic.css?v=c3';
   l.addEventListener('load', () => { readColors(); if (core && typeof core.setTheme === 'function') safe(() => core.setTheme(coreTheme())); });
   document.head.appendChild(l);
 }
@@ -2110,11 +2110,16 @@ function systemPanel(S) {
     + todo + did + `<div class="srows">${S.rows.map(row).join('')}</div>`
     + '<p class="cnote">Tap a line to open it. Read-only: Jarvis never places a trade.</p>';
 }
+// the inside is drawn again only when it changed (every feed update redraws the home: an identical redraw would swap the line under a finger)
+let sysHtml = '';
 function renderSystem() {                              // the panel itself is in the page (#p-system): only its inside is drawn
   const S = sysOf();
   safe(() => renderSysbar(S));
   const box = $('#p-system');
-  if (box) { box.className = 'panel sys ' + (S.level || ''); box.innerHTML = safe(() => systemPanel(S), ''); }
+  if (!box) return;
+  const cls = 'panel sys ' + (S.level || ''), html = safe(() => systemPanel(S), '');
+  if (box.className.replace(/ pressed\b/, '') !== cls) box.className = cls;
+  if (html !== sysHtml || !box.firstChild) { sysHtml = html; box.innerHTML = html; }
 }
 function showSystem() {                               // the System panel on the Jarvis screen (from the strip, the orb, "status")
   if (active !== 'home') show('home');
@@ -3174,9 +3179,11 @@ const fx = (() => {
       const gl = document.createElement('i'); gl.className = 'glare'; p.appendChild(gl);
     }
   }
+  // the glare's spot is --glx / --gly (2026-11-18): it was --gx / --gy, the home's gutter, so a press on the System panel moved it half a
+  // screen sideways under the finger and the tap on a line opened nothing (tests.test_jarvis_hub s)
   document.addEventListener('pointerdown', (e) => {
     const p = e.target.closest && e.target.closest('#home .panel, #home .jx-card');
-    if (p && level() !== 'off') { const r = p.getBoundingClientRect(); p.style.setProperty('--gx', ((e.clientX - r.left) / r.width * 100).toFixed(1) + '%'); p.style.setProperty('--gy', ((e.clientY - r.top) / r.height * 100).toFixed(1) + '%'); p.classList.add('pressed'); }
+    if (p && level() !== 'off') { const r = p.getBoundingClientRect(); p.style.setProperty('--glx', ((e.clientX - r.left) / r.width * 100).toFixed(1) + '%'); p.style.setProperty('--gly', ((e.clientY - r.top) / r.height * 100).toFixed(1) + '%'); p.classList.add('pressed'); }
     if (level() !== 'high' && level() !== 'ultra') return;
     const b = e.target.closest && e.target.closest('button,.kbox,[role=button]');
     if (!b) return;

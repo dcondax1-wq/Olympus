@@ -460,7 +460,7 @@ html[data-fx="low"] .title, html[data-fx="off"] .title { animation: none; }
 .tapr.b { border-width: 1px; animation-duration: .8s; animation-delay: .06s; opacity: 0; }
 .sweep { display: none; }
 .glare { position: absolute; inset: 0; pointer-events: none; z-index: 3; opacity: 0; transition: opacity .3s; mix-blend-mode: screen;
-  background: radial-gradient(120% 70% at var(--gx, 50%) var(--gy, 0%), rgba(var(--cr3), .22), rgba(var(--cr), .06) 38%, transparent 62%); }
+  background: radial-gradient(120% 70% at var(--glx, 50%) var(--gly, 0%), rgba(var(--cr3), .22), rgba(var(--cr), .06) 38%, transparent 62%); }
 .pressed > .glare { opacity: 1; }
 html[data-fx="low"] .tapr, html[data-fx="off"] .tapr, html[data-fx="low"] .sweep, html[data-fx="off"] .sweep, html[data-fx="off"] .glare { display: none; }
 html[data-fx="off"] .ocore, html[data-fx="off"] .orb svg { filter: none; }
