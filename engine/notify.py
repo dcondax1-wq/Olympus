@@ -4,15 +4,17 @@ report (tools/pc_report.py + tools/pc_guard.py, every 15 min -> your private ntf
 
 One settings file: notify_settings.json (repo root; a missing or broken file = DEFAULTS, a missing key = its default).
   alerts               per type on / off: trade_opened, trade_closed, eval_milestones (25/50/75 %), account_status (PASSED,
-                       FAILED, LOCKED, LOST, target reached, payout READY), room_low, daily_summary, pc_silent,
+                       FAILED, LOCKED, LOST, target reached, payout READY), room_low, daily_summary, morning_brief, pc_silent,
                        problems (bot down, FEED STALE, NinjaTrader closed, fill check, trade watch), other (roll, quiet bot, ...).
-                       Default (owner 2026-11-18, "important only"): ON = trade_closed, account_status, daily_summary, pc_silent;
-                       the rest OFF
+                       Default (owner 2026-11-18, "important only"): ON = trade_closed, account_status, daily_summary,
+                       morning_brief, pc_silent, problems; the rest OFF
   quiet_hours          ET; inside them trade pushes and ordinary ones arrive without sound (ntfy priority "low"), the guard's
                        summaries / milestones wait for the end; ring_in_quiet_hours kinds keep their sound
   milestones_pct       eval progress pushes (% of the profit target made), once per level per eval
   room_low_used_pct    "room getting low" pushes (% of the max loss used), once per level per eval
   daily_summary_at     the day summary time (ET), up to the 17:00 CME break
+  morning_brief_at     the morning brief time (ET, default 07:30, up to 09:30; tools/morning_brief.py): 4 lines = PC ok?, each
+                       account ($ / to pass / to payout), overnight trades + today's entry hours + big news, edge light + needs you
   pc_silent_after_min  the cloud says "Your PC stopped reporting" when neither its heartbeat nor its status feed is newer
   pc_silent_remind_after_min   one reminder after this; at most 2 pushes per outage per trading day, never every run
 
@@ -22,6 +24,7 @@ Messages (examples):
   Zlarior 50K: 50% of the target made ($1,500 of $3,000)
   ATLAS 25K: room getting low, $250 left of $1,000
   Day Mon Nov 16: +$310                     (each account: $ today, $ to pass, room; tomorrow's big US news)
+  ZEUS - Wed Nov 18 - PC ok                 (07:30 ET: accounts, overnight, today's hours + news, edge, needs you)
   PC stopped reporting                      Your PC stopped reporting at 09:14 ET. Check it: STOP BOT, START BOT.
 Tests: python -X utf8 -m tests.test_notify
 """
@@ -37,11 +40,12 @@ from zoneinfo import ZoneInfo
 ET = ZoneInfo("America/New_York")
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SETTINGS_PATH = os.path.join(ROOT, "notify_settings.json")
-TYPES = ("trade_opened", "trade_closed", "eval_milestones", "account_status", "room_low", "daily_summary", "pc_silent", "problems",
-         "other")
-# owner 2026-11-18: "important only" = trade results, PASSED / FAILED / LOCKED, payout ready, PC silent, the daily summary.
+TYPES = ("trade_opened", "trade_closed", "eval_milestones", "account_status", "room_low", "daily_summary", "morning_brief", "pc_silent",
+         "problems", "other")
+# owner 2026-11-18: "important only" = trade results, PASSED / FAILED / LOCKED, payout ready, PC silent, the daily summary
+# (+ the 07:30 ET morning brief, tools/morning_brief.py, 2026-11-18).
 # Everything else is OFF by default (one line in notify_settings.json turns a type back on).
-IMPORTANT = ("trade_closed", "account_status", "daily_summary", "pc_silent", "problems")   # problems = emergencies (bot down, NinjaTrader closed)
+IMPORTANT = ("trade_closed", "account_status", "daily_summary", "morning_brief", "pc_silent", "problems")   # problems = emergencies (bot down, NinjaTrader closed)
 DEFAULTS = {
     "alerts": {k: k in IMPORTANT for k in TYPES},
     "quiet_hours": {"from": "23:00", "to": "07:00"},
@@ -49,6 +53,7 @@ DEFAULTS = {
     "milestones_pct": [25, 50, 75, 100],
     "room_low_used_pct": [50, 75],
     "daily_summary_at": "16:15",
+    "morning_brief_at": "07:30",
     "pc_silent_after_min": 20,
     "pc_silent_remind_after_min": 120,
 }
@@ -135,8 +140,9 @@ def merge(raw) -> dict:
         if isinstance(raw.get(k), list):
             vals = sorted({int(x) for x in raw[k] if isinstance(x, (int, float)) and 0 < x <= 100})
             out[k] = vals
-    if isinstance(raw.get("daily_summary_at"), str) and hm_min(raw["daily_summary_at"], -1) >= 0:
-        out["daily_summary_at"] = raw["daily_summary_at"]
+    for k in ("daily_summary_at", "morning_brief_at"):
+        if isinstance(raw.get(k), str) and hm_min(raw[k], -1) >= 0:
+            out[k] = raw[k]
     for k, lo, hi in (("pc_silent_after_min", 5, 240), ("pc_silent_remind_after_min", 30, 720)):
         v = raw.get(k)
         if isinstance(v, (int, float)) and not isinstance(v, bool):
@@ -179,6 +185,8 @@ def kind_of(key: str) -> str:
         return "room_low"
     if k.startswith("guard:day:"):
         return "daily_summary"
+    if k.startswith("guard:brief:"):                # tools/morning_brief.py: the 07:30 ET ZEUS brief
+        return "morning_brief"
     if k.startswith(("cond:", "back:", "fill:", "watch:")):
         return "problems"
     if k.startswith(("pc_silent:", "pc_back:")):

@@ -67,6 +67,7 @@ do not go through these settings and still ring.
 | eval progress (25 / 50 / 75 / 100%) | `Zlarior 50K: 50% of the target made ($1,500 of $3,000)` |
 | room low (50 / 75% used) | `ATLAS 25K: room getting low, $250 left of $1,000` |
 | 16:15 ET day summary | `Day Mon Nov 16: +$310` / `Zlarior 50K: +$420 today, $2,580 to pass, room $1,800 of $2,000; ... Tomorrow (Tue): CPI m/m 08:30.` |
+| 07:30 ET morning brief (`morning_brief`, ON) | `ZEUS - Wed Nov 18 - PC ok` / `Zlarior 50K $49,193 ($3,807 to pass) · 25K #2 $25,000 ($1,500 to pass) · ATLAS 25K funded $25,000 ($2,100 to payout)` / `Overnight: no trades · Today: Zlarior till 15:30, ATLAS till 12:00 · CPI m/m 08:30` / `Edge: GREEN · Needs you: none` (trading days only, once; also on the Board; tools/morning_brief.py) |
 | **PC silent** (the cloud, PC off is fine) | `Your PC stopped reporting at 09:14 ET. Check it: STOP BOT, START BOT.` once, one reminder after 2 h, `PC reporting again` when back |
 
 The PC silent check is a step of the cloud monitor (`tools/pc_silent_check.py`, every run: about every 30 min on weekdays

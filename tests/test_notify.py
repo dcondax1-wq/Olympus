@@ -12,6 +12,9 @@ tools/pc_guard.py). Offline: the ntfy GET / POST are stubs, the heartbeat is a d
   f. through pc_report: a type switched off sends nothing, a 03:10 trade arrives without sound
   g. the workflow: the step runs before the install and the monitor, never fails the job, reads the secret, the settings file
      is in the sparse checkout
+  h. the 07:30 ET morning brief (tools/morning_brief.py): 4 lines, $ first, no account id; once a day through pc_guard (a
+     restart = state.json read back: no repeat); weekends / CME closures / outside 07:30-09:30 nothing; "important only" keeps
+     it, the switch drops it; the ntfy POST is a stub (ASCII title); ONE Board event a day, only from the real report
 
   python -X utf8 -m tests.test_notify
 """
@@ -58,7 +61,8 @@ def settings():
         imp = {k for k, v in s["alerts"].items() if v}
         check("a. no file: the defaults ('important only': trade results, pass/fail/locked/payout, daily summary, PC silent, problems; "
               "quiet 23:00-07:00, summary 16:15, silent after 20 min, reminder 2 h)",
-              imp == {"trade_closed", "account_status", "daily_summary", "pc_silent", "problems"} and s["quiet_hours"] == {"from": "23:00", "to": "07:00"} and s["daily_summary_at"] == "16:15"
+              imp == {"trade_closed", "account_status", "daily_summary", "morning_brief", "pc_silent", "problems"} and s["quiet_hours"] == {"from": "23:00", "to": "07:00"}
+              and s["daily_summary_at"] == "16:15" and s["morning_brief_at"] == "07:30"
               and s["pc_silent_after_min"] == 20 and s["pc_silent_remind_after_min"] == 120, s)
         p = os.path.join(tmp, "s.json")
         with open(p, "w") as fh:
@@ -74,23 +78,24 @@ def settings():
         check("a. the repo's notify_settings.json loads, names every type, 'important only' on (owner 2026-11-18), the asked defaults",
               set(raw["alerts"]) == set(N.TYPES) and {k for k, v in repo["alerts"].items() if v} == set(N.IMPORTANT)
               and repo["alerts"] == N.DEFAULTS["alerts"] and repo["milestones_pct"] == [25, 50, 75, 100]
-              and repo["pc_silent_after_min"] == 20 and repo["pc_silent_remind_after_min"] == 120 and repo["daily_summary_at"] == "16:15", repo)
+              and repo["pc_silent_after_min"] == 20 and repo["pc_silent_remind_after_min"] == 120 and repo["daily_summary_at"] == "16:15"
+              and repo["morning_brief_at"] == "07:30" and raw["alerts"]["morning_brief"] is True, repo)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     kinds = {k: N.kind_of(k) for k in ("open:lit:1", "close:atlas:2", "guard:goal:lit:x:50", "guard:dd:lit:x:75", "guard:dll:lit:d",
                                         "guard:day:2026-11-16", "cond:bot_down:1", "fill:lit:1:size", "guard:roll:x", "guard:quiet:lit:d",
                                         "guard:goal:lit:2026-11-02:100", "life:passed:atlas:a", "life:locked:atlas:a",
-                                        "life:payout_ready:x:f50:abc:2026-11-13", "pc_silent:2026-11-16:1")}
+                                        "life:payout_ready:x:f50:abc:2026-11-13", "pc_silent:2026-11-16:1", "guard:brief:2026-11-18")}
     check("a. push keys -> types", list(kinds.values()) == ["trade_opened", "trade_closed", "eval_milestones", "room_low", "room_low",
                                                              "daily_summary", "problems", "problems", "other", "other",
                                                              "account_status", "account_status", "account_status", "account_status",
-                                                             "pc_silent"], kinds)
+                                                             "pc_silent", "morning_brief"], kinds)
     every = [{"key": k, "priority": "default"} for k in kinds]
     kept = [m["key"] for m in N.apply(every, at(2026, 11, 17, 10, 0), N.merge({}))]
-    check("a. 'important only' defaults: trade results, target reached, PASSED / LOCKED / payout READY, the day summary, PC silent "
+    check("a. 'important only' defaults: trade results, target reached, PASSED / LOCKED / payout READY, the day summary, the morning brief, PC silent "
           "+ problems (bot down, fill size) are kept; trade opened, 25-75 %, room low, other are dropped",
           kept == ["close:atlas:2", "guard:day:2026-11-16", "cond:bot_down:1", "fill:lit:1:size", "guard:goal:lit:2026-11-02:100", "life:passed:atlas:a",
-                   "life:locked:atlas:a", "life:payout_ready:x:f50:abc:2026-11-13", "pc_silent:2026-11-16:1"], kept)
+                   "life:locked:atlas:a", "life:payout_ready:x:f50:abc:2026-11-13", "pc_silent:2026-11-16:1", "guard:brief:2026-11-18"], kept)
     night, day = at(2026, 11, 17, 3, 10), at(2026, 11, 17, 10, 0)
     check("a. quiet hours over midnight: 03:10 and 23:30 quiet, 07:00 and 10:00 not", N.quiet(night, S) and N.quiet(at(2026, 11, 17, 23, 30), S)
           and not N.quiet(at(2026, 11, 17, 7, 0), S) and not N.quiet(day, S))
@@ -358,8 +363,121 @@ def workflow():
     check("g. read-only: no order, no arming, no live_model write", not re.search(r"PLACE;|place_order|CLOSEPOSITION|LIVE_PHRASE|/api/live|arm\(", src))
 
 
+# ============================================================================================== h the morning brief
+def brief():
+    from tools import morning_brief as MB
+    from tools import pc_guard as G
+    from tools import pc_report as R
+    from tests.test_launch_kit import atlas_card, lit_card, snap_of
+    tmp = tempfile.mkdtemp()
+    keep_env = {k: os.environ.get(k) for k in ("LE_BOARD_DIR", "LE_INBOX_DIR", "LE_BOARD_SHARED", "LE_PC_REPORT")}
+    real = N.settings
+    try:
+        os.environ.update(LE_BOARD_DIR=os.path.join(tmp, "board"), LE_INBOX_DIR=os.path.join(tmp, "inbox"),
+                          LE_BOARD_SHARED=os.path.join(tmp, "shared.jsonl"))
+        os.environ.pop("LE_PC_REPORT", None)
+        N.settings = lambda path=None: S
+        news = os.path.join(tmp, "root")
+        os.makedirs(os.path.join(news, "data", "news"))
+        with open(os.path.join(news, "data", "news", "events.csv"), "w", encoding="utf-8") as fh:
+            fh.write("date,time_et,event,impact\n2026-11-18,08:30,CPI m/m,high\n2026-11-18,10:30,Crude Oil Inventories,medium\n")
+        plan = {"accounts": [{"key": "zlarior", "name": "Zlarior", "plan": "MFFU Builder 50K", "stage": "eval", "status": "live", "pc": ["mffu50k_eval", "lit"]},
+                             {"key": "atlas", "name": "ATLAS", "plan": "MFFU Builder 25K (funded)", "stage": "funded", "status": "live", "pc": ["atlas"]},
+                             {"key": "rapid1", "name": "Rapid EOD 25K (next)", "plan": "MFFU Rapid EOD 25K", "stage": "eval", "status": "waiting"},
+                             {"key": "fresh25", "name": "Zlarior 25K #2", "plan": "MFFU Builder 25K", "stage": "eval", "status": "live", "pc": ["b25k_2"]}]}
+
+        def snap(now, lit=None, atlas=None, trades=(), cond=None, eh=None, extra=()):
+            board = {"lit": lit or lit_card(balance=49192.78, floor=48168.2, room=1024.58, to_target=3807.22),
+                     "atlas": atlas or atlas_card(balance=25000.0, room=1000.0, status="funded", stage="funded", funded={"to_ask": 2100.0, "ready": False}),
+                     "trades": list(trades)}
+            accts = [{"id": "b25k_2", "name": "Zlarior Builder 25K #2", "kind": "eval", "source": "pc", "plan": "MFFU Builder 25K",
+                      "eval": {"balance": 25000.0, "floor": 24000.0, "room": 1000.0, "to_target": 1500.0}, "trades": []}] + list(extra)
+            s = snap_of(now, board, eh=eh if eh is not None else {"d": "2026-11-17", "z": ["G", 3.8, 3.9], "a": ["G", 1.9, 2.0, "2026-11-17"], "t": now - 3600})
+            s["live"] = {"board": board, "accounts": accts}
+            s["cond"] = cond or {}
+            return s
+
+        wed = at(2026, 11, 18, 7, 32)
+        b = MB.build(snap(wed), wed, plan, [], news)
+        ex = b["lines"]
+        check("h. Wed 07:32: 4 lines = 'ZEUS · Wed Nov 18 · PC ok', each account $ first (Zlarior 50K, 25K #2 side by side, ATLAS funded "
+              "$ to payout), overnight + today's hours + CPI, edge + needs you", ex == [
+                  "ZEUS · Wed Nov 18 · PC ok",
+                  "Zlarior 50K $49,193 ($3,807 to pass) · 25K #2 $25,000 ($1,500 to pass) · ATLAS 25K funded $25,000 ($2,100 to payout)",
+                  "Overnight: no trades · Today: Zlarior till 15:30, ATLAS till 12:00 · CPI m/m 08:30",
+                  "Edge: GREEN · Needs you: none"], ex)
+        check("h. the push: ASCII title 'ZEUS - Wed Nov 18 - PC ok', a 3-line body (4 with the title)",
+              b["title"] == "ZEUS - Wed Nov 18 - PC ok" and all(ord(c) < 128 for c in b["title"]) and len(b["body"].split("\n")) == 3, b)
+        odd = {"id": "EVBLDR987654321", "name": "EVBLDR987654321", "kind": "eval", "source": "pc", "plan": "MFFU Builder 25K",
+               "eval": {"balance": 25100.0, "floor": 24100.0, "room": 1000.0, "to_target": 1400.0}, "trades": []}
+        b2 = MB.build(snap(wed, extra=[odd]), wed, plan, [], news)
+        check("h. an account the plan lacks: shown, its id cut to the last 4 (never the full id)",
+              "987654321" not in b2["body"] and "...4321" in b2["body"], b2["body"])
+        t3 = at(2026, 11, 18, 3, 5)
+        tr = [{"acct": "lit", "src": "live", "day": "2026-11-18", "entry_t": t3, "exit_t": t3 + 1200, "usd": 605.0},
+              {"acct": "lit", "src": "paper", "day": "2026-11-18", "entry_t": t3 + 60, "exit_t": t3 + 900, "usd": -200.0},
+              {"acct": "lit", "src": "live", "day": "2026-11-17", "entry_t": at(2026, 11, 17, 10, 0), "exit_t": at(2026, 11, 17, 11, 0), "usd": 300.0}]
+        pos = {"side": "SHORT", "qty": 2, "entry_t": wed - 300}
+        b3 = MB.build(snap(wed, trades=tr, atlas=atlas_card(balance=25000.0, status="funded", stage="funded", position=pos,
+                                                           funded={"ready": True, "max_request": 1000.0})), wed, plan, [], news)
+        check("h. overnight = since 18:00 ET, paper left out: 'Zlarior 50K +$605 (1 trade), ATLAS 25K SHORT open'; payout READY -> needs you",
+              "Overnight: Zlarior 50K +$605 (1 trade), ATLAS 25K SHORT open" in b3["lines"][2] and "(payout READY $1,000)" in b3["lines"][1]
+              and "Needs you: request the ATLAS 25K payout $1,000" in b3["lines"][3], b3["lines"])
+        b4 = MB.build(snap(wed, cond={"bot_down": "x"}, eh={"d": "2026-11-17", "z": ["G", 3.8, 3.9], "a": ["A", 1.2, 2.0, "2026-11-17"], "t": wed}), wed, plan, [], news)
+        check("h. a problem: 'PC: bot down' in the title, its one action under needs you; edge 'Zlarior GREEN, ATLAS AMBER'",
+              b4["title"].endswith("PC: bot down") and "Needs you: bot down: STOP BOT, START BOT" in b4["lines"][3]
+              and "Edge: Zlarior GREEN, ATLAS AMBER" in b4["lines"][3], b4["lines"])
+        old = snap(wed)
+        old.update(hb_age=2400)
+        check("h. an old report says so ('PC: last report 40 min old')", MB.build(old, wed, plan, [], news)["title"].endswith("PC: last report 40 min old"))
+        mon = at(2026, 11, 23, 7, 31)
+        check("h. Monday: ATLAS has no EMA, so its hours start at 09:30", "Today: Zlarior till 15:30, ATLAS 09:30-12:00" in MB.build(snap(mon), mon, plan, [], news)["lines"][2])
+        fri = at(2026, 11, 27, 7, 31)
+        bf = MB.build(snap(fri), fri, plan, [], news)["lines"][2]
+        check("h. Fri Nov 27 (early close 13:15): entries end 13:00, said plainly", "Zlarior till 13:00, ATLAS till 12:00" in bf and "early close 13:15" in bf, bf)
+
+        # once a day through the guard; a restart (state.json read back) never repeats it
+        def run(st, now):
+            st, ms = G.guard(st, snap(now))
+            return json.loads(json.dumps(st)), [m for m in ms if m["key"].startswith("guard:brief:")]
+        st, m = run({}, wed)
+        check("h. guard at 07:32: ONE brief (key guard:brief:2026-11-18)", [x["key"] for x in m] == ["guard:brief:2026-11-18"], m)
+        st2, m2 = run(st, wed + 15 * 60)
+        st3, m3 = run(json.loads(json.dumps(st2)), wed + 30 * 60)
+        check("h. 07:47 and after a restart at 08:02: nothing again", not m2 and not m3, (m2, m3))
+        nothing = [run({}, t)[1] for t in (at(2026, 11, 18, 7, 10), at(2026, 11, 18, 9, 40), at(2026, 11, 21, 7, 32), at(2026, 12, 25, 7, 32), at(2027, 1, 1, 7, 45))]
+        check("h. 07:10, 09:40, Saturday, Christmas, New Year's Day: nothing", not any(nothing), nothing)
+        check("h. 'important only' keeps it; morning_brief off drops it", [x["key"] for x in N.apply(m, wed, S)] == ["guard:brief:2026-11-18"]
+              and not N.apply(m, wed, N.merge({"alerts": {"morning_brief": False}})), m)
+        posts = []
+
+        def http(method, url, body=None, headers=None, timeout=None):
+            posts.append({"m": method, "url": url, "body": body.decode("utf-8"), "h": headers})
+            return 200, "{}"
+        ok, _why = R.ntfy_post("https://ntfy.example", "topic-test", m[0]["body"], title=m[0]["title"], priority=m[0]["priority"], tags=m[0]["tags"], http=http)
+        check("h. the ntfy POST (stub): Title 'ZEUS - Wed Nov 18 - PC ok', a UTF-8 body of 3 lines, nothing sent for real",
+              ok and len(posts) == 1 and posts[0]["h"]["Title"] == "ZEUS - Wed Nov 18 - PC ok" and len(posts[0]["body"].split("\n")) == 3, posts)
+        evs = [json.loads(x) for x in open(os.path.join(tmp, "board", "events.jsonl"), encoding="utf-8")]
+        check("h. ONE Board event 'brief' for the day (a test board), not again on the later runs", [e["kind"] for e in evs] == ["brief"]
+              and evs[0]["data"]["day"] == "2026-11-18" and evs[0]["text"].startswith("ZEUS · Wed Nov 18 · PC ok | Zlarior 50K"), evs)
+        os.environ.pop("LE_BOARD_DIR", None)
+        check("h. no Board write outside the real report (no LE_PC_REPORT, no test board): a self-test never posts a fake brief",
+              MB.board_post(b) is None)
+        from engine import board_events as BE
+        check("h. Board kind 'brief' exists (quiet, not LOUD), the page names it", "brief" in BE.KINDS and "brief" not in BE.LOUD
+              and "brief: 'Morning brief'" in open(os.path.join(ROOT, "tools", "web_public", "board", "boardmodel.js"), encoding="utf-8").read())
+    finally:
+        N.settings = real
+        for k, v in keep_env.items():
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
 def main() -> int:
-    for f in (settings, milestones, news, silent, cloud, report, workflow):
+    for f in (settings, milestones, news, silent, cloud, report, workflow, brief):
         try:
             f()
         except Exception as e:
