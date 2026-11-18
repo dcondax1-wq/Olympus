@@ -47,6 +47,7 @@ def at(y, m, d, hh=0, mm=0):
 
 
 S = N.merge({})                            # the defaults, independent of the repo file
+ALL = N.merge({"alerts": {k: True for k in N.TYPES}})   # every type on: the quiet-hours / switch checks
 
 
 # ============================================================================================== a settings
@@ -54,8 +55,10 @@ def settings():
     tmp = tempfile.mkdtemp()
     try:
         s = N.settings(os.path.join(tmp, "none.json"))
-        check("a. no file: the defaults (every type on, quiet 23:00-07:00, summary 16:15, silent after 20 min, reminder 2 h)",
-              all(s["alerts"].values()) and s["quiet_hours"] == {"from": "23:00", "to": "07:00"} and s["daily_summary_at"] == "16:15"
+        imp = {k for k, v in s["alerts"].items() if v}
+        check("a. no file: the defaults ('important only': trade results, pass/fail/locked/payout, daily summary, PC silent; "
+              "quiet 23:00-07:00, summary 16:15, silent after 20 min, reminder 2 h)",
+              imp == {"trade_closed", "account_status", "daily_summary", "pc_silent"} and s["quiet_hours"] == {"from": "23:00", "to": "07:00"} and s["daily_summary_at"] == "16:15"
               and s["pc_silent_after_min"] == 20 and s["pc_silent_remind_after_min"] == 120, s)
         p = os.path.join(tmp, "s.json")
         with open(p, "w") as fh:
@@ -64,30 +67,41 @@ def settings():
         j = N.merge({"alerts": {"trade_opened": False, "bogus": False, "pc_silent": "no"}, "quiet_hours": {"from": "25:00", "to": "06:00"},
                      "milestones_pct": [50, "x", 200, 100], "pc_silent_after_min": 1, "daily_summary_at": "16:30"})
         check("a. junk ignored, good values kept, limits clamped", j["alerts"]["trade_opened"] is False and "bogus" not in j["alerts"]
-              and j["alerts"]["pc_silent"] is True and j["quiet_hours"] == {"from": "23:00", "to": "06:00"} and j["milestones_pct"] == [50, 100]
+              and j["alerts"]["pc_silent"] is True and N.merge({"alerts": {"problems": True}})["alerts"]["problems"] is True and j["quiet_hours"] == {"from": "23:00", "to": "06:00"} and j["milestones_pct"] == [50, 100]
               and j["pc_silent_after_min"] == 5 and j["daily_summary_at"] == "16:30", j)
         repo = N.settings(N.SETTINGS_PATH)
         raw = json.load(open(N.SETTINGS_PATH, encoding="utf-8"))
-        check("a. the repo's notify_settings.json loads, names every type, all on, the asked defaults",
-              set(raw["alerts"]) == set(N.TYPES) and all(repo["alerts"].values()) and repo["milestones_pct"] == [25, 50, 75, 100]
+        check("a. the repo's notify_settings.json loads, names every type, 'important only' on (owner 2026-11-18), the asked defaults",
+              set(raw["alerts"]) == set(N.TYPES) and {k for k, v in repo["alerts"].items() if v} == set(N.IMPORTANT)
+              and repo["alerts"] == N.DEFAULTS["alerts"] and repo["milestones_pct"] == [25, 50, 75, 100]
               and repo["pc_silent_after_min"] == 20 and repo["pc_silent_remind_after_min"] == 120 and repo["daily_summary_at"] == "16:15", repo)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     kinds = {k: N.kind_of(k) for k in ("open:lit:1", "close:atlas:2", "guard:goal:lit:x:50", "guard:dd:lit:x:75", "guard:dll:lit:d",
-                                        "guard:day:2026-11-16", "cond:bot_down:1", "fill:lit:1:size", "guard:roll:x", "guard:quiet:lit:d")}
+                                        "guard:day:2026-11-16", "cond:bot_down:1", "fill:lit:1:size", "guard:roll:x", "guard:quiet:lit:d",
+                                        "guard:goal:lit:2026-11-02:100", "life:passed:atlas:a", "life:locked:atlas:a",
+                                        "life:payout_ready:x:f50:abc:2026-11-13", "pc_silent:2026-11-16:1")}
     check("a. push keys -> types", list(kinds.values()) == ["trade_opened", "trade_closed", "eval_milestones", "room_low", "room_low",
-                                                             "daily_summary", "problems", "problems", "other", "other"], kinds)
+                                                             "daily_summary", "problems", "problems", "other", "other",
+                                                             "account_status", "account_status", "account_status", "account_status",
+                                                             "pc_silent"], kinds)
+    every = [{"key": k, "priority": "default"} for k in kinds]
+    kept = [m["key"] for m in N.apply(every, at(2026, 11, 17, 10, 0), N.merge({}))]
+    check("a. 'important only' defaults: trade results, target reached, PASSED / LOCKED / payout READY, the day summary, PC silent "
+          "are kept; trade opened, 25-75 %, room low, problems, other are dropped",
+          kept == ["close:atlas:2", "guard:day:2026-11-16", "guard:goal:lit:2026-11-02:100", "life:passed:atlas:a",
+                   "life:locked:atlas:a", "life:payout_ready:x:f50:abc:2026-11-13", "pc_silent:2026-11-16:1"], kept)
     night, day = at(2026, 11, 17, 3, 10), at(2026, 11, 17, 10, 0)
     check("a. quiet hours over midnight: 03:10 and 23:30 quiet, 07:00 and 10:00 not", N.quiet(night, S) and N.quiet(at(2026, 11, 17, 23, 30), S)
           and not N.quiet(at(2026, 11, 17, 7, 0), S) and not N.quiet(day, S))
     msgs = [{"key": "open:lit:1", "priority": "high"}, {"key": "cond:bot_down:1", "priority": "high"}, {"key": "guard:dd:lit:x:75", "priority": "high"},
             {"key": "guard:roll:late", "priority": "high"}, {"key": "guard:quiet:lit:d", "priority": "default"}, {"key": "guard:ready", "priority": "low", "night": True}]
-    q = {m["key"]: m["priority"] for m in N.apply(msgs, night, S)}
+    q = {m["key"]: m["priority"] for m in N.apply(msgs, night, ALL)}
     check("a. 03:10: the trade and an ordinary push lose their sound; problems, room low and a high 'other' keep it",
           q == {"open:lit:1": "low", "cond:bot_down:1": "high", "guard:dd:lit:x:75": "high", "guard:roll:late": "high",
                 "guard:quiet:lit:d": "low", "guard:ready": "low"}, q)
-    check("a. 10:00: nothing changed", [m["priority"] for m in N.apply(msgs, day, S)] == [m["priority"] for m in msgs])
-    off = N.merge({"alerts": {"trade_opened": False, "problems": False}})
+    check("a. 10:00: nothing changed", [m["priority"] for m in N.apply(msgs, day, ALL)] == [m["priority"] for m in msgs])
+    off = N.merge({"alerts": {**ALL["alerts"], "trade_opened": False, "problems": False}})
     check("a. a type switched off is dropped", [m["key"] for m in N.apply(msgs, day, off)] == ["guard:dd:lit:x:75", "guard:roll:late", "guard:quiet:lit:d", "guard:ready"])
     check("a. no quiet hours (from == to)", not N.quiet(night, N.merge({"quiet_hours": {"from": "00:00", "to": "00:00"}})))
 
@@ -319,7 +333,7 @@ def report():
         st2, m = R.events(st, snap_of(t, b))
         check("f. trade_opened off: no entry push, the key still recorded (it never comes later)", not [x for x in m if x["key"].startswith("open:")]
               and f"open:lit:{pos['entry_t']}" in st2["seen"], m)
-        N.settings = lambda path=None: S
+        N.settings = lambda path=None: ALL
         n = at(2026, 11, 17, 3, 10)
         p2 = {**pos, "entry_t": n - 120}
         _s, m = R.events(st, snap_of(n, {"lit": lit_card(position=p2), "trades": []}))

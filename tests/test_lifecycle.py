@@ -290,8 +290,9 @@ def persist_and_wire(bot_pass, bot_lock):
           len(life) == 1 and life[0]["title"] == "ATLAS 25K LOCKED by MFFU" and life[0]["priority"] == "high"
           and not [m for m in msgs2 if str(m.get("key", "")).startswith("life:")], (msgs, msgs2))
     from engine import notify as N
-    check("f. notify types: life:payout_ready -> eval_milestones, other life: keys -> problems (ring in quiet hours)",
-          N.kind_of("life:payout_ready:x:f50:abc:2026-11-13") == "eval_milestones" and N.kind_of("life:locked:atlas:abc") == "problems")
+    check("f. notify types: every life: key (payout ready, locked, passed) -> account_status: ON by default, rings in quiet hours",
+          N.kind_of("life:payout_ready:x:f50:abc:2026-11-13") == "account_status" and N.kind_of("life:locked:atlas:abc") == "account_status"
+          and N.on("account_status", N.merge({})) and N.rings("account_status", N.merge({})))
 
 
 def main() -> int:

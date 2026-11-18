@@ -27,6 +27,9 @@ data/handsoff.jsonl
 data/handsoff_state.json
 data/*_handsoff.jsonl
 data/*_handsoff_state.json
+# ZEUS phone safety switch (engine/phone_safety.py): on/off + every press
+data/phone_safety.json
+data/phone_safety_log.jsonl
 # the PC bot's archive of NinjaTrader bars (engine/pcbars.py), machine-local
 data/nt_bars/
 # the phone live.json push's scratch git dir (engine/live_publish.py)

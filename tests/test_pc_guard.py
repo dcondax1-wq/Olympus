@@ -168,6 +168,9 @@ def reporter():
     real_fact = roll_watch.fact
     roll_watch.fact = lambda *a, **k: {}
     hidden_bots.FORCE = ()                 # BLITZ shown (dashboard_view.json hides it since owner 2026-11-15): this part tests the BLITZ guard logic
+    from engine import notify as _N
+    real_settings = _N.settings            # every type on: this part tests the guard's pushes (the owner's defaults: "important only")
+    _N.settings = lambda path=None: _N.merge({"alerts": {k: True for k in _N.TYPES}})
     b = Box()
     try:
         cfg = b.topic()
@@ -204,7 +207,12 @@ def reporter():
     finally:
         roll_watch.fact = real_fact
         hidden_bots.FORCE = None
+        _N.settings = real_settings
         b.cleanup()
+    kept = [m["key"] for m in _N.apply([{"key": "guard:dd:c:x:50"}, {"key": "guard:dll:c:d"}, {"key": "guard:day:2026-11-16"}],
+                                       at(2026, 11, 16, 16, 20), _N.merge({}))]
+    check("owner's 'important only' defaults: of those three only the day summary is pushed (room low is OFF)",
+          kept == ["guard:day:2026-11-16"], kept)
 
 
 def static():

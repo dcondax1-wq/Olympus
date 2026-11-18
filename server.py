@@ -1247,6 +1247,15 @@ try:
 except Exception as _di_err:
     print(f"[day_inbox] disabled: {_di_err.__class__.__name__}: {_di_err}", flush=True)
 # ---- END DAY INBOX ----
+# ---- ZEUS PHONE SAFETY ---- (engine/phone_safety.py, docs/ZEUS_FEATURES.md): /safety/ = PAUSE / RESUME / FLATTEN / KILL from the
+# phone over the private Tailscale link only, through REMOTE's own command code. OFF until `python -X utf8 -m engine.phone_safety --on`.
+# Never start / arm / update: no such button.
+try:
+    from engine import phone_safety as _ps
+    _ps.install(app, REMOTE, BOT)
+except Exception as _ps_err:
+    print(f"[phone_safety] /safety disabled: {_ps_err.__class__.__name__}: {_ps_err}", flush=True)
+# ---- END ZEUS PHONE SAFETY ----
 _static = StaticFiles(directory=WEB)
 _static.all_directories = list(UI_DIRS)       # first directory that has the file wins
 app.mount("/", _static, name="web")
