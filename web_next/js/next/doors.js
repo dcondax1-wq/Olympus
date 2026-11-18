@@ -9,7 +9,8 @@
  * Used by: hub/doors.html (the Doors page), the Gate's four door tiles, launcher.js (groups + door shortcuts, it loads this file),
  * jarvis/switcher.js DIST, jarvis/districts.js and atlas/atlas.js zones (their own copies of `ids`, kept equal by the tests).
  * Classic ES5 script, no DOM, no network: window.OLYMPUS_DOORS (module.exports in node). Paths are from the site root.
- *   DOORS                 [{ id, title, line, colour, items: [{ label, greek, href, app, words }], ids }]
+ *   DOORS                 [{ id, title, line, colour, home?, items: [{ label, greek, href, app, words }], ids }]   home = the door's own landing page
+ *   homeOf(id)            the door's landing: its home page, else the Doors page at that door (hub/doors.html#<id>)
  *   doorOf(id)            the door id of an app ('more' when it is in no list: a new app lands in More until it is filed)
  *   words(app)            the plain search words of an app (its name, purpose, id, its door, its shortcut labels, WORDS)
  *   find(q, apps)         { items: [{ door, item }], apps: [app] }: every word of q must match (case-insensitive) */
@@ -17,6 +18,7 @@
   'use strict';
   var DOORS = [
     { id: 'zeus', title: 'ZEUS Trading', line: 'Zlarior and ATLAS: accounts, live bots, trades, brain, rules, payouts', colour: '#c8a24a',
+      home: 'hub/zeus.html',   // the door's landing (night-zeushub 2026-11-18): live accounts, today, the big buttons; the Doors page links it first
       items: [
         { label: 'My accounts', greek: 'Business · My Accounts', href: 'business/accounts.html', app: 'business', words: 'accounts evals funded mffu builder 50k 25k rapid balance pass target floor' },
         { label: 'Bots right now', greek: 'NQ', href: 'nq/', app: 'nq', words: 'bots live on off running pc zlarior atlas lit status drawdown ninjatrader' },
@@ -80,6 +82,7 @@
   for (i = 0; i < DOORS.length; i++) for (j = 0; j < DOORS[i].ids.length; j++) byId[DOORS[i].ids[j]] = DOORS[i].id;
   function door(id) { for (var k = 0; k < DOORS.length; k++) if (DOORS[k].id === id) return DOORS[k]; return null; }
   function doorOf(id) { return byId[id] || 'more'; }
+  function homeOf(id) { var d = door(id); return d && d.home ? d.home : 'hub/doors.html#' + (d ? d.id : 'zeus'); }
   function words(a) {
     if (!a) return '';
     var id = String(a.id || ''), d = door(doorOf(id)), out = [a.name, a.purpose, a.label, a.sub, id, d ? d.title : '', WORDS[id] || ''];
@@ -96,7 +99,7 @@
     for (var n = 0; n < list.length; n++) if (list[n] && all(words(list[n]))) res.apps.push(list[n]);
     return res;
   }
-  var api = { VERSION: 1, DOORS: DOORS, WORDS: WORDS, door: door, doorOf: doorOf, words: words, find: find, ALL: 'gate/index.html#az', PAGE: 'hub/doors.html' };
+  var api = { VERSION: 1, DOORS: DOORS, WORDS: WORDS, door: door, doorOf: doorOf, homeOf: homeOf, words: words, find: find, ALL: 'gate/index.html#az', PAGE: 'hub/doors.html' };
   g.OLYMPUS_DOORS = api;
   if (typeof module === 'object' && module && module.exports) module.exports = api;
 }(typeof window !== 'undefined' ? window : typeof globalThis !== 'undefined' ? globalThis : this));

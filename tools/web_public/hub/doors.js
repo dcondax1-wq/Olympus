@@ -1,6 +1,7 @@
 /* The Doors page (hub/doors.html, 2026-11-18, night-org, docs/ORGANIZATION.md): four doors, each with its few shortcuts (plain name, the Greek
  * app name under it) and "All apps in this door"; a search over every shortcut and every app by plain words. Data: window.OLYMPUS_DOORS
  * (olympus/doors.js) + window.OLYMPUS_APPS_LIST (olympus/apps-list.js). #zeus / #money / #kalshi / #more opens a door (default: ZEUS Trading).
+ * A door with a `home` (ZEUS: hub/zeus.html) shows one big link to it first.
  * Read only; text through textContent; localStorage only for the last door opened (try / catch). */
 (function () {
   'use strict';
@@ -29,6 +30,10 @@
     out.style.setProperty('--dc', INK[dr.id]);
     var h = el('h2', 'dr-h2', dr.title); h.id = 'doorH'; out.appendChild(h);
     out.appendChild(el('p', 'dr-line', dr.line));
+    if (dr.home) {                                             // the door's own landing first (ZEUS: hub/zeus.html, night-zeushub)
+      var hl = row('Open ' + dr.title.split(' ')[0], 'Right now: PC, every account, today\'s windows and news, the big buttons', href(dr.home), dr.id);
+      hl.className += ' dr-home'; hl.setAttribute('data-home', dr.id); out.appendChild(hl);
+    }
     var list = el('div', 'dr-list'); list.setAttribute('aria-labelledby', 'doorH');
     dr.items.forEach(function (it) { list.appendChild(row(it.label, it.greek, href(it.href), dr.id)); });
     out.appendChild(list);
