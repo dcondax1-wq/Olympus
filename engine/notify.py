@@ -41,7 +41,7 @@ TYPES = ("trade_opened", "trade_closed", "eval_milestones", "account_status", "r
          "other")
 # owner 2026-11-18: "important only" = trade results, PASSED / FAILED / LOCKED, payout ready, PC silent, the daily summary.
 # Everything else is OFF by default (one line in notify_settings.json turns a type back on).
-IMPORTANT = ("trade_closed", "account_status", "daily_summary", "pc_silent")
+IMPORTANT = ("trade_closed", "account_status", "daily_summary", "pc_silent", "problems")   # problems = emergencies (bot down, NinjaTrader closed)
 DEFAULTS = {
     "alerts": {k: k in IMPORTANT for k in TYPES},
     "quiet_hours": {"from": "23:00", "to": "07:00"},
