@@ -23,7 +23,7 @@ const srv = http.createServer((q, s) => {
   const steps = [], errors = [];
   const step = (n, ok, info = '') => steps.push([n, !!ok, String(info).slice(0, 300)]);
   const shot = async (p, name) => { if (shots) await p.screenshot({ path: path.join(shots, name) }); };
-  const b = await chromium.launch();
+  const b = require('./net_stub.cjs').wrap(await chromium.launch());   // ntfy.sh answers "{}": never the PC's real status
   try {
     const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
     await ctx.addInitScript(() => { try { localStorage.setItem('oly.hiddenBots', '[]'); } catch (e) {} });   // BLITZ shown for these pinned checks (hidden by default since 2026-11-15)

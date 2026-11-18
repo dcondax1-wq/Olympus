@@ -148,7 +148,7 @@ async function frames(p, tag) {
     return null;
   });
   const PH = `http://127.0.0.1:${phoneSrv.address().port}`, PC = `http://127.0.0.1:${pcSrv.address().port}`;
-  const b = await chromium.launch({ args: GPU });
+  const b = require('./net_stub.cjs').wrap(await chromium.launch({ args: GPU }));   // ntfy.sh answers "{}": never the PC's real status
   try {
     // ---------------------------------------------------------------- phone portrait
     {
