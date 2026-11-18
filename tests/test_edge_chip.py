@@ -56,6 +56,10 @@ def part_a():
     site = json.loads(read(EH.SITE))
     check("a. tools/web_public/edge.json = the tiny result of the committed run", site.get("kind") == "le-edge" and site.get("eh") == d.get("tiny")
           and EH._bytes(site["eh"]) <= 120, site)
+    bots = site.get("bots") or {}
+    check("a. edge.json bots (night-zask, ZEUS 'trades per week'): Zlarior + ATLAS last-40 trades/week, win %, PF, $/month, light = the run",
+          bots == EH.site_bots(d) and bots["lit"]["tpw"] == d["lit"]["windows"]["40"]["now"]["tpw"] and bots["lit"]["light"] == d["card"]["light"]
+          and bots["atlas"]["usd_month"] == w.get("usd_month") and all(k in bots["lit"] for k in ("n", "tpw", "win", "pf", "usd_month", "to")), bots)
 
 
 def part_b():

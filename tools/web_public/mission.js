@@ -107,7 +107,9 @@
         el.insertBefore(box.firstElementChild, el.firstChild);      // Home's top area
         // real.js prepends its cards once realcore.js has loaded (async on the first render): keep the strip on top
         if (!el.__mcTop && typeof MutationObserver !== 'undefined') {
-          el.__mcTop = new MutationObserver(() => { const s = el.querySelector(':scope > .mc-strip'); if (s && el.firstElementChild !== s) el.prepend(s); });
+          // the ZEUS card (olympus/zeus_core.js, 2026-11-18) is Home's first card: the strip stays right under it
+          el.__mcTop = new MutationObserver(() => { const s = el.querySelector(':scope > .mc-strip'), z = el.querySelector(':scope > .zeus-card'), top = z ? z.nextElementSibling : el.firstElementChild;
+            if (s && top !== s) { if (z) z.after(s); else el.prepend(s); } });
           el.__mcTop.observe(el, { childList: true });
         }
         MU.wire(el);

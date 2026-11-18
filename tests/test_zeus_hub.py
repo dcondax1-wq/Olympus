@@ -5,6 +5,9 @@
   c. node, the pure part: entry windows (LIT 02:00-15:30; ATLAS MACD / EMA not Mondays / S/R; weekend, Thanksgiving closed, the
      Nov 27 early close ends entries 13:00; the PC's own window wins), news notes (7 days), PC line (fresh / silent / never),
      account rows from the real MFFU_MODEL.cards (matched by PC id: the 25K #2 eval on its own row, ATLAS funded = payout text)
+  e. the homes' ZEUS card (olympus/zeus_core.js, 2026-11-18 night-zcard): node summary() = the page's rows; Zenith (index.html#/today)
+     starts with it as #page's first child (gone on other pages, back on Home), Jarvis has it right under the greeting (before the tiles):
+     PC reported, 3 account lines with $ to pass / payout + today's $, the edge chip, a tap -> hub/zeus.html; silent = red PC SILENT
   d. Chromium 390 x 844 (ntfy routed to a fixture): PC reported, 3 account rows with $ + chips + today's $, the edge chip, two window
      lines, the buttons; a silent feed + stale board copy = the red PC SILENT strip; no sideways scroll, 44 px taps, no page errors
     python -X utf8 -m tests.test_zeus_hub        (ZEUS_NO_BROWSER=1 skips d; run d only under flock -w 2400 /tmp/olympus_browser.lock)
@@ -65,22 +68,25 @@ def lite_fixture(now):
 
 
 def part_a():
-    html, js = rd(HUB, "zeus.html"), rd(HUB, "zeus.js")
+    html, js, core = rd(HUB, "zeus.html"), rd(HUB, "zeus.js"), rd(WEB, "olympus", "zeus_core.js")
     check("a. files: hub/zeus.html + hub/zeus.js", os.path.isfile(os.path.join(HUB, "zeus.html")) and os.path.isfile(os.path.join(HUB, "zeus.js")))
     check("a. AGORA look: data-theme agora, the kit's agora.css, viewport-fit=cover, title ZEUS",
           'data-theme="agora"' in html and "olympus/agora.css" in html and "viewport-fit=cover" in html and "<title>ZEUS</title>" in html)
     check("a. text only: no innerHTML / insertAdjacentHTML / document.write / eval, no outside address",
-          not re.search(r"innerHTML|insertAdjacentHTML|document\.write|\beval\(", js) and not re.search(r"https?://", js)
+          not re.search(r"innerHTML|insertAdjacentHTML|document\.write|\beval\(", js + core) and not re.search(r"https?://", js + core)
           and not re.search(r'(src|href)="https?://', html))
     methods = re.findall(r"method:\s*'([A-Z]+)'", js)
-    check("a. read only: no POST / PUT / DELETE (only GET + one HEAD for the weekly review)", methods == ["HEAD"] and "localStorage" not in js, methods)
-    check("a. data: PC_FEED.fetchLatest + ../board/board.json + ../business/accounts.json, Board pick + MFFU cards, ../pythia/events.json",
-          "PC_FEED.fetchLatest" in js and "'../board/board.json'" in js and "'../business/accounts.json'" in js and "BM.pick(" in js and "MM.cards(" in js
-          and "'../pythia/events.json'" in js)
+    check("a. read only: no POST / PUT / DELETE (only GET + one HEAD for the weekly review)", methods == ["HEAD"] and "localStorage" not in js + core
+          and not re.findall(r"method:", core), methods)
+    # the data + the account matching live in olympus/zeus_core.js (2026-11-18, night-zcard: shared with the Zenith and Jarvis home cards;
+    # its paths are relative to olympus/, so '../board/board.json' is the same file)
+    check("a. data: PC_FEED.fetchLatest + ../board/board.json + ../business/accounts.json, Board pick + MFFU cards (zeus_core.js), ../pythia/events.json",
+          "F.fetchLatest(" in core and "url('../board/board.json')" in core and "url('../business/accounts.json')" in core and "BM.pick(" in core and "MM.cards(" in core
+          and "ZC.summary(" in js and "ZC.fetchAll(" in js and "'../pythia/events.json'" in js and "BM.pick(" not in js and "MM.cards(" not in js)
     order = [m for m in re.findall(r'<script src="([^"?]+)', html)]
-    check("a. scripts: pc_feed, payoutcoach, mffumodel, boardmodel (after mffumodel), edge_chip, the Decide card, zeus.js last",
+    check("a. scripts: pc_feed, payoutcoach, mffumodel, boardmodel (after mffumodel), edge_chip, the Decide card, the shared zeus_core, zeus.js last",
           order == ["../pc_feed.js", "../business/payoutcoach.js", "../business/mffumodel.js", "../board/boardmodel.js", "../edge_chip.js",
-                    "../business/decide.js", "zeus.js"], order)
+                    "../business/decide.js", "../olympus/zeus_core.js", "zeus.js"], order)
     check("a. the ZEUS edge chip mounts here (data-edge-chip, ../edge.json)", 'id="edgeChip" data-edge-chip data-edge-src="../edge.json"' in html)
     hrefs = re.findall(r'class="zs-btn"(?: id="\w+")? href="([^"]+)"', html)
     want = ["../business/mffu.html", "../trading/", "../index.html#/brain", "../board/", "../business/lab.html", "../business/accounts.html#coach", "../business/week.html"]
@@ -238,12 +244,104 @@ def part_d():
         srv.shutdown()
 
 
+def part_e_static():
+    zen, jar, core = rd(WEB, "index.html"), rd(WEB, "jarvis", "index.html"), rd(WEB, "olympus", "zeus_core.js")
+    check("e. both homes load the ONE shared module (olympus/zeus_core.js) and the ZEUS page uses it too; the card links hub/zeus.html",
+          'src="olympus/zeus_core.js?v=' in zen and "Z.keep(pg" in zen and 'src="../olympus/zeus_core.js?v=' in jar and 'id="zeusCard" data-zeus-card' in jar
+          and 'src="../olympus/zeus_core.js?v=' in rd(HUB, "zeus.html") and "url('../hub/zeus.html')" in core)
+    check("e. Jarvis: the ZEUS card sits right after the greeting, before the three tiles", jar.index('id="hello"') < jar.index('id="zeusCard"') < jar.index('id="hfirst"'))
+    check("e. zeus_core.js: text only, GET only, no outside address", not re.search(r"innerHTML|insertAdjacentHTML|document\.write|\beval\(|https?://|method:|localStorage", core))
+    now = int(time.time())
+    plan = os.path.join(WEB, "business", "accounts.json")
+    r = node(f"""
+      const C = require({json.dumps(os.path.join(WEB, 'olympus', 'zeus_core.js'))}), plan = require({json.dumps(plan)}), lite = {json.dumps(lite_fixture(now))}, now = {now};
+      const s = C.summary({{ lite, plan, BM, MM, coach: PC }}, now);
+      const cards = MM.cards({{ lite, plan, board: null, coach: PC, today: Z.et(now).day }}, now).map((c) => Z.acctRow(c, now));
+      out({{ pc: s.pc, rows: s.rows, same: JSON.stringify(s.rows) === JSON.stringify(cards), mode: s.mode }});
+    """)
+    keys = [x.get("key") for x in r.get("rows") or []]
+    check("e. node: summary() = the ZEUS page's rows (same matching, not a copy): 3 real accounts, 'PC reported 4 min ago'",
+          r.get("same") is True and set(keys) == {"zlarior", "atlas", "fresh25"} and (r.get("pc") or {}).get("text") == "PC reported 4 min ago", r)
+
+
+def part_e_browser():
+    try:
+        from playwright.sync_api import sync_playwright
+    except Exception as e:  # noqa: BLE001
+        print(f"[SKIP] e. browser (playwright missing: {e})")
+        return
+    srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), functools.partial(Quiet, directory=WEB))
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    base = f"http://127.0.0.1:{srv.server_address[1]}/"
+    now = int(time.time())
+    msg = json.dumps({"id": "x1", "time": now - 240, "event": "message", "topic": "t", "message": json.dumps(lite_fixture(now))})
+    stale = {"v": 1, "kind": "olympus-board", "t": now - 3600, "src": "cloud", "pc": {"t": now - 10 * 86400, "via": "heartbeat", "stale": True},
+             "accounts": [], "events": []}
+    CARD = """(sel) => { const c = document.querySelector(sel); if (!c) return null; const a = c.querySelector('.zeus-go'), pc = c.querySelector('.zeus-pc'), e = c.querySelector('.zeus-edge');
+      return { rows: [...c.querySelectorAll('.zeus-row')].map((r) => [r.dataset.key, r.textContent]), pc: pc.textContent, cls: pc.className, href: a.getAttribute('href'),
+        edge: e && !e.hidden ? e.textContent : '', top: Math.round(c.getBoundingClientRect().top), h: Math.round(a.getBoundingClientRect().height),
+        wide: document.documentElement.scrollWidth <= innerWidth + 1 }; }"""
+    try:
+        with sync_playwright() as pw:
+            exe = next(iter(sorted(glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome"))), None)
+            br = pw.chromium.launch(**({"executable_path": exe} if exe else {}))
+            ctx = br.new_context(viewport={"width": 390, "height": 844}, has_touch=True, is_mobile=True)
+            errs: list = []
+            ctx.route("**/ntfy.sh/**", lambda r: r.fulfill(status=200, content_type="application/x-ndjson", body=msg + "\n"))
+            p = ctx.new_page()
+            p.set_default_timeout(45000)
+            p.on("pageerror", lambda e: errs.append("zenith: " + str(e)))
+            p.goto(base + "index.html#/today")
+            p.wait_for_function("document.querySelectorAll('#page > .zeus-card .zeus-row').length === 3 && !!document.querySelector('#page > .zeus-card .zeus-edge:not([hidden])')")
+            z = p.evaluate("(" + CARD + ")('#page > .zeus-card')")
+            first = p.evaluate("document.querySelector('#page').firstElementChild.className")
+            txt = {k: t for k, t in z["rows"]}
+            check("e. Zenith Home starts with the ZEUS card: 'PC reported 4 min ago', Zlarior $49,193 · $3,807 to pass · +$120 today, ATLAS Funded + payout line, 25K #2 $25,210",
+                  first.startswith("zeus-card") and "PC reported 4 min ago" in z["pc"] and "good" in z["cls"] and "$49,193" in txt.get("zlarior", "")
+                  and "$3,807 to pass" in txt.get("zlarior", "") and "+$120 today" in txt.get("zlarior", "") and "Funded" in txt.get("atlas", "")
+                  and "$25,210" in txt.get("fresh25", "") and "BLITZ" not in str(z["rows"]), (first, z))
+            check("e. Zenith: the edge chip in the card (GREEN, ATLAS), a tap opens hub/zeus.html, a 44 px tap, no sideways scroll",
+                  "GREEN" in z["edge"] and "ATLAS" in z["edge"] and z["href"].endswith("/hub/zeus.html") and z["h"] >= 44 and z["wide"], z)
+            p.evaluate("location.hash = '#/perf'")
+            p.wait_for_timeout(1200)
+            gone = p.evaluate("!document.querySelector('#page > .zeus-card')")
+            p.evaluate("location.hash = '#/today'")
+            p.wait_for_function("!!document.querySelector('#page > .zeus-card .zeus-row')")
+            back = p.evaluate("document.querySelector('#page').firstElementChild.className.startsWith('zeus-card')")
+            check("e. Zenith: only on Home (gone on Results, first again back on Home)", gone and back, (gone, back))
+            j = ctx.new_page()
+            j.set_default_timeout(60000)
+            j.on("pageerror", lambda e: errs.append("jarvis: " + str(e)))
+            j.goto(base + "jarvis/")
+            j.wait_for_function("document.querySelectorAll('#zeusCard .zeus-row').length === 3")
+            jc = j.evaluate("(" + CARD + ")('#zeusCard .zeus-card')")
+            order = j.evaluate("(() => { const z = document.getElementById('zeusCard').getBoundingClientRect(), t = document.getElementById('hfirst').getBoundingClientRect(), h = document.getElementById('hello').getBoundingClientRect(); return [Math.round(h.top), Math.round(z.top), Math.round(t.top)]; })()")
+            check("e. Jarvis: the ZEUS card under the greeting, above the tiles: PC reported, the 3 accounts, a tap opens hub/zeus.html",
+                  "PC reported 4 min ago" in jc["pc"] and len(jc["rows"]) == 3 and jc["href"].endswith("/hub/zeus.html") and order[0] < order[1] < order[2], (jc, order))
+            ctx.unroute("**/ntfy.sh/**")
+            ctx.route("**/ntfy.sh/**", lambda r: r.fulfill(status=200, body=""))
+            ctx.route("**/board/board.json*", lambda r: r.fulfill(status=200, content_type="application/json", body=json.dumps(stale)))
+            s = ctx.new_page()
+            s.on("pageerror", lambda e: errs.append("silent: " + str(e)))
+            s.goto(base + "index.html#/today")
+            s.wait_for_function("!!document.querySelector('#page > .zeus-card .zeus-pc.bad')")
+            sc = s.evaluate("(" + CARD + ")('#page > .zeus-card')")
+            check("e. silent feed + 10-day-old copy: the card says red 'PC SILENT: last report 10 days ago' (role alert), plan rows still shown",
+                  "PC SILENT" in sc["pc"] and "10 days ago" in sc["pc"] and "bad" in sc["cls"] and any(k == "zlarior" for k, _ in sc["rows"]), sc)
+            check("e. no page errors from the card", not [e for e in errs if "zeus" in e.lower() or "zc" in e.lower() or "ZEUS_CORE" in e], errs)
+            br.close()
+    finally:
+        srv.shutdown()
+
+
 def main():
     part_a()
     part_b()
     part_c()
+    part_e_static()
     if not os.environ.get("ZEUS_NO_BROWSER"):
         part_d()
+        part_e_browser()
     n = sum(RES)
     print(f"\nzeus_hub: {n}/{len(RES)} " + ("ALL PASS" if n == len(RES) else "FAILED"))
     return 0 if n == len(RES) else 1

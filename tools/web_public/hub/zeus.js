@@ -1,7 +1,7 @@
 /* ZEUS (hub/zeus.html, 2026-11-18, night-zeushub): what the owner opens when he thinks "trading". One page, phone first:
  *   1. live strip   "PC reported X min ago" (red when silent) + each account: name, stage chip, balance, $ to pass / payout, today's $
- *                   Data: PC_FEED.fetchLatest (core + ext merged) + ../board/board.json fallback + ../business/accounts.json (plan),
- *                   matched by PC id / Name exactly like the Board (BOARD_MODEL.pick for the PC age, MFFU_MODEL.cards for the rows)
+ *                   Data + matching: ../olympus/zeus_core.js (ZEUS_CORE.fetchAll + summary, shared with the Zenith and Jarvis home
+ *                   cards): PC_FEED.fetchLatest + board.json + accounts.json, BOARD_MODEL.pick for the PC age, MFFU_MODEL.cards for the rows
  *   2. ZEUS edge chip (../edge_chip.js) for Zlarior and ATLAS
  *   3. today        the next entry window of Zlarior and ATLAS (the PC's own window when it sent one, else the same hours as
  *                   engine/live_board.py: LIT 02:00-15:30, ATLAS MACD 02:00-05:00 + 09:30-11:00, EMA 03:00-09:30 not Mondays,
@@ -117,42 +117,9 @@
     return { items: out.slice(0, 6), updated: evj.updated || null };
   }
 
-  function usd(v, sign) {
-    if (!okN(v)) return '-';
-    var s = '$' + Math.abs(Math.round(v)).toLocaleString('en-US');
-    return v < 0 ? '-' + s : sign && v > 0 ? '+' + s : s;
-  }
-  function ago(s) {
-    if (s == null || !isFinite(s)) return 'never';
-    s = Math.max(0, Math.round(s));
-    if (s < 90) return 'just now';
-    if (s < 5400) return Math.round(s / 60) + ' min ago';
-    if (s < 2 * 86400) return Math.round(s / 3600) + ' h ago';
-    return Math.round(s / 86400) + ' days ago';
-  }
-
-  // the PC line from the Board's pick (same STALE_S = 30 min): {silent, text}
-  function pcLine(BM, res, nowS) {
-    var b = res && res.board, t = b && b.pc && okN(+b.pc.t) && +b.pc.t > 0 ? +b.pc.t : null;
-    var age = t ? nowS - t : null, silent = age == null || age > (BM && BM.STALE_S || 1800);
-    return { silent: silent, age_s: age, mode: res ? res.mode : 'none',
-             text: !t ? 'PC SILENT: your PC has never reported here. The bots may not be running.'
-               : silent ? 'PC SILENT: last report ' + ago(age) + '. On the PC: STOP BOT, then START BOT.' : 'PC reported ' + ago(age) };
-  }
-
-  // one account row from an MFFU_MODEL card: {name, chip, cls, balance, goal, today, src}
-  function acctRow(c, nowS) {
-    var st = String(c.stage || 'eval'), chip = c.status || 'Evaluation', goal;
-    var cls = st === 'funded' ? 'funded' : st === 'passed' ? 'passed' : st === 'failed' || chip === 'Failed' ? 'failed' : 'eval';
-    if (cls === 'failed') goal = 'Floor reached: this account is done';
-    else if (st === 'funded') goal = c.payout && c.payout.c && c.payout.c.text ? c.payout.c.text : 'Funded: payout status needs the PC\'s payout tracker';
-    else if (st === 'passed') goal = 'Passed: waiting for MFFU\'s funded account';
-    else goal = c.target && okN(c.target.left) ? usd(c.target.left) + ' to pass' : 'To pass: no live balance yet';
-    var today = c.dll && okN(c.dll.today) ? c.dll.today : null;
-    var src = c.balance && c.balance.src ? c.balance.src + (c.age_s != null ? ' · ' + ago(c.age_s) : '') : 'no number yet';
-    return { key: c.key, name: c.name, chip: chip, cls: cls, balance: c.balance ? c.balance.v : null, goal: goal, today: today,
-             todayText: today == null ? 'Today: -' : 'Today: ' + usd(today, true), src: src, planOnly: !!c.planOnly };
-  }
+  // the PC line, the account rows and their matching live in ../olympus/zeus_core.js (shared with the Zenith + Jarvis home cards)
+  var ZC = root.ZEUS_CORE || (typeof require === 'function' ? require('../olympus/zeus_core.js') : null);
+  var usd = ZC.usd, ago = ZC.ago, pcLine = ZC.pcLine, acctRow = ZC.acctRow;
 
   var API = { BOTS: BOTS, et: et, calendar: calendar, nextWindow: nextWindow, pcWindow: pcWindow, windowLine: windowLine, notes: notes,
               pcLine: pcLine, acctRow: acctRow, usd: usd, ago: ago, inWords: inWords };
@@ -164,7 +131,6 @@
   var d = document, $ = function (id) { return d.getElementById(id); };
   function el(tag, cls, text) { var e = d.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = String(text); return e; }
   function nowS() { return Math.floor(Date.now() / 1000); }
-  function todayET() { return et(nowS()).day; }
   function getJSON(u, ms) {
     var ac = typeof AbortController === 'function' ? new AbortController() : null, tm = ac ? setTimeout(function () { ac.abort(); }, ms || 6000) : 0;
     return fetch(u, ac ? { cache: 'no-cache', signal: ac.signal } : { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; })
@@ -222,23 +188,17 @@
   function load() {
     if (busy) return Promise.resolve();
     busy = true;
-    var BM = root.BOARD_MODEL, MM = root.MFFU_MODEL;
-    return Promise.all([getJSON('../business/accounts.json'), getJSON('../board/board.json'), getJSON('../pythia/events.json'),
-      root.PC_FEED ? Promise.race([root.PC_FEED.fetchLatest({}), new Promise(function (r) { setTimeout(function () { r(null); }, 8000); })]).catch(function () { return null; }) : null])
+    return Promise.all([ZC.fetchAll({ force: true }), getJSON('../pythia/events.json')])
       .then(function (v) {
-        var plan = v[0], site = v[1], evj = v[2], lite = v[3], now = nowS();
-        var res = BM ? BM.pick({ site: site, lite: lite, plan: plan }, now) : null;
-        var pl = pcLine(BM, res, now);
-        var cards = [];
-        try { if (MM) cards = MM.cards({ lite: lite, plan: plan, board: site, coach: root.PAYOUT_COACH, today: todayET() }, now); } catch (e) { cards = []; }
-        var rows = cards.filter(function (c) { return !/blitz/i.test(String(c.key)); }).map(function (c) { return acctRow(c, now); });
-        drawStrip(pl, rows);
+        var data = v[0], evj = v[1], lite = data.lite, now = nowS();
+        var s = ZC.summary(data, now);                               // the Board's pick + the MFFU cards, BLITZ left out (zeus_core.js)
+        drawStrip(s.pc, s.rows);
         try { if (root.EDGE_CHIP) root.EDGE_CHIP.update(lite); } catch (e) { /* never the page */ }
         var cal = calendar(evj);
         drawToday([windowLine('lit', now, cal, lite), windowLine('atlas', now, cal, lite)], notes(evj, now, 7));
         $('stamp').textContent = 'Checked ' + new Date(now * 1000).toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: 'numeric', minute: '2-digit' }) + ' ET'
-          + (res ? ' · ' + res.label : '');
-        root.ZEUS_PAGE.last = { pc: pl, rows: rows, mode: res ? res.mode : 'none' };
+          + (s.label ? ' · ' + s.label : '');
+        root.ZEUS_PAGE.last = { pc: s.pc, rows: s.rows, mode: s.mode };
         root.ZEUS_PAGE.ready = true;
       })
       .then(function () { busy = false; }, function () { busy = false; root.ZEUS_PAGE.ready = true; });

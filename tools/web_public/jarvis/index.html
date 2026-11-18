@@ -135,14 +135,54 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
 @keyframes olyGo{to{opacity:0;visibility:hidden}}
 @keyframes olyEnd{to{opacity:0;visibility:hidden}}
 .oly canvas{position:absolute;top:0;left:0;width:100%;height:100%;display:block}
-.oly .oly-w{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:radial-gradient(120% 75% at 50% 42%,#1a2c55 0%,#0b1430 46%,#04060c 100%)}
-.oly .oly-w svg{width:min(26vw,104px);height:auto;filter:drop-shadow(0 0 18px rgba(226,182,92,.28));animation:olyMk .62s cubic-bezier(.2,.8,.2,1) both}
-.oly .oly-w b{font:600 14px/1 -apple-system,"SF Pro Display",system-ui,"Helvetica Neue",Arial,sans-serif;letter-spacing:.56em;padding-left:.56em;color:#ead39a;animation:olyTx .7s cubic-bezier(.2,.8,.2,1) .18s both}
-.oly .oly-w i{display:block;width:72px;height:1px;background:linear-gradient(90deg,transparent,#e2b65c,transparent);animation:olyLn .7s cubic-bezier(.2,.8,.2,1) .28s both}
-@keyframes olyMk{from{opacity:0;transform:translateY(8px) scale(.9);filter:blur(6px) drop-shadow(0 0 0 rgba(226,182,92,0))}to{opacity:1;transform:none}}
-@keyframes olyTx{from{opacity:0;letter-spacing:.9em}to{opacity:1}}
-@keyframes olyLn{from{opacity:0;transform:scaleX(0)}to{opacity:1;transform:none}}
-@media (prefers-reduced-motion:reduce){.oly .oly-w svg,.oly .oly-w b,.oly .oly-w i{animation:none}}
+/* the entry (night-entry2 2026-11-18, owner: "better ... Olympian entry screen"): black marble with gold veins, a lightning strike onto the
+   gold temple (a ZEUS nod: the bolt lights in the pediment), a gold sheen, OLYMPUS letter by letter, the four doors in one line. 1.2 s,
+   composited only (transform / opacity), the final state is the base style: calm / fade / off and reduced motion show it still. */
+.oly .oly-w{position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 860' preserveAspectRatio='xMidYMid slice'%3E%3Cg fill='none' stroke='%23e2b65c' stroke-linecap='round'%3E%3Cpath d='M-20 128C80 168 140 92 232 170S360 236 420 192' stroke-opacity='.16' stroke-width='1.3'/%3E%3Cpath d='M-10 150C70 182 150 128 214 196' stroke-opacity='.08' stroke-width='.7'/%3E%3Cpath d='M-10 610C92 560 162 690 262 650S380 572 430 628' stroke-opacity='.13' stroke-width='1.1'/%3E%3Cpath d='M58 -10C92 120 36 262 118 384S70 520 96 600' stroke-opacity='.07' stroke-width='.8'/%3E%3Cpath d='M318 870C292 762 370 704 336 604S252 484 304 402' stroke-opacity='.09' stroke-width='.9'/%3E%3C/g%3E%3C/svg%3E") center/cover no-repeat,radial-gradient(90% 55% at 50% 44%,rgba(226,182,92,.13) 0%,rgba(226,182,92,0) 60%),radial-gradient(130% 80% at 50% 40%,#16244a 0%,#0a1128 48%,#03050b 100%)}
+.oly .oly-w:before,.oly .oly-w:after{content:"";position:absolute;top:-4%;bottom:-4%;width:58px;background:repeating-linear-gradient(90deg,rgba(243,236,224,.07) 0 7px,rgba(243,236,224,.015) 7px 10px,rgba(243,236,224,.07) 10px 14px);-webkit-mask:linear-gradient(transparent,#000 22%,#000 78%,transparent);mask:linear-gradient(transparent,#000 22%,#000 78%,transparent)}
+.oly .oly-w:before{left:-14px}.oly .oly-w:after{right:-14px}
+.oly .oly-launch-ui{display:none}
+.oly .oly-c{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding-bottom:6vh;transition:transform .36s cubic-bezier(.4,0,.6,1)}
+.oly .oly-go .oly-c{transform:scale(1.06)}
+.oly .oly-mk{position:relative;width:min(33vw,132px)}
+.oly .oly-t{display:block;width:100%;height:auto;position:relative}
+.oly .oly-halo{position:absolute;left:50%;top:50%;width:230%;height:0;padding-bottom:230%;margin:-115% 0 0 -115%;border-radius:50%;background:radial-gradient(closest-side,rgba(232,186,96,.24),rgba(226,182,92,.08) 52%,rgba(226,182,92,0))}
+.oly .oly-sh{position:absolute;top:0;left:0;width:100%;height:100%;overflow:hidden;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='160 200 704 624'%3E%3Cpath d='M512 226 830 392H194zM296 362h432L512 282z' fill-rule='evenodd'/%3E%3Cpath d='M194 408h636v44H194zM245 474h84v22h-84zM256 496h62v196h-62zM395 474h84v22h-84zM406 496h62v196h-62zM545 474h84v22h-84zM556 496h62v196h-62zM695 474h84v22h-84zM706 496h62v196h-62zM214 712h596v38H214zM174 768h676v40H174z'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='160 200 704 624'%3E%3Cpath d='M512 226 830 392H194zM296 362h432L512 282z' fill-rule='evenodd'/%3E%3Cpath d='M194 408h636v44H194zM245 474h84v22h-84zM256 496h62v196h-62zM395 474h84v22h-84zM406 496h62v196h-62zM545 474h84v22h-84zM556 496h62v196h-62zM695 474h84v22h-84zM706 496h62v196h-62zM214 712h596v38H214zM174 768h676v40H174z'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat}
+.oly .oly-sh:after{content:"";position:absolute;top:0;bottom:0;left:0;width:60%;background:linear-gradient(100deg,rgba(255,250,232,0),rgba(255,250,232,.85) 50%,rgba(255,250,232,0));transform:translateX(-140%)}
+.oly .oly-bolt{fill:#fff4d6}
+.oly .oly-mk .oly-zap{position:absolute;left:50%;bottom:86%;width:44px;height:52vh;margin-left:-22px;opacity:0}
+.oly .oly-zap path{fill:none;stroke:#fff8e6;stroke-width:2;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.oly .oly-zap path+path{stroke:rgba(190,215,255,.55);stroke-width:7}
+.oly .oly-fx{position:absolute;top:0;left:0;right:0;bottom:0;margin:0;background:radial-gradient(70% 45% at 50% 30%,rgba(214,226,255,.42),rgba(214,226,255,0) 70%);opacity:0;pointer-events:none}
+.oly .oly-w b{display:block;font:500 31px/1 "Didot","Bodoni 72",ui-serif,"Times New Roman",Georgia,serif;letter-spacing:.3em;padding-left:.3em;white-space:nowrap}
+.oly .oly-w b span{display:inline-block;color:#ecd49a;background:linear-gradient(180deg,#fff1c8 10%,#e2b65c 58%,#a8782c 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.oly .oly-w i{display:flex;align-items:center;gap:9px;width:150px;height:7px}
+.oly .oly-w i:before,.oly .oly-w i:after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(226,182,92,0),#e2b65c)}
+.oly .oly-w i:after{background:linear-gradient(90deg,#e2b65c,rgba(226,182,92,0))}
+.oly .oly-w i u{width:6px;height:6px;background:#f0cd82;transform:rotate(45deg)}
+.oly .oly-w em{font:500 11px/1 -apple-system,system-ui,sans-serif;font-style:normal;letter-spacing:.4em;padding-left:.4em;color:rgba(234,211,154,.66)}
+/* the mark's 1.2 s: halo + temple rise (0-0.5 s), the strike (0.26 s), the sheen (0.42 s), the letters (0.3-0.7 s), the rule and the doors line */
+.oly .oly-mark .oly-halo{animation:olyHalo .6s cubic-bezier(.2,.8,.2,1) both}
+.oly .oly-mark .oly-t{animation:olyRise .55s cubic-bezier(.2,.8,.2,1) both}
+.oly .oly-mark .oly-mk .oly-zap{animation:olyZap .42s linear .24s both}
+.oly .oly-mark .oly-fx{animation:olyFx .5s ease-out .24s both}
+.oly .oly-mark .oly-bolt{animation:olyBolt .5s linear .26s both}
+.oly .oly-mark .oly-sh:after{animation:olySh .4s cubic-bezier(.4,0,.2,1) .4s both}
+.oly .oly-mark b span{animation:olyLt .38s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(.26s + var(--k) * 35ms)}
+.oly .oly-mark i{animation:olyLn .34s cubic-bezier(.2,.8,.2,1) .46s both}
+.oly .oly-mark em,.oly .oly-mark .oly-skip{animation:olyIn .3s ease-out .5s both}
+.oly .oly-mark:before,.oly .oly-mark:after{animation:olyCol 1.2s cubic-bezier(.2,.8,.2,1) both}
+@keyframes olyHalo{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:none}}
+@keyframes olyRise{from{opacity:0;transform:translateY(14px) scale(.92)}to{opacity:1;transform:none}}
+@keyframes olyZap{0%{opacity:0}8%{opacity:1}30%{opacity:.15}42%{opacity:.95}100%{opacity:0}}
+@keyframes olyFx{0%{opacity:0}10%{opacity:1}35%{opacity:.25}48%{opacity:.7}100%{opacity:0}}
+@keyframes olyBolt{0%{opacity:.25}10%{opacity:1}30%{opacity:.4}45%{opacity:1}100%{opacity:1}}
+@keyframes olySh{to{transform:translateX(240%)}}
+@keyframes olyLt{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes olyLn{from{opacity:0;transform:scaleX(.2)}to{opacity:1;transform:none}}
+@keyframes olyIn{from{opacity:0}to{opacity:1}}
+@keyframes olyCol{from{transform:translateY(26px)}to{transform:none}}
+@media (prefers-reduced-motion:reduce){.oly .oly-w *,.oly .oly-w:before,.oly .oly-w:after{animation:none!important;transition:none!important}}
 .oly .oly-skip{position:absolute;left:0;right:0;bottom:calc(22px + env(safe-area-inset-bottom,0px));text-align:center;font:500 14px/1 -apple-system,system-ui,sans-serif;letter-spacing:.02em;color:rgba(243,236,224,.55);pointer-events:none}</style>
 </head>
 <body>
@@ -165,6 +205,8 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
  * Versions (picked before the first paint by the start script in <head>, html[data-intro]):
  *   mark   1.2 s, a new launch (first start, or 20+ minutes after the last one), since 2026-11-18: the gold temple on navy and OLYMPUS,
  *          no WebGL (the owner: the old entry "looks made in the 2000s"; modern, fast, the same on every phone)
+ *          entry2 (2026-11-18): black marble with gold veins, a lightning strike onto the temple (the bolt lights in its pediment),
+ *          a gold sheen, OLYMPUS letter by letter, "ZEUS · MONEY · KALSHI", Tap to enter; CSS transform / opacity only
  *   off    0.5 s, the same launch seen again (an app switch that reloaded the page) and 3D effects Off
  *   calm   3.5 s, reduce motion: the mark fading in and out, nothing moves       fade   0.8 s (a start after one that did not finish, no WebGL)
  *   full   10 s film / lite 5 s / short 1 s: only on request now (the command palette's "Play the OLYMPUS intro", 'jarvis.intro.force')
@@ -355,17 +397,21 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
   // ---------------------------------------------------------------- the still versions: calm (reduce motion), fade, 3D off, no WebGL
   // the mark (2026-11-18): the Home Screen icon's temple (web/icons/icon.svg, the same shapes) in gold, OLYMPUS, a hairline. Every still version
   // uses it: mark 1.2 s (a new launch), calm 3.5 s (reduce motion: opacity only), fade 0.8 s, off 0.5 s. No WebGL, no file to wait for.
-  var MARK = '<svg viewBox="160 200 704 624" aria-hidden="true"><defs><linearGradient id="olyGd" x1="0" y1="226" x2="0" y2="808" gradientUnits="userSpaceOnUse">'
+  var MARK = '<svg class="oly-t" viewBox="160 200 704 624" aria-hidden="true"><defs><linearGradient id="olyGd" x1="0" y1="226" x2="0" y2="808" gradientUnits="userSpaceOnUse">'
     + '<stop offset="0" stop-color="#fbe7b0"/><stop offset=".45" stop-color="#e2b65c"/><stop offset="1" stop-color="#b0802f"/></linearGradient></defs><g fill="url(#olyGd)">'
     + '<path d="M512 226 830 392H194zM512 282 296 362h432z" fill-rule="evenodd"/><rect x="194" y="408" width="636" height="44" rx="6"/>'
     + '<rect x="245" y="474" width="84" height="22" rx="4"/><rect x="256" y="496" width="62" height="196"/><rect x="395" y="474" width="84" height="22" rx="4"/><rect x="406" y="496" width="62" height="196"/>'
     + '<rect x="545" y="474" width="84" height="22" rx="4"/><rect x="556" y="496" width="62" height="196"/><rect x="695" y="474" width="84" height="22" rx="4"/><rect x="706" y="496" width="62" height="196"/>'
-    + '<rect x="214" y="712" width="596" height="38" rx="5"/><rect x="174" y="768" width="676" height="40" rx="6"/></g></svg>';
+    + '<rect x="214" y="712" width="596" height="38" rx="5"/><rect x="174" y="768" width="676" height="40" rx="6"/></g><path class="oly-bolt" d="M524 290 494 332h20l-12 26 34-44h-20z"/></svg>';
+  // entry2 (2026-11-18): the strike from the sky onto the temple's apex (a ZEUS nod; the bolt above lights in the pediment)
+  var ZAP = '<svg class="oly-zap" viewBox="0 0 44 100" preserveAspectRatio="none" aria-hidden="true"><path d="M31 0 22 15 29 20 15 39 26 45 12 64 24 71 16 87 22 100"/><path d="M31 0 22 15 29 20 15 39 26 45 12 64 24 71 16 87 22 100"/></svg>';
   function still(mode) {
     st.q = 'still';
     var w = doc.createElement('div');
     w.className = 'oly-w oly-' + mode;
-    w.innerHTML = MARK + '<b>OLYMPUS</b><i></i>';
+    var lt = 'OLYMPUS'.replace(/./g, function (c, k) { return '<span style="--k:' + k + '">' + c + '</span>'; });
+    w.innerHTML = '<p class="oly-fx"></p><div class="oly-c"><div class="oly-mk"><s class="oly-halo"></s>' + ZAP + MARK + '<s class="oly-sh"></s></div><b>' + lt
+      + '</b><i><u></u></i><em>ZEUS \u00b7 MONEY \u00b7 KALSHI</em></div>' + (mode === 'mark' ? '<small class="oly-skip">Tap to enter</small>' : '');
     el.appendChild(w);
     var len = LEN[mode] || 0.5;
     var hold = mode === 'mark' ? 820 : Math.round(len * (mode === 'calm' ? 720 : 400));        // how long the mark stands
@@ -375,6 +421,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     // fires this timer late, and the old deadline (due by then too) must not cut the fade short (state 'deadline' instead of 'done')
     if (HOLD < 0) setTimeout(function () {
       clearTimeout(killT); killT = setTimeout(function () { finish('deadline'); }, fade + 1200);
+      w.className += ' oly-go';                                                                   // the doors open: a slight push in
       fadeOut(fade, 'reveal');
     }, hold);
   }
@@ -1001,6 +1048,12 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
         <div class="hero-line" id="heroLine" aria-live="polite"></div>
         <p class="hero-state" id="heroState" hidden></p>
       </section>
+      <!-- ZEUS (2026-11-18, night-zcard): the first card of the home = ../olympus/zeus_core.js (the same matching as hub/zeus.html): PC reported X min ago
+           (red PC SILENT), one line per real account (stage, balance, $ to pass / payout, today's $), the ZEUS edge chip; a tap opens ../hub/zeus.html.
+           Paper / cloud ledgers stay lower (Needs you, labelled Paper test). -->
+      <style>.home-in > .zeus-host { margin: 0 var(--gxr, 16px) 0 var(--gx, 16px); } .zeus-host .zeus-card { margin: 0; } a.hc-bot { text-decoration: none; color: inherit; } .tiles.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        html:root[data-jlook="classic"] .home-in[data-home="v2"] > .zeus-host { order: 1; margin-top: 8px; }</style>
+      <div class="zeus-host" id="zeusCard" data-zeus-card></div>
       <div class="tiles" id="hfirst" role="group" aria-label="What matters now" aria-busy="true"><div class="tile sk" aria-hidden="true"><span class="t-k">NQ bots</span><span class="sk-b w60"></span><span class="sk-b w80 s"></span></div><div class="tile sk" aria-hidden="true"><span class="t-k">Money</span><span class="sk-b w60"></span><span class="sk-b w80 s"></span></div><div class="tile sk" aria-hidden="true"><span class="t-k">Today</span><span class="sk-b w60"></span><span class="sk-b w80 s"></span></div></div>
 
       <div class="hbody">
@@ -3104,13 +3157,27 @@ function tiltStep() {
   $('#stage').style.transform = tiltOn ? `perspective(800px) rotateY(${(cgx * 8).toFixed(2)}deg) rotateX(${(-cgy * 6).toFixed(2)}deg)` : '';
   if (tiltOn && (Math.abs(tgx - cgx) > .002 || Math.abs(tgy - cgy) > .002)) tiltRaf = requestAnimationFrame(tiltStep);
 }
-async function setTilt(on) {
-  if (on) {
+// boot = the page opening with Tilt saved on. iPhone Safari (and Chromium since 2026) asks for motion access only from a tap, so the
+// page no longer asks while it opens: that refusal saved Tilt OFF on every open (2026-11-18 night-jgreen). Tilt stays on, the lean
+// works at once where access is already given, and the owner's first tap asks; only a real "Don't allow" then turns it off.
+async function setTilt(on, boot) {
+  if (on && !boot) {
     try { const DOE = window.DeviceOrientationEvent; if (DOE && typeof DOE.requestPermission === 'function' && (await DOE.requestPermission()) !== 'granted') { toast('Motion access was not allowed. iPhone: Settings, Safari, Motion & Orientation Access.', 'TILT'); on = false; } } catch (_) { on = false; }
   }
-  rawSet('jp3dtilt', on ? '1' : '0'); tiltOn = on;
+  if (!boot) rawSet('jp3dtilt', on ? '1' : '0');
+  tiltOn = on;
   if (on) window.addEventListener('deviceorientation', onOrient, { passive: true }); else { window.removeEventListener('deviceorientation', onOrient); $('#stage').style.transform = ''; }
+  if (on && boot) tiltAskOnTap();
   renderMore();
+}
+function tiltAskOnTap() {
+  const DOE = window.DeviceOrientationEvent;
+  if (!DOE || typeof DOE.requestPermission !== 'function') return;
+  window.addEventListener('click', async () => {
+    if (!tiltOn) return;
+    let r = ''; try { r = await DOE.requestPermission(); } catch (_) { r = ''; }
+    if (r === 'denied') { toast('Motion access was not allowed. iPhone: Settings, Safari, Motion & Orientation Access.', 'TILT'); setTilt(false); }
+  }, { once: true, capture: true });
 }
 
 // ------------------------------------------------------------------ effects: stars, the hologram globe, tap ripples, scan sweeps, press glare, auto-low
@@ -3447,7 +3514,7 @@ safe(renderBar);
 safe(renderSugs);
 safe(renderMore);
 safe(setupMic);
-if (S.tilt()) safe(() => setTilt(true));
+if (S.tilt()) safe(() => setTilt(true, true));
 if (location.hash) history.replaceState(null, '', location.pathname + location.search);
 try { show('home'); } catch (_) { /* the screen still shows; the next refresh draws what is missing */ }
 safe(boot);
@@ -3547,7 +3614,8 @@ if ('serviceWorker' in navigator) {
 <script src="./welcome.js?v=w1" defer></script>
 <script type="module" src="./transitions.js?v=t5"></script>
 <script type="module" src="./briefing.js?v=r2"></script>
-<script type="module" src="./home-cards.js?v=hc2"></script>
+<script src="../olympus/zeus_core.js?v=1" defer></script>
+<script type="module" src="./home-cards.js?v=hc3"></script>
 <script type="module" src="./copilot-card.js?v=cp2"></script>
 </body>
 </html>

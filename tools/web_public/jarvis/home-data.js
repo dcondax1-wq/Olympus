@@ -4,7 +4,7 @@
 // docs/JARVIS_API.md) its nudges / ask are used first. Every part is total: a missing source never throws, it gives plain words instead,
 // and ?demo=1 (or no source at all) fills each part from FAKE so the home is never blank. Read only: nothing here trades, arms or sends.
 //
-//   buildHome({ facts, snap, api, money, events, kairos, now, demo, favs, recent, apps }) -> model (pure; runs in node, tests.test_jarvis_home_agora)
+//   buildHome({ facts, snap, api, money, events, kairos, now, demo, favs, recent, apps, zeus }) -> model (zeus: the ZEUS card is on the page = no NQ bots tile) (pure; runs in node, tests.test_jarvis_home_agora)
 //   loadHome({ demo, api, win, quick, districtOf })  -> Promise<model>   fetches what it needs (timeouts 5 s; quick = no network), then buildHome
 //   model = { demo, online, asof, today: { items: [{ id, text, tone, app?, say? }], more }, bots: [{ id, name, size, level, pnl, room, mll, text, app }],
 //             money: { low, base, high, live, text, note }, day: { now: {label, text, until, entries}, next: { title, when, impact } | null },
@@ -154,6 +154,8 @@ export function stateFrom(o) {
     const pa = pcT != null ? Math.max(0, now / 1000 - pcT) : null;
     if (pa != null && pa > SILENT_S) return silent(pa, pcT);
     if (pa != null && pa > STALE_S) return { kind: 'stale', text: `The last bot report is ${ageText(pa)} old: your accounts are not affected`, age: pa };
+    // a fresh PC report without the live feed's account cards (2026-11-18, night-zcard): the PC IS reporting (the ZEUS card has its accounts), never "not reported yet"
+    if (pa != null) return { kind: 'live', text: `PC reported ${ageText(pa)} ago`, age: pa, pcOnly: true };
     return { kind: 'waiting', text: WORDS.waiting, age: null };
   }
   if (age != null && age > SILENT_S) return silent(age, t);
@@ -184,11 +186,13 @@ export function tightest(bots) {
 /** The three tiles of the first screen, in order: NQ bots (drawdown left), Money (the Mint estimate with its range), Today (the window now / the next event). */
 export function tilesFrom(m) {
   const st = m.state || { kind: 'live' }, t = tightest(m.bots), n = arr(m.bots).length;
+  // the ZEUS card sits above the tiles (2026-11-18, night-zcard: ../olympus/zeus_core.js, every real account with its $): no second NQ bots tile
+  // under it that could say something else ("The bots have not reported yet" while the PC reports); Money + Today side by side
   const bots = t ? { id: 'bots', app: t.app || 'zenith', kicker: 'NQ bots', tone: t.level || '', lead: 'Drawdown left', big: usd(t.room), tail: num(t.mll) != null && t.mll > 0 ? `of ${usd(t.mll)} max loss` : '',
     sub: `${t.name}${t.size ? ' ' + t.size : ''}${n > 1 ? `, the tighter of ${n}` : ''}${t.pnl != null ? ` · ${usd(t.pnl, true)} today` : ''}`, frac: num(t.mll) != null && t.mll > 0 ? Math.max(0, Math.min(1, t.room / t.mll)) : null, aria: `NQ bots. ${t.name}: ${drawdownLine(t)}` }
     : { id: 'bots', app: 'zenith', kicker: 'NQ bots', tone: '', lead: '', big: '', tail: '', frac: null,
-      text: st.kind === 'offline' ? 'You are offline' : st.fix ? `No report since ${st.since}` : 'The bots have not reported yet',
-      sub: st.kind === 'offline' ? 'The bots keep running on the PC on their own.' : st.fix ? 'On the PC, tap STOP BOT, then START BOT.' : 'Your accounts are not affected.',
+      text: st.kind === 'offline' ? 'You are offline' : st.fix ? `No report since ${st.since}` : st.pcOnly ? st.text : 'The bots have not reported yet',
+      sub: st.kind === 'offline' ? 'The bots keep running on the PC on their own.' : st.fix ? 'On the PC, tap STOP BOT, then START BOT.' : st.pcOnly ? 'Each account: the ZEUS card above.' : 'Your accounts are not affected.',
       aria: 'NQ bots. ' + (st.fix ? st.text : WORDS.waiting), tone: st.fix ? 'warn' : '' };
   const k = m.money;
   // not live = Mint's bundled sample streams (mint/fixture.json: "EXAMPLE numbers, not real"), not a backtest of your bots: said so, plainly
@@ -200,7 +204,7 @@ export function tilesFrom(m) {
   const today = w ? { id: 'today', app: 'kairos', kicker: 'Today', tone: w.entries ? 'ok' : '', text: w.label, sub: [w.until, e ? `Next: ${e.title}, ${e.when}` : ''].filter(Boolean).join(' · ') || w.text, aria: `Today. ${w.label}. ${w.until || ''}${e ? ` Next: ${e.title}, ${e.when}` : ''}` }
     : e ? { id: 'today', app: 'pythia', kicker: 'Today', tone: e.impact === 'high' ? 'warn' : '', text: `Next: ${e.title}`, sub: `${e.when}${e.impact ? ' · ' + e.impact + ' impact' : ''}`, aria: `Today. Next: ${e.title}, ${e.when}` }
       : { id: 'today', app: 'planner', kicker: 'Today', tone: '', text: 'Nothing on the calendar I can read', sub: 'Open the Planner for your day.', aria: 'Today. Nothing on the calendar I can read.' };
-  return [bots, money, today];
+  return m.zeus ? [money, today] : [bots, money, today];
 }
 /** a paper-test nudge (nudges.js 'paper_*': the cloud paper ledger, not a real account) */
 export const isPaper = (x) => isObj(x) && /^paper[_:]/.test(String(x.id || ''));
@@ -221,7 +225,7 @@ export function buildHome(o) {
   const now = num(o.now) != null ? +o.now : Date.now(), demo = !!o.demo, facts = isObj(o.facts) ? o.facts : null;
   const online = o.online !== false;
   const lookup = appsLookup(o.apps);
-  const m = { demo, online, asof: now, today: { items: [], more: 0 }, bots: [], money: null, day: { now: null, next: null }, asks: ASKS.slice(), favs: [], recent: [] };
+  const m = { demo, online, zeus: !!o.zeus && !demo, asof: now, today: { items: [], more: 0 }, bots: [], money: null, day: { now: null, next: null }, asks: ASKS.slice(), favs: [], recent: [] };
   // today: what needs you
   try { m.today = nudgesFrom(demo ? FAKE.facts : facts, demo ? null : o.api); } catch (_) { /* stays empty */ }
   // bots
@@ -279,7 +283,11 @@ export async function loadHome(opts) {
   const c = cache || { money: null, sample: null, events: null, pcT: null };
   const kairos = await kairosNow(now);
   let favs = null; for (const k of FAV_KEYS) { favs = lsRead(k); if (favs && favs.length) break; }
-  const home = buildHome({ demo, facts, snap, districtOf: opts.districtOf, api: win.JARVIS_API || null, money: c.money, sampleMoney: c.sample, events: c.events, kairos, now, apps, pcT: c.pcT,
+  let zeus = false; try { zeus = !!(win.document && win.document.querySelector('#zeusCard .zeus-card')); } catch (_) { zeus = false; }
+  // the ZEUS card's PC age (the PC's ntfy status, ../olympus/zeus_core.js) when it is newer: the hero never says "not reported" under a card that says it did
+  let pcT = c.pcT;
+  try { const z = win.ZEUS_CORE && win.ZEUS_CORE.last, a = z && z.pc ? num(z.pc.age_s) : null; if (!demo && a != null && (pcT == null || now / 1000 - a > pcT)) pcT = now / 1000 - a; } catch (_) { /* optional */ }
+  const home = buildHome({ demo, zeus, facts, snap, districtOf: opts.districtOf, api: win.JARVIS_API || null, money: c.money, sampleMoney: c.sample, events: c.events, kairos, now, apps, pcT,
     favs: favs || [], recent: lsRead(REC_KEY) || [], online: win.navigator ? win.navigator.onLine !== false : true });
   return home;
 }

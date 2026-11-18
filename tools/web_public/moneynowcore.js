@@ -83,7 +83,8 @@
     let edge = 'good';
     if (st.edge === 'bad' || (room != null && room <= 0) || (frac != null && frac < 0.25)) edge = 'bad';
     else if (st.edge === 'warn' || room == null || mll == null || today == null || (frac != null && frac < 0.5) || bot.edge !== 'good') edge = 'warn';
-    return { key: def.key, name: A.name || def.name, size: A.size || def.size, color: A.color || def.color, page: def.page, edge, room, mll, today, status: st, next: nextWords(A, M), have: true };
+    // a paper / cloud ledger (the cloud monitor's twin of LIT): never read as a real account (2026-11-18, the ZEUS card above has the real ones)
+    return { key: def.key, name: (A.paper ? 'Paper test · ' : '') + (A.name || def.name), size: A.size || def.size, color: A.color || def.color, page: def.page, edge, room, mll, today, status: st, next: nextWords(A, M), have: true };
   }
 
   function model(M) {

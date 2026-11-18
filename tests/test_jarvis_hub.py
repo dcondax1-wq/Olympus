@@ -265,7 +265,7 @@ def part_a():
           and "background:#000" in sw and "location.reload()" in sw)
     check("a. worker v14: data.js, jarvis.css, the fonts, every separate part, switcher.js, the new brain's obsidian.js / memory.js / "
           "assist-ui.js and voice-mode.js in SHELL, each saved on its own (a missing part is skipped)",
-          "const CACHE = 'jarvis-v56';" in sw and all(f"'./{f}'" in sw for f in ("data.js", "switcher.js", "obsidian.js", "memory.js", "assist-ui.js", "voice-mode.js", "tools.js", "voice-out.js") + PARTS + FONTS)
+          "const CACHE = 'jarvis-v60';" in sw and all(f"'./{f}'" in sw for f in ("data.js", "switcher.js", "obsidian.js", "memory.js", "assist-ui.js", "voice-mode.js", "tools.js", "voice-out.js") + PARTS + FONTS)
           and f"'./{JCSS}'" in sw and "SHELL.map((u) => c.add(new Request(u, { cache: 'reload' })).catch(() => null))" in sw)
     shell = re.search(r"const SHELL = \[([^\]]*)\]", sw)
     shell_files = re.findall(r"'\./([^'?]+)", shell.group(1)) if shell else []
@@ -839,7 +839,7 @@ def run_c(br, url):
         const reg = await Promise.race([navigator.serviceWorker.ready, new Promise((ok) => setTimeout(() => ok(null), 6000))]);
         if (!reg) return 'no worker';
         for (let i = 0; i < 30; i++) {
-          const c = await caches.open('jarvis-v56');
+          const c = await caches.open('jarvis-v60');
           const got = await Promise.all(['./index.html', './data.js', './%s', './orbitron.woff2', './rajdhani-500.woff2'].map((u) => c.match(u)));
           if (got.every(Boolean)) return 'ok';
           await new Promise((ok) => setTimeout(ok, 200));
@@ -976,7 +976,12 @@ def run_look(br, url):
         if (el && lg && lg.textContent && !B.t0) { B.t0 = performance.now(); B.shown = getComputedStyle(el).display !== 'none'; }
         if (lg && lg.textContent) B.log = lg.textContent;
         if (B.t0 && !el && !B.gone) { B.gone = performance.now(); mo.disconnect(); } });
-      mo.observe(document, { childList: true, subtree: true, characterData: true }); })();""")
+      mo.observe(document, { childList: true, subtree: true, characterData: true });
+      // the line under the core as the brain set it, before the first-open briefing (briefing.js, 5.2 s after load) puts its title there:
+      // on a busy machine the look below is read after that, so it reads this copy (2026-11-18 night-jgreen)
+      const so = new MutationObserver(() => { const s = document.getElementById('says'); if (!s) return;
+        if (!(window.__jarvisBrief && window.__jarvisBrief.runs)) B.says = s.textContent; });
+      so.observe(document, { childList: true, subtree: true, characterData: true }); })();""")
     p.goto(url + "planner/")
     p.goto(url + "jarvis/")
     ready(p)
@@ -998,7 +1003,7 @@ def run_look(br, url):
                  orb: document.fonts.check('700 16px Orbitron'), raj: document.fonts.check('500 16px Rajdhani'),
                  tfont: getComputedStyle(t).fontFamily, title: t.textContent, state: document.getElementById('state').textContent,
                  hud: !!document.querySelector('#hud, .hudring, #hudBot, #hudTop'),
-                 says: document.getElementById('says').textContent, ticks: 0,
+                 says: (window.__jarvisBrief && window.__jarvisBrief.runs && window.__bootfx.says) || document.getElementById('says').textContent, ticks: 0,
                  bars: document.querySelectorAll('#vbars i').length, fx: document.documentElement.dataset.fx,
                  jlook: document.documentElement.dataset.jlook || '', saved: localStorage.getItem('jarvis.look') };
     })()""")
