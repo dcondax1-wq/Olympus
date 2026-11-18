@@ -186,13 +186,28 @@ def tap(p, sel):
     p.locator(sel).first.dispatch_event("click")
 
 
+def until(p, js, ms=60000):
+    """wait for the real condition (a JS expression), not a fixed time: under machine load the async list / status fetches can take
+    seconds; False when it never comes true (the check that follows then fails with its own detail)"""
+    try:
+        p.wait_for_function(js, timeout=ms, polling=100)
+        return True
+    except Exception:
+        return False
+
+
+OPEN_FULL = f"OLYMPUS_LAUNCHER.isOpen() && OLYMPUS_LAUNCHER.state().tiles === {NTILES} && !!document.querySelector('.oly-l .oly-tile[data-app=oracle]')"
+IN_SHEET = "!!(document.activeElement && document.activeElement.closest('.oly-l'))"
+DOTS = "[...document.querySelectorAll('.oly-l .oly-tile')].filter((t) => t.dataset.status).length >= 10 && !!localStorage.getItem('oly.launcher.status')"
+
+
 def test_phone(br, origin):
     ctx, p, errs = page(br, origin)
     p.goto(origin + "/", wait_until="commit")
     p.wait_for_selector("#olyLauncherBtn", timeout=120000, state="attached")
     tb = p.evaluate("(() => { const b = document.getElementById('olyLauncherBtn'); const r = b.getBoundingClientRect(); return { inTop: !!b.closest('header.top'), w: r.width, h: r.height, label: b.getAttribute('aria-label') }; })()")
     check("c. phone: a launcher button sits in the Zenith top bar (header.top), 40 px, with a plain label", tb["inTop"] and tb["h"] >= 40 and "launcher" in tb["label"].lower(), tb)
-    tap(p, "#olyLauncherBtn"); p.wait_for_timeout(500)
+    tap(p, "#olyLauncherBtn"); until(p, OPEN_FULL)
     S = p.evaluate("OLYMPUS_LAUNCHER.state()")
     j = p.evaluate("(() => { const a = document.querySelector('.oly-l .oly-jv'); return { href: a.getAttribute('href'), target: a.target, text: a.textContent }; })()")
     check("c. phone: the sheet opens with the big 'Open Olympus (Jarvis)' button (jarvis/, this tab) and all app tiles", S["open"] and not S["pc"] and S["tiles"] == NTILES and j["href"] == "jarvis/" and not j["target"] and "Open Olympus (Jarvis)" in j["text"], (S, j))
@@ -209,7 +224,7 @@ def test_phone(br, origin):
     check("c. phone: search by plain words: 'taxes' shows the Taxes page, 'payout' the payout rules and Ledger", "business/taxes.html" in tx and "trading/#rulesCard" in po and "ledger/" in po, (tx, po))
     t = p.evaluate("(() => { const a = document.querySelector('.oly-l .oly-tile[data-app=oracle]'); return { href: a.getAttribute('href'), name: a.querySelector('b').textContent, purpose: a.querySelector('small').textContent, glyph: a.querySelector('.oly-g').textContent, c: a.style.getPropertyValue('--c') }; })()")
     check("c. phone: a tile = its glyph in its colour, its name and one plain line, and opens <app>/ in this tab", t["href"] == "oracle/" and t["name"] == "Oracle" and t["c"] == "#7fb0a3" and len(t["purpose"]) > 8, t)
-    p.wait_for_timeout(4000)
+    until(p, DOTS)
     dots = p.evaluate("[...document.querySelectorAll('.oly-l .oly-tile')].map((t) => t.dataset.status).filter(Boolean)")
     check("c. phone: the status dots come from each app's jarvis.json (ok / warn / bad / stale / off), cached in localStorage", len(dots) >= 10 and set(dots) <= {"ok", "warn", "bad", "stale", "off", "none"}
           and p.evaluate("!!localStorage.getItem('oly.launcher.status')"), (len(dots), set(dots)))
@@ -223,11 +238,13 @@ def test_phone(br, origin):
     tap(p, ".oly-l .oly-tile[data-app=mind]"); p.wait_for_timeout(200)
     rec = p.evaluate("JSON.parse(localStorage.getItem('oly.launcher.recent'))")
     check("c. phone: opening an app records it in oly.launcher.recent (newest first, 4 kept) and closes the sheet", rec[:1] == ["mind"] and not p.evaluate("OLYMPUS_LAUNCHER.isOpen()"), rec)
-    p.focus("#olyLauncherBtn"); tap(p, "#olyLauncherBtn"); p.wait_for_timeout(300)
+    p.focus("#olyLauncherBtn"); tap(p, "#olyLauncherBtn"); until(p, OPEN_FULL + " && !!document.querySelector('.oly-l .oly-rc .oly-chip')")
     check("c. phone: 'Recent' shows it first the next time", p.locator(".oly-l .oly-rc .oly-chip").first.get_attribute("data-app") == "mind")
-    p.keyboard.press("Escape"); p.wait_for_timeout(200)
-    check("c. phone: Escape closes it and the focus goes back to the button", not p.evaluate("OLYMPUS_LAUNCHER.isOpen()") and p.evaluate("document.activeElement && document.activeElement.id") == "olyLauncherBtn")
-    tap(p, "#olyLauncherBtn"); p.wait_for_timeout(300)
+    until(p, IN_SHEET, 10000)                                  # the sheet moves the focus inside itself 30 ms after it opens; Escape is heard there
+    p.keyboard.press("Escape"); until(p, "!OLYMPUS_LAUNCHER.isOpen()", 10000)
+    esc = p.evaluate("[OLYMPUS_LAUNCHER.isOpen(), document.activeElement && (document.activeElement.id || document.activeElement.className || document.activeElement.tagName)]")
+    check("c. phone: Escape closes it and the focus goes back to the button", not esc[0] and esc[1] == "olyLauncherBtn", esc)
+    tap(p, "#olyLauncherBtn"); until(p, OPEN_FULL)
     geo = p.evaluate("""(() => { const pn = document.querySelector('.oly-l .oly-pn').getBoundingClientRect(); return { w: pn.width, h: pn.height, over: document.documentElement.scrollWidth - innerWidth,
       small: [...document.querySelectorAll('.oly-l a, .oly-l button')].filter((e) => e.offsetParent && e.getBoundingClientRect().height < 40 && !e.classList.contains('chip')).map((e) => e.className) }; })()""")
     check("c. phone: the sheet fits 390 x 844 (no sideways scroll, every tap target at least 40 px)", geo["w"] <= 390 and geo["h"] <= 844 and geo["over"] <= 0 and not geo["small"], geo)
@@ -237,7 +254,7 @@ def test_phone(br, origin):
     for label, kw in (("LITE (3D Low)", {"fx": "low"}), ("reduced motion", {"reduced": True})):
         ctx, p, errs = page(br, origin, **kw)
         p.goto(origin + "/", wait_until="commit"); p.wait_for_selector("#olyLauncherBtn", timeout=120000, state="attached")
-        tap(p, "#olyLauncherBtn"); p.wait_for_timeout(300)
+        tap(p, "#olyLauncherBtn"); until(p, OPEN_FULL)
         calm = p.evaluate("document.querySelector('.oly-l').classList.contains('calm')")
         anim = p.evaluate("getComputedStyle(document.querySelector('.oly-l .oly-pn')).animationName")
         check(f"c. phone {label}: the sheet is calm (no entrance animation) and still complete (all tiles)", calm and anim == "none" and p.evaluate("OLYMPUS_LAUNCHER.state().tiles") == NTILES, (calm, anim))
@@ -246,8 +263,7 @@ def test_phone(br, origin):
     ctx, p, errs = page(br, origin)
     ctx.route(re.compile(r".*/olympus/apps-list\.js.*"), lambda r: r.abort())
     p.goto(origin + "/", wait_until="commit"); p.wait_for_selector("#olyLauncherBtn", timeout=120000, state="attached")
-    tap(p, "#olyLauncherBtn"); p.wait_for_timeout(300)
-    p.wait_for_timeout(500)
+    tap(p, "#olyLauncherBtn"); until(p, "OLYMPUS_LAUNCHER.isOpen() && /could not load/.test((document.querySelector('.oly-l .oly-em') || {}).textContent || '')")
     check("c. phone: without the list (offline, a blocked file) the sheet still opens with the Jarvis button and says why", p.is_visible(".oly-l .oly-jv") and "could not load" in p.inner_text(".oly-l .oly-em"))
     ctx.close()
 
@@ -257,19 +273,20 @@ def test_pc(br, origin):
     p.goto(origin + "/", wait_until="commit")
     p.wait_for_selector("#olyLauncherBtn", timeout=120000, state="attached")
     inbar = p.evaluate("!!document.getElementById('olyLauncherBtn').closest('.tb-right')")
-    tap(p, "#olyLauncherBtn"); p.wait_for_timeout(500)
+    tap(p, "#olyLauncherBtn"); until(p, OPEN_FULL)
     S = p.evaluate("OLYMPUS_LAUNCHER.state()")
     j = p.evaluate("(() => { const a = document.querySelector('.oly-l .oly-jv'); return [a.href, a.target, a.rel]; })()")
     t = p.evaluate("(() => { const a = document.querySelector('.oly-l .oly-tile[data-app=oracle]'); return [a.href, a.target, a.rel]; })()")
     check("c. PC: the button is in the top bar; the sheet's links go to the public site (https://demetrades2000-coder.github.io/nq-dashboard/<app>/) in a new tab",
           inbar and S["pc"] and S["tiles"] == NTILES and j[0] == "https://demetrades2000-coder.github.io/nq-dashboard/jarvis/" and j[1] == "_blank" and "noopener" in j[2]
           and t[0] == "https://demetrades2000-coder.github.io/nq-dashboard/oracle/" and t[1] == "_blank", (inbar, S, j, t))
-    p.wait_for_timeout(4000)
+    until(p, DOTS)
     dots = p.evaluate("[...document.querySelectorAll('.oly-l .oly-tile')].map((t) => t.dataset.status).filter(Boolean)")
     check("c. PC: the status dots are read from the public site's jarvis.json files (cross-origin) and cached", len(dots) >= 10 and p.evaluate("!!localStorage.getItem('oly.launcher.status')"), len(dots))
     g = p.evaluate("getComputedStyle(document.querySelector('.oly-l .oly-gr')).gridTemplateColumns.split(' ').length")
     check("c. PC: three columns of tiles, the panel fits the window", g == 3 and p.evaluate("document.querySelector('.oly-l .oly-pn').getBoundingClientRect().height") <= 800)
-    p.keyboard.press("Escape"); p.wait_for_timeout(200)
+    until(p, IN_SHEET, 10000)                                  # the sheet moves the focus inside itself 30 ms after it opens; Escape is heard there
+    p.keyboard.press("Escape"); until(p, "!OLYMPUS_LAUNCHER.isOpen()", 10000)
     check("c. PC: Escape closes it", not p.evaluate("OLYMPUS_LAUNCHER.isOpen()") and not [e for e in errs if "launcher" in e.lower()], errs[:3])
     ctx.close()
 
