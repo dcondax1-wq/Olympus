@@ -25,6 +25,7 @@ import json
 import os
 import re
 import sys
+import time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
@@ -735,10 +736,17 @@ def test_env(br, origin):
             p.wait_for_function("() => window.ENV_LAB", timeout=60000)
             p.evaluate("() => window.ENV_LAB.ready")
             p.wait_for_timeout(2500)
-            m = p.evaluate("() => window.ENV_LAB.measure()")
             import io
             from PIL import Image, ImageStat
-            px = sum(ImageStat.Stat(Image.open(io.BytesIO(p.screenshot())).convert("L").resize((60, 130))).stddev)
+            # the picture: a few drawn frames after the files are in (a loaded machine can show a frame still being composed): look
+            # again for up to 15 s until it is not blank; a scene that never draws stays at a flat contrast and fails below
+            t_end = time.time() + 15
+            while True:
+                px = sum(ImageStat.Stat(Image.open(io.BytesIO(p.screenshot())).convert("L").resize((60, 130))).stddev)
+                if px > 12 or time.time() > t_end:
+                    break
+                p.wait_for_timeout(500)
+            m = p.evaluate("() => window.ENV_LAB.measure()")
             lim = (45, 160000) if q == "high" else (28, 80000)
             real = [e for e in errs if "favicon" not in e and "Failed to load resource" not in e]
             check(f"i. env lab {q}{' (no assets: the fallback colours)' if extra else ''}: {m['draws']} draws, {m['tris']} triangles (<= {lim[0]} / {lim[1]}), {m['files']} files loaded, "
