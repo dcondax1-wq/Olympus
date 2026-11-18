@@ -17,6 +17,7 @@ What it does (nothing here changes what a suite asserts):
     under load (and says so in the output)
   - BK_FAST=1 (opt-in; run_area.py --fast): new contexts default to device_scale_factor=1 and reduced motion (the suite's own explicit
     values win). Software GL is much slower at 3x pixels. Suites that assert 3D or motion should not run with it;
+  - ntfy.sh answered with "{}" in every context (tests/net_stub.py): the PC's public status topic never reaches a suite's page;
   - a clear "machine too loaded" skip: BK_MAX_LOAD=<load per cpu> makes launch() print the reason and exit with code 77 (run_area.py
     reports it as SKIP, not as a failure) when load1 / cpus is above it.
 Nothing here ever kills a process other than the browser this process started.
@@ -84,6 +85,14 @@ def install() -> None:
     if _PATCHED:
         return
     _PATCHED = True
+    try:                                                         # hermetic by default: ntfy.sh (the PC's public status topic) answers "{}"
+        try:
+            from tests import net_stub as _NS
+        except ImportError:
+            import net_stub as _NS
+        _NS.install()
+    except Exception:  # noqa: BLE001
+        pass
     from playwright.sync_api import Browser, BrowserContext, Page, TimeoutError as PWTimeout
     try:
         from playwright.sync_api import Frame, Locator

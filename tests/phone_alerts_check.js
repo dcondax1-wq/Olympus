@@ -19,7 +19,7 @@ const srv = http.createServer((q, s) => {
 (async () => {
   const steps = [], errors = [];
   const step = (n, ok, info = '') => steps.push([n, !!ok, String(info).slice(0, 300)]);
-  const b = await chromium.launch();
+  const b = require('./net_stub.cjs').wrap(await chromium.launch());   // ntfy.sh answers "{}": never the PC's real status
   try {
     const p = await b.newPage({ viewport: { width: 390, height: 900 }, isMobile: true, hasTouch: true });
     p.on('pageerror', (e) => errors.push(e.message.slice(0, 200)));
