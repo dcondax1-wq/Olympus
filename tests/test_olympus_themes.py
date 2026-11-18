@@ -423,8 +423,8 @@ def test_jarvis(br, origin, shots=None):
     p.evaluate("window.__jarvis.setTheme('agora')")
     p.wait_for_timeout(200)
     back = p.evaluate("() => [localStorage.getItem('olympus.theme'), document.documentElement.dataset.olyTheme, getComputedStyle(document.documentElement).getPropertyValue('--c').trim(), document.documentElement.style.getPropertyValue('--c'), localStorage.getItem('olympus.theme.paint')]")
-    check("d. a Jarvis colour (Agora) goes back to the OLYMPUS default and shows its own colour (no inline paint left)",
-          back[0] == "agora" and back[1] == "agora" and back[2] == "#c8a24a" and back[3] == "" and back[4] is None, back)
+    check("d. a Jarvis colour (Agora) goes back to the OLYMPUS default and shows its own colour (no inline paint left): Classic Jarvis's violet, the Jarvis default since 2026-11-18",
+          back[0] == "agora" and back[1] == "agora" and back[2] == "#a855f7" and back[3] == "" and back[4] is None, back)
     p.evaluate("window.__jarvis.setTheme('agora')")
     check("d. Jarvis: no console error while theming", not real(errs), real(errs)[:3])
     ctx.close()
@@ -545,7 +545,10 @@ def test_reach_data(data):
           not miss and "url(" not in fonts and "http" not in fonts and all(st[i][1] and st[i][1].get("radius") for i in STYLED), miss)
     defs = []
     for fp in glob.glob(os.path.join(WEB, "**", "*.css"), recursive=True) + glob.glob(os.path.join(WEB, "**", "*.html"), recursive=True):
-        if re.search(r"--oly-th-[\w-]+\s*:", read(fp)):
+        # Jarvis's own Classic look (jarvis/classic.css, the Jarvis default since 2026-11-18) repaints the slots, but only inside rules scoped
+        # to <html data-jlook="classic">: those blocks are its look, not a stylesheet painting the AGORA default
+        txt = re.sub(r'html:root\[data-jlook="classic"\][^{}]*\{[^{}]*\}', "", read(fp))
+        if re.search(r"--oly-th-[\w-]+\s*:", txt):
             defs.append(os.path.relpath(fp, WEB))
     check("f. no stylesheet defines a theme slot (--oly-th-*): only themes.js paints them, so on the default every var(--oly-th-x, <AGORA colour>) is the AGORA colour", not defs, defs)
     left, layer_bad = {}, {}
@@ -624,7 +627,7 @@ def gate_ready(p):
 
 
 # 2026-11-14: the Me hub (team ME1, a page hub: health, cards, home) has its own Mix row and takes Plan & Day's look in the combos
-MIX_ROWS = ["Today", "Me", "Bots & Evals", "Kalshi", "My Money", "Plan & Day", "Research", "Jarvis", "Worlds", "Settings & Help", "This Gate"]
+MIX_ROWS = ["Bots & Evals", "My Money", "Today", "Me", "Plan & Day", "Jarvis", "Research", "Kalshi", "Worlds", "Settings & Help", "This Gate"]   # the Gate's hub order (2026-11-16: Bots & Evals and My Money lead, Kalshi and Worlds last)
 TRADER_HUBS = {"today": "amber", "me": "forest", "bots": "amber", "kalshi": "stocks", "money": "stocks", "plan": "forest", "research": "amber", "jarvis": "forest", "worlds": "aurora", "settings": "forest"}
 
 
@@ -768,6 +771,8 @@ def test_same_as_before(br):
             ctx = br.new_context(viewport={"width": 390, "height": 844}, is_mobile=True, has_touch=True, service_workers="block", reduced_motion="reduce")
             ctx.route("**/*", (lambda o: lambda r: r.continue_() if r.request.url.startswith(o) else r.abort())(origin))
             ctx.add_init_script("try { sessionStorage.setItem('jarvis.booted', '1'); localStorage.setItem('jarvis.seen', JSON.stringify('j9')); localStorage.setItem('jarvis.intro', 'off'); } catch (e) {}")
+            if name == "jarvis":                 # Jarvis's AGORA look (Classic, the default since 2026-11-18, is its own violet palette, not the slots' AGORA literals)
+                ctx.add_init_script("try { localStorage.setItem('jarvis.look', 'agora'); } catch (e) {}")
             p = ctx.new_page()
             p.set_default_timeout(90000)
             try:

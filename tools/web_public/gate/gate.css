@@ -205,6 +205,7 @@ html[data-oly-lite="1"] .g-hub, html[data-oly-lite="1"] .g-card { box-shadow: no
 .g-dr { display: flex; flex-direction: column; justify-content: flex-end; gap: 3px; min-height: 72px; padding: 10px 12px; border-radius: var(--ag-radius-s); border: 1px solid var(--ag-line);
   border-top: 4px solid var(--dc, var(--ag-gold)); background: linear-gradient(180deg, var(--ag-s2), var(--ag-s1)); color: var(--ag-text); text-decoration: none; -webkit-touch-callout: none; min-width: 0; }
 .g-dr b { font: 700 1.1875rem/1.15 var(--ag-serif); color: var(--dc, var(--ag-gold)); }     /* the four doors (2026-11-18); night-gate: 10 px padding, the "Four doors" heading and the search hint for screen readers only, so the Right now card and Your six stay on the first phone screen (390 x 844) */
+.g-dr[data-door="zeus"] { --dc: var(--oly-th-a8, #c8a24a); } .g-dr[data-door="money"] { --dc: var(--oly-th-g8, #a0ac6e); } .g-dr[data-door="kalshi"] { --dc: var(--oly-th-a8, #c9b94e); } .g-dr[data-door="more"] { --dc: var(--oly-th-a9, #d1a06a); }   /* door colours here, not inline: they follow the theme */
 .g-qline { color: var(--ag-soft); font-size: .8125rem; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow-wrap: anywhere; }
 .g-qline.ok { color: var(--ag-olive-text); } .g-qline.warn { color: var(--ag-sun); } .g-qline.bad { color: var(--ag-terra-text); }
 .g-rowp { display: flex; align-items: stretch; border-top: 1px solid var(--ag-line); }
@@ -229,21 +230,6 @@ html.g-locked, html.g-locked body { overflow: hidden; }
 @media (prefers-reduced-motion: no-preference) { .g-q { transition: transform var(--ag-d1) var(--ag-ease), border-color var(--ag-d1) var(--ag-ease); } .g-q:active { transform: scale(.97); } }
 @media (hover: hover) { .g-q:hover, .g-azbtn:hover { border-color: var(--ag-gold); } }
 
-/* ================================================================================================ style themes (olympus/themes.js 'style', 2026-11-14)
-   Only under <html data-oly-style> (a style theme is on): the page background (a gradient or a pattern), the cards' surface, border, shadow and
-   blur, the titles' weight / case / tracking / italic and the primary button, from the --oly-th-* the engine paints. The default (AGORA) and the
-   colour-only themes never set the attribute, so nothing here applies to them. */
-html[data-oly-style] { background: var(--oly-th-page-bg) fixed var(--oly-th-n3); }
-html[data-oly-style] body { background: transparent; }
-html[data-oly-style] :is(.g-card, .g-hub, .g-fact, .g-list:not(:empty), .g-search input, .g-chip, .g-sw, .g-mixrow, .g-combo) { background: var(--oly-th-card-bg) !important; border: var(--oly-th-card-border) !important; box-shadow: var(--oly-th-card-shadow) !important;
-  border-radius: var(--oly-th-radius) !important;
-  -webkit-backdrop-filter: var(--oly-th-card-blur); backdrop-filter: var(--oly-th-card-blur); }
-html[data-oly-style] :is(.g-title, .g-h2, .g-hub b, .g-nowhead h2) { font-weight: var(--oly-th-title-weight) !important; text-transform: var(--oly-th-title-case); letter-spacing: var(--oly-th-title-track) !important;
-  font-style: var(--oly-th-title-style); }
-html[data-oly-style] .g-btn.primary { background: var(--oly-th-btn-bg) !important; color: var(--oly-th-btn-fg) !important; border: var(--oly-th-btn-border) !important; box-shadow: none !important; }
-html[data-oly-style] :is(.g-sw[aria-checked="true"], .g-mini[aria-checked="true"], .g-combo[aria-pressed="true"]) { border-color: var(--oly-th-ring) !important; box-shadow: 0 0 0 2px var(--oly-th-ring) inset !important; }
-html[data-oly-style] :is(.g-q, .g-azbtn) { background: var(--oly-th-card-bg) !important; border: var(--oly-th-card-border) !important; border-radius: var(--oly-th-radius) !important; }
-
 /* ------------------------------------------------------------------ 3D touch (team FX 2026-11-15, gate.js tilt3d): only with html[data-g3d] (never reduced motion / LITE / Battery) */
 html[data-g3d] .g-hubgrid { perspective: 900px; }
 html[data-g3d] .g-hub { position: relative; transform-style: preserve-3d; will-change: auto; }
@@ -258,3 +244,18 @@ html[data-g3d] .g-hicon { transition: transform .18s ease-out; }
 @keyframes g-rise { from { opacity: 0; transform: translateY(14px) rotateX(16deg); } to { opacity: 1; transform: none; } }
 html[data-g3d] .g-hubgrid.g-rise .g-hub { transform-origin: 50% 100%; animation: g-rise .52s cubic-bezier(.2, .8, .2, 1) both; animation-delay: var(--g-rise, 0ms); }
 @media (prefers-reduced-motion: reduce) { html[data-g3d] .g-hub, html[data-g3d] .g-hub.g-tilt, html[data-g3d] .g-hub.g-hover { transform: none !important; } html[data-g3d] .g-hub::after { display: none; } }
+
+/* ================================================================================================ style themes (olympus/themes.js 'style', 2026-11-14)
+   Only under <html data-oly-style> (a style theme is on): the page background (a gradient or a pattern), the cards' surface, border, shadow and
+   blur, the titles' weight / case / tracking / italic and the primary button, from the --oly-th-* the engine paints. The default (AGORA) and the
+   colour-only themes never set the attribute, so nothing here applies to them. */
+html[data-oly-style] { background: var(--oly-th-page-bg) fixed var(--oly-th-n3); }
+html[data-oly-style] body { background: transparent; }
+html[data-oly-style] :is(.g-card, .g-hub, .g-fact, .g-list:not(:empty), .g-search input, .g-chip, .g-sw, .g-mixrow, .g-combo) { background: var(--oly-th-card-bg) !important; border: var(--oly-th-card-border) !important; box-shadow: var(--oly-th-card-shadow) !important;
+  border-radius: var(--oly-th-radius) !important;
+  -webkit-backdrop-filter: var(--oly-th-card-blur); backdrop-filter: var(--oly-th-card-blur); }
+html[data-oly-style] :is(.g-title, .g-h2, .g-hub b, .g-nowhead h2) { font-weight: var(--oly-th-title-weight) !important; text-transform: var(--oly-th-title-case); letter-spacing: var(--oly-th-title-track) !important;
+  font-style: var(--oly-th-title-style); }
+html[data-oly-style] .g-btn.primary { background: var(--oly-th-btn-bg) !important; color: var(--oly-th-btn-fg) !important; border: var(--oly-th-btn-border) !important; box-shadow: none !important; }
+html[data-oly-style] :is(.g-sw[aria-checked="true"], .g-mini[aria-checked="true"], .g-combo[aria-pressed="true"]) { border-color: var(--oly-th-ring) !important; box-shadow: 0 0 0 2px var(--oly-th-ring) inset !important; }
+html[data-oly-style] :is(.g-q, .g-azbtn) { background: var(--oly-th-card-bg) !important; border: var(--oly-th-card-border) !important; border-radius: var(--oly-th-radius) !important; }

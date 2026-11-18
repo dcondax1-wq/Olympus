@@ -234,7 +234,10 @@ def test_jarvis(br, origin):
     ctx, p, errs = jarvis(br, origin, reduced=True)
     p.wait_for_function("() => !!window.jarvisPortal", timeout=120000)
     mode = p.evaluate("() => window.jarvisPortal.jump({ id: 'oracle', name: 'Oracle', color: '#7fe9ff' })")
-    p.wait_for_timeout(600)
+    try:                                               # a 0.2 s fade: wait for it to be gone (a loaded machine runs its timers late), not a fixed 600 ms
+        p.wait_for_function("() => !document.querySelector('.jportal-fade, .jportal')", timeout=int(BK.limit_ms(5000, "fade gone")))
+    except Exception:
+        pass
     check("h. reduced motion: a 0.2 s fade instead of the warp, gone after", mode == "fade"
           and p.evaluate("() => !document.querySelector('.jportal-fade, .jportal')"), mode)
     ctx.close()
@@ -264,6 +267,8 @@ def jarvis_gpu(br, origin, fx):
     p.on("pageerror", lambda e: errs.append(str(e)))
     p.goto(origin + "/jarvis/")
     p.wait_for_function("() => window.__jarvisBackdrop && __jarvisBackdrop.frames > 3", timeout=240000)
+    if fx == "high":                                   # the core's composer comes up after the backdrop on a slow machine: wait for its 2 MSAA buffers
+        settle(p, 2)
     p.wait_for_timeout(int(BK.limit_ms(2500, "gpu settle")))
     return ctx, p, errs
 
