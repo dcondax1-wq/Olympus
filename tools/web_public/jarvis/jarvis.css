@@ -978,6 +978,7 @@ html[data-bg3d="on"][data-court="3d"] .court-art { opacity: 0; }                
 .dgate i { flex: none; width: 7px; height: 7px; border-radius: 50%; background: transparent; }
 .dgate[data-need] { color: var(--txt); } .dgate[data-need="warn"] i { background: var(--warn); } .dgate[data-need="bad"] i { background: var(--bad); }
 .dgate:not([data-need]) i { display: none; }
+.jtitle { display: none; }                                         /* the HUD title: Classic Jarvis only (classic.css) */
 .hero-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-width: 0; }
 .hero-h { margin: 0; min-width: 0; font: 600 34px/1.15 var(--fh); letter-spacing: 0; color: var(--txt); }
 .hero .hsub { margin: 0; text-align: left; font: 500 14px/1.4 var(--fb); letter-spacing: 0; color: var(--oly-th-n30, #cfc4b2); }

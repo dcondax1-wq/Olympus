@@ -4,7 +4,7 @@
      palette (#a855f7 / #7c3aed / #c084fc on black), Orbitron + Rajdhani from the files in jarvis/; jarvis.css keeps no violet / techno font
   b. static: the first paint adds data-jlook + the sheet only for 'jarvis.look' = 'classic' under the default OLYMPUS theme; the Look sheet's
      Jarvis look switch (AGORA / Classic Jarvis), the palette entries and the voice phrases; the 3D core gets the violet of classic.css
-  c. Chromium (phone size): saved Classic -> violet from the first paint; AGORA -> gold again and the choice cleared;
+  c. Chromium (phone size): Classic (the default since 2026-11-18) -> violet from the first paint; AGORA -> gold again and saved;
      Classic again from the Look sheet; "classic Jarvis" typed in the command bar switches it; picking another OLYMPUS theme turns Classic off;
      no page error
 
@@ -45,13 +45,14 @@ def part_static():
           and all(os.path.isfile(os.path.join(JV, f)) for f in ("orbitron.woff2", "rajdhani-400.woff2", "rajdhani-500.woff2", "rajdhani-600.woff2", "rajdhani-700.woff2")))
     check("a. jarvis.css (the AGORA default) stays free of the violet and the techno fonts", "#a855f7" not in main and "@font-face" not in main and "data-jlook" not in main)
     head = page[:page.index("</head>")]
-    check("b. the first paint: Classic only for 'jarvis.look' = 'classic' under the default OLYMPUS theme; its own sheet, added then",
-          "g('jarvis.look') === 'classic' && (g('olympus.theme') || 'agora') === 'agora'" in head and "d.setAttribute('data-jlook', 'classic')" in head
-          and "cl.href = 'classic.css?v=c1'" in head and "d.setAttribute('data-theme', 'agora')" in head)
+    check("b. the first paint: Classic by default (2026-11-18, owner: 'back to how it was'), AGORA only for 'jarvis.look' = 'agora'; under the default OLYMPUS theme; its own sheet, added then",
+          "g('jarvis.look') !== 'agora' && (g('olympus.theme') || 'agora') === 'agora'" in head and "d.setAttribute('data-jlook', 'classic')" in head
+          and "cl.href = 'classic.css?v=c2'" in head and "d.setAttribute('data-theme', 'agora')" in head)
     check("b. the Look sheet: Jarvis look AGORA / Classic Jarvis; palette entries; the voice phrases; the core key",
           'id="jlookSeg"' in page and 'data-jlook-k="classic"' in page and 'data-jlook-k="agora"' in page and "function setJLook(k)" in page
           and "Look: Classic Jarvis" in page and "bring back (the )?old (jarvis|look)" in page and "if (root.dataset.jlook === 'classic' && !olyOn()) return themeColors();" in page)
-    check("b. any OLYMPUS theme replaces Classic", "if (olyOn() && root.dataset.jlook) { delete root.dataset.jlook; rawSet('jarvis.look', null); }" in page)
+    check("b. any OLYMPUS theme replaces Classic; back on the default theme Classic returns (unless AGORA was picked)",
+          "if (olyOn() && root.dataset.jlook) delete root.dataset.jlook;" in page and "else if (!olyOn() && !root.dataset.jlook && raw('jarvis.look') !== 'agora') { classicSheet(); root.dataset.jlook = 'classic'; }" in page)
 
 
 def part_browser():
@@ -84,18 +85,18 @@ def part_browser():
                   and "Orbitron" in a["fh"] and a["sheet"], a)
             p.evaluate("() => { document.querySelector('#look').hidden = false; document.querySelector('[data-jlook-k=agora]').click(); }")
             b = p.evaluate(st)
-            check("c. AGORA: gold again, the choice cleared", b["jlook"] == "" and b["c"] == "#c8a24a" and b["saved"] is None, b)
+            check("c. AGORA: gold again, the choice saved ('agora': Classic is the default)", b["jlook"] == "" and b["c"] == "#c8a24a" and b["saved"] == "agora", b)
             p.evaluate("() => document.querySelector('[data-jlook-k=classic]').click()")
             p.wait_for_timeout(300)
             c = p.evaluate(st)
             pressed = p.evaluate("() => document.querySelector('[data-jlook-k=classic]').getAttribute('aria-pressed')")
-            check("c. Classic from the Look sheet: violet, saved, its button pressed", c["jlook"] == "classic" and c["c"] == "#a855f7" and c["saved"] == "classic" and pressed == "true", (c, pressed))
+            check("c. Classic from the Look sheet: violet, saved, its button pressed", c["jlook"] == "classic" and c["c"] == "#a855f7" and c["saved"] is None and pressed == "true", (c, pressed))
             p.evaluate("() => { document.querySelector('[data-jlook-k=agora]').click(); document.querySelector('#look').hidden = true; }")
             p.fill("#q", "classic Jarvis")
             p.press("#q", "Enter")
             p.wait_for_timeout(500)
             d = p.evaluate(st)
-            check("c. 'classic Jarvis' typed in the command bar switches it", d["jlook"] == "classic" and d["saved"] == "classic", d)
+            check("c. 'classic Jarvis' typed in the command bar switches it (back to the default: nothing saved)", d["jlook"] == "classic" and d["saved"] is None, d)
             p.evaluate("() => window.OLYMPUS_THEMES && window.OLYMPUS_THEMES.set('nord')")
             p.wait_for_timeout(600)
             e = p.evaluate(st)

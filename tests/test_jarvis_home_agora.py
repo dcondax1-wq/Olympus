@@ -142,7 +142,7 @@ def part_d():
 def part_e():
     page = read(JV, "index.html")
     css = read(JV, "jarvis.css")
-    check("e. index.html: the home cards mount (#htoday + home-cards.js module) and the Jarvis CSS is versioned", 'id="htoday"' in page and 'src="./home-cards.js?v=' in page and "jarvis.css?v=j19" in page)
+    check("e. index.html: the home cards mount (#htoday + home-cards.js module) and the Jarvis CSS is versioned", 'id="htoday"' in page and 'src="./home-cards.js?v=' in page and "jarvis.css?v=j20" in page)
     check("e. the What's new note is a slim banner in the page flow (#wnb, dismissible), not a toast over the top card; toasts sit above the dock",
           "function banner(" in page and "banner('Every app is its own dashboard" in page and ".wnb {" in css and "bottom: calc(var(--stack) + 8px)" in css and "top: auto" in css)
     hc = read(JV, "home-cards.js")
