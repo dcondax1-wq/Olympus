@@ -154,6 +154,19 @@ def gather(offline: bool = False, hb=None, lite=None, now=None) -> dict:
 
 
 # ------------------------------------------------------------------------------------------------ the 40 lines
+DECISIONS = os.path.join(ROOT, "tools", "web_public", "business", "decisions.json")
+
+
+def decide_open(path: str | None = None):
+    """Ids of the Decide card's open questions (business/decisions.json, Claude keeps it), or None when the file is missing."""
+    try:
+        with open(path or DECISIONS, encoding="utf-8") as fh:
+            j = json.load(fh)
+    except (OSError, ValueError):
+        return None
+    return [str(d.get("id")) for d in (j.get("items") or []) if isinstance(d, dict) and d.get("status", "open") == "open"]
+
+
 def lines(board: dict, now=None) -> list:
     now = int(now or time.time())
     pc = B._d(board.get("pc"))
@@ -193,6 +206,10 @@ def lines(board: dict, now=None) -> list:
     out.append(f"OWNER NOTES NOT ANSWERED: {len(on)}" + (" (answer: python tools/board.py note \"...\" --answers all)" if on else ""))
     for e in on[-5:]:
         out.append(f"  [{e.get('id')}] {B.et_text(e.get('t'))} {e.get('acct') or ''}: {B.clean(e.get('text'), 110)}")
+    dec = decide_open()
+    if dec is not None:
+        out.append(f"DECIDE CARD: {len(dec)} open (tools/web_public/business/decisions.json; a tap arrives above as 'Decide <id>: YES/NO/LATER'; "
+                   "apply it by the CLAUDE.md rules, then set its status)" + (": " + ", ".join(dec[:7]) if dec else ""))
     w = board.get("waiting") or []
     out.append(f"WAITING ON THE OWNER (accounts.json decisions, plan {board.get('plan_updated') or '?'}): {len(w)}")
     for x in w[:5]:
