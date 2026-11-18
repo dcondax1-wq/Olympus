@@ -6,8 +6,10 @@ One settings file: notify_settings.json (repo root; a missing or broken file = D
   alerts               per type on / off: trade_opened, trade_closed, eval_milestones (25/50/75 %), account_status (PASSED,
                        FAILED, LOCKED, LOST, target reached, payout READY), room_low, daily_summary, morning_brief, pc_silent,
                        problems (bot down, FEED STALE, NinjaTrader closed, fill check, trade watch), other (roll, quiet bot, ...).
-                       Default (owner 2026-11-18, "important only"): ON = trade_closed, account_status, daily_summary,
-                       morning_brief, pc_silent, problems; the rest OFF
+                       Default (owner 2026-11-18, "important only" + every entry): ON = trade_opened, trade_closed,
+                       account_status, daily_summary, morning_brief, pc_silent, problems; the rest OFF. Entries go out the
+                       moment the bot routes them (instant_entry, via engine/push.pc_notify; the 15-minute report then skips
+                       the same entry), closes with the next report ($, day, room).
   quiet_hours          ET; inside them trade pushes and ordinary ones arrive without sound (ntfy priority "low"), the guard's
                        summaries / milestones wait for the end; ring_in_quiet_hours kinds keep their sound
   milestones_pct       eval progress pushes (% of the profit target made), once per level per eval
@@ -35,6 +37,7 @@ import datetime as dt
 import json
 import os
 import re
+import time
 from zoneinfo import ZoneInfo
 
 ET = ZoneInfo("America/New_York")
@@ -45,7 +48,9 @@ TYPES = ("trade_opened", "trade_closed", "eval_milestones", "account_status", "r
 # owner 2026-11-18: "important only" = trade results, PASSED / FAILED / LOCKED, payout ready, PC silent, the daily summary
 # (+ the 07:30 ET morning brief, tools/morning_brief.py, 2026-11-18).
 # Everything else is OFF by default (one line in notify_settings.json turns a type back on).
-IMPORTANT = ("trade_closed", "account_status", "daily_summary", "morning_brief", "pc_silent", "problems")   # problems = emergencies (bot down, NinjaTrader closed)
+# owner 2026-11-18 evening: "I want notifications when we get in a trade in any account" -> trade_opened ON, sent the moment the
+# bot routes the entry (instant_entry below, from engine/push.pc_notify), not at the next 15-minute report.
+IMPORTANT = ("trade_opened", "trade_closed", "account_status", "daily_summary", "morning_brief", "pc_silent", "problems")   # problems = emergencies (bot down, NinjaTrader closed)
 DEFAULTS = {
     "alerts": {k: k in IMPORTANT for k in TYPES},
     "quiet_hours": {"from": "23:00", "to": "07:00"},
@@ -207,6 +212,8 @@ def apply(msgs, now, s: dict | None = None) -> list:
         kind = m.get("kind") or kind_of(m.get("key"))
         if not on(kind, s):
             continue
+        if kind == "trade_opened" and instant_sent(m.get("entry_t")):
+            continue                                # the phone already got this entry the moment it was routed
         if quiet(now, s) and not rings(kind, s) and not m.get("night"):
             if kind in ("trade_opened", "trade_closed") or m.get("priority") in (None, "", "default"):
                 m = {**m, "priority": "low"}
@@ -396,3 +403,147 @@ def silent_step(prev: dict | None, seen_t, now, s: dict | None = None, fetched: 
         out["sent"] = 2
     st["out"] = out
     return st, msgs
+
+
+# ------------------------------------------------------------------------------------------------ instant entry alerts
+# Owner 2026-11-18: "I want notifications when we get in a trade in any account." Every routed entry of every bot (LIT /
+# Zlarior on each eval, ATLAS on the funded 25K, the extra accounts) already calls engine/push.pc_notify with a "fill"
+# payload; pc_notify hands real-account entries to instant_entry in a daemon thread: one ntfy push to the owner's PRIVATE
+# alert topic (the same OLYMPUS_HOME/ntfy.json the 15-minute report uses), at once. Never raises, never blocks routing.
+INSTANT_PATH = os.path.join(ROOT, "logs", "notify", "instant_sent.json")
+INSTANT_KEEP_S = 3 * 86400
+INSTANT_MATCH_S = 90                # the report's entry time vs the routed one (fill time vs order time)
+PT_USD = {"MNQ": 2.0, "MES": 5.0, "NQ": 20.0, "ES": 50.0}
+_ID_RX = re.compile(r"\b[A-Z]{4,}[A-Z0-9]*\d{5,}\b")
+
+
+def mask_ids(s) -> str:
+    """Account ids never leave the PC whole: MFFUEVBLDR123456 -> ...3456."""
+    return _ID_RX.sub(lambda m: "..." + m.group(0)[-4:], str(s or ""))
+
+
+def alert_cfg(env=None) -> dict:
+    """The private alert topic {"ntfy", "topic"} from OLYMPUS_HOME/ntfy.json (tools/pc_report.load_cfg's file); {} when none."""
+    try:
+        try:
+            from . import nogithub
+            d = nogithub.olympus_dir(env)
+        except Exception:
+            e = os.environ if env is None else env
+            d = e.get("OLYMPUS_HOME") or os.path.join(e.get("USERPROFILE") or os.path.expanduser("~"), ".olympus")
+        with open(os.path.join(d, "ntfy.json"), encoding="utf-8") as fh:
+            c = json.load(fh) or {}
+        topic = str(c.get("topic") or "").strip()
+        if not topic or c.get("on", True) is False:
+            return {}
+        return {"ntfy": str(c.get("ntfy") or "https://ntfy.sh").rstrip("/"), "topic": topic}
+    except Exception:
+        return {}
+
+
+def _instant_state(path=None) -> dict:
+    try:
+        with open(path or INSTANT_PATH, encoding="utf-8") as fh:
+            d = json.load(fh)
+        return d if isinstance(d, dict) else {}
+    except Exception:
+        return {}
+
+
+def instant_sent(entry_t, path=None, now=None) -> bool:
+    """True when an instant entry push went out for a trade entered within INSTANT_MATCH_S of entry_t (the report skips it)."""
+    t = _f(entry_t)
+    if t is None:
+        return False
+    for v in _d(_instant_state(path).get("entries")).values():
+        if _f(v) is not None and abs(_f(v) - t) <= INSTANT_MATCH_S:
+            return True
+    return False
+
+
+def _real_entry(p: dict) -> bool:
+    if not isinstance(p, dict) or p.get("kind") != "fill":
+        return False
+    acct = str(p.get("account") or "").lower()
+    if any(w in acct for w in ("paper", "sim", "demo", "playback", "replay")):
+        return False
+    return str(p.get("strategy") or "").upper() != "BLITZ"        # BLITZ is the hidden paper bot
+
+
+def _px(x) -> str:
+    v = _f(x)
+    return "" if v is None else (f"{v:,.2f}".rstrip("0").rstrip(".") if v % 1 else f"{v:,.0f}")
+
+
+def entry_message(p: dict, now=None, s: dict | None = None) -> dict:
+    """{title, body, priority, tags} for one routed entry: 'Zlarior 50K: LONG opened | risk $368 | target +$1,432'."""
+    p = _d(p)
+    side = str(p.get("side") or "").upper() or ("LONG" if "LONG" in str(p.get("title") or "") else "SHORT")
+    acct = mask_ids(p.get("account") or "account")
+    body0 = str(p.get("body") or "")
+    bot = "ATLAS" if ("ATLAS" in body0 or str(p.get("key") or "").endswith(":acctb") or "ATLAS" in acct.upper()) else "Zlarior"
+    name = acct if (bot.lower() in acct.lower()) else f"{bot} {acct}"
+    m = re.search(r"\b(MNQ|MES|NQ|ES)\b", body0)
+    contract = m.group(1) if m else "MNQ"
+    q, e, st, tg = _f(p.get("qty")), _f(p.get("entry")), _f(p.get("stop")), _f(p.get("target"))
+    usd_pt = PT_USD.get(contract, 2.0)
+    risk = abs(e - st) * q * usd_pt if None not in (q, e, st) else None
+    gain = abs(tg - e) * q * usd_pt if None not in (q, e, tg) else None
+    title = f"{name}: {side} opened" + (f" | risk ${risk:,.0f}" if risk else "") + (f" | target +${gain:,.0f}" if gain else "")
+    parts = [f"{int(q) if q is not None else ''} {contract}".strip() + (f" at {_px(e)}" if e is not None else "") + "."]
+    if st is not None or tg is not None:
+        parts.append(" ".join(x for x in (f"Stop {_px(st)}," if st is not None else "", f"target {_px(tg)}." if tg is not None else "") if x).rstrip(","))
+    when = _f(p.get("t"))
+    if when:
+        parts.append(_et(when).strftime("%I:%M %p ET").lstrip("0") + ".")
+    s = s or settings()
+    night = quiet(now if now is not None else time.time(), s)
+    return {"title": mask_ids(title), "body": mask_ids(" ".join(x for x in parts if x)), "priority": "low" if night else "high",
+            "tags": "chart_with_upwards_trend" if side == "LONG" else "chart_with_downwards_trend"}
+
+
+def _post(base, topic, msg, timeout=8) -> bool:
+    import urllib.request
+    h = {"Content-Type": "text/plain; charset=utf-8", "Title": msg["title"].encode("ascii", "replace").decode("ascii"),
+         "Priority": msg["priority"], "Tags": msg["tags"]}
+    req = urllib.request.Request(f"{base}/{topic}", data=msg["body"].encode("utf-8"), headers=h, method="POST")
+    with urllib.request.urlopen(req, timeout=timeout) as r:
+        return 200 <= r.status < 300
+
+
+def instant_entry(p: dict, now=None, path=None, cfg=None, poster=None) -> str:
+    """Send one entry push now (daemon thread from engine/push.pc_notify). Returns why (for tests / logs). Never raises."""
+    try:
+        if not _real_entry(p):
+            return "not a real-account entry"
+        s = settings()
+        if not on("trade_opened", s):
+            return "trade_opened is off"
+        cfg = cfg if cfg is not None else alert_cfg()
+        if not cfg.get("topic"):
+            return "no private alert topic on this PC"
+        path = path or INSTANT_PATH
+        st = _instant_state(path)
+        keys, ents = _d(st.get("keys")), _d(st.get("entries"))
+        key = str(p.get("key") or "")
+        if key and key in keys:
+            return "already sent"
+        msg = entry_message(p, now=now, s=s)
+        ok = (poster or _post)(cfg["ntfy"], cfg["topic"], msg)
+        if not ok:
+            return "ntfy did not take it (the 15-minute report sends it instead)"
+        t_now = time.time() if now is None else float(now)
+        keys[key or f"t:{t_now}"] = t_now
+        if _f(p.get("t")) is not None:
+            ents[key or f"t:{t_now}"] = _f(p.get("t"))
+        cut = t_now - INSTANT_KEEP_S
+        st = {"keys": {k: v for k, v in keys.items() if (_f(v) or 0) >= cut},
+              "entries": {k: v for k, v in ents.items() if (_f(keys.get(k)) or t_now) >= cut}}
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        tmp = path + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as fh:
+            json.dump(st, fh)
+        os.replace(tmp, path)
+        return "sent"
+    except Exception as e:
+        return f"failed: {e.__class__.__name__}"
