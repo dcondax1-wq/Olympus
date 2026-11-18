@@ -84,8 +84,9 @@ def part_a():
           "F.fetchLatest(" in core and "url('../board/board.json')" in core and "url('../business/accounts.json')" in core and "BM.pick(" in core and "MM.cards(" in core
           and "ZC.summary(" in js and "ZC.fetchAll(" in js and "'../pythia/events.json'" in js and "BM.pick(" not in js and "MM.cards(" not in js)
     order = [m for m in re.findall(r'<script src="([^"?]+)', html)]
-    check("a. scripts: pc_feed, payoutcoach, mffumodel, boardmodel (after mffumodel), edge_chip, the shared zeus_core, zeus.js last",
-          order == ["../pc_feed.js", "../business/payoutcoach.js", "../business/mffumodel.js", "../board/boardmodel.js", "../edge_chip.js", "../olympus/zeus_core.js", "zeus.js"], order)
+    check("a. scripts: pc_feed, payoutcoach, mffumodel, boardmodel (after mffumodel), edge_chip, the Decide card, the shared zeus_core, zeus.js last",
+          order == ["../pc_feed.js", "../business/payoutcoach.js", "../business/mffumodel.js", "../board/boardmodel.js", "../edge_chip.js",
+                    "../business/decide.js", "../olympus/zeus_core.js", "zeus.js"], order)
     check("a. the ZEUS edge chip mounts here (data-edge-chip, ../edge.json)", 'id="edgeChip" data-edge-chip data-edge-src="../edge.json"' in html)
     hrefs = re.findall(r'class="zs-btn"(?: id="\w+")? href="([^"]+)"', html)
     want = ["../business/mffu.html", "../trading/", "../index.html#/brain", "../board/", "../business/lab.html", "../business/accounts.html#coach", "../business/week.html"]

@@ -403,6 +403,127 @@ def run(out_path, bars_path=None, now=None, net=None, rules_path=RULES):
     return led, added
 
 
+# ---------------------------------------------------------------- the PC's 24/7 run (tools/pc_report.py hook, like kalshi_rewards_paper)
+PC_DIR = os.path.join(ROOT, "data", "kalshi_k1")        # gitignored
+PC_LOOPS = 48           # one child = 48 passes x 15 min = 12 h
+PC_GAP = 900
+STALE_S = 2400          # a child whose ledger is older than this is replaced
+
+
+def public_summary(led):
+    """The tiny PUBLIC card for the Kalshi page (<= 200 bytes as JSON): signals, settled, net $ per $1 staked, days running."""
+    summarize(led)
+    closed = led.get("closed") or []
+    n_open = len(led.get("open") or [])
+    pnl = sum(s.get("pnl_c", 0) for s in closed) / 100.0
+    staked = sum(s.get("price_c", 0) for s in closed) / 100.0
+    try:
+        days = (ts(led["updated"]) - ts(led["started"])) / 86400.0
+    except (KeyError, TypeError, ValueError):
+        days = 0.0
+    return {"kind": "kalshi_k1_pub", "paper_only": True, "updated": led.get("updated"), "days": round(max(days, 0.0), 1),
+            "sig": len(closed) + n_open, "set": len(closed), "net": round(pnl, 2),
+            "pu": round(pnl / staked, 3) if staked else None}
+
+
+def read_card(path=None, now=None):
+    """public_summary() as written by the PC child, only when it is under 2 days old; None otherwise. Never raises."""
+    path = path or pc_paths()["pub"]
+    try:
+        d = json.load(open(path, encoding="utf-8"))
+        if d.get("kind") != "kalshi_k1_pub" or d.get("paper_only") is not True:
+            return None
+        if (now or time.time()) - os.path.getmtime(path) > 2 * 86400:
+            return None
+        return {k: d.get(k) for k in ("kind", "paper_only", "updated", "days", "sig", "set", "net", "pu") if d.get(k) is not None}
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def pc_paths(pc_dir=PC_DIR):
+    return {"out": os.path.join(pc_dir, "k1_paper.json"), "pub": os.path.join(pc_dir, "summary.json"),
+            "run": os.path.join(pc_dir, "run.json"), "off": os.path.join(pc_dir, "OFF"), "log": os.path.join(pc_dir, "run.log")}
+
+
+def _read(path):
+    try:
+        return json.load(open(path, encoding="utf-8"))
+    except Exception:  # noqa: BLE001
+        return {}
+
+
+def pc_guard(now=None, env=None, pc_dir=PC_DIR):
+    """(start?, why) for the PC hook. Never raises."""
+    e = os.environ if env is None else env
+    now = time.time() if now is None else now
+    P = pc_paths(pc_dir)
+    if str(e.get("LE_KALSHI_K1", "1")).strip() == "0":
+        return False, "off (LE_KALSHI_K1=0)"
+    if os.path.exists(P["off"]):
+        return False, "off (data/kalshi_k1/OFF)"
+    try:
+        age = now - os.path.getmtime(P["out"])
+    except OSError:
+        age = None
+    run = _read(P["run"])
+    if age is not None and age < STALE_S:
+        return False, "running (ledger %d s old)" % age
+    if now - float(run.get("t") or 0) < STALE_S:
+        return False, "starting"
+    return True, "not running" if age is None else "ledger %d min old" % (age // 60)
+
+
+def pc_spawn(token, pc_dir=PC_DIR):
+    """the detached, low-priority child with no window (it outlives the 15-minute task)."""
+    import subprocess
+    P = pc_paths(pc_dir)
+    os.makedirs(pc_dir, exist_ok=True)
+    log = open(P["log"], "a", encoding="utf-8")
+    cmd = [sys.executable, "-X", "utf8", os.path.abspath(__file__), "--loop", str(PC_LOOPS), "--gap", str(PC_GAP), "--out", P["out"],
+           "--pub", P["pub"], "--token", token, "--run", P["run"]]
+    bars = os.path.join(ROOT, "data", "nt_bars", "MNQ_1m.csv")
+    if os.path.exists(bars):
+        cmd += ["--bars", bars]
+    kw = {"cwd": ROOT, "stdout": log, "stderr": log, "stdin": subprocess.DEVNULL}
+    if os.name == "nt":
+        base = 0x00004000 | 0x08000000 | 0x00000200
+        try:
+            return subprocess.Popen(cmd, creationflags=base | 0x01000000, **kw).pid
+        except OSError:
+            return subprocess.Popen(cmd, creationflags=base, **kw).pid
+    kw["start_new_session"] = True
+    return subprocess.Popen(cmd, **kw).pid
+
+
+def maybe_run(say=print, env=None, now=None, pc_dir=PC_DIR, spawn_fn=None):
+    """tools/pc_report.py's 15-minute hook: keep one paper child running. Never raises; returns the new pid or None."""
+    try:
+        e = os.environ if env is None else env
+        if e.get("LE_PR_NO_NET") == "1" and spawn_fn is None:
+            return None
+        now = time.time() if now is None else now
+        ok, why = pc_guard(now, e, pc_dir)
+        if not ok:
+            return None
+        token = "%d-%d" % (int(now), os.getpid())
+        P = pc_paths(pc_dir)
+        write_json(P["run"], {"token": token, "t": int(now), "why": why})   # an older child sees the new token and stops
+        pid = (spawn_fn or pc_spawn)(token, pc_dir)
+        if pid:
+            say("  [OK]  Kalshi K1 paper test started (paper only, public data, pid %s)" % pid)
+        return pid
+    except Exception as ex:  # noqa: BLE001
+        say("  [..] Kalshi K1 paper skipped: %s: %s" % (ex.__class__.__name__, str(ex)[:120]))
+        return None
+
+
+def still_mine(run_path, token):
+    if not run_path or not token:
+        return True
+    r = _read(run_path)
+    return not isinstance(r, dict) or r.get("token") in (None, token)
+
+
 def print_summary(led):
     print("rule         n   won   P&L $ (1 lot)  staked $  per $1  verdict")
     for k, r in sorted(led.get("summary", {}).items()):
@@ -476,15 +597,38 @@ def main():
     ap.add_argument("--bars", default="")
     ap.add_argument("--summary", action="store_true")
     ap.add_argument("--selftest", action="store_true")
+    ap.add_argument("--loop", type=int, default=1, help="(PC hook) passes to run")
+    ap.add_argument("--gap", type=float, default=900.0, help="(PC hook) seconds between passes")
+    ap.add_argument("--pub", help="also write the tiny public summary here after every pass")
+    ap.add_argument("--token", help="(PC hook) this child's token; it stops when run.json names another")
+    ap.add_argument("--run", help="(PC hook) the run.json holding the current token")
+    ap.add_argument("--pc-status", action="store_true", help="what the PC hook would do now (starts nothing)")
     a = ap.parse_args()
     if a.selftest:
         return selftest()
+    if a.pc_status:
+        print("PC hook:", pc_guard())
+        return 0
     if a.summary:
         print_summary(load_ledger(a.out))
         return 0
-    led, added = run(a.out, a.bars or None)
-    print(f"kalshi_paper: {added} new signal(s), {len(led['open'])} open, {len(led['closed'])} settled -> {a.out}")
-    print_summary(led)
+    for k in range(max(1, a.loop)):
+        t0 = time.time()
+        if not still_mine(a.run, a.token):
+            print("a newer run took over: stopping", flush=True)
+            break
+        try:
+            led, added = run(a.out, a.bars or None)
+            if a.pub:
+                write_json(a.pub, public_summary(led))
+            print(f"kalshi_paper: {added} new signal(s), {len(led['open'])} open, {len(led['closed'])} settled -> {a.out}", flush=True)
+        except Exception as e:  # noqa: BLE001  (one bad pass never kills the run)
+            print("pass error:", repr(e), file=sys.stderr, flush=True)
+            if a.loop <= 1:
+                raise
+        if k < a.loop - 1:
+            time.sleep(max(1.0, a.gap - (time.time() - t0)))
+    print_summary(load_ledger(a.out))
     return 0
 
 

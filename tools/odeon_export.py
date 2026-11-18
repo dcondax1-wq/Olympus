@@ -10,6 +10,8 @@ Sources (futures only, never Yahoo):
   ATLAS   the members' stored research trades (research/second/ema_best.json, md_best.json, sr_best.json) and, when a
           trade has a picture, its plain-words setup line (research/lab/chart_examples/index.json, the "alt" text up to
           "Result:", which engine/trade_chart.py builds from what the bot saw at the entry)
+  real (data) every account's live trades of the PC's data branch (tools/live_trades.py: data/pc_days/<day>/trades.jsonl.gz
+          + bars/<ROOT>_1m.csv.gz, pulled by tools/data_pull.py), reel id real.<account key>.<day_HHMM>_<side>, "ak" = the account
   paper / real  the cloud's own trades since the PC feed (2026-10-19 on): research/odeon/cloud_trades.json, a snapshot of the
           `dashboard` branch's state.json (the cloud paper ledger + the PC account's closed MFFU eval trades from its
           heartbeat), refreshed by `--snapshot`; or --data <site data.json> (the published file: live.ledger + accounts)
@@ -47,6 +49,8 @@ import subprocess
 from zoneinfo import ZoneInfo
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if ROOT not in __import__("sys").path:
+    __import__("sys").path.insert(0, ROOT)
 ET = ZoneInfo("America/New_York")
 OUT = os.path.join(ROOT, "tools", "web_public", "odeon", "trades.json")
 REPLAYS = os.path.join(ROOT, "research", "lab", "replays.json")
@@ -502,6 +506,40 @@ def live_trades(tape: Tape, data: dict, twins: dict) -> list:
     return out
 
 
+# ---------------------------------------------------------------- every account's live trades from the PC's data branch
+def branch_trades(tape: Tape, rows: list, twins: dict, n: int = 40) -> list:
+    """The data branch's closed live trades (tools/live_trades.load: data/pc_days, pulled by tools/data_pull.py) on the PC's own
+    NinjaTrader 1m bars of that day. One reel per account and trade ("ak" = the account key); no bars = no reel (the Trading page
+    then says the replay comes after the day's upload)."""
+    out = []
+    for t in rows[-n:]:
+        if t.get("e") is None or t.get("s") is None or t.get("x") is None or not t.get("xt"):
+            continue
+        e_t, d = int(t["t"]), (-1 if t["side"] == "SHORT" else 1)
+        side = "short" if d < 0 else "long"
+        risk = abs(float(t["e"]) - float(t["s"]))
+        tg = float(t["tg"]) if t.get("tg") is not None else float(t["e"]) + d * risk
+        base = {"id": f"real.{t['ak']}.{dt.datetime.fromtimestamp(e_t, ET):%Y-%m-%d_%H%M}_{side}", "ak": t["ak"],
+                "bot": t["bot"], "strat": t["bot"] if not t.get("m") else t["m"],
+                "label": f"{t['an']} · {'Zlarior · LIT' if t['bot'] == 'LIT' else 'ATLAS' + (' ' + t['m'] if t.get('m') else '')} (MFFU, real)",
+                "src": "real", "day": t["day"], "d": d, "qty": int(t.get("q") or 1),
+                "entry": {"t": e_t, "px": float(t["e"])}, "stop": float(t["s"]), "target": round(tg, 2),
+                "exit": {"t": int(t["xt"]), "px": float(t["x"]), "kind": str(t.get("k") or "").upper()},
+                "usd": float(t.get("usd") or 0), "r": float(t.get("r") or 0), "risk_pts": risk, "off": et_off(e_t),
+                "plan_rr": abs(tg - float(t["e"])) / risk if risk else None, "target_label": "VIX band" if t["bot"] == "LIT" else "target",
+                "twin": twins.get(e_t) if t["bot"] == "LIT" else None}
+
+        def evs(rows_, secs, a, t_end, base=base, side=side):
+            en = base["entry"]
+            return [ev(en["t"], "entry", f"{side.capitalize()} {micros(base['qty'])} at {px(en['px'])}. Stop {px(base['stop'])} "
+                       f"({base['risk_pts']:.2f} pts). Target {px(base['target'])} ({(base['plan_rr'] or 0):.2f}R).", price=en["px"])]
+        tr = make_trade(tape, base, evs)
+        if tr:
+            tr["ak"] = t["ak"]
+            out.append(tr)
+    return out
+
+
 # ---------------------------------------------------------------- the cloud's own trades (a snapshot of the dashboard branch)
 def _git_show(ref: str) -> bytes | None:
     p = subprocess.run(["git", "-C", ROOT, "show", ref], capture_output=True, timeout=120)
@@ -553,7 +591,8 @@ def snapshot(out_dir: str = SNAP, pad_before: int = 6 * 3600, pad_after: int = 3
 
 
 # ---------------------------------------------------------------- the bundle
-def build(n_lit: int = 42, n_atlas: int = 14, data_path: str | None = None, extra_bars=(), cloud: bool = True) -> dict:
+def build(n_lit: int = 42, n_atlas: int = 14, data_path: str | None = None, extra_bars=(), cloud: bool = True,
+          pc_days: str | None = None) -> dict:
     """the reels: the last n_lit LIT + n_atlas ATLAS replays, plus the live trades: --data's when given, else the cloud
     snapshot's (research/odeon/, when `cloud` and it is there)"""
     data = None
@@ -574,14 +613,23 @@ def build(n_lit: int = 42, n_atlas: int = 14, data_path: str | None = None, extr
         lt = [x for x in lt if x]
         if lt:
             t_min, t_max = min(t_min, min(lt) - 86400), max(t_max, max(lt) + 86400)
+    from tools import live_trades as LT          # the PC's data branch (data/pc_days): every account's live trades + that day's bars
+    brows = LT.load(pc_days or LT.PC_DAYS)
+    if brows:
+        extra_bars = tuple(extra_bars) + tuple(LT.bars_paths(pc_days or LT.PC_DAYS))
+        t_min, t_max = min(t_min, brows[0]["t"] - 86400), max(t_max, brows[-1]["t"] + 86400)
     tape = Tape(t_min, t_max, extra_bars, ((data or {}).get("live") or {}).get("bars1"))
     trades = lit_trades(tape, n_lit) + atlas_trades(tape, n_atlas)
-    if data:
+    twins = {}
+    if data or brows:
         with open(BACKTEST, encoding="utf-8") as fh:
             bt = json.load(fh)["trades"]
         twins = {int(t["entry_t"]): {"src": "backtest", "r": r2(t.get("r")), "usd": r2(t.get("pnl")), "exit": t.get("exit"),
                                      "qty": t.get("qty")} for t in bt}
+    if data:
         trades += live_trades(tape, data, twins)
+    if brows:
+        trades += branch_trades(tape, brows, twins)
     trades.sort(key=lambda t: (t["entry"]["t"], t["id"]), reverse=True)
     seen, uniq = set(), []
     for t in trades:
@@ -593,6 +641,7 @@ def build(n_lit: int = 42, n_atlas: int = 14, data_path: str | None = None, extr
             "source": "TradingView CME NQ1! 1m (data/NQ_1m.csv on the 5m basis; data/NQ_5m.csv where 1m is missing); "
                       "LIT: research/lab/replays.json charts (engine markers); ATLAS: research/second/*_best.json"
                       + ("; paper / real: the cloud's ledger and the PC's eval trades on the PC's NinjaTrader MNQ 1m bars" if data else ""),
+            # (+ every account's live trades of the PC's data branch on that day's NinjaTrader bars, when data/pc_days is there)
             "trades": uniq}
 
 

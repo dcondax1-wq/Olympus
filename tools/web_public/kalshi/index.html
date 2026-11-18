@@ -23,7 +23,7 @@
 <script>(function () { var d = document.documentElement; d.setAttribute('data-theme', 'kalshi');
   /* inside Jarvis (a frame under its bar) the notch is Jarvis's: no second top inset */
   try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
-<link rel="stylesheet" href="kalshi.css?v=k33">
+<link rel="stylesheet" href="kalshi.css?v=k34">
 <!-- OLYMPUS theme (../olympus/themes.js, key 'olympus.theme', picked on the Gate's Look row or in Jarvis's Look sheet): every colour of
      kalshi.css reads a theme slot with its AGORA colour as the fallback (tools/theme_tokenize.py), on the full 'page' palette since
      2026-11-14 (team T2: a light look is light here too, like everywhere). The <head> paints the engine's copy of the look before the first
@@ -61,8 +61,9 @@
     </button>
   </header>
   <!-- the Kalshi home (owner 2026-11-18, "can't find things"): status line -> the rewards card -> what we tested -> the other Kalshi apps -> the bar -->
-  <div class="note" id="kpaused" role="note" style="border-color: rgba(var(--warn-rgb), .5)"><p><b style="color: var(--warn)">Kalshi: PAUSED</b> for real money. Paper tests running: <span id="kpaused-rw">rewards (no numbers yet)</span>, K1 rules (on the Kalshi server; its results do not reach this page yet). $0 at risk.</p></div>
+  <div class="note" id="kpaused" role="note" style="border-color: rgba(var(--warn-rgb), .5)"><p><b style="color: var(--warn)">Kalshi: PAUSED</b> for real money. Paper tests running: <span id="kpaused-rw">rewards (no numbers yet)</span>, <span id="kpaused-k1">K1 rules (not running yet)</span>. $0 at risk.</p></div>
   <section class="note krw" id="krw" aria-label="Rewards test (paper)" hidden></section>
+  <section class="note krw" id="kk1" aria-label="K1 rules test (paper)"><p><b>K1 rules test (paper)</b> No numbers yet. It was meant to run on the Kalshi server, but nothing there reaches this page. It now starts on the PC with the next update, and its numbers will show here. $0 at risk.</p></section>
   <section class="note khub" id="khub" aria-label="Kalshi home">
     <h2>What we tested and why it's paused</h2>
     <ul class="kh-l">
@@ -100,6 +101,6 @@
 <script src="../olympus/gate-nav.js?v=g5" defer></script><!-- the way back to the Gate + Go to (olympus/gate-nav.js) -->
 <script src="../olympus/intro-app.js?v=i7" data-app="kalshi" data-name="Kalshi" data-glyph="K" data-color="#8fa07a" defer></script><!-- the app intro without the kit (olympus/intro-app.js) -->
 <script src="kfx.js?v=k26"></script>
-<script src="kalshi.js?v=k33"></script>
+<script src="kalshi.js?v=k34"></script>
 </body>
 </html>

@@ -1,11 +1,11 @@
 """How do I... (tools/web_public/hub/help.html + help.js + help.json, 2026-11-18, night-help).
-  a. the data: 16 questions (add an account, eval passed, payout, phone safety, restart, update, PC silent, Limit 0, accounts, ZEUS Lab,
+  a. the data: 24 questions (add an account, eval passed, payout, phone safety, restart, update, PC silent, Limit 0, accounts, ZEUS Lab,
      taxes, holidays, buy next, Kalshi, Cloudflare, MFFU address check); each 2-4 steps, a "where", at most ONE copy line, a link to a
      page that exists (or https), facts that match the code (prices, the safety line, the payout line, PC_DOCTOR.bat, UPDATE.bat, phrase)
   b. the page: AGORA look, textContent only (no innerHTML), one GET of help.json, no write, no outside script; linked from ZEUS (Help),
      the Doors page, Business, and the More door (olympus/doors.js = web_next copy): find('help') / find('how do I') find it
   c. node, the pure part: filler words skipped ("how do I pause" = pause), every word must match, valid() rules
-  d. Chromium 390 x 844 (ntfy routed to an empty answer): 16 cards, typing filters, one hit opens itself, #payout opens that answer,
+  d. Chromium 390 x 844 (ntfy routed to an empty answer): 24 cards, typing filters, one hit opens itself, #payout opens that answer,
      Copy button, no sideways scroll, 44 px taps, no page errors
     python -X utf8 -m tests.test_help_page        (HELP_NO_BROWSER=1 skips d; run d only under flock -w 2400 /tmp/olympus_browser.lock)
 """
@@ -26,7 +26,8 @@ WEB = os.path.join(ROOT, "tools", "web_public")
 HUB = os.path.join(WEB, "hub")
 RES: list = []
 WANT = ["add-account", "eval-passed", "payout", "safety", "restart", "update", "pc-silent", "limit-0", "accounts", "lab", "taxes", "holidays",
-        "buy-next", "kalshi", "cloudflare", "address-check"]
+        "buy-next", "kalshi", "cloudflare", "address-check", "decide", "morning-brief", "weekly-review", "mffu-view", "live-trades",
+        "circuit-breaker", "other-markets", "rapid-lit-bank"]
 
 
 def check(name, ok, info=""):
@@ -49,7 +50,7 @@ def part_a():
     data = json.loads(rd(HUB, "help.json"))
     items = data.get("items") or []
     by = {it["id"]: it for it in items}
-    check("a. help.json: the 16 questions, in order, ids unique", [it["id"] for it in items] == WANT, [it["id"] for it in items])
+    check("a. help.json: the 24 questions, in order, ids unique", [it["id"] for it in items] == WANT, [it["id"] for it in items])
     bad = [it["id"] for it in items if not (2 <= len(it.get("steps") or []) <= 4 and it.get("q") and it.get("where") and it.get("words"))]
     check("a. every answer: 2-4 steps, a question, a 'where' (the click or icon), search words", not bad, bad)
     multi = [it["id"] for it in items if not isinstance(it.get("copy", ""), str) or "\n" in it.get("copy", "")]
@@ -119,7 +120,7 @@ def part_b():
           not re.search(r"innerHTML|outerHTML|insertAdjacentHTML|document\.write", js))
     check("b. read only: one GET of help.json, no POST, no localStorage, no outside script",
           js.count("fetch(") == 1 and "fetch('help.json" in js and "POST" not in js and "localStorage" not in js
-          and not re.search(r'<script src="https?:', html) and re.findall(r'<script src="([^"]+)"', html) == ["help.js?v=2"], re.findall(r'<script src="([^"]+)"', html))
+          and not re.search(r'<script src="https?:', html) and re.findall(r'<script src="([^"]+)"', html) == ["help.js?v=3"], re.findall(r'<script src="([^"]+)"', html))
     z, dr, biz = rd(HUB, "zeus.html"), rd(HUB, "doors.html"), rd(WEB, "business", "index.html")
     check("b. linked: ZEUS (a Help button), the Doors page (top + bottom), Business (a Help card)",
           '<a href="help.html" id="helpBtn">Help</a>' in z and 'id="helpLink"' in dr and dr.count('href="help.html"') >= 2 and 'href="../hub/help.html"' in biz)
@@ -144,8 +145,8 @@ def part_b():
           "hub/help.html" in o["help"] and "hub/help.html" in o["how"] and "hub/help.html" in o["howp"] and "hub/help.html" in o["more"]
           and all(5 <= n <= 8 for n in o["n"]) and o["arch"] == [True], o)
     check("c. filler words skipped: 'How do I restart my bot?' -> restart, bot", o["terms"] == ["restart", "bot"], o["terms"])
-    check("c. search (best first): 'how do I pause' -> the phone safety answer first; 'pc silent' -> PC silent; 'payout' -> payout first; 'Taxes?' -> taxes; nonsense -> none; empty -> all 16",
-          o["pause"][:1] == ["safety"] and o["silent"][:1] == ["pc-silent"] and o["pay"][:1] == ["payout"] and "taxes" in o["tax"] and o["none"] == [] and o["all"] == 16,
+    check("c. search (best first): 'how do I pause' -> the phone safety answer first; 'pc silent' -> PC silent; 'payout' -> payout first; 'Taxes?' -> taxes; nonsense -> none; empty -> all 24",
+          o["pause"][:1] == ["safety"] and o["silent"][:1] == ["pc-silent"] and o["pay"][:1] == ["payout"] and "taxes" in o["tax"] and o["none"] == [] and o["all"] == 24,
           {k: o[k] for k in ("pause", "silent", "pay", "tax", "none", "all")})
     check("c. valid(): every answer of help.json passes; one step only fails", o["valid"] is True and o["bad"] is False, (o["valid"], o["bad"]))
 
@@ -180,10 +181,10 @@ def part_d():
             p.wait_for_function("window.HELP_PAGE && window.HELP_PAGE.ready")
             n = p.eval_on_selector_all(".hp-q", "els => els.length")
             cnt = p.text_content("#count")
-            check("d. 390 px: 16 question cards, '16 questions'", n == 16 and cnt.strip() == "16 questions", (n, cnt))
+            check("d. 390 px: 24 question cards, '24 questions'", n == 24 and cnt.strip() == "24 questions", (n, cnt))
             p.fill("#q", "payout")
             vis = p.eval_on_selector_all(".hp-q:not([hidden])", "els => els.map(e => e.id)")
-            check("d. typing 'payout' filters the list as you type (payout first, fewer cards)", vis[:1] == ["payout"] and len(vis) < 16, vis)
+            check("d. typing 'payout' filters the list as you type (payout first, fewer cards)", vis[:1] == ["payout"] and len(vis) < 24, vis)
             p.fill("#q", "how do I pause")
             one = p.evaluate("(() => { const v = [...document.querySelectorAll('.hp-q:not([hidden])')]; return v.map(e => [e.id, e.open]); })()")
             check("d. 'how do I pause' -> the phone safety answer first", one[:1] and one[0][0] == "safety", one)

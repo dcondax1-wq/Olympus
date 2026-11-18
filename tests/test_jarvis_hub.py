@@ -933,11 +933,17 @@ def run_c(br, url):
               const x = r.left + r.width / 2, a = document.elementFromPoint(x, r.top - 4.5), b = document.elementFromPoint(x, r.bottom + 4.5);
               return r.height + (a && el.contains(a) ? 5 : 0) + (b && el.contains(b) ? 5 : 0); };
             const out = [];
-            for (const s of q) for (const el of document.querySelectorAll(s)) { const h = hitH(el); if (h < 43.5) out.push(s + ' ' + (el.textContent || '').trim().slice(0, 12) + ' ' + h); }
+            // a key the layout hides on purpose (display: none: Send on an empty field, 2026-11-18) is no tap target; it is measured once shown (below)
+            for (const s of q) for (const el of document.querySelectorAll(s)) { if (!el.getClientRects().length) continue; const h = hitH(el); if (h < 43.5) out.push(s + ' ' + (el.textContent || '').trim().slice(0, 12) + ' ' + h); }
             document.getElementById('home').scrollTop = 0;
             return out;
         }"""
         small = p.evaluate(tsz, ['.bar .pm', '#addB', '.sug', '#next', '.pillb', '#bigmic', '#fab', '.ask .key', '#q'])
+        if wdt > 360:                               # Send shows once something is typed (a phone up to 360 px wide: the keyboard's Send key sends)
+            p.fill("#q", "status")
+            sent = p.evaluate("(() => { const b = document.querySelector('.ask .key.send'); return !!b && b.getClientRects().length > 0; })()")
+            small += p.evaluate(tsz, ['.ask .key.send']) + ([] if sent else ['.ask .key.send not shown with text typed'])
+            p.fill("#q", "")
         p.click("#moreB")                          # the ⋯ menu covers the middle of a small phone: its keys on their own
         small += p.evaluate(tsz, ['#more .key'])
         cut = p.evaluate("""[...document.querySelectorAll('#kpct, #kusd, #npnl, #p-market .kv strong, #more .key, .hsub')].filter((e) => e.scrollWidth > e.clientWidth + 0.5)
@@ -961,14 +967,29 @@ def run_c(br, url):
 def run_look(br, url):
     """Run L: the old Jarvis look and its features, on the folder as it is."""
     ctx, p, errs, kal = new_page(br, boot=True, voice=True)
+    # the boot screen timed on the page's own clock, from its first log line to its removal (2026-11-18: read after ready() on a busy
+    # machine it had already gone, the start's feed requests holding the main thread for seconds after the ready marker)
+    ctx.add_init_script("""(() => { const B = window.__bootfx = { shown: false, t0: 0, gone: 0, log: '', lt: [] };
+      try { new PerformanceObserver((l) => { for (const e of l.getEntries()) B.lt.push([e.startTime, e.duration]); }).observe({ type: 'longtask', buffered: true }); } catch (e) { B.ltOff = true; }
+      const mo = new MutationObserver(() => {
+        const el = document.getElementById('bootfx'), lg = document.getElementById('bootlog');
+        if (el && lg && lg.textContent && !B.t0) { B.t0 = performance.now(); B.shown = getComputedStyle(el).display !== 'none'; }
+        if (lg && lg.textContent) B.log = lg.textContent;
+        if (B.t0 && !el && !B.gone) { B.gone = performance.now(); mo.disconnect(); } });
+      mo.observe(document, { childList: true, subtree: true, characterData: true }); })();""")
     p.goto(url + "planner/")
     p.goto(url + "jarvis/")
     ready(p)
-    booting = p.evaluate("!!document.getElementById('bootfx') && getComputedStyle(document.getElementById('bootfx')).display !== 'none'")
-    t0 = time.time()
-    p.wait_for_function("!document.getElementById('bootfx')", timeout=3000)
-    took = time.time() - t0
-    check("l. the boot screen: J.A.R.V.I.S. and its boot log on the first open, gone within 1.2 s", booting and took < 1.3, (booting, took))
+    p.wait_for_function("!document.getElementById('bootfx')", timeout=8000)
+    bt = p.evaluate("""(() => { const B = window.__bootfx; return { shown: B.shown, t0: B.t0, gone: B.gone, log: B.log, blocked: B.ltOff || !B.gone ? null
+        : Math.round(B.lt.reduce((t, [s, d]) => t + Math.max(0, Math.min(B.gone, s + d) - Math.max(B.t0, s)), 0)) }; })()""")
+    # its own time = the page's clock less the main thread's blocked time (the software-drawn 3D core and the start's feeds hold a test
+    # machine's main thread for a second: its 0.84 s timer then fires late), like the intro's fade below; the wall clock under 4 s
+    took = (bt["gone"] - bt["t0"] - (bt["blocked"] or 0)) / 1000 if bt["t0"] and bt["gone"] and bt["blocked"] is not None else 99
+    # Classic Jarvis (the default again, 2026-11-18): the HUD boot log as it was (f8df6008: > CORE .... ONLINE, > ZENITH · NQ BOTS ...)
+    check("l. the boot screen: the HUD boot log (> CORE ... ONLINE) on the first open, gone within 1.2 s of its own time (the wall clock < 4 s)",
+          bt["shown"] and bt["log"].startswith("> CORE ") and "ONLINE" in bt["log"] and took < 1.3
+          and bt["gone"] - bt["t0"] < BK.limit_ms(4000, "boot screen wall", cap=4900), (bt, took))
     p.wait_for_timeout(600)
     look = p.evaluate("""(async () => {
         await document.fonts.ready;
@@ -978,11 +999,14 @@ def run_look(br, url):
                  tfont: getComputedStyle(t).fontFamily, title: t.textContent, state: document.getElementById('state').textContent,
                  hud: !!document.querySelector('#hud, .hudring, #hudBot, #hudTop'),
                  says: document.getElementById('says').textContent, ticks: 0,
-                 bars: document.querySelectorAll('#vbars i').length, fx: document.documentElement.dataset.fx };
+                 bars: document.querySelectorAll('#vbars i').length, fx: document.documentElement.dataset.fx,
+                 jlook: document.documentElement.dataset.jlook || '', saved: localStorage.getItem('jarvis.look') };
     })()""")
-    check("l. Agora by default (gold #c8a24a); the title OLYMPUS in the serif",
-          look["c"] == "#c8a24a" and look["theme"] == "agora" and look["tfont"].lstrip('"').startswith("Iowan")
-          and look["title"] == "OLYMPUS", look)
+    # 2026-11-18 (owner: Jarvis "back to how it was"): Classic Jarvis is the default look again (violet HUD on the Agora theme,
+    # data-jlook="classic", Orbitron titles); AGORA gold is the opt-in ('jarvis.look' = 'agora': tests.test_jarvis_classic)
+    check("l. Classic Jarvis by default (violet #a855f7 on the Agora theme, nothing saved); the title OLYMPUS in Orbitron",
+          look["c"] == "#a855f7" and look["theme"] == "agora" and look["jlook"] == "classic" and look["saved"] is None
+          and look["tfont"].lstrip('"').startswith("Orbitron") and look["title"] == "OLYMPUS", look)
     check("l. no HUD ring around the core any more (AGORA); the state word, 32 voice bars and the line under the core",
           not look["hud"]
           and look["state"] == "Standby" and look["bars"] == 32 and "Tap the core or type below to speak with me." in look["says"] and look["fx"] == "high", look)
@@ -1041,12 +1065,13 @@ def run_look(br, url):
     p.click("#setCalm")
     check("l. Calm motion: kept on this phone (the 3D core then follows the iPhone's reduce-motion switch)", calm == "true"
           and p.evaluate("localStorage.getItem('jarvis.calm')") == "false", calm)
-    p.evaluate("localStorage.setItem('jtheme', 'reactor-stark')")      # an old copy's neon theme: ignored, Agora stays
+    p.evaluate("localStorage.setItem('jtheme', 'reactor-stark')")      # an old copy's neon theme: ignored, the default look stays
     p.click("#lookX")
     p.reload()
     ready(p)
-    th = p.evaluate("[document.documentElement.dataset.theme, getComputedStyle(document.documentElement).getPropertyValue('--c').trim(), !!document.getElementById('bootfx')]")
-    check("l. an old saved neon theme is ignored: Agora gold from the first paint; no boot screen again in the same launch", th == ["agora", "#c8a24a", False], th)
+    th = p.evaluate("[document.documentElement.dataset.theme, document.documentElement.dataset.jlook || '', getComputedStyle(document.documentElement).getPropertyValue('--c').trim(), !!document.getElementById('bootfx')]")
+    check("l. an old saved neon theme is ignored: the default Classic violet on the Agora theme from the first paint; no boot screen again in the same launch",
+          th == ["agora", "classic", "#a855f7", False], th)
     # voice: tap the big mic, Jarvis hears, answers out loud in her voice at its own pace (tts.js: rate 1.0 / pitch 1.0, 2026-11-03), the state word follows
     p.evaluate("window.__utter = 'is the market open'; window.__states = []; window.__said = []")
     p.click("#bigmic")
@@ -1638,7 +1663,10 @@ FADE_PROBE = """(() => {
 BLOCKED = """(() => { const st = window.__olyIntro || {}, end = window.__introEnd, a = end - st.ms;
   if (window.__ltOff || !(end > 0)) return null;
   return Math.round((window.__lt || []).reduce((t, [s, d]) => t + Math.max(0, Math.min(end, s + d) - Math.max(a, s)), 0)); })()"""
-PHASE_LOG = """(() => { const L = window.__phases = []; setInterval(() => { const x = window.__olyIntro && window.__olyIntro.phase; if (x && L[L.length - 1] !== x) L.push(x); }, 25); })();"""
+# every phase a frame drew: read on each animation frame as well as every 25 ms (2026-11-18: a main thread held by Jarvis's start under the
+# film leaves a phase one frame long, which a timer alone missed)
+PHASE_LOG = """(() => { const L = window.__phases = []; const see = () => { const x = window.__olyIntro && window.__olyIntro.phase; if (x && L[L.length - 1] !== x) L.push(x); };
+  setInterval(see, 25); (function f() { see(); requestAnimationFrame(f); })(); })();"""
 SFX_KIT = """window.__sfx = []; window.OLYMPUS_SFX = { play(n) { window.__sfx.push(n); } };"""
 INTRO_GONE = "!document.getElementById('olyIntro') && !document.documentElement.hasAttribute('data-intro')"
 MIC_WHO = """(() => { const b = document.getElementById('mic').getBoundingClientRect(); const e = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2); return [e && (e.id || e.className || e.tagName), Math.round(b.top), Math.round(b.height), innerHeight]; })()"""

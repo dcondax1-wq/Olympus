@@ -1425,6 +1425,36 @@
     if (best && (!RW.j || String(best.updated || '') >= String(RW.j.updated || ''))) { RW.j = best; RW.src = 'pc'; rwShow(); }
   }
 
+  // ---- "K1 rules test (paper)": tools/kalshi_paper.py (weather lock + NQ hourly model) on the PC; its tiny card (key kalshi_k1, <= 200 bytes) rides the
+  // PC's ntfy ext post (tools/pc_report.py). No numbers -> the card says plainly that it is not running / not arriving. $0 at risk.
+  const K1 = { j: null };
+  function k1Ok(j) { return isObj(j) && j.kind === 'kalshi_k1_pub' && j.paper_only === true && num(j.sig) != null && num(j.set) != null; }
+  function k1Show() {
+    const el = $('#kk1'), ln = $('#kpaused-k1'), j = K1.j;
+    if (!k1Ok(j)) { if (ln) ln.textContent = 'K1 rules (not running yet)'; return; }
+    const d = num(j.days), age = rwAge(j), pu = num(j.pu);
+    if (ln) ln.textContent = `K1 rules (${rwUsd(j.net, true)} over ${d == null ? '?' : d < 1 ? d.toFixed(1) : String(Math.round(d * 10) / 10)} day${d === 1 ? '' : 's'})`;
+    if (!el) return;
+    const cell = (t, v, c) => `<div><dt>${t}</dt><dd class="${c || ''}">${v}</dd></div>`;
+    el.innerHTML = '<p><b>K1 rules test (paper)</b> Weather lock and Nasdaq hourly rules, 1 contract each, fee included. $0 at risk, nothing is placed.</p>'
+      + '<dl class="krw-g">' + cell('Signals', esc(fmtN(num(j.sig) || 0))) + cell('Settled', esc(fmtN(num(j.set) || 0)))
+      + cell('Net', esc(rwUsd(j.net, true)), cls(j.net)) + cell('Days', d == null ? '–' : esc(d < 1 ? d.toFixed(1) : String(Math.round(d * 10) / 10))) + '</dl>'
+      + `<p class="krw-f">${pu != null ? esc(rwUsd(pu, true)) + ' per $1 bet · ' : ''}from the PC · <span class="krw-age${age.old ? ' old' : ''}">updated ${esc(age.s)}${age.old ? ' (late)' : ''}</span></p>`;
+  }
+  async function k1Load() {
+    const feed = await rwGet('../status_feed.json', 3000);
+    if (!isObj(feed) || !/^[A-Za-z0-9_-]{1,64}$/.test(String(feed.topic || '')) || !/^https:\/\/[A-Za-z0-9.-]+\/?$/.test(String(feed.ntfy || ''))) return;
+    const txt = await rwGet(String(feed.ntfy).replace(/\/+$/, '') + '/' + encodeURIComponent(feed.topic) + '/json?poll=1&since=12h', 5000, true);
+    let best = null;
+    for (const line of String(txt || '').split('\n')) {
+      let m = null, x = null;
+      try { m = JSON.parse(line); x = JSON.parse(m.message); } catch (_) { continue; }
+      const k = !isObj(x) ? null : x.kind === 'le-live' ? x.kalshi_k1 : x.kind === 'le-live-ext' && isObj(x.x) ? x.x.kalshi_k1 : null;
+      if (k1Ok(k) && (!best || String(k.updated || '') >= String(best.updated || ''))) best = k;
+    }
+    if (best) { K1.j = best; k1Show(); }
+  }
+
   function whatifHtml(k, v) {
     const m = whatifModel(k, v), head = '<div class="card-h"><h2>If you change the bot</h2></div><p class="wi-lab">A backtest of past bets · suggestions only · nothing here places or changes a bet</p>';
     if (!m.enough) return `<section class="card whatif" id="sec-whatif">${head}<p class="muted">${esc(m.recommend)}</p>${fwdStrip()}</section>`;
@@ -2172,5 +2202,10 @@
   fwd();
   scanLoad();
   rewardsLoad();
+  k1Load();
   offline();
 })();
+
+// K1 card: see k1Load
+
+//
