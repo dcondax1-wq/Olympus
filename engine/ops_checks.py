@@ -1537,6 +1537,14 @@ def tick(now=None, ctx=None, state=None, sender=None, state_path: str = STATE_PA
                 out.append({"key": "calendar", "ok": cal["ok"], "changed": cal["changed"]})
             except Exception as e:
                 ops_log(f"calendar refresh failed: {e.__class__.__name__}: {scrub(str(e), 120)}")
+        if do_backup and real:           # the data pipe (engine/datapipe.py): ledger rows every tick, the day's data after 17:05 ET
+            try:
+                from . import datapipe
+                pid = datapipe.maybe_run(now=now, say=lambda *a: None)
+                if pid:
+                    out.append({"key": "datapipe", "pid": pid})
+            except Exception as e:
+                ops_log(f"data pipe failed: {e.__class__.__name__}")
     finally:
         state["last_tick_t"] = int(now)
         save_state(state, state_path)
