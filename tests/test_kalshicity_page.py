@@ -487,8 +487,8 @@ def run_browser():
             on_calls = p.evaluate("window.__sfx.slice()")
             check("c. sound is off until the note button is pressed (no sfx call), then ambience and ticks go through OLYMPUS.sfx; the choice is kept on this phone",
                   off_calls == 0 and p.get_attribute("#sound", "aria-pressed") == "true" and "tap" in on_calls and "tick" in on_calls and json.loads(p.evaluate("localStorage.getItem('kalshicity.v1')")).get("sound") is True, on_calls)
+            p.keyboard.press("Escape")                       # close the edge's sheet first (on a 390 x 844 phone it lies over the chip row), as for the first tap
             p.click("#sound")
-            p.keyboard.press("Escape")
             n0 = p.evaluate("window.__sfx.length")
             p.evaluate(f"KC.select({json.dumps(ids[0])})")
             check("c. ...and off again silences it", p.get_attribute("#sound", "aria-pressed") == "false" and p.evaluate("window.__sfx.length") == n0)
