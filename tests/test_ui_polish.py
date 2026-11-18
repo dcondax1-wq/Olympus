@@ -214,7 +214,7 @@ def part_b(tmp):
         room, mll, today = raw[2], raw[3], raw[4]
         ok &= (f"${round(room):,}" in txt and f"of ${round(mll):,} max loss" in txt and r["room"] == room and r["mll"] == mll and r["today"] == today)
     check("b. Money now: 'Drawdown left $X of $max loss' with the board's own room and max loss for every account, today's $ next to it, never 'of 10 days'",
-          ok and h3.count("Drawdown left") == len(r3) and h3.count("max loss") == len(r3) and "10 days" not in txt and "session" not in txt.lower() and h3.count('class="mn-r"') == len(r3), txt[:400])
+          ok and len(re.findall(r"Drawdown left \$", txt)) == len(r3) and h3.count("max loss") == len(r3) and "10 days" not in txt and "session" not in txt.lower() and h3.count('class="mn-r"') == len(r3), txt[:400])
     check("b. Money now: each row says what the bot waits for (an open trade: its target / stop) and its status in plain words (In a trade / Running / Armed ...)",
           all(r["next"] and r["status"]["text"] for r in r3) and "target" in r3[0]["next"] and r3[0]["status"]["text"].startswith("In a trade") and h3.count('class="mn-nx"') == len(r3), [r["next"] for r in r3])
     check("b. Money now: edge colours: a healthy board is green, 15% of the drawdown left is red, 40% is amber", o["mn3"]["edge"] == "good" and o["mnRed"] == "bad" and o["mnAmb"] == "warn", (o["mn3"]["edge"], o["mnRed"], o["mnAmb"]))
@@ -335,7 +335,7 @@ def part_c(F, tmp, shots):
               MNP and MNP["after"] == 2 and MNP["kids"][2] == "mnCard" and MNP["n"] >= 2 and MNP["x"] <= 1 and H["kids"][:4] == ["pl-hi", "su-bar", "su-accts", "pl-now"], MNP)
         check("c. Money now: one row per account the board has (Zlarior, ATLAS, BLITZ when it exists), every row is a 44 px tap, 'Drawdown left $... of $... max loss' and a status word, no 'X of 10 days'",
               MNP and MNP["keys"][:2] == ["lit", "atlas"] and MNP["n"] == exp and all(h >= 44 for h in MNP["taps"]) and all(w >= 300 for w in MNP["w"])
-              and MNP["txt"].count("Drawdown left") == MNP["n"] and MNP["txt"].count("max loss") >= MNP["n"] and "10 days" not in MNP["txt"] and "next" in MNP["txt"].lower() and "Bot " in MNP["txt"] and "NaN" not in MNP["txt"], MNP)
+              and len(re.findall(r"Drawdown left \$", MNP["txt"])) == MNP["n"] and MNP["txt"].count("max loss") >= MNP["n"] and "10 days" not in MNP["txt"] and "next" in MNP["txt"].lower() and "Bot " in MNP["txt"] and "NaN" not in MNP["txt"], MNP)
         pg.click("#mnCard .mn-row[data-mn='atlas']")
         pg.wait_for_timeout(700)
         check("c. Money now: tapping a row opens that bot (ATLAS)", pg.evaluate("() => location.hash") == "#/atlas", pg.evaluate("() => location.hash"))
@@ -423,7 +423,9 @@ def part_c(F, tmp, shots):
         check("c. the bottom bar: a light on a bot's tab while it is in a trade (Zlarior)", "lit:trade" in td, td)
         col = pg.evaluate("() => getComputedStyle(document.documentElement).getPropertyValue('--bot').trim()")
         top = pg.query_selector("#page > .pl-bot .su-acct[data-bot='blitz']")
-        check("c. a bot tab opens on its account card, in the bot's colour (BLITZ purple)", top is not None and col.lower() in ("#b388ff", "var(--bz)") , col)
+        bz = pg.evaluate("() => getComputedStyle(document.documentElement).getPropertyValue('--bz').trim()")
+        check("c. a bot tab opens on its account card, in the bot's colour (BLITZ's --bz: AGORA's #dac08b since 2026-11-09, a theme's a11 under a look)",
+              top is not None and col and col.lower() == bz.lower(), (col, bz))
         pg.click("#tabs a[data-t='money']")
         pg.wait_for_timeout(900)
         mo = pg.evaluate("() => ({ hash: location.hash, chips: [...document.querySelectorAll('#sub .strip button')].map(b => b.dataset.go) })")
@@ -589,7 +591,7 @@ def part_d(F, shots):
             txt: c.innerText.replace(/\\s+/g, ' '), x: document.documentElement.scrollWidth - innerWidth, bar: !!document.querySelector('#nxStatusHome .su-bar') }; }""")
         check(f"d. PC Home: the Money now card is the first thing in the status box ({MND and MND['n']} rows), the status bar right below it, 'Drawdown left $.. of $.. max loss' per account, rows link to the bots",
               MND and MND["first"] == "mnCard" and MND["bar"] and MND["keys"][:2] == ["lit", "atlas"] and MND["goto"][:2] == ["zlarior", "atlas"] and all(h >= 44 for h in MND["taps"])
-              and MND["txt"].count("Drawdown left") == MND["n"] and "max loss" in MND["txt"] and "10 days" not in MND["txt"] and "next" in MND["txt"].lower() and MND["x"] <= 1, MND)
+              and len(re.findall(r"Drawdown left \$", MND["txt"])) == MND["n"] and "max loss" in MND["txt"] and "10 days" not in MND["txt"] and "next" in MND["txt"].lower() and MND["x"] <= 1, MND)
         # --- the one-line sticky status strip on EVERY page (dynamic: the first pages of the sidebar, then a long one scrolled)
         pages = pg.eval_on_selector_all("#nav a[data-page]", "els => els.map(e => e.dataset.page)")
         pages = [x for x in dict.fromkeys(["cc"] + pages) if pg.evaluate("(id) => !!document.getElementById('page-' + id)", x)][:8]

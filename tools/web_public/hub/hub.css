@@ -115,6 +115,15 @@ html[data-oly-lite="1"] .hb-best { box-shadow: none; }
 @media (hover: hover) { .hb-row:hover, .hb-hubrow:hover { background: var(--ag-s2); } .hb-tab:hover, .hb-chip:hover, a.hb-fact:hover { border-color: var(--ag-gold); } }
 @media (max-width: 359px) { .hb-main .hb-title { font-size: 1.625rem; } .hb-acts { grid-template-columns: 1fr; } }
 
+/* 3D touch (team FX 2026-11-15, hub.js mark3d): the best app's icon turns in like a coin catching the light, once per launch */
+@keyframes hb-coin { 0% { opacity: 0; transform: perspective(400px) rotateY(-70deg) scale(.9); } 60% { opacity: 1; transform: perspective(400px) rotateY(8deg); } 100% { transform: none; } }
+@keyframes hb-glint { 0%, 35% { background-position: -120% 0; } 100% { background-position: 220% 0; } }
+html[data-g3d] .hb-best .hb-ico.big { position: relative; animation: hb-coin .7s cubic-bezier(.2, .8, .2, 1) .1s both; }
+html[data-g3d] .hb-best .hb-ico.big::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: linear-gradient(105deg, transparent 35%, rgba(var(--oly-th-a8-rgb, 211,181,121), .35) 50%, transparent 65%) no-repeat; background-size: 60% 100%;
+  animation: hb-glint 1.1s ease-out .2s both; }
+@media (prefers-reduced-motion: reduce) { html[data-g3d] .hb-best .hb-ico.big, html[data-g3d] .hb-best .hb-ico.big::after { animation: none !important; } }
+
 /* ================================================================================================ style themes (olympus/themes.js 'style', 2026-11-14)
    Only under <html data-oly-style> (a style look is on): the cards' surface, border, shadow and blur, the titles and the primary button, from the
    --oly-th-* the engine paints (the page background and h1-h3 come from agora.css's own style layer). The default and the colour-only looks never set it. */
@@ -125,12 +134,3 @@ html[data-oly-style] .hb-fold .hb-list { background: transparent !important; box
 html[data-oly-style] :is(.hb-title, .hb-h2, .hb-h3, .hb-bname) { font-weight: var(--oly-th-title-weight) !important; text-transform: var(--oly-th-title-case); letter-spacing: var(--oly-th-title-track) !important;
   font-style: var(--oly-th-title-style); }
 html[data-oly-style] :is(.hb-btn.primary, .hb-tab[aria-selected="true"]) { background: var(--oly-th-btn-bg) !important; color: var(--oly-th-btn-fg) !important; border: var(--oly-th-btn-border) !important; box-shadow: none !important; }
-
-/* 3D touch (team FX 2026-11-15, hub.js mark3d): the best app's icon turns in like a coin catching the light, once per launch */
-@keyframes hb-coin { 0% { opacity: 0; transform: perspective(400px) rotateY(-70deg) scale(.9); } 60% { opacity: 1; transform: perspective(400px) rotateY(8deg); } 100% { transform: none; } }
-@keyframes hb-glint { 0%, 35% { background-position: -120% 0; } 100% { background-position: 220% 0; } }
-html[data-g3d] .hb-best .hb-ico.big { position: relative; animation: hb-coin .7s cubic-bezier(.2, .8, .2, 1) .1s both; }
-html[data-g3d] .hb-best .hb-ico.big::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
-  background: linear-gradient(105deg, transparent 35%, rgba(var(--oly-th-a8-rgb, 211,181,121), .35) 50%, transparent 65%) no-repeat; background-size: 60% 100%;
-  animation: hb-glint 1.1s ease-out .2s both; }
-@media (prefers-reduced-motion: reduce) { html[data-g3d] .hb-best .hb-ico.big, html[data-g3d] .hb-best .hb-ico.big::after { animation: none !important; } }

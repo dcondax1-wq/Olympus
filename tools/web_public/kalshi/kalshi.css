@@ -918,15 +918,6 @@ html.framed .note.sample { top: 56px; }
 .rk-o { list-style: none; margin: 8px 0; padding: 0; }
 .rk-o li { display: flex; justify-content: space-between; gap: 10px; padding: 6px 0; border-top: 1px solid var(--line, rgba(var(--oly-th-n20-rgb, 127,127,127),.2)); min-width: 0; flex-wrap: wrap; }
 .rk code { overflow-wrap: anywhere; }
-/* ================================================================================================ style themes (olympus/themes.js 'style', 2026-11-14)
-   Only under <html data-oly-style> (a style look is on; team T2 "lock down the looks": Kalshi wears the look's surfaces like every other page):
-   the page background, the cards' surface, border, shadow, blur and corners, the titles. The default (AGORA) and the colour looks never set it. */
-html[data-oly-style] { background: var(--oly-th-page-bg) fixed var(--oly-th-n3); }
-html[data-oly-style] body { background: transparent !important; }
-html[data-oly-style] .card { background: var(--oly-th-card-bg) !important; border: var(--oly-th-card-border) !important; box-shadow: var(--oly-th-card-shadow) !important;
-  border-radius: var(--oly-th-radius) !important; -webkit-backdrop-filter: var(--oly-th-card-blur); backdrop-filter: var(--oly-th-card-blur); }
-html[data-oly-style] :is(.top h1, .card h2) { font-family: var(--oly-th-display, var(--fh)); font-weight: var(--oly-th-title-weight) !important; text-transform: var(--oly-th-title-case);
-  letter-spacing: var(--oly-th-title-track) !important; font-style: var(--oly-th-title-style); }
 
 /* ---- "Rewards test (paper)" card (2026-11-17, kalshi.js rewardsLoad): four numbers under the PAUSED note */
 .krw { display: block; margin-top: 8px; }
@@ -955,3 +946,13 @@ html[data-oly-style] :is(.top h1, .card h2) { font-family: var(--oly-th-display,
 /* K1 card reuses .krw */
 /* . */
 /* . */
+
+/* ================================================================================================ style themes (olympus/themes.js 'style', 2026-11-14)
+   Only under <html data-oly-style> (a style look is on; team T2 "lock down the looks": Kalshi wears the look's surfaces like every other page):
+   the page background, the cards' surface, border, shadow, blur and corners, the titles. The default (AGORA) and the colour looks never set it. */
+html[data-oly-style] { background: var(--oly-th-page-bg) fixed var(--oly-th-n3); }
+html[data-oly-style] body { background: transparent !important; }
+html[data-oly-style] .card { background: var(--oly-th-card-bg) !important; border: var(--oly-th-card-border) !important; box-shadow: var(--oly-th-card-shadow) !important;
+  border-radius: var(--oly-th-radius) !important; -webkit-backdrop-filter: var(--oly-th-card-blur); backdrop-filter: var(--oly-th-card-blur); }
+html[data-oly-style] :is(.top h1, .card h2) { font-family: var(--oly-th-display, var(--fh)); font-weight: var(--oly-th-title-weight) !important; text-transform: var(--oly-th-title-case);
+  letter-spacing: var(--oly-th-title-track) !important; font-style: var(--oly-th-title-style); }
