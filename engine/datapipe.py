@@ -23,6 +23,10 @@ Privacy: account names become "...1234" (last 4), no balances / cash, no file pa
 Append-only: commits on top of the branch tip, never a force push, never a deleted file; a file already on the branch is only
 replaced inside REPLACE_DAYS (a day packed before its close is completed later). Only the branch `data`, never `pc` / `main`.
 
+night-data 2026-11-18: the git push below is OFF unless LE_DATAPIPE_GIT=1 (or `run --git`): the backup repo turned out PUBLIC
+(the branch would publish every trade forever) and the PC has no push sign-in. The nightly run still packs + reviews locally
+(logs/datapipe/days/), and Claude gets the days over ntfy on request (engine/datafeed.py; the hook is in maybe_run).
+
 How it pushes: like the heartbeat (engine/heartbeat.py), from a PRIVATE scratch git dir (data/datapipe_pub.git, gitignored):
 the project's own .git is never written (the auto-update needs a clean tree), every git call has a hard timeout, never
 prompts (Git Credential Manager's saved sign-in for the backup account, the one the auto-update fetches with), plumbing only
@@ -796,6 +800,14 @@ def push_files(files: dict, url: str, git_dir: str | None = None, branch: str = 
         return {"ok": False, "error": f"{e.__class__.__name__}: {e}"}
 
 
+def git_enabled(env=None) -> bool:
+    """The git push to branch `data` is OFF unless LE_DATAPIPE_GIT=1 (night-data 2026-11-18): the backup repo is PUBLIC, so
+    the branch would publish every trade forever, and the PC has no push sign-in (it reads the public repo anonymously). The
+    data reaches Claude over ntfy on request instead (engine/datafeed.py). Off = no GitHub call at all from the pipe."""
+    e = os.environ if env is None else env
+    return str(e.get("LE_DATAPIPE_GIT", "")).strip() == "1"
+
+
 def backup_url(root: str = ROOT, env=None) -> str | None:
     """The backup repo the PC updates from (update_source.json via engine/autoupdate.source); None = not set."""
     try:
@@ -842,15 +854,21 @@ def replace_ok_for(today: str):
 def run(days=None, push: bool = True, now=None, root: str = ROOT, work: str | None = None, folder: str | None = None,
         url: str | None = None, g: Git | None = None, interactive: bool = False, review: bool = True, notify=None,
         emit=None, build_twin: bool = True, backfill: int = BACKFILL_DAYS, exec_store: str | None = None,
-        learn_store: str | None = None, archive_root: str | None = None, edge: dict | None = None) -> dict:
-    """Pack the days not on the branch yet (or `days`), run the ZEUS review of the newest, push. Returns a summary."""
+        learn_store: str | None = None, archive_root: str | None = None, edge: dict | None = None,
+        git: bool | None = None) -> dict:
+    """Pack the days not on the branch yet (or `days`), run the ZEUS review of the newest, push. Returns a summary.
+    The push needs git=True, LE_DATAPIPE_GIT=1 or an explicit url (tests); otherwise it packs locally only (git_enabled)."""
     now = int(now if now is not None else time.time())
     w = work or WORK
     days_dir = os.path.join(w, "days")
     st = _read_json(os.path.join(w, "state.json"), {}) or {}
     out = {"t": now, "days": [], "pushed": None, "review": None, "errors": []}
     collect(root, w, exec_store)
-    url = url if url is not None else backup_url(root)
+    git_off = url is None and not (git if git is not None else git_enabled())
+    if git_off:
+        st["fails"] = 0                       # no push tried: the review must not say "the PC could not send its data"
+        out["note"] = "git push off: the data goes to Claude over ntfy on request (engine/datafeed.py)"
+    url = url if url is not None else (None if git_off else backup_url(root))
     g = g or Git(os.path.join(root, SCRATCH_REL), cwd=root)
     on_branch = {}
     if push and url:
@@ -915,7 +933,7 @@ def run(days=None, push: bool = True, now=None, root: str = ROOT, work: str | No
         else:
             st["fails"] = int(st.get("fails") or 0) + 1
             st["last_error"] = {"t": now, "error": scrub_text(res.get("error"), names)[:200]}
-    elif push and not url:
+    elif push and not url and not git_off:
         out["errors"].append("no backup repo set (update_source.json): packed locally only")
     st["partial"] = sorted(d for d, fs in packed.items() if json.loads(fs["manifest.json"]).get("partial"))
     st["last_run"] = {"t": now, "days": sorted(packed), "errors": out["errors"][:5]}
@@ -975,9 +993,9 @@ def spawn(work: str | None = None) -> int | None:
         return None
 
 
-def maybe_run(now=None, say=print, env=None, work: str | None = None, spawn_fn=None, root: str = ROOT) -> int | None:
-    """The PC tasks' hook (tools/pc_report.py every 15 min, engine/ops_checks.tick every 5): collect the ledgers, then start
-    the nightly child once when due. Never raises."""
+def maybe_run(now=None, say=print, env=None, work: str | None = None, spawn_fn=None, root: str = ROOT, feed=None) -> int | None:
+    """The PC tasks' hook (engine/ops_checks.tick every 5 min): collect the ledgers, answer a data request of Claude's over
+    ntfy (engine/datafeed.maybe_answer, or `feed` in tests), then start the nightly child once when due. Never raises."""
     try:
         e = os.environ if env is None else env
         sw = str(e.get("LE_DATAPIPE", "")).strip()
@@ -988,6 +1006,13 @@ def maybe_run(now=None, say=print, env=None, work: str | None = None, spawn_fn=N
         w = work or WORK
         collect(root, w)
         now = int(now if now is not None else time.time())
+        if feed is not None or work is None:  # Claude's data requests over ntfy (engine/datafeed.py): one GET, outside the session
+            try:
+                if feed is None:
+                    from .datafeed import maybe_answer as feed
+                feed(now=now, env=e, say=say)
+            except Exception:
+                pass
         st = _read_json(os.path.join(w, "state.json"), {}) or {}
         ok, day = due(now, st)
         if not ok:
@@ -1024,6 +1049,7 @@ def main(argv=None) -> int:
     ap.add_argument("--no-push", action="store_true")
     ap.add_argument("--no-review", action="store_true")
     ap.add_argument("--signin", action="store_true", help="allow the GitHub sign-in window (Git Credential Manager) once")
+    ap.add_argument("--git", action="store_true", help="push to the backup's branch data this time (off by default: git_enabled)")
     ap.add_argument("--backfill", type=int, default=BACKFILL_DAYS)
     ap.add_argument("--from-hook", action="store_true")
     ap.add_argument("--quiet", action="store_true")
@@ -1040,7 +1066,8 @@ def main(argv=None) -> int:
     except Exception:
         pass
     try:
-        r = run(days=a.day, push=not a.no_push, interactive=a.signin, review=not a.no_review, backfill=a.backfill)
+        r = run(days=a.day, push=not a.no_push, interactive=a.signin, review=not a.no_review, backfill=a.backfill,
+                git=True if a.git else None)
     finally:
         if a.from_hook:
             try:
@@ -1052,6 +1079,8 @@ def main(argv=None) -> int:
         print(f"days packed: {len(r['days'])} ({', '.join(r['days'][-5:])}{' ...' if len(r['days']) > 5 else ''})")
         print("pushed: " + ("yes " + str(p.get("commit")) + (" (no change)" if p.get("unchanged") else "") if p.get("ok") else
                             f"NO ({p.get('error')})" if p else "no (nothing to push / --no-push)"))
+        if r.get("note"):
+            print("  " + r["note"] + (": --signin is not needed" if a.signin else ""))
         if r.get("review"):
             print(r["review"].get("text"))
         for e in r["errors"]:
