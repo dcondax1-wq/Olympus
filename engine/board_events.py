@@ -184,7 +184,8 @@ def _trim(path: str):
     with open(path + ".tmp", "w", encoding="utf-8") as fh:
         for r in rows[-KEEP_LINES:]:
             fh.write(json.dumps(r, ensure_ascii=False) + "\n")
-    os.replace(path + ".tmp", path)
+    from .fsutil import replace as _fs_replace   # retried on a Windows / OneDrive lock (tests.test_selfheal)
+    _fs_replace(path + ".tmp", path)
 
 
 def append(rec: dict, path: str) -> dict:
@@ -513,8 +514,14 @@ def public(board: dict) -> dict:
 
 # ------------------------------------------------------------------------------------------------ what travels
 def _note_running(bot):
-    """bot_started / bot_stopped when the bot's running flag changes between two heartbeats (the first beat records only a start)."""
+    """bot_started / bot_stopped when the bot's running flag changes between two heartbeats (the first beat records only a start).
+    Only the real bot server's heartbeat (LE_HEARTBEAT=1, run_bot.ps1) or a test with its own LE_BOARD_DIR records it: before
+    2026-11-18 every test that built a heartbeat payload (the PC self-test, UPDATE's after-update tests) wrote a fake
+    "Bot running (PC server started)" into the real board (the owner's "bot started 5 times today")."""
     try:
+        env = os.environ
+        if not env.get("LE_BOARD_DIR") and (env.get("LE_HEARTBEAT") != "1" or env.get("LE_SELFTEST_CHILD") == "1"):
+            return
         run = bool(getattr(bot, "running", False))
         was = _S.get("running")
         if was is None:

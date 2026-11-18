@@ -73,7 +73,8 @@ def save(on: bool, p: str | None = None) -> str:
     tmp = fp + ".tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump({"v": 1, "on": bool(on)}, fh, indent=1)
-    os.replace(tmp, fp)
+    from .fsutil import replace as _fs_replace   # retried on a Windows / OneDrive lock
+    _fs_replace(tmp, fp)
     return fp
 
 

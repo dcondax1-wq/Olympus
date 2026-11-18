@@ -306,8 +306,9 @@ def main(argv=None) -> int:
 
         # ------------------------------------------------------------------ switches + target URL
         check("enabled: on with LE_HEARTBEAT=1, off by default, LE_LIVE_PUBLISH=0/1 override",
-              lp.enabled({"LE_HEARTBEAT": "1"}) and not lp.enabled({}) and not lp.enabled({"LE_HEARTBEAT": "1", "LE_LIVE_PUBLISH": "0"})
-              and lp.enabled({"LE_LIVE_PUBLISH": "1"}))
+              lp.enabled({"LE_HEARTBEAT": "1", "LE_NO_GITHUB": "0"}) and not lp.enabled({"LE_NO_GITHUB": "0"})
+              and not lp.enabled({"LE_HEARTBEAT": "1", "LE_LIVE_PUBLISH": "0", "LE_NO_GITHUB": "0"})
+              and lp.enabled({"LE_LIVE_PUBLISH": "1", "LE_NO_GITHUB": "0"}))
         for origin, want in (("https://github.com/demetrades2000-coder/nq-liquidity-engine.git", "https://github.com/demetrades2000-coder/nq-dashboard.git"),
                              ("git@github.com:demetrades2000-coder/nq-liquidity-engine.git", "git@github.com:demetrades2000-coder/nq-dashboard.git"),
                              ("https://github.com/demetrades2000-coder/nq-liquidity-engine", "https://github.com/demetrades2000-coder/nq-dashboard.git")):

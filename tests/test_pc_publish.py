@@ -98,7 +98,15 @@ def main() -> int:
         # ------------------------------------------------------------------ nogithub (the bot side)
         oh = os.path.join(tmp, "oh")
         os.makedirs(oh)
-        check("nogithub: off by default (no env, no marker)", not nogithub.active({"OLYMPUS_HOME": oh}))
+        check("nogithub: off by default (no env, no marker, no backup source)", not nogithub.active({"OLYMPUS_HOME": oh}, root=tmp))
+        with open(os.path.join(tmp, "update_source.json"), "w") as fh:
+            json.dump({"remote": "olympus", "url": "https://github.com/x/olympus.git", "branch": "pc"}, fh)
+        check("nogithub: on when update_source.json names the backup repo (2026-11-18: the PC without the marker pushed to the "
+              "suspended account 22x a day); LE_NO_GITHUB=0 / LE_UPDATE_SOURCE=origin turn it off",
+              nogithub.active({"OLYMPUS_HOME": oh}, root=tmp) and not nogithub.active({"OLYMPUS_HOME": oh, "LE_NO_GITHUB": "0"}, root=tmp)
+              and not nogithub.active({"OLYMPUS_HOME": oh, "LE_UPDATE_SOURCE": "origin"}, root=tmp)
+              and "backup" in nogithub.why({"OLYMPUS_HOME": oh}, root=tmp))
+        os.remove(os.path.join(tmp, "update_source.json"))
         open(os.path.join(oh, "no_github"), "w").close()
         check("nogithub: on with the marker file; LE_NO_GITHUB=0 overrides it off, =1 forces it on",
               nogithub.active({"OLYMPUS_HOME": oh}) and not nogithub.active({"OLYMPUS_HOME": oh, "LE_NO_GITHUB": "0"})
@@ -120,8 +128,8 @@ def main() -> int:
         check("GitHub-free mode keeps the auto-update ON when the code names the backup repo (update_source.json)",
               autoupdate.is_enabled({"enabled": True}, env_on) and autoupdate.source()["remote"] != "origin")
         check("... and changes nothing when the mode is off (old behaviour)",
-              live_publish.enabled({"LE_HEARTBEAT": "1"}) and remote_ctl.enabled({"LE_REMOTE": "1"})
-              and autoupdate.is_enabled({"enabled": True}, {}))
+              live_publish.enabled({"LE_HEARTBEAT": "1", "LE_NO_GITHUB": "0"}) and remote_ctl.enabled({"LE_REMOTE": "1", "LE_NO_GITHUB": "0"})
+              and autoupdate.is_enabled({"enabled": True}, {"LE_NO_GITHUB": "0"}))
 
         class Bot:
             running = False
@@ -132,7 +140,11 @@ def main() -> int:
         finally:
             os.environ.pop("LE_NO_GITHUB", None)
         check("the Heartbeat object uses the local writer in GitHub-free mode (no git, no network)", hb.push_fn is nogithub.local_push and hb.notify_fn is None)
-        hb2 = heartbeat.Heartbeat(Bot(), last_path=os.path.join(tmp, "last2.json"))
+        os.environ["LE_NO_GITHUB"] = "0"
+        try:
+            hb2 = heartbeat.Heartbeat(Bot(), last_path=os.path.join(tmp, "last2.json"))
+        finally:
+            os.environ.pop("LE_NO_GITHUB", None)
         check("... and the real push otherwise", hb2.push_fn is heartbeat.push)
         src = open(os.path.join(ROOT, "engine", "nogithub.py"), encoding="utf-8").read()
         check("nogithub.py touches no trading file (no live_model, no order code)", "live_model" not in src.replace("live_model*", "") and "ninjatrader" not in src.lower().replace("ninjatrader bars", ""))

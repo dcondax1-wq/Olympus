@@ -32,6 +32,9 @@ if ROOT not in sys.path:
 
 from engine import heartbeat as hb  # noqa: E402
 
+# the live-thread checks set LE_HEARTBEAT=1 like the real server: the board's "bot started" events go to a temp folder
+os.environ.setdefault("LE_BOARD_DIR", os.path.join(tempfile.mkdtemp(prefix="hb_board_"), "board"))
+
 RES: list = []
 ENV = {**os.environ, "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t", "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@t"}
 
@@ -245,6 +248,20 @@ def main() -> int:
         r = h.beat()
         check("push works again: fails 0, last_ok_t set, the wait back to every_s", r.get("ok") and h.fails == 0 and h.last_ok_t
               and h.next_wait() == 300.0 and h.status()["health"]["ok"] is True, h.status())
+
+        # 2026-11-18: the account behind origin is suspended -> the heartbeat stops trying GitHub (local writes from then on)
+        hg = hb.Heartbeat(fake_bot(), every_s=300, last_path=lp, push_fn=lambda p, files=None: {"ok": True}, log=lambda *a: None)
+        hg.push_fn, said = hb.push, []
+        hg._say = said.append
+        hg._note({"ok": False, "error": "fatal: unable to access 'https://github.com/x/y.git/': Your account is suspended. 403"})
+        from engine import nogithub as _ngm
+        check("origin account suspended: the heartbeat switches to the local writer at once (no more GitHub retries), says so once",
+              hg.push_fn is _ngm.local_push and hg.notify_fn is None and len(said) == 1 and "GitHub-free" in said[0], said)
+        hg2 = hb.Heartbeat(fake_bot(), every_s=300, last_path=lp, push_fn=lambda p, files=None: {"ok": True}, log=lambda *a: None)
+        hg2.push_fn = hb.push
+        hg2._say = lambda *a: None
+        hg2._note({"ok": False, "error": "fatal: unable to access 'https://github.com/x/y.git/': Could not resolve host"})
+        check("a plain network error does not switch it", hg2.push_fn is hb.push)
 
         # the live threads: a BaseException ends the push thread -> the watchdog restarts it
         os.environ["LE_HEARTBEAT"] = "1"

@@ -729,6 +729,9 @@ def pc_sync(force: bool = False, fetch=None, key_path: str | None = None, cache_
         if fetch is not None:
             st = fetch()
         else:
+            from . import nogithub
+            if nogithub.active():            # GitHub-free mode: origin is gone (2026-11-08); the last good copy, no fetch
+                raise RuntimeError("GitHub-free mode")
             import subprocess
             from .heartbeat import _NET_CFG, _git_env, run_cmd    # (2026-11-03) no Windows pipe hang on a stuck fetch
             r = run_cmd(["git", *_NET_CFG, "fetch", "-q", "--depth", "1", "origin", "dashboard"], cwd=ROOT, timeout=60, env=_git_env())

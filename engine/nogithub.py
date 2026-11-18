@@ -1,7 +1,10 @@
 """GitHub-free mode for the PC bot (owner 2026-11-10: the GitHub account is gone and stays gone).
 
-Off by default. On when the environment has LE_NO_GITHUB=1 or the file %USERPROFILE%\\.olympus\\no_github exists (PUBLISH_NQ.bat
-makes it; UNDO_PUBLISH_NQ.bat removes it). When on, nothing in the bot talks to GitHub:
+On when the environment has LE_NO_GITHUB=1, or the file %USERPROFILE%\\.olympus\\no_github exists (PUBLISH_NQ.bat / BOTS_BACK.bat
+make it; UNDO_PUBLISH_NQ.bat removes it), or (2026-11-18) the checkout's update_source.json names the backup repo (a remote
+other than origin: the code already comes from the backup, so origin is the lost account). LE_NO_GITHUB=0 turns it off.
+Before 2026-11-18 a PC without the marker kept pushing its heartbeat to the suspended account (22 failed pushes a day, a red
+"Heartbeat to the cloud" on UPDATE / HEALTH CHECK). When on, nothing in the bot talks to origin GitHub:
   * the heartbeat still runs (same payload, same bars) but "pushes" to the local folder logs/pc_hb/ (local_push), which
     tools/pc_publish.py reads instead of the heartbeat branch;
   * the phone live.json push and the phone remote control (control branch) stay off; the git auto-update stays off
@@ -25,15 +28,46 @@ def olympus_dir(env=None) -> str:
     return env.get("OLYMPUS_HOME") or os.path.join(env.get("USERPROFILE") or os.path.expanduser("~"), ".olympus")
 
 
-def active(env=None) -> bool:
+def backup_source(root: str | None = None, env=None) -> bool:
+    """True when update_source.json at the checkout's root names the backup repo (not origin), as engine/autoupdate.source
+    reads it (LE_UPDATE_SOURCE=origin forces origin). Never raises."""
+    env = os.environ if env is None else env
+    if env.get("LE_UPDATE_SOURCE") == "origin":
+        return False
+    try:
+        with open(os.path.join(root or ROOT, "update_source.json"), encoding="utf-8") as fh:
+            s = json.load(fh)
+        r = str((s or {}).get("remote") or "").strip()
+        return bool(r) and r != "origin" and str(s.get("url") or "").startswith("https://")
+    except Exception:
+        return False
+
+
+def active(env=None, root: str | None = None) -> bool:
     env = os.environ if env is None else env
     v = env.get("LE_NO_GITHUB")
     if v is not None and v != "":
         return v == "1"
     try:
-        return os.path.exists(os.path.join(olympus_dir(env), MARKER))
+        if os.path.exists(os.path.join(olympus_dir(env), MARKER)):
+            return True
     except Exception:
-        return False
+        pass
+    return backup_source(root, env)
+
+
+def why(env=None, root: str | None = None) -> str:
+    """One plain line: why GitHub-free mode is on (or off)."""
+    env = os.environ if env is None else env
+    v = env.get("LE_NO_GITHUB")
+    if v not in (None, ""):
+        return "on (LE_NO_GITHUB=1)" if v == "1" else "off (LE_NO_GITHUB=0)"
+    try:
+        if os.path.exists(os.path.join(olympus_dir(env), MARKER)):
+            return "on (BOTS_BACK / PUBLISH_NQ marker)"
+    except Exception:
+        pass
+    return "on (code comes from the backup repo)" if backup_source(root, env) else "off"
 
 
 def _write(path: str, data: bytes):

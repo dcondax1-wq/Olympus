@@ -405,9 +405,10 @@ def update(py=sys.executable) -> bool:
     auto-update and UPDATE.bat (ATLAS's account block moved out of second_model.json, files checked out from main by
     hand, a shallow history). True = new code arrived (START BOT re-runs itself, the Start page restarts the server)."""
     from . import autoupdate, generated_files, nogithub
-    if nogithub.active():
-        # GitHub-free mode (BOTS_BACK.bat / GO_LIVE_EVAL.bat; the account is gone, 2026-11-08): no git fetch at all. A fetch
-        # would only fail (a scary "git fetch failed" line, or a sign-in window) and new code comes from the code zip.
+    if nogithub.active() and autoupdate.source()["remote"] == "origin":
+        # GitHub-free mode (BOTS_BACK.bat / GO_LIVE_EVAL.bat; the account is gone, 2026-11-08) with no backup source: no git
+        # fetch at all. A fetch would only fail (a scary "git fetch failed" line, or a sign-in window); new code comes from
+        # the code zip. With update_source.json (the backup repo, 2026-11-14) the pull below fetches the backup, never origin.
         print(" [OK] Update by git skipped (GitHub-free mode: new code comes from the code zip, UPDATE_FROM_ZIP.bat).")
         return False
     if generated_files.git_exe() == "git" and not shutil.which("git"):

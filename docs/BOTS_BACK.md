@@ -38,6 +38,13 @@ code, not guessed) and the fix.
 | Telegram / Discord from the PC (`engine/alerts.py`, `data/alerts.json`) | none (direct to Telegram) | works if you filled it in Settings | nothing; BOTS_BACK says on or off |
 | Trading itself (`engine/live.py`, `engine/ninjatrader.py`, `live_model*.json`) | none | works | nothing, never touched |
 
+**2026-11-18:** GitHub-free mode also turns on by itself when the code comes from the backup repo (`update_source.json`
+names a remote other than origin: `engine/nogithub.py` `backup_source`), so a PC without the marker no longer pushes its
+heartbeat to the suspended account (it failed 22x a day). A running bot that still meets "account suspended" switches to the
+local heartbeat on the spot. HEALTH CHECK / UPDATE: "Heartbeat (on this PC)" is never red for GitHub, old
+"[heartbeat] push failed" log lines are not listed, START BOT still pulls from the backup. Route the heartbeat to the
+backup's `heartbeat` branch: not done (a write login + a push every 5 min to the code backup; ntfy already reports).
+
 ## What BOTS_BACK.bat does (one double-click, safe to repeat)
 | Step | It does | It never does |
 |---|---|---|

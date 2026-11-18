@@ -293,7 +293,8 @@ def _write(path: str, text: str) -> bool:
     tmp = path + ".tmp"
     with open(tmp, "w", encoding="utf-8", newline="") as fh:
         fh.write(text)
-    os.replace(tmp, path)
+    from .fsutil import replace as _fs_replace   # retried on a Windows / OneDrive lock
+    _fs_replace(tmp, path)
     return True
 
 

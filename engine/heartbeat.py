@@ -83,6 +83,9 @@ STUCK_S = 600.0                                  # a beat running longer than th
 WATCH_S = 60.0                                   # the watchdog's tick
 FROZEN_S = 180.0                                 # a tick this much longer than asked = the process was frozen (PC asleep)
 RETRY_S = 60.0                                   # after a failed push the next try comes after at most this
+# the account behind origin is gone (suspended 2026-11-08): the heartbeat stops trying GitHub for the rest of this process and
+# writes locally (engine/nogithub.local_push), the same as GitHub-free mode; before, it failed 22x a day with a red health line
+GONE_RE = re.compile(r"suspended|repository not found|returned error: 403|account (is )?(disabled|locked)", re.I)
 FAIL_NOTICE_S = 30 * 60                          # a refused GitHub login for this long -> one phone push a day (2026-10-29)
 AUTH_RE = re.compile(r"authentication failed|could not read username|terminal prompts disabled|invalid username or password|"
                      r"permission denied|\b40[13]\b|bad credentials|logon failed|credential", re.I)
@@ -837,6 +840,15 @@ class Heartbeat:
         self.fails += 1
         self.fail_since = self.fail_since or (self.last_ok_t or int(now))
         self.last_error, self.last_error_t = _redact(str(res.get("error") or "push failed")), int(now)
+        if self.push_fn is push and GONE_RE.search(self.last_error):
+            try:
+                from . import nogithub as _ng
+                self.push_fn, self.notify_fn = _ng.local_push, None
+                self._say("[heartbeat] GitHub account gone (suspended): the heartbeat is written on this PC from now on "
+                          "(logs/pc_hb, GitHub-free mode); phone reports go by ntfy")
+                return
+            except Exception:
+                pass
         if now - self._err_at > 3600:
             self._err_at = now
             self._say(f"[heartbeat] push failed (try {self.fails}, next in {int(self.next_wait())} s): {self.last_error}")

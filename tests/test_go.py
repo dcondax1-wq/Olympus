@@ -259,11 +259,16 @@ def main():
         old_ng = os.environ.get("LE_NO_GITHUB")
         try:
             os.environ["LE_NO_GITHUB"] = "1"
-            check("GitHub-free mode: update() skips git (no fetch, no 'git fetch failed' line)", G.update() is False and pulls == [], pulls)
+            os.environ["LE_UPDATE_SOURCE"] = "origin"
+            check("GitHub-free mode, origin source: update() skips git (no fetch, no 'git fetch failed' line)", G.update() is False and pulls == [], pulls)
+            os.environ.pop("LE_UPDATE_SOURCE", None)
+            check("GitHub-free mode + the backup source (update_source.json): update() pulls from the backup",
+                  G.update() is False and pulls == [1], pulls)
             os.environ["LE_NO_GITHUB"] = "0"
-            check("GitHub mode: update() still pulls", G.update() is False and pulls == [1], pulls)
+            check("GitHub mode: update() still pulls", G.update() is False and pulls == [1, 1], pulls)
         finally:
             G.PULL = None
+            os.environ.pop("LE_UPDATE_SOURCE", None)
             if old_ng is None:
                 os.environ.pop("LE_NO_GITHUB", None)
             else:

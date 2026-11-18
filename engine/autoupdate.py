@@ -173,7 +173,7 @@ def is_enabled(state: dict | None = None, env=None, root: str = ROOT) -> bool:
         return False
     try:
         from . import nogithub
-        if nogithub.active(env) and source(root, env)["remote"] == "origin":
+        if nogithub.active(env, root) and source(root, env)["remote"] == "origin":
             return False         # GitHub-free mode (engine/nogithub.py): the old account (origin) is gone; the backup still updates
     except Exception:
         pass
