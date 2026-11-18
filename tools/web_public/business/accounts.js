@@ -1,5 +1,5 @@
 // MY ACCOUNTS page (classic script, read only). Plan from ./accounts.json; live eval numbers from the PC (window.PC_FEED over
-// ntfy) when it has reported, else ../home.json. Everything is drawn with textContent. BLITZ's account C is never shown.
+// ntfy) when it has reported, else ../home.json, matched to the plan by PC id / Name (mffumodel.js). Everything is drawn with textContent. BLITZ's account C is never shown.
 (function () {
   'use strict';
   const $ = (id) => document.getElementById(id);
@@ -13,21 +13,16 @@
     return null;
   }
 
-  // one live row per PC account: {match: builder50k | builder25k, stage, to_target, room, balance, today, status, session}
-  function liveRows(accounts, second) {
-    const out = [];
-    for (const a of Array.isArray(accounts) ? accounts : []) {
-      if (!isObj(a) || !['eval', 'funded'].includes(a.kind) || a.source === 'cloud' || a.source === 'pc_blitz' || a.id === 'acct_c') continue;
-      const e = isObj(a.eval) ? a.eval : {};
-      const start = num(e.start_balance);
-      out.push({ match: start != null && Math.abs(start - 25000) < 1 ? 'builder25k' : 'builder50k', stage: a.kind,
-                 to_target: num(e.to_target), room: num(e.room), balance: num(e.balance), today: num(e.today), status: e.status || '', session: num(e.session) });
-    }
-    const b = isObj(second) ? second.account_b : null;
-    if (isObj(b) && isObj(b.eval) && b.enabled !== false && !out.some((r) => r.match === 'builder25k')) {
-      const e = b.eval;
-      out.push({ match: 'builder25k', stage: b.stage === 'funded' ? 'funded' : 'eval', to_target: num(e.to_target), room: num(e.room),
-                 balance: num(e.balance), today: num(e.today), status: e.status || '', session: num(e.session) });
+  // the live numbers of each plan row: matched by the PC id / Name (mffumodel.js), NEVER by plan size (2026-11-18: the new
+  // Builder 25K eval b25k_2 had landed on ATLAS's funded row and hidden it)
+  function liveFor(plan, lite, home) {
+    const M = window.MFFU_MODEL, out = new Map();
+    if (!M) return out;
+    for (const r of M.match(plan, lite, home)) {
+      if (!r.live) continue;
+      const l = r.live;
+      out.set(r.plan ? String(r.plan.key) : '__pc__' + r.key, { stage: l.stage, to_target: l.to_target, room: l.room, balance: l.balance, today: l.today,
+                                                                status: l.status, session: l.session, name: l.name, plan: l.plan, src: l.src });
     }
     return out;
   }
@@ -70,25 +65,18 @@
   async function main() {
     const plan = (await getJSON('accounts.json')) || { accounts: [], decisions: [], rules: [] };
     const home = await getJSON('../home.json');
-    let accounts = isObj(home) ? home.accounts : null, src = isObj(home) ? 'site' : '', t = 0, lite = null;
+    let src = isObj(home) ? 'site' : '', t = 0, lite = null;
     try {
       if (window.PC_FEED) {
         lite = await window.PC_FEED.fetchLatest({});
-        if (isObj(lite) && Array.isArray(lite.accounts) && lite.accounts.length) { accounts = lite.accounts; src = 'pc'; t = +lite.t || 0; }
+        if (isObj(lite) && ((Array.isArray(lite.accounts) && lite.accounts.length) || isObj(lite.board))) { src = 'pc'; t = +lite.t || 0; }
       }
     } catch (e) { /* plan only */ }
     try { if (window.PAYOUT_CARD) window.PAYOUT_CARD.mount($('coach'), { plan, home, lite, title: 'Payouts' }); } catch (e) { /* the coach never breaks the page */ }
-    const live = liveRows(accounts, isObj(home) ? home.second : null);
-    const used = new Set();
+    const live = liveFor(plan, src === 'pc' ? lite : null, isObj(home) ? home : null);
     const list = $('list'); list.textContent = '';
-    for (const a of plan.accounts || []) {
-      let l = null;
-      if (a.status === 'live' && a.match) {
-        const i = live.findIndex((r, k) => !used.has(k) && r.match === a.match);
-        if (i >= 0) { used.add(i); l = live[i]; }
-      }
-      list.appendChild(card(a, l));
-    }
+    for (const a of plan.accounts || []) list.appendChild(card(a, a.status === 'live' ? live.get(String(a.key)) || null : null));
+    for (const [k, l] of live) if (k.startsWith('__pc__')) list.appendChild(card({ name: l.name || k.slice(6), plan: l.plan || '', stage: l.stage, status: 'live', bots: '-', next: 'On your PC, not in the plan yet: tell Claude its name' }, l));
     const n = (s) => (plan.accounts || []).filter((a) => a.status === s).length;
     const cost = (plan.accounts || []).filter((a) => a.status !== 'live').map((a) => { const m = String(a.cost || '').match(/\d+(\.\d+)?/); return m ? +m[0] : null; }).filter((v) => v != null);
     kv($('sum'), [['Running now', String(n('live'))], ['To buy now', String(n('buying'))], ['Later (if MFFU says yes)', String(n('waiting'))],

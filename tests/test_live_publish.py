@@ -186,6 +186,42 @@ def pc_health_checks(now, lm, p_none):
           lp.kalshi_rewards_card(now=now, path=kp) is None and lp.kalshi_rewards_card(path=kp + ".none") is None, "")
 
 
+def mffu_checks(now, lm):
+    """2026-11-18 MFFU page: the PC's ntfy post carries "mf" (engine/mffu_view.compact: start date, trading days, trades,
+    best / worst day, equity, last 4 only) and stays under ntfy's 3,900 bytes; trimmed eq first, then mf, before "accounts"."""
+    from engine import mffu_view as MV
+    from tools import pc_report as R
+    L = lp.build(hb_payload(now), now, lm=lm)
+    mf = MV.compact(L)
+    row = (mf or {}).get("a", [{}])[0]
+    check("mf: the bot's own ledger -> start date, trading days, trades, wins, best / worst day, equity, last 4 only",
+          row.get("sd") == "2026-10-19" and row.get("td") == 2 and row.get("n") == 3 and row.get("w") == 3 and row.get("bd") == ["2026-10-20", 450]
+          and row.get("wd") == ["2026-10-19", 300] and row.get("eq") == [0, 300, 750] and row.get("l4") is None and "FAKEEVAL1" not in json.dumps(mf), mf)
+    L["accounts"][0]["broker_account"] = "MFFUEVBLDR602936016"
+    check("mf: the broker account shows as its last 4 digits only", MV.compact(L)["a"][0].get("l4") == "6016" and "60293" not in json.dumps(MV.compact(L)))
+    L["board"]["atlas"] = {"id": "atlas", "balance": 25000.0, "profit": 0.0, "status": "funded", "eval_start": "2026-11-17",
+                           "funded": {"cycle_profit": 0, "best_day": 0, "cycle_days": 0, "payouts_n": 0, "max_request": 0}}
+    a = [x for x in MV.compact(L)["a"] if x["id"] == "atlas"]
+    check("mf: ATLAS's own account (board card): start date + the payout tracker", a and a[0]["sd"] == "2026-11-17" and a[0]["f"]["cp"] == 0, a)
+    check("mf: junk in -> None, never raises", MV.compact({"accounts": "x", "board": 3}) is None and MV.compact(None) is None)
+    snap = {"t": int(now), "hb_t": int(now) - 60, "live": L, "hb": {}, "server": True, "nt": True, "market_open": True, "mode": "live"}
+    lt = R.lite(snap)
+    check("mf: pc_report.lite carries mf and stays under 3,900 bytes", "mf" in lt and R._size(lt) <= R.MAX_STATUS_BYTES, R._size(lt))
+    # three real accounts with long names and 8-day equity lines: still under the cap; eq is cut before mf, mf before accounts
+    for i in range(2):
+        L["accounts"].append({**json.loads(json.dumps(L["accounts"][0])), "id": f"b25k_{i}", "name": f"Zlarior Builder 25K #{i + 2}"})
+    for a in L["accounts"]:
+        a["days"] = [[f"2026-11-{d:02d}", 100.0 * (-1) ** d] for d in range(1, 13)]
+    big = R.lite(snap)
+    eqs = [len(x.get("eq") or []) for x in (big.get("mf") or {}).get("a") or []]
+    check("mf: a much bigger post still fits; the equity line is cut (or mf dropped) before the accounts block",
+          R._size(big) <= R.MAX_STATUS_BYTES and len(big.get("accounts") or []) == 3 and (not big.get("mf") or max(eqs or [0]) <= 4)
+          and big.get("trimmed"), (R._size(big), eqs, list(big)))
+    src = read("tools/pc_report.py")
+    i_eq, i_brd, i_mf, i_acc = (src.index(x) for x in ("_mfcut(o, 4)", 'o.pop("brd", None)', 'o.pop("mf", None)', 'o.pop("accounts", None)'))
+    check("mf: trim order = glance, eq to 4, brd, eq 0, mf, then accounts", i_eq < i_brd < i_mf < i_acc)
+
+
 def main(argv=None) -> int:
     argv = sys.argv[1:] if argv is None else argv
     tmp = tempfile.mkdtemp(prefix="le_livepub_")
@@ -228,6 +264,7 @@ def main(argv=None) -> int:
         finally:
             _hbz.FORCE = None
         pc_health_checks(now, lm, p)
+        mffu_checks(now, lm)
         big =lp.build(hb_payload(now, n_trades=60), now, lm=lm)
         sz = len(json.dumps(big, separators=(",", ":")))
         check("size: under 64 KB with 60 trades of long notes (trimmed to the last 25)", sz < lp.MAX_BYTES and len(big["accounts"][0]["trades"]) <= 25, sz)
