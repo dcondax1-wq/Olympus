@@ -6,7 +6,10 @@ the repo's own engine code (read-only use: engine/live_publish.build, engine/go.
               in logs/heartbeat_last.json), whether the bot server answers (http://127.0.0.1:8766), NinjaTrader and the bar feed.
   2. status   the live.json the phone already reads (engine/live_publish.build: kind "le-live", pc, pc_verdict, board.lit /
               atlas / blitz, accounts), cut to a LITE copy under 4 KB, posted to the public ntfy status topic of
-              tools/web_public/status_feed.json (the site reads it with tools/web_public/pc_feed.js). PUBLIC: no PC name, no login,
+              tools/web_public/status_feed.json (the site reads it with tools/web_public/pc_feed.js). Split (2026-11-18): the core
+              (kind "le-live": heartbeat t, verdict, cards, accounts) every run; the extras (brd, life, mf, pc.glance,
+              kalshi_rewards, ...) in up to 2 "le-live-ext" posts just before it, every 2nd run or when their news changed;
+              readers merge them (pc_feed.js / tools/pc_feed.py). PUBLIC: no PC name, no login,
               broker account ids cut to the last 4 digits, no folder, no email (public(), tools/site_privacy.py, docs/PRIVACY.md). Its "t" is the bot's own
               heartbeat time (never "now"), so an old report always looks old; "reporter" says what this PC saw just now.
   3. alerts   phone pushes on YOUR private ntfy topic (made here once, kept in %USERPROFILE%\\.olympus\\ntfy.json, never in the
@@ -28,7 +31,7 @@ soft (logged, exit 0). Tests: tests/test_bots_back.py (fake http, fake files, ne
   python tools/pc_report.py --dry-run    one run that sends nothing: prints what it would send
   python tools/pc_report.py --setup      make your alert topic when there is none, print it
   python tools/pc_report.py --test       send one test push to your alert topic
-Local files (gitignored): data/pc_report/ (last.json, state.json, status.json, live.json, report_log.jsonl).
+Local files (gitignored): data/pc_report/ (last.json, state.json, status.json, status_ext.json, live.json, report_log.jsonl).
 """
 from __future__ import annotations
 
@@ -51,6 +54,14 @@ STATUS_FEED = os.path.join(ROOT, "tools", "web_public", "status_feed.json")
 NTFY_DEFAULT = "https://ntfy.sh"
 PORT_DEFAULT = int(os.environ.get("PORT") or 8766)
 MAX_STATUS_BYTES = 3900          # ntfy turns a message over 4,096 bytes into a file attachment: stay under it
+# the split (owner 2026-11-18): the core "le-live" post every run, the extras in "le-live-ext" posts (tools/pc_feed.py merges them)
+EXT_KIND = "le-live-ext"
+EXT_PARTS = 2                    # at most 2 ext posts a run (ntfy.sh free: a few hundred messages a day per IP)
+EXT_EVERY_S = 1740               # the ext goes every 2nd 15-minute run (29 min), or at once when its news changed (ext_hash)
+EXT_ORDER = ("brd", "life", "mf", "board_trades", "learn", "lab", "glance", "kalshi_rewards")
+CORE_KEYS = ("eh", "v", "kind", "lite", "src", "t", "every_s", "host", "model_state", "price", "day_pnl", "pc_verdict", "pc", "reporter",
+             "board", "accounts", "trimmed")
+BRD_BYTES = 1200
 HB_STALE_S = 900                 # the bot beats every 5 min: older than 15 min = the bot is not reporting
 BAR_STALE_S = 300                # the last 1-minute bar older than 5 min while the market is open = FEED STALE
 REMIND_S = 3 * 3600
@@ -465,13 +476,11 @@ def verdict_now(snap: dict, base: dict | None) -> dict | None:
     return v
 
 
-def lite(snap: dict, max_bytes: int = MAX_STATUS_BYTES) -> dict:
-    """The live.json the site reads (tools/web_public/live.js LIVE.apply, board.js, truth.js), cut to under max_bytes:
-    kind "le-live", lite True, t = the bot's own heartbeat time (None when the PC bot never reported), pc, pc_verdict,
-    board.lit / atlas / blitz cards + the last trades, accounts (no trade lists), reporter (what this PC saw at reporter.t),
-    brd (the Board's tiny cut, engine/board_events.status_block: account stage / balance / room / to pass, newest events),
-    mf (the MFFU page's extras per account, engine/mffu_view.compact: start date, trading days, trades, best / worst day, equity).
-    It goes to a PUBLIC topic: public() takes out the PC name, logins, broker account ids and folders (tests.test_public_build_privacy e)."""
+def full(snap: dict) -> dict:
+    """Everything the site may read from the PC, uncut and before the privacy pass: the core (kind "le-live", lite True, t = the
+    bot's own heartbeat time or None, pc, pc_verdict, board.lit / atlas / blitz cards + lines + the last trades, accounts without
+    trade lists, reporter = what this PC saw at reporter.t) and the extra blocks that ride in the ext post (EXT_TOP + pc.glance):
+    brd (engine/board_events.status_block), life (engine/lifecycle hb block, cut), mf (engine/mffu_view.compact), kalshi_rewards."""
     L = snap.get("live") if isinstance(snap.get("live"), dict) else {}
     pc = _d(L.get("pc"))
     bd = _d(L.get("board"))
@@ -504,11 +513,14 @@ def lite(snap: dict, max_bytes: int = MAX_STATUS_BYTES) -> dict:
                       "eval": ev, "pnl": a.get("pnl"), "running": a.get("running"), "trades": [], "days": []})
     if accts:
         out["accounts"] = accts
-    try:                                           # the Board's tiny cut (engine/board_events.status_block: events + account rows)
-        from engine import board_events
-        out["brd"] = board_events.status_block()
+    try:                                           # the Board's cut (engine/board_events.status_block: events + account rows); the ext
+        from engine import board_events            # post has room for more events than the old single post (700 bytes)
+        out["brd"] = board_events.status_block(max_bytes=BRD_BYTES)
     except Exception:  # noqa: BLE001
         pass
+    life = _life(hb.get("life"))
+    if life:
+        out["life"] = life
     try:                                           # the MFFU-style account page (engine/mffu_view.py: start, days, trades, best day, equity)
         from engine import mffu_view
         mf = mffu_view.compact(L)
@@ -520,33 +532,35 @@ def lite(snap: dict, max_bytes: int = MAX_STATUS_BYTES) -> dict:
         out["kalshi_rewards"] = snap["kalshi_rewards"]
     if isinstance(snap.get("eh"), dict):     # the ZEUS edge chip (tools/edge_pc.read_tiny, <= 120 bytes; tools/web_public/edge_chip.js)
         out["eh"] = snap["eh"]
-    out = {k: v for k, v in out.items() if v is not None}
-    # too big: drop the least needed parts first
-    def _gcut(o, n):                     # the Brain page's glance (engine/brain_glance.py): fewer log lines / levels first
-        from engine import brain_glance
-        g = _d(_d(o.get("pc")).get("glance"))
-        if g:
-            brain_glance.fit(g, n)
-    def _mfcut(o, n):                    # the MFFU page's equity line: 4 points, then none (the block itself goes before "accounts")
-        from engine import mffu_view
-        mffu_view.cut_eq(o.get("mf"), n)
-    # the glance is cut (then left out) before the Board's events; the Board's events go before the accounts block;
-    # the MFFU page's "mf": its equity line is cut after the glance, the rest goes after "brd" and before "accounts"
-    steps = [lambda o: o.pop("kalshi_rewards", None), lambda o: _d(o.get("board")).pop("lines", None),
-             lambda o: _d(o.get("brd")).__setitem__("ev", _d(o.get("brd")).get("ev", [])[:2]) if o.get("brd") else None,
-             lambda o: _gcut(o, 1000), lambda o: _gcut(o, 600),
-             lambda o: _d(o.get("brd")).__setitem__("ev", []) if o.get("brd") else None,
-             lambda o: _d(o.get("pc")).pop("glance", None),
-             lambda o: _mfcut(o, 4),
-             lambda o: o.pop("brd", None),
-             lambda o: _mfcut(o, 0),
-             lambda o: o.pop("mf", None),
-             lambda o: o.pop("eh", None),
-             lambda o: o.pop("accounts", None),
-             lambda o: _d(o.get("board")).__setitem__("trades", _d(o.get("board")).get("trades", [])[:1]) if o.get("board") else None,
+    for k in ("learn", "lab"):                     # the learning loop / ZEUS Lab notes when the reporter's snapshot has them
+        if isinstance(snap.get(k), dict):
+            out[k] = snap[k]
+    return {k: v for k, v in out.items() if v is not None}
+
+
+def _life(b) -> dict | None:
+    """The heartbeat "life" block (engine/lifecycle.Book.hb_block), cut for the public topic: stage per account, last 2 events.
+    Account keys go through the privacy pass too (an extra account's key can hold an id)."""
+    b = _d(b)
+    if not b.get("acc") and not b.get("ev"):
+        return None
+    try:
+        from tools import site_privacy
+        ck = site_privacy.clean_string
+    except Exception:  # noqa: BLE001
+        return None
+    acc = {ck(str(k))[:24]: {x: _d(r).get(x) for x in ("label", "stage", "since", "bal") if _d(r).get(x) is not None}
+           for k, r in _d(b.get("acc")).items()}
+    ev = [{x: _d(e).get(x) for x in ("t", "stage", "title") if _d(e).get(x) is not None} for e in (b.get("ev") or [])[-2:] if isinstance(e, dict)]
+    return {"acc": acc, "ev": ev}
+
+
+def _fit_core(out: dict, max_bytes: int) -> dict:
+    """The core post under max_bytes: board lines, waiting texts, windows go first; the accounts block only after them."""
+    steps = [lambda o: _d(o.get("board")).pop("lines", None),
              lambda o: [_d(_d(o.get("board")).get(k)).pop("waiting", None) for k in ("lit", "atlas", "blitz")],
              lambda o: [_d(_d(o.get("board")).get(k)).pop("window", None) for k in ("atlas", "blitz")],
-             lambda o: _d(o.get("board")).pop("trades", None)]
+             lambda o: o.pop("accounts", None)]
     for st in steps:
         if _size(out) <= max_bytes:
             break
@@ -554,16 +568,99 @@ def lite(snap: dict, max_bytes: int = MAX_STATUS_BYTES) -> dict:
         out["trimmed"] = True
     if _size(out) > max_bytes:                     # last resort: the essentials only
         bb = _d(out.get("board"))
-        brd = _d(out.get("brd"))
         out = {"v": 1, "kind": "le-live", "lite": True, "src": "pc_report", "t": out.get("t"), "trimmed": True, "pc": out.get("pc"),
                "pc_verdict": {k: _d(out.get("pc_verdict")).get(k) for k in ("code", "label", "level")},
                "reporter": out.get("reporter"),
                "board": {"t": bb.get("t"), "data_t": bb.get("data_t"),
                          **{k: {x: _d(bb.get(k)).get(x) for x in ("id", "name", "room", "mll", "balance", "today_pnl", "status")}
                             for k in ("lit", "atlas", "blitz") if bb.get(k)}}}
-        if brd:                                    # the Board's account rows (and its newest event) still go: an eval pass is news
-            out["brd"] = {"t": brd.get("t"), "ac": brd.get("ac"), "ev": (brd.get("ev") or [])[:1], "on": brd.get("on")}
-    return public(out)
+    return out
+
+
+def _cuts(key: str) -> list:
+    """Ways to make one ext block smaller, least loss first (the last one = leave it out)."""
+    def glance(n):
+        def f(v):
+            from engine import brain_glance
+            brain_glance.fit(v, n)
+        return f
+    def eq(n):
+        def f(v):
+            from engine import mffu_view
+            mffu_view.cut_eq(v, n)
+        return f
+    def ev(n):
+        return lambda v: v.__setitem__("ev", (v.get("ev") or [])[:n]) if isinstance(v, dict) else None
+    def first(n):
+        return lambda v: v.__delitem__(slice(n, None)) if isinstance(v, list) else None
+    return {"glance": [glance(1000), glance(600)], "mf": [eq(4), eq(0)], "brd": [ev(3), ev(1), ev(0)], "life": [ev(0)],
+            "board_trades": [first(1)]}.get(key, [])
+
+
+def split(out: dict, max_bytes: int = MAX_STATUS_BYTES, parts: int | None = None) -> tuple:
+    """full() -> (core, [ext ...]), each post under max_bytes, each through the privacy pass. The ext blocks go in EXT_ORDER into
+    at most EXT_PARTS posts; a block too big for any is cut (_cuts), then left out ("cut" lists it)."""
+    parts = EXT_PARTS if parts is None else parts
+    core = json.loads(json.dumps(out, default=str))
+    x = {k: core.pop(k) for k in list(core) if k not in CORE_KEYS}
+    g = _d(core.get("pc")).pop("glance", None)
+    if g:
+        x["glance"] = g
+    tr = _d(core.get("board")).pop("trades", None)  # the last 3 trades: history, not the heartbeat (pc_feed lays them back in board)
+    if tr:
+        x["board_trades"] = tr
+    core = _fit_core(core, max_bytes)
+    base = {"v": 1, "kind": EXT_KIND, "src": "pc_report", "t": out.get("t"), "rt": _d(out.get("reporter")).get("t")}
+    packs, cut = [{}], []
+    order = [k for k in EXT_ORDER if k in x] + sorted(k for k in x if k not in EXT_ORDER)
+    for k in order:
+        v, steps, placed = x[k], _cuts(k), False
+        while not placed:
+            for i, p in enumerate(packs):
+                if _size({**base, "part": 9, "of": 9, "x": {**p, k: v}}) <= max_bytes:
+                    p[k], placed = v, True
+                    break
+            if not placed and len(packs) < parts and _size({**base, "part": 9, "of": 9, "x": {k: v}}) <= max_bytes:
+                packs.append({k: v})
+                placed = True
+            if not placed:
+                if not steps:
+                    cut.append(k)
+                    break
+                steps.pop(0)(v)
+                if k not in cut:
+                    cut.append(k)
+    packs = [p for p in packs if p]
+    exts = [{**base, "part": i, "of": len(packs), "x": p} for i, p in enumerate(packs)]
+    if cut and exts:
+        exts[-1]["cut"] = cut
+    return public(core), [public(e) for e in exts]
+
+
+def lite(snap: dict, max_bytes: int = MAX_STATUS_BYTES) -> dict:
+    """The core post (kind "le-live") the site reads (tools/web_public/live.js LIVE.apply, board.js, truth.js), under max_bytes.
+    It goes to a PUBLIC topic: public() takes out the PC name, logins, broker account ids and folders (tests.test_public_build_privacy e)."""
+    return split(full(snap), max_bytes)[0]
+
+
+def posts(snap: dict, max_bytes: int = MAX_STATUS_BYTES) -> tuple:
+    """(core, [ext ...]) of one run: what run_once posts (exts first, then the core). tools/pc_feed.merge puts them together."""
+    return split(full(snap), max_bytes)
+
+
+def merged(snap: dict, max_bytes: int = MAX_STATUS_BYTES) -> dict:
+    """What a reader sees after this run's posts (tools/pc_feed.merge of the core and its ext): the old single-post shape."""
+    from tools import pc_feed
+    core, exts = posts(snap, max_bytes)
+    return pc_feed.merge(core, exts)
+
+
+def ext_hash(exts) -> str:
+    """The ext's news (block times and the brain glance left out): a new hash = post the ext now, not at the next EXT_EVERY_S."""
+    import hashlib
+    keep = [{k: ({a: b for a, b in v.items() if a != "t"} if isinstance(v, dict) else v) for k, v in _d(e.get("x")).items()
+             if k not in ("glance",)} for e in exts or []]
+    return hashlib.sha1(json.dumps(keep, sort_keys=True, default=str).encode("utf-8")).hexdigest()[:16]
 
 
 def public(out: dict) -> dict:
@@ -1029,12 +1126,29 @@ def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, n
            "status_t": last.get("status_t"), "alerts_last": last.get("alerts_last"), "errors": [],
            # the Launch card (tools/launch_card.report_state) reads only this file: whether alerts go out, never the topic itself
            "alerts_on": bool(cfg["topic"]) and bool(cfg["on"])}
-    status = lite(snap)
-    write_json(os.path.join(work, "status.json"), status, compact=True)
+    status, exts = posts(snap)
+    for k in ("ext_t", "ext_h"):
+        rec[k] = last.get(k)
     if snap.get("live"):
         write_json(os.path.join(work, "live.json"), snap["live"], compact=True)
-    # status -> the public status topic (the site)
+    # status -> the public status topic (the site): the ext post(s) first when due, then the core (so since=latest is the core)
     if cfg["status_topic"] and status.get("t"):
+        h = ext_hash(exts)
+        due = bool(exts) and (h != last.get("ext_h") or not num(last.get("ext_t")) or snap["t"] - float(last["ext_t"]) >= EXT_EVERY_S)
+        for e in exts if due else []:
+            body = json.dumps(e, separators=(",", ":"), default=str, ensure_ascii=False)
+            if dry:
+                say(f"[dry] status ext {e.get('part')} ({len(body.encode('utf-8'))} bytes: {', '.join(_d(e.get('x')))}) -> {cfg['ntfy']}/{cfg['status_topic']}")
+                continue
+            ok, why = ntfy_post(cfg["ntfy"], cfg["status_topic"], body, priority="min", http=http)
+            if not ok:
+                rec["errors"].append("status ext: " + why)
+                due = False
+                break
+        if due and not dry:
+            rec["ext_t"], rec["ext_h"] = snap["t"], h
+        if num(rec.get("ext_t")):
+            status["xt"] = int(rec["ext_t"])         # when the extras last went (readers merge the newest ext with this core)
         body = json.dumps(status, separators=(",", ":"), default=str, ensure_ascii=False)
         if dry:
             say(f"[dry] status ({len(body.encode('utf-8'))} bytes) -> {cfg['ntfy']}/{cfg['status_topic']}")
@@ -1046,6 +1160,8 @@ def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, n
                 rec["errors"].append("status: " + why)
     elif not status.get("t"):
         rec["errors"].append("status: the bot has never reported on this PC (nothing to show)")
+    write_json(os.path.join(work, "status.json"), status, compact=True)
+    write_json(os.path.join(work, "status_ext.json"), exts, compact=True)
     # alerts -> your private topic
     state = read_json(os.path.join(work, "state.json"), {}) or {}
     new_state, msgs = events(state, snap)
@@ -1154,13 +1270,6 @@ def main(argv=None) -> int:
         try:
             from engine import learn_loop as _ll
             _ll.maybe_run(say=(lambda *_: None) if a.quiet else print)
-        except Exception:
-            pass
-        # data pipe + ZEUS daily review (engine/datapipe.py, docs/DATA_PIPE.md): copies the bots' ledger rows every run; after 17:05 ET one
-        # detached child sends the day's NinjaTrader bars, trades, decisions and live-vs-backtest to the backup repo branch `data`; soft
-        try:
-            from engine import datapipe as _dp
-            _dp.maybe_run(say=(lambda *_: None) if a.quiet else print)
         except Exception:
             pass
         # Obsidian living sync (tools/obsidian_sync.py, docs/OBSIDIAN_SYNC.md): the bots' day, trades + pictures, research, business,

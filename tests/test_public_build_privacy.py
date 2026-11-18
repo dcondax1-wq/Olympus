@@ -338,14 +338,19 @@ def ntfy():
     live["pc"]["glance"] = {"v": 1, "bots": [{"id": "lit", "log": [f"route {F['broker_low']}", f"funded {F['broker_mix']}", f"link http://{F['tsip']}:8766",
                                                                     f"via {F['tailnet']}", f"key {F['ghp']}", f"alerts {F['topic']}"]}]}
     snap["kalshi_rewards"] = {"v": 1, "text": f"paper on {F['tailnet']} by {F['email']}"}
-    L = PR.lite(snap)
+    snap["hb"]["life"] = {"acc": {f"x:{b1}": {"label": f"Zlarior {b1}", "stage": "eval", "bal": 1}}, "ev": [{"t": t, "stage": "eval", "title": f"on {b1}"}]}
+    L, exts = PR.posts(snap)
     raw = json.dumps(L, ensure_ascii=False)
-    leak = [k for k in ("broker_low", "broker_mix", "tsip", "tailnet", "ghp", "topic") if F[k].lower() in raw.lower()]
+    rawx = json.dumps(exts, ensure_ascii=False)
+    leak = [k for k in ("broker_low", "broker_mix", "tsip", "tailnet", "ghp", "topic") if F[k].lower() in (raw + rawx).lower()]
     check("e. no lower-case / letters+digits broker id, Tailscale IP, tailnet name, key or alert topic in the glance / Kalshi card",
-          not leak and SP.MASK + "3570" in raw and SP.MASK + "2465" in raw, (leak, raw[:900]))
+          not leak and SP.MASK + "3570" in raw + rawx and SP.MASK + "2465" in raw + rawx, (leak, (raw + rawx)[:900]))
     em = [v for v in SP.status_canaries() if "@" in v]
     check("e. public_status masks this PC's canaries by default (the owner's git email in a free-text line)",
           all(v.lower() not in json.dumps(SP.public_status({"note": "from " + v}), ensure_ascii=False).lower() for v in em), len(em))
+    check("e. the ext posts (le-live-ext: brd, life, mf, ...) pass the same privacy pass: no PC name, broker id (life keys too), folder, email",
+          exts and "PLANT-PC" not in rawx and b1 not in rawx and F["email"] not in rawx and "Jane Planted" not in rawx
+          and all(len(json.dumps(e, ensure_ascii=False).encode("utf-8")) <= PR.MAX_STATUS_BYTES for e in exts), rawx[:600])
     check("e. the public status has no PC name (host) anywhere", "PLANT-PC" not in raw and '"host"' not in raw, raw[:400])
     check("e. the public status has no full broker id, no personal folder, no email", b1 not in raw and "Jane Planted" not in raw and F["email"] not in raw, raw[:600])
     check("e. the eval numbers the site needs stay (balance, drawdown left, the verdict, the last trade)",

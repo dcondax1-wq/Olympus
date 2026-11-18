@@ -55,7 +55,7 @@ def fetch_hb(remotes=REMOTES) -> dict:
 
 
 def fetch_lite(get=None) -> dict | None:
-    """The newest PC status post (kind le-live) on the public ntfy topic, or None."""
+    """The newest PC status post (kind le-live) on the public ntfy topic with its ext blocks merged in (brd, mf, ...), or None."""
     try:
         from tools import pc_silent_check as P
         with open(STATUS_FEED, encoding="utf-8") as fh:
@@ -63,17 +63,8 @@ def fetch_lite(get=None) -> dict | None:
         ok, msgs = P.poll(str(feed.get("ntfy") or "https://ntfy.sh").rstrip("/"), str(feed.get("topic") or ""), since="12h", get=get)
     except Exception:  # noqa: BLE001
         return None
-    best, bt = None, -1.0
-    for m in msgs if ok else []:
-        try:
-            j = json.loads(m.get("message") or "")
-        except (ValueError, TypeError):
-            continue
-        if isinstance(j, dict) and j.get("kind") == "le-live":
-            rt = float(B._d(j.get("reporter")).get("t") or m.get("time") or j.get("t") or 0)
-            if rt >= bt:
-                best, bt = j, rt
-    return best
+    from tools import pc_feed                      # the core post + its newest ext post(s) merged (the old single post as it was)
+    return pc_feed.pick(msgs) if ok else None
 
 
 def lite_live(lite: dict | None, plan_accounts=None) -> dict:

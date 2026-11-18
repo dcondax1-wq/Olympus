@@ -325,9 +325,10 @@ def glance_checks(REF):
     # the PC's 15-minute status carries it and still fits
     snap = {"t": t_arm, "hb": hb, "hb_t": t_arm - 60, "server": True, "nt": True, "market_open": True, "entry_hours": True, "mode": "LIVE",
             "live": p}
-    lt = R.lite(snap)
-    check("glance: on the PC's 15-minute status (pc.glance) and the status still fits 3,900 bytes",
-          (lt.get("pc") or {}).get("glance", {}).get("bots") and R._size(lt) <= R.MAX_STATUS_BYTES, R._size(lt))
+    core, exts = R.posts(snap)
+    lt = R.merged(snap)
+    check("glance: on the PC's 15-minute status (the ext post, merged back to pc.glance) and every post still fits 3,900 bytes",
+          (lt.get("pc") or {}).get("glance", {}).get("bots") and all(R._size(x) <= R.MAX_STATUS_BYTES for x in [core, *exts]), R._size(lt))
     check("glance: never raises on junk", G.build(None) is None and isinstance(G.build({"brain": "x", "second": 3, "acct": []}), dict))
 
 

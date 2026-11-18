@@ -112,7 +112,8 @@ def poll(base, topic, since="12h", get=None) -> tuple:
 
 
 def feed_last(msgs) -> int | None:
-    """The newest PC status post time (only the PC's 'le-live' posts; the cloud's own alert text is not one)."""
+    """The newest PC status post time (only the PC's 'le-live' core posts; the cloud's own alert text is not one, and neither is the
+    'le-live-ext' extras post, which goes only every 2nd run: the core is the heartbeat)."""
     best = None
     for m in msgs:
         try:

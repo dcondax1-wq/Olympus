@@ -205,21 +205,82 @@ def mffu_checks(now, lm):
     check("mf: ATLAS's own account (board card): start date + the payout tracker", a and a[0]["sd"] == "2026-11-17" and a[0]["f"]["cp"] == 0, a)
     check("mf: junk in -> None, never raises", MV.compact({"accounts": "x", "board": 3}) is None and MV.compact(None) is None)
     snap = {"t": int(now), "hb_t": int(now) - 60, "live": L, "hb": {}, "server": True, "nt": True, "market_open": True, "mode": "live"}
-    lt = R.lite(snap)
-    check("mf: pc_report.lite carries mf and stays under 3,900 bytes", "mf" in lt and R._size(lt) <= R.MAX_STATUS_BYTES, R._size(lt))
-    # three real accounts with long names and 8-day equity lines: still under the cap; eq is cut before mf, mf before accounts
+    lt = R.merged(snap)
+    core, exts = R.posts(snap)
+    check("mf: rides in the ext post (merged back to the top-level mf); every post under 3,900 bytes",
+          "mf" in lt and "mf" not in core and any("mf" in e["x"] for e in exts) and all(R._size(x) <= R.MAX_STATUS_BYTES for x in [core, *exts]),
+          [R._size(x) for x in [core, *exts]])
+    # three real accounts with long names and 8-day equity lines: the core keeps every account; mf keeps its equity line in the ext
     for i in range(2):
         L["accounts"].append({**json.loads(json.dumps(L["accounts"][0])), "id": f"b25k_{i}", "name": f"Zlarior Builder 25K #{i + 2}"})
     for a in L["accounts"]:
         a["days"] = [[f"2026-11-{d:02d}", 100.0 * (-1) ** d] for d in range(1, 13)]
-    big = R.lite(snap)
+    core, exts = R.posts(snap)
+    big = R.merged(snap)
     eqs = [len(x.get("eq") or []) for x in (big.get("mf") or {}).get("a") or []]
-    check("mf: a much bigger post still fits; the equity line is cut (or mf dropped) before the accounts block",
-          R._size(big) <= R.MAX_STATUS_BYTES and len(big.get("accounts") or []) == 3 and (not big.get("mf") or max(eqs or [0]) <= 4)
-          and big.get("trimmed"), (R._size(big), eqs, list(big)))
+    check("mf: a much bigger post: the core keeps all 3 accounts untrimmed, mf keeps its equity line (ext), all posts fit",
+          all(R._size(x) <= R.MAX_STATUS_BYTES for x in [core, *exts]) and len(core.get("accounts") or []) == 3 and not core.get("trimmed")
+          and big.get("mf") and max(eqs or [0]) >= 3, ([R._size(x) for x in [core, *exts]], eqs, list(big)))
     src = read("tools/pc_report.py")
-    i_eq, i_brd, i_mf, i_acc = (src.index(x) for x in ("_mfcut(o, 4)", 'o.pop("brd", None)', 'o.pop("mf", None)', 'o.pop("accounts", None)'))
-    check("mf: trim order = glance, eq to 4, brd, eq 0, mf, then accounts", i_eq < i_brd < i_mf < i_acc)
+    fc = src[src.index("def _fit_core"):src.index("def _cuts")]
+    check("split: the core cuts lines / waiting / windows before the accounts block; ext order brd, life, mf ... glance, kalshi",
+          fc.index('pop("lines"') < fc.index('pop("waiting"') < fc.index('o.pop("accounts"') and R.EXT_ORDER.index("brd") < R.EXT_ORDER.index("mf")
+          < R.EXT_ORDER.index("glance") < R.EXT_ORDER.index("kalshi_rewards"))
+    split_checks(now, L)
+
+
+def split_checks(now, L):
+    """2026-11-18 split of the PC's ntfy status: the core (le-live) every run, the extras in le-live-ext posts (up to 2), readers merge
+    (tools/pc_feed.py = tools/web_public/pc_feed.js). Sizes, the merge, the old single post, the PC-silent check."""
+    from tools import pc_report as R, pc_feed as PF, pc_silent_check as PS
+    t = int(now)
+    snap = {"t": t, "hb_t": t - 60, "live": L, "server": True, "nt": True, "market_open": True, "mode": "live",
+            "hb": {"life": {"acc": {"lit": {"label": "Zlarior 50K", "stage": "eval", "since": t - 86400, "why": "x" * 90, "bal": 49193}},
+                            "ev": [{"t": t - 9, "key": "k", "stage": "passed", "title": "ATLAS PASSED", "body": "b" * 300, "push": True}] * 3}},
+            "kalshi_rewards": {"net": 2.1, "days": 1.5, "updated": "2026-11-18"}}
+    full = R.full(snap)
+    core, exts = R.split(full)
+    sizes = [R._size(x) for x in [core, *exts]]
+    print(f"  [info] split sizes: core {sizes[0]} bytes, ext {sizes[1:]} (the old single post would be {R._size(full)} uncut)")
+    check("split: core = kind le-live with heartbeat t, verdict, reporter, board cards, accounts; no extras in it; small (3 accounts < 3,300 bytes)",
+          core["kind"] == "le-live" and core["t"] == t - 60 and core.get("pc_verdict") and core["reporter"]["t"] == t and core["board"].get("lit")
+          and len(core.get("accounts") or []) == 3 and not set(core) & {"brd", "mf", "life", "kalshi_rewards"} and "glance" not in core.get("pc", {})
+          and sizes[0] < 3300 and not core.get("trimmed"), (sizes, list(core)))
+    check("split: ext = kind le-live-ext, t / rt of this run, part / of, x holds brd / life / mf / kalshi_rewards; each under 3,900 bytes",
+          exts and all(e["kind"] == R.EXT_KIND and e["t"] == t - 60 and e["rt"] == t and e["of"] == len(exts) for e in exts)
+          and {"mf", "life", "kalshi_rewards", "board_trades"} <= {k for e in exts for k in e["x"]} and max(sizes) <= R.MAX_STATUS_BYTES, [list(e["x"]) for e in exts])
+    life = next(e["x"]["life"] for e in exts if "life" in e["x"])
+    check("split: life is cut for the public topic (stage per account, last 2 events, no long why / body)",
+          life["acc"]["lit"]["stage"] == "eval" and "why" not in life["acc"]["lit"] and len(life["ev"]) == 2 and "body" not in life["ev"][0], life)
+    # a big ext: 2 parts, then cuts; the core never grows
+    snap2 = {**snap, "learn": {"notes": ["n" * 200] * 8}, "lab": {"notes": ["l" * 200] * 8}}
+    core2, ext2 = R.posts(snap2)
+    check("split: a big ext spreads over at most 2 posts (cut / dropped blocks named in 'cut'); the core is the same",
+          1 <= len(ext2) <= R.EXT_PARTS and all(R._size(e) <= R.MAX_STATUS_BYTES for e in ext2) and R._size(core2) == R._size(core)
+          and {"learn", "lab"} & {k for e in ext2 for k in e["x"]}, ([list(e["x"]) for e in ext2], ext2[-1].get("cut")))
+    # merge: ntfy messages -> the old single-post shape
+    msg = lambda j, tm: {"event": "message", "time": tm, "message": json.dumps(j)}          # noqa: E731
+    m = PF.pick([msg(e, t) for e in exts] + [msg(core, t), {"event": "open"}, msg({"kind": "x"}, t)])
+    check("merge (tools/pc_feed.pick): core + ext -> mf / life / kalshi_rewards at the top, board_trades -> board.trades, the core's own keys kept, ext_t set",
+          m["t"] == core["t"] and m.get("mf") and m.get("life") and m["kalshi_rewards"]["net"] == 2.1 and m["accounts"] == core["accounts"]
+          and m["board"]["trades"] == full["board"]["trades"] and "board_trades" not in m
+          and m["ext_t"] == t, list(m))
+    old_ext = [{**e, "rt": t - 3 * 3600} for e in exts]
+    check("merge: an ext over 2 h older than the core is ignored; ext alone -> None; core alone -> the core",
+          "mf" not in PF.pick([msg(e, t - 3 * 3600) for e in old_ext] + [msg(core, t)]) and PF.pick([msg(e, t) for e in exts]) is None
+          and PF.pick([msg(core, t)]) == core)
+    single = R.public(json.loads(json.dumps(full, default=str)))
+    check("merge: the old single post (blocks inside, no ext) comes back unchanged (backward compatible)",
+          PF.pick([msg(single, t)]) == single and PF.merge(single, exts)["mf"] == single["mf"])
+    newer = {**core, "reporter": {**core["reporter"], "t": t + 900}}
+    check("merge: the newest core wins, with the last ext (sent every 2nd run) still merged in",
+          PF.pick([msg(e, t) for e in exts] + [msg(core, t), msg(newer, t + 900)])["reporter"]["t"] == t + 900
+          and PF.pick([msg(e, t) for e in exts] + [msg(newer, t + 900)]).get("mf"))
+    check("PC-silent check: only the core counts as the PC's heartbeat (an ext post alone is not one)",
+          PS.feed_last([msg(e, t + 500) for e in exts] + [msg(core, t)]) == t and PS.feed_last([msg(e, t) for e in exts]) is None)
+    check("ext_hash: the same news -> the same hash (block times and the glance left out); new news -> a new hash",
+          R.ext_hash(exts) == R.ext_hash([{**e, "x": {k: ({**v, "t": 1} if isinstance(v, dict) else v) for k, v in e["x"].items()}} for e in exts])
+          and R.ext_hash(exts) != R.ext_hash(ext2))
 
 
 def main(argv=None) -> int:

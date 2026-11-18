@@ -2115,6 +2115,12 @@ def part_rewards(br, url, tmp):
         check("rw2. the PC's newer status post wins: $12.34 earned, -$2.50 fills, +$9.84 net, 3.2 days, 7 fills, 'from the PC'",
               all(w in t for w in ("$12.34", "−$2.50", "+$9.84", "3.2", "7 fills", "from the PC")), t[:300])
         check("rw2. the status topic is read from ../status_feed.json (ntfy poll, GET)", any("/olympus-test-status/json?poll=1" in u for u in R["asked"]), R["asked"][:2])
+        pc2 = dict(pc, reward=23.45, net=20.95, updated="2099-02-01T00:00:00+00:00")       # 2026-11-18 split: the card rides in the ext post
+        ext = {"kind": "le-live-ext", "t": 2, "rt": 2, "part": 0, "of": 1, "x": {"kalshi_rewards": pc2}}
+        R["ntfy"] = "\n".join(json.dumps({"event": "message", "time": i + 1, "message": json.dumps(m)}) for i, m in enumerate([msg, ext, {"kind": "le-live", "t": 3}])) + "\n"
+        open_()
+        p.wait_for_function("document.querySelector('#krw').textContent.indexOf('$23.45') >= 0", timeout=20000)
+        check("rw2. the split status (core + le-live-ext post): the ext's newer rewards card wins ($23.45)", "$23.45" in p.inner_text("#krw"))
         bad = dict(copy, paper=dict(copy["paper"], reward="<img src=x onerror=window.__pwn=1>"),
                    backtest={"text": "<script>window.__pwn=1</script>bad"})
         R["own"], R["ntfy"] = json.dumps(bad), None

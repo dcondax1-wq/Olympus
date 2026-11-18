@@ -4,8 +4,15 @@
 // index.html. This file reads it. Its "t" is the bot's own heartbeat time, so an old report always looks old; "reporter.t" is when the
 // PC last looked (reporter.server false = the PC is on but the bot server does not answer).
 // Classic script (window.PC_FEED) and a CommonJS module for node tests (tests/test_bots_back.py). No DOM; fetch only in fetchLatest.
-//   parseLatest(ndjsonText)          -> the newest lite live.json in an ntfy /json?poll=1 answer, or null
-//   feedUrls(feed)                   -> the ntfy poll URLs for {ntfy, topic} (since=latest first, a 30-minute window as the fallback)
+// Split (2026-11-18): the PC posts the CORE (kind "le-live": heartbeat t, verdict, cards, accounts) every run and the extras in
+// "le-live-ext" posts just before it (x = brd, life, mf, board_trades, glance, kalshi_rewards, later learn / lab; part / of), every 2nd run or when
+// their news changed. parseLatest lays the newest ext of each part (not older than EXT_MAX_S before the core) into the core where
+// the core has none (glance -> pc.glance, board_trades -> board.trades), so every page sees the old single-post shape; an old single post comes back as it was.
+// tools/pc_feed.py is the Python twin (tools/board.py).
+//   parseLatest(ndjsonText)          -> the newest lite live.json in an ntfy /json?poll=1 answer (ext merged in), or null
+//   merge(core, exts)                -> a copy of core with the ext blocks laid in
+//   feedUrls(feed)                   -> the ntfy poll URLs for {ntfy, topic} (a 70-minute window = core + ext first, since=latest
+//                                       = the core alone as the fallback)
 //   fetchLatest({feedUrl, fetch})    -> Promise of the newest lite live.json or null (never throws)
 //   mergeBoard(siteBoard, liteBoard) -> the site's board with the PC's fresher account cards laid in (map / health / progress /
 //                                       trades of the site kept); the site's when it is newer
@@ -19,19 +26,47 @@
   const okN = (v) => typeof v === 'number' && Number.isFinite(v);
   const T = (b) => (isObj(b) ? +b.data_t || +b.t || 0 : 0);
 
+  const EXT_KIND = 'le-live-ext', EXT_MAX_S = 2 * 3600, NESTED = { glance: ['pc', 'glance'], board_trades: ['board', 'trades'] };
+  const CORE_OWN = new Set(['v', 'kind', 'lite', 'src', 't', 'every_s', 'trimmed', 'pc', 'pc_verdict', 'reporter', 'board', 'accounts', 'host',
+    'model_state', 'price', 'day_pnl', 'xt', 'ext_t']);
+  const rtOf = (j) => +((isObj(j.reporter) && j.reporter.t) || j.rt || j.t) || 0;
+  const copy = (v) => (v == null ? v : JSON.parse(JSON.stringify(v)));
+
+  function merge(core, exts) {
+    if (!isObj(core)) return core;
+    const out = copy(core), crt = rtOf(core), seen = new Set();
+    let used = 0;
+    const list = (Array.isArray(exts) ? exts : []).filter((e) => isObj(e) && e.kind === EXT_KIND && rtOf(e) > 0).sort((a, b) => rtOf(b) - rtOf(a));
+    for (const e of list) {
+      const et = rtOf(e), part = +e.part || 0;
+      if ((crt && et < crt - EXT_MAX_S) || seen.has(part)) continue;
+      seen.add(part);
+      for (const [k, v] of Object.entries(isObj(e.x) ? e.x : {})) {
+        if (NESTED[k]) {
+          const [hk, kk] = NESTED[k];
+          if (isObj(out[hk]) && out[hk][kk] == null) { out[hk][kk] = copy(v); used = Math.max(used, et); }
+        } else if (!CORE_OWN.has(k) && out[k] == null) { out[k] = copy(v); used = Math.max(used, et); }
+      }
+    }
+    if (used) out.ext_t = Math.round(used);
+    return out;
+  }
+
   function parseLatest(text) {
     let best = null, bestT = -1;
+    const exts = [];
     for (const line of String(text || '').split('\n')) {
       if (!line.trim()) continue;
       let m, j;
       try { m = JSON.parse(line); } catch (e) { continue; }
       if (!isObj(m) || (m.event && m.event !== 'message') || typeof m.message !== 'string') continue;
       try { j = JSON.parse(m.message); } catch (e) { continue; }
+      if (isObj(j) && j.kind === EXT_KIND) { if (!j.rt && okN(+m.time)) j.rt = +m.time; exts.push(j); continue; }
       if (!isObj(j) || j.kind !== 'le-live' || !okN(+j.t) || +j.t <= 0) continue;
       const rt = +((isObj(j.reporter) && j.reporter.t) || m.time || j.t);
       if (rt >= bestT) { best = j; bestT = rt; }
     }
-    return best;
+    return best ? merge(best, exts) : null;
   }
 
   function feedUrls(feed) {
@@ -39,7 +74,7 @@
     const base = String(feed.ntfy || 'https://ntfy.sh').replace(/\/+$/, '');
     if (!/^https:\/\//.test(base)) return [];
     const t = encodeURIComponent(feed.topic);
-    return [`${base}/${t}/json?poll=1&since=latest`, `${base}/${t}/json?poll=1&since=30m`];
+    return [`${base}/${t}/json?poll=1&since=70m`, `${base}/${t}/json?poll=1&since=latest`];
   }
 
   async function fetchLatest(opts) {
@@ -97,7 +132,7 @@
     return { ...home, live: nl, board: mergeBoard(home.board, lite.board) };
   }
 
-  const API = { FRESH_S, parseLatest, feedUrls, fetchLatest, mergeBoard, toLive, overlayHome };
+  const API = { FRESH_S, EXT_KIND, EXT_MAX_S, parseLatest, merge, feedUrls, fetchLatest, mergeBoard, toLive, overlayHome };
   root.PC_FEED = API;
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
 })(typeof window !== 'undefined' ? window : globalThis);
