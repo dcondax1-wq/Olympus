@@ -265,3 +265,4 @@ data/*.Last.txt
 data/nt_export/
 # Kalshi K1 paper on the PC (tools/kalshi_paper.py maybe_run): ledger, public summary, run token, log
 data/kalshi_k1/
+data/gh_publish/
