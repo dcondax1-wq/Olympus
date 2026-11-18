@@ -1,15 +1,27 @@
 // TRADING core (ES module, pure: no DOM, no network, no storage). The numbers of the Trading page (tools/web_public/trading/), node-tested by tests/test_trading_page.py.
 // Input: ./trades.json (tools/trading_export.py: every 2026 trade, src backtest / paper / live), ../home.json board.trades (the PC's newest), the canonical accounts of
 // olympus/truth.js accountsOf(home), ../ledger/rules.json limits, ../business/accounts.json rules, and the clock. BLITZ is hidden (owner 2026-11-15) and always left out.
-//   merge(file, home)                 -> rows (file rows + the PC's newer rows, one per trade), newest last
-//   pick(rows, {bot, src})            -> the rows of one bot ('all' | 'LIT' | 'ATLAS') and one source ('live' | 'paper' | 'backtest')
+//   merge(file, home, lite, nowS)     -> rows (file rows + home.json's + the fresh PC feed's, one per trade and account), newest last
+//   feedRows(lite, nowS)              -> LIVE rows of the PC's ntfy feed (pc_feed.js: board_trades + "at" per account) when it is fresh
+//   pick(rows, {bot, src, acct})      -> the rows of one bot ('all' | 'LIT' | 'ATLAS'), one source ('live' | 'paper' | 'backtest'), one account
+//   liveAccounts(rows) / liveStats(rows)   the LIVE accounts with trades (Zlarior 50K, Zlarior 25K #2, ATLAS funded 25K, Rapid 25K) and their numbers
 //   daily(rows) / months(rows) / monthGrid(ym, rows)   the calendar (weekdays only: the bots trade Mon-Fri)
 //   stats(rows, from, to) / halves(rows)               trades/week, win %, PF, avg win / loss $, best / worst day, max DD $, streaks; 2026 H1 vs H2
 //   hours(rows) / weekdays(rows)      the time-of-day and weekday bars;  equity(rows) the curve per bot
 //   flatClock(nowS)                   MFFU: flat by 16:10 ET, no orders 16:10-18:00 ET, weekend closed Fri 16:10 - Sun 18:00
 //   todayCards(A, rows, home, nowS) / rulesCheck(A, rows, rules, biz) / twins(rows) / lastLive(rows, ages)
-export const BOTS = { LIT: { bot: 'LIT', acct: 'zlarior', name: 'Zlarior', plan: 'builder_50k', size: '50K' }, ATLAS: { bot: 'ATLAS', acct: 'atlas', name: 'ATLAS', plan: 'builder_25k', size: '25K' } };
+export const BOTS = { LIT: { bot: 'LIT', acct: 'zlarior', ak: 'z50k', name: 'Zlarior', plan: 'builder_50k', size: '50K' }, ATLAS: { bot: 'ATLAS', acct: 'atlas', ak: 'atlas25f', name: 'ATLAS', plan: 'builder_25k', size: '25K' } };
+const mainLive = (r, bot) => r.src === 'live' && r.bot === bot && (r.ak || BOTS[bot].ak) === BOTS[bot].ak;   // the bot's own account (the cards' account)
 export const SRC = { live: 'LIVE', paper: 'PAPER', backtest: 'BACKTEST' };
+// the LIVE accounts (tools/live_trades.py ACCOUNTS, the same keys): key -> name, bot (null = from the trade), the PC / ledger ids that mean it
+export const ACCTS = {
+  z50k: { name: 'Zlarior 50K', bot: 'LIT', ids: ['zlarior', 'mffu50k_eval', 'lit', 'main'] },
+  z25k2: { name: 'Zlarior 25K #2', bot: 'LIT', ids: ['b25k_2'] },
+  atlas25f: { name: 'ATLAS funded 25K', bot: 'ATLAS', ids: ['atlas', 'acctb', 'account_b'] },
+  rapid25: { name: 'Rapid 25K', bot: null, ids: ['rapid', 'acctr', 'rapid25k', 'rapid_25k', 'rapideod', 'rapid_eod'] },
+};
+export const FEED_FRESH_S = 36 * 3600;   // a PC feed older than this is not read for trades (the same 36 hours the banner calls stale)
+export const REPLAY_LATER = 'Replay after tonight\'s data upload';
 export const SRC_WORDS = { live: 'LIVE from the PC (the real MFFU eval)', paper: 'PAPER (the cloud\'s practice twin)', backtest: 'BACKTEST (a replay of the rules, not money made)' };
 export const FLAT_MOD = 970, OPEN_MOD = 1080;          // 16:10 and 18:00 ET (research/lit/mffu_rules.json trading_hours; ledger/rules.json flat_by_mod / open_mod)
 export const RAPID = { cons: 0.3, target: 3000, minDays: 4 };   // the Rapid EOD 50K evaluation (business/accounts.json rules: "no single day over 30% of it", "at least 4 days")
@@ -23,6 +35,16 @@ export const num = (v) => { const x = typeof v === 'string' ? parseFloat(v.repla
 const str = (v, n) => String(v == null ? '' : v).replace(/[<>]/g, '').slice(0, n || 80);
 const isDay = (d) => /^\d{4}-\d{2}-\d{2}$/.test(String(d || ''));
 const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+const ATLAS_RX = /atlas|ema|macd|sr_/;
+/** a PC / ledger account id -> the account key (z50k, z25k2, atlas25f, rapid25, or a new account's own id); null = hidden or junk */
+export function acctKey(id, bot) {
+  const a = String(id == null ? '' : id).trim().toLowerCase().split('/').pop();
+  if (!a) return bot === 'ATLAS' ? 'atlas25f' : bot === 'LIT' ? 'z50k' : null;
+  if (/blitz|acctc|acct_c|atlas_v2/.test(a)) return null;
+  for (const k of Object.keys(ACCTS)) if (ACCTS[k].ids.includes(a) || (k === 'rapid25' && a.startsWith('rapid'))) return k;
+  return /^[a-z0-9_]{2,24}$/.test(a) ? a : null;
+}
+export const acctName = (k) => (ACCTS[k] ? ACCTS[k].name : `Account ${str(k, 24)}`);
 
 // ------------------------------------------------------------------------------------------------ words and numbers
 export function money(x) { const v = num(x); if (v == null) return '$0'; const a = Math.abs(Math.round(v)); return (v < 0 && a !== 0 ? '-' : '') + '$' + a.toLocaleString('en-US'); }
@@ -66,7 +88,13 @@ function clean(x) {
   const usd = num(x.usd);
   return { id: str(x.id, 80), bot, acct: BOTS[bot].acct, src, m: str(x.m, 8), day: x.day, hm: /^\d{2}:\d{2}$/.test(String(x.hm)) ? x.hm : (etParts(t) || {}).hm || '', t, xt: num(x.xt),
     side: x.side === 'SHORT' ? 'SHORT' : 'LONG', q: num(x.q), e: num(x.e), s: num(x.s), tg: num(x.tg), x: num(x.x), k: str(x.k, 12).toUpperCase(), usd: usd == null ? 0 : usd, r: num(x.r), risk: num(x.risk),
-    odeon: typeof x.odeon === 'string' && /^[A-Za-z0-9_.:-]{1,80}$/.test(x.odeon) ? x.odeon : null, twin: isObj(x.twin) ? x.twin : null, open: x.open === true };
+    odeon: typeof x.odeon === 'string' && /^[A-Za-z0-9_.:-]{1,80}$/.test(x.odeon) ? x.odeon : null, twin: isObj(x.twin) ? x.twin : null, open: x.open === true,
+    ...(src === 'live' ? liveAcct(x, bot) : {}), feed: x.feed === true };
+}
+/** a LIVE row's account: its key ("ak"), name and last 4 digits only ("a4"); a row without one = the bot's own account */
+function liveAcct(x, bot) {
+  const k = typeof x.ak === 'string' && /^[a-z0-9_]{2,24}$/.test(x.ak) ? x.ak : acctKey('', bot);
+  return { ak: k, an: acctName(k), a4: /^\d{4}$/.test(String(x.a4 || '')) ? String(x.a4) : null };
 }
 /** the futures session day of an ET time: from 18:00 ET it is the next day's session, and a weekend lands on Monday (the calendar is Mon-Fri) */
 export function sessionDay(p) {
@@ -80,26 +108,78 @@ export function homeRows(home) {
   const out = [];
   for (const x of arr(obj(obj(home).board).trades)) {
     if (!isObj(x) || hidden(x)) continue;
-    const s = String(x.acct || x.key || '').toLowerCase(), bot = /atlas|ema|macd|sr_/.test(s) ? 'ATLAS' : 'LIT', t = num(x.entry_t) != null ? num(x.entry_t) : num(x.exit_t);
+    const s = String(x.acct || x.key || '').toLowerCase(), bot = ATLAS_RX.test(s) ? 'ATLAS' : 'LIT', t = num(x.entry_t) != null ? num(x.entry_t) : num(x.exit_t);
     if (t == null) continue;
     const p = etParts(t) || {}, side = String(x.side || (num(x.dir) != null ? (num(x.dir) > 0 ? 'LONG' : 'SHORT') : '')).toUpperCase(), src = String(x.src || '') === 'paper' ? 'paper' : 'live';
-    const r = clean({ id: `${src}.home.${bot.toLowerCase()}.${t}`, bot, src, m: str(x.member, 8), day: isDay(x.day) ? x.day : sessionDay(p), hm: p.hm, t, xt: num(x.exit_t), side, q: num(x.qty),
+    const ak = src === 'live' ? acctKey(x.aid || (bot === 'ATLAS' ? 'atlas' : 'zlarior'), bot) : null;
+    const r = clean({ id: `${src}.home.${ak || bot.toLowerCase()}.${t}`, bot, src, ak, m: str(x.member, 8), day: isDay(x.day) ? x.day : sessionDay(p), hm: p.hm, t, xt: num(x.exit_t), side, q: num(x.qty),
       e: num(x.entry != null ? x.entry : x.entry_px), s: num(x.stop != null ? x.stop : x.stop_px), tg: num(x.target != null ? x.target : x.target_px), x: num(x.exit_px),
-      k: typeof x.exit === 'string' ? x.exit : x.exit_kind, usd: num(x.usd != null ? x.usd : x.pnl), r: num(x.r != null ? x.r : x.R), open: x.open === true });
+      k: typeof x.exit === 'string' ? x.exit : x.exit_kind, usd: num(x.usd != null ? x.usd : x.pnl), r: num(x.r != null ? x.r : x.R), open: x.open === true || String(x.exit || '').toUpperCase() === 'OPEN', feed: x.feed === true });
     if (r) out.push(r);
   }
   return out;
 }
-/** the file's rows plus the PC's newer ones (the same trade = the same bot, source and entry minute: the file's row is kept) */
-export function merge(file, home) {
-  const rows = [], seen = {};
-  const key = (r) => `${r.src}|${r.bot}|${r.m}|${Math.floor(r.t / 60)}`;
-  for (const x of arr(obj(file).trades)) { const r = clean(x); if (r && !seen[key(r)]) { seen[key(r)] = 1; rows.push(r); } }
-  for (const r of homeRows(home)) if (!seen[key(r)]) { seen[key(r)] = 1; rows.push(r); }
-  rows.sort((a, b) => a.t - b.t || (a.bot < b.bot ? -1 : a.bot > b.bot ? 1 : 0));
+/** when the PC feed was made (the ext's time, else the reporter's look, else the heartbeat), epoch s; null = none */
+export function feedT(lite) { const l = obj(lite); return num(l.ext_t) || num(obj(l.reporter).t) || num(l.t); }
+/** the PC feed's trades (pc_feed.js parseLatest: board.trades = the ext's board_trades, "at" = every real account's last trades) as rows,
+ *  only when the feed is fresh (FEED_FRESH_S). A board row with src "paper" stays PAPER; the "at" rows are LIVE per account. */
+export function feedRows(lite, nowS) {
+  const l = obj(lite), ft = feedT(l), now = num(nowS);
+  if (ft == null || (now != null && now - ft > FEED_FRESH_S)) return [];
+  const out = homeRows({ board: { trades: arr(obj(l.board).trades).map((x) => (isObj(x) ? { ...x, feed: true } : x)) } });
+  for (const a of arr(obj(l.at).a)) {
+    if (!isObj(a) || hidden(a)) continue;
+    for (const v of arr(a.tr)) {
+      if (!Array.isArray(v) || num(v[0]) == null) continue;
+      const [t, xt, d, q, e, s, tg, k, usd, r] = v, bot0 = ACCTS[acctKey(a.id)] ? ACCTS[acctKey(a.id)].bot : null;
+      const ak = acctKey(a.id, bot0 || 'LIT'); if (!ak) continue;
+      const bot = bot0 || 'LIT', p = etParts(t) || {};
+      const row = clean({ id: `live.feed.${ak}.${t}`, bot, src: 'live', ak, a4: a.l4, day: sessionDay(p), hm: p.hm, t, xt: num(xt), side: num(d) < 0 ? 'SHORT' : 'LONG', q: num(q),
+        e: num(e), s: num(s), tg: num(tg), x: null, k: k || '', usd: num(usd), r: num(r), open: num(xt) == null, feed: true });
+      if (row) out.push(row);
+    }
+  }
+  return out;
+}
+/** the same trade: one source and entry minute, and for LIVE one account (two accounts trade the same signal = two rows); else one bot + member */
+const tradeKey = (r) => (r.src === 'live' ? `live|${r.ak}|${Math.floor(r.t / 60)}` : `${r.src}|${r.bot}|${r.m}|${Math.floor(r.t / 60)}`);
+/** the file's rows plus the PC's newer ones (home.json board.trades, the fresh feed): a trade already in the file keeps the file's row
+ *  (it has the twin and the replay); a feed row of a closed trade replaces an earlier open copy */
+export function merge(file, home, lite, nowS) {
+  const rows = [], at = {};
+  const add = (r) => {
+    if (!r) return;
+    const k = tradeKey(r), i = at[k];
+    if (i == null) { at[k] = rows.length; rows.push(r); return; }
+    const old = rows[i];
+    if (old.open && !r.open) rows[i] = { ...r, a4: r.a4 || old.a4 };
+    else if (!old.a4 && r.a4) rows[i] = { ...old, a4: r.a4 };
+  };
+  for (const x of arr(obj(file).trades)) add(clean(x));
+  for (const r of homeRows(home)) add(r);
+  for (const r of feedRows(lite, nowS)) add(r);
+  rows.sort((a, b) => a.t - b.t || (a.bot < b.bot ? -1 : a.bot > b.bot ? 1 : 0) || (String(a.ak || '') < String(b.ak || '') ? -1 : 1));
   return rows;
 }
-export function pick(rows, f) { const o = obj(f), bot = o.bot || 'all', src = o.src || 'backtest'; return arr(rows).filter((r) => r.src === src && (bot === 'all' || r.bot === bot) && !r.open); }
+export function pick(rows, f) {
+  const o = obj(f), bot = o.bot || 'all', src = o.src || 'backtest', acct = o.acct || 'all';
+  return arr(rows).filter((r) => r.src === src && (bot === 'all' || r.bot === bot) && (acct === 'all' || src !== 'live' || r.ak === acct) && !r.open);
+}
+/** the LIVE accounts that have closed trades, in the owner's order (the 4 known first, a new account after): [{ k, name, bot, n, a4 }] */
+export function liveAccounts(rows) {
+  const by = {};
+  for (const r of arr(rows)) if (r.src === 'live' && !r.open && r.ak) { const x = by[r.ak] || (by[r.ak] = { k: r.ak, name: r.an || acctName(r.ak), bot: r.bot, n: 0, a4: null }); x.n += 1; x.a4 = r.a4 || x.a4; }
+  const order = Object.keys(ACCTS);
+  return Object.values(by).sort((a, b) => ((order.indexOf(a.k) + 1 || 99) - (order.indexOf(b.k) + 1 || 99)) || (a.k < b.k ? -1 : 1));
+}
+/** LIVE numbers per account: trades, net $, win %, PF, best day, last day, $ today (the session day of nowS) */
+export function liveStats(rows, nowS) {
+  const today = sessionDay(etParts(nowS));
+  return liveAccounts(rows).map((a) => {
+    const R = pick(rows, { src: 'live', acct: a.k }), s = stats(R);
+    return { ...a, s, today: Math.round(R.filter((r) => r.day === today).reduce((x, r) => x + r.usd, 0) * 100) / 100, todayN: R.filter((r) => r.day === today).length, last: R.length ? R[R.length - 1].day : '' };
+  });
+}
 /** the source to open on: LIVE when there is any live trade, else BACKTEST */
 export function defaultSrc(rows) { return arr(rows).some((r) => r.src === 'live') ? 'live' : 'backtest'; }
 export function counts(rows) { const c = { live: 0, paper: 0, backtest: 0 }; for (const r of arr(rows)) c[r.src] += 1; return c; }
@@ -229,7 +309,7 @@ export function todayCards(A, rows, home, nowS) {
     const open = arr(obj(obj(home).board).trades).filter((x) => isObj(x) && x.open === true && !hidden(x) && (/atlas|ema|macd|sr_/.test(String(x.acct || x.key || '').toLowerCase()) ? 'ATLAS' : 'LIT') === bot);
     const repDay = num(a.t) != null ? (etParts(a.t) || {}).day : '';
     const fresh = repDay && repDay === today;
-    const todayLive = arr(rows).filter((r) => r.src === 'live' && r.bot === bot && r.day === today);
+    const todayLive = arr(rows).filter((r) => mainLive(r, bot) && r.day === today);
     const o = open[0] ? { side: String(open[0].side || '').toUpperCase() === 'SHORT' ? 'Short' : 'Long', usd: num(open[0].usd), r: num(open[0].r) } : null;
     out.push({ bot, name: M.name, size: M.size, has: !!a.has,
       today: a.has ? num(a.today) || 0 : null, todayTrades: todayLive.length,
@@ -247,7 +327,7 @@ export function rulesCheck(A, rows, rules, biz) {
   for (const r of arr(obj(biz).rules)) if (Array.isArray(r) && typeof r[0] === 'string') bizRules[r[0]] = str(r[1], 400);
   for (const bot of ['LIT', 'ATLAS']) {
     const M = BOTS[bot], a = obj(obj(A)[bot === 'LIT' ? 'lit' : 'atlas']), L = lim(rules, M.plan);
-    const live = arr(rows).filter((r) => r.src === 'live' && r.bot === bot), D = Object.values(daily(live));
+    const live = arr(rows).filter((r) => mainLive(r, bot) && !r.open), D = Object.values(daily(live));
     const best = D.reduce((b, d) => (!b || d.usd > b.usd ? d : b), null), liveNet = live.reduce((s, r) => s + r.usd, 0);
     const profit = a.has && num(a.profit) != null ? num(a.profit) : Math.round(liveNet * 100) / 100;
     const cons = num(L.cons) || 0.5, buffer = num(L.buffer), payMin = num(L.pay_min), split = num(L.split), start = num(a.start) || (bot === 'LIT' ? 50000 : 25000);
@@ -288,7 +368,10 @@ export function twins(rows) {
 /** one trade's line for the list and the day sheet */
 export function tradeView(r) {
   const side = r.side === 'SHORT' ? 'Short' : 'Long';
-  return { id: r.id, day: r.day, dayLabel: dayLabel(r.day), hm: r.hm, bot: r.bot, who: r.bot === 'ATLAS' ? `ATLAS${r.m ? ' · ' + r.m : ''}` : 'Zlarior · LIT', src: SRC[r.src], srcKey: r.src, side,
+  const bot = r.bot === 'ATLAS' ? `ATLAS${r.m ? ' · ' + r.m : ''}` : 'Zlarior · LIT';
+  const who = r.src === 'live' && r.ak ? `${r.an || acctName(r.ak)}${r.a4 ? ' ...' + r.a4 : ''} · ${r.bot === 'ATLAS' ? bot : 'LIT'}` : bot;
+  return { id: r.id, day: r.day, dayLabel: dayLabel(r.day), hm: r.hm, bot: r.bot, who, ak: r.ak || '', src: SRC[r.src], srcKey: r.src, side,
+    replayLater: r.src === 'live' && !r.odeon ? REPLAY_LATER : '',
     plan: `Entry ${px(r.e)} · Stop ${px(r.s)} · Target ${px(r.tg)}`, usd: moneyS(r.usd), r: rFmt(r.r), exit: r.k ? `Exit: ${r.k.toLowerCase()}` : '', q: r.q,
     sign: r.usd > 0.5 ? 'pos' : r.usd < -0.5 ? 'neg' : '', odeon: r.odeon ? `../odeon/#reel=${encodeURIComponent(r.odeon)}` : '' };
 }

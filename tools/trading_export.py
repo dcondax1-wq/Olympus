@@ -8,13 +8,19 @@ Sources (futures only, never Yahoo):
             ATLAS  research/second/ema_best.json, md_best.json, sr_best.json (the three members' research trades, their own sizes)
   PAPER     LIT    research/odeon/cloud_trades.json live.ledger (the cloud's paper twin of Zlarior, a snapshot of the dashboard branch)
   LIVE      LIT    research/odeon/cloud_trades.json accounts[] (the PC's closed MFFU eval trades from its heartbeat)
+            ALL    data/pc_days/<day>/trades.jsonl.gz (tools/live_trades.py: the PC's data branch, engine/datapipe.py, pulled by
+                   tools/data_pull.py or --fetch): every live trade of every account, keyed per account ("ak": z50k Zlarior 50K,
+                   z25k2 Zlarior 25K #2, atlas25f ATLAS funded 25K, rapid25 Rapid 25K; "a4" = the last 4 digits only). No branch
+                   yet (before the PC's first upload) = no such rows: the file is built from the rest, nothing fails
   replay    tools/web_public/odeon/trades.json ids: a row whose trade Odeon can play gets "odeon" = that reel id
   twin      a LIVE row gets the PAPER trade with the same entry minute ("twin"), and the BACKTEST trade within 10 minutes when there is one
-The page adds the PC's newest trades from ../home.json (board.trades) at run time; this file is the history.
+The page adds the PC's newest trades at run time (the ntfy feed's board_trades + "at" per account, ../home.json board.trades);
+this file is the history.
 Same inputs give the same bytes (no clock, sorted keys, fixed rounding).
 
   python tools/trading_export.py            # -> tools/web_public/trading/trades.json
   python tools/trading_export.py --check    # exit 1 when the file is stale
+  python tools/trading_export.py --fetch    # first git fetch olympus data + copy the day folders (tools/live_trades.fetch_days)
 """
 from __future__ import annotations
 
@@ -27,6 +33,10 @@ import sys
 from zoneinfo import ZoneInfo
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if ROOT not in sys.path:
+    sys.path.insert(0, ROOT)
+from tools import live_trades as LT  # noqa: E402
+
 OUT = os.path.join(ROOT, "tools", "web_public", "trading", "trades.json")
 BT = os.path.join(ROOT, "research", "lab", "backtest_live.json")
 CLOUD = os.path.join(ROOT, "research", "odeon", "cloud_trades.json")
@@ -121,17 +131,41 @@ def cloud(c: dict):
     return paper, live, (int(m.group(1)) if m else None)
 
 
-def build() -> dict:
+def branch_live(pc_days: str | None = None) -> tuple:
+    """(rows, info) of the PC's data branch copies (data/pc_days): every closed live trade per account; ([], None) when none"""
+    d = pc_days or LT.PC_DAYS
+    rows = []
+    for t in LT.load(d):
+        r = row(t["bot"], "atlas" if t["bot"] == "ATLAS" else "zlarior", "live", {**t, "risk_usd": t.get("risk_usd")}, t.get("m") or "")
+        r["id"] = f"live.{t['ak']}.{r['id'].split('.', 2)[2]}"
+        r.update({"ak": t["ak"], "an": t["an"], "a4": t.get("a4"), "data": 1})
+        rows.append(r)
+    ds = LT.days(d)
+    return rows, ({"days": len(ds), "from": ds[0], "to": ds[-1], "bars": sorted(LT.bar_days(d))[-60:]} if ds else None)
+
+
+def default_ak(r) -> str:
+    return r.get("ak") or ("atlas25f" if r["bot"] == "ATLAS" else "z50k")
+
+
+def build(pc_days: str | None = None) -> dict:
     bt = _load(BT, {}) or {}
     lit, atl = backtest_lit(bt), backtest_atlas()
     paper, live, snap_t = cloud(_load(CLOUD, {}) or {})
+    for r in live:                                  # the old heartbeat rows: the 50K eval (Zlarior) / ATLAS's account
+        r.update({"ak": default_ak(r), "an": LT.acct_name(default_ak(r))})
+    dlive, dinfo = branch_live(pc_days)
+    have = {(r["ak"], r["t"] // 60) for r in dlive}
+    live = dlive + [r for r in live if (r["ak"], r["t"] // 60) not in have]   # the data branch wins; the heartbeat fills older days
     reels = {}
     for t in (_load(ODEON, {}) or {}).get("trades") or []:
         src = {"real": "live"}.get(t.get("src"), t.get("src"))
-        reels[(src, t.get("bot"), int((t.get("entry") or {}).get("t") or 0))] = t.get("id")
+        e_t = int((t.get("entry") or {}).get("t") or 0)
+        reels[(src, t.get("bot"), e_t, t.get("ak") or "")] = t.get("id")
+        reels.setdefault((src, t.get("bot"), e_t, ""), t.get("id"))
     rows = lit + atl + paper + live
     for r in rows:
-        r["odeon"] = reels.get((r["src"], r["bot"], r["t"]))
+        r["odeon"] = reels.get((r["src"], r["bot"], r["t"], r.get("ak") or "")) or (reels.get((r["src"], r["bot"], r["t"], "")) if not r.get("data") else None)
     by_t = {(p["bot"], p["t"] // 60): p for p in paper}
     for r in live:
         tw = {}
@@ -149,22 +183,31 @@ def build() -> dict:
             continue
         seen.add(r["id"])
         uniq.append(r)
-    upto = {}
+    upto, accts = {}, {}
     for r in uniq:
         k = f"{r['src']}_{r['bot'].lower()}"
         upto[k] = max(upto.get(k, ""), r["day"])
+        if r["src"] == "live":
+            a = accts.setdefault(r["ak"], {"name": r["an"], "bot": r["bot"], "n": 0, "from": r["day"], "to": r["day"], "a4": None})
+            a["n"] += 1
+            a["to"] = max(a["to"], r["day"])
+            a["a4"] = r.get("a4") or a["a4"]
+    for r in uniq:
+        r.pop("data", None)
     ref = {}
     for key, name in PERIODS.items():
         p = (bt.get("periods") or {}).get(name)
         if p:
             ref[key] = {k: p.get(k) for k in ("from", "to", "trades", "per_week", "win_pct", "pf", "net", "max_dd", "best_day", "worst_day", "per_month")}
-    return {"v": 1, "app": "trading", "from": FROM, "n": len(uniq), "trades": uniq, "upto": upto, "cloud_t": snap_t,
+    return {"v": 1, "app": "trading", "from": FROM, "n": len(uniq), "trades": uniq, "upto": upto, "cloud_t": snap_t, "accts": accts,
+            "data_branch": dinfo,
             "lit_ref": ref, "built_from": (bt.get("meta") or {}).get("built"),
             "sources": {"backtest": "BACKTEST: LIT = research/lab/backtest_live.json (the live-settings replay, normal size: $800 risk up to a "
                                     "20-pt stop); ATLAS = research/second/*_best.json (the 3 members' research trades). Replays on TradingView "
                                     "CME NQ1! futures bars, costs in. Not money made.",
                         "paper": "PAPER: the cloud's paper twin of Zlarior (research/odeon/cloud_trades.json, the dashboard branch's ledger).",
-                        "live": "LIVE: the PC's closed MFFU eval trades (its heartbeat, same snapshot) plus the newest from home.json."}}
+                        "live": "LIVE: the PC's real MFFU trades per account: the data branch's daily upload (every trade, "
+                                "tools/live_trades.py), the old heartbeat snapshot before it, and at run time the PC's 15-minute feed."}}
 
 
 def dump(bundle: dict) -> str:
@@ -175,8 +218,12 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--check", action="store_true", help="exit 1 when trades.json would change")
     ap.add_argument("--out", default=OUT)
+    ap.add_argument("--fetch", action="store_true", help="first git fetch olympus data and copy the day folders to data/pc_days/")
+    ap.add_argument("--pc-days", default=None, help=argparse.SUPPRESS)
     a = ap.parse_args(argv)
-    text = dump(build())
+    if a.fetch:
+        print(LT.fetch_days()[1])
+    text = dump(build(a.pc_days))
     if a.check:
         try:
             with open(a.out, encoding="utf-8") as fh:

@@ -59,7 +59,7 @@ MAX_STATUS_BYTES = 3900          # ntfy turns a message over 4,096 bytes into a 
 EXT_KIND = "le-live-ext"
 EXT_PARTS = 2                    # at most 2 ext posts a run (ntfy.sh free: a few hundred messages a day per IP)
 EXT_EVERY_S = 1740               # the ext goes every 2nd 15-minute run (29 min), or at once when its news changed (ext_hash)
-EXT_ORDER = ("brd", "life", "mf", "board_trades", "learn", "lab", "glance", "kalshi_rewards")
+EXT_ORDER = ("brd", "life", "mf", "board_trades", "at", "learn", "lab", "glance", "kalshi_rewards")   # "at": engine/feed_trades
 CORE_KEYS = ("eh", "v", "kind", "lite", "src", "t", "every_s", "host", "model_state", "price", "day_pnl", "pc_verdict", "pc", "reporter",
              "board", "accounts", "trimmed")
 BRD_BYTES = 1200
@@ -75,7 +75,7 @@ CARD_KEYS = ("id", "name", "plan", "method", "badge", "source", "configured", "b
              "target_balance", "profit", "today_pnl", "week_pnl", "status", "session", "sessions", "dll", "dll_used", "trades_today",
              "max_day", "room_frac", "paused", "off")
 POS_KEYS = ("side", "qty", "entry", "stop", "target", "be", "entry_t", "unrealized_r")
-TRADE_KEYS = ("acct", "day", "entry_t", "exit_t", "side", "qty", "exit", "r", "usd", "open")
+TRADE_KEYS = ("acct", "src", "key", "member", "day", "entry_t", "exit_t", "side", "qty", "exit", "r", "usd", "open")   # src: paper rows stay paper
 WORDS = ("amber", "anchor", "apple", "arrow", "aspen", "atlas", "autumn", "badger", "bamboo", "banjo", "basil", "beacon", "birch",
          "bison", "blaze", "breeze", "brook", "cactus", "camel", "canyon", "cedar", "cobalt", "comet", "coral", "cotton", "crane",
          "crystal", "dahlia", "delta", "desert", "dolphin", "dove", "eagle", "ember", "falcon", "fern", "fjord", "flint", "forest",
@@ -535,6 +535,13 @@ def full(snap: dict) -> dict:
             out["mf"] = mf
     except Exception:  # noqa: BLE001
         pass
+    try:                                           # every real account's last trades (engine/feed_trades: the Trading page's LIVE rows)
+        from engine import feed_trades
+        at = feed_trades.compact(L)
+        if at:
+            out["at"] = at
+    except Exception:  # noqa: BLE001
+        pass
     if isinstance(snap.get("kalshi_rewards"), dict):   # the Kalshi page's "Rewards test (paper)" card (tools/kalshi_rewards_paper.py)
         # only what the card reads (~180 bytes, no per-series rows); it rides an ext post (EXT_ORDER)
         out["kalshi_rewards"] = {k: snap["kalshi_rewards"].get(k) for k in KALSHI_RW_LITE if snap["kalshi_rewards"].get(k) is not None}
@@ -602,8 +609,13 @@ def _cuts(key: str) -> list:
         return lambda v: v.__setitem__("ev", (v.get("ev") or [])[:n]) if isinstance(v, dict) else None
     def first(n):
         return lambda v: v.__delitem__(slice(n, None)) if isinstance(v, list) else None
+    def at(n):
+        def f(v):
+            from engine import feed_trades
+            feed_trades.cut(v, n)
+        return f
     return {"glance": [glance(1000), glance(600)], "mf": [eq(4), eq(0)], "brd": [ev(3), ev(1), ev(0)], "life": [ev(0)],
-            "board_trades": [first(1)]}.get(key, [])
+            "board_trades": [first(1)], "at": [at(2), at(1)]}.get(key, [])
 
 
 def split(out: dict, max_bytes: int = MAX_STATUS_BYTES, parts: int | None = None) -> tuple:
