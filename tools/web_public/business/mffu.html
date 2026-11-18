@@ -57,6 +57,8 @@
   <header class="top"><div class="brand"><div><h1 class="ag-title">My MFFU Accounts</h1><p class="sub">Each account the way MFFU shows it</p></div></div>
     <button type="button" class="ag-btn refresh" id="refresh">Refresh</button></header>
   <p id="status" class="note" role="status" aria-live="polite">Loading...</p>
+  <!-- ZEUS edge chip (../edge_chip.js): LIT + ATLAS last 40 sessions vs 2026; mffu.js hands it the PC status -->
+  <div id="edgeChip" data-edge-chip data-edge-src="../edge.json"></div>
   <div class="mf-list" id="list"></div>
   <section class="ag-card card planned" id="plannedBox" hidden style="margin-top:16px"><h2>PLAN: not bought yet</h2><ul id="planned"></ul></section>
   <p class="note">Rules (MFFU help center, checked Nov 17): Builder eval = make the target, never touch the trailing floor (it trails your best
@@ -67,6 +69,7 @@
 </main>
 <script src="payoutcoach.js?v=1"></script>
 <script src="mffumodel.js?v=1"></script>
-<script src="mffu.js?v=1"></script>
+<script src="../edge_chip.js?v=1"></script>
+<script src="mffu.js?v=2"></script>
 </body>
 </html>

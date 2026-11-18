@@ -291,7 +291,7 @@ def edge(path: str | None = None) -> dict | None:
     if not isinstance(c, dict) or not c.get("line"):
         return None
     keep = ("light", "line", "data_to", "sessions_missing", "pf40", "usd_month40", "tpw40", "pf40_2026_h1", "pf40_2021_25",
-            "false_alarm_h2_pct", "export", "note")
+            "false_alarm_h2_pct", "export", "note", "atlas")
     return {k: c.get(k) for k in keep} | {"source": "tools/edge_health.py -> research/lab/edge_health.json", "built": d.get("built")}
 
 

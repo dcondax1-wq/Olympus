@@ -398,6 +398,11 @@ def gather(now=None, root: str = ROOT, env=None, http=None, port=PORT_DEFAULT, f
         snap["kalshi_rewards"] = _lpk.kalshi_rewards_card(now, os.path.join(root, "data", "kalshi_rewards", "summary.json"))
     except Exception:
         snap["kalshi_rewards"] = None
+    try:                                    # ZEUS edge light (tools/edge_pc.py: the PC's daily edge_health --pc result, <= 120 bytes)
+        from tools import edge_pc as _ep
+        snap["eh"] = _ep.read_tiny(os.path.join(root, "data", "edge", "tiny.json"), now=now)
+    except Exception:
+        snap["eh"] = None
     return snap
 
 
@@ -513,6 +518,8 @@ def lite(snap: dict, max_bytes: int = MAX_STATUS_BYTES) -> dict:
         pass
     if isinstance(snap.get("kalshi_rewards"), dict):   # the Kalshi page's "Rewards test (paper)" card (tools/kalshi_rewards_paper.py)
         out["kalshi_rewards"] = snap["kalshi_rewards"]
+    if isinstance(snap.get("eh"), dict):     # the ZEUS edge chip (tools/edge_pc.read_tiny, <= 120 bytes; tools/web_public/edge_chip.js)
+        out["eh"] = snap["eh"]
     out = {k: v for k, v in out.items() if v is not None}
     # too big: drop the least needed parts first
     def _gcut(o, n):                     # the Brain page's glance (engine/brain_glance.py): fewer log lines / levels first
@@ -534,6 +541,7 @@ def lite(snap: dict, max_bytes: int = MAX_STATUS_BYTES) -> dict:
              lambda o: o.pop("brd", None),
              lambda o: _mfcut(o, 0),
              lambda o: o.pop("mf", None),
+             lambda o: o.pop("eh", None),
              lambda o: o.pop("accounts", None),
              lambda o: _d(o.get("board")).__setitem__("trades", _d(o.get("board")).get("trades", [])[:1]) if o.get("board") else None,
              lambda o: [_d(_d(o.get("board")).get(k)).pop("waiting", None) for k in ("lit", "atlas", "blitz")],
@@ -1153,6 +1161,13 @@ def main(argv=None) -> int:
         try:
             from tools import obsidian_sync as _obs
             _obs.maybe_run(say=(lambda *_: None) if a.quiet else print)
+        except Exception:
+            pass
+        # ZEUS edge light (tools/edge_pc.py): once a day after 17:00 ET a detached low-priority `tools/edge_health.py --pc` (LIT on the
+        # PC's own bars, ~30 s) -> data/edge/tiny.json = the status "eh" above. Research only, never a bot setting; LE_EDGE=0 = off; soft
+        try:
+            from tools import edge_pc as _ep
+            _ep.maybe_run(say=(lambda *_: None) if a.quiet else print)
         except Exception:
             pass
         # Kalshi rewards PAPER test (tools/kalshi_rewards_paper.py, owner 2026-11-17): keeps one detached low-priority child running
