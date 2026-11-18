@@ -262,6 +262,8 @@ def lane_spec(blk: dict, cfg: dict | None = None) -> dict:
         s["confirm"] = cfg["confirm"]           # the phrase typed at this start, in memory only
     if funded:
         s["funded"] = {"start": blk.get("funded_start") or "", "payouts": dict(blk.get("payouts") or {})}
+    if lit_bank_on(blk):
+        s["lit_bank"] = True                    # the 25K's "bank at the room" option (OFF unless the owner said yes)
     return s
 
 
@@ -289,6 +291,46 @@ def best_day_cap(q: int, tgt_pts, risk: float, target: float, day_pnl: float) ->
         return q, None
     cap_usd = BEST_DAY * float(target) * MARGIN - max(0.0, float(day_pnl))
     return max(0, min(q, int(cap_usd // win1))), cap_usd
+
+
+# The Rapid 25K's LIT "bank at the room" option (research/writeups/rapid25-lit-lane-2026-11-18.md, tools/money/rapid25_lit_lane.py
+# lane b). OFF by default: data/rapid.json "lit_bank": true on a 25K turns it on (python -X utf8 -m engine.rapid --lit-bank on).
+# Eval only: when the 30% best-day guard leaves < 1 micro, LIT's lane takes 1 micro with its exit limit at the day's remaining
+# room instead of the target (taken only if that is >= 1R and nearer than the target); funded and the 50K are unchanged.
+BANK_MIN_R, BANK_TICK = 1.0, 0.25
+
+
+def lit_bank_on(blk: dict | None) -> bool:
+    return bool(blk) and blk.get("lit_bank") is True and plan_info(blk)["preset"] == "mffu_rapid_eod_25k"
+
+
+def lit_bank(entry, d: int, risk_pts, tgt_pts, cap_usd, comm: float = COMM, min_r: float = BANK_MIN_R) -> dict | None:
+    """1 micro banked at the day's room: {"qty": 1, "pts", "px", "usd"} or None (no room, < min_r x the stop, or not nearer
+    than the target). px = entry +/- pts, pts rounded DOWN to a tick so the fill pays <= cap $ after the commission."""
+    try:
+        e, risk, cap = float(entry), float(risk_pts), float(cap_usd)
+        tgt = float(tgt_pts) if tgt_pts else None
+    except (TypeError, ValueError):
+        return None
+    if cap <= 0 or risk <= 0:
+        return None
+    pts = int((cap + float(comm)) / PV / BANK_TICK) * BANK_TICK
+    if pts <= 0 or pts < float(min_r) * risk - 1e-9 or (tgt and pts >= tgt - 1e-9):
+        return None
+    return {"qty": 1, "pts": round(pts, 2), "px": round(e + (1 if int(d) == 1 else -1) * pts, 2),
+            "usd": round(pts * PV - float(comm), 2), "cap_usd": round(cap, 2)}
+
+
+def bank_pnl(bank: dict, qty: int, mfe_r, risk_pts, model_pnl: float, comm: float = COMM) -> tuple:
+    """-> ($ booked, banked?) at the model's exit: banked when the model's best excursion went 1 tick through the bank price
+    (the broker's limit filled); else the model's own $, never above the bank."""
+    q = max(1, int(qty or 1))
+    usd = round(q * (float(bank["pts"]) * PV - float(comm)), 2)
+    try:
+        hit = float(mfe_r) * float(risk_pts) >= float(bank["pts"]) + BANK_TICK - 1e-9
+    except (TypeError, ValueError):
+        hit = False
+    return (usd, True) if hit else (round(min(float(model_pnl), usd), 2), False)
 
 
 def payout_advice(balance: float, start: float = 50000.0, paid_days=(), today: str | None = None,
@@ -654,7 +696,17 @@ def main(argv=None) -> int:
     ap.add_argument("--payout")
     ap.add_argument("--off", action="store_true")
     ap.add_argument("--status", action="store_true")
+    ap.add_argument("--lit-bank", choices=("on", "off"), help="the 25K only: LIT takes 1 micro banked at the day's 30%% room")
     a = ap.parse_args(argv)
+    if a.lit_bank:
+        b = load()
+        if not b.get("account") or plan_info(b)["preset"] != "mffu_rapid_eod_25k":
+            print("NOT set: --lit-bank is for the Rapid EOD 25K only (no 25K in data/rapid.json)")
+            return 1
+        b["lit_bank"] = a.lit_bank == "on"
+        save(b)
+        print(f"Rapid EOD 25K: LIT bank-at-the-room {a.lit_bank.upper()} (from the next bot start)")
+        return 0
     if a.off:
         r = off()
         print("Rapid EOD: OFF (no new trades on it after the next bot start)")

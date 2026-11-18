@@ -249,6 +249,8 @@ def normalize(spec: dict, primary: dict | None = None, seen_ids=(), seen_names=(
            "lit_sizing": dict(s.get("lit_sizing") or {}), "problem": None}
     if s.get("lane"):
         out["lane"] = str(s.get("lane"))     # "rapid": LIT's lane of the Rapid EOD (engine/rapid.py: ATLAS shares the account)
+    if s.get("lit_bank") is True and out.get("lane") == "rapid":
+        out["lit_bank"] = True               # the Rapid 25K's "bank at the room" option (engine/rapid.lit_bank; OFF by default)
     pre = PRESETS.get(out["preset"])
     out["firm"] = str(s.get("firm") or (pre or {}).get("firm") or "")
     out["plan"] = str(s.get("plan") or (pre or {}).get("plan") or "")
@@ -470,6 +472,7 @@ class Account:
         self.gaveup: set = set()
         self.last_size = None                  # the last entry's sizing {"qty", "reasons"}
         self.hedge_wait: set = set()           # LIT entry_t that waited for ATLAS / BLITZ on another account to close (logged once)
+        self.bank: dict = {}                   # entry_t -> engine/rapid.lit_bank (the Rapid 25K option; empty when OFF)
         self.mx = threading.RLock()
 
     # ---- plumbing
@@ -747,7 +750,14 @@ class Account:
             if tgt and tgt * sz.TW_PV - sz.TW_COMM > 0:
                 cap_usd = bd * float(R["target"]) * BEST_DAY_MARGIN - max(0.0, self.day_pnl(today))
                 cap = max(0, int(cap_usd / (tgt * sz.TW_PV - sz.TW_COMM)))     # < 1 -> skip (2026-10-24 cap invariant)
-                if cap < 1:
+                self.bank.pop(int(ent.get("entry_t") or 0), None)
+                bank = self._bank_for(ent, cap_usd) if cap < 1 and self.spec.get("lit_bank") else None
+                if bank is not None:
+                    q = 1
+                    self.bank[int(ent["entry_t"])] = bank
+                    reasons.append(f"best-day rule {bd * 100:.0f}%: 1 micro banked at the day's room ${cap_usd:,.0f} "
+                                   f"(exit {bank['px']:,.2f}, +{bank['pts']:g} pts)")
+                elif cap < 1:
                     q = 0
                     reasons.append(f"skip: best-day rule {bd * 100:.0f}%: 1 micro's winner pays more than ${cap_usd:,.0f}: no trade")
                 elif cap < q:
@@ -778,6 +788,24 @@ class Account:
             self.log("risk", f"entry at {_et(ent['entry_t']):%H:%M} ET at {q} instead of {int(ent['qty'])}: "
                              + ("; ".join(reasons[-3:]) or mode))
         return q
+
+    def _bank_for(self, ent: dict, cap_usd: float):
+        """The Rapid 25K option (engine/rapid.lit_bank): 1 micro, exit limit at the day's best-day room; eval only."""
+        try:
+            from . import rapid as _rp
+            from . import sizing as sz
+            if self.spec.get("lane") != "rapid" or self.mode not in EVAL_MODES or ent.get("entry") is None:
+                return None
+            risk = _num(ent.get("risk_pts"))
+            if risk is None and ent.get("stop0", ent.get("stop")) is not None:
+                risk = abs(float(ent["entry"]) - float(ent.get("stop0", ent.get("stop"))))
+            tgt = _num(ent.get("tgt_pts"))
+            if tgt is None and ent.get("target") is not None:
+                tgt = abs(float(ent["target"]) - float(ent["entry"]))
+            return _rp.lit_bank(ent["entry"], 1 if ent["dir"] == 1 else -1, risk, tgt, cap_usd, comm=sz.TW_COMM)
+        except Exception as e:
+            self.log("error", f"bank-at-the-room check failed: {e.__class__.__name__}: {e} (no bank: the guard skips)")
+            return None
 
     # ---- one poll (the same rules as LiveBot._route_signals, for this account)
     def broker_stop(self, entry_t):
@@ -938,8 +966,12 @@ class Account:
                 self.open_t, self.open_qty = ent["entry_t"], q
                 if ent is en:
                     self.provisional[int(en["entry_t"])] = {"qty": q, "dir": d, "t": int(now)}
+                bk = self.bank.get(int(ent["entry_t"])) if q == 1 else None
+                if q != 1:
+                    self.bank.pop(int(ent["entry_t"]), None)
                 rr = self.route({"sym": sym, "side": "buy" if d == 1 else "sell", "qty": q, "stop": _tick(ent["stop"], d),
-                                 "target": _tick(ent["target"], d, target=True), "entry": ent["entry"], "entry_t": ent["entry_t"]})
+                                 "target": _tick(bk["px"] if bk else ent["target"], d, target=True), "entry": ent["entry"],
+                                 "entry_t": ent["entry_t"]})
                 if rr.get("ok") is not False:
                     self.router.notify_entry(self, ent, q, sym, rr)
         if pos and self.open_t == pos.get("entry_t") and getattr(self.adapter, "route_stop_moves", False):
@@ -967,11 +999,19 @@ class Account:
                 from . import lit as _lit
                 from .sizing import LIVE_COMM     # the live commission (tr from engine/lit_live carries it as comm_rt)
                 pnl = round(qty * (float(tr["pts"]) * _lit.PV - float(tr.get("comm_rt", LIVE_COMM))), 2)
+            bk = self.bank.pop(int(tr["entry_t"]), None)
+            if bk is not None:                                  # the Rapid 25K option: the broker's limit at the room
+                from . import rapid as _rp
+                from .sizing import LIVE_COMM
+                pnl, hit = _rp.bank_pnl(bk, qty, tr.get("mfe"), tr.get("risk_pts"), pnl, comm=float(tr.get("comm_rt", LIVE_COMM)))
+                why = "BANK (best-day room)" if hit else tr["exit_reason"]
+            else:
+                why = tr["exit_reason"]
             if self.spec["adapter"] == "paper" or tr["exit_reason"] == "TIME" or getattr(self.adapter, "route_all_exits", False):
-                self.route({"sym": sym, "side": "exit", "qty": qty, "reason": tr["exit_reason"], "pnl": pnl,
+                self.route({"sym": sym, "side": "exit", "qty": qty, "reason": why, "pnl": pnl,
                             "entry_t": tr["entry_t"], "exit_t": tr["exit_t"]})
             if routed:
-                self._close(tr["entry_t"], tr["exit_t"], pnl, now, tr["exit_reason"])
+                self._close(tr["entry_t"], tr["exit_t"], pnl, now, why)
                 self.router.notify_outcome(self, tr, qty, pnl)
 
     def _close(self, entry_t, exit_t, pnl, now, why):
@@ -1024,7 +1064,8 @@ class Account:
             return {"id": self.id, "nt_account": self.spec.get("nt_account"), "day": today, "ledger": self.ledger[-300:],
                     "closes": list(self.closes), "seen": [list(k) for k in list(self.seen)[-500:]], "open_t": self.open_t,
                     "open_qty": self.open_qty, "blocked": sorted(self.blocked), "flattened": sorted(self.flattened),
-                    "provisional": {str(k): v for k, v in self.provisional.items()}, "lock": self.lock}
+                    "provisional": {str(k): v for k, v in self.provisional.items()}, "lock": self.lock,
+                    **({"bank": {str(k): v for k, v in self.bank.items()}} if self.bank else {})}
 
     def restore(self, b: dict, today: str):
         if not b or b.get("nt_account") != self.spec.get("nt_account"):
@@ -1038,6 +1079,7 @@ class Account:
         self.blocked = set(b.get("blocked") or [])
         self.flattened = set(b.get("flattened") or [])
         self.provisional = {int(k): v for k, v in (b.get("provisional") or {}).items()}
+        self.bank = {int(k): v for k, v in (b.get("bank") or {}).items()}
         lk = b.get("lock")
         self.lock = lk if lk and lk.get("day") == today else None
 
