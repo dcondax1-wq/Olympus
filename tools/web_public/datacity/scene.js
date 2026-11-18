@@ -3,14 +3,14 @@
 // the canvas and the billboards' canvases; city.js drives it.
 import * as THREE from '../jarvis/three.module.min.js';
 import { COLORS } from './util.js';
-import * as SH from './shaders.js?v=dcgfx10';
+import * as SH from './shaders.js?v=dcgfx11';
 import { Skyline, pick } from './skyline.js';
 import { Rays, SunRays, FogLayers, Rain, Traffic, Beam, Billboards } from './fx.js';
 import { createRenderer } from '../olympus/render.js';          // the OLYMPUS render core: ACES, MSAA, bloom, the film finish, tiers
 import { Landmarks } from './landmarks.js';
-import { Outskirts } from './outskirts.js?v=dcgfx3';
-import { SatelliteTowns } from './towns.js?v=dcgfx3';
-import { Streams } from './streams.js?v=dcgfx2';
+import { Outskirts } from './outskirts.js?v=dcgfx4';
+import { SatelliteTowns } from './towns.js?v=dcgfx4';
+import { Streams } from './streams.js?v=dcgfx3';
 import { routes } from './routes.js';
 import { Cars, Flyers, Airships, Monorail } from './vehicles.js';
 import { River, Ships } from './water.js';
@@ -19,8 +19,9 @@ import { Fireworks } from './fireworks.js';
 import { KitFx } from './kitfx.js';
 import { PROFILES, phoneHint, profileOf } from './caps.js?v=dcgfx2';
 import { Link } from './links.js';
+import { NEON } from './look-mode.js';   // the two looks of the Data City (look-mode.js): neon night (default) or AGORA marble
 
-const FOG = { night: 0x3a2e46, day: 0xc2cfd2, dusk: 0x7a4a52, storm: 0x4c4650 };
+const FOG = { night: (NEON ? 0x070a1c : 0x3a2e46), day: (NEON ? 0x9fbbe2 : 0xc2cfd2), dusk: (NEON ? 0x4a2a4a : 0x7a4a52), storm: (NEON ? 0x2a3140 : 0x4c4650) };
 const DENSITY = { night: 0.0024, day: 0.0015 };
 const FLOW = { hq: 1600, lq: 420 };
 const STARS = { hq: 1800, lq: 450 };
@@ -42,7 +43,7 @@ export function textSprite(text, color, size = 1) {
   tex.colorSpace = THREE.SRGBColorSpace;
   const draw = () => {
     g.clearRect(0, 0, 512, 96);
-    g.font = '800 44px Georgia, Georgia, -apple-system, system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.font = (NEON ? '800 44px Orbitron, Rajdhani, -apple-system, system-ui, sans-serif' : '800 44px Georgia, Georgia, -apple-system, system-ui, sans-serif'); g.textAlign = 'center'; g.textBaseline = 'middle';
     g.shadowColor = color; g.shadowBlur = 18; g.fillStyle = color;
     g.fillText(text.split('').join(String.fromCharCode(8202)), 256, 50);
     tex.needsUpdate = true;
@@ -66,7 +67,7 @@ export function textSprite2(lines) {
     g.clearRect(0, 0, c.width, c.height);
     g.textAlign = 'center'; g.textBaseline = 'middle';
     for (const [text, color, size, y] of lines) {
-      g.font = `800 ${Math.round(44 * size)}px Georgia, Georgia, -apple-system, system-ui, sans-serif`;
+      g.font = `800 ${Math.round(44 * size)}px ${NEON ? 'Orbitron, Rajdhani' : 'Georgia, Georgia'}, -apple-system, system-ui, sans-serif`;
       g.shadowColor = color; g.shadowBlur = 18 * size; g.fillStyle = color;
       g.fillText(text.split('').join(String.fromCharCode(8202)), c.width / 2, (top - y) * ppu + 2 * size);
     }
@@ -94,8 +95,12 @@ export class CityScene {
     // 0..1 screen value; the PBR landmarks tone-map themselves. Tier from OLYMPUS.fx() (followed live); the app steps down itself.
     this.phone = phoneHint();                                  // v3: a phone gets the phone-safe caps (caps.js) and a pixel ratio of at most 1.5
     this.rc = createRenderer({ canvas, scene: this.scene, camera: this.camera, space: 'display', env: 'night', adapt: false, maxDpr: this.phone ? PROFILES.phone.dpr : PROFILES.full.dpr,
-      bloom: { strength: 0.2, radius: 0.4, threshold: 0.86 }, grade: { grain: 0.02, vignette: 0.24, aberration: 0, saturation: 0.92 },
+      bloom: { strength: (NEON ? 0.62 : 0.2), radius: (NEON ? 0.5 : 0.4), threshold: (NEON ? 0.8 : 0.86) }, grade: { grain: (NEON ? 0.035 : 0.02), vignette: (NEON ? 0.26 : 0.24), aberration: (NEON ? 0.002 : 0), saturation: (NEON ? 1.04 : 0.92) },
+      bloomMax: NEON ? 0.7 : undefined,                       // the neon night glows (the AGORA cap .25 holds for the marble look)
       onQuality: (lv) => this._tier(lv) });
+    // the look pass (olympus/look.js): a colour grade in the ONE finish pass (0 draw calls); no depth of field (the district names stay sharp)
+    import('../olympus/look.js').then((L) => { this.lookFx = L.polish(this.rc, NEON ? { grade: 'night', mix: 0.28 }
+      : { grade: 'dusk', mix: 0.35 }); }).catch(() => {});
     this.renderer = this.rc.renderer;
     this.quality = this.rc.quality() === 'low' || this.rc.quality() === 'off' ? 'lq' : 'hq';
     this.profile = profileOf(this.rc.quality(), this.phone, !!window.OLYMPUS?.saver?.());
@@ -103,7 +108,7 @@ export class CityScene {
     const v3 = () => new THREE.Vector3();
     this.U = { uTime: { value: 0 }, uFog: { value: new THREE.Color(FOG.night) }, uFogD: { value: DENSITY.night }, uHaze: { value: 0.2 },
                uDay: { value: 0 }, uDusk: { value: 0 }, uToday: { value: 0 }, uWet: { value: 0.6 }, uRain: { value: 0 }, uPR: { value: 1 },
-               uAccent: { value: new THREE.Color(0xd39556) }, uSun: { value: v3().set(0, -1, 0) }, uCloud: { value: 0 }, uFlash: { value: 0 },
+               uAccent: { value: new THREE.Color((NEON ? 0x3fd8ff : 0xd39556)) }, uSun: { value: v3().set(0, -1, 0) }, uCloud: { value: 0 }, uFlash: { value: 0 },
                uGrow: { value: opts.calm ? 1 : 0 }, uFlow: { value: 1 } };  // the rise on load (0 -> 1); the data streams' speed
     this.flash = 0;
     this.storm = false;
@@ -160,7 +165,7 @@ export class CityScene {
       const a = Math.random() * Math.PI * 2, h = 0.08 + Math.random() * 0.9, r = 1400, flat = Math.sqrt(1 - h * h);
       p.set([Math.cos(a) * r * flat, h * r, Math.sin(a) * r * flat], i * 3);
     }
-    this.stars = points({ position: [p, 3] }, new THREE.PointsMaterial({ color: 0xe8dcc0, size: 1.4, sizeAttenuation: false,
+    this.stars = points({ position: [p, 3] }, new THREE.PointsMaterial({ color: (NEON ? 0xcfd8ff : 0xe8dcc0), size: (NEON ? 1.6 : 1.4), sizeAttenuation: false,
       transparent: true, opacity: 0.85, depthWrite: false, fog: false }));
     this.scene.add(this.stars);
   }
@@ -247,8 +252,8 @@ export class CityScene {
     const M = new THREE.Matrix4(), bake = (g, m, extra) => { const local = g.attributes.position.array.slice(); g.applyMatrix4(m); extra(g, local); return g; };
     const tint = (hex) => (g) => { const c = new THREE.Color(hex), n = g.attributes.position.count, a = new Float32Array(n * 3);
       for (let i = 0; i < n; i++) a.set([c.r, c.g, c.b], i * 3); g.setAttribute('color', new THREE.BufferAttribute(a, 3)); };
-    const base = mergeSimple([bake(new THREE.CylinderGeometry(15, 20, 1.7, 16), M.makeTranslation(0, 0.2, 0), tint(0xb8a584)),
-                              bake(new THREE.CylinderGeometry(10.2, 13.5, 1.4, 12), M.makeTranslation(0, 1.6, 0), tint(0xcdbd9a))]);
+    const base = mergeSimple([bake(new THREE.CylinderGeometry(15, 20, 1.7, 16), M.makeTranslation(0, 0.2, 0), tint(NEON ? 0x162d4e : 0xb8a584)),
+                              bake(new THREE.CylinderGeometry(10.2, 13.5, 1.4, 12), M.makeTranslation(0, 1.6, 0), tint(NEON ? 0x244c68 : 0xcdbd9a))]);
     this.tower.add(new THREE.Mesh(base, new THREE.MeshBasicMaterial({ vertexColors: true })));
     const keep = (g, local) => g.setAttribute('aL', new THREE.BufferAttribute(local, 3));
     const parts = [bake(new THREE.CylinderGeometry(2.4, 5.4, 72, 10, 1), M.makeTranslation(0, 38, 0), keep),
@@ -262,7 +267,7 @@ export class CityScene {
     const ringGeo = [[0.9, 19], [14, 8.2], [37, 6.6], [62, 5.1], [78, 4.2], [94, 3.4]].map(([y, r]) => { const g = new THREE.TorusGeometry(r, y < 2 ? 0.18 : 0.11, 6, 64); g.rotateX(Math.PI / 2); g.translate(0, y, 0); return g; });
     const merged = mergeSimple(ringGeo);
     this.tower.add(new THREE.Mesh(merged, new THREE.MeshBasicMaterial({ color: COLORS.lit, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false })));
-    const name = textSprite2([['City Capital', '#d79e64', 0.86, 112], ['LIT · Zlarior', '#ddac7b', 1.0, 103]]);
+    const name = textSprite2(NEON ? [['CITY CAPITAL', '#ffd36b', 0.86, 112], ['LIT · ZLARIOR', '#7fe9ff', 1.0, 103]] : [['City Capital', '#d79e64', 0.86, 112], ['LIT · Zlarior', '#ddac7b', 1.0, 103]]);
     this.towerName = name;
     this.towerTitle = null;
     this.tower.add(name);
@@ -273,12 +278,12 @@ export class CityScene {
   _names() {
     this.nameSprites = [];
     for (const d of this.L.districts) {
-      const s = textSprite(d.name, d.css || '#b2cadc', Math.max(0.9, Math.min(2.4, d.half / 34)));
+      const s = textSprite(d.name, d.css || (NEON ? '#e9ecf6' : '#b2cadc'), Math.max(0.9, Math.min(2.4, d.half / 34)));
       s.position.set(d.cx, d.kind === 'harbor' ? 8 : 16 + Math.min(30, d.half * 0.3), d.cz);
       this.scene.add(s);
       this.nameSprites.push(s);
     }
-    const disc = textSprite('DISCOVERIES', '#ddac7b', 0.8);
+    const disc = textSprite('DISCOVERIES', (NEON ? '#ffe08a' : '#ddac7b'), 0.8);
     disc.position.set(0, 6, -22);
     this.scene.add(disc);
     this.nameSprites.push(disc);                     // the phone hides it with the district names when far (one draw call less)
@@ -293,7 +298,7 @@ export class CityScene {
     w.position.set((h.x0 + h.x1) / 2, 0.05, (h.z0 + h.z1) / 2);
     w.renderOrder = 1;
     this.scene.add(w);
-    const pier = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 0.12, 0.5), new THREE.MeshBasicMaterial({ color: 0xd39556, transparent: true, opacity: 0.35,
+    const pier = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 0.12, 0.5), new THREE.MeshBasicMaterial({ color: (NEON ? 0x3fd8ff : 0xd39556), transparent: true, opacity: 0.35,
       blending: THREE.AdditiveBlending, depthWrite: false }), h.piers);              // neon pier lines
     const m4 = new THREE.Matrix4();
     for (let k = 0; k < h.piers; k++) { m4.makeScale(h.x1 - h.x0 - 20, 1, 1).setPosition((h.x0 + h.x1) / 2, 0.15, h.z0 + 7 + k * 7 - 2.2); pier.setMatrixAt(k, m4); }
@@ -349,7 +354,7 @@ export class CityScene {
     this._sun = sun; this._wx = w;
     this.kit?.set(sun, w, U, this.caps);
     U.uFlow.value = (sun.open ? 1 : 0.4) * (0.75 + Math.min(1.2, (w.vix || 16) / 22));            // the market drives the data streams
-    const bk = +(0.12 + 0.1 * (1 - sun.day) + 0.04 * U.uCloud.value).toFixed(2);                  // more glow at night, less by day
+    const bk = +((NEON ? 0.55 : 0.12) + (NEON ? 0.5 : 0.1) * (1 - sun.day) + (NEON ? 0.12 : 0.04) * U.uCloud.value).toFixed(2);                  // more glow at night, less by day
     if (bk !== this.bloomK) { this.bloomK = bk; this.rc.setBloom({ strength: bk }); }
     this.rc.renderer.toneMappingExposure = 1 + 0.12 * sun.day - 0.1 * (w.storm ? 1 : 0);
     return '#' + fog.getHexString();

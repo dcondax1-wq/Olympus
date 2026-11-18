@@ -10,13 +10,15 @@
 //   - far away (the LOD rule from the core) a district becomes ONE merged copy of the same buildings (one draw, the same colours), not a grey block;
 //   - the outer town: whitewashed houses with clay-tile roofs (two instanced draws), cypress rows, bronze braziers and Poly Haven horse statues on the
 //     agora (a GPU only; LITE and a software GL skip the model files).
-// Budget: about 40 draw calls and under 60k triangles on high (env-kit BUDGET 45 / 160k). No bloom, no neon, no network of its own (the kit's scans
+// Budget: about 40 draw calls and under 60k triangles on high (env-kit BUDGET 45 / 160k). On the render core since 2026-11-18 (a faint glow on the
+// gold highlights only, threshold above 1; the golden look grade), no neon, no network of its own (the kit's scans
 // and HDRI are the site's own files). The camera orbits by drag / pinch / wheel and flies on tours; reduced motion draws only on change.
 // Registers window.MINTCITY3D = { mount, setPlan, flyTo, tour, stop, state, dispose } and fires 'mintcity3d'. mintcity.js draws the 2D map and list
 // first and only hides the map when mount() returns true; LITE (OLYMPUS.lite()) never mounts it (the 2D map and the list only).
 import * as THREE from '../jarvis/three.module.min.js';
 import * as C from './mintcitycore.js';
 import { dress, shaftGeo, latheGeo, boxGeo, mergeParts, mat4, laurelGeo } from '../olympus/hero-stage.js';
+import { createRenderer } from '../olympus/render.js';   // the OLYMPUS render core (2026-11-18 cities pass): ACES finish, MSAA / FXAA, tiers, the look grade
 
 let R = null;
 const PT = 0.52;                     // the top of a district platform (the buildings stand on it)
@@ -200,7 +202,8 @@ function frame(now) {
     const dist = Math.hypot(cam.x - d.cx, cam.y, cam.z - d.cz), near = C.lodDetail(dist, R.tier);
     if (near !== d.on) { d.on = near; d.detail.visible = near; d.proxy.visible = !near; }
   }
-  R.renderer.render(R.scene, R.camera); R.frames++; R.calls = R.renderer.info.render.calls; R.tris = R.renderer.info.render.triangles;
+  if (R.reduce && !R.fly && !R.tourName) R.rc.draw(); else R.rc.render();   // on demand (reduced motion): draw now, whatever the frame gap
+  R.frames++; R.calls = R.renderer.info.render.calls; R.tris = R.renderer.info.render.triangles;
   if (!R.reduce || R.fly || R.tourName) R.raf = requestAnimationFrame(frame);
 }
 function kick() { if (R && !R.raf && !R.dead && !document.hidden) R.raf = requestAnimationFrame(frame); }
@@ -209,28 +212,36 @@ function mount(box, plan, opts) {
   if (R) dispose();
   if (!box || !webgl()) return false;
   opts = opts || {};
-  let renderer;
-  try { renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' }); } catch (_) { return false; }
-  const reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  const tier = opts.tier || ((navigator.hardwareConcurrency || 4) <= 4 ? 'mid' : 'high');
-  let oLite = false; try { oLite = !!(window.OLYMPUS && window.OLYMPUS.lite && window.OLYMPUS.lite()); } catch (_) { oLite = false; }
-  const lite = oLite || tier === 'low';
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, tier === 'high' ? 2 : 1.5)); renderer.outputColorSpace = THREE.SRGBColorSpace;
-  box.appendChild(renderer.domElement); renderer.domElement.style.touchAction = 'none';
+  const reduce0 = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const tier0 = opts.tier || ((navigator.hardwareConcurrency || 4) <= 4 ? 'mid' : 'high');
   const scene = new THREE.Scene(); scene.background = new THREE.Color(0x3b2c1e);
   const camera = new THREE.PerspectiveCamera(46, 1.2, 0.5, 400);
-  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.02;
-  const D = dress({ renderer, scene, camera, tier: lite ? 'low' : 'high', palette: 'golden', hdri: 'golden', envI: 0.85, sunDir: [0.55, 0.62, 0.45], key: 2.6, hemi: 0.55, rim: 0.8, shadows: false, metalEnv: 1.9,
+  // the render core (as Chrysos and Ergasterion): one finish pass with tone mapping, anti-aliasing and the look's golden grade; a soft bloom
+  // only on the gilded column's highlights (threshold above 1). It owns the canvas, its pixel ratio (the render-scale governor) and its tiers.
+  let rc, renderer;
+  try {
+    const canvas = document.createElement('canvas');
+    rc = createRenderer({ canvas, scene, camera, maxDpr: tier0 === 'high' ? 2 : 1.5, env: 'none', exposure: 1.02, tint: '#c8a24a',
+      bloom: { strength: 0.14, radius: 0.35, threshold: 1.15 }, grade: { grain: 0.012, vignette: 0.18 } });
+    renderer = rc.renderer;
+  } catch (_) { try { if (rc) rc.dispose(); } catch (e) { /* nothing */ } return false; }
+  const reduce = reduce0, tier = tier0;
+  let oLite = false; try { oLite = !!(window.OLYMPUS && window.OLYMPUS.lite && window.OLYMPUS.lite()); } catch (_) { oLite = false; }
+  const lite = oLite || tier === 'low';
+  box.appendChild(renderer.domElement); renderer.domElement.style.touchAction = 'none'; renderer.domElement.style.width = '100%'; renderer.domElement.style.height = '100%';
+  const D = dress({ rc, scene, camera, tier: lite ? 'low' : 'high', palette: 'golden', hdri: 'golden', envI: 0.85, sunDir: [0.55, 0.62, 0.45], key: 2.6, hemi: 0.55, rim: 0.8, shadows: false, metalEnv: 1.9,
     sky: { sunX: 0.8, sunY: 0.72, templeX: 0.14, horizon: 0.4 }, fogNear: 150, fogFar: 380 });
   const geoms = { box: boxGeo(1, 1, 1), col: columnGeo(lite || D.kit.geoLite), tower: towerGeo(), roof: prism(), hit: new THREE.CylinderGeometry(10, 10, 24, 12) };
   const mats = { plaster: D.kit.mat('plaster', { color: '#ffffff' }), marble: D.kit.mat('marble', { color: '#ffffff' }), roof: D.kit.mat('roof', { color: '#ffffff' }),
     metal: D.kit.mat('gold', { color: '#ffffff', rough: 0.32 }), far: new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.75, metalness: 0.05 }), hit: new THREE.MeshBasicMaterial({ visible: false }) };
-  R = { renderer, scene, camera, box, geoms, mats, D, tier, lite, reduce, frames: 0, calls: 0, tris: 0, raf: 0, dead: false, districts: [], root: null, pose: Object.assign({}, C.OVERVIEW), onPick: opts.onPick || null, touched: false, fly: null, tourName: null, ptr: new Map(), last: 0 };
+  R = { rc, renderer, scene, camera, box, geoms, mats, D, tier, lite, reduce, frames: 0, calls: 0, tris: 0, raf: 0, dead: false, districts: [], root: null, pose: Object.assign({}, C.OVERVIEW), onPick: opts.onPick || null, touched: false, fly: null, tourName: null, ptr: new Map(), last: 0 };
   buildSet();
   build(plan);
+  // the look pass (olympus/look.js): the golden grade in the finish pass (0 draw calls); no depth of field: the bronze tablets stay sharp
+  import('../olympus/look.js').then((L) => { if (R && R.rc === rc) { R.look = L.polish(rc, { grade: 'golden', mix: 0.3 }); kick(); } }).catch(() => {});
   D.envReady.then(() => kick());
   R.timers = [setTimeout(kick, 1500), setTimeout(kick, 4000)];          // the scans arrive later: draw again (reduced motion draws on demand)
-  const size = () => { const w = Math.max(200, box.clientWidth || 320), h = Math.max(160, box.clientHeight || 300); renderer.setSize(w, h, false); D.backdrop(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); applyPose(R.pose); kick(); };
+  const size = () => { const w = Math.max(200, box.clientWidth || 320), h = Math.max(160, box.clientHeight || 300); rc.resize(w, h); D.backdrop(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); applyPose(R.pose); kick(); };
   applyPose(R.pose); size();
   if (typeof ResizeObserver === 'function') { R.ro = new ResizeObserver(size); R.ro.observe(box); }
   // drag = turn, two fingers / wheel = zoom, a short tap on a district = pick it
@@ -282,7 +293,8 @@ function dispose() {
     R.scene.traverse((o) => { if (o.isInstancedMesh) o.dispose(); if (o.geometry) o.geometry.dispose(); });
     Object.values(R.geoms).forEach((g) => g.dispose()); R.mats.far.dispose(); R.mats.hit.dispose(); if (R.cyp) R.cyp.material.dispose();
     if (R.D) R.D.dispose();
-    R.renderer.dispose(); if (el.parentNode) el.parentNode.removeChild(el);
+    if (R.look) R.look.dispose();
+    R.rc.dispose(); if (el.parentNode) el.parentNode.removeChild(el);
   } catch (_) { /* nothing */ }
   R = null;
 }

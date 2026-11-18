@@ -8,6 +8,7 @@ import * as THREE from '../jarvis/three.module.min.js';
 import { FOG } from './shaders.js';
 import { pick } from './skyline.js';
 import { PROFILES } from './caps.js';
+import { NEON } from './look-mode.js';   // the two looks of the Data City (look-mode.js): neon night (default) or AGORA marble
 
 const CARS = { hq: 520, lq: 160 };
 const FLYERS = { hq: 90, lq: 28 };
@@ -47,7 +48,7 @@ export class Cars {
   constructor(L, U, quality) {
     const rnd = mulberry(5), segs = L.streets.filter((s) => Math.hypot(s[2] - s[0], s[3] - s[1]) > 14);
     const n = CARS.hq, seg = new Float32Array(n * 4), car = new Float32Array(n * 3), col = new Float32Array(n * 3), c = new THREE.Color();
-    const pal = [0xce8841, 0xd39556, 0xd39556, 0xb2cadc, 0xcdbf9f, 0x9bab62, 0xd1904e];
+    const pal = [(NEON ? 0xff4d6d : 0xce8841), (NEON ? 0x3fd8ff : 0xd39556), (NEON ? 0xffc94a : 0xd39556), (NEON ? 0xe9ecf6 : 0xb2cadc), (NEON ? 0xa68bff : 0xcdbf9f), (NEON ? 0x39e59a : 0x9bab62), (NEON ? 0xff9f43 : 0xd1904e)];
     for (let i = 0; i < n; i++) {
       let s = segs[Math.floor(rnd() * segs.length)];
       if (rnd() < 0.5) s = [s[2], s[3], s[0], s[1]];
@@ -151,7 +152,7 @@ export class Flyers {
     const dt = new THREE.DataTexture(tex, PATH_SAMPLES, np, THREE.RGBAFormat, THREE.FloatType);
     dt.minFilter = dt.magFilter = THREE.NearestFilter; dt.needsUpdate = true;
     const n = FLYERS.hq, fly = new Float32Array(n * 4), col = new Float32Array(n * 3), c = new THREE.Color();
-    const pal = [0xd39556, 0xd39556, 0xcc8073, 0xcdbf9f, 0x9bab62];
+    const pal = [(NEON ? 0x3fd8ff : 0xd39556), (NEON ? 0xffc94a : 0xd39556), (NEON ? 0xff4d9a : 0xcc8073), (NEON ? 0xa68bff : 0xcdbf9f), (NEON ? 0x39e59a : 0x9bab62)];
     for (let i = 0; i < n; i++) {
       fly.set([i % np, rnd(), (0.0022 + rnd() * 0.003) * (rnd() < 0.5 ? 1 : -1), 0.9 + rnd() * 0.5], i * 4);
       c.setHex(pal[Math.floor(rnd() * pal.length)]); col.set([c.r, c.g, c.b], i * 3);
@@ -185,7 +186,7 @@ export class Airships {
       ${FOG}
       void main(){ vec3 base = mix(vec3(0.10,0.12,0.2), vec3(0.62,0.66,0.74), uDay) * (0.5 + 0.5 * max(vN.y, 0.0));
         float band = step(0.9, fract(vL.x * 0.35)) * 0.5;
-        vec3 col = base + vec3(0.90, 0.65, 0.35) * band * (1.0 - uDay * 0.6) + vec3(1.0, 0.8, 0.4) * step(vL.y, -1.5) * 1.5;
+        vec3 col = base + vec3(${NEON ? '0.2' : '0.90'}, ${NEON ? '0.7' : '0.65'}, ${NEON ? '1.0' : '0.35'}) * band * (1.0 - uDay * 0.6) + vec3(1.0, 0.8, 0.4) * step(vL.y, -1.5) * 1.5;
         col += vec3(1.0, 0.15, 0.15) * step(5.2, vL.x) * (0.5 + 0.5 * sin(uTime * 3.0)) * 1.2;
         gl_FragColor = vec4(mix(col, uFog, fogAmount(vFD, 30.0)), 1.0); }`,
       uniforms: pick(U, 'uTime', 'uFog', 'uFogD', 'uHaze', 'uDay') });
@@ -223,7 +224,7 @@ void main(){
   vec3 col = mix(vec3(0.05, 0.07, 0.13), vec3(0.4, 0.44, 0.52), uDay);
   float edge = smoothstep(0.78, 0.95, abs(vUv.x - 0.5) * 2.0);
   float run = step(0.92, fract(vUv.y * 60.0 - uTime * 0.4));
-  col += vec3(0.95, 0.72, 0.40) * (edge * 1.3 + run * 0.35 * (1.0 - edge)) * mix(1.0, 0.5, uDay);
+  col += vec3(${NEON ? '0.2' : '0.95'}, ${NEON ? '0.85' : '0.72'}, ${NEON ? '1.0' : '0.40'}) * (edge * 1.3 + run * 0.35 * (1.0 - edge)) * mix(1.0, 0.5, uDay);
   gl_FragColor = vec4(mix(col, uFog, fogAmount(vFD, ${RAIL_Y}.0)), 1.0);
 }`;
 const TRAIN_FS = `uniform float uDay; uniform float uTime; varying vec3 vL; varying float vFD; varying vec3 vN;
@@ -232,7 +233,7 @@ void main(){
   float win = step(abs(vL.y - 0.05), 0.12) * step(abs(vN.y), 0.5) * step(abs(fract(vL.x * 2.2) - 0.5), 0.34);
   vec3 col = mix(vec3(0.7, 0.75, 0.85), vec3(0.9, 0.92, 0.96), uDay) * (0.35 + 0.5 * max(vN.y, 0.0) + 0.15 * abs(vN.z));
   col = mix(col, vec3(1.0, 0.86, 0.5) * 1.5, win);
-  col += vec3(0.95, 0.70, 0.35) * step(abs(vL.y + 0.18), 0.04) * 1.4;
+  col += vec3(${NEON ? '0.1' : '0.95'}, ${NEON ? '0.8' : '0.70'}, ${NEON ? '1.0' : '0.35'}) * step(abs(vL.y + 0.18), 0.04) * 1.4;
   col += vec3(1.0, 0.95, 0.8) * step(0.95, vL.x * sign(vN.x + 0.001)) * step(0.5, abs(vN.x)) * 1.5;
   gl_FragColor = vec4(mix(col, uFog, fogAmount(vFD, ${RAIL_Y}.0)), 1.0);
 }`;
@@ -278,7 +279,7 @@ export class Monorail {
     st.forEach((s, i) => {
       const u = this.stationU[i], p = this.curve.getPointAt(u), t = this.curve.getTangentAt(u);
       m4.compose(new THREE.Vector3(p.x, RAIL_Y - 0.9, p.z), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), -Math.atan2(t.z, t.x)), new THREE.Vector3(1, 1, 1));
-      bake(platG, m4, 0x5b8db3);
+      bake(platG, m4, (NEON ? 0x2a8fb0 : 0x5b8db3));
     });
     const fg = new THREE.BufferGeometry();
     fg.setAttribute('position', new THREE.Float32BufferAttribute(fpos, 3)); fg.setAttribute('normal', new THREE.Float32BufferAttribute(fnor, 3));

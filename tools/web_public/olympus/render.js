@@ -13,7 +13,7 @@
 //   - anti-aliasing: 4x MSAA on HD (WebGL2), FXAA folded into the finishing pass on LITE;
 //   - one finishing pass: tone mapping (ACES, or AgX with tone:'agx') + sRGB + a time-of-day colour grade LUT (lut:'golden' | setGrade)
 //     + a speaker focus blur (setFocus) + vignette + very low film grain (one draw, 2026-11-11 effects pass);
-//   - AGORA: bloom strength is capped at .25 (BLOOM_MAX) whatever an app asks; onFrame(fn) / onTier(fn) let shared effects
+//   - AGORA: bloom strength is capped at .25 (BLOOM_MAX) unless the app passes bloomMax for its own non-AGORA look (<= .8); onFrame(fn) / onTier(fn) let shared effects
 //     (olympus/fx-cine.js) ride the scene's own frame loop and follow its tier;
 //   - quality tiers from OLYMPUS.fx() (ultra / high / low / off), followed live, stepped down on slow frames when the owner has
 //     not chosen a level; pixel ratio <= 2 (<= 1.5 on low, 1 when off); no frame while the tab is hidden.
@@ -348,7 +348,9 @@ export function createRenderer(opts) {
   }
   const hooks = [], tierSubs = [];
   let tHook = 0;
-  const capBloom = (b) => { if (b && b.strength > BLOOM_MAX) b.strength = BLOOM_MAX; return b; };     // AGORA: bloom <= .25, always
+  // AGORA: bloom <= .25. An app whose owner-chosen look is not AGORA (Data City's neon night, 2026-11-18) may pass bloomMax (<= .8)
+  const bloomCap = Number.isFinite(o.bloomMax) ? Math.min(0.8, Math.max(BLOOM_MAX, o.bloomMax)) : BLOOM_MAX;
+  const capBloom = (b) => { if (b && b.strength > bloomCap) b.strength = bloomCap; return b; };
   let width = 0, height = 0, dpr = 1, raf = 0, loop = null, tPrev = 0, firstFrame = true, asleep = false, tDraw = 0, draws = 0;
   const bloomTint = new THREE.Color(1, 1, 1);
   const perf = { last: 0, n: 0, sum: 0, work: 0, warm: 0, fps: 0, steps: 0 };
