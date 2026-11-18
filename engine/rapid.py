@@ -27,6 +27,12 @@ What runs on that account (research/writeups/stack-one-account-2026-11-16.md, ra
     python -X utf8 -m engine.rapid --to-funded --account "<funded Name>" --start <first funded day>
     python -X utf8 -m engine.rapid --payout 2026-12-20=600        (record one after MFFU paid it)
     python -X utf8 -m engine.rapid --off
+
+The Rapid EOD 25K (owner 2026-11-18; still ONE Rapid at a time, data/rapid.json "plan": "mffu_rapid_eod_25k"; added with
+python -X utf8 -m engine.accounts add --plan rapideod25 --name "<Name>" or engine.rapid --size 25k): the same lanes and
+rules at the 25K's numbers (research/writeups/rapid-25k-vs-50k-2026-11-17.md, tools/money/rapid25.py "keep $500"): LIT's
+live two_week on $1,500 / $1,000 EOD floor / 20 micros, soft day $500, best day 30% x $1,500 x 0.95 = $427; funded 60% of
+the room <= $750, a winner <= $1,000; ATLAS min($250, 30% of the room); payouts above the $1,100 buffer + $500 kept in.
 """
 from __future__ import annotations
 
@@ -47,6 +53,24 @@ SLIP, PV, COMM = 0.25, 2.0, 1.90    # one full stop-out of 1 micro = (stop + 1 t
 BEST_DAY, MIN_DAYS, MARGIN = 0.3, 4, 0.95
 BUFFER, PAY_MIN, CUSHION, SPLIT = 2100.0, 500.0, 1000.0, 0.9
 STRATEGIES = ["ema_lon_vix", "macd_sweep", "sr_nyreclaim"]
+# The plan of the ONE Rapid (data/rapid.json "plan"; missing = the 50K). The 25K (owner 2026-11-18, buying it tonight):
+# research/writeups/rapid-25k-vs-50k-2026-11-17.md / tools/money/rapid25.py "25K, keep $500" = the 50K's rules at the 25K's
+# numbers: ATLAS $250 at 30% of the room, keep $500 above the $1,100 buffer, MFFU wants >= $250 net since the last payout.
+PLANS = {
+    "mffu_rapid_eod_50k": {"plan": "rapideod50k", "label": "Rapid EOD 50K", "start": 50000.0, "target": 3000.0,
+                           "atlas_usd": ATLAS_USD, "buffer": BUFFER, "cushion": CUSHION, "since": 500.0, "eval_min_room": 200.0},
+    "mffu_rapid_eod_25k": {"plan": "rapideod25k", "label": "Rapid EOD 25K", "start": 25000.0, "target": 1500.0,
+                           "atlas_usd": 250.0, "buffer": 1100.0, "cushion": 500.0, "since": 250.0, "eval_min_room": 100.0},
+}
+
+
+def plan_info(x=None) -> dict:
+    """The plan numbers of a block / spec / preset name ("plan" or "preset"); anything unknown = the 50K (as before)."""
+    k = x.get("preset") or x.get("plan") if isinstance(x, dict) else x
+    k = str(k or "")
+    if k not in PLANS:
+        k = next((pk for pk, v in PLANS.items() if v["plan"] == k), PRESET)
+    return {**PLANS[k], "preset": k}
 
 
 def _num(x, d=None):
@@ -124,9 +148,11 @@ def _other_names() -> dict:
     return out
 
 
-def set_account(name: str, start: str | None = None, p: str | None = None, others: dict | None = None, allow=None) -> dict:
+def set_account(name: str, start: str | None = None, p: str | None = None, others: dict | None = None, allow=None,
+                preset: str | None = None) -> dict:
     """The owner's one line: the Rapid's NinjaTrader Name, the eval from `start` (default today's session), DISARMED. The
-    same Name again keeps everything (no reset); a new Name starts a new eval. A real Name goes on the allowlist (no arming)."""
+    same Name again keeps everything (no reset); a new Name starts a new eval. A real Name goes on the allowlist (no arming).
+    preset = "mffu_rapid_eod_25k" for the 25K (None = the same Name's plan, else the 50K)."""
     nm = str(name or "").strip()
     why = name_problem(nm, others)
     if why:
@@ -136,13 +162,17 @@ def set_account(name: str, start: str | None = None, p: str | None = None, other
             _dt.date.fromisoformat(start)
         except ValueError:
             return {"ok": False, "error": f"--start {start!r} is not yyyy-mm-dd"}
+    if preset is not None and preset not in PLANS:
+        return {"ok": False, "error": f"unknown Rapid plan {preset!r}"}
     old = load(p)
-    if str(old.get("account") or "").strip() == nm and old.get("enabled") is not False:
+    same = str(old.get("account") or "").strip() == nm and old.get("enabled") is not False
+    want = preset or (str(old.get("plan") or PRESET) if same else PRESET)
+    if same and str(old.get("plan") or PRESET) == want:
         blk = dict(old)
         if start:
             blk["eval_start"] = start
     else:
-        blk = {"v": 1, "account": nm, "plan": PRESET, "stage": "eval", "eval_start": start or _today(), "armed": False,
+        blk = {"v": 1, "account": nm, "plan": want, "stage": "eval", "eval_start": start or _today(), "armed": False,
                "payouts": {}, "set": _today()}
         if old.get("account"):
             blk["previous"] = old.get("account")
@@ -223,7 +253,8 @@ def lane_spec(blk: dict, cfg: dict | None = None) -> dict:
     cfg = cfg or {}
     funded = blk.get("stage") == "funded"
     armed = blk.get("armed") is True
-    s = {"id": LANE_ID, "name": "Rapid EOD 50K", "preset": PRESET, "mode": "funded" if funded else "two_week",
+    P = plan_info(blk)
+    s = {"id": LANE_ID, "name": P["label"], "preset": P["preset"], "mode": "funded" if funded else "two_week",
          "adapter": "ninjatrader" if cfg.get("adapter") == "ninjatrader" else "paper", "nt_account": blk["account"],
          "eval_start": blk.get("eval_start") or "", "enabled": True, "armed": armed, "lane": "rapid"}
     if armed and cfg.get("confirm"):
@@ -235,17 +266,18 @@ def lane_spec(blk: dict, cfg: dict | None = None) -> dict:
 
 def atlas_block(blk: dict) -> dict:
     """ATLAS's lane: an engine/account_b block on the same account (sized by RapidAtlas.size)."""
-    b = {"account": blk["account"], "plan": PLAN, "eval_start": blk.get("eval_start") or "", "strategies": list(STRATEGIES),
-         "sizing": "safe", "armed": blk.get("armed") is True, "eval_min_room": 200.0}
+    P = plan_info(blk)
+    b = {"account": blk["account"], "plan": P["plan"], "eval_start": blk.get("eval_start") or "", "strategies": list(STRATEGIES),
+         "sizing": "safe", "armed": blk.get("armed") is True, "eval_min_room": P["eval_min_room"]}
     if blk.get("stage") == "funded":
         b.update({"stage": "funded", "funded_start": blk.get("funded_start") or "", "payouts": dict(blk.get("payouts") or {})})
     return b
 
 
-def stack_qty(risk: float, room, cum: float, maxq: int, dll: float = 1000.0) -> tuple:
-    """research stack_q: $ = min($500, 30% x room, the soft day left), micros = $ / one full stop-out of 1 micro."""
+def stack_qty(risk: float, room, cum: float, maxq: int, dll: float = 1000.0, cap: float = ATLAS_USD) -> tuple:
+    """research stack_q: $ = min($500 (the 25K: $250), 30% x room, the soft day left), micros = $ / one full stop-out of 1 micro."""
     loss1 = (float(risk) + SLIP) * PV + COMM
-    usd = min(ATLAS_USD, ATLAS_F * max(0.0, float(room or 0.0)), float(dll) + min(0.0, float(cum or 0.0)))
+    usd = min(float(cap), ATLAS_F * max(0.0, float(room or 0.0)), float(dll) + min(0.0, float(cum or 0.0)))
     return max(0, min(int(maxq), int(usd // loss1))), usd, loss1
 
 
@@ -258,14 +290,24 @@ def best_day_cap(q: int, tgt_pts, risk: float, target: float, day_pnl: float) ->
     return max(0, min(q, int(cap_usd // win1))), cap_usd
 
 
-def payout_advice(balance: float, start: float = 50000.0, paid_days=(), today: str | None = None) -> dict:
-    """Funded: what to withdraw today. MFFU pays above the $2,100 buffer ($500 min); the bot keeps $1,000 more in."""
-    keep = start + BUFFER + CUSHION
+def payout_advice(balance: float, start: float = 50000.0, paid_days=(), today: str | None = None,
+                  buffer: float = BUFFER, cushion: float = CUSHION, since: float | None = None,
+                  since_profit: float | None = None) -> dict:
+    """Funded: what to withdraw today. MFFU pays above the $2,100 buffer ($500 min); the bot keeps $1,000 more in
+    (the 25K: $1,100 buffer, keep $500 more, and MFFU's >= $250 net since the last payout: `since` / `since_profit`,
+    checked only when both are given and a payout was already made)."""
+    keep = start + float(buffer) + float(cushion)
     amt = round(max(0.0, float(balance) - keep), 2)
     amt = float(int(amt))
     ready = amt >= PAY_MIN and (today is None or today not in set(paid_days))
-    return {"keep_at": keep, "request": amt if ready else 0.0, "to_you": round(amt * SPLIT, 2) if ready else 0.0, "ready": ready,
+    short = None
+    if ready and since is not None and since_profit is not None and list(paid_days) and float(since_profit) < float(since):
+        ready, short = False, round(float(since) - float(since_profit), 2)
+    out = {"keep_at": keep, "request": amt if ready else 0.0, "to_you": round(amt * SPLIT, 2) if ready else 0.0, "ready": ready,
             "to_next": round(max(0.0, keep + PAY_MIN - float(balance)), 2)}
+    if short is not None:                 # MFFU's net-since-the-last-payout rule (the 25K's $250) not met yet
+        out["to_next"], out["since_short"] = short, short
+    return out
 
 
 def _open_leg(ad, d=None):
@@ -290,6 +332,7 @@ class RapidAtlas(AB.AccountB):
     def __init__(self, bot, spec, state_path=None, adapter_factory=None):
         super().__init__(bot, spec, state_path=state_path or _state_path(getattr(bot, "state_path", None)),
                          adapter_factory=adapter_factory)
+        self.P = plan_info(self.spec)
         self.label = f"ATLAS Rapid {self.name}"
         self.spec["label"] = self.label
 
@@ -376,8 +419,9 @@ class RapidAtlas(AB.AccountB):
             return {"qty": 0, "reasons": [f"room ${room:,.0f} to the floor: no trade"], "lock": "failed"}
         if not self.funded() and float(state.get("profit") or 0.0) + float(state.get("cum") or 0.0) >= float(R["target"]):
             return {"qty": 0, "reasons": ["eval target reached: no new trade"], "lock": "passed"}
-        q, usd, loss1 = stack_qty(risk, room, float(state.get("cum") or 0.0), int(R["max_micros"]), float(R["dll"]))
-        why = [f"${usd:,.0f} risk (min $500, 30% of the ${room:,.0f} room, the day left) / ${loss1:,.0f} a micro -> {q}"]
+        cap = float(self.P["atlas_usd"])
+        q, usd, loss1 = stack_qty(risk, room, float(state.get("cum") or 0.0), int(R["max_micros"]), float(R["dll"]), cap)
+        why = [f"${usd:,.0f} risk (min ${cap:,.0f}, 30% of the ${room:,.0f} room, the day left) / ${loss1:,.0f} a micro -> {q}"]
         if q > 0 and not self.funded():
             today = AB.trading_day(self.clock())
             q2, cap = best_day_cap(q, trade.get("tgt_pts"), risk, float(R["target"]), self.day_pnl(today))
@@ -483,14 +527,26 @@ class RapidAtlas(AB.AccountB):
         start = float(self.rules["start"])
         bal = start + float(st.get("balance") or 0.0) + float(st.get("cum") or 0.0)
         F = self.spec.get("funded") or {}
-        a = payout_advice(bal, start, (F.get("payouts") or {}).keys(), today)
+        pays = F.get("payouts") or {}
+        since = since_profit = None
+        if self.P["preset"] != PRESET and pays:       # the 25K: >= $250 net since the last payout (days after it)
+            last = max(str(d) for d in pays)
+            since = float(self.P["since"])
+            since_profit = sum(v for d, v in self.days(today).items() if d > last)
+        a = payout_advice(bal, start, pays.keys(), today, self.P["buffer"], self.P["cushion"], since, since_profit)
         paid = sum(float(v) for v in (F.get("payouts") or {}).values())
         text = (f"PAYOUT READY: request ${a['request']:,.0f} (${a['to_you']:,.0f} to you); keeps ${a['keep_at']:,.0f} in the account"
-                if a["ready"] else f"next payout once the balance passes ${a['keep_at'] + PAY_MIN:,.0f} (${a['to_next']:,.0f} to go)")
-        return {"name": self.label, "balance": round(bal, 2), "ask_at_balance": a["keep_at"] + PAY_MIN, "to_ask": a["to_next"],
+                if a["ready"] else
+                f"next payout once ${a['since_short']:,.0f} more is made since the last one (MFFU: >= ${self.P['since']:,.0f})"
+                if a.get("since_short") is not None else
+                f"next payout once the balance passes ${a['keep_at'] + PAY_MIN:,.0f} (${a['to_next']:,.0f} to go)")
+        out = {"name": self.label, "balance": round(bal, 2), "ask_at_balance": a["keep_at"] + PAY_MIN, "to_ask": a["to_next"],
                 "request": a["request"], "to_you": a["to_you"], "ready": a["ready"], "paid": round(paid, 2),
                 "paid_to_you": round(paid * SPLIT, 2), "graduated": False, "text": text,
                 "record_cmd": "python -X utf8 -m engine.rapid --payout {day}={amount}", "payouts": dict(F.get("payouts") or {})}
+        if a.get("since_short") is not None:
+            out["since_short"] = a["since_short"]
+        return out
 
     def _funded_lifecycle(self, now):
         try:
@@ -558,24 +614,31 @@ def status(p: str | None = None, state_path: str | None = None) -> dict:
         except Exception:
             pass
     funded = blk.get("stage") == "funded"
+    P = plan_info(blk)
+    nm = "Rapid EOD" if P["preset"] == PRESET else P["label"]
     start = blk.get("funded_start") if funded else blk.get("eval_start")
     days = {}
     for d, _, pnl, *_ in closes:
         if start and str(d) >= str(start):
             days[str(d)] = round(days.get(str(d), 0.0) + float(pnl), 2)
     paid = sum(float(v) for v in (blk.get("payouts") or {}).values()) if funded else 0.0
-    bal = 50000.0 + sum(days.values()) - paid
+    bal = P["start"] + sum(days.values()) - paid
     out = {"on": True, "account": blk["account"], "stage": blk.get("stage") or "eval", "armed": blk.get("armed") is True,
            "start": start, "balance": round(bal, 2), "days_traded": len([v for v in days.values() if abs(v) > 1e-9])}
     if funded:
-        a = payout_advice(bal, 50000.0, (blk.get("payouts") or {}).keys(), _today())
+        pays = blk.get("payouts") or {}
+        since = since_profit = None
+        if P["preset"] != PRESET and pays:            # the 25K: >= $250 net since the last payout
+            last = max(str(d) for d in pays)
+            since, since_profit = float(P["since"]), sum(v for d, v in days.items() if d > last)
+        a = payout_advice(bal, P["start"], pays.keys(), _today(), P["buffer"], P["cushion"], since, since_profit)
         out["payout"] = a
-        out["text"] = (f"Rapid EOD funded {blk['account']}: balance ${bal:,.0f}; "
+        out["text"] = (f"{nm} funded {blk['account']}: balance ${bal:,.0f}; "
                        + (f"request ${a['request']:,.0f} today (${a['to_you']:,.0f} to you)" if a["ready"] else
                           f"no payout yet (${a['to_next']:,.0f} to go; the bot keeps ${a['keep_at']:,.0f} in)"))
     else:
         best = max(days.values()) if days else 0.0
-        out["text"] = (f"Rapid EOD eval {blk['account']}: balance ${bal:,.0f} (target $53,000), {out['days_traded']} of 4 days, "
+        out["text"] = (f"{nm} eval {blk['account']}: balance ${bal:,.0f} (target ${P['start'] + P['target']:,.0f}), {out['days_traded']} of 4 days, "
                        f"best day ${best:,.0f}; {'ARMED' if out['armed'] else 'not armed yet (START BOT + the phrase)'}")
     return out
 
@@ -585,6 +648,7 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="python -m engine.rapid", description="the MFFU Rapid EOD 50K (LIT + ATLAS on one account)")
     ap.add_argument("--account")
     ap.add_argument("--start")
+    ap.add_argument("--size", choices=("50k", "25k"), default=None, help="the Rapid EOD size (default: 50K / the same Name's)")
     ap.add_argument("--to-funded", action="store_true")
     ap.add_argument("--payout")
     ap.add_argument("--off", action="store_true")
@@ -603,12 +667,12 @@ def main(argv=None) -> int:
         print("Rapid EOD funded: set (disarmed: START BOT + the phrase arms it)" if r["ok"] else f"NOT set: {r['error']}")
         return 0 if r["ok"] else 1
     if a.account:
-        r = set_account(a.account, a.start)
+        r = set_account(a.account, a.start, preset=f"mffu_rapid_eod_{a.size}" if a.size else None)
         if not r["ok"]:
             print(f"NOT set: {r['error']}")
             return 1
         b = r["block"]
-        print(f"[OK] Rapid EOD = {b['account']}, eval from {b['eval_start']}, NOT armed. LIT + ATLAS trade it after START BOT "
+        print(f"[OK] Rapid EOD{'' if b.get('plan', PRESET) == PRESET else ' 25K'} = {b['account']}, eval from {b['eval_start']}, NOT armed. LIT + ATLAS trade it after START BOT "
               "(you type I ACCEPT LIVE RISK)." + (f" {r['note']}." if r.get("note") else ""))
         return 0
     print(status()["text"])

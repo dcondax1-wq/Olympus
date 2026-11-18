@@ -224,7 +224,8 @@ def rapid(hb: dict) -> dict | None:
     room = (bal - floor) if bal is not None and floor is not None else None
     lk = row.get("locked") or hrow.get("locked")
     dis = _d(row.get("account")).get("disabled") or hrow.get("disabled")
-    out = {"id": "rapid", "name": "Rapid EOD", "what": "LIT + ATLAS · MFFU Rapid EOD 50K",
+    out = {"id": "rapid", "name": "Rapid EOD",
+           "what": "LIT + ATLAS · MFFU Rapid EOD " + ("25K" if _f(pr.get("start")) == 25000.0 else "50K"),
            "on": bool(hrow.get("enabled", row.get("enabled"))) and bool(row.get("running", hb.get("running"))),
            "armed": bool(hrow.get("armed")), "mode": hrow.get("label") or _d(row.get("account")).get("label"),
            "wait": "Trades the same LIT setups as Zlarior (and ATLAS's when LIT is flat).",

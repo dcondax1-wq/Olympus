@@ -92,6 +92,7 @@ PLANS = {
     "builder25k": {"preset": "mffu_builder_25k", "label": "MFFU Builder 25K", "safe_usd": 150.0, "price": 63.00},
     # ATLAS on the MFFU Rapid EOD 50K next to LIT (engine/rapid.py RapidAtlas sizes it: $500 / 30% of the room)
     "rapideod50k": {"preset": "mffu_rapid_eod_50k", "label": "MFFU Rapid EOD 50K", "safe_usd": 500.0, "price": 94.00},
+    "rapideod25k": {"preset": "mffu_rapid_eod_25k", "label": "MFFU Rapid EOD 25K", "safe_usd": 250.0, "price": 97.20},
 }
 SIZINGS = ("need", "safe")
 MAX_PER_DAY = 2

@@ -51,7 +51,7 @@ ALIASES = {"lit": "zlarior", "zlarior": "zlarior", "builder50k": "zlarior", "a":
            "atlas": "atlas", "builder25k": "atlas", "b": "atlas", "acct_b": "atlas", "account_b": "atlas", "second": "atlas",
            "rapid": "rapid1", "rapid1": "rapid1", "rapid_eod": "rapid1", "blitz": "blitz", "c": "blitz", "acct_c": "blitz",
            "pc": "", "all": "", "": ""}
-RULES = {"Rapid EOD 50K": (50000.0, 3000.0, 2000.0), "Builder 50K": (50000.0, 3000.0, 2000.0), "Builder 25K": (25000.0, 1500.0, 1000.0)}
+RULES = {"Rapid EOD 50K": (50000.0, 3000.0, 2000.0), "Rapid EOD 25K": (25000.0, 1500.0, 1000.0), "Builder 50K": (50000.0, 3000.0, 2000.0), "Builder 25K": (25000.0, 1500.0, 1000.0)}
 SRC_LABEL = {"bot": "PC", "owner": "owner, typed", "claude": "Claude", "plan": "PLAN", "cloud": "cloud"}
 _LOCK = threading.Lock()
 _S: dict = {"running": None}
