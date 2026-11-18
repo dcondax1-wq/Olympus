@@ -1109,7 +1109,7 @@ def sec_k(br, base, C, days, picks, ids):
         p = ctx.new_page()
         p.on("pageerror", lambda e: errs.append(str(e)))
         p.on("console", lambda m: errs.append(m.text) if m.type == "error" and "Failed to load resource" not in m.text else None)
-        p.goto(base + f"?athens=1&first=0&q={q}&light=day", wait_until="domcontentloaded")
+        p.goto(base + f"?athens=1&first=0&q={q}&light=day&direct=0", wait_until="domcontentloaded")   # direct=0: the first-person walker + thumb stick these checks pin (the directed walk: test_town_walk)
         p.wait_for_function("window.__athens && window.__athens.world", timeout=170000)
         p.wait_for_timeout(2000)
         out[q] = p.evaluate("({ calls: window.__athens.calls(), tris: window.__athens.tris(), houses: window.__athens.houses, npcs: (window.__athens.scene.npcs || []).length, sub: document.querySelector('#athSub').textContent, err: window.__athensWorldError || null })")
@@ -1153,7 +1153,9 @@ def sec_k(br, base, C, days, picks, ids):
             p.evaluate("(() => { const s = window.__athens.scene, q = s.npcPos[0]; s.flyTo(q.x, q.z, { dist: 40, pitch: .5, dur: .02 }); })()")
             p.wait_for_function("!window.__athens.scene.fly", timeout=60000)
             frames(p, 2)
-            p.evaluate("(() => { const s = window.__athens.scene, q = s.npcPos[0], v = s.project(q.x, 3, q.z); window.__athens.ui.tap(v.x, v.y); })()")
+            # aim where the scene looks for a villager (pickNpc: the terrain under its feet + 1.3 m x 2.4 from the city view), project and tap in one go
+            # (ui.tap takes page coordinates: it takes the canvas offset off again)
+            p.evaluate("(async () => { const { groundY } = await import('./athens-plan.js'), s = window.__athens.scene, q = s.npcPos[0], v = s.project(q.x, groundY(q.x, q.z) + 1.3 * 2.4, q.z), r = s.canvas.getBoundingClientRect(); window.__athens.ui.tap(v.x + r.left, v.y + r.top); })()")
             p.wait_for_timeout(700)
             npc = p.evaluate("document.querySelector('.ath-card').innerText")
             p.screenshot(path=os.path.join(SHOTS, "athens_nest_390x844_villager.png"))
@@ -1508,7 +1510,11 @@ def sec_l(br, base, C, days, picks, ids):
             hframes(p, 4)
             p.evaluate("window.__hellas.ui.hideCard()")
             hframes(p, 4)
-            bt = p.evaluate("(() => { const S = window.__hellas.scene, b = window.__hellas.world.builders[1], q = S.builderPos[1], v = S.project(q.x, 4, q.z), r = window.__hellas.ui.tap(v.x, v.y); return { vis: v.vis, hit: r && r.name, title: document.querySelector('.hel-card h3').textContent, chat: document.querySelectorAll('.hel-card .ppl-qs button').length, facing: !!(S.talk && S.talk.kind === 'builder' && S.builderPos[1].facing), labels: [...document.querySelectorAll('.hel-label.builder:not([hidden])')].map((l) => l.textContent) }; })()")
+            # our own chat card (the shared people kit takes the talk when it knows the builder: that path is checked with a stub below, so the kit
+            # is set aside for this one tap and put back)
+            p.evaluate("(() => { const S = window.__hellas.scene, q = S.builderPos[1]; S.flyTo(q.x, q.z, { dist: 150, pitch: .6, dur: .02 }); })()")   # it walked on: look at where it is now
+            hrest(p)
+            bt = p.evaluate("(() => { const had = window.OLYMPUS_PEOPLE; delete window.OLYMPUS_PEOPLE; try { const S = window.__hellas.scene, b = window.__hellas.world.builders[1], q = S.builderPos[1], v = S.project(q.x, 4, q.z), r = window.__hellas.ui.tap(v.x, v.y); return { vis: v.vis, hit: r && r.name, how: window.__hellas.ui.lastTalk && window.__hellas.ui.lastTalk.how, title: document.querySelector('.hel-card h3').textContent, chat: document.querySelectorAll('.hel-card .ppl-qs button').length, facing: !!(S.talk && S.talk.kind === 'builder' && S.builderPos[1].facing), labels: [...document.querySelectorAll('.hel-label.builder:not([hidden])')].map((l) => l.textContent) }; } finally { if (had) window.OLYMPUS_PEOPLE = had; } })()")
             hshot(p, "hellas_390x844_builders.png")
             check("l. a city at work says what it is working on: the 'At work' tag and the plain line on its card, a floating label on approach ('Name' + 'testing ... · N runs · last: ...')",
                   "At work" in bz["card"] and re.search(r"Testing .+ · \d+ runs · last: ", bz["card"]) and any(re.search(r"testing .+ · \d+ runs · last: ", w) for w in bz["wide"]) and bz["cls"] >= 1, {"wide": bz["wide"], "cls": bz["cls"]})
