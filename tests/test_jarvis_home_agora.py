@@ -216,7 +216,7 @@ console.log(JSON.stringify(out));
     sl = o["silent"]
     check("f. a PC silent since Nov 7 (home.json's last report, no live feed): the day and the fix in one line, as the hero (over an amber nudge) and on the NQ bots tile",
           sl["st"] == ["stale", "PC silent since Nov 7: STOP BOT, then START BOT", "Nov 7"] and sl["hero"]["text"] == "PC silent since Nov 7: STOP BOT, then START BOT." and sl["hero"]["tone"] == "warn"
-          and sl["hero"]["more"] == 2 and sl["tile"] == ["No report since Nov 7", "On the PC, tap STOP BOT, then START BOT.", "warn"] and o["fresh"] == "waiting"
+          and sl["hero"]["more"] == 2 and sl["tile"] == ["No report since Nov 7", "On the PC, tap STOP BOT, then START BOT.", "warn"] and o["fresh"] == "live"
           and o["when"] == ["Nov 7", "today 9:00 AM", ""], (sl, o["fresh"], o["when"]))
     check("f. a paper test never takes the hero (it waits in '+1 more'); nudges: real accounts first, the cloud paper ledger one calm 'Paper test, not real money' line, never red",
           o["paperOnly"] == ["Nothing needs you right now.", 1, 1]

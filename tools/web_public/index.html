@@ -1139,7 +1139,7 @@ a.lnk { color: var(--accent-2); text-decoration: underline; text-decoration-colo
 <script src="real.js?v=3" defer></script>
 <script src="liveview.js?v=5" defer></script>
 <script src="missioncore.js?v=2" defer></script>
-<script src="mission.js?v=1" defer></script>
+<script src="mission.js?v=2" defer></script>
 <script src="holo.js?v=6e1b6af9" defer></script>
 <script src="blitzcore.js?v=3" defer></script>
 <script src="mindcore.js?v=2" defer></script>
@@ -1155,7 +1155,7 @@ a.lnk { color: var(--accent-2); text-decoration: underline; text-decoration-colo
 <script src="zenith_hero.js?v=4" defer></script>
 <script src="launcher.js?v=l13" defer></script>
 <script src="zenith_money.js?v=3" defer></script>
-<script src="moneynowcore.js?v=q6a" defer></script>
+<script src="moneynowcore.js?v=q7" defer></script>
 <script src="moneynow.js?v=1" defer></script>
 <script src="sessioncore.js?v=2" defer></script>
 <script src="sessionday.js?v=1" defer></script>
@@ -1163,6 +1163,12 @@ a.lnk { color: var(--accent-2); text-decoration: underline; text-decoration-colo
 <script src="zenith_pages.js?v=1" defer></script>
 <script src="zenith_nq.js?v=1" defer></script>
 <script src="embed.js?v=1" defer></script>
+<script src="olympus/zeus_core.js?v=1" defer></script>
+<script>/* ZEUS (2026-11-18, night-zcard): Home starts with ONE ZEUS card (olympus/zeus_core.js, the same matching as hub/zeus.html): PC reported X min ago
+   (red PC SILENT), one line per real account (stage, balance, $ to pass / payout, today's $), the ZEUS edge chip; a tap opens hub/zeus.html.
+   Kept the first child of #page through every Home redraw; other pages never show it. Paper / cloud ledgers stay lower (Money now: "Paper test"). */
+document.addEventListener('DOMContentLoaded', function () { var Z = window.ZEUS_CORE, pg = document.getElementById('page');
+  if (Z && Z.keep && pg) Z.keep(pg, { when: function () { return typeof PAGE === 'undefined' || PAGE == null ? !/^#\/(?!today\b)[a-z]/.test(location.hash) : PAGE === 'today'; } }); });</script>
 <script>/* POLIS life on the Zenith home (QA round 6): the herald's banner under the status and the accounts, put back after every live redraw; hidden when the city file has no news */
 /* speed (2026-11-18): the herald's library (28 KB gzipped) arrives after the page has loaded, never in the deferred chain the first view waits on */
 addEventListener('load', function () { setTimeout(function () { var s = document.createElement('script'); s.src = 'olympus/polis-life.js?v=pl4'; s.async = true;

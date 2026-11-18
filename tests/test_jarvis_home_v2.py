@@ -53,7 +53,7 @@ MEASURE = r"""() => {
     const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0 ? [r.left, r.top, r.right, r.bottom].map((v) => Math.round(v * 10) / 10) : null; };
   const hit = (a, b) => a && b && a[0] < b[2] - 0.5 && b[0] < a[2] - 0.5 && a[1] < b[3] - 0.5 && b[1] < a[3] - 0.5;
   const home = R('#home');
-  const parts = { bar: R('.bar'), court: R('#court'), greet: R('#hello'), sysbar: R('#sysbar'), when: R('.hero .hsub'), heroNow: R('#heroNow'), heroMore: R('.hero-more'), heroState: R('#heroState'), wnb: R('#wnb'),
+  const parts = { bar: R('.bar'), court: R('#court'), greet: R('#hello'), sysbar: R('#sysbar'), when: R('.hero .hsub'), heroNow: R('#heroNow'), heroMore: R('.hero-more'), heroState: R('#heroState'), wnb: R('#wnb'), zeus: R('#zeusCard .zeus-card'),
     dock: R('#dock'), chip: R('#next'), fab: R('#fab'), orb: R('#nxOrb'), tip: R('.nx-tip.on'), toast: R('#toast') };
   [...document.querySelectorAll('#hfirst .tile')].forEach((t, i) => { parts['tile' + i] = R(t); });
   const keys = Object.keys(parts).filter((k) => parts[k]), overlaps = [];
@@ -73,6 +73,7 @@ MEASURE = r"""() => {
     hero: (document.getElementById('heroNow') || {}).textContent || '', greet: (document.getElementById('hello') || {}).textContent || '',
     state: (document.getElementById('heroState') || {}).textContent || '', tileText: [...document.querySelectorAll('#hfirst .tile')].map((t) => t.innerText.replace(/\s+/g, ' ').trim()),
     labels: [...document.querySelectorAll('#hfirst .tile')].map((t) => t.getAttribute('aria-label') || ''), court: document.documentElement.dataset.court || '', dock: document.documentElement.dataset.orbDock || '',
+    zeusText: ((document.querySelector('#zeusCard .zeus-card') || {}).innerText || '').replace(/\s+/g, ' ').trim(),
     needs: [...document.querySelectorAll('.dgate')].map((g) => g.dataset.district + ':' + (g.dataset.need || '')), gates: [...document.querySelectorAll('.dgate')].map((g) => g.getAttribute('aria-label')) };
 }"""
 
@@ -208,15 +209,21 @@ def run():
 
             # ---------------------------------------------------------------- c. no data at all + d. pull to refresh
             ctx, p, errs, seen = open_page(br, origin, 390, 844, query="x=1")
-            early = p.evaluate("({ sk: document.querySelectorAll('#hfirst .tile.sk').length, tiles: document.querySelectorAll('#hfirst .tile').length, named: [...document.querySelectorAll('#hfirst .tile')].every((t) => t.textContent.trim().length > 3) })")
-            check("c. never blank: from the first paint there are three tiles, each with its title (a skeleton until its numbers are in)", early["tiles"] == 3 and early["named"], early)
+            early = p.evaluate("({ sk: document.querySelectorAll('#hfirst .tile.sk').length, tiles: document.querySelectorAll('#hfirst .tile').length, named: [...document.querySelectorAll('#hfirst .tile')].every((t) => t.textContent.trim().length > 3), zeus: !!document.querySelector('#zeusCard .zeus-card') })")
+            # three skeleton tiles in the page itself; once the ZEUS card is up (2026-11-18) the NQ bots one gives way to it: two tiles + the card
+            check("c. never blank: from the first paint there are three tiles (two + the ZEUS card once it is up), each with its title (a skeleton until its numbers are in)",
+                  (early["tiles"] == 3 or (early["tiles"] == 2 and early["zeus"])) and early["named"], early)
             ready(p)
-            p.wait_for_function("document.querySelectorAll('#hfirst .tile:not(.sk)').length === 3", timeout=60000, polling=250)
+            # 2026-11-18 (night-zcard): off the demo, the ZEUS card (olympus/zeus_core.js) is the first card and the NQ bots tile is gone (no second, different
+            # bots line); Money + Today side by side. Nothing published = the card's red PC SILENT line
+            p.wait_for_function("document.querySelectorAll('#hfirst .tile:not(.sk)').length === 2 && !!document.querySelector('#zeusCard .zeus-pc.bad, #zeusCard .zeus-pc.good')", timeout=60000, polling=250)
             m = p.evaluate(MEASURE)
             if SHOTS:
                 p.screenshot(path=os.path.join(SHOTS, "v2_no_data.png"))
-            check("c. PC offline / nothing published, in plain words: 'The bots have not reported yet' + 'Your accounts are not affected.' on the tile, no doorway marked, nothing overlapping, all on the first screen",
-                  "The bots have not reported yet" in m["tileText"][0] and "Your accounts are not affected." in m["tileText"][0] and not m["overlaps"] and not m["below"] and all(n.endswith(":") or "warn" in n or "bad" in n for n in m["needs"]), (m["tileText"], m["hero"], m["needs"]))
+            # the ZEUS card (3 accounts + the edge light) takes the room the NQ bots tile had: it is on the first screen; Money + Today may start under the fold
+            check("c. PC offline / nothing published, in plain words: the ZEUS card first says PC SILENT (never reported), then Money + Today; no doorway marked, nothing overlapping, the card starts on the first screen (its PC line seen)",
+                  "PC SILENT" in m["zeusText"] and m["parts"].get("zeus") and m["parts"]["zeus"][1] < m["parts"]["tile0"][1] and [t.split(" ")[0] for t in m["tileText"]] == ["Money", "Today"]
+                  and not m["overlaps"] and not [k for k in m["below"] if not k.startswith("tile") and k != "zeus"] and m["parts"]["zeus"][1] + 60 < m["home"][3] and all(n.endswith(":") or "warn" in n or "bad" in n for n in m["needs"]), (m["zeusText"], m["tileText"], m["overlaps"], m["below"], m["parts"], m["needs"]))
             check("c. the hero still says ONE sentence (what needs you, or that the bots have not reported: your accounts are not affected)", len(m["hero"]) > 12 and m["hero"].count(".") <= 2, m["hero"])
             n0 = sum(1 for u in seen if "/money/index.json" in u)
             asof0 = p.evaluate("window.__jarvisHome.model().asof")

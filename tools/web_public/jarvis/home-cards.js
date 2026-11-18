@@ -83,8 +83,9 @@ function bots(m) {
     + `<span class="hc-bh">${dot(b.level)}<b>${esc(b.name)}</b><em>${esc(b.size)}</em></span>${pnlHtml(b.pnl)}<span class="hc-dd">${esc(drawdownLine(b))}</span>`
     + (b.text ? `<span class="hc-sub">${esc(b.text)}</span>` : '') + '</button>').join('')
     : st.fix && m.online ? `<button class="hc-bot hc-wide" type="button" data-app="zenith"><span class="hc-bh">${dot('warn')}<b>No bot report since ${esc(st.since)}</b></span><span class="hc-sub">On the PC, tap STOP BOT, then START BOT.</span></button>`
+    : st.pcOnly ? `<a class="hc-bot hc-wide" href="../hub/zeus.html"><span class="hc-bh">${dot('ok')}<b>${esc(st.text)}</b></span><span class="hc-sub">Each account, $ to pass and today's $: the ZEUS card at the top.</span></a>`
     : `<button class="hc-bot hc-wide" type="button" data-app="zenith"><span class="hc-bh">${dot('')}<b>No bot report yet</b></span><span class="hc-sub">${m.online ? 'The bots have not reported yet: your accounts are not affected.' : 'You are offline. The bots keep running on the PC on their own.'}</span></button>`;
-  const age = (st.kind === 'stale' && !(st.fix && !m.bots.length)) || st.kind === 'live' ? `<p class="hc-age ${esc(st.kind)}">${esc(st.text)}</p>` : '';
+  const age = (st.kind === 'stale' && !(st.fix && !m.bots.length)) || (st.kind === 'live' && !(st.pcOnly && !m.bots.length)) ? `<p class="hc-age ${esc(st.kind)}">${esc(st.text)}</p>` : '';
   return `<section class="hc-sec" aria-labelledby="hcB"><h2 id="hcB">NQ bots</h2><div class="hc-strip${m.bots.length > 1 ? '' : ' one'}">${cards}</div>${age}</section>`;
 }
 function day(m) {
@@ -110,7 +111,7 @@ export function render(m) {
   if (!host) return '';
   const p = m.pending || {};
   hero(m); doors(m);
-  if (first) { set(first, m.tiles.map((t) => tile(t, !!p[t.id])).join('')); first.removeAttribute('aria-busy'); }
+  if (first) { set(first, m.tiles.map((t) => tile(t, !!p[t.id])).join('')); first.removeAttribute('aria-busy'); first.classList.toggle('two', m.tiles.length === 2); }
   set(host, needsList(m) + bots(m) + day(m));
   if (favHost) set(favHost, favs(m));
   host.setAttribute('data-ready', '1');
@@ -201,6 +202,7 @@ function start() {
   firstRun();
   timer = setInterval(() => { if (visible()) refresh(); }, 15000);
   window.addEventListener('online', () => refresh()); window.addEventListener('offline', () => refresh());
+  window.addEventListener('zeus:update', () => refresh());                         // the ZEUS card heard the PC: the hero and tiles follow it
   document.addEventListener('visibilitychange', () => { if (visible()) refresh(Date.now() - lastAt > 5 * 60e3 ? { force: true } : {}); });
   window.__jarvisHome = { render: () => last && render(last), model: () => last, refresh, pull, doRefresh, stop: () => clearInterval(timer) };
 }
