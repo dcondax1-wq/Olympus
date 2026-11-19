@@ -12,6 +12,9 @@ Paper bots, temp files, Sim / made-up names only: nothing routed to a real Ninja
   f. funded: Tier-1 news ban (ATLAS refused + flattened, LIT's lane news on); payouts above $1,100 + $500 kept in
   g. the OFF-by-default "bank at the room" option (research/writeups/rapid25-lit-lane-2026-11-18.md): 1 micro with its exit
      limit at the day's 30% room when the guard says 0; eval + 25K only; booked at the bank when the model went through it
+  h. the old docs line `engine.rapid --account "<Name>"` (no --size) never means a silent 50K any more (night-money
+     2026-11-18): the size comes from NinjaTrader's balance or the Name, unknown or contradicted = refused (nothing saved),
+     the same Name keeps its plan, and the [OK] line prints the rules the bot will use
 """
 from __future__ import annotations
 
@@ -64,6 +67,9 @@ def cli_checks(tmp):
         check("a. --plan rapideod25: the 25K block (LIT + ATLAS), DISARMED, allowlisted",
               r["ok"] and b and b["account"] == NR and b["plan"] == P25 and b["armed"] is False and NR in TC.allowed()
               and "Rapid EOD 25K" in r["say"], (r, b))
+        check("a. ADD_ACCOUNT.bat option 5 prints the rules it will trade with (25K: $1,500 / $1,000 floor / 20 micros / $427 day)",
+              any("Rapid EOD 25K: target +$1,500, floor $1,000 below the best close, max 20 micros, a winning day <= $427" in x
+                  for x in r.get("notes") or []), r.get("notes"))
         inv = [x for x in AC.inventory() if x["role"] == "rapid"]
         check("a. inventory: the Rapid row is a Rapid EOD 25K eval", [(x["plan"], x["stage"]) for x in inv] == [("rapideod25", "eval")], inv)
         check("a. slots line shows the Rapid EOD 25K", "Rapid EOD 25K 0/3" in AC.slots_text(), AC.slots_text())
@@ -98,6 +104,71 @@ def cli_checks(tmp):
             os.environ.pop("NINJATRADER_FOLDER", None)
         else:
             os.environ["NINJATRADER_FOLDER"] = env_keep
+
+
+def bat_checks():
+    """ADD_ACCOUNT.bat: every add line goes to :done only when the add worked (exit 0), else to :notadded (no restart)."""
+    bat = open(os.path.join(ROOT, "ADD_ACCOUNT.bat"), encoding="utf-8").read()
+    adds = [ln for ln in bat.splitlines() if ln.startswith('if "%CH%"==')]
+    check("h. ADD_ACCOUNT.bat: all 5 options go to Done only on success (&& goto :done || goto :notadded)",
+          len(adds) == 5 and all("&& goto :done || goto :notadded" in ln and "& goto :done" not in ln.replace("&& goto :done", "")
+                                 for ln in adds), adds)
+    nb = bat[bat.find("\n:notadded"):bat.find("\n:done")]           # the label lines, not the gotos
+    check("h. ADD_ACCOUNT.bat: a refused add says [NOT ADDED], nothing changed, no restart (not 'Done ... START BOT')",
+          ":notadded" in bat and "[NOT ADDED]" in nb and "No restart needed" in nb and "START BOT" not in nb
+          and bat.count("\r\n") == 0 and "--plan rapideod25" in bat and "5  New Rapid EOD 25K" in bat, nb)
+    raw = open(os.path.join(ROOT, "ADD_ACCOUNT.bat"), "rb").read()
+    check("h. ADD_ACCOUNT.bat keeps CRLF line ends (cmd.exe misreads labels otherwise)",
+          raw.count(b"\r\n") == raw.count(b"\n") and raw.count(b"\n") > 40)
+
+
+def size_line_checks(tmp):
+    """h. python -m engine.rapid --account without --size: the size from NinjaTrader / the Name, never a silent 50K."""
+    import contextlib
+    import io
+    import json as _json
+    from engine import go as G
+    keep_rp, keep_nb = rapid.PATH, G.nt_balances
+    bal = {}
+    try:
+        rapid.PATH = os.path.join(tmp, "rapid_h.json")
+        G.nt_balances = lambda: dict(bal)
+        check("h. size_hint: NinjaTrader $25,000 -> 25k, $50,000 -> 50k; else the Name (25K / 50K in it); else unknown",
+              rapid.size_hint("X1", {"X1": 25000.0})[0] == "25k" and rapid.size_hint("X1", {"X1": 50110.0})[0] == "50k"
+              and rapid.size_hint("MFFUEVRPD25K0001", {})[0] == "25k" and rapid.size_hint("MFFUEVRPD50K0001", {})[0] == "50k"
+              and rapid.size_hint("MFFUEVRPD0001", {})[0] is None)
+
+        def run(*argv):
+            out = io.StringIO()
+            with contextlib.redirect_stdout(out):
+                rc = rapid.main(list(argv))
+            return rc, out.getvalue()
+        rc, txt = run("--account", "Sim205")
+        check("h. no --size and nothing readable: refused (asks 25k or 50k), nothing saved",
+              rc == 1 and "--size 25k" in txt and "Nothing changed" in txt and not os.path.exists(rapid.PATH), (rc, txt))
+        bal["Sim205"] = 25000.0
+        rc, b0 = run("--account", "Sim205", "--size", "50k")
+        check("h. --size 50k on an account NinjaTrader shows at $25,000: refused, nothing saved",
+              rc == 1 and "not a 50K" in b0 and not os.path.exists(rapid.PATH), (rc, b0))
+        rc, txt = run("--account", "Sim205", "--start", "2026-11-20")
+        blk = _json.load(open(rapid.PATH, encoding="utf-8"))
+        check("h. no --size, NinjaTrader shows $25,000: the Rapid EOD 25K block (DISARMED), the line says why + the 25K rules",
+              rc == 0 and blk.get("plan") == P25 and blk.get("armed") is False and blk.get("eval_start") == "2026-11-20"
+              and "Rapid EOD 25K: NinjaTrader shows $25,000" in txt and "[OK] Rapid EOD 25K = Sim205" in txt
+              and "target +$1,500, floor $1,000 below the best close, max 20 micros, a winning day <= $427" in txt, (rc, txt, blk))
+        bal.clear()
+        rc, txt = run("--account", "Sim205")
+        check("h. the same Name again (balance not readable): keeps the 25K, no reset",
+              rc == 0 and _json.load(open(rapid.PATH, encoding="utf-8")).get("plan") == P25
+              and _json.load(open(rapid.PATH, encoding="utf-8")).get("eval_start") == "2026-11-20", (rc, txt))
+        os.remove(rapid.PATH)
+        bal["Sim206"] = 50000.0
+        rc, txt = run("--account", "Sim206")
+        check("h. a 50K balance: the Rapid EOD 50K (unchanged rules: $3,000, $2,000 floor, 30 micros, $855 day)",
+              rc == 0 and _json.load(open(rapid.PATH, encoding="utf-8")).get("plan") == "mffu_rapid_eod_50k"
+              and "target +$3,000, floor $2,000 below the best close, max 30 micros, a winning day <= $855" in txt, (rc, txt))
+    finally:
+        rapid.PATH, G.nt_balances = keep_rp, keep_nb
 
 
 def bank_checks(tmp, clock):
@@ -356,6 +427,8 @@ def main() -> int:
         check("status(): the 25K's balance and target", sx["on"] and "target $26,500" in sx["text"] and "Rapid EOD 25K" in sx["text"], sx)
         bank_checks(os.path.join(tmp, "bank"), clock)
         cli_checks(os.path.join(tmp, "cli"))
+        size_line_checks(os.path.join(tmp, "sizeline"))
+        bat_checks()
     finally:
         MA.ADAPTER_FACTORY = None
         shutil.rmtree(tmp, ignore_errors=True)

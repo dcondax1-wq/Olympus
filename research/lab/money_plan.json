@@ -1,0 +1,3922 @@
+{
+ "v": 2,
+ "date": "2026-11-18",
+ "start": "2026-11-19",
+ "end": "2027-05-17",
+ "n": 1000,
+ "sessions": 126,
+ "markets": {
+  "H2": "2026 Jul-Oct-like",
+  "H1": "2026 Jan-Jun-like",
+  "REF": "2021-25-like"
+ },
+ "months": [
+  "2026-11",
+  "2026-12",
+  "2027-01",
+  "2027-02",
+  "2027-03",
+  "2027-04",
+  "2027-05"
+ ],
+ "prices": {
+  "builder50k": 91.8,
+  "builder25k": 63.0,
+  "rapid_eod25k": 97.2,
+  "rapid_eod50k": 165.0
+ },
+ "tax": 0.3,
+ "budget": 150.0,
+ "now": [
+  {
+   "key": "Z50",
+   "name": "Zlarior 50K",
+   "plan": "Builder 50K",
+   "stage": "eval",
+   "balance": 49193,
+   "to_pass": 3807,
+   "room": 1025,
+   "bots": "Zlarior (LIT)"
+  },
+  {
+   "key": "N25",
+   "name": "Zlarior 25K #2",
+   "plan": "Builder 25K",
+   "stage": "eval",
+   "balance": 25000,
+   "to_pass": 1500,
+   "room": 1000,
+   "bots": "Zlarior (LIT) at 40% of the room"
+  },
+  {
+   "key": "A25",
+   "name": "ATLAS funded 25K",
+   "plan": "Builder 25K",
+   "stage": "funded",
+   "balance": 24887,
+   "to_pass": null,
+   "room": 887,
+   "bots": "ATLAS"
+  },
+  {
+   "key": "R25",
+   "name": "Rapid EOD 25K",
+   "plan": "Rapid EOD 25K",
+   "stage": "buy tonight",
+   "balance": null,
+   "to_pass": 1500,
+   "room": 1000,
+   "bots": "Zlarior + ATLAS",
+   "price": 97.2
+  }
+ ],
+ "names": {
+  "Z50": "Zlarior 50K",
+  "N25": "Zlarior 25K #2",
+  "A25": "ATLAS funded 25K",
+  "R25": "Rapid EOD 25K",
+  "R2": "Rapid EOD 50K (next buy)"
+ },
+ "spans": {
+  "H1": [
+   "2026-01-01",
+   "2026-06-30"
+  ],
+  "H2": [
+   "2026-07-01",
+   "2026-10-16"
+  ],
+  "REF": [
+   "2021-11-01",
+   "2025-12-31"
+  ]
+ },
+ "rows": {
+  "H2": {
+   "accounts": {
+    "Z50": {
+     "cash_m": 710,
+     "net_m": 494,
+     "cash_6m": 4261,
+     "paid_6m": 4313,
+     "fees_6m": 52.05,
+     "first_pay": "2027-02-02",
+     "first_pay_k": 52.0,
+     "first_pay_p25": "2027-01-11",
+     "first_pay_p75": "2027-03-05",
+     "first_pay_usd": 1600,
+     "p_pay_by_dec31": 14.9,
+     "p_pay_by_jan31": 43.7,
+     "p_no_pay_6m": 9.5,
+     "funded_med": "2026-12-22",
+     "p_funded_6m": 99.1,
+     "lost_6m": 7.1,
+     "month_cash": [
+      -2,
+      229,
+      642,
+      808,
+      1033,
+      1026,
+      525
+     ],
+     "eval": {
+      "p10": 21.5,
+      "p20": 43.3,
+      "p60": 70.2,
+      "f60": 25.7,
+      "open60": 4.1,
+      "pass_med": 16.0,
+      "pass_date": "2026-12-10"
+     }
+    },
+    "N25": {
+     "cash_m": 326,
+     "net_m": 227,
+     "cash_6m": 1955,
+     "paid_6m": 1984,
+     "fees_6m": 28.79,
+     "first_pay": "2027-01-26",
+     "first_pay_k": 47.0,
+     "first_pay_p25": "2026-12-31",
+     "first_pay_p75": "2027-03-01",
+     "first_pay_usd": 800,
+     "p_pay_by_dec31": 21.2,
+     "p_pay_by_jan31": 45.6,
+     "p_no_pay_6m": 16.9,
+     "funded_med": "2026-12-07",
+     "p_funded_6m": 95.4,
+     "lost_6m": 17.4,
+     "month_cash": [
+      0,
+      181,
+      300,
+      365,
+      440,
+      458,
+      211
+     ],
+     "eval": {
+      "p10": 46.7,
+      "p20": 64.3,
+      "p60": 82.3,
+      "f60": 2.3,
+      "open60": 15.4,
+      "pass_med": 8.0,
+      "pass_date": "2026-11-30"
+     }
+    },
+    "A25": {
+     "cash_m": 523,
+     "net_m": 364,
+     "cash_6m": 3139,
+     "paid_6m": 3176,
+     "fees_6m": 36.6,
+     "first_pay": "2026-12-29",
+     "first_pay_k": 28.0,
+     "first_pay_p25": "2026-12-14",
+     "first_pay_p75": "2027-01-22",
+     "first_pay_usd": 800,
+     "p_pay_by_dec31": 53.9,
+     "p_pay_by_jan31": 80.1,
+     "p_no_pay_6m": 1.4,
+     "funded_med": "2026-11-19",
+     "p_funded_6m": 100.0,
+     "lost_6m": 10.2,
+     "month_cash": [
+      24,
+      489,
+      568,
+      585,
+      656,
+      554,
+      262
+     ]
+    },
+    "R25": {
+     "cash_m": 1005,
+     "net_m": 697,
+     "cash_6m": 6028,
+     "paid_6m": 6157,
+     "fees_6m": 129.08,
+     "first_pay": "2027-02-03",
+     "first_pay_k": 53.0,
+     "first_pay_p25": "2027-01-15",
+     "first_pay_p75": "2027-03-03",
+     "first_pay_usd": 686,
+     "p_pay_by_dec31": 9.6,
+     "p_pay_by_jan31": 41.0,
+     "p_no_pay_6m": 10.4,
+     "funded_med": "2026-12-31",
+     "p_funded_6m": 99.2,
+     "lost_6m": 28.3,
+     "month_cash": [
+      -97,
+      110,
+      700,
+      1234,
+      1644,
+      1610,
+      827
+     ],
+     "eval": {
+      "p10": 4.6,
+      "p20": 31.1,
+      "p60": 89.8,
+      "f60": 0.1,
+      "open60": 10.1,
+      "pass_med": 25.0,
+      "pass_date": "2026-12-23"
+     }
+    },
+    "R2": {
+     "cash_m": 1969,
+     "net_m": 1368,
+     "cash_6m": 11811,
+     "paid_6m": 12005,
+     "fees_6m": 193.38,
+     "first_pay": "2027-02-25",
+     "first_pay_k": 69.0,
+     "first_pay_p25": "2027-02-05",
+     "first_pay_p75": "2027-03-24",
+     "first_pay_usd": 1017,
+     "p_pay_by_dec31": 0.6,
+     "p_pay_by_jan31": 16.7,
+     "p_no_pay_6m": 9.9,
+     "funded_med": "2027-02-02",
+     "p_funded_6m": 99.4,
+     "lost_6m": 14.4,
+     "month_cash": [
+      -3,
+      -89,
+      473,
+      1908,
+      3538,
+      3897,
+      2087
+     ],
+     "buy_med": "2026-12-24",
+     "p_bought": 99.9
+    }
+   },
+   "fleet": {
+    "four": {
+     "months": [
+      {
+       "month": "2026-11",
+       "sessions": 8,
+       "cash_mean": -75,
+       "net_mean": -82,
+       "fees_mean": 99,
+       "cum_net_p10": -97,
+       "cum_net_p50": -97,
+       "cum_net_p90": -97
+      },
+      {
+       "month": "2026-12",
+       "sessions": 22,
+       "cash_mean": 1009,
+       "net_mean": 700,
+       "fees_mean": 21,
+       "cum_net_p10": -160,
+       "cum_net_p50": 427,
+       "cum_net_p90": 1889
+      },
+      {
+       "month": "2027-01",
+       "sessions": 20,
+       "cash_mean": 2211,
+       "net_mean": 1541,
+       "fees_mean": 21,
+       "cum_net_p10": 274,
+       "cum_net_p50": 1583,
+       "cum_net_p90": 4984
+      },
+      {
+       "month": "2027-02",
+       "sessions": 20,
+       "cash_mean": 2992,
+       "net_mean": 2089,
+       "fees_mean": 18,
+       "cum_net_p10": 776,
+       "cum_net_p50": 3717,
+       "cum_net_p90": 8532
+      },
+      {
+       "month": "2027-03",
+       "sessions": 23,
+       "cash_mean": 3774,
+       "net_mean": 2632,
+       "fees_mean": 31,
+       "cum_net_p10": 1777,
+       "cum_net_p50": 6482,
+       "cum_net_p90": 12439
+      },
+      {
+       "month": "2027-04",
+       "sessions": 22,
+       "cash_mean": 3648,
+       "net_mean": 2543,
+       "fees_mean": 37,
+       "cum_net_p10": 2992,
+       "cum_net_p50": 9233,
+       "cum_net_p90": 15850
+      },
+      {
+       "month": "2027-05",
+       "sessions": 11,
+       "cash_mean": 1825,
+       "net_mean": 1272,
+       "fees_mean": 20,
+       "cum_net_p10": 3853,
+       "cum_net_p50": 10676,
+       "cum_net_p90": 17189
+      }
+     ],
+     "cash_m": 2564,
+     "net_m": 1782,
+     "cash_6m": 15383,
+     "net_6m": 10694,
+     "net_6m_p10": 3853,
+     "net_6m_p50": 10676,
+     "net_6m_p90": 17189,
+     "spring_cash_m": 3711,
+     "spring_net_m": 2588,
+     "first_any": "2026-12-23",
+     "p_pay_by_dec31": 67.2,
+     "p_no_pay_by_jan31": 7.2,
+     "p_no_pay_6m": 0.1,
+     "p_net_negative_6m": 0.1,
+     "pocket_p90": 189,
+     "pocket_p95": 252,
+     "fees_6m": 247
+    },
+    "five": {
+     "months": [
+      {
+       "month": "2026-11",
+       "sessions": 8,
+       "cash_mean": -78,
+       "net_mean": -85,
+       "fees_mean": 102,
+       "cum_net_p10": -97,
+       "cum_net_p50": -97,
+       "cum_net_p90": -97
+      },
+      {
+       "month": "2026-12",
+       "sessions": 22,
+       "cash_mean": 920,
+       "net_mean": 606,
+       "fees_mean": 125,
+       "cum_net_p10": -160,
+       "cum_net_p50": 272,
+       "cum_net_p90": 1740
+      },
+      {
+       "month": "2027-01",
+       "sessions": 20,
+       "cash_mean": 2684,
+       "net_mean": 1859,
+       "fees_mean": 67,
+       "cum_net_p10": 109,
+       "cum_net_p50": 1418,
+       "cum_net_p90": 5987
+      },
+      {
+       "month": "2027-02",
+       "sessions": 20,
+       "cash_mean": 4900,
+       "net_mean": 3420,
+       "fees_mean": 34,
+       "cum_net_p10": 611,
+       "cum_net_p50": 4295,
+       "cum_net_p90": 13002
+      },
+      {
+       "month": "2027-03",
+       "sessions": 23,
+       "cash_mean": 7312,
+       "net_mean": 5105,
+       "fees_mean": 44,
+       "cum_net_p10": 1696,
+       "cum_net_p50": 9886,
+       "cum_net_p90": 22058
+      },
+      {
+       "month": "2027-04",
+       "sessions": 22,
+       "cash_mean": 7545,
+       "net_mean": 5268,
+       "fees_mean": 44,
+       "cum_net_p10": 3751,
+       "cum_net_p50": 15702,
+       "cum_net_p90": 28777
+      },
+      {
+       "month": "2027-05",
+       "sessions": 11,
+       "cash_mean": 3912,
+       "net_mean": 2731,
+       "fees_mean": 23,
+       "cum_net_p10": 5336,
+       "cum_net_p50": 18736,
+       "cum_net_p90": 32527
+      }
+     ],
+     "cash_m": 4532,
+     "net_m": 3151,
+     "cash_6m": 27195,
+     "net_6m": 18904,
+     "net_6m_p10": 5336,
+     "net_6m_p50": 18736,
+     "net_6m_p90": 32527,
+     "spring_cash_m": 7428,
+     "spring_net_m": 5186,
+     "first_any": "2026-12-23",
+     "p_pay_by_dec31": 67.2,
+     "p_no_pay_by_jan31": 7.2,
+     "p_no_pay_6m": 0.1,
+     "p_net_negative_6m": 0.1,
+     "pocket_p90": 189,
+     "pocket_p95": 252,
+     "fees_6m": 440
+    }
+   },
+   "fill5": {
+    "p_all5_6m": 90.1,
+    "all5_med": "2027-02-08"
+   },
+   "decisions": {
+    "payout-ping-1000": {
+     "usd_month": -9,
+     "net_month": -7,
+     "first_pay_days": 2.0,
+     "no_pay_pts": 1.6,
+     "lost_pts": 0.0,
+     "with": {
+      "cash_m": 321,
+      "first_pay": "2027-01-28",
+      "first_pay_usd": 800,
+      "p_no_pay_6m": 18.5,
+      "lost_6m": 17.4
+     },
+     "without": {
+      "cash_m": 326,
+      "first_pay": "2027-01-26",
+      "first_pay_usd": 800,
+      "p_no_pay_6m": 16.9,
+      "lost_6m": 17.4,
+      "eval": {
+       "p10": 46.7,
+       "p20": 64.3,
+       "p60": 82.3,
+       "f60": 2.3,
+       "open60": 15.4,
+       "pass_med": 8.0,
+       "pass_date": "2026-11-30"
+      }
+     },
+     "per_account": {
+      "A25": {
+       "usd_month": -4,
+       "net_month": -3,
+       "first_pay_days": 2.0,
+       "no_pay_pts": 0.0,
+       "lost_pts": -0.4,
+       "with": {
+        "cash_m": 519,
+        "first_pay": "2026-12-31",
+        "first_pay_usd": 800,
+        "p_no_pay_6m": 1.4,
+        "lost_6m": 9.8
+       },
+       "without": {
+        "cash_m": 523,
+        "first_pay": "2026-12-29",
+        "first_pay_usd": 800,
+        "p_no_pay_6m": 1.4,
+        "lost_6m": 10.2
+       }
+      },
+      "N25": {
+       "usd_month": -5,
+       "net_month": -4,
+       "first_pay_days": 2.0,
+       "no_pay_pts": 1.6,
+       "lost_pts": 0.0,
+       "with": {
+        "cash_m": 321,
+        "first_pay": "2027-01-28",
+        "first_pay_usd": 800,
+        "p_no_pay_6m": 18.5,
+        "lost_6m": 17.4
+       },
+       "without": {
+        "cash_m": 326,
+        "first_pay": "2027-01-26",
+        "first_pay_usd": 800,
+        "p_no_pay_6m": 16.9,
+        "lost_6m": 17.4,
+        "eval": {
+         "p10": 46.7,
+         "p20": 64.3,
+         "p60": 82.3,
+         "f60": 2.3,
+         "open60": 15.4,
+         "pass_med": 8.0,
+         "pass_date": "2026-11-30"
+        }
+       }
+      }
+     }
+    },
+    "zlarior-funded25": {
+     "usd_month": 125,
+     "net_month": 86,
+     "first_pay_days": -7.0,
+     "no_pay_pts": -0.7,
+     "lost_pts": 16.1,
+     "with": {
+      "cash_m": 648,
+      "first_pay": "2026-12-17",
+      "first_pay_usd": 800,
+      "p_no_pay_6m": 0.7,
+      "lost_6m": 26.3
+     },
+     "without": {
+      "cash_m": 523,
+      "first_pay": "2026-12-29",
+      "first_pay_usd": 800,
+      "p_no_pay_6m": 1.4,
+      "lost_6m": 10.2
+     },
+     "per_account": {
+      "A25": {
+       "usd_month": 125,
+       "net_month": 86,
+       "first_pay_days": -7.0,
+       "no_pay_pts": -0.7,
+       "lost_pts": 16.1,
+       "with": {
+        "cash_m": 648,
+        "first_pay": "2026-12-17",
+        "first_pay_usd": 800,
+        "p_no_pay_6m": 0.7,
+        "lost_6m": 26.3
+       },
+       "without": {
+        "cash_m": 523,
+        "first_pay": "2026-12-29",
+        "first_pay_usd": 800,
+        "p_no_pay_6m": 1.4,
+        "lost_6m": 10.2
+       }
+      }
+     }
+    },
+    "rapid25-lit-bank": {
+     "usd_month": 83,
+     "net_month": 58,
+     "first_pay_days": -5.0,
+     "no_pay_pts": -2.5,
+     "lost_pts": 3.9,
+     "with": {
+      "cash_m": 1088,
+      "first_pay": "2027-01-27",
+      "first_pay_usd": 687,
+      "p_no_pay_6m": 7.9,
+      "lost_6m": 32.2,
+      "eval": {
+       "p10": 6.7,
+       "p20": 44.5,
+       "p60": 94.0,
+       "f60": 0.6,
+       "open60": 5.4,
+       "pass_med": 21.0
+      }
+     },
+     "without": {
+      "cash_m": 1005,
+      "first_pay": "2027-02-03",
+      "first_pay_usd": 686,
+      "p_no_pay_6m": 10.4,
+      "lost_6m": 28.3,
+      "eval": {
+       "p10": 4.6,
+       "p20": 31.1,
+       "p60": 89.8,
+       "f60": 0.1,
+       "open60": 10.1,
+       "pass_med": 25.0,
+       "pass_date": "2026-12-23"
+      }
+     },
+     "per_account": {
+      "R25": {
+       "usd_month": 83,
+       "net_month": 58,
+       "first_pay_days": -5.0,
+       "no_pay_pts": -2.5,
+       "lost_pts": 3.9,
+       "with": {
+        "cash_m": 1088,
+        "first_pay": "2027-01-27",
+        "first_pay_usd": 687,
+        "p_no_pay_6m": 7.9,
+        "lost_6m": 32.2,
+        "eval": {
+         "p10": 6.7,
+         "p20": 44.5,
+         "p60": 94.0,
+         "f60": 0.6,
+         "open60": 5.4,
+         "pass_med": 21.0
+        }
+       },
+       "without": {
+        "cash_m": 1005,
+        "first_pay": "2027-02-03",
+        "first_pay_usd": 686,
+        "p_no_pay_6m": 10.4,
+        "lost_6m": 28.3,
+        "eval": {
+         "p10": 4.6,
+         "p20": 31.1,
+         "p60": 89.8,
+         "f60": 0.1,
+         "open60": 10.1,
+         "pass_med": 25.0,
+         "pass_date": "2026-12-23"
+        }
+       }
+      }
+     }
+    },
+    "atlas-on-50k-funded": {
+     "usd_month": 451,
+     "net_month": 314,
+     "first_pay_days": -9.0,
+     "no_pay_pts": -5.3,
+     "lost_pts": 0.4,
+     "with": {
+      "cash_m": 1161,
+      "first_pay": "2027-01-20",
+      "first_pay_usd": 1600,
+      "p_no_pay_6m": 4.2,
+      "lost_6m": 7.5
+     },
+     "without": {
+      "cash_m": 710,
+      "first_pay": "2027-02-02",
+      "first_pay_usd": 1600,
+      "p_no_pay_6m": 9.5,
+      "lost_6m": 7.1,
+      "eval": {
+       "p10": 21.5,
+       "p20": 43.3,
+       "p60": 70.2,
+       "f60": 25.7,
+       "open60": 4.1,
+       "pass_med": 16.0,
+       "pass_date": "2026-12-10"
+      }
+     },
+     "per_account": {
+      "Z50": {
+       "usd_month": 451,
+       "net_month": 314,
+       "first_pay_days": -9.0,
+       "no_pay_pts": -5.3,
+       "lost_pts": 0.4,
+       "with": {
+        "cash_m": 1161,
+        "first_pay": "2027-01-20",
+        "first_pay_usd": 1600,
+        "p_no_pay_6m": 4.2,
+        "lost_6m": 7.5
+       },
+       "without": {
+        "cash_m": 710,
+        "first_pay": "2027-02-02",
+        "first_pay_usd": 1600,
+        "p_no_pay_6m": 9.5,
+        "lost_6m": 7.1,
+        "eval": {
+         "p10": 21.5,
+         "p20": 43.3,
+         "p60": 70.2,
+         "f60": 25.7,
+         "open60": 4.1,
+         "pass_med": 16.0,
+         "pass_date": "2026-12-10"
+        }
+       }
+      }
+     }
+    },
+    "atlas-on-rapid": {
+     "usd_month": 817,
+     "net_month": 571,
+     "first_pay_days": -39.0,
+     "no_pay_pts": -39.7,
+     "lost_pts": 14.2,
+     "with": {
+      "cash_m": 1005,
+      "first_pay": "2027-02-03",
+      "first_pay_usd": 686,
+      "p_no_pay_6m": 10.4,
+      "lost_6m": 28.3,
+      "eval": {
+       "p10": 4.6,
+       "p20": 31.1,
+       "p60": 89.8,
+       "f60": 0.1,
+       "open60": 10.1,
+       "pass_med": 25.0,
+       "pass_date": "2026-12-23"
+      }
+     },
+     "without": {
+      "cash_m": 188,
+      "first_pay": "2027-03-30",
+      "first_pay_usd": 654,
+      "p_no_pay_6m": 50.1,
+      "lost_6m": 14.1,
+      "eval": {
+       "p10": 0.0,
+       "p20": 2.1,
+       "p60": 43.7,
+       "f60": 0.0,
+       "open60": 56.3,
+       "pass_med": 42.0
+      }
+     },
+     "per_account": {
+      "R25": {
+       "usd_month": 817,
+       "net_month": 571,
+       "first_pay_days": -39.0,
+       "no_pay_pts": -39.7,
+       "lost_pts": 14.2,
+       "with": {
+        "cash_m": 1005,
+        "first_pay": "2027-02-03",
+        "first_pay_usd": 686,
+        "p_no_pay_6m": 10.4,
+        "lost_6m": 28.3,
+        "eval": {
+         "p10": 4.6,
+         "p20": 31.1,
+         "p60": 89.8,
+         "f60": 0.1,
+         "open60": 10.1,
+         "pass_med": 25.0,
+         "pass_date": "2026-12-23"
+        }
+       },
+       "without": {
+        "cash_m": 188,
+        "first_pay": "2027-03-30",
+        "first_pay_usd": 654,
+        "p_no_pay_6m": 50.1,
+        "lost_6m": 14.1,
+        "eval": {
+         "p10": 0.0,
+         "p20": 2.1,
+         "p60": 43.7,
+         "f60": 0.0,
+         "open60": 56.3,
+         "pass_med": 42.0
+        }
+       }
+      }
+     }
+    },
+    "keep-1000-rapid": {
+     "usd_month": -20,
+     "net_month": -14,
+     "first_pay_days": 4.0,
+     "no_pay_pts": 1.1,
+     "lost_pts": -8.6,
+     "with": {
+      "cash_m": 985,
+      "first_pay": "2027-02-09",
+      "first_pay_usd": 680,
+      "p_no_pay_6m": 11.5,
+      "lost_6m": 19.7
+     },
+     "without": {
+      "cash_m": 1005,
+      "first_pay": "2027-02-03",
+      "first_pay_usd": 686,
+      "p_no_pay_6m": 10.4,
+      "lost_6m": 28.3,
+      "eval": {
+       "p10": 4.6,
+       "p20": 31.1,
+       "p60": 89.8,
+       "f60": 0.1,
+       "open60": 10.1,
+       "pass_med": 25.0,
+       "pass_date": "2026-12-23"
+      }
+     },
+     "per_account": {
+      "R25": {
+       "usd_month": -20,
+       "net_month": -14,
+       "first_pay_days": 4.0,
+       "no_pay_pts": 1.1,
+       "lost_pts": -8.6,
+       "with": {
+        "cash_m": 985,
+        "first_pay": "2027-02-09",
+        "first_pay_usd": 680,
+        "p_no_pay_6m": 11.5,
+        "lost_6m": 19.7
+       },
+       "without": {
+        "cash_m": 1005,
+        "first_pay": "2027-02-03",
+        "first_pay_usd": 686,
+        "p_no_pay_6m": 10.4,
+        "lost_6m": 28.3,
+        "eval": {
+         "p10": 4.6,
+         "p20": 31.1,
+         "p60": 89.8,
+         "f60": 0.1,
+         "open60": 10.1,
+         "pass_med": 25.0,
+         "pass_date": "2026-12-23"
+        }
+       }
+      }
+     }
+    },
+    "ask-mffu-parallel": {
+     "usd_month": 56,
+     "net_month": 36,
+     "first_pay_days": -8.0,
+     "no_pay_pts": -2.8,
+     "lost_pts": 0.7,
+     "with": {
+      "cash_m": 766,
+      "first_pay": "2027-01-21",
+      "first_pay_usd": 1600,
+      "p_no_pay_6m": 6.7,
+      "lost_6m": 7.8
+     },
+     "without": {
+      "cash_m": 710,
+      "first_pay": "2027-02-02",
+      "first_pay_usd": 1600,
+      "p_no_pay_6m": 9.5,
+      "lost_6m": 7.1,
+      "eval": {
+       "p10": 21.5,
+       "p20": 43.3,
+       "p60": 70.2,
+       "f60": 25.7,
+       "open60": 4.1,
+       "pass_med": 16.0,
+       "pass_date": "2026-12-10"
+      }
+     },
+     "per_account": {
+      "Z50": {
+       "usd_month": 56,
+       "net_month": 36,
+       "first_pay_days": -8.0,
+       "no_pay_pts": -2.8,
+       "lost_pts": 0.7,
+       "with": {
+        "cash_m": 766,
+        "first_pay": "2027-01-21",
+        "first_pay_usd": 1600,
+        "p_no_pay_6m": 6.7,
+        "lost_6m": 7.8
+       },
+       "without": {
+        "cash_m": 710,
+        "first_pay": "2027-02-02",
+        "first_pay_usd": 1600,
+        "p_no_pay_6m": 9.5,
+        "lost_6m": 7.1,
+        "eval": {
+         "p10": 21.5,
+         "p20": 43.3,
+         "p60": 70.2,
+         "f60": 25.7,
+         "open60": 4.1,
+         "pass_med": 16.0,
+         "pass_date": "2026-12-10"
+        }
+       }
+      }
+     }
+    }
+   },
+   "info": {
+    "_n25-atlas-funded": {
+     "usd_month": 158,
+     "net_month": 109,
+     "first_pay_days": -9.0,
+     "no_pay_pts": -4.3,
+     "lost_pts": 1.3,
+     "with": {
+      "cash_m": 484,
+      "first_pay": "2027-01-13",
+      "first_pay_usd": 800,
+      "p_no_pay_6m": 12.6,
+      "lost_6m": 18.7
+     },
+     "without": {
+      "cash_m": 326,
+      "first_pay": "2027-01-26",
+      "first_pay_usd": 800,
+      "p_no_pay_6m": 16.9,
+      "lost_6m": 17.4,
+      "eval": {
+       "p10": 46.7,
+       "p20": 64.3,
+       "p60": 82.3,
+       "f60": 2.3,
+       "open60": 15.4,
+       "pass_med": 8.0,
+       "pass_date": "2026-11-30"
+      }
+     },
+     "per_account": {
+      "N25": {
+       "usd_month": 158,
+       "net_month": 109,
+       "first_pay_days": -9.0,
+       "no_pay_pts": -4.3,
+       "lost_pts": 1.3,
+       "with": {
+        "cash_m": 484,
+        "first_pay": "2027-01-13",
+        "first_pay_usd": 800,
+        "p_no_pay_6m": 12.6,
+        "lost_6m": 18.7
+       },
+       "without": {
+        "cash_m": 326,
+        "first_pay": "2027-01-26",
+        "first_pay_usd": 800,
+        "p_no_pay_6m": 16.9,
+        "lost_6m": 17.4,
+        "eval": {
+         "p10": 46.7,
+         "p20": 64.3,
+         "p60": 82.3,
+         "f60": 2.3,
+         "open60": 15.4,
+         "pass_med": 8.0,
+         "pass_date": "2026-11-30"
+        }
+       }
+      }
+     }
+    }
+   },
+   "plain": {
+    "LIT": {
+     "trades": 40,
+     "tpw": 2.56,
+     "win": 50.0,
+     "pf": 3.0,
+     "net": 6615,
+     "per_month": 1781,
+     "max_dd": -902,
+     "win_days_pw": 1.28
+    },
+    "ATLAS": {
+     "trades": 46,
+     "tpw": 2.95,
+     "win": 56.5,
+     "pf": 2.55,
+     "net": 5256,
+     "per_month": 1415,
+     "max_dd": -876,
+     "win_days_pw": 1.47
+    },
+    "LIT + ATLAS (one account)": {
+     "trades": 86,
+     "tpw": 5.51,
+     "win": 51.2,
+     "pf": 2.64,
+     "net": 11056,
+     "per_month": 2977,
+     "max_dd": -1202,
+     "win_days_pw": 2.12
+    }
+   },
+   "picks": {
+    "four": {
+     "months": [
+      {
+       "month": "2026-11",
+       "sessions": 8,
+       "cash_mean": -71,
+       "net_mean": -79,
+       "fees_mean": 99,
+       "cum_net_p10": -97,
+       "cum_net_p50": -97,
+       "cum_net_p90": -97
+      },
+      {
+       "month": "2026-12",
+       "sessions": 22,
+       "cash_mean": 1304,
+       "net_mean": 906,
+       "fees_mean": 23,
+       "cum_net_p10": -160,
+       "cum_net_p50": 463,
+       "cum_net_p90": 2335
+      },
+      {
+       "month": "2027-01",
+       "sessions": 20,
+       "cash_mean": 2930,
+       "net_mean": 2043,
+       "fees_mean": 25,
+       "cum_net_p10": 302,
+       "cum_net_p50": 2143,
+       "cum_net_p90": 6506
+      },
+      {
+       "month": "2027-02",
+       "sessions": 20,
+       "cash_mean": 3768,
+       "net_mean": 2630,
+       "fees_mean": 24,
+       "cum_net_p10": 888,
+       "cum_net_p50": 5045,
+       "cum_net_p90": 10706
+      },
+      {
+       "month": "2027-03",
+       "sessions": 23,
+       "cash_mean": 4435,
+       "net_mean": 3091,
+       "fees_mean": 46,
+       "cum_net_p10": 2370,
+       "cum_net_p50": 8573,
+       "cum_net_p90": 14669
+      },
+      {
+       "month": "2027-04",
+       "sessions": 22,
+       "cash_mean": 4146,
+       "net_mean": 2886,
+       "fees_mean": 53,
+       "cum_net_p10": 4398,
+       "cum_net_p50": 11636,
+       "cum_net_p90": 17971
+      },
+      {
+       "month": "2027-05",
+       "sessions": 11,
+       "cash_mean": 2075,
+       "net_mean": 1444,
+       "fees_mean": 28,
+       "cum_net_p10": 5510,
+       "cum_net_p50": 13185,
+       "cum_net_p90": 19654
+      }
+     ],
+     "cash_m": 3098,
+     "net_m": 2154,
+     "cash_6m": 18587,
+     "net_6m": 12921,
+     "net_6m_p10": 5510,
+     "net_6m_p50": 13185,
+     "net_6m_p90": 19654,
+     "spring_cash_m": 4290,
+     "spring_net_m": 2988,
+     "first_any": "2026-12-22",
+     "p_pay_by_dec31": 69.3,
+     "p_no_pay_by_jan31": 6.3,
+     "p_no_pay_6m": 0.1,
+     "p_net_negative_6m": 0.2,
+     "pocket_p90": 189,
+     "pocket_p95": 252,
+     "fees_6m": 298
+    },
+    "five": {
+     "months": [
+      {
+       "month": "2026-11",
+       "sessions": 8,
+       "cash_mean": -74,
+       "net_mean": -82,
+       "fees_mean": 102,
+       "cum_net_p10": -97,
+       "cum_net_p50": -97,
+       "cum_net_p90": -97
+      },
+      {
+       "month": "2026-12",
+       "sessions": 22,
+       "cash_mean": 1212,
+       "net_mean": 809,
+       "fees_mean": 130,
+       "cum_net_p10": -160,
+       "cum_net_p50": 298,
+       "cum_net_p90": 2195
+      },
+      {
+       "month": "2027-01",
+       "sessions": 20,
+       "cash_mean": 3412,
+       "net_mean": 2368,
+       "fees_mean": 70,
+       "cum_net_p10": 139,
+       "cum_net_p50": 2067,
+       "cum_net_p90": 7414
+      },
+      {
+       "month": "2027-02",
+       "sessions": 20,
+       "cash_mean": 5733,
+       "net_mean": 4001,
+       "fees_mean": 39,
+       "cum_net_p10": 761,
+       "cum_net_p50": 5664,
+       "cum_net_p90": 15391
+      },
+      {
+       "month": "2027-03",
+       "sessions": 23,
+       "cash_mean": 8009,
+       "net_mean": 5589,
+       "fees_mean": 57,
+       "cum_net_p10": 2557,
+       "cum_net_p50": 11687,
+       "cum_net_p90": 24031
+      },
+      {
+       "month": "2027-04",
+       "sessions": 22,
+       "cash_mean": 8078,
+       "net_mean": 5636,
+       "fees_mean": 61,
+       "cum_net_p10": 5405,
+       "cum_net_p50": 17966,
+       "cum_net_p90": 31575
+      },
+      {
+       "month": "2027-05",
+       "sessions": 11,
+       "cash_mean": 4166,
+       "net_mean": 2907,
+       "fees_mean": 32,
+       "cum_net_p10": 7123,
+       "cum_net_p50": 20885,
+       "cum_net_p90": 35130
+      }
+     ],
+     "cash_m": 5089,
+     "net_m": 3538,
+     "cash_6m": 30536,
+     "net_6m": 21228,
+     "net_6m_p10": 7123,
+     "net_6m_p50": 20885,
+     "net_6m_p90": 35130,
+     "spring_cash_m": 8044,
+     "spring_net_m": 5612,
+     "first_any": "2026-12-22",
+     "p_pay_by_dec31": 69.3,
+     "p_no_pay_by_jan31": 6.3,
+     "p_no_pay_6m": 0.1,
+     "p_net_negative_6m": 0.3,
+     "pocket_p90": 189,
+     "pocket_p95": 252,
+     "fees_6m": 491
+    },
+    "accounts": {
+     "Z50": {
+      "cash_m": 1161,
+      "net_m": 808,
+      "cash_6m": 6964,
+      "paid_6m": 7061,
+      "fees_6m": 97.03,
+      "first_pay": "2027-01-20",
+      "first_pay_k": 43.0,
+      "first_pay_p25": "2026-12-31",
+      "first_pay_p75": "2027-02-18",
+      "first_pay_usd": 1600,
+      "p_pay_by_dec31": 25.9,
+      "p_pay_by_jan31": 59.7,
+      "p_no_pay_6m": 4.2,
+      "funded_med": "2026-12-22",
+      "p_funded_6m": 99.1,
+      "lost_6m": 7.5,
+      "month_cash": [
+       3,
+       470,
+       1170,
+       1457,
+       1640,
+       1475,
+       750
+      ]
+     },
+     "N25": {
+      "cash_m": 326,
+      "net_m": 227,
+      "cash_6m": 1955,
+      "paid_6m": 1984,
+      "fees_6m": 28.79,
+      "first_pay": "2027-01-26",
+      "first_pay_k": 47.0,
+      "first_pay_p25": "2026-12-31",
+      "first_pay_p75": "2027-03-01",
+      "first_pay_usd": 800,
+      "p_pay_by_dec31": 21.2,
+      "p_pay_by_jan31": 45.6,
+      "p_no_pay_6m": 16.9,
+      "funded_med": "2026-12-07",
+      "p_funded_6m": 95.4,
+      "lost_6m": 17.4,
+      "month_cash": [
+       0,
+       181,
+       300,
+       365,
+       440,
+       458,
+       211
+      ]
+     },
+     "A25": {
+      "cash_m": 523,
+      "net_m": 364,
+      "cash_6m": 3139,
+      "paid_6m": 3176,
+      "fees_6m": 36.6,
+      "first_pay": "2026-12-29",
+      "first_pay_k": 28.0,
+      "first_pay_p25": "2026-12-14",
+      "first_pay_p75": "2027-01-22",
+      "first_pay_usd": 800,
+      "p_pay_by_dec31": 53.9,
+      "p_pay_by_jan31": 80.1,
+      "p_no_pay_6m": 1.4,
+      "funded_med": "2026-11-19",
+      "p_funded_6m": 100.0,
+      "lost_6m": 10.2,
+      "month_cash": [
+       24,
+       489,
+       568,
+       585,
+       656,
+       554,
+       262
+      ]
+     },
+     "R25": {
+      "cash_m": 1088,
+      "net_m": 755,
+      "cash_6m": 6528,
+      "paid_6m": 6663,
+      "fees_6m": 135.11,
+      "first_pay": "2027-01-27",
+      "first_pay_k": 48.0,
+      "first_pay_p25": "2027-01-11",
+      "first_pay_p75": "2027-02-23",
+      "first_pay_usd": 687,
+      "p_pay_by_dec31": 12.7,
+      "p_pay_by_jan31": 50.5,
+      "p_no_pay_6m": 7.9,
+      "funded_med": "2026-12-22",
+      "p_funded_6m": 99.4,
+      "lost_6m": 32.2,
+      "month_cash": [
+       -97,
+       163,
+       891,
+       1361,
+       1699,
+       1658,
+       853
+      ]
+     },
+     "R2": {
+      "cash_m": 1992,
+      "net_m": 1384,
+      "cash_6m": 11949,
+      "paid_6m": 12143,
+      "fees_6m": 193.38,
+      "first_pay": "2027-02-24",
+      "first_pay_k": 68.0,
+      "first_pay_p25": "2027-02-04",
+      "first_pay_p75": "2027-03-24",
+      "first_pay_usd": 1036,
+      "p_pay_by_dec31": 0.6,
+      "p_pay_by_jan31": 17.3,
+      "p_no_pay_6m": 10.0,
+      "funded_med": "2027-02-01",
+      "p_funded_6m": 99.3,
+      "lost_6m": 14.6,
+      "month_cash": [
+       -3,
+       -92,
+       483,
+       1965,
+       3574,
+       3932,
+       2091
+      ]
+     }
+    }
+   }
+  },
+  "H1": {
+   "accounts": {
+    "Z50": {
+     "cash_m": 741,
+     "net_m": 516,
+     "cash_6m": 4444,
+     "paid_6m": 4494,
+     "fees_6m": 50.4,
+     "first_pay": "2027-02-03",
+     "first_pay_k": 53.5,
+     "first_pay_p25": "2027-01-11",
+     "first_pay_p75": "2027-03-08",
+     "first_pay_usd": 1600,
+     "p_pay_by_dec31": 14.8,
+     "p_pay_by_jan31": 42.2,
+     "p_no_pay_6m": 7.8,
+     "funded_med": "2026-12-21",
+     "p_funded_6m": 99.4,
+     "lost_6m": 8.3,
+     "month_cash": [
+      -2,
+      234,
+      680,
+      800,
+      1086,
+      1150,
+      496
+     ],
+     "eval": {
+      "p10": 24.4,
+      "p20": 46.8,
+      "p60": 73.9,
+      "f60": 21.7,
+      "open60": 4.4,
+      "pass_med": 15.0,
+      "pass_date": "2026-12-09"
+     }
+    },
+    "N25": {
+     "cash_m": 369,
+     "net_m": 257,
+     "cash_6m": 2215,
+     "paid_6m": 2241,
+     "fees_6m": 26.27,
+     "first_pay": "2027-01-26",
+     "first_pay_k": 47.0,
+     "first_pay_p25": "2027-01-04",
+     "first_pay_p75": "2027-02-25",
+     "first_pay_usd": 800,
+     "p_pay_by_dec31": 22.3,
+     "p_pay_by_jan31": 49.7,
+     "p_no_pay_6m": 10.5,
+     "funded_med": "2026-12-08",
+     "p_funded_6m": 99.0,
+     "lost_6m": 14.4,
+     "month_cash": [
+      3,
+      185,
+      359,
+      416,
+      509,
+      513,
+      230
+     ],
+     "eval": {
+      "p10": 45.6,
+      "p20": 66.1,
+      "p60": 86.1,
+      "f60": 1.5,
+      "open60": 12.4,
+      "pass_med": 9.0,
+      "pass_date": "2026-12-01"
+     }
+    },
+    "A25": {
+     "cash_m": 700,
+     "net_m": 487,
+     "cash_6m": 4201,
+     "paid_6m": 4270,
+     "fees_6m": 69.36,
+     "first_pay": "2026-12-16",
+     "first_pay_k": 20.0,
+     "first_pay_p25": "2026-12-07",
+     "first_pay_p75": "2027-01-05",
+     "first_pay_usd": 800,
+     "p_pay_by_dec31": 72.8,
+     "p_pay_by_jan31": 93.1,
+     "p_no_pay_6m": 0.0,
+     "funded_med": "2026-11-19",
+     "p_funded_6m": 100.0,
+     "lost_6m": 12.5,
+     "month_cash": [
+      68,
+      732,
+      799,
+      758,
+      820,
+      667,
+      357
+     ]
+    },
+    "R25": {
+     "cash_m": 2298,
+     "net_m": 1602,
+     "cash_6m": 13786,
+     "paid_6m": 13905,
+     "fees_6m": 119.17,
+     "first_pay": "2027-01-28",
+     "first_pay_k": 49.5,
+     "first_pay_p25": "2027-01-13",
+     "first_pay_p75": "2027-02-19",
+     "first_pay_usd": 927,
+     "p_pay_by_dec31": 11.7,
+     "p_pay_by_jan31": 49.4,
+     "p_no_pay_6m": 4.2,
+     "funded_med": "2027-01-12",
+     "p_funded_6m": 99.4,
+     "lost_6m": 20.7,
+     "month_cash": [
+      -97,
+      223,
+      1560,
+      2724,
+      3766,
+      3803,
+      1808
+     ],
+     "eval": {
+      "p10": 0.7,
+      "p20": 12.8,
+      "p60": 88.5,
+      "f60": 0.2,
+      "open60": 11.3,
+      "pass_med": 33.0,
+      "pass_date": "2027-01-06"
+     }
+    },
+    "R2": {
+     "cash_m": 4617,
+     "net_m": 3223,
+     "cash_6m": 27704,
+     "paid_6m": 27893,
+     "fees_6m": 189.09,
+     "first_pay": "2027-02-10",
+     "first_pay_k": 58.0,
+     "first_pay_p25": "2027-01-25",
+     "first_pay_p75": "2027-03-05",
+     "first_pay_usd": 1554,
+     "p_pay_by_dec31": 3.4,
+     "p_pay_by_jan31": 32.9,
+     "p_no_pay_6m": 1.8,
+     "funded_med": "2027-01-25",
+     "p_funded_6m": 99.7,
+     "lost_6m": 12.6,
+     "month_cash": [
+      -10,
+      -9,
+      1887,
+      5053,
+      8116,
+      8544,
+      4123
+     ],
+     "buy_med": "2026-12-16",
+     "p_bought": 100.0
+    }
+   },
+   "fleet": {
+    "four": {
+     "months": [
+      {
+       "month": "2026-11",
+       "sessions": 8,
+       "cash_mean": -28,
+       "net_mean": -49,
+       "fees_mean": 99,
+       "cum_net_p10": -97,
+       "cum_net_p50": -97,
+       "cum_net_p90": -97
+      },
+      {
+       "month": "2026-12",
+       "sessions": 22,
+       "cash_mean": 1373,
+       "net_mean": 955,
+       "fees_mean": 20,
+       "cum_net_p10": -97,
+       "cum_net_p50": 463,
+       "cum_net_p90": 2143
+      },
+      {
+       "month": "2027-01",
+       "sessions": 20,
+       "cash_mean": 3399,
+       "net_mean": 2374,
+       "fees_mean": 16,
+       "cum_net_p10": 440,
+       "cum_net_p50": 2450,
+       "cum_net_p90": 7341
+      },
+      {
+       "month": "2027-02",
+       "sessions": 20,
+       "cash_mean": 4697,
+       "net_mean": 3282,
+       "fees_mean": 21,
+       "cum_net_p10": 1520,
+       "cum_net_p50": 6000,
+       "cum_net_p90": 12354
+      },
+      {
+       "month": "2027-03",
+       "sessions": 23,
+       "cash_mean": 6180,
+       "net_mean": 4314,
+       "fees_mean": 42,
+       "cum_net_p10": 3590,
+       "cum_net_p50": 10793,
+       "cum_net_p90": 18288
+      },
+      {
+       "month": "2027-04",
+       "sessions": 22,
+       "cash_mean": 6133,
+       "net_mean": 4281,
+       "fees_mean": 43,
+       "cum_net_p10": 6539,
+       "cum_net_p50": 15333,
+       "cum_net_p90": 23545
+      },
+      {
+       "month": "2027-05",
+       "sessions": 11,
+       "cash_mean": 2891,
+       "net_mean": 2016,
+       "fees_mean": 24,
+       "cum_net_p10": 7750,
+       "cum_net_p50": 17455,
+       "cum_net_p90": 26212
+      }
+     ],
+     "cash_m": 4108,
+     "net_m": 2862,
+     "cash_6m": 24646,
+     "net_6m": 17172,
+     "net_6m_p10": 7750,
+     "net_6m_p50": 17455,
+     "net_6m_p90": 26212,
+     "spring_cash_m": 6156,
+     "spring_net_m": 4298,
+     "first_any": "2026-12-15",
+     "p_pay_by_dec31": 80.2,
+     "p_no_pay_by_jan31": 2.3,
+     "p_no_pay_6m": 0.0,
+     "p_net_negative_6m": 0.0,
+     "pocket_p90": 189,
+     "pocket_p95": 189,
+     "fees_6m": 265
+    },
+    "five": {
+     "months": [
+      {
+       "month": "2026-11",
+       "sessions": 8,
+       "cash_mean": -38,
+       "net_mean": -60,
+       "fees_mean": 109,
+       "cum_net_p10": -97,
+       "cum_net_p50": -97,
+       "cum_net_p90": -97
+      },
+      {
+       "month": "2026-12",
+       "sessions": 22,
+       "cash_mean": 1364,
+       "net_mean": 913,
+       "fees_mean": 139,
+       "cum_net_p10": -97,
+       "cum_net_p50": 298,
+       "cum_net_p90": 2362
+      },
+      {
+       "month": "2027-01",
+       "sessions": 20,
+       "cash_mean": 5286,
+       "net_mean": 3685,
+       "fees_mean": 51,
+       "cum_net_p10": 282,
+       "cum_net_p50": 2702,
+       "cum_net_p90": 11423
+      },
+      {
+       "month": "2027-02",
+       "sessions": 20,
+       "cash_mean": 9750,
+       "net_mean": 6817,
+       "fees_mean": 29,
+       "cum_net_p10": 1692,
+       "cum_net_p50": 9608,
+       "cum_net_p90": 23216
+      },
+      {
+       "month": "2027-03",
+       "sessions": 23,
+       "cash_mean": 14296,
+       "net_mean": 9992,
+       "fees_mean": 49,
+       "cum_net_p10": 5804,
+       "cum_net_p50": 20917,
+       "cum_net_p90": 37586
+      },
+      {
+       "month": "2027-04",
+       "sessions": 22,
+       "cash_mean": 14678,
+       "net_mean": 10260,
+       "fees_mean": 48,
+       "cum_net_p10": 12366,
+       "cum_net_p50": 31538,
+       "cum_net_p90": 51004
+      },
+      {
+       "month": "2027-05",
+       "sessions": 11,
+       "cash_mean": 7014,
+       "net_mean": 4901,
+       "fees_mean": 29,
+       "cum_net_p10": 16092,
+       "cum_net_p50": 35952,
+       "cum_net_p90": 56713
+      }
+     ],
+     "cash_m": 8725,
+     "net_m": 6085,
+     "cash_6m": 52350,
+     "net_6m": 36508,
+     "net_6m_p10": 16092,
+     "net_6m_p50": 35952,
+     "net_6m_p90": 56713,
+     "spring_cash_m": 14487,
+     "spring_net_m": 10126,
+     "first_any": "2026-12-15",
+     "p_pay_by_dec31": 80.2,
+     "p_no_pay_by_jan31": 2.3,
+     "p_no_pay_6m": 0.0,
+     "p_net_negative_6m": 0.0,
+     "pocket_p90": 189,
+     "pocket_p95": 189,
+     "fees_6m": 454
+    }
+   },
+   "fill5": {
+    "p_all5_6m": 95.8,
+    "all5_med": "2027-02-04"
+   },
+   "decisions": {
+    "payout-ping-1000": {
+     "usd_month": -11,
+     "net_month": -8,
+     "first_pay_days": 2.0,
+     "no_pay_pts": 0.1,
+     "lost_pts": -1.5,
+     "with": {
+      "cash_m": 694,
+      "first_pay": "2026-12-18",
+      "first_pay_usd": 800,
+      "p_no_pay_6m": 0.1,
+      "lost_6m": 11.0
+     },
+     "without": {
+      "cash_m": 700,
+      "first_pay": "2026-12-16",
+      "first_pay_usd": 800,
+      "p_no_pay_6m": 0.0,
+      "lost_6m": 12.5
+     },
+     "per_account": {
+      "A25": {
+       "usd_month": -6,
+       "net_month": -4,
+       "first_pay_days": 2.0,
+       "no_pay_pts": 0.1,
+       "lost_pts": -1.5,
+       "with": {
+        "cash_m": 694,
+        "first_pay": "2026-12-18",
+        "first_pay_usd": 800,
+        "p_no_pay_6m": 0.1,
+        "lost_6m": 11.0
+       },
+       "without": {
+        "cash_m": 700,
+        "first_pay": "2026-12-16",
+        "first_pay_usd": 800,
+        "p_no_pay_6m": 0.0,
+        "lost_6m": 12.5
+       }
+      },
+      "N25": {
+       "usd_month": -5,
+       "net_month": -4,
+       "first_pay_days": 2.0,
+       "no_pay_pts": 0.7,
+       "lost_pts": -0.3,
+       "with": {
+        "cash_m": 364,
+        "first_pay": "2027-01-28",
+        "first_pay_usd": 800,
+        "p_no_pay_6m": 11.2,
+        "lost_6m": 14.1
+       },
+       "without": {
+        "cash_m": 369,
+        "first_pay": "2027-01-26",
+        "first_pay_usd": 800,
+        "p_no_pay_6m": 10.5,
+        "lost_6m": 14.4,
+        "eval": {
+         "p10": 45.6,
+         "p20": 66.1,
+         "p60": 86.1,
+         "f60": 1.5,
+         "open60": 12.4,
+         "pass_med": 9.0,
+         "pass_date": "2026-12-01"
+        }
+       }
+      }
+     }
+    },
+    "zlarior-funded25": {
+     "usd_month": 141,
+     "net_month": 97,
+     "first_pay_days": -4.0,
+     "no_pay_pts": 0.0,
+     "lost_pts": 6.1,
+     "with": {
+      "cash_m": 841,
+      "first_pay": "2026-12-10",
+      "first_pay_usd": 800,
+      "p_no_pay_6m": 0.0,
+      "lost_6m": 18.6
+     },
+     "without": {
+      "cash_m": 700,
+      "first_pay": "2026-12-16",
+      "first_pay_usd": 800,
+      "p_no_pay_6m": 0.0,
+      "lost_6m": 12.5
+     },
+     "per_account": {
+      "A25": {
+       "usd_month": 141,
+       "net_month": 97,
+       "first_pay_days": -4.0,
+       "no_pay_pts": 0.0,
+       "lost_pts": 6.1,
+       "with": {
+        "cash_m": 841,
+        "first_pay": "2026-12-10",
+        "first_pay_usd": 800,
+        "p_no_pay_6m": 0.0,
+        "lost_6m": 18.6
+       },
+       "without": {
+        "cash_m": 700,
+        "first_pay": "2026-12-16",
+        "first_pay_usd": 800,
+        "p_no_pay_6m": 0.0,
+        "lost_6m": 12.5
+       }
+      }
+     }
+    },
+    "rapid25-lit-bank": {
+     "usd_month": 10,
+     "net_month": 8,
+     "first_pay_days": -0.5,
+     "no_pay_pts": -0.2,
+     "lost_pts": -0.1,
+     "with": {
+      "cash_m": 2308,
+      "first_pay": "2027-01-28",
+      "first_pay_usd": 882,
+      "p_no_pay_6m": 4.0,
+      "lost_6m": 20.6,
+      "eval": {
+       "p10": 1.4,
+       "p20": 20.6,
+       "p60": 86.2,
+       "f60": 0.8,
+       "open60": 13.0,
+       "pass_med": 29.0
+      }
+     },
+     "without": {
+      "cash_m": 2298,
+      "first_pay": "2027-01-28",
+      "first_pay_usd": 927,
+      "p_no_pay_6m": 4.2,
+      "lost_6m": 20.7,
+      "eval": {
+       "p10": 0.7,
+       "p20": 12.8,
+       "p60": 88.5,
+       "f60": 0.2,
+       "open60": 11.3,
+       "pass_med": 33.0,
+       "pass_date": "2027-01-06"
+      }
+     },
+     "per_account": {
+      "R25": {
+       "usd_month": 10,
+       "net_month": 8,
+       "first_pay_days": -0.5,
+       "no_pay_pts": -0.2,
+       "lost_pts": -0.1,
+       "with": {
+        "cash_m": 2308,
+        "first_pay": "2027-01-28",
+        "first_pay_usd": 882,
+        "p_no_pay_6m": 4.0,
+        "lost_6m": 20.6,
+        "eval": {
+         "p10": 1.4,
+         "p20": 20.6,
+         "p60": 86.2,
+         "f60": 0.8,
+         "open60": 13.0,
+         "pass_med": 29.0
+        }
+       },
+       "without": {
+        "cash_m": 2298,
+        "first_pay": "2027-01-28",
+        "first_pay_usd": 927,
+        "p_no_pay_6m": 4.2,
+        "lost_6m": 20.7,
+        "eval": {
+         "p10": 0.7,
+         "p20": 12.8,
+         "p60": 88.5,
+         "f60": 0.2,
+         "open60": 11.3,
+         "pass_med": 33.0,
+         "pass_date": "2027-01-06"
+        }
+       }
+      }
+     }
+    },
+    "atlas-on-50k-funded": {
+     "usd_month": 422,
+     "net_month": 294,
+     "first_pay_days": -10.5,
+     "no_pay_pts": -5.7,
+     "lost_pts": -0.5,
+     "with": {
+      "cash_m": 1163,
+      "first_pay": "2027-01-20",
+      "first_pay_usd": 1600,
+      "p_no_pay_6m": 2.1,
+      "lost_6m": 7.8
+     },
+     "without": {
+      "cash_m": 741,
+      "first_pay": "2027-02-03",
+      "first_pay_usd": 1600,
+      "p_no_pay_6m": 7.8,
+      "lost_6m": 8.3,
+      "eval": {
+       "p10": 24.4,
+       "p20": 46.8,
+       "p60": 73.9,
+       "f60": 21.7,
+       "open60": 4.4,
+       "pass_med": 15.0,
+       "pass_date": "2026-12-09"
+      }
+     },
+     "per_account": {
+      "Z50": {
+       "usd_month": 422,
+       "net_month": 294,
+       "first_pay_days": -10.5,
+       "no_pay_pts": -5.7,
+       "lost_pts": -0.5,
+       "with": {
+        "cash_m": 1163,
+        "first_pay": "2027-01-20",
+        "first_pay_usd": 1600,
+        "p_no_pay_6m": 2.1,
+        "lost_6m": 7.8
+       },
+       "without": {
+        "cash_m": 741,
+        "first_pay": "2027-02-03",
+        "first_pay_usd": 1600,
+        "p_no_pay_6m": 7.8,
+        "lost_6m": 8.3,
+        "eval": {
+         "p10": 24.4,
+         "p20": 46.8,
+         "p60": 73.9,
+         "f60": 21.7,
+         "open60": 4.4,
+         "pass_med": 15.0,
+         "pass_date": "2026-12-09"
+        }
+       }
+      }
+     }
+    },
+    "atlas-on-rapid": {
+     "usd_month": 2084,
+     "net_month": 1457,
+     "first_pay_days": -43.5,
+     "no_pay_pts": -51.9,
+     "lost_pts": 15.0,
+     "with": {
+      "cash_m": 2298,
+      "first_pay": "2027-01-28",
+      "first_pay_usd": 927,
+      "p_no_pay_6m": 4.2,
+      "lost_6m": 20.7,
+      "eval": {
+       "p10": 0.7,
+       "p20": 12.8,
+       "p60": 88.5,
+       "f60": 0.2,
+       "open60": 11.3,
+       "pass_med": 33.0,
+       "pass_date": "2027-01-06"
+      }
+     },
+     "without": {
+      "cash_m": 214,
+      "first_pay": "2027-03-31",
+      "first_pay_usd": 717,
+      "p_no_pay_6m": 56.1,
+      "lost_6m": 5.7,
+      "eval": {
+       "p10": 0.3,
+       "p20": 2.2,
+       "p60": 25.4,
+       "f60": 0.0,
+       "open60": 74.6,
+       "pass_med": 42.0
+      }
+     },
+     "per_account": {
+      "R25": {
+       "usd_month": 2084,
+       "net_month": 1457,
+       "first_pay_days": -43.5,
+       "no_pay_pts": -51.9,
+       "lost_pts": 15.0,
+       "with": {
+        "cash_m": 2298,
+        "first_pay": "2027-01-28",
+        "first_pay_usd": 927,
+        "p_no_pay_6m": 4.2,
+        "lost_6m": 20.7,
+        "eval": {
+         "p10": 0.7,
+         "p20": 12.8,
+         "p60": 88.5,
+         "f60": 0.2,
+         "open60": 11.3,
+         "pass_med": 33.0,
+         "pass_date": "2027-01-06"
+        }
+       },
+       "without": {
+        "cash_m": 214,
+        "first_pay": "2027-03-31",
+        "first_pay_usd": 717,
+        "p_no_pay_6m": 56.1,
+        "lost_6m": 5.7,
+        "eval": {
+         "p10": 0.3,
+         "p20": 2.2,
+         "p60": 25.4,
+         "f60": 0.0,
+         "open60": 74.6,
+         "pass_med": 42.0
+        }
+       }
+      }
+     }
+    },
+    "keep-1000-rapid": {
+     "usd_month": 56,
+     "net_month": 40,
+     "first_pay_days": 2.5,
+     "no_pay_pts": 0.1,
+     "lost_pts": -9.8,
+     "with": {
+      "cash_m": 2354,
+      "first_pay": "2027-02-02",
+      "first_pay_usd": 934,
+      "p_no_pay_6m": 4.3,
+      "lost_6m": 10.9
+     },
+     "without": {
+      "cash_m": 2298,
+      "first_pay": "2027-01-28",
+      "first_pay_usd": 927,
+      "p_no_pay_6m": 4.2,
+      "lost_6m": 20.7,
+      "eval": {
+       "p10": 0.7,
+       "p20": 12.8,
+       "p60": 88.5,
+       "f60": 0.2,
+       "open60": 11.3,
+       "pass_med": 33.0,
+       "pass_date": "2027-01-06"
+      }
+     },
+     "per_account": {
+      "R25": {
+       "usd_month": 56,
+       "net_month": 40,
+       "first_pay_days": 2.5,
+       "no_pay_pts": 0.1,
+       "lost_pts": -9.8,
+       "with": {
+        "cash_m": 2354,
+        "first_pay": "2027-02-02",
+        "first_pay_usd": 934,
+        "p_no_pay_6m": 4.3,
+        "lost_6m": 10.9
+       },
+       "without": {
+        "cash_m": 2298,
+        "first_pay": "2027-01-28",
+        "first_pay_usd": 927,
+        "p_no_pay_6m": 4.2,
+        "lost_6m": 20.7,
+        "eval": {
+         "p10": 0.7,
+         "p20": 12.8,
+         "p60": 88.5,
+         "f60": 0.2,
+         "open60": 11.3,
+         "pass_med": 33.0,
+         "pass_date": "2027-01-06"
+        }
+       }
+      }
+     }
+    },
+    "ask-mffu-parallel": {
+     "usd_month": 53,
+     "net_month": 33,
+     "first_pay_days": -6.5,
+     "no_pay_pts": -2.7,
+     "lost_pts": 0.1,
+     "with": {
+      "cash_m": 794,
+      "first_pay": "2027-01-26",
+      "first_pay_usd": 1600,
+      "p_no_pay_6m": 5.1,
+      "lost_6m": 8.4
+     },
+     "without": {
+      "cash_m": 741,
+      "first_pay": "2027-02-03",
+      "first_pay_usd": 1600,
+      "p_no_pay_6m": 7.8,
+      "lost_6m": 8.3,
+      "eval": {
+       "p10": 24.4,
+       "p20": 46.8,
+       "p60": 73.9,
+       "f60": 21.7,
+       "open60": 4.4,
+       "pass_med": 15.0,
+       "pass_date": "2026-12-09"
+      }
+     },
+     "per_account": {
+      "Z50": {
+       "usd_month": 53,
+       "net_month": 33,
+       "first_pay_days": -6.5,
+       "no_pay_pts": -2.7,
+       "lost_pts": 0.1,
+       "with": {
+        "cash_m": 794,
+        "first_pay": "2027-01-26",
+        "first_pay_usd": 1600,
+        "p_no_pay_6m": 5.1,
+        "lost_6m": 8.4
+       },
+       "without": {
+        "cash_m": 741,
+        "first_pay": "2027-02-03",
+        "first_pay_usd": 1600,
+        "p_no_pay_6m": 7.8,
+        "lost_6m": 8.3,
+        "eval": {
+         "p10": 24.4,
+         "p20": 46.8,
+         "p60": 73.9,
+         "f60": 21.7,
+         "open60": 4.4,
+         "pass_med": 15.0,
+         "pass_date": "2026-12-09"
+        }
+       }
+      }
+     }
+    }
+   },
+   "info": {
+    "_n25-atlas-funded": {
+     "usd_month": 274,
+     "net_month": 190,
+     "first_pay_days": -15.0,
+     "no_pay_pts": -6.2,
+     "lost_pts": 0.4,
+     "with": {
+      "cash_m": 643,
+      "first_pay": "2027-01-05",
+      "first_pay_usd": 800,
+      "p_no_pay_6m": 4.3,
+      "lost_6m": 14.8
+     },
+     "without": {
+      "cash_m": 369,
+      "first_pay": "2027-01-26",
+      "first_pay_usd": 800,
+      "p_no_pay_6m": 10.5,
+      "lost_6m": 14.4,
+      "eval": {
+       "p10": 45.6,
+       "p20": 66.1,
+       "p60": 86.1,
+       "f60": 1.5,
+       "open60": 12.4,
+       "pass_med": 9.0,
+       "pass_date": "2026-12-01"
+      }
+     },
+     "per_account": {
+      "N25": {
+       "usd_month": 274,
+       "net_month": 190,
+       "first_pay_days": -15.0,
+       "no_pay_pts": -6.2,
+       "lost_pts": 0.4,
+       "with": {
+        "cash_m": 643,
+        "first_pay": "2027-01-05",
+        "first_pay_usd": 800,
+        "p_no_pay_6m": 4.3,
+        "lost_6m": 14.8
+       },
+       "without": {
+        "cash_m": 369,
+        "first_pay": "2027-01-26",
+        "first_pay_usd": 800,
+        "p_no_pay_6m": 10.5,
+        "lost_6m": 14.4,
+        "eval": {
+         "p10": 45.6,
+         "p20": 66.1,
+         "p60": 86.1,
+         "f60": 1.5,
+         "open60": 12.4,
+         "pass_med": 9.0,
+         "pass_date": "2026-12-01"
+        }
+       }
+      }
+     }
+    }
+   },
+   "plain": {
+    "LIT": {
+     "trades": 80,
+     "tpw": 3.12,
+     "win": 58.8,
+     "pf": 3.71,
+     "net": 14406,
+     "per_month": 2363,
+     "max_dd": -1353,
+     "win_days_pw": 1.84
+    },
+    "ATLAS": {
+     "trades": 104,
+     "tpw": 4.06,
+     "win": 52.9,
+     "pf": 2.92,
+     "net": 18362,
+     "per_month": 3012,
+     "max_dd": -1062,
+     "win_days_pw": 1.91
+    },
+    "LIT + ATLAS (one account)": {
+     "trades": 176,
+     "tpw": 6.88,
+     "win": 55.7,
+     "pf": 3.07,
+     "net": 26816,
+     "per_month": 4399,
+     "max_dd": -1108,
+     "win_days_pw": 2.5
+    }
+   },
+   "picks": {
+    "four": {
+     "months": [
+      {
+       "month": "2026-11",
+       "sessions": 8,
+       "cash_mean": -28,
+       "net_mean": -49,
+       "fees_mean": 99,
+       "cum_net_p10": -97,
+       "cum_net_p50": -97,
+       "cum_net_p90": -97
+      },
+      {
+       "month": "2026-12",
+       "sessions": 22,
+       "cash_mean": 1781,
+       "net_mean": 1240,
+       "fees_mean": 22,
+       "cum_net_p10": -97,
+       "cum_net_p50": 846,
+       "cum_net_p90": 3148
+      },
+      {
+       "month": "2027-01",
+       "sessions": 20,
+       "cash_mean": 4028,
+       "net_mean": 2815,
+       "fees_mean": 18,
+       "cum_net_p10": 421,
+       "cum_net_p50": 3010,
+       "cum_net_p90": 8999
+      },
+      {
+       "month": "2027-02",
+       "sessions": 20,
+       "cash_mean": 5164,
+       "net_mean": 3608,
+       "fees_mean": 24,
+       "cum_net_p10": 1535,
+       "cum_net_p50": 7115,
+       "cum_net_p90": 14380
+      },
+      {
+       "month": "2027-03",
+       "sessions": 23,
+       "cash_mean": 6684,
+       "net_mean": 4663,
+       "fees_mean": 53,
+       "cum_net_p10": 3774,
+       "cum_net_p50": 12323,
+       "cum_net_p90": 20755
+      },
+      {
+       "month": "2027-04",
+       "sessions": 22,
+       "cash_mean": 6468,
+       "net_mean": 4511,
+       "fees_mean": 58,
+       "cum_net_p10": 7358,
+       "cum_net_p50": 17332,
+       "cum_net_p90": 25413
+      },
+      {
+       "month": "2027-05",
+       "sessions": 11,
+       "cash_mean": 3144,
+       "net_mean": 2192,
+       "fees_mean": 31,
+       "cum_net_p10": 8639,
+       "cum_net_p50": 19470,
+       "cum_net_p90": 28217
+      }
+     ],
+     "cash_m": 4540,
+     "net_m": 3163,
+     "cash_6m": 27243,
+     "net_6m": 18979,
+     "net_6m_p10": 8639,
+     "net_6m_p50": 19470,
+     "net_6m_p90": 28217,
+     "spring_cash_m": 6576,
+     "spring_net_m": 4587,
+     "first_any": "2026-12-15",
+     "p_pay_by_dec31": 80.6,
+     "p_no_pay_by_jan31": 2.5,
+     "p_no_pay_6m": 0.0,
+     "p_net_negative_6m": 0.0,
+     "pocket_p90": 189,
+     "pocket_p95": 189,
+     "fees_6m": 304
+    },
+    "five": {
+     "months": [
+      {
+       "month": "2026-11",
+       "sessions": 8,
+       "cash_mean": -38,
+       "net_mean": -60,
+       "fees_mean": 109,
+       "cum_net_p10": -97,
+       "cum_net_p50": -97,
+       "cum_net_p90": -97
+      },
+      {
+       "month": "2026-12",
+       "sessions": 22,
+       "cash_mean": 1771,
+       "net_mean": 1197,
+       "fees_mean": 141,
+       "cum_net_p10": -97,
+       "cum_net_p50": 681,
+       "cum_net_p90": 3048
+      },
+      {
+       "month": "2027-01",
+       "sessions": 20,
+       "cash_mean": 5920,
+       "net_mean": 4128,
+       "fees_mean": 51,
+       "cum_net_p10": 259,
+       "cum_net_p50": 3516,
+       "cum_net_p90": 13089
+      },
+      {
+       "month": "2027-02",
+       "sessions": 20,
+       "cash_mean": 10264,
+       "net_mean": 7175,
+       "fees_mean": 31,
+       "cum_net_p10": 1813,
+       "cum_net_p50": 10608,
+       "cum_net_p90": 25584
+      },
+      {
+       "month": "2027-03",
+       "sessions": 23,
+       "cash_mean": 14776,
+       "net_mean": 10325,
+       "fees_mean": 60,
+       "cum_net_p10": 5787,
+       "cum_net_p50": 22538,
+       "cum_net_p90": 39727
+      },
+      {
+       "month": "2027-04",
+       "sessions": 22,
+       "cash_mean": 15015,
+       "net_mean": 10491,
+       "fees_mean": 64,
+       "cum_net_p10": 13850,
+       "cum_net_p50": 33227,
+       "cum_net_p90": 52460
+      },
+      {
+       "month": "2027-05",
+       "sessions": 11,
+       "cash_mean": 7274,
+       "net_mean": 5081,
+       "fees_mean": 36,
+       "cum_net_p10": 17184,
+       "cum_net_p50": 38195,
+       "cum_net_p90": 58729
+      }
+     ],
+     "cash_m": 9164,
+     "net_m": 6390,
+     "cash_6m": 54981,
+     "net_6m": 38339,
+     "net_6m_p10": 17184,
+     "net_6m_p50": 38195,
+     "net_6m_p90": 58729,
+     "spring_cash_m": 14896,
+     "spring_net_m": 10408,
+     "first_any": "2026-12-15",
+     "p_pay_by_dec31": 80.6,
+     "p_no_pay_by_jan31": 2.5,
+     "p_no_pay_6m": 0.0,
+     "p_net_negative_6m": 0.0,
+     "pocket_p90": 189,
+     "pocket_p95": 189,
+     "fees_6m": 493
+    },
+    "accounts": {
+     "Z50": {
+      "cash_m": 1163,
+      "net_m": 810,
+      "cash_6m": 6979,
+      "paid_6m": 7066,
+      "fees_6m": 87.21,
+      "first_pay": "2027-01-20",
+      "first_pay_k": 43.0,
+      "first_pay_p25": "2026-12-30",
+      "first_pay_p75": "2027-02-17",
+      "first_pay_usd": 1600,
+      "p_pay_by_dec31": 27.3,
+      "p_pay_by_jan31": 59.7,
+      "p_no_pay_6m": 2.1,
+      "funded_med": "2026-12-21",
+      "p_funded_6m": 99.4,
+      "lost_6m": 7.8,
+      "month_cash": [
+       -2,
+       517,
+       1120,
+       1341,
+       1712,
+       1558,
+       733
+      ]
+     },
+     "N25": {
+      "cash_m": 369,
+      "net_m": 257,
+      "cash_6m": 2215,
+      "paid_6m": 2241,
+      "fees_6m": 26.27,
+      "first_pay": "2027-01-26",
+      "first_pay_k": 47.0,
+      "first_pay_p25": "2027-01-04",
+      "first_pay_p75": "2027-02-25",
+      "first_pay_usd": 800,
+      "p_pay_by_dec31": 22.3,
+      "p_pay_by_jan31": 49.7,
+      "p_no_pay_6m": 10.5,
+      "funded_med": "2026-12-08",
+      "p_funded_6m": 99.0,
+      "lost_6m": 14.4,
+      "month_cash": [
+       3,
+       185,
+       359,
+       416,
+       509,
+       513,
+       230
+      ]
+     },
+     "A25": {
+      "cash_m": 700,
+      "net_m": 487,
+      "cash_6m": 4201,
+      "paid_6m": 4270,
+      "fees_6m": 69.36,
+      "first_pay": "2026-12-16",
+      "first_pay_k": 20.0,
+      "first_pay_p25": "2026-12-07",
+      "first_pay_p75": "2027-01-05",
+      "first_pay_usd": 800,
+      "p_pay_by_dec31": 72.8,
+      "p_pay_by_jan31": 93.1,
+      "p_no_pay_6m": 0.0,
+      "funded_med": "2026-11-19",
+      "p_funded_6m": 100.0,
+      "lost_6m": 12.5,
+      "month_cash": [
+       68,
+       732,
+       799,
+       758,
+       820,
+       667,
+       357
+      ]
+     },
+     "R25": {
+      "cash_m": 2308,
+      "net_m": 1610,
+      "cash_6m": 13848,
+      "paid_6m": 13969,
+      "fees_6m": 121.21,
+      "first_pay": "2027-01-28",
+      "first_pay_k": 49.0,
+      "first_pay_p25": "2027-01-07",
+      "first_pay_p75": "2027-02-24",
+      "first_pay_usd": 882,
+      "p_pay_by_dec31": 17.9,
+      "p_pay_by_jan31": 51.2,
+      "p_no_pay_6m": 4.0,
+      "funded_med": "2027-01-07",
+      "p_funded_6m": 99.2,
+      "lost_6m": 20.6,
+      "month_cash": [
+       -97,
+       346,
+       1750,
+       2650,
+       3644,
+       3730,
+       1824
+      ]
+     },
+     "R2": {
+      "cash_m": 4623,
+      "net_m": 3227,
+      "cash_6m": 27738,
+      "paid_6m": 27927,
+      "fees_6m": 188.93,
+      "first_pay": "2027-02-10",
+      "first_pay_k": 58.0,
+      "first_pay_p25": "2027-01-25",
+      "first_pay_p75": "2027-03-04",
+      "first_pay_usd": 1552,
+      "p_pay_by_dec31": 3.4,
+      "p_pay_by_jan31": 33.2,
+      "p_no_pay_6m": 1.8,
+      "funded_med": "2027-01-25",
+      "p_funded_6m": 99.8,
+      "lost_6m": 12.6,
+      "month_cash": [
+       -10,
+       -10,
+       1891,
+       5100,
+       8091,
+       8546,
+       4130
+      ]
+     }
+    }
+   }
+  },
+  "REF": {
+   "accounts": {
+    "Z50": {
+     "cash_m": -10,
+     "net_m": -16,
+     "cash_6m": -59,
+     "paid_6m": 130,
+     "fees_6m": 189.38,
+     "first_pay": "2027-03-18",
+     "first_pay_k": 84.5,
+     "first_pay_p25": "2027-02-11",
+     "first_pay_p75": "2027-04-20",
+     "first_pay_usd": 1600,
+     "p_pay_by_dec31": 0.1,
+     "p_pay_by_jan31": 1.0,
+     "p_no_pay_6m": 92.4,
+     "funded_med": "2027-02-11",
+     "p_funded_6m": 58.2,
+     "lost_6m": 24.7,
+     "month_cash": [
+      -3,
+      -35,
+      -20,
+      -7,
+      0,
+      0,
+      6
+     ],
+     "eval": {
+      "p10": 2.5,
+      "p20": 5.8,
+      "p60": 12.2,
+      "f60": 75.7,
+      "open60": 12.1,
+      "pass_med": 22.0,
+      "pass_date": "2026-12-18"
+     }
+    },
+    "N25": {
+     "cash_m": -5,
+     "net_m": -8,
+     "cash_6m": -31,
+     "paid_6m": 54,
+     "fees_6m": 84.55,
+     "first_pay": "2027-03-01",
+     "first_pay_k": 71.0,
+     "first_pay_p25": "2027-01-22",
+     "first_pay_p75": "2027-04-15",
+     "first_pay_usd": 800,
+     "p_pay_by_dec31": 0.5,
+     "p_pay_by_jan31": 1.8,
+     "p_no_pay_6m": 93.7,
+     "funded_med": "2027-01-13",
+     "p_funded_6m": 50.6,
+     "lost_6m": 30.3,
+     "month_cash": [
+      0,
+      -1,
+      -4,
+      -5,
+      -14,
+      -4,
+      -1
+     ],
+     "eval": {
+      "p10": 11.5,
+      "p20": 18.1,
+      "p60": 28.1,
+      "f60": 30.0,
+      "open60": 41.9,
+      "pass_med": 13.0,
+      "pass_date": "2026-12-07"
+     }
+    },
+    "A25": {
+     "cash_m": 28,
+     "net_m": 2,
+     "cash_6m": 167,
+     "paid_6m": 525,
+     "fees_6m": 358.53,
+     "first_pay": "2027-01-21",
+     "first_pay_k": 44.0,
+     "first_pay_p25": "2026-12-16",
+     "first_pay_p75": "2027-03-18",
+     "first_pay_usd": 800,
+     "p_pay_by_dec31": 15.8,
+     "p_pay_by_jan31": 23.2,
+     "p_no_pay_6m": 57.5,
+     "funded_med": "2026-11-19",
+     "p_funded_6m": 100.0,
+     "lost_6m": 94.6,
+     "month_cash": [
+      16,
+      49,
+      21,
+      28,
+      11,
+      26,
+      16
+     ]
+    },
+    "R25": {
+     "cash_m": -15,
+     "net_m": -25,
+     "cash_6m": -89,
+     "paid_6m": 199,
+     "fees_6m": 287.91,
+     "first_pay": "2027-03-03",
+     "first_pay_k": 73.0,
+     "first_pay_p25": "2027-02-01",
+     "first_pay_p75": "2027-04-20",
+     "first_pay_usd": 914,
+     "p_pay_by_dec31": 0.5,
+     "p_pay_by_jan31": 1.9,
+     "p_no_pay_6m": 92.1,
+     "funded_med": "2027-02-22",
+     "p_funded_6m": 35.6,
+     "lost_6m": 27.5,
+     "month_cash": [
+      -97,
+      -14,
+      -4,
+      5,
+      3,
+      13,
+      7
+     ],
+     "eval": {
+      "p10": 0.0,
+      "p20": 3.2,
+      "p60": 14.5,
+      "f60": 57.9,
+      "open60": 27.6,
+      "pass_med": 30.0,
+      "pass_date": "2026-12-31"
+     }
+    },
+    "R2": {
+     "cash_m": -16,
+     "net_m": -21,
+     "cash_6m": -97,
+     "paid_6m": 90,
+     "fees_6m": 186.94,
+     "first_pay": "2027-03-17",
+     "first_pay_k": 83.0,
+     "first_pay_p25": "2027-02-15",
+     "first_pay_p75": "2027-04-16",
+     "first_pay_usd": 1283,
+     "p_pay_by_dec31": 0.1,
+     "p_pay_by_jan31": 0.3,
+     "p_no_pay_6m": 96.9,
+     "funded_med": "2027-03-29",
+     "p_funded_6m": 13.9,
+     "lost_6m": 7.6,
+     "month_cash": [
+      -5,
+      -23,
+      -18,
+      -5,
+      -24,
+      -20,
+      -2
+     ],
+     "buy_med": "2027-02-01",
+     "p_bought": 48.9
+    }
+   },
+   "fleet": {
+    "four": {
+     "months": [
+      {
+       "month": "2026-11",
+       "sessions": 8,
+       "cash_mean": -84,
+       "net_mean": -92,
+       "fees_mean": 109,
+       "cum_net_p10": -160,
+       "cum_net_p50": -97,
+       "cum_net_p90": -97
+      },
+      {
+       "month": "2026-12",
+       "sessions": 22,
+       "cash_mean": -1,
+       "net_mean": -39,
+       "fees_mean": 130,
+       "cum_net_p10": -412,
+       "cum_net_p50": -223,
+       "cum_net_p90": 371
+      },
+      {
+       "month": "2027-01",
+       "sessions": 20,
+       "cash_mean": -8,
+       "net_mean": -49,
+       "fees_mean": 146,
+       "cum_net_p10": -601,
+       "cum_net_p50": -320,
+       "cum_net_p90": 371
+      },
+      {
+       "month": "2027-02",
+       "sessions": 20,
+       "cash_mean": 20,
+       "net_mean": -30,
+       "fees_mean": 148,
+       "cum_net_p10": -790,
+       "cum_net_p50": -475,
+       "cum_net_p90": 681
+      },
+      {
+       "month": "2027-03",
+       "sessions": 23,
+       "cash_mean": -1,
+       "net_mean": -50,
+       "fees_mean": 166,
+       "cum_net_p10": -1008,
+       "cum_net_p50": -601,
+       "cum_net_p90": 681
+      },
+      {
+       "month": "2027-04",
+       "sessions": 22,
+       "cash_mean": 34,
+       "net_mean": -20,
+       "fees_mean": 147,
+       "cum_net_p10": -1163,
+       "cum_net_p50": -664,
+       "cum_net_p90": 855
+      },
+      {
+       "month": "2027-05",
+       "sessions": 11,
+       "cash_mean": 27,
+       "net_mean": -3,
+       "fees_mean": 74,
+       "cum_net_p10": -1237,
+       "cum_net_p50": -664,
+       "cum_net_p90": 1025
+      }
+     ],
+     "cash_m": -2,
+     "net_m": -47,
+     "cash_6m": -12,
+     "net_6m": -284,
+     "net_6m_p10": -1237,
+     "net_6m_p50": -664,
+     "net_6m_p90": 1025,
+     "spring_cash_m": 16,
+     "spring_net_m": -35,
+     "first_any": "2027-01-29",
+     "p_pay_by_dec31": 16.3,
+     "p_no_pay_by_jan31": 75.3,
+     "p_no_pay_6m": 51.1,
+     "p_net_negative_6m": 72.7,
+     "pocket_p90": 1260,
+     "pocket_p95": 1364,
+     "fees_6m": 920
+    },
+    "five": {
+     "months": [
+      {
+       "month": "2026-11",
+       "sessions": 8,
+       "cash_mean": -89,
+       "net_mean": -96,
+       "fees_mean": 114,
+       "cum_net_p10": -160,
+       "cum_net_p50": -97,
+       "cum_net_p90": -97
+      },
+      {
+       "month": "2026-12",
+       "sessions": 22,
+       "cash_mean": -24,
+       "net_mean": -63,
+       "fees_mean": 154,
+       "cum_net_p10": -412,
+       "cum_net_p50": -223,
+       "cum_net_p90": 206
+      },
+      {
+       "month": "2027-01",
+       "sessions": 20,
+       "cash_mean": -26,
+       "net_mean": -70,
+       "fees_mean": 172,
+       "cum_net_p10": -601,
+       "cum_net_p50": -349,
+       "cum_net_p90": 206
+      },
+      {
+       "month": "2027-02",
+       "sessions": 20,
+       "cash_mean": 15,
+       "net_mean": -43,
+       "fees_mean": 178,
+       "cum_net_p10": -790,
+       "cum_net_p50": -475,
+       "cum_net_p90": 407
+      },
+      {
+       "month": "2027-03",
+       "sessions": 23,
+       "cash_mean": -24,
+       "net_mean": -79,
+       "fees_mean": 205,
+       "cum_net_p10": -1008,
+       "cum_net_p50": -635,
+       "cum_net_p90": 459
+      },
+      {
+       "month": "2027-04",
+       "sessions": 22,
+       "cash_mean": 14,
+       "net_mean": -47,
+       "fees_mean": 190,
+       "cum_net_p10": -1174,
+       "cum_net_p50": -785,
+       "cum_net_p90": 560
+      },
+      {
+       "month": "2027-05",
+       "sessions": 11,
+       "cash_mean": 25,
+       "net_mean": -11,
+       "fees_mean": 94,
+       "cum_net_p10": -1276,
+       "cum_net_p50": -853,
+       "cum_net_p90": 743
+      }
+     ],
+     "cash_m": -18,
+     "net_m": -68,
+     "cash_6m": -109,
+     "net_6m": -408,
+     "net_6m_p10": -1276,
+     "net_6m_p50": -853,
+     "net_6m_p90": 743,
+     "spring_cash_m": -5,
+     "spring_net_m": -63,
+     "first_any": "2027-01-29",
+     "p_pay_by_dec31": 16.3,
+     "p_no_pay_by_jan31": 75.3,
+     "p_no_pay_6m": 51.1,
+     "p_net_negative_6m": 80.2,
+     "pocket_p90": 1294,
+     "pocket_p95": 1391,
+     "fees_6m": 1107
+    }
+   },
+   "fill5": {
+    "p_all5_6m": 3.6,
+    "all5_med": "2027-03-30"
+   },
+   "decisions": {
+    "payout-ping-1000": {
+     "usd_month": -6,
+     "net_month": -4,
+     "first_pay_days": 1.0,
+     "no_pay_pts": 3.7,
+     "lost_pts": -0.5,
+     "with": {
+      "cash_m": 24,
+      "first_pay": "2027-01-22",
+      "first_pay_usd": 800,
+      "p_no_pay_6m": 61.2,
+      "lost_6m": 94.1
+     },
+     "without": {
+      "cash_m": 28,
+      "first_pay": "2027-01-21",
+      "first_pay_usd": 800,
+      "p_no_pay_6m": 57.5,
+      "lost_6m": 94.6
+     },
+     "per_account": {
+      "A25": {
+       "usd_month": -4,
+       "net_month": -3,
+       "first_pay_days": 1.0,
+       "no_pay_pts": 3.7,
+       "lost_pts": -0.5,
+       "with": {
+        "cash_m": 24,
+        "first_pay": "2027-01-22",
+        "first_pay_usd": 800,
+        "p_no_pay_6m": 61.2,
+        "lost_6m": 94.1
+       },
+       "without": {
+        "cash_m": 28,
+        "first_pay": "2027-01-21",
+        "first_pay_usd": 800,
+        "p_no_pay_6m": 57.5,
+        "lost_6m": 94.6
+       }
+      },
+      "N25": {
+       "usd_month": -2,
+       "net_month": -1,
+       "first_pay_days": -2.0,
+       "no_pay_pts": 1.3,
+       "lost_pts": -0.5,
+       "with": {
+        "cash_m": -7,
+        "first_pay": "2027-02-25",
+        "first_pay_usd": 800,
+        "p_no_pay_6m": 95.0,
+        "lost_6m": 29.8
+       },
+       "without": {
+        "cash_m": -5,
+        "first_pay": "2027-03-01",
+        "first_pay_usd": 800,
+        "p_no_pay_6m": 93.7,
+        "lost_6m": 30.3,
+        "eval": {
+         "p10": 11.5,
+         "p20": 18.1,
+         "p60": 28.1,
+         "f60": 30.0,
+         "open60": 41.9,
+         "pass_med": 13.0,
+         "pass_date": "2026-12-07"
+        }
+       }
+      }
+     }
+    },
+    "zlarior-funded25": {
+     "usd_month": -26,
+     "net_month": -18,
+     "first_pay_days": 8.0,
+     "no_pay_pts": 10.0,
+     "lost_pts": -1.6,
+     "with": {
+      "cash_m": 2,
+      "first_pay": "2027-02-02",
+      "first_pay_usd": 800,
+      "p_no_pay_6m": 67.5,
+      "lost_6m": 93.0
+     },
+     "without": {
+      "cash_m": 28,
+      "first_pay": "2027-01-21",
+      "first_pay_usd": 800,
+      "p_no_pay_6m": 57.5,
+      "lost_6m": 94.6
+     },
+     "per_account": {
+      "A25": {
+       "usd_month": -26,
+       "net_month": -18,
+       "first_pay_days": 8.0,
+       "no_pay_pts": 10.0,
+       "lost_pts": -1.6,
+       "with": {
+        "cash_m": 2,
+        "first_pay": "2027-02-02",
+        "first_pay_usd": 800,
+        "p_no_pay_6m": 67.5,
+        "lost_6m": 93.0
+       },
+       "without": {
+        "cash_m": 28,
+        "first_pay": "2027-01-21",
+        "first_pay_usd": 800,
+        "p_no_pay_6m": 57.5,
+        "lost_6m": 94.6
+       }
+      }
+     }
+    },
+    "rapid25-lit-bank": {
+     "usd_month": 7,
+     "net_month": 5,
+     "first_pay_days": -2.0,
+     "no_pay_pts": -2.1,
+     "lost_pts": 5.4,
+     "with": {
+      "cash_m": -8,
+      "first_pay": "2027-03-01",
+      "first_pay_usd": 819,
+      "p_no_pay_6m": 90.0,
+      "lost_6m": 32.9,
+      "eval": {
+       "p10": 0.1,
+       "p20": 4.5,
+       "p60": 17.5,
+       "f60": 61.6,
+       "open60": 20.9,
+       "pass_med": 29.0
+      }
+     },
+     "without": {
+      "cash_m": -15,
+      "first_pay": "2027-03-03",
+      "first_pay_usd": 914,
+      "p_no_pay_6m": 92.1,
+      "lost_6m": 27.5,
+      "eval": {
+       "p10": 0.0,
+       "p20": 3.2,
+       "p60": 14.5,
+       "f60": 57.9,
+       "open60": 27.6,
+       "pass_med": 30.0,
+       "pass_date": "2026-12-31"
+      }
+     },
+     "per_account": {
+      "R25": {
+       "usd_month": 7,
+       "net_month": 5,
+       "first_pay_days": -2.0,
+       "no_pay_pts": -2.1,
+       "lost_pts": 5.4,
+       "with": {
+        "cash_m": -8,
+        "first_pay": "2027-03-01",
+        "first_pay_usd": 819,
+        "p_no_pay_6m": 90.0,
+        "lost_6m": 32.9,
+        "eval": {
+         "p10": 0.1,
+         "p20": 4.5,
+         "p60": 17.5,
+         "f60": 61.6,
+         "open60": 20.9,
+         "pass_med": 29.0
+        }
+       },
+       "without": {
+        "cash_m": -15,
+        "first_pay": "2027-03-03",
+        "first_pay_usd": 914,
+        "p_no_pay_6m": 92.1,
+        "lost_6m": 27.5,
+        "eval": {
+         "p10": 0.0,
+         "p20": 3.2,
+         "p60": 14.5,
+         "f60": 57.9,
+         "open60": 27.6,
+         "pass_med": 30.0,
+         "pass_date": "2026-12-31"
+        }
+       }
+      }
+     }
+    },
+    "atlas-on-50k-funded": {
+     "usd_month": 2,
+     "net_month": -1,
+     "first_pay_days": -5.5,
+     "no_pay_pts": -1.7,
+     "lost_pts": 15.9,
+     "with": {
+      "cash_m": -8,
+      "first_pay": "2027-03-11",
+      "first_pay_usd": 1600,
+      "p_no_pay_6m": 90.7,
+      "lost_6m": 40.6
+     },
+     "without": {
+      "cash_m": -10,
+      "first_pay": "2027-03-18",
+      "first_pay_usd": 1600,
+      "p_no_pay_6m": 92.4,
+      "lost_6m": 24.7,
+      "eval": {
+       "p10": 2.5,
+       "p20": 5.8,
+       "p60": 12.2,
+       "f60": 75.7,
+       "open60": 12.1,
+       "pass_med": 22.0,
+       "pass_date": "2026-12-18"
+      }
+     },
+     "per_account": {
+      "Z50": {
+       "usd_month": 2,
+       "net_month": -1,
+       "first_pay_days": -5.5,
+       "no_pay_pts": -1.7,
+       "lost_pts": 15.9,
+       "with": {
+        "cash_m": -8,
+        "first_pay": "2027-03-11",
+        "first_pay_usd": 1600,
+        "p_no_pay_6m": 90.7,
+        "lost_6m": 40.6
+       },
+       "without": {
+        "cash_m": -10,
+        "first_pay": "2027-03-18",
+        "first_pay_usd": 1600,
+        "p_no_pay_6m": 92.4,
+        "lost_6m": 24.7,
+        "eval": {
+         "p10": 2.5,
+         "p20": 5.8,
+         "p60": 12.2,
+         "f60": 75.7,
+         "open60": 12.1,
+         "pass_med": 22.0,
+         "pass_date": "2026-12-18"
+        }
+       }
+      }
+     }
+    },
+    "atlas-on-rapid": {
+     "usd_month": 7,
+     "net_month": -3,
+     "first_pay_days": -38.0,
+     "no_pay_pts": -7.3,
+     "lost_pts": 24.3,
+     "with": {
+      "cash_m": -15,
+      "first_pay": "2027-03-03",
+      "first_pay_usd": 914,
+      "p_no_pay_6m": 92.1,
+      "lost_6m": 27.5,
+      "eval": {
+       "p10": 0.0,
+       "p20": 3.2,
+       "p60": 14.5,
+       "f60": 57.9,
+       "open60": 27.6,
+       "pass_med": 30.0,
+       "pass_date": "2026-12-31"
+      }
+     },
+     "without": {
+      "cash_m": -22,
+      "first_pay": "2027-04-26",
+      "first_pay_usd": 723,
+      "p_no_pay_6m": 99.4,
+      "lost_6m": 3.2,
+      "eval": {
+       "p10": 0.0,
+       "p20": 0.1,
+       "p60": 2.2,
+       "f60": 3.1,
+       "open60": 94.7,
+       "pass_med": 40.5
+      }
+     },
+     "per_account": {
+      "R25": {
+       "usd_month": 7,
+       "net_month": -3,
+       "first_pay_days": -38.0,
+       "no_pay_pts": -7.3,
+       "lost_pts": 24.3,
+       "with": {
+        "cash_m": -15,
+        "first_pay": "2027-03-03",
+        "first_pay_usd": 914,
+        "p_no_pay_6m": 92.1,
+        "lost_6m": 27.5,
+        "eval": {
+         "p10": 0.0,
+         "p20": 3.2,
+         "p60": 14.5,
+         "f60": 57.9,
+         "open60": 27.6,
+         "pass_med": 30.0,
+         "pass_date": "2026-12-31"
+        }
+       },
+       "without": {
+        "cash_m": -22,
+        "first_pay": "2027-04-26",
+        "first_pay_usd": 723,
+        "p_no_pay_6m": 99.4,
+        "lost_6m": 3.2,
+        "eval": {
+         "p10": 0.0,
+         "p20": 0.1,
+         "p60": 2.2,
+         "f60": 3.1,
+         "open60": 94.7,
+         "pass_med": 40.5
+        }
+       }
+      }
+     }
+    },
+    "keep-1000-rapid": {
+     "usd_month": -3,
+     "net_month": -2,
+     "first_pay_days": 3.5,
+     "no_pay_pts": 0.7,
+     "lost_pts": -0.9,
+     "with": {
+      "cash_m": -18,
+      "first_pay": "2027-03-08",
+      "first_pay_usd": 872,
+      "p_no_pay_6m": 92.8,
+      "lost_6m": 26.6
+     },
+     "without": {
+      "cash_m": -15,
+      "first_pay": "2027-03-03",
+      "first_pay_usd": 914,
+      "p_no_pay_6m": 92.1,
+      "lost_6m": 27.5,
+      "eval": {
+       "p10": 0.0,
+       "p20": 3.2,
+       "p60": 14.5,
+       "f60": 57.9,
+       "open60": 27.6,
+       "pass_med": 30.0,
+       "pass_date": "2026-12-31"
+      }
+     },
+     "per_account": {
+      "R25": {
+       "usd_month": -3,
+       "net_month": -2,
+       "first_pay_days": 3.5,
+       "no_pay_pts": 0.7,
+       "lost_pts": -0.9,
+       "with": {
+        "cash_m": -18,
+        "first_pay": "2027-03-08",
+        "first_pay_usd": 872,
+        "p_no_pay_6m": 92.8,
+        "lost_6m": 26.6
+       },
+       "without": {
+        "cash_m": -15,
+        "first_pay": "2027-03-03",
+        "first_pay_usd": 914,
+        "p_no_pay_6m": 92.1,
+        "lost_6m": 27.5,
+        "eval": {
+         "p10": 0.0,
+         "p20": 3.2,
+         "p60": 14.5,
+         "f60": 57.9,
+         "open60": 27.6,
+         "pass_med": 30.0,
+         "pass_date": "2026-12-31"
+        }
+       }
+      }
+     }
+    },
+    "ask-mffu-parallel": {
+     "usd_month": -6,
+     "net_month": -8,
+     "first_pay_days": -7.5,
+     "no_pay_pts": -1.9,
+     "lost_pts": 7.7,
+     "with": {
+      "cash_m": -16,
+      "first_pay": "2027-03-09",
+      "first_pay_usd": 1600,
+      "p_no_pay_6m": 90.5,
+      "lost_6m": 32.4
+     },
+     "without": {
+      "cash_m": -10,
+      "first_pay": "2027-03-18",
+      "first_pay_usd": 1600,
+      "p_no_pay_6m": 92.4,
+      "lost_6m": 24.7,
+      "eval": {
+       "p10": 2.5,
+       "p20": 5.8,
+       "p60": 12.2,
+       "f60": 75.7,
+       "open60": 12.1,
+       "pass_med": 22.0,
+       "pass_date": "2026-12-18"
+      }
+     },
+     "per_account": {
+      "Z50": {
+       "usd_month": -6,
+       "net_month": -8,
+       "first_pay_days": -7.5,
+       "no_pay_pts": -1.9,
+       "lost_pts": 7.7,
+       "with": {
+        "cash_m": -16,
+        "first_pay": "2027-03-09",
+        "first_pay_usd": 1600,
+        "p_no_pay_6m": 90.5,
+        "lost_6m": 32.4
+       },
+       "without": {
+        "cash_m": -10,
+        "first_pay": "2027-03-18",
+        "first_pay_usd": 1600,
+        "p_no_pay_6m": 92.4,
+        "lost_6m": 24.7,
+        "eval": {
+         "p10": 2.5,
+         "p20": 5.8,
+         "p60": 12.2,
+         "f60": 75.7,
+         "open60": 12.1,
+         "pass_med": 22.0,
+         "pass_date": "2026-12-18"
+        }
+       }
+      }
+     }
+    }
+   },
+   "info": {
+    "_n25-atlas-funded": {
+     "usd_month": 4,
+     "net_month": 2,
+     "first_pay_days": -18.0,
+     "no_pay_pts": -2.8,
+     "lost_pts": 9.5,
+     "with": {
+      "cash_m": -1,
+      "first_pay": "2027-02-03",
+      "first_pay_usd": 800,
+      "p_no_pay_6m": 90.9,
+      "lost_6m": 39.8
+     },
+     "without": {
+      "cash_m": -5,
+      "first_pay": "2027-03-01",
+      "first_pay_usd": 800,
+      "p_no_pay_6m": 93.7,
+      "lost_6m": 30.3,
+      "eval": {
+       "p10": 11.5,
+       "p20": 18.1,
+       "p60": 28.1,
+       "f60": 30.0,
+       "open60": 41.9,
+       "pass_med": 13.0,
+       "pass_date": "2026-12-07"
+      }
+     },
+     "per_account": {
+      "N25": {
+       "usd_month": 4,
+       "net_month": 2,
+       "first_pay_days": -18.0,
+       "no_pay_pts": -2.8,
+       "lost_pts": 9.5,
+       "with": {
+        "cash_m": -1,
+        "first_pay": "2027-02-03",
+        "first_pay_usd": 800,
+        "p_no_pay_6m": 90.9,
+        "lost_6m": 39.8
+       },
+       "without": {
+        "cash_m": -5,
+        "first_pay": "2027-03-01",
+        "first_pay_usd": 800,
+        "p_no_pay_6m": 93.7,
+        "lost_6m": 30.3,
+        "eval": {
+         "p10": 11.5,
+         "p20": 18.1,
+         "p60": 28.1,
+         "f60": 30.0,
+         "open60": 41.9,
+         "pass_med": 13.0,
+         "pass_date": "2026-12-07"
+        }
+       }
+      }
+     }
+    }
+   },
+   "plain": {
+    "LIT": {
+     "trades": 511,
+     "tpw": 2.37,
+     "win": 53.6,
+     "pf": 1.02,
+     "net": 908,
+     "per_month": 18,
+     "max_dd": -9113,
+     "win_days_pw": 1.27
+    },
+    "ATLAS": {
+     "trades": 994,
+     "tpw": 4.61,
+     "win": 37.3,
+     "pf": 1.08,
+     "net": 10393,
+     "per_month": 203,
+     "max_dd": -11403,
+     "win_days_pw": 1.38
+    },
+    "LIT + ATLAS (one account)": {
+     "trades": 1485,
+     "tpw": 6.89,
+     "win": 44.4,
+     "pf": 1.02,
+     "net": 4028,
+     "per_month": 79,
+     "max_dd": -18101,
+     "win_days_pw": 1.75
+    }
+   },
+   "picks": {
+    "four": {
+     "months": [
+      {
+       "month": "2026-11",
+       "sessions": 8,
+       "cash_mean": -84,
+       "net_mean": -92,
+       "fees_mean": 109,
+       "cum_net_p10": -160,
+       "cum_net_p50": -97,
+       "cum_net_p90": -97
+      },
+      {
+       "month": "2026-12",
+       "sessions": 22,
+       "cash_mean": 12,
+       "net_mean": -32,
+       "fees_mean": 134,
+       "cum_net_p10": -412,
+       "cum_net_p50": -223,
+       "cum_net_p90": 371
+      },
+      {
+       "month": "2027-01",
+       "sessions": 20,
+       "cash_mean": 13,
+       "net_mean": -37,
+       "fees_mean": 154,
+       "cum_net_p10": -601,
+       "cum_net_p50": -349,
+       "cum_net_p90": 400
+      },
+      {
+       "month": "2027-02",
+       "sessions": 20,
+       "cash_mean": 18,
+       "net_mean": -34,
+       "fees_mean": 155,
+       "cum_net_p10": -819,
+       "cum_net_p50": -475,
+       "cum_net_p90": 718
+      },
+      {
+       "month": "2027-03",
+       "sessions": 23,
+       "cash_mean": 14,
+       "net_mean": -42,
+       "fees_mean": 172,
+       "cum_net_p10": -1009,
+       "cum_net_p50": -601,
+       "cum_net_p90": 938
+      },
+      {
+       "month": "2027-04",
+       "sessions": 22,
+       "cash_mean": 42,
+       "net_mean": -19,
+       "fees_mean": 161,
+       "cum_net_p10": -1197,
+       "cum_net_p50": -727,
+       "cum_net_p90": 1079
+      },
+      {
+       "month": "2027-05",
+       "sessions": 11,
+       "cash_mean": 28,
+       "net_mean": -3,
+       "fees_mean": 78,
+       "cum_net_p10": -1294,
+       "cum_net_p50": -761,
+       "cum_net_p90": 1328
+      }
+     ],
+     "cash_m": 7,
+     "net_m": -43,
+     "cash_6m": 43,
+     "net_6m": -258,
+     "net_6m_p10": -1294,
+     "net_6m_p50": -761,
+     "net_6m_p90": 1328,
+     "spring_cash_m": 28,
+     "spring_net_m": -30,
+     "first_any": "2027-01-27",
+     "p_pay_by_dec31": 16.9,
+     "p_no_pay_by_jan31": 74.8,
+     "p_no_pay_6m": 51.8,
+     "p_net_negative_6m": 73.2,
+     "pocket_p90": 1302,
+     "pocket_p95": 1391,
+     "fees_6m": 962
+    },
+    "five": {
+     "months": [
+      {
+       "month": "2026-11",
+       "sessions": 8,
+       "cash_mean": -89,
+       "net_mean": -96,
+       "fees_mean": 114,
+       "cum_net_p10": -160,
+       "cum_net_p50": -97,
+       "cum_net_p90": -97
+      },
+      {
+       "month": "2026-12",
+       "sessions": 22,
+       "cash_mean": -13,
+       "net_mean": -57,
+       "fees_mean": 159,
+       "cum_net_p10": -412,
+       "cum_net_p50": -223,
+       "cum_net_p90": 206
+      },
+      {
+       "month": "2027-01",
+       "sessions": 20,
+       "cash_mean": -6,
+       "net_mean": -58,
+       "fees_mean": 180,
+       "cum_net_p10": -602,
+       "cum_net_p50": -378,
+       "cum_net_p90": 235
+      },
+      {
+       "month": "2027-02",
+       "sessions": 20,
+       "cash_mean": 14,
+       "net_mean": -45,
+       "fees_mean": 185,
+       "cum_net_p10": -822,
+       "cum_net_p50": -504,
+       "cum_net_p90": 441
+      },
+      {
+       "month": "2027-03",
+       "sessions": 23,
+       "cash_mean": -5,
+       "net_mean": -67,
+       "fees_mean": 212,
+       "cum_net_p10": -1037,
+       "cum_net_p50": -664,
+       "cum_net_p90": 643
+      },
+      {
+       "month": "2027-04",
+       "sessions": 22,
+       "cash_mean": 30,
+       "net_mean": -40,
+       "fees_mean": 203,
+       "cum_net_p10": -1231,
+       "cum_net_p50": -819,
+       "cum_net_p90": 780
+      },
+      {
+       "month": "2027-05",
+       "sessions": 11,
+       "cash_mean": 27,
+       "net_mean": -10,
+       "fees_mean": 97,
+       "cum_net_p10": -1329,
+       "cum_net_p50": -889,
+       "cum_net_p90": 1070
+      }
+     ],
+     "cash_m": -7,
+     "net_m": -62,
+     "cash_6m": -41,
+     "net_6m": -374,
+     "net_6m_p10": -1329,
+     "net_6m_p50": -889,
+     "net_6m_p90": 1070,
+     "spring_cash_m": 12,
+     "spring_net_m": -54,
+     "first_any": "2027-01-27",
+     "p_pay_by_dec31": 16.9,
+     "p_no_pay_by_jan31": 74.8,
+     "p_no_pay_6m": 51.8,
+     "p_net_negative_6m": 79.6,
+     "pocket_p90": 1352,
+     "pocket_p95": 1421,
+     "fees_6m": 1149
+    },
+    "accounts": {
+     "Z50": {
+      "cash_m": -8,
+      "net_m": -17,
+      "cash_6m": -48,
+      "paid_6m": 174,
+      "fees_6m": 221.51,
+      "first_pay": "2027-03-11",
+      "first_pay_k": 79.0,
+      "first_pay_p25": "2027-02-03",
+      "first_pay_p75": "2027-04-20",
+      "first_pay_usd": 1600,
+      "p_pay_by_dec31": 0.7,
+      "p_pay_by_jan31": 2.3,
+      "p_no_pay_6m": 90.7,
+      "funded_med": "2027-02-11",
+      "p_funded_6m": 58.2,
+      "lost_6m": 40.6,
+      "month_cash": [
+       -3,
+       -27,
+       -12,
+       -16,
+       1,
+       5,
+       4
+      ]
+     },
+     "N25": {
+      "cash_m": -5,
+      "net_m": -8,
+      "cash_6m": -31,
+      "paid_6m": 54,
+      "fees_6m": 84.55,
+      "first_pay": "2027-03-01",
+      "first_pay_k": 71.0,
+      "first_pay_p25": "2027-01-22",
+      "first_pay_p75": "2027-04-15",
+      "first_pay_usd": 800,
+      "p_pay_by_dec31": 0.5,
+      "p_pay_by_jan31": 1.8,
+      "p_no_pay_6m": 93.7,
+      "funded_med": "2027-01-13",
+      "p_funded_6m": 50.6,
+      "lost_6m": 30.3,
+      "month_cash": [
+       0,
+       -1,
+       -4,
+       -5,
+       -14,
+       -4,
+       -1
+      ]
+     },
+     "A25": {
+      "cash_m": 28,
+      "net_m": 2,
+      "cash_6m": 167,
+      "paid_6m": 525,
+      "fees_6m": 358.53,
+      "first_pay": "2027-01-21",
+      "first_pay_k": 44.0,
+      "first_pay_p25": "2026-12-16",
+      "first_pay_p75": "2027-03-18",
+      "first_pay_usd": 800,
+      "p_pay_by_dec31": 15.8,
+      "p_pay_by_jan31": 23.2,
+      "p_no_pay_6m": 57.5,
+      "funded_med": "2026-11-19",
+      "p_funded_6m": 100.0,
+      "lost_6m": 94.6,
+      "month_cash": [
+       16,
+       49,
+       21,
+       28,
+       11,
+       26,
+       16
+      ]
+     },
+     "R25": {
+      "cash_m": -8,
+      "net_m": -20,
+      "cash_6m": -45,
+      "paid_6m": 253,
+      "fees_6m": 297.82,
+      "first_pay": "2027-03-01",
+      "first_pay_k": 71.0,
+      "first_pay_p25": "2027-01-22",
+      "first_pay_p75": "2027-04-12",
+      "first_pay_usd": 819,
+      "p_pay_by_dec31": 1.1,
+      "p_pay_by_jan31": 2.9,
+      "p_no_pay_6m": 90.0,
+      "funded_med": "2027-02-18",
+      "p_funded_6m": 42.6,
+      "lost_6m": 32.9,
+      "month_cash": [
+       -97,
+       -9,
+       8,
+       12,
+       16,
+       15,
+       10
+      ]
+     },
+     "R2": {
+      "cash_m": -14,
+      "net_m": -19,
+      "cash_6m": -84,
+      "paid_6m": 102,
+      "fees_6m": 186.78,
+      "first_pay": "2027-03-17",
+      "first_pay_k": 83.5,
+      "first_pay_p25": "2027-02-15",
+      "first_pay_p75": "2027-04-15",
+      "first_pay_usd": 1231,
+      "p_pay_by_dec31": 0.1,
+      "p_pay_by_jan31": 0.3,
+      "p_no_pay_6m": 96.6,
+      "funded_med": "2027-03-29",
+      "p_funded_6m": 14.3,
+      "lost_6m": 8.2,
+      "month_cash": [
+       -5,
+       -24,
+       -19,
+       -4,
+       -20,
+       -12,
+       -1
+      ]
+     }
+    }
+   }
+  }
+ },
+ "decision_values": {
+  "payout-ping-1000": {
+   "usd_month": -9,
+   "usd_month_by": {
+    "jan_jun": -11,
+    "jul_oct": -9,
+    "y2021_25": -6
+   },
+   "risk": "25K #2 no payout in 6 months 16.9% -> 18.5%; in a 2021-25-like market it costs $6 a month",
+   "recommend": "no",
+   "recommend_why": "Keep the $750 ping: waiting for $1,000 pays a little less and each payout comes about 2 trading days later.",
+   "impact": "-$9 a month in a Jul-Oct-like market (-$11 Jan-Jun-like, -$6 2021-25-like); first payout about 2 trading days later.",
+   "why": "The bot pings you when $750 sits above the $1,100 buffer; waiting for the full $1,000 (balance $27,100) means fewer, bigger requests."
+  },
+  "zlarior-funded25": {
+   "usd_month": 125,
+   "usd_month_by": {
+    "jan_jun": 141,
+    "jul_oct": 125,
+    "y2021_25": -26
+   },
+   "risk": "ATLAS 25K no payout in 6 months 1.4% -> 0.7%; ATLAS 25K funded account lost 10.2% -> 26.3%; in a 2021-25-like market it costs $26 a month",
+   "recommend": "no",
+   "recommend_why": "More money, but more risk: ATLAS 25K: the funded account is lost 26 in 100 times instead of 10. Not worth it now.",
+   "impact": "+$125 a month in a Jul-Oct-like market (+$141 Jan-Jun-like, -$26 2021-25-like); first payout about 7 trading days sooner.",
+   "why": "Two strategies on ATLAS's funded 25K: more trades and a sooner first payout, but bigger swings on a $1,000 floor."
+  },
+  "rapid25-lit-bank": {
+   "usd_month": 83,
+   "usd_month_by": {
+    "jan_jun": 10,
+    "jul_oct": 83,
+    "y2021_25": 7
+   },
+   "risk": "Rapid 25K no payout in 6 months 10.4% -> 7.9%; Rapid 25K funded account lost 28.3% -> 32.2%; Rapid 25K eval fails in 3 months 0.1% -> 0.6%; Rapid 25K eval passes in about 21 trading days instead of 25",
+   "recommend": "yes",
+   "recommend_why": "More money in both 2026 halves without a real jump in risk.",
+   "impact": "+$83 a month in a Jul-Oct-like market (+$10 Jan-Jun-like, +$7 2021-25-like); first payout about 5 trading days sooner."
+  },
+  "atlas-on-50k-funded": {
+   "usd_month": 451,
+   "usd_month_by": {
+    "jan_jun": 422,
+    "jul_oct": 451,
+    "y2021_25": 2
+   },
+   "risk": "Zlarior 50K no payout in 6 months 9.5% -> 4.2%",
+   "recommend": "yes",
+   "recommend_why": "More money in both 2026 halves without a real jump in risk.",
+   "impact": "+$451 a month in a Jul-Oct-like market (+$422 Jan-Jun-like, +$2 2021-25-like); first payout about 9 trading days sooner."
+  },
+  "atlas-on-rapid": {
+   "usd_month": 817,
+   "usd_month_by": {
+    "jan_jun": 2084,
+    "jul_oct": 817,
+    "y2021_25": 7
+   },
+   "risk": "Rapid 25K no payout in 6 months 50.1% -> 10.4%; Rapid 25K funded account lost 14.1% -> 28.3%; Rapid 25K eval passes in about 25 trading days instead of 42",
+   "recommend": "yes",
+   "recommend_why": "Keep ATLAS on the Rapid (it is already built that way): without it the 30% rule skips most of Zlarior's trades and half of the runs see no payout in 6 months.",
+   "impact": "+$817 a month in a Jul-Oct-like market (+$2,084 Jan-Jun-like, +$7 2021-25-like); first payout about 39 trading days sooner.",
+   "why": "On the Rapid 25K the 30% best-day rule skips most of Zlarior's trades: alone it passes in about 42 trading days, with ATLAS about 25.",
+   "applies": "Rapid preset already built LIT + ATLAS ($250 on the 25K, $500 on a 50K); a no turns ATLAS off there"
+  },
+  "keep-1000-rapid": {
+   "usd_month": -20,
+   "usd_month_by": {
+    "jan_jun": 56,
+    "jul_oct": -20,
+    "y2021_25": -3
+   },
+   "risk": "Rapid 25K no payout in 6 months 10.4% -> 11.5%; Rapid 25K funded account lost 28.3% -> 19.7%; in a 2021-25-like market it costs $3 a month",
+   "recommend": "no",
+   "recommend_why": "Keep $500 on the Rapid 25K (as built): payouts come sooner for about the same money. $1,000 is the safer choice (fewer accounts lost), so a yes is fine if you prefer safety. A Rapid 50K keeps $1,000 already.",
+   "impact": "-$20 a month in a Jul-Oct-like market (+$56 Jan-Jun-like, -$3 2021-25-like); first payout about 4 trading days later.",
+   "why": "Leaving more in the Rapid after each payout gives the bot more room, so fewer funded accounts get stuck; each payout is smaller and comes later.",
+   "applies": "Rapid funded payout rule: the 25K keeps $500 above the buffer today (a yes raises it to $1,000); the 50K preset keeps $1,000 already"
+  },
+  "ask-mffu-parallel": {
+   "usd_month": 56,
+   "usd_month_by": {
+    "jan_jun": 53,
+    "jul_oct": 56,
+    "y2021_25": -6
+   },
+   "risk": "None to ask: one support message. Without a written yes, a rules question could hold up payouts.",
+   "recommend": "yes",
+   "recommend_why": "Free, and it protects every future payout: send the message (Claude drafts it). Buy the fresh 50K only when your budget round allows ($91.80).",
+   "unlocks": true,
+   "impact": "Free to ask. A written yes lets you run a fresh Builder 50K ($91.80) next to Zlarior's: +$56 a month Jul-Oct-like (+$53 Jan-Jun-like, -$6 2021-25-like), the 50K's first payout about 8 trading days sooner. It also protects every payout from a rules dispute."
+  },
+  "cloud-alerts": {
+   "usd_month": 0,
+   "usd_month_by": {
+    "jan_jun": 0,
+    "jul_oct": 0,
+    "y2021_25": 0
+   },
+   "risk": "None: free GitHub minutes on the backup repo; it only reads the PC's report.",
+   "recommend": "yes",
+   "recommend_why": "Free, and a silent PC is the biggest threat to the funded accounts (7 days without a trade wipes a funded account's profit)."
+  }
+ },
+ "picks": {
+  "payout-ping-1000": "no",
+  "zlarior-funded25": "no",
+  "rapid25-lit-bank": "yes",
+  "atlas-on-50k-funded": "yes",
+  "atlas-on-rapid": "yes",
+  "keep-1000-rapid": "no"
+ }
+}
