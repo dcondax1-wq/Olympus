@@ -467,8 +467,8 @@ def clock_changes(today: str, days: int = 21) -> list:
 
 
 def early_closes(today: str, days: int = 45) -> list:
-    try:
-        from .lit_live import early_close
+    try:                                  # engine/cme_calendar = lit_live.early_close's own source (same values), without
+        from .cme_calendar import early_close   # lit_live's numpy + pandas in every PC report (night-learnloop 2026-11-19)
     except Exception:
         return []
     out, t = [], dt.date.fromisoformat(today)

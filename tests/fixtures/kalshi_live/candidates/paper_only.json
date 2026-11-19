@@ -1,0 +1,2 @@
+{"name": "paper_only", "strategy": "taker_fav_band", "status": "PAPER ONLY - weak candidate. Never armed.", "series": "KXFAKEP",
+ "rule": {"price_band": [0.80, 0.95], "decide_hours_before_close": 6, "size_usd_per_bet": 5}}

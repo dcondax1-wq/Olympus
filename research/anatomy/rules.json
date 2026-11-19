@@ -1,0 +1,503 @@
+{
+ "v": 1,
+ "built": "2026-11-18 20:00",
+ "cells": 59,
+ "p_needed": 0.00339,
+ "rules": [
+  {
+   "id": "lit_anat_pullback_x1.25",
+   "bot": "lit",
+   "who": "Zlarior",
+   "title": "Zlarior: x1.25 size on a pullback in the daily trend (daily trend with the trade, 1h trend against)",
+   "what": "Zlarior trades 25% bigger when yesterday's close is on the trade's side of its 20-day average AND the 1h trend (EMA 20 vs 50) points the other way: a dip in an uptrend or a rally in a downtrend (the classic triple-screen pullback). Everything else as today.",
+   "status": "rejected",
+   "why": "Jul-Oct (check): -$23 at the LIT size",
+   "hits": {
+    "2021-25": 69,
+    "H1": 15,
+    "H2": 6
+   },
+   "flip": {
+    "H1": 0.07623,
+    "H2": 1.0
+   },
+   "shuffle": null,
+   "usd_month_by": {
+    "H1": 349,
+    "H2": -6,
+    "2021-25": 11
+   },
+   "eval_usd_month_by": {
+    "H1": 163,
+    "H2": 130
+   },
+   "with": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "pf": 5.11,
+     "net": 36028,
+     "per_month": 5911,
+     "dd": -2373,
+     "eval_per_month": 5686,
+     "p10": 45.4,
+     "f10": 0.0,
+     "pass_med": 10.5
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "pf": 2.88,
+     "net": 9896,
+     "per_month": 2664,
+     "dd": -1396,
+     "eval_per_month": 3289,
+     "p10": 39.1,
+     "f10": 0.0,
+     "pass_med": 12.0
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "pf": 1.02,
+     "net": 1847,
+     "per_month": 36,
+     "dd": -18948,
+     "eval_per_month": null,
+     "p10": null,
+     "f10": null,
+     "pass_med": null
+    }
+   },
+   "today": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "pf": 4.98,
+     "net": 33901,
+     "per_month": 5562,
+     "dd": -2196,
+     "eval_per_month": 5523,
+     "p10": 44.5,
+     "f10": 0.0,
+     "pass_med": 11.0
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "pf": 2.91,
+     "net": 9919,
+     "per_month": 2670,
+     "dd": -1396,
+     "eval_per_month": 3159,
+     "p10": 39.1,
+     "f10": 0.0,
+     "pass_med": 12.0
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "pf": 1.01,
+     "net": 1265,
+     "per_month": 25,
+     "dd": -19426,
+     "eval_per_month": null,
+     "p10": null,
+     "f10": null,
+     "pass_med": null
+    }
+   }
+  },
+  {
+   "id": "lit_anat_checklist_skip",
+   "bot": "lit",
+   "who": "Zlarior",
+   "title": "Zlarior: skip what a careful human would skip (against both trends, late, news within 30 min, no room)",
+   "what": "No Zlarior trade when any of the 4 checklist flags is on: against the daily AND the 1h trend; the day already moved 1 daily ATR before the entry; a high-impact US release within 30 minutes after the entry; the prior-day high / low less than 1R ahead on the target side.",
+   "status": "rejected",
+   "why": "Jan-Jun (pick): -$2,508 at the LIT size; Jan-Jun (pick): -$8,488 on the eval path; Jul-Oct (check): -$5,624 at the LIT size; Jul-Oct (check): -$3,121 on the eval path; H1: 1.8 trades a week (needs 2-4); H2: 1.47 trades a week (needs 2-4)",
+   "hits": {
+    "2021-25": 260,
+    "H1": 34,
+    "H2": 17
+   },
+   "flip": {
+    "H1": 1.0,
+    "H2": 1.0
+   },
+   "shuffle": null,
+   "usd_month_by": {
+    "H1": -412,
+    "H2": -1514,
+    "2021-25": 90
+   },
+   "eval_usd_month_by": {
+    "H1": -1393,
+    "H2": -840
+   },
+   "with": {
+    "H1": {
+     "n": 46,
+     "tpw": 1.8,
+     "pf": 7.26,
+     "net": 31393,
+     "per_month": 5150,
+     "dd": -1373,
+     "eval_per_month": 4130,
+     "p10": 37.0,
+     "f10": 0.0,
+     "pass_med": 12.0
+    },
+    "H2": {
+     "n": 23,
+     "tpw": 1.47,
+     "pf": 2.22,
+     "net": 4295,
+     "per_month": 1156,
+     "dd": -1324,
+     "eval_per_month": 2319,
+     "p10": 24.6,
+     "f10": 0.0,
+     "pass_med": 20.0
+    },
+    "2021-25": {
+     "n": 251,
+     "tpw": 1.17,
+     "pf": 1.11,
+     "net": 5851,
+     "per_month": 115,
+     "dd": -12428,
+     "eval_per_month": null,
+     "p10": null,
+     "f10": null,
+     "pass_med": null
+    }
+   },
+   "today": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "pf": 4.98,
+     "net": 33901,
+     "per_month": 5562,
+     "dd": -2196,
+     "eval_per_month": 5523,
+     "p10": 44.5,
+     "f10": 0.0,
+     "pass_med": 11.0
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "pf": 2.91,
+     "net": 9919,
+     "per_month": 2670,
+     "dd": -1396,
+     "eval_per_month": 3159,
+     "p10": 39.1,
+     "f10": 0.0,
+     "pass_med": 12.0
+    },
+    "2021-25": {
+     "n": 511,
+     "tpw": 2.38,
+     "pf": 1.01,
+     "net": 1265,
+     "per_month": 25,
+     "dd": -19426,
+     "eval_per_month": null,
+     "p10": null,
+     "f10": null,
+     "pass_med": null
+    }
+   }
+  },
+  {
+   "id": "atlas_anat_london_open_x1.25",
+   "bot": "atlas",
+   "who": "ATLAS",
+   "title": "ATLAS: x1.25 size on London-open-hour entries (03:00-03:59 ET)",
+   "what": "ATLAS trades 25% bigger when the entry is in the 03:00 ET hour (08:00 London, the London open).",
+   "status": "rejected",
+   "why": "2021-25 worse than today",
+   "hits": {
+    "2021-24": 218,
+    "2025": 56,
+    "H1": 33,
+    "H2": 10
+   },
+   "flip": {
+    "H1": 0.00175,
+    "H2": 0.07473
+   },
+   "shuffle": null,
+   "usd_month_by": {
+    "H1": 125,
+    "H2": 34,
+    "2025": 122,
+    "2021-24": -14
+   },
+   "eval_usd_month_by": null,
+   "with": {
+    "H1": {
+     "n": 90,
+     "tpw": 3.52,
+     "pf": 2.82,
+     "net": 14290,
+     "per_month": 2344,
+     "dd": -1207,
+     "p10": 61.3,
+     "f10": 0.0,
+     "dead10": 0.0,
+     "pass_med": 6.0,
+     "money": 9590,
+     "sig_tpw": 4.38
+    },
+    "H2": {
+     "n": 25,
+     "tpw": 1.6,
+     "pf": 3.21,
+     "net": 4135,
+     "per_month": 1113,
+     "dd": -887,
+     "p10": 43.5,
+     "f10": 0.0,
+     "dead10": 0.0,
+     "pass_med": 7.0,
+     "money": 2253,
+     "sig_tpw": 3.27
+    },
+    "2025": {
+     "n": 150,
+     "tpw": 2.91,
+     "pf": 0.88,
+     "net": -1549,
+     "per_month": -126,
+     "dd": -4973,
+     "p10": 24.9,
+     "f10": 0.0,
+     "dead10": 6.0,
+     "pass_med": 5.0,
+     "money": -2605,
+     "sig_tpw": 4.84
+    },
+    "2021-24": {
+     "n": 587,
+     "tpw": 3.61,
+     "pf": 0.95,
+     "net": -2767,
+     "per_month": -71,
+     "dd": -10714,
+     "p10": 19.4,
+     "f10": 0.0,
+     "dead10": 11.7,
+     "pass_med": 4.0,
+     "money": -3782,
+     "sig_tpw": 5.37
+    }
+   },
+   "today": {
+    "H1": {
+     "n": 85,
+     "tpw": 3.32,
+     "pf": 2.81,
+     "net": 13524,
+     "per_month": 2219,
+     "dd": -1200,
+     "p10": 61.3,
+     "f10": 0.0,
+     "dead10": 0.0,
+     "pass_med": 6.0,
+     "money": 9083,
+     "sig_tpw": 4.38
+    },
+    "H2": {
+     "n": 25,
+     "tpw": 1.6,
+     "pf": 3.14,
+     "net": 4009,
+     "per_month": 1079,
+     "dd": -887,
+     "p10": 43.5,
+     "f10": 0.0,
+     "dead10": 0.0,
+     "pass_med": 7.0,
+     "money": 2135,
+     "sig_tpw": 3.27
+    },
+    "2025": {
+     "n": 155,
+     "tpw": 3.0,
+     "pf": 0.78,
+     "net": -3052,
+     "per_month": -248,
+     "dd": -4057,
+     "p10": 24.9,
+     "f10": 0.0,
+     "dead10": 6.8,
+     "pass_med": 5.0,
+     "money": -2111,
+     "sig_tpw": 4.84
+    },
+    "2021-24": {
+     "n": 596,
+     "tpw": 3.66,
+     "pf": 0.96,
+     "net": -2223,
+     "per_month": -57,
+     "dd": -9424,
+     "p10": 19.3,
+     "f10": 0.0,
+     "dead10": 11.3,
+     "pass_med": 4.0,
+     "money": -3953,
+     "sig_tpw": 5.37
+    }
+   }
+  },
+  {
+   "id": "atlas_anat_checklist_skip",
+   "bot": "atlas",
+   "who": "ATLAS",
+   "title": "ATLAS: skip what a careful human would skip (against both trends, late, news within 30 min, no room)",
+   "what": "No ATLAS trade when any of the 4 checklist flags is on (the same checklist as for Zlarior); the slot stays free for a later ATLAS signal that day.",
+   "status": "rejected",
+   "why": "not better in Jan-Jun (pick); not better in Jul-Oct (check) (Jan-Jun 2-week pass 61.3 -> 39.5%; Jan-Jun money after fees -$5,012; Jul-Oct 2-week pass 43.5 -> 30.4%; Jul-Oct money after fees -$1,479)",
+   "hits": {
+    "2021-24": 268,
+    "2025": 78,
+    "H1": 42,
+    "H2": 16
+   },
+   "flip": {
+    "H1": 1.0,
+    "H2": 1.0
+   },
+   "shuffle": null,
+   "usd_month_by": {
+    "H1": -1811,
+    "H2": -484,
+    "2025": 141,
+    "2021-24": 293
+   },
+   "eval_usd_month_by": null,
+   "with": {
+    "H1": {
+     "n": 31,
+     "tpw": 1.21,
+     "pf": 2.02,
+     "net": 2489,
+     "per_month": 408,
+     "dd": -1423,
+     "p10": 39.5,
+     "f10": 0.0,
+     "dead10": 0.0,
+     "pass_med": 8.0,
+     "money": 4071,
+     "sig_tpw": 4.38
+    },
+    "H2": {
+     "n": 21,
+     "tpw": 1.35,
+     "pf": 2.07,
+     "net": 2210,
+     "per_month": 595,
+     "dd": -851,
+     "p10": 30.4,
+     "f10": 0.0,
+     "dead10": 0.0,
+     "pass_med": 8.0,
+     "money": 656,
+     "sig_tpw": 3.27
+    },
+    "2025": {
+     "n": 124,
+     "tpw": 2.4,
+     "pf": 0.88,
+     "net": -1315,
+     "per_month": -107,
+     "dd": -3361,
+     "p10": 20.5,
+     "f10": 0.0,
+     "dead10": 2.0,
+     "pass_med": 6.0,
+     "money": -1242,
+     "sig_tpw": 4.84
+    },
+    "2021-24": {
+     "n": 472,
+     "tpw": 2.9,
+     "pf": 1.22,
+     "net": 9151,
+     "per_month": 236,
+     "dd": -5733,
+     "p10": 21.9,
+     "f10": 0.0,
+     "dead10": 5.0,
+     "pass_med": 6.0,
+     "money": 3443,
+     "sig_tpw": 5.37
+    }
+   },
+   "today": {
+    "H1": {
+     "n": 85,
+     "tpw": 3.32,
+     "pf": 2.81,
+     "net": 13524,
+     "per_month": 2219,
+     "dd": -1200,
+     "p10": 61.3,
+     "f10": 0.0,
+     "dead10": 0.0,
+     "pass_med": 6.0,
+     "money": 9083,
+     "sig_tpw": 4.38
+    },
+    "H2": {
+     "n": 25,
+     "tpw": 1.6,
+     "pf": 3.14,
+     "net": 4009,
+     "per_month": 1079,
+     "dd": -887,
+     "p10": 43.5,
+     "f10": 0.0,
+     "dead10": 0.0,
+     "pass_med": 7.0,
+     "money": 2135,
+     "sig_tpw": 3.27
+    },
+    "2025": {
+     "n": 155,
+     "tpw": 3.0,
+     "pf": 0.78,
+     "net": -3052,
+     "per_month": -248,
+     "dd": -4057,
+     "p10": 24.9,
+     "f10": 0.0,
+     "dead10": 6.8,
+     "pass_med": 5.0,
+     "money": -2111,
+     "sig_tpw": 4.84
+    },
+    "2021-24": {
+     "n": 596,
+     "tpw": 3.66,
+     "pf": 0.96,
+     "net": -2223,
+     "per_month": -57,
+     "dd": -9424,
+     "p10": 19.3,
+     "f10": 0.0,
+     "dead10": 11.3,
+     "pass_med": 4.0,
+     "money": -3953,
+     "sig_tpw": 5.37
+    }
+   }
+  }
+ ],
+ "protected_ok": true
+}

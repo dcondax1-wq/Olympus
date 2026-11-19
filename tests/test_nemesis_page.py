@@ -56,7 +56,7 @@ def part_a():
     html, css = rd(PAGE, "index.html"), rd(PAGE, "nemesis.css")
     js = {n: rd(PAGE, n) for n in files if n.endswith(".js")}
     check("a. the kit first (olympus.css, themes.js, olympus.js ?v=o2 with data-app), viewport-fit=cover, theme-color, dark, manifest, icon, apple-touch-icon",
-          '<link rel="stylesheet" href="../olympus/olympus.css?v=o7">' in html and 'src="../olympus/themes.js?v=o6"' in html and 'src="../olympus/olympus.js?v=o10" data-app="nemesis"' in html
+          '<link rel="stylesheet" href="../olympus/olympus.css?v=o7">' in html and 'src="../olympus/themes.js?v=o6"' in html and 'src="../olympus/olympus.js?v=o11" data-app="nemesis"' in html
           and "viewport-fit=cover" in html and 'name="theme-color"' in html and 'content="dark"' in html and 'rel="manifest" href="manifest.webmanifest"' in html
           and 'rel="icon" href="icon.svg"' in html and 'rel="apple-touch-icon"' in html)
     check("a. no CDN, no outside script / font / image: every src and href is local", not re.search(r'(src|href)="https?://', html) and not any(re.search(r"import[^;]*['\"]https?://", s) for s in js.values()))
@@ -193,6 +193,8 @@ def make_site(tmp, with_odeon=True, with_home=True):
     shutil.copytree(PAGE, os.path.join(site, "nemesis"))
     for d in ("jarvis", "olympus"):
         shutil.copytree(os.path.join(WEB, d), os.path.join(site, d))
+    from tests.olympus_money_kit import root_readers      # home_feed.js + what it reads, as on the real site (night-feedsB)
+    root_readers(site)
     if with_odeon:
         os.makedirs(os.path.join(site, "odeon"))
         shutil.copy(os.path.join(WEB, "odeon", "trades.json"), os.path.join(site, "odeon", "trades.json"))
@@ -225,6 +227,7 @@ def run_browser():
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     base = f"http://127.0.0.1:{srv.server_address[1]}/nq-dashboard/nemesis/"
     outside, posts = [], []
+    from tests import agora_kit as AK                 # is_status_feed: the one allowed outside address (night-feedsB: home_feed.js)
     shots = os.environ.get("NEM_SHOTS")
     try:
         with sync_playwright() as pw:
@@ -245,6 +248,8 @@ def run_browser():
                         posts.append(route.request.method + " " + u)
                     if u.startswith(f"http://127.0.0.1:{srv.server_address[1]}") or u.startswith(("data:", "blob:")):
                         return route.continue_()
+                    if AK.is_status_feed(u):      # the sanctioned public PC status feed (docs/PRIVACY.md; home_feed.js asks it): aborted, never reached
+                        return route.abort()
                     outside.append(u)
                     return route.abort()
                 ctx.route("**/*", guard)
