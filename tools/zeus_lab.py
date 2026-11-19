@@ -11,6 +11,9 @@ Built on what exists (nothing re-implemented):
              before it is judged, + "rejected_forever" (the CLAUDE_REFERENCE "Tested and rejected" list + the learn loop's
              first 8: NEVER run again; a "blocks" entry stops any experiment on that bot + feature, cross ones too).
   members    kind atlas_member = a NEW ATLAS member (tools/atlas_plus.py, its stored verdict; "cells" = versions searched).
+  anatomy    kind anatomy = a rule from the win / loss anatomy (tools/win_loss_anatomy.py: a size x m or a skip on an entry
+             fact the trade-intel table does not hold, e.g. the daily x 1h trend pullback or the careful-human checklist), run
+             by that tool's lab_run on the same real backtests and judges (Zlarior or ATLAS).
   re-test    the REAL backtests through engine/learn_loop's runners: LIT = tools/lit_edge.evaluate (run lit_live re-walked:
              the LIT size + the live two_week eval path, costs in); ATLAS = tools/atlas_deep.score (the real account-B rules,
              engine/second.py members). Kinds: lit_tilt / atlas_tilt (the learn-loop rule language), lit_x (a
@@ -65,7 +68,7 @@ REF_DOC = os.path.join(ROOT, "docs", "TESTED_AND_REJECTED.md")   # moved out of 
 EDGE = os.path.join(ROOT, "research", "lab", "edge_health.json")
 ZEUS_QUEUE = os.path.join(ROOT, "research", "zeus_queue.jsonl")         # night-learn's daily review proposals (tools/data_pull.py)
 VERSION = 1
-RUNNABLE = ("lit_tilt", "atlas_tilt", "lit_x", "atlas_member", "lit_idea")
+RUNNABLE = ("lit_tilt", "atlas_tilt", "lit_x", "atlas_member", "lit_idea", "anatomy")
 KINDS = RUNNABLE + ("parked",)
 BOTS = ("lit", "atlas", "kalshi")
 LIT_X_KEYS = ("tgt", "be", "tc", "speed", "slow", "late")
@@ -155,6 +158,9 @@ def load_registry(path: str = REGISTRY) -> tuple:
             er += LI.idea_errors(e.get("idea"))
             if e.get("bot") != "lit":
                 er.append("lit_idea is for bot lit")
+        if e.get("kind") == "anatomy":
+            from tools import win_loss_anatomy as WA
+            er += WA.rule_errors(e)
         if e.get("kind") == "atlas_member" and (e.get("bot") != "atlas" or not e.get("family")):
             er.append("atlas_member is for bot atlas and needs family (tools/atlas_plus.py)")
         if e.get("kind") == "parked" and not e.get("parked_why"):
@@ -403,6 +409,9 @@ def run_member(e: dict, C, rules: dict) -> dict:
 
 
 def run_one(e: dict, C, rules: dict) -> dict:
+    if e["kind"] == "anatomy":                                                 # tools/win_loss_anatomy.py (2026-11-18)
+        from tools import win_loss_anatomy as WA
+        return WA.lab_run(e, C, rules)
     if e["kind"] == "atlas_member":
         return run_member(e, C, rules)
     return run_atlas(e, C, rules) if e["kind"] == "atlas_tilt" else run_lit(e, C, rules)
