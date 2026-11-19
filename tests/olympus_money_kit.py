@@ -40,13 +40,6 @@ def site(tmp, app, name, data=True, drop=()):
         if os.path.exists(src):
             shutil.copy(src, os.path.join(base, "jarvis", f))
     link_assets(base)
-    # the site's root reader of the PC's status post (night-feedsB 2026-11-18: home_feed.js, loaded by the ZEUS Trading apps before the
-    # kit) and what it imports, as on the real site: without a post (the tests' ntfy answers "{}") it leaves home.json / data.json alone
-    for f in ("home_feed.js", "pc_feed.js", "status_feed.json", os.path.join("business", "payoutcoach.js")):
-        src = os.path.join(WEB, f)
-        if os.path.exists(src):
-            os.makedirs(os.path.dirname(os.path.join(base, f)), exist_ok=True)
-            shutil.copy(src, os.path.join(base, f))
     if data:
         shutil.copy(FIX, os.path.join(base, "data.json"))
     for f in drop:
@@ -56,10 +49,21 @@ def site(tmp, app, name, data=True, drop=()):
     return srv, f"http://127.0.0.1:{srv.server_address[1]}/{app}/"
 
 
+def root_readers(base):
+    """The site's root reader of the PC's status post (night-feedsB 2026-11-18: home_feed.js, loaded by the ZEUS Trading apps before the
+    kit) and what it imports, as on the real site: without a post (the tests' ntfy answers "{}") it leaves home.json / data.json alone."""
+    for f in ("home_feed.js", "pc_feed.js", "status_feed.json", os.path.join("business", "payoutcoach.js")):
+        src, out = os.path.join(WEB, f), os.path.join(base, f)
+        if os.path.exists(src) and not os.path.exists(out):
+            os.makedirs(os.path.dirname(out), exist_ok=True)
+            shutil.copy(src, out)
+
+
 def link_assets(base):
     """The built site always publishes assets/ (the CC0 sounds, scans and HDRIs the shared kit uses; tools/build_web_dashboard.py copies it).
     QA Round 7: without it the kit's first-tap UI sound asked for assets/audio/ui.m4a and ui.ogg and got two 404 console lines on every tap
     test of these throw-away sites, which no real visitor ever sees. A link (a copy where links are not allowed) keeps the copy cheap."""
+    root_readers(base)
     dst = os.path.join(base, "assets")
     if os.path.exists(dst):
         return

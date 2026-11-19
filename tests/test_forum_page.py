@@ -170,6 +170,8 @@ def make_site(tmp, with_pantheon=True, with_home=True):
     shutil.copytree(PAGE, os.path.join(site, "forum"))
     for d in ("jarvis", "olympus"):
         shutil.copytree(os.path.join(WEB, d), os.path.join(site, d))
+    from tests.olympus_money_kit import root_readers      # home_feed.js + what it reads, as on the real site (night-feedsB)
+    root_readers(site)
     if with_pantheon:
         os.makedirs(os.path.join(site, "pantheon"))
         doc = json.loads(rd(WEB, "pantheon", "pantheon.json"))

@@ -193,6 +193,8 @@ def make_site(tmp, with_odeon=True, with_home=True):
     shutil.copytree(PAGE, os.path.join(site, "nemesis"))
     for d in ("jarvis", "olympus"):
         shutil.copytree(os.path.join(WEB, d), os.path.join(site, d))
+    from tests.olympus_money_kit import root_readers      # home_feed.js + what it reads, as on the real site (night-feedsB)
+    root_readers(site)
     if with_odeon:
         os.makedirs(os.path.join(site, "odeon"))
         shutil.copy(os.path.join(WEB, "odeon", "trades.json"), os.path.join(site, "odeon", "trades.json"))
