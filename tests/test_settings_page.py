@@ -91,7 +91,7 @@ def part_b():
       const imp = C.applyImport(st2, exp);
       const clr = C.clearApp(st, 'jarvis'), left = C.listKeys(st);
       const j = new Mem(); j.setItem('jarvis.smart', JSON.stringify({ keys: { groq: 'gsk_SECRET' }, on: false }));
-      const a0 = C.alertsGet(j), a1 = C.alertsSet(j, { speak: false, from: '23:30' }), eng = C.engineSet(j, 'cloud'), md = C.modeSet(j, 'research'), bogus = C.modeSet(j, 'nope');
+      const a0 = C.alertsGet(j), a1 = C.alertsSet(j, { speak: false, from: '23:30' }), eng = C.engineSet(j, 'phone'), md = C.modeSet(j, 'research'), bogus = C.modeSet(j, 'nope');
       const sv = new Mem(); sv.setItem('jfx', 'ultra'); sv.setItem('olympus.sfx', JSON.stringify({ v: 0.8, m: false }));
       C.saverSet(sv, true); const on = [sv.getItem('jfx'), sv.getItem('oly.intro'), JSON.parse(sv.getItem('olympus.sfx')).m, C.saverOn(sv)];
       C.saverSet(sv, false); const off = [sv.getItem('jfx'), sv.getItem('oly.intro'), JSON.parse(sv.getItem('olympus.sfx')).m, JSON.parse(sv.getItem('olympus.sfx')).v, C.saverOn(sv)];
@@ -117,7 +117,7 @@ def part_b():
           r["clr"] == [["jarvis.mode", "jarvis.vault.learned"], ["jarvis.smart", "jarvis.vault"]] and "mind.state" in r["left"] and "jarvis.smart" in r["left"] and "jarvis.mode" not in r["left"], r["clr"])
     check("b. Jarvis's own keys: alerts defaults (speak / brief / quiet on, 22:00-07:00), a change keeps the rest, engine mode, default mode; an unknown mode changes nothing",
           r["a0"] == {"speak": True, "brief": True, "quiet": True, "from": "22:00", "to": "07:00"} and r["a1"] == {"speak": False, "brief": True, "quiet": True, "from": "23:30", "to": "07:00"}
-          and r["eng"] == "cloud" and r["md"] == "research" and r["bogus"] == "research" and r["smart"] == "gsk_SECRET", (r["a0"], r["a1"], r["eng"], r["md"]))
+          and r["eng"] == "phone" and r["md"] == "research" and r["bogus"] == "research" and r["smart"] == "gsk_SECRET", (r["a0"], r["a1"], r["eng"], r["md"]))
     check("b. brain key and vault STATUS only (saved / not, the providers, connected + repo): never a key character in the answer",
           r["brain"] == {"saved": True, "providers": ["Groq"], "on": False} and r["noBrain"]["saved"] is False and r["vault"] == {"connected": True, "repo": "me/vault"}
           and r["noVault"]["connected"] is False and "SECRET" not in json.dumps([r["brain"], r["vault"]]), (r["brain"], r["vault"]))
@@ -260,10 +260,10 @@ def part_c():
             check("c. sound volume is saved in olympus.sfx", abs(json.loads(p.evaluate("localStorage.getItem('olympus.sfx')"))["v"] - 0.6) < 0.01)
             # ---- Jarvis
             p.click("#t-jarvis")
-            p.click("#engSeg [data-v=cloud]")
+            p.click("#engSeg [data-v=phone]")
             p.click("#modeSeg [data-v=life]")
             p.uncheck("#aQuiet")
-            check("c. Jarvis: voice engine, default mode and quiet hours are written in the keys Jarvis reads", json.loads(p.evaluate("localStorage.getItem('jarvis.voiceEngine')"))["mode"] == "cloud"
+            check("c. Jarvis: voice engine, default mode and quiet hours are written in the keys Jarvis reads", json.loads(p.evaluate("localStorage.getItem('jarvis.voiceEngine')"))["mode"] == "phone"
                   and p.evaluate("localStorage.getItem('jarvis.mode')") == "life" and json.loads(p.evaluate("localStorage.getItem('jarvis.alerts.v1')"))["quiet"] is False and p.is_disabled("#aFrom"))
             body = p.inner_text("#p-jarvis")
             check("c. brain key: only SAVED and the provider name, never a key; the button opens Jarvis; Obsidian: CONNECTED + repo, never the token",

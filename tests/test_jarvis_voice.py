@@ -4,12 +4,13 @@ conversation. Runs the real Jarvis page (the folder as it is: the real brain, th
 reports its word timing, and checks:
   a. the files: the module parses, exports its parts, Safari 16 safe; in the worker's SHELL (jarvis-v14); the shell loads it
      after the start, never as part of it
-  b. the pure parts in node: the voice ranking (tts.js, owner 2026-11-03 "a female voice": Ava premium first, a natural female
-     voice over any male one, the owner's pick kept, novelty voices never),
+  b. the pure parts in node: the voice ranking (tts.js, owner 2026-11-18 "Male, British": a British man first, Premium > Enhanced >
+     plain, any man over a woman, the owner's pick kept, novelty voices never),
      the holographic cards (copied from the reply's cards and "Name: $x" lines); the brain's "voice mode" / "exit voice mode"
      controls and its farewell flag
   c. entering: the Voice mode tile, "Jarvis, voice mode" typed (a spoken entry), holding the big mic; the core goes full
-     screen (the Jarvis screen's core waits behind), the greeting in her best voice (Ava premium), the mic analyser only after a tap
+     screen (the Jarvis screen's core waits behind), the greeting in his best iPhone voice (Daniel Enhanced: the AI voice is not
+     downloaded in a test), the mic analyser only after a tap
   d. a turn: mocked recognition -> the brain's spoken answer in the captions (word by word, as the voice reports), the same
      words said (in sentence chunks, one after the other), the reply also kept in the Jarvis chat; listening again after; the cards of the numbers cited float out;
      the HUD arc shows the system verdict; the core reacts to the mic (level up while you talk)
@@ -18,7 +19,8 @@ reports its word timing, and checks:
      aborted, the Jarvis screen's core back
   g. no recognition (a Home Screen app): the same screen with a type-to-talk field, said once per launch; the recognizer
      refusing the mic switches to it too
-  h. reduce motion and 3D effects Off: no animation loop, no mic analyser, everything shown at once; the voice pick is kept
+  h. reduce motion and 3D effects Off: no animation loop, no mic analyser, everything shown at once; the VOICE button switches the one
+     setting (AI voice George <-> iPhone voice) and says so in the voice picked
   i. no page errors anywhere
     python -X utf8 -m tests.test_jarvis_voice      (temp folder + a local server; nothing else touched; ~1-2 min)
 Screenshots: research/handoff/2026-11-03/voice/ (set JARVIS_VOICE_SHOTS=<folder> to change, '' to skip).
@@ -229,12 +231,12 @@ def part_pure(tmp):
     except Exception:
         check("b. the pure parts run in node", False, r.stderr or r.stdout)
         return
-    check("b. voice: a female voice first (Samantha over Daniel Enhanced); Ava (Premium) over compact Ava and a premium male voice; never Zarvox / Bubbles; none English = the phone's default",
-          o["best"] == "Samantha" and o["premium"] == "Ava (Premium)" and o["usOnly"] == "Samantha" and o["none"] is None
-          and o["maleOnly"] == "Daniel" and o["pchoices"][:2] == ["Ava (Premium)", "Ava"] and "Bubbles" not in o["pchoices"], o)
+    check("b. voice: a British man first (Daniel Enhanced over plain Daniel and Samantha); Daniel (Premium) over Ava (Premium); never Zarvox / Bubbles; none English = the phone's default",
+          o["best"] == "Daniel (Enhanced)" and o["premium"] == "Daniel (Premium)" and o["usOnly"] == "Samantha" and o["none"] is None
+          and o["maleOnly"] == "Daniel" and o["pchoices"][:2] == ["Daniel (Premium)", "Daniel (Enhanced)"] and "Bubbles" not in o["pchoices"], o)
     check("b. voice: the owner's pick is kept while the phone has it, else the best; a novelty pick is never used",
-          o["saved"] == "Karen" and o["gone"] == "Samantha" and o["saidNovelty"] == "Samantha", o)
-    check("b. voice: the choices are English only, best first, no novelty voice", o["choices"][:2] == ["Samantha", "Karen"]
+          o["saved"] == "Karen" and o["gone"] == "Daniel (Enhanced)" and o["saidNovelty"] == "Daniel (Enhanced)", o)
+    check("b. voice: the choices are English only, best first, no novelty voice", o["choices"][:2] == ["Daniel (Enhanced)", "Daniel"]
           and "Zarvox" not in o["choices"] and "Thomas" not in o["choices"], o["choices"])
     check("b. cards from the text: 'Zlarior · room  $1,106', 'ATLAS · room  $750' (copied as written, nothing computed)",
           o["frText"] == [{"k": "Zlarior · room", "v": "$1,106"}, {"k": "ATLAS · room", "v": "$750"}], o["frText"])
@@ -263,11 +265,11 @@ def run_main(br, url):
     # so the greeting is found by its words, and a turn's answer is what is said after it
     p.wait_for_function("window.__said.some((x) => /listening/i.test(x.text))", timeout=8000)
     g = p.evaluate("window.__said.find((x) => /listening/i.test(x.text))")
-    check("c. the greeting in her voice: Ava (Premium), at the voice's own pace and pitch (within the natural-speech nudge)", g["voice"] == "Ava (Premium)" and "listening" in g["text"].lower()
+    check("c. the greeting in his voice: Daniel (Enhanced), the best British man on the phone (the AI voice is not downloaded here), at the voice's own pace and pitch", g["voice"] == "Daniel (Enhanced)" and "listening" in g["text"].lower()
           and abs(g["rate"] - 1) <= 0.05 and abs(g["pitch"] - 1) <= 0.05, g)       # (2026-11-04: the natural-speech layer nudges rate / pitch by up to 2.5% per phrase)
     check("c. the 3D core goes full screen (mounted in voice mode, the Jarvis screen's core let go: one core at a time)",
           s.get("core") is not None and p.evaluate("document.getElementById('coreSlot').children.length") == 0, (s.get("core"), home_core))
-    check("c. the button labels the voice", p.inner_text("#vmVoice").lower().startswith("voice: ava"), p.inner_text("#vmVoice"))
+    check("c. the button names the voice setting: George (the AI voice, the default)", p.inner_text("#vmVoice").lower() == "voice: george", p.inner_text("#vmVoice"))
     # the mic analyser (asked inside the tile's tap) and the core reacting to it while listening
     # listening after the greeting: seen in the phase history (2026-11-18: on a loaded machine, 2 fps, the 'once' recognizer's whole turn
     # - listening, thinking, speaking, listening again - can pass between two polls of the current phase)
@@ -325,10 +327,10 @@ def run_main(br, url):
     p.click("#vmStage", position={"x": 60, "y": 60})
     wait_phase(p, "idle", 8000)
     p.click("#vmVoice")
-    p.wait_for_function("window.__said.some((x) => /at your service/.test(x.text))", timeout=5000)
-    pick = p.evaluate("[localStorage.getItem('jarvis.vmVoice'), window.__said[window.__said.length - 1].voice]")
-    pick.append(p.evaluate("JSON.parse(localStorage.getItem('jarvis.voiceCfg') || '{}').voice || ''"))
-    check("h. the VOICE button: the next voice (Ava compact), said and kept on this phone for voice mode and the Jarvis screen", pick == ["Ava", "Ava", "Ava"], pick)
+    p.wait_for_function("window.__said.some((x) => /iPhone voice/.test(x.text))", timeout=5000)
+    pick = p.evaluate("[JSON.parse(localStorage.getItem('jarvis.voiceEngine') || '{}').mode, window.__said[window.__said.length - 1].voice, document.getElementById('vmVoice').textContent]")
+    check("h. the VOICE button: the one setting switches to the iPhone voice (kept for voice mode and the Jarvis screen), said in it (Daniel Enhanced)",
+          pick == ["phone", "Daniel (Enhanced)", "Voice: iPhone"], pick)
     # f. END: the mic released
     p.click("#vmX")
     p.wait_for_function(f"!{VMS}.open", timeout=8000)
