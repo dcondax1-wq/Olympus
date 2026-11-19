@@ -142,7 +142,7 @@ def part_c(tmp, shots):
                 pg.click("#moInstX")
             A = pg.evaluate(SNAP)
             check("c. Home with a fresh report (1 minute old): the calm strip above the page, no banner, the visible link 'Open the new NQ page' (44 px tall) that goes to nq/",
-                  A and not A["hidden"] and A["level"] == "ok" and A["title"] == "The three NQ bots on one page" and A["link"] == "Open the new NQ page" and A["href"].endswith("/nq/") and A["h"] >= 44 and A["w"] >= 44 and A["above"]
+                  A and not A["hidden"] and A["level"] == "ok" and A["title"] == "Zlarior and ATLAS on one page" and A["link"] == "Open the new NQ page" and A["href"].endswith("/nq/") and A["h"] >= 44 and A["w"] >= 44 and A["above"]
                   and A["next"] == "page" and A["top"] < 400 and A["x"] <= 0, A)
             check("c. AGORA look: the strip's title is the serif", any(f in A["font"] for f in ("Palatino", "Iowan", "Georgia")), A["font"])
             sh(pg, "zenith_nq_fresh.png")
