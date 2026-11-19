@@ -82,7 +82,7 @@ NOW = [
 NAMES = {"Z50": "Zlarior 50K", "N25": "Zlarior 25K #2", "A25": "ATLAS funded 25K", "R25": "Rapid EOD 25K", "R2": "Rapid EOD 50K (next buy)"}
 PRICE_OF = {"Z50": P50, "N25": P25, "A25": P25, "R25": PR25, "R2": PR50}
 DECIDE_IDS = ("payout-ping-1000", "zlarior-funded25", "rapid25-lit-bank", "atlas-on-50k-funded", "atlas-on-rapid",
-              "keep-1000-rapid", "ask-mffu-parallel", "cloud-alerts", "atlas-funded-room-40")
+              "keep-1000-rapid", "ask-mffu-parallel", "cloud-alerts", "atlas-funded-room-40", "drop-lucid-account4")
 # a Decide item this tool ADDS when it is missing (2026-11-19, the lead: the ATLAS health study's one real trade-off, as an
 # owner choice with $); every other item is only ever valued, never added or removed
 NEW_ITEMS = [{
@@ -94,6 +94,16 @@ NEW_ITEMS = [{
     "source": "research/writeups/atlas-health-2026-11-18.md",
     "applies": "ATLAS's funded sizing 60% -> 40% of the room (engine/account_b funded preset; Claude changes it only after your "
                "yes, Sim check first)",
+    "added": "2026-11-19"}, {
+    "id": "drop-lucid-account4",
+    "question": "Business page: drop 'Account #4 = LucidPro 50K' and show your MFFU next buys instead (Rapid EOD 25K now, then a "
+                "fresh Builder 50K and a Rapid EOD 50K from payouts)?",
+    "why": "You said MFFU only, and your next buy is the Rapid EOD 25K, but the Business page still plans a LucidPro 50K as "
+           "account #4 (an older plan from Nov 14).",
+    "impact": "", "impact_usd": 0, "options": ["yes", "no", "later"], "status": "open",
+    "source": "docs/ACCOUNT_4.md",
+    "applies": "Claude swaps the Business page's account #4 line (business/businesscore.js ACCOUNT4 + its Python twin, "
+               "tests.test_money_door) for the Money plan's next buys; nothing live changes",
     "added": "2026-11-19"}]
 # Kalshi K8 (the gold / silver clock bets, live from the owner's phone 2026-11-19): NOT in any total above - unproven
 KALSHI_K8 = {
@@ -544,7 +554,18 @@ APPLIES = {
 
 def decision_values(res):
     out = {}
+    A = res["rows"]["H2"]["accounts"]
+    out["drop-lucid-account4"] = {
+        "usd_month": 0, "usd_month_by": {"jan_jun": 0, "jul_oct": 0, "y2021_25": 0}, "recommend": "yes",
+        "recommend_why": "Yes: it only fixes the page. Your MFFU path already has the better next buys, and a LucidPro account "
+                         "would also need its own rules set up and checked first.",
+        "risk": "None: words on a page; no account, order or setting changes.",
+        "impact": (f"$0 by itself (a page fix). For comparison, Jul-Oct-like: the Rapid EOD 25K you buy now is about "
+                   f"{usd(A['R25']['cash_m'])} a month, the Rapid EOD 50K from payouts about {usd(A['R2']['cash_m'])} a month; the "
+                   f"page's LucidPro line said about $810 a month (an older, non-MFFU estimate).")}
     for did in DECIDE_IDS:
+        if did in out:
+            continue
         if did in UNLOCKS:
             rec, why, risk = STATIC[did]
             D = {sp: res["rows"][sp]["decisions"].get(did) or {} for sp in SPANS}

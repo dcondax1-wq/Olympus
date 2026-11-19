@@ -3940,6 +3940,18 @@
   }
  },
  "decision_values": {
+  "drop-lucid-account4": {
+   "usd_month": 0,
+   "usd_month_by": {
+    "jan_jun": 0,
+    "jul_oct": 0,
+    "y2021_25": 0
+   },
+   "recommend": "yes",
+   "recommend_why": "Yes: it only fixes the page. Your MFFU path already has the better next buys, and a LucidPro account would also need its own rules set up and checked first.",
+   "risk": "None: words on a page; no account, order or setting changes.",
+   "impact": "$0 by itself (a page fix). For comparison, Jul-Oct-like: the Rapid EOD 25K you buy now is about $1,005 a month, the Rapid EOD 50K from payouts about $1,969 a month; the page's LucidPro line said about $810 a month (an older, non-MFFU estimate)."
+  },
   "payout-ping-1000": {
    "usd_month": -9,
    "usd_month_by": {
