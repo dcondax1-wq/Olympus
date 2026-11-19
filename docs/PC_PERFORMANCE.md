@@ -29,17 +29,25 @@ One double-click, same on the Surface and the main PC: **`CLEAN_STORAGE.bat`** (
 the site page `.../nq-dashboard/pc/`, section "Clean storage": it then fetches `pc/clean_storage.ps1` itself).
 1. It prints a plain table of what it would free (a size per category) and asks **Y**.
 2. It clears only safe things: temp files (older than 1 day), browser caches (never passwords or sign-ins), thumbnail and
-   icon caches, crash dumps and error reports, npm / pip caches, NinjaTrader's old logs, traces and cache folders, the bot's
-   own old logs / backups (the 3 newest stay) / `data\*.corrupt-*` / `__pycache__`. Windows asks once (click **Yes**) for its
-   own part: Windows temp, the Windows Update download cache, the Delivery Optimization cache, Windows crash dumps and old
-   Windows logs. The **Recycle Bin** and **Windows.old** (big, no way back to the old Windows) are asked about separately.
-3. It ends with **"Freed X GB, C: now Y GB free"** and writes every removed file with its size to
+   icon caches, crash dumps and error reports, npm / pip caches, NinjaTrader's own old log and trace files (14+ days), the
+   bot's own old logs / backups (the 3 newest stay) / `data\*.corrupt-*` / every `__pycache__` of its code / the research
+   replay cache `research\runs\_cache` (14+ days, rebuilt when needed) / old `OLYMPUS_BACKUP_*.zip` code zips in the bot
+   folder (14+ days, the 2 newest stay). Windows asks once (click **Yes**) for its own part: Windows temp, the Windows
+   Update download cache, the Delivery Optimization cache, Windows crash dumps and old Windows logs. The **Recycle Bin** and
+   **Windows.old** (big, no way back to the old Windows) are asked about separately.
+   **Second drive (2026-11-19):** if the PC has another fixed drive (D:, E: ...) with room and the bot and NinjaTrader are
+   stopped, ONE more Y/N question moves the bot's old archives that nothing reads (`data\_pre_clean_backup`,
+   `data\_cfd_archive`, `data\duka_cache`, `data\nt_export`, offered from 200 MB together) to
+   `<drive>\LiquidityEngine-archive` (robocopy /MOVE; a README.txt there says where they came from). Never the bot,
+   NinjaTrader, `backups\` (the bot restores from it) or anything live.
+3. It ends with **"Done: freed X GB. C: now Y GB free."** and writes every removed file with its size to
    `logs\clean_storage-DATE.txt` (no bot folder: `%LOCALAPPDATA%\LiquidityEngine\logs`).
 - **Never touched:** the bot's `data\` state files, `.env.local.ps1`, live_state / accounts / journals, the bar archive
-  `data\nt_bars`, NinjaTrader's workspaces, templates, `bin`, the database (`db`, except `db\cache`), `le_feed` (the bot's
-  bars), `incoming` / `outgoing` (orders), and anything outside its allow-list (a wrong `TEMP` variable cannot widen it).
-- **If the bot or NinjaTrader is running** it says so and skips their folders and Windows.old; only temp files (3 days old
-  then), caches and Windows junk are cleaned.
+  `data\nt_bars`, NinjaTrader's database (`db`, `db\cache` included), workspaces, templates, settings, `bin`, `le_feed`
+  (the bot's bars), `incoming` / `outgoing` (orders), and anything outside its allow-list (a wrong `TEMP` variable cannot widen it).
+- **If the bot or NinjaTrader is running** it says so and skips their folders, Windows.old and the archive move; only temp
+  files (3 days old then), caches and Windows junk are cleaned. For the full clean: when the bot is flat, STOP BOT, close
+  NinjaTrader, double-click CLEAN_STORAGE.bat again.
 - `CLEAN_STORAGE.bat -DryRun` (or `clean_pc.ps1 -Storage -DryRun`) only prints the table. `-KeepDays 30` keeps the bot's
   logs longer. OneDrive: it prints the "Free up space" (Files On-Demand) hint and warns not to use it on the NinjaTrader 8 folder.
 - The PC health line **Storage** (free GB on the bot's drive + bot folder + NinjaTrader folder size; amber < 15 GB, red

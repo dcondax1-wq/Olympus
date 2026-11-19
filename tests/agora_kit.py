@@ -201,8 +201,9 @@ def status_feed_prefix():
 
 
 def is_status_feed(u):
+    """the status topic, or its chart twin <topic>-bars (the NQ page's live chart, tools/pc_report.py le-bars; the same public data class)"""
     pre = status_feed_prefix()
-    return bool(pre) and u.startswith(pre)
+    return bool(pre) and (u.startswith(pre) or u.startswith(pre[:-1] + "-bars/"))
 
 
 def page(br, origin, w=390, h=844, reduced=False, lite=False, storage=None, mock=None):

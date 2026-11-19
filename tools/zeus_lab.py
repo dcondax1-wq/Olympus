@@ -11,6 +11,9 @@ Built on what exists (nothing re-implemented):
              before it is judged, + "rejected_forever" (the CLAUDE_REFERENCE "Tested and rejected" list + the learn loop's
              first 8: NEVER run again; a "blocks" entry stops any experiment on that bot + feature, cross ones too).
   members    kind atlas_member = a NEW ATLAS member (tools/atlas_plus.py, its stored verdict; "cells" = versions searched).
+  funded     kind atlas_funded = a protective rule family on ATLAS's FUNDED 25K (tools/atlas_health.py, its stored verdict:
+             member pause / edge-light size / day loss cap / smaller risk in a hole / skips; the family's Jan-Jun pick, the
+             funded gate incl. the live stuck stop, and it must act in Jul-Oct; "cells" = versions scored).
   re-test    the REAL backtests through engine/learn_loop's runners: LIT = tools/lit_edge.evaluate (run lit_live re-walked:
              the LIT size + the live two_week eval path, costs in); ATLAS = tools/atlas_deep.score (the real account-B rules,
              engine/second.py members). Kinds: lit_tilt / atlas_tilt (the learn-loop rule language), lit_x (a
@@ -65,7 +68,8 @@ REF_DOC = os.path.join(ROOT, "docs", "TESTED_AND_REJECTED.md")   # moved out of 
 EDGE = os.path.join(ROOT, "research", "lab", "edge_health.json")
 ZEUS_QUEUE = os.path.join(ROOT, "research", "zeus_queue.jsonl")         # night-learn's daily review proposals (tools/data_pull.py)
 VERSION = 1
-RUNNABLE = ("lit_tilt", "atlas_tilt", "lit_x", "atlas_member", "lit_idea")
+RUNNABLE = ("lit_tilt", "atlas_tilt", "lit_x", "atlas_member", "lit_idea", "atlas_funded")
+FUNDED_FAMILIES = ("M", "L", "D", "S", "K")   # tools/atlas_health.FAMILY
 KINDS = RUNNABLE + ("parked",)
 BOTS = ("lit", "atlas", "kalshi")
 LIT_X_KEYS = ("tgt", "be", "tc", "speed", "slow", "late")
@@ -157,6 +161,8 @@ def load_registry(path: str = REGISTRY) -> tuple:
                 er.append("lit_idea is for bot lit")
         if e.get("kind") == "atlas_member" and (e.get("bot") != "atlas" or not e.get("family")):
             er.append("atlas_member is for bot atlas and needs family (tools/atlas_plus.py)")
+        if e.get("kind") == "atlas_funded" and (e.get("bot") != "atlas" or e.get("family") not in FUNDED_FAMILIES):
+            er.append(f"atlas_funded is for bot atlas and needs family in {FUNDED_FAMILIES} (tools/atlas_health.py)")
         if e.get("kind") == "parked" and not e.get("parked_why"):
             er.append("a parked experiment needs parked_why")
         if er:
@@ -262,8 +268,9 @@ def cross_experiments(exps: list, forever: list) -> list:
 
 def cells(exps: list, queue_n: int = 0) -> int:
     """Cells ever judged in this search: every runnable Lab experiment (cross ones too) + the learn queue. An atlas_member
-    family counts every version its tool searched ("cells")."""
-    return sum(int(e.get("cells") or 1) if e.get("kind") == "atlas_member" else 1 for e in exps if e.get("kind") in RUNNABLE) + int(queue_n)
+    or atlas_funded family counts every version its tool searched ("cells")."""
+    return sum(int(e.get("cells") or 1) if e.get("kind") in ("atlas_member", "atlas_funded") else 1
+               for e in exps if e.get("kind") in RUNNABLE) + int(queue_n)
 
 
 def p_needed(n_cells: int, alpha: float = 0.2) -> float:
@@ -330,7 +337,8 @@ def run_lit(e: dict, C, rules: dict) -> dict:
     elif e["kind"] == "lit_idea":                                               # tools/lit_lab_ideas (exit / size ideas)
         from tools import lit_lab_ideas as LI
         rule = None
-        o, U, L = E.evaluate(U=LI.units(e["idea"]))
+        with LI.eval_hook(e["idea"]):                                           # eval ideas: the eval path's sizing
+            o, U, L = E.evaluate(U=LI.units(e["idea"]))
         hits = LI.hits(e["idea"], U, U0)
     else:
         rule = None
@@ -402,9 +410,19 @@ def run_member(e: dict, C, rules: dict) -> dict:
     return AP.lab_result(e)
 
 
+def run_funded(e: dict, C, rules: dict) -> dict:
+    """atlas_funded: a protective rule family on ATLAS's funded 25K (tools/atlas_health.py: the funded Monte Carlo with the
+    live stuck stop, from a fresh start and from today's balance, real day order, fixed-$250 view, random-timing control).
+    Reads that tool's stored verdict (research/second/atlas_health.json; rerun the tool for new bars)."""
+    from tools import atlas_health as AH
+    return AH.lab_result(e)
+
+
 def run_one(e: dict, C, rules: dict) -> dict:
     if e["kind"] == "atlas_member":
         return run_member(e, C, rules)
+    if e["kind"] == "atlas_funded":
+        return run_funded(e, C, rules)
     return run_atlas(e, C, rules) if e["kind"] == "atlas_tilt" else run_lit(e, C, rules)
 
 

@@ -1,4 +1,22 @@
 ## Tested and rejected (don't redo without a new idea)
+- **Zlarior's two live evals together (2026-11-18b, `lit-ideas-2026-11-18b.md`, `tools/money/lit_two_evals.py`, Lab
+  `lit_eval_zombie` / `lit_two_eval_stagger`):** the 50K hole + the 25K #2 on ONE Monte Carlo (same paths, live sizing).
+  ATLAS's zombie-eval rule on Zlarior (1-micro last bullet at 80% of the room + give up under $200): pair +$57 / +$51 a
+  month only by killing evals (2-week fails 50K 4.9 -> 10.4 / 3.1 -> 6.9%, 25K 0 -> 8.1 / 0 -> 8.3%, both dead in 20
+  sessions 0.4 -> 16.3%); stagger (alternate full / half size per signal): -$80 / -$49 a month, 25K 2-week pass 48 -> 31%.
+  Today both evals die together 0.3-0.4% within 20 sessions: the joint risk is waiting, not failing. Rejected.
+- **ATLAS funded 25K protective rules (2026-11-18, `atlas-health-2026-11-18.md`, `tools/atlas_health.py`,
+  `research/second/atlas_health.json`, Lab kind `atlas_funded`):** 17 pre-declared + 5 post-hoc on the funded 25K Monte
+  Carlo WITH the live $100 stuck stop (600 paths, fresh start + today's -$113, real day order, fixed $250, random-timing
+  controls): member pause on its own last 10 / 20 trades (PF < 1 -> paper / x0.5), size by the edge light (AMBER / RED x0.75
+  / x0.5 / paper, last-40 R-PF < 1.5 x0.5), day caps (stop after a loss, $275, $367, a third of the room), 30-40% of the room
+  in a hole or always, skip the day after a losing day. 0 pass: caps / skips / light sizes cost $18-191 a month in Jul-Oct
+  or slow the first payout; the member pause never acts in Jul-Oct (Jan-Jun +$9, 2021-25 stranded 94.5 -> 90.5%, random
+  halving 93%); 40% of the room halves 2026 stranding (8.5 / 9.2 -> 5.8 / 4.5%) at the same $ but first payout 18 / 25 -> 20
+  / 31 sessions. VIX < 15 skip re-measured: still post-hoc + a $ knife edge (Jul-Oct $543 / $581 / $490 / $330 at 14.5 / 15
+  / 15.5 / 16). Found: at 60% of the room the stuck stop strands ~9% (2026-like) / ~95% (2021-25-like) funded 25Ks in 6
+  months; older funded tools showed 0% lost. The AMBER light = a calm-market dip (VIX < 18 every session Aug 24 - Oct 16,
+  still +8.0R at a fixed size). Nothing changed.
 - **ZEUS Lab LIT ideas (2026-11-18, `zeus-lab-lit-ideas-2026-11-18.md`, `tools/lit_lab_ideas.py`, Lab kind `lit_idea`):** 10
   pre-declared single versions on the live LIT trades (LIT size + two_week eval path room 0.4, costs in), $/month vs today H1 /
   H2: time stop 60 min without +1R -$695 / -$945; out at 09:29 if not at BE -$317 / +$33 (5 + 2 trades); BE at 09:29 if +0.5R

@@ -23,3 +23,14 @@ function global:Start-Process {
     foreach ($l in $out) { [Console]::WriteLine("CHILD| $l") }
     return [pscustomobject]@{ ExitCode = $code }
 }
+# robocopy /MOVE (the old archives to a second drive): a REAL move inside the sandbox tree (copy, then remove the source),
+# exit 1 like robocopy after files were copied; anything but /MOVE is refused with 16 (robocopy's fatal error)
+function global:robocopy.exe {
+    $src = "$($args[0])"; $dst = "$($args[1])"
+    [Console]::WriteLine("HARNESS-ROBOCOPY $src -> $dst $($args[2..($args.Count - 1)] -join ' ')")
+    if (-not ($args -contains '/MOVE')) { $global:LASTEXITCODE = 16; return }
+    New-Item -ItemType Directory -Path $dst -Force | Out-Null
+    Copy-Item -Path (Join-Path $src '*') -Destination $dst -Recurse -Force
+    Remove-Item -LiteralPath $src -Recurse -Force
+    $global:LASTEXITCODE = 1
+}
