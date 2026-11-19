@@ -1,0 +1,6440 @@
+{
+ "stake_$": 15.0,
+ "split": {
+  "train": [
+   "2026-08-03",
+   "2026-09-30"
+  ],
+  "test": [
+   "2026-10-01",
+   "2026-11-18"
+  ]
+ },
+ "legs": {
+  "A_gold": {
+   "label": "05:30 DOWN gold",
+   "tape": {
+    "train": {
+     "n": 42,
+     "win_rate": 0.714,
+     "avg_price": 0.512,
+     "implied_win": 0.512,
+     "avg_win_$": 13.8,
+     "avg_loss_$": -15.27,
+     "net_$": 230.94,
+     "net_per_$1": 0.3608,
+     "t_stat": 2.61,
+     "worst_streak": 3,
+     "max_dd_$": -52.52,
+     "trades_per_month": 22.0,
+     "usd_per_month": 121.2,
+     "first": "2026-08-04",
+     "last": "2026-09-30",
+     "ci95_net_per_$1": [
+      0.095,
+      0.635
+     ],
+     "median_contracts_our_side_first45s": 648.1
+    },
+    "test": {
+     "n": 35,
+     "win_rate": 0.743,
+     "avg_price": 0.529,
+     "implied_win": 0.529,
+     "avg_win_$": 13.16,
+     "avg_loss_$": -15.29,
+     "net_$": 204.53,
+     "net_per_$1": 0.3834,
+     "t_stat": 2.63,
+     "worst_streak": 4,
+     "max_dd_$": -61.13,
+     "trades_per_month": 21.7,
+     "usd_per_month": 127.06,
+     "first": "2026-10-01",
+     "last": "2026-11-18",
+     "ci95_net_per_$1": [
+      0.098,
+      0.652
+     ],
+     "median_contracts_our_side_first45s": 4986.03
+    }
+   },
+   "m1": {
+    "train": {
+     "n": 42,
+     "win_rate": 0.714,
+     "avg_price": 0.505,
+     "implied_win": 0.497,
+     "avg_win_$": 14.03,
+     "avg_loss_$": -15.37,
+     "net_$": 236.63,
+     "net_per_$1": 0.3684,
+     "t_stat": 2.54,
+     "worst_streak": 3,
+     "max_dd_$": -54.5,
+     "trades_per_month": 22.0,
+     "usd_per_month": 124.19,
+     "first": "2026-08-04",
+     "last": "2026-09-30",
+     "ci95_net_per_$1": [
+      0.09,
+      0.667
+     ]
+    },
+    "test": {
+     "n": 35,
+     "win_rate": 0.743,
+     "avg_price": 0.544,
+     "implied_win": 0.539,
+     "avg_win_$": 13.48,
+     "avg_loss_$": -15.23,
+     "net_$": 213.38,
+     "net_per_$1": 0.3999,
+     "t_stat": 2.49,
+     "worst_streak": 4,
+     "max_dd_$": -61.3,
+     "trades_per_month": 21.7,
+     "usd_per_month": 132.56,
+     "first": "2026-10-01",
+     "last": "2026-11-18",
+     "ci95_net_per_$1": [
+      0.095,
+      0.701
+     ]
+    }
+   },
+   "by_month": {
+    "2026-08": {
+     "n": 20,
+     "paid": 0.5,
+     "won": 0.6,
+     "net_per_$1": 0.089
+    },
+    "2026-09": {
+     "n": 22,
+     "paid": 0.51,
+     "won": 0.818,
+     "net_per_$1": 0.622
+    },
+    "2026-10": {
+     "n": 22,
+     "paid": 0.543,
+     "won": 0.636,
+     "net_per_$1": 0.209
+    },
+    "2026-11": {
+     "n": 13,
+     "paid": 0.546,
+     "won": 0.923,
+     "net_per_$1": 0.722
+    }
+   },
+   "filters": {
+    "none": {
+     "train": {
+      "n": 42,
+      "win_rate": 0.714,
+      "avg_price": 0.512,
+      "implied_win": 0.512,
+      "avg_win_$": 13.8,
+      "avg_loss_$": -15.27,
+      "net_$": 230.94,
+      "net_per_$1": 0.3608,
+      "t_stat": 2.61,
+      "worst_streak": 3,
+      "max_dd_$": -52.52,
+      "trades_per_month": 22.0,
+      "usd_per_month": 121.2,
+      "first": "2026-08-04",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 35,
+      "win_rate": 0.743,
+      "avg_price": 0.529,
+      "implied_win": 0.529,
+      "avg_win_$": 13.16,
+      "avg_loss_$": -15.29,
+      "net_$": 204.53,
+      "net_per_$1": 0.3834,
+      "t_stat": 2.63,
+      "worst_streak": 4,
+      "max_dd_$": -61.13,
+      "trades_per_month": 21.7,
+      "usd_per_month": 127.06,
+      "first": "2026-10-01",
+      "last": "2026-11-18"
+     }
+    },
+    "price<=0.50": {
+     "train": {
+      "n": 17,
+      "win_rate": 0.706,
+      "avg_price": 0.454,
+      "implied_win": 0.454,
+      "avg_win_$": 17.53,
+      "avg_loss_$": -15.34,
+      "net_$": 133.68,
+      "net_per_$1": 0.5116,
+      "t_stat": 2.07,
+      "worst_streak": 1,
+      "max_dd_$": -15.55,
+      "trades_per_month": 9.6,
+      "usd_per_month": 75.36,
+      "first": "2026-08-06",
+      "last": "2026-09-28"
+     },
+     "test": {
+      "n": 12,
+      "win_rate": 0.667,
+      "avg_price": 0.438,
+      "implied_win": 0.438,
+      "avg_win_$": 19.14,
+      "avg_loss_$": -15.31,
+      "net_$": 91.85,
+      "net_per_$1": 0.4988,
+      "t_stat": 1.54,
+      "worst_streak": 2,
+      "max_dd_$": -30.49,
+      "trades_per_month": 7.8,
+      "usd_per_month": 59.49,
+      "first": "2026-10-01",
+      "last": "2026-11-16"
+     }
+    },
+    "price<=0.55": {
+     "train": {
+      "n": 33,
+      "win_rate": 0.667,
+      "avg_price": 0.488,
+      "implied_win": 0.488,
+      "avg_win_$": 15.35,
+      "avg_loss_$": -15.28,
+      "net_$": 169.67,
+      "net_per_$1": 0.3364,
+      "t_stat": 1.98,
+      "worst_streak": 3,
+      "max_dd_$": -60.55,
+      "trades_per_month": 17.9,
+      "usd_per_month": 92.23,
+      "first": "2026-08-06",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 18,
+      "win_rate": 0.722,
+      "avg_price": 0.467,
+      "implied_win": 0.467,
+      "avg_win_$": 16.74,
+      "avg_loss_$": -15.31,
+      "net_$": 141.12,
+      "net_per_$1": 0.5115,
+      "t_stat": 2.2,
+      "worst_streak": 3,
+      "max_dd_$": -45.81,
+      "trades_per_month": 11.7,
+      "usd_per_month": 91.39,
+      "first": "2026-10-01",
+      "last": "2026-11-16"
+     }
+    },
+    "price<=0.60": {
+     "train": {
+      "n": 37,
+      "win_rate": 0.703,
+      "avg_price": 0.497,
+      "implied_win": 0.497,
+      "avg_win_$": 14.63,
+      "avg_loss_$": -15.28,
+      "net_$": 212.33,
+      "net_per_$1": 0.376,
+      "t_stat": 2.47,
+      "worst_streak": 3,
+      "max_dd_$": -60.55,
+      "trades_per_month": 19.4,
+      "usd_per_month": 111.44,
+      "first": "2026-08-04",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 30,
+      "win_rate": 0.733,
+      "avg_price": 0.513,
+      "implied_win": 0.513,
+      "avg_win_$": 14.01,
+      "avg_loss_$": -15.29,
+      "net_$": 185.82,
+      "net_per_$1": 0.4065,
+      "t_stat": 2.49,
+      "worst_streak": 3,
+      "max_dd_$": -45.81,
+      "trades_per_month": 18.6,
+      "usd_per_month": 115.44,
+      "first": "2026-10-01",
+      "last": "2026-11-18"
+     }
+    },
+    "price<=0.65": {
+     "train": {
+      "n": 42,
+      "win_rate": 0.714,
+      "avg_price": 0.512,
+      "implied_win": 0.512,
+      "avg_win_$": 13.8,
+      "avg_loss_$": -15.27,
+      "net_$": 230.94,
+      "net_per_$1": 0.3608,
+      "t_stat": 2.61,
+      "worst_streak": 3,
+      "max_dd_$": -52.52,
+      "trades_per_month": 22.0,
+      "usd_per_month": 121.2,
+      "first": "2026-08-04",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 35,
+      "win_rate": 0.743,
+      "avg_price": 0.529,
+      "implied_win": 0.529,
+      "avg_win_$": 13.16,
+      "avg_loss_$": -15.29,
+      "net_$": 204.53,
+      "net_per_$1": 0.3834,
+      "t_stat": 2.63,
+      "worst_streak": 4,
+      "max_dd_$": -61.13,
+      "trades_per_month": 21.7,
+      "usd_per_month": 127.06,
+      "first": "2026-10-01",
+      "last": "2026-11-18"
+     }
+    },
+    "price<=0.70": {
+     "train": {
+      "n": 42,
+      "win_rate": 0.714,
+      "avg_price": 0.512,
+      "implied_win": 0.512,
+      "avg_win_$": 13.8,
+      "avg_loss_$": -15.27,
+      "net_$": 230.94,
+      "net_per_$1": 0.3608,
+      "t_stat": 2.61,
+      "worst_streak": 3,
+      "max_dd_$": -52.52,
+      "trades_per_month": 22.0,
+      "usd_per_month": 121.2,
+      "first": "2026-08-04",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 35,
+      "win_rate": 0.743,
+      "avg_price": 0.529,
+      "implied_win": 0.529,
+      "avg_win_$": 13.16,
+      "avg_loss_$": -15.29,
+      "net_$": 204.53,
+      "net_per_$1": 0.3834,
+      "t_stat": 2.63,
+      "worst_streak": 4,
+      "max_dd_$": -61.13,
+      "trades_per_month": 21.7,
+      "usd_per_month": 127.06,
+      "first": "2026-10-01",
+      "last": "2026-11-18"
+     }
+    },
+    "price>=0.45": {
+     "train": {
+      "n": 35,
+      "win_rate": 0.714,
+      "avg_price": 0.531,
+      "implied_win": 0.531,
+      "avg_win_$": 12.46,
+      "avg_loss_$": -15.22,
+      "net_$": 159.35,
+      "net_per_$1": 0.2997,
+      "t_stat": 2.1,
+      "worst_streak": 2,
+      "max_dd_$": -44.18,
+      "trades_per_month": 18.4,
+      "usd_per_month": 83.63,
+      "first": "2026-08-04",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 28,
+      "win_rate": 0.714,
+      "avg_price": 0.558,
+      "implied_win": 0.558,
+      "avg_win_$": 11.04,
+      "avg_loss_$": -15.29,
+      "net_$": 98.51,
+      "net_per_$1": 0.2315,
+      "t_stat": 1.54,
+      "worst_streak": 3,
+      "max_dd_$": -45.77,
+      "trades_per_month": 17.8,
+      "usd_per_month": 62.47,
+      "first": "2026-10-02",
+      "last": "2026-11-18"
+     }
+    },
+    "price>=0.50": {
+     "train": {
+      "n": 25,
+      "win_rate": 0.72,
+      "avg_price": 0.551,
+      "implied_win": 0.551,
+      "avg_win_$": 11.32,
+      "avg_loss_$": -15.21,
+      "net_$": 97.26,
+      "net_per_$1": 0.2568,
+      "t_stat": 1.6,
+      "worst_streak": 2,
+      "max_dd_$": -44.79,
+      "trades_per_month": 13.1,
+      "usd_per_month": 51.05,
+      "first": "2026-08-04",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 23,
+      "win_rate": 0.783,
+      "avg_price": 0.576,
+      "implied_win": 0.576,
+      "avg_win_$": 10.5,
+      "avg_loss_$": -15.28,
+      "net_$": 112.68,
+      "net_per_$1": 0.3226,
+      "t_stat": 2.16,
+      "worst_streak": 2,
+      "max_dd_$": -30.64,
+      "trades_per_month": 16.3,
+      "usd_per_month": 79.77,
+      "first": "2026-10-07",
+      "last": "2026-11-18"
+     }
+    },
+    "price>=0.55": {
+     "train": {
+      "n": 9,
+      "win_rate": 0.889,
+      "avg_price": 0.599,
+      "implied_win": 0.599,
+      "avg_win_$": 9.55,
+      "avg_loss_$": -15.1,
+      "net_$": 61.28,
+      "net_per_$1": 0.4515,
+      "t_stat": 2.46,
+      "worst_streak": 1,
+      "max_dd_$": -15.1,
+      "trades_per_month": 5.4,
+      "usd_per_month": 36.57,
+      "first": "2026-08-04",
+      "last": "2026-09-23"
+     },
+     "test": {
+      "n": 17,
+      "win_rate": 0.765,
+      "avg_price": 0.594,
+      "implied_win": 0.594,
+      "avg_win_$": 9.58,
+      "avg_loss_$": -15.27,
+      "net_$": 63.42,
+      "net_per_$1": 0.2462,
+      "t_stat": 1.44,
+      "worst_streak": 1,
+      "max_dd_$": -20.51,
+      "trades_per_month": 12.3,
+      "usd_per_month": 45.96,
+      "first": "2026-10-08",
+      "last": "2026-11-18"
+     }
+    },
+    "prev15 up": {
+     "train": {
+      "n": 29,
+      "win_rate": 0.759,
+      "avg_price": 0.508,
+      "implied_win": 0.508,
+      "avg_win_$": 14.33,
+      "avg_loss_$": -15.27,
+      "net_$": 208.29,
+      "net_per_$1": 0.4705,
+      "t_stat": 2.91,
+      "worst_streak": 3,
+      "max_dd_$": -46.1,
+      "trades_per_month": 15.8,
+      "usd_per_month": 113.22,
+      "first": "2026-08-05",
+      "last": "2026-09-29"
+     },
+     "test": {
+      "n": 21,
+      "win_rate": 0.81,
+      "avg_price": 0.521,
+      "implied_win": 0.521,
+      "avg_win_$": 14.24,
+      "avg_loss_$": -15.27,
+      "net_$": 180.97,
+      "net_per_$1": 0.5655,
+      "t_stat": 3.14,
+      "worst_streak": 2,
+      "max_dd_$": -30.64,
+      "trades_per_month": 13.6,
+      "usd_per_month": 117.21,
+      "first": "2026-10-01",
+      "last": "2026-11-16"
+     }
+    },
+    "prev15 down": {
+     "train": {
+      "n": 13,
+      "win_rate": 0.615,
+      "avg_price": 0.522,
+      "implied_win": 0.522,
+      "avg_win_$": 12.37,
+      "avg_loss_$": -15.26,
+      "net_$": 22.65,
+      "net_per_$1": 0.1148,
+      "t_stat": 0.45,
+      "worst_streak": 2,
+      "max_dd_$": -30.79,
+      "trades_per_month": 6.8,
+      "usd_per_month": 11.89,
+      "first": "2026-08-04",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 13,
+      "win_rate": 0.615,
+      "avg_price": 0.535,
+      "implied_win": 0.535,
+      "avg_win_$": 11.43,
+      "avg_loss_$": -15.31,
+      "net_$": 14.88,
+      "net_per_$1": 0.0751,
+      "t_stat": 0.31,
+      "worst_streak": 3,
+      "max_dd_$": -49.45,
+      "trades_per_month": 8.8,
+      "usd_per_month": 10.06,
+      "first": "2026-10-05",
+      "last": "2026-11-18"
+     }
+    },
+    "prior4h up": {
+     "train": {
+      "n": 25,
+      "win_rate": 0.68,
+      "avg_price": 0.513,
+      "implied_win": 0.513,
+      "avg_win_$": 13.25,
+      "avg_loss_$": -15.29,
+      "net_$": 102.98,
+      "net_per_$1": 0.2703,
+      "t_stat": 1.49,
+      "worst_streak": 2,
+      "max_dd_$": -53.04,
+      "trades_per_month": 13.4,
+      "usd_per_month": 54.99,
+      "first": "2026-08-05",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 13,
+      "win_rate": 0.615,
+      "avg_price": 0.518,
+      "implied_win": 0.518,
+      "avg_win_$": 13.51,
+      "avg_loss_$": -15.29,
+      "net_$": 31.63,
+      "net_per_$1": 0.1594,
+      "t_stat": 0.59,
+      "worst_streak": 3,
+      "max_dd_$": -45.81,
+      "trades_per_month": 9.2,
+      "usd_per_month": 22.39,
+      "first": "2026-10-05",
+      "last": "2026-11-16"
+     }
+    },
+    "prior4h down": {
+     "train": {
+      "n": 17,
+      "win_rate": 0.765,
+      "avg_price": 0.51,
+      "implied_win": 0.51,
+      "avg_win_$": 14.53,
+      "avg_loss_$": -15.22,
+      "net_$": 127.96,
+      "net_per_$1": 0.494,
+      "t_stat": 2.3,
+      "worst_streak": 1,
+      "max_dd_$": -15.36,
+      "trades_per_month": 9.2,
+      "usd_per_month": 69.56,
+      "first": "2026-08-04",
+      "last": "2026-09-28"
+     },
+     "test": {
+      "n": 22,
+      "win_rate": 0.818,
+      "avg_price": 0.535,
+      "implied_win": 0.535,
+      "avg_win_$": 13.01,
+      "avg_loss_$": -15.3,
+      "net_$": 172.9,
+      "net_per_$1": 0.516,
+      "t_stat": 3.11,
+      "worst_streak": 1,
+      "max_dd_$": -15.38,
+      "trades_per_month": 13.7,
+      "usd_per_month": 107.41,
+      "first": "2026-10-01",
+      "last": "2026-11-18"
+     }
+    },
+    "prior11h up": {
+     "train": {
+      "n": 17,
+      "win_rate": 0.647,
+      "avg_price": 0.516,
+      "implied_win": 0.516,
+      "avg_win_$": 13.34,
+      "avg_loss_$": -15.22,
+      "net_$": 55.41,
+      "net_per_$1": 0.2143,
+      "t_stat": 0.94,
+      "worst_streak": 3,
+      "max_dd_$": -45.62,
+      "trades_per_month": 9.1,
+      "usd_per_month": 29.59,
+      "first": "2026-08-05",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 16,
+      "win_rate": 0.625,
+      "avg_price": 0.527,
+      "implied_win": 0.527,
+      "avg_win_$": 13.59,
+      "avg_loss_$": -15.27,
+      "net_$": 44.28,
+      "net_per_$1": 0.1817,
+      "t_stat": 0.74,
+      "worst_streak": 1,
+      "max_dd_$": -27.29,
+      "trades_per_month": 10.1,
+      "usd_per_month": 28.08,
+      "first": "2026-10-01",
+      "last": "2026-11-17"
+     }
+    },
+    "prior11h down": {
+     "train": {
+      "n": 24,
+      "win_rate": 0.75,
+      "avg_price": 0.504,
+      "implied_win": 0.504,
+      "avg_win_$": 14.41,
+      "avg_loss_$": -15.31,
+      "net_$": 167.51,
+      "net_per_$1": 0.457,
+      "t_stat": 2.52,
+      "worst_streak": 2,
+      "max_dd_$": -30.82,
+      "trades_per_month": 13.0,
+      "usd_per_month": 91.05,
+      "first": "2026-08-04",
+      "last": "2026-09-28"
+     },
+     "test": {
+      "n": 19,
+      "win_rate": 0.842,
+      "avg_price": 0.531,
+      "implied_win": 0.531,
+      "avg_win_$": 12.89,
+      "avg_loss_$": -15.33,
+      "net_$": 160.25,
+      "net_per_$1": 0.553,
+      "t_stat": 3.28,
+      "worst_streak": 3,
+      "max_dd_$": -46.0,
+      "trades_per_month": 13.5,
+      "usd_per_month": 113.44,
+      "first": "2026-10-07",
+      "last": "2026-11-18"
+     }
+    },
+    "Mon-Wed": {
+     "train": {
+      "n": 26,
+      "win_rate": 0.808,
+      "avg_price": 0.526,
+      "implied_win": 0.526,
+      "avg_win_$": 13.2,
+      "avg_loss_$": -15.2,
+      "net_$": 201.26,
+      "net_per_$1": 0.5086,
+      "t_stat": 3.32,
+      "worst_streak": 2,
+      "max_dd_$": -30.57,
+      "trades_per_month": 13.6,
+      "usd_per_month": 105.63,
+      "first": "2026-08-04",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 21,
+      "win_rate": 0.762,
+      "avg_price": 0.51,
+      "implied_win": 0.51,
+      "avg_win_$": 13.75,
+      "avg_loss_$": -15.33,
+      "net_$": 143.36,
+      "net_per_$1": 0.4471,
+      "t_stat": 2.39,
+      "worst_streak": 3,
+      "max_dd_$": -45.81,
+      "trades_per_month": 14.2,
+      "usd_per_month": 96.97,
+      "first": "2026-10-05",
+      "last": "2026-11-18"
+     }
+    },
+    "Thu-Fri": {
+     "train": {
+      "n": 16,
+      "win_rate": 0.562,
+      "avg_price": 0.488,
+      "implied_win": 0.488,
+      "avg_win_$": 15.21,
+      "avg_loss_$": -15.31,
+      "net_$": 29.68,
+      "net_per_$1": 0.1215,
+      "t_stat": 0.47,
+      "worst_streak": 4,
+      "max_dd_$": -61.15,
+      "trades_per_month": 9.5,
+      "usd_per_month": 17.71,
+      "first": "2026-08-06",
+      "last": "2026-09-25"
+     },
+     "test": {
+      "n": 14,
+      "win_rate": 0.714,
+      "avg_price": 0.557,
+      "implied_win": 0.557,
+      "avg_win_$": 12.22,
+      "avg_loss_$": -15.25,
+      "net_$": 61.17,
+      "net_per_$1": 0.2874,
+      "t_stat": 1.21,
+      "worst_streak": 2,
+      "max_dd_$": -36.98,
+      "trades_per_month": 9.7,
+      "usd_per_month": 42.32,
+      "first": "2026-10-01",
+      "last": "2026-11-13"
+     }
+    }
+   },
+   "filter_picked_on_train": "Mon-Wed"
+  },
+  "A_silver": {
+   "label": "05:30 DOWN silver",
+   "tape": {
+    "train": {
+     "n": 41,
+     "win_rate": 0.683,
+     "avg_price": 0.51,
+     "implied_win": 0.51,
+     "avg_win_$": 13.78,
+     "avg_loss_$": -15.32,
+     "net_$": 186.71,
+     "net_per_$1": 0.2986,
+     "t_stat": 2.08,
+     "worst_streak": 3,
+     "max_dd_$": -75.85,
+     "trades_per_month": 21.5,
+     "usd_per_month": 97.99,
+     "first": "2026-08-04",
+     "last": "2026-09-30",
+     "ci95_net_per_$1": [
+      0.013,
+      0.569
+     ],
+     "median_contracts_our_side_first45s": 82.78
+    },
+    "test": {
+     "n": 35,
+     "win_rate": 0.571,
+     "avg_price": 0.517,
+     "implied_win": 0.517,
+     "avg_win_$": 13.55,
+     "avg_loss_$": -15.15,
+     "net_$": 43.74,
+     "net_per_$1": 0.082,
+     "t_stat": 0.48,
+     "worst_streak": 3,
+     "max_dd_$": -48.72,
+     "trades_per_month": 21.7,
+     "usd_per_month": 27.17,
+     "first": "2026-10-01",
+     "last": "2026-11-18",
+     "ci95_net_per_$1": [
+      -0.241,
+      0.381
+     ],
+     "median_contracts_our_side_first45s": 229.96
+    }
+   },
+   "m1": {
+    "train": {
+     "n": 41,
+     "win_rate": 0.683,
+     "avg_price": 0.505,
+     "implied_win": 0.497,
+     "avg_win_$": 15.89,
+     "avg_loss_$": -15.28,
+     "net_$": 246.29,
+     "net_per_$1": 0.3936,
+     "t_stat": 2.36,
+     "worst_streak": 3,
+     "max_dd_$": -51.1,
+     "trades_per_month": 21.5,
+     "usd_per_month": 129.26,
+     "first": "2026-08-04",
+     "last": "2026-09-30",
+     "ci95_net_per_$1": [
+      0.083,
+      0.721
+     ]
+    },
+    "test": {
+     "n": 35,
+     "win_rate": 0.571,
+     "avg_price": 0.521,
+     "implied_win": 0.516,
+     "avg_win_$": 16.31,
+     "avg_loss_$": -15.21,
+     "net_$": 97.89,
+     "net_per_$1": 0.1833,
+     "t_stat": 0.9,
+     "worst_streak": 3,
+     "max_dd_$": -51.2,
+     "trades_per_month": 21.7,
+     "usd_per_month": 60.81,
+     "first": "2026-10-01",
+     "last": "2026-11-18",
+     "ci95_net_per_$1": [
+      -0.211,
+      0.561
+     ]
+    }
+   },
+   "by_month": {
+    "2026-08": {
+     "n": 19,
+     "paid": 0.483,
+     "won": 0.632,
+     "net_per_$1": 0.364
+    },
+    "2026-09": {
+     "n": 22,
+     "paid": 0.524,
+     "won": 0.727,
+     "net_per_$1": 0.419
+    },
+    "2026-10": {
+     "n": 22,
+     "paid": 0.536,
+     "won": 0.591,
+     "net_per_$1": 0.185
+    },
+    "2026-11": {
+     "n": 13,
+     "paid": 0.496,
+     "won": 0.538,
+     "net_per_$1": 0.18
+    }
+   },
+   "filters": {
+    "none": {
+     "train": {
+      "n": 41,
+      "win_rate": 0.683,
+      "avg_price": 0.51,
+      "implied_win": 0.51,
+      "avg_win_$": 13.78,
+      "avg_loss_$": -15.32,
+      "net_$": 186.71,
+      "net_per_$1": 0.2986,
+      "t_stat": 2.08,
+      "worst_streak": 3,
+      "max_dd_$": -75.85,
+      "trades_per_month": 21.5,
+      "usd_per_month": 97.99,
+      "first": "2026-08-04",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 35,
+      "win_rate": 0.571,
+      "avg_price": 0.517,
+      "implied_win": 0.517,
+      "avg_win_$": 13.55,
+      "avg_loss_$": -15.15,
+      "net_$": 43.74,
+      "net_per_$1": 0.082,
+      "t_stat": 0.48,
+      "worst_streak": 3,
+      "max_dd_$": -48.72,
+      "trades_per_month": 21.7,
+      "usd_per_month": 27.17,
+      "first": "2026-10-01",
+      "last": "2026-11-18"
+     }
+    },
+    "price<=0.50": {
+     "train": {
+      "n": 19,
+      "win_rate": 0.632,
+      "avg_price": 0.449,
+      "implied_win": 0.449,
+      "avg_win_$": 17.65,
+      "avg_loss_$": -15.35,
+      "net_$": 104.33,
+      "net_per_$1": 0.3577,
+      "t_stat": 1.45,
+      "worst_streak": 2,
+      "max_dd_$": -30.53,
+      "trades_per_month": 10.5,
+      "usd_per_month": 57.74,
+      "first": "2026-08-06",
+      "last": "2026-09-29"
+     },
+     "test": {
+      "n": 13,
+      "win_rate": 0.615,
+      "avg_price": 0.454,
+      "implied_win": 0.454,
+      "avg_win_$": 16.64,
+      "avg_loss_$": -15.23,
+      "net_$": 56.95,
+      "net_per_$1": 0.2861,
+      "t_stat": 0.96,
+      "worst_streak": 2,
+      "max_dd_$": -30.38,
+      "trades_per_month": 8.1,
+      "usd_per_month": 35.38,
+      "first": "2026-10-01",
+      "last": "2026-11-18"
+     }
+    },
+    "price<=0.55": {
+     "train": {
+      "n": 31,
+      "win_rate": 0.645,
+      "avg_price": 0.48,
+      "implied_win": 0.48,
+      "avg_win_$": 15.59,
+      "avg_loss_$": -15.35,
+      "net_$": 143.05,
+      "net_per_$1": 0.3018,
+      "t_stat": 1.69,
+      "worst_streak": 6,
+      "max_dd_$": -91.88,
+      "trades_per_month": 16.3,
+      "usd_per_month": 75.08,
+      "first": "2026-08-04",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 24,
+      "win_rate": 0.625,
+      "avg_price": 0.484,
+      "implied_win": 0.484,
+      "avg_win_$": 14.94,
+      "avg_loss_$": -15.22,
+      "net_$": 87.14,
+      "net_per_$1": 0.2375,
+      "t_stat": 1.17,
+      "worst_streak": 2,
+      "max_dd_$": -33.51,
+      "trades_per_month": 14.9,
+      "usd_per_month": 54.13,
+      "first": "2026-10-01",
+      "last": "2026-11-18"
+     }
+    },
+    "price<=0.60": {
+     "train": {
+      "n": 38,
+      "win_rate": 0.658,
+      "avg_price": 0.498,
+      "implied_win": 0.498,
+      "avg_win_$": 14.55,
+      "avg_loss_$": -15.32,
+      "net_$": 164.7,
+      "net_per_$1": 0.2838,
+      "t_stat": 1.83,
+      "worst_streak": 3,
+      "max_dd_$": -82.04,
+      "trades_per_month": 19.9,
+      "usd_per_month": 86.44,
+      "first": "2026-08-04",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 31,
+      "win_rate": 0.548,
+      "avg_price": 0.504,
+      "implied_win": 0.504,
+      "avg_win_$": 14.45,
+      "avg_loss_$": -15.15,
+      "net_$": 33.46,
+      "net_per_$1": 0.0708,
+      "t_stat": 0.37,
+      "worst_streak": 3,
+      "max_dd_$": -48.72,
+      "trades_per_month": 19.3,
+      "usd_per_month": 20.79,
+      "first": "2026-10-01",
+      "last": "2026-11-18"
+     }
+    },
+    "price<=0.65": {
+     "train": {
+      "n": 39,
+      "win_rate": 0.667,
+      "avg_price": 0.501,
+      "implied_win": 0.501,
+      "avg_win_$": 14.33,
+      "avg_loss_$": -15.32,
+      "net_$": 173.42,
+      "net_per_$1": 0.2912,
+      "t_stat": 1.93,
+      "worst_streak": 3,
+      "max_dd_$": -82.04,
+      "trades_per_month": 20.5,
+      "usd_per_month": 91.01,
+      "first": "2026-08-04",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 35,
+      "win_rate": 0.571,
+      "avg_price": 0.517,
+      "implied_win": 0.517,
+      "avg_win_$": 13.55,
+      "avg_loss_$": -15.15,
+      "net_$": 43.74,
+      "net_per_$1": 0.082,
+      "t_stat": 0.48,
+      "worst_streak": 3,
+      "max_dd_$": -48.72,
+      "trades_per_month": 21.7,
+      "usd_per_month": 27.17,
+      "first": "2026-10-01",
+      "last": "2026-11-18"
+     }
+    },
+    "price<=0.70": {
+     "train": {
+      "n": 41,
+      "win_rate": 0.683,
+      "avg_price": 0.51,
+      "implied_win": 0.51,
+      "avg_win_$": 13.78,
+      "avg_loss_$": -15.32,
+      "net_$": 186.71,
+      "net_per_$1": 0.2986,
+      "t_stat": 2.08,
+      "worst_streak": 3,
+      "max_dd_$": -75.85,
+      "trades_per_month": 21.5,
+      "usd_per_month": 97.99,
+      "first": "2026-08-04",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 35,
+      "win_rate": 0.571,
+      "avg_price": 0.517,
+      "implied_win": 0.517,
+      "avg_win_$": 13.55,
+      "avg_loss_$": -15.15,
+      "net_$": 43.74,
+      "net_per_$1": 0.082,
+      "t_stat": 0.48,
+      "worst_streak": 3,
+      "max_dd_$": -48.72,
+      "trades_per_month": 21.7,
+      "usd_per_month": 27.17,
+      "first": "2026-10-01",
+      "last": "2026-11-18"
+     }
+    },
+    "price>=0.45": {
+     "train": {
+      "n": 34,
+      "win_rate": 0.706,
+      "avg_price": 0.53,
+      "implied_win": 0.53,
+      "avg_win_$": 12.6,
+      "avg_loss_$": -15.31,
+      "net_$": 149.3,
+      "net_per_$1": 0.2884,
+      "t_stat": 1.97,
+      "worst_streak": 2,
+      "max_dd_$": -45.32,
+      "trades_per_month": 17.8,
+      "usd_per_month": 78.36,
+      "first": "2026-08-04",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 30,
+      "win_rate": 0.633,
+      "avg_price": 0.533,
+      "implied_win": 0.533,
+      "avg_win_$": 13.12,
+      "avg_loss_$": -15.12,
+      "net_$": 83.08,
+      "net_per_$1": 0.1818,
+      "t_stat": 1.05,
+      "worst_streak": 3,
+      "max_dd_$": -45.04,
+      "trades_per_month": 19.0,
+      "usd_per_month": 52.68,
+      "first": "2026-10-02",
+      "last": "2026-11-18"
+     }
+    },
+    "price>=0.50": {
+     "train": {
+      "n": 23,
+      "win_rate": 0.696,
+      "avg_price": 0.56,
+      "implied_win": 0.56,
+      "avg_win_$": 10.88,
+      "avg_loss_$": -15.31,
+      "net_$": 66.85,
+      "net_per_$1": 0.1915,
+      "t_stat": 1.15,
+      "worst_streak": 2,
+      "max_dd_$": -45.32,
+      "trades_per_month": 12.1,
+      "usd_per_month": 35.09,
+      "first": "2026-08-04",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 22,
+      "win_rate": 0.545,
+      "avg_price": 0.555,
+      "implied_win": 0.555,
+      "avg_win_$": 11.5,
+      "avg_loss_$": -15.12,
+      "net_$": -13.21,
+      "net_per_$1": -0.0395,
+      "t_stat": -0.23,
+      "worst_streak": 2,
+      "max_dd_$": -33.0,
+      "trades_per_month": 14.2,
+      "usd_per_month": -8.55,
+      "first": "2026-10-02",
+      "last": "2026-11-17"
+     }
+    },
+    "price>=0.55": {
+     "train": {
+      "n": 10,
+      "win_rate": 0.8,
+      "avg_price": 0.604,
+      "implied_win": 0.604,
+      "avg_win_$": 9.25,
+      "avg_loss_$": -15.16,
+      "net_$": 43.65,
+      "net_per_$1": 0.2884,
+      "t_stat": 1.33,
+      "worst_streak": 2,
+      "max_dd_$": -30.32,
+      "trades_per_month": 6.1,
+      "usd_per_month": 26.58,
+      "first": "2026-08-05",
+      "last": "2026-09-23"
+     },
+     "test": {
+      "n": 11,
+      "win_rate": 0.455,
+      "avg_price": 0.589,
+      "implied_win": 0.589,
+      "avg_win_$": 9.38,
+      "avg_loss_$": -15.05,
+      "net_$": -43.4,
+      "net_per_$1": -0.2608,
+      "t_stat": -1.04,
+      "worst_streak": 2,
+      "max_dd_$": -52.02,
+      "trades_per_month": 8.0,
+      "usd_per_month": -31.45,
+      "first": "2026-10-02",
+      "last": "2026-11-12"
+     }
+    },
+    "prev15 up": {
+     "train": {
+      "n": 22,
+      "win_rate": 0.818,
+      "avg_price": 0.522,
+      "implied_win": 0.522,
+      "avg_win_$": 13.44,
+      "avg_loss_$": -15.29,
+      "net_$": 180.71,
+      "net_per_$1": 0.5406,
+      "t_stat": 3.22,
+      "worst_streak": 1,
+      "max_dd_$": -20.61,
+      "trades_per_month": 11.7,
+      "usd_per_month": 96.51,
+      "first": "2026-08-05",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 15,
+      "win_rate": 0.6,
+      "avg_price": 0.518,
+      "implied_win": 0.518,
+      "avg_win_$": 13.4,
+      "avg_loss_$": -15.15,
+      "net_$": 29.74,
+      "net_per_$1": 0.1303,
+      "t_stat": 0.51,
+      "worst_streak": 3,
+      "max_dd_$": -45.62,
+      "trades_per_month": 9.7,
+      "usd_per_month": 19.26,
+      "first": "2026-10-01",
+      "last": "2026-11-16"
+     }
+    },
+    "prev15 down": {
+     "train": {
+      "n": 19,
+      "win_rate": 0.526,
+      "avg_price": 0.496,
+      "implied_win": 0.496,
+      "avg_win_$": 14.4,
+      "avg_loss_$": -15.33,
+      "net_$": 5.99,
+      "net_per_$1": 0.0206,
+      "t_stat": 0.09,
+      "worst_streak": 4,
+      "max_dd_$": -61.43,
+      "trades_per_month": 10.1,
+      "usd_per_month": 3.2,
+      "first": "2026-08-04",
+      "last": "2026-09-29"
+     },
+     "test": {
+      "n": 19,
+      "win_rate": 0.579,
+      "avg_price": 0.513,
+      "implied_win": 0.513,
+      "avg_win_$": 13.67,
+      "avg_loss_$": -15.18,
+      "net_$": 28.95,
+      "net_per_$1": 0.0998,
+      "t_stat": 0.43,
+      "worst_streak": 2,
+      "max_dd_$": -33.47,
+      "trades_per_month": 12.0,
+      "usd_per_month": 18.36,
+      "first": "2026-10-02",
+      "last": "2026-11-18"
+     }
+    },
+    "prior4h up": {
+     "train": {
+      "n": 20,
+      "win_rate": 0.8,
+      "avg_price": 0.51,
+      "implied_win": 0.51,
+      "avg_win_$": 13.92,
+      "avg_loss_$": -15.27,
+      "net_$": 161.7,
+      "net_per_$1": 0.5314,
+      "t_stat": 2.88,
+      "worst_streak": 2,
+      "max_dd_$": -30.57,
+      "trades_per_month": 10.7,
+      "usd_per_month": 86.36,
+      "first": "2026-08-05",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 13,
+      "win_rate": 0.615,
+      "avg_price": 0.513,
+      "implied_win": 0.513,
+      "avg_win_$": 13.71,
+      "avg_loss_$": -15.16,
+      "net_$": 33.9,
+      "net_per_$1": 0.1712,
+      "t_stat": 0.62,
+      "worst_streak": 2,
+      "max_dd_$": -30.22,
+      "trades_per_month": 9.2,
+      "usd_per_month": 24.0,
+      "first": "2026-10-05",
+      "last": "2026-11-16"
+     }
+    },
+    "prior4h down": {
+     "train": {
+      "n": 21,
+      "win_rate": 0.571,
+      "avg_price": 0.51,
+      "implied_win": 0.51,
+      "avg_win_$": 13.59,
+      "avg_loss_$": -15.34,
+      "net_$": 25.0,
+      "net_per_$1": 0.0779,
+      "t_stat": 0.37,
+      "worst_streak": 4,
+      "max_dd_$": -61.35,
+      "trades_per_month": 11.4,
+      "usd_per_month": 13.59,
+      "first": "2026-08-04",
+      "last": "2026-09-28"
+     },
+     "test": {
+      "n": 22,
+      "win_rate": 0.545,
+      "avg_price": 0.52,
+      "implied_win": 0.52,
+      "avg_win_$": 13.45,
+      "avg_loss_$": -15.15,
+      "net_$": 9.83,
+      "net_per_$1": 0.0293,
+      "t_stat": 0.12,
+      "worst_streak": 2,
+      "max_dd_$": -42.44,
+      "trades_per_month": 13.7,
+      "usd_per_month": 6.11,
+      "first": "2026-10-01",
+      "last": "2026-11-18"
+     }
+    },
+    "prior11h up": {
+     "train": {
+      "n": 15,
+      "win_rate": 0.667,
+      "avg_price": 0.506,
+      "implied_win": 0.506,
+      "avg_win_$": 14.38,
+      "avg_loss_$": -15.3,
+      "net_$": 67.3,
+      "net_per_$1": 0.2943,
+      "t_stat": 1.16,
+      "worst_streak": 2,
+      "max_dd_$": -39.73,
+      "trades_per_month": 8.6,
+      "usd_per_month": 38.65,
+      "first": "2026-08-04",
+      "last": "2026-09-25"
+     },
+     "test": {
+      "n": 17,
+      "win_rate": 0.588,
+      "avg_price": 0.521,
+      "implied_win": 0.521,
+      "avg_win_$": 13.63,
+      "avg_loss_$": -15.14,
+      "net_$": 30.34,
+      "net_per_$1": 0.1173,
+      "t_stat": 0.48,
+      "worst_streak": 2,
+      "max_dd_$": -40.26,
+      "trades_per_month": 10.8,
+      "usd_per_month": 19.24,
+      "first": "2026-10-01",
+      "last": "2026-11-17"
+     }
+    },
+    "prior11h down": {
+     "train": {
+      "n": 25,
+      "win_rate": 0.68,
+      "avg_price": 0.509,
+      "implied_win": 0.509,
+      "avg_win_$": 13.66,
+      "avg_loss_$": -15.33,
+      "net_$": 109.57,
+      "net_per_$1": 0.2873,
+      "t_stat": 1.57,
+      "worst_streak": 3,
+      "max_dd_$": -45.96,
+      "trades_per_month": 13.6,
+      "usd_per_month": 59.56,
+      "first": "2026-08-06",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 18,
+      "win_rate": 0.556,
+      "avg_price": 0.514,
+      "implied_win": 0.514,
+      "avg_win_$": 13.47,
+      "avg_loss_$": -15.16,
+      "net_$": 13.4,
+      "net_per_$1": 0.0488,
+      "t_stat": 0.19,
+      "worst_streak": 2,
+      "max_dd_$": -41.8,
+      "trades_per_month": 12.5,
+      "usd_per_month": 9.27,
+      "first": "2026-10-06",
+      "last": "2026-11-18"
+     }
+    },
+    "Mon-Wed": {
+     "train": {
+      "n": 25,
+      "win_rate": 0.72,
+      "avg_price": 0.522,
+      "implied_win": 0.522,
+      "avg_win_$": 13.22,
+      "avg_loss_$": -15.27,
+      "net_$": 131.01,
+      "net_per_$1": 0.3448,
+      "t_stat": 1.96,
+      "worst_streak": 2,
+      "max_dd_$": -30.18,
+      "trades_per_month": 13.1,
+      "usd_per_month": 68.76,
+      "first": "2026-08-04",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 21,
+      "win_rate": 0.476,
+      "avg_price": 0.501,
+      "implied_win": 0.501,
+      "avg_win_$": 14.31,
+      "avg_loss_$": -15.22,
+      "net_$": -24.3,
+      "net_per_$1": -0.0759,
+      "t_stat": -0.36,
+      "worst_streak": 4,
+      "max_dd_$": -74.28,
+      "trades_per_month": 14.2,
+      "usd_per_month": -16.43,
+      "first": "2026-10-05",
+      "last": "2026-11-18"
+     }
+    },
+    "Thu-Fri": {
+     "train": {
+      "n": 16,
+      "win_rate": 0.625,
+      "avg_price": 0.491,
+      "implied_win": 0.491,
+      "avg_win_$": 14.79,
+      "avg_loss_$": -15.37,
+      "net_$": 55.7,
+      "net_per_$1": 0.2271,
+      "t_stat": 0.9,
+      "worst_streak": 4,
+      "max_dd_$": -61.22,
+      "trades_per_month": 9.5,
+      "usd_per_month": 33.24,
+      "first": "2026-08-06",
+      "last": "2026-09-25"
+     },
+     "test": {
+      "n": 14,
+      "win_rate": 0.714,
+      "avg_price": 0.543,
+      "implied_win": 0.543,
+      "avg_win_$": 12.79,
+      "avg_loss_$": -14.98,
+      "net_$": 68.03,
+      "net_per_$1": 0.3195,
+      "t_stat": 1.31,
+      "worst_streak": 3,
+      "max_dd_$": -44.83,
+      "trades_per_month": 9.7,
+      "usd_per_month": 47.07,
+      "first": "2026-10-01",
+      "last": "2026-11-13"
+     }
+    }
+   },
+   "filter_picked_on_train": "prev15 up"
+  },
+  "A_gold_lon": {
+   "label": "10:30 London DOWN gold",
+   "tape": {
+    "train": {
+     "n": 42,
+     "win_rate": 0.714,
+     "avg_price": 0.512,
+     "implied_win": 0.512,
+     "avg_win_$": 13.8,
+     "avg_loss_$": -15.27,
+     "net_$": 230.94,
+     "net_per_$1": 0.3608,
+     "t_stat": 2.61,
+     "worst_streak": 3,
+     "max_dd_$": -52.52,
+     "trades_per_month": 22.0,
+     "usd_per_month": 121.2,
+     "first": "2026-08-04",
+     "last": "2026-09-30",
+     "ci95_net_per_$1": [
+      0.095,
+      0.635
+     ],
+     "median_contracts_our_side_first45s": 648.1
+    },
+    "test": {
+     "n": 35,
+     "win_rate": 0.829,
+     "avg_price": 0.536,
+     "implied_win": 0.536,
+     "avg_win_$": 13.08,
+     "avg_loss_$": -15.31,
+     "net_$": 287.36,
+     "net_per_$1": 0.5385,
+     "t_stat": 4.23,
+     "worst_streak": 1,
+     "max_dd_$": -15.46,
+     "trades_per_month": 21.7,
+     "usd_per_month": 178.51,
+     "first": "2026-10-01",
+     "last": "2026-11-18",
+     "ci95_net_per_$1": [
+      0.274,
+      0.771
+     ],
+     "median_contracts_our_side_first45s": 4220.09
+    }
+   },
+   "m1": {
+    "train": {
+     "n": 42,
+     "win_rate": 0.714,
+     "avg_price": 0.505,
+     "implied_win": 0.497,
+     "avg_win_$": 14.03,
+     "avg_loss_$": -15.37,
+     "net_$": 236.63,
+     "net_per_$1": 0.3684,
+     "t_stat": 2.54,
+     "worst_streak": 3,
+     "max_dd_$": -54.5,
+     "trades_per_month": 22.0,
+     "usd_per_month": 124.19,
+     "first": "2026-08-04",
+     "last": "2026-09-30",
+     "ci95_net_per_$1": [
+      0.09,
+      0.667
+     ]
+    },
+    "test": {
+     "n": 35,
+     "win_rate": 0.829,
+     "avg_price": 0.551,
+     "implied_win": 0.546,
+     "avg_win_$": 13.47,
+     "avg_loss_$": -15.13,
+     "net_$": 299.97,
+     "net_per_$1": 0.5628,
+     "t_stat": 3.89,
+     "worst_streak": 1,
+     "max_dd_$": -16.62,
+     "trades_per_month": 21.7,
+     "usd_per_month": 186.35,
+     "first": "2026-10-01",
+     "last": "2026-11-18",
+     "ci95_net_per_$1": [
+      0.269,
+      0.84
+     ]
+    }
+   }
+  },
+  "A_silver_lon": {
+   "label": "10:30 London DOWN silver",
+   "tape": {
+    "train": {
+     "n": 41,
+     "win_rate": 0.683,
+     "avg_price": 0.51,
+     "implied_win": 0.51,
+     "avg_win_$": 13.78,
+     "avg_loss_$": -15.32,
+     "net_$": 186.71,
+     "net_per_$1": 0.2986,
+     "t_stat": 2.08,
+     "worst_streak": 3,
+     "max_dd_$": -75.85,
+     "trades_per_month": 21.5,
+     "usd_per_month": 97.99,
+     "first": "2026-08-04",
+     "last": "2026-09-30",
+     "ci95_net_per_$1": [
+      0.013,
+      0.569
+     ],
+     "median_contracts_our_side_first45s": 82.78
+    },
+    "test": {
+     "n": 35,
+     "win_rate": 0.571,
+     "avg_price": 0.526,
+     "implied_win": 0.526,
+     "avg_win_$": 12.75,
+     "avg_loss_$": -15.15,
+     "net_$": 27.84,
+     "net_per_$1": 0.0523,
+     "t_stat": 0.31,
+     "worst_streak": 3,
+     "max_dd_$": -48.72,
+     "trades_per_month": 21.7,
+     "usd_per_month": 17.29,
+     "first": "2026-10-01",
+     "last": "2026-11-18",
+     "ci95_net_per_$1": [
+      -0.273,
+      0.337
+     ],
+     "median_contracts_our_side_first45s": 240.63
+    }
+   },
+   "m1": {
+    "train": {
+     "n": 41,
+     "win_rate": 0.683,
+     "avg_price": 0.505,
+     "implied_win": 0.497,
+     "avg_win_$": 15.89,
+     "avg_loss_$": -15.28,
+     "net_$": 246.29,
+     "net_per_$1": 0.3936,
+     "t_stat": 2.36,
+     "worst_streak": 3,
+     "max_dd_$": -51.1,
+     "trades_per_month": 21.5,
+     "usd_per_month": 129.26,
+     "first": "2026-08-04",
+     "last": "2026-09-30",
+     "ci95_net_per_$1": [
+      0.083,
+      0.721
+     ]
+    },
+    "test": {
+     "n": 35,
+     "win_rate": 0.571,
+     "avg_price": 0.528,
+     "implied_win": 0.522,
+     "avg_win_$": 14.12,
+     "avg_loss_$": -15.23,
+     "net_$": 53.9,
+     "net_per_$1": 0.1009,
+     "t_stat": 0.57,
+     "worst_streak": 3,
+     "max_dd_$": -51.2,
+     "trades_per_month": 21.7,
+     "usd_per_month": 33.48,
+     "first": "2026-10-01",
+     "last": "2026-11-18",
+     "ci95_net_per_$1": [
+      -0.242,
+      0.423
+     ]
+    }
+   }
+  },
+  "B_gold": {
+   "label": "17:00 UP gold",
+   "tape": {
+    "train": {
+     "n": 43,
+     "win_rate": 0.628,
+     "avg_price": 0.517,
+     "implied_win": 0.517,
+     "avg_win_$": 13.06,
+     "avg_loss_$": -15.29,
+     "net_$": 108.0,
+     "net_per_$1": 0.1649,
+     "t_stat": 1.18,
+     "worst_streak": 3,
+     "max_dd_$": -51.59,
+     "trades_per_month": 22.2,
+     "usd_per_month": 55.72,
+     "first": "2026-08-03",
+     "last": "2026-09-30",
+     "ci95_net_per_$1": [
+      -0.118,
+      0.429
+     ],
+     "median_contracts_our_side_first45s": 3152.18
+    },
+    "test": {
+     "n": 35,
+     "win_rate": 0.8,
+     "avg_price": 0.495,
+     "implied_win": 0.495,
+     "avg_win_$": 14.79,
+     "avg_loss_$": -15.29,
+     "net_$": 307.22,
+     "net_per_$1": 0.5766,
+     "t_stat": 3.95,
+     "worst_streak": 2,
+     "max_dd_$": -31.67,
+     "trades_per_month": 21.7,
+     "usd_per_month": 190.85,
+     "first": "2026-10-01",
+     "last": "2026-11-18",
+     "ci95_net_per_$1": [
+      0.287,
+      0.845
+     ],
+     "median_contracts_our_side_first45s": 11720.24
+    }
+   },
+   "m1": {
+    "train": {
+     "n": 43,
+     "win_rate": 0.628,
+     "avg_price": 0.509,
+     "implied_win": 0.503,
+     "avg_win_$": 13.15,
+     "avg_loss_$": -15.28,
+     "net_$": 110.64,
+     "net_per_$1": 0.1693,
+     "t_stat": 1.2,
+     "worst_streak": 3,
+     "max_dd_$": -50.02,
+     "trades_per_month": 22.2,
+     "usd_per_month": 57.08,
+     "first": "2026-08-03",
+     "last": "2026-09-30",
+     "ci95_net_per_$1": [
+      -0.118,
+      0.443
+     ]
+    },
+    "test": {
+     "n": 35,
+     "win_rate": 0.8,
+     "avg_price": 0.509,
+     "implied_win": 0.504,
+     "avg_win_$": 13.95,
+     "avg_loss_$": -15.35,
+     "net_$": 283.19,
+     "net_per_$1": 0.5305,
+     "t_stat": 3.7,
+     "worst_streak": 2,
+     "max_dd_$": -33.61,
+     "trades_per_month": 21.7,
+     "usd_per_month": 175.92,
+     "first": "2026-10-01",
+     "last": "2026-11-18",
+     "ci95_net_per_$1": [
+      0.243,
+      0.801
+     ]
+    }
+   },
+   "by_month": {
+    "2026-08": {
+     "n": 21,
+     "paid": 0.535,
+     "won": 0.571,
+     "net_per_$1": 0.006
+    },
+    "2026-09": {
+     "n": 22,
+     "paid": 0.485,
+     "won": 0.682,
+     "net_per_$1": 0.324
+    },
+    "2026-10": {
+     "n": 22,
+     "paid": 0.509,
+     "won": 0.818,
+     "net_per_$1": 0.563
+    },
+    "2026-11": {
+     "n": 13,
+     "paid": 0.508,
+     "won": 0.769,
+     "net_per_$1": 0.476
+    }
+   },
+   "filters": {
+    "none": {
+     "train": {
+      "n": 43,
+      "win_rate": 0.628,
+      "avg_price": 0.517,
+      "implied_win": 0.517,
+      "avg_win_$": 13.06,
+      "avg_loss_$": -15.29,
+      "net_$": 108.0,
+      "net_per_$1": 0.1649,
+      "t_stat": 1.18,
+      "worst_streak": 3,
+      "max_dd_$": -51.59,
+      "trades_per_month": 22.2,
+      "usd_per_month": 55.72,
+      "first": "2026-08-03",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 35,
+      "win_rate": 0.8,
+      "avg_price": 0.495,
+      "implied_win": 0.495,
+      "avg_win_$": 14.79,
+      "avg_loss_$": -15.29,
+      "net_$": 307.22,
+      "net_per_$1": 0.5766,
+      "t_stat": 3.95,
+      "worst_streak": 2,
+      "max_dd_$": -31.67,
+      "trades_per_month": 21.7,
+      "usd_per_month": 190.85,
+      "first": "2026-10-01",
+      "last": "2026-11-18"
+     }
+    },
+    "price<=0.50": {
+     "train": {
+      "n": 16,
+      "win_rate": 0.562,
+      "avg_price": 0.452,
+      "implied_win": 0.452,
+      "avg_win_$": 17.06,
+      "avg_loss_$": -15.37,
+      "net_$": 45.96,
+      "net_per_$1": 0.1868,
+      "t_stat": 0.69,
+      "worst_streak": 1,
+      "max_dd_$": -15.5,
+      "trades_per_month": 8.5,
+      "usd_per_month": 24.55,
+      "first": "2026-08-04",
+      "last": "2026-09-29"
+     },
+     "test": {
+      "n": 18,
+      "win_rate": 0.667,
+      "avg_price": 0.428,
+      "implied_win": 0.428,
+      "avg_win_$": 19.84,
+      "avg_loss_$": -15.35,
+      "net_$": 145.98,
+      "net_per_$1": 0.5289,
+      "t_stat": 1.96,
+      "worst_streak": 2,
+      "max_dd_$": -30.94,
+      "trades_per_month": 11.4,
+      "usd_per_month": 92.58,
+      "first": "2026-10-02",
+      "last": "2026-11-18"
+     }
+    },
+    "price<=0.55": {
+     "train": {
+      "n": 30,
+      "win_rate": 0.567,
+      "avg_price": 0.487,
+      "implied_win": 0.487,
+      "avg_win_$": 14.9,
+      "avg_loss_$": -15.3,
+      "net_$": 54.34,
+      "net_per_$1": 0.1185,
+      "t_stat": 0.65,
+      "worst_streak": 3,
+      "max_dd_$": -49.92,
+      "trades_per_month": 16.0,
+      "usd_per_month": 29.02,
+      "first": "2026-08-04",
+      "last": "2026-09-29"
+     },
+     "test": {
+      "n": 23,
+      "win_rate": 0.739,
+      "avg_price": 0.447,
+      "implied_win": 0.447,
+      "avg_win_$": 17.97,
+      "avg_loss_$": -15.35,
+      "net_$": 213.42,
+      "net_per_$1": 0.6053,
+      "t_stat": 2.86,
+      "worst_streak": 2,
+      "max_dd_$": -30.94,
+      "trades_per_month": 14.6,
+      "usd_per_month": 135.35,
+      "first": "2026-10-02",
+      "last": "2026-11-18"
+     }
+    },
+    "price<=0.60": {
+     "train": {
+      "n": 39,
+      "win_rate": 0.615,
+      "avg_price": 0.506,
+      "implied_win": 0.506,
+      "avg_win_$": 13.63,
+      "avg_loss_$": -15.29,
+      "net_$": 97.82,
+      "net_per_$1": 0.1643,
+      "t_stat": 1.09,
+      "worst_streak": 3,
+      "max_dd_$": -51.59,
+      "trades_per_month": 20.5,
+      "usd_per_month": 51.34,
+      "first": "2026-08-04",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 31,
+      "win_rate": 0.774,
+      "avg_price": 0.479,
+      "implied_win": 0.479,
+      "avg_win_$": 15.82,
+      "avg_loss_$": -15.29,
+      "net_$": 272.77,
+      "net_per_$1": 0.5764,
+      "t_stat": 3.49,
+      "worst_streak": 2,
+      "max_dd_$": -31.67,
+      "trades_per_month": 19.3,
+      "usd_per_month": 169.45,
+      "first": "2026-10-01",
+      "last": "2026-11-18"
+     }
+    },
+    "price<=0.65": {
+     "train": {
+      "n": 43,
+      "win_rate": 0.628,
+      "avg_price": 0.517,
+      "implied_win": 0.517,
+      "avg_win_$": 13.06,
+      "avg_loss_$": -15.29,
+      "net_$": 108.0,
+      "net_per_$1": 0.1649,
+      "t_stat": 1.18,
+      "worst_streak": 3,
+      "max_dd_$": -51.59,
+      "trades_per_month": 22.2,
+      "usd_per_month": 55.72,
+      "first": "2026-08-03",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 34,
+      "win_rate": 0.794,
+      "avg_price": 0.49,
+      "implied_win": 0.49,
+      "avg_win_$": 15.07,
+      "avg_loss_$": -15.29,
+      "net_$": 299.94,
+      "net_per_$1": 0.579,
+      "t_stat": 3.85,
+      "worst_streak": 2,
+      "max_dd_$": -31.67,
+      "trades_per_month": 21.1,
+      "usd_per_month": 186.33,
+      "first": "2026-10-01",
+      "last": "2026-11-18"
+     }
+    },
+    "price<=0.70": {
+     "train": {
+      "n": 43,
+      "win_rate": 0.628,
+      "avg_price": 0.517,
+      "implied_win": 0.517,
+      "avg_win_$": 13.06,
+      "avg_loss_$": -15.29,
+      "net_$": 108.0,
+      "net_per_$1": 0.1649,
+      "t_stat": 1.18,
+      "worst_streak": 3,
+      "max_dd_$": -51.59,
+      "trades_per_month": 22.2,
+      "usd_per_month": 55.72,
+      "first": "2026-08-03",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 35,
+      "win_rate": 0.8,
+      "avg_price": 0.495,
+      "implied_win": 0.495,
+      "avg_win_$": 14.79,
+      "avg_loss_$": -15.29,
+      "net_$": 307.22,
+      "net_per_$1": 0.5766,
+      "t_stat": 3.95,
+      "worst_streak": 2,
+      "max_dd_$": -31.67,
+      "trades_per_month": 21.7,
+      "usd_per_month": 190.85,
+      "first": "2026-10-01",
+      "last": "2026-11-18"
+     }
+    },
+    "price>=0.45": {
+     "train": {
+      "n": 36,
+      "win_rate": 0.667,
+      "avg_price": 0.537,
+      "implied_win": 0.537,
+      "avg_win_$": 12.28,
+      "avg_loss_$": -15.26,
+      "net_$": 111.59,
+      "net_per_$1": 0.2039,
+      "t_stat": 1.41,
+      "worst_streak": 3,
+      "max_dd_$": -53.62,
+      "trades_per_month": 18.6,
+      "usd_per_month": 57.57,
+      "first": "2026-08-03",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 25,
+      "win_rate": 0.84,
+      "avg_price": 0.538,
+      "implied_win": 0.538,
+      "avg_win_$": 12.06,
+      "avg_loss_$": -15.2,
+      "net_$": 192.54,
+      "net_per_$1": 0.5087,
+      "t_stat": 3.69,
+      "worst_streak": 2,
+      "max_dd_$": -31.67,
+      "trades_per_month": 16.2,
+      "usd_per_month": 124.7,
+      "first": "2026-10-01",
+      "last": "2026-11-16"
+     }
+    },
+    "price>=0.50": {
+     "train": {
+      "n": 27,
+      "win_rate": 0.667,
+      "avg_price": 0.556,
+      "implied_win": 0.556,
+      "avg_win_$": 11.06,
+      "avg_loss_$": -15.23,
+      "net_$": 62.03,
+      "net_per_$1": 0.1517,
+      "t_stat": 0.96,
+      "worst_streak": 2,
+      "max_dd_$": -36.2,
+      "trades_per_month": 13.9,
+      "usd_per_month": 32.01,
+      "first": "2026-08-03",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 17,
+      "win_rate": 0.941,
+      "avg_price": 0.565,
+      "implied_win": 0.565,
+      "avg_win_$": 11.01,
+      "avg_loss_$": -14.92,
+      "net_$": 161.24,
+      "net_per_$1": 0.628,
+      "t_stat": 5.91,
+      "worst_streak": 1,
+      "max_dd_$": -14.92,
+      "trades_per_month": 12.0,
+      "usd_per_month": 114.14,
+      "first": "2026-10-01",
+      "last": "2026-11-12"
+     }
+    },
+    "price>=0.55": {
+     "train": {
+      "n": 13,
+      "win_rate": 0.769,
+      "avg_price": 0.587,
+      "implied_win": 0.587,
+      "avg_win_$": 9.94,
+      "avg_loss_$": -15.24,
+      "net_$": 53.65,
+      "net_per_$1": 0.2733,
+      "t_stat": 1.36,
+      "worst_streak": 1,
+      "max_dd_$": -15.45,
+      "trades_per_month": 6.7,
+      "usd_per_month": 27.68,
+      "first": "2026-08-03",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 12,
+      "win_rate": 0.917,
+      "avg_price": 0.587,
+      "implied_win": 0.587,
+      "avg_win_$": 9.88,
+      "avg_loss_$": -14.92,
+      "net_$": 93.8,
+      "net_per_$1": 0.5205,
+      "t_stat": 3.72,
+      "worst_streak": 1,
+      "max_dd_$": -14.91,
+      "trades_per_month": 8.5,
+      "usd_per_month": 66.4,
+      "first": "2026-10-01",
+      "last": "2026-11-12"
+     }
+    },
+    "prev15 up": {
+     "train": {
+      "n": 22,
+      "win_rate": 0.591,
+      "avg_price": 0.522,
+      "implied_win": 0.522,
+      "avg_win_$": 12.51,
+      "avg_loss_$": -15.31,
+      "net_$": 24.87,
+      "net_per_$1": 0.0742,
+      "t_stat": 0.39,
+      "worst_streak": 3,
+      "max_dd_$": -46.03,
+      "trades_per_month": 11.4,
+      "usd_per_month": 12.83,
+      "first": "2026-08-03",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 14,
+      "win_rate": 0.786,
+      "avg_price": 0.533,
+      "implied_win": 0.533,
+      "avg_win_$": 12.56,
+      "avg_loss_$": -15.14,
+      "net_$": 92.71,
+      "net_per_$1": 0.4367,
+      "t_stat": 2.02,
+      "worst_streak": 2,
+      "max_dd_$": -30.08,
+      "trades_per_month": 15.2,
+      "usd_per_month": 100.79,
+      "first": "2026-10-20",
+      "last": "2026-11-16"
+     }
+    },
+    "prev15 down": {
+     "train": {
+      "n": 21,
+      "win_rate": 0.667,
+      "avg_price": 0.512,
+      "implied_win": 0.512,
+      "avg_win_$": 13.57,
+      "avg_loss_$": -15.27,
+      "net_$": 83.13,
+      "net_per_$1": 0.2599,
+      "t_stat": 1.28,
+      "worst_streak": 3,
+      "max_dd_$": -50.11,
+      "trades_per_month": 11.6,
+      "usd_per_month": 46.01,
+      "first": "2026-08-05",
+      "last": "2026-09-28"
+     },
+     "test": {
+      "n": 21,
+      "win_rate": 0.81,
+      "avg_price": 0.469,
+      "implied_win": 0.469,
+      "avg_win_$": 16.24,
+      "avg_loss_$": -15.4,
+      "net_$": 214.51,
+      "net_per_$1": 0.6693,
+      "t_stat": 3.38,
+      "worst_streak": 1,
+      "max_dd_$": -15.6,
+      "trades_per_month": 13.0,
+      "usd_per_month": 133.26,
+      "first": "2026-10-01",
+      "last": "2026-11-18"
+     }
+    },
+    "prior4h up": {
+     "train": {
+      "n": 14,
+      "win_rate": 0.429,
+      "avg_price": 0.511,
+      "implied_win": 0.511,
+      "avg_win_$": 12.29,
+      "avg_loss_$": -15.3,
+      "net_$": -48.65,
+      "net_per_$1": -0.2277,
+      "t_stat": -0.91,
+      "worst_streak": 3,
+      "max_dd_$": -59.95,
+      "trades_per_month": 7.3,
+      "usd_per_month": -25.53,
+      "first": "2026-08-03",
+      "last": "2026-09-29"
+     },
+     "test": {
+      "n": 19,
+      "win_rate": 0.789,
+      "avg_price": 0.516,
+      "implied_win": 0.516,
+      "avg_win_$": 12.86,
+      "avg_loss_$": -15.23,
+      "net_$": 132.03,
+      "net_per_$1": 0.4585,
+      "t_stat": 2.46,
+      "worst_streak": 2,
+      "max_dd_$": -36.75,
+      "trades_per_month": 13.5,
+      "usd_per_month": 93.46,
+      "first": "2026-10-01",
+      "last": "2026-11-12"
+     }
+    },
+    "prior4h down": {
+     "train": {
+      "n": 29,
+      "win_rate": 0.724,
+      "avg_price": 0.521,
+      "implied_win": 0.521,
+      "avg_win_$": 13.28,
+      "avg_loss_$": -15.28,
+      "net_$": 156.64,
+      "net_per_$1": 0.3549,
+      "t_stat": 2.19,
+      "worst_streak": 2,
+      "max_dd_$": -34.79,
+      "trades_per_month": 15.2,
+      "usd_per_month": 82.21,
+      "first": "2026-08-04",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 16,
+      "win_rate": 0.812,
+      "avg_price": 0.469,
+      "implied_win": 0.469,
+      "avg_win_$": 17.02,
+      "avg_loss_$": -15.37,
+      "net_$": 175.2,
+      "net_per_$1": 0.7157,
+      "t_stat": 3.09,
+      "worst_streak": 2,
+      "max_dd_$": -30.94,
+      "trades_per_month": 15.7,
+      "usd_per_month": 172.03,
+      "first": "2026-10-19",
+      "last": "2026-11-18"
+     }
+    },
+    "prior11h up": {
+     "train": {
+      "n": 26,
+      "win_rate": 0.577,
+      "avg_price": 0.52,
+      "implied_win": 0.52,
+      "avg_win_$": 12.36,
+      "avg_loss_$": -15.3,
+      "net_$": 17.1,
+      "net_per_$1": 0.0433,
+      "t_stat": 0.26,
+      "worst_streak": 3,
+      "max_dd_$": -51.97,
+      "trades_per_month": 13.6,
+      "usd_per_month": 8.97,
+      "first": "2026-08-03",
+      "last": "2026-09-29"
+     },
+     "test": {
+      "n": 13,
+      "win_rate": 0.769,
+      "avg_price": 0.508,
+      "implied_win": 0.508,
+      "avg_win_$": 14.52,
+      "avg_loss_$": -15.09,
+      "net_$": 99.88,
+      "net_per_$1": 0.5067,
+      "t_stat": 1.93,
+      "worst_streak": 2,
+      "max_dd_$": -30.08,
+      "trades_per_month": 9.9,
+      "usd_per_month": 76.01,
+      "first": "2026-10-01",
+      "last": "2026-11-09"
+     }
+    },
+    "prior11h down": {
+     "train": {
+      "n": 17,
+      "win_rate": 0.706,
+      "avg_price": 0.514,
+      "implied_win": 0.514,
+      "avg_win_$": 13.94,
+      "avg_loss_$": -15.27,
+      "net_$": 90.9,
+      "net_per_$1": 0.3495,
+      "t_stat": 1.58,
+      "worst_streak": 3,
+      "max_dd_$": -49.96,
+      "trades_per_month": 9.2,
+      "usd_per_month": 49.41,
+      "first": "2026-08-06",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 22,
+      "win_rate": 0.818,
+      "avg_price": 0.487,
+      "implied_win": 0.487,
+      "avg_win_$": 14.95,
+      "avg_loss_$": -15.44,
+      "net_$": 207.34,
+      "net_per_$1": 0.6177,
+      "t_stat": 3.48,
+      "worst_streak": 2,
+      "max_dd_$": -30.94,
+      "trades_per_month": 14.0,
+      "usd_per_month": 131.49,
+      "first": "2026-10-02",
+      "last": "2026-11-18"
+     }
+    },
+    "Mon-Wed": {
+     "train": {
+      "n": 27,
+      "win_rate": 0.667,
+      "avg_price": 0.525,
+      "implied_win": 0.525,
+      "avg_win_$": 12.66,
+      "avg_loss_$": -15.31,
+      "net_$": 90.19,
+      "net_per_$1": 0.2195,
+      "t_stat": 1.3,
+      "worst_streak": 2,
+      "max_dd_$": -36.0,
+      "trades_per_month": 13.9,
+      "usd_per_month": 46.53,
+      "first": "2026-08-03",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 21,
+      "win_rate": 0.81,
+      "avg_price": 0.514,
+      "implied_win": 0.514,
+      "avg_win_$": 13.86,
+      "avg_loss_$": -15.25,
+      "net_$": 174.64,
+      "net_per_$1": 0.5468,
+      "t_stat": 3.01,
+      "worst_streak": 2,
+      "max_dd_$": -30.94,
+      "trades_per_month": 14.2,
+      "usd_per_month": 118.13,
+      "first": "2026-10-05",
+      "last": "2026-11-18"
+     }
+    },
+    "Thu-Fri": {
+     "train": {
+      "n": 16,
+      "win_rate": 0.562,
+      "avg_price": 0.505,
+      "implied_win": 0.505,
+      "avg_win_$": 13.86,
+      "avg_loss_$": -15.27,
+      "net_$": 17.81,
+      "net_per_$1": 0.0729,
+      "t_stat": 0.29,
+      "worst_streak": 3,
+      "max_dd_$": -56.64,
+      "trades_per_month": 9.5,
+      "usd_per_month": 10.63,
+      "first": "2026-08-06",
+      "last": "2026-09-25"
+     },
+     "test": {
+      "n": 14,
+      "win_rate": 0.786,
+      "avg_price": 0.465,
+      "implied_win": 0.465,
+      "avg_win_$": 16.24,
+      "avg_loss_$": -15.34,
+      "net_$": 132.58,
+      "net_per_$1": 0.6212,
+      "t_stat": 2.48,
+      "worst_streak": 1,
+      "max_dd_$": -15.76,
+      "trades_per_month": 9.7,
+      "usd_per_month": 91.72,
+      "first": "2026-10-01",
+      "last": "2026-11-13"
+     }
+    }
+   },
+   "filter_picked_on_train": "prior4h down"
+  },
+  "B_silver": {
+   "label": "17:00 UP silver",
+   "tape": {
+    "train": {
+     "n": 43,
+     "win_rate": 0.744,
+     "avg_price": 0.529,
+     "implied_win": 0.529,
+     "avg_win_$": 12.58,
+     "avg_loss_$": -15.28,
+     "net_$": 234.57,
+     "net_per_$1": 0.359,
+     "t_stat": 2.86,
+     "worst_streak": 2,
+     "max_dd_$": -30.36,
+     "trades_per_month": 22.2,
+     "usd_per_month": 121.02,
+     "first": "2026-08-03",
+     "last": "2026-09-30",
+     "ci95_net_per_$1": [
+      0.095,
+      0.593
+     ],
+     "median_contracts_our_side_first45s": 358.64
+    },
+    "test": {
+     "n": 35,
+     "win_rate": 0.743,
+     "avg_price": 0.509,
+     "implied_win": 0.509,
+     "avg_win_$": 13.31,
+     "avg_loss_$": -15.35,
+     "net_$": 207.8,
+     "net_per_$1": 0.389,
+     "t_stat": 2.69,
+     "worst_streak": 3,
+     "max_dd_$": -45.96,
+     "trades_per_month": 21.7,
+     "usd_per_month": 129.09,
+     "first": "2026-10-01",
+     "last": "2026-11-18",
+     "ci95_net_per_$1": [
+      0.082,
+      0.654
+     ],
+     "median_contracts_our_side_first45s": 2010.3700000000001
+    }
+   },
+   "m1": {
+    "train": {
+     "n": 43,
+     "win_rate": 0.744,
+     "avg_price": 0.525,
+     "implied_win": 0.518,
+     "avg_win_$": 12.47,
+     "avg_loss_$": -15.37,
+     "net_$": 230.15,
+     "net_per_$1": 0.3504,
+     "t_stat": 2.79,
+     "worst_streak": 2,
+     "max_dd_$": -30.98,
+     "trades_per_month": 22.2,
+     "usd_per_month": 118.74,
+     "first": "2026-08-03",
+     "last": "2026-09-30",
+     "ci95_net_per_$1": [
+      0.093,
+      0.593
+     ]
+    },
+    "test": {
+     "n": 35,
+     "win_rate": 0.743,
+     "avg_price": 0.511,
+     "implied_win": 0.505,
+     "avg_win_$": 13.18,
+     "avg_loss_$": -15.43,
+     "net_$": 203.79,
+     "net_per_$1": 0.3822,
+     "t_stat": 2.61,
+     "worst_streak": 3,
+     "max_dd_$": -46.38,
+     "trades_per_month": 21.7,
+     "usd_per_month": 126.6,
+     "first": "2026-10-01",
+     "last": "2026-11-18",
+     "ci95_net_per_$1": [
+      0.069,
+      0.65
+     ]
+    }
+   },
+   "by_month": {
+    "2026-08": {
+     "n": 21,
+     "paid": 0.536,
+     "won": 0.714,
+     "net_per_$1": 0.271
+    },
+    "2026-09": {
+     "n": 22,
+     "paid": 0.515,
+     "won": 0.773,
+     "net_per_$1": 0.426
+    },
+    "2026-10": {
+     "n": 22,
+     "paid": 0.505,
+     "won": 0.773,
+     "net_per_$1": 0.457
+    },
+    "2026-11": {
+     "n": 13,
+     "paid": 0.521,
+     "won": 0.692,
+     "net_per_$1": 0.256
+    }
+   },
+   "filters": {
+    "none": {
+     "train": {
+      "n": 43,
+      "win_rate": 0.744,
+      "avg_price": 0.529,
+      "implied_win": 0.529,
+      "avg_win_$": 12.58,
+      "avg_loss_$": -15.28,
+      "net_$": 234.57,
+      "net_per_$1": 0.359,
+      "t_stat": 2.86,
+      "worst_streak": 2,
+      "max_dd_$": -30.36,
+      "trades_per_month": 22.2,
+      "usd_per_month": 121.02,
+      "first": "2026-08-03",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 35,
+      "win_rate": 0.743,
+      "avg_price": 0.509,
+      "implied_win": 0.509,
+      "avg_win_$": 13.31,
+      "avg_loss_$": -15.35,
+      "net_$": 207.8,
+      "net_per_$1": 0.389,
+      "t_stat": 2.69,
+      "worst_streak": 3,
+      "max_dd_$": -45.96,
+      "trades_per_month": 21.7,
+      "usd_per_month": 129.09,
+      "first": "2026-10-01",
+      "last": "2026-11-18"
+     }
+    },
+    "price<=0.50": {
+     "train": {
+      "n": 14,
+      "win_rate": 0.571,
+      "avg_price": 0.447,
+      "implied_win": 0.447,
+      "avg_win_$": 16.96,
+      "avg_loss_$": -15.4,
+      "net_$": 43.28,
+      "net_per_$1": 0.2016,
+      "t_stat": 0.71,
+      "worst_streak": 1,
+      "max_dd_$": -15.7,
+      "trades_per_month": 7.6,
+      "usd_per_month": 23.53,
+      "first": "2026-08-05",
+      "last": "2026-09-29"
+     },
+     "test": {
+      "n": 15,
+      "win_rate": 0.6,
+      "avg_price": 0.444,
+      "implied_win": 0.444,
+      "avg_win_$": 17.11,
+      "avg_loss_$": -15.39,
+      "net_$": 61.66,
+      "net_per_$1": 0.2677,
+      "t_stat": 0.96,
+      "worst_streak": 4,
+      "max_dd_$": -61.27,
+      "trades_per_month": 10.4,
+      "usd_per_month": 42.65,
+      "first": "2026-10-06",
+      "last": "2026-11-18"
+     }
+    },
+    "price<=0.55": {
+     "train": {
+      "n": 28,
+      "win_rate": 0.75,
+      "avg_price": 0.486,
+      "implied_win": 0.486,
+      "avg_win_$": 14.41,
+      "avg_loss_$": -15.41,
+      "net_$": 194.74,
+      "net_per_$1": 0.4558,
+      "t_stat": 2.8,
+      "worst_streak": 2,
+      "max_dd_$": -30.93,
+      "trades_per_month": 15.0,
+      "usd_per_month": 104.0,
+      "first": "2026-08-04",
+      "last": "2026-09-29"
+     },
+     "test": {
+      "n": 28,
+      "win_rate": 0.714,
+      "avg_price": 0.479,
+      "implied_win": 0.479,
+      "avg_win_$": 14.9,
+      "avg_loss_$": -15.39,
+      "net_$": 174.93,
+      "net_per_$1": 0.4077,
+      "t_stat": 2.36,
+      "worst_streak": 3,
+      "max_dd_$": -47.6,
+      "trades_per_month": 17.8,
+      "usd_per_month": 110.94,
+      "first": "2026-10-02",
+      "last": "2026-11-18"
+     }
+    },
+    "price<=0.60": {
+     "train": {
+      "n": 34,
+      "win_rate": 0.735,
+      "avg_price": 0.5,
+      "implied_win": 0.5,
+      "avg_win_$": 13.86,
+      "avg_loss_$": -15.37,
+      "net_$": 208.1,
+      "net_per_$1": 0.401,
+      "t_stat": 2.72,
+      "worst_streak": 1,
+      "max_dd_$": -20.37,
+      "trades_per_month": 17.8,
+      "usd_per_month": 109.22,
+      "first": "2026-08-03",
+      "last": "2026-09-29"
+     },
+     "test": {
+      "n": 30,
+      "win_rate": 0.7,
+      "avg_price": 0.486,
+      "implied_win": 0.486,
+      "avg_win_$": 14.65,
+      "avg_loss_$": -15.35,
+      "net_$": 169.58,
+      "net_per_$1": 0.3691,
+      "t_stat": 2.19,
+      "worst_streak": 3,
+      "max_dd_$": -47.6,
+      "trades_per_month": 19.0,
+      "usd_per_month": 107.54,
+      "first": "2026-10-02",
+      "last": "2026-11-18"
+     }
+    },
+    "price<=0.65": {
+     "train": {
+      "n": 41,
+      "win_rate": 0.732,
+      "avg_price": 0.52,
+      "implied_win": 0.521,
+      "avg_win_$": 13.02,
+      "avg_loss_$": -15.28,
+      "net_$": 222.42,
+      "net_per_$1": 0.3567,
+      "t_stat": 2.7,
+      "worst_streak": 2,
+      "max_dd_$": -30.36,
+      "trades_per_month": 21.2,
+      "usd_per_month": 114.75,
+      "first": "2026-08-03",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 34,
+      "win_rate": 0.735,
+      "avg_price": 0.503,
+      "implied_win": 0.503,
+      "avg_win_$": 13.63,
+      "avg_loss_$": -15.35,
+      "net_$": 202.65,
+      "net_per_$1": 0.3902,
+      "t_stat": 2.62,
+      "worst_streak": 3,
+      "max_dd_$": -45.96,
+      "trades_per_month": 21.1,
+      "usd_per_month": 125.89,
+      "first": "2026-10-01",
+      "last": "2026-11-18"
+     }
+    },
+    "price<=0.70": {
+     "train": {
+      "n": 42,
+      "win_rate": 0.738,
+      "avg_price": 0.524,
+      "implied_win": 0.524,
+      "avg_win_$": 12.83,
+      "avg_loss_$": -15.28,
+      "net_$": 229.61,
+      "net_per_$1": 0.3597,
+      "t_stat": 2.79,
+      "worst_streak": 2,
+      "max_dd_$": -30.36,
+      "trades_per_month": 21.7,
+      "usd_per_month": 118.47,
+      "first": "2026-08-03",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 34,
+      "win_rate": 0.735,
+      "avg_price": 0.503,
+      "implied_win": 0.503,
+      "avg_win_$": 13.63,
+      "avg_loss_$": -15.35,
+      "net_$": 202.65,
+      "net_per_$1": 0.3902,
+      "t_stat": 2.62,
+      "worst_streak": 3,
+      "max_dd_$": -45.96,
+      "trades_per_month": 21.1,
+      "usd_per_month": 125.89,
+      "first": "2026-10-01",
+      "last": "2026-11-18"
+     }
+    },
+    "price>=0.45": {
+     "train": {
+      "n": 36,
+      "win_rate": 0.806,
+      "avg_price": 0.548,
+      "implied_win": 0.548,
+      "avg_win_$": 11.99,
+      "avg_loss_$": -15.22,
+      "net_$": 241.1,
+      "net_per_$1": 0.4417,
+      "t_stat": 3.6,
+      "worst_streak": 2,
+      "max_dd_$": -30.36,
+      "trades_per_month": 18.6,
+      "usd_per_month": 124.39,
+      "first": "2026-08-03",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 28,
+      "win_rate": 0.857,
+      "avg_price": 0.534,
+      "implied_win": 0.534,
+      "avg_win_$": 12.63,
+      "avg_loss_$": -15.31,
+      "net_$": 241.81,
+      "net_per_$1": 0.5674,
+      "t_stat": 4.43,
+      "worst_streak": 3,
+      "max_dd_$": -45.96,
+      "trades_per_month": 19.4,
+      "usd_per_month": 167.29,
+      "first": "2026-10-01",
+      "last": "2026-11-13"
+     }
+    },
+    "price>=0.50": {
+     "train": {
+      "n": 29,
+      "win_rate": 0.828,
+      "avg_price": 0.568,
+      "implied_win": 0.568,
+      "avg_win_$": 11.12,
+      "avg_loss_$": -15.14,
+      "net_$": 191.29,
+      "net_per_$1": 0.436,
+      "t_stat": 3.44,
+      "worst_streak": 1,
+      "max_dd_$": -15.42,
+      "trades_per_month": 15.0,
+      "usd_per_month": 98.69,
+      "first": "2026-08-03",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 20,
+      "win_rate": 0.85,
+      "avg_price": 0.558,
+      "implied_win": 0.558,
+      "avg_win_$": 11.29,
+      "avg_loss_$": -15.27,
+      "net_$": 146.14,
+      "net_per_$1": 0.481,
+      "t_stat": 3.27,
+      "worst_streak": 2,
+      "max_dd_$": -30.53,
+      "trades_per_month": 13.8,
+      "usd_per_month": 101.1,
+      "first": "2026-10-01",
+      "last": "2026-11-13"
+     }
+    },
+    "price>=0.55": {
+     "train": {
+      "n": 15,
+      "win_rate": 0.733,
+      "avg_price": 0.608,
+      "implied_win": 0.608,
+      "avg_win_$": 9.1,
+      "avg_loss_$": -15.07,
+      "net_$": 39.83,
+      "net_per_$1": 0.1761,
+      "t_stat": 0.92,
+      "worst_streak": 2,
+      "max_dd_$": -30.06,
+      "trades_per_month": 7.7,
+      "usd_per_month": 20.55,
+      "first": "2026-08-03",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 7,
+      "win_rate": 0.857,
+      "avg_price": 0.628,
+      "implied_win": 0.628,
+      "avg_win_$": 7.98,
+      "avg_loss_$": -15.04,
+      "net_$": 32.87,
+      "net_per_$1": 0.3126,
+      "t_stat": 1.41,
+      "worst_streak": 1,
+      "max_dd_$": -15.04,
+      "trades_per_month": 5.0,
+      "usd_per_month": 23.27,
+      "first": "2026-10-01",
+      "last": "2026-11-12"
+     }
+    },
+    "prev15 up": {
+     "train": {
+      "n": 25,
+      "win_rate": 0.76,
+      "avg_price": 0.535,
+      "implied_win": 0.535,
+      "avg_win_$": 12.23,
+      "avg_loss_$": -15.33,
+      "net_$": 140.33,
+      "net_per_$1": 0.3696,
+      "t_stat": 2.3,
+      "worst_streak": 2,
+      "max_dd_$": -30.36,
+      "trades_per_month": 12.9,
+      "usd_per_month": 72.4,
+      "first": "2026-08-03",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 16,
+      "win_rate": 0.562,
+      "avg_price": 0.504,
+      "implied_win": 0.504,
+      "avg_win_$": 12.25,
+      "avg_loss_$": -15.36,
+      "net_$": 2.75,
+      "net_per_$1": 0.0113,
+      "t_stat": 0.06,
+      "worst_streak": 2,
+      "max_dd_$": -37.91,
+      "trades_per_month": 12.2,
+      "usd_per_month": 2.09,
+      "first": "2026-10-09",
+      "last": "2026-11-17"
+     }
+    },
+    "prev15 down": {
+     "train": {
+      "n": 18,
+      "win_rate": 0.722,
+      "avg_price": 0.521,
+      "implied_win": 0.521,
+      "avg_win_$": 13.11,
+      "avg_loss_$": -15.23,
+      "net_$": 94.24,
+      "net_per_$1": 0.3442,
+      "t_stat": 1.67,
+      "worst_streak": 2,
+      "max_dd_$": -31.66,
+      "trades_per_month": 10.1,
+      "usd_per_month": 53.12,
+      "first": "2026-08-06",
+      "last": "2026-09-28"
+     },
+     "test": {
+      "n": 19,
+      "win_rate": 0.895,
+      "avg_price": 0.513,
+      "implied_win": 0.513,
+      "avg_win_$": 13.87,
+      "avg_loss_$": -15.33,
+      "net_$": 205.05,
+      "net_per_$1": 0.7072,
+      "t_stat": 4.7,
+      "worst_streak": 1,
+      "max_dd_$": -15.43,
+      "trades_per_month": 11.8,
+      "usd_per_month": 127.38,
+      "first": "2026-10-01",
+      "last": "2026-11-18"
+     }
+    },
+    "prior4h up": {
+     "train": {
+      "n": 15,
+      "win_rate": 0.667,
+      "avg_price": 0.509,
+      "implied_win": 0.509,
+      "avg_win_$": 13.07,
+      "avg_loss_$": -15.28,
+      "net_$": 54.27,
+      "net_per_$1": 0.2373,
+      "t_stat": 1.01,
+      "worst_streak": 3,
+      "max_dd_$": -45.62,
+      "trades_per_month": 7.7,
+      "usd_per_month": 28.0,
+      "first": "2026-08-03",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 16,
+      "win_rate": 0.812,
+      "avg_price": 0.54,
+      "implied_win": 0.54,
+      "avg_win_$": 12.34,
+      "avg_loss_$": -15.27,
+      "net_$": 114.63,
+      "net_per_$1": 0.471,
+      "t_stat": 2.5,
+      "worst_streak": 2,
+      "max_dd_$": -30.53,
+      "trades_per_month": 11.9,
+      "usd_per_month": 85.11,
+      "first": "2026-10-01",
+      "last": "2026-11-10"
+     }
+    },
+    "prior4h down": {
+     "train": {
+      "n": 28,
+      "win_rate": 0.786,
+      "avg_price": 0.54,
+      "implied_win": 0.54,
+      "avg_win_$": 12.36,
+      "avg_loss_$": -15.28,
+      "net_$": 180.3,
+      "net_per_$1": 0.4245,
+      "t_stat": 2.87,
+      "worst_streak": 1,
+      "max_dd_$": -22.38,
+      "trades_per_month": 15.2,
+      "usd_per_month": 98.0,
+      "first": "2026-08-04",
+      "last": "2026-09-28"
+     },
+     "test": {
+      "n": 19,
+      "win_rate": 0.684,
+      "avg_price": 0.483,
+      "implied_win": 0.483,
+      "avg_win_$": 14.27,
+      "avg_loss_$": -15.39,
+      "net_$": 93.17,
+      "net_per_$1": 0.3203,
+      "t_stat": 1.48,
+      "worst_streak": 3,
+      "max_dd_$": -45.85,
+      "trades_per_month": 13.5,
+      "usd_per_month": 65.95,
+      "first": "2026-10-07",
+      "last": "2026-11-18"
+     }
+    },
+    "prior11h up": {
+     "train": {
+      "n": 20,
+      "win_rate": 0.8,
+      "avg_price": 0.525,
+      "implied_win": 0.525,
+      "avg_win_$": 12.11,
+      "avg_loss_$": -15.4,
+      "net_$": 132.08,
+      "net_per_$1": 0.4346,
+      "t_stat": 2.58,
+      "worst_streak": 1,
+      "max_dd_$": -22.01,
+      "trades_per_month": 10.5,
+      "usd_per_month": 69.32,
+      "first": "2026-08-03",
+      "last": "2026-09-29"
+     },
+     "test": {
+      "n": 14,
+      "win_rate": 0.786,
+      "avg_price": 0.534,
+      "implied_win": 0.534,
+      "avg_win_$": 13.08,
+      "avg_loss_$": -15.27,
+      "net_$": 98.03,
+      "net_per_$1": 0.4603,
+      "t_stat": 2.05,
+      "worst_streak": 2,
+      "max_dd_$": -30.53,
+      "trades_per_month": 10.7,
+      "usd_per_month": 74.6,
+      "first": "2026-10-01",
+      "last": "2026-11-09"
+     }
+    },
+    "prior11h down": {
+     "train": {
+      "n": 23,
+      "win_rate": 0.696,
+      "avg_price": 0.532,
+      "implied_win": 0.532,
+      "avg_win_$": 13.06,
+      "avg_loss_$": -15.21,
+      "net_$": 102.49,
+      "net_per_$1": 0.2932,
+      "t_stat": 1.57,
+      "worst_streak": 3,
+      "max_dd_$": -45.56,
+      "trades_per_month": 12.5,
+      "usd_per_month": 55.71,
+      "first": "2026-08-06",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 21,
+      "win_rate": 0.714,
+      "avg_price": 0.492,
+      "implied_win": 0.492,
+      "avg_win_$": 13.47,
+      "avg_loss_$": -15.39,
+      "net_$": 109.76,
+      "net_per_$1": 0.3417,
+      "t_stat": 1.78,
+      "worst_streak": 3,
+      "max_dd_$": -45.85,
+      "trades_per_month": 13.3,
+      "usd_per_month": 69.61,
+      "first": "2026-10-02",
+      "last": "2026-11-18"
+     }
+    },
+    "Mon-Wed": {
+     "train": {
+      "n": 27,
+      "win_rate": 0.778,
+      "avg_price": 0.525,
+      "implied_win": 0.525,
+      "avg_win_$": 12.63,
+      "avg_loss_$": -15.25,
+      "net_$": 173.8,
+      "net_per_$1": 0.4237,
+      "t_stat": 2.79,
+      "worst_streak": 2,
+      "max_dd_$": -30.36,
+      "trades_per_month": 13.9,
+      "usd_per_month": 89.67,
+      "first": "2026-08-03",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 21,
+      "win_rate": 0.714,
+      "avg_price": 0.518,
+      "implied_win": 0.518,
+      "avg_win_$": 12.64,
+      "avg_loss_$": -15.3,
+      "net_$": 97.75,
+      "net_per_$1": 0.3062,
+      "t_stat": 1.63,
+      "worst_streak": 4,
+      "max_dd_$": -61.27,
+      "trades_per_month": 14.2,
+      "usd_per_month": 66.12,
+      "first": "2026-10-05",
+      "last": "2026-11-18"
+     }
+    },
+    "Thu-Fri": {
+     "train": {
+      "n": 16,
+      "win_rate": 0.688,
+      "avg_price": 0.535,
+      "implied_win": 0.535,
+      "avg_win_$": 12.49,
+      "avg_loss_$": -15.32,
+      "net_$": 60.78,
+      "net_per_$1": 0.2499,
+      "t_stat": 1.12,
+      "worst_streak": 1,
+      "max_dd_$": -22.77,
+      "trades_per_month": 9.5,
+      "usd_per_month": 36.27,
+      "first": "2026-08-06",
+      "last": "2026-09-25"
+     },
+     "test": {
+      "n": 14,
+      "win_rate": 0.786,
+      "avg_price": 0.495,
+      "implied_win": 0.495,
+      "avg_win_$": 14.22,
+      "avg_loss_$": -15.46,
+      "net_$": 110.05,
+      "net_per_$1": 0.512,
+      "t_stat": 2.24,
+      "worst_streak": 1,
+      "max_dd_$": -18.15,
+      "trades_per_month": 9.7,
+      "usd_per_month": 76.14,
+      "first": "2026-10-01",
+      "last": "2026-11-13"
+     }
+    }
+   },
+   "filter_picked_on_train": "price<=0.55"
+  },
+  "C_silver": {
+   "label": "16:15 DOWN silver",
+   "tape": {
+    "train": {
+     "n": 43,
+     "win_rate": 0.837,
+     "avg_price": 0.533,
+     "implied_win": 0.533,
+     "avg_win_$": 12.87,
+     "avg_loss_$": -15.29,
+     "net_$": 356.32,
+     "net_per_$1": 0.5426,
+     "t_stat": 4.7,
+     "worst_streak": 2,
+     "max_dd_$": -30.4,
+     "trades_per_month": 22.2,
+     "usd_per_month": 183.84,
+     "first": "2026-08-03",
+     "last": "2026-09-30",
+     "ci95_net_per_$1": [
+      0.297,
+      0.761
+     ],
+     "median_contracts_our_side_first45s": 544.32
+    },
+    "test": {
+     "n": 35,
+     "win_rate": 0.629,
+     "avg_price": 0.518,
+     "implied_win": 0.518,
+     "avg_win_$": 13.42,
+     "avg_loss_$": -15.31,
+     "net_$": 96.15,
+     "net_per_$1": 0.1801,
+     "t_stat": 1.07,
+     "worst_streak": 3,
+     "max_dd_$": -45.75,
+     "trades_per_month": 21.7,
+     "usd_per_month": 59.73,
+     "first": "2026-10-01",
+     "last": "2026-11-18",
+     "ci95_net_per_$1": [
+      -0.164,
+      0.526
+     ],
+     "median_contracts_our_side_first45s": 1041.59
+    }
+   },
+   "m1": {
+    "train": {
+     "n": 43,
+     "win_rate": 0.837,
+     "avg_price": 0.552,
+     "implied_win": 0.546,
+     "avg_win_$": 12.76,
+     "avg_loss_$": -15.37,
+     "net_$": 351.9,
+     "net_per_$1": 0.5372,
+     "t_stat": 3.9,
+     "worst_streak": 2,
+     "max_dd_$": -30.58,
+     "trades_per_month": 22.2,
+     "usd_per_month": 181.56,
+     "first": "2026-08-03",
+     "last": "2026-09-30",
+     "ci95_net_per_$1": [
+      0.256,
+      0.809
+     ]
+    },
+    "test": {
+     "n": 35,
+     "win_rate": 0.629,
+     "avg_price": 0.53,
+     "implied_win": 0.524,
+     "avg_win_$": 12.12,
+     "avg_loss_$": -15.33,
+     "net_$": 67.37,
+     "net_per_$1": 0.1262,
+     "t_stat": 0.79,
+     "worst_streak": 3,
+     "max_dd_$": -45.88,
+     "trades_per_month": 21.7,
+     "usd_per_month": 41.85,
+     "first": "2026-10-01",
+     "last": "2026-11-18",
+     "ci95_net_per_$1": [
+      -0.199,
+      0.448
+     ]
+    }
+   },
+   "by_month": {
+    "2026-08": {
+     "n": 21,
+     "paid": 0.559,
+     "won": 0.81,
+     "net_per_$1": 0.474
+    },
+    "2026-09": {
+     "n": 22,
+     "paid": 0.546,
+     "won": 0.864,
+     "net_per_$1": 0.598
+    },
+    "2026-10": {
+     "n": 22,
+     "paid": 0.494,
+     "won": 0.636,
+     "net_per_$1": 0.248
+    },
+    "2026-11": {
+     "n": 13,
+     "paid": 0.591,
+     "won": 0.615,
+     "net_per_$1": -0.082
+    }
+   },
+   "filters": {
+    "none": {
+     "train": {
+      "n": 43,
+      "win_rate": 0.837,
+      "avg_price": 0.533,
+      "implied_win": 0.533,
+      "avg_win_$": 12.87,
+      "avg_loss_$": -15.29,
+      "net_$": 356.32,
+      "net_per_$1": 0.5426,
+      "t_stat": 4.7,
+      "worst_streak": 2,
+      "max_dd_$": -30.4,
+      "trades_per_month": 22.2,
+      "usd_per_month": 183.84,
+      "first": "2026-08-03",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 35,
+      "win_rate": 0.629,
+      "avg_price": 0.518,
+      "implied_win": 0.518,
+      "avg_win_$": 13.42,
+      "avg_loss_$": -15.31,
+      "net_$": 96.15,
+      "net_per_$1": 0.1801,
+      "t_stat": 1.07,
+      "worst_streak": 3,
+      "max_dd_$": -45.75,
+      "trades_per_month": 21.7,
+      "usd_per_month": 59.73,
+      "first": "2026-10-01",
+      "last": "2026-11-18"
+     }
+    },
+    "price<=0.50": {
+     "train": {
+      "n": 15,
+      "win_rate": 0.8,
+      "avg_price": 0.427,
+      "implied_win": 0.427,
+      "avg_win_$": 19.03,
+      "avg_loss_$": -15.4,
+      "net_$": 182.1,
+      "net_per_$1": 0.7887,
+      "t_stat": 3.2,
+      "worst_streak": 1,
+      "max_dd_$": -15.56,
+      "trades_per_month": 8.8,
+      "usd_per_month": 106.6,
+      "first": "2026-08-05",
+      "last": "2026-09-25"
+     },
+     "test": {
+      "n": 16,
+      "win_rate": 0.562,
+      "avg_price": 0.413,
+      "implied_win": 0.413,
+      "avg_win_$": 20.26,
+      "avg_loss_$": -15.42,
+      "net_$": 74.47,
+      "net_per_$1": 0.3021,
+      "t_stat": 0.98,
+      "worst_streak": 2,
+      "max_dd_$": -30.79,
+      "trades_per_month": 10.1,
+      "usd_per_month": 47.23,
+      "first": "2026-10-01",
+      "last": "2026-11-17"
+     }
+    },
+    "price<=0.55": {
+     "train": {
+      "n": 23,
+      "win_rate": 0.826,
+      "avg_price": 0.463,
+      "implied_win": 0.463,
+      "avg_win_$": 16.65,
+      "avg_loss_$": -15.31,
+      "net_$": 255.18,
+      "net_per_$1": 0.7232,
+      "t_stat": 4.08,
+      "worst_streak": 1,
+      "max_dd_$": -15.56,
+      "trades_per_month": 12.7,
+      "usd_per_month": 141.23,
+      "first": "2026-08-05",
+      "last": "2026-09-28"
+     },
+     "test": {
+      "n": 21,
+      "win_rate": 0.476,
+      "avg_price": 0.441,
+      "implied_win": 0.441,
+      "avg_win_$": 19.42,
+      "avg_loss_$": -15.37,
+      "net_$": 25.07,
+      "net_per_$1": 0.0776,
+      "t_stat": 0.29,
+      "worst_streak": 2,
+      "max_dd_$": -45.77,
+      "trades_per_month": 13.3,
+      "usd_per_month": 15.9,
+      "first": "2026-10-01",
+      "last": "2026-11-17"
+     }
+    },
+    "price<=0.60": {
+     "train": {
+      "n": 32,
+      "win_rate": 0.781,
+      "avg_price": 0.494,
+      "implied_win": 0.494,
+      "avg_win_$": 15.11,
+      "avg_loss_$": -15.29,
+      "net_$": 270.79,
+      "net_per_$1": 0.5524,
+      "t_stat": 3.55,
+      "worst_streak": 2,
+      "max_dd_$": -30.4,
+      "trades_per_month": 17.1,
+      "usd_per_month": 144.61,
+      "first": "2026-08-04",
+      "last": "2026-09-29"
+     },
+     "test": {
+      "n": 25,
+      "win_rate": 0.56,
+      "avg_price": 0.463,
+      "implied_win": 0.463,
+      "avg_win_$": 16.8,
+      "avg_loss_$": -15.37,
+      "net_$": 66.07,
+      "net_per_$1": 0.1721,
+      "t_stat": 0.77,
+      "worst_streak": 2,
+      "max_dd_$": -31.94,
+      "trades_per_month": 15.9,
+      "usd_per_month": 41.9,
+      "first": "2026-10-01",
+      "last": "2026-11-17"
+     }
+    },
+    "price<=0.65": {
+     "train": {
+      "n": 39,
+      "win_rate": 0.821,
+      "avg_price": 0.518,
+      "implied_win": 0.518,
+      "avg_win_$": 13.67,
+      "avg_loss_$": -15.29,
+      "net_$": 330.49,
+      "net_per_$1": 0.554,
+      "t_stat": 4.36,
+      "worst_streak": 2,
+      "max_dd_$": -30.4,
+      "trades_per_month": 20.5,
+      "usd_per_month": 173.45,
+      "first": "2026-08-04",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 30,
+      "win_rate": 0.633,
+      "avg_price": 0.49,
+      "implied_win": 0.49,
+      "avg_win_$": 14.59,
+      "avg_loss_$": -15.37,
+      "net_$": 108.04,
+      "net_per_$1": 0.2354,
+      "t_stat": 1.26,
+      "worst_streak": 2,
+      "max_dd_$": -31.94,
+      "trades_per_month": 18.6,
+      "usd_per_month": 67.12,
+      "first": "2026-10-01",
+      "last": "2026-11-18"
+     }
+    },
+    "price<=0.70": {
+     "train": {
+      "n": 43,
+      "win_rate": 0.837,
+      "avg_price": 0.533,
+      "implied_win": 0.533,
+      "avg_win_$": 12.87,
+      "avg_loss_$": -15.29,
+      "net_$": 356.32,
+      "net_per_$1": 0.5426,
+      "t_stat": 4.7,
+      "worst_streak": 2,
+      "max_dd_$": -30.4,
+      "trades_per_month": 22.2,
+      "usd_per_month": 183.84,
+      "first": "2026-08-03",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 33,
+      "win_rate": 0.606,
+      "avg_price": 0.506,
+      "implied_win": 0.506,
+      "avg_win_$": 14.2,
+      "avg_loss_$": -15.31,
+      "net_$": 84.88,
+      "net_per_$1": 0.1684,
+      "t_stat": 0.94,
+      "worst_streak": 3,
+      "max_dd_$": -45.75,
+      "trades_per_month": 20.5,
+      "usd_per_month": 52.73,
+      "first": "2026-10-01",
+      "last": "2026-11-18"
+     }
+    },
+    "price>=0.45": {
+     "train": {
+      "n": 34,
+      "win_rate": 0.882,
+      "avg_price": 0.569,
+      "implied_win": 0.569,
+      "avg_win_$": 11.04,
+      "avg_loss_$": -15.21,
+      "net_$": 270.27,
+      "net_per_$1": 0.522,
+      "t_stat": 5.09,
+      "worst_streak": 1,
+      "max_dd_$": -19.72,
+      "trades_per_month": 17.5,
+      "usd_per_month": 139.44,
+      "first": "2026-08-03",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 23,
+      "win_rate": 0.739,
+      "avg_price": 0.582,
+      "implied_win": 0.582,
+      "avg_win_$": 10.45,
+      "avg_loss_$": -15.2,
+      "net_$": 86.49,
+      "net_per_$1": 0.2482,
+      "t_stat": 1.52,
+      "worst_streak": 2,
+      "max_dd_$": -30.14,
+      "trades_per_month": 14.6,
+      "usd_per_month": 54.85,
+      "first": "2026-10-02",
+      "last": "2026-11-18"
+     }
+    },
+    "price>=0.50": {
+     "train": {
+      "n": 28,
+      "win_rate": 0.857,
+      "avg_price": 0.59,
+      "implied_win": 0.59,
+      "avg_win_$": 9.79,
+      "avg_loss_$": -15.21,
+      "net_$": 174.22,
+      "net_per_$1": 0.4092,
+      "t_stat": 3.6,
+      "worst_streak": 1,
+      "max_dd_$": -19.72,
+      "trades_per_month": 14.4,
+      "usd_per_month": 89.89,
+      "first": "2026-08-03",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 19,
+      "win_rate": 0.684,
+      "avg_price": 0.606,
+      "implied_win": 0.606,
+      "avg_win_$": 8.68,
+      "avg_loss_$": -15.2,
+      "net_$": 21.68,
+      "net_per_$1": 0.0754,
+      "t_stat": 0.44,
+      "worst_streak": 2,
+      "max_dd_$": -35.67,
+      "trades_per_month": 12.0,
+      "usd_per_month": 13.75,
+      "first": "2026-10-02",
+      "last": "2026-11-18"
+     }
+    },
+    "price>=0.55": {
+     "train": {
+      "n": 21,
+      "win_rate": 0.857,
+      "avg_price": 0.611,
+      "implied_win": 0.611,
+      "avg_win_$": 8.81,
+      "avg_loss_$": -15.27,
+      "net_$": 112.83,
+      "net_per_$1": 0.3535,
+      "t_stat": 2.82,
+      "worst_streak": 1,
+      "max_dd_$": -19.72,
+      "trades_per_month": 10.8,
+      "usd_per_month": 58.21,
+      "first": "2026-08-03",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 14,
+      "win_rate": 0.857,
+      "avg_price": 0.634,
+      "implied_win": 0.634,
+      "avg_win_$": 8.42,
+      "avg_loss_$": -14.99,
+      "net_$": 71.07,
+      "net_per_$1": 0.337,
+      "t_stat": 2.18,
+      "worst_streak": 1,
+      "max_dd_$": -15.22,
+      "trades_per_month": 8.9,
+      "usd_per_month": 45.07,
+      "first": "2026-10-02",
+      "last": "2026-11-18"
+     }
+    },
+    "prev15 up": {
+     "train": {
+      "n": 22,
+      "win_rate": 0.955,
+      "avg_price": 0.529,
+      "implied_win": 0.529,
+      "avg_win_$": 13.74,
+      "avg_loss_$": -15.05,
+      "net_$": 273.5,
+      "net_per_$1": 0.8128,
+      "t_stat": 6.98,
+      "worst_streak": 1,
+      "max_dd_$": -15.05,
+      "trades_per_month": 12.0,
+      "usd_per_month": 148.67,
+      "first": "2026-08-06",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 18,
+      "win_rate": 0.778,
+      "avg_price": 0.536,
+      "implied_win": 0.536,
+      "avg_win_$": 13.85,
+      "avg_loss_$": -15.23,
+      "net_$": 132.92,
+      "net_per_$1": 0.485,
+      "t_stat": 2.12,
+      "worst_streak": 2,
+      "max_dd_$": -30.14,
+      "trades_per_month": 12.7,
+      "usd_per_month": 94.1,
+      "first": "2026-10-02",
+      "last": "2026-11-13"
+     }
+    },
+    "prev15 down": {
+     "train": {
+      "n": 21,
+      "win_rate": 0.714,
+      "avg_price": 0.538,
+      "implied_win": 0.538,
+      "avg_win_$": 11.66,
+      "avg_loss_$": -15.33,
+      "net_$": 82.83,
+      "net_per_$1": 0.2587,
+      "t_stat": 1.4,
+      "worst_streak": 2,
+      "max_dd_$": -34.93,
+      "trades_per_month": 11.2,
+      "usd_per_month": 44.23,
+      "first": "2026-08-03",
+      "last": "2026-09-28"
+     },
+     "test": {
+      "n": 17,
+      "win_rate": 0.471,
+      "avg_price": 0.499,
+      "implied_win": 0.499,
+      "avg_win_$": 12.67,
+      "avg_loss_$": -15.35,
+      "net_$": -36.78,
+      "net_per_$1": -0.1416,
+      "t_stat": -0.6,
+      "worst_streak": 3,
+      "max_dd_$": -51.2,
+      "trades_per_month": 10.6,
+      "usd_per_month": -22.85,
+      "first": "2026-10-01",
+      "last": "2026-11-18"
+     }
+    },
+    "prior4h up": {
+     "train": {
+      "n": 18,
+      "win_rate": 0.889,
+      "avg_price": 0.545,
+      "implied_win": 0.545,
+      "avg_win_$": 12.81,
+      "avg_loss_$": -15.23,
+      "net_$": 174.49,
+      "net_per_$1": 0.6356,
+      "t_stat": 3.76,
+      "worst_streak": 1,
+      "max_dd_$": -15.26,
+      "trades_per_month": 9.3,
+      "usd_per_month": 90.02,
+      "first": "2026-08-03",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 12,
+      "win_rate": 0.75,
+      "avg_price": 0.501,
+      "implied_win": 0.501,
+      "avg_win_$": 15.8,
+      "avg_loss_$": -15.35,
+      "net_$": 96.18,
+      "net_per_$1": 0.5232,
+      "t_stat": 1.7,
+      "worst_streak": 1,
+      "max_dd_$": -15.41,
+      "trades_per_month": 7.5,
+      "usd_per_month": 59.75,
+      "first": "2026-10-01",
+      "last": "2026-11-18"
+     }
+    },
+    "prior4h down": {
+     "train": {
+      "n": 25,
+      "win_rate": 0.8,
+      "avg_price": 0.524,
+      "implied_win": 0.524,
+      "avg_win_$": 12.92,
+      "avg_loss_$": -15.32,
+      "net_$": 181.84,
+      "net_per_$1": 0.4758,
+      "t_stat": 3.01,
+      "worst_streak": 1,
+      "max_dd_$": -15.56,
+      "trades_per_month": 13.6,
+      "usd_per_month": 98.84,
+      "first": "2026-08-04",
+      "last": "2026-09-28"
+     },
+     "test": {
+      "n": 23,
+      "win_rate": 0.565,
+      "avg_price": 0.527,
+      "implied_win": 0.527,
+      "avg_win_$": 11.77,
+      "avg_loss_$": -15.3,
+      "net_$": -0.04,
+      "net_per_$1": -0.0001,
+      "t_stat": 0.01,
+      "worst_streak": 4,
+      "max_dd_$": -61.47,
+      "trades_per_month": 15.9,
+      "usd_per_month": -0.02,
+      "first": "2026-10-05",
+      "last": "2026-11-17"
+     }
+    },
+    "prior11h up": {
+     "train": {
+      "n": 21,
+      "win_rate": 0.857,
+      "avg_price": 0.533,
+      "implied_win": 0.533,
+      "avg_win_$": 13.5,
+      "avg_loss_$": -15.22,
+      "net_$": 197.3,
+      "net_per_$1": 0.6152,
+      "t_stat": 3.69,
+      "worst_streak": 3,
+      "max_dd_$": -45.66,
+      "trades_per_month": 11.2,
+      "usd_per_month": 105.36,
+      "first": "2026-08-04",
+      "last": "2026-09-29"
+     },
+     "test": {
+      "n": 14,
+      "win_rate": 0.429,
+      "avg_price": 0.489,
+      "implied_win": 0.489,
+      "avg_win_$": 19.28,
+      "avg_loss_$": -15.29,
+      "net_$": -6.66,
+      "net_per_$1": -0.031,
+      "t_stat": -0.11,
+      "worst_streak": 3,
+      "max_dd_$": -45.75,
+      "trades_per_month": 10.7,
+      "usd_per_month": -5.07,
+      "first": "2026-10-01",
+      "last": "2026-11-09"
+     }
+    },
+    "prior11h down": {
+     "train": {
+      "n": 22,
+      "win_rate": 0.818,
+      "avg_price": 0.534,
+      "implied_win": 0.534,
+      "avg_win_$": 12.25,
+      "avg_loss_$": -15.35,
+      "net_$": 159.03,
+      "net_per_$1": 0.4733,
+      "t_stat": 2.92,
+      "worst_streak": 1,
+      "max_dd_$": -21.93,
+      "trades_per_month": 11.4,
+      "usd_per_month": 82.05,
+      "first": "2026-08-03",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 21,
+      "win_rate": 0.762,
+      "avg_price": 0.538,
+      "implied_win": 0.538,
+      "avg_win_$": 11.22,
+      "avg_loss_$": -15.35,
+      "net_$": 102.8,
+      "net_per_$1": 0.3221,
+      "t_stat": 1.84,
+      "worst_streak": 3,
+      "max_dd_$": -46.29,
+      "trades_per_month": 13.3,
+      "usd_per_month": 65.2,
+      "first": "2026-10-02",
+      "last": "2026-11-18"
+     }
+    },
+    "Mon-Wed": {
+     "train": {
+      "n": 27,
+      "win_rate": 0.815,
+      "avg_price": 0.533,
+      "implied_win": 0.533,
+      "avg_win_$": 12.52,
+      "avg_loss_$": -15.33,
+      "net_$": 198.81,
+      "net_per_$1": 0.4823,
+      "t_stat": 3.21,
+      "worst_streak": 3,
+      "max_dd_$": -45.66,
+      "trades_per_month": 13.9,
+      "usd_per_month": 102.57,
+      "first": "2026-08-03",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 21,
+      "win_rate": 0.476,
+      "avg_price": 0.494,
+      "implied_win": 0.494,
+      "avg_win_$": 15.45,
+      "avg_loss_$": -15.33,
+      "net_$": -14.18,
+      "net_per_$1": -0.0442,
+      "t_stat": -0.19,
+      "worst_streak": 3,
+      "max_dd_$": -45.75,
+      "trades_per_month": 14.2,
+      "usd_per_month": -9.59,
+      "first": "2026-10-05",
+      "last": "2026-11-18"
+     }
+    },
+    "Thu-Fri": {
+     "train": {
+      "n": 16,
+      "win_rate": 0.875,
+      "avg_price": 0.533,
+      "implied_win": 0.533,
+      "avg_win_$": 13.42,
+      "avg_loss_$": -15.2,
+      "net_$": 157.51,
+      "net_per_$1": 0.6442,
+      "t_stat": 3.55,
+      "worst_streak": 1,
+      "max_dd_$": -15.36,
+      "trades_per_month": 9.5,
+      "usd_per_month": 94.01,
+      "first": "2026-08-06",
+      "last": "2026-09-25"
+     },
+     "test": {
+      "n": 14,
+      "win_rate": 0.857,
+      "avg_price": 0.554,
+      "implied_win": 0.554,
+      "avg_win_$": 11.73,
+      "avg_loss_$": -15.22,
+      "net_$": 110.33,
+      "net_per_$1": 0.5188,
+      "t_stat": 2.67,
+      "worst_streak": 1,
+      "max_dd_$": -15.27,
+      "trades_per_month": 9.7,
+      "usd_per_month": 76.33,
+      "first": "2026-10-01",
+      "last": "2026-11-13"
+     }
+    }
+   },
+   "filter_picked_on_train": "prev15 up"
+  },
+  "C_gold": {
+   "label": "16:15 DOWN gold",
+   "tape": {
+    "train": {
+     "n": 43,
+     "win_rate": 0.698,
+     "avg_price": 0.536,
+     "implied_win": 0.536,
+     "avg_win_$": 12.32,
+     "avg_loss_$": -15.19,
+     "net_$": 172.24,
+     "net_per_$1": 0.2639,
+     "t_stat": 1.99,
+     "worst_streak": 3,
+     "max_dd_$": -45.34,
+     "trades_per_month": 22.2,
+     "usd_per_month": 88.86,
+     "first": "2026-08-03",
+     "last": "2026-09-30",
+     "ci95_net_per_$1": [
+      -0.006,
+      0.506
+     ],
+     "median_contracts_our_side_first45s": 2925.42
+    },
+    "test": {
+     "n": 35,
+     "win_rate": 0.6,
+     "avg_price": 0.514,
+     "implied_win": 0.514,
+     "avg_win_$": 14.26,
+     "avg_loss_$": -15.27,
+     "net_$": 85.73,
+     "net_per_$1": 0.1608,
+     "t_stat": 0.91,
+     "worst_streak": 3,
+     "max_dd_$": -61.96,
+     "trades_per_month": 21.7,
+     "usd_per_month": 53.26,
+     "first": "2026-10-01",
+     "last": "2026-11-18",
+     "ci95_net_per_$1": [
+      -0.181,
+      0.499
+     ],
+     "median_contracts_our_side_first45s": 7125.6
+    }
+   },
+   "m1": {
+    "train": {
+     "n": 43,
+     "win_rate": 0.698,
+     "avg_price": 0.556,
+     "implied_win": 0.549,
+     "avg_win_$": 11.02,
+     "avg_loss_$": -15.29,
+     "net_$": 131.81,
+     "net_per_$1": 0.2015,
+     "t_stat": 1.57,
+     "worst_streak": 3,
+     "max_dd_$": -45.78,
+     "trades_per_month": 22.2,
+     "usd_per_month": 68.01,
+     "first": "2026-08-03",
+     "last": "2026-09-30",
+     "ci95_net_per_$1": [
+      -0.058,
+      0.439
+     ]
+    },
+    "test": {
+     "n": 35,
+     "win_rate": 0.6,
+     "avg_price": 0.548,
+     "implied_win": 0.543,
+     "avg_win_$": 11.81,
+     "avg_loss_$": -15.29,
+     "net_$": 33.82,
+     "net_per_$1": 0.0635,
+     "t_stat": 0.39,
+     "worst_streak": 3,
+     "max_dd_$": -67.96,
+     "trades_per_month": 21.7,
+     "usd_per_month": 21.01,
+     "first": "2026-10-01",
+     "last": "2026-11-18",
+     "ci95_net_per_$1": [
+      -0.256,
+      0.383
+     ]
+    }
+   },
+   "by_month": {
+    "2026-08": {
+     "n": 21,
+     "paid": 0.562,
+     "won": 0.714,
+     "net_per_$1": 0.243
+    },
+    "2026-09": {
+     "n": 22,
+     "paid": 0.55,
+     "won": 0.682,
+     "net_per_$1": 0.162
+    },
+    "2026-10": {
+     "n": 22,
+     "paid": 0.524,
+     "won": 0.682,
+     "net_per_$1": 0.275
+    },
+    "2026-11": {
+     "n": 13,
+     "paid": 0.589,
+     "won": 0.462,
+     "net_per_$1": -0.298
+    }
+   },
+   "filters": {
+    "none": {
+     "train": {
+      "n": 43,
+      "win_rate": 0.698,
+      "avg_price": 0.536,
+      "implied_win": 0.536,
+      "avg_win_$": 12.32,
+      "avg_loss_$": -15.19,
+      "net_$": 172.24,
+      "net_per_$1": 0.2639,
+      "t_stat": 1.99,
+      "worst_streak": 3,
+      "max_dd_$": -45.34,
+      "trades_per_month": 22.2,
+      "usd_per_month": 88.86,
+      "first": "2026-08-03",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 35,
+      "win_rate": 0.6,
+      "avg_price": 0.514,
+      "implied_win": 0.514,
+      "avg_win_$": 14.26,
+      "avg_loss_$": -15.27,
+      "net_$": 85.73,
+      "net_per_$1": 0.1608,
+      "t_stat": 0.91,
+      "worst_streak": 3,
+      "max_dd_$": -61.96,
+      "trades_per_month": 21.7,
+      "usd_per_month": 53.26,
+      "first": "2026-10-01",
+      "last": "2026-11-18"
+     }
+    },
+    "price<=0.50": {
+     "train": {
+      "n": 17,
+      "win_rate": 0.647,
+      "avg_price": 0.458,
+      "implied_win": 0.458,
+      "avg_win_$": 16.29,
+      "avg_loss_$": -15.31,
+      "net_$": 87.31,
+      "net_per_$1": 0.3349,
+      "t_stat": 1.35,
+      "worst_streak": 4,
+      "max_dd_$": -61.17,
+      "trades_per_month": 9.8,
+      "usd_per_month": 50.15,
+      "first": "2026-08-04",
+      "last": "2026-09-25"
+     },
+     "test": {
+      "n": 14,
+      "win_rate": 0.571,
+      "avg_price": 0.418,
+      "implied_win": 0.418,
+      "avg_win_$": 21.21,
+      "avg_loss_$": -15.32,
+      "net_$": 77.78,
+      "net_per_$1": 0.3614,
+      "t_stat": 1.05,
+      "worst_streak": 2,
+      "max_dd_$": -30.52,
+      "trades_per_month": 8.7,
+      "usd_per_month": 48.32,
+      "first": "2026-10-01",
+      "last": "2026-11-18"
+     }
+    },
+    "price<=0.55": {
+     "train": {
+      "n": 25,
+      "win_rate": 0.68,
+      "avg_price": 0.482,
+      "implied_win": 0.482,
+      "avg_win_$": 15.0,
+      "avg_loss_$": -15.27,
+      "net_$": 132.87,
+      "net_per_$1": 0.3477,
+      "t_stat": 1.83,
+      "worst_streak": 2,
+      "max_dd_$": -49.2,
+      "trades_per_month": 14.4,
+      "usd_per_month": 76.31,
+      "first": "2026-08-04",
+      "last": "2026-09-25"
+     },
+     "test": {
+      "n": 23,
+      "win_rate": 0.522,
+      "avg_price": 0.46,
+      "implied_win": 0.46,
+      "avg_win_$": 18.45,
+      "avg_loss_$": -15.3,
+      "net_$": 53.13,
+      "net_per_$1": 0.1506,
+      "t_stat": 0.6,
+      "worst_streak": 3,
+      "max_dd_$": -45.74,
+      "trades_per_month": 14.3,
+      "usd_per_month": 33.01,
+      "first": "2026-10-01",
+      "last": "2026-11-18"
+     }
+    },
+    "price<=0.60": {
+     "train": {
+      "n": 34,
+      "win_rate": 0.676,
+      "avg_price": 0.507,
+      "implied_win": 0.507,
+      "avg_win_$": 13.77,
+      "avg_loss_$": -15.23,
+      "net_$": 149.11,
+      "net_per_$1": 0.2879,
+      "t_stat": 1.83,
+      "worst_streak": 2,
+      "max_dd_$": -49.2,
+      "trades_per_month": 17.8,
+      "usd_per_month": 78.26,
+      "first": "2026-08-04",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 28,
+      "win_rate": 0.571,
+      "avg_price": 0.479,
+      "implied_win": 0.479,
+      "avg_win_$": 16.5,
+      "avg_loss_$": -15.27,
+      "net_$": 80.86,
+      "net_per_$1": 0.1889,
+      "t_stat": 0.89,
+      "worst_streak": 3,
+      "max_dd_$": -48.08,
+      "trades_per_month": 17.4,
+      "usd_per_month": 50.23,
+      "first": "2026-10-01",
+      "last": "2026-11-18"
+     }
+    },
+    "price<=0.65": {
+     "train": {
+      "n": 40,
+      "win_rate": 0.7,
+      "avg_price": 0.524,
+      "implied_win": 0.524,
+      "avg_win_$": 12.79,
+      "avg_loss_$": -15.2,
+      "net_$": 175.79,
+      "net_per_$1": 0.289,
+      "t_stat": 2.09,
+      "worst_streak": 2,
+      "max_dd_$": -40.14,
+      "trades_per_month": 21.0,
+      "usd_per_month": 92.26,
+      "first": "2026-08-04",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 32,
+      "win_rate": 0.562,
+      "avg_price": 0.497,
+      "implied_win": 0.497,
+      "avg_win_$": 15.62,
+      "avg_loss_$": -15.27,
+      "net_$": 67.3,
+      "net_per_$1": 0.1377,
+      "t_stat": 0.71,
+      "worst_streak": 4,
+      "max_dd_$": -67.35,
+      "trades_per_month": 19.9,
+      "usd_per_month": 41.81,
+      "first": "2026-10-01",
+      "last": "2026-11-18"
+     }
+    },
+    "price<=0.70": {
+     "train": {
+      "n": 42,
+      "win_rate": 0.69,
+      "avg_price": 0.531,
+      "implied_win": 0.531,
+      "avg_win_$": 12.6,
+      "avg_loss_$": -15.19,
+      "net_$": 167.94,
+      "net_per_$1": 0.2632,
+      "t_stat": 1.94,
+      "worst_streak": 3,
+      "max_dd_$": -45.34,
+      "trades_per_month": 21.7,
+      "usd_per_month": 86.64,
+      "first": "2026-08-03",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 34,
+      "win_rate": 0.588,
+      "avg_price": 0.508,
+      "implied_win": 0.508,
+      "avg_win_$": 14.71,
+      "avg_loss_$": -15.27,
+      "net_$": 80.34,
+      "net_per_$1": 0.1549,
+      "t_stat": 0.85,
+      "worst_streak": 4,
+      "max_dd_$": -67.35,
+      "trades_per_month": 21.1,
+      "usd_per_month": 49.91,
+      "first": "2026-10-01",
+      "last": "2026-11-18"
+     }
+    },
+    "price>=0.45": {
+     "train": {
+      "n": 37,
+      "win_rate": 0.73,
+      "avg_price": 0.555,
+      "implied_win": 0.555,
+      "avg_win_$": 11.66,
+      "avg_loss_$": -15.17,
+      "net_$": 163.2,
+      "net_per_$1": 0.291,
+      "t_stat": 2.16,
+      "worst_streak": 2,
+      "max_dd_$": -30.13,
+      "trades_per_month": 19.1,
+      "usd_per_month": 84.2,
+      "first": "2026-08-03",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 25,
+      "win_rate": 0.64,
+      "avg_price": 0.561,
+      "implied_win": 0.561,
+      "avg_win_$": 11.06,
+      "avg_loss_$": -15.23,
+      "net_$": 39.8,
+      "net_per_$1": 0.105,
+      "t_stat": 0.61,
+      "worst_streak": 2,
+      "max_dd_$": -55.43,
+      "trades_per_month": 16.2,
+      "usd_per_month": 25.78,
+      "first": "2026-10-02",
+      "last": "2026-11-17"
+     }
+    },
+    "price>=0.50": {
+     "train": {
+      "n": 26,
+      "win_rate": 0.731,
+      "avg_price": 0.587,
+      "implied_win": 0.587,
+      "avg_win_$": 10.02,
+      "avg_loss_$": -15.08,
+      "net_$": 84.93,
+      "net_per_$1": 0.2166,
+      "t_stat": 1.44,
+      "worst_streak": 2,
+      "max_dd_$": -31.67,
+      "trades_per_month": 13.4,
+      "usd_per_month": 43.82,
+      "first": "2026-08-03",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 21,
+      "win_rate": 0.619,
+      "avg_price": 0.578,
+      "implied_win": 0.578,
+      "avg_win_$": 9.99,
+      "avg_loss_$": -15.24,
+      "net_$": 7.95,
+      "net_per_$1": 0.025,
+      "t_stat": 0.15,
+      "worst_streak": 2,
+      "max_dd_$": -55.43,
+      "trades_per_month": 15.2,
+      "usd_per_month": 5.76,
+      "first": "2026-10-06",
+      "last": "2026-11-16"
+     }
+    },
+    "price>=0.55": {
+     "train": {
+      "n": 18,
+      "win_rate": 0.722,
+      "avg_price": 0.612,
+      "implied_win": 0.612,
+      "avg_win_$": 8.82,
+      "avg_loss_$": -15.05,
+      "net_$": 39.37,
+      "net_per_$1": 0.1455,
+      "t_stat": 0.84,
+      "worst_streak": 1,
+      "max_dd_$": -22.1,
+      "trades_per_month": 9.3,
+      "usd_per_month": 20.31,
+      "first": "2026-08-03",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 12,
+      "win_rate": 0.75,
+      "avg_price": 0.619,
+      "implied_win": 0.619,
+      "avg_win_$": 8.68,
+      "avg_loss_$": -15.18,
+      "net_$": 32.6,
+      "net_per_$1": 0.1807,
+      "t_stat": 0.88,
+      "worst_streak": 2,
+      "max_dd_$": -40.16,
+      "trades_per_month": 9.4,
+      "usd_per_month": 25.44,
+      "first": "2026-10-09",
+      "last": "2026-11-16"
+     }
+    },
+    "prev15 up": {
+     "train": {
+      "n": 20,
+      "win_rate": 0.8,
+      "avg_price": 0.54,
+      "implied_win": 0.54,
+      "avg_win_$": 12.61,
+      "avg_loss_$": -15.18,
+      "net_$": 140.98,
+      "net_per_$1": 0.4637,
+      "t_stat": 2.63,
+      "worst_streak": 1,
+      "max_dd_$": -19.5,
+      "trades_per_month": 10.9,
+      "usd_per_month": 76.64,
+      "first": "2026-08-06",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 21,
+      "win_rate": 0.571,
+      "avg_price": 0.51,
+      "implied_win": 0.51,
+      "avg_win_$": 15.86,
+      "avg_loss_$": -15.3,
+      "net_$": 52.65,
+      "net_per_$1": 0.1643,
+      "t_stat": 0.66,
+      "worst_streak": 4,
+      "max_dd_$": -67.35,
+      "trades_per_month": 14.5,
+      "usd_per_month": 36.42,
+      "first": "2026-10-01",
+      "last": "2026-11-13"
+     }
+    },
+    "prev15 down": {
+     "train": {
+      "n": 23,
+      "win_rate": 0.609,
+      "avg_price": 0.533,
+      "implied_win": 0.533,
+      "avg_win_$": 12.0,
+      "avg_loss_$": -15.19,
+      "net_$": 31.25,
+      "net_per_$1": 0.0896,
+      "t_stat": 0.48,
+      "worst_streak": 3,
+      "max_dd_$": -45.34,
+      "trades_per_month": 12.3,
+      "usd_per_month": 16.69,
+      "first": "2026-08-03",
+      "last": "2026-09-28"
+     },
+     "test": {
+      "n": 14,
+      "win_rate": 0.643,
+      "avg_price": 0.52,
+      "implied_win": 0.52,
+      "avg_win_$": 12.14,
+      "avg_loss_$": -15.23,
+      "net_$": 33.08,
+      "net_per_$1": 0.1554,
+      "t_stat": 0.63,
+      "worst_streak": 2,
+      "max_dd_$": -30.39,
+      "trades_per_month": 9.5,
+      "usd_per_month": 22.38,
+      "first": "2026-10-05",
+      "last": "2026-11-18"
+     }
+    },
+    "prior4h up": {
+     "train": {
+      "n": 20,
+      "win_rate": 0.7,
+      "avg_price": 0.529,
+      "implied_win": 0.529,
+      "avg_win_$": 13.99,
+      "avg_loss_$": -15.11,
+      "net_$": 105.15,
+      "net_per_$1": 0.346,
+      "t_stat": 1.66,
+      "worst_streak": 2,
+      "max_dd_$": -30.13,
+      "trades_per_month": 10.5,
+      "usd_per_month": 55.18,
+      "first": "2026-08-03",
+      "last": "2026-09-29"
+     },
+     "test": {
+      "n": 16,
+      "win_rate": 0.75,
+      "avg_price": 0.472,
+      "implied_win": 0.472,
+      "avg_win_$": 17.27,
+      "avg_loss_$": -15.36,
+      "net_$": 145.79,
+      "net_per_$1": 0.5945,
+      "t_stat": 2.25,
+      "worst_streak": 1,
+      "max_dd_$": -18.86,
+      "trades_per_month": 11.9,
+      "usd_per_month": 108.24,
+      "first": "2026-10-01",
+      "last": "2026-11-10"
+     }
+    },
+    "prior4h down": {
+     "train": {
+      "n": 23,
+      "win_rate": 0.696,
+      "avg_price": 0.543,
+      "implied_win": 0.543,
+      "avg_win_$": 10.86,
+      "avg_loss_$": -15.25,
+      "net_$": 67.09,
+      "net_per_$1": 0.1923,
+      "t_stat": 1.13,
+      "worst_streak": 2,
+      "max_dd_$": -49.2,
+      "trades_per_month": 12.1,
+      "usd_per_month": 35.21,
+      "first": "2026-08-04",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 19,
+      "win_rate": 0.474,
+      "avg_price": 0.549,
+      "implied_win": 0.549,
+      "avg_win_$": 10.26,
+      "avg_loss_$": -15.24,
+      "net_$": -60.06,
+      "net_per_$1": -0.2085,
+      "t_stat": -1.02,
+      "worst_streak": 3,
+      "max_dd_$": -77.27,
+      "trades_per_month": 13.5,
+      "usd_per_month": -42.52,
+      "first": "2026-10-07",
+      "last": "2026-11-18"
+     }
+    },
+    "prior11h up": {
+     "train": {
+      "n": 24,
+      "win_rate": 0.75,
+      "avg_price": 0.527,
+      "implied_win": 0.527,
+      "avg_win_$": 12.71,
+      "avg_loss_$": -15.27,
+      "net_$": 137.06,
+      "net_per_$1": 0.3756,
+      "t_stat": 2.18,
+      "worst_streak": 2,
+      "max_dd_$": -30.72,
+      "trades_per_month": 12.8,
+      "usd_per_month": 73.2,
+      "first": "2026-08-04",
+      "last": "2026-09-29"
+     },
+     "test": {
+      "n": 12,
+      "win_rate": 0.5,
+      "avg_price": 0.508,
+      "implied_win": 0.508,
+      "avg_win_$": 17.01,
+      "avg_loss_$": -15.32,
+      "net_$": 10.15,
+      "net_per_$1": 0.0552,
+      "t_stat": 0.15,
+      "worst_streak": 3,
+      "max_dd_$": -45.69,
+      "trades_per_month": 9.1,
+      "usd_per_month": 7.73,
+      "first": "2026-10-01",
+      "last": "2026-11-09"
+     }
+    },
+    "prior11h down": {
+     "train": {
+      "n": 19,
+      "win_rate": 0.632,
+      "avg_price": 0.548,
+      "implied_win": 0.548,
+      "avg_win_$": 11.75,
+      "avg_loss_$": -15.11,
+      "net_$": 35.18,
+      "net_per_$1": 0.1222,
+      "t_stat": 0.59,
+      "worst_streak": 1,
+      "max_dd_$": -27.24,
+      "trades_per_month": 9.8,
+      "usd_per_month": 18.15,
+      "first": "2026-08-03",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 23,
+      "win_rate": 0.652,
+      "avg_price": 0.517,
+      "implied_win": 0.517,
+      "avg_win_$": 13.16,
+      "avg_loss_$": -15.24,
+      "net_$": 75.57,
+      "net_per_$1": 0.2163,
+      "t_stat": 1.1,
+      "worst_streak": 2,
+      "max_dd_$": -30.52,
+      "trades_per_month": 14.6,
+      "usd_per_month": 47.93,
+      "first": "2026-10-02",
+      "last": "2026-11-18"
+     }
+    },
+    "Mon-Wed": {
+     "train": {
+      "n": 27,
+      "win_rate": 0.667,
+      "avg_price": 0.531,
+      "implied_win": 0.531,
+      "avg_win_$": 12.36,
+      "avg_loss_$": -15.21,
+      "net_$": 85.61,
+      "net_per_$1": 0.2086,
+      "t_stat": 1.21,
+      "worst_streak": 4,
+      "max_dd_$": -60.51,
+      "trades_per_month": 13.9,
+      "usd_per_month": 44.17,
+      "first": "2026-08-03",
+      "last": "2026-09-30"
+     },
+     "test": {
+      "n": 21,
+      "win_rate": 0.524,
+      "avg_price": 0.494,
+      "implied_win": 0.494,
+      "avg_win_$": 16.1,
+      "avg_loss_$": -15.25,
+      "net_$": 24.6,
+      "net_per_$1": 0.0768,
+      "t_stat": 0.3,
+      "worst_streak": 3,
+      "max_dd_$": -53.5,
+      "trades_per_month": 14.2,
+      "usd_per_month": 16.64,
+      "first": "2026-10-05",
+      "last": "2026-11-18"
+     }
+    },
+    "Thu-Fri": {
+     "train": {
+      "n": 16,
+      "win_rate": 0.75,
+      "avg_price": 0.545,
+      "implied_win": 0.545,
+      "avg_win_$": 12.26,
+      "avg_loss_$": -15.13,
+      "net_$": 86.63,
+      "net_per_$1": 0.3574,
+      "t_stat": 1.69,
+      "worst_streak": 1,
+      "max_dd_$": -22.28,
+      "trades_per_month": 9.5,
+      "usd_per_month": 51.71,
+      "first": "2026-08-06",
+      "last": "2026-09-25"
+     },
+     "test": {
+      "n": 14,
+      "win_rate": 0.714,
+      "avg_price": 0.545,
+      "implied_win": 0.545,
+      "avg_win_$": 12.24,
+      "avg_loss_$": -15.32,
+      "net_$": 61.13,
+      "net_per_$1": 0.2872,
+      "t_stat": 1.2,
+      "worst_streak": 1,
+      "max_dd_$": -16.27,
+      "trades_per_month": 9.7,
+      "usd_per_month": 42.29,
+      "first": "2026-10-01",
+      "last": "2026-11-13"
+     }
+    }
+   },
+   "filter_picked_on_train": "prev15 up"
+  },
+  "D_gold": {
+   "label": "17:15 UP gold (Aug-Sep only)",
+   "tape": {
+    "train": {
+     "n": 0
+    },
+    "test": {
+     "n": 0
+    }
+   },
+   "m1": {
+    "train": {
+     "n": 37,
+     "win_rate": 0.838,
+     "avg_price": 0.691,
+     "implied_win": 0.681,
+     "avg_win_$": 6.77,
+     "avg_loss_$": -15.2,
+     "net_$": 118.58,
+     "net_per_$1": 0.2139,
+     "t_stat": 1.9,
+     "worst_streak": 2,
+     "max_dd_$": -35.4,
+     "trades_per_month": 20.5,
+     "usd_per_month": 65.63,
+     "first": "2026-08-07",
+     "last": "2026-09-30",
+     "ci95_net_per_$1": [
+      -0.018,
+      0.435
+     ]
+    },
+    "test": {
+     "n": 0
+    }
+   }
+  },
+  "D_silver": {
+   "label": "17:15 UP silver (Aug-Sep only)",
+   "tape": {
+    "train": {
+     "n": 0
+    },
+    "test": {
+     "n": 0
+    }
+   },
+   "m1": {
+    "train": {
+     "n": 42,
+     "win_rate": 0.881,
+     "avg_price": 0.764,
+     "implied_win": 0.754,
+     "avg_win_$": 4.36,
+     "avg_loss_$": -15.24,
+     "net_$": 85.19,
+     "net_per_$1": 0.1364,
+     "t_stat": 1.76,
+     "worst_streak": 2,
+     "max_dd_$": -37.97,
+     "trades_per_month": 21.7,
+     "usd_per_month": 43.95,
+     "first": "2026-08-03",
+     "last": "2026-09-30",
+     "ci95_net_per_$1": [
+      -0.031,
+      0.293
+     ]
+    },
+    "test": {
+     "n": 0
+    }
+   }
+  },
+  "R_natgas": {
+   "label": "roll: natgas UP 17:00-17:15",
+   "tape": {
+    "train": {
+     "n": 5,
+     "win_rate": 1.0,
+     "avg_price": 0.768,
+     "implied_win": 0.768,
+     "avg_win_$": 4.37,
+     "avg_loss_$": 0.0,
+     "net_$": 21.85,
+     "net_per_$1": 0.2946,
+     "t_stat": 4.51,
+     "worst_streak": 0,
+     "max_dd_$": 0.0,
+     "trades_per_month": 10.0,
+     "usd_per_month": 43.7,
+     "first": "2026-09-08",
+     "last": "2026-09-14",
+     "ci95_net_per_$1": [
+      0.184,
+      0.41
+     ],
+     "median_contracts_our_side_first45s": 329.17
+    },
+    "test": {
+     "n": 10,
+     "win_rate": 1.0,
+     "avg_price": 0.891,
+     "implied_win": 0.891,
+     "avg_win_$": 1.71,
+     "avg_loss_$": 0.0,
+     "net_$": 17.08,
+     "net_per_$1": 0.1179,
+     "t_stat": 5.51,
+     "worst_streak": 0,
+     "max_dd_$": 0.0,
+     "trades_per_month": 8.2,
+     "usd_per_month": 14.05,
+     "first": "2026-10-07",
+     "last": "2026-11-12",
+     "ci95_net_per_$1": [
+      0.08,
+      0.159
+     ],
+     "median_contracts_our_side_first45s": 2083.78
+    }
+   },
+   "m1": {
+    "train": {
+     "n": 5,
+     "win_rate": 1.0,
+     "avg_price": 0.946,
+     "implied_win": 0.941,
+     "avg_win_$": 0.78,
+     "avg_loss_$": 0.0,
+     "net_$": 3.9,
+     "net_per_$1": 0.0534,
+     "t_stat": 3.91,
+     "worst_streak": 0,
+     "max_dd_$": 0.0,
+     "trades_per_month": 10.0,
+     "usd_per_month": 7.8,
+     "first": "2026-09-08",
+     "last": "2026-09-14",
+     "ci95_net_per_$1": [
+      0.029,
+      0.072
+     ]
+    },
+    "test": {
+     "n": 10,
+     "win_rate": 1.0,
+     "avg_price": 0.943,
+     "implied_win": 0.934,
+     "avg_win_$": 0.82,
+     "avg_loss_$": 0.0,
+     "net_$": 8.22,
+     "net_per_$1": 0.0564,
+     "t_stat": 7.27,
+     "worst_streak": 0,
+     "max_dd_$": 0.0,
+     "trades_per_month": 8.2,
+     "usd_per_month": 6.76,
+     "first": "2026-10-07",
+     "last": "2026-11-12",
+     "ci95_net_per_$1": [
+      0.043,
+      0.072
+     ]
+    }
+   },
+   "by_month": {
+    "2026-09": {
+     "n": 5,
+     "paid": 0.946,
+     "won": 1.0,
+     "net_per_$1": 0.053
+    },
+    "2026-10": {
+     "n": 5,
+     "paid": 0.95,
+     "won": 1.0,
+     "net_per_$1": 0.049
+    },
+    "2026-11": {
+     "n": 5,
+     "paid": 0.936,
+     "won": 1.0,
+     "net_per_$1": 0.064
+    }
+   },
+   "late_80_96": {
+    "train": {
+     "n": 5,
+     "win_rate": 1.0,
+     "avg_price": 0.938,
+     "implied_win": 0.938,
+     "avg_win_$": 0.89,
+     "avg_loss_$": 0.0,
+     "net_$": 4.47,
+     "net_per_$1": 0.0616,
+     "t_stat": 7.28,
+     "worst_streak": 0,
+     "max_dd_$": 0.0,
+     "trades_per_month": 10.0,
+     "usd_per_month": 8.94,
+     "first": "2026-09-08",
+     "last": "2026-09-14"
+    },
+    "test": {
+     "n": 10,
+     "win_rate": 1.0,
+     "avg_price": 0.935,
+     "implied_win": 0.935,
+     "avg_win_$": 0.94,
+     "avg_loss_$": 0.0,
+     "net_$": 9.44,
+     "net_per_$1": 0.0649,
+     "t_stat": 9.26,
+     "worst_streak": 0,
+     "max_dd_$": 0.0,
+     "trades_per_month": 8.2,
+     "usd_per_month": 7.77,
+     "first": "2026-10-07",
+     "last": "2026-11-12"
+    }
+   },
+   "first_seconds": [
+    {
+     "date": "2026-09-08",
+     "won": true,
+     "0-5s": null,
+     "5-15s": [
+      0.69,
+      3
+     ],
+     "15-30s": [
+      0.663,
+      31
+     ]
+    },
+    {
+     "date": "2026-09-09",
+     "won": true,
+     "0-5s": null,
+     "5-15s": [
+      0.64,
+      15
+     ],
+     "15-30s": [
+      0.868,
+      306
+     ]
+    },
+    {
+     "date": "2026-09-10",
+     "won": true,
+     "0-5s": null,
+     "5-15s": null,
+     "15-30s": [
+      0.803,
+      257
+     ]
+    },
+    {
+     "date": "2026-09-11",
+     "won": true,
+     "0-5s": null,
+     "5-15s": [
+      0.468,
+      51
+     ],
+     "15-30s": [
+      0.685,
+      174
+     ]
+    },
+    {
+     "date": "2026-09-14",
+     "won": true,
+     "0-5s": null,
+     "5-15s": [
+      0.613,
+      65
+     ],
+     "15-30s": [
+      0.82,
+      56
+     ]
+    },
+    {
+     "date": "2026-10-07",
+     "won": true,
+     "0-5s": [
+      0.683,
+      168
+     ],
+     "5-15s": null,
+     "15-30s": [
+      0.817,
+      151
+     ]
+    },
+    {
+     "date": "2026-10-08",
+     "won": true,
+     "0-5s": [
+      0.681,
+      1016
+     ],
+     "5-15s": [
+      0.809,
+      104
+     ],
+     "15-30s": [
+      0.843,
+      40
+     ]
+    },
+    {
+     "date": "2026-10-09",
+     "won": true,
+     "0-5s": [
+      0.711,
+      211
+     ],
+     "5-15s": [
+      0.76,
+      1194
+     ],
+     "15-30s": [
+      0.803,
+      313
+     ]
+    },
+    {
+     "date": "2026-10-12",
+     "won": true,
+     "0-5s": [
+      0.716,
+      132
+     ],
+     "5-15s": [
+      0.769,
+      655
+     ],
+     "15-30s": [
+      0.893,
+      17
+     ]
+    },
+    {
+     "date": "2026-10-13",
+     "won": true,
+     "0-5s": [
+      0.706,
+      112
+     ],
+     "5-15s": [
+      0.798,
+      1377
+     ],
+     "15-30s": [
+      0.904,
+      330
+     ]
+    },
+    {
+     "date": "2026-11-06",
+     "won": true,
+     "0-5s": [
+      0.803,
+      1484
+     ],
+     "5-15s": [
+      0.846,
+      483
+     ],
+     "15-30s": [
+      0.883,
+      6
+     ]
+    },
+    {
+     "date": "2026-11-09",
+     "won": true,
+     "0-5s": [
+      0.887,
+      1844
+     ],
+     "5-15s": [
+      0.96,
+      82
+     ],
+     "15-30s": [
+      0.938,
+      13
+     ]
+    },
+    {
+     "date": "2026-11-10",
+     "won": true,
+     "0-5s": [
+      0.905,
+      6126
+     ],
+     "5-15s": [
+      0.877,
+      542
+     ],
+     "15-30s": [
+      0.909,
+      4
+     ]
+    },
+    {
+     "date": "2026-11-11",
+     "won": true,
+     "0-5s": [
+      0.847,
+      1132
+     ],
+     "5-15s": [
+      0.881,
+      574
+     ],
+     "15-30s": [
+      0.939,
+      182
+     ]
+    },
+    {
+     "date": "2026-11-12",
+     "won": true,
+     "0-5s": [
+      0.931,
+      6337
+     ],
+     "5-15s": [
+      0.988,
+      2854
+     ],
+     "15-30s": [
+      0.98,
+      22
+     ]
+    }
+   ]
+  },
+  "R_wti": {
+   "label": "roll: WTI DOWN 17:00-17:15",
+   "tape": {
+    "train": {
+     "n": 10,
+     "win_rate": 0.9,
+     "avg_price": 0.662,
+     "implied_win": 0.662,
+     "avg_win_$": 7.43,
+     "avg_loss_$": -15.4,
+     "net_$": 51.47,
+     "net_per_$1": 0.342,
+     "t_stat": 2.06,
+     "worst_streak": 1,
+     "max_dd_$": -15.4,
+     "trades_per_month": 7.8,
+     "usd_per_month": 40.18,
+     "first": "2026-08-07",
+     "last": "2026-09-14",
+     "ci95_net_per_$1": [
+      -0.013,
+      0.608
+     ],
+     "median_contracts_our_side_first45s": 713.86
+    },
+    "test": {
+     "n": 10,
+     "win_rate": 0.8,
+     "avg_price": 0.539,
+     "implied_win": 0.539,
+     "avg_win_$": 11.41,
+     "avg_loss_$": -15.45,
+     "net_$": 60.37,
+     "net_per_$1": 0.3956,
+     "t_stat": 1.67,
+     "worst_streak": 1,
+     "max_dd_$": -15.49,
+     "trades_per_month": 8.2,
+     "usd_per_month": 49.67,
+     "first": "2026-10-07",
+     "last": "2026-11-12",
+     "ci95_net_per_$1": [
+      -0.133,
+      0.8
+     ],
+     "median_contracts_our_side_first45s": 2484.12
+    }
+   },
+   "m1": {
+    "train": {
+     "n": 9,
+     "win_rate": 0.889,
+     "avg_price": 0.798,
+     "implied_win": 0.788,
+     "avg_win_$": 4.28,
+     "avg_loss_$": -14.69,
+     "net_$": 19.55,
+     "net_per_$1": 0.1465,
+     "t_stat": 0.79,
+     "worst_streak": 1,
+     "max_dd_$": -14.69,
+     "trades_per_month": 7.6,
+     "usd_per_month": 16.53,
+     "first": "2026-08-10",
+     "last": "2026-09-14",
+     "ci95_net_per_$1": [
+      -0.209,
+      0.475
+     ]
+    },
+    "test": {
+     "n": 9,
+     "win_rate": 0.778,
+     "avg_price": 0.674,
+     "implied_win": 0.668,
+     "avg_win_$": 6.46,
+     "avg_loss_$": -15.47,
+     "net_$": 14.27,
+     "net_per_$1": 0.1051,
+     "t_stat": 0.49,
+     "worst_streak": 1,
+     "max_dd_$": -17.77,
+     "trades_per_month": 7.4,
+     "usd_per_month": 11.74,
+     "first": "2026-10-07",
+     "last": "2026-11-12",
+     "ci95_net_per_$1": [
+      -0.353,
+      0.499
+     ]
+    }
+   },
+   "by_month": {
+    "2026-08": {
+     "n": 4,
+     "paid": 0.662,
+     "won": 0.75,
+     "net_per_$1": 0.209
+    },
+    "2026-09": {
+     "n": 5,
+     "paid": 0.907,
+     "won": 1.0,
+     "net_per_$1": 0.096
+    },
+    "2026-10": {
+     "n": 5,
+     "paid": 0.74,
+     "won": 0.8,
+     "net_per_$1": -0.002
+    },
+    "2026-11": {
+     "n": 4,
+     "paid": 0.593,
+     "won": 0.75,
+     "net_per_$1": 0.237
+    }
+   },
+   "late_80_96": {
+    "train": {
+     "n": 10,
+     "win_rate": 0.9,
+     "avg_price": 0.879,
+     "implied_win": 0.879,
+     "avg_win_$": 1.77,
+     "avg_loss_$": -14.95,
+     "net_$": 0.98,
+     "net_per_$1": 0.0066,
+     "t_stat": 0.08,
+     "worst_streak": 1,
+     "max_dd_$": -14.95,
+     "trades_per_month": 7.8,
+     "usd_per_month": 0.76,
+     "first": "2026-08-07",
+     "last": "2026-09-14"
+    },
+    "test": {
+     "n": 8,
+     "win_rate": 1.0,
+     "avg_price": 0.853,
+     "implied_win": 0.853,
+     "avg_win_$": 2.38,
+     "avg_loss_$": 0.0,
+     "net_$": 19.07,
+     "net_per_$1": 0.1617,
+     "t_stat": 13.26,
+     "worst_streak": 0,
+     "max_dd_$": 0.0,
+     "trades_per_month": 6.6,
+     "usd_per_month": 15.69,
+     "first": "2026-10-07",
+     "last": "2026-11-12"
+    }
+   },
+   "first_seconds": [
+    {
+     "date": "2026-08-07",
+     "won": true,
+     "0-5s": null,
+     "5-15s": null,
+     "15-30s": [
+      0.58,
+      54
+     ]
+    },
+    {
+     "date": "2026-08-10",
+     "won": true,
+     "0-5s": null,
+     "5-15s": null,
+     "15-30s": [
+      0.59,
+      1
+     ]
+    },
+    {
+     "date": "2026-08-11",
+     "won": true,
+     "0-5s": null,
+     "5-15s": null,
+     "15-30s": [
+      0.517,
+      47
+     ]
+    },
+    {
+     "date": "2026-08-12",
+     "won": false,
+     "0-5s": null,
+     "5-15s": null,
+     "15-30s": [
+      0.575,
+      42
+     ]
+    },
+    {
+     "date": "2026-08-13",
+     "won": true,
+     "0-5s": null,
+     "5-15s": [
+      0.577,
+      15
+     ],
+     "15-30s": [
+      0.548,
+      41
+     ]
+    },
+    {
+     "date": "2026-09-08",
+     "won": true,
+     "0-5s": [
+      0.59,
+      8
+     ],
+     "5-15s": [
+      0.572,
+      65
+     ],
+     "15-30s": [
+      0.742,
+      1357
+     ]
+    },
+    {
+     "date": "2026-09-09",
+     "won": true,
+     "0-5s": null,
+     "5-15s": [
+      0.6,
+      333
+     ],
+     "15-30s": [
+      0.773,
+      1813
+     ]
+    },
+    {
+     "date": "2026-09-10",
+     "won": true,
+     "0-5s": null,
+     "5-15s": null,
+     "15-30s": [
+      0.763,
+      817
+     ]
+    },
+    {
+     "date": "2026-09-11",
+     "won": true,
+     "0-5s": null,
+     "5-15s": null,
+     "15-30s": [
+      0.801,
+      1484
+     ]
+    },
+    {
+     "date": "2026-09-14",
+     "won": true,
+     "0-5s": [
+      0.59,
+      100
+     ],
+     "5-15s": [
+      0.656,
+      92
+     ],
+     "15-30s": [
+      0.726,
+      183
+     ]
+    },
+    {
+     "date": "2026-10-07",
+     "won": true,
+     "0-5s": [
+      0.636,
+      100
+     ],
+     "5-15s": [
+      0.598,
+      324
+     ],
+     "15-30s": [
+      0.614,
+      524
+     ]
+    },
+    {
+     "date": "2026-10-08",
+     "won": false,
+     "0-5s": [
+      0.529,
+      502
+     ],
+     "5-15s": [
+      0.418,
+      74
+     ],
+     "15-30s": [
+      0.389,
+      368
+     ]
+    },
+    {
+     "date": "2026-10-09",
+     "won": true,
+     "0-5s": [
+      0.585,
+      300
+     ],
+     "5-15s": [
+      0.537,
+      40
+     ],
+     "15-30s": [
+      0.637,
+      1036
+     ]
+    },
+    {
+     "date": "2026-10-12",
+     "won": true,
+     "0-5s": [
+      0.546,
+      300
+     ],
+     "5-15s": [
+      0.49,
+      67
+     ],
+     "15-30s": [
+      0.509,
+      452
+     ]
+    },
+    {
+     "date": "2026-10-13",
+     "won": true,
+     "0-5s": [
+      0.591,
+      302
+     ],
+     "5-15s": [
+      0.46,
+      204
+     ],
+     "15-30s": [
+      0.487,
+      758
+     ]
+    },
+    {
+     "date": "2026-11-06",
+     "won": true,
+     "0-5s": [
+      0.613,
+      63
+     ],
+     "5-15s": [
+      0.658,
+      1223
+     ],
+     "15-30s": [
+      0.59,
+      212
+     ]
+    },
+    {
+     "date": "2026-11-09",
+     "won": false,
+     "0-5s": [
+      0.642,
+      600
+     ],
+     "5-15s": [
+      0.582,
+      378
+     ],
+     "15-30s": [
+      0.517,
+      199
+     ]
+    },
+    {
+     "date": "2026-11-10",
+     "won": true,
+     "0-5s": [
+      0.628,
+      600
+     ],
+     "5-15s": [
+      0.541,
+      714
+     ],
+     "15-30s": [
+      0.479,
+      561
+     ]
+    },
+    {
+     "date": "2026-11-11",
+     "won": true,
+     "0-5s": [
+      0.537,
+      692
+     ],
+     "5-15s": [
+      0.515,
+      51
+     ],
+     "15-30s": [
+      0.589,
+      1004
+     ]
+    },
+    {
+     "date": "2026-11-12",
+     "won": true,
+     "0-5s": [
+      0.622,
+      924
+     ],
+     "5-15s": [
+      0.598,
+      3706
+     ],
+     "15-30s": [
+      0.575,
+      259
+     ]
+    }
+   ]
+  },
+  "R_brent": {
+   "label": "roll: Brent DOWN 17:30-17:45",
+   "tape": {
+    "train": {
+     "n": 0
+    },
+    "test": {
+     "n": 4,
+     "win_rate": 1.0,
+     "avg_price": 0.853,
+     "implied_win": 0.853,
+     "avg_win_$": 2.34,
+     "avg_loss_$": 0.0,
+     "net_$": 9.36,
+     "net_per_$1": 0.1597,
+     "t_stat": 13.57,
+     "worst_streak": 0,
+     "max_dd_$": 0.0,
+     "trades_per_month": 8.0,
+     "usd_per_month": 18.73,
+     "first": "2026-11-06",
+     "last": "2026-11-12",
+     "ci95_net_per_$1": null,
+     "median_contracts_our_side_first45s": 277.46
+    }
+   },
+   "m1": {
+    "train": {
+     "n": 0
+    },
+    "test": {
+     "n": 5,
+     "win_rate": 1.0,
+     "avg_price": 0.792,
+     "implied_win": 0.78,
+     "avg_win_$": 3.76,
+     "avg_loss_$": 0.0,
+     "net_$": 18.82,
+     "net_per_$1": 0.2537,
+     "t_stat": 5.13,
+     "worst_streak": 0,
+     "max_dd_$": 0.0,
+     "trades_per_month": 10.0,
+     "usd_per_month": 37.64,
+     "first": "2026-11-06",
+     "last": "2026-11-12",
+     "ci95_net_per_$1": [
+      0.188,
+      0.353
+     ]
+    }
+   },
+   "late_80_96": {
+    "train": {
+     "n": 0
+    },
+    "test": {
+     "n": 5,
+     "win_rate": 1.0,
+     "avg_price": 0.836,
+     "implied_win": 0.836,
+     "avg_win_$": 2.69,
+     "avg_loss_$": 0.0,
+     "net_$": 13.45,
+     "net_per_$1": 0.1829,
+     "t_stat": 18.4,
+     "worst_streak": 0,
+     "max_dd_$": 0.0,
+     "trades_per_month": 10.0,
+     "usd_per_month": 26.9,
+     "first": "2026-11-06",
+     "last": "2026-11-12"
+    }
+   },
+   "first_seconds": [
+    {
+     "date": "2026-11-06",
+     "won": true,
+     "0-5s": null,
+     "5-15s": null,
+     "15-30s": null
+    },
+    {
+     "date": "2026-11-09",
+     "won": true,
+     "0-5s": null,
+     "5-15s": null,
+     "15-30s": null
+    },
+    {
+     "date": "2026-11-10",
+     "won": true,
+     "0-5s": null,
+     "5-15s": null,
+     "15-30s": [
+      0.837,
+      5
+     ]
+    },
+    {
+     "date": "2026-11-11",
+     "won": true,
+     "0-5s": [
+      0.623,
+      236
+     ],
+     "5-15s": null,
+     "15-30s": [
+      0.86,
+      61
+     ]
+    },
+    {
+     "date": "2026-11-12",
+     "won": true,
+     "0-5s": [
+      0.678,
+      156
+     ],
+     "5-15s": [
+      0.899,
+      106
+     ],
+     "15-30s": [
+      0.84,
+      1
+     ]
+    }
+   ]
+  },
+  "R_natgas_1615": {
+   "label": "roll ticket: natgas UP 16:00-16:15",
+   "tape": {
+    "train": {
+     "n": 5,
+     "win_rate": 1.0,
+     "avg_price": 0.564,
+     "implied_win": 0.564,
+     "avg_win_$": 11.23,
+     "avg_loss_$": 0.0,
+     "net_$": 56.15,
+     "net_per_$1": 0.7403,
+     "t_stat": 7.84,
+     "worst_streak": 0,
+     "max_dd_$": 0.0,
+     "trades_per_month": 10.0,
+     "usd_per_month": 112.3,
+     "first": "2026-09-08",
+     "last": "2026-09-14",
+     "ci95_net_per_$1": [
+      0.598,
+      0.924
+     ],
+     "median_contracts_our_side_first45s": 118.23
+    },
+    "test": {
+     "n": 10,
+     "win_rate": 0.8,
+     "avg_price": 0.58,
+     "implied_win": 0.58,
+     "avg_win_$": 10.91,
+     "avg_loss_$": -15.19,
+     "net_$": 56.95,
+     "net_per_$1": 0.3745,
+     "t_stat": 1.59,
+     "worst_streak": 2,
+     "max_dd_$": -30.37,
+     "trades_per_month": 8.2,
+     "usd_per_month": 46.85,
+     "first": "2026-10-07",
+     "last": "2026-11-12",
+     "ci95_net_per_$1": [
+      -0.071,
+      0.765
+     ],
+     "median_contracts_our_side_first45s": 359.41
+    }
+   },
+   "m1": {
+    "train": {
+     "n": 5,
+     "win_rate": 1.0,
+     "avg_price": 0.522,
+     "implied_win": 0.513,
+     "avg_win_$": 13.61,
+     "avg_loss_$": 0.0,
+     "net_$": 68.06,
+     "net_per_$1": 0.8962,
+     "t_stat": 6.9,
+     "worst_streak": 0,
+     "max_dd_$": 0.0,
+     "trades_per_month": 10.0,
+     "usd_per_month": 136.12,
+     "first": "2026-09-08",
+     "last": "2026-09-14",
+     "ci95_net_per_$1": [
+      0.641,
+      1.094
+     ]
+    },
+    "test": {
+     "n": 10,
+     "win_rate": 0.8,
+     "avg_price": 0.6,
+     "implied_win": 0.593,
+     "avg_win_$": 9.25,
+     "avg_loss_$": -15.34,
+     "net_$": 43.29,
+     "net_per_$1": 0.2853,
+     "t_stat": 1.29,
+     "worst_streak": 2,
+     "max_dd_$": -30.68,
+     "trades_per_month": 8.2,
+     "usd_per_month": 35.61,
+     "first": "2026-10-07",
+     "last": "2026-11-12",
+     "ci95_net_per_$1": [
+      -0.146,
+      0.657
+     ]
+    }
+   }
+  },
+  "R_brent_1615": {
+   "label": "roll ticket: Brent DOWN 16:00-16:15",
+   "tape": {
+    "train": {
+     "n": 0
+    },
+    "test": {
+     "n": 5,
+     "win_rate": 0.4,
+     "avg_price": 0.45,
+     "implied_win": 0.45,
+     "avg_win_$": 15.61,
+     "avg_loss_$": -15.38,
+     "net_$": -14.93,
+     "net_per_$1": -0.1941,
+     "t_stat": -0.39,
+     "worst_streak": 3,
+     "max_dd_$": -46.15,
+     "trades_per_month": 10.0,
+     "usd_per_month": -29.86,
+     "first": "2026-11-06",
+     "last": "2026-11-12",
+     "ci95_net_per_$1": [
+      -1.0,
+      0.71
+     ],
+     "median_contracts_our_side_first45s": 66.28999999999999
+    }
+   },
+   "m1": {
+    "train": {
+     "n": 0
+    },
+    "test": {
+     "n": 5,
+     "win_rate": 0.4,
+     "avg_price": 0.438,
+     "implied_win": 0.422,
+     "avg_win_$": 20.73,
+     "avg_loss_$": -15.27,
+     "net_$": -4.36,
+     "net_per_$1": -0.0571,
+     "t_stat": -0.1,
+     "worst_streak": 3,
+     "max_dd_$": -45.81,
+     "trades_per_month": 10.0,
+     "usd_per_month": -8.72,
+     "first": "2026-11-06",
+     "last": "2026-11-12",
+     "ci95_net_per_$1": [
+      -1.0,
+      1.008
+     ]
+    }
+   }
+  }
+ },
+ "mined_control": {
+  "zbar": 3.0,
+  "picks": [
+   {
+    "series": "silver",
+    "window_close_ET": "1615",
+    "side": "no",
+    "train_z": -4.42,
+    "train_n": 43,
+    "test": {
+     "n": 35,
+     "win_rate": 0.629,
+     "avg_price": 0.53,
+     "implied_win": 0.524,
+     "avg_win_$": 12.12,
+     "avg_loss_$": -15.33,
+     "net_$": 67.37,
+     "net_per_$1": 0.1262,
+     "t_stat": 0.79,
+     "worst_streak": 3,
+     "max_dd_$": -45.88,
+     "trades_per_month": 21.7,
+     "usd_per_month": 41.85,
+     "first": "2026-10-01",
+     "last": "2026-11-18"
+    }
+   },
+   {
+    "series": "silver",
+    "window_close_ET": "1700",
+    "side": "yes",
+    "train_z": 3.2,
+    "train_n": 43,
+    "test": {
+     "n": 35,
+     "win_rate": 0.743,
+     "avg_price": 0.511,
+     "implied_win": 0.505,
+     "avg_win_$": 13.18,
+     "avg_loss_$": -15.43,
+     "net_$": 203.79,
+     "net_per_$1": 0.3822,
+     "t_stat": 2.61,
+     "worst_streak": 3,
+     "max_dd_$": -46.38,
+     "trades_per_month": 21.7,
+     "usd_per_month": 126.6,
+     "first": "2026-10-01",
+     "last": "2026-11-18"
+    }
+   }
+  ],
+  "pooled_test": {
+   "n": 70,
+   "win_rate": 0.686,
+   "avg_price": 0.52,
+   "implied_win": 0.515,
+   "avg_win_$": 12.7,
+   "avg_loss_$": -15.37,
+   "net_$": 271.16,
+   "net_per_$1": 0.2542,
+   "t_stat": 2.35,
+   "worst_streak": 3,
+   "max_dd_$": -53.26,
+   "trades_per_month": 43.5,
+   "usd_per_month": 168.45,
+   "first": "2026-10-01",
+   "last": "2026-11-18"
+  }
+ },
+ "mined_control_z25": {
+  "zbar": 2.5,
+  "picks": [
+   {
+    "series": "gold",
+    "window_close_ET": "1615",
+    "side": "no",
+    "train_z": -2.59,
+    "train_n": 43,
+    "test": {
+     "n": 35,
+     "win_rate": 0.6,
+     "avg_price": 0.548,
+     "implied_win": 0.543,
+     "avg_win_$": 11.81,
+     "avg_loss_$": -15.29,
+     "net_$": 33.82,
+     "net_per_$1": 0.0635,
+     "t_stat": 0.39,
+     "worst_streak": 3,
+     "max_dd_$": -67.96,
+     "trades_per_month": 21.7,
+     "usd_per_month": 21.01,
+     "first": "2026-10-01",
+     "last": "2026-11-18"
+    }
+   },
+   {
+    "series": "gold",
+    "window_close_ET": "2345",
+    "side": "no",
+    "train_z": -2.65,
+    "train_n": 41,
+    "test": {
+     "n": 27,
+     "win_rate": 0.37,
+     "avg_price": 0.53,
+     "implied_win": 0.525,
+     "avg_win_$": 10.77,
+     "avg_loss_$": -15.33,
+     "net_$": -152.94,
+     "net_per_$1": -0.3713,
+     "t_stat": -2.19,
+     "worst_streak": 4,
+     "max_dd_$": -158.93,
+     "trades_per_month": 17.1,
+     "usd_per_month": -96.99,
+     "first": "2026-10-01",
+     "last": "2026-11-17"
+    }
+   },
+   {
+    "series": "gold",
+    "window_close_ET": "0530",
+    "side": "no",
+    "train_z": -2.78,
+    "train_n": 42,
+    "test": {
+     "n": 35,
+     "win_rate": 0.743,
+     "avg_price": 0.544,
+     "implied_win": 0.539,
+     "avg_win_$": 13.48,
+     "avg_loss_$": -15.23,
+     "net_$": 213.38,
+     "net_per_$1": 0.3999,
+     "t_stat": 2.49,
+     "worst_streak": 4,
+     "max_dd_$": -61.3,
+     "trades_per_month": 21.7,
+     "usd_per_month": 132.56,
+     "first": "2026-10-01",
+     "last": "2026-11-18"
+    }
+   },
+   {
+    "series": "silver",
+    "window_close_ET": "1615",
+    "side": "no",
+    "train_z": -4.42,
+    "train_n": 43,
+    "test": {
+     "n": 35,
+     "win_rate": 0.629,
+     "avg_price": 0.53,
+     "implied_win": 0.524,
+     "avg_win_$": 12.12,
+     "avg_loss_$": -15.33,
+     "net_$": 67.37,
+     "net_per_$1": 0.1262,
+     "t_stat": 0.79,
+     "worst_streak": 3,
+     "max_dd_$": -45.88,
+     "trades_per_month": 21.7,
+     "usd_per_month": 41.85,
+     "first": "2026-10-01",
+     "last": "2026-11-18"
+    }
+   },
+   {
+    "series": "silver",
+    "window_close_ET": "1700",
+    "side": "yes",
+    "train_z": 3.2,
+    "train_n": 43,
+    "test": {
+     "n": 35,
+     "win_rate": 0.743,
+     "avg_price": 0.511,
+     "implied_win": 0.505,
+     "avg_win_$": 13.18,
+     "avg_loss_$": -15.43,
+     "net_$": 203.79,
+     "net_per_$1": 0.3822,
+     "t_stat": 2.61,
+     "worst_streak": 3,
+     "max_dd_$": -46.38,
+     "trades_per_month": 21.7,
+     "usd_per_month": 126.6,
+     "first": "2026-10-01",
+     "last": "2026-11-18"
+    }
+   }
+  ],
+  "pooled_test": {
+   "n": 167,
+   "win_rate": 0.629,
+   "avg_price": 0.533,
+   "implied_win": 0.527,
+   "avg_win_$": 12.53,
+   "avg_loss_$": -15.32,
+   "net_$": 365.42,
+   "net_per_$1": 0.1436,
+   "t_stat": 1.97,
+   "worst_streak": 6,
+   "max_dd_$": -98.22,
+   "trades_per_month": 103.7,
+   "usd_per_month": 227.01,
+   "first": "2026-10-01",
+   "last": "2026-11-18"
+  }
+ },
+ "candidate": {
+  "rule": "legs with train >= +5%/$1 (n>=20), tape entry",
+  "legs": [
+   "A_gold",
+   "A_silver",
+   "B_gold",
+   "B_silver",
+   "C_silver",
+   "C_gold"
+  ],
+  "train": {
+   "n": 255,
+   "win_rate": 0.718,
+   "avg_price": 0.523,
+   "implied_win": 0.523,
+   "avg_win_$": 13.05,
+   "avg_loss_$": -15.27,
+   "net_$": 1288.78,
+   "net_per_$1": 0.3319,
+   "t_stat": 6.12,
+   "worst_streak": 5,
+   "max_dd_$": -76.57,
+   "trades_per_month": 131.6,
+   "usd_per_month": 664.92,
+   "first": "2026-08-03",
+   "last": "2026-09-30",
+   "ci95_net_per_$1": [
+    0.194,
+    0.466
+   ],
+   "median_contracts_our_side_first45s": 708.31
+  },
+  "test": {
+   "n": 210,
+   "win_rate": 0.681,
+   "avg_price": 0.514,
+   "implied_win": 0.514,
+   "avg_win_$": 13.76,
+   "avg_loss_$": -15.27,
+   "net_$": 945.16,
+   "net_per_$1": 0.2953,
+   "t_stat": 4.56,
+   "worst_streak": 8,
+   "max_dd_$": -122.74,
+   "trades_per_month": 130.5,
+   "usd_per_month": 587.16,
+   "first": "2026-10-01",
+   "last": "2026-11-18",
+   "ci95_net_per_$1": [
+    0.109,
+    0.45
+   ],
+   "median_contracts_our_side_first45s": 3027.97
+  },
+  "test_at_$10": {
+   "n": 210,
+   "win_rate": 0.681,
+   "avg_price": 0.514,
+   "implied_win": 0.514,
+   "avg_win_$": 9.09,
+   "avg_loss_$": -10.1,
+   "net_$": 623.1,
+   "net_per_$1": 0.2946,
+   "t_stat": 4.56,
+   "worst_streak": 8,
+   "max_dd_$": -81.17,
+   "trades_per_month": 130.5,
+   "usd_per_month": 387.09,
+   "first": "2026-10-01",
+   "last": "2026-11-18"
+  },
+  "test_at_$20": {
+   "n": 210,
+   "win_rate": 0.681,
+   "avg_price": 0.514,
+   "implied_win": 0.514,
+   "avg_win_$": 18.41,
+   "avg_loss_$": -20.45,
+   "net_$": 1262.43,
+   "net_per_$1": 0.2946,
+   "t_stat": 4.56,
+   "worst_streak": 8,
+   "max_dd_$": -164.11,
+   "trades_per_month": 130.5,
+   "usd_per_month": 784.25,
+   "first": "2026-10-01",
+   "last": "2026-11-18"
+  },
+  "test_slip_1c": {
+   "n": 210,
+   "win_rate": 0.681,
+   "avg_price": 0.524,
+   "implied_win": 0.514,
+   "avg_win_$": 13.17,
+   "avg_loss_$": -15.27,
+   "net_$": 860.61,
+   "net_per_$1": 0.2692,
+   "t_stat": 4.27,
+   "worst_streak": 8,
+   "max_dd_$": -122.72,
+   "trades_per_month": 130.5,
+   "usd_per_month": 534.63,
+   "first": "2026-10-01",
+   "last": "2026-11-18",
+   "ci95_net_per_$1": [
+    0.087,
+    0.421
+   ],
+   "median_contracts_our_side_first45s": 3027.97
+  },
+  "test_slip_2c": {
+   "n": 210,
+   "win_rate": 0.681,
+   "avg_price": 0.534,
+   "implied_win": 0.514,
+   "avg_win_$": 12.65,
+   "avg_loss_$": -15.28,
+   "net_$": 785.6,
+   "net_per_$1": 0.2455,
+   "t_stat": 3.97,
+   "worst_streak": 8,
+   "max_dd_$": -122.85,
+   "trades_per_month": 130.5,
+   "usd_per_month": 488.03,
+   "first": "2026-10-01",
+   "last": "2026-11-18",
+   "ci95_net_per_$1": [
+    0.068,
+    0.393
+   ],
+   "median_contracts_our_side_first45s": 3027.97
+  }
+ },
+ "last_two_weeks": {
+  "A_gold": {
+   "n": 10,
+   "win_rate": 0.9,
+   "avg_price": 0.572,
+   "implied_win": 0.572,
+   "avg_win_$": 11.03,
+   "avg_loss_$": -15.38,
+   "net_$": 83.89,
+   "net_per_$1": 0.5515,
+   "t_stat": 2.95,
+   "worst_streak": 1,
+   "max_dd_$": -15.38,
+   "trades_per_month": 20.0,
+   "usd_per_month": 167.79,
+   "first": "2026-11-05",
+   "last": "2026-11-18"
+  },
+  "A_silver": {
+   "n": 10,
+   "win_rate": 0.5,
+   "avg_price": 0.531,
+   "implied_win": 0.531,
+   "avg_win_$": 12.32,
+   "avg_loss_$": -15.25,
+   "net_$": -14.62,
+   "net_per_$1": -0.0958,
+   "t_stat": -0.32,
+   "worst_streak": 2,
+   "max_dd_$": -30.71,
+   "trades_per_month": 20.0,
+   "usd_per_month": -29.24,
+   "first": "2026-11-05",
+   "last": "2026-11-18"
+  },
+  "B_gold": {
+   "n": 10,
+   "win_rate": 0.8,
+   "avg_price": 0.49,
+   "implied_win": 0.49,
+   "avg_win_$": 15.04,
+   "avg_loss_$": -15.47,
+   "net_$": 89.35,
+   "net_per_$1": 0.5853,
+   "t_stat": 2.09,
+   "worst_streak": 2,
+   "max_dd_$": -30.94,
+   "trades_per_month": 20.0,
+   "usd_per_month": 178.7,
+   "first": "2026-11-05",
+   "last": "2026-11-18"
+  },
+  "B_silver": {
+   "n": 10,
+   "win_rate": 0.6,
+   "avg_price": 0.506,
+   "implied_win": 0.506,
+   "avg_win_$": 12.3,
+   "avg_loss_$": -15.32,
+   "net_$": 12.51,
+   "net_per_$1": 0.0821,
+   "t_stat": 0.27,
+   "worst_streak": 3,
+   "max_dd_$": -45.85,
+   "trades_per_month": 20.0,
+   "usd_per_month": 25.03,
+   "first": "2026-11-05",
+   "last": "2026-11-18"
+  },
+  "C_silver": {
+   "n": 10,
+   "win_rate": 0.8,
+   "avg_price": 0.589,
+   "implied_win": 0.589,
+   "avg_win_$": 9.26,
+   "avg_loss_$": -15.22,
+   "net_$": 43.61,
+   "net_per_$1": 0.2881,
+   "t_stat": 1.3,
+   "worst_streak": 1,
+   "max_dd_$": -15.23,
+   "trades_per_month": 20.0,
+   "usd_per_month": 87.22,
+   "first": "2026-11-05",
+   "last": "2026-11-18"
+  },
+  "C_gold": {
+   "n": 10,
+   "win_rate": 0.6,
+   "avg_price": 0.56,
+   "implied_win": 0.56,
+   "avg_win_$": 10.52,
+   "avg_loss_$": -15.26,
+   "net_$": 2.06,
+   "net_per_$1": 0.0137,
+   "t_stat": 0.06,
+   "worst_streak": 2,
+   "max_dd_$": -30.39,
+   "trades_per_month": 20.0,
+   "usd_per_month": 4.13,
+   "first": "2026-11-05",
+   "last": "2026-11-18"
+  }
+ },
+ "friend_check": [
+  {
+   "day": "2026-11-06",
+   "leg": "gold 0530 no",
+   "friend_price": 0.66,
+   "tape_15_30s": 0.65,
+   "friend_won": true,
+   "kalshi_result_agrees": true
+  },
+  {
+   "day": "2026-11-09",
+   "leg": "silver 0530 no",
+   "friend_price": 0.42,
+   "tape_15_30s": 0.444,
+   "friend_won": false,
+   "kalshi_result_agrees": true
+  },
+  {
+   "day": "2026-11-10",
+   "leg": "gold 0530 no",
+   "friend_price": 0.59,
+   "tape_15_30s": 0.615,
+   "friend_won": true,
+   "kalshi_result_agrees": true
+  },
+  {
+   "day": "2026-11-10",
+   "leg": "silver 1615 no",
+   "friend_price": 0.47,
+   "tape_15_30s": 0.477,
+   "friend_won": true,
+   "kalshi_result_agrees": true
+  },
+  {
+   "day": "2026-11-12",
+   "leg": "gold 0530 no",
+   "friend_price": 0.58,
+   "tape_15_30s": 0.58,
+   "friend_won": true,
+   "kalshi_result_agrees": true
+  },
+  {
+   "day": "2026-11-12",
+   "leg": "silver 0530 no",
+   "friend_price": 0.63,
+   "tape_15_30s": 0.624,
+   "friend_won": true,
+   "kalshi_result_agrees": true
+  },
+  {
+   "day": "2026-11-12",
+   "leg": "silver 1700 yes",
+   "friend_price": 0.63,
+   "tape_15_30s": 0.631,
+   "friend_won": true,
+   "kalshi_result_agrees": true
+  },
+  {
+   "day": "2026-11-13",
+   "leg": "gold 0530 no",
+   "friend_price": 0.6,
+   "tape_15_30s": 0.591,
+   "friend_won": true,
+   "kalshi_result_agrees": true
+  },
+  {
+   "day": "2026-11-13",
+   "leg": "silver 0530 no",
+   "friend_price": 0.53,
+   "tape_15_30s": 0.53,
+   "friend_won": true,
+   "kalshi_result_agrees": true
+  },
+  {
+   "day": "2026-11-13",
+   "leg": "gold 1700 yes",
+   "friend_price": 0.41,
+   "tape_15_30s": 0.432,
+   "friend_won": true,
+   "kalshi_result_agrees": true
+  },
+  {
+   "day": "2026-11-13",
+   "leg": "silver 1700 yes",
+   "friend_price": 0.49,
+   "tape_15_30s": 0.511,
+   "friend_won": true,
+   "kalshi_result_agrees": true
+  },
+  {
+   "day": "2026-11-16",
+   "leg": "gold 1700 yes",
+   "friend_price": 0.48,
+   "tape_15_30s": 0.494,
+   "friend_won": false,
+   "kalshi_result_agrees": true
+  },
+  {
+   "day": "2026-11-16",
+   "leg": "silver 1700 yes",
+   "friend_price": 0.44,
+   "tape_15_30s": 0.443,
+   "friend_won": false,
+   "kalshi_result_agrees": true
+  },
+  {
+   "day": "2026-11-17",
+   "leg": "gold 0530 no",
+   "friend_price": 0.56,
+   "tape_15_30s": 0.574,
+   "friend_won": false,
+   "kalshi_result_agrees": true
+  },
+  {
+   "day": "2026-11-17",
+   "leg": "silver 0530 no",
+   "friend_price": 0.53,
+   "tape_15_30s": 0.514,
+   "friend_won": false,
+   "kalshi_result_agrees": true
+  },
+  {
+   "day": "2026-11-17",
+   "leg": "gold 1700 yes",
+   "friend_price": 0.41,
+   "tape_15_30s": 0.416,
+   "friend_won": false,
+   "kalshi_result_agrees": true
+  },
+  {
+   "day": "2026-11-17",
+   "leg": "silver 1700 yes",
+   "friend_price": 0.42,
+   "tape_15_30s": 0.423,
+   "friend_won": false,
+   "kalshi_result_agrees": true
+  },
+  {
+   "day": "2026-11-18",
+   "leg": "gold 0530 no",
+   "friend_price": 0.58,
+   "tape_15_30s": 0.587,
+   "friend_won": true,
+   "kalshi_result_agrees": true
+  },
+  {
+   "day": "2026-11-18",
+   "leg": "silver 0530 no",
+   "friend_price": 0.49,
+   "tape_15_30s": 0.478,
+   "friend_won": true,
+   "kalshi_result_agrees": true
+  },
+  {
+   "day": "2026-11-18",
+   "leg": "gold 1700 yes",
+   "friend_price": 0.46,
+   "tape_15_30s": 0.45,
+   "friend_won": true,
+   "kalshi_result_agrees": true
+  },
+  {
+   "day": "2026-11-18",
+   "leg": "silver 1700 yes",
+   "friend_price": 0.42,
+   "tape_15_30s": 0.444,
+   "friend_won": false,
+   "kalshi_result_agrees": true
+  },
+  {
+   "day": "2026-11-06",
+   "leg": "natgas 1715 yes",
+   "friend_price": 0.8,
+   "tape_15_30s": 0.883,
+   "friend_won": true,
+   "kalshi_result_agrees": true
+  },
+  {
+   "day": "2026-11-12",
+   "leg": "natgas 1715 yes",
+   "friend_price": 0.95,
+   "tape_15_30s": 0.98,
+   "friend_won": true,
+   "kalshi_result_agrees": true
+  },
+  {
+   "day": "2026-11-10",
+   "leg": "natgas 1615 yes",
+   "friend_price": 0.57,
+   "tape_15_30s": 0.539,
+   "friend_won": true,
+   "kalshi_result_agrees": true
+  },
+  {
+   "day": "2026-11-06",
+   "leg": "brent 1615 no",
+   "friend_price": 0.48,
+   "tape_15_30s": 0.55,
+   "friend_won": true,
+   "kalshi_result_agrees": true
+  }
+ ],
+ "friend_skipped": [
+  {
+   "day": "2026-11-06",
+   "leg": "silver 0530 no",
+   "tape_15_30s": 0.635,
+   "would_have_won": true
+  },
+  {
+   "day": "2026-11-09",
+   "leg": "gold 0530 no",
+   "tape_15_30s": 0.506,
+   "would_have_won": true
+  },
+  {
+   "day": "2026-11-10",
+   "leg": "silver 0530 no",
+   "tape_15_30s": 0.461,
+   "would_have_won": true
+  },
+  {
+   "day": "2026-11-12",
+   "leg": "gold 1700 yes",
+   "tape_15_30s": 0.574,
+   "would_have_won": true
+  }
+ ]
+}

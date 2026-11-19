@@ -61,7 +61,7 @@ def settings():
         imp = {k for k, v in s["alerts"].items() if v}
         check("a. no file: the defaults ('important only': trade results, pass/fail/locked/payout, daily summary, PC silent, problems; "
               "quiet 23:00-07:00, summary 16:15, silent after 20 min, reminder 2 h)",
-              imp == {"trade_closed", "account_status", "daily_summary", "morning_brief", "pc_silent", "problems"} and s["quiet_hours"] == {"from": "23:00", "to": "07:00"}
+              imp == {"trade_opened", "trade_closed", "account_status", "daily_summary", "morning_brief", "pc_silent", "problems"} and s["quiet_hours"] == {"from": "23:00", "to": "07:00"}
               and s["daily_summary_at"] == "16:15" and s["morning_brief_at"] == "07:30"
               and s["pc_silent_after_min"] == 20 and s["pc_silent_remind_after_min"] == 120, s)
         p = os.path.join(tmp, "s.json")
@@ -92,9 +92,9 @@ def settings():
                                                              "pc_silent", "morning_brief"], kinds)
     every = [{"key": k, "priority": "default"} for k in kinds]
     kept = [m["key"] for m in N.apply(every, at(2026, 11, 17, 10, 0), N.merge({}))]
-    check("a. 'important only' defaults: trade results, target reached, PASSED / LOCKED / payout READY, the day summary, the morning brief, PC silent "
-          "+ problems (bot down, fill size) are kept; trade opened, 25-75 %, room low, other are dropped",
-          kept == ["close:atlas:2", "guard:day:2026-11-16", "cond:bot_down:1", "fill:lit:1:size", "guard:goal:lit:2026-11-02:100", "life:passed:atlas:a",
+    check("a. 'important only' defaults: entries (owner 2026-11-18 evening), trade results, target reached, PASSED / LOCKED / payout READY, the day "
+          "summary, the morning brief, PC silent + problems (bot down, fill size) are kept; 25-75 %, room low, other are dropped",
+          kept == ["open:lit:1", "close:atlas:2", "guard:day:2026-11-16", "cond:bot_down:1", "fill:lit:1:size", "guard:goal:lit:2026-11-02:100", "life:passed:atlas:a",
                    "life:locked:atlas:a", "life:payout_ready:x:f50:abc:2026-11-13", "pc_silent:2026-11-16:1", "guard:brief:2026-11-18"], kept)
     night, day = at(2026, 11, 17, 3, 10), at(2026, 11, 17, 10, 0)
     check("a. quiet hours over midnight: 03:10 and 23:30 quiet, 07:00 and 10:00 not", N.quiet(night, S) and N.quiet(at(2026, 11, 17, 23, 30), S)
@@ -476,8 +476,77 @@ def brief():
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+def instant():
+    """g. instant entry alerts (owner 2026-11-18: 'notifications when we get in a trade in any account')."""
+    tmp = tempfile.mkdtemp()
+    real_settings = N.settings
+    try:
+        path = os.path.join(tmp, "instant.json")
+        N.settings = lambda path=None: N.merge({})
+        p = {"kind": "fill", "key": "fill:1795050000", "t": 1795050000, "account": "MFFUEVBLDR123456016", "side": "LONG", "qty": 6,
+             "entry": 24980.25, "stop": 24955, "target": 25360, "body": "Entered 6 MNQ", "title": "LONG · x"}
+        sent = []
+        poster = lambda base, topic, msg: sent.append((base, topic, msg)) or True
+        cfg = {"ntfy": "https://ntfy.sh", "topic": "nq-test-topic-0000"}
+        day = at(2026, 11, 18, 10, 0)
+        why = N.instant_entry(p, now=day, path=path, cfg=cfg, poster=poster)
+        msg = sent[0][2] if sent else {}
+        check("g. a real entry goes out at once to the private topic, $ first, ids masked, sound on in the day",
+              why == "sent" and len(sent) == 1 and sent[0][1] == cfg["topic"] and msg["title"].startswith("Zlarior ...6016: LONG opened | risk $303")
+              and "MFFUEVBLDR" not in msg["title"] + msg["body"] and "Stop 24,955" in msg["body"] and msg["priority"] == "high", (why, msg))
+        check("g. the same entry twice: one push", N.instant_entry(p, now=day, path=path, cfg=cfg, poster=poster) == "already sent" and len(sent) == 1)
+        check("g. the 15-minute report then skips that entry (90 s match), keeps other trades",
+              N.instant_sent(1795050000 + 40, path=path) and not N.instant_sent(1795050000 + 400, path=path))
+        old_path = N.INSTANT_PATH
+        N.INSTANT_PATH = path
+        try:
+            kept = [m["key"] for m in N.apply([{"key": "open:lit:1795050030", "entry_t": 1795050030, "priority": "high"},
+                                               {"key": "open:atlas:1795059999", "entry_t": 1795059999, "priority": "high"},
+                                               {"key": "close:lit:1795050030", "entry_t": 1795050030, "priority": "high"}], day, N.merge({}))]
+        finally:
+            N.INSTANT_PATH = old_path
+        check("g. apply(): the report's copy of an instant entry is dropped, a different entry and the close are kept",
+              kept == ["open:atlas:1795059999", "close:lit:1795050030"], kept)
+        atl = dict(p, key="fill:1795051000:acctb", t=1795051000, account="ATLAS 25K", body="Entered 2 MNQ (ATLAS)", side="SHORT")
+        N.instant_entry(atl, now=day, path=path, cfg=cfg, poster=poster)
+        check("g. ATLAS's entry is named ATLAS, short arrow", len(sent) == 2 and sent[1][2]["title"].startswith("ATLAS 25K: SHORT opened")
+              and sent[1][2]["tags"] == "chart_with_downwards_trend", sent[-1])
+        night = at(2026, 11, 18, 3, 10)
+        N.instant_entry(dict(p, key="fill:1795060000", t=1795060000), now=night, path=path, cfg=cfg, poster=poster)
+        check("g. inside quiet hours it still arrives, without sound", len(sent) == 3 and sent[2][2]["priority"] == "low")
+        for bad, why_word in ((dict(p, key="fill:9", account="Paper"), "not a real"), (dict(p, key="fill:10", account="Sim101"), "not a real"),
+                              (dict(p, key="fill:11", strategy="BLITZ"), "not a real"), (dict(p, key="fill:12", kind="outcome"), "not a real")):
+            check(f"g. never for paper / sim / BLITZ / an outcome ({bad.get('account')}, {bad.get('strategy')}, {bad.get('kind')})",
+                  N.instant_entry(bad, now=day, path=path, cfg=cfg, poster=poster).startswith(why_word) and len(sent) == 3)
+        check("g. no private topic on this machine (the cloud): nothing sent",
+              N.instant_entry(dict(p, key="fill:13"), now=day, path=path, cfg={}, poster=poster).startswith("no private") and len(sent) == 3)
+        check("g. ntfy refuses: not recorded, so the 15-minute report still sends it",
+              N.instant_entry(dict(p, key="fill:14", t=1795070000), now=day, path=path, cfg=cfg, poster=lambda *a: False).startswith("ntfy did not")
+              and not N.instant_sent(1795070000, path=path))
+        def boom(*a):
+            raise OSError("down")
+        check("g. a network error never raises", N.instant_entry(dict(p, key="fill:15"), now=day, path=path, cfg=cfg, poster=boom).startswith("failed"))
+        N.settings = lambda path=None: N.merge({"alerts": {"trade_opened": False}})
+        check("g. trade_opened switched off: nothing sent", N.instant_entry(dict(p, key="fill:16"), now=day, path=path, cfg=cfg, poster=poster) == "trade_opened is off"
+              and len(sent) == 3)
+        import engine.push as P
+        src = open(P.__file__, encoding="utf-8").read()
+        check("g. engine/push.pc_notify hands every fill to instant_entry in its own daemon thread (never delays routing)",
+              'target=notify.instant_entry' in src and 'name="push-ntfy", daemon=True' in src)
+        home = os.path.join(tmp, "olympus")
+        os.makedirs(home)
+        with open(os.path.join(home, "ntfy.json"), "w") as fh:
+            json.dump({"topic": "nq-abc-def-ghi-1234", "ntfy": "https://ntfy.sh/"}, fh)
+        c = N.alert_cfg({"OLYMPUS_HOME": home})
+        check("g. the private topic comes from OLYMPUS_HOME/ntfy.json, like the 15-minute report",
+              c == {"ntfy": "https://ntfy.sh", "topic": "nq-abc-def-ghi-1234"} or (c.get("topic") == "nq-abc-def-ghi-1234"), c)
+    finally:
+        N.settings = real_settings
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
 def main() -> int:
-    for f in (settings, milestones, news, silent, cloud, report, workflow, brief):
+    for f in (settings, milestones, news, silent, cloud, report, workflow, brief, instant):
         try:
             f()
         except Exception as e:

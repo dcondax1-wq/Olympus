@@ -157,9 +157,9 @@ def _closed(day: str) -> bool:
 
 
 def _early(day: str):
-    try:
-        from . import lit_live
-        ec = lit_live.early_close(day)
+    try:                                    # engine/cme_calendar = lit_live.early_close's own source (same values), light:
+        from . import cme_calendar          # no numpy / pandas in the PC's 15-minute report (night-learnloop 2026-11-19)
+        ec = cme_calendar.early_close(day)
         return int(ec) if isinstance(ec, (int, float)) else None
     except Exception:
         return None
@@ -994,6 +994,20 @@ def odds_lit_live(lm: dict | None = None) -> tuple[dict | None, str]:
 
 
 def atlas_info_safe() -> dict | None:
+    """engine/second.atlas_info(). Its usual answer is research/second/atlas.json as it is (+ name / source defaults): read
+    here directly when engine.second is not loaded yet, so the PC's 15-minute report does not import numpy + pandas just for
+    it (night-learnloop 2026-11-19, the same dict). Anything else (no file, no members, a bad file) goes to second.atlas_info."""
+    import sys
+    if "engine.second" not in sys.modules:
+        try:
+            with open(os.path.join(ROOT, "research", "second", "atlas.json"), encoding="utf-8") as fh:
+                d = json.load(fh)
+            if isinstance(d, dict) and d.get("members"):
+                d.setdefault("name", "ATLAS")
+                d.setdefault("source", "research/second/atlas.json")
+                return d
+        except Exception:
+            pass
     try:
         from . import second
         return second.atlas_info()

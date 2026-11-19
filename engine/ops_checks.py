@@ -327,8 +327,19 @@ def http_probe(url: str, timeout: float = 5.0) -> dict:
 
 
 def internet(probe=http_probe, urls=PROBE_URLS) -> dict:
-    """{"up": bool, "drift_s": server clock - this PC's clock (median of the answers), "n": answers}."""
-    res = [probe(u) for u in urls]
+    """{"up": bool, "drift_s": server clock - this PC's clock (median of the answers), "n": answers}. The probes run side by
+    side (night-learnloop 2026-11-19: one round trip a tick instead of three; with the internet down 5 s, not 15 s), results
+    in the urls' order as before."""
+    res = None
+    if len(urls) > 1:
+        try:
+            from concurrent.futures import ThreadPoolExecutor
+            with ThreadPoolExecutor(max_workers=len(urls)) as ex:
+                res = list(ex.map(probe, urls))
+        except Exception:                           # no threads here: one after the other
+            res = None
+    if res is None:
+        res = [probe(u) for u in urls]
     up = [r for r in res if r.get("ok")]
     rows = sorted((r["date"] - (r["t0"] + r["t1"]) / 2.0, max(0.0, r["t1"] - r["t0"]) / 2.0) for r in up if r.get("date"))
     if not rows:

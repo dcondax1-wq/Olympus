@@ -163,8 +163,8 @@ def part_d():
     idx = open(os.path.join(ROOT, "tools", "web_public", "index.html"), encoding="utf-8").read()
     sw = open(os.path.join(ROOT, "tools", "web_public", "sw.js"), encoding="utf-8").read()
     pcs = open(os.path.join(ROOT, "web_next", "js", "next", "second.js"), encoding="utf-8").read()
-    check("d. phone loads secondcore.js?v=9, service worker cache bumped (le-public-v29 or later), PC loads ?v=8",
-          "secondcore.js?v=9" in idx and int(__import__("re").search(r"le-public-v(\d+)", sw).group(1)) >= 29 and "secondcore.js?v=9" in pcs)
+    check("d. phone loads secondcore.js?v=10, service worker cache bumped (le-public-v29 or later), PC loads ?v=8",
+          "secondcore.js?v=10" in idx and int(__import__("re").search(r"le-public-v(\d+)", sw).group(1)) >= 29 and "secondcore.js?v=10" in pcs)
 
 
 def main():

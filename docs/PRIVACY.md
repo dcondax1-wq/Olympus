@@ -22,6 +22,7 @@ What private data the system holds, where it lives and who can see it. Three set
 | Road to $10K figures (savings, jobs, Kalshi) | `data\goals_money.json` | Only you, unless "show on the phone" is on (then they are in the site) |
 | Trading account names (the MFFU ids) | the PC (heartbeat, `data\accounts.json`, NinjaTrader) | You + your devices on Tailscale; the site shows the last 4 digits only |
 | Eval balances, P&L, trades, positions, the strategy, the research | the Netlify site + the ntfy status topic | Anyone with the site's link if it were public; anyone who reads the status topic |
+| NQ chart bars + our trades (prices, sides, micros, $; accounts by label like "Zlarior 50K", never an id or digits) | the ntfy chart topic = the status topic + `-bars` (`tools/pc_report.py` le-bars, through `public_status`) | Anyone who reads that topic (public on purpose, like the status topic) |
 | Kalshi bot status (balance, P&L) | the Jarvis VM's feed, then the site's `kalshi.json` | Same as the site; the Kalshi keys never leave the VM |
 | Trade pushes (entry, exit, $) | your private ntfy alert topic | Anyone who knows the topic name: keep it secret |
 | Keys (Netlify token, Telegram / Discord, NinjaTrader login) | `%USERPROFILE%\.olympus\`, `data\alerts.json`, the PC | Only you (gitignored, never in the site) |

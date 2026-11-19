@@ -19,7 +19,18 @@ import json
 import os
 import sys
 
-import numpy as np
+
+class _LazyNumpy:
+    """numpy on first use only: the PC's 15-minute report reads load() / pct_of() / band_at() (no numpy) through engine/goals,
+    so importing this module no longer costs the report a numpy import (night-learnloop 2026-11-19, same outputs)."""
+
+    def __getattr__(self, k):
+        import numpy
+        globals()["np"] = numpy
+        return getattr(numpy, k)
+
+
+np = _LazyNumpy()
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "research", "lab", "health_band.json")
@@ -123,21 +134,23 @@ def load(path=OUT):
 
 
 def pct_of(qs, v):
-    """Percentile (0..100) of value v within the stored percentiles 1..99 (linear between them, clipped to 0.5 / 99.5)."""
-    q = np.asarray(qs, float)
+    """Percentile (0..100) of value v within the stored percentiles 1..99 (linear between them, clipped to 0.5 / 99.5).
+    Pure Python (bisect = numpy.searchsorted on the sorted percentiles, the same numbers)."""
+    import bisect
+    q = [float(x) for x in qs]
     if v is None or not len(q):
         return None
     if v < q[0]:
         return 0.5
     if v > q[-1]:
         return 99.5
-    i = int(np.searchsorted(q, v, side="right"))
+    i = bisect.bisect_right(q, v)
     if i >= len(q):
         return 99.0
     lo, hi = q[i - 1], q[i]
     f = 0.0 if hi == lo else (v - lo) / (hi - lo)
     # ties (a flat stretch of the distribution, e.g. many 0R paths): the middle of the tie
-    j = int(np.searchsorted(q, v, side="left"))
+    j = bisect.bisect_left(q, v)
     if hi == lo or (j < i - 1):
         return round(float((j + i) / 2.0 + 0.5), 1)
     return round(float(i + f), 1)

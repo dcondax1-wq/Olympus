@@ -265,4 +265,26 @@ data/*.Last.txt
 data/nt_export/
 # Kalshi K1 paper on the PC (tools/kalshi_paper.py maybe_run): ledger, public summary, run token, log
 data/kalshi_k1/
+# Kalshi LIVE executor on the PC (engine/kalshi_live.py): arm record (proof hash, never the phrase), state, commands, KILL, log,
+# public card, lock. The owner's Kalshi key is never here: it lives in %USERPROFILE%\.olympus\kalshi\ (KALSHI_KEY_SETUP.bat)
+data/kalshi_live/
 data/gh_publish/
+
+# Slimmed 2026-11-19 (night-clean): these were moved out of the repo; docs/ARCHIVE.md says what, why and the one-line restore.
+# Screenshots that tests and shot scripts write into the old hand-off folders by default (test_arena, test_hermes,
+# test_prometheus, test_strategytree, tests/shots_*.py, tools/icon_options_build.py) stay on the machine that made them.
+research/handoff/2026-10-2*/**/*.png
+research/handoff/2026-10-2*/**/*.jpg
+research/handoff/2026-11-0*/**/*.png
+research/handoff/2026-11-0*/**/*.jpg
+# test_sfx_lab --shots before / after pictures
+docs/shots/sound/*.jpg
+# PC dashboard screenshots of the old 7-page hub (no reader)
+research/lab/screens_pc/
+# the old Strategy Lab trader-layer batch (tools/lab_trader_run.py): per-trade and per-decision dumps are rebuilt by a re-run;
+# TRADER_LAYER_results.json + the *__<period>.json scorecards stay committed (strategy_lab.board() and the tables read them)
+research/lab/TRADER_LAYER_trades_*.json
+research/lab/TRADER_LAYER_decisions_*.json
+# Home Screen icon options (tools/icon_options_build.py, icon_options_detail.py, icon_options_minimal.py rebuild them);
+# the live icon is web/icons/ (tools/icon_temple.py, 2026-11-18)
+tools/web_public/icon_options/

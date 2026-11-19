@@ -730,3 +730,16 @@ its own `./my_leads.json` (the owner's batch, written on his PC by `RUN_AGENCY.b
 3. `tools/build_web_dashboard.py` app tuple: `"business"`.  4. `sw.js` OTHER_APPS: `'business/'`.
 5. `olympus/intro-app.js` FLAVOUR: `business: ['columns', 'Count the ventures', 'tap'],`
 6. `jarvis/transitions.js` REGISTRY: `business: { kind: 'columns', ms: 1000, n: 5 },`
+
+## why (2026-11-19, night-anatomy: why our trades win and lose)
+Folder `tools/web_public/why/` (why.json from `tools/win_loss_anatomy.py`), test `tests/test_why_page.py`. Wired by `tools/wire_new_apps.py`.
+```js
+  app('why', 'Why', 'trading', '#c8a24a', 'Why our trades win and lose, per bot, in plain $', { glyph: '?' }),
+```
+APPS / AMBIENT: `why: ['Why', '?', '#c8a24a']`, `why: 'scroll',` · FLAVOUR: `why: ['columns', 'See why we win', 'tick']` · REGISTRY: `why: { kind: 'tiles', ms: 800 }`
+
+## board (2026-11-18, the Board: what the bot, you and Claude know)
+```js
+  app('board', 'Board', 'trading', '#c8a24a', 'What the bot, you and Claude know: accounts, events, notes', { glyph: '▤' }),
+```
+APPS / AMBIENT: `board: ['Board', '▤', '#c8a24a']`, `board: 'scroll',` · FLAVOUR: `board: ['columns', 'Read the board', 'tick']` · REGISTRY: `board: { kind: 'tiles', ms: 800 }`

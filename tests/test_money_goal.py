@@ -349,7 +349,7 @@ def readonly_ui_checks():
     a = rd("tools/web_public/moneycore.js")
     check("h. moneycore.js byte-identical on both apps", a == rd("web_next/js/next/moneycore.js"))
     idx = rd("tools/web_public/index.html")
-    check("h. phone loads moneycore.js before goals.js v3", 0 < idx.find("moneycore.js?v=2") < idx.find("goals.js?v=5"))
+    check("h. phone loads moneycore.js before goals.js v3", 0 < idx.find("moneycore.js?v=2") < idx.find("goals.js?v=6"))
     sw = rd("tools/web_public/sw.js")
     check("h. phone service worker bumped (le-public-v39+)", int(__import__("re").search(r"le-public-v(\d+)", sw).group(1)) >= 39)
     gj = rd("tools/web_public/goals.js")

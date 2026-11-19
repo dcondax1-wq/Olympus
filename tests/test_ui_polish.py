@@ -4,7 +4,7 @@ the one section order on every bot tab, Money = real money only, the motion syst
 dashboards (read-only UI).
 
   a. static   statuscore.js byte-identical on both apps, the phone loads statuscore.js + polish.js after blitz.js and
-              polish.css in the head, caches bumped (phone le-public-v46+, PC le-shell-next-v28+), clean.js?v=3 kept,
+              polish.css in the head, caches bumped (phone le-public-v46+, PC le-shell-next-v28+), clean.js?v=4 kept,
               read-only (no fetch / POST in the renderers), FEATURES.md lists the features, the PC sidebar sections
   b. node     StatusUI from the live-board fixture (2 and 3 accounts): the status items, the account cards (ring, REAL /
               SIM tag, the day in one line), the Sunday open card on the clock-change weekend (and not on a Tuesday),
@@ -67,8 +67,8 @@ def part_a():
     check("a. sessioncore.js (window.SessionDay) + sessionday.js: the phone loads them after moneynow.js; read-only (no fetch / POST / innerHTML / arm / route / api)",
           idx.find('src="sessioncore.js?v=') > idx.find('src="moneynow.js?v=') > 0 and idx.find('src="sessionday.js?v=') > idx.find('src="sessioncore.js?v=')
           and not re.search(r"fetch\(|POST|innerHTML|/api/|arm_c|route\(", rd("tools", "web_public", "sessioncore.js")) and "fetch(" not in rd("tools", "web_public", "sessionday.js"))
-    check("a. caches: phone le-public-v46+, PC le-shell-next-v28+; clean.js?v=3 kept", int(re.search(r"le-public-v(\d+)", psw).group(1)) >= 46
-          and int(re.search(r"le-shell-next-v(\d+)", sw).group(1)) >= 28 and 'clean.js?v=3"' in idx and "/css/polish.css" in sw)
+    check("a. caches: phone le-public-v46+, PC le-shell-next-v28+; clean.js?v=4 kept", int(re.search(r"le-public-v(\d+)", psw).group(1)) >= 46
+          and int(re.search(r"le-shell-next-v(\d+)", sw).group(1)) >= 28 and 'clean.js?v=4"' in idx and "/css/polish.css" in sw)
     for n in ("statuscore.js", "polish.js"):
         src = rd("tools", "web_public", n)
         check(f"a. {n} is read-only (no fetch, no POST, no arm / route / order call)", "fetch(" not in src and "POST" not in src and "/api/" not in src and "arm_c" not in src)

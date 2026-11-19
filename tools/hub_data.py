@@ -153,9 +153,50 @@ def business_raw() -> dict:
     hit = _BIZ_CACHE.get("b")
     if hit is not None and hit[0] == key:
         return copy.deepcopy(hit[1])
-    b = _business_raw()
+    b = _disk_get(key)
+    if b is None:
+        b = _business_raw()
+        _disk_put(key, b)
     _BIZ_CACHE["b"] = (key, copy.deepcopy(b))
     return b
+
+
+# The same cache on disk (night-learnloop 2026-11-19): the PC's 15-minute report is a NEW process each time, so the in-memory
+# cache never hit there and every report paid openpyxl + numpy + the workbook parse (~350 ms here, more on the Surface). The
+# result is stored only when it is plain JSON (it comes back identical), keyed by the same file stats; LE_HUB_DISK_CACHE=0 = off.
+BIZ_DISK = os.path.join(ROOT, "logs", "cache", "hub_business.json")
+
+
+def _disk_key(key) -> list:
+    return [[str(p), m, z] for p, m, z in key]
+
+
+def _disk_get(key):
+    if os.environ.get("LE_HUB_DISK_CACHE", "1").strip() == "0":
+        return None
+    try:
+        with open(BIZ_DISK, encoding="utf-8") as fh:
+            d = json.load(fh)
+        if isinstance(d, dict) and d.get("key") == _disk_key(key) and isinstance(d.get("b"), dict):
+            return d["b"]
+    except Exception:                                        # noqa: BLE001
+        pass
+    return None
+
+
+def _disk_put(key, b) -> None:
+    if os.environ.get("LE_HUB_DISK_CACHE", "1").strip() == "0":
+        return
+    try:
+        if json.loads(json.dumps(b)) != b:                   # not plain JSON: it would not come back the same
+            return
+        os.makedirs(os.path.dirname(BIZ_DISK), exist_ok=True)
+        tmp = BIZ_DISK + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as fh:
+            json.dump({"key": _disk_key(key), "b": b}, fh, separators=(",", ":"))
+        os.replace(tmp, BIZ_DISK)
+    except Exception:                                        # noqa: BLE001
+        pass
 
 
 def _business_raw() -> dict:
