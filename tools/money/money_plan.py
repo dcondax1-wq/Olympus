@@ -82,7 +82,26 @@ NOW = [
 NAMES = {"Z50": "Zlarior 50K", "N25": "Zlarior 25K #2", "A25": "ATLAS funded 25K", "R25": "Rapid EOD 25K", "R2": "Rapid EOD 50K (next buy)"}
 PRICE_OF = {"Z50": P50, "N25": P25, "A25": P25, "R25": PR25, "R2": PR50}
 DECIDE_IDS = ("payout-ping-1000", "zlarior-funded25", "rapid25-lit-bank", "atlas-on-50k-funded", "atlas-on-rapid",
-              "keep-1000-rapid", "ask-mffu-parallel", "cloud-alerts")
+              "keep-1000-rapid", "ask-mffu-parallel", "cloud-alerts", "atlas-funded-room-40")
+# a Decide item this tool ADDS when it is missing (2026-11-19, the lead: the ATLAS health study's one real trade-off, as an
+# owner choice with $); every other item is only ever valued, never added or removed
+NEW_ITEMS = [{
+    "id": "atlas-funded-room-40",
+    "question": "ATLAS's funded 25K: risk 40% of the room a trade instead of 60% (safer, but the first payout comes later)?",
+    "why": "The bot stops ATLAS for good once the funded room is under $100. Smaller trades make that rarer, but each win is "
+           "smaller, so payouts come later.",
+    "impact": "", "impact_usd": 0, "options": ["yes", "no", "later"], "status": "open",
+    "source": "research/writeups/atlas-health-2026-11-18.md",
+    "applies": "ATLAS's funded sizing 60% -> 40% of the room (engine/account_b funded preset; Claude changes it only after your "
+               "yes, Sim check first)",
+    "added": "2026-11-19"}]
+# Kalshi K8 (the gold / silver clock bets, live from the owner's phone 2026-11-19): NOT in any total above - unproven
+KALSHI_K8 = {
+    "status": "UNPROVEN: forward paper running; you chose to start live at $15 a bet",
+    "bet": 15, "bankroll": 250, "week_in_sample": 143, "week_last4": 123, "worst_day": -92, "deepest_dip": -123, "newest_week": -75,
+    "month_if_held": [530, 620],
+    "proof_bar": "120 paper bets (about 4 weeks) that win at least 65% at an average price of 56c or less",
+    "source": "research/writeups/kalshi-red-team-K8-2026-11-19.md"}
 
 
 # ================================================================================================ the trade streams
@@ -208,20 +227,22 @@ def n25_seat(ask=None, atlas=False):
     return BSeat(s, B["L"], B["S"] if atlas else B["L"])
 
 
-def a25_funded(z, ask=None):
-    f = BL.GF("builder25k", U.UP25, z, ask=ask)
+def a25_funded(z, ask=None, pct=None):
+    f = BL.GF("builder25k", {**U.UP25, "pct": pct} if pct else U.UP25, z, ask=ask)
     f.bal = f.trade_pnl = A25_PNL                   # Nov 18: one traded day, -$113 (floor still $24,000)
     f.cyc = [A25_PNL]
     f.first_trade, f.elig_from = "2027-01-01", U.cal(1)    # the 48 h first wait ends on Nov 20 (k = 1)
     return f
 
 
-def a25_seat(ask=None, lit=False):
+def a25_seat(ask=None, lit=False, pct=None):
+    """ATLAS's funded 25K from tonight; pct = the funded share of the room a trade (UP25 = 0.6; the ATLAS health study's S3 = 0.4)."""
     B = by()
     z = {"LIT": ("fq", None), "ATLAS": ("stack", 250.0, 0.3)} if lit else {"ATLAS": ("fq", None)}
-    s = BL.Seat(lambda _=None: BL.GEv(BL.E25, BL.Zatlas25(), stuck=200.0), lambda: BL.GF("builder25k", U.UP25, z, ask=ask),
+    cfg = {**U.UP25, "pct": pct} if pct else U.UP25
+    s = BL.Seat(lambda _=None: BL.GEv(BL.E25, BL.Zatlas25(), stuck=200.0), lambda: BL.GF("builder25k", cfg, z, ask=ask),
                 P25, [])
-    s.evals, s.f, s.wait = [], a25_funded(z, ask), 0
+    s.evals, s.f, s.wait = [], a25_funded(z, ask, pct), 0
     return BSeat(s, B["A"], B["S"] if lit else B["A"])
 
 
@@ -238,6 +259,7 @@ BASE = {"Z50": lambda: z50_seat(), "N25": lambda: n25_seat(), "A25": lambda: a25
 VARIANTS = {
     "payout-ping-1000": {"A25": lambda: a25_seat(ask=1000.0), "N25": lambda: n25_seat(ask=1000.0)},
     "zlarior-funded25": {"A25": lambda: a25_seat(lit=True)},
+    "atlas-funded-room-40": {"A25": lambda: a25_seat(pct=0.4)},           # research/writeups/atlas-health-2026-11-18.md S3
     "rapid25-lit-bank": {"R25": lambda: r25_seat(lane="bank1")},
     "atlas-on-50k-funded": {"Z50": lambda: z50_seat(atlas=True)},
     "atlas-on-rapid": {"R25": lambda: r25_seat(atlas=False)},
@@ -468,6 +490,14 @@ def judge(did, D):
         why = ("Keep $1,000 in the Rapid 25K too: more money in both halves." if rec == "yes" else
                "Keep $500 on the Rapid 25K (as built): payouts come sooner for about the same money. $1,000 is the safer "
                "choice (fewer accounts lost), so a yes is fine if you prefer safety. A Rapid 50K keeps $1,000 already.")
+    elif did == "atlas-funded-room-40":
+        lost_w = [(d.get("without") or {}).get("lost_6m"), (d.get("with") or {}).get("lost_6m")] if (d := (h2.get("per_account") or {}).get("A25")) else [None, None]
+        rec = "yes" if both_up and not worse else "no"
+        why = ("Yes: about the same money and the funded 25K gets stuck less often." if rec == "yes" else
+               f"Your choice: keep 60% for the faster first payout (fastest money), or say yes for safety: the funded 25K gets "
+               f"stuck {lost_w[1]:.0f} in 100 times instead of {lost_w[0]:.0f} in 100 within 6 months"
+               + (f", for about {usd(-m2)} a month less." if m2 < -5 else ", for about the same money.")
+               if lost_w[0] is not None else "Keep 60% for the faster first payout.")
     elif did == "payout-ping-1000":
         rec = "yes" if m2 >= 0 and m1 >= 0 and not worse else "no"
         why = ("Ask for the full $1,000: the same or a bit more money and fewer small requests." if rec == "yes" else
@@ -632,7 +662,7 @@ def _combo(k, rec):
     yes = lambda d: rec.get(d) == "yes"                                  # noqa: E731
     ask = 1000.0 if yes("payout-ping-1000") else None
     if k == "A25":
-        return lambda: a25_seat(ask=ask, lit=yes("zlarior-funded25"))
+        return lambda: a25_seat(ask=ask, lit=yes("zlarior-funded25"), pct=0.4 if yes("atlas-funded-room-40") else None)
     if k == "N25":
         return lambda: n25_seat(ask=ask)
     if k == "Z50":
@@ -659,6 +689,7 @@ def page(res):
                            "info": {d: {kk: v for kk, v in x.items() if kk != "per_account"} for d, x in r["info"].items()},
                            "decisions": {d: {kk: v for kk, v in x.items() if kk != "per_account"} for d, x in r["decisions"].items()}}
     out["decision_values"] = res["decision_values"]
+    out["kalshi_k8"] = KALSHI_K8
     return out
 
 
@@ -667,6 +698,10 @@ def write_decisions(vals, path=DECISIONS, today=TODAY):
     their own proposals to the same file)."""
     with open(path, encoding="utf-8") as fh:
         doc = json.load(fh)
+    have = {it.get("id") for it in doc.get("items") or []}
+    for it in NEW_ITEMS:
+        if it["id"] not in have and it["id"] in vals:
+            doc.setdefault("items", []).append(dict(it))
     for it in doc.get("items") or []:
         v = vals.get(it.get("id"))
         if not v:

@@ -105,6 +105,18 @@
       + (fd != null && Math.abs(fd) >= 1 ? ', the 50K\'s first payout about ' + Math.round(Math.abs(fd)) + ' trading days ' + (fd < 0 ? 'sooner' : 'later') : '') + '.';
   }
 
+  // Kalshi K8 (gold / silver clock bets): never added to the MFFU totals, never called proven
+  function kalshi(k) {
+    const box = $('k8'), dl = $('k8kv');
+    if (!k) { box.textContent = 'No Kalshi data in this plan.'; dl.textContent = ''; return; }
+    box.textContent = k.status + '. Not counted in any number above. Proven only after ' + k.proof_bar + '.';
+    const m = Array.isArray(k.month_if_held) ? k.month_if_held : [];
+    kv(dl, [['If it holds up, at ' + usd(k.bet) + ' a bet', (m.length ? usd(m[0]) + '-' + usd(m[1]) + ' a month' : '-') + ' (past weeks: ' + usd(k.week_in_sample) + ' a week, the last 4 weeks ' + usd(k.week_last4) + ')'],
+      ['Normal bad stretch', usd(k.deepest_dip) + ' (worst day ' + usd(k.worst_day) + ', the newest week ' + usd(k.newest_week) + ')'],
+      ['Keep in the Kalshi account', 'at least ' + usd(k.bankroll)]]);
+    hook.k8 = true;
+  }
+
   function decisions() {
     const box = $('dec'); box.textContent = '';
     const items = (DEC && Array.isArray(DEC.items) ? DEC.items : []).filter((d) => d && d.id && String(d.status || 'open') === 'open');
@@ -167,6 +179,7 @@
       'A funded account can get stuck after a losing streak (under $100 of room: the bot stops trading it). Then a fresh eval of the same size replaces it; that is counted above.'];
     for (const t of steps) b.appendChild(el('li', null, t));
     decisions();
+    kalshi(D.kalshi_k8);
     // the running total + month by month
     fan(F.months);
     $('fanNote').textContent = 'Gold line = the middle case; band = bad 10 in 100 to good 10 in 100. Every account trades the same signals, so a bad stretch hits all of them at once.';

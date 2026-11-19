@@ -35,7 +35,7 @@ LAB = os.path.join(ROOT, "research", "lab", "money_plan.json")
 RES = []
 KEYS = ("Z50", "N25", "A25", "R25", "R2")
 VALUED = ("payout-ping-1000", "zlarior-funded25", "rapid25-lit-bank", "atlas-on-50k-funded", "atlas-on-rapid", "keep-1000-rapid",
-          "ask-mffu-parallel", "cloud-alerts")
+          "ask-mffu-parallel", "cloud-alerts", "atlas-funded-room-40")
 
 
 def check(name, cond, detail=""):
