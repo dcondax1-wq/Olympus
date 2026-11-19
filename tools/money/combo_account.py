@@ -106,6 +106,8 @@ LEN, GAP, H_EVAL, MONTHS = 126, 2, 60, 6.0
 SPAN = {"H1": ("2026-01-01", "2026-06-30"), "H2": ("2026-07-01", "2026-10-16"), "REF": ("2021-11-01", "2025-12-31")}
 SPAN_WORD = {"H1": "Jan-Jun 2026", "H2": "Jul-Oct 2026", "REF": "2021-25"}
 SPANS = ("H1", "H2", "REF")
+YEARS = {f"Y{y}": (f"{y}-01-01", f"{y}-12-31") for y in (2022, 2023, 2024, 2025)}     # honesty check only
+ALL_SPANS = {**SPAN, **YEARS}
 SEED_SLOT, SEED_FUND = 7, 23
 N_PATHS = 2000
 BEST_DAY_MARGIN = 0.95                      # engine/firms.BEST_DAY_MARGIN (the fleet's best-day guard)
@@ -287,12 +289,31 @@ def trades(path=None):
     return _D["T"]
 
 
-def combo_days(combo: str, news: bool = False) -> list:
-    """per session: the combo's trades (the news-ruled versions for a Rapid funded account), entry order, Z > A > B > P."""
-    key = (combo, news)
+def _span_of(day):
+    return next(s for s in SPANS if SPAN[s][0] <= day <= SPAN[s][1])
+
+
+def _zero_shift(zero):
+    """honesty placebo: per bot and period, its mean points-per-stop (R) on the stored trades; subtracting mean R x stop
+    from every trade keeps the bot's timing, stops, win / loss shape and variance but takes its edge to zero."""
+    out = {}
+    for s in zero:
+        for sp in SPANS:
+            a, z = span_ix(sp)
+            R = [t["pts"] / t["risk"] for i in range(a, z) for t in trades()[i] if t["s"] == s and t["risk"]]
+            out[(s, sp)] = float(np.mean(R)) if R else 0.0
+    return out
+
+
+def combo_days(combo: str, news: bool = False, zero: tuple = ()) -> list:
+    """per session: the combo's trades (the news-ruled versions for a Rapid funded account), entry order, Z > A > B > P.
+    zero = bots taken to zero edge (honesty placebo only)."""
+    zero = tuple(zero or ())
+    key = (combo, news, zero)
     C = _D.setdefault("C", {})
     if key not in C:
         ms = set(members(combo))
+        sh = _zero_shift(zero) if zero else {}
         out = []
         for ts in trades():
             day = []
@@ -303,6 +324,9 @@ def combo_days(combo: str, news: bool = False) -> list:
                     if t["n"] == "skip":
                         continue
                     t = {**t, "pts": t["n"][0], "w1": t["n"][1], "xt": t["n"][2]}
+                if t["s"] in zero:
+                    p2 = t["pts"] - sh[(t["s"], _span_of(t["day"]))] * t["risk"]
+                    t = {**t, "pts": p2, "w1": min(t["w1"], p2)}
                 day.append(t)
             day.sort(key=lambda t: (t["et"], PRIO[t["s"]]))
             out.append(day)
@@ -312,7 +336,7 @@ def combo_days(combo: str, news: bool = False) -> list:
 
 def span_ix(span):
     S = sessions()
-    a, z = SPAN[span]
+    a, z = ALL_SPANS[span]
     ix = [i for i, d in enumerate(S) if a <= d <= z]
     return ix[0], ix[-1] + 1
 
@@ -699,7 +723,8 @@ def _elig_session(k0, wait_h):
 
 # ================================================================================================ the 6-month account slot
 def row_key(r):
-    return f"{r['acct']}|{r['eval']}>{r['funded']}|{r['sizing']}|{r['rule']}|t{r['ticks']}"
+    k = f"{r['acct']}|{r['eval']}>{r['funded']}|{r['sizing']}|{r['rule']}|t{r['ticks']}"
+    return k + (f"|zero{''.join(r['zero'])}" if r.get("zero") else "")
 
 
 class Slot:
@@ -771,8 +796,8 @@ def is_rapid(acct):
 
 
 def run_slot(r, paths):
-    De = combo_days(r["eval"])
-    Df = combo_days(r["funded"], news=is_rapid(r["acct"]))
+    De = combo_days(r["eval"], zero=r.get("zero"))
+    Df = combo_days(r["funded"], news=is_rapid(r["acct"]), zero=r.get("zero"))
     out = []
     for seq in paths:
         s = Slot(r)
@@ -783,7 +808,7 @@ def run_slot(r, paths):
 
 
 def run_funded(r, paths):
-    Df = combo_days(r["funded"], news=is_rapid(r["acct"]))
+    Df = combo_days(r["funded"], news=is_rapid(r["acct"]), zero=r.get("zero"))
     cell = {"acct": r["acct"], "sizing": r["sizing"], "rule": r["rule"], "ticks": r["ticks"]}
     out = []
     for seq in paths:
@@ -897,9 +922,9 @@ def rows():
     return out
 
 
-def score_row(r, n=N_PATHS):
+def score_row(r, n=N_PATHS, spans=SPANS):
     o = {}
-    for sp in SPANS:
+    for sp in spans:
         PS = day_paths(sp, n, seed=SEED_SLOT)
         PF = day_paths(sp, n, seed=SEED_FUND)
         sl = run_slot(r, PS)
@@ -909,10 +934,10 @@ def score_row(r, n=N_PATHS):
 
 
 def _job(args):
-    r, n = args
+    r, n = args[:2]
     _patch_account_b()
     t0 = time.time()
-    o = score_row(r, n)
+    o = score_row(r, n, *(args[2:] or ()))
     return row_key(r), o, round(time.time() - t0, 1)
 
 
@@ -1085,10 +1110,117 @@ def check(n=150, log=print):
     return res
 
 
+# ================================================================================================ honesty checks (diagnostics)
+HONEST_YEARS = [R("b50", "Z"), R("b50", "Z+A"), R("b50", "Z+A+B"), R("b50", "Z", "Z+A"), R("b25", "Z"), R("b25", "A"),
+                R("b25", "Z+A"), R("b25", "Z+A+B"), R("r25", "Z+A", sizing="lanes"), R("r25", "Z+A+B", sizing="lanes")]
+HONEST_ZERO = [{**R("b50", "Z"), "zero": ("Z",)}, {**R("b50", "Z+A"), "zero": ("A",)}, {**R("b50", "Z+A"), "zero": ("Z", "A")},
+               {**R("b50", "Z+A+B"), "zero": ("A", "B")}, {**R("b50", "Z", "Z+A"), "zero": ("A",)},
+               {**R("r25", "Z+A+B", sizing="lanes"), "zero": ("B",)}]
+
+
+def honesty(n=N_PATHS, workers=3, log=print):
+    """Not part of the verdict (that rule was fixed first): (1) the same rows inside each year of 2021-25, (2) a placebo with
+    a bot's edge taken to zero (same timing, stops, variance): if a combo still "wins" with a zero-edge partner, the gain is
+    the prop firm's capped downside (more variance = more lottery tickets), not the partner's edge."""
+    trades()
+    _patch_account_b()
+    jobs = [(r, n, tuple(YEARS)) for r in HONEST_YEARS] + [(r, n) for r in HONEST_ZERO]
+    res = {}
+    import multiprocessing as mp
+    with mp.get_context("fork").Pool(workers) as pool:
+        for k, o, sec in pool.imap_unordered(_job, jobs):
+            res[k] = {sp: {**{kk: vv for kk, vv in x.items() if not kk.startswith("_")}, "_net": x["_net"]} for sp, x in o.items()}
+            log(f"{k} {sec:.0f}s")
+    out = {"years": {}, "zero": {}}
+    for r in HONEST_YEARS:
+        k = row_key(r)
+        out["years"][k] = {sp: res[k][sp]["slot"]["net_m"] for sp in YEARS}
+        base = row_key(R(r["acct"], "Z"))
+        if k != base and base in res:
+            out["years"][k]["gap_vs_Z"] = {sp: [round(x, 1) for x in paired(res[k][sp]["_net"], res[base][sp]["_net"])] for sp in YEARS}
+    for r in HONEST_ZERO:
+        k = row_key(r)
+        out["zero"][k] = {sp: {"net_m": res[k][sp]["slot"]["net_m"], "p_neg": res[k][sp]["slot"]["p_neg"],
+                               "eval_f60": res[k][sp]["slot"]["eval"]["f60"], "pay30": res[k][sp]["funded"]["pay30"]} for sp in SPANS}
+    return out
+
+
+# ================================================================================================ tables for the write-up
+def _m(x):
+    return "-" if x is None else (f"-${abs(x):,.0f}" if x < 0 else f"${x:,.0f}")
+
+
+def label(r):
+    nm = r["eval"] if r["eval"] == r["funded"] else f"{r['eval']} eval, {r['funded']} funded"
+    if "+" in r["eval"] or "+" in r["funded"]:
+        nm += f" ({r['sizing']})"
+    if r["rule"] == "adds":
+        nm += " adds"
+    if r["ticks"]:
+        nm += " +1 tick"
+    return nm
+
+
+def tables(o) -> str:
+    L = []
+    rows = o["rows"]
+    L.append("### A. The trades themselves (real days in order, $250 a trade, one position first-in, costs in)\n")
+    L.append("| Combo | trades/wk H1 / H2 / 21-25 | win % | PF | net $ | $/month | max DD |")
+    L.append("|---|---|---|---|---|---|---|")
+    for c in COMBOS + ("Z+A+P", "Z+A+B+P"):
+        p = o["plain"].get(f"{c}|first|t0")
+        if not p:
+            continue
+        L.append(f"| {c} | " + " / ".join(f"{p[s]['tpw']}" for s in SPANS) + " | " + " / ".join(f"{p[s]['win']}" for s in SPANS)
+                 + " | " + " / ".join(f"{p[s]['pf']}" for s in SPANS) + " | " + " / ".join(_m(p[s]["net"]) for s in SPANS)
+                 + " | " + " / ".join(_m(p[s]["per_month"]) for s in SPANS)
+                 + " | " + " / ".join(_m(p[s]["max_dd"]) for s in SPANS) + " |")
+    for a in ACCTS:
+        L.append(f"\n### {PLANS[a]['label']} (${PLANS[a]['price']:.2f})\n")
+        L.append("| Row | $/month after fees, H1 / H2 / 21-25 (10-90% of paths) | lose money in 6 mo | eval pass in 60 / median days (25-75%) / fail | funded: 1st payout <= 30 / 60 days, lost or stuck |")
+        L.append("|---|---|---|---|---|")
+        for k, r in rows.items():
+            if r["acct"] != a or r["group"] != "main":
+                continue
+            cur = " **(today)**" if k in o["current"][a] else ""
+            money = " / ".join(f"{_m(r[s]['slot']['net_m'])} ({_m(r[s]['slot']['p10_m'])}..{_m(r[s]['slot']['p90_m'])})" for s in SPANS)
+            neg = " / ".join(f"{r[s]['slot']['p_neg']}%" for s in SPANS)
+            ev = " / ".join(f"{r[s]['slot']['eval']['p60']}%, {r[s]['slot']['eval']['pass_med'] or '-'}"
+                            f" ({'-'.join(str(int(x)) for x in (r[s]['slot']['eval']['pass_q'] or [])) or '-'}), {r[s]['slot']['eval']['f60']}%" for s in SPANS)
+            fu = " / ".join(f"{r[s]['funded']['pay30']}/{r[s]['funded']['pay60']}%, {r[s]['funded']['lost_or_stuck']}%" for s in SPANS)
+            L.append(f"| {label(r)}{cur} | {money} | {neg} | {ev} | {fu} |")
+    L.append("\n### Sensitivities ($/month after fees, H1 / H2 / 21-25)\n")
+    L.append("| Account | Row | main | +1 tick | same-side adds |")
+    L.append("|---|---|---|---|---|")
+    for k, r in rows.items():
+        if r["group"] != "main":
+            continue
+        tk = rows.get(row_key({**r, "ticks": 1}))
+        ad = rows.get(row_key({**r, "rule": "adds"}))
+        f = lambda x: " / ".join(_m(x[s]["slot"]["net_m"]) for s in SPANS) if x else "-"  # noqa: E731
+        L.append(f"| {PLANS[r['acct']]['label']} | {label(r)} | {f(r)} | {f(tk)} | {f(ad)} |")
+    L.append("\n### Zlarior eval, combo once funded; post-close lead added ($/month after fees H1 / H2 / 21-25; funded 1st payout <= 30 days)\n")
+    L.append("| Account | Row | $/month | funded pay <= 30 d | eval fail in 60 |")
+    L.append("|---|---|---|---|---|")
+    for k, r in rows.items():
+        if r["group"] not in ("funded_only", "pcm"):
+            continue
+        L.append(f"| {PLANS[r['acct']]['label']} | {label(r)} | " + " / ".join(_m(r[s]["slot"]["net_m"]) for s in SPANS) + " | "
+                 + " / ".join(f"{r[s]['funded']['pay30']}%" for s in SPANS) + " | " + " / ".join(f"{r[s]['slot']['eval']['f60']}%" for s in SPANS) + " |")
+    L.append("\n### Verdict (pre-registered: above today's setup by > 2 SE in all three periods, 6-month loss chance not +5 pts, still above at +1 tick)\n")
+    L.append("| Account | Row | gap vs today $/month H1 / H2 / 21-25 (2 SE) | beats today? |")
+    L.append("|---|---|---|---|")
+    for k, v in o["verdict"].items():
+        r = rows[k]
+        gaps = " / ".join(", ".join(f"{c['gap_m']:+,} ({2 * c['se']:,.0f})" for c in v["checks"][s]) for s in SPANS)
+        L.append(f"| {PLANS[r['acct']]['label']} | {label(r)} | {gaps} | {'YES' if v['beats_today'] else 'no'} |")
+    return "\n".join(L)
+
+
 # ================================================================================================ main
 def main(argv=None):
     ap = argparse.ArgumentParser()
-    ap.add_argument("cmd", choices=["build-blitz", "build", "check", "study"])
+    ap.add_argument("cmd", choices=["build-blitz", "build", "check", "study", "table", "honesty"])
     ap.add_argument("--tf", type=int, default=1)
     ap.add_argument("--n", type=int, default=N_PATHS)
     ap.add_argument("--workers", type=int, default=3)
@@ -1101,6 +1233,16 @@ def main(argv=None):
     if a.cmd == "build":
         o = build()
         print("trades", o["count"], "->", os.path.relpath(TRADES, ROOT))
+        return 0
+    if a.cmd == "honesty":
+        o = honesty(a.n, a.workers)
+        p = os.path.join(ROOT, "research", "lab", "combo_account_honesty.json")
+        with open(p, "w", encoding="utf-8") as fh:
+            json.dump(o, fh, indent=1)
+        print(json.dumps(o, indent=1))
+        return 0
+    if a.cmd == "table":
+        print(tables(json.load(open(a.out, encoding="utf-8"))))
         return 0
     if a.cmd == "check":
         r = check()

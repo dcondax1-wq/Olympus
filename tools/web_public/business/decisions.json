@@ -1,7 +1,7 @@
 {
  "v": 1,
  "kind": "olympus-decisions",
- "updated": "2026-11-18",
+ "updated": "2026-11-19",
  "note": "The Decide card (business/decide.js on the Board + ZEUS pages). Claude keeps this list. A tap only posts an owner note (POST /inbox/board on the PC link); Claude applies it next session by the CLAUDE.md rules, then sets status to yes / no / later / done. Nothing here changes a live setting.",
  "items": [
   {
@@ -262,6 +262,32 @@
    "recommend": "yes",
    "recommend_why": "Yes: it only fixes the page. Your MFFU path already has the better next buys, and a LucidPro account would also need its own rules set up and checked first.",
    "valued": "2026-11-18 tools/money/money_plan.py (same paths for every account; $ a month to you after fees and MFFU's cut, before the 30% tax pot)"
+  },
+  {
+   "id": "zlarior-atlas-50k",
+   "question": "Zlarior's Builder 50K: ATLAS trades it too, from the eval on (one position at a time: the first bot in keeps the account)?",
+   "why": "Two bots on one 50K pass the eval in about a week instead of two and the funded account pays sooner; it beat Zlarior alone in Jan-Jun, Jul-Oct and 2021-25, and with ATLAS's edge set to zero it would not.",
+   "impact": "+$572 a month in a Jul-Oct-like market (runs: +$2 to +$1,067), +$1,060 Jan-Jun-like (+$503 to +$1,601), +$51 2021-25-like (-$122 to +$472); after the extra eval fees.",
+   "impact_usd": 572,
+   "options": [
+    "yes",
+    "no",
+    "later"
+   ],
+   "status": "open",
+   "source": "research/writeups/one-account-combo-2026-11-19.md",
+   "applies": "the lead adds ATLAS (its own live size) to Zlarior's 50K with a one-position first-in rule, then Sim-tests it; a yes replaces the funded-only card atlas-on-50k-funded",
+   "added": "2026-11-19",
+   "usd_month": 572,
+   "usd_month_by": {
+    "jan_jun": 1060,
+    "jul_oct": 572,
+    "y2021_25": 51
+   },
+   "risk": "evals that fail inside 2 weeks 0.1% -> 2-4% (2026-like), 0.5% -> 34% (2021-25-like); 60-day fails 9-13% unchanged in 2026; in 2021-25 behind Zlarior alone in 65% of runs and in 2022 by $113 a month",
+   "recommend": "yes",
+   "recommend_why": "The only combo that beat today's setup in all three periods with the two bots you run; the gain comes from ATLAS's edge (placebo), not from more trades. Sim first.",
+   "valued": "2026-11-19 tools/money/combo_account.py (2,000 whole-day runs x 6 months, same runs for every row; $ a month to you after fees and MFFU's cut, before the 30% tax pot)"
   }
  ]
 }
