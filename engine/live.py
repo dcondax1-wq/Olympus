@@ -376,6 +376,9 @@ class LiveBot:
         self._hedge_who = {}             # LIT entry_t -> whose opposite close it waits for ("BLITZ"; absent = account B)
         self.fleet = None                # engine/fleet.Fleet: copy trading to the follower accounts (None = off: no data/fleet.json)
         self._fleet_sig = None           # the fleet block it was built from
+        # ATLAS + Zlarior on ONE account (engine/combo50k.py; OFF by default: no data/combo_50k.json = None = today's bot)
+        self.combo = None                # the combo spec while ON (ATLAS also routed to this 50K, one position, one direction)
+        self._combo_why = None           # why a switch that is on does not apply to this bot (logged once)
 
     # ------------------------------------------------------------------ plumbing
     def _log(self, kind, text, **kw):
@@ -650,6 +653,7 @@ class LiveBot:
         self._sync_account_c()                          # account C (engine/account_c.py, OFF by default: data/account_c.json)
         self.fleet, self._fleet_sig = None, None        # the fleet (engine/fleet.py, OFF by default: no block = nothing)
         self._fleet_build()                             # built here, not at the first poll: see _fleet_build
+        self._combo_sync()                              # ATLAS + Zlarior on ONE 50K (engine/combo50k.py, OFF: no switch = None)
         self.running = True
         self.stop_flag.clear()
         if spawn:
@@ -1341,6 +1345,10 @@ class LiveBot:
         self.bars_tail = base.to_records(max(0, len(base) - 400))
         self._emit_events(res, sym)
         self._eod_summary(res, sym, now)
+        if model == "lit":
+            self._combo_sync()                # the owner's combo switch (OFF: no file = nothing changes)
+            if self.combo is not None or self._combo_live():
+                self._combo_frames = (df_full, df1, int(now))   # _combo_refresh: ATLAS's trade on this poll's bars
         self._route_signals(res, sym, now, secs)
         self.health["lit_ms"] = int((time.perf_counter() - t0) * 1000)   # poll start -> LIT decided and routed
         self._guards_tick(now)
@@ -1626,6 +1634,10 @@ class LiveBot:
         op = self._second_pos()
         rows = [{k: r.get(k) for k in ("t", "side", "qty", "reason", "pnl", "entry_t", "src", "strategy", "stop", "target")}
                 for r in self.ledger if r.get("src")][-8:]
+        ci = self.combo_info() if (self.combo is not None or self._combo_live()) else None
+        if ci:                                 # ATLAS + Zlarior on ONE account (engine/combo50k.py, only while on)
+            return {"keys": keys, "account": acct, "open": op, "routed": rows, "note": ci["note"], "combo": ci,
+                    **({"account_b": ab} if ab else {})}
         return {"keys": keys, "account": acct, "open": op, "routed": rows,
                 "note": "LIT first, one position at a time, max 2 trades a day (1 second-strategy trade)",
                 **({"account_b": ab} if ab else {})}
@@ -1651,7 +1663,9 @@ class LiveBot:
     def _second_route_tick(self, df5, df1, res, sym, now):
         """After LIT's routing: manage the open routed second-strategy position, then (flat account, LIT idle, right at a
         5m open) route a new second-strategy entry. Never raises; nothing happens while no strategy has "route" on and none
-        is open."""
+        is open. ATLAS + Zlarior on ONE account (engine/combo50k.py, ON or an ATLAS trade of it still open): _combo_tick."""
+        if self.combo is not None or self._combo_live():
+            return self._combo_tick(df5, df1, res, sym, now)
         try:
             cfg, keys = self._second_cfg()
         except Exception as e:
@@ -1812,7 +1826,7 @@ class LiveBot:
                 self.seen.add(("s_exit", k, int(et_)))
                 if self.cfg["adapter"] == "paper" or reason == "TIME" or getattr(self.adapter, "route_all_exits", False):
                     self._route({"sym": sym, "side": "exit", "qty": q, "reason": reason, "pnl": pnl, "entry_t": int(et_),
-                                 "exit_t": tr.get("exit_t"), "src": k, "strategy": pv.get("short")})
+                                 "exit_t": tr.get("exit_t"), "src": k, "strategy": pv.get("short"), **self._combo_tags(pv)})
                 self._open_routed, self._open_src = None, None
                 self._push_second_outcome(pv, reason, pnl, tr.get("exit_t"), q)
             else:
@@ -1854,7 +1868,7 @@ class LiveBot:
                   f"Second strategy {pv.get('short')} {_et(int(et_)):%H:%M} ET: {reason} - flatten {q} MNQ at market"
                   + (f" (~{px:,.2f})" if px is not None else ""))
         self._route({"sym": sym, "side": "exit", "qty": q, "reason": reason, "entry_t": int(et_), "exit_t": int(now), "pnl": pnl,
-                     "pnl_est": True, "src": pv.get("key"), "strategy": pv.get("short")})
+                     "pnl_est": True, "src": pv.get("key"), "strategy": pv.get("short"), **self._combo_tags(pv)})
         pv["flat"] = {"reason": reason, "t": int(now), "px": px}
         if self._open_routed is not None and int(self._open_routed) == int(et_):
             self._open_routed, self._open_src = None, None
@@ -1881,6 +1895,336 @@ class LiveBot:
             self._push_send(p)
         except Exception as e:
             self._log("warn", f"phone notification failed: {e.__class__.__name__}")
+
+    # ------------------------------------------------------------------ ATLAS + Zlarior on ONE account (engine/combo50k.py)
+    # OFF by default: self.combo is None and no combo trade is open = none of these run (today's bot, byte for byte).
+    def _combo_sync(self):
+        """The owner's switch (data/combo_50k.json) / the harness start cfg "combo_50k" -> self.combo. A change is picked
+        up only while no ATLAS combo trade is open on the account (that one is managed to its exit). Never raises."""
+        try:
+            from . import combo50k
+            spec = combo50k.build(self)
+        except Exception as e:
+            self._note_error(f"combo switch not read: {e.__class__.__name__}: {e}")
+            spec = None
+        why = (spec or {}).get("off_why")
+        on = spec if spec and spec.get("on") else None
+        if why and why != self._combo_why:
+            self._log("warn", f"ATLAS + Zlarior on one account: {why}")
+        self._combo_why = why
+        if (on is None) == (self.combo is None) and (on is None or on == self.combo):
+            return
+        if self._combo_live() and self.combo is not None:
+            return                                        # an ATLAS combo trade is open: the change waits until it is flat
+        self.combo = on
+        if on is not None:
+            self._log("system", f"ATLAS + Zlarior on ONE account ON ({on.get('src')}): ATLAS also trades {on.get('account') or 'this account'}, "
+                                f"one position at a time (conflict {on['conflict']}), ATLAS size x{on['factor']:g}")
+        else:
+            self._log("system", "ATLAS + Zlarior on ONE account OFF: Zlarior alone on this account again")
+
+    def _combo_live(self) -> bool:
+        return any(isinstance(p, dict) and p.get("combo") and not p.get("final") for p in self._second_prov.values())
+
+    @staticmethod
+    def _combo_tags(pv) -> dict:
+        """Ledger tags of an ATLAS combo row (engine/combo50k): {} for anything else (the old rows, byte for byte)."""
+        if not (isinstance(pv, dict) and pv.get("combo")):
+            return {}
+        from .combo50k import LABEL
+        return {"combo": "atlas50k", "who": LABEL}
+
+    def _combo_board(self, who, d, q, what, rr):
+        """The Board line of a trade on the combo's 50K (the real bot only; a harness never writes the repo's board)."""
+        if self.state_path != STATE_PATH or (rr or {}).get("ok") is False:
+            return
+        from . import combo50k
+        combo50k.board_note(who, "LONG" if d == 1 else "SHORT", q, what)
+
+    def _combo_lit_skip(self, ent, sym=None, now=None):
+        """Zlarior's entry while ATLAS (the combo) holds this 50K: why it is skipped, or None = route it (lit_priority, an
+        opposite entry under close_on_opposite: _second_preempt closes ATLAS at market first). Not a combo position: None.
+        With sym / now: ATLAS's trade is first brought up to this poll's bars (its exit bar may have just closed: the study
+        frees the account at ATLAS's exit, _combo_refresh), so a Zlarior entry right after ATLAS's exit is not lost."""
+        pv = self._second_prov.get(int(self._open_routed)) if self._open_routed is not None else None
+        if not (isinstance(pv, dict) and pv.get("combo")):
+            return None
+        if sym is not None and now is not None and self._combo_refresh(sym, now):
+            pv = self._second_prov.get(int(self._open_routed)) if self._open_routed is not None else None
+            if not (self._open_src and isinstance(pv, dict) and pv.get("combo")):
+                return None                               # ATLAS's trade is over on this poll's bars: the 50K is free
+        from .combo50k import LABEL
+        rule = (self.combo or {}).get("conflict") or "first_in"
+        side = "LONG" if int(pv.get("dir") or 1) == 1 else "SHORT"
+        held = f"{LABEL} holds a {side} {pv.get('short') or pv.get('key')} trade from {_et(int(self._open_routed)):%H:%M} ET"
+        if rule == "lit_priority":
+            return None
+        if rule == "close_on_opposite" and int(pv.get("dir") or 0) == -(1 if ent["dir"] == 1 else -1):
+            return None
+        return f"one position on the 50K: {held} (conflict rule {rule}: the first bot in keeps the account)"
+
+    def _combo_refresh(self, sym, now) -> bool:
+        """ATLAS's open combo trade managed on THIS poll's bars right now (the view + _second_manage, as _combo_tick does
+        after Zlarior's routing; the same view key, so it is not computed twice). True when it ran. Never raises."""
+        fr = getattr(self, "_combo_frames", None)
+        if not fr or fr[2] != int(now):
+            return False
+        try:
+            from . import second as _second
+            df5, df1 = fr[0], fr[1]
+            live_prov = [p.get("key") for p in self._second_prov.values() if isinstance(p, dict) and not p.get("final")]
+            if not live_prov:
+                return False
+            scfg = _second.load_cfg()
+            S = scfg.get("strategies") or {}
+            sub_v = {**scfg, "strategies": {k: {**S[k], "route": True} for k in dict.fromkeys(live_prov) if k in S}}
+            last5 = int(df5["time"].max())
+            vk = (last5, int(df1["time"].max()) if df1 is not None and len(df1) else 0, tuple(live_prov), "combo")
+            if vk != self._second_view_key or self._second_view is None:
+                self._second_view = _second.run(df5, one_min=df1, now=now, cfg=sub_v, lit=[])
+                self._second_view_key = vk
+            self._second_manage(self._second_view, sym, now, last5)
+            return True
+        except Exception as e:
+            self._note_error(f"combo refresh failed: {e.__class__.__name__}: {e}")
+            return False
+
+    def _combo_entries_today(self, day):
+        return [r for r in self.ledger if r.get("side") in ("buy", "sell") and r.get("combo") and r.get("entry_t")
+                and trading_day(int(r["entry_t"])) == day]
+
+    def _combo_block(self, d, tb, now):
+        """Why ATLAS's entry in direction d at the 5m open tb does not go to this 50K now (None = route): one position on the
+        account (a position, an entry going out, an order still working at the broker), the conflict rule, Zlarior armed the
+        other way (guard), ONE direction across every account, ATLAS's day count and stop line, feed / owner blocks."""
+        side = lambda x: "LONG" if x == 1 else "SHORT"
+        c = self.combo or {}
+        g = c.get("guards") or {}
+        st = self.state or {}
+        if self._open_routed is not None:
+            who = "ATLAS (its earlier trade)" if self._open_src else "Zlarior"
+            return f"one position on the 50K: {who} holds it (first in keeps the account)"
+        legs = [lg for lg in (getattr(self.adapter, "legs", None) or []) if isinstance(lg, dict)
+                and lg.get("status") in ("entry_sent", "pending", "cancel_pending", "protected", "unprotected")]
+        if legs:
+            return "one position on the 50K: an order of this account is still working at NinjaTrader"
+        if c.get("conflict") == "lit_priority":
+            why = self._lit_busy()
+            if why:
+                return f"Zlarior first (conflict rule lit_priority): {why}"
+        en = st.get("enter_now")
+        if en:
+            return f"one position on the 50K: Zlarior is entering {side(int(en.get('dir') or 1))}"
+        if g.get("atlas_lit_armed_block", True):
+            su = st.get("setups") or {}
+            opp = "short" if d == 1 else "long"
+            if su.get(opp):
+                return f"no hedging: Zlarior has a {side(-d)} setup armed" + (" (waiting for its 1m CISD)" if su[opp].get("tapped_t") else "")
+        h = self._combo_opposite(d)
+        if h:
+            return f"no hedging: {h}"
+        day = trading_day(tb)
+        mx = int(g.get("atlas_max_per_day", 2))
+        n = len(self._combo_entries_today(day))
+        if n >= mx:
+            return f"{n} ATLAS entries on the 50K today already (max {mx} a day)"
+        if self.health.get("entries_blocked"):
+            return "feed stale"
+        if self._no_entries_day is not None and self._no_entries_day == trading_day(now):
+            return "the owner flattened remotely today"
+        return None
+
+    def _combo_opposite(self, d):
+        """ONE direction across every MFFU account: who holds (or is still closing) the side opposite to d on ANOTHER account
+        (ATLAS's 25K = account B, the extra accounts, ATLAS on the Rapid EOD, the fleet's followers), else None. BLITZ (account
+        C) is closed first instead (LIT > ATLAS > BLITZ). An unreadable account fails closed."""
+        side = lambda x: "LONG" if x == 1 else "SHORT"
+        ab = self.acct_b
+        if ab is not None:
+            try:
+                if ab.open_t is not None and int((ab.prov.get(int(ab.open_t)) or {}).get("dir") or 0) == -d:
+                    return f"ATLAS's 25K (account B) holds a {side(-d)} position"
+                for _, pv in ab.closing_open():
+                    if int(pv.get("dir") or 0) == -d:
+                        return f"ATLAS's 25K (account B) is closing a {side(-d)} position (not confirmed yet)"
+            except Exception:
+                return "account B state unreadable (fails closed)"
+        if self.accts is not None:
+            try:
+                h = self.accts.opposite_open(d)
+                if h:
+                    return h
+            except Exception:
+                return "the extra accounts' state is unreadable (fails closed)"
+        ar = getattr(self, "acct_r", None)
+        if ar is not None and getattr(ar, "open_t", None) is not None:
+            try:
+                if int((ar.prov.get(int(ar.open_t)) or {}).get("dir") or 0) == -d:
+                    return f"ATLAS on the Rapid EOD holds a {side(-d)} position"
+            except Exception:
+                return "the Rapid EOD's state is unreadable (fails closed)"
+        fl = getattr(self, "fleet", None)
+        if fl is not None:
+            try:
+                h = fl.opposite_open(d)
+                if h:
+                    return h
+            except Exception:
+                return "fleet state unreadable (fails closed)"
+        return None
+
+    def _combo_qty(self, t, k, day):
+        """ATLAS's micros on the 50K from its ONE shared room (engine/combo50k.atlas_qty: account_b's builder50k sizing on
+        Zlarior's eval state, x atlas_size_factor, <= 40). Funded (lit_sizing mode funded): funded_qty on the funded state.
+        Returns (qty, reasons, room). Fails closed."""
+        from . import combo50k
+        lsz = getattr(self, "_lit_sizing", None) or {}
+        risk = abs(float(t["entry"]) - float(t["stop"]))
+        tgt = abs(float(t["target"]) - float(t["entry"]))
+        try:
+            if lsz.get("mode") == "funded":
+                from .multi_account import primary_state
+                st = primary_state(self, "funded")
+                stage = "funded"
+            else:
+                st = self.eval_state()
+                stage = "eval"
+            if st is not None:
+                st = {**st, "n_today": len(self._combo_entries_today(day))}
+            g = (self.combo or {}).get("guards") or {}
+            room = (st or {}).get("room")
+            line = float(g.get("atlas_min_room_funded", 100.0) if stage == "funded" else g.get("atlas_min_room", 200.0))
+            if room is not None and float(room) < line:
+                return 0, [f"room ${float(room):,.0f} under ATLAS's ${line:,.0f} {'funded' if stage == 'funded' else 'eval'} stop line"], room
+            r = combo50k.atlas_qty(self.combo, {"risk_pts": risk, "tgt_pts": tgt}, st, self.eval_start(), base=lsz or None,
+                                   stage=stage, key=k)
+            return int(r["qty"]), list(r.get("reasons") or []), room
+        except Exception as e:
+            self._note_error(f"combo ATLAS sizing failed: {e.__class__.__name__}: {e}")
+            return 0, [f"sizing failed ({e.__class__.__name__}): not traded"], None
+
+    def _combo_tick(self, df5, df1, res, sym, now):
+        """After Zlarior's routing: manage ATLAS's open combo trade on this 50K (fill check, breakeven move, cuts, 15:55,
+        model exit: _second_manage on the raw member view), then (combo on, at a 5m open) ATLAS's new entry. Never raises."""
+        try:
+            from . import combo50k
+            from . import second as _second
+            scfg = _second.load_cfg()
+            S = scfg.get("strategies") or {}
+            keys = [k for k in combo50k.MEMBERS if isinstance(S.get(k), dict) and S[k].get("on", True) and not S[k].get("cloud_only")] \
+                if self.combo is not None else []
+            self._second_routed = keys                     # guards: the account's day count knows ATLAS is routed here
+            live_prov = [p.get("key") for p in self._second_prov.values() if isinstance(p, dict) and not p.get("final")]
+            mk = list(dict.fromkeys(keys + [k for k in live_prov if k]))
+            sub = {**scfg, "strategies": {k: {**S[k], "route": True} for k in mk if k in S}}
+            last5 = int(df5["time"].max())
+            if live_prov:
+                vk = (last5, int(df1["time"].max()) if df1 is not None and len(df1) else 0, tuple(live_prov), "combo")
+                if vk != self._second_view_key or self._second_view is None:
+                    sub_v = {**sub, "strategies": {k: v for k, v in sub["strategies"].items() if k in live_prov}}
+                    self._second_view = _second.run(df5, one_min=df1, now=now, cfg=sub_v, lit=[])
+                    self._second_view_key = vk
+                self._second_manage(self._second_view, sym, now, last5)
+            if keys:
+                self._combo_entry(df5, df1, {**sub, "strategies": {k: sub["strategies"][k] for k in keys}}, keys, sym, now)
+        except Exception as e:
+            self._note_error(f"combo (ATLAS on the 50K) failed: {e.__class__.__name__}: {e}")
+        finally:
+            self._save_state()
+
+    def _combo_entry(self, df5, df1, sub, keys, sym, now):
+        from . import combo50k
+        from . import second as _second
+        tb = int(df5["time"].max()) + 300                 # the 5m bar opening now: ATLAS fills at its open
+        age = int(now) - tb
+        if age < 0 or age > combo50k.MAX_AGE_S:
+            return
+        if self.kill or ("c_probe", tb) in self.seen:
+            return
+        self.seen.add(("c_probe", tb))
+        px, est = self._second_mark(sym, now, bar_t=tb)
+        if px is None:
+            return
+        cols = ["time", "open", "high", "low", "close", "volume"]
+        bar = pd.DataFrame([{"time": tb, "open": px, "high": px, "low": px, "close": px, "volume": 1.0}])
+        df5x = pd.concat([df5[cols], bar], ignore_index=True)
+        df1x = df1
+        if df1 is not None and len(df1) and int(df1["time"].max()) < tb:
+            df1x = pd.concat([df1[cols], bar], ignore_index=True)
+        pr = _second.run(df5x, one_min=df1x, now=now, cfg=sub, lit=[])
+        for k in keys:
+            s = (pr.get("strategies") or {}).get(k) or {}
+            if s.get("error"):
+                self._snote(("cerr", k), "warn", f"{combo50k.LABEL}: {k}: {s['error']} (no entry from it this bar)")
+        day = trading_day(tb)
+        pick, why_s, sigs = combo50k.atlas_pick(pr, keys, tb, day)
+        if not sigs:
+            return
+        L = combo50k.LABEL
+        if pick is None:
+            k0, t0 = sigs[0]
+            nm0 = (sub["strategies"].get(k0) or {}).get("short") or k0
+            self._log("system", f"{L}: {nm0} {'LONG' if int(t0['dir']) == 1 else 'SHORT'} at the {_et(tb):%H:%M} ET open is not "
+                                f"ATLAS's trade: {why_s}")
+            return
+        k, t = pick
+        sc = sub["strategies"][k]
+        nm = sc.get("short") or k
+        d = 1 if int(t["dir"]) == 1 else -1
+        head = f"{L}: {nm} {'LONG' if d == 1 else 'SHORT'} at the {_et(tb):%H:%M} ET open"
+        why = self._combo_block(d, tb, now)
+        q, reasons, room = (0, [], None) if why else self._combo_qty(t, k, day)
+        if not why and q < 1:
+            why = "size 0 (" + "; ".join(reasons[-3:]) + ")"
+        ent = {"entry_t": tb, "dir": d, "entry": float(t["entry"]), "stop": float(t["stop"]), "target": float(t["target"]),
+               "qty": q, "src": k, "setup": f"{L} {nm}", "risk_pts": abs(float(t["entry"]) - float(t["stop"]))}
+        if not why:
+            gb = self._guard_entry(ent, q, sym, now)
+            if gb:
+                why = f"GUARD {gb}"
+        ac = getattr(self, "acct_c", None)
+        if not why and ac is not None:
+            # BLITZ (account C) holding the other side is closed at market first (LIT > ATLAS > BLITZ, as everywhere)
+            try:
+                if ac.yield_to(d, L, sym, now, px=ent["entry"], entry_t=tb) is False:
+                    why = "no hedging: BLITZ's (account C) opposite close is not confirmed yet"
+            except Exception as e:
+                if getattr(ac, "open_t", None) is not None:
+                    why = f"no hedging: account C check failed ({e.__class__.__name__}), fails closed"
+        if why:
+            self._log("risk", f"{head} NOT routed on the 50K: {why}")
+            return
+        self._open_routed, self._open_src, self._open_qty, self._open_adds = tb, k, q, []
+        stop_r, tgt_r = tick_px(ent["stop"], d), tick_px(ent["target"], d, target=True)
+        self._second_prov[tb] = {"key": k, "short": nm, "qty": q, "model_qty": int(t.get("qty") or 0), "dir": d, "est": est,
+                                 "entry": float(t["entry"]), "stop": stop_r, "target": tgt_r, "t": int(self.clock()),
+                                 "risk_pts": ent["risk_pts"], "day": day, "combo": True}
+        self.seen.add(("s_entry", k, tb))
+        self._log("system", f"{head}: ROUTED MARKET {q} MNQ ({int(self.clock()) - tb} s after the open), stop {stop_r:,.2f}, "
+                            f"target {tgt_r:,.2f}; size {'; '.join(reasons[-3:])}" + ("; priced from the last close" if est else ""))
+        rr = self._route({**self._entry_action(ent, q, sym), "src": k, "strategy": f"{nm} ({L})", "combo": "atlas50k", "who": L})
+        self._guard_routed(tb)
+        self._push_fill({**ent, "stop0": ent["stop"]}, q, sym, rr, strategy=nm, who=L)
+        self._combo_board(L, d, q, nm, rr)
+        su = (self.state or {}).get("setups") or {}
+        if su and (rr or {}).get("ok") is not False and (self.combo or {}).get("conflict") != "lit_priority":
+            # Zlarior's armed setups on this account do not go out while ATLAS holds it (they never rest at the broker:
+            # Zlarior enters at market on its 1m CISD close; _combo_lit_skip skips them)
+            self._log("risk", f"{L} filled first: Zlarior's armed {' / '.join(sorted(su))} setup(s) on this 50K are cancelled "
+                              f"while ATLAS holds it (conflict rule {(self.combo or {}).get('conflict')})")
+
+    def combo_info(self):
+        """Heartbeat / dashboards: the combo's state (None when off)."""
+        if self.combo is None and not self._combo_live():
+            return None
+        from .combo50k import LABEL
+        op = self._second_pos() if self._open_src else None
+        rows = [{k: r.get(k) for k in ("t", "side", "qty", "reason", "pnl", "entry_t", "src", "who")}
+                for r in self.ledger if r.get("who")][-8:]
+        c = self.combo or {}
+        return {"on": self.combo is not None, "label": LABEL, "account": c.get("account"), "conflict": c.get("conflict"),
+                "atlas_size_factor": c.get("factor"), "open": ({**op, "who": LABEL} if op else None), "routed": rows,
+                "note": "ATLAS + Zlarior on ONE 50K: one position at a time, one direction across every account"}
 
     def _brain_tick(self, res, P, now, keep):
         """The Bot Brain (engine/brain.py): what LIT is thinking at this poll, read from this poll's result. Read-only,
@@ -2699,6 +3043,11 @@ class LiveBot:
                 self._log("risk", f"Entry at {_et(ent['entry_t']):%H:%M} ET NOT routed: seen {now - int(ent['entry_t'])} s after its "
                                   f"1m fill bar opened (limit {float(self.cfg.get('lit_max_late_s', LIT_MAX_LATE_S)):.0f} s) - not chasing")
                 self._hedge_blocked(ent["entry_t"], now)
+            elif self._open_src and (cw := self._combo_lit_skip(ent, sym, now)):
+                # ATLAS + Zlarior on ONE account (engine/combo50k.py, OFF = never here): ATLAS holds this 50K and the conflict
+                # rule keeps it (first_in; close_on_opposite on the same side): Zlarior's entry is skipped, never a 2nd position
+                self._blocked_entries.add(ent["entry_t"])
+                self._log("risk", f"Entry at {_et(ent['entry_t']):%H:%M} ET NOT routed: {cw}")
             elif not (q :=self._equity_qty(ent["entry_t"], ent["qty"], ent)):
                 self._blocked_entries.add(ent["entry_t"])
             elif (gb := self._guard_entry(ent, q, sym, now)):
@@ -2725,9 +3074,16 @@ class LiveBot:
                     self._log("system", f"LIT 1m CISD closed at {_et(en['entry_t']):%H:%M} ET: MARKET entry sent at once "
                                         f"({int(self.clock()) - int(en['entry_t'])} s after the close; the backtest fills at this bar's open)"
                                         + ("; size from the CISD close, the feed did not show this bar's open yet" if en.get("est") else ""))
-                rr = self._route(self._entry_action(ent, q, sym))
-                self._guard_routed(ent["entry_t"])
-                self._push_fill(ent, q, sym, rr)
+                if self.combo is None:
+                    rr = self._route(self._entry_action(ent, q, sym))
+                    self._guard_routed(ent["entry_t"])
+                    self._push_fill(ent, q, sym, rr)
+                else:                         # the combo is on: every alert / board line says which bot traded the 50K
+                    from .combo50k import ZLABEL
+                    rr = self._route({**self._entry_action(ent, q, sym), "who": ZLABEL})
+                    self._guard_routed(ent["entry_t"])
+                    self._push_fill(ent, q, sym, rr, who=ZLABEL)
+                    self._combo_board(ZLABEL, d, q, "LIT", rr)
         if pos and self._open_routed == pos.get("entry_t") and getattr(self.adapter, "route_stop_moves", False):
             self._route_stop_move(pos, sym)
         if pos and self._open_routed == pos.get("entry_t") and (pos.get("add_now") or pos.get("adds")):
@@ -2970,9 +3326,10 @@ class LiveBot:
             self._log("warn", f"phone notification failed: {e.__class__.__name__}")
             return None
 
-    def _push_fill(self, pos, qty, sym, res, strategy=None):
+    def _push_fill(self, pos, qty, sym, res, strategy=None, who=None):
         """ENTRY notice for a routed entry (paper: the fill; NinjaTrader notifies its own real fill). strategy: a routed
-        second strategy's short name (body "Entered 4 MNQ (EMA)"); LIT's own entries have none."""
+        second strategy's short name (body "Entered 4 MNQ (EMA)"); LIT's own entries have none. who: the combo's bot label
+        (engine/combo50k.py, only while it is on): title "ATLAS on Zlarior 50K: LONG opened"."""
         try:
             from . import push
             res = res or {}
@@ -2987,6 +3344,10 @@ class LiveBot:
                                    **({"strategy": strategy} if strategy else {}))
             if strategy:
                 p["body"] = f"{p['body']} ({strategy})"
+            if who:
+                from .combo50k import entry_text
+                p["title"] = entry_text(who, "LONG" if pos.get("dir") == 1 else "SHORT")
+                p["who"] = who
             self._push_send(p)
         except Exception as e:
             self._log("warn", f"phone notification failed: {e.__class__.__name__}")

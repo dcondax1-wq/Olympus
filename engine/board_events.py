@@ -60,6 +60,7 @@ _S: dict = {"running": None}
 KINDS += ("risk_alert",)             # night-risk 2026-11-18: engine/circuit_breaker (live vs twin advice) + engine/msg_throttle (runaway orders)
 LOUD = LOUD | {"risk_alert"}
 KINDS += ("weekly_review",)          # tools/weekly_review.py: "Weekly review ready" (Friday ops task on the PC), once a week
+KINDS += ("combo_trade",)            # engine/combo50k.py (OFF by default): "ATLAS on Zlarior 50K: LONG opened" / "Zlarior on its 50K: ..."
 
 _CTRL = re.compile(r"[\x00-\x1f\x7f<>]")
 _LOCK_RX = re.compile(r"limit\s*0\b|max(imum)?\s+order\s+quantity|account\s+(is\s+)?(locked|disabled|halted)", re.I)

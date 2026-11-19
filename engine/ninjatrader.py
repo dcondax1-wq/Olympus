@@ -1124,6 +1124,16 @@ class NinjaTraderAdapter:
     def _push_fill(self, lg):
         """ENTRY: NinjaTrader reported the entry fill."""
         inst = lg["instrument"].split(" ")[0]
+        if lg.get("who"):                    # ATLAS + Zlarior on ONE account (engine/combo50k.py): say which bot traded the 50K
+            def mk(P):
+                from .combo50k import entry_text
+                p = P.entry_payload(self._push_account(), "LONG" if lg["dir"] == 1 else "SHORT", lg["filled"], lg["entry_t"],
+                                    src="pc", contract=inst, entry=lg["fill_px"], stop=lg.get("stop0") or lg["stop"],
+                                    target=lg["target"], who=lg["who"])
+                p["title"] = entry_text(lg["who"], "LONG" if lg["dir"] == 1 else "SHORT")
+                return p
+            self._push(mk)
+            return
         self._push(lambda P: P.entry_payload(self._push_account(), "LONG" if lg["dir"] == 1 else "SHORT", lg["filled"], lg["entry_t"],
                                              src="pc", contract=inst, entry=lg["fill_px"], stop=lg.get("stop0") or lg["stop"],
                                              target=lg["target"]))
@@ -1135,6 +1145,14 @@ class NinjaTraderAdapter:
         fill, ex = float(lg["fill_px"] or 0), float(x.get("avg") or 0)
         usd = (ex - fill) * lg["dir"] * int(x.get("filled") or lg["bracket_qty"] or 0) * pv
         reason = "TARGET" if name == "TARGET" else ("BE" if abs(ex - fill) <= 1.0 else "STOP")
+        if lg.get("who"):                    # the combo (engine/combo50k.py): "ATLAS on Zlarior 50K: LONG closed"
+            def mk(P):
+                p = P.outcome_payload(self._push_account(), "LONG" if lg["dir"] == 1 else "SHORT", reason, usd,
+                                      lg["entry_t"], int(self.clock()), src="pc", exit_px=ex, qty=x.get("filled"), who=lg["who"])
+                p["title"] = f"{lg['who']}: {'LONG' if lg['dir'] == 1 else 'SHORT'} closed"
+                return p
+            self._push(mk)
+            return
         self._push(lambda P: P.outcome_payload(self._push_account(), "LONG" if lg["dir"] == 1 else "SHORT", reason, usd,
                                                lg["entry_t"], int(self.clock()), src="pc", exit_px=ex, qty=x.get("filled")))
 
@@ -1593,7 +1611,8 @@ class NinjaTraderAdapter:
             legs.append({"instrument": inst, "qty": qty, "side": side, "dir": d, "entry_t": ts, "stop": stop, "target": target,
                          "entry_id": base + "E", "stop_id": base + "S", "target_id": base + "T", "oco": base + "O",
                          "status": "entry_sent", "filled": 0, "fill_px": None, "fill_mtime": None, "bracket_qty": 0, "stop0": stop,
-                         "sent_at": self.clock(), "ref": float(ref) if ref else None})
+                         "sent_at": self.clock(), "ref": float(ref) if ref else None,
+                         **({"who": str(action["who"])[:40]} if action.get("who") else {})})   # engine/combo50k: which bot (only while on)
         # S1 2026-11-15, write-ahead: the legs are saved BEFORE the entry file goes out, so a crash between the order file
         # and the state save restores an "entry_sent" leg (the next tick finds its fill and places the stop / target)
         # instead of a position no bracket of the bot explains

@@ -11,6 +11,7 @@ data/lite.json
 data/start_bot.json
 data/live_state.json
 data/guards_state.json
+data/combo_50k.json
 data/ninjatrader_state.json
 data/ninjatrader_reset_ok.json
 data/ninjatrader_state*.json.corrupt-*

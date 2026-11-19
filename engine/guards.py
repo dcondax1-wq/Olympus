@@ -93,6 +93,13 @@ def config(bot) -> dict:
         # them a second strategy, LIT's own count stays at its max_per_day (dup_problem)
         out["max_per_day"] = max(2, int(out.get("max_per_day") or 1))
         out["second_on"] = True
+    cb = getattr(bot, "combo", None)
+    if cb:
+        # ATLAS + Zlarior on ONE account (engine/combo50k.py, OFF by default): ATLAS's own max (2) on the 50K next to LIT's own
+        n = int((cb.get("guards") or {}).get("atlas_max_per_day", 2))
+        out["max_per_day"] = max(int(_lit_params(bot).get("max_per_day") or 1) + n, int(out.get("max_per_day") or 1))
+        out["second_on"] = True
+        out["second_max"] = n
     return out
 
 
@@ -355,7 +362,10 @@ def dup_problem(bot, entry_t: int, c, s: dict, src=None) -> str | None:
                 and trading_day(r["entry_t"]) == trading_day(entry_t) and int(r["entry_t"]) not in void]
         if src:
             ns = len({int(r["entry_t"]) for r in rows if r.get("src")})
-            if ns >= 1:
+            if c.get("second_max") is not None:            # the combo (engine/combo50k.py): ATLAS's own max on the 50K
+                if ns >= int(c["second_max"]):
+                    return f"{ns} ATLAS entr{'y' if ns == 1 else 'ies'} already routed today on the 50K (ATLAS max {int(c['second_max'])} a day)"
+            elif ns >= 1:
                 return f"{ns} second-strategy entry already routed today (max 1 a day: the other slot is LIT's)"
         else:
             nl = len({int(r["entry_t"]) for r in rows if not r.get("src")})
