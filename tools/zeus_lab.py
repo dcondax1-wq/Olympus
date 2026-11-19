@@ -11,6 +11,12 @@ Built on what exists (nothing re-implemented):
              before it is judged, + "rejected_forever" (the CLAUDE_REFERENCE "Tested and rejected" list + the learn loop's
              first 8: NEVER run again; a "blocks" entry stops any experiment on that bot + feature, cross ones too).
   members    kind atlas_member = a NEW ATLAS member (tools/atlas_plus.py, its stored verdict; "cells" = versions searched).
+  anatomy    kind anatomy = a rule from the win / loss anatomy (tools/win_loss_anatomy.py: a size x m or a skip on an entry
+             fact the trade-intel table does not hold, e.g. the daily x 1h trend pullback or the careful-human checklist), run
+             by that tool's lab_run on the same real backtests and judges (Zlarior or ATLAS).
+  funded     kind atlas_funded = a protective rule family on ATLAS's FUNDED 25K (tools/atlas_health.py, its stored verdict:
+             member pause / edge-light size / day loss cap / smaller risk in a hole / skips; the family's Jan-Jun pick, the
+             funded gate incl. the live stuck stop, and it must act in Jul-Oct; "cells" = versions scored).
   grade      kind setup_grade = the human setup grade A / B / C for Zlarior or ATLAS (tools/setup_grade.py, its stored
              verdict research/lab/setup_grade.json; "variant" = which grade + use, "cells" = every variant it tried).
   re-test    the REAL backtests through engine/learn_loop's runners: LIT = tools/lit_edge.evaluate (run lit_live re-walked:
@@ -67,9 +73,10 @@ REF_DOC = os.path.join(ROOT, "docs", "TESTED_AND_REJECTED.md")   # moved out of 
 EDGE = os.path.join(ROOT, "research", "lab", "edge_health.json")
 ZEUS_QUEUE = os.path.join(ROOT, "research", "zeus_queue.jsonl")         # night-learn's daily review proposals (tools/data_pull.py)
 VERSION = 1
-RUNNABLE = ("lit_tilt", "atlas_tilt", "lit_x", "atlas_member", "lit_idea", "setup_grade")
+RUNNABLE = ("lit_tilt", "atlas_tilt", "lit_x", "atlas_member", "lit_idea", "atlas_funded", "anatomy", "setup_grade")
+FUNDED_FAMILIES = ("M", "L", "D", "S", "K")   # tools/atlas_health.FAMILY
 GRADE_VARIANTS = ("h1:skipC", "h1:size", "all7:skipC", "all7:size")          # tools/setup_grade.py
-CELL_KINDS = ("atlas_member", "setup_grade")                                  # kinds that count every version they searched
+CELL_KINDS = ("atlas_member", "atlas_funded", "setup_grade")                  # kinds that count every version they searched
 KINDS = RUNNABLE + ("parked",)
 BOTS = ("lit", "atlas", "kalshi")
 LIT_X_KEYS = ("tgt", "be", "tc", "speed", "slow", "late")
@@ -159,8 +166,13 @@ def load_registry(path: str = REGISTRY) -> tuple:
             er += LI.idea_errors(e.get("idea"))
             if e.get("bot") != "lit":
                 er.append("lit_idea is for bot lit")
+        if e.get("kind") == "anatomy":
+            from tools import win_loss_anatomy as WA
+            er += WA.rule_errors(e)
         if e.get("kind") == "atlas_member" and (e.get("bot") != "atlas" or not e.get("family")):
             er.append("atlas_member is for bot atlas and needs family (tools/atlas_plus.py)")
+        if e.get("kind") == "atlas_funded" and (e.get("bot") != "atlas" or e.get("family") not in FUNDED_FAMILIES):
+            er.append(f"atlas_funded is for bot atlas and needs family in {FUNDED_FAMILIES} (tools/atlas_health.py)")
         if e.get("kind") == "setup_grade" and (e.get("bot") not in ("lit", "atlas") or e.get("variant") not in GRADE_VARIANTS):
             er.append(f"setup_grade is for bot lit or atlas and needs variant in {GRADE_VARIANTS} (tools/setup_grade.py)")
         if e.get("kind") == "parked" and not e.get("parked_why"):
@@ -268,7 +280,7 @@ def cross_experiments(exps: list, forever: list) -> list:
 
 def cells(exps: list, queue_n: int = 0) -> int:
     """Cells ever judged in this search: every runnable Lab experiment (cross ones too) + the learn queue. An atlas_member
-    family counts every version its tool searched ("cells")."""
+    or atlas_funded family or setup_grade entry counts every version its tool searched ("cells")."""
     return sum(int(e.get("cells") or 1) if e.get("kind") in CELL_KINDS else 1 for e in exps if e.get("kind") in RUNNABLE) + int(queue_n)
 
 
@@ -336,7 +348,8 @@ def run_lit(e: dict, C, rules: dict) -> dict:
     elif e["kind"] == "lit_idea":                                               # tools/lit_lab_ideas (exit / size ideas)
         from tools import lit_lab_ideas as LI
         rule = None
-        o, U, L = E.evaluate(U=LI.units(e["idea"]))
+        with LI.eval_hook(e["idea"]):                                           # eval ideas: the eval path's sizing
+            o, U, L = E.evaluate(U=LI.units(e["idea"]))
         hits = LI.hits(e["idea"], U, U0)
     else:
         rule = None
@@ -408,6 +421,12 @@ def run_member(e: dict, C, rules: dict) -> dict:
     return AP.lab_result(e)
 
 
+def run_funded(e: dict, C, rules: dict) -> dict:
+    """atlas_funded: a protective rule family on ATLAS's funded 25K (tools/atlas_health.py: the funded Monte Carlo with the
+    live stuck stop, from a fresh start and from today's balance, real day order, fixed-$250 view, random-timing control).
+    Reads that tool's stored verdict (research/second/atlas_health.json; rerun the tool for new bars)."""
+    from tools import atlas_health as AH
+    return AH.lab_result(e)
 def run_grade(e: dict, C, rules: dict) -> dict:
     """setup_grade: the human setup grade (tools/setup_grade.py: 7 checks a calm trader asks, A / B / C by the warnings
     count, skip C or size A / B / C; LIT size + eval path + 2021-25, ATLAS eval + funded 25K, random-grade luck test).
@@ -417,8 +436,13 @@ def run_grade(e: dict, C, rules: dict) -> dict:
 
 
 def run_one(e: dict, C, rules: dict) -> dict:
+    if e["kind"] == "anatomy":                                                 # tools/win_loss_anatomy.py (2026-11-18)
+        from tools import win_loss_anatomy as WA
+        return WA.lab_run(e, C, rules)
     if e["kind"] == "atlas_member":
         return run_member(e, C, rules)
+    if e["kind"] == "atlas_funded":
+        return run_funded(e, C, rules)
     if e["kind"] == "setup_grade":
         return run_grade(e, C, rules)
     return run_atlas(e, C, rules) if e["kind"] == "atlas_tilt" else run_lit(e, C, rules)

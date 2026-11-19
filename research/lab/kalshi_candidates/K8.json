@@ -1,0 +1,63 @@
+{
+ "strategy": "K8 metals time-of-day (the friend's 'printer' legs, flat size): buy the side the clock favours in Kalshi's 15-minute gold/silver up/down markets, 20 seconds after the window opens",
+ "status": "PAPER ONLY. Never armed. Kalshi is paused for real money; only the owner can ever place real orders.",
+ "date": "2026-11-19",
+ "source": "research/writeups/kalshi-metals-2026-11-19.md, research/kalshi_edge_K8/study.py -> results.json",
+ "series": [
+  "KXGOLD15M",
+  "KXSILVER15M"
+ ],
+ "rule": {
+  "plain": "Every US weekday, one taker order per leg, flat $10 each, never more than one order per market, no averaging, no exits (hold to the settle 15 minutes later).",
+  "legs": [
+   "05:30 DOWN gold: the 05:15-05:30 ET market; at 05:15:20 ET buy NO (= 'down') at the ask",
+   "05:30 DOWN silver: the 05:15-05:30 ET market; at 05:15:20 ET buy NO at the ask",
+   "17:00 UP gold: the 16:45-17:00 ET market; at 16:45:20 ET buy YES (= 'up') at the ask",
+   "17:00 UP silver: the 16:45-17:00 ET market; at 16:45:20 ET buy YES at the ask",
+   "16:15 DOWN silver: the 16:00-16:15 ET market; at 16:00:20 ET buy NO at the ask",
+   "16:15 DOWN gold: the 16:00-16:15 ET market; at 16:00:20 ET buy NO at the ask"
+  ],
+  "entry_time": "20 seconds after the 15-minute window opens (ET, NTP-synced clock); if no fill by 40 s, skip",
+  "price_limit": "tested as: take the ask 15-30 s after the open, whatever it is (no cap); in paper, send a limit at that ask and skip if not filled by 40 s",
+  "size": "$10 per leg (whole contracts = floor(10 / price)); no compounding",
+  "fee": "Kalshi taker fee 0.07 x C x p x (1-p), rounded up to the cent per order",
+  "days": "US weekdays only; Kalshi lists these markets Monday-Friday"
+ },
+ "held_out": {
+  "period": "2026-10-01 .. 2026-11-18 (rules and legs fixed on 2026-08-03 .. 09-30)",
+  "trades": 210,
+  "win_rate": 0.681,
+  "net_per_dollar": 0.2953,
+  "net_per_dollar_95pct_range": [
+   0.109,
+   0.45
+  ],
+  "net_per_dollar_if_2c_worse_fills": 0.2455,
+  "worst_streak": 8,
+  "max_drawdown_usd_at_15": -122.74,
+  "trades_per_month": 130.5,
+  "usd_per_month_at_15": 587.16,
+  "usd_per_month_at_10": 387.09,
+  "usd_per_month_at_20": 784.25
+ },
+ "train": {
+  "trades": 255,
+  "win_rate": 0.718,
+  "net_per_dollar": 0.3319
+ },
+ "needs": [
+  "Kalshi PUBLIC market data on the PC: the market ticker of each window (e.g. KXGOLD15M-26NOV190530-30) and its order book / best ask at 20 s after the open (REST GET /markets/{ticker} or the public websocket)",
+  "an NTP-synced clock on the PC (the order must go out 15-30 s after 05:15:00, 16:45:00, 16:00:00 ET)",
+  "for real money only (owner's decision, never Claude): the owner's own Kalshi API key on the PC",
+  "nothing else is required for the clock legs; optional logging: NinjaTrader 1-minute bars of COMEX gold (GC front month) and silver (SI front month) 04:45-05:45 and 16:15-17:15 ET, to watch whether the drift is still there"
+ ],
+ "unproven": [
+  "the windows come from the friend's own posts; he probably found them in these same months, so the clean test is forward paper trading from 2026-11-19 (kill rule: stop if the first 60 paper bets win under 55%)",
+  "why it happens is not proven: we cannot read Pyth's tick history (it now needs an API key); 05:30 follows the London clock (gold auction at 10:30 London), 16:00 / 17:00 are CME session times",
+  "Kalshi already removed the metals windows inside the CME break on 2026-10-01; it or Pyth can change the market list or the index any day and the edge would vanish at once",
+  "the friend's bot and copycats buy the same seconds: if market makers start pricing the clock, entry prices rise from ~0.52 toward the win rate (~0.70) and the edge is gone; watch the paid price",
+  "losing streaks: test worst streak 8 bets; gold and silver usually lose on the same day",
+  "the newest days were the worst: 11/16 evening + all 6 legs on 11/17 lost (8 in a row, -$92 that day at $15); one bad day cannot tell bad luck from the start of the end, which is why paper comes first",
+  "the 16:15 legs cost more in November (0.59) and lost money that month: drop them first if paper disappoints"
+ ]
+}

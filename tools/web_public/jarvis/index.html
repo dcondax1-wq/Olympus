@@ -116,7 +116,7 @@ window.addEventListener('error', function (e) {
 <script src="../olympus/quiet-net.js?v=q6a" data-fresh="raw:kalshi-feed,api:kalshi-feed,site:kalshi.json" async></script>
 <!-- the PC feed (night A sync): the bots' numbers straight from the PC (ntfy, tools/pc_report.py), the same feed the Gate, the hubs and Zenith use;
      data.js lays it over live.json when it is newer. Async: never waited on by the start (a slow network must not hold Jarvis); the next refresh uses it. -->
-<script src="../pc_feed.js?v=n2" id="pcFeedJs" async></script>
+<script src="../pc_feed.js?v=n3" id="pcFeedJs" async></script>
 <script src="../olympus/themes.js?v=o6" id="olyThemesJs" async></script>
 <script src="../olympus/sfx.js?v=s4" id="olySfxJs" async></script>
 <style>.booted #bootfx{display:none}
@@ -1944,7 +1944,13 @@ function renderHead() {
   $('#hello').textContent = D.greeting();
   $('#when').textContent = D.whenLine();
   const k = D.kalshiView(), st = D.kalshiState(), kp = $('#kpct'), ku = $('#kusd');
-  if (!k) {
+  // no kalshi.json (real money paused): the PC's PAPER tests (K1 rules + rewards, its status post) with their age, never "not connected"
+  const kpp = !k && D.kalshiPaperView ? D.kalshiPaperView() : null;
+  if (kpp) {
+    kp.className = 'nc'; kp.textContent = 'PAUSED';
+    ku.className = 'm'; ku.textContent = `paper ${kpp.net != null ? D.usd2(kpp.net, true) : '—'}${kpp.t ? ' · ' + D.ago(kpp.t) : ''}`;
+    ku.title = `Real money paused. Paper tests on your PC: ${kpp.k1 ? `K1 ${D.usd2(kpp.k1.net, true)} (${kpp.k1.sig} signals)` : 'K1 not running'}${kpp.rewards ? `, rewards ${D.usd2(kpp.rewards.net, true)}` : ''}`;
+  } else if (!k) {
     kp.className = 'nc'; kp.textContent = st === 'error' ? 'NO SIGNAL' : st === 'waiting' ? 'OFFLINE' : 'LINKING…';
     ku.className = ''; ku.textContent = st === 'waiting' ? 'not connected yet' : st === 'error' ? 'feed unreachable' : ' ';
   } else {
@@ -1957,12 +1963,15 @@ function renderHead() {
   const v = D.liveView(), np = $('#npnl'), ns = $('#nsub');
   if (!v) { np.className = 'nc'; np.textContent = D.liveError() ? 'NO SIGNAL' : 'LINKING…'; ns.textContent = ' '; }
   else {
-    const accts = [v.lit, v.atlas, v.blitz].filter((x) => x && x.room != null && Number.isFinite(+x.today_pnl));
+    // every real account (night-feedsA): the bot cards + the PC's other accounts (Zlarior 25K #2), the same set as the ZEUS card
+    const accts = [v.lit, v.atlas, v.blitz, ...(Array.isArray(v.extra) ? v.extra : [])].filter((x) => x && x.room != null && Number.isFinite(+x.today_pnl));
     const sum = accts.reduce((s, x) => s + +x.today_pnl, 0);
     np.className = 'm' + (sum > 0 ? ' up' : sum < 0 ? ' dn' : '');
     np.textContent = accts.length ? D.usd(sum, true) : '—';
     const vd = v.verdict || {};
-    ns.textContent = `${accts.length} ${accts.length === 1 ? 'account' : 'accounts'} · ${String(vd.code || vd.label || 'status ?').split(':')[0].toLowerCase()}`;
+    // the verdict in a word or two: a short label ("FEED STALE", "PC SILENT") says more than its code ("FEED"); a long one gives its code ("TRADING")
+    const vl = String(vd.label || '').split(':')[0], vw = vl && vl.length <= 12 ? vl : String(vd.code || vl || 'status ?').split(':')[0];
+    ns.textContent = `${accts.length} ${accts.length === 1 ? 'account' : 'accounts'} · ${vw.toLowerCase()}`;
   }
   const lv = levels();
   $('#dot').className = 'sdot' + (lv.zenith === 'bad' ? ' bad' : lv.zenith === 'warn' ? ' warn' : !navigator.onLine ? ' off' : '');
@@ -1980,11 +1989,13 @@ function zenithCard() {
     if (!x) return '';
     const set = x.room != null;
     const rf = Number.isFinite(+x.room_frac) ? +x.room_frac : null;
-    return `<div class="acct"><i>${esc(label)} · ${esc(x.plan || '')}${x.badge ? ' · ' + esc(x.badge) : ''}</i>${set ? `<div class="kv"><div><span>Today</span><strong class="m ${sgn(+x.today_pnl)}">${D.usd(x.today_pnl, true)}</strong></div><div><span>Drawdown left</span><strong class="m">${D.usd(x.room)}</strong>${Number.isFinite(+x.mll) && x.mll != null ? `<em>of ${D.usd(x.mll)}</em>` : ''}</div><div><span>To target</span><strong class="m">${D.usd(x.to_target)}</strong></div></div>${rf != null ? segBar(rf, rf < .25 ? 'bad' : rf < .5 ? 'warn' : 'ok') : ''}` : `<p class="muted">${esc(x.off ? 'Account C off · paper only until its own 25K' : x.status || 'not set up')}</p>`}</div>`;
+    // a funded account has no target to pass (its payout line is on the ZEUS card): never a "to target" number there
+    const funded = String(x.status || x.stage || '').toLowerCase() === 'funded' || /funded/i.test(String(x.plan || ''));
+    return `<div class="acct"><i>${esc(label)} · ${esc(x.plan || '')}${x.badge ? ' · ' + esc(x.badge) : ''}</i>${set ? `<div class="kv"><div><span>Today</span><strong class="m ${sgn(+x.today_pnl)}">${D.usd(x.today_pnl, true)}</strong></div><div><span>Drawdown left</span><strong class="m">${D.usd(x.room)}</strong>${Number.isFinite(+x.mll) && x.mll != null ? `<em>of ${D.usd(x.mll)}</em>` : ''}</div><div><span>${funded ? 'Stage' : 'To target'}</span><strong class="m">${funded ? 'Funded' : D.usd(x.to_target)}</strong></div></div>${rf != null ? segBar(rf, rf < .25 ? 'bad' : rf < .5 ? 'warn' : 'ok') : ''}` : `<p class="muted">${esc(x.off ? 'Account C off · paper only until its own 25K' : x.status || 'not set up')}</p>`}</div>`;
   };
   const line = (v.lines || []).find((x) => x.level === 'bad' || x.level === 'warn');
   return `<button class="panel card" type="button" data-app="zenith">${head(lvl)}<span class="pill ${lvl}">${esc(vd.label || 'Bot status')}${v.t ? ' · ' + esc(D.ago(v.t)) : ''}${v.cached ? ' · saved' : ''}</span>`
-    + `${line ? `<p class="pline ${line.level === 'bad' ? 'bad' : 'warn'}">${esc(line.text)}</p>` : ''}${acct(v.lit, 'Zlarior')}${acct(v.atlas, 'ATLAS')}${acct(v.blitz, 'BLITZ')}</button>`;
+    + `${line ? `<p class="pline ${line.level === 'bad' ? 'bad' : 'warn'}">${esc(line.text)}</p>` : ''}${acct(v.lit, 'Zlarior')}${acct(v.atlas, 'ATLAS')}${acct(v.blitz, 'BLITZ')}${(Array.isArray(v.extra) ? v.extra : []).map((x) => acct(x, x.name)).join('')}</button>`;
 }
 function plannerCard() {
   const p = D.plannerDay();
@@ -2149,7 +2160,7 @@ function renderSysbar(S) {
   $('#sysbar').className = 'sysbar ' + (S.level || '');
   $('#syst').textContent = S.short || S.todo || (S.level === 'ok' ? 'Nothing needs you' : 'Every system at a glance');
   $('#sysbar').setAttribute('aria-label', `System: ${S.verdict}${S.todo ? '. ' + S.todo : ''}. Open the System panel`);
-  $('#sysdots').innerHTML = S.rows.map((r) => `<i class="${esc(r.level || 'off')}" title="${esc(r.name)}">${esc(SYS_SHORT[r.id] || r.name.charAt(0))}</i>`).join('');
+  $('#sysdots').innerHTML = S.rows.map((r) => `<i class="${esc(r.level || 'off')}" title="${esc(r.name)}">${esc(SYS_SHORT[r.id] || r.abbr || r.name.charAt(0))}</i>`).join('');
 }
 function systemPanel(S) {
   const row = (r) => `<button class="srow ${esc(r.level || 'off')}" type="button" data-app="${esc(r.app)}" data-sys-row="${esc(r.id)}">`
@@ -2327,6 +2338,8 @@ function fallbackBrain({ getFacts }) {
     }
     if (/\bkalshi\b/.test(q)) {
       const k = F.kalshi;
+      const kpp = !k && D.kalshiPaperView ? D.kalshiPaperView() : null;
+      if (kpp) return { text: `Kalshi: real money paused. Paper tests on your PC: ${kpp.k1 ? `K1 rules ${D.usd2(kpp.k1.net, true)} (${kpp.k1.sig} signals)` : 'K1 not running yet'}${kpp.rewards ? `, rewards ${D.usd2(kpp.rewards.net, true)} net` : ''}${kpp.t ? ' (' + D.ago(kpp.t) + ')' : ''}. Nothing is placed.` };
       if (!k) return { text: F.kalshiState === 'error' ? 'I cannot reach the Kalshi feed right now. Try again in a minute.' : 'Kalshi is not connected yet: the Kalshi bot runs on its own server and connects from its own chat. Open the Kalshi page for the one step.' };
       const pos = Array.isArray(k.positions) ? k.positions : [];
       const lines = [`Kalshi${k.mode ? ' (' + String(k.mode).toUpperCase() + ')' : ''}: ${D.kalshiRun(k)[1].toLowerCase()}, balance ${usd2(k.balance)}, today ${usd2(k.today_pnl, true)}${k.week_pnl != null ? `, this week ${usd2(k.week_pnl, true)}` : ''}, ${pos.length} open ${pos.length === 1 ? 'position' : 'positions'}${k.t ? ' (' + ago(k.t) + ')' : ''}.`];
@@ -3462,7 +3475,7 @@ function showToday() {
 // A pulse leaves the core when fresh numbers arrive.
 function renderSats() {
   const rows = sysOf().rows || [], n = rows.length || 1;
-  $('#sats').innerHTML = rows.map((r, i) => `<button type="button" tabindex="-1" class="sat ${esc(r.level || 'off')}" style="--a:${(360 * i / n - 90).toFixed(1)}deg" data-sat="${esc(r.id)}" title="${esc(r.name)}"><i>${esc(SYS_SHORT[r.id] || String(r.name || '?').charAt(0))}</i></button>`).join('');
+  $('#sats').innerHTML = rows.map((r, i) => `<button type="button" tabindex="-1" class="sat ${esc(r.level || 'off')}" style="--a:${(360 * i / n - 90).toFixed(1)}deg" data-sat="${esc(r.id)}" title="${esc(r.name)}"><i>${esc(SYS_SHORT[r.id] || r.abbr || String(r.name || '?').charAt(0))}</i></button>`).join('');
 }
 $('#sats').addEventListener('click', (e) => { const b = e.target.closest('[data-sat]'); if (!b) return; e.stopPropagation(); showSystem(); });
 function corePulse() {
@@ -3612,10 +3625,10 @@ if ('serviceWorker' in navigator) {
 <script type="module" src="./backdrop.js?v=b4"></script>
 <script type="module" src="./portal.js?v=p2"></script>
 <script src="./welcome.js?v=w1" defer></script>
-<script type="module" src="./transitions.js?v=t5"></script>
-<script type="module" src="./briefing.js?v=r2"></script>
-<script src="../olympus/zeus_core.js?v=1" defer></script>
+<script type="module" src="./transitions.js?v=t6"></script>
+<script type="module" src="./briefing.js?v=r3"></script>
+<script src="../olympus/zeus_core.js?v=2" defer></script>
 <script type="module" src="./home-cards.js?v=hc3"></script>
-<script type="module" src="./copilot-card.js?v=cp2"></script>
+<script type="module" src="./copilot-card.js?v=cp3"></script>
 </body>
 </html>

@@ -1,4 +1,34 @@
 ## Tested and rejected (don't redo without a new idea)
+- **Win / loss anatomy rules (2026-11-18, `win-loss-anatomy-2026-11-18.md`):** `tools/win_loss_anatomy.py`, ZEUS Lab kind
+  `anatomy` + one atlas_tilt. 4 pre-declared single versions from the strongest findings of the per-trade anatomy, on the real
+  backtests (costs in): Zlarior x1.25 on a pullback in the daily trend (prior close vs its 20-day SMA with the trade, 1h EMA 20/50 against;
+  15 + 6 trades) Jan-Jun +$349 / Jul-Oct -$6 a month at the LIT size (the Jul-Oct winners were 2-3 micro trades x1.25 cannot
+  change), eval +$163 / +$130, flip p 0.08 / 1.0; Zlarior skip the careful-human checklist (against the daily AND 1h trend / the
+  day already moved 1 daily ATR / big US release within 30 min / prior-day high-low under 1R ahead) -$412 / -$1,514 a month,
+  1.8 / 1.5 trades a week, 2-week pass 44.5 -> 37.0 / 39.1 -> 24.6 (2021-25 +$90); ATLAS x1.25 in the 03:00 ET hour (25K path)
+  +$125 / +$34 a month but 2025 money after fees -$494, Jul-Oct p 0.075 (nearest miss, re-tested nightly); ATLAS checklist skip
+  -$1,811 / -$484 a month, 2-week pass 61.3 -> 39.5 / 43.5 -> 30.4 (2021-24 PF 0.96 -> 1.22: care pays only in bad years). 0 pass.
+  Diagnosis: losers mostly never worked (Zlarior 62%, ATLAS 58%, BLITZ 72% of 2026's lost $), a 50% wider stop wins 0-9% of
+  Zlarior / ATLAS stop-outs, entry-fact buckets consistent in all 3 periods = chance (18 of 86 vs 15.4 shuffled; ATLAS 12 / 90 vs
+  15.7; BLITZ 7 / 66 vs 14.2).
+- **Zlarior's two live evals together (2026-11-18b, `lit-ideas-2026-11-18b.md`, `tools/money/lit_two_evals.py`, Lab
+  `lit_eval_zombie` / `lit_two_eval_stagger`):** the 50K hole + the 25K #2 on ONE Monte Carlo (same paths, live sizing).
+  ATLAS's zombie-eval rule on Zlarior (1-micro last bullet at 80% of the room + give up under $200): pair +$57 / +$51 a
+  month only by killing evals (2-week fails 50K 4.9 -> 10.4 / 3.1 -> 6.9%, 25K 0 -> 8.1 / 0 -> 8.3%, both dead in 20
+  sessions 0.4 -> 16.3%); stagger (alternate full / half size per signal): -$80 / -$49 a month, 25K 2-week pass 48 -> 31%.
+  Today both evals die together 0.3-0.4% within 20 sessions: the joint risk is waiting, not failing. Rejected.
+- **ATLAS funded 25K protective rules (2026-11-18, `atlas-health-2026-11-18.md`, `tools/atlas_health.py`,
+  `research/second/atlas_health.json`, Lab kind `atlas_funded`):** 17 pre-declared + 5 post-hoc on the funded 25K Monte
+  Carlo WITH the live $100 stuck stop (600 paths, fresh start + today's -$113, real day order, fixed $250, random-timing
+  controls): member pause on its own last 10 / 20 trades (PF < 1 -> paper / x0.5), size by the edge light (AMBER / RED x0.75
+  / x0.5 / paper, last-40 R-PF < 1.5 x0.5), day caps (stop after a loss, $275, $367, a third of the room), 30-40% of the room
+  in a hole or always, skip the day after a losing day. 0 pass: caps / skips / light sizes cost $18-191 a month in Jul-Oct
+  or slow the first payout; the member pause never acts in Jul-Oct (Jan-Jun +$9, 2021-25 stranded 94.5 -> 90.5%, random
+  halving 93%); 40% of the room halves 2026 stranding (8.5 / 9.2 -> 5.8 / 4.5%) at the same $ but first payout 18 / 25 -> 20
+  / 31 sessions. VIX < 15 skip re-measured: still post-hoc + a $ knife edge (Jul-Oct $543 / $581 / $490 / $330 at 14.5 / 15
+  / 15.5 / 16). Found: at 60% of the room the stuck stop strands ~9% (2026-like) / ~95% (2021-25-like) funded 25Ks in 6
+  months; older funded tools showed 0% lost. The AMBER light = a calm-market dip (VIX < 18 every session Aug 24 - Oct 16,
+  still +8.0R at a fixed size). Nothing changed.
 - **ZEUS Lab LIT ideas (2026-11-18, `zeus-lab-lit-ideas-2026-11-18.md`, `tools/lit_lab_ideas.py`, Lab kind `lit_idea`):** 10
   pre-declared single versions on the live LIT trades (LIT size + two_week eval path room 0.4, costs in), $/month vs today H1 /
   H2: time stop 60 min without +1R -$695 / -$945; out at 09:29 if not at BE -$317 / +$33 (5 + 2 trades); BE at 09:29 if +0.5R

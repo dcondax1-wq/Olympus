@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "strategy": "rewards_maker",
+  "status": "proposal",
+  "date": "2026-11-19",
+  "capital_cap_usd": 60,
+  "per_market_cap_usd": 20,
+  "daily_loss_stop_usd": 8,
+  "max_open_orders": 8,
+  "markets": [
+    {"series": "KXFAKEA", "why": "fixture: two rewarded markets", "quote": {"offset_cents": 0, "size": 10},
+     "pause": [{"type": "after_move", "cents": 5, "minutes": 60}, "close_2h"], "max_markets": 2},
+    {"series": "KXFAKEB", "why": "fixture: one rewarded market, 1c behind", "quote": {"offset_cents": 1, "size": 5},
+     "pause": ["spread_10c"], "max_markets": 1}
+  ],
+  "evidence": {"note": "TEST FIXTURE ONLY (tests/test_kalshi_live.py): invented series, never traded"},
+  "unproven": ["fixture: not a real plan"]
+}

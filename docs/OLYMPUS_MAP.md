@@ -34,6 +34,7 @@ Data: apps only read published JSON (and bundled `fixture.json` / demo fallbacks
 | Pnyx (`pnyx`) | ZEUS Trading | money | Prop-firm rules and risk calculator: stop to micros | `fixture.json`, `../home.json`, `../ledger/rules.json` | `tests.test_pnyx_page` |
 | Pythia (`pythia`) | ZEUS Trading | trading | The risk calendar: the next 14 days, and | `fixture.json`, `events.json`, `../home.json` | `tests.test_pythia_page` |
 | Trading (`trading`) | ZEUS Trading | trading | Every trade: today, calendar, stats, payout rules | `../home.json`, `fixture.json`, `trades.json`, `../ledger/rules.json`, `../business/accounts.json` | `tests.test_trading_page` |
+| Why (`why`) | ZEUS Trading | trading | Why our trades win and lose, per bot | `why.json` | `tests.test_why_page` |
 | Zenith (`zenith`) | ZEUS Trading | trading | NQ bots · Zlarior · ATLAS | data.json, home.json, live.json (the bot feeds) | `tests.test_zenith_mode` |
 | Agency (`agency`) | Money | money | Website agency: leads, demo sites, calls and the | `fixture.json`, `my_leads.json`, `leads.json`, `callrules.json`, `callscript.json`, ... | `tests.test_agency` |
 | Arbiter (`arbiter`) | Money | money | Paper-only spreads and funding: net yearly return after | `fixture.json`, `../money/arbiter.json` | `tests.test_arbiter_page` |
@@ -84,7 +85,7 @@ Data: apps only read published JSON (and bundled `fixture.json` / demo fallbacks
 | Symposium (`symposium`) | More | life | Meet everyone who works for you, and talk | `fixture.json` | `tests.test_symposium_page` |
 | Daphne (`tree`) | More | trading | The strategy tree search | `jarvis.json`, `tree.json` | `tests.test_strategytree` |
 
-75 apps. Rebuild the registry list after editing `jarvis/apps.js` or `olympus.js`: `python tools/apps_list_build.py`; recount: `python tools/apps_list_build.py --check`.
+76 apps. Rebuild the registry list after editing `jarvis/apps.js` or `olympus.js`: `python tools/apps_list_build.py`; recount: `python tools/apps_list_build.py --check`.
 
 ## Where the organizing code lives
 
