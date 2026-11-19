@@ -23,6 +23,9 @@ the repo's own engine code (read-only use: engine/live_publish.build, engine/go.
               each NinjaTrader trade's real fill against the live loop's plan; a flag (wrong size, no stop at NinjaTrader,
               slippage over 2 ticks, bracket price off, costs above plan, an entry that never filled) is one high-priority
               push at any hour, and the trade's own push ends with "Fill check OK" or the flags.
+              Olympus first (2026-11-19, docs/NOTIFICATIONS.md): when a phone turned on notifications in Olympus, each alert goes to
+              it as Web Push (engine/push.app_send, the PC's own key; the core post carries that key as "wp"); the ntfy copy only
+              when no phone took it, so one phone never gets the same alert twice.
   4. chart    the NQ page's live chart (owner 2026-11-18): the latest NQ 5-minute bars from this PC's NinjaTrader (LE_BarFeed's files)
               + every open trade and today's closed trades per account (by label, never an id), one small post of kind "le-bars"
               on its own public topic (the status topic + "-bars"): at most 24 a day (hourly candles in the bots' hours on runs
