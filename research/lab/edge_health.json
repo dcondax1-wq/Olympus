@@ -1,7 +1,7 @@
 {
  "v": 1,
- "built": "2026-11-18T02:10:30+00:00",
- "today": "2026-11-18",
+ "built": "2026-11-19T06:42:44+00:00",
+ "today": "2026-11-19",
  "what": "Edge health: a WARNING light for LIT, not a trading switch. Paper research; changes no bot.",
  "freshness": {
   "rows": {
@@ -15,8 +15,8 @@
   },
   "export_end": "2026-10-16",
   "bars_end": "2026-11-06",
-  "today": "2026-11-18",
-  "sessions_missing": 7
+  "today": "2026-11-19",
+  "sessions_missing": 8
  },
  "basis_shift": {
   "5m": 0.0,
@@ -2443,7 +2443,7 @@
   "light": "GREEN",
   "line": "Edge health: GREEN · last 40 sessions PF 3.84 vs 2026 H1 3.91 · data to Nov 6",
   "data_to": "2026-11-06",
-  "sessions_missing": 7,
+  "sessions_missing": 8,
   "pf40": 3.84,
   "usd_month40": 3440,
   "tpw40": 2.5,
@@ -2478,6 +2478,6 @@
    2.8,
    "2026-10-16"
   ],
-  "t": 1794967830
+  "t": 1795070564
  }
 }

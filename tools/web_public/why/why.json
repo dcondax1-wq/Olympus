@@ -1,7 +1,7 @@
 {
  "v": 1,
  "kind": "olympus-why",
- "built": "2026-11-18 20:30",
+ "built": "2026-11-19 01:42",
  "data_to": "2026-10-16",
  "source": "research/writeups/win-loss-anatomy-2026-11-18.md",
  "note": "Research only (tools/win_loss_anatomy.py). Nothing here changes a live setting.",
