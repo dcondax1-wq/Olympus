@@ -1,0 +1,1 @@
+{"version": 1, "strategy": "clock", "about": "TEST FIXTURE: the K8 clock with no live leg (the maker-executor tests run without it)", "live_legs": []}
