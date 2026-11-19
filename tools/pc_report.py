@@ -1155,6 +1155,11 @@ def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, n
            # the Launch card (tools/launch_card.report_state) reads only this file: whether alerts go out, never the topic itself
            "alerts_on": bool(cfg["topic"]) and bool(cfg["on"])}
     status, exts = posts(snap)
+    try:                                    # the trade alerts' account names (engine/mffu_view.push_name, engine/notify.entry_message)
+        from engine import mffu_view
+        mffu_view.save_names(mffu_view.compact(snap.get("live")), path=os.path.join(work, "names.json"))
+    except Exception:
+        pass
     for k in ("ext_t", "ext_h"):
         rec[k] = last.get(k)
     if snap.get("live"):
