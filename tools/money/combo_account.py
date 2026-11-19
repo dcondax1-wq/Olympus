@@ -72,6 +72,14 @@ built for it); Rapid EOD 50K = Zlarior + ATLAS, lanes (reference).
     /home/user/heavy.sh python -X utf8 tools/money/combo_account.py build                  # all bots -> combo_account_trades.json
     /home/user/heavy.sh python -X utf8 tools/money/combo_account.py check                  # parity with the repo's simulators
     /home/user/heavy.sh python -X utf8 tools/money/combo_account.py study [--n 2000] [--workers 3]
+FINAL rules (night-comboplus, design research/lab/combo_final_design_2026-11-19.md committed before any variant result; write-up
+research/writeups/one-account-combo-final-2026-11-19.md): Builder 50K, Zlarior + ATLAS, 12 rule sets (conflict, ATLAS's share of
+its size, eval guards), MFFU's move to live after the 5th payout in every row, day AND week blocks, the pre-registered pick ->
+research/lab/combo_final.json + research/lab/combo_50k.json (the config the live build reads).
+    /home/user/heavy.sh python -X utf8 tools/money/combo_account.py build-paths   # ATLAS's own paths -> combo_atlas_paths.json
+    /home/user/heavy.sh python -X utf8 tools/money/combo_account.py final [--n 2000] [--workers 3]
+    /home/user/heavy.sh python -X utf8 tools/money/combo_account.py posthoc   # the 2 post-hoc rows (shown, never picked)
+    python -X utf8 tools/money/combo_account.py final-table
 Test: python -X utf8 -m tests.test_combo_account (money area).
 """
 from __future__ import annotations
@@ -99,6 +107,7 @@ logging.getLogger("engine.sizing").setLevel(logging.ERROR)
 OUT = os.path.join(ROOT, "research", "lab", "combo_account.json")
 TRADES = os.path.join(ROOT, "research", "lab", "combo_account_trades.json")
 PART = os.path.join(ROOT, "research", "runs", "_cache", "combo_account_blitz_tf{tf}.json")
+APATHS = os.path.join(ROOT, "research", "lab", "combo_atlas_paths.json")      # ATLAS's own intraday path (final study: early closes)
 DATE = "2026-11-19"
 PV, COMM, TICK = 2.0, 1.90, 0.25
 SLIP = TICK
@@ -305,11 +314,13 @@ def _zero_shift(zero):
     return out
 
 
-def combo_days(combo: str, news: bool = False, zero: tuple = ()) -> list:
+def combo_days(combo: str, news: bool = False, zero: tuple = (), drop=None) -> list:
     """per session: the combo's trades (the news-ruled versions for a Rapid funded account), entry order, Z > A > B > P.
-    zero = bots taken to zero edge (honesty placebo only)."""
+    zero = bots taken to zero edge (honesty placebo only); drop = days whose ATLAS trades are removed (final study: ATLAS's
+    best days taken away)."""
     zero = tuple(zero or ())
-    key = (combo, news, zero)
+    drop = frozenset(drop or ())
+    key = (combo, news, zero, drop)
     C = _D.setdefault("C", {})
     if key not in C:
         ms = set(members(combo))
@@ -319,6 +330,8 @@ def combo_days(combo: str, news: bool = False, zero: tuple = ()) -> list:
             day = []
             for t in ts:
                 if t["s"] not in ms:
+                    continue
+                if drop and t["s"] == "A" and t["day"] in drop:
                     continue
                 if news and t.get("n"):
                     if t["n"] == "skip":
@@ -496,6 +509,13 @@ class Book:
         self.zf = cell.get("lit_funded") or P["z_funded"]
         ze = cell.get("lit_eval")
         self.ze = {k: v for k, v in ze.items() if not str(k).startswith("_")} if ze else P["z_eval"]
+        # final study (night-comboplus): the conflict rule, ATLAS's share of its own size, the eval guards
+        self.conflict = cell.get("conflict") or "first"            # first | zprio (Z the other way closes A) | zfull (any Z closes A)
+        af = cell.get("a_f") or {}
+        self.a_f = float(af.get("eval" if stage == "eval" else "funded", 1.0))
+        self.a_room_min = float(cell.get("a_room_min") or 0.0) if stage == "eval" else 0.0
+        self.day_cap = float(cell.get("day_cap") or 0.0) if stage == "eval" else 0.0
+        self.cuts = 0
 
     # -------------------------------------------------------------------- sizing
     def size(self, t, room, cum, st):
@@ -562,6 +582,8 @@ class Book:
                 opn = still
             if cum <= -dll:
                 break
+            if self.day_cap and cum <= -self.day_cap:                # eval guard: no new entry after a -$cap closed day
+                break
             open_q = 0
             if opn:
                 if self.rule != "adds" or any(o[1] != t["d"] for o in opn):
@@ -573,13 +595,19 @@ class Book:
             room = round(self.bal + cum - floor - o_loss, 2)
             if room < self.mr[s]:
                 continue
+            if s == "A" and self.a_room_min and room < self.a_room_min:     # eval guard: ATLAS only with room >= X
+                continue
             st = self.state_for(room, cum - o_loss, s)
             q = self.size(t, room, cum - o_loss, st)
+            if s == "A" and self.a_f < 1.0 and q > 0:                       # ATLAS's share of its own size
+                q = max(1, int(math.floor(self.a_f * q + 1e-9)))
             q = min(q, self.maxq - open_q)
             if q > 0 and self.cons:
                 q = self.cons_cap(q, t, cum)
             if q <= 0:
                 continue
+            if s == "A" and self.conflict in ("zprio", "zfull"):
+                t = self._maybe_cut(t, ts)
             traded = True
             self.n_by[s] += 1
             self.n_tr += 1
@@ -601,6 +629,19 @@ class Book:
         for o in opn:
             cum += o[3]
         return cum, traded, False
+
+    def _maybe_cut(self, t, ts):
+        """Zlarior priority (final study): the first Zlarior signal while this ATLAS trade is open (the other way for zprio,
+        either way for zfull) closes ATLAS at market at that minute; Zlarior then trades from the room after that close."""
+        for z in ts:
+            if z["et"] <= t["et"] or z["s"] != "Z":
+                continue
+            if z["et"] >= t["xt"]:
+                break
+            if self.conflict == "zfull" or z["d"] != t["d"]:
+                self.cuts += 1
+                return cut_trade(t, z["et"])
+        return t
 
 
 class Eval(Book):
@@ -639,6 +680,10 @@ class Funded(Book):
 
     def __init__(self, cell, combo):
         super().__init__(cell, "funded", combo)
+        self.max_pays = int(self.P["F"]["max_payouts"])
+
+    def _pay(self, k):
+        return self._builder_pay(k) if self.P["kind"] == "builder" else self._rapid_pay()
 
     def step(self, ts, keep=None):
         """-> (event, owner $) with event None | "paid" | "lost" | "stuck" | "grad"."""
@@ -659,17 +704,14 @@ class Funded(Book):
         self.peak = max(self.peak, self.bal)
         self.floor = min(max(self.floor, self.peak - self.mll), self.lock)
         ev, owner = None, 0.0
-        if self.P["kind"] == "builder":
-            amt = self._builder_pay(k)
-        else:
-            amt = self._rapid_pay()
+        amt = self._pay(k)
         if amt:
             self.pays.append(amt)
             self.bal -= amt
             self.cyc, self.cyc_start = [], self.bal
             owner = amt * F["split"]
             ev = "paid"
-            if len(self.pays) >= F["max_payouts"]:
+            if self.max_pays and len(self.pays) >= self.max_pays:
                 self.state = "grad"
                 return "grad", owner
         fl = max(self.floor, self.lock) if self.pays else self.floor
@@ -721,6 +763,103 @@ def _elig_session(k0, wait_h):
     return _ELIG[key]
 
 
+# ================================================================================================ final study: live account, early closes
+# MFFU Builder: after the 5th approved sim payout you move to a LIVE account and the sim accounts go dormant
+# (research/lit/mffu_rules.json builder_50k.sim_funded.max_sim_payouts / sim_live_together; .live = the live rules).
+# Confirmed: $2,000 EOD trailing that stops at the start once the floor gets there, $1,000 soft day, daily payouts >= $250,
+# 80%, no consistency rule, 21 days with no evals after a live breach. Assumed (stated in the write-up): starts at $0
+# profit, 40 micros, the bots size it with their funded rules, the bot keeps a $2,000 cushion and withdraws the rest.
+LIVE = {"mll": 2000.0, "lock": 0.0, "dll": 1000.0, "maxq": 40, "pay_min": 250.0, "keep": 2000.0, "split": 0.8,
+        "cooldown": 15, "gap": GAP}
+
+
+class Live(Funded):
+    """the live account after the 5th sim payout (final study main model): the funded Book on the live rules above."""
+
+    def __init__(self, cell, combo):
+        super().__init__(cell, combo)
+        L = LIVE
+        self.mll, self.lock, self.dll, self.maxq = L["mll"], L["lock"], L["dll"], int(L["maxq"])
+        self.floor = -self.mll
+        self.max_pays = None
+
+    def state_for(self, room, cum, s):
+        st = super().state_for(room, cum, s)
+        st["cycle_target"] = None                     # no consistency rule on live: the size's best-day-share cap is off
+        st["locked"] = self.floor >= self.lock - 1e-9 or bool(self.pays)
+        return st
+
+    def _pay(self, k):
+        avail = round(self.bal - LIVE["keep"], 2)
+        if self.floor >= self.lock - 1e-9 and avail >= LIVE["pay_min"]:
+            return avail
+        return 0.0
+
+
+_AP = {}
+
+
+def atlas_paths(path=None):
+    """(day, entry, dir, member) -> (bar-close times, open points at each close, worst points so far): ATLAS's OWN stored
+    path (tools/second_mix units), used only to price an ATLAS trade a conflict rule closes early."""
+    key = path or APATHS
+    if _AP.get("key") != key:
+        d = json.load(open(key, encoding="utf-8"))
+        P = {}
+        for k, (dt_, po, pw) in d["paths"].items():
+            day, et, dr, src = k.split("|")
+            et = int(et)
+            P[(day, et, int(dr), src)] = ([et + int(x) for x in dt_], [float(x) for x in po], [float(x) for x in pw])
+        _AP.update(key=key, P=P)
+    return _AP["P"]
+
+
+def cut_trade(t, at):
+    """ATLAS closed at market at minute `at`: the last bar close at or before it, minus 1 tick; its worst open loss up to
+    then; inside its first bar: the entry price minus 1 tick (no look-ahead)."""
+    import bisect
+    pt, po, pw = atlas_paths()[(t["day"], int(t["et"]), int(t["d"]), t["src"])]
+    k = bisect.bisect_right(pt, at) - 1
+    if k >= 0:
+        pts = po[k] - TICK
+        w1 = min(0.0, pw[k], pts)
+    else:
+        pts = w1 = -TICK
+    return {**t, "pts": round(pts, 4), "w1": round(min(w1, pts), 4), "xt": int(at), "cut": 1}
+
+
+def build_paths(units=None) -> str:
+    """research/lab/combo_atlas_paths.json from the second_mix units cache (every ATLAS row of the trade table)."""
+    import pickle
+    cands = [units, os.path.join(ROOT, "research", "runs", "_cache", "second_mix_units.pkl"),
+             "/home/user/nq-liquidity-engine/research/runs/_cache/second_mix_units.pkl"]
+    src = next(c for c in cands if c and os.path.exists(c))
+    U = pickle.load(open(src, "rb"))
+    by = {(u["day"], int(u["entry_t"]), int(u["dir"]), u["src"]): u for nm in ("EMA", "MD", "SR") for u in U[nm]}
+    d = json.load(open(TRADES, encoding="utf-8"))
+    cols = d["cols"]
+    out, miss, bad = {}, 0, 0
+    for row in d["rows"]:
+        r = dict(zip(cols, row))
+        if r["s"] != "A":
+            continue
+        u = by.get((r["day"], int(r["et"]), int(r["d"]), r["src"]))
+        if u is None:
+            miss += 1
+            continue
+        if abs(float(u["pts"]) - float(r["pts"])) > 1e-3 or abs(float(u["risk"]) - float(r["risk"])) > 1e-3:
+            bad += 1
+        out[f"{r['day']}|{int(r['et'])}|{int(r['d'])}|{r['src']}"] = [[int(x) - int(r["et"]) for x in u["pt"]],
+                                                                       [round(float(x), 2) for x in u["po"]],
+                                                                       [round(float(x), 2) for x in u["pw"]]]
+    o = {"built": dt.datetime.now().strftime("%Y-%m-%d %H:%M"), "source": "tools/second_mix units (second_mix_units.pkl)",
+         "note": "per ATLAS row: [bar-close time - entry (s)], [open points at that close], [worst points so far]",
+         "missing": miss, "pts_mismatch": bad, "paths": out}
+    with open(APATHS, "w", encoding="utf-8") as fh:
+        json.dump(o, fh, separators=(",", ":"))
+    return f"{len(out)} paths, {miss} missing, {bad} mismatched -> {os.path.relpath(APATHS, ROOT)}"
+
+
 # ================================================================================================ the 6-month account slot
 def row_key(r):
     k = f"{r['acct']}|{r['eval']}>{r['funded']}|{r['sizing']}|{r['rule']}|t{r['ticks']}"
@@ -732,7 +871,7 @@ class Slot:
 
     def __init__(self, r):
         self.r = r
-        self.cell = {"acct": r["acct"], "sizing": r["sizing"], "rule": r["rule"], "ticks": r["ticks"]}
+        self.cell = cell_of(r)
         self.price = PLANS[r["acct"]]["price"]
         self.cost = self.owner = 0.0
         self.evals = self.funded_n = self.lost = self.stuck = self.grads = self.pays = 0
@@ -742,6 +881,11 @@ class Slot:
         self.wait = 0
         self.ek = 0
         self.max_risk = 0.0
+        # after the 5th payout: "rebuy" = a new eval (the study), "stop" = the slot ends (live worth $0), "live" = MFFU's
+        # move to a live account (sim dormant: no new eval while it trades; a live breach = 15 sessions, then a new eval)
+        self.live_mode = r.get("live", "rebuy")
+        self.lv, self.lv_wait, self.cool, self.done = None, 0, 0, False
+        self.lives, self.owner_live = 0, 0.0
         self._buy()
 
     def _buy(self):
@@ -751,6 +895,31 @@ class Slot:
         self.ek = 0
 
     def step(self, k, ts_e, ts_f):
+        if self.done:
+            return
+        if self.lv_wait:
+            self.lv_wait -= 1
+            if self.lv_wait <= 0:
+                self.lv = Live(self.cell, self.r["funded"])
+                self.lives += 1
+            return
+        if self.lv is not None:
+            ev, x = self.lv.step(ts_f)
+            self.max_risk = max(self.max_risk, self.lv.max_risk)
+            if x:
+                self.owner += x
+                self.owner_live += x
+                self.pays += 1
+            if ev in ("lost", "stuck"):
+                self.lost += ev == "lost"
+                self.stuck += ev == "stuck"
+                self.lv, self.cool = None, LIVE["cooldown"]
+            return
+        if self.cool:
+            self.cool -= 1
+            if self.cool <= 0:
+                self._buy()
+            return
         if self.e is not None:
             self.ek += 1
             res, _ = self.e.step(ts_e)
@@ -783,21 +952,35 @@ class Slot:
             self.stuck += ev == "stuck"
             self.grads += ev == "grad"
             self.f = None
-            self._buy()
+            if ev == "grad" and self.live_mode == "stop":
+                self.done = True
+            elif ev == "grad" and self.live_mode == "live":
+                self.lv_wait = LIVE["gap"]
+            else:
+                self._buy()
 
     def out(self):
         fe = self.first_eval or ("open", self.ek)
         return (self.owner - self.cost, self.owner, self.cost, self.evals, self.funded_n, self.lost + self.stuck, self.pays,
-                self.first_pay or 0, fe[0], fe[1], self.max_risk)
+                self.first_pay or 0, fe[0], fe[1], self.max_risk, self.lives, self.owner_live, self.grads)
 
 
 def is_rapid(acct):
     return PLANS[acct]["kind"] == "rapid"
 
 
+def cell_of(r):
+    """the Book's cell from a row (the final study's conflict / ATLAS share / eval guards ride along when present)."""
+    c = {"acct": r["acct"], "sizing": r["sizing"], "rule": r["rule"], "ticks": r["ticks"]}
+    for k in ("conflict", "a_f", "a_room_min", "day_cap"):
+        if r.get(k) is not None:
+            c[k] = r[k]
+    return c
+
+
 def run_slot(r, paths):
-    De = combo_days(r["eval"], zero=r.get("zero"))
-    Df = combo_days(r["funded"], news=is_rapid(r["acct"]), zero=r.get("zero"))
+    De = combo_days(r["eval"], zero=r.get("zero"), drop=r.get("drop"))
+    Df = combo_days(r["funded"], news=is_rapid(r["acct"]), zero=r.get("zero"), drop=r.get("drop"))
     out = []
     for seq in paths:
         s = Slot(r)
@@ -808,8 +991,8 @@ def run_slot(r, paths):
 
 
 def run_funded(r, paths):
-    Df = combo_days(r["funded"], news=is_rapid(r["acct"]), zero=r.get("zero"))
-    cell = {"acct": r["acct"], "sizing": r["sizing"], "rule": r["rule"], "ticks": r["ticks"]}
+    Df = combo_days(r["funded"], news=is_rapid(r["acct"]), zero=r.get("zero"), drop=r.get("drop"))
+    cell = cell_of(r)
     out = []
     for seq in paths:
         f = Funded(cell, r["funded"])
@@ -1217,10 +1400,366 @@ def tables(o) -> str:
     return "\n".join(L)
 
 
+# ================================================================================================ FINAL rules (night-comboplus)
+# Pre-registered: research/lab/combo_final_design_2026-11-19.md (committed before any variant result). Builder 50K only,
+# Zlarior + ATLAS, MFFU's move to live after the 5th payout in every row ("live"), day AND week bootstraps.
+FINAL_OUT = os.path.join(ROOT, "research", "lab", "combo_final.json")
+FINAL_CFG = os.path.join(ROOT, "research", "lab", "combo_50k.json")
+FINAL_DESIGN = "research/lab/combo_final_design_2026-11-19.md"
+SEED_WEEK, SEED_WEEK_F, SEED_HIST = 202, 203, 606
+N_HIST, N_HIST_PATHS = 200, 500
+F_SPANS = ("H1", "H2", "REF", "Y2022")
+VARIANTS = [   # id, eval combo, funded combo, conflict, ATLAS share {eval, funded}, eval room guard, eval day cap, plain reason
+    ("base", "Z+A", "Z+A", "first", 1.0, 1.0, None, None, "the study's proposal: first in keeps the account"),
+    ("zprio", "Z+A", "Z+A", "zprio", 1.0, 1.0, None, None, "Zlarior entering the other way closes ATLAS (today's HEDGE rule)"),
+    ("zfull", "Z+A", "Z+A", "zfull", 1.0, 1.0, None, None, "any Zlarior entry closes an open ATLAS trade"),
+    ("a60", "Z+A", "Z+A", "first", 0.6, 0.6, None, None, "ATLAS at 60% of its own size"),
+    ("a40", "Z+A", "Z+A", "first", 0.4, 0.4, None, None, "ATLAS at 40% of its own size"),
+    ("a_eval_off", "Z", "Z+A", "first", 0.0, 1.0, None, None, "ATLAS sits out the eval, full size once funded"),
+    ("a50_eval", "Z+A", "Z+A", "first", 0.5, 1.0, None, None, "ATLAS at 50% in the eval, 100% once funded"),
+    ("room1500", "Z+A", "Z+A", "first", 1.0, 1.0, 1500.0, None, "in the eval ATLAS trades only with >= $1,500 of room"),
+    ("daycap500", "Z+A", "Z+A", "first", 1.0, 1.0, None, 500.0, "in the eval no new entry after a -$500 day"),
+    ("a60_room1500", "Z+A", "Z+A", "first", 0.6, 0.6, 1500.0, None, "ATLAS 60% + the $1,500 room guard"),
+    ("room1500_daycap500", "Z+A", "Z+A", "first", 1.0, 1.0, 1500.0, 500.0, "the $1,500 room guard + the -$500 day cap"),
+    ("a_eval_off_a60", "Z", "Z+A", "first", 0.0, 0.6, None, None, "ATLAS sits out the eval, 60% once funded"),
+]
+VIDS = [v[0] for v in VARIANTS]
+# POST-HOC rows (added AFTER the 12 results, on the same data; NOT part of the pick, shown labelled as such): the most robust
+# conflict rule of the 12 (zfull: lowest "$0 or worse" share) with the two eval fixes that passed the 2-week bar
+POSTHOC = [
+    ("zfull_a50_eval", "Z+A", "Z+A", "zfull", 0.5, 1.0, None, None, "post-hoc: zfull + ATLAS 50% in the eval"),
+    ("zfull_room1500", "Z+A", "Z+A", "zfull", 1.0, 1.0, 1500.0, None, "post-hoc: zfull + the $1,500 eval room guard"),
+]
+PH_IDS = [v[0] for v in POSTHOC]
+F_TESTS = {   # test -> (periods, bootstrap, row overrides, with funded-only stats)
+    "day": (F_SPANS, "day", {}, True),
+    "week": (F_SPANS, "week", {}, True),
+    "day_t1": (SPANS, "day", {"ticks": 1}, False),
+    "week_t1": (SPANS, "week", {"ticks": 1}, False),
+    "day_drop5": (SPANS, "day", {"drop5": True}, False),
+    "day_stop": (SPANS, "day", {"live": "stop"}, False),
+    "day_rebuy": (SPANS, "day", {"live": "rebuy"}, False),        # parity with the study (base and Zlarior alone only)
+}
+
+
+def frow(vid, **kw):
+    """a final-study row: Builder 50K, own sizes, MFFU live move ("live") unless overridden."""
+    if vid == "Z":
+        r = {**R("b50", "Z"), "live": "live", "vid": "Z"}
+    else:
+        v = next(x for x in VARIANTS + POSTHOC if x[0] == vid)
+        r = {**R("b50", v[1], v[2]), "live": "live", "vid": vid, "conflict": v[3], "a_f": {"eval": v[4], "funded": v[5]},
+             "a_room_min": v[6], "day_cap": v[7]}
+    r.update(kw)
+    return r
+
+
+def week_blocks(span):
+    """the period's sessions as calendar weeks (Mon-Fri) -> [[session index, ...], ...]"""
+    S = sessions()
+    a, z = span_ix(span)
+    wk = collections.OrderedDict()
+    for i in range(a, z):
+        y, w, _ = dt.date.fromisoformat(S[i]).isocalendar()
+        wk.setdefault((y, w), []).append(i)
+    return list(wk.values())
+
+
+def week_paths(span, n, seed, length=LEN, blocks=None):
+    """whole calendar weeks drawn with replacement and laid end to end (a bad week stays a bad week), cut at `length`."""
+    B = blocks or week_blocks(span)
+    rng = np.random.default_rng(seed)
+    out = np.empty((n, length), dtype=np.int64)
+    for p in range(n):
+        seq = []
+        while len(seq) < length:
+            seq += B[int(rng.integers(0, len(B)))]
+        out[p] = seq[:length]
+    return out
+
+
+def pool_paths(pool, n, seed, length=LEN):
+    pool = np.asarray(pool)
+    return pool[np.random.default_rng(seed).integers(0, len(pool), size=(n, length))]
+
+
+def best_atlas_days(span, k=5):
+    """ATLAS's k best days of the period by its stored R (the same days for every row)."""
+    a, z = span_ix(span)
+    by = collections.defaultdict(float)
+    for i in range(a, z):
+        for t in trades()[i]:
+            if t["s"] == "A" and t["risk"]:
+                by[t["day"]] += t["pts"] / t["risk"]
+    return [d for d, _ in sorted(by.items(), key=lambda x: -x[1])[:k]]
+
+
+def f_paths(boot, span, n, funded=False):
+    if boot == "day":
+        return day_paths(span, n, seed=SEED_FUND if funded else SEED_SLOT)
+    return week_paths(span, n, seed=SEED_WEEK_F if funded else SEED_WEEK)
+
+
+def _final_job(args):
+    vid, test, n = args
+    _patch_account_b()
+    spans, boot, ov, with_f = F_TESTS[test]
+    t0 = time.time()
+    o = {}
+    for sp in spans:
+        kw = {k: v for k, v in ov.items() if k != "drop5"}
+        if ov.get("drop5"):
+            kw["drop"] = tuple(best_atlas_days(sp))
+        r = frow(vid, **kw)
+        sl = run_slot(r, f_paths(boot, sp, n))
+        x = {"slot": slot_stats(sl), "_net": np.array([q[0] for q in sl]) / MONTHS,
+             "live_n": round(float(np.mean([q[11] for q in sl])), 2), "owner_live_m": round(float(np.mean([q[12] for q in sl])) / MONTHS),
+             "grads": round(float(np.mean([q[13] for q in sl])), 2)}
+        if with_f:
+            x["funded"] = funded_stats(run_funded(r, f_paths(boot, sp, n, funded=True)))
+        o[sp] = x
+    return vid, test, o, round(time.time() - t0, 1)
+
+
+def _hist_job(args):
+    """one resampled H2 history: its 16 weeks redrawn (seeded), N day paths from that pool, every row on the same paths."""
+    b, pool, n = args[:3]
+    vids = args[3] if len(args) > 3 else ["Z"] + VIDS
+    _patch_account_b()
+    P = pool_paths(pool, n, seed=1000 + b)
+    return b, {vid: float(np.mean([q[0] for q in run_slot(frow(vid), P)]) / MONTHS) for vid in vids}
+
+
+def hist_pools(span="H2", B=N_HIST):
+    W = week_blocks(span)
+    rng = np.random.default_rng(SEED_HIST)
+    return [[i for j in rng.integers(0, len(W), size=len(W)) for i in W[int(j)]] for _ in range(B)]
+
+
+def final_constraints(res, hist, vids=None):
+    """the pre-registered pick (design file section 3)."""
+    vids = vids or VIDS
+    out = {}
+    for vid in vids:
+        c, info = {}, {}
+        g = {}
+        for test in ("day", "week", "day_t1", "week_t1", "day_drop5", "day_stop"):
+            base = "day" if test == "day_drop5" else test
+            for sp in F_TESTS[test][0]:
+                m, se = paired(res[vid][test][sp]["_net"], res["Z"][base][sp]["_net"])
+                g[(test, sp)] = (round(m), round(se, 1))
+        info["gaps"] = {f"{t}|{sp}": v for (t, sp), v in g.items()}
+        c["C1"] = all(g[(b, sp)][0] > 2 * g[(b, sp)][1] for b in ("day", "week") for sp in ("H1", "H2"))
+        c["C2"] = all(g[(b, "REF")][0] >= -50 for b in ("day", "week"))
+        f10 = {(b, sp): res[vid][b][sp]["slot"]["eval"]["f10"] for b in ("day", "week") for sp in ("H1", "H2")}
+        c["C3"] = all(v <= 5.0 for v in f10.values())
+        c["C4"] = all(g[(b, sp)][0] > 0 for b in ("day_t1", "week_t1") for sp in ("H1", "H2"))
+        h = np.array([x[vid] - x["Z"] for x in hist])
+        share = float((h <= 0).mean())
+        c["C5"] = share <= 0.07
+        info["f10"] = {f"{b}|{sp}": v for (b, sp), v in f10.items()}
+        info["hist"] = {"share_le0": round(share, 3), "p10": round(float(np.percentile(h, 10))), "p50": round(float(np.median(h))),
+                        "p90": round(float(np.percentile(h, 90))), "n": len(h)}
+        out[vid] = {"pass": c, "all4": all(c[k] for k in ("C1", "C2", "C3", "C4")), "all5": all(c.values()),
+                    "h2_week_m": res[vid]["week"]["H2"]["slot"]["net_m"], **info}
+    A = [v for v in vids if out[v]["all5"]]
+    Bt = [v for v in vids if out[v]["all4"]]
+    if A:
+        tier, win = "A", max(A, key=lambda v: out[v]["h2_week_m"])
+    elif Bt:
+        tier, win = "B", max(Bt, key=lambda v: out[v]["h2_week_m"])
+    else:
+        tier, win = "C", "base"
+    return {"rows": out, "tier": tier, "winner": win, "tier_A": A, "tier_B": Bt}
+
+
+def final(n=N_PATHS, workers=3, n_hist=N_HIST, n_hist_paths=N_HIST_PATHS, log=print):
+    trades()
+    atlas_paths()
+    _patch_account_b()
+    jobs = []
+    for vid in ["Z"] + VIDS:
+        for test in F_TESTS:
+            if test == "day_rebuy" and vid not in ("Z", "base"):
+                continue
+            if test == "day_drop5" and vid == "Z":
+                continue
+            jobs.append((vid, test, n))
+    pools = hist_pools("H2", n_hist)
+    hjobs = [(b, pools[b], n_hist_paths) for b in range(n_hist)]
+    log(f"{len(jobs)} row-tests ({len(VIDS)} variants + Zlarior alone), {n} paths; {n_hist} H2 histories x {n_hist_paths} paths")
+    res = collections.defaultdict(dict)
+    hb = {}
+    t0 = time.time()
+    import multiprocessing as mp
+    with mp.get_context("fork").Pool(workers) as pool:
+        for i, (vid, test, o, sec) in enumerate(pool.imap_unordered(_final_job, jobs)):
+            res[vid][test] = o
+            log(f"[{i + 1}/{len(jobs)}] {vid} {test} {sec:.0f}s ({time.time() - t0:.0f}s)")
+        for i, (b, x) in enumerate(pool.imap_unordered(_hist_job, hjobs)):
+            hb[b] = x
+            if i % 20 == 19:
+                log(f"[hist {i + 1}/{len(hjobs)}] ({time.time() - t0:.0f}s)")
+    hist = [hb[b] for b in range(n_hist)]                  # history b at index b (its seeded pool + paths)
+    res["Z"]["day_drop5"] = res["Z"]["day"]
+    pick = final_constraints(res, hist)
+    cuts = {}
+    for vid in ("zprio", "zfull"):                       # how many ATLAS trades a conflict rule closes on the real days
+        cuts[vid] = {}
+        for sp in SPANS:
+            a, z = span_ix(sp)
+            b = Book(cell_of(frow(vid)), "funded", "Z+A")
+            b.bal = 1e6
+            n_c = 0
+            for i in range(a, z):
+                b.cuts = 0
+                b.trade_day(combo_days("Z+A")[i])
+                n_c += b.cuts
+            cuts[vid][sp] = n_c
+    strip = lambda o: {sp: {k: v for k, v in x.items() if not k.startswith("_")} for sp, x in o.items()}  # noqa: E731
+    out = {"date": DATE, "design": FINAL_DESIGN, "n": n, "n_hist": n_hist, "n_hist_paths": n_hist_paths,
+           "variants": [{"id": v[0], "eval": v[1], "funded": v[2], "conflict": v[3], "a_f": {"eval": v[4], "funded": v[5]},
+                         "a_room_min": v[6], "day_cap": v[7], "why": v[8]} for v in VARIANTS],
+           "results": {vid: {test: strip(o) for test, o in T.items()} for vid, T in res.items()},
+           "hist_raw": hist, "pick": pick, "cuts": cuts, "best_atlas_days": {sp: best_atlas_days(sp) for sp in SPANS},
+           "live_rules": LIVE, "secs": round(time.time() - t0)}
+    return out
+
+
+def posthoc(n=N_PATHS, workers=3, log=print):
+    """the POST-HOC rows (not part of the pick): Zlarior alone re-run for the paired gaps, the same 200 H2 histories
+    (Zlarior's history values re-computed on the same seeded paths) -> o["posthoc"] in combo_final.json."""
+    o = json.load(open(FINAL_OUT, encoding="utf-8"))
+    trades()
+    atlas_paths()
+    _patch_account_b()
+    jobs = [(vid, test, n) for vid in ["Z"] + PH_IDS for test in F_TESTS if test != "day_rebuy"
+            and not (vid == "Z" and test == "day_drop5")]
+    pools = hist_pools("H2", o["n_hist"])
+    hjobs = [(b, pools[b], o["n_hist_paths"], ["Z"] + PH_IDS) for b in range(o["n_hist"])]
+    res = collections.defaultdict(dict)
+    hist = {}
+    t0 = time.time()
+    import multiprocessing as mp
+    with mp.get_context("fork").Pool(workers) as pool:
+        for i, (vid, test, x, sec) in enumerate(pool.imap_unordered(_final_job, jobs)):
+            res[vid][test] = x
+            log(f"[{i + 1}/{len(jobs)}] {vid} {test} {sec:.0f}s ({time.time() - t0:.0f}s)")
+        for b, x in pool.imap_unordered(_hist_job, hjobs):
+            hist[b] = x
+    res["Z"]["day_drop5"] = res["Z"]["day"]
+    H = [hist[b] for b in range(o["n_hist"])]
+    same = max(abs(H[b]["Z"] - o["hist_raw"][b]["Z"]) for b in range(len(H)))
+    pick = final_constraints(res, H, PH_IDS)
+    strip = lambda q: {sp: {k: v for k, v in x.items() if not k.startswith("_")} for sp, x in q.items()}  # noqa: E731
+    o["posthoc"] = {"note": "added AFTER the 12 pre-registered results, same data: shown, NOT used for the pick or the config",
+                    "variants": [{"id": v[0], "eval": v[1], "funded": v[2], "conflict": v[3], "a_f": {"eval": v[4], "funded": v[5]},
+                                  "a_room_min": v[6], "day_cap": v[7], "why": v[8]} for v in POSTHOC],
+                    "results": {vid: {test: strip(x) for test, x in res[vid].items()} for vid in PH_IDS},
+                    "z_rerun_same": {test: {sp: res["Z"][test][sp]["slot"]["net_m"] == o["results"]["Z"][test][sp]["slot"]["net_m"]
+                                            for sp in res["Z"][test]} for test in res["Z"]},
+                    "hist_z_max_diff": round(same, 6), "rows": pick["rows"], "secs": round(time.time() - t0)}
+    with open(FINAL_OUT, "w", encoding="utf-8") as fh:
+        json.dump(o, fh, indent=1)
+    return o
+
+
+def final_config(o) -> dict:
+    """research/lab/combo_50k.json: the rules the live build reads."""
+    w = o["pick"]["winner"]
+    v = next(x for x in o["variants"] if x["id"] == w)
+    R_ = o["results"]
+    ev = {}
+    for sp in ("H1", "H2", "REF", "Y2022"):
+        z, x = R_["Z"]["week"][sp]["slot"], R_[w]["week"][sp]["slot"]
+        zd, xd = R_["Z"]["day"][sp]["slot"], R_[w]["day"][sp]["slot"]
+        ev[sp] = {"usd_month_week": x["net_m"], "usd_month_day": xd["net_m"], "zlarior_alone_week": z["net_m"],
+                  "zlarior_alone_day": zd["net_m"], "range_10_90_week": [x["p10_m"], x["p90_m"]],
+                  "eval_fail_2wk_week": x["eval"]["f10"], "eval_fail_60_week": x["eval"]["f60"],
+                  "eval_pass_median_days": x["eval"]["pass_med"],
+                  "funded_pay30_week": R_[w]["week"][sp]["funded"]["pay30"], "funded_pay60_week": R_[w]["week"][sp]["funded"]["pay60"],
+                  "gap_vs_zlarior_week": o["pick"]["rows"][w]["gaps"][f"week|{sp}"][0]}
+        if sp in R_[w]["day_stop"]:
+            ev[sp].update({"usd_month_live_worth_0_day": R_[w]["day_stop"][sp]["slot"]["net_m"],
+                           "zlarior_alone_live_worth_0_day": R_["Z"]["day_stop"][sp]["slot"]["net_m"],
+                           "gap_without_atlas_5_best_days_day": o["pick"]["rows"][w]["gaps"][f"day_drop5|{sp}"][0],
+                           "gap_plus_1_tick_week": o["pick"]["rows"][w]["gaps"][f"week_t1|{sp}"][0]})
+    P = o["pick"]["rows"][w]
+    ph = []
+    for x in (o.get("posthoc") or {}).get("variants", []):
+        rr = o["posthoc"]["rows"][x["id"]]
+        ph.append({"variant": x["id"], "active": False, "conflict": x["conflict"], "atlas_size_factor": x["a_f"],
+                   "atlas_eval_min_room_usd": x["a_room_min"],
+                   "gap_vs_zlarior_week": {sp: rr["gaps"][f"week|{sp}"][0] for sp in ("H1", "H2", "REF", "Y2022")},
+                   "eval_fail_2wk_week_h2": rr["f10"]["week|H2"], "h2_histories_gap_le0": rr["hist"]["share_le0"]})
+    return {"version": 1, "account": "builder50k", "bots": ["lit", "atlas"], "conflict": v["conflict"],
+            "atlas_size_factor": dict(v["a_f"]),
+            "guards": {"atlas_in_eval": v["a_f"]["eval"] > 0, "atlas_eval_min_room_usd": v["a_room_min"],
+                       "eval_day_stop_usd": v["day_cap"], "one_position": True, "soft_day_usd_both_bots": 1000.0,
+                       "max_micros": 40, "flat_by": "16:10 ET"},
+            "sizes": {"lit_eval": "live_model.json lit_sizing two_week (room_f 0.4, kept to session 80)",
+                      "lit_funded": "engine/multi_account builder 50K funded preset",
+                      "atlas": "engine/account_b plan builder50k (need size in the eval, funded_qty once funded), x atlas_size_factor"},
+            "variant": w, "pick_tier": o["pick"]["tier"],
+            "evidence": {"source": "research/writeups/one-account-combo-final-2026-11-19.md", "results": "research/lab/combo_final.json",
+                         "design": FINAL_DESIGN, "n_paths": o["n"], "periods": ev,
+                         "h2_resampled_histories_gap_le0": P["hist"]["share_le0"], "constraints": P["pass"],
+                         "variants_tried": len(o["variants"]), "date": DATE, "paper_only": True},
+            "post_hoc_not_active": {"note": "chosen AFTER seeing the 12 results, same data: NOT the rules to build. Re-test on "
+                                            "fresh days (Nov-Dec 2026) under the same 5 constraints before any switch.",
+                                    "rows": ph}}
+
+
+def final_tables(o) -> str:
+    R_, pk = o["results"], o["pick"]
+    L = []
+    W = {"H1": "Jan-Jun", "H2": "Jul-Oct", "REF": "2021-25", "Y2022": "2022"}
+
+    def money(vid, test, sp):
+        return R_[vid][test][sp]["slot"]["net_m"]
+    L.append("### Money ($ a month after fees, MFFU live move in; week-block / day-block bootstrap; gap vs Zlarior alone)\n")
+    L.append("| Row | " + " | ".join(W[s] for s in F_SPANS) + " | C1-C5 |")
+    L.append("|---|" + "---|" * (len(F_SPANS) + 1))
+    for vid in ["Z"] + VIDS:
+        cells = []
+        for sp in F_SPANS:
+            wk, dy = money(vid, "week", sp), money(vid, "day", sp)
+            if vid == "Z":
+                cells.append(f"{_m(wk)} / {_m(dy)}")
+            else:
+                gw = pk["rows"][vid]["gaps"][f"week|{sp}"][0]
+                cells.append(f"{_m(wk)} / {_m(dy)} ({gw:+,})")
+        cc = "today" if vid == "Z" else "".join("Y" if pk["rows"][vid]["pass"][k] else "n" for k in ("C1", "C2", "C3", "C4", "C5"))
+        L.append(f"| {vid} | " + " | ".join(cells) + f" | {cc} |")
+    L.append("\n### Safety and speed (week-block; day-block in brackets)\n")
+    L.append("| Row | eval fail in 2 weeks H1 / H2 / 21-25 | eval fail in 60 H1 / H2 | eval pass median days H1 / H2 | funded 1st payout <= 30 / 60 d H2 | 6 months lose money H2 |")
+    L.append("|---|---|---|---|---|---|")
+    for vid in ["Z"] + VIDS:
+        w_, d_ = R_[vid]["week"], R_[vid]["day"]
+        L.append(f"| {vid} | " + " / ".join(f"{w_[s]['slot']['eval']['f10']}% ({d_[s]['slot']['eval']['f10']}%)" for s in SPANS)
+                 + " | " + " / ".join(f"{w_[s]['slot']['eval']['f60']}%" for s in ("H1", "H2"))
+                 + " | " + " / ".join(f"{w_[s]['slot']['eval']['pass_med']}" for s in ("H1", "H2"))
+                 + f" | {w_['H2']['funded']['pay30']}% / {w_['H2']['funded']['pay60']}% | {w_['H2']['slot']['p_neg']}% |")
+    L.append("\n### Robustness (gap vs Zlarior alone, $ a month; H1 / H2 / 21-25)\n")
+    L.append("| Row | +1 tick (week) | ATLAS's 5 best days removed (day) | live worth $0 (stop at payout 5, day) | old model: new eval after payout 5 (day) | H2 histories: gap <= $0 / 10% / median / 90% |")
+    L.append("|---|---|---|---|---|---|")
+    for vid in VIDS:
+        g = pk["rows"][vid]["gaps"]
+        f = lambda t: " / ".join(f"{g[f'{t}|{s}'][0]:+,}" for s in SPANS)  # noqa: E731
+        rb = "-"
+        if "day_rebuy" in R_[vid]:
+            rb = " / ".join(f"{R_[vid]['day_rebuy'][s]['slot']['net_m'] - R_['Z']['day_rebuy'][s]['slot']['net_m']:+,}" for s in SPANS)
+        h = pk["rows"][vid]["hist"]
+        L.append(f"| {vid} | {f('week_t1')} | {f('day_drop5')} | {f('day_stop')} | {rb} | {100 * h['share_le0']:.1f}% / {h['p10']:+,} / {h['p50']:+,} / {h['p90']:+,} |")
+    L.append(f"\nPick: tier {pk['tier']}, winner **{pk['winner']}** (tier A = all of C1-C5: {pk['tier_A'] or 'none'}; C1-C4: {pk['tier_B'] or 'none'}).")
+    return "\n".join(L)
+
+
 # ================================================================================================ main
 def main(argv=None):
     ap = argparse.ArgumentParser()
-    ap.add_argument("cmd", choices=["build-blitz", "build", "check", "study", "table", "honesty"])
+    ap.add_argument("cmd", choices=["build-blitz", "build", "check", "study", "table", "honesty", "build-paths", "final", "final-table",
+                                       "posthoc"])
     ap.add_argument("--tf", type=int, default=1)
     ap.add_argument("--n", type=int, default=N_PATHS)
     ap.add_argument("--workers", type=int, default=3)
@@ -1229,6 +1768,9 @@ def main(argv=None):
     a = ap.parse_args(argv)
     if a.cmd == "build-blitz":
         print("->", build_blitz(a.tf))
+        return 0
+    if a.cmd == "build-paths":
+        print(build_paths())
         return 0
     if a.cmd == "build":
         o = build()
@@ -1243,6 +1785,24 @@ def main(argv=None):
         return 0
     if a.cmd == "table":
         print(tables(json.load(open(a.out, encoding="utf-8"))))
+        return 0
+    if a.cmd == "final":
+        o = final(a.n, a.workers)
+        with open(FINAL_OUT, "w", encoding="utf-8") as fh:
+            json.dump(o, fh, indent=1)
+        cfg = final_config(o)
+        with open(FINAL_CFG, "w", encoding="utf-8") as fh:
+            json.dump(cfg, fh, indent=1)
+        print(final_tables(o))
+        print("wrote", os.path.relpath(FINAL_OUT, ROOT), os.path.relpath(FINAL_CFG, ROOT), f"{o['secs']}s")
+        return 0
+    if a.cmd == "posthoc":
+        o = posthoc(a.n, a.workers)
+        print(json.dumps({k: {kk: o["posthoc"]["rows"][k][kk] for kk in ("pass", "h2_week_m", "f10", "hist")} for k in PH_IDS}, indent=1))
+        print("Z re-run identical:", o["posthoc"]["z_rerun_same"], "hist Z max diff", o["posthoc"]["hist_z_max_diff"])
+        return 0
+    if a.cmd == "final-table":
+        print(final_tables(json.load(open(FINAL_OUT, encoding="utf-8"))))
         return 0
     if a.cmd == "check":
         r = check()

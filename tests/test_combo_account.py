@@ -8,6 +8,10 @@ research/writeups/one-account-combo-2026-11-19.md; night-combo 2026-11-19). Offl
   e. the Monte Carlo draws whole days inside the period (each day keeps its trades), the same paths for every row
   f. parity: the Book == tools/account4_sim.Ev, tools/uprisk.Funded, tools/money/rapid_levers.Rapid on the same paths
   g. the trade table (every bot, futures bars, flat before 16:10) and, when present, the study file + its verdict shape
+  h. FINAL rules (night-comboplus, research/lab/combo_final_design_2026-11-19.md): Zlarior priority closes ATLAS at its own
+     last bar close at / before Zlarior's minute (-1 tick, worst so far), first-in skips Zlarior; ATLAS's share of its
+     size; the eval room guard and day stop; MFFU's live move (no new eval while live, 15 sessions after a live breach,
+     "stop" ends the slot); week blocks; the ATLAS path file; when present combo_final.json + combo_50k.json shape
     python -X utf8 -m tests.test_combo_account
 """
 from __future__ import annotations
@@ -175,6 +179,130 @@ def part_g():
           and str(o["compared"]["rows"]) in open(W, encoding="utf-8").read())
 
 
+def _with_path(t, pt, po, pw):
+    """register a synthetic ATLAS path for t in combo_account's path table (the real table loaded first)."""
+    P = C.atlas_paths()
+    t = {**t, "day": "2099-01-01", "src": "EMA"}
+    P[(t["day"], int(t["et"]), int(t["d"]), t["src"])] = (pt, po, pw)
+    return t
+
+
+def part_h():
+    a_ = _with_path(_t("A", 100, 1000, 1, pts=20.0, w1=-5.0), [400, 700], [3.0, -2.0], [-1.0, -4.0])
+    z_opp, z_same = _t("Z", 750, 900, -1, pts=8.0, w1=-2.0), _t("Z", 750, 900, 1, pts=8.0, w1=-2.0)
+    a_["day"] = z_opp["day"] = z_same["day"] = "2099-01-01"
+
+    def run(conflict, z):
+        b = C.Eval({**C.R("b50", "Z+A"), "conflict": conflict}, "Z+A")
+        _fixed(b, 3)
+        keep = []
+        b.step([a_, z], keep)
+        return [(t["s"], t["pts"], t["w1"], t["xt"]) for t, _, _ in keep]
+    got = run("zprio", z_opp)
+    check("h. zprio: Zlarior the other way closes ATLAS at its last bar close <= that minute - 1 tick (worst so far), then trades",
+          got == [("A", -2.25, -4.0, 750), ("Z", 8.0, -2.0, 900)], got)
+    got = run("zprio", z_same)
+    check("h. zprio: a same-side Zlarior signal is skipped (ATLAS keeps the account)", [g[0] for g in got] == ["A"] and got[0][1] == 20.0, got)
+    got = run("zfull", z_same)
+    check("h. zfull: any Zlarior entry closes ATLAS", [g[0] for g in got] == ["A", "Z"] and got[0][1] == -2.25, got)
+    got = run("first", z_opp)
+    check("h. first-in: Zlarior skipped, ATLAS's full trade", got == [("A", 20.0, -5.0, 1000)], got)
+    a0 = _with_path(_t("A", 100, 1000, 1, pts=20.0, w1=-5.0), [400, 700], [3.0, -2.0], [-1.0, -4.0])
+    c = C.cut_trade(a0, 300)
+    check("h. a close inside ATLAS's first bar = the entry price - 1 tick (no look-ahead)", c["pts"] == -0.25 and c["xt"] == 300, c)
+    b = C.Eval({**C.R("b50", "Z+A"), "a_f": {"eval": 0.6, "funded": 0.4}}, "Z+A")
+    _fixed(b, 10)
+    keep = []
+    b.step([_t("A", 100, 200, 1)], keep)
+    f = C.Funded({**C.R("b50", "Z+A"), "a_f": {"eval": 0.6, "funded": 0.4}}, "Z+A")
+    _fixed(f, 1)
+    keep2 = []
+    f.trade_day([_t("A", 100, 200, 1)], keep2)
+    check("h. ATLAS share: 60% of 10 micros = 6 in the eval; 40% of 1 = still 1 once funded (never 0, never above its own)",
+          [q for _, q, _ in keep] == [6] and [q for _, q, _ in keep2] == [1], (keep, keep2))
+    b = C.Eval({**C.R("b50", "Z+A"), "a_room_min": 1500.0}, "Z+A")
+    _fixed(b, 3)
+    b.bal = -600.0
+    keep = []
+    b.step([_t("A", 100, 200, 1), _t("Z", 300, 400, 1)], keep)
+    check("h. eval room guard: with $1,400 of room ATLAS is skipped, Zlarior still trades", [t["s"] for t, _, _ in keep] == ["Z"], keep)
+    b = C.Eval({**C.R("b50", "Z+A"), "day_cap": 500.0}, "Z+A")
+    _fixed(b, 10)
+    keep = []
+    b.step([_t("Z", 100, 200, 1, pts=-30.0, w1=-30.0), _t("A", 300, 400, 1), _t("Z", 500, 600, 1)], keep)
+    check("h. eval day stop: after a -$619 closed day no new entry by either bot", len(keep) == 1, keep)
+    f = C.Funded({**C.R("b50", "Z+A"), "day_cap": 500.0, "a_room_min": 1500.0}, "Z+A")
+    check("h. the eval guards are off once funded", f.day_cap == 0.0 and f.a_room_min == 0.0)
+    lv = C.Live(C.cell_of(C.frow("Z")), "Z")
+    _fixed(lv, 1)
+    ev = [lv.step([_t("Z", 100, 200, 1, pts=(x + 1.9) / 2.0, w1=0.0)]) for x in (1500, 900, 100, 400)]
+    check("h. live account: nothing until the floor locks at the start; then daily, everything above the $2,000 cushion "
+          "once >= $250, 80% to you, no payout limit", [e for e, _ in ev] == [None, "paid", None, "paid"]
+          and abs(ev[1][1] - 320.0) < 0.01 and abs(ev[3][1] - 400.0) < 0.01 and lv.max_pays is None, ev)
+
+    class Stub:
+        def __init__(self, evs):
+            self.evs, self.max_risk = list(evs), 0.0
+
+        def step(self, ts):
+            return self.evs.pop(0) if self.evs else (None, 0.0)
+    for mode in ("live", "stop", "rebuy"):
+        s = C.Slot(C.frow("Z", live=mode))
+        s.e, s.f = None, Stub([("grad", 1600.0)])
+        s.step(0, [], [])
+        evals0 = s.evals
+        if mode == "live":
+            s.step(1, [], [])
+            s.step(2, [], [])
+            ok = isinstance(s.lv, C.Live) and s.evals == 1
+            s.lv = Stub([("lost", 0.0)])
+            s.step(3, [], [])
+            for k in range(14):
+                s.step(4 + k, [], [])
+            ok = ok and s.evals == 1
+            s.step(18, [], [])
+            check("h. live move: after the 5th payout a live account (no new eval while it trades); a live breach = 15 sessions, "
+                  "then a new eval", ok and s.evals == 2 and s.lives == 1, (s.evals, s.lives))
+        elif mode == "stop":
+            for k in range(5):
+                s.step(1 + k, [], [])
+            check("h. stop: the slot ends at the 5th payout (live worth $0)", s.done and s.evals == 1 and abs(s.owner - 1600.0) < 0.01)
+        else:
+            check("h. rebuy (the study's model): a new eval at once", evals0 == 2)
+    P = C.week_paths("H2", 30, seed=5)
+    W = C.week_blocks("H2")
+    a, z = C.span_ix("H2")
+    starts = {w[0] for w in W}
+    check("h. week blocks: calendar weeks inside the period, a path starts on a week's first day and keeps weeks whole",
+          P.min() >= a and P.max() < z and all(p[0] in starts for p in P) and sum(len(w) for w in W) == z - a)
+    d = json.load(open(C.APATHS, encoding="utf-8"))
+    nA = sum(1 for r in json.load(open(C.TRADES, encoding="utf-8"))["rows"] if r[0] == "A")
+    check("h. ATLAS path file: every ATLAS row of the trade table, 0 missing, points = the stored trade's",
+          len(d["paths"]) == nA and d["missing"] == 0 and d["pts_mismatch"] == 0, (len(d["paths"]), nA))
+    if not os.path.exists(C.FINAL_OUT):
+        print("SKIP h. no final study file yet")
+        return
+    o = json.load(open(C.FINAL_OUT, encoding="utf-8"))
+    check("h. final: 12 pre-registered variants + Zlarior alone, every test, 2,000 paths, 200 H2 histories",
+          len(o["variants"]) == 12 and set(o["results"]) == {"Z", *C.VIDS} and o["n"] >= 2000 and o["n_hist"] >= 200
+          and all(set(o["results"][v]) >= {"day", "week", "day_t1", "week_t1", "day_drop5", "day_stop"} for v in C.VIDS))
+    pk = o["pick"]
+    check("h. final: the pick follows the design rule (tier A: C1-C5, else B: C1-C4, else the base)",
+          (pk["tier"] == "A" and pk["winner"] == max(pk["tier_A"], key=lambda v: pk["rows"][v]["h2_week_m"]))
+          or (pk["tier"] == "B" and not pk["tier_A"] and pk["winner"] == max(pk["tier_B"], key=lambda v: pk["rows"][v]["h2_week_m"]))
+          or (pk["tier"] == "C" and not pk["tier_B"] and pk["winner"] == "base"), pk["tier"])
+    cfg = json.load(open(C.FINAL_CFG, encoding="utf-8"))
+    check("h. combo_50k.json (the live build reads it): version 1, builder50k, lit + atlas, the winner's conflict / ATLAS size / guards, evidence",
+          cfg.get("version") == 1 and cfg.get("account") == "builder50k" and cfg.get("bots") == ["lit", "atlas"]
+          and cfg.get("variant") == pk["winner"] and cfg.get("conflict") in ("first", "zprio", "zfull")
+          and isinstance(cfg.get("guards"), dict) and "atlas_size_factor" in cfg and isinstance(cfg.get("evidence"), dict)
+          and cfg["evidence"].get("paper_only") is True, cfg)
+    W = os.path.join(ROOT, "research", "writeups", "one-account-combo-final-2026-11-19.md")
+    txt = open(W, encoding="utf-8").read() if os.path.exists(W) else ""
+    check("h. the final write-up exists, names the winner and the design file, and labels the post-hoc rows",
+          pk["winner"] in txt and C.FINAL_DESIGN in txt and "post-hoc" in txt.lower())
+
+
 def main():
     part_a()
     part_b()
@@ -183,6 +311,7 @@ def main():
     part_e()
     part_f()
     part_g()
+    part_h()
     ok = all(RES)
     print(f"\n{sum(RES)}/{len(RES)} passed" + ("" if ok else "  FAILURES"))
     return 0 if ok else 1
