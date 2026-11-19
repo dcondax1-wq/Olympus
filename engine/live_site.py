@@ -299,7 +299,7 @@ def merge_board(site, lite):
         return s or (site if site else None)
     if not s:
         return l
-    if _bt(s) > _bt(l):
+    if _bt(s) > _bt(l) and str(s.get("where") or "").lower() != "cloud":   # a cloud build's board (t = build time) never beats the PC
         return s
     out = dict(s)
     for k in ("t", "data_t", "where", "today", "host", "running", "level"):
