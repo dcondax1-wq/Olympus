@@ -1,0 +1,6534 @@
+{
+ "date": "2026-11-18",
+ "n": 600,
+ "spans": {
+  "H1": [
+   "2026-01-01",
+   "2026-06-30"
+  ],
+  "H2": [
+   "2026-07-01",
+   "2026-10-16"
+  ],
+  "REF": [
+   "2021-11-01",
+   "2025-12-31"
+  ]
+ },
+ "fixed_spans": {
+  "H1": [
+   "2026-01-01",
+   "2026-06-30"
+  ],
+  "H2": [
+   "2026-07-01",
+   "2026-10-16"
+  ],
+  "2025": [
+   "2025-01-01",
+   "2025-12-31"
+  ],
+  "2021-24": [
+   "2021-11-01",
+   "2024-12-31"
+  ]
+ },
+ "rows": {
+  "today": {
+   "fixed": {
+    "H1": {
+     "n": 104,
+     "tpw": 4.06,
+     "pf": 2.92,
+     "net": 18362,
+     "per_month": 3012,
+     "max_dd": -1062
+    },
+    "H2": {
+     "n": 46,
+     "tpw": 2.95,
+     "pf": 2.55,
+     "net": 5256,
+     "per_month": 1415,
+     "max_dd": -876
+    },
+    "2025": {
+     "n": 222,
+     "tpw": 4.3,
+     "pf": 1.17,
+     "net": 4466,
+     "per_month": 364,
+     "max_dd": -4871
+    },
+    "2021-24": {
+     "n": 772,
+     "tpw": 4.71,
+     "pf": 1.06,
+     "net": 5927,
+     "per_month": 152,
+     "max_dd": -11403
+    }
+   },
+   "funded": {
+    "H1": {
+     "per_month": 581,
+     "first_med": 18.0,
+     "first_p75": 28.0,
+     "no_pay_6m": 7.3,
+     "lost_6m": 0.0,
+     "stuck_6m": 8.5,
+     "dead_6m": 8.5,
+     "min_room_p10": 121,
+     "payouts": 4.4,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 491,
+     "first_med": 25.0,
+     "first_p75": 38.0,
+     "no_pay_6m": 7.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 9.2,
+     "dead_6m": 9.2,
+     "min_room_p10": 135,
+     "payouts": 3.72,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 45,
+     "first_med": 16.0,
+     "first_p75": 25.0,
+     "no_pay_6m": 79.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 94.5,
+     "dead_6m": 94.5,
+     "min_room_p10": 41,
+     "payouts": 0.34,
+     "paths": 600
+    }
+   },
+   "today_state": {
+    "H1": {
+     "per_month": 572,
+     "first_med": 19.0,
+     "first_p75": 28.0,
+     "no_pay_6m": 8.3,
+     "lost_6m": 0.0,
+     "stuck_6m": 9.8,
+     "dead_6m": 9.8,
+     "min_room_p10": 103,
+     "payouts": 4.32,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 480,
+     "first_med": 27.0,
+     "first_p75": 40.0,
+     "no_pay_6m": 9.2,
+     "lost_6m": 0.0,
+     "stuck_6m": 10.5,
+     "dead_6m": 10.5,
+     "min_room_p10": 98,
+     "payouts": 3.63,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 40,
+     "first_med": 17.0,
+     "first_p75": 29.0,
+     "no_pay_6m": 82.5,
+     "lost_6m": 0.0,
+     "stuck_6m": 94.8,
+     "dead_6m": 94.8,
+     "min_room_p10": 38,
+     "payouts": 0.31,
+     "paths": 600
+    }
+   },
+   "real": {
+    "H1": {
+     "per_month": 626,
+     "first_med": 19.0,
+     "first_p75": 23.75,
+     "no_pay_6m": 0.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 322,
+     "payouts": 4.46,
+     "paths": 26
+    },
+    "H2": {
+     "per_month": 283,
+     "first_med": 20.0,
+     "first_p75": 25.0,
+     "no_pay_6m": 43.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 340,
+     "payouts": 0.88,
+     "paths": 16
+    },
+    "REF": {
+     "per_month": 53,
+     "first_med": 28.0,
+     "first_p75": 41.5,
+     "no_pay_6m": 70.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 92.6,
+     "dead_6m": 92.6,
+     "min_room_p10": 42,
+     "payouts": 0.41,
+     "paths": 216
+    }
+   },
+   "no_stuck": {
+    "H1": {
+     "per_month": 592,
+     "first_med": 18.0,
+     "first_p75": 28.75,
+     "no_pay_6m": 5.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 121,
+     "payouts": 4.48,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 497,
+     "first_med": 26.0,
+     "first_p75": 38.0,
+     "no_pay_6m": 5.5,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 149,
+     "payouts": 3.77,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 48,
+     "first_med": 17.0,
+     "first_p75": 28.5,
+     "no_pay_6m": 78.2,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 2,
+     "payouts": 0.37,
+     "paths": 600
+    }
+   },
+   "trades_resized": {},
+   "idea": {
+    "fam": "base"
+   },
+   "fam": "base",
+   "gate_ok": null,
+   "gate_why": [],
+   "acts_h2": false,
+   "deltas_2026": [],
+   "flip": {
+    "H1": 1.0,
+    "H2": 1.0
+   },
+   "kind": "base"
+  },
+  "M1 member last-10 PF<1 -> paper": {
+   "fixed": {
+    "H1": {
+     "n": 84,
+     "tpw": 3.28,
+     "pf": 2.9,
+     "net": 15136,
+     "per_month": 2483,
+     "max_dd": -1071
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "pf": 1.98,
+     "net": 3331,
+     "per_month": 897,
+     "max_dd": -962
+    },
+    "2025": {
+     "n": 105,
+     "tpw": 2.03,
+     "pf": 1.35,
+     "net": 4221,
+     "per_month": 344,
+     "max_dd": -2543
+    },
+    "2021-24": {
+     "n": 381,
+     "tpw": 2.33,
+     "pf": 1.1,
+     "net": 5126,
+     "per_month": 131,
+     "max_dd": -9139
+    }
+   },
+   "funded": {
+    "H1": {
+     "per_month": 572,
+     "first_med": 20.0,
+     "first_p75": 30.0,
+     "no_pay_6m": 6.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 8.5,
+     "dead_6m": 8.5,
+     "min_room_p10": 138,
+     "payouts": 4.33,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 300,
+     "first_med": 34.5,
+     "first_p75": 53.0,
+     "no_pay_6m": 16.7,
+     "lost_6m": 0.0,
+     "stuck_6m": 20.7,
+     "dead_6m": 20.7,
+     "min_room_p10": 61,
+     "payouts": 2.28,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 36,
+     "first_med": 34.5,
+     "first_p75": 48.0,
+     "no_pay_6m": 79.3,
+     "lost_6m": 0.0,
+     "stuck_6m": 88.8,
+     "dead_6m": 88.8,
+     "min_room_p10": 38,
+     "payouts": 0.28,
+     "paths": 600
+    }
+   },
+   "today_state": {
+    "H1": {
+     "per_month": 562,
+     "first_med": 21.0,
+     "first_p75": 31.0,
+     "no_pay_6m": 8.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 9.8,
+     "dead_6m": 9.8,
+     "min_room_p10": 103,
+     "payouts": 4.26,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 290,
+     "first_med": 37.0,
+     "first_p75": 54.0,
+     "no_pay_6m": 19.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 21.7,
+     "dead_6m": 21.7,
+     "min_room_p10": 62,
+     "payouts": 2.2,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 33,
+     "first_med": 34.5,
+     "first_p75": 52.0,
+     "no_pay_6m": 81.7,
+     "lost_6m": 0.0,
+     "stuck_6m": 89.8,
+     "dead_6m": 89.8,
+     "min_room_p10": 36,
+     "payouts": 0.25,
+     "paths": 600
+    }
+   },
+   "real": {
+    "H1": {
+     "per_month": 560,
+     "first_med": 22.0,
+     "first_p75": 27.5,
+     "no_pay_6m": 0.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 322,
+     "payouts": 4.0,
+     "paths": 26
+    },
+    "H2": {
+     "per_month": 121,
+     "first_med": 12.0,
+     "first_p75": 20.0,
+     "no_pay_6m": 68.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 340,
+     "payouts": 0.5,
+     "paths": 16
+    },
+    "REF": {
+     "per_month": 58,
+     "first_med": 46.0,
+     "first_p75": 61.0,
+     "no_pay_6m": 73.6,
+     "lost_6m": 0.0,
+     "stuck_6m": 84.7,
+     "dead_6m": 84.7,
+     "min_room_p10": 43,
+     "payouts": 0.45,
+     "paths": 216
+    }
+   },
+   "trades_resized": {
+    "2021-24": 391,
+    "2025": 117,
+    "H1": 20,
+    "H2": 6
+   },
+   "idea": {
+    "fam": "M",
+    "mem_n": 10,
+    "mem_w": 0.0
+   },
+   "fam": "M",
+   "gate_ok": false,
+   "gate_why": [
+    "H2 $491 -> $300/mo",
+    "2021-25 $45 -> $36/mo",
+    "more dead accounts H2 9.2 -> 20.7%",
+    "H1 1st payout 18 -> 20 sessions",
+    "H2 1st payout 25 -> 34.5 sessions",
+    "H2 no payout 7.0 -> 16.7%",
+    "from today's account H1: 1st payout 19.0 -> 21.0 sessions",
+    "from today's account H2: $480 -> $290/mo, dead 10.5 -> 21.7%, 1st payout 27.0 -> 37.0 sessions, no payout 9.2 -> 19.0%",
+    "from today's account 2021-25: $40 -> $33/mo",
+    "real order H1 $626 -> $560/mo",
+    "real order H2 $283 -> $121/mo"
+   ],
+   "acts_h2": true,
+   "deltas_2026": [
+    {
+     "day": "2026-01-02",
+     "t": "SR:1767366000",
+     "usd": -280.1
+    },
+    {
+     "day": "2026-01-14",
+     "t": "MD:1768374000",
+     "usd": 219.6
+    },
+    {
+     "day": "2026-01-14",
+     "t": "EMA:1768395900",
+     "usd": 214.5
+    },
+    {
+     "day": "2026-01-16",
+     "t": "MD:1768574700",
+     "usd": -213.6
+    },
+    {
+     "day": "2026-01-19",
+     "t": "MD:1768834800",
+     "usd": -161.6
+    },
+    {
+     "day": "2026-01-27",
+     "t": "EMA:1769504100",
+     "usd": -0.6
+    },
+    {
+     "day": "2026-01-28",
+     "t": "EMA:1769594100",
+     "usd": -1.0
+    },
+    {
+     "day": "2026-01-29",
+     "t": "EMA:1769674800",
+     "usd": 210.8
+    },
+    {
+     "day": "2026-01-30",
+     "t": "EMA:1769777700",
+     "usd": 235.2
+    },
+    {
+     "day": "2026-02-02",
+     "t": "MD:1770015900",
+     "usd": -1050.1
+    },
+    {
+     "day": "2026-02-03",
+     "t": "EMA:1770121800",
+     "usd": 234.5
+    },
+    {
+     "day": "2026-02-05",
+     "t": "EMA:1770278400",
+     "usd": 190.8
+    },
+    {
+     "day": "2026-02-12",
+     "t": "EMA:1770890700",
+     "usd": 114.8
+    },
+    {
+     "day": "2026-02-18",
+     "t": "EMA:1771416300",
+     "usd": 169.8
+    },
+    {
+     "day": "2026-05-04",
+     "t": "MD:1777874400",
+     "usd": -1458.3
+    },
+    {
+     "day": "2026-06-04",
+     "t": "EMA:1780559700",
+     "usd": -1648.8
+    },
+    {
+     "day": "2026-09-11",
+     "t": "SR:1789138200",
+     "usd": -18.1
+    },
+    {
+     "day": "2026-09-24",
+     "t": "SR:1790260800",
+     "usd": -384.3
+    },
+    {
+     "day": "2026-10-02",
+     "t": "EMA:1790925000",
+     "usd": -773.0
+    },
+    {
+     "day": "2026-10-06",
+     "t": "SR:1791296100",
+     "usd": -381.3
+    },
+    {
+     "day": "2026-10-07",
+     "t": "MD:1791381300",
+     "usd": -367.6
+    }
+   ],
+   "flip": {
+    "H1": 1.0,
+    "H2": 1.0
+   },
+   "kind": "pre-declared"
+  },
+  "M2 member last-20 PF<1 -> paper": {
+   "fixed": {
+    "H1": {
+     "n": 83,
+     "tpw": 3.24,
+     "pf": 3.16,
+     "net": 17695,
+     "per_month": 2903,
+     "max_dd": -1290
+    },
+    "H2": {
+     "n": 46,
+     "tpw": 2.95,
+     "pf": 2.55,
+     "net": 5256,
+     "per_month": 1415,
+     "max_dd": -876
+    },
+    "2025": {
+     "n": 144,
+     "tpw": 2.79,
+     "pf": 1.19,
+     "net": 3204,
+     "per_month": 261,
+     "max_dd": -3802
+    },
+    "2021-24": {
+     "n": 439,
+     "tpw": 2.68,
+     "pf": 1.18,
+     "net": 9956,
+     "per_month": 255,
+     "max_dd": -9271
+    }
+   },
+   "funded": {
+    "H1": {
+     "per_month": 582,
+     "first_med": 18.0,
+     "first_p75": 28.0,
+     "no_pay_6m": 6.7,
+     "lost_6m": 0.0,
+     "stuck_6m": 8.3,
+     "dead_6m": 8.3,
+     "min_room_p10": 128,
+     "payouts": 4.39,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 491,
+     "first_med": 25.0,
+     "first_p75": 38.0,
+     "no_pay_6m": 7.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 9.2,
+     "dead_6m": 9.2,
+     "min_room_p10": 135,
+     "payouts": 3.72,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 46,
+     "first_med": 33.0,
+     "first_p75": 52.5,
+     "no_pay_6m": 74.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 88.3,
+     "dead_6m": 88.3,
+     "min_room_p10": 40,
+     "payouts": 0.35,
+     "paths": 600
+    }
+   },
+   "today_state": {
+    "H1": {
+     "per_month": 573,
+     "first_med": 20.0,
+     "first_p75": 28.0,
+     "no_pay_6m": 7.5,
+     "lost_6m": 0.0,
+     "stuck_6m": 9.5,
+     "dead_6m": 9.5,
+     "min_room_p10": 114,
+     "payouts": 4.34,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 480,
+     "first_med": 27.0,
+     "first_p75": 40.0,
+     "no_pay_6m": 9.2,
+     "lost_6m": 0.0,
+     "stuck_6m": 10.5,
+     "dead_6m": 10.5,
+     "min_room_p10": 98,
+     "payouts": 3.63,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 38,
+     "first_med": 33.5,
+     "first_p75": 49.25,
+     "no_pay_6m": 79.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 89.5,
+     "dead_6m": 89.5,
+     "min_room_p10": 43,
+     "payouts": 0.3,
+     "paths": 600
+    }
+   },
+   "real": {
+    "H1": {
+     "per_month": 626,
+     "first_med": 18.0,
+     "first_p75": 23.75,
+     "no_pay_6m": 0.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 264,
+     "payouts": 4.46,
+     "paths": 26
+    },
+    "H2": {
+     "per_month": 283,
+     "first_med": 20.0,
+     "first_p75": 25.0,
+     "no_pay_6m": 43.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 340,
+     "payouts": 0.88,
+     "paths": 16
+    },
+    "REF": {
+     "per_month": 43,
+     "first_med": 41.0,
+     "first_p75": 52.0,
+     "no_pay_6m": 76.4,
+     "lost_6m": 0.0,
+     "stuck_6m": 89.8,
+     "dead_6m": 89.8,
+     "min_room_p10": 41,
+     "payouts": 0.34,
+     "paths": 216
+    }
+   },
+   "trades_resized": {
+    "2021-24": 333,
+    "2025": 78,
+    "H1": 21
+   },
+   "idea": {
+    "fam": "M",
+    "mem_n": 20,
+    "mem_w": 0.0
+   },
+   "fam": "M",
+   "gate_ok": true,
+   "gate_why": [],
+   "acts_h2": false,
+   "deltas_2026": [
+    {
+     "day": "2026-01-02",
+     "t": "SR:1767366000",
+     "usd": -280.1
+    },
+    {
+     "day": "2026-01-13",
+     "t": "SR:1768317000",
+     "usd": -362.2
+    },
+    {
+     "day": "2026-01-14",
+     "t": "EMA:1768395900",
+     "usd": 214.5
+    },
+    {
+     "day": "2026-01-27",
+     "t": "EMA:1769504100",
+     "usd": -0.6
+    },
+    {
+     "day": "2026-01-28",
+     "t": "EMA:1769594100",
+     "usd": -1.0
+    },
+    {
+     "day": "2026-01-29",
+     "t": "EMA:1769674800",
+     "usd": 210.8
+    },
+    {
+     "day": "2026-01-30",
+     "t": "EMA:1769777700",
+     "usd": 235.2
+    },
+    {
+     "day": "2026-02-03",
+     "t": "EMA:1770121800",
+     "usd": 234.5
+    },
+    {
+     "day": "2026-02-05",
+     "t": "EMA:1770278400",
+     "usd": 190.8
+    },
+    {
+     "day": "2026-02-12",
+     "t": "EMA:1770890700",
+     "usd": 114.8
+    },
+    {
+     "day": "2026-02-18",
+     "t": "EMA:1771416300",
+     "usd": 169.8
+    },
+    {
+     "day": "2026-02-26",
+     "t": "EMA:1772105100",
+     "usd": -0.7
+    },
+    {
+     "day": "2026-02-27",
+     "t": "EMA:1772185200",
+     "usd": -135.2
+    },
+    {
+     "day": "2026-03-18",
+     "t": "EMA:1773823800",
+     "usd": -0.6
+    },
+    {
+     "day": "2026-03-20",
+     "t": "EMA:1773995400",
+     "usd": -1254.96
+    }
+   ],
+   "flip": {
+    "H1": 1.0,
+    "H2": 1.0
+   },
+   "kind": "pre-declared"
+  },
+  "M3 member last-20 PF<1 -> x0.5": {
+   "fixed": {
+    "H1": {
+     "n": 103,
+     "tpw": 4.02,
+     "pf": 3.05,
+     "net": 17972,
+     "per_month": 2949,
+     "max_dd": -1195
+    },
+    "H2": {
+     "n": 46,
+     "tpw": 2.95,
+     "pf": 2.55,
+     "net": 5256,
+     "per_month": 1415,
+     "max_dd": -876
+    },
+    "2025": {
+     "n": 213,
+     "tpw": 4.13,
+     "pf": 1.16,
+     "net": 3471,
+     "per_month": 283,
+     "max_dd": -4083
+    },
+    "2021-24": {
+     "n": 748,
+     "tpw": 4.57,
+     "pf": 1.11,
+     "net": 7663,
+     "per_month": 196,
+     "max_dd": -9199
+    }
+   },
+   "funded": {
+    "H1": {
+     "per_month": 590,
+     "first_med": 18.0,
+     "first_p75": 27.0,
+     "no_pay_6m": 6.5,
+     "lost_6m": 0.0,
+     "stuck_6m": 7.7,
+     "dead_6m": 7.7,
+     "min_room_p10": 166,
+     "payouts": 4.47,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 491,
+     "first_med": 25.0,
+     "first_p75": 38.0,
+     "no_pay_6m": 7.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 9.2,
+     "dead_6m": 9.2,
+     "min_room_p10": 135,
+     "payouts": 3.72,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 50,
+     "first_med": 24.0,
+     "first_p75": 39.5,
+     "no_pay_6m": 75.7,
+     "lost_6m": 0.0,
+     "stuck_6m": 90.5,
+     "dead_6m": 90.5,
+     "min_room_p10": 39,
+     "payouts": 0.39,
+     "paths": 600
+    }
+   },
+   "today_state": {
+    "H1": {
+     "per_month": 586,
+     "first_med": 18.5,
+     "first_p75": 28.0,
+     "no_pay_6m": 7.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 8.2,
+     "dead_6m": 8.2,
+     "min_room_p10": 144,
+     "payouts": 4.43,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 480,
+     "first_med": 27.0,
+     "first_p75": 40.0,
+     "no_pay_6m": 9.2,
+     "lost_6m": 0.0,
+     "stuck_6m": 10.5,
+     "dead_6m": 10.5,
+     "min_room_p10": 98,
+     "payouts": 3.63,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 46,
+     "first_med": 25.0,
+     "first_p75": 39.5,
+     "no_pay_6m": 78.3,
+     "lost_6m": 0.0,
+     "stuck_6m": 91.3,
+     "dead_6m": 91.3,
+     "min_room_p10": 37,
+     "payouts": 0.35,
+     "paths": 600
+    }
+   },
+   "real": {
+    "H1": {
+     "per_month": 626,
+     "first_med": 18.5,
+     "first_p75": 23.75,
+     "no_pay_6m": 0.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 322,
+     "payouts": 4.46,
+     "paths": 26
+    },
+    "H2": {
+     "per_month": 283,
+     "first_med": 20.0,
+     "first_p75": 25.0,
+     "no_pay_6m": 43.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 340,
+     "payouts": 0.88,
+     "paths": 16
+    },
+    "REF": {
+     "per_month": 64,
+     "first_med": 36.0,
+     "first_p75": 49.0,
+     "no_pay_6m": 66.2,
+     "lost_6m": 0.0,
+     "stuck_6m": 88.0,
+     "dead_6m": 88.0,
+     "min_room_p10": 46,
+     "payouts": 0.5,
+     "paths": 216
+    }
+   },
+   "trades_resized": {
+    "2021-24": 333,
+    "2025": 78,
+    "H1": 21
+   },
+   "idea": {
+    "fam": "M",
+    "mem_n": 20,
+    "mem_w": 0.5
+   },
+   "fam": "M",
+   "gate_ok": true,
+   "gate_why": [],
+   "acts_h2": false,
+   "deltas_2026": [
+    {
+     "day": "2026-01-02",
+     "t": "SR:1767366000",
+     "usd": -280.1
+    },
+    {
+     "day": "2026-01-13",
+     "t": "SR:1768317000",
+     "usd": -181.1
+    },
+    {
+     "day": "2026-01-14",
+     "t": "EMA:1768395900",
+     "usd": 128.7
+    },
+    {
+     "day": "2026-01-28",
+     "t": "EMA:1769594100",
+     "usd": -0.5
+    },
+    {
+     "day": "2026-01-29",
+     "t": "EMA:1769674800",
+     "usd": 105.4
+    },
+    {
+     "day": "2026-01-30",
+     "t": "EMA:1769777700",
+     "usd": 156.8
+    },
+    {
+     "day": "2026-02-03",
+     "t": "EMA:1770121800",
+     "usd": 140.7
+    },
+    {
+     "day": "2026-02-05",
+     "t": "EMA:1770278400",
+     "usd": 95.4
+    },
+    {
+     "day": "2026-02-12",
+     "t": "EMA:1770890700",
+     "usd": 57.4
+    },
+    {
+     "day": "2026-02-18",
+     "t": "EMA:1771416300",
+     "usd": 84.9
+    },
+    {
+     "day": "2026-02-27",
+     "t": "EMA:1772185200",
+     "usd": -67.6
+    },
+    {
+     "day": "2026-03-20",
+     "t": "EMA:1773995400",
+     "usd": -627.48
+    }
+   ],
+   "flip": {
+    "H1": 1.0,
+    "H2": 1.0
+   },
+   "kind": "pre-declared"
+  },
+  "L1 AMBER x0.75, RED x0.5": {
+   "fixed": {
+    "H1": {
+     "n": 98,
+     "tpw": 3.83,
+     "pf": 3.02,
+     "net": 16442,
+     "per_month": 2697,
+     "max_dd": -1074
+    },
+    "H2": {
+     "n": 46,
+     "tpw": 2.95,
+     "pf": 2.63,
+     "net": 4922,
+     "per_month": 1325,
+     "max_dd": -876
+    },
+    "2025": {
+     "n": 215,
+     "tpw": 4.17,
+     "pf": 1.04,
+     "net": 700,
+     "per_month": 57,
+     "max_dd": -3686
+    },
+    "2021-24": {
+     "n": 750,
+     "tpw": 4.58,
+     "pf": 1.11,
+     "net": 6775,
+     "per_month": 174,
+     "max_dd": -6285
+    }
+   },
+   "funded": {
+    "H1": {
+     "per_month": 582,
+     "first_med": 19.0,
+     "first_p75": 29.0,
+     "no_pay_6m": 5.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 7.2,
+     "dead_6m": 7.2,
+     "min_room_p10": 185,
+     "payouts": 4.42,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 473,
+     "first_med": 28.0,
+     "first_p75": 41.0,
+     "no_pay_6m": 7.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 9.7,
+     "dead_6m": 9.7,
+     "min_room_p10": 139,
+     "payouts": 3.58,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 48,
+     "first_med": 38.5,
+     "first_p75": 59.5,
+     "no_pay_6m": 75.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 87.5,
+     "dead_6m": 87.5,
+     "min_room_p10": 32,
+     "payouts": 0.38,
+     "paths": 600
+    }
+   },
+   "today_state": {
+    "H1": {
+     "per_month": 574,
+     "first_med": 21.0,
+     "first_p75": 31.0,
+     "no_pay_6m": 6.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 8.3,
+     "dead_6m": 8.3,
+     "min_room_p10": 154,
+     "payouts": 4.36,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 462,
+     "first_med": 29.0,
+     "first_p75": 42.0,
+     "no_pay_6m": 8.7,
+     "lost_6m": 0.0,
+     "stuck_6m": 10.3,
+     "dead_6m": 10.3,
+     "min_room_p10": 99,
+     "payouts": 3.5,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 43,
+     "first_med": 41.5,
+     "first_p75": 58.0,
+     "no_pay_6m": 77.7,
+     "lost_6m": 0.0,
+     "stuck_6m": 88.7,
+     "dead_6m": 88.7,
+     "min_room_p10": 33,
+     "payouts": 0.34,
+     "paths": 600
+    }
+   },
+   "real": {
+    "H1": {
+     "per_month": 627,
+     "first_med": 19.5,
+     "first_p75": 25.0,
+     "no_pay_6m": 0.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 322,
+     "payouts": 4.46,
+     "paths": 26
+    },
+    "H2": {
+     "per_month": 158,
+     "first_med": 16.0,
+     "first_p75": 23.75,
+     "no_pay_6m": 62.5,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 340,
+     "payouts": 0.62,
+     "paths": 16
+    },
+    "REF": {
+     "per_month": 64,
+     "first_med": 44.0,
+     "first_p75": 57.0,
+     "no_pay_6m": 68.5,
+     "lost_6m": 0.0,
+     "stuck_6m": 88.0,
+     "dead_6m": 88.0,
+     "min_room_p10": 34,
+     "payouts": 0.5,
+     "paths": 216
+    }
+   },
+   "trades_resized": {
+    "2021-24": 657,
+    "2025": 205,
+    "H1": 34,
+    "H2": 17
+   },
+   "idea": {
+    "fam": "L",
+    "light": {
+     "AMBER": 0.75,
+     "RED": 0.5
+    }
+   },
+   "fam": "L",
+   "gate_ok": false,
+   "gate_why": [
+    "H2 $491 -> $473/mo",
+    "more dead accounts H2 9.2 -> 9.7%",
+    "H2 1st payout 25 -> 28 sessions",
+    "from today's account H1: 1st payout 19.0 -> 21.0 sessions",
+    "from today's account H2: $480 -> $462/mo, 1st payout 27.0 -> 29.0 sessions",
+    "real order H2 $283 -> $158/mo"
+   ],
+   "acts_h2": true,
+   "deltas_2026": [
+    {
+     "day": "2026-01-02",
+     "t": "MD:1767337200",
+     "usd": 123.6
+    },
+    {
+     "day": "2026-01-02",
+     "t": "SR:1767366000",
+     "usd": -280.1
+    },
+    {
+     "day": "2026-01-07",
+     "t": "MD:1767773700",
+     "usd": 68.8
+    },
+    {
+     "day": "2026-01-07",
+     "t": "SR:1767800400",
+     "usd": 103.4
+    },
+    {
+     "day": "2026-01-09",
+     "t": "MD:1767943500",
+     "usd": 76.9
+    },
+    {
+     "day": "2026-01-13",
+     "t": "MD:1768297200",
+     "usd": 133.2
+    },
+    {
+     "day": "2026-01-13",
+     "t": "SR:1768317000",
+     "usd": -181.1
+    },
+    {
+     "day": "2026-01-14",
+     "t": "MD:1768374000",
+     "usd": 54.9
+    },
+    {
+     "day": "2026-01-14",
+     "t": "EMA:1768395900",
+     "usd": 42.9
+    },
+    {
+     "day": "2026-01-16",
+     "t": "MD:1768574700",
+     "usd": -213.6
+    },
+    {
+     "day": "2026-01-19",
+     "t": "SR:1768834200",
+     "usd": -202.2
+    },
+    {
+     "day": "2026-01-19",
+     "t": "MD:1768834800",
+     "usd": -161.6
+    },
+    {
+     "day": "2026-01-20",
+     "t": "SR:1768924200",
+     "usd": 134.9
+    },
+    {
+     "day": "2026-01-28",
+     "t": "SR:1769614800",
+     "usd": 68.9
+    },
+    {
+     "day": "2026-01-29",
+     "t": "EMA:1769674800",
+     "usd": 105.4
+    },
+    {
+     "day": "2026-01-30",
+     "t": "EMA:1769777700",
+     "usd": 156.8
+    },
+    {
+     "day": "2026-01-30",
+     "t": "SR:1769784300",
+     "usd": -276.1
+    },
+    {
+     "day": "2026-02-02",
+     "t": "MD:1770015900",
+     "usd": -1050.1
+    },
+    {
+     "day": "2026-02-03",
+     "t": "EMA:1770121800",
+     "usd": 93.8
+    },
+    {
+     "day": "2026-02-05",
+     "t": "EMA:1770278400",
+     "usd": 95.4
+    },
+    {
+     "day": "2026-02-05",
+     "t": "MD:1770279900",
+     "usd": -458.1
+    },
+    {
+     "day": "2026-02-10",
+     "t": "MD:1770713100",
+     "usd": 76.9
+    },
+    {
+     "day": "2026-02-10",
+     "t": "SR:1770736500",
+     "usd": -227.1
+    },
+    {
+     "day": "2026-02-16",
+     "t": "MD:1771257300",
+     "usd": 76.4
+    },
+    {
+     "day": "2026-02-19",
+     "t": "MD:1771490100",
+     "usd": -281.6
+    },
+    {
+     "day": "2026-09-16",
+     "t": "SR:1789567500",
+     "usd": 71.4
+    },
+    {
+     "day": "2026-09-18",
+     "t": "MD:1789719000",
+     "usd": -57.1
+    },
+    {
+     "day": "2026-09-22",
+     "t": "EMA:1790061000",
+     "usd": 69.8
+    },
+    {
+     "day": "2026-09-24",
+     "t": "SR:1790260800",
+     "usd": -128.1
+    },
+    {
+     "day": "2026-09-28",
+     "t": "MD:1790581800",
+     "usd": 102.9
+    },
+    {
+     "day": "2026-10-02",
+     "t": "EMA:1790925000",
+     "usd": -386.5
+    },
+    {
+     "day": "2026-10-06",
+     "t": "EMA:1791274200",
+     "usd": 58.9
+    },
+    {
+     "day": "2026-10-06",
+     "t": "SR:1791296100",
+     "usd": -127.1
+    },
+    {
+     "day": "2026-10-09",
+     "t": "MD:1791525900",
+     "usd": 61.9
+    }
+   ],
+   "flip": {
+    "H1": 1.0,
+    "H2": 1.0
+   },
+   "kind": "pre-declared"
+  },
+  "L2 AMBER x0.5, RED x0.5": {
+   "fixed": {
+    "H1": {
+     "n": 96,
+     "tpw": 3.75,
+     "pf": 3.1,
+     "net": 15812,
+     "per_month": 2594,
+     "max_dd": -1062
+    },
+    "H2": {
+     "n": 41,
+     "tpw": 2.63,
+     "pf": 2.26,
+     "net": 3650,
+     "per_month": 983,
+     "max_dd": -995
+    },
+    "2025": {
+     "n": 200,
+     "tpw": 3.88,
+     "pf": 1.02,
+     "net": 265,
+     "per_month": 22,
+     "max_dd": -3052
+    },
+    "2021-24": {
+     "n": 727,
+     "tpw": 4.44,
+     "pf": 1.01,
+     "net": 303,
+     "per_month": 8,
+     "max_dd": -7144
+    }
+   },
+   "funded": {
+    "H1": {
+     "per_month": 592,
+     "first_med": 19.5,
+     "first_p75": 28.0,
+     "no_pay_6m": 5.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 6.3,
+     "dead_6m": 6.3,
+     "min_room_p10": 203,
+     "payouts": 4.49,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 452,
+     "first_med": 29.0,
+     "first_p75": 43.0,
+     "no_pay_6m": 7.2,
+     "lost_6m": 0.0,
+     "stuck_6m": 10.7,
+     "dead_6m": 10.7,
+     "min_room_p10": 96,
+     "payouts": 3.43,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 44,
+     "first_med": 44.0,
+     "first_p75": 73.75,
+     "no_pay_6m": 76.3,
+     "lost_6m": 0.0,
+     "stuck_6m": 83.2,
+     "dead_6m": 83.2,
+     "min_room_p10": 30,
+     "payouts": 0.35,
+     "paths": 600
+    }
+   },
+   "today_state": {
+    "H1": {
+     "per_month": 585,
+     "first_med": 21.0,
+     "first_p75": 31.0,
+     "no_pay_6m": 5.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 7.2,
+     "dead_6m": 7.2,
+     "min_room_p10": 168,
+     "payouts": 4.44,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 444,
+     "first_med": 31.0,
+     "first_p75": 45.0,
+     "no_pay_6m": 8.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 11.3,
+     "dead_6m": 11.3,
+     "min_room_p10": 90,
+     "payouts": 3.36,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 39,
+     "first_med": 46.0,
+     "first_p75": 76.0,
+     "no_pay_6m": 79.5,
+     "lost_6m": 0.0,
+     "stuck_6m": 85.0,
+     "dead_6m": 85.0,
+     "min_room_p10": 32,
+     "payouts": 0.31,
+     "paths": 600
+    }
+   },
+   "real": {
+    "H1": {
+     "per_month": 592,
+     "first_med": 19.5,
+     "first_p75": 25.0,
+     "no_pay_6m": 0.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 322,
+     "payouts": 4.23,
+     "paths": 26
+    },
+    "H2": {
+     "per_month": 141,
+     "first_med": 16.0,
+     "first_p75": 23.75,
+     "no_pay_6m": 62.5,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 340,
+     "payouts": 0.56,
+     "paths": 16
+    },
+    "REF": {
+     "per_month": 60,
+     "first_med": 58.0,
+     "first_p75": 87.25,
+     "no_pay_6m": 71.3,
+     "lost_6m": 0.0,
+     "stuck_6m": 85.6,
+     "dead_6m": 85.6,
+     "min_room_p10": 33,
+     "payouts": 0.47,
+     "paths": 216
+    }
+   },
+   "trades_resized": {
+    "2021-24": 657,
+    "2025": 205,
+    "H1": 34,
+    "H2": 17
+   },
+   "idea": {
+    "fam": "L",
+    "light": {
+     "AMBER": 0.5,
+     "RED": 0.5
+    }
+   },
+   "fam": "L",
+   "gate_ok": false,
+   "gate_why": [
+    "H2 $491 -> $452/mo",
+    "more dead accounts H2 9.2 -> 10.7%",
+    "H1 1st payout 18 -> 19.5 sessions",
+    "H2 1st payout 25 -> 29 sessions",
+    "from today's account H1: 1st payout 19.0 -> 21.0 sessions",
+    "from today's account H2: $480 -> $444/mo, dead 10.5 -> 11.3%, 1st payout 27.0 -> 31.0 sessions",
+    "real order H1 $626 -> $592/mo",
+    "real order H2 $283 -> $141/mo"
+   ],
+   "acts_h2": true,
+   "deltas_2026": [
+    {
+     "day": "2026-01-02",
+     "t": "MD:1767337200",
+     "usd": 123.6
+    },
+    {
+     "day": "2026-01-02",
+     "t": "SR:1767366000",
+     "usd": -280.1
+    },
+    {
+     "day": "2026-01-07",
+     "t": "MD:1767773700",
+     "usd": 137.6
+    },
+    {
+     "day": "2026-01-07",
+     "t": "SR:1767800400",
+     "usd": 103.4
+    },
+    {
+     "day": "2026-01-09",
+     "t": "MD:1767943500",
+     "usd": 76.9
+    },
+    {
+     "day": "2026-01-13",
+     "t": "MD:1768297200",
+     "usd": 133.2
+    },
+    {
+     "day": "2026-01-13",
+     "t": "SR:1768317000",
+     "usd": -181.1
+    },
+    {
+     "day": "2026-01-14",
+     "t": "MD:1768374000",
+     "usd": 109.8
+    },
+    {
+     "day": "2026-01-14",
+     "t": "EMA:1768395900",
+     "usd": 128.7
+    },
+    {
+     "day": "2026-01-16",
+     "t": "MD:1768574700",
+     "usd": -213.6
+    },
+    {
+     "day": "2026-01-19",
+     "t": "SR:1768834200",
+     "usd": -202.2
+    },
+    {
+     "day": "2026-01-19",
+     "t": "MD:1768834800",
+     "usd": -161.6
+    },
+    {
+     "day": "2026-01-20",
+     "t": "SR:1768924200",
+     "usd": 134.9
+    },
+    {
+     "day": "2026-01-28",
+     "t": "EMA:1769594100",
+     "usd": -0.5
+    },
+    {
+     "day": "2026-01-28",
+     "t": "SR:1769614800",
+     "usd": 137.8
+    },
+    {
+     "day": "2026-01-29",
+     "t": "EMA:1769674800",
+     "usd": 105.4
+    },
+    {
+     "day": "2026-01-30",
+     "t": "EMA:1769777700",
+     "usd": 156.8
+    },
+    {
+     "day": "2026-01-30",
+     "t": "SR:1769784300",
+     "usd": -276.1
+    },
+    {
+     "day": "2026-02-02",
+     "t": "MD:1770015900",
+     "usd": -1050.1
+    },
+    {
+     "day": "2026-02-03",
+     "t": "EMA:1770121800",
+     "usd": 140.7
+    },
+    {
+     "day": "2026-02-05",
+     "t": "EMA:1770278400",
+     "usd": 95.4
+    },
+    {
+     "day": "2026-02-05",
+     "t": "MD:1770279900",
+     "usd": -916.2
+    },
+    {
+     "day": "2026-02-10",
+     "t": "MD:1770713100",
+     "usd": 153.8
+    },
+    {
+     "day": "2026-02-10",
+     "t": "SR:1770736500",
+     "usd": -227.1
+    },
+    {
+     "day": "2026-02-11",
+     "t": "SR:1770822600",
+     "usd": -259.1
+    },
+    {
+     "day": "2026-02-12",
+     "t": "EMA:1770890700",
+     "usd": 57.4
+    },
+    {
+     "day": "2026-02-16",
+     "t": "MD:1771257300",
+     "usd": 152.8
+    },
+    {
+     "day": "2026-02-17",
+     "t": "SR:1771343100",
+     "usd": -251.1
+    },
+    {
+     "day": "2026-02-18",
+     "t": "EMA:1771416300",
+     "usd": 84.9
+    },
+    {
+     "day": "2026-02-19",
+     "t": "MD:1771490100",
+     "usd": -563.2
+    },
+    {
+     "day": "2026-09-10",
+     "t": "EMA:1789038300",
+     "usd": -392.62
+    },
+    {
+     "day": "2026-09-11",
+     "t": "SR:1789138200",
+     "usd": -18.1
+    },
+    {
+     "day": "2026-09-16",
+     "t": "SR:1789567500",
+     "usd": 71.4
+    },
+    {
+     "day": "2026-09-18",
+     "t": "MD:1789719000",
+     "usd": -57.1
+    },
+    {
+     "day": "2026-09-22",
+     "t": "EMA:1790061000",
+     "usd": 139.6
+    },
+    {
+     "day": "2026-09-24",
+     "t": "SR:1790260800",
+     "usd": -256.2
+    },
+    {
+     "day": "2026-09-28",
+     "t": "MD:1790581800",
+     "usd": 102.9
+    },
+    {
+     "day": "2026-09-29",
+     "t": "MD:1790661900",
+     "usd": -370.1
+    },
+    {
+     "day": "2026-10-02",
+     "t": "EMA:1790925000",
+     "usd": -386.5
+    },
+    {
+     "day": "2026-10-06",
+     "t": "EMA:1791274200",
+     "usd": 58.9
+    },
+    {
+     "day": "2026-10-06",
+     "t": "SR:1791296100",
+     "usd": -254.2
+    },
+    {
+     "day": "2026-10-07",
+     "t": "MD:1791381300",
+     "usd": -367.6
+    },
+    {
+     "day": "2026-10-09",
+     "t": "MD:1791525900",
+     "usd": 123.8
+    }
+   ],
+   "flip": {
+    "H1": 1.0,
+    "H2": 1.0
+   },
+   "kind": "pre-declared"
+  },
+  "L3 RED -> paper": {
+   "fixed": {
+    "H1": {
+     "n": 91,
+     "tpw": 3.55,
+     "pf": 2.94,
+     "net": 16606,
+     "per_month": 2724,
+     "max_dd": -1723
+    },
+    "H2": {
+     "n": 46,
+     "tpw": 2.95,
+     "pf": 2.55,
+     "net": 5256,
+     "per_month": 1415,
+     "max_dd": -876
+    },
+    "2025": {
+     "n": 137,
+     "tpw": 2.66,
+     "pf": 0.96,
+     "net": -699,
+     "per_month": -57,
+     "max_dd": -5017
+    },
+    "2021-24": {
+     "n": 373,
+     "tpw": 2.28,
+     "pf": 1.34,
+     "net": 15192,
+     "per_month": 390,
+     "max_dd": -4020
+    }
+   },
+   "funded": {
+    "H1": {
+     "per_month": 544,
+     "first_med": 19.0,
+     "first_p75": 30.0,
+     "no_pay_6m": 9.5,
+     "lost_6m": 0.0,
+     "stuck_6m": 11.3,
+     "dead_6m": 11.3,
+     "min_room_p10": 86,
+     "payouts": 4.12,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 491,
+     "first_med": 25.0,
+     "first_p75": 38.0,
+     "no_pay_6m": 7.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 9.2,
+     "dead_6m": 9.2,
+     "min_room_p10": 135,
+     "payouts": 3.72,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 47,
+     "first_med": 37.0,
+     "first_p75": 57.5,
+     "no_pay_6m": 75.7,
+     "lost_6m": 0.0,
+     "stuck_6m": 80.8,
+     "dead_6m": 80.8,
+     "min_room_p10": 44,
+     "payouts": 0.36,
+     "paths": 600
+    }
+   },
+   "today_state": {
+    "H1": {
+     "per_month": 535,
+     "first_med": 20.0,
+     "first_p75": 30.0,
+     "no_pay_6m": 10.5,
+     "lost_6m": 0.0,
+     "stuck_6m": 12.8,
+     "dead_6m": 12.8,
+     "min_room_p10": 85,
+     "payouts": 4.05,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 480,
+     "first_med": 27.0,
+     "first_p75": 40.0,
+     "no_pay_6m": 9.2,
+     "lost_6m": 0.0,
+     "stuck_6m": 10.5,
+     "dead_6m": 10.5,
+     "min_room_p10": 98,
+     "payouts": 3.63,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 44,
+     "first_med": 38.0,
+     "first_p75": 55.75,
+     "no_pay_6m": 77.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 82.5,
+     "dead_6m": 82.5,
+     "min_room_p10": 41,
+     "payouts": 0.34,
+     "paths": 600
+    }
+   },
+   "real": {
+    "H1": {
+     "per_month": 600,
+     "first_med": 18.0,
+     "first_p75": 24.0,
+     "no_pay_6m": 3.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 3.8,
+     "dead_6m": 3.8,
+     "min_room_p10": 248,
+     "payouts": 4.27,
+     "paths": 26
+    },
+    "H2": {
+     "per_month": 283,
+     "first_med": 20.0,
+     "first_p75": 25.0,
+     "no_pay_6m": 43.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 340,
+     "payouts": 0.88,
+     "paths": 16
+    },
+    "REF": {
+     "per_month": 45,
+     "first_med": 36.0,
+     "first_p75": 54.0,
+     "no_pay_6m": 69.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 75.0,
+     "dead_6m": 75.0,
+     "min_room_p10": 24,
+     "payouts": 0.35,
+     "paths": 216
+    }
+   },
+   "trades_resized": {
+    "2021-24": 399,
+    "2025": 85,
+    "H1": 13
+   },
+   "idea": {
+    "fam": "L",
+    "light": {
+     "RED": 0.0
+    }
+   },
+   "fam": "L",
+   "gate_ok": false,
+   "gate_why": [
+    "H1 $581 -> $544/mo",
+    "more dead accounts H1 8.5 -> 11.3%",
+    "H1 no payout 7.3 -> 9.5%",
+    "from today's account H1: $572 -> $535/mo, dead 9.8 -> 12.8%, no payout 8.3 -> 10.5%",
+    "real order H1 dead 0.0 -> 3.8%",
+    "real order H1 $626 -> $600/mo"
+   ],
+   "acts_h2": false,
+   "deltas_2026": [
+    {
+     "day": "2026-01-02",
+     "t": "MD:1767337200",
+     "usd": 247.2
+    },
+    {
+     "day": "2026-01-02",
+     "t": "SR:1767366000",
+     "usd": -280.1
+    },
+    {
+     "day": "2026-01-09",
+     "t": "MD:1767943500",
+     "usd": 153.8
+    },
+    {
+     "day": "2026-01-13",
+     "t": "MD:1768297200",
+     "usd": 222.0
+    },
+    {
+     "day": "2026-01-13",
+     "t": "SR:1768317000",
+     "usd": -362.2
+    },
+    {
+     "day": "2026-01-16",
+     "t": "MD:1768574700",
+     "usd": -213.6
+    },
+    {
+     "day": "2026-01-19",
+     "t": "SR:1768834200",
+     "usd": -404.4
+    },
+    {
+     "day": "2026-01-19",
+     "t": "MD:1768834800",
+     "usd": -161.6
+    },
+    {
+     "day": "2026-01-20",
+     "t": "SR:1768924200",
+     "usd": 134.9
+    },
+    {
+     "day": "2026-01-30",
+     "t": "EMA:1769777700",
+     "usd": 235.2
+    },
+    {
+     "day": "2026-01-30",
+     "t": "SR:1769784300",
+     "usd": -276.1
+    },
+    {
+     "day": "2026-02-02",
+     "t": "MD:1770015900",
+     "usd": -1050.1
+    }
+   ],
+   "flip": {
+    "H1": 1.0,
+    "H2": 1.0
+   },
+   "kind": "pre-declared"
+  },
+  "L4 AMBER x0.5, RED -> paper": {
+   "fixed": {
+    "H1": {
+     "n": 89,
+     "tpw": 3.48,
+     "pf": 3.21,
+     "net": 15796,
+     "per_month": 2592,
+     "max_dd": -1062
+    },
+    "H2": {
+     "n": 41,
+     "tpw": 2.63,
+     "pf": 2.26,
+     "net": 3650,
+     "per_month": 983,
+     "max_dd": -995
+    },
+    "2025": {
+     "n": 122,
+     "tpw": 2.36,
+     "pf": 0.79,
+     "net": -1826,
+     "per_month": -149,
+     "max_dd": -3397
+    },
+    "2021-24": {
+     "n": 350,
+     "tpw": 2.14,
+     "pf": 1.16,
+     "net": 4388,
+     "per_month": 113,
+     "max_dd": -3937
+    }
+   },
+   "funded": {
+    "H1": {
+     "per_month": 558,
+     "first_med": 20.0,
+     "first_p75": 31.0,
+     "no_pay_6m": 7.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 8.7,
+     "dead_6m": 8.7,
+     "min_room_p10": 138,
+     "payouts": 4.24,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 452,
+     "first_med": 29.0,
+     "first_p75": 43.0,
+     "no_pay_6m": 7.2,
+     "lost_6m": 0.0,
+     "stuck_6m": 10.7,
+     "dead_6m": 10.7,
+     "min_room_p10": 96,
+     "payouts": 3.43,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 35,
+     "first_med": 58.0,
+     "first_p75": 94.25,
+     "no_pay_6m": 78.7,
+     "lost_6m": 0.0,
+     "stuck_6m": 65.0,
+     "dead_6m": 65.0,
+     "min_room_p10": 36,
+     "payouts": 0.28,
+     "paths": 600
+    }
+   },
+   "today_state": {
+    "H1": {
+     "per_month": 553,
+     "first_med": 22.0,
+     "first_p75": 33.0,
+     "no_pay_6m": 7.3,
+     "lost_6m": 0.0,
+     "stuck_6m": 9.5,
+     "dead_6m": 9.5,
+     "min_room_p10": 112,
+     "payouts": 4.19,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 444,
+     "first_med": 31.0,
+     "first_p75": 45.0,
+     "no_pay_6m": 8.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 11.3,
+     "dead_6m": 11.3,
+     "min_room_p10": 90,
+     "payouts": 3.36,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 30,
+     "first_med": 61.0,
+     "first_p75": 91.5,
+     "no_pay_6m": 81.7,
+     "lost_6m": 0.0,
+     "stuck_6m": 68.0,
+     "dead_6m": 68.0,
+     "min_room_p10": 33,
+     "payouts": 0.24,
+     "paths": 600
+    }
+   },
+   "real": {
+    "H1": {
+     "per_month": 593,
+     "first_med": 20.5,
+     "first_p75": 25.0,
+     "no_pay_6m": 0.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 322,
+     "payouts": 4.23,
+     "paths": 26
+    },
+    "H2": {
+     "per_month": 141,
+     "first_med": 16.0,
+     "first_p75": 23.75,
+     "no_pay_6m": 62.5,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 340,
+     "payouts": 0.56,
+     "paths": 16
+    },
+    "REF": {
+     "per_month": 49,
+     "first_med": 69.0,
+     "first_p75": 99.0,
+     "no_pay_6m": 74.5,
+     "lost_6m": 0.0,
+     "stuck_6m": 56.5,
+     "dead_6m": 56.5,
+     "min_room_p10": 33,
+     "payouts": 0.39,
+     "paths": 216
+    }
+   },
+   "trades_resized": {
+    "2021-24": 657,
+    "2025": 205,
+    "H1": 34,
+    "H2": 17
+   },
+   "idea": {
+    "fam": "L",
+    "light": {
+     "AMBER": 0.5,
+     "RED": 0.0
+    }
+   },
+   "fam": "L",
+   "gate_ok": false,
+   "gate_why": [
+    "H1 $581 -> $558/mo",
+    "H2 $491 -> $452/mo",
+    "2021-25 $45 -> $35/mo",
+    "more dead accounts H1 8.5 -> 8.7%, H2 9.2 -> 10.7%",
+    "H1 1st payout 18 -> 20 sessions",
+    "H2 1st payout 25 -> 29 sessions",
+    "from today's account H1: $572 -> $553/mo, 1st payout 19.0 -> 22.0 sessions",
+    "from today's account H2: $480 -> $444/mo, dead 10.5 -> 11.3%, 1st payout 27.0 -> 31.0 sessions",
+    "from today's account 2021-25: $40 -> $30/mo",
+    "real order H1 $626 -> $593/mo",
+    "real order H2 $283 -> $141/mo"
+   ],
+   "acts_h2": true,
+   "deltas_2026": [
+    {
+     "day": "2026-01-02",
+     "t": "MD:1767337200",
+     "usd": 247.2
+    },
+    {
+     "day": "2026-01-02",
+     "t": "SR:1767366000",
+     "usd": -280.1
+    },
+    {
+     "day": "2026-01-07",
+     "t": "MD:1767773700",
+     "usd": 137.6
+    },
+    {
+     "day": "2026-01-07",
+     "t": "SR:1767800400",
+     "usd": 103.4
+    },
+    {
+     "day": "2026-01-09",
+     "t": "MD:1767943500",
+     "usd": 153.8
+    },
+    {
+     "day": "2026-01-13",
+     "t": "MD:1768297200",
+     "usd": 222.0
+    },
+    {
+     "day": "2026-01-13",
+     "t": "SR:1768317000",
+     "usd": -362.2
+    },
+    {
+     "day": "2026-01-14",
+     "t": "MD:1768374000",
+     "usd": 109.8
+    },
+    {
+     "day": "2026-01-14",
+     "t": "EMA:1768395900",
+     "usd": 128.7
+    },
+    {
+     "day": "2026-01-16",
+     "t": "MD:1768574700",
+     "usd": -213.6
+    },
+    {
+     "day": "2026-01-19",
+     "t": "SR:1768834200",
+     "usd": -404.4
+    },
+    {
+     "day": "2026-01-19",
+     "t": "MD:1768834800",
+     "usd": -161.6
+    },
+    {
+     "day": "2026-01-20",
+     "t": "SR:1768924200",
+     "usd": 134.9
+    },
+    {
+     "day": "2026-01-28",
+     "t": "EMA:1769594100",
+     "usd": -0.5
+    },
+    {
+     "day": "2026-01-28",
+     "t": "SR:1769614800",
+     "usd": 137.8
+    },
+    {
+     "day": "2026-01-29",
+     "t": "EMA:1769674800",
+     "usd": 105.4
+    },
+    {
+     "day": "2026-01-30",
+     "t": "EMA:1769777700",
+     "usd": 235.2
+    },
+    {
+     "day": "2026-01-30",
+     "t": "SR:1769784300",
+     "usd": -276.1
+    },
+    {
+     "day": "2026-02-02",
+     "t": "MD:1770015900",
+     "usd": -1050.1
+    },
+    {
+     "day": "2026-02-03",
+     "t": "EMA:1770121800",
+     "usd": 140.7
+    },
+    {
+     "day": "2026-02-05",
+     "t": "EMA:1770278400",
+     "usd": 95.4
+    },
+    {
+     "day": "2026-02-05",
+     "t": "MD:1770279900",
+     "usd": -916.2
+    },
+    {
+     "day": "2026-02-10",
+     "t": "MD:1770713100",
+     "usd": 153.8
+    },
+    {
+     "day": "2026-02-10",
+     "t": "SR:1770736500",
+     "usd": -227.1
+    },
+    {
+     "day": "2026-02-11",
+     "t": "SR:1770822600",
+     "usd": -259.1
+    },
+    {
+     "day": "2026-02-12",
+     "t": "EMA:1770890700",
+     "usd": 57.4
+    },
+    {
+     "day": "2026-02-16",
+     "t": "MD:1771257300",
+     "usd": 152.8
+    },
+    {
+     "day": "2026-02-17",
+     "t": "SR:1771343100",
+     "usd": -251.1
+    },
+    {
+     "day": "2026-02-18",
+     "t": "EMA:1771416300",
+     "usd": 84.9
+    },
+    {
+     "day": "2026-02-19",
+     "t": "MD:1771490100",
+     "usd": -563.2
+    },
+    {
+     "day": "2026-09-10",
+     "t": "EMA:1789038300",
+     "usd": -392.62
+    },
+    {
+     "day": "2026-09-11",
+     "t": "SR:1789138200",
+     "usd": -18.1
+    },
+    {
+     "day": "2026-09-16",
+     "t": "SR:1789567500",
+     "usd": 71.4
+    },
+    {
+     "day": "2026-09-18",
+     "t": "MD:1789719000",
+     "usd": -57.1
+    },
+    {
+     "day": "2026-09-22",
+     "t": "EMA:1790061000",
+     "usd": 139.6
+    },
+    {
+     "day": "2026-09-24",
+     "t": "SR:1790260800",
+     "usd": -256.2
+    },
+    {
+     "day": "2026-09-28",
+     "t": "MD:1790581800",
+     "usd": 102.9
+    },
+    {
+     "day": "2026-09-29",
+     "t": "MD:1790661900",
+     "usd": -370.1
+    },
+    {
+     "day": "2026-10-02",
+     "t": "EMA:1790925000",
+     "usd": -386.5
+    },
+    {
+     "day": "2026-10-06",
+     "t": "EMA:1791274200",
+     "usd": 58.9
+    },
+    {
+     "day": "2026-10-06",
+     "t": "SR:1791296100",
+     "usd": -254.2
+    },
+    {
+     "day": "2026-10-07",
+     "t": "MD:1791381300",
+     "usd": -367.6
+    },
+    {
+     "day": "2026-10-09",
+     "t": "MD:1791525900",
+     "usd": 123.8
+    }
+   ],
+   "flip": {
+    "H1": 1.0,
+    "H2": 1.0
+   },
+   "kind": "pre-declared"
+  },
+  "L5 last-40 R-PF<1.5 -> x0.5": {
+   "fixed": {
+    "H1": {
+     "n": 98,
+     "tpw": 3.83,
+     "pf": 3.09,
+     "net": 16664,
+     "per_month": 2734,
+     "max_dd": -1062
+    },
+    "H2": {
+     "n": 45,
+     "tpw": 2.88,
+     "pf": 2.29,
+     "net": 4306,
+     "per_month": 1159,
+     "max_dd": -876
+    },
+    "2025": {
+     "n": 207,
+     "tpw": 4.01,
+     "pf": 1.01,
+     "net": 157,
+     "per_month": 13,
+     "max_dd": -3226
+    },
+    "2021-24": {
+     "n": 740,
+     "tpw": 4.52,
+     "pf": 1.08,
+     "net": 4452,
+     "per_month": 114,
+     "max_dd": -5848
+    }
+   },
+   "funded": {
+    "H1": {
+     "per_month": 597,
+     "first_med": 19.0,
+     "first_p75": 28.0,
+     "no_pay_6m": 5.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 6.2,
+     "dead_6m": 6.2,
+     "min_room_p10": 198,
+     "payouts": 4.52,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 453,
+     "first_med": 28.0,
+     "first_p75": 41.0,
+     "no_pay_6m": 7.7,
+     "lost_6m": 0.0,
+     "stuck_6m": 10.7,
+     "dead_6m": 10.7,
+     "min_room_p10": 95,
+     "payouts": 3.44,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 45,
+     "first_med": 39.0,
+     "first_p75": 58.0,
+     "no_pay_6m": 77.2,
+     "lost_6m": 0.0,
+     "stuck_6m": 87.5,
+     "dead_6m": 87.5,
+     "min_room_p10": 35,
+     "payouts": 0.35,
+     "paths": 600
+    }
+   },
+   "today_state": {
+    "H1": {
+     "per_month": 591,
+     "first_med": 20.0,
+     "first_p75": 30.0,
+     "no_pay_6m": 5.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 6.8,
+     "dead_6m": 6.8,
+     "min_room_p10": 168,
+     "payouts": 4.48,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 441,
+     "first_med": 30.0,
+     "first_p75": 43.0,
+     "no_pay_6m": 9.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 12.5,
+     "dead_6m": 12.5,
+     "min_room_p10": 86,
+     "payouts": 3.34,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 40,
+     "first_med": 39.0,
+     "first_p75": 57.75,
+     "no_pay_6m": 79.7,
+     "lost_6m": 0.0,
+     "stuck_6m": 88.8,
+     "dead_6m": 88.8,
+     "min_room_p10": 35,
+     "payouts": 0.31,
+     "paths": 600
+    }
+   },
+   "real": {
+    "H1": {
+     "per_month": 627,
+     "first_med": 19.0,
+     "first_p75": 24.75,
+     "no_pay_6m": 0.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 322,
+     "payouts": 4.46,
+     "paths": 26
+    },
+    "H2": {
+     "per_month": 158,
+     "first_med": 16.0,
+     "first_p75": 23.75,
+     "no_pay_6m": 62.5,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 340,
+     "payouts": 0.62,
+     "paths": 16
+    },
+    "REF": {
+     "per_month": 50,
+     "first_med": 34.0,
+     "first_p75": 45.5,
+     "no_pay_6m": 72.7,
+     "lost_6m": 0.0,
+     "stuck_6m": 88.0,
+     "dead_6m": 88.0,
+     "min_room_p10": 25,
+     "payouts": 0.38,
+     "paths": 216
+    }
+   },
+   "trades_resized": {
+    "2021-24": 546,
+    "2025": 158,
+    "H1": 25,
+    "H2": 5
+   },
+   "idea": {
+    "fam": "L",
+    "pf40": [
+     1.5,
+     0.5
+    ]
+   },
+   "fam": "L",
+   "gate_ok": false,
+   "gate_why": [
+    "H2 $491 -> $453/mo",
+    "more dead accounts H2 9.2 -> 10.7%",
+    "H2 1st payout 25 -> 28 sessions",
+    "H2 no payout 7.0 -> 7.7%",
+    "from today's account H2: $480 -> $441/mo, dead 10.5 -> 12.5%, 1st payout 27.0 -> 30.0 sessions, no payout 9.2 -> 9.8%",
+    "real order H2 $283 -> $158/mo"
+   ],
+   "acts_h2": true,
+   "deltas_2026": [
+    {
+     "day": "2026-01-02",
+     "t": "MD:1767337200",
+     "usd": 123.6
+    },
+    {
+     "day": "2026-01-02",
+     "t": "SR:1767366000",
+     "usd": -280.1
+    },
+    {
+     "day": "2026-01-07",
+     "t": "MD:1767773700",
+     "usd": 137.6
+    },
+    {
+     "day": "2026-01-07",
+     "t": "SR:1767800400",
+     "usd": 103.4
+    },
+    {
+     "day": "2026-01-09",
+     "t": "MD:1767943500",
+     "usd": 76.9
+    },
+    {
+     "day": "2026-01-13",
+     "t": "MD:1768297200",
+     "usd": 133.2
+    },
+    {
+     "day": "2026-01-13",
+     "t": "SR:1768317000",
+     "usd": -181.1
+    },
+    {
+     "day": "2026-01-14",
+     "t": "MD:1768374000",
+     "usd": 109.8
+    },
+    {
+     "day": "2026-01-14",
+     "t": "EMA:1768395900",
+     "usd": 128.7
+    },
+    {
+     "day": "2026-01-16",
+     "t": "MD:1768574700",
+     "usd": -213.6
+    },
+    {
+     "day": "2026-01-19",
+     "t": "SR:1768834200",
+     "usd": -202.2
+    },
+    {
+     "day": "2026-01-19",
+     "t": "MD:1768834800",
+     "usd": -161.6
+    },
+    {
+     "day": "2026-01-20",
+     "t": "SR:1768924200",
+     "usd": 134.9
+    },
+    {
+     "day": "2026-01-28",
+     "t": "EMA:1769594100",
+     "usd": -0.5
+    },
+    {
+     "day": "2026-01-28",
+     "t": "SR:1769614800",
+     "usd": 137.8
+    },
+    {
+     "day": "2026-01-29",
+     "t": "EMA:1769674800",
+     "usd": 105.4
+    },
+    {
+     "day": "2026-01-30",
+     "t": "EMA:1769777700",
+     "usd": 156.8
+    },
+    {
+     "day": "2026-01-30",
+     "t": "SR:1769784300",
+     "usd": -276.1
+    },
+    {
+     "day": "2026-02-02",
+     "t": "MD:1770015900",
+     "usd": -1050.1
+    },
+    {
+     "day": "2026-02-03",
+     "t": "EMA:1770121800",
+     "usd": 140.7
+    },
+    {
+     "day": "2026-02-05",
+     "t": "EMA:1770278400",
+     "usd": 95.4
+    },
+    {
+     "day": "2026-02-05",
+     "t": "MD:1770279900",
+     "usd": -916.2
+    },
+    {
+     "day": "2026-10-02",
+     "t": "EMA:1790925000",
+     "usd": -386.5
+    },
+    {
+     "day": "2026-10-06",
+     "t": "EMA:1791274200",
+     "usd": 58.9
+    },
+    {
+     "day": "2026-10-06",
+     "t": "SR:1791296100",
+     "usd": -254.2
+    },
+    {
+     "day": "2026-10-07",
+     "t": "MD:1791381300",
+     "usd": -367.6
+    }
+   ],
+   "flip": {
+    "H1": 1.0,
+    "H2": 1.0
+   },
+   "kind": "pre-declared"
+  },
+  "D1 stop the day after a loss": {
+   "fixed": {
+    "H1": {
+     "n": 88,
+     "tpw": 3.44,
+     "pf": 2.7,
+     "net": 14039,
+     "per_month": 2303,
+     "max_dd": -1222
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "pf": 2.25,
+     "net": 3760,
+     "per_month": 1012,
+     "max_dd": -835
+    },
+    "2025": {
+     "n": 194,
+     "tpw": 3.76,
+     "pf": 1.06,
+     "net": 1552,
+     "per_month": 126,
+     "max_dd": -6499
+    },
+    "2021-24": {
+     "n": 645,
+     "tpw": 3.94,
+     "pf": 1.1,
+     "net": 8235,
+     "per_month": 211,
+     "max_dd": -11336
+    }
+   },
+   "funded": {
+    "H1": {
+     "per_month": 505,
+     "first_med": 21.0,
+     "first_p75": 32.0,
+     "no_pay_6m": 11.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 14.5,
+     "dead_6m": 14.5,
+     "min_room_p10": 79,
+     "payouts": 3.82,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 354,
+     "first_med": 31.0,
+     "first_p75": 48.0,
+     "no_pay_6m": 15.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 20.2,
+     "dead_6m": 20.2,
+     "min_room_p10": 70,
+     "payouts": 2.69,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 40,
+     "first_med": 22.5,
+     "first_p75": 33.0,
+     "no_pay_6m": 80.7,
+     "lost_6m": 0.0,
+     "stuck_6m": 92.7,
+     "dead_6m": 92.7,
+     "min_room_p10": 39,
+     "payouts": 0.31,
+     "paths": 600
+    }
+   },
+   "today_state": {
+    "H1": {
+     "per_month": 495,
+     "first_med": 22.0,
+     "first_p75": 33.0,
+     "no_pay_6m": 12.5,
+     "lost_6m": 0.0,
+     "stuck_6m": 15.5,
+     "dead_6m": 15.5,
+     "min_room_p10": 70,
+     "payouts": 3.74,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 341,
+     "first_med": 34.0,
+     "first_p75": 49.0,
+     "no_pay_6m": 17.5,
+     "lost_6m": 0.0,
+     "stuck_6m": 20.8,
+     "dead_6m": 20.8,
+     "min_room_p10": 62,
+     "payouts": 2.58,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 37,
+     "first_med": 24.0,
+     "first_p75": 37.0,
+     "no_pay_6m": 82.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 92.7,
+     "dead_6m": 92.7,
+     "min_room_p10": 39,
+     "payouts": 0.28,
+     "paths": 600
+    }
+   },
+   "real": {
+    "H1": {
+     "per_month": 470,
+     "first_med": 19.0,
+     "first_p75": 23.75,
+     "no_pay_6m": 15.4,
+     "lost_6m": 0.0,
+     "stuck_6m": 15.4,
+     "dead_6m": 15.4,
+     "min_room_p10": 93,
+     "payouts": 3.31,
+     "paths": 26
+    },
+    "H2": {
+     "per_month": 140,
+     "first_med": 19.5,
+     "first_p75": 25.75,
+     "no_pay_6m": 62.5,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 263,
+     "payouts": 0.56,
+     "paths": 16
+    },
+    "REF": {
+     "per_month": 31,
+     "first_med": 32.0,
+     "first_p75": 45.0,
+     "no_pay_6m": 78.2,
+     "lost_6m": 0.0,
+     "stuck_6m": 99.1,
+     "dead_6m": 99.1,
+     "min_room_p10": 39,
+     "payouts": 0.25,
+     "paths": 216
+    }
+   },
+   "trades_resized": {},
+   "idea": {
+    "fam": "D",
+    "after_loss": true
+   },
+   "fam": "D",
+   "gate_ok": false,
+   "gate_why": [
+    "H1 $581 -> $505/mo",
+    "H2 $491 -> $354/mo",
+    "more dead accounts H1 8.5 -> 14.5%, H2 9.2 -> 20.2%",
+    "H1 1st payout 18 -> 21 sessions",
+    "H1 no payout 7.3 -> 11.0%",
+    "H2 1st payout 25 -> 31 sessions",
+    "H2 no payout 7.0 -> 15.8%",
+    "from today's account H1: $572 -> $495/mo, dead 9.8 -> 15.5%, 1st payout 19.0 -> 22.0 sessions, no payout 8.3 -> 12.5%",
+    "from today's account H2: $480 -> $341/mo, dead 10.5 -> 20.8%, 1st payout 27.0 -> 34.0 sessions, no payout 9.2 -> 17.5%",
+    "real order H1 dead 0.0 -> 15.4%",
+    "real order REF dead 92.6 -> 99.1%",
+    "real order H1 $626 -> $470/mo",
+    "real order H2 $283 -> $140/mo"
+   ],
+   "acts_h2": true,
+   "deltas_2026": [
+    {
+     "day": "2026-01-02",
+     "t": "SR:1767366000",
+     "usd": -280.1
+    },
+    {
+     "day": "2026-01-07",
+     "t": "SR:1767800400",
+     "usd": 206.8
+    },
+    {
+     "day": "2026-01-13",
+     "t": "SR:1768317000",
+     "usd": -362.2
+    },
+    {
+     "day": "2026-01-14",
+     "t": "EMA:1768395900",
+     "usd": 214.5
+    },
+    {
+     "day": "2026-01-30",
+     "t": "SR:1769784300",
+     "usd": -276.1
+    },
+    {
+     "day": "2026-02-05",
+     "t": "MD:1770279900",
+     "usd": -1832.4
+    },
+    {
+     "day": "2026-02-10",
+     "t": "SR:1770736500",
+     "usd": -454.2
+    },
+    {
+     "day": "2026-03-05",
+     "t": "MD:1772701200",
+     "usd": 161.9
+    },
+    {
+     "day": "2026-04-10",
+     "t": "MD:1775810700",
+     "usd": 191.6
+    },
+    {
+     "day": "2026-04-17",
+     "t": "EMA:1776409500",
+     "usd": -1506.3
+    },
+    {
+     "day": "2026-04-21",
+     "t": "SR:1776781500",
+     "usd": -462.2
+    },
+    {
+     "day": "2026-04-28",
+     "t": "SR:1777388400",
+     "usd": 160.9
+    },
+    {
+     "day": "2026-05-14",
+     "t": "SR:1778770800",
+     "usd": 227.8
+    },
+    {
+     "day": "2026-05-21",
+     "t": "SR:1779372900",
+     "usd": -454.2
+    },
+    {
+     "day": "2026-06-02",
+     "t": "SR:1780410300",
+     "usd": 141.4
+    },
+    {
+     "day": "2026-07-10",
+     "t": "SR:1783698000",
+     "usd": 153.9
+    },
+    {
+     "day": "2026-07-21",
+     "t": "SR:1784643300",
+     "usd": -261.1
+    },
+    {
+     "day": "2026-08-04",
+     "t": "EMA:1785835800",
+     "usd": -1048.68
+    },
+    {
+     "day": "2026-08-31",
+     "t": "MD:1788187500",
+     "usd": -195.6
+    },
+    {
+     "day": "2026-09-09",
+     "t": "SR:1788967200",
+     "usd": 236.8
+    },
+    {
+     "day": "2026-10-06",
+     "t": "SR:1791296100",
+     "usd": -381.3
+    }
+   ],
+   "flip": {
+    "H1": 1.0,
+    "H2": 1.0
+   },
+   "kind": "pre-declared"
+  },
+  "D2 day cap $275 (25% of buffer)": {
+   "fixed": {
+    "H1": {
+     "n": 94,
+     "tpw": 3.67,
+     "pf": 2.8,
+     "net": 15269,
+     "per_month": 2505,
+     "max_dd": -1132
+    },
+    "H2": {
+     "n": 42,
+     "tpw": 2.69,
+     "pf": 2.25,
+     "net": 3896,
+     "per_month": 1049,
+     "max_dd": -953
+    },
+    "2025": {
+     "n": 203,
+     "tpw": 3.93,
+     "pf": 1.08,
+     "net": 1870,
+     "per_month": 152,
+     "max_dd": -6042
+    },
+    "2021-24": {
+     "n": 699,
+     "tpw": 4.27,
+     "pf": 1.09,
+     "net": 7446,
+     "per_month": 191,
+     "max_dd": -10992
+    }
+   },
+   "funded": {
+    "H1": {
+     "per_month": 537,
+     "first_med": 20.0,
+     "first_p75": 29.0,
+     "no_pay_6m": 8.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 11.7,
+     "dead_6m": 11.7,
+     "min_room_p10": 82,
+     "payouts": 4.08,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 453,
+     "first_med": 27.0,
+     "first_p75": 40.0,
+     "no_pay_6m": 9.5,
+     "lost_6m": 0.0,
+     "stuck_6m": 11.2,
+     "dead_6m": 11.2,
+     "min_room_p10": 86,
+     "payouts": 3.44,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 40,
+     "first_med": 30.0,
+     "first_p75": 45.0,
+     "no_pay_6m": 79.2,
+     "lost_6m": 0.0,
+     "stuck_6m": 90.7,
+     "dead_6m": 90.7,
+     "min_room_p10": 40,
+     "payouts": 0.31,
+     "paths": 600
+    }
+   },
+   "today_state": {
+    "H1": {
+     "per_month": 528,
+     "first_med": 21.0,
+     "first_p75": 32.0,
+     "no_pay_6m": 10.2,
+     "lost_6m": 0.0,
+     "stuck_6m": 13.2,
+     "dead_6m": 13.2,
+     "min_room_p10": 82,
+     "payouts": 4.01,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 442,
+     "first_med": 29.0,
+     "first_p75": 43.0,
+     "no_pay_6m": 10.3,
+     "lost_6m": 0.0,
+     "stuck_6m": 12.0,
+     "dead_6m": 12.0,
+     "min_room_p10": 85,
+     "payouts": 3.35,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 35,
+     "first_med": 30.0,
+     "first_p75": 45.0,
+     "no_pay_6m": 82.2,
+     "lost_6m": 0.0,
+     "stuck_6m": 92.7,
+     "dead_6m": 92.7,
+     "min_room_p10": 35,
+     "payouts": 0.27,
+     "paths": 600
+    }
+   },
+   "real": {
+    "H1": {
+     "per_month": 594,
+     "first_med": 21.0,
+     "first_p75": 26.5,
+     "no_pay_6m": 0.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 252,
+     "payouts": 4.23,
+     "paths": 26
+    },
+    "H2": {
+     "per_month": 158,
+     "first_med": 16.0,
+     "first_p75": 23.75,
+     "no_pay_6m": 62.5,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 240,
+     "payouts": 0.62,
+     "paths": 16
+    },
+    "REF": {
+     "per_month": 46,
+     "first_med": 33.0,
+     "first_p75": 52.0,
+     "no_pay_6m": 72.7,
+     "lost_6m": 0.0,
+     "stuck_6m": 92.6,
+     "dead_6m": 92.6,
+     "min_room_p10": 38,
+     "payouts": 0.35,
+     "paths": 216
+    }
+   },
+   "trades_resized": {},
+   "idea": {
+    "fam": "D",
+    "day_cap": 275.0
+   },
+   "fam": "D",
+   "gate_ok": false,
+   "gate_why": [
+    "H1 $581 -> $537/mo",
+    "H2 $491 -> $453/mo",
+    "more dead accounts H1 8.5 -> 11.7%, H2 9.2 -> 11.2%",
+    "H1 1st payout 18 -> 20 sessions",
+    "H1 no payout 7.3 -> 8.8%",
+    "H2 1st payout 25 -> 27 sessions",
+    "H2 no payout 7.0 -> 9.5%",
+    "from today's account H1: $572 -> $528/mo, dead 9.8 -> 13.2%, 1st payout 19.0 -> 21.0 sessions, no payout 8.3 -> 10.2%",
+    "from today's account H2: $480 -> $442/mo, dead 10.5 -> 12.0%, 1st payout 27.0 -> 29.0 sessions, no payout 9.2 -> 10.3%",
+    "real order H1 $626 -> $594/mo",
+    "real order H2 $283 -> $158/mo"
+   ],
+   "acts_h2": true,
+   "deltas_2026": [
+    {
+     "day": "2026-01-02",
+     "t": "SR:1767366000",
+     "usd": -280.1
+    },
+    {
+     "day": "2026-01-07",
+     "t": "SR:1767800400",
+     "usd": 206.8
+    },
+    {
+     "day": "2026-01-13",
+     "t": "SR:1768317000",
+     "usd": -362.2
+    },
+    {
+     "day": "2026-01-14",
+     "t": "EMA:1768395900",
+     "usd": 171.6
+    },
+    {
+     "day": "2026-01-30",
+     "t": "SR:1769784300",
+     "usd": -276.1
+    },
+    {
+     "day": "2026-02-05",
+     "t": "MD:1770279900",
+     "usd": -1374.3
+    },
+    {
+     "day": "2026-02-10",
+     "t": "SR:1770736500",
+     "usd": -454.2
+    },
+    {
+     "day": "2026-03-05",
+     "t": "MD:1772701200",
+     "usd": 161.9
+    },
+    {
+     "day": "2026-04-10",
+     "t": "MD:1775810700",
+     "usd": 143.7
+    },
+    {
+     "day": "2026-04-17",
+     "t": "EMA:1776409500",
+     "usd": -502.1
+    },
+    {
+     "day": "2026-04-21",
+     "t": "SR:1776781500",
+     "usd": -462.2
+    },
+    {
+     "day": "2026-04-28",
+     "t": "SR:1777388400",
+     "usd": 160.9
+    },
+    {
+     "day": "2026-05-14",
+     "t": "SR:1778770800",
+     "usd": 227.8
+    },
+    {
+     "day": "2026-05-21",
+     "t": "SR:1779372900",
+     "usd": -454.2
+    },
+    {
+     "day": "2026-07-10",
+     "t": "SR:1783698000",
+     "usd": 153.9
+    },
+    {
+     "day": "2026-07-21",
+     "t": "SR:1784643300",
+     "usd": -261.1
+    },
+    {
+     "day": "2026-08-04",
+     "t": "EMA:1785835800",
+     "usd": -1048.68
+    },
+    {
+     "day": "2026-08-31",
+     "t": "MD:1788187500",
+     "usd": -195.6
+    },
+    {
+     "day": "2026-09-09",
+     "t": "SR:1788967200",
+     "usd": 118.4
+    },
+    {
+     "day": "2026-10-06",
+     "t": "SR:1791296100",
+     "usd": -127.1
+    }
+   ],
+   "flip": {
+    "H1": 1.0,
+    "H2": 1.0
+   },
+   "kind": "pre-declared"
+  },
+  "D3 day cap $367 (1/3 of buffer)": {
+   "fixed": {
+    "H1": {
+     "n": 101,
+     "tpw": 3.95,
+     "pf": 2.85,
+     "net": 16583,
+     "per_month": 2721,
+     "max_dd": -1140
+    },
+    "H2": {
+     "n": 45,
+     "tpw": 2.88,
+     "pf": 2.39,
+     "net": 4711,
+     "per_month": 1268,
+     "max_dd": -1071
+    },
+    "2025": {
+     "n": 220,
+     "tpw": 4.26,
+     "pf": 1.11,
+     "net": 2931,
+     "per_month": 239,
+     "max_dd": -5492
+    },
+    "2021-24": {
+     "n": 769,
+     "tpw": 4.69,
+     "pf": 1.07,
+     "net": 6504,
+     "per_month": 167,
+     "max_dd": -11214
+    }
+   },
+   "funded": {
+    "H1": {
+     "per_month": 562,
+     "first_med": 18.0,
+     "first_p75": 29.0,
+     "no_pay_6m": 7.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 10.0,
+     "dead_6m": 10.0,
+     "min_room_p10": 102,
+     "payouts": 4.26,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 461,
+     "first_med": 25.0,
+     "first_p75": 38.0,
+     "no_pay_6m": 10.5,
+     "lost_6m": 0.0,
+     "stuck_6m": 12.7,
+     "dead_6m": 12.7,
+     "min_room_p10": 87,
+     "payouts": 3.5,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 41,
+     "first_med": 20.5,
+     "first_p75": 33.0,
+     "no_pay_6m": 79.7,
+     "lost_6m": 0.0,
+     "stuck_6m": 92.8,
+     "dead_6m": 92.8,
+     "min_room_p10": 38,
+     "payouts": 0.32,
+     "paths": 600
+    }
+   },
+   "today_state": {
+    "H1": {
+     "per_month": 552,
+     "first_med": 19.0,
+     "first_p75": 29.0,
+     "no_pay_6m": 9.2,
+     "lost_6m": 0.0,
+     "stuck_6m": 11.5,
+     "dead_6m": 11.5,
+     "min_room_p10": 94,
+     "payouts": 4.19,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 450,
+     "first_med": 28.0,
+     "first_p75": 41.0,
+     "no_pay_6m": 11.7,
+     "lost_6m": 0.0,
+     "stuck_6m": 13.8,
+     "dead_6m": 13.8,
+     "min_room_p10": 80,
+     "payouts": 3.41,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 36,
+     "first_med": 21.0,
+     "first_p75": 35.0,
+     "no_pay_6m": 82.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 94.5,
+     "dead_6m": 94.5,
+     "min_room_p10": 37,
+     "payouts": 0.28,
+     "paths": 600
+    }
+   },
+   "real": {
+    "H1": {
+     "per_month": 620,
+     "first_med": 19.0,
+     "first_p75": 24.75,
+     "no_pay_6m": 0.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 322,
+     "payouts": 4.42,
+     "paths": 26
+    },
+    "H2": {
+     "per_month": 158,
+     "first_med": 16.0,
+     "first_p75": 23.75,
+     "no_pay_6m": 62.5,
+     "lost_6m": 0.0,
+     "stuck_6m": 18.8,
+     "dead_6m": 18.8,
+     "min_room_p10": 91,
+     "payouts": 0.62,
+     "paths": 16
+    },
+    "REF": {
+     "per_month": 60,
+     "first_med": 34.5,
+     "first_p75": 52.0,
+     "no_pay_6m": 66.7,
+     "lost_6m": 0.0,
+     "stuck_6m": 89.4,
+     "dead_6m": 89.4,
+     "min_room_p10": 45,
+     "payouts": 0.46,
+     "paths": 216
+    }
+   },
+   "trades_resized": {},
+   "idea": {
+    "fam": "D",
+    "day_cap": 367.0
+   },
+   "fam": "D",
+   "gate_ok": false,
+   "gate_why": [
+    "H1 $581 -> $562/mo",
+    "H2 $491 -> $461/mo",
+    "more dead accounts H1 8.5 -> 10.0%, H2 9.2 -> 12.7%",
+    "H2 no payout 7.0 -> 10.5%",
+    "from today's account H1: $572 -> $552/mo, dead 9.8 -> 11.5%, no payout 8.3 -> 9.2%",
+    "from today's account H2: $480 -> $450/mo, dead 10.5 -> 13.8%, no payout 9.2 -> 11.7%",
+    "real order H2 dead 0.0 -> 18.8%",
+    "real order H2 $283 -> $158/mo"
+   ],
+   "acts_h2": true,
+   "deltas_2026": [
+    {
+     "day": "2026-01-02",
+     "t": "SR:1767366000",
+     "usd": -280.1
+    },
+    {
+     "day": "2026-01-07",
+     "t": "SR:1767800400",
+     "usd": 103.4
+    },
+    {
+     "day": "2026-01-13",
+     "t": "SR:1768317000",
+     "usd": -181.1
+    },
+    {
+     "day": "2026-01-14",
+     "t": "EMA:1768395900",
+     "usd": 85.8
+    },
+    {
+     "day": "2026-01-30",
+     "t": "SR:1769784300",
+     "usd": -276.1
+    },
+    {
+     "day": "2026-02-05",
+     "t": "MD:1770279900",
+     "usd": -916.2
+    },
+    {
+     "day": "2026-02-10",
+     "t": "SR:1770736500",
+     "usd": -227.1
+    },
+    {
+     "day": "2026-04-10",
+     "t": "MD:1775810700",
+     "usd": 95.8
+    },
+    {
+     "day": "2026-04-21",
+     "t": "SR:1776781500",
+     "usd": -231.1
+    },
+    {
+     "day": "2026-04-28",
+     "t": "SR:1777388400",
+     "usd": 160.9
+    },
+    {
+     "day": "2026-05-14",
+     "t": "SR:1778770800",
+     "usd": 113.9
+    },
+    {
+     "day": "2026-05-21",
+     "t": "SR:1779372900",
+     "usd": -227.1
+    },
+    {
+     "day": "2026-08-04",
+     "t": "EMA:1785835800",
+     "usd": -349.56
+    },
+    {
+     "day": "2026-08-31",
+     "t": "MD:1788187500",
+     "usd": -195.6
+    }
+   ],
+   "flip": {
+    "H1": 1.0,
+    "H2": 1.0
+   },
+   "kind": "pre-declared"
+  },
+  "D4 day cap 1/3 of the room": {
+   "fixed": {
+    "H1": {
+     "n": 104,
+     "tpw": 4.06,
+     "pf": 2.92,
+     "net": 18362,
+     "per_month": 3012,
+     "max_dd": -1062
+    },
+    "H2": {
+     "n": 46,
+     "tpw": 2.95,
+     "pf": 2.55,
+     "net": 5256,
+     "per_month": 1415,
+     "max_dd": -876
+    },
+    "2025": {
+     "n": 222,
+     "tpw": 4.3,
+     "pf": 1.17,
+     "net": 4466,
+     "per_month": 364,
+     "max_dd": -4871
+    },
+    "2021-24": {
+     "n": 772,
+     "tpw": 4.71,
+     "pf": 1.06,
+     "net": 5927,
+     "per_month": 152,
+     "max_dd": -11403
+    }
+   },
+   "funded": {
+    "H1": {
+     "per_month": 572,
+     "first_med": 19.0,
+     "first_p75": 30.0,
+     "no_pay_6m": 6.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 5.8,
+     "dead_6m": 5.8,
+     "min_room_p10": 136,
+     "payouts": 4.34,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 448,
+     "first_med": 26.0,
+     "first_p75": 41.0,
+     "no_pay_6m": 12.3,
+     "lost_6m": 0.0,
+     "stuck_6m": 6.3,
+     "dead_6m": 6.3,
+     "min_room_p10": 113,
+     "payouts": 3.4,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 43,
+     "first_med": 26.0,
+     "first_p75": 40.0,
+     "no_pay_6m": 79.3,
+     "lost_6m": 0.0,
+     "stuck_6m": 91.0,
+     "dead_6m": 91.0,
+     "min_room_p10": 75,
+     "payouts": 0.34,
+     "paths": 600
+    }
+   },
+   "today_state": {
+    "H1": {
+     "per_month": 568,
+     "first_med": 21.0,
+     "first_p75": 33.0,
+     "no_pay_6m": 6.3,
+     "lost_6m": 0.0,
+     "stuck_6m": 6.0,
+     "dead_6m": 6.0,
+     "min_room_p10": 128,
+     "payouts": 4.31,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 430,
+     "first_med": 28.0,
+     "first_p75": 45.0,
+     "no_pay_6m": 15.3,
+     "lost_6m": 0.0,
+     "stuck_6m": 8.7,
+     "dead_6m": 8.7,
+     "min_room_p10": 103,
+     "payouts": 3.25,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 39,
+     "first_med": 28.0,
+     "first_p75": 43.5,
+     "no_pay_6m": 82.2,
+     "lost_6m": 0.0,
+     "stuck_6m": 92.0,
+     "dead_6m": 92.0,
+     "min_room_p10": 76,
+     "payouts": 0.3,
+     "paths": 600
+    }
+   },
+   "real": {
+    "H1": {
+     "per_month": 615,
+     "first_med": 20.5,
+     "first_p75": 25.0,
+     "no_pay_6m": 0.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 235,
+     "payouts": 4.38,
+     "paths": 26
+    },
+    "H2": {
+     "per_month": 191,
+     "first_med": 16.0,
+     "first_p75": 23.75,
+     "no_pay_6m": 62.5,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 248,
+     "payouts": 0.75,
+     "paths": 16
+    },
+    "REF": {
+     "per_month": 33,
+     "first_med": 28.0,
+     "first_p75": 44.0,
+     "no_pay_6m": 76.9,
+     "lost_6m": 0.0,
+     "stuck_6m": 91.2,
+     "dead_6m": 91.2,
+     "min_room_p10": 75,
+     "payouts": 0.25,
+     "paths": 216
+    }
+   },
+   "trades_resized": {},
+   "idea": {
+    "fam": "D",
+    "day_cap_room": 0.3333333333333333
+   },
+   "fam": "D",
+   "gate_ok": false,
+   "gate_why": [
+    "H2 $491 -> $448/mo",
+    "H2 no payout 7.0 -> 12.3%",
+    "from today's account H1: 1st payout 19.0 -> 21.0 sessions",
+    "from today's account H2: $480 -> $430/mo, no payout 9.2 -> 15.3%",
+    "real order H1 $626 -> $615/mo",
+    "real order H2 $283 -> $191/mo"
+   ],
+   "acts_h2": true,
+   "deltas_2026": [],
+   "flip": {
+    "H1": 1.0,
+    "H2": 1.0
+   },
+   "kind": "pre-declared"
+  },
+  "S1 40% of room while under start": {
+   "fixed": {
+    "H1": {
+     "n": 104,
+     "tpw": 4.06,
+     "pf": 2.92,
+     "net": 18362,
+     "per_month": 3012,
+     "max_dd": -1062
+    },
+    "H2": {
+     "n": 46,
+     "tpw": 2.95,
+     "pf": 2.55,
+     "net": 5256,
+     "per_month": 1415,
+     "max_dd": -876
+    },
+    "2025": {
+     "n": 222,
+     "tpw": 4.3,
+     "pf": 1.17,
+     "net": 4466,
+     "per_month": 364,
+     "max_dd": -4871
+    },
+    "2021-24": {
+     "n": 772,
+     "tpw": 4.71,
+     "pf": 1.06,
+     "net": 5927,
+     "per_month": 152,
+     "max_dd": -11403
+    }
+   },
+   "funded": {
+    "H1": {
+     "per_month": 581,
+     "first_med": 18.0,
+     "first_p75": 28.0,
+     "no_pay_6m": 7.3,
+     "lost_6m": 0.0,
+     "stuck_6m": 8.7,
+     "dead_6m": 8.7,
+     "min_room_p10": 135,
+     "payouts": 4.39,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 489,
+     "first_med": 26.0,
+     "first_p75": 39.0,
+     "no_pay_6m": 7.2,
+     "lost_6m": 0.0,
+     "stuck_6m": 9.0,
+     "dead_6m": 9.0,
+     "min_room_p10": 158,
+     "payouts": 3.7,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 45,
+     "first_med": 18.0,
+     "first_p75": 30.0,
+     "no_pay_6m": 79.2,
+     "lost_6m": 0.0,
+     "stuck_6m": 94.7,
+     "dead_6m": 94.7,
+     "min_room_p10": 34,
+     "payouts": 0.34,
+     "paths": 600
+    }
+   },
+   "today_state": {
+    "H1": {
+     "per_month": 577,
+     "first_med": 20.0,
+     "first_p75": 29.0,
+     "no_pay_6m": 7.2,
+     "lost_6m": 0.0,
+     "stuck_6m": 9.2,
+     "dead_6m": 9.2,
+     "min_room_p10": 110,
+     "payouts": 4.37,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 479,
+     "first_med": 28.0,
+     "first_p75": 43.0,
+     "no_pay_6m": 8.2,
+     "lost_6m": 0.0,
+     "stuck_6m": 9.5,
+     "dead_6m": 9.5,
+     "min_room_p10": 124,
+     "payouts": 3.62,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 41,
+     "first_med": 20.0,
+     "first_p75": 31.0,
+     "no_pay_6m": 81.2,
+     "lost_6m": 0.0,
+     "stuck_6m": 94.5,
+     "dead_6m": 94.5,
+     "min_room_p10": 38,
+     "payouts": 0.32,
+     "paths": 600
+    }
+   },
+   "real": {
+    "H1": {
+     "per_month": 628,
+     "first_med": 19.0,
+     "first_p75": 23.75,
+     "no_pay_6m": 0.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 296,
+     "payouts": 4.46,
+     "paths": 26
+    },
+    "H2": {
+     "per_month": 283,
+     "first_med": 20.0,
+     "first_p75": 25.0,
+     "no_pay_6m": 43.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 453,
+     "payouts": 0.88,
+     "paths": 16
+    },
+    "REF": {
+     "per_month": 58,
+     "first_med": 31.0,
+     "first_p75": 45.0,
+     "no_pay_6m": 70.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 91.2,
+     "dead_6m": 91.2,
+     "min_room_p10": 37,
+     "payouts": 0.44,
+     "paths": 216
+    }
+   },
+   "trades_resized": {},
+   "idea": {
+    "fam": "S",
+    "pct_hole": 0.4
+   },
+   "fam": "S",
+   "gate_ok": false,
+   "gate_why": [
+    "more dead accounts H1 8.5 -> 8.7%, REF 94.5 -> 94.7%",
+    "no fewer dead accounts (needs -1 point in one span)"
+   ],
+   "acts_h2": true,
+   "deltas_2026": [],
+   "flip": {
+    "H1": 1.0,
+    "H2": 1.0
+   },
+   "kind": "pre-declared"
+  },
+  "S2 30% of room while under start": {
+   "fixed": {
+    "H1": {
+     "n": 104,
+     "tpw": 4.06,
+     "pf": 2.92,
+     "net": 18362,
+     "per_month": 3012,
+     "max_dd": -1062
+    },
+    "H2": {
+     "n": 46,
+     "tpw": 2.95,
+     "pf": 2.55,
+     "net": 5256,
+     "per_month": 1415,
+     "max_dd": -876
+    },
+    "2025": {
+     "n": 222,
+     "tpw": 4.3,
+     "pf": 1.17,
+     "net": 4466,
+     "per_month": 364,
+     "max_dd": -4871
+    },
+    "2021-24": {
+     "n": 772,
+     "tpw": 4.71,
+     "pf": 1.06,
+     "net": 5927,
+     "per_month": 152,
+     "max_dd": -11403
+    }
+   },
+   "funded": {
+    "H1": {
+     "per_month": 582,
+     "first_med": 18.0,
+     "first_p75": 28.0,
+     "no_pay_6m": 6.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 8.3,
+     "dead_6m": 8.3,
+     "min_room_p10": 135,
+     "payouts": 4.41,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 483,
+     "first_med": 27.0,
+     "first_p75": 41.0,
+     "no_pay_6m": 7.7,
+     "lost_6m": 0.0,
+     "stuck_6m": 9.3,
+     "dead_6m": 9.3,
+     "min_room_p10": 141,
+     "payouts": 3.66,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 47,
+     "first_med": 20.0,
+     "first_p75": 33.0,
+     "no_pay_6m": 78.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 94.0,
+     "dead_6m": 94.0,
+     "min_room_p10": 33,
+     "payouts": 0.36,
+     "paths": 600
+    }
+   },
+   "today_state": {
+    "H1": {
+     "per_month": 576,
+     "first_med": 20.0,
+     "first_p75": 29.0,
+     "no_pay_6m": 7.3,
+     "lost_6m": 0.0,
+     "stuck_6m": 9.2,
+     "dead_6m": 9.2,
+     "min_room_p10": 114,
+     "payouts": 4.36,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 477,
+     "first_med": 30.0,
+     "first_p75": 44.0,
+     "no_pay_6m": 7.5,
+     "lost_6m": 0.0,
+     "stuck_6m": 8.8,
+     "dead_6m": 8.8,
+     "min_room_p10": 149,
+     "payouts": 3.61,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 42,
+     "first_med": 21.0,
+     "first_p75": 33.5,
+     "no_pay_6m": 80.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 93.8,
+     "dead_6m": 93.8,
+     "min_room_p10": 33,
+     "payouts": 0.32,
+     "paths": 600
+    }
+   },
+   "real": {
+    "H1": {
+     "per_month": 626,
+     "first_med": 19.0,
+     "first_p75": 24.75,
+     "no_pay_6m": 0.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 264,
+     "payouts": 4.46,
+     "paths": 26
+    },
+    "H2": {
+     "per_month": 283,
+     "first_med": 20.0,
+     "first_p75": 25.0,
+     "no_pay_6m": 43.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 426,
+     "payouts": 0.88,
+     "paths": 16
+    },
+    "REF": {
+     "per_month": 54,
+     "first_med": 31.0,
+     "first_p75": 47.5,
+     "no_pay_6m": 72.7,
+     "lost_6m": 0.0,
+     "stuck_6m": 91.7,
+     "dead_6m": 91.7,
+     "min_room_p10": 24,
+     "payouts": 0.41,
+     "paths": 216
+    }
+   },
+   "trades_resized": {},
+   "idea": {
+    "fam": "S",
+    "pct_hole": 0.3
+   },
+   "fam": "S",
+   "gate_ok": false,
+   "gate_why": [
+    "more dead accounts H2 9.2 -> 9.3%",
+    "no fewer dead accounts (needs -1 point in one span)",
+    "H2 1st payout 25 -> 27 sessions",
+    "H2 no payout 7.0 -> 7.7%",
+    "from today's account H2: 1st payout 27.0 -> 30.0 sessions"
+   ],
+   "acts_h2": true,
+   "deltas_2026": [],
+   "flip": {
+    "H1": 1.0,
+    "H2": 1.0
+   },
+   "kind": "pre-declared"
+  },
+  "S3 40% of room always": {
+   "fixed": {
+    "H1": {
+     "n": 104,
+     "tpw": 4.06,
+     "pf": 2.92,
+     "net": 18362,
+     "per_month": 3012,
+     "max_dd": -1062
+    },
+    "H2": {
+     "n": 46,
+     "tpw": 2.95,
+     "pf": 2.55,
+     "net": 5256,
+     "per_month": 1415,
+     "max_dd": -876
+    },
+    "2025": {
+     "n": 222,
+     "tpw": 4.3,
+     "pf": 1.17,
+     "net": 4466,
+     "per_month": 364,
+     "max_dd": -4871
+    },
+    "2021-24": {
+     "n": 772,
+     "tpw": 4.71,
+     "pf": 1.06,
+     "net": 5927,
+     "per_month": 152,
+     "max_dd": -11403
+    }
+   },
+   "funded": {
+    "H1": {
+     "per_month": 588,
+     "first_med": 20.0,
+     "first_p75": 30.0,
+     "no_pay_6m": 5.2,
+     "lost_6m": 0.0,
+     "stuck_6m": 5.8,
+     "dead_6m": 5.8,
+     "min_room_p10": 203,
+     "payouts": 4.46,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 485,
+     "first_med": 31.0,
+     "first_p75": 45.0,
+     "no_pay_6m": 4.2,
+     "lost_6m": 0.0,
+     "stuck_6m": 4.5,
+     "dead_6m": 4.5,
+     "min_room_p10": 289,
+     "payouts": 3.69,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 48,
+     "first_med": 22.5,
+     "first_p75": 37.0,
+     "no_pay_6m": 78.3,
+     "lost_6m": 0.0,
+     "stuck_6m": 92.5,
+     "dead_6m": 92.5,
+     "min_room_p10": 34,
+     "payouts": 0.37,
+     "paths": 600
+    }
+   },
+   "today_state": {
+    "H1": {
+     "per_month": 583,
+     "first_med": 21.0,
+     "first_p75": 32.0,
+     "no_pay_6m": 5.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 6.7,
+     "dead_6m": 6.7,
+     "min_room_p10": 185,
+     "payouts": 4.42,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 473,
+     "first_med": 33.0,
+     "first_p75": 47.5,
+     "no_pay_6m": 5.5,
+     "lost_6m": 0.0,
+     "stuck_6m": 6.0,
+     "dead_6m": 6.0,
+     "min_room_p10": 232,
+     "payouts": 3.6,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 42,
+     "first_med": 25.0,
+     "first_p75": 37.25,
+     "no_pay_6m": 80.7,
+     "lost_6m": 0.0,
+     "stuck_6m": 93.3,
+     "dead_6m": 93.3,
+     "min_room_p10": 35,
+     "payouts": 0.33,
+     "paths": 600
+    }
+   },
+   "real": {
+    "H1": {
+     "per_month": 619,
+     "first_med": 21.0,
+     "first_p75": 24.75,
+     "no_pay_6m": 0.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 446,
+     "payouts": 4.42,
+     "paths": 26
+    },
+    "H2": {
+     "per_month": 187,
+     "first_med": 16.0,
+     "first_p75": 23.75,
+     "no_pay_6m": 62.5,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 416,
+     "payouts": 0.75,
+     "paths": 16
+    },
+    "REF": {
+     "per_month": 67,
+     "first_med": 39.0,
+     "first_p75": 52.5,
+     "no_pay_6m": 65.3,
+     "lost_6m": 0.0,
+     "stuck_6m": 86.1,
+     "dead_6m": 86.1,
+     "min_room_p10": 35,
+     "payouts": 0.51,
+     "paths": 216
+    }
+   },
+   "trades_resized": {},
+   "idea": {
+    "fam": "S",
+    "pct": 0.4
+   },
+   "fam": "S",
+   "gate_ok": false,
+   "gate_why": [
+    "H1 1st payout 18 -> 20 sessions",
+    "H2 1st payout 25 -> 31 sessions",
+    "from today's account H1: 1st payout 19.0 -> 21.0 sessions",
+    "from today's account H2: 1st payout 27.0 -> 33.0 sessions",
+    "real order H2 $283 -> $187/mo"
+   ],
+   "acts_h2": true,
+   "deltas_2026": [],
+   "flip": {
+    "H1": 1.0,
+    "H2": 1.0
+   },
+   "kind": "pre-declared"
+  },
+  "K1 skip VIX<15 (re-measure)": {
+   "fixed": {
+    "H1": {
+     "n": 100,
+     "tpw": 3.91,
+     "pf": 3.12,
+     "net": 18776,
+     "per_month": 3080,
+     "max_dd": -1062
+    },
+    "H2": {
+     "n": 39,
+     "tpw": 2.5,
+     "pf": 3.56,
+     "net": 6077,
+     "per_month": 1636,
+     "max_dd": -808
+    },
+    "2025": {
+     "n": 195,
+     "tpw": 3.78,
+     "pf": 1.27,
+     "net": 6388,
+     "per_month": 520,
+     "max_dd": -4172
+    },
+    "2021-24": {
+     "n": 527,
+     "tpw": 3.22,
+     "pf": 1.17,
+     "net": 10923,
+     "per_month": 280,
+     "max_dd": -9365
+    }
+   },
+   "funded": {
+    "H1": {
+     "per_month": 591,
+     "first_med": 18.0,
+     "first_p75": 28.0,
+     "no_pay_6m": 6.2,
+     "lost_6m": 0.0,
+     "stuck_6m": 7.3,
+     "dead_6m": 7.3,
+     "min_room_p10": 157,
+     "payouts": 4.47,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 581,
+     "first_med": 23.0,
+     "first_p75": 33.0,
+     "no_pay_6m": 1.2,
+     "lost_6m": 0.0,
+     "stuck_6m": 1.3,
+     "dead_6m": 1.3,
+     "min_room_p10": 474,
+     "payouts": 4.39,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 47,
+     "first_med": 27.5,
+     "first_p75": 46.0,
+     "no_pay_6m": 77.3,
+     "lost_6m": 0.0,
+     "stuck_6m": 87.3,
+     "dead_6m": 87.3,
+     "min_room_p10": 35,
+     "payouts": 0.36,
+     "paths": 600
+    }
+   },
+   "today_state": {
+    "H1": {
+     "per_month": 582,
+     "first_med": 19.0,
+     "first_p75": 28.25,
+     "no_pay_6m": 7.3,
+     "lost_6m": 0.0,
+     "stuck_6m": 8.7,
+     "dead_6m": 8.7,
+     "min_room_p10": 123,
+     "payouts": 4.4,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 575,
+     "first_med": 25.0,
+     "first_p75": 36.0,
+     "no_pay_6m": 1.5,
+     "lost_6m": 0.0,
+     "stuck_6m": 1.7,
+     "dead_6m": 1.7,
+     "min_room_p10": 426,
+     "payouts": 4.34,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 41,
+     "first_med": 26.5,
+     "first_p75": 48.0,
+     "no_pay_6m": 80.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 89.7,
+     "dead_6m": 89.7,
+     "min_room_p10": 32,
+     "payouts": 0.32,
+     "paths": 600
+    }
+   },
+   "real": {
+    "H1": {
+     "per_month": 679,
+     "first_med": 19.0,
+     "first_p75": 23.75,
+     "no_pay_6m": 0.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 322,
+     "payouts": 4.77,
+     "paths": 26
+    },
+    "H2": {
+     "per_month": 436,
+     "first_med": 15.0,
+     "first_p75": 21.5,
+     "no_pay_6m": 31.2,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 480,
+     "payouts": 1.31,
+     "paths": 16
+    },
+    "REF": {
+     "per_month": 56,
+     "first_med": 36.0,
+     "first_p75": 47.75,
+     "no_pay_6m": 75.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 84.3,
+     "dead_6m": 84.3,
+     "min_room_p10": 42,
+     "payouts": 0.43,
+     "paths": 216
+    }
+   },
+   "trades_resized": {
+    "2021-24": 245,
+    "2025": 27,
+    "H1": 4,
+    "H2": 7
+   },
+   "idea": {
+    "fam": "K",
+    "vix_skip": 15.0
+   },
+   "fam": "K",
+   "gate_ok": true,
+   "gate_why": [],
+   "acts_h2": true,
+   "deltas_2026": [
+    {
+     "day": "2026-01-02",
+     "t": "MD:1767337200",
+     "usd": 247.2
+    },
+    {
+     "day": "2026-01-02",
+     "t": "SR:1767366000",
+     "usd": -280.1
+    },
+    {
+     "day": "2026-01-07",
+     "t": "MD:1767773700",
+     "usd": 240.8
+    },
+    {
+     "day": "2026-01-07",
+     "t": "SR:1767800400",
+     "usd": 206.8
+    },
+    {
+     "day": "2026-08-10",
+     "t": "SR:1786371900",
+     "usd": 44.9
+    },
+    {
+     "day": "2026-08-13",
+     "t": "EMA:1786611300",
+     "usd": 240.9
+    },
+    {
+     "day": "2026-08-17",
+     "t": "MD:1786974600",
+     "usd": 41.4
+    },
+    {
+     "day": "2026-08-31",
+     "t": "SR:1788185700",
+     "usd": 239.5
+    },
+    {
+     "day": "2026-08-31",
+     "t": "MD:1788187500",
+     "usd": -195.6
+    },
+    {
+     "day": "2026-09-22",
+     "t": "EMA:1790061000",
+     "usd": 244.3
+    },
+    {
+     "day": "2026-09-28",
+     "t": "MD:1790581800",
+     "usd": 205.8
+    }
+   ],
+   "flip": {
+    "H1": 0.31092,
+    "H2": 0.03799
+   },
+   "kind": "re-measure"
+  },
+  "K2 skip the day after a losing day": {
+   "fixed": {
+    "H1": {
+     "n": 86,
+     "tpw": 3.36,
+     "pf": 2.87,
+     "net": 14883,
+     "per_month": 2442,
+     "max_dd": -947
+    },
+    "H2": {
+     "n": 38,
+     "tpw": 2.44,
+     "pf": 2.06,
+     "net": 2976,
+     "per_month": 801,
+     "max_dd": -1008
+    },
+    "2025": {
+     "n": 158,
+     "tpw": 3.06,
+     "pf": 1.21,
+     "net": 3877,
+     "per_month": 316,
+     "max_dd": -3707
+    },
+    "2021-24": {
+     "n": 535,
+     "tpw": 3.27,
+     "pf": 1.08,
+     "net": 5811,
+     "per_month": 149,
+     "max_dd": -8681
+    }
+   },
+   "funded": {
+    "H1": {
+     "per_month": 559,
+     "first_med": 21.0,
+     "first_p75": 31.0,
+     "no_pay_6m": 6.2,
+     "lost_6m": 0.0,
+     "stuck_6m": 7.7,
+     "dead_6m": 7.7,
+     "min_room_p10": 183,
+     "payouts": 4.23,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 334,
+     "first_med": 35.0,
+     "first_p75": 54.0,
+     "no_pay_6m": 15.2,
+     "lost_6m": 0.0,
+     "stuck_6m": 18.0,
+     "dead_6m": 18.0,
+     "min_room_p10": 70,
+     "payouts": 2.53,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 44,
+     "first_med": 20.0,
+     "first_p75": 37.0,
+     "no_pay_6m": 78.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 91.3,
+     "dead_6m": 91.3,
+     "min_room_p10": 41,
+     "payouts": 0.34,
+     "paths": 600
+    }
+   },
+   "today_state": {
+    "H1": {
+     "per_month": 549,
+     "first_med": 22.0,
+     "first_p75": 33.0,
+     "no_pay_6m": 7.3,
+     "lost_6m": 0.0,
+     "stuck_6m": 8.3,
+     "dead_6m": 8.3,
+     "min_room_p10": 154,
+     "payouts": 4.16,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 323,
+     "first_med": 38.0,
+     "first_p75": 57.75,
+     "no_pay_6m": 17.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 18.7,
+     "dead_6m": 18.7,
+     "min_room_p10": 68,
+     "payouts": 2.44,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 39,
+     "first_med": 21.0,
+     "first_p75": 39.0,
+     "no_pay_6m": 80.7,
+     "lost_6m": 0.0,
+     "stuck_6m": 91.8,
+     "dead_6m": 91.8,
+     "min_room_p10": 34,
+     "payouts": 0.3,
+     "paths": 600
+    }
+   },
+   "real": {
+    "H1": {
+     "per_month": 527,
+     "first_med": 22.5,
+     "first_p75": 27.75,
+     "no_pay_6m": 0.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 411,
+     "payouts": 3.81,
+     "paths": 26
+    },
+    "H2": {
+     "per_month": 78,
+     "first_med": 17.0,
+     "first_p75": 22.0,
+     "no_pay_6m": 68.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 269,
+     "payouts": 0.31,
+     "paths": 16
+    },
+    "REF": {
+     "per_month": 60,
+     "first_med": 27.5,
+     "first_p75": 50.5,
+     "no_pay_6m": 67.6,
+     "lost_6m": 0.0,
+     "stuck_6m": 90.7,
+     "dead_6m": 90.7,
+     "min_room_p10": 38,
+     "payouts": 0.47,
+     "paths": 216
+    }
+   },
+   "trades_resized": {},
+   "idea": {
+    "fam": "K",
+    "cool": true
+   },
+   "fam": "K",
+   "gate_ok": false,
+   "gate_why": [
+    "H1 $581 -> $559/mo",
+    "H2 $491 -> $334/mo",
+    "more dead accounts H2 9.2 -> 18.0%",
+    "H1 1st payout 18 -> 21 sessions",
+    "H2 1st payout 25 -> 35 sessions",
+    "H2 no payout 7.0 -> 15.2%",
+    "from today's account H1: $572 -> $549/mo, 1st payout 19.0 -> 22.0 sessions",
+    "from today's account H2: $480 -> $323/mo, dead 10.5 -> 18.7%, 1st payout 27.0 -> 38.0 sessions, no payout 9.2 -> 17.0%",
+    "real order H1 $626 -> $527/mo",
+    "real order H2 $283 -> $78/mo"
+   ],
+   "acts_h2": true,
+   "deltas_2026": [
+    {
+     "day": "2026-01-29",
+     "t": "EMA:1769674800",
+     "usd": 210.8
+    },
+    {
+     "day": "2026-02-17",
+     "t": "SR:1771343100",
+     "usd": -251.1
+    },
+    {
+     "day": "2026-02-19",
+     "t": "MD:1771490100",
+     "usd": -1126.4
+    },
+    {
+     "day": "2026-03-05",
+     "t": "EMA:1772697600",
+     "usd": 196.2
+    },
+    {
+     "day": "2026-03-05",
+     "t": "MD:1772701200",
+     "usd": 161.9
+    },
+    {
+     "day": "2026-03-16",
+     "t": "MD:1773646200",
+     "usd": -9.2
+    },
+    {
+     "day": "2026-03-16",
+     "t": "SR:1773672900",
+     "usd": -249.1
+    },
+    {
+     "day": "2026-03-18",
+     "t": "EMA:1773823800",
+     "usd": -0.6
+    },
+    {
+     "day": "2026-03-27",
+     "t": "EMA:1774595100",
+     "usd": -1741.0
+    },
+    {
+     "day": "2026-04-16",
+     "t": "MD:1776325800",
+     "usd": -1596.6
+    },
+    {
+     "day": "2026-04-27",
+     "t": "SR:1777297200",
+     "usd": 244.2
+    },
+    {
+     "day": "2026-05-07",
+     "t": "EMA:1778146500",
+     "usd": 168.8
+    },
+    {
+     "day": "2026-05-14",
+     "t": "EMA:1778754000",
+     "usd": 203.6
+    },
+    {
+     "day": "2026-05-14",
+     "t": "SR:1778770800",
+     "usd": 227.8
+    },
+    {
+     "day": "2026-06-03",
+     "t": "EMA:1780470900",
+     "usd": -107.2
+    },
+    {
+     "day": "2026-06-25",
+     "t": "EMA:1782385500",
+     "usd": 189.8
+    },
+    {
+     "day": "2026-07-24",
+     "t": "EMA:1784879700",
+     "usd": -1639.3
+    },
+    {
+     "day": "2026-08-13",
+     "t": "EMA:1786611300",
+     "usd": 240.9
+    },
+    {
+     "day": "2026-08-18",
+     "t": "EMA:1787037300",
+     "usd": -451.02
+    },
+    {
+     "day": "2026-08-18",
+     "t": "SR:1787060400",
+     "usd": 127.9
+    },
+    {
+     "day": "2026-08-27",
+     "t": "SR:1787841300",
+     "usd": 204.8
+    },
+    {
+     "day": "2026-09-10",
+     "t": "EMA:1789038300",
+     "usd": -392.62
+    },
+    {
+     "day": "2026-09-29",
+     "t": "MD:1790661900",
+     "usd": -370.1
+    }
+   ],
+   "flip": {
+    "H1": 1.0,
+    "H2": 1.0
+   },
+   "kind": "pre-declared"
+  },
+  "K1b skip VIX<14.5 (post-hoc)": {
+   "fixed": {
+    "H1": {
+     "n": 104,
+     "tpw": 4.06,
+     "pf": 2.92,
+     "net": 18362,
+     "per_month": 3012,
+     "max_dd": -1062
+    },
+    "H2": {
+     "n": 43,
+     "tpw": 2.76,
+     "pf": 2.72,
+     "net": 5341,
+     "per_month": 1438,
+     "max_dd": -808
+    },
+    "2025": {
+     "n": 213,
+     "tpw": 4.13,
+     "pf": 1.2,
+     "net": 5264,
+     "per_month": 428,
+     "max_dd": -4545
+    },
+    "2021-24": {
+     "n": 560,
+     "tpw": 3.42,
+     "pf": 1.17,
+     "net": 11535,
+     "per_month": 296,
+     "max_dd": -9365
+    }
+   },
+   "funded": {
+    "H1": {
+     "per_month": 581,
+     "first_med": 18.0,
+     "first_p75": 28.0,
+     "no_pay_6m": 7.3,
+     "lost_6m": 0.0,
+     "stuck_6m": 8.5,
+     "dead_6m": 8.5,
+     "min_room_p10": 121,
+     "payouts": 4.4,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 543,
+     "first_med": 24.0,
+     "first_p75": 35.0,
+     "no_pay_6m": 3.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 5.2,
+     "dead_6m": 5.2,
+     "min_room_p10": 360,
+     "payouts": 4.11,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 48,
+     "first_med": 23.5,
+     "first_p75": 42.0,
+     "no_pay_6m": 77.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 90.0,
+     "dead_6m": 90.0,
+     "min_room_p10": 36,
+     "payouts": 0.37,
+     "paths": 600
+    }
+   },
+   "today_state": {
+    "H1": {
+     "per_month": 572,
+     "first_med": 19.0,
+     "first_p75": 28.0,
+     "no_pay_6m": 8.3,
+     "lost_6m": 0.0,
+     "stuck_6m": 9.8,
+     "dead_6m": 9.8,
+     "min_room_p10": 103,
+     "payouts": 4.32,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 537,
+     "first_med": 27.0,
+     "first_p75": 38.0,
+     "no_pay_6m": 3.7,
+     "lost_6m": 0.0,
+     "stuck_6m": 4.2,
+     "dead_6m": 4.2,
+     "min_room_p10": 341,
+     "payouts": 4.07,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 42,
+     "first_med": 24.0,
+     "first_p75": 42.0,
+     "no_pay_6m": 79.5,
+     "lost_6m": 0.0,
+     "stuck_6m": 91.0,
+     "dead_6m": 91.0,
+     "min_room_p10": 36,
+     "payouts": 0.32,
+     "paths": 600
+    }
+   },
+   "real": {
+    "H1": {
+     "per_month": 661,
+     "first_med": 19.0,
+     "first_p75": 23.75,
+     "no_pay_6m": 0.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 322,
+     "payouts": 4.65,
+     "paths": 26
+    },
+    "H2": {
+     "per_month": 329,
+     "first_med": 20.0,
+     "first_p75": 25.0,
+     "no_pay_6m": 43.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 480,
+     "payouts": 1.06,
+     "paths": 16
+    },
+    "REF": {
+     "per_month": 57,
+     "first_med": 33.0,
+     "first_p75": 46.5,
+     "no_pay_6m": 70.8,
+     "lost_6m": 0.0,
+     "stuck_6m": 90.3,
+     "dead_6m": 90.3,
+     "min_room_p10": 38,
+     "payouts": 0.44,
+     "paths": 216
+    }
+   },
+   "trades_resized": {
+    "2021-24": 212,
+    "2025": 9,
+    "H2": 3
+   },
+   "idea": {
+    "fam": "K",
+    "vix_skip": 14.5
+   },
+   "fam": "K",
+   "gate_ok": true,
+   "gate_why": [],
+   "acts_h2": true,
+   "deltas_2026": [
+    {
+     "day": "2026-08-17",
+     "t": "MD:1786974600",
+     "usd": 41.4
+    },
+    {
+     "day": "2026-08-31",
+     "t": "SR:1788185700",
+     "usd": 239.5
+    },
+    {
+     "day": "2026-08-31",
+     "t": "MD:1788187500",
+     "usd": -195.6
+    }
+   ],
+   "flip": {
+    "H1": 1.0,
+    "H2": 0.37066
+   },
+   "kind": "post-hoc"
+  },
+  "K1c skip VIX<15.5 (post-hoc)": {
+   "fixed": {
+    "H1": {
+     "n": 97,
+     "tpw": 3.79,
+     "pf": 3.22,
+     "net": 18790,
+     "per_month": 3083,
+     "max_dd": -1062
+    },
+    "H2": {
+     "n": 27,
+     "tpw": 1.73,
+     "pf": 4.35,
+     "net": 4990,
+     "per_month": 1344,
+     "max_dd": -321
+    },
+    "2025": {
+     "n": 173,
+     "tpw": 3.35,
+     "pf": 1.16,
+     "net": 3352,
+     "per_month": 273,
+     "max_dd": -4298
+    },
+    "2021-24": {
+     "n": 505,
+     "tpw": 3.08,
+     "pf": 1.17,
+     "net": 10355,
+     "per_month": 266,
+     "max_dd": -9365
+    }
+   },
+   "funded": {
+    "H1": {
+     "per_month": 587,
+     "first_med": 18.0,
+     "first_p75": 28.0,
+     "no_pay_6m": 6.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 7.5,
+     "dead_6m": 7.5,
+     "min_room_p10": 145,
+     "payouts": 4.45,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 490,
+     "first_med": 31.0,
+     "first_p75": 45.0,
+     "no_pay_6m": 0.3,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 643,
+     "payouts": 3.71,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 38,
+     "first_med": 30.5,
+     "first_p75": 49.5,
+     "no_pay_6m": 79.7,
+     "lost_6m": 0.0,
+     "stuck_6m": 91.7,
+     "dead_6m": 91.7,
+     "min_room_p10": 35,
+     "payouts": 0.29,
+     "paths": 600
+    }
+   },
+   "today_state": {
+    "H1": {
+     "per_month": 577,
+     "first_med": 19.0,
+     "first_p75": 29.0,
+     "no_pay_6m": 7.2,
+     "lost_6m": 0.0,
+     "stuck_6m": 9.0,
+     "dead_6m": 9.0,
+     "min_room_p10": 123,
+     "payouts": 4.37,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 481,
+     "first_med": 33.0,
+     "first_p75": 47.0,
+     "no_pay_6m": 0.3,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 584,
+     "payouts": 3.66,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 33,
+     "first_med": 30.0,
+     "first_p75": 47.0,
+     "no_pay_6m": 82.5,
+     "lost_6m": 0.0,
+     "stuck_6m": 92.2,
+     "dead_6m": 92.2,
+     "min_room_p10": 36,
+     "payouts": 0.25,
+     "paths": 600
+    }
+   },
+   "real": {
+    "H1": {
+     "per_month": 622,
+     "first_med": 19.0,
+     "first_p75": 23.75,
+     "no_pay_6m": 0.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 322,
+     "payouts": 4.42,
+     "paths": 26
+    },
+    "H2": {
+     "per_month": 172,
+     "first_med": 22.5,
+     "first_p75": 40.0,
+     "no_pay_6m": 62.5,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 813,
+     "payouts": 0.69,
+     "paths": 16
+    },
+    "REF": {
+     "per_month": 46,
+     "first_med": 41.0,
+     "first_p75": 54.0,
+     "no_pay_6m": 79.2,
+     "lost_6m": 0.0,
+     "stuck_6m": 82.4,
+     "dead_6m": 82.4,
+     "min_room_p10": 42,
+     "payouts": 0.36,
+     "paths": 216
+    }
+   },
+   "trades_resized": {
+    "2021-24": 267,
+    "2025": 49,
+    "H1": 7,
+    "H2": 19
+   },
+   "idea": {
+    "fam": "K",
+    "vix_skip": 15.5
+   },
+   "fam": "K",
+   "gate_ok": false,
+   "gate_why": [
+    "2021-25 $45 -> $38/mo",
+    "H2 1st payout 25 -> 31 sessions",
+    "H2 1.73 trades a week",
+    "from today's account H2: 1st payout 27.0 -> 33.0 sessions",
+    "from today's account 2021-25: $40 -> $33/mo",
+    "real order H2 $283 -> $172/mo"
+   ],
+   "acts_h2": true,
+   "deltas_2026": [
+    {
+     "day": "2026-01-02",
+     "t": "MD:1767337200",
+     "usd": 247.2
+    },
+    {
+     "day": "2026-01-02",
+     "t": "SR:1767366000",
+     "usd": -280.1
+    },
+    {
+     "day": "2026-01-07",
+     "t": "MD:1767773700",
+     "usd": 240.8
+    },
+    {
+     "day": "2026-01-07",
+     "t": "SR:1767800400",
+     "usd": 206.8
+    },
+    {
+     "day": "2026-01-09",
+     "t": "MD:1767943500",
+     "usd": 153.8
+    },
+    {
+     "day": "2026-01-13",
+     "t": "MD:1768297200",
+     "usd": 222.0
+    },
+    {
+     "day": "2026-01-13",
+     "t": "SR:1768317000",
+     "usd": -362.2
+    },
+    {
+     "day": "2026-08-07",
+     "t": "EMA:1786100700",
+     "usd": -652.16
+    },
+    {
+     "day": "2026-08-10",
+     "t": "SR:1786371900",
+     "usd": 44.9
+    },
+    {
+     "day": "2026-08-12",
+     "t": "SR:1786543800",
+     "usd": 147.4
+    },
+    {
+     "day": "2026-08-13",
+     "t": "EMA:1786611300",
+     "usd": 240.9
+    },
+    {
+     "day": "2026-08-17",
+     "t": "MD:1786974600",
+     "usd": 41.4
+    },
+    {
+     "day": "2026-08-18",
+     "t": "EMA:1787037300",
+     "usd": -451.02
+    },
+    {
+     "day": "2026-08-18",
+     "t": "SR:1787060400",
+     "usd": 127.9
+    },
+    {
+     "day": "2026-08-26",
+     "t": "EMA:1787729400",
+     "usd": 155.4
+    },
+    {
+     "day": "2026-08-27",
+     "t": "SR:1787841300",
+     "usd": 204.8
+    },
+    {
+     "day": "2026-08-31",
+     "t": "SR:1788185700",
+     "usd": 239.5
+    },
+    {
+     "day": "2026-08-31",
+     "t": "MD:1788187500",
+     "usd": -195.6
+    },
+    {
+     "day": "2026-09-18",
+     "t": "MD:1789719000",
+     "usd": -114.2
+    },
+    {
+     "day": "2026-09-22",
+     "t": "EMA:1790061000",
+     "usd": 244.3
+    },
+    {
+     "day": "2026-09-24",
+     "t": "SR:1790260800",
+     "usd": -384.3
+    },
+    {
+     "day": "2026-09-28",
+     "t": "MD:1790581800",
+     "usd": 205.8
+    },
+    {
+     "day": "2026-10-07",
+     "t": "MD:1791381300",
+     "usd": -367.6
+    },
+    {
+     "day": "2026-10-09",
+     "t": "MD:1791525900",
+     "usd": 247.6
+    }
+   ],
+   "flip": {
+    "H1": 0.27068,
+    "H2": 1.0
+   },
+   "kind": "post-hoc"
+  },
+  "K1d skip VIX<16 (post-hoc)": {
+   "fixed": {
+    "H1": {
+     "n": 88,
+     "tpw": 3.44,
+     "pf": 3.38,
+     "net": 18576,
+     "per_month": 3048,
+     "max_dd": -1062
+    },
+    "H2": {
+     "n": 16,
+     "tpw": 1.03,
+     "pf": 8.12,
+     "net": 4149,
+     "per_month": 1117,
+     "max_dd": -248
+    },
+    "2025": {
+     "n": 156,
+     "tpw": 3.02,
+     "pf": 1.09,
+     "net": 1726,
+     "per_month": 141,
+     "max_dd": -4256
+    },
+    "2021-24": {
+     "n": 479,
+     "tpw": 2.92,
+     "pf": 1.18,
+     "net": 10765,
+     "per_month": 276,
+     "max_dd": -9365
+    }
+   },
+   "funded": {
+    "H1": {
+     "per_month": 574,
+     "first_med": 19.0,
+     "first_p75": 29.0,
+     "no_pay_6m": 6.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 7.8,
+     "dead_6m": 7.8,
+     "min_room_p10": 140,
+     "payouts": 4.35,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 330,
+     "first_med": 43.0,
+     "first_p75": 63.0,
+     "no_pay_6m": 1.5,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 857,
+     "payouts": 2.53,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 34,
+     "first_med": 30.5,
+     "first_p75": 48.25,
+     "no_pay_6m": 81.3,
+     "lost_6m": 0.0,
+     "stuck_6m": 91.3,
+     "dead_6m": 91.3,
+     "min_room_p10": 33,
+     "payouts": 0.26,
+     "paths": 600
+    }
+   },
+   "today_state": {
+    "H1": {
+     "per_month": 571,
+     "first_med": 20.0,
+     "first_p75": 30.0,
+     "no_pay_6m": 6.5,
+     "lost_6m": 0.0,
+     "stuck_6m": 8.0,
+     "dead_6m": 8.0,
+     "min_room_p10": 131,
+     "payouts": 4.33,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 319,
+     "first_med": 46.0,
+     "first_p75": 65.75,
+     "no_pay_6m": 1.7,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 744,
+     "payouts": 2.44,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 31,
+     "first_med": 31.0,
+     "first_p75": 51.5,
+     "no_pay_6m": 83.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 91.3,
+     "dead_6m": 91.3,
+     "min_room_p10": 33,
+     "payouts": 0.24,
+     "paths": 600
+    }
+   },
+   "real": {
+    "H1": {
+     "per_month": 534,
+     "first_med": 19.0,
+     "first_p75": 24.75,
+     "no_pay_6m": 0.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 322,
+     "payouts": 3.88,
+     "paths": 26
+    },
+    "H2": {
+     "per_month": 60,
+     "first_med": 19.5,
+     "first_p75": 29.75,
+     "no_pay_6m": 75.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 857,
+     "payouts": 0.25,
+     "paths": 16
+    },
+    "REF": {
+     "per_month": 35,
+     "first_med": 36.0,
+     "first_p75": 48.25,
+     "no_pay_6m": 85.2,
+     "lost_6m": 0.0,
+     "stuck_6m": 80.1,
+     "dead_6m": 80.1,
+     "min_room_p10": 47,
+     "payouts": 0.27,
+     "paths": 216
+    }
+   },
+   "trades_resized": {
+    "2021-24": 293,
+    "2025": 66,
+    "H1": 16,
+    "H2": 30
+   },
+   "idea": {
+    "fam": "K",
+    "vix_skip": 16.0
+   },
+   "fam": "K",
+   "gate_ok": false,
+   "gate_why": [
+    "H2 $491 -> $330/mo",
+    "2021-25 $45 -> $34/mo",
+    "H2 1st payout 25 -> 43 sessions",
+    "H2 1.03 trades a week",
+    "from today's account H2: $480 -> $319/mo, 1st payout 27.0 -> 46.0 sessions",
+    "from today's account 2021-25: $40 -> $31/mo",
+    "real order H1 $626 -> $534/mo",
+    "real order H2 $283 -> $60/mo"
+   ],
+   "acts_h2": true,
+   "deltas_2026": [
+    {
+     "day": "2026-01-02",
+     "t": "MD:1767337200",
+     "usd": 247.2
+    },
+    {
+     "day": "2026-01-02",
+     "t": "SR:1767366000",
+     "usd": -280.1
+    },
+    {
+     "day": "2026-01-07",
+     "t": "MD:1767773700",
+     "usd": 240.8
+    },
+    {
+     "day": "2026-01-07",
+     "t": "SR:1767800400",
+     "usd": 206.8
+    },
+    {
+     "day": "2026-01-09",
+     "t": "MD:1767943500",
+     "usd": 153.8
+    },
+    {
+     "day": "2026-01-13",
+     "t": "MD:1768297200",
+     "usd": 222.0
+    },
+    {
+     "day": "2026-01-13",
+     "t": "SR:1768317000",
+     "usd": -362.2
+    },
+    {
+     "day": "2026-01-14",
+     "t": "MD:1768374000",
+     "usd": 219.6
+    },
+    {
+     "day": "2026-01-14",
+     "t": "EMA:1768395900",
+     "usd": 214.5
+    },
+    {
+     "day": "2026-01-16",
+     "t": "MD:1768574700",
+     "usd": -213.6
+    },
+    {
+     "day": "2026-01-19",
+     "t": "SR:1768834200",
+     "usd": -404.4
+    },
+    {
+     "day": "2026-01-19",
+     "t": "MD:1768834800",
+     "usd": -161.6
+    },
+    {
+     "day": "2026-01-20",
+     "t": "SR:1768924200",
+     "usd": 134.9
+    },
+    {
+     "day": "2026-05-29",
+     "t": "MD:1780036200",
+     "usd": 103.6
+    },
+    {
+     "day": "2026-06-03",
+     "t": "EMA:1780470900",
+     "usd": -107.2
+    },
+    {
+     "day": "2026-07-10",
+     "t": "MD:1783671300",
+     "usd": 120.8
+    },
+    {
+     "day": "2026-07-10",
+     "t": "SR:1783698000",
+     "usd": 153.9
+    },
+    {
+     "day": "2026-08-04",
+     "t": "MD:1785830400",
+     "usd": 195.8
+    },
+    {
+     "day": "2026-08-04",
+     "t": "EMA:1785835800",
+     "usd": -1048.68
+    },
+    {
+     "day": "2026-08-06",
+     "t": "SR:1786029300",
+     "usd": -320.2
+    },
+    {
+     "day": "2026-08-07",
+     "t": "EMA:1786100700",
+     "usd": -652.16
+    },
+    {
+     "day": "2026-08-10",
+     "t": "SR:1786371900",
+     "usd": 44.9
+    },
+    {
+     "day": "2026-08-12",
+     "t": "SR:1786543800",
+     "usd": 147.4
+    },
+    {
+     "day": "2026-08-13",
+     "t": "EMA:1786611300",
+     "usd": 240.9
+    },
+    {
+     "day": "2026-08-17",
+     "t": "MD:1786974600",
+     "usd": 41.4
+    },
+    {
+     "day": "2026-08-18",
+     "t": "EMA:1787037300",
+     "usd": -451.02
+    },
+    {
+     "day": "2026-08-18",
+     "t": "SR:1787060400",
+     "usd": 127.9
+    },
+    {
+     "day": "2026-08-26",
+     "t": "EMA:1787729400",
+     "usd": 155.4
+    },
+    {
+     "day": "2026-08-27",
+     "t": "SR:1787841300",
+     "usd": 204.8
+    },
+    {
+     "day": "2026-08-31",
+     "t": "SR:1788185700",
+     "usd": 239.5
+    },
+    {
+     "day": "2026-08-31",
+     "t": "MD:1788187500",
+     "usd": -195.6
+    },
+    {
+     "day": "2026-09-09",
+     "t": "MD:1788935400",
+     "usd": 83.8
+    },
+    {
+     "day": "2026-09-09",
+     "t": "SR:1788967200",
+     "usd": 236.8
+    },
+    {
+     "day": "2026-09-18",
+     "t": "MD:1789719000",
+     "usd": -114.2
+    },
+    {
+     "day": "2026-09-22",
+     "t": "EMA:1790061000",
+     "usd": 244.3
+    },
+    {
+     "day": "2026-09-24",
+     "t": "SR:1790260800",
+     "usd": -384.3
+    },
+    {
+     "day": "2026-09-28",
+     "t": "MD:1790581800",
+     "usd": 205.8
+    },
+    {
+     "day": "2026-10-06",
+     "t": "EMA:1791274200",
+     "usd": 117.8
+    },
+    {
+     "day": "2026-10-06",
+     "t": "SR:1791296100",
+     "usd": -381.3
+    },
+    {
+     "day": "2026-10-07",
+     "t": "MD:1791381300",
+     "usd": -367.6
+    },
+    {
+     "day": "2026-10-09",
+     "t": "MD:1791525900",
+     "usd": 247.6
+    }
+   ],
+   "flip": {
+    "H1": 0.4109,
+    "H2": 1.0
+   },
+   "kind": "post-hoc"
+  },
+  "S4 50% of room always (post-hoc)": {
+   "fixed": {
+    "H1": {
+     "n": 104,
+     "tpw": 4.06,
+     "pf": 2.92,
+     "net": 18362,
+     "per_month": 3012,
+     "max_dd": -1062
+    },
+    "H2": {
+     "n": 46,
+     "tpw": 2.95,
+     "pf": 2.55,
+     "net": 5256,
+     "per_month": 1415,
+     "max_dd": -876
+    },
+    "2025": {
+     "n": 222,
+     "tpw": 4.3,
+     "pf": 1.17,
+     "net": 4466,
+     "per_month": 364,
+     "max_dd": -4871
+    },
+    "2021-24": {
+     "n": 772,
+     "tpw": 4.71,
+     "pf": 1.06,
+     "net": 5927,
+     "per_month": 152,
+     "max_dd": -11403
+    }
+   },
+   "funded": {
+    "H1": {
+     "per_month": 584,
+     "first_med": 19.0,
+     "first_p75": 28.0,
+     "no_pay_6m": 6.5,
+     "lost_6m": 0.0,
+     "stuck_6m": 7.7,
+     "dead_6m": 7.7,
+     "min_room_p10": 157,
+     "payouts": 4.42,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 492,
+     "first_med": 28.0,
+     "first_p75": 42.0,
+     "no_pay_6m": 5.7,
+     "lost_6m": 0.0,
+     "stuck_6m": 6.0,
+     "dead_6m": 6.0,
+     "min_room_p10": 231,
+     "payouts": 3.73,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 47,
+     "first_med": 18.0,
+     "first_p75": 30.0,
+     "no_pay_6m": 79.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 93.8,
+     "dead_6m": 93.8,
+     "min_room_p10": 32,
+     "payouts": 0.36,
+     "paths": 600
+    }
+   },
+   "today_state": {
+    "H1": {
+     "per_month": 575,
+     "first_med": 20.0,
+     "first_p75": 30.0,
+     "no_pay_6m": 7.7,
+     "lost_6m": 0.0,
+     "stuck_6m": 8.8,
+     "dead_6m": 8.8,
+     "min_room_p10": 118,
+     "payouts": 4.35,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 483,
+     "first_med": 31.0,
+     "first_p75": 44.0,
+     "no_pay_6m": 6.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 6.2,
+     "dead_6m": 6.2,
+     "min_room_p10": 205,
+     "payouts": 3.66,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 41,
+     "first_med": 20.0,
+     "first_p75": 31.0,
+     "no_pay_6m": 81.3,
+     "lost_6m": 0.0,
+     "stuck_6m": 94.2,
+     "dead_6m": 94.2,
+     "min_room_p10": 33,
+     "payouts": 0.32,
+     "paths": 600
+    }
+   },
+   "real": {
+    "H1": {
+     "per_month": 624,
+     "first_med": 18.5,
+     "first_p75": 23.75,
+     "no_pay_6m": 0.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 426,
+     "payouts": 4.46,
+     "paths": 26
+    },
+    "H2": {
+     "per_month": 191,
+     "first_med": 16.0,
+     "first_p75": 23.75,
+     "no_pay_6m": 62.5,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 417,
+     "payouts": 0.75,
+     "paths": 16
+    },
+    "REF": {
+     "per_month": 58,
+     "first_med": 31.0,
+     "first_p75": 46.75,
+     "no_pay_6m": 67.6,
+     "lost_6m": 0.0,
+     "stuck_6m": 90.3,
+     "dead_6m": 90.3,
+     "min_room_p10": 48,
+     "payouts": 0.44,
+     "paths": 216
+    }
+   },
+   "trades_resized": {},
+   "idea": {
+    "fam": "S",
+    "pct": 0.5
+   },
+   "fam": "S",
+   "gate_ok": false,
+   "gate_why": [
+    "H2 1st payout 25 -> 28 sessions",
+    "from today's account H2: 1st payout 27.0 -> 31.0 sessions",
+    "real order H2 $283 -> $191/mo"
+   ],
+   "acts_h2": true,
+   "deltas_2026": [],
+   "flip": {
+    "H1": 1.0,
+    "H2": 1.0
+   },
+   "kind": "post-hoc"
+  },
+  "S5 40% of room below the peak (post-hoc)": {
+   "fixed": {
+    "H1": {
+     "n": 104,
+     "tpw": 4.06,
+     "pf": 2.92,
+     "net": 18362,
+     "per_month": 3012,
+     "max_dd": -1062
+    },
+    "H2": {
+     "n": 46,
+     "tpw": 2.95,
+     "pf": 2.55,
+     "net": 5256,
+     "per_month": 1415,
+     "max_dd": -876
+    },
+    "2025": {
+     "n": 222,
+     "tpw": 4.3,
+     "pf": 1.17,
+     "net": 4466,
+     "per_month": 364,
+     "max_dd": -4871
+    },
+    "2021-24": {
+     "n": 772,
+     "tpw": 4.71,
+     "pf": 1.06,
+     "net": 5927,
+     "per_month": 152,
+     "max_dd": -11403
+    }
+   },
+   "funded": {
+    "H1": {
+     "per_month": 589,
+     "first_med": 19.0,
+     "first_p75": 29.0,
+     "no_pay_6m": 5.2,
+     "lost_6m": 0.0,
+     "stuck_6m": 6.0,
+     "dead_6m": 6.0,
+     "min_room_p10": 189,
+     "payouts": 4.46,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 487,
+     "first_med": 30.0,
+     "first_p75": 44.75,
+     "no_pay_6m": 5.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 5.7,
+     "dead_6m": 5.7,
+     "min_room_p10": 234,
+     "payouts": 3.69,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 46,
+     "first_med": 20.0,
+     "first_p75": 33.0,
+     "no_pay_6m": 78.7,
+     "lost_6m": 0.0,
+     "stuck_6m": 93.0,
+     "dead_6m": 93.0,
+     "min_room_p10": 32,
+     "payouts": 0.36,
+     "paths": 600
+    }
+   },
+   "today_state": {
+    "H1": {
+     "per_month": 583,
+     "first_med": 20.0,
+     "first_p75": 31.0,
+     "no_pay_6m": 5.7,
+     "lost_6m": 0.0,
+     "stuck_6m": 7.0,
+     "dead_6m": 7.0,
+     "min_room_p10": 152,
+     "payouts": 4.42,
+     "paths": 600
+    },
+    "H2": {
+     "per_month": 482,
+     "first_med": 33.0,
+     "first_p75": 47.0,
+     "no_pay_6m": 5.5,
+     "lost_6m": 0.0,
+     "stuck_6m": 5.8,
+     "dead_6m": 5.8,
+     "min_room_p10": 220,
+     "payouts": 3.65,
+     "paths": 600
+    },
+    "REF": {
+     "per_month": 43,
+     "first_med": 22.5,
+     "first_p75": 37.0,
+     "no_pay_6m": 80.3,
+     "lost_6m": 0.0,
+     "stuck_6m": 93.0,
+     "dead_6m": 93.0,
+     "min_room_p10": 34,
+     "payouts": 0.33,
+     "paths": 600
+    }
+   },
+   "real": {
+    "H1": {
+     "per_month": 622,
+     "first_med": 21.0,
+     "first_p75": 25.0,
+     "no_pay_6m": 0.0,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 420,
+     "payouts": 4.42,
+     "paths": 26
+    },
+    "H2": {
+     "per_month": 173,
+     "first_med": 16.0,
+     "first_p75": 23.75,
+     "no_pay_6m": 62.5,
+     "lost_6m": 0.0,
+     "stuck_6m": 0.0,
+     "dead_6m": 0.0,
+     "min_room_p10": 538,
+     "payouts": 0.69,
+     "paths": 16
+    },
+    "REF": {
+     "per_month": 66,
+     "first_med": 39.0,
+     "first_p75": 53.5,
+     "no_pay_6m": 65.3,
+     "lost_6m": 0.0,
+     "stuck_6m": 87.0,
+     "dead_6m": 87.0,
+     "min_room_p10": 39,
+     "payouts": 0.51,
+     "paths": 216
+    }
+   },
+   "trades_resized": {},
+   "idea": {
+    "fam": "S",
+    "pct_dd": 0.4
+   },
+   "fam": "S",
+   "gate_ok": false,
+   "gate_why": [
+    "H2 1st payout 25 -> 30 sessions",
+    "from today's account H2: 1st payout 27.0 -> 33.0 sessions",
+    "real order H2 $283 -> $173/mo"
+   ],
+   "acts_h2": true,
+   "deltas_2026": [],
+   "flip": {
+    "H1": 1.0,
+    "H2": 1.0
+   },
+   "kind": "post-hoc"
+  }
+ },
+ "doc": "(2026-11-18, written before the first rule run). Families, each version scored on the same paths:\n  M  member pause on the member's OWN paper ledger (all its signals, fixed R, costs in, trades closed before the entry):\n     M1 last-10 PF < 1 -> paper only (x0) until it is back >= 1;  M2 the same on the last 20;  M3 last-20 PF < 1 -> x0.5.\n     (Close to 2026-10-30 \"member weights from the member's last 5-20 trades\", 0/24 on the EVAL path: this is the funded\n     money path and a full pause.)\n  L  the ATLAS edge light as the owner sees it (tools/edge_health: the account's own last 40 sessions, R a week at a fixed\n     size, GREEN > 2.14, RED <= 0.17; the 40 sessions BEFORE the trade's day):  L1 AMBER x0.75, RED x0.5;  L2 AMBER x0.5,\n     RED x0.5;  L3 RED paper only (x0);  L4 AMBER x0.5, RED x0;  L5 the PF the owner reads: last-40-session R-PF < 1.5 -> x0.5.\n  D  daily loss caps tied to the $1,100 buffer (today: the $600 soft daily loss, max 2 trades a day): D1 no new trade after a\n     losing trade (day P&L <= -$25);  D2 day cap $275 (25% of the buffer: every trade's full stop-out fits what is left);\n     D3 day cap $367 (a third of the buffer);  D4 day cap = a third of the room at the day's start.\n  S  smaller risk while the account is under its start balance (in the hole):  S1 40% of the room (not 60%);  S2 30%;\n     S3 40% always.\n  K  skip conditions:  K1 skip days with the prior VIX close under 15 (RE-MEASURE: the post-hoc lead of atlas-revive);\n     K2 skip the session after a losing day on the account (one cool-off day).\nPOST-HOC (added after the first run, shown, never eligible): K1 at VIX 14.5 / 15.5 / 16 (the knife edge under the dead-account\nmeasure), S4 50% of the room always, S5 40% of the room while the balance is under its best end-of-day balance.\nGATE (the family's Jan-Jun pick = its version with the most funded $ a month in Jan-Jun; that pick must hold ALL of):\n  (a) money   funded $ a month to the owner >= today - $10 in H1 and H2 (seed noise), REF >= today - $5;\n  (b) safety  dead accounts in 6 months (floor touched or stuck) <= today in H1, H2 and REF, lower by >= 1 point in one of them;\n  (c) speed   median first payout <= today + 1 session and no payout in 6 months <= today + 0.5 point, H1 and H2;\n  (d) trades  2.0-4.1 a week on the account (fixed view) in H1 and H2;\n  (e) the same (a)-(c) from TODAY's account (balance -$113, room $887);\n  (f) real day order (a funded start every 5 sessions, 126 sessions or to Oct 16): dead not higher in any span, $ a month not\n      lower by more than $10 in H1 / H2;\n  (g) a timing rule (M, L, K) beats >= 90% of 40 random-timing controls on (a) + (b) (`control`, run only for a passer).\nFixed view (the proof rule's table): every trade at $250 x the rule's weight, the real days in order, costs in: trades a week,\nPF, net $, $ a month, max drawdown, for H1 / H2 / 2025 / 2021-24 (D1-D3 and K2 act there too; D4 / S change only funded sizes).",
+ "today_balance": -113.0,
+ "picks": {
+  "M": {
+   "pick": "M3 member last-20 PF<1 -> x0.5",
+   "versions": 3,
+   "gate_ok": true,
+   "acts_h2": false,
+   "proof_ok": false,
+   "why": [
+    "never acts in Jul-Oct (0 trades changed): Jul-Oct cannot check it"
+   ]
+  },
+  "L": {
+   "pick": "L5 last-40 R-PF<1.5 -> x0.5",
+   "versions": 5,
+   "gate_ok": false,
+   "acts_h2": true,
+   "proof_ok": false,
+   "why": [
+    "H2 $491 -> $453/mo",
+    "more dead accounts H2 9.2 -> 10.7%",
+    "H2 1st payout 25 -> 28 sessions",
+    "H2 no payout 7.0 -> 7.7%",
+    "from today's account H2: $480 -> $441/mo, dead 10.5 -> 12.5%, 1st payout 27.0 -> 30.0 sessions, no payout 9.2 -> 9.8%",
+    "real order H2 $283 -> $158/mo"
+   ]
+  },
+  "D": {
+   "pick": "D4 day cap 1/3 of the room",
+   "versions": 4,
+   "gate_ok": false,
+   "acts_h2": true,
+   "proof_ok": false,
+   "why": [
+    "H2 $491 -> $448/mo",
+    "H2 no payout 7.0 -> 12.3%",
+    "from today's account H1: 1st payout 19.0 -> 21.0 sessions",
+    "from today's account H2: $480 -> $430/mo, no payout 9.2 -> 15.3%",
+    "real order H1 $626 -> $615/mo",
+    "real order H2 $283 -> $191/mo"
+   ]
+  },
+  "S": {
+   "pick": "S3 40% of room always",
+   "versions": 5,
+   "gate_ok": false,
+   "acts_h2": true,
+   "proof_ok": false,
+   "why": [
+    "H1 1st payout 18 -> 20 sessions",
+    "H2 1st payout 25 -> 31 sessions",
+    "from today's account H1: 1st payout 19.0 -> 21.0 sessions",
+    "from today's account H2: 1st payout 27.0 -> 33.0 sessions",
+    "real order H2 $283 -> $187/mo"
+   ]
+  },
+  "K": {
+   "pick": "K2 skip the day after a losing day",
+   "versions": 5,
+   "gate_ok": false,
+   "acts_h2": true,
+   "proof_ok": false,
+   "why": [
+    "H1 $581 -> $559/mo",
+    "H2 $491 -> $334/mo",
+    "more dead accounts H2 9.2 -> 18.0%",
+    "H1 1st payout 18 -> 21 sessions",
+    "H2 1st payout 25 -> 35 sessions",
+    "H2 no payout 7.0 -> 15.2%",
+    "from today's account H1: $572 -> $549/mo, 1st payout 19.0 -> 22.0 sessions",
+    "from today's account H2: $480 -> $323/mo, dead 10.5 -> 18.7%, 1st payout 27.0 -> 38.0 sessions, no payout 9.2 -> 17.0%",
+    "real order H1 $626 -> $527/mo",
+    "real order H2 $283 -> $78/mo"
+   ]
+  }
+ },
+ "passers": [
+  "M2 member last-20 PF<1 -> paper",
+  "M3 member last-20 PF<1 -> x0.5",
+  "K1 skip VIX<15 (re-measure)",
+  "K1b skip VIX<14.5 (post-hoc)"
+ ],
+ "took_s": 176,
+ "control": {
+  "ran": true,
+  "rows": {
+   "M2 member last-20 PF<1 -> paper": {
+    "hits": 1,
+    "draws": 40,
+    "rule": {
+     "H1": {
+      "per_month": 581,
+      "first_med": 18.0,
+      "first_p75": 27.0,
+      "no_pay_6m": 6.3,
+      "lost_6m": 0.0,
+      "stuck_6m": 8.3,
+      "dead_6m": 8.3,
+      "min_room_p10": 139,
+      "payouts": 4.39,
+      "paths": 300
+     },
+     "H2": {
+      "per_month": 493,
+      "first_med": 24.0,
+      "first_p75": 37.0,
+      "no_pay_6m": 7.0,
+      "lost_6m": 0.0,
+      "stuck_6m": 9.0,
+      "dead_6m": 9.0,
+      "min_room_p10": 178,
+      "payouts": 3.74,
+      "paths": 300
+     },
+     "REF": {
+      "per_month": 43,
+      "first_med": 33.5,
+      "first_p75": 54.75,
+      "no_pay_6m": 77.3,
+      "lost_6m": 0.0,
+      "stuck_6m": 89.0,
+      "dead_6m": 89.0,
+      "min_room_p10": 40,
+      "payouts": 0.33,
+      "paths": 300
+     }
+    },
+    "today": {
+     "H1": {
+      "per_month": 591,
+      "first_med": 18.0,
+      "first_p75": 27.0,
+      "no_pay_6m": 5.7,
+      "lost_6m": 0.0,
+      "stuck_6m": 7.0,
+      "dead_6m": 7.0,
+      "min_room_p10": 192,
+      "payouts": 4.48,
+      "paths": 300
+     },
+     "H2": {
+      "per_month": 493,
+      "first_med": 24.0,
+      "first_p75": 37.0,
+      "no_pay_6m": 7.0,
+      "lost_6m": 0.0,
+      "stuck_6m": 9.0,
+      "dead_6m": 9.0,
+      "min_room_p10": 178,
+      "payouts": 3.74,
+      "paths": 300
+     },
+     "REF": {
+      "per_month": 38,
+      "first_med": 16.0,
+      "first_p75": 23.5,
+      "no_pay_6m": 81.7,
+      "lost_6m": 0.0,
+      "stuck_6m": 95.3,
+      "dead_6m": 95.3,
+      "min_room_p10": 40,
+      "payouts": 0.3,
+      "paths": 300
+     }
+    },
+    "ok": true,
+    "per_metric": {
+     "H1 per_month": {
+      "rule": 581,
+      "today": 591,
+      "draws_median": 497.0,
+      "draws_p10": 391.1,
+      "draws_p90": 603.1,
+      "share_as_good": 0.15
+     },
+     "H1 dead_6m": {
+      "rule": 8.3,
+      "today": 7.0,
+      "draws_median": 10.0,
+      "draws_p10": 2.7,
+      "draws_p90": 21.1,
+      "share_as_good": 0.425
+     },
+     "H2 per_month": {
+      "rule": 493,
+      "today": 493,
+      "draws_median": 493.0,
+      "draws_p10": 493.0,
+      "draws_p90": 493.0,
+      "share_as_good": 1.0
+     },
+     "H2 dead_6m": {
+      "rule": 9.0,
+      "today": 9.0,
+      "draws_median": 9.0,
+      "draws_p10": 9.0,
+      "draws_p90": 9.0,
+      "share_as_good": 1.0
+     },
+     "REF per_month": {
+      "rule": 43,
+      "today": 38,
+      "draws_median": 34.5,
+      "draws_p10": 24.9,
+      "draws_p90": 46.400000000000006,
+      "share_as_good": 0.175
+     },
+     "REF dead_6m": {
+      "rule": 89.0,
+      "today": 95.3,
+      "draws_median": 91.5,
+      "draws_p10": 86.9,
+      "draws_p90": 95.03,
+      "share_as_good": 0.225
+     }
+    }
+   },
+   "M3 member last-20 PF<1 -> x0.5": {
+    "hits": 0,
+    "draws": 40,
+    "rule": {
+     "H1": {
+      "per_month": 595,
+      "first_med": 17.0,
+      "first_p75": 26.0,
+      "no_pay_6m": 5.0,
+      "lost_6m": 0.0,
+      "stuck_6m": 6.3,
+      "dead_6m": 6.3,
+      "min_room_p10": 203,
+      "payouts": 4.51,
+      "paths": 300
+     },
+     "H2": {
+      "per_month": 493,
+      "first_med": 24.0,
+      "first_p75": 37.0,
+      "no_pay_6m": 7.0,
+      "lost_6m": 0.0,
+      "stuck_6m": 9.0,
+      "dead_6m": 9.0,
+      "min_room_p10": 178,
+      "payouts": 3.74,
+      "paths": 300
+     },
+     "REF": {
+      "per_month": 48,
+      "first_med": 25.0,
+      "first_p75": 41.5,
+      "no_pay_6m": 76.3,
+      "lost_6m": 0.0,
+      "stuck_6m": 90.0,
+      "dead_6m": 90.0,
+      "min_room_p10": 42,
+      "payouts": 0.37,
+      "paths": 300
+     }
+    },
+    "today": {
+     "H1": {
+      "per_month": 591,
+      "first_med": 18.0,
+      "first_p75": 27.0,
+      "no_pay_6m": 5.7,
+      "lost_6m": 0.0,
+      "stuck_6m": 7.0,
+      "dead_6m": 7.0,
+      "min_room_p10": 192,
+      "payouts": 4.48,
+      "paths": 300
+     },
+     "H2": {
+      "per_month": 493,
+      "first_med": 24.0,
+      "first_p75": 37.0,
+      "no_pay_6m": 7.0,
+      "lost_6m": 0.0,
+      "stuck_6m": 9.0,
+      "dead_6m": 9.0,
+      "min_room_p10": 178,
+      "payouts": 3.74,
+      "paths": 300
+     },
+     "REF": {
+      "per_month": 38,
+      "first_med": 16.0,
+      "first_p75": 23.5,
+      "no_pay_6m": 81.7,
+      "lost_6m": 0.0,
+      "stuck_6m": 95.3,
+      "dead_6m": 95.3,
+      "min_room_p10": 40,
+      "payouts": 0.3,
+      "paths": 300
+     }
+    },
+    "ok": true,
+    "per_metric": {
+     "H1 per_month": {
+      "rule": 595,
+      "today": 591,
+      "draws_median": 573.5,
+      "draws_p10": 548.1,
+      "draws_p90": 598.2,
+      "share_as_good": 0.125
+     },
+     "H1 dead_6m": {
+      "rule": 6.3,
+      "today": 7.0,
+      "draws_median": 6.65,
+      "draws_p10": 4.97,
+      "draws_p90": 8.7,
+      "share_as_good": 0.5
+     },
+     "H2 per_month": {
+      "rule": 493,
+      "today": 493,
+      "draws_median": 493.0,
+      "draws_p10": 493.0,
+      "draws_p90": 493.0,
+      "share_as_good": 1.0
+     },
+     "H2 dead_6m": {
+      "rule": 9.0,
+      "today": 9.0,
+      "draws_median": 9.0,
+      "draws_p10": 9.0,
+      "draws_p90": 9.0,
+      "share_as_good": 1.0
+     },
+     "REF per_month": {
+      "rule": 48,
+      "today": 38,
+      "draws_median": 40.0,
+      "draws_p10": 34.9,
+      "draws_p90": 49.0,
+      "share_as_good": 0.15
+     },
+     "REF dead_6m": {
+      "rule": 90.0,
+      "today": 95.3,
+      "draws_median": 93.0,
+      "draws_p10": 90.63000000000001,
+      "draws_p90": 95.03,
+      "share_as_good": 0.1
+     }
+    }
+   },
+   "K1 skip VIX<15 (re-measure)": {
+    "hits": 0,
+    "draws": 40,
+    "rule": {
+     "H1": {
+      "per_month": 604,
+      "first_med": 17.5,
+      "first_p75": 27.0,
+      "no_pay_6m": 4.0,
+      "lost_6m": 0.0,
+      "stuck_6m": 5.3,
+      "dead_6m": 5.3,
+      "min_room_p10": 208,
+      "payouts": 4.57,
+      "paths": 300
+     },
+     "H2": {
+      "per_month": 584,
+      "first_med": 23.0,
+      "first_p75": 34.0,
+      "no_pay_6m": 0.3,
+      "lost_6m": 0.0,
+      "stuck_6m": 0.3,
+      "dead_6m": 0.3,
+      "min_room_p10": 479,
+      "payouts": 4.42,
+      "paths": 300
+     },
+     "REF": {
+      "per_month": 42,
+      "first_med": 31.0,
+      "first_p75": 52.5,
+      "no_pay_6m": 79.0,
+      "lost_6m": 0.0,
+      "stuck_6m": 88.7,
+      "dead_6m": 88.7,
+      "min_room_p10": 36,
+      "payouts": 0.32,
+      "paths": 300
+     }
+    },
+    "today": {
+     "H1": {
+      "per_month": 591,
+      "first_med": 18.0,
+      "first_p75": 27.0,
+      "no_pay_6m": 5.7,
+      "lost_6m": 0.0,
+      "stuck_6m": 7.0,
+      "dead_6m": 7.0,
+      "min_room_p10": 192,
+      "payouts": 4.48,
+      "paths": 300
+     },
+     "H2": {
+      "per_month": 493,
+      "first_med": 24.0,
+      "first_p75": 37.0,
+      "no_pay_6m": 7.0,
+      "lost_6m": 0.0,
+      "stuck_6m": 9.0,
+      "dead_6m": 9.0,
+      "min_room_p10": 178,
+      "payouts": 3.74,
+      "paths": 300
+     },
+     "REF": {
+      "per_month": 38,
+      "first_med": 16.0,
+      "first_p75": 23.5,
+      "no_pay_6m": 81.7,
+      "lost_6m": 0.0,
+      "stuck_6m": 95.3,
+      "dead_6m": 95.3,
+      "min_room_p10": 40,
+      "payouts": 0.3,
+      "paths": 300
+     }
+    },
+    "ok": true,
+    "per_metric": {
+     "H1 per_month": {
+      "rule": 604,
+      "today": 591,
+      "draws_median": 582.5,
+      "draws_p10": 543.7,
+      "draws_p90": 599.3,
+      "share_as_good": 0.05
+     },
+     "H1 dead_6m": {
+      "rule": 5.3,
+      "today": 7.0,
+      "draws_median": 7.3,
+      "draws_p10": 5.66,
+      "draws_p90": 9.8,
+      "share_as_good": 0.1
+     },
+     "H2 per_month": {
+      "rule": 584,
+      "today": 493,
+      "draws_median": 423.5,
+      "draws_p10": 341.7,
+      "draws_p90": 513.0,
+      "share_as_good": 0.0
+     },
+     "H2 dead_6m": {
+      "rule": 0.3,
+      "today": 9.0,
+      "draws_median": 10.0,
+      "draws_p10": 2.93,
+      "draws_p90": 20.770000000000007,
+      "share_as_good": 0.025
+     },
+     "REF per_month": {
+      "rule": 42,
+      "today": 38,
+      "draws_median": 37.0,
+      "draws_p10": 29.6,
+      "draws_p90": 50.2,
+      "share_as_good": 0.35
+     },
+     "REF dead_6m": {
+      "rule": 88.7,
+      "today": 95.3,
+      "draws_median": 93.0,
+      "draws_p10": 90.24,
+      "draws_p90": 96.34,
+      "share_as_good": 0.025
+     }
+    }
+   },
+   "K1b skip VIX<14.5 (post-hoc)": {
+    "hits": 0,
+    "draws": 40,
+    "rule": {
+     "H1": {
+      "per_month": 591,
+      "first_med": 18.0,
+      "first_p75": 27.0,
+      "no_pay_6m": 5.7,
+      "lost_6m": 0.0,
+      "stuck_6m": 7.0,
+      "dead_6m": 7.0,
+      "min_room_p10": 192,
+      "payouts": 4.48,
+      "paths": 300
+     },
+     "H2": {
+      "per_month": 548,
+      "first_med": 24.0,
+      "first_p75": 35.5,
+      "no_pay_6m": 3.0,
+      "lost_6m": 0.0,
+      "stuck_6m": 4.7,
+      "dead_6m": 4.7,
+      "min_room_p10": 403,
+      "payouts": 4.15,
+      "paths": 300
+     },
+     "REF": {
+      "per_month": 43,
+      "first_med": 26.0,
+      "first_p75": 54.0,
+      "no_pay_6m": 78.3,
+      "lost_6m": 0.0,
+      "stuck_6m": 91.7,
+      "dead_6m": 91.7,
+      "min_room_p10": 32,
+      "payouts": 0.33,
+      "paths": 300
+     }
+    },
+    "today": {
+     "H1": {
+      "per_month": 591,
+      "first_med": 18.0,
+      "first_p75": 27.0,
+      "no_pay_6m": 5.7,
+      "lost_6m": 0.0,
+      "stuck_6m": 7.0,
+      "dead_6m": 7.0,
+      "min_room_p10": 192,
+      "payouts": 4.48,
+      "paths": 300
+     },
+     "H2": {
+      "per_month": 493,
+      "first_med": 24.0,
+      "first_p75": 37.0,
+      "no_pay_6m": 7.0,
+      "lost_6m": 0.0,
+      "stuck_6m": 9.0,
+      "dead_6m": 9.0,
+      "min_room_p10": 178,
+      "payouts": 3.74,
+      "paths": 300
+     },
+     "REF": {
+      "per_month": 38,
+      "first_med": 16.0,
+      "first_p75": 23.5,
+      "no_pay_6m": 81.7,
+      "lost_6m": 0.0,
+      "stuck_6m": 95.3,
+      "dead_6m": 95.3,
+      "min_room_p10": 40,
+      "payouts": 0.3,
+      "paths": 300
+     }
+    },
+    "ok": true,
+    "per_metric": {
+     "H1 per_month": {
+      "rule": 591,
+      "today": 591,
+      "draws_median": 591.0,
+      "draws_p10": 591.0,
+      "draws_p90": 591.0,
+      "share_as_good": 1.0
+     },
+     "H1 dead_6m": {
+      "rule": 7.0,
+      "today": 7.0,
+      "draws_median": 7.0,
+      "draws_p10": 7.0,
+      "draws_p90": 7.0,
+      "share_as_good": 1.0
+     },
+     "H2 per_month": {
+      "rule": 548,
+      "today": 493,
+      "draws_median": 459.5,
+      "draws_p10": 412.7,
+      "draws_p90": 518.7,
+      "share_as_good": 0.025
+     },
+     "H2 dead_6m": {
+      "rule": 4.7,
+      "today": 9.0,
+      "draws_median": 9.15,
+      "draws_p10": 4.97,
+      "draws_p90": 14.470000000000002,
+      "share_as_good": 0.1
+     },
+     "REF per_month": {
+      "rule": 43,
+      "today": 38,
+      "draws_median": 38.0,
+      "draws_p10": 30.700000000000003,
+      "draws_p90": 50.300000000000004,
+      "share_as_good": 0.375
+     },
+     "REF dead_6m": {
+      "rule": 91.7,
+      "today": 95.3,
+      "draws_median": 93.85,
+      "draws_p10": 89.7,
+      "draws_p90": 96.03,
+      "share_as_good": 0.2
+     }
+    }
+   }
+  },
+  "n_paths": 300
+ }
+}

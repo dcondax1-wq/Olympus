@@ -8,6 +8,7 @@
   * safety: RED -> size-down advice (never a stop), GREEN / AMBER / missing
   * one run with a fake runner in a temp dir: state + page, ONE board line + push for a NEW ready (not again), one for a
     new RED, none when not asked; a live file changed = nothing sent
+  * kind atlas_funded (tools/atlas_health.py): the funded 25K protective rule families, their stored verdict, cells, register()
   * static: never writes a live file, no broker / order import, outputs gitignored, the page reads only via textContent
 
     python -X utf8 -m tests.test_zeus_lab
@@ -238,6 +239,34 @@ def t_member(tmp):
           open(p, encoding="utf-8").read() == after)
 
 
+def t_funded(tmp):
+    """kind atlas_funded (tools/atlas_health.py, 2026-11-18): the 5 protective rule families on ATLAS's funded 25K, their
+    stored verdict (the family's Jan-Jun pick; a rule that never acts in Jul-Oct cannot pass), cells, register()."""
+    E, F, R, errs = Z.load_registry()
+    M = [e for e in E if e["kind"] == "atlas_funded"]
+    ids = {"atlas_funded_member_pause", "atlas_funded_light_size", "atlas_funded_day_cap", "atlas_funded_hole_size", "atlas_funded_skip"}
+    check("funded rule families registered (member pause, light size, day cap, smaller risk, skips)", ids <= {e["id"] for e in M}, [e["id"] for e in M])
+    check("a funded family counts every version it scored in the many-tests bar", Z.cells(M) == sum(int(e["cells"]) for e in M) > len(M), Z.cells(M))
+    check("no cross copy of a funded family", not [x for x in Z.cross_experiments(E, F) if x.get("cross_of", "").startswith("atlas_funded_")])
+    rs = {e["id"]: Z.run_one(e, None, RULES) for e in M if e["id"] in ids}
+    check("funded runner: stored verdict with head / base / flip / why / H1-H2 $ change", all(
+        {"proof_ok", "why", "flip", "head", "base", "deltas", "usd_month_by"} <= set(r) and r["head"]["H1"].get("per_month") is not None
+        and r["base"]["2021-24"].get("per_month") is not None for r in rs.values()), {k: r.get("why") for k, r in rs.items()})
+    check("every funded family: a yes / no verdict naming its Jan-Jun pick", all(isinstance(r["proof_ok"], bool) and "Jan-Jun pick" in r["why"]
+                                                                                  for r in rs.values()), {k: r["why"][:80] for k, r in rs.items()})
+    mp = rs["atlas_funded_member_pause"]
+    check("a pick that changes nothing in Jul-Oct is never passed (Jul-Oct must check it)",
+          not (mp["proof_ok"] and mp["usd_month_by"]["H2"] == 0 and not any(Z.span_of(d["day"], "atlas") == "H2" for d in mp["deltas"]))
+          and ("never acts in Jul-Oct" in mp["why"] or mp["usd_month_by"]["H2"] != 0), mp["why"])
+    p = os.path.join(tmp, "reg_f.json")
+    shutil.copy(Z.REGISTRY, p)
+    e = {"id": "zz_funded", "bot": "atlas", "kind": "atlas_funded", "family": "S", "cells": 3, "title": "t", "what_changes": "w",
+         "registered": "2026-11-18", "source": "s"}
+    check("register(): a valid funded family is saved", Z.register(e, p) == [] and "zz_funded" in {x["id"] for x in Z.load_registry(p)[0]})
+    check("register(): an unknown funded family / another bot is refused", bool(Z.register({**e, "id": "zz_f2", "family": "X"}, p))
+          and bool(Z.register({**e, "id": "zz_f3", "bot": "lit"}, p)))
+
+
 def t_static():
     src = open(os.path.join(ROOT, "tools", "zeus_lab.py"), encoding="utf-8").read()
     code = re.sub(r'"""[\s\S]*?"""', "", src)
@@ -266,6 +295,7 @@ def main() -> int:
         t_run(tmp)
         t_proposals(tmp)
         t_member(tmp)
+        t_funded(tmp)
         t_static()
     finally:
         shutil.rmtree(tmp, ignore_errors=True)

@@ -37,7 +37,7 @@ AREAS = {
                 "argus_page", "ares_page", "athena_page", "chronos_page", "forum_page", "hephaestus_page", "hermes", "labyrinth_page", "nemesis_page",
                 "plutus_page", "prometheus", "tyche_page", "pantheon", "mind_page", "datacity"],
     "zenith": ["hidden_bots", "feed_accounts", "zenith_shell", "zenith_pages", "zenith_pro", "zenith_mode", "atlas_ui", "blitz_tab", "planner_addons", "ui_polish", "phone_e2e"],
-    "kalshi": ["kalshi_edges", "kalshi_research", "kalshi_publish", "kalshi_guard", "kalshi_vm_update", "kalshi_page", "kalshicity_page"],
+    "kalshi": ["kalshi_edges", "kalshi_red_team", "kalshi_research", "kalshi_publish", "kalshi_guard", "kalshi_vm_update", "kalshi_page", "kalshicity_page"],
     "cities": ["cities_page", "kalshicity_page", "datacity"],
     "nq": ["lit_live", "risk_monitors", "no_yahoo", "risk_invariants", "mffu_rules", "holidays", "holiday_replay", "guards", "sizing_caps", "second", "eval_lifecycle", "lifecycle", "live_board", "live_publish", "mffu_view", "heartbeat",
            "lit_scale_in", "lit_learn", "learn_loop", "zeus_lab", "other_markets"],
