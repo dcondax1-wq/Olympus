@@ -40,6 +40,13 @@ def site(tmp, app, name, data=True, drop=()):
         if os.path.exists(src):
             shutil.copy(src, os.path.join(base, "jarvis", f))
     link_assets(base)
+    # the site's root reader of the PC's status post (night-feedsB 2026-11-18: home_feed.js, loaded by the ZEUS Trading apps before the
+    # kit) and what it imports, as on the real site: without a post (the tests' ntfy answers "{}") it leaves home.json / data.json alone
+    for f in ("home_feed.js", "pc_feed.js", "status_feed.json", os.path.join("business", "payoutcoach.js")):
+        src = os.path.join(WEB, f)
+        if os.path.exists(src):
+            os.makedirs(os.path.dirname(os.path.join(base, f)), exist_ok=True)
+            shutil.copy(src, os.path.join(base, f))
     if data:
         shutil.copy(FIX, os.path.join(base, "data.json"))
     for f in drop:

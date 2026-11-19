@@ -17,14 +17,11 @@
   const demo = /[?&]demo=1(&|$)/.test(location.search || '');
   const API = window.HOME_FEED = { version: 1, lite: null, used: false, ready: null };
   if (demo) return;
+  // loaded with import() (both files are module-safe and set window.PC_FEED / PAYOUT_COACH): a missing file only rejects this promise,
+  // where a <script> tag's load error would make the OLYMPUS kit show "could not load" over the whole page while it is starting
   function need(global, src) {
     if (window[global]) return Promise.resolve(window[global]);
-    return new Promise((ok) => {
-      const s = d.createElement('script'); s.src = url(src); s.async = true;
-      const t = setTimeout(() => ok(window[global] || null), 4000);
-      s.onload = s.onerror = () => { clearTimeout(t); ok(window[global] || null); };
-      (d.head || d.documentElement).appendChild(s);
-    });
+    return Promise.race([import(url(src)).then(() => window[global] || null, () => null), new Promise((ok) => setTimeout(() => ok(window[global] || null), 4000))]);
   }
   // the PC's newest post (core + ext), asked once per page as soon as this script runs; 3.5 s at most
   API.ready = Promise.all([need('PC_FEED', 'pc_feed.js?v=n2'), need('PAYOUT_COACH', 'business/payoutcoach.js?v=1')]).then(([F]) => {

@@ -209,11 +209,13 @@ const { pathToFileURL } = require('url');
   const de = DE.buildAccounts(H, null, null);
   out.demeter = de.accounts.map((a) => [a.key, a.name, a.room, a.balance, a.toTarget]);
   // home_feed.js in a stub page: the app's fetch of home.json gets the PC's numbers; other files and no-post pages are left alone
-  async function page(ndjson) {
+  async function page(ndjson, have = true) {
     const loaded = {};
-    const win = { location: { href: 'http://site/ares/', origin: 'http://site', search: '' } };
+    // the page's own copies of pc_feed.js / payoutcoach.js (the shim imports them when missing: http:// cannot be imported in node,
+    // which is the "file missing" case of a real page)
+    const win = { location: { href: 'http://site/ares/', origin: 'http://site', search: '' }, ...(have ? { PC_FEED: F, PAYOUT_COACH: C } : {}) };
     const doc = { currentScript: { src: 'http://site/home_feed.js?v=1' }, documentElement: {},
-      createElement: () => ({}), head: { appendChild(s) { loaded[s.src] = 1; if (/pc_feed/.test(s.src)) win.PC_FEED = F; if (/payoutcoach/.test(s.src)) win.PAYOUT_COACH = C; setTimeout(() => s.onload && s.onload(), 0); } } };
+      createElement: () => { throw new Error('no script tags: a failed one would trip the OLYMPUS kit'); }, head: { appendChild() { throw new Error('no script tags'); } } };
     const calls = [];
     win.fetch = async (u) => {
       calls.push(String(u));
@@ -231,9 +233,10 @@ const { pathToFileURL } = require('url');
     const other = await (await win.fetch('../ledger/rules.json')).json();
     return { h, dj, own, other, loaded: Object.keys(loaded), used: win.HOME_FEED.used };
   }
-  const p1 = await page(FX.ndjson), p0 = await page('{}');
+  const p1 = await page(FX.ndjson), p0 = await page('{}'), pm = await page(FX.ndjson, false);
   out.shim = { bal: p1.h.accounts[0].eval.balance, name: p1.h.accounts[0].name, eval: p1.h.live.eval.balance, lines: p1.h.board.lines.length, used: p1.used,
-    other: p1.other.other, loaded: p1.loaded, noPost: p0.h.accounts[0].eval.balance, noPostUsed: p0.used, data: p1.dj.accounts[0].eval.balance, own: p1.own.own };
+    other: p1.other.other, noPost: p0.h.accounts[0].eval.balance, noPostUsed: p0.used, data: p1.dj.accounts[0].eval.balance, own: p1.own.own,
+    missing: pm.h.accounts[0].eval.balance, missingUsed: pm.used };
   console.log(JSON.stringify(out));
 })().catch((e) => { console.log(JSON.stringify({ error: String(e && e.stack || e) })); });
 """
@@ -321,7 +324,9 @@ def part_a(tmp):
     s = m["shim"]
     check("a. home_feed.js: an app's fetch of home.json gets the PC's numbers (Zlarior 50K $49,192.78, real eval, no false lines); other files untouched; no post = the cloud's file",
           s["bal"] == 49192.78 and s["name"] == "Zlarior 50K" and s["eval"] == 49192.78 and s["lines"] == 0 and s["used"] is True and s["other"] == 1
-          and any("pc_feed.js" in u for u in s["loaded"]) and s["noPost"] == 49900.0 and s["noPostUsed"] is False and s["data"] == 49192.78 and s["own"] == 1, s)
+          and s["noPost"] == 49900.0 and s["noPostUsed"] is False and s["data"] == 49192.78 and s["own"] == 1, s)
+    check("a. home_feed.js never adds a <script> tag (a failed one trips the OLYMPUS kit's 'could not load'): a missing pc_feed.js leaves home.json as it was",
+          s["missing"] == 49900.0 and s["missingUsed"] is False, s)
 
 
 # ------------------------------------------------------------------------------------------------ b. phone
