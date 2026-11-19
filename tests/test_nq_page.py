@@ -41,6 +41,10 @@ def test_static():
           SILENT in html and SILENT in core and "Backtest, not a promise" in html and html.count("Bring the bots back (3 steps)") == 2 and 'href="../"' in html)
     check("a. the sheet is a labelled dialog with a Close button; Escape and the veil close it", 'role="dialog"' in html and 'aria-modal="true"' in html and 'id="sheetClose"' in html and "'Escape'" in js and "veil" in js)
     check("a. paper only is said in plain words (never places an order; cannot start, stop or change a bot)", "never places an order" in html and "cannot start, stop or change a bot" in html)
+    # phone QA 2026-11-19: a funded account (ATLAS) read "Eval progress: Not yet: need $1,463 more" (its payout line); the status lines above
+    # the chart filled in after the page showed and pushed the chart card down
+    check("a. a funded account's progress row says 'Payout progress' (no eval there); the status lines above the chart hold their space",
+          "b.funded ? 'Payout progress' : 'Eval progress'" in js and "funded: true" in core and "#status { min-height: 3lh; }" in html)
     # howto.json = docs/NQ_BOT_BACK.md
     r = subprocess.run([sys.executable, os.path.join(AK.ROOT, "tools", "nq_howto_build.py"), "--check"], capture_output=True, text=True)
     hw = json.loads(AK.read(os.path.join(d, "howto.json")))

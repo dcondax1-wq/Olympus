@@ -319,6 +319,15 @@ def part_bc(br, url):
               len(un) == 1 and un[0]["id"] == P.endpoint_id(phones[1]["endpoint"]) and un[0]["auth"] == phones[1]["auth"]
               and p.evaluate("window.__push.calls")[-1][0] == "unsub" and st2["state"] == "off"
               and p.locator("#pushCard [data-push=allow]").count() == 1, (un, st2))
+        # never nagging (phone QA 2026-11-19): "Not now" puts the question away for 7 days; once on, the card leaves the home after a day
+        n0 = len(world["posts"])
+        p.click("#pushCard [data-push=later]")
+        gone = p.evaluate("document.getElementById('pushCard').hidden")
+        st3 = p.evaluate("window.OLY_PUSH.check().then(() => [window.OLY_PUSH.state().state, document.getElementById('pushCard').hidden, JSON.parse(localStorage.getItem('olympus.push')).later - Date.now()])")
+        ui = read(JV, "push-ui.js")
+        check("b. 'Not now': the card leaves the home and stays away for 7 days (still off underneath, nothing sent); 'on' leaves the home after one day",
+              gone and st3[0] == "off" and st3[1] is True and 6.9 * 86400e3 < st3[2] <= 7 * 86400e3 and len(world["posts"]) == n0
+              and "ON_SHOW_MS = 86400 * 1000" in ui and "state === 'on' && +s0.onAt > 0 && now - +s0.onAt > ON_SHOW_MS" in ui, (gone, st3))
     finally:
         P.CONFIG_PATH, P.PC_KEY_PATH = saved
         shutil.rmtree(tmp, ignore_errors=True)

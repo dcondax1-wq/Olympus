@@ -75,13 +75,13 @@ def test_static():
     check("a. warp.js's door table is olympus/doors.js's (every app's family = its door, the cities and home first)", doors and mine == doors, (mine, doors))
     boot = boot_of(js)
     check("a. themes.js carries warp.js's WARP BOOT letter for letter, runs it, then loads warp.js async (never waited on)",
-          boot and boot in th and "olyWarpBoot(window, document);" in th and "new URL('warp.js?v=w1', me.src)" in th and "s.async = true" in th, len(boot))
+          boot and boot in th and "olyWarpBoot(window, document);" in th and "new URL('warp.js?v=w2', me.src)" in th and "s.async = true" in th, len(boot))
     check("a. the boot reads the one-shot hand-off before the first frame only (no body yet), 6 s fresh, for this page, then removes it",
           "d.body) return" in boot and "Date.now() - h.t < 6000" in boot and "h.to !== p" in boot and "s.removeItem('oly.warp.in')" in boot and "pagereveal" in boot)
     agora = re.sub(r"/\*.*?\*/", "", read(KIT, "agora.css"), flags=re.S).lstrip()
     check("a. agora.css (every kit app: its files come from the network anyway) @import warp.css as its first rule: the arrival before the first frame",
-          agora.startswith('@import url("warp.css?v=w1");'))
-    sw_pages = {"jarvis/index.html": "../olympus/warp.css?v=w1", "index.html": "olympus/warp.css?v=w1", "kalshi/index.html": "../olympus/warp.css?v=w1"}
+          agora.startswith('@import url("warp.css?v=w2");'))
+    sw_pages = {"jarvis/index.html": "../olympus/warp.css?v=w2", "index.html": "olympus/warp.css?v=w2", "kalshi/index.html": "../olympus/warp.css?v=w2"}
     pair = '<style>@view-transition{navigation:auto;types:oly-warp}</style><link rel="stylesheet" href="%s" media="print" onload="this.media=\'all\'">'
     bad = [f for f, u in sw_pages.items() if (pair % u) not in read(WEB, *f.split("/")) or read(WEB, *f.split("/")).find(pair % u) > read(WEB, *f.split("/")).find("<script")]
     clean = [f for f in ("jarvis/jarvis.css", "kalshi/kalshi.css", "zenith_agora.css") if "warp.css" in read(WEB, *f.split("/"))]
@@ -99,15 +99,30 @@ def test_static():
           and not re.search(r"@keyframes[^{]*\{[^}]*(clip-path|width|height|left|top|filter)\s*:", css))
     pages = ["hub/doors.html", "hub/zeus.html", "hub/help.html", "atlas/index.html"]
     check("a. the pages without themes.js load warp.js themselves (Doors, the ZEUS hub, Help, Atlas)",
-          all('src="../olympus/warp.js?v=w1" defer' in read(WEB, *p.split("/")) and "olympus/themes.js?v=" not in read(WEB, *p.split("/")) for p in pages))
+          all('src="../olympus/warp.js?v=w2" defer' in read(WEB, *p.split("/")) and "olympus/themes.js?v=" not in read(WEB, *p.split("/")) for p in pages))
     check("a. launcher.js stays byte-identical in both dashboards", read(WEB, "launcher.js") == read(ROOT, "web_next", "js", "next", "launcher.js"))
+    # phone QA 2026-11-19: a jump INTO Olympus World was a View Transition the page refused ("ViewTransition opt-in disabled") and the kit
+    # showed "Cities could not load"; the World now opts in like every app, and a skipped transition is never a page failure
+    world, kit = read(WEB, "cities", "world", "index.html"), read(KIT, "olympus.js")
+    check("a. Olympus World opts in (@view-transition, warp.css without holding the first frame) and loads warp.js for the way out",
+          "@view-transition{navigation:auto;types:oly-warp}" in world and 'href="../../olympus/warp.css?v=w2" media="print"' in world
+          and 'src="../../olympus/warp.js?v=w2" defer' in world)
+    trap = kit[kit.find("addEventListener('unhandledrejection'"):][:900]
+    check("a. the kit: a View Transition the browser skipped (AbortError / InvalidStateError ... transition) never shows 'could not load'",
+          "/transition/i.test(" in trap and "InvalidStateError" in trap and trap.find("transition/i.test(") < trap.find("fail("))
+    # phone QA 2026-11-19: the flash held the phone near-white (mean luminance ~210 of 255) while the next page loaded
+    fk = re.search(r"@keyframes ow-flash\{[^']*\}\}", js)
+    bk = re.search(r"@keyframes ow-breathe\{[^']*\}\}", js)
+    check("a. the flash is a flash, not a white screen: it settles to <= 0.7 opacity, the wait breathes <= 0.6, a small white core (<= 5%)",
+          fk and float(re.findall(r"opacity:([\d.]+)", fk.group(0))[-1]) <= 0.7 and bk and max(float(x) for x in re.findall(r"opacity:([\d.]+)", bk.group(0))) <= 0.6
+          and "#fff 9%" not in js and "#fff 9%" not in css and "#fff 8%" not in css, (fk and fk.group(0), bk and bk.group(0)))
     # the family of each kind of address (node, a fake window)
     probe = r"""
 const fs = require('fs'), vm = require('vm');
 const mk = (href) => { const ev = {}; const w = { addEventListener(k, f) { ev[k] = f; }, location: new URL(href), innerWidth: 390, innerHeight: 844, devicePixelRatio: 3,
   sessionStorage: { getItem() { return null; }, setItem() {}, removeItem() {} }, localStorage: { getItem() { return null; } }, navigator: {} };
   const el = () => ({ style: { setProperty() {} }, setAttribute() {}, appendChild() {}, classList: { add() {}, remove() {}, contains() { return false; } } });
-  const d = { documentElement: el(), body: {}, head: el(), currentScript: { src: 'https://x.io/site/olympus/warp.js?v=w1' }, addEventListener() {}, querySelector() { return null; },
+  const d = { documentElement: el(), body: {}, head: el(), currentScript: { src: 'https://x.io/site/olympus/warp.js?v=w2' }, addEventListener() {}, querySelector() { return null; },
     getElementById() { return null; }, createElement: el };
   w.window = w; w.document = d; w.URL = URL; w.JSON = JSON; w.Math = Math; w.Date = Date; w.setTimeout = setTimeout;
   vm.runInNewContext(fs.readFileSync(process.argv[1], 'utf8'), Object.assign(w, { location: w.location, navigator: w.navigator }));

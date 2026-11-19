@@ -986,6 +986,12 @@ def run(days=None, push: bool = True, now=None, root: str = ROOT, work: str | No
         except Exception as e:
             out["errors"].append(f"review: {e.__class__.__name__}: {str(e)[:160]}")
     if rv_day and (learn if learn is not None else work is None) and str(os.environ.get("LE_LEARNED", "")).strip() != "0":
+        try:                                  # Kalshi K8 weekly self-check (engine/kalshi_adapt.py): only ever shrinks / pauses a leg
+            if work is None:                  # the real nightly child only (tests pass their own work dir: no network, no PC files)
+                from . import kalshi_adapt
+                out["kadapt"] = (kalshi_adapt.pc_weekly(root=root, now=now) or {}).get("line")
+        except Exception:  # noqa: BLE001
+            pass
         try:                                  # ZEUS learned (engine/zeus_learn.py): the nightly scorecard, research + advice only
             from . import zeus_learn
             L = zeus_learn.nightly(rv_day, days_dir, out_dir=zeus_learn.OUT if work is None else os.path.join(w, "learn"), now=now,

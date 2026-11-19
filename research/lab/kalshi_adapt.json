@@ -1,0 +1,469 @@
+{
+ "v": 1,
+ "kind": "k8-adapt-report",
+ "t": 1795064241,
+ "as_of": "2026-11-18",
+ "src": "cloud (tools/kalshi_adapt.py, public tape)",
+ "rules": {
+  "weeks_long": 8,
+  "weeks_short": 4,
+  "min_bets_long": 25,
+  "min_bets_short": 12,
+  "half_below": 0.05,
+  "half_factor": 0.5,
+  "off_below": 0.0,
+  "creep_c": 0.04,
+  "cap_margin": 0.08,
+  "cap_floor": 0.5,
+  "restore_at": 0.1,
+  "restore_creep_c": 0.02,
+  "entry_window_s": [
+   15,
+   30
+  ],
+  "entry_fallback_s": [
+   5,
+   45
+  ],
+  "scan_weeks": 12,
+  "scan_holdout_weeks": 4,
+  "scan_rules": 384,
+  "scan_alpha": 0.05,
+  "scan_min_net": 0.1,
+  "scan_min_n": 25,
+  "scan_hold_min_net": 0.05,
+  "scan_hold_min_n": 12,
+  "scan_max_price": 0.7,
+  "scan_max_spread": 0.1,
+  "new_per_week": 2
+ },
+ "base_price": {
+  "gold_0530_down": 0.512,
+  "silver_0530_down": 0.51,
+  "gold_1700_up": 0.517,
+  "silver_1700_up": 0.529,
+  "silver_1615_down": 0.533
+ },
+ "windows": {
+  "long": [
+   "2026-09-24",
+   "2026-11-18"
+  ],
+  "short": [
+   "2026-10-22",
+   "2026-11-18"
+  ]
+ },
+ "legs": {
+  "gold_0530_down": {
+   "name": "gold DOWN 05:15-05:30 ET",
+   "live": true,
+   "w8": {
+    "n": 40,
+    "won": 32,
+    "win_rate": 0.8,
+    "net_usd": 302.0,
+    "cost_usd": 610.0,
+    "net_per_1": 0.4951,
+    "avg_price": 0.5306,
+    "fees_usd": 19.58,
+    "usd_month": 164.02,
+    "bets_month": 21.7,
+    "first": "2026-09-24",
+    "last": "2026-11-18",
+    "avg_price_all": 0.5306
+   },
+   "w4": {
+    "n": 20,
+    "won": 18,
+    "win_rate": 0.9,
+    "net_usd": 182.86,
+    "cost_usd": 304.14,
+    "net_per_1": 0.6012,
+    "avg_price": 0.556,
+    "fees_usd": 9.25,
+    "usd_month": 198.63,
+    "bets_month": 21.7,
+    "first": "2026-10-22",
+    "last": "2026-11-18",
+    "avg_price_all": 0.556
+   },
+   "hits": [
+    "creep (cap already lower)"
+   ],
+   "guard": null,
+   "now": {}
+  },
+  "silver_0530_down": {
+   "name": "silver DOWN 05:15-05:30 ET",
+   "live": false,
+   "w8": {
+    "n": 40,
+    "won": 24,
+    "win_rate": 0.6,
+    "net_usd": 74.08,
+    "cost_usd": 608.92,
+    "net_per_1": 0.1216,
+    "avg_price": 0.5199,
+    "fees_usd": 19.99,
+    "usd_month": 40.23,
+    "bets_month": 21.7,
+    "first": "2026-09-24",
+    "last": "2026-11-18",
+    "avg_price_all": 0.5199
+   },
+   "w4": {
+    "n": 20,
+    "won": 12,
+    "win_rate": 0.6,
+    "net_usd": 18.69,
+    "cost_usd": 304.31,
+    "net_per_1": 0.0614,
+    "avg_price": 0.5396,
+    "fees_usd": 9.59,
+    "usd_month": 20.3,
+    "bets_month": 21.7,
+    "first": "2026-10-22",
+    "last": "2026-11-18",
+    "avg_price_all": 0.5396
+   },
+   "hits": [],
+   "guard": null,
+   "now": {}
+  },
+  "silver_1615_down": {
+   "name": "silver DOWN 16:00-16:15 ET",
+   "live": false,
+   "w8": {
+    "n": 38,
+    "won": 25,
+    "win_rate": 0.6579,
+    "net_usd": 146.01,
+    "cost_usd": 580.99,
+    "net_per_1": 0.2513,
+    "avg_price": 0.5116,
+    "fees_usd": 19.39,
+    "usd_month": 79.3,
+    "bets_month": 20.6,
+    "first": "2026-09-24",
+    "last": "2026-11-18",
+    "avg_price_all": 0.5215
+   },
+   "w4": {
+    "n": 18,
+    "won": 12,
+    "win_rate": 0.6667,
+    "net_usd": 75.13,
+    "cost_usd": 273.87,
+    "net_per_1": 0.2743,
+    "avg_price": 0.538,
+    "fees_usd": 8.68,
+    "usd_month": 81.61,
+    "bets_month": 19.6,
+    "first": "2026-10-22",
+    "last": "2026-11-18",
+    "avg_price_all": 0.5553
+   },
+   "hits": [],
+   "guard": null,
+   "now": {}
+  },
+  "gold_1700_up": {
+   "name": "gold UP 16:45-17:00 ET",
+   "live": true,
+   "w8": {
+    "n": 40,
+    "won": 31,
+    "win_rate": 0.775,
+    "net_usd": 315.66,
+    "cost_usd": 609.34,
+    "net_per_1": 0.518,
+    "avg_price": 0.4988,
+    "fees_usd": 20.86,
+    "usd_month": 171.44,
+    "bets_month": 21.7,
+    "first": "2026-09-24",
+    "last": "2026-11-18",
+    "avg_price_all": 0.4988
+   },
+   "w4": {
+    "n": 20,
+    "won": 15,
+    "win_rate": 0.75,
+    "net_usd": 159.1,
+    "cost_usd": 304.9,
+    "net_per_1": 0.5218,
+    "avg_price": 0.493,
+    "fees_usd": 10.55,
+    "usd_month": 172.82,
+    "bets_month": 21.7,
+    "first": "2026-10-22",
+    "last": "2026-11-18",
+    "avg_price_all": 0.493
+   },
+   "hits": [],
+   "guard": null,
+   "now": {}
+  },
+  "silver_1700_up": {
+   "name": "silver UP 16:45-17:00 ET",
+   "live": true,
+   "w8": {
+    "n": 39,
+    "won": 28,
+    "win_rate": 0.7179,
+    "net_usd": 216.46,
+    "cost_usd": 595.54,
+    "net_per_1": 0.3635,
+    "avg_price": 0.5046,
+    "fees_usd": 20.15,
+    "usd_month": 117.57,
+    "bets_month": 21.2,
+    "first": "2026-09-24",
+    "last": "2026-11-18",
+    "avg_price_all": 0.5102
+   },
+   "w4": {
+    "n": 19,
+    "won": 12,
+    "win_rate": 0.6316,
+    "net_usd": 67.98,
+    "cost_usd": 291.02,
+    "net_per_1": 0.2336,
+    "avg_price": 0.4929,
+    "fees_usd": 10.06,
+    "usd_month": 73.84,
+    "bets_month": 20.6,
+    "first": "2026-10-22",
+    "last": "2026-11-18",
+    "avg_price_all": 0.5047
+   },
+   "hits": [],
+   "guard": null,
+   "now": {}
+  }
+ },
+ "adapt": {},
+ "changes": [],
+ "proposals": [],
+ "restored": {},
+ "restores_applied": [],
+ "scan": {
+  "rules_tried": 384,
+  "bar_t": 3.65,
+  "expected_false_at_5pct": 19.2,
+  "discovery": [
+   "2026-08-27",
+   "2026-10-21"
+  ],
+  "held_out": [
+   "2026-10-22",
+   "2026-11-18"
+  ],
+  "with_data": 384,
+  "found": [
+   {
+    "leg": "silver UP 16:45-17:00 ET",
+    "series": "KXSILVER15M",
+    "hhmm": "1700",
+    "side": "yes",
+    "known": true,
+    "t": 3.78,
+    "disc": {
+     "n": 39,
+     "win_rate": 0.7949,
+     "net_per_1": 0.4912,
+     "avg_price": 0.509
+    },
+    "hold": {
+     "n": 18,
+     "win_rate": 0.6111,
+     "net_per_1": 0.1744,
+     "avg_price": 0.4911
+    }
+   }
+  ],
+  "passed": [],
+  "top": [
+   {
+    "leg": "silver UP 16:45-17:00 ET",
+    "series": "KXSILVER15M",
+    "hhmm": "1700",
+    "side": "yes",
+    "known": true,
+    "t": 3.78,
+    "disc": {
+     "n": 39,
+     "win_rate": 0.7949,
+     "net_per_1": 0.4912,
+     "avg_price": 0.509
+    },
+    "hold": {
+     "n": 18,
+     "win_rate": 0.6111,
+     "net_per_1": 0.1744,
+     "avg_price": 0.4911
+    }
+   },
+   {
+    "leg": "gold DOWN 05:15-05:30 ET",
+    "series": "KXGOLD15M",
+    "hhmm": "0530",
+    "side": "no",
+    "known": true,
+    "t": 3.26,
+    "disc": {
+     "n": 37,
+     "win_rate": 0.7568,
+     "net_per_1": 0.5294,
+     "avg_price": 0.5059
+    },
+    "hold": {
+     "n": 20,
+     "win_rate": 0.75,
+     "net_per_1": 0.3769,
+     "avg_price": 0.5385
+    }
+   },
+   {
+    "leg": "gold UP 14:00-14:15 ET",
+    "series": "KXGOLD15M",
+    "hhmm": "1415",
+    "side": "yes",
+    "known": false,
+    "t": 3.2,
+    "disc": {
+     "n": 22,
+     "win_rate": 0.8182,
+     "net_per_1": 0.589,
+     "avg_price": 0.52
+    },
+    "hold": {
+     "n": 20,
+     "win_rate": 0.4,
+     "net_per_1": -0.0213,
+     "avg_price": 0.386
+    }
+   },
+   {
+    "leg": "silver DOWN 02:15-02:30 ET",
+    "series": "KXSILVER15M",
+    "hhmm": "0230",
+    "side": "no",
+    "known": false,
+    "t": 2.68,
+    "disc": {
+     "n": 23,
+     "win_rate": 0.7826,
+     "net_per_1": 0.4703,
+     "avg_price": 0.5026
+    },
+    "hold": {
+     "n": 20,
+     "win_rate": 0.5,
+     "net_per_1": -0.0421,
+     "avg_price": 0.517
+    }
+   },
+   {
+    "leg": "silver UP 14:45-15:00 ET",
+    "series": "KXSILVER15M",
+    "hhmm": "1500",
+    "side": "yes",
+    "known": false,
+    "t": 2.58,
+    "disc": {
+     "n": 21,
+     "win_rate": 0.7619,
+     "net_per_1": 0.5564,
+     "avg_price": 0.4786
+    },
+    "hold": {
+     "n": 20,
+     "win_rate": 0.55,
+     "net_per_1": 0.159,
+     "avg_price": 0.5065
+    }
+   },
+   {
+    "leg": "silver UP 15:15-15:30 ET",
+    "series": "KXSILVER15M",
+    "hhmm": "1530",
+    "side": "yes",
+    "known": false,
+    "t": 2.49,
+    "disc": {
+     "n": 23,
+     "win_rate": 0.7391,
+     "net_per_1": 0.5911,
+     "avg_price": 0.4878
+    },
+    "hold": {
+     "n": 18,
+     "win_rate": 0.6667,
+     "net_per_1": 0.2798,
+     "avg_price": 0.4756
+    }
+   },
+   {
+    "leg": "silver DOWN 12:45-13:00 ET",
+    "series": "KXSILVER15M",
+    "hhmm": "1300",
+    "side": "no",
+    "known": false,
+    "t": 2.41,
+    "disc": {
+     "n": 22,
+     "win_rate": 0.7727,
+     "net_per_1": 0.4441,
+     "avg_price": 0.5409
+    },
+    "hold": {
+     "n": 19,
+     "win_rate": 0.4737,
+     "net_per_1": -0.1158,
+     "avg_price": 0.5284
+    }
+   },
+   {
+    "leg": "silver DOWN 16:00-16:15 ET",
+    "series": "KXSILVER15M",
+    "hhmm": "1615",
+    "side": "no",
+    "known": true,
+    "t": 2.4,
+    "disc": {
+     "n": 34,
+     "win_rate": 0.7059,
+     "net_per_1": 0.4516,
+     "avg_price": 0.4715
+    },
+    "hold": {
+     "n": 17,
+     "win_rate": 0.7059,
+     "net_per_1": 0.2398,
+     "avg_price": 0.5482
+    }
+   }
+  ]
+ },
+ "calendar": {
+  "tickers": 200,
+  "missing": [],
+  "missing_n": 0,
+  "holidays_until": "2027-03-29",
+  "warn": null
+ },
+ "data": {
+  "tape_markets": 622,
+  "candle_markets": 8204,
+  "fetched": {
+   "calls": 0,
+   "markets": 0,
+   "tape": 0,
+   "candles": 0
+  }
+ },
+ "line": "K8 re-test: no change (5 legs tested); watching: gold 05:30 down paid +4c (still wins enough)",
+ "how": "Only ever tighter on its own (half size / OFF / a lower max price); back up or a new leg only with the owner's yes on the Decide card. engine/kalshi_adapt.py has the rules."
+}
