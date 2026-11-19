@@ -312,10 +312,10 @@ def pacing():
         work = os.path.join(tmp, "work")
         http = FakeHTTP()
 
-        def step(now, L=None, mo=True, fresh=True, dry=False, other=0, limited=False, say=None, nt=None):
+        def step(now, L=None, mo=True, fresh=True, dry=False, other=0, limited=False, say=None, nt=None, busy=False):
             d, _ = make(now, L, fresh) if nt is None else (nt, L)
             return R.bars_step(work, cfg, L or {}, now, mo, dry=dry, http=http, say=say or (lambda *_: None), root=os.path.join(tmp, "root"),
-                               nt_folder=d, other_posts=other, limited=limited, feed_path=feed), d
+                               nt_folder=d, other_posts=other, limited=limited, feed_path=feed, busy_run=busy), d
 
         r, d1 = step(t10, live_L(t10), mo=False)
         check("b. market closed -> no post", not r["posted"] and r["why"] == "market closed" and not http.posts(), r)
@@ -324,56 +324,84 @@ def pacing():
         r, d1 = step(t10, live_L(t10), other=40)
         p1 = http.posts(TOPIC + "-bars")
         body = json.loads(p1[0]["body"]) if p1 else {}
-        check("b. fresh bars in the bots' hours -> one post to <status topic>-bars, priority min, kind le-bars, under 3,900 bytes, nothing to the status topic",
-              r["posted"] and len(p1) == 1 and p1[0]["h"].get("Priority") == "min" and body.get("kind") == "le-bars" and len(p1[0]["body"].encode()) < 3900
-              and not http.posts(TOPIC), (r, len(p1)))
+        check("b. fresh bars + the day's trades -> one post to <status topic>-bars (a trade-level post: the trades are new), priority min, kind le-bars, "
+              "under 3,900 bytes, nothing to the status topic",
+              r["posted"] and r.get("kind") == "trades" and len(p1) == 1 and p1[0]["h"].get("Priority") == "min" and body.get("kind") == "le-bars"
+              and len(p1[0]["body"].encode()) < 3900 and not http.posts(TOPIC), (r, len(p1)))
         st = R.read_json(os.path.join(work, R.BARS_STATE), {})
         day = R._utc_day(t10)
-        check("b. the state counts today's posts (this run's 40 others + 1 chart) per UTC day", st["days"][day] == {"all": 41, "bars": 1} and st["t"] == t10, st.get("days"))
+        check("b. the state counts today's posts per UTC day (this run's 40 others + 1 chart; not a candle post)", st["days"][day] == {"all": 41, "bars": 1} and st["t"] == t10, st.get("days"))
         r, _ = step(t10 + 60, live_L(t10), nt=d1)
         check("b. the same bars and trades a minute later -> 'unchanged', no post", not r["posted"] and r["why"] == "unchanged" and len(http.posts()) == 1, r)
         r, _ = step(t10 + 600, live_L(t10))
-        check("b. new bars 10 minutes later (the bots' hours: every 15-minute run, 14 min apart) -> not yet", not r["posted"] and r["why"].startswith("next in") and len(http.posts()) == 1, r)
+        check("b. new candles 10 minutes later, the trades the same -> not yet (candles about hourly)", not r["posted"] and r["why"].startswith("candles next in") and len(http.posts()) == 1, r)
         L_new = live_L(t10)
         L_new["accounts"][0]["position"] = None
         L_new["accounts"][0]["trades"].append({"entry_t": t10 - 1200, "exit_t": t10 + 500, "side": "SHORT", "qty": 6, "entry": 21060.25, "exit_px": 21020.0,
                                                "exit": "TARGET", "pnl": 471.6, "r": 3.8})
-        r, _ = step(t10 + 360, L_new)
+        r, _ = step(t10 + 360, L_new, busy=True)
         cl = json.loads(http.posts()[-1]["body"]).get("closed", []) if r["posted"] else []
-        check("b. a trade closed (6 min after the last post) -> posted at once, the close in it", r["posted"] and r["why"] == "a trade changed" and len(http.posts()) == 2
-              and any(c.get("usd") == 471.6 for c in cl), r)
+        check("b. a trade closed (6 min after the last post) -> posted at once, the close in it, even on a run that sent the ext post (trade levels first)",
+              r["posted"] and r["why"] == "a trade changed" and len(http.posts()) == 2 and any(c.get("usd") == 471.6 for c in cl), r)
         L_new2 = json.loads(json.dumps(L_new))
         L_new2["accounts"][1]["position"]["stop"] = 21060.25
         r, _ = step(t10 + 360 + 120, L_new2)
-        check("b. ... but never twice in 5 minutes (the 25K #2 stop moved 2 min later: waits)", not r["posted"] and len(http.posts()) == 2, r)
+        check("b. ... but never twice in 5 minutes (the 25K #2 stop moved 2 min later: waits)", not r["posted"] and r["why"].startswith("a trade changed: next in") and len(http.posts()) == 2, r)
         r, _ = step(t10 + 360 + 900, L_new2)
-        check("b. 15 minutes later -> posted (the moved stop in it)", r["posted"] and len(http.posts()) == 3
+        check("b. the next run -> posted (the moved stop in it)", r["posted"] and r["why"] == "a trade changed" and len(http.posts()) == 3
               and any(o.get("sl") == 21060.25 for o in json.loads(http.posts()[-1]["body"]).get("open", [])), r)
-        # outside the bots' hours: hourly
-        r, _ = step(t20, {})
+        t_c = t10 + 360 + 900 + 3600
+        r, _ = step(t_c, L_new2, busy=True)
+        r2, _ = step(t_c + 900, L_new2)
+        check("b. an hour later, only new candles: not on a run that sent the ext post; on the next run -> one hourly candle post",
+              not r["posted"] and "ext post" in r["why"] and r2["posted"] and r2["why"] == "hourly candles" and r2.get("kind") == "candles" and len(http.posts()) == 4, (r, r2))
+        st = R.read_json(os.path.join(work, R.BARS_STATE), {})
+        check("b. ... counted as a candle post", st["days"][day].get("candles") == 1 and st["days"][day]["bars"] == 4, st["days"].get(day))
+        # outside the bots' hours: no candles, trade levels still go
         n0 = len(http.posts())
-        r2, _ = step(t20 + 1800, {})
-        r3, _ = step(t20 + 3600, {})
-        check("b. outside the bots' hours (20:07 ET, market open): once, then not 30 min later, then again an hour later",
-              r["posted"] and not r2["posted"] and r2["why"].startswith("next in") and r3["posted"] and len(http.posts()) == n0 + 1, (r, r2, r3))
-        # the daily share
-        st = R.read_json(os.path.join(work, R.BARS_STATE), {})
-        day20 = R._utc_day(t20 + 7200)
-        st["days"][day20] = {"all": 10, "bars": R.BARS_DAY_MAX}
-        R.write_json(os.path.join(work, R.BARS_STATE), st)
-        r, _ = step(t20 + 7200, {})
-        check("b. BARS_DAY_MAX (64) chart posts this UTC day -> no more today", not r["posted"] and "chart posts today" in r["why"], r)
-        st["days"][day20] = {"all": R.BARS_DAY_ALL_MAX - 1, "bars": 3}
-        R.write_json(os.path.join(work, R.BARS_STATE), st)
-        r, _ = step(t20 + 7200, {}, other=1)
-        check("b. a busy ntfy day (this PC sent 200 posts today with this run's) -> no chart: the status and the pushes first", not r["posted"] and "posts today" in r["why"], r)
-        st = R.read_json(os.path.join(work, R.BARS_STATE), {})
-        st["days"][day20] = {"all": 10, "bars": 3}
-        R.write_json(os.path.join(work, R.BARS_STATE), st)
-        r, _ = step(t20 + 7200, {}, limited=True)
-        check("b. the core or a push met ntfy's daily cap this run (429) -> no chart for the rest of the UTC day", not r["posted"] and "429" in r["why"], r)
-        nxt = et(2026, 11, 18, 19, 5) + 86400                 # 00:05 UTC on 11-20 (19:05 ET 11-19): a new UTC day
-        r, _ = step(nxt, {})
+        r, _ = step(t20, L_new2)
+        r2, _ = step(t20 + 3600, L_new2)
+        L_ev = {"accounts": [{"id": "mffu50k_eval", "kind": "eval", "source": "pc", "trades": [],
+                              "position": {"entry_t": t20 + 3600 + 600, "side": "LONG", "qty": 2, "entry": 21000.0, "stop": 20990.0, "target": 21040.0}}]}
+        r3, _ = step(t20 + 3600 + 900, L_ev)
+        check("b. outside the bots' hours (20:07 ET, market open): no candle post (twice an hour apart), but an entry still posts at once",
+              not r["posted"] and "bots' hours" in r["why"] and not r2["posted"] and r3["posted"] and r3["why"] == "a trade changed" and len(http.posts()) == n0 + 1, (r, r2, r3))
+        # the daily share, each on its own state file
+        def own(name, counts, ht="old-trades", t_last=0):
+            w = os.path.join(tmp, name)
+            os.makedirs(w, exist_ok=True)
+            R.write_json(os.path.join(w, R.BARS_STATE), {"days": counts, "ht": ht, "hb": "old-bars", "t": t_last})
+            return w
+
+        def run_at(w, now, L, busy=False, other=0, limited=False):
+            d, _ = make(now)
+            return R.bars_step(w, cfg, L, now, True, http=http, root=os.path.join(tmp, "root"), nt_folder=d, feed_path=feed, busy_run=busy, other_posts=other, limited=limited)
+        dz = R._utc_day(t10)
+        w = own("cap23", {dz: {"all": 60, "bars": R.BARS_DAY_MAX - 1, "candles": 10}})
+        r = run_at(w, t10, L_ev)
+        r2 = run_at(w, t10 + 900, live_L(t10))
+        check("b. BARS_DAY_MAX = 24 chart posts this UTC day, every kind counted: the 24th goes, a 25th never (not even a trade level)",
+              r["posted"] and not r2["posted"] and "24 chart posts today" in r2["why"] and R.BARS_DAY_MAX == 24
+              and R.read_json(os.path.join(w, R.BARS_STATE), {})["days"][dz]["bars"] == 24, (r, r2))
+        w = own("cand18", {dz: {"all": 60, "bars": 18, "candles": R.BARS_DAY_MAX - R.BARS_TRADE_RESERVE}})
+        r = run_at(w, t10, L_ev)
+        r2 = run_at(w, t10 + 2 * 3600, L_ev)
+        check("b. 18 candle posts today: no more candles (6 kept for trade levels), yet a trade change still posts", r["posted"] and r["why"] == "a trade changed"
+              and not r2["posted"] and "18 candle posts today" in r2["why"] and R.BARS_DAY_MAX - R.BARS_TRADE_RESERVE == 18, (r, r2))
+        w = own("busy", {dz: {"all": R.BARS_DAY_ALL_MAX - 1, "bars": 3}})
+        r = run_at(w, t10, L_ev, other=1)
+        check("b. a busy ntfy day (this PC counted 226 = 250 - 24 posts today with this run's) -> no chart: the status and the pushes first",
+              not r["posted"] and "226 posts today" in r["why"] and R.BARS_DAY_ALL_MAX == 226 and R.NTFY_DAY_CAP == 250, r)
+        w = own("lim", {dz: {"all": 10, "bars": 3}})
+        r = run_at(w, t10, L_ev, limited=True)
+        r2 = run_at(w, t10 + 3600, L_ev)
+        check("b. the core or a push met ntfy's daily cap this run (429) -> no chart for the rest of the UTC day", not r["posted"] and "429" in r["why"]
+              and not r2["posted"] and "429" in r2["why"], (r, r2))
+        work = w
+        nxt = et(2026, 11, 19, 19, 5) + 86400 * 0                # 00:05 UTC on 11-20 (19:05 ET 11-19): a new UTC day, the market open
+        L_nx = {"accounts": [{"id": "b25k_2", "kind": "eval", "source": "pc", "trades": [],
+                              "position": {"entry_t": nxt - 300, "side": "SHORT", "qty": 1, "entry": 21000.0, "stop": 21010.0, "target": 20960.0}}]}
+        r, _ = step(nxt, L_nx)
         check("b. ... and the next UTC day it posts again (ntfy.sh resets at 00:00 UTC); days older than 3 are dropped", r["posted"]
               and set(R.read_json(os.path.join(work, R.BARS_STATE), {})["days"]) <= {R._utc_day(nxt - 86400 * k) for k in range(4)}, r)
         http429 = FakeHTTP({TOPIC + "-bars": 429})
@@ -399,6 +427,99 @@ def pacing():
         check("b. junk arguments never raise", r["posted"] is False and "softly" in r["why"], r)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
+
+
+# ============================================================================================== b. a whole day (the budget)
+def day_L(t, trail=False):
+    """The PC's live.json at time t of Wed 2026-11-18: ATLAS SHORT 03:12-03:44 ET (stopped), Zlarior LONG on the 50K + 25K #2 09:47-11:02 ET
+    (stop to break-even at 10:20, target). trail=True: the open trade's stop moves on every 15-minute run from 02:00 to 16:00 ET (the worst case)."""
+    T = lambda h, m: et(2026, 11, 18, h, m)                   # noqa: E731
+    a_in, a_out, l_in, l_be, l_out = T(3, 12), T(3, 44), T(9, 47), T(10, 20), T(11, 2)
+    accts, board = [], []
+    for acct, q in (("mffu50k_eval", 3), ("b25k_2", 1)):
+        row = {"id": acct, "kind": "eval", "source": "pc", "trades": []}
+        if trail and T(2, 0) <= t < T(16, 0):
+            row["position"] = {"entry_t": T(2, 0), "side": "LONG", "qty": q, "entry": 21000.0, "stop": 20990.0 + 0.25 * ((t - T(2, 0)) // 900), "target": 21100.0}
+        elif l_in <= t < l_out:
+            row["position"] = {"entry_t": l_in, "side": "LONG", "qty": q, "entry": 21003.0, "stop": 21003.0 if t >= l_be else 20990.0, "target": 21030.0}
+        if t >= l_out:
+            row["trades"].append({"day": "2026-11-18", "entry_t": l_in, "exit_t": l_out, "side": "LONG", "qty": q, "entry": 21003.0, "exit_px": 21030.0,
+                                  "exit": "TARGET", "pnl": round(27 * 2 * q - 1.9 * q, 2)})
+        accts.append(row)
+    if a_in <= t < a_out:
+        board.append({"acct": "atlas", "src": "live", "entry_t": a_in, "side": "SHORT", "qty": 2, "entry": 21050.0, "stop": 21060.0, "target": 21010.0, "open": True})
+    elif t >= a_out:
+        board.append({"acct": "atlas", "src": "live", "entry_t": a_in, "exit_t": a_out, "side": "SHORT", "qty": 2, "entry": 21050.0, "exit_px": 21060.25,
+                      "exit": "STOP", "usd": -44.8})
+    return {"t": t - 60, "accounts": accts, "board": {"trades": board}}
+
+
+def day_sim():
+    tmp = tempfile.mkdtemp(prefix="pcbars_day_")
+    try:
+        cfg = {"ntfy": "https://ntfy.sh", "status_topic": TOPIC}
+        feed = os.path.join(tmp, "status_feed.json")
+        with open(feed, "w", encoding="utf-8") as fh:
+            json.dump({"ntfy": "https://ntfy.sh", "topic": TOPIC}, fh)
+        u0 = int(dt.datetime(2026, 11, 18, 0, 0, tzinfo=dt.timezone.utc).timestamp())     # the UTC day = Tue 19:00 ET -> Wed 19:00 ET
+        events = [et(2026, 11, 18, 3, 12), et(2026, 11, 18, 3, 44), et(2026, 11, 18, 9, 47), et(2026, 11, 18, 10, 20), et(2026, 11, 18, 11, 2)]
+        nt_dir = os.path.join(tmp, "nt")
+
+        def bars_at(t):
+            end = t // 300 * 300
+            shutil.rmtree(nt_dir, ignore_errors=True)
+            return nt_folder(nt_dir, walk(end, 180, seed=t % 89), [(end + 60 * i, 21100.0, 21101.0, 21099.0, 21100.5) for i in range((t - end) // 60)])
+
+        def one_day(name, trail=False, fast=False):
+            work, http, rows, status = os.path.join(tmp, name), FakeHTTP(), [], 0
+            prev_ht = None
+            for k in range(96):
+                t = u0 + 180 + k * 900                           # the 15-minute report task (:03, :18, :33, :48)
+                calls = [(t, False)] + ([(t + 300, True), (t + 600, True)] if fast else [])     # fast: a 5-minute --bars caller on top
+                for tc, alone in calls:
+                    L = day_L(tc, trail)
+                    mo = R.market_open(tc, env={})
+                    changed = R._bars_hashes({"ac": None, **{kk: v for kk, v in zip(("ac", "open", "closed"), R.chart_trades(L, tc)) if v}})[1] != prev_ht
+                    ext = (not alone) and (k % 2 == 0 or changed)      # the ext post: every 2nd run, or at once when its news (a trade) changed
+                    other = 0 if alone else 1 + (2 if ext else 0) + (1 if changed and k else 0)   # core + 2 ext parts + a trade push
+                    status += other
+                    d = bars_at(tc)
+                    r = R.bars_step(work, cfg, L, tc, mo, http=http, root=os.path.join(tmp, "root"), nt_folder=d, feed_path=feed, other_posts=other, busy_run=ext)
+                    rows.append({"t": tc, "posted": r["posted"], "kind": r.get("kind"), "why": r["why"], "mo": mo, "ext": ext, "hours": R.bars_hours(tc)})
+                    prev_ht = R._bars_hashes({kk: v for kk, v in zip(("ac", "open", "closed"), R.chart_trades(L, tc)) if v})[1]
+            st = R.read_json(os.path.join(work, R.BARS_STATE), {})
+            return rows, http, status, st
+
+        rows, http, status, st = one_day("normal")
+        posted = [r for r in rows if r["posted"]]
+        cand, trd = [r for r in posted if r["kind"] == "candles"], [r for r in posted if r["kind"] == "trades"]
+        first_after = [next((r for r in rows if r["t"] >= e), None) for e in events]
+        check(f"b. a whole trading day (96 report runs, the ext every 2nd run): {len(posted)} chart posts = {len(cand)} hourly candle posts + {len(trd)} trade-level posts, "
+              f"at most 24 (BARS_DAY_MAX); with ~210 status posts a day that is <= 234 of ntfy's 250",
+              len(posted) <= R.BARS_DAY_MAX and len(cand) <= R.BARS_DAY_MAX - R.BARS_TRADE_RESERVE and 210 + len(posted) <= 234 and len(posted) >= 15, [(et_str(r["t"]), r["kind"]) for r in posted])
+        check(f"b. ... this PC's whole day in the simulation: {status} status + push posts + {len(posted)} chart = {status + len(posted)} <= 250, and the state file counted it",
+              status + len(posted) <= R.NTFY_DAY_CAP and st["days"]["2026-11-18"]["all"] == status + len(posted) and st["days"]["2026-11-18"]["bars"] == len(posted)
+              and st["days"]["2026-11-18"].get("candles") == len(cand), (status, st.get("days")))
+        check("b. ... every entry / exit / stop move went out on the first run after it (ATLAS 03:12 + 03:44, Zlarior 09:47, the BE stop 10:20, the exit 11:02)",
+              all(r and r["posted"] and r["kind"] == "trades" for r in first_after), [(et_str(r["t"]), r["posted"], r["why"]) for r in first_after if r])
+        check("b. ... candles only in the bots' hours (01:50-16:10 ET), never on a run that sent the ext post, never twice within 59 minutes; nothing while the market is closed",
+              all(r["hours"] and not r["ext"] for r in cand) and all(b["t"] - a["t"] >= R.BARS_GAP_CANDLES_S for a, b in zip(cand, cand[1:]))
+              and not any(r["posted"] and not r["mo"] for r in rows) and any(not r["mo"] for r in rows), [(et_str(r["t"]), r["ext"]) for r in cand])
+        rows2, http2, status2, st2 = one_day("trail", trail=True)
+        p2 = [r for r in rows2 if r["posted"]]
+        check(f"b. the worst day (the stop moves on every run 02:00-16:00 ET = 56 changes): still exactly 24 chart posts, then nothing (cap), no 429",
+              len(p2) == R.BARS_DAY_MAX and len([r for r in p2 if r["kind"] == "candles"]) <= 18 and any("24 chart posts today" in r["why"] for r in rows2)
+              and len(http2.posts(TOPIC + "-bars")) == 24, (len(p2), [(et_str(r["t"]), r["kind"]) for r in p2][-4:]))
+        rows3, http3, status3, st3 = one_day("fast", fast=True)
+        p3 = [r for r in rows3 if r["posted"]]
+        check(f"b. a 5-minute --bars caller on top of the 15-minute runs (288 more calls): {len(p3)} chart posts, still <= 24, the same hourly candles",
+              len(p3) <= R.BARS_DAY_MAX and len([r for r in p3 if r["kind"] == "candles"]) <= 18, len(p3))
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
+def et_str(t):
+    return dt.datetime.fromtimestamp(t, ET).strftime("%H:%M")
 
 
 # ============================================================================================== c. run_once
@@ -429,8 +550,14 @@ def run():
             rec = R.run_once(work=os.path.join(root, "work"), http=http, root=root, now=t, feed_problem=lambda: None, say=lambda *_: None, feed_path=feed)
             return rec, http, root
 
-        rec0, h0, _ = go("plain", "", now)
-        rec1, h1, root1 = go("chart", d, now)
+        import time as _time
+        real_time, fixed = _time.time, _time.time()
+        _time.time = lambda: fixed          # engine/board_events.status_block stamps the real clock into the ext post's "brd": the same second for both runs
+        try:
+            rec0, h0, _ = go("plain", "", now)
+            rec1, h1, root1 = go("chart", d, now)
+        finally:
+            _time.time = real_time
         s0 = [(c["url"], c["body"]) for c in h0.posts(TOPIC)]
         s1 = [(c["url"], c["body"]) for c in h1.posts(TOPIC)]
         check("c. the status posts (ext + core) are byte-identical with and without the chart (their 3,900-byte caps untouched)",
@@ -475,19 +602,19 @@ def run():
 
         def boom(*a, **k):
             raise RuntimeError("chart exploded")
-        R.bars_step = boom
+        R.bars_step, _time.time = boom, (lambda: fixed)
         try:
             rec3, h3, _ = go("broken", d, now)
         finally:
-            R.bars_step = real_step
+            R.bars_step, _time.time = real_step, real_time
         check("c. the chart step raises -> the status posts are the same, no chart post, rec ok as without it, rec['bars'] says it failed softly",
               [(c["url"], c["body"]) for c in h3.posts(TOPIC)] == s0 and not h3.posts(TOPIC + "-bars") and rec3["errors"] == rec0["errors"]
               and "failed softly" in rec3["bars"]["why"], rec3.get("bars"))
-        R.chart_trades = boom
+        R.chart_trades, _time.time = boom, (lambda: fixed)
         try:
             rec4, h4, _ = go("broken2", d, now)
         finally:
-            R.chart_trades = real_trades
+            R.chart_trades, _time.time = real_trades, real_time
         check("c. the trades part raises inside -> no chart post that run, the status posts untouched", not h4.posts(TOPIC + "-bars")
               and [(c["url"], c["body"]) for c in h4.posts(TOPIC)] == s0 and rec4["errors"] == rec0["errors"], rec4.get("bars"))
         # a dry run: nothing sent
@@ -572,6 +699,7 @@ def node_twin():
 def main() -> int:
     packer()
     pacing()
+    day_sim()
     run()
     node_twin()
     bad = RES.count(False)

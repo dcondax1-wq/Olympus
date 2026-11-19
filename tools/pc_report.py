@@ -25,7 +25,8 @@ the repo's own engine code (read-only use: engine/live_publish.build, engine/go.
               push at any hour, and the trade's own push ends with "Fill check OK" or the flags.
   4. chart    the NQ page's live chart (owner 2026-11-18): the latest NQ 5-minute bars from this PC's NinjaTrader (LE_BarFeed's files)
               + every open trade and today's closed trades per account (by label, never an id), one small post of kind "le-bars"
-              on its own public topic (the status topic + "-bars"), paced for ntfy.sh's daily cap (bars_step, BARS_* below).
+              on its own public topic (the status topic + "-bars"): at most 24 a day (hourly candles in the bots' hours on runs
+              without an ext post, at once after an entry / exit / stop move; bars_step, BARS_* below).
 Nothing here starts, stops, arms or routes anything; no order, no live_model*.json, no engine/ file is changed. Every failure is
 soft (logged, exit 0). Tests: tests/test_bots_back.py (fake http, fake files, never the real network).
 
@@ -717,10 +718,16 @@ def public(out: dict) -> dict:
 #   trades  every open trade and the day's closed trades of the real MFFU accounts (engine/feed_trades rules: never BLITZ, never the
 #           cloud paper twin), each named by its label (tools/live_trades.ACCOUNTS: Zlarior 50K, Zlarior 25K #2, ATLAS funded 25K,
 #           Rapid 25K), never by an id or digits: side, micros, entry, stop, target, times, exit price, $.
-# Paced for ntfy.sh's free cap (250 messages a UTC day per IP, reset 00:00 UTC; the PC already sends ~150: docs/BOTS_BACK.md): only
-# while the market is open and the bars are fresh, only when they changed, at most every 14 min in the bots' hours (weekday 01:50-16:10
-# ET = every 15-minute run), about hourly in the other open hours, at once (>= 5 min after the last) when a trade opened / closed /
-# moved; at most BARS_DAY_MAX a UTC day, none once this PC sent BARS_DAY_ALL_MAX posts that day or ntfy said 429. Posted AFTER the
+# The budget (lead 2026-11-18): ntfy.sh's free tier takes ~250 messages a UTC day per IP (reset 00:00 UTC, measured) and the status
+# posts already use ~210, so the chart adds AT MOST BARS_DAY_MAX = 24 posts a UTC day, trade levels before candles:
+#   trade levels  an entry, an exit or a stop / target move (the trades block changed): posted on that run (>= 5 min after the last
+#                 chart post), in any open-market hour, up to the whole 24
+#   candles       only in the bots' hours (weekday 01:50-16:10 ET), about hourly (59 min after the last chart post), only on a run that
+#                 sent no ext post (it rides the 15-minute cycle: a run never sends more than an ext run does), at most 18 a day
+#                 (BARS_DAY_MAX - BARS_TRADE_RESERVE: 6 always left for the trade levels)
+#   never         market closed, nothing changed, bars stale, after a 429 that UTC day, once this PC counted NTFY_DAY_CAP -
+#                 BARS_DAY_MAX posts that day (core + ext + pushes + chart)
+# A full day: 15 hourly candle posts + 2-6 trade-level posts = ~17-21 (tests.test_pc_bars b simulates whole days). Posted AFTER the
 # core and the pushes, so it never takes their room. Every step is soft: a failure here never touches the other posts.
 BARS_KIND = "le-bars"
 BARS_TOPIC_SUFFIX = "-bars"
@@ -730,11 +737,12 @@ BARS_MAX = 180                   # 15 hours: the bots' whole day (LIT from 02:00
 BARS_MIN = 12                    # fewer bars than this: no post
 BARS_TAIL_BYTES = 96 * 1024      # only the end of a bar file is read (~2,000 lines)
 BARS_TICK = 0.25                 # NQ / MNQ
-BARS_GAP_DAY_S = 840             # in the bots' hours: every 15-minute run
-BARS_GAP_NIGHT_S = 3540          # in the other open hours: about hourly
+BARS_GAP_CANDLES_S = 3540        # candles: about hourly (the 4th 15-minute run), in the bots' hours only
 BARS_GAP_TRADE_S = 300           # a trade opened / closed / moved: at once, but never twice in 5 minutes
-BARS_DAY_MAX = 64                # chart posts a UTC day (the 15-minute runs of the bots' hours + hourly the rest = ~66 at most)
-BARS_DAY_ALL_MAX = 200           # no chart post once this PC sent this many posts today (core + ext + pushes + chart): 50 kept spare
+NTFY_DAY_CAP = 250               # ntfy.sh free: messages a UTC day per IP (measured 2026-11-18; the status posts use ~210)
+BARS_DAY_MAX = 24                # chart posts a UTC day, all kinds (lead 2026-11-18: "at most ~24 a day")
+BARS_TRADE_RESERVE = 6           # of those, always left for the trade levels: candles stop at 18 a day
+BARS_DAY_ALL_MAX = NTFY_DAY_CAP - BARS_DAY_MAX   # 226: no chart post once this PC counted this many posts today (the status first)
 BARS_STALE_S = 900               # the newest price older than this while the market is open: no post (the core says FEED STALE)
 BARS_TRADES = 12                 # closed trades in one post at most (the newest)
 
@@ -1110,8 +1118,9 @@ def _bars_hashes(post) -> tuple:
     return h([p.get(k) for k in ("t0", "p0", "n", "b", "g", "f", "sym")]), h([p.get(k) for k in ("ac", "open", "closed")])
 
 
-def bars_due(state: dict | None, post: dict | None, now: int, market_open_now: bool) -> tuple:
-    """(due, why): whether the chart post goes now (the pacing in the block comment above)."""
+def bars_due(state: dict | None, post: dict | None, now: int, market_open_now: bool, busy_run: bool = False) -> tuple:
+    """(due, why): whether the chart post goes now (the budget in the block comment above; why "a trade changed" = a trade-level
+    post, "hourly candles" = a candle post). busy_run: this run already sent an ext post (candles wait; trade levels never do)."""
     st = _d(state)
     if not market_open_now:
         return False, "market closed"
@@ -1132,12 +1141,17 @@ def bars_due(state: dict | None, post: dict | None, now: int, market_open_now: b
     if hb == st.get("hb") and ht == st.get("ht"):
         return False, "unchanged"
     gap = int(now) - int(num(st.get("t")) or 0)
-    if ht != st.get("ht") and gap >= BARS_GAP_TRADE_S:
-        return True, "a trade changed"
-    need = BARS_GAP_DAY_S if bars_hours(now) else BARS_GAP_NIGHT_S
-    if gap >= need:
-        return True, "due"
-    return False, f"next in {span(need - gap)}"
+    if ht != st.get("ht"):                          # trade levels first: an entry, an exit, a moved stop / target
+        return (True, "a trade changed") if gap >= BARS_GAP_TRADE_S else (False, f"a trade changed: next in {span(BARS_GAP_TRADE_S - gap)}")
+    if not bars_hours(now):
+        return False, "candles only in the bots' hours (01:50-16:10 ET)"
+    if int(num(cnt.get("candles")) or 0) >= BARS_DAY_MAX - BARS_TRADE_RESERVE:
+        return False, f"{BARS_DAY_MAX - BARS_TRADE_RESERVE} candle posts today (the rest is kept for trade levels)"
+    if gap < BARS_GAP_CANDLES_S:
+        return False, f"candles next in {span(BARS_GAP_CANDLES_S - gap)}"
+    if busy_run:
+        return False, "this run sent the ext post: the candles go on the next run"
+    return True, "hourly candles"
 
 
 def _nt_folder(root: str, env=None):
@@ -1154,9 +1168,11 @@ def _nt_folder(root: str, env=None):
 
 def bars_step(work: str, cfg: dict, L: dict | None, now: int, market_open_now: bool, dry: bool = False, http=None, say=print,
               root: str = ROOT, nt_folder: str | None = None, other_posts: int = 0, limited: bool = False,
-              feed_path: str | None = None) -> dict:
-    """One chart turn of a report run: count this run's other posts, build the post, post it to the chart topic when due, keep the
-    state (data/pc_report/bars.json). -> {"posted", "why", "bytes", "n"}. Never raises; never writes in a dry run."""
+              feed_path: str | None = None, busy_run: bool = False) -> dict:
+    """One chart turn of a report run: count this run's other posts, build the post, post it to the chart topic when due (bars_due;
+    busy_run = this run sent an ext post), keep the state (data/pc_report/bars.json: the last post, per UTC day the counts "all" (every
+    post of this PC), "bars" (chart posts), "candles" (the candle-only ones)). -> {"posted", "why", "bytes", "n"}. Never raises; never
+    writes in a dry run."""
     res = {"posted": False, "why": ""}
     try:
         p = os.path.join(work, BARS_STATE)
@@ -1174,7 +1190,7 @@ def bars_step(work: str, cfg: dict, L: dict | None, now: int, market_open_now: b
             res["why"] = "no status topic"
         else:
             post = bars_post(L, int(now), root, nt_folder) if market_open_now else None
-            due, why = bars_due(st, post, int(now), market_open_now)
+            due, why = bars_due(st, post, int(now), market_open_now, busy_run=bool(busy_run))
             res["why"] = why
             if due:
                 body = json.dumps(post, separators=(",", ":"), ensure_ascii=False)
@@ -1188,8 +1204,11 @@ def bars_step(work: str, cfg: dict, L: dict | None, now: int, market_open_now: b
                         hb, ht = _bars_hashes(post)
                         st.update(t=int(now), hb=hb, ht=ht, n=post.get("n"), bytes=res["bytes"])
                         cnt["bars"] = int(num(cnt.get("bars")) or 0) + 1
+                        if why == "hourly candles":
+                            cnt["candles"] = int(num(cnt.get("candles")) or 0) + 1
                         cnt["all"] += 1
                         res["posted"] = True
+                        res["kind"] = "trades" if why == "a trade changed" else "candles"
                     else:
                         res["why"] = "chart: " + w
                         if "rate limit" in w:
@@ -1655,7 +1674,7 @@ def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, n
            # the Launch card (tools/launch_card.report_state) reads only this file: whether alerts go out, never the topic itself
            "alerts_on": bool(cfg["topic"]) and bool(cfg["on"])}
     status, exts = posts(snap)
-    posted = 0                                      # this run's public posts (the chart's daily ntfy share counts them)
+    posted = ext_n = 0                              # this run's public posts / ext posts (the chart's daily ntfy share counts them)
     for k in ("ext_t", "ext_h"):
         rec[k] = last.get(k)
     if snap.get("live"):
@@ -1675,6 +1694,7 @@ def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, n
                 due = False
                 break
             posted += 1
+            ext_n += 1
         if due and not dry:
             rec["ext_t"], rec["ext_h"] = snap["t"], h
         if num(rec.get("ext_t")):
@@ -1723,7 +1743,7 @@ def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, n
         rec["bars"] = bars_step(work, cfg, snap.get("live") if isinstance(snap.get("live"), dict) else {}, snap["t"],
                                 bool(snap.get("market_open")), dry=dry, http=http, say=say, root=root, nt_folder=_nt_folder(root, env),
                                 other_posts=0 if dry else posted + sent, limited=any("rate limit" in str(e) for e in rec["errors"]),
-                                feed_path=feed_path)
+                                feed_path=feed_path, busy_run=ext_n > 0)
     except Exception as e:  # noqa: BLE001
         rec["bars"] = {"posted": False, "why": f"chart failed softly: {e.__class__.__name__}"}
     rec.update(sent=sent, queued=len(msgs), ok=not rec["errors"])
