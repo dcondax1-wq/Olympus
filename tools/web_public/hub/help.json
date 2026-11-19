@@ -244,20 +244,21 @@
   },
   {
    "id": "kalshi",
-   "q": "Is Kalshi on?",
-   "words": "kalshi status paused paper rewards bets on off prediction k1 rewards card paper test",
+   "q": "Is Kalshi on? How does it go live?",
+   "words": "kalshi status paused paper rewards bets on off prediction k1 rewards card paper test live go live phrase key api key stop flatten",
    "where": "The Kalshi page (the Kalshi door)",
    "steps": [
-    "Kalshi is PAUSED for real money: no real bets (\"Kalshi paused for now\").",
-    "Two paper tests run and never place an order: the rewards card (9 rewarded markets, shows net $ and its age) and the K1 rules card. The PC's 15-minute report keeps both going.",
-    "Real bets come back only with your yes: tell Claude."
+    "Kalshi is PAUSED for real money: ready to go live when you type the phrase. The paper tests (rewards, K1) keep running and never place an order.",
+    "Once, on the PC: kalshi.com > your account > Profile Settings > API Keys > Create New API Key (it downloads a .txt), then double-click KALSHI_KEY_SETUP.bat. It moves the key out of Downloads into your private folder. Never paste the key in a chat.",
+    "Go live: double-click KALSHI_LIVE.bat. It shows the plan, the limits and what it would place, then YOU type I ACCEPT KALSHI LIVE RISK. It switches itself off after any stop (then you type it again).",
+    "Stop: KALSHI_STOP.bat on the PC, or PAUSE / FLATTEN / KILL on the phone's ZEUS Safety page."
    ],
    "copy": "",
    "link": {
     "href": "../kalshi/",
     "label": "Kalshi"
    },
-   "src": "STATE.md (Kalshi), tools/kalshi_rewards_paper.py, tools/kalshi_paper.py"
+   "src": "engine/kalshi_live.py, KALSHI_KEY_SETUP.bat, KALSHI_LIVE.bat, KALSHI_STOP.bat, STATE.md (Kalshi)"
   },
   {
    "id": "cloudflare",

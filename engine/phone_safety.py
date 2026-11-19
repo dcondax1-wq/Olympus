@@ -15,6 +15,8 @@ phone can only WATCH the bot (engine/live_site.py: read-only over the link). Thi
 
 Never: start, arm, update, restart, size, settings. There is no code path from here to any of them (ACTIONS is the whole list,
 each runs the SAME function the GitHub remote runs: RemoteControl.run_cmd, with its log, hands-off record and phone notice).
+Kalshi (2026-11-19): every press also reaches the Kalshi live executor when it is ON (engine/kalshi_live.phone_press: pause /
+resume / flatten / kill, its own words appended to the answer; nothing when it is OFF); it can never switch Kalshi on.
 
 Who may press (every check must pass; check() is pure, the tests call it):
   1 switched ON at the PC (OFF by default, it acts on orders): python -X utf8 -m engine.phone_safety --on
@@ -223,6 +225,13 @@ def run(rc, action: str, body: dict, now=None, log_path: str | None = None) -> d
         if status not in ("done", "refused", "failed"):
             status = "failed"
         rc._finish(d, cid, cmd, status, msg, now, title=f"Phone {action.upper()}: {status}")
+    try:                                    # the same press for the Kalshi live executor (engine/kalshi_live.py); '' when it is OFF
+        from engine import kalshi_live
+        k = kalshi_live.phone_press(action, now=now)
+        if k:
+            msg = f"{msg} | {k}"
+    except Exception:  # noqa: BLE001
+        pass
     row = {"t": int(now), "action": action, "status": status, "msg": str(msg)[:200], "src": "phone"}
     log(row, log_path)
     try:
@@ -268,6 +277,11 @@ def status_view(bot, env=None, now=None, state_path: str | None = None, log_path
         out["trail"] = audit_trail.recent(8, now=now)
     except Exception:  # noqa: BLE001
         out["trail"] = []
+    try:                                    # Kalshi live executor: one short line, None when it is OFF
+        from engine import kalshi_live
+        out["kalshi"] = kalshi_live.phone_view(now=now)
+    except Exception:  # noqa: BLE001
+        out["kalshi"] = None
     return out
 
 
@@ -313,6 +327,7 @@ function load(){fetch("status",{cache:"no-store"}).then(function(r){return r.jso
   h+='<div class="row"><span>Zlarior position</span><b>'+esc(s.position)+'</b></div>';
   h+='<div class="row"><span>Other accounts open</span><b>'+esc(s.others_open)+'</b></div>';
   h+='<div class="row"><span>New trades</span><b>'+(s.pause?"PAUSED until "+esc(s.pause):(s.no_entries_today?"blocked today (flattened)":"allowed"))+'</b></div>';
+  if(s.kalshi)h+='<div class="row"><span>Kalshi</span><b>'+esc(s.kalshi)+'</b></div>';
   h+='<div class="mute">Updated '+hm(s.t)+'</div>';
   var tr=(s.trail||[]).slice().reverse().map(function(x){return "<li>"+esc(hm(x.t))+" &middot; "+esc(x.what)+"</li>"}).join("");
   document.getElementById("trail").innerHTML=tr||'<li class="mute">nothing yet</li>';
