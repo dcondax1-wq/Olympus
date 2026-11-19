@@ -68,8 +68,8 @@
       else {
         // once per app launch: the same launch seen again (a reload after an app switch: sessionStorage still has 'jarvis.booted') or a
         // start within 20 minutes of the last one gets the 0.5 s fade; a new launch gets the MARK (2026-11-18, owner: the entry screen
-        // "looks made in the 2000s"): 1.2 s, the gold temple on deep navy and OLYMPUS, no WebGL, the same on every phone. The 10 s film
-        // stays one tap away (the command palette: Play the OLYMPUS intro).
+        // "looks made in the 2000s"; v3 night-intro3: "looks wrong / cheap"): 2.2 s, a storm, a lightning strike on the gold temple, OLYMPUS
+        // (the olympus-entry script), no WebGL, the same on every phone. The 10 s film stays one tap away (the command palette).
         var again = false;
         try { again = !!sessionStorage.getItem('jarvis.booted') || (g('jarvis.intro.day') === day && Date.now() - (parseInt(g('jarvis.intro.at') || '0', 10) || 0) < 20 * 60 * 1000); } catch (e) { /* private mode */ }
         im = again ? 'off' : 'mark';
@@ -135,58 +135,19 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
 @keyframes olyGo{to{opacity:0;visibility:hidden}}
 @keyframes olyEnd{to{opacity:0;visibility:hidden}}
 .oly canvas{position:absolute;top:0;left:0;width:100%;height:100%;display:block}
-/* the entry (night-entry2 2026-11-18, owner: "better ... Olympian entry screen"): black marble with gold veins, a lightning strike onto the
-   gold temple (a ZEUS nod: the bolt lights in the pediment), a gold sheen, OLYMPUS letter by letter, the four doors in one line. 1.2 s,
-   composited only (transform / opacity), the final state is the base style: calm / fade / off and reduced motion show it still. */
-.oly .oly-w{position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 860' preserveAspectRatio='xMidYMid slice'%3E%3Cg fill='none' stroke='%23e2b65c' stroke-linecap='round'%3E%3Cpath d='M-20 128C80 168 140 92 232 170S360 236 420 192' stroke-opacity='.16' stroke-width='1.3'/%3E%3Cpath d='M-10 150C70 182 150 128 214 196' stroke-opacity='.08' stroke-width='.7'/%3E%3Cpath d='M-10 610C92 560 162 690 262 650S380 572 430 628' stroke-opacity='.13' stroke-width='1.1'/%3E%3Cpath d='M58 -10C92 120 36 262 118 384S70 520 96 600' stroke-opacity='.07' stroke-width='.8'/%3E%3Cpath d='M318 870C292 762 370 704 336 604S252 484 304 402' stroke-opacity='.09' stroke-width='.9'/%3E%3C/g%3E%3C/svg%3E") center/cover no-repeat,radial-gradient(90% 55% at 50% 44%,rgba(226,182,92,.13) 0%,rgba(226,182,92,0) 60%),radial-gradient(130% 80% at 50% 40%,#16244a 0%,#0a1128 48%,#03050b 100%)}
-.oly .oly-w:before,.oly .oly-w:after{content:"";position:absolute;top:-4%;bottom:-4%;width:58px;background:repeating-linear-gradient(90deg,rgba(243,236,224,.07) 0 7px,rgba(243,236,224,.015) 7px 10px,rgba(243,236,224,.07) 10px 14px);-webkit-mask:linear-gradient(transparent,#000 22%,#000 78%,transparent);mask:linear-gradient(transparent,#000 22%,#000 78%,transparent)}
-.oly .oly-w:before{left:-14px}.oly .oly-w:after{right:-14px}
-.oly .oly-launch-ui{display:none}
-.oly .oly-c{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding-bottom:6vh;transition:transform .36s cubic-bezier(.4,0,.6,1)}
-.oly .oly-go .oly-c{transform:scale(1.06)}
-.oly .oly-mk{position:relative;width:min(33vw,132px)}
-.oly .oly-t{display:block;width:100%;height:auto;position:relative}
-.oly .oly-halo{position:absolute;left:50%;top:50%;width:230%;height:0;padding-bottom:230%;margin:-115% 0 0 -115%;border-radius:50%;background:radial-gradient(closest-side,rgba(232,186,96,.24),rgba(226,182,92,.08) 52%,rgba(226,182,92,0))}
-.oly .oly-sh{position:absolute;top:0;left:0;width:100%;height:100%;overflow:hidden;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='160 200 704 624'%3E%3Cpath d='M512 226 830 392H194zM296 362h432L512 282z' fill-rule='evenodd'/%3E%3Cpath d='M194 408h636v44H194zM245 474h84v22h-84zM256 496h62v196h-62zM395 474h84v22h-84zM406 496h62v196h-62zM545 474h84v22h-84zM556 496h62v196h-62zM695 474h84v22h-84zM706 496h62v196h-62zM214 712h596v38H214zM174 768h676v40H174z'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='160 200 704 624'%3E%3Cpath d='M512 226 830 392H194zM296 362h432L512 282z' fill-rule='evenodd'/%3E%3Cpath d='M194 408h636v44H194zM245 474h84v22h-84zM256 496h62v196h-62zM395 474h84v22h-84zM406 496h62v196h-62zM545 474h84v22h-84zM556 496h62v196h-62zM695 474h84v22h-84zM706 496h62v196h-62zM214 712h596v38H214zM174 768h676v40H174z'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat}
-.oly .oly-sh:after{content:"";position:absolute;top:0;bottom:0;left:0;width:60%;background:linear-gradient(100deg,rgba(255,250,232,0),rgba(255,250,232,.85) 50%,rgba(255,250,232,0));transform:translateX(-140%)}
-.oly .oly-bolt{fill:#fff4d6}
-.oly .oly-mk .oly-zap{position:absolute;left:50%;bottom:86%;width:44px;height:52vh;margin-left:-22px;opacity:0}
-.oly .oly-zap path{fill:none;stroke:#fff8e6;stroke-width:2;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke}
-.oly .oly-zap path+path{stroke:rgba(190,215,255,.55);stroke-width:7}
-.oly .oly-fx{position:absolute;top:0;left:0;right:0;bottom:0;margin:0;background:radial-gradient(70% 45% at 50% 30%,rgba(214,226,255,.42),rgba(214,226,255,0) 70%);opacity:0;pointer-events:none}
-.oly .oly-w b{display:block;font:500 31px/1 "Didot","Bodoni 72",ui-serif,"Times New Roman",Georgia,serif;letter-spacing:.3em;padding-left:.3em;white-space:nowrap}
-.oly .oly-w b span{display:inline-block;color:#ecd49a;background:linear-gradient(180deg,#fff1c8 10%,#e2b65c 58%,#a8782c 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.oly .oly-w i{display:flex;align-items:center;gap:9px;width:150px;height:7px}
-.oly .oly-w i:before,.oly .oly-w i:after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(226,182,92,0),#e2b65c)}
-.oly .oly-w i:after{background:linear-gradient(90deg,#e2b65c,rgba(226,182,92,0))}
-.oly .oly-w i u{width:6px;height:6px;background:#f0cd82;transform:rotate(45deg)}
-.oly .oly-w em{font:500 11px/1 -apple-system,system-ui,sans-serif;font-style:normal;letter-spacing:.4em;padding-left:.4em;color:rgba(234,211,154,.66)}
-/* the mark's 1.2 s: halo + temple rise (0-0.5 s), the strike (0.26 s), the sheen (0.42 s), the letters (0.3-0.7 s), the rule and the doors line */
-.oly .oly-mark .oly-halo{animation:olyHalo .6s cubic-bezier(.2,.8,.2,1) both}
-.oly .oly-mark .oly-t{animation:olyRise .55s cubic-bezier(.2,.8,.2,1) both}
-.oly .oly-mark .oly-mk .oly-zap{animation:olyZap .42s linear .24s both}
-.oly .oly-mark .oly-fx{animation:olyFx .5s ease-out .24s both}
-.oly .oly-mark .oly-bolt{animation:olyBolt .5s linear .26s both}
-.oly .oly-mark .oly-sh:after{animation:olySh .4s cubic-bezier(.4,0,.2,1) .4s both}
-.oly .oly-mark b span{animation:olyLt .38s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(.26s + var(--k) * 35ms)}
-.oly .oly-mark i{animation:olyLn .34s cubic-bezier(.2,.8,.2,1) .46s both}
-.oly .oly-mark em,.oly .oly-mark .oly-skip{animation:olyIn .3s ease-out .5s both}
-.oly .oly-mark:before,.oly .oly-mark:after{animation:olyCol 1.2s cubic-bezier(.2,.8,.2,1) both}
-@keyframes olyHalo{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:none}}
-@keyframes olyRise{from{opacity:0;transform:translateY(14px) scale(.92)}to{opacity:1;transform:none}}
-@keyframes olyZap{0%{opacity:0}8%{opacity:1}30%{opacity:.15}42%{opacity:.95}100%{opacity:0}}
-@keyframes olyFx{0%{opacity:0}10%{opacity:1}35%{opacity:.25}48%{opacity:.7}100%{opacity:0}}
-@keyframes olyBolt{0%{opacity:.25}10%{opacity:1}30%{opacity:.4}45%{opacity:1}100%{opacity:1}}
-@keyframes olySh{to{transform:translateX(240%)}}
-@keyframes olyLt{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-@keyframes olyLn{from{opacity:0;transform:scaleX(.2)}to{opacity:1;transform:none}}
-@keyframes olyIn{from{opacity:0}to{opacity:1}}
-@keyframes olyCol{from{transform:translateY(26px)}to{transform:none}}
-@media (prefers-reduced-motion:reduce){.oly .oly-w *,.oly .oly-w:before,.oly .oly-w:after{animation:none!important;transition:none!important}}
+/* the entry v3 (night-intro3 2026-11-18, owner: the entry "looks wrong / cheap"): a storm over a sea of clouds, a lightning strike on the gold
+   temple, OLYMPUS, then the clouds clear onto Jarvis. Drawn once by the olympus-entry script into canvases, moved only by transform / opacity
+   (the phone runs that off the main thread); every size and timing is set there. .oly-w is its host; .oly-c the plain stand-in when that
+   script is missing or fails (the Home Screen temple and OLYMPUS, still). */
+.oly .oly-w{position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden}
+.oly .oly-c{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding-bottom:6vh;background:radial-gradient(120% 80% at 50% 42%,#151b38 0%,#080b18 55%,#03040a 100%)}
+.oly .oly-c svg{width:min(42vw,176px);height:auto}
+.oly .oly-c b{font:500 30px/1 "Didot","Bodoni 72",ui-serif,Georgia,serif;letter-spacing:.3em;padding-left:.3em;color:#ecd49a}
 .oly .oly-skip{position:absolute;left:0;right:0;bottom:calc(22px + env(safe-area-inset-bottom,0px));text-align:center;font:500 14px/1 -apple-system,system-ui,sans-serif;letter-spacing:.02em;color:rgba(243,236,224,.55);pointer-events:none}</style>
 </head>
 <body>
-<div class="oly" id="olyIntro" aria-hidden="true"><div class="oly-launch-ui" aria-hidden="true"><div class="oly-depth-front" aria-hidden="true"><i></i><i></i></div><div class="oly-launch-bar"><img src="intro-logo.webp" alt=""><span>OLYMPUS <i>/</i> COMMAND DECK</span><b>01</b></div><div class="oly-launch-copy"><small>CONNECTED WORLDS</small><strong>Enter your<br>night city.</strong><span>One map. Every arena.</span></div><button class="oly-enter" type="button" tabindex="-1">ENTER OLYMPUS <b>↗</b></button></div></div>
+<div class="oly" id="olyIntro" aria-hidden="true"></div>
+<script src="entry.js?v=e1" defer id="olyEntryJs"></script>
 <script id="olympus-intro">
 /* OLYMPUS intro (2026-11-03, owner: "INSANE, about 10 seconds, ending on my logo"). It plays over Jarvis while Jarvis starts
  * underneath and never holds Jarvis up. One WebGL1 full-screen shader (procedural storm, ridge, marble columns) plus one
@@ -203,12 +164,12 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
  *   8.7  portal  the camera punches through the ring: the ring grows past the screen and its inside is a hole onto Jarvis
  *
  * Versions (picked before the first paint by the start script in <head>, html[data-intro]):
- *   mark   1.2 s, a new launch (first start, or 20+ minutes after the last one), since 2026-11-18: the gold temple on navy and OLYMPUS,
- *          no WebGL (the owner: the old entry "looks made in the 2000s"; modern, fast, the same on every phone)
- *          entry2 (2026-11-18): black marble with gold veins, a lightning strike onto the temple (the bolt lights in its pediment),
- *          a gold sheen, OLYMPUS letter by letter, "ZEUS · MONEY · KALSHI", Tap to enter; CSS transform / opacity only
+ *   mark   2.2 s, a new launch (first start, or 20+ minutes after the last one), since 2026-11-18, no WebGL (the owner: the old entry
+ *          "looks made in the 2000s"). v3 (night-intro3, "looks wrong / cheap"): the olympus-entry script's film title: a storm over a
+ *          sea of clouds, a branching bolt strikes the gold temple (a full-screen flash, the metal lit), OLYMPUS, the clouds clear onto
+ *          Jarvis. Canvases drawn once, moved only by transform / opacity (Web Animations: smooth while Jarvis starts underneath).
  *   off    0.5 s, the same launch seen again (an app switch that reloaded the page) and 3D effects Off
- *   calm   3.5 s, reduce motion: the mark fading in and out, nothing moves       fade   0.8 s (a start after one that did not finish, no WebGL)
+ *   calm   3.5 s, reduce motion: the scene's last frame fading in and out, nothing moves   fade   0.8 s (a start after one that did not finish, no WebGL)
  *   full   10 s film / lite 5 s / short 1 s: only on request now (the command palette's "Play the OLYMPUS intro", 'jarvis.intro.force')
  * Rendered below the screen's resolution (1.5x; 1x on low-end or 3D Low); late frames step the resolution down and a phone under
  * 20 fps cuts to the reveal: never a slideshow. No WebGL: the still version.
@@ -231,13 +192,13 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
   'use strict';
   var W = window, doc = document, root = doc.documentElement;
   var st = W.__olyIntro = { mode: '', q: '', state: 'idle', frames: 0, ms: 0, err: '', done: false, scale: 0, n: 0, fps: 0, phase: '', cues: [], logo: false };
-  var LEN = { full: 10, lite: 5, short: 1.0, calm: 3.5, fade: 0.8, off: 0.5, mark: 1.3 };
+  var LEN = { full: 10, lite: 5, short: 1.0, calm: 3.5, fade: 0.8, off: 0.5, mark: 2.2 };
   var RATE = { full: 1, lite: 2, short: 1 };                // the film's clock runs at this multiple of the wall clock
   var ls = function (k, v) {
     try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { /* private mode */ }
     return null;
   };
-  var el = null, cv = null, gl = null, raf = 0, killT = 0, t0 = 0, ended = false, audio = null, gesture = false, holdUp = false, logoImg = null;
+  var el = null, cv = null, gl = null, raf = 0, killT = 0, t0 = 0, ended = false, audio = null, gesture = false, holdUp = false, logoImg = null, scene = null;
   var now = function () { return (W.performance && performance.now) ? performance.now() : Date.now(); };
   // a still frame for screenshots (docs, research/handoff): 'jarvis.intro.hold' = the film's second to hold, under automation only
   var HOLD = navigator.webdriver && isFinite(parseFloat(ls('jarvis.intro.hold'))) ? parseFloat(ls('jarvis.intro.hold')) : -1;
@@ -256,6 +217,8 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     ls('jarvis.intro.run', null);
     try { var x = gl && gl.getExtension('WEBGL_lose_context'); if (x) x.loseContext(); } catch (e) { /* */ }
     gl = null;
+    try { if (scene) scene.free(); } catch (e) { /* */ }                 // the entry's canvases: memory back at once (iPhone)
+    scene = null;
     try { if (el && el.parentNode) el.parentNode.removeChild(el); } catch (e) { /* */ }
     root.removeAttribute('data-intro');
     try {
@@ -394,34 +357,63 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
   function onVis() { if (doc.visibilityState !== 'visible') finish('hidden'); }
   var up = function () { if (holdUp) setTimeout(function () { holdUp = false; }, 80); };
 
-  // ---------------------------------------------------------------- the still versions: calm (reduce motion), fade, 3D off, no WebGL
-  // the mark (2026-11-18): the Home Screen icon's temple (web/icons/icon.svg, the same shapes) in gold, OLYMPUS, a hairline. Every still version
-  // uses it: mark 1.2 s (a new launch), calm 3.5 s (reduce motion: opacity only), fade 0.8 s, off 0.5 s. No WebGL, no file to wait for.
-  var MARK = '<svg class="oly-t" viewBox="160 200 704 624" aria-hidden="true"><defs><linearGradient id="olyGd" x1="0" y1="226" x2="0" y2="808" gradientUnits="userSpaceOnUse">'
+  // ---------------------------------------------------------------- the mark and the still versions (no WebGL)
+  // v3 (night-intro3 2026-11-18): entry.js's scene (window.__olyEntry). mark 2.2 s = the film title; calm 3.5 s, fade 0.8 s, off 0.5 s = its
+  // last frame, still. It runs its own clock off the main thread (Web Animations): the timers here only tidy up. No scene: the plain still.
+  var MARK = '<svg viewBox="160 200 704 624" aria-hidden="true"><defs><linearGradient id="olyGd" x1="0" y1="226" x2="0" y2="808" gradientUnits="userSpaceOnUse">'
     + '<stop offset="0" stop-color="#fbe7b0"/><stop offset=".45" stop-color="#e2b65c"/><stop offset="1" stop-color="#b0802f"/></linearGradient></defs><g fill="url(#olyGd)">'
     + '<path d="M512 226 830 392H194zM512 282 296 362h432z" fill-rule="evenodd"/><rect x="194" y="408" width="636" height="44" rx="6"/>'
     + '<rect x="245" y="474" width="84" height="22" rx="4"/><rect x="256" y="496" width="62" height="196"/><rect x="395" y="474" width="84" height="22" rx="4"/><rect x="406" y="496" width="62" height="196"/>'
     + '<rect x="545" y="474" width="84" height="22" rx="4"/><rect x="556" y="496" width="62" height="196"/><rect x="695" y="474" width="84" height="22" rx="4"/><rect x="706" y="496" width="62" height="196"/>'
-    + '<rect x="214" y="712" width="596" height="38" rx="5"/><rect x="174" y="768" width="676" height="40" rx="6"/></g><path class="oly-bolt" d="M524 290 494 332h20l-12 26 34-44h-20z"/></svg>';
-  // entry2 (2026-11-18): the strike from the sky onto the temple's apex (a ZEUS nod; the bolt above lights in the pediment)
-  var ZAP = '<svg class="oly-zap" viewBox="0 0 44 100" preserveAspectRatio="none" aria-hidden="true"><path d="M31 0 22 15 29 20 15 39 26 45 12 64 24 71 16 87 22 100"/><path d="M31 0 22 15 29 20 15 39 26 45 12 64 24 71 16 87 22 100"/></svg>';
+    + '<rect x="214" y="712" width="596" height="38" rx="5"/><rect x="174" y="768" width="676" height="40" rx="6"/></g></svg>';
   function still(mode) {
     st.q = 'still';
     var w = doc.createElement('div');
     w.className = 'oly-w oly-' + mode;
-    var lt = 'OLYMPUS'.replace(/./g, function (c, k) { return '<span style="--k:' + k + '">' + c + '</span>'; });
-    w.innerHTML = '<p class="oly-fx"></p><div class="oly-c"><div class="oly-mk"><s class="oly-halo"></s>' + ZAP + MARK + '<s class="oly-sh"></s></div><b>' + lt
-      + '</b><i><u></u></i><em>ZEUS \u00b7 MONEY \u00b7 KALSHI</em></div>' + (mode === 'mark' ? '<small class="oly-skip">Tap to enter</small>' : '');
     el.appendChild(w);
+    if (W.__olyEntry || (mode !== 'mark' && mode !== 'calm')) { show(w, mode); return; }   // off / fade never wait (reload, safe start)
+    // entry.js (deferred) runs once the page is parsed, before Jarvis's start; the dark overlay (the scene's first frame) waits for its
+    // call (window.__olyEntryReady), 1.2 s at most (offline, no saved copy: the plain still)
+    var go = function () { if (W.__olyEntryReady !== go) return; W.__olyEntryReady = null; clearTimeout(t); if (!st.done) show(w, mode); };
+    var t = setTimeout(go, 1200);
+    W.__olyEntryReady = go;
+  }
+  function show(w, mode) {
+    try {
+      if (W.__olyEntry) scene = W.__olyEntry.build(w, mode === 'mark' ? 'mark' : 'still', {});
+    } catch (e) { scene = null; st.err = 'entry: ' + String((e && e.message) || e); w.innerHTML = ''; }
+    if (scene) { st.build = scene.ms; st.layers = scene.n; st.dpr = scene.dpr; st.anims = scene.anims.length; }
+    else w.innerHTML = '<div class="oly-c">' + MARK + '<b>OLYMPUS</b></div>';
+    if (mode === 'mark' && scene && scene.end) {
+      st.q = 'scene';
+      el.style.background = 'transparent';                         // the scene brings its own night; its last fade shows Jarvis
+      if (HOLD >= 0) { scene.hold(HOLD * 1000); return; }           // a still frame for screenshots (automation only)
+      el.style.animation = 'none'; void el.offsetWidth; el.style.animation = 'olyEnd .45s linear ' + ((scene.end + 600) / 1000).toFixed(2) + 's forwards';
+      clearTimeout(killT); killT = setTimeout(function () { finish('deadline'); }, scene.end + 1200);
+      setTimeout(function () {                                      // the hand-off: Jarvis may start its 3D core now (under the fade)
+        if (st.done || st.state === 'skipped') return;
+        signalEnd(); st.state = 'reveal';
+        if (!holdUp) el.style.pointerEvents = 'none';
+      }, scene.out);
+      var last = scene.anims[scene.anims.length - 1];               // the clouds clearing: the scene's last animation
+      if (last && last.finished) last.finished.then(function () { waitUp(function () { finish('done'); }); }, function () { /* skipped */ });
+      else setTimeout(function () { waitUp(function () { finish('done'); }); }, scene.end + 20);
+      return;
+    }
     var len = LEN[mode] || 0.5;
-    var hold = mode === 'mark' ? 820 : Math.round(len * (mode === 'calm' ? 720 : 400));        // how long the mark stands
-    var fade = mode === 'mark' ? 360 : Math.round(len * (mode === 'calm' ? 280 : 600));        // then the composited fade onto Jarvis
-    if (mode === 'calm') { w.style.opacity = '0'; w.style.transition = 'opacity ' + Math.round(len * 380) + 'ms ease-out'; setTimeout(function () { w.style.opacity = '1'; }, 30); }
-    // the hard stop is set again from here (like the film's first frame): a phone whose main thread is busy with Jarvis's own start
-    // fires this timer late, and the old deadline (due by then too) must not cut the fade short (state 'deadline' instead of 'done')
+    var hold = mode === 'mark' ? 900 : Math.round(len * (mode === 'calm' ? 720 : 400));        // how long the still stands
+    var fade = mode === 'mark' ? 420 : Math.round(len * (mode === 'calm' ? 280 : 600));        // then the composited fade onto Jarvis
+    if (HOLD < 0) {                                                 // the stops from here (it may have waited for entry.js)
+      clearTimeout(killT); killT = setTimeout(function () { finish('deadline'); }, hold + fade + 1200);
+      el.style.animation = 'none'; void el.offsetWidth; el.style.animation = 'olyEnd .45s linear ' + ((hold + fade + 600) / 1000).toFixed(2) + 's forwards';
+    }
+    if (mode === 'calm') {                                          // reduce motion: in and out by opacity only
+      if (w.animate) w.animate([{ opacity: 0 }, { opacity: 1 }], { duration: Math.round(len * 380), easing: 'ease-out', fill: 'both' });
+      else { w.style.opacity = '0'; w.style.transition = 'opacity ' + Math.round(len * 380) + 'ms ease-out'; setTimeout(function () { w.style.opacity = '1'; }, 30); }
+    }
+    // and again when the fade starts: a busy start fires this timer late; the old deadline must not cut the fade short
     if (HOLD < 0) setTimeout(function () {
       clearTimeout(killT); killT = setTimeout(function () { finish('deadline'); }, fade + 1200);
-      w.className += ' oly-go';                                                                   // the doors open: a slight push in
       fadeOut(fade, 'reveal');
     }, hold);
   }
