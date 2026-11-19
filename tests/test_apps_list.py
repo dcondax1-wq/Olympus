@@ -268,6 +268,33 @@ def test_phone(br, origin):
     ctx.close()
 
 
+def test_gone(br, origin):
+    """night-bugsweep 2026-11-19: an app folder that is not on this site (mind/ on the public site: its jarvis.json is a 404) is asked once, then
+    not again for a day (a 404 in the console on every Refresh before); its dot stays grey ('none'); the other dots are asked as usual."""
+    ctx, p, errs = page(br, origin)
+    asked = []
+
+    def r404(r):
+        asked.append(r.request.url)
+        return r.fulfill(status=404, content_type="text/plain", body="404: Not Found")
+    ctx.route(re.compile(r".*/mind/jarvis\.json(\?.*)?$"), r404)                # later routes win over page()'s own
+    p.goto(origin + "/", wait_until="commit")
+    p.wait_for_selector("#olyLauncherBtn", timeout=120000, state="attached")
+    tap(p, "#olyLauncherBtn"); until(p, OPEN_FULL)
+    ok1 = until(p, "(() => { const s = JSON.parse(localStorage.getItem('oly.launcher.status') || '{}'); return !!(s.mind && s.mind.gone) && !!s.oracle; })()")
+    first = len(asked)
+    p.evaluate("(() => { const s = JSON.parse(localStorage.getItem('oly.launcher.status')); for (const k in s) if (k !== 'mind') s[k].at = 1; localStorage.setItem('oly.launcher.status', JSON.stringify(s)); })()")
+    p.reload(wait_until="commit")
+    p.wait_for_selector("#olyLauncherBtn", timeout=120000, state="attached")
+    tap(p, "#olyLauncherBtn"); until(p, OPEN_FULL)
+    ok2 = until(p, "(() => { const s = JSON.parse(localStorage.getItem('oly.launcher.status') || '{}'); return !!s.oracle && s.oracle.at > 1; })()")
+    p.wait_for_timeout(300)
+    dot = p.evaluate("(document.querySelector('.oly-l .oly-tile[data-app=mind]') || {dataset: {}}).dataset.status || ''")
+    check("c. phone: a folder not on the site (mind/jarvis.json 404) is asked once, then not again for a day while the other dots refresh; its dot stays grey",
+          ok1 and ok2 and first == 1 and len(asked) == 1 and dot == "none" and not [e for e in errs if "launcher" in e.lower()], (ok1, ok2, first, len(asked), dot))
+    ctx.close()
+
+
 def test_pc(br, origin):
     ctx, p, errs = page(br, origin, width=1280, height=800)
     p.goto(origin + "/", wait_until="commit")
@@ -304,7 +331,7 @@ def main():
     s2, o2 = serve(NEXT)
     with sync_playwright() as pw:
         br = launch(pw)
-        for fn, o in ((test_phone, o1), (test_pc, o2)):
+        for fn, o in ((test_phone, o1), (test_gone, o1), (test_pc, o2)):
             try:
                 fn(br, o)
             except Exception as e:

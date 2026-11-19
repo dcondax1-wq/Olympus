@@ -456,6 +456,44 @@ def part_e_shell(br, shell, oa, shots):
     ctx.close()
 
 
+def part_absent(br, shell):
+    """night-bugsweep 2026-11-19: a built-in whose folder is not on the site (mind/ on the public site) is asked once, then remembered on the
+    phone for a day: the next opens of Jarvis ask nothing (a 404 in the console on every load before), and a tap still says 'not on the site'."""
+    ctx = br.new_context(viewport={"width": 390, "height": 844})
+    ctx.route(re.compile(r"^https?://(?!127\.0\.0\.1[:/])"), lambda r: r.abort())
+    asked = []
+    ctx.on("request", lambda r: asked.append(r.url) if "/mind/jarvis.json" in r.url else None)
+    p = ctx.new_page()
+    p.on("pageerror", lambda e: ERRS.append("absent: " + str(e)))
+    p.goto(shell)
+    p.wait_for_selector("#cards .card")
+    ok1 = True
+    try:
+        p.wait_for_function("(JSON.parse(localStorage.getItem('jarvis.absentApps.v1') || '{}')).mind > 0", timeout=20000)
+    except Exception:  # noqa: BLE001
+        ok1 = False
+    first = len(asked)
+    p.reload()
+    p.wait_for_selector("#cards .card")
+    p.wait_for_timeout(2500)
+    p.evaluate("window.dispatchEvent(new Event('focus')); document.dispatchEvent(new Event('visibilitychange'))")
+    p.wait_for_timeout(1000)
+    again = len(asked) - first
+    off = p.evaluate("(() => { const m = JSON.parse(localStorage.getItem('jarvis.absentApps.v1') || '{}'); return Object.keys(m).sort(); })()")
+    check("i. a built-in whose folder is not on the site (mind/): its jarvis.json asked once (404), remembered on the phone, NOT asked on the next open",
+          ok1 and first == 1 and again == 0 and "mind" in off, (ok1, first, again, off))
+    # a day later it is asked again (the folder may be published by then)
+    p.evaluate("(() => { const m = JSON.parse(localStorage.getItem('jarvis.absentApps.v1')); m.mind = Date.now() - 25 * 3600e3; localStorage.setItem('jarvis.absentApps.v1', JSON.stringify(m)); })()")
+    p.reload()
+    p.wait_for_selector("#cards .card")
+    try:
+        p.wait_for_function("(JSON.parse(localStorage.getItem('jarvis.absentApps.v1') || '{}')).mind > Date.now() - 3600e3", timeout=20000)
+    except Exception:  # noqa: BLE001
+        pass
+    check("i. a day later the folder is asked once more (published since? its card shows; still absent: remembered again)", len(asked) - first == 1, asked)
+    ctx.close()
+
+
 # ---------------------------------------------------------------------------------------------------- f. fetching
 def part_f(p, harness, oa, ob, tmp):
     fresh(p, harness)
@@ -685,6 +723,7 @@ def run_browser(oa, ob, tmp, example):
         part_i(p, harness, oa, tmp)
         ctx.close()
         part_e_shell(br, oa + "/nq-dashboard/jarvis/", oa, os.environ.get("JARVIS_APPS_SHOTS"))
+        part_absent(br, oa + "/nq-dashboard/jarvis/")
         check("h. no page errors", not ERRS, ERRS)
         br.close()
 

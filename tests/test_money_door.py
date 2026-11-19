@@ -224,17 +224,22 @@ def part_e():
             door = p.inner_text("#door")
             check("e. DEMO: the door shows the first payout, funded $ a month, account #4, the business estimate and the $197.80 spent",
                   "$1,200 about" in door and "$884 a month" in door and "$1,694 a month" in door and "$0-3,250 a month" in door and "$198" in door, door)
-            check("e. DEMO: 7 moves, 2 trading rows from the DEMO plan, 11 ready items, 6 ideas",
-                  p.locator("#moves li").count() == 7 and p.locator("#trade .acct").count() == 2 and p.inner_text("#tradeSrc") == "DEMO evals"
+            check("e. DEMO: 2 trading rows from the DEMO plan, 11 ready items, 6 ideas",
+                  p.locator("#trade .acct").count() == 2 and p.inner_text("#tradeSrc") == "DEMO evals"
                   and p.locator("#ready > details").count() == 11 and p.locator("#ideas tbody tr").count() == 6, p.inner_text("#tradeSrc"))
-            p.locator("#moves input").nth(1).dispatch_event("click")
+            # night-bugsweep 2026-11-19: the public site always shows the example (business.json is private); its to-dos, buy advice and
+            # account #4 date (an old "LucidPro ... 2026-12-24") were drawn as if they were the owner's
+            demo_txt = " ".join(p.inner_text(x) for x in ("#status", "#moves", "#acct4", "#nextBuys", "#heroText"))
+            check("e. DEMO says so plainly and never shows the example's advice as real: no to-do list, no 'Next to buy', no account #4 date, no 'Do next'",
+                  "Example numbers (DEMO), not yours" in p.inner_text("#status") and "private on your PC" in p.inner_text("#status")
+                  and p.locator("#moves li").count() == 0 and p.is_visible("#movesNote") and p.locator("#nextBuys li").count() == 0
+                  and p.inner_text("#acct4") == "" and "Do next" not in demo_txt and "LucidPro" not in demo_txt and not p.is_visible("#snap"), demo_txt[:400])
             p.locator("#ready > details").first.evaluate("(d) => { d.open = true; }")
             p.locator("#ready > details").first.locator("input").first.dispatch_event("click")
             p.reload()
             AK.open_app(p, origin, "business")
-            check("e. a move tick and a ready step stay after a reload (this phone only); the week counter only counts the 7-day plan",
-                  p.locator("#moves input").nth(1).is_checked() and p.inner_text("#movesPill") == "1 of 7 done" and p.inner_text("#weekPill") == "0 done"
-                  and p.locator("#ready > details").first.locator("input").first.is_checked())
+            check("e. a ready step stays after a reload (this phone only); the week counter only counts the 7-day plan",
+                  p.inner_text("#weekPill") == "0 done" and p.locator("#ready > details").first.locator("input").first.is_checked())
             check("e. taps >= 44 px, no sideways scroll at 375 px, nothing fetched off the site, no console error",
                   not AK.taps(p) and AK.no_sideways(p) and not off and not errs, (AK.taps(p)[:4], off[:3], errs[:3]))
             AK.shot(p, "business-door-375")
@@ -245,6 +250,19 @@ def part_e():
             check("e. a published home.json drives the plan live: 'your evals', Zlarior + ATLAS with their own room, no broker id on the page",
                   p.inner_text("#tradeSrc") == "your evals" and "Zlarior (LIT)" in t and "$1,133" in t and "$1,351" in t and not BROKER_ID.search(p.inner_text("body"))
                   and not errs, (t[:300], errs[:3]))
+            check("e. the live plan's account #4 rule is shown (it follows your evals); an old home.json says it is a snapshot",
+                  p.inner_text("#acct4").startswith("Account #4:") and "These eval numbers are a snapshot" in t, (p.inner_text("#acct4"), t[:200]))   # home_real.json: built 2026-11-03
+            ctx.close()
+            # the PC's own business.json, 6 days old: a SNAPSHOT tag and a plain line; its own to-dos are shown (they are the owner's)
+            import biz_publish as BP
+            own = BP.build(sample=False)
+            own["asof"] = "2026-11-01T12:00:00+00:00"
+            ctx, p, errs, seen, off = AK.page(br, origin, mock={"/business/business.json": json.dumps(own)})
+            AK.open_app(p, origin, "business")
+            st = p.inner_text("#status")
+            check("e. an old business.json: SNAPSHOT tag, 'Snapshot from 2026-11-01 ... days old', its own moves listed, no DEMO tag",
+                  p.is_visible("#snap") and not p.is_visible("#demo") and st.startswith("Snapshot from 2026-11-01 12:00 UTC (") and "days old" in st
+                  and p.locator("#moves li").count() == len(own.get("moves") or []) and not errs, (st, errs[:3]))
             ctx.close()
     finally:
         srv.shutdown()

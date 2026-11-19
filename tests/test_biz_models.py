@@ -61,6 +61,9 @@ import(process.argv[2]).then((C) => {
     total: { usd_m3: [0, 2630], real_usd_month: 'x' }, prices: [{ name: 'Starter', setup: 499, monthly: 49 }, { setup: 1 }], week: [{ day: 1, title: 'T', tasks: ['a', 2] }, { day: 'q' }], rules: ['r', 5] });
   o.clean = [d.models.length, d.models[1].usd_m3, d.models[1].built, d.models[1].first_dollar, d.total.real, d.total.usd_m3, d.prices.length, d.week.length, d.week[0].tasks, d.rules, d.sample];
   o.first = [C.firstAction(d), C.firstAction({ models: [] })];
+  const n = Date.parse('2026-11-19T06:00:00Z');
+  o.state = [C.dataState({ sample: true, asof: '2026-11-19T05:00:00Z' }, n), C.dataState({ asof: '2026-11-12T08:00:00Z' }, n), C.dataState({ asof: '2026-11-17T08:00:00Z' }, n),
+    C.dataState({ asof: '2026-11-19T01:00:00Z' }, n), C.dataState({ asof: 'junk' }, n), C.dataState(null, n)].map((x) => [x.kind, x.text]);
   process.stdout.write(JSON.stringify(o));
 });
 """
@@ -77,6 +80,10 @@ def test_core():
     check("b. clean(): junk models dropped, bad ranges become 0-0, non-text list items dropped, a bad real becomes 0, junk prices / days dropped",
           o["clean"] == [2, [0, 0], ["a", "b"], [], 0, [0, 2630], 1, 1, ["a"], ["r"], True], o["clean"])
     check("b. the first action skips a paused model", o["first"] == ["Agency: Call 10", "Nothing to do."], o["first"])
+    k = [x[0] for x in o["state"]]
+    check("b. dataState (night-bugsweep): the example is DEMO even when new, a PC copy over 36 h old is a SNAPSHOT with its date and age, a new one is fresh, no date = snapshot",
+          k == ["demo", "snapshot", "snapshot", "fresh", "snapshot", "demo"] and "private on your PC" in o["state"][0][1]
+          and o["state"][1][1].startswith("Snapshot from 2026-11-12 08:00 UTC (7 days old)") and "(46 hours old)" in o["state"][2][1] and "Updated 2026-11-19 01:00" in o["state"][3][1], o["state"])
 
 
 def _storefront():
