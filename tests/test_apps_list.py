@@ -82,11 +82,11 @@ def test_static():
     doors_static(ids)
     ph, pc = read(WEB, "index.html"), read(NEXT, "index.html")
     check("b. the phone dashboard has ONE tag, launcher.js (deferred); the list is loaded by the launcher, async, so a slow site never holds Zenith back",
-          '<script src="launcher.js?v=l14" defer></script>' in ph and "apps-list" not in ph and "olympus/apps-list.js?v=l6" in read(WEB, "launcher.js"))
-    check("b. the PC dashboard has ONE tag, js/next/launcher.js (the list comes from js/next/apps-list.js, in the worker's ASSETS)", '<script src="/js/next/launcher.js?v=l14" defer></script>' in pc and "apps-list" not in pc and "/js/next/apps-list.js?v=l6" in read(NEXT, "js", "next", "launcher.js"))
+          '<script src="launcher.js?v=l16" defer></script>' in ph and "apps-list" not in ph and "olympus/apps-list.js?v=l6" in read(WEB, "launcher.js"))
+    check("b. the PC dashboard has ONE tag, js/next/launcher.js (the list comes from js/next/apps-list.js, in the worker's ASSETS)", '<script src="/js/next/launcher.js?v=l16" defer></script>' in pc and "apps-list" not in pc and "/js/next/apps-list.js?v=l6" in read(NEXT, "js", "next", "launcher.js"))
     sw = read(NEXT, "sw.js")
     v = re.search(r"const SHELL = 'le-shell-next-v(\d+)'", sw)
-    check("b. the PC worker caches both files and its version is bumped (v34 or later)", "'/js/next/apps-list.js?v=l6'" in sw and "'/js/next/launcher.js?v=l14'" in sw and v and int(v.group(1)) >= 34)
+    check("b. the PC worker caches both files and its version is bumped (v34 or later)", "'/js/next/apps-list.js?v=l6'" in sw and "'/js/next/launcher.js?v=l16'" in sw and v and int(v.group(1)) >= 34)
     check("b. the root worker is untouched by the launcher (it fetches versioned files at run time; olympus/ is skipped on purpose)", "launcher" not in read(WEB, "sw.js") and "apps-list" not in read(WEB, "sw.js"))
     js = read(WEB, "launcher.js")
     check("b. launcher.js: read-only (no POST, no orders), every storage call in try, Safari 16 safe (no lookbehind, ?., ??, .at())",
@@ -134,7 +134,7 @@ console.log(JSON.stringify({ doors: D.DOORS.map((d) => ({ id: d.id, title: d.tit
         check(f"d. {name} is the four doors (same ids, same app lists as olympus/doors.js)", got == want, got)
     lj = read(WEB, "launcher.js")
     check("d. the launcher loads doors.js with the list (async; olympus/doors.js on the phone, /js/next/doors.js on the PC) and groups by it",
-          "'olympus/doors.js?v=d5'" in lj and "'/js/next/doors.js?v=d5'" in lj and "D.DOORS.map" in lj and "OLYMPUS_DOORS" in lj)
+          "'olympus/doors.js?v=d6'" in lj and "'/js/next/doors.js?v=d6'" in lj and "D.DOORS.map" in lj and "OLYMPUS_DOORS" in lj)
 
 
 # ------------------------------------------------------------------ c. browser
@@ -268,6 +268,33 @@ def test_phone(br, origin):
     ctx.close()
 
 
+def test_gone(br, origin):
+    """night-bugsweep 2026-11-19: an app folder that is not on this site (mind/ on the public site: its jarvis.json is a 404) is asked once, then
+    not again for a day (a 404 in the console on every Refresh before); its dot stays grey ('none'); the other dots are asked as usual."""
+    ctx, p, errs = page(br, origin)
+    asked = []
+
+    def r404(r):
+        asked.append(r.request.url)
+        return r.fulfill(status=404, content_type="text/plain", body="404: Not Found")
+    ctx.route(re.compile(r".*/mind/jarvis\.json(\?.*)?$"), r404)                # later routes win over page()'s own
+    p.goto(origin + "/", wait_until="commit")
+    p.wait_for_selector("#olyLauncherBtn", timeout=120000, state="attached")
+    tap(p, "#olyLauncherBtn"); until(p, OPEN_FULL)
+    ok1 = until(p, "(() => { const s = JSON.parse(localStorage.getItem('oly.launcher.status') || '{}'); return !!(s.mind && s.mind.gone) && !!s.oracle; })()")
+    first = len(asked)
+    p.evaluate("(() => { const s = JSON.parse(localStorage.getItem('oly.launcher.status')); for (const k in s) if (k !== 'mind') s[k].at = 1; localStorage.setItem('oly.launcher.status', JSON.stringify(s)); })()")
+    p.reload(wait_until="commit")
+    p.wait_for_selector("#olyLauncherBtn", timeout=120000, state="attached")
+    tap(p, "#olyLauncherBtn"); until(p, OPEN_FULL)
+    ok2 = until(p, "(() => { const s = JSON.parse(localStorage.getItem('oly.launcher.status') || '{}'); return !!s.oracle && s.oracle.at > 1; })()")
+    p.wait_for_timeout(300)
+    dot = p.evaluate("(document.querySelector('.oly-l .oly-tile[data-app=mind]') || {dataset: {}}).dataset.status || ''")
+    check("c. phone: a folder not on the site (mind/jarvis.json 404) is asked once, then not again for a day while the other dots refresh; its dot stays grey",
+          ok1 and ok2 and first == 1 and len(asked) == 1 and dot == "none" and not [e for e in errs if "launcher" in e.lower()], (ok1, ok2, first, len(asked), dot))
+    ctx.close()
+
+
 def test_pc(br, origin):
     ctx, p, errs = page(br, origin, width=1280, height=800)
     p.goto(origin + "/", wait_until="commit")
@@ -304,7 +331,7 @@ def main():
     s2, o2 = serve(NEXT)
     with sync_playwright() as pw:
         br = launch(pw)
-        for fn, o in ((test_phone, o1), (test_pc, o2)):
+        for fn, o in ((test_phone, o1), (test_gone, o1), (test_pc, o2)):
             try:
                 fn(br, o)
             except Exception as e:
