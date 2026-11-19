@@ -36,6 +36,7 @@ from tools.hermes import build, fixture, wrapped  # noqa: E402
 PAGE = os.path.join(ROOT, "tools", "web_public", "hermes")
 SHOTS = os.environ.get("HERMES_SHOTS") or os.path.join(ROOT, "research", "handoff", "2026-11-03", "hermes")
 RES = []
+OFFSITE: list = []           # every off-site request the pages made (answered 404 here)
 
 
 def check(name, ok, info=""):
@@ -198,9 +199,9 @@ def part_d():
           "--bot: calc(var(--sb) + 160px)" in css and re.search(r"\.foot \{[^}]*right: calc\(var\(--sr\) \+ 96px\)", css))
     check("d. prefers-reduced-motion in the CSS and the script", "@media (prefers-reduced-motion: reduce)" in css and "prefers-reduced-motion: reduce" in js)
     urls = set(re.findall(r"https?://[^\s'\"`)]+", html + css + js))
-    allowed = {"https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json",
-               "https://api.github.com/repos/demetrades2000-coder/kalshi-feed/contents/kalshi.json?ref=main", "https://demetrades2000-coder.github.io"}
-    check("d. no CDN, no other site: only the Kalshi feed and Jarvis's origin", urls <= allowed, urls - allowed)
+    allowed = {"https://demetrades2000-coder.github.io"}
+    check("d. no CDN, no other site: only Jarvis's origin (the Kalshi feed is this site's own kalshi.json; the kalshi-feed repo is retired)",
+          urls <= allowed and "const KALSHI = '../kalshi.json';" in open(os.path.join(PAGE, "data.js"), encoding="utf-8").read(), urls - allowed)
     check("d. Safari 16 safe: no lookbehind, no Array copy methods, no Object.groupBy, no AbortSignal.timeout",
           not re.search(r"\(\?<[=!]|\.toSorted\(|\.toReversed\(|\.toSpliced\(|\.with\(|Object\.groupBy|AbortSignal\.timeout", code))
     check("d. only transform / opacity / stroke animate (no layout transitions)",
@@ -291,18 +292,20 @@ def run_browser():
                 ctx.add_init_script(INIT)
                 if slow_kalshi:                                      # the feed answers 1.5 s after the deck started (inside data.js's 4 s limit)
                     ctx.add_init_script("""(() => { const f = window.fetch.bind(window);
-                      window.fetch = (u, o) => String(u).includes('kalshi-feed') ? new Promise((ok) => { const t = setInterval(() => { if (window.HERMES && HERMES.state().n > 0) { clearInterval(t); setTimeout(ok, 1500); } }, 50); }).then(() => f(u, o)) : f(u, o); })();""")
+                      window.fetch = (u, o) => /\/kalshi\.json/.test(String(u)) ? new Promise((ok) => { const t = setInterval(() => { if (window.HERMES && HERMES.state().n > 0) { clearInterval(t); setTimeout(ok, 1500); } }, 50); }).then(() => f(u, o)) : f(u, o); })();""")
                 if planner:
                     ctx.add_init_script(f"localStorage.setItem('planner.v1', {json.dumps(json.dumps(planner))});")
                 cors = {"Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*"}   # as GitHub sends
-                # no request leaves the machine: the Kalshi feed from the stub, anything else off-site a 404
-                ctx.route(re.compile(r"^https?://(?!127\.0\.0\.1)"), lambda r: r.fulfill(status=200, content_type="application/json", body=json.dumps(kalshi), headers=cors)
-                          if kalshi and "kalshi-feed" in r.request.url else r.fulfill(status=404, body="not found", headers=cors))
+                # no request leaves the machine: anything off-site a 404 (and noted: the retired kalshi-feed repo must never be asked);
+                # the Kalshi feed is the site's own /kalshi.json, answered by the stub
+                ctx.route(re.compile(r"^https?://(?!127\.0\.0\.1)"), lambda r: (OFFSITE.append(r.request.url), r.fulfill(status=404, body="not found", headers=cors)))
+                if kalshi:
+                    ctx.route(re.compile(r"^http://127\.0\.0\.1:\d+/(?:[^?]*/)?kalshi\.json"), lambda r: r.fulfill(status=200, content_type="application/json", body=json.dumps(kalshi)))
                 p = ctx.new_page()
                 p.errs, p.bad = [], []
                 p.on("pageerror", lambda e: p.errs.append(str(e)))
                 p.on("console", lambda m: m.type == "error" and "Failed to load resource" not in m.text and p.errs.append(m.text))
-                expected = ("/fates/jarvis.json", "/datacity/discoveries.json", "kalshi-feed", "/kalshi.json", "favicon") + tuple(expect)
+                expected = ("/fates/jarvis.json", "/datacity/discoveries.json", "/kalshi.json", "favicon") + tuple(expect)
                 p.on("response", lambda r: r.status >= 400 and not any(x in r.url for x in expected) and p.bad.append(f"{r.status} {r.url}"))
                 return ctx, p
 
@@ -666,6 +669,8 @@ def main():
     part_d()
     if os.environ.get("HERMES_NO_BROWSER") != "1":
         run_browser()
+        dead = [u for u in OFFSITE if "kalshi-feed" in u]
+        check("e. never the retired kalshi-feed repo (raw or API): the Kalshi feed is the site's own kalshi.json", not dead, dead[:3])
     print(f"\n{sum(RES)}/{len(RES)} passed")
     return 0 if all(RES) else 1
 

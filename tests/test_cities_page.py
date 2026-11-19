@@ -45,7 +45,7 @@ SHOTS = os.environ.get("CITIES_SHOTS") or os.path.join(tempfile.gettempdir(), "c
 RES = []
 ONLY = next((a.split("=", 1)[1].split(",") for a in sys.argv if a.startswith("--only=")), None)   # e.g. --only=c  or  --only=a,b,g: one section at a time (the machine is slow)
 want = lambda k: ONLY is None or k in ONLY  # noqa: E731
-BAD_ORIGINS = ("githubusercontent", "/kalshi.json")          # the Kalshi feed: the site copy (tried first, absent on the test server) and the raw file, blocked on purpose in the offline runs
+BAD_ORIGINS = ("/kalshi.json",)          # the Kalshi feed: the site's own copy (absent on the test server), blocked on purpose in the offline runs
 
 
 def check(name, ok, info=""):
@@ -73,8 +73,8 @@ def part_a():
     outside = {n: re.findall(r"https?://[^\s'\"`)]+", t) for n, t in srcs.items()}
     outside = {n: [u for u in us if "w3.org" not in u] for n, us in outside.items()}
     outside = {n: us for n, us in outside.items() if us}
-    check("a. no outside address except the Kalshi feed (datasets.js); everything else is relative", list(outside) == ["datasets.js"]
-          and all("raw.githubusercontent.com/demetrades2000-coder/kalshi-feed" in u for u in outside["datasets.js"]), outside)
+    check("a. no outside address at all: everything is relative (the Kalshi feed is the site's ../kalshi.json; the kalshi-feed repo is retired, polish2 2026-11-19)",
+          not outside and "url: '../kalshi.json', remote: true" in srcs["datasets.js"] and "kalshi-feed/main" not in srcs["datasets.js"], outside)
     check("a. three.js from ../jarvis/, the render core from ../olympus/render.js (no CDN)", "../jarvis/three.module.min.js" in srcs["scene.js"]
           and "../olympus/render.js" in srcs["scene.js"] and "createRenderer" in srcs["scene.js"] and "cdn" not in " ".join(srcs.values()).lower())
     check("a. the engine is deterministic by construction: no Math.random in generator / datasets / util", all(not re.search(r"Math\.random\s*\(", srcs[n]) for n in ("generator.js", "datasets.js", "util.js")))
@@ -82,7 +82,8 @@ def part_a():
     check("a. manifest: name, standalone, theme, icons that exist", mf["display"] == "standalone" and mf["name"] and mf["theme_color"].startswith("#")
           and all(os.path.isfile(os.path.normpath(os.path.join(PAGE, i["src"].split("?", 1)[0]))) for i in mf["icons"]), mf)
     # the real published files the adapters read
-    urls = re.findall(r"url: '(\.\./[^']+)'", srcs["datasets.js"])
+    # (a remote: true feed is optional and only on a site that published it: the Kalshi bot's ../kalshi.json, put there by pc_publish)
+    urls = [u for u, rest in re.findall(r"url: '(\.\./[^']+)'([^\n]*)", srcs["datasets.js"]) if "remote: true" not in rest]
     check("a. every file an adapter reads is a published page file that exists (odeon, datacity, tree, forge, pantheon, fates, arena, athena ...)",
           len(set(urls)) >= 9 and all(os.path.isfile(os.path.normpath(os.path.join(PAGE, u))) for u in urls), [u for u in set(urls) if not os.path.isfile(os.path.normpath(os.path.join(PAGE, u)))])
     cfg = json.loads(read(os.path.join(PAGE, "cities.json")))
@@ -397,9 +398,10 @@ class Page:
         self.p.on("requestfailed", lambda r: self.errs.append("requestfailed: " + r.url) if not any(o in r.url for o in BAD_ORIGINS) else None)
         self.p.on("response", lambda r: self.errs.append(f"{r.status}: {r.url}") if r.status >= 400 and not any(o in r.url for o in BAD_ORIGINS) and "favicon" not in r.url else None)
         if kalshi == "abort":
-            self.p.route("**/raw.githubusercontent.com/**", lambda rt: rt.abort())
+            self.p.route("**/kalshi.json*", lambda rt: rt.abort())
         elif kalshi:
-            self.p.route("**/raw.githubusercontent.com/**", lambda rt: rt.fulfill(status=200, content_type="application/json", headers={"access-control-allow-origin": "*"}, body=json.dumps(kalshi)))
+            self.p.route("**/kalshi.json*", lambda rt: rt.fulfill(status=200, content_type="application/json", body=json.dumps(kalshi)))
+        self.p.route("**/raw.githubusercontent.com/**", lambda rt: (self.errs.append("retired kalshi-feed asked: " + rt.request.url), rt.abort()))
         # Existing world/navigation checks enter through the explicit map route.
         # The normal skyline entrance has its own assertion in section i.
         self.url = base + f"?q={q}" + ("&world=1" if world else "") + extra

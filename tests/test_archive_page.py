@@ -230,6 +230,9 @@ def test_page():
             check(f"c. the real index: no DEMO chip, all {idx['counts']['runs']:,} runs loaded (index.json first, then {len(idx['shards'])} shards), 30 cards shown with 'Show 30 more', write-ups and datasets listed",
                   not r["demo"] and r["runs"] == idx["counts"]["runs"] and r["total"] == idx["counts"]["runs"] and r["cards"] == 30 and r["ws"] == 8 and r["ds"] == idx["counts"]["datasets"] and "runs match" in r["count"], r)
             check("c. the real run reads only the site's own index.json and shards, and no console error", any("archive/index.json" in u for u in seen) and sum(1 for u in seen if "runs-" in u) == len(idx["shards"]) and not off and not errs, (off[:3], errs[:3]))
+            sw = p.evaluate("() => [document.documentElement.scrollWidth, innerWidth]")
+            check("c. the real index at 390 px: no sideways scroll (polish2 2026-11-19: a run's long id and its tiles pushed the page 2 px; the id wraps, the card's track is its own width)",
+                  AK.no_sideways(p) and sw[0] <= 390, sw)
             p.fill("#q", "inducement before the sweep")
             p.wait_for_timeout(500)
             w = p.evaluate("() => [!document.querySelector('#redo').hidden, document.querySelector('#redo').textContent.slice(0, 160), document.querySelectorAll('#redo a').length]")

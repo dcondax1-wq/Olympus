@@ -110,6 +110,11 @@ import(process.argv[2]).then((C) => {
   // junk
   const junk = [null, undefined, 7, 'x', [], {}, { board: 5, live: [], accounts: 'no' }, { board: { lit: { room: 'abc' }, trades: [null, 3, {}, { usd: 'x' }] }, live: { pc: { t: 'never', blitz: 'no' } } }];
   o.junk = junk.map((j) => { try { const v = C.build(j, NOW); return [v.bots.length, v.bots.every((b) => !b.status.flame), v.trades.length, !!v.banner, v.facts.length, C.hasData(j)]; } catch (e) { return 'THROW ' + e.message; } });
+  // the CME trading day (polish2 2026-11-19): 18:00 ET starts the next day, so a 23:30 ET stop-out and a 00:40 ET report are one day
+  const N2 = Date.parse('2026-11-19T05:40:00Z'), T2 = N2 / 1000, night = home(T - T2 + 5 * M);   // reported 00:35 ET
+  night.board.trades = [{ acct: 'atlas', src: 'live', key: 'ema_lon_vix', member: 'EMA', entry_t: Date.parse('2026-11-19T04:25:00Z') / 1000, exit_t: Date.parse('2026-11-19T04:30:00Z') / 1000, side: 'SHORT', exit: 'STOP', r: -1.029, usd: -168.81, open: false }];
+  const nv = C.build(night, N2);
+  o.cme = [C.tradingDay(Date.parse('2026-11-18T22:59:00Z') / 1000), C.tradingDay(Date.parse('2026-11-18T23:00:00Z') / 1000), C.tradingDay(T2), nv.bots[1].todayText, nv.bots[1].dayLabel, nv.trades[0].day, C.tradingDay(null)];
   // the sheet
   const hw = C.howto({ title: 'How to bring reporting back', intro: 'i', steps: [{ n: 1, title: 'A', text: 'Netlify > avatar > tokens', code: 'python x' }, { title: 'B' }, 4, { title: '<b>C</b>' }, { title: 'D' }, { title: 'E' }, { title: 'F' }], undo: 'u', limits: ['l1', 5, 'l2'] });
   o.howto = [hw.steps.length, hw.steps[0].text, hw.steps[0].code, hw.steps[2].title, hw.limits, C.howto(null), C.howto({ steps: [] })];
@@ -135,6 +140,8 @@ def test_rules():
     f = o["fresh"]
     check("b. fresh report: no banner, three flames, 'Running' x3, the headline counts them", f["banner"] is None and f["lit"] == [True, True, True] and f["labels"] == ["Running"] * 3 and f["headline"] == "3 of 3 bots reported in the last 20 minutes." and f["line"] == "Reported 3 minutes ago.", f)
     check("b. 'Drawdown left $X of $max loss' for each bot, with the share left", f["dd"] == ["Drawdown left $1,145 of $2,000 max loss", "Drawdown left $822 of $1,000 max loss", "Drawdown left $607 of $1,000 max loss"] and f["frac"] == [57, 82, 61] and f["tight"] == "lit", (f["dd"], f["frac"], f["tight"]))
+    check("b. the CME trading day (18:00 ET starts the next): 17:59 ET is still Nov 18, 18:00 ET is Nov 19; a 23:30 stop-out and a 00:40 report are one day, its own R (no ~), 'Today'",
+          o["cme"] == ["2026-11-18", "2026-11-19", "2026-11-19", "-$169 (-1.0R)", "Today", "2026-11-19", ""], o["cme"])
     check("b. today's P&L in $ with its R (the R of that day's trades), labelled Today on the report day", f["today"] == ["$0 (0.0R)", "-$169 (-1.0R)", "$0 (0.0R)"] and f["day"] == ["Today"] * 3, (f["today"], f["day"]))
     check("b. eval progress to the target in plain words; BLITZ is marked paper", f["prog"] == ["$3,686 to go to the $3,000 target (0% done)", "$1,318 to go to the $1,500 target (12% done)", "$1,893 to go to the $1,500 target (0% done)"] and f["paper"] == [False, False, True], f["prog"])
     check("b. the plan is one sentence with the LIT rules (02:00-15:30 ET, flat 15:55), plus what the bot said when it is fresh",
@@ -172,14 +179,32 @@ def test_rules():
 def home_json(age_s, trades=True):
     """A real-shaped home.json whose PC report is age_s old (the shape of the 2026-11-06 site)."""
     t = int(time.time()) - age_s
+    # every board row carries its CME trading day (engine/live_board.trading_day: 18:00 ET starts the next day); without it the
+    # ATLAS trade 11 hours before the report fell on another calendar day between midnight and 11:00 ET, and the day's R became
+    # an estimate (polish2 2026-11-19: the check failed every night)
+    from engine.live_board import trading_day
+    import datetime as _dt
+    from zoneinfo import ZoneInfo
+    ny = ZoneInfo("America/New_York")
+    d0 = _dt.date.fromisoformat(trading_day(t)) - _dt.timedelta(days=1)
+    start = int(_dt.datetime(d0.year, d0.month, d0.day, 18, 0, tzinfo=ny).timestamp())          # 18:00 ET: this report's session began
+    x_exit = min(t - 30, max(t - 39700, start + 600))                                             # the ATLAS stop-out: inside that session
     return json.dumps({"built": "x", "home_only": True,
         "live": {"pc": {"present": True, "t": t, "running": True, "second": {"t": t}, "blitz": {"t": t, "eval": {"start_balance": 25000.0, "balance": 24607.28, "profit": -392.72, "today": 0.0, "room": 607.28, "target": 26500.0, "to_target": 1892.72}, "state": {"text": "No more checks today."}, "today": []}}},
         "board": {"data_t": t, "running": True,
                   "lit": {"name": "Zlarior", "balance": 49313.54, "room": 1145.34, "mll": 2000.0, "to_target": 3686.46, "target_balance": 53000.0, "profit": -686.46, "today_pnl": 0.0, "waiting": "Entry window closed at 15:30 ET with no trade today. Next chance tomorrow from 02:00 ET."},
                   "atlas": {"name": "ATLAS", "balance": 25182.19, "room": 822.24, "mll": 1000.0, "to_target": 1317.81, "target_balance": 26500.0, "profit": 182.19, "today_pnl": -168.81, "waiting": "EMA: Done for today (1 trade a day)"},
-                  "trades": [{"acct": "atlas", "src": "live", "key": "ema_lon_vix", "member": "EMA", "entry_t": t - 40000, "exit_t": t - 39700, "side": "SHORT", "exit": "STOP", "r": -1.029, "usd": -168.81, "open": False},
+                  "trades": [{"acct": "atlas", "src": "live", "key": "ema_lon_vix", "member": "EMA", "day": trading_day(x_exit), "entry_t": x_exit - 300, "exit_t": x_exit, "side": "SHORT", "exit": "STOP", "r": -1.029, "usd": -168.81, "open": False},
                              {"acct": "lit", "src": "paper", "key": "lit", "day": "2026-11-03", "entry_t": 1793738340, "exit_t": 1793739360, "side": "LONG", "exit": "TIME", "r": 0.2, "usd": 27.1, "open": False}] if trades else []},
         "results": {"periods": {"2026 H2 (check)": {"from": "2026-07-01", "to": "2026-10-16", "trades": 40, "pf": 2.91, "net": 9918.78, "per_month": 2670.0}}}})
+
+
+def demo_today():
+    """The DEMO's Zlarior day: its +$312 trade closed 90 minutes ago, so its own R (+0.8R) counts when that is the same CME trading day
+    as now; in the first 90 minutes of a session (18:00-19:30 ET) the trade is the last session's and the R is the estimate (~)."""
+    from engine.live_board import trading_day
+    now = int(time.time())
+    return "+$312 (+0.8R)" if trading_day(now - 90 * 60) == trading_day(now) else "+$312 (~+0.7R)"
 
 
 SNAP = """() => ({ demo: !document.querySelector('#demo').hidden, banner: !document.querySelector('#banner').hidden, btitle: document.querySelector('#bannerTitle').textContent, btext: document.querySelector('#bannerText').textContent,
@@ -209,7 +234,7 @@ def test_page():
                   d["demo"] and not d["banner"] and d["flames"] == 3 and d["legend"] == ["1", "1", "1"] and d["pills"] == ["Running"] * 3 and d["scene"] == "2d" and d["bars"] == 6
                   and d["dd"] == ["Drawdown left $1,420 of $2,000 max loss", "Drawdown left $840 of $1,000 max loss", "Drawdown left $560 of $1,000 max loss"], d)
             check("c. DEMO: today's P&L in $ with R, the eval progress, ten trades each with $ (R) and its closing rule, the plan sentence, the three backtest facts under 'Backtest, not a promise'",
-                  d["kv"][0] == "+$312 (+0.8R)" and d["kv"][1].startswith("$2,580 to go to the $3,000 target") and d["dt"][0] == "Today" and len(d["trades"]) == 10 and all(re.search(r"\$[\d,]+ \(~?[+-]?\d+\.\dR\)", x) for x in d["trades"])
+                  d["kv"][0] == demo_today() and d["kv"][1].startswith("$2,580 to go to the $3,000 target") and d["dt"][0] == "Today" and len(d["trades"]) == 10 and all(re.search(r"\$[\d,]+ \(~?[+-]?\d+\.\dR\)", x) for x in d["trades"])
                   and len(d["rules"]) == 10 and all(d["rules"]) and "02:00 and 15:30 ET" in d["plan"] and "flat by 15:55 ET" in d["plan"] and d["facts"][0] == "PF 2.91, +$9,919, about $2,670 a month" and len(d["facts"]) == 3
                   and d["pill"] == "Backtest, not a promise" and "1 Jul 2026 to 16 Oct 2026" in d["factNote"], d)
             check("c. AGORA look: serif title, warm dark body", any(f in d["font"] for f in ("Palatino", "Iowan", "Georgia")) and d["bg"] == "rgb(20, 17, 14)", d)

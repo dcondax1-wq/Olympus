@@ -10,7 +10,7 @@
      PC reported, 3 account lines with $ to pass / payout + today's $, the edge chip, a tap -> hub/zeus.html; silent = red PC SILENT
   d. Chromium 390 x 844 (ntfy routed to a fixture): PC reported, 3 account rows with $ + chips + today's $, the edge chip, the
      ZEUS learned card (status "zl", night-learnloop), two window lines, the buttons; a silent feed + stale board copy = the red PC
-     SILENT strip and no learned card; no sideways scroll, 44 px taps, no page errors
+     SILENT strip and the learned card's calm placeholder (polish2 2026-11-19: it used to hide); no sideways scroll, 44 px taps, no page errors
     python -X utf8 -m tests.test_zeus_hub        (ZEUS_NO_BROWSER=1 skips d; run d only under flock -w 2400 /tmp/olympus_browser.lock)
 """
 from __future__ import annotations
@@ -249,8 +249,9 @@ def part_d():
             check("d. silent feed + 10-day-old board copy: the strip is RED 'PC SILENT: last report 10 days ago' (role alert), plan rows still shown",
                   "bad" in pc2["cls"] and "PC SILENT" in pc2["t"] and "10 days ago" in pc2["t"] and pc2["role"] == "alert" and pc2["bg"] != "rgba(0, 0, 0, 0)"
                   and "zlarior" in n2, (pc2, n2))
-            check("d. no learned line anywhere (silent feed, no learned.json): the ZEUS learned card stays hidden",
-                  p2.evaluate("document.getElementById('learned').hidden") is True)
+            lw = p2.evaluate("(() => { const s = document.getElementById('learned'), b = document.getElementById('learnBox'); return { hidden: s.hidden, cls: b.className, t: b.textContent, li: b.querySelectorAll('li').length }; })()")
+            check("d. no learned line anywhere (silent feed, no learned.json): the ZEUS learned card shows a calm 'First nightly report after today's close' (never hidden, no rows)",
+                  lw["hidden"] is False and "wait" in lw["cls"] and lw["t"].startswith("First nightly report after today's close") and "ZEUS changes nothing" in lw["t"] and lw["li"] == 0, lw)
             check("d. no page errors", not errs, errs)
             br.close()
     finally:

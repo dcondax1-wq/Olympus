@@ -441,8 +441,13 @@ def part_g(tmp, dd_c):
 def part_h():
     html = open(os.path.join(ROOT, "tools", "web_public", "hub", "zeus.html"), encoding="utf-8").read()
     js = open(os.path.join(ROOT, "tools", "web_public", "hub", "zeus.js"), encoding="utf-8").read()
-    check("h. zeus.html: a hidden 'ZEUS learned' section with its box, zeus.js?v=3", re.search(r'<section id="learned"[^>]*hidden', html)
-          and 'id="learnBox"' in html and "zeus.js?v=3" in html)
+    # polish2 2026-11-19: the card stayed hidden when there was no nightly line yet; now a calm placeholder from the first paint
+    sec = re.search(r'<section id="learned"[^>]*>', html)
+    box = re.search(r'<div id="learnBox" class="zs-learn wait"[^>]*><p class="zs-goal">([^<]*)</p><p class="zs-src">([^<]*)</p></div>', html)
+    check("h. zeus.html: the 'ZEUS learned' section is shown from the first paint with its box holding the calm placeholder; zeus.js?v=3",
+          sec and "hidden" not in sec.group(0) and box and box.group(1) == "First nightly report after today's close" and "zeus.js?v=3" in html, (sec and sec.group(0), box and box.groups()))
+    check("h. zeus.js: no nightly line = the same placeholder words (LEARN_WAIT), never a hidden card",
+          "if (!L) { box.className = 'zs-learn wait';" in js and "sec.hidden = true" not in js and box and "'First nightly report after today\\'s close'" in js)
     check("h. zeus.js: text only (no innerHTML / eval), reads learned.json next to the page", not re.search(r"innerHTML|insertAdjacentHTML|\beval\(", js)
           and "getJSON('learned.json')" in js)
     script = r"""
@@ -453,7 +458,7 @@ const cloudOld = {day: '2026-11-18', t: 1795000000, line: 'ZEUS learned Nov 18: 
 const cloudNew = {day: '2026-11-20', t: 1795200000, line: 'ZEUS learned Nov 20: ATLAS 2 trades +$90, edge AMBER, nothing to change', built: 'y', proposals: 2};
 const a = Z.learned({zl: zl}, cloudOld, now), b = Z.learned({zl: zl}, cloudNew, now), c = Z.learned(null, null, now);
 const d = Z.learned({zl: {d: '2026-11-10', t: 1, s: 'ATLAS no trade', p: 0}}, null, now);
-console.log(JSON.stringify({a: a, b: b, c: c, d: d}));
+console.log(JSON.stringify({a: a, b: b, c: c, d: d, wait: Z.LEARN_WAIT}));
 """
     r = subprocess.run(["node", "-e", script, os.path.join(ROOT, "tools", "web_public", "hub", "zeus.js")], capture_output=True, text=True, timeout=60)
     try:
@@ -467,6 +472,8 @@ console.log(JSON.stringify({a: a, b: b, c: c, d: d}));
     check("h. node: the cloud copy when newer (prefix cut), nothing = null, a 9-day-old line is marked old",
           b.get("when") == "Nov 20" and b["rows"][0]["text"].startswith("2 trades +$90") and "Cloud copy" in b.get("src", "")
           and o.get("c") is None and (o.get("d") or {}).get("old") is True, o)
+    check("h. node: the placeholder words match the page's first paint (nothing changes when zeus.js finds no line)",
+          box and o.get("wait") == [box.group(1).replace("&#39;", "'"), box.group(2)], (o.get("wait"), box and box.groups()))
 
 
 # ================================================================================================ i. faster thinking

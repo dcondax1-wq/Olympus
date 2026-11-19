@@ -17,11 +17,11 @@ from tests import agora_kit as AK  # noqa: E402
 
 APP, NAME = "stoa", "Stoa"
 check = AK.check
-KALSHI = "https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json"
 
 
 def test_static():
-    AK.static_kit(APP, NAME, reads=("../home.json", "../money/index.json", "../alerts.json"), storage="ls", allow_urls=(KALSHI,))
+    # the Kalshi feed is the site's own ../kalshi.json (SITE_FEED); the old kalshi-feed repo is retired (polish2 2026-11-19): no web address at all
+    AK.static_kit(APP, NAME, reads=("../home.json", "../money/index.json", "../alerts.json"), storage="ls")
     d = os.path.join(AK.WEB, APP)
     js, core, scene, html = (AK.read(os.path.join(d, n)) for n in ("stoa.js", "stoacore.js", "stoascene.js", "index.html"))
     check("a. the only browser storage is Done / Snooze under one key (stoa.state.v1), wrapped in try / catch", js.count("localStorage.") == 2 and "stoa.state.v1" in js and not re.search(r"sessionStorage|indexedDB", js + core + scene) and js.count("try {") >= 2)

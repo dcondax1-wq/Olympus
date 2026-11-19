@@ -17,16 +17,15 @@ from tests import agora_kit as AK  # noqa: E402
 
 APP, NAME = "dionysus", "Dionysus"
 check = AK.check
-RAW = "https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json"
 SITE_EDGES = os.path.join(AK.WEB, "kalshicity", "edges.json")
 SITE_WHATIF = os.path.join(AK.WEB, "kalshicity", "whatif.json")
 
 
 def test_static():
-    AK.static_kit(APP, NAME, reads=("../kalshicity/edges.json", "../kalshicity/whatif.json"), allow_urls=(RAW,))
+    AK.static_kit(APP, NAME, reads=("../kalshicity/edges.json", "../kalshicity/whatif.json"))
     js = AK.read(os.path.join(AK.WEB, APP, "dionysus.js"))
-    check("a. the one web address is the SAME public feed the Kalshi page reads (kalshi-feed/main/kalshi.json), fetched with a plain GET; no key, no header, no POST",
-          RAW in js and "Authorization" not in js and "headers" not in js.replace("cache: 'no-cache'", "") and RAW == "https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json")
+    check("a. the bot's feed is the SAME file the Kalshi page reads, this site's ../kalshi.json (the kalshi-feed repo is retired, polish2 2026-11-19), a plain GET; no key, no header, no POST, no web address",
+          "const SITE_FEED = '../kalshi.json';" in js and "kalshi-feed/main" not in js and "githubusercontent" not in js and "Authorization" not in js and "headers" not in js.replace("cache: 'no-cache'", ""))
     html = AK.read(os.path.join(AK.WEB, APP, "index.html"))
     check("a. 'Suggestions only' is said on the page, and nothing on it can place or change a bet (no order / buy / sell words in the code)",
           "Suggestions only" in html and not re.search(r"\b(placeOrder|createOrder|/portfolio/orders|\.post\(|method:)", js))
@@ -143,16 +142,16 @@ def test_page():
             check("c. every tap target is at least 44 x 44 px", not AK.taps(p), AK.taps(p)[:4])
             check("c. no sideways scroll; Jarvis's corner is free; no console error; nothing off the origin", AK.no_sideways(p) and not AK.corner(p) and not errs and not off, (errs[:3], off[:3]))
             ctx.close()
-            # ---- the live feed is unreachable (blocked here): the site's own copy takes over, labelled
+            # ---- no kalshi.json on the site (404 here): the site's kalshicity mirror takes over, labelled
             ctx, p, errs, seen, off = AK.page(br, origin)
             AK.open_app(p, origin, APP, "?at=2026-11-05T12:00:00Z")
             s = p.evaluate("""() => ({ demo: !document.querySelector('#demo').hidden, pill: document.querySelector('#botPill').textContent, bal: document.querySelector('#bal').textContent, src: document.querySelector('#srcNote').textContent, guard: document.querySelector('#guardTitle').textContent,
               gl: document.querySelector('#guardCard').dataset.level, open: document.querySelector('#open').textContent, wi: document.querySelector('#sets [aria-pressed=true]').textContent, scan: document.querySelector('#scan').innerText.includes('95–97¢ bets') })""")
-            check("c. the live feed was tried (and refused here), so the site's copy is shown: no DEMO chip, $55.81, 'Paused', 'the site's copy', the guard says the bot is resting, the real what-if (A) and scan",
-                  any("raw.githubusercontent.com" in u for u in off) and not s["demo"] and s["bal"] == "$55.81" and s["pill"] == "Paused" and "site's copy" in s["src"] and s["guard"] == "The guard has the bot resting" and s["gl"] == "bad" and "live feed" in s["open"] and s["wi"] == "A" and s["scan"], (s, off[:2]))
+            check("c. the feed was asked on the site (../kalshi.json, absent here), so the kalshicity copy is shown: no DEMO chip, $55.81, 'Paused', 'the site's copy', the guard says the bot is resting, the real what-if (A) and scan",
+                  any(u.split("?")[0].endswith("/kalshi.json") for u in seen) and not off and not s["demo"] and s["bal"] == "$55.81" and s["pill"] == "Paused" and "site's copy" in s["src"] and s["guard"] == "The guard has the bot resting" and s["gl"] == "bad" and "live feed" in s["open"] and s["wi"] == "A" and s["scan"], (s, off[:2]))
             ctx.close()
             # ---- the live feed answers (mocked)
-            ctx, p, errs, seen, off = AK.page(br, origin, mock={"raw.githubusercontent.com": feed_json()})
+            ctx, p, errs, seen, off = AK.page(br, origin, mock={"/kalshi.json": feed_json()})
             AK.open_app(p, origin, APP, "?at=2026-11-05T12:00:00Z")
             l = p.evaluate("""() => ({ demo: !document.querySelector('#demo').hidden, pill: document.querySelector('#botPill').textContent, bal: document.querySelector('#bal').textContent, src: document.querySelector('#srcNote').textContent, tiles: document.querySelector('#heroTiles').innerText,
               open: document.querySelector('#open').innerText, recent: document.querySelector('#recent').innerText, guard: document.querySelector('#guardTitle').textContent })""")

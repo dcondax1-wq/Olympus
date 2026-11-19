@@ -369,6 +369,8 @@ def part_f():
     check("f. the kit first (olympus.css + olympus.js data-app=arena), viewport-fit=cover, theme-color, dark",
           '<link rel="stylesheet" href="../olympus/olympus.css' in html and 'src="../olympus/olympus.js?v=o13" data-app="arena"' in html
           and "viewport-fit=cover" in html and 'name="theme-color" content="#14110e"' in html and 'content="dark"' in html)
+    check("f. the PC feed reader is on the page (../pc_feed.js, id pcFeedJs): ../jarvis/data.js reads the PC's status post first, never the old live.json of the suspended account when the post answers",
+          '<script src="../pc_feed.js?v=' in html and 'id="pcFeedJs"' in html)
     check("f. no CDN, no outside script or font: every src / href is local", not re.search(r'(src|href)="https?://', html)
           and not any(re.search(r"import[^;]*['\"]https?://", s) for s in js.values()))
     check("f. three.js is Jarvis's copy (../jarvis/three.module.min.js), the vault only through ../jarvis/obsidian.js",
@@ -412,6 +414,11 @@ def make_site(tmp, doc=None):
     shutil.copytree(PAGE, os.path.join(site, "arena"))
     shutil.copytree(os.path.join(WEB, "jarvis"), os.path.join(site, "jarvis"))
     shutil.copytree(os.path.join(WEB, "olympus"), os.path.join(site, "olympus"))
+    # the PC feed reader the page loads (polish2 2026-11-19: Arena reads the PC's status post first, like Jarvis) and a stub pointer to a
+    # topic that never answers here (every off-machine request is a 404 in this test)
+    shutil.copy(os.path.join(WEB, "pc_feed.js"), os.path.join(site, "pc_feed.js"))
+    with open(os.path.join(site, "status_feed.json"), "w", encoding="utf-8") as fh:
+        json.dump({"v": 1, "ntfy": "https://ntfy.invalid", "topic": "arena_test"}, fh)
     if doc is not None:
         with open(os.path.join(site, "arena", "events.json"), "w", encoding="utf-8") as fh:
             fh.write(build.dumps(doc))

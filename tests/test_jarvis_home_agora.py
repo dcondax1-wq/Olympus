@@ -240,6 +240,11 @@ console.log(JSON.stringify(out));
     check("f. CSS: 44 px taps on the new parts, focus rings, 200-450 ms ease-out, everything still with reduced motion, no glow / blur / neon",
           all(x in v2 for x in (".dgate { position: relative; min-width: 0; min-height: 44px", "min-height: 48px", ".hv-btn { min-height: 44px", ".tile:focus-visible", "@media (prefers-reduced-motion: reduce)"))
           and not re.search(r"blur\(|text-shadow|filter:", v2) and set(re.findall(r"(?:transition|animation):[^;]*?(\d?\.\d+)s", v2)) <= {".2", ".25", ".45", ".9", "1.5"}, sorted(set(re.findall(r"(?:transition|animation):[^;]*?(\d?\.\d+)s", v2))))
+    lines2 = 2 * 17 * 1.4 + 8          # the hero sentence: 17px/1.4, two lines, 4px padding above and below
+    mh = [float(x) for x in re.findall(r"\.hero-(?:line|now) \{[^}]*?min-height: (\d+)px", v2)]
+    sk = re.search(r"\.sk-b\.l \{[^}]*height: (\d+)px; margin: (\d+)px 0;", v2)
+    check("f. the hero sentence holds two lines from the first frame (line + button >= 56 px, the skeleton as tall): a sentence that lands or changes never pushes the home 8 px (polish2 2026-11-19)",
+          len(mh) == 2 and min(mh) >= lines2 and sk and int(sk.group(1)) + 2 * int(sk.group(2)) >= lines2, (mh, sk and sk.groups()))
     check("f. CSS: text never sits on the bare scene (the hero's scrim reaches 0.9 where the words start; the tiles and the sections are on the sheet); the bottom stack is a solid base; the search button makes room for the docked orb",
           "rgba(var(--pr), .90) var(--court-h)" in v2 and ".tiles {" in v2 and "background: rgba(var(--pr), .92)" in v2 and ".dockfade::after" in v2 and 'html[data-orb-dock="1"] .fab' in v2 and 'html[data-orb-tip="1"] .fab' in v2
           and "@media (max-height: 739px) { .court { display: none; }" in v2)

@@ -571,8 +571,10 @@ def main() -> int:
         readers = ["hermes/data.js", "tyche/data.js", "kalshi/kalshi.js", "ledger/ledger.js", "inbox/inbox.js", "stoa/stoa.js",
                    "ergasterion/ergasterion.js", "dionysus/dionysus.js", "kalshicity/kalshicity.js", "jarvis/data.js", "cities/datasets.js"]
         bad = [rd for rd in readers if "../kalshi.json" not in open(os.path.join(W, rd), encoding="utf-8").read()]
-        check("every Kalshi reader asks this site's ../kalshi.json before the old GitHub address (which stays as the fallback)", not bad, bad)
-        check("every Kalshi reader keeps the old feed address as the fallback", all("kalshi-feed" in open(os.path.join(W, rd), encoding="utf-8").read() for rd in readers))
+        check("every Kalshi reader asks this site's ../kalshi.json", not bad, bad)
+        # polish2 2026-11-19: the old feed repo (kalshi-feed, on the suspended GitHub account) is retired: no reader names its address any more
+        old = [rd for rd in readers if re.search(r"https://(?:raw\.githubusercontent\.com|api\.github\.com/repos)/[^'\"]*kalshi-feed", open(os.path.join(W, rd), encoding="utf-8").read())]
+        check("no Kalshi reader asks the retired kalshi-feed repo (raw or API): the site's copy is the one address", not old, old)
         check("kalshi page: the kalshi-server message holds {SITE_URL}, filled from location.origin, no github.io address",
               "{SITE_URL}/kalshi/SETUP.md" in js and "location.origin" in js and "github.io" not in js)
     finally:

@@ -1,24 +1,24 @@
 """ORACLE (tools/web_public/oracle/, owner 2026-11-03): a live 3D market radar of NQ, the LIT bot's world. Read-only.
 
-It reads what the Zenith dashboard reads: live.json from the PC (GitHub's API first, raw.githubusercontent.com when the API
-says no; the same two addresses tools/web_public/live.js builds), then the site's own ../home.json (or ../data.json). With
+It reads what Jarvis, the Gate and ZEUS read: the PC's own status post (../pc_feed.js, the ntfy topic named in ../status_feed.json;
+polish2 2026-11-19: the old live.json on the suspended GitHub account is never asked), then the site's own ../home.json (or ../data.json). With
 neither it replays a fixture day (demo_day.json: 2026-01-22, the London sweeps of the Asia high / PDH and the NY short at
 09:24 that banked +6.4R), rebuilt from the stored bars by engine/brain.replay (python -X utf8 -m tests.test_oracle_page --regen).
 
 Runs the real page in Chromium (WebGL through SwiftShader) on a local copy of the site layout (/oracle/, /jarvis/, home.json),
-answers the GitHub endpoints with a live.json made by the real publisher (engine/live_publish.build over a heartbeat whose
+answers the PC's ntfy poll with a post made by the real publisher (engine/live_publish.build over a heartbeat whose
 Brain is the fixture day at 09:40 ET), and checks:
-  a. the files and the static rules: every module, no dead export, no outside URL but the two GitHub endpoints, three.js only
+  a. the files and the static rules: every module, no dead export, no outside URL (the PC feed's host is the site's own status_feed.json), three.js only
      from ../jarvis/, viewport / theme-color / safe areas / reduced motion, jarvis.json by the Jarvis contract
   b. the pure parts (time.js, data.js) in the browser: ET clock, sessions, the next LIT window, normalize() of the fixture
   c. demo at 390 x 844 and 844 x 390: no console errors, the DEMO chip, the replay walks the stages (sweep -> ... -> trade ->
      done), lightning on the London sweeps, the HUD price = the fixture bar
   d. the fixture live.json: the LIVE chip, the HUD price, every level's distance in points and $ per MNQ, the stage
      constellation = the fixture's stages, P&L today, the open position's planes, ATLAS satellites; a second poll with new
-     stages moves the constellation; the API answering 403 falls back to raw
+     stages moves the constellation; ntfy's 70-minute window refused (429) -> its latest post; a post with only the brain glance
   e. a stale live.json (an hour old): LAST SEEN, the last world kept; no live.json and no site files: the demo
   f. reduced motion, no sideways scroll, the orb's 80 x 160 px corner left free, and across every case: no request outside
-     the page's origin but the two GitHub endpoints
+     the page's origin but the PC's ntfy poll (never GitHub)
   g. the 2026-11-03 day pass: the holographic ladder (round ticks, the nearest open levels named at their ring's height, the
      price pointer), the event ribbon (sweeps / CISD / limit / entry / exit with ET times, the entry linking to Odeon's film),
      the replay scrubber (drag = seek + pause), "Replay today" rebuilt from the live World and the site's bars, one top bar +
@@ -48,8 +48,7 @@ DEMO = os.path.join(ORC, "demo_day.json")
 ET = ZoneInfo("America/New_York")
 DAY = "2026-01-22"
 MODULES = ["main.js", "data.js", "demo.js", "time.js", "scene.js", "layers.js", "sky.js", "glow.js", "hud.js", "ladder.js", "events.js", "heat.js", "arena.js", "prophecy.js", "insights.js", "sheet.js", "temple.js"]
-API = "https://api.github.com/repos/demetrades2000-coder/nq-dashboard/contents/live.json?ref=live"
-RAW = "https://raw.githubusercontent.com/demetrades2000-coder/nq-dashboard/live/live.json"
+NTFY, TOPIC = "https://ntfy.oracle.test", "oracle_test_topic"      # the PC feed's host and topic, as the site's status_feed.json names them
 RES: list = []
 
 
@@ -188,6 +187,14 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(data)
             return
+        if path == "/status_feed.json":            # the site's own pointer to the PC's ntfy topic (tools/pc_report.py)
+            data = json.dumps({"v": 1, "ntfy": NTFY, "topic": TOPIC}).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+            return
         if path in ("/home.json", "/data.json"):
             body = SITE["home"] if path == "/home.json" else None
             if body is None:
@@ -204,7 +211,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
     def translate_path(self, path):
         p = path.split("?")[0]
-        if p.startswith("/oracle/") or p.startswith("/jarvis/") or p.startswith("/olympus/"):
+        if p.startswith("/oracle/") or p.startswith("/jarvis/") or p.startswith("/olympus/") or p == "/pc_feed.js":
             return os.path.join(WEB, *p.lstrip("/").split("/"))
         return os.path.join(WEB, "__missing__")
 
@@ -216,7 +223,7 @@ def serve():
 
 
 # ------------------------------------------------------------------ browser helpers
-FEED = {"api": None, "raw": None, "calls": []}     # what the GitHub stubs answer: (status, body) or None (= 404)
+FEED = {"post": None, "fail": None, "calls": []}   # the PC's newest status post (a live.json-shaped dict, None = none posted), {"70m"|"latest": status}
 OUTSIDE: list = []
 
 
@@ -227,14 +234,15 @@ def new_page(br, origin, vw, *, reduced=False, quality="high"):
         u = route.request.url
         if u.startswith(origin) or u.startswith("data:") or u.startswith("blob:"):
             return route.continue_()
-        base = u.split("?t=")[0]
-        if base in (API, RAW):
-            FEED["calls"].append("api" if base == API else "raw")
-            ans = FEED["api" if base == API else "raw"]
-            st, body = ans if ans else (404, {"message": "Not Found"})
-            return route.fulfill(status=st, body=json.dumps(body), headers={"Access-Control-Allow-Origin": "*", "Content-Type": "application/json",
-                                                                          "Access-Control-Expose-Headers": "X-RateLimit-Remaining, X-RateLimit-Reset",
-                                                                          "x-ratelimit-remaining": "55", "x-ratelimit-reset": "0"})
+        if u.startswith(f"{NTFY}/{TOPIC}/json?poll=1"):
+            win = "70m" if "since=70m" in u else "latest"
+            FEED["calls"].append("pc:" + win)
+            st = (FEED["fail"] or {}).get(win)
+            if st:
+                return route.fulfill(status=st, body="{}", headers={"Access-Control-Allow-Origin": "*", "Content-Type": "application/json"})
+            j = FEED["post"]
+            body = json.dumps({"id": "m1", "time": int(time.time()), "event": "message", "topic": TOPIC, "message": json.dumps(j)}) + "\n" if j else ""
+            return route.fulfill(status=200, body=body, headers={"Access-Control-Allow-Origin": "*", "Content-Type": "application/x-ndjson"})
         OUTSIDE.append(u)
         return route.abort()
     ctx.route("**/*", guard)
@@ -322,13 +330,11 @@ def static_checks():
           and "../olympus/render.js" in src["scene.js"] and "../olympus/materials.js" in src["arena.js"]
           and "".join(src.values()).count("three.module.min.js") == 1 and "../jarvis/three.module.min.js" in src["main.js"], imports)
     urls = set(re.findall(r"https?://[^\s'\"`)]+", "".join(src.values()) + html + css))
-    allowed = {"https://api.github.com/repos/${owner}/${repo}/contents/live.json?ref=live",
-               "https://raw.githubusercontent.com/${owner}/${repo}/live/live.json"}
-    check("a. no outside address but the two GitHub endpoints live.js uses", urls == allowed and "api.github.com" not in
-          "".join(v for k, v in src.items() if k != "data.js"), urls)
-    js = open(os.path.join(WEB, "live.js"), encoding="utf-8").read()
-    check("a. the same endpoints as tools/web_public/live.js", "contents/live.json?ref=live" in js and "/live/live.json" in js
-          and "contents/live.json?ref=live" in src["data.js"] and "/live/live.json" in src["data.js"])
+    check("a. no outside address at all (the PC feed's ntfy host comes from the site's own status_feed.json, never GitHub)",
+          not urls and not re.search(r"api\.github\.com|githubusercontent|nq-dashboard", "".join(src.values())), urls)
+    check("a. the live numbers are the PC's status post: ../pc_feed.js loaded (defer) before main.js, data.js asks PC_FEED.fetchLatest with ../status_feed.json",
+          '<script src="../pc_feed.js?v=' in html and html.index("../pc_feed.js") < html.index('src="main.js') and "defer" in html[html.index("../pc_feed.js"):html.index('src="main.js')]
+          and "fetchLatest({ feedUrl: '../status_feed.json' })" in src["data.js"] and "globalThis.PC_FEED" in src["data.js"])
     net = [f for f, s in src.items() if re.search(r"\bfetch\s*\(", s) and f not in ("data.js", "demo.js")]
     check("a. only data.js (and demo.js for its fixture) fetch anything; no XHR, beacon or socket", not net and not re.search(
         r"XMLHttpRequest|sendBeacon|WebSocket|EventSource", "".join(src.values())), net)
@@ -438,7 +444,7 @@ def seek(p, hh, mm):
 
 
 def demo_checks(br, origin, vw):
-    FEED.update(api=None, raw=None, calls=[])
+    FEED.update(post=None, fail=None, calls=[])
     fx = json.load(open(DEMO, encoding="utf-8"))
     tag = f"{vw[0]}x{vw[1]}"
     ctx, p, log = new_page(br, origin, vw)
@@ -522,11 +528,11 @@ def demo_checks(br, origin, vw):
 # ------------------------------------------------------------------ d. the fixture live.json
 def live_checks(br, origin, vw, j):
     tag = f"{vw[0]}x{vw[1]}"
-    FEED.update(api=(200, j), raw=None, calls=[])
+    FEED.update(post=j, fail=None, calls=[])
     ctx, p, log = new_page(br, origin, vw)
     p.goto(origin + "/oracle/")
     ready(p, "live")
-    check(f"d. {tag}: live.json from the GitHub API -> LIVE chip", p.inner_text("#mode").startswith("LIVE") and FEED["calls"][:1] == ["api"], FEED["calls"])
+    check(f"d. {tag}: the PC's status post (ntfy, 70-minute window) -> LIVE chip", p.inner_text("#mode").startswith("LIVE") and FEED["calls"][:1] == ["pc:70m"], FEED["calls"])
     check(f"d. {tag}: HUD price = live.json price", p.inner_text("#price") == fmt_px(j["price"]), [p.inner_text("#price"), j["price"]])
     rows = p.eval_on_selector_all("#lv-list li.lv:not(.now)", "els => els.map(e => ({id: e.dataset.id, d: +e.dataset.dist, usd: +e.dataset.usd, "
                                   "txt: e.querySelector('.lv-d').textContent, u: e.querySelector('.lv-usd').textContent}))")
@@ -557,10 +563,9 @@ def live_checks(br, origin, vw, j):
     shot(p, f"live_{vw[0]}")
     # a new poll with the Brain at the 5m CISD moves the constellation
     j2 = fixture_live(j["t"] + 1, stage_key="cisd5")
-    FEED["api"] = (200, j2)
-    p.evaluate("oracle.refresh()")
-    try:
-        p.wait_for_function("oracle.constellation.indexOf('now') === 4", timeout=10000)
+    FEED["post"] = j2
+    try:                                             # pc_feed.js shares one answer per page for 20 s: look again until the new post is read
+        p.wait_for_function("(window.oracle.refresh(), oracle.constellation.indexOf('now') === 4)", polling=2000, timeout=45000)
     except Exception:
         print("   debug:", FEED["calls"], p.evaluate("[oracle.mode, oracle.world.t, oracle.world.stage.key]"), real_errors(log))
     check(f"d. {tag}: next poll at the 5m CISD: the constellation follows (5/10, stars 1-4 done)",
@@ -573,16 +578,33 @@ def live_checks(br, origin, vw, j):
 
 # ------------------------------------------------------------------ e. fallbacks and states
 def state_checks(br, origin, j_now):
-    # the API says no (rate limit): raw.githubusercontent.com
-    FEED.update(api=(403, {"message": "API rate limit exceeded"}), raw=(200, j_now), calls=[])
+    # ntfy refuses the 70-minute window (its rate limit): the latest post alone, still LIVE; never a GitHub address
+    FEED.update(post=j_now, fail={"70m": 429}, calls=[])
     ctx, p, log = new_page(br, origin, (390, 844))
     p.goto(origin + "/oracle/")
     ready(p, "live")
-    check("e. API 403 -> raw.githubusercontent.com, still LIVE", FEED["calls"][:2] == ["api", "raw"] and p.inner_text("#price") == fmt_px(j_now["price"]), FEED["calls"])
+    check("e. ntfy 429 on the 70-minute window -> its latest post, still LIVE", FEED["calls"][:2] == ["pc:70m", "pc:latest"] and p.inner_text("#price") == fmt_px(j_now["price"]), FEED["calls"])
+    ctx.close()
+    # a real PC post has no Bot Brain cut (pc_report lite: < 4 KB): its brain glance (pc.glance) gives the levels, the stage and the lines
+    lit_g = {"id": "lit", "name": "Zlarior", "on": True, "stage": "Inducement (3/10)", "wait": "Waiting for the inducement under the Asia low",
+             "lv": [["Asia low", round(j_now["price"] - 12.5, 2), -12.5], ["PDH", round(j_now["price"] + 30.25, 2), 30.25]], "log": [["09:31", "Swept London high"]]}
+    lite = {"v": 1, "kind": "le-live", "lite": True, "src": "pc_report", "t": j_now["t"], "price": j_now["price"],
+            "pc": {"running": True, "present": True, "t": j_now["t"], "glance": {"v": 1, "t": j_now["t"], "bots": [lit_g]}},
+            "board": {k: j_now["board"][k] for k in ("lit", "atlas") if k in j_now["board"]}, "reporter": {"t": j_now["t"] + 5, "server": True}}
+    FEED.update(post=lite, fail=None, calls=[])
+    ctx, p, log = new_page(br, origin, (390, 844))
+    p.goto(origin + "/oracle/")
+    ready(p, "live")
+    w = p.evaluate("oracle.world")
+    check("e. the PC's real (lite) post: LIVE, its price, the glance's levels with points / $ per MNQ, the stage 3/10 and its sentence",
+          p.inner_text("#mode").startswith("LIVE") and p.inner_text("#price") == fmt_px(j_now["price"]) and [l["label"] for l in w["levels"]] == ["PDH", "Asia low"]
+          and [l["usd"] for l in w["levels"]] == [61, 25] and w["stage"]["key"] == "inducement" and w["stage"]["n"] == 3
+          and w["stage"]["waiting"] == lit_g["wait"] and p.inner_text("#stage-n") == "3/10", w and [w["levels"], w["stage"]])
+    errs = real_errors(log)
     ctx.close()
     # an hour-old live.json: LAST SEEN, the world kept; Replay a day -> demo -> Back to live
     old = fixture_live(j_now["t"] - 3600)
-    FEED.update(api=(200, old), raw=None, calls=[])
+    FEED.update(post=old, fail=None, calls=[])
     ctx, p, log = new_page(br, origin, (390, 844))
     p.goto(origin + "/oracle/")
     ready(p, "stale")
@@ -595,10 +617,10 @@ def state_checks(br, origin, j_now):
     p.click("#replay")
     p.wait_for_function("oracle.mode === 'stale'")
     check("e. Replay a day -> the demo; Back to live -> the last real world", ok and p.inner_text("#price") == fmt_px(old["price"]))
-    errs = real_errors(log)
+    errs += real_errors(log)
     ctx.close()
     # the site's own home.json when live.json is missing
-    FEED.update(api=None, raw=None, calls=[])
+    FEED.update(post=None, fail=None, calls=[])
     SITE["home"] = {"board": j_now["board"], "live": {"price": j_now["price"], "bars": [[j_now["t"] - 600 + 300 * i, 1, 1, 1, j_now["price"] + i] for i in range(2)]}}
     ctx, p, log = new_page(br, origin, (390, 844))
     p.goto(origin + "/oracle/")
@@ -614,7 +636,7 @@ def state_checks(br, origin, j_now):
 # ------------------------------------------------------------------ f. reduced motion, quality, Jarvis's card
 def today_checks(br, origin, j_now):
     """Replay today: live.json + the site's 5m bars of today -> the scrubber walks today's session from the 18:00 open."""
-    FEED.update(api=(200, j_now), raw=None, calls=[])
+    FEED.update(post=j_now, fail=None, calls=[])
     t_now = int(j_now["t"])
     now_et = dt.datetime.fromtimestamp(t_now, ET)
     sess = dt.datetime.combine(now_et.date() - dt.timedelta(days=0 if now_et.hour >= 18 else 1), dt.time(18, 0), ET)
@@ -679,7 +701,7 @@ def arena_checks(br, origin):
           and got["lv"]["tone"] == "closed" and got["cl"]["tone"] == "off", got)
     ctx.close()
     # live fixture: the DOM ribbon + heat on the HUD, the ladder and the rings
-    FEED.update(api=(200, fixture_live(int(time.time()))), raw=None, calls=[])
+    FEED.update(post=fixture_live(int(time.time())), fail=None, calls=[])
     ctx, p, log = new_page(br, origin, (390, 844))
     p.goto(origin + "/oracle/")
     ready(p, "live")
@@ -713,7 +735,7 @@ def arena_checks(br, origin):
     shot(p, "arena_low_390")
     ctx.close()
     # HD tier (?q=high), small canvas so software GL can draw it: bloom + MSAA, 3 passes
-    FEED.update(api=(200, fixture_live(int(time.time()))), raw=None, calls=[])
+    FEED.update(post=fixture_live(int(time.time())), fail=None, calls=[])
     ctx = br.new_context(viewport={"width": 390, "height": 700}, device_scale_factor=1)
     ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith(origin) else r.fulfill(status=404, body="{}"))
     q = ctx.new_page()
@@ -729,7 +751,7 @@ def arena_checks(br, origin):
 
 
 def misc_checks(br, origin):
-    FEED.update(api=None, raw=None, calls=[])
+    FEED.update(post=None, fail=None, calls=[])
     ctx, p, log = new_page(br, origin, (390, 844), reduced=True)
     p.goto(origin + "/oracle/?demo=1")
     ready(p, "demo")
@@ -789,7 +811,7 @@ def main(argv=None) -> int:
             br.close()
     finally:
         srv.shutdown()
-    check("f. across every case: no request outside the page's origin but the two GitHub endpoints", not OUTSIDE, OUTSIDE[:5])
+    check("f. across every case: no request outside the page's origin but the PC's ntfy poll (never the old GitHub live.json)", not OUTSIDE, OUTSIDE[:5])
     n, ok = len(RES), sum(RES)
     print(f"\n{ok}/{n} checks passed")
     return 0 if ok == n else 1
