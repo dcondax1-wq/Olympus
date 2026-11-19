@@ -383,7 +383,7 @@ def part_b(tmp, shots):
                 return False
 
         sh = (lambda n: pg.screenshot(path=os.path.join(shots, n), full_page=False)) if shots else (lambda n: None)
-        ok = go("#/today", "() => { const c = document.querySelector('#mnCard'); return c && c.textContent.includes('25K #2') && document.body.innerText.includes('This week') }")
+        ok = go("#/today", "() => { const c = document.querySelector('#mnCard'); return c && c.textContent.includes('25K #2') && document.body.innerText.includes('This week') && document.body.innerText.includes('$1,463') }")
         t = text()
         mn = pg.evaluate("() => (document.querySelector('#mnCard') || {}).innerText || ''")
         check("b. Home: Money now = Zlarior 50K, ATLAS 25K funded, Zlarior 25K #2; no 'Blocked'", ok and "Zlarior 50K" in mn and "ATLAS 25K funded" in mn and "Zlarior 25K #2" in mn
@@ -416,7 +416,7 @@ def part_b(tmp, shots):
         t = text()
         check("b. Eval cockpit: '$3,807 to pass · $1,025 of room' on the real 50K (never the 25K #2's '$28,000 to pass')", ok and "$3,807 to pass" in t and "$1,025 of room" in t and "$28,000" not in t)
         sh("cockpit.png")
-        ok = go("#/money", "() => document.querySelector('#zmNow') && document.querySelector('#zmPay')")
+        ok = go("#/money", "() => document.querySelector('#zmNow') && document.querySelector('#zmPay') && document.querySelector('#zmPay').innerText.includes('need $')")
         t = text()
         now_ = pg.evaluate("() => (document.querySelector('#zmNow') || {}).innerText || ''")
         pay = pg.evaluate("() => (document.querySelector('#zmPay') || {}).innerText || ''")

@@ -68,7 +68,7 @@
     }
     let t = '';
     try { t = window.StatusUI && window.StatusUI.oneLine ? window.StatusUI.oneLine(A, M).text : ''; } catch (e) { t = ''; }
-    t = String(t || A.waiting || '').replace(/\s+/g, ' ').trim();
+    t = String(t || A.waiting || '').replace(/\s+/g, ' ').trim().replace(/^Next window\b/, 'Entry window');     // "Next Next window" read twice
     if (!t || /^(watching|no data yet)$/i.test(t)) return NP;
     return t.slice(0, 120);
   }
@@ -101,7 +101,9 @@
     // the other real accounts the PC routes (the Zlarior 25K #2, a Rapid ...: board "accounts", night-feedsB 2026-11-18), after the bots
     for (const a of As) {
       if (!a || !a.key || ROWS.some((d) => d.key === a.key) || a.placeholder || a.paper || !okN(a.balance)) continue;
-      rows.push(rowOf({ key: a.key, name: a.name || a.key, size: a.size || '', color: '#8aa0ff', page: { phone: 'accounts', pc: 'accounts' } }, a, M, bot));
+      // its name may say its size already ("Zlarior 25K #2"): then no second "25K"
+      const nm = a.name || a.key, sz = /\b\d+K\b/i.test(String(nm)) ? '' : (a.size || '');
+      rows.push(rowOf({ key: a.key, name: nm, size: sz, color: '#8aa0ff', page: { phone: 'accounts', pc: 'accounts' } }, { ...a, size: sz }, M, bot));
     }
     let edge = bot.edge === 'idle' ? 'good' : bot.edge;
     for (const r of rows) edge = worst(edge, r.edge);

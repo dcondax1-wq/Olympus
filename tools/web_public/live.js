@@ -149,7 +149,10 @@
     try {
       const { j, src, raw } = await fetchLive();
       const changed = !LIVE.j || j.t !== LIVE.j.t || (raw && (!LIVE.raw || (raw.reporter || {}).t !== (LIVE.raw.reporter || {}).t));
-      LIVE.j = j; LIVE.raw = raw || null; LIVE.at = Date.now(); LIVE.src = src; LIVE.err = null; LIVE.polls++;
+      // the same post again (a focus / 45 s poll): keep the copy already laid out (its funded line has the payout coach's number);
+      // a fresh copy would put the PC's own payout line back on the pickers (board.js, mission.js, blitz.js) until the next redraw
+      if (changed) { LIVE.j = j; LIVE.raw = raw || null; }
+      LIVE.at = Date.now(); LIVE.src = src; LIVE.err = null; LIVE.polls++;
       if (changed) redraw();
     } catch (e) { LIVE.err = e.message || String(e); }
     finally { LIVE.busy = false; chip(); }
