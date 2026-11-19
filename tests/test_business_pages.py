@@ -201,14 +201,16 @@ def part_b():
             import json
             nd = json.dumps({"event": "message", "time": FEED["reporter"]["t"], "message": json.dumps(FEED)}) + "\n"
             ctx, p, errs, seen, off = AK.page(br, origin, w=390, h=844, mock={"json?poll=1": nd})
-            p.goto(f"{origin}/business/mffu.html")
+            import datetime as _dt                       # the page's clock 2 min after the post (?at=): the feed reads as live
+            p.goto(f"{origin}/business/mffu.html?at=" + _dt.datetime.fromtimestamp(FEED["t"] + 120, _dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"))
             p.wait_for_function("window.MFFU_PAGE && window.MFFU_PAGE.ready", timeout=60000)
             o = p.evaluate("""() => ({ n: document.querySelectorAll('#list .mf').length, keys: [...document.querySelectorAll('#list .mf')].map((c) => c.dataset.key),
                 st: [...document.querySelectorAll('#list .mf-st')].map((e) => e.textContent), h: [...document.querySelectorAll('#list h2')].map((e) => e.textContent),
                 txt: document.getElementById('list').textContent, planned: document.getElementById('plannedBox').hidden, eq: document.querySelectorAll('canvas.eq').length })""")
-            check("b. MFFU view (fed the 2026-11-18 PC post): 3 cards Zlarior 50K / ATLAS Sim Funded / Zlarior 25K #2, ...6016, floor, payout, PLAN list, equity line",
-                  o["n"] == 3 and o["st"] == ["Evaluation", "Sim Funded", "Evaluation"] and o["h"][0] == "Zlarior · …6016" and "$48,168.20" in o["txt"]
-                  and "Requestable now: $0.00" in o["txt"] and "PC live feed" in o["txt"] and not o["planned"] and o["eq"] == 1, o)
+            check("b. MFFU view (fed the 2026-11-18 PC post): 3 cards Zlarior 50K / ATLAS Sim Funded / Zlarior 25K #2 (the owner's names), ...6016, floor, payout, PLAN list, equity line",
+                  o["n"] == 3 and o["st"] == ["Evaluation", "Sim Funded", "Evaluation"] and o["h"] == ["Zlarior 50K", "ATLAS 25K funded", "Zlarior 25K #2"]
+                  and "account …6016" in o["txt"] and "$48,168.20" in o["txt"] and "Requestable now $0.00" in o["txt"] and "Live from your PC" in o["txt"]
+                  and not o["planned"] and o["eq"] == 1, o)
             check("b. MFFU view at 390 px: taps >= 44 px, no sideways scroll, nothing off the site, no console error",
                   not AK.taps(p) and AK.no_sideways(p) and not off and not errs, (AK.taps(p)[:4], off[:3], errs[:3]))
             AK.shot(p, "business-mffu-390")
