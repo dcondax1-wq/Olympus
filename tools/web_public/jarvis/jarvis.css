@@ -5,6 +5,8 @@
    Safari 16 safe: no CSS nesting, no registered custom properties, prefixed backdrop-filter and masks. */
 
 /* ---------------------------------------------------------------- themes (the old app's own colour tokens) */
+@import url("../olympus/warp.css?v=w1"); /* the world-to-world arrival (olympus/warp.js): render-blocking, before the first frame */
+@view-transition { navigation: auto; types: oly-warp; } /* the jump's opt-in here too, not only in the import: known before the first frame */
 :root, :root[data-theme="agora"] {
   --bg: var(--oly-th-n3, #14110e); --bg2: var(--oly-th-n4, #1d1914); --pr: var(--oly-th-n4-rgb, 29,25,20); --txt: var(--oly-th-n37, #f3ece0); --mut: var(--oly-th-n22, #9a8f7d); --dim: var(--oly-th-n5, #26211b); --dim2: var(--oly-th-n8, #3a3228); --dim3: var(--oly-th-a2, #5a4a30);
   --c: var(--oly-th-a8, #c8a24a); --c2: var(--oly-th-a5, #9c6b3c); --c3: var(--oly-th-warn, #e0b060); --cr: var(--oly-th-a8-rgb, 200,162,74); --cr2: var(--oly-th-a5-rgb, 156,107,60); --cr3: var(--oly-th-a13-rgb, 240,217,160); --tint: var(--oly-th-a14, #f3e3bd);

@@ -1,6 +1,7 @@
 /* Kalshi page (tools/web_public/kalshi/, owner 2026-11-01): the dashboard of the Kalshi bot (its own server, real money).
    AGORA look since 2026-11-09 (docs/DESIGN_AGORA.md): marble, bronze, gold; olive for gains, terracotta for losses; no neon.
    Safari 16 safe: no CSS nesting, no container queries, no color-mix; every animation sits behind prefers-reduced-motion. */
+@import url("../olympus/warp.css?v=w1"); /* the world-to-world arrival (olympus/warp.js): render-blocking, before the first frame */
 :root, :root[data-theme="kalshi"] {
   /* AGORA (docs/DESIGN_AGORA.md, owner 2026-11-09): marble, bronze and gold; olive for gains, terracotta for losses.
      The old variable names stay (the page and the scripts read them) but they now hold the AGORA colours. */
