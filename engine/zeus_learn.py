@@ -18,7 +18,8 @@ Per strategy (Zlarior = LIT, ATLAS, BLITZ paper, K8 Kalshi clock bets once its l
              trades split by it ("slipping in calm markets" when calm days lose and the rest win)
 Adaptations: NONE automatic here. The only automatic, owner-approved responses stay where they are (engine/circuit_breaker's
 SIZE DOWN / PAUSE advice push, the edge light, the ATLAS zombie-eval rule): this reports them, it never sizes, pauses, arms or
-edits a setting (live_model*.json untouched). Anything new becomes a Decide-card PROPOSAL ("let Claude test X?"), checked
+edits a setting (live_model*.json untouched); K8's weekly re-test (engine/kalshi_adapt.py, only ever smaller: half size / OFF / a
+lower max price) is REPORTED here ("auto: ...") with its restore asks. Anything new becomes a Decide-card PROPOSAL ("let Claude test X?"), checked
 against docs/TESTED_AND_REJECTED.md + the ZEUS Lab's rejected_forever first; the cloud (tools/learn_night.py) puts it on
 tools/web_public/business/decisions.json. Never a silent change.
 
@@ -250,6 +251,9 @@ def k8_rows(root: str = ROOT) -> dict:
         d = _read_json(os.path.join(root, "data", "kalshi_live", f"clock_{k}.json"), None)
         if isinstance(d, dict) and isinstance(d.get("rows"), list):
             out[k] = [r for r in d["rows"] if isinstance(r, dict)]
+    ad = _read_json(os.path.join(root, "data", "kalshi_live", "clock_adapt.json"), None)    # engine/kalshi_adapt's weekly re-test
+    if out and isinstance(ad, dict):
+        out["adapt"] = ad
     return out
 
 
@@ -608,6 +612,9 @@ def k8_block(K: dict, day: str) -> dict | None:
            "price_gap_c": round(100 * ((_f(r.get("price")) or 0) - (_f((pmap.get(r.get("id")) or {}).get("price")) or 0)), 1)}
           for r in live[-20:] if r.get("id") in pmap]
     flags, watch = [], []
+    auto, props = k8_adapt(K.get("adapt"), day)
+    if auto:
+        flags.append("auto: " + "; ".join(a["short"] for a in auto)[:140])
     if pm is not None and len(price) >= 10 and pm > K8_KILL_PRICE - 0.02:
         watch.append(f"fills creeping up ({100 * pm:.0f}c average, kill at {100 * K8_KILL_PRICE:.0f}c)")
     if light == "RED":
@@ -617,9 +624,29 @@ def k8_block(K: dict, day: str) -> dict | None:
            "roll": roll, "edge": {"light": light, "src": f"its own last {r40.get('n', 0)} {src} bets (held-out {100 * K8_HELD_OUT_RATE:.0f}%)"},
            "fills": {"n": len(price), "avg_price": pm, "kill_price": K8_KILL_PRICE},
            "twin": {"n": len(tw), "same_result": sum(1 for x in tw if x["same"]), "price_gap_c_med": _med([x["price_gap_c"] for x in tw])},
-           "flags": flags, "watch": watch, "proposals": []}
-    blk["verdict"] = verdict(flags, watch, [])
+           "flags": flags, "watch": watch, "proposals": props, "auto": auto}
+    blk["verdict"] = verdict(flags, watch, props)
     return blk
+
+
+def k8_adapt(ad, day: str) -> tuple:
+    """engine/kalshi_adapt's weekly re-test (data/kalshi_live/clock_adapt.json, written by the PC itself): the cuts it made in the
+    7 days up to `day` (automatic, only ever smaller: half size / OFF / a lower max price) and its open asks for the owner
+    (restore a recovered leg), each one ready for the Decide card."""
+    if not isinstance(ad, dict):
+        return [], []
+    try:
+        lo = (dt.date.fromisoformat(day) - dt.timedelta(days=7)).isoformat()
+    except ValueError:
+        return [], []
+    auto = [{"day": c.get("day"), "leg": c.get("leg"), "what": c.get("what"), "short": str(c.get("short") or c.get("leg"))[:70],
+             "text": str(c.get("text") or "")[:240]}
+            for c in ad.get("changes") or [] if isinstance(c, dict) and lo < str(c.get("day") or "") <= day]
+    props = []
+    for p in ad.get("proposals") or []:
+        if isinstance(p, dict) and str(p.get("id") or "").startswith("k8-") and p.get("question") and p.get("why"):
+            props.append({"id": p["id"], "question": p["question"], "why": p["why"], "impact": p.get("impact"), "decide_item": p})
+    return auto, props
 
 
 def verdict(flags, watch, props) -> str:
@@ -681,7 +708,8 @@ def build(days: list, days_dir: str | None = None, root: str = ROOT, now=None, e
     acts = [i for i in ((review or {}).get("items") or []) if i.get("level") == "act"]
     S = {"v": VERSION, "kind": "zeus-learned", "day": day, "t": now, "sessions": len(days),
          "regime": {**(facts.get(day) or {}), "tag": regime_tag(facts.get(day) or {})},
-         "bots": bots, "proposals": props, "auto_changes": [],
+         "bots": bots, "proposals": props,
+         "auto_changes": [{"bot": "k8", **a} for a in ((bots.get("k8") or {}).get("auto") or []) if not (bots.get("k8") or {}).get("hidden")],
          "adaptations": [{"rule": "engine/circuit_breaker live-vs-twin advice", "bot": s, "level": (b.get("breaker") or {}).get("level")}
                          for s, b in bots.items() if b.get("breaker")],
          "review_acts": [i.get("text") for i in acts][:3],
