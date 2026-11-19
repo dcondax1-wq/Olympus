@@ -205,6 +205,11 @@ const { pathToFileURL } = require('url');
   const AE = await import(pathToFileURL(path.join(web, 'aegis', 'aegiscore.js')).href);
   const ae = AE.buildAccounts(H, null, null);
   out.aegis = ae.accounts.map((a) => [a.key, a.name, a.room, a.balance]);
+  // the NQ page (nq/nqcore.js): the post's three accounts by the ZEUS card's names, the post's time (fresh for 30 min), the funded line
+  const NQ = await import(pathToFileURL(path.join(web, 'nq', 'nqcore.js')).href);
+  const nv = NQ.build(H, (FX.T + 17 * 60 - 300) * 1000), nc = NQ.build(FX.home, FX.T * 1000);
+  out.nq = { names: nv.bots.map((b) => b.name), tags: nv.bots.map((b) => b.tag), dd: nv.bots.map((b) => b.ddLine), flames: nv.bots.map((b) => b.status.flame), head: nv.headline,
+    atlas: nv.bots[1].progLine, plan: nv.bots[1].plan, cloudNames: nc.bots.map((b) => b.name), cloudHead: nc.headline };
   const DE = await import(pathToFileURL(path.join(web, 'demeter', 'demetercore.js')).href);
   const de = DE.buildAccounts(H, null, null);
   out.demeter = de.accounts.map((a) => [a.key, a.name, a.room, a.balance, a.toTarget]);
@@ -316,6 +321,12 @@ def part_a(tmp):
     lk = m["lk"]
     check("a. litkit realEval: the PC's 50K ($49,192.78, $1,024.58 room); the cloud's PAPER placeholder is never 'real'; the 25K #2 listed first is never the 50K",
           lk["real"] == [49192.78, 1024.58, True] and lk["cloud"] == [49900.0, False] and lk["first25"] == 49192.78, lk)
+    q = m["nq"]
+    check("a. NQ page core: Zlarior (LIT 50K $1,025), ATLAS (25K funded, the coach line), Zlarior 25K #2 (LIT 25K $1,000), all lit by the post 17 min old, 'All 3 accounts reported'",
+          q["names"] == ["Zlarior", "ATLAS", "Zlarior 25K #2"] and q["tags"] == ["LIT 50K", "25K funded", "LIT 25K"] and q["dd"] == ["Drawdown left $1,025 of $2,000 max loss", "Drawdown left $887 of $1,000 max loss", "Drawdown left $1,000 of $1,000 max loss"]
+          and q["flames"] == [True, True, True] and q["head"].startswith("All 3 accounts reported 17 minutes ago") and q["atlas"] == "Not yet: need $1,463 more." and q["plan"] == "MFFU Builder 25K funded", q)
+    check("a. NQ page core without the post: the cloud's two cards, the old headline (the page's source line says it is the cloud's copy)",
+          q["cloudNames"] == ["Zlarior", "ATLAS"] and ("bots reported" in q["cloudHead"] or q["cloudHead"].startswith("No report")), q)
     ae, de = m["aegis"], m["demeter"]
     check("a. Aegis: Zlarior 50K $1,024.58, ATLAS $887.20, and the Zlarior 25K #2 ($1,000) as its own account",
           [x[1] for x in ae] == ["Zlarior", "ATLAS", "Zlarior 25K #2"] and ae[0][2] == 1024.58 and ae[1][2] == 887.2 and ae[2][2] == 1000, ae)
@@ -451,6 +462,18 @@ def part_b(tmp, shots):
             check(f"b. {app}: the PC's numbers ({want}), not the cloud twin's ({bad})", got and bad not in t, [x for x in t.split("\n") if "$" in x][:8])
             if app == "ares/":
                 sh("ares.png")
+        pg.goto(base + "nq/?flat=1")
+        try:
+            pg.wait_for_function("() => document.body.innerText.includes('All 3 accounts reported')", timeout=25000)
+            got = True
+        except Exception:  # noqa: BLE001
+            got = False
+        t = text()
+        src = pg.evaluate("() => (document.getElementById('src') || {}).textContent || ''")
+        names = pg.evaluate("() => [...document.querySelectorAll('#bots .bot h3')].map((e) => e.textContent.trim())")
+        check("b. NQ page: 'All 3 accounts reported', Zlarior / ATLAS 25K funded / Zlarior 25K #2 with the PC's drawdown, the source = your PC's report; not the cloud's $1,900",
+              got and names == ["Zlarior LIT 50K", "ATLAS 25K funded", "Zlarior 25K #2 LIT 25K"] and "$1,025" in t and "$887" in t and "Source: your PC's status report" in src and "$1,900" not in t,
+              (names, src, [x for x in t.split("\n") if "$" in x][:6]))
         check("b. no page error with the PC's post", not errs, errs[:3])
         c.close()
         # the same site with NO post (ntfy answers {}): the pages keep working on the cloud's copy (the fixes only act on a post)
