@@ -336,7 +336,8 @@ def run_lit(e: dict, C, rules: dict) -> dict:
     elif e["kind"] == "lit_idea":                                               # tools/lit_lab_ideas (exit / size ideas)
         from tools import lit_lab_ideas as LI
         rule = None
-        o, U, L = E.evaluate(U=LI.units(e["idea"]))
+        with LI.eval_hook(e["idea"]):                                           # eval ideas: the eval path's sizing
+            o, U, L = E.evaluate(U=LI.units(e["idea"]))
         hits = LI.hits(e["idea"], U, U0)
     else:
         rule = None
