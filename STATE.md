@@ -160,6 +160,7 @@ Rules: MFFU ONLY ("We stick with MFFU"). Limits: max 5 sim-funded, Builder 1x50K
 - Nightly self-learning loop is built (engine/learn_loop.py, research/learn_queue.json, docs/LEARN_LOOP.md): starts on the PC by itself after tonight; first cloud run rejected all 8 seed ideas.
 
 ## Next for Claude
+- NEXT CHAT WAVE (owner 2026-11-19: "reset tonight, then send a lot of help"): FIRST land night-comboplus + night-combolive if not landed (git branch --list 'night-combo*'). Then max 4 helpers at once (this machine crashed at 5+), money order: 1) independent red team of the combo live lock (live trading code: one-position lock, no-hedge direction lock, sizing, OFF = identical) + the owner's Sim101 steps; 2) Kalshi K8 paper dry run on the last real windows (would the executor have bet the right side, size, price?) + the phone setup page check; 3) Rapid EOD 25K lane ready-to-arm check (owner buys it this week: setup line, sizing, 30% best-day guard, 16:10 flat) with a replay; 4) live vs backtest: this month's real Zlarior + ATLAS trades vs the twin, where $ is lost. Don't redo 'Recent findings'.
 - Update this file and keep "My Accounts" (business/accounts.html, plan in business/accounts.json) current on every account / plan change.
 - Wire card links for new Business pages (taxes, security, schedule, work) in business/index.html; sw.js CACHE bump (lead); Data City still 3 red.
 - Build the 25K LIT lane OFF (+LIT at $250) once today's balance is used; PC doctor. Judge Kalshi rewards paper after a few days (reward minus fill losses).
