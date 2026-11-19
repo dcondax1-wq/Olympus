@@ -1969,7 +1969,9 @@ function renderHead() {
     np.className = 'm' + (sum > 0 ? ' up' : sum < 0 ? ' dn' : '');
     np.textContent = accts.length ? D.usd(sum, true) : '—';
     const vd = v.verdict || {};
-    ns.textContent = `${accts.length} ${accts.length === 1 ? 'account' : 'accounts'} · ${String(vd.code || vd.label || 'status ?').split(':')[0].toLowerCase()}`;
+    // the verdict in a word or two: a short label ("FEED STALE", "PC SILENT") says more than its code ("FEED"); a long one gives its code ("TRADING")
+    const vl = String(vd.label || '').split(':')[0], vw = vl && vl.length <= 12 ? vl : String(vd.code || vl || 'status ?').split(':')[0];
+    ns.textContent = `${accts.length} ${accts.length === 1 ? 'account' : 'accounts'} · ${vw.toLowerCase()}`;
   }
   const lv = levels();
   $('#dot').className = 'sdot' + (lv.zenith === 'bad' ? ' bad' : lv.zenith === 'warn' ? ' warn' : !navigator.onLine ? ' off' : '');

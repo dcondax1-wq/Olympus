@@ -41,9 +41,12 @@
     const c = cards.find((x) => isObj(x) && x.key === key && x.stage === 'funded');
     const r = c && isObj(c.payout) && isObj(c.payout.c) && c.payout.c.ok ? c.payout.c : null;
     if (!r || !/payout tracker/i.test(String(c.payout.src || ''))) return null;
+    // its last traded day (the PC's mf row "lt", by its last 4): the 7-day inactivity countdown (funded: 7 days without a trade wipes the profits)
+    const mfr = (isObj(lite.mf) && Array.isArray(lite.mf.a) ? lite.mf.a : []).find((x) => isObj(x) && c.last4 && String(x.l4 || '') === String(c.last4));
+    const lt = mfr && /^\d{4}-\d{2}-\d{2}$/.test(String(mfr.lt || '')) ? String(mfr.lt) : null;
     return { t: +c.payout.t || +(c.balance && c.balance.t) || 0, from: 'your PC (live feed, payout tracker)',
              state: { balance: r.balance, cycle_start_balance: Math.round((r.balance - r.cycle_profit) * 100) / 100, best_day: r.best_day, cycle_days: r.cycle_days,
-                      payouts_n: r.payouts_n, eligible_from: r.eligible_from || null, first_trade: null, last_trade: null, room: c.room && c.room.v != null ? c.room.v : null } };
+                      payouts_n: r.payouts_n, eligible_from: r.eligible_from || null, first_trade: null, last_trade: lt, room: c.room && c.room.v != null ? c.room.v : null } };
   }
 
   function rowsOf(plan, home, lite) {

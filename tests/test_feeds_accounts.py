@@ -12,6 +12,7 @@ and the real numbers come only from the PC's ntfy status posts (core + ext). Fou
   7. a 15-day-old Kalshi engine copy gave "today's" advice (kalshi-brain OLD_S) and "Kalshi: $0 today" (copilot kalshiNow)
   8. Jarvis asked the old, suspended GitHub account's live.json first (404s in the console): the PC feed first (test_sync_truth)
   9. pc_feed.fetchLatest: one shared answer per page (3-4 modules asked it at load; a slow phone made some give up after 3 s)
+ 10. (lead 2026-11-19) a 2nd "Zlarior 50K" row on the Board / ZEUS card when the card and the ledger row differ by cents: mffumodel.match
 Node parts are pure (no network). The browser part serves tools/web_public with a cloud-like home.json and answers ntfy with a
 fixture feed (core + 2 ext parts, fake last-4), then reads the Jarvis tiles, My Accounts, the Board and Trading at 390 x 844.
 Run: python -m tests.test_feeds_accounts  (browser part under: flock -w 2400 /tmp/olympus_browser.lock; FEEDS_NO_BROWSER=1 skips it)
@@ -74,7 +75,7 @@ def feed_posts(now: int) -> list:
     ext0 = {"v": 1, "kind": "le-live-ext", "src": "pc_report", "t": t, "part": 0, "of": 2, "x": {
         "mf": {"t": t, "a": [{"id": "mffu50k_eval", "sd": "2026-10-19", "l4": "0001", "td": 1, "bd": ["2026-11-16", -129], "wd": ["2026-11-16", -129], "eq": [-678, -807], "n": 1},
                              {"id": "b25k_2", "sd": "2026-11-18", "l4": "0003"},
-                             {"id": "atlas", "sd": "2026-11-17", "l4": "0002", "td": 1, "bd": ["2026-11-18", -113], "wd": ["2026-11-18", -113], "eq": [0, -113], "n": 1,
+                             {"id": "atlas", "sd": "2026-11-17", "l4": "0002", "td": 1, "lt": "2026-11-18", "bd": ["2026-11-18", -113], "wd": ["2026-11-18", -113], "eq": [0, -113], "n": 1,
                               "f": {"cp": -113, "bd": -113, "cd": 1, "ef": "2026-11-20", "pn": 0, "mr": 0}}]},
         "kalshi_k1": {"kind": "kalshi_k1_pub", "paper_only": True, "updated": up, "days": 0.1, "sig": 0, "set": 0, "net": 0.0},
         "kalshi_rewards": {"kind": "kalshi_rewards_pub", "paper_only": True, "updated": up, "days": 0.91, "reward": 12.68, "fill_pnl": -15.0,
@@ -168,9 +169,26 @@ const plan = JSON.parse(fs.readFileSync(path.join(WP, 'business/accounts.json'),
 const rows = sandbox.PAYOUT_CARD.rowsOf(plan, null, lite);
 const r = rows.find((x) => x.key === 'atlas');
 const p = r ? sandbox.PAYOUT_CARD.pick(r, null, NOW) : null;
-out.pay = p ? { from: p.from, text: sandbox.PAYOUT_COACH.coach(p.state, r.planKey).text } : null;
+out.pay = p ? { from: p.from, text: sandbox.PAYOUT_COACH.coach(p.state, r.planKey).text, idle: sandbox.PAYOUT_COACH.lines(sandbox.PAYOUT_COACH.coach(p.state, r.planKey, '2026-11-19')).filter((x) => /^Inactivity/.test(x)) } : null;
 const mm = sandbox.MFFU_MODEL.cards({ lite, plan, coach: sandbox.PAYOUT_COACH }, NOW).find((c) => c.key === 'atlas');
 out.zeusPay = mm && mm.payout && mm.payout.c ? mm.payout.c.text : null;
+// 9. ONE row per account (lead 2026-11-19: a 2nd "Zlarior 50K" row on the Board and the ZEUS card when the bot's card and its ledger row
+//    read the balance a few cents apart): mffumodel.match by PC id / last 4 first, the balance only as a last resort within $5
+const MM = require(path.join(WP, 'business/mffumodel.js')), BMm = require(path.join(WP, 'board/boardmodel.js')), ZC = require(path.join(WP, 'olympus/zeus_core.js'));
+const PCm = require(path.join(WP, 'business/payoutcoach.js'));
+const cents = JSON.parse(JSON.stringify(lite)); cents.accounts[0].name = 'Zlarior 50K'; cents.accounts[0].eval.balance = 49192.80;
+const keys = (rows) => rows.map((r) => r.key + (r.live ? ':' + r.live.id : ''));
+out.m = { cents: keys(MM.match(plan, cents, null)), centsNoPlan: keys(MM.match(null, cents, null)) };
+const open = JSON.parse(JSON.stringify(lite)); open.accounts[0].eval.balance = 49110.0;       // an open trade: the ledger row moved, the floor did not
+out.m.openNoPlan = keys(MM.match(null, open, null));
+const twins = JSON.parse(JSON.stringify(lite));                                              // a 2nd fresh 25K eval: its own id, the same numbers
+twins.accounts.push({ ...JSON.parse(JSON.stringify(twins.accounts[1])), id: 'b25k_3', name: 'Zlarior Builder 25K #3' });
+out.m.twins = keys(MM.match(null, twins, null));
+out.m.cloudHome = keys(MM.match(plan, lite, I.home));
+const site = BMm.planBoard(plan, NOW); site.accounts.forEach((r) => { delete r.pc; }); site.src = 'cloud';     // a published board.json without "pc" ids
+const pick = BMm.pick({ site, lite: cents, plan }, NOW);
+out.m.board = pick.board.accounts.map((r) => r.name);
+out.m.zeus = ZC.summary({ lite: cents, plan, site: null, BM: BMm, MM, coach: PCm }, NOW).rows.map((r) => r.name);
 console.log(JSON.stringify(out));
 """
 
@@ -210,8 +228,19 @@ def node_part():
           "Kalshi: real money paused. Paper tests: K1 $0.00 (0 signals), rewards -$2.32" in day and "Kalshi: $0 today" not in day, o["day"])
     check("6. the Jarvis home NQ bots strip: Zlarior, ATLAS, then 'Zlarior 25K #2' (eval, $1,500 to pass)",
           o["bots"] == [["Zlarior", "", ""], ["ATLAS", "", ""], ["Zlarior 25K #2", "", "Eval · $1,500 to pass"]] or [b[0] for b in o["bots"]] == ["Zlarior", "ATLAS", "Zlarior 25K #2"], o["bots"])
+    m = o["m"]
+    check("9. mffumodel.match: the bot's card and its ledger row 2 cents apart = ONE Zlarior row (plan: zlarior / atlas / rapid1 / fresh25; no plan: 3)",
+          m["cents"] == ["zlarior:lit", "atlas:atlas", "rapid1", "fresh25:b25k_2"] and m["centsNoPlan"] == ["lit:lit", "atlas:atlas", "b25k_2:b25k_2"], m)
+    check("9. an open trade moved the ledger balance $83 (the floor did not): still one Zlarior row", m["openNoPlan"] == ["lit:lit", "atlas:atlas", "b25k_2:b25k_2"], m["openNoPlan"])
+    check("9. two different 25K evals with the same fresh numbers stay TWO accounts (own ids are never merged by balance)",
+          m["twins"] == ["lit:lit", "atlas:atlas", "b25k_2:b25k_2", "b25k_3:b25k_3"], m["twins"])
+    check("9. the cloud's PAPER twin in home.json ($49,900) never becomes an account", m["cloudHome"] == ["zlarior:lit", "atlas:atlas", "rapid1", "fresh25:b25k_2"], m["cloudHome"])
+    check("9. Board (a board.json without pc ids) and the ZEUS card: one Zlarior, ATLAS, Zlarior 25K #2 (+ the planned Rapid on the Board)",
+          m["board"] == ["Zlarior", "ATLAS", "Rapid EOD 25K (next)", "Zlarior 25K #2"] and m["zeus"] == ["Zlarior", "ATLAS", "Zlarior 25K #2"], (m["board"], m["zeus"]))
     check("7. Board / My Accounts payout coach: from the PC payout tracker (no more 'NO NUMBERS'), the ZEUS card's own words",
           o["pay"] is not None and o["pay"]["text"] == o["zeusPay"] == "Not yet: need $1,463 more." and "payout tracker" in o["pay"]["from"], (o["pay"], o["zeusPay"]))
+    check("7. the payout card's 7-day inactivity line from the PC's last traded day (mf 'lt' 2026-11-18): trade by 2026-11-24",
+          o["pay"] is not None and len(o["pay"]["idle"]) == 1 and o["pay"]["idle"][0].startswith("Inactivity: trade by 2026-11-24"), o["pay"])
 
 
 def python_twin():
