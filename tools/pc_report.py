@@ -23,6 +23,10 @@ the repo's own engine code (read-only use: engine/live_publish.build, engine/go.
               each NinjaTrader trade's real fill against the live loop's plan; a flag (wrong size, no stop at NinjaTrader,
               slippage over 2 ticks, bracket price off, costs above plan, an entry that never filled) is one high-priority
               push at any hour, and the trade's own push ends with "Fill check OK" or the flags.
+  4. chart    the NQ page's live chart (owner 2026-11-18): the latest NQ 5-minute bars from this PC's NinjaTrader (LE_BarFeed's files)
+              + every open trade and today's closed trades per account (by label, never an id), one small post of kind "le-bars"
+              on its own public topic (the status topic + "-bars"): at most 24 a day (hourly candles in the bots' hours on runs
+              without an ext post, at once after an entry / exit / stop move; bars_step, BARS_* below).
 Nothing here starts, stops, arms or routes anything; no order, no live_model*.json, no engine/ file is changed. Every failure is
 soft (logged, exit 0). Tests: tests/test_bots_back.py (fake http, fake files, never the real network).
 
@@ -31,7 +35,8 @@ soft (logged, exit 0). Tests: tests/test_bots_back.py (fake http, fake files, ne
   python tools/pc_report.py --dry-run    one run that sends nothing: prints what it would send
   python tools/pc_report.py --setup      make your alert topic when there is none, print it
   python tools/pc_report.py --test       send one test push to your alert topic
-Local files (gitignored): data/pc_report/ (last.json, state.json, status.json, status_ext.json, live.json, report_log.jsonl).
+  python tools/pc_report.py --bars       only the NQ chart post (from the last run's live.json; same pacing; for a 5-minute task)
+Local files (gitignored): data/pc_report/ (last.json, state.json, status.json, status_ext.json, live.json, bars.json, report_log.jsonl).
 """
 from __future__ import annotations
 
@@ -39,6 +44,7 @@ import argparse
 import datetime as dt
 import json
 import os
+import re
 import secrets
 import sys
 import time
@@ -701,6 +707,519 @@ def public(out: dict) -> dict:
         return {k: out[k] for k in ("v", "kind", "lite", "src", "t", "every_s", "trimmed") if k in out}
 
 
+# ------------------------------------------------------------------------------------------------ the NQ page's live chart (le-bars)
+# Owner 2026-11-18, "Live chart + our trades: NQ chart with every entry, stop and target drawn on it" (tools/web_public/nq/nqchart.js).
+# Its own small post, kind "le-bars", on its OWN public topic (the status topic + "-bars"; status_feed.json "bars_topic" overrides): the
+# core / ext posts, their 3,900-byte caps, their since=latest and the 70-minute window every page polls stay exactly as they were.
+#   bars    LE_BarFeed's <ROOT>_5m.csv (the chart the bot decides on: engine/ninjatrader.NinjaTraderBars.root_for, MNQ first) + the 5m
+#           bar still forming, built from <ROOT>_1m.csv; the bot's own archive data/nt_bars/NQ_5m.csv when that folder has none.
+#           Packed small: p0 = the first open in ticks, then 4 tick deltas a bar (open - previous close, high - open, open - low,
+#           close - open); t0 + 5 minutes a bar ("g" lists the bars that start elsewhere: the 17:00 halt). The oldest go first.
+#   trades  every open trade and the day's closed trades of the real MFFU accounts (engine/feed_trades rules: never BLITZ, never the
+#           cloud paper twin), each named by its label (tools/live_trades.ACCOUNTS: Zlarior 50K, Zlarior 25K #2, ATLAS funded 25K,
+#           Rapid 25K), never by an id or digits: side, micros, entry, stop, target, times, exit price, $.
+# The budget (lead 2026-11-18): ntfy.sh's free tier takes ~250 messages a UTC day per IP (reset 00:00 UTC, measured) and the status
+# posts already use ~210, so the chart adds AT MOST BARS_DAY_MAX = 24 posts a UTC day, trade levels before candles:
+#   trade levels  an entry, an exit or a stop / target move (the trades block changed): posted on that run (>= 5 min after the last
+#                 chart post), in any open-market hour, up to the whole 24
+#   candles       only in the bots' hours (weekday 01:50-16:10 ET), about hourly (59 min after the last chart post), only on a run that
+#                 sent no ext post (it rides the 15-minute cycle: a run never sends more than an ext run does), at most 18 a day
+#                 (BARS_DAY_MAX - BARS_TRADE_RESERVE: 6 always left for the trade levels)
+#   never         market closed, nothing changed, bars stale, after a 429 that UTC day, once this PC counted NTFY_DAY_CAP -
+#                 BARS_DAY_MAX posts that day (core + ext + pushes + chart)
+# A full day: 15 hourly candle posts + 2-6 trade-level posts = ~17-21 (tests.test_pc_bars b simulates whole days). Posted AFTER the
+# core and the pushes, so it never takes their room. Every step is soft: a failure here never touches the other posts.
+BARS_KIND = "le-bars"
+BARS_TOPIC_SUFFIX = "-bars"
+BARS_STATE = "bars.json"         # data/pc_report/bars.json: the last chart post + today's post counts (gitignored with the folder)
+BARS_TF = 300                    # 5-minute bars
+BARS_MAX = 180                   # 15 hours: the bots' whole day (LIT from 02:00 ET) at 15:55 ET; under 3,900 bytes the oldest go first
+BARS_MIN = 12                    # fewer bars than this: no post
+BARS_TAIL_BYTES = 96 * 1024      # only the end of a bar file is read (~2,000 lines)
+BARS_TICK = 0.25                 # NQ / MNQ
+BARS_GAP_CANDLES_S = 3540        # candles: about hourly (the 4th 15-minute run), in the bots' hours only
+BARS_GAP_TRADE_S = 300           # a trade opened / closed / moved: at once, but never twice in 5 minutes
+NTFY_DAY_CAP = 250               # ntfy.sh free: messages a UTC day per IP (measured 2026-11-18; the status posts use ~210)
+BARS_DAY_MAX = 24                # chart posts a UTC day, all kinds (lead 2026-11-18: "at most ~24 a day")
+BARS_TRADE_RESERVE = 6           # of those, always left for the trade levels: candles stop at 18 a day
+BARS_DAY_ALL_MAX = NTFY_DAY_CAP - BARS_DAY_MAX   # 226: no chart post once this PC counted this many posts today (the status first)
+BARS_STALE_S = 900               # the newest price older than this while the market is open: no post (the core says FEED STALE)
+BARS_TRADES = 12                 # closed trades in one post at most (the newest)
+
+
+def _utc_day(t) -> str:
+    return dt.datetime.fromtimestamp(int(t), dt.timezone.utc).strftime("%Y-%m-%d")
+
+
+def _cme_day(t) -> str:
+    """The CME trading day of a unix time: 18:00 ET opens the next day (the engine's rule, engine/ninjatrader._trading_day)."""
+    try:
+        from zoneinfo import ZoneInfo
+        d = dt.datetime.fromtimestamp(float(t), ZoneInfo("America/New_York")) + dt.timedelta(hours=6)
+    except Exception:  # noqa: BLE001  (no tzdata: New York winter time)
+        d = dt.datetime.fromtimestamp(float(t), dt.timezone.utc) + dt.timedelta(hours=1)
+    return d.strftime("%Y-%m-%d")
+
+
+def bars_hours(now=None) -> bool:
+    """Weekday 01:50-16:10 ET: the bots' day (entries from 01:50, flat by 15:55, the last exits and the day's close)."""
+    try:
+        from zoneinfo import ZoneInfo
+        t = dt.datetime.fromtimestamp(now or time.time(), ZoneInfo("America/New_York"))
+        return t.weekday() < 5 and 110 <= t.hour * 60 + t.minute <= 970
+    except Exception:  # noqa: BLE001
+        return True
+
+
+def bars_topic(cfg: dict | None = None, feed_path: str | None = None) -> str:
+    """The public chart topic: status_feed.json "bars_topic", else the status topic + "-bars" ("" without a status topic)."""
+    feed = read_json(feed_path or STATUS_FEED, {}) or {}
+    t = str(_d(feed).get("bars_topic") or "").strip()
+    if t and re.fullmatch(r"[A-Za-z0-9_-]{1,64}", t):
+        return t
+    st = str(_d(cfg).get("status_topic") or status_feed(feed_path)["topic"] or "").strip()
+    return st + BARS_TOPIC_SUFFIX if re.fullmatch(r"[A-Za-z0-9_-]{1,59}", st) else ""
+
+
+def read_bar_tail(path, max_rows: int = 2000, tail_bytes: int = BARS_TAIL_BYTES) -> list:
+    """[(t, open, high, low, close)] of the newest rows of a bar CSV, oldest first: LE_BarFeed's "time,open,high,low,close,volume"
+    (no header, time = the bar's OPEN in unix seconds) or the bot's archive (the same with a header). Stdlib only, the file's end
+    only; a header, a junk line and a torn last line (no newline yet: NinjaTrader is still writing it) are skipped; one row a time
+    (the last wins); high / low widened to hold open and close. Never raises."""
+    rows = {}
+    try:
+        with open(path, "rb") as fh:
+            fh.seek(0, os.SEEK_END)
+            size = fh.tell()
+            fh.seek(max(0, size - tail_bytes))
+            text = fh.read().decode("utf-8", "replace")
+    except (OSError, TypeError, ValueError):
+        return []
+    lines = text.split("\n")
+    if size > tail_bytes:
+        lines = lines[1:]                          # the first line was cut by the seek
+    if not text.endswith(("\n", "\r")):
+        lines = lines[:-1]                         # torn: the next run has it whole
+    for ln in lines:
+        parts = ln.strip().split(",")
+        if len(parts) < 5:
+            continue
+        try:
+            t = int(float(parts[0]))
+            o, h, l, c = (float(x) for x in parts[1:5])
+        except ValueError:
+            continue
+        if t <= 0 or not all(0 < v < 1e7 for v in (o, h, l, c)):
+            continue
+        rows[t] = (t, o, max(h, o, c, l), min(l, o, c, h), c)
+    return [rows[t] for t in sorted(rows)][-max(1, int(max_rows)):]
+
+
+def bar_files(root: str = ROOT, nt_folder: str | None = None) -> dict:
+    """Where the chart's bars come from: {"m5", "m1": paths or None, "sym": the chart's contract ("MNQ 12-26") or root, "src": "nt"
+    (LE_BarFeed's files in Documents\\NinjaTrader 8\\le_feed) | "archive" (the bot's data/nt_bars/) | None}. nt_folder: the NinjaTrader
+    8 folder (None = the real one, engine/ninjatrader.default_folder; "" = never, for a test with its own root). Never raises."""
+    out = {"m5": None, "m1": None, "sym": None, "src": None}
+    if nt_folder != "":
+        try:
+            from engine import ninjatrader as NT
+            feed = NT.NinjaTraderBars(folder=nt_folder or None)
+            m5, m1 = feed.file_for("NQ", 5), feed.file_for("NQ", 1)
+            if m5 or m1:
+                out.update(m5=m5, m1=m1, src="nt")
+                try:
+                    out["sym"] = feed.chart_instrument("NQ") or feed.root_for("NQ")
+                except Exception:  # noqa: BLE001
+                    out["sym"] = feed.root_for("NQ")
+                return out
+        except Exception:  # noqa: BLE001
+            pass
+    arch = os.path.join(root, "data", "nt_bars")
+    m5, m1 = os.path.join(arch, "NQ_5m.csv"), os.path.join(arch, "NQ_1m.csv")
+    if os.path.isfile(m5) or os.path.isfile(m1):
+        out.update(m5=m5 if os.path.isfile(m5) else None, m1=m1 if os.path.isfile(m1) else None, src="archive", sym="NQ")
+    return out
+
+
+def chart_bars(m5: list, m1: list, now: int, tf: int = BARS_TF) -> tuple:
+    """(bars, forming, data_t): the closed 5-minute bars, then the ones the 1-minute bars after them build (the newest still forming
+    while now is inside it); a 1-minute-only chart builds them all (as engine/ninjatrader does). data_t = the newest price's time (the
+    last 1m bar's close, else the last 5m bar's), never later than now."""
+    bars = list(m5 or [])
+    end = bars[-1][0] + tf if bars else None
+    rest = [r for r in (m1 or []) if end is None or r[0] >= end]
+    agg = {}
+    if rest:
+        base = end if end is not None else rest[0][0] // tf * tf
+        for t, o, h, l, c in rest:
+            k = base + (t - base) // tf * tf
+            a = agg.get(k)
+            agg[k] = (k, a[1], max(a[2], h), min(a[3], l), c) if a else (k, o, h, l, c)
+    built = [agg[k] for k in sorted(agg)]
+    forming = bool(built) and now < built[-1][0] + tf
+    data_t = rest[-1][0] + 60 if built else (bars[-1][0] + tf if bars else None)
+    return bars + built, forming, (min(int(data_t), int(now)) if data_t else None)
+
+
+def _side(x) -> int:
+    s = str(_d(x).get("side") or "").strip().upper()
+    if s.startswith("S"):
+        return -1
+    if s.startswith(("L", "B")):
+        return 1
+    d = num(_d(x).get("dir"))
+    return -1 if d is not None and d < 0 else 1
+
+
+def _px2(v):
+    x = num(v)
+    return None if x is None else round(x, 2)
+
+
+def _qty(v):
+    x = num(v)
+    return int(round(x)) if x else None
+
+
+def _chart_accounts(L: dict) -> list:
+    """[(key, label, bot, badge, account row or None)]: the real MFFU accounts of the PC's live.json (engine/feed_trades rules: eval /
+    funded from the PC, never BLITZ, never the cloud paper twin), named by tools/live_trades.ACCOUNTS (an account it does not know:
+    "Account 1 25K", key "x1"), never by its id. ATLAS from the board (account B's routed trades) when no account row is ATLAS's."""
+    try:
+        from tools import live_trades as LT
+        key_of, names = LT.acct_key, {k: (v[0], v[1]) for k, v in LT.ACCOUNTS.items()}
+    except Exception:  # noqa: BLE001
+        key_of, names = (lambda a, b=None: None), {}
+    try:
+        from engine import feed_trades as FT
+        real = FT._real
+    except Exception:  # noqa: BLE001
+        def real(a):
+            return bool(a.get("id")) and a.get("kind") in ("eval", "funded") and a.get("source") not in ("cloud", "pc_blitz")
+    out, extra = [], 0
+    for a in _d(L).get("accounts") or []:
+        a = _d(a)
+        try:
+            if not real(a):
+                continue
+        except Exception:  # noqa: BLE001
+            continue
+        k = key_of(a.get("id"))
+        if not k:
+            continue
+        if k in names:
+            label, bot = names[k]
+        else:
+            extra += 1
+            m = re.search(r"(\d+K)", str(a.get("plan") or ""))
+            k, label, bot = f"x{extra}", f"Account {extra}" + (f" {m.group(1)}" if m else ""), None
+        if any(r[0] == k for r in out):
+            continue
+        bot = bot or ("ATLAS" if "atlas" in str(a.get("strategy") or "").lower() else "LIT")
+        out.append((k, label, bot, _badge(a.get("badge")), a))
+    if not any(r[0] == "atlas25f" for r in out):
+        bd = _d(_d(L).get("board"))
+        card = _d(bd.get("atlas"))
+        rows = [t for t in bd.get("trades") or [] if _d(t).get("acct") == "atlas" and _d(t).get("src") == "live"]
+        if rows or num(_d(card.get("position")).get("entry_t")):
+            label, bot = names.get("atlas25f", ("ATLAS funded 25K", "ATLAS"))
+            out.append(("atlas25f", label, bot or "ATLAS", _badge(card.get("badge")), None))
+    return out
+
+
+def _badge(b) -> str | None:
+    """LIVE / SIM / PAPER (the account's own word), nothing else: a free-text badge never reaches the public post."""
+    b = str(b or "").strip().upper()
+    return ("LIVE" if b == "LIVE ACCOUNT" else b) if b in ("LIVE", "LIVE ACCOUNT", "SIM", "PAPER") else None
+
+
+def _open_row(k, p) -> dict | None:
+    p = _d(p)
+    et_ = num(p.get("entry_t"))
+    if not et_ or str(p.get("exit") or p.get("exit_kind") or "").upper() not in ("", "OPEN") or num(p.get("exit_t")):
+        return None
+    row = {"k": k, "s": _side(p), "q": _qty(p.get("qty")), "t": int(et_), "e": _px2(p.get("entry")), "sl": _px2(p.get("stop")),
+           "tp": _px2(p.get("target"))}
+    if p.get("be"):
+        row["be"] = 1
+    return {a: b for a, b in row.items() if b is not None}
+
+
+def _closed_row(k, t) -> dict | None:
+    t = _d(t)
+    et_ = num(t.get("entry_t"))
+    why = t.get("exit") if isinstance(t.get("exit"), str) else t.get("exit_kind")
+    if not et_ or t.get("open") is True or str(why or "").upper() == "OPEN":
+        return None
+    xt = num(t.get("exit_t"))
+    xp = t.get("exit_px") if t.get("exit_px") is not None else t.get("exit") if isinstance(t.get("exit"), (int, float)) else None
+    usd = num(t.get("pnl")) if t.get("pnl") is not None else num(t.get("usd"))
+    r = num(t.get("r") if t.get("r") is not None else t.get("R"))
+    row = {"k": k, "s": _side(t), "q": _qty(t.get("qty")), "t": int(et_), "e": _px2(t.get("entry")), "xt": int(xt) if xt else None,
+           "x": _px2(xp), "usd": None if usd is None else round(usd, 2), "r": None if r is None else round(r, 2),
+           "why": re.sub(r"[^A-Z0-9_ -]", "", str(why or "").upper())[:12] or None, "day": str(t.get("day") or "")[:10] or None}
+    return {a: b for a, b in row.items() if b is not None}
+
+
+def chart_trades(L: dict, now: int, since=None, n_closed: int = BARS_TRADES) -> tuple:
+    """({key: [label, bot, badge]}, open, closed) for the chart: every open trade of each real account (its position, or an open
+    routed ATLAS trade) and its closed trades of today's CME day or exited since `since` (the first bar), the newest n_closed,
+    oldest first. One row a trade (an open position that is also a closed row is closed). Never raises."""
+    accts, opens, closed = {}, [], []
+    try:
+        L = _d(L)
+        today = _cme_day(now)
+        bd = _d(L.get("board"))
+        for k, label, bot, badge, a in _chart_accounts(L):
+            if a is not None:
+                pos, rows = [a.get("position")], list(a.get("trades") or [])
+            else:                                      # ATLAS's account B from the board
+                pos = [_d(bd.get("atlas")).get("position")]
+                rows = [t for t in bd.get("trades") or [] if _d(t).get("acct") == "atlas" and _d(t).get("src") == "live"]
+                pos += [t for t in rows if _d(t).get("open") is True]
+            cl = {}
+            for t in rows:
+                r = _closed_row(k, t)
+                if not r:
+                    continue
+                last = r.get("xt") or r["t"]
+                if (r.get("day") or _cme_day(last)) == today or _cme_day(last) == today or (since and last >= since):
+                    r.pop("day", None)
+                    cl[r["t"]] = r
+            op = {}
+            for p in pos:
+                r = _open_row(k, p)
+                if r and r["t"] not in cl and r["t"] not in op:
+                    op[r["t"]] = r
+            if cl or op:
+                accts[k] = [label, bot] + ([badge] if badge else [])
+                closed += cl.values()
+                opens += op.values()
+        closed = sorted(closed, key=lambda r: (r.get("xt") or r["t"], r["t"]))[-max(0, int(n_closed)):]
+        opens = sorted(opens, key=lambda r: r["t"])
+        used = {r["k"] for r in opens + closed}
+        accts = {k: v for k, v in accts.items() if k in used}
+    except Exception:  # noqa: BLE001
+        return {}, [], []
+    return accts, opens, closed
+
+
+def _bar_size(o) -> int:
+    return len(json.dumps(o, separators=(",", ":"), ensure_ascii=False).encode("utf-8"))
+
+
+def pack_bars(bars, opens=(), closed=(), accts=None, now=None, data_t=None, sym=None, forming=False, day=None, trades_t=None,
+              max_bytes: int = MAX_STATUS_BYTES) -> dict | None:
+    """The "le-bars" post (through the privacy pass) under max_bytes, or None (no bars / cannot fit):
+      {"v": 1, "kind": "le-bars", "src": "pc_report", "t": the newest price's time, "rt": when the PC looked, "tt": the trades' time
+       (the bot's heartbeat), "sym", "tf": 300, "tick": 0.25, "t0": the first bar's open time, "p0": its open in ticks, "n": bars,
+       "b": [o - prev close, high - o, o - low, close - o] x n in ticks (the first bar's prev close = p0), "g": [[i, t], ...] the bars
+       that do not start tf after the one before, "f": 1 the last bar is still forming, "day": today's CME day,
+       "ac": {key: [label, bot, badge]}, "open": [{k, s (1 long / -1 short), q, t, e, sl, tp, be}],
+       "closed": [{k, s, q, t, e, xt, x, usd, r, why}]}
+    The oldest bars go first (never below BARS_MIN); then the oldest closed trades ("cut": how many)."""
+    try:
+        bars = [b for b in (bars or []) if b and len(b) >= 5][-BARS_MAX:]
+        if len(bars) < BARS_MIN:
+            return None
+        now = int(now or time.time())
+        accts, opens, closed = dict(accts or {}), list(opens or []), list(closed or [])
+        today = day or _cme_day(now)
+
+        def build(bs, cl, cut=0):
+            p0 = round(bs[0][1] / BARS_TICK)
+            flat, gaps, prev_c, prev_t = [], [], p0, None
+            for i, (t, o, h, l, c) in enumerate(x[:5] for x in bs):
+                O, H, Lo, C = (round(v / BARS_TICK) for v in (o, h, l, c))
+                flat += [O - prev_c, max(0, H - O), max(0, O - Lo), C - O]
+                if prev_t is not None and int(t) != prev_t + BARS_TF:
+                    gaps.append([i, int(t)])
+                prev_c, prev_t = C, int(t)
+            # a closed trade that ended before the first bar is only kept when it is today's
+            cl = [r for r in cl if (r.get("xt") or r["t"]) >= int(bs[0][0]) or _cme_day(r.get("xt") or r["t"]) == today]
+            used = {r["k"] for r in opens + cl}
+            post = {"v": 1, "kind": BARS_KIND, "src": "pc_report", "t": int(data_t or int(bs[-1][0]) + BARS_TF), "rt": now,
+                    "tt": int(trades_t) if num(trades_t) else None, "sym": str(sym)[:24] if sym else None, "tf": BARS_TF,
+                    "tick": BARS_TICK, "t0": int(bs[0][0]), "p0": p0, "n": len(bs), "b": flat, "g": gaps or None,
+                    "f": 1 if forming else None, "day": today, "ac": {k: v for k, v in accts.items() if k in used} or None,
+                    "open": opens or None, "closed": cl or None, "cut": cut or None}
+            return {k: v for k, v in post.items() if v is not None}
+
+        lo, hi = BARS_MIN, len(bars)                   # the most bars that fit (binary search on the newest kept)
+        if _bar_size(build(bars, closed)) > max_bytes:
+            while lo < hi:
+                mid = (lo + hi + 1) // 2
+                if _bar_size(build(bars[-mid:], closed)) <= max_bytes:
+                    lo = mid
+                else:
+                    hi = mid - 1
+            bars = bars[-lo:]
+        cut = 0
+        while _bar_size(build(bars, closed, cut)) > max_bytes and closed:
+            closed, cut = closed[1:], cut + 1          # still too big at BARS_MIN bars: the oldest closed trades go
+        post = public(build(bars, closed, cut))
+        while _bar_size(post) > max_bytes and len(bars) > BARS_MIN:
+            bars = bars[1:]                            # the privacy pass made it longer (it never should): one bar more
+            post = public(build(bars, closed, cut))
+        ok = _bar_size(post) <= max_bytes and post.get("kind") == BARS_KIND and post.get("n") and isinstance(post.get("b"), list)
+        return post if ok else None
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def unpack_bars(post) -> list:
+    """[(t, open, high, low, close)] of a "le-bars" post, oldest first ([] for anything else). The reader's side, for the tests and
+    tools; tools/web_public/nq/nqbars.js unpack() is its JS twin."""
+    try:
+        p = _d(post)
+        if p.get("kind") != BARS_KIND:
+            return []
+        tf, tick, n, b = int(p.get("tf") or BARS_TF), float(p.get("tick") or BARS_TICK), int(p["n"]), list(p["b"])
+        if n <= 0 or len(b) != 4 * n:
+            return []
+        gaps = {int(i): int(t) for i, t in p.get("g") or []}
+        out, prev_c, t = [], int(p["p0"]), int(p["t0"])
+        for i in range(n):
+            do, dh, dl, dc = (int(x) for x in b[4 * i:4 * i + 4])
+            if i:
+                t = gaps.get(i, t + tf)
+            o = prev_c + do
+            out.append((t, o * tick, (o + dh) * tick, (o - dl) * tick, (o + dc) * tick))
+            prev_c = o + dc
+        return out
+    except Exception:  # noqa: BLE001
+        return []
+
+
+def bars_post(L: dict | None, now: int, root: str = ROOT, nt_folder: str | None = None) -> dict | None:
+    """The chart post of right now: the PC's NinjaTrader bars (bar_files) + the trades of the PC's live.json L, through the privacy
+    pass, under MAX_STATUS_BYTES. None without enough bars. Never raises."""
+    try:
+        f = bar_files(root, nt_folder)
+        m5 = read_bar_tail(f["m5"], BARS_MAX + 12) if f["m5"] else []
+        m1 = read_bar_tail(f["m1"], BARS_MAX * 5 + 12) if f["m1"] else []
+        bars, forming, data_t = chart_bars(m5, m1, int(now))
+        bars = bars[-BARS_MAX:]
+        if len(bars) < BARS_MIN:
+            return None
+        accts, opens, closed = chart_trades(L or {}, int(now), since=bars[0][0])
+        return pack_bars(bars, opens, closed, accts, now=now, data_t=data_t, sym=f["sym"], forming=forming, day=_cme_day(now),
+                         trades_t=_d(L).get("t"))
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def _bars_hashes(post) -> tuple:
+    import hashlib
+
+    def h(o):
+        return hashlib.sha1(json.dumps(o, sort_keys=True, default=str).encode("utf-8")).hexdigest()[:16]
+    p = _d(post)
+    return h([p.get(k) for k in ("t0", "p0", "n", "b", "g", "f", "sym")]), h([p.get(k) for k in ("ac", "open", "closed")])
+
+
+def bars_due(state: dict | None, post: dict | None, now: int, market_open_now: bool, busy_run: bool = False) -> tuple:
+    """(due, why): whether the chart post goes now (the budget in the block comment above; why "a trade changed" = a trade-level
+    post, "hourly candles" = a candle post). busy_run: this run already sent an ext post (candles wait; trade levels never do)."""
+    st = _d(state)
+    if not market_open_now:
+        return False, "market closed"
+    day = _utc_day(now)
+    cnt = _d(_d(st.get("days")).get(day))
+    if st.get("blocked") == day:
+        return False, "ntfy.sh limit reached today (429): back tomorrow"
+    if int(num(cnt.get("bars")) or 0) >= BARS_DAY_MAX:
+        return False, f"{BARS_DAY_MAX} chart posts today (the daily share)"
+    if int(num(cnt.get("all")) or 0) >= BARS_DAY_ALL_MAX:
+        return False, f"{BARS_DAY_ALL_MAX} posts today: the status and the pushes first"
+    if not post:
+        return False, "no NinjaTrader bars on this PC"
+    age = int(now) - int(num(post.get("t")) or 0)
+    if age > BARS_STALE_S:
+        return False, f"the newest bar is {span(age)} old"
+    hb, ht = _bars_hashes(post)
+    if hb == st.get("hb") and ht == st.get("ht"):
+        return False, "unchanged"
+    gap = int(now) - int(num(st.get("t")) or 0)
+    if ht != st.get("ht"):                          # trade levels first: an entry, an exit, a moved stop / target
+        return (True, "a trade changed") if gap >= BARS_GAP_TRADE_S else (False, f"a trade changed: next in {span(BARS_GAP_TRADE_S - gap)}")
+    if not bars_hours(now):
+        return False, "candles only in the bots' hours (01:50-16:10 ET)"
+    if int(num(cnt.get("candles")) or 0) >= BARS_DAY_MAX - BARS_TRADE_RESERVE:
+        return False, f"{BARS_DAY_MAX - BARS_TRADE_RESERVE} candle posts today (the rest is kept for trade levels)"
+    if gap < BARS_GAP_CANDLES_S:
+        return False, f"candles next in {span(BARS_GAP_CANDLES_S - gap)}"
+    if busy_run:
+        return False, "this run sent the ext post: the candles go on the next run"
+    return True, "hourly candles"
+
+
+def _nt_folder(root: str, env=None):
+    """The NinjaTrader folder the chart reads: LE_PR_T_NTDIR (tests), else the real one only for the real repo (a test's own root
+    never reads this PC's NinjaTrader files)."""
+    env = os.environ if env is None else env
+    if env.get("LE_PR_T_NTDIR") is not None:
+        return env["LE_PR_T_NTDIR"]
+    try:
+        return None if os.path.realpath(root) == os.path.realpath(ROOT) else ""
+    except (OSError, ValueError):
+        return ""
+
+
+def bars_step(work: str, cfg: dict, L: dict | None, now: int, market_open_now: bool, dry: bool = False, http=None, say=print,
+              root: str = ROOT, nt_folder: str | None = None, other_posts: int = 0, limited: bool = False,
+              feed_path: str | None = None, busy_run: bool = False) -> dict:
+    """One chart turn of a report run: count this run's other posts, build the post, post it to the chart topic when due (bars_due;
+    busy_run = this run sent an ext post), keep the state (data/pc_report/bars.json: the last post, per UTC day the counts "all" (every
+    post of this PC), "bars" (chart posts), "candles" (the candle-only ones)). -> {"posted", "why", "bytes", "n"}. Never raises; never
+    writes in a dry run."""
+    res = {"posted": False, "why": ""}
+    try:
+        p = os.path.join(work, BARS_STATE)
+        st = read_json(p, {}) or {}
+        st = st if isinstance(st, dict) else {}
+        day, keep = _utc_day(now), _utc_day(int(now) - 3 * 86400)
+        days = {k: dict(v) for k, v in _d(st.get("days")).items() if isinstance(v, dict) and str(k) >= keep}
+        cnt = days.setdefault(day, {})
+        cnt["all"] = int(num(cnt.get("all")) or 0) + max(0, int(other_posts or 0))
+        st["days"] = days
+        if limited:                                    # the core or a push met ntfy's daily cap this run: no chart today
+            st["blocked"] = day
+        topic = bars_topic(cfg, feed_path)
+        if not topic:
+            res["why"] = "no status topic"
+        else:
+            post = bars_post(L, int(now), root, nt_folder) if market_open_now else None
+            due, why = bars_due(st, post, int(now), market_open_now, busy_run=bool(busy_run))
+            res["why"] = why
+            if due:
+                body = json.dumps(post, separators=(",", ":"), ensure_ascii=False)
+                res.update(bytes=len(body.encode("utf-8")), n=post.get("n"))
+                if dry:
+                    say(f"[dry] chart bars ({post.get('n')} bars, {len(post.get('open') or [])} open, {len(post.get('closed') or [])} closed, "
+                        f"{res['bytes']} bytes) -> {cfg.get('ntfy')}/{topic}")
+                else:
+                    ok, w = ntfy_post(cfg.get("ntfy") or NTFY_DEFAULT, topic, body, priority="min", http=http)
+                    if ok:
+                        hb, ht = _bars_hashes(post)
+                        st.update(t=int(now), hb=hb, ht=ht, n=post.get("n"), bytes=res["bytes"])
+                        cnt["bars"] = int(num(cnt.get("bars")) or 0) + 1
+                        if why == "hourly candles":
+                            cnt["candles"] = int(num(cnt.get("candles")) or 0) + 1
+                        cnt["all"] += 1
+                        res["posted"] = True
+                        res["kind"] = "trades" if why == "a trade changed" else "candles"
+                    else:
+                        res["why"] = "chart: " + w
+                        if "rate limit" in w:
+                            st["blocked"] = day
+        if not dry:
+            write_json(p, st)
+    except Exception as e:  # noqa: BLE001
+        res["why"] = f"chart failed softly: {e.__class__.__name__}"
+    return res
+
+
 # ------------------------------------------------------------------------------------------------ alerts (events)
 BOT_NAME = {"lit": "LIT", "atlas": "ATLAS", "blitz": "BLITZ"}
 
@@ -1160,6 +1679,7 @@ def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, n
         mffu_view.save_names(mffu_view.compact(snap.get("live")), path=os.path.join(work, "names.json"))
     except Exception:
         pass
+    posted = ext_n = 0                              # this run's public posts / ext posts (the chart's daily ntfy share counts them)
     for k in ("ext_t", "ext_h"):
         rec[k] = last.get(k)
     if snap.get("live"):
@@ -1178,6 +1698,8 @@ def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, n
                 rec["errors"].append("status ext: " + why)
                 due = False
                 break
+            posted += 1
+            ext_n += 1
         if due and not dry:
             rec["ext_t"], rec["ext_h"] = snap["t"], h
         if num(rec.get("ext_t")):
@@ -1189,6 +1711,7 @@ def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, n
             ok, why = ntfy_post(cfg["ntfy"], cfg["status_topic"], body, priority="min", http=http)
             if ok:
                 rec["status_t"] = snap["t"]
+                posted += 1
             else:
                 rec["errors"].append("status: " + why)
     elif not status.get("t"):
@@ -1219,6 +1742,15 @@ def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, n
                 _d(_d(new_state.get("guard")).get("sent")).pop(m["key"], None)
     if not dry:
         write_json(os.path.join(work, "state.json"), new_state)
+    # the NQ page's live chart (le-bars, its own topic): after the core and the pushes, so it never takes their room; soft, and its
+    # own problems stay in rec["bars"] (never in errors: the report itself is fine without it)
+    try:
+        rec["bars"] = bars_step(work, cfg, snap.get("live") if isinstance(snap.get("live"), dict) else {}, snap["t"],
+                                bool(snap.get("market_open")), dry=dry, http=http, say=say, root=root, nt_folder=_nt_folder(root, env),
+                                other_posts=0 if dry else posted + sent, limited=any("rate limit" in str(e) for e in rec["errors"]),
+                                feed_path=feed_path, busy_run=ext_n > 0)
+    except Exception as e:  # noqa: BLE001
+        rec["bars"] = {"posted": False, "why": f"chart failed softly: {e.__class__.__name__}"}
     rec.update(sent=sent, queued=len(msgs), ok=not rec["errors"])
     if not dry:
         write_json(os.path.join(work, "last.json"), rec)
@@ -1242,6 +1774,7 @@ def main(argv=None) -> int:
     ap.add_argument("--test", action="store_true")
     ap.add_argument("--quiet", action="store_true", help="no card (the scheduled task)")
     ap.add_argument("--again", action="store_true", help="with --test: send the test push again")
+    ap.add_argument("--bars", action="store_true", help="only the NQ chart post (le-bars), from the last run's live.json")
     a = ap.parse_args(argv)
     if a.setup or a.test:
         try:
@@ -1263,6 +1796,20 @@ def main(argv=None) -> int:
         cfg = load_cfg()
         snap = gather(port=a.port)
         print(card_text(card(snap, cfg, read_json(os.path.join(a.work, "last.json"), {}) or {})))
+        return 0
+    if a.bars:                         # the chart post alone (a cheap 5-minute caller): the same pacing and daily share as a full run
+        lk = None if a.dry_run else run_lock(a.work)
+        if not a.dry_run and lk is None:
+            return 0
+        try:
+            now = now_s()
+            r = bars_step(a.work, load_cfg(), read_json(os.path.join(a.work, "live.json"), {}) or {}, now, market_open(now),
+                          dry=a.dry_run, say=(lambda *_: None) if a.quiet else print)
+        finally:
+            run_unlock(lk)
+        if not a.quiet:
+            print(f"  [{'OK' if r.get('posted') else '..'}]  NQ chart: " + (f"posted {r.get('n')} bars ({r.get('bytes')} bytes)"
+                                                                         if r.get("posted") else r.get("why") or "nothing to do"))
         return 0
     lk = None if a.dry_run else run_lock(a.work)
     if not a.dry_run and lk is None:
