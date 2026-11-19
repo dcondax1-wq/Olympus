@@ -8,6 +8,7 @@
   * safety: RED -> size-down advice (never a stop), GREEN / AMBER / missing
   * one run with a fake runner in a temp dir: state + page, ONE board line + push for a NEW ready (not again), one for a
     new RED, none when not asked; a live file changed = nothing sent
+  * kind atlas_funded (tools/atlas_health.py): the funded 25K protective rule families, their stored verdict, cells, register()
   * static: never writes a live file, no broker / order import, outputs gitignored, the page reads only via textContent
 
     python -X utf8 -m tests.test_zeus_lab
@@ -236,6 +237,102 @@ def t_member(tmp):
           len(after.splitlines()) - len(before.splitlines()) <= 2)
     check("register(): a bad one is refused, file unchanged", Z.register({**e, "id": "zz_bad", "family": None}, p) and
           open(p, encoding="utf-8").read() == after)
+    # night-bugsweep 2026-11-19: a REPLACE kept the data but rewrote the whole file in json.dump's layout (every entry split over many lines)
+    e2 = {**e, "cells": 3, "title": "t2", "registered": "2099-01-01"}
+    check("register(): a replace is saved (its registered date kept)", Z.register(e2, p) == []
+          and next(x for x in Z.load_registry(p)[0] if x["id"] == "zz_member")["cells"] == 3
+          and next(x for x in json.load(open(p, encoding="utf-8"))["experiments"] if x["id"] == "zz_member")["registered"] == "2026-11-18")
+    after2 = open(p, encoding="utf-8").read()
+    gone, came = set(after.splitlines()) - set(after2.splitlines()), set(after2.splitlines()) - set(after.splitlines())
+    check("register(): a replace keeps the one-entry-per-line layout (only the replaced entry's line changes, nothing else moves)",
+          len(gone) == 1 and len(came) == 1 and '"zz_member"' in next(iter(came)) and len(after2.splitlines()) == len(after.splitlines()), (gone, came))
+    first = next(x for x in json.load(open(p, encoding="utf-8"))["experiments"] if "id" in x and x["id"] != "zz_member")
+    ml = after2.index('"id": "' + first["id"] + '"')
+    check("register(): replacing a multi-line hand-kept entry makes it one line in its own place, the entries around it untouched",
+          Z.register({**first, "title": first["title"] + " (re)"}, p) == []
+          and len(open(p, encoding="utf-8").read().splitlines()) <= len(after2.splitlines())
+          and open(p, encoding="utf-8").read()[:ml] == after2[:ml]
+          and [x["id"] for x in json.load(open(p, encoding="utf-8"))["experiments"] if "id" in x] == [x["id"] for x in json.loads(after2)["experiments"] if "id" in x])
+
+
+def t_funded(tmp):
+    """kind atlas_funded (tools/atlas_health.py, 2026-11-18): the 5 protective rule families on ATLAS's funded 25K, their
+    stored verdict (the family's Jan-Jun pick; a rule that never acts in Jul-Oct cannot pass), cells, register()."""
+    E, F, R, errs = Z.load_registry()
+    M = [e for e in E if e["kind"] == "atlas_funded"]
+    ids = {"atlas_funded_member_pause", "atlas_funded_light_size", "atlas_funded_day_cap", "atlas_funded_hole_size", "atlas_funded_skip"}
+    check("funded rule families registered (member pause, light size, day cap, smaller risk, skips)", ids <= {e["id"] for e in M}, [e["id"] for e in M])
+    check("a funded family counts every version it scored in the many-tests bar", Z.cells(M) == sum(int(e["cells"]) for e in M) > len(M), Z.cells(M))
+    check("no cross copy of a funded family", not [x for x in Z.cross_experiments(E, F) if x.get("cross_of", "").startswith("atlas_funded_")])
+    rs = {e["id"]: Z.run_one(e, None, RULES) for e in M if e["id"] in ids}
+    check("funded runner: stored verdict with head / base / flip / why / H1-H2 $ change", all(
+        {"proof_ok", "why", "flip", "head", "base", "deltas", "usd_month_by"} <= set(r) and r["head"]["H1"].get("per_month") is not None
+        and r["base"]["2021-24"].get("per_month") is not None for r in rs.values()), {k: r.get("why") for k, r in rs.items()})
+    check("every funded family: a yes / no verdict naming its Jan-Jun pick", all(isinstance(r["proof_ok"], bool) and "Jan-Jun pick" in r["why"]
+                                                                                  for r in rs.values()), {k: r["why"][:80] for k, r in rs.items()})
+    mp = rs["atlas_funded_member_pause"]
+    check("a pick that changes nothing in Jul-Oct is never passed (Jul-Oct must check it)",
+          not (mp["proof_ok"] and mp["usd_month_by"]["H2"] == 0 and not any(Z.span_of(d["day"], "atlas") == "H2" for d in mp["deltas"]))
+          and ("never acts in Jul-Oct" in mp["why"] or mp["usd_month_by"]["H2"] != 0), mp["why"])
+    p = os.path.join(tmp, "reg_f.json")
+    shutil.copy(Z.REGISTRY, p)
+    e = {"id": "zz_funded", "bot": "atlas", "kind": "atlas_funded", "family": "S", "cells": 3, "title": "t", "what_changes": "w",
+         "registered": "2026-11-18", "source": "s"}
+    check("register(): a valid funded family is saved", Z.register(e, p) == [] and "zz_funded" in {x["id"] for x in Z.load_registry(p)[0]})
+    check("register(): an unknown funded family / another bot is refused", bool(Z.register({**e, "id": "zz_f2", "family": "X"}, p))
+          and bool(Z.register({**e, "id": "zz_f3", "bot": "lit"}, p)))
+
+
+def t_third(tmp):
+    """kind new_strategy (tools/third_strategy.py, 2026-11-19): a standalone third strategy (bot third), stored verdict."""
+    E, F, R, errs = Z.load_registry()
+    M = [e for e in E if e["kind"] == "new_strategy"]
+    check("registry: the 3 third-strategy families (post-close, pivots, TD count)",
+          {"third_pcm", "third_cam", "third_tds"} <= {e["id"] for e in M} and all(e["bot"] == "third" for e in M), [e["id"] for e in M])
+    check("new_strategy counts every version it searched", Z.cells(M) == sum(int(e["cells"]) for e in M) and Z.cells(M) >= 150, Z.cells(M))
+    r = Z.run_one(next(e for e in M if e["id"] == "third_cam"), None, RULES)
+    check("third runner: stored verdict, rejected (fails Jul-Oct / 2025), head per month", {"proof_ok", "why", "flip", "head", "base", "deltas"} <= set(r)
+          and r["proof_ok"] is False and r["head"]["H1"].get("per_month") is not None, r.get("why"))
+    r = Z.run_one(next(e for e in M if e["id"] == "third_pcm"), None, RULES)
+    check("third runner: no Jan-Jun pick = rejected", r["proof_ok"] is False and r["why"].startswith("no Jan-Jun pick"), r.get("why"))
+    row = Z.page_row(next(e for e in M if e["id"] == "third_tds"), {"status": "rejected", "head": Z.run_one(next(e for e in M if e["id"] == "third_tds"), None, RULES)["head"]})
+    check("page row: plain name + $ a month per half", row["who"] == "Third strategy" and row["months"]["H1"]["exp"] is not None, row.get("months"))
+    p = os.path.join(tmp, "reg3.json")
+    shutil.copy(Z.REGISTRY, p)
+    e = {"id": "zz_third", "bot": "third", "kind": "new_strategy", "family": "pcm", "cells": 2, "title": "t", "what_changes": "w",
+         "registered": "2026-11-19", "source": "s"}
+    check("register(): a valid new_strategy is saved", Z.register(e, p) == [] and "zz_third" in {x["id"] for x in Z.load_registry(p)[0]})
+    check("register(): new_strategy on another bot / unknown family is refused", Z.register({**e, "id": "zz_t2", "bot": "lit"}, p) != []
+          and Z.register({**e, "id": "zz_t3", "family": "xyz"}, p) != [])
+
+
+def t_blitz(tmp):
+    """kind blitz_idea (tools/blitz_review.py, 2026-11-18): BLITZ exit ideas (bot blitz), stored verdict, hidden on the page."""
+    E, F, R, errs = Z.load_registry()
+    M = [e for e in E if e["kind"] == "blitz_idea"]
+    check("registry: the 8 BLITZ exit ideas", len(M) == 8 and all(e["bot"] == "blitz" for e in M) and {e["idea"] for e in M} == set(Z.BLITZ_IDEAS),
+          [e["id"] for e in M])
+    r = Z.run_one(next(e for e in M if e["idea"] == "chk10_any"), None, RULES)
+    check("blitz runner: stored verdict, rejected (the Jan-Jun pick loses Jul-Oct), $ a month per span",
+          r["proof_ok"] is False and "Jul-Oct" in r["why"] and r["head"]["H1"]["per_month"] is not None and r["base"]["2021-25"]["n"] > 1000, r.get("why"))
+    row = Z.page_row(M[0], {"status": "rejected", "head": r["head"], "base": r["base"]})
+    check("page row: BLITZ, $ a month now vs idea per span", row["who"] == "BLITZ" and row["months"]["2021-25"]["now"] is not None, row.get("months"))
+    from engine import hidden_bots as HB
+    old = HB.FORCE
+    try:
+        HB.FORCE = ("blitz",)
+        hid = [x["id"] for x in Z.build_page({"rows": [row, {**row, "id": "l", "bot": "lit", "status": "rejected"}]})["rows"]]
+        HB.FORCE = ()
+        shown = [x["id"] for x in Z.build_page({"rows": [row]})["rows"]]
+    finally:
+        HB.FORCE = old
+    check("page: a hidden bot's rows are left out, shown again when unhidden", hid == ["l"] and shown == [row["id"]], (hid, shown))
+    p = os.path.join(tmp, "regb.json")
+    shutil.copy(Z.REGISTRY, p)
+    e = {"id": "zz_blitz", "bot": "blitz", "kind": "blitz_idea", "idea": "be05", "title": "t", "what_changes": "w", "registered": "2026-11-18",
+         "source": "s"}
+    check("register(): a valid blitz_idea is saved; another bot / unknown idea refused", Z.register(e, p) == []
+          and Z.register({**e, "id": "zz_b2", "bot": "lit"}, p) != [] and Z.register({**e, "id": "zz_b3", "idea": "nope"}, p) != [])
 
 
 def t_static():
@@ -266,6 +363,9 @@ def main() -> int:
         t_run(tmp)
         t_proposals(tmp)
         t_member(tmp)
+        t_funded(tmp)
+        t_third(tmp)
+        t_blitz(tmp)
         t_static()
     finally:
         shutil.rmtree(tmp, ignore_errors=True)

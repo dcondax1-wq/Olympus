@@ -9,8 +9,13 @@
    UAC are stubs (tests/win_harness/clean_storage_stubs.ps1; the UAC stub really runs the elevated child).
      - -DryRun: the table, nothing deleted (every file and its time unchanged), a log
      - a full run: old junk gone, EVERY protected file still there (state, .env.local.ps1, accounts, journals, nt_bars,
-       NinjaTrader workspaces / templates / bin / db / le_feed / incoming / outgoing), the newest 3 backups stay,
-       "Freed X, C: now Y free"
+       NinjaTrader workspaces / templates / bin / db (db\\cache too) / le_feed / incoming / outgoing), the newest 3 backups
+       stay, every __pycache__ of the bot's code (never a venv's), the old replay cache research\\runs\\_cache, old
+       OLYMPUS_BACKUP zips (the newest 2 stay) gone, "Done: freed X. C: now Y free"
+     - a second drive (2026-11-19): the old archives (data\\_cfd_archive ...) are offered ONCE, move on Y (robocopy stub),
+       a README.txt is left there, nothing else moves; never offered while the bot runs
+   Without pwsh the static part still reads the script like PowerShell does (tests/win_harness/ps_struct.py: strings,
+   here-strings, comments, every bracket paired, no PowerShell-7-only operator).
      - NinjaTrader running (a real process named NinjaTrader) or the bot answering on its port: their folders and
        Windows.old are skipped, temp / caches / Windows still cleaned, and it says so
      - a hostile TEMP (the user profile, the bot folder, the bot's data folder, NinjaTrader's workspaces / db): nothing
@@ -112,6 +117,67 @@ def static():
     ba = rb(os.path.join(ROOT, "scripts", "clean_pc.ps1")).decode("utf-8", "replace")
     check("CLEAN_PC reaches it: clean_pc.ps1 -Storage hands over, the PC_KIT gets CLEAN_STORAGE.bat + clean_storage.ps1, the end hints at it",
           re.search(r"\[switch\]\$Storage", ba) and "clean_storage.ps1" in ba and "CLEAN_STORAGE.bat" in ba and ba.count("clean_storage.ps1") >= 3)
+    static_2026_11_19(code, body)
+
+
+def _fn(body, name):
+    m = re.search(r"function " + re.escape(name) + r"\b.*?\n\}", body, re.S)
+    return m.group(0) if m else ""
+
+
+def static_2026_11_19(code, body):
+    """night-clean 2026-11-19: NinjaTrader's log + trace only, the bot's caches and old code zips, the second-drive move,
+    'Done: freed X GB', and the PowerShell structure read without pwsh."""
+    sys.path.insert(0, ROOT)
+    from tests.win_harness.ps_struct import check_script
+    for p in (PS1, STUBS):
+        probs = check_script(rb(p).decode("utf-8", "replace"))
+        check(f"{os.path.basename(p)}: read like PowerShell (strings, here-strings, comments): every bracket paired, no PowerShell-7-only operator",
+              not probs, probs)
+    m = re.search(r"\$ntItems = @\(\)\s*foreach \(\$nt in \$NtFolders\) \{(.*?)\n    \}", body, re.S)
+    nt_dirs = re.findall(r"J2 \$nt '(\w+)'", m.group(1)) if m else None
+    check("NinjaTrader: only its own old log and trace folders are cleaned (no cache, no db, no db\\cache)",
+          nt_dirs == ["log", "trace"] and "'db'" not in m.group(1), nt_dirs)
+    check("NinjaTrader's db is never a deletable place (db\\cache included), whatever TEMP says",
+          "if (Test-UnderRoot $probe (J2 $nt 'db')) { $res = 'no' }" in body and "'db', 'cache'" not in body)
+    check("the bot's replay cache research\\runs\\_cache: an item kept KeepDays and a place where every file may go (rebuilt on demand)",
+          "@{ Dir = (Pj @($BotRoot, 'research', 'runs', '_cache')); Days = $KeepDays }" in body
+          and "elseif (Test-UnderRoot $probe (Pj @($BotRoot, 'research', 'runs', '_cache'))) { $res = 'ok' }" in body)
+    oz = _fn(body, "Get-OldZips")
+    check("old code zips: only OLYMPUS_BACKUP_*.zip (+ its .sha256.txt) in the bot folder, the newest 2 stay, KeepDays old",
+          "GetFiles('OLYMPUS_BACKUP_*.zip')" in oz and "Sort-Object LastWriteTime -Descending" in oz and "for ($i = $Keep;" in oz
+          and "Get-OldZips $BotRoot $KeepDays 2" in body and "@{ File = $z }" in body)
+    pp = _fn(body, "Get-PycParents")
+    sk = re.search(r"\$skip = @\(([^)]*)\)", pp)
+    skip = set(re.findall(r"'([^']+)'", sk.group(1))) if sk else set()
+    check("every __pycache__ of the bot's code, never inside .git, data, logs, backups, node_modules or a Python install (venv)",
+          {".git", "data", "logs", "backups", "node_modules", ".venv", "venv", "site-packages"} <= skip and "ReparsePoint" in pp
+          and "foreach ($d in (Get-PycParents $BotRoot)) { $botItems += @{ Dir = $d; Days = 0; Rx = '\\.pyc$'; PycOnly = $true } }" in body, skip)
+    # the second drive: one question, only the four listed archive folders, robocopy only there, never while busy / in a dry run
+    m = re.search(r"\$ArchiveRel = @\(([^)]*)\)", body)
+    arch = re.findall(r"'([^']+)'", m.group(1)) if m else []
+    check("second drive: only the four old archive folders can move (never the bot, NinjaTrader, backups\\ or live data)",
+          arch == ["data\\_pre_clean_backup", "data\\_cfd_archive", "data\\duka_cache", "data\\nt_export"], arch)
+    mv = _fn(body, "Move-Archive")
+    check("second drive: robocopy /MOVE is called in ONE place, inside Move-Archive, which refuses an unlisted folder, a busy PC and a dry run",
+          body.count("robocopy.exe") == 1 and "robocopy.exe" in mv and "/MOVE" in mv and "/XJ" in mv
+          and "if (-not $listed -or $Busy -or $DryRun)" in mv and mv.index("$listed") < mv.index("robocopy.exe"))
+    check("second drive: robocopy's exit code 8+ is a failure (nothing counted), moved bytes = before - what is left",
+          "if ($code -ge 8)" in mv and "Measure-Tree $Src" in mv)
+    sd = _fn(body, "Get-SecondDrive")
+    check("second drive: a FIXED drive with a letter, not the system drive and not the bot's own drive, only on Windows",
+          "[System.IO.DriveType]::Fixed" in sd and "'^[a-z]:$'" in sd and "$nm -eq $sd" in sd and "$nm -eq $botDrive" in sd
+          and "$env:OS -ne 'Windows_NT'" in sd)
+    check("second drive: planned only with a bot folder and nothing running, 200 MB or more, room for it + 2 GB",
+          "if ($BotRoot -and -not $Busy) {" in body and "$MoveMin = [int64]200MB" in body and "($archTotal + [int64]2GB)" in body)
+    check("second drive: asked ONCE with Ask-YN (never answered by -Yes or -Extras), shown in the table first",
+          body.count("$doMove = Ask-YN") == 1 and "$doMove = $Extras" not in body and "$doMove = $Yes" not in body
+          and "could MOVE there" in body and body.index("could MOVE there") < body.index("$doMove = Ask-YN"))
+    check("second drive: a README.txt in the archive folder says where the folders came from",
+          "J2 $moveTo 'README.txt'" in body and "Moved here by CLEAN_STORAGE" in body)
+    check("the end: one plain 'Done: freed X GB. C: now Y GB free.' (the move counted in), and how to get the full clean when busy",
+          '"Done: freed " + $frTxt + ". C: now "' in body and "Fmt ($script:Freed + $script:Moved)" in body
+          and "STOP BOT, close NinjaTrader, then double-click CLEAN_STORAGE.bat again" in body)
 
 
 # ============================================================================================== the health line (engine/pc_health)
@@ -279,8 +345,8 @@ class World:
         self.f("nt", N, "log/log.20260101.00001.txt", 40, 5000)
         self.f("nt", N, "log/log.20261104.00001.txt", 0.1, must_go=False)
         self.f("nt", N, "trace/trace.20260101.00001.txt", 40, 5000)
-        self.f("nt", N, "cache/chartcache.bin", 30, 40_000)
-        self.f("nt", N, "db/cache/dc.bin", 30, 40_000)
+        self.f("nt", N, "cache/chartcache.bin", 30, 40_000, must_go=False)          # 2026-11-19: only log + trace, never caches
+        self.f("nt", N, "db/cache/dc.bin", 30, 40_000, must_go=False)               # never its db, db\cache included
         for rel in ("workspaces/Main.xml", "workspaces/_Workspaces.xml", "templates/Chart/le.xml", "bin/Custom/Indicators/LE_BarFeed.cs",
                     "db/tick/MNQ 12-26/20261103.ncd", "db/minute/MNQ 12-26/20261103.ncd", "db/day/MNQ 12-26/x.ncd", "db/replay/r.ncd",
                     "le_feed/MNQ_1m.csv", "le_feed/accounts.csv", "incoming/oif1.txt", "outgoing/ATI_Sim101_position.txt",
@@ -327,6 +393,27 @@ class World:
             self.f("bot", B, "tools/__pycache__/x.cpython-312.pyc", 10)
             self.f("bot", B, "__pycache__/server.cpython-312.pyc", 10)
             self.f("bot", B, "engine/not_a_cache.pyc", 10, must_go=False)          # a .pyc outside __pycache__ is not ours
+            # 2026-11-19: every __pycache__ of the bot's code (deeper folders too), never a venv's or data's
+            self.f("bot", B, "agency/billing/__pycache__/store.cpython-312.pyc", 10, 4000)
+            self.f("bot", B, "tools/kalshi_kit/public/__pycache__/vm.cpython-312.pyc", 10)
+            self.f("bot", B, ".venv/Lib/site-packages/pkg/__pycache__/mod.cpython-312.pyc", 10, must_go=False)
+            self.f("bot", B, "data/__pycache__/dukascopy.cpython-312.pyc", 10, must_go=False)
+            # the research replay cache (rebuilt on demand): old files go, a fresh one and the run library itself stay
+            self.f("bot", B, "research/runs/_cache/litfinal_v2_1.pkl", 30, 30_000)
+            self.f("bot", B, "research/runs/_cache/edge/data/NQ_5m.csv", 30, 8000)
+            self.f("bot", B, "research/runs/_cache/atlas_fresh.pkl", 1, must_go=False)
+            self.f("bot", B, "research/runs/lit_live.json", 200, must_go=False)
+            self.f("bot", B, "research/runs/index.json", 200, must_go=False)
+            # old code zips in the bot folder: the newest 2 stay whatever their age, older ones (14+ days) go with their .sha256.txt
+            for age, name in ((40, "OLYMPUS_BACKUP_20261009_aaaaaaa"), (30, "OLYMPUS_BACKUP_20261019_bbbbbbb"),
+                              (20, "OLYMPUS_BACKUP_20261029_ccccccc"), (1, "OLYMPUS_BACKUP_20261117_ddddddd")):
+                self.f("bot", B, name + ".zip", age, 25_000, must_go=age >= 30)
+                self.f("bot", B, name + ".sha256.txt", age, 100, must_go=age >= 30)
+            self.f("bot", B, "OLYMPUS_NOTES.zip", 90, must_go=False)                 # not a code zip
+            # an old archive nothing reads (moves to a second drive only when asked; never deleted)
+            self.archive_dir = os.path.join(B, "data", "_cfd_archive")
+            self.archive_files = [self.f("archive", B, "data/_cfd_archive/old_cfd.csv", 400, 30_000, must_go=False),
+                                  self.f("archive", B, "data/_cfd_archive/2024/q1.csv", 400, 30_000, must_go=False)]
             self.f("bot", B, "reports/tmp/r1.txt", 30)
             self.f("bot", B, "reports/keep.txt", 30, must_go=False)
             for age, name in ((40, "le-backup-20260925-1635.zip"), (30, "le-backup-20261005-1635.zip"), (20, "le-backup-20261015-1635.zip"),
@@ -367,15 +454,18 @@ class World:
                 out[p] = (st.st_size, int(st.st_mtime))
         return out
 
-    def env(self, strict=False, temp=None, elevated=False, answer="n", uac="yes", port=None, bin_bytes=None):
+    def env(self, strict=False, temp=None, elevated=False, answer="n", uac="yes", port=None, bin_bytes=None, extra=None):
         e = dict(os.environ, TEMP=temp or self.temp, TMP=temp or self.temp, LOCALAPPDATA=self.la, APPDATA=self.ap, ProgramData=self.pd,
                  WINDIR=self.win, SystemDrive=self.dir, OneDrive=os.path.join(self.dir, "OneDrive"), NINJATRADER_FOLDER=self.nt,
                  USERPROFILE=self.home, HOME=self.home, COMPUTERNAME="TESTPC", PORT=str(port or free_port()),
                  LE_T_ELEVATED="1" if elevated else "0", LE_T_ANSWER=answer, LE_T_UAC=uac, LE_T_STUBS=STUBS, LE_T_STRICT="1" if strict else "0",
                  LE_T_PWSH=find_pwsh() or "pwsh", PSModulePath=os.environ.get("PSModulePath", ""))
         e.pop("LE_BOT_DIR", None)
+        for k in ("LE_T_SECOND_DRIVE", "LE_T_MOVE_MIN"):
+            e.pop(k, None)
         if bin_bytes is not None:
             e["LE_T_BIN_BYTES"] = str(bin_bytes)
+        e.update(extra or {})
         return e
 
     def run(self, pwsh, args, **kw):
@@ -445,8 +535,9 @@ def run_world(pwsh, strict: bool):
               set(before) ^ set(after))
         check(f"DryRun: a plain table with sizes for every category, a TOTAL, the never-touched line{tag}",
               all(k in out for k in ("What can be freed", "Temporary files (your account)", "Browser caches (sign-ins stay)", "Thumbnail and icon caches",
-                                     "NinjaTrader old logs and caches", "Bot old logs, backups and __pycache__", "Windows Update downloads",
+                                     "NinjaTrader old log and trace files", "Bot old logs, backups, old code zips, caches", "Windows Update downloads",
                                      "Old Windows logs", "TOTAL", "Never touched")), out[-2500:])
+        check(f"DryRun: no second drive in the sandbox = no move offered{tag}", "could MOVE there" not in out and "HARNESS-ROBOCOPY" not in out)
         check(f"DryRun: says nothing was deleted, with a size{tag}", re.search(r"DRY RUN: nothing was deleted. It would free about [\d.,]+ (MB|GB|KB)", out), out[-800:])
         check(f"DryRun: no question asked, no Windows (UAC) request{tag}", "HARNESS-UAC" not in out and "Type Y" not in out)
         lg = w.log_text()
@@ -479,8 +570,13 @@ def run_world(pwsh, strict: bool):
         check(f"full run: the update service was stopped and started again around the download cache{tag}",
               out.index("HARNESS-SVC stop wuauserv") < out.index("HARNESS-SVC start wuauserv"), out[-3000:])
         check(f"full run: asks before the Recycle Bin / Windows.old and does neither on N{tag}", "HARNESS-BIN" not in out and "HARNESS-TAKEOWN" not in out)
-        m = re.search(r"Freed ([\d.,]+) (KB|MB|GB), C: now ([\d.,]+ GB free|not readable)\.", out)
-        check(f"full run: ends with 'Freed X, C: now Y GB free'{tag}", m, out[-1500:])
+        m = re.search(r"Done: freed ([\d.,]+) (KB|MB|GB)\. C: now ([\d.,]+ GB free|not readable)\.", out)
+        check(f"full run: ends with 'Done: freed X. C: now Y GB free.'{tag}", m, out[-1500:])
+        check(f"full run: the newest 2 code zips stay (20 and 1 days), the 40- and 30-day ones and their .sha256.txt are gone{tag}",
+              all(os.path.exists(os.path.join(w.bot, n)) for n in ("OLYMPUS_BACKUP_20261029_ccccccc.zip", "OLYMPUS_BACKUP_20261117_ddddddd.zip"))
+              and not os.path.exists(os.path.join(w.bot, "OLYMPUS_BACKUP_20261009_aaaaaaa.zip"))
+              and not os.path.exists(os.path.join(w.bot, "OLYMPUS_BACKUP_20261009_aaaaaaa.sha256.txt")))
+        check(f"full run: the old archive is NOT deleted (it only ever moves, when asked){tag}", all(os.path.exists(p) for p in w.archive_files))
         if m:
             mult = {"KB": 1024, "MB": 1024 ** 2, "GB": 1024 ** 3}[m.group(2)]
             check(f"full run: the freed figure is at least the 1.5 MB of known junk (both parts added){tag}", float(m.group(1).replace(",", "")) * mult >= 1.5 * 1024 ** 2, m.group(0))
@@ -492,6 +588,50 @@ def run_world(pwsh, strict: bool):
         out2, err2 = w.run(pwsh, ["-DryRun"], strict=strict)
         check(f"second DryRun after cleaning: about nothing left (under 100 KB){tag}", re.search(r"TOTAL \(without the two below\)\s+(0|\d{1,2} KB)\b", out2), out2[-1500:])
     finally:
+        w.cleanup()
+
+    # ---------------------------------------------------------------- 2b. a second drive (2026-11-19): the old archives move, asked once
+    w = World()
+    try:
+        drive = os.path.join(w.dir, "D_drive")
+        os.makedirs(drive)
+        extra = {"LE_T_SECOND_DRIVE": drive, "LE_T_MOVE_MIN": "1000"}
+        dest = os.path.join(drive, "LiquidityEngine-archive")
+        before = w.all_files()
+        out, err = w.run(pwsh, ["-DryRun"], strict=strict, extra=extra)
+        common("second drive, -DryRun", out, err)
+        check(f"second drive -DryRun: the plan offers the move (size + folder), moves and deletes nothing{tag}",
+              "could MOVE there" in out and "data\\_cfd_archive" in out and "HARNESS-ROBOCOPY" not in out and digest(before) == digest(w.all_files()), out[-1500:])
+        out, err = w.run(pwsh, ["-Yes"], strict=strict, answer="n", extra=extra)
+        common("second drive, the move answered N", out, err)
+        check(f"second drive N: nothing moved, the archive is where it was{tag}",
+              "HARNESS-ROBOCOPY" not in out and all(os.path.exists(p) for p in w.archive_files) and not os.path.exists(dest), out[-1200:])
+        out, err = w.run(pwsh, ["-Yes"], strict=strict, answer="y", extra=extra)
+        common("second drive, the move answered Y", out, err)
+        moved = [os.path.join(dest, "_cfd_archive", "old_cfd.csv"), os.path.join(dest, "_cfd_archive", "2024", "q1.csv")]
+        others = [p for p in w.lost() if p not in w.archive_files]
+        readme = os.path.join(dest, "README.txt")
+        note = open(readme, encoding="utf-8-sig", errors="replace").read() if os.path.exists(readme) else ""
+        check(f"second drive Y: data\\_cfd_archive is now <drive>\\LiquidityEngine-archive\\_cfd_archive (robocopy /MOVE), a README says from where{tag}",
+              all(os.path.exists(p) for p in moved) and not os.path.exists(w.archive_dir) and "/MOVE" in out
+              and "Moved here by CLEAN_STORAGE" in note and "data\\_cfd_archive" in note, out[-2000:])
+        check(f"second drive Y: nothing else moved or went (every other protected file of the bot, NinjaTrader and data still there){tag}",
+              not others and os.path.exists(os.path.join(w.bot, "data", "live_state.json")), [os.path.relpath(p, w.dir) for p in others][:8])
+        check(f"second drive Y: the result names the move and ends with 'Done: freed'{tag}",
+              "of old archives to" in out and re.search(r"Done: freed [\d.,]+ (KB|MB|GB)\. C: now", out), out[-900:])
+    finally:
+        w.cleanup()
+    w = World()
+    sock, port = start_fake_bot_port()
+    try:
+        drive = os.path.join(w.dir, "D_drive")
+        os.makedirs(drive)
+        out, err = w.run(pwsh, ["-Yes"], strict=strict, answer="y", port=port, extra={"LE_T_SECOND_DRIVE": drive, "LE_T_MOVE_MIN": "1000"})
+        common("second drive with the bot RUNNING", out, err)
+        check(f"second drive + bot running: the move is not even offered, the archive stays{tag}",
+              "could MOVE there" not in out and "HARNESS-ROBOCOPY" not in out and all(os.path.exists(p) for p in w.archive_files), out[-1200:])
+    finally:
+        sock.close()
         w.cleanup()
 
     if strict:

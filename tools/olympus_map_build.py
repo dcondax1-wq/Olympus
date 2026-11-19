@@ -41,6 +41,7 @@ FOOT = """
 | Atlas command center (districts, search, pins, recent, needs-me strip, one-screen map) | `tools/web_public/atlas/` (`atlas.js`, `hub.js`, `atlas.css`) | `node --test tests/test_atlas_standalone_hub.mjs`, `tests/test_atlas_intro.mjs` |
 | Zenith launcher sheet (favourites, search, recent, MAP) | `tools/web_public/launcher.js` = `web_next/js/next/launcher.js` (byte-identical) | `tests.test_apps_list` |
 | Jarvis switcher (search, MAP, favourites, recent) | `tools/web_public/jarvis/switcher.js` | `tests.test_jarvis_hub` (parts n, p, s) |
+| World-to-world jump (hyperspace out of the page you tap, each world's arrival signature through a View Transition; reduced motion = a fade) | `tools/web_public/olympus/warp.js` + `warp.css` (themes.js loads it and reads the arrival in `<head>`; agora.css / jarvis.css / kalshi.css / zenith_agora.css @import warp.css) | `tests.test_warp` |
 | App registry | `tools/web_public/jarvis/apps.js` -> `olympus/apps-list.js` | `tests.test_apps_list` |
 | This map | `tools/olympus_map_build.py` -> `docs/OLYMPUS_MAP.md` | `tests.test_olympus_map` |
 """

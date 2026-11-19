@@ -160,7 +160,7 @@ def run_browser():
 
             # 02:10 ET Friday: the 01:45 morning plan
             ctx, p, errs, seen = page(dt.datetime(2026, 11, 13, 2, 10, tzinfo=NY))
-            c = p.evaluate("(() => { const c = document.getElementById('hcCopilot'); return { slot: c.dataset.slot, kind: c.dataset.kind, h: c.querySelector('h2').innerText, rows: [...c.querySelectorAll('.hc-row')].map((b) => [b.innerText, b.dataset.say]), foot: (c.querySelector('.hc-age') || {}).innerText || '' }; })()")
+            c = p.evaluate("(() => { const c = document.getElementById('hcCopilot'); return { slot: c.dataset.slot, kind: c.dataset.kind, h: c.querySelector('h2').textContent.replace(/\s+/g, ' ').trim(), rows: [...c.querySelectorAll('.hc-row')].map((b) => [b.innerText, b.dataset.say]), foot: (c.querySelector('.hc-age') || {}).innerText || '' }; })()")
             check("c. 02:10 ET: the Morning plan card (slot 01:45) with its verdict chip, the accounts' loss budget, Kalshi and the foot with file ages",
                   c["slot"] == "01:45" and c["kind"] == "morning" and c["h"].startswith("Morning plan") and re.search(r"GO|CAREFUL|SIT OUT", c["h"])
                   and any("can lose $1,000 today" in r[0] for r in c["rows"]) and any(r[0].startswith("Kalshi: +$4.10 today") for r in c["rows"])
@@ -186,7 +186,7 @@ def run_browser():
             ctx.close()
             # 16:20 ET Friday: the 16:05 day summary, at 375 px
             ctx, p, errs, _ = page(dt.datetime(2026, 11, 13, 16, 20, tzinfo=NY), width=375)
-            c = p.evaluate("(() => { const c = document.getElementById('hcCopilot'); return { slot: c.dataset.slot, h: c.querySelector('h2').innerText, rows: [...c.querySelectorAll('.hc-row')].map((b) => [b.innerText, Math.round(b.getBoundingClientRect().height)]), sx: document.documentElement.scrollWidth - document.documentElement.clientWidth }; })()")
+            c = p.evaluate("(() => { const c = document.getElementById('hcCopilot'); return { slot: c.dataset.slot, h: c.querySelector('h2').textContent.replace(/\s+/g, ' ').trim(), rows: [...c.querySelectorAll('.hc-row')].map((b) => [b.innerText, Math.round(b.getBoundingClientRect().height)]), sx: document.documentElement.scrollWidth - document.documentElement.clientWidth }; })()")
             check("c. 16:20 ET: the Day summary (slot 16:05) with today's $ per account and the trade", c["slot"] == "16:05" and c["h"].startswith("Day summary") and "+$27" in c["h"]
                   and any(r[0].startswith("Zlarior 50K: +$27 today; drawdown left $1,133 of $2,000") for r in c["rows"]) and any(r[0].startswith("1 trade today") for r in c["rows"]), c)
             check("c. 375 px: no sideways scroll and every card line is at least 44 px tall", c["sx"] <= 0 and all(r[1] >= 44 for r in c["rows"]), c)

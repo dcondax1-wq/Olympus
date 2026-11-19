@@ -287,7 +287,7 @@ def pc_send(payload: dict, prefs: dict | None = None):
             from . import push
             p = apply_level(payload, prefs if prefs is not None else prefs_cached())
             n = push.pc_notifier()
-            if p is None:
+            if p is None or not push.pc_app_ok(p):      # 2026-11-19: the phone app takes these only with LE_PUSH_EXTRA=1
                 n.mark(payload)
                 n._save()
                 return
@@ -658,6 +658,13 @@ def ops_tick(ctx: dict, state: dict, now, send, real: bool) -> list:
         if real:
             _write(PREFS_PATH, A["prefs"])
         acks = acks_from(msgs)
+        if relay is not None:                        # the phones' sealed subscriptions / tests for the PC's own key (engine/push.intake)
+            try:
+                ir = push.intake(msgs, now)
+                if ir.get("added") or ir.get("removed") or ir.get("tests") or ir.get("error"):
+                    out.append({"key": "push_intake", **{k: ir.get(k) for k in ("added", "removed", "tests", "sent", "ignored", "error")}})
+            except Exception:
+                pass
         hb = ctx.get("hb") or {}
         saved = float(hb.get("_saved_t") or hb.get("t") or 0)
         pays = []

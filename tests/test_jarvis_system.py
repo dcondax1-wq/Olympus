@@ -76,6 +76,24 @@ await D.refreshKalshi(); const k1 = kc();
 await D.refreshKalshi(); await D.refresh({ maxAge: 0 }); await D.refreshKalshi();
 out.kalshi = { first: k1 - k0, after: kc() - k1, state: D.kalshiState(), backedOff: D.kalshiBackedOff(), row: D.systemStatus(D.getFacts()).rows.find((r) => r.id === 'kalshi') };
 await D.kalshiRetry(); out.kalshi.retry = kc() - k1;
+out.kalshi.dead = calls.filter((c) => /kalshi-feed/.test(c.url)).map((c) => c.url);
+out.kalshi.urls = [...new Set(calls.filter((c) => c.url.includes('kalshi')).map((c) => c.url.split('?')[0]))];
+// e2 (night-bugsweep 2026-11-19): the PC feed carries Kalshi (here the K8 live card): the PC is the source, the site's kalshi.json is not asked
+{
+  const D2 = await import(pathToFileURL(dataPath).href + '?pcfeed');
+  const t0 = Math.floor(Date.now() / 1000);
+  liveBody = { ...scen.published, t: t0, kalshi_live: { kind: 'kalshi_live_pub', v: 1, st: 'live', u: new Date().toISOString(), net: 3.25, f: 2, o: 4, cap: 50, stop: 10 } };
+  await D2.refreshLive();
+  const c0 = kc();
+  await D2.refreshKalshi();
+  const row = D2.systemStatus(D2.getFacts()).rows.find((r) => r.id === 'kalshi');
+  liveBody = { ...liveBody, t: t0 + 1, kalshi_live: { kind: 'kalshi_live_pub', v: 1, st: 'stopped', u: new Date().toISOString(), net: -10, why: 'daily loss stop' } };
+  await D2.refreshLive();
+  const st = D2.systemStatus(D2.getFacts());
+  liveBody = { ...liveBody, t: t0 + 2, kalshi_live: { kind: 'kalshi_live_pub', v: 1, st: 'off', u: new Date().toISOString() } };
+  await D2.refreshLive();
+  out.kalshiPc = { asked: kc() - c0, state: D2.kalshiState(), row, stopped: st.rows.find((r) => r.id === 'kalshi'), todo: st.todo, off: D2.liveView().klive };
+}
 // f. the Planner: not linked -> one clear grey line; linked (its own sync on this phone) -> today's day from planner.json, read-only
 out.planner0 = { day: D.plannerDay(), row: D.systemStatus(D.getFacts()).rows.find((r) => r.id === 'planner'), linked: D.plannerLinked() };
 localStorage.setItem('planner.sync', JSON.stringify({ token: 'ghp_PLANNERFAKE', repo: 'owner/planner-data' }));
@@ -287,9 +305,19 @@ def main() -> int:
           and mn["facts"] == mn["stored"] and mn["same"] == 0, mn)
     k = O["kalshi"]
     # since 8e61ac1 the same-origin ../kalshi.json is asked first and GitHub raw second: one try per page load = at most 2 requests
-    check("e. Kalshi not linked (404): one try per page load (same-origin, then GitHub), then none; grey 'NOT LINKED' with the planned step; kalshiRetry() asks again",
-          1 <= k["first"] <= 2 and k["after"] == 0 and k["state"] == "waiting" and k["backedOff"] and k["row"]["value"] == "NOT LINKED" and k["row"]["level"] == ""
-          and "planned" in k["row"]["text"] and 1 <= k["retry"] <= 2, k)
+    # night-bugsweep 2026-11-19: only this site's own ../kalshi.json; the old kalshi-feed repo (suspended account) is never asked
+    check("e. Kalshi not linked (404): one try per page load (this site's kalshi.json only), then none; grey 'NOT LINKED' with the planned step; kalshiRetry() asks again",
+          k["first"] == 1 and k["after"] == 0 and k["state"] == "waiting" and k["backedOff"] and k["row"]["value"] == "NOT LINKED" and k["row"]["level"] == ""
+          and "planned" in k["row"]["text"] and k["retry"] == 1, k)
+    check("e. never a dead URL: no request to the suspended account's kalshi-feed repo (raw or API); the only Kalshi address is ../kalshi.json",
+          k["dead"] == [] and k["urls"] == ["../kalshi.json"], (k["dead"], k["urls"]))
+    kp = O["kalshiPc"]
+    check("e. the PC feed carries Kalshi (the K8 live card): kalshi.json is not asked; the System row reads LIVE, today +$3.25, 2 fills, green",
+          kp["asked"] == 0 and kp["state"] == "waiting" and kp["row"]["value"] == "LIVE" and kp["row"]["level"] == "ok" and "today +$3.25" in kp["row"]["text"]
+          and "2 fills" in kp["row"]["text"] and kp["row"]["sub"] == "live on your PC", kp)
+    check("e. a STOPPED K8 card is red with the plain step (type the phrase on the PC); an 'off' card is no card (paper / paused lines instead)",
+          kp["stopped"]["value"] == "STOPPED" and kp["stopped"]["level"] == "bad" and "daily loss stop" in kp["stopped"]["text"]
+          and "KALSHI_LIVE.bat" in (kp["stopped"].get("todo") or "") and kp["off"] is None, kp)
     p0, p1 = O["planner0"], O["planner1"]
     check("f. the Planner not linked on this phone: one clear grey line (NOT LINKED, open it once), no error", p0["day"] is None and p0["row"]["value"] == "NOT LINKED"
           and p0["row"]["level"] == "" and "open the Planner once on this phone" in p0["row"]["text"] and not p0["linked"], p0)

@@ -2,7 +2,8 @@
 
 ON / OFF: data/rapid.json (local, gitignored, never the phrase). Missing, or no "account" in it = OFF: the bot is exactly
 today's. The owner sets ONE value, the NinjaTrader account Name (docs/RAPID_EOD_SETUP.md):
-    python -X utf8 -m engine.rapid --account "<NinjaTrader account Name>"      (eval from today's session, DISARMED)
+    python -X utf8 -m engine.rapid --account "<NinjaTrader account Name>" [--size 25k|50k]   (eval from today's session, DISARMED;
+    no --size: the size NinjaTrader's balance or the Name shows, refused when unknown or contradicted, never a silent 50K)
 Arming: only START BOT after the owner typed I ACCEPT LIVE RISK (engine/go.step_arm -> arm()); a real (non-Sim) account
 also needs NINJATRADER_LIVE=1 and the allowlist (each adapter's own gate, engine/ninjatrader._live_gate). Nothing here arms.
 
@@ -147,6 +148,65 @@ def _other_names() -> dict:
     except Exception:
         pass
     return out
+
+
+def size_hint(name: str, balances: dict | None = None) -> tuple:
+    """("25k" | "50k" | None, why) of a Rapid account: NinjaTrader's fresh balance for its Name (below $35,000 = the 25K, the
+    same line as engine/go.slot_problem), else the Name ("25K" / "50K" in it). None = unknown (the owner says --size).
+    2026-11-18 (night-money): `engine.rapid --account` without --size used to mean the 50K, so a Rapid EOD 25K added with the
+    old docs line would have traded on the 50K's numbers ($2,000 floor, 30 micros) with only $1,000 of real room."""
+    nm = str(name or "").strip()
+    if balances is None:
+        try:
+            from . import go
+            balances = go.nt_balances()
+        except Exception:
+            balances = {}
+    bal = _num((balances or {}).get(nm))
+    if bal is not None and bal > 0:
+        return ("25k" if bal < 35000 else "50k"), f"NinjaTrader shows ${bal:,.0f} for {nm}"
+    u = nm.upper().replace(" ", "")
+    if "25K" in u and "50K" not in u:
+        return "25k", f"the Name {nm} says 25K"
+    if "50K" in u and "25K" not in u:
+        return "50k", f"the Name {nm} says 50K"
+    return None, f"NinjaTrader's balance for {nm} is not readable yet"
+
+
+def cli_size(name: str, size: str | None, p: str | None = None, balances: dict | None = None) -> tuple:
+    """The --size the one line uses: (size | None, message, ok). The same Name again keeps its plan (no --size needed);
+    a new Name takes --size, else the size NinjaTrader's balance / the Name shows; a --size that contradicts the balance
+    or the Name, or no size at all, is refused (nothing saved)."""
+    old = load(p)
+    nm = str(name or "").strip()
+    same = str(old.get("account") or "").strip() == nm and old.get("enabled") is not False
+    hint, why = size_hint(nm, balances)
+    if size and hint and hint != size:
+        return None, (f"{why}: that is a Rapid EOD {hint.upper()}, not a {size.upper()}. Nothing changed. "
+                      f"Use --size {hint} (or ADD_ACCOUNT.bat)"), False
+    if size or same:
+        return size, "", True
+    if not hint:
+        return None, (f"which Rapid is {nm}? {why}. Add --size 25k (Rapid EOD 25K) or --size 50k (Rapid EOD 50K). "
+                      "Nothing changed"), False
+    return hint, f"Rapid EOD {hint.upper()}: {why}", True
+
+
+def rules_line(blk: dict) -> str:
+    """The numbers the bot will use on this Rapid, in plain words (printed by the one line so a wrong size shows at once)."""
+    P = plan_info(blk)
+    R = (_ma_presets().get(P["preset"]) or {}).get("rules") or {}
+    tgt, mll, mq = float(P["target"]), float(R.get("mll") or 0.0), int(R.get("max_micros") or 0)
+    return (f"{P['label']}: target +${tgt:,.0f}, floor ${mll:,.0f} below the best close, max {mq} micros, a winning day "
+            f"<= ${int(BEST_DAY * tgt * MARGIN):,} (30% rule), ATLAS <= ${float(P['atlas_usd']):,.0f} a trade")
+
+
+def _ma_presets() -> dict:
+    try:
+        from .multi_account import PRESETS
+        return PRESETS
+    except Exception:
+        return {}
 
 
 def set_account(name: str, start: str | None = None, p: str | None = None, others: dict | None = None, allow=None,
@@ -688,10 +748,12 @@ def status(p: str | None = None, state_path: str | None = None) -> dict:
 
 def main(argv=None) -> int:
     import argparse
-    ap = argparse.ArgumentParser(prog="python -m engine.rapid", description="the MFFU Rapid EOD 50K (LIT + ATLAS on one account)")
+    ap = argparse.ArgumentParser(prog="python -m engine.rapid", description="the MFFU Rapid EOD 25K / 50K (LIT + ATLAS on one account)")
     ap.add_argument("--account")
     ap.add_argument("--start")
-    ap.add_argument("--size", choices=("50k", "25k"), default=None, help="the Rapid EOD size (default: 50K / the same Name's)")
+    ap.add_argument("--size", choices=("50k", "25k"), default=None,
+                    help="the Rapid EOD size (default: the same Name's, else what NinjaTrader's balance / the Name shows; "
+                         "unknown = refused)")
     ap.add_argument("--to-funded", action="store_true")
     ap.add_argument("--payout")
     ap.add_argument("--off", action="store_true")
@@ -720,13 +782,20 @@ def main(argv=None) -> int:
         print("Rapid EOD funded: set (disarmed: START BOT + the phrase arms it)" if r["ok"] else f"NOT set: {r['error']}")
         return 0 if r["ok"] else 1
     if a.account:
-        r = set_account(a.account, a.start, preset=f"mffu_rapid_eod_{a.size}" if a.size else None)
+        size, msg, ok = cli_size(a.account, a.size)
+        if not ok:
+            print(f"NOT set: {msg}")
+            return 1
+        if msg:
+            print(msg)
+        r = set_account(a.account, a.start, preset=f"mffu_rapid_eod_{size}" if size else None)
         if not r["ok"]:
             print(f"NOT set: {r['error']}")
             return 1
         b = r["block"]
-        print(f"[OK] Rapid EOD{'' if b.get('plan', PRESET) == PRESET else ' 25K'} = {b['account']}, eval from {b['eval_start']}, NOT armed. LIT + ATLAS trade it after START BOT "
+        print(f"[OK] {plan_info(b)['label']} = {b['account']}, eval from {b['eval_start']}, NOT armed. LIT + ATLAS trade it after START BOT "
               "(you type I ACCEPT LIVE RISK)." + (f" {r['note']}." if r.get("note") else ""))
+        print(f"     {rules_line(b)}")
         return 0
     print(status()["text"])
     return 0

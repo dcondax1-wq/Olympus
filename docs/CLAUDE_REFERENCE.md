@@ -770,13 +770,17 @@ The long list moved on 2026-11-18 to `docs/TESTED_AND_REJECTED.md` (heading "## 
   `pc/clean_storage.ps1` from the site, so the build only needs the two files in `tools/web_public/pc/`, which
   `tools/build_web_dashboard.py` already copies; a test keeps them identical to the repo files). Flow: table of sizes per
   category -> Y -> the user part (no admin) -> one UAC prompt for the Windows part (`-SystemPart`, result handed back via a
-  temp file) -> "Freed X, C: now Y free". Recycle Bin and Windows.old asked separately (`-Extras` answers Y). Safety: every
+  temp file) -> "Done: freed X. C: now Y free." Recycle Bin and Windows.old asked separately (`-Extras` answers Y); a second
+  fixed drive (2026-11-19) gets ONE more Y/N to robocopy /MOVE only `data\_pre_clean_backup|_cfd_archive|duka_cache|nt_export`
+  (200 MB+, bot + NinjaTrader stopped, never -Yes/-Extras) to `<drive>\LiquidityEngine-archive` + README.txt. Safety: every
   delete goes through `Remove-SafeFile` / `Remove-SafeEmptyDir` / `Remove-SafeTree`, which refuse anything not under an
   allow-listed root (roots equal to the profile, bot folder, NinjaTrader folder, drive, Windows dir or ProgramData are refused),
   anything named like state / secrets / journals / accounts, and anything in `nt_bars`, `workspaces`, `templates`, `le_feed`,
-  `incoming`, `outgoing`, NinjaTrader `db` (except `db\cache`), or the bot's `data\` (only `*.corrupt-<n>` directly inside).
+  `incoming`, `outgoing`, NinjaTrader `db` (all of it, `db\cache` too; 2026-11-19: NinjaTrader = its own `log` + `trace` only),
+  or the bot's `data\` (only `*.corrupt-<n>` directly inside). The bot part also clears every `__pycache__` of the code (never a
+  venv's), `research\runs\_cache` 14+ days and old `OLYMPUS_BACKUP_*.zip` (the newest 2 stay).
   Bot or NinjaTrader running (process, port 8766, supervisor.pid) -> the `nt` and `bot` categories and Windows.old are skipped.
-  Test hooks (env, tests only): `LE_T_ELEVATED`, `LE_T_ANSWER`, `LE_T_BIN_BYTES`. Health: `engine/pc_health.py` adds the
+  Test hooks (env, tests only): `LE_T_ELEVATED`, `LE_T_ANSWER`, `LE_T_BIN_BYTES`, `LE_T_SECOND_DRIVE`, `LE_T_MOVE_MIN`. Health: `engine/pc_health.py` adds the
   `storage` line + `storage` block ({free_gb, bot_gb, nt_gb}; capped folder walk every 6 h, never in the first 5 min);
   `live_publish.pc_health_summary` shows it as "Storage" instead of the Disk line (Jarvis System view). Tests:
   `python -X utf8 -m tests.test_clean_storage` (sandbox tree, real process named NinjaTrader, bot port, hostile TEMP).

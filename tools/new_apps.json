@@ -661,6 +661,24 @@
         "kind": "tiles",
         "ms": 800
       }
+    },
+    {
+      "id": "why",
+      "name": "Why",
+      "group": "trading",
+      "accent": "#c8a24a",
+      "description": "Why our trades win and lose, per bot, in plain $",
+      "glyph": "?",
+      "ambient": "scroll",
+      "flavour": [
+        "columns",
+        "See why we win",
+        "tick"
+      ],
+      "transition": {
+        "kind": "tiles",
+        "ms": 800
+      }
     }
   ],
   "pending": [],

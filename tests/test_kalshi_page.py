@@ -2152,6 +2152,26 @@ def part_rewards(br, url, tmp):
         kt = p.inner_text("#kk1")
         check("k1b. the PC's ext post fills the K1 card: Signals 14, Settled 6, Net -$0.80, 2.5 Days, -$0.12 per $1, 'from the PC', age shown",
               all(w in kt for w in ("14", "6", "−$0.80", "2.5", "−$0.12 per $1", "from the PC", "updated")) and "K1 rules (−$0.80 over 2.5 days)" in p.inner_text("#kpaused"), kt[:300])
+        # Kalshi LIVE executor (engine/kalshi_live.py, night-klive): OFF = the plain PAUSED line; its PC card (key kalshi_live) = LIVE / STOPPED
+        check("kl0. no PC card: the status line says plainly 'PAUSED: ready to go live when you type the phrase' and '$0 at risk'",
+              "PAUSED: ready to go live when you type the phrase" in k0 and "$0 at risk" in k0, k0[:300])
+        klc = {"kind": "kalshi_live_pub", "v": 1, "st": "live", "net": 1.25, "f": 3, "o": 6, "cap": 60, "stop": 8, "u": "2099-02-01T00:00:00+00:00"}
+        R["ntfy"] = json.dumps({"event": "message", "time": 1, "message": json.dumps({"kind": "le-live-ext", "t": 2, "part": 0, "of": 1,
+                                                                                    "x": {"kalshi_k1": k1c, "kalshi_live": klc}})}) + "\n"
+        open_()
+        p.wait_for_function("document.querySelector('#kpaused-live').textContent.indexOf('LIVE:') >= 0", timeout=20000)
+        kl = p.inner_text("#kpaused")
+        check("kl1. the PC's Kalshi LIVE card turns the line into 'Kalshi: LIVE': today +$1.25, 3 fills, 6 orders resting, the limits, "
+              "'At most $60.00 at risk' (never '$0 at risk' while live)", "KALSHI: LIVE" in kl.upper()
+              and all(w in kl for w in ("+$1.25", "3 fills", "6 orders resting", "$60.00 total", "At most $60.00 at risk"))
+              and "$0 at risk" not in kl and "ready to go live" not in kl, kl[:400])
+        R["ntfy"] = json.dumps({"event": "message", "time": 1, "message": json.dumps({"kind": "le-live-ext", "t": 2, "part": 0, "of": 1, "x": {
+            "kalshi_live": dict(klc, st="stopped", net=-8.4, why="daily loss stop: day -$8.40")}})}) + "\n"
+        open_()
+        p.wait_for_function("document.querySelector('#kpaused-live').textContent.indexOf('STOPPED') >= 0", timeout=20000)
+        kl = p.inner_text("#kpaused")
+        check("kl2. after a stop: 'Kalshi: STOPPED (daily loss stop ...)': it is OFF, today -$8.40, type the phrase on the PC to restart",
+              "KALSHI: STOPPED" in kl.upper() and all(w in kl for w in ("daily loss stop", "OFF", "−$8.40", "type the phrase", "No new orders")), kl[:400])
         R["ntfy"] = None
         bad = dict(copy, paper=dict(copy["paper"], reward="<img src=x onerror=window.__pwn=1>"),
                    backtest={"text": "<script>window.__pwn=1</script>bad"})

@@ -201,6 +201,17 @@ def kind_of(key: str) -> str:
     return "other"
 
 
+def entry_t_of(m: dict):
+    """A report push's trade entry time: its "entry_t", else the last number of its key ("open:lit:1795050000")."""
+    m = _d(m)
+    if _f(m.get("entry_t")) is not None:
+        return _f(m.get("entry_t"))
+    k = str(m.get("key") or "")
+    if k.startswith(("open:", "close:")):
+        return _f(k.rsplit(":", 1)[-1])
+    return None
+
+
 def apply(msgs, now, s: dict | None = None) -> list:
     """The settings on a list of pushes ({key, title, body, priority, ...}): a type that is off is dropped (its key stays
     recorded as seen by the caller, so it never comes later); in quiet hours a trade or an ordinary push loses its sound."""
@@ -212,8 +223,10 @@ def apply(msgs, now, s: dict | None = None) -> list:
         kind = m.get("kind") or kind_of(m.get("key"))
         if not on(kind, s):
             continue
-        if kind == "trade_opened" and instant_sent(m.get("entry_t")):
+        if kind == "trade_opened" and instant_sent(entry_t_of(m)):
             continue                                # the phone already got this entry the moment it was routed
+        if kind == "trade_closed" and instant_sent(entry_t_of(m), what="exits"):
+            continue                                # the phone app already got this exit the moment the bot saw it
         if quiet(now, s) and not rings(kind, s) and not m.get("night"):
             if kind in ("trade_opened", "trade_closed") or m.get("priority") in (None, "", "default"):
                 m = {**m, "priority": "low"}
@@ -450,24 +463,67 @@ def _instant_state(path=None) -> dict:
         return {}
 
 
-def instant_sent(entry_t, path=None, now=None) -> bool:
-    """True when an instant entry push went out for a trade entered within INSTANT_MATCH_S of entry_t (the report skips it)."""
+def instant_sent(entry_t, path=None, now=None, what: str = "entries") -> bool:
+    """True when an instant push went out for a trade entered within INSTANT_MATCH_S of entry_t (the report skips its own copy).
+    what: "entries" (ntfy or the phone app) or "exits" (the phone app, engine/push.pc_notify)."""
     t = _f(entry_t)
     if t is None:
         return False
-    for v in _d(_instant_state(path).get("entries")).values():
+    for v in _d(_instant_state(path).get(what)).values():
         if _f(v) is not None and abs(_f(v) - t) <= INSTANT_MATCH_S:
             return True
     return False
 
 
-def _real_entry(p: dict) -> bool:
-    if not isinstance(p, dict) or p.get("kind") != "fill":
+def _save_instant(st: dict, path, t_now: float) -> None:
+    keys = _d(st.get("keys"))
+    cut = t_now - INSTANT_KEEP_S
+    out = {"keys": {k: v for k, v in keys.items() if (_f(v) or 0) >= cut}}
+    for what in ("entries", "exits"):
+        out[what] = {k: v for k, v in _d(st.get(what)).items() if (_f(keys.get(k)) or t_now) >= cut}
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as fh:
+        json.dump(out, fh)
+    os.replace(tmp, path)
+
+
+def _trade_entry_t(p: dict):
+    """The entry time of a trade notice: "fill:<t>" / "out:<t>" keys carry it (an outcome's own "t" is the exit)."""
+    m = re.match(r"^(?:fill|out):(\d+)", str(_d(p).get("key") or ""))
+    return _f(m.group(1)) if m else (_f(_d(p).get("t")) if _d(p).get("kind") == "fill" else None)
+
+
+def instant_record(p: dict, what: str = "entry", now=None, path=None) -> bool:
+    """The phone app got this entry / exit at once (engine/push.pc_notify): recorded like an instant ntfy entry, so instant_entry
+    and the 15-minute report never send the same alert to the phone again. Never raises."""
+    try:
+        path = path or INSTANT_PATH
+        st = _instant_state(path)
+        t_now = time.time() if now is None else float(now)
+        et_ = _trade_entry_t(p)
+        key = str(_d(p).get("key") or f"t:{t_now}")
+        st.setdefault("keys", {})[key] = t_now
+        if et_ is not None:
+            st.setdefault("entries" if what == "entry" else "exits", {})[key] = et_
+        _save_instant(st, path, t_now)
+        return True
+    except Exception:
+        return False
+
+
+def real_trade(p: dict) -> bool:
+    """An entry / exit notice of a real account: never Paper, Sim, a demo / replay account, or BLITZ (the hidden paper bot)."""
+    if not isinstance(p, dict) or p.get("kind") not in ("fill", "outcome"):
         return False
     acct = str(p.get("account") or "").lower()
-    if any(w in acct for w in ("paper", "sim", "demo", "playback", "replay")):
+    if any(w in acct for w in ("paper", "sim", "demo", "playback", "replay", "blitz")):
         return False
-    return str(p.get("strategy") or "").upper() != "BLITZ"        # BLITZ is the hidden paper bot
+    return str(p.get("strategy") or "").upper() != "BLITZ" and not str(p.get("key") or "").endswith(":acctc")
+
+
+def _real_entry(p: dict) -> bool:
+    return isinstance(p, dict) and p.get("kind") == "fill" and real_trade(p)
 
 
 def _px(x) -> str:
@@ -475,14 +531,47 @@ def _px(x) -> str:
     return "" if v is None else (f"{v:,.2f}".rstrip("0").rstrip(".") if v % 1 else f"{v:,.0f}")
 
 
+def display_name(p: dict) -> str:
+    """The owner's name of the account a trade notice is about ("Zlarior 50K", "ATLAS 25K funded"; ids masked)."""
+    p = _d(p)
+    acct = mask_ids(p.get("account") or "account")
+    body0 = str(p.get("body") or "")
+    bot = "ATLAS" if ("ATLAS" in body0 or ":acctb" in str(p.get("key") or "") or "ATLAS" in acct.upper()) else "Zlarior"
+    name = acct if (bot.lower() in acct.lower()) else f"{bot} {acct}"
+    try:                                    # the owner's own names ("Zlarior 50K", "ATLAS 25K funded"), from the PC's names.json
+        from . import mffu_view
+        name = mffu_view.push_name(p.get("account")) or name
+    except Exception:
+        pass
+    return mask_ids(name)
+
+
+EXIT_WORDS = {"TARGET": "Target hit", "STOP": "Stopped out", "BE": "Breakeven stop", "TIME": "Closed on time", "EOD": "Closed at the day's end",
+              "TIME SAFETY": "Closed before the close", "KILL": "Closed by the kill switch", "FLATTEN": "Flattened", "LIT PRIORITY": "Closed for a LIT entry"}
+
+
+def exit_message(p: dict, now=None, s: dict | None = None) -> dict:
+    """{title, body, priority, tags} for one exit the bot saw: 'Zlarior 50K: LONG closed +$605' / 'Target hit · +2.0R · 6 MNQ ·
+    10:58 AM ET.' (the phone app's exit notice; it replaces the entry's)."""
+    p = _d(p)
+    side = str(p.get("side") or "").upper()
+    usd = _f(p.get("usd"))
+    title = f"{display_name(p)}: {(side + ' ') if side in ('LONG', 'SHORT') else ''}closed {signed(usd) if usd is not None else ''}".strip()
+    why = EXIT_WORDS.get(str(p.get("exit") or "").upper(), str(p.get("exit") or "").capitalize())
+    r = _f(p.get("R") if p.get("R") is not None else p.get("r"))
+    bits = [why, f"{r:+.1f}R" if r is not None else "", _et(p["t"]).strftime("%I:%M %p ET").lstrip("0") if _f(p.get("t")) else ""]
+    s = s or settings()
+    night = quiet(now if now is not None else time.time(), s)
+    return {"title": mask_ids(title), "body": mask_ids(" · ".join(b for b in bits if b) + "."), "priority": "low" if night else "default",
+            "tags": "checkered_flag"}
+
+
 def entry_message(p: dict, now=None, s: dict | None = None) -> dict:
     """{title, body, priority, tags} for one routed entry: 'Zlarior 50K: LONG opened | risk $368 | target +$1,432'."""
     p = _d(p)
     side = str(p.get("side") or "").upper() or ("LONG" if "LONG" in str(p.get("title") or "") else "SHORT")
-    acct = mask_ids(p.get("account") or "account")
     body0 = str(p.get("body") or "")
-    bot = "ATLAS" if ("ATLAS" in body0 or str(p.get("key") or "").endswith(":acctb") or "ATLAS" in acct.upper()) else "Zlarior"
-    name = acct if (bot.lower() in acct.lower()) else f"{bot} {acct}"
+    name = display_name(p)
     m = re.search(r"\b(MNQ|MES|NQ|ES)\b", body0)
     contract = m.group(1) if m else "MNQ"
     q, e, st, tg = _f(p.get("qty")), _f(p.get("entry")), _f(p.get("stop")), _f(p.get("target"))
@@ -536,14 +625,8 @@ def instant_entry(p: dict, now=None, path=None, cfg=None, poster=None) -> str:
         keys[key or f"t:{t_now}"] = t_now
         if _f(p.get("t")) is not None:
             ents[key or f"t:{t_now}"] = _f(p.get("t"))
-        cut = t_now - INSTANT_KEEP_S
-        st = {"keys": {k: v for k, v in keys.items() if (_f(v) or 0) >= cut},
-              "entries": {k: v for k, v in ents.items() if (_f(keys.get(k)) or t_now) >= cut}}
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        tmp = path + ".tmp"
-        with open(tmp, "w", encoding="utf-8") as fh:
-            json.dump(st, fh)
-        os.replace(tmp, path)
+        st.update(keys=keys, entries=ents)
+        _save_instant(st, path, t_now)
         return "sent"
     except Exception as e:
         return f"failed: {e.__class__.__name__}"

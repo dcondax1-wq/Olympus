@@ -56,7 +56,7 @@ def part_a():
     html, css = rd(PAGE, "index.html"), rd(PAGE, "forum.css")
     js = {n: rd(PAGE, n) for n in files if n.endswith(".js")}
     check("a. the kit first (olympus.css, themes.js, olympus.js ?v=o2 with data-app), viewport-fit=cover, theme-color, dark, manifest, icon, apple-touch-icon",
-          '<link rel="stylesheet" href="../olympus/olympus.css?v=o7">' in html and 'src="../olympus/themes.js?v=o6"' in html and 'src="../olympus/olympus.js?v=o10" data-app="forum"' in html
+          '<link rel="stylesheet" href="../olympus/olympus.css?v=o7">' in html and 'src="../olympus/themes.js?v=o7"' in html and 'src="../olympus/olympus.js?v=o12" data-app="forum"' in html
           and "viewport-fit=cover" in html and 'name="theme-color"' in html and 'content="dark"' in html and 'rel="manifest" href="manifest.webmanifest"' in html
           and 'rel="icon" href="icon.svg"' in html and 'rel="apple-touch-icon"' in html)
     check("a. no CDN, no outside script / font / image: every src and href is local", not re.search(r'(src|href)="https?://', html) and not any(re.search(r"import[^;]*['\"]https?://", s) for s in js.values()))
@@ -70,7 +70,7 @@ def part_a():
           fetched == {"../pantheon/pantheon.json", "../home.json", "fixture.json"} and not any(re.search(r"WebSocket|sendBeacon|XMLHttpRequest|EventSource", s) for s in js.values())
           and "const KEY = 'forum.v1'" in js["forum.js"] and set(re.findall(r"localStorage\.\w+Item\(([A-Za-z'\"\.]+)", js["forum.js"])) <= {"KEY", "'forum.opt"}, fetched)   # + the 30-minute "this optional file is not there" note (forum.opt404.<url>)
     check("a. the OLYMPUS effects library (fx-core, ui, text, burst ?v=f1) is linked after olympus.js; forumdesk.js draws the desk / shrine / ritual with textContent only and reads the Planner only through its own helper",
-          all(f"../olympus/fx-{n}.js?v=f1" in html for n in ("core", "ui", "text", "burst")) and html.find("fx-core.js") > html.find("olympus.js?v=o10") and "forumdesk.js" in js
+          all(f"../olympus/fx-{n}.js?v=f1" in html for n in ("core", "ui", "text", "burst")) and html.find("fx-core.js") > html.find("olympus.js?v=o12") and "forumdesk.js" in js
           and not re.search(r"innerHTML", js["forumdesk.js"]) and "planner.v1" not in js["forum.js"] and "fxTarget" in js["scene.js"] and "id=\"desk\"" in html and "id=\"shrine\"" in html)
     check("a. the core has no clock, no network and no storage of its own (pure: the page passes the date in)", not re.search(r"fetch\(|XMLHttpRequest|localStorage|Date\.now|new Date\(\)", js["forumcore.js"]))
     check("a. safe areas on every edge, the orb's corner (the card and the step bar stop 96 px from the right), dvh after vh, reduced motion",
@@ -170,6 +170,8 @@ def make_site(tmp, with_pantheon=True, with_home=True):
     shutil.copytree(PAGE, os.path.join(site, "forum"))
     for d in ("jarvis", "olympus"):
         shutil.copytree(os.path.join(WEB, d), os.path.join(site, d))
+    from tests.olympus_money_kit import root_readers      # home_feed.js + what it reads, as on the real site (night-feedsB)
+    root_readers(site)
     if with_pantheon:
         os.makedirs(os.path.join(site, "pantheon"))
         doc = json.loads(rd(WEB, "pantheon", "pantheon.json"))
@@ -203,6 +205,7 @@ def run_browser():
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     base = f"http://127.0.0.1:{srv.server_address[1]}/nq-dashboard/forum/"
     outside = []
+    from tests import agora_kit as AK                 # is_status_feed: the one allowed outside address (night-feedsB: home_feed.js)
     shots = os.environ.get("FORUM_SHOTS")
     try:
         with sync_playwright() as pw:
@@ -218,6 +221,8 @@ def run_browser():
                     u = route.request.url
                     if u.startswith(f"http://127.0.0.1:{srv.server_address[1]}") or u.startswith(("data:", "blob:")):
                         return route.continue_()
+                    if AK.is_status_feed(u):      # the sanctioned public PC status feed (docs/PRIVACY.md; home_feed.js asks it): aborted, never reached
+                        return route.abort()
                     outside.append(u)
                     return route.abort()
                 ctx.route("**/*", guard)

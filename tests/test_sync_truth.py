@@ -44,14 +44,20 @@ const old = NOW - 3 * 3600, fresh = NOW - 240;
 const ghLive = { kind: 'le-live', t: old, pc: { t: old }, board: { t: old, data_t: old, lit: { room: 1300, mll: 2000, today_pnl: 50, balance: 51300 }, atlas: { room: 900, mll: 1000, today_pnl: 0, balance: 24900 },
   trades: [{ acct: 'lit', entry_t: old - 600, usd: 50 }] } };
 const lite = { kind: 'le-live', lite: true, t: fresh, pc: { t: fresh, running: true }, board: { t: fresh, data_t: fresh, lit: { room: 1145, mll: 2000, today_pnl: 212.5, balance: 51145 },
-  atlas: { room: 822, mll: 1000, today_pnl: -40, balance: 24822 } }, reporter: { t: NOW - 60, server: true } };
+  atlas: { room: 822, mll: 1000, today_pnl: -40, balance: 24822 } }, reporter: { t: NOW - 60, server: true },
+  // night-feedsA: the PC's account list (the lit card's own 50K row, the 25K #2 eval, a cloud paper twin) + Kalshi's paper K1 card
+  accounts: [{ id: 'mffu50k_eval', name: 'MFFU 50K Eval', plan: 'Builder 50K', kind: 'eval', source: 'pc', badge: 'LIVE', eval: { balance: 51145, room: 1145, mll: 2000 } },
+    { id: 'b25k_2', name: 'Zlarior Builder 25K #2', plan: 'Builder 25K', kind: 'eval', source: 'pc', badge: 'LIVE', conn: { t: fresh }, eval: { start_balance: 25000, balance: 25120, floor: 24120, room: 1000, mll: 1000, to_target: 1380, target_balance: 26500 }, pnl: { today: 120 } },
+    { id: 'cloud_paper', name: 'Paper (cloud)', kind: 'paper', source: 'cloud', badge: 'PAPER', eval: { balance: 49900, room: 1900, mll: 2000 } }],
+  kalshi_k1: { kind: 'kalshi_k1_pub', paper_only: true, updated: new Date((NOW - 300) * 1000).toISOString(), days: 1.5, sig: 3, set: 2, net: 1.25 } };
+let ghAsked = 0;
 const home = { built: new Date((old) * 1000).toISOString(), live: { pc: { t: old } }, board: { t: old, data_t: old, lit: { room: 1200, mll: 2000, today_pnl: 10, balance: 51200 }, atlas: { room: 900, mll: 1000, today_pnl: 0, balance: 24900 } },
   accounts: [{ id: 'mffu50k', name: 'Zlarior 50K', plan: 'MFFU Builder 50K', eval: { room: 1300, mll: 2000, balance: 51300 }, pnl: { today: 50 } }] };
 const feed = { ntfy: 'https://ntfy.example', topic: 'olympus_status_test' };
 let useFeed = true, liveBody = ghLive;
 const fakeFetch = async (u) => {
   u = String(u);
-  if (u.includes('live.json')) return { ok: true, status: 200, json: async () => JSON.parse(JSON.stringify(liveBody)) };
+  if (u.includes('live.json')) { ghAsked++; return { ok: true, status: 200, json: async () => JSON.parse(JSON.stringify(liveBody)) }; }
   if (u.endsWith('status_feed.json')) return useFeed ? { ok: true, status: 200, json: async () => feed } : { ok: false, status: 404, json: async () => ({}) };
   if (u.startsWith('https://ntfy.example/')) return { ok: true, status: 200, text: async () => JSON.stringify({ event: 'message', time: NOW - 60, message: JSON.stringify(lite) }) + '\n' };
   if (u.endsWith('home.json')) return { ok: true, status: 200, json: async () => JSON.parse(JSON.stringify(home)) };
@@ -65,15 +71,17 @@ const out = {};
 // a. truth
 const h1 = await T.withPcFeed(JSON.parse(JSON.stringify(home)));
 const A = T.accountsOf(h1), ag = T.agesOf(h1, NOW);
-out.truth = { lit: A.lit.room, atlas: A.atlas.room, litToday: A.lit.today, atlasToday: A.atlas.today, litBal: A.lit.balance, pcT: ag.pc.t };
+out.truth = { lit: A.lit.room, atlas: A.atlas.room, litToday: A.lit.today, atlasToday: A.atlas.today, litBal: A.lit.balance, pcT: ag.pc.t, extra: T.extraOf(h1).map((x) => [x.name, x.room, x.today, x.toTarget]) };
 // b / c. Jarvis data.js
 const D = await import(pathToFileURL(path.join(WP, 'jarvis/data.js')).href + '?a');
 await D.refreshLive(); await D.pcFeedReady();
 let v = D.liveView();
-out.jarvisFeed = { lit: v.lit && v.lit.room, atlas: v.atlas && v.atlas.room, litToday: v.lit && v.lit.today_pnl, t: v.raw && v.raw.pc && v.raw.pc.t, trades: (v.trades || []).length, blitz: v.blitz };
+out.jarvisFeed = { lit: v.lit && v.lit.room, atlas: v.atlas && v.atlas.room, litToday: v.lit && v.lit.today_pnl, t: v.raw && v.raw.pc && v.raw.pc.t, trades: (v.trades || []).length, blitz: v.blitz, gh: ghAsked,
+  extra: (v.extra || []).map((x) => [x.name, x.room, x.today_pnl, x.to_target]), kp: v.kpaper && v.kpaper.k1 ? [v.kpaper.k1.sig, v.kpaper.k1.net, v.kpaper.net] : null,
+  sys: D.systemStatus({ now: new Date(NOW * 1000), live: v, kalshiState: 'waiting' }).rows.map((r) => [r.id, r.abbr || '', r.value]) };
 const D2 = await import(pathToFileURL(path.join(WP, 'jarvis/data.js')).href + '?b');
 liveBody = { ...ghLive, t: NOW, pc: { t: NOW }, board: { ...ghLive.board, t: NOW, data_t: NOW, lit: { ...ghLive.board.lit, room: 1100 } } };
-await D2.refreshLive(); await D2.pcFeedReady(); v = D2.liveView(); out.jarvisNewerGh = { lit: v.lit && v.lit.room };
+ghAsked = 0; await D2.refreshLive(); await D2.pcFeedReady(); v = D2.liveView(); out.jarvisNewerGh = { lit: v.lit && v.lit.room, gh: ghAsked };
 const D3 = await import(pathToFileURL(path.join(WP, 'jarvis/data.js')).href + '?c');
 useFeed = false; liveBody = ghLive; await D3.refreshLive(); await D3.pcFeedReady(); v = D3.liveView(); out.jarvisNoFeed = { lit: v.lit && v.lit.room, err: v.err };
 useFeed = true;
@@ -103,8 +111,16 @@ def main() -> int:
     j = o["jarvisFeed"]
     check("b. Jarvis data.js: the newer PC feed wins over GitHub's old live.json (the same $1,145 / $822 / +212.5 as truth.js)",
           j["lit"] == t["lit"] and j["atlas"] == t["atlas"] and j["litToday"] == t["litToday"] and j["t"] == t["pcT"], j)
-    check("b. Jarvis keeps GitHub's trade list under the feed's cards (the lite feed has no trades)", j["trades"] >= 1, j)
-    check("c. a newer GitHub live.json stays (no feed rollback)", o["jarvisNewerGh"]["lit"] == 1100, o["jarvisNewerGh"])
+    # night-feedsA 2026-11-18: the PC feed is read FIRST; GitHub's live.json lives on the old, suspended account (every read was a 404 in
+    # the console on the phone), so it is asked only when the feed has nothing (c, below). The trades come from the feed's own ext post.
+    check("b. the PC feed answered: GitHub's old live.json (the suspended account) was not asked at all", j["gh"] == 0, j)
+    check("c. the PC feed stays the word while it answers (GitHub not asked again)", o["jarvisNewerGh"]["lit"] == 1145 and o["jarvisNewerGh"]["gh"] == 0, o["jarvisNewerGh"])
+    check("g. every real account: the PC's 25K #2 next to the bot cards in Jarvis (the 50K's own row and the cloud paper twin are not a 2nd account), same as truth.extraOf",
+          j["extra"] == [["Zlarior 25K #2", 1000, 120, 1380]] and t["extra"] == [["Zlarior 25K #2", 1000, 120, 1380]], (j["extra"], t["extra"]))
+    sysr = {r[0]: r for r in j["sys"]}
+    check("g. the System view has its own line for it (Z2) and Kalshi says PAUSED with the paper tests, never 'not linked'",
+          sysr.get("b25k_2", [None, ""])[1] == "Z2" and sysr.get("kalshi", [None, None, ""])[2] == "PAUSED", j["sys"])
+    check("g. Kalshi's paper K1 card from the feed: 3 signals, +$1.25", j["kp"] == [3, 1.25, 1.25], j["kp"])
     check("c. no PC feed at all: GitHub's live.json as before, no error", o["jarvisNoFeed"]["lit"] == 1300 and not o["jarvisNoFeed"]["err"], o["jarvisNoFeed"])
     jd = {a["name"].split()[0]: a for a in o["jdata"]}
     check("d. Jarvis brain / copilot / nudges (jdata.accounts): the canonical rows = truth.js's numbers",
@@ -117,7 +133,7 @@ def main() -> int:
     check("f. BLITZ hidden in Jarvis's board", j["blitz"] is None, j)
     jdx = open(os.path.join(WP, "jarvis", "index.html"), encoding="utf-8").read()
     check("f. Jarvis loads the PC feed async (never holds the start on a slow network) and reads afresh when it lands",
-          '<script src="../pc_feed.js?v=n2" id="pcFeedJs" async></script>' in jdx and "s.addEventListener('load', () => safe(() => D.refreshLive()))" in jdx)
+          '<script src="../pc_feed.js?v=n4" id="pcFeedJs" async></script>' in jdx and "s.addEventListener('load', () => safe(() => D.refreshLive()))" in jdx)
     n, ok = len(RES), sum(RES)
     print(f"sync truth: {ok}/{n} " + ("ALL PASS" if ok == n else "FAILED"))
     return 0 if ok == n else 1

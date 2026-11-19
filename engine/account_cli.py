@@ -344,9 +344,17 @@ def _add_rapid(name, start, funded, rows, plan="rapideod") -> dict:
     if not r.get("ok"):
         return {"ok": False, "error": r.get("error")}
     b = r["block"]
-    return {"ok": True, "notes": [x for x in [r.get("note")] if x],
+    return {"ok": True, "notes": [x for x in [r.get("note"), _rules_line(rp, b)] if x],
             "say": f"[OK] {P['label']} = {b['account']} (LIT + ATLAS), eval from {b['eval_start']}, NOT armed. It joins at the "
                    "next START BOT (you type I ACCEPT LIVE RISK)."}
+
+
+def _rules_line(rp, blk):
+    """The numbers the bot will use on the Rapid (so a wrong size shows at once); None when it cannot be read."""
+    try:
+        return rp.rules_line(blk)
+    except Exception:
+        return None
 
 
 def _allow_raise(name):

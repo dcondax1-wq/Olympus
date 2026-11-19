@@ -293,9 +293,10 @@ async def api_alerts_send(req: Request):
 # codes (gitignored); the API never returns the private key or an endpoint
 @app.get("/api/push")
 def api_push_get():
+    # 2026-11-19: the PC's own key + the phones that turned on notifications in Olympus (engine/push.pc_config; no cloud link)
     from engine import push
-    sync = push.pc_sync()
-    return J({**push.status(push.pc_config(sync)), "linked": bool(sync.get("private")), "sync_error": push._PC.get("sync_err"),
+    cfg = push.pc_config()
+    return J({**push.status(cfg), "linked": bool(cfg.get("private") and cfg.get("subs")), "sync_error": None,
               "heartbeat_key": bool(push.pc_public_key()), "recent": push.pc_notifier().log[-10:]})
 
 
@@ -311,9 +312,9 @@ async def api_push_save(req: Request):
 @app.post("/api/push/test")
 def api_push_test():
     from engine import push
-    cfg = push.pc_config(push.pc_sync(force=True))
+    cfg = push.pc_config()
     if not push.enabled(cfg):
-        return J({"ok": False, "error": "not linked yet: keep the heartbeat on (LE_HEARTBEAT=1) and allow notifications in the phone app; the cloud links this PC on its next run"}, 400)
+        return J({"ok": False, "error": "no phone yet: open Olympus from the iPhone's Home Screen and tap Allow notifications (the PC picks it up within 5 minutes)"}, 400)
     n = push.pc_notifier()
     n.cfg = cfg
     r = n.notify(push.text_payload("PC", "test", "Test · PC bot", "Notifications from the PC bot work.", key=f"test:{int(time.time())}"))

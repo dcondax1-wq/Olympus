@@ -36,7 +36,12 @@ TEXT_EXT = {".html", ".htm", ".js", ".mjs", ".json", ".md", ".txt", ".css", ".we
 SKIP_PARTS = {"node_modules", "__pycache__", ".git"}
 MAX_BYTES = 8 * 1024 * 1024
 HISTORY = re.compile(r"\b(was|were|old|older|before|previous|previously|used to|up from|down from|instead of|until|replaced|no longer|stale|superseded|earlier|formerly|last run)\b", re.I)
-OWNER_DOCS_SKIP = {"CLAUDE_REFERENCE.md"}                 # Claude's own map and history: full of old numbers on purpose, never shown to the owner
+FULL_BRIEF = "## The full brief (CLAUDE.md as it was"          # CLAUDE_REFERENCE.md's last section: the long brief, moved there 2026-11-15
+OWNER_DOCS_SKIP = {"CLAUDE_REFERENCE.md"}
+# the Archive app is the library of every run ever made (each row dated, "live" there is a run's label): an old headline / trio figure in
+# it is a dated result to look at ('warn'), never the current headline ('wrong'); certain errors (list prices, limits, counts) stay 'wrong'
+HISTORY_PATHS = ("tools/web_public/archive/",)
+HISTORY_RULES = {"old-headline", "old-trio", "trio-month"}                 # Claude's own map and history: full of old numbers on purpose, never shown to the owner
 
 
 # ------------------------------------------------------------------------------------------------ the facts
@@ -64,6 +69,11 @@ def load_facts(root: str = ROOT) -> dict:
     """The facts every published number is checked against, each with where it came from. Never raises; a missing source goes in facts['missing']."""
     F = {"missing": [], "sources": {}, "conflicts": []}
     claude = _text(root, "CLAUDE.md")
+    brief = claude
+    if claude is not None:                              # the brief was cut to one page on 2026-11-15: its long form (word for word) is the last
+        ref = _text(root, "docs/CLAUDE_REFERENCE.md") or ""   # section of CLAUDE_REFERENCE.md; a fact not in the short brief is read from there
+        i = ref.find(FULL_BRIEF)
+        brief = claude + ("\n" + ref[i:] if i >= 0 else "")
     rules = _json(root, "research/lit/mffu_rules.json")
     road = _json(root, "research/props/roadmap.json")
     firms = _json(root, "research/lit/funded_firms.json")
@@ -76,13 +86,15 @@ def load_facts(root: str = ROOT) -> dict:
     # prices: the owner's real ones (CLAUDE.md hard rules), cross-checked against the three data files
     price = {}
     if claude:
-        m = re.search(r"Builder 25K \$(\d+(?:\.\d+)?)", claude)
-        price["b25"] = float(m.group(1)) if m else None
-        m = re.search(r"ATLAS 25K[^$]{0,40}\$(\d+(?:\.\d+)?)", claude)
-        price["atlas25"] = float(m.group(1)) if m else None
-        m = re.search(r"Builder 50K \$(\d+(?:\.\d+)?)", claude)
+        # the one-page brief says "Builder 50K $91.80, 25K $63 / $43" (the Builder 25K, then the ATLAS 25K); the long form names each one
+        short = re.search(r"Builder 50K \$(\d+(?:\.\d+)?), 25K \$(\d+(?:\.\d+)?) / \$(\d+(?:\.\d+)?)", claude)
+        m = re.search(r"Builder 25K \$(\d+(?:\.\d+)?)", brief)
+        price["b25"] = float(short.group(2)) if short else (float(m.group(1)) if m else None)
+        m = re.search(r"ATLAS 25K[^$]{0,40}\$(\d+(?:\.\d+)?)", brief)
+        price["atlas25"] = float(short.group(3)) if short else (float(m.group(1)) if m else None)
+        m = re.search(r"Builder 50K \$(\d+(?:\.\d+)?)", brief)
         price["b50"] = float(m.group(1)) if m else None
-        price["activation"] = 0.0 if re.search(r"\$0 activation", claude) else None
+        price["activation"] = 0.0 if re.search(r"\$0 activation", brief) else None
     F["price"] = price
     if road and "prices" in road:
         for k, key in (("L50", "b50"), ("L25", "b25"), ("A25", "atlas25")):
@@ -132,13 +144,13 @@ def load_facts(root: str = ROOT) -> dict:
     # the headline: CLAUDE.md
     head = {}
     if claude:
-        m = re.search(r"\*\*Headline[^\n]*?2026 PF (\d\.\d\d), \+\$([\d,]+)", claude)
+        m = re.search(r"\*\*Headline[^\n]*?2026 PF (\d\.\d\d), \+\$([\d,]+)", brief)
         if m:
             head["pf_2026"], head["net_2026"] = float(m.group(1)), int(money(m.group(2)))
-        m = re.search(r"H2 check rate: PF (\d\.\d\d), \+\$([\d,]+) \(~\$([\d,]+)/mo\)", claude)
+        m = re.search(r"H2 check rate: PF (\d\.\d\d), \+\$([\d,]+) \(~\$([\d,]+)/mo\)", brief)
         if m:
             head["pf_h2"], head["net_h2"], head["pm_h2"] = float(m.group(1)), int(money(m.group(2))), int(money(m.group(3)))
-        m = re.search(r"funded 60% of room, <= \$([\d,]+), winner <= \$([\d,]+)", claude)
+        m = re.search(r"funded 60% of room, <= \$([\d,]+), winner <= \$([\d,]+)", brief)
         if m:
             head["funded_cap"], head["winner_cap"] = int(money(m.group(1))), int(money(m.group(2)))
     F["headline"] = head
@@ -307,6 +319,8 @@ def rules_for(F):
         v = m.group(1) or m.group(2)
         if not v or not _near(ctx, "MFFU", "Builder") or past(pre, post):
             return None
+        if m.group(2) and re.search(r"\b\d{2,3}K\b|Builder|eval", m.group(0), re.I):
+            return None                                           # "activation fees (Builder 50K $91.80, ...)": the $ after it is an eval's price
         return ("wrong", "$" + v + " activation", "$0 activation (one-time price, nothing else to pay)")
     R.append(("mffu-activation", re.compile(r"\$\s?([1-9]\d*)\s+activation|activation fee[^$\n]{0,20}\$\s?([1-9]\d*)", re.I), activation))
     return R
@@ -369,6 +383,8 @@ def scan_text(text: str, rules, rel: str) -> list:
             if not r:
                 continue
             sev, found, exp = r
+            if sev == "wrong" and rid in HISTORY_RULES and rel.startswith(HISTORY_PATHS):
+                sev = "warn"
             out.append({"severity": sev, "file": rel, "line": bisect.bisect_right(starts, m.start()), "found": re.sub(r"\s+", " ", found)[:60], "expected": exp, "rule": rid,
                         "context": re.sub(r"\s+", " ", ctx)[:200]})
     return out

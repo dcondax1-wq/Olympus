@@ -8,8 +8,9 @@
   e. the homes' ZEUS card (olympus/zeus_core.js, 2026-11-18 night-zcard): node summary() = the page's rows; Zenith (index.html#/today)
      starts with it as #page's first child (gone on other pages, back on Home), Jarvis has it right under the greeting (before the tiles):
      PC reported, 3 account lines with $ to pass / payout + today's $, the edge chip, a tap -> hub/zeus.html; silent = red PC SILENT
-  d. Chromium 390 x 844 (ntfy routed to a fixture): PC reported, 3 account rows with $ + chips + today's $, the edge chip, two window
-     lines, the buttons; a silent feed + stale board copy = the red PC SILENT strip; no sideways scroll, 44 px taps, no page errors
+  d. Chromium 390 x 844 (ntfy routed to a fixture): PC reported, 3 account rows with $ + chips + today's $, the edge chip, the
+     ZEUS learned card (status "zl", night-learnloop), two window lines, the buttons; a silent feed + stale board copy = the red PC
+     SILENT strip and no learned card; no sideways scroll, 44 px taps, no page errors
     python -X utf8 -m tests.test_zeus_hub        (ZEUS_NO_BROWSER=1 skips d; run d only under flock -w 2400 /tmp/olympus_browser.lock)
 """
 from __future__ import annotations
@@ -83,7 +84,7 @@ def part_a():
     check("a. data: PC_FEED.fetchLatest + ../board/board.json + ../business/accounts.json, Board pick + MFFU cards (zeus_core.js), ../pythia/events.json",
           "F.fetchLatest(" in core and "url('../board/board.json')" in core and "url('../business/accounts.json')" in core and "BM.pick(" in core and "MM.cards(" in core
           and "ZC.summary(" in js and "ZC.fetchAll(" in js and "'../pythia/events.json'" in js and "BM.pick(" not in js and "MM.cards(" not in js)
-    order = [m for m in re.findall(r'<script src="([^"?]+)', html)]
+    order = [m for m in re.findall(r'<script src="([^"?]+)', html) if m != "../olympus/warp.js"]   # the world-to-world jump (tests.test_warp) is not data
     check("a. scripts: pc_feed, payoutcoach, mffumodel, boardmodel (after mffumodel), edge_chip, the Decide card, the shared zeus_core, zeus.js last",
           order == ["../pc_feed.js", "../business/payoutcoach.js", "../business/mffumodel.js", "../board/boardmodel.js", "../edge_chip.js",
                     "../business/decide.js", "../olympus/zeus_core.js", "zeus.js"], order)
@@ -191,7 +192,9 @@ def part_d():
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     base = f"http://127.0.0.1:{srv.server_address[1]}/hub/zeus.html"
     now = int(time.time())
-    msg = json.dumps({"id": "x1", "time": now - 240, "event": "message", "topic": "t", "message": json.dumps(lite_fixture(now))})
+    zl = {"d": time.strftime("%Y-%m-%d", time.localtime(now)), "t": now - 3600, "p": 1,
+          "s": "Zlarior 1 trade +$208, edge GREEN, nothing to change \u00b7 ATLAS no trade, edge AMBER, slipping in calm markets: watching"}
+    msg = json.dumps({"id": "x1", "time": now - 240, "event": "message", "topic": "t", "message": json.dumps({**lite_fixture(now), "zl": zl})})
     stale = {"v": 1, "kind": "olympus-board", "t": now - 3600, "src": "cloud", "pc": {"t": now - 10 * 86400, "via": "heartbeat", "stale": True},
              "accounts": [], "events": []}
     try:
@@ -214,6 +217,10 @@ def part_d():
                   and "Today: +$120" in txt.get("zlarior", "") and "Sim Funded" in txt.get("atlas", "") and "$25,210" in txt.get("fresh25", ""), (pc, accts))
             edge = p.evaluate("(() => { const e = document.getElementById('edgeChip'); return { hidden: e.hidden, t: e.textContent }; })()")
             check("d. the ZEUS edge chip shows Zlarior + ATLAS (from the PC's eh)", not edge["hidden"] and "GREEN" in edge["t"] and "ATLAS" in edge["t"], edge)
+            lc = p.evaluate("(() => { const s = document.getElementById('learned'); return { hidden: s.hidden, rows: s.querySelectorAll('li').length, t: s.textContent }; })()")
+            check("d. ZEUS learned card (the PC's nightly line, status 'zl'): one row per strategy, 1 idea for Decide, 'changed nothing'",
+                  not lc["hidden"] and lc["rows"] == 2 and "Zlarior" in lc["t"] and "slipping in calm markets" in lc["t"] and "1 idea" in lc["t"]
+                  and "changed nothing" in lc["t"], lc)
             wins = p.eval_on_selector_all(".zs-win", "els => els.map(e => e.textContent)")
             check("d. Today: two window lines (Zlarior, ATLAS), each 'Open now' or 'Next'",
                   len(wins) == 2 and wins[0].startswith("Zlarior") and wins[1].startswith("ATLAS") and all(re.search(r"Open now|Next:|No entry window", w) for w in wins), wins)
@@ -231,6 +238,7 @@ def part_d():
             p2.on("pageerror", lambda e: errs.append(str(e)))
             p2.route("**/ntfy.sh/**", lambda r: r.fulfill(status=200, body=""))
             p2.route("**/board/board.json*", lambda r: r.fulfill(status=200, content_type="application/json", body=json.dumps(stale)))
+            p2.route("**/hub/learned.json*", lambda r: r.fulfill(status=404, body=""))
             p2.goto(base)
             p2.wait_for_function("window.ZEUS_PAGE && window.ZEUS_PAGE.ready")
             pc2 = p2.evaluate("(() => { const b = document.getElementById('pc'); return { cls: b.className, t: b.textContent, bg: getComputedStyle(b).backgroundColor, role: b.getAttribute('role') }; })()")
@@ -238,6 +246,8 @@ def part_d():
             check("d. silent feed + 10-day-old board copy: the strip is RED 'PC SILENT: last report 10 days ago' (role alert), plan rows still shown",
                   "bad" in pc2["cls"] and "PC SILENT" in pc2["t"] and "10 days ago" in pc2["t"] and pc2["role"] == "alert" and pc2["bg"] != "rgba(0, 0, 0, 0)"
                   and "zlarior" in n2, (pc2, n2))
+            check("d. no learned line anywhere (silent feed, no learned.json): the ZEUS learned card stays hidden",
+                  p2.evaluate("document.getElementById('learned').hidden") is True)
             check("d. no page errors", not errs, errs)
             br.close()
     finally:
