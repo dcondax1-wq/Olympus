@@ -19,7 +19,7 @@ vec3 skyCol(vec3 d) {
   c = mix(c, zen, smoothstep(0.15, 0.75, h));
   c += vec3(0.12, 0.05, 0.028) * exp(-max(h, 0.0) * 14.0);           // the city's own light on the low haze
   c += vec3(0.05, 0.09, 0.16) * pow(max(dot(d, uMoonDir), 0.0), 24.0) * 0.6;
-  c = mix(c, vec3(0.010, 0.010, 0.018), smoothstep(0.0, -0.3, h));
+  c = mix(c, vec3(0.010, 0.010, 0.018), 1.0 - smoothstep(-0.3, 0.0, h));
   return c;
 }
 vec3 fogged(vec3 col, vec3 wp) {
@@ -102,7 +102,7 @@ void main() {
   vec3 col = base * (mix(vec3(0.05, 0.04, 0.06), vec3(0.10, 0.14, 0.28), hemi) * 1.8 + uMoonCol * max(dot(N, uMoonDir), 0.0) * 1.4);
   vec3 R = reflect(-V, N);
   float fr = 0.04 + 0.96 * pow(1.0 - max(dot(N, V), 0.0), 5.0);
-  vec3 env = skyCol(R) * 1.7 + uStreet * smoothstep(0.15, -0.35, R.y) * 0.35;
+  vec3 env = skyCol(R) * 1.7 + uStreet * (1.0 - smoothstep(-0.35, 0.15, R.y)) * 0.35;
   col += env * fr * mix(1.0, 0.15, ruin) * (1.0 - vRoof * 0.5);
   col += uStreet * 0.07 * exp(-vF.y * 0.6);                                    // street light on the lowest floors
   float edge = min(vF.x, vFW - vF.x);
@@ -153,9 +153,11 @@ void main() {
   col += tint * sel * (0.6 + 0.4 * sin(uTime * 4.0)) * (fr * 0.25 + (1.0 - smoothstep(0.0, 0.06, edge)) * 1.8);   // selected: a lit outline, not a lit box
 #ifdef MIRROR
   col *= 0.5 * exp(-max(-vW.y, 0.0) * 0.045);
+  col = (col.r == col.r && col.g == col.g && col.b == col.b) ? min(col, vec3(0.3)) : vec3(0.0);   // a reflection is never a light source (no bloom spikes)
 #endif
   col = fogged(col, vW);
-  gl_FragColor = vec4(col, 1.0);
+  if (!(col.r == col.r && col.g == col.g && col.b == col.b)) col = vec3(0.0);                // never a NaN into the bloom
+  gl_FragColor = vec4(min(col, vec3(24.0)), 1.0);
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
 }
@@ -234,6 +236,7 @@ void main() {
     alpha = 0.62;
   }
   col = fogged(col, vW);
+  if (!(col.r == col.r && col.g == col.g && col.b == col.b)) col = vec3(0.0);
   gl_FragColor = vec4(col, alpha);
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
