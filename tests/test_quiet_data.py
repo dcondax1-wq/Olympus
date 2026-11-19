@@ -79,6 +79,11 @@ const KRAW = 'https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed
   // the site's optional kalshi.json: asked once, then remembered; a 200 elsewhere is untouched; other addresses pass through
   const l1 = await F('../kalshi.json?t=1'), l2 = await F('../kalshi.json?t=2'), l3 = await F('/kalshicity/learned.json'), l4 = await F('https://api.coingecko.com/api/v3/simple/price');
   out.local = { calls: calls.filter((u) => /kalshi\.json/.test(u) && u.indexOf('github') < 0).length, status: [l1.status, l2.status, l3.status, l4.status] };
+  // night-bugsweep: an app's status card on this site: a folder the site leaves out (mind/) is remembered per folder; a good card is asked as usual
+  mode = Object.assign({}, mode, { '/mind/jarvis.json': 404 });
+  const c1 = await F('/mind/jarvis.json?jt=1'), c2 = await F('../mind/jarvis.json?jt=2'), c3 = await F('/oracle/jarvis.json'), c4 = await F('/oracle/jarvis.json'), c5 = await F('https://other.example/mind/jarvis.json');
+  out.cards = { mind: calls.filter((u) => /mind\/jarvis\.json/.test(u) && u.indexOf('other.example') < 0).length, oracle: calls.filter((u) => u.indexOf('/oracle/jarvis.json') >= 0).length,
+    other: calls.filter((u) => u.indexOf('other.example') >= 0).length, status: [c1.status, c2.status, c3.status, c4.status, c5.status], dead: NET.dead('card:mind'), okDead: NET.dead('card:oracle') };
   out.post = (await F(RAW, { method: 'POST' })).status;
   out.state = Object.keys(NET.state()).sort();
   out.forgot = null;
@@ -123,6 +128,9 @@ def node_part():
     check("a. the page's own abort is not taken as a dead source", o["abort"]["err"] == "AbortError" and not o["abort"]["dead"], o["abort"])
     check("a. the site's optional kalshi.json: asked once (404 remembered); other site files and other hosts pass untouched",
           o["local"]["calls"] == 1 and o["local"]["status"] == [404, 404, 200, 200], o["local"])
+    C = o["cards"]
+    check("a. an app's status card on this site (<folder>/jarvis.json): a folder not on the site (mind/) asked once, its 404 remembered; a good card (oracle/) asked every time; another site untouched",
+          C["mind"] == 1 and C["oracle"] == 2 and C["other"] == 1 and C["status"] == [404, 404, 200, 200, 404] and C["dead"] and not C["okDead"], C)
     check("a. a page's data-fresh sources are asked afresh on load (the Kalshi page), and an entry older than 6 h is forgotten",
           o["fresh"] == [] or o["fresh"] == ["raw:nq-dashboard"], o["fresh"])
     check("a. the owner can always ask again: after a tap / click the next ask goes to the real source (and a good answer clears the memory)",

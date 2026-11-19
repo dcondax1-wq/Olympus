@@ -247,10 +247,12 @@ def part_d():
     check("d. read-only and offline: no network module, no subprocess, no order / arm / route word in code, writes only the scoreboard file",
           not re.search(r"^\s*(import|from)\s+(urllib|http|socket|requests|subprocess)", code, re.M) and "place_order" not in code and code.count("open(tmp, \"w\"") == 1)
     check("d. no key, token or secret in the file", not re.search(r"api[_-]?key|password|access[_-]?token|bearer|\bsk-[A-Za-z0-9]{10}", code, re.I))
-    with open(os.path.join(ROOT, "CLAUDE.md"), encoding="utf-8") as fh:
-        cm = fh.read()
+    # the brief's prices read the way the numbers audit reads them (the one-page CLAUDE.md "Builder 50K $91.80, 25K $63 / $43", else the long brief)
+    from tools import numbers_audit as NA
+    cp = NA.load_facts(ROOT)["price"]
     check("d. the fallback prices are the CLAUDE.md prices ($91.80 50K, $63 25K, $43 ATLAS 25K, $0 activation) and equal ledger/rules.json",
-          "Builder 50K $91.80" in cm and "Builder 25K $63" in cm and "$43" in cm and MS.PRICES == {"builder_50k": 91.8, "builder_25k": 63.0, "atlas_25k": 43.0, "activation": 0.0}
+          cp == {"b50": 91.8, "b25": 63.0, "atlas25": 43.0, "activation": 0.0}
+          and MS.PRICES == {"builder_50k": cp["b50"], "builder_25k": cp["b25"], "atlas_25k": cp["atlas25"], "activation": cp["activation"]}
           and {k: v["price"] for k, v in rules()["accounts"].items()} == {k: v["price"] for k, v in MS.FALLBACK_ACCOUNTS.items()})
     gi = open(os.path.join(ROOT, ".gitignore"), encoding="utf-8").read()
     check("d. the owner's ledger, the local scoreboard copy and the Sunday reports are gitignored", all(x in gi for x in ("data/money_ledger.json", "tools/web_public/money/", "docs/reports/money_week_*.md")))
