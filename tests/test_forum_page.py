@@ -205,6 +205,7 @@ def run_browser():
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     base = f"http://127.0.0.1:{srv.server_address[1]}/nq-dashboard/forum/"
     outside = []
+    from tests import agora_kit as AK                 # is_status_feed: the one allowed outside address (night-feedsB: home_feed.js)
     shots = os.environ.get("FORUM_SHOTS")
     try:
         with sync_playwright() as pw:
@@ -220,6 +221,8 @@ def run_browser():
                     u = route.request.url
                     if u.startswith(f"http://127.0.0.1:{srv.server_address[1]}") or u.startswith(("data:", "blob:")):
                         return route.continue_()
+                    if AK.is_status_feed(u):      # the sanctioned public PC status feed (docs/PRIVACY.md; home_feed.js asks it): aborted, never reached
+                        return route.abort()
                     outside.append(u)
                     return route.abort()
                 ctx.route("**/*", guard)
