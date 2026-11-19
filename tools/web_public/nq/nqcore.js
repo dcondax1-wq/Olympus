@@ -84,15 +84,20 @@ export function status(t, running, nowS, freshS) {
 
 // ------------------------------------------------------------------------------------------------ the three bots
 function findAccount(home, re) { for (const a of Array.isArray(home.accounts) ? home.accounts : []) { if (isObj(a) && !a.error && re.test([a.id, a.name, a.plan, a.source].join(' ').toLowerCase())) return a; } return null; }
+// the site's home.json is a CLOUD build: its board cards are the cloud's paper twin (badge PAPER, source "cloud paper": "$1,900 left" on
+// old bars) and its 50K row is badged PAPER. Never shown as Zlarior's or ATLAS's account, late post or not (night-feedsB 2026-11-19, the
+// rule of olympus/truth.js): no number beats a wrong one. A cloud build relaying the PC's own cards (badge LIVE, source "PC bot") still counts.
+const paperish = (x) => isObj(x) && (/^paper$/i.test(String(x.badge || '')) || /\bcloud\b/i.test(String(x.source || '')));
+export const cloudCopy = (home) => String(obj(obj(home).board).where || '').toLowerCase() === 'cloud' && num(obj(obj(home).board).report_t) == null;
 function evalBlock(key, home) {
   const board = obj(home.board), pc = obj(obj(home.live).pc);
   if (key === 'lit') {
-    if (isObj(board.lit) && num(board.lit.room) != null) return { e: board.lit, today: board.lit.today_pnl, wait: board.lit.waiting };
-    const a = findAccount(home, /mffu50k|zlarior|builder 50k/); const src = a && String(a.source || '') !== 'cloud' ? a : null;
+    if (isObj(board.lit) && num(board.lit.room) != null && !paperish(board.lit)) return { e: board.lit, today: board.lit.today_pnl, wait: board.lit.waiting };
+    const a = findAccount(home, /mffu50k|zlarior|builder 50k/); const src = a && String(a.source || '') !== 'cloud' && !paperish(a) ? a : null;
     return src ? { e: obj(src.eval), today: first(obj(src.pnl).today, obj(src.eval).today), wait: obj(src.eval).clock_text } : null;
   }
   if (key === 'atlas') {
-    if (isObj(board.atlas) && num(board.atlas.room) != null) return { e: board.atlas, today: board.atlas.today_pnl, wait: board.atlas.waiting };
+    if (isObj(board.atlas) && num(board.atlas.room) != null && !paperish(board.atlas)) return { e: board.atlas, today: board.atlas.today_pnl, wait: board.atlas.waiting };
     const b = obj(obj(home.second).account_b); return isObj(b.eval) ? { e: b.eval, today: first(b.eval.today, b.day_pnl), wait: '' } : null;
   }
   const bl = obj(pc.blitz); return isObj(bl.eval) ? { e: bl.eval, today: bl.eval.today, wait: obj(bl.state).text } : null;
@@ -222,11 +227,12 @@ export function build(home, nowMs) {
     const P = extraBot(c);
     bots.push(botView(P.key, h, nowS, trades, P, { e: c, today: c.today_pnl, wait: c.waiting }));
   }
-  const rt = num(obj(h.board).report_t), pcT = first(rt != null ? Math.max(rt, first(obj(obj(h.live).pc).t, 0) || 0) : null, obj(obj(h.live).pc).t, obj(h.board).data_t);
+  // a cloud copy's board.data_t is the cloud's own bars (its paper twin), never a report from the PC: only live.pc.t counts there
+  const rt = num(obj(h.board).report_t), pcT = cloudCopy(h) ? num(obj(obj(h.live).pc).t) : first(rt != null ? Math.max(rt, first(obj(obj(h.live).pc).t, 0) || 0) : null, obj(obj(h.live).pc).t, obj(h.board).data_t);
   const pc = status(pcT, null, nowS, postFresh(h));
   const lit = bots[0], burning = bots.filter((b) => b.status.flame).length, n = bots.length;
   const tight = bots.filter((b) => b.has && b.roomFrac != null).sort((a, b) => a.roomFrac - b.roomFrac)[0] || null;
-  const headline = pc.code === 'none' ? 'No report from your PC yet.' : pc.code !== 'running' ? `Last report from your PC: ${pc.ageText}.`
+  const headline = pc.code === 'none' ? (cloudCopy(h) ? "Waiting for your PC's status report: the cloud's copy has no account numbers." : 'No report from your PC yet.') : pc.code !== 'running' ? `Last report from your PC: ${pc.ageText}.`
     : rt != null ? (burning === n ? `All ${n} accounts reported ${pc.ageText} (your PC's status report).` : `${burning} of ${n} accounts reported in the last 30 minutes.`)
       : `${burning} of ${n} bots reported in the last 20 minutes.`;
   return { nowS, pc, bots, trades, plan: planLine(h, lit.status), facts: facts(h), banner: banner(pc), headline, burning, tight,

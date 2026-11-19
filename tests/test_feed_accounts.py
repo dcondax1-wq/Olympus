@@ -209,7 +209,8 @@ const { pathToFileURL } = require('url');
   const NQ = await import(pathToFileURL(path.join(web, 'nq', 'nqcore.js')).href);
   const nv = NQ.build(H, (FX.T + 17 * 60 - 300) * 1000), nc = NQ.build(FX.home, FX.T * 1000);
   out.nq = { names: nv.bots.map((b) => b.name), tags: nv.bots.map((b) => b.tag), dd: nv.bots.map((b) => b.ddLine), flames: nv.bots.map((b) => b.status.flame), head: nv.headline,
-    atlas: nv.bots[1].progLine, plan: nv.bots[1].plan, cloudNames: nc.bots.map((b) => b.name), cloudHead: nc.headline };
+    atlas: nv.bots[1].progLine, plan: nv.bots[1].plan, cloudNames: nc.bots.map((b) => b.name), cloudHead: nc.headline,
+    cloudHas: nc.bots.map((b) => b.has), cloudDd: nc.bots.map((b) => b.ddLine), cloudCopy: [NQ.cloudCopy(FX.home), NQ.cloudCopy(H)] };
   const DE = await import(pathToFileURL(path.join(web, 'demeter', 'demetercore.js')).href);
   const de = DE.buildAccounts(H, null, null);
   out.demeter = de.accounts.map((a) => [a.key, a.name, a.room, a.balance, a.toTarget]);
@@ -325,8 +326,9 @@ def part_a(tmp):
     check("a. NQ page core: Zlarior (LIT 50K $1,025), ATLAS (25K funded, the coach line), Zlarior 25K #2 (LIT 25K $1,000), all lit by the post 17 min old, 'All 3 accounts reported'",
           q["names"] == ["Zlarior", "ATLAS", "Zlarior 25K #2"] and q["tags"] == ["LIT 50K", "25K funded", "LIT 25K"] and q["dd"] == ["Drawdown left $1,025 of $2,000 max loss", "Drawdown left $887 of $1,000 max loss", "Drawdown left $1,000 of $1,000 max loss"]
           and q["flames"] == [True, True, True] and q["head"].startswith("All 3 accounts reported 17 minutes ago") and q["atlas"] == "Not yet: need $1,463 more." and q["plan"] == "MFFU Builder 25K funded", q)
-    check("a. NQ page core without the post: the cloud's two cards, the old headline (the page's source line says it is the cloud's copy)",
-          q["cloudNames"] == ["Zlarior", "ATLAS"] and ("bots reported" in q["cloudHead"] or q["cloudHead"].startswith("No report")), q)
+    check("a. NQ page core without the post: Zlarior and ATLAS with NO numbers (the cloud's paper twin's $1,900 is never shown as the account), 'Waiting for your PC's status report'",
+          q["cloudNames"] == ["Zlarior", "ATLAS"] and q["cloudHas"] == [False, False] and q["cloudDd"] == ["Drawdown not reported yet"] * 2
+          and q["cloudHead"].startswith("Waiting for your PC's status report") and q["cloudCopy"] == [True, False], q)
     ae, de = m["aegis"], m["demeter"]
     check("a. Aegis: Zlarior 50K $1,024.58, ATLAS $887.20, and the Zlarior 25K #2 ($1,000) as its own account",
           [x[1] for x in ae] == ["Zlarior", "ATLAS", "Zlarior 25K #2"] and ae[0][2] == 1024.58 and ae[1][2] == 887.2 and ae[2][2] == 1000, ae)

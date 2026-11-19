@@ -40,7 +40,8 @@ function srcLine() {
   const pf = S.home && S.home.pc_feed, rt = pf && (pf.report_t || pf.t);
   if (rt) return `Source: your PC's status report, ${C.ageText(Math.max(0, Date.now() / 1000 - rt))} (the ZEUS card reads the same report).`;
   const b = S.home && S.home.built ? new Date(S.home.built) : null, when = b && !isNaN(b) ? b.toLocaleString('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) + ' ET' : '';
-  return `Source: the cloud's copy of the site (home.json${when ? ', built ' + when : ''}). Your PC's own report has not arrived on this page yet, so these numbers may be old.`;
+  // the cloud's own cards are its paper twin (nqcore hides them): say so, never "these numbers may be old" over numbers that were never the account
+  return `Source: the cloud's copy of the site (home.json${when ? ', built ' + when : ''}). Your PC's own report has not arrived on this page yet${C.cloudCopy(S.home) ? ": the cloud's copy only has its paper test, so no account numbers are shown. They appear the moment the report arrives." : ', so these numbers may be old.'}`;
 }
 
 /** the fixture keeps ages, not dates: every "..._ago_min" becomes a real time counted back from now, so the example is always "a few minutes ago" */
