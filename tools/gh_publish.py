@@ -23,7 +23,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 REPO = os.environ.get("LE_GH_SITE_DIR", "/home/user/dcondax1-wq.github.io")
 WORK = os.environ.get("LE_GH_SITE_WORK", os.path.join(ROOT, "data", "gh_publish"))
-MAX_PER_DAY = 4
+MAX_PER_DAY = 6                     # 4 -> 6 (2026-11-19): a morning fix for the owner; still far from bot-like
 SKIP = ("runs/",)
 NAME, EMAIL = "dcondax1-wq", "dcondax1-wq@users.noreply.github.com"
 
