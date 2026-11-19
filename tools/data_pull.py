@@ -16,6 +16,8 @@ The old route (the PC's git push to the backup's branch `data`) is OFF on the PC
     python tools/data_pull.py --ref <rev>        # read another ref (tests, or an already fetched branch); --no-fetch skips git fetch
 
 What it imports (futures only: NinjaTrader bars of the owner's PC, never Yahoo / CFD):
+  GC / SI (else MGC / SIL) 1-minute bars around the Kalshi K8 windows (04:45-05:45, 15:45-17:15 ET) when the PC has a chart of
+         them -> data/metals/<SYM>_1m.csv (append-only, with the chart contract per bar: import_metals)
   NQ  <- bars/NQ_1m (an NQ chart) else bars/MNQ_1m (same index points, research/writeups/mnq-vs-nq-feed.md), then 5m for days
          without 1m; ES <- ES else MES. Through data/import_futures._finish (builds 5m / 15m / 1h, the roll file applied), and ONLY
          bars newer than the newest bar already in data/<SYM>_1m.csv / _5m.csv: the TradingView exports are never overwritten
@@ -207,6 +209,73 @@ def import_bars(out_dir: str = OUT, data_dir: str = DATA, days: list | None = No
             with contextlib.redirect_stdout(io.StringIO()):                  # rewritten file keeps every old line as it was
                 IF._finish(sym, add, data_dir, check=True)
             lines.append(f"{sym} {tf}: +{len(add)} bars to {pd.to_datetime(int(add['time'].max()), unit='s', utc=True):%Y-%m-%d %H:%M} UTC")
+    return lines
+
+
+METALS = {"GC": ("GC", "MGC"), "SI": ("SI", "SIL")}       # engine/datafeed.SYM_TFS: 1-minute, the Kalshi K8 windows only
+METALS_DIR = os.path.join(DATA, "metals")
+METAL_COLS = ("time", "open", "high", "low", "close", "volume", "contract")
+
+
+def import_metals(out_dir: str = OUT, metals_dir: str = METALS_DIR, days: list | None = None, dry: bool = False) -> list:
+    """The PC's COMEX gold / silver 1-minute bars around the K8 windows (04:45-05:45, 15:45-17:15 ET) -> data/metals/<SYM>_1m.csv
+    (append-only: only bars newer than the file's last, each with its chart contract, e.g. "GC 12-26"; futures, never CFD).
+    Stdlib only. -> one line per metal that had bars."""
+    import csv
+    import gzip as _gz
+    lines = []
+    for sym, roots in METALS.items():
+        rows = {}
+        for day in sorted(days if days is not None else complete_days(out_dir)):
+            d = os.path.join(out_dir, day)
+            try:
+                man = json.load(open(os.path.join(d, "manifest.json"), encoding="utf-8"))
+            except Exception:
+                continue
+            files = man.get("files") or {}
+            root = next((r for r in roots if (files.get(f"bars/{r}_1m.csv.gz") or {}).get("rows")), None)
+            if root is None:
+                continue
+            chart = str((man.get("chart") or {}).get(root) or root)[:20]
+            try:
+                with open(os.path.join(d, "bars", f"{root}_1m.csv.gz"), "rb") as fh:
+                    text = _gz.decompress(fh.read()).decode("ascii", "replace")
+            except (OSError, EOFError, ValueError):
+                continue
+            for r in csv.DictReader(io.StringIO(text)):
+                try:
+                    t = int(float(r["time"]))
+                    rows[t] = [t] + [float(r[k]) for k in ("open", "high", "low", "close")] + [r.get("volume") or "0", chart]
+                except (KeyError, ValueError, TypeError):
+                    continue
+        if not rows:
+            continue
+        path = os.path.join(metals_dir, f"{sym}_1m.csv")
+        last = 0
+        if os.path.exists(path):
+            try:
+                with open(path, encoding="utf-8") as fh:
+                    for r in csv.DictReader(fh):
+                        last = max(last, int(float(r["time"])))
+            except Exception:
+                last = 0
+        add = [rows[t] for t in sorted(rows) if t > last]
+        if not add:
+            lines.append(f"{sym} 1m (K8 windows): up to date")
+            continue
+        if dry:
+            lines.append(f"{sym} 1m (K8 windows): would add {len(add)} bars")
+            continue
+        os.makedirs(metals_dir, exist_ok=True)
+        new = not os.path.exists(path)
+        with open(path, "a", encoding="utf-8", newline="") as fh:
+            w = csv.writer(fh, lineterminator="\n")
+            if new:
+                w.writerow(METAL_COLS)
+            for r in add:
+                w.writerow([r[0]] + [f"{x:g}" for x in r[1:5]] + r[5:])
+        lines.append(f"{sym} 1m (K8 windows): +{len(add)} bars to {dt.datetime.fromtimestamp(add[-1][0], dt.timezone.utc):%Y-%m-%d %H:%M} UTC "
+                     f"-> data/metals/{sym}_1m.csv")
     return lines
 
 
@@ -434,6 +503,8 @@ def main(argv=None) -> int:
         print(f"days on branch data: {len(days)} ({min(days)} .. {max(days)}); copied {len(wrote)} to {os.path.relpath(a.out, ROOT)}/")
     if not a.no_import:
         for ln in import_bars(a.out, a.data, dry=a.dry_run):
+            print("  " + ln)
+        for ln in import_metals(a.out, os.path.join(a.data, "metals"), dry=a.dry_run):
             print("  " + ln)
     n = 0 if a.dry_run else queue_proposals(a.out, a.queue)
     print(f"research queue: +{n} proposal(s) -> {os.path.relpath(a.queue, ROOT)}")

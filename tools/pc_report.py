@@ -65,7 +65,8 @@ MAX_STATUS_BYTES = 3900          # ntfy turns a message over 4,096 bytes into a 
 EXT_KIND = "le-live-ext"
 EXT_PARTS = 2                    # at most 2 ext posts a run (ntfy.sh free: a few hundred messages a day per IP)
 EXT_EVERY_S = 1740               # the ext goes every 2nd 15-minute run (29 min), or at once when its news changed (ext_hash)
-EXT_ORDER = ("brd", "life", "mf", "board_trades", "at", "learn", "lab", "glance", "kalshi_rewards", "kalshi_k1", "kalshi_live")   # "at": engine/feed_trades
+EXT_ORDER = ("brd", "life", "mf", "board_trades", "at", "zl", "learn", "lab", "glance", "kalshi_rewards", "kalshi_k1", "kalshi_live")   # "at": engine/feed_trades
+# "zl": ZEUS learned, the nightly line (engine/zeus_learn.read_tiny, <= 220 bytes) -> the ZEUS page's "ZEUS learned" card
 CORE_KEYS = ("eh", "v", "kind", "lite", "src", "t", "every_s", "host", "model_state", "price", "day_pnl", "pc_verdict", "pc", "reporter",
              "board", "accounts", "trimmed")
 BRD_BYTES = 1200
@@ -437,6 +438,11 @@ def gather(now=None, root: str = ROOT, env=None, http=None, port=PORT_DEFAULT, f
         snap["eh"] = _ep.read_tiny(os.path.join(root, "data", "edge", "tiny.json"), now=now)
     except Exception:
         snap["eh"] = None
+    try:                                    # ZEUS learned (engine/zeus_learn.py: the nightly line, <= 220 bytes, the ZEUS page card)
+        from engine import zeus_learn as _zl
+        snap["zl"] = _zl.read_tiny(os.path.join(root, "logs", "learn", "tiny.json"), now=now)
+    except Exception:
+        snap["zl"] = None
     return snap
 
 
@@ -567,6 +573,8 @@ def full(snap: dict) -> dict:
         out["kalshi_live"] = snap["kalshi_live"]
     if isinstance(snap.get("eh"), dict):     # the ZEUS edge chip (tools/edge_pc.read_tiny, <= 120 bytes; tools/web_public/edge_chip.js)
         out["eh"] = snap["eh"]
+    if isinstance(snap.get("zl"), dict):     # ZEUS learned (engine/zeus_learn.read_tiny, <= 220 bytes): rides an ext post (EXT_ORDER)
+        out["zl"] = snap["zl"]
     for k in ("learn", "lab"):                     # the learning loop / ZEUS Lab notes when the reporter's snapshot has them
         if isinstance(snap.get(k), dict):
             out[k] = snap[k]
