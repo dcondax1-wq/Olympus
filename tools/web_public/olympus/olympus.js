@@ -601,6 +601,9 @@
   window.addEventListener('unhandledrejection', function (e) {
     if (state !== 'loading') return;
     var r = e && e.reason;
+    // a View Transition the browser skipped (the warp's arrival: "Transition was aborted because of invalid state", a page without the
+    // opt-in, a second tap) is never the page failing: it simply shows without the animation (phone QA 2026-11-19, Olympus World)
+    if (r && /^(AbortError|InvalidStateError|TimeoutError)$/.test(String(r.name || '')) && /transition/i.test(String(r.message || ''))) return;
     fail((r && r.message) || String(r || 'a script error'));
   });
   // cross-tab: the owner changed the level in Jarvis or another app

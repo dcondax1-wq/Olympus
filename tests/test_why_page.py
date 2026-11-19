@@ -233,6 +233,9 @@ def part_d():
           not urls and re.findall(r"fetch\('([^']+)'", js) == ["why.json"] and not re.search(r"method:\s*'POST'|XMLHttpRequest|sendBeacon|WebSocket", js), urls)
     check("d. phone first: 44 px taps, overflow-wrap, a side-scroll box only around the tables",
           "min-height: 44px" in css and "overflow-wrap" in css and ".wrap { overflow-x: auto" in css)
+    wj = rd(APP, "why.json")
+    check("d. plain words (phone QA 2026-11-19): '1 trade', never '1 trades'; the hidden bot is never named in the page's text",
+          "(c.n === 1 ? ' trade' : ' trades')" in js and "BLITZ: to +1R" not in wj)
     sys.path.insert(0, os.path.join(ROOT, "tools"))
     import agora_audit as A
     res = A.static_scan()

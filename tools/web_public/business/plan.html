@@ -20,6 +20,8 @@
 <link rel="stylesheet" href="business.css?v=4">
 <style>
   .back { display: inline-block; margin: 4px 0 10px; min-height: 44px; line-height: 44px; }
+  /* the label / number rows: on a phone the label had a word a line (the long $ value took the width); half and half now (phone QA 2026-11-19) */
+  .kv { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .kv dd { overflow-wrap: anywhere; }
   .seg { display: flex; flex-wrap: wrap; gap: 6px; }
   .seg + .seg { margin-top: 8px; }
   .seg .btn { min-height: 44px; padding: 0 12px; font-size: 14px; }

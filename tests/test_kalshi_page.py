@@ -2155,6 +2155,11 @@ def part_rewards(br, url, tmp):
         # Kalshi LIVE executor (engine/kalshi_live.py, night-klive): OFF = the plain PAUSED line; its PC card (key kalshi_live) = LIVE / STOPPED
         check("kl0. no PC card: the status line says plainly 'PAUSED: ready to go live when you type the phrase' and '$0 at risk'",
               "PAUSED: ready to go live when you type the phrase" in k0 and "$0 at risk" in k0, k0[:300])
+        # phone QA 2026-11-19: the live line names the bot the owner knows (K8, gold and silver) and, with the PC's Kalshi numbers in, the
+        # header says the PC runs Kalshi (with their age) instead of the old kalshi-server's "Not connected yet"
+        sub = p.inner_text("#sub")
+        check("kl0. the line names K8 (the gold and silver clock bot); the header: 'On your PC · real money paused · updated ...'",
+              "K8, the gold and silver clock bot" in k0 and sub.startswith("On your PC · real money paused · updated "), (k0[:200], sub))
         klc = {"kind": "kalshi_live_pub", "v": 1, "st": "live", "net": 1.25, "f": 3, "o": 6, "cap": 60, "stop": 8, "u": "2099-02-01T00:00:00+00:00"}
         R["ntfy"] = json.dumps({"event": "message", "time": 1, "message": json.dumps({"kind": "le-live-ext", "t": 2, "part": 0, "of": 1,
                                                                                     "x": {"kalshi_k1": k1c, "kalshi_live": klc}})}) + "\n"

@@ -77,7 +77,10 @@ def part_a():
           not re.search(r"innerHTML|insertAdjacentHTML|document\.write|\beval\(", js + core) and not re.search(r"https?://", js + core)
           and not re.search(r'(src|href)="https?://', html))
     methods = re.findall(r"method:\s*'([A-Z]+)'", js)
-    check("a. read only: no POST / PUT / DELETE (only GET + one HEAD for the weekly review)", methods == ["HEAD"] and "localStorage" not in js + core
+    # the one thing the card keeps on the phone: its own height (key olympus.zeus.cardh, phone QA 2026-11-19), never data
+    core_nh = re.sub(r"localStorage\.(getItem|setItem)\(HKEY", "", core)
+    check("a. read only: no POST / PUT / DELETE (only GET + one HEAD for the weekly review); the card stores only its height",
+          methods == ["HEAD"] and "localStorage" not in js + core_nh and "HKEY = 'olympus.zeus.cardh'" in core
           and not re.findall(r"method:", core), methods)
     # the data + the account matching live in olympus/zeus_core.js (2026-11-18, night-zcard: shared with the Zenith and Jarvis home cards;
     # its paths are relative to olympus/, so '../board/board.json' is the same file)
@@ -260,7 +263,8 @@ def part_e_static():
           'src="olympus/zeus_core.js?v=' in zen and "Z.keep(pg" in zen and 'src="../olympus/zeus_core.js?v=' in jar and 'id="zeusCard" data-zeus-card' in jar
           and 'src="../olympus/zeus_core.js?v=' in rd(HUB, "zeus.html") and "url('../hub/zeus.html')" in core)
     check("e. Jarvis: the ZEUS card sits right after the greeting, before the three tiles", jar.index('id="hello"') < jar.index('id="zeusCard"') < jar.index('id="hfirst"'))
-    check("e. zeus_core.js: text only, GET only, no outside address", not re.search(r"innerHTML|insertAdjacentHTML|document\.write|\beval\(|https?://|method:|localStorage", core))
+    check("e. zeus_core.js: text only, GET only, no outside address, nothing stored but its own height",
+          not re.search(r"innerHTML|insertAdjacentHTML|document\.write|\beval\(|https?://|method:|localStorage", re.sub(r"localStorage\.(getItem|setItem)\(HKEY", "", core)))
     now = int(time.time())
     plan = os.path.join(WEB, "business", "accounts.json")
     r = node(f"""
@@ -328,6 +332,21 @@ def part_e_browser():
             order = j.evaluate("(() => { const z = document.getElementById('zeusCard').getBoundingClientRect(), t = document.getElementById('hfirst').getBoundingClientRect(), h = document.getElementById('hello').getBoundingClientRect(); return [Math.round(h.top), Math.round(z.top), Math.round(t.top)]; })()")
             check("e. Jarvis: the ZEUS card under the greeting, above the tiles: PC reported, the 3 accounts, a tap opens hub/zeus.html",
                   "PC reported 4 min ago" in jc["pc"] and len(jc["rows"]) == 3 and jc["href"].endswith("/hub/zeus.html") and order[0] < order[1] < order[2], (jc, order))
+            # phone QA 2026-11-19: the card grew under the opening's hand-off ("Asking your PC..." -> 3 rows -> the chip) and pushed the home
+            # down twice. Its space is held from the first frame (this phone's last height, else a typical card) and released once it is full.
+            j.wait_for_function("!document.querySelector('#zeusCardBox').style.minHeight && !!localStorage.getItem('olympus.zeus.cardh')", timeout=20000)
+            full = j.evaluate("[document.querySelector('#zeusCardBox').offsetHeight, +localStorage.getItem('olympus.zeus.cardh')]")
+            j2 = ctx.new_page()
+            j2.set_default_timeout(60000)
+            j2.on("pageerror", lambda e: errs.append("jarvis2: " + str(e)))
+            j2.goto(base + "jarvis/", wait_until="domcontentloaded")
+            early = j2.evaluate("(() => { const c = document.querySelector('#zeusCardBox'); return c ? [c.style.minHeight, c.querySelectorAll('.zeus-row').length, c.offsetHeight] : null; })()")
+            j2.wait_for_function("document.querySelectorAll('#zeusCard .zeus-row').length === 3 && !document.querySelector('#zeusCardBox').style.minHeight", timeout=20000)
+            late = j2.evaluate("document.querySelector('#zeusCardBox').offsetHeight")
+            check("e. Jarvis: the ZEUS card holds its full height from the first frame (no jump when the PC's numbers and the chip arrive), "
+                  "then keeps the real height for next time", full[0] == full[1] and early and early[0] == f"{full[1]}px" and early[1] == 0
+                  and abs(early[2] - late) <= 2, (full, early, late))
+            j2.close()
             ctx.unroute("**/ntfy.sh/**")
             ctx.route("**/ntfy.sh/**", lambda r: r.fulfill(status=200, body=""))
             ctx.route("**/board/board.json*", lambda r: r.fulfill(status=200, content_type="application/json", body=json.dumps(stale)))

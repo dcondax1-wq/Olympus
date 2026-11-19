@@ -263,10 +263,22 @@
     }
   };
 
+  // the PC runs Kalshi now (K8 live card, K1 / rewards paper tests in its status post): the header says that instead of the old
+  // kalshi-server's "Not connected yet" (phone QA 2026-11-19), with the age of the PC's numbers
+  function pcKalshi() {
+    const lv = KLV.j && KLV.j.st !== 'off' ? KLV.j : null, k1 = K1.j, rw = RW.src === 'pc' ? RW.j : null;   // all set up before the first render
+    const tm = (j) => Date.parse((j && j.updated) || '') || 0;
+    const src = lv ? { updated: lv.u } : !k1 ? rw : !rw ? k1 : tm(k1) >= tm(rw) ? k1 : rw;   // the newer of the two
+    if (!src) return '';
+    const age = rwAge(src);
+    return (lv ? (lv.st === 'live' ? 'K8 LIVE on your PC' : 'K8 on your PC: ' + lv.st) : 'On your PC · real money paused') + ' · updated ' + age.s;
+  }
+  function subFix() { if (S.state === 'waiting' && !previewing()) { const e = $('#sub'); if (e) e.textContent = pcKalshi() || 'Not connected yet'; } }
+
   // ------------------------------------------------------------------ sections
   function subHtml() {
     if (previewing()) return '<span class="pill warn" id="pill">Preview</span><span class="ago">sample data, not your account</span>';
-    if (S.state === 'waiting') return 'Not connected yet';
+    if (S.state === 'waiting') return pcKalshi() || 'Not connected yet';
     const k = S.k;
     if (!k) return S.state === 'error' ? 'Could not reach the Kalshi feed' : 'Loading…';
     const [lvl, label] = stateOf(k), m = String(k.mode == null ? '' : k.mode).trim().toLowerCase().slice(0, 12), t = parseT(k.t);
@@ -1422,7 +1434,7 @@
       const kr = !isObj(x) ? null : x.kind === 'le-live' ? x.kalshi_rewards : x.kind === 'le-live-ext' && isObj(x.x) ? x.x.kalshi_rewards : null;   // the old single post or the ext post (2026-11-18 split)
       if (rwOk(kr) && (!best || String(kr.updated || '') >= String(best.updated || ''))) best = kr;
     }
-    if (best && (!RW.j || String(best.updated || '') >= String(RW.j.updated || ''))) { RW.j = best; RW.src = 'pc'; rwShow(); }
+    if (best && (!RW.j || String(best.updated || '') >= String(RW.j.updated || ''))) { RW.j = best; RW.src = 'pc'; rwShow(); subFix(); }
   }
 
   // ---- "K1 rules test (paper)": tools/kalshi_paper.py (weather lock + NQ hourly model) on the PC; its tiny card (key kalshi_k1, <= 200 bytes) rides the
@@ -1456,6 +1468,7 @@
     }
     if (best) { K1.j = best; k1Show(); }
     if (live) { KLV.j = live; klShow(); }
+    subFix();
   }
 
   // ---- Kalshi LIVE (engine/kalshi_live.py, night-klive 2026-11-19): OFF until the owner types the phrase on the PC. Its <= 200-byte card
@@ -1471,18 +1484,18 @@
     const today = num(j.net) != null ? `today ${usd(j.net, true)}` : 'today not known yet';
     if (j.st === 'stopped') {
       if (hd) hd.textContent = 'Kalshi: STOPPED';
-      ln.textContent = `STOPPED${j.why ? ' (' + String(j.why).slice(0, 40) + ')' : ''}: it is OFF now, ${today}. To restart, type the phrase on the PC (KALSHI_LIVE.bat). Updated ${age.s}.`;
+      ln.textContent = `K8 (gold and silver) STOPPED${j.why ? ' (' + String(j.why).slice(0, 40) + ')' : ''}: it is OFF now, ${today}. To restart, type the phrase on the PC (KALSHI_LIVE.bat). Updated ${age.s}.`;
       if (risk) risk.textContent = 'No new orders.';
       return;
     }
     if (j.st === 'idle') {
       if (hd) hd.textContent = 'Kalshi: ARMED, not running';
-      ln.textContent = `ARMED, but the PC is not running it right now: double-click KALSHI_LIVE.bat on the PC to start it again. ${today[0].toUpperCase() + today.slice(1)}. Updated ${age.s}.`;
+      ln.textContent = `K8 (gold and silver) ARMED, but the PC is not running it right now: double-click KALSHI_LIVE.bat on the PC to start it again. ${today[0].toUpperCase() + today.slice(1)}. Updated ${age.s}.`;
       if (risk) risk.textContent = 'No order rests for more than 20 minutes without it.';
       return;
     }
     if (hd) hd.textContent = j.st === 'live' ? 'Kalshi: LIVE' : 'Kalshi: PAUSED from the phone';
-    ln.textContent = `${j.st === 'live' ? 'LIVE' : 'PAUSED (no new orders until 4 PM ET or RESUME)'}: ${today}, ${fmtN(num(j.f) || 0)} fill${num(j.f) === 1 ? '' : 's'}, `
+    ln.textContent = `K8 (gold and silver) ${j.st === 'live' ? 'LIVE' : 'PAUSED (no new orders until 4 PM ET or RESUME)'}: ${today}, ${fmtN(num(j.f) || 0)} fill${num(j.f) === 1 ? '' : 's'}, `
       + `${fmtN(num(j.o) || 0)} order${num(j.o) === 1 ? '' : 's'} resting.${lim} Pause or flatten from the phone: ZEUS Safety. Updated ${age.s}${age.old ? ' (late)' : ''}.`;
     if (risk && cap != null) risk.textContent = `At most ${usd(cap)} at risk.`;
   }

@@ -73,7 +73,7 @@ DAY0 = 1080                    # 18:00 ET: the CME day starts
 WIDER = 0.5                    # the "a stop 50% wider" diagnostic (the live stop stays 1 tick beyond the sweep: hard rule)
 CAUSES = ("news", "wick", "turned", "never")
 CAUSE_WORD = {"news": "a high-impact news release hit it",
-              "wick": "shaken out, then price went on to our target (BLITZ: to +1R)",
+              "wick": "shaken out, then price went on to our target",
               "turned": "it worked (+0.5R or more), then turned and lost",
               "never": "it never worked (less than +0.5R in our favour)"}
 # the careful-human checklist (written before the first run; entry facts only, classic discretionary rules, no data mining)
