@@ -450,9 +450,12 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   order, plan, log) -> heartbeat `second`, `/api/next/brain/second`, Bot Brain "Second-strategy brain" tab (phone + PC,
   `secondcore.js` SecondUI.brain).
 - **ATLAS + Zlarior on ONE account, the Builder 50K (2026-11-19 night-combolive, Decide card `zlarior-atlas-50k`), built,
-  OFF:** `engine/combo50k.py` (docstring = the full rules). Rule values `research/lab/combo_50k.json` (absent = conflict
-  `first_in`, `atlas_size_factor` 1.0, guards: `atlas_lit_armed_block` on, `atlas_max_per_day` 2, `atlas_min_room` $200 /
-  funded $100, `atlas_max_risk_usd` none); owner switch `data/combo_50k.json` (gitignored; absent / `"on": false` = the bot
+  OFF:** `engine/combo50k.py` (docstring = the full rules). Rule values `research/lab/combo_50k.json` = night-comboplus's
+  pick a50_eval (conflict `first` = first_in, `atlas_size_factor` {"eval": 0.5, "funded": 1.0} by Zlarior's lit_sizing stage,
+  rounded down min 1 micro = the simulator's `max(1, floor(f x q))`, guards null = off: atlas_in_eval, atlas_eval_min_room_usd,
+  eval_day_stop_usd (both bots), soft_day_usd_both_bots $1,000, max_micros 40, flat_by; aliases zprio = close_on_opposite,
+  zfull = lit_priority; absent file = first_in x1.0); this build's own guards: `atlas_lit_armed_block` OFF (optional),
+  `atlas_max_per_day` 2, `atlas_min_room` $200 / funded $100, `atlas_max_risk_usd` none; owner switch `data/combo_50k.json` (gitignored; absent / `"on": false` = the bot
   byte for byte today's: `LiveBot.combo` None, every hook skipped) via `python -X utf8 -m engine.combo50k --on --account
   "<Name>"` (typed I ACCEPT LIVE RISK + `engine.ninjatrader --selftest`; a non-Sim Name also needs the Decide card answered
   yes) / `--off` / `--status` / `--steps`; applies only when its "account" = the bot's own nt_account; harnesses use the
@@ -461,16 +464,19 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   and ledger (`LiveBot._combo_tick` / `_combo_entry` from `_second_route_tick`; management = `_second_manage` on the raw
   view, lit=[]): one position (a position, Zlarior entering, an order still working at NinjaTrader), conflict rules first_in
   (Zlarior skipped while ATLAS holds: `_combo_lit_skip` in `_route_primary`) / lit_priority (Zlarior's entry closes ATLAS
-  first = `_second_preempt`; ATLAS waits while `_lit_busy`) / close_on_opposite; one direction fleet-wide (`_combo_opposite`:
+  first = `_second_preempt`) / close_on_opposite; a Zlarior entry right after ATLAS's exit bar first refreshes ATLAS's
+  trade on that poll's bars (`_combo_refresh`); one direction fleet-wide (`_combo_opposite`:
   account B incl. closing, extra accounts, Rapid, fleet; BLITZ yields; the others already see the 50K via `_open_routed`);
   ATLAS size `combo50k.atlas_qty` = `account_b.qty` builder50k on `LiveBot.eval_state` (shared room, both bots' day $) x the
   factor, <= 40; guards Zlarior 1 + ATLAS 2 a day (`guards.config` `second_max`), daily loss / kill / pause / flatten /
   reconcile see both. Ledger rows `"combo": "atlas50k"`, `"who"`; pushes "ATLAS on Zlarior 50K: LONG opened" / "Zlarior on its
   50K: ..." (live.py `_push_fill(who=)`, NinjaTrader legs `who`), Board kind `combo_trade` (real bot only), heartbeat
   `second.route.combo`; `fill_audit` skips combo rows (not Zlarior's), `circuit_breaker.atlas_pairs` adds them to ATLAS. Test
-  `python -X utf8 -m tests.test_combo_50k [--units | --quick | --full | --seg <day>]` (nq area, by parts): units + the parity
-  replay (real LiveBot, fake NinjaTrader, one Sim 50K, bot restarted each morning) == `combo_account.Eval` trade for trade
-  (entries taken / skipped, micros, $, eval end) -> `research/lab/combo_50k_check.json`.
+  `python -X utf8 -m tests.test_combo_50k [--units | --quick | --full | --seg <day> [--case a50|study|armed] [--scenario]]`
+  (nq area, parts sep / oct): units + the parity replay (real LiveBot, fake NinjaTrader, one Sim 50K, bot restarted each
+  morning) == `combo_account.Eval` trade for trade (entries taken / skipped, micros, $, eval end): Sep 2-10 at the research
+  rules (ATLAS x0.5), Oct 2-7 at the study (x1.0), + close_on_opposite on Sep 4 -> `research/lab/combo_50k_check.json`.
+  Owner steps: `python -X utf8 -m engine.combo50k --steps`.
 - **Account B (2026-10-22, owner "trade it on another 50K or a 25K"), built, OFF:** `second_model.json` `"account_b": null`;
   on = `python -m engine.second --account-b "<NT Name>" --plan builder25k|builder50k --start <day> [--sizing need|safe]`
   (refused if the self-test fails), `--account-b off`. `engine/account_b.py` (LiveBot.acct_b, `_account_b_tick` after
