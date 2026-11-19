@@ -531,8 +531,10 @@ def instant():
               and len(sent) == 3)
         import engine.push as P
         src = open(P.__file__, encoding="utf-8").read()
-        check("g. engine/push.pc_notify hands every fill to instant_entry in its own daemon thread (never delays routing)",
-              'target=notify.instant_entry' in src and 'name="push-ntfy", daemon=True' in src)
+        check("g. engine/push.pc_notify hands every fill to its own daemon thread (never delays routing): the phone app first, "
+              "instant_entry (ntfy) when no phone took it (tests.test_webpush proves it)",
+              'threading.Thread(target=_pc_send, args=(dict(payload),), name="push", daemon=True)' in src
+              and '(ntfy or notify.instant_entry)(dict(payload))' in src)
         home = os.path.join(tmp, "olympus")
         os.makedirs(home)
         with open(os.path.join(home, "ntfy.json"), "w") as fh:
