@@ -101,7 +101,9 @@
   function loadStatus() {
     var saved = json(STATUS_KEY, {}); if (saved && typeof saved === 'object') for (var k in saved) if (!st.status[k] && saved[k] && saved[k].lv) st.status[k] = saved[k];
     st.apps.forEach(function (a) { paintDot(a.id); });
-    if (st.fetching || Date.now() - st.lastFetch < 2 * 60 * 1000) return;
+    // the list not loaded yet: nothing to ask, and the 2-minute pause must not start now (night-bugsweep: an open before the list arrived
+    // used it up, so the dots stayed empty for 2 minutes)
+    if (!st.apps.length || st.fetching || Date.now() - st.lastFetch < 2 * 60 * 1000) return;
     // a folder not on this site (its jarvis.json answered 404: mind/ on the public site, the vault stays on the PC) is not asked again for a
     // day (night-bugsweep 2026-11-19: it was a 404 in the console on every Refresh); its dot stays grey
     var gone = function (a) { var s = st.status[a.id]; return !!(s && s.gone && Date.now() - (s.at || 0) < GONE_TTL); };
