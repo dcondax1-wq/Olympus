@@ -986,7 +986,9 @@ def lab_result(e: dict, path: str = OUT) -> dict:
     if v["ok"] and pl:
         k = ("lit:H2", "lit:2021-25") if bot == "lit" else ("funded:H2", "funded:REF")
         if not row["placebo_ok"]:
-            why = f"better in all three periods, but random grades with the same A/B/C counts do as well (p {pl[k[0]]} / {pl[k[1]]})"
+            why = (f"better in Jan-Jun, Jul-Oct and 2021-25, but could be luck: random skips of as many setups do as well "
+                   f"(Jul-Oct p {pl[k[0]]}, 2021-25 p {pl[k[1]]}; needs <= 0.2 in both), and it flips to a loss with the "
+                   f"first-draft level distance or a stricter C")
         else:
             why = f"better in Jan-Jun, Jul-Oct and 2021-25; beats random grades (p {pl[k[0]]} / {pl[k[1]]})"
     return {"proof_ok": bool(row["pass"]), "why": why or "-", "flip": v.get("flip") or {"H1": 1.0, "H2": 1.0}, "head": head, "base": base,
