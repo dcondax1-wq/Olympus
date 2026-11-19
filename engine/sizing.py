@@ -937,8 +937,8 @@ def _full_closures(y: int) -> set:
     def obs(d):
         return d + _dt.timedelta(days=1) if d.weekday() == 6 else d - _dt.timedelta(days=1) if d.weekday() == 5 else d
     out = {obs(_dt.date(y, 1, 1)), obs(_dt.date(y, 12, 25))}
-    try:
-        from .lit_live import _easter
+    try:                                 # the same Easter as engine/lit_live._easter, from the light calendar module: importing
+        from .cme_calendar import _easter  # lit_live here pulled numpy + pandas into every 15-minute PC report (night-learnloop)
         out.add(_easter(y) - _dt.timedelta(days=2))
     except Exception:
         pass
