@@ -66,7 +66,7 @@ def part_a():
     rt = rd("web_next", "js", "next", "routes.js")
     check("a. PC sidebar Insight: Mind, Trader's deck, Scorecard", "['Insight', ['mind', 'deck', 'pro', 'insight']]" in rt and "PAGES.pro = proPage" in rd("web_next", "js", "app.js"))
     hub = rd("tools", "web_public", "hub.js")
-    check("a. journal tags (hub.js): tag buttons, a tag filter, tags in the CSV", "data-jtag" in hub and "['jTag', 'tag']" in hub and "'note', 'tags'" in hub and 'hub.js?v=10' in idx)
+    check("a. journal tags (hub.js): tag buttons, a tag filter, tags in the CSV", "data-jtag" in hub and "['jTag', 'tag']" in hub and "'note', 'tags'" in hub and 'hub.js?v=11' in idx)
     check("a. docs/ZENITH_COMPARISON.md lists the competition", os.path.exists(os.path.join(ROOT, "docs", "ZENITH_COMPARISON.md"))
           and all(w in rd("docs", "ZENITH_COMPARISON.md") for w in ("TradeZella", "Tradervue", "Edgewonk", "TraderSync")))
 

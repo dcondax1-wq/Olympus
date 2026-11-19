@@ -2,7 +2,7 @@
 Make a separate tab at the bottom ... improve dashboard features"; read-only UI).
 
   a. static   the shared renderers are byte-identical on both apps (blitzcore.js, mindcore.js, deckcore.js), the phone loads
-              them after holo.js, caches bumped (phone le-public-v45+, PC le-shell-next-v27+), clean.js?v=3 kept, the PC sidebar
+              them after holo.js, caches bumped (phone le-public-v45+, PC le-shell-next-v27+), clean.js?v=4 kept, the PC sidebar
               puts BLITZ right after ATLAS, GET /api/next/blitz exists, web_next/FEATURES.md lists the new features
   b. node     BlitzUI renders every part for BLITZ off / Sim test / armed real from a real paper-shadow state
               (tests.test_blitz.fake_state on data/NQ_1m.csv), MindUI from the Mind fixture, DeckUI's eight features; garbage
@@ -128,8 +128,8 @@ def part_a():
     pidx, psw, sw, cl = rd("tools", "web_public", "index.html"), rd("tools", "web_public", "sw.js"), rd("web_next", "sw.js"), rd("tools", "web_public", "clean.js")
     order = [pidx.find(f'src="{n}?v=') for n in ("holo.js", "blitzcore.js", "mindcore.js", "deckcore.js", "blitz.js")]
     check("a. phone index loads blitzcore / mindcore / deckcore / blitz.js after holo.js, in that order", all(i > 0 for i in order) and order == sorted(order), order)
-    check("a. caches: phone le-public-v45+, PC le-shell-next-v27+; clean.js?v=3 kept", int(re.search(r"le-public-v(\d+)", psw).group(1)) >= 45
-          and int(re.search(r"le-shell-next-v(\d+)", sw).group(1)) >= 27 and 'clean.js?v=3"' in pidx)
+    check("a. caches: phone le-public-v45+, PC le-shell-next-v27+; clean.js?v=4 kept", int(re.search(r"le-public-v(\d+)", psw).group(1)) >= 45
+          and int(re.search(r"le-shell-next-v(\d+)", sw).group(1)) >= 27 and 'clean.js?v=4"' in pidx)
     # 2026-10-30 (night 3, layout deliberately changed): every bot tab is Today · Brain · Trades · Results · Rules; Go live is a chip under Rules
     check("a. clean.js: six tabs, BLITZ sections Today · Brain · Trades · Results · Rules (+ the Go live chip)", "['today', 'lit', 'atlas', 'blitz', 'money', 'system']" in cl
           and "['Rules', ['blitz/rules', 'blitz/golive'], []]" in cl and "blitz: ['BLITZ', 'blitz']" in cl)

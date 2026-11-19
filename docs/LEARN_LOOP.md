@@ -33,6 +33,25 @@ When a candidate comes: tell Claude **"review the learn candidates"**. Claude re
 4. **Report.** `research/learn/latest.md` (one page), `summary.json`, `history.jsonl`, `drift.jsonl`, `results/<id>.json`.
    All machine-local (gitignored): the PC's auto-update needs a clean folder.
 
+## ZEUS learned (night-learnloop 2026-11-19): one scorecard a night, every strategy
+
+Owner: "our bot that is constantly learning both / all of our strategies, more features, more data pulls, smarter and faster
+thinking bot". One pipeline instead of scattered tools:
+
+| What | How |
+|---|---|
+| When (PC) | Every weekday after the 17:00 ET close, inside the data pipe's nightly child (`engine/datapipe.py`, right after the ZEUS daily review). Never in the session. |
+| What it looks at | Per strategy (Zlarior, ATLAS, BLITZ paper, K8 Kalshi once its ledger exists): today's trades and $, live vs the backtest twin, the last 20 / 40 / 60 trades (win %, PF, $), did the losers go +0.5R first, what the winners kept, fill slippage, the market (VIX band + calm / normal / wild range). |
+| Your phone | ONE line a night, e.g. "ZEUS learned Nov 19: Zlarior 2 trades +$310, edge GREEN, nothing to change · ATLAS no trade, edge AMBER, slipping in calm markets: watching". Type daily_summary in `notify_settings.json`; `LE_LEARNED_PUSH=0` stops it. |
+| The ZEUS page | A "ZEUS learned" card with the same line and its date (from the PC's live feed, or the cloud copy `hub/learned.json`). |
+| What it changes | Nothing. The approved automatic advice (circuit breaker SIZE DOWN / PAUSE push, edge light) keeps running as before. A new idea becomes a Decide-card question "let Claude test X?" (checked against Tested and rejected first); a yes only starts a test. |
+| Cloud | `python tools/learn_night.py` (Claude): pulls the PC's days, re-runs edge health, the win / loss anatomy, the ZEUS Lab (`--publish`), writes the card + the Decide questions, prints what changed. |
+
+Files: `engine/zeus_learn.py` (PC), `tools/learn_night.py` (cloud), `logs/learn/<day>.json` on the PC, the day folder's
+`learn.json` (rides the data feed). More data: the data feed also sends COMEX gold / silver (GC / SI, or MGC / SIL) 1-minute
+bars around 04:45-05:45 and 15:45-17:15 ET when NinjaTrader has those charts (-> `data/metals/` in the cloud), next to NQ / ES.
+Tests: `python -X utf8 -m tests.test_learn_night`.
+
 ## Commands (PC or cloud, from the repo folder)
 - `python -X utf8 -m engine.learn_loop status`: the queue and each verdict.
 - `python -X utf8 -m engine.learn_loop run --force`: one night now (still skips while a trade is open). `--max 8` runs the whole queue.

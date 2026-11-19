@@ -71,8 +71,8 @@ def part_a():
     fb = src[src.index("function reactorFb("):src.index("function reactorFb(") + 2600]
     sp = src[src.index("const cv = $('#spCv')"):src.index("const cv = $('#spCv')") + 3200]
     check("a. the eval arc on Home (reactorFb) and the intro (stars, halo) are re-toned: no cold colour", not cold(fb) and not cold(sp), (cold(fb), cold(sp)))
-    check("a. changed files are re-versioned so a phone does not keep the old copy: zenith_hero.js?v=5, zenith_money.js?v=3, zenith_agora.css?v=a5 (AGORA v2 Home layer)",
-          'src="zenith_hero.js?v=5"' in idx and 'src="zenith_money.js?v=3"' in idx and 'href="zenith_agora.css?v=a5"' in idx)
+    check("a. changed files are re-versioned so a phone does not keep the old copy: zenith_hero.js?v=5, zenith_money.js?v=4, zenith_agora.css?v=a5 (AGORA v2 Home layer)",
+          'src="zenith_hero.js?v=5"' in idx and 'src="zenith_money.js?v=4"' in idx and 'href="zenith_agora.css?v=a5"' in idx)
 
 
 NODE = r"""
@@ -142,7 +142,7 @@ def part_c(tmp, shots):
                 pg.click("#moInstX")
             A = pg.evaluate(SNAP)
             check("c. Home with a fresh report (1 minute old): the calm strip above the page, no banner, the visible link 'Open the new NQ page' (44 px tall) that goes to nq/",
-                  A and not A["hidden"] and A["level"] == "ok" and A["title"] == "The three NQ bots on one page" and A["link"] == "Open the new NQ page" and A["href"].endswith("/nq/") and A["h"] >= 44 and A["w"] >= 44 and A["above"]
+                  A and not A["hidden"] and A["level"] == "ok" and A["title"] == "Zlarior and ATLAS on one page" and A["link"] == "Open the new NQ page" and A["href"].endswith("/nq/") and A["h"] >= 44 and A["w"] >= 44 and A["above"]
                   and A["next"] == "page" and A["top"] < 400 and A["x"] <= 0, A)
             check("c. AGORA look: the strip's title is the serif", any(f in A["font"] for f in ("Palatino", "Iowan", "Georgia")), A["font"])
             sh(pg, "zenith_nq_fresh.png")

@@ -348,7 +348,7 @@ def test_ui(sb):
     sw = open(os.path.join(ROOT, "tools", "web_public", "sw.js"), encoding="utf-8").read()
     routes = open(os.path.join(ROOT, "web_next", "js", "next", "routes.js"), encoding="utf-8").read()
     check("h. phone: Zlarior > Results and ATLAS > Results have a Learning chip, learning.js loads before clean.js, SW v35+",
-          "'execq', 'learning']" in clean and "'atlas/results', 'atstats', 'atlearn']" in clean and idx.index("learning.js?v=1") < idx.index("clean.js?v=3")
+          "'execq', 'learning']" in clean and "'atlas/results', 'atstats', 'atlearn']" in clean and idx.index("learning.js?v=1") < idx.index("clean.js?v=4")
           and int(__import__("re").search(r"le-public-v(\d+)", sw).group(1)) >= 35)
     check("h. PC: Zlarior > Results and ATLAS > Results have a Learning page", "'edge', 'learnlit']" in routes and "'atlas:results', 'atlassetups', 'learnatlas']" in routes)
 

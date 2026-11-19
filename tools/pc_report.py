@@ -65,7 +65,8 @@ MAX_STATUS_BYTES = 3900          # ntfy turns a message over 4,096 bytes into a 
 EXT_KIND = "le-live-ext"
 EXT_PARTS = 2                    # at most 2 ext posts a run (ntfy.sh free: a few hundred messages a day per IP)
 EXT_EVERY_S = 1740               # the ext goes every 2nd 15-minute run (29 min), or at once when its news changed (ext_hash)
-EXT_ORDER = ("brd", "life", "mf", "board_trades", "at", "learn", "lab", "glance", "kalshi_rewards", "kalshi_k1")   # "at": engine/feed_trades
+EXT_ORDER = ("brd", "life", "mf", "board_trades", "at", "zl", "learn", "lab", "glance", "kalshi_rewards", "kalshi_k1", "kalshi_live")   # "at": engine/feed_trades
+# "zl": ZEUS learned, the nightly line (engine/zeus_learn.read_tiny, <= 220 bytes) -> the ZEUS page's "ZEUS learned" card
 CORE_KEYS = ("eh", "v", "kind", "lite", "src", "t", "every_s", "host", "model_state", "price", "day_pnl", "pc_verdict", "pc", "reporter",
              "board", "accounts", "trimmed")
 BRD_BYTES = 1200
@@ -427,11 +428,21 @@ def gather(now=None, root: str = ROOT, env=None, http=None, port=PORT_DEFAULT, f
         snap["kalshi_k1"] = _kp.read_card(os.path.join(root, "data", "kalshi_k1", "summary.json"), now)
     except Exception:
         snap["kalshi_k1"] = None
+    try:                                    # the Kalshi K8 live/paper card (engine/kalshi_live.read_card, <= 200 bytes; None / off = not sent)
+        from engine import kalshi_live as _kl
+        snap["kalshi_live"] = _kl.read_card(now)
+    except Exception:
+        snap["kalshi_live"] = None
     try:                                    # ZEUS edge light (tools/edge_pc.py: the PC's daily edge_health --pc result, <= 120 bytes)
         from tools import edge_pc as _ep
         snap["eh"] = _ep.read_tiny(os.path.join(root, "data", "edge", "tiny.json"), now=now)
     except Exception:
         snap["eh"] = None
+    try:                                    # ZEUS learned (engine/zeus_learn.py: the nightly line, <= 220 bytes, the ZEUS page card)
+        from engine import zeus_learn as _zl
+        snap["zl"] = _zl.read_tiny(os.path.join(root, "logs", "learn", "tiny.json"), now=now)
+    except Exception:
+        snap["zl"] = None
     return snap
 
 
@@ -558,8 +569,12 @@ def full(snap: dict) -> dict:
         out["kalshi_rewards"] = {k: snap["kalshi_rewards"].get(k) for k in KALSHI_RW_LITE if snap["kalshi_rewards"].get(k) is not None}
     if isinstance(snap.get("kalshi_k1"), dict):        # the Kalshi page's "K1 rules (paper)" card (tools/kalshi_paper.py), <= 200 bytes, ext post
         out["kalshi_k1"] = snap["kalshi_k1"]
+    if isinstance(snap.get("kalshi_live"), dict) and snap["kalshi_live"].get("st") != "off":   # Kalshi K8 live/paper card, <= 200 bytes
+        out["kalshi_live"] = snap["kalshi_live"]
     if isinstance(snap.get("eh"), dict):     # the ZEUS edge chip (tools/edge_pc.read_tiny, <= 120 bytes; tools/web_public/edge_chip.js)
         out["eh"] = snap["eh"]
+    if isinstance(snap.get("zl"), dict):     # ZEUS learned (engine/zeus_learn.read_tiny, <= 220 bytes): rides an ext post (EXT_ORDER)
+        out["zl"] = snap["zl"]
     for k in ("learn", "lab"):                     # the learning loop / ZEUS Lab notes when the reporter's snapshot has them
         if isinstance(snap.get(k), dict):
             out[k] = snap[k]
@@ -1880,6 +1895,13 @@ def main(argv=None) -> int:
         try:
             from tools import kalshi_paper as _kp1
             _kp1.maybe_run(say=(lambda *_: None) if a.quiet else print)
+        except Exception:
+            pass
+        # Kalshi K8 clock bot (engine/kalshi_clock.py + engine/kalshi_live.py): keeps the paper loop running and brings the LIVE
+        # loop back after a PC restart ONLY while the owner's typed phrase is on record; OFF by default; never touches the futures bot
+        try:
+            from engine import kalshi_live as _klv
+            _klv.maybe_run(say=(lambda *_: None) if a.quiet else print)
         except Exception:
             pass
     return 0
