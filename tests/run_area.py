@@ -36,7 +36,7 @@ AREAS = {
     "olympus": ["olympus_sfx", "sfx_engine", "sfx_lab", "olympus_fx", "olympus_kit", "olympus_render", "olympus_themes", "app_intro", "oracle_page", "odeon_page", "fates", "arena",
                 "argus_page", "ares_page", "athena_page", "chronos_page", "forum_page", "hephaestus_page", "hermes", "labyrinth_page", "nemesis_page",
                 "plutus_page", "prometheus", "tyche_page", "pantheon", "mind_page", "datacity"],
-    "zenith": ["hidden_bots", "zenith_shell", "zenith_pages", "zenith_pro", "zenith_mode", "atlas_ui", "blitz_tab", "planner_addons", "ui_polish", "phone_e2e"],
+    "zenith": ["hidden_bots", "zenith_shell", "zenith_pages", "zenith_pro", "zenith_mode", "atlas_ui", "blitz_tab", "planner_addons", "ui_polish", "phone_e2e", "feed_accounts"],
     "kalshi": ["kalshi_edges", "kalshi_red_team", "kalshi_research", "kalshi_publish", "kalshi_guard", "kalshi_live", "kalshi_clock", "kalshi_vm_update", "kalshi_page", "kalshicity_page"],
     "cities": ["cities_page", "kalshicity_page", "datacity"],
     "nq": ["lit_live", "risk_monitors", "no_yahoo", "risk_invariants", "mffu_rules", "holidays", "holiday_replay", "guards", "sizing_caps", "second", "eval_lifecycle", "lifecycle", "live_board", "live_publish", "mffu_view", "heartbeat",
