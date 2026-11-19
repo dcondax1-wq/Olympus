@@ -109,7 +109,7 @@ def test_page():
                 mult = BK.multiplier()
             except Exception:
                 pass
-            check("b. frame rate in headless (software GL, no GPU, 390 x 844, low tier): %.1f fps and %.2f ms of JavaScript a frame; it keeps drawing (the phone's GPU is far faster, the JS is the part a phone pays the same)" % (fps, s2["scene"]["jsMs"]),
+            check("b. frame rate in headless (software GL, no GPU, 390 x 844, low tier): %.1f fps and %.2f ms of JavaScript a frame (median); it keeps drawing (the phone's GPU is far faster, the JS is the part a phone pays the same)" % (fps, s2["scene"]["jsMs"]),
                   fps >= 0.5 / mult and s2["scene"]["jsMs"] < 8 * mult, (fps, s2["scene"]))
             check("b. labels over the city (%d) and the learning ticker has a dated line" % s2["labels"], s2["labels"] >= 3 and re.match(r"^[A-Z][a-z]{2} \d+ · ", s2["ticker"] or ""), (s2["labels"], s2["ticker"]))
             AK.shot(p, "world-low-home")
@@ -165,11 +165,9 @@ def test_page():
 
 
 # ------------------------------------------------------------------------------------------------ the phone shots and the video (--shots)
-VIDEO = [  # js before, frames at 24 fps (manual clock): the opening flyover, then flights from district to district
-    (None, 96), (None, 18),
-    ("OWORLD.district('zeus')", 30), ("OWORLD.open('app:hub-zeus-html')", 34), ("OWORLD.open('bot:lit')", 34),
-    ("OWORLD.district('kalshi')", 32), ("OWORLD.open(OWORLD.world().places.find((p) => p.quarter === 'lab' && p.state === 'ruin').id)", 30),
-    ("OWORLD.district('more')", 30), ("document.querySelector('#cardX').click(); document.querySelector('.dk[data-act=home]').click()", 32),
+VIDEO = [  # js before, frames at 24 fps (manual clock): the opening flyover, then flights between districts; 7.9 s in all (<= 8 s)
+    (None, 84), ("OWORLD.district('zeus')", 26), ("OWORLD.open('app:hub-zeus-html')", 26), ("OWORLD.district('kalshi')", 26),
+    ("document.querySelector('#cardX').click(); document.querySelector('.dk[data-act=home]').click()", 28),
 ]
 SHOT_STEPS = [  # name, js (the flight is finished in one clock step, then a few frames settle)
     ("01-city", "OWORLD.skip()"),
@@ -212,10 +210,10 @@ def make_shots():
             ctx, p, e1 = _shots_page(pw, origin, 2)
             for name, js in SHOT_STEPS:
                 p.evaluate("() => { " + js + " }")
-                p.evaluate("() => { OWORLD.step(1300, true); for (let i = 0; i < 10; i++) OWORLD.step(100, true); }")
+                p.evaluate("() => { OWORLD.step(1300, true); for (let i = 0; i < 24; i++) OWORLD.step(100, true); }")
                 p.wait_for_timeout(700)
                 p.evaluate("() => OWORLD.step(40)")
-                p.screenshot(path=os.path.join(SHOTS, name + ".png"), timeout=600000)
+                p.screenshot(path=os.path.join(SHOTS, name + ".jpg"), type="jpeg", quality=90, timeout=600000)
                 print("  shot:", name, flush=True)
             ctx.close()
             ctx, p, e2 = _shots_page(pw, origin, 1)

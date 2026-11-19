@@ -256,7 +256,8 @@ function chooseLabelSet() {
     for (const p of list) add('p' + p.i, p.x, p.top + 1.5, p.z, p.name, p.kind === 'app' ? 'app' : '', p.raw.hue);
     if (pose.dist > 55) for (const dd of w.districts || []) for (const q of dd.quarters || []) if (q.id !== 'apps') add('q' + dd.id + q.id, q.x, 6, q.z, q.name, 'q', dd.hue);
   }
-  const keep = C.chooseLabels(cands, 16, W, H);
+  const hb = $('#top').getBoundingClientRect().bottom;                       // never under the glass top bar
+  const keep = C.chooseLabels(cands, 16, W, H, hb + 4);
   S.labelKeys = keep.map((k) => cands.find((c) => c.key === k));
 }
 function placeLabels() {
@@ -523,6 +524,7 @@ window.OWORLD = {
   focus: (f) => (S.scene ? S.scene.setFocus(f, true) : null),
   pose: (p) => (S.scene ? (p ? S.scene.setPose(p) : S.scene.pose()) : null),
   world: () => S.world,
+  three: () => (S.scene ? S.scene.scene : null),       // the THREE.Scene (tests, debugging)
 };
 dock();
 if (d.readyState === 'loading') d.addEventListener('DOMContentLoaded', boot); else boot();

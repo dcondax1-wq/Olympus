@@ -149,8 +149,8 @@ void main() {
     col += tint * 0.05 * light * (1.0 - ruin) * (1.0 - filler * 0.6);
   }
   // a pulse runs up the building; the selected place glows at its edges
-  col += tint * pulse * 2.2 * smoothstep(0.75, 1.0, 1.0 - abs(fract(vF.y * 0.08 - uTime * 0.9) - 0.5) * 2.0);
-  col += tint * sel * (0.55 + 0.45 * sin(uTime * 4.0)) * (fr * 2.0 + (1.0 - smoothstep(0.0, 0.1, edge)) * 2.5);
+  col += tint * pulse * 1.2 * smoothstep(0.8, 1.0, 1.0 - abs(fract(vF.y * 0.08 - uTime * 0.9) - 0.5) * 2.0);
+  col += tint * sel * (0.6 + 0.4 * sin(uTime * 4.0)) * (fr * 0.25 + (1.0 - smoothstep(0.0, 0.06, edge)) * 1.8);   // selected: a lit outline, not a lit box
 #ifdef MIRROR
   col *= 0.5 * exp(-max(-vW.y, 0.0) * 0.045);
 #endif
@@ -258,7 +258,8 @@ void main() {
   float star = step(0.9965, s) * (1.0 - smoothstep(0.08, 0.45, length(fract(sc) - 0.5)));
   float tw = 0.55 + 0.45 * sin(uTime * (1.0 + s * 3.0) + s * 80.0);
   col += vec3(0.85, 0.9, 1.0) * star * tw * up * (1.0 + 3.0 * step(0.9993, s));
-  float band = exp(-pow(dot(d, normalize(vec3(0.35, 0.55, -0.75))) * 3.2, 2.0));       // a faint Milky Way
+  float bq = dot(d, normalize(vec3(0.35, 0.55, -0.75))) * 3.2;
+  float band = exp(-bq * bq);                                                        // a faint Milky Way
   col += vec3(0.05, 0.05, 0.09) * band * up * (0.5 + 0.5 * hash13(floor(d * 90.0)));
   float m = dot(d, uMoonDir);
   col += vec3(0.95, 0.93, 0.85) * smoothstep(0.99955, 0.99975, m) * 3.0 + vec3(0.25, 0.3, 0.45) * pow(max(m, 0.0), 300.0) * 1.2;
@@ -268,7 +269,8 @@ void main() {
     for (int i = 0; i < 3; i++) {
       float fi = float(i);
       float c = sin(x * (1.4 + fi * 0.7) + uTime * (0.07 + fi * 0.03) + fi * 2.0) * 0.06 + 0.32 + fi * 0.05;
-      a += exp(-pow((d.y - c) * 18.0, 2.0)) * (0.5 + 0.5 * sin(x * 7.0 + uTime * 0.3 + fi));
+      float aq = (d.y - c) * 18.0;
+      a += exp(-aq * aq) * (0.5 + 0.5 * sin(x * 7.0 + uTime * 0.3 + fi));
     }
     col += mix(vec3(0.05, 0.6, 0.45), vec3(0.35, 0.2, 0.7), smoothstep(0.25, 0.5, d.y)) * a * 0.09 * uAurora * up;
   }
@@ -355,7 +357,7 @@ void main() {
 `;
 export const BEAM_FS = /* glsl */`
 varying float vY; varying vec3 vC; varying float vEdge;
-void main() { float a = pow(1.0 - vY, 1.6) * smoothstep(0.0, 0.8, vEdge) * 0.22; gl_FragColor = vec4(vC * a, 1.0); }
+void main() { float a = pow(clamp(1.0 - vY, 0.0, 1.0), 1.6) * smoothstep(0.0, 0.8, vEdge) * 0.22; gl_FragColor = vec4(vC * a, 1.0); }
 `;
 
 // ------------------------------------------------------------------------------------------------ rings: crowns, progress arcs, shock waves
@@ -398,7 +400,8 @@ uniform vec3 uCol; uniform float uK;
 varying vec2 vUv;
 void main() {
   float r = length(vUv - 0.5) * 2.0;
-  float ring = exp(-pow((r - 0.92) * 14.0, 2.0)) + exp(-pow((r - 0.75) * 30.0, 2.0)) * 0.4;
+  float q1 = (r - 0.92) * 14.0, q2 = (r - 0.75) * 30.0;
+  float ring = exp(-q1 * q1) + exp(-q2 * q2) * 0.4;
   gl_FragColor = vec4(uCol * ring * (1.0 - uK) * (1.0 - uK) * 1.5, 1.0);
 }
 `;
@@ -406,7 +409,7 @@ export const PILLAR_FS = /* glsl */`
 uniform vec3 uCol; uniform float uK;
 varying vec2 vUv;
 void main() {
-  float a = pow(1.0 - vUv.y, 1.25) * sin(min(uK * 3.0, 3.14159)) * (1.0 - uK);
+  float a = pow(clamp(1.0 - vUv.y, 0.0, 1.0), 1.25) * sin(min(uK * 3.0, 3.14159)) * (1.0 - uK);
   gl_FragColor = vec4(uCol * a * 0.28, 1.0);
 }
 `;

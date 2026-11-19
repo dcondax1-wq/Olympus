@@ -242,9 +242,10 @@ export function districtPose(w, d) {
 }
 /** a place: frame it from the plaza side (or keep the current yaw), close enough to read its buildings */
 export function placePose(pl, cur) {
-  const len = Math.hypot(pl.x, pl.z);
-  const yaw = len > 1 ? Math.atan2(-pl.x / len, -pl.z / len) + 0.35 : (cur ? cur.yaw : 0);
-  return { tx: pl.x, ty: Math.min(pl.top * 0.3, 8), tz: pl.z, dist: clamp(pl.r * 2.3 + pl.top * 1.25 + 10, 20, 150), yaw: wrap(yaw), pitch: 0.42 };
+  // an app tower downtown is framed from the plaza side; a learning place from outside, the downtown skyline behind it (never hidden by it)
+  const len = Math.hypot(pl.x, pl.z), app = pl.kind === 'app';
+  const yaw = len > 1 ? (app ? Math.atan2(-pl.x / len, -pl.z / len) : Math.atan2(pl.x / len, pl.z / len)) + 0.35 : (cur ? cur.yaw : 0);
+  return { tx: pl.x, ty: Math.min(pl.top * 0.3, 8), tz: pl.z, dist: clamp(pl.r * 2.3 + pl.top * 1.25 + 10, 20, 150), yaw: wrap(yaw), pitch: app ? 0.42 : 0.56 };
 }
 
 // ------------------------------------------------------------------------------------------------ picking and labels
@@ -261,11 +262,12 @@ export function pick(cands, x, y) {
   return best ? best.i : -1;
 }
 /** cands in priority order: [{key, sx, sy, w, h}]: the ones that fit without overlapping (max n), keys returned */
-export function chooseLabels(cands, max, W, H) {
+export function chooseLabels(cands, max, W, H, top) {
+  const T = top == null ? 60 : top;
   const got = [], boxes = [];
   for (const c of cands || []) {
     if (got.length >= max) break;
-    if (!(c.sx - c.w / 2 > 4 && c.sy - c.h > 60 && c.sx + c.w / 2 < W - 4 && c.sy < H - 40)) continue;
+    if (!(c.sx - c.w / 2 > 4 && c.sy - c.h > T && c.sx + c.w / 2 < W - 4 && c.sy < H - 40)) continue;
     const b = [c.sx - c.w / 2 - 3, c.sy - c.h - 3, c.sx + c.w / 2 + 3, c.sy + 3];
     if (boxes.some((o) => !(b[2] < o[0] || b[0] > o[2] || b[3] < o[1] || b[1] > o[3]))) continue;
     boxes.push(b); got.push(c.key);

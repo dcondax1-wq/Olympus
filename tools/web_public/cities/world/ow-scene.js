@@ -335,7 +335,8 @@ export function createWorld(opts) {
   // ------------------------------------------------------------------------------------------------ the loop
   const INTRO = 3.6;
   const startPose = { ...pose };
-  let frames = 0, fps = 0, tPrevFrame = 0, jsMs = 0, bloomNow = 0.62;
+  let frames = 0, fps = 0, tPrevFrame = 0, bloomNow = 0.62;
+  const works = new Float32Array(60);
   const dists = plan.places.map((p) => Math.hypot(p.x, p.z) / R);
   function frame(dt, t) {
     const t0 = now(), tReal = performance.now();
@@ -383,8 +384,7 @@ export function createWorld(opts) {
     const real = performance.now();                                          // the real render speed (fps), whatever the clock
     if (tPrevFrame) { const ms = real - tPrevFrame; fps = fps ? fps * 0.9 + (1000 / Math.max(1, ms)) * 0.1 : 1000 / Math.max(1, ms); }
     tPrevFrame = real;
-    const work = real - tReal;
-    jsMs = jsMs ? jsMs * 0.9 + work * 0.1 : work;
+    works[frames % works.length] = real - tReal;                            // the JavaScript of this frame (the median is reported)
     if (!manual) rc.render();
   }
 
@@ -426,7 +426,7 @@ export function createWorld(opts) {
     v3.set(x, y, z).project(camera);
     const b = canvas.clientWidth, h = canvas.clientHeight;
     const front = v3.z > -1 && v3.z < 1;
-    const depth = camera.position.distanceTo(new THREE.Vector3(x, y, z));
+    const depth = Math.hypot(camera.position.x - x, camera.position.y - y, camera.position.z - z);
     return { sx: (v3.x * 0.5 + 0.5) * b, sy: (-v3.y * 0.5 + 0.5) * h, front, depth, focal: h / 2 / Math.tan((camera.fov * Math.PI) / 360) };
   }
   function candidates() {
@@ -459,6 +459,7 @@ export function createWorld(opts) {
     skipIntro() { if (introT >= 0) { introT = -1; grow.fill(1); texDirty = true; pose = clampPose(homePose(world), world); } },
     state() {
       const st = rc.stats();
+      const ws = Array.from(works.slice(0, Math.min(frames, works.length))).sort((a, b) => a - b), jsMs = ws.length ? ws[ws.length >> 1] : 0;
       return { frames, fps: Math.round(fps * 10) / 10, jsMs: Math.round(jsMs * 100) / 100, tier: rc.quality(), calls: st.calls, triangles: st.triangles,
         instances: plan.n, places: N, selected, intro: introT >= 0, warp, tween: !!tween, tour: !!tour, history: !!history, pose: { ...pose },
         mirror: mirror.visible, traffic: traffic.geometry.instanceCount, dpr: st.dpr, bloom: st.bloom, compiled: st.compiled };
