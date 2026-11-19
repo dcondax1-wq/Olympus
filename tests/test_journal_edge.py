@@ -7,7 +7,7 @@ losing run normal?", and the PC's fill checks. Read only.
      the pure core, edge.json's shape and dates (tools/journal_edge_build.py --check), the link from Mnemosyne's first page
   b. the maths in node (edgecore.js): words, rows, real-trade merging (one row per signal, real over paper), stats (the Trading page's win %), groups and "both
      halves", the heat map (no claim under 3 / 5 trades), the equity curve and drawdowns, MAE / MFE words, losing runs and the seeded verdict, the real numbers
-  d. the fill-check block end to end: research/handoff/.../feed_fills.compact (the PC builder, parked for the lead) -> tools/pc_report.split -> pc_feed.js
+  d. the fill-check block end to end: engine/feed_fills.compact (the PC builder) -> tools/pc_report.split -> pc_feed.js
      parseLatest -> edgecore.fills
   c. Chromium 390 x 844 with a stubbed PC feed (+ 375 x 667, no feed): every card drawn, the chips, taps >= 44 px, no sideways scroll, no console error,
      nothing off the site; screenshots when AGORA_SHOTS=<dir>
@@ -31,7 +31,7 @@ from tests import agora_kit as AK  # noqa: E402
 ROOT, WEB = AK.ROOT, AK.WEB
 D = os.path.join(WEB, "journal")
 check = AK.check
-FF_PATH = os.path.join(ROOT, "research", "handoff", "2026-11-18", "botgap", "feed_fills.py")
+FF_PATH = os.path.join(ROOT, "engine", "feed_fills.py")
 
 
 def read(p):

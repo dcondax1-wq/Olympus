@@ -1,4 +1,4 @@
-"""FEED FILLS (night-botgap 2026-11-18, research/writeups/bot-gap-2026-11-18.md). PARKED HERE, not in engine/: it was finished after
+"""FEED FILLS (night-botgap 2026-11-18, research/writeups/bot-gap-2026-11-18.md). Wired by the lead into tools/pc_report.full() (ext "fq").
 the 23:00 ET cut-off for PC code, so the lead reviews it and moves it to engine/feed_fills.py (git mv) before wiring it. Nothing imports
 it from here except tests/test_journal_edge.py (part d: the block it makes is the one journal/edgecore.js fills() reads).
 The small "fills vs plan" block the PC can add to its

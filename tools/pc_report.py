@@ -68,7 +68,7 @@ MAX_STATUS_BYTES = 3900          # ntfy turns a message over 4,096 bytes into a 
 EXT_KIND = "le-live-ext"
 EXT_PARTS = 2                    # at most 2 ext posts a run (ntfy.sh free: a few hundred messages a day per IP)
 EXT_EVERY_S = 1740               # the ext goes every 2nd 15-minute run (29 min), or at once when its news changed (ext_hash)
-EXT_ORDER = ("brd", "life", "mf", "board_trades", "at", "zl", "learn", "lab", "glance", "kalshi_rewards", "kalshi_k1", "kalshi_live")   # "at": engine/feed_trades
+EXT_ORDER = ("brd", "life", "mf", "board_trades", "at", "fq", "zl", "learn", "lab", "glance", "kalshi_rewards", "kalshi_k1", "kalshi_live")   # "at": engine/feed_trades
 # "zl": ZEUS learned, the nightly line (engine/zeus_learn.read_tiny, <= 220 bytes) -> the ZEUS page's "ZEUS learned" card
 CORE_KEYS = ("eh", "v", "kind", "lite", "src", "t", "every_s", "host", "model_state", "price", "day_pnl", "pc_verdict", "pc", "reporter",
              "board", "accounts", "trimmed", "wp")   # wp: the phone app's push set-up (engine/push.app_block: public keys, ~230 bytes)
@@ -567,6 +567,13 @@ def full(snap: dict) -> dict:
             out["at"] = at
     except Exception:  # noqa: BLE001
         pass
+    try:                                           # fills vs plan (engine/feed_fills, night-botgap): the journal's "Fills vs plan" card
+        from engine import feed_fills
+        fq = feed_fills.compact(hb.get("exec"), snap.get("fills"), snap.get("t"))
+        if fq:
+            out["fq"] = fq
+    except Exception:  # noqa: BLE001
+        pass
     if isinstance(snap.get("kalshi_rewards"), dict):   # the Kalshi page's "Rewards test (paper)" card (tools/kalshi_rewards_paper.py)
         # only what the card reads (~180 bytes, no per-series rows); it rides an ext post (EXT_ORDER)
         out["kalshi_rewards"] = {k: snap["kalshi_rewards"].get(k) for k in KALSHI_RW_LITE if snap["kalshi_rewards"].get(k) is not None}
@@ -651,8 +658,13 @@ def _cuts(key: str) -> list:
             from engine import feed_trades
             feed_trades.cut(v, n)
         return f
+    def fq(n):
+        def f(v):
+            from engine import feed_fills
+            feed_fills.cut(v, n)
+        return f
     return {"glance": [glance(1000), glance(600)], "mf": [eq(4), eq(0)], "brd": [ev(3), ev(1), ev(0)], "life": [ev(0)],
-            "board_trades": [first(1)], "at": [at(2), at(1)]}.get(key, [])
+            "board_trades": [first(1)], "at": [at(2), at(1)], "fq": [fq(2), fq(0)]}.get(key, [])
 
 
 def split(out: dict, max_bytes: int = MAX_STATUS_BYTES, parts: int | None = None) -> tuple:

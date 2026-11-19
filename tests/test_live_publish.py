@@ -435,7 +435,7 @@ def main(argv=None) -> int:
               'src="live.js?v=' in idx and "window.LIVE.apply(D)" in idx and "window.LIVE.apply(j)" in idx)
         check("phone: SW cache bumped to v15+, live.json network-only",
               int(__import__("re").search(r"le-public-v(\d+)", sw).group(1)) >= 15 and "url.pathname.endsWith('live.json') || url.pathname.endsWith('status_feed.json')) return;" in sw)
-        check("phone: stale banner off while live.json is fresh; 'Live · N ago' in the update line", "!liveOn" in more and "Live</b>" in more)
+        check("phone: stale banner off while live.json is fresh; 'Live · N ago' in the update line", "!liveOn" in more and ("Live</b>" in more or "'Live'}</b>" in more))   # night-feedsB: 'PC report' or 'Live' in the same slot
         check("phone: build copies live.js (every file of tools/web_public)", "for name in os.listdir(WEB)" in read("tools/build_web_dashboard.py"))
 
         # ------------------------------------------------------------------ the real phone page (Playwright)
