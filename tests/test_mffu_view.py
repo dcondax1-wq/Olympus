@@ -10,6 +10,7 @@ network, no browser.
   d. only trade / day news: a new live balance or an open position does not change mf (the ext post's news hash stays)
   e. the split (tools/pc_report.posts): every post under 3,900 bytes on a busy day, mf rides the ext post whole
   f. junk in -> None / no raise
+  g. the trade alerts' names: save_names (data/pc_report/names.json: last 4 -> "Zlarior 50K") and push_name for an alert's label
 
     python -X utf8 -m tests.test_mffu_view
 """
@@ -194,6 +195,35 @@ def part_f():
                                         "trades": [None, {"pnl": "x"}], "stats": "no", "funded": [1]}]})["a"][0]["id"] == "q")
 
 
+def part_g(mf):
+    """the trade alerts' names: names.json from the mf block, push_name for an alert's account label"""
+    import tempfile
+    d = tempfile.mkdtemp()
+    path = os.path.join(d, "pc_report", "names.json")
+    none = [MV.push_name(x, path=path) for x in ("MFFUEVBLDR123456016", "ATLAS 25K", "Zlarior Builder 25K #2", "MFFU 50K", "", None, "FLEET MFFU Builder 50K x")]
+    check("g. no names file yet: an id label stays the caller's (None), a size label maps by words, junk -> None",
+          none == [None, "ATLAS 25K", "Zlarior 25K #2", "Zlarior 50K", None, None, None], none)
+    ok = MV.save_names(mf, path=path)
+    saved = json.load(open(path, encoding="utf-8"))
+    check("g. save_names: last 4 -> the owner's name, PC id -> name (no full id in the file)",
+          ok and saved == {"l4": {"6016": "Zlarior 50K", "6019": "Zlarior 25K #2", "6018": "ATLAS 25K funded"},
+                           "id": {"mffu50k_eval": "Zlarior 50K", "b25k_2": "Zlarior 25K #2", "atlas": "ATLAS 25K funded"}}, saved)
+    got = [MV.push_name(x, path=path) for x in ("MFFUEVBLDR123456016", "ATLAS MFFUSFBLDR000006018", "ATLAS 25K", "Zlarior Builder 25K #2",
+                                                 "MFFUEVBLDR000009999", "Zlarior ...6019")]
+    check("g. push_name with the file: ...6016 -> Zlarior 50K, ATLAS's label -> ATLAS 25K funded, the 25K #2 by its words or ...6019, an unknown id -> None",
+          got == ["Zlarior 50K", "ATLAS 25K funded", "ATLAS 25K funded", "Zlarior 25K #2", None, "Zlarior 25K #2"], got)
+    t0 = os.path.getmtime(path)
+    same = MV.save_names(copy.deepcopy(mf), path=path) and os.path.getmtime(path) == t0
+    dup = copy.deepcopy(mf)
+    dup["a"][1]["l4"] = "6016"                     # two accounts ending in 6016: that last 4 is left out
+    MV.save_names(dup, path=path)
+    d2 = json.load(open(path, encoding="utf-8"))
+    check("g. unchanged -> not rewritten; a last 4 shared by two accounts is left out (never the wrong name)",
+          same and "6016" not in d2["l4"] and MV.push_name("MFFUEVBLDR123456016", path=path) is None, d2)
+    check("g. save_names / push_name never raise", MV.save_names(None, path=path) is False and MV.save_names({"a": [None, {"nm": 5}]}, path=os.path.join(d, "x", "\0bad")) in (True, False)
+          and MV.push_name(object(), path=path) is None)
+
+
 def main() -> int:
     part_a()
     L, mf = part_b()
@@ -201,6 +231,7 @@ def main() -> int:
     part_d(L, mf)
     part_e(L)
     part_f()
+    part_g(mf)
     print(f"mffu view: {sum(RES)}/{len(RES)} {'ALL PASS' if all(RES) else 'FAILED'}")
     return 0 if all(RES) else 1
 

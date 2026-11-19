@@ -21,14 +21,19 @@ Only what changes when a trade closes or a day ends rides here (the ext post's n
 balance, floor, today's $ and the open position stay in the core post (board cards, accounts) every 15 minutes.
 Typical size ~200-280 bytes an account (3 accounts ~770); tools/pc_report trims with cut_eq: 4 equity points, then cut_eq(0) = no equity line and no
 dashboard stats (pf / aw / al / bt / wt / ct), then the whole block, before the accounts block of the core.
-Tests: tests/test_mffu_view.py (size, fields, no ids, names, the split), tests/test_live_publish.py (mffu_checks).
+save_names(mf) / push_name(label): the trade alerts' account names (data/pc_report/names.json, last 4 -> "Zlarior 50K").
+Tests: tests/test_mffu_view.py (size, fields, no ids, names, the split, alert names), tests/test_live_publish.py (mffu_checks).
 """
 from __future__ import annotations
 
+import json
+import os
 import re
 
 EQ_N = 8
 STATS = ("pf", "aw", "al", "bt", "wt", "ct")       # the dashboard stats cut_eq(0) drops
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+NAMES_FILE = os.path.join(ROOT, "data", "pc_report", "names.json")   # gitignored: last 4 digits / PC id -> the owner's name
 
 
 def _d(x) -> dict:
@@ -235,6 +240,70 @@ def compact(L: dict | None) -> dict | None:
             return None
         return {"t": _i(_d(L.get("board")).get("data_t")) or _i(L.get("t")),        # zero td / n / w are left out (= 0)
                 "a": [{k: v for k, v in x.items() if v is not None and not (k in ("td", "n", "w") and v == 0)} for x in rows][:6]}
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def save_names(mf: dict | None, path: str | None = None) -> bool:
+    """The trade alerts' names (owner 2026-11-18: "notifications when trades are taken, on which account"): writes
+    {"l4": {last 4 digits: owner name}, "id": {PC id: owner name}} from the mf block to data/pc_report/names.json (only when it
+    changed; a last 4 shared by two accounts is left out). tools/pc_report calls it after compact(). Never raises."""
+    try:
+        l4s, ids, dup = {}, {}, set()
+        for r in _l(_d(mf).get("a")):
+            r = _d(r)
+            nm = str(r.get("nm") or "")[:40]
+            if not nm:
+                continue
+            if r.get("id"):
+                ids[str(r["id"])[:24]] = nm
+            k = str(r.get("l4") or "")
+            if re.fullmatch(r"\d{4}", k):
+                if k in l4s and l4s[k] != nm:
+                    dup.add(k)
+                l4s[k] = nm
+        out = {"l4": {k: v for k, v in l4s.items() if k not in dup}, "id": ids}
+        if not out["l4"] and not ids:
+            return False
+        path = path or NAMES_FILE
+        try:
+            with open(path, encoding="utf-8") as fh:
+                if json.load(fh) == out:
+                    return True
+        except Exception:  # noqa: BLE001
+            pass
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        tmp = path + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as fh:
+            json.dump(out, fh)
+        os.replace(tmp, path)
+        return True
+    except Exception:  # noqa: BLE001
+        return False
+
+
+def push_name(account, path: str | None = None) -> str | None:
+    """The owner's name for a trade alert's account label (engine/notify.entry_message): its last 4 digits in names.json
+    ("MFFUEVBLDR...6016" -> "Zlarior 50K", "ATLAS MFFUSFBLDR...6018" -> "ATLAS 25K funded"), "ATLAS ..." -> ATLAS's row, a label
+    without an id but with a size ("Zlarior Builder 25K #2" -> "Zlarior 25K #2", "MFFU 50K" -> "Zlarior 50K"). None when unsure
+    (the caller keeps its own name). Never an id, never raises."""
+    try:
+        text = str(account or "").strip()
+        if not text:
+            return None
+        try:
+            with open(path or NAMES_FILE, encoding="utf-8") as fh:
+                names = _d(json.load(fh))
+        except Exception:  # noqa: BLE001
+            names = {}
+        l4 = last4(text)
+        nm = _d(names.get("l4")).get(l4) if l4 else None
+        if not nm and re.match(r"\s*atlas\b", text, re.I):
+            nm = _d(names.get("id")).get("atlas")
+        if not nm and l4 is None and not re.match(r"\s*fleet\b", text, re.I) and re.search(r"(?:^|[^\w$])\d{2,3}\s*k\b", text, re.I):
+            nm = owner_name(None, text, text, "funded" if re.search(r"\bfunded\b", text, re.I) else None)
+        nm = str(nm or "")[:40]
+        return nm if nm and not re.search(r"\d{5,}", nm) else None
     except Exception:  # noqa: BLE001
         return None
 
