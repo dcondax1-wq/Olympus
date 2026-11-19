@@ -1084,6 +1084,165 @@ def register(say=print) -> list:
     return errs
 
 
+# ================================================================================================ the phone page (pure + write)
+SIZE_WORD = {"lit": "at the LIT size ($800 a trade up to a 20-point stop)", "atlas": "at $250 a trade (the funded 25K size)",
+             "blitz": "at $150 a trade"}
+SHORT_CAUSE = {"never": "Never worked", "turned": "Worked, then turned", "wick": "Shaken out, then went our way",
+               "news": "News release hit it"}
+STATUS_PAGE = {"passes": "Passes", "rejected": "Rejected", "blocked": "Already tested"}
+
+
+def _pct(x):
+    x = _num(x)
+    return "-" if x is None else f"{x:.0f}%"
+
+
+def _money_rows(x: dict) -> list:
+    out = []
+    for sp in ("H1", "H2", "2021-25"):
+        o = x["spans"][sp]
+        out.append({"span": SPAN_WORD[sp], "n": o["n"], "tpw": o["tpw"], "win": o["win"], "pf": o["pf"], "net": o["net"],
+                    "per_month": o["per_month"], "dd": o["dd"]})
+    return out
+
+
+def _rule_card(r: dict) -> dict:
+    """One tested rule for the page: $ a month today vs with it, per period, + the verdict in plain words."""
+    u = r.get("usd_month_by") or {}
+    if r["bot"] == "lit":
+        spans = (("H1", "Jan-Jun"), ("H2", "Jul-Oct"), ("2021-25", "2021-25"))
+    else:
+        spans = (("H1", "Jan-Jun"), ("H2", "Jul-Oct"), ("2025", "2025"), ("2021-24", "2021-24"))
+    months = [{"span": w, "now": ((r.get("today") or {}).get(sp) or {}).get("per_month"),
+               "with": ((r.get("with") or {}).get(sp) or {}).get("per_month"), "diff": u.get(sp)} for sp, w in spans]
+    why = str(r.get("why") or "")
+    return {"id": r["id"], "title": r["title"].split(": ", 1)[-1], "status": r["status"],
+            "word": STATUS_PAGE.get(r["status"], r["status"]), "why": why[:240], "months": months,
+            "line": ("Passes the adopt bar: " if r["status"] == "passes" else "Rejected: ") + why[:160]}
+
+
+def bot_card(x: dict, rules: list) -> dict:
+    """Everything the phone shows for one bot, in plain words with $ (2026 first, 2021-25 as the reference)."""
+    bot = x["bot"]
+    S, H1, H2, R5 = (x["spans"][k] for k in ("2026", "H1", "H2", "2021-25"))
+    lost = S["lost"]
+    causes = sorted(({"key": c, "label": SHORT_CAUSE[c], "word": CAUSE_WORD[c], "n": S["causes"][c]["n"],
+                      "usd": S["causes"][c]["usd"], "share": S["causes"][c]["share"] or 0.0} for c in CAUSES),
+                    key=lambda c: c["usd"])
+    ck = S["checklist"]
+    st, be, w = S["stops"], S["be"], S["winners"]
+    aim = "+1R" if bot == "blitz" else "the target"
+    after = [f"Stops were real: with a stop 50% wider, {_pct(st['wider_win'])} of the {st['n']} stop-outs of 2026 would have "
+             f"reached {aim} first (2021-25: {_pct(R5['stops']['wider_win'])}).",
+             f"A stopped trade was at best +{st['mfe_med'] or 0:.2f}R our way (median) and was out after {st['mins_med'] or 0:.0f} min; "
+             f"an hour after the stop, price was a median {abs(st['after60_med'] or 0):.2f}R "
+             + ("further against us." if (st['after60_med'] or 0) < 0 else "back our way.")]
+    if be["n"]:
+        after.append(f"Breakeven exits: {be['n']} in 2026, {money(be['usd'])} in total; {_pct(H1['be']['target_later'])} of the Jan-Jun "
+                     f"ones and {_pct(H2['be']['target_later'])} of the Jul-Oct ones later reached the target (other breakeven and exit "
+                     "rules were tested many times and lost: see Tested and rejected).")
+    win = [f"The best 20% of the {w['n']} winners made {money(w['top20_usd'])} of the {money(S['net'])} net: a few big "
+           "winners pay for everything.",
+           f"A winner went only {w['mae_med'] or 0:.2f}R against us first (median; {_pct(w['mae_small'])} never went 0.25R "
+           f"against) and took {w['mins_med'] or 0:.0f} min (best point after {w['t_mfe_med'] or 0:.0f} min).",
+           f"Hindsight: {_pct(w['day_with'])} of winners came on days that closed our way, {_pct(S['losers']['day_with'])} of losers. "
+           f"Days that closed our way made {money(S['day_with']['with']['usd'])}, days against {money(S['day_with']['against']['usd'])}. "
+           "Nobody knows the close at the entry."]
+    c = x["chance"]
+    careful_line = (f"{ck['good_losers']['n']} of {S['n_loss']} losers ({_pct(ck['good_losers']['share'])} of the lost $) passed every "
+                    f"check: good trades that lost. The checklist would have skipped losers that lost ${abs(ck['losers_flagged']['usd']):,.0f} "
+                    f"but also winners that made ${abs(ck['winners_flagged']['usd']):,.0f}.")
+    return {"bot": bot, "name": x["name"], "size": SIZE_WORD[bot], "money": _money_rows(x),
+            "headline": (f"2026: {S['n']} trades, {money(S['net'])} ({money(S['per_month'])} a month), {S['win']:.0f}% winners. "
+                         f"The {S['n_loss']} losing trades cost ${lost:,.0f}."),
+            "lose": causes, "lose_total": -lost, "lose_n": S["n_loss"],
+            "lose_ref": (f"2021-25 (reference): never worked {_pct(R5['causes']['never']['share'])}, worked then turned "
+                         f"{_pct(R5['causes']['turned']['share'])}, shaken out {_pct(R5['causes']['wick']['share'])}, "
+                         f"news {_pct(R5['causes']['news']['share'])} of {money(-R5['lost'])} lost."),
+            "careful": {"good": ck["good_losers"], "flagged": ck["losers_flagged"], "winners_flagged": ck["winners_flagged"],
+                        "net": [{"span": SPAN_WORD[sp], "usd": x["spans"][sp]["checklist"]["net_if_skipped"],
+                                 "per_month": x["spans"][sp]["checklist"]["per_month_if_skipped"]} for sp in ("H1", "H2", "2021-25")],
+                        "line": careful_line},
+            "win": win, "after": after,
+            "chance": (f"Known at the entry, nothing tells a loser from a winner better than chance: {c['real']} of {c['n_buckets']} "
+                       f"buckets (session, weekday, VIX, trends, news, prior-day levels, setup) were worse or better in all three "
+                       f"periods; shuffled results give {c['shuffled_mean']}."),
+            "biggest": [{"day": b["day"], "line": f"{b['day']} {b['hm']} {b['side']}{(' ' + b['who']) if bot == 'atlas' else ''}: "
+                                                    f"{money(b['usd'])}, {SHORT_CAUSE.get(b['cause'], b['cause']).lower()}, "
+                                                    + ("checklist: " + ", ".join(b["flags"]) if b["flags"] else "passed every check")}
+                        for b in S["biggest_losers"][:3]],
+            "rules": [_rule_card(r) for r in rules if r.get("bot") == bot]}
+
+
+def page_doc(E: dict, R: dict, hide=("blitz",), data_to: str | None = None) -> dict:
+    """why.json (pure): explain.json + rules.json -> the phone page. Hidden bots are left out (engine/hidden_bots)."""
+    bots = [b for b in BOTS if b in (E.get("bots") or {})]
+    rules = (R or {}).get("rules") or []
+    cards = [bot_card(E["bots"][b], rules) for b in bots]
+    shown = [c for c in cards if c["bot"] not in set(hide or ())]
+    n_pass = sum(1 for r in rules if r.get("status") == "passes" and r.get("bot") not in set(hide or ()))
+    n_rules = sum(1 for r in rules if r.get("bot") not in set(hide or ()))
+    lines = []
+    for c in shown:
+        never = next(x for x in c["lose"] if x["key"] == "never")
+        lines.append(f"{c['name']}: {never['share']:.0f}% of 2026's lost $ came from trades that never worked; skipping what a "
+                     f"careful human would skip = {money(c['careful']['net'][0]['per_month'])} / "
+                     f"{money(c['careful']['net'][1]['per_month'])} a month (Jan-Jun / Jul-Oct).")
+    verdict = ("Our losers are mostly good trades that lost: at the entry they look like the winners, the stops are real, and "
+               "the trades a careful human would skip carry as many winners as losers. The money is in a few big winners.")
+    doc = {"v": VERSION, "kind": "olympus-why", "built": E.get("built"), "data_to": data_to, "source": WRITEUP,
+           "note": "Research only (tools/win_loss_anatomy.py). Nothing here changes a live setting.",
+           "title": "Why we win / why we lose",
+           "intro": ("Every Zlarior and ATLAS trade of 2021-2026 taken apart, costs in: how far it went for and against us and "
+                     "when, what the day and the trends did, news, the prior day's levels, and what came after the exit."),
+           "verdict": verdict, "lines": lines,
+           "tested": (f"{n_rules} rules from this study were tested on the real backtests (picked on Jan-Jun 2026, checked on "
+                      f"Jul-Oct and 2021-25, costs in): {n_pass} passed. They stay in the ZEUS Lab and are re-tested every night."),
+           "checklist": [w for _, w in CHECKS], "bots": shown,
+           "hidden_note": (f"{len(cards) - len(shown)} more bot is hidden (paper); its anatomy is in the write-up."
+                           if len(cards) > len(shown) else None)}
+    return doc
+
+
+def page(say=print) -> dict:
+    """research/anatomy/explain.json + rules.json -> tools/web_public/why/why.json (hidden bots scrubbed, stamped)."""
+    from engine import hidden_bots as HB
+    from tools import zeus_lab as Z
+    E = json.load(open(os.path.join(OUT_DIR, "explain.json"), encoding="utf-8"))
+    R = json.load(open(os.path.join(OUT_DIR, "rules.json"), encoding="utf-8")) if os.path.exists(os.path.join(OUT_DIR, "rules.json")) else {}
+    hide = HB.hidden()
+    doc = HB.publish(page_doc(E, R, hide=hide, data_to=Z.data_last_day()), hide)
+    os.makedirs(os.path.dirname(PAGE), exist_ok=True)
+    with open(PAGE, "w", encoding="utf-8") as fh:
+        json.dump(doc, fh, indent=1, ensure_ascii=False)
+        fh.write("\n")
+    tile = jarvis_tile(doc)
+    with open(os.path.join(os.path.dirname(PAGE), "jarvis.json"), "w", encoding="utf-8") as fh:
+        json.dump(tile, fh, ensure_ascii=False)
+    say(f"why.json: {len(doc['bots'])} bots, {os.path.getsize(PAGE):,} bytes -> {os.path.relpath(PAGE, ROOT)} (+ jarvis.json tile)")
+    return doc
+
+
+def jarvis_tile(doc: dict) -> dict:
+    """The launcher tile (jarvis.json): what the study says in three numbers."""
+    b = {c["bot"]: c for c in doc.get("bots") or []}
+    lit = b.get("lit") or {}
+    never = next((x for x in lit.get("lose") or [] if x["key"] == "never"), {})
+    rules = [r for c in doc.get("bots") or [] for r in c.get("rules") or []]
+    skip = (lit.get("careful") or {}).get("net") or [{}, {}]
+    kp = [{"label": "Zlarior losses: never worked", "value": f"{(never.get('share') or 0):.0f}%"},
+          {"label": "Rules passed", "value": f"{sum(1 for r in rules if r.get('status') == 'passes')} of {len(rules)}"},
+          {"label": "Careful skip, Jul-Oct", "value": money(skip[1].get("per_month")) + "/mo" if len(skip) > 1 else "-"}]
+    try:
+        t = int(dt.datetime.strptime(str(doc.get("built")), "%Y-%m-%d %H:%M").replace(tzinfo=ET).timestamp())
+    except (TypeError, ValueError):
+        t = 0
+    return {"v": 1, "name": "Why", "status": {"level": "ok", "label": "Study done"}, "kpis": kp,
+            "lines": ["Why our trades win and lose, in $: every Zlarior and ATLAS trade taken apart.",
+                      "Losers mostly look like winners at the entry; the skip list costs more than it saves."],
+            "t": t, "open": "#", "theme": "#14110e", "stale_after": 31536000}
+
+
 # ================================================================================================ CLI
 def _main(argv=None) -> int:
     import argparse
@@ -1100,6 +1259,8 @@ def _main(argv=None) -> int:
         run_rules()
     if a.cmd == "register":
         register()
+    if a.cmd in ("page", "all"):
+        page()
     return 0
 
 

@@ -16,7 +16,8 @@ and changes and adapts if it needs to."
    `lit_x`, `lit_idea` = an exit or two-fact size rule from `tools/lit_lab_ideas.py` (time stop, NY-open / news exits,
    stall exit, breakeven on a close, NR7, London build-ups; `python -X utf8 tools/lit_lab_ideas.py check` = options off is
    live), `atlas_member` = a new ATLAS member judged by `tools/atlas_plus.py`, its stored verdict, every version it
-   searched counted, `parked`). Add one with `zeus_lab.register(entry)` (validated, keeps the file's layout). The "Tested and rejected" list is `rejected_forever` (never re-run; `blocks` = a bot + fact).
+   searched counted, `anatomy` = a size or skip rule from the win / loss anatomy on an entry fact trade_intel does not hold
+   (daily x 1h trend pullback, the careful-human checklist; `tools/win_loss_anatomy.py` lab_run, the same judges), `parked`). Add one with `zeus_lab.register(entry)` (validated, keeps the file's layout). The "Tested and rejected" list is `rejected_forever` (never re-run; `blocks` = a bot + fact).
 2. **Proof** (every run): the real Zlarior backtest (`tools/lit_edge`, LIT size + live two_week eval path) or ATLAS
    (`tools/atlas_deep`, the real account-B rules), costs in. Picked on 2026 Jan-Jun, checked on Jul-Oct, both better,
    eval fails not up, 2-4 trades a week (LIT), 2021-25 shown (a gate for ATLAS), enough trades changed, the learn loop's

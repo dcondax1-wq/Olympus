@@ -1,4 +1,16 @@
 ## Tested and rejected (don't redo without a new idea)
+- **Win / loss anatomy rules (2026-11-18, `win-loss-anatomy-2026-11-18.md`):** `tools/win_loss_anatomy.py`, ZEUS Lab kind
+  `anatomy` + one atlas_tilt. 4 pre-declared single versions from the strongest findings of the per-trade anatomy, on the real
+  backtests (costs in): Zlarior x1.25 on a pullback in the daily trend (prior close vs its 20-day SMA with the trade, 1h EMA 20/50 against;
+  15 + 6 trades) Jan-Jun +$349 / Jul-Oct -$6 a month at the LIT size (the Jul-Oct winners were 2-3 micro trades x1.25 cannot
+  change), eval +$163 / +$130, flip p 0.08 / 1.0; Zlarior skip the careful-human checklist (against the daily AND 1h trend / the
+  day already moved 1 daily ATR / big US release within 30 min / prior-day high-low under 1R ahead) -$412 / -$1,514 a month,
+  1.8 / 1.5 trades a week, 2-week pass 44.5 -> 37.0 / 39.1 -> 24.6 (2021-25 +$90); ATLAS x1.25 in the 03:00 ET hour (25K path)
+  +$125 / +$34 a month but 2025 money after fees -$494, Jul-Oct p 0.075 (nearest miss, re-tested nightly); ATLAS checklist skip
+  -$1,811 / -$484 a month, 2-week pass 61.3 -> 39.5 / 43.5 -> 30.4 (2021-24 PF 0.96 -> 1.22: care pays only in bad years). 0 pass.
+  Diagnosis: losers mostly never worked (Zlarior 62%, ATLAS 58%, BLITZ 72% of 2026's lost $), a 50% wider stop wins 0-9% of
+  Zlarior / ATLAS stop-outs, entry-fact buckets consistent in all 3 periods = chance (18 of 86 vs 15.4 shuffled; ATLAS 12 / 90 vs
+  15.7; BLITZ 7 / 66 vs 14.2).
 - **Zlarior's two live evals together (2026-11-18b, `lit-ideas-2026-11-18b.md`, `tools/money/lit_two_evals.py`, Lab
   `lit_eval_zombie` / `lit_two_eval_stagger`):** the 50K hole + the 25K #2 on ONE Monte Carlo (same paths, live sizing).
   ATLAS's zombie-eval rule on Zlarior (1-micro last bullet at 80% of the room + give up under $200): pair +$57 / +$51 a

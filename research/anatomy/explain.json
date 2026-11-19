@@ -1,6 +1,6 @@
 {
  "v": 1,
- "built": "2026-11-18 18:54",
+ "built": "2026-11-18 20:00",
  "bots": {
   "lit": {
    "bot": "lit",
@@ -89,7 +89,7 @@
       "top20_usd": 33838,
       "top20_share_of_net": 99.8,
       "day_with": 61.7,
-      "after_target_more": 8.43
+      "beyond_target_r": 2.296
      },
      "losers": {
       "n": 33,
@@ -151,7 +151,77 @@
         "winners_usd": 3199
        }
       }
-     }
+     },
+     "biggest_losers": [
+      {
+       "day": "2026-02-25",
+       "hm": "06:21",
+       "side": "short",
+       "who": "LIT",
+       "exit": "STOP",
+       "usd": -755,
+       "r": -1.045,
+       "mfe_r": 0.118,
+       "mins": 12,
+       "cause": "never",
+       "flags": []
+      },
+      {
+       "day": "2026-01-14",
+       "hm": "02:17",
+       "side": "long",
+       "who": "LIT",
+       "exit": "STOP",
+       "usd": -564,
+       "r": -1.035,
+       "mfe_r": 0.606,
+       "mins": 177,
+       "cause": "turned",
+       "flags": []
+      },
+      {
+       "day": "2026-05-13",
+       "hm": "07:46",
+       "side": "long",
+       "who": "LIT",
+       "exit": "STOP",
+       "usd": -499,
+       "r": -1.031,
+       "mfe_r": 0.884,
+       "mins": 33,
+       "cause": "turned",
+       "flags": []
+      },
+      {
+       "day": "2026-05-08",
+       "hm": "08:23",
+       "side": "short",
+       "who": "LIT",
+       "exit": "STOP",
+       "usd": -482,
+       "r": -1.028,
+       "mfe_r": 0.142,
+       "mins": 8,
+       "cause": "news",
+       "flags": [
+        "against_htf",
+        "news_soon"
+       ]
+      },
+      {
+       "day": "2026-02-12",
+       "hm": "05:33",
+       "side": "short",
+       "who": "LIT",
+       "exit": "STOP",
+       "usd": -465,
+       "r": -1.029,
+       "mfe_r": 0.116,
+       "mins": 119,
+       "cause": "never",
+       "flags": []
+      }
+     ]
     },
     "H2": {
      "n": 40,
@@ -236,7 +306,7 @@
       "top20_usd": 8725,
       "top20_share_of_net": 88.0,
       "day_with": 50.0,
-      "after_target_more": 7.11
+      "beyond_target_r": 2.547
      },
      "losers": {
       "n": 20,
@@ -298,7 +368,74 @@
         "winners_usd": 0
        }
       }
-     }
+     },
+     "biggest_losers": [
+      {
+       "day": "2026-08-03",
+       "hm": "02:02",
+       "side": "long",
+       "who": "LIT",
+       "exit": "STOP",
+       "usd": -635,
+       "r": -1.037,
+       "mfe_r": 0.735,
+       "mins": 38,
+       "cause": "turned",
+       "flags": []
+      },
+      {
+       "day": "2026-09-04",
+       "hm": "03:26",
+       "side": "short",
+       "who": "LIT",
+       "exit": "STOP",
+       "usd": -468,
+       "r": -1.029,
+       "mfe_r": 0.069,
+       "mins": 8,
+       "cause": "never",
+       "flags": []
+      },
+      {
+       "day": "2026-09-15",
+       "hm": "08:34",
+       "side": "short",
+       "who": "LIT",
+       "exit": "STOP",
+       "usd": -440,
+       "r": -1.027,
+       "mfe_r": 0.007,
+       "mins": 15,
+       "cause": "never",
+       "flags": []
+      },
+      {
+       "day": "2026-10-08",
+       "hm": "08:45",
+       "side": "short",
+       "who": "LIT",
+       "exit": "STOP",
+       "usd": -419,
+       "r": -1.028,
+       "mfe_r": 0.515,
+       "mins": 20,
+       "cause": "turned",
+       "flags": []
+      },
+      {
+       "day": "2026-07-06",
+       "hm": "04:46",
+       "side": "short",
+       "who": "LIT",
+       "exit": "STOP",
+       "usd": -354,
+       "r": -1.022,
+       "mfe_r": 0.312,
+       "mins": 69,
+       "cause": "never",
+       "flags": []
+      }
+     ]
     },
     "2021-25": {
      "n": 511,
@@ -383,7 +520,7 @@
       "top20_usd": 94700,
       "top20_share_of_net": 7486.5,
       "day_with": 57.5,
-      "after_target_more": 7.62
+      "beyond_target_r": 3.051
      },
      "losers": {
       "n": 236,
@@ -445,7 +582,293 @@
         "winners_usd": 10199
        }
       }
-     }
+     },
+     "biggest_losers": [
+      {
+       "day": "2025-12-24",
+       "hm": "03:25",
+       "side": "long",
+       "who": "LIT",
+       "exit": "STOP",
+       "usd": -860,
+       "r": -1.086,
+       "mfe_r": 0.091,
+       "mins": 40,
+       "cause": "wick",
+       "flags": []
+      },
+      {
+       "day": "2024-03-13",
+       "hm": "02:20",
+       "side": "short",
+       "who": "LIT",
+       "exit": "STOP",
+       "usd": -855,
+       "r": -1.079,
+       "mfe_r": 0.604,
+       "mins": 45,
+       "cause": "turned",
+       "flags": [
+        "against_htf"
+       ]
+      },
+      {
+       "day": "2023-06-27",
+       "hm": "03:00",
+       "side": "short",
+       "who": "LIT",
+       "exit": "STOP",
+       "usd": -851,
+       "r": -1.067,
+       "mfe_r": 0.088,
+       "mins": 10,
+       "cause": "never",
+       "flags": []
+      },
+      {
+       "day": "2023-07-18",
+       "hm": "07:20",
+       "side": "long",
+       "who": "LIT",
+       "exit": "STOP",
+       "usd": -848,
+       "r": -1.059,
+       "mfe_r": 0.016,
+       "mins": 20,
+       "cause": "never",
+       "flags": []
+      },
+      {
+       "day": "2023-01-24",
+       "hm": "05:55",
+       "side": "long",
+       "who": "LIT",
+       "exit": "STOP",
+       "usd": -842,
+       "r": -1.062,
+       "mfe_r": 0.098,
+       "mins": 15,
+       "cause": "never",
+       "flags": []
+      }
+     ]
+    },
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "win": 55.8,
+     "pf": 4.19,
+     "net": 43820,
+     "per_month": 4467,
+     "dd": -2196,
+     "won": 57546,
+     "lost": 13727,
+     "n_win": 67,
+     "n_loss": 53,
+     "exits": {
+      "STOP": {
+       "n": 39,
+       "usd": -11804
+      },
+      "CUT": {
+       "n": 13,
+       "usd": -1849
+      },
+      "BE": {
+       "n": 35,
+       "usd": 140
+      },
+      "EOD": {
+       "n": 8,
+       "usd": 4831
+      },
+      "TARGET": {
+       "n": 25,
+       "usd": 52502
+      }
+     },
+     "causes": {
+      "news": {
+       "n": 1,
+       "usd": -482,
+       "share": 3.5
+      },
+      "wick": {
+       "n": 1,
+       "usd": -225,
+       "share": 1.6
+      },
+      "turned": {
+       "n": 14,
+       "usd": -4473,
+       "share": 32.6
+      },
+      "never": {
+       "n": 37,
+       "usd": -8546,
+       "share": 62.3
+      }
+     },
+     "stops": {
+      "n": 52,
+      "usd": -13653,
+      "mfe_med": 0.248,
+      "mins_med": 34.0,
+      "never_half": 73.1,
+      "target_later": 23.1,
+      "back_clean": 1.9,
+      "wider_win": 2.0,
+      "after60_med": -0.105
+     },
+     "be": {
+      "n": 35,
+      "usd": 140,
+      "mfe_med": 1.834,
+      "target_later": 34.3
+     },
+     "winners": {
+      "n": 67,
+      "usd": 57546,
+      "mae_med": 0.304,
+      "mae_small": 43.3,
+      "t_mfe_med": 90.0,
+      "mins_med": 132.0,
+      "top20_usd": 42563,
+      "top20_share_of_net": 97.1,
+      "day_with": 58.2,
+      "beyond_target_r": 2.296
+     },
+     "losers": {
+      "n": 53,
+      "usd": -13727,
+      "mfe_med": 0.234,
+      "t_mae_med": 33.0,
+      "mins_med": 35.0,
+      "day_with": 34.6
+     },
+     "day_with": {
+      "with": {
+       "n": 57,
+       "avg_r": 1.597,
+       "usd": 37119
+      },
+      "against": {
+       "n": 62,
+       "avg_r": 0.12,
+       "usd": 7061
+      }
+     },
+     "checklist": {
+      "losers_flagged": {
+       "n": 25,
+       "usd": -5590,
+       "share": 40.7
+      },
+      "good_losers": {
+       "n": 28,
+       "usd": -8136,
+       "share": 59.3
+      },
+      "winners_flagged": {
+       "n": 26,
+       "usd": 15429,
+       "share": 26.8
+      },
+      "net_if_skipped": -9838,
+      "per_month_if_skipped": -1003,
+      "checks": {
+       "against_htf": {
+        "n": 43,
+        "losers_usd": -4995,
+        "winners_usd": 12230
+       },
+       "late": {
+        "n": 3,
+        "losers_usd": -442,
+        "winners_usd": 990
+       },
+       "news_soon": {
+        "n": 1,
+        "losers_usd": -482,
+        "winners_usd": 0
+       },
+       "no_room": {
+        "n": 7,
+        "losers_usd": -381,
+        "winners_usd": 3199
+       }
+      }
+     },
+     "biggest_losers": [
+      {
+       "day": "2026-02-25",
+       "hm": "06:21",
+       "side": "short",
+       "who": "LIT",
+       "exit": "STOP",
+       "usd": -755,
+       "r": -1.045,
+       "mfe_r": 0.118,
+       "mins": 12,
+       "cause": "never",
+       "flags": []
+      },
+      {
+       "day": "2026-08-03",
+       "hm": "02:02",
+       "side": "long",
+       "who": "LIT",
+       "exit": "STOP",
+       "usd": -635,
+       "r": -1.037,
+       "mfe_r": 0.735,
+       "mins": 38,
+       "cause": "turned",
+       "flags": []
+      },
+      {
+       "day": "2026-01-14",
+       "hm": "02:17",
+       "side": "long",
+       "who": "LIT",
+       "exit": "STOP",
+       "usd": -564,
+       "r": -1.035,
+       "mfe_r": 0.606,
+       "mins": 177,
+       "cause": "turned",
+       "flags": []
+      },
+      {
+       "day": "2026-05-13",
+       "hm": "07:46",
+       "side": "long",
+       "who": "LIT",
+       "exit": "STOP",
+       "usd": -499,
+       "r": -1.031,
+       "mfe_r": 0.884,
+       "mins": 33,
+       "cause": "turned",
+       "flags": []
+      },
+      {
+       "day": "2026-05-08",
+       "hm": "08:23",
+       "side": "short",
+       "who": "LIT",
+       "exit": "STOP",
+       "usd": -482,
+       "r": -1.028,
+       "mfe_r": 0.142,
+       "mins": 8,
+       "cause": "news",
+       "flags": [
+        "against_htf",
+        "news_soon"
+       ]
+      }
+     ]
     }
    },
    "chance": {
@@ -2804,7 +3227,7 @@
       "top20_usd": 22380,
       "top20_share_of_net": 87.0,
       "day_with": 67.2,
-      "after_target_more": 6.145
+      "beyond_target_r": 2.657
      },
      "losers": {
       "n": 51,
@@ -2866,7 +3289,74 @@
         "winners_usd": 3566
        }
       }
-     }
+     },
+     "biggest_losers": [
+      {
+       "day": "2026-01-02",
+       "hm": "02:00",
+       "side": "short",
+       "who": "MACD",
+       "exit": "STOP",
+       "usd": -271,
+       "r": -1.084,
+       "mfe_r": 0.789,
+       "mins": 61,
+       "cause": "turned",
+       "flags": []
+      },
+      {
+       "day": "2026-04-03",
+       "hm": "04:05",
+       "side": "long",
+       "who": "EMA",
+       "exit": "STOP",
+       "usd": -270,
+       "r": -1.081,
+       "mfe_r": 0.0,
+       "mins": 20,
+       "cause": "never",
+       "flags": []
+      },
+      {
+       "day": "2026-01-07",
+       "hm": "03:15",
+       "side": "long",
+       "who": "MACD",
+       "exit": "STOP",
+       "usd": -269,
+       "r": -1.075,
+       "mfe_r": 0.797,
+       "mins": 44,
+       "cause": "turned",
+       "flags": []
+      },
+      {
+       "day": "2026-06-24",
+       "hm": "03:40",
+       "side": "short",
+       "who": "EMA",
+       "exit": "STOP",
+       "usd": -265,
+       "r": -1.06,
+       "mfe_r": 0.713,
+       "mins": 5,
+       "cause": "turned",
+       "flags": []
+      },
+      {
+       "day": "2026-01-14",
+       "hm": "08:05",
+       "side": "short",
+       "who": "EMA",
+       "exit": "STOP",
+       "usd": -265,
+       "r": -1.059,
+       "mfe_r": 0.333,
+       "mins": 15,
+       "cause": "never",
+       "flags": []
+      }
+     ]
     },
     "H2": {
      "n": 51,
@@ -2959,7 +3449,7 @@
       "top20_usd": 7225,
       "top20_share_of_net": 87.8,
       "day_with": 65.5,
-      "after_target_more": 4.42
+      "beyond_target_r": 1.493
      },
      "losers": {
       "n": 22,
@@ -3021,7 +3511,76 @@
         "winners_usd": 1136
        }
       }
-     }
+     },
+     "biggest_losers": [
+      {
+       "day": "2026-08-13",
+       "hm": "04:55",
+       "side": "long",
+       "who": "EMA",
+       "exit": "STOP",
+       "usd": -281,
+       "r": -1.123,
+       "mfe_r": 0.59,
+       "mins": 10,
+       "cause": "turned",
+       "flags": []
+      },
+      {
+       "day": "2026-09-22",
+       "hm": "03:10",
+       "side": "long",
+       "who": "EMA",
+       "exit": "STOP",
+       "usd": -268,
+       "r": -1.074,
+       "mfe_r": 0.769,
+       "mins": 25,
+       "cause": "turned",
+       "flags": []
+      },
+      {
+       "day": "2026-09-22",
+       "hm": "03:10",
+       "side": "long",
+       "who": "MACD",
+       "exit": "STOP",
+       "usd": -268,
+       "r": -1.074,
+       "mfe_r": 0.769,
+       "mins": 21,
+       "cause": "turned",
+       "flags": []
+      },
+      {
+       "day": "2026-07-23",
+       "hm": "06:10",
+       "side": "short",
+       "who": "EMA",
+       "exit": "STOP",
+       "usd": -265,
+       "r": -1.062,
+       "mfe_r": 0.603,
+       "mins": 25,
+       "cause": "turned",
+       "flags": []
+      },
+      {
+       "day": "2026-08-31",
+       "hm": "10:15",
+       "side": "long",
+       "who": "S/R",
+       "exit": "STOP",
+       "usd": -263,
+       "r": -1.053,
+       "mfe_r": 1.67,
+       "mins": 10,
+       "cause": "turned",
+       "flags": [
+        "against_htf"
+       ]
+      }
+     ]
     },
     "2021-25": {
      "n": 1125,
@@ -3114,7 +3673,7 @@
       "top20_usd": 126404,
       "top20_share_of_net": 833.7,
       "day_with": 65.9,
-      "after_target_more": 5.73
+      "beyond_target_r": 2.297
      },
      "losers": {
       "n": 707,
@@ -3176,7 +3735,300 @@
         "winners_usd": 8860
        }
       }
-     }
+     },
+     "biggest_losers": [
+      {
+       "day": "2023-12-29",
+       "hm": "02:45",
+       "side": "short",
+       "who": "MACD",
+       "exit": "STOP",
+       "usd": -298,
+       "r": -1.192,
+       "mfe_r": 0.4,
+       "mins": 30,
+       "cause": "never",
+       "flags": [
+        "against_htf"
+       ]
+      },
+      {
+       "day": "2024-06-14",
+       "hm": "02:10",
+       "side": "short",
+       "who": "MACD",
+       "exit": "STOP",
+       "usd": -298,
+       "r": -1.192,
+       "mfe_r": 0.0,
+       "mins": 10,
+       "cause": "never",
+       "flags": [
+        "against_htf"
+       ]
+      },
+      {
+       "day": "2022-01-05",
+       "hm": "04:50",
+       "side": "short",
+       "who": "EMA",
+       "exit": "STOP",
+       "usd": -294,
+       "r": -1.178,
+       "mfe_r": 0.0,
+       "mins": 5,
+       "cause": "never",
+       "flags": []
+      },
+      {
+       "day": "2022-08-26",
+       "hm": "03:00",
+       "side": "long",
+       "who": "EMA",
+       "exit": "STOP",
+       "usd": -294,
+       "r": -1.178,
+       "mfe_r": 0.074,
+       "mins": 5,
+       "cause": "never",
+       "flags": []
+      },
+      {
+       "day": "2023-07-04",
+       "hm": "05:10",
+       "side": "long",
+       "who": "EMA",
+       "exit": "STOP",
+       "usd": -294,
+       "r": -1.178,
+       "mfe_r": 0.667,
+       "mins": 90,
+       "cause": "turned",
+       "flags": []
+      }
+     ]
+    },
+    "2026": {
+     "n": 163,
+     "tpw": 3.96,
+     "win": 55.2,
+     "pf": 2.94,
+     "net": 33966,
+     "per_month": 3463,
+     "dd": -1533,
+     "won": 51436,
+     "lost": 17470,
+     "n_win": 90,
+     "n_loss": 73,
+     "exits": {
+      "STOP": {
+       "n": 61,
+       "usd": -15790
+      },
+      "CUT": {
+       "n": 7,
+       "usd": -889
+      },
+      "T15": {
+       "n": 2,
+       "usd": -271
+      },
+      "BE": {
+       "n": 27,
+       "usd": 12
+      },
+      "HEDGE": {
+       "n": 11,
+       "usd": 1814
+      },
+      "EOD": {
+       "n": 7,
+       "usd": 2368
+      },
+      "TARGET": {
+       "n": 48,
+       "usd": 46722
+      }
+     },
+     "causes": {
+      "news": {
+       "n": 1,
+       "usd": -264,
+       "share": 1.5
+      },
+      "wick": {
+       "n": 4,
+       "usd": -888,
+       "share": 5.1
+      },
+      "turned": {
+       "n": 24,
+       "usd": -6268,
+       "share": 35.9
+      },
+      "never": {
+       "n": 44,
+       "usd": -10050,
+       "share": 57.5
+      }
+     },
+     "stops": {
+      "n": 68,
+      "usd": -16679,
+      "mfe_med": 0.337,
+      "mins_med": 25.0,
+      "never_half": 61.8,
+      "target_later": 30.9,
+      "back_clean": 5.9,
+      "wider_win": 6.5,
+      "after60_med": 0.005
+     },
+     "be": {
+      "n": 27,
+      "usd": 12,
+      "mfe_med": 1.38,
+      "target_later": 18.5
+     },
+     "winners": {
+      "n": 90,
+      "usd": 51436,
+      "mae_med": 0.319,
+      "mae_small": 38.9,
+      "t_mfe_med": 67.5,
+      "mins_med": 97.5,
+      "top20_usd": 30844,
+      "top20_share_of_net": 90.8,
+      "day_with": 66.7,
+      "beyond_target_r": 2.535
+     },
+     "losers": {
+      "n": 73,
+      "usd": -17470,
+      "mfe_med": 0.317,
+      "t_mae_med": 20.0,
+      "mins_med": 25.0,
+      "day_with": 48.6
+     },
+     "day_with": {
+      "with": {
+       "n": 95,
+       "avg_r": 1.232,
+       "usd": 29261
+      },
+      "against": {
+       "n": 67,
+       "avg_r": 0.297,
+       "usd": 4975
+      }
+     },
+     "checklist": {
+      "losers_flagged": {
+       "n": 25,
+       "usd": -5778,
+       "share": 33.1
+      },
+      "good_losers": {
+       "n": 48,
+       "usd": -11692,
+       "share": 66.9
+      },
+      "winners_flagged": {
+       "n": 33,
+       "usd": 22080,
+       "share": 42.9
+      },
+      "net_if_skipped": -16302,
+      "per_month_if_skipped": -1662,
+      "checks": {
+       "against_htf": {
+        "n": 38,
+        "losers_usd": -4157,
+        "winners_usd": 15893
+       },
+       "late": {
+        "n": 10,
+        "losers_usd": -764,
+        "winners_usd": 5937
+       },
+       "news_soon": {
+        "n": 0,
+        "losers_usd": 0,
+        "winners_usd": 0
+       },
+       "no_room": {
+        "n": 14,
+        "losers_usd": -857,
+        "winners_usd": 4702
+       }
+      }
+     },
+     "biggest_losers": [
+      {
+       "day": "2026-08-13",
+       "hm": "04:55",
+       "side": "long",
+       "who": "EMA",
+       "exit": "STOP",
+       "usd": -281,
+       "r": -1.123,
+       "mfe_r": 0.59,
+       "mins": 10,
+       "cause": "turned",
+       "flags": []
+      },
+      {
+       "day": "2026-01-02",
+       "hm": "02:00",
+       "side": "short",
+       "who": "MACD",
+       "exit": "STOP",
+       "usd": -271,
+       "r": -1.084,
+       "mfe_r": 0.789,
+       "mins": 61,
+       "cause": "turned",
+       "flags": []
+      },
+      {
+       "day": "2026-04-03",
+       "hm": "04:05",
+       "side": "long",
+       "who": "EMA",
+       "exit": "STOP",
+       "usd": -270,
+       "r": -1.081,
+       "mfe_r": 0.0,
+       "mins": 20,
+       "cause": "never",
+       "flags": []
+      },
+      {
+       "day": "2026-01-07",
+       "hm": "03:15",
+       "side": "long",
+       "who": "MACD",
+       "exit": "STOP",
+       "usd": -269,
+       "r": -1.075,
+       "mfe_r": 0.797,
+       "mins": 44,
+       "cause": "turned",
+       "flags": []
+      },
+      {
+       "day": "2026-09-22",
+       "hm": "03:10",
+       "side": "long",
+       "who": "EMA",
+       "exit": "STOP",
+       "usd": -268,
+       "r": -1.074,
+       "mfe_r": 0.769,
+       "mins": 25,
+       "cause": "turned",
+       "flags": []
+      }
+     ]
     }
    },
    "chance": {
@@ -5593,7 +6445,7 @@
       "top20_usd": 7332,
       "top20_share_of_net": 133.0,
       "day_with": 98.4,
-      "after_target_more": null
+      "beyond_target_r": null
      },
      "losers": {
       "n": 98,
@@ -5655,7 +6507,85 @@
         "winners_usd": 1080
        }
       }
-     }
+     },
+     "biggest_losers": [
+      {
+       "day": "2026-06-09",
+       "hm": "13:00",
+       "side": "short",
+       "who": "BLITZ",
+       "exit": "STOP",
+       "usd": -407,
+       "r": -1.0,
+       "mfe_r": 0.087,
+       "mins": 18,
+       "cause": "never",
+       "flags": [
+        "late"
+       ]
+      },
+      {
+       "day": "2026-06-25",
+       "hm": "12:00",
+       "side": "short",
+       "who": "BLITZ",
+       "exit": "STOP",
+       "usd": -309,
+       "r": -1.0,
+       "mfe_r": 0.116,
+       "mins": 11,
+       "cause": "never",
+       "flags": [
+        "late"
+       ]
+      },
+      {
+       "day": "2026-06-09",
+       "hm": "13:30",
+       "side": "short",
+       "who": "BLITZ",
+       "exit": "TIME",
+       "usd": -220,
+       "r": -0.567,
+       "mfe_r": 0.183,
+       "mins": 31,
+       "cause": "never",
+       "flags": [
+        "late"
+       ]
+      },
+      {
+       "day": "2026-05-18",
+       "hm": "15:30",
+       "side": "short",
+       "who": "BLITZ",
+       "exit": "STOP",
+       "usd": -183,
+       "r": -1.0,
+       "mfe_r": 0.105,
+       "mins": 10,
+       "cause": "never",
+       "flags": [
+        "late"
+       ]
+      },
+      {
+       "day": "2026-06-08",
+       "hm": "11:00",
+       "side": "long",
+       "who": "BLITZ",
+       "exit": "TIME",
+       "usd": -182,
+       "r": -0.814,
+       "mfe_r": 0.598,
+       "mins": 31,
+       "cause": "turned",
+       "flags": [
+        "against_htf",
+        "late"
+       ]
+      }
+     ]
     },
     "H2": {
      "n": 109,
@@ -5732,7 +6662,7 @@
       "top20_usd": 2918,
       "top20_share_of_net": 136.2,
       "day_with": 85.0,
-      "after_target_more": null
+      "beyond_target_r": null
      },
      "losers": {
       "n": 49,
@@ -5794,7 +6724,76 @@
         "winners_usd": 1041
        }
       }
-     }
+     },
+     "biggest_losers": [
+      {
+       "day": "2026-07-28",
+       "hm": "11:00",
+       "side": "short",
+       "who": "BLITZ",
+       "exit": "STOP",
+       "usd": -226,
+       "r": -1.0,
+       "mfe_r": 0.311,
+       "mins": 19,
+       "cause": "never",
+       "flags": []
+      },
+      {
+       "day": "2026-07-27",
+       "hm": "12:00",
+       "side": "short",
+       "who": "BLITZ",
+       "exit": "STOP",
+       "usd": -197,
+       "r": -1.0,
+       "mfe_r": 0.196,
+       "mins": 26,
+       "cause": "never",
+       "flags": [
+        "late"
+       ]
+      },
+      {
+       "day": "2026-08-06",
+       "hm": "11:00",
+       "side": "long",
+       "who": "BLITZ",
+       "exit": "STOP",
+       "usd": -181,
+       "r": -1.0,
+       "mfe_r": 0.331,
+       "mins": 24,
+       "cause": "never",
+       "flags": []
+      },
+      {
+       "day": "2026-08-06",
+       "hm": "11:30",
+       "side": "long",
+       "who": "BLITZ",
+       "exit": "STOP",
+       "usd": -180,
+       "r": -1.0,
+       "mfe_r": 0.22,
+       "mins": 26,
+       "cause": "never",
+       "flags": []
+      },
+      {
+       "day": "2026-07-31",
+       "hm": "13:00",
+       "side": "short",
+       "who": "BLITZ",
+       "exit": "STOP",
+       "usd": -180,
+       "r": -1.0,
+       "mfe_r": 0.079,
+       "mins": 25,
+       "cause": "never",
+       "flags": []
+      }
+     ]
     },
     "2021-25": {
      "n": 1869,
@@ -5871,7 +6870,7 @@
       "top20_usd": 41450,
       "top20_share_of_net": 907.1,
       "day_with": 92.3,
-      "after_target_more": null
+      "beyond_target_r": null
      },
      "losers": {
       "n": 929,
@@ -5933,7 +6932,299 @@
         "winners_usd": 6447
        }
       }
-     }
+     },
+     "biggest_losers": [
+      {
+       "day": "2025-04-07",
+       "hm": "11:00",
+       "side": "long",
+       "who": "BLITZ",
+       "exit": "STOP",
+       "usd": -753,
+       "r": -1.0,
+       "mfe_r": 0.371,
+       "mins": 15,
+       "cause": "never",
+       "flags": [
+        "against_htf",
+        "late"
+       ]
+      },
+      {
+       "day": "2025-04-10",
+       "hm": "13:30",
+       "side": "short",
+       "who": "BLITZ",
+       "exit": "STOP",
+       "usd": -389,
+       "r": -1.0,
+       "mfe_r": 0.189,
+       "mins": 30,
+       "cause": "never",
+       "flags": [
+        "late"
+       ]
+      },
+      {
+       "day": "2025-04-10",
+       "hm": "13:00",
+       "side": "short",
+       "who": "BLITZ",
+       "exit": "STOP",
+       "usd": -360,
+       "r": -1.0,
+       "mfe_r": -0.0,
+       "mins": 5,
+       "cause": "wick",
+       "flags": [
+        "late"
+       ]
+      },
+      {
+       "day": "2025-04-04",
+       "hm": "11:00",
+       "side": "short",
+       "who": "BLITZ",
+       "exit": "STOP",
+       "usd": -323,
+       "r": -1.0,
+       "mfe_r": -0.0,
+       "mins": 5,
+       "cause": "never",
+       "flags": [
+        "late"
+       ]
+      },
+      {
+       "day": "2025-04-08",
+       "hm": "13:30",
+       "side": "short",
+       "who": "BLITZ",
+       "exit": "STOP",
+       "usd": -289,
+       "r": -1.0,
+       "mfe_r": 0.127,
+       "mins": 15,
+       "cause": "wick",
+       "flags": [
+        "late"
+       ]
+      }
+     ]
+    },
+    "2026": {
+     "n": 329,
+     "tpw": 7.99,
+     "win": 55.3,
+     "pf": 1.58,
+     "net": 7657,
+     "per_month": 781,
+     "dd": -1314,
+     "won": 20822,
+     "lost": 13166,
+     "n_win": 182,
+     "n_loss": 147,
+     "exits": {
+      "STOP": {
+       "n": 67,
+       "usd": -7924
+      },
+      "EOD": {
+       "n": 23,
+       "usd": 1724
+      },
+      "TIME": {
+       "n": 239,
+       "usd": 13857
+      }
+     },
+     "causes": {
+      "news": {
+       "n": 1,
+       "usd": -172,
+       "share": 1.3
+      },
+      "wick": {
+       "n": 9,
+       "usd": -1114,
+       "share": 8.5
+      },
+      "turned": {
+       "n": 39,
+       "usd": -2406,
+       "share": 18.3
+      },
+      "never": {
+       "n": 98,
+       "usd": -9473,
+       "share": 72.0
+      }
+     },
+     "stops": {
+      "n": 67,
+      "usd": -7924,
+      "mfe_med": 0.201,
+      "mins_med": 16.0,
+      "never_half": 74.6,
+      "target_later": 0.0,
+      "back_clean": 16.4,
+      "wider_win": 30.5,
+      "after60_med": 0.06
+     },
+     "be": {
+      "n": 0,
+      "usd": 0,
+      "mfe_med": null,
+      "target_later": null
+     },
+     "winners": {
+      "n": 182,
+      "usd": 20822,
+      "mae_med": 0.243,
+      "mae_small": 51.1,
+      "t_mfe_med": 24.0,
+      "mins_med": 31.0,
+      "top20_usd": 10290,
+      "top20_share_of_net": 134.4,
+      "day_with": 94.0,
+      "beyond_target_r": null
+     },
+     "losers": {
+      "n": 147,
+      "usd": -13166,
+      "mfe_med": 0.321,
+      "t_mae_med": 21.0,
+      "mins_med": 31.0,
+      "day_with": 76.2
+     },
+     "day_with": {
+      "with": {
+       "n": 283,
+       "avg_r": 0.233,
+       "usd": 9632
+      },
+      "against": {
+       "n": 46,
+       "avg_r": -0.32,
+       "usd": -1976
+      }
+     },
+     "checklist": {
+      "losers_flagged": {
+       "n": 89,
+       "usd": -8273,
+       "share": 62.8
+      },
+      "good_losers": {
+       "n": 58,
+       "usd": -4893,
+       "share": 37.2
+      },
+      "winners_flagged": {
+       "n": 116,
+       "usd": 13934,
+       "share": 66.9
+      },
+      "net_if_skipped": -5661,
+      "per_month_if_skipped": -577,
+      "checks": {
+       "against_htf": {
+        "n": 74,
+        "losers_usd": -2650,
+        "winners_usd": 3969
+       },
+       "late": {
+        "n": 180,
+        "losers_usd": -7251,
+        "winners_usd": 13202
+       },
+       "news_soon": {
+        "n": 1,
+        "losers_usd": -172,
+        "winners_usd": 0
+       },
+       "no_room": {
+        "n": 23,
+        "losers_usd": -1052,
+        "winners_usd": 2121
+       }
+      }
+     },
+     "biggest_losers": [
+      {
+       "day": "2026-06-09",
+       "hm": "13:00",
+       "side": "short",
+       "who": "BLITZ",
+       "exit": "STOP",
+       "usd": -407,
+       "r": -1.0,
+       "mfe_r": 0.087,
+       "mins": 18,
+       "cause": "never",
+       "flags": [
+        "late"
+       ]
+      },
+      {
+       "day": "2026-06-25",
+       "hm": "12:00",
+       "side": "short",
+       "who": "BLITZ",
+       "exit": "STOP",
+       "usd": -309,
+       "r": -1.0,
+       "mfe_r": 0.116,
+       "mins": 11,
+       "cause": "never",
+       "flags": [
+        "late"
+       ]
+      },
+      {
+       "day": "2026-07-28",
+       "hm": "11:00",
+       "side": "short",
+       "who": "BLITZ",
+       "exit": "STOP",
+       "usd": -226,
+       "r": -1.0,
+       "mfe_r": 0.311,
+       "mins": 19,
+       "cause": "never",
+       "flags": []
+      },
+      {
+       "day": "2026-06-09",
+       "hm": "13:30",
+       "side": "short",
+       "who": "BLITZ",
+       "exit": "TIME",
+       "usd": -220,
+       "r": -0.567,
+       "mfe_r": 0.183,
+       "mins": 31,
+       "cause": "never",
+       "flags": [
+        "late"
+       ]
+      },
+      {
+       "day": "2026-07-27",
+       "hm": "12:00",
+       "side": "short",
+       "who": "BLITZ",
+       "exit": "STOP",
+       "usd": -197,
+       "r": -1.0,
+       "mfe_r": 0.196,
+       "mins": 26,
+       "cause": "never",
+       "flags": [
+        "late"
+       ]
+      }
+     ]
     }
    },
    "chance": {
