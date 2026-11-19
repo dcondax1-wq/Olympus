@@ -17,6 +17,8 @@ Built on what exists (nothing re-implemented):
   funded     kind atlas_funded = a protective rule family on ATLAS's FUNDED 25K (tools/atlas_health.py, its stored verdict:
              member pause / edge-light size / day loss cap / smaller risk in a hole / skips; the family's Jan-Jun pick, the
              funded gate incl. the live stuck stop, and it must act in Jul-Oct; "cells" = versions scored).
+  grade      kind setup_grade = the human setup grade A / B / C for Zlarior or ATLAS (tools/setup_grade.py, its stored
+             verdict research/lab/setup_grade.json; "variant" = which grade + use, "cells" = every variant it tried).
   re-test    the REAL backtests through engine/learn_loop's runners: LIT = tools/lit_edge.evaluate (run lit_live re-walked:
              the LIT size + the live two_week eval path, costs in); ATLAS = tools/atlas_deep.score (the real account-B rules,
              engine/second.py members). Kinds: lit_tilt / atlas_tilt (the learn-loop rule language), lit_x (a
@@ -71,8 +73,10 @@ REF_DOC = os.path.join(ROOT, "docs", "TESTED_AND_REJECTED.md")   # moved out of 
 EDGE = os.path.join(ROOT, "research", "lab", "edge_health.json")
 ZEUS_QUEUE = os.path.join(ROOT, "research", "zeus_queue.jsonl")         # night-learn's daily review proposals (tools/data_pull.py)
 VERSION = 1
-RUNNABLE = ("lit_tilt", "atlas_tilt", "lit_x", "atlas_member", "lit_idea", "atlas_funded", "anatomy")
+RUNNABLE = ("lit_tilt", "atlas_tilt", "lit_x", "atlas_member", "lit_idea", "atlas_funded", "anatomy", "setup_grade")
 FUNDED_FAMILIES = ("M", "L", "D", "S", "K")   # tools/atlas_health.FAMILY
+GRADE_VARIANTS = ("h1:skipC", "h1:size", "all7:skipC", "all7:size")          # tools/setup_grade.py
+CELL_KINDS = ("atlas_member", "atlas_funded", "setup_grade")                  # kinds that count every version they searched
 KINDS = RUNNABLE + ("parked",)
 BOTS = ("lit", "atlas", "kalshi")
 LIT_X_KEYS = ("tgt", "be", "tc", "speed", "slow", "late")
@@ -169,6 +173,8 @@ def load_registry(path: str = REGISTRY) -> tuple:
             er.append("atlas_member is for bot atlas and needs family (tools/atlas_plus.py)")
         if e.get("kind") == "atlas_funded" and (e.get("bot") != "atlas" or e.get("family") not in FUNDED_FAMILIES):
             er.append(f"atlas_funded is for bot atlas and needs family in {FUNDED_FAMILIES} (tools/atlas_health.py)")
+        if e.get("kind") == "setup_grade" and (e.get("bot") not in ("lit", "atlas") or e.get("variant") not in GRADE_VARIANTS):
+            er.append(f"setup_grade is for bot lit or atlas and needs variant in {GRADE_VARIANTS} (tools/setup_grade.py)")
         if e.get("kind") == "parked" and not e.get("parked_why"):
             er.append("a parked experiment needs parked_why")
         if er:
@@ -274,9 +280,8 @@ def cross_experiments(exps: list, forever: list) -> list:
 
 def cells(exps: list, queue_n: int = 0) -> int:
     """Cells ever judged in this search: every runnable Lab experiment (cross ones too) + the learn queue. An atlas_member
-    or atlas_funded family counts every version its tool searched ("cells")."""
-    return sum(int(e.get("cells") or 1) if e.get("kind") in ("atlas_member", "atlas_funded") else 1
-               for e in exps if e.get("kind") in RUNNABLE) + int(queue_n)
+    or atlas_funded family or setup_grade entry counts every version its tool searched ("cells")."""
+    return sum(int(e.get("cells") or 1) if e.get("kind") in CELL_KINDS else 1 for e in exps if e.get("kind") in RUNNABLE) + int(queue_n)
 
 
 def p_needed(n_cells: int, alpha: float = 0.2) -> float:
@@ -422,6 +427,12 @@ def run_funded(e: dict, C, rules: dict) -> dict:
     Reads that tool's stored verdict (research/second/atlas_health.json; rerun the tool for new bars)."""
     from tools import atlas_health as AH
     return AH.lab_result(e)
+def run_grade(e: dict, C, rules: dict) -> dict:
+    """setup_grade: the human setup grade (tools/setup_grade.py: 7 checks a calm trader asks, A / B / C by the warnings
+    count, skip C or size A / B / C; LIT size + eval path + 2021-25, ATLAS eval + funded 25K, random-grade luck test).
+    Reads that tool's stored verdict (research/lab/setup_grade.json); rerun the tool for new bars."""
+    from tools import setup_grade as SG
+    return SG.lab_result(e)
 
 
 def run_one(e: dict, C, rules: dict) -> dict:
@@ -432,6 +443,8 @@ def run_one(e: dict, C, rules: dict) -> dict:
         return run_member(e, C, rules)
     if e["kind"] == "atlas_funded":
         return run_funded(e, C, rules)
+    if e["kind"] == "setup_grade":
+        return run_grade(e, C, rules)
     return run_atlas(e, C, rules) if e["kind"] == "atlas_tilt" else run_lit(e, C, rules)
 
 
