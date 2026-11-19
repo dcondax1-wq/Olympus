@@ -370,9 +370,9 @@
           payouts_n: f ? n(f.pn) : null, eligible_from: f && f.ef ? f.ef : null, room: n(card.room) };
         try { c = coach.coach(st, /50K/i.test(String(card.plan || '')) || +card.mll >= 2000 ? 'builder50k' : 'builder25k', today || etParts(Date.now() / 1000).day); } catch (e) { c = null; }
       }
-      if (!c || !c.ok) { card.to_target = null; missing = true; continue; }
-      card.to_target = c.need_more; card.payout_text = c.text; card.payout_status = c.status;
       const acc = (Array.isArray(accounts) ? accounts : []).find((a) => isObj(a) && a.id === id);
+      if (!c || !c.ok) { card.to_target = null; if (acc && isObj(acc.eval)) acc.eval.to_target = null; missing = true; continue; }
+      card.to_target = c.need_more; card.payout_text = c.text; card.payout_status = c.status;
       if (acc && isObj(acc.eval)) { acc.eval.to_target = c.need_more; acc.eval.target_balance = r2(bal0(card) + c.need_more); acc.payout_text = c.text; }
     }
     return missing;
