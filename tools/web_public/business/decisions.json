@@ -93,7 +93,7 @@
     "no",
     "later"
    ],
-   "status": "open",
+   "status": "done",
    "source": "research/writeups/stack-one-account-2026-11-16.md",
    "applies": "add the ATLAS $500 lane to the 50K's funded account once MFFU funds it (lead wires, Sim first)",
    "added": "2026-11-16",
@@ -106,7 +106,8 @@
    "risk": "Zlarior 50K no payout in 6 months 9.5% -> 4.2%",
    "recommend": "yes",
    "recommend_why": "More money in both 2026 halves without a real jump in risk.",
-   "valued": "2026-11-18 tools/money/money_plan.py (same paths for every account; $ a month to you after fees and MFFU's cut, before the 30% tax pot)"
+   "valued": "2026-11-18 tools/money/money_plan.py (same paths for every account; $ a month to you after fees and MFFU's cut, before the 30% tax pot)",
+   "closed_note": "Replaced by zlarior-atlas-50k (2026-11-19): same question, newer proof (ATLAS at half size in the eval, full size once funded)."
   },
   {
    "id": "atlas-on-rapid",
