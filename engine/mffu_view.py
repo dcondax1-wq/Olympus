@@ -71,7 +71,7 @@ def owner_name(acct_id=None, name=None, plan=None, stage=None) -> str:
         i, n, p = str(acct_id or "").strip().lower(), str(name or ""), str(plan or "")
         rapid = bool(re.search(r"\brapid\b", f"{n} {p}", re.I)) or i.startswith("rapid")
         bot = "Rapid EOD" if rapid else "ATLAS" if (i in ("atlas", "acct_b") or re.search(r"\batlas\b", n, re.I)) else "Zlarior"
-        m = re.search(r"(?<![\w$])(\d{2,3})\s*k\b", p, re.I) or re.search(r"(?<![\w$])(\d{2,3})\s*k\b", n, re.I) \
+        m = re.search(r"(?:^|[^\w$])(\d{2,3})\s*k\b", p, re.I) or re.search(r"(?:^|[^\w$])(\d{2,3})\s*k\b", n, re.I) \
             or re.fullmatch(r"[a-z]*?(\d{2,3})k(?:_[a-z0-9]+)?", i)
         size = f" {m.group(1)}K" if m else ""
         h = re.search(r"#\s*(\d{1,2})\b", n)
