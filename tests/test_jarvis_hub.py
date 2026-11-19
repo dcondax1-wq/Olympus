@@ -1025,6 +1025,12 @@ def run_look(br, url):
               c3[0] == "none" and c3[1] == "none" and c3[2] and c3[3] and c3[3].get("design") == "reactor", c3)
     bg = p.evaluate("[!!document.querySelector('#bgglobe, .floor, .scan, .hudring, .pad'), !!document.querySelector('.bgfx')]")
     check("l. the backdrop is calm: no wireframe globe, grid floor, scanlines or projector pad (the 3D courtyard, or the plain marble dark, is all there is)", bg[0] is False and bg[1], bg)
+    # the Kalshi state settles when its first answer lands (a 404 here): wait for it rather than for a fixed time (night-fitperf 2026-11-19:
+    # the boot screen now leaves ~0.5 s sooner, so a fixed wait after it read the box while it still said LINKING…)
+    try:
+        p.wait_for_function("document.getElementById('kpct').textContent !== 'LINKING…' && document.getElementById('kpct').textContent !== '--'", timeout=15000, polling=200)
+    except Exception:  # noqa: BLE001  (the check below says what it shows)
+        pass
     head = p.evaluate("[document.getElementById('kpct').textContent, document.getElementById('npnl').textContent, document.getElementById('nsub').textContent]")
     check("l. KALSHI TODAY says OFFLINE (not connected yet) while kalshi.json is missing; NQ BOTS TODAY adds the three accounts (+$308)",
           head[0] == "OFFLINE" and head[1] == "+$308" and head[2].startswith("3 accounts"), head)

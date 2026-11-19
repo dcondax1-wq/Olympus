@@ -236,6 +236,17 @@ check('router is pure ES, no imports', !/^\s*import\s/m.test(fs.readFileSync(pat
   check('low drawdown is first and bad, with $ and R', nl[0].id === 'dd_low' && nl[0].level === 'bad' && /\$300/.test(nl[0].text) && /R\)/.test(nl[0].text), JSON.stringify(nl[0]));
   check('unrated trades nudge', N.nudges(mkS(), { now: Date.parse('2026-11-01T15:00:00Z'), max: 9 }).some((x) => x.id === 'unrated'));
   const stale = N.nudges({ at: {} }, { now: NOW, max: 9 }); check('missing files nudge once, never invent', stale.length === 1 && stale[0].id === 'feeds_stale', JSON.stringify(stale.map((x) => x.id)));
+  // night-fitperf 2026-11-19 (owner's hero: "Some data is old or missing: odeon/trades.json (22 days old)"): only what he can act on, no file names
+  const day = 86400, oldOdeon = { ...S.odeon, upto: '2026-10-19' }, fs = (l) => l.filter((x) => x.id === 'feeds_stale');
+  const cloudOld = { home: { ...S.home, t: NOW / 1000 - 3 * day }, odeon: oldOdeon, at: { ...S.at, odeon: NOW } };
+  const pcFresh = N.nudges(mkS({ ...cloudOld, home: { ...cloudOld.home, truth: { ages: { pc: { t: NOW / 1000 - 600 } } } } }), { now: NOW, max: 9 });
+  check('feeds: a fresh PC report (10 min) supersedes the old cloud copies: no stale-data nudge', fs(pcFresh).length === 0, JSON.stringify(fs(pcFresh)));
+  const pcSilent = fs(N.nudges(mkS({ ...cloudOld, home: { ...cloudOld.home, live: { pc: { t: NOW / 1000 - 3 * day } } } }), { now: NOW, max: 9 }));
+  check('feeds: old account numbers + a silent PC = ONE warn in plain words (no file name), with the fix', pcSilent.length === 1 && pcSilent[0].level === 'warn'
+    && /account numbers are 3 days old/i.test(pcSilent[0].text) && /STATUS\.bat/.test(pcSilent[0].why) && !/\.json|odeon|trades/i.test(pcSilent[0].text), JSON.stringify(pcSilent));
+  const replayOnly = fs(N.nudges(mkS({ odeon: oldOdeon }), { now: NOW, max: 9 }));
+  check('feeds: an old trade replay alone (a cloud-build matter, nothing to act on) is never a nudge', replayOnly.length === 0, JSON.stringify(replayOnly));
+  check('no nudge ever names a file', [pcFresh, N.nudges(mkS({ odeon: oldOdeon }), { now: NOW, max: 9 }), N.nudges({ at: {} }, { now: NOW, max: 9 })].flat().every((x) => !/\.json\b/.test(x.text + ' ' + (x.why || ''))));
   check('quiet keys are skipped', !N.nudges(S, { now: NOW, max: 9, quiet: [n[0].key] }).some((x) => x.key === n[0].key));
   check('empty sources never throw', Array.isArray(N.nudges(null)) && Array.isArray(N.nudges(undefined, { now: NaN })));
 }

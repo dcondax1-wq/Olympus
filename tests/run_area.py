@@ -60,11 +60,13 @@ AREAS["pc"].append("kalshi_adapt")      # the same suite: the PC half (pc_weekly
 # docs/NOTIFICATIONS.md); the browser half (the card, the button, push-sw.js) runs with the jarvis suites
 AREAS["pc"] += ["push", "webpush"]
 AREAS["jarvis"].insert(AREAS["jarvis"].index("jarvis_classic"), "jarvis_push")
+# night-fitperf 2026-11-19: edge to edge on the iPhone Home Screen app (dock, app frames, host badge, phantom keyboard) + the start memo; its own line
+AREAS["jarvis"].append("fit_edge")
 # suites too long for one budget run BY PARTS, each its own row and budget (night team D 2026-11-16: the whole kit walk, every app +
 # power + tiers + more in one browser, is the longest browser suite); a part is "<suite>:<label>" = python -m tests.test_<suite> <args>
 PARTS = {"olympus_kit": [("a", ["datacity", "mind", "tree"]), ("b", ["oracle", "odeon", "fates"]), ("c", ["hermes", "prometheus", "tyche"]),
                          ("power", ["power", "tiers"]), ("more", ["more"])]}
-SLOW = {"jarvis_hub", "phone_e2e", "olympus_kit", "olympus_themes", "olympus_render", "zenith_mode", "ui_polish", "datacity", "jarvis_home"}
+SLOW = {"fit_edge", "jarvis_hub", "phone_e2e", "olympus_kit", "olympus_themes", "olympus_render", "zenith_mode", "ui_polish", "datacity", "jarvis_home"}
 
 
 def suites_for(area: str) -> list:
