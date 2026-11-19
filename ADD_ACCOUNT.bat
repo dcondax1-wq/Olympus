@@ -2,6 +2,7 @@
 rem Add a new MFFU account to the bot (double-click). It only ADDS the account, disarmed: nothing trades until you
 rem press START BOT and type the live phrase yourself. Uses engine/account_cli.py and engine/lit25.py.
 rem First it prints what it detected (engine/onboard.py: plan from the Name, 25K / 50K from the balance, passed or fresh).
+rem A refused add (wrong Name, wrong size, one Rapid only) says [NOT ADDED] and never "Done ... START BOT" (night-money 2026-11-18).
 setlocal EnableExtensions
 cd /d "%~dp0"
 title Liquidity Engine - ADD ACCOUNT
@@ -26,15 +27,20 @@ echo.
 echo  Copy the account's Name from NinjaTrader (Accounts tab) and paste it here.
 set /p NAME=Account name: 
 if "%NAME%"=="" goto :noname
-if "%CH%"=="1" "%PY%" -X utf8 -m engine.accounts add --plan builder25k --name "%NAME%" & goto :done
-if "%CH%"=="2" "%PY%" -X utf8 -m engine.accounts add --plan builder50k --name "%NAME%" & goto :done
-if "%CH%"=="3" "%PY%" -X utf8 -m engine.accounts add --plan rapideod --name "%NAME%" & goto :done
-if "%CH%"=="5" "%PY%" -X utf8 -m engine.accounts add --plan rapideod25 --name "%NAME%" & goto :done
-if "%CH%"=="4" for /f %%d in ('powershell -NoProfile -Command "(Get-Date).ToString('yyyy-MM-dd')"') do "%PY%" -X utf8 -m engine.lit25 --funded "%NAME%" --start %%d & goto :done
+if "%CH%"=="1" "%PY%" -X utf8 -m engine.accounts add --plan builder25k --name "%NAME%" && goto :done || goto :notadded
+if "%CH%"=="2" "%PY%" -X utf8 -m engine.accounts add --plan builder50k --name "%NAME%" && goto :done || goto :notadded
+if "%CH%"=="3" "%PY%" -X utf8 -m engine.accounts add --plan rapideod --name "%NAME%" && goto :done || goto :notadded
+if "%CH%"=="5" "%PY%" -X utf8 -m engine.accounts add --plan rapideod25 --name "%NAME%" && goto :done || goto :notadded
+if "%CH%"=="4" for /f %%d in ('powershell -NoProfile -Command "(Get-Date).ToString('yyyy-MM-dd')"') do "%PY%" -X utf8 -m engine.lit25 --funded "%NAME%" --start %%d && goto :done || goto :notadded
 echo  [FIX] Type only 1, 2, 3, 4 or 5. Nothing changed.
 goto :end
 :noname
 echo  [FIX] No name pasted. Nothing changed.
+goto :end
+:notadded
+echo.
+echo  [NOT ADDED] Read the line above: nothing changed, the bot keeps trading as before. No restart needed.
+echo  Fix the Name (copy it again from NinjaTrader, Accounts tab) and run ADD_ACCOUNT.bat again.
 goto :end
 :done
 echo.

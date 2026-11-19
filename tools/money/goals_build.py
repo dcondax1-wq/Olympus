@@ -7,7 +7,9 @@ chips), the rules that protect the accounts, and the decisions waiting on the ow
   python tools/money/goals_build.py --print      print the JSON instead of writing it
 
 Sources (read only):
-  research/lab/fleet_plan.json   tools/money/fleet_plan.py: one Monte Carlo for every account (the dates are its medians)
+  research/lab/money_plan.json   tools/money/money_plan.py (2026-11-18 night-money): tonight's accounts on one Monte Carlo
+                                 (the dates are its medians; the same numbers as the Money plan page, business/plan.html)
+  research/lab/fleet_plan.json   tools/money/fleet_plan.py (2026-11-17): the fallback when money_plan.json is missing
   research/lab/rapid25.json      tools/money/rapid25.py: Rapid EOD 25K / 50K eval and funded numbers
   tools/web_public/business/accounts.json   the plan (stages, ATLAS funded payouts) and the "decisions"
   tools/board.py gather          the live board: which accounts the PC / owner say passed or are funded
@@ -28,6 +30,7 @@ for p in (ROOT, os.path.join(ROOT, "tools"), os.path.join(ROOT, "tools", "money"
         sys.path.insert(0, p)
 
 FLEET = os.path.join(ROOT, "research", "lab", "fleet_plan.json")
+MONEY = os.path.join(ROOT, "research", "lab", "money_plan.json")
 RAPID25 = os.path.join(ROOT, "research", "lab", "rapid25.json")
 ACCOUNTS = os.path.join(ROOT, "tools", "web_public", "business", "accounts.json")
 OUT = os.path.join(ROOT, "tools", "web_public", "business", "goals.json")
@@ -46,9 +49,9 @@ WEEK = [
      "why": "So the funded 25K's first payout is not blocked when it is ready (~late Dec).", "done": False},
     {"date": "2026-11-18", "what": "Leave the PC and NinjaTrader on every weekday",
      "why": "The bot trades 02:00-15:55 ET by itself and is flat by 15:55. Nothing to click.", "done": False, "every": "every weekday"},
-    {"date": "2026-11-20", "what": "Buy the Rapid EOD 25K ($97.20 with CLUB) from your own money, then add it to the bot",
-     "why": "One line on the PC, added OFF until you arm it: python -X utf8 -m engine.accounts add --plan rapideod25 --name \"NAME\" "
-            "(or ADD_ACCOUNT.bat once its menu lists it). Leaves $52.80 of your $150.", "done": False, "id": "buy_r25"},
+    {"date": "2026-11-19", "what": "Buy the Rapid EOD 25K ($97.20 with CLUB) from your own money, then add it to the bot",
+     "why": "Double-click ADD_ACCOUNT.bat, type 5, paste the Name (or: python -X utf8 -m engine.accounts add --plan rapideod25 "
+            "--name \"NAME\"). It is added OFF until START BOT + your phrase. Leaves $52.80 of your $150.", "done": False, "id": "buy_r25"},
     {"date": "2026-11-19", "what": "Add Cloudflare Pages (free, 3 steps in docs/HOSTING.md)",
      "why": "Removes the Netlify badge and allows 15 dashboard updates a day instead of ~18 a month.", "done": False},
     {"date": "2026-11-20", "what": "Friday after 16:10 ET: 5-minute check on My Accounts (payout coach)",
@@ -131,15 +134,73 @@ def stage(row: dict) -> str:
     return s
 
 
-def build(offline: bool = False, today: str | None = None, fleet=None, r25=None, acc=None, rows=None, pc=None) -> dict:
+def _ladder_money(M: dict, is_, payouts_n: int, has_plan) -> tuple:
+    """(milestones, bad case, source) from research/lab/money_plan.json (tonight's accounts, the Money plan page's numbers)."""
+    R = M["rows"][MKT]
+    A, F4, F5 = R["accounts"], R["fleet"]["four"], R["fleet"]["five"]
+    ev = lambda k: (A.get(k) or {}).get("eval") or {}                    # noqa: E731
+    n25, z50, r25 = ev("N25"), ev("Z50"), ev("R25")
+    wk = next((w for w in WEEK if w.get("id") == "buy_r25"), None)
+    buy_r25 = wk["date"] if wk else M["start"]
+    names = M.get("names") or {}
+    first = min(("A25", "N25", "Z50", "R25"), key=lambda k: (A.get(k) or {}).get("first_pay") or "9999")
+    keep = ASK25 * SPLIT * (1 - TAX)
+    r2 = A.get("R2") or {}
+    L = [
+        {"id": "atlas_funded", "date": "2026-11-17", "what": "ATLAS passed the Builder 25K: now funded",
+         "detail": "Passed at $26,946.10 (target $26,500). It trades the funded 25K by itself.",
+         "done": is_("atlas", "passed", "funded")},
+        {"id": "z25_pass", "date": n25.get("pass_date"), "what": "Zlarior 25K #2 passes",
+         "detail": f"Needs +$1,500 with at most $1,000 lost: {n25.get('p60', 0):.0f} in 100 runs pass within 3 months "
+                   f"({n25.get('f60', 0):.0f} fail). Then it is funded: your 2nd funded 25K.", "done": is_("fresh25", "passed", "funded")},
+        {"id": "buy_r25", "date": buy_r25, "what": f"Buy the Rapid EOD 25K ({usd(PRICE['rapid25'])} with CLUB)",
+         "detail": f"This week, from your own {usd(BUDGET)} budget (leaves {usd(BUDGET - PRICE['rapid25'])}). Zlarior + ATLAS trade it from "
+                   f"day one. Add it with ADD_ACCOUNT.bat option 5 (engine.accounts add --plan rapideod25); it is added OFF.",
+         "usd": -PRICE["rapid25"], "done": has_plan("rapid eod 25k")},
+        {"id": "z50_pass", "date": z50.get("pass_date"), "what": "Zlarior 50K passes",
+         "detail": f"Needs about $3,807 more with only ~$1,025 of room: {z50.get('p60', 0):.0f} in 100 runs pass within 3 months, "
+                   f"{z50.get('f60', 0):.0f} fail (then a re-buy, {usd(PRICE['builder50k'])}).", "done": is_("zlarior", "passed", "funded")},
+        {"id": "pay1", "date": F4.get("first_any"), "what": f"First payout: {names.get(first, first)}",
+         "detail": f"The bot pings you once $750 sits above the $1,100 buffer: ask then (MFFU pays up to $1,000 a request; the "
+                   f"full $1,000 at a $27,100 balance). On $1,000 you get {usd(ASK25 * SPLIT)} (80%), {usd(ASK25 * SPLIT * TAX)} to the "
+                   f"tax pot, {usd(keep)} to keep.", "usd": keep, "done": payouts_n > 0},
+        {"id": "buy_r50", "date": r2.get("buy_med"), "what": f"Buy the Rapid EOD 50K ({usd(PRICE['rapid50'])} with CLUB), paid from payouts",
+         "detail": f"Once the payouts you keep (after the tax pot) reach {usd(PRICE['rapid50'])}: {r2.get('p_bought', 0):.0f} in 100 runs get "
+                   f"there. It fills your 5th funded slot (about {usd(r2.get('cash_m', 0))} a month); the bot runs one Rapid today, so it "
+                   f"needs your yes.", "usd": -PRICE["rapid50"], "done": has_plan("rapid eod 50k")},
+        {"id": "r25_pass", "date": r25.get("pass_date"), "what": "Rapid EOD 25K passes",
+         "detail": f"About {r25.get('pass_med') or 0:.0f} trading days from tonight ({r25.get('p60', 0):.0f} in 100 runs within 3 "
+                   f"months). Payouts then come daily (you keep 90%).", "done": False},
+        {"id": "z50_pay", "date": (A.get("Z50") or {}).get("first_pay"), "what": "First payout: Zlarior's funded 50K",
+         "detail": f"Middle case; half the time between {when(A['Z50']['first_pay_p25'])} and {when(A['Z50']['first_pay_p75'])}."
+         if (A.get("Z50") or {}).get("first_pay_p25") else "Middle case.", "done": False},
+        {"id": "r50_pass", "date": r2.get("funded_med"), "what": "Rapid EOD 50K is funded",
+         "detail": "About 5-6 weeks after you buy it (4 days minimum and the 30% best-day rule).", "done": False},
+        {"id": "all5", "date": (R.get("fill5") or {}).get("all5_med"), "what": "All 5 funded slots full",
+         "detail": f"MFFU's limit: 1 Builder 50K + 2 Builder 25K + Rapids, 5 funded in all "
+                   f"({(R.get('fill5') or {}).get('p_all5_6m', 0):.0f} in 100 runs get there in 6 months). Then only re-buys.", "done": False},
+        {"id": "spring", "date": "2027-03-01", "what": f"About {usd(round(F5['spring_net_m'], -2))} a month to you by spring",
+         "detail": f"Mar-Apr average with all 5 accounts, after fees, MFFU's cut and the 30% tax pot (about "
+                   f"{usd(round(F5['spring_cash_m'], -2))} before the tax pot). Money plan page: every account and decision.",
+         "usd": round(F5["spring_net_m"], -2), "done": False},
+    ]
+    L = [m for m in L if m.get("date")]
+    ref = M["rows"][BAD]["fleet"]["five"]
+    bad = (f"If the market is like 2021-25 (the bots had no edge): about $0 a month comes in (payouts barely cover the eval "
+           f"fees; 6 months end near {usd(round(ref['net_6m'], -2))} after the tax pot) and {round(ref['p_no_pay_6m'])} in 100 runs get "
+           f"no payout at all. Keep up to {usd(round(ref['pocket_p95'], -2))} ready for re-buys.")
+    return L, bad, "research/lab/money_plan.json (" + str(M.get("date")) + ")"
+
+
+def build(offline: bool = False, today: str | None = None, fleet=None, r25=None, acc=None, rows=None, pc=None, money=None) -> dict:
     today = today or dt.date.today().isoformat()
     fleet = fleet if fleet is not None else _load(FLEET)
     r25 = r25 if r25 is not None else _load(RAPID25)
     acc = acc if acc is not None else _load(ACCOUNTS)
+    money = money if money is not None else _load(MONEY)
     if rows is None:
         rows, pc = board_rows(offline)
     pc = pc or {}
-    A = fleet["rows"][MKT]["accounts"]
     plan_by = {a.get("key"): a for a in acc.get("accounts") or []}
 
     def is_(key, *words):
@@ -147,6 +208,16 @@ def build(offline: bool = False, today: str | None = None, fleet=None, r25=None,
         p = plan_by.get(key) or {}
         txt = " ".join([stage(r), str(p.get("stage") or "").lower()])
         return any(w in txt for w in words)
+
+    atlas = plan_by.get("atlas") or {}
+    payouts_n = int(((atlas.get("funded") or {}).get("payouts_n")) or 0)
+    has_plan = lambda word: any(word in str(a.get("plan") or "").lower() and a.get("status") == "live" for a in acc.get("accounts") or [])  # noqa: E731
+    if ((money.get("rows") or {}).get(MKT) or {}).get("accounts"):
+        L, bad, src = _ladder_money(money, is_, payouts_n, has_plan)
+        mkt_name = (money.get("markets") or {}).get(MKT, "2026 Jul-Oct-like")
+        n_runs = money.get("n") or 1000
+        return _finish(L, bad, src, mkt_name, n_runs, today, rows, plan_by, pc, acc)
+    A = fleet["rows"][MKT]["accounts"]
 
     rp = (r25.get("rows") or {})
     r25k = rp.get("25K, keep $500", {}).get(MKT, {})
@@ -171,10 +242,6 @@ def build(offline: bool = False, today: str | None = None, fleet=None, r25=None,
     spring = [m for m in four if m["month"] in ("2027-03", "2027-04")]
     sp_net = sum(m["net_mean"] for m in spring) / max(1, len(spring)) + m25 * (1 - TAX)
     sp_cash = sum(m["cash_mean"] for m in spring) / max(1, len(spring)) + m25
-
-    atlas = plan_by.get("atlas") or {}
-    payouts_n = int(((atlas.get("funded") or {}).get("payouts_n")) or 0)
-    has_plan = lambda word: any(word in str(a.get("plan") or "").lower() and a.get("status") == "live" for a in acc.get("accounts") or [])  # noqa: E731
 
     L = [
         {"id": "atlas_funded", "date": "2026-11-17", "what": "ATLAS passed the Builder 25K: now funded",
@@ -210,6 +277,15 @@ def build(offline: bool = False, today: str | None = None, fleet=None, r25=None,
          "detail": f"Mar-Apr average after fees, splits and the 30% tax pot (about {usd(round(sp_cash, -2))} before the tax pot).",
          "usd": round(sp_net, -2), "done": False},
     ]
+    ref = fleet["rows"][BAD]["fleet"]["five"]
+    bad = (f"If the market is like 2021-25 (the bots had no edge): about {usd(round(ref['total_net_mean'], -2))} in 6 months, "
+           f"{round(ref['p_no_pay_6m'])} in 100 get no payout at all. Keep up to {usd(round(ref['pocket_p95'], -2))} ready for re-buys.")
+    return _finish(L, bad, "research/lab/fleet_plan.json (" + str(fleet.get("date")) + ")",
+                   fleet.get("markets", {}).get(MKT, "2026 Jul-Oct-like"), 1000, today, rows, plan_by, pc, acc)
+
+
+def _finish(L, bad, src, mkt_name, n_runs, today, rows, plan_by, pc, acc) -> dict:
+    """Chips, this week, where you are now and the page document (both ladders)."""
     L.sort(key=lambda m: (m["date"], m["id"] != "spring"))
     nxt = False
     for m in L:
@@ -229,10 +305,6 @@ def build(offline: bool = False, today: str | None = None, fleet=None, r25=None,
         week.append({"date": w["date"], "when": w.get("every") or when(w["date"], approx=False), "what": w["what"], "why": w["why"],
                      "status": st, **({"auto": True} if w.get("auto") else {})})
 
-    ref = fleet["rows"][BAD]["fleet"]["five"]
-    bad = (f"If the market is like 2021-25 (the bots had no edge): about {usd(round(ref['total_net_mean'], -2))} in 6 months, "
-           f"{round(ref['p_no_pay_6m'])} in 100 get no payout at all. Keep up to {usd(round(ref['pocket_p95'], -2))} ready for re-buys.")
-
     now = []
     for key in ("zlarior", "fresh25", "atlas"):
         r = rows.get(key) or {}
@@ -250,14 +322,13 @@ def build(offline: bool = False, today: str | None = None, fleet=None, r25=None,
 
     return {
         "v": 1, "updated": today, "built_by": "tools/money/goals_build.py",
-        "market": fleet.get("markets", {}).get(MKT, "2026 Jul-Oct-like"),
-        "note": "Dates are ESTIMATES: the middle of 1,000 runs of a market like Jul-Oct 2026 (Jan-Jun was better, 2021-25 much worse). "
+        "market": mkt_name,
+        "note": f"Dates are ESTIMATES: the middle of {n_runs:,} runs of a market like Jul-Oct 2026 (Jan-Jun was better, 2021-25 much worse). "
                 "Real dates move with real trades; this page is rebuilt when they do.",
         "now": now, "pc": pc_txt,
         "week": week, "ladder": L, "bad_case": bad, "rules": RULES,
         "decisions": [str(x) for x in acc.get("decisions") or []],
-        "sources": ["research/lab/fleet_plan.json (" + str(fleet.get("date")) + ")", "research/lab/rapid25.json",
-                    "business/accounts.json (" + str(acc.get("updated")) + ")", "tools/board.py gather"],
+        "sources": [src, "research/lab/rapid25.json", "business/accounts.json (" + str(acc.get("updated")) + ")", "tools/board.py gather"],
     }
 
 
