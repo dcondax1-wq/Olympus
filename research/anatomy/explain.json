@@ -1,6 +1,6 @@
 {
  "v": 1,
- "built": "2026-11-18 20:00",
+ "built": "2026-11-18 20:30",
  "bots": {
   "lit": {
    "bot": "lit",
@@ -8937,5 +8937,132 @@
     "Known at the entry, nothing separates losers from winners better than chance: 7 of 66 fact buckets were worse (or better) in all three periods, vs 14.2 on average with the results shuffled (p 0.97)."
    ]
   }
+ },
+ "kalshi_k8": {
+  "all": {
+   "n": 465,
+   "won": 70.1,
+   "usd": 2234,
+   "avg_win": 13.36,
+   "avg_loss": -15.27
+  },
+  "first": "2026-08-03",
+  "last": "2026-11-18",
+  "legs": [
+   {
+    "leg": "05:15 down gold",
+    "n": 77,
+    "won": 72.7,
+    "usd": 435,
+    "avg_win": 13.51,
+    "avg_loss": -15.28
+   },
+   {
+    "leg": "05:15 down silver",
+    "n": 76,
+    "won": 63.2,
+    "usd": 230,
+    "avg_win": 13.69,
+    "avg_loss": -15.23
+   },
+   {
+    "leg": "16:00 down gold",
+    "n": 78,
+    "won": 70.5,
+    "usd": 415,
+    "avg_win": 13.94,
+    "avg_loss": -15.29
+   },
+   {
+    "leg": "16:00 down silver",
+    "n": 78,
+    "won": 74.4,
+    "usd": 442,
+    "avg_win": 12.91,
+    "avg_loss": -15.32
+   },
+   {
+    "leg": "16:45 up gold",
+    "n": 78,
+    "won": 65.4,
+    "usd": 258,
+    "avg_win": 13.12,
+    "avg_loss": -15.23
+   },
+   {
+    "leg": "16:45 up silver",
+    "n": 78,
+    "won": 74.4,
+    "usd": 452,
+    "avg_win": 13.08,
+    "avg_loss": -15.31
+   }
+  ],
+  "periods": {
+   "train": {
+    "n": 255,
+    "won": 71.8,
+    "usd": 1289,
+    "avg_win": 13.05,
+    "avg_loss": -15.27
+   },
+   "test": {
+    "n": 210,
+    "won": 68.1,
+    "usd": 945,
+    "avg_win": 13.76,
+    "avg_loss": -15.27
+   }
+  },
+  "price": [
+   {
+    "band": "under 50c",
+    "n": 184,
+    "won": 63.6,
+    "usd": 1106,
+    "avg_win": 18.25,
+    "avg_loss": -15.35
+   },
+   {
+    "band": "50-55c",
+    "n": 122,
+    "won": 69.7,
+    "usd": 527,
+    "avg_win": 12.84,
+    "avg_loss": -15.27
+   },
+   {
+    "band": "55-60c",
+    "n": 82,
+    "won": 73.2,
+    "usd": 294,
+    "avg_win": 10.45,
+    "avg_loss": -15.13
+   },
+   {
+    "band": "60c+",
+    "n": 77,
+    "won": 83.1,
+    "usd": 307,
+    "avg_win": 7.87,
+    "avg_loss": -15.12
+   }
+  ],
+  "pairs": {
+   "n": 232,
+   "both_won": 139,
+   "both_lost": 45
+  },
+  "weeks": {
+   "n": 16,
+   "losing": 2,
+   "last": -74
+  },
+  "say": [
+   "465 bets 2026-08-03 to 2026-11-18: 70% won, +$2,234 at $15 a bet. A loss costs $15.27, a win pays $13.36: K8 wins by being right often, not big.",
+   "Why it wins: the cheap fills. Bets bought under 50c made +$1,106 of the +$2,234 (64% won, $18.25 a win); at 60c+ they win 83% but pay $7.87, +$307 in total. A price creeping up is the real threat.",
+   "Why it loses: gold and silver of the same window move together. Of 232 windows both won 139 and both lost 45 times: the 6 legs are closer to 3 bets a day, so a bad day costs 2 x $15.",
+   "Held-out weeks (test): 68% won, +$945; 2 of 16 weeks lost money, the newest week -$74."
+  ]
  }
 }

@@ -860,6 +860,9 @@ def explain(bots=BOTS, draws: int = 200, say=print) -> dict:
         out["bots"][b] = explain_bot(b, rows, draws)
         for ln in out["bots"][b]["say"]:
             say(f"{NAME[b]}: {ln}")
+    out["kalshi_k8"] = k8_anatomy(k8_rows())
+    for ln in (out["kalshi_k8"] or {}).get("say", []):
+        say(f"Kalshi K8: {ln}")
     os.makedirs(OUT_DIR, exist_ok=True)
     with open(os.path.join(OUT_DIR, "explain.json"), "w", encoding="utf-8") as fh:
         json.dump(out, fh, indent=1, default=float)
@@ -1084,6 +1087,69 @@ def register(say=print) -> list:
     return errs
 
 
+# ================================================================================================ Kalshi K8 (cheap, from its own bets)
+K8_CSV = os.path.join(ROOT, "research", "kalshi_edge_K8", "data", "legs_bets.csv")
+K8_LEG = {"A": "05:15 down", "B": "16:00 down", "C": "16:45 up"}
+
+
+def k8_rows(path: str = K8_CSV) -> list:
+    """The 6 gold / silver clock legs of K8 (research/kalshi_edge_K8, $15 a bet, fees in); the R_ oil / gas extras left out."""
+    import csv
+    try:
+        with open(path, encoding="utf-8") as fh:
+            R = list(csv.DictReader(fh))
+    except OSError:
+        return []
+    out = []
+    for r in R:
+        if r.get("leg", "").startswith("R_") or _num(r.get("net_usd_at_15")) is None:
+            continue
+        out.append({"day": r["date"], "leg": r["leg"], "window": r["leg"][0], "metal": r["leg"][2:], "period": r.get("period"),
+                    "price": _num(r.get("entry_15_30s")), "won": str(r.get("won")) == "1", "usd": float(r["net_usd_at_15"])})
+    return out
+
+
+def k8_anatomy(rows: list) -> dict:
+    """K8 wins vs losses (pure): per leg, by the price paid, train vs test, the two metals of one window, the weeks."""
+    def a(rs):
+        n, w = len(rs), sum(1 for r in rs if r["won"])
+        gw = [r["usd"] for r in rs if r["won"]]
+        gl = [r["usd"] for r in rs if not r["won"]]
+        return {"n": n, "won": _share(w, n), "usd": round(sum(r["usd"] for r in rs)),
+                "avg_win": round(sum(gw) / len(gw), 2) if gw else None, "avg_loss": round(sum(gl) / len(gl), 2) if gl else None}
+    if not rows:
+        return {}
+    price = []
+    for lo, hi, w in ((0, .5, "under 50c"), (.5, .55, "50-55c"), (.55, .6, "55-60c"), (.6, 1.01, "60c+")):
+        price.append({"band": w, **a([r for r in rows if r["price"] is not None and lo <= r["price"] < hi])})
+    by = collections.defaultdict(dict)
+    for r in rows:
+        by[(r["day"], r["window"])][r["metal"]] = r["won"]
+    pairs = [v for v in by.values() if len(v) == 2]
+    wk = collections.defaultdict(list)
+    for r in rows:
+        wk[dt.date.fromisoformat(r["day"]).isocalendar()[:2]].append(r)
+    weeks = [a(v)["usd"] for _, v in sorted(wk.items())]
+    o = {"all": a(rows), "first": min(r["day"] for r in rows), "last": max(r["day"] for r in rows),
+         "legs": [{"leg": f"{K8_LEG.get(k[0], k[0])} {k[2:]}", **a([r for r in rows if r["leg"] == k])} for k in sorted({r["leg"] for r in rows})],
+         "periods": {p: a([r for r in rows if r["period"] == p]) for p in ("train", "test")},
+         "price": price, "pairs": {"n": len(pairs), "both_won": sum(1 for v in pairs if all(v.values())),
+                                   "both_lost": sum(1 for v in pairs if not any(v.values()))},
+         "weeks": {"n": len(weeks), "losing": sum(1 for x in weeks if x < 0), "last": weeks[-1] if weeks else None}}
+    A_, P = o["all"], o["price"]
+    o["say"] = [f"{A_['n']} bets {o['first']} to {o['last']}: {A_['won']:.0f}% won, {money(A_['usd'])} at $15 a bet. A loss costs "
+                f"${abs(A_['avg_loss']):.2f}, a win pays ${A_['avg_win']:.2f}: K8 wins by being right often, not big.",
+                f"Why it wins: the cheap fills. Bets bought under 50c made {money(P[0]['usd'])} of the {money(A_['usd'])} "
+                f"({P[0]['won']:.0f}% won, ${P[0]['avg_win']:.2f} a win); at 60c+ they win {P[3]['won']:.0f}% but pay ${P[3]['avg_win']:.2f}, "
+                f"{money(P[3]['usd'])} in total. A price creeping up is the real threat.",
+                f"Why it loses: gold and silver of the same window move together. Of {o['pairs']['n']} windows both won "
+                f"{o['pairs']['both_won']} and both lost {o['pairs']['both_lost']} times: the 6 legs are closer to 3 bets a day, so a bad "
+                f"day costs 2 x ${abs(A_['avg_loss']):.0f}.",
+                f"Held-out weeks (test): {o['periods']['test']['won']:.0f}% won, {money(o['periods']['test']['usd'])}; "
+                f"{o['weeks']['losing']} of {o['weeks']['n']} weeks lost money, the newest week {money(o['weeks']['last'])}."]
+    return o
+
+
 # ================================================================================================ the phone page (pure + write)
 SIZE_WORD = {"lit": "at the LIT size ($800 a trade up to a 20-point stop)", "atlas": "at $250 a trade (the funded 25K size)",
              "blitz": "at $150 a trade"}
@@ -1199,6 +1265,10 @@ def page_doc(E: dict, R: dict, hide=("blitz",), data_to: str | None = None) -> d
            "tested": (f"{n_rules} rules from this study were tested on the real backtests (picked on Jan-Jun 2026, checked on "
                       f"Jul-Oct and 2021-25, costs in): {n_pass} passed. They stay in the ZEUS Lab and are re-tested every night."),
            "checklist": [w for _, w in CHECKS], "bots": shown,
+           "kalshi": ({"title": "Kalshi K8 metals (paper)", "lines": E["kalshi_k8"]["say"],
+                       "legs": E["kalshi_k8"]["legs"], "price": E["kalshi_k8"]["price"],
+                       "source": "research/kalshi_edge_K8/data/legs_bets.csv (writeups/kalshi-red-team-K8-2026-11-19.md)"}
+                      if (E.get("kalshi_k8") or {}).get("say") else None),
            "hidden_note": (f"{len(cards) - len(shown)} more bot is hidden (paper); its anatomy is in the write-up."
                            if len(cards) > len(shown) else None)}
     return doc

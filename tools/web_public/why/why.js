@@ -52,7 +52,11 @@
         rules: (b.rules || []).map(ruleView), money: moneyRows(b.money)
       };
     });
-    return { ok: true, title: d.title, intro: d.intro, verdict: d.verdict, lines: d.lines || [], tested: d.tested,
+    var k = d.kalshi && typeof d.kalshi === 'object' && Array.isArray(d.kalshi.lines) ? d.kalshi : null;
+    var kalshi = k ? { title: k.title, lines: k.lines, source: k.source || '',
+      rows: (k.legs || []).map(function (l) { return [l.leg, String(l.n), pct(l.won), money(l.usd)]; }),
+      price: (k.price || []).map(function (l) { return [l.band, String(l.n), pct(l.won), money(l.usd)]; }) } : null;
+    return { ok: true, title: d.title, intro: d.intro, verdict: d.verdict, lines: d.lines || [], tested: d.tested, kalshi: kalshi,
              checklist: d.checklist || [], bots: bots, hiddenNote: d.hidden_note || null,
              status: (d.intro || '') + (d.data_to ? ' Data to ' + d.data_to + '.' : ''),
              foot: 'Built ' + (d.built || '?') + ' · ' + (d.source || '') + ' · ' + (d.note || '') };
@@ -142,6 +146,15 @@
       sec.appendChild(det);
       host.appendChild(sec);
     });
+    if (m.kalshi) {
+      $('kalshiH').textContent = m.kalshi.title || 'Kalshi';
+      m.kalshi.lines.forEach(function (t) { $('kalshiLines').appendChild(el('li', null, t)); });
+      var kt = $('kalshiTable');
+      kt.appendChild(table(['Leg', 'Bets', 'Won', 'Net'], m.kalshi.rows.map(function (r) { return { cells: r, neg: false }; }), -1));
+      kt.appendChild(table(['Price paid', 'Bets', 'Won', 'Net'], m.kalshi.price.map(function (r) { return { cells: r, neg: false }; }), -1));
+      $('kalshiSrc').textContent = 'At $15 a bet, fees in. ' + m.kalshi.source;
+      $('kalshi').hidden = false;
+    }
     var cl = $('checkLines');
     m.checklist.forEach(function (t) { cl.appendChild(el('li', null, t)); });
     $('checklist').hidden = !m.checklist.length;

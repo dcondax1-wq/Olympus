@@ -43,6 +43,9 @@ Owner: "See why our losses lose for strategies. And why they win. I expect all o
   open hour, ATLAS skip-the-checklist. **0 of 4 pass.** The nearest miss is ATLAS's London-open hour: +$125 / +$34 a month on the
   25K path in 2026, but 2025's money after fees is $494 worse and the Jul-Oct gain could be luck. All four are in the ZEUS Lab and
   re-tested every night on new data. No proposal goes to the Decide card.
+- **Kalshi K8 metals (paper, in-sample).** 465 bets, 70% won, +$2,234 at $15: it wins by being right often (a win pays $13.36, a
+  loss costs $15.27), the money is in the cheap fills (under 50c: +$1,106), and gold and silver of one window win or lose
+  together (both lost 45 of 232 windows). Section 7.
 - **What this means.** Our losses are the price of the edge, not mistakes a careful human would avoid. The strategies are better
   served by what already protects them (the 15-minute check, the weekly half size, the eval's 40% room cap, ATLAS's zombie-eval
   rule) than by a filter. "Better" will have to come from new setups or more accounts, not from cutting losers.
@@ -233,6 +236,39 @@ No rule passed, so no proposal was added to business/decisions.json.
 - ATLAS protection: ATLAS's losers look like its winners; its account-level rule (zombie eval) was the only keeper and is on.
 - The ZEUS Lab re-runs the four rules every night (kind anatomy = tools/win_loss_anatomy.lab_run, and an atlas_tilt); a rule
   only reaches the owner after it passes, then 4 weeks of shadow.
+
+## 7. Kalshi K8 metals (paper): wins vs losses
+
+From K8's own bet list (research/kalshi_edge_K8/data/legs_bets.csv: the 6 gold / silver 15-minute clock legs, $15 a bet, fees
+in, Aug 3 - Nov 18; the oil / gas extras left out; `k8_anatomy` in the tool). All of it is the friend's own history (in-sample,
+kalshi-red-team-K8-2026-11-19.md); "test" = the weeks the study held out.
+
+- **465 bets, 70% won, +$2,234.** A loss costs $15.27, a win pays $13.36: K8 wins by being right often, not by winning big.
+- **Why it wins: the cheap fills.** Bets bought under 50c made +$1,106 of the $2,234 (64% won, $18.25 a win). At 60c and up
+  they won 83% but paid only $7.87 a win, +$307 in total. The price creeping up (50c in October to 54c lately, red team) is the
+  biggest threat to the money, more than the win rate.
+- **Why it loses: the two metals are one bet.** In 232 windows with both a gold and a silver bet, both won 139 times and both
+  lost 45 times (48 split): a bad window costs two losses at once, so the 6 legs are closer to 3 bets a day.
+- **Held-out weeks:** 68% won, +$945 (train 72%, +$1,289); 2 of 16 weeks lost money, the newest one -$74.
+
+| Leg | Bets | Won | Net |
+|---|---:|---:|---:|
+| 05:15 down, gold | 77 | 72.7% | +$435 |
+| 05:15 down, silver | 76 | 63.2% | +$230 |
+| 16:00 down, gold | 78 | 70.5% | +$415 |
+| 16:00 down, silver | 78 | 74.4% | +$442 |
+| 16:45 up, gold | 78 | 65.4% | +$258 |
+| 16:45 up, silver | 78 | 74.4% | +$452 |
+
+| Price paid | Bets | Won | Net | A win pays |
+|---|---:|---:|---:|---:|
+| under 50c | 184 | 63.6% | +$1,106 | $18.25 |
+| 50-55c | 122 | 69.7% | +$527 | $12.84 |
+| 55-60c | 82 | 73.2% | +$294 | $10.45 |
+| 60c+ | 77 | 83.1% | +$307 | $7.87 |
+
+No rule was tested on K8 here (no paper results yet, and every leg is in-sample); the red team's plan stands: paper first, live
+small only after 120 paper bets at 65%+ won with the average price at or under 56c.
 
 ## How it was done
 

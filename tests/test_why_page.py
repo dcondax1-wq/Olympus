@@ -8,7 +8,7 @@ research/writeups/win-loss-anatomy-2026-11-18.md).
      the 4 rules registered in the ZEUS Lab (valid, runnable), no account ids / emails, BLITZ absent while it is hidden
   d. the page: AGORA look (theme #14110e, agora.css, a11y), text only through textContent, it reads only why.json, no outside
      address, the static AGORA audit has no hard FAIL for the app
-  e. node: why.js model() on the committed why.json (what the page shows), a broken file, a hidden bot
+  e. node: why.js model() on the committed why.json (what the page shows), a broken file, a hidden bot, the Kalshi K8 card
   f. Chromium 390 x 844 (skip with WHY_NO_BROWSER=1; run under flock -w 2400 /tmp/olympus_browser.lock): every section drawn,
      no sideways scroll, no page error
     python -X utf8 -m tests.test_why_page
@@ -108,6 +108,14 @@ def part_a():
     check("a. a stop 50% wider (85): the target came first -> wider_win", P.get("wider_win") is True, P)
     P2 = W.path_facts(B, 0, 6, 1, 100.0, 90.0, None, 10.0, 89.75)
     check("a. no target (BLITZ): wider_1r instead of wider_win", "wider_win" not in P2 and P2.get("wider_1r") is True, P2)
+    K = [{"day": "2026-08-03", "leg": "A_gold", "window": "A", "metal": "gold", "period": "train", "price": 0.45, "won": True, "usd": 18.0},
+         {"day": "2026-08-03", "leg": "A_silver", "window": "A", "metal": "silver", "period": "train", "price": 0.62, "won": True, "usd": 8.0},
+         {"day": "2026-08-04", "leg": "A_gold", "window": "A", "metal": "gold", "period": "test", "price": 0.52, "won": False, "usd": -15.3},
+         {"day": "2026-08-04", "leg": "A_silver", "window": "A", "metal": "silver", "period": "test", "price": 0.51, "won": False, "usd": -15.3}]
+    k = W.k8_anatomy(K)
+    check("a. Kalshi K8: wins vs losses, price bands, both metals of a window together (1 both won, 1 both lost), weeks",
+          k["all"]["n"] == 4 and k["all"]["won"] == 50.0 and k["pairs"] == {"n": 2, "both_won": 1, "both_lost": 1}
+          and k["price"][0]["usd"] == 18 and k["price"][3]["avg_win"] == 8.0 and len(k["say"]) == 4 and W.k8_anatomy([]) == {}, k)
     rows2 = [(100, 101, 99, 100), (100, 100, 89, 90), (90, 91, 80, 81), (81, 140, 81, 139)]
     P3 = W.path_facts(FakeBars(rows2), 0, 1, 1, 100.0, 90.0, 130.0, 10.0, 89.75)
     check("a. a real stop: price went 0.5R deeper before the target -> not a shake-out", P3.get("post_tgt") is True and P3.get("post_tgt_clean") is False, P3)
@@ -189,6 +197,10 @@ def part_c():
         x = E["bots"][b["bot"]]["spans"]["2026"]
         ok = ok and b["lose_total"] == -x["lost"] and abs(sum(c["usd"] for c in b["lose"]) + x["lost"]) <= 4
     check("c. every card's 2026 loss total and cause $ = research/anatomy/explain.json", ok)
+    kk = D.get("kalshi") or {}
+    check("c. the Kalshi K8 card: 4 lines with $, 6 legs, 4 price bands, from K8's own bet list",
+          len(kk.get("lines") or []) == 4 and all("$" in x for x in kk["lines"]) and len(kk.get("legs") or []) == 6
+          and len(kk.get("price") or []) == 4 and "legs_bets.csv" in kk.get("source", ""), kk)
     rid = {r["id"]: r["status"] for r in R["rules"]}
     pid = {r["id"]: r["status"] for b in D["bots"] for r in b["rules"]}
     check("c. the page's tested rules = rules.json (statuses too)", pid and all(rid.get(k) == v for k, v in pid.items()), (pid, rid))
@@ -247,7 +259,8 @@ def part_e():
       out({{ ok: m.ok, n: m.bots.length, names: m.bots.map((b) => b.name), w: m.bots.map((b) => b.lose.map((x) => x.width)),
              v: m.bots[0].lose[0].value, rules: m.bots.map((b) => b.rules.length), rows: m.bots[0].money.length,
              care: m.bots[0].carefulRows.map((x) => x.month), bad: WHY.model(null), bad2: WHY.model({{ kind: 'x' }}).ok,
-             hid: WHY.model(h).bots.map((b) => b.name), money: [WHY.money(-1234.5), WHY.money(0), WHY.money(null), WHY.money(1234567)] }});""")
+             hid: WHY.model(h).bots.map((b) => b.name), money: [WHY.money(-1234.5), WHY.money(0), WHY.money(null), WHY.money(1234567)],
+             k: m.kalshi && {{ n: m.kalshi.lines.length, rows: m.kalshi.rows.length, price: m.kalshi.price.length }} }});""")
     check("e. model(): Zlarior and ATLAS, the biggest cause first at 100% width, every width 0..100",
           r.get("ok") is True and r.get("names", [])[:2] == ["Zlarior", "ATLAS"] and all(x[0] == 100 and all(0 <= y <= 100 for y in x) for x in r.get("w", [])), r)
     check("e. a cause row reads '$ · share · trades'; 3 money rows; the checklist $ a month per period; the rules listed",
@@ -257,6 +270,7 @@ def part_e():
           r.get("bad", {}).get("ok") is False and "why.json" in r.get("bad", {}).get("status", "") and r.get("bad2") is False
           and "ATLAS" not in r.get("hid", []), r)
     check("e. $ words: -$1,235 / +$0 / - / +$1,234,567", r.get("money") == ["-$1,235", "+$0", "-", "+$1,234,567"], r.get("money"))
+    check("e. the Kalshi K8 card: 4 lines, 6 legs, 4 price bands", r.get("k") == {"n": 4, "rows": 6, "price": 4}, r.get("k"))
 
 
 # ------------------------------------------------------------------------------------------------ f. Chromium 390 x 844
@@ -295,6 +309,8 @@ def part_f():
                   and r["verdict"] and r["wide"], r)
             check("f. taps >= 44 px, the footer names the write-up, the status line the data date", r["tap"] >= 44 and "win-loss-anatomy" in r["foot"]
                   and "Data to" in r["status"], r)
+            k = p.evaluate("(() => ({ shown: !document.getElementById('kalshi').hidden, lines: document.querySelectorAll('#kalshiLines li').length }))()")
+            check("f. the Kalshi K8 card is drawn (4 lines)", k == {"shown": True, "lines": 4}, k)
             check("f. no page errors", not errs, errs)
             br.close()
     finally:
