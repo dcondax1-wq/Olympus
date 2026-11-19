@@ -54,7 +54,7 @@ def part_a():
     html, css = rd(PAGE, "index.html"), rd(PAGE, "settings.css")
     js = {n: rd(PAGE, n) for n in files if n.endswith(".js")}
     check("a. the kit first (olympus.css, themes.js, olympus.js ?v=o2 with data-app='settings'), viewport-fit=cover, theme-color, dark, manifest, icon, apple-touch-icon",
-          '<link rel="stylesheet" href="../olympus/olympus.css?v=o7">' in html and 'src="../olympus/themes.js?v=o7"' in html and 'src="../olympus/olympus.js?v=o12" data-app="settings"' in html
+          '<link rel="stylesheet" href="../olympus/olympus.css?v=o7">' in html and 'src="../olympus/themes.js?v=o8"' in html and 'src="../olympus/olympus.js?v=o13" data-app="settings"' in html
           and "viewport-fit=cover" in html and 'name="theme-color"' in html and 'content="dark"' in html and 'rel="manifest" href="manifest.webmanifest"' in html
           and 'rel="icon" href="icon.svg"' in html and 'rel="apple-touch-icon"' in html and "fx-core.js?v=f1" in html and "sfx.js" in html)
     check("a. no CDN, no outside script / font / image: every src and href is local", not re.search(r'(src|href)="https?://', html))
