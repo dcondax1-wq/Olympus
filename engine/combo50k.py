@@ -4,7 +4,10 @@ simulator); red team: research/writeups/one-account-combo-redteam-2026-11-19.md 
 
 Two files:
   research/lab/combo_50k.json  the RULE VALUES (tracked; absent = DEFAULTS below):
-      {"conflict": "first_in" | "lit_priority" | "close_on_opposite", "atlas_size_factor": 1.0, "guards": {...}}
+      {"conflict": "first" (= first_in) | "lit_priority" (= the study's zfull) | "close_on_opposite" (= zprio),
+       "atlas_size_factor": x | {"eval": 0.5, "funded": 1.0}, "guards": {... null = off ...}, "variant": ...}
+      night-comboplus's pick (a50_eval, tier B): first in keeps the account, ATLAS at 50% of its own size in the eval and
+      100% once funded, every eval guard off (null), one position, $1,000 soft day for both bots, 40 micros, flat by 16:10.
   data/combo_50k.json          the OWNER'S SWITCH (local, gitignored; absent / {"on": false} = OFF = the bot is exactly today's):
       {"on": true, "account": "<the NinjaTrader Name of Zlarior's 50K, or Sim101 for the Sim test>", "set": "yyyy-mm-dd", ...}
       Written only by the owner's step (the typed phrase, like every live switch):
@@ -25,22 +28,25 @@ What the switch does when ON (engine/live.py, LiveBot._combo_*; every hook is `s
     the remote flatten and the reconcile see BOTH bots). ATLAS's own account (account B, its 25K) is untouched.
   * ONE POSITION on the 50K: while the account holds a position, has an entry going out (Zlarior entering / its 1m CISD
     entry pending / an order still working at the broker), the other bot's entry waits. The conflict rule decides who:
-      first_in           (default, the study's main rule) the first bot in keeps the account; every later signal of either
+      first_in / first   (default, the study's main rule) the first bot in keeps the account; every later signal of either
                          bot is skipped until it is flat (Zlarior's armed setups are dropped while ATLAS holds)
-      lit_priority       Zlarior's entry closes ATLAS at market first, then Zlarior enters; ATLAS never enters while Zlarior
-                         is in a trade, entering or has a setup armed
-      close_on_opposite  Zlarior entering the OTHER way closes ATLAS first (the red team's "+$484" variant); a same-side
+      lit_priority       (the simulator's zfull) any Zlarior entry while ATLAS holds closes ATLAS at market first, then
+                         Zlarior enters; ATLAS never enters while Zlarior holds / is entering
+      close_on_opposite  (zprio) Zlarior entering the OTHER way closes ATLAS first (the red team's "+$484"); a same-side
                          Zlarior signal while ATLAS holds is skipped
   * ONE DIRECTION across every MFFU account (no hedging, research/lit/mffu_rules.json): ATLAS's 50K entry is skipped while
     ATLAS's 25K (account B, incl. a close not confirmed), an extra account (engine/multi_account), ATLAS on the Rapid or a
     fleet follower holds the other side; BLITZ (account C) the other way is closed first (LIT > ATLAS > BLITZ, as today);
     the other accounts already see the 50K's position (LiveBot._open_routed + its ledger row): account B / C / extra
-    accounts / followers never open against it. Guard "atlas_lit_armed_block" (default on): ATLAS never enters while
-    Zlarior has a setup armed the other way (ATLAS's rule today; red team 6.2: 2 trades in Jul-Oct).
+    accounts / followers never open against it. Optional guard "atlas_lit_armed_block" (OFF: not in the research rules;
+    on = ATLAS never enters while Zlarior has a setup armed the other way, ATLAS's 25K rule; it is not needed for the
+    no-hedge rule: Zlarior's later entry on the 50K is skipped / closes ATLAS, the other accounts refuse the other side).
   * SIZE from the 50K's ONE shared room (balance + today's closed P&L of BOTH bots - the trailing floor = LiveBot.eval_state):
     Zlarior unchanged (live_model.json lit_sizing two_week, room_f 0.4, kept to session 80); ATLAS = engine/account_b.qty on
     the builder50k preset (need size, the zombie-eval last bullet, the soft-daily-loss guard; funded: funded_qty) x
-    atlas_size_factor, capped at the plan's 40 micros; no ATLAS entry under ATLAS's $200 eval stop line ($100 funded).
+    atlas_size_factor of the 50K's stage (eval / funded = Zlarior's lit_sizing mode), rounded down, min 1 micro (= the
+    simulator), capped at 40 micros; no ATLAS entry under ATLAS's $200 eval stop line ($100 funded). Guards from the file:
+    atlas_in_eval, atlas_eval_min_room_usd, eval_day_stop_usd (both bots), soft_day_usd_both_bots, max_micros (null = off).
   * Alerts / board: the entry push and the Board say which bot traded ("ATLAS on Zlarior 50K: LONG opened", "Zlarior on its
     50K: SHORT opened"); heartbeat second.route "combo".
 
@@ -51,6 +57,7 @@ from __future__ import annotations
 
 import datetime as _dt
 import json
+import math
 import os
 import sys
 
@@ -66,9 +73,26 @@ MEMBERS = ("ema_lon_vix", "macd_sweep", "sr_nyreclaim")   # ATLAS's member order
 PLAN = "builder50k"
 MAX_PER_DAY = 2                          # ATLAS's own limit (its raw stream); Zlarior keeps its 1
 MAX_AGE_S = 45                           # a 5m open seen later than this is not probed (= engine/account_b.MAX_AGE_S)
-GUARD_DEFAULTS = {"atlas_lit_armed_block": True, "atlas_max_per_day": MAX_PER_DAY, "atlas_min_room": 200.0,
-                  "atlas_min_room_funded": 100.0, "atlas_max_risk_usd": None}
-DEFAULTS = {"conflict": "first_in", "atlas_size_factor": 1.0, "guards": {}}
+# the research file's guards (night-comboplus research/lab/combo_50k.json; null = off) + this build's own (absent = default)
+GUARD_DEFAULTS = {
+    "atlas_in_eval": True,                # false = ATLAS trades the 50K only once it is funded
+    "atlas_eval_min_room_usd": None,      # eval: ATLAS only while the room is >= this ($; null = off)
+    "eval_day_stop_usd": None,            # eval: no new entry of EITHER bot once today's closed P&L <= -this (null = off)
+    "one_position": True,                 # must stay true (same-side adds are not built)
+    "soft_day_usd_both_bots": 1000.0,     # the soft daily loss both bots count against (<= the guards' $1,000; null = the guards')
+    "max_micros": 40,                     # ATLAS's micros cap on the 50K (<= the plan's 40)
+    "flat_by": "16:10 ET",                # MFFU's flat time (both bots are out by 15:55 ET already; information)
+    "atlas_lit_armed_block": False,       # this build: true = ATLAS never enters while Zlarior has a setup armed the other way
+    "atlas_max_per_day": MAX_PER_DAY,     # this build: ATLAS's entries a day on the 50K (its own stream already has <= 2)
+    "atlas_min_room": 200.0,              # this build: ATLAS's own eval stop line (engine/account_b zombie-eval rule) ...
+    "atlas_min_room_funded": 100.0,       # ... and funded (the study's min_room lines)
+    "atlas_max_risk_usd": None,           # this build: ATLAS's worst-case $ a trade (stop + 2 ticks + $1.90; null = off)
+}
+DEFAULTS = {"conflict": "first_in", "atlas_size_factor": {"eval": 1.0, "funded": 1.0}, "guards": {}}
+ALIASES = {"first": "first_in", "first_in": "first_in", "zprio": "close_on_opposite", "close_on_opposite": "close_on_opposite",
+           "zfull": "lit_priority", "lit_priority": "lit_priority"}       # the simulator's names (tools/money/combo_account)
+INFO_KEYS = ("version", "account", "bots", "variant", "pick_tier", "sizes", "evidence", "post_hoc_not_active", "note", "notes",
+             "built", "source")
 ON_CMD = 'python -X utf8 -m engine.combo50k --on --account "<Name>"'
 
 
@@ -93,44 +117,82 @@ def _num(x, d=None):
 
 
 # ------------------------------------------------------------------------------------------------ the rule values
+def factor_of(rules: dict, stage: str) -> float:
+    """ATLAS's size share on the 50K for the account's stage ("eval" / "funded")."""
+    f = (rules or {}).get("atlas_size_factor", (rules or {}).get("factor"))
+    if isinstance(f, dict):
+        return float(f.get("funded" if stage == "funded" else "eval", 1.0))
+    return float(f if f is not None else 1.0)
+
+
 def normalize(raw) -> dict:
-    """The rule values (research/lab/combo_50k.json, or a harness dict) -> {"conflict", "atlas_size_factor", "guards",
-    "problem": why it cannot run or None, "unknown": [keys ignored]}. A "rules" sub-dict is read too."""
+    """The rule values (research/lab/combo_50k.json, or a harness dict) -> {"conflict", "atlas_size_factor": {"eval",
+    "funded"}, "guards", "problem": why it cannot run or None, "unknown": [keys ignored]}. A "rules" sub-dict is read too.
+    conflict "first" (the research file) = first_in; atlas_size_factor a number or {"eval": x, "funded": y}; a null guard =
+    off (its default where a default exists)."""
     src = raw if isinstance(raw, dict) else {}
     if isinstance(src.get("rules"), dict):
         src = {**src, **src["rules"]}
-    out = {"conflict": DEFAULTS["conflict"], "atlas_size_factor": DEFAULTS["atlas_size_factor"], "guards": dict(GUARD_DEFAULTS),
-           "problem": None, "unknown": []}
+    out = {"conflict": DEFAULTS["conflict"], "atlas_size_factor": dict(DEFAULTS["atlas_size_factor"]), "guards": dict(GUARD_DEFAULTS),
+           "problem": None, "unknown": [], "variant": src.get("variant")}
     c = str(src.get("conflict") or DEFAULTS["conflict"]).strip().lower()
-    if c not in CONFLICTS:
-        out["problem"] = f"conflict {src.get('conflict')!r} unknown ({' | '.join(CONFLICTS)})"
-    out["conflict"] = c
-    f = _num(src.get("atlas_size_factor"), None) if src.get("atlas_size_factor") is not None else 1.0
-    if f is None or not 0.0 < f <= 2.0:
-        out["problem"] = out["problem"] or f"atlas_size_factor {src.get('atlas_size_factor')!r} must be a number in (0, 2]"
-        f = 1.0
-    out["atlas_size_factor"] = float(f)
+    if c not in ALIASES:
+        out["problem"] = f"conflict {src.get('conflict')!r} unknown ({' | '.join(CONFLICTS)}, or first / zprio / zfull)"
+    out["conflict"] = ALIASES.get(c, c)
+    acct = str(src.get("account") or PLAN).strip().lower().replace(" ", "").replace("_", "")
+    if acct != PLAN:
+        out["problem"] = out["problem"] or f"account {src.get('account')!r}: this build is the Builder 50K only (builder50k)"
+    bots = src.get("bots")
+    if bots is not None and (not isinstance(bots, (list, tuple)) or not {"lit", "atlas"} <= {str(b).lower() for b in bots}):
+        out["problem"] = out["problem"] or f"bots {bots!r}: this build is Zlarior (lit) + ATLAS (atlas)"
+    f = src.get("atlas_size_factor", 1.0)
+    fd = f if isinstance(f, dict) else {"eval": f, "funded": f}
+    for st in ("eval", "funded"):
+        v = fd.get(st, 1.0)
+        n = 1.0 if v is None else _num(v)
+        if n is None or not 0.0 <= n <= 2.0:
+            out["problem"] = out["problem"] or f"atlas_size_factor {f!r} must be a number in [0, 2] or {{\"eval\": x, \"funded\": y}}"
+            n = 1.0
+        out["atlas_size_factor"][st] = float(n)
     g = src.get("guards") if isinstance(src.get("guards"), dict) else {}
     for k, v in g.items():
         if k not in GUARD_DEFAULTS:
             out["unknown"].append(str(k))
             continue
-        if k == "atlas_lit_armed_block":
-            out["guards"][k] = bool(v)
-        elif k == "atlas_max_per_day":
+        if k in ("atlas_lit_armed_block", "atlas_in_eval", "one_position"):
+            out["guards"][k] = GUARD_DEFAULTS[k] if v is None else bool(v)
+        elif k == "flat_by":
+            txt = None if v is None else str(v).strip()
+            if txt is not None:
+                import re
+                m = re.match(r"^(\d{1,2}):(\d{2})(\s*ET)?$", txt)
+                if not m or not (0 <= int(m.group(1)) < 24 and 0 <= int(m.group(2)) < 60):
+                    out["problem"] = out["problem"] or f"guards.flat_by {v!r} must look like 16:10 ET"
+                elif int(m.group(1)) * 60 + int(m.group(2)) < 955:
+                    out["problem"] = out["problem"] or f"guards.flat_by {v!r} is before 15:55 ET: an earlier flat time is not built"
+            out["guards"][k] = txt
+        elif k in ("atlas_max_per_day", "max_micros"):
+            if v is None:
+                continue                                     # null = the default (2 a day / 40 micros)
             n = _num(v)
-            if n is None or not 0 <= int(n) <= MAX_PER_DAY:
-                out["problem"] = out["problem"] or f"guards.atlas_max_per_day {v!r} must be 0-{MAX_PER_DAY}"
+            hi = MAX_PER_DAY if k == "atlas_max_per_day" else 40
+            if n is None or not (0 if k == "atlas_max_per_day" else 1) <= int(n) <= hi:
+                out["problem"] = out["problem"] or f"guards.{k} {v!r} must be a whole number up to {hi}"
             else:
                 out["guards"][k] = int(n)
-        elif v is None and k == "atlas_max_risk_usd":
-            out["guards"][k] = None
+        elif v is None:
+            out["guards"][k] = None if k not in ("atlas_min_room", "atlas_min_room_funded") else GUARD_DEFAULTS[k]
         else:
             n = _num(v)
             if n is None or n < 0 or n > 5000:
                 out["problem"] = out["problem"] or f"guards.{k} {v!r} must be a number of $ (0-5000)"
             else:
                 out["guards"][k] = float(n)
+    if out["guards"].get("one_position") is not True:
+        out["problem"] = out["problem"] or "guards.one_position false: same-side adds on the 50K are not built (one position only)"
+    for k in src:
+        if k not in ("conflict", "atlas_size_factor", "guards", "rules") and k not in INFO_KEYS:
+            out["unknown"].append(str(k))
     return out
 
 
@@ -197,7 +259,7 @@ def build(bot):
         src = SWITCH_REL
     if rules.get("problem"):
         return {"off_why": f"combo rules not usable ({rules['problem']}): OFF"}
-    return {"on": True, "account": own, "conflict": rules["conflict"], "factor": float(rules["atlas_size_factor"]),
+    return {"on": True, "account": own, "conflict": rules["conflict"], "atlas_size_factor": dict(rules["atlas_size_factor"]),
             "guards": dict(rules["guards"]), "unknown": list(rules.get("unknown") or []), "keys": list(MEMBERS),
             "label": LABEL, "src": src, "max_micros": 40}
 
@@ -216,9 +278,10 @@ def ab_spec(combo: dict, eval_start: str | None, stage: str = "eval", funded: di
 def atlas_qty(combo: dict, trade: dict, state: dict | None, eval_start: str | None, base: dict | None = None,
               stage: str = "eval", funded: dict | None = None, key: str | None = None) -> dict:
     """Micros for ATLAS's entry on the 50K: engine/account_b.qty (eval need size + last bullet + soft-daily-loss guard) /
-    funded_qty on the builder50k preset from the 50K's shared state, x atlas_size_factor (min 1 while the base is >= 1;
-    above 1x the soft-daily-loss guard and 60% of the room still cap it), at most the plan's 40 micros, then the guard
-    atlas_max_risk_usd. Fails closed (0)."""
+    funded_qty on the builder50k preset from the 50K's shared state, then x atlas_size_factor of the 50K's stage (the
+    research file: eval 0.5, funded 1.0) rounded DOWN, never under 1 micro while the base size is >= 1 (exactly
+    tools/money/combo_account's a_f rule: max(1, floor(f x q))); a factor of 0 = no trade; above 1x the soft-daily-loss
+    guard and 60% of the room still cap it. Then guards.max_micros (<= the plan's 40) and atlas_max_risk_usd. Fails closed."""
     from . import account_b as AB
     from . import sizing as SZ
     if state is None:
@@ -226,24 +289,30 @@ def atlas_qty(combo: dict, trade: dict, state: dict | None, eval_start: str | No
     spec = ab_spec(combo, eval_start, stage, funded)
     r = AB.qty(spec, trade, dict(state), base=base, key=key) if stage != "funded" else AB.funded_qty(spec, trade, dict(state), base=base, key=key)
     q0 = int(r.get("qty") or 0)
-    maxq = int(min(int(combo.get("max_micros") or 40), int(spec["rules"]["max_micros"])))
+    g = combo.get("guards") or {}
+    maxq = int(min(int(g.get("max_micros") or combo.get("max_micros") or 40), int(spec["rules"]["max_micros"])))
     reasons = list(r.get("reasons") or [])
-    f = float(combo.get("factor") or 1.0)
+    f = factor_of(combo, stage)
     q = q0
     risk = float(_num(trade.get("risk_pts"), 0.0) or 0.0)
     loss1 = (risk + SZ.TW_DLL_SLIP) * SZ.TW_PV + SZ.TW_COMM
-    if q0 > 0 and abs(f - 1.0) > 1e-9:
-        q = max(1, int(q0 * f + 1e-9))
-        if q > q0:
-            room = float(_num(state.get("room"), 0.0) or 0.0)
-            q = min(q, int(max(0.0, 0.6 * room) / loss1 + 1e-9) if loss1 > 0 else 0)
-            q = int(AB.dll_guard({"qty": q, "reasons": []}, risk, spec["rules"], state).get("qty") or 0)
-            q = max(q, q0) if q >= q0 else q0
-        reasons.append(f"atlas_size_factor {f:g}: {q0} -> {q}")
+    if q0 > 0 and f <= 0.0:
+        q = 0
+        reasons.append(f"atlas_size_factor {stage} 0: ATLAS does not trade the 50K in this stage")
+    elif q0 > 0 and f < 1.0 - 1e-12:
+        q = max(1, int(math.floor(f * q0 + 1e-9)))      # = tools/money/combo_account (night-comboplus) ATLAS's share
+        reasons.append(f"atlas_size_factor {stage} {f:g}: {q0} -> {q}")
+    elif q0 > 0 and f > 1.0 + 1e-12:
+        q = int(math.floor(f * q0 + 1e-9))
+        room = float(_num(state.get("room"), 0.0) or 0.0)
+        q = min(q, int(max(0.0, 0.6 * room) / loss1 + 1e-9) if loss1 > 0 else 0)
+        q = int(AB.dll_guard({"qty": q, "reasons": []}, risk, spec["rules"], state).get("qty") or 0)
+        q = max(q, q0)                                   # never below the base size, never above the caps it passed
+        reasons.append(f"atlas_size_factor {stage} {f:g}: {q0} -> {q}")
     if q > maxq:
-        reasons.append(f"plan max {maxq} micros")
+        reasons.append(f"max {maxq} micros")
         q = maxq
-    cap = (combo.get("guards") or {}).get("atlas_max_risk_usd")
+    cap = g.get("atlas_max_risk_usd")
     if q > 0 and cap is not None and loss1 > 0 and q * loss1 > float(cap):
         q2 = int(float(cap) / loss1 + 1e-9)
         reasons.append(f"guard atlas_max_risk_usd ${float(cap):,.0f}: {q} -> {q2}")
@@ -363,7 +432,8 @@ def set_on(account: str, phrase: str, root: str | None = None, selftest=None, to
     p = _write_switch(blk, root)
     return {"ok": True, "path": p, "block": blk,
             "say": f"ATLAS + Zlarior on ONE account: ON for {nm} ({'Sim' if sim else 'REAL'}), conflict {rules['conflict']}, "
-                   f"ATLAS size x{rules['atlas_size_factor']:g}. The running bot picks it up at its next poll."}
+                   f"ATLAS size x{rules['atlas_size_factor']['eval']:g} in the eval, x{rules['atlas_size_factor']['funded']:g} funded. "
+                   "The running bot picks it up at its next poll."}
 
 
 def set_off(root: str | None = None, today: str | None = None) -> dict:

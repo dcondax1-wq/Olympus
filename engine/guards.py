@@ -100,6 +100,16 @@ def config(bot) -> dict:
         out["max_per_day"] = max(int(_lit_params(bot).get("max_per_day") or 1) + n, int(out.get("max_per_day") or 1))
         out["second_on"] = True
         out["second_max"] = n
+        g = cb.get("guards") or {}
+        if g.get("soft_day_usd_both_bots") is not None:      # the soft daily loss both bots count against (never raised)
+            out["daily_loss_usd"] = min(float(out.get("daily_loss_usd") or 1000.0), float(g["soft_day_usd_both_bots"]))
+        if g.get("eval_day_stop_usd") is not None:
+            try:
+                ev = bot._combo_stage() == "eval"
+            except Exception:
+                ev = True
+            if ev:
+                out["combo_day_stop"] = float(g["eval_day_stop_usd"])
     return out
 
 
@@ -488,6 +498,10 @@ def entry_problems(bot, ent: dict, action: dict, plan_qty, now: int, c: dict | N
         pnl = bot.day_pnl_routed()
         if pnl <= -float(c["daily_loss_usd"]):
             out.append(f"today's routed P&L ${pnl:,.0f} reached the ${float(c['daily_loss_usd']):,.0f} soft daily loss")
+    if c.get("combo_day_stop") is not None:           # engine/combo50k (OFF by default): the eval day stop of both bots
+        pnl = bot.day_pnl_routed()
+        if pnl <= -float(c["combo_day_stop"]):
+            out.append(f"combo eval day stop: today's closed ${pnl:,.0f} <= -${float(c['combo_day_stop']):,.0f} (no new entry of either bot)")
     p = clock_problem(bot, c)
     if p:
         out.append(p)

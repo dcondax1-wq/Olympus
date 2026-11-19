@@ -19,12 +19,13 @@ neither data/combo_50k.json nor research/lab/combo_50k.json is written (the star
     ATLAS's engine/second members, fake NinjaTrader, both bots on one Sim 50K, a fresh eval per segment, the bot restarted
     every morning on the same state) == tools/money/combo_account.Eval on the same days: the same entries taken and skipped,
     the same micros, the same exits and $, the same eval end; never two positions, never more than one bracket working.
-    Default segments (both bots signal and conflict): Sep 2-10 with the DEFAULT rules (Zlarior first, ATLAS long skipped;
-    Zlarior armed short at 03:10 on Sep 4 masks ATLAS's EMA long, so Zlarior's short goes in; 3 signals on Sep 9) and Oct 2-7
-    with EXACTLY the study's rules (armed block off: ATLAS first 3 times, Zlarior skipped same side and opposite).
-    The guard atlas_lit_armed_block (default on: ATLAS never enters while Zlarior has a setup armed the other way, today's
-    ATLAS rule, not in the study): a signal the bot masks for it must say so in the log; the reference is then re-run without
-    that one ATLAS trade (the cascade included).
+    Default segments (both bots signal and conflict): Sep 2-10 with the RESEARCH RULES research/lab/combo_50k.json
+    (night-comboplus a50_eval: first in, ATLAS x0.5 in the eval = the simulator's max(1, floor(0.5 q)); Zlarior first, ATLAS
+    long skipped; ATLAS long first, Zlarior short skipped; 3 signals on Sep 9) and Oct 2-7 with the main-branch study
+    (first in, ATLAS x1.0: ATLAS first 3 times, Zlarior skipped same side and opposite, the eval passes Oct 7).
+    --full adds Aug 18 - Sep 1 and Oct 2-7 at a50, Sep 2-10 at x1.0, and Sep 2-10 with this build's optional guard
+    atlas_lit_armed_block (off in the research rules): a signal the bot masks for it must say so in the log; the reference
+    is then re-run without that one ATLAS trade (the cascade included).
  d. close_on_opposite on Sep 4: ATLAS's long is closed at market (LIT PRIORITY) before Zlarior's short goes out; the fake
     50K never holds more than one trade.
 Results -> research/lab/combo_50k_check.json.
@@ -55,12 +56,30 @@ from tests.test_second_route import Harness, at, hm  # noqa: E402
 OUT = os.path.join(ROOT, "research", "lab", "combo_50k_check.json")
 RESULTS = TR.RESULTS
 check = TR.check
-DEFAULT_CFG = {"conflict": "first_in"}                                   # = no research/lab/combo_50k.json: the defaults
-PURE_CFG = {"conflict": "first_in", "guards": {"atlas_lit_armed_block": False}}   # exactly the study's rule set (no armed block)
-SEGMENTS = {"quick": [("2026-09-02", "2026-09-10", DEFAULT_CFG)],
-            "default": [("2026-09-02", "2026-09-10", DEFAULT_CFG), ("2026-10-02", "2026-10-07", PURE_CFG)],
-            "full": [("2026-08-18", "2026-09-01", DEFAULT_CFG), ("2026-09-02", "2026-09-10", DEFAULT_CFG),
-                     ("2026-10-02", "2026-10-07", PURE_CFG), ("2026-09-02", "2026-09-10", PURE_CFG)]}
+RULES_FILE = os.path.join(ROOT, CB.RULES_REL)
+
+
+def research_cfg() -> dict:
+    """research/lab/combo_50k.json as the live bot reads it (night-comboplus pick a50_eval: first in, ATLAS x0.5 in the eval,
+    x1.0 funded, every eval guard off); absent -> the same values written out."""
+    try:
+        return json.load(open(RULES_FILE, encoding="utf-8"))
+    except (OSError, ValueError):
+        return {"conflict": "first", "atlas_size_factor": {"eval": 0.5, "funded": 1.0}, "variant": "a50_eval",
+                "guards": {"atlas_in_eval": True, "atlas_eval_min_room_usd": None, "eval_day_stop_usd": None, "one_position": True,
+                           "soft_day_usd_both_bots": 1000.0, "max_micros": 40, "flat_by": "16:10 ET"}}
+
+
+# (start, end, the bot's rules, the reference's ATLAS eval share, its label)
+A50 = "a50"            # the research rules (combo_50k.json): ATLAS x0.5 in the eval
+STUDY = "study"        # the main-branch study: first in, ATLAS x1.0
+ARMED = "armed"        # the study + this build's optional atlas_lit_armed_block guard (a mask must name it; the reference re-run)
+CASES = {A50: (lambda: research_cfg(), 0.5), STUDY: (lambda: {"conflict": "first", "atlas_size_factor": 1.0}, 1.0),
+         ARMED: (lambda: {"conflict": "first", "atlas_size_factor": 1.0, "guards": {"atlas_lit_armed_block": True}}, 1.0)}
+SEGMENTS = {"quick": [("2026-09-02", "2026-09-10", A50)],
+            "default": [("2026-09-02", "2026-09-10", A50), ("2026-10-02", "2026-10-07", STUDY)],
+            "full": [("2026-08-18", "2026-09-01", A50), ("2026-09-02", "2026-09-10", A50), ("2026-10-02", "2026-10-07", STUDY),
+                     ("2026-09-02", "2026-09-10", STUDY), ("2026-09-02", "2026-09-10", ARMED), ("2026-10-02", "2026-10-07", A50)]}
 
 
 # ================================================================================================ the reference
@@ -74,11 +93,27 @@ class Reference:
         self.S = C.sessions()
         self.D = C.combo_days("Z+A")
 
-    def segment(self, a, z, drop=frozenset()):
+    def book(self, a_f=1.0):
+        """The study's Eval book; a_f < 1 = ATLAS's share of its own size in the eval (night-comboplus a50_eval). The
+        simulator after the merge takes it as the cell's "a_f"; on a branch without it the same rule is applied here,
+        word for word: q = max(1, floor(a_f x q)) on every ATLAS size (tools/money/combo_account.Book.trade_day)."""
+        import math
+        C = self.C
+        cell = {**C.R("b50", "Z+A"), "conflict": "first", "a_f": {"eval": a_f, "funded": 1.0}}
+        ev = C.Eval(cell, "Z+A")
+        if a_f < 1.0 and not hasattr(ev, "a_f"):
+            base = ev.size
+
+            def size(t, room, cum, st, base=base):
+                q = base(t, room, cum, st)
+                return max(1, int(math.floor(a_f * q + 1e-9))) if t["s"] == "A" and q > 0 else q
+            ev.size = size
+        return ev
+
+    def segment(self, a, z, drop=frozenset(), a_f=1.0):
         """Real sessions a..z in order on ONE fresh eval (ends at pass / fail / stuck). drop = {(s, et)} not fed (masked
         live by a declared guard). -> (rows [(day, s, et, d, q, pnl, x)], cands {day: [trade]}, end (day, result) | None)."""
-        C = self.C
-        ev = C.Eval(C.R("b50", "Z+A"), "Z+A")
+        ev = self.book(a_f)
         rows, cands, end = [], {}, None
         for si, day in enumerate(self.S):
             if day < a or day > z:
@@ -102,13 +137,27 @@ def units():
     try:
         # a. off = today
         n0 = CB.normalize({})
-        check("a. rules: no file -> first_in, ATLAS size x1.0, armed-opposite block on, ATLAS 2 a day, $200 stop line",
-              n0["conflict"] == "first_in" and n0["atlas_size_factor"] == 1.0 and n0["guards"]["atlas_lit_armed_block"] is True
+        check("a. rules: no file -> first_in, ATLAS size x1.0, armed-opposite block off, ATLAS 2 a day, $200 stop line",
+              n0["conflict"] == "first_in" and n0["atlas_size_factor"] == {"eval": 1.0, "funded": 1.0}
+              and n0["guards"]["atlas_lit_armed_block"] is False
               and n0["guards"]["atlas_max_per_day"] == 2 and n0["guards"]["atlas_min_room"] == 200.0 and not n0["problem"], n0)
         check("a. rules: bad conflict / factor refused, unknown guard keys listed, a 'rules' sub-dict read",
               CB.normalize({"conflict": "both"})["problem"] and CB.normalize({"atlas_size_factor": 3})["problem"]
               and CB.normalize({"guards": {"zzz": 1}})["unknown"] == ["zzz"]
               and CB.normalize({"rules": {"conflict": "lit_priority"}})["conflict"] == "lit_priority")
+        rf = CB.normalize(research_cfg())
+        check("a. the research file research/lab/combo_50k.json (night-comboplus a50_eval): conflict first = first_in, ATLAS x0.5 "
+              "eval / x1.0 funded, null guards off, one position, $1,000 both bots, 40 micros, no problem, no unknown key",
+              rf["conflict"] == "first_in" and rf["atlas_size_factor"] == {"eval": 0.5, "funded": 1.0} and not rf["problem"]
+              and not rf["unknown"] and rf["guards"]["atlas_eval_min_room_usd"] is None and rf["guards"]["eval_day_stop_usd"] is None
+              and rf["guards"]["atlas_in_eval"] is True and rf["guards"]["soft_day_usd_both_bots"] == 1000.0
+              and rf["guards"]["max_micros"] == 40 and os.path.exists(RULES_FILE), rf)
+        check("a. rules: aliases zprio = close_on_opposite, zfull = lit_priority; a number factor = both stages; one_position false "
+              "/ another account / a bot list without ATLAS refused",
+              CB.normalize({"conflict": "zprio"})["conflict"] == "close_on_opposite" and CB.normalize({"conflict": "zfull"})["conflict"] == "lit_priority"
+              and CB.normalize({"atlas_size_factor": 0.75})["atlas_size_factor"] == {"eval": 0.75, "funded": 0.75}
+              and CB.normalize({"guards": {"one_position": False}})["problem"] and CB.normalize({"account": "builder25k"})["problem"]
+              and CB.normalize({"bots": ["lit"]})["problem"])
         check("a. the switch: no data/combo_50k.json in a fresh root -> off", CB.read_switch(tmp) == {"on": False})
 
         class FB:
@@ -167,6 +216,14 @@ def units():
         check("a. guards: ATLAS's 2nd entry on the 50K allowed, a 3rd refused, Zlarior's own 1 still free; off text unchanged",
               p1 is None and p2 and "ATLAS max 2" in p2 and p3 is None and p4 == "2 second-strategy entry already routed today (max 1 a day: the other slot is LIT's)",
               (p1, p2, p3, p4))
+        gb.combo = {"guards": {**CB.GUARD_DEFAULTS, "eval_day_stop_usd": 400.0, "soft_day_usd_both_bots": 800.0}}
+        gb._combo_stage = lambda: "eval"
+        c3 = G.config(gb)
+        gb._combo_stage = lambda: "funded"
+        c4 = G.config(gb)
+        check("a. guards: soft_day_usd_both_bots lowers the soft daily loss both bots count against; eval_day_stop_usd only in "
+              "the eval (null = off)", c3["daily_loss_usd"] == 800.0 and c3.get("combo_day_stop") == 400.0
+              and "combo_day_stop" not in c4 and "combo_day_stop" not in c2 and c2["daily_loss_usd"] == 1000.0, (c3, c4))
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 
@@ -194,7 +251,8 @@ def units():
     import combo_account as C
     C.trades()
     bk = C.Eval(C.R("b50", "Z+A"), "Z+A")
-    spec = {"on": True, "account": "Sim101", "factor": 1.0, "guards": dict(CB.GUARD_DEFAULTS), "max_micros": 40}
+    spec = {"on": True, "account": "Sim101", "atlas_size_factor": {"eval": 1.0, "funded": 1.0}, "guards": dict(CB.GUARD_DEFAULTS),
+            "max_micros": 40}
     A = [t for ts in C.trades() for t in ts if t["s"] == "A" and t["day"] >= "2026-01-01"][:80]
     diff = []
     for i, t in enumerate(A):
@@ -205,13 +263,28 @@ def units():
         if a != b:
             diff.append((t["day"], t["risk"], st["room"], a, b))
     check(f"b. ATLAS's micros on the 50K == the study's Book.size (account_b.qty builder50k) on {len(A)} trades x 4 states", not diff, diff[:4])
-    s2 = {**spec, "factor": 0.5}
+    s2 = {**spec, "atlas_size_factor": {"eval": 0.5, "funded": 1.0}}
     st = {"profit": 0.0, "cum": 0.0, "room": 2000.0, "session": 1, "n_today": 0, "wk_pnl": 0.0, "days_traded": 0}
     q1 = CB.atlas_qty(spec, {"risk_pts": 20.0, "tgt_pts": 160.0}, st, "2026-01-02")["qty"]
     q2 = CB.atlas_qty(s2, {"risk_pts": 20.0, "tgt_pts": 160.0}, st, "2026-01-02")["qty"]
-    q3 = CB.atlas_qty({**spec, "factor": 2.0}, {"risk_pts": 20.0, "tgt_pts": 160.0}, st, "2026-01-02")
+    q3 = CB.atlas_qty({**spec, "atlas_size_factor": {"eval": 2.0, "funded": 1.0}}, {"risk_pts": 20.0, "tgt_pts": 160.0}, st, "2026-01-02")
     q4 = CB.atlas_qty({**spec, "guards": {**spec["guards"], "atlas_max_risk_usd": 200.0}}, {"risk_pts": 20.0, "tgt_pts": 160.0}, st, "2026-01-02")["qty"]
     loss1 = (20.0 + 0.5) * 2 + 1.9
+    import math
+    halves = [(n, max(1, int(math.floor(0.5 * n + 1e-9)))) for n in range(1, 41)]
+    pairs, bad_r = [], []
+    for room in (60.0, 120.0, 300.0, 700.0, 1500.0, 2400.0):
+        stx = {**st, "room": room, "profit": 3000.0 - 0.9 * room}
+        for rp in (6.0, 14.0, 33.0):
+            a1 = CB.atlas_qty(spec, {"risk_pts": rp, "tgt_pts": 8 * rp}, stx, "2026-01-02")["qty"]
+            a5 = CB.atlas_qty(s2, {"risk_pts": rp, "tgt_pts": 8 * rp}, stx, "2026-01-02")["qty"]
+            pairs.append((a1, a5))
+            if a5 != (max(1, int(math.floor(0.5 * a1 + 1e-9))) if a1 > 0 else 0):
+                bad_r.append((room, rp, a1, a5))
+    z0 = CB.atlas_qty({**spec, "atlas_size_factor": {"eval": 0.0, "funded": 1.0}}, {"risk_pts": 20.0, "tgt_pts": 160.0}, st, "2026-01-02")
+    check(f"b. eval x0.5 = the simulator's rounding max(1, floor(0.5 q)) on 18 sizes ({sorted(set(pairs))[:6]}...); funded x1.0; "
+          "a factor 0 = no trade", not bad_r and any(a1 == 1 for a1, _ in pairs) and CB.factor_of(s2, "funded") == 1.0
+          and z0["qty"] == 0, (bad_r, pairs))
     check(f"b. atlas_size_factor 0.5 halves ({q1} -> {q2}); x2 stays inside 60% room + the $1,000 day + 40 micros; risk cap $200",
           q2 == max(1, int(q1 * 0.5)) and q3["qty"] <= 40 and q3["qty"] * loss1 <= 1000.0 + 1e-6 and q3["qty"] * loss1 <= 0.6 * 2000 + 1e-6
           and q4 == int(200.0 / loss1), (q1, q2, q3, q4))
@@ -239,6 +312,8 @@ def units():
     lb._open_routed, lb._open_src, lb._second_prov = None, None, {}
     lb.combo = {"conflict": "first_in", "guards": dict(CB.GUARD_DEFAULTS)}
     lb.state = {"setups": {"short": {"tapped_t": None}}}
+    w0 = lb._combo_block(1, tb, now)
+    lb.combo = {"conflict": "first_in", "guards": {**CB.GUARD_DEFAULTS, "atlas_lit_armed_block": True}}
     w1 = lb._combo_block(1, tb, now)
     lb.state = {"setups": {"long": {}}}
     w2 = lb._combo_block(1, tb, now)
@@ -265,14 +340,55 @@ def units():
     w6 = lb._combo_block(1, tb, now)
     w6b = lb._combo_block(-1, tb, now)
     lb.acct_b = None
-    check("b. ATLAS's 50K entry blocked: Zlarior armed the other way, Zlarior entering, the 50K holds a position, an order "
-          "working at NinjaTrader, ATLAS's 25K holds the other side; allowed: Zlarior armed the SAME way, ATLAS's 25K same side",
-          w1 and "armed" in w1 and w2 is None and w3 and "entering" in w3 and w4 and "one position" in w4 and w5 and "working" in w5
+    check("b. ATLAS's 50K entry blocked: Zlarior armed the other way (only with the optional guard on; the research rules: "
+          "allowed), Zlarior entering, the 50K holds a position, an order working at NinjaTrader, ATLAS's 25K holds the other "
+          "side; allowed: Zlarior armed the SAME way, ATLAS's 25K same side",
+          w0 is None and w1 and "armed" in w1 and w2 is None and w3 and "entering" in w3 and w4 and "one position" in w4 and w5 and "working" in w5
           and w6 and "no hedging" in w6 and w6b is None, (w1, w2, w3, w4, w5, w6, w6b))
+    lb.combo = {"conflict": "first_in", "guards": {**CB.GUARD_DEFAULTS, "eval_day_stop_usd": 400.0}}
+    lb._lit_sizing = {"mode": "two_week"}
+    lb.ledger = [{"t": now - 3000, "side": "exit", "pnl": -450.0, "entry_t": now - 4000}]
+    w7 = lb._combo_block(1, tb, now)
+    lb.combo["guards"]["eval_day_stop_usd"] = None
+    w8 = lb._combo_block(1, tb, now)
+    lb.ledger, lb._lit_sizing = [], None
+    check("b. eval_day_stop_usd: ATLAS blocked once today's closed P&L of both bots <= -$400 in the eval; null = off",
+          w7 and "eval day stop" in w7 and w8 is None, (w7, w8))
     check("b. alert / board text: 'ATLAS on Zlarior 50K: LONG opened (4 MNQ, EMA)'",
           CB.entry_text(CB.LABEL, "long", 4, "EMA") == "ATLAS on Zlarior 50K: LONG opened (4 MNQ, EMA)")
     from engine import board_events as BE
     check("b. the Board knows the kind combo_trade (not loud)", "combo_trade" in BE.KINDS and "combo_trade" not in BE.LOUD)
+    # the instant alerts: NinjaTrader's own fill push (legs carry "who" only while the combo is on) and the bot's paper push
+    from engine import push as PU
+
+    class FA:
+        got = []
+
+        def _push_account(self):
+            return "MFFU 50K"
+
+        def _push(self, make):
+            self.got.append(make(PU))
+        clock = staticmethod(lambda: at("2026-09-09", 11, 40))
+    fa = FA()
+    lg = {"instrument": "MNQ 12-26", "dir": 1, "filled": 8, "entry_t": at("2026-09-09", 11, 20), "fill_px": 29700.0, "stop": 29680.75,
+          "target": 29854.75, "stop0": 29680.75, "bracket_qty": 8}
+    nt.NinjaTraderAdapter._push_fill(fa, dict(lg))
+    nt.NinjaTraderAdapter._push_fill(fa, {**lg, "who": CB.LABEL})
+    nt.NinjaTraderAdapter._push_exit(fa, {**lg, "who": CB.LABEL}, "TARGET", {"avg": 29854.75, "filled": 8})
+    t0_, t1_, t2_ = [p.get("title") for p in fa.got]
+    check("b. NinjaTrader's fill push: today's title without the combo; 'ATLAS on Zlarior 50K: LONG opened' / '... closed' with it",
+          t0_ == "LONG · MFFU 50K" and t1_ == "ATLAS on Zlarior 50K: LONG opened" and t2_ == "ATLAS on Zlarior 50K: LONG closed", (t0_, t1_, t2_))
+    sent = []
+    lb2 = live.LiveBot()
+    lb2.cfg = {"sym": "NQ", "adapter": "paper"}
+    lb2._push_send = sent.append
+    lb2._push_account = lambda: "MFFU 50K"
+    pos = {"dir": -1, "entry_t": at("2026-09-09", 2, 54), "entry": 29900.0, "stop": 29920.0, "target": 29700.0}
+    lb2._push_fill(pos, 4, "NQ", {"ok": True})
+    lb2._push_fill(pos, 4, "NQ", {"ok": True}, who=CB.ZLABEL)
+    check("b. the bot's own entry push (paper): unchanged without who; 'Zlarior on its 50K: SHORT opened' with it",
+          [p["title"] for p in sent] == ["SHORT · MFFU 50K", "Zlarior on its 50K: SHORT opened"], [p.get("title") for p in sent])
 
 
 def _stream_parity():
@@ -385,9 +501,9 @@ def masked_armed(b, day, cands):
     return out
 
 
-def run_segment(H, R, a, z, combo_cfg, label):
+def run_segment(H, R, a, z, combo_cfg, label, a_f=1.0):
     """One fresh eval a..z through the live bot; returns (live rows, reference rows, details)."""
-    rows_ref, cands, end = R.segment(a, z)
+    rows_ref, cands, end = R.segment(a, z, a_f=a_f)
     days = sorted(cands)
     if end:
         days = [d for d in days if d <= end[0]]
@@ -413,7 +529,7 @@ def run_segment(H, R, a, z, combo_cfg, label):
         b.stop()
         print(f"   {label} {day}: {len([r for r in rows_live if r[0] == day])} trade(s) on the 50K, {time.time() - t0:.0f} s", flush=True)
     if masked:
-        rows_ref, _, end = R.segment(a, z, drop=frozenset(masked))
+        rows_ref, _, end = R.segment(a, z, drop=frozenset(masked), a_f=a_f)
     return rows_live, rows_ref, {"end": end, "errors": errors, "legs_max": legs_max, "masked": masked, "two_pos": two_pos,
                                  "logs": logs[-400:], "seconds": round(time.time() - t0)}
 
@@ -481,15 +597,21 @@ def replay(segments, do_scenario=False):
     H = Harness(ref, lm_extra={"lit_sizing": lit_sizing()})
     out = {}
     try:
-        for a, z, ccfg in segments:
-            pure = ccfg is PURE_CFG
-            label = f"c. eval from {a} ({'the study rules exactly: no armed block' if pure else 'default rules'})"
-            rl, rr, det = run_segment(H, R, a, z, ccfg, label)
-            k = f"{a}{' pure' if pure else ''}"
+        for a, z, case in segments:
+            mk, a_f = CASES[case]
+            ccfg = mk()
+            label = f"c. eval from {a} ({ {A50: 'the research rules combo_50k.json: ATLAS x0.5 in the eval', STUDY: 'the study: first in, ATLAS x1.0', ARMED: 'the study + the optional armed-opposite guard'}[case] })"
+            rl, rr, det = run_segment(H, R, a, z, ccfg, label, a_f=a_f)
+            k = f"{a} {case}"
             out[k] = compare(rl, rr, label, det)
             out[k]["logs"] = det["logs"][-60:]
-            if pure:
-                check(f"{label}: nothing masked (the guard is off): the trade list IS the study's", not det["masked"], det["masked"])
+            out[k]["rules"] = ccfg
+            if case != ARMED:
+                check(f"{label}: nothing masked (no armed guard): the trade list IS the simulator's", not det["masked"], det["masked"])
+            if case == A50:
+                half = [r for r in rr if r[1] == "A"]
+                check(f"{label}: ATLAS's {len(half)} trade(s) at the simulator's eval share (sizes halved, rounded down, min 1)",
+                      bool(half), half)
             print(f"   {label}: {out[k]['live']} live / {out[k]['ref']} reference trades, masked {det['masked']}, eval end {det['end']}, "
                   f"{det['seconds']} s", flush=True)
         if do_scenario:
@@ -509,7 +631,9 @@ def main(argv=None) -> int:
         segs = SEGMENTS[mode]
         if "--seg" in argv:                       # one segment (tests/run_area.py runs the default ones as parts)
             day = argv[argv.index("--seg") + 1]
-            segs = [x for x in SEGMENTS["default"] if x[0] == day][:1]
+            case = argv[argv.index("--case") + 1] if "--case" in argv else None
+            segs = [x for x in SEGMENTS["full"] if x[0] == day and (case is None or x[2] == case)][:1] if case else \
+                [x for x in SEGMENTS["default"] if x[0] == day][:1]
         out = replay(segs, do_scenario=(mode != "quick" and ("--seg" not in argv or "--scenario" in argv)))
     n_ok = sum(1 for _, ok in RESULTS if ok)
     print(f"\n{n_ok}/{len(RESULTS)} checks passed ({time.time() - t0:.0f} s)")

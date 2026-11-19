@@ -1892,6 +1892,9 @@ class LiveBot:
             p = push.outcome_payload(self._push_account(), "LONG" if pv.get("dir") == 1 else "SHORT", reason, usd, int(et_),
                                      exit_t, src="pc", qty=qty, strategy=pv.get("short"))
             p["body"] = f"{p['body']} ({pv.get('short')})"
+            if pv.get("combo"):                        # ATLAS + Zlarior on ONE account (engine/combo50k.py)
+                from .combo50k import LABEL
+                p["title"], p["who"] = f"{LABEL}: {'LONG' if pv.get('dir') == 1 else 'SHORT'} closed", LABEL
             self._push_send(p)
         except Exception as e:
             self._log("warn", f"phone notification failed: {e.__class__.__name__}")
@@ -1918,8 +1921,10 @@ class LiveBot:
             return                                        # an ATLAS combo trade is open: the change waits until it is flat
         self.combo = on
         if on is not None:
+            f = on.get("atlas_size_factor") or {}
             self._log("system", f"ATLAS + Zlarior on ONE account ON ({on.get('src')}): ATLAS also trades {on.get('account') or 'this account'}, "
-                                f"one position at a time (conflict {on['conflict']}), ATLAS size x{on['factor']:g}")
+                                f"one position at a time (conflict {on['conflict']}), ATLAS size x{float(f.get('eval', 1.0)):g} in the eval / "
+                                f"x{float(f.get('funded', 1.0)):g} funded")
         else:
             self._log("system", "ATLAS + Zlarior on ONE account OFF: Zlarior alone on this account again")
 
@@ -2008,14 +2013,13 @@ class LiveBot:
                 and lg.get("status") in ("entry_sent", "pending", "cancel_pending", "protected", "unprotected")]
         if legs:
             return "one position on the 50K: an order of this account is still working at NinjaTrader"
-        if c.get("conflict") == "lit_priority":
-            why = self._lit_busy()
-            if why:
-                return f"Zlarior first (conflict rule lit_priority): {why}"
         en = st.get("enter_now")
         if en:
             return f"one position on the 50K: Zlarior is entering {side(int(en.get('dir') or 1))}"
-        if g.get("atlas_lit_armed_block", True):
+        ds = g.get("eval_day_stop_usd")
+        if ds is not None and self._combo_stage() == "eval" and self.day_pnl_routed() <= -float(ds):
+            return f"eval day stop: today's closed ${self.day_pnl_routed():,.0f} <= -${float(ds):,.0f} (no new entry of either bot)"
+        if g.get("atlas_lit_armed_block", False):
             su = st.get("setups") or {}
             opp = "short" if d == 1 else "long"
             if su.get(opp):
@@ -2082,26 +2086,47 @@ class LiveBot:
         risk = abs(float(t["entry"]) - float(t["stop"]))
         tgt = abs(float(t["target"]) - float(t["entry"]))
         try:
-            if lsz.get("mode") == "funded":
+            stage = self._combo_stage()
+            if stage == "funded":
                 from .multi_account import primary_state
                 st = primary_state(self, "funded")
-                stage = "funded"
             else:
                 st = self.eval_state()
-                stage = "eval"
             if st is not None:
                 st = {**st, "n_today": len(self._combo_entries_today(day))}
             g = (self.combo or {}).get("guards") or {}
             room = (st or {}).get("room")
+            if stage == "eval" and g.get("atlas_in_eval") is False:
+                return 0, ["guard atlas_in_eval false: ATLAS trades the 50K only once it is funded"], room
             line = float(g.get("atlas_min_room_funded", 100.0) if stage == "funded" else g.get("atlas_min_room", 200.0))
             if room is not None and float(room) < line:
                 return 0, [f"room ${float(room):,.0f} under ATLAS's ${line:,.0f} {'funded' if stage == 'funded' else 'eval'} stop line"], room
+            mr = g.get("atlas_eval_min_room_usd")
+            if stage == "eval" and mr is not None and room is not None and float(room) < float(mr):
+                return 0, [f"guard atlas_eval_min_room_usd: room ${float(room):,.0f} < ${float(mr):,.0f}"], room
             r = combo50k.atlas_qty(self.combo, {"risk_pts": risk, "tgt_pts": tgt}, st, self.eval_start(), base=lsz or None,
                                    stage=stage, key=k)
             return int(r["qty"]), list(r.get("reasons") or []), room
         except Exception as e:
             self._note_error(f"combo ATLAS sizing failed: {e.__class__.__name__}: {e}")
             return 0, [f"sizing failed ({e.__class__.__name__}): not traded"], None
+
+    def _combo_stage(self) -> str:
+        """The 50K's stage for the combo's rules ("eval" / "funded"): Zlarior's own lit_sizing mode (funded once switched
+        with eval_life --to-funded; "auto" = funded after the eval target, as engine/sizing.lit_qty)."""
+        lsz = getattr(self, "_lit_sizing", None) or {}
+        mode = lsz.get("mode")
+        if mode == "funded":
+            return "funded"
+        if mode == "auto":
+            try:
+                st = self.eval_state()
+                tgt = float(((lsz.get("two_week") or {}).get("acct") or {}).get("target", 3000.0))
+                if st is not None and float(st.get("profit") or 0.0) >= tgt:
+                    return "funded"
+            except Exception:
+                pass
+        return "eval"
 
     def _combo_tick(self, df5, df1, res, sym, now):
         """After Zlarior's routing: manage ATLAS's open combo trade on this 50K (fill check, breakeven move, cuts, 15:55,
@@ -2206,6 +2231,14 @@ class LiveBot:
         self._guard_routed(tb)
         self._push_fill({**ent, "stop0": ent["stop"]}, q, sym, rr, strategy=nm, who=L)
         self._combo_board(L, d, q, nm, rr)
+        if (rr or {}).get("ok") is False and self._entry_never_placed(tb):
+            # NinjaTrader provably never took it (refused / not picked up, nothing filled or open): no position, nothing
+            # booked, the 50K is free again for either bot (a NOT OK that may still be open stays held and managed)
+            self._open_routed, self._open_src = None, None
+            self._second_prov[tb].update(final=True, refused=str((rr or {}).get("error") or "refused")[:160])
+            self._log("risk", f"{head}: NinjaTrader never took the order ({self._second_prov[tb]['refused']}): nothing booked, "
+                              "the 50K is free again")
+            return
         su = (self.state or {}).get("setups") or {}
         if su and (rr or {}).get("ok") is not False and (self.combo or {}).get("conflict") != "lit_priority":
             # Zlarior's armed setups on this account do not go out while ATLAS holds it (they never rest at the broker:
@@ -2223,7 +2256,8 @@ class LiveBot:
                 for r in self.ledger if r.get("who")][-8:]
         c = self.combo or {}
         return {"on": self.combo is not None, "label": LABEL, "account": c.get("account"), "conflict": c.get("conflict"),
-                "atlas_size_factor": c.get("factor"), "open": ({**op, "who": LABEL} if op else None), "routed": rows,
+                "atlas_size_factor": c.get("atlas_size_factor"), "stage": self._combo_stage() if c else None,
+                "open": ({**op, "who": LABEL} if op else None), "routed": rows,
                 "note": "ATLAS + Zlarior on ONE 50K: one position at a time, one direction across every account"}
 
     def _brain_tick(self, res, P, now, keep):
