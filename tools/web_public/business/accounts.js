@@ -20,7 +20,7 @@
     if (!isObj(h)) return null;
     const b = isObj(h.board) ? h.board : {}, fake = (x) => isObj(x) && (/^paper$/i.test(String(x.badge || '')) || /cloud/i.test(String(x.source || '')));
     const board = { ...b };
-    for (const k of ['lit', 'atlas', 'blitz']) if (b.where === 'cloud' || fake(b[k])) delete board[k];
+    for (const k of ['lit', 'atlas', 'blitz']) if (fake(b[k])) delete board[k];
     return { ...h, board, accounts: (Array.isArray(h.accounts) ? h.accounts : []).filter((a) => !fake(a) && !(isObj(a) && isObj(a.conn) && a.conn.present === false)) };
   }
   function ago(t) {

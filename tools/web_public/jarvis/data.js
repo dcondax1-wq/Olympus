@@ -222,9 +222,9 @@ function pcFeedOver() {
 }
 // pc_feed.js loads async next to this module: wait for it a moment (2 s at most) so the first read can be the PC's own feed
 function feedLib(ms = 2000) {
-  if (globalThis.PC_FEED || typeof document === 'undefined') return Promise.resolve(globalThis.PC_FEED || null);
+  if (globalThis.PC_FEED || typeof document === 'undefined' || typeof document.getElementById !== 'function') return Promise.resolve(globalThis.PC_FEED || null);
   const s = document.getElementById('pcFeedJs');
-  if (!s) return Promise.resolve(null);
+  if (!s || typeof s.addEventListener !== 'function') return Promise.resolve(null);
   return new Promise((ok) => {
     const done = () => { clearTimeout(t); ok(globalThis.PC_FEED || null); }, t = setTimeout(done, ms);
     s.addEventListener('load', done, { once: true }); s.addEventListener('error', done, { once: true });
@@ -236,9 +236,11 @@ export function refreshLive() {
   L.busy = (async () => {
     // the PC's own feed FIRST (night-feedsA 2026-11-18): the GitHub live.json below lives on the old, suspended account (every read
     // was a 404 in the console); it is asked only when the PC feed has nothing (no status_feed.json, ntfy down, a test site)
-    const F0 = await feedLib();
+    let F0 = null;
+    try { F0 = await feedLib(); } catch (_) { F0 = null; }
     if (F0) {
-      const lite = await pcFeedOver();
+      let lite = null;
+      try { lite = await pcFeedOver(); } catch (_) { lite = null; }
       if (lite) { L.at = Date.now(); L.busy = null; emit('live'); return; }
     }
     try {

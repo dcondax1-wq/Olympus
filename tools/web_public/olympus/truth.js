@@ -48,23 +48,24 @@ const toS = (v) => {      // epoch seconds / ms, or an ISO time -> epoch seconds
 // ------------------------------------------------------------------------------------------------ where each account's numbers come from
 const ROW_RE = { lit: /mffu50k|zlarior|builder 50k|\blit\b|\b50k\b/, atlas: /atlas|acctb|acct_b/, blitz: /blitz|acct_c/ };
 /** the account's own row in home.accounts (the PC's): never the cloud paper twin of LIT ("Paper (cloud)", plan "MFFU 50K rules") */
-// night-feedsA 2026-11-18: the GitHub Pages site is a CLOUD build: its board cards say where "cloud", badge PAPER, source "cloud paper"
-// ($49,900 = the cloud's paper twin) and its 50K account row is badged PAPER. Those were shown as Zlarior's numbers whenever the PC feed
-// was late. A cloud / paper copy is never a real account (BLITZ is paper by design): no number beats a wrong one.
+// night-feedsA 2026-11-18: the GitHub Pages site is a CLOUD build: its board cards say badge PAPER, source "cloud paper" ($49,900 = the
+// cloud's paper twin) and its 50K account row is badged PAPER. Those were shown as Zlarior's numbers whenever the PC feed was late. A paper /
+// cloud card or row is never a real account (BLITZ is paper by design): no number beats a wrong one. (A cloud build relaying the PC's own
+// cards, badge LIVE / source "PC bot", is still the PC's numbers.)
 const paperish = (x) => isObj(x) && (/^paper$/i.test(String(x.badge || '')) || /\bcloud\b/i.test(String(x.source || '')));
 function rowOf(home, key) {
   for (const a of Array.isArray(home.accounts) ? home.accounts : []) {
     if (!isObj(a) || a.error) continue;
     const s = [a.id, a.name, a.plan, a.strategy].map((x) => String(x || '')).join(' ').toLowerCase();
     if (key !== 'blitz' && (String(a.source || '').toLowerCase() === 'cloud' || /\bcloud\b/.test(s) || paperish(a))) continue;
-    if (key === 'lit' && (ROW_RE.atlas.test(s) || ROW_RE.blitz.test(s))) continue;
+    if (key === 'lit' && (ROW_RE.atlas.test(s) || ROW_RE.blitz.test(s) || /\b25k\b/.test(s))) continue;     // Zlarior's 25K #2 is not the 50K (night-feedsA)
     if (ROW_RE[key].test(s)) return a;
   }
   return null;
 }
 function blockOf(key, home) {
   const board = obj(home.board), pc = obj(obj(home.live).pc), row = rowOf(home, key);
-  const b = board[key], cloudCard = key !== 'blitz' && (String(board.where || '').toLowerCase() === 'cloud' || paperish(b));
+  const b = board[key], cloudCard = key !== 'blitz' && paperish(b);       // a cloud build that relays the PC's own cards (badge LIVE) still counts
   if (isObj(b) && num(b.room) != null && !cloudCard) return { e: b, today: first(b.today_pnl, b.today), week: b.week_pnl, src: 'board.' + key, row };
   if (row && (isObj(row.eval) || isObj(row.funded_eval))) { const e = isObj(row.eval) ? row.eval : row.funded_eval; return { e, today: first(obj(row.pnl).today, e.today), week: obj(row.pnl).week, src: 'accounts.' + (row.id || key), row }; }
   if (key === 'atlas') { const ab = obj(obj(home.second).account_b); return isObj(ab.eval) ? { e: ab.eval, today: first(ab.eval.today, ab.day_pnl), week: null, src: 'second.account_b', row: null } : null; }
@@ -107,13 +108,15 @@ export function accountsOf(home) {
 export function extraOf(home) {
   const h = obj(home), board = obj(h.board), out = [];
   const src = Array.isArray(h.pc_accounts) ? h.pc_accounts : Array.isArray(h.accounts) ? h.accounts : [];
+  // the rows accountsOf already reads as Zlarior / ATLAS (an older home.json without board cards: its 50K row IS Zlarior)
+  const own = new Set(['lit', 'atlas'].map((k) => (Array.isArray(h.pc_accounts) ? null : rowOf(h, k))).filter(Boolean).map((a) => String(a.id)));
   const same = (c, e) => isObj(c) && num(c.balance) != null && num(c.balance) === num(e.balance) && num(c.floor) === num(e.floor);
   for (const a of src) {
     if (!isObj(a) || !a.id || a.error || !['eval', 'funded'].includes(String(a.kind))) continue;
     const id = String(a.id), who = `${id} ${a.name || ''} ${a.source || ''}`;
     if (/^(lit|atlas|blitz|zlarior|acct_?b|acct_?c|cloud_paper)$/i.test(id) || /cloud|blitz|scalp/i.test(who) || /^paper$/i.test(String(a.badge || ''))) continue;
     const e = isObj(a.eval) ? a.eval : isObj(a.funded) ? a.funded : null;
-    if (!e || num(e.balance) == null || same(board.lit, e) || same(board.atlas, e) || out.some((x) => x.id === id)) continue;
+    if (!e || num(e.balance) == null || own.has(id) || same(board.lit, e) || same(board.atlas, e) || out.some((x) => x.id === id)) continue;
     const m = /(\d+)\s*k\b/i.exec(String(a.plan || '')) || /(\d+)\s*k\b/i.exec(String(a.name || '')), size = m ? m[1] + 'K' : '';
     const start = first(e.start_balance, size === '50K' ? 50000 : size === '25K' ? 25000 : null), mll = first(e.mll, size === '50K' ? 2000 : 1000);
     const tb = first(e.target_balance), target = tb != null && start != null && tb > start ? tb - start : size === '50K' ? 3000 : 1500;
