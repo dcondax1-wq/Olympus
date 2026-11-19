@@ -1416,6 +1416,13 @@ VARIANTS = [   # id, eval combo, funded combo, conflict, ATLAS share {eval, fund
     ("a_eval_off_a60", "Z", "Z+A", "first", 0.0, 0.6, None, None, "ATLAS sits out the eval, 60% once funded"),
 ]
 VIDS = [v[0] for v in VARIANTS]
+# POST-HOC rows (added AFTER the 12 results, on the same data; NOT part of the pick, shown labelled as such): the most robust
+# conflict rule of the 12 (zfull: lowest "$0 or worse" share) with the two eval fixes that passed the 2-week bar
+POSTHOC = [
+    ("zfull_a50_eval", "Z+A", "Z+A", "zfull", 0.5, 1.0, None, None, "post-hoc: zfull + ATLAS 50% in the eval"),
+    ("zfull_room1500", "Z+A", "Z+A", "zfull", 1.0, 1.0, 1500.0, None, "post-hoc: zfull + the $1,500 eval room guard"),
+]
+PH_IDS = [v[0] for v in POSTHOC]
 F_TESTS = {   # test -> (periods, bootstrap, row overrides, with funded-only stats)
     "day": (F_SPANS, "day", {}, True),
     "week": (F_SPANS, "week", {}, True),
@@ -1432,7 +1439,7 @@ def frow(vid, **kw):
     if vid == "Z":
         r = {**R("b50", "Z"), "live": "live", "vid": "Z"}
     else:
-        v = next(x for x in VARIANTS if x[0] == vid)
+        v = next(x for x in VARIANTS + POSTHOC if x[0] == vid)
         r = {**R("b50", v[1], v[2]), "live": "live", "vid": vid, "conflict": v[3], "a_f": {"eval": v[4], "funded": v[5]},
              "a_room_min": v[6], "day_cap": v[7]}
     r.update(kw)
@@ -1508,10 +1515,11 @@ def _final_job(args):
 
 def _hist_job(args):
     """one resampled H2 history: its 16 weeks redrawn (seeded), N day paths from that pool, every row on the same paths."""
-    b, pool, n = args
+    b, pool, n = args[:3]
+    vids = args[3] if len(args) > 3 else ["Z"] + VIDS
     _patch_account_b()
     P = pool_paths(pool, n, seed=1000 + b)
-    return b, {vid: float(np.mean([q[0] for q in run_slot(frow(vid), P)]) / MONTHS) for vid in ["Z"] + VIDS}
+    return b, {vid: float(np.mean([q[0] for q in run_slot(frow(vid), P)]) / MONTHS) for vid in vids}
 
 
 def hist_pools(span="H2", B=N_HIST):
@@ -1520,10 +1528,11 @@ def hist_pools(span="H2", B=N_HIST):
     return [[i for j in rng.integers(0, len(W), size=len(W)) for i in W[int(j)]] for _ in range(B)]
 
 
-def final_constraints(res, hist):
+def final_constraints(res, hist, vids=None):
     """the pre-registered pick (design file section 3)."""
+    vids = vids or VIDS
     out = {}
-    for vid in VIDS:
+    for vid in vids:
         c, info = {}, {}
         g = {}
         for test in ("day", "week", "day_t1", "week_t1", "day_drop5", "day_stop"):
@@ -1545,8 +1554,8 @@ def final_constraints(res, hist):
                         "p90": round(float(np.percentile(h, 90))), "n": len(h)}
         out[vid] = {"pass": c, "all4": all(c[k] for k in ("C1", "C2", "C3", "C4")), "all5": all(c.values()),
                     "h2_week_m": res[vid]["week"]["H2"]["slot"]["net_m"], **info}
-    A = [v for v in VIDS if out[v]["all5"]]
-    Bt = [v for v in VIDS if out[v]["all4"]]
+    A = [v for v in vids if out[v]["all5"]]
+    Bt = [v for v in vids if out[v]["all4"]]
     if A:
         tier, win = "A", max(A, key=lambda v: out[v]["h2_week_m"])
     elif Bt:
@@ -1608,6 +1617,44 @@ def final(n=N_PATHS, workers=3, n_hist=N_HIST, n_hist_paths=N_HIST_PATHS, log=pr
     return out
 
 
+def posthoc(n=N_PATHS, workers=3, log=print):
+    """the POST-HOC rows (not part of the pick): Zlarior alone re-run for the paired gaps, the same 200 H2 histories
+    (Zlarior's history values re-computed on the same seeded paths) -> o["posthoc"] in combo_final.json."""
+    o = json.load(open(FINAL_OUT, encoding="utf-8"))
+    trades()
+    atlas_paths()
+    _patch_account_b()
+    jobs = [(vid, test, n) for vid in ["Z"] + PH_IDS for test in F_TESTS if test != "day_rebuy"
+            and not (vid == "Z" and test == "day_drop5")]
+    pools = hist_pools("H2", o["n_hist"])
+    hjobs = [(b, pools[b], o["n_hist_paths"], ["Z"] + PH_IDS) for b in range(o["n_hist"])]
+    res = collections.defaultdict(dict)
+    hist = {}
+    t0 = time.time()
+    import multiprocessing as mp
+    with mp.get_context("fork").Pool(workers) as pool:
+        for i, (vid, test, x, sec) in enumerate(pool.imap_unordered(_final_job, jobs)):
+            res[vid][test] = x
+            log(f"[{i + 1}/{len(jobs)}] {vid} {test} {sec:.0f}s ({time.time() - t0:.0f}s)")
+        for b, x in pool.imap_unordered(_hist_job, hjobs):
+            hist[b] = x
+    res["Z"]["day_drop5"] = res["Z"]["day"]
+    H = [hist[b] for b in range(o["n_hist"])]
+    same = max(abs(H[b]["Z"] - o["hist_raw"][b]["Z"]) for b in range(len(H)))
+    pick = final_constraints(res, H, PH_IDS)
+    strip = lambda q: {sp: {k: v for k, v in x.items() if not k.startswith("_")} for sp, x in q.items()}  # noqa: E731
+    o["posthoc"] = {"note": "added AFTER the 12 pre-registered results, same data: shown, NOT used for the pick or the config",
+                    "variants": [{"id": v[0], "eval": v[1], "funded": v[2], "conflict": v[3], "a_f": {"eval": v[4], "funded": v[5]},
+                                  "a_room_min": v[6], "day_cap": v[7], "why": v[8]} for v in POSTHOC],
+                    "results": {vid: {test: strip(x) for test, x in res[vid].items()} for vid in PH_IDS},
+                    "z_rerun_same": {test: {sp: res["Z"][test][sp]["slot"]["net_m"] == o["results"]["Z"][test][sp]["slot"]["net_m"]
+                                            for sp in res["Z"][test]} for test in res["Z"]},
+                    "hist_z_max_diff": round(same, 6), "rows": pick["rows"], "secs": round(time.time() - t0)}
+    with open(FINAL_OUT, "w", encoding="utf-8") as fh:
+        json.dump(o, fh, indent=1)
+    return o
+
+
 def final_config(o) -> dict:
     """research/lab/combo_50k.json: the rules the live build reads."""
     w = o["pick"]["winner"]
@@ -1624,8 +1671,7 @@ def final_config(o) -> dict:
                   "funded_pay30_week": R_[w]["week"][sp]["funded"]["pay30"], "funded_pay60_week": R_[w]["week"][sp]["funded"]["pay60"]}
     P = o["pick"]["rows"][w]
     return {"version": 1, "account": "builder50k", "bots": ["lit", "atlas"], "conflict": v["conflict"],
-            "atlas_size_factor": v["a_f"]["funded"] if v["a_f"]["eval"] == v["a_f"]["funded"] else None,
-            "atlas_size_factor_by_stage": v["a_f"],
+            "atlas_size_factor": dict(v["a_f"]),
             "guards": {"atlas_in_eval": v["a_f"]["eval"] > 0, "atlas_eval_min_room_usd": v["a_room_min"],
                        "eval_day_stop_usd": v["day_cap"], "one_position": True, "soft_day_usd_both_bots": 1000.0,
                        "max_micros": 40, "flat_by": "16:10 ET"},
@@ -1687,7 +1733,8 @@ def final_tables(o) -> str:
 # ================================================================================================ main
 def main(argv=None):
     ap = argparse.ArgumentParser()
-    ap.add_argument("cmd", choices=["build-blitz", "build", "check", "study", "table", "honesty", "build-paths", "final", "final-table"])
+    ap.add_argument("cmd", choices=["build-blitz", "build", "check", "study", "table", "honesty", "build-paths", "final", "final-table",
+                                       "posthoc"])
     ap.add_argument("--tf", type=int, default=1)
     ap.add_argument("--n", type=int, default=N_PATHS)
     ap.add_argument("--workers", type=int, default=3)
@@ -1723,6 +1770,11 @@ def main(argv=None):
             json.dump(cfg, fh, indent=1)
         print(final_tables(o))
         print("wrote", os.path.relpath(FINAL_OUT, ROOT), os.path.relpath(FINAL_CFG, ROOT), f"{o['secs']}s")
+        return 0
+    if a.cmd == "posthoc":
+        o = posthoc(a.n, a.workers)
+        print(json.dumps({k: {kk: o["posthoc"]["rows"][k][kk] for kk in ("pass", "h2_week_m", "f10", "hist")} for k in PH_IDS}, indent=1))
+        print("Z re-run identical:", o["posthoc"]["z_rerun_same"], "hist Z max diff", o["posthoc"]["hist_z_max_diff"])
         return 0
     if a.cmd == "final-table":
         print(final_tables(json.load(open(FINAL_OUT, encoding="utf-8"))))

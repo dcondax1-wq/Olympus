@@ -1,0 +1,108 @@
+{
+ "version": 1,
+ "account": "builder50k",
+ "bots": [
+  "lit",
+  "atlas"
+ ],
+ "conflict": "first",
+ "atlas_size_factor": {
+  "eval": 0.5,
+  "funded": 1.0
+ },
+ "guards": {
+  "atlas_in_eval": true,
+  "atlas_eval_min_room_usd": null,
+  "eval_day_stop_usd": null,
+  "one_position": true,
+  "soft_day_usd_both_bots": 1000.0,
+  "max_micros": 40,
+  "flat_by": "16:10 ET"
+ },
+ "sizes": {
+  "lit_eval": "live_model.json lit_sizing two_week (room_f 0.4, kept to session 80)",
+  "lit_funded": "engine/multi_account builder 50K funded preset",
+  "atlas": "engine/account_b plan builder50k (need size in the eval, funded_qty once funded), x atlas_size_factor"
+ },
+ "variant": "a50_eval",
+ "pick_tier": "B",
+ "evidence": {
+  "source": "research/writeups/one-account-combo-final-2026-11-19.md",
+  "results": "research/lab/combo_final.json",
+  "design": "research/lab/combo_final_design_2026-11-19.md",
+  "n_paths": 2000,
+  "periods": {
+   "H1": {
+    "usd_month_week": 2554,
+    "usd_month_day": 2563,
+    "zlarior_alone_week": 905,
+    "zlarior_alone_day": 872,
+    "range_10_90_week": [
+     1318,
+     3887
+    ],
+    "eval_fail_2wk_week": 0.0,
+    "eval_fail_60_week": 1.9,
+    "eval_pass_median_days": 12.0,
+    "funded_pay30_week": 92.0,
+    "funded_pay60_week": 97.5
+   },
+   "H2": {
+    "usd_month_week": 1501,
+    "usd_month_day": 1461,
+    "zlarior_alone_week": 805,
+    "zlarior_alone_day": 734,
+    "range_10_90_week": [
+     503,
+     2578
+    ],
+    "eval_fail_2wk_week": 4.4,
+    "eval_fail_60_week": 15.8,
+    "eval_pass_median_days": 8.0,
+    "funded_pay30_week": 68.1,
+    "funded_pay60_week": 85.3
+   },
+   "REF": {
+    "usd_month_week": 16,
+    "usd_month_day": 7,
+    "zlarior_alone_week": -10,
+    "zlarior_alone_day": -7,
+    "range_10_90_week": [
+     -92,
+     221
+    ],
+    "eval_fail_2wk_week": 7.0,
+    "eval_fail_60_week": 66.0,
+    "eval_pass_median_days": 17.0,
+    "funded_pay30_week": 18.6,
+    "funded_pay60_week": 22.1
+   },
+   "Y2022": {
+    "usd_month_week": 25,
+    "usd_month_day": 43,
+    "zlarior_alone_week": 166,
+    "zlarior_alone_day": 170,
+    "range_10_90_week": [
+     -92,
+     236
+    ],
+    "eval_fail_2wk_week": 5.8,
+    "eval_fail_60_week": 57.5,
+    "eval_pass_median_days": 17.0,
+    "funded_pay30_week": 17.5,
+    "funded_pay60_week": 21.7
+   }
+  },
+  "h2_resampled_histories_gap_le0": 0.145,
+  "constraints": {
+   "C1": true,
+   "C2": true,
+   "C3": true,
+   "C4": true,
+   "C5": false
+  },
+  "variants_tried": 12,
+  "date": "2026-11-19",
+  "paper_only": true
+ }
+}
