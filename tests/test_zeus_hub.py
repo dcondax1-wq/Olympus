@@ -84,7 +84,7 @@ def part_a():
     check("a. data: PC_FEED.fetchLatest + ../board/board.json + ../business/accounts.json, Board pick + MFFU cards (zeus_core.js), ../pythia/events.json",
           "F.fetchLatest(" in core and "url('../board/board.json')" in core and "url('../business/accounts.json')" in core and "BM.pick(" in core and "MM.cards(" in core
           and "ZC.summary(" in js and "ZC.fetchAll(" in js and "'../pythia/events.json'" in js and "BM.pick(" not in js and "MM.cards(" not in js)
-    order = [m for m in re.findall(r'<script src="([^"?]+)', html)]
+    order = [m for m in re.findall(r'<script src="([^"?]+)', html) if m != "../olympus/warp.js"]   # the world-to-world jump (tests.test_warp) is not data
     check("a. scripts: pc_feed, payoutcoach, mffumodel, boardmodel (after mffumodel), edge_chip, the Decide card, the shared zeus_core, zeus.js last",
           order == ["../pc_feed.js", "../business/payoutcoach.js", "../business/mffumodel.js", "../board/boardmodel.js", "../edge_chip.js",
                     "../business/decide.js", "../olympus/zeus_core.js", "zeus.js"], order)
