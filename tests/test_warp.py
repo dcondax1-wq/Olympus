@@ -101,6 +101,21 @@ def test_static():
     check("a. the pages without themes.js load warp.js themselves (Doors, the ZEUS hub, Help, Atlas)",
           all('src="../olympus/warp.js?v=w1" defer' in read(WEB, *p.split("/")) and "olympus/themes.js?v=" not in read(WEB, *p.split("/")) for p in pages))
     check("a. launcher.js stays byte-identical in both dashboards", read(WEB, "launcher.js") == read(ROOT, "web_next", "js", "next", "launcher.js"))
+    # phone QA 2026-11-19: a jump INTO Olympus World was a View Transition the page refused ("ViewTransition opt-in disabled") and the kit
+    # showed "Cities could not load"; the World now opts in like every app, and a skipped transition is never a page failure
+    world, kit = read(WEB, "cities", "world", "index.html"), read(KIT, "olympus.js")
+    check("a. Olympus World opts in (@view-transition, warp.css without holding the first frame) and loads warp.js for the way out",
+          "@view-transition{navigation:auto;types:oly-warp}" in world and 'href="../../olympus/warp.css?v=w1" media="print"' in world
+          and 'src="../../olympus/warp.js?v=w1" defer' in world)
+    trap = kit[kit.find("addEventListener('unhandledrejection'"):][:900]
+    check("a. the kit: a View Transition the browser skipped (AbortError / InvalidStateError ... transition) never shows 'could not load'",
+          "/transition/i.test(" in trap and "InvalidStateError" in trap and trap.find("transition/i.test(") < trap.find("fail("))
+    # phone QA 2026-11-19: the flash held the phone near-white (mean luminance ~210 of 255) while the next page loaded
+    fk = re.search(r"@keyframes ow-flash\{[^']*\}\}", js)
+    bk = re.search(r"@keyframes ow-breathe\{[^']*\}\}", js)
+    check("a. the flash is a flash, not a white screen: it settles to <= 0.7 opacity, the wait breathes <= 0.6, a small white core (<= 5%)",
+          fk and float(re.findall(r"opacity:([\d.]+)", fk.group(0))[-1]) <= 0.7 and bk and max(float(x) for x in re.findall(r"opacity:([\d.]+)", bk.group(0))) <= 0.6
+          and "#fff 9%" not in js and "#fff 9%" not in css and "#fff 8%" not in css, (fk and fk.group(0), bk and bk.group(0)))
     # the family of each kind of address (node, a fake window)
     probe = r"""
 const fs = require('fs'), vm = require('vm');

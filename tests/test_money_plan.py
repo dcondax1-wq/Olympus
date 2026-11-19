@@ -227,6 +227,11 @@ def part_f():
                   and got["rows"] == len(four["months"]), got)
             check("f. every open decision is listed with its $ a month", got["dec"] == n_open and got["valued"] >= len(VALUED), got)
             check("f. no sideways scroll at 390 px", got["wide"] <= 0, got["wide"])
+            # phone QA 2026-11-19: the label of a label / number row had a word a line and the K8 card's "Normal bad stretch" ran into its $
+            kv = p.evaluate("""() => { const rows = [...document.querySelectorAll('dl.kv')].flatMap((dl) => [...dl.querySelectorAll('dt')].map((dt) => {
+                const dd = dt.nextElementSibling, a = dt.getBoundingClientRect(), b = dd ? dd.getBoundingClientRect() : null;
+                return [Math.round(a.width), b ? Math.round(b.left - a.right) : 99]; })); return { n: rows.length, narrow: rows.filter((r) => r[0] < 120).length, touch: rows.filter((r) => r[1] < 4).length }; }""")
+            check("f. 390 px: every label / number row gives the label at least 120 px and never touches its number", kv["n"] > 10 and kv["narrow"] == 0 and kv["touch"] == 0, kv)
             p.click("#cnt button:nth-child(2)")
             g2 = p.evaluate("() => ({acc: [...document.querySelectorAll('#acc section')].map((s) => s.dataset.key), hero: document.getElementById('big').textContent})")
             check("f. '+ the next buy' adds the Rapid EOD 50K card and its $", g2["acc"][-1] == "R2" and len(g2["acc"]) == 5

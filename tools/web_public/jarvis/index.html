@@ -1046,7 +1046,9 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
            (red PC SILENT), one line per real account (stage, balance, $ to pass / payout, today's $), the ZEUS edge chip; a tap opens ../hub/zeus.html.
            Paper / cloud ledgers stay lower (Needs you, labelled Paper test). -->
       <style>.home-in > .zeus-host { margin: 0 var(--gxr, 16px) 0 var(--gx, 16px); } .zeus-host .zeus-card { margin: 0; } a.hc-bot { text-decoration: none; color: inherit; } .tiles.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-        html:root[data-jlook="classic"] .home-in[data-home="v2"] > .zeus-host { order: 1; margin-top: 8px; }</style>
+        html:root[data-jlook="classic"] .home-in[data-home="v2"] > .zeus-host { order: 1; margin-top: 8px; }
+        /* KALSHI TODAY / NQ BOTS TODAY: their second line ("paper -$10.32 · 3 min ago") wraps on a phone; held from the start (phone QA 2026-11-19) */
+        @media (max-width: 520px) { #kbox em, #nbox em { min-height: 2lh; } }</style>
       <div class="zeus-host" id="zeusCard" data-zeus-card></div>
       <!-- phone notifications (2026-11-19, owner: "I want notifications on my phone"): ./push-ui.js draws this card ("Allow notifications",
            on / test / turn off); the PC pushes every trade and the important alerts straight here (engine/push.py, ./push-sw.js) -->
@@ -3597,9 +3599,9 @@ if ('serviceWorker' in navigator) {
 <script src="./welcome.js?v=w1" defer></script>
 <script type="module" src="./transitions.js?v=t6"></script>
 <script type="module" src="./briefing.js?v=r3"></script>
-<script src="../olympus/zeus_core.js?v=3" defer></script>
+<script src="../olympus/zeus_core.js?v=4" defer></script>
 <script type="module" src="./home-cards.js?v=hc3"></script>
 <script type="module" src="./copilot-card.js?v=cp3"></script>
-<script src="./push-ui.js?v=pu1" defer></script>
+<script src="./push-ui.js?v=pu2" defer></script>
 </body>
 </html>
