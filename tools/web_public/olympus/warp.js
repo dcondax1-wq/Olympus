@@ -61,7 +61,7 @@
     lab:    { a: '#e9d3a3', b: '#86b9dc', k: '#060910', label: 'More' }
   };
   var DOOR = {        // olympus/doors.js DOORS[].ids (tests.test_warp keeps this copy equal to it)
-    zeus: 'zenith nq board trading aegis pnyx demeter labyrinth fates moirai odeon nemesis kronos apollo journal kratos epilogue ares argus oracle pantheon pythia pheme kairos chronos forum delphi',
+    zeus: 'zenith nq board why trading aegis pnyx demeter labyrinth fates moirai odeon nemesis kronos apollo journal kratos epilogue ares argus oracle pantheon pythia pheme kairos chronos forum delphi',
     money: 'business ledger hera plutus chrysos oikos agency mercury mint mintcity harmonia hermes argo arbiter',
     kalshi: 'kalshi dionysus kalshicity sibyl tyche',
     more: 'compass helios herald stoa hestia inbox planner mind arena athena lyceum nike gallery polis symposium ergasterion settings bridge atlas cities datacity observatory tree prometheus hephaestus clio archive pinakes colosseum'
@@ -84,6 +84,9 @@
     return { id: id, fam: fam, url: u.href, path: norm(u.pathname), search: u.search };
   }
   var HERE = world(location.href) || { id: '', fam: 'lab', path: norm(location.pathname), search: location.search };
+  // pages that do not opt in to the arrival before their first frame (no agora / jarvis / kalshi / zenith sheet): the browser's
+  // transition is skipped as we leave (Chrome would abort it on arrival and report an error there); the jump out still plays
+  function optsIn(dest) { return !!dest && !/^(atlas|atlascity|bridge|pc|fx)$/.test(dest.id) && !/\/datacity\/(jarvis\/|map\.html)|-lab\.html$|core-demo\.html$/.test(dest.path); }
 
   // ------------------------------------------------------------------------------------------------ settings, tiers
   function get(n) { try { return W.localStorage.getItem(n); } catch (e) { return null; } }
@@ -331,7 +334,7 @@
       try { if (W.OLYMPUS && W.OLYMPUS.covered) W.OLYMPUS.covered(true); } catch (e) { /* the scene keeps running under the jump */ }
       if (mode === 'fade') {
         r.el = overlay(dest, o, true);
-        if (r.nav) r.timer = setTimeout(function () { go(r); }, T.fade);
+        if (r.nav) { r.timer = setTimeout(function () { go(r); }, T.fade); r.give = setTimeout(function () { if (run === r) stop(r, true); }, T.give); }
         return r;
       }
       r.navAt = dest.id === HERE.id && dest.fam === HERE.fam ? T.hop : T.nav;     // another page of the same world: a short hop
@@ -430,11 +433,10 @@
   // ------------------------------------------------------------------------------------------------ leaving, coming back, arriving
   W.addEventListener('pageswap', function (e) {
     try {
-      var v = e.viewTransition, act = e.activation;
-      if (v) { guard(v); if (!enabled()) { v.skipTransition(); return; } root.classList.add('oly-warping'); }
+      var v = e.viewTransition, act = e.activation, to = act && act.entry && act.entry.url ? world(act.entry.url) : null;
+      if (v) { guard(v); if (!enabled() || (act && act.entry && !optsIn(to))) { v.skipTransition(); if (!enabled()) return; } else root.classList.add('oly-warping'); }
       if ((!run || !run.nav) && act && act.entry && act.entry.url && enabled()) {           // a jump nobody tapped (back, forward, a script)
-        var dest = world(act.entry.url);
-        if (dest) hand(dest, { back: act.navigationType === 'traverse' });
+        if (to) hand(to, { back: act.navigationType === 'traverse' });
       }
     } catch (x) { /* the browser's own transition */ }
   });

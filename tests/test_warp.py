@@ -78,13 +78,15 @@ def test_static():
           boot and boot in th and "olyWarpBoot(window, document);" in th and "new URL('warp.js?v=w1', me.src)" in th and "s.async = true" in th, len(boot))
     check("a. the boot reads the one-shot hand-off before the first frame only (no body yet), 6 s fresh, for this page, then removes it",
           "d.body) return" in boot and "Date.now() - h.t < 6000" in boot and "h.to !== p" in boot and "s.removeItem('oly.warp.in')" in boot and "pagereveal" in boot)
-    imports = {"olympus/agora.css": 'warp.css?v=w1', "jarvis/jarvis.css": '../olympus/warp.css?v=w1', "kalshi/kalshi.css": '../olympus/warp.css?v=w1', "zenith_agora.css": 'olympus/warp.css?v=w1'}
-    bad = []
-    for f, url in imports.items():
-        s = re.sub(r"/\*.*?\*/", "", read(WEB, *f.split("/")), flags=re.S).lstrip()
-        if not s.startswith(f'@import url("{url}");'):
-            bad.append(f)
-    check("a. agora.css, jarvis.css, kalshi.css and zenith_agora.css @import warp.css as their first rule (render-blocking arrival)", not bad, bad)
+    agora = re.sub(r"/\*.*?\*/", "", read(KIT, "agora.css"), flags=re.S).lstrip()
+    check("a. agora.css (every kit app: its files come from the network anyway) @import warp.css as its first rule: the arrival before the first frame",
+          agora.startswith('@import url("warp.css?v=w1");'))
+    sw_pages = {"jarvis/index.html": "../olympus/warp.css?v=w1", "index.html": "olympus/warp.css?v=w1", "kalshi/index.html": "../olympus/warp.css?v=w1"}
+    pair = '<style>@view-transition{navigation:auto;types:oly-warp}</style><link rel="stylesheet" href="%s" media="print" onload="this.media=\'all\'">'
+    bad = [f for f, u in sw_pages.items() if (pair % u) not in read(WEB, *f.split("/")) or read(WEB, *f.split("/")).find(pair % u) > read(WEB, *f.split("/")).find("<script")]
+    clean = [f for f in ("jarvis/jarvis.css", "kalshi/kalshi.css", "zenith_agora.css") if "warp.css" in read(WEB, *f.split("/"))]
+    check("a. Jarvis, Zenith and Kalshi (their worker serves their sheets from its own copy) opt in inline at the top of <head> and load warp.css "
+          "without holding the first frame (a slow site never keeps them white); their own sheets import nothing", not bad and not clean, (bad, clean))
     fams = ["home", "zeus", "money", "kalshi", "city", "lab"]
     check("a. warp.css opts in (@view-transition navigation auto, type oly-warp) and scopes every rule to it (same-page transitions keep their own)",
           "@view-transition { navigation: auto; types: oly-warp; }" in css and not re.search(r"(^|\})\s*::view-transition", css))
@@ -137,8 +139,13 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         super().end_headers()
 
 
+class Server(http.server.ThreadingHTTPServer):
+    def handle_error(self, request, client_address):
+        pass                                                          # a page that left mid-download (the jump) is not an error
+
+
 def serve():
-    srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), functools.partial(Handler, directory=WEB))
+    srv = Server(("127.0.0.1", 0), functools.partial(Handler, directory=WEB))
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     return srv, f"http://127.0.0.1:{srv.server_address[1]}"
 
@@ -151,9 +158,9 @@ addEventListener('pagereveal', (e) => {
   if (!v) return;
   v.ready.then(() => {
     window.__rv.types = v.types ? Array.from(v.types) : null;
-    window.__rv.anims = document.getAnimations().filter((a) => a.effect && a.effect.pseudoElement).map((a) => [a.effect.pseudoElement, a.animationName, Math.round(a.effect.getComputedTiming().endTime)]);
+    window.__rv.anims = document.getAnimations().filter((a) => a.effect && a.effect.pseudoElement && (/^::view-transition/.test(a.effect.pseudoElement) || a.effect.target === document.documentElement)).map((a) => [a.effect.pseudoElement, a.animationName, Math.round(a.effect.getComputedTiming().endTime)]);
     const fz = sessionStorage.getItem('test.freeze');
-    if (fz) { sessionStorage.removeItem('test.freeze'); document.getAnimations().forEach((a) => { if (a.effect && a.effect.pseudoElement) { a.pause(); a.currentTime = +fz; } }); window.__frozen = true; }
+    if (fz) { sessionStorage.removeItem('test.freeze'); document.getAnimations().forEach((a) => { if (a.effect && a.effect.pseudoElement && (/^::view-transition/.test(a.effect.pseudoElement) || a.effect.target === document.documentElement)) { a.pause(); a.currentTime = +fz; } }); window.__frozen = true; }
   }, (x) => { window.__rv.err = String(x); });
   v.finished.then(() => { window.__rv.done = Date.now(); });
 });
@@ -222,10 +229,14 @@ def test_jump(br, origin):
         p.evaluate("() => document.querySelector('a.oly-home').click()")
         h = arrived(p, "**/jarvis/")
         hout, hrv = h["out"] or {}, h["rv"] or {}
-        hanims = {x[0]: x[1] for x in hrv.get("anims") or []}
-        check("b. NQ -> Jarvis (the seat): family home, the old world falls away and home settles around you (ow-old-home + ow-home)",
-              hout.get("fam") == "home" and hout.get("to") == "jarvis" and hrv.get("vt") and hanims.get("::view-transition-new(root)") == "ow-home"
-              and hanims.get("::view-transition-old(root)") == "ow-old-home", (hout, hrv))
+        hanims: dict = {}
+        for x in hrv.get("anims") or []:
+            hanims.setdefault(x[0], []).append(x[1])
+        home = hanims.get("::view-transition-new(root)") == ["ow-home"] and hanims.get("::view-transition-old(root)") == ["ow-old-home"]
+        plain = "-ua-view-transition-fade-in" in hanims.get("::view-transition-new(root)", [])      # warp.css not there yet (it never holds Jarvis's first frame)
+        check(f"b. NQ -> Jarvis (the seat): the HOME jump (the light falls inward into the gold orb), Jarvis arrives through the typed View Transition "
+              f"({'home: the old world falls away, home settles around you' if home else 'a cross-fade: warp.css was still on its way'})",
+              hout.get("fam") == "home" and hout.get("to") == "jarvis" and hrv.get("vt") and "oly-warp" in (hrv.get("types") or []) and (home or plain), (hout, hrv))
         real = [e for e in errs if "Failed to load resource" not in e]
         check("b. no page error and no console error on Doors, NQ or Jarvis during the jumps", not real, real[:6])
     finally:
@@ -283,6 +294,17 @@ def test_skip_and_safety(br, origin):
         out = a["out"] or {}
         has_nav = p.evaluate("() => !!window.navigation")
         check("f. location.href = ... right after a tap jumps too (Navigation API): family money", not has_nav or (out.get("fam") == "money" and out.get("runs", 0) >= 1 and a["fam"] == "money"), (has_nav, out, a["fam"]))
+        # a page that does not opt in (Atlas): the jump plays, the browser's transition is skipped as we leave (no error on arrival)
+        open_doors(p, origin, "more")
+        n0 = len(errs)
+        p.evaluate("""() => { const a = document.createElement('a'); a.href = '../atlas/'; a.id = 'toAtlas'; a.textContent = 'atlas';
+          a.style.cssText = 'position:fixed;left:10px;top:10px;z-index:99;width:90px;height:50px'; document.body.appendChild(a); }""")
+        p.click("#toAtlas")
+        a = arrived(p, "**/atlas/")
+        p.wait_for_timeout(800)
+        late = [e for e in errs[n0:] if "Failed to load resource" not in e]
+        check("g. Atlas (no arrival sheet): the jump plays, no View Transition, no error on arrival",
+              (a["out"] or {}).get("fam") == "lab" and not (a["rv"] or {}).get("vt") and not late, (a["out"], late))
         # left alone
         open_doors(p, origin)
         res = p.evaluate("""() => { const W = OLYMPUS_WARP, mk = (h, t) => { const a = document.createElement('a'); a.href = h; if (t) a.target = t; a.textContent = 'x'; a.style.cssText = 'position:fixed;left:0;top:0;width:40px;height:40px;z-index:99'; document.body.appendChild(a); return a; };
@@ -320,33 +342,27 @@ def shots(br, origin):
               ("1-leave-zeus-lightning.png", "2-home-returning-to-jarvis.png", "3-arrive-money-world.png")))
     finally:
         ctx.close()
-    # the film: Doors -> NQ (ZEUS) -> Jarvis (home) -> Doors -> Polis (a city), at 390 x 844
+    # the film (<= 6 s): Doors -> NQ (ZEUS lightning) -> Jarvis (home, "returning"), at 390 x 844
     vdir = os.path.join(SHOTS, "_video")
     shutil.rmtree(vdir, ignore_errors=True)
     ctx, p, errs = context(br, origin, scale=1, video=vdir)
     try:
         open_doors(p, origin)
-        p.wait_for_timeout(700)
+        p.wait_for_timeout(500)
         p.locator('a.dr-row[href="../nq/"]').first.click()
         arrived(p, "**/nq/")
-        p.wait_for_timeout(1200)
+        p.wait_for_timeout(900)
         p.wait_for_function("() => window.OLYMPUS_WARP && document.querySelector('a.oly-home')", timeout=60000)
         p.evaluate("() => document.querySelector('a.oly-home').click()")
         arrived(p, "**/jarvis/")
-        p.wait_for_timeout(1400)
-        p.goto(origin + "/hub/doors.html#money")
-        p.wait_for_function("() => window.OLYMPUS_WARP && document.querySelector('a.dr-row')", timeout=60000)
-        p.wait_for_timeout(600)
-        p.locator('a.dr-row[href="../ledger/"]').first.click()
-        arrived(p, "**/ledger/")
-        p.wait_for_timeout(1200)
+        p.wait_for_timeout(700)
     finally:
         video = p.video
         ctx.close()
     webm = video.path() if video else ""
     mp4 = os.path.join(SHOTS, "warp.mp4")
     if webm and shutil.which("ffmpeg"):
-        subprocess.run(["/home/user/heavy.sh", "ffmpeg", "-y", "-loglevel", "error", "-i", webm, "-vf", "scale=390:-2", "-c:v", "libx264", "-preset", "slow", "-crf", "30",
+        subprocess.run(["/home/user/heavy.sh", "ffmpeg", "-y", "-loglevel", "error", "-i", webm, "-t", "6", "-vf", "scale=390:-2", "-c:v", "libx264", "-preset", "slow", "-crf", "30",
                         "-pix_fmt", "yuv420p", "-movflags", "+faststart", "-an", mp4], timeout=600)
     shutil.rmtree(vdir, ignore_errors=True)
     size = os.path.getsize(mp4) if os.path.isfile(mp4) else 0
