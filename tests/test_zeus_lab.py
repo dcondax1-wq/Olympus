@@ -283,6 +283,29 @@ def t_funded(tmp):
           and bool(Z.register({**e, "id": "zz_f3", "bot": "lit"}, p)))
 
 
+def t_third(tmp):
+    """kind new_strategy (tools/third_strategy.py, 2026-11-19): a standalone third strategy (bot third), stored verdict."""
+    E, F, R, errs = Z.load_registry()
+    M = [e for e in E if e["kind"] == "new_strategy"]
+    check("registry: the 3 third-strategy families (post-close, pivots, TD count)",
+          {"third_pcm", "third_cam", "third_tds"} <= {e["id"] for e in M} and all(e["bot"] == "third" for e in M), [e["id"] for e in M])
+    check("new_strategy counts every version it searched", Z.cells(M) == sum(int(e["cells"]) for e in M) and Z.cells(M) >= 150, Z.cells(M))
+    r = Z.run_one(next(e for e in M if e["id"] == "third_cam"), None, RULES)
+    check("third runner: stored verdict, rejected (fails Jul-Oct / 2025), head per month", {"proof_ok", "why", "flip", "head", "base", "deltas"} <= set(r)
+          and r["proof_ok"] is False and r["head"]["H1"].get("per_month") is not None, r.get("why"))
+    r = Z.run_one(next(e for e in M if e["id"] == "third_pcm"), None, RULES)
+    check("third runner: no Jan-Jun pick = rejected", r["proof_ok"] is False and r["why"].startswith("no Jan-Jun pick"), r.get("why"))
+    row = Z.page_row(next(e for e in M if e["id"] == "third_tds"), {"status": "rejected", "head": Z.run_one(next(e for e in M if e["id"] == "third_tds"), None, RULES)["head"]})
+    check("page row: plain name + $ a month per half", row["who"] == "Third strategy" and row["months"]["H1"]["exp"] is not None, row.get("months"))
+    p = os.path.join(tmp, "reg3.json")
+    shutil.copy(Z.REGISTRY, p)
+    e = {"id": "zz_third", "bot": "third", "kind": "new_strategy", "family": "pcm", "cells": 2, "title": "t", "what_changes": "w",
+         "registered": "2026-11-19", "source": "s"}
+    check("register(): a valid new_strategy is saved", Z.register(e, p) == [] and "zz_third" in {x["id"] for x in Z.load_registry(p)[0]})
+    check("register(): new_strategy on another bot / unknown family is refused", Z.register({**e, "id": "zz_t2", "bot": "lit"}, p) != []
+          and Z.register({**e, "id": "zz_t3", "family": "xyz"}, p) != [])
+
+
 def t_static():
     src = open(os.path.join(ROOT, "tools", "zeus_lab.py"), encoding="utf-8").read()
     code = re.sub(r'"""[\s\S]*?"""', "", src)
@@ -312,6 +335,7 @@ def main() -> int:
         t_proposals(tmp)
         t_member(tmp)
         t_funded(tmp)
+        t_third(tmp)
         t_static()
     finally:
         shutil.rmtree(tmp, ignore_errors=True)

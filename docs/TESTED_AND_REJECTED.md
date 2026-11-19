@@ -1,4 +1,11 @@
 ## Tested and rejected (don't redo without a new idea)
+- **Third strategy hunt (2026-11-19, `third-strategy-2026-11-18.md`, `tools/third_strategy.py`, `research/second/third_strategy.json`,
+  Lab kind `new_strategy`):** 172 pre-declared cells, NQ 5m whole CME day, $500 a trade, structure stops, costs in, flat 15:55:
+  post-close move (16:00-17:00) traded at the 18:00 reopen, follow / fade (80), Camarilla H3/L3 fade + H4/L4 break + floor
+  R1/S1 fade (44), TD Sequential 9-count fade on 15m / 1h, any hour (48). 0 hold H1/H2/2025/2021-24 vs 0.4 with coin-flip sides.
+  H1 picks lose Jul-Oct: H4 break +$1,683 -> -$881/mo, 1h 9-count +$3,265 -> -$381/mo (both lose 2025). Fades of pivots and
+  of the post-close move lose. Paper lead: FOLLOW a big post-close move at the reopen (14/32 cells positive H1/H2/2021-24,
+  p 0.005 over 2021-25) but no cell reaches PF 1.1 in 2025, 0.2-1.4 trades a week, and it adds LIT-eval fails. Nothing adopted.
 - **Setup grade, "trade like a calm person" (2026-11-18, `setup-grade-2026-11-18.md`, `tools/setup_grade.py`, Lab kind
   `setup_grade`):** 7 human warnings at the signal (daily trend vs SMA20 against, prior-day / overnight high-low / 18:00 VWAP /
   100-pt number within 0.5R toward the target, range so far >= ADR14, inside day so far, high-impact news in 30 min, ES 30-min

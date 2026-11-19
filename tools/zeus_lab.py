@@ -73,12 +73,14 @@ REF_DOC = os.path.join(ROOT, "docs", "TESTED_AND_REJECTED.md")   # moved out of 
 EDGE = os.path.join(ROOT, "research", "lab", "edge_health.json")
 ZEUS_QUEUE = os.path.join(ROOT, "research", "zeus_queue.jsonl")         # night-learn's daily review proposals (tools/data_pull.py)
 VERSION = 1
-RUNNABLE = ("lit_tilt", "atlas_tilt", "lit_x", "atlas_member", "lit_idea", "atlas_funded", "anatomy", "setup_grade")
+RUNNABLE = ("lit_tilt", "atlas_tilt", "lit_x", "atlas_member", "lit_idea", "atlas_funded", "anatomy", "setup_grade",
+            "new_strategy")
 FUNDED_FAMILIES = ("M", "L", "D", "S", "K")   # tools/atlas_health.FAMILY
 GRADE_VARIANTS = ("h1:skipC", "h1:size", "all7:skipC", "all7:size")          # tools/setup_grade.py
-CELL_KINDS = ("atlas_member", "atlas_funded", "setup_grade")                  # kinds that count every version they searched
+CELL_KINDS = ("atlas_member", "atlas_funded", "setup_grade", "new_strategy")  # kinds that count every version they searched
+NEW_FAMILIES = ("pcm", "cam", "tds")          # tools/third_strategy.py (a standalone third strategy, bot "third")
 KINDS = RUNNABLE + ("parked",)
-BOTS = ("lit", "atlas", "kalshi")
+BOTS = ("lit", "atlas", "kalshi", "third")
 LIT_X_KEYS = ("tgt", "be", "tc", "speed", "slow", "late")
 STATUS_WORD = {"testing": "Testing", "shadow": "Shadow (paper, forward)", "ready": "READY TO ADOPT", "rejected": "Rejected",
                "parked": "Parked (not built)", "forever": "Rejected for good", "adopted": "Adopted", "error": "Error",
@@ -87,7 +89,7 @@ DEFAULT_RULES = {"shadow_weeks": 4, "min_forward_changed": 2, "family_alpha": 0.
 CROSS = {("lit", "atlas"): {"vix": "vix", "stop_atr": "stop_atr", "rr": "rr"},
          ("atlas", "lit"): {"vix": "vix", "stop_atr": "stop_atr", "rr": "rr"}}
 TILT_OF = {"lit": "lit_tilt", "atlas": "atlas_tilt"}
-NAME = {"lit": "Zlarior", "atlas": "ATLAS", "kalshi": "Kalshi"}
+NAME = {"lit": "Zlarior", "atlas": "ATLAS", "kalshi": "Kalshi", "third": "Third strategy"}
 LIT_SPAN_MONTHS = {"H1": 6.0, "H2": None, "2021-25": 60.0}
 
 
@@ -147,7 +149,7 @@ def load_registry(path: str = REGISTRY) -> tuple:
         if e.get("kind") not in KINDS:
             er.append(f"unknown kind {e.get('kind')!r}")
         if e.get("bot") not in BOTS:
-            er.append("bot must be lit, atlas or kalshi")
+            er.append("bot must be lit, atlas, kalshi or third")
         for k in ("title", "what_changes", "registered", "source"):
             if not e.get(k):
                 er.append(f"needs {k}")
@@ -175,6 +177,8 @@ def load_registry(path: str = REGISTRY) -> tuple:
             er.append(f"atlas_funded is for bot atlas and needs family in {FUNDED_FAMILIES} (tools/atlas_health.py)")
         if e.get("kind") == "setup_grade" and (e.get("bot") not in ("lit", "atlas") or e.get("variant") not in GRADE_VARIANTS):
             er.append(f"setup_grade is for bot lit or atlas and needs variant in {GRADE_VARIANTS} (tools/setup_grade.py)")
+        if e.get("kind") == "new_strategy" and (e.get("bot") != "third" or e.get("family") not in NEW_FAMILIES):
+            er.append(f"new_strategy is for bot third and needs family in {NEW_FAMILIES} (tools/third_strategy.py)")
         if e.get("kind") == "parked" and not e.get("parked_why"):
             er.append("a parked experiment needs parked_why")
         if er:
@@ -470,6 +474,9 @@ def run_one(e: dict, C, rules: dict) -> dict:
         return run_funded(e, C, rules)
     if e["kind"] == "setup_grade":
         return run_grade(e, C, rules)
+    if e["kind"] == "new_strategy":                                            # tools/third_strategy.py (2026-11-19)
+        from tools import third_strategy as TS
+        return TS.lab_result(e)
     return run_atlas(e, C, rules) if e["kind"] == "atlas_tilt" else run_lit(e, C, rules)
 
 
