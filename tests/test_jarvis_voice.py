@@ -393,16 +393,18 @@ def run_no_sr(br, url):
     start(p, url)
     p.click('#qa [data-qa="voice"]')
     p.wait_for_function(f"{VMS} && {VMS}.open && {VMS}.typing", timeout=8000)
-    p.wait_for_function("window.__said.length >= 1", timeout=5000)
-    note = p.evaluate("window.__said[0].text")
+    # the evening briefing ("Good evening. All systems look good.") can be said first on a loaded machine: the note is found by its words
+    p.wait_for_function("window.__said.some((x) => /not available/.test(x.text))", timeout=8000)
+    note = p.evaluate("window.__said.find((x) => /not available/.test(x.text)).text")
     check("g. no recognition (a Home Screen app): the same screen with a type-to-talk field, and Jarvis says so",
           p.locator("#vmType").is_visible() and "not available" in note and not vm(p)["recognition"], note)
     shot(p, "voice_type_fallback.png")
     p.fill("#vmQ", "is the market open")
     p.press("#vmQ", "Enter")
-    p.wait_for_function("window.__said.length >= 2", timeout=15000)
+    AFTER = "(() => { const a = window.__said, i = a.findIndex((x) => /not available/.test(x.text)); return a.slice(i + 1); })()"
+    p.wait_for_function(f"{AFTER}.length >= 1", timeout=15000)
     p.wait_for_function(f"{VMS}.phase === 'idle'", timeout=15000)
-    caps = p.evaluate("[document.getElementById('vmYou').textContent, document.getElementById('vmJar').textContent, window.__said.slice(1).map((x) => x.text).join(' ')]")
+    caps = p.evaluate(f"[document.getElementById('vmYou').textContent, document.getElementById('vmJar').textContent, {AFTER}.map((x) => x.text).join(' ')]")
     check("g. typed: the brain's answer in the captions and said out loud", caps[0] == "is the market open" and flat(caps[1]) == flat(caps[2]) and "market" in caps[2].lower(), caps)
     p.click("#vmX")
     p.click('#qa [data-qa="voice"]')

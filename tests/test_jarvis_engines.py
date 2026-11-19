@@ -71,7 +71,7 @@ self.onmessage = (e) => {
     if (MODE === 'crash') { setTimeout(() => { throw new Error('out of memory'); }, 400); return; }
     const T = m.cfg.totalBytes; let i = 0;
     const step = () => { i++; self.postMessage({ type: 'progress', loaded: Math.round(T * i / 6), total: T, file: 'onnx/model_quantized.onnx' });
-      if (i < 6) setTimeout(step, 350); else setTimeout(() => self.postMessage({ type: 'ready', device: 'wasm', dtype: 'q8', ms: 2100, warmMs: 300, rtf: 0.5 }), 150); };
+      if (i < 6) setTimeout(step, 700); else setTimeout(() => self.postMessage({ type: 'ready', device: 'wasm', dtype: 'q8', ms: 4300, warmMs: 300, rtf: 0.5 }), 300); };
     setTimeout(step, 250);
     return;
   }
@@ -86,6 +86,10 @@ self.onmessage = (e) => {
 SPY = """
 window.__ai = []; window.__aiInit = []; window.__plays = 0;
 try { const bc = new BroadcastChannel('fake-nv'); bc.onmessage = (e) => { const d = e.data || {}; if (d.k === 'gen') window.__ai.push(d.text); if (d.k === 'init') window.__aiInit.push(d.cfg); }; } catch (e) {}
+window.__pill = [];                    // every line the progress pill showed (a loaded machine can poll past a short one)
+document.addEventListener('DOMContentLoaded', () => new MutationObserver(() => { const e = document.getElementById('nvStatus');
+  if (e && !e.hidden && e.textContent && window.__pill[window.__pill.length - 1] !== e.textContent) window.__pill.push(e.textContent); })
+  .observe(document.body, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['hidden', 'style'] }));
 const op = HTMLMediaElement.prototype.play;
 HTMLMediaElement.prototype.play = function () { if (String(this.src || '').indexOf('blob:') === 0) window.__plays++; return op.apply(this, arguments); };
 """
@@ -126,7 +130,7 @@ def run_ok(br, url):
     p.press("#q", "Enter")
     p.wait_for_function("window.__said.some((x) => /market/i.test(x.text))", timeout=15000)       # (a "Good evening." can come first, at the first tap)
     first = p.evaluate("window.__said.find((x) => /market/i.test(x.text))")
-    p.wait_for_function("/^Getting Jarvis's voice ready \\(one time, about 117 MB\\) · \\d+%$/.test((document.getElementById('nvStatus') || {}).textContent || '')", timeout=10000)
+    p.wait_for_function("window.__pill.some((t) => /^Getting Jarvis's voice ready \\(one time, about 117 MB\\) · \\d+%$/.test(t))", timeout=20000)
     pill = p.evaluate("(() => { const e = document.getElementById('nvStatus'), r = e.getBoundingClientRect(); return { text: e.textContent, pe: getComputedStyle(e).pointerEvents, top: r.top, w: r.width, vw: innerWidth }; })()")
     init = p.evaluate("window.__aiInit[0] || null")
     check("b. first use: the answer is said at once by the iPhone's British man (Daniel), never silence, while the one-time download starts",
@@ -137,7 +141,7 @@ def run_ok(br, url):
           init and init["dtype"] == "q8" and init["device"] == "wasm" and init["voice"] == "bm_george" and "/resolve/1939ad2a8e416c0acfeecc08a694d14ef25f2231/" in init["hfPin"]
           and init["lib"] == "https://cdn.jsdelivr.net/npm/kokoro-js@1.2.1/dist/kokoro.web.js" and init["total"] > 110e6, init)
     p.wait_for_function("window.__jarvis.aiVoice().state === 'ready'", timeout=20000)
-    p.wait_for_function("/AI voice is ready/.test((document.getElementById('nvStatus') || {}).textContent || '')", timeout=5000)
+    p.wait_for_function("window.__pill.some((t) => /AI voice is ready/.test(t))", timeout=15000)
     p.wait_for_function("document.getElementById('nvStatus').hidden", timeout=8000)
     check("b. ready: the line says so, then goes", True)
     idle(p)
@@ -195,7 +199,7 @@ def run_crash(br, url):
     p.press("#q", "Enter")
     p.wait_for_function("window.__said.length >= 1", timeout=15000)
     p.wait_for_function("window.__jarvis.aiVoice().state === 'failed'", timeout=15000)
-    p.wait_for_function("/AI voice right now/.test((document.getElementById('nvStatus') || {}).textContent || '')", timeout=5000)
+    p.wait_for_function("window.__pill.some((t) => /AI voice right now/.test(t))", timeout=15000)
     idle(p)
     p.evaluate("window.__said = []")
     p.evaluate("window.__jarvis.talk('Still talking with the iPhone voice.')")
