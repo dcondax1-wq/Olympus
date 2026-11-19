@@ -8,7 +8,7 @@ Jarvis screen, tools/web_public/jarvis/voice-out.js + tts.js + the speech parts 
      and (WebKit) drops a speak() made outside a tap until one was made inside a tap, like iOS:
      - an answer before any tap waits ("TAP TO HEAR"), the first tap unlocks (WebKit: a silent primer inside the tap) and says it
      - a typed question: the answer is said (by default: no setting needed), within 300 ms of the answer showing
-     - an empty voice list: the phone's default voice (en-US); after voiceschanged, Ava (Premium)
+     - an empty voice list: the phone's default British voice (en-GB); after voiceschanged, Daniel (the best British man here)
      - a 600-character answer: said in sentence chunks (<= 180 chars), in order, all of it, then STANDBY
      - speaking: the waveform on the core and "TAP TO STOP"; a tap on the core stops her at once
      - the dock's speaker: off is kept on this phone (also after a reload), nothing said while off; on says "Voice on."
@@ -133,7 +133,7 @@ def part_node(tmp):
           o["stall"]["ended"] == 0 and o["stall"]["stall"] and "this one too" in o["stall"]["stall"], o["stall"])
     check("b. speak() while she talks: cancel, then the next one 70 ms later (WebKit swallows it sooner)",
           len(o["race"]) == 2 and o["race"][1][0] == "The next reply." and o["race"][1][1] >= 60, o["race"])
-    check("b. rate NaN / pitch 7 -> 1 / 1 (out of range throws on the phone); en-US, full volume", all(c == [1, 1, "en-US", 1] for c in o["clamp"]), o["clamp"])
+    check("b. rate NaN / pitch 7 -> 1 / 1 (out of range throws on the phone); no voice list = the British default (en-GB), full volume", all(c == [1, 1, "en-GB", 1] for c in o["clamp"]), o["clamp"])
     check("b. an empty voice list: the phone's default first, the list asked again for the next chunk (Ava Premium)", o["late"] == ["", "Ava (Premium)"], o["late"])
     check("b. the primer: one silent utterance (volume 0)", o["primed"] and o["primer"]["vol"] == 0 and not o["primer"]["text"].strip(), o["primer"])
     check("b. needsPrimer: iPhone Safari, the Home Screen app, Chrome on iPhone yes; desktop Chrome, Android no",
@@ -266,8 +266,8 @@ def run(br, url, name, ios, device=None):
     p.press("#q", "Enter")
     p.wait_for_function("window.__said.length >= 1", timeout=15000)
     lat = p.evaluate("(() => { const m = window.__marks.filter((x) => /market/i.test(x.text)).pop(); return m ? Math.round(window.__said[0].t - m.t) : null; })()")
-    check(f"{tag} a typed question: the answer is said by default (no setting), in her voice (Ava Premium), within 300 ms of showing",
-          "market" in said(p)[0].lower() and p.evaluate("window.__said[0].voice") == "Ava (Premium)" and lat is not None and 0 <= lat < 300, (said(p), lat))
+    check(f"{tag} a typed question: the answer is said by default (no setting), in his voice (Daniel: the best British man here; the AI voice is not downloaded in a test), within 300 ms of showing",
+          "market" in said(p)[0].lower() and p.evaluate("window.__said[0].voice") == "Daniel" and lat is not None and 0 <= lat < 300, (said(p), lat))
     print(f"   ({tag} answer shown -> voice: {lat} ms)", flush=True)
     idle(p)
     # 3. a 600-character answer: chunks, in order, all of it
@@ -324,7 +324,7 @@ def run(br, url, name, ios, device=None):
     p.click("#vTest")
     p.wait_for_function("window.__said.length >= 1", timeout=5000)
     idle(p)
-    check(f"{tag} Test voice: one natural sentence in her voice", said(p) == [TEST_LINE] and p.evaluate("window.__said[0].voice") == "Ava (Premium)", said(p))
+    check(f"{tag} Test voice: one natural sentence in his voice", said(p) == [TEST_LINE] and p.evaluate("window.__said[0].voice") == "Daniel", said(p))
     p.click("#vX")
     # 7. the mic and hands-free still work
     p.evaluate("window.__said = []; window.__utter = 'is the market open'")
@@ -351,8 +351,8 @@ def run(br, url, name, ios, device=None):
     p.evaluate("window.__jarvis.talk('Now with the voice list.')")
     p.wait_for_function("window.__said.length >= 1", timeout=5000)
     b = p.evaluate("window.__said[0]")
-    check(f"{tag} empty voice list: said in the phone's default voice (en-US); after voiceschanged, Ava (Premium)",
-          a["voice"] == "" and a["lang"] == "en-US" and b["voice"] == "Ava (Premium)", (a, b))
+    check(f"{tag} empty voice list: said in the phone's default British voice (en-GB); after voiceschanged, Daniel",
+          a["voice"] == "" and a["lang"] == "en-GB" and b["voice"] == "Daniel", (a, b))
     check(f"{tag} no page errors (empty voice list)", not errs, errs)
     ctx.close()
 

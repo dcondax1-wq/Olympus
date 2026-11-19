@@ -10,7 +10,8 @@ to-dos, notes, maths, the persona) and tts.js (the voice), with brain.js and mem
   c. reminders on a mocked clock: "at 5" at 10:50 AM = 5 PM today, "in 20 minutes", "tomorrow at 9am", "on friday", "tonight";
      due() fires each once, oldest first, a missed one marked late; no time = the to-do list; cancel
   d. to-dos, notes, maths and money ("15% of 2,300", "split $120 four ways", "45 x 12", tip, "(2+3)*4", divide by zero)
-  e. the voice ranking: Ava (Premium) over Zoe (Premium) over compact voices, any natural female voice over a male one, never a
+  e. the voice ranking (2026-11-18, owner: Male, British): a British man first (Daniel Premium), then the women in their own order
+     (Ava (Premium) over Zoe (Premium) over compact voices), never a
      novelty voice (Zarvox, Bubbles, Bad News ...), the owner's pick kept, labels ("Ava · Premium · en-US")
   f. speech text: no markdown, emojis, links or symbols; money / % / k / per month in words; sentence chunks <= the limit, a
      decimal never split, a comma for a breath in a long sentence; cleaning twice changes nothing
@@ -21,8 +22,8 @@ to-dos, notes, maths, the persona) and tts.js (the voice), with brain.js and mem
      question, the key only in the Authorization header, and a "[remember: ...]" line is learned, never shown
   i. with the vault connected: a fact kept on the phone is offered to Obsidian ("Say yes"), written only after "yes"
   j. the cloud voice: only with the switch on and a Groq key; a 429 falls back to the phone's voice
-  k. Chromium: a due reminder shows in the chat and as a toast when Jarvis opens; the Voice sheet has the talk style, the cloud
-     switch and the one-time Ava (Premium) tip; no page errors
+  k. Chromium: a due reminder shows in the chat and as a toast when Jarvis opens; the Voice sheet has the one setting (AI voice
+     George / iPhone voice / Off), the talk style and the free iPhone-voice tip; no page errors
     python -X utf8 -m tests.test_jarvis_assistant      (node + a temp folder + a local server; ~30 s)
 """
 from __future__ import annotations
@@ -252,13 +253,13 @@ def checks(O):
           and d["2300 * 0.15 + 10"].endswith("= 355") and d["how much is 3 squared"].endswith("= 9") and d["$3,500 / 4"].endswith("= $875"), d)
     # e
     e = O["e"]
-    check("e. voice: Ava (Premium) first, then Zoe (Premium), Allison (Enhanced); compact voices after; a natural female voice over a premium male one",
-          e["best"] == "Ava (Premium)" and e["choices"][:3] == ["Ava (Premium)", "Zoe (Premium)", "Allison (Enhanced)"]
-          and e["choices"].index("Samantha") < e["choices"].index("Daniel (Premium)") and e["choices"].index("Ava") < e["choices"].index("Samantha"), e)
+    check("e. voice: the British man first (Daniel Premium), then the women in their own order: Ava (Premium), Zoe (Premium), Allison (Enhanced); compact voices after",
+          e["best"] == "Daniel (Premium)" and e["choices"][:4] == ["Daniel (Premium)", "Ava (Premium)", "Zoe (Premium)", "Allison (Enhanced)"]
+          and e["choices"].index("Ava") < e["choices"].index("Samantha"), e)
     check("e. voice: never a novelty voice (Zarvox, Bubbles, Bad News, Fred), even when saved; not English never offered",
-          not {"Zarvox", "Bubbles", "Bad News", "Fred", "Thomas"} & set(e["choices"]) and e["novelty"] == "Ava (Premium)" and e["noEnglish"] is None, e["choices"])
-    check("e. voice: the owner's pick kept; Chrome = Google UK English Female; Edge = Aria (Natural); label 'Ava · Premium · en-US'",
-          e["saved"] == "Samantha" and e["chrome"] == "Google UK English Female" and e["edge"].startswith("Microsoft Aria") and e["label"] == "Ava · Premium · en-US", e)
+          not {"Zarvox", "Bubbles", "Bad News", "Fred", "Thomas"} & set(e["choices"]) and e["novelty"] == "Daniel (Premium)" and e["noEnglish"] is None, e["choices"])
+    check("e. voice: the owner's pick kept; Chrome = Google UK English Male; Edge = Guy (Natural); label 'Ava · Premium · en-US'",
+          e["saved"] == "Samantha" and e["chrome"] == "Google UK English Male" and e["edge"].startswith("Microsoft Guy") and e["label"] == "Ava · Premium · en-US", e)
     # f
     f = O["f"]
     check("f. speech text: no markdown, list marks, links or emojis ('Check a link.')", f[0]["c"] == "Sure! Here is the plan: Gym at 6. Study 2h. Check a link." , f[0]["c"])
@@ -312,8 +313,8 @@ def checks(O):
           and O["i4"] == "Not saved." and "gym time is 6 AM" in O["i5"], (O["i_w2"], O["i2"], O["i3"], O["i4"], O["i5"]))
     # j
     jp, jc, j4, jk = O["j_phone"], O["j_cloud"], O["j_429"], O["j_parked"]
-    check("j. no cloud: the phone's voice (Ava Premium) in sentence chunks, rate / pitch 1, nothing fetched",
-          [x[0] for x in jp["said"]] == ["Hello there. Your room is 1,106 dollars."] or (len(jp["said"]) >= 1 and all(x[1] == "Ava (Premium)" for x in jp["said"]))
+    check("j. no cloud: the phone's voice (Daniel Premium, the British man) in sentence chunks, rate / pitch 1, nothing fetched",
+          [x[0] for x in jp["said"]] == ["Hello there. Your room is 1,106 dollars."] or (len(jp["said"]) >= 1 and all(x[1] == "Daniel (Premium)" for x in jp["said"]))
           and jp["fetched"] == 0 and jp["ended"] == 1, jp)
     check("j. cloud on + a Groq key: Orpheus at api.groq.com, the key only in the header, the cleaned text, no phone voice",
           jc["fetched"] and all(f["url"] == "https://api.groq.com/openai/v1/audio/speech" and f["auth"] and not f["key_in_body"] and f["model"] == "canopylabs/orpheus-v1-english"
@@ -359,13 +360,14 @@ def part_browser():
             p.evaluate("window.__jarvisOpenVoice ? window.__jarvisOpenVoice() : null")
             p.evaluate("document.getElementById('vset') && document.getElementById('vset').click()")
             p.wait_for_function("!document.getElementById('voice').hidden", timeout=5000)
-            sheet = p.evaluate("[document.getElementById('vStyle').value, !!document.getElementById('vCloud'), !document.getElementById('vTip').hidden, document.getElementById('vTip').textContent]")
-            check("k. the Voice sheet: talk style (short), the cloud voice switch, the one-time Ava (Premium) tip with the exact iPhone steps",
-                  sheet[0] == "short" and sheet[1] and sheet[2] and "Settings → Accessibility → Spoken Content → Voices → English → Ava" in sheet[3], sheet)
+            sheet = p.evaluate("[document.getElementById('vStyle').value, [...document.querySelectorAll('#vPick [data-vpick]')].map((b) => b.textContent + '=' + b.getAttribute('aria-pressed')), "
+                               "document.getElementById('vPhoneTip').textContent]")
+            check("k. the Voice sheet: the one setting (AI voice (George) picked / iPhone voice / Off), talk style (short), the free iPhone-voice tip with the exact steps",
+                  sheet[0] == "short" and sheet[1] == ["AI voice (George)=true", "iPhone voice=false", "Off=false"]
+                  and "Accessibility → Spoken Content → Voices → English" in sheet[2] and "United Kingdom" in sheet[2], sheet)
             p.select_option("#vStyle", "chatty")
-            p.click("#vTipX")
-            st = p.evaluate("[JSON.parse(localStorage.getItem('jarvis.persona')).style, localStorage.getItem('jarvis.tip.ava'), document.getElementById('vTip').hidden]")
-            check("k. talk style kept ('chatty'); the tip dismissed once and for all", st == ["chatty", "1", True], st)
+            st = p.evaluate("[JSON.parse(localStorage.getItem('jarvis.persona')).style]")
+            check("k. talk style kept ('chatty')", st == ["chatty"], st)
             p.evaluate("window.__said = []")
             p.click("#vTest")
             p.wait_for_function("window.__said.some((t) => /how I'll sound/.test(t))", timeout=5000)

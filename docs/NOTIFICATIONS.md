@@ -1,4 +1,104 @@
-# Phone notifications: one for every trade, in your app
+# Phone notifications: every trade, in Olympus on your iPhone
+
+Owner, 2026-11-19: "I want notifications on my phone." Since 2026-11-19 your PC sends them straight to the **Olympus** app on your
+iPhone (https://dcondax1-wq.github.io/jarvis/, opened from the Home Screen). No cloud, no GitHub, nothing to copy, free.
+
+## Turn it on (2 taps)
+
+1. Open **Olympus from your Home Screen** (not a Safari tab; iOS 16.4 or later). Not there yet: open the link in Safari, tap
+   **Share**, **Add to Home Screen**, **Add**, then open Olympus from the Home Screen.
+2. On the home, under the ZEUS card, tap **Allow notifications**, then **Allow** on the iPhone's question.
+
+Within about 5 minutes your PC sends **"Olympus notifications are on"**. The card then says **Notifications on**, with
+**Send a test** (your PC answers within 5 minutes) and **Turn off**. The PC must be on (it is, for the bots).
+
+## What you get
+
+| When | Notification (one per trade: the exit replaces the entry) | Opens |
+|---|---|---|
+| a real account enters a trade (Zlarior 50K, Zlarior 25K #2, ATLAS 25K funded, any extra account) | **Zlarior 50K: LONG opened** / risk $303 · target +$4,557. 6 MNQ at 24,980.25. Stop 24,955, target 25,360. 10:42 AM ET. | NQ page |
+| that trade ends | **Zlarior 50K: LONG closed +$605** / Target hit · +2.0R · 10:58 AM ET. | NQ page |
+| the important alerts of the PC's 15-minute report (your `notify_settings.json` types that are on: trade results, PASSED / FAILED / LOCKED / payout ready, the 16:15 day summary, the 07:30 morning brief, bot down / NinjaTrader closed / FEED STALE, and "Back to normal", which replaces its problem) | the same words as before | NQ page or Board |
+
+Never for Paper, Sim or BLITZ. Quiet hours (23:00-07:00 ET) = the notification still comes, without sound. Tap one and Olympus
+opens at its page. Entries and exits arrive seconds after the bot routes / sees them; the report's alerts every 15 minutes.
+
+## One alert, one phone (the ntfy app is the backup)
+
+The PC still has your private ntfy alert topic (the ntfy app, if you follow it). Each alert goes to **Olympus first**; it goes
+to ntfy **only when no phone took it** (Olympus not set up, the iPhone's push service did not answer). So the same alert never
+arrives twice on your phone. Nothing else changed in the ntfy alerts (below).
+
+## If something is off
+
+| Olympus says | Do this |
+|---|---|
+| "Add Olympus to your Home Screen first" | You are in a Safari tab: step 1 above. |
+| "Notifications are blocked" | iPhone Settings, Notifications, Olympus, turn on Allow Notifications. |
+| "Waiting for your PC" | The PC shares its key with its next report (every 15 min). Keep the PC on; Olympus finishes by itself. |
+| "Your PC confirms within 5 minutes" for much longer | The PC's 5-minute task is not running: on the PC, `SETUP_SHORTCUTS.bat` (task LiquidityEngineOps). Olympus sends it again by itself every 30 min. |
+| "Olympus is updating" | Swipe Olympus away, open it again from the Home Screen, tap Try again. |
+
+If the PC's key ever changes (its file was lost), the phone notices on its next open and subscribes again by itself.
+
+## How it works (for the curious)
+
+- **Key**: the PC makes its own Web Push (VAPID) key once and keeps it in `data/push.json` (gitignored, never printed, never
+  posted). Its **public** half, the PC's box key (`data/push_pc_key.json`) and short ids of the phones it has ride the PC's
+  15-minute status post as `wp` (`engine/push.app_block`, ~230 bytes, inside the post that already goes out: no extra ntfy post).
+- **Phone**: `tools/web_public/jarvis/push-ui.js` subscribes with that key and seals the subscription to the PC's box key
+  (P-256 ECDH + HKDF-SHA256 "le-push-sub-v1" + AES-GCM, only that PC can open it), then posts it to the free relay topic
+  (`tools/web_public/push_relay.json`). Send a test / Turn off are sealed too, proved with the phone's own subscription secret.
+- **PC intake**: the 5-minute ops task already reads the relay (`engine/alerts_plus.ops_tick`) and hands the phones' messages to
+  `engine/push.intake`: at most 5 phones in `data/push.json` "devices", one welcome push to a new one, a phone the push service
+  calls gone (deleted, another key) is dropped. The PC never posts on the relay (ntfy's free daily budget stays for the reports).
+- **Sending**: `engine/push.pc_notify` (every real-account entry and exit: LIT, ATLAS, the extra accounts), `tools/pc_report.py`
+  (the report's alerts) and `pc_send_now` (tests) push with the built-in RFC 8291 / 8292 sender (`cryptography`; pywebpush if
+  installed). Other PC notices (pre-session check, ops helper, armed setups) stay off the phone unless `LE_PUSH_EXTRA=1`; they
+  never went to ntfy either. Without `cryptography` nothing changes: no key, no card progress, every alert goes to ntfy.
+- **Worker**: `tools/web_public/jarvis/push-sw.js` (imported by `jarvis/sw.js`) shows each push (one tag per trade and account:
+  the exit closes the entry's notification), opens Olympus at the NQ page or the Board, and turns a critical alert's tap into
+  the relay "Got it".
+- Tests: `python -X utf8 -m tests.test_webpush` (PC: key, intake, send to a mocked endpoint, one alert one phone, report, no
+  `cryptography`), `flock -w 2400 /tmp/olympus_browser.lock python -X utf8 -m tests.test_jarvis_push` (the card, the button, the
+  worker, a real push event), `python -X utf8 -m tests.test_push` (the payloads and the encryption).
+
+## ntfy alerts, short and $ first (2026-11-17)
+
+One settings file: `notify_settings.json` (repo root): each type on / off, quiet hours (default 23:00-07:00 ET: no sound, except
+PC silent, room low and problems), milestones, summary time. Code: `engine/notify.py`; tests: `python -X utf8 -m tests.test_notify`.
+
+**Default since 2026-11-18 (owner: "important only")**: ON = trade closed (the result), account_status (PASSED, FAILED,
+LOCKED, LOST, target reached, payout READY), the daily summary, PC silent. OFF = trade opened, 25/50/75 % milestones, room low,
+problems (bot down, FEED STALE, NinjaTrader closed), other. Turn one back on with `true` in `notify_settings.json`. The PC
+ops task's critical alerts that repeat until "Got it" (unprotected position, KILL fired, drawdown left, engine/alerts_plus.py)
+do not go through these settings and still ring.
+
+| When | Example |
+|---|---|
+| trade opened | `Zlarior 50K SHORT opened \| risk $368 \| target +$1,432` |
+| trade closed | `Zlarior 50K closed +$605 \| day +$605 \| room $1,750` |
+| eval progress (25 / 50 / 75 / 100%) | `Zlarior 50K: 50% of the target made ($1,500 of $3,000)` |
+| room low (50 / 75% used) | `ATLAS 25K: room getting low, $250 left of $1,000` |
+| 16:15 ET day summary | `Day Mon Nov 16: +$310` / `Zlarior 50K: +$420 today, $2,580 to pass, room $1,800 of $2,000; ... Tomorrow (Tue): CPI m/m 08:30.` |
+| 07:30 ET morning brief (`morning_brief`, ON) | `ZEUS - Wed Nov 18 - PC ok` / `Zlarior 50K $49,193 ($3,807 to pass) · 25K #2 $25,000 ($1,500 to pass) · ATLAS 25K funded $25,000 ($2,100 to payout)` / `Overnight: no trades · Today: Zlarior till 15:30, ATLAS till 12:00 · CPI m/m 08:30` / `Edge: GREEN · Needs you: none` (trading days only, once; also on the Board; tools/morning_brief.py) |
+| **PC silent** (the cloud, PC off is fine) | `Your PC stopped reporting at 09:14 ET. Check it: STOP BOT, START BOT.` once, one reminder after 2 h, `PC reporting again` when back |
+
+The PC silent check is a step of the cloud monitor (`tools/pc_silent_check.py`, every run: about every 30 min on weekdays
+01:30-16:00 ET). It reads the heartbeat branch and the PC's posts on the status topic; silent = neither is newer than 20 min.
+It pushes to your private ntfy topic when the GitHub secret **LE_NTFY_TOPIC** holds it (GitHub -> Settings -> Secrets and
+variables -> Actions -> New secret, the topic name your ntfy app follows); without it the plain alert (no $, no names, no ids)
+goes to the public status topic.
+
+---
+
+## History: the old Home Screen app (gone since 2026-11-08)
+
+Until 2026-11-08 the notifications went to the old Liquidity Home Screen app on demetrades2000-coder.github.io, with keys handed
+out by a GitHub Actions cloud monitor. That GitHub account was suspended, so the site, the cloud monitor and the key hand-off are
+gone; the text below is kept only as a record (`engine/push.py` keeps that code for its tests, the PC no longer uses it).
+
+### What the old app showed
 
 **What you get.** Your Home Screen app (Liquidity, https://demetrades2000-coder.github.io/nq-dashboard/) shows:
 
@@ -49,36 +149,7 @@ minutes after the fill (GitHub can add a few minutes). The PC bot's arrive a few
 
 Paper only, as always: notifications never place or change an order.
 
-## ntfy alerts, short and $ first (2026-11-17)
-
-One settings file: `notify_settings.json` (repo root): each type on / off, quiet hours (default 23:00-07:00 ET: no sound, except
-PC silent, room low and problems), milestones, summary time. Code: `engine/notify.py`; tests: `python -X utf8 -m tests.test_notify`.
-
-**Default since 2026-11-18 (owner: "important only")**: ON = trade closed (the result), account_status (PASSED, FAILED,
-LOCKED, LOST, target reached, payout READY), the daily summary, PC silent. OFF = trade opened, 25/50/75 % milestones, room low,
-problems (bot down, FEED STALE, NinjaTrader closed), other. Turn one back on with `true` in `notify_settings.json`. The PC
-ops task's critical alerts that repeat until "Got it" (unprotected position, KILL fired, drawdown left, engine/alerts_plus.py)
-do not go through these settings and still ring.
-
-| When | Example |
-|---|---|
-| trade opened | `Zlarior 50K SHORT opened \| risk $368 \| target +$1,432` |
-| trade closed | `Zlarior 50K closed +$605 \| day +$605 \| room $1,750` |
-| eval progress (25 / 50 / 75 / 100%) | `Zlarior 50K: 50% of the target made ($1,500 of $3,000)` |
-| room low (50 / 75% used) | `ATLAS 25K: room getting low, $250 left of $1,000` |
-| 16:15 ET day summary | `Day Mon Nov 16: +$310` / `Zlarior 50K: +$420 today, $2,580 to pass, room $1,800 of $2,000; ... Tomorrow (Tue): CPI m/m 08:30.` |
-| 07:30 ET morning brief (`morning_brief`, ON) | `ZEUS - Wed Nov 18 - PC ok` / `Zlarior 50K $49,193 ($3,807 to pass) · 25K #2 $25,000 ($1,500 to pass) · ATLAS 25K funded $25,000 ($2,100 to payout)` / `Overnight: no trades · Today: Zlarior till 15:30, ATLAS till 12:00 · CPI m/m 08:30` / `Edge: GREEN · Needs you: none` (trading days only, once; also on the Board; tools/morning_brief.py) |
-| **PC silent** (the cloud, PC off is fine) | `Your PC stopped reporting at 09:14 ET. Check it: STOP BOT, START BOT.` once, one reminder after 2 h, `PC reporting again` when back |
-
-The PC silent check is a step of the cloud monitor (`tools/pc_silent_check.py`, every run: about every 30 min on weekdays
-01:30-16:00 ET). It reads the heartbeat branch and the PC's posts on the status topic; silent = neither is newer than 20 min.
-It pushes to your private ntfy topic when the GitHub secret **LE_NTFY_TOPIC** holds it (GitHub -> Settings -> Secrets and
-variables -> Actions -> New secret, the topic name your ntfy app follows); without it the plain alert (no $, no names, no ids)
-goes to the public status topic.
-
----
-
-## Setup: tap Allow (that is all)
+### Setup of the old app (gone)
 
 You need iOS 16.4 or later, and the app must be opened **from the Home Screen** (notifications do not work in a Safari tab).
 
@@ -99,7 +170,7 @@ notifications shows **linked** and has a **Send test** button.
 
 ---
 
-## When something is off
+### When something is off
 
 | The app says | Do this |
 |---|---|
@@ -110,7 +181,7 @@ notifications shows **linked** and has a **Send test** button.
 
 If the cloud's key ever changes (its cache is lost), the app subscribes again on its next open, by itself.
 
-## Settings you can change (optional)
+### Settings you can change (optional)
 
 | What | Where |
 |---|---|
@@ -122,7 +193,7 @@ If the cloud's key ever changes (its cache is lost), the app subscribes again on
 Secrets live at https://github.com/demetrades2000-coder/nq-liquidity-engine/settings/secrets/actions (variables: the
 Variables tab next to it). None is needed for the normal setup.
 
-## How it works (for the curious)
+### How it works (for the curious)
 
 - **Relay**: a free ntfy.sh topic named in `tools/web_public/push_relay.json` (not secret). When you allow notifications the
   app posts its push subscription there. A subscription alone cannot send anything: sending needs the private key.

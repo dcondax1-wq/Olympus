@@ -104,7 +104,7 @@ def main() -> int:
           and "holo_hist.json" in ph and "method:" not in ph and "POST" not in ph)
     check("static: PC reads GET /api/next/holo (+ /days), never POSTs", "/api/next/holo" in pc and "/api/next/holo/days" in pc and "POST" not in pc)
     check("static: Live View (PC) has the 3D button", 'data-goto="holo"' in rd("web_next", "js", "next", "liveview.js"))
-    check("static: clean.js not bumped (clean.js?v=3)", 'clean.js?v=3"' in pidx)
+    check("static: clean.js not bumped (clean.js?v=4)", 'clean.js?v=4"' in pidx)
 
     node = shutil.which("node")
     groot = subprocess.run(["npm", "root", "-g"], capture_output=True, text=True).stdout.strip() if shutil.which("npm") else ""
