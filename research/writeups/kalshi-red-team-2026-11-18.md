@@ -173,7 +173,10 @@ to +12.4%) and Bab-el-Mandeb -0.03% (-8.7% to +6.5%): the rewards have to carry 
 ## 6. The other helpers' results (rewards go-live plan, K6, K7)
 
 None had arrived by the time of this commit: the three helpers were still working and nothing was committed in their
-worktrees. When they arrive, each claim goes through the same gate:
+worktrees. One early check on the go-live plan's DRAFT caps ($50 in all, $10 per market, $10 daily stop; still placeholders,
+not its result): on the 42 live books of Nov 19, **10 contracts a side (about $9 a market) clears Kalshi's $1-a-day minimum on
+0 of 42 markets** (the best pays $0.73 a day), 15 a side on 1, 20 a side on 2. At $10 a market the rewards would be $0 while
+the fill risk stays. When the results arrive, each claim goes through the same gate:
 
 ```
 python research/kalshi_red_team/verify.py <their trade list .json/.csv> --rules-tried <every cell they read> --split <their split date>
