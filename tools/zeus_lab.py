@@ -14,6 +14,8 @@ Built on what exists (nothing re-implemented):
   anatomy    kind anatomy = a rule from the win / loss anatomy (tools/win_loss_anatomy.py: a size x m or a skip on an entry
              fact the trade-intel table does not hold, e.g. the daily x 1h trend pullback or the careful-human checklist), run
              by that tool's lab_run on the same real backtests and judges (Zlarior or ATLAS).
+  blitz      kind blitz_idea = a BLITZ (hidden paper scalper, bot "blitz") exit idea (tools/blitz_review.py, its stored verdict;
+             BLITZ's own $ at $150 a trade + account C's 25K eval); rows of a hidden bot never reach the page (_shown).
   funded     kind atlas_funded = a protective rule family on ATLAS's FUNDED 25K (tools/atlas_health.py, its stored verdict:
              member pause / edge-light size / day loss cap / smaller risk in a hole / skips; the family's Jan-Jun pick, the
              funded gate incl. the live stuck stop, and it must act in Jul-Oct; "cells" = versions scored).
@@ -74,13 +76,14 @@ EDGE = os.path.join(ROOT, "research", "lab", "edge_health.json")
 ZEUS_QUEUE = os.path.join(ROOT, "research", "zeus_queue.jsonl")         # night-learn's daily review proposals (tools/data_pull.py)
 VERSION = 1
 RUNNABLE = ("lit_tilt", "atlas_tilt", "lit_x", "atlas_member", "lit_idea", "atlas_funded", "anatomy", "setup_grade",
-            "new_strategy")
+            "new_strategy", "blitz_idea")
 FUNDED_FAMILIES = ("M", "L", "D", "S", "K")   # tools/atlas_health.FAMILY
 GRADE_VARIANTS = ("h1:skipC", "h1:size", "all7:skipC", "all7:size")          # tools/setup_grade.py
 CELL_KINDS = ("atlas_member", "atlas_funded", "setup_grade", "new_strategy")  # kinds that count every version they searched
 NEW_FAMILIES = ("pcm", "cam", "tds")          # tools/third_strategy.py (a standalone third strategy, bot "third")
 KINDS = RUNNABLE + ("parked",)
-BOTS = ("lit", "atlas", "kalshi", "third")
+BOTS = ("lit", "atlas", "kalshi", "third", "blitz")
+BLITZ_IDEAS = ("chk10_loss", "chk15_loss", "chk10_any", "band_in", "band_in10", "be05", "chk15_loss_h45", "band_in10_h45")  # tools/blitz_review.py
 LIT_X_KEYS = ("tgt", "be", "tc", "speed", "slow", "late")
 STATUS_WORD = {"testing": "Testing", "shadow": "Shadow (paper, forward)", "ready": "READY TO ADOPT", "rejected": "Rejected",
                "parked": "Parked (not built)", "forever": "Rejected for good", "adopted": "Adopted", "error": "Error",
@@ -89,7 +92,7 @@ DEFAULT_RULES = {"shadow_weeks": 4, "min_forward_changed": 2, "family_alpha": 0.
 CROSS = {("lit", "atlas"): {"vix": "vix", "stop_atr": "stop_atr", "rr": "rr"},
          ("atlas", "lit"): {"vix": "vix", "stop_atr": "stop_atr", "rr": "rr"}}
 TILT_OF = {"lit": "lit_tilt", "atlas": "atlas_tilt"}
-NAME = {"lit": "Zlarior", "atlas": "ATLAS", "kalshi": "Kalshi", "third": "Third strategy"}
+NAME = {"lit": "Zlarior", "atlas": "ATLAS", "kalshi": "Kalshi", "third": "Third strategy", "blitz": "BLITZ"}
 LIT_SPAN_MONTHS = {"H1": 6.0, "H2": None, "2021-25": 60.0}
 
 
@@ -149,7 +152,7 @@ def load_registry(path: str = REGISTRY) -> tuple:
         if e.get("kind") not in KINDS:
             er.append(f"unknown kind {e.get('kind')!r}")
         if e.get("bot") not in BOTS:
-            er.append("bot must be lit, atlas, kalshi or third")
+            er.append("bot must be lit, atlas, kalshi, third or blitz")
         for k in ("title", "what_changes", "registered", "source"):
             if not e.get(k):
                 er.append(f"needs {k}")
@@ -179,6 +182,8 @@ def load_registry(path: str = REGISTRY) -> tuple:
             er.append(f"setup_grade is for bot lit or atlas and needs variant in {GRADE_VARIANTS} (tools/setup_grade.py)")
         if e.get("kind") == "new_strategy" and (e.get("bot") != "third" or e.get("family") not in NEW_FAMILIES):
             er.append(f"new_strategy is for bot third and needs family in {NEW_FAMILIES} (tools/third_strategy.py)")
+        if e.get("kind") == "blitz_idea" and (e.get("bot") != "blitz" or e.get("idea") not in BLITZ_IDEAS):
+            er.append(f"blitz_idea is for bot blitz and needs idea in {BLITZ_IDEAS} (tools/blitz_review.py)")
         if e.get("kind") == "parked" and not e.get("parked_why"):
             er.append("a parked experiment needs parked_why")
         if er:
@@ -477,6 +482,9 @@ def run_one(e: dict, C, rules: dict) -> dict:
     if e["kind"] == "new_strategy":                                            # tools/third_strategy.py (2026-11-19)
         from tools import third_strategy as TS
         return TS.lab_result(e)
+    if e["kind"] == "blitz_idea":                                              # tools/blitz_review.py (2026-11-18, BLITZ paper)
+        from tools import blitz_review as BR
+        return BR.lab_result(e)
     return run_atlas(e, C, rules) if e["kind"] == "atlas_tilt" else run_lit(e, C, rules)
 
 
@@ -651,7 +659,11 @@ def page_row(e: dict, s: dict, blocked=None) -> dict:
                shadow_from=s.get("shadow_from"), usd_month_by=s.get("usd_month_by"), flip=s.get("flip"), hits=s.get("hits"),
                tested=s.get("tested"), was_shadow=s.get("was_shadow"))
     h, b = s.get("head") or {}, s.get("base") or {}
-    if e["bot"] == "lit":
+    if e["bot"] == "blitz":                                  # BLITZ's own $ at $150 a trade + account C's 25K eval
+        row["months"] = {sp: {"exp": _per_month_lit(h, sp), "now": _per_month_lit(b, sp)} for sp in ("H1", "H2", "2021-25")}
+        row["detail"] = {sp: {k: (h.get(sp) or {}).get(k) for k in ("n", "tpw", "pf", "net", "dd")} for sp in ("H1", "H2", "2021-25")}
+        row["speed"] = {sp: {k: (h.get(sp) or {}).get(k) for k in ("p10", "f10")} for sp in ("H1", "H2")}
+    elif e["bot"] == "lit":
         row["months"] = {sp: {"exp": _per_month_lit(h, sp), "now": _per_month_lit(b, sp)} for sp in ("H1", "H2", "2021-25")}
         row["eval_months"] = {sp: {"exp": _per_month_lit(h, sp, "eval"), "now": _per_month_lit(b, sp, "eval")} for sp in ("H1", "H2")}
         row["detail"] = {sp: {k: (h.get(sp) or {}).get(k) for k in ("n", "tpw", "pf", "net", "dd")} for sp in ("H1", "H2", "2021-25")}
@@ -668,8 +680,18 @@ def page_row(e: dict, s: dict, blocked=None) -> dict:
 ORDER = {"ready": 0, "shadow": 1, "testing": 2, "proposed": 3, "error": 3, "rejected": 4, "parked": 5, "blocked": 6, "adopted": 7}
 
 
+def _shown(rows: list) -> list:
+    """The page never shows a hidden bot (dashboard_view.json hidden_bots, engine/hidden_bots.py: BLITZ is hidden today)."""
+    try:
+        from engine import hidden_bots as HB
+        hide = set(HB.hidden())
+    except Exception:  # noqa: BLE001
+        hide = {"blitz"}
+    return [r for r in rows if str(r.get("bot") or "").lower() not in hide]
+
+
 def build_page(S: dict) -> dict:
-    rows = sorted(S.get("rows") or [], key=lambda r: (ORDER.get(r.get("status"), 9), r.get("bot") != "lit", r.get("id")))
+    rows = sorted(_shown(S.get("rows") or []), key=lambda r: (ORDER.get(r.get("status"), 9), r.get("bot") != "lit", r.get("id")))
     cnt = {}
     for r in rows:
         cnt[r["status"]] = cnt.get(r["status"], 0) + 1
