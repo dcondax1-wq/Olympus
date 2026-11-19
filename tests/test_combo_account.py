@@ -297,6 +297,10 @@ def part_h():
           and cfg.get("variant") == pk["winner"] and cfg.get("conflict") in ("first", "zprio", "zfull")
           and isinstance(cfg.get("guards"), dict) and "atlas_size_factor" in cfg and isinstance(cfg.get("evidence"), dict)
           and cfg["evidence"].get("paper_only") is True, cfg)
+    W = os.path.join(ROOT, "research", "writeups", "one-account-combo-final-2026-11-19.md")
+    txt = open(W, encoding="utf-8").read() if os.path.exists(W) else ""
+    check("h. the final write-up exists, names the winner and the design file, and labels the post-hoc rows",
+          pk["winner"] in txt and C.FINAL_DESIGN in txt and "post-hoc" in txt.lower())
 
 
 def main():

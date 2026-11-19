@@ -72,6 +72,14 @@ built for it); Rapid EOD 50K = Zlarior + ATLAS, lanes (reference).
     /home/user/heavy.sh python -X utf8 tools/money/combo_account.py build                  # all bots -> combo_account_trades.json
     /home/user/heavy.sh python -X utf8 tools/money/combo_account.py check                  # parity with the repo's simulators
     /home/user/heavy.sh python -X utf8 tools/money/combo_account.py study [--n 2000] [--workers 3]
+FINAL rules (night-comboplus, design research/lab/combo_final_design_2026-11-19.md committed before any variant result; write-up
+research/writeups/one-account-combo-final-2026-11-19.md): Builder 50K, Zlarior + ATLAS, 12 rule sets (conflict, ATLAS's share of
+its size, eval guards), MFFU's move to live after the 5th payout in every row, day AND week blocks, the pre-registered pick ->
+research/lab/combo_final.json + research/lab/combo_50k.json (the config the live build reads).
+    /home/user/heavy.sh python -X utf8 tools/money/combo_account.py build-paths   # ATLAS's own paths -> combo_atlas_paths.json
+    /home/user/heavy.sh python -X utf8 tools/money/combo_account.py final [--n 2000] [--workers 3]
+    /home/user/heavy.sh python -X utf8 tools/money/combo_account.py posthoc   # the 2 post-hoc rows (shown, never picked)
+    python -X utf8 tools/money/combo_account.py final-table
 Test: python -X utf8 -m tests.test_combo_account (money area).
 """
 from __future__ import annotations
@@ -1581,7 +1589,7 @@ def final(n=N_PATHS, workers=3, n_hist=N_HIST, n_hist_paths=N_HIST_PATHS, log=pr
     hjobs = [(b, pools[b], n_hist_paths) for b in range(n_hist)]
     log(f"{len(jobs)} row-tests ({len(VIDS)} variants + Zlarior alone), {n} paths; {n_hist} H2 histories x {n_hist_paths} paths")
     res = collections.defaultdict(dict)
-    hist = []
+    hb = {}
     t0 = time.time()
     import multiprocessing as mp
     with mp.get_context("fork").Pool(workers) as pool:
@@ -1589,9 +1597,10 @@ def final(n=N_PATHS, workers=3, n_hist=N_HIST, n_hist_paths=N_HIST_PATHS, log=pr
             res[vid][test] = o
             log(f"[{i + 1}/{len(jobs)}] {vid} {test} {sec:.0f}s ({time.time() - t0:.0f}s)")
         for i, (b, x) in enumerate(pool.imap_unordered(_hist_job, hjobs)):
-            hist.append(x)
+            hb[b] = x
             if i % 20 == 19:
                 log(f"[hist {i + 1}/{len(hjobs)}] ({time.time() - t0:.0f}s)")
+    hist = [hb[b] for b in range(n_hist)]                  # history b at index b (its seeded pool + paths)
     res["Z"]["day_drop5"] = res["Z"]["day"]
     pick = final_constraints(res, hist)
     cuts = {}
@@ -1668,8 +1677,21 @@ def final_config(o) -> dict:
                   "zlarior_alone_day": zd["net_m"], "range_10_90_week": [x["p10_m"], x["p90_m"]],
                   "eval_fail_2wk_week": x["eval"]["f10"], "eval_fail_60_week": x["eval"]["f60"],
                   "eval_pass_median_days": x["eval"]["pass_med"],
-                  "funded_pay30_week": R_[w]["week"][sp]["funded"]["pay30"], "funded_pay60_week": R_[w]["week"][sp]["funded"]["pay60"]}
+                  "funded_pay30_week": R_[w]["week"][sp]["funded"]["pay30"], "funded_pay60_week": R_[w]["week"][sp]["funded"]["pay60"],
+                  "gap_vs_zlarior_week": o["pick"]["rows"][w]["gaps"][f"week|{sp}"][0]}
+        if sp in R_[w]["day_stop"]:
+            ev[sp].update({"usd_month_live_worth_0_day": R_[w]["day_stop"][sp]["slot"]["net_m"],
+                           "zlarior_alone_live_worth_0_day": R_["Z"]["day_stop"][sp]["slot"]["net_m"],
+                           "gap_without_atlas_5_best_days_day": o["pick"]["rows"][w]["gaps"][f"day_drop5|{sp}"][0],
+                           "gap_plus_1_tick_week": o["pick"]["rows"][w]["gaps"][f"week_t1|{sp}"][0]})
     P = o["pick"]["rows"][w]
+    ph = []
+    for x in (o.get("posthoc") or {}).get("variants", []):
+        rr = o["posthoc"]["rows"][x["id"]]
+        ph.append({"variant": x["id"], "active": False, "conflict": x["conflict"], "atlas_size_factor": x["a_f"],
+                   "atlas_eval_min_room_usd": x["a_room_min"],
+                   "gap_vs_zlarior_week": {sp: rr["gaps"][f"week|{sp}"][0] for sp in ("H1", "H2", "REF", "Y2022")},
+                   "eval_fail_2wk_week_h2": rr["f10"]["week|H2"], "h2_histories_gap_le0": rr["hist"]["share_le0"]})
     return {"version": 1, "account": "builder50k", "bots": ["lit", "atlas"], "conflict": v["conflict"],
             "atlas_size_factor": dict(v["a_f"]),
             "guards": {"atlas_in_eval": v["a_f"]["eval"] > 0, "atlas_eval_min_room_usd": v["a_room_min"],
@@ -1682,7 +1704,10 @@ def final_config(o) -> dict:
             "evidence": {"source": "research/writeups/one-account-combo-final-2026-11-19.md", "results": "research/lab/combo_final.json",
                          "design": FINAL_DESIGN, "n_paths": o["n"], "periods": ev,
                          "h2_resampled_histories_gap_le0": P["hist"]["share_le0"], "constraints": P["pass"],
-                         "variants_tried": len(o["variants"]), "date": DATE, "paper_only": True}}
+                         "variants_tried": len(o["variants"]), "date": DATE, "paper_only": True},
+            "post_hoc_not_active": {"note": "chosen AFTER seeing the 12 results, same data: NOT the rules to build. Re-test on "
+                                            "fresh days (Nov-Dec 2026) under the same 5 constraints before any switch.",
+                                    "rows": ph}}
 
 
 def final_tables(o) -> str:
