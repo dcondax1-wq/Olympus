@@ -127,3 +127,30 @@ python tests/smoke.py (2 min) -> touched area's tests -> python tools/ship.py. A
 - 2026-11-17 owner balances: Zlarior 50K $49,192.78 (~$3,807 to pass, ~$1,025 room if floor $48,168.20); ATLAS 25K $26,946.10 = +$1,946 > $1,500 target -> PASSED (likely why an order said 'Limit 0'); waiting for MFFU's funded 25K account name.
 
 --- end verbatim old STATE.md ---
+
+
+## Live now table (replaced 2026-11-19)
+| What | State |
+|---|---|
+| Zlarior (LIT, MFFU Builder 50K eval) | $49,192.78 (2026-11-17): about $3,807 to pass, about $1,025 room (floor $48,168.20). Sizing two_week room_f 0.4 kept to session 80 ("yes 40%") |
+| ATLAS (MFFU Builder 25K) | $26,946.10 = +$1,946 > $1,500 target: PASSED, awaiting MFFU's funded 25K account name (likely why an order said 'Limit 0'). Zombie-eval rule ON ("Fix atlas") |
+| Rapid EOD 50K | Built (engine/rapid.py, docs/RAPID_EOD_SETUP.md), OFF until the owner pastes the account line; NOT bought yet. ONE only ("I'll stick with 1 rapid") |
+| BLITZ | Hidden on every dashboard, silent ("Zlarior and ATLAS only for now"); runs on paper. Switch: dashboard_view.json hidden_bots |
+| Kalshi | Paused ("Kalshi paused for now"). Rewards PAPER test running (tools/kalshi_rewards_paper.py, ledger research/kalshi_edge_K5/paper/rewards_paper.json): 9 rewarded markets, GET only, never an order; first read ~2.3 $/market-day |
+| PC | Has NOT reported since 2026-11-07 (heartbeat branch, ntfy empty). Updates itself from backup dcondax1-wq/olympus branch pc when flat; evals only update Fri/Sat; restart window 17:00-18:00 ET |
+| Phone dashboard | Netlify site moonlit-scone-08afe5 (private); updates itself once the owner pastes a Netlify key |
+| Notifications | Built: $-first alerts (notify_settings.json) + cloud PC-SILENT check. Cloud monitor runs from `main`, not updated since Nov 7, so not live yet |
+
+## Waiting on the owner (old list, moved 2026-11-19)
+1. PC has not reported since 2026-11-07: restart/check it (fix first; nothing new reaches the PC until it does).
+2. Rapid EOD 50K: buy (code FIFTYOFF/CLUB, ~$94), paste ONE line (docs/RAPID_EOD_SETUP.md), START BOT + phrase. LIT + ATLAS $500 from day one, 30% best-day guard, funded keep $1,000 above the buffer. Jul-Oct replay: pass median 20 sessions, 0 fails.
+3. Tell MFFU's funded 25K account name for ATLAS (passed).
+4. Add GitHub secret LE_NTFY_TOPIC = ntfy alert topic (else alerts go to the public status topic); merge/update `main` so the cloud monitor runs the new checks.
+5. Business: do the Security list once (~1 hour, business/security.html); fill agency/config.json then AGENCY_DAY.bat; list the 8 products (docs/BUSINESS_LISTING_KIT.md). $0 earned so far.
+6. Yes/no (W1): backtest on same 1m bars as live (branch night-w1-clean1m 94b955a): Jan-Jun $33,901 -> $33,171 (PF 4.98 -> 4.85); Jul-Oct + 2021-25 identical; live == backtest 120/120. On yes: merge, refresh STRATEGY.md / research/lit/final_results.json.
+7. Yes/no: lock the PC bot page to his devices (Tailscale only; anyone on home WiFi can reach Stop today).
+8. Yes/no: delete ~7 GB old test leftovers (python tools/disk_clean.py --apply; blocked for Claude).
+9. Optional: Obsidian sync, 1 min on the PC: python tools/obsidian_sync.py --setup "C:\path\to\your\vault" (docs/OBSIDIAN_SYNC.md).
+10. To load fixes: when both bots are flat, STOP BOT then START BOT. Kalshi pause sentence in the kalshi-server chat (if not done).
+11. Owner yes/no, older (details in history): Builder levers (fresh 50K / 2nd 25K), Rapid $1,000 keep, stack-on-one-account.
+- Trading page (2026-11-17 night-trading, tools/web_public/trading/, wired 2026-11-17): today per account + 16:10 ET flat clock, Mon-Fri calendar of daily $, last 30 trades (-> Odeon replay), 2026 H1 vs H2 stats, 50%/30% payout rules check, hour/weekday bars, live vs twin, equity curve, "order rejected (Limit 0)" help; every number says LIVE / PAPER / BACKTEST + "Last live data: <date>". Data: python tools/trading_export.py (rerun after new trades; --check). Test: tests/run_area.py trading.

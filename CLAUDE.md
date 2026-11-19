@@ -2,7 +2,8 @@
 
 Owner trades MFFU evals (Zlarior = LIT on the Builder 50K, ATLAS on a 25K; BLITZ hidden, paper). Not a coder, writes from a phone.
 **Reply:** one short table (what / result), plain words, $ not just R, then at most 3 numbered steps with one copy-paste line.
-Do the work instead of asking; be honest when something doesn't work. **Start every chat with `python tools/board.py read` (live accounts, events, owner notes), then read `STATE.md`** (what's live,
+Do the work instead of asking; be honest when something doesn't work. Fix what you find as you go, unasked (owner 2026-11-19); bring him only
+live-money / strategy yes-no and hands-only steps (his to-do = STATE.md 'Waiting on the owner', max 5). **Start every chat with `python tools/board.py read` (live accounts, events, owner notes), then read `STATE.md`** (what's live,
 what's waiting, what's next) and update it at the end. Full detail: `docs/CLAUDE_REFERENCE.md` (read the section before touching
 an area; the old long brief is its last section).
 
