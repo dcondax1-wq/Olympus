@@ -254,7 +254,7 @@ def review(days: list, edge: dict | None = None, prev: dict | None = None, pipe:
     # ---- the data pipe itself
     if pipe and int(pipe.get("fails") or 0) >= 2:
         item("act", "pipe", "the PC could not send its data to the backup repo twice in a row",
-             "On the PC, in the bot folder: python -X utf8 -m engine.datapipe run --signin (sign in as the backup account).")
+             "On the PC, in the bot folder: python -X utf8 -m engine.datapipe run --git --signin (sign in as the backup account).")
     # ---- the text
     z, a = roll["zlarior"], roll["atlas"]
 
