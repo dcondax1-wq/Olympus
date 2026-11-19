@@ -1,26 +1,25 @@
-"""Web Push notifications to the phone app (the Home Screen web app at demetrades2000-coder.github.io/nq-dashboard).
+"""Web Push notifications to the phone: Olympus, the Home Screen app at https://dcondax1-wq.github.io/jarvis/ (2026-11-19).
 
-Owner (2026-10-18): the only thing to do is tap "Allow" in the app; the rest is automatic. Two kinds of notice, short:
-  ENTRY    title "LONG · MFFU 50K"   body "Entered 4 MNQ"
-  OUTCOME  title "LONG · MFFU 50K"   body "+$1,812" | "−$366" | "$0 breakeven" | "+$212 closed 15:55"
-One notification tag per trade (the outcome replaces the entry), the app icon, details in the app's Activity page.
-Account label: "Paper" for the cloud paper bot, the NinjaTrader account name for PC fills (e.g. "Sim101"), live_model.json
-"account": {"name": ...} (default "MFFU 50K") for a real account.
+Owner 2026-11-19: "I want notifications on my phone." The PC owns its key and talks to the phone without any cloud or GitHub step
+(the old flow below, a GitHub Actions cloud monitor handing the key to the PC, died with that GitHub account on Nov 8):
+  key      the PC makes its VAPID key pair once (own_key, data/push.json, gitignored). The PUBLIC key + the PC's box key
+           (data/push_pc_key.json) ride its 15-minute status core post ("wp", app_block): no extra ntfy post.
+  phone    Olympus's "Allow notifications" (tools/web_public/jarvis/push-ui.js) subscribes with that key and posts the subscription,
+           sealed to the PC's box key, to the free relay topic (tools/web_public/push_relay.json).
+  intake   the PC's 5-minute ops task reads the relay (engine/alerts_plus.ops_tick -> intake): the phone joins data/push.json
+           "devices" and gets one welcome push; "Send a test" / "Turn off" work the same way.
+  send     every real-account entry and exit (pc_notify, at once, "Zlarior 50K: LONG opened" / "... closed +$605"), the 15-minute
+           report's alerts (tools/pc_report.py) and tests go to the phone; the private ntfy topic is the backup, used only when no
+           phone took the alert (never twice on one phone). jarvis/push-sw.js shows them (one notification per trade: the exit
+           replaces the entry) and opens Olympus at the NQ page / the Board.
 
-How it stays automatic (no server of our own, no copy-paste):
-  relay    a free ntfy.sh topic (tools/web_public/push_relay.json, not secret). The app posts its push subscription there when
-           notifications are allowed; the cloud monitor reads the topic every run and keeps the subscriptions in its own
-           state (dashboard branch). The cloud and the PC post "sent" markers there, so a trade is notified once.
-  key      the VAPID key pair. GitHub Secret LE_VAPID_PRIVATE when set; otherwise the cloud makes a pair on its first run and
-           keeps the private key in the GitHub Actions cache (LE_VAPID_KEY_FILE, never committed, never printed). The public
-           key goes to data.json; when it changes, the app subscribes again on its next open.
-  PC       the PC bot gets the same key without a manual step: it publishes its own public key in the heartbeat, the cloud
-           encrypts the VAPID private key to it (ECIES, state.json on the private dashboard branch) and the PC decrypts it
-           with data/push_pc_key.json (gitignored), together with the subscriptions.
-Manual overrides still work: LE_PUSH_SUBS (+ _2.._5) secrets, data/push.json on the PC.
+Payloads: entry_payload / outcome_payload / text_payload (tag per trade, url, key for de-duplication). Sending: pywebpush when
+installed, else the built-in RFC 8291 (aes128gcm) + RFC 8292 (VAPID) sender (needs only `cryptography`). Nothing configured or no
+`cryptography` = every call is a silent no-op and the ntfy alerts carry on. Never raises into the trading loops.
 
-Sending uses pywebpush when installed, else the built-in RFC 8291 (aes128gcm) + RFC 8292 (VAPID) sender (needs only
-`cryptography`). Nothing configured = every call is a silent no-op. Never raises into the trading loops.
+The old cloud flow (kept for its tests; nothing on the PC uses it now): the relay held the old app's plain subscriptions, the cloud
+kept its key in the Actions cache and sealed it to the PC (pc_sync, state.json on the dashboard branch), both sides posted "sent"
+markers so a trade was notified once. Manual overrides still work: LE_PUSH_SUBS (+ _2.._5), data/push.json "subs".
 """
 from __future__ import annotations
 
@@ -28,6 +27,7 @@ import base64
 import hashlib
 import json
 import os
+import re
 import struct
 import threading
 import time
@@ -134,26 +134,28 @@ def ensure_key_file(path: str) -> dict:
 
 
 # ---- ECIES: the cloud hands the VAPID private key to the PC without anyone copying it
-def seal(secret: bytes, recipient_pub_b64: str) -> str:
+def seal(secret: bytes, recipient_pub_b64: str, info: bytes = b"le-push-pc-v1") -> str:
     from cryptography.hazmat.primitives import hashes
     from cryptography.hazmat.primitives.asymmetric import ec
     from cryptography.hazmat.primitives.ciphers.aead import AESGCM
     from cryptography.hazmat.primitives.kdf.hkdf import HKDF
     rp = ec.EllipticCurvePublicKey.from_encoded_point(ec.SECP256R1(), b64u_dec(recipient_pub_b64))
     eph = ec.generate_private_key(ec.SECP256R1())
-    key = HKDF(hashes.SHA256(), 32, None, b"le-push-pc-v1").derive(eph.exchange(ec.ECDH(), rp))
+    key = HKDF(hashes.SHA256(), 32, None, info).derive(eph.exchange(ec.ECDH(), rp))
     nonce = os.urandom(12)
     return b64u(_pub_bytes(eph.public_key()) + nonce + AESGCM(key).encrypt(nonce, secret, None))
 
 
-def unseal(box_b64: str, recipient_priv_b64: str) -> bytes:
+def unseal(box_b64: str, recipient_priv_b64: str, info: bytes = b"le-push-pc-v1") -> bytes:
+    """Open a box sealed to the PC's key: 65-byte ephemeral P-256 point + 12-byte nonce + AES-256-GCM (HKDF-SHA256 over the ECDH
+    secret, no salt, `info` = the label of what it carries: the old cloud key hand-off, or a phone's subscription SUB_INFO)."""
     from cryptography.hazmat.primitives import hashes
     from cryptography.hazmat.primitives.asymmetric import ec
     from cryptography.hazmat.primitives.ciphers.aead import AESGCM
     from cryptography.hazmat.primitives.kdf.hkdf import HKDF
     b = b64u_dec(box_b64)
     eph = ec.EllipticCurvePublicKey.from_encoded_point(ec.SECP256R1(), b[:65])
-    key = HKDF(hashes.SHA256(), 32, None, b"le-push-pc-v1").derive(_priv_from_b64(recipient_priv_b64).exchange(ec.ECDH(), eph))
+    key = HKDF(hashes.SHA256(), 32, None, info).derive(_priv_from_b64(recipient_priv_b64).exchange(ec.ECDH(), eph))
     return AESGCM(key).decrypt(b[65:77], b[77:], None)
 
 
@@ -212,9 +214,10 @@ def parse_subs(text) -> list:
 
 
 # ---------------------------------------------------------------------------------------------- relay (ntfy.sh)
-# sub / unsub: the app's push subscription; sent: a notice the cloud / PC already pushed; ack: the app's "Got it" on a
-# critical alert; prefs: the app's on / silent / off levels; crit: a sender's open critical alerts (engine/alerts_plus.py)
-RELAY_KINDS = ("sub", "unsub", "sent", "ack", "prefs", "crit")
+# sub / unsub: the app's push subscription (v 2 = Olympus, sealed to the PC: engine/push.intake); test: Olympus's "Send a test"
+# (sealed); sent: a notice the cloud / PC already pushed; ack: the app's "Got it" on a critical alert; prefs: the app's on / silent /
+# off levels; crit: a sender's open critical alerts (engine/alerts_plus.py)
+RELAY_KINDS = ("sub", "unsub", "test", "sent", "ack", "prefs", "crit")
 
 
 class Relay:
@@ -624,6 +627,20 @@ class Notifier:
     def seen(self, payload: dict) -> bool:
         return str(payload["key"]) in self.sent
 
+    def claim(self, payload: dict) -> bool:
+        """Mark the notice's key as sent unless it already was: True = this caller sends it (one notice, one sender, even when
+        two paths or threads see the same trade at once)."""
+        with _lock:
+            k = str(payload["key"])
+            if k in self.sent:
+                return False
+            self.sent[k] = time.time()
+            if len(self.sent) > self.keep:
+                for old in sorted(self.sent, key=self.sent.get)[: len(self.sent) - self.keep]:
+                    self.sent.pop(old, None)
+            self._save()
+            return True
+
     def mark(self, payload_or_key):
         self.sent[str(payload_or_key["key"] if isinstance(payload_or_key, dict) else payload_or_key)] = time.time()
 
@@ -762,46 +779,363 @@ def pc_sync(force: bool = False, fetch=None, key_path: str | None = None, cache_
     return out
 
 
-def pc_config(sync=None) -> dict:
-    s = sync if sync is not None else pc_sync()
-    return config(private=s.get("private"), subs_extra=s.get("subs"))
+# ---------------------------------------------------------------------------------------------- the PC's own key + Olympus
+# Owner 2026-11-19: "I want notifications on my phone." The GitHub account behind the cloud monitor was suspended on Nov 8, so the
+# cloud's key hand-off (pc_sync above) is gone for good. The PC owns its push key now; no cloud and no GitHub in the loop:
+#   key      data/push.json "vapid_private" (gitignored), made once on the PC (own_key). Its PUBLIC half, the PC's box key
+#            (data/push_pc_key.json) and short ids of the phones it has ride the PC's 15-minute status core post as "wp" (app_block,
+#            ~230 bytes, no extra ntfy post; tools/pc_report.py).
+#   phone    Olympus (tools/web_public/jarvis/push-ui.js): "Allow notifications" subscribes with that key, seals the subscription to
+#            the box key (only this PC can open it: ECDH P-256 + HKDF-SHA256 "le-push-sub-v1" + AES-GCM) and posts it to the free
+#            relay topic (tools/web_public/push_relay.json). The phone's own posts; the PC only reads the relay.
+#   intake   the PC's 5-minute ops task (engine/alerts_plus.ops_tick already reads the relay) -> intake(): the phone joins
+#            data/push.json "devices" and gets ONE welcome push; sealed "test" / "unsub" requests are proved with the phone's own
+#            subscription secret. A phone that changes key / is deleted answers 403/404/410 and is dropped.
+#   send     pc_notify (every real-account entry and exit the moment the bot routes / sees it), tools/pc_report.py (the 15-minute
+#            report's alerts) and pc_send_now go to the phones first; the private ntfy alert topic stays the backup: an alert goes
+#            there only when no phone took it, so one phone never gets the same alert twice.
+# Without `cryptography` nothing here runs (no key, no "wp", no intake) and every alert goes to ntfy exactly as before.
+OLYMPUS_URL = "https://dcondax1-wq.github.io/jarvis/"
+SUB_INFO = b"le-push-sub-v1"
+MAX_DEVICES = 5
+DONE_KEEP_S = 2 * 86400              # sealed relay requests already handled (the relay keeps ~12 h; the ops task reads it every 5 min)
+SUB_MAX_AGE_S = 3 * 86400            # a sealed request older (or newer) than this is ignored
+_B64_87 = re.compile(r"^[A-Za-z0-9_-]{87}$")
+
+
+def crypto_ok() -> bool:
+    try:
+        from cryptography.hazmat.primitives.asymmetric import ec  # noqa: F401
+        return True
+    except Exception:
+        return False
+
+
+def own_key(path: str | None = None, make: bool = True) -> dict | None:
+    """The PC's own VAPID key {"private", "public"} from data/push.json ("vapid_private"), made once when missing (make). A broken
+    key there is set aside ("vapid_private_bad") and a new one made: the phones subscribe again by themselves. None without
+    `cryptography` or when the file cannot be written. Never raises; callers never print or post the private key."""
+    path = path or CONFIG_PATH
+    try:
+        f = _read_json(path)
+        priv = str(f.get("vapid_private") or "").strip()
+        if priv:
+            try:
+                return {"private": priv, "public": public_from_private(priv)}
+            except ValueError:
+                if not make:
+                    return None
+        if not make:
+            return None
+        priv, pub = generate_keys()
+        cur = _read_json(path)                         # read again: another PC task may have just made one
+        old = str(cur.get("vapid_private") or "").strip()
+        if old and old != str(f.get("vapid_private") or "").strip():
+            return own_key(path, make=False)
+        if old:
+            cur["vapid_private_bad"] = old
+        cur.update(vapid_private=priv, vapid_made=int(time.time()))
+        _write_private(path, cur)
+        return {"private": priv, "public": pub}
+    except Exception:
+        return None
+
+
+def pc_config(sync=None, path: str | None = None) -> dict:
+    """The PC's push set-up: its own key (own_key) + the phones in data/push.json "devices" made for it + any manual codes.
+    sync: an answer of the old cloud hand-off (pc_sync; tests and old set-ups) instead."""
+    if sync is not None:
+        return config(private=sync.get("private"), subs_extra=sync.get("subs"))
+    path = path or CONFIG_PATH
+    own_key(path)
+    c = config(path=path)                              # LE_VAPID_PRIVATE (if ever set) > data/push.json (the PC's own key)
+    rows = [d for d in _read_json(path).get("devices") or [] if isinstance(d, dict) and d.get("sub")]
+    mine = [d["sub"] for d in rows if not d.get("key") or d.get("key") == c["public"]]
+    c["subs"] = parse_subs(c["subs"] + mine)
+    return c
+
+
+def app_block(path: str | None = None, key_path: str | None = None) -> dict | None:
+    """What the phone needs from the PC's status post, public by design: k = the VAPID public key (the phone subscribes with it),
+    b = the PC's box key (the phone seals its subscription to it), d = 8-character ids of the phones the PC sends to (the phone says
+    "on" when it sees its own). None without `cryptography` (then only the ntfy alerts go out). Never raises."""
+    try:
+        if SEALED:
+            return None
+        c = pc_config(path=path)
+        b = pc_public_key(key_path)
+        if not (c.get("public") and b):
+            return None
+        return {"k": c["public"], "b": b, "d": sorted({endpoint_id(s["endpoint"])[:8] for s in c["subs"]})[:2 * MAX_DEVICES]}
+    except Exception:
+        return None
+
+
+def app_block_ok(wp) -> bool:
+    """A "wp" block as app_block makes it (only public keys and short hex ids: safe to post as is)."""
+    return (isinstance(wp, dict) and set(wp) == {"k", "b", "d"} and all(isinstance(wp[x], str) and _B64_87.match(wp[x]) for x in "kb")
+            and isinstance(wp["d"], list) and all(isinstance(i, str) and re.fullmatch(r"[0-9a-f]{8}", i) for i in wp["d"]))
+
+
+def _devices(path) -> list:
+    return [d for d in _read_json(path).get("devices") or [] if isinstance(d, dict) and d.get("id") and d.get("sub")]
+
+
+def drop_gone(ids, path: str | None = None) -> int:
+    """Forget the phones the push service called gone (403 / 404 / 410: deleted, or made for another key). Never raises."""
+    path = path or CONFIG_PATH
+    try:
+        ids = {str(i) for i in ids or ()}
+        f = _read_json(path)
+        rows = f.get("devices") or []
+        keep = [d for d in rows if not (isinstance(d, dict) and d.get("id") in ids)]
+        if len(keep) != len(rows):
+            f["devices"] = keep
+            _write_private(path, f)
+        return len(rows) - len(keep)
+    except Exception:
+        return 0
+
+
+def _hm_et(t) -> str:
+    try:
+        return _et_dt(t).strftime("%I:%M %p ET").lstrip("0")
+    except Exception:
+        return ""
+
+
+def welcome_payload(now=None) -> dict:
+    now = int(now or time.time())
+    p = text_payload("PC", "test", "Olympus notifications are on",
+                     "This phone now gets every trade (entry and exit, with the account name) and the important alerts from your PC.",
+                     key=f"welcome:{now}", t=now, url="#board")
+    p["tag"] = "le-welcome"
+    return p
+
+
+def test_payload(now=None) -> dict:
+    now = int(now or time.time())
+    p = text_payload("PC", "test", "Test from your PC", f"Notifications work: your PC sent this at {_hm_et(now)}.", key=f"test:{now}",
+                     t=now, url="#board")
+    p["tag"] = "le-test"
+    return p
+
+
+def intake(msgs, now=None, path: str | None = None, key_path: str | None = None, sender=None) -> dict:
+    """The ops task's relay read (every 5 min): the phones' sealed {"le": "sub" | "unsub" | "test", "v": 2, "box"} requests.
+    sub    a subscription made with the PC's own key joins data/push.json "devices" (the newest MAX_DEVICES phones heard from)
+           and that phone alone gets ONE welcome push;
+    unsub  removes the phone, test sends it one test push; both only with the phone's own subscription secret inside the box.
+    Each request once (its hash in "done", 2 days), never one older than 3 days. -> {"added", "removed", "tests", "sent",
+    "ignored"}. Never raises; posts nothing to ntfy."""
+    out = {"added": [], "removed": [], "tests": [], "sent": 0, "ignored": 0}
+    try:
+        import hmac as _hmac
+        now = int(time.time() if now is None else now)
+        path = path or CONFIG_PATH
+        reqs = [m for m in msgs or [] if isinstance(m, dict) and m.get("le") in ("sub", "unsub", "test") and m.get("v") == 2
+                and isinstance(m.get("box"), str) and 100 < len(m["box"]) < 6000]
+        if not reqs:
+            return out
+        c = pc_config(path=path)
+        pc_public_key(key_path)                          # the box key exists before the first phone can seal to it
+        mine = _read_json(key_path or PC_KEY_PATH).get("private")
+        if not c.get("public") or not mine:
+            out["skipped"] = "no key on this PC (cryptography missing?)"
+            return out
+        f = _read_json(path)
+        before = {d["id"] for d in _devices(path)}
+        devs = {d["id"]: dict(d) for d in _devices(path)}
+        done = {k: v for k, v in (f.get("done") or {}).items() if isinstance(v, (int, float)) and now - v < DONE_KEEP_S}
+        for m in sorted(reqs, key=lambda x: x.get("_t", 0)):
+            h = hashlib.sha256(m["box"].encode()).hexdigest()[:16]
+            if h in done:
+                continue
+            done[h] = now
+            try:
+                body = json.loads(unseal(m["box"], mine, SUB_INFO).decode("utf-8"))
+                kind, t = body.get("le"), int(body.get("t") or 0)
+            except Exception:
+                out["ignored"] += 1
+                continue
+            if kind != m.get("le") or abs(now - t) > SUB_MAX_AGE_S:
+                out["ignored"] += 1
+                continue
+            if kind == "sub":
+                subs = parse_subs(body.get("sub"))
+                if not subs or body.get("key") != c["public"]:
+                    out["ignored"] += 1                  # junk, or made for an old key (the phone subscribes again by itself)
+                    continue
+                sid = endpoint_id(subs[0]["endpoint"])
+                row = devs.get(sid) or {"id": sid, "since": now}
+                if sid not in devs and sid not in out["added"]:
+                    out["added"].append(sid)
+                row.update(sub=subs[0], key=c["public"], seen=now, ua=re.sub(r"[^A-Za-z0-9 .()/-]", "", str(body.get("ua") or ""))[:40])
+                devs[sid] = row
+                continue
+            sid, row = str(body.get("id") or ""), devs.get(str(body.get("id") or ""))
+            if not row or not _hmac.compare_digest(str(body.get("auth") or ""), str(row["sub"]["keys"]["auth"])):
+                out["ignored"] += 1
+                continue
+            if kind == "unsub":
+                devs.pop(sid, None)
+                out["removed"].append(sid)
+            elif sid not in out["tests"]:
+                out["tests"].append(sid)
+        keep = sorted(devs.values(), key=lambda d: d.get("seen") or 0)[-MAX_DEVICES:]
+        out["removed"] += [i for i in devs if i not in {d["id"] for d in keep}]
+        f = _read_json(path)                             # read again: the bot may have dropped a gone phone meanwhile
+        now_ids = {d["id"] for d in _devices(path)}
+        f["devices"] = [d for d in keep if d["id"] in now_ids or d["id"] not in before]
+        f["done"] = done
+        _write_private(path, f)
+        rows = {d["id"]: d for d in f["devices"]}
+        todo = [(i, welcome_payload(now)) for i in out["added"] if i in rows] + [(i, test_payload(now)) for i in out["tests"] if i in rows]
+        for sid, p in todo:
+            r = app_send(p, cfg=dict(c, subs=[rows[sid]["sub"]]), sender=sender, path=path)
+            out["sent"] += int(r.get("sent") or 0)
+    except Exception as e:
+        out["error"] = e.__class__.__name__
+    return out
+
+
+def pc_app_ok(p: dict) -> bool:
+    """Which PC notices go to the phone (owner 2026-11-18, "important only"): every real-account entry / exit (notify_settings.json
+    trade_opened / trade_closed; never Paper, Sim, BLITZ), tests, and the 15-minute report's alerts (kind "report", already filtered
+    by engine/notify.apply). Every other kind (ops helper, risk, armed setups ...) only with LE_PUSH_EXTRA=1: none of them went to
+    the ntfy alerts either, and several repeat what the report already says."""
+    k = (p or {}).get("kind")
+    if k in ("test", "report"):
+        return True
+    if k in ("fill", "outcome"):
+        try:
+            from . import notify
+            return notify.real_trade(p) and notify.on("trade_opened" if k == "fill" else "trade_closed")
+        except Exception:
+            return False
+    return extra_on()
+
+
+_TRADE_KEY = re.compile(r"^(?:fill|out):(\d+)(.*)$")
+
+
+def app_trade_tag(p: dict) -> str:
+    """One notification per trade AND account (two accounts can enter on the same bar): the exit replaces the entry."""
+    m = _TRADE_KEY.match(str(p.get("key") or ""))
+    et_, rest = (m.group(1), m.group(2)) if m else (str(int(p.get("t") or 0)), "")
+    return f"t{hashlib.sha1((str(p.get('account') or '') + rest).encode()).hexdigest()[:6]}-{et_}"
+
+
+def app_payload(p: dict, now=None) -> dict:
+    """What Olympus shows for a PC notice: a trade gets the owner's account name and $ ("Zlarior 50K: LONG opened", "risk $368 ·
+    target +$1,432 · 6 MNQ at 24,980 ..."; "Zlarior 50K: LONG closed +$605"), its own tag (the exit replaces the entry) and opens the
+    NQ page; quiet hours = no sound. Other notices keep their words. Never raises."""
+    q = dict(p or {})
+    try:
+        from . import notify
+        k = q.get("kind")
+        if k == "fill":
+            m = notify.entry_message(q, now=now)
+            head, _, rest = m["title"].partition(" | ")
+            q.update(title=head, body=((rest.replace(" | ", " · ") + ". ") if rest else "") + m["body"], silent=m["priority"] == "low")
+        elif k == "outcome":
+            m = notify.exit_message(q, now=now)
+            q.update(title=m["title"], body=m["body"], silent=m["priority"] == "low")
+        if k in ("fill", "outcome"):
+            q.update(tag=app_trade_tag(p), url="#nq")
+        elif str(q.get("url") or "").startswith("#/"):      # the old app's routes (#/activity, #/today ...): Olympus's Board
+            q["url"] = "#board"
+        q["key"] = notify.mask_ids(q.get("key"))           # an extra account's key can end in its id: only the last 4 travel
+    except Exception:
+        pass
+    return q
+
+
+def report_payload(m: dict) -> dict:
+    """A 15-minute report alert (tools/pc_report.py: key, title, body, priority) for Olympus: the same words, one tag per thing (a
+    trade's close replaces its open, "Back to normal" replaces its problem) and the page it opens. Quiet hours = no sound."""
+    key = str((m or {}).get("key") or "")
+    try:
+        from . import notify
+        kind = m.get("kind") or notify.kind_of(key)
+    except Exception:
+        kind = "other"
+    parts = key.split(":")
+    if key.startswith(("open:", "close:")) and len(parts) >= 3:
+        tag = f"r-{re.sub(r'[^A-Za-z0-9_-]', '', parts[1])[:24]}-{parts[-1]}"
+    elif key.startswith(("cond:", "back:")) and len(parts) >= 2:
+        tag = f"le-cond-{re.sub(r'[^A-Za-z0-9_-]', '', parts[1])[:24]}"
+    else:
+        tag = f"le-{str(kind).replace('_', '-')[:20]}-{hashlib.sha1(key.encode()).hexdigest()[:6]}"
+    url = "#nq" if kind in ("trade_opened", "trade_closed", "account_status", "eval_milestones", "room_low") else "#board"
+    try:
+        from . import notify as _n
+        wkey = _n.mask_ids(key)
+    except Exception:
+        wkey = re.sub(r"\d{5,}", "", key)
+    return {"kind": "report", "key": f"rep:{wkey}", "t": int((m or {}).get("t") or time.time()), "title": str(m.get("title") or "Olympus")[:120],
+            "body": str(m.get("body") or "")[:600], "tag": tag, "url": url, "silent": (m or {}).get("priority") in ("low", "min")}
+
+
+def app_send(payload: dict, cfg=None, sender=None, path: str | None = None) -> dict:
+    """One notice to the phones with the PC's own key; the ones the push service calls gone are forgotten. {"sent", "devices",
+    "gone", "errors"}; never raises, never posts to ntfy."""
+    try:
+        c = cfg or pc_config(path=path)
+        if not enabled(c):
+            return {"sent": 0, "devices": len(c.get("subs") or []), "skipped": "no phone"}
+        if SEALED and sender is None:
+            return {"sent": 0, "skipped": "PC self-test child: no real push"}
+        r = send(payload, cfg=c, sender=sender)
+        if r.get("gone"):
+            drop_gone(r["gone"], path)
+        return r
+    except Exception as e:
+        return {"sent": 0, "errors": [e.__class__.__name__]}
 
 
 def pc_notifier() -> Notifier:
     if _PC["notifier"] is None:
-        _PC["notifier"] = Notifier(path=SENT_PATH, relay=Relay(timeout=4.0), src="pc")
+        # no relay: the cloud that read its "sent" markers is gone, and every marker would be one more ntfy publish of the PC's IP
+        _PC["notifier"] = Notifier(path=SENT_PATH, relay=None, src="pc")
     return _PC["notifier"]
 
 
-def _pc_send(payload, push_it):
+def _pc_send(payload, sender=None, ntfy=None) -> dict:
+    """pc_notify's worker thread: the phone app first; for an entry the private ntfy alert topic (engine/notify.instant_entry)
+    only when no phone took it (one alert, one phone). A phone that took an entry / exit is recorded (engine/notify.instant_record)
+    so the 15-minute report does not send its own copy. -> what happened (tests). Never raises."""
+    res: dict = {}
     try:
         n = pc_notifier()
-        n.cfg = pc_config()
-        if not enabled(n.cfg):
-            n.mark(payload)
-            n._save()
-            return
-        n.notify(payload, push_it=push_it)
+        if not n.claim(payload):                 # another path / thread already has this notice (same key)
+            return {"dup": True}
+        res = app_send(app_payload(payload), sender=sender) if pc_app_ok(payload) else {"sent": 0, "skipped": "not for the phone"}
+        n.log.append({"t": int(time.time()), "key": payload.get("key"), **{x: res.get(x) for x in ("sent", "gone", "errors", "skipped")}})
+        del n.log[:-50]
+    except Exception as e:
+        res = {"sent": 0, "errors": [e.__class__.__name__]}
+    try:
+        from . import notify
+        k = payload.get("kind")
+        if k in ("fill", "outcome") and res.get("sent"):
+            notify.instant_record(payload, "entry" if k == "fill" else "exit")
+            if k == "fill":
+                res["ntfy"] = "skipped: the phone app has it"
+        elif k == "fill":                        # owner 2026-11-18: every entry on any real account -> phone, at once
+            res["ntfy"] = (ntfy or notify.instant_entry)(dict(payload))
     except Exception:
         pass
+    return res
 
 
 def pc_notify(payload: dict) -> dict | None:
-    """PC side, in a background thread (git fetch / push service never delay order routing). Entry and outcome notices are
-    pushed; other kinds only with LE_PUSH_EXTRA=1. Never raises."""
+    """PC side, in a background thread (the push service never delays order routing): pc_app_ok notices to the phone app, every
+    real-account entry to the ntfy alert topic when the app did not take it. Never raises."""
     try:
         if pc_notifier().seen(payload):
             return {"dup": True}
-        # pc: update / auto-resume notices; ops: the owner's PC helpers (engine/ops_checks.py: pre-session, day / week
-        # summary, internet / NinjaTrader drops, MFFU inactivity, eval passed / failed, contract roll)
-        push_it = payload.get("kind") in ("fill", "outcome", "test", "pc", "ops") or extra_on()
-        threading.Thread(target=_pc_send, args=(payload, push_it), name="push", daemon=True).start()
-        if payload.get("kind") == "fill":            # owner 2026-11-18: every entry on any real account -> phone, at once
-            try:
-                from . import notify
-                threading.Thread(target=notify.instant_entry, args=(dict(payload),), name="push-ntfy", daemon=True).start()
-            except Exception:
-                pass
+        threading.Thread(target=_pc_send, args=(dict(payload),), name="push", daemon=True).start()
         return {"queued": True}
     except Exception:
         return None
@@ -809,13 +1143,15 @@ def pc_notify(payload: dict) -> dict | None:
 
 def pc_send_now(payload: dict, sync=None, sender=None) -> dict:
     """PC side, synchronous, for a script or a scheduled task (no server thread to wait for): push one notice now. No
-    de-duplication here (engine/ops_checks keeps its own keys in data/ops_state.json). sync = pc_sync() result, for
-    tests. Never raises."""
+    de-duplication here (engine/ops_checks keeps its own keys in data/ops_state.json); pc_app_ok decides what goes. sync =
+    pc_sync() result, for tests. Never raises."""
     try:
+        if sync is None and not pc_app_ok(payload):
+            return {"sent": 0, "skipped": "not for the phone (LE_PUSH_EXTRA=1 sends it)"}
         cfg = pc_config(sync)
         if not enabled(cfg):
             return {"sent": 0, "skipped": "not configured"}
-        return send(payload, cfg=cfg, sender=sender)
+        return app_send(app_payload(payload), cfg=cfg, sender=sender)
     except Exception as e:
         return {"sent": 0, "errors": [e.__class__.__name__]}
 

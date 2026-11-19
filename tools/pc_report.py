@@ -67,7 +67,7 @@ EXT_PARTS = 2                    # at most 2 ext posts a run (ntfy.sh free: a fe
 EXT_EVERY_S = 1740               # the ext goes every 2nd 15-minute run (29 min), or at once when its news changed (ext_hash)
 EXT_ORDER = ("brd", "life", "mf", "board_trades", "at", "learn", "lab", "glance", "kalshi_rewards", "kalshi_k1")   # "at": engine/feed_trades
 CORE_KEYS = ("eh", "v", "kind", "lite", "src", "t", "every_s", "host", "model_state", "price", "day_pnl", "pc_verdict", "pc", "reporter",
-             "board", "accounts", "trimmed")
+             "board", "accounts", "trimmed", "wp")   # wp: the phone app's push set-up (engine/push.app_block: public keys, ~230 bytes)
 BRD_BYTES = 1200
 HB_STALE_S = 900                 # the bot beats every 5 min: older than 15 min = the bot is not reporting
 BAR_STALE_S = 300                # the last 1-minute bar older than 5 min while the market is open = FEED STALE
@@ -560,6 +560,12 @@ def full(snap: dict) -> dict:
         out["kalshi_k1"] = snap["kalshi_k1"]
     if isinstance(snap.get("eh"), dict):     # the ZEUS edge chip (tools/edge_pc.read_tiny, <= 120 bytes; tools/web_public/edge_chip.js)
         out["eh"] = snap["eh"]
+    try:                                     # Olympus phone notifications (2026-11-19): the PC's PUBLIC push key + box key + its phones'
+        from engine import push as _push     # short ids (engine/push.app_block); the phone subscribes with them. Core, never cut.
+        if _push.app_block_ok(snap.get("wp")):
+            out["wp"] = snap["wp"]
+    except Exception:  # noqa: BLE001
+        pass
     for k in ("learn", "lab"):                     # the learning loop / ZEUS Lab notes when the reporter's snapshot has them
         if isinstance(snap.get(k), dict):
             out[k] = snap[k]
@@ -599,7 +605,7 @@ def _fit_core(out: dict, max_bytes: int) -> dict:
         bb = _d(out.get("board"))
         out = {"v": 1, "kind": "le-live", "lite": True, "src": "pc_report", "t": out.get("t"), "trimmed": True, "pc": out.get("pc"),
                "pc_verdict": {k: _d(out.get("pc_verdict")).get(k) for k in ("code", "label", "level")},
-               "reporter": out.get("reporter"),
+               "reporter": out.get("reporter"), **({"wp": out["wp"]} if out.get("wp") else {}),
                "board": {"t": bb.get("t"), "data_t": bb.get("data_t"),
                          **{k: {x: _d(bb.get(k)).get(x) for x in ("id", "name", "room", "mll", "balance", "today_pnl", "status")}
                             for k in ("lit", "atlas", "blitz") if bb.get(k)}}}
@@ -668,7 +674,16 @@ def split(out: dict, max_bytes: int = MAX_STATUS_BYTES, parts: int | None = None
     exts = [{**base, "part": i, "of": len(packs), "x": p} for i, p in enumerate(packs)]
     if cut and exts:
         exts[-1]["cut"] = cut
-    return public(core), [public(e) for e in exts]
+    pub = public(core)
+    wp = core.get("wp")
+    if isinstance(pub, dict) and isinstance(wp, dict):
+        try:                                       # public keys and hex ids only (app_block_ok): posted as made, never re-masked
+            from engine import push as _push
+            if _push.app_block_ok(wp):
+                pub["wp"] = wp
+        except Exception:  # noqa: BLE001
+            pass
+    return pub, [public(e) for e in exts]
 
 
 def lite(snap: dict, max_bytes: int = MAX_STATUS_BYTES) -> dict:
@@ -1663,11 +1678,30 @@ def run_unlock(p):
             pass
 
 
+def _app_push(m: dict) -> bool:
+    """One report alert to the phone app (Olympus, engine/push.app_send with the PC's own key): True = a phone took it."""
+    try:
+        from engine import push as _push
+        return bool(_push.app_send(_push.report_payload(m)).get("sent"))
+    except Exception:  # noqa: BLE001
+        return False
+
+
 def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, now=None, root: str = ROOT, port=PORT_DEFAULT,
-             feed_problem=None, say=print, feed_path: str | None = None) -> dict:
+             feed_problem=None, say=print, feed_path: str | None = None, app_push=None) -> dict:
+    """One run. app_push(msg) -> True when the phone app took that alert (tests); None = the real one when this PC has a phone
+    (only on a real run: a test's fake http never reaches the PC's own push files)."""
     os.makedirs(work, exist_ok=True)
     cfg = load_cfg(env, feed_path)
     snap = gather(now, root=root, env=env, http=http, port=port, feed_problem=feed_problem)
+    if app_push is None and http is None:           # Olympus phone notifications, the real run: the PC's own push key (made once)
+        try:                                        # + its phones ride the core post (wp); the alerts go to the phones first
+            from engine import push as _push
+            snap["wp"] = _push.app_block()
+            if _d(snap.get("wp")).get("d"):
+                app_push = _app_push
+        except Exception:  # noqa: BLE001
+            pass
     last = read_json(os.path.join(work, "last.json"), {}) or {}
     rec = {"t": snap["t"], "ok": True, "hb_t": snap.get("hb_t"), "server": snap.get("server"), "problems": sorted(conditions(snap)),
            "status_t": last.get("status_t"), "alerts_last": last.get("alerts_last"), "errors": [],
@@ -1723,10 +1757,23 @@ def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, n
     new_state, msgs = events(state, snap)
     sent = 0
     for m in msgs:
-        if not cfg["topic"] or not cfg["on"]:
-            break
         if dry:
-            say(f"[dry] push -> {cfg['topic']}: {m['title']}: {m['body']}")
+            if app_push is not None:
+                say(f"[dry] push -> the phone app (Olympus), else {cfg['topic'] or 'nothing'}: {m['title']}: {m['body']}")
+            elif cfg["topic"] and cfg["on"]:
+                say(f"[dry] push -> {cfg['topic']}: {m['title']}: {m['body']}")
+            continue
+        if app_push is not None:                    # the phone app first; the ntfy copy only when no phone took it (never twice)
+            try:
+                took = bool(app_push(m))
+            except Exception:  # noqa: BLE001
+                took = False
+            if took:
+                sent += 1
+                rec["app_sent"] = int(rec.get("app_sent") or 0) + 1
+                rec["alerts_last"] = {"t": snap["t"], "title": m["title"], "via": "app"}
+                continue
+        if not cfg["topic"] or not cfg["on"]:
             continue
         ok, why = ntfy_post(cfg["ntfy"], cfg["topic"], m["body"], title=m["title"], priority=m.get("priority"), tags=m.get("tags"), http=http)
         if ok:

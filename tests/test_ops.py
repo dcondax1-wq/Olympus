@@ -443,7 +443,10 @@ def main() -> int:
                              sender=lambda s, d, pr, pu: (out.append(d), 201)[1])
         check("push.pc_send_now: linked -> sent through the sender", r.get("sent") == 1 and b'"kind":"ops"' in out[0], r)
         src = open(os.path.join(ROOT, "engine", "push.py"), encoding="utf-8").read()
-        check("push.pc_notify always pushes kind 'ops'", re.search(r'kind"\) in \("fill", "outcome", "test", "pc", "ops"\)', src) is not None)
+        # 2026-11-19 (Olympus notifications, owner "important only"): ops notices reach the phone only with LE_PUSH_EXTRA=1; they never
+        # went to the ntfy alerts and several repeat the 15-minute report (day summary, eval result, roll)
+        check("push.pc_app_ok: an ops notice goes to the phone only with LE_PUSH_EXTRA=1, a test always",
+              not push.pc_app_ok({"kind": "ops"}) and push.pc_app_ok({"kind": "test"}) and "return extra_on()" in src)
         from tools import cloud_monitor as cm
         cell = cm._ops_cell({"checks_t": int(now), "bad": 1, "warn": 2, "first_fix": "Bar feed 1m: open NinjaTrader", "backup_t": int(now) - 3600,
                              "disk_free_gb": 88.2})
