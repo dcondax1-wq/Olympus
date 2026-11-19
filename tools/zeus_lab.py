@@ -206,21 +206,46 @@ def register(e: dict, path: str = REGISTRY, replace: bool = True) -> list:
     if errs:
         return errs
     txt = open(path, encoding="utf-8").read()
-    if old is None:                       # keep the hand-kept layout: one new line at the end of "experiments"
-        i = txt.index("[", txt.index('"experiments"'))
-        _, end = json.JSONDecoder().raw_decode(txt[i:])
-        j = i + end - 1                   # the closing "]"
-        k = len(txt[:j].rstrip())
-        new = txt[:k] + ",\n  " + json.dumps(e, ensure_ascii=False) + "\n " + txt[j:]
-        if json.loads(new)["experiments"][-1] == e:
-            tmp = path + ".tmp"
-            with open(tmp, "w", encoding="utf-8") as fh:
-                fh.write(new)
-            os.replace(tmp, path)
-            return []
-    R["experiments"] = exps
-    _write_json(path, R, indent=1)
+    # keep the hand-kept layout (night-bugsweep 2026-11-19: a replace used to rewrite the whole file in json.dump's layout): a new entry
+    # is one new line at the end of "experiments"; a replaced one becomes one line in its own place; every other byte stays as it was
+    new = None
+    try:
+        close, spans = _array_spans(txt, "experiments")
+        line = json.dumps(e, ensure_ascii=False)
+        hit = next(((a, b) for a, b, x in spans if isinstance(x, dict) and x.get("id") == e.get("id")), None) if old is not None else None
+        if hit:
+            new = txt[:hit[0]] + line + txt[hit[1]:]
+            want = [e if x.get("id") == e.get("id") else x for x in R["experiments"]]
+        else:
+            k = len(txt[:close].rstrip())
+            new = txt[:k] + ("," if spans else "") + "\n  " + line + "\n " + txt[close:]
+            want = exps
+        if json.loads(new).get("experiments") != want:
+            new = None
+    except (ValueError, KeyError):
+        new = None
+    if new is None:                       # a file this cannot splice (hand-edited oddly): the plain layout, still valid
+        R["experiments"] = exps
+        _write_json(path, R, indent=1)
+        return []
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as fh:
+        fh.write(new)
+    os.replace(tmp, path)
     return []
+
+
+def _array_spans(txt: str, key: str) -> tuple:
+    """(index of the closing "]", [(start, end, value) of each element]) of the top-level array `key` in a JSON text."""
+    i = txt.index("[", txt.index(f'"{key}"'))
+    dec, pos, out = json.JSONDecoder(), i + 1, []
+    while True:
+        pos = re.compile(r"[\s,]*").match(txt, pos).end()
+        if txt[pos] == "]":
+            return pos, out
+        val, end = dec.raw_decode(txt, pos)
+        out.append((pos, end, val))
+        pos = end
 
 
 def doc_rejected(path: str = REF_DOC) -> list:

@@ -96,6 +96,17 @@ def part_facts():
         check("a. a source that disagrees with CLAUDE.md (the roadmap prices Builder 50K at $153) is a 'wrong' finding by itself", ("sources-disagree", "wrong") in hits, hits)
         r2 = A.audit(mini(tempfile.mkdtemp(prefix="le_audit_"), drop=("research/lit/funded_firms.json",)))
         check("a. a missing source of truth is reported as a finding, never a crash", any(f["rule"] == "source" and "funded_firms" in f["file"] for f in r2["findings"]), r2["findings"][:2])
+        # night-bugsweep 2026-11-19: the brief was cut to one page (2026-11-15); the long brief moved, word for word, to CLAUDE_REFERENCE.md's last section
+        short = mini(tempfile.mkdtemp(prefix="le_audit_"))
+        put(short, "CLAUDE.md", "# one-page brief\n- Prop prices: owner's real prices (Builder 50K $91.80, 25K $63 / $43), never list prices.\n")
+        put(short, "docs/CLAUDE_REFERENCE.md", "# map\nold numbers: 2026 PF 3.66\n\n## The full brief (CLAUDE.md as it was on 2026-11-15, moved here word for word)\n" + CLAUDE)
+        Fs = A.load_facts(short)
+        check("a. one-page brief: prices come from its 'Builder 50K $91.80, 25K $63 / $43' line, the headline and $0 activation from the full brief in CLAUDE_REFERENCE.md; nothing missing",
+              Fs["price"] == {"b25": 63.0, "atlas25": 43.0, "b50": 91.8, "activation": 0.0} and Fs["headline"].get("pf_h2") == 2.91 and Fs["headline"].get("net_2026") == 43820
+              and Fs["missing"] == [] and Fs["conflicts"] == [], (Fs["price"], Fs["headline"], Fs["missing"]))
+        put(short, "docs/CLAUDE_REFERENCE.md", "# map, no full brief section\n")
+        check("a. one-page brief and no full brief: the headline is reported missing (never read from the reference's history lines)",
+              "CLAUDE.md headline pf_h2" in A.load_facts(short)["missing"], A.load_facts(short)["missing"])
         empty = A.audit(tempfile.mkdtemp(prefix="le_audit_"))
         check("a. an empty folder does not crash the audit (every source reported missing)", empty["files"] == 0 and len([f for f in empty["findings"] if f["rule"] == "source"]) >= 5)
     finally:
@@ -126,6 +137,8 @@ CLEAN = {
     "docs/OLD.md": ("The trio paid $1,754 a month before the rerun (up from $1,754 on the old trades).\nBefore: room 55% | 53.7 / 2.2 | the old pass rate.\nThe bot was PF 3.66 and +$41,734 until the new cut.\n"),
     "tools/web_public/a/mffu_dd.html": "<p>MFFU Builder 50K: trailing max loss $2,000 that locks at $50,100; fee $91.80.</p>\n",
     "tools/web_public/a/code.js": "// OLYMPUS with ~12 apps: opts.apps()\nconst fee = '$91.80';\n",
+    # night-bugsweep: the taxes page lists deductible fees; the $ after "activation fees" is the eval's price, not an activation fee
+    "tools/web_public/a/taxes.html": "<li><b>Eval fees, resets, activation fees</b> (Builder 50K $91.80, 25K $63 / $43). Keep each receipt email.</li>\n",
 }
 
 
@@ -159,6 +172,12 @@ def part_rules():
         put(r, "tools/web_public/a/learned.html", "<p>Together (litlosspack): 2026 +$41.7k, PF 3.66, max DD -$2.3k.</p>\n")
         sv = {f["severity"] for f in A.audit(r)["findings"] if f["rule"] == "old-headline" and f["file"] == "tools/web_public/a/learned.html"}
         check("b. a dated research result ('litlosspack: 2026 +$41.7k, PF 3.66') is a 'warn' to look at, only a 'headline / quote / current' sentence with an old figure is 'wrong'", sv == {"warn"}, sv)
+        # night-bugsweep: the Archive app (every run ever made, "live" = a run's label) holds dated results: old headline = 'warn'; a list price there stays 'wrong'
+        put(r, "tools/web_public/archive/index.json", '["lit_adv","reference: LIT live with the live sizing (vs live). 2026 H1 (pick) n=80 PF 3.66 net +36,723"]\n')
+        put(r, "tools/web_public/archive/runs-9.json", '["fee","The MFFU Builder 50K eval costs $153."]\n')
+        ar = {(f["rule"], f["severity"]) for f in A.audit(r)["findings"] if f["file"].startswith("tools/web_public/archive/")}
+        check("b. the Archive's dated runs: an old headline figure is a 'warn' (history), a list price as the owner's price is still 'wrong'",
+              ("old-headline", "warn") in ar and ("old-headline", "wrong") not in ar and ("list-price", "wrong") in ar, ar)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 

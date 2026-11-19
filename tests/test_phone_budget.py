@@ -353,8 +353,11 @@ def test_lazy_hd(br, origin):
     ctx.close()
 
 
+# the canvas is scrolled into the middle of the screen first (night-bugsweep 2026-11-19: NQ's 3D columns now start below the first screen,
+# y 884 of 844, and the screenshot read past its edge: IndexError 'image index out of range'), then measured on the next frame
 CENTER_DARK = """(sel) => new Promise((res) => {
-  const c = document.querySelector(sel); const r = c.getBoundingClientRect(); res([r.left + r.width / 2, r.top + r.height / 2, r.width, r.height]);
+  const c = document.querySelector(sel); c.scrollIntoView({ block: 'center', inline: 'center' });
+  requestAnimationFrame(() => requestAnimationFrame(() => { const r = c.getBoundingClientRect(); res([r.left + r.width / 2, r.top + r.height / 2, r.width, r.height]); }));
 })"""
 
 
@@ -364,6 +367,9 @@ def center_rgb(p, xy):
     im = Image.open(io.BytesIO(p.screenshot())).convert("RGB")
     k = im.width / 390.0
     box = (int((xy[0] - 40) * k), int((xy[1] - 40) * k), int((xy[0] + 40) * k), int((xy[1] + 40) * k))
+    box = (max(0, box[0]), max(0, box[1]), min(im.width, box[2]), min(im.height, box[3]))     # only what is on the screenshot
+    if box[0] >= box[2] or box[1] >= box[3]:
+        raise ValueError(f"the element's centre {xy[:2]} is off the screen ({im.width / k:.0f} x {im.height / k:.0f})")
     px = [im.getpixel((x, y)) for x in range(box[0], box[2], 4) for y in range(box[1], box[3], 4)]
     return [round(sum(c[i] for c in px) / len(px)) for i in range(3)]
 

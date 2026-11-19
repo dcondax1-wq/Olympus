@@ -215,6 +215,7 @@ Rules: MFFU ONLY ("We stick with MFFU"). Limits: max 5 sim-funded, Builder 1x50K
 - Work cheaply: python tests/smoke.py -> touched area -> python tools/ship.py; at most 2-3 helpers.
 
 - Test sweep 2026-11-17 (night-sweep): fixed update_from_zip not taking tracked data/board/shared.jsonl (exact !un-ignore now honoured), added the live-switch row rf40_nowk_tw80 to research/lit/uprisk_eval.json (board odds were empty), and 5 stale test pins (cold_calls kit versions, fresh_start sw, pc_guard BLITZ hidden, pc_health clock).
+- Bug sweep 2026-11-19 (night-bugsweep): reds fixed at the root: numbers_audit 36/36 + money_scoreboard 35/35 read the owner's prices from the one-page CLAUDE.md ('25K $63 / $43') and the headline from CLAUDE_REFERENCE's full brief; copilot 27/27; phone_budget kalshi 107 kB (scripts deferred) + ctx crash (NQ canvas below the fold); zeus_lab.register replace keeps one line per entry; Jarvis never asks the suspended kalshi-feed (PC feed = Kalshi, K8 card on the System row) and remembers absent folders (mind/) a day, quiet-net remembers 404 app cards per session, launcher dots load on first open; Business page: DEMO says so and hides the example's to-dos / buy advice, SNAPSHOT tag when old; Fates reads the PC feed. Left: Kalshi-family pages still ask kalshi-feed once a session, Oracle polls dcondax1-wq/nq-dashboard live.json (404).
 
 ## Pointers
 - Money: Business page (docs/BUSINESS.md), payout plan research/lab/payout_plan.json; fleet `--plan mffu_builder_50k` (engine/multi_account).

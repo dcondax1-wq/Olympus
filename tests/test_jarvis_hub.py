@@ -265,7 +265,7 @@ def part_a():
           and "background:#000" in sw and "location.reload()" in sw)
     check("a. worker v14: data.js, jarvis.css, the fonts, every separate part, switcher.js, the new brain's obsidian.js / memory.js / "
           "assist-ui.js and voice-mode.js in SHELL, each saved on its own (a missing part is skipped)",
-          "const CACHE = 'jarvis-v66';" in sw and all(f"'./{f}'" in sw for f in ("data.js", "switcher.js", "obsidian.js", "memory.js", "assist-ui.js", "voice-mode.js", "tools.js", "voice-out.js") + PARTS + FONTS)
+          "const CACHE = 'jarvis-v67';" in sw and all(f"'./{f}'" in sw for f in ("data.js", "switcher.js", "obsidian.js", "memory.js", "assist-ui.js", "voice-mode.js", "tools.js", "voice-out.js") + PARTS + FONTS)
           and f"'./{JCSS}'" in sw and "SHELL.map((u) => c.add(new Request(u, { cache: 'reload' })).catch(() => null))" in sw)
     shell = re.search(r"const SHELL = \[([^\]]*)\]", sw)
     shell_files = re.findall(r"'\./([^'?]+)", shell.group(1)) if shell else []
@@ -301,9 +301,10 @@ def part_a():
     check("a. each separate part is loaded on its own with import() and has a fallback in the page",
           all(f"'./{f}', (m) => typeof m." in page for f in PARTS) and "return import(path).then(" in page and "function fallbackBrain(" in page
           and 'id="orb"' in page and "html[data-state=" in css and "D.fallbackApps" in page and "frameView(a)" in page, [f for f in PARTS if f"'./{f}', (m)" not in page])
-    check("a. kalshi.json from the Kalshi bot's own repo (kalshi-feed, main): raw first, then the API (security review 2026-11-01)",
-          "raw.githubusercontent.com/${OWNER}/kalshi-feed/main/kalshi.json" in data and "api.github.com/repos/${OWNER}/kalshi-feed/contents/kalshi.json?ref=main" in data
-          and "ref=kalshi" not in data and data.index("URLS.kalshiRaw") < data.index("URLS.kalshiApi, {"))
+    # night-bugsweep 2026-11-19: the kalshi-feed repo is on the suspended account (a 404 on every load): this site's own copy only, the PC feed first
+    check("a. kalshi.json: this site's own copy only (never the suspended account's kalshi-feed repo); the PC feed's Kalshi cards come first",
+          "kalshiLocal: '../kalshi.json'" in data and "kalshi-feed/main" not in data and "kalshi-feed/contents" not in data and "ref=kalshi" not in data
+          and "pcHasKalshi()" in data)
     check("a. data.js exports getFacts, the refreshes, the change event, the add-ons", all(x in data for x in (
         "export function getFacts()", "export function refreshLive()", "export function refreshKalshi()", "export function onChange(",
         "'planner.today.v1'", "export const fallbackApps", "export function refreshCrypto(", "export const VERSES", "export const QUOTES")))
@@ -352,6 +353,7 @@ def feeds(ctx, kal):
     ctx.route(re.compile(r"^https?://(?!127\.0\.0\.1[:/])"), lambda r: r.abort())       # nothing leaves the machine
     ctx.route("https://api.github.com/**", feed)
     ctx.route("https://raw.githubusercontent.com/**", feed)
+    ctx.route(re.compile(r"^http://(127\.0\.0\.1|localhost):\d+/kalshi\.json(\?.*)?$"), feed)     # Jarvis reads this site's own copy only
     ctx.route("https://api.coingecko.com/**", lambda r: r.fulfill(status=200, content_type="application/json", body=json.dumps(CRYPTO),
                                                                   headers={"Access-Control-Allow-Origin": "*"}))
 
@@ -839,7 +841,7 @@ def run_c(br, url):
         const reg = await Promise.race([navigator.serviceWorker.ready, new Promise((ok) => setTimeout(() => ok(null), 6000))]);
         if (!reg) return 'no worker';
         for (let i = 0; i < 30; i++) {
-          const c = await caches.open('jarvis-v66');
+          const c = await caches.open('jarvis-v67');
           const got = await Promise.all(['./index.html', './data.js', './%s', './orbitron.woff2', './rajdhani-500.woff2'].map((u) => c.match(u)));
           if (got.every(Boolean)) return 'ok';
           await new Promise((ok) => setTimeout(ok, 200));

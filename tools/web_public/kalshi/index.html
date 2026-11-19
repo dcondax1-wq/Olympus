@@ -104,7 +104,9 @@
 <script src="../olympus/quiet-net.js?v=q6a" data-fresh="raw:kalshi-feed,api:kalshi-feed,site:kalshi.json"></script>
 <script src="../olympus/gate-nav.js?v=g5" defer></script><!-- the way back to the Gate + Go to (olympus/gate-nav.js) -->
 <script src="../olympus/intro-app.js?v=i8" data-app="kalshi" data-name="Kalshi" data-glyph="K" data-color="#8fa07a" defer></script><!-- the app intro without the kit (olympus/intro-app.js) -->
-<script src="kfx.js?v=k26"></script>
-<script src="kalshi.js?v=k36"></script>
+<!-- defer (night-bugsweep 2026-11-19): the page's own scripts run after the document is parsed, in this order, before DOMContentLoaded; they no
+     longer hold the first paint (the phone budget: 300 kB / 9 render-blocking files; kalshi.js alone is 190 kB) -->
+<script src="kfx.js?v=k26" defer></script>
+<script src="kalshi.js?v=k36" defer></script>
 </body>
 </html>

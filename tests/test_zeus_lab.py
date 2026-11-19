@@ -237,6 +237,22 @@ def t_member(tmp):
           len(after.splitlines()) - len(before.splitlines()) <= 2)
     check("register(): a bad one is refused, file unchanged", Z.register({**e, "id": "zz_bad", "family": None}, p) and
           open(p, encoding="utf-8").read() == after)
+    # night-bugsweep 2026-11-19: a REPLACE kept the data but rewrote the whole file in json.dump's layout (every entry split over many lines)
+    e2 = {**e, "cells": 3, "title": "t2", "registered": "2099-01-01"}
+    check("register(): a replace is saved (its registered date kept)", Z.register(e2, p) == []
+          and next(x for x in Z.load_registry(p)[0] if x["id"] == "zz_member")["cells"] == 3
+          and next(x for x in json.load(open(p, encoding="utf-8"))["experiments"] if x["id"] == "zz_member")["registered"] == "2026-11-18")
+    after2 = open(p, encoding="utf-8").read()
+    gone, came = set(after.splitlines()) - set(after2.splitlines()), set(after2.splitlines()) - set(after.splitlines())
+    check("register(): a replace keeps the one-entry-per-line layout (only the replaced entry's line changes, nothing else moves)",
+          len(gone) == 1 and len(came) == 1 and '"zz_member"' in next(iter(came)) and len(after2.splitlines()) == len(after.splitlines()), (gone, came))
+    first = next(x for x in json.load(open(p, encoding="utf-8"))["experiments"] if "id" in x and x["id"] != "zz_member")
+    ml = after2.index('"id": "' + first["id"] + '"')
+    check("register(): replacing a multi-line hand-kept entry makes it one line in its own place, the entries around it untouched",
+          Z.register({**first, "title": first["title"] + " (re)"}, p) == []
+          and len(open(p, encoding="utf-8").read().splitlines()) <= len(after2.splitlines())
+          and open(p, encoding="utf-8").read()[:ml] == after2[:ml]
+          and [x["id"] for x in json.load(open(p, encoding="utf-8"))["experiments"] if "id" in x] == [x["id"] for x in json.loads(after2)["experiments"] if "id" in x])
 
 
 def t_funded(tmp):
