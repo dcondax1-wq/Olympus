@@ -1119,6 +1119,34 @@ class DailyUpdater:
 
 
 # ---------------------------------------------------------------------- CLI
+def signin(root: str = ROOT, fetch=None, say=print) -> int:
+    """GITHUB_SIGNIN.bat: fetch the backup once with the console, so Git Credential Manager opens its GitHub sign-in window
+    (only the first time) and saves the sign-in; the hourly auto-update then reads the PRIVATE backup with it. Fetch only:
+    the checkout, the bot and its files are not touched. 0 = signed in and the backup answers. Never raises."""
+    try:
+        src = source(root)
+        if src.get("remote") == "origin" or not src.get("url"):
+            say("  [FIX]  This folder is not connected to the backup yet: run SETUP_EVERYTHING.bat once instead.")
+            return 2
+        sh = Shell(log=file_log)
+        try:
+            ensure_helper(sh)
+        except Exception:  # noqa: BLE001
+            pass
+        acct = src.get("account")
+        say("  [..]   Checking GitHub" + (f" (if a GitHub window opens, sign in as {acct})" if acct else "") + "...")
+        c, why = (fetch or fetch_interactive)(sh, src)
+        if c == 0:
+            say("  [OK]   Signed in. The backup answers: the PC keeps updating itself every hour (outside trading time).")
+            return 0
+        say("  [FIX]  GitHub did not answer (" + (why or f"git exit {c}") + "). Run GITHUB_SIGNIN.bat again and sign in as "
+            + (acct or "the backup account") + ".")
+        return 1
+    except Exception as e:  # noqa: BLE001
+        say(f"  [FIX]  Sign-in failed: {e.__class__.__name__}")
+        return 1
+
+
 def main(argv=None) -> int:
     import argparse
     ap = argparse.ArgumentParser(prog="python -m engine.autoupdate", description="PC bot auto-update (owner opt-in)")
@@ -1134,10 +1162,15 @@ def main(argv=None) -> int:
                                                          "repo in update_source.json and turn auto-update on (bot server "
                                                          "stopped; a GitHub sign-in window may open)")
     g.add_argument("--source-status", action="store_true", help="read only: exit 0 when connected to the backup repo, else 10")
+    g.add_argument("--signin", action="store_true", help="GITHUB_SIGNIN.bat (owner 2026-11-19: backup made private): one fetch of "
+                                                        "the backup WITH the GitHub sign-in window, so the saved sign-in lets the "
+                                                        "hourly auto-update keep working; touches no code, safe while the bot runs")
     ap.add_argument("--port", type=int, default=int(os.environ.get("PORT") or 8766), help="the bot server's port (--connect)")
     a = ap.parse_args(argv)
     if a.connect:
         return connect(port=a.port)
+    if a.signin:
+        return signin()
     if a.source_status:
         code, words = source_status()
         print(f"  [{'OK' if code == 0 else '..'}]    {words}")

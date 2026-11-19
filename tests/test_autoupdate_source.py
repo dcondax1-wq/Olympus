@@ -329,6 +329,18 @@ def main() -> int:
     v = au.version(ROOT)
     check("version() names the source, no user@ part", "@" not in str(v.get("source")) and "olympus" in str(v.get("source")), v)
 
+    # GITHUB_SIGNIN.bat (owner 2026-11-19: the backup made private): one fetch WITH the sign-in window, fetch only
+    said = []
+    rc_ok = au.signin(fetch=lambda sh, src: (0, ""), say=said.append)
+    rc_bad = au.signin(fetch=lambda sh, src: (128, "auth failed"), say=said.append)
+    check("signin(): OK when the backup answers, FIX with a plain retry line when it does not; names the account to sign in as",
+          rc_ok == 0 and rc_bad == 1 and any("Signed in" in x for x in said) and any("GITHUB_SIGNIN.bat again" in x for x in said)
+          and any("sign in as" in x for x in said), said)
+    bat = open(os.path.join(ROOT, "GITHUB_SIGNIN.bat"), encoding="utf-8").read()
+    check("GITHUB_SIGNIN.bat runs engine.autoupdate --signin and nothing else that could touch the bot",
+          "-m engine.autoupdate --signin" in bat and "server" not in bat.lower().replace("never touches the bot", "")
+          and "STOP" not in bat and "taskkill" not in bat.lower(), bat[-300:])
+
     n, ok = len(RESULTS), sum(RESULTS)
     print(f"autoupdate_source: {ok}/{n} {'ALL PASS' if ok == n else 'FAILURES'}")
     return 0 if ok == n else 1
