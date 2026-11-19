@@ -344,8 +344,9 @@
 
     // ---- 4. the hero: rays and warm light behind the temple, the temple, its flash light, its sweep, the flare, sparks, the word
     var hero = el('div', 'oly-h', 'position:absolute;left:0;top:0;width:' + vw + 'px;height:' + vh + 'px', sc);
+    var hin = el('div', 'oly-hi', 'position:absolute;left:0;top:0;width:' + vw + 'px;height:' + vh + 'px', hero);   // the approach (its own layer)
     var tcx = ax, tcy = Y(520), R0 = Math.max(vw, vh) * 0.62;
-    var ray = can(hero, tcx - R0, tcy - R0, R0 * 2, R0 * 2, 0.22), rg = ray.g;
+    var ray = can(hin, tcx - R0, tcy - R0, R0 * 2, R0 * 2, 0.22), rg = ray.g;
     rg.globalCompositeOperation = 'lighter';
     for (var s = 0; s < 34; s++) {
       var a0 = (s / 34) * Math.PI * 2 + R() * 0.15, aw = 0.025 + R() * 0.07, st = 0.016 + R() * 0.05, up3 = Math.sin(a0) < 0 ? 1 : 0.3;
@@ -353,7 +354,7 @@
       gr.addColorStop(0, 'rgba(255,214,140,' + (st * up3).toFixed(3) + ')'); gr.addColorStop(0.35, 'rgba(255,190,110,' + (st * up3 * 0.45).toFixed(3) + ')'); gr.addColorStop(1, 'rgba(255,180,100,0)');
       rg.fillStyle = gr; rg.beginPath(); rg.moveTo(R0, R0); rg.arc(R0, R0, R0, a0, a0 + aw); rg.closePath(); rg.fill();
     }
-    var gw = tw * 2.6, gh = th * 2.3, glow = can(hero, tcx - gw / 2, Y(226) - gh * 0.28, gw, gh, 0.5), gg = glow.g;
+    var gw = tw * 2.6, gh = th * 2.3, glow = can(hin, tcx - gw / 2, Y(226) - gh * 0.28, gw, gh, 0.5), gg = glow.g;
     gg.translate(-(tcx - gw / 2), -(Y(226) - gh * 0.28));
     var g1 = gg.createRadialGradient(tcx, Y(560), 0, tcx, Y(560), tw * 0.95);
     g1.addColorStop(0, 'rgba(255,214,140,.62)'); g1.addColorStop(0.4, 'rgba(255,170,80,.2)'); g1.addColorStop(1, 'rgba(255,150,60,0)');
@@ -365,7 +366,7 @@
     var core = gg.createRadialGradient(tcx, Y(590), 0, tcx, Y(590), tw * 0.42);       // the inner light, seen between the columns
     core.addColorStop(0, 'rgba(255,240,200,.95)'); core.addColorStop(0.5, 'rgba(255,200,110,.5)'); core.addColorStop(1, 'rgba(255,170,80,0)');
     gg.fillStyle = core; gg.fillRect(X(220), Y(300), tw, th);
-    var pad = 4, tb = el('div', 'oly-tb', 'position:absolute;left:' + (X(174) - pad) + 'px;top:' + (Y(226) - pad) + 'px;width:' + (tw + 2 * pad) + 'px;height:' + (th + 2 * pad) + 'px', hero);
+    var pad = 4, tb = el('div', 'oly-tb', 'position:absolute;left:' + (X(174) - pad) + 'px;top:' + (Y(226) - pad) + 'px;width:' + (tw + 2 * pad) + 'px;height:' + (th + 2 * pad) + 'px', hin);
     var TX = function (u) { return (u - 174) * k + pad; }, TY = function (v) { return (v - 226) * k + pad; };
     var tc = still ? null : can(tb, 0, 0, tw + 2 * pad, th + 2 * pad, dpr);
     if (tc) temple(tc.g, TX, TY, k, COLD, false);
@@ -380,7 +381,7 @@
     var swp = el('div', 'oly-sw', 'position:absolute;left:0;top:0;width:100%;height:100%;overflow:hidden;-webkit-mask:' + mk + ' 0 0/100% 100% no-repeat;mask:' + mk + ' 0 0/100% 100% no-repeat', tb);
     var band = el('i', '', 'position:absolute;top:-20%;bottom:-20%;left:0;width:42%;background:linear-gradient(100deg,rgba(255,250,235,0) 0%,rgba(255,250,235,.12) 30%,rgba(255,252,240,.9) 50%,rgba(255,250,235,.12) 70%,rgba(255,250,235,0) 100%)', swp);
     // the flare at the apex: a hot core and a long anamorphic streak (the film-lens look)
-    var fw = vw * 1.1, fh = 46, flare = can(hero, ax - fw / 2, ay - fh / 2, fw, fh, 0.5), flg = flare.g;
+    var fw = vw * 1.1, fh = 46, flare = can(hin, ax - fw / 2, ay - fh / 2, fw, fh, 0.5), flg = flare.g;
     var sk = flg.createLinearGradient(0, 0, fw, 0);
     sk.addColorStop(0, 'rgba(150,170,255,0)'); sk.addColorStop(0.38, 'rgba(170,190,255,.35)'); sk.addColorStop(0.5, 'rgba(255,255,255,.95)'); sk.addColorStop(0.62, 'rgba(170,190,255,.35)'); sk.addColorStop(1, 'rgba(150,170,255,0)');
     flg.fillStyle = sk; flg.fillRect(0, fh / 2 - 1.2, fw, 2.4);
@@ -389,7 +390,7 @@
     flg.fillStyle = fc; flg.fillRect(fw / 2 - fh / 2, 0, fh, fh);
 
     // the word: each letter its own canvas (gold leaf: a metal ramp, a lit top edge, a dark under edge), set with Cinzel's spacing
-    var wgw = fs * wordU / 1000 + fs * 1.2, wglow = can(hero, ax - wgw / 2, wy - cap - fs * 0.55, wgw, cap + fs * 1.1, 0.5), wgg = wglow.g;
+    var wgw = fs * wordU / 1000 + fs * 1.2, wglow = can(hin, ax - wgw / 2, wy - cap - fs * 0.55, wgw, cap + fs * 1.1, 0.5), wgg = wglow.g;
     wgg.save(); wgg.translate(wgw / 2, (cap + fs * 1.1) / 2); wgg.scale(1, 0.32);
     var wr = wgg.createRadialGradient(0, 0, 0, 0, 0, wgw / 2);
     wr.addColorStop(0, 'rgba(255,190,100,.32)'); wr.addColorStop(0.6, 'rgba(255,170,80,.1)'); wr.addColorStop(1, 'rgba(255,160,70,0)');
@@ -399,7 +400,7 @@
     var wx0 = ax - (wordU / 2) * u, letters = [], gmask = '';
     for (var c2 = 0; c2 < word.length; c2++) {
       var G = GL[word[c2]], lx = wx0 + (xs[c2] + G[1]) * u - 2, lw2 = (G[2] - G[1]) * u + 4, lt = wy - 0.73 * fs - 2, lh2 = 0.76 * fs + 4;
-      var lc = can(hero, lx, lt, lw2, lh2, dpr), lg2 = lc.g, path = new Path2D(G[3]);
+      var lc = can(hin, lx, lt, lw2, lh2, dpr), lg2 = lc.g, path = new Path2D(G[3]);
       lg2.translate(-G[1] * u + 2, wy - lt); lg2.scale(u, u);
       lg2.save(); lg2.translate(0, 34); lg2.fillStyle = 'rgba(42,26,6,.9)'; lg2.fill(path); lg2.restore();
       lg2.fillStyle = lin(lg2, 0, -700, 0, 0, [0, '#fff6dc', 0.18, '#f6dc96', 0.46, '#e0b25a', 0.72, '#b8852f', 0.9, '#9a6a22', 1, '#c79843']); lg2.fill(path);
@@ -410,14 +411,14 @@
     }
     // the word's glint: a band of light, masked to the letters (one svg mask for the whole word)
     var gwW = wordU * u + 2, gm = 'url("data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + (GL.O[1] * u).toFixed(2) + ' 0 ' + gwW.toFixed(2) + ' ' + (0.76 * fs).toFixed(2) + '">' + gmask + '</svg>') + '")';
-    var gl = el('div', 'oly-gl', 'position:absolute;overflow:hidden;left:' + (wx0 - 1).toFixed(1) + 'px;top:' + (wy - 0.73 * fs).toFixed(1) + 'px;width:' + gwW.toFixed(1) + 'px;height:' + (0.76 * fs).toFixed(1) + 'px;-webkit-mask:' + gm + ' 0 0/100% 100% no-repeat;mask:' + gm + ' 0 0/100% 100% no-repeat', hero);
+    var gl = el('div', 'oly-gl', 'position:absolute;overflow:hidden;left:' + (wx0 - 1).toFixed(1) + 'px;top:' + (wy - 0.73 * fs).toFixed(1) + 'px;width:' + gwW.toFixed(1) + 'px;height:' + (0.76 * fs).toFixed(1) + 'px;-webkit-mask:' + gm + ' 0 0/100% 100% no-repeat;mask:' + gm + ' 0 0/100% 100% no-repeat', hin);
     var gband = el('i', '', 'position:absolute;top:0;bottom:0;left:0;width:18%;background:linear-gradient(100deg,rgba(255,252,240,0),rgba(255,252,240,.78) 50%,rgba(255,252,240,0))', gl);
     // the rule and the four doors' line
-    var rl = el('div', '', 'position:absolute;left:' + (ax - 78) + 'px;top:' + ry + 'px;width:156px;height:7px', hero);
+    var rl = el('div', '', 'position:absolute;left:' + (ax - 78) + 'px;top:' + ry + 'px;width:156px;height:7px', hin);
     var r1 = el('i', '', 'position:absolute;left:0;top:3px;width:70px;height:1px;background:linear-gradient(90deg,rgba(226,182,92,0),#e2b65c);transform-origin:100% 50%', rl);
     var r2 = el('i', '', 'position:absolute;right:0;top:3px;width:70px;height:1px;background:linear-gradient(90deg,#e2b65c,rgba(226,182,92,0));transform-origin:0 50%', rl);
     var dm = el('i', '', 'position:absolute;left:75px;top:0.5px;width:6px;height:6px;background:linear-gradient(135deg,#fff0c4,#d9a74e);transform:rotate(45deg)', rl);
-    var tg = el('div', '', 'position:absolute;left:0;right:0;top:' + ty + 'px;text-align:center;font:500 10.5px/1 -apple-system,"SF Pro Text",system-ui,"Inter","Helvetica Neue",Arial,sans-serif;letter-spacing:.42em;padding-left:.42em;color:rgba(236,218,176,.66);white-space:nowrap', hero);
+    var tg = el('div', '', 'position:absolute;left:0;right:0;top:' + ty + 'px;text-align:center;font:500 10.5px/1 -apple-system,"SF Pro Text",system-ui,"Inter","Helvetica Neue",Arial,sans-serif;letter-spacing:.42em;padding-left:.42em;color:rgba(236,218,176,.66);white-space:nowrap', hin);
     tg.textContent = 'ZEUS · MONEY · KALSHI';
 
     // ---- 5. the veils: the film starts inside the clouds and flies through them (two near masses that open around the temple and pass
@@ -503,7 +504,8 @@
       cam(sky, 1.0, 1.07, -3); cam(fl, 1.0, 1.1, 2); cam(cMid, 1.0, 1.19, 8); cam(lit, 1.0, 1.19, 8); cam(cNear, 1.02, 1.38, 18);
       A(veils[0], [{ opacity: 1, transform: 'scale(1)' }, { opacity: 0.85, transform: 'scale(1.55)', offset: 0.42 }, { opacity: 0, transform: 'scale(3)' }], 560, 0, 'linear');
       A(veils[1], [{ opacity: 1, transform: 'scale(1)' }, { opacity: 0.75, transform: 'scale(1.35)', offset: 0.45 }, { opacity: 0, transform: 'scale(2.2)' }], 660, 30, 'linear');
-      A(hero, [{ transform: 'scale(.9)' }, { transform: 'scale(1)' }], 1150, 0, 'cubic-bezier(.16,.62,.3,1)');
+      A(hin, [{ transform: 'scale(.9)' }, { transform: 'scale(1)' }], 1150, 0, 'cubic-bezier(.16,.62,.3,1)');
+      hin.style.transformOrigin = ax + 'px ' + (base - th * 0.3) + 'px';
       var sh = Math.max(3, vw / 78), shk = [[0, 0], [-1, 0.55], [0.85, -0.7], [-0.6, 0.45], [0.42, -0.3], [-0.2, 0.18], [0, 0]];
       A(sc, shk.map(function (q) { return { transform: 'translate(' + (q[0] * sh).toFixed(1) + 'px,' + (q[1] * sh).toFixed(1) + 'px)' }; }), 380, T.strike, 'linear');
       A(ground, [{ opacity: 0, transform: 'scale(.05,.01)' }, { opacity: 0.9, transform: 'scale(.2,.042)', offset: 0.1 }, { opacity: 0, transform: 'scale(1.35,.26)' }], 950, T.strike + 50, 'cubic-bezier(.1,.7,.3,1)');
@@ -551,7 +553,7 @@
           { transform: 'translate(' + (x0 + sway * 0.7).toFixed(1) + 'px,' + (y0 - rise).toFixed(1) + 'px)', opacity: 0 }], du, d0, 'ease-out');
       });
       // the hand-off: the temple and the word are gone (a push through) before Jarvis shows (never two logos at once), then the clouds clear
-      A(hero, [{ opacity: 1, transform: 'scale(1)' }, { opacity: 0, transform: 'scale(1.07)' }], 240, T.out, 'cubic-bezier(.3,0,.6,1)', 'forwards');
+      A(hero, [{ opacity: 1, transform: 'scale(1)' }, { opacity: 0, transform: 'scale(1.07)' }], 240, T.out, 'cubic-bezier(.3,0,.6,1)');
       hero.style.transformOrigin = ax + 'px ' + (base - th * 0.3) + 'px';
       A(stage, [{ opacity: 1 }, { opacity: 0 }], T.end - T.out - 180, T.out + 180, 'cubic-bezier(.4,0,.6,1)');
     } else {

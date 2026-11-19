@@ -358,10 +358,8 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
   var up = function () { if (holdUp) setTimeout(function () { holdUp = false; }, 80); };
 
   // ---------------------------------------------------------------- the mark and the still versions (no WebGL)
-  // v3 (night-intro3 2026-11-18): the olympus-entry script's scene (window.__olyEntry, above). mark 2.2 s = the film title (a new launch);
-  // calm 3.5 s (reduce motion), fade 0.8 s, off 0.5 s = its last frame, still, opacity only. The scene runs its own clock off the main
-  // thread (Web Animations, transform / opacity), so a busy start cannot stretch it: the timers here only tidy up. If that script is
-  // missing or fails: the Home Screen icon's temple (web/icons/icon.svg, the same shapes) and OLYMPUS, still.
+  // v3 (night-intro3 2026-11-18): entry.js's scene (window.__olyEntry). mark 2.2 s = the film title; calm 3.5 s, fade 0.8 s, off 0.5 s = its
+  // last frame, still. It runs its own clock off the main thread (Web Animations): the timers here only tidy up. No scene: the plain still.
   var MARK = '<svg viewBox="160 200 704 624" aria-hidden="true"><defs><linearGradient id="olyGd" x1="0" y1="226" x2="0" y2="808" gradientUnits="userSpaceOnUse">'
     + '<stop offset="0" stop-color="#fbe7b0"/><stop offset=".45" stop-color="#e2b65c"/><stop offset="1" stop-color="#b0802f"/></linearGradient></defs><g fill="url(#olyGd)">'
     + '<path d="M512 226 830 392H194zM512 282 296 362h432z" fill-rule="evenodd"/><rect x="194" y="408" width="636" height="44" rx="6"/>'
@@ -373,9 +371,9 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     var w = doc.createElement('div');
     w.className = 'oly-w oly-' + mode;
     el.appendChild(w);
-    if (W.__olyEntry) { show(w, mode); return; }
-    // entry.js (deferred) runs once the page is parsed, before Jarvis's start: until then the overlay stays dark (the scene's own first
-    // frame); it calls back (window.__olyEntryReady). Never more than 1.2 s (offline with no saved copy): the plain still instead
+    if (W.__olyEntry || (mode !== 'mark' && mode !== 'calm')) { show(w, mode); return; }   // off / fade never wait (reload, safe start)
+    // entry.js (deferred) runs once the page is parsed, before Jarvis's start; the dark overlay (the scene's first frame) waits for its
+    // call (window.__olyEntryReady), 1.2 s at most (offline, no saved copy: the plain still)
     var go = function () { if (W.__olyEntryReady !== go) return; W.__olyEntryReady = null; clearTimeout(t); if (!st.done) show(w, mode); };
     var t = setTimeout(go, 1200);
     W.__olyEntryReady = go;
@@ -390,7 +388,6 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
       st.q = 'scene';
       el.style.background = 'transparent';                         // the scene brings its own night; its last fade shows Jarvis
       if (HOLD >= 0) { scene.hold(HOLD * 1000); return; }           // a still frame for screenshots (automation only)
-      // the hard stops again from here (the scene may start a little after the overlay: once the page is parsed)
       el.style.animation = 'none'; void el.offsetWidth; el.style.animation = 'olyEnd .45s linear ' + ((scene.end + 600) / 1000).toFixed(2) + 's forwards';
       clearTimeout(killT); killT = setTimeout(function () { finish('deadline'); }, scene.end + 1200);
       setTimeout(function () {                                      // the hand-off: Jarvis may start its 3D core now (under the fade)
@@ -404,14 +401,17 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
       return;
     }
     var len = LEN[mode] || 0.5;
-    var hold = mode === 'mark' ? 1300 : Math.round(len * (mode === 'calm' ? 720 : 400));       // how long the still stands
+    var hold = mode === 'mark' ? 900 : Math.round(len * (mode === 'calm' ? 720 : 400));        // how long the still stands
     var fade = mode === 'mark' ? 420 : Math.round(len * (mode === 'calm' ? 280 : 600));        // then the composited fade onto Jarvis
+    if (HOLD < 0) {                                                 // the stops from here (it may have waited for entry.js)
+      clearTimeout(killT); killT = setTimeout(function () { finish('deadline'); }, hold + fade + 1200);
+      el.style.animation = 'none'; void el.offsetWidth; el.style.animation = 'olyEnd .45s linear ' + ((hold + fade + 600) / 1000).toFixed(2) + 's forwards';
+    }
     if (mode === 'calm') {                                          // reduce motion: in and out by opacity only
       if (w.animate) w.animate([{ opacity: 0 }, { opacity: 1 }], { duration: Math.round(len * 380), easing: 'ease-out', fill: 'both' });
       else { w.style.opacity = '0'; w.style.transition = 'opacity ' + Math.round(len * 380) + 'ms ease-out'; setTimeout(function () { w.style.opacity = '1'; }, 30); }
     }
-    // the hard stop is set again from here (like the film's first frame): a phone whose main thread is busy with Jarvis's own start
-    // fires this timer late, and the old deadline (due by then too) must not cut the fade short (state 'deadline' instead of 'done')
+    // and again when the fade starts: a busy start fires this timer late; the old deadline must not cut the fade short
     if (HOLD < 0) setTimeout(function () {
       clearTimeout(killT); killT = setTimeout(function () { finish('deadline'); }, fade + 1200);
       fadeOut(fade, 'reveal');

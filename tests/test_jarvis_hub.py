@@ -1698,6 +1698,12 @@ ENTRY_SCENE = """(() => { const sc = document.querySelector('#olyIntro .oly-s');
   A.forEach((a) => a.effect.getKeyframes().forEach((k) => Object.keys(k).forEach((x) => { if (!/^(offset|computedOffset|easing|composite)$/.test(x)) props.add(x); })));
   const h = sc.querySelector('.oly-h'), word = h ? [...h.querySelectorAll('canvas.oly-2d')].filter((c) => c.getBoundingClientRect().top > innerHeight * 0.45 && c.getBoundingClientRect().width < 80) : [];
   return { scene: true, canvases: sc.querySelectorAll('canvas.oly-2d').length, letters: word.length, anims: A.length, props: [...props] }; })()"""
+# ...read the moment the scene is built (a MutationObserver's callback runs once the building script is done): a loaded test machine
+# can reach the page only after the 2.2 s entry is over
+ENTRY_WATCH = """(() => { const see = %s;
+  new MutationObserver((ms, mo) => { if (window.__entryScene || !document.querySelector('#olyIntro .oly-s .oly-h canvas')) return;
+    window.__entryScene = Object.assign(see(), { gl: !!document.querySelector('#olyIntro canvas:not(.oly-2d)') }); mo.disconnect(); })
+    .observe(document, { childList: true, subtree: true }); })();""" % ENTRY_SCENE[:-2]
 # the hand-off, frame by frame (the scene held by jarvis.intro.hold, its animations set to t): the scene's opacity (1 = Jarvis hidden) and the
 # temple + word's (the hero). Never two logos at once: once Jarvis shows (scene < 0.85) the hero is gone (<= 0.1)
 HANDOFF = """(() => { const sc = document.querySelector('#olyIntro .oly-s'), h = sc && sc.querySelector('.oly-h'); if (!h) return null;
@@ -1746,21 +1752,20 @@ def run_intro(br, url):
 
     # 0. a cold open (2026-11-18, owner: the entry "looks made in the 2000s", then "looks wrong / cheap"): the 2.2 s entry v3 (night-intro3: a
     # storm, a lightning strike on the gold temple, OLYMPUS; 2D canvases moved by the Web Animations API), no WebGL, then Jarvis
-    ctx, p, errs = intro_page(br, url, init=[SFX_KIT])
+    ctx, p, errs = intro_page(br, url, init=[SFX_KIT, ENTRY_WATCH])
     wait(p, "window.__olyIntro && window.__olyIntro.mode")
-    wait(p, "window.__olyIntro.q === 'scene' || window.__olyIntro.done")                     # entry.js (deferred) has drawn it
-    mk_gl = p.evaluate("!!document.querySelector('#olyIntro canvas:not(.oly-2d)')")          # the film's WebGL canvas (the entry's are 2D: .oly-2d)
-    mk = p.evaluate(ENTRY_SCENE)
     wait(p, INTRO_GONE)
+    mk = p.evaluate("window.__entryScene || { scene: false }")                               # as built (entry.js, deferred)
+    mk_gl = mk.get("gl", True)                                                                # the film's WebGL canvas (the entry's are 2D: .oly-2d)
     ready_slow(p)
     s = intro_state(p)
     check("o. a cold open plays the 2.2 s entry: its scene (night sky, clouds, the bolt, the gold temple, OLYMPUS in 7 letters), no WebGL, it ends by itself "
           "(done) and the mic is tappable, no page errors",
           s["st"]["mode"] == "mark" and s["st"]["q"] == "scene" and s["st"]["len"] == 2.2 and s["st"]["state"] == "done" and not mk_gl and mk["scene"]
-          and mk["canvases"] >= 20 and mk["letters"] == 7 and s["st"]["layers"] == mk["canvases"] and s["st"]["dpr"] <= 2 and not s["st"]["err"]
+          and mk.get("canvases", 0) >= 20 and mk.get("letters") == 7 and s["st"].get("layers") == mk.get("canvases") and s["st"].get("dpr", 9) <= 2 and not s["st"]["err"]
           and p.evaluate(MIC_FREE) and not errs, (s, mk_gl, mk, errs))
     check("o. the entry moves only transform and opacity (the phone's compositor runs it while Jarvis starts underneath), with Web Animations it started itself",
-          mk["anims"] >= 60 and mk["anims"] == s["st"]["anims"] and set(mk["props"]) <= {"transform", "opacity"}, mk)
+          mk.get("anims", 0) >= 60 and mk.get("anims") == s["st"].get("anims") and set(mk.get("props", ["?"])) <= {"transform", "opacity"}, mk)
     check("o. the mark remembers the launch (the next start within 20 minutes gets the 0.5 s fade), no in-progress flag left",
           bool(p.evaluate("localStorage.getItem('jarvis.intro.day')")) and bool(p.evaluate("localStorage.getItem('jarvis.intro.at')")) and p.evaluate("localStorage.getItem('jarvis.intro.run')") is None)
     p.reload(wait_until="commit")
@@ -1911,8 +1916,10 @@ def run_intro(br, url):
         gl = p.evaluate("!!document.querySelector('#olyIntro canvas:not(.oly-2d)')")
         wait(p, INTRO_GONE)
         s = intro_state(p)
+        # reduce motion: the entry's last frame (its scene, still); the quick versions use it only when entry.js is already there, else the
+        # plain still at once (never a wait on a reload or a safe start): no animation either way
         check(f"o. {label}", s["st"]["mode"] == want and s["st"]["q"] == "still" and s["st"]["len"] == length and not gl and s["st"]["state"] == "done"
-              and s["st"].get("anims") == 0 and (s["st"].get("layers") or 0) >= 20, s)
+              and not s["st"].get("anims") and (want != "calm" or (s["st"].get("layers") or 0) >= 20), s)
         ctx.close()
     ctx, p, errs = intro_page(br, url, extra="localStorage.setItem('jarvis.intro', 'off');")
     ready_slow(p)
