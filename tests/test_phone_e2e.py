@@ -539,7 +539,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         if host in ("api.github.com", "raw.githubusercontent.com"):
             if CTL.mode == "down":                        # offline: the feeds are gone too
                 return self.drop()
-            if path.endswith("/kalshi.json"):     # nq-dashboard/kalshi/ (branch kalshi) and the kalshi-feed repo (main)
+            if path.endswith("/kalshi.json"):     # the old kalshi-feed repo / branch kalshi: retired (polish2 2026-11-19), the pages read BASE + kalshi.json
                 if CTL.kalshi != "published":
                     return self.send_bytes(404, b"404: Not Found", "text/plain; charset=utf-8", cors)
                 return self.send_bytes(200, json.dumps(kalshi_json()).encode(), "application/json", cors)

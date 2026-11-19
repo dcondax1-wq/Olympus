@@ -3,7 +3,7 @@
 // Reads ../home.json (the small first-paint file; never the 8 MB data.json), ./howto.json (docs/NQ_BOT_BACK.md, bundled by tools/nq_howto_build.py) and ./fixture.json (DEMO, never blank).
 // Read only: it sends nothing and keeps nothing. Text only through textContent / createElementNS. The 3D columns come from nqscene.js (optional). window.NQ is the test hook.
 // ?demo=1 the example; ?demo=1&silent=4d (or 90m, 5h) the example with a silent PC; ?flat=1 the 2D columns; ?howto=1 opens the sheet.
-import * as C from './nqcore.js';
+import * as C from './nqcore.js?v=d1';   // d1 (polish2 2026-11-19): the CME trading day
 import * as T from '../olympus/truth.js';
 
 const O = window.OLYMPUS || null;

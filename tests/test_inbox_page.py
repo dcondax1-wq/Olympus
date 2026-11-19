@@ -57,7 +57,8 @@ def part_a():
     check("a. no CDN: every src and href in the page is local", not re.search(r'(src|href)="https?://', html))
     check("a. no innerHTML / insertAdjacentHTML / document.write", not any(re.search(r"innerHTML|insertAdjacentHTML|document\.write", s) for s in js.values()))
     urls = set(re.findall(r"https?://[^\s'\"`)]+", js["inbox.js"] + js["inboxcore.js"]))
-    check("a. the only outside address is the Kalshi feed (read like the Kalshi page does); no POST, WebSocket, beacon", urls == {"https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json"}
+    check("a. no outside address at all (the Kalshi feed is this site's own kalshi.json, read like the Kalshi page does; the kalshi-feed repo is retired); no POST, WebSocket, beacon", not urls
+          and "const SITE_FEED = '../kalshi.json';" in js["inbox.js"]
           and not re.search(r"method\s*:|WebSocket|sendBeacon|XMLHttpRequest|EventSource", js["inbox.js"]), urls)
     wr = {x.strip() for x in re.findall(r"jset\(([^,)]+)", js["inbox.js"])} | {x.strip() for x in re.findall(r"LS\.setItem\(([^,)]+)", js["inbox.js"])}
     check("a. it writes only its own keys (inbox.*): the cache, the Kalshi status log, the read state, the card", wr <= {"K.CACHE_KEY", "K.KALSHI_KEY", "'inbox.card.v1'", "'inbox.probe'", "k"}
@@ -157,9 +158,12 @@ def part_c():
 
             def mock(route):
                 u = route.request.url
-                if live.get("down") and (u.endswith(".json") or "kalshi-feed" in u) and "/inbox/" not in u:
+                if "kalshi-feed" in u:                    # the retired repo: never asked (a request here fails the run below)
+                    posts.append("RETIRED " + u)
                     return route.abort()
-                if "kalshi-feed" in u:
+                if live.get("down") and u.endswith(".json") and "/inbox/" not in u:
+                    return route.abort()
+                if u.split("?")[0].endswith("/kalshi.json"):  # the Kalshi feed: this site's own copy
                     return route.fulfill(status=200, content_type="application/json", body=json.dumps(live["kalshi"]))
                 if u.endswith("/bridge/status.json"):
                     return route.fulfill(status=200, content_type="application/json", body=json.dumps(live["bridge"])) if live["bridge"] else route.abort()

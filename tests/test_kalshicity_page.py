@@ -1,5 +1,5 @@
 """KALSHI CITY (tools/web_public/kalshicity/, OLYMPUS 2026-11-04): the night city of the Kalshi bot's edges, over the learning engine's files.
-  a. the static rules: the kit (?v=o2, data-app), the render core + Jarvis's three.js, no CDN, no innerHTML, only the site's own files plus the public kalshi-feed are
+  a. the static rules: the kit (?v=o2, data-app), the render core + Jarvis's three.js, no CDN, no innerHTML, only the site's own files (its kalshi.json too; the kalshi-feed repo is retired) are
      fetched (read only: no POST, no key), safe areas and the orb's corner, 16 px gutters, reduced motion, the manifest, the icon, jarvis.json, the fixture
   b. the pure modules in node: cityfeed.js (shape, the live merge, the cards, the clock) and citylayout.js (one district per market, every edge placed once, nothing
      overlaps, height follows EV, grey and low below 30 bets, going-up / crumbling flags, a deterministic skyline)
@@ -26,7 +26,7 @@ import threading
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB = os.path.join(ROOT, "tools", "web_public")
 PAGE = os.path.join(WEB, "kalshicity")
-RAW_PREFIX = "https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/"
+FEED_PATH = "/kalshi.json"          # the bot's feed: this site's own copy (the old kalshi-feed repo is retired, polish2 2026-11-19)
 RES = []
 
 
@@ -70,10 +70,10 @@ def part_a():
           all(n in fxs for n in ("godRays", "lightning", "aurora", "lensFlare", "OLYMPUS_FX")) and '<script src="../olympus/fx-core.js?v=f1"></script>' in html and "O.sfx(" in fxs and "AudioContext" not in " ".join(js.values()))
     check("a. no innerHTML / insertAdjacentHTML / document.write (the data only ever goes in as text)", not any(re.search(r"innerHTML|insertAdjacentHTML|document\.write", s) for s in js.values()))
     fetched = set(re.findall(r"getJSON\(([^,)]+)", js["kalshicity.js"]))
-    check("a. the page fetches only edges.json, learning_log.json, hypotheses.json (the ideas' paper scores), the public kalshi-feed (RAW), the research lessons (learned.json) and its fixture; no WebSocket / beacon / XHR / EventSource",
-          {x.strip() for x in fetched} - {"url"} == {"'edges.json'", "'learning_log.json'", "RAW", "SITE_FEED", "'learned.json'", "'hypotheses.json'", "'fixture.json'"} and not any(re.search(r"WebSocket|sendBeacon|XMLHttpRequest|EventSource", s) for s in js.values()), fetched)
-    check("a. RAW is the public kalshi-feed's kalshi.json (read only: GET, no key, no header), and nothing of Kalshi's own is called",
-          "raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json" in js["cityfeed.js"] and not re.search(r"kalshi\.com|trading-api|api\.elections", " ".join(js.values()))
+    check("a. the page fetches only edges.json, learning_log.json, hypotheses.json (the ideas' paper scores), the site's kalshi.json (SITE_FEED), the research lessons (learned.json) and its fixture; no WebSocket / beacon / XHR / EventSource",
+          {x.strip() for x in fetched} - {"url"} == {"'edges.json'", "'learning_log.json'", "SITE_FEED", "'learned.json'", "'hypotheses.json'", "'fixture.json'"} and not any(re.search(r"WebSocket|sendBeacon|XMLHttpRequest|EventSource", s) for s in js.values()), fetched)
+    check("a. the bot's feed is this site's ../kalshi.json (read only: GET, no key, no header; never the retired kalshi-feed repo), and nothing of Kalshi's own is called",
+          "const SITE_FEED = '../kalshi.json';" in js["kalshicity.js"] and not any("kalshi-feed/main" in s or "githubusercontent" in s for s in js.values()) and not re.search(r"kalshi\.com|trading-api|api\.elections", " ".join(js.values()))
           and "method:" not in js["kalshicity.js"].replace(" ", "").lower() and "'POST'" not in js["kalshicity.js"] and "headers" not in js["kalshicity.js"])
     check("a. safe areas on every edge, the orb's corner (dock stops 96 px from the right, the sheet sits 52 px above the dock), 44 px tap rows, dvh after vh, reduced motion, touch-action none",
           all(f"var(--s{x})" in css for x in "trbl") and "right: calc(var(--sr) + var(--oly-orb-clear, 96px))" in css and "min-height: 44px" in css and "min-height: 48px" in css
@@ -300,10 +300,10 @@ def run_browser():
 
                 def guard(route):
                     u = route.request.url
-                    if u.startswith(RAW_PREFIX):
+                    if u.startswith(f"http://127.0.0.1:{srv.server_address[1]}") and u.split("?")[0].endswith(FEED_PATH):
                         raw_hits.append(u)
                         if live["mode"] == "ok":
-                            return route.fulfill(status=200, body=json.dumps(feed), content_type="application/json", headers={"access-control-allow-origin": "*"})
+                            return route.fulfill(status=200, body=json.dumps(feed), content_type="application/json")
                         return route.abort()
                     if u.startswith(f"http://127.0.0.1:{srv.server_address[1]}") or u.startswith(("data:", "blob:")):
                         return route.continue_()
@@ -586,8 +586,8 @@ def run_browser():
     finally:
         srv.shutdown()
         shutil.rmtree(tmp, ignore_errors=True)
-    check("c. nothing left the machine: no request to any origin but the public feed address, which this test answers itself (GET, no key)",
-          not outside and raw_hits and all(u.endswith("/main/kalshi.json") for u in raw_hits), (outside[:3], raw_hits[:2]))
+    check("c. nothing left the machine: no request to any other origin (the bot's feed is the site's own kalshi.json, which this test answers itself: GET, no key)",
+          not outside and raw_hits and all(u.split("?")[0].endswith(FEED_PATH) for u in raw_hits), (outside[:3], raw_hits[:2]))
 
 
 def main():

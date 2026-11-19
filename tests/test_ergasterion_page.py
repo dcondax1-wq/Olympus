@@ -30,7 +30,6 @@ APP, NAME = "ergasterion", "Ergasterion"
 check = AK.check
 D = os.path.join(AK.WEB, APP)
 BUILD = os.path.join(AK.ROOT, "tools", "ergasterion_build.py")
-KALSHI = "https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json"
 SCENES = {"stars", "smoke", "coins", "embers", "neurons", "skyline", "torches", "threads", "streaks", "bars", "leaves", "columns", "shards", "rings", "maze"}
 READS = ("./builders.json", "./queue.json", "../home.json", "../money/index.json", "../cronos/status.json", "../prometheus/forge.json", "../hephaestus/data.json")
 BUDGET = {"calls": 45, "triangles": 150000}        # the high tier's budget for the whole factory (floor.js draws about 15 calls / 40k triangles before post-processing)
@@ -88,7 +87,7 @@ def test_static():
           and all((a["last_t"] > 0 and all(c["t"] > 0 and c["s"] for c in a["commits"]) and len(a["commits"]) <= 8 and isinstance(a["folders"], list)) if a["live"] else (a["note"] == "job only, no live activity" and not a["commits"] and a["last_t"] == 0) for a in bj["agents"])
           and (bj["source"] == "git") == any(a["live"] for a in bj["agents"]) and not re.search(r"[<>]", json.dumps(bj)), bj["source"])
     check("a. no secrets or markup in queue.json", not re.search(r"[<>]|api[_-]?key|password|secret|ghp_|sk-[a-z0-9]{10}", json.dumps(q), re.I))
-    AK.static_kit(APP, NAME, reads=READS, allow_urls=(KALSHI,))
+    AK.static_kit(APP, NAME, reads=READS)          # the Kalshi feed is the site's ../kalshi.json (the kalshi-feed repo is retired): no web address
     js = AK.read(os.path.join(D, "ergasterion.js")) + AK.read(os.path.join(D, "ergasterioncore.js"))
     check("a. Ergasterion only informs: no localStorage / cookie of its own, no POST, no window.open, nothing started, bought or traded", not re.search(r"localStorage|sessionStorage|indexedDB|method:\s*['\"]POST|window\.open|location\.href\s*=", js))
     check("a. the 3D files: floor.js (render core) and floorload.js (its own module tag, before the page)", all(os.path.isfile(os.path.join(D, n)) for n in ("floor.js", "floorload.js")))
@@ -836,7 +835,7 @@ def test_page():
                 check("c. REAL Builders' camp: the agents of builders.json by name (never 'Example'), a tent each, and the note says where the activity comes from (git at build time, or job lines only)",
                       "Example" not in rc[0] and rc[1] == min(10, len(bj["agents"])) and sorted(rc[3]) == sorted(a["name"] for a in bj["agents"][:10]) and ("Read from git when the site was built" in rc[2] if bj["source"] == "git" else "no live activity" in rc[2]), rc[:3])
                 check("c. REAL files: Kalshi (mocked feed) is Working and Cronos is Working from its status.json; the dev agents read the real queue.json", "(Kalshi bot), Working" in rr["kalshi"] and "(Cronos), Working" in rr["cron"] and rr["dev"].startswith("Epistates (Dev agents)"), rr["kalshi"])
-                check("c. REAL run reads only the site's own files (the kalshi feed is the one outside address) and has no console error; every tap >= 44 px with the real lists", any("queue.json" in u for u in seen) and not errs and not [u for u in off if "kalshi" not in u] and not AK.taps(p) and AK.no_sideways(p), (off[:3], errs[:3], AK.taps(p)[:3]))
+                check("c. REAL run reads only the site's own files (the Kalshi feed too: no outside address at all) and has no console error; every tap >= 44 px with the real lists", any("queue.json" in u for u in seen) and not errs and not off and not AK.taps(p) and AK.no_sideways(p), (off[:3], errs[:3], AK.taps(p)[:3]))
                 AK.shot(p, "ergasterion-real")
                 ctx.close()
             finally:

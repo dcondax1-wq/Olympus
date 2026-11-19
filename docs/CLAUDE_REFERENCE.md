@@ -1155,8 +1155,8 @@ The long list moved on 2026-11-18 to `docs/TESTED_AND_REJECTED.md` (heading "## 
   worker (le-public-v51) keeps out of both and of every OLYMPUS app folder (OTHER_APPS: jarvis/, planner/, kalshi/, datacity/,
   mind/, tree/, oracle/, odeon/, fates/, hermes/, prometheus/). Test `python -X utf8 -m tests.test_zenith_pro` (41).
 - **Kalshi in Jarvis (2026-11-01):** the Kalshi bot runs 24/7 on its own Oracle Cloud server with real money, not on the PC.
-  Its own Claude chat is "kalshi-server". The phone reads `kalshi.json` from its OWN public repo,
-  `demetrades2000-coder/kalshi-feed` (main): raw first, then the API.
+  Its own Claude chat is "kalshi-server". The phone reads `kalshi.json` from this site's own copy (`../kalshi.json`, pc_publish);
+  the old repo `kalshi-feed` (suspended account) is RETIRED (polish2 2026-11-19): no page asks it, quiet-net answers it locally.
   - **Why its own repo:** a deploy key on nq-dashboard could rewrite the whole Pages site, so the key only gets write access
     to kalshi-feed.
   - **The server builds it:** `tools/kalshi_kit/public/kalshi_status_vm.py` (stdlib).
@@ -1870,7 +1870,7 @@ the hand-written table below is the 2026-11-04 map and is not updated any more.
 | Mind | Life | `mind/` | the Obsidian vault as a living 3D brain (DEMO brain when not connected) | `jarvis/obsidian.js` `graphSnapshot()` only | `test_mind`, `test_mind_page` |
 | Arena | Life | `arena/` | Olympian ranks: XP for discipline | `events.json` (`tools/arena/build.py`), the phone adds Planner / Obsidian / Kalshi | `test_arena` |
 | Athena | Life | `athena/` | the library: Ask / Today / Cards / Rules / Saved / **Train** (2026-11-04: 8-question daily quiz from the library only, Leitner boxes in `localStorage['athena.train.v1']`; "Read the chart" = 10 real replayed setups, would the bot take it + where is the stop; streak; weakest topic + ONE thing to study; code `athenatraincore.js` pure + `athenatrain.js` screens) | `library.json` (`tools/athena_build.py` from `STRATEGY.md`, the MFFU rules, the rejected list); `drills.json` (`tools/athena_drills.py` from `research/lab/backtest_live.json` + `data/NQ_5m.csv`; rerun after the replay is re-exported, `--check`) | `test_athena_page` |
-| Kalshi | Money | `kalshi/` | the Kalshi bot's numbers | `kalshi.json` from the public `kalshi-feed` repo (`engine/kalshi_publish.py`) | `test_kalshi_page`, `test_kalshi_publish` |
+| Kalshi | Money | `kalshi/` | the Kalshi bot's numbers | the site's own `kalshi.json` (`engine/kalshi_publish.py`; the `kalshi-feed` repo is retired) + the PC feed's K8 / paper cards | `test_kalshi_page`, `test_kalshi_publish` |
 | Tyche | Money | `tyche/` | the Kalshi bets as a 3D fortune wheel (coins, fortune card, compare, replay; Cash tab 2026-11-04: break-even win rate, money at risk and when it comes back, pace vs the usual day, best hours, one-tap money line; `cash.js` + `cashpanel.js`) | the same `kalshi.json` | `test_tyche_page` |
 | Hermes | Money | `hermes/` | OLYMPUS Wrapped: story cards of your money, share PNG; 2026-11-04 cards: pass clock, cushion (losers you can afford), week rank, weekdays, plain-line summary + Copy as text (`cards2.js`) | `wrapped.json` (CRONOS `hermes` build task), `../datacity/discoveries.json`, `../fates/jarvis.json` | `test_hermes` |
 | Plutus | Money | `plutus/` | the money plan: accounts, fees, payouts, goal tracker | `plans.json` (`tools/ares_plutus_build.py` from `research/lit/funded_firms.json`), `../data.json` | `test_plutus_page` |
@@ -1895,8 +1895,9 @@ The Kalshi app (`kalshi/`, k18) has three top cards in Today: "Why am I losing" 
   live.pc.blitz), `agesOf(home)` ("Numbers from the PC report 5 days ago (cloud copy 59 minutes old)."), `canonHome(home)` for older cores.
   Used by Aegis, Helios, NQ, Ergasterion, the people kit (`people-data.js`), the Agora lab and the root strip (`window.OLYMPUS_TRUTH`, `more.js`).
   A new page that shows account numbers reads them through it. Test `tests.test_truth` (same numbers in Aegis, Helios, NQ and Home).
-- **Quiet net:** `olympus/quiet-net.js` (classic, first script in `<head>`) asks the suspended GitHub sources (nq-dashboard, kalshi-feed) and
-  the optional `kalshi.json` once per browser session (4 s limit), then answers 404 locally (`window.OLYMPUS_NET`). A page that calls them
+- **Quiet net:** `olympus/quiet-net.js` (classic, first script in `<head>`) asks the suspended GitHub source (nq-dashboard) and
+  the optional `kalshi.json` once per browser session (4 s limit), then answers 404 locally (`window.OLYMPUS_NET`); the old kalshi-feed
+  repo is `retired` (never asked, not even on a tap). A page that calls them
   loads it first. Optional files get honest empty copies from their builders (`tools/cronos/site.py` PLACEHOLDERS + cronos status,
   `tools/polis_build.py` sky, `tools/money_publish.py` Sibyl ledger). Test `tests.test_quiet_data`.
 - **Kit** (`olympus/`): `olympus.js` + `olympus.css` (veil, tiers, per-app name / glyph / colour, `data-oly-fx` wiring), `render.js` + `materials.js` (real

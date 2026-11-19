@@ -1,12 +1,12 @@
 """The Kalshi page (tools/web_public/kalshi/, owner 2026-11-01): the dashboard of the Kalshi bot's kalshi.json (contract:
 engine/kalshi_publish.py; v2 adds `strategies` and `equity`). The bot runs 24/7 on its own server with real money (about
 $68), three live strategies, often 0 open bets and many 15-minute trades a day. Runs the real page in Chromium on a local copy
-of the site layout (<site>/kalshi/), kalshi.json served from a stub that can answer 404 / the file / 500 / bad JSON / no
-connection / later, and checks:
+of the site layout (<site>/kalshi/), the site's own ../kalshi.json served from a stub that can answer 404 / the file / 500 / bad JSON /
+the host's HTML page / no connection / later, and checks:
   a. the files and the static rules (no CDN, fonts only self-hosted, Safari-16-safe script, inputs >= 16px, reduced motion,
      safe areas, the old Jarvis look and its eclipse / reactor themes)
-  b. waiting (404 from the feed's own repo, demetrades2000-coder/kalshi-feed): the "Connect your Kalshi bot" card with the
-     one step for the bot's own chat (#step inside #body), Copy; raw first, then the GitHub API, no other address; the
+  b. waiting (404 for the site's own kalshi.json; the old kalshi-feed repo is retired, polish2 2026-11-19): the "Connect your Kalshi bot"
+     card with the one step for the bot's own chat (#step inside #body), Copy; the site's copy only, no other address; the
      preview with sample data (every section, the SAMPLE banner, Exit preview, never kept, gone once real data exists)
   c. the publisher's own sample through clean(): KPI header, curve from the days, daily bars (one per day), calendar, stats,
      the open position (side tag, "10 × 42¢ → 55¢", countdown), the trade
@@ -263,6 +263,8 @@ class Quiet(http.server.SimpleHTTPRequestHandler):
         super().end_headers()
 
     def do_GET(self):
+        if self.path.split("?")[0].endswith("/nq-dashboard/kalshi.json"):     # the feed: this site's own copy (FEED below)
+            return site_feed(self)
         if "/kalshi/" in self.path or (SITE["mode"] != "ok" and ".woff2" in self.path):   # the page's folder (and Jarvis's fonts)
             if SITE["mode"] == "down":
                 self.close_connection = True
@@ -288,42 +290,53 @@ def serve(root):
     return srv
 
 
-# the feed's own repo (security review 2026-11-01): raw first (with a ?t= cache-buster), then the GitHub API; nothing else answers
-FEED_RAW = "https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json"
-FEED_API = "https://api.github.com/repos/demetrades2000-coder/kalshi-feed/contents/kalshi.json?ref=main"
-FEED = {"mode": "404", "j": None, "held": [], "hits": 0, "raw": None, "api": None, "n": {"raw": 0, "api": 0}, "wrong": []}
+# the feed: this site's own copy, <site>/kalshi.json (pc_publish), answered by the local server (so the page's worker never stands in the
+# way). polish2 2026-11-19: the old feed repo (kalshi-feed on the suspended GitHub account, raw + API) is retired: any ask of it is WRONG.
+FEED = {"mode": "404", "j": None, "held": [], "hits": 0, "site": None, "n": {"site": 0}, "wrong": []}
+
+
+def _send(h, status, ctype, body):
+    data = body.encode("utf-8") if isinstance(body, str) else body
+    h.send_response(status)
+    h.send_header("Content-Type", ctype)
+    h.send_header("Content-Length", str(len(data)))
+    h.end_headers()
+    h.wfile.write(data)
+
+
+def site_feed(h):
+    FEED["hits"] += 1
+    FEED["n"]["site"] += 1
+    m = FEED["site"] or FEED["mode"]                 # a one-off mode, else the shared one
+    if m == "hold":                                  # answered with the file once release() says so
+        ev = threading.Event()
+        FEED["held"].append(ev)
+        ev.wait(120)
+        m = "ok"
+    if m == "ok":
+        return _send(h, 200, "application/json", json.dumps(FEED["j"]))
+    if m == "404":
+        return _send(h, 404, "text/plain", "404: Not Found")
+    if m == "500":
+        return _send(h, 500, "text/plain", "server error")
+    if m == "bad":
+        return _send(h, 200, "application/json", "{not json")
+    if m == "html":                                  # a host that answers a missing file with its own page
+        return _send(h, 200, "text/html; charset=utf-8", "<!doctype html><title>Site</title><h1>Home</h1>")
+    h.close_connection = True                        # "abort": no answer at all (no connection)
+    return None
 
 
 def feed(route):
-    u = route.request.url
-    src = "raw" if u.split("?")[0] == FEED_RAW else "api" if u == FEED_API else None
-    if src is None:                                  # any other address (e.g. the old Pages-repo branch) never answers
-        if "kalshi" in u:
-            FEED["wrong"].append(u)
-        return route.abort()
-    FEED["hits"] += 1
-    FEED["n"][src] += 1
-    m = FEED[src] or FEED["mode"]                    # a per-source mode, else the shared one
-    if m == "ok":
-        return route.fulfill(status=200, content_type="application/json", body=json.dumps(FEED["j"]))
-    if m == "404":
-        return route.fulfill(status=404, content_type="text/plain", body="404: Not Found")
-    if m == "500":
-        return route.fulfill(status=500, content_type="text/plain", body="server error")
-    if m == "bad":
-        return route.fulfill(status=200, content_type="application/json", body="{not json")
-    if m == "hold":
-        FEED["held"].append(route)
-        return None
+    """the old GitHub addresses: never asked (retired); a request there is recorded and dropped"""
+    if "kalshi" in route.request.url:
+        FEED["wrong"].append(route.request.url)
     return route.abort()
 
 
 def release():
-    for r in FEED["held"]:
-        try:
-            r.fulfill(status=200, content_type="application/json", body=json.dumps(FEED["j"]))
-        except Exception:
-            pass
+    for ev in FEED["held"]:
+        ev.set()
     FEED["held"] = []
 
 
@@ -375,14 +388,14 @@ def part_a():
     check("a. the pin: kit.json (same origin, 3 s at most), a lowercase 64-hex sha256 only, the exact pinned wording, Copy takes it",
           "get('kit.json', {}, 3000)" in js and "/^[0-9a-f]{64}$/.test(h)" in js and "(only run kalshi_status_vm.py if its sha256 is ${h})" in js
           and "writeText(paste())" in js and "'./kit.json'" in sw and "u.searchParams.has('v')" in sw)
-    check("a. the feed is read from its own repo kalshi-feed (raw first, then the API), never from the Pages repo",
-          f"const RAW = '{FEED_RAW}';" in js and f"const API = '{FEED_API}';" in js and "ref=kalshi" not in js and "nq-dashboard/kalshi/kalshi.json" not in js
-          and code.index("get(RAW") < code.index("get(API"))
+    check("a. the feed is this site's own ../kalshi.json only: never the retired kalshi-feed repo (raw / API), never the Pages repo's branch",
+          "const LOCAL = new URL('../kalshi.json', location.href).href;" in js and "get(LOCAL" in code and "kalshi-feed/main" not in js and "kalshi-feed/contents" not in js
+          and "ref=kalshi" not in js and "nq-dashboard/kalshi/kalshi.json" not in js and 'data-fresh="site:kalshi.json"' in html and "kalshi-feed" not in html)
     urls = set(re.findall(r"https?://[^\s'\"`)<>]+", html + js + css))
-    allowed = ("https://raw.githubusercontent.com/", "https://api.github.com/", "http://www.w3.org/2000/svg",
+    allowed = ("http://www.w3.org/2000/svg",
                )
     fonts = re.findall(r"url\(\"?([^\")]+)\"?\)", css)
-    check("a. no CDN or other site (only the feed on GitHub); fonts only self-hosted next to Jarvis, with system fallbacks",
+    check("a. no CDN or other site (not even GitHub: the feed is the site's own copy); fonts only self-hosted next to Jarvis, with system fallbacks",
           all(u.startswith(allowed) for u in urls) and "@import" not in css and fonts and all(f.startswith(("../jarvis/", "data:image/svg+xml")) for f in fonts)
           and '"Iowan Old Style"' in css and '"SF Pro Rounded"' in css and "Orbitron" not in css and "Rajdhani" not in css, (sorted(urls), fonts))
     risky = [w for w in ("(?<=", "(?<!", ".toSorted(", ".toReversed(", ".toSpliced(", ".findLast(", "Object.groupBy", "AbortSignal.timeout",
@@ -623,8 +636,14 @@ def run_browser(url, tmp):
         check("d. the three live strategies: names, today, total, win rate, running",
               p.locator("#sec-strat tbody tr").count() == 3 and "15-min favourites" in stt and "Late favourite (BTC hourly)" in stt and "Gold 5 PM" in stt
               and "3 running" in stt and "Live · 612 trades · running" in stt and "+$3.23" in stt and "−$21.37" in stt and "93%" in stt and "571–41" in stt, stt)
-        cell = p.locator(f"#sec-cal .cd[data-v='{today}'] em").inner_text()
-        check("d. the calendar shows small days to the cent", cell == (re.sub(r"\$", "", usd(rb["today_pnl"], True)) if abs(rb["today_pnl"]) < 10 else cell), (cell, rb["today_pnl"]))
+        # the newest small, non-zero day of the month on show (polish2 2026-11-19: the check read TODAY's cell, and today's P&L is $0.00 from
+        # midnight ET until the first bet settles, so it failed every night; a $0 day has no cents to show and stays a plain "0")
+        rdays = [(str(d[0]), d[1]) for d in rb.get("days") or [] if isinstance(d, (list, tuple)) and len(d) > 1 and isinstance(d[1], (int, float))]
+        small = [(d, v) for d, v in rdays if d[:7] == today[:7] and 0.005 <= abs(v) < 10]
+        cd, cv = small[-1] if small else (today, rb["today_pnl"])
+        cell = p.locator(f"#sec-cal .cd[data-v='{cd}'] em").inner_text()
+        want = "0" if abs(cv) < 0.005 else re.sub(r"\$", "", usd(cv, True)) if abs(cv) < 10 else cell
+        check("d. the calendar shows small days to the cent (a $0 day a plain 0)", cell == want, (cd, cell, cv))
         shot(p, "3_realbot")
 
         # ---- e. a wide sample (contract v2, every list long)
@@ -801,17 +820,14 @@ def run_browser(url, tmp):
         ready(p)
         check("e. Refresh asks the feed again and keeps the sort", FEED["hits"] > h0 and p.input_value("#posSort") == "pnl")
 
-        # ---- the feed's two addresses
-        n0 = dict(FEED["n"])
-        FEED["raw"], FEED["api"] = "500", None
-        open_("ok", sample(time.time()))
-        check("f. raw.githubusercontent down: the GitHub API of kalshi-feed answers, the numbers show",
-              p.get_attribute("#body", "data-state") == "ok" and "$512.34" in text(p) and FEED["n"]["api"] > n0["api"], FEED["n"])
+        # ---- the feed's one address (the site's own copy)
         n1 = dict(FEED["n"])
-        FEED["raw"], FEED["api"] = None, None
         open_("404", clear=True)
-        check("f. a 404 from kalshi-feed = not connected yet (waiting), without asking the API",
-              p.get_attribute("#body", "data-state") == "waiting" and FEED["n"]["api"] == n1["api"] and FEED["n"]["raw"] > n1["raw"], FEED["n"])
+        check("f. a 404 for the site's kalshi.json = not connected yet (waiting); the retired kalshi-feed never asked",
+              p.get_attribute("#body", "data-state") == "waiting" and FEED["n"]["site"] > n1["site"] and not FEED["wrong"], (FEED["n"], FEED["wrong"][:2]))
+        open_("html", clear=True)
+        check("f. the host's own HTML page where kalshi.json would be = not connected yet too (never an error)",
+              p.get_attribute("#body", "data-state") == "waiting", p.get_attribute("#body", "data-state"))
 
         # ---- f. stale, stopped, error, offline copy, loading
         open_("ok", {**sample(time.time()), "t": int(time.time()) - 3600})
@@ -1129,7 +1145,7 @@ def run_browser(url, tmp):
             check("j. any Jarvis font that loads from ../jarvis/ is 200 (AGORA uses system fonts)", all(st_ == 200 for st_, _ in fontres), fontres[:6])
         else:
             print("       (this checkout has no tools/web_public/jarvis/*.woff2: the font requests 404 here; strict once the fonts are in)")
-        check("j. kalshi.json only ever asked from kalshi-feed (raw, then the API)", not FEED["wrong"], FEED["wrong"][:3])
+        check("j. kalshi.json only ever asked from this site (never the retired kalshi-feed repo, raw or API)", not FEED["wrong"], FEED["wrong"][:3])
         part_k(br, url, tmp)
         part_kit(br, url, tmp)
         part_v4(br, url, tmp)
@@ -1250,7 +1266,7 @@ def part_k(br, url, tmp):
     q.evaluate("navigator.serviceWorker.getRegistration().then((r) => r.update()).then(() => true)")
     until(f"caches.keys().then((k) => k.indexOf('{cn}') >= 0 && k.indexOf('{cn}u') < 0)", 15000)
     c = q.evaluate(allc)
-    check("k. kalshi.json never cached (the feed is cross-origin and left alone)", not any("kalshi.json" in u for v in c.values() for u in v), c)
+    check("k. kalshi.json never cached (the feed lives outside the worker's kalshi/ folder and is left alone)", not any("kalshi.json" in u for v in c.values() for u in v), c)
     # kit.json is network first: a new pin on the site shows on the next open; offline, the saved pin stays
     kj = os.path.join(kdir, "kit.json")
     new = hashlib.sha256(b"a newer kalshi_status_vm.py").hexdigest()
@@ -1285,7 +1301,7 @@ def part_kit(br, url, tmp):
     q = ctx.new_page()
     errs = []
     q.on("pageerror", lambda e: errs.append(str(e)))
-    FEED.update(mode="404", raw=None, api=None)
+    FEED.update(mode="404", site=None)
 
     def step(content, slow=0.0):
         if content is None:

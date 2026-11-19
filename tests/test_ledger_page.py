@@ -28,7 +28,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 WEB = os.path.join(ROOT, "tools", "web_public")
 PAGE = os.path.join(WEB, "ledger")
-RAW_PREFIX = "https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/"
+FEED_PATH = "/kalshi.json"          # the Kalshi feed: this site's own copy (the old kalshi-feed repo is retired, polish2 2026-11-19)
 RES = []
 
 
@@ -70,7 +70,7 @@ def part_a():
     check("a. no innerHTML / insertAdjacentHTML / document.write: the data only ever goes in as text", not any(re.search(r"innerHTML|insertAdjacentHTML|document\.write", s) for s in js.values()))
     fetched = {x.strip() for x in re.findall(r"getJSON\(([^,)]+)", js["ledger.js"])} - {"url"}
     check("a. the page reads only home.json, rules.json, the public Kalshi feed (this site's own kalshi.json first), its fixture, the Money plan's ../plutus/roadmap.json and the Scoreboard's ../money/scoreboard.json (GET); no WebSocket / beacon / XHR / EventSource, no POST, no custom header, nothing sent",
-          fetched == {"'../home.json'", "'rules.json'", "RAW", "SITE_FEED", "'fixture.json'", "'../plutus/roadmap.json'", "'../money/scoreboard.json'"} and not any(re.search(r"WebSocket|sendBeacon|XMLHttpRequest|EventSource", s) for s in js.values())
+          fetched == {"'../home.json'", "'rules.json'", "SITE_FEED", "'fixture.json'", "'../plutus/roadmap.json'", "'../money/scoreboard.json'"} and not any(re.search(r"WebSocket|sendBeacon|XMLHttpRequest|EventSource", s) for s in js.values())
           and not re.search(r"method\s*:|'POST'|headers\s*:|body\s*:", js["ledger.js"]), fetched)
     ls = re.findall(r"localStorage\.(\w+)Item\(([^,)]+)", " ".join(js.values()))
     check("a. storage only under the one key 'ledger.v1' (read, write) plus the 30-minute 'ledger.opt404.<url>' not-there notes; no cookies, no IndexedDB, no other keys", ls and all(k in ("KEY", "'ledger.opt404.' + u") for _, k in ls) and "const KEY = 'ledger.v1'" in js["ledger.js"]
@@ -284,9 +284,9 @@ def run_browser():
 
                     def guard(route):
                         u = route.request.url
-                        if u.startswith(RAW_PREFIX):
+                        if u.startswith(f"http://127.0.0.1:{srv.server_address[1]}") and u.split("?")[0].endswith(FEED_PATH):
                             raw_hits.append(u)
-                            return route.fulfill(status=200, body=json.dumps(FEED), content_type="application/json", headers={"access-control-allow-origin": "*"}) if live["feed"] else route.abort()
+                            return route.fulfill(status=200, body=json.dumps(FEED), content_type="application/json") if live["feed"] else route.continue_()
                         if u.startswith(f"http://127.0.0.1:{srv.server_address[1]}") or u.startswith(("data:", "blob:")):
                             return route.continue_()
                         outside.append(u)
@@ -526,7 +526,7 @@ def run_browser():
     finally:
         srv.shutdown()
         shutil.rmtree(tmp, ignore_errors=True)
-    check("c. nothing left the phone: no request to any origin but the public Kalshi feed address (a read, answered locally here), and no POST anywhere", not outside and raw_hits and all(u.endswith("/main/kalshi.json") for u in raw_hits), (outside[:3], raw_hits[:2]))
+    check("c. nothing left the phone: no request to any other origin (the Kalshi feed is this site's own kalshi.json, answered locally here), and no POST anywhere", not outside and raw_hits and all(u.split("?")[0].endswith(FEED_PATH) for u in raw_hits), (outside[:3], raw_hits[:2]))
 
 
 # ------------------------------------------------------------------------------------------------ r. the Money plan check (2026-11-04): expected vs actual cash from ../plutus/roadmap.json
@@ -611,8 +611,6 @@ def part_roadmap_browser(rm):
 
                 def guard(route):
                     u = route.request.url
-                    if u.startswith(RAW_PREFIX):
-                        return route.abort()
                     return route.continue_() if u.startswith(f"http://127.0.0.1:{srv.server_address[1]}") or u.startswith(("data:", "blob:")) else route.abort()
                 ctx.route("**/*", guard)
                 p = ctx.new_page()

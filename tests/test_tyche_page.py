@@ -1,23 +1,23 @@
 """TYCHE (tools/web_public/tyche/, owner 2026-11-03): the Kalshi bot's bets as a 3D wheel of fortune. Read-only.
 
-It reads the same kalshi.json as the Kalshi page (docs/KALSHI_PUBLISH.md): raw.githubusercontent.com first, the GitHub API
-when raw fails; a 404 = the bot is not linked yet -> the demo ("Not linked yet: demo") and a 10-minute backoff, so a load
-makes one request. The fixtures go through the real publisher's clean() (engine.kalshi_publish), so the page is tested
+It reads the same kalshi.json as the Kalshi page (docs/KALSHI_PUBLISH.md): this site's own copy, ../kalshi.json (the old kalshi-feed
+repo on the suspended GitHub account is retired, polish2 2026-11-19); a 404 (or the host's HTML page) = the bot is not linked yet -> the
+demo ("Not linked yet: demo") and a 10-minute backoff, so a load makes one request. The fixtures go through the real publisher's clean() (engine.kalshi_publish), so the page is tested
 against exactly what the bot's server sends.
 
 Runs the real page in Chromium (WebGL through SwiftShader) on a local copy of the site layout (/tyche/, /jarvis/), answers
-the two GitHub endpoints itself, and checks:
-  a. the files and the static rules: every module used, three.js only from ../jarvis/, no outside URL but the two feed
-     endpoints (the same as the Kalshi page's), viewport / theme-color / safe areas / the orb's corner / reduced motion, no
+the site's /kalshi.json itself, and checks:
+  a. the files and the static rules: every module used, three.js only from ../jarvis/, no outside URL at all (the feed is the
+     site's own copy, the same as the Kalshi page's), viewport / theme-color / safe areas / the orb's corner / reduced motion, no
      innerHTML, Safari 16 safe, jarvis.json by the Jarvis contract (with theme), the site build and the root worker know it
   b. the pure parts in the browser: normalize() of v3 / v2 / v1 / junk, Kelly, the formats, the Feed's 404 backoff
-  c. not linked (404) at 390 x 844 and 844 x 390: TWO requests per load (the site copy, then raw), the "Not linked yet: demo" chip, no console errors,
+  c. not linked (404) at 390 x 844 and 844 x 390: ONE request per load (the site copy), the "Not linked yet: demo" chip, no console errors,
      the HUD = the demo's numbers, a coin per open bet, no sideways scroll, the orb's corner free, in all three views
   d. a v3 feed: LIVE, every HUD number = the fixture's (balance, today, week, open, win rate, ROI, next settlement), a coin
      per position, the Kelly slider's stakes (capped at the max bet), the pools' and the scales' panels, a tapped coin's sheet
-  e. a v2 and a v1 feed (no v3 fields) still render with the numbers they carry; a stale feed says LAST SEEN; raw failing
-     falls back to the API; nothing reachable = "Offline: demo"; ?demo=1 makes no request; reduced motion; Jarvis's card
-  f. across every case: no request outside the page's origin but the two feed endpoints
+  e. a v2 and a v1 feed (no v3 fields) still render with the numbers they carry; a stale feed says LAST SEEN; the site answering
+     500 = "Offline: demo"; nothing reachable = "Offline: demo"; ?demo=1 makes no request; reduced motion; Jarvis's card
+  f. across every case: no request outside the page's origin (never the retired kalshi-feed repo)
     python -X utf8 -m tests.test_tyche_page            (--shots: screenshots to research/handoff/2026-11-03/tyche/)
 """
 from __future__ import annotations
@@ -37,8 +37,6 @@ sys.path.insert(0, ROOT)
 WEB = os.path.join(ROOT, "tools", "web_public")
 TY = os.path.join(WEB, "tyche")
 MODULES = ["main.js", "data.js", "demo.js", "fmt.js", "scene.js", "wheel.js", "pools.js", "scales.js", "glow.js", "hud.js", "sparks.js", "bankroll.js", "caustics.js", "fortune.js", "fortunepanel.js", "cash.js", "cashpanel.js", "tychefx.js"]
-RAW = "https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json"
-API = "https://api.github.com/repos/demetrades2000-coder/kalshi-feed/contents/kalshi.json?ref=main"
 THEME = "#14110e"          # AGORA night: the page's theme-color, the committed jarvis.json and the live card all carry it
 MINUS = "−"
 RES: list = []
@@ -217,7 +215,7 @@ def serve():
     return srv, f"http://127.0.0.1:{srv.server_address[1]}"
 
 
-FEED = {"raw": None, "api": None, "calls": []}     # (status, body) | "abort" | None (= 404)
+FEED = {"site": None, "calls": []}     # the site's own /kalshi.json: (status, body) | "abort" | None (= 404)
 OUTSIDE: list = []
 
 
@@ -226,17 +224,15 @@ def new_page(br, origin, vw, *, reduced=False, quality="high"):
 
     def guard(route):
         u = route.request.url
-        if u.startswith(origin) or u.startswith("data:") or u.startswith("blob:"):
-            return route.continue_()
-        base = u.split("?t=")[0]
-        if base in (RAW, API):
-            which = "raw" if base == RAW else "api"
-            FEED["calls"].append(which)
-            ans = FEED[which]
+        if u.split("?")[0] == origin + "/kalshi.json":     # the feed: this site's own copy (the page asks ../kalshi.json)
+            FEED["calls"].append("site")
+            ans = FEED["site"]
             if ans == "abort":
                 return route.abort()
             st, body = ans if ans else (404, {"message": "Not Found"})
-            return route.fulfill(status=st, body=json.dumps(body), headers={"Access-Control-Allow-Origin": "*", "Content-Type": "application/json"})
+            return route.fulfill(status=st, body=json.dumps(body), headers={"Content-Type": "application/json"})
+        if u.startswith(origin) or u.startswith("data:") or u.startswith("blob:"):
+            return route.continue_()
         OUTSIDE.append(u)
         return route.abort()
     ctx.route("**/*", guard)
@@ -319,10 +315,10 @@ def static_checks():
     check("a. the 3D runs on the OLYMPUS render core (createRenderer), no second WebGLRenderer; glass coins and gold from materials.js",
           "createRenderer" in files["scene.js"] and "WebGLRenderer" not in "\n".join(files.values()) and "../olympus/materials.js" in files["wheel.js"]
           and "glass(" in files["wheel.js"] and "metal(" in files["wheel.js"])
-    check("a. no outside URL but the two feed endpoints", urls <= {RAW, API}, urls - {RAW, API})
+    check("a. no outside URL (the feed is the site's own copy; the retired kalshi-feed repo is never named)", not urls and "kalshi-feed/" not in every, urls)
     kal = read(os.path.join(WEB, "kalshi", "kalshi.js"))
-    check("a. the same feed as the Kalshi page (raw, then the API)", f"'{RAW}'" in kal and f"'{API}'" in kal
-          and f"RAW = '{RAW}'" in files["data.js"] and f"API = '{API}'" in files["data.js"])
+    check("a. the same feed as the Kalshi page (this site's ../kalshi.json)", "new URL('../kalshi.json', location.href)" in kal
+          and "export const LOCAL = '../kalshi.json';" in files["data.js"] and "RAW" not in files["data.js"] and "API" not in files["data.js"])
     check("a. viewport-fit=cover, its own theme-color, dark color-scheme", 'viewport-fit=cover' in idx and f'name="theme-color" content="{THEME}"' in idx
           and 'name="color-scheme" content="dark"' in idx)
     check("a. safe areas on every edge, the orb's corner reserved, reduced motion in CSS and in the loop",
@@ -354,7 +350,7 @@ def static_checks():
 # ------------------------------------------------------------------ b. the pure parts
 def pure_checks(br, origin, now):
     ctx, p, log = new_page(br, origin, (390, 844))
-    FEED["raw"] = FEED["api"] = None
+    FEED["site"] = None
     p.goto(origin + "/tyche/?demo=1")
     ready(p)
     v3, v2, v1 = fixture_v3(now), fixture_v2(now), fixture_v1(now)
@@ -366,8 +362,9 @@ def pure_checks(br, origin, now):
       const fake = (seq) => { let i = 0; return async () => { const s = seq[Math.min(i++, seq.length - 1)]; if (s === 'net') throw new TypeError('offline');
         return { ok: s === 200, status: s, json: async () => ({ t: now, balance: 1 }) }; }; };
       const f404 = new d.Feed(fake([404])), a = await f404.poll(), d1 = f404.delay(), b = await f404.poll(), d2 = f404.delay();
-      const fApi = new d.Feed(fake([500, 500, 200])), c = await fApi.poll();
+      const fOk = new d.Feed(fake([200])), c = await fOk.poll(), f500 = new d.Feed(fake([500])), g = await f500.poll();
       const fNet = new d.Feed(fake(['net', 'net'])), e = await fNet.poll();
+      const fHtml = new d.Feed(async () => ({ ok: true, status: 200, json: async () => { throw new SyntaxError('<!doctype html>'); } })), hh = await fHtml.poll();
       const dm = d.normalize(demo.demoFeed(now), now);
       return {
         m3: { bal: m3.balance, open: m3.open.length, win: m3.stats.winRate, roi: m3.stats.roi, src: m3.stats.src, next: m3.next.title, kelly: m3.kelly,
@@ -380,7 +377,7 @@ def pure_checks(br, origin, now):
         junk, odd: typeof odd === 'string' ? odd : odd && { open: odd.open.length, settled: odd.settled.length, eq: odd.equity.pts.length, win: odd.stats.winRate },
         kelly: [d.kellyStake(0.6, 0.5, 0.25, { bankroll: 1000, maxBet: 25 }), d.kellyStake(0.55, 0.52, 0.25, { bankroll: 2400, maxBet: 120 }),
                 d.kellyStake(0.4, 0.5, 1, { bankroll: 1000, maxBet: 25 }), d.kellyStake(null, 0.5, 1, { bankroll: 1000 })],
-        feed: [a.state, d1, b.state, d2, f404.requests, c.state, fApi.requests, e.state, fNet.requests, fNet.delay()],
+        feed: [a.state, d1, b.state, d2, f404.requests, c.state, fOk.requests, e.state, fNet.requests, fNet.delay(), g.state, hh.state, fHtml.requests],
         fmt: [f.usd(-3.1, true), f.usd(1234.5), f.usd(0, true), f.pct(0.6421), f.pct(0.083, true), f.cents(0.42), f.cents(0.968), f.edgeC(0.05),
               f.countdown(252), f.countdown(7500), f.countdown(3 * 86400 + 4 * 3600 + 5), f.countdown(-1)],
         demo: { open: dm.open.length, w: dm.stats.wins, l: dm.stats.losses, n: dm.stats.trades, cats: dm.categories.rows.length, bk: dm.buckets.rows.length,
@@ -413,8 +410,8 @@ def pure_checks(br, origin, now):
           abs(k[0]["f"] - 0.2) < 1e-9 and k[0]["stake"] == 25 and k[0]["capped"] is True and abs(k[0]["raw"] - 50) < 1e-9
           and abs(k[1]["stake"] - 0.0625 * 0.25 * 2400) < 1e-9 and k[1]["capped"] is False
           and k[2]["stake"] == 0 and k[2]["f"] < 0 and k[3]["stake"] is None, k)
-    check("b. the Feed: a 404 = unlinked, two requests a poll (this site's ../kalshi.json, then raw), 10 then 20 min backoff; site copy + raw failing -> the API; offline -> error, 2 min",
-          r["feed"] == ["unlinked", 600000, "unlinked", 1200000, 4, "ok", 3, "error", 3, 120000], r["feed"])
+    check("b. the Feed: ONE request a poll (this site's ../kalshi.json); a 404 = unlinked, 10 then 20 min backoff; offline or a 500 -> error, 2 min; the host's HTML = unlinked",
+          r["feed"] == ["unlinked", 600000, "unlinked", 1200000, 2, "ok", 1, "error", 1, 120000, "error", "unlinked", 1], r["feed"])
     check("b. formats: money to the cent with a real minus, percents, cents, edge, countdowns",
           r["fmt"] == [f"{MINUS}$3.10", "$1,234.50", "$0.00", "64.2%", "+8.3%", "42¢", "96.8¢", "+5.0¢", "4m 12s", "2h 05m", "3d 4h", "settling"], r["fmt"])
     dm = r["demo"]
@@ -429,14 +426,14 @@ def pure_checks(br, origin, now):
 # ------------------------------------------------------------------ c. not linked yet (404)
 def unlinked_checks(br, origin, vw):
     tag = f"{vw[0]}x{vw[1]}"
-    FEED.update(raw=None, api=None, calls=[])
+    FEED.update(site=None, calls=[])
     ctx, p, log = new_page(br, origin, vw)
     p.goto(origin + "/tyche/")
     ready(p)
     p.wait_for_timeout(4000)
     h, m = hud(p), p.evaluate("""() => { const m = window.tyche.model; return { open: m.open.length, bal: m.balance, today: m.today, week: m.week,
       win: m.stats.winRate, roi: m.stats.roi, next: m.next && m.next.title, coins: window.tyche.coins, req: window.tyche.requests }; }""")
-    check(f"c. {tag}: a 404 = TWO requests per load (the site's own ../kalshi.json, then raw only; no API retry, no poll), backed off", FEED["calls"] == ["raw"] and m["req"] == 2, FEED["calls"])
+    check(f"c. {tag}: a 404 = ONE request per load (the site's own ../kalshi.json; no retry, no poll), backed off", FEED["calls"] == ["site"] and m["req"] == 1, FEED["calls"])
     check(f"c. {tag}: the chip says 'Not linked yet: demo'", h["_mode"] == "unlinked" and h["_chip"] == "Not linked yet: demo", h["_chip"])
     want = {"h-balance": usd(m["bal"]), "h-today": usd(m["today"], True), "h-week": usd(m["week"], True), "h-open": str(m["open"]),
             "h-win": pct(m["win"]), "h-roi": pct(m["roi"], True), "h-next-title": m["next"]}
@@ -515,13 +512,13 @@ def v3_checks(br, origin, vw):
     tag = f"{vw[0]}x{vw[1]}"
     now = int(time.time())
     j = fixture_v3(now)
-    FEED.update(raw=(200, j), api=None, calls=[])
+    FEED.update(site=(200, j), calls=[])
     ctx, p, log = new_page(br, origin, vw)
     p.goto(origin + "/tyche/#wheel")
     ready(p)
     p.wait_for_timeout(800)
     h, want = hud(p), expected(j, now)
-    check(f"d. {tag}: v3 feed -> LIVE", h["_mode"] == "live" and h["_chip"] == "LIVE" and FEED["calls"] == ["raw"], (h["_chip"], FEED["calls"]))
+    check(f"d. {tag}: v3 feed -> LIVE", h["_mode"] == "live" and h["_chip"] == "LIVE" and FEED["calls"] == ["site"], (h["_chip"], FEED["calls"]))
     diff = {k: (h[k], v) for k, v in want.items() if not k.startswith("_") and h[k] != v}
     check(f"d. {tag}: every HUD number = the fixture's (balance, today, week, open, win rate, ROI, next)", not diff and h["_signs"] == list(want["_signs"]), (diff, h["_signs"]))
     left = cd_seconds(h["h-next-cd"])
@@ -590,7 +587,7 @@ def tap_checks(br, origin):
     """Reduced motion (the coins hold still): a tap on a coin opens its sheet; the countdown keeps running."""
     now = int(time.time())
     j = fixture_v3(now)
-    FEED.update(raw=(200, j), api=None, calls=[])
+    FEED.update(site=(200, j), calls=[])
     ctx, p, log = new_page(br, origin, (390, 844), reduced=True)
     p.goto(origin + "/tyche/#wheel")
     ready(p)
@@ -618,7 +615,7 @@ def tap_checks(br, origin):
 def state_checks(br, origin):
     now = int(time.time())
     for name, j in (("v2", fixture_v2(now)), ("v1", fixture_v1(now))):
-        FEED.update(raw=(200, j), api=None, calls=[])
+        FEED.update(site=(200, j), calls=[])
         ctx, p, log = new_page(br, origin, (390, 844))
         p.goto(origin + "/tyche/")
         ready(p)
@@ -635,22 +632,22 @@ def state_checks(br, origin):
         shot(p, f"{name}-scales-390x844")
         ctx.close()
     # stale: an hour old
-    FEED.update(raw=(200, fixture_v3(now, age=3600)), api=None, calls=[])
+    FEED.update(site=(200, fixture_v3(now, age=3600)), calls=[])
     ctx, p, log = new_page(br, origin, (390, 844))
     p.goto(origin + "/tyche/")
     ready(p)
     h = hud(p)
     check("e. a feed an hour old: LAST SEEN 1 H AGO, the bot's numbers kept", h["_mode"] == "stale" and h["_chip"] == "LAST SEEN 1 H AGO" and h["h-balance"] == "$2,481.37", h)
     ctx.close()
-    # raw failing -> the API
-    FEED.update(raw=(500, {"message": "boom"}), api=(200, fixture_v3(now)), calls=[])
+    # the site answering 500: an error (no other address to try), the demo said so
+    FEED.update(site=(500, {"message": "boom"}), calls=[])
     ctx, p, log = new_page(br, origin, (390, 844))
     p.goto(origin + "/tyche/")
     ready(p)
-    check("e. raw failing (500) -> the GitHub API, LIVE", FEED["calls"] == ["raw", "api"] and hud(p)["_mode"] == "live", FEED["calls"])
+    check("e. the site's copy failing (500): 'Offline: demo', one request, nothing else asked", FEED["calls"] == ["site"] and hud(p)["_mode"] == "offline", FEED["calls"])
     ctx.close()
     # nothing reachable -> the demo, said so
-    FEED.update(raw="abort", api="abort", calls=[])
+    FEED.update(site="abort", calls=[])
     ctx, p, log = new_page(br, origin, (390, 844))
     p.goto(origin + "/tyche/")
     ready(p)
@@ -658,7 +655,7 @@ def state_checks(br, origin):
     check("e. nothing reachable: 'Offline: demo', no page errors", h["_mode"] == "offline" and h["_chip"] == "Offline: demo" and not log["errors"], (h["_chip"], log["errors"]))
     ctx.close()
     # ?demo=1: no request at all
-    FEED.update(raw=None, api=None, calls=[])
+    FEED.update(site=None, calls=[])
     ctx, p, log = new_page(br, origin, (390, 844))
     p.goto(origin + "/tyche/?demo=1")
     ready(p)
@@ -667,7 +664,7 @@ def state_checks(br, origin):
     check("e. ?demo=1: the DEMO chip and no request to the feed", h["_chip"] == "DEMO" and FEED["calls"] == [] and not real_errors(log), (h["_chip"], FEED["calls"]))
     ctx.close()
     # inside Jarvis: the live card
-    FEED.update(raw=(200, fixture_v3(now)), api=None, calls=[])
+    FEED.update(site=(200, fixture_v3(now)), calls=[])
     ctx, p, log = new_page(br, origin, (390, 844))
     p.goto(origin + "/frame.html")
     p.wait_for_function("window.__cards.length > 0", timeout=120000)
@@ -812,7 +809,7 @@ def main(argv=None) -> int:
             br.close()
     finally:
         srv.shutdown()
-    check("f. across every case: no request outside the page's origin but the two feed endpoints", not OUTSIDE, OUTSIDE[:5])
+    check("f. across every case: no request outside the page's origin (never the retired kalshi-feed repo)", not OUTSIDE, OUTSIDE[:5])
     n, ok = len(RES), sum(RES)
     print(f"\n{ok}/{n} checks passed")
     return 0 if ok == n else 1
