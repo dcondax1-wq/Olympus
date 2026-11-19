@@ -483,6 +483,11 @@ def entry_message(p: dict, now=None, s: dict | None = None) -> dict:
     body0 = str(p.get("body") or "")
     bot = "ATLAS" if ("ATLAS" in body0 or str(p.get("key") or "").endswith(":acctb") or "ATLAS" in acct.upper()) else "Zlarior"
     name = acct if (bot.lower() in acct.lower()) else f"{bot} {acct}"
+    try:                                    # the owner's own names ("Zlarior 50K", "ATLAS 25K funded"), from the PC's names.json
+        from . import mffu_view
+        name = mffu_view.push_name(p.get("account")) or name
+    except Exception:
+        pass
     m = re.search(r"\b(MNQ|MES|NQ|ES)\b", body0)
     contract = m.group(1) if m else "MNQ"
     q, e, st, tg = _f(p.get("qty")), _f(p.get("entry")), _f(p.get("stop")), _f(p.get("target"))

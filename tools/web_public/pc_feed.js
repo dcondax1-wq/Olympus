@@ -77,19 +77,35 @@
     return [`${base}/${t}/json?poll=1&since=70m`, `${base}/${t}/json?poll=1&since=latest`];
   }
 
+  // ONE answer per page (night-feedsA 2026-11-18): a page asks the feed from 3-4 modules at load (Jarvis: data.js, truth.js, zeus_core.js);
+  // on a busy phone each status_feed.json + ntfy round trip took up to 4 s and a module that gave up after 3 s showed the CLOUD copy as if
+  // it were the account. In a browser every caller now shares one in-flight answer for SHARE_MS (each gets its own copy); a miss is never kept.
+  const SHARE_MS = 20000, SHARED = typeof window !== 'undefined' && typeof document !== 'undefined' ? new Map() : null;
+  function shared(key, make) {
+    if (!SHARED) return make();
+    const hit = SHARED.get(key);
+    if (hit && Date.now() - hit.at < SHARE_MS) return hit.p;
+    const p = Promise.resolve().then(make);
+    SHARED.set(key, { at: Date.now(), p });
+    p.then((v) => { if (v == null && SHARED.get(key) && SHARED.get(key).p === p) SHARED.delete(key); }, () => { if (SHARED.get(key) && SHARED.get(key).p === p) SHARED.delete(key); });
+    return p;
+  }
+  const absUrl = (u) => { try { return new URL(u, document.baseURI).href; } catch (e) { return String(u); } };
+
   async function fetchLatest(opts) {
     const o = opts || {}, f = o.fetch || (typeof fetch !== 'undefined' ? fetch : null);
     if (!f) return null;
     let feed = o.feed || null;
     for (const u of feed ? [] : (o.feedUrl ? [o.feedUrl] : ['status_feed.json', '../status_feed.json'])) {
-      try { const r = await f(u, { cache: 'no-cache' }); if (r && r.ok) { feed = await r.json(); break; } } catch (e) { /* next */ }
+      try {
+        const j = await shared('feed ' + (SHARED ? absUrl(u) : u), async () => { const r = await f(u, { cache: 'no-cache' }); return r && r.ok ? await r.json() : null; });
+        if (j) { feed = j; break; }
+      } catch (e) { /* next */ }
     }
     for (const u of feedUrls(feed)) {
       try {
-        const r = await f(u, { cache: 'no-store' });
-        if (!r || !r.ok) continue;
-        const j = parseLatest(await r.text());
-        if (j) return j;
+        const j = await shared('poll ' + u, async () => { const r = await f(u, { cache: 'no-store' }); return r && r.ok ? parseLatest(await r.text()) : null; });
+        if (j) return SHARED ? copy(j) : j;
       } catch (e) { /* next */ }
     }
     return null;
@@ -105,7 +121,7 @@
     const s = isObj(site) && !site.error ? site : null, l = isObj(lite) && !lite.error ? lite : null;
     if (!l) return s || site || null;
     if (!s) return l;
-    if (T(s) > T(l)) return s;
+    if (T(s) > T(l) && String(s.where || '').toLowerCase() !== 'cloud') return s;   // a CLOUD build's board is never newer news than the PC (its t = build time)
     const out = { ...s };
     for (const k of ['t', 'data_t', 'where', 'today', 'host', 'running', 'level']) if (l[k] != null) out[k] = l[k];
     for (const k of ['lit', 'atlas', 'blitz']) if (isObj(l[k])) out[k] = { ...(isObj(s[k]) ? s[k] : {}), ...l[k] };

@@ -1,0 +1,731 @@
+{
+ "date": "2026-11-18",
+ "trades": 1149,
+ "sessions": [
+  "2021-11-01",
+  "2026-10-16"
+ ],
+ "light_cuts": [
+  2.14,
+  0.17
+ ],
+ "now": {
+  "day": "2026-10-16",
+  "n": 24,
+  "pf_r": 1.89,
+  "r_week": 0.9949524060722017,
+  "sum_r": 7.959619248577614
+ },
+ "base_rates": {
+  "H1": {
+   "windows": 128,
+   "pf_r": {
+    "p10": 1.05,
+    "p25": 1.75,
+    "median": 2.82,
+    "p75": 3.15,
+    "p90": 3.64
+   },
+   "share_pf_le_1_89": 26.6,
+   "share_pf_le_1_41": 18.8,
+   "light": {
+    "GREEN": 73.4,
+    "RED": 10.9,
+    "AMBER": 15.6
+   },
+   "forward": {
+    "after_weak": {
+     "windows": 34,
+     "next40_pf_r_median": 3.08,
+     "next40_r_week_mean": 3.72,
+     "next40_pf_ge_2": 100.0,
+     "next40_positive": 100.0,
+     "next60_r_week_mean": 3.79
+    },
+    "after_any": {
+     "windows": 128,
+     "next40_pf_r_median": 3.23,
+     "next40_r_week_mean": 3.92,
+     "next40_pf_ge_2": 100.0,
+     "next40_positive": 100.0,
+     "next60_r_week_mean": 3.73
+    }
+   },
+   "dips": {
+    "count": 1,
+    "median_len": 34.0,
+    "longest": 34,
+    "back_to_pf2_median_sessions": 36.0,
+    "never_back_in_data": 0
+   }
+  },
+  "H2": {
+   "windows": 78,
+   "pf_r": {
+    "p10": 1.67,
+    "p25": 1.95,
+    "median": 3.09,
+    "p75": 4.44,
+    "p90": 5.4
+   },
+   "share_pf_le_1_89": 24.4,
+   "share_pf_le_1_41": 3.8,
+   "light": {
+    "GREEN": 64.1,
+    "RED": 0.0,
+    "AMBER": 35.9
+   },
+   "forward": {
+    "after_any": {
+     "windows": 38,
+     "next40_pf_r_median": 1.9,
+     "next40_r_week_mean": 1.55,
+     "next40_pf_ge_2": 47.4,
+     "next40_positive": 100.0,
+     "next60_r_week_mean": 2.04
+    }
+   },
+   "dips": {
+    "count": 3,
+    "median_len": 4.0,
+    "longest": 14,
+    "back_to_pf2_median_sessions": 14.0,
+    "never_back_in_data": 2
+   }
+  },
+  "2025": {
+   "windows": 258,
+   "pf_r": {
+    "p10": 0.5,
+    "p25": 0.8,
+    "median": 1.22,
+    "p75": 1.51,
+    "p90": 1.83
+   },
+   "share_pf_le_1_89": 90.7,
+   "share_pf_le_1_41": 67.1,
+   "light": {
+    "GREEN": 7.4,
+    "RED": 37.6,
+    "AMBER": 55.0
+   },
+   "forward": {
+    "after_weak": {
+     "windows": 234,
+     "next40_pf_r_median": 1.22,
+     "next40_r_week_mean": 0.52,
+     "next40_pf_ge_2": 8.5,
+     "next40_positive": 71.8,
+     "next60_r_week_mean": 0.62
+    },
+    "after_any": {
+     "windows": 258,
+     "next40_pf_r_median": 1.19,
+     "next40_r_week_mean": 0.38,
+     "next40_pf_ge_2": 7.8,
+     "next40_positive": 66.3,
+     "next60_r_week_mean": 0.54
+    }
+   },
+   "dips": {
+    "count": 5,
+    "median_len": 16.0,
+    "longest": 144,
+    "back_to_pf2_median_sessions": 62.0,
+    "never_back_in_data": 0
+   }
+  },
+  "2021-24": {
+   "windows": 780,
+   "pf_r": {
+    "p10": 0.45,
+    "p25": 0.67,
+    "median": 1.01,
+    "p75": 1.58,
+    "p90": 1.97
+   },
+   "share_pf_le_1_89": 88.2,
+   "share_pf_le_1_41": 68.6,
+   "light": {
+    "GREEN": 11.7,
+    "RED": 53.7,
+    "AMBER": 34.6
+   },
+   "forward": {
+    "after_weak": {
+     "windows": 688,
+     "next40_pf_r_median": 0.98,
+     "next40_r_week_mean": 0.16,
+     "next40_pf_ge_2": 9.9,
+     "next40_positive": 48.5,
+     "next60_r_week_mean": 0.14
+    },
+    "after_any": {
+     "windows": 780,
+     "next40_pf_r_median": 1.0,
+     "next40_r_week_mean": 0.16,
+     "next40_pf_ge_2": 9.0,
+     "next40_positive": 50.4,
+     "next60_r_week_mean": 0.13
+    }
+   },
+   "dips": {
+    "count": 15,
+    "median_len": 11.0,
+    "longest": 200,
+    "back_to_pf2_median_sessions": 17.0,
+    "never_back_in_data": 0
+   }
+  }
+ },
+ "usd_pf": {
+  "H1": {
+   "windows": 128,
+   "median": 2.86,
+   "p10": 1.39,
+   "share_le_1_41": 10.9
+  },
+  "H2": {
+   "windows": 78,
+   "median": 2.8,
+   "p10": 1.4,
+   "share_le_1_41": 16.7
+  },
+  "2025": {
+   "windows": 258,
+   "median": 1.29,
+   "p10": 0.58,
+   "share_le_1_41": 58.9
+  },
+  "2021-24": {
+   "windows": 775,
+   "median": 1.01,
+   "p10": 0.46,
+   "share_le_1_41": 76.4
+  }
+ },
+ "drawdowns": {
+  "H1": {
+   "trades": 104,
+   "sum_r": 95.3,
+   "max_dd_r": -5.1,
+   "longest_under_sessions": 14,
+   "dd_at_end_r": -3.1,
+   "sessions_since_high": 6
+  },
+  "H2": {
+   "trades": 46,
+   "sum_r": 30.4,
+   "max_dd_r": -4.9,
+   "longest_under_sessions": 40,
+   "dd_at_end_r": -1.0,
+   "sessions_since_high": 4
+  },
+  "2025": {
+   "trades": 222,
+   "sum_r": 24.0,
+   "max_dd_r": -22.9,
+   "longest_under_sessions": 162,
+   "dd_at_end_r": -9.4,
+   "sessions_since_high": 162
+  },
+  "2021-24": {
+   "trades": 772,
+   "sum_r": 31.7,
+   "max_dd_r": -50.7,
+   "longest_under_sessions": 618,
+   "dd_at_end_r": -35.5,
+   "sessions_since_high": 618
+  }
+ },
+ "regime": {
+  "last40": [
+   "2026-08-24",
+   "2026-10-16"
+  ],
+  "by_vix": {
+   "<15": {
+    "H1": {
+     "n": 4,
+     "sum_r": -1.2,
+     "avg_r": -0.299,
+     "win": 25.0,
+     "pf": 0.62
+    },
+    "last40": {
+     "n": 4,
+     "sum_r": -1.77,
+     "avg_r": -0.442,
+     "win": 25.0,
+     "pf": 0.44
+    }
+   },
+   "15-18": {
+    "H1": {
+     "n": 47,
+     "sum_r": 43.51,
+     "avg_r": 0.926,
+     "win": 38.3,
+     "pf": 3.06
+    },
+    "last40": {
+     "n": 20,
+     "sum_r": 9.73,
+     "avg_r": 0.486,
+     "win": 40.0,
+     "pf": 2.67
+    }
+   },
+   "18-22": {
+    "H1": {
+     "n": 37,
+     "sum_r": 42.13,
+     "avg_r": 1.139,
+     "win": 40.5,
+     "pf": 3.44
+    },
+    "last40": {
+     "n": 0
+    }
+   },
+   "22+": {
+    "H1": {
+     "n": 16,
+     "sum_r": 10.84,
+     "avg_r": 0.677,
+     "win": 25.0,
+     "pf": 2.5
+    },
+    "last40": {
+     "n": 0
+    }
+   }
+  },
+  "by_member": {
+   "EMA": {
+    "H1": {
+     "n": 51,
+     "sum_r": 34.01,
+     "avg_r": 0.667,
+     "win": 23.5,
+     "pf": 2.45
+    },
+    "Jul-Aug": {
+     "n": 12,
+     "sum_r": 15.09,
+     "avg_r": 1.257,
+     "win": 33.3,
+     "pf": 5.71
+    },
+    "last40": {
+     "n": 10,
+     "sum_r": 3.45,
+     "avg_r": 0.345,
+     "win": 20.0,
+     "pf": 2.33
+    }
+   },
+   "MD": {
+    "H1": {
+     "n": 27,
+     "sum_r": 39.8,
+     "avg_r": 1.474,
+     "win": 37.0,
+     "pf": 3.62
+    },
+    "Jul-Aug": {
+     "n": 6,
+     "sum_r": 5.17,
+     "avg_r": 0.862,
+     "win": 33.3,
+     "pf": 2.75
+    },
+    "last40": {
+     "n": 7,
+     "sum_r": 4.24,
+     "avg_r": 0.606,
+     "win": 57.1,
+     "pf": 2.65
+    }
+   },
+   "SR": {
+    "H1": {
+     "n": 26,
+     "sum_r": 21.47,
+     "avg_r": 0.826,
+     "win": 61.5,
+     "pf": 3.1
+    },
+    "Jul-Aug": {
+     "n": 9,
+     "sum_r": 0.46,
+     "avg_r": 0.051,
+     "win": 33.3,
+     "pf": 1.08
+    },
+    "last40": {
+     "n": 7,
+     "sum_r": 0.26,
+     "avg_r": 0.037,
+     "win": 42.9,
+     "pf": 1.07
+    }
+   }
+  },
+  "by_daytype": {
+   "trend (eff >= 0.35)": {
+    "H1": {
+     "n": 1,
+     "sum_r": 0.0,
+     "avg_r": 0.002,
+     "win": 0.0,
+     "pf": 99.0
+    },
+    "Jul-Aug": {
+     "n": 2,
+     "sum_r": 3.46,
+     "avg_r": 1.728,
+     "win": 50.0,
+     "pf": 4.37
+    },
+    "last40": {
+     "n": 0
+    }
+   },
+   "mixed": {
+    "H1": {
+     "n": 33,
+     "sum_r": 46.02,
+     "avg_r": 1.395,
+     "win": 42.4,
+     "pf": 4.56
+    },
+    "Jul-Aug": {
+     "n": 5,
+     "sum_r": 0.87,
+     "avg_r": 0.173,
+     "win": 20.0,
+     "pf": 1.77
+    },
+    "last40": {
+     "n": 4,
+     "sum_r": 1.51,
+     "avg_r": 0.377,
+     "win": 25.0,
+     "pf": 2.4
+    }
+   },
+   "chop (eff < 0.15)": {
+    "H1": {
+     "n": 69,
+     "sum_r": 50.34,
+     "avg_r": 0.73,
+     "win": 34.8,
+     "pf": 2.45
+    },
+    "Jul-Aug": {
+     "n": 20,
+     "sum_r": 16.39,
+     "avg_r": 0.82,
+     "win": 35.0,
+     "pf": 2.72
+    },
+    "last40": {
+     "n": 20,
+     "sum_r": 6.45,
+     "avg_r": 0.323,
+     "win": 40.0,
+     "pf": 1.82
+    }
+   }
+  },
+  "days": {
+   "H1": {
+    "sessions": 128,
+    "vix_mean": 19.35,
+    "rth_range_pct": 1.46,
+    "trend_eff": 0.131,
+    "vix_share": {
+     "<15": 3.9,
+     "15-18": 42.2,
+     "18-22": 33.6,
+     "22+": 20.3
+    }
+   },
+   "Jul-Aug": {
+    "sessions": 44,
+    "vix_mean": 16.25,
+    "rth_range_pct": 1.36,
+    "trend_eff": 0.118,
+    "vix_share": {
+     "<15": 15.9,
+     "15-18": 68.2,
+     "18-22": 15.9,
+     "22+": 0.0
+    }
+   },
+   "last40": {
+    "sessions": 40,
+    "vix_mean": 15.6,
+    "rth_range_pct": 1.05,
+    "trend_eff": 0.119,
+    "vix_share": {
+     "<15": 25.0,
+     "15-18": 75.0,
+     "18-22": 0.0,
+     "22+": 0.0
+    }
+   }
+  },
+  "mix": {
+   "last40_actual_r": 7.96,
+   "last40_with_h1_r_per_bucket": 17.32,
+   "h1_r_per_trade": 0.916,
+   "last40_trades": 24,
+   "last40_at_h1_overall": 21.99
+  }
+ },
+ "members_pf": {
+  "EMA": {
+   "oct16_last10_pf": 2.31,
+   "oct16_last20_pf": 2.8,
+   "oct16_last10_r": 4.14,
+   "oct16_last20_r": 11.39,
+   "nov6_last10_pf": 2.56,
+   "nov6_last20_pf": 1.58,
+   "nov6_added": 6
+  },
+  "MD": {
+   "oct16_last10_pf": 1.55,
+   "oct16_last20_pf": 2.98,
+   "oct16_last10_r": 2.41,
+   "oct16_last20_r": 19.6,
+   "nov6_last10_pf": 2.41,
+   "nov6_last20_pf": 2.98,
+   "nov6_added": 3
+  },
+  "SR": {
+   "oct16_last10_pf": 1.66,
+   "oct16_last20_pf": 1.94,
+   "oct16_last10_r": 3.21,
+   "oct16_last20_r": 8.69,
+   "nov6_last10_pf": 2.62,
+   "nov6_last20_pf": 1.93,
+   "nov6_added": 2
+  }
+ },
+ "fresh": {
+  "vix_source": "CBOE daily VIX (free file, cached)",
+  "after_oct16": {
+   "sessions": 22,
+   "first": "2026-10-19",
+   "last": "2026-11-17",
+   "vix_close_min": 16.61,
+   "vix_close_max": 28.18,
+   "prior_close_share": {
+    "<15": 0.0,
+    "15-18": 31.8,
+    "18-22": 54.5,
+    "22+": 13.6
+   },
+   "closes": {
+    "2026-10-19": 18.44,
+    "2026-10-20": 17.31,
+    "2026-10-21": 16.68,
+    "2026-10-22": 19.03,
+    "2026-10-23": 19.45,
+    "2026-10-26": 18.39,
+    "2026-10-27": 17.52,
+    "2026-10-28": 16.91,
+    "2026-10-29": 17.2,
+    "2026-10-30": 19.42,
+    "2026-11-02": 21.15,
+    "2026-11-03": 20.83,
+    "2026-11-04": 16.61,
+    "2026-11-05": 28.18,
+    "2026-11-06": 25.64,
+    "2026-11-09": 19.92,
+    "2026-11-10": 19.46,
+    "2026-11-11": 17.49,
+    "2026-11-12": 18.7,
+    "2026-11-13": 19.3,
+    "2026-11-16": 22.91,
+    "2026-11-17": 25.46
+   }
+  },
+  "sep1_oct16_prior_close_share": {
+   "<15": 23.5,
+   "15-18": 76.5,
+   "18-22": 0.0,
+   "22+": 0.0
+  },
+  "h1_prior_close_share": {
+   "<15": 3.9,
+   "15-18": 42.2,
+   "18-22": 33.6,
+   "22+": 20.3
+  },
+  "pc_paper": {
+   "to": "2026-11-06",
+   "by_member": {
+    "EMA": {
+     "n": 6,
+     "sum_r": 1.68,
+     "avg_r": 0.28,
+     "win": 16.7,
+     "pf": 1.41
+    },
+    "MD": {
+     "n": 3,
+     "sum_r": 5.92,
+     "avg_r": 1.975,
+     "win": 33.3,
+     "pf": 3.89
+    },
+    "SR": {
+     "n": 2,
+     "sum_r": 0.95,
+     "avg_r": 0.473,
+     "win": 50.0,
+     "pf": 1.92
+    }
+   },
+   "all": {
+    "n": 11,
+    "sum_r": 8.55,
+    "avg_r": 0.777,
+    "win": 27.3,
+    "pf": 2.19
+   },
+   "trades": [
+    {
+     "day": "2026-10-20",
+     "src": "EMA",
+     "dir": -1,
+     "r": 5.8004,
+     "exit": "TARGET"
+    },
+    {
+     "day": "2026-10-21",
+     "src": "MD",
+     "dir": 1,
+     "r": -1.026,
+     "exit": "STOP"
+    },
+    {
+     "day": "2026-10-21",
+     "src": "EMA",
+     "dir": 1,
+     "r": -1.0279,
+     "exit": "STOP"
+    },
+    {
+     "day": "2026-10-22",
+     "src": "MD",
+     "dir": 1,
+     "r": -1.022,
+     "exit": "STOP"
+    },
+    {
+     "day": "2026-10-23",
+     "src": "EMA",
+     "dir": -1,
+     "r": 0.0007,
+     "exit": "BE"
+    },
+    {
+     "day": "2026-10-26",
+     "src": "SR",
+     "dir": -1,
+     "r": -1.029,
+     "exit": "STOP"
+    },
+    {
+     "day": "2026-10-27",
+     "src": "MD",
+     "dir": 1,
+     "r": 7.973,
+     "exit": "TARGET"
+    },
+    {
+     "day": "2026-10-28",
+     "src": "EMA",
+     "dir": 1,
+     "r": -1.04,
+     "exit": "STOP"
+    },
+    {
+     "day": "2026-11-03",
+     "src": "EMA",
+     "dir": -1,
+     "r": -1.0253,
+     "exit": "STOP"
+    },
+    {
+     "day": "2026-11-03",
+     "src": "SR",
+     "dir": -1,
+     "r": 1.975,
+     "exit": "TARGET"
+    },
+    {
+     "day": "2026-11-06",
+     "src": "EMA",
+     "dir": -1,
+     "r": -1.0293,
+     "exit": "STOP"
+    }
+   ],
+   "by_vix": {
+    "<15": {
+     "n": 0
+    },
+    "15-18": {
+     "n": 4,
+     "sum_r": -4.12,
+     "avg_r": -1.029,
+     "win": 0.0,
+     "pf": 0.0
+    },
+    "18-22": {
+     "n": 6,
+     "sum_r": 13.69,
+     "avg_r": 2.282,
+     "win": 50.0,
+     "pf": 7.67
+    },
+    "22+": {
+     "n": 1,
+     "sum_r": -1.03,
+     "avg_r": -1.029,
+     "win": 0.0,
+     "pf": 0.0
+    }
+   }
+  },
+  "light_nov6": {
+   "sessions_to": "2026-11-06",
+   "trades": 25,
+   "pf_r": 2.72,
+   "r_week": 2.26,
+   "light": "GREEN",
+   "note": "PC paper ledgers (members' own, after one position + max 2 a day; LIT no-hedge not applied)"
+  },
+  "rth": {
+   "oct19_nov6": {
+    "sessions": 15,
+    "range_pct": 1.74,
+    "trend_eff": 0.112
+   },
+   "H1": {
+    "range_pct": 1.46,
+    "trend_eff": 0.131
+   },
+   "Jul-Oct16": {
+    "range_pct": 1.23,
+    "trend_eff": 0.122
+   }
+  },
+  "missing": "No NQ bars or ATLAS trades for Nov 9 - Nov 17 anywhere in the cloud (PC silent, no data branch on the backup yet); Nov 18 = the funded account's first live trade day (-$113, owner's report)."
+ }
+}

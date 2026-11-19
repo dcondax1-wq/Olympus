@@ -1,0 +1,1808 @@
+{
+ "series": {
+  "KXPANAMAWEEKLY": {
+   "markets": 40,
+   "n_markets": 55,
+   "reproduce": {
+    "mine": {
+     "first15": 1.13,
+     "last15": 1.381,
+     "all30": 1.242
+    },
+    "published": {
+     "first15": 1.13,
+     "last15": 1.398,
+     "all30": 1.25
+    },
+    "mine_reward": {
+     "first15": 700.4,
+     "last15": 537.9
+    },
+    "published_reward": {
+     "first15": 700.4,
+     "last15": 537.9
+    },
+    "mine_fill": {
+     "first15": -264.0,
+     "last15": -107.6
+    },
+    "published_fill": {
+     "first15": -264.0,
+     "last15": -102.3
+    }
+   },
+   "sim2_equals_sim": true,
+   "base": {
+    "first15": {
+     "markets": 28,
+     "reward": 700.41,
+     "fill_pnl": -263.95,
+     "fills": 107.0,
+     "capital_days": 38624.2,
+     "avg_capital": 2574.9,
+     "reward_per100_day": 1.813,
+     "fill_per100_day": -0.683,
+     "net_per100_day": 1.13,
+     "ci95": [
+      -0.086,
+      2.241
+     ],
+     "p_net_le_0": 0.034
+    },
+    "last15": {
+     "markets": 25,
+     "reward": 537.86,
+     "fill_pnl": -107.56,
+     "fills": 111.5,
+     "capital_days": 31154.2,
+     "avg_capital": 2076.9,
+     "reward_per100_day": 1.726,
+     "fill_per100_day": -0.345,
+     "net_per100_day": 1.381,
+     "ci95": [
+      -0.814,
+      4.205
+     ],
+     "p_net_le_0": 0.131
+    },
+    "all30": {
+     "markets": 40,
+     "reward": 1238.27,
+     "fill_pnl": -371.51,
+     "fills": 218.5,
+     "capital_days": 69778.4,
+     "avg_capital": 2325.9,
+     "reward_per100_day": 1.775,
+     "fill_per100_day": -0.532,
+     "net_per100_day": 1.242,
+     "ci95": [
+      -0.061,
+      2.648
+     ],
+     "p_net_le_0": 0.032
+    }
+   },
+   "variants": {
+    "per_side": {
+     "first15": {
+      "markets": 28,
+      "reward": 833.55,
+      "fill_pnl": -263.95,
+      "fills": 107.0,
+      "capital_days": 38624.2,
+      "avg_capital": 2574.9,
+      "reward_per100_day": 2.158,
+      "fill_per100_day": -0.683,
+      "net_per100_day": 1.475,
+      "ci95": [
+       0.328,
+       2.529
+      ],
+      "p_net_le_0": 0.004
+     },
+     "last15": {
+      "markets": 25,
+      "reward": 626.8,
+      "fill_pnl": -107.56,
+      "fills": 111.5,
+      "capital_days": 31154.2,
+      "avg_capital": 2076.9,
+      "reward_per100_day": 2.012,
+      "fill_per100_day": -0.345,
+      "net_per100_day": 1.667,
+      "ci95": [
+       -0.518,
+       4.422
+      ],
+      "p_net_le_0": 0.077
+     },
+     "all30": {
+      "markets": 40,
+      "reward": 1460.35,
+      "fill_pnl": -371.51,
+      "fills": 218.5,
+      "capital_days": 69778.4,
+      "avg_capital": 2325.9,
+      "reward_per100_day": 2.093,
+      "fill_per100_day": -0.532,
+      "net_per100_day": 1.56,
+      "ci95": [
+       0.281,
+       2.893
+      ],
+      "p_net_le_0": 0.008
+     }
+    },
+    "per_side_min1": {
+     "first15": {
+      "markets": 28,
+      "reward": 822.89,
+      "fill_pnl": -263.95,
+      "fills": 107.0,
+      "capital_days": 38624.2,
+      "avg_capital": 2574.9,
+      "reward_per100_day": 2.13,
+      "fill_per100_day": -0.683,
+      "net_per100_day": 1.447,
+      "ci95": [
+       0.297,
+       2.502
+      ],
+      "p_net_le_0": 0.005
+     },
+     "last15": {
+      "markets": 25,
+      "reward": 622.31,
+      "fill_pnl": -107.56,
+      "fills": 111.5,
+      "capital_days": 31154.2,
+      "avg_capital": 2076.9,
+      "reward_per100_day": 1.998,
+      "fill_per100_day": -0.345,
+      "net_per100_day": 1.652,
+      "ci95": [
+       -0.536,
+       4.407
+      ],
+      "p_net_le_0": 0.081
+     },
+     "all30": {
+      "markets": 40,
+      "reward": 1445.19,
+      "fill_pnl": -371.51,
+      "fills": 218.5,
+      "capital_days": 69778.4,
+      "avg_capital": 2325.9,
+      "reward_per100_day": 2.071,
+      "fill_per100_day": -0.532,
+      "net_per100_day": 1.539,
+      "ci95": [
+       0.252,
+       2.876
+      ],
+      "p_net_le_0": 0.009
+     }
+    },
+    "owner_50_a_side": {
+     "first15": {
+      "markets": 28,
+      "reward": 184.79,
+      "fill_pnl": -48.7,
+      "fills": 78.25,
+      "capital_days": 10094.1,
+      "avg_capital": 672.9,
+      "reward_per100_day": 1.831,
+      "fill_per100_day": -0.482,
+      "net_per100_day": 1.348,
+      "ci95": [
+       -0.006,
+       2.658
+      ],
+      "p_net_le_0": 0.026
+     },
+     "last15": {
+      "markets": 25,
+      "reward": 146.85,
+      "fill_pnl": 17.99,
+      "fills": 79.5,
+      "capital_days": 8677.4,
+      "avg_capital": 578.5,
+      "reward_per100_day": 1.692,
+      "fill_per100_day": 0.207,
+      "net_per100_day": 1.9,
+      "ci95": [
+       -0.69,
+       5.649
+      ],
+      "p_net_le_0": 0.101
+     },
+     "all30": {
+      "markets": 40,
+      "reward": 331.64,
+      "fill_pnl": -30.72,
+      "fills": 157.75,
+      "capital_days": 18771.5,
+      "avg_capital": 625.7,
+      "reward_per100_day": 1.767,
+      "fill_per100_day": -0.164,
+      "net_per100_day": 1.603,
+      "ci95": [
+       0.026,
+       3.284
+      ],
+      "p_net_le_0": 0.022
+     },
+     "biggest_market_day_fill_losses": [
+      [
+       -41.5,
+       "KXPANAMAWEEKLY-26OCT18-T190",
+       2
+      ],
+      [
+       -35.0,
+       "KXPANAMAWEEKLY-26NOV15-T205",
+       29
+      ],
+      [
+       -32.0,
+       "KXPANAMAWEEKLY-26OCT25-T195",
+       0
+      ],
+      [
+       -25.0,
+       "KXPANAMAWEEKLY-26NOV08-T195",
+       23
+      ],
+      [
+       -24.5,
+       "KXPANAMAWEEKLY-26NOV08-T195",
+       17
+      ]
+     ],
+     "worst_week": {
+      "usd_per100_over_7_days": -3.3,
+      "start_day": 23,
+      "reward": 71.3,
+      "fill": -89.6,
+      "avg_capital": 554.8
+     }
+    },
+    "owner_25_a_side": {
+     "first15": {
+      "markets": 28,
+      "reward": 90.5,
+      "fill_pnl": -27.14,
+      "fills": 72.25,
+      "capital_days": 5057.7,
+      "avg_capital": 337.2,
+      "reward_per100_day": 1.789,
+      "fill_per100_day": -0.537,
+      "net_per100_day": 1.253,
+      "ci95": [
+       -0.136,
+       2.58
+      ],
+      "p_net_le_0": 0.039
+     },
+     "last15": {
+      "markets": 25,
+      "reward": 70.15,
+      "fill_pnl": 2.53,
+      "fills": 70.5,
+      "capital_days": 4440.8,
+      "avg_capital": 296.1,
+      "reward_per100_day": 1.58,
+      "fill_per100_day": 0.057,
+      "net_per100_day": 1.637,
+      "ci95": [
+       -0.899,
+       5.353
+      ],
+      "p_net_le_0": 0.135
+     },
+     "all30": {
+      "markets": 40,
+      "reward": 160.65,
+      "fill_pnl": -24.61,
+      "fills": 142.75,
+      "capital_days": 9498.5,
+      "avg_capital": 316.6,
+      "reward_per100_day": 1.691,
+      "fill_per100_day": -0.259,
+      "net_per100_day": 1.432,
+      "ci95": [
+       -0.135,
+       3.046
+      ],
+      "p_net_le_0": 0.041
+     }
+    },
+    "owner_50_no_min": {
+     "first15": {
+      "markets": 28,
+      "reward": 235.97,
+      "fill_pnl": -48.7,
+      "fills": 78.25,
+      "capital_days": 10094.1,
+      "avg_capital": 672.9,
+      "reward_per100_day": 2.338,
+      "fill_per100_day": -0.482,
+      "net_per100_day": 1.855,
+      "ci95": [
+       0.55,
+       3.144
+      ],
+      "p_net_le_0": 0.003
+     },
+     "last15": {
+      "markets": 25,
+      "reward": 177.59,
+      "fill_pnl": 17.99,
+      "fills": 79.5,
+      "capital_days": 8677.4,
+      "avg_capital": 578.5,
+      "reward_per100_day": 2.047,
+      "fill_per100_day": 0.207,
+      "net_per100_day": 2.254,
+      "ci95": [
+       -0.351,
+       6.032
+      ],
+      "p_net_le_0": 0.054
+     },
+     "all30": {
+      "markets": 40,
+      "reward": 413.56,
+      "fill_pnl": -30.72,
+      "fills": 157.75,
+      "capital_days": 18771.5,
+      "avg_capital": 625.7,
+      "reward_per100_day": 2.203,
+      "fill_per100_day": -0.164,
+      "net_per100_day": 2.04,
+      "ci95": [
+       0.486,
+       3.694
+      ],
+      "p_net_le_0": 0.004
+     }
+    },
+    "pause5c_per_side": {
+     "first15": {
+      "markets": 28,
+      "reward": 767.74,
+      "fill_pnl": 133.37,
+      "fills": 87.0,
+      "capital_days": 35935.4,
+      "avg_capital": 2395.7,
+      "reward_per100_day": 2.136,
+      "fill_per100_day": 0.371,
+      "net_per100_day": 2.508,
+      "ci95": [
+       0.933,
+       4.456
+      ],
+      "p_net_le_0": 0.002
+     },
+     "last15": {
+      "markets": 25,
+      "reward": 581.05,
+      "fill_pnl": -22.84,
+      "fills": 82.25,
+      "capital_days": 28484.7,
+      "avg_capital": 1899.0,
+      "reward_per100_day": 2.04,
+      "fill_per100_day": -0.08,
+      "net_per100_day": 1.96,
+      "ci95": [
+       -0.314,
+       4.816
+      ],
+      "p_net_le_0": 0.046
+     },
+     "all30": {
+      "markets": 40,
+      "reward": 1348.79,
+      "fill_pnl": 110.53,
+      "fills": 169.25,
+      "capital_days": 64420.1,
+      "avg_capital": 2147.3,
+      "reward_per100_day": 2.094,
+      "fill_per100_day": 0.172,
+      "net_per100_day": 2.265,
+      "ci95": [
+       0.773,
+       3.984
+      ],
+      "p_net_le_0": 0.001
+     }
+    }
+   },
+   "worst_week_base": {
+    "usd_per100_over_7_days": -4.55,
+    "start_day": 23,
+    "reward": 263.72,
+    "fill": -353.01,
+    "avg_capital": 1960.6
+   },
+   "biggest_market_day_fill_losses_base": [
+    [
+     -166.0,
+     "KXPANAMAWEEKLY-26OCT18-T190",
+     2
+    ],
+    [
+     -140.0,
+     "KXPANAMAWEEKLY-26NOV15-T205",
+     29
+    ],
+    [
+     -128.0,
+     "KXPANAMAWEEKLY-26OCT25-T195",
+     0
+    ],
+    [
+     -100.0,
+     "KXPANAMAWEEKLY-26NOV08-T195",
+     23
+    ],
+    [
+     -98.0,
+     "KXPANAMAWEEKLY-26NOV08-T195",
+     17
+    ]
+   ],
+   "verify_fills": {
+    "verdict": "false",
+    "reasons": [
+     "net per $1 is not positive after exact fees (-6.2%)",
+     "t -0.64 is under the multiple-testing bar 3.56 for 272 rules tried"
+    ],
+    "problem_counts": {
+     "same_rows": 12
+    },
+    "all": {
+     "n": 212,
+     "clusters": 28,
+     "win_rate": 0.33668341708542715,
+     "breakeven_win_rate": 0.3711,
+     "net_usd": -299.37,
+     "fees_usd": 0.0,
+     "cost_usd": 4865.25,
+     "reward_usd": 0.0,
+     "net_per_1": -0.0615,
+     "ci95": [
+      -0.2554,
+      0.1239
+     ],
+     "net_per_1_with_reward": -0.0615,
+     "ci95_with_reward": [
+      -0.2554,
+      0.1239
+     ],
+     "t": -0.64,
+     "p_one_sided": 0.7398,
+     "trades_per_week": 50.94,
+     "marked_not_settled": 13,
+     "usd_month_at_stake": -136.19,
+     "stake": 10.0,
+     "first": "2026-10-18T16:47+00:00",
+     "last": "2026-11-16T19:59+00:00"
+    },
+    "first_half": {
+     "n": 102,
+     "clusters": 19,
+     "win_rate": 0.3137254901960784,
+     "breakeven_win_rate": 0.3538,
+     "net_usd": -211.1,
+     "fees_usd": 0.0,
+     "cost_usd": 2605.92,
+     "reward_usd": 0.0,
+     "net_per_1": -0.081,
+     "ci95": [
+      -0.2889,
+      0.0591
+     ],
+     "net_per_1_with_reward": -0.081,
+     "ci95_with_reward": [
+      -0.2889,
+      0.0591
+     ],
+     "t": -0.95,
+     "p_one_sided": 0.8299,
+     "trades_per_week": 49.72,
+     "marked_not_settled": 0,
+     "usd_month_at_stake": -175.01,
+     "stake": 10.0,
+     "first": "2026-10-18T16:47+00:00",
+     "last": "2026-11-02T01:25+00:00"
+    },
+    "second_half": {
+     "n": 110,
+     "clusters": 13,
+     "win_rate": 0.36082474226804123,
+     "breakeven_win_rate": 0.396,
+     "net_usd": -88.28,
+     "fees_usd": 0.0,
+     "cost_usd": 2259.33,
+     "reward_usd": 0.0,
+     "net_per_1": -0.0391,
+     "ci95": [
+      -0.3092,
+      0.3704
+     ],
+     "net_per_1_with_reward": -0.0391,
+     "ci95_with_reward": [
+      -0.3092,
+      0.3704
+     ],
+     "t": -0.23,
+     "p_one_sided": 0.5921,
+     "trades_per_week": 53.22,
+     "marked_not_settled": 13,
+     "usd_month_at_stake": -90.35,
+     "stake": 10.0,
+     "first": "2026-11-02T08:44+00:00",
+     "last": "2026-11-16T19:59+00:00"
+    }
+   },
+   "by_bucket_per_side": {
+    "first15": {
+     "mid": {
+      "reward_per100_day": 4.442,
+      "fill_per100_day": -0.327,
+      "net_per100_day": 4.115,
+      "fill_per1_filled": -0.025,
+      "filled_per100_day": 13.07,
+      "capital_days": 15876.2,
+      "fills": 66.8
+     },
+     "cheap": {
+      "reward_per100_day": 1.579,
+      "fill_per100_day": -23.833,
+      "net_per100_day": -22.255,
+      "fill_per1_filled": -1.0,
+      "filled_per100_day": 23.83,
+      "capital_days": 999.0,
+      "fills": 39.0
+     },
+     "rich": {
+      "reward_per100_day": 0.834,
+      "fill_per100_day": 0.192,
+      "net_per100_day": 1.026,
+      "fill_per1_filled": 0.1161,
+      "filled_per100_day": 1.66,
+      "capital_days": 13507.0,
+      "fills": 1.2
+     }
+    },
+    "last15": {
+     "mid": {
+      "reward_per100_day": 4.367,
+      "fill_per100_day": -0.19,
+      "net_per100_day": 4.177,
+      "fill_per1_filled": -0.0128,
+      "filled_per100_day": 14.77,
+      "capital_days": 11953.9,
+      "fills": 69.5
+     },
+     "cheap": {
+      "reward_per100_day": 3.021,
+      "fill_per100_day": -13.543,
+      "net_per100_day": -10.521,
+      "fill_per1_filled": -0.9049,
+      "filled_per100_day": 14.97,
+      "capital_days": 849.7,
+      "fills": 32.0
+     },
+     "rich": {
+      "reward_per100_day": 0.833,
+      "fill_per100_day": 0.318,
+      "net_per100_day": 1.151,
+      "fill_per1_filled": 0.0682,
+      "filled_per100_day": 4.66,
+      "capital_days": 9493.9,
+      "fills": 10.0
+     }
+    }
+   },
+   "oos": {
+    "base": {
+     "markets": 18,
+     "reward": 62.46,
+     "fill_pnl": -150.42,
+     "fills": 40.25,
+     "capital_days": 4411.8,
+     "avg_capital": 2205.9,
+     "reward_per100_day": 1.416,
+     "fill_per100_day": -3.409,
+     "net_per100_day": -1.994,
+     "ci95": [
+      -8.223,
+      1.079
+     ],
+     "p_net_le_0": 0.864
+    },
+    "per_side_min1": {
+     "markets": 18,
+     "reward": 77.56,
+     "fill_pnl": -150.42,
+     "fills": 40.25,
+     "capital_days": 4411.8,
+     "avg_capital": 2205.9,
+     "reward_per100_day": 1.758,
+     "fill_per100_day": -3.409,
+     "net_per100_day": -1.651,
+     "ci95": [
+      -7.849,
+      1.406
+     ],
+     "p_net_le_0": 0.793
+    },
+    "owner_50_a_side": {
+     "markets": 18,
+     "reward": 15.67,
+     "fill_pnl": -39.05,
+     "fills": 27.25,
+     "capital_days": 1110.5,
+     "avg_capital": 555.2,
+     "reward_per100_day": 1.411,
+     "fill_per100_day": -3.517,
+     "net_per100_day": -2.106,
+     "ci95": [
+      -8.948,
+      1.506
+     ],
+     "p_net_le_0": 0.833
+    },
+    "pause5c_per_side": {
+     "markets": 18,
+     "reward": 75.18,
+     "fill_pnl": -21.46,
+     "fills": 19.25,
+     "capital_days": 4119.9,
+     "avg_capital": 2060.0,
+     "reward_per100_day": 1.825,
+     "fill_per100_day": -0.521,
+     "net_per100_day": 1.304,
+     "ci95": [
+      -0.127,
+      2.506
+     ],
+     "p_net_le_0": 0.037
+    }
+   },
+   "oos_window": [
+    "2026-11-17T05:00+00:00",
+    "2026-11-19T00:00+00:00",
+    18
+   ]
+  },
+  "KXBABELMANDEBWEEKLY": {
+   "markets": 40,
+   "n_markets": 67,
+   "reproduce": {
+    "mine": {
+     "first15": 1.885,
+     "last15": 0.761,
+     "all30": 1.328
+    },
+    "published": {
+     "first15": 1.885,
+     "last15": 0.755,
+     "all30": 1.325
+    },
+    "mine_reward": {
+     "first15": 1198.6,
+     "last15": 707.5
+    },
+    "published_reward": {
+     "first15": 1198.6,
+     "last15": 707.5
+    },
+    "mine_fill": {
+     "first15": 17.2,
+     "last15": -224.4
+    },
+    "published_fill": {
+     "first15": 17.2,
+     "last15": -228.6
+    }
+   },
+   "sim2_equals_sim": true,
+   "base": {
+    "first15": {
+     "markets": 28,
+     "reward": 1198.6,
+     "fill_pnl": 17.23,
+     "fills": 222.25,
+     "capital_days": 64499.8,
+     "avg_capital": 4300.0,
+     "reward_per100_day": 1.858,
+     "fill_per100_day": 0.027,
+     "net_per100_day": 1.885,
+     "ci95": [
+      -0.877,
+      3.944
+     ],
+     "p_net_le_0": 0.077
+    },
+    "last15": {
+     "markets": 24,
+     "reward": 707.53,
+     "fill_pnl": -224.4,
+     "fills": 227.0,
+     "capital_days": 63444.4,
+     "avg_capital": 4229.6,
+     "reward_per100_day": 1.115,
+     "fill_per100_day": -0.354,
+     "net_per100_day": 0.761,
+     "ci95": [
+      -0.085,
+      1.466
+     ],
+     "p_net_le_0": 0.035
+    },
+    "all30": {
+     "markets": 40,
+     "reward": 1906.13,
+     "fill_pnl": -207.17,
+     "fills": 449.25,
+     "capital_days": 127944.2,
+     "avg_capital": 4264.8,
+     "reward_per100_day": 1.49,
+     "fill_per100_day": -0.162,
+     "net_per100_day": 1.328,
+     "ci95": [
+      -0.007,
+      2.545
+     ],
+     "p_net_le_0": 0.027
+    }
+   },
+   "variants": {
+    "per_side": {
+     "first15": {
+      "markets": 28,
+      "reward": 1386.77,
+      "fill_pnl": 17.23,
+      "fills": 222.25,
+      "capital_days": 64499.8,
+      "avg_capital": 4300.0,
+      "reward_per100_day": 2.15,
+      "fill_per100_day": 0.027,
+      "net_per100_day": 2.177,
+      "ci95": [
+       -0.492,
+       4.199
+      ],
+      "p_net_le_0": 0.049
+     },
+     "last15": {
+      "markets": 24,
+      "reward": 861.47,
+      "fill_pnl": -224.4,
+      "fills": 227.0,
+      "capital_days": 63444.4,
+      "avg_capital": 4229.6,
+      "reward_per100_day": 1.358,
+      "fill_per100_day": -0.354,
+      "net_per100_day": 1.004,
+      "ci95": [
+       0.167,
+       1.702
+      ],
+      "p_net_le_0": 0.009
+     },
+     "all30": {
+      "markets": 40,
+      "reward": 2248.24,
+      "fill_pnl": -207.17,
+      "fills": 449.25,
+      "capital_days": 127944.2,
+      "avg_capital": 4264.8,
+      "reward_per100_day": 1.757,
+      "fill_per100_day": -0.162,
+      "net_per100_day": 1.595,
+      "ci95": [
+       0.251,
+       2.78
+      ],
+      "p_net_le_0": 0.008
+     }
+    },
+    "per_side_min1": {
+     "first15": {
+      "markets": 28,
+      "reward": 1373.83,
+      "fill_pnl": 17.23,
+      "fills": 222.25,
+      "capital_days": 64499.8,
+      "avg_capital": 4300.0,
+      "reward_per100_day": 2.13,
+      "fill_per100_day": 0.027,
+      "net_per100_day": 2.157,
+      "ci95": [
+       -0.522,
+       4.186
+      ],
+      "p_net_le_0": 0.052
+     },
+     "last15": {
+      "markets": 24,
+      "reward": 852.88,
+      "fill_pnl": -224.4,
+      "fills": 227.0,
+      "capital_days": 63444.4,
+      "avg_capital": 4229.6,
+      "reward_per100_day": 1.344,
+      "fill_per100_day": -0.354,
+      "net_per100_day": 0.991,
+      "ci95": [
+       0.155,
+       1.687
+      ],
+      "p_net_le_0": 0.011
+     },
+     "all30": {
+      "markets": 40,
+      "reward": 2226.71,
+      "fill_pnl": -207.17,
+      "fills": 449.25,
+      "capital_days": 127944.2,
+      "avg_capital": 4264.8,
+      "reward_per100_day": 1.74,
+      "fill_per100_day": -0.162,
+      "net_per100_day": 1.578,
+      "ci95": [
+       0.234,
+       2.762
+      ],
+      "p_net_le_0": 0.009
+     }
+    },
+    "owner_50_a_side": {
+     "first15": {
+      "markets": 28,
+      "reward": 382.38,
+      "fill_pnl": 25.79,
+      "fills": 164.0,
+      "capital_days": 17809.8,
+      "avg_capital": 1187.3,
+      "reward_per100_day": 2.147,
+      "fill_per100_day": 0.145,
+      "net_per100_day": 2.292,
+      "ci95": [
+       -0.373,
+       4.489
+      ],
+      "p_net_le_0": 0.043
+     },
+     "last15": {
+      "markets": 24,
+      "reward": 238.46,
+      "fill_pnl": -91.01,
+      "fills": 158.0,
+      "capital_days": 17103.9,
+      "avg_capital": 1140.3,
+      "reward_per100_day": 1.394,
+      "fill_per100_day": -0.532,
+      "net_per100_day": 0.862,
+      "ci95": [
+       -0.079,
+       1.64
+      ],
+      "p_net_le_0": 0.037
+     },
+     "all30": {
+      "markets": 40,
+      "reward": 620.83,
+      "fill_pnl": -65.22,
+      "fills": 322.0,
+      "capital_days": 34913.7,
+      "avg_capital": 1163.8,
+      "reward_per100_day": 1.778,
+      "fill_per100_day": -0.187,
+      "net_per100_day": 1.591,
+      "ci95": [
+       0.219,
+       2.92
+      ],
+      "p_net_le_0": 0.011
+     },
+     "biggest_market_day_fill_losses": [
+      [
+       -159.0,
+       "KXBABELMANDEBWEEKLY-26OCT18-T185",
+       2
+      ],
+      [
+       -50.62,
+       "KXBABELMANDEBWEEKLY-26NOV08-T205",
+       20
+      ],
+      [
+       -40.25,
+       "KXBABELMANDEBWEEKLY-26NOV15-T175",
+       28
+      ],
+      [
+       -39.5,
+       "KXBABELMANDEBWEEKLY-26OCT25-T200",
+       8
+      ],
+      [
+       -28.13,
+       "KXBABELMANDEBWEEKLY-26OCT25-T190",
+       4
+      ]
+     ],
+     "worst_week": {
+      "usd_per100_over_7_days": 1.03,
+      "start_day": 17,
+      "reward": 96.86,
+      "fill": -86.99,
+      "avg_capital": 962.2
+     }
+    },
+    "owner_25_a_side": {
+     "first15": {
+      "markets": 28,
+      "reward": 154.92,
+      "fill_pnl": 37.48,
+      "fills": 148.5,
+      "capital_days": 9331.5,
+      "avg_capital": 622.1,
+      "reward_per100_day": 1.66,
+      "fill_per100_day": 0.402,
+      "net_per100_day": 2.062,
+      "ci95": [
+       -0.527,
+       4.37
+      ],
+      "p_net_le_0": 0.059
+     },
+     "last15": {
+      "markets": 24,
+      "reward": 95.01,
+      "fill_pnl": -45.68,
+      "fills": 141.75,
+      "capital_days": 8778.0,
+      "avg_capital": 585.2,
+      "reward_per100_day": 1.082,
+      "fill_per100_day": -0.52,
+      "net_per100_day": 0.562,
+      "ci95": [
+       -0.428,
+       1.351
+      ],
+      "p_net_le_0": 0.11
+     },
+     "all30": {
+      "markets": 40,
+      "reward": 249.93,
+      "fill_pnl": -8.2,
+      "fills": 290.25,
+      "capital_days": 18109.5,
+      "avg_capital": 603.6,
+      "reward_per100_day": 1.38,
+      "fill_per100_day": -0.045,
+      "net_per100_day": 1.335,
+      "ci95": [
+       -0.064,
+       2.76
+      ],
+      "p_net_le_0": 0.033
+     }
+    },
+    "owner_50_no_min": {
+     "first15": {
+      "markets": 28,
+      "reward": 400.66,
+      "fill_pnl": 25.79,
+      "fills": 164.0,
+      "capital_days": 17809.8,
+      "avg_capital": 1187.3,
+      "reward_per100_day": 2.25,
+      "fill_per100_day": 0.145,
+      "net_per100_day": 2.394,
+      "ci95": [
+       -0.262,
+       4.571
+      ],
+      "p_net_le_0": 0.038
+     },
+     "last15": {
+      "markets": 24,
+      "reward": 248.41,
+      "fill_pnl": -91.01,
+      "fills": 158.0,
+      "capital_days": 17103.9,
+      "avg_capital": 1140.3,
+      "reward_per100_day": 1.452,
+      "fill_per100_day": -0.532,
+      "net_per100_day": 0.92,
+      "ci95": [
+       -0.026,
+       1.699
+      ],
+      "p_net_le_0": 0.03
+     },
+     "all30": {
+      "markets": 40,
+      "reward": 649.07,
+      "fill_pnl": -65.22,
+      "fills": 322.0,
+      "capital_days": 34913.7,
+      "avg_capital": 1163.8,
+      "reward_per100_day": 1.859,
+      "fill_per100_day": -0.187,
+      "net_per100_day": 1.672,
+      "ci95": [
+       0.316,
+       2.997
+      ],
+      "p_net_le_0": 0.007
+     }
+    },
+    "pause5c_per_side": {
+     "first15": {
+      "markets": 28,
+      "reward": 1354.18,
+      "fill_pnl": 129.49,
+      "fills": 195.5,
+      "capital_days": 62424.0,
+      "avg_capital": 4161.6,
+      "reward_per100_day": 2.169,
+      "fill_per100_day": 0.207,
+      "net_per100_day": 2.377,
+      "ci95": [
+       0.171,
+       4.127
+      ],
+      "p_net_le_0": 0.019
+     },
+     "last15": {
+      "markets": 24,
+      "reward": 815.94,
+      "fill_pnl": 50.13,
+      "fills": 156.75,
+      "capital_days": 52005.4,
+      "avg_capital": 3467.0,
+      "reward_per100_day": 1.569,
+      "fill_per100_day": 0.096,
+      "net_per100_day": 1.665,
+      "ci95": [
+       0.982,
+       2.296
+      ],
+      "p_net_le_0": 0.0
+     },
+     "all30": {
+      "markets": 40,
+      "reward": 2170.13,
+      "fill_pnl": 179.63,
+      "fills": 352.25,
+      "capital_days": 114429.3,
+      "avg_capital": 3814.3,
+      "reward_per100_day": 1.896,
+      "fill_per100_day": 0.157,
+      "net_per100_day": 2.053,
+      "ci95": [
+       0.928,
+       3.141
+      ],
+      "p_net_le_0": 0.002
+     }
+    }
+   },
+   "worst_week_base": {
+    "usd_per100_over_7_days": -0.17,
+    "start_day": 15,
+    "reward": 293.51,
+    "fill": -299.94,
+    "avg_capital": 3775.6
+   },
+   "biggest_market_day_fill_losses_base": [
+    [
+     -564.5,
+     "KXBABELMANDEBWEEKLY-26OCT18-T185",
+     2
+    ],
+    [
+     -158.0,
+     "KXBABELMANDEBWEEKLY-26OCT25-T200",
+     8
+    ],
+    [
+     -145.93,
+     "KXBABELMANDEBWEEKLY-26NOV15-T175",
+     28
+    ],
+    [
+     -134.7,
+     "KXBABELMANDEBWEEKLY-26NOV08-T205",
+     20
+    ],
+    [
+     -112.5,
+     "KXBABELMANDEBWEEKLY-26OCT25-T190",
+     4
+    ]
+   ],
+   "verify_fills": {
+    "verdict": "false",
+    "reasons": [
+     "net per $1 is not positive after exact fees (-0.0%)",
+     "the two time halves disagree (+1.5% / -1.1%)",
+     "t -0.01 is under the multiple-testing bar 3.56 for 272 rules tried"
+    ],
+    "problem_counts": {
+     "same_rows": 13
+    },
+    "all": {
+     "n": 450,
+     "clusters": 35,
+     "win_rate": 0.5766590389016019,
+     "breakeven_win_rate": 0.6217,
+     "net_usd": -5.78,
+     "fees_usd": 0.0,
+     "cost_usd": 20215.01,
+     "reward_usd": 0.0,
+     "net_per_1": -0.0003,
+     "ci95": [
+      -0.0865,
+      0.0653
+     ],
+     "net_per_1_with_reward": -0.0003,
+     "ci95_with_reward": [
+      -0.0865,
+      0.0653
+     ],
+     "t": -0.01,
+     "p_one_sided": 0.503,
+     "trades_per_week": 105.37,
+     "marked_not_settled": 13,
+     "usd_month_at_stake": -1.31,
+     "stake": 10.0,
+     "first": "2026-10-18T05:51+00:00",
+     "last": "2026-11-17T03:18+00:00"
+    },
+    "first_half": {
+     "n": 221,
+     "clusters": 22,
+     "win_rate": 0.5429864253393665,
+     "breakeven_win_rate": 0.5603,
+     "net_usd": 128.6,
+     "fees_usd": 0.0,
+     "cost_usd": 8454.95,
+     "reward_usd": 0.0,
+     "net_per_1": 0.0152,
+     "ci95": [
+      -0.169,
+      0.1732
+     ],
+     "net_per_1_with_reward": 0.0152,
+     "ci95_with_reward": [
+      -0.169,
+      0.1732
+     ],
+     "t": 0.17,
+     "p_one_sided": 0.4316,
+     "trades_per_week": 104.21,
+     "marked_not_settled": 0,
+     "usd_month_at_stake": 68.87,
+     "stake": 10.0,
+     "first": "2026-10-18T05:51+00:00",
+     "last": "2026-11-02T02:08+00:00"
+    },
+    "second_half": {
+     "n": 229,
+     "clusters": 20,
+     "win_rate": 0.6111111111111112,
+     "breakeven_win_rate": 0.6789,
+     "net_usd": -134.38,
+     "fees_usd": 0.0,
+     "cost_usd": 11760.06,
+     "reward_usd": 0.0,
+     "net_per_1": -0.0114,
+     "ci95": [
+      -0.0768,
+      0.025
+     ],
+     "net_per_1_with_reward": -0.0114,
+     "ci95_with_reward": [
+      -0.0768,
+      0.025
+     ],
+     "t": -0.46,
+     "p_one_sided": 0.6777,
+     "trades_per_week": 108.26,
+     "marked_not_settled": 13,
+     "usd_month_at_stake": -53.75,
+     "stake": 10.0,
+     "first": "2026-11-02T07:56+00:00",
+     "last": "2026-11-17T03:18+00:00"
+    }
+   },
+   "by_bucket_per_side": {
+    "first15": {
+     "mid": {
+      "reward_per100_day": 6.684,
+      "fill_per100_day": -1.065,
+      "net_per100_day": 5.619,
+      "fill_per1_filled": -0.0339,
+      "filled_per100_day": 31.36,
+      "capital_days": 16626.1,
+      "fills": 183.0
+     },
+     "cheap": {
+      "reward_per100_day": 3.779,
+      "fill_per100_day": -3.505,
+      "net_per100_day": 0.274,
+      "fill_per1_filled": -1.0,
+      "filled_per100_day": 3.51,
+      "capital_days": 835.4,
+      "fills": 8.0
+     },
+     "rich": {
+      "reward_per100_day": 1.517,
+      "fill_per100_day": 1.39,
+      "net_per100_day": 2.907,
+      "fill_per1_filled": 0.1071,
+      "filled_per100_day": 12.98,
+      "capital_days": 16083.1,
+      "fills": 31.2
+     }
+    },
+    "last15": {
+     "mid": {
+      "reward_per100_day": 6.588,
+      "fill_per100_day": -5.479,
+      "net_per100_day": 1.109,
+      "fill_per1_filled": -0.1305,
+      "filled_per100_day": 42.0,
+      "capital_days": 9770.4,
+      "fills": 134.5
+     },
+     "cheap": {
+      "reward_per100_day": 3.891,
+      "fill_per100_day": -12.867,
+      "net_per100_day": -8.977,
+      "fill_per1_filled": -0.9235,
+      "filled_per100_day": 13.93,
+      "capital_days": 657.1,
+      "fills": 9.0
+     },
+     "rich": {
+      "reward_per100_day": 1.457,
+      "fill_per100_day": 3.016,
+      "net_per100_day": 4.473,
+      "fill_per1_filled": 0.0761,
+      "filled_per100_day": 39.66,
+      "capital_days": 13338.4,
+      "fills": 83.0
+     }
+    }
+   },
+   "oos": {
+    "base": {
+     "markets": 22,
+     "reward": 176.29,
+     "fill_pnl": -450.25,
+     "fills": 119.75,
+     "capital_days": 6454.3,
+     "avg_capital": 3227.1,
+     "reward_per100_day": 2.731,
+     "fill_per100_day": -6.976,
+     "net_per100_day": -4.245,
+     "ci95": [
+      -13.811,
+      0.933
+     ],
+     "p_net_le_0": 0.926
+    },
+    "per_side_min1": {
+     "markets": 22,
+     "reward": 195.37,
+     "fill_pnl": -450.25,
+     "fills": 119.75,
+     "capital_days": 6454.3,
+     "avg_capital": 3227.1,
+     "reward_per100_day": 3.027,
+     "fill_per100_day": -6.976,
+     "net_per100_day": -3.949,
+     "ci95": [
+      -13.574,
+      1.203
+     ],
+     "p_net_le_0": 0.906
+    },
+    "owner_50_a_side": {
+     "markets": 22,
+     "reward": 51.12,
+     "fill_pnl": -116.08,
+     "fills": 82.5,
+     "capital_days": 1775.1,
+     "avg_capital": 887.6,
+     "reward_per100_day": 2.88,
+     "fill_per100_day": -6.539,
+     "net_per100_day": -3.659,
+     "ci95": [
+      -13.541,
+      1.556
+     ],
+     "p_net_le_0": 0.882
+    },
+    "pause5c_per_side": {
+     "markets": 22,
+     "reward": 172.17,
+     "fill_pnl": -441.58,
+     "fills": 107.25,
+     "capital_days": 5616.2,
+     "avg_capital": 2808.1,
+     "reward_per100_day": 3.066,
+     "fill_per100_day": -7.863,
+     "net_per100_day": -4.797,
+     "ci95": [
+      -15.934,
+      1.101
+     ],
+     "p_net_le_0": 0.924
+    }
+   },
+   "oos_window": [
+    "2026-11-17T05:00+00:00",
+    "2026-11-19T00:00+00:00",
+    22
+   ]
+  }
+ },
+ "notes": [],
+ "pooled_two_series": {
+  "base": {
+   "first15": {
+    "markets": 56,
+    "reward": 1899.01,
+    "fill_pnl": -246.72,
+    "fills": 329.25,
+    "capital_days": 103124.0,
+    "avg_capital": 6874.9,
+    "reward_per100_day": 1.841,
+    "fill_per100_day": -0.239,
+    "net_per100_day": 1.602,
+    "ci95": [
+     -0.131,
+     2.971
+    ],
+    "p_net_le_0": 0.036
+   },
+   "last15": {
+    "markets": 49,
+    "reward": 1245.39,
+    "fill_pnl": -331.96,
+    "fills": 338.5,
+    "capital_days": 94598.6,
+    "avg_capital": 6306.6,
+    "reward_per100_day": 1.317,
+    "fill_per100_day": -0.351,
+    "net_per100_day": 0.966,
+    "ci95": [
+     -0.006,
+     1.902
+    ],
+    "p_net_le_0": 0.026
+   },
+   "all30": {
+    "markets": 80,
+    "reward": 3144.4,
+    "fill_pnl": -578.68,
+    "fills": 667.75,
+    "capital_days": 197722.7,
+    "avg_capital": 6590.8,
+    "reward_per100_day": 1.59,
+    "fill_per100_day": -0.293,
+    "net_per100_day": 1.298,
+    "ci95": [
+     0.252,
+     2.23
+    ],
+    "p_net_le_0": 0.01
+   },
+   "worst_week": {
+    "usd_per100_over_7_days": 1.86,
+    "start_day": 17
+   }
+  },
+  "per_side": {
+   "first15": {
+    "markets": 56,
+    "reward": 2220.31,
+    "fill_pnl": -246.72,
+    "fills": 329.25,
+    "capital_days": 103124.0,
+    "avg_capital": 6874.9,
+    "reward_per100_day": 2.153,
+    "fill_per100_day": -0.239,
+    "net_per100_day": 1.914,
+    "ci95": [
+     0.208,
+     3.232
+    ],
+    "p_net_le_0": 0.017
+   },
+   "last15": {
+    "markets": 49,
+    "reward": 1488.27,
+    "fill_pnl": -331.96,
+    "fills": 338.5,
+    "capital_days": 94598.6,
+    "avg_capital": 6306.6,
+    "reward_per100_day": 1.573,
+    "fill_per100_day": -0.351,
+    "net_per100_day": 1.222,
+    "ci95": [
+     0.267,
+     2.165
+    ],
+    "p_net_le_0": 0.005
+   },
+   "all30": {
+    "markets": 80,
+    "reward": 3708.58,
+    "fill_pnl": -578.68,
+    "fills": 667.75,
+    "capital_days": 197722.7,
+    "avg_capital": 6590.8,
+    "reward_per100_day": 1.876,
+    "fill_per100_day": -0.293,
+    "net_per100_day": 1.583,
+    "ci95": [
+     0.561,
+     2.504
+    ],
+    "p_net_le_0": 0.003
+   },
+   "worst_week": {
+    "usd_per100_over_7_days": 3.85,
+    "start_day": 17
+   }
+  },
+  "per_side_min1": {
+   "first15": {
+    "markets": 56,
+    "reward": 2196.71,
+    "fill_pnl": -246.72,
+    "fills": 329.25,
+    "capital_days": 103124.0,
+    "avg_capital": 6874.9,
+    "reward_per100_day": 2.13,
+    "fill_per100_day": -0.239,
+    "net_per100_day": 1.891,
+    "ci95": [
+     0.177,
+     3.215
+    ],
+    "p_net_le_0": 0.018
+   },
+   "last15": {
+    "markets": 49,
+    "reward": 1475.19,
+    "fill_pnl": -331.96,
+    "fills": 338.5,
+    "capital_days": 94598.6,
+    "avg_capital": 6306.6,
+    "reward_per100_day": 1.559,
+    "fill_per100_day": -0.351,
+    "net_per100_day": 1.209,
+    "ci95": [
+     0.255,
+     2.157
+    ],
+    "p_net_le_0": 0.006
+   },
+   "all30": {
+    "markets": 80,
+    "reward": 3671.9,
+    "fill_pnl": -578.68,
+    "fills": 667.75,
+    "capital_days": 197722.7,
+    "avg_capital": 6590.8,
+    "reward_per100_day": 1.857,
+    "fill_per100_day": -0.293,
+    "net_per100_day": 1.564,
+    "ci95": [
+     0.539,
+     2.488
+    ],
+    "p_net_le_0": 0.003
+   },
+   "worst_week": {
+    "usd_per100_over_7_days": 3.75,
+    "start_day": 17
+   }
+  },
+  "owner_50_a_side": {
+   "first15": {
+    "markets": 56,
+    "reward": 567.17,
+    "fill_pnl": -22.91,
+    "fills": 242.25,
+    "capital_days": 27904.0,
+    "avg_capital": 1860.3,
+    "reward_per100_day": 2.033,
+    "fill_per100_day": -0.082,
+    "net_per100_day": 1.95,
+    "ci95": [
+     0.154,
+     3.388
+    ],
+    "p_net_le_0": 0.018
+   },
+   "last15": {
+    "markets": 49,
+    "reward": 385.31,
+    "fill_pnl": -73.03,
+    "fills": 237.5,
+    "capital_days": 25781.3,
+    "avg_capital": 1718.8,
+    "reward_per100_day": 1.495,
+    "fill_per100_day": -0.283,
+    "net_per100_day": 1.211,
+    "ci95": [
+     0.121,
+     2.452
+    ],
+    "p_net_le_0": 0.016
+   },
+   "all30": {
+    "markets": 80,
+    "reward": 952.47,
+    "fill_pnl": -95.94,
+    "fills": 479.75,
+    "capital_days": 53685.2,
+    "avg_capital": 1789.5,
+    "reward_per100_day": 1.774,
+    "fill_per100_day": -0.179,
+    "net_per100_day": 1.595,
+    "ci95": [
+     0.45,
+     2.689
+    ],
+    "p_net_le_0": 0.005
+   },
+   "worst_week": {
+    "usd_per100_over_7_days": 0.71,
+    "start_day": 17
+   }
+  },
+  "owner_25_a_side": {
+   "first15": {
+    "markets": 56,
+    "reward": 245.42,
+    "fill_pnl": 10.34,
+    "fills": 220.75,
+    "capital_days": 14389.2,
+    "avg_capital": 959.3,
+    "reward_per100_day": 1.706,
+    "fill_per100_day": 0.072,
+    "net_per100_day": 1.777,
+    "ci95": [
+     -0.055,
+     3.299
+    ],
+    "p_net_le_0": 0.028
+   },
+   "last15": {
+    "markets": 49,
+    "reward": 165.15,
+    "fill_pnl": -43.15,
+    "fills": 212.25,
+    "capital_days": 13218.8,
+    "avg_capital": 881.3,
+    "reward_per100_day": 1.249,
+    "fill_per100_day": -0.326,
+    "net_per100_day": 0.923,
+    "ci95": [
+     -0.158,
+     2.176
+    ],
+    "p_net_le_0": 0.053
+   },
+   "all30": {
+    "markets": 80,
+    "reward": 410.57,
+    "fill_pnl": -32.81,
+    "fills": 433.0,
+    "capital_days": 27608.0,
+    "avg_capital": 920.3,
+    "reward_per100_day": 1.487,
+    "fill_per100_day": -0.119,
+    "net_per100_day": 1.368,
+    "ci95": [
+     0.214,
+     2.537
+    ],
+    "p_net_le_0": 0.009
+   },
+   "worst_week": {
+    "usd_per100_over_7_days": -2.07,
+    "start_day": 17
+   }
+  },
+  "owner_50_no_min": {
+   "first15": {
+    "markets": 56,
+    "reward": 636.63,
+    "fill_pnl": -22.91,
+    "fills": 242.25,
+    "capital_days": 27904.0,
+    "avg_capital": 1860.3,
+    "reward_per100_day": 2.282,
+    "fill_per100_day": -0.082,
+    "net_per100_day": 2.199,
+    "ci95": [
+     0.426,
+     3.627
+    ],
+    "p_net_le_0": 0.011
+   },
+   "last15": {
+    "markets": 49,
+    "reward": 426.0,
+    "fill_pnl": -73.03,
+    "fills": 237.5,
+    "capital_days": 25781.3,
+    "avg_capital": 1718.8,
+    "reward_per100_day": 1.652,
+    "fill_per100_day": -0.283,
+    "net_per100_day": 1.369,
+    "ci95": [
+     0.277,
+     2.628
+    ],
+    "p_net_le_0": 0.006
+   },
+   "all30": {
+    "markets": 80,
+    "reward": 1062.63,
+    "fill_pnl": -95.94,
+    "fills": 479.75,
+    "capital_days": 53685.2,
+    "avg_capital": 1789.5,
+    "reward_per100_day": 1.979,
+    "fill_per100_day": -0.179,
+    "net_per100_day": 1.801,
+    "ci95": [
+     0.665,
+     2.893
+    ],
+    "p_net_le_0": 0.002
+   },
+   "worst_week": {
+    "usd_per100_over_7_days": 1.82,
+    "start_day": 17
+   }
+  },
+  "pause5c_per_side": {
+   "first15": {
+    "markets": 56,
+    "reward": 2121.92,
+    "fill_pnl": 262.86,
+    "fills": 282.5,
+    "capital_days": 98359.3,
+    "avg_capital": 6557.3,
+    "reward_per100_day": 2.157,
+    "fill_per100_day": 0.267,
+    "net_per100_day": 2.425,
+    "ci95": [
+     0.842,
+     3.688
+    ],
+    "p_net_le_0": 0.003
+   },
+   "last15": {
+    "markets": 49,
+    "reward": 1397.0,
+    "fill_pnl": 27.3,
+    "fills": 239.0,
+    "capital_days": 80490.1,
+    "avg_capital": 5366.0,
+    "reward_per100_day": 1.736,
+    "fill_per100_day": 0.034,
+    "net_per100_day": 1.77,
+    "ci95": [
+     0.781,
+     2.76
+    ],
+    "p_net_le_0": 0.0
+   },
+   "all30": {
+    "markets": 80,
+    "reward": 3518.92,
+    "fill_pnl": 290.16,
+    "fills": 521.5,
+    "capital_days": 178849.4,
+    "avg_capital": 5961.6,
+    "reward_per100_day": 1.968,
+    "fill_per100_day": 0.162,
+    "net_per100_day": 2.13,
+    "ci95": [
+     1.12,
+     3.066
+    ],
+    "p_net_le_0": 0.0
+   },
+   "worst_week": {
+    "usd_per100_over_7_days": 9.89,
+    "start_day": 17
+   }
+  },
+  "oos_base": {
+   "markets": 40,
+   "reward": 238.75,
+   "fill_pnl": -600.67,
+   "fills": 160.0,
+   "capital_days": 10866.1,
+   "avg_capital": 5433.1,
+   "reward_per100_day": 2.197,
+   "fill_per100_day": -5.528,
+   "net_per100_day": -3.331,
+   "ci95": [
+    -8.944,
+    0.229
+   ],
+   "p_net_le_0": 0.966
+  },
+  "oos_per_side_min1": {
+   "markets": 40,
+   "reward": 272.93,
+   "fill_pnl": -600.67,
+   "fills": 160.0,
+   "capital_days": 10866.1,
+   "avg_capital": 5433.1,
+   "reward_per100_day": 2.512,
+   "fill_per100_day": -5.528,
+   "net_per100_day": -3.016,
+   "ci95": [
+    -8.63,
+    0.486
+   ],
+   "p_net_le_0": 0.947
+  },
+  "oos_owner_50_a_side": {
+   "markets": 40,
+   "reward": 66.78,
+   "fill_pnl": -155.13,
+   "fills": 109.75,
+   "capital_days": 2885.6,
+   "avg_capital": 1442.8,
+   "reward_per100_day": 2.314,
+   "fill_per100_day": -5.376,
+   "net_per100_day": -3.062,
+   "ci95": [
+    -8.989,
+    0.605
+   ],
+   "p_net_le_0": 0.941
+  },
+  "oos_pause5c_per_side": {
+   "markets": 40,
+   "reward": 247.36,
+   "fill_pnl": -463.04,
+   "fills": 126.5,
+   "capital_days": 9736.1,
+   "avg_capital": 4868.1,
+   "reward_per100_day": 2.541,
+   "fill_per100_day": -4.756,
+   "net_per100_day": -2.215,
+   "ci95": [
+    -7.939,
+    1.393
+   ],
+   "p_net_le_0": 0.854
+  }
+ },
+ "chance_2_of_8_both_halves": 0.633,
+ "chance_2_of_11_both_halves": 0.803
+}

@@ -1,0 +1,220 @@
+{
+ "q": 50,
+ "days": 7,
+ "markets": {
+  "KXPANAMAWEEKLY-26NOV22-T195": {
+   "reward_if_todays_share_all_week": 24.29,
+   "fill_pnl_marked": 0.79,
+   "fills": 15,
+   "filled_usd": 181.82,
+   "avg_capital": 65.6,
+   "net_per100_day": 5.46,
+   "fill_per100_day": 0.17,
+   "worst_fills": [
+    [
+     1794953250,
+     "no",
+     0.56,
+     25.0,
+     -0.1
+    ],
+    [
+     1794953250,
+     "no",
+     0.56,
+     15.0,
+     -0.1
+    ],
+    [
+     1795023872,
+     "no",
+     0.49,
+     48.0,
+     -0.03
+    ],
+    [
+     1794953250,
+     "no",
+     0.56,
+     10.0,
+     -0.1
+    ],
+    [
+     1794928447,
+     "yes",
+     0.55,
+     50.0,
+     -0.01
+    ]
+   ],
+   "mid_now": 0.54
+  },
+  "KXRT-FUR-80": {
+   "reward_if_todays_share_all_week": 20.16,
+   "fill_pnl_marked": -67.84,
+   "fills": 71,
+   "filled_usd": 723.48,
+   "avg_capital": 311.1,
+   "net_per100_day": -2.19,
+   "fill_per100_day": -3.12,
+   "worst_fills": [
+    [
+     1794871990,
+     "no",
+     0.58,
+     50.0,
+     -0.325
+    ],
+    [
+     1794648492,
+     "no",
+     0.54,
+     50.0,
+     -0.285
+    ],
+    [
+     1794840612,
+     "no",
+     0.54,
+     50.0,
+     -0.285
+    ],
+    [
+     1794819587,
+     "no",
+     0.6,
+     35.9,
+     -0.345
+    ],
+    [
+     1794805527,
+     "no",
+     0.62,
+     33.2,
+     -0.365
+    ]
+   ],
+   "mid_now": 0.745
+  },
+  "KXBABELMANDEBWEEKLY-26NOV22-T185": {
+   "reward_if_todays_share_all_week": 16.03,
+   "fill_pnl_marked": -10.54,
+   "fills": 8,
+   "filled_usd": 146.24,
+   "avg_capital": 93.3,
+   "net_per100_day": 0.84,
+   "fill_per100_day": -1.61,
+   "worst_fills": [
+    [
+     1794708003,
+     "yes",
+     0.6,
+     50.0,
+     -0.075
+    ],
+    [
+     1794724874,
+     "yes",
+     0.59,
+     50.0,
+     -0.065
+    ],
+    [
+     1794724886,
+     "yes",
+     0.59,
+     50.0,
+     -0.065
+    ],
+    [
+     1794862770,
+     "no",
+     0.49,
+     50.0,
+     -0.015
+    ],
+    [
+     1794920781,
+     "yes",
+     0.55,
+     15.0,
+     -0.025
+    ]
+   ],
+   "mid_now": 0.525
+  },
+  "KXBABELMANDEBWEEKLY-26NOV22-T190": {
+   "reward_if_todays_share_all_week": 14.28,
+   "fill_pnl_marked": 0.19,
+   "fills": 1,
+   "filled_usd": 0.94,
+   "avg_capital": 33.2,
+   "net_per100_day": 6.22,
+   "fill_per100_day": 0.08,
+   "worst_fills": [
+    [
+     1794961814,
+     "no",
+     0.47,
+     2.0,
+     0.095
+    ]
+   ],
+   "mid_now": 0.435
+  },
+  "KXRT-ZER-50": {
+   "reward_if_todays_share_all_week": 10.92,
+   "fill_pnl_marked": 7.32,
+   "fills": 11,
+   "filled_usd": 109.58,
+   "avg_capital": 118.1,
+   "net_per100_day": 2.21,
+   "fill_per100_day": 0.89,
+   "worst_fills": [
+    [
+     1794613942,
+     "no",
+     0.42,
+     30.0,
+     -0.095
+    ],
+    [
+     1794613942,
+     "no",
+     0.42,
+     14.0,
+     -0.095
+    ],
+    [
+     1794731420,
+     "yes",
+     0.7,
+     50.0,
+     -0.025
+    ],
+    [
+     1794613942,
+     "no",
+     0.42,
+     5.0,
+     -0.095
+    ],
+    [
+     1794613942,
+     "no",
+     0.42,
+     1.0,
+     -0.095
+    ]
+   ],
+   "mid_now": 0.675
+  }
+ },
+ "pooled": {
+  "reward": 85.68,
+  "fill_pnl": -70.08,
+  "net_per100_day": 0.36,
+  "fill_per100_day": -1.61,
+  "reward_per100_day": 1.97
+ }
+}
