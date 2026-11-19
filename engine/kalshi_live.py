@@ -745,8 +745,12 @@ def norm_candidate(raw, name="") -> tuple:
             "max_spread": _f(g("max_spread"), 0.06), "status": str(raw.get("status"))[:40]}, ""
 
 
-def load_all(plan_path=None, cand_dir=None) -> dict:
-    """The plan + the candidates + one hash over both (what the owner arms). Never raises."""
+CLOCK_PATH = None            # None = engine/kalshi_clock.CFG_PATH (research/lab/kalshi_clock.json); tests point it elsewhere
+
+
+def load_all(plan_path=None, cand_dir=None, state_dir=None) -> dict:
+    """The maker plan + the taker candidates + the K8 clock settings (engine/kalshi_clock.py, with the bet size picked on the phone)
+    and ONE hash over them (what the owner arms: any change = OFF until the phrase is typed again). Never raises."""
     plan_path, cand_dir = plan_path or PLAN_PATH, cand_dir or CAND_DIR
     out = {"plan": None, "problems": [], "cands": [], "skipped": [], "sha": "", "has_plan": os.path.isfile(plan_path)}
     h = hashlib.sha256()
@@ -772,12 +776,23 @@ def load_all(plan_path=None, cand_dir=None) -> dict:
             out["cands"].append(c)
         else:
             out["skipped"].append(f"{name}: {why}")
+    out["clock"], out["clock_problems"] = None, []
+    try:
+        from engine import kalshi_clock
+        ccfg, cprobs = kalshi_clock.load_config(CLOCK_PATH, state_dir)
+        out["clock"], out["clock_problems"] = ccfg, cprobs
+        if ccfg["live_legs"] and not cprobs:
+            h.update(b"clock\0" + json.dumps(ccfg, sort_keys=True).encode())
+    except Exception as e:  # noqa: BLE001
+        out["clock_problems"] = [f"the clock settings could not load ({e.__class__.__name__})"]
+    out["clock_ok"] = bool(out["clock"] and out["clock"]["live_legs"] and not out["clock_problems"])
     h.update(EXEC_VERSION.encode())
-    out["sha"] = h.hexdigest() if (out["plan"] or out["cands"]) else ""
+    out["maker_runnable"] = bool((out["plan"] and not out["problems"]) or (not out["has_plan"] and out["cands"]))
+    out["runnable"] = bool(out["maker_runnable"] or out["clock_ok"])
+    out["sha"] = h.hexdigest() if out["runnable"] or out["plan"] or out["cands"] else ""
     out["caps"] = dict(DEFAULT_CAPS)
     out["caps"].update((out["plan"] or {}).get("caps") or {})
     out["caps"]["size"] = HARD["size"]
-    out["runnable"] = bool((out["plan"] and not out["problems"]) or (not out["has_plan"] and out["cands"]))
     return out
 
 
@@ -814,9 +829,17 @@ def arm(phrase, state_dir=None, plan_path=None, cand_dir=None, env=None, now=Non
         return False, "not armed: LE_KALSHI_LIVE=0 switches Kalshi off on this PC"
     if str(phrase or "").strip() != PHRASE:
         return False, f"not armed: the phrase must be exactly: {PHRASE}"
-    A = load_all(plan_path, cand_dir)
+    A = load_all(plan_path, cand_dir, state_dir)
+    if A["clock_ok"] and not A["maker_runnable"]:
+        try:
+            from engine import kalshi_clock
+            killed, kwhy = kalshi_clock.kill_state(state_dir, A["clock"])
+        except Exception:  # noqa: BLE001
+            killed, kwhy = False, ""
+        if killed:
+            return False, "not armed: " + kwhy + " (ask Claude before any restart)"
     if not A["runnable"]:
-        why = "; ".join(A["problems"][:3]) if A["has_plan"] else "no plan file (research/lab/kalshi_live_plan.json) and no candidate"
+        why = "; ".join((A["problems"] + A["clock_problems"])[:3]) or "no plan file (research/lab/kalshi_live_plan.json) and no candidate"
         return False, "not armed: " + why
     if expect_sha is not None and A["sha"] != expect_sha:
         return False, "not armed: the plan changed while you were reading it: double-click KALSHI_LIVE.bat again"
@@ -1110,7 +1133,7 @@ class Executor:
         self._alert = alert_cfg
         self.say = say or (lambda *_: None)
         self.st = blank_state() if dry else load_state(self.P)
-        self.A = load_all(self.plan_path, self.cand_dir)
+        self.A = load_all(self.plan_path, self.cand_dir, self.P["dir"] if state_dir else None)
         self.done, self.stop_why = False, None
         self.v = None
         self.pick_now, self.cand_mk = {}, {}
@@ -1528,7 +1551,7 @@ class Executor:
 
     def _cycle(self, now) -> dict:
         st = self.st
-        self.A = load_all(self.plan_path, self.cand_dir)       # every loop: a changed plan = the arm no longer matches = stop
+        self.A = load_all(self.plan_path, self.cand_dir, self.P["dir"] if self.P["dir"] != STATE_DIR else None)   # every loop
         self.controls(now)
         if self.done:
             return {"note": "stopped by a command"}
@@ -1545,9 +1568,12 @@ class Executor:
             else:
                 self.done = True
             return {"note": why}
-        if not self.A["runnable"]:
-            self.stop("the plan has a problem: " + "; ".join(self.A["problems"][:2]), now=now)
-            return {"note": "plan problem"}
+        if not self.A["maker_runnable"]:
+            if self.A["plan"] and self.A["problems"] and st.get("armed_t"):
+                self.stop("the plan has a problem: " + "; ".join(self.A["problems"][:2]), now=now)
+            else:
+                self.done = True                            # nothing for the maker loop (the K8 clock bets run in their own loop)
+            return {"note": "no maker plan"}
         # 1. Kalshi first: exchange, cash, positions, resting orders, fills, settlements
         try:
             ex = self.api.get("/exchange/status", auth=False)
@@ -1720,6 +1746,15 @@ def card(P, ex=None, now=None) -> dict:
                   "cap": caps["capital_cap_usd"], "stop": caps["daily_loss_stop_usd"]})
     if state == "stopped":
         c["why"] = re.sub(r"[^A-Za-z0-9 $+.,:()%-]", "", str((st.get("stopped") or {}).get("why") or ""))[:40]
+    try:                                    # K8 clock bets: [settled bets, won, net $] live and paper
+        from engine import kalshi_clock as KC
+        CP = KC.paths(P["dir"] if P["dir"] != STATE_DIR else None)
+        for k, path in (("cl", CP["clock_live"]), ("cp", CP["clock_paper"])):
+            s_ = KC.stats(KC.rows(path))
+            if s_["n"] or s_["open"]:
+                c[k] = [s_["n"], s_["won"], s_["net"]]
+    except Exception:  # noqa: BLE001
+        pass
     while len(json.dumps(c, separators=(",", ":"))) > CARD_MAX and c.get("why"):
         c["why"] = c["why"][:-5]
     return c
@@ -1904,14 +1939,19 @@ def spawn(state_dir=None) -> int:
     return pid
 
 
-def maybe_run(say=print, env=None, now=None, state_dir=None, spawn_fn=None):
+def maybe_run(say=print, env=None, now=None, state_dir=None, spawn_fn=None, plan_path=None, cand_dir=None):
     """The PC 15-minute report hook (lead wires it in tools/pc_report.py): restarts the loop ONLY while armed (after a PC restart).
     OFF / not armed / running = nothing. Never raises; returns the new pid or None."""
     try:
         P = paths(state_dir)
         now = time.time() if now is None else now
+        try:
+            from engine import kalshi_clock
+            kalshi_clock.maybe_run(say=say, env=env, now=now, state_dir=state_dir, spawn_fn=spawn_fn)
+        except Exception:  # noqa: BLE001
+            pass
         live, why = arm_state(P=P, env=env)
-        if not live:
+        if not live or not load_all(plan_path, cand_dir, state_dir)["maker_runnable"]:
             return None
         if loop_alive(P, now):
             return None
@@ -1973,6 +2013,11 @@ def dry_run(api=None, plan_path=None, cand_dir=None, now=None, say=print) -> dic
 
 def describe(A) -> list:
     caps, out = A["caps"], []
+    if A.get("clock_ok"):
+        from engine import kalshi_clock
+        out += kalshi_clock.describe(A["clock"])
+    for p in A.get("clock_problems") or []:
+        out.append(f"[FIX] clock settings: {p}")
     if A["plan"]:
         p = A["plan"]
         out.append(f"Plan: {p['strategy'].replace('_', ' ')} (status: {p['status'] or '?'}{', ' + p['date'] if p['date'] else ''})")
@@ -1988,8 +2033,9 @@ def describe(A) -> list:
     for c in A["cands"]:
         out.append(f"Taker rule {c['name']}: {', '.join(r['series'] for r in c['rules'])}, {money(c['usd'])} a bet, "
                    f"price {c['band'][0] * 100:.0f}-{c['band'][1] * 100:.0f}c (status {c['status']})")
-    out.append(f"Limits (checked before every order): {money(caps['capital_cap_usd'])} total, {money(caps['per_market_cap_usd'])} a market, "
-               f"stop at -{money(caps['daily_loss_stop_usd'])} a day, at most {caps['max_open_orders']} orders resting.")
+    if A.get("maker_runnable"):
+        out.append(f"Limits (checked before every order): {money(caps['capital_cap_usd'])} total, {money(caps['per_market_cap_usd'])} a market, "
+                   f"stop at -{money(caps['daily_loss_stop_usd'])} a day, at most {caps['max_open_orders']} orders resting.")
     return out
 
 
@@ -2021,18 +2067,27 @@ def go(state_dir=None, env=None, input_fn=input, say=print, spawn_fn=None, api=N
         say(" [FIX] LE_KALSHI_LIVE=0 switches Kalshi off on this PC. Nothing armed.")
         return 1
     P = paths(state_dir)
-    A = load_all(plan_path, cand_dir)
-    if arm_state(P=P, sha=A["sha"], env=env)[0] and loop_alive(P, now):
+    A = load_all(plan_path, cand_dir, state_dir)
+    if arm_state(P=P, sha=A["sha"], env=env)[0] and (loop_alive(P, now) or not A["maker_runnable"]):
         say(" [OK] Kalshi is already LIVE and running: nothing to do. Stop: KALSHI_STOP.bat or the phone's ZEUS Safety page.")
         return 0
     say(" 1/4 What it trades")
     for ln in (describe(A) if (A["plan"] or A["cands"]) else ["No plan yet (research/lab/kalshi_live_plan.json)."]):
         say("     " + ln)
     if not A["runnable"]:
-        for p in A["problems"][:4]:
+        for p in (A["problems"] + A["clock_problems"])[:4]:
             say(f" [FIX] plan: {p}")
         say(" [FIX] The plan cannot go live as it is: ask Claude to fix it. Nothing armed.")
         return 1
+    clock_spawn = None
+    try:
+        from engine import kalshi_clock
+        clock_spawn = kalshi_clock.maybe_run(say=lambda *_: None, env=env, now=now, state_dir=state_dir,
+                                             spawn_fn=(spawn_fn and (lambda sd: spawn_fn(sd))))
+        for ln in kalshi_clock.report_lines(state_dir):
+            say("     " + ln)
+    except Exception:  # noqa: BLE001
+        pass
     say(" 2/4 Your Kalshi key")
     try:
         api = api or api_from_key(env)
@@ -2065,8 +2120,8 @@ def go(state_dir=None, env=None, input_fn=input, say=print, spawn_fn=None, api=N
             "Pause or flatten: the phone's ZEUS Safety page. Stop: KALSHI_STOP.bat on the PC. Fills come batched, then one day summary.",
             priority="default", tags="rocket")
     save_state(P, ex.st)
-    pid = (spawn_fn or spawn)(state_dir)
-    say(f"\n [OK] Kalshi LIVE is running in the background (pid {pid}). Pushes: fills (batched), the day's result, any stop.")
+    pid = (spawn_fn or spawn)(state_dir) if A["maker_runnable"] else clock_spawn or "already running"
+    say(f"\n [OK] Kalshi LIVE is on (loop {pid}). Pushes: each bet, each result, the day's summary, any stop.")
     say("      Pause / flatten from the phone: the ZEUS Safety page. Stop here: double-click KALSHI_STOP.bat.")
     return 0
 
@@ -2084,7 +2139,8 @@ def main(argv=None) -> int:
     import argparse
     ap = argparse.ArgumentParser(description="Kalshi LIVE executor (OFF by default; the owner arms it with the typed phrase)")
     g = ap.add_mutually_exclusive_group()
-    for f in ("--status", "--dry-run", "--check-key", "--go", "--loop", "--start", "--stop", "--pause", "--resume", "--flatten"):
+    for f in ("--status", "--dry-run", "--check-key", "--go", "--loop", "--start", "--stop", "--pause", "--resume", "--flatten",
+              "--clock-loop", "--clock-report"):
         g.add_argument(f, action="store_true")
     g.add_argument("--arm", action="store_true", help="arm only (the owner types the phrase; --phrase for a script he runs)")
     ap.add_argument("--phrase", default=None)
@@ -2094,6 +2150,14 @@ def main(argv=None) -> int:
     P = paths(sd)
     if a.dry_run:
         dry_run()
+        return 0
+    if a.clock_loop or a.clock_report:
+        from engine import kalshi_clock
+        if a.clock_report:
+            for ln in kalshi_clock.describe(kalshi_clock.load_config(state_dir=sd)[0]) + kalshi_clock.report_lines(sd):
+                print("  " + ln)
+            return 0
+        print(f"{iso(time.time())} kalshi clock loop: {kalshi_clock.run(state_dir=sd)}", flush=True)
         return 0
     if a.check_key:
         try:

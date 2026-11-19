@@ -245,20 +245,20 @@
   {
    "id": "kalshi",
    "q": "Is Kalshi on? How does it go live?",
-   "words": "kalshi status paused paper rewards bets on off prediction k1 rewards card paper test live go live phrase key api key stop flatten",
+   "words": "kalshi status paused paper rewards bets on off prediction k1 rewards card paper test live go live phrase key api key stop flatten k8 gold silver clock phone page kalshi-live bet size",
    "where": "The Kalshi page (the Kalshi door)",
    "steps": [
-    "Kalshi is PAUSED for real money: ready to go live when you type the phrase. The paper tests (rewards, K1) keep running and never place an order.",
-    "Once, on the PC: kalshi.com > your account > Profile Settings > API Keys > Create New API Key (it downloads a .txt), then double-click KALSHI_KEY_SETUP.bat. It moves the key out of Downloads into your private folder. Never paste the key in a chat.",
-    "Go live: double-click KALSHI_LIVE.bat. It shows the plan, the limits and what it would place, then YOU type I ACCEPT KALSHI LIVE RISK. It switches itself off after any stop (then you type it again).",
-    "Stop: KALSHI_STOP.bat on the PC, or PAUSE / FLATTEN / KILL on the phone's ZEUS Safety page."
+    "Kalshi is PAUSED for real money: ready to go live when you type the phrase. The K8 clock bets (gold / silver 15-minute markets) run on paper every weekday meanwhile.",
+    "On the iPhone: kalshi.com > your account > Profile Settings > API Keys > Create New API Key; keep the page open (Key ID + the private key text). Never paste the key in a chat.",
+    "Open your PC link (the same address as ZEUS Safety) with /kalshi-live/ at the end: paste the Key ID and the key, Save (it shows Key OK and your balance), pick the bet size, type I ACCEPT KALSHI LIVE RISK, Start.",
+    "STOP on that page (one tap) or KILL on ZEUS Safety turns it off at once. A phone push for each bet, each result and the day."
    ],
    "copy": "",
    "link": {
     "href": "../kalshi/",
     "label": "Kalshi"
    },
-   "src": "engine/kalshi_live.py, KALSHI_KEY_SETUP.bat, KALSHI_LIVE.bat, KALSHI_STOP.bat, STATE.md (Kalshi)"
+   "src": "engine/kalshi_live.py, engine/kalshi_clock.py, engine/kalshi_web.py, KALSHI_LIVE.bat, STATE.md (Kalshi)"
   },
   {
    "id": "cloudflare",

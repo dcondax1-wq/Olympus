@@ -313,6 +313,7 @@ ul{margin:6px 0 0;padding-left:18px}li{margin:2px 0;font-size:14px}
 that stays on the PC with the typed phrase. FLATTEN and KILL need a second tap. If this page does not answer, close the trade
 in NinjaTrader or the MFFU app.</p>
 <div class="card"><b>What happened</b><ul id="trail"><li class="mute">-</li></ul></div>
+<p class="mute"><a href="/kalshi-live/">Kalshi K8 (key, bet size, start / STOP)</a></p>
 </main><script>
 var primed=null,timer=null,ON=false;
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
@@ -404,6 +405,11 @@ def install(app, rc, bot) -> dict:
     try:
         from engine import live_site
         live_site.allow_post(allowed)
+    except Exception:  # noqa: BLE001
+        pass
+    try:                                    # the Kalshi K8 phone page (/kalshi-live/, engine/kalshi_web.py): same private link, never the futures bot
+        from engine import kalshi_web
+        kalshi_web.install(app)
     except Exception:  # noqa: BLE001
         pass
     return {"actions": sorted(ACTIONS), "on": is_on()}

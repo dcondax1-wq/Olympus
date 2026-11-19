@@ -46,6 +46,7 @@ from cryptography.hazmat.primitives.asymmetric import ed25519, padding, rsa  # n
 
 from engine import kalshi_live as KL  # noqa: E402
 
+KL.CLOCK_PATH = os.path.join(ROOT, "tests", "fixtures", "kalshi_live", "clock_off.json")   # this suite: the maker / taker executor only
 RES: list = []
 FIX = os.path.join(ROOT, "tests", "fixtures", "kalshi_live")
 PLAN = os.path.join(FIX, "plan.json")
@@ -363,7 +364,7 @@ class World:
             fh.write(pem.replace(b"\n", b"\r\n"))                        # as Windows saves the downloaded .txt
         with open(os.path.join(kd, "key_id.txt"), "w", encoding="utf-8-sig") as fh:
             fh.write(KEY_ID + "\n")
-        self.env = {"OLYMPUS_HOME": self.home}
+        self.env = {"OLYMPUS_HOME": self.home, "LE_KALSHI_CLOCK": "0"}
         self.sd = os.path.join(self.dir, "state")
         self.plan = os.path.join(self.dir, "plan.json")
         raw = json.load(open(PLAN, encoding="utf-8"))
@@ -1029,14 +1030,14 @@ def part_card(tmp, w_loop):
           "armed" not in ps_src and set(PS.ACTIONS) == {"pause", "resume", "flatten", "kill"})
     spawned = []
     wm = World(tmp, "maybe", candidates=False)
-    r0 = KL.maybe_run(say=lambda *_: None, state_dir=wm.sd, now=wm.clock(), spawn_fn=lambda sd: spawned.append(sd) or 7)
+    kw = {"say": lambda *_: None, "state_dir": wm.sd, "spawn_fn": lambda sd: spawned.append(sd) or 7, "plan_path": wm.plan, "cand_dir": wm.cands}
+    r0 = KL.maybe_run(env=wm.env, now=wm.clock(), **kw)
     wm.arm()
-    r1 = KL.maybe_run(say=lambda *_: None, state_dir=wm.sd, now=wm.clock(), spawn_fn=lambda sd: spawned.append(sd) or 7)
+    r1 = KL.maybe_run(env=wm.env, now=wm.clock(), **kw)
     KL.save_state(KL.paths(wm.sd), dict(KL.load_state(KL.paths(wm.sd)), t=wm.clock()))
-    r2 = KL.maybe_run(say=lambda *_: None, state_dir=wm.sd, now=wm.clock() + 500, spawn_fn=lambda sd: spawned.append(sd) or 7)
-    r3 = KL.maybe_run(say=lambda *_: None, state_dir=wm.sd, now=wm.clock() + 30, spawn_fn=lambda sd: spawned.append(sd) or 7)
-    r4 = KL.maybe_run(say=lambda *_: None, env={"LE_KALSHI_LIVE": "0"}, state_dir=wm.sd, now=wm.clock() + 900,
-                      spawn_fn=lambda sd: spawned.append(sd) or 7)
+    r2 = KL.maybe_run(env=wm.env, now=wm.clock() + 500, **kw)
+    r3 = KL.maybe_run(env=wm.env, now=wm.clock() + 30, **kw)
+    r4 = KL.maybe_run(env=dict(wm.env, LE_KALSHI_LIVE="0"), now=wm.clock() + 900, **kw)
     check("i6. the PC hook maybe_run: not armed = nothing; armed + no loop = start it once; a fresh loop or LE_KALSHI_LIVE=0 = nothing; "
           "never raises", r0 is None and r1 == 7 and r3 is None and r4 is None and len(spawned) == 2 and r2 == 7, (r0, r1, r2, r3, r4, spawned))
 
