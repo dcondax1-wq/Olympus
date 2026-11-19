@@ -252,6 +252,7 @@ def do_stop() -> dict:
 def status_view() -> dict:
     from engine import kalshi_clock as KC
     now = _now()
+    KC.maybe_run(say=lambda *_: None, env=_env(), state_dir=_S["state_dir"], spawn_fn=_S["spawn"])   # the paper loop runs from the first look
     cfg, probs = KC.load_config(state_dir=_S["state_dir"])
     loop = KC.ClockLoop(state_dir=_S["state_dir"], env=_env(), clock=_S["clock"] or time.time,
                         public_api=KL.Api(http=_S["http"]) if _S["http"] else None)

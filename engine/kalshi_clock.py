@@ -563,6 +563,8 @@ class ClockLoop:
         if v["killed"] and v["live"]:
             self.stop_live(v["kill_why"])
             v["live"] = False
+        elif not v["live"] and (KL._jread(self.P["arm"], {}) or {}).get("armed") is True:
+            self.stop_live(v["why"].replace(": type the phrase again", ""))      # armed, but no longer valid (settings changed, ...): say so
         paper, live_rows = rows(self.P["clock_paper"]), rows(self.P["clock_live"])
         placed, notes, waiting = [], [], []
         for lid in ids:

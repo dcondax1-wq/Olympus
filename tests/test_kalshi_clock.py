@@ -342,6 +342,15 @@ def part_stops(tmp):
     check("f6. cash on Kalshi below the bet ($20): the morning bet ($14.8) goes in, the evening ones are skipped (cash left $5)",
           len(w.posts()) == 1, w.posts())
 
+    w = World(tmp, "changed")
+    w.arm()
+    raw = KL._jread(KC.CFG_PATH, {})
+    loop = w.loop()
+    KL._jwrite(KC.stake_path(w.sd), {"stake": 10})        # the armed settings changed (another bet size) without the phrase
+    w.run_until(loop, OPEN_AM + 25)
+    check("f6b. the armed settings changed without the phrase: no order, OFF and one push saying why", not w.posts() and raw
+          and any("STOPPED" in p["title"] and "changed" in p["title"] for p in w.pushes), w.pushes)
+
     w = World(tmp, "stop")
     w.arm()
     from engine import kalshi_web as KW
