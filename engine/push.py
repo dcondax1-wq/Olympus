@@ -796,6 +796,12 @@ def pc_notify(payload: dict) -> dict | None:
         # summary, internet / NinjaTrader drops, MFFU inactivity, eval passed / failed, contract roll)
         push_it = payload.get("kind") in ("fill", "outcome", "test", "pc", "ops") or extra_on()
         threading.Thread(target=_pc_send, args=(payload, push_it), name="push", daemon=True).start()
+        if payload.get("kind") == "fill":            # owner 2026-11-18: every entry on any real account -> phone, at once
+            try:
+                from . import notify
+                threading.Thread(target=notify.instant_entry, args=(dict(payload),), name="push-ntfy", daemon=True).start()
+            except Exception:
+                pass
         return {"queued": True}
     except Exception:
         return None

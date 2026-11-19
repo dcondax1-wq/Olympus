@@ -1,4 +1,10 @@
 ## Tested and rejected (don't redo without a new idea)
+- **Zlarior's two live evals together (2026-11-18b, `lit-ideas-2026-11-18b.md`, `tools/money/lit_two_evals.py`, Lab
+  `lit_eval_zombie` / `lit_two_eval_stagger`):** the 50K hole + the 25K #2 on ONE Monte Carlo (same paths, live sizing).
+  ATLAS's zombie-eval rule on Zlarior (1-micro last bullet at 80% of the room + give up under $200): pair +$57 / +$51 a
+  month only by killing evals (2-week fails 50K 4.9 -> 10.4 / 3.1 -> 6.9%, 25K 0 -> 8.1 / 0 -> 8.3%, both dead in 20
+  sessions 0.4 -> 16.3%); stagger (alternate full / half size per signal): -$80 / -$49 a month, 25K 2-week pass 48 -> 31%.
+  Today both evals die together 0.3-0.4% within 20 sessions: the joint risk is waiting, not failing. Rejected.
 - **ZEUS Lab LIT ideas (2026-11-18, `zeus-lab-lit-ideas-2026-11-18.md`, `tools/lit_lab_ideas.py`, Lab kind `lit_idea`):** 10
   pre-declared single versions on the live LIT trades (LIT size + two_week eval path room 0.4, costs in), $/month vs today H1 /
   H2: time stop 60 min without +1R -$695 / -$945; out at 09:29 if not at BE -$317 / +$33 (5 + 2 trades); BE at 09:29 if +0.5R
