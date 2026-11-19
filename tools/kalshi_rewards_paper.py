@@ -4,9 +4,13 @@
 
 What it pretends: on the best few rewarded markets of KXRT / KXPANAMAWEEKLY / KXBABELMANDEBWEEKLY (K5's lead) it keeps one
 virtual resting bid of Q contracts on BOTH sides (YES bid and NO bid) at the reward reference price, and every cycle (~60 s):
-  reward  pool $/sec x seconds since the last snapshot (capped at 120 s) x my score / (everyone's score + mine), only when both
-          sides have Target depth including mine (help.kalshi.com Liquidity Incentive Program: score = size x DF^ticks behind
-          the reference, reference = price where depth reaches Target/5).
+  reward  pool $/sec x seconds since the last snapshot (capped at 120 s) x (my yes share + my no share) / 2, only when both
+          sides have Target depth including mine. Kalshi's PUBLISHED scoring (help.kalshi.com Liquidity Incentive Program and the
+          KalshiEX filing as amended Oct 28, 2026): reference = the level where cumulative depth reaches Target/5; only whole
+          levels down to where cumulative depth reaches Target qualify; score = size x DF^ticks behind the reference; each SIDE is
+          shared separately (a snapshot is worth at most 2.0 over everyone). A market program pays nothing under $1.00
+          (paid_est in the totals). Before 2026-11-19 this tool pooled the two sides and counted every level: a ledger made by
+          that formula is set aside (<ledger>.old_formula.json) and a fresh one starts.
   fills   CONSERVATIVE queue model: I join the BACK of the queue at my price; taker volume at or through my price first eats
           all depth that was ahead of me (better prices + same price), only the rest fills me, at my price.
   requote if the reference moved, cancel and re-place at the new one (back of the queue again); a filled order is refilled.
@@ -105,6 +109,26 @@ def ref_price(levels, target):
     return None
 
 
+FORMULA = "lip-published-2026-10-28"       # per-side shares, qualifying levels to Target, $1 minimum per market program
+
+
+def qualifying(levels, target):
+    """whole levels from the best bid down to (and including) the first where cumulative size reaches Target; [] if never."""
+    lv = sorted(levels, reverse=True)
+    cum = 0.0
+    for i, (pr, s) in enumerate(lv):
+        cum += s
+        if cum >= target - 1e-9 and not (i + 1 < len(lv) and abs(lv[i + 1][0] - pr) < 1e-9):
+            return lv[:i + 1]
+    return []
+
+
+def payout(x):
+    """what one market program pays: rounded down to the cent, nothing under $1.00."""
+    c = math.floor(x * 100 + 1e-9) / 100.0
+    return c if c >= 1.0 - 1e-9 else 0.0
+
+
 def score(levels, ref, df):
     if ref is None:
         return 0.0
@@ -124,7 +148,7 @@ def maker_fee(p, n, fee_type):
 
 # ---------------------------------------------------------------- ledger
 def blank():
-    return {"v": 1, "kind": "kalshi_rewards_paper", "paper_only": True, "started": None, "updated": None,
+    return {"v": 1, "kind": "kalshi_rewards_paper", "paper_only": True, "started": None, "updated": None, "formula": FORMULA,
             "series": SERIES, "picked_at": 0, "markets": {}, "totals": {}}
 
 
@@ -270,8 +294,7 @@ def cycle(net, led, now):
         if prev is None:
             continue
         secs = min(max(now - prev, 0.0), DT_CAP)
-        my = {}
-        tot = 0.0
+        share = 0.0
         valid = True
         for sd, lv in (("yes", yes), ("no", no)):
             o = m[sd]
@@ -280,13 +303,18 @@ def cycle(net, led, now):
             if sum(s for _, s in allv) < tgt:
                 valid = False
             r = ref_price(allv, tgt)
-            tot += score(allv, r, df)
-            my[sd] = score(mine, r, df) if mine else 0.0
+            ql = qualifying(allv, tgt)
+            tot = score(ql, r, df)
+            if mine and ql and o["p"] >= ql[-1][0] - 1e-9 and tot > 0:
+                share += score(mine, r, df) / tot           # each side shared on its own
         m["snaps"] += 1
         m["secs"] += secs
-        if valid and tot > 0:
+        if valid:
             m["valid"] += 1
-            m["reward"] += prog["usd_sec"] * secs * (my["yes"] + my["no"]) / tot
+            add = prog["usd_sec"] * secs * share / 2.0
+            m["reward"] += add
+            bp = m.setdefault("by_prog", {})
+            bp[prog["end"]] = bp.get(prog["end"], 0.0) + add
     tally(led, now)
 
 
@@ -303,7 +331,10 @@ def tally(led, now):
         by[s] = {"markets": len(sm), "reward": round(sum(m["reward"] for m in sm), 2),
                  "fills_pnl": round(sum(m["settled"] if m.get("settled") is not None else m.get("mark", 0.0) for m in sm), 2),
                  "valid_pct": round(100 * sum(m["valid"] for m in sm) / max(sum(m["snaps"] for m in sm), 1))}
+    paid = sum(payout(x) for m in ms for e, x in (m.get("by_prog") or {}).items() if T(e) <= now)
+    open_r = sum(x for m in ms for e, x in (m.get("by_prog") or {}).items() if T(e) > now)
     led["totals"] = {"reward": round(rew, 2), "fills_pnl": round(pnl, 2), "net": round(rew + pnl, 2),
+                     "paid_est": round(paid, 2), "open_programs_reward": round(open_r, 2),
                      "market_hours": round(hrs, 1), "capital_now": round(cap, 0),
                      "net_per_market_day": round((rew + pnl) / max(hrs / 24, 1e-9), 2) if hrs else None, "by_series": by}
     led["updated"] = dt.datetime.fromtimestamp(now, dt.timezone.utc).isoformat(timespec="seconds")
@@ -317,6 +348,8 @@ def summary(led):
         print("%-22s %4d %9.2f %10.2f %6d%%" % (s, b["markets"], b["reward"], b["fills_pnl"], b["valid_pct"]))
     print("NET $%.2f over %.1f market-hours (%s $ per market-day), capital now ~$%s" % (
         t.get("net", 0), t.get("market_hours", 0), t.get("net_per_market_day"), t.get("capital_now")))
+    print("scoring %s; closed programs would pay $%s after the $1-per-market-program rule (+$%s still open)" % (
+        led.get("formula", "OLD (pooled sides, every level)"), t.get("paid_est"), t.get("open_programs_reward")))
 
 
 # ---------------------------------------------------------------- the PC's 24/7 run (tools/pc_report.py hook)
@@ -430,6 +463,19 @@ def site_copy(led, path=SITE_COPY, headline=HEADLINE):
     return d
 
 
+def fresh_if_old_formula(path, led):
+    """a ledger scored by the pre-2026-11-19 formula (pooled sides, every level) is kept aside as <path>.old_formula.json and a
+    fresh ledger starts (its numbers would mix two scorings)."""
+    if led.get("formula") == FORMULA or not led.get("markets"):
+        led["formula"] = FORMULA
+        return led
+    try:
+        save(path[:-5] + ".old_formula.json" if path.endswith(".json") else path + ".old_formula.json", led)
+    except OSError:
+        pass
+    return blank()
+
+
 def still_mine(run_path, token):
     if not run_path or not token:
         return True
@@ -466,13 +512,21 @@ def selftest():
     assert abs(score([(0.39, 200), (0.37, 100)], 0.39, 0.5) - 225) < 1e-9; ok += 1
     assert maker_fee(0.5, 100, "quadratic") == 0.0 and maker_fee(0.5, 100, "quadratic_with_maker_fees") == 0.44; ok += 1
     st, led = Stub(), blank()
+    old = dict(blank(), markets={"X": {}})
+    old.pop("formula")
+    tmpo = os.path.join(tempfile.mkdtemp(), "rewards_paper.json")
+    assert fresh_if_old_formula(tmpo, old)["markets"] == {} and os.path.exists(tmpo[:-5] + ".old_formula.json")
+    assert fresh_if_old_formula(tmpo, led) is led and led["formula"] == FORMULA
     cycle(st, led, 2e9)
     m = led["markets"]["KXRT-A"]
     assert m["yes"]["p"] == 0.39 and m["yes"]["queue"] == 1000 and m["reward"] == 0; ok += 1
     cycle(st, led, 2e9 + 60)
-    # my score 200 per side, everyone 1000+0.5*500 + 200 = 1450 per side -> share 200/1450; pool 100$/day
-    exp = 100 / 86400 * 60 * 400 / 2900
-    assert abs(m["reward"] - exp) < 1e-9, m["reward"]; ok += 1
+    # published scoring: per side, my 200 joins the 39c level (1,000 + 200 reaches Target there, so the 38c level does not
+    # qualify) -> my share 200/1,200 on each side; a snapshot is worth (1/6 + 1/6) / 2 of the pool; pool $100/day
+    exp = 100 / 86400 * 60 * (200 / 1200 + 200 / 1200) / 2
+    assert abs(m["reward"] - exp) < 1e-9, m["reward"]
+    assert qualifying([(0.39, 150), (0.38, 900), (0.37, 5000)], 1000) == [(0.39, 150), (0.38, 900)] and payout(0.999) == 0 \
+        and payout(16.239) == 16.23; ok += 1
     # a taker sells 1100 YES at 0.39: 1000 queue ahead, 100 fill me
     st.trades = [{"trade_id": "a", "taker_side": "no", "yes_price_dollars": "0.39", "no_price_dollars": "0.61", "count_fp": "1100"}]
     cycle(st, led, 2e9 + 120)
@@ -533,6 +587,7 @@ def main():
     led = load(a.out)
     if a.summary:
         return summary(led)
+    led = fresh_if_old_formula(a.out, led)
     net = Net()
     for k in range(a.loop):
         t0 = time.time()

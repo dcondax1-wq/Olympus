@@ -1,0 +1,31 @@
+{
+ "version": 1,
+ "strategy": "rewards_maker",
+ "status": "rejected",
+ "capital_cap_usd": 50,
+ "per_market_cap_usd": 10,
+ "daily_loss_stop_usd": 10,
+ "max_open_orders": 5,
+ "markets": [
+  {"series": "KXHORMUZPEAK",
+   "why": "REJECTED for real money (2026-11-18). Best-looking idea: one $10 bid at 1c (1,000 contracts) on the cheap side, only where the live book says it earns >= $1.50 a reward period. The 32-day replay was positive in both halves with 0 fills, but only about 1-2 such bids existed at a time and the rewards rest on today's order books, not history; the red team found the broader rule lost money on new data.",
+   "quote": {"offset_cents": 0, "size": 1000},
+   "pause": ["Do not trade this with real money: status is rejected.",
+             "Paper only: quote a side only while its best bid is 1c and the live book says a $10 bid earns at least $1.50 over the reward period (Kalshi pays nothing under $1 per market).",
+             "No quotes in the last 33 hours before the market closes (the counted week is over).",
+             "After any fill in a market, stop quoting that market and hold to settlement."]},
+  {"series": "KXHORMUZMAX",
+   "why": "REJECTED for real money. Same 1c-bid idea; replay positive in both halves with 0 fills, but tiny capacity (about $7-8 of qualifying bids on average) and rewards estimated from today's books only.",
+   "quote": {"offset_cents": 0, "size": 1000},
+   "pause": ["Do not trade this with real money: status is rejected.",
+             "Paper only, same rules as KXHORMUZPEAK."]}
+ ],
+ "evidence": {"paper_days": 0.93, "net_per_100_per_day": -0.03, "backtest_both_halves": true, "worst_day_usd": -11.81},
+ "unproven": [
+  "The only forward money test (the PC paper, 0.93 days) made $12.93 of rewards and lost $13.54 on 3 fills: net -$0.61.",
+  "Kalshi publishes no order-book history, so every backtest reward assumes today's depth; if other bidders crowd the thin 1c levels the reward shrinks fast.",
+  "The red team found the same kind of rule lost $3.06 a day per $100 in the first 43 hours after the replay window, and that most small orders fall under Kalshi's $1 minimum per market.",
+  "Only 3 of about 40 series-and-price cells passed, which chance alone can produce; the 1c bids were watched forward for only half an hour.",
+  "Real payouts were never checked against a real account, and the program ends January 1, 2027 (Kalshi can change it any day)."
+ ]
+}
