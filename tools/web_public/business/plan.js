@@ -96,6 +96,15 @@
     return s;
   }
 
+  // the next pocket buy round (<= $150): a fresh Builder 50K next to Zlarior's hole, once MFFU says yes in writing (the Decide
+  // card's ask-mffu-parallel; tools/money/money_plan.py; research/writeups/lit-ideas-2026-11-18b.md measured +$50 / +$54)
+  function fresh50(x, pr) {
+    const d = x || {}, fd = d.first_pay_days;
+    return 'Your next $' + D.budget + ' round, once MFFU says yes in writing: a fresh Builder 50K (' + usd2(pr.builder50k) + ') next to Zlarior\'s. Both trade; the first pass is kept. '
+      + (d.usd_month != null ? 'About ' + usd(d.usd_month, true) + ' a month after its fee' : 'A small plus')
+      + (fd != null && Math.abs(fd) >= 1 ? ', the 50K\'s first payout about ' + Math.round(Math.abs(fd)) + ' trading days ' + (fd < 0 ? 'sooner' : 'later') : '') + '.';
+  }
+
   function decisions() {
     const box = $('dec'); box.textContent = '';
     const items = (DEC && Array.isArray(DEC.items) ? DEC.items : []).filter((d) => d && d.id && String(d.status || 'open') === 'open');
@@ -152,6 +161,7 @@
     const r2 = A.R2 || {}, pr = D.prices || {};
     const steps = [
       'Tonight or tomorrow: the Rapid EOD 25K, ' + usd2(pr.rapid_eod25k) + ' with CLUB (leaves ' + usd2(D.budget - pr.rapid_eod25k) + ' of your ' + usd2(D.budget) + '). Add it with ADD_ACCOUNT.bat, option 5. It is added OFF until START BOT and you type the phrase.',
+      fresh50(R.decisions && R.decisions['ask-mffu-parallel'], pr),
       'An eval fails: buy the same one again at once (Builder 50K ' + usd2(pr.builder50k) + ', 25K ' + usd2(pr.builder25k) + ', Rapid 25K ' + usd2(pr.rapid_eod25k) + '). Keep ' + usd(F.pocket_p90) + ' ready (' + usd(F.pocket_p95) + ' covers 19 in 20 runs).',
       'Next buy, paid from payouts (not your pocket): a Rapid EOD 50K (' + usd2(pr.rapid_eod50k) + ' with CLUB) once payouts after the tax pot reach ' + usd2(pr.rapid_eod50k) + ': likely ~' + day(r2.buy_med) + ' (' + pct(r2.p_bought) + ' of runs). It is your 5th funded slot and about ' + usd(r2.cash_m) + ' a month. The bot runs one Rapid today: say yes and Claude wires the second.',
       'A funded account can get stuck after a losing streak (under $100 of room: the bot stops trading it). Then a fresh eval of the same size replaces it; that is counted above.'];

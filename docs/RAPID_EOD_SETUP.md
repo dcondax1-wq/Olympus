@@ -53,7 +53,8 @@ It shows the balance, days traded (4 needed) and your best day.
 | Funded payout | it tells you what to take: only above $26,600 ($1,100 buffer + $500 kept), $500 minimum, $250 profit since the last one | only above $53,100 ($1,000 kept) |
 
 Expected (Money plan, Jul-Oct 2026-like market, not a promise): the 25K passes in about 25 trading days (9 in 10 runs within
-3 months), first payout about 2 months after you buy it, about $1,000 a month to you after that. Details: Business > Money plan.
+3 months), its first payout about early February (about $690 to you), about $1,000 a month on average over the next 6 months.
+Details: Business > Money plan.
 
 ## Later
 
