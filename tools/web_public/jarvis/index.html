@@ -108,14 +108,14 @@ window.addEventListener('error', function (e) {
   if (!window.__jarvisErr) window.__jarvisErr = String(e.message || 'Script error') + (e.filename ? ' (' + String(e.filename).split('/').pop() + ':' + e.lineno + ')' : '');
 }, true);
 </script>
-<link rel="stylesheet" id="jcss" href="jarvis.css?v=j22">
+<link rel="stylesheet" id="jcss" href="jarvis.css?v=j23">
 <link rel="stylesheet" id="jhome" href="home3d.css?v=h4">
 <!-- quiet-net, no data-fresh (night-bugsweep 2026-11-19): Kalshi's state comes from the PC feed (data.js); the old kalshi-feed repo is on the
      suspended account and is never asked; this site's kalshi.json, when missing, is a 404 remembered for the session (it was asked afresh,
      and logged, on every load); a tap (Refresh) still asks the real file at once.
      async: the file lives in ../olympus/, outside Jarvis's worker, so its saved copy cannot answer for it; a blocking tag made a slow
      network hold the whole start one more round trip (6-12 s). A fetch before it arrives is just one real try, as before quiet-net. -->
-<script src="../olympus/quiet-net.js?v=q6a" async></script>
+<script src="../olympus/quiet-net.js?v=q9" async></script>
 <!-- the PC feed (night A sync): the bots' numbers straight from the PC (ntfy, tools/pc_report.py), the same feed the Gate, the hubs and Zenith use;
      data.js lays it over live.json when it is newer. Async: never waited on by the start (a slow network must not hold Jarvis); the next refresh uses it. -->
 <script src="../pc_feed.js?v=n4" id="pcFeedJs" async></script>

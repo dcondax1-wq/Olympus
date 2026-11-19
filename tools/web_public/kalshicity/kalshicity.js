@@ -2,7 +2,7 @@
 // kalshi.json), shapes them (cityfeed.js), lays the city out (citylayout.js), draws it (cityscene.js) and writes the words. Text only through
 // textContent (no data ever becomes HTML). Read only: nothing here writes anywhere. window.KC is the test hook.
 import { shape, shapeHyps, cardFreshness, cardBotStatus, cardOf, headlineOf, usd, pct, evf, pts, STATUS_COLOR, STATUS_WORD, ADVICE, etHour, clockLabel, phaseWord, MIN_N,
-  hypOf, hypCardOf, pairOf, tickerLines, changesOf, HYP_COLOR, HYP_WORD, worldBotLabel } from './cityfeed.js?v=bot19';
+  hypOf, hypCardOf, pairOf, tickerLines, changesOf, HYP_COLOR, HYP_WORD, worldBotLabel } from './cityfeed.js?v=bot20';
 import { layout } from './citylayout.js?v=night8';
 import { cityAtlas, edgeCountLabel } from './cityatlas.js?v=skyline8';
 import { districtOptionLabel, districtTitle } from './citynav.js?v=nav1';

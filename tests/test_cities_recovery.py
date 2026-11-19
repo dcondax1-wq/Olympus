@@ -19,7 +19,7 @@ def main():
     script = r"""
 const assert = require('node:assert/strict');
 const source = process.argv[1];
-const actualImport = "import('./atlas-entry.js?v=a5')";
+const actualImport = "import('./atlas-entry.js?v=a6')";
 assert.ok(source.includes(actualImport), 'recovery module import changed');
 // Keep the actual page function and replace only its module boundary with a stub.
 const executable = source.replace(actualImport, 'loadRecovery()');
