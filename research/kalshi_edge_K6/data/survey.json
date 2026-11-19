@@ -1,0 +1,664 @@
+{
+ "KXFED": {
+  "n": 424,
+  "events": 42,
+  "first": "2021-07-26",
+  "last": "2026-10-28",
+  "volume": 59335069.22,
+  "n_live": 22,
+  "n_hist": 413,
+  "rule": "If the upper bound of the target federal funds rate published on the Federal Reserve's official website is greater than 5.25% following the Federal Reserve's Oct 28, 2026 meeting, then the market resolves to Yes.",
+  "rule2": "This market will expire the first 2:05 PM ET following the release of a Federal Reserve statement for their Oct 28, 2026 meeting or one week following the last day of that meeting.",
+  "example": "KXFED-26OCT-T5.25",
+  "strike_type": "greater"
+ },
+ "FED": {
+  "n": 0
+ },
+ "KXFEDDECISION": {
+  "n": 150,
+  "events": 30,
+  "first": "2023-05-03",
+  "last": "2026-10-28",
+  "volume": 631624911.5,
+  "n_live": 10,
+  "n_hist": 145,
+  "rule": "If the Federal Reserve does a Hike of   25bps on October 28, 2026, then the market resolves to Yes.",
+  "rule2": "The outcomes are mutually exclusive: at most one can resolve to Yes. For example, a 50-basis-point hike resolves \u201cHike   25 bps\u201d to Yes and \u201cHike 25 bps\u201d to No.\n\nIf the scheduled FOMC meeting is canceled and does not occur on its scheduled date, \u201cFed maintains rate\u201d resolves to Yes and all other out",
+  "example": "KXFEDDECISION-26OCT-H26",
+  "strike_type": "custom"
+ },
+ "FEDDECISION": {
+  "n": 0
+ },
+ "KXRATECUTCOUNT": {
+  "n": 30,
+  "events": 2,
+  "first": "2025-01-01",
+  "last": "2026-01-01",
+  "volume": 27234469.0,
+  "n_live": 0,
+  "n_hist": 30,
+  "rule": "If the Fed cuts exactly 9 times before 2026, the market resolves to Yes.",
+  "rule2": "To be clear, 25bp of cuts is equal to one cut (so 25bp cut is 1, 50bp cut is 2, 75bp cut is 3, and so on). Note: this detail has been included in past iterations including the previous iteration titled, \"Number of rate cuts in 2024?\"",
+  "example": "KXRATECUTCOUNT-25DEC31-T9",
+  "strike_type": "between"
+ },
+ "KXFEDFUNDSYEAR": {
+  "n": 0
+ },
+ "KXEFFR": {
+  "n": 15,
+  "events": 3,
+  "first": "2026-04-01",
+  "last": "2026-10-01",
+  "volume": 63045.2,
+  "n_live": 5,
+  "n_hist": 10,
+  "rule": "If the first published Effective Federal Funds Rate (EFFR) value for September 30, 2026 is above 4.00%, then the market resolves to Yes.",
+  "rule2": "",
+  "example": "KXEFFR-26OCT01-T4.00",
+  "strike_type": "greater"
+ },
+ "KXSOFR": {
+  "n": 1,
+  "events": 1,
+  "first": "2021-09-26",
+  "last": "2021-09-26",
+  "volume": 3391.0,
+  "n_live": 0,
+  "n_hist": 1,
+  "rule": "If the Secured Overnight Financing Rate strictly exceeds 0.05% on September 25, 2021, then the market resolves to Yes.",
+  "rule2": "Please see SOFR in the rulebook for more details.",
+  "example": "SOFR-21SEP25-T0.05",
+  "strike_type": null
+ },
+ "KXSOFRD": {
+  "n": 428,
+  "events": 72,
+  "first": "2026-08-06",
+  "last": "2026-11-18",
+  "volume": 479003.47,
+  "n_live": 336,
+  "n_hist": 127,
+  "rule": "If the Secured Overnight Financing Rate (SOFR) for November 17, 2026 is at least 3.95%, then the market resolves to Yes.",
+  "rule2": "The Underlying is the initially reported SOFR for November 17, 2026 in the table named \u201cSecured Overnight Financing Rate Data\u201d in the column labeled \u201cRate (%)\u201d. Later revisions will not be accounted for in determining the Expiration Value.",
+  "example": "KXSOFRD-26NOV18-T3.95",
+  "strike_type": "greater_or_equal"
+ },
+ "KX3MTBILL": {
+  "n": 6,
+  "events": 2,
+  "first": "2026-03-31",
+  "last": "2026-06-30",
+  "volume": 36949.29,
+  "n_live": 0,
+  "n_hist": 6,
+  "rule": "If U.S. Treasury Daily Yield Curve Rate (3 Mo) for June 30, 2026 (end of Q2 2026) is above 4.00%, then the market resolves to Yes.",
+  "rule2": "",
+  "example": "KX3MTBILL-26JUN30-T4.00",
+  "strike_type": "greater"
+ },
+ "KXINXW": {
+  "n": 0
+ },
+ "KXINXWD": {
+  "n": 0
+ },
+ "INXW": {
+  "n": 0
+ },
+ "KXNASDAQ100W": {
+  "n": 0
+ },
+ "KXNASDAQ100WD": {
+  "n": 0
+ },
+ "NASDAQ100W": {
+  "n": 0
+ },
+ "KXINXM": {
+  "n": 0
+ },
+ "KXINXME": {
+  "n": 0
+ },
+ "KXINXMD": {
+  "n": 0
+ },
+ "INXM": {
+  "n": 0
+ },
+ "KXNASDAQ100M": {
+  "n": 0
+ },
+ "KXNASDAQ100ME": {
+  "n": 0
+ },
+ "KXNASDAQ100MD": {
+  "n": 0
+ },
+ "NASDAQ100M": {
+  "n": 0
+ },
+ "KXNASDAQ100MAXM": {
+  "n": 0
+ },
+ "KXNASDAQ100MINM": {
+  "n": 0
+ },
+ "KXINXMAXMM": {
+  "n": 22,
+  "events": 2,
+  "first": "2026-05-18",
+  "last": "2026-06-30",
+  "volume": 1141765.89,
+  "n_live": 0,
+  "n_hist": 22,
+  "rule": "If the value of the S&P 500 index value starting Jun 1, 2026 and ending on Jun 30, 2026 is above 7750, then the market resolves to Yes.",
+  "rule2": "",
+  "example": "KXINXMAXMM-30JUN2026-7750",
+  "strike_type": "greater"
+ },
+ "KXINXWUD": {
+  "n": 1,
+  "events": 1,
+  "first": "2026-06-05",
+  "last": "2026-06-05",
+  "volume": 394.54,
+  "n_live": 0,
+  "n_hist": 1,
+  "rule": "If the end-of-day price of the S&P 500 on June 05, 2026 is above 7580.06, then the market resolves to Yes.",
+  "rule2": "The target value is the end-of-day/closing price of the prior week's close.",
+  "example": "KXINXWUD-26JUN05H1600-T7580.06",
+  "strike_type": "greater"
+ },
+ "KXNASDAQWUD": {
+  "n": 1,
+  "events": 1,
+  "first": "2026-06-05",
+  "last": "2026-06-05",
+  "volume": 93.76,
+  "n_live": 0,
+  "n_hist": 1,
+  "rule": "If the end-of-day price of the NASDAQ-100 on June 05, 2026 is above 30333.18, then the market resolves to Yes.",
+  "rule2": "The target value is the end-of-day/closing price of the prior week's close.",
+  "example": "KXNASDAQWUD-26JUN05H1600-T30333.18",
+  "strike_type": "greater"
+ },
+ "KXTNOTED": {
+  "n": 9218,
+  "events": 665,
+  "first": "2023-02-14",
+  "last": "2026-07-01",
+  "volume": 6596545.0,
+  "n_live": 0,
+  "n_hist": 9218,
+  "rule": "If the yield curve par rate for 10-year U.S. treasury note is above 4.58 % on Jul 1, 2026, then the market resolves to Yes.",
+  "rule2": "The market will expire at the sooner of the first 7:00 PM ET following the data release for Jul 1, 2026, or one week following Jul 1, 2026.",
+  "example": "KXTNOTED-26JUL01-T4.58",
+  "strike_type": "greater"
+ },
+ "KXTNOTEW": {
+  "n": 2544,
+  "events": 170,
+  "first": "2023-02-17",
+  "last": "2026-06-26",
+  "volume": 10678178.98,
+  "n_live": 0,
+  "n_hist": 2544,
+  "rule": "If the yield curve par rate for 10-year U.S. treasury note is above 4.66 % on Jun 26, 2026, then the market resolves to Yes.",
+  "rule2": "The market will expire at the sooner of the first 7:00 PM ET following the data release for Jun 26, 2026, or one week following Jun 26, 2026.",
+  "example": "KXTNOTEW-26JUN26-T4.66",
+  "strike_type": "greater"
+ },
+ "TNOTED": {
+  "n": 0
+ },
+ "TNOTEW": {
+  "n": 0
+ },
+ "TNOTE": {
+  "n": 0
+ },
+ "KXTNOTE": {
+  "n": 68,
+  "events": 18,
+  "first": "2022-01-31",
+  "last": "2023-05-02",
+  "volume": 151663.0,
+  "n_live": 0,
+  "n_hist": 68,
+  "rule": "If the yield curve par rate for 10-year U.S. treasury notes is above 3.72 % on May 2, 2023, then the market resolves to Yes.",
+  "rule2": "The market will expire at the sooner of the first 7:00 PM ET following the data release for May 2, 2023, or one week following May 2, 2023.",
+  "example": "TNOTE-23MAY02-T3.72",
+  "strike_type": "greater"
+ },
+ "KXNOTE10W": {
+  "n": 0
+ },
+ "KXNOTE10M": {
+  "n": 11,
+  "events": 1,
+  "first": "2026-06-30",
+  "last": "2026-06-30",
+  "volume": 7222.71,
+  "n_live": 0,
+  "n_hist": 11,
+  "rule": "If the yield curve par rate for 10-year U.S. treasury note is above 4.74 % on Jun 30, 2026, then the market resolves to Yes.",
+  "rule2": "The market will expire at the sooner of the first 7:00 PM ET following the data release for Jun 30, 2026, or one week following Jun 30, 2026.",
+  "example": "KXNOTE10M-26JUN30-T4.74",
+  "strike_type": "greater"
+ },
+ "KXNOTE10": {
+  "n": 8,
+  "events": 2,
+  "first": "2026-05-29",
+  "last": "2026-06-30",
+  "volume": 15959.66,
+  "n_live": 0,
+  "n_hist": 8,
+  "rule": "If the yield curve par rate for 10-year U.S. treasury notes is above 4.601 % on Jun 30, 2026, then the market resolves to Yes.",
+  "rule2": "The market will expire at the sooner of the first 7:00 PM ET following the data release for Jun 30, 2026, or one week following Jun 30, 2026.",
+  "example": "KXNOTE10-26JUN30-T4.601",
+  "strike_type": "greater"
+ },
+ "KX10YRDIRHW": {
+  "n": 130,
+  "events": 6,
+  "first": "2026-10-09",
+  "last": "2026-11-13",
+  "volume": 55202.22,
+  "n_live": 130,
+  "n_hist": 0,
+  "rule": "If the daily published par yield for the 10Y U.S. Treasury is above 5.16% on any business day between Nov 6, 2026 and Nov 13, 2026, then the market resolves to Yes.",
+  "rule2": "How this is resolved\nThis market covers the period between Nov 6, 2026 and Nov 13, 2026.\nResolution is based solely on the Daily Treasury Par Yield Curve Rate for the 10Y tenor as published by the U.S. Department of the Treasury for each business day in this period; intraday values are not considere",
+  "example": "KX10YRDIRHW-26NOV13H-T5.16",
+  "strike_type": "greater"
+ },
+ "KX10YRDIRLW": {
+  "n": 120,
+  "events": 6,
+  "first": "2026-10-09",
+  "last": "2026-11-13",
+  "volume": 64732.93,
+  "n_live": 120,
+  "n_hist": 0,
+  "rule": "If the daily published par yield for the 10Y U.S. Treasury is below 4.85% on any business day between Nov 6, 2026 and Nov 13, 2026, then the market resolves to Yes.",
+  "rule2": "How this is resolved\nThis market covers the period between Nov 6, 2026 and Nov 13, 2026.\nResolution is based solely on the Daily Treasury Par Yield Curve Rate for the 10Y tenor as published by the U.S. Department of the Treasury for each business day in this period; intraday values are not considere",
+  "example": "KX10YRDIRLW-26NOV13L-T4.85",
+  "strike_type": "less"
+ },
+ "KX10YRDIRHM": {
+  "n": 101,
+  "events": 4,
+  "first": "2026-09-11",
+  "last": "2026-11-13",
+  "volume": 168972.16,
+  "n_live": 92,
+  "n_hist": 16,
+  "rule": "If the daily published par yield for the 10-year U.S. Treasury is above 5.14% on any business day between Nov 1, 2026 and Nov 30, 2026, then the market resolves to Yes.",
+  "rule2": "How this is resolved\nThis market covers the period between Nov 1, 2026 and Nov 30, 2026.\nResolution is based solely on the Daily Treasury Par Yield Curve Rate for the 10-year tenor as published by the U.S. Department of the Treasury for each business day in this period; intraday values are not consi",
+  "example": "KX10YRDIRHM-26NOV30H-T5.14",
+  "strike_type": "greater"
+ },
+ "KX10YRDIRLM": {
+  "n": 76,
+  "events": 3,
+  "first": "2026-09-30",
+  "last": "2026-11-05",
+  "volume": 101569.79,
+  "n_live": 76,
+  "n_hist": 0,
+  "rule": "If the daily published par yield for the 10-year U.S. Treasury is below 4.85% on any business day between Nov 1, 2026 and Nov 30, 2026, then the market resolves to Yes.",
+  "rule2": "How this is resolved\nThis market covers the period between Nov 1, 2026 and Nov 30, 2026.\nResolution is based solely on the Daily Treasury Par Yield Curve Rate for the 10-year tenor as published by the U.S. Department of the Treasury for each business day in this period; intraday values are not consi",
+  "example": "KX10YRDIRLM-26NOV30L-T4.85",
+  "strike_type": "less"
+ },
+ "KX2YRDIRHM": {
+  "n": 51,
+  "events": 2,
+  "first": "2026-10-30",
+  "last": "2026-11-13",
+  "volume": 38524.7,
+  "n_live": 51,
+  "n_hist": 0,
+  "rule": "If the daily published par yield for the 2-year U.S. Treasury is above 4.87% on any business day between Nov 1, 2026 and Nov 30, 2026, then the market resolves to Yes.",
+  "rule2": "How this is resolved\nThis market covers the period between Nov 1, 2026 and Nov 30, 2026.\nResolution is based solely on the Daily Treasury Par Yield Curve Rate for the 2-year generic constant-maturity tenor as published by the U.S. Department of the Treasury for each business day in this period; intr",
+  "example": "KX2YRDIRHM-26NOV30H-T4.87",
+  "strike_type": "greater"
+ },
+ "KX2YRDIRLM": {
+  "n": 81,
+  "events": 2,
+  "first": "2026-10-01",
+  "last": "2026-11-05",
+  "volume": 79661.78,
+  "n_live": 81,
+  "n_hist": 0,
+  "rule": "If the daily published par yield for the 2-year U.S. Treasury is below 4.47% on any business day between Nov 1, 2026 and Nov 30, 2026, then the market resolves to Yes.",
+  "rule2": "How this is resolved\nThis market covers the period between Nov 1, 2026 and Nov 30, 2026.\nResolution is based solely on the Daily Treasury Par Yield Curve Rate for the 2-year generic constant-maturity tenor as published by the U.S. Department of the Treasury for each business day in this period; intr",
+  "example": "KX2YRDIRLM-26NOV30L-T4.47",
+  "strike_type": "less"
+ },
+ "KX5YRDIRHM": {
+  "n": 43,
+  "events": 2,
+  "first": "2026-10-30",
+  "last": "2026-11-13",
+  "volume": 46972.659999999996,
+  "n_live": 43,
+  "n_hist": 0,
+  "rule": "If the daily published par yield for the 5-year U.S. Treasury is above 4.97% on any business day between Nov 1, 2026 and Nov 30, 2026, then the market resolves to Yes.",
+  "rule2": "How this is resolved\nThis market covers the period between Nov 1, 2026 and Nov 30, 2026.\nResolution is based solely on the Daily Treasury Par Yield Curve Rate for the 5-year generic constant-maturity tenor as published by the U.S. Department of the Treasury for each business day in this period; intr",
+  "example": "KX5YRDIRHM-26NOV30H-T4.97",
+  "strike_type": "greater"
+ },
+ "KX30YRDIRHM": {
+  "n": 92,
+  "events": 4,
+  "first": "2026-09-11",
+  "last": "2026-11-13",
+  "volume": 171855.27,
+  "n_live": 85,
+  "n_hist": 7,
+  "rule": "If the daily published par yield for the 30-year U.S. Treasury is above 5.46% on any business day between Nov 1, 2026 and Nov 30, 2026, then the market resolves to Yes.",
+  "rule2": "How this is resolved\nThis market covers the period between Nov 1, 2026 and Nov 30, 2026.\nResolution is based solely on the Daily Treasury Par Yield Curve Rate for the 30-year tenor as published by the U.S. Department of the Treasury for each business day in this period; intraday values are not consi",
+  "example": "KX30YRDIRHM-26NOV30H-T5.46",
+  "strike_type": "greater"
+ },
+ "KXNOTE30W": {
+  "n": 0
+ },
+ "KX30YUSTW": {
+  "n": 1,
+  "events": 1,
+  "first": "2026-05-15",
+  "last": "2026-05-15",
+  "volume": 10.0,
+  "n_live": 0,
+  "n_hist": 1,
+  "rule": "If the 30Y US Treasury yield is above 5.00% before 26-May-15 at 5pm EST, then the market resolves to Yes.",
+  "rule2": "",
+  "example": "KX30YUSTW-26MAY15-T5.00",
+  "strike_type": "greater"
+ },
+ "KXUST10": {
+  "n": 4,
+  "events": 1,
+  "first": "2026-06-06",
+  "last": "2026-06-30",
+  "volume": 32520.15,
+  "n_live": 0,
+  "n_hist": 4,
+  "rule": "If the 10Y US Treasury Yield before month-end is above 4.65%, then the market resolves to Yes.",
+  "rule2": "",
+  "example": "KXUST10-26JUN30-T4.65",
+  "strike_type": "greater"
+ },
+ "KXUST10M": {
+  "n": 5,
+  "events": 1,
+  "first": "2026-06-30",
+  "last": "2026-06-30",
+  "volume": 13958.18,
+  "n_live": 0,
+  "n_hist": 5,
+  "rule": "If the 10Y US Treasury Yield for month-end is above 4.70%, then the market resolves to Yes.",
+  "rule2": "",
+  "example": "KXUST10M-26JUN30-T4.70",
+  "strike_type": "greater"
+ },
+ "KXUST2": {
+  "n": 4,
+  "events": 1,
+  "first": "2026-06-06",
+  "last": "2026-06-30",
+  "volume": 38428.229999999996,
+  "n_live": 0,
+  "n_hist": 4,
+  "rule": "If 2Y US Treasury Yield before month-end is above 4.25%, then the market resolves to Yes.",
+  "rule2": "",
+  "example": "KXUST2-26JUN30-T4.25",
+  "strike_type": "greater"
+ },
+ "KXUST30": {
+  "n": 8,
+  "events": 2,
+  "first": "2026-05-19",
+  "last": "2026-06-30",
+  "volume": 46444.07,
+  "n_live": 0,
+  "n_hist": 8,
+  "rule": "If the 30Y US Treasury Yield before month-end is above 5.25%, then the market resolves to Yes.",
+  "rule2": "",
+  "example": "KXUST30-26JUN30-T5.25",
+  "strike_type": "greater"
+ },
+ "KXUST10A": {
+  "n": 345,
+  "events": 21,
+  "first": "2026-07-02",
+  "last": "2026-11-13",
+  "volume": 306329.08,
+  "n_live": 175,
+  "n_hist": 185,
+  "rule": "If the par yield for the 10Y U.S. Treasury is above 5.18% on Nov 13, 2026, then the market resolves to Yes.",
+  "rule2": "The market will expire at the sooner of the first 7:00 PM ET following the data release for Nov 13, 2026, or one week following Nov 13, 2026.",
+  "example": "KXUST10A-26NOV13-T5.18",
+  "strike_type": "greater"
+ },
+ "KXUST2A": {
+  "n": 355,
+  "events": 21,
+  "first": "2026-07-02",
+  "last": "2026-11-13",
+  "volume": 206478.87,
+  "n_live": 175,
+  "n_hist": 205,
+  "rule": "If the par yield for the 2Y U.S. Treasury is above 4.78% on Nov 13, 2026, then the market resolves to Yes.",
+  "rule2": "The market will expire at the sooner of the first 7:00 PM ET following the data release for Nov 13, 2026, or one week following Nov 13, 2026.",
+  "example": "KXUST2A-26NOV13-T4.78",
+  "strike_type": "greater"
+ },
+ "KXUST5A": {
+  "n": 308,
+  "events": 18,
+  "first": "2026-07-10",
+  "last": "2026-11-13",
+  "volume": 159752.48,
+  "n_live": 165,
+  "n_hist": 158,
+  "rule": "If the par yield for the 5Y U.S. Treasury is above 4.93% on Nov 13, 2026, then the market resolves to Yes.",
+  "rule2": "The market will expire at the sooner of the first 7:00 PM ET following the data release for Nov 13, 2026, or one week following Nov 13, 2026.",
+  "example": "KXUST5A-26NOV13-T4.93",
+  "strike_type": "greater"
+ },
+ "KXUST30A": {
+  "n": 335,
+  "events": 21,
+  "first": "2026-07-02",
+  "last": "2026-11-13",
+  "volume": 214489.23,
+  "n_live": 185,
+  "n_hist": 165,
+  "rule": "If the par yield for the 30Y U.S. Treasury is above 5.58% on Nov 13, 2026, then the market resolves to Yes.",
+  "rule2": "The market will expire at the sooner of the first 7:00 PM ET following the data release for Nov 13, 2026, or one week following Nov 13, 2026.",
+  "example": "KXUST30A-26NOV13-T5.58",
+  "strike_type": "greater"
+ },
+ "KX20YRRATEW": {
+  "n": 0
+ },
+ "KX20YRRATED": {
+  "n": 0
+ },
+ "KXFRM": {
+  "n": 505,
+  "events": 132,
+  "first": "2021-07-29",
+  "last": "2024-02-22",
+  "volume": 720835.0,
+  "n_live": 0,
+  "n_hist": 505,
+  "rule": "If the 30-Year Fixed Rate Mortgage rate as reported by the Freddie Mac Primary Mortgage Market Survey\u00ae (\u201cPMMS\u201d)  for the week ending February 22, 2024 is above 6.9%, then the market resolves to Yes.",
+  "rule2": "The contract will expire at the sooner of the first 12:05 PM following the release of the data for February 22, 2024, or February 29, 2024. The Last Trading Time will always be 11:55 AM ET on February 22, 2024.",
+  "example": "FRM-24FEB22-T6.9",
+  "strike_type": "greater"
+ },
+ "FRM": {
+  "n": 0
+ },
+ "KX10Y2Y": {
+  "n": 1,
+  "events": 1,
+  "first": "2023-12-30",
+  "last": "2023-12-30",
+  "volume": 7073.0,
+  "n_live": 0,
+  "n_hist": 1,
+  "rule": "If the daily 10-Year Treasury Constant Maturity minus the 2-year Treasury Constant Maturity according to the Federal Reserve Economic Data (FRED) series, measured in percent and not seasonally adjusted, between Issuance and <date>, is above 0%, then the market resolves to Yes.",
+  "rule2": "Please note that intraday changes will not be reflected in the Underlying, as FRED only posts a single value per day.",
+  "example": "10Y2Y-23DEC29-T0",
+  "strike_type": "greater"
+ },
+ "10Y2Y": {
+  "n": 0
+ },
+ "KX10YRRATEH": {
+  "n": 8545,
+  "events": 360,
+  "first": "2026-10-09",
+  "last": "2026-11-18",
+  "volume": 246958.62,
+  "n_live": 8545,
+  "n_hist": 0,
+  "rule": "If the Pyth security yield for the 10-Year U.S. Treasury Note is above 4.83% at Nov 18, 2026 at 5:00pm ET, the market resolves to Yes.",
+  "rule2": "Settlement uses the closing Pyth yield of the one-minute candlestick immediately preceding the settlement time. For a 1:00pm ET observation, use the 12:59pm candle, covering 12:59:00pm up to but excluding 1:00:00pm ET. No averaging applies. The closing Pyth yield, expressed as a percentage, is round",
+  "example": "KX10YRRATEH-18NOV2617-T483",
+  "strike_type": "greater"
+ },
+ "KX2YRRATEH": {
+  "n": 8824,
+  "events": 360,
+  "first": "2026-10-09",
+  "last": "2026-11-18",
+  "volume": 157575.45,
+  "n_live": 8824,
+  "n_hist": 0,
+  "rule": "If the Pyth security yield for the 2-Year U.S. Treasury Note is above 4.86% at Nov 18, 2026 at 5:00pm ET, the market resolves to Yes.",
+  "rule2": "Settlement uses the closing Pyth yield of the one-minute candlestick immediately preceding the settlement time. For a 1:00pm ET observation, use the 12:59pm candle, covering 12:59:00pm up to but excluding 1:00:00pm ET. No averaging applies. The closing Pyth yield, expressed as a percentage, is round",
+  "example": "KX2YRRATEH-18NOV2617-T486",
+  "strike_type": "greater"
+ },
+ "KX10YR550PCT": {
+  "n": 1,
+  "events": 1,
+  "first": "2026-11-01",
+  "last": "2026-11-01",
+  "volume": 13050.12,
+  "n_live": 1,
+  "n_hist": 0,
+  "rule": "If the Daily Treasury Par Yield Curve Rate for the 10-year generic constant-maturity tenor is at least 5.50% on any business day from October 1, 2026 at 12:00 AM EDT through October 31, 2026 at 11:59:59 PM EDT, inclusive, then the market resolves to Yes.",
+  "rule2": "This market uses the 10-year generic constant-maturity Treasury tenor and the U.S. Department of the Treasury Daily Treasury Par Yield Curve Rate. The observation period is from October 1, 2026 at 12:00 AM EDT through October 31, 2026 at 11:59:59 PM EDT, inclusive. A published rate of 5.50% or highe",
+  "example": "KX10YR550PCT-31OCT26-T5.50",
+  "strike_type": "greater_or_equal"
+ },
+ "KX10YR6PCT": {
+  "n": 0
+ },
+ "KX30YR6PCT": {
+  "n": 1,
+  "events": 1,
+  "first": "2026-11-01",
+  "last": "2026-11-01",
+  "volume": 19386.62,
+  "n_live": 1,
+  "n_hist": 0,
+  "rule": "If the Daily Treasury Par Yield Curve Rate for the 30-year generic constant-maturity tenor is at least 6.00% on any business day from October 1, 2026 at 12:00 AM EDT through October 31, 2026 at 11:59:59 PM EDT, inclusive, then the market resolves to Yes.",
+  "rule2": "This market uses the 30-year generic constant-maturity Treasury tenor and the U.S. Department of the Treasury Daily Treasury Par Yield Curve Rate. The observation period is from October 1, 2026 at 12:00 AM EDT through October 31, 2026 at 11:59:59 PM EDT, inclusive. A published rate of 6.00% or highe",
+  "example": "KX30YR6PCT-31OCT26-T6",
+  "strike_type": "greater_or_equal"
+ },
+ "KX5YRDIRLM": {
+  "n": 76,
+  "events": 2,
+  "first": "2026-10-01",
+  "last": "2026-11-05",
+  "volume": 42484.11,
+  "n_live": 76,
+  "n_hist": 0,
+  "rule": "If the daily published par yield for the 5-year U.S. Treasury is below 4.60% on any business day between Nov 1, 2026 and Nov 30, 2026, then the market resolves to Yes.",
+  "rule2": "How this is resolved\nThis market covers the period between Nov 1, 2026 and Nov 30, 2026.\nResolution is based solely on the Daily Treasury Par Yield Curve Rate for the 5-year generic constant-maturity tenor as published by the U.S. Department of the Treasury for each business day in this period; intr",
+  "example": "KX5YRDIRLM-26NOV30L-T4.60",
+  "strike_type": "less"
+ },
+ "KX30YRDIRLM": {
+  "n": 72,
+  "events": 3,
+  "first": "2026-09-30",
+  "last": "2026-11-05",
+  "volume": 106415.97,
+  "n_live": 72,
+  "n_hist": 0,
+  "rule": "If the daily published par yield for the 30-year U.S. Treasury is below 5.26% on any business day between Nov 1, 2026 and Nov 30, 2026, then the market resolves to Yes.",
+  "rule2": "How this is resolved\nThis market covers the period between Nov 1, 2026 and Nov 30, 2026.\nResolution is based solely on the Daily Treasury Par Yield Curve Rate for the 30-year tenor as published by the U.S. Department of the Treasury for each business day in this period; intraday values are not consi",
+  "example": "KX30YRDIRLM-26NOV30L-T5.26",
+  "strike_type": "less"
+ },
+ "KX7YRDIRHM": {
+  "n": 40,
+  "events": 2,
+  "first": "2026-10-02",
+  "last": "2026-11-13",
+  "volume": 60905.159999999996,
+  "n_live": 40,
+  "n_hist": 0,
+  "rule": "If the daily published par yield for the 7-year U.S. Treasury is above 5.04% on any business day between Nov 1, 2026 and Nov 30, 2026, then the market resolves to Yes.",
+  "rule2": "How this is resolved\nThis market covers the period between Nov 1, 2026 and Nov 30, 2026.\nResolution is based solely on the Daily Treasury Par Yield Curve Rate for the 7-year generic constant-maturity tenor as published by the U.S. Department of the Treasury for each business day in this period; intr",
+  "example": "KX7YRDIRHM-26NOV30H-T5.04",
+  "strike_type": "greater"
+ },
+ "KX7YRDIRLM": {
+  "n": 65,
+  "events": 2,
+  "first": "2026-10-01",
+  "last": "2026-11-05",
+  "volume": 51210.92,
+  "n_live": 65,
+  "n_hist": 0,
+  "rule": "If the daily published par yield for the 7-year U.S. Treasury is below 4.71% on any business day between Nov 1, 2026 and Nov 30, 2026, then the market resolves to Yes.",
+  "rule2": "How this is resolved\nThis market covers the period between Nov 1, 2026 and Nov 30, 2026.\nResolution is based solely on the Daily Treasury Par Yield Curve Rate for the 7-year generic constant-maturity tenor as published by the U.S. Department of the Treasury for each business day in this period; intr",
+  "example": "KX7YRDIRLM-26NOV30L-T4.71",
+  "strike_type": "less"
+ },
+ "KXTREASURYMAX": {
+  "n": 0
+ },
+ "KXUST5M": {
+  "n": 5,
+  "events": 1,
+  "first": "2026-06-30",
+  "last": "2026-06-30",
+  "volume": 12743.35,
+  "n_live": 0,
+  "n_hist": 5,
+  "rule": "If the 5Y US Treasury Yield for month-end is above 4.40%, then the market resolves to Yes.",
+  "rule2": "",
+  "example": "KXUST5M-26JUN30-T4.40",
+  "strike_type": "greater"
+ },
+ "KXUST30M": {
+  "n": 8,
+  "events": 1,
+  "first": "2026-06-30",
+  "last": "2026-06-30",
+  "volume": 39058.630000000005,
+  "n_live": 0,
+  "n_hist": 8,
+  "rule": "If the 30Y US Treasury Yield for month-end is above 5.30%, then the market resolves to Yes.",
+  "rule2": "",
+  "example": "KXUST30M-26JUN30-T5.30",
+  "strike_type": "greater"
+ }
+}
