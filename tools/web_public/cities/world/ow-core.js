@@ -76,7 +76,7 @@ export function lightOf(p) {
   if (p.district === 'kalshi' && p.kind !== 'app') return 0.62;
   return p.state === 'live' ? 1.15 : p.state === 'ruin' ? 0.8 : 1.0;
 }
-const HALO = { live: 0.8, app: 0.3, bright: 0.35, growing: 0.3, testing: 0.2, planned: 0.2, data: 0.3, ruin: 0.1 };
+const HALO = { live: 0.55, app: 0.3, bright: 0.35, growing: 0.3, testing: 0.2, planned: 0.2, data: 0.3, ruin: 0.1 };
 
 /**
  * planWorld(world, {tier: 'high' | 'low'}) -> { places, n, pos, size, info, tint, misc, halos, rings, beams, R, stats }
@@ -158,7 +158,7 @@ export function planWorld(w, opts) {
       halos.push([p.x, kindTop * 0.55 + 1.5, p.z, Math.min(48, (p.r || 4) * 1.25 + kindTop * 0.4 + 3), hue[0], hue[1], hue[2], hi, pi]);
     }
     if (p.kind === 'bot') {
-      rings.push([p.x, kindTop + 4, p.z, Math.max(6, p.r * 0.45), 1, 0.35, 0.16, 0.12, hue, 1.4, pi]);
+      rings.push([p.x, kindTop + 4, p.z, Math.max(6, p.r * 0.4), 1, 0.35, 0.14, 0.12, hue, 0.9, pi]);
       beams.push([p.x, kindTop, p.z, 1.0, 140, 3.2, 0.21 + r() * 0.1, r() * 6.28, hue, pi]);
     } else if (p.kind === 'account' && p.state !== 'planned') {
       rings.push([p.x, kindTop + 2.2, p.z, 3.4, p.progress != null ? clamp(p.progress, 0.02, 1) : 0.02, 0.0, 0.3, 0, hex('#ffd27a'), 1.6, pi]);
@@ -190,7 +190,7 @@ export function planWorld(w, opts) {
   const gold = hex('#ffd890');
   const gr = rng(7);
   stack(N, 0, 0, 5.2, 5.2, 46, 0.5, S.CROWN, 0.7, gold, 0, 0, gr);
-  for (const [k, rad, y] of [[0, 9, 40], [1, 15, 30], [2, 22, 19]]) rings.push([0, y, 0, rad, 1, (k % 2 ? -1 : 1) * (0.12 + k * 0.05), 0.08 + k * 0.03, 0.05 * k, gold, 1.5 - k * 0.3, N]);
+  for (const [k, rad, y] of [[0, 8, 41], [1, 12.5, 33]]) rings.push([0, y, 0, rad, 1, (k % 2 ? -1 : 1) * (0.12 + k * 0.05), 0.08 + k * 0.03, 0.05 * k, gold, 1.0 - k * 0.25, N]);
   for (let k = 0; k < 4; k++) beams.push([0, 46, 0, 1.0, 230, 4.0, 0.13 + k * 0.025, k * 1.57, k % 2 ? hex('#9fc4ff') : gold, N]);
   // the four districts glow over their wedges (place indices N+1..N+4)
   halos.push([0, 30, 0, 30, gold[0], gold[1], gold[2], 0.45, N]);
@@ -231,14 +231,14 @@ export function clampPose(p, w) {
   for (const k of ['tx', 'ty', 'tz', 'dist', 'yaw', 'pitch']) if (!isFinite(q[k])) q[k] = k === 'dist' ? 150 : k === 'pitch' ? 0.6 : 0;
   return q;
 }
-export function homePose(w) { const R = (w && +w.R) || 130; return { tx: 0, ty: 0, tz: -R * 0.55, dist: R * 1.15, yaw: 0, pitch: 0.48 }; }
+export function homePose(w) { const R = (w && +w.R) || 130; return { tx: 0, ty: 0, tz: -R * 0.42, dist: R * 1.5, yaw: -0.38, pitch: 0.62 }; }
 export function overviewPose(w) { const R = (w && +w.R) || 130; return { tx: 0, ty: 0, tz: -R * 0.08, dist: R * 3.1, yaw: -0.35, pitch: 1.12 }; }
 export function districtPose(w, d) {
   if (!d) return homePose(w);
   const len = Math.hypot(d.x, d.z) || 1;
   const span = Math.abs(((d.a1 - d.a0) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI)) || 1;
   const R = (w && +w.R) || 130;
-  return { tx: d.x, ty: 0, tz: d.z, dist: clamp(R * (0.55 + span * 0.3), 70, R * 1.6), yaw: Math.atan2(-d.x / len, -d.z / len), pitch: 0.72 };
+  return { tx: d.x, ty: 0, tz: d.z, dist: clamp(R * (0.45 + span * 0.22), 70, R * 1.25), yaw: Math.atan2(-d.x / len, -d.z / len), pitch: 0.82 };
 }
 /** a place: frame it from the plaza side (or keep the current yaw), close enough to read its buildings */
 export function placePose(pl, cur) {

@@ -68,11 +68,10 @@ def wait_ready(p, origin, q, ms=180000):
 
 def tap_place(p, pid):
     """put the camera over a place and tap its centre on the canvas"""
-    p.evaluate("(id) => { const w = OWORLD.world(); const pl = w.places.find((x) => x.id === id); OWORLD.pose({ tx: pl.x, ty: 2, tz: pl.z, dist: 60, yaw: 0, pitch: 0.75 }); }", pid)
+    p.evaluate("(id) => { document.querySelector('#card').hidden = true; OWORLD.focus(0); const w = OWORLD.world(); const pl = w.places.find((x) => x.id === id); OWORLD.pose({ tx: pl.x, ty: 2, tz: pl.z, dist: 60, yaw: 0, pitch: 0.75 }); }", pid)
     p.wait_for_function("(id) => { const s = OWORLD.screenOf(id); return s && s.front; }", arg=pid, timeout=60000, polling=200)
     p.wait_for_timeout(600)
     s = p.evaluate("(id) => OWORLD.screenOf(id)", pid)
-    p.evaluate("() => { document.querySelector('#card').hidden = true; }")
     p.mouse.click(s["x"], s["y"])
     p.wait_for_timeout(500)
     return p.evaluate("() => OWORLD.state()")

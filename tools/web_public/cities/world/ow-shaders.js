@@ -291,7 +291,7 @@ void main() {
   vec3 wp = aHalo.xyz + (right * position.x + up * position.y) * s;
   vUv = position.xy;
   float dcam = distance(cameraPosition, aHalo.xyz);
-  vC = aCol.rgb * aCol.a * ps.r * ps.a * 2.0 * (1.0 + ps.g * 2.5 + ps.b * 0.6) * 0.4 * smoothstep(s * 1.0, s * 3.0, dcam);
+  vC = aCol.rgb * aCol.a * ps.r * ps.a * 2.0 * (1.0 + ps.g * 2.5 + ps.b * 0.6) * 0.4 * smoothstep(s * 1.5, s * 4.5, dcam);
   gl_Position = projectionMatrix * viewMatrix * vec4(wp, 1.0);
 }
 `;
@@ -407,7 +407,7 @@ uniform vec3 uCol; uniform float uK;
 varying vec2 vUv;
 void main() {
   float a = pow(1.0 - vUv.y, 1.25) * sin(min(uK * 3.0, 3.14159)) * (1.0 - uK);
-  gl_FragColor = vec4(uCol * a * 0.4, 1.0);
+  gl_FragColor = vec4(uCol * a * 0.28, 1.0);
 }
 `;
 

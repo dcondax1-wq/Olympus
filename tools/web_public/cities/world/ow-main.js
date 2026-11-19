@@ -92,10 +92,12 @@ function openCard(title) {
   $('#sheet').hidden = true;
   card.hidden = false; card.classList.remove('in'); void card.offsetWidth; card.classList.add('in');
   card.scrollTop = 0;
+  if (S.scene) S.scene.setFocus(0.21);
   return $('#cardBody');
 }
 function closeCard() {
   $('#card').hidden = true;
+  if (S.scene) S.scene.setFocus(0);
   S.sel = -1;
   if (S.scene) S.scene.select(-1);
   if (location.hash) try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* fine */ }
@@ -280,6 +282,7 @@ function sheet(title) {
   const s = $('#sheet');
   $('#sheetName').textContent = title;
   s.hidden = false; s.classList.remove('in'); void s.offsetWidth; s.classList.add('in');
+  if (S.scene) S.scene.setFocus(0.18);
   const b = $('#sheetBody'); b.textContent = ''; return b;
 }
 function findSheet() {
@@ -373,7 +376,7 @@ function dock() {
     else if (a === 'history') setHistory(!S.history);
   };
   $('#cardX').onclick = () => closeCard();
-  $('#sheetX').onclick = () => { $('#sheet').hidden = true; };
+  $('#sheetX').onclick = () => { $('#sheet').hidden = true; if (S.scene) S.scene.setFocus(0); };
   const tk = $('#ticker');
   const goTick = () => { const l = S.feed[S.tick]; if (l && l.id != null && S.byId.has(l.id)) flyPlace(S.byId.get(l.id)); };
   tk.onclick = goTick;
@@ -394,7 +397,7 @@ function startTicker() {
     const t = $('#tickText');
     t.textContent = l.text; t.classList.remove('in'); void t.offsetWidth; t.classList.add('in');
     const i = l.id != null ? S.byId.get(l.id) : null;
-    if (S.scene && i != null && !S.history && S.sel < 0) S.scene.burst(i, { dur: 1.8 });
+    if (S.scene && i != null && !S.history && S.sel < 0 && qs.get('clock') !== 'manual') S.scene.burst(i, { dur: 1.8 });
   };
   next();
   setInterval(() => { if (!d.hidden) next(); }, 5200);
@@ -517,6 +520,7 @@ window.OWORLD = {
   district: (id) => goDistrict(id),
   skip: () => { if (S.scene) S.scene.skipIntro(); },
   step: (ms, noDraw) => (S.scene ? S.scene.step(ms, noDraw) : false),
+  focus: (f) => (S.scene ? S.scene.setFocus(f, true) : null),
   pose: (p) => (S.scene ? (p ? S.scene.setPose(p) : S.scene.pose()) : null),
   world: () => S.world,
 };

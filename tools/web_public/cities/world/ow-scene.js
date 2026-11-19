@@ -181,11 +181,14 @@ export function createWorld(opts) {
   let tween = null, vel = { yaw: 0, pitch: 0 }, lastInput = now(), introT = reduced ? -1 : 0, introAt = 0, warp = 0, fovKick = 0;
   let tour = null, history = null;
   const baseFov = () => (camera.aspect < 0.8 ? 60 : camera.aspect < 1.2 ? 52 : 44);
+  let focus = 0, focusTo = 0;
   function applyCam() {
     const c = poseToCam(pose);
     camera.position.set(c.pos[0], Math.max(c.pos[1], 1.2), c.pos[2]);
     camera.lookAt(c.look[0], c.look[1], c.look[2]);
     camera.fov = baseFov() + fovKick;
+    const cw = canvas.clientWidth || 390, ch = canvas.clientHeight || 844;
+    if (focus > 0.002) camera.setViewOffset(cw, ch, 0, Math.round(focus * ch), cw, ch); else if (camera.view) camera.clearViewOffset();
     camera.updateProjectionMatrix();
     U.uFogDensity.value = 0.0024 / (1 + camera.position.y / 110);
   }
@@ -369,6 +372,7 @@ export function createWorld(opts) {
     if (any) texDirty = true;
     if (texDirty) writeTex();
     stepFx(dt);
+    focus += (focusTo - focus) * (1 - Math.exp(-Math.min(dt, 0.1) * 7));
     U.uWarp.value = warp;
     warpMesh.visible = warp > 0.01;
     const bs = 0.62 + warp * 0.18;
@@ -450,6 +454,8 @@ export function createWorld(opts) {
     overview(o) { flyTo(overviewPose(world), { warp: true, ms: 1000, lift: 0.2, ...(o || {}) }); },
     /** ?clock=manual: advance the clock by ms and draw that frame now (frame-by-frame capture: smooth video on a machine without a GPU) */
     step(ms, noDraw) { if (!manual) return false; vnow += ms; frame(Math.min(ms, 100) / 1000, vnow / 1000); if (!noDraw) rc.draw(); return true; },
+    /** the share of the screen height the subject moves up (a card covers the bottom): 0..0.3 */
+    setFocus(f, now) { focusTo = clamp(+f || 0, 0, 0.3); if (reduced || now) focus = focusTo; },
     skipIntro() { if (introT >= 0) { introT = -1; grow.fill(1); texDirty = true; pose = clampPose(homePose(world), world); } },
     state() {
       const st = rc.stats();
