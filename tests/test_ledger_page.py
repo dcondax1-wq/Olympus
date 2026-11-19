@@ -242,6 +242,7 @@ GEOM = """() => { const W = innerWidth, bad = [];
     if (el.closest('svg') && el.tagName.toLowerCase() !== 'svg') continue;
     const cs = getComputedStyle(el), b = el.getBoundingClientRect();
     if (!b.width || !b.height || cs.visibility === 'hidden' || el.closest('[hidden]') || el.closest('.tabs') && el.tagName === 'BUTTON') continue;
+    if (el.closest('.ag-navback')) continue;   // designqa 2026-11-19: the AGORA shell's back link (olympus/agora-ui.js) sits 8 px into the gutter on purpose, so its 44 px tap area lines up with the title
     if (b.right > W - 80 && b.bottom > innerHeight - 170 && el.closest('#sheet')) bad.push('orb ' + (el.id || el.className));
     if (b.right > W - 16 + 0.5 || b.left < 16 - 0.5) { if (!el.closest('svg') && !(el.closest('.hero') && false)) bad.push('gutter ' + (el.id || el.className || el.tagName) + ' ' + Math.round(b.left) + '-' + Math.round(b.right)); }
   }
@@ -504,7 +505,7 @@ def run_browser():
             check("c. Import JSON (a file chosen on the phone) puts the three entries back; importing the same file again adds nothing", net(p) == "$708.20" and "Imported 3 entries" in p.inner_text("#toast"), p.inner_text("#toast"))
             r = p.evaluate("LG.importText(" + json.dumps(open(path_j, encoding="utf-8").read()) + ")")
             check("c. ...a second import of the same file adds 0; a file that is not a Ledger export is refused with a message and changes nothing", r["added"] == 0 and st(p)["entries"] == 3 and p.evaluate("LG.importText('{\"x\": 1}')")["ok"] is False and "not a Ledger export" in p.inner_text("#toast") and st(p)["entries"] == 3)
-            check("c. no page errors so far, and the only key on the phone besides the quality setting is ledger.v1", not p.errs and p.evaluate("Object.keys(localStorage).filter((k) => k !== 'jfx' && !k.startsWith('olympus') && !k.startsWith('ledger.opt404.'))") == ["ledger.v1"], (p.errs, p.evaluate("Object.keys(localStorage)")))
+            check("c. no page errors so far, and the only key on the phone besides the quality setting (and the shell's gate.recent.v1, olympus/gate-nav.js, designqa 2026-11-19) is ledger.v1", not p.errs and p.evaluate("Object.keys(localStorage).filter((k) => k !== 'jfx' && !k.startsWith('olympus') && !k.startsWith('ledger.opt404.') && !k.startsWith('gate.'))") == ["ledger.v1"], (p.errs, p.evaluate("Object.keys(localStorage)")))
             ctx.close()
 
             # ---- 5. reduced motion keeps the vault still; the high tier; offline already covered (no feed, no home)
