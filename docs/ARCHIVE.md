@@ -24,14 +24,14 @@ screenshots into these folders. Only docs mention them, as "screenshots in ...".
 | `research/lab/person_v1/` (118) | the person-style study's first scorecards, replaced by the re-run (PERSON_REPORT.md) | superseded; `strategy_lab.board()` reads only top-level scorecards | 2.3 MB | `git checkout e706b2efe18f -- research/lab/person_v1` |
 | `tools/web_public/icon_options/` (297) | the Oct 25 Home Screen icon options (a..m, j1..k3, p1..p14) | closed choice: the live icon is `web/icons/` (gold temple, `tools/icon_temple.py`, 2026-11-18); the site build never copied this folder | 22.7 MB | `git checkout e706b2efe18f -- tools/web_public/icon_options` (needed again only for `tools/icon_apply.py`) |
 
-Restore everything at once:
+Restore everything at once (one line):
 
 ```
-git checkout e706b2efe18f -- 'research/handoff/2026-10-2*/*.png' 'research/handoff/2026-11-0*/*.png' 'research/handoff/2026-11-0*/*.jpg' 'docs/shots/*.png' 'docs/shots/*.jpg' research/lab/screens_pc research/lab/person_v1 'research/lab/TRADER_LAYER_trades_*' 'research/lab/TRADER_LAYER_decisions_*' tools/web_public/icon_options
+git checkout e706b2efe18f -- 'research/handoff/2026-10-2*/*.png' 'research/handoff/2026-11-0*/*.png' 'research/handoff/2026-11-0*/*.jpg' 'docs/shots/colosseum/*.png' 'docs/shots/colosseum/*.jpg' 'docs/shots/polis/*.png' 'docs/shots/polis/*.jpg' 'docs/shots/jarvis_home_v2/*.png' 'docs/shots/jarvis_home_v2/*.jpg' 'docs/shots/jarvis_home_agora/*.png' 'docs/shots/jarvis_home_agora/*.jpg' 'docs/shots/qa_round6/*.png' 'docs/shots/qa_round6/*.jpg' 'docs/shots/qa_round6_phone/*.png' 'docs/shots/qa_round6_phone/*.jpg' 'docs/shots/qa_round7/*.png' 'docs/shots/qa_round7/*.jpg' 'docs/shots/gate/*.png' 'docs/shots/gate/*.jpg' 'docs/shots/worlds/*.png' 'docs/shots/worlds/*.jpg' 'docs/shots/design_v2/*.png' 'docs/shots/design_v2/*.jpg' 'docs/shots/environments_v3/*.png' 'docs/shots/environments_v3/*.jpg' 'docs/shots/sound/*.png' 'docs/shots/sound/*.jpg' 'docs/shots/direction_v3/*.png' 'docs/shots/direction_v3/*.jpg' 'docs/shots/characters_v3/*.png' 'docs/shots/characters_v3/*.jpg' 'docs/shots/characters_v2/*.png' 'docs/shots/characters_v2/*.jpg' 'docs/shots/voices/*.png' 'docs/shots/voices/*.jpg' research/lab/screens_pc research/lab/person_v1 'research/lab/TRADER_LAYER_trades_*' 'research/lab/TRADER_LAYER_decisions_*' tools/web_public/icon_options
 ```
 
-(`'docs/shots/*.png'` also matches pictures still in the repo; git simply writes the same file again.) A restored file
-that `.gitignore` now lists needs `git add -f` to be committed again.
+Only the moved files match these paths (the hand-off and docs/shots text files that stayed are .md / .json / .csv). A restored
+file that `.gitignore` now lists needs `git add -f` to be committed again.
 
 ## Kept on purpose (checked, still used)
 
