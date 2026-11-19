@@ -235,6 +235,15 @@ def decide_item(p: dict) -> dict | None:
     pid = str(p.get("id") or "")[:40].lower()
     if not _ID.fullmatch(pid) or not p.get("question") or not p.get("why"):
         return None
+    full = p.get("decide_item")                 # a ready Decide item (engine/kalshi_adapt's restore asks): kept as it is, checked
+    if isinstance(full, dict) and str(full.get("id")) == pid and "$" in str(full.get("impact")) and full.get("source") \
+            and isinstance(full.get("impact_usd"), (int, float)) and set(full.get("options") or []) <= {"yes", "no", "later"}:
+        try:
+            from engine.datapipe import scrub_text
+            words = {k: scrub_text(str(full.get(k) or ""))[:240] for k in ("question", "why", "impact")}
+        except Exception:
+            words = {k: str(full.get(k) or "")[:240] for k in ("question", "why", "impact")}
+        return dict(full, status="open", **words)
     imp = str(p.get("impact") or "Not known until tested: $0 changes before a yes.")
     if "$" not in imp:
         imp += " ($0 changes before a yes.)"
