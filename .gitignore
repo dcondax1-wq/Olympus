@@ -265,6 +265,9 @@ data/*.Last.txt
 data/nt_export/
 # Kalshi K1 paper on the PC (tools/kalshi_paper.py maybe_run): ledger, public summary, run token, log
 data/kalshi_k1/
+# Kalshi LIVE executor on the PC (engine/kalshi_live.py): arm record (proof hash, never the phrase), state, commands, KILL, log,
+# public card, lock. The owner's Kalshi key is never here: it lives in %USERPROFILE%\.olympus\kalshi\ (KALSHI_KEY_SETUP.bat)
+data/kalshi_live/
 data/gh_publish/
 
 # Slimmed 2026-11-19 (night-clean): these were moved out of the repo; docs/ARCHIVE.md says what, why and the one-line restore.

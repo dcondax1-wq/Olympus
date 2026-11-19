@@ -1,0 +1,1530 @@
+{
+ "outcome_rule": {
+  "gold": {
+   "markets": 7397,
+   "result_disagrees_with_rule": 0,
+   "ties": 19,
+   "target_equals_previous_settle": [
+    7336,
+    7338
+   ]
+  },
+  "silver": {
+   "markets": 7361,
+   "result_disagrees_with_rule": 1,
+   "ties": 36,
+   "target_equals_previous_settle": [
+    7301,
+    7303
+   ]
+  }
+ },
+ "entry": {
+  "bets": 465,
+  "fallback_5_45s_used": 20,
+  "no_trade_of_our_side_after_20s": 1,
+  "walk_not_filled_by_45s": 21,
+  "gap_vs_study": {
+   "first_at_20s": {
+    "n": 464,
+    "mean_c": -0.18,
+    "median_c": 0.0,
+    "p90_c": 2.2
+   },
+   "walk_28_after_20s": {
+    "n": 464,
+    "mean_c": -0.18,
+    "median_c": 0.0,
+    "p90_c": 2.1
+   },
+   "ask60": {
+    "n": 464,
+    "mean_c": 0.85,
+    "median_c": 1.4,
+    "p90_c": 10.8
+   },
+   "open_sweep_vwap": {
+    "n": 127,
+    "mean_c": 4.62,
+    "median_c": 4.7,
+    "p90_c": 16.5
+   }
+  },
+  "gap_first_at_20s_winners_losers_c": [
+   -0.4,
+   0.32
+  ],
+  "gap_walk_28_after_20s_winners_losers_c": [
+   -0.4,
+   0.34
+  ]
+ },
+ "pnl": {
+  "train Aug3-Sep30": {
+   "study": {
+    "n": 255,
+    "days": 43,
+    "win_rate": 0.718,
+    "avg_price": 0.523,
+    "net_usd_at_15": 1288.07,
+    "net_per_1": 0.3318,
+    "ci95": [
+     0.1944,
+     0.4665
+    ],
+    "t": 4.8,
+    "usd_per_week_at_15": 149.78
+   },
+   "first_at_20s": {
+    "n": 254,
+    "days": 43,
+    "win_rate": 0.72,
+    "avg_price": 0.518,
+    "net_usd_at_15": 1382.99,
+    "net_per_1": 0.357,
+    "ci95": [
+     0.2141,
+     0.4962
+    ],
+    "t": 5.0,
+    "usd_per_week_at_15": 160.81
+   },
+   "walk_28_after_20s": {
+    "n": 254,
+    "days": 43,
+    "win_rate": 0.72,
+    "avg_price": 0.52,
+    "net_usd_at_15": 1380.36,
+    "net_per_1": 0.3565,
+    "ci95": [
+     0.2133,
+     0.4955
+    ],
+    "t": 5.0,
+    "usd_per_week_at_15": 160.51
+   },
+   "ask60": {
+    "n": 254,
+    "days": 43,
+    "win_rate": 0.717,
+    "avg_price": 0.527,
+    "net_usd_at_15": 1261.1,
+    "net_per_1": 0.3257,
+    "ci95": [
+     0.1874,
+     0.4678
+    ],
+    "t": 4.65,
+    "usd_per_week_at_15": 146.64
+   }
+  },
+  "test Oct1-Nov18": {
+   "study": {
+    "n": 210,
+    "days": 35,
+    "win_rate": 0.681,
+    "avg_price": 0.514,
+    "net_usd_at_15": 944.93,
+    "net_per_1": 0.2952,
+    "ci95": [
+     0.1086,
+     0.4501
+    ],
+    "t": 3.54,
+    "usd_per_week_at_15": 134.99
+   },
+   "first_at_20s": {
+    "n": 210,
+    "days": 35,
+    "win_rate": 0.681,
+    "avg_price": 0.515,
+    "net_usd_at_15": 941.23,
+    "net_per_1": 0.2938,
+    "ci95": [
+     0.1139,
+     0.4461
+    ],
+    "t": 3.58,
+    "usd_per_week_at_15": 134.46
+   },
+   "walk_28_after_20s": {
+    "n": 210,
+    "days": 35,
+    "win_rate": 0.681,
+    "avg_price": 0.513,
+    "net_usd_at_15": 968.6,
+    "net_per_1": 0.3024,
+    "ci95": [
+     0.1183,
+     0.456
+    ],
+    "t": 3.64,
+    "usd_per_week_at_15": 138.37
+   },
+   "ask60": {
+    "n": 210,
+    "days": 35,
+    "win_rate": 0.681,
+    "avg_price": 0.527,
+    "net_usd_at_15": 899.44,
+    "net_per_1": 0.281,
+    "ci95": [
+     0.0897,
+     0.4471
+    ],
+    "t": 3.15,
+    "usd_per_week_at_15": 128.49
+   }
+  },
+  "last 4 weeks Oct22-Nov18": {
+   "study": {
+    "n": 120,
+    "days": 20,
+    "win_rate": 0.675,
+    "avg_price": 0.528,
+    "net_usd_at_15": 490.03,
+    "net_per_1": 0.2682,
+    "ci95": [
+     0.0433,
+     0.4941
+    ],
+    "t": 2.27,
+    "usd_per_week_at_15": 122.51
+   },
+   "first_at_20s": {
+    "n": 120,
+    "days": 20,
+    "win_rate": 0.675,
+    "avg_price": 0.53,
+    "net_usd_at_15": 484.96,
+    "net_per_1": 0.2653,
+    "ci95": [
+     0.0413,
+     0.4884
+    ],
+    "t": 2.28,
+    "usd_per_week_at_15": 121.24
+   },
+   "walk_28_after_20s": {
+    "n": 120,
+    "days": 20,
+    "win_rate": 0.675,
+    "avg_price": 0.527,
+    "net_usd_at_15": 512.28,
+    "net_per_1": 0.2803,
+    "ci95": [
+     0.0529,
+     0.5032
+    ],
+    "t": 2.37,
+    "usd_per_week_at_15": 128.07
+   },
+   "ask60": {
+    "n": 120,
+    "days": 20,
+    "win_rate": 0.675,
+    "avg_price": 0.54,
+    "net_usd_at_15": 444.57,
+    "net_per_1": 0.2434,
+    "ci95": [
+     0.017,
+     0.4642
+    ],
+    "t": 2.05,
+    "usd_per_week_at_15": 111.14
+   }
+  },
+  "last 2 weeks Nov5-Nov18": {
+   "study": {
+    "n": 60,
+    "days": 10,
+    "win_rate": 0.7,
+    "avg_price": 0.541,
+    "net_usd_at_15": 216.77,
+    "net_per_1": 0.2376,
+    "ci95": [
+     -0.129,
+     0.5584
+    ],
+    "t": 1.27,
+    "usd_per_week_at_15": 108.39
+   },
+   "first_at_20s": {
+    "n": 60,
+    "days": 10,
+    "win_rate": 0.7,
+    "avg_price": 0.542,
+    "net_usd_at_15": 226.17,
+    "net_per_1": 0.248,
+    "ci95": [
+     -0.1195,
+     0.5725
+    ],
+    "t": 1.32,
+    "usd_per_week_at_15": 113.09
+   },
+   "walk_28_after_20s": {
+    "n": 60,
+    "days": 10,
+    "win_rate": 0.7,
+    "avg_price": 0.54,
+    "net_usd_at_15": 226.56,
+    "net_per_1": 0.2486,
+    "ci95": [
+     -0.1223,
+     0.5673
+    ],
+    "t": 1.32,
+    "usd_per_week_at_15": 113.28
+   },
+   "ask60": {
+    "n": 60,
+    "days": 10,
+    "win_rate": 0.7,
+    "avg_price": 0.551,
+    "net_usd_at_15": 196.09,
+    "net_per_1": 0.215,
+    "ci95": [
+     -0.1512,
+     0.5414
+    ],
+    "t": 1.15,
+    "usd_per_week_at_15": 98.04
+   }
+  },
+  "all Aug3-Nov18": {
+   "study": {
+    "n": 465,
+    "days": 78,
+    "win_rate": 0.701,
+    "avg_price": 0.519,
+    "net_usd_at_15": 2233.0,
+    "net_per_1": 0.3153,
+    "ci95": [
+     0.2093,
+     0.4174
+    ],
+    "t": 5.94,
+    "usd_per_week_at_15": 143.14
+   },
+   "first_at_20s": {
+    "n": 464,
+    "days": 78,
+    "win_rate": 0.703,
+    "avg_price": 0.517,
+    "net_usd_at_15": 2324.22,
+    "net_per_1": 0.3284,
+    "ci95": [
+     0.2232,
+     0.4305
+    ],
+    "t": 6.12,
+    "usd_per_week_at_15": 148.99
+   },
+   "walk_28_after_20s": {
+    "n": 464,
+    "days": 78,
+    "win_rate": 0.703,
+    "avg_price": 0.517,
+    "net_usd_at_15": 2348.96,
+    "net_per_1": 0.332,
+    "ci95": [
+     0.2244,
+     0.4355
+    ],
+    "t": 6.16,
+    "usd_per_week_at_15": 150.57
+   },
+   "ask60": {
+    "n": 464,
+    "days": 78,
+    "win_rate": 0.7,
+    "avg_price": 0.527,
+    "net_usd_at_15": 2160.54,
+    "net_per_1": 0.3055,
+    "ci95": [
+     0.1929,
+     0.4114
+    ],
+    "t": 5.52,
+    "usd_per_week_at_15": 138.5
+   }
+  }
+ },
+ "verify_as_booked": {
+  "verdict": "weak",
+  "reasons": [
+   "reported fees or P&L differ from the exact recompute on 256 rows"
+  ],
+  "problem_counts": {
+   "pnl_mismatch": 256
+  },
+  "all": {
+   "n": 465,
+   "clusters": 78,
+   "win_rate": 0.7010752688172043,
+   "breakeven_win_rate": 0.5223,
+   "net_usd": 2233.0,
+   "fees_usd": 232.84,
+   "cost_usd": 7083.0,
+   "reward_usd": 0.0,
+   "net_per_1": 0.3153,
+   "ci95": [
+    0.2145,
+    0.42
+   ],
+   "net_per_1_with_reward": 0.3153,
+   "ci95_with_reward": [
+    0.2145,
+    0.42
+   ],
+   "t": 5.94,
+   "p_one_sided": 0.0,
+   "trades_per_week": 30.4,
+   "marked_not_settled": 0,
+   "usd_month_at_stake": 416.42,
+   "stake": 10.0,
+   "first": "2026-08-03T20:00+00:00",
+   "last": "2026-11-18T21:45+00:00"
+  },
+  "first_half": {
+   "n": 255,
+   "clusters": 43,
+   "win_rate": 0.7176470588235294,
+   "breakeven_win_rate": 0.5292,
+   "net_usd": 1288.07,
+   "fees_usd": 126.49,
+   "cost_usd": 3881.93,
+   "reward_usd": 0.0,
+   "net_per_1": 0.3318,
+   "ci95": [
+    0.1953,
+    0.471
+   ],
+   "net_per_1_with_reward": 0.3318,
+   "ci95_with_reward": [
+    0.1953,
+    0.471
+   ],
+   "t": 4.8,
+   "p_one_sided": 0.0,
+   "trades_per_week": 30.76,
+   "marked_not_settled": 0,
+   "usd_month_at_stake": 443.46,
+   "stake": 10.0,
+   "first": "2026-08-03T20:00+00:00",
+   "last": "2026-09-30T20:45+00:00"
+  },
+  "second_half": {
+   "n": 210,
+   "clusters": 35,
+   "win_rate": 0.680952380952381,
+   "breakeven_win_rate": 0.5141,
+   "net_usd": 944.93,
+   "fees_usd": 106.35,
+   "cost_usd": 3201.07,
+   "reward_usd": 0.0,
+   "net_per_1": 0.2952,
+   "ci95": [
+    0.1352,
+    0.4499
+   ],
+   "net_per_1_with_reward": 0.2952,
+   "ci95_with_reward": [
+    0.1352,
+    0.4499
+   ],
+   "t": 3.54,
+   "p_one_sided": 0.0002,
+   "trades_per_week": 30.3,
+   "marked_not_settled": 0,
+   "usd_month_at_stake": 388.58,
+   "stake": 10.0,
+   "first": "2026-10-01T09:15+00:00",
+   "last": "2026-11-18T21:45+00:00"
+  }
+ },
+ "verify_walk_20s": {
+  "verdict": "holds",
+  "reasons": [],
+  "problem_counts": {},
+  "all": {
+   "n": 464,
+   "clusters": 78,
+   "win_rate": 0.7025862068965517,
+   "breakeven_win_rate": 0.5195,
+   "net_usd": 2348.94,
+   "fees_usd": 233.41,
+   "cost_usd": 7075.06,
+   "reward_usd": 0.0,
+   "net_per_1": 0.332,
+   "ci95": [
+    0.2333,
+    0.4383
+   ],
+   "net_per_1_with_reward": 0.332,
+   "ci95_with_reward": [
+    0.2333,
+    0.4383
+   ],
+   "t": 6.16,
+   "p_one_sided": 0.0,
+   "trades_per_week": 30.33,
+   "marked_not_settled": 0,
+   "usd_month_at_stake": 437.59,
+   "stake": 10.0,
+   "first": "2026-08-03T20:00+00:00",
+   "last": "2026-11-18T21:45+00:00"
+  },
+  "first_half": {
+   "n": 254,
+   "clusters": 43,
+   "win_rate": 0.7204724409448819,
+   "breakeven_win_rate": 0.5239,
+   "net_usd": 1380.35,
+   "fees_usd": 126.98,
+   "cost_usd": 3871.65,
+   "reward_usd": 0.0,
+   "net_per_1": 0.3565,
+   "ci95": [
+    0.2159,
+    0.4987
+   ],
+   "net_per_1_with_reward": 0.3565,
+   "ci95_with_reward": [
+    0.2159,
+    0.4987
+   ],
+   "t": 5.0,
+   "p_one_sided": 0.0,
+   "trades_per_week": 30.64,
+   "marked_not_settled": 0,
+   "usd_month_at_stake": 474.63,
+   "stake": 10.0,
+   "first": "2026-08-03T20:00+00:00",
+   "last": "2026-09-30T20:45+00:00"
+  },
+  "second_half": {
+   "n": 210,
+   "clusters": 35,
+   "win_rate": 0.680952380952381,
+   "breakeven_win_rate": 0.5143,
+   "net_usd": 968.59,
+   "fees_usd": 106.43,
+   "cost_usd": 3203.41,
+   "reward_usd": 0.0,
+   "net_per_1": 0.3024,
+   "ci95": [
+    0.1407,
+    0.4573
+   ],
+   "net_per_1_with_reward": 0.3024,
+   "ci95_with_reward": [
+    0.1407,
+    0.4573
+   ],
+   "t": 3.64,
+   "p_one_sided": 0.0001,
+   "trades_per_week": 30.3,
+   "marked_not_settled": 0,
+   "usd_month_at_stake": 398.02,
+   "stake": 10.0,
+   "first": "2026-10-01T09:15+00:00",
+   "last": "2026-11-18T21:45+00:00"
+  }
+ },
+ "by_month": {
+  "2026-08": {
+   "study": {
+    "n": 123,
+    "days": 21,
+    "win_rate": 0.675,
+    "avg_price": 0.523,
+    "net_usd_at_15": 487.04,
+    "net_per_1": 0.26,
+    "ci95": [
+     0.0532,
+     0.4834
+    ],
+    "t": 2.4,
+    "usd_per_week_at_15": 115.96
+   },
+   "walk_28_after_20s": {
+    "n": 123,
+    "days": 21,
+    "win_rate": 0.675,
+    "avg_price": 0.519,
+    "net_usd_at_15": 528.69,
+    "net_per_1": 0.2822,
+    "ci95": [
+     0.068,
+     0.5115
+    ],
+    "t": 2.54,
+    "usd_per_week_at_15": 125.88
+   }
+  },
+  "2026-09": {
+   "study": {
+    "n": 132,
+    "days": 22,
+    "win_rate": 0.758,
+    "avg_price": 0.523,
+    "net_usd_at_15": 801.03,
+    "net_per_1": 0.3987,
+    "ci95": [
+     0.2329,
+     0.5771
+    ],
+    "t": 4.56,
+    "usd_per_week_at_15": 182.05
+   },
+   "walk_28_after_20s": {
+    "n": 131,
+    "days": 22,
+    "win_rate": 0.763,
+    "avg_price": 0.52,
+    "net_usd_at_15": 851.67,
+    "net_per_1": 0.4262,
+    "ci95": [
+     0.258,
+     0.6148
+    ],
+    "t": 4.71,
+    "usd_per_week_at_15": 193.56
+   }
+  },
+  "2026-10": {
+   "study": {
+    "n": 132,
+    "days": 22,
+    "win_rate": 0.689,
+    "avg_price": 0.503,
+    "net_usd_at_15": 689.7,
+    "net_per_1": 0.3424,
+    "ci95": [
+     0.138,
+     0.528
+    ],
+    "t": 3.37,
+    "usd_per_week_at_15": 156.75
+   },
+   "walk_28_after_20s": {
+    "n": 132,
+    "days": 22,
+    "win_rate": 0.689,
+    "avg_price": 0.504,
+    "net_usd_at_15": 697.75,
+    "net_per_1": 0.3461,
+    "ci95": [
+     0.1425,
+     0.5276
+    ],
+    "t": 3.45,
+    "usd_per_week_at_15": 158.58
+   }
+  },
+  "2026-11": {
+   "study": {
+    "n": 78,
+    "days": 13,
+    "win_rate": 0.667,
+    "avg_price": 0.531,
+    "net_usd_at_15": 255.23,
+    "net_per_1": 0.2151,
+    "ci95": [
+     -0.081,
+     0.4786
+    ],
+    "t": 1.47,
+    "usd_per_week_at_15": 98.17
+   },
+   "walk_28_after_20s": {
+    "n": 78,
+    "days": 13,
+    "win_rate": 0.667,
+    "avg_price": 0.529,
+    "net_usd_at_15": 270.84,
+    "net_per_1": 0.2281,
+    "ci95": [
+     -0.0748,
+     0.4936
+    ],
+    "t": 1.54,
+    "usd_per_week_at_15": 104.17
+   }
+  }
+ },
+ "by_week_study": {
+  "2026-08-03": [
+   28,
+   0.54,
+   -3.01
+  ],
+  "2026-08-10": [
+   29,
+   0.59,
+   14.66
+  ],
+  "2026-08-17": [
+   30,
+   0.83,
+   263.93
+  ],
+  "2026-08-24": [
+   30,
+   0.7,
+   150.68
+  ],
+  "2026-08-31": [
+   30,
+   0.9,
+   270.7
+  ],
+  "2026-09-07": [
+   30,
+   0.67,
+   93.71
+  ],
+  "2026-09-14": [
+   30,
+   0.73,
+   185.82
+  ],
+  "2026-09-21": [
+   30,
+   0.87,
+   306.91
+  ],
+  "2026-09-28": [
+   30,
+   0.6,
+   73.23
+  ],
+  "2026-10-05": [
+   30,
+   0.6,
+   65.32
+  ],
+  "2026-10-12": [
+   30,
+   0.8,
+   249.2
+  ],
+  "2026-10-19": [
+   30,
+   0.77,
+   236.28
+  ],
+  "2026-10-26": [
+   30,
+   0.6,
+   70.33
+  ],
+  "2026-11-02": [
+   30,
+   0.67,
+   122.93
+  ],
+  "2026-11-09": [
+   30,
+   0.83,
+   207.25
+  ],
+  "2026-11-16": [
+   18,
+   0.39,
+   -74.94
+  ]
+ },
+ "by_leg_last4w": {
+  "A_gold": {
+   "study": {
+    "n": 20,
+    "days": 20,
+    "win_rate": 0.75,
+    "avg_price": 0.544,
+    "net_usd_at_15": 99.51,
+    "net_per_1": 0.3279,
+    "ci95": [
+     -0.0376,
+     0.6483
+    ],
+    "t": 1.79,
+    "usd_per_week_at_15": 24.88
+   },
+   "walk_28_after_20s": {
+    "n": 20,
+    "days": 20,
+    "win_rate": 0.75,
+    "avg_price": 0.546,
+    "net_usd_at_15": 104.04,
+    "net_per_1": 0.3445,
+    "ci95": [
+     -0.0269,
+     0.6689
+    ],
+    "t": 1.87,
+    "usd_per_week_at_15": 26.01
+   }
+  },
+  "A_silver": {
+   "study": {
+    "n": 20,
+    "days": 20,
+    "win_rate": 0.6,
+    "avg_price": 0.525,
+    "net_usd_at_15": 34.64,
+    "net_per_1": 0.1134,
+    "ci95": [
+     -0.2816,
+     0.5054
+    ],
+    "t": 0.54,
+    "usd_per_week_at_15": 8.66
+   },
+   "walk_28_after_20s": {
+    "n": 20,
+    "days": 20,
+    "win_rate": 0.6,
+    "avg_price": 0.51,
+    "net_usd_at_15": 58.53,
+    "net_per_1": 0.1916,
+    "ci95": [
+     -0.2603,
+     0.634
+    ],
+    "t": 0.82,
+    "usd_per_week_at_15": 14.63
+   }
+  },
+  "B_gold": {
+   "study": {
+    "n": 20,
+    "days": 20,
+    "win_rate": 0.75,
+    "avg_price": 0.493,
+    "net_usd_at_15": 159.49,
+    "net_per_1": 0.5221,
+    "ci95": [
+     0.073,
+     0.9304
+    ],
+    "t": 2.4,
+    "usd_per_week_at_15": 39.87
+   },
+   "walk_28_after_20s": {
+    "n": 20,
+    "days": 20,
+    "win_rate": 0.75,
+    "avg_price": 0.502,
+    "net_usd_at_15": 147.59,
+    "net_per_1": 0.4801,
+    "ci95": [
+     0.0395,
+     0.873
+    ],
+    "t": 2.27,
+    "usd_per_week_at_15": 36.9
+   }
+  },
+  "B_silver": {
+   "study": {
+    "n": 20,
+    "days": 20,
+    "win_rate": 0.65,
+    "avg_price": 0.505,
+    "net_usd_at_15": 73.12,
+    "net_per_1": 0.239,
+    "ci95": [
+     -0.1564,
+     0.6312
+    ],
+    "t": 1.11,
+    "usd_per_week_at_15": 18.28
+   },
+   "walk_28_after_20s": {
+    "n": 20,
+    "days": 20,
+    "win_rate": 0.65,
+    "avg_price": 0.504,
+    "net_usd_at_15": 75.53,
+    "net_per_1": 0.2473,
+    "ci95": [
+     -0.1513,
+     0.6502
+    ],
+    "t": 1.14,
+    "usd_per_week_at_15": 18.88
+   }
+  },
+  "C_silver": {
+   "study": {
+    "n": 20,
+    "days": 20,
+    "win_rate": 0.7,
+    "avg_price": 0.555,
+    "net_usd_at_15": 86.45,
+    "net_per_1": 0.2848,
+    "ci95": [
+     -0.1404,
+     0.7289
+    ],
+    "t": 1.28,
+    "usd_per_week_at_15": 21.61
+   },
+   "walk_28_after_20s": {
+    "n": 20,
+    "days": 20,
+    "win_rate": 0.7,
+    "avg_price": 0.552,
+    "net_usd_at_15": 90.98,
+    "net_per_1": 0.3002,
+    "ci95": [
+     -0.132,
+     0.7501
+    ],
+    "t": 1.34,
+    "usd_per_week_at_15": 22.74
+   }
+  },
+  "C_gold": {
+   "study": {
+    "n": 20,
+    "days": 20,
+    "win_rate": 0.6,
+    "avg_price": 0.545,
+    "net_usd_at_15": 36.82,
+    "net_per_1": 0.1215,
+    "ci95": [
+     -0.3365,
+     0.5911
+    ],
+    "t": 0.52,
+    "usd_per_week_at_15": 9.21
+   },
+   "walk_28_after_20s": {
+    "n": 20,
+    "days": 20,
+    "win_rate": 0.6,
+    "avg_price": 0.547,
+    "net_usd_at_15": 35.61,
+    "net_per_1": 0.117,
+    "ci95": [
+     -0.3279,
+     0.567
+    ],
+    "t": 0.51,
+    "usd_per_week_at_15": 8.9
+   }
+  }
+ },
+ "by_leg_all": {
+  "A_gold": {
+   "n": 77,
+   "days": 77,
+   "win_rate": 0.727,
+   "avg_price": 0.519,
+   "net_usd_at_15": 435.04,
+   "net_per_1": 0.3709,
+   "ci95": [
+    0.1676,
+    0.5697
+   ],
+   "t": 3.71,
+   "usd_per_week_at_15": 28.25
+  },
+  "A_silver": {
+   "n": 76,
+   "days": 76,
+   "win_rate": 0.632,
+   "avg_price": 0.513,
+   "net_usd_at_15": 230.6,
+   "net_per_1": 0.1991,
+   "ci95": [
+    -0.0039,
+    0.4033
+   ],
+   "t": 1.84,
+   "usd_per_week_at_15": 15.17
+  },
+  "B_gold": {
+   "n": 78,
+   "days": 78,
+   "win_rate": 0.705,
+   "avg_price": 0.507,
+   "net_usd_at_15": 415.33,
+   "net_per_1": 0.3494,
+   "ci95": [
+    0.15,
+    0.5602
+   ],
+   "t": 3.36,
+   "usd_per_week_at_15": 26.62
+  },
+  "B_silver": {
+   "n": 78,
+   "days": 78,
+   "win_rate": 0.744,
+   "avg_price": 0.52,
+   "net_usd_at_15": 442.36,
+   "net_per_1": 0.3725,
+   "ci95": [
+    0.1917,
+    0.5592
+   ],
+   "t": 3.92,
+   "usd_per_week_at_15": 28.36
+  },
+  "C_silver": {
+   "n": 78,
+   "days": 78,
+   "win_rate": 0.744,
+   "avg_price": 0.526,
+   "net_usd_at_15": 451.67,
+   "net_per_1": 0.3798,
+   "ci95": [
+    0.1844,
+    0.5736
+   ],
+   "t": 3.77,
+   "usd_per_week_at_15": 28.95
+  },
+  "C_gold": {
+   "n": 78,
+   "days": 78,
+   "win_rate": 0.654,
+   "avg_price": 0.526,
+   "net_usd_at_15": 258.0,
+   "net_per_1": 0.2175,
+   "ci95": [
+    0.0115,
+    0.4226
+   ],
+   "t": 2.04,
+   "usd_per_week_at_15": 16.54
+  }
+ },
+ "clocks": {
+  "gold": {
+   "oct26_30": [
+    {
+     "day": "26OCT26",
+     "0515-0530ET_down": false,
+     "0615-0630ET_down": true
+    },
+    {
+     "day": "26OCT27",
+     "0515-0530ET_down": false,
+     "0615-0630ET_down": true
+    },
+    {
+     "day": "26OCT28",
+     "0515-0530ET_down": false,
+     "0615-0630ET_down": true
+    },
+    {
+     "day": "26OCT29",
+     "0515-0530ET_down": true,
+     "0615-0630ET_down": true
+    },
+    {
+     "day": "26OCT30",
+     "0515-0530ET_down": true,
+     "0615-0630ET_down": true
+    }
+   ],
+   "other_days_down": {
+    "0530": "55/73",
+    "0630": "32/73"
+   }
+  },
+  "silver": {
+   "oct26_30": [
+    {
+     "day": "26OCT26",
+     "0515-0530ET_down": false,
+     "0615-0630ET_down": true
+    },
+    {
+     "day": "26OCT27",
+     "0515-0530ET_down": false,
+     "0615-0630ET_down": false
+    },
+    {
+     "day": "26OCT28",
+     "0515-0530ET_down": true,
+     "0615-0630ET_down": true
+    },
+    {
+     "day": "26OCT29",
+     "0515-0530ET_down": true,
+     "0615-0630ET_down": true
+    },
+    {
+     "day": "26OCT30",
+     "0515-0530ET_down": true,
+     "0615-0630ET_down": false
+    }
+   ],
+   "other_days_down": {
+    "0530": "47/73",
+    "0630": "35/73"
+   }
+  },
+  "weekdays_until_2027_04_30_where_1030_London_is_not_0530_ET": [
+   "2027-03-15",
+   "2027-03-26",
+   10
+  ]
+ },
+ "luck": {
+  "windows_scanned": 182,
+  "sides": 364,
+  "observed_top10": [
+   [
+    0.744,
+    "silver",
+    "1700",
+    "up",
+    78,
+    4.3
+   ],
+   [
+    0.744,
+    "silver",
+    "1615",
+    "down",
+    78,
+    -4.3
+   ],
+   [
+    0.731,
+    "gold",
+    "0530",
+    "down",
+    78,
+    -4.08
+   ],
+   [
+    0.705,
+    "gold",
+    "1700",
+    "up",
+    78,
+    3.62
+   ],
+   [
+    0.681,
+    "silver",
+    "2100",
+    "down",
+    69,
+    -3.01
+   ],
+   [
+    0.667,
+    "silver",
+    "0715",
+    "up",
+    78,
+    2.94
+   ],
+   [
+    0.654,
+    "gold",
+    "1615",
+    "down",
+    78,
+    -2.72
+   ],
+   [
+    0.654,
+    "gold",
+    "0745",
+    "down",
+    78,
+    -2.72
+   ],
+   [
+    0.654,
+    "gold",
+    "0515",
+    "up",
+    78,
+    2.72
+   ],
+   [
+    0.652,
+    "silver",
+    "2145",
+    "down",
+    69,
+    -2.53
+   ]
+  ],
+  "friend_legs_full_sample": [
+   [
+    0.744,
+    "silver",
+    "1700",
+    "up",
+    78,
+    4.3
+   ],
+   [
+    0.744,
+    "silver",
+    "1615",
+    "down",
+    78,
+    -4.3
+   ],
+   [
+    0.731,
+    "gold",
+    "0530",
+    "down",
+    78,
+    -4.08
+   ],
+   [
+    0.705,
+    "gold",
+    "1700",
+    "up",
+    78,
+    3.62
+   ],
+   [
+    0.654,
+    "gold",
+    "1615",
+    "down",
+    78,
+    -2.72
+   ],
+   [
+    0.641,
+    "silver",
+    "0530",
+    "down",
+    78,
+    -2.49
+   ]
+  ],
+  "friend_legs_avg_win": 0.703,
+  "coin_flip_top6_avg_win": {
+   "median": 0.643,
+   "p95": 0.661,
+   "p99": 0.671
+  },
+  "bonferroni_z_bar_5pct_two_sided": 3.64
+ },
+ "liquidity_at_20s": {
+  "A_gold": {
+   "$10": {
+    "contracts": 19,
+    "filled_by_30s_pct": 92,
+    "filled_by_45s_pct": 99,
+    "walk_minus_first_trade_c_median": 0.0,
+    "walk_minus_first_trade_c_p90": 0.69
+   },
+   "$15": {
+    "contracts": 28,
+    "filled_by_30s_pct": 90,
+    "filled_by_45s_pct": 99,
+    "walk_minus_first_trade_c_median": 0.0,
+    "walk_minus_first_trade_c_p90": 0.79
+   },
+   "$20": {
+    "contracts": 38,
+    "filled_by_30s_pct": 82,
+    "filled_by_45s_pct": 99,
+    "walk_minus_first_trade_c_median": 0.0,
+    "walk_minus_first_trade_c_p90": 0.84
+   },
+   "our_side_contracts_20_25s_median": 97.9
+  },
+  "A_silver": {
+   "$10": {
+    "contracts": 19,
+    "filled_by_30s_pct": 46,
+    "filled_by_45s_pct": 86,
+    "walk_minus_first_trade_c_median": 0.0,
+    "walk_minus_first_trade_c_p90": 1.93
+   },
+   "$15": {
+    "contracts": 29,
+    "filled_by_30s_pct": 36,
+    "filled_by_45s_pct": 76,
+    "walk_minus_first_trade_c_median": 0.0,
+    "walk_minus_first_trade_c_p90": 2.75
+   },
+   "$20": {
+    "contracts": 38,
+    "filled_by_30s_pct": 30,
+    "filled_by_45s_pct": 64,
+    "walk_minus_first_trade_c_median": 0.0,
+    "walk_minus_first_trade_c_p90": 2.75
+   },
+   "our_side_contracts_20_25s_median": 3.1
+  },
+  "B_gold": {
+   "$10": {
+    "contracts": 19,
+    "filled_by_30s_pct": 100,
+    "filled_by_45s_pct": 100,
+    "walk_minus_first_trade_c_median": 0.0,
+    "walk_minus_first_trade_c_p90": 0.48
+   },
+   "$15": {
+    "contracts": 29,
+    "filled_by_30s_pct": 100,
+    "filled_by_45s_pct": 100,
+    "walk_minus_first_trade_c_median": 0.0,
+    "walk_minus_first_trade_c_p90": 0.31
+   },
+   "$20": {
+    "contracts": 38,
+    "filled_by_30s_pct": 100,
+    "filled_by_45s_pct": 100,
+    "walk_minus_first_trade_c_median": 0.0,
+    "walk_minus_first_trade_c_p90": 0.65
+   },
+   "our_side_contracts_20_25s_median": 487.8
+  },
+  "B_silver": {
+   "$10": {
+    "contracts": 19,
+    "filled_by_30s_pct": 91,
+    "filled_by_45s_pct": 97,
+    "walk_minus_first_trade_c_median": 0.0,
+    "walk_minus_first_trade_c_p90": 0.79
+   },
+   "$15": {
+    "contracts": 29,
+    "filled_by_30s_pct": 85,
+    "filled_by_45s_pct": 97,
+    "walk_minus_first_trade_c_median": 0.0,
+    "walk_minus_first_trade_c_p90": 1.0
+   },
+   "$20": {
+    "contracts": 38,
+    "filled_by_30s_pct": 79,
+    "filled_by_45s_pct": 97,
+    "walk_minus_first_trade_c_median": 0.0,
+    "walk_minus_first_trade_c_p90": 1.03
+   },
+   "our_side_contracts_20_25s_median": 66.1
+  },
+  "C_silver": {
+   "$10": {
+    "contracts": 18,
+    "filled_by_30s_pct": 85,
+    "filled_by_45s_pct": 100,
+    "walk_minus_first_trade_c_median": 0.0,
+    "walk_minus_first_trade_c_p90": 1.76
+   },
+   "$15": {
+    "contracts": 27,
+    "filled_by_30s_pct": 76,
+    "filled_by_45s_pct": 100,
+    "walk_minus_first_trade_c_median": 0.0,
+    "walk_minus_first_trade_c_p90": 2.98
+   },
+   "$20": {
+    "contracts": 37,
+    "filled_by_30s_pct": 71,
+    "filled_by_45s_pct": 100,
+    "walk_minus_first_trade_c_median": 0.0,
+    "walk_minus_first_trade_c_p90": 2.9
+   },
+   "our_side_contracts_20_25s_median": 23.0
+  },
+  "C_gold": {
+   "$10": {
+    "contracts": 18,
+    "filled_by_30s_pct": 96,
+    "filled_by_45s_pct": 100,
+    "walk_minus_first_trade_c_median": 0.0,
+    "walk_minus_first_trade_c_p90": 0.8
+   },
+   "$15": {
+    "contracts": 28,
+    "filled_by_30s_pct": 95,
+    "filled_by_45s_pct": 100,
+    "walk_minus_first_trade_c_median": 0.0,
+    "walk_minus_first_trade_c_p90": 1.2
+   },
+   "$20": {
+    "contracts": 37,
+    "filled_by_30s_pct": 95,
+    "filled_by_45s_pct": 100,
+    "walk_minus_first_trade_c_median": 0.0,
+    "walk_minus_first_trade_c_p90": 1.03
+   },
+   "our_side_contracts_20_25s_median": 574.5
+  }
+ },
+ "correlation": {
+  "pairs": [
+   [
+    "A_gold",
+    "A_silver",
+    0.411
+   ],
+   [
+    "A_gold",
+    "B_gold",
+    0.065
+   ],
+   [
+    "A_gold",
+    "B_silver",
+    0.103
+   ],
+   [
+    "A_gold",
+    "C_silver",
+    -0.097
+   ],
+   [
+    "A_gold",
+    "C_gold",
+    -0.252
+   ],
+   [
+    "A_silver",
+    "B_gold",
+    -0.127
+   ],
+   [
+    "A_silver",
+    "B_silver",
+    -0.085
+   ],
+   [
+    "A_silver",
+    "C_silver",
+    0.163
+   ],
+   [
+    "A_silver",
+    "C_gold",
+    0.024
+   ],
+   [
+    "B_gold",
+    "B_silver",
+    0.586
+   ],
+   [
+    "B_gold",
+    "C_silver",
+    0.071
+   ],
+   [
+    "B_gold",
+    "C_gold",
+    0.18
+   ],
+   [
+    "B_silver",
+    "C_silver",
+    0.059
+   ],
+   [
+    "B_silver",
+    "C_gold",
+    0.128
+   ],
+   [
+    "C_silver",
+    "C_gold",
+    0.56
+   ]
+  ],
+  "mean_rho": 0.119,
+  "design_effect_6_bets_a_day": 1.6,
+  "same_window_gold_silver": [
+   [
+    "A_gold",
+    "A_silver",
+    0.411
+   ],
+   [
+    "B_gold",
+    "B_silver",
+    0.586
+   ],
+   [
+    "C_silver",
+    "C_gold",
+    0.56
+   ]
+  ]
+ },
+ "forward": {
+  "break_even_win_rate_at_54c": 0.5575,
+  "design_effect": 1.6,
+  "thresholds": [
+   {
+    "paper_bets": 60,
+    "weeks": 2.0,
+    "win_rate_needed": 0.691,
+    "chance_to_pass_if_the_edge_is_gone": 0.05,
+    "chance_to_pass_if_it_is_like_aug_nov_normal": 0.44,
+    "chance_to_pass_resampling_aug_nov_days": 0.55
+   },
+   {
+    "paper_bets": 90,
+    "weeks": 3.0,
+    "win_rate_needed": 0.666,
+    "chance_to_pass_if_the_edge_is_gone": 0.05,
+    "chance_to_pass_if_it_is_like_aug_nov_normal": 0.59,
+    "chance_to_pass_resampling_aug_nov_days": 0.75
+   },
+   {
+    "paper_bets": 120,
+    "weeks": 4.0,
+    "win_rate_needed": 0.652,
+    "chance_to_pass_if_the_edge_is_gone": 0.05,
+    "chance_to_pass_if_it_is_like_aug_nov_normal": 0.7,
+    "chance_to_pass_resampling_aug_nov_days": 0.83
+   },
+   {
+    "paper_bets": 150,
+    "weeks": 5.0,
+    "win_rate_needed": 0.642,
+    "chance_to_pass_if_the_edge_is_gone": 0.05,
+    "chance_to_pass_if_it_is_like_aug_nov_normal": 0.79,
+    "chance_to_pass_resampling_aug_nov_days": 0.89
+   },
+   {
+    "paper_bets": 180,
+    "weeks": 6.0,
+    "win_rate_needed": 0.634,
+    "chance_to_pass_if_the_edge_is_gone": 0.05,
+    "chance_to_pass_if_it_is_like_aug_nov_normal": 0.85,
+    "chance_to_pass_resampling_aug_nov_days": 0.93
+   }
+  ]
+ },
+ "trend": {
+  "days": 78,
+  "slope_net_per_1_per_month": -0.0005,
+  "ci95_per_month": [
+   -0.1555,
+   0.1481
+  ],
+  "first_half_avg_daily_net_per_1": 0.3332,
+  "second_half_avg_daily_net_per_1": 0.293
+ },
+ "price_paid_by_month": {
+  "2026-08": 0.523,
+  "2026-09": 0.523,
+  "2026-10": 0.503,
+  "2026-11": 0.531
+ }
+}

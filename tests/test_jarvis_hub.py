@@ -265,7 +265,7 @@ def part_a():
           and "background:#000" in sw and "location.reload()" in sw)
     check("a. worker v14: data.js, jarvis.css, the fonts, every separate part, switcher.js, the new brain's obsidian.js / memory.js / "
           "assist-ui.js and voice-mode.js in SHELL, each saved on its own (a missing part is skipped)",
-          "const CACHE = 'jarvis-v61';" in sw and all(f"'./{f}'" in sw for f in ("data.js", "switcher.js", "obsidian.js", "memory.js", "assist-ui.js", "voice-mode.js", "tools.js", "voice-out.js") + PARTS + FONTS)
+          "const CACHE = 'jarvis-v64';" in sw and all(f"'./{f}'" in sw for f in ("data.js", "switcher.js", "obsidian.js", "memory.js", "assist-ui.js", "voice-mode.js", "tools.js", "voice-out.js") + PARTS + FONTS)
           and f"'./{JCSS}'" in sw and "SHELL.map((u) => c.add(new Request(u, { cache: 'reload' })).catch(() => null))" in sw)
     shell = re.search(r"const SHELL = \[([^\]]*)\]", sw)
     shell_files = re.findall(r"'\./([^'?]+)", shell.group(1)) if shell else []
@@ -839,7 +839,7 @@ def run_c(br, url):
         const reg = await Promise.race([navigator.serviceWorker.ready, new Promise((ok) => setTimeout(() => ok(null), 6000))]);
         if (!reg) return 'no worker';
         for (let i = 0; i < 30; i++) {
-          const c = await caches.open('jarvis-v61');
+          const c = await caches.open('jarvis-v64');
           const got = await Promise.all(['./index.html', './data.js', './%s', './orbitron.woff2', './rajdhani-500.woff2'].map((u) => c.match(u)));
           if (got.every(Boolean)) return 'ok';
           await new Promise((ok) => setTimeout(ok, 200));
@@ -1083,7 +1083,7 @@ def run_look(br, url):
     p.wait_for_function("window.__said.length > 0", timeout=6000)
     p.wait_for_function("document.documentElement.dataset.state === 'idle'", timeout=4000)
     said, states = p.evaluate("[window.__said, window.__states]")
-    check("l. voice: tap the mic -> LISTENING -> THINKING -> SPEAKING -> STANDBY; the answer is read at the voice's own pace (rate and pitch 1.0 within the prosody's +-12%: voice-engines.js 2026-11-04)",
+    check("l. voice: tap the mic -> LISTENING -> THINKING -> SPEAKING -> STANDBY; the answer is read at the voice's own pace (rate and pitch 1.0 within +-12%; the words by speech-text.js 2026-11-18)",
           "market" in said[0][0].lower() and abs(said[0][1] - 1.0) < 0.12 and abs(said[0][2] - 1.0) < 0.12
           and [s for s in states if s in ("listening", "thinking", "speaking", "idle")][:4] == ["listening", "thinking", "speaking", "idle"], (said, states))
     p.click("#hf")
@@ -1577,20 +1577,37 @@ def part_intro_files():
           bool(js) and page.index('id="olyIntro"') < page.index('<script id="olympus-intro">') < page.index('<script type="module">')
           and not os.path.exists(os.path.join(JV, "intro.js")) and len(js.encode()) < 64_000 and "fetch(" not in js and "import " not in js and "XMLHttpRequest" not in js and "(?<" not in js
           and not re.search(r"[\w)\]]\?\.[A-Za-z_$]", js) and "??" not in js, len(js))
+    # the entry v3 (night-intro3 2026-11-18): its own file, jarvis/entry.js, DEFERRED right after the overlay: a deferred file runs in document
+    # order with the page's module, i.e. once the page is parsed and before Jarvis's start (an async file may run after it; the inline
+    # intro script keeps the overlay, its deadlines and the skip, and waits for the entry at most 1.2 s); the shell's size stays put
+    ef = os.path.join(JV, "entry.js")
+    ejs = open(ef, encoding="utf-8").read() if os.path.exists(ef) else ""
+    tag = '<script src="entry.js?v=e1" defer id="olyEntryJs"></script>'
+    check("o. the entry (v3): jarvis/entry.js, deferred right after the overlay (before the intro script and Jarvis's module), under 56 KB, no fetch / "
+          "import / font file (OLYMPUS is its own outlines, Cinzel OFL), Safari 16 safe, canvases at most 2x, nothing drawn per frame (no "
+          "requestAnimationFrame, no WebGL): Web Animations only; the intro script waits for it at most 1.2 s",
+          bool(ejs) and tag in page and page.index('id="olyIntro"') < page.index(tag) < page.index('<script id="olympus-intro">') < page.index('<script type="module">')
+          and len(ejs.encode()) < 56_000 and "fetch(" not in ejs and "import " not in ejs and "XMLHttpRequest" not in ejs and "(?<" not in ejs
+          and not re.search(r"[\w)\]]\?\.[A-Za-z_$]", ejs) and "??" not in ejs and "@font-face" not in ejs and "Math.min(2, W.devicePixelRatio || 1)" in ejs
+          and "requestAnimationFrame" not in ejs and re.findall(r"getContext\('([\w-]+)'", ejs) == ["2d"] and "e.animate(frames" in ejs and "SIL Open Font License" in ejs
+          and "W.__olyEntry = {" in ejs and "W.__olyEntryReady()" in ejs and "W.__olyEntry.build(w, mode === 'mark' ? 'mark' : 'still'" in js
+          and "W.__olyEntryReady = go;" in js and "setTimeout(go, 1200)" in js, len(ejs))
     node = shutil.which("node")
-    if node and js:
+    for name, code in (("intro", js), ("entry", ejs)):
+        if not (node and code):
+            continue
         import subprocess
         with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-8") as fh:
-            fh.write(js)
+            fh.write(code)
         r = subprocess.run([node, "--check", fh.name], capture_output=True, text=True)
         os.remove(fh.name)
-        check("o. the intro script parses (node --check): a syntax error would leave only its fail-safes", r.returncode == 0, r.stderr[-300:])
+        check(f"o. the {name} script parses (node --check): a syntax error would leave only its fail-safes", r.returncode == 0, r.stderr[-300:])
     check("o. the overlay is in the page with its own CSS deadline (gone by 0.95 s when intro.js never runs), above the orb, async script",
           '<div class="oly" id="olyIntro" aria-hidden="true">' in page
           and "if (!window.__olyIntro) { var o = document.getElementById('olyIntro'); if (o) o.style.visibility = 'hidden'; } }, 700);" in page
           and "html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}" in page and "z-index:2147483640" in page
           and "@keyframes olyEnd" in page)
-    check("o. the start script picks the version before the first paint: the 1.2 s mark (a new launch, 2026-11-18) / off (the same launch again, 3D Off) / calm (reduce motion) / fade (safe start, unfinished intro); the film only on request; none under automation",
+    check("o. the start script picks the version before the first paint: the 2.2 s entry (a new launch, 2026-11-18) / off (the same launch again, 3D Off) / calm (reduce motion) / fade (safe start, unfinished intro); the film only on request; none under automation",
           all(x in page for x in ("im = again ? 'off' : 'mark';", "im = 'calm'", "im = 'off'", "n > 0 || g('jarvis.intro.run')) im = 'fade'",
                                   "sessionStorage.getItem('jarvis.booted')", "20 * 60 * 1000", "(!navigator.webdriver || fo)", "g('jarvis.intro') !== 'off'")))
     check("o. the film: 10 s full / 5 s lite, six phases (heart, storm, rise, eclipse, word, portal), the sound cues, the logo texture, skip in 60 ms",
@@ -1674,6 +1691,25 @@ PHASE_LOG = """(() => { const L = window.__phases = []; const see = () => { cons
   setInterval(see, 25); (function f() { see(); requestAnimationFrame(f); })(); })();"""
 SFX_KIT = """window.__sfx = []; window.OLYMPUS_SFX = { play(n) { window.__sfx.push(n); } };"""
 INTRO_GONE = "!document.getElementById('olyIntro') && !document.documentElement.hasAttribute('data-intro')"
+# the entry v3's scene right after it was built (the olympus-entry script): its 2D canvases, the 7 letters' canvases, its animations and
+# what they move (only transform / opacity: the compositor runs them; the overlay's own CSS deadline, olyEnd, is not the scene's)
+ENTRY_SCENE = """(() => { const sc = document.querySelector('#olyIntro .oly-s'); if (!sc) return { scene: false };
+  const A = document.getAnimations().filter((a) => a.effect && a.effect.target && sc.contains(a.effect.target)), props = new Set();
+  A.forEach((a) => a.effect.getKeyframes().forEach((k) => Object.keys(k).forEach((x) => { if (!/^(offset|computedOffset|easing|composite)$/.test(x)) props.add(x); })));
+  const h = sc.querySelector('.oly-h'), word = h ? [...h.querySelectorAll('canvas.oly-2d')].filter((c) => c.getBoundingClientRect().top > innerHeight * 0.45 && c.getBoundingClientRect().width < 80) : [];
+  return { scene: true, canvases: sc.querySelectorAll('canvas.oly-2d').length, letters: word.length, anims: A.length, props: [...props] }; })()"""
+# ...read the moment the scene is built (a MutationObserver's callback runs once the building script is done): a loaded test machine
+# can reach the page only after the 2.2 s entry is over
+ENTRY_WATCH = """(() => { const see = %s;
+  new MutationObserver((ms, mo) => { if (window.__entryScene || !document.querySelector('#olyIntro .oly-s .oly-h canvas')) return;
+    window.__entryScene = Object.assign(see(), { gl: !!document.querySelector('#olyIntro canvas:not(.oly-2d)') }); mo.disconnect(); })
+    .observe(document, { childList: true, subtree: true }); })();""" % ENTRY_SCENE[:-2]
+# the hand-off, frame by frame (the scene held by jarvis.intro.hold, its animations set to t): the scene's opacity (1 = Jarvis hidden) and the
+# temple + word's (the hero). Never two logos at once: once Jarvis shows (scene < 0.85) the hero is gone (<= 0.1)
+HANDOFF = """(() => { const sc = document.querySelector('#olyIntro .oly-s'), h = sc && sc.querySelector('.oly-h'); if (!h) return null;
+  const A = document.getAnimations().filter((a) => a.effect && a.effect.target && sc.contains(a.effect.target)), out = [];
+  for (let t = 1400; t <= 2300; t += 20) { A.forEach((a) => { a.pause(); a.currentTime = t; }); out.push([t, +(+getComputedStyle(sc).opacity).toFixed(3), +(+getComputedStyle(h).opacity).toFixed(3)]); }
+  return out; })()"""
 MIC_WHO = """(() => { const b = document.getElementById('mic').getBoundingClientRect(); const e = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2); return [e && (e.id || e.className || e.tagName), Math.round(b.top), Math.round(b.height), innerHeight]; })()"""
 MIC_FREE = """(() => { const b = document.getElementById('mic').getBoundingClientRect();
   const e = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2); return !!e && !!e.closest('#mic'); })()"""
@@ -1714,16 +1750,22 @@ def run_intro(br, url):
     home extras that came with it (quick actions, today's timeline, the core's satellites)."""
     wait = lambda p, js, ms=40000: p.wait_for_function(js, timeout=ms)
 
-    # 0. a cold open (2026-11-18, owner: the entry "looks made in the 2000s"): the 1.2 s mark, no WebGL, then Jarvis
-    ctx, p, errs = intro_page(br, url, init=[SFX_KIT])
+    # 0. a cold open (2026-11-18, owner: the entry "looks made in the 2000s", then "looks wrong / cheap"): the 2.2 s entry v3 (night-intro3: a
+    # storm, a lightning strike on the gold temple, OLYMPUS; 2D canvases moved by the Web Animations API), no WebGL, then Jarvis
+    ctx, p, errs = intro_page(br, url, init=[SFX_KIT, ENTRY_WATCH])
     wait(p, "window.__olyIntro && window.__olyIntro.mode")
-    mk_gl = p.evaluate("!!document.querySelector('#olyIntro canvas')")
-    mk_svg = p.evaluate("!!document.querySelector('#olyIntro .oly-w svg') && /OLYMPUS/.test((document.querySelector('#olyIntro .oly-w b') || {}).textContent || '')")
     wait(p, INTRO_GONE)
+    mk = p.evaluate("window.__entryScene || { scene: false }")                               # as built (entry.js, deferred)
+    mk_gl = mk.get("gl", True)                                                                # the film's WebGL canvas (the entry's are 2D: .oly-2d)
     ready_slow(p)
     s = intro_state(p)
-    check("o. a cold open plays the 1.2 s mark: the gold temple and OLYMPUS on navy, no WebGL, it ends by itself (done) and the mic is tappable, no page errors",
-          s["st"]["mode"] == "mark" and s["st"]["q"] == "still" and s["st"]["len"] == 1.3 and s["st"]["state"] == "done" and not mk_gl and mk_svg and p.evaluate(MIC_FREE) and not errs, (s, mk_gl, mk_svg, errs))
+    check("o. a cold open plays the 2.2 s entry: its scene (night sky, clouds, the bolt, the gold temple, OLYMPUS in 7 letters), no WebGL, it ends by itself "
+          "(done) and the mic is tappable, no page errors",
+          s["st"]["mode"] == "mark" and s["st"]["q"] == "scene" and s["st"]["len"] == 2.2 and s["st"]["state"] == "done" and not mk_gl and mk["scene"]
+          and mk.get("canvases", 0) >= 20 and mk.get("letters") == 7 and s["st"].get("layers") == mk.get("canvases") and s["st"].get("dpr", 9) <= 2 and not s["st"]["err"]
+          and p.evaluate(MIC_FREE) and not errs, (s, mk_gl, mk, errs))
+    check("o. the entry moves only transform and opacity (the phone's compositor runs it while Jarvis starts underneath), with Web Animations it started itself",
+          mk.get("anims", 0) >= 60 and mk.get("anims") == s["st"].get("anims") and set(mk.get("props", ["?"])) <= {"transform", "opacity"}, mk)
     check("o. the mark remembers the launch (the next start within 20 minutes gets the 0.5 s fade), no in-progress flag left",
           bool(p.evaluate("localStorage.getItem('jarvis.intro.day')")) and bool(p.evaluate("localStorage.getItem('jarvis.intro.at')")) and p.evaluate("localStorage.getItem('jarvis.intro.run')") is None)
     p.reload(wait_until="commit")
@@ -1731,6 +1773,32 @@ def run_intro(br, url):
     wait(p, INTRO_GONE)
     s = intro_state(p)
     check("o. the same launch seen again (an app switch that reloaded the page) gets the 0.5 s fade, never the mark or the film again", s["st"]["mode"] == "off" and s["st"]["state"] == "done", s)
+    ctx.close()
+    ctx, p, errs = intro_page(br, url, "mark", "localStorage.setItem('jarvis.intro.hold', '1.6');")
+    wait(p, "window.__olyIntro && window.__olyIntro.q === 'scene'")
+    hc = p.evaluate(HANDOFF) or []
+    bad = [x for x in hc if x[1] < 0.85 and x[2] > 0.1]
+    check("o. the entry's hand-off: the full title until 1.7 s, then the temple and the word are gone before Jarvis shows through (never two logos), "
+          "the clouds clear by 2.22 s (one composited fade, no jump)",
+          bool(hc) and all(x[1] == 1 and x[2] == 1 for x in hc if x[0] <= 1700) and not bad and all(x[1] == 0 for x in hc if x[0] >= 2240) and not errs,
+          (bad[:3], [x for x in hc if x[0] % 100 == 0], errs[:2]))
+    ctx.close()
+    # the entry script fails (or is missing): the plain stand-in (the Home Screen temple and OLYMPUS), still, and the same clean end
+    ctx, p, errs = intro_page(br, url, "mark", init=["Object.defineProperty(window, '__olyEntry', { get() { return { build() { throw new Error('test: no scene'); } }; }, set() {} });"])
+    wait(p, "window.__olyIntro && window.__olyIntro.mode")
+    plain = p.evaluate("!!document.querySelector('#olyIntro .oly-c svg') && !document.querySelector('#olyIntro canvas')")
+    wait(p, INTRO_GONE)
+    s = intro_state(p)
+    check("o. the entry script failing: the plain stand-in (the Home Screen temple and OLYMPUS, still) instead, the error noted, it ends by itself, no page errors",
+          plain and s["st"]["mode"] == "mark" and s["st"]["q"] == "still" and "no scene" in s["st"]["err"] and s["st"]["state"] == "done" and p.evaluate(MIC_FREE) and not errs, (plain, s, errs))
+    ctx.close()
+    ctx, p, errs = intro_page(br, url, "mark", abort=r".*/jarvis/entry\.js.*")                 # entry.js never arrives (offline, no saved copy)
+    wait(p, "window.__olyIntro && window.__olyIntro.mode")
+    wait(p, INTRO_GONE)
+    ready_slow(p)
+    s = intro_state(p)
+    check("o. entry.js never arriving: the overlay waits 1.2 s at most, then the plain still, it ends by itself; Jarvis starts, no page errors",
+          s["st"]["mode"] == "mark" and s["st"]["q"] == "still" and s["st"]["state"] == "done" and s["st"]["ms"] < BK.limit_ms(4500, "intro no entry") and p.evaluate(MIC_FREE) and not errs, (s, errs))
     ctx.close()
 
     # 1. the film on request ('jarvis.intro.force' = 'full', as the palette's replay asks for it): the 10 s film in WebGL, Jarvis starting underneath
@@ -1839,16 +1907,19 @@ def run_intro(br, url):
     ctx.close()
 
     # 7. the versions it picks by itself
-    for label, kw, want, length in (("reduce motion: the calm 3.5 s version (the logo and the word mark fading in and out)", {"reduced": "reduce"}, "calm", 3.5),
+    for label, kw, want, length in (("reduce motion: the calm 3.5 s version (the entry's last frame fading in and out, nothing moves)", {"reduced": "reduce"}, "calm", 3.5),
                                      ("3D effects Off: a 0.5 s fade", {"extra": "localStorage.setItem('jfx', 'off');"}, "off", 0.5),
                                      ("after a start that did not finish: the fade, never WebGL", {"extra": "localStorage.setItem('jarvis.unfinished', '1');"}, "fade", 0.8),
                                      ("after an intro that did not finish (the phone closed it): the fade", {"extra": "localStorage.setItem('jarvis.intro.run', '1');"}, "fade", 0.8)):
         ctx, p, errs = intro_page(br, url, **kw)
         wait(p, "window.__olyIntro && window.__olyIntro.mode")
-        gl = p.evaluate("!!document.querySelector('#olyIntro canvas:not(.oly-l)')")
+        gl = p.evaluate("!!document.querySelector('#olyIntro canvas:not(.oly-2d)')")
         wait(p, INTRO_GONE)
         s = intro_state(p)
-        check(f"o. {label}", s["st"]["mode"] == want and s["st"]["q"] == "still" and s["st"]["len"] == length and not gl and s["st"]["state"] == "done", s)
+        # reduce motion: the entry's last frame (its scene, still); the quick versions use it only when entry.js is already there, else the
+        # plain still at once (never a wait on a reload or a safe start): no animation either way
+        check(f"o. {label}", s["st"]["mode"] == want and s["st"]["q"] == "still" and s["st"]["len"] == length and not gl and s["st"]["state"] == "done"
+              and not s["st"].get("anims") and (want != "calm" or (s["st"].get("layers") or 0) >= 20), s)
         ctx.close()
     ctx, p, errs = intro_page(br, url, extra="localStorage.setItem('jarvis.intro', 'off');")
     ready_slow(p)
@@ -1860,7 +1931,7 @@ def run_intro(br, url):
     ctx, p, errs = intro_page(br, url, extra="localStorage.setItem('jfx', 'low');")
     wait(p, "window.__olyIntro && window.__olyIntro.mode")
     wait(p, INTRO_GONE)
-    check("o. 3D Low / a low-end phone: the same 1.2 s mark (no WebGL)", intro_state(p)["st"]["mode"] == "mark" and intro_state(p)["st"]["state"] == "done", intro_state(p))
+    check("o. 3D Low / a low-end phone: the same 2.2 s entry (no WebGL)", intro_state(p)["st"]["mode"] == "mark" and intro_state(p)["st"]["state"] == "done", intro_state(p))
     ctx.close()
     ctx, p, errs = intro_page(br, url, "lite", init=[PHASE_LOG])
     wait(p, "window.__olyIntro && window.__olyIntro.mode")

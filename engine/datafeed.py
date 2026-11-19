@@ -69,14 +69,17 @@ STALE_LOCK_S = 1800
 BLACKOUT = (110, 960)                           # weekdays 01:50-16:00 ET (engine/datapipe.BLACKOUT): the session, nothing runs
 HTTP_TIMEOUT_S = 8.0
 PUT_TIMEOUT_S = 120.0
-PREFER = {"NQ": ("NQ", "MNQ"), "ES": ("ES", "MES")}
+PREFER = {"NQ": ("NQ", "MNQ"), "ES": ("ES", "MES"), "GC": ("GC", "MGC"), "SI": ("SI", "SIL")}
 TFS = ("1m", "5m")
-EXTRAS = ("review.json", "proposals.jsonl")     # from the nightly run's local day folder (logs/datapipe/days/<day>/)
+SYM_TFS = {"GC": ("1m",), "SI": ("1m",)}        # metals (Kalshi K8 legs): 1-minute around 04:45-05:45 / 15:45-17:15 ET only
+                                                # (engine/datapipe.day_bars cuts them; ~150 bars a metal a day, a few KB)
+EXTRAS = ("review.json", "proposals.jsonl", "learn.json")   # from the nightly run's local day folder (logs/datapipe/days/<day>/);
+                                                # learn.json = ZEUS learned's public cut (engine/zeus_learn.public)
 UA = "olympus-pc-data/1"
 _ID = re.compile(r"^[a-z0-9]{6,24}$")
 _DAY = re.compile(r"^\d{4}-\d{2}-\d{2}$")
-DAY_FILE = re.compile(r"^days/(\d{4}-\d{2}-\d{2})/(manifest\.json|trades\.jsonl\.gz|review\.json|proposals\.jsonl|"
-                      r"bars/(?:MNQ|NQ|MES|ES)_(?:1m|5m)\.csv\.gz)$")
+DAY_FILE = re.compile(r"^days/(\d{4}-\d{2}-\d{2})/(manifest\.json|trades\.jsonl\.gz|review\.json|proposals\.jsonl|learn\.json|"
+                      r"bars/(?:MNQ|NQ|MES|ES|GC|MGC|SI|SIL)_(?:1m|5m)\.csv\.gz)$")
 
 
 # ================================================================================================ small helpers
@@ -272,7 +275,7 @@ def pick_frames(frames: dict) -> dict:
     """{(sym, tf): (root, frame)}: NQ else MNQ, ES else MES (one root per symbol: the cloud imports only that one)."""
     out = {}
     for sym, roots in PREFER.items():
-        for tf in TFS:
+        for tf in SYM_TFS.get(sym, TFS):
             for r in roots:
                 f = frames.get((r, tf))
                 if f is not None and len(f):

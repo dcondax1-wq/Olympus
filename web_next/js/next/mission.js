@@ -30,7 +30,7 @@ export function loadMissionCore() {
   if (CP) return CP;
   CP = new Promise((res, rej) => {
     const s = document.createElement('script');
-    s.src = new URL('./missioncore.js?v=2', import.meta.url).href;
+    s.src = new URL('./missioncore.js?v=3', import.meta.url).href;
     s.onload = () => res(); s.onerror = () => { CP = null; rej(new Error('missioncore.js did not load')); };
     document.head.appendChild(s);
   });
