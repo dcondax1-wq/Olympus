@@ -306,6 +306,35 @@ def t_third(tmp):
           and Z.register({**e, "id": "zz_t3", "family": "xyz"}, p) != [])
 
 
+def t_blitz(tmp):
+    """kind blitz_idea (tools/blitz_review.py, 2026-11-18): BLITZ exit ideas (bot blitz), stored verdict, hidden on the page."""
+    E, F, R, errs = Z.load_registry()
+    M = [e for e in E if e["kind"] == "blitz_idea"]
+    check("registry: the 8 BLITZ exit ideas", len(M) == 8 and all(e["bot"] == "blitz" for e in M) and {e["idea"] for e in M} == set(Z.BLITZ_IDEAS),
+          [e["id"] for e in M])
+    r = Z.run_one(next(e for e in M if e["idea"] == "chk10_any"), None, RULES)
+    check("blitz runner: stored verdict, rejected (the Jan-Jun pick loses Jul-Oct), $ a month per span",
+          r["proof_ok"] is False and "Jul-Oct" in r["why"] and r["head"]["H1"]["per_month"] is not None and r["base"]["2021-25"]["n"] > 1000, r.get("why"))
+    row = Z.page_row(M[0], {"status": "rejected", "head": r["head"], "base": r["base"]})
+    check("page row: BLITZ, $ a month now vs idea per span", row["who"] == "BLITZ" and row["months"]["2021-25"]["now"] is not None, row.get("months"))
+    from engine import hidden_bots as HB
+    old = HB.FORCE
+    try:
+        HB.FORCE = ("blitz",)
+        hid = [x["id"] for x in Z.build_page({"rows": [row, {**row, "id": "l", "bot": "lit", "status": "rejected"}]})["rows"]]
+        HB.FORCE = ()
+        shown = [x["id"] for x in Z.build_page({"rows": [row]})["rows"]]
+    finally:
+        HB.FORCE = old
+    check("page: a hidden bot's rows are left out, shown again when unhidden", hid == ["l"] and shown == [row["id"]], (hid, shown))
+    p = os.path.join(tmp, "regb.json")
+    shutil.copy(Z.REGISTRY, p)
+    e = {"id": "zz_blitz", "bot": "blitz", "kind": "blitz_idea", "idea": "be05", "title": "t", "what_changes": "w", "registered": "2026-11-18",
+         "source": "s"}
+    check("register(): a valid blitz_idea is saved; another bot / unknown idea refused", Z.register(e, p) == []
+          and Z.register({**e, "id": "zz_b2", "bot": "lit"}, p) != [] and Z.register({**e, "id": "zz_b3", "idea": "nope"}, p) != [])
+
+
 def t_static():
     src = open(os.path.join(ROOT, "tools", "zeus_lab.py"), encoding="utf-8").read()
     code = re.sub(r'"""[\s\S]*?"""', "", src)
@@ -336,6 +365,7 @@ def main() -> int:
         t_member(tmp)
         t_funded(tmp)
         t_third(tmp)
+        t_blitz(tmp)
         t_static()
     finally:
         shutil.rmtree(tmp, ignore_errors=True)

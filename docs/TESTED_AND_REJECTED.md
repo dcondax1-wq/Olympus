@@ -1,4 +1,10 @@
 ## Tested and rejected (don't redo without a new idea)
+- **BLITZ review (2026-11-18, `blitz-review-2026-11-18.md`, `tools/blitz_review.py`, `research/scalp/blitz_review.json`, Lab kind
+  `blitz_idea`):** 8 pre-declared EXIT ideas on today's BLITZ (account C, $150, costs in): out at minute 10 / 15 if in a loss and
+  never +0.5R, out at minute 10 if never +0.25R (H1 pick: +$22 Jan-Jun, -$292/mo Jul-Oct, 2-week fails 21.7 -> 40.6%), out on a
+  1m close back inside the noise band (from entry / from minute 10), breakeven at +0.5R, the minute-15 cut / band exit with a
+  45-minute hold (+$144-162 Jul-Oct, -$240 Jan-Jun). 0 pass; every one LOWERS the win rate (35-53% vs 57%): non-starters (not
+  +0.5R by minute 10) still end near 0R in 2026. Today's BLITZ: +$963 / +$667 / +$73 a month, own 25K slot +$286 / +$52 / -$39.
 - **Third strategy hunt (2026-11-19, `third-strategy-2026-11-18.md`, `tools/third_strategy.py`, `research/second/third_strategy.json`,
   Lab kind `new_strategy`):** 172 pre-declared cells, NQ 5m whole CME day, $500 a trade, structure stops, costs in, flat 15:55:
   post-close move (16:00-17:00) traded at the 18:00 reopen, follow / fade (80), Camarilla H3/L3 fade + H4/L4 break + floor
