@@ -138,6 +138,8 @@ def classify(row):
     low = ev.lower()
     if "unemployment claims" in low or "press conference" in low:
         return None
+    if low.startswith("fomc") and "minutes" in low:     # day-archive 2026-11-20: the minutes (3 weeks after a meeting) are not a decision
+        return "other", "FOMC minutes 2:00 PM (" + (ev.split("(", 1)[1].rstrip(")") if "(" in ev else "last meeting") + ")", "med"
     if low.startswith("fomc"):
         return "fomc", "FOMC decision 2:00 PM" + (" with projections" if "projections" in low else "") + ", press conference 2:30 PM", "high"
     if low.startswith("cpi"):
@@ -305,8 +307,10 @@ def selftest():
     ck("the roll titles name the next contract: MNQ 03-27 after Dec 2026, MNQ 06-27 after Mar 2027", any("MNQ 03-27" in e["title"] for e in es if e["kind"] == "roll") and any("MNQ 06-27" in e["title"] for e in es if e["kind"] == "roll"))
     ck("claims: the weekly rule skips Nov 26, and a dated Wednesday Nov 25 replaces it", ev["weekly"][0]["skip"] == ["2026-11-26"] and "2026-11-25" in by("claims"))
     ck("FOMC decisions come from the saved calendar (Dec 9 2026, Jan 27 and Mar 17 2027), verify true, each with its source file; nothing is made up for day 1", by("fomc") == ["2026-10-28", "2026-12-09", "2027-01-27", "2027-03-17"] and all(e["verify"] and "events.csv" in e["src"] for e in es if e["kind"] == "fomc"), by("fomc"))
-    ck("NFP: Nov 6 from the saved calendar, Dec 4 / Feb 5 / Mar 5 from the BLS rule, Jan 1 (holiday) undated, all verify true", by("nfp") == ["2026-11-06", "2026-12-04", "2027-02-05", "2027-03-05"] and any(u["kind"] == "nfp" and "2027-01-01" in u["title"] for u in ev["undated"]) and all(e["verify"] for e in es if e["kind"] == "nfp"), by("nfp"))
-    ck("CPI Nov 10 and PPI Nov 13 come from the saved calendar; the next CPI / PPI and retail sales are UNDATED with the official calendar named (no date field)", by("cpi") == ["2026-11-10"] and by("ppi") == ["2026-11-13"] and {u["kind"] for u in ev["undated"]} >= {"cpi", "ppi", "retail"}
+    ck("FOMC minutes (3 weeks after a meeting) are never a decision: Nov 18 / Dec 30 / Feb 17 are 'FOMC minutes', kind other (day-archive 2026-11-20)",
+       not any("minutes" in e["title"].lower() for e in es if e["kind"] == "fomc") and [e["date"] for e in es if e["title"].startswith("FOMC minutes")] == ["2026-11-18", "2026-12-30", "2027-02-17"])
+    ck("NFP: Nov 6 and Jan 8 (the BLS date for the Jan 1 holiday) from the saved calendar, Dec 4 / Feb 5 / Mar 5 from the BLS rule, all verify true", by("nfp") == ["2026-11-06", "2026-12-04", "2027-01-08", "2027-02-05", "2027-03-05"] and all(e["verify"] for e in es if e["kind"] == "nfp"), by("nfp"))
+    ck("CPI Nov 10 and PPI Nov 13 (and the later ones the saved calendar holds, day-archive 2026-11-20) come from the saved calendar; the next CPI / PPI and retail sales are UNDATED with the official calendar named (no date field)", by("cpi")[:1] == ["2026-11-10"] and by("ppi")[:1] == ["2026-11-13"] and {u["kind"] for u in ev["undated"]} >= {"cpi", "ppi", "retail"}
        and all("date" not in u and u["confirm"] and u["verify"] for u in ev["undated"]) and any("bls.gov" in u["confirm"] for u in ev["undated"]) and any("census.gov" in u["confirm"] for u in ev["undated"]), [u["title"] for u in ev["undated"]])
     ck("no claims or press-conference rows are copied from the saved calendar (the weekly rule and the decision cover them)", not any("press conference 2:30 PM" not in e["title"] and e["kind"] == "other" and "Claims" in e["title"] for e in es))
     ck("deterministic: building twice gives the same text", render(ev) == render(build(DEFAULT["from"], DEFAULT["to"], DEFAULT["asof"], read_calendar())))
