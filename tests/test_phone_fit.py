@@ -5,6 +5,8 @@ through Chromium's Emulation.setSafeAreaInsetsOverride so env(safe-area-inset-*)
   a. no sideways scroll (the page is never wider than the phone)
   b. nothing hidden under the bottom: at the very end of the page the last line of content ends above every bar fixed to the bottom
      (a tab bar, the orb) and above the home bar (env(safe-area-inset-bottom))
+  d. no empty band at the end: at most BAND_MAX px between the last line and the home bar (the old 176 px orb seat on pages without an orb
+     was the "funky" bottom: an empty slab under every page)
   c. no page errors; the ZEUS page shows the Live feed strip and one card per account with its last trades and the open trade
 SHOTS=<dir> also saves a phone screenshot of each page (viewport, the top) and of its end (the bottom), for the handoff.
     flock -w 2400 /tmp/olympus_browser.lock python -X utf8 -m tests.test_phone_fit
@@ -24,6 +26,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB = os.path.join(ROOT, "tools", "web_public")
 RES: list = []
 SIZES = [(390, 844), (430, 932)]
+BAND_MAX = 120          # px of empty page under the last line at the very end (the OLYMPUS seal's 96 px corner fits; the old 176 px seat did not)
 INSETS = {"top": 47, "bottom": 34}
 PAGES = [("zeus", "hub/zeus.html", "window.ZEUS_PAGE && window.ZEUS_PAGE.ready"),
          ("mffu", "business/mffu.html", None),
@@ -159,6 +162,9 @@ def main() -> int:
                     limit = min(m["barTop"], m["H"] - sb)
                     check(f"b. {name} {w}x{h}: the last line ends above the bottom bars and the home bar ({round(m['last'])} <= {round(limit)})",
                           m["last"] <= limit + 0.5, (m["lastEl"], m["bars"], m["H"], sb))
+                    band = m["H"] - sb - m["last"]
+                    check(f"d. {name} {w}x{h}: no empty band at the end (the 'funky' bottom): {round(band)} px between the last line and the home bar <= {BAND_MAX}",
+                          band <= BAND_MAX, (m["lastEl"], m["bars"]))
                     check(f"c. {name} {w}x{h}: no page errors", not errs, errs[:3])
                     if name == "zeus":
                         z = p.evaluate("""(() => ({ feed: [...document.querySelectorAll('#feed .zs-ev')].map((e) => e.textContent),
