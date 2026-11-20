@@ -309,6 +309,10 @@ def allow_reviewed(f):
     # their street addresses / ZIPs / phones are the product's sample. The owner's own batch (agency/my_leads.json) is NOT allowed.
     if f["file"] in AGENCY_DEMO and f["kind"] in ("street address", "state + ZIP", "phone"):
         return True
+    # the Website Factory's concept sites (tools/site_factory.py, agency/f/<id>/): each shows ONE business's own public phone and
+    # street address (OpenStreetMap listing) so its click-to-call works; never the owner (test_site_factory checks the facts come from the lead)
+    if re.fullmatch(r"agency/f/[a-z2-9]{8}/index\.html", f["file"]) and f["kind"] in ("street address", "state + ZIP", "phone"):
+        return True
     if f["kind"] == "email":
         if re.search(r"(^|/)(OFL|LICENSE|NOTICE|COPYING)[^/]*$", f["file"]) or f["file"].startswith(("olympus/three-addons/", "assets/")):
             return True
