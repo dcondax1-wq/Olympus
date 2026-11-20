@@ -1017,6 +1017,16 @@ a.lnk { color: var(--accent-2); text-decoration: underline; text-decoration-colo
   window.__olyPaint = on;
   var mt = document.querySelector('meta[name="theme-color"]'); if (mt && c.meta) { mt.setAttribute('data-oly-own', mt.getAttribute('content') || ''); mt.setAttribute('content', c.meta); }
 } catch (e) { return; } })('today', (function () { try { return window.localStorage.getItem('le.theme') === '"light"' ? 'off' : 'page'; } catch (e) { return 'page'; } })());</script>
+<script>/* OLYMPUS NIGHT from the first frame while nothing is chosen (day-arenas 2026-11-20: the kit's default is no longer saved as a choice,
+   so the FIRST PAINT copy above paints nothing then; this paints the engine's saved copy of 'night', which it writes on every apply) */
+(function () { try {
+  var ls = window.localStorage, v = ls.getItem('olympus.theme'), d = document.documentElement, k, on = window.__olyPaint || [];
+  if ((v && v !== 'agora') || ls.getItem('olympus.theme.night') === '1' || ls.getItem('le.theme') === '"light"' || ls.getItem('olympus.themeMix')) return;
+  var c = JSON.parse(ls.getItem('olympus.theme.look.page.night') || 'null'); if (!c || !c.vars) return;
+  for (k in c.vars) { d.style.setProperty(k, c.vars[k]); on.push(k); }
+  d.setAttribute('data-oly-theme', 'night'); d.setAttribute('data-oly-scheme', 'dark'); if (c.style) d.setAttribute('data-oly-style', c.style);
+  window.__olyPaint = on;
+} catch (e) { /* the engine paints it a moment later */ } })();</script>
 <script>(function () {
   var R = document.documentElement, own = function () { return R.getAttribute('data-theme') === 'light'; };
   function go() {
@@ -1181,7 +1191,7 @@ html[data-oly-scheme="light"] {
 </div>
 <div class="toast" id="toast"></div>
 <script src="main.js?v=w14" defer fetchpriority="high"></script><!-- the Zenith app itself (QA Round 7: was a 422 KB inline script; deferred so the skeleton paints first) -->
-<script src="zenith_settle.js?v=2" defer></script><!-- day-arenas DESIGN: Home start-up changes happen behind a still copy of the last frame, shown in one step (no cascade of jumps) -->
+<script src="zenith_settle.js?v=5" defer></script><!-- day-arenas DESIGN: Home start-up changes happen behind a still copy of the last frame, shown in one step (no cascade of jumps) -->
 <script type="module">import * as T from "./olympus/truth.js?v=r12"; window.OLYMPUS_TRUTH = T;</script><!-- one source for drawdown / balance / data age (QA round 6) -->
 <script src="extras.js?v=3" defer fetchpriority="high"></script>
 <script src="hub.js?v=11d" defer fetchpriority="high"></script>
@@ -1234,6 +1244,7 @@ html[data-oly-scheme="light"] {
 <script src="zenith_nq.js?v=5" defer></script>
 <script src="embed.js?v=1" defer></script>
 <script src="olympus/zeus_core.js?v=8" defer></script>
+<script src="olympus/dashfx.js?v=d1" defer></script><script src="zenith_fx.js?v=4" defer></script>
 <script>/* ZEUS (2026-11-18, night-zcard): Home starts with ONE ZEUS card (olympus/zeus_core.js, the same matching as hub/zeus.html): PC reported X min ago
    (red PC SILENT), one line per real account (stage, balance, $ to pass / payout, today's $), the ZEUS edge chip; a tap opens hub/zeus.html.
    Kept the first child of #page through every Home redraw; other pages never show it. Paper / cloud ledgers stay lower (Money now: "Paper test"). */
