@@ -3567,6 +3567,17 @@ class LiveBot:
         now = float(self.clock())
         if self._await_nt_bar(now):
             return 0.0
+        try:                                    # engine/fast_entry.py (OFF by default): the minute's first poll on NinjaTrader's
+            from . import fast_entry as _fe     # first tick instead of +2 s; None = not on / not that poll = today's wait
+            if _fe.enabled(self.cfg):
+                w = _fe.first_tick_wait(self._nt_feed, self.cfg.get("sym", "NQ"), now, self.cfg.get("poll_offsets") or (2.0, 32.0),
+                                        clock=self.clock, sleep=self.stop_flag.wait, done=getattr(self, "_tick_b", None))
+                if w is not None:
+                    if w[0] == 0.0:
+                        self._tick_b = w[1]     # this minute's first poll runs now: no second one at +2 s
+                    return w[0]
+        except Exception as e:
+            self._note_error(f"poll on tick failed: {e.__class__.__name__}: {e}")
         return max(0.0, next_wake(now, self.cfg.get("poll_offsets") or (2.0, 32.0)) - now)
 
     def _await_nt_bar(self, now, limit_s=20.0, step=0.25):

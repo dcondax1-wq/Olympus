@@ -129,8 +129,11 @@ def eval_checks(tmp):
                     == AB.qty(e2, {"risk_pts": r, "tgt_pts": 2 * r}, st(room, cum=cum, sess=s_))["qty"]
                     for r in (6.0, 15.0, 40.0) for room in (150.0, 900.0, 1600.0) for cum in (-300.0, 0.0) for s_ in (1, 11))
     q = AB.qty(e, {"risk_pts": 10.0, "tgt_pts": 15.0}, st(1000.0))
-    check(f"a. eval sizing as before (25K need, 10-pt stop: 20 micros; funded keys without a stage change nothing) -> {q['qty']}",
-          q["qty"] == 20 and grid_same and not any("funded" in x for x in q["reasons"]), q)
+    # 17 (was 20): live is "eval two_week room_f 0.4" (CLAUDE.md owner-approved sizing; engine/multi_account two_week room_f
+    # 0.4, was 0.5): 40% of the $1,000 room / (10 pts x $2 + costs) = 17 micros. Same checks, the expected number only.
+    check(f"a. eval sizing as before (25K need, 10-pt stop: 17 micros at room_f 0.4; funded keys without a stage change nothing) "
+          f"-> {q['qty']}",
+          q["qty"] == 17 and grid_same and not any("funded" in x for x in q["reasons"]), q)
     now = ts("2026-10-28", 9)
     B, fb = acct(e, now, tmp, closes=[["2026-10-26", now - 2 * 86400, 900.0, now - 2 * 86400 - 600],
                                       ["2026-10-27", now - 86400, 650.0, now - 86400 - 600]], tag="ev")

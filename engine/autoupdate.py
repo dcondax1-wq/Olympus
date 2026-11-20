@@ -258,9 +258,29 @@ def bot_flat_reason(bot) -> str | None:
         from .accounts import _lit_stage
         if getattr(bot, "running", False) and _lit_stage(getattr(bot, "state", None) or {}).get("stage") in PENDING_STAGES:
             return "a LIT setup is armed"
-        return None
+        return extra_flat_reason(bot)
     except Exception as e:
         return f"cannot tell if flat ({e.__class__.__name__})"
+
+
+def extra_flat_reason(bot) -> str | None:
+    """(night-nqlive 2026-11-20) The bot's OTHER accounts: ATLAS (account B), account C, the Rapid lane: an open position or an
+    open NinjaTrader bracket there also keeps an update / restart away (before, only LIT's own position and legs were checked,
+    so an hourly update could restart the server under an open ATLAS trade). Never raises; None = flat."""
+    try:
+        for nm, lab in (("acct_b", "ATLAS"), ("acct_c", "account C"), ("acct_r", "the Rapid lane")):
+            a = getattr(bot, nm, None)
+            if a is None:
+                continue
+            pos = a.position() if callable(getattr(a, "position", None)) else None
+            if pos:
+                return f"{lab} has a position open"
+            for lg in list(getattr(getattr(a, "adapter", None), "legs", None) or []):
+                if isinstance(lg, dict) and lg.get("status") in OPEN_LEG:
+                    return f"{lab}'s NinjaTrader bracket is {lg.get('status')}"
+        return None
+    except Exception as e:
+        return f"cannot tell if the other accounts are flat ({e.__class__.__name__})"
 
 
 def bot_all_hours(bot) -> bool:

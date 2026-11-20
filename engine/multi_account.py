@@ -474,6 +474,10 @@ class Account:
         self.hedge_wait: set = set()           # LIT entry_t that waited for ATLAS / BLITZ on another account to close (logged once)
         self.bank: dict = {}                   # entry_t -> engine/rapid.lit_bank (the Rapid 25K option; empty when OFF)
         self.mx = threading.RLock()
+        try:                                   # when this account joined the running bot (an account added while it runs):
+            self.added_t = int(router.clock())  # a model trade that ENDED before that is none of its business (night-nqlive)
+        except Exception:
+            self.added_t = 0
 
     # ---- plumbing
     @property
@@ -977,8 +981,14 @@ class Account:
         if pos and self.open_t == pos.get("entry_t") and getattr(self.adapter, "route_stop_moves", False):
             self._stop_move(pos, sym)
         self._drop_unplaced(now)
+        # night-nqlive 2026-11-20 (PC data 2026-11-17 20:26 ET): Zlarior 25K #2, added while the bot ran, booked the Nov 16 06:16
+        # trade's model exit (-$129.40) on its own ledger and sent NinjaTrader a CLOSEPOSITION for it on its first poll: the
+        # model's window still holds older trades and the bot's start (ctx "start") was before the account existed. A trade
+        # that ended before this account joined is skipped; an exit of an entry this account never routed books $0 (as
+        # LiveBot does since 2026-10-26: "a missed 08:37 BE trade booked +$0.10 on the 50K").
+        start_x = max(int(start or 0), int(getattr(self, "added_t", 0) or 0))
         for tr in res["trades"]:
-            if tr["exit_t"] < start - secs or ("exit", tr["entry_t"]) in self.seen:
+            if tr["exit_t"] < start - secs or tr["exit_t"] < start_x - secs or ("exit", tr["entry_t"]) in self.seen:
                 continue
             self.seen.add(("exit", tr["entry_t"]))
             if tr["entry_t"] in self.blocked:
@@ -1008,7 +1018,7 @@ class Account:
             else:
                 why = tr["exit_reason"]
             if self.spec["adapter"] == "paper" or tr["exit_reason"] == "TIME" or getattr(self.adapter, "route_all_exits", False):
-                self.route({"sym": sym, "side": "exit", "qty": qty, "reason": why, "pnl": pnl,
+                self.route({"sym": sym, "side": "exit", "qty": qty, "reason": why, "pnl": pnl if routed else 0.0,
                             "entry_t": tr["entry_t"], "exit_t": tr["exit_t"]})
             if routed:
                 self._close(tr["entry_t"], tr["exit_t"], pnl, now, why)

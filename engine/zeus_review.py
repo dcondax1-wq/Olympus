@@ -213,6 +213,15 @@ def review(days: list, edge: dict | None = None, prev: dict | None = None, pipe:
         top = max(set(reasons), key=reasons.count)
         propose("missed-entries", "zlarior", f"execution: {reasons.count(top)} missed entries in 10 sessions, mostly '{top}'",
                 {"reasons": reasons[:6]})
+    # ---- the bot's own "NOT routed" lines of the day (engine/fill_audit.day_not_routed via the nightly verdict, 2026-11-20):
+    # why an entry did not reach the account (feed stale, seen late, size 0, guard, never routed during a gap), info only
+    nr = [x for x in (((today.get("twin") or {}).get("nightly") or {}).get("not_routed") or []) if isinstance(x, dict)]
+    if nr:
+        first = nr[0]
+        item("info", "not_routed", f"{len(nr)} entr{'y' if len(nr) == 1 else 'ies'} NOT routed today, first {first.get('et')} ET: "
+             + str(first.get("text") or "")[:140])
+    if tw["verdict"] == "unknown":
+        item("info", "unknown", "a backtest trade on a day before the PC's own records: check the broker statement")
     # ---- refused orders
     rj = rejects(today)
     rj_days = sum(1 for b in days[-5:] if rejects(b))

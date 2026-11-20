@@ -22,7 +22,9 @@ size). Two more real misses came later (Nov 10-11, both losers). Net: missing th
 
 The audit bug (engine/fill_audit._pc_on / _miss_reason): a day BEFORE the PC's own first record (its exec_audit store and
 trade rows start Nov 3-6) has no uptime samples and no ledger rows, so _pc_on returns None and the row is called
-"missed: PC bot off (no record of the bot that day)" - even for Oct 28, which was traded. PROPOSED fix (not applied):
+"missed: PC bot off (no record of the bot that day)" - even for Oct 28, which was traded. LANDED 2026-11-20 (night-nqlive):
+engine/fill_audit.compare(..., first_record_day) / audit() mark such a day "unknown" exactly as classify() below says
+(tests/test_nq_live_reliability.py). The original proposal text:
 classify() below - such a day is status "unknown" ("before the PC's records start <day>: check the broker statement"),
 left out of the missed count and missed $. A test (tests/test_live_gap_proposal.py) pins both today's behaviour and the
 proposal on the Oct 28 case.

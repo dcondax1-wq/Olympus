@@ -18,6 +18,9 @@ goes this way, on request, with no new sign-in and nothing for the owner to do:
                                                 src / bot / acct / mode; account names cut to the last 4, no balances, no paths
            days/<day>/manifest.json             rows, sha256, chart contract, partial (an unfinished session), code version
            days/<day>/review.json, proposals.jsonl   when the nightly run (engine/datapipe) made them
+           days/<day>/gaps.json         (2026-11-20) the bot's own "NOT routed" lines, held-back entries and uptime samples
+                                        of the day (logs/exec_audit/notes.json, ids cut): why a backtest trade did not reach
+                                        the account, readable from the cloud (day_gaps)
          Oldest day first, at most MAX_ZIP bytes: a longer gap says "more" and the cloud asks again from where it stopped.
 ntfy.sh anonymous limits, measured 2026-11-18: an attachment up to 2 MB (1.9 MB accepted, 2.6 MB refused with HTTP 413), kept
 3 hours; messages kept 12 hours; 250 messages a day per IP. The PC's status posts already use ~210 a day, so an answer is ONE
@@ -78,7 +81,7 @@ EXTRAS = ("review.json", "proposals.jsonl", "learn.json")   # from the nightly r
 UA = "olympus-pc-data/1"
 _ID = re.compile(r"^[a-z0-9]{6,24}$")
 _DAY = re.compile(r"^\d{4}-\d{2}-\d{2}$")
-DAY_FILE = re.compile(r"^days/(\d{4}-\d{2}-\d{2})/(manifest\.json|trades\.jsonl\.gz|review\.json|proposals\.jsonl|learn\.json|"
+DAY_FILE = re.compile(r"^days/(\d{4}-\d{2}-\d{2})/(manifest\.json|trades\.jsonl\.gz|review\.json|proposals\.jsonl|learn\.json|gaps\.json|"
                       r"bars/(?:MNQ|NQ|MES|ES|GC|MGC|SI|SIL)_(?:1m|5m)\.csv\.gz)$")
 
 
@@ -298,7 +301,38 @@ def wanted_days(since: str, now, frames: dict, rows: list) -> list:
     return sorted(d for d in cand if dt.date.fromisoformat(d).weekday() < 5)
 
 
-def pack_day(day: str, picked: dict, rows: list, names, contracts: dict, now, code, local_days: str) -> dict:
+GAPS_UPTIME_MAX = 400                           # uptime samples a day in gaps.json (the bot samples every 4 min + each change)
+
+
+def day_gaps(day: str, notes: dict | None) -> bytes | None:
+    """gaps.json of one CME day (night-nqlive 2026-11-20, research/writeups/lit-more-money-2026-11-19.md "Proposal 2": a real
+    miss like Nov 10-11 could not be explained from the cloud): the bot's own "NOT routed / NOT traded / size 0 / never routed"
+    lines of the day, the entries it held back with its reason, and the uptime samples (running, entries blocked, feed block,
+    kill), all from logs/exec_audit/notes.json (engine/fill_audit.collect). Account ids cut to the last 4 (engine/notify.mask_ids);
+    no balances, no paths. None when the day has nothing (no file then). Never raises."""
+    try:
+        from . import fill_audit as FA
+        from .notify import mask_ids
+        N = notes or {}
+        lines = FA.day_not_routed(day, notes=N)
+        blocked = [{"entry_t": int(k), "et": FA._hm(int(k)), "reason": mask_ids(str((v or {}).get("reason") or ""))[:200],
+                    "running": (v or {}).get("running")}
+                   for k, v in sorted((N.get("blocked") or {}).items()) if str(k).isdigit() and FA.trading_day(int(k)) == day]
+        ups = [{"t": int(u["t"]), "et": FA._hm(int(u["t"])), **{k: u.get(k) for k in ("running", "blocked", "feed_block", "kill")}}
+               for u in (N.get("uptime") or []) if isinstance(u, dict) and u.get("t") and FA.trading_day(int(u["t"])) == day]
+        if not (lines or blocked or ups):
+            return None
+        for u in ups:
+            if u.get("feed_block"):
+                u["feed_block"] = mask_ids(str(u["feed_block"]))[:120]
+        rec = {"v": 1, "day": day, "not_routed": lines, "blocked": blocked, "uptime": ups[-GAPS_UPTIME_MAX:],
+               "uptime_n": len(ups), "note": "the PC bot's own record of why an entry of this day did not reach the account"}
+        return json.dumps(rec, indent=1, sort_keys=True).encode("utf-8")
+    except Exception:
+        return None
+
+
+def pack_day(day: str, picked: dict, rows: list, names, contracts: dict, now, code, local_days: str, notes: dict | None = None) -> dict:
     """{path inside days/<day>/: bytes} for one CME day (manifest.json last)."""
     from . import datapipe as DP
     files = {}
@@ -306,6 +340,9 @@ def pack_day(day: str, picked: dict, rows: list, names, contracts: dict, now, co
         files.update(DP.day_bars(day, {(root, tf): f}))
     tr = DP.day_trades(day, rows, names)
     files["trades.jsonl.gz"] = DP.gz(DP.jsonl_bytes(tr))
+    g = day_gaps(day, notes)
+    if g is not None and len(g) < 200_000:
+        files["gaps.json"] = g
     for x in EXTRAS:
         p = os.path.join(local_days, day, x)
         try:
@@ -353,9 +390,10 @@ def build(since: str, now=None, root: str = ROOT, folder: str | None = None, arc
     picked = pick_frames(frames)
     code = _code(root)
     days = wanted_days(since, now, {(r, tf): f for (_s, tf), (r, f) in picked.items()}, rows)
+    notes = _read_json(os.path.join(exec_store or os.path.join(root, "logs", "exec_audit"), "notes.json"), {}) or {}
     packed, size, more = {}, 22, False
     for d in days:
-        fs = pack_day(d, picked, rows, names, contracts, now, code, os.path.join(w, "days"))
+        fs = pack_day(d, picked, rows, names, contracts, now, code, os.path.join(w, "days"), notes=notes)
         c = _entry_cost(d, fs)
         if packed and size + c > max_zip:
             more = True
