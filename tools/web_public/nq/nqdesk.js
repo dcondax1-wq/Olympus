@@ -367,3 +367,109 @@ function drawQuality(box, q) {
   box.appendChild(ul);
 }
 export const draw = { accounts: drawAccounts, thinking: drawThinking, quality: drawQuality };
+
+// ================================================================================================ round 3 (lead 2026-11-20: the audit's MERGE verdicts)
+// Ares (GO / WAIT / HALT) -> gate(); Kairos (the bots' day timeline) -> dayLine(); Chronos (replay a past day) -> pastDays(). The old apps stay
+// reachable (each card links to it); their doors move here via LEAD_WIRES.md.
+
+// the trading day in New York time (Kairos's windows, the hidden paper bot left out). Minutes since midnight ET.
+export const DAY = [
+  { id: 'asia', from: 1080, to: 120, label: 'Evening / Asia', who: 'LIT waits for 02:00 (a paper copy may trade)' },
+  { id: 'london', from: 120, to: 480, label: 'London entries', who: 'LIT looks for a sweep; ATLAS EMA 02:00-05:00' },
+  { id: 'nyam', from: 480, to: 720, label: 'New York morning', who: 'LIT can still enter; ATLAS NY level reclaim' },
+  { id: 'nypm', from: 720, to: 930, label: 'New York afternoon', who: 'entries until 15:30' },
+  { id: 'winddown', from: 930, to: 955, label: 'No new trades', who: 'open trades closed at 15:55' },
+  { id: 'flat', from: 955, to: 970, label: 'Flat time', who: 'MFFU needs flat by 16:10' },
+  { id: 'idle', from: 970, to: 1020, label: 'Quiet', who: 'flat until the CME break' },
+  { id: 'break', from: 1020, to: 1080, label: 'CME break', who: 'no prices' },
+];
+const WD = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+export function phase(nowS) {
+  const p = etParts(nowS), wd = WD[p.wd] ?? new Date(nowS * 1000).getUTCDay(), mod = +p.hm.slice(0, 2) * 60 + +p.hm.slice(3);
+  if (wd === 6 || (wd === 0 && mod < 1080) || (wd === 5 && mod >= 1020)) return { id: 'closed', label: 'Market closed', who: 'reopens Sunday 18:00 ET', mod, wd };
+  const w = DAY.find((x) => (x.from < x.to ? mod >= x.from && mod < x.to : mod >= x.from || mod < x.to));
+  return { ...w, mod, wd };
+}
+/** the strip from 18:00 (yesterday) to 17:00: each window's share, the now marker, today's trades as dots */
+export function dayLine(home, nowS) {
+  const ph = phase(nowS), span = 23 * 60, pos = (m) => ((m - 1080 + 1440) % 1440) / span;
+  const segs = DAY.filter((w) => w.id !== 'break').map((w) => ({ id: w.id, label: w.label, a: pos(w.from), b: w.to === 120 ? pos(120) : pos(w.to) || 1 }));
+  const day = etParts(nowS).day, dots = [];
+  for (const t of arr(isObj(home) && isObj(home.board) ? home.board.trades : null)) {
+    if (!isObj(t) || t.src === 'paper' || /blitz/i.test(String(t.acct))) continue;
+    const et = num(t.entry_t); if (!et) continue;
+    const p = etParts(et), m = +p.hm.slice(0, 2) * 60 + +p.hm.slice(3);
+    if (p.day !== day && !(m >= 1080 && p.day < day)) continue;
+    dots.push({ x: pos(m), bot: /atlas/i.test(String(t.acct)) ? 'ATLAS' : 'Zlarior', open: !!t.open, usd: num(t.usd), side: String(t.side || '') });
+  }
+  return { phase: ph, now: ph.id === 'closed' || ph.id === 'break' ? null : pos(ph.mod), segs, dots };
+}
+
+/** Ares's verdict for the BOTS, per account: HALT (market shut, floor reached, daily loss limit hit, eval target reached), WAIT (outside the entry
+ * window, high-impact news within 30 minutes, data stale), GO (in its window with room). Only the posted numbers; the manual calculator stays in ../ares/. */
+const DLL = { 'MFFU Builder 50K': 1000, 'MFFU Builder 25K': 600, 'MFFU Builder 25K (funded)': 600, 'MFFU Rapid EOD 25K': 500 };
+export function gate(accts, home, news, nowS) {
+  const ph = phase(nowS), hm = etParts(nowS).hm, soon = todayNews(news, nowS).find((n) => n.time && !n.past && minsBetween(hm, n.time) <= 30);
+  return arr(accts).filter((a) => isObj(a) && a.dot !== 'plan').map((a) => {
+    const why = [], halt = (t) => why.push({ level: 'halt', t }), wait = (t) => why.push({ level: 'wait', t });
+    if (ph.id === 'closed' || ph.id === 'break') halt(`${ph.label}: ${ph.who}.`);
+    if (a.has && a.room !== null && a.room <= 0) halt('At the drawdown floor: the account is over.');
+    const dll = DLL[a.plan] ?? (a.mll >= 2000 ? 1000 : 600);
+    if (a.has && a.today !== null && a.today <= -dll) halt(`Daily loss limit hit (${money(a.today)} of -${money(dll)}): MFFU pauses it for the day.`);
+    if (a.has && a.stage === 'Eval' && a.goal !== null && a.goal <= 0) halt('Target reached: stop this eval and ask MFFU for the funded account.');
+    if (!a.has) wait('No numbers from the PC for this account yet.');
+    else if (a.dot === 'stale') wait(`The PC's numbers are ${a.ageText}: check the PC before trusting GO.`);
+    if (['winddown', 'flat', 'idle'].includes(ph.id)) wait(`${ph.label} (${ph.who}).`);
+    else if (ph.id === 'asia') wait('Before 02:00 ET: LIT takes no real entry yet.');
+    if (soon) wait(`${soon.title} at ${soon.time} ET (within 30 min): spreads jump, stops slip.`);
+    const level = why.some((x) => x.level === 'halt') ? 'halt' : why.length ? 'wait' : 'go';
+    return { key: a.key, name: a.name, level, why: why.length ? why : [{ level: 'go', t: `${ph.label}: in its window, ${money(a.room)} of room left.` }] };
+  });
+}
+function minsBetween(a, b) { return (+b.slice(0, 2) * 60 + +b.slice(3)) - (+a.slice(0, 2) * 60 + +a.slice(3)); }
+
+/** Chronos: the past days with a real or paper trade (../odeon/trades.json), newest first, each a link to its replay (../chronos/#YYYY-MM-DD) */
+export function pastDays(odeon, n = 8) {
+  const by = new Map();
+  for (const t of arr(isObj(odeon) ? odeon.trades : null)) {
+    if (!isObj(t) || !t.day || /blitz/i.test(String(t.bot) + t.label)) continue;
+    const d = by.get(t.day) || { day: t.day, n: 0, usd: 0, real: false, bots: new Set() };
+    d.n++; d.usd += num(t.usd) || 0; d.real = d.real || t.src === 'real'; d.bots.add(t.bot === 'LIT' ? 'Zlarior' : String(t.bot || ''));
+    by.set(t.day, d);
+  }
+  return [...by.values()].sort((a, b) => (a.day < b.day ? 1 : -1)).slice(0, n).map((d) => ({ day: d.day, n: d.n, usd: Math.round(d.usd), real: d.real, bots: [...d.bots].join(' + '), href: '../chronos/#' + d.day }));
+}
+
+function drawGate(box, G) {
+  clear(box);
+  const W = { go: 'GO', wait: 'WAIT', halt: 'HALT' };
+  for (const g of G) {
+    const r = el('div', 'dk-gate ' + g.level); r.dataset.key = g.key;
+    r.appendChild(el('span', 'dk-gv ' + g.level, W[g.level]));
+    const t = el('div', 'dk-gt'); t.appendChild(el('b', '', g.name)); for (const w of g.why.slice(0, 3)) t.appendChild(el('small', '', w.t)); r.appendChild(t);
+    box.appendChild(r);
+  }
+  if (!G.length) box.appendChild(el('p', 'dk-none', 'No account numbers yet.'));
+}
+function drawDay(box, D) {
+  clear(box);
+  const bar = el('div', 'dk-day'); bar.setAttribute('role', 'img');
+  bar.setAttribute('aria-label', `The trading day from 18:00 to 17:00 New York time. Now: ${D.phase.label}, ${D.phase.who}.`);
+  for (const s of D.segs) { const i = el('i', 'dk-seg ' + s.id); i.style.left = `${(s.a * 100).toFixed(2)}%`; i.style.width = `${(Math.max(0, s.b - s.a) * 100).toFixed(2)}%`; i.title = s.label; bar.appendChild(i); }
+  for (const d of D.dots) { const i = el('b', 'dk-dotr ' + (d.open ? 'open' : (d.usd || 0) >= 0 ? 'win' : 'loss')); i.style.left = `${(d.x * 100).toFixed(2)}%`; i.title = `${d.bot} ${d.side} ${d.open ? 'open' : money(d.usd, true)}`; bar.appendChild(i); }
+  if (D.now !== null) { const n = el('span', 'dk-now'); n.style.left = `${(D.now * 100).toFixed(2)}%`; bar.appendChild(n); }
+  box.appendChild(bar);
+  const ticks = el('div', 'dk-ticks'); for (const [x, t] of [[0, '18:00'], [8 / 23, '02:00'], [14 / 23, '08:00'], [18 / 23, '12:00'], [1, '17:00']]) { const s = el('span', '', t); s.style.left = `${(x * 100).toFixed(2)}%`; ticks.appendChild(s); }
+  box.appendChild(ticks);
+  const p = el('p', 'dk-line'); p.appendChild(el('b', '', `Now: ${D.phase.label}. `)); p.appendChild(document.createTextNode(D.phase.who + '.')); box.appendChild(p);
+  if (D.dots.length) box.appendChild(el('p', 'dk-note', D.dots.map((d) => `${d.bot} ${d.side.toLowerCase()} ${d.open ? '(open)' : money(d.usd, true)}`).join(' · ')));
+}
+function drawPast(box, L) {
+  clear(box);
+  if (!L.length) { box.appendChild(el('p', 'dk-none', 'No replayable day yet.')); return; }
+  const ul = el('ul', 'dk-past');
+  for (const d of L) { const li = el('li'); const a = el('a', '', `${nice2(d.day)} · ${d.bots} · ${d.n} trade${d.n === 1 ? '' : 's'}`); a.href = d.href; li.appendChild(a); li.appendChild(el('span', 'ag-num ' + (d.usd > 0 ? 'pos' : d.usd < 0 ? 'neg' : ''), `${money(d.usd, true)}${d.real ? ' LIVE' : ''}`)); ul.appendChild(li); }
+  box.appendChild(ul);
+}
+function nice2(d) { const t = Date.parse(d + 'T12:00:00Z'); return isNaN(t) ? d : new Date(t).toLocaleDateString('en-US', { timeZone: 'UTC', weekday: 'short', month: 'short', day: 'numeric' }); }
+draw.gate = drawGate; draw.day = drawDay; draw.past = drawPast;

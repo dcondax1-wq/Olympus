@@ -118,6 +118,20 @@ import(process.argv[2]).then((D) => {
   const h4 = JSON.parse(JSON.stringify(home));
   h4.accounts.push({ id: 'rapid', name: 'Rapid EOD 25K', source: 'pc', live: true, conn: { t: now - 240 }, eval: { balance: 25000, room: 1000, mll: 1000, to_target: 1500, today: 0, status: 'open' } });
   o.n4 = D.accounts(h4, biz, now).map((a) => [a.key, a.dot, a.balance]);
+  // round 3: Ares gate, Kairos day line, Chronos past days
+  const A5 = D.accounts(home, biz, now);
+  o.gate = D.gate(A5, home, news, now).map((g) => [g.key, g.level, g.why[0].t]);
+  const fri1700 = Date.parse('2026-11-20T22:30:00Z') / 1000, wed0100 = Date.parse('2026-11-18T06:00:00Z') / 1000;
+  o.gateClosed = D.gate(A5, home, news, fri1700).map((g) => g.level);
+  o.gateAsia = D.gate(A5, home, news, wed0100).map((g) => g.level);
+  const newsSoon = { events: [{ date: '2026-11-20', time: '10:45', title: 'Fed speech', impact: 'high' }] };
+  o.gateNews = D.gate(A5, home, newsSoon, now).find((g) => g.key === 'zlarior');
+  const AD = A5.map((a) => (a.key === 'zlarior' ? { ...a, today: -1000 } : a));
+  o.gateDll = D.gate(AD, home, news, now).find((g) => g.key === 'zlarior');
+  o.phase = [D.phase(now).id, D.phase(fri1700).id, D.phase(wed0100).id, D.phase(Date.parse('2026-11-20T21:00:00Z') / 1000).id];
+  const DLn = D.dayLine(home, now); o.day = [DLn.phase.id, Math.round(DLn.now * 1000) / 1000, DLn.dots.map((d) => [d.bot, d.open]), DLn.segs.length];
+  o.past = D.pastDays({ trades: [{ day: '2026-10-28', bot: 'LIT', src: 'real', usd: -437 }, { day: '2026-10-28', bot: 'ATLAS', src: 'paper', usd: 100 }, { day: '2026-10-29', bot: 'BLITZ', usd: 5 },
+    { day: '2026-10-27', bot: 'LIT', src: 'lit', usd: 300 }] });
   const junk = [null, undefined, 7, 'x', [], {}, { board: 5, live: [], accounts: 'no' }, { accounts: [null, 4, { id: 'mffu50k_eval' }], live: { pc: { glance: { bots: [null, { id: 'lit', arm: 'x', lv: [null, [1]] }] } } } }];
   o.junk = junk.map((j) => { try { return [D.accounts(j, j, now, j).length, D.thinking(j, j, j, now, j).length, D.quality(j, j, j, now).rows.length]; } catch (e) { return 'THROW ' + e.message; } });
   o.words = [D.money(-0.2), D.money(1234.5, true), D.rText(0.5), D.rText(-1.03), D.ageText(30), D.ageText(4 * 60), D.ageText(2 * 3600 + 600), D.mins(1500)];
@@ -187,6 +201,17 @@ def test_core():
           and o["briefJunk"][0] is None and o["briefJunk"][1]["bias"] is None and o["briefJunk"][1]["levels"] == [], (o["briefOld"], o["briefJunk"]))
     check("b. N accounts: the PC's Rapid EOD 25K (id 'rapid') fills the planned Rapid tile with its numbers, the extra Builder keeps its own tile",
           ["rapid1", "live", 25000] in o["n4"] and ["xtra9", "live", 50100] in o["n4"] and len(o["n4"]) == 5 and o["n4"][-1][0] == "xtra9", o["n4"])
+    gt = {g[0]: g for g in o["gate"]}
+    check("r3. Ares -> GO / WAIT / HALT per account (Fri 10:30 ET, NY morning): Zlarior 50K GO with its room, the stale 25K #2 WAIT, the planned Rapid not listed",
+          gt["zlarior"][1] == "go" and "$1,025 of room" in gt["zlarior"][2] and gt["fresh25"][1] == "wait" and "rapid1" not in gt, o["gate"])
+    check("r3. ... Fri 17:30 ET = HALT for all (market closed); Wed 01:00 ET = WAIT (LIT takes no real entry before 02:00); news in 15 min = WAIT; a -$1,000 day on the 50K = HALT (MFFU daily loss limit)",
+          set(o["gateClosed"]) == {"halt"} and o["gateAsia"][0] == "wait" and o["gateNews"]["level"] == "wait" and "Fed speech at 10:45" in o["gateNews"]["why"][0]["t"]
+          and o["gateDll"]["level"] == "halt" and "Daily loss limit" in o["gateDll"]["why"][0]["t"], (o["gateClosed"], o["gateAsia"], o["gateNews"], o["gateDll"]))
+    check("r3. Kairos -> the day line: phases (NY morning / closed / Asia / flat time), the now marker at 10:30 (16.5 of 23 h from 18:00), today's trades as dots (ATLAS open, Zlarior closed), 7 windows; no BLITZ",
+          o["phase"] == ["nyam", "closed", "asia", "flat"] and o["day"][0] == "nyam" and o["day"][1] == round(990 / 1380, 3) and o["day"][2] == [["ATLAS", True], ["Zlarior", False]]
+          and o["day"][3] == 7, (o["phase"], o["day"]))
+    check("r3. Chronos -> past days newest first with their bots, $ and LIVE flag, each a ../chronos/#day link; BLITZ never",
+          [(d["day"], d["bots"], d["usd"], d["real"], d["href"]) for d in o["past"]] == [("2026-10-28", "Zlarior + ATLAS", -337, True, "../chronos/#2026-10-28"), ("2026-10-27", "Zlarior", 300, False, "../chronos/#2026-10-27")], o["past"])
     q2 = {r[0]: r for r in o["q2"]}
     check("d. a 2-hour-old report: report amber, a 2-hour-old heartbeat red (the bot beats every 5 min); without reporter.na the last alert is the "
           "newest trade event (ATLAS's entry 25 min ago); no news file -> amber",
