@@ -42,7 +42,6 @@
         { label: 'Fleet plan', greek: 'Business · Fleet Plan', href: 'business/plan.html', app: '', words: 'fleet plan accounts 6 months buy rapid builder monte carlo' },
         { label: 'Household', greek: 'Oikos', href: 'oikos/', app: 'oikos', words: 'household bills budget leaks buckets home spending' },
         { label: 'More work', greek: 'Business · More Work', href: 'business/work.html', app: '', words: 'work jobs side work freelance agency websites income' },
-        { label: 'Work week', greek: 'Business · Work Week', href: 'business/schedule.html', app: '', words: 'schedule week calendar checks review payout day' }
       ],
       ids: ['business', 'widget', 'ledger', 'hera', 'plutus', 'chrysos', 'oikos', 'agency', 'mercury', 'mint', 'mintcity', 'harmonia', 'hermes', 'argo', 'arbiter'] },
     { id: 'kalshi', title: 'Kalshi', line: 'The Kalshi bot and its edges. Paused: paper only, no real bets', colour: '#b5a642',

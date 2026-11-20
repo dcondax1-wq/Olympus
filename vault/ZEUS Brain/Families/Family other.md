@@ -7,11 +7,13 @@ type: "family"
 
 # Research family: other
 
-> [!abstract] 94 write-ups
-> adopt-candidate 15, finding 8, info 16, promising 14, rejected 30, research 11
+> [!abstract] 96 write-ups
+> adopt-candidate 15, finding 9, info 16, promising 14, rejected 30, research 12
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-20 | [[nq-live-reliability-2026-11-20\|NQ live bot reliability]] | finding |
+| 2026-11-20 | [[money-ideas-2026-11-20\|Money ideas]] | research |
 | 2026-11-19 | [[third-strategy-2026-11-18\|Third strategy hunt]] | rejected |
 | 2026-11-19 | [[lit-more-money-2026-11-19\|Zlarior]] | rejected |
 | 2026-11-18 | [[zeus-lab-lit-ideas-2026-11-18\|ZEUS Lab]] | research |

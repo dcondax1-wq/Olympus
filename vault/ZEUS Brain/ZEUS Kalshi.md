@@ -135,6 +135,7 @@ type: "kalshi"
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-20 | [[kalshi-k8-monday-2026-11-20\|Kalshi K8 for a $55 account, ready by Monday 6 PM]] | research |
 | 2026-11-19 | [[kalshi-red-team-K8-2026-11-19\|Kalshi red team on K8]] | research |
 | 2026-11-19 | [[kalshi-metals-2026-11-19\|Kalshi K8 commodities]] | research |
 | 2026-11-19 | [[kalshi-edge-K7-2026-11-18\|Kalshi K7]] | rejected |

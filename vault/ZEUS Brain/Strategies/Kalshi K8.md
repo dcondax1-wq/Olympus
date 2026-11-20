@@ -35,12 +35,16 @@ key: "k8"
 
 ## Tested and rejected
 
-_Nothing on the rejected list names this one yet._
+> [!failure]- **Kalshi K8 better edge
+> **Kalshi K8 better edge (2026-11-20 night-kalshi8, `research/writeups/kalshi-k8-monday-2026-11-20.md`, `research/kalshi_k8_monday/edge.py`, 84 variants, one-sided Bonferroni t >= 3.24 found on Aug 3-Oct 21, checked on the held-out Oct 22-Nov 19, $2.50 bets, the +20 s tape price, verify.py fees): NOTHING passed. Entry +10 s pays 0.15-0.5c MORE than +20 s (-2% to -3% per $1), +40 s pays 0.8c more and misses 19% of fills: +20 s stays. Price caps 50-60c per leg (30): the skipped dearer bets still made +19% to +53% per $1 in the find weeks (only gold 16:15 above 60c lost, 8 bets). Leg filters from the metals' own path on Kalshi's settles (48: previous quarter hour, 4-hour move, the session ...
+> Write-ups: [[kalshi-k8-monday-2026-11-20|Kalshi K8 for a $55 account, ready by Monday 6 PM]]
+
 
 ## Write-ups
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-20 | [[kalshi-k8-monday-2026-11-20\|Kalshi K8 for a $55 account, ready by Monday 6 PM]] | research |
 | 2026-11-19 | [[kalshi-red-team-K8-2026-11-19\|Kalshi red team on K8]] | research |
 | 2026-11-19 | [[kalshi-metals-2026-11-19\|Kalshi K8 commodities]] | research |
 | 2026-11-19 | [[kalshi-edge-K7-2026-11-18\|Kalshi K7]] | rejected |

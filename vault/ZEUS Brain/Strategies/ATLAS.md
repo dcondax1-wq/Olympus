@@ -62,6 +62,10 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 
 ## Tested and rejected
 
+> [!failure]- Payday levers + cross-bot loss cuts
+> judged on the FIRST PAYOUT date AND the chance of losing the account (today's balances, 1,000 same paths a market; Jul-Oct / Jan-Jun). 8 levers, 0 pass: ATLAS funded 40% of the room (first payout +5 / +5 days, paid by Jan 15 66 -> 58 / 84 -> 81%, lost 10.2 -> 5.8%: safer, later), ask at $1,000 (+2 / +4 days), ATLAS "need" funded size (-$91 / -$70 a month), 25K #2 40% + $300 cap (+5 / +2 days), Rapid ATLAS $150 (+6 / +3 days, -$198 / -$522) or $350 (lost in 6 m 28.9 -> 36.8%), Rapid LIT bank lane (eval lost first 8.4 -> 11.6% Jan-Jun), ATLAS on Zlarior's 50K NOW vs after the pass (nearest miss: sooner, eval deaths 26 -> 8% Jan-Jun, but 6-month lost 8.3 -> 9.7% and 2021-25-like 48 -> 63%). ...
+> Write-ups: [[payday-plan-2026-11-20|Payday plan]]
+
 > [!failure]- ATLAS more money
 > 10 pre-registered ideas (14 variants) on the FUNDED 25K from today's $887 room (600 week-block paths, live stuck stop, costs in). Rejected: thin-room sit-outs (only MACD / EMA out while the room is under $300 / $500 / $700: Jul-Oct -$6 to -$63 a month, more lost or no-payout), no stuck stop + 40% of the room (first payout +3 / +7 sessions), ATLAS v2 hunts x0.5 on the funded account (+$51 / +$93 / +$18 a month but 4.5-4.7 trades a week, Jul-Oct lost 10.5 -> 12.2%, real-order Jan-Jun lost 0 -> 3.8%, Jan-Jun fixed $ down; fresh Oct 19 - Nov 19 hunts -1.1R / 0R), v2 as built (+ min_room $200: Jul-Oct lost 16.8%), Asia hunt only (Jul-Oct lost 18%), flat 3 min before CPI / jobs / FOMC (-$82 a ...
 > Write-ups: [[atlas-more-money-2026-11-19|ATLAS more money]]

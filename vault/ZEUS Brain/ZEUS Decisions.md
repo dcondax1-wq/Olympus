@@ -6,7 +6,7 @@ type: "decisions"
 
 # ZEUS Decisions
 
-> [!question] 10 open
+> [!question] 11 open
 > Answer on the Decide card (Business app). A yes means Claude tests it; nothing live changes without proof.
 
 ## Open
@@ -60,6 +60,11 @@ type: "decisions"
 > **Why:** Best of 12 rule sets fixed before testing: it keeps most of the extra money and halves the evals that die in 2 weeks (9% -> 4% Jul-Oct); it beat Zlarior alone in Jan-Jun, Jul-Oct and 2021-25, with MFFU's move to live after payout 5 counted.
 > **Impact:** +$696 a month in a Jul-Oct-like market (+$392 if the live account after payout 5 is worth nothing), +$1,649 Jan-Jun-like (+$466), +$26 2021-25-like; 2022-like -$141; after the extra eval fees.
 > Added 2026-11-19 · write-up [[one-account-combo-final-2026-11-19|One account, Zlarior + ATLAS on the Builder 50K]] · id `zlarior-atlas-50k`
+
+> [!question] Kalshi K8: start at $8 a bet (not $15) and step up with the cash: $10 from $67, $15 from $100?
+> **Why:** $15 a bet on $55 means 3 losses in a row (the test had a streak of 8) leave too little to bet. Betting about 15% of the cash keeps the pot alive while it grows.
+> **Impact:** Chance the $55 is wiped out in the first 4 weeks: 7.9% -> 0.2% as tested, 24.8% -> 3.3% if the edge is half as good; median after 4 weeks $467 -> $430 (-$37) if the edge holds.
+> Added 2026-11-20 · write-up [[money-ideas-2026-11-20|Money ideas]] · id `kalshi-stake-ladder`
 
 ## Yes
 

@@ -55,8 +55,9 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 
 ## Rejected idea families
 
-44 entries from docs/TESTED_AND_REJECTED.md, newest first.
+46 entries from docs/TESTED_AND_REJECTED.md, newest first.
 
+- **Payday levers + cross-bot loss cuts** · [[ATLAS]] · [[payday-plan-2026-11-20|Payday plan]]
 - **Zlarior more money, 2 pre-registered batches** · [[Zlarior (LIT)]] · [[lit-more-money-2026-11-19|Zlarior]]
 - **ATLAS more money** · [[ATLAS]] · [[atlas-more-money-2026-11-19|ATLAS more money]]
 - **BLITZ review** · [[BLITZ (paper)]] · [[blitz-review-2026-11-18|BLITZ review]]
@@ -101,6 +102,7 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 - **Smart entries** · [[lit-smart-entries-2026-11-17|LIT smart entries]]
 - **Regime sizing** · [[Zlarior (LIT)]] · [[lit-regime-sizing-2026-11-17|LIT regime sizing]]
 - **Learn loop first night** · [[Zlarior (LIT)]], [[ATLAS]]
+- ****Kalshi K8 better edge** · [[Kalshi K8]] · [[kalshi-k8-monday-2026-11-20|Kalshi K8 for a $55 account, ready by Monday 6 PM]]
 
 ## Rejected in the write-ups
 

@@ -51,7 +51,7 @@ def w(p, data):
 
 APPS = [{"id": "zenith", "path": "", "live": False}, {"id": "alpha", "path": "alpha/", "live": True}, {"id": "beta", "path": "beta/", "live": False}, {"id": "gamma", "path": "gamma/", "live": True}]
 PAGE = ('<!doctype html><html><head><meta name="viewport" content="width=device-width, viewport-fit=cover"><link rel="manifest" href="manifest.webmanifest">'
-        '<link rel="apple-touch-icon" href="touch.png"><link rel="stylesheet" href="../olympus/olympus.css?v=o7"><script src="../olympus/olympus.js?v=o13" data-app="{id}"></script></head><body>{id}</body></html>')
+        '<link rel="apple-touch-icon" href="touch.png"><link rel="stylesheet" href="../olympus/olympus.css?v=o7"><script src="../olympus/olympus.js?v=o14" data-app="{id}"></script></head><body>{id}</body></html>')
 MAN = {"name": "x", "short_name": "x", "start_url": "./", "scope": "./", "display": "standalone", "icons": [{"src": "i192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
                                                                                                           {"src": "i512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}]}
 
@@ -145,7 +145,7 @@ def main():
         shutil.rmtree(os.path.join(site, "gamma"))
         w(os.path.join(site, "alpha", "jarvis.json"), json.dumps({"v": 1, "t": int(WED - 40 * 3600)}))
         w(os.path.join(site, "beta", "i192.png"), png(180))
-        w(os.path.join(site, "beta", "index.html"), PAGE.format(id="beta").replace("olympus.js?v=o13", "olympus.js?v=o1"))
+        w(os.path.join(site, "beta", "index.html"), PAGE.format(id="beta").replace("olympus.js?v=o14", "olympus.js?v=o1"))
         w(os.path.join(site, "home.json"), "{not json")
         srv, base = serve(site)
         rows, v = go(repo, base)
@@ -154,7 +154,7 @@ def main():
               and row(rows, "root worker")[1] == "PASS", wk)
         check("a 404 app is a problem with the status code in the detail", g[1] == "FAIL" and "404" in g[2], g)
         check("a card older than 30 h fails (40 h old); an icon whose real PNG size differs from the manifest fails; a kit tag the repo has but the live page lacks fails",
-              al[1] == "FAIL" and "40.0 h old" in al[2] and be[1] == "FAIL" and "manifest says 192x192" in be[2] and "olympus.js?v=o13" in be[2], (al, be))
+              al[1] == "FAIL" and "40.0 h old" in al[2] and be[1] == "FAIL" and "manifest says 192x192" in be[2] and "olympus.js?v=o14" in be[2], (al, be))
         check("a data file that is not valid JSON fails", hj[1] == "FAIL" and "not valid JSON" in hj[2], hj)
         check("one problem makes the whole run PROBLEMS (exit code 1)", v == "PROBLEMS" and V.main(["--base", base, "--repo", repo, "--hb-url", base + "hb/heartbeat.json", "--no-write"]) == 1)
         srv.shutdown()
