@@ -1,7 +1,7 @@
 {
  "v": 1,
  "title": "ZEUS this week",
- "built": "2026-11-20 17:38 ET",
+ "built": "2026-11-20 17:45 ET",
  "built_by": "tools/weekly_review.py",
  "week": {
   "from": "2026-11-16",
@@ -10,7 +10,7 @@
   "complete": true,
   "sessions_done": 5
  },
- "pc": "PC last reported Nov 20 17:30 ET",
+ "pc": "PC last reported Nov 20 17:45 ET",
  "accounts": [
   {
    "key": "zlarior",
@@ -18,7 +18,7 @@
    "plan": "MFFU Builder 50K",
    "stage": "eval",
    "end": 49192.78,
-   "src": "PC live, Nov 20 17:27 ET",
+   "src": "PC live, Nov 20 17:42 ET",
    "room": 1024.58,
    "to_pass": 3807.22,
    "trades": 1,
@@ -47,7 +47,7 @@
    "plan": "MFFU Builder 25K (funded)",
    "stage": "funded",
    "end": 25401.38,
-   "src": "PC live, Nov 20 17:27 ET",
+   "src": "PC live, Nov 20 17:42 ET",
    "room": 1401.38,
    "to_pass": null,
    "trades": 2,
@@ -75,7 +75,7 @@
    "plan": "MFFU Rapid EOD 25K",
    "stage": "eval",
    "end": 25000.0,
-   "src": "PC live, Nov 20 17:27 ET",
+   "src": "PC live, Nov 20 17:42 ET",
    "room": 1000.0,
    "to_pass": 1500.0,
    "trades": 0,
@@ -101,7 +101,7 @@
    "plan": "MFFU Builder 25K",
    "stage": "eval",
    "end": 25000.0,
-   "src": "PC live, Nov 20 17:27 ET",
+   "src": "PC live, Nov 20 17:42 ET",
    "room": 1000.0,
    "to_pass": 1500.0,
    "trades": 0,
@@ -173,14 +173,14 @@
  "changes": {
   "n": 200,
   "items": [
+   "DESIGN kit: OLYMPUS NIGHT page glow violet-black (no brown), the automatic default steps aside on...",
+   "Cold-calling plan (owner 17:50: no postcards, cold calling, legal + not harassment): a real person...",
+   "Switcher header on one line ('Six arenas, then More · swipe'); handoff shot: pc vs final switcher",
+   "Owner to-do: make the olympus repo private Sat (+ GITHUB_SIGNIN.bat); STATE: repo still public,...",
+   "Home: Everything else = the 10 he uses + 'See all apps (A to Z)'; Strategy forge off the Home",
    "Plan: receptionist is voice-only (no texting until 10DLC)",
    "Plan + STATE: postcards built (Lob $0.909/card); privacy blocker - concept sites must move to a...",
-   "Client plan: inbound-only AI receptionist (no PC address on public pages)",
-   "Plan: how we get website clients without cold calls (postcards + their own site's call-me / claim...",
-   "Landing fixes from QA triage: re-add trading/index.html panelfx.js (dropped by the theirs-hunks...",
-   "Ledger: finder round 16:38 (4 lenses, 13 findings, 11 real): PC update blocked by '?' names...",
-   "Guard: tools/win_paths.py (no :\"|?* / reserved / trailing dot-space / case-twin file names) in...",
-   "Unblock the PC auto-update: rename 2 screenshots whose names held \"?\""
+   "Client plan: inbound-only AI receptionist (no PC address on public pages)"
   ]
  },
  "next": {
@@ -383,6 +383,6 @@
  "sources": {
   "trades": "PC status post",
   "plan_updated": "2026-11-20",
-  "board_pc": "Nov 20 17:30 ET"
+  "board_pc": "Nov 20 17:45 ET"
  }
 }

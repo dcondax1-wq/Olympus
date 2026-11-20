@@ -111,6 +111,7 @@ const T = require(process.argv[1]);
 console.log(JSON.stringify({
   w1: T.waterfall(800, 30, 0, 0), w5: T.waterfall(4000, 30, 0, 0), full: T.waterfall(800, 30, 5000, 320), near: T.waterfall(800, 30, 4900, 300),
   junk: T.waterfall('x', 30, 'y', -5),
+  df: [T.dueFor('2026-12-28'), T.dueFor('2027-01-05'), T.dueFor('2027-05-01'), T.dueFor('2027-07-04'), T.dueFor('2027-10-01')].map((r) => T.iso(r.due) + '|' + r.taxYear),
   p: [T.potPct(5000, false), T.potPct(15000, false), T.potPct(30000, true), T.potPct(60000, false), T.potPct(100000, true), T.potPct('x')],
 }));
 """
@@ -130,6 +131,10 @@ def part_d():
           (w5["pot"], w5["reserve"], w5["retire"], w5["live"], w5["yours"]) == (1200, 320, 400, 800, 1280), w5)
     check("d. full buckets give their share back: $800 -> $480 yours; near-full buckets take only what is missing",
           full["yours"] == 480 and full["live"] == 0 and full["reserve"] == 0 and near["live"] == 100 and near["reserve"] == 20, (full, near))
+    check("d. the due date follows the day money lands: Dec 28 -> Jan 15 2027 (2026 tax), Jan 5 2027 -> Apr 15 2027 (2027 tax), May -> Jun 15, Jul -> Sep 15, Oct -> Jan 18 2028",
+          o["df"] == ["2027-01-15|2026", "2027-04-15|2027", "2027-06-15|2027", "2027-09-15|2027", "2028-01-18|2027"], o["df"])
+    check("d. the page tells him to take a late-December payout in December, the Rise digital-asset answer and the HSA family limit",
+          all(x in read(BIZ, "taxes.html") for x in ("Take it in December", "digital assets", "family</b> limit")))
     check("d. junk gives 0 everywhere", all(o["junk"][k] == 0 for k in ("pot", "reserve", "retire", "live", "yours")), o["junk"])
     check("d. Maryland set-aside %: $5k only trading 15, $15k 20, $30k + day job 40, $60k 30, $100k + day job 45, unknown 25",
           o["p"] == [15, 20, 40, 30, 45, 25], o["p"])
