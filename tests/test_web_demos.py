@@ -8,7 +8,7 @@ businesses (restaurant, roofer, car detailer, real estate) + the gallery the own
      SwiftShader), no console / page errors, no sideways scroll, layout shift <= 0.02, taps >= 44 px, sentences >= 15 px, nothing asked
      from another host, a pick changes the 3D picture, the booking sheet opens / validates / thanks without sending anything; without WebGL
      the drawn picture stays and the picks / slider still work; reduced motion = no auto-turn; the gallery's client mode hides prices and
-     is remembered.
+     is remembered; "Make it theirs" opens a demo with the prospect's name / town / phone (text only: markup in the name stays text).
     python -X utf8 -m tests.test_web_demos
 """
 from __future__ import annotations
@@ -49,7 +49,7 @@ def static():
         probs = []
         if len(re.findall(r"<h1[\s>]", t)) != 1: probs.append("h1")
         if 'name="robots" content="noindex"' not in t: probs.append("noindex")
-        if not re.search(r'class="demo-strip"><span>Demo site · fictional', t): probs.append("strip")
+        if not re.search(r'class="demo-strip"><span data-strip>Demo site · fictional', t): probs.append("strip")
         tels = re.findall(r'href="tel:\+1555010(\d{4})"', t)
         if len(tels) < 2 or any(not x.startswith("01") for x in tels): probs.append("555 tel")
         if not re.search(r'<dialog id="book" class="sheet"', t) or t.count("data-book") < 2 or "nothing is sent" not in t: probs.append("booking")
@@ -83,7 +83,7 @@ def static():
     gt = read(g)
     check("a. the gallery: the 4 demos linked, a price to build + monthly for each (8 data-price), the pitch lines and client mode",
           all(f'href="{d}/"' in gt for d in DEMOS) and gt.count("data-price=") == 8 and gt.count('class="pitch owner-only"') == 4 and 'id="client"' in gt
-          and "html.client .owner-only { display: none !important; }" in gt, gt.count("data-price="))
+          and "html.client .owner-only { display: none !important; }" in gt and 'id="theirs"' in gt, gt.count("data-price="))
     priv = [str(p.relative_to(WEB)) for p in DEMOS_DIR.rglob("*") if p.is_file() and p.suffix in (".html", ".js", ".css")
             and re.search(r"demetrades|gmail\.com|@[a-z0-9-]+\.(com|net)", read(p), re.I)]
     check("a. no private names or e-mail addresses in the demo files", not priv, priv)
@@ -242,6 +242,21 @@ def browser():
         check("b. gallery: 4 demo cards with their stills and 8 prices, no sideways scroll, taps >= 44 px, sentences >= 15 px",
               g["cards"] == 4 and g["imgs"] >= 2 and g["prices"] == 8 and g["sw"] <= g["cw"] and not r["small"] and not r["tiny"] and not errs3, (g, r["small"], r["tiny"], errs3))
         check("b. gallery: client mode hides prices and pitch lines, is remembered after a reload, and turns back off", hidden and kept and back == 8, (hidden, kept, back))
+        # Make it theirs: the form builds the link, the demo shows their name / town / phone, markup stays text
+        p.fill("#theirs [name=biz]", "Rosa's <img src=x onerror=alert(1)>Pizzeria")
+        p.fill("#theirs [name=city]", "Springfield")
+        p.fill("#theirs [name=tel]", "(555) 010-0199")
+        p.select_option("#theirs [name=demo]", "roofer")
+        with p.expect_navigation():
+            p.click("#theirs button[type=submit]")
+        p.wait_for_timeout(800)
+        t = p.evaluate("""() => ({ path: location.pathname, logo: document.querySelector('.logo [data-biz]').textContent, strip: document.querySelector('[data-strip]').textContent,
+          city: [...document.querySelectorAll('[data-city]')].map(e => e.textContent), imgs: document.querySelectorAll('main img, header img').length,
+          tels: [...new Set([...document.querySelectorAll('a[href^="tel:"]')].map(a => a.getAttribute('href')))], shown: [...document.querySelectorAll('a[href^="tel:"]')].some(a => a.textContent.includes('(555) 010-0199')),
+          fict: document.querySelector('[data-fict]').textContent, rev: document.querySelector('[data-reviews]').textContent })""")
+        check("b. Make it theirs: the roofer demo opens with their name (markup stripped, 40 characters max), town, phone on every Call link; marked as a sample with sample reviews",
+              t["path"].endswith("/roofer/") and t["logo"].startswith("Rosa's") and len(t["logo"]) <= 40 and "<" not in t["logo"] and t["imgs"] == 0 and t["strip"].startswith("Sample site for Rosa's")
+              and set(t["city"]) == {"Springfield"} and t["tels"] == ["tel:+15550100199"] and t["shown"] and t["fict"] == "(sample site)" and "samples" in t["rev"], t)
         ctx.close()
         b.close()
     srv.shutdown()

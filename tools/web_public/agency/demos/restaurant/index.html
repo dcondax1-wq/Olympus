@@ -17,22 +17,22 @@
   --display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif; }
 </style>
 <link rel="stylesheet" href="../demo.css?v=d1">
-<script src="../demo.js?v=d1" defer></script>
+<script src="../demo.js?v=d2" defer></script>
 <script src="../../../olympus/lazy3d.js?v=l2" data-src="scene.js?v=r1" data-near="#stage" data-event="demo3d" defer></script>
 </head>
 <body>
-<div class="demo-strip"><span>Demo site · fictional restaurant</span><a href="../">All demos</a></div>
+<div class="demo-strip"><span data-strip>Demo site · fictional restaurant</span><a href="../">All demos</a></div>
 
 <header class="site-head"><div class="wrap">
   <a class="logo" href="#top" aria-label="Lantern and Thyme, top of page">
     <svg viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="16" fill="#e8894a"/><path d="M17 7c-3 4-5 7-5 10a5 5 0 0 0 10 0c0-3-2-6-5-10z" fill="#1a1410"/><path d="M17 14c-1.4 2-2.2 3.3-2.2 4.6a2.2 2.2 0 0 0 4.4 0c0-1.3-.8-2.6-2.2-4.6z" fill="#f6c77a"/></svg>
-    Lantern &amp; Thyme</a>
+    <span data-biz>Lantern &amp; Thyme</span></a>
   <a class="btn primary small" href="#book" data-book="Dinner">Book a table</a>
 </div></header>
 
 <main id="top">
   <section class="hero"><div class="wrap">
-    <p class="eyebrow">Wood-fired · Millbrook</p>
+    <p class="eyebrow">Wood-fired · <span data-city>Millbrook</span></p>
     <h1>Tonight's table is waiting.</h1>
     <p class="lead">Hand-stretched pizza, fresh pasta and a wood oven at 450°C. See every dish before you order, and book in two taps.</p>
     <div class="cta">
@@ -83,7 +83,7 @@
   </div></section>
 
   <section id="reviews"><div class="wrap">
-    <p class="eyebrow">Reviews</p>
+    <p class="eyebrow" data-reviews>Reviews</p>
     <h2>Regulars say it best</h2>
     <div class="reviews">
       <article class="card review"><span class="stars" aria-label="5 stars">★★★★★</span><p>"The crust is perfect: blistered, chewy, light. We booked again before we'd paid."</p><span class="who">Dana R. · Google</span></article>
@@ -104,13 +104,13 @@
         <circle cx="205" cy="110" r="22" fill="#e8894a" opacity=".25"/><path d="M205 84c-9 0-16 7-16 16 0 12 16 26 16 26s16-14 16-26c0-9-7-16-16-16z" fill="#e8894a"/><circle cx="205" cy="100" r="6" fill="#1a1410"/></svg>
     </div>
     <div class="grid two">
-      <div class="card"><h3>Mill Street, Millbrook</h3><p>Two minutes from the station. Street parking after 6 pm.</p>
+      <div class="card"><h3>Mill Street, <span data-city>Millbrook</span></h3><p>Two minutes from the station. Street parking after 6 pm.</p>
         <div class="visit-cta"><a class="btn ghost small" href="https://maps.apple.com/?q=Mill+Street">Directions</a><a class="btn ghost small" href="tel:+15550100142">(555) 010-0142</a></div></div>
       <div class="card"><table class="hours"><tbody><tr><td>Mon</td><td>Closed</td></tr><tr><td>Tue - Thu</td><td>5 - 10 pm</td></tr><tr><td>Fri - Sat</td><td>5 - 11 pm</td></tr><tr><td>Sun</td><td>12 - 9 pm</td></tr></tbody></table></div>
     </div>
   </div></section>
 
-  <footer><div class="wrap"><p>© <span data-year>2026</span> Lantern &amp; Thyme (a fictional restaurant).</p><p>Demo website built by Olympus Agency: your business, your dishes, in 3D.</p></div></footer>
+  <footer><div class="wrap"><p>© <span data-year>2026</span> <span data-biz>Lantern &amp; Thyme</span> <span data-fict>(a fictional restaurant)</span>.</p><p>Demo website built by Olympus Agency: your business, your dishes, in 3D.</p></div></footer>
 </main>
 
 <nav class="dock" aria-label="Quick actions"><a class="btn ghost" href="tel:+15550100142">Call</a><a class="btn primary" href="#book" data-book="Dinner">Book a table</a></nav>

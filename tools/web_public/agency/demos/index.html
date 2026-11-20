@@ -41,6 +41,9 @@ html.client .owner-only { display: none !important; }
 .how ol { margin: 10px 0 0; padding-left: 20px; color: var(--soft); font-size: .9375rem; }
 .how li + li { margin-top: 6px; }
 .fine { margin-top: 20px; }
+.theirs { margin-top: 26px; background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 16px; }
+.theirs-form { display: grid; gap: 12px; margin-top: 14px; }
+.theirs-form .fine { margin: 0; min-height: 1.5em; }
 </style>
 <script>try { if (localStorage.getItem('agency.demos.client') === '1') document.documentElement.classList.add('client'); } catch (e) { /* private mode */ }</script>
 <link rel="stylesheet" href="demo.css?v=d1">
@@ -101,12 +104,31 @@ html.client .owner-only { display: none !important; }
     </article>
   </div>
 
+  <section class="theirs owner-only" aria-labelledby="theirsH"><h2 id="theirsH">Make it theirs</h2>
+    <p class="soft" style="margin-top:6px;font-size:.9375rem">Type the prospect's name: the demo opens with their name, town and number in it. Nothing is saved or sent; it is all in the link.</p>
+    <form id="theirs" class="theirs-form">
+      <label class="field">Business name<input name="biz" maxlength="40" autocomplete="off" placeholder="e.g. Rosa's Pizzeria" required></label>
+      <div class="two-col"><label class="field">Town<input name="city" maxlength="30" autocomplete="off" placeholder="e.g. Springfield"></label>
+        <label class="field">Their phone<input name="tel" type="tel" maxlength="16" autocomplete="off" placeholder="555 010 0199"></label></div>
+      <label class="field">Demo<select name="demo"><option value="restaurant">Restaurant · café</option><option value="roofer">Roofer · contractor</option><option value="detailer">Detailer · dealer</option><option value="estate">Real estate · venue</option></select></label>
+      <div class="two-col"><button class="btn primary" type="submit">Open their demo</button><button class="btn ghost" type="button" id="copy">Copy the link</button></div>
+      <p class="fine" id="copied" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+
   <section class="how owner-only"><h2>How to use it in a pitch</h2>
     <ol><li>Open the demo closest to their trade before you walk in (it loads in about a second on 4G).</li>
       <li>Hand them the phone on the 3D part: "drag it". Let them play for 10 seconds; say nothing.</li>
       <li>Tap "Book" so they see the request land, then: "This, with your name, your photos, in two weeks."</li></ol></section>
   <p class="fine soft">Demo sites by Olympus Agency. The businesses, people, reviews, addresses and 555 phone numbers are made up.</p>
 </main>
+<script>(function () { var f = document.getElementById('theirs'), out = document.getElementById('copied'); if (!f) return;
+  function link() { var q = new URLSearchParams(); ['biz', 'city', 'tel'].forEach(function (k) { var v = f.elements[k].value.trim(); if (v) q.set(k, v); });
+    return new URL(f.elements.demo.value + '/?' + q.toString(), location.href).href; }
+  f.addEventListener('submit', function (e) { e.preventDefault(); if (f.reportValidity()) location.href = link(); });
+  document.getElementById('copy').addEventListener('click', function () { if (!f.reportValidity()) return; var u = link();
+    var ok = function () { out.textContent = 'Link copied: paste it in a text to them.'; }, no = function () { out.textContent = u; };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(u).then(ok, no); else no(); }); })();</script>
 <script>(function () { var c = document.getElementById('client'), h = document.documentElement; if (!c) return; c.checked = h.classList.contains('client');
   c.addEventListener('change', function () { h.classList.toggle('client', c.checked); try { localStorage.setItem('agency.demos.client', c.checked ? '1' : '0'); } catch (e) { /* private mode */ } }); })();</script>
 </body>

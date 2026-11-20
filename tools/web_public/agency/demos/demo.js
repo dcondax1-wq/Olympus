@@ -4,11 +4,38 @@
  *                     window 'demo:pick' {group, value} for the 3D scene; window.DEMO_PICKS holds the current choices
  *  - input[data-ba]   the before / after slider: --ba on the stage (0..1, the 2D picture's clip) + window 'demo:ba' {value}
  *  - [data-note]      a pick's one-line note goes into the row's .pick-note
+ *  - ?biz=&city=&tel=  "Make it theirs" (the gallery builds the link): the prospect's business name, town and phone replace the made-up
+ *                     ones ([data-biz], [data-city], every tel: link); the strip then says "Sample site for <name>", reviews are marked as
+ *                     samples. Text only (textContent), lengths capped, nothing stored or sent.
  */
 (function () {
   'use strict';
   var D = document, W = window;
   W.DEMO_PICKS = W.DEMO_PICKS || {};
+  (function personalise() {
+    var q; try { q = new URLSearchParams(location.search); } catch (e) { return; }
+    var clean = function (v, n) { return String(v || '').replace(/[\u0000-\u001f<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, n); };
+    var biz = clean(q.get('biz'), 40), city = clean(q.get('city'), 30), tel = String(q.get('tel') || '').replace(/[^0-9+]/g, '').slice(0, 16);
+    var each = function (sel, f) { var l = D.querySelectorAll(sel); for (var i = 0; i < l.length; i++) f(l[i]); };
+    if (biz) {
+      each('[data-biz]', function (e) { e.textContent = biz; });
+      each('[data-fict]', function (e) { e.textContent = '(sample site)'; });
+      each('[data-strip]', function (e) { e.textContent = 'Sample site for ' + biz; });
+      each('[data-reviews]', function (e) { e.textContent = 'Reviews (samples: yours go here)'; });
+      D.title = biz + ' · sample site';
+      each('.logo[aria-label]', function (e) { e.setAttribute('aria-label', biz + ', top of page'); });
+      D.documentElement.setAttribute('data-personal', '1');
+    }
+    if (city) each('[data-city]', function (e) { e.textContent = city; });
+    var digits = tel.replace(/\D/g, '');
+    if (digits.length >= 7) {
+      var us = digits.length === 10 ? digits : digits.length === 11 && digits[0] === '1' ? digits.slice(1) : '';
+      var shown = us ? '(' + us.slice(0, 3) + ') ' + us.slice(3, 6) + '-' + us.slice(6) : tel;
+      var href = 'tel:' + (us ? '+1' + us : tel);
+      each('a[href^="tel:"]', function (a) { a.setAttribute('href', href); var t = a.lastChild;
+        if (t && t.nodeType === 3 && /\(555\) 010-\d{4}/.test(t.nodeValue)) t.nodeValue = t.nodeValue.replace(/\(555\) 010-\d{4}/, shown); });
+    }
+  })();
   function fire(name, detail) { try { W.dispatchEvent(new CustomEvent(name, { detail: detail })); } catch (e) { /* old browser */ } }
   function show(group, value) {
     var all = D.querySelectorAll('[data-for^="' + group + ':"]');

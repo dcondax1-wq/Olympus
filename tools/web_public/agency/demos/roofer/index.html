@@ -30,16 +30,16 @@ h1, h2 { font-weight: 800; letter-spacing: -.02em; }
 .trust span { font-size: .8125rem; color: var(--soft); }
 </style>
 <link rel="stylesheet" href="../demo.css?v=d1">
-<script src="../demo.js?v=d1" defer></script>
+<script src="../demo.js?v=d2" defer></script>
 <script src="../../../olympus/lazy3d.js?v=l2" data-src="scene.js?v=f1" data-near="#stage" data-event="demo3d" defer></script>
 </head>
 <body>
-<div class="demo-strip"><span>Demo site · fictional roofer</span><a href="../">All demos</a></div>
+<div class="demo-strip"><span data-strip>Demo site · fictional roofer</span><a href="../">All demos</a></div>
 
 <header class="site-head"><div class="wrap">
   <a class="logo" href="#top" aria-label="Northgable Roofing, top of page">
     <svg viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="8" fill="#14202c"/><path d="M5 18L17 8l12 10" fill="none" stroke="#f97316" stroke-width="3.5" stroke-linejoin="round"/><path d="M9 17v9h16v-9" fill="none" stroke="#fff" stroke-width="2.5"/></svg>
-    Northgable Roofing</a>
+    <span data-biz>Northgable Roofing</span></a>
   <a class="btn primary small" href="#book" data-book="Free roof check">Free check</a>
 </div></header>
 
@@ -106,7 +106,7 @@ h1, h2 { font-weight: 800; letter-spacing: -.02em; }
   </div></section>
 
   <section id="reviews"><div class="wrap">
-    <p class="eyebrow">Reviews</p>
+    <p class="eyebrow" data-reviews>Reviews</p>
     <h2>Homeowners after the storm</h2>
     <div class="reviews">
       <article class="card review"><span class="stars" aria-label="5 stars">★★★★★</span><p>"They showed us the hail hits on a tablet, handled the insurance and finished in one day."</p><span class="who">Kevin M. · Google</span></article>
@@ -117,7 +117,7 @@ h1, h2 { font-weight: 800; letter-spacing: -.02em; }
 
   <section id="visit"><div class="wrap">
     <p class="eyebrow">Service area</p>
-    <h2>Millbrook and 30 miles around</h2>
+    <h2><span data-city>Millbrook</span> and 30 miles around</h2>
     <div class="map" role="img" aria-label="Map of the service area: a 30-mile circle around Millbrook">
       <svg viewBox="0 0 400 250" aria-hidden="true"><rect width="400" height="250" fill="#e8e5dc"/>
         <g stroke="#fff" stroke-width="10" fill="none"><path d="M0 120H400"/><path d="M200 0V250"/><path d="M40 0L360 250"/></g><g stroke="#d6d1c4" stroke-width="5" fill="none"><path d="M0 60H400"/><path d="M0 190H400"/><path d="M100 0V250"/><path d="M300 0V250"/></g>
@@ -125,13 +125,13 @@ h1, h2 { font-weight: 800; letter-spacing: -.02em; }
         <path d="M200 98c-9 0-16 7-16 16 0 12 16 26 16 26s16-14 16-26c0-9-7-16-16-16z" fill="#c2410c"/><circle cx="200" cy="114" r="6" fill="#fff"/></svg>
     </div>
     <div class="grid two">
-      <div class="card"><h3>Yard: Quarry Road, Millbrook</h3><p>Mon - Sat 7 am - 6 pm · 24/7 storm line</p>
+      <div class="card"><h3>Yard: Quarry Road, <span data-city>Millbrook</span></h3><p>Mon - Sat 7 am - 6 pm · 24/7 storm line</p>
         <div class="visit-cta"><a class="btn ghost small" href="https://maps.apple.com/?q=Quarry+Road">Directions</a><a class="btn ghost small" href="tel:+15550100177">(555) 010-0177</a></div></div>
       <div class="card"><h3>Licensed &amp; insured</h3><p>State contractor licence, $2M liability cover, manufacturer-certified installers.</p></div>
     </div>
   </div></section>
 
-  <footer><div class="wrap"><p>© <span data-year>2026</span> Northgable Roofing (a fictional contractor).</p><p>Demo website built by Olympus Agency: the before / after your customers can touch.</p></div></footer>
+  <footer><div class="wrap"><p>© <span data-year>2026</span> <span data-biz>Northgable Roofing</span> <span data-fict>(a fictional contractor)</span>.</p><p>Demo website built by Olympus Agency: the before / after your customers can touch.</p></div></footer>
 </main>
 
 <nav class="dock" aria-label="Quick actions"><a class="btn ghost" href="tel:+15550100177">Call</a><a class="btn primary" href="#book" data-book="Free roof check">Free roof check</a></nav>

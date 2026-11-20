@@ -26,16 +26,16 @@
 .agent .av { width: 56px; height: 56px; border-radius: 50%; background: #2f5d50; color: #fff; display: grid; place-items: center; font: 700 1.25rem/1 system-ui; }
 </style>
 <link rel="stylesheet" href="../demo.css?v=d1">
-<script src="../demo.js?v=d1" defer></script>
+<script src="../demo.js?v=d2" defer></script>
 <script src="../../../olympus/lazy3d.js?v=l2" data-src="scene.js?v=e1" data-near="#stage" data-event="demo3d" defer></script>
 </head>
 <body>
-<div class="demo-strip"><span>Demo site · fictional listing</span><a href="../">All demos</a></div>
+<div class="demo-strip"><span data-strip>Demo site · fictional listing</span><a href="../">All demos</a></div>
 
 <header class="site-head"><div class="wrap">
   <a class="logo" href="#top" aria-label="Willow Row Realty, top of page">
     <svg viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="8" fill="#2f5d50"/><path d="M8 26V14l9-6 9 6v12h-6v-7h-6v7z" fill="#fbfaf7"/></svg>
-    Willow Row</a>
+    <span data-biz>Willow Row</span></a>
   <a class="btn primary small" href="#book" data-book="In-person viewing">Book a viewing</a>
 </div></header>
 
@@ -89,7 +89,7 @@
   </div></section>
 
   <section id="reviews"><div class="wrap">
-    <p class="eyebrow">Reviews</p>
+    <p class="eyebrow" data-reviews>Reviews</p>
     <h2>Buyers on the agent</h2>
     <div class="reviews">
       <article class="card review"><span class="stars" aria-label="5 stars">★★★★★</span><p>"We walked through three flats in 3D on the train and only viewed the one we bought."</p><span class="who">Hannah &amp; Leo · Google</span></article>
@@ -116,7 +116,7 @@
     </div>
   </div></section>
 
-  <footer><div class="wrap"><p>© <span data-year>2026</span> Willow Row Realty (a fictional agency and property).</p><p>Demo website built by Olympus Agency: listings people can walk through.</p></div></footer>
+  <footer><div class="wrap"><p>© <span data-year>2026</span> <span data-biz>Willow Row Realty</span> <span data-fict>(a fictional agency and property)</span>.</p><p>Demo website built by Olympus Agency: listings people can walk through.</p></div></footer>
 </main>
 
 <nav class="dock" aria-label="Quick actions"><a class="btn ghost" href="tel:+15550100163">Call</a><a class="btn primary" href="#book" data-book="In-person viewing">Book a viewing</a></nav>
