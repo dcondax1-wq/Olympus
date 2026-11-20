@@ -5,7 +5,7 @@
 Temp files and made-up names only (the test world of tests/test_accounts_cli): nothing armed, nothing routed.
   a. the page + status open on the PC and over the signed-in Tailscale link; refused from the home WiFi, Funnel, cloud mode
   b. a POST needs this page's header, JSON, same Origin (another web site / a bare form cannot press it), small body, rate limit
-  c. Add = ADD_ACCOUNT.bat option 5: [OK] Rapid EOD 25K, DISARMED, allowlisted; NOT ADDED for a taken Name, a 2nd Rapid, no plan
+  c. Add = ADD_ACCOUNT.bat option 5: [OK] Rapid EOD 25K, DISARMED, allowlisted; NOT ADDED for a taken Name, a 3rd Rapid (a 2nd = Rapid #2), no plan
   d. CHECK THE NAME when NinjaTrader does not show the Name; the status lists NinjaTrader Names not added yet; Names masked
   e. never arms by itself: no arm route; the other PC POSTs stay refused over the link
   f. one press to trading (owner 2026-11-20): Name + the typed phrase on the PC = add, then Re-arm now (engine/onboard.rearm,
@@ -118,9 +118,15 @@ def main() -> int:
               and any("Watch it here" in x for x in r["lines"]), r["lines"])
         check("d. CHECK THE NAME: NinjaTrader does not show it", r.get("check_name") is True
               and any(x.startswith("- CHECK THE NAME") for x in r["lines"]), r["lines"])
-        r2 = pc.post("/add-account/add", headers=pc_h, json={"plan": "rapideod25", "name": "MFFUEVRPD250000002"}).json()
-        check("c. NOT ADDED: a 2nd Rapid (one Rapid only), from the PC itself", r2["ok"] is False and "one Rapid" in r2["lines"][0]
-              and rapid.read()["account"] == NR, r2)
+        r2 = pc.post("/add-account/add", headers=pc_h, json={"plan": "rapideod", "name": "MFFUEVRPD500000002"}).json()
+        b2 = rapid.read(rapid.slot_path("rapid2")) or {}
+        check("c. a 2nd Rapid (the 50K) = Rapid #2 (data/rapid2.json), DISARMED; the 1st untouched (day-multirapid)",
+              r2["ok"] is True and "Rapid #2" in r2["lines"][0] and b2.get("account") == "MFFUEVRPD500000002"
+              and b2.get("armed") is False and rapid.read()["account"] == NR, r2)
+        r2b = pc.post("/add-account/add", headers=pc_h, json={"plan": "rapideod25", "name": "MFFUEVRPD250000003"}).json()
+        check("c. NOT ADDED: a 3rd Rapid (both Rapid slots taken)", r2b["ok"] is False and "both Rapid slots" in r2b["lines"][0], r2b)
+        AB._HITS.clear()
+        AC.remove("MFFUEVRPD500000002")
         r3 = c.post("/add-account/add", headers={**link, **page_h}, json={"plan": "builder25k", "name": TC.N25}).json()
         check("c. Builder 25K for the Name NinjaTrader shows: [OK], no CHECK THE NAME", r3["ok"] and not r3.get("check_name")
               and any(x["nt_account"] == TC.N25 and x["armed"] is False for x in TC.file_rows()), r3)
