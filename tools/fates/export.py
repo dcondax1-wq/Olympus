@@ -136,7 +136,7 @@ def jarvis_card(doc: dict) -> dict:
     }
 
 
-THEME = "#07050f"
+THEME = "#14110e"
 
 
 def pct(x) -> str:

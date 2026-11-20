@@ -78,9 +78,13 @@ def main() -> int:
     check("c. the feed URL from status_feed.json (70-minute window), the public default topic otherwise",
           d["feed"][0] == "https://ntfy.sh/abc/json?poll=1&since=70m" and "olympus-nq-status-" in d["feed"][1], d["feed"])
 
-    for fam, need in (("small", ["$3,807 to pass", "Zlarior 50K"]), ("medium", ["$49,193", "payout: see Olympus", "Zlarior 25K #2", "$25,000", "Kalshi"]),
-                      ("large", ["$49,193", "$24,887", "$25,000", "$1,500 to pass", "drawdown room 51%", "NQ"])):
-        r = node("draw", LITE, HOME, fam, "-")
+    for fam, par, need in (("small", "-", ["$3,807 to pass", "Zlarior 50K"]),
+                           ("medium", "classic", ["$49,193", "payout: see Olympus", "Zlarior 25K #2", "$25,000", "Kalshi"]),
+                           ("large", "classic", ["$49,193", "-$113", "$25,000", "$1,500 to pass", "drawdown room 51%", "NQ"]),
+                           ("medium", "-", ["$49,193", "-$113", "room $1,025", "NQ bot", "Decide"]),
+                           ("large", "-", ["$49,193", "-$113", "$25,000", "room $887", "Kalshi", "Websites", "Planner", "NQ 26431.00"])):
+        r = node("draw", LITE, HOME, fam, par)
+        fam = fam if par == "-" else fam + " classic"
         txt = " | ".join(r["texts"])
         check(f"d. {fam}: draws {need}", all(n in r["texts"] for n in need), txt)
         check(f"d. {fam}: no undefined / NaN / null in what it draws", not re.search(r"undefined|NaN|null|\[object", txt), txt)
@@ -101,6 +105,44 @@ def main() -> int:
         v = [None, None, out.stderr[-300:], None]
     check("c. funded 'to payout' = the payout coach (pc_feed payoutLines), not the PC's raw $750-ping line (%s)" % v,
           v[0] is not None and abs(v[0] - v[1]) < 0.01 and v[2].endswith(" to payout") and v[0] != v[3], v)
+    # owner 2026-11-20: MFFU sim-FUNDED accounts start at $0: funded ATLAS 25K at $24,887 reads -$113 (balance - $25,000); evals keep their balance
+    r = node("draw", LITE, HOME, "large", "-")
+    check("g. funded = balance - start (ATLAS -$113, never $24,887); evals unchanged ($49,193, $25,000)",
+          "-$113" in r["texts"] and "$24,887" not in r["texts"] and "$49,193" in r["texts"] and "$25,000" in r["texts"], r["texts"])
+    # widget2 2026-11-20 (owner: "half my home screen ... easily access buttons"): every button is its own link to the right Olympus page
+    want = {"NQ bot": "nq/", "Kalshi": "kalshi/", "Cities": "cities/", "Jarvis": "jarvis/", "Planner": "planner/", "Business": "business/",
+            "Websites": "agency/", "Decide": "board/#decide"}
+    site = "https://dcondax1-wq.github.io/"
+    for fam, names in (("large", list(want)), ("medium", ["NQ bot", "Kalshi", "Jarvis", "Decide"])):
+        r = node("draw", LITE, HOME, fam, "-")
+        got = {l["text"]: l["url"] for l in r["links"] if l["text"] in want}
+        check(f"g. {fam}: {len(names)} tappable buttons, each opens its page", got == {n: site + want[n] for n in names}, got)
+        check(f"g. {fam}: each button has an SF Symbol icon", len(r["symbols"]) == len(names), r["symbols"])
+        check(f"g. {fam}: account lines open the NQ bot, the PC line opens the board",
+              any(l["url"] == site + "nq/" and "$49,193" in l["text"] for l in r["links"])
+              and any(l["url"] == site + "board/" and "PC silent" in l["text"] for l in r["links"]), r["links"])
+    # open trade yes/no: a card with a live position shows LONG / SHORT and its open $ on its line
+    import tempfile
+    rows = read(LITE).splitlines()
+    for i in range(len(rows) - 1, -1, -1):
+        try:
+            o = json.loads(rows[i]); msg = json.loads(o["message"])
+        except (ValueError, KeyError, TypeError):
+            continue
+        if isinstance(msg.get("board"), dict) and isinstance(msg["board"].get("lit"), dict):
+            msg["board"]["lit"]["position"] = {"side": "SHORT", "dir": -1, "qty": 2, "entry_t": msg["t"] - 300, "unrealized_usd": 125.0}
+            o["message"] = json.dumps(msg); rows[i] = json.dumps(o)
+            break
+    with tempfile.NamedTemporaryFile("w", suffix=".ndjson", delete=False) as fh:
+        fh.write("\n".join(rows) + "\n"); tmp = fh.name
+    r = node("draw", tmp, HOME, "large", "-")
+    os.unlink(tmp)
+    check("g. an open trade shows on its account line (SHORT +$125); a flat account shows none",
+          any(l["url"] == site + "nq/" and "SHORT +$125" in l["text"] and "Zlarior 50K" in l["text"] for l in r["links"])
+          and sum("SHORT" in t or "LONG" in t for t in r["texts"]) == 1, r["texts"])
+    sp = read(os.path.join(WEB, "setup.html"))
+    check("g. setup page: Scriptable steps, one-tap import, the 8 Shortcuts Open-URL links, honest refresh note",
+          "Scriptable" in sp and "olympus-widget.js" in sp and all(site + u in sp for u in want.values()) and "15 min" in sp and "viewport-fit=cover" in sp, "")
     r = node("draw", "-", "-", "large", "light")
     check("d. offline + nothing saved: says so, OFFLINE tag, saves nothing", "OFFLINE · —" in r["texts"] and r["cached"] == 0
           and any("No account numbers yet" in t for t in r["texts"]), r["texts"])
@@ -110,7 +152,7 @@ def main() -> int:
     check("d. no PC post -> the site copy marked PAPER · SITE", any(t.startswith("PAPER · SITE") for t in r["texts"]) and "PAPER" in r["texts"], r["texts"])
 
     from tools import site_privacy as SP
-    files = ["olympus-widget.js", "index.html", "glance.html", "glance.js", "widget.css", "manifest.webmanifest"]
+    files = ["olympus-widget.js", "index.html", "setup.html", "glance.html", "glance.js", "widget.css", "manifest.webmanifest"]
     found = []
     for f in files:
         txt = read(os.path.join(WEB, f))
@@ -124,7 +166,7 @@ def main() -> int:
     js = read(os.path.join(WEB, "glance.js")) + read(os.path.join(WEB, "olympus-widget.js"))
     check("e. no innerHTML / insertAdjacentHTML / document.write (text only)", not re.search(r"innerHTML|insertAdjacentHTML|document\.write", js))
     check("e. read only: no POST, no ntfy publish, no key", not re.search(r"method:\s*['\"]POST|\.method\s*=\s*['\"]POST|Authorization", js))
-    for f in ("index.html", "glance.html"):
+    for f in ("index.html", "setup.html", "glance.html"):
         h = read(os.path.join(WEB, f))
         check(f"e. {f}: title, viewport-fit=cover, light + dark", "<title>" in h and "viewport-fit=cover" in h and "light dark" in h)
     gh, gj = read(os.path.join(WEB, "glance.html")), read(os.path.join(WEB, "glance.js"))

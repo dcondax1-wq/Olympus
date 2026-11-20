@@ -156,6 +156,11 @@ def part_e():
     check("e. Maryland taxes 60/40 futures gains as ordinary income: $30,000 -> ~$1,835 (state + county 3.30%), $0 federal", 1700 < f2["total"] < 1900, f2)
     w = K.waterfall(800)
     check("e. waterfall($800) = 240 / 80 / 80 / 160 / 240", (w["tax_pot"], w["eval_reserve"], w["retirement"], w["live_fund"], w["yours"]) == (240, 80, 80, 160, 240), w)
+    d30 = K.magi_dial(30000)
+    check("e. 2027 Saver's Match at $30,000 profit: Roth $2,000 gets ~$508; $7,500 traditional pulls MAGI to ~$20,400 -> the full $1,000 + ~$1,204 tax saved",
+          abs(d30["roth_2000"]["match"] - 508) < 2 and d30["full_match_at"]["put_in"] == 7500 and d30["full_match_at"]["match"] == 1000
+          and abs(d30["full_match_at"]["tax_saved"] - 1203.75) < 2, d30)
+    check("e. Saver's Match band: $1,000 at MAGI <= $20,500, $0 at >= $35,500", K.savers_match(20000, 2000) == 1000 and K.savers_match(35500, 2000) == 0)
     check("e. S-corp break-even near $49,000 profit (Maryland)", 40000 <= K.scorp_break_even() <= 60000, K.scorp_break_even())
 
 

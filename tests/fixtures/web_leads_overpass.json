@@ -1,0 +1,11 @@
+{"version": 0.6, "generator": "fixture: FICTIONAL businesses for tests/test_web_leads.py (not real places)", "elements": [
+ {"type": "node", "id": 1001, "tags": {"name": "Example Plumbing Co (fictional)", "craft": "plumber", "phone": "+1 301-555-0101", "opening_hours": "Mo-Fr 08:00-17:00", "addr:housenumber": "12", "addr:street": "Sample St", "addr:city": "Frederick"}},
+ {"type": "node", "id": 1002, "tags": {"name": "Sample Diner (fictional)", "amenity": "restaurant", "phone": "(301) 555-0102", "website": "https://example.com"}},
+ {"type": "way", "id": 1003, "center": {"lat": 39.4, "lon": -77.4}, "tags": {"name": "Demo Burger (fictional)", "amenity": "fast_food", "brand": "Demo Burger", "brand:wikidata": "Q0"}},
+ {"type": "node", "id": 1004, "tags": {"name": "Test Nails (fictional)", "shop": "nails", "phone": "301.555.0104", "contact:facebook": "https://www.facebook.com/testnails"}},
+ {"type": "node", "id": 1005, "tags": {"name": "Placeholder Auto (fictional)", "shop": "car_repair", "opening_hours": "Mo-Sa 08:00-18:00"}},
+ {"type": "node", "id": 1006, "tags": {"shop": "convenience"}},
+ {"type": "node", "id": 1007, "tags": {"name": "Example Plumbing Co (fictional)", "craft": "plumber", "phone": "+1 301-555-0101"}},
+ {"type": "node", "id": 1008, "tags": {"name": "Mock Gym (fictional)", "leisure": "fitness_centre", "phone": "+1 (301) 555-0108", "website": "https://www.facebook.com/mockgym"}},
+ {"type": "node", "id": 1009, "tags": {"name": "Closed Shop (fictional)", "shop": "clothes", "disused": "yes"}}
+]}

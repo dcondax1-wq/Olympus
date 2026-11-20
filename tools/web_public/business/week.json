@@ -1,7 +1,7 @@
 {
  "v": 1,
  "title": "ZEUS this week",
- "built": "2026-11-20 06:38 ET",
+ "built": "2026-11-20 14:20 ET",
  "built_by": "tools/weekly_review.py",
  "week": {
   "from": "2026-11-16",
@@ -10,7 +10,7 @@
   "complete": false,
   "sessions_done": 4
  },
- "pc": "PC last reported Nov 20 6:30 ET",
+ "pc": "PC last reported Nov 20 9:30 ET",
  "accounts": [
   {
    "key": "zlarior",
@@ -18,7 +18,7 @@
    "plan": "MFFU Builder 50K",
    "stage": "eval",
    "end": 49192.78,
-   "src": "PC live, Nov 20 6:27 ET",
+   "src": "PC live, Nov 20 9:27 ET",
    "room": 1024.58,
    "to_pass": 3807.22,
    "trades": 1,
@@ -46,28 +46,28 @@
    "name": "ATLAS",
    "plan": "MFFU Builder 25K (funded)",
    "stage": "funded",
-   "end": 24887.2,
-   "src": "PC live, Nov 20 6:27 ET",
-   "room": 887.2,
+   "end": 25401.38,
+   "src": "PC live, Nov 20 9:27 ET",
+   "room": 1401.38,
    "to_pass": null,
-   "trades": 1,
-   "win_pct": 0,
-   "usd_week": -112.8,
+   "trades": 2,
+   "win_pct": 50,
+   "usd_week": 401.38,
    "best_day": {
-    "day": "2026-11-18",
-    "usd": -112.8
+    "day": "2026-11-20",
+    "usd": 514.18
    },
    "strat": "ATLAS",
    "start": 25000.0,
-   "wins": 0,
+   "wins": 1,
    "losses": 1,
-   "r_week": -1.04,
+   "r_week": 5.59,
    "room_start": 1000.0,
    "consistency": {
     "rule": "funded: best day at most 50% of the cycle profit",
-    "line": "No winning day this week."
+    "line": "best day 11-20 +$514 = 128% of the cycle profit (over 50%: payout waits for more days)."
    },
-   "status_line": "Payout: Not yet: need $1,463 more."
+   "status_line": "Payout: Not yet: need $949 more."
   },
   {
    "key": "fresh25",
@@ -75,7 +75,7 @@
    "plan": "MFFU Builder 25K",
    "stage": "eval",
    "end": 25000.0,
-   "src": "PC live, Nov 20 6:27 ET",
+   "src": "PC live, Nov 20 9:27 ET",
    "room": 1000.0,
    "to_pass": 1500.0,
    "trades": 0,
@@ -120,11 +120,11 @@
   },
   {
    "name": "ATLAS",
-   "trades": 1,
+   "trades": 2,
    "target": "2-4 a week",
-   "pf": 0.0,
-   "usd": -112.8,
-   "win_pct": 0,
+   "pf": 4.56,
+   "usd": 401.38,
+   "win_pct": 50,
    "exp_tpw": [
     3.12,
     4.38
@@ -136,8 +136,8 @@
    "exp_src": "edge_health.json (40-session medians, 2026)",
    "exp_usd_week": 92.0,
    "plan_usd_month": 500.0,
-   "verdict": "behind",
-   "why": "-$113 this week"
+   "verdict": "ahead",
+   "why": "+$401 vs about $92 expected"
   }
  ],
  "light": {
@@ -147,14 +147,14 @@
  "changes": {
   "n": 200,
   "items": [
-   "Brief: fresh VIX/VXN from pc (to 2026-11-19), bias re-measured (unchanged: no better than a coin),...",
-   "Data: VIX / VXN daily closes from CBOE refreshed to Nov 19",
-   "Land day-atlasedge: ATLAS edge holding on fresh data (edge check AMBER- GREEN to Nov 19), Decide...",
-   "day-brief hand-off: REPORT + LEAD_WIRES",
-   "ATLAS edge check reads fresh data to Nov 19: AMBER - GREEN (PF 2.4 vs 2026 2.8); edge holding, no...",
-   "Brief: no churn (age field dropped, stale text by date), account labels, write-up...",
-   "Brief: prev_recap (yesterday, always filled), live trade wins over its paper twin, contract v1.1...",
-   "Premarket brief: tools/premarket_brief.py - nq/brief.json (levels, news tiers, bots' windows +..."
+   "Owner to-do: MFFU question dropped (owner 14:30: answer it from research), health cover + tax-pot...",
+   "Website business HQ (Agency - 'Websites'): research (15 offers, 40+ sources), expert (diagnosis +...",
+   "WEB demos: laptop layout (text left, 3D right, above the fold); demo.css d2; tests 42",
+   "WEB demos: Make it theirs (the prospect's name, town and phone in the demo from the gallery, text...",
+   "Web leads: research prices on every offer (starter site $1,500 + the right monthly add-on), Agency...",
+   "WEB demos: 4 sellable 3D website demos (restaurant, roofer, detailer, real estate) + the gallery...",
+   "Web leads: first real list (Frederick, partial: 67 businesses with no website, 2 hot, OSM via the...",
+   "Web leads (Agency): free OpenStreetMap lead finder (businesses with no website, scored, best..."
   ]
  },
  "next": {
@@ -174,16 +174,14 @@
    }
   ],
   "decisions": [
-   "Yes/no: ATLAS trades on Zlarior's 50K once it is funded",
-   "Yes/no: ATLAS trades on the Rapid EOD accounts",
-   "Yes/no: keep $1,000 in each Rapid when taking payouts",
-   "Ask MFFU: a 2nd Builder 50K and 2nd 25K eval while the current ones run?"
+   "Tell Claude: 2027 health cover (job / parent / spouse / none), under 34? Deadline Dec 31",
+   "Before ATLAS's first payout: open a free brokerage + Treasury fund for the tax pot (20 min)"
   ],
   "steps": []
  },
  "pace": {
-  "usd_month": -1310.0,
-  "line": "On pace for -$1,310 a month (estimate: this week's -$242 x 4.3; one week is noise, the plan says about $2,156). Eval $ is not cash until the account passes and pays out.",
+  "usd_month": 1470.0,
+  "line": "On pace for $1,470 a month (estimate: this week's +$272 x 4.3; one week is noise, the plan says about $2,156). Eval $ is not cash until the account passes and pays out.",
   "basis": "this week"
  },
  "twins": {
@@ -272,7 +270,19 @@
   ],
   "note": "R only (the twin's $ is at the research size). Days after the cloud's last bars are not compared."
  },
- "best": null,
+ "best": {
+  "acct": "atlas",
+  "bot": "ATLAS",
+  "day": "2026-11-20",
+  "time": "03:45",
+  "side": "SHORT",
+  "usd": 514.18,
+  "r": 6.63,
+  "exit": "TARGET",
+  "mfe_r": null,
+  "cause": "target",
+  "lesson": "Target hit: the plan did exactly what it should. Nothing to change."
+ },
  "worst": {
   "acct": "zlarior",
   "bot": "Zlarior",
@@ -333,42 +343,13 @@
    "news": []
   }
  ],
- "weekend": [
-  {
-   "id": "zlarior-atlas-50k",
-   "question": "Zlarior's Builder 50K: ATLAS trades it too (one position at a time, first bot in keeps it; ATLAS at half its size until the eval passes, full size once funded)?",
-   "usd_month": 696.0,
-   "src": "Decide card"
-  },
-  {
-   "id": "atlas-on-rapid",
-   "question": "Rapid EOD: ATLAS trades it next to Zlarior from day one?",
-   "usd_month": 609.0,
-   "src": "Decide card"
-  },
-  {
-   "id": "zlarior-funded25",
-   "question": "Funded 25K: Zlarior (LIT) trades it too, next to ATLAS?",
-   "usd_month": 125.0,
-   "src": "Decide card"
-  },
-  {
-   "id": "rapid25-lit-bank",
-   "question": "Rapid 25K: Zlarior trades 1 micro and takes profit at the day's room (instead of skipping most trades)?",
-   "usd_month": 83.0,
-   "src": "Decide card"
-  },
-  {
-   "id": "ask-mffu-parallel",
-   "question": "Ask MFFU to say yes in writing: a 2nd Builder 50K and a 2nd 25K eval while the current ones run?",
-   "usd_month": 56.0,
-   "src": "Decide card"
-  }
+ "weekend": [],
+ "missing": [
+  "PC live numbers: last report Nov 20 9:30 ET (4 h ago)"
  ],
- "missing": [],
  "sources": {
   "trades": "PC status post",
   "plan_updated": "2026-11-20",
-  "board_pc": "Nov 20 6:30 ET"
+  "board_pc": "Nov 20 9:30 ET"
  }
 }

@@ -77,16 +77,21 @@ def static_kit(app, name, reads=(), storage=None, allow_urls=()):
     check(f"a. the files: {', '.join(names)}", all(os.path.isfile(os.path.join(d, n)) for n in names), [n for n in names if not os.path.isfile(os.path.join(d, n))])
     html, js, core, css = (read(os.path.join(d, n)) for n in ("index.html", f"{app}.js", f"{app}core.js", f"{app}.css"))
     lines = html.splitlines()
-    i = next((n for n, ln in enumerate(lines) if "../olympus/olympus.js?v=o19" in ln), -1)
-    check(f'a. the kit: olympus.css?v=o7, agora.css after it, themes.js, olympus.js?v=o19 data-app="{app}", the intro tag on the very next line',
+    i = next((n for n, ln in enumerate(lines) if "../olympus/olympus.js?v=o20" in ln), -1)
+    check(f'a. the kit: olympus.css?v=o7, agora.css after it, themes.js, olympus.js?v=o20 data-app="{app}", the intro tag on the very next line',
           html.index("../olympus/olympus.css?v=o7") < html.index("../olympus/agora.css") < html.index(f"{app}.css") and "../olympus/themes.js?v=o9" in html
           and f'data-app="{app}"' in lines[i] and lines[i + 1].strip() == INCLUDE and html.count("intro-app.js") == 1, lines[i:i + 2])
-    check("a. AGORA: <html data-theme=\"agora\">, the a11y layer and the sound kit, the page is an ES module",
-          re.search(r'<html lang="en" data-theme="agora"( data-oly-shell="app")?( data-oly-light)?>', html) and "../olympus/a11y.js" in html and ("../olympus/sfx.js?v=s4" in html or "../olympus/olympus.js" in html) and f'<script type="module" src="{app}.js' in html)
+    # the sound kit: olympus.js loads olympus/sfx.js on the first sound (day-a11y 2026-11-20, PERF ask 4: no parser-loaded 103 KB on every open);
+    # a page may still carry the old deferred tag
+    check("a. AGORA: <html data-theme=\"agora\">, the a11y layer, the sound kit on demand (no blocking sfx.js tag), the page is an ES module",
+          re.search(r'<html lang="en" data-theme="agora"( data-oly-shell="app")?( data-oly-light)?>', html) and "../olympus/a11y.js" in html
+          and ("sfx.js" not in html or '../olympus/sfx.js?v=s4" defer' in html) and f'<script type="module" src="{app}.js' in html)
     check(f"a. viewport-fit=cover, theme-color, manifest, icon, apple-touch-icon, lang, ONE h1 named {name}, a polite live status line",
           all(x in html for x in ("viewport-fit=cover", 'name="theme-color"', 'rel="manifest"', 'rel="icon"', "apple-touch-icon", '<html lang="en"')) and html.count("<h1") == 1
           and f">{name}</h1>" in html and 'role="status"' in html and 'aria-live="polite"' in html)
-    bad = [p for p in (r"\.innerHTML", r"outerHTML", r"insertAdjacentHTML", r"document\.write", r"\beval\s*\(", r"new Function", r"\bimport\s*\(") if re.search(p, js) or re.search(p, core)]
+    # a literal import('./<own file>.js') of the app's own module is not built from data (day-a11y 2026-11-20, PERF ask 3: the 3D after load + idle)
+    js_ = re.sub(r"\bimport\(\s*'\./[\w-]+\.js'\s*\)", "", js)
+    bad = [p for p in (r"\.innerHTML", r"outerHTML", r"insertAdjacentHTML", r"document\.write", r"\beval\s*\(", r"new Function", r"\bimport\s*\(") if re.search(p, js_) or re.search(p, core)]
     check("a. no markup is ever built from data: no innerHTML / outerHTML / insertAdjacentHTML / document.write / eval / dynamic import", not bad, bad)
     fetches = set(re.findall(r"getJSON\('([^']+)'", js))
     want = {"./fixture.json", *reads, *allow_urls}
