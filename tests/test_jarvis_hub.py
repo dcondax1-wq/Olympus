@@ -1506,6 +1506,9 @@ def run_switcher(br, url):
 
     def swipe(dx):
         before = p.evaluate(CUR)
+        # the orb where it is NOW: on Jarvis's own screen it docks in the row above the Ask bar, elsewhere it floats (2026-11-20: the swipe from
+        # Jarvis used the floating spot and missed once the owner's order put Jarvis right before the Planner)
+        cx, cy = p.evaluate("(() => { const b = document.getElementById('nxOrb').getBoundingClientRect(); return [b.left + b.width / 2, b.top + b.height / 2]; })()")
         p.mouse.move(cx, cy); p.mouse.down()
         for k in (2, 5):                                # two quick moves: the flick must end within 600 ms of the finger's own clock, even on a loaded machine
             p.mouse.move(cx + dx * k / 5, cy + 2)
