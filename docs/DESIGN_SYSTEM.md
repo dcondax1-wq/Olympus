@@ -101,3 +101,23 @@ The NQ look (owner 2026-11-20: no gold): deep navy, electric cyan `#22d3ee` + bl
 
 Low tier = the phone tier (30 fps, pixel ratio 1, no reflections); reduced motion = everything still at its final state; no WebGL / Save-Data / 2G-3G =
 the drawn vault. The 3D import waits for load + idle, so no long task over 200 ms lands before it (tests/test_nqfx.py).
+
+## 7. Dashboard FX (olympus/dashfx.js)
+
+The one-tag "3D + glow" layer for every dashboard (owner 2026-11-20: "it needs some 3D, it needs some effects"): `dashfx.css` in `<head>` +
+`<script src="../olympus/dashfx.js?v=d1" defer>`, then data attributes. Palette **OLYMPUS NIGHT** (`--dfx-*`, zero specificity): black base,
+near-black violet cards `#16131e -> #020204`, violet outlines `#3e255e`, violet glow `#9d59ee`, lavender `#dacbf0`, gold `#f1c14b` only as a small
+bright accent, mint `#77db89` profit, red `#ef4444` loss. Demo: `/olympus/dashfx-lab.html`; full guide: `research/handoff/2026-11-20/fx/DASHFX_API.md`.
+
+| `data-dfx` | Effect |
+|---|---|
+| `glass` | near-black violet card, slow violet / gold edge light (paused off screen) |
+| `tilt` | gentle 3D lean (pointer; the phone's tilt only if already allowed) |
+| `reveal` | below-the-fold sections rise in (translate + fade) |
+| `roll` | the number counts up when seen, final text exact |
+| `spark` | an SVG line glows with a gradient area under it |
+| `bar` (+ `data-dfx-value`) | glowing progress bar, gold at 100% |
+| `bg` / `<body data-dfx-bg>` | aurora + <= 60 dots, 30 fps, paused when unseen |
+
+API `OLYMPUS_DASHFX`: `wire`, `bar`, `theme`, `palette`, `chart.svg / canvas / lwc`, `stats`, `stop`. Rules: transforms / opacity only (layout shift
+0), reduced motion = nothing moves, no WebGL, no long task, everything stoppable (tests/test_dashfx.py).
