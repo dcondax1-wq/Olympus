@@ -10,3 +10,9 @@
    own big "Olympus World" card. Check `tests.test_apps_list` / `tests.test_olympus_map` for a pinned Cities url before landing;
    if it is pinned, skip this item (the card on `cities/` already leads there).
 3. `docs/OLYMPUS_MAP.md` line 63 (rebuilt by `tools/olympus_map_build.py`): the Cities row's blurb follows item 2 if you take it.
+4. **Intro (jarvis/entry.js changed): `entry.js?v=e1` -> `?v=e2`** in `jarvis/index.html` line 152, `jarvis/sw.js` line 54, and the pin in
+   `tests/test_jarvis_hub.py` line 1593.
+5. **Jump (olympus/warp.js + warp.css changed): `?v=w2` -> `?v=w3`** in `olympus/themes.js` 761 (warp.js), `olympus/agora.css` 8,
+   `jarvis/index.html` 18, `index.html` 8, `kalshi/index.html` 5 (warp.css), `hub/doors.html` 64, `hub/help.html` 64, `hub/zeus.html` 94,
+   `atlas/index.html` 22 (warp.js), `cities/world/index.html` 22 + 26, `jarvis/sw.js` 54 and `kalshi/sw.js` 14 (both files), and the pins in
+   `tests/test_warp.py` lines 78, 83, 84, 102, 108, 109, 125. (Left for you so every page and pin moves together in one commit.)
