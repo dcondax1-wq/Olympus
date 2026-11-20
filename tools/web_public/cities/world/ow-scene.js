@@ -4,8 +4,8 @@
 // pooled pulses: thousands of buildings in about a dozen calls. Everything that moves is computed on the GPU from uTime.
 import * as THREE from '../../jarvis/three.module.min.js';
 import { createRenderer } from '../../olympus/render.js';
-import * as SH from './ow-shaders.js?v=w2';
-import { poseToCam, lerpPose, ease, warpCurve, clampPose, homePose, overviewPose, districtPose, placePose, clamp, hex, rng } from './ow-core.js?v=w2';
+import * as SH from './ow-shaders.js?v=w3';
+import { poseToCam, lerpPose, ease, warpCurve, clampPose, homePose, overviewPose, districtPose, placePose, clamp, hex, rng } from './ow-core.js?v=w3';
 
 const MOON = new THREE.Vector3(0.28, 0.2, -1).normalize();
 
@@ -203,6 +203,46 @@ export function createWorld(opts) {
   const rings = new THREE.Mesh(ringGeo, new THREE.ShaderMaterial({ vertexShader: SH.RING_VS, fragmentShader: SH.RING_FS, uniforms: { ...U, ...PU }, side: THREE.DoubleSide, ...additive }));
   rings.renderOrder = 3; rings.frustumCulled = false;
   scene.add(rings);
+  // ---- LED displays: ticker bands round the tallest towers (the Gate, ZEUS, the Kalshi bot, Business); text = setDisplay(row, line)
+  const ROWS = 4, TXW = 1024, TXH = 128;
+  const txt = document.createElement('canvas'); txt.width = TXW; txt.height = TXH * ROWS;
+  const tg = txt.getContext('2d');
+  tg.fillStyle = '#000'; tg.fillRect(0, 0, TXW, TXH * ROWS);
+  const txtTex = new THREE.CanvasTexture(txt); txtTex.flipY = false; txtTex.minFilter = txtTex.magFilter = THREE.NearestFilter; txtTex.generateMipmaps = false;
+  const bandSpec = [];
+  const byHref = (h) => plan.places.findIndex((p) => p.href === h);
+  const gold = [1.0, 0.72, 0.32];
+  bandSpec.push({ x: 0, y: 29.0, z: 0, r: 3.05, h: 2.0, row: 0, col: gold, place: N });
+  for (const [href, row] of [['hub/zeus.html', 1], ['kalshi/', 2], ['business/', 3]]) {
+    const i = byHref(href);
+    if (i < 0) continue;
+    const p = plan.places[i], fw = 2.7 + 1.5 * clamp(((p.raw.b || [])[0] || 120) / 255, 0, 1);
+    bandSpec.push({ x: p.x, y: p.top * 0.42, z: p.z, r: fw * 0.64, h: Math.max(1.2, p.top * 0.06), row, col: p.hue.map((v) => Math.min(1, v * 1.25 + 0.1)), place: i });
+  }
+  const dn = bandSpec.length, dA = new Float32Array(dn * 4), dB = new Float32Array(dn * 4), dC = new Float32Array(dn * 3), dP = new Float32Array(dn);
+  bandSpec.forEach((b, k) => {
+    const circ = 2 * Math.PI * b.r, rep = Math.max(1, Math.round(circ / (b.h * 8)));
+    dA.set([b.x, b.y, b.z, b.r], k * 4); dB.set([b.h, b.row, rep, 0.035 / rep], k * 4); dC.set(b.col, k * 3); dP[k] = b.place;
+  });
+  const bandGeo = new THREE.CylinderGeometry(1, 1, 1, 32, 1, true).translate(0, 0.5, 0);
+  const bands = new THREE.Mesh(instanced(bandGeo, [['aBand', dA, 4], ['aBand2', dB, 4], ['aCol', dC, 3], ['aPlace', dP, 1]], dn),
+    new THREE.ShaderMaterial({ vertexShader: SH.BAND_VS, fragmentShader: SH.BAND_FS, uniforms: { ...U, ...PU, uText: { value: txtTex }, uRows: { value: ROWS } }, side: THREE.DoubleSide, extensions: { derivatives: true } }));
+  bands.frustumCulled = false; bands.renderOrder = 2;
+  scene.add(bands);
+  const shown = new Array(ROWS).fill('');
+  function setDisplay(row, text) {
+    const r = Math.max(0, Math.min(ROWS - 1, row | 0)), t = String(text || '').replace(/\s+/g, ' ').trim().toUpperCase().slice(0, 160);
+    if (!t || shown[r] === t) return false;
+    shown[r] = t;
+    tg.fillStyle = '#000'; tg.fillRect(0, r * TXH, TXW, TXH);
+    tg.font = '700 76px -apple-system, "SF Pro Display", system-ui, "Helvetica Neue", Arial, sans-serif';
+    tg.textBaseline = 'middle'; tg.fillStyle = '#fff';
+    const unit = t + '   \u2022   ', w = Math.max(1, tg.measureText(unit).width);
+    for (let x = 0; x < TXW; x += w) tg.fillText(unit, x, r * TXH + TXH * 0.54);
+    txtTex.needsUpdate = true;
+    return true;
+  }
+  setDisplay(0, 'OLYMPUS   ' + N + ' PLACES LEARNING');
   // ---- pooled pulses: a shock wave on the ground and a pillar of light
   const pool = [];
   for (let k = 0; k < 4; k++) {
@@ -507,7 +547,7 @@ export function createWorld(opts) {
 
   const api = {
     THREE, rc, scene, camera, plan,
-    flyTo, burst, select, setTrading, setLight, project, candidates, startHistory, stopHistory, startTour, stopTour, groundAt,
+    flyTo, burst, select, setTrading, setLight, setDisplay, project, candidates, startHistory, stopHistory, startTour, stopTour, groundAt,
     pose: () => ({ ...pose }),
     setPose(p) { tween = null; introT = -1; pose = clampPose(p, world); grow.fill(1); texDirty = true; },
     flyToPlace(i, o) { const p = plan.places[i]; if (p) flyTo(placePose(p, pose), { warp: true, ms: 950, ...(o || {}), done: () => { burst(i); if (o && o.done) o.done(); } }); },
@@ -533,7 +573,7 @@ export function createWorld(opts) {
       canvas.removeEventListener('pointerdown', onDown); canvas.removeEventListener('pointermove', onMove); canvas.removeEventListener('pointerup', onUp);
       canvas.removeEventListener('pointercancel', onUp); canvas.removeEventListener('wheel', onWheel); canvas.removeEventListener('contextmenu', noMenu);
       scene.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
-      placeTex.dispose(); glowTex.dispose(); landTex.dispose(); rc.dispose();
+      placeTex.dispose(); glowTex.dispose(); landTex.dispose(); txtTex.dispose(); rc.dispose();
     },
   };
   return api;

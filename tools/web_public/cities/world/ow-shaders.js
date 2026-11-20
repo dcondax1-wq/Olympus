@@ -574,3 +574,41 @@ export const WARP_FS = /* glsl */`
 varying float vA; varying vec3 vC; varying float vT;
 void main() { gl_FragColor = vec4(vC * vA * (1.0 - abs(vT - 0.5) * 2.0) * 1.6, 1.0); }
 `;
+
+// ------------------------------------------------------------------------------------------------ LED displays: ticker bands round the tallest towers
+// (revamp-cities 2026-11-20, the owner's "displays"): an open cylinder per band (instanced), its text from one small canvas (a row per
+// band, redrawn only when the line changes), scrolled round the tower on the GPU and drawn as a dot-matrix LED on dark glass.
+// aBand = x, y, z, radius; aBand2 = height, row, repeats round the tower, scroll speed; aCol = the LED colour.
+export const BAND_VS = PLACE + /* glsl */`
+attribute vec4 aBand; attribute vec4 aBand2; attribute vec3 aCol; attribute float aPlace;
+varying vec2 vUv; varying vec4 vB2; varying vec3 vC; varying vec3 vW; varying float vG;
+void main() {
+  vec4 ps = placeState(aPlace);
+  float g = smoothstep(0.75, 1.0, ps.r);
+  vec3 wp = aBand.xyz + vec3(position.x * aBand.w, (position.y) * aBand2.x * g, position.z * aBand.w);
+  vUv = uv; vB2 = aBand2; vC = aCol * (0.6 + 0.4 * ps.a * 2.0) * (1.0 + ps.g); vW = wp; vG = g;
+  gl_Position = projectionMatrix * viewMatrix * vec4(wp, 1.0);
+}
+`;
+export const BAND_FS = COMMON + /* glsl */`
+uniform sampler2D uText; uniform float uRows;
+varying vec2 vUv; varying vec4 vB2; varying vec3 vC; varying vec3 vW; varying float vG;
+void main() {
+  if (vG < 0.02) discard;
+  float u = fract((1.0 - vUv.x) * vB2.z - uTime * vB2.w);                      // seen from outside the band, left to right
+  vec2 cells = vec2(1024.0 * 0.25, 128.0 * 0.25);                              // one LED per 4 x 4 canvas pixels
+  vec2 q = vec2(u, vUv.y) * cells;
+  vec2 fw = fwidth(q);
+  float detail = 1.0 - smoothstep(0.35, 0.9, max(fw.x, fw.y));
+  float dotm = mix(0.55, 1.0 - smoothstep(0.32, 0.46, length(fract(q) - 0.5)), detail);
+  float t = texture2D(uText, vec2((floor(q.x) + 0.5) / cells.x, (vB2.y + 1.0 - (floor(q.y) + 0.5) / cells.y) / uRows)).r;   // one sample per LED
+  float edge = smoothstep(0.0, 0.06, vUv.y) * smoothstep(0.0, 0.06, 1.0 - vUv.y);
+  vec3 col = vec3(0.006, 0.008, 0.014) + vC * 0.035 * dotm;                    // dark glass, faint unlit LEDs
+  col += vC * t * dotm * 3.2 * edge;
+  col += vC * (1.0 - edge) * 0.6;                                               // the bright frame lines
+  col = fogged(col, vW);
+  gl_FragColor = vec4(min(col, vec3(12.0)), 1.0);
+  #include <tonemapping_fragment>
+  #include <colorspace_fragment>
+}
+`;

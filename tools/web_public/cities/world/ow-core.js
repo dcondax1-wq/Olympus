@@ -270,7 +270,7 @@ export function districtPose(w, d) {
   const len = Math.hypot(d.x, d.z) || 1;
   const span = Math.abs(((d.a1 - d.a0) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI)) || 1;
   const R = (w && +w.R) || 130;
-  return { tx: d.x, ty: 0, tz: d.z, dist: clamp(R * (0.45 + span * 0.22), 70, R * 1.25), yaw: Math.atan2(-d.x / len, -d.z / len), pitch: 0.82 };
+  return { tx: d.x, ty: 0, tz: d.z, dist: clamp(R * (0.45 + span * 0.22), 70, R * 1.25), yaw: Math.atan2(-d.x / len, -d.z / len), pitch: 0.6 };
 }
 /** a place: frame it from the plaza side (or keep the current yaw), close enough to read its buildings */
 export function placePose(pl, cur) {
