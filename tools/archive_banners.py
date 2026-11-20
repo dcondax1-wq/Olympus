@@ -84,7 +84,8 @@ LINK = ("margin-left:auto;flex:none;display:inline-flex;align-items:center;min-h
 # 1) a full-screen page (html/body overflow hidden, its own HUD pinned at top 0): the strip moves out of <body> and the page is
 #    pushed down under it (body becomes the box its fixed parts sit in), so nothing of the page is covered;
 # 2) ?demo=1 (the page's own sample mode, which promises to read no real file): says 'sample data' and fetches nothing; else
-#    reads the first date-ish field of the page's own data file -> "Archived · its data: Oct 28, 23 days old" (amber when > 2 days).
+#    1.5 s after load, reads the first date-ish field of the page's own data file from the browser cache (force-cache: the copy the
+#    page itself just fetched, so no second download; the network only if it is not cached) -> "Archived · its data: Oct 28, 23 days old" (amber when > 2 days).
 JS = ("(function(){var b=document.currentScript.parentNode,h=document.documentElement,d=document.body;try{"
       "var y=function(e){return getComputedStyle(e).overflowY};if(d&&(y(h)==='hidden'||y(d)==='hidden')){h.insertBefore(b,d);"
       "b.style.position='fixed';b.style.left='0';b.style.right='0';var ov=b.getAttribute('data-overlay');var fit=function(){var H=b.offsetHeight;"
@@ -92,14 +93,15 @@ JS = ("(function(){var b=document.currentScript.parentNode,h=document.documentEl
       "h.style.boxSizing='border-box';d.style.transform='translateZ(0)';d.style.height=d.style.minHeight=d.style.maxHeight=(innerHeight-H)+'px';if(getComputedStyle(d).position==='fixed')d.style.top=H+'px';};"
       "fit();addEventListener('resize',fit);}}catch(e){}"
       "var s=b.getAttribute('data-src'),o=b.querySelector('[data-age]');if(!o)return;"
-      "if(/[?&#]demo(=1)?(&|$)/.test(location.search)||/^#demo\\b/.test(location.hash)){o.textContent=' · sample data';return;}if(!s||!window.fetch)return;"
-      "fetch(s,{cache:'no-cache'}).then(function(r){return r.ok?r.json():null}).then(function(j){if(!j||typeof j!=='object')return;"
+      "if(/[?&#]demo(=1)?(&|$)/.test(location.search)||/^#demo\\b/.test(location.hash)){o.textContent=' · sample data';return;}if(!s||!window.fetch)return;var go=function(){"
+      "fetch(s,{cache:'force-cache'}).then(function(r){return r.ok?r.json():null}).then(function(j){if(!j||typeof j!=='object')return;"
       "var v=j.upto||j.asof||j.as_of||j.built||j.updated||j.date||j.generated_at||j.t,ms=null;"
       "if(typeof v==='number')ms=v<1e12?v*1000:v;else if(typeof v==='string'){var m=v.match(/^(\\d{4})-(\\d\\d)-(\\d\\d)(?:[ T](\\d\\d):(\\d\\d))?/);"
       "if(m)ms=new Date(+m[1],m[2]-1,+m[3],+(m[4]||12),+(m[5]||0)).getTime();}if(!ms||!isFinite(ms))return;"
       "var n=Math.floor((Date.now()-ms)/864e5),w=new Date(ms).toLocaleDateString('en-US',{month:'short',day:'numeric'});"
       "o.textContent=' · data '+w+(n<1?', today':n===1?', 1 day old':', '+n+' days old');"
-      "if(n>2)o.style.color='var(--oly-th-warn,#e0b060)';}).catch(function(){});})();")
+      "if(n>2)o.style.color='var(--oly-th-warn,#e0b060)';}).catch(function(){});};"
+      "if(document.readyState==='complete')setTimeout(go,1500);else addEventListener('load',function(){setTimeout(go,1500);});})();")
 
 
 def uses_oly_st(app: str) -> bool:

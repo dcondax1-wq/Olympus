@@ -47,7 +47,10 @@ def main():
             pg.on("console", lambda m: m.type == "error" and cons.append(m.text[:160]))
             def resp(r):
                 if r.status >= 400: bad.append(f"{r.status}:{r.url.split(str(port) + '/')[-1][:70]}")
-                try: n = int(r.headers.get("content-length") or 0) or len(r.body()); size[0] += n; big.append((n, r.url.split(str(port) + '/')[-1][:60]))
+                try:   # bytes that crossed the wire (a browser-cache hit counts 0), the body size as a fallback
+                    try: n = int(r.request.sizes().get("responseBodySize") or 0)
+                    except Exception: n = int(r.headers.get("content-length") or 0) or len(r.body())
+                    size[0] += n; big.append((n, r.url.split(str(port) + '/')[-1][:60]))
                 except Exception: pass
             pg.on("response", resp)
             try: pg.goto(f"http://127.0.0.1:{port}/{i}/", wait_until="load", timeout=20000)
