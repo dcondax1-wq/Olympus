@@ -450,8 +450,8 @@ def status(root: str | None = None) -> dict:
 
 
 OWNER_STEPS = (
-    "1. Sim first: in NinjaTrader keep Zlarior on Sim101 for a day (START BOT on Sim101), then type here: "
-    'python -X utf8 -m engine.combo50k --on --account "Sim101"   (type I ACCEPT LIVE RISK when asked).',
+    '1. Sim first: python -X utf8 -m engine.combo50k --on --account "Sim101"  (type I ACCEPT LIVE RISK when asked), then '
+    "START BOT with Zlarior's account set to Sim101 in NinjaTrader for one or two days.",
     "2. Watch one or two days: the phone / Board say \"ATLAS on Zlarior 50K: LONG opened\" or \"Zlarior on its 50K: ...\"; "
     "never two positions on Sim101, never long on one account and short on another.",
     "3. Tap yes on the Decide card zlarior-atlas-50k, then: python -X utf8 -m engine.combo50k --on --account \"<your 50K Name>\" "
