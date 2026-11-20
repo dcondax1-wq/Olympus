@@ -1,4 +1,17 @@
 ## Tested and rejected (don't redo without a new idea)
+- **Zlarior more money, 2 pre-registered batches (2026-11-19, `lit-more-money-2026-11-19.md`, `tools/lit_more_money.py`,
+  `research/lit/more_money.json`, designs `research/lit/more_money_design_batch1/2.md`, Lab rows `research/lab/lit_more_money.json`):**
+  9 single versions, LIT $/month H1 / H2 / 2021-25 vs today $5,562 / $2,670 / $25: ES (MES) LIT filler on days NQ has not
+  traded yet, NQ preempts (4.5 trades/wk) $4,478 / $3,026 / -$66, eval 2-week pass 44.5 -> 43.7, funded $929 -> $642 a month;
+  breakeven at clip(0.25 x target R, 0.5-2R) $5,194 / $2,429 / $209; LIMIT entry at the 1m CISD close (1 tick through, else
+  market) $5,554 / $2,583 / $26 (fills 112/119 at the same price on average; the 7 misses are runners, chase ~5 pts); NY setups only on London's
+  discount side $5,482 / $2,770 / $51; Tier-1 news day: only setups after the release $4,277 / $2,736 / $54; out on a 5m close
+  back through the CISD level before +0.5R $4,738 / $532 / -$75; ES closes beyond its own sweep-window extreme before +0.5R ->
+  out $5,562 / $2,771 / $30 (0 cuts in Jan-Jun, 4 in Jul-Oct: nearest miss, paper only); keep only SMT setups (ES held) 0.8 /
+  1.0 trades a week $150 / $937 / $61; trade MES instead of MNQ when ES held (SMT pick) $4,945 / $5,383 / $76 (30 ES trades in
+  2026, loses Jan-Jun). 0 pass. Target touch-fills checked: requiring 1 tick through changes 0 trades. Live gap Oct 26 - Nov 16:
+  see the write-up (one real miss, one refused order already fixed, one traded trade the audit could not see; fix proposal
+  `tools/live_gap_proposal.py`).
 - **BLITZ review (2026-11-18, `blitz-review-2026-11-18.md`, `tools/blitz_review.py`, `research/scalp/blitz_review.json`, Lab kind
   `blitz_idea`):** 8 pre-declared EXIT ideas on today's BLITZ (account C, $150, costs in): out at minute 10 / 15 if in a loss and
   never +0.5R, out at minute 10 if never +0.25R (H1 pick: +$22 Jan-Jun, -$292/mo Jul-Oct, 2-week fails 21.7 -> 40.6%), out on a

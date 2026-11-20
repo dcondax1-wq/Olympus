@@ -1,0 +1,615 @@
+{
+ "v": 1,
+ "date": "2026-11-19",
+ "kind": "lit_more_money",
+ "bot": "lit",
+ "about": "Zlarior (LIT) more-money ideas, pre-registered in 2 batches (research/lit/more_money_design_batch1/2.md), one fixed version each, costs in; gate G1-G6 (both 2026 halves better at the LIT size and on the eval path, 2021-25 not worse, 2-4 trades a week, week-block bootstrap <= 0.10, funded 50K not lower)",
+ "base": {
+  "per_month": {
+   "H1": 5562,
+   "H2": 2670,
+   "2021-25": 25
+  },
+  "eval": {
+   "H1": {
+    "per_month": 5523,
+    "p10": 44.5,
+    "f10": 0.0
+   },
+   "H2": {
+    "per_month": 3159,
+    "p10": 39.1,
+    "f10": 0.0
+   }
+  },
+  "funded_per_month": {
+   "H1": 929,
+   "H2": 915,
+   "REF": 58
+  }
+ },
+ "count": {
+  "batch1": 2,
+  "batch2": 7,
+  "total": 9,
+  "passed": []
+ },
+ "rows": [
+  {
+   "id": "lit_more_es_filler",
+   "bot": "lit",
+   "kind": "lit_more_money",
+   "batch": 1,
+   "title": "Extra trades on ES (S&P micros) on days Zlarior has not traded yet",
+   "rule": "LIT on ES as MES, same account, only while NQ has not traded that day; NQ preempts an open ES trade",
+   "status": "rejected",
+   "per_month": {
+    "H1": 4478,
+    "H2": 3026,
+    "2021-25": -66
+   },
+   "d_per_month": {
+    "H1": -1084,
+    "H2": 356,
+    "2021-25": -91
+   },
+   "tpw": {
+    "H1": 4.49,
+    "H2": 4.49,
+    "2021-25": 2.68
+   },
+   "pf": {
+    "H1": 2.61,
+    "H2": 2.08,
+    "2021-25": 0.97
+   },
+   "dd": {
+    "H1": -3450,
+    "H2": -3507,
+    "2021-25": -22533
+   },
+   "eval": {
+    "H1": {
+     "per_month": 3925,
+     "p10": 43.7,
+     "f10": 0.0,
+     "pass_med": 9.0
+    },
+    "H2": {
+     "per_month": 2008,
+     "p10": 42.0,
+     "f10": 0.0,
+     "pass_med": 7.5
+    }
+   },
+   "funded_per_month": {
+    "H1": 642,
+    "H2": 639,
+    "REF": 49
+   },
+   "boot_p": 0.783,
+   "gate": {
+    "G1_lit_both": false,
+    "G2_eval": false,
+    "G3_2021_25": false,
+    "G4_tpw": false,
+    "G5_boot": false,
+    "G6_funded": false,
+    "PASS": false
+   },
+   "source": "tools/lit_more_money.py, research/writeups/lit-more-money-2026-11-19.md"
+  },
+  {
+   "id": "lit_more_be_frac",
+   "bot": "lit",
+   "kind": "lit_more_money",
+   "batch": 1,
+   "title": "Move to breakeven later on far targets, sooner on near ones",
+   "rule": "breakeven at clip(0.25 x planned target R, 0.5R, 2.0R) instead of +1R",
+   "status": "rejected",
+   "per_month": {
+    "H1": 5194,
+    "H2": 2429,
+    "2021-25": 209
+   },
+   "d_per_month": {
+    "H1": -368,
+    "H2": -242,
+    "2021-25": 184
+   },
+   "tpw": {
+    "H1": 3.12,
+    "H2": 2.56,
+    "2021-25": 2.38
+   },
+   "pf": {
+    "H1": 3.53,
+    "H2": 2.48,
+    "2021-25": 1.1
+   },
+   "dd": {
+    "H1": -2196,
+    "H2": -1557,
+    "2021-25": -26414
+   },
+   "eval": {
+    "H1": {
+     "per_month": 4121,
+     "p10": 55.5,
+     "f10": 0.0,
+     "pass_med": 7.0
+    },
+    "H2": {
+     "per_month": 3038,
+     "p10": 39.1,
+     "f10": 0.0,
+     "pass_med": 11.0
+    }
+   },
+   "funded_per_month": {
+    "H1": 931,
+    "H2": 854,
+    "REF": 84
+   },
+   "boot_p": 0.768,
+   "gate": {
+    "G1_lit_both": false,
+    "G2_eval": false,
+    "G3_2021_25": true,
+    "G4_tpw": true,
+    "G5_boot": false,
+    "G6_funded": false,
+    "PASS": false
+   },
+   "source": "tools/lit_more_money.py, research/writeups/lit-more-money-2026-11-19.md"
+  },
+  {
+   "id": "lit_more_fill_limit_close",
+   "bot": "lit",
+   "kind": "lit_more_money",
+   "batch": 2,
+   "title": "Enter with a limit order at the signal candle's close instead of a market order",
+   "rule": "entry LIMIT at the 1m CISD close for one bar (needs 1 tick through), else market next bar",
+   "status": "rejected",
+   "per_month": {
+    "H1": 5554,
+    "H2": 2583,
+    "2021-25": 26
+   },
+   "d_per_month": {
+    "H1": -8,
+    "H2": -88,
+    "2021-25": 1
+   },
+   "tpw": {
+    "H1": 3.12,
+    "H2": 2.56,
+    "2021-25": 2.38
+   },
+   "pf": {
+    "H1": 4.86,
+    "H2": 2.79,
+    "2021-25": 1.01
+   },
+   "dd": {
+    "H1": -2171,
+    "H2": -1692,
+    "2021-25": -19426
+   },
+   "eval": {
+    "H1": {
+     "per_month": 5169,
+     "p10": 41.2,
+     "f10": 0.0,
+     "pass_med": 11.0
+    },
+    "H2": {
+     "per_month": 3147,
+     "p10": 39.1,
+     "f10": 0.0,
+     "pass_med": 12.5
+    }
+   },
+   "funded_per_month": {
+    "H1": 917,
+    "H2": 885,
+    "REF": 58
+   },
+   "boot_p": 0.639,
+   "gate": {
+    "G1_lit_both": false,
+    "G2_eval": false,
+    "G3_2021_25": true,
+    "G4_tpw": true,
+    "G5_boot": false,
+    "G6_funded": false,
+    "PASS": false
+   },
+   "source": "tools/lit_more_money.py, research/writeups/lit-more-money-2026-11-19.md"
+  },
+  {
+   "id": "lit_more_bias_london",
+   "bot": "lit",
+   "kind": "lit_more_money",
+   "batch": 2,
+   "title": "New York trades only from London's cheap side (longs) / expensive side (shorts)",
+   "rule": "NY setups only on London's discount side (long: sweep extreme <= London 02-05 midpoint)",
+   "status": "rejected",
+   "per_month": {
+    "H1": 5482,
+    "H2": 2770,
+    "2021-25": 51
+   },
+   "d_per_month": {
+    "H1": -80,
+    "H2": 100,
+    "2021-25": 26
+   },
+   "tpw": {
+    "H1": 3.05,
+    "H2": 2.37,
+    "2021-25": 2.32
+   },
+   "pf": {
+    "H1": 4.98,
+    "H2": 3.21,
+    "2021-25": 1.03
+   },
+   "dd": {
+    "H1": -2063,
+    "H2": -1268,
+    "2021-25": -19566
+   },
+   "eval": {
+    "H1": {
+     "per_month": 5497,
+     "p10": 44.5,
+     "f10": 0.0,
+     "pass_med": 11.0
+    },
+    "H2": {
+     "per_month": 3249,
+     "p10": 39.1,
+     "f10": 0.0,
+     "pass_med": 12.0
+    }
+   },
+   "funded_per_month": {
+    "H1": 935,
+    "H2": 993,
+    "REF": 57
+   },
+   "boot_p": 0.5454,
+   "gate": {
+    "G1_lit_both": false,
+    "G2_eval": false,
+    "G3_2021_25": true,
+    "G4_tpw": true,
+    "G5_boot": false,
+    "G6_funded": true,
+    "PASS": false
+   },
+   "source": "tools/lit_more_money.py, research/writeups/lit-more-money-2026-11-19.md"
+  },
+  {
+   "id": "lit_more_news_after",
+   "bot": "lit",
+   "kind": "lit_more_money",
+   "batch": 2,
+   "title": "On big-news days, wait for the release before taking a setup",
+   "rule": "Tier-1 day: skip setups triggered before the day's first high-impact release (day left free)",
+   "status": "rejected",
+   "per_month": {
+    "H1": 4277,
+    "H2": 2736,
+    "2021-25": 54
+   },
+   "d_per_month": {
+    "H1": -1284,
+    "H2": 66,
+    "2021-25": 29
+   },
+   "tpw": {
+    "H1": 2.73,
+    "H2": 2.24,
+    "2021-25": 2.21
+   },
+   "pf": {
+    "H1": 4.19,
+    "H2": 3.26,
+    "2021-25": 1.03
+   },
+   "dd": {
+    "H1": -2660,
+    "H2": -1125,
+    "2021-25": -20550
+   },
+   "eval": {
+    "H1": {
+     "per_month": 4618,
+     "p10": 42.9,
+     "f10": 0.0,
+     "pass_med": 9.5
+    },
+    "H2": {
+     "per_month": 3811,
+     "p10": 42.0,
+     "f10": 0.0,
+     "pass_med": 12.0
+    }
+   },
+   "funded_per_month": {
+    "H1": 792,
+    "H2": 908,
+    "REF": 59
+   },
+   "boot_p": 0.9176,
+   "gate": {
+    "G1_lit_both": false,
+    "G2_eval": false,
+    "G3_2021_25": true,
+    "G4_tpw": true,
+    "G5_boot": false,
+    "G6_funded": false,
+    "PASS": false
+   },
+   "source": "tools/lit_more_money.py, research/writeups/lit-more-money-2026-11-19.md"
+  },
+  {
+   "id": "lit_more_cisd_fail",
+   "bot": "lit",
+   "kind": "lit_more_money",
+   "batch": 2,
+   "title": "Get out when price falls back through the shift level before the trade works",
+   "rule": "before +0.5R / BE: a 5m close below the CISD level and the entry -> out",
+   "status": "rejected",
+   "per_month": {
+    "H1": 4738,
+    "H2": 532,
+    "2021-25": -75
+   },
+   "d_per_month": {
+    "H1": -824,
+    "H2": -2139,
+    "2021-25": -100
+   },
+   "tpw": {
+    "H1": 3.12,
+    "H2": 2.56,
+    "2021-25": 2.38
+   },
+   "pf": {
+    "H1": 6.19,
+    "H2": 1.42,
+    "2021-25": 0.95
+   },
+   "dd": {
+    "H1": -2047,
+    "H2": -1488,
+    "2021-25": -16415
+   },
+   "eval": {
+    "H1": {
+     "per_month": 4490,
+     "p10": 49.6,
+     "f10": 0.0,
+     "pass_med": 8.0
+    },
+    "H2": {
+     "per_month": 1773,
+     "p10": 24.6,
+     "f10": 0.0,
+     "pass_med": 9.5
+    }
+   },
+   "funded_per_month": {
+    "H1": 869,
+    "H2": 313,
+    "REF": 43
+   },
+   "boot_p": 0.9874,
+   "gate": {
+    "G1_lit_both": false,
+    "G2_eval": false,
+    "G3_2021_25": false,
+    "G4_tpw": true,
+    "G5_boot": false,
+    "G6_funded": false,
+    "PASS": false
+   },
+   "source": "tools/lit_more_money.py, research/writeups/lit-more-money-2026-11-19.md"
+  },
+  {
+   "id": "lit_more_es_fail",
+   "bot": "lit",
+   "kind": "lit_more_money",
+   "batch": 2,
+   "title": "Get out when ES breaks its own low (high) before the trade works",
+   "rule": "before +0.5R / BE: ES closes beyond its own extreme of the sweep window -> out",
+   "status": "rejected",
+   "per_month": {
+    "H1": 5562,
+    "H2": 2771,
+    "2021-25": 30
+   },
+   "d_per_month": {
+    "H1": 0,
+    "H2": 101,
+    "2021-25": 5
+   },
+   "tpw": {
+    "H1": 3.12,
+    "H2": 2.56,
+    "2021-25": 2.38
+   },
+   "pf": {
+    "H1": 4.98,
+    "H2": 3.13,
+    "2021-25": 1.02
+   },
+   "dd": {
+    "H1": -2196,
+    "H2": -1396,
+    "2021-25": -19426
+   },
+   "eval": {
+    "H1": {
+     "per_month": 5523,
+     "p10": 44.5,
+     "f10": 0.0,
+     "pass_med": 11.0
+    },
+    "H2": {
+     "per_month": 3586,
+     "p10": 39.1,
+     "f10": 0.0,
+     "pass_med": 12.0
+    }
+   },
+   "funded_per_month": {
+    "H1": 929,
+    "H2": 959,
+    "REF": 58
+   },
+   "boot_p": 0.0382,
+   "gate": {
+    "G1_lit_both": false,
+    "G2_eval": false,
+    "G3_2021_25": true,
+    "G4_tpw": true,
+    "G5_boot": true,
+    "G6_funded": true,
+    "PASS": false
+   },
+   "source": "tools/lit_more_money.py, research/writeups/lit-more-money-2026-11-19.md"
+  },
+  {
+   "id": "lit_more_smt_filter",
+   "bot": "lit",
+   "kind": "lit_more_money",
+   "batch": 2,
+   "title": "Only take setups where ES did not make the same new low (SMT divergence)",
+   "rule": "keep an NQ setup only when ES did NOT make a new 2-hour extreme at NQ's sweep (SMT present)",
+   "status": "rejected",
+   "per_month": {
+    "H1": 150,
+    "H2": 937,
+    "2021-25": 61
+   },
+   "d_per_month": {
+    "H1": -5412,
+    "H2": -1734,
+    "2021-25": 36
+   },
+   "tpw": {
+    "H1": 0.78,
+    "H2": 1.03,
+    "2021-25": 2.08
+   },
+   "pf": {
+    "H1": 1.42,
+    "H2": 2.42,
+    "2021-25": 1.04
+   },
+   "dd": {
+    "H1": -1608,
+    "H2": -1242,
+    "2021-25": -19426
+   },
+   "eval": {
+    "H1": {
+     "per_month": 93,
+     "p10": 1.7,
+     "f10": 0.0,
+     "pass_med": 38.5
+    },
+    "H2": {
+     "per_month": 1600,
+     "p10": 27.5,
+     "f10": 0.0,
+     "pass_med": 36.0
+    }
+   },
+   "funded_per_month": {
+    "H1": 17,
+    "H2": 364,
+    "REF": 62
+   },
+   "boot_p": 1.0,
+   "gate": {
+    "G1_lit_both": false,
+    "G2_eval": false,
+    "G3_2021_25": true,
+    "G4_tpw": false,
+    "G5_boot": false,
+    "G6_funded": false,
+    "PASS": false
+   },
+   "source": "tools/lit_more_money.py, research/writeups/lit-more-money-2026-11-19.md"
+  },
+  {
+   "id": "lit_more_smt_pick",
+   "bot": "lit",
+   "kind": "lit_more_money",
+   "batch": 2,
+   "title": "When ES held up (SMT), trade ES instead of NQ",
+   "rule": "SMT present -> trade MES instead of MNQ (ES stop, ES VIX band target), else NQ",
+   "status": "rejected",
+   "per_month": {
+    "H1": 4945,
+    "H2": 5383,
+    "2021-25": 76
+   },
+   "d_per_month": {
+    "H1": -617,
+    "H2": 2713,
+    "2021-25": 51
+   },
+   "tpw": {
+    "H1": 3.12,
+    "H2": 2.56,
+    "2021-25": 2.38
+   },
+   "pf": {
+    "H1": 3.51,
+    "H2": 4.33,
+    "2021-25": 1.04
+   },
+   "dd": {
+    "H1": -2841,
+    "H2": -2191,
+    "2021-25": -19426
+   },
+   "eval": {
+    "H1": {
+     "per_month": 4789,
+     "p10": 44.5,
+     "f10": 0.0,
+     "pass_med": 8.5
+    },
+    "H2": {
+     "per_month": 4145,
+     "p10": 39.1,
+     "f10": 0.0,
+     "pass_med": 13.5
+    }
+   },
+   "funded_per_month": {
+    "H1": 823,
+    "H2": 884,
+    "REF": 58
+   },
+   "boot_p": 0.241,
+   "gate": {
+    "G1_lit_both": false,
+    "G2_eval": false,
+    "G3_2021_25": true,
+    "G4_tpw": true,
+    "G5_boot": false,
+    "G6_funded": false,
+    "PASS": false
+   },
+   "source": "tools/lit_more_money.py, research/writeups/lit-more-money-2026-11-19.md"
+  }
+ ]
+}
