@@ -317,8 +317,8 @@ def test_page():
             ag = p.evaluate("() => { const a = document.querySelector('#nowAge'); return a && !a.hidden ? [a.textContent, a.dataset.level, a.className] : null; }")
             check("c. olympus2: the PC report's age as the site-wide chip (age.js): 'updated 5 min ago', ok", ag == ["updated 5 min ago", "ok", "oly-age"], ag)
             go = p.evaluate("() => [...document.querySelectorAll('#money a.g-acct, #nowFacts a.g-fact')].map((a) => a.href.replace(location.origin, ''))")
-            check("c. each card / fact is a tap to the app with the detail: the eval cards and drawdown -> Aegis, today -> NQ, the window -> Kairos",
-                  go == ["/aegis/index.html", "/aegis/index.html", "/aegis/index.html", "/aegis/index.html", "/nq/index.html", "/kairos/index.html"], go)
+            check("c. each card / fact is a tap to the app with the detail: the eval cards and drawdown -> Aegis, today -> NQ, the window -> NQ (Kairos retired)",
+                  go == ["/aegis/index.html", "/aegis/index.html", "/aegis/index.html", "/aegis/index.html", "/nq/index.html", "/nq/index.html"], go)
             tiles = p.evaluate("() => [...document.querySelectorAll('.g-hub')].map((a) => [a.dataset.hub, a.href.replace(location.origin, ''), a.querySelector('.g-hline').textContent, a.querySelector('.g-hcount').textContent])")
             # night-gate 2026-11-18: the counts come from the catalog (Board + Trading joined Bots & Evals with the four doors), not pinned numbers
             per = {}
