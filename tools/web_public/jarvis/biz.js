@@ -88,7 +88,7 @@ const weekStart = (ymd, dow) => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ymd
 
 // ------------------------------------------------------------------------------------------------ intents
 const RX = [
-  ['pc', /\b(is (the|my) (pc|computer|bot|bots|ninjatrader|server|system) (ok|on|running|alive|up|working|fine|healthy)|(pc|computer|system) (ok|status|health)|health check|is everything (ok|fine|running|good)|(ninjatrader|nt) (ok|on|connected|running)|disk space|is the pc on)\b/],
+  ['pc', /\b(is (the|my) (pc|computer|bot|bots|ninjatrader|server|system) (ok|on|running|alive|up|working|fine|healthy)|(pc|computer|system) (ok|status|health)|(ninjatrader|nt) (ok|on|connected|running)|disk space|is the pc on)\b/],
   ['decide', /\b(decide|decision|decisions|yes ?\/? ?no questions?|what do you recommend|your recommendations?|what would you do)\b/],
   ['taxes', /\b(tax|taxes|irs|set aside|estimated payment)\b/],
   ['payoutnow', /\b(can i (ask|request|take|get) (for )?a payout|(how much|how far) (more )?(to|until|till|before) (a |my |the |the first )?payout|payout (now|today)|ready for a payout|when can (i|atlas) (ask|request|get paid|withdraw)|need for a payout)\b/],

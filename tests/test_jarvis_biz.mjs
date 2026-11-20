@@ -68,7 +68,7 @@ const OWNER = {
   news: ["what's on the news today", 'any cpi this week', 'economic calendar', 'big releases'],
   steps: ['what should I do today', 'my to-do list', 'anything for me', 'what is waiting on me'],
   kalshi: ["how's kalshi", 'kalshi today', 'k8 status'],
-  pc: ['is the pc ok', 'is the bot running', 'pc status', 'is everything ok', 'is ninjatrader connected'],
+  pc: ['is the pc ok', 'is the bot running', 'pc status', 'is the computer on', 'is ninjatrader connected'],
   decide: ['what do you recommend', 'decide card', 'any decisions for me'],
   taxes: ['how much for taxes', 'taxes on a $1,000 payout', 'when is the next estimated payment'],
   review: ['how did yesterday go', 'daily review'],
@@ -79,7 +79,7 @@ const OWNER = {
 };
 let nq = 0; for (const [id, qs] of Object.entries(OWNER)) for (const q of qs) { nq++; ok(B.match(q) === id, `owner asks "${q}" -> ${id} (got ${B.match(q)})`); }
 ok(nq >= 60, `${nq} owner phrasings`);
-for (const q of ['and yesterday?', 'why?', 'what about atlas?', 'open it', 'explain the strategy', 'how far to target', 'how much room do I have', 'hide my balance']) ok(B.match(q) === null, `left to the brain: "${q}"`);
+for (const q of ['is everything ok', 'and yesterday?', 'why?', 'what about atlas?', 'open it', 'explain the strategy', 'how far to target', 'how much room do I have', 'hide my balance']) ok(B.match(q) === null, `left to the brain: "${q}"`);
 
 const say = {};
 for (const q of Object.keys(Q).filter((q) => Q[q])) { const r = await B.ask(q, deps); say[q] = r; console.log('   > ' + r.text.replace(/\n/g, '\n     ')); }
