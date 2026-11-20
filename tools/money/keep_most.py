@@ -5,7 +5,7 @@ a live account ... maximize how much we keep."
 
 One file, no network, no secrets. Prints / writes research/lab/keep_most.json:
   1. tax(): 2026 / 2027 federal income tax + self-employment tax on a Schedule C profit, with and without a day job, for a
-     no-income-tax state and a typical 5% state -> the set-aside % per payout at $5k / $15k / $30k / $60k / $100k a year.
+     Maryland (state + county 2.25% / 3.20%) -> the set-aside % per payout at $5k / $15k / $30k / $60k / $100k a year.
   2. ladder: Solo 401(k) room and tax saved, S-corp break-even profit (payroll + extra costs < SE tax saved).
   3. section 1256 (a personal futures account) blended rate vs the same $ as prop income.
   4. live account: risk of ruin at 1 MNQ from the repo's real trades (research/anatomy, costs in), week-block bootstrap,
@@ -53,9 +53,48 @@ YEARS[2027] = {
 SE_FACTOR = 0.9235
 SS_RATE, MED_RATE, ADD_MED, ADD_MED_AT = 0.124, 0.029, 0.009, 200000.0
 NIIT, NIIT_AT = 0.038, 200000.0
+# ---- Maryland (owner's state, 2026-11-20; nothing more specific is stored) ----------------------------------------
+# State brackets for a single filer after the 2025 Budget Reconciliation and Financing Act (HB 352), the flat standard
+# deduction, the personal exemption and its phase-out, the 2% capital-gains surcharge, and the county range.
+MD = {
+    "brackets": [(1000, .02), (2000, .03), (3000, .04), (100000, .0475), (125000, .05), (150000, .0525), (250000, .055),
+                 (500000, .0575), (1000000, .0625), (None, .065)],
+    "std": 3350.0,
+    "exemption": [(100000, 3200.0), (125000, 1600.0), (150000, 800.0), (None, 0.0)],   # by federal AGI, single
+    "cg_surcharge": 0.02, "cg_surcharge_at": 350000.0,
+    "local_low": 0.0225, "local_high": 0.032,
+    "src": "Maryland Comptroller (marylandtaxes.gov) 2026 rates + HB 352 (2025)",
+}
+
+
+def md_tax(fagi, local, cap_gain=0.0):
+    """Maryland state + county tax on a federal AGI (Maryland starts from federal AGI; no lower rate for capital gains,
+    60/40 futures included; the 2% surcharge only on net capital gain when FAGI is over $350,000)."""
+    ex = next(v for hi, v in MD["exemption"] if hi is None or fagi <= hi)
+    base = max(0.0, fagi - MD["std"] - ex)
+    t, lo = 0.0, 0.0
+    for hi, r in MD["brackets"]:
+        top = base if hi is None else min(base, hi)
+        if top > lo:
+            t += (top - lo) * r
+        if hi is None or base <= hi:
+            break
+        lo = hi
+    sur = MD["cg_surcharge"] * cap_gain if fagi > MD["cg_surcharge_at"] else 0.0
+    return t + local * base + sur
+
+
+def state_tax(state, agi, y, cap_gain=0.0):
+    """state = a flat rate (float) or ('MD', county_rate)."""
+    if isinstance(state, tuple):
+        return md_tax(agi, state[1], cap_gain)
+    return state * max(0.0, agi - YEARS[y]["std"])
+
+
 LEVELS = [5000, 15000, 30000, 60000, 100000]
 DAY_JOB = 50000.0          # the "with a day job" case: $50,000 W-2 wages
-STATE = {"none": 0.0, "typical 5%": 0.05}
+STATE = {"Maryland, county 2.25%": ("MD", 0.0225), "Maryland, county 3.20%": ("MD", 0.032)}
+MD_LOW, MD_HIGH = STATE["Maryland, county 2.25%"], STATE["Maryland, county 3.20%"]
 
 
 def bracket_tax(taxable, y):
@@ -100,7 +139,7 @@ def tax(profit, wages=0.0, state=0.0, y=2026, qbi=True, pretax_retire=0.0, se_re
             q = min(0.2 * qbi_income, 0.2 * before_qbi)
         taxable = max(0.0, before_qbi - q)
         inc = bracket_tax(taxable, y)
-        st = state * max(0.0, agi - YEARS[y]["std"])
+        st = state_tax(state, agi, y)
         return {"se": se, "income": inc, "state": st, "qbi": q, "taxable": taxable, "agi": agi}
     a, b = full(profit, pretax_retire), full(0.0, 0.0)
     parts = {k: round(a[k] - b[k], 2) for k in ("se", "income", "state")}
@@ -123,9 +162,9 @@ def set_aside_table(y=2026):
     return rows
 
 
-def pot_pct(profit, day_job=False, state=False, y=2026):
-    """The set-aside % rounded UP to the next 5 (safe default: no QBI)."""
-    pct = tax(profit, DAY_JOB if day_job else 0.0, 0.05 if state else 0.0, y, qbi=False)["pct"]
+def pot_pct(profit, day_job=False, high_county=True, y=2026):
+    """The set-aside % in Maryland rounded UP to the next 5 (safe default: no QBI, the highest county rate)."""
+    pct = tax(profit, DAY_JOB if day_job else 0.0, MD_HIGH if high_county else MD_LOW, y, qbi=False)["pct"]
     return int(-(-pct // 5) * 5)
 
 
@@ -150,10 +189,11 @@ SCORP_COSTS = {"payroll_service": 600.0, "extra_return_prep": 1000.0, "state_fee
                "unemployment_tax": 420.0}
 
 
-def scorp(profit, salary_share=0.5, min_salary=30000.0, state_fee=300.0, y=2026):
+def scorp(profit, salary_share=0.5, min_salary=30000.0, state_fee=300.0, y=2026, state=None):
     """S-corp vs sole prop: salary = max(min_salary, share x profit) but never more than profit. Payroll tax 15.3% on the
     salary (employer half deductible), the rest is a distribution with no SE tax. QBI shrinks (salary is not QBI)."""
-    sole = tax(profit, 0.0, 0.0, y, qbi=True)
+    state = MD_HIGH if state is None else state
+    sole = tax(profit, 0.0, state, y, qbi=True)
     sal = min(profit, max(min_salary, salary_share * profit))
     fica = 0.124 * min(sal, YEARS[y]["ss_base"]) + 0.029 * sal
     costs = SCORP_COSTS["payroll_service"] + SCORP_COSTS["extra_return_prep"] + SCORP_COSTS["unemployment_tax"] + state_fee
@@ -162,7 +202,7 @@ def scorp(profit, salary_share=0.5, min_salary=30000.0, state_fee=300.0, y=2026)
     before_qbi = max(0.0, agi - YEARS[y]["std"])
     q = min(0.2 * max(0.0, k1), 0.2 * before_qbi)
     inc = bracket_tax(max(0.0, before_qbi - q), y)
-    s_total = fica + inc + costs
+    s_total = fica + inc + costs + state_tax(state, agi, y)
     return {"profit": profit, "salary": round(sal), "sole_prop_tax": round(sole["total"]), "scorp_tax_plus_costs": round(s_total),
             "saved": round(sole["total"] - s_total)}
 
@@ -175,7 +215,7 @@ def scorp_break_even(y=2026):
 
 
 # ---- section 1256 vs prop income ----------------------------------------------------------------------------------
-def s1256(gain, wages=0.0, y=2026):
+def s1256(gain, wages=0.0, y=2026, state=None):
     """Tax on `gain` of 60/40 futures profit (no SE tax) on top of wages: 60% at the LTCG rate, 40% ordinary; NIIT over
     $200k MAGI. Returns the total and the blended %."""
     std = YEARS[y]["std"]
@@ -190,7 +230,10 @@ def s1256(gain, wages=0.0, y=2026):
     lt15 = lt_taxable - lt0 - lt20
     lt_tax = 0.15 * lt15 + 0.20 * lt20
     niit = NIIT * max(0.0, min(gain, wages + gain - NIIT_AT))
-    total = ord_tax + lt_tax + niit
+    st_tax = 0.0
+    if state is not None:
+        st_tax = state_tax(state, wages + gain, y, cap_gain=gain) - state_tax(state, wages, y)
+    total = ord_tax + lt_tax + niit + st_tax
     return {"gain": gain, "total": round(total, 2), "pct": round(100 * total / gain, 1) if gain else 0.0}
 
 
@@ -200,8 +243,12 @@ def compare_1256(y=2026):
         for job in (0.0, DAY_JOB):
             prop = tax(p, job, 0.0, y, qbi=True)
             fut = s1256(p, job, y)
+            prop_md = tax(p, job, MD_HIGH, y, qbi=True)
+            fut_md = s1256(p, job, y, MD_HIGH)
             rows.append({"amount": p, "day_job": job, "prop_pct": prop["pct"], "prop_tax": prop["total"],
-                         "s1256_pct": fut["pct"], "s1256_tax": fut["total"], "kept_more": round(prop["total"] - fut["total"])})
+                         "s1256_pct": fut["pct"], "s1256_tax": fut["total"], "kept_more": round(prop["total"] - fut["total"]),
+                         "prop_md_tax": prop_md["total"], "s1256_md_tax": fut_md["total"],
+                         "kept_more_md": round(prop_md["total"] - fut_md["total"])})
     return rows
 
 
@@ -310,15 +357,16 @@ def waterfall(received, pot=30, reserve=10, retire=10, live=20, live_banked=0.0,
 def main(argv):
     quick = "--quick" in argv
     out = {
-        "built": "2026-11-20", "note": "education, not tax advice; single filer; federal + a flat 5% state on AGI minus the standard deduction",
+        "built": "2026-11-20", "note": "education, not tax advice; single filer; federal + Maryland state + county (2.25% lowest, 3.20% highest)",
+        "maryland": {k: v for k, v in MD.items()},
         "years": {str(k): {kk: vv for kk, vv in v.items() if kk != "brackets"} | {"brackets": v["brackets"]} for k, v in YEARS.items()},
         "set_aside_2026": set_aside_table(2026),
         "set_aside_2027": set_aside_table(2027),
-        "pot_pct": {f"{p}": {"no_job_no_state": pot_pct(p), "no_job_5pct": pot_pct(p, state=True), "job_no_state": pot_pct(p, True),
-                             "job_5pct": pot_pct(p, True, True)} for p in LEVELS},
-        "solo401k": [solo401k(p) | {"tax_saved_if_maxed": retire_saving(p, solo401k(p)["solo401k_max"]),
-                                    "tax_saved_10pct": retire_saving(p, 0.10 * p),
-                                    "tax_saved_10pct_day_job": retire_saving(p, 0.10 * p, DAY_JOB)} for p in LEVELS],
+        "pot_pct": {f"{p}": {"no_job_low_county": pot_pct(p, False, False), "no_job_high_county": pot_pct(p),
+                             "job_low_county": pot_pct(p, True, False), "job_high_county": pot_pct(p, True)} for p in LEVELS},
+        "solo401k": [solo401k(p) | {"tax_saved_if_maxed": retire_saving(p, solo401k(p)["solo401k_max"], 0.0, MD_HIGH),
+                                    "tax_saved_10pct": retire_saving(p, 0.10 * p, 0.0, MD_HIGH),
+                                    "tax_saved_10pct_day_job": retire_saving(p, 0.10 * p, DAY_JOB, MD_HIGH)} for p in LEVELS],
         "scorp": [scorp(p) for p in (30000, 60000, 80000, 100000, 150000)],
         "scorp_break_even": scorp_break_even(),
         "s1256": compare_1256(),

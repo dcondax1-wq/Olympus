@@ -58,8 +58,8 @@ def part_a():
     low = (html + js).lower()
     check("a. no private details (account ids, emails, the owner's name) on the page",
           not re.search(r"[\w.+-]+@[\w-]+\.[\w.]+", html + js) and "dcondax" not in low and "zlarior" not in low)
-    check("a. Kalshi's treatment is marked as unclear; the state note tells him to check his own state",
-          "Unclear" in html and "Check your state" in html)
+    check("a. Kalshi's treatment is marked as unclear; the state card is Maryland",
+          "Unclear" in html and "Your state: Maryland" in html)
     # the 30% default is the same everywhere a tax set-aside is suggested
     oc, lc, py = read(WEB, "oikos", "oikoscore.js"), read(WEB, "ledger", "ledgercore.js"), read(ROOT, "tools", "money", "oikos.py")
     check("a. Oikos, the Ledger and the Oikos scanner all default to the same 30% as this page",
@@ -111,7 +111,7 @@ const T = require(process.argv[1]);
 console.log(JSON.stringify({
   w1: T.waterfall(800, 30, 0, 0), w5: T.waterfall(4000, 30, 0, 0), full: T.waterfall(800, 30, 5000, 320), near: T.waterfall(800, 30, 4900, 300),
   junk: T.waterfall('x', 30, 'y', -5),
-  p: [T.potPct(5000, false, false), T.potPct(30000, false, true), T.potPct(30000, true, true), T.potPct(60000, true, false), T.potPct(100000, true, true), T.potPct('x')],
+  p: [T.potPct(5000, false), T.potPct(15000, false), T.potPct(30000, true), T.potPct(60000, false), T.potPct(100000, true), T.potPct('x')],
 }));
 """
 
@@ -131,11 +131,11 @@ def part_d():
     check("d. full buckets give their share back: $800 -> $480 yours; near-full buckets take only what is missing",
           full["yours"] == 480 and full["live"] == 0 and full["reserve"] == 0 and near["live"] == 100 and near["reserve"] == 20, (full, near))
     check("d. junk gives 0 everywhere", all(o["junk"][k] == 0 for k in ("pot", "reserve", "retire", "live", "yours")), o["junk"])
-    check("d. set-aside %: $5k only trading 15, $30k + state 20, $30k job + state 35, $60k job 35, $100k job + state 40, unknown 20",
-          o["p"] == [15, 20, 35, 35, 40, 20], o["p"])
+    check("d. Maryland set-aside %: $5k only trading 15, $15k 20, $30k + day job 40, $60k 30, $100k + day job 45, unknown 25",
+          o["p"] == [15, 20, 40, 30, 45, 25], o["p"])
     html = read(BIZ, "taxes.html")
-    check("d. the page has the waterfall, the %-table, the no-penalty card, the ladder, the live trigger and 'Tell Claude your state'",
-          all(x in html for x in ('id="wfYours"', 'id="s-pct"', 'id="s-pen"', 'id="s-ladder"', 'id="s-live"', "Tell Claude your state", "$5,000 in the live fund")))
+    check("d. the page has the waterfall, the %-table, the no-penalty card, the ladder, the live trigger and the Maryland card",
+          all(x in html for x in ('id="wfYours"', 'id="s-pct"', 'id="s-pen"', 'id="s-ladder"', 'id="s-live"', "Tell Claude your county", "$5,000 in the live fund")))
 
 
 def part_e():
@@ -148,7 +148,12 @@ def part_e():
           K.YEARS[2026]["ss_base"] == 184500 and K.YEARS[2027]["ss_base"] == 192300 and K.YEARS[2027]["std"] == 16600)
     f = K.s1256(30000, 0, 2026)
     check("e. $30,000 of 60/40 futures gains with no other income: $0 federal (all in the 0% band)", f["total"] == 0, f)
-    check("e. the set-aside % the page uses = keep_most.pot_pct", [K.pot_pct(5000), K.pot_pct(30000, True, True), K.pot_pct(100000, True, True)] == [15, 35, 40])
+    check("e. the Maryland set-aside % the page uses = keep_most.pot_pct (highest county)",
+          [K.pot_pct(5000), K.pot_pct(15000), K.pot_pct(30000, True), K.pot_pct(60000), K.pot_pct(100000, True)] == [15, 20, 40, 30, 45])
+    m = K.md_tax(30000 - 2119.5, 0.032)
+    check("e. Maryland on $27,880 AGI, county 3.20%: state $961 + county $683 (std $3,350, exemption $3,200)", abs(m - 1643.3) < 1, m)
+    f2 = K.s1256(30000, 0, 2026, K.MD_HIGH)
+    check("e. Maryland taxes 60/40 futures gains as ordinary income: $30,000 -> ~$1,812 (state + county), $0 federal", 1700 < f2["total"] < 1900, f2)
     w = K.waterfall(800)
     check("e. waterfall($800) = 240 / 80 / 80 / 160 / 240", (w["tax_pot"], w["eval_reserve"], w["retirement"], w["live_fund"], w["yours"]) == (240, 80, 80, 160, 240), w)
     check("e. S-corp break-even near $50,000 profit", 40000 <= K.scorp_break_even() <= 60000, K.scorp_break_even())

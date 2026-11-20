@@ -55,12 +55,13 @@
     return { payout: r2(P), pct: Q, pot, yours: r2(P - pot) };
   }
 
-  // keep-the-most (2026-11-20, tools/money/keep_most.py -> research/lab/keep_most.json): the set-aside % by the year's
-  // profit (fees off), rounded UP to the next 5, safe default = no QBI. [up to $ a year, no job, no job + state, day job, day job + state]
-  const POT_TABLE = [[15000, 15, 15, 30, 30], [30000, 20, 20, 30, 35], [60000, 25, 25, 35, 40], [Infinity, 30, 30, 35, 40]];
-  function potPct(yearProfit, dayJob, stateTax) {
+  // keep-the-most (2026-11-20, tools/money/keep_most.py -> research/lab/keep_most.json): the set-aside % in MARYLAND
+  // (federal + SE + state + the highest county rate, 3.20%) by the year's profit after fees, rounded UP to the next 5,
+  // safe default = no QBI. [up to $ a year, only trading, + a $50k day job]
+  const POT_TABLE = [[5000, 15, 35], [15000, 20, 35], [30000, 25, 40], [60000, 30, 40], [Infinity, 35, 45]];
+  function potPct(yearProfit, dayJob) {
     const y = toNum(yearProfit); const row = POT_TABLE.find((r) => (y == null ? 30000 : y) <= r[0]) || POT_TABLE[POT_TABLE.length - 1];
-    return row[1 + (dayJob ? 2 : 0) + (stateTax ? 1 : 0)];
+    return row[dayJob ? 2 : 1];
   }
   const LIVE_TARGET = 5000, RESERVE_TARGET = 320;
   // the day a payout lands: tax pot, eval reserve (10% until $320), retirement 10%, live fund (20% until $5,000), the rest yours
@@ -102,14 +103,14 @@
     if (d && $('wfDue')) $('wfDue').textContent = 'Pay the ' + usd(w.pot) + ' tax pot to the IRS by ' + fmtDate(d.due) + ' (1040-ES, ' + d.period + ').';
   }
   function suggest() {
-    const y = $('year'), j = $('job'), st = $('stateTax'); if (!y || !$('pct')) return;
-    $('pct').value = String(potPct(y.value, j && j.checked, st && st.checked));
+    const y = $('year'), j = $('job'); if (!y || !$('pct')) return;
+    $('pct').value = String(potPct(y.value, j && j.checked));
     drawCalc();
   }
   function start() {
     drawDates();
     for (const id of ['pay', 'pct', 'liveHave', 'resHave']) { const e = $(id); if (e) e.addEventListener('input', drawCalc); }
-    for (const id of ['year', 'job', 'stateTax']) { const e = $(id); if (e) e.addEventListener('change', suggest); }
+    for (const id of ['year', 'job']) { const e = $(id); if (e) e.addEventListener('change', suggest); }
     if ($('pay')) drawCalc();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
