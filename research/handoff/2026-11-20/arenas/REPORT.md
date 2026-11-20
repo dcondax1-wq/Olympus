@@ -77,3 +77,16 @@ LEAD_WIRES: nothing new for round 2 (every folder is in the root worker's OTHER_
 - Also fixed: plan.html never applied a light look (it has no kit engine); it now paints the chosen look itself.
 - Tests: test_decide 31/31 (4 new ranking checks + the page wiring), business_pages 40/40. Shots: `before-plan-*`, `after-plan-*` (public site) and
   `after-plan-pc-*` (the PC link, with the taps), dark and light. Layout shift 0.
+
+## Round 4: Decide card drop-lucid-account4 (owner said YES: MFFU only)
+- The Business page's "Account #4: buy the LucidPro 50K ..." line is now **"Next buys (MFFU only): the Rapid EOD 25K now (added today), then the
+  Rapid EOD 50K about <the first payout's bank date>, ($165 with code CLUB; adds about $1,969 a month, estimate), then a fresh Builder 50K."**
+  Today's plan dates the Rapid EOD 50K at Dec 30 to Jan 4 (business/fleet_plan.json says about Jan 5). The total row reads "With the Rapid EOD 50K too: $2,853 a month" (was $1,694 with the Lucid line).
+- Changed together: `business/businesscore.js` ACCOUNT4 and its Python twin `engine/payout_plan.py` (a planner the money tools use; not the bot),
+  `money_machines/money_door.json` next buys (Rapid EOD 25K $97.20 now; Rapid EOD 50K $165 then a Builder 50K from payouts), `tools/biz_publish.py`
+  (the money move "Next buy after the Rapid EOD 25K ..." and the rule line), the regenerated `business/fixture.json` (0 "Lucid" left), and the
+  Zenith money screens (`hub.js` "what to buy next" fallback, `scalecore.js` ladder rule, `features.js` list): MFFU only.
+- The Business research table was priced at $134.40 an account (the old plan); its notes now say the MFFU Rapid EOD 50K costs $165, about $31 more a buy.
+- Left as is: the archived Plutus app (folded under Archive) still lists a Lucid plan in its old study; the research write-ups keep their history.
+- Tests: money area 18/18 suites, 658 checks (money_door 48/48 with the browser, pins updated: $2,853, the MFFU line, no Lucid, no sale claim);
+  business 85/85, decide 31/31. Shot: `shots/after-business-nextbuys-dark|light.jpg`.

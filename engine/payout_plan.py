@@ -39,8 +39,10 @@ SLOW = 2.0                     # the slow case: twice the sessions (about 1 in 1
 BANK_DAYS = 4                  # business days from the request to the bank (ESTIMATE: check MFFU's payout page)
 CLOSED = {"2026-11-26", "2026-12-25", "2027-01-01", "2027-01-18", "2027-02-15", "2027-04-02", "2027-05-31", "2027-06-18", "2027-07-05",
           "2027-09-06", "2027-11-25", "2027-12-24"}   # CME equity futures full closures (Thanksgiving, Christmas, New Year ... ): no session
-ACCOUNT4 = {"name": "LucidPro 50K (copies Zlarior)", "price": [120, 135], "adds_month": 810.0, "sale": ["2026-11-19", "2026-12-01"],
-            "doc": "docs/ACCOUNT_4.md"}
+# the next buys (owner 2026-11-20, Decide card drop-lucid-account4: YES, "MFFU only"; was a LucidPro 50K): the Rapid EOD 25K now, the Rapid EOD 50K
+# from the first payout (business/fleet_plan.json next_buy: $165 with code CLUB, about $1,969 a month Jul-Oct-like), then a fresh Builder 50K
+ACCOUNT4 = {"name": "Rapid EOD 50K", "now": "Rapid EOD 25K", "then": "a fresh Builder 50K", "price": [165, 165], "code": "CLUB", "adds_month": 1969.0,
+            "sale": None, "doc": "business/fleet_plan.json"}
 
 
 def _d(s: str) -> _dt.date:
@@ -138,12 +140,12 @@ def plan(accounts: list, today: str | None = None) -> dict:
     alive = [r for r in rows if r["state"] != "lost"]
     first = min(alive, key=lambda r: r["bank_typical"]) if alive else None
     buy = first["bank_typical"] if first else None
-    in_sale = bool(buy and ACCOUNT4["sale"][0] <= buy <= ACCOUNT4["sale"][1])
+    in_sale = bool(buy and ACCOUNT4["sale"] and ACCOUNT4["sale"][0] <= buy <= ACCOUNT4["sale"][1])
     a4 = {**ACCOUNT4, "buy_on": buy, "in_sale": in_sale, "after": first["name"] if first else None,
-          "text": (f"Account #4: buy the {ACCOUNT4['name']} about {buy}, the day {first['name']}'s first payout is in your bank "
-                   f"(${ACCOUNT4['price'][0]}-{ACCOUNT4['price'][1]} with a code; adds about ${ACCOUNT4['adds_month']:,.0f} a month, estimate)."
-                   + (" That is inside the Black Friday sale: buy in the sale." if in_sale else "")) if first else
-                  "Account #4: waits for a first payout; no live eval to plan from."}
+          "text": (f"Next buys (MFFU only): the {ACCOUNT4['now']} now (added today), then the {ACCOUNT4['name']} about {buy}, the day {first['name']}'s "
+                   f"first payout is in your bank (${ACCOUNT4['price'][0]} with code {ACCOUNT4['code']}; adds about ${ACCOUNT4['adds_month']:,.0f} a month, estimate), "
+                   f"then {ACCOUNT4['then']}." + (" That is inside the sale: buy in the sale." if in_sale else "")) if first else
+                  f"Next buys (MFFU only): the {ACCOUNT4['now']} now; the {ACCOUNT4['name']} waits for a first payout."}
     month = round(sum(r["funded_month"] for r in alive), 2)
     paid_first = round(sum(r["to_you"] for r in alive), 2)
     return {"v": VERSION, "kind": "payout-plan", "today": today, "label": "ESTIMATE", "accounts": rows, "account4": a4,
