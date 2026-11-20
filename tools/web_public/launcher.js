@@ -58,9 +58,10 @@
   function apps() {
     var L = window.OLYMPUS_APPS_LIST;
     if (!L || !L.length) return [];
-    var out = [];
-    for (var i = 0; i < L.length; i++) if (L[i].id !== 'zenith' && L[i].path) out.push(L[i]);
-    return out;
+    var out = [], D = doors(), FIRST = ['cities', 'kalshi', 'nq', 'jarvis', 'planner', 'business'];   // owner 2026-11-20: his order first
+    for (var i = 0; i < L.length; i++) if (L[i].id !== 'zenith' && L[i].path && !(D && D.retired && D.retired(L[i].id))) out.push(L[i]);   // retired: shown nowhere
+    var rank = function (a) { var k = FIRST.indexOf(a.id); return k < 0 ? FIRST.length : k; };
+    return out.map(function (a, i) { return [rank(a), i, a]; }).sort(function (x, y) { return x[0] - y[0] || x[1] - y[1]; }).map(function (x) { return x[2]; });
   }
 
   // ---------------------------------------------------------------- recent
