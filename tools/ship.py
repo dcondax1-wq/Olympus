@@ -1,9 +1,11 @@
-"""Ship in one command (owner 2026-11-15, "save usage"): checks, then push to GitHub and to the backup the PC updates from.
+"""Ship in one command (owner 2026-11-15, "save usage"): checks, then push to the ONE home, dcondax1-wq/Olympus branch pc.
 
     python tools/ship.py              smoke check + model list check, then push (refuses on a red check or a dirty tree)
     python tools/ship.py --zip DIR    also build the PC code zip (OLYMPUS_BACKUP_<date>_<sha>.zip + .sha256.txt) into DIR
     python tools/ship.py --no-tests   push without the smoke check (only right after you ran the area's own tests)
-Pushes HEAD to origin claude/clever-heisenberg-51zwcr and, when the remote exists, to olympus refs/heads/pc (docs/AUTO_UPDATE.md)."""
+Pushes HEAD to dcondax1-wq/Olympus refs/heads/pc only (owner 2026-11-20: "Olympus branch pc is now the main home"): the remote whose
+URL is that repo, whatever its name (origin in a fresh clone, olympus on older checkouts). The old demetrades2000-coder/nq-liquidity-engine
+repo is never pushed to any more, even when a remote still points at it (docs/AUTO_UPDATE.md)."""
 from __future__ import annotations
 
 import argparse
@@ -15,7 +17,8 @@ import sys
 from zoneinfo import ZoneInfo
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-BRANCH = "claude/clever-heisenberg-51zwcr"
+HOME_REPO, BRANCH = "dcondax1-wq/olympus", "pc"     # the only push target (compared lower-case)
+OLD_REPO = "demetrades2000-coder/nq-liquidity-engine"   # retired 2026-11-20: never pushed
 ZIP_EXCLUDE = ("research", "data", "docs/shots", "cache")
 
 
@@ -33,6 +36,21 @@ def push(remote, ref):
             return True
         print(f"  push {remote} retry {i + 1}: {r.stderr.strip()[-160:]}")
     return False
+
+
+def _repo_of(url: str) -> str:
+    u = (url or "").strip().lower().rstrip("/")
+    u = u[:-4] if u.endswith(".git") else u
+    u = u.split("github.com", 1)[-1].lstrip(":/")
+    return "/".join(u.split("/")[-2:])
+
+
+def home_remote() -> str | None:
+    """The git remote that points at dcondax1-wq/Olympus (None = none; then nothing is pushed)."""
+    for name in sh("git", "remote").split():
+        if _repo_of(sh("git", "remote", "get-url", "--push", name, check=False)) == HOME_REPO:
+            return name
+    return None
 
 
 def build_zip(out):
@@ -58,14 +76,14 @@ def main(argv=None) -> int:
     sh(sys.executable, "tools/model_versions.py", "--check")
     if not a.no_tests and subprocess.run([sys.executable, "tests/smoke.py"], cwd=ROOT).returncode != 0:
         raise SystemExit("[STOP] smoke check red: nothing pushed")
-    ok = push("origin", BRANCH)
-    remotes = sh("git", "remote").split()
-    ok_b = push("olympus", "refs/heads/pc") if "olympus" in remotes else None
-    print(f"[{'OK' if ok else 'FIX'}] GitHub {BRANCH}   [{'OK' if ok_b else ('SKIP' if ok_b is None else 'FIX')}] backup olympus/pc"
-          f"   at {sh('git', 'rev-parse', '--short', 'HEAD')}")
+    rem = home_remote()
+    if rem is None:
+        raise SystemExit(f"[STOP] no git remote points at {HOME_REPO}: git remote add olympus https://github.com/dcondax1-wq/Olympus")
+    ok = push(rem, f"refs/heads/{BRANCH}")
+    print(f"[{'OK' if ok else 'FIX'}] Olympus pc ({rem})   at {sh('git', 'rev-parse', '--short', 'HEAD')}   (old repo: not pushed)")
     if a.zip:
         print(f"[OK] zip {build_zip(a.zip)}")
-    return 0 if ok and ok_b is not False else 1
+    return 0 if ok else 1
 
 
 if __name__ == "__main__":

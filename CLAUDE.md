@@ -23,12 +23,13 @@ an area; the old long brief is its last section).
 - At most 2-3 helpers, only for real work; cheaper models for mechanical jobs; never re-run a huge finished helper.
 - Run only the touched area's tests: `python tests/smoke.py` first (2 min), then `python tests/run_area.py <area>`.
   Browser suites only when screens changed, always under `flock -w 2400 /tmp/olympus_browser.lock`. Never run test_win_scripts.
-- Ship with one command: `python tools/ship.py` (tests touched areas, pushes GitHub + the backup, optional zip).
+- Ship with one command: `python tools/ship.py` (tests touched areas, pushes Olympus pc only, optional zip).
 - Free disk weekly: `python tools/disk_clean.py` (dry run first).
 
 ## Where things are
 - Live strategy LIT: `engine/lit.py`, `engine/lit_live.py`, `STRATEGY.md`. PC bot: `server.py` + `engine/live.py` -> NinjaTrader
   via `engine/ninjatrader.py`. ATLAS: `engine/second.py`, `engine/account_b.py`. Apps: `tools/web_public/<id>/` (map: `docs/OLYMPUS_MAP.md`).
-- Branch: work and push on `claude/clever-heisenberg-51zwcr`; the PC updates itself from the backup `dcondax1-wq/olympus`
-  branch `pc` (add_repo with push first; `docs/AUTO_UPDATE.md`).
+- Home (owner 2026-11-20): **`dcondax1-wq/Olympus` branch `pc`** is the one main repo. Commit and push only there (`git push
+  origin HEAD:pc`, or `python tools/ship.py`); the PC updates itself from it (`docs/AUTO_UPDATE.md`). Never use the old
+  `demetrades2000-coder/nq-liquidity-engine` repo or its `claude/clever-heisenberg-51zwcr` branch.
 - Key checks: `python -X utf8 -m tests.test_lit_live` (live loop = backtest), `python -m engine.ninjatrader --selftest`.

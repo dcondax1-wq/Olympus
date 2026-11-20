@@ -19,6 +19,9 @@ updating the files every time we make changes, so do it now."
    first time: **sign in as dcondax1-wq**. After that, no more zips.
 
 ## For the lead (every change that should reach the PC)
+- **Since 2026-11-20 Olympus `pc` is the main home** (owner): commit and push only there (`python tools/ship.py`, or
+  `git push origin HEAD:pc` from a clone of dcondax1-wq/Olympus). The old demetrades2000-coder/nq-liquidity-engine repo is
+  retired: never push to it.
 - Test it, then push the release to the backup: `git push olympus <release>:pc` (attach the repo first: add_repo
   `dcondax1-wq/olympus` with push access). The PC installs it within the hour when it is flat. The backup's default
   branch `main` only holds a README, so none of the repo's scheduled GitHub Actions run there (private repos have few
