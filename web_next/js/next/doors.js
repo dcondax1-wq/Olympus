@@ -21,10 +21,10 @@
     { id: 'zeus', title: 'ZEUS Trading', line: 'Zlarior and ATLAS: accounts, live bots, trades, brain, rules, payouts', colour: '#c8a24a',
       home: 'hub/zeus.html',   // the door's landing (night-zeushub 2026-11-18): live accounts, today, the big buttons; the Doors page links it first
       items: [
-        { label: 'Room left on each account', greek: 'MFFU view', href: 'business/mffu.html', app: '', words: 'room drawdown left lose floor open trade live' },
-        { label: 'Decide cards', greek: 'Board · Decide', href: 'board/index.html#decide', app: '', words: 'decide decisions yes no questions' },
         { label: 'My accounts', greek: 'Business · My Accounts', href: 'business/accounts.html', app: 'business', words: 'accounts evals funded mffu builder 50k 25k rapid balance pass target floor' },
         { label: 'Bots right now', greek: 'NQ', href: 'nq/', app: 'nq', words: 'bots live on off running pc zlarior atlas lit status drawdown ninjatrader' },
+        { label: 'Room left on each account', greek: 'MFFU view', href: 'business/mffu.html', app: '', words: 'room drawdown left lose floor open trade live' },
+        { label: 'Decide cards', greek: 'Board · Decide', href: 'board/index.html#decide', app: '', words: 'decide decisions yes no questions' },
         { label: "Bot's brain", greek: 'Zenith · Brain', href: 'index.html#/brain', app: '', words: 'brain thinking setups levels sweep why waiting' },
         { label: 'Trades', greek: 'Trading', href: 'trading/', app: 'trading', words: 'trades history calendar stats fills today pnl p&l' },
         { label: 'Drawdown left', greek: 'Aegis', href: 'aegis/', app: 'aegis', words: 'risk drawdown stop loss max loss limit room guard dll mll' },
