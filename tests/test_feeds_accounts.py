@@ -236,7 +236,7 @@ def node_part():
           m["twins"] == ["lit:lit", "atlas:atlas", "b25k_2:b25k_2", "b25k_3:b25k_3"], m["twins"])
     check("9. the cloud's PAPER twin in home.json ($49,900) never becomes an account", m["cloudHome"] == ["zlarior:lit", "atlas:atlas", "rapid1", "fresh25:b25k_2"], m["cloudHome"])
     check("9. Board (a board.json without pc ids) and the ZEUS card: one Zlarior, ATLAS, Zlarior 25K #2 (+ the planned Rapid on the Board)",
-          m["board"] == ["Zlarior", "ATLAS", "Rapid EOD 25K (next)", "Zlarior 25K #2"] and m["zeus"] == ["Zlarior", "ATLAS", "Zlarior 25K #2"], (m["board"], m["zeus"]))
+          m["board"] == ["Zlarior", "ATLAS", "Rapid EOD 25K", "Zlarior 25K #2"] and m["zeus"] == ["Zlarior", "ATLAS", "Zlarior 25K #2"], (m["board"], m["zeus"]))
     check("7. Board / My Accounts payout coach: from the PC payout tracker (no more 'NO NUMBERS'), the ZEUS card's own words",
           o["pay"] is not None and o["pay"]["text"] == o["zeusPay"] == "Not yet: need $1,463 more." and "payout tracker" in o["pay"]["from"], (o["pay"], o["zeusPay"]))
     check("7. the payout card's 7-day inactivity line from the PC's last traded day (mf 'lt' 2026-11-18): trade by 2026-11-24",

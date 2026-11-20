@@ -15,6 +15,8 @@ Paper bots, temp files, Sim / made-up names only: nothing routed to a real Ninja
   h. the old docs line `engine.rapid --account "<Name>"` (no --size) never means a silent 50K any more (night-money
      2026-11-18): the size comes from NinjaTrader's balance or the Name, unknown or contradicted = refused (nothing saved),
      the same Name keeps its plan, and the [OK] line prints the rules the bot will use
+  i. night-rapidready 2026-11-20: every rule printed at add time, CHECK THE NAME for a Name NinjaTrader does not show, START BOT
+     step 3 lists the Rapid before the phrase (dry run: nothing armed), the Board / MFFU plan row matches the PC id "rapid"
 """
 from __future__ import annotations
 
@@ -104,6 +106,102 @@ def cli_checks(tmp):
             os.environ.pop("NINJATRADER_FOLDER", None)
         else:
             os.environ["NINJATRADER_FOLDER"] = env_keep
+
+
+def ready_checks(tmp):
+    """i. night-rapidready 2026-11-20 (owner buying the 25K tonight): the owner's path prints every rule it keeps, warns on a
+    Name NinjaTrader does not show, START BOT step 3 lists the Rapid before the phrase, and the Board / MFFU plan row matches the
+    PC's Rapid account by its id."""
+    import contextlib
+    import io
+    import json as _json
+    from engine import account_cli as AC, go as G
+    from tests import test_accounts_cli as TC
+    keep = {k: getattr(G, k) for k in ("CFG", "SECOND_PATH", "ALLOW_PATH", "ACCOUNTS_PATH", "ANCHOR_PATH", "bot_running")}
+    keep_rp, env_keep = rapid.PATH, os.environ.get("NINJATRADER_FOLDER")
+    try:
+        os.makedirs(tmp, exist_ok=True)
+        TC.world(tmp)
+        G.bot_running = lambda: False
+        r = AC.add("rapideod25", TC.N25 + "X")            # a Name NinjaTrader does not show (a typo): added + warned
+        check("i. a Name NinjaTrader does not show: added DISARMED, but CHECK THE NAME is printed",
+              r["ok"] and any("CHECK THE NAME" in x and "does not show" in x for x in r.get("notes") or []), r.get("notes"))
+        AC.remove(TC.N25 + "X")
+        with open(os.path.join(os.environ["NINJATRADER_FOLDER"], "le_feed", "accounts.csv"), "a") as fh:
+            fh.write(f"MFFUEVRPD251190004,{int(__import__('time').time())},25000,0,0,25000\n")
+        r = AC.add("rapideod25", "MFFUEVRPD251190004")
+        notes = r.get("notes") or []
+        check("i. the Name NinjaTrader shows at $25,000: no CHECK THE NAME warning", r["ok"] and not any("CHECK THE NAME" in x for x in notes), notes)
+        check("i. the [OK] lines also print min days, the flat time, the funded news ban and the payout line",
+              any("4+ trading days to pass" in x and "MFFU: 16:10" in x and "CPI / jobs / Fed" in x and "above $26,600" in x
+                  and "$500 min" in x and "-$500" in x for x in notes), notes)
+        check("i. slots line names both Rapid sizes", "Rapid EOD 50K 0/3" in AC.slots_text() and "Rapid EOD 25K 0/3" in AC.slots_text(),
+              AC.slots_text())
+        lines = G.phrase_also_arms()
+        check("i. START BOT step 3 lists the Rapid EOD 25K (Zlarior + ATLAS, its Name) before the phrase",
+              any("Zlarior + ATLAS" in x and "Rapid EOD 25K" in x and "MFFUEVRPD251190004" in x for x in lines), lines)
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            rc = G.run(dry=True, inp=lambda *_a: "no", pull=False)
+        txt = out.getvalue()
+        check("i. START BOT dry run, phrase NOT typed: the Rapid is listed at 3/4 and stays DISARMED",
+              "Rapid EOD 25K  MFFUEVRPD251190004" in txt and txt.find("Rapid EOD 25K") > txt.find("3/4 Real money")
+              and "Nothing is armed" in txt and rapid.read()["armed"] is False, (rc, txt[-900:]))
+        AC.remove("MFFUEVRPD251190004")
+        check("i. no Rapid: step 3 lists nothing extra", not [x for x in G.phrase_also_arms() if "Rapid" in x], G.phrase_also_arms())
+    finally:
+        for k, v in keep.items():
+            setattr(G, k, v)
+        rapid.PATH = keep_rp
+        if env_keep is None:
+            os.environ.pop("NINJATRADER_FOLDER", None)
+        else:
+            os.environ["NINJATRADER_FOLDER"] = env_keep
+    # START BOT's launch checklist (engine/launch_check): the Rapid in the RUNNING bot (both lanes, armed)
+    from engine import launch_check as LC
+    from tests.test_rapid import Clock as _Clock
+    fp = os.path.join(tmp, "rapid_lc.json")
+    rapid.save({"v": 1, "account": "Sim205", "plan": P25, "stage": "eval", "eval_start": DAY, "armed": True, "payouts": {}}, fp)
+    bot = make_bot(os.path.join(tmp, "lc"), _Clock(T0 + 290), blk25(armed=True))
+    f = {"rapid": LC.rapid_fact(bot, fp)}
+    it = next((x for x in LC.checklist(f, None, True, T0)["items"] if x["key"] == "rapid"), {})
+    check("i. launch checklist: 'Rapid EOD 25K (LIT + ATLAS)' green when both lanes run armed in the bot",
+          it.get("state") == "good" and "Rapid EOD 25K" in it.get("label", "") and "Sim205" in it.get("detail", ""), (f, it))
+    bot2 = make_bot(os.path.join(tmp, "lc2"), _Clock(T0 + 290), False)
+    it2 = next((x for x in LC.checklist({"rapid": LC.rapid_fact(bot2, fp)}, None, True, T0)["items"] if x["key"] == "rapid"), {})
+    check("i. launch checklist: red when the Rapid is set but its lanes did not start in the bot",
+          it2.get("state") == "bad" and "did not start" in it2.get("detail", ""), it2)
+    rapid.save({"v": 1, "account": "Sim205", "plan": P25, "stage": "eval", "eval_start": DAY, "armed": False, "payouts": {}}, fp)
+    it3 = next((x for x in LC.checklist({"rapid": LC.rapid_fact(make_bot(os.path.join(tmp, "lc3"), _Clock(T0 + 290), blk25()), fp)},
+                                        None, True, T0)["items"] if x["key"] == "rapid"), {})
+    check("i. launch checklist: red 'NOT armed' when running without the typed phrase", it3.get("state") == "bad"
+          and "NOT armed" in it3.get("detail", ""), it3)
+    check("i. launch checklist: no Rapid set = no Rapid line (the 3 live accounts' checklist is unchanged)",
+          LC.rapid_fact(bot, os.path.join(tmp, "none.json")) is None
+          and not any(x["key"] == "rapid" for x in LC.checklist({}, None, True, T0)["items"]))
+    # the Board / MFFU view: the plan row of the Rapid matches the PC's id "rapid" (not only its Name)
+    from engine import board_events as BE
+    plan = _json.load(open(os.path.join(ROOT, "tools", "web_public", "business", "accounts.json"), encoding="utf-8"))
+    row = next((a for a in plan["accounts"] if a.get("key") == "rapid1"), {})
+    check("i. accounts.json: the Rapid row is 'Rapid EOD 25K' (MFFU Rapid EOD 25K, $97.20) with the PC id rapid",
+          row.get("name") == "Rapid EOD 25K" and row.get("plan") == "MFFU Rapid EOD 25K" and "rapid" in (row.get("pc") or [])
+          and "97.20" in str(row.get("cost")) and BE.plan_key(plan["accounts"], "rapid", "") == "rapid1"
+          and BE.plan_key(plan["accounts"], "rapid", "Rapid EOD 25K") == "rapid1", row)
+    check("i. accounts.json: limits + rules know the Rapid EOD 25K (its own 3 funded; $1,500, 4 days, 30%, $1,100 buffer)",
+          "3 Rapid EOD 25K" in plan.get("limits", "") and any(r[0] == "Rapid EOD 25K" and "$1,500" in r[1] and "4 days" in r[1]
+                                                            and "30%" in r[1] and "$1,100" in r[1] for r in plan.get("rules") or []))
+    from tools import board as BD
+    lite = {"t": 1795150000, "board": {"data_t": 1795150000},
+            "accounts": [{"id": "rapid", "name": "Rapid EOD 25K", "plan": "Rapid EOD 25K", "kind": "eval",
+                          "eval": {"balance": 25212.5, "room": 1000.0, "floor": 24212.5, "to_target": 1287.5}}]}
+    b = BD.gather(offline=True, hb={"present": False, "reason": "test"}, lite=lite, now=1795150300)
+    rr = next((x for x in b["accounts"] if x.get("key") == "rapid1"), {})
+    check("i. Board: once the PC reports it, the row reads 'Rapid EOD 25K', eval, the PC's balance / room / to pass",
+          rr.get("name") == "Rapid EOD 25K" and rr.get("stage") == "eval" and not rr.get("plan_only") and rr.get("balance") == 25212.5
+          and rr.get("to_pass") == 1287.5 and not any(x.get("not_in_plan") for x in b["accounts"]), rr)
+    b0 = BD.gather(offline=True, hb={"present": False, "reason": "test"}, lite={"t": 1795150000, "board": {}}, now=1795150300)
+    r0 = next((x for x in b0["accounts"] if x.get("key") == "rapid1"), {})
+    check("i. Board before the PC reports it: 'Rapid EOD 25K' PLAN ONLY, chip planned", r0.get("plan_only") and r0.get("chip") == "planned", r0)
 
 
 def bat_checks():
@@ -428,6 +526,7 @@ def main() -> int:
         bank_checks(os.path.join(tmp, "bank"), clock)
         cli_checks(os.path.join(tmp, "cli"))
         size_line_checks(os.path.join(tmp, "sizeline"))
+        ready_checks(os.path.join(tmp, "ready"))
         bat_checks()
     finally:
         MA.ADAPTER_FACTORY = None

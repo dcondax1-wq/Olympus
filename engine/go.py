@@ -599,7 +599,8 @@ def step_arm(cfg, phrase, dry=False, open_page=True) -> int:
         from . import rapid
         rr = rapid.arm(phrase)
         if not rr.get("off"):
-            print(f"     Rapid EOD (LIT + ATLAS): {'armed ' + str(rr.get('account')) if rr.get('ok') else 'NOT armed: ' + str(rr.get('error'))[:160]}")
+            lbl = rapid.plan_info(rapid.read() or {})["label"]        # "Rapid EOD 25K" / "Rapid EOD 50K": the size shows here too
+            print(f"     {lbl} (LIT + ATLAS): {'armed ' + str(rr.get('account')) if rr.get('ok') else 'NOT armed: ' + str(rr.get('error'))[:160]}")
     except Exception as e:
         print(f"     Rapid EOD: NOT armed ({e.__class__.__name__}: {e})")
     try:                                   # accounts added with engine.accounts (engine/account_cli.py): armed only here
@@ -718,11 +719,34 @@ def run(dry=False, inp=input, py=sys.executable, pull=True) -> int:
     print("\n 3/4 Real money:")
     print(f"       Zlarior (LIT)  ->  50K  {cfg['lit']}")
     print(f"       ATLAS          ->  25K  {cfg['atlas']}")
-    print("     Check both names against NinjaTrader's Accounts tab (50K about $49,700, 25K about $25,000).")
+    for ln in phrase_also_arms():
+        print(ln)
+    print("     Check each name against NinjaTrader's Accounts tab (the phrase arms every account listed here).")
     print("     Typing the line also lets the bot come back by itself after a restart (PC on + NinjaTrader connected);")
     print("     the kill switch or STOP BOT turns that off.")
     phrase = typed_phrase(ask(" Type  I ACCEPT LIVE RISK  then Enter (anything else stops here, nothing armed)", None, inp))
     return step_arm(cfg, phrase, dry)
+
+
+def phrase_also_arms() -> list:
+    """START BOT step 3: every OTHER account the typed phrase arms (added with ADD_ACCOUNT.bat: a Builder 25K #2, the Rapid EOD
+    25K / 50K), one line each, so the owner checks every Name before he types it (2026-11-20 night-rapidready: the window
+    listed only the 50K and the 25K while the phrase also armed the 25K #2 and the Rapid). Print only; never raises."""
+    out = []
+    try:
+        from . import account_cli
+        for r in account_cli.inventory():
+            if r.get("role") not in ("extra", "rapid") or r.get("enabled", True) is False:
+                continue
+            if r["role"] == "extra" and not (r.get("cli") or r.get("armed")):
+                continue                     # an old multi_account row the phrase does not arm (and not armed): not trading
+            plan = account_cli.PLANS.get(r.get("plan"), {}).get("label", str(r.get("plan") or ""))
+            who = {"lit": "Zlarior (LIT)", "lit+atlas": "Zlarior + ATLAS", "atlas": "ATLAS"}.get(r.get("bots"), str(r.get("bots")))
+            out.append(f"       {who + ('  ' if len(who) < 15 else ' ')}->  {plan}{' funded' if r.get('stage') == 'funded' else ''}  {r['name']}"
+                       + (" (Sim)" if r.get("sim") else ""))
+    except Exception:
+        pass
+    return out
 
 
 def typed_phrase(s) -> str:

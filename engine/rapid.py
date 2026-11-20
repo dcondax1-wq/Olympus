@@ -201,6 +201,16 @@ def rules_line(blk: dict) -> str:
             f"<= ${int(BEST_DAY * tgt * MARGIN):,} (30% rule), ATLAS <= ${float(P['atlas_usd']):,.0f} a trade")
 
 
+def rules_more(blk: dict) -> str:
+    """The rest of MFFU's rules the bot keeps on this Rapid (printed under rules_line at add time; night-rapidready 2026-11-20:
+    min days, the 16:10 flat, the funded news ban and the payout line were in the docs only)."""
+    P = plan_info(blk)
+    keep = float(P["start"]) + float(P["buffer"]) + float(P["cushion"])
+    return (f"{MIN_DAYS}+ trading days to pass, flat by 15:55 ET (MFFU: 16:10), no MFFU daily loss (the bot stops at "
+            f"-${float((_ma_presets().get(P['preset']) or {}).get('rules', {}).get('dll') or 0):,.0f}); funded: flat 3 min before to "
+            f"2.5 min after CPI / jobs / Fed, payouts of what is above ${keep:,.0f} (${PAY_MIN:,.0f} min, {SPLIT:.0%} to you)")
+
+
 def _ma_presets() -> dict:
     try:
         from .multi_account import PRESETS
@@ -796,6 +806,7 @@ def main(argv=None) -> int:
         print(f"[OK] {plan_info(b)['label']} = {b['account']}, eval from {b['eval_start']}, NOT armed. LIT + ATLAS trade it after START BOT "
               "(you type I ACCEPT LIVE RISK)." + (f" {r['note']}." if r.get("note") else ""))
         print(f"     {rules_line(b)}")
+        print(f"     {rules_more(b)}")
         return 0
     print(status()["text"])
     return 0

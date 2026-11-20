@@ -184,7 +184,7 @@ def slots(rows=None) -> dict:
 def slots_text(rows=None) -> str:
     s, L = slots(rows), limits()
     return (f"MFFU slots: evals {s['evals']} of {L['evals']} · funded {s['funded']} of {L['funded']} (Builder 50K "
-            f"{s['builder50k']}/{L['builder50k']}, Builder 25K {s['builder25k']}/{L['builder25k']}, Rapid EOD "
+            f"{s['builder50k']}/{L['builder50k']}, Builder 25K {s['builder25k']}/{L['builder25k']}, Rapid EOD 50K "
             f"{s['rapideod']}/{L['rapideod']}, Rapid EOD 25K {s['rapideod25']}/{L['rapideod25']})")
 
 
@@ -271,9 +271,26 @@ def add(plan: str, name: str, bots: str | None = None, start: str | None = None,
     else:
         r = _add_lit(plan, name, bots, start, funded, rows)
     if r.get("ok"):
-        r["notes"] = notes + list(r.get("notes") or [])
+        unseen = _unseen_note(name)
+        r["notes"] = notes + list(r.get("notes") or []) + ([unseen] if unseen else [])
         r["slots"] = slots_text()
     return r
+
+
+def _unseen_note(name) -> str | None:
+    """NinjaTrader shows other accounts right now but not this Name (a typo, or LE_BarFeed has not seen the new account
+    yet): a warning, never a refusal (night-rapidready 2026-11-20: a mistyped Name was added silently)."""
+    if _is_sim(name):
+        return None
+    try:
+        bals = _go().nt_balances() or {}
+    except Exception:
+        return None
+    n = sum(1 for k in bals if not _is_sim(k))
+    if not n or str(name or "").strip() in bals:
+        return None
+    return (f"CHECK THE NAME: NinjaTrader does not show {name} right now (it shows {n} other account"
+            f"{'s' if n != 1 else ''}). Copy it again from the Accounts tab before START BOT")
 
 
 def _add_lit(plan, name, bots, start, funded, rows) -> dict:
@@ -344,15 +361,16 @@ def _add_rapid(name, start, funded, rows, plan="rapideod") -> dict:
     if not r.get("ok"):
         return {"ok": False, "error": r.get("error")}
     b = r["block"]
-    return {"ok": True, "notes": [x for x in [r.get("note"), _rules_line(rp, b)] if x],
+    return {"ok": True, "notes": [x for x in [r.get("note"), _rules_line(rp, b), _rules_line(rp, b, more=True)] if x],
             "say": f"[OK] {P['label']} = {b['account']} (LIT + ATLAS), eval from {b['eval_start']}, NOT armed. It joins at the "
                    "next START BOT (you type I ACCEPT LIVE RISK)."}
 
 
-def _rules_line(rp, blk):
-    """The numbers the bot will use on the Rapid (so a wrong size shows at once); None when it cannot be read."""
+def _rules_line(rp, blk, more=False):
+    """The numbers the bot will use on the Rapid (so a wrong size shows at once); more = the rest of MFFU's rules it keeps
+    (min days, flat time, funded news ban, payouts). None when it cannot be read."""
     try:
-        return rp.rules_line(blk)
+        return rp.rules_more(blk) if more else rp.rules_line(blk)
     except Exception:
         return None
 

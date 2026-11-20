@@ -430,7 +430,10 @@
     for (const a of accts) for (const x of a.recent) latest.push({ name: a.name, key: a.key, ...x });
     latest.sort((x, y) => y.entry_t - x.entry_t);
     const decoder = accts.filter((a) => a.l4).map((a) => [a.l4, a.name]);
-    return { feed, accounts: accts, planned: M ? M.planned(s.plan).map(planRow) : [], open, latest: latest.slice(0, 5), decoder, now,
+    // a planned row (status waiting / buying) the PC already reports is a live card now: not listed twice (night-rapidready 2026-11-20:
+    // the Rapid EOD 25K, bought tonight, would show as its card AND as "planned" until accounts.json said live)
+    const live = new Set(accts.map((a) => String(a.key)));
+    return { feed, accounts: accts, planned: M ? M.planned(s.plan).filter((a) => !live.has(String(a.key))).map(planRow) : [], open, latest: latest.slice(0, 5), decoder, now,
              session_day: tradingDay(now), today: ctx.today, day: dayEnd(now) };
   }
 
