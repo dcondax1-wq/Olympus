@@ -1099,7 +1099,8 @@ def inactivity_notice(view: dict, now) -> dict | None:
         return None
     left = PLAN["inactivity_days"] - n
     title = f"No trade for {n} days (MFFU closes an account at {PLAN['inactivity_days']})"
-    body = ("Place 1 MNQ by hand today (in and out, a few dollars), or let the min-days 1-micro trade run. "
+    body = ("Place 1 MNQ by hand today (in and out, a few dollars), or switch on the bot's keep-alive trade "
+            "(python -X utf8 -m engine.keepalive --status). "
             + (f"{left} day{'s' if left != 1 else ''} left." if left > 0 else "Do it today.")
             + (f" Holiday week: the last CME session before the 7-day mark is {sq['last_session']}." if sq and sq.get("last_session") else ""))
     return _payload("idle", title, body, f"ops:idle:{trading_day(now)}", now)

@@ -148,6 +148,10 @@ data/lit25.json
 data/lit25.json.tmp
 data/lifecycle.json
 data/lifecycle.json.tmp
+data/keepalive.json
+data/keepalive.json.tmp
+data/keepalive_state.json
+data/keepalive_state.json.tmp
 data/live_state_acctr*.json
 data/live_state_acctr*.json.tmp
 data/ninjatrader_state_acctr.json

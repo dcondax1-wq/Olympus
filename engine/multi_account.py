@@ -1149,7 +1149,14 @@ class AccountRouter:
         """MFFU (and most firms) forbid long and short on the same underlying at the same time, also across your own
         accounts. Copy trading is always the same side; this refuses an order of direction d while any OTHER account
         (an extra one, or the bot's own: exclude=None means the caller is the bot's own account) holds the opposite side.
-        Returns why, or None."""
+        Returns why, or None. A keep-alive trade the other way (engine/keepalive.py, OFF by default) is closed first."""
+        try:
+            from . import keepalive as _ka
+            h = _ka.opposite(self.bot, d)
+            if h:
+                return h
+        except Exception:
+            pass
         for a in self.accounts:
             if a is exclude or a.open_t is None:
                 continue

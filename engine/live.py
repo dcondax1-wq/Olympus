@@ -1223,6 +1223,7 @@ class LiveBot:
         self.health["fallback"] = False
         self.health["nt_down"] = self.health["nt_down_1m"] = None      # set by this poll's NinjaTrader fetches (no_yahoo)
         self._adapter_tick()
+        self._keepalive_tick(None, now, may_open=False)   # an open keep-alive past its hold is closed even if the feed fails
         if not getattr(self, "_unplaced_scanned", False):
             self._unplaced_scanned = True
             self._void_unplaced_exits()
@@ -1368,6 +1369,7 @@ class LiveBot:
             self._second_route_tick(df_full, df1, res, sym, now)   # routed second strategies (OFF by default): LIT routed first
             self._account_b_tick(df_full, df1, sym, now)           # account B (OFF by default): its own account, after LIT
             self._fleet_tick(sym, now)                             # the fleet (OFF by default): copies of LIT / ATLAS / BLITZ
+            self._keepalive_tick(df1, now)                         # MFFU 7-day keep-alive (OFF by default, engine/keepalive.py)
             self._second_tick(df_full, df1, res, now)
             self._chart_tick(df_full, df1, res, now, brain_keep)  # trade pictures, background thread (read-only)
         return self.state
@@ -2971,6 +2973,19 @@ class LiveBot:
         except Exception as e:
             self.fleet, self._fleet_sig = None, None
             self._note_error(f"fleet not started yet: {e.__class__.__name__}: {e}")
+
+    def _keepalive_tick(self, df1, now, may_open=True):
+        """engine/keepalive.py, OFF by default (data/keepalive.json, the owner's switch per account): MFFU's 7-day rule, one
+        1-micro trade on an account that would otherwise go 7 days without one. After the routing (may_open) with this poll's
+        1m close; before the data fetch only an open one past its hold is closed. Never raises."""
+        try:
+            from . import keepalive as _ka
+            px = bt = None
+            if df1 is not None and len(df1):
+                px, bt = float(df1["close"].iloc[-1]), int(df1["time"].iloc[-1])
+            _ka.tick(self, now, px=px, bar_t=bt, may_open=may_open)
+        except Exception as e:
+            self._note_error(f"keep-alive failed: {e.__class__.__name__}: {e}")
 
     def _fleet_tick(self, sym, now):
         """After LIT, account C and account B routed: every follower copies its lead. Never raises; off = returns at once."""

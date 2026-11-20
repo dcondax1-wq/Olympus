@@ -297,15 +297,19 @@
      "days": 7,
      "rule": "no trade for 7 consecutive calendar days -> the account could be closed (one-time-payment accounts, incl. sim funded); live: none",
      "sim_funded_breach": "forfeits ALL profits on the account",
-     "vacation": "tell support before a break of more than 7 days"
+     "vacation": "tell support before a break of more than 7 days",
+     "terms": "Terms section 7 Dormant Accounts: 'If a User does not execute at least one (1) trade per seven (7) consecutive calendar day period, whether in an Evaluation Account or a Sim Trading Account, the Company may, in its sole discretion, deem the applicable account dormant, close it, and treat such closure as a breach of these Terms.' No warning step is promised.",
+     "counts": "an EXECUTED (filled) trade; no page says a login or an unfilled order counts; no minimum size or hold time",
+     "keep_alive": "a 1-micro trade only to stay active is not forbidden anywhere; Terms 12.4 asks size / frequency close to your usual pattern -> engine/keepalive.py (OFF by default): 1 MNQ, 15:33-15:48 ET, news-free, never opposite another account, hard 40-tick bracket, out in 30 s"
     },
     "status": "confirmed",
     "source": [
+     "https://myfundedfutures.com/terms",
      "https://help.myfundedfutures.com/en/articles/16596524-inactivity-rule-one-time-payment-model",
      "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide"
     ],
-    "checked": "2026-11-17",
-    "note": "older article says a breach; the one-time model article says 'could be closed'. Contact support before a break >7 days"
+    "checked": "2026-11-20",
+    "note": "Terms section 7 (updated 2026-10-09, read 2026-11-20): may close + count it as a breach; the one-time model article says 'could be closed'. The older article 11972075 is gone (404). Contact support before a break >7 days"
    },
    "commission_rt": {
     "value": {

@@ -589,7 +589,8 @@ def display_name(p: dict, lane: bool = True) -> str:
 EXIT_WORDS = {"TARGET": "target", "STOP": "stop", "BE": "breakeven", "TIME": "time exit", "EOD": "day's end", "TIME SAFETY": "before the close",
               "KILL": "kill switch", "KILL SWITCH": "kill switch", "FLATTEN": "flattened", "LIT PRIORITY": "for a LIT entry",
               "HEDGE": "no-hedge rule", "NO TRADE": "not placed", "CUT": "cut early", "T15": "15-min rule", "TIME STOP": "time stop",
-              "BANK": "banked", "BANK (BEST-DAY ROOM)": "banked (best-day room)", "NEWS": "news"}
+              "BANK": "banked", "BANK (BEST-DAY ROOM)": "banked (best-day room)", "NEWS": "news",
+              "KEEP-ALIVE": "keep-alive"}     # engine/keepalive.py: MFFU's 7-day keep-alive trade
 LIVE_SNAP = os.path.join(ROOT, "data", "pc_report", "live.json")   # tools/pc_report: the PC's last full live view (every 15 min)
 
 

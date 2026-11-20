@@ -921,6 +921,13 @@ class AccountB:
         """Calendar days (ET) since the last traded day on this account (or since the eval / funded start without one)."""
         start = (self.spec.get("funded") or {}).get("start") if self.funded() else self.spec.get("eval_start")
         days = [str(c[0]) for c in self.all_closes() if c and (not start or str(c[0]) >= str(start))]
+        try:                                # a keep-alive trade / a hand trade noted (engine/keepalive.py) restarts the clock too
+            from . import keepalive as KA, lifecycle as LC
+            k = KA.last_day(self.bot, LC.key_of(self))
+            if k and (not start or k >= str(start)):
+                days.append(k)
+        except Exception:
+            pass
         last = max(days) if days else start
         if not last:
             return None

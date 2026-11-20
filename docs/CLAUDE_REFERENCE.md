@@ -9,6 +9,7 @@
 > - ZEUS = the trading system: Zlarior = LIT (`engine/lit.py`, `engine/lit_live.py`, `STRATEGY.md`, `live_model.json` = `live_model_lit.json`), ATLAS (`engine/second.py`, `engine/account_b.py`), BLITZ hidden/paper. Sections: Live strategy, Second strategies.
 > - Accounts: `engine/account_cli.py` (add/rename), `engine/rapid.py` (Rapid), `engine/lit25.py` (LIT on a 25K, `docs/LIT25_FUNDED.md`), `ADD_ACCOUNT.bat` + `docs/ADD_ACCOUNT.md` (owner steps).
 > - Lifecycle: `engine/lifecycle.py` (and `engine/eval_life.py`, see Live strategy "Eval lifecycle"); payout coach `engine/payout_coach.py`, `payout_plan.py`, `payout_policy.py`.
+> - MFFU 7-day rule (2026-11-20): `engine/keepalive.py` = the keep-alive trade, OFF per account until the owner's `--on <key> --yes` (1 MNQ at 15:33 ET on the last full session before last trade + 6, out in 30 s, ~$2.40, max $22.90; every gate in its docstring) + the phone warnings for every MFFU account (on: heads-up; off: the session before + "TODAY"). Claude never switches it on. `tests/test_keepalive.py` (nq area).
 > - Comms board: `engine/board_events.py`, `tools/board.py`, `docs/BOARD.md`, page `tools/web_public/board/`.
 > - Notifications: `notify_settings.json` (what pings the owner), `tools/pc_silent_check.py` (PC went silent alarm).
 > - Auto-update from the backup: `docs/AUTO_UPDATE.md`, `python -m engine.autoupdate --connect` (and `--pull`); branch `pc` of `dcondax1-wq/olympus`.
