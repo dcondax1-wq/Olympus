@@ -105,6 +105,9 @@ AREAS["pc"].append("run_area_fast")       # day-quality round 2: --changed mappe
 AREAS["privacy"].append("status_sign")   # day-security 2026-11-20: signed status posts + no future-dated post (tests/test_status_sign.py); its own line
 AREAS["board"].append("status_sign")
 AREAS["pc"].append("pc_watch")            # day-quality round 3: the cloud PC watch (.github/workflows/pc-watch.yml, docs/PC_WATCH.md)
+for _a in ("pc", "nq"):                   # wf-atlas-start 2026-11-20: ATLAS without a start day = a plain problem + push, never a TypeError
+    if "account_b_start" not in AREAS[_a]:
+        AREAS[_a].append("account_b_start")
 # suites too long for one budget run BY PARTS, each its own row and budget (night team D 2026-11-16: the whole kit walk, every app +
 # power + tiers + more in one browser, is the longest browser suite); a part is "<suite>:<label>" = python -m tests.test_<suite> <args>
 PARTS = {"olympus_kit": [("a", ["datacity", "mind", "tree"]), ("b", ["oracle", "odeon", "fates"]), ("c", ["hermes", "prometheus", "tyche"]),
