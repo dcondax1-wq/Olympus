@@ -43,5 +43,12 @@ Write-up: `research/writeups/lit-edge-2026-11-20.md`. Rules fixed before the run
 - `python tests/run_area.py privacy`: repo_secrets 12/12 and public_build_privacy pass; private_link and phone_safety
   can't start here (`No module named 'fastapi'`, missing from this container).
 
+## VIX data (lead's note, 11:14 UTC)
+Re-ran the cold-run study with pc's fresh data/VIX_1d.csv + VXN_1d.csv (to Nov 19) and the candidate cache rebuilt:
+**no number moved** (same 7 twin trades, same exits, -$858 / -4.18R). Why: none of the 7 hit a target (stops, BE,
+a cut, an end-of-day exit), and no setup was added or dropped by the band. The idea scores (Jan-Jun / Jul-Oct /
+2021-25) use trades up to Oct 16 only, where the old file was complete, so they do not change either. The VIX files
+were put back to this branch's copy (pc already has the fresh ones).
+
 ## Screenshots
 None: no screen changed.
