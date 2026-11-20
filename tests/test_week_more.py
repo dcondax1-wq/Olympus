@@ -115,7 +115,10 @@ def main():
     check("Fri Nov 27: early close 13:15", cal[4]["status"] == "early" and "13:15" in cal[4]["text"], cal[4])
     we = doc["weekend"]
     us = [x["usd_month"] for x in we]
-    check("weekend: open cards only, biggest $ first, max 5", 0 < len(we) <= 5 and us == sorted(us, reverse=True), we)
+    n_open = sum(1 for c in json.load(open(os.path.join(ROOT, "tools", "web_public", "business", "decisions.json"), encoding="utf-8"))["items"]
+                 if c.get("status") == "open")      # 2026-11-20 lead: 0 open is real once the owner answered every card
+    check("weekend: open cards only, biggest $ first, max 5", len(we) <= 5 and (len(we) > 0 or n_open == 0) and us == sorted(us, reverse=True)
+          and all(x.get("status", "open") == "open" for x in we), we)
     with tempfile.TemporaryDirectory() as d:
         os.makedirs(os.path.join(d, "x"))
         old = M.BIZ

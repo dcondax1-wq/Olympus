@@ -151,7 +151,11 @@ def part_d():
     from tools import board as T
     b = B.build(events=evs, plan_doc=PLAN, now=NOW + 5)
     ln = [x for x in T.lines(b, now=NOW + 5) if x.startswith("DECIDE CARD")]
-    check("d. board.py read: one DECIDE CARD line with the open count and ids", ln and f"{N_OPEN} open" in ln[0] and "payout-ping-1000" in ln[0], ln)
+    # 2026-11-20 lead: the owner answered every card (0 open is a real state): the line then says "0 open" and lists no ids
+    first_open = next((c["id"] for c in json.load(open(os.path.join(ROOT, "tools", "web_public", "business", "decisions.json"), encoding="utf-8"))["items"]
+                       if c.get("status") == "open"), None)
+    check("d. board.py read: one DECIDE CARD line with the open count and ids", ln and f"{N_OPEN} open" in ln[0]
+          and (first_open in ln[0] if first_open else N_OPEN == 0), ln)
 
 
 class Site(http.server.SimpleHTTPRequestHandler):
