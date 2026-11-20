@@ -190,8 +190,8 @@ forged answer with a correct sha256 but no signature is ignored once a vk is pin
 
 ## W8 (MEDIUM, privacy): the owner's birthday is in the public repo (engine/money_goal.py)
 
-`engine/money_goal.py` (3 places) and `tests/fixtures/argus/home_real.json` (2) carry the car goal "before I turn 19 (Feb 22,
-2027)", which gives the date of birth. The public site already scrubs it (site_privacy AGE_RX), but the repo is public. Change the
+`engine/money_goal.py` (3 places) and `tests/fixtures/argus/home_real.json` (2) carry the car goal with the owner's age and an exact
+date, which together give the birthday. The public site already scrubs it (site_privacy AGE_RX), but the repo is public. Change the
 text to "by Feb 2027" (no age, no day), and update the 2 assertions in tests/test_money_goal.py. Git history keeps the old text,
 which is why the owner step "make the repo private" (REPORT.md) is the real fix.
 
