@@ -677,7 +677,13 @@ def _cuts(key: str) -> list:
             from engine import feed_fills
             feed_fills.cut(v, n)
         return f
-    return {"glance": [glance(1000), glance(600)], "mf": [eq(4), eq(0)], "brd": [ev(3), ev(1), ev(0)], "life": [ev(0)],
+    def k8(*keys):                     # day-kalshi 2026-11-20: the K8 card's extras go before the whole Kalshi block would be cut
+        def f(v):
+            if isinstance(v, dict) and isinstance(v.get("k8"), dict):
+                for key in keys:
+                    v["k8"].pop(key, None)
+        return f
+    return {"kalshi_live": [k8("lg"), k8("e", "dy")], "glance": [glance(1000), glance(600)], "mf": [eq(4), eq(0)], "brd": [ev(3), ev(1), ev(0)], "life": [ev(0)],
             "board_trades": [first(1)], "at": [at(2), at(1)], "fq": [fq(2), fq(0)]}.get(key, [])
 
 

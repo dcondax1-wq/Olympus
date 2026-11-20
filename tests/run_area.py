@@ -67,6 +67,7 @@ AREAS["kalshi"].append("kalshi_adapt")  # night-kadapt 2026-11-19: the K8 weekly
 AREAS["money"].append("money_ideas")   # night-moneyideas 2026-11-20: money book + Kalshi bankroll ladder (tools/money/money_book.py, kalshi_bankroll.py); its own line
 AREAS["pc"].append("kalshi_adapt")      # the same suite: the PC half (pc_weekly, clock_adapt.json, the ZEUS learned line)
 AREAS["kalshi"].append("kalshi_k8_monday")  # night-kalshi8 2026-11-20: the $55 rule, the edge tests, the Nov 16-19 dry run (research/kalshi_k8_monday/); its own line
+AREAS["kalshi"].append("kalshi_k8_day")  # day-kalshi 2026-11-20: Monday rehearsal, every stop on $55, restarts, no order without key + phrase; its own line
 AREAS["nq"].append("live_gap_proposal")  # night-litmore 2026-11-19: live vs backtest gap + the fill_audit "no record" proposal (tools/live_gap_proposal.py); its own line
 AREAS["nq"] += ["nq_live_reliability", "fast_entry"]   # night-nqlive 2026-11-20: missed-trade alarms + audit fixes, poll-on-tick (OFF); own line
 AREAS["pc"] += ["nq_live_reliability", "account_b_min_room"]   # the same suite (fast alarm, autoupdate flat, datafeed gaps) + ATLAS min_room CLI
