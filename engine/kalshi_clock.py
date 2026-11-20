@@ -453,6 +453,18 @@ def paper_like_live(rs, cfg) -> list:
     return [r for r in rs if r.get("leg") in cfg["live_legs"] and (r.get("cost") is None or KL._f(r.get("cost"), 0.0) <= cap)]
 
 
+def setup_flag(what, env=None):
+    """1 / 0 / None: a Kalshi key id + key file are on this PC ('key'; never read past existence) / the phone alert topic is set ('alerts')."""
+    try:
+        if what == "key":
+            kf = KL.key_files(env)
+            return 1 if kf["key_id"] and os.path.isfile(kf["key_file"]) else 0
+        from engine import notify
+        return 1 if (notify.alert_cfg(env) or {}).get("topic") else 0
+    except Exception:  # noqa: BLE001
+        return None
+
+
 def leg_switch(P, cfg) -> list:
     """[[leg code, won, of, paused 0/1, the live bot obeys it 0/1]] for the live legs, from the paper ledger (every window)."""
     try:
@@ -511,7 +523,9 @@ def card_k8(state_dir=None, cfg=None, now=None) -> dict | None:
                 # and the last 5 bets [leg code, MM-DD, contracts, price c, $, W | L | o (open)] for the phone's bet log
                 "dy": [k["day"]["used"], k["day"]["stop"]], "e": edge_health(rs), "lg": bet_log(rs, 5),
                 # each live leg's own last-20 record and the pause rule (engine/kalshi_legswitch): [code, won, of, paused 0/1, obeyed 0/1]
-                "ls": leg_switch(P, cfg)}
+                "ls": leg_switch(P, cfg),
+                # the Monday checklist (day-kalshi, Olympus 2): a key is saved on the PC (yes/no only, never the key) and the phone alerts are set
+                "kk": setup_flag("key"), "al": setup_flag("alerts")}
     except Exception:  # noqa: BLE001
         return None
 
