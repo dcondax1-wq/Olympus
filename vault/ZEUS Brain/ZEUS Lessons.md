@@ -9,6 +9,22 @@ type: "lessons"
 > [!tip] This note grows by itself
 > Every night it is rebuilt from the loss anatomy, the rejected list and the newest write-ups. Don't redo a rejected idea without a new angle.
 
+## Reason codes (recounted on every build)
+
+Every losing trade gets ONE main cause and the checklist flags; each lesson note keeps its own counts and examples.
+
+| Lesson | Losers in all backtests | Losers 2026 | $ 2026 |
+|---|---|---|---|
+| [[Lesson never worked\|never]] | 1319 | 184 | -$38,515 |
+| [[Lesson worked then turned\|turned]] | 624 | 82 | -$20,656 |
+| [[Lesson shaken out\|wick]] | 186 | 16 | -$3,531 |
+| [[Lesson news hit\|news]] | 16 | 3 | -$1,143 |
+| [[Lesson not yet classified\|unclassified]] | 0 | 0 | $0 |
+| [[Lesson against both trends\|against_htf]] | 561 | 76 | -$15,118 |
+| [[Lesson late entry\|late]] | 600 | 81 | -$9,029 |
+| [[Lesson news soon\|news_soon]] | 12 | 2 | -$655 |
+| [[Lesson no room\|no_room]] | 192 | 16 | -$3,028 |
+
 ## Why we lose (loss clusters)
 
 _Built 2026-11-19 01:42, research/anatomy/explain.json._
@@ -55,8 +71,10 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 
 ## Rejected idea families
 
-47 entries from docs/TESTED_AND_REJECTED.md, newest first.
+51 entries from docs/TESTED_AND_REJECTED.md, newest first.
 
+- **Zlarior edge, 5 pre-registered ideas** · [[Zlarior (LIT)]] · [[lit-edge-2026-11-20|Zlarior]]
+- **ATLAS edge at real fills** · [[ATLAS]] · [[atlas-edge-2026-11-20|ATLAS edge at real fills]]
 - **ATLAS real-fill fixes** · [[ATLAS]] · [[atlas-fills-2026-11-20|ATLAS real fills]]
 - **Payday levers + cross-bot loss cuts** · [[ATLAS]] · [[payday-plan-2026-11-20|Payday plan]]
 - **Zlarior more money, 2 pre-registered batches** · [[Zlarior (LIT)]] · [[lit-more-money-2026-11-19|Zlarior]]
@@ -71,11 +89,13 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 - **ATLAS new members** · [[ATLAS]] · [[atlas-members-2026-11-18|ATLAS new members]]
 - **New-strategy hunt** · [[new-strategy-hunt-2026-11-17|New-strategy hunt]]
 - **Market-regime warning features** · [[Zlarior (LIT)]] · [[edge-health-2026-11-17|Edge health, 2026-11-17]]
+- **Regime guard** · [[Zlarior (LIT)]], [[ATLAS]] · [[regime-guard-2026-11-20|Regime guard]]
 - **Famous published strategies** · [[public-strategies-2026-11-17|Famous published strategies on CME NQ]]
 - **Drift switch** · [[Zlarior (LIT)]] · [[drift-switch-2026-11-17|"Edge stopped working" switch]]
 - **Walk-forward re-tuning** · [[lit-walkforward-2026-11-17|LIT walk-forward re-tuning]]
 - **Rule-native layer** · [[BLITZ (paper)]], [[Rapid lanes]] · [[rule-native-2026-11-17|Rule-native search]]
 - **Published models as taught: ICT 2022, Silver Bullet, Mech/IFVG, continuation, ...**
+- **ICT ATM range + ES/NQ SMT as the trigger, MES, Judas swing** · [[Rapid lanes]] · [[newstrat-ict-smt-2026-11-20|New strategy for the extra accounts]]
 - **92 confluences; 6 daily-bias methods; grade/confidence sizing; partials and ...**
 - **Fixed 10–15 pt stops: wicked out, lose money. Structural stops are rarely ≤15 ...**
 - **Target variants: no cap / draw mode / "last real pool" all worse**
@@ -107,6 +127,12 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 
 ## Rejected in the write-ups
 
+- 2026-11-20 [[regime-guard-2026-11-20|Regime guard]] ([[Family filters|filters]])
+- 2026-11-20 [[premarket-brief-2026-11-20|Premarket brief]] ([[Family bias|bias]])
+- 2026-11-20 [[newstrat-ict-smt-2026-11-20|New strategy for the extra accounts]] ([[Family other|other]])
+- 2026-11-20 [[lit-eval-rescue-2026-11-20|Zlarior eval rescue]] ([[Family risk|risk]])
+- 2026-11-20 [[lit-edge-2026-11-20|Zlarior]] ([[Family other|other]])
+- 2026-11-20 [[atlas-edge-2026-11-20|ATLAS edge at real fills]] ([[Family second|second]])
 - 2026-11-19 [[third-strategy-2026-11-18|Third strategy hunt]] ([[Family other|other]])
 - 2026-11-19 [[lit-more-money-2026-11-19|Zlarior]] ([[Family other|other]])
 - 2026-11-19 [[kalshi-edge-K7-2026-11-18|Kalshi K7]] ([[Family kalshi|kalshi]])

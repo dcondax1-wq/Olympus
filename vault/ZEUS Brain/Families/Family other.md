@@ -7,13 +7,18 @@ type: "family"
 
 # Research family: other
 
-> [!abstract] 92 write-ups
-> adopt-candidate 15, finding 11, info 16, promising 14, rejected 31, research 5
+> [!abstract] 97 write-ups
+> adopt-candidate 15, finding 14, info 16, promising 14, rejected 33, research 5
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-20 | [[security-2026-11-20\|Security check]] | finding |
+| 2026-11-20 | [[redteam-live2-2026-11-20\|Red team 2 of the live bot]] | finding |
 | 2026-11-20 | [[redteam-live-2026-11-20\|Red team of tonight's live code]] | finding |
+| 2026-11-20 | [[nq-speed-fills-2026-11-20\|NQ bot speed and fills]] | finding |
 | 2026-11-20 | [[nq-live-reliability-2026-11-20\|NQ live bot reliability]] | finding |
+| 2026-11-20 | [[newstrat-ict-smt-2026-11-20\|New strategy for the extra accounts]] | rejected |
+| 2026-11-20 | [[lit-edge-2026-11-20\|Zlarior]] | rejected |
 | 2026-11-19 | [[third-strategy-2026-11-18\|Third strategy hunt]] | rejected |
 | 2026-11-19 | [[lit-more-money-2026-11-19\|Zlarior]] | rejected |
 | 2026-11-18 | [[zeus-lab-lit-ideas-2026-11-18\|ZEUS Lab]] | rejected |

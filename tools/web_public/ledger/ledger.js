@@ -3,6 +3,7 @@
 // (no data ever becomes HTML). window.LG is the test hook; ?today=YYYY-MM-DD pretends it is that day (tests, screenshots).
 import * as C from './ledgercore.js';
 import * as SB from './scoreboardcore.js';
+import * as T from '../olympus/truth.js';
 
 const O = window.OLYMPUS || null;
 const KEY = 'ledger.v1';
@@ -46,8 +47,19 @@ function knownAccounts() {
   }
   return out;
 }
+// day-arenas 2026-11-20: the PC's other real evals (Zlarior 25K #2: only the PC's own account list has it, olympus/truth.js extraOf) get
+// their fee too, at the owner's price for that plan (rules.json plans), so the Ledger's net matches Hera and the money cards ($197.80, not $134.80)
+function extraFees(today) {
+  const out = [];
+  for (const a of S.extra || []) {
+    const plan = S.rules && S.rules.plans ? S.rules.plans[a.size === '50K' ? 'builder_50k' : 'builder_25k'] : null, price = plan ? C.num(plan.price_owner) : null;
+    if (price == null || price <= 0 || (S.rules && S.rules.accounts && S.rules.accounts[a.id])) continue;
+    out.push({ key: `auto:fee:${a.id}`, kind: 'fee', amount: price, date: today, cat: 'Eval fees', acct: a.id, note: `${a.name} (the PC's account list, the price list's ${plan.name || a.size} price; confirm the date)`, auto: true });
+  }
+  return out;
+}
 function recalc() {
-  const today = S.today, auto = C.autoEntries({ home: S.home, rules: S.rules }, today), merged = C.merge(S.st, auto, today);
+  const today = S.today, auto = C.autoEntries({ home: S.home, rules: S.rules }, today).concat(extraFees(today)), merged = C.merge(S.st, auto, today);
   let list = merged.list, feed = S.feed, known = knownAccounts();
   S.demo = S.st.entries.length === 0 && merged.auto.length === 0 && !feed && !!S.fixture;
   if (S.demo) {
@@ -184,7 +196,7 @@ function acctView() {
     if (a.stage) chips.append(document.createTextNode(' '), h('span', 'chip info', `${a.stage}${a.status ? ' · ' + a.status : ''}`.toUpperCase()));
     e.append(chips);
     const rows = [['Cost to date', C.money(-a.cost), a.cost ? 'neg' : 'dim'], a.fees ? ['  eval fees', C.money(-a.fees), 'dim'] : null, a.resets ? ['  resets', C.money(-a.resets), 'dim'] : null, a.activation ? ['  activation', C.money(-a.activation), 'dim'] : null, a.expenses ? ['  expenses', C.money(-a.expenses), 'dim'] : null,
-      ['Payouts received', C.money(a.payouts), a.payouts ? 'pos' : 'dim'], a.pending ? ['Payouts requested, waiting', C.money(a.pending), 'dim'] : null, a.income ? ['Other income', C.money(a.income), 'pos'] : null];
+      ['Payouts received', (a.payouts ? '+' : '') + C.money(a.payouts), a.payouts ? 'pos' : 'dim'], a.pending ? ['Payouts requested, waiting', C.money(a.pending), 'dim'] : null, a.income ? ['Other income', C.money(a.income), 'pos'] : null];
     if (a.id === 'kalshi' && a.kalshi) {
       const k = a.kalshi;
       rows.push(['Put in (deposits)', C.money(k.deposits), 'dim'], ['Taken out', C.money(k.withdrawals), 'dim'], k.balance != null ? ['Balance now', C.money(k.balance), ''] : null, k.result != null ? ['Result', C.moneyS(k.result), sign(k.result)] : null);
@@ -429,7 +441,7 @@ function card2() {
 }
 function postCard() {
   if (S.demo || !O || !O.framed || !S.model) return;
-  try { window.parent.postMessage({ jarvis: 1, href: location.href, card: card2() }, (/^https?:/.test(location.protocol) ? location.origin : 'https://demetrades2000-coder.github.io')); } catch (_) { /* not inside Jarvis */ }
+  try { window.parent.postMessage({ jarvis: 1, href: location.href, card: card2() }, (/^https?:/.test(location.protocol) ? location.origin : 'https://dcondax1-wq.github.io')); } catch (_) { /* not inside Jarvis */ }
 }
 
 // ------------------------------------------------------------------------------------------------ start
@@ -499,6 +511,8 @@ async function main() {
   document.body.dataset.ready = '1';
   if (O && S.scene) O.ready();
   S.ready = true;
+  // the PC's own status (0.5-3 s): its account list adds the evals the cloud copy does not know (their fees above)
+  if (S.home) T.withPcFeed(S.home).then((h) => { const ex = T.extraOf(h); if (ex.length) { S.extra = ex; recalc(); renderHero(); setTab(S.tab); } }).catch(() => {});
 }
 
 window.LG = {

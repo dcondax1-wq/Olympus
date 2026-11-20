@@ -1,6 +1,6 @@
 ---
 name: land-helper
-description: Land a finished helper branch (night-*) on Olympus pc (the one home since 2026-11-20) with the fewest tokens - merge, version bumps, smoke, ship. Use whenever a helper reports "committed on night-<x>, not pushed".
+description: Land a finished helper branch (night-* / day-*) on Olympus pc (the one home since 2026-11-20) with the fewest tokens - merge, version bumps, smoke, ship. Use whenever a helper reports "committed on night-<x>, not pushed".
 ---
 
 # Land a helper branch (cheap, same every time)
@@ -10,14 +10,23 @@ Run from the main checkout of `dcondax1-wq/Olympus` on branch `pc` (never from a
 ```bash
 cd /home/user/Olympus && git checkout pc
 B=$(git rev-parse HEAD)
-git merge --no-edit night-<x>                 # conflict? keep BOTH sides (STATE.md, tests/run_area.py lists)
-python tools/bump_versions.py --apply --base $B && python tools/bump_versions.py --check --base $B
+git fetch -q origin <branch> && git merge --no-edit FETCH_HEAD   # conflict? keep BOTH sides (STATE.md, tests/run_area.py lists)
+python tools/bump_versions.py --apply --base $B && python tools/bump_versions.py --check --base $B   # --check after --apply passes since 2026-11-20
+python -X utf8 tools/site_checks.py            # Kalshi cache = css/js ?v, worker tags = page tags, both launchers identical
+git checkout -- docs/shots 2>/dev/null         # browser suites rewrite the golden shots: never commit them
 timeout 600 python tests/smoke.py | tail -1    # known env red: none now (8/8 since 2026-11-17)
 git checkout -- data/GEX_1d.csv tools/web_hub_snapshot.json 2>/dev/null    # smoke rewrites it (and tools/web_hub_snapshot.json); never commit them
 git add -A tools tests web_next && git commit -q -m "<what>" (+ trailers)   # only if bump wrote files
 python tools/ship.py --no-tests | tail -1      # pushes Olympus pc only (the old repo is retired)
 git worktree remove --force .claude/worktrees/<x>
 ```
+
+Known mis-bumps (check the diff for these, fix by hand):
+- Fixed in the tool 2026-11-20 (no hand work): Kalshi CACHE ahead of kalshi.css/js ?v (now moved as one tag), the datacity ?v cascade
+  failing --check, the Gate's script-array tags (`b + 'olympus/x.js?v=..'`) never bumped.
+- Still by hand: launcher.js's apps-list ?v (below); a helper that edited a module but not its ?v (bump_versions only sees the diff
+  vs --base: a file edited AND re-tagged by the helper is "already bumped", fine; edited and NOT re-tagged gets bumped).
+- A red `site_checks` after landing = a worker precaching an old ?v: rerun bump_versions --apply, else set the worker entry (lead-only sw.js).
 
 Rules that save usage:
 - Read only the helper's report and `git diff --stat`; open a file only when the diff touches engine/ or live code.

@@ -328,8 +328,10 @@ def core(W, hide):
         k, nm = a["key"], str(a.get("name") or "")
         lv = live.get(k) or {}
         bal = lv.get("balance") if isinstance(lv.get("balance"), (int, float)) else None
-        stage = str(lv.get("stage") or a.get("stage") or "eval")
-        waiting = str(a.get("status")) == "waiting" or bool(lv.get("plan_only"))
+        # olympus2 2026-11-20: accounts.json (Claude keeps it, the newest word) beats the Board's copy for the stage once it says funded
+        # (the Board still said ATLAS "passed"); "planned" = the plan says waiting / buying, or the Board has it as plan-only with no balance
+        stage = "funded" if str(a.get("stage")) == "funded" else str(lv.get("stage") or a.get("stage") or "eval")
+        waiting = str(a.get("status")) in ("waiting", "buying") or (bool(lv.get("plan_only")) and bal is None and str(a.get("status")) != "live")
         size = 50000 if "50K" in (nm + " " + str(a.get("plan", ""))).upper() else 25000
         start, goal = size, size + (3000 if size == 50000 else 1500)
         if stage == "funded":
@@ -599,6 +601,8 @@ def decisions(W):
         if not isinstance(x, dict) or not x.get("id"):
             continue
         open_ = str(x.get("status") or "open") == "open"
+        if not open_:                                    # olympus2: an answered decision is no longer a place (the Board keeps its history)
+            continue
         W.add("dec:" + x["id"], short(x.get("question"), 46), "decision", "money", "decisions", "planned" if open_ else "bright",
               short(x.get("question"), 120), [["Why", short(x.get("why"), 40)], ["What it changes", short(x.get("impact"), 40)],
                                               ["Status", "Waiting for your yes / no" if open_ else str(x.get("status")).title()]],

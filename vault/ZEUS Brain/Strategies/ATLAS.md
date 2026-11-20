@@ -46,6 +46,7 @@ _From research/anatomy/explain.json (costs in)._
 | [[Month 2026-08\|2026-08]] | backtest | 18 | +$2,272 |
 | [[Month 2026-09\|2026-09]] | backtest | 17 | -$219 |
 | [[Month 2026-10\|2026-10]] | backtest | 10 | +$5,233 |
+| [[Month 2026-11\|2026-11]] | live | 3 | +$1,510 |
 
 _backtest = the bot's rules replayed on futures data (costs in); paper / live = what the bot really did._
 
@@ -61,6 +62,10 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 - Known at the entry, nothing separates losers from winners better than chance: 12 of 90 fact buckets were worse (or better) in all three periods, vs 15.7 on average with the results shuffled (p 0.781).
 
 ## Tested and rejected
+
+> [!failure]- ATLAS edge at real fills
+> 14 of 15 fail at 6 and 10 ticks on 60% and 40% sizing. Limit at the 5m open / 1-2 ticks better with a 1-2 min timeout (only ~52% fill, the runners are missed: funded $151-285 a month Jan-Jun-like vs $503), limit 2 min then market, the next 5m open, per leg +0 / +5 min (picked +0), drop EMA (-$301 a month Jul-Oct-like), EMA half size, the day stop after a loss (re-check at real fills), 3 losses -> 3 sessions off, a weekly cap at 35% of the room. Info only (1m bars, 2021-25 untestable): EMA +60 s, per-leg minute (MACD +1: Jul-Oct $436 vs $402). ES versions of the 3 legs (`tools/atlas_es.py`): PF 0.60-0.84 in 2026 at 3 ES ticks, all lose at 10. Passed: 2 losses in a row -> 1 micro (Decide ...
+> Write-ups: [[atlas-edge-2026-11-20|ATLAS edge at real fills]]
 
 > [!failure]- ATLAS real-fill fixes
 > ATLAS's 3 real entries filled 10 / 12 / 16 ticks past the 5m open (market order 3-5 s after a 5m close, price still running our way). Judged at 6 AND 10 ticks a side vs today at the same cost (funded 25K, fixed view, 2026 halves + 2021-25): 0 of 6 pass. Limit at the open 5 min (misses 17-18% of 2026's trades = the runners, funded $550 -> $314 a month Jan-Jun at 6 ticks), limit 4 ticks worse (-$272), enter on the 1m close +60 s (Jul-Oct +$57, Jan-Jun -$75, 2021-25 untestable: no 1m bars), skip a signal bar > 2x its 20-bar median (skips 30%, good trades), member hours picked on Jan-Jun (Jul-Oct -$164: overfit), London pause before 08:00 ET (Jul-Oct $438 -> $74). Post-hoc, never eligible: ...
@@ -89,6 +94,10 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 > [!failure]- ATLAS new members
 > 29 pre-declared versions, 5m NQ RTH, stop 1 tick beyond structure, 2R or VIX-band target, $250 a trade, costs in: VWAP pullback with trend (8; all lose Jul-Oct), opening-drive continuation on a 1m trigger (8; 2021-25 = 5m proxy), prior-day value-area re-entry = 80% rule re-measure (1; stops too wide for $250), 15m Keltner squeeze (8; 0.1-0.4 a week), prior-day POC first touch (4). 0 hold H1/H2/2025/2021-24 (coin-flip 0). Picks as a 4th member on the funded 25K ($250 / 30% room): opening drive $541/$353 -> $578/$253 a month, no-pay 15 -> 34% Jul-Oct, 4.49/wk; POC $521/$279; with S/R out both ~-$90/mo. ZEUS Lab: atlas_member_* Rejected. Nothing changed.
 > Write-ups: [[atlas-members-2026-11-18|ATLAS new members]]
+
+> [!failure]- Regime guard
+> VRP (RV20 > VIX), 1-year ATR20 / ER20 bottom-third, 2-of-3 vote, half / out for LIT + ATLAS: 0 of 8. None is more common in 2021-25 than 2026 (G1/G4 fire most in Jul-Oct); LIT's 2021-25 $ is made on the flagged days (+$2,065 -> -$1.8k..-$5.9k). Post-hoc lead: ATLAS worse on chop days in all 3 periods; out = ATLAS Jan-Jun -$4,746, funded 2021-25 lost 94.5 -> 85.7%. NQ/ES correlation not testable (ES daily from 2025-04).
+> Write-ups: [[regime-guard-2026-11-20|Regime guard]]
 
 > [!failure]- B-holds
 > while ATLAS (account B) holds a trade, skip LIT's opposite entry instead of closing B (HEDGE). Both accounts 2026 +$52.3k -> +$53.6k, 2021-25 -$3.2k -> -$5.0k; ATLAS 25K 2-week pass H1 65.5 -> 60.5 (stuck 0.8 -> 3.4); 9 clashes in 2026, 35 in 2021-25. Rejected: LIT priority stays.
@@ -126,8 +135,12 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-20 | [[skeptic-live-patches-2026-11-20\|Skeptic check of the two live sizing patches]] | research |
+| 2026-11-20 | [[skeptic-atlas-streak-2026-11-20\|Skeptic check of Decide card atlas-funded-streak-1micro]] | research |
+| 2026-11-20 | [[regime-guard-2026-11-20\|Regime guard]] | rejected |
 | 2026-11-20 | [[atlas-risk-real-fills-2026-11-20\|ATLAS funded 25K at real fills]] | finding |
 | 2026-11-20 | [[atlas-fills-2026-11-20\|ATLAS real fills]] | finding |
+| 2026-11-20 | [[atlas-edge-2026-11-20\|ATLAS edge at real fills]] | rejected |
 | 2026-11-19 | [[one-account-combo-redteam-2026-11-19\|Red team]] | research |
 | 2026-11-19 | [[one-account-combo-final-2026-11-19\|One account, Zlarior + ATLAS on the Builder 50K]] | research |
 | 2026-11-19 | [[one-account-combo-2026-11-19\|ONE account, several bots]] | research |
@@ -162,12 +175,8 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 | 2026-10-28 | [[scalp-na-mffu\|BLITZ]] | promising |
 | 2026-10-27 | [[b-holds-vs-lit-priority\|B-holds vs LIT priority]] | rejected |
 | 2026-10-26 | [[atlas-funded\|ATLAS's funded account]] | adopt-candidate |
-| 2026-10-25 | [[live-learning\|Live learning]] | info |
-| 2026-10-25 | [[atlas-v2\|ATLAS v2]] | promising |
-| 2026-10-24 | [[atlas-chatgpt-breakouts\|ChatGPT's 10 ATLAS breakout templates]] | rejected |
-| 2026-10-23 | [[stophunt-audit\|STOP-HUNT audit]] | finding |
 
-... and 14 older (see the families).
+... and 18 older (see the families).
 
 ## Links
 

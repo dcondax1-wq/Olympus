@@ -64,6 +64,7 @@ _From research/anatomy/explain.json (costs in)._
 | [[Month 2026-10\|2026-10]] | backtest | 8 | +$6,660 |
 | [[Month 2026-10\|2026-10]] | live | 1 | -$437 |
 | [[Month 2026-10\|2026-10]] | paper | 3 | -$1,538 |
+| [[Month 2026-11\|2026-11]] | live | 1 | -$129 |
 
 _backtest = the bot's rules replayed on futures data (costs in); paper / live = what the bot really did._
 
@@ -79,6 +80,10 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 - Known at the entry, nothing separates losers from winners better than chance: 18 of 86 fact buckets were worse (or better) in all three periods, vs 15.4 on average with the results shuffled (p 0.274).
 
 ## Tested and rejected
+
+> [!failure]- Zlarior edge, 5 pre-registered ideas
+> LIT $/month H1 / H2 / 2021-25 vs today $5,562 / $2,670 / $25: limit 2 ticks better than the model fill for 1 min, else market $5,184 / $2,585 / $26; skip a setup when the 1m entry is > 60 min after the sweep bar $849 / $824 / $119 (1.2 / 0.8 trades a week); Tier-1 day target capped at 4R $4,997 / $2,616 / $89; MES instead of MNQ when ES's planned target R >= 1.25 x NQ's $5,069 / $9,656 / $198 (fails Jan-Jun, eval -$10.6k / +$7.0k; paper lead, forward only); no +1R breakeven in the first 10 min $5,068 / $2,670 / $25. 0 pass. Fill map: limits 10-50% of the risk better fill 0-60% and miss $17-34k of Jan-Jun winners. +10 ticks a trade: $5,176 / $2,447 / -$353. Cold run (7 twin trades -4.2R) = ...
+> Write-ups: [[lit-edge-2026-11-20|Zlarior]]
 
 > [!failure]- Zlarior more money, 2 pre-registered batches
 > 9 single versions, LIT $/month H1 / H2 / 2021-25 vs today $5,562 / $2,670 / $25: ES (MES) LIT filler on days NQ has not traded yet, NQ preempts (4.5 trades/wk) $4,478 / $3,026 / -$66, eval 2-week pass 44.5 -> 43.7, funded $929 -> $642 a month; breakeven at clip(0.25 x target R, 0.5-2R) $5,194 / $2,429 / $209; LIMIT entry at the 1m CISD close (1 tick through, else market) $5,554 / $2,583 / $26 (fills 112/119 at the same price on average; the 7 misses are runners, chase ~5 pts); NY setups only on London's discount side $5,482 / $2,770 / $51; Tier-1 news day: only setups after the release $4,277 / $2,736 / $54; out on a 5m close back through the CISD level before +0.5R $4,738 / $532 / -$75; ...
@@ -99,6 +104,10 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 > [!failure]- Market-regime warning features
 > VIX, RTH range %, overnight share, trend efficiency, sweep reclaim (40-session means) as a 2026-vs-2021-25 light: only overnight share separates (BA 0.94) and it is a yearly drift that calls 2022 (LIT's good year) bad and precedes a worse LIT in 2021-25. Kept: the light from LIT's own last 40 sessions (warning only).
 > Write-ups: [[edge-health-2026-11-17|Edge health, 2026-11-17]]
+
+> [!failure]- Regime guard
+> VRP (RV20 > VIX), 1-year ATR20 / ER20 bottom-third, 2-of-3 vote, half / out for LIT + ATLAS: 0 of 8. None is more common in 2021-25 than 2026 (G1/G4 fire most in Jul-Oct); LIT's 2021-25 $ is made on the flagged days (+$2,065 -> -$1.8k..-$5.9k). Post-hoc lead: ATLAS worse on chop days in all 3 periods; out = ATLAS Jan-Jun -$4,746, funded 2021-25 lost 94.5 -> 85.7%. NQ/ES correlation not testable (ES daily from 2025-04).
+> Write-ups: [[regime-guard-2026-11-20|Regime guard]]
 
 > [!failure]- Drift switch
 > cut LIT to paper/half after a rolling loss (51 versions): 0 pass; never fires in 2026; 2021-25 fewer failed evals but same less payout; no better than random cuts.
@@ -152,6 +161,10 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-20 | [[skeptic-atlas-streak-2026-11-20\|Skeptic check of Decide card atlas-funded-streak-1micro]] | research |
+| 2026-11-20 | [[regime-guard-2026-11-20\|Regime guard]] | rejected |
+| 2026-11-20 | [[lit-eval-rescue-2026-11-20\|Zlarior eval rescue]] | rejected |
+| 2026-11-20 | [[lit-edge-2026-11-20\|Zlarior]] | rejected |
 | 2026-11-19 | [[one-account-combo-redteam-2026-11-19\|Red team]] | research |
 | 2026-11-19 | [[one-account-combo-final-2026-11-19\|One account, Zlarior + ATLAS on the Builder 50K]] | research |
 | 2026-11-19 | [[one-account-combo-2026-11-19\|ONE account, several bots]] | research |
@@ -188,12 +201,8 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 | 2026-11-03 | [[2026-11-03-fates\|FATES]] | info |
 | 2026-11-03 | [[2026-11-03-eval-dp\|Zlarior eval size worked out state by state]] | promising |
 | 2026-10-30 | [[lit-edge-2026-10-30\|Zlarior edge night]] | adopt-candidate |
-| 2026-10-29 | [[structure-management\|Trade like a person]] | adopt-candidate |
-| 2026-10-29 | [[mind\|Mind]] | finding |
-| 2026-10-28 | [[scalp-na-mffu\|BLITZ]] | promising |
-| 2026-10-28 | [[lit-reversal-exit\|LIT reversal exits]] | rejected |
 
-... and 63 older (see the families).
+... and 67 older (see the families).
 
 ## Links
 

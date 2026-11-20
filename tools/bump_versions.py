@@ -13,12 +13,15 @@ What it does, against the base (default origin/main; `git diff --name-only <base
      (the highest tag in use + 1); a file already bumped since the base (its reference differs from the base's) is left alone
   2. every service worker that lists a touched file (a changed file, a file this tool edited such as the html it re-tagged, a ?v= entry
      it bumped) gets its cache name bumped once: tools/web_public/sw.js (le-public-vNN), web_next/sw.js (le-shell-next-vNN),
-     jarvis/sw.js (jarvis-vNN, the old name pushed onto its OLD list), kalshi/sw.js (kalshi-<tag>, the ?v= of its files)
+     jarvis/sw.js (jarvis-vNN, the old name pushed onto its OLD list), kalshi/sw.js (kalshi-<tag>: ALWAYS the ?v= of kalshi.css
+     AND kalshi.js, which move together; a cache that ran ahead of them pulls them up, TIED below)
   3. a changed file under an app folder (tools/web_public/<app>/ with an index.html) that has no ?v= and is listed by no worker
      (a module the app imports) bumps the root worker's cache (le-public-vNN) once
   4. tests that pin an exact string (`'secondcore.js?v=8'`, `const CACHE = 'jarvis-v24';`, the OLD list's first entry,
      `caches.open('jarvis-v24')`) are updated by exact string replacement; every pin changed, and every one it could not
      safely change (an ambiguous tag, a cache name on a line it does not recognise), is reported.
+A page whose only change is a ?v= (the cascade of a bump) needs no root cache bump, so --check after --apply passes on
+the real git diff. A path joined to the site base in a script (gate/index.html: b + 'olympus/x.css?v=a4') resolves from the site root.
 Files with no ?v= get none added. The tool never touches git, never pushes, and in dry-run / --check never writes.
 """
 from __future__ import annotations
@@ -165,6 +168,8 @@ def collect_refs(repo, files):
             continue
         for m in REF_RE.finditer(t):
             tgt = resolve(f, m.group(2))
+            if tgt and not repo.exists(tgt) and not m.group(2).startswith((".", "/")) and site_root(f):
+                tgt = posixpath.normpath(posixpath.join(site_root(f), m.group(2)))    # a path joined to the site base in a script (gate/index.html: b + 'olympus/x.css?v=a4')
             if tgt and repo.exists(tgt):
                 refs.append(Ref(f, m.start(3), m.end(3), m.group(1), m.group(2), m.group(3), tgt))
     return refs
@@ -190,6 +195,20 @@ def already_bumped(repo, refs_of_file):
         if m and m.group(2) != r.tag:
             return True
     return False
+
+
+V_RE = re.compile(r"\?v=[A-Za-z]*\d+")
+
+
+def tags_only_change(repo, rel):
+    """True when the file differs from the base only in its ?v= tags (the cascade of a bump, not a content change)"""
+    bt, t = repo.base_text(rel), repo.text(rel)
+    return bt is not None and t is not None and bt != t and V_RE.sub("?v=", bt) == V_RE.sub("?v=", t)
+
+
+# a worker whose cache name must equal the ?v= of a pair of its files, moved together (kalshi/sw.js: CACHE = 'kalshi-' + the ?v= of
+# kalshi.css / kalshi.js, see its header and kalshi/index.html); any reason that bumps the worker bumps the pair to one tag
+TIED = {"tools/web_public/kalshi/sw.js": ["tools/web_public/kalshi/kalshi.css", "tools/web_public/kalshi/kalshi.js"]}
 
 
 def make_plan(repo, changed=None):
@@ -249,10 +268,42 @@ def make_plan(repo, changed=None):
     # ---- 3. an app file with no ?v= that no worker lists: the root worker, once
     apps = {d for d in os.listdir(repo.p("tools/web_public")) if repo.exists(f"tools/web_public/{d}/index.html")} if os.path.isdir(repo.p("tools/web_public")) else set()
     unversioned = [c for c in in_site if c.startswith("tools/web_public/") and c.count("/") >= 3 and c.split("/")[2] in apps and c.split("/")[2] != "jarvis"
-                   and c not in by_target and not any(c in lst for lst in wlisted.values()) and not c.endswith("/sw.js")]
+                   and c not in by_target and not any(c in lst for lst in wlisted.values()) and not c.endswith("/sw.js")
+                   and not tags_only_change(repo, c)]       # a page whose only change is a ?v= this tool (or a helper) moved: --apply never asks for it, so --check must not
     if unversioned and ROOT_WORKER in wlisted and ROOT_WORKER not in worker_bump:
         worker_bump[ROOT_WORKER] = ("phone root", f"app files without ?v=: {', '.join(unversioned[:3])}" + (f" (+{len(unversioned) - 3} more)" if len(unversioned) > 3 else ""))
 
+    tied_tag: dict[str, str] = {}                                # worker -> the one tag of its pair and its cache
+    for wp, pair in TIED.items():
+        w = next((x for x in WORKERS if x["path"] == wp), None)
+        t = repo.text(wp)
+        m = re.search(w["re"], t) if (w and t) else None
+        pair = [f for f in pair if f in by_target]
+        if not m or not pair:
+            continue
+        cur = {f: (bumped[f][1] if f in bumped else max((r.tag for r in by_target[f]), key=tag_num)) for f in pair}
+        bm = re.search(w["re"], repo.base_text(wp) or "")
+        top = max(list(cur.values()) + [m.group(3)], key=tag_num)          # never backwards: a cache that ran ahead pulls the pair up to it
+        if wp in worker_bump and bm and top == bm.group(3):
+            top = bump_tag(top) or top                                # the worker must move (a file it lists changed): the pair moves with it
+        if all(v == top for v in cur.values()) and m.group(3) == top:
+            continue
+        tied_tag[wp] = top
+        for f in pair:
+            if all(r.tag == top for r in by_target[f]) or (f in bumped and bumped[f][1] == top):
+                continue
+            if f in bumped:                                          # step 1 gave it another tag: its rows are replaced below
+                gone = {f"{r.literal}?v={r.tag} -> ?v={bumped[f][1]}" for r in by_target[f]}
+                plan.rows = [row for row in plan.rows if not (row[0] == "query" and row[2] in gone)]
+            bumped[f] = (bumped[f][0] if f in bumped else max((r.tag for r in by_target[f]), key=tag_num), top)
+            for r in by_target[f]:
+                lst = [e for e in edits.get(r.file, []) if (e[0], e[1]) != (r.start, r.end)]
+                lst.append((r.start, r.end, top))
+                edits[r.file] = lst
+                if r.tag != top:
+                    plan.add("query", r.file, f"{r.literal}?v={r.tag} -> ?v={top}   (kept equal to its pair + the cache)")
+        if wp not in worker_bump:
+            worker_bump[wp] = (w["label"], "cache name = its pair's ?v=")
     cache_changes: list[tuple[dict, str, str]] = []              # (worker, old name, new name)
     sw_text: dict[str, str] = {}
     for w in WORKERS:
@@ -272,11 +323,17 @@ def make_plan(repo, changed=None):
         old = m.group(2) + m.group(3)
         bt = repo.base_text(wp)
         bm = re.search(w["re"], bt) if bt else None
-        if bm and bm.group(2) + bm.group(3) != old:
+        if wp in tied_tag:                                      # kalshi: exactly the pair's tag (also repairs a cache that ran ahead of it)
+            if tied_tag[wp] == m.group(3):
+                sw_text[wp] = t
+                continue
+        elif bm and bm.group(2) + bm.group(3) != old:
             plan.warnings.append(f"{wp}: cache already bumped since {repo.base} ({bm.group(2)}{bm.group(3)} -> {old}), left alone")
             sw_text[wp] = t
             continue
-        if w["style"] == "num":
+        if wp in tied_tag:
+            newv = tied_tag[wp]
+        elif w["style"] == "num":
             newv = str(int(m.group(3)) + 1)
         else:                                                    # kalshi: 'kalshi-' + the ?v= of its files
             tags = [mm.group(1) for mm in re.finditer(r"\?v=([A-Za-z]*\d+)", t)]

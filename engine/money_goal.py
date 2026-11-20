@@ -1,4 +1,4 @@
-"""Road to $10K / Stingray 3LT (owner 2026-10-26: "a $10,000 month by February 2027; a 2024 Stingray 3LT before I turn 19").
+"""Road to $10K / Stingray 3LT (owner 2026-10-26: "a $10,000 month by February 2027; a 2024 Stingray 3LT by February 2027" (wording without the age, day-security 2026-11-20).
 
 Read-only to trading: nothing here arms, routes, sizes or changes a config. It only reads the account data the dashboards
 already have and the owner's own money figures, and writes one gitignored file of those figures.
@@ -13,7 +13,7 @@ The card (build(), pure), in this order on both dashboards:
     1. "$10K month by February 2027": this month so far, a bar split into jobs + Kalshi (typed in by the owner on the PC)
        + prop payouts (recorded with the bot: engine.account_b --payout, eval_life --payout / data/accounts.json
        funded.payouts; x the firm's split = to you), and the plan line once all 9 are funded
-    2. "2024 Stingray 3LT before I turn 19 (Feb 22, 2027)": saved vs the $38,000 target (40% down on ~$78K + a $7K cushion)
+    2. "2024 Stingray 3LT by Feb 2027": saved vs the $38,000 target (40% down on ~$78K + a $7K cushion)
        with a stretch marker at $46,000 (50% down + cushion), days left, $ a week needed from today, and on pace / behind
        by $X at the current pace (the savings entries since the $20,000 start of 2026-10-26)
     3. "C8 Z06": saved vs $60,000 (about $55K down + $5K cushion on a ~$108K all-in 2023-24 Z06), no date
@@ -48,9 +48,9 @@ PACE_MAX_DAYS = 180
 DEFAULTS = {
     "month_goal": 10000.0, "goal_by": "2027-02",              # goal 1: a $10K month by February 2027
     "start": {"usd": 20000.0, "day": "2026-10-26"},            # the savings balance the owner gave (2026-10-26)
-    # goal 2 (owner 2026-10-26 final): a 2024 C8 Stingray 3LT before he turns 19 (2027-02-22), ~$78K all-in; target 40% down
+    # goal 2 (owner 2026-10-26 final): a 2024 C8 Stingray 3LT by Feb 2027, ~$78K all-in; target 40% down
     # ($31.2K) + a $7K cushion = $38K; stretch 50% down + cushion = $46K
-    "car": {"name": "2024 Stingray 3LT", "short": "Stingray 3LT", "why": "before I turn 19", "by": "2027-02-22", "price": 78000.0,
+    "car": {"name": "2024 Stingray 3LT", "short": "Stingray 3LT", "why": "by Feb 2027", "by": "2027-02-22", "price": 78000.0,
             "target": 38000.0, "target_note": "40% down on ~$78K all-in + a $7K cushion",
             "stretch": 46000.0, "stretch_note": "50% down + the cushion"},
     # goal 3: a C8 Z06, no date
@@ -598,7 +598,8 @@ def car_goal(C: dict, saved, points: list, today: dt.date, hidden: bool) -> dict
         days_left = max(0, (dt.date.fromisoformat(by) - today).days)
     except ValueError:
         days_left = 0
-    title = f"{C['name']} {C.get('why') or ''} ({day_label(by)})".replace("  ", " ")
+    # no exact day next to the goal in the title (with an age it gave the birthday away: day-security 2026-11-20); the countdown keeps the date
+    title = f"{C['name']} {C['why']}" if C.get("why") else f"{C['name']} ({day_label(by)})"
     top = max(target, stretch)
     out = {"k": "car", "kind": "car", "title": title, "name": C["name"], "short": C.get("short") or C["name"], "price": C.get("price"),
            "target": target, "target_note": C.get("target_note"), "stretch": stretch or None, "stretch_note": C.get("stretch_note"),

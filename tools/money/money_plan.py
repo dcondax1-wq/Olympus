@@ -715,6 +715,7 @@ def page(res):
 
 
 REAL_FILLS_TOOL = "tools/atlas_risk.py"   # items it valued (ATLAS at 10 ticks a side, research/writeups/atlas-risk-real-fills-2026-11-20.md)
+REAL_FILLS_TOOLS = (REAL_FILLS_TOOL, "tools/money/rapid25_launch.py")   # + the Rapid 25K launch check (rapid-launch-2026-11-20.md)
 # keep their values: re-run that tool to refresh them, or drop its name from the item's "valued" to hand the item back here
 
 
@@ -731,7 +732,7 @@ def write_decisions(vals, path=DECISIONS, today=TODAY):
         v = vals.get(it.get("id"))
         if not v:
             continue
-        if REAL_FILLS_TOOL in str(it.get("valued") or ""):
+        if any(t in str(it.get("valued") or "") for t in REAL_FILLS_TOOLS):
             continue                     # valued at ATLAS's real fills (2026-11-20): this tool's 1-tick value would undo it
         for k in ("usd_month", "usd_month_by", "risk", "recommend", "recommend_why"):
             it[k] = v[k]

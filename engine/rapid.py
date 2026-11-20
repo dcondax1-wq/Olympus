@@ -69,7 +69,8 @@ PLANS = {
                            "atlas_usd": ATLAS_USD, "buffer": BUFFER, "cushion": CUSHION, "since": 500.0, "eval_min_room": 200.0},
     "mffu_rapid_eod_25k": {"plan": "rapideod25k", "label": "Rapid EOD 25K", "start": 25000.0, "target": 1500.0,
                            "atlas_usd": 250.0, "buffer": 1100.0, "cushion": 500.0, "since": 250.0, "eval_min_room": 100.0,
-                           "mffu_dll": 500.0},   # owner 2026-11-20: bought WITH MFFU's daily loss limit $500 (a soft pause, never a fail)
+                           "mffu_dll": 500.0,    # owner 2026-11-20: bought WITH MFFU's daily loss limit $500 (a soft pause, never a fail)
+                           "atlas_slip": 2.5},   # owner YES 2026-11-20 (card rapid-atlas-size-10t): ATLAS's Rapid lane sizes on stop + 10 ticks (its real fills)
 }
 
 
@@ -203,6 +204,13 @@ def _other_names() -> dict:
     try:
         out.setdefault("ATLAS (25K)", None)
         out["ATLAS (25K)"] = out["ATLAS (25K)"] or (AB.raw_cfg() or {}).get("account")
+    except Exception:
+        pass
+    try:                       # redteam2 2026-11-20: the extra accounts too (Zlarior 25K #2, account C), as account_cli does
+        from . import account_cli
+        for r in account_cli.inventory():
+            if r.get("role") not in ("main", "b", "rapid") and r.get("name"):
+                out.setdefault(f"the account {r.get('id')}", r["name"])
     except Exception:
         pass
     return out
@@ -411,9 +419,10 @@ def atlas_block(blk: dict) -> dict:
     return b
 
 
-def stack_qty(risk: float, room, cum: float, maxq: int, dll: float = 1000.0, cap: float = ATLAS_USD) -> tuple:
-    """research stack_q: $ = min($500 (the 25K: $250), 30% x room, the soft day left), micros = $ / one full stop-out of 1 micro."""
-    loss1 = (float(risk) + SLIP) * PV + COMM
+def stack_qty(risk: float, room, cum: float, maxq: int, dll: float = 1000.0, cap: float = ATLAS_USD, slip: float = SLIP) -> tuple:
+    """research stack_q: $ = min($500 (the 25K: $250), 30% x room, the soft day left), micros = $ / one full stop-out of 1 micro.
+    slip = the extra points a stop-out costs past the stop (default 1 tick; a plan's "atlas_slip" sizes on real fills, 2.5 = 10 ticks)."""
+    loss1 = (float(risk) + float(slip)) * PV + COMM
     usd = min(float(cap), ATLAS_F * max(0.0, float(room or 0.0)), float(dll) + min(0.0, float(cum or 0.0)))
     return max(0, min(int(maxq), int(usd // loss1))), usd, loss1
 
@@ -603,7 +612,8 @@ class RapidAtlas(AB.AccountB):
         if not self.funded() and float(state.get("profit") or 0.0) + float(state.get("cum") or 0.0) >= float(R["target"]):
             return {"qty": 0, "reasons": ["eval target reached: no new trade"], "lock": "passed"}
         cap = float(self.P["atlas_usd"])
-        q, usd, loss1 = stack_qty(risk, room, float(state.get("cum") or 0.0), int(R["max_micros"]), float(R["dll"]), cap)
+        q, usd, loss1 = stack_qty(risk, room, float(state.get("cum") or 0.0), int(R["max_micros"]), float(R["dll"]), cap,
+                                  float(self.P.get("atlas_slip", SLIP)))
         why = [f"${usd:,.0f} risk (min ${cap:,.0f}, 30% of the ${room:,.0f} room, the day left) / ${loss1:,.0f} a micro -> {q}"]
         if q > 0 and not self.funded():
             today = AB.trading_day(self.clock())

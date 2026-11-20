@@ -163,7 +163,7 @@ def part_a():
     blocks = re.findall(r"```(\w*)\n(.*?)```", doc, re.S)
     box = [ln for ln in (blocks[0][1] if blocks else "").splitlines() if ln.strip()]
     check("a. the brief opens with a 5-line 'send this to ChatGPT' box: its own site (never under the owner's github.io), jarvis.json with CORS",
-          "Send this to ChatGPT" in doc[:200] and len(box) == 5 and doc.index("```") < 300 and "never under demetrades2000-coder.github.io" in box[1]
+          "Send this to ChatGPT" in doc[:200] and len(box) == 5 and doc.index("```") < 300 and "never under dcondax1-wq.github.io" in box[1]
           and "jarvis.json" in box[3] and "Access-Control-Allow-Origin: *" in box[3], box)
     keys = ("X-Frame-Options", "frame-ancestors", "viewport-fit=cover", "safe-area-inset", "#0b0b0d", "manifest.webmanifest")
     check("a. the brief: let it be framed, phone viewport, safe areas, the dark theme, Home Screen manifest", all(k in doc for k in keys), [k for k in keys if k not in doc])

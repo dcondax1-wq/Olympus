@@ -199,7 +199,7 @@ def part_d():
           "--bot: calc(var(--sb) + 160px)" in css and re.search(r"\.foot \{[^}]*right: calc\(var\(--sr\) \+ 96px\)", css))
     check("d. prefers-reduced-motion in the CSS and the script", "@media (prefers-reduced-motion: reduce)" in css and "prefers-reduced-motion: reduce" in js)
     urls = set(re.findall(r"https?://[^\s'\"`)]+", html + css + js))
-    allowed = {"https://demetrades2000-coder.github.io"}
+    allowed = {"https://dcondax1-wq.github.io"}
     check("d. no CDN, no other site: only Jarvis's origin (the Kalshi feed is this site's own kalshi.json; the kalshi-feed repo is retired)",
           urls <= allowed and "const KALSHI = '../kalshi.json';" in open(os.path.join(PAGE, "data.js"), encoding="utf-8").read(), urls - allowed)
     check("d. Safari 16 safe: no lookbehind, no Array copy methods, no Object.groupBy, no AbortSignal.timeout",

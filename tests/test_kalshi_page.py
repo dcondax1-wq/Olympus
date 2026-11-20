@@ -340,6 +340,15 @@ def release():
     FEED["held"] = []
 
 
+def old_bot_text(p):
+    """The OLD kalshi-server bot's own words (as in check b: its card, the sub line, the foot): #sub + #body + #foot without the K8
+    sections (K8 runs on the owner's PC, so they say 'PC' on purpose: #kpaused, #k8d, #k8s, the K8 status / live-day cards)."""
+    return p.evaluate("""() => { const b = document.querySelector('#body'); const c = b ? b.cloneNode(true) : document.createElement('div');
+      c.querySelectorAll('#kpaused, #k8d, #k8s, .k8d, .k8s').forEach((e) => e.remove());
+      const t = (s) => { const e = document.querySelector(s); return e ? e.innerText : ''; };
+      return t('#sub') + ' ' + c.textContent + ' ' + t('#foot'); }""")
+
+
 def text(p, sel="#body"):
     return p.locator(sel).inner_text()
 
@@ -471,7 +480,7 @@ def run_browser(url, tmp):
         p = ctx.new_page()
         p.set_default_timeout(120000)                   # a busy box: software GL + many pages
         errs, cons, dialogs, bad, fontres = [], [], [], [], []
-        p.on("response", lambda r: bad.append((r.status, r.url)) if r.status >= 400 and r.url.startswith(url.split("/nq-dashboard/")[0]) and "/kalshicity/" not in r.url and "/nq-dashboard/kalshi.json" not in r.url else None)
+        p.on("response", lambda r: bad.append((r.status, r.url)) if r.status >= 400 and r.url.startswith(url.split("/nq-dashboard/")[0]) and "/kalshicity/" not in r.url and "/nq-dashboard/kalshi.json" not in r.url and "/kalshi/k8.json" not in r.url else None)
         p.on("response", lambda r: fontres.append((r.status, r.url.rsplit("/", 1)[1])) if ".woff2" in r.url else None)
         p.on("pageerror", lambda e: errs.append(str(e)))
         p.on("console", lambda m: cons.append(m.text) if m.type == "error" and not re.search(r"Failed to load resource|net::ERR", m.text) else None)
@@ -834,7 +843,9 @@ def run_browser(url, tmp):
         check("f. stale (an hour old): amber pill, the note says the bot stopped sending, numbers still shown",
               "NOT UPDATING" in p.inner_text("#sub").upper() and p.locator("#pill.warn").count() == 1 and "every minute" in p.inner_text(".note.warn")
               and "1 h ago" in p.inner_text(".note.warn") and "$512.34" in text(p) and p.get_attribute("#body", "data-state") == "stale"
-              and not re.search(r"\bPC\b", text(p)))
+              and not re.search(r"\bPC\b", old_bot_text(p)),
+              (p.inner_text("#sub"), p.locator("#pill.warn").count(), p.inner_text(".note.warn")[:200] if p.locator(".note.warn").count() else None,
+               p.get_attribute("#body", "data-state"), "$512.34" in text(p), re.findall(r".{60}\bPC\b.{20}", old_bot_text(p))[:3]))
         shot(p, "5_stale")
         open_("ok", {**sample(time.time()), "running": False})
         check("f. the bot says it stopped: red Stopped pill", p.locator("#pill.bad").inner_text().upper() == "STOPPED")
@@ -1172,7 +1183,7 @@ def part_k(br, url, tmp):
     nofont = lambda u: FONTS or ".woff2" not in u                    # noqa: E731  (a checkout without Jarvis's fonts: their 404s only)
     q.on("console", lambda m: errs.append((m.text, (m.location or {}).get("url", ""))) if m.type == "error" and SITE["mode"] == "ok" and not SITE["slow"]
          and nofont((m.location or {}).get("url", "")) and "kalshi.json" not in (m.location or {}).get("url", "") and "/kalshicity/" not in (m.location or {}).get("url", "") else None)   # the feed's 404 = waiting; Kalshi City's HEAD = 404 until that page exists
-    q.on("response", lambda r: bad.append((r.status, r.url)) if r.status >= 400 and "127.0.0.1" in r.url and SITE["mode"] == "ok" and nofont(r.url) and "/kalshicity/" not in r.url and "/nq-dashboard/kalshi.json" not in r.url else None)
+    q.on("response", lambda r: bad.append((r.status, r.url)) if r.status >= 400 and "127.0.0.1" in r.url and SITE["mode"] == "ok" and nofont(r.url) and "/kalshicity/" not in r.url and "/nq-dashboard/kalshi.json" not in r.url and "/kalshi/k8.json" not in r.url else None)
     pg = lambda: q.evaluate("document.title === 'Kalshi' && !!document.getElementById('body')")  # noqa: E731
 
     def until(js, timeout=10000):
@@ -1872,52 +1883,13 @@ def part_whatif(br, url, tmp):
     check("w3. every set header is a >= 44 px tap that opens its rule in words (A: skips 90–95¢, 1,255 of the past 1,836 bets stay in)",
           len(heights) == 4 and min(heights) >= 44 and "Skips every bet priced 90–95¢" in ex and "1,255 of the past 1,836 bets" in ex, (heights, ex))
     check("w3. the footnote says what net, dip and ruin are, and that a past replay is not a promise", "not a promise" in p.inner_text("#sec-whatif .wi-f") and "400 seeded runs" in p.inner_text("#sec-whatif .wi-f"))
-    # ---- the forward test strip at the bottom of the card (tools/kalshi_forward.py -> kalshicity/forward.json)
+    # ---- the forward test strip at the bottom of the card: RETIRED 2026-11-20 (kalshicity/forward.json came only from the retired kalshi-feed repo)
     strip0 = p.inner_text("#sec-whatif #wi-fwd")
-    check("w3. forward strip, no forward.json on the site: 'Forward test · collecting: 0 bets so far', says the band was picked after the fact (never blank)",
-          "forward test" in strip0.lower() and "collecting: 0 bets so far" in strip0 and "picked after the fact" in strip0 and p.locator("#sec-whatif > .wi-fwd:last-child").count() == 1, strip0)
-    sys.path.insert(0, ROOT)
-    from tools import kalshi_forward as KF
-    kdir = os.path.join(tmp, "nq-dashboard", "kalshicity")
-    os.makedirs(kdir, exist_ok=True)
-    fpath = os.path.join(kdir, "forward.json")
-
-    def fwd_json(n_bets):
-        T0 = 1_793_000_000
-        mk = lambda i, t, px, c, pnl: {"t": t, "ticker": f"KXF-{i}", "side": "yes", "action": "buy", "contracts": c, "price": px, "pnl": pnl}   # noqa: E731
-        st = {"v": 1, "start_t": T0, "start_day": "2026-10-26", "seen": [], "last_t": None, "gaps": 0, "sets": {k: KF.blank_set() for k in KF.NAMES}}
-        bets = [mk(i, T0 + 10 * i, 0.93 if i % 2 == 0 else 0.96, 10, -9.31 if i % 2 == 0 else 0.31) for i in range(n_bets)]
-        KF.update(st, {"balance": 100.0, "trades": bets, "t": T0 + 10000})
-        return KF.report(st, {"t": T0 + 10000})
-    try:
-        for n_b, want in ((6, ["collecting: 6 bets so far", "since 2026-10-26", "30 needed to judge", "bot −$"]), (31, ["A is +", "ahead of the bot", "A +$"])):
-            rep_ = fwd_json(n_b)
-            with open(fpath, "w", encoding="utf-8") as fh:
-                json.dump(rep_, fh)
-            p.goto(page_url)
-            p.wait_for_selector("#sec-whatif #wi-fwd")
-            p.wait_for_function("document.querySelector('#wi-fwd').textContent.indexOf('collecting: 0 bets') < 0", timeout=60000)
-            txt = p.inner_text("#wi-fwd")
-            check(f"w3. forward strip with forward.json ({n_b} bets): " + ", ".join(want[:2]) + ", the nets per rule (A, B, C, bot) and the after-the-fact note",
-                  all(w_ in txt for w_ in want) and all(k_ in txt for k_ in ("A ", "B ", "C ", "bot ")) and "picked after the fact" in txt, txt)
-        rep_ = fwd_json(41)
-        rep_["flags"]["may_be_incomplete"], rep_["gaps"] = True, 1
-        with open(fpath, "w", encoding="utf-8") as fh:
-            json.dump(rep_, fh)
-        p.goto(page_url)
-        p.wait_for_function("document.querySelector('#wi-fwd') && document.querySelector('#wi-fwd').textContent.indexOf('collecting: 0 bets') < 0", timeout=60000)
-        check("w3. a tally that may have missed bets says so", "May be incomplete" in p.inner_text("#wi-fwd"))
-        with open(fpath, "w", encoding="utf-8") as fh:
-            fh.write("<html>not json")
-        p.goto(page_url)
-        p.wait_for_selector("#sec-whatif #wi-fwd")
-        time.sleep(1.5)
-        check("w3. a broken forward.json is ignored: the strip stays 'collecting: 0 bets so far'", "collecting: 0 bets so far" in p.inner_text("#wi-fwd"))
-    finally:
-        if os.path.exists(fpath):
-            os.remove(fpath)
-        if not os.listdir(kdir):
-            os.rmdir(kdir)
+    asked = p.evaluate("performance.getEntriesByType('resource').map((r) => r.name).filter((u) => /forward\\.json|scan\\.json/.test(u))")
+    check("w3. forward strip: says plainly it is retired (the old bot's feed was switched off on 2026-11-19, K8 is tested on paper on the home computer), never 'collecting: 0 bets'; "
+          "the page never asks for kalshicity/forward.json or scan.json",
+          "forward test" in strip0.lower() and "retired" in strip0 and "2026-11-19" in strip0 and "collecting" not in strip0
+          and p.locator("#sec-whatif > .wi-fwd:last-child").count() == 1 and not asked, (strip0, asked))
     open_(j)
     # ---- under 100 bets: not enough, never blank
     open_(sample(time.time()))
@@ -1957,7 +1929,7 @@ def part_whatif(br, url, tmp):
 
 
 def part_scan(br, url, tmp):
-    """'Where the money is' (Edge, under the what-if card): tools/kalshi_scan.py's scan.json when the site has it, else the same maths on the feed's price bands,
+    """'Where the money is' (Edge, under the what-if card): the same maths on the feed's price bands (scan.json is retired 2026-11-20 and never asked for),
     else a dated sample; looking back, not proven; never blank; every tap >= 44 px; text only."""
     page_url = url + "kalshi/"
     sys.path.insert(0, ROOT)
@@ -1989,45 +1961,26 @@ def part_scan(br, url, tmp):
         if wait_text:
             p.wait_for_function(f"document.querySelector('#sec-scan').textContent.indexOf({json.dumps(wait_text)}) >= 0", timeout=60000)
     try:
+        # scan.json is no longer asked for (2026-11-20: it came only from the retired kalshi-feed repo): even a file on the site is ignored
         with open(spath, "w", encoding="utf-8") as fh:
             json.dump(scan, fh)
-        open_(j, "Worth a paper test")
-        p.wait_for_function("document.querySelector('#sec-scan .sc-l').textContent.indexOf('Looking back') >= 0", timeout=60000)
-        order = p.evaluate("[...document.querySelectorAll('#g-edge > .card')].slice(0, 2).map((c) => c.id)")
-        t = p.inner_text("#sec-scan")
-        check("s1. with scan.json on the site: the card follows the what-if card in Edge, says 'looking back, not proven, suggestions only', two groups (worth a paper test / avoid)",
-              order == ["sec-whatif", "sec-scan"] and "looking back" in t.lower() and "not proven" in t.lower() and "suggestions only" in t.lower() and "worth a paper test" in t.lower() and "avoid" in t.lower(), (order, t[:200]))
-        rows = p.eval_on_selector_all("#sec-scan .sc-h", "els => els.map(e => [e.querySelector('.sc-n').textContent.trim(), e.querySelector('b').textContent, Math.round(e.getBoundingClientRect().height)])")
-        check("s1. five rows to paper-test and five to avoid, each a >= 44 px tap with its cents per $1 (95–97¢ +1.5¢; 90–95¢ −1.1¢)",
-              len(rows) == len(scan["test"]) + len(scan["avoid"]) == 10 and min(h for _, _, h in rows) >= 44 and rows[0][0].startswith("95–97¢") and rows[0][1] == "+1.5¢"
-              and any(n_.startswith("90–95¢") and c_ == "−1.1¢" for n_, c_, _ in rows), rows)
-        p.click("#sec-scan .sc-i.avoid .sc-h >> nth=0")
-        d = p.inner_text("#sec-scan .sc-i.avoid.open .sc-d")
-        check("s2. tapping a row opens its sentence from scan.json: the 90–95¢ band, 92.2% won against 92.8% priced, −1.1¢ on every $1, lost $248 on $5,343 bet, fees about $27, 'not proven'",
-              d == scan["avoid"][0]["text"] and "$248" in d and "$5,343" in d and "92.2%" in d and "not proven" in d, d)
-        p.click("#sec-scan .sc-i.avoid .sc-h >> nth=0")
-        check("s2. tapping it again closes it", p.locator("#sec-scan .sc-d").count() == 0)
-        check("s2. nothing on the card places an order (no form, no link, no POST)", p.locator("#sec-scan form, #sec-scan a").count() == 0 and not posts)
-        # a scan with hostile names is text, never markup
-        evil = json.loads(json.dumps(scan))
-        evil["test"][0]["name"] = "<img src=x onerror=window.__pwned=1>"
-        evil["test"][0]["text"] = "<b onmouseover=window.__pwned=1>x</b>"
-        with open(spath, "w", encoding="utf-8") as fh:
-            json.dump(evil, fh)
-        open_(j, "Worth a paper test")
-        p.wait_for_function("document.querySelector('#sec-scan .sc-n').textContent.indexOf('<img') >= 0", timeout=60000)
-        p.click("#sec-scan .sc-h >> nth=0")
-        check("s3. hostile names and sentences in scan.json are text, never markup", p.evaluate("!window.__pwned") and p.locator("#sec-scan img, #sec-scan .sc-d b").count() == 0)
-        # a broken scan.json is ignored: the feed's own bands
-        with open(spath, "w", encoding="utf-8") as fh:
-            fh.write("<html>not json")
         open_(j)
         time.sleep(1.5)
+        order = p.evaluate("[...document.querySelectorAll('#g-edge > .card')].slice(0, 2).map((c) => c.id)")
         tb = p.inner_text("#sec-scan")
-        check("s4. a broken scan.json is ignored: the same maths on this feed's price bands ('From this feed's price bands only'), the 90–95¢ band still on the avoid list with −1.1¢ and the dollars",
-              "price bands only" in tb and p.locator("#sec-scan .sc-i.avoid").count() >= 1 and "−1.1¢" in tb and p.locator("#sec-scan .sc-i.test").count() >= 1, tb[:300])
+        asked = p.evaluate("performance.getEntriesByType('resource').map((r) => r.name).filter((u) => /scan\\.json/.test(u))")
+        check("s1. the card follows the what-if card in Edge, says 'looking back, not proven, suggestions only', two groups; it never asks for scan.json (retired), "
+              "so even a file on the site is ignored: the same maths on this feed's price bands",
+              order == ["sec-whatif", "sec-scan"] and "looking back" in tb.lower() and "not proven" in tb.lower() and "suggestions only" in tb.lower() and "worth a paper test" in tb.lower()
+              and "avoid" in tb.lower() and "price bands only" in tb and not asked, (order, tb[:200], asked))
+        rows = p.eval_on_selector_all("#sec-scan .sc-h", "els => els.map(e => [e.querySelector('.sc-n').textContent.trim(), e.querySelector('b').textContent, Math.round(e.getBoundingClientRect().height)])")
+        check("s4. from the bands: the 90–95¢ band on the avoid list with −1.1¢, rows to paper-test too, each a >= 44 px tap",
+              p.locator("#sec-scan .sc-i.avoid").count() >= 1 and "−1.1¢" in tb and p.locator("#sec-scan .sc-i.test").count() >= 1 and rows and min(h for _, _, h in rows) >= 44, rows)
         p.click("#sec-scan .sc-i.avoid .sc-h >> nth=0")
         check("s4. and its sentence carries the dollars", "−$248" in p.inner_text("#sec-scan .sc-d") or "$248" in p.inner_text("#sec-scan .sc-d"), p.inner_text("#sec-scan .sc-d"))
+        p.click("#sec-scan .sc-i.avoid .sc-h >> nth=0")
+        check("s2. tapping it again closes it; nothing on the card places an order (no form, no link, no POST)",
+              p.locator("#sec-scan .sc-d").count() == 0 and p.locator("#sec-scan form, #sec-scan a").count() == 0 and not posts)
         os.remove(spath)
         open_(j)
         check("s5. no scan.json on the site at all: the card is still there (never blank), from the bands", "price bands only" in p.inner_text("#sec-scan") and p.locator("#sec-scan .sc-h").count() >= 2)
@@ -2057,7 +2010,7 @@ def part_scan(br, url, tmp):
         q.goto(page_url)
         ready(q, 20000)
         q.wait_for_selector("#sec-scan")
-        q.wait_for_function("document.querySelector('#sec-scan .sc-l').textContent.indexOf('Looking back') >= 0", timeout=60000)
+        q.wait_for_function("document.querySelector('#sec-scan').textContent.indexOf('Looking back') >= 0", timeout=60000)
         q.click("#sec-scan .sc-h >> nth=0")
         sw = q.evaluate("[document.documentElement.scrollWidth, innerWidth, Math.max(...[...document.querySelectorAll('#sec-scan *')].map((e) => e.getBoundingClientRect().right))]")
         check("s6. 375 x 667: the card (rows open) fits, no sideways scroll, nothing past the right edge", sw[0] <= sw[1] and sw[2] <= sw[1] + 0.5, sw)
@@ -2119,9 +2072,10 @@ def part_rewards(br, url, tmp):
               and isinstance(copy.get("backtest"), dict) and bool(copy["backtest"].get("text")), str(copy)[:200])
         open_()
         t = p.inner_text("#krw")
-        check("rw1. the card is under the PAUSED note and the K8 status card (night-kalshi8): 'Rewards test (paper)', Earned, Fills, Net, Days, '$0 at risk', 'saved copy', the backtest line",
-              p.evaluate("document.querySelector('#kpaused').nextElementSibling.id") == "k8s"
-              and p.evaluate("document.querySelector('#k8s').nextElementSibling.id") == "krw" and "Rewards test (paper)" in t
+        order = p.evaluate("[...document.querySelectorAll('main > section, main > div, main > h2')].map((e) => e.id).filter(Boolean).slice(0, 7).join(' ')")
+        check("rw1. K8 first (Olympus 2): live day, K8 status, the go-live checklist, then 'History and tests' with the PAUSED note and this card: "
+              "'Rewards test (paper)', Earned, Fills, Net, Days, '$0 at risk', 'saved copy', the backtest line",
+              order.startswith("k8d k8s kgo khist kpaused krw") and "Rewards test (paper)" in t
               and all(w in t for w in ("Earned", "Fills", "Net", "Days", "$0 at risk", "saved copy", "Backtest (30 days)")), t[:300])
         check("rw1. the numbers are the copy's ($ earned, fill $)", ("$%.2f" % copy["paper"]["reward"]) in t, t[:200])
         k0 = p.inner_text("#kpaused")

@@ -133,7 +133,7 @@ def main() -> int:
     check("f. BLITZ hidden in Jarvis's board", j["blitz"] is None, j)
     jdx = open(os.path.join(WP, "jarvis", "index.html"), encoding="utf-8").read()
     check("f. Jarvis loads the PC feed async (never holds the start on a slow network) and reads afresh when it lands",
-          '<script src="../pc_feed.js?v=n4" id="pcFeedJs" async></script>' in jdx and "s.addEventListener('load', () => safe(() => D.refreshLive()))" in jdx)
+          '<script src="../pc_feed.js?v=n5" id="pcFeedJs" async></script>' in jdx and "s.addEventListener('load', () => safe(() => D.refreshLive()))" in jdx)
     n, ok = len(RES), sum(RES)
     print(f"sync truth: {ok}/{n} " + ("ALL PASS" if ok == n else "FAILED"))
     return 0 if ok == n else 1

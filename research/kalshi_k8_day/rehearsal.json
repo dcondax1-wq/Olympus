@@ -1,0 +1,1168 @@
+{
+ "monday": "2026-11-23",
+ "settings": "research/lab/kalshi_clock.json ($55 rule)",
+ "tickers": {
+  "gold_0530_down": "KXGOLD15M-26NOV230530-30",
+  "silver_0530_down": "KXSILVER15M-26NOV230530-30",
+  "silver_1615_down": "KXSILVER15M-26NOV231615-15",
+  "gold_1700_up": "KXGOLD15M-26NOV231700-00",
+  "silver_1700_up": "KXSILVER15M-26NOV231700-00"
+ },
+ "scenarios": [
+  {
+   "source_day": "2026-11-19",
+   "mode": "paper",
+   "armed": false,
+   "bets": [
+    {
+     "leg": "gold_0530_down",
+     "ticker": "KXGOLD15M-26NOV230530-30",
+     "side": "no",
+     "status": "settled",
+     "why": null,
+     "n": 5,
+     "price": 0.5,
+     "cost": 2.5,
+     "fee": 0.09,
+     "result": "won",
+     "pnl": 2.41
+    },
+    {
+     "leg": "silver_0530_down",
+     "ticker": "KXSILVER15M-26NOV230530-30",
+     "side": "no",
+     "status": "settled",
+     "why": null,
+     "n": 5,
+     "price": 0.45,
+     "cost": 2.25,
+     "fee": 0.09,
+     "result": "won",
+     "pnl": 2.66
+    },
+    {
+     "leg": "silver_1615_down",
+     "ticker": "KXSILVER15M-26NOV231615-15",
+     "side": "no",
+     "status": "settled",
+     "why": null,
+     "n": 4,
+     "price": 0.58,
+     "cost": 2.32,
+     "fee": 0.07,
+     "result": "won",
+     "pnl": 1.61
+    },
+    {
+     "leg": "gold_1700_up",
+     "ticker": "KXGOLD15M-26NOV231700-00",
+     "side": "yes",
+     "status": "settled",
+     "why": null,
+     "n": 4,
+     "price": 0.53,
+     "cost": 2.12,
+     "fee": 0.07,
+     "result": "lost",
+     "pnl": -2.19
+    },
+    {
+     "leg": "silver_1700_up",
+     "ticker": "KXSILVER15M-26NOV231700-00",
+     "side": "yes",
+     "status": "settled",
+     "why": null,
+     "n": 4,
+     "price": 0.55,
+     "cost": 2.2,
+     "fee": 0.07,
+     "result": "lost",
+     "pnl": -2.27
+    }
+   ],
+   "orders": [],
+   "won": 3,
+   "settled": 5,
+   "net": 2.22,
+   "restart": [
+    {
+     "bets_today": [
+      0,
+      0
+     ],
+     "day_worst": [
+      0,
+      0
+     ],
+     "week_worst": [
+      0,
+      0
+     ],
+     "open_all": [
+      0,
+      0
+     ],
+     "dd_now": [
+      0.0,
+      0.0
+     ],
+     "tickers_same": true,
+     "done_same": true
+    }
+   ],
+   "pushes": [
+    {
+     "title": "Kalshi K8 Mon Nov 23: paper +$2.22",
+     "body": "Today: live 0 bets, 0 won, $0.00; paper 5 bets, 3 won, +$2.22. Since the start: live 0 bets, 0 won, $0.00; paper 5 bets, 3 won, +$2.22 (60%). Live is OFF. Kill rule: OFF if under 58% won after 60 live bets."
+    }
+   ]
+  },
+  {
+   "source_day": "2026-11-19",
+   "mode": "live",
+   "armed": true,
+   "bets": [
+    {
+     "leg": "gold_0530_down",
+     "ticker": "KXGOLD15M-26NOV230530-30",
+     "side": "no",
+     "status": "settled",
+     "why": null,
+     "n": 5.0,
+     "price": 0.5,
+     "cost": 2.5,
+     "fee": 0.09,
+     "result": "won",
+     "pnl": 2.41
+    },
+    {
+     "leg": "gold_1700_up",
+     "ticker": "KXGOLD15M-26NOV231700-00",
+     "side": "yes",
+     "status": "settled",
+     "why": null,
+     "n": 4.0,
+     "price": 0.53,
+     "cost": 2.12,
+     "fee": 0.07,
+     "result": "lost",
+     "pnl": -2.19
+    },
+    {
+     "leg": "silver_1700_up",
+     "ticker": "KXSILVER15M-26NOV231700-00",
+     "side": "yes",
+     "status": "settled",
+     "why": null,
+     "n": 4.0,
+     "price": 0.55,
+     "cost": 2.2,
+     "fee": 0.07,
+     "result": "lost",
+     "pnl": -2.27
+    }
+   ],
+   "orders": [
+    {
+     "ticker": "KXGOLD15M-26NOV230530-30",
+     "side": "ask",
+     "count": "5",
+     "price": "0.5000",
+     "expiration_time": 1795428940,
+     "client_order_id": "olyc-6b041238-6f45c7"
+    },
+    {
+     "ticker": "KXGOLD15M-26NOV231700-00",
+     "side": "bid",
+     "count": "4",
+     "price": "0.5300",
+     "expiration_time": 1795470340,
+     "client_order_id": "olyc-6b04b3f0-a24cd6"
+    },
+    {
+     "ticker": "KXSILVER15M-26NOV231700-00",
+     "side": "bid",
+     "count": "4",
+     "price": "0.5500",
+     "expiration_time": 1795470340,
+     "client_order_id": "olyc-6b04b3f0-570c42"
+    }
+   ],
+   "won": 1,
+   "settled": 3,
+   "net": -2.05,
+   "restart": [
+    {
+     "bets_today": [
+      1,
+      1
+     ],
+     "day_worst": [
+      2.41,
+      2.41
+     ],
+     "week_worst": [
+      2.41,
+      2.41
+     ],
+     "open_all": [
+      0,
+      0
+     ],
+     "dd_now": [
+      0.0,
+      0.0
+     ],
+     "tickers_same": true,
+     "done_same": true
+    }
+   ],
+   "pushes": [
+    {
+     "title": "Kalshi LIVE 05:15 ET: 1 bet in",
+     "body": "gold DOWN 05:15-05:30 ET: 5 at 50c ($2.50). Results about 16 minutes after the open."
+    },
+    {
+     "title": "Kalshi LIVE 05:30: gold WON +$2.41",
+     "body": "Today +$2.41 on 1 bet. Live so far: 1 bet, 1 won (100%), +$2.41."
+    },
+    {
+     "title": "Kalshi LIVE 16:45 ET: 2 bets in",
+     "body": "gold UP 16:45-17:00 ET: 4 at 53c ($2.12); silver UP 16:45-17:00 ET: 4 at 55c ($2.20). Results about 16 minutes after the open."
+    },
+    {
+     "title": "Kalshi LIVE 17:00: gold LOST -$2.19, silver LOST -$2.27",
+     "body": "Today -$2.05 on 3 bets. Live so far: 3 bets, 1 won (33%), -$2.05."
+    },
+    {
+     "title": "Kalshi K8 Mon Nov 23: LIVE -$2.05 | paper +$2.22",
+     "body": "Today: live 3 bets, 1 won, -$2.05; paper 5 bets, 3 won, +$2.22. Since the start: live 3 bets, 1 won, -$2.05 (33%); paper 5 bets, 3 won, +$2.22 (60%). Live is ON. Kill rule: OFF if under 58% won after 60 live bets."
+    }
+   ]
+  },
+  {
+   "source_day": "2026-11-18",
+   "mode": "paper",
+   "armed": false,
+   "bets": [
+    {
+     "leg": "gold_0530_down",
+     "ticker": "KXGOLD15M-26NOV230530-30",
+     "side": "no",
+     "status": "settled",
+     "why": null,
+     "n": 4,
+     "price": 0.58,
+     "cost": 2.32,
+     "fee": 0.07,
+     "result": "won",
+     "pnl": 1.61
+    },
+    {
+     "leg": "silver_0530_down",
+     "ticker": "KXSILVER15M-26NOV230530-30",
+     "side": "no",
+     "status": "settled",
+     "why": null,
+     "n": 5,
+     "price": 0.49,
+     "cost": 2.45,
+     "fee": 0.09,
+     "result": "won",
+     "pnl": 2.46
+    },
+    {
+     "leg": "silver_1615_down",
+     "ticker": "KXSILVER15M-26NOV231615-15",
+     "side": "no",
+     "status": "settled",
+     "why": null,
+     "n": 4,
+     "price": 0.6,
+     "cost": 2.4,
+     "fee": 0.07,
+     "result": "won",
+     "pnl": 1.53
+    },
+    {
+     "leg": "gold_1700_up",
+     "ticker": "KXGOLD15M-26NOV231700-00",
+     "side": "yes",
+     "status": "settled",
+     "why": null,
+     "n": 5,
+     "price": 0.5,
+     "cost": 2.5,
+     "fee": 0.09,
+     "result": "won",
+     "pnl": 2.41
+    },
+    {
+     "leg": "silver_1700_up",
+     "ticker": "KXSILVER15M-26NOV231700-00",
+     "side": "yes",
+     "status": "settled",
+     "why": null,
+     "n": 5,
+     "price": 0.49,
+     "cost": 2.45,
+     "fee": 0.09,
+     "result": "lost",
+     "pnl": -2.54
+    }
+   ],
+   "orders": [],
+   "won": 4,
+   "settled": 5,
+   "net": 5.47,
+   "restart": [
+    {
+     "bets_today": [
+      0,
+      0
+     ],
+     "day_worst": [
+      0,
+      0
+     ],
+     "week_worst": [
+      0,
+      0
+     ],
+     "open_all": [
+      0,
+      0
+     ],
+     "dd_now": [
+      0.0,
+      0.0
+     ],
+     "tickers_same": true,
+     "done_same": true
+    }
+   ],
+   "pushes": [
+    {
+     "title": "Kalshi K8 Mon Nov 23: paper +$5.47",
+     "body": "Today: live 0 bets, 0 won, $0.00; paper 5 bets, 4 won, +$5.47. Since the start: live 0 bets, 0 won, $0.00; paper 5 bets, 4 won, +$5.47 (80%). Live is OFF. Kill rule: OFF if under 58% won after 60 live bets."
+    }
+   ]
+  },
+  {
+   "source_day": "2026-11-18",
+   "mode": "live",
+   "armed": true,
+   "bets": [
+    {
+     "leg": "gold_0530_down",
+     "ticker": "KXGOLD15M-26NOV230530-30",
+     "side": "no",
+     "status": "settled",
+     "why": null,
+     "n": 4.0,
+     "price": 0.58,
+     "cost": 2.32,
+     "fee": 0.07,
+     "result": "won",
+     "pnl": 1.61
+    },
+    {
+     "leg": "gold_1700_up",
+     "ticker": "KXGOLD15M-26NOV231700-00",
+     "side": "yes",
+     "status": "settled",
+     "why": null,
+     "n": 5.0,
+     "price": 0.5,
+     "cost": 2.5,
+     "fee": 0.09,
+     "result": "won",
+     "pnl": 2.41
+    },
+    {
+     "leg": "silver_1700_up",
+     "ticker": "KXSILVER15M-26NOV231700-00",
+     "side": "yes",
+     "status": "settled",
+     "why": null,
+     "n": 5.0,
+     "price": 0.49,
+     "cost": 2.45,
+     "fee": 0.09,
+     "result": "lost",
+     "pnl": -2.54
+    }
+   ],
+   "orders": [
+    {
+     "ticker": "KXGOLD15M-26NOV230530-30",
+     "side": "ask",
+     "count": "4",
+     "price": "0.4200",
+     "expiration_time": 1795428940,
+     "client_order_id": "olyc-6b041238-e77ac1"
+    },
+    {
+     "ticker": "KXGOLD15M-26NOV231700-00",
+     "side": "bid",
+     "count": "5",
+     "price": "0.5000",
+     "expiration_time": 1795470340,
+     "client_order_id": "olyc-6b04b3f0-9ee0ec"
+    },
+    {
+     "ticker": "KXSILVER15M-26NOV231700-00",
+     "side": "bid",
+     "count": "5",
+     "price": "0.4900",
+     "expiration_time": 1795470340,
+     "client_order_id": "olyc-6b04b3f0-1942e8"
+    }
+   ],
+   "won": 2,
+   "settled": 3,
+   "net": 1.48,
+   "restart": [
+    {
+     "bets_today": [
+      1,
+      1
+     ],
+     "day_worst": [
+      1.61,
+      1.61
+     ],
+     "week_worst": [
+      1.61,
+      1.61
+     ],
+     "open_all": [
+      0,
+      0
+     ],
+     "dd_now": [
+      0.0,
+      0.0
+     ],
+     "tickers_same": true,
+     "done_same": true
+    }
+   ],
+   "pushes": [
+    {
+     "title": "Kalshi LIVE 05:15 ET: 1 bet in",
+     "body": "gold DOWN 05:15-05:30 ET: 4 at 58c ($2.32). Results about 16 minutes after the open."
+    },
+    {
+     "title": "Kalshi LIVE 05:30: gold WON +$1.61",
+     "body": "Today +$1.61 on 1 bet. Live so far: 1 bet, 1 won (100%), +$1.61."
+    },
+    {
+     "title": "Kalshi LIVE 16:45 ET: 2 bets in",
+     "body": "gold UP 16:45-17:00 ET: 5 at 50c ($2.50); silver UP 16:45-17:00 ET: 5 at 49c ($2.45). Results about 16 minutes after the open."
+    },
+    {
+     "title": "Kalshi LIVE 17:00: gold WON +$2.41, silver LOST -$2.54",
+     "body": "Today +$1.48 on 3 bets. Live so far: 3 bets, 2 won (67%), +$1.48."
+    },
+    {
+     "title": "Kalshi K8 Mon Nov 23: LIVE +$1.48 | paper +$5.47",
+     "body": "Today: live 3 bets, 2 won, +$1.48; paper 5 bets, 4 won, +$5.47. Since the start: live 3 bets, 2 won, +$1.48 (67%); paper 5 bets, 4 won, +$5.47 (80%). Live is ON. Kill rule: OFF if under 58% won after 60 live bets."
+    }
+   ]
+  },
+  {
+   "source_day": "2026-11-17",
+   "mode": "paper",
+   "armed": false,
+   "bets": [
+    {
+     "leg": "gold_0530_down",
+     "ticker": "KXGOLD15M-26NOV230530-30",
+     "side": "no",
+     "status": "settled",
+     "why": null,
+     "n": 4,
+     "price": 0.58,
+     "cost": 2.32,
+     "fee": 0.07,
+     "result": "lost",
+     "pnl": -2.39
+    },
+    {
+     "leg": "silver_0530_down",
+     "ticker": "KXSILVER15M-26NOV230530-30",
+     "side": "no",
+     "status": "settled",
+     "why": null,
+     "n": 4,
+     "price": 0.52,
+     "cost": 2.08,
+     "fee": 0.07,
+     "result": "lost",
+     "pnl": -2.15
+    },
+    {
+     "leg": "silver_1615_down",
+     "ticker": "KXSILVER15M-26NOV231615-15",
+     "side": "no",
+     "status": "settled",
+     "why": null,
+     "n": 5,
+     "price": 0.48,
+     "cost": 2.4,
+     "fee": 0.09,
+     "result": "lost",
+     "pnl": -2.49
+    },
+    {
+     "leg": "gold_1700_up",
+     "ticker": "KXGOLD15M-26NOV231700-00",
+     "side": "yes",
+     "status": "settled",
+     "why": null,
+     "n": 6,
+     "price": 0.41,
+     "cost": 2.46,
+     "fee": 0.11,
+     "result": "lost",
+     "pnl": -2.57
+    },
+    {
+     "leg": "silver_1700_up",
+     "ticker": "KXSILVER15M-26NOV231700-00",
+     "side": "yes",
+     "status": "settled",
+     "why": null,
+     "n": 5,
+     "price": 0.42,
+     "cost": 2.1,
+     "fee": 0.09,
+     "result": "lost",
+     "pnl": -2.19
+    }
+   ],
+   "orders": [],
+   "won": 0,
+   "settled": 5,
+   "net": -11.79,
+   "restart": [
+    {
+     "bets_today": [
+      0,
+      0
+     ],
+     "day_worst": [
+      0,
+      0
+     ],
+     "week_worst": [
+      0,
+      0
+     ],
+     "open_all": [
+      0,
+      0
+     ],
+     "dd_now": [
+      0.0,
+      0.0
+     ],
+     "tickers_same": true,
+     "done_same": true
+    }
+   ],
+   "pushes": [
+    {
+     "title": "Kalshi K8 Mon Nov 23: paper -$11.79",
+     "body": "Today: live 0 bets, 0 won, $0.00; paper 5 bets, 0 won, -$11.79. Since the start: live 0 bets, 0 won, $0.00; paper 5 bets, 0 won, -$11.79 (0%). Live is OFF. Kill rule: OFF if under 58% won after 60 live bets."
+    }
+   ]
+  },
+  {
+   "source_day": "2026-11-17",
+   "mode": "live",
+   "armed": true,
+   "bets": [
+    {
+     "leg": "gold_0530_down",
+     "ticker": "KXGOLD15M-26NOV230530-30",
+     "side": "no",
+     "status": "settled",
+     "why": null,
+     "n": 4.0,
+     "price": 0.58,
+     "cost": 2.32,
+     "fee": 0.07,
+     "result": "lost",
+     "pnl": -2.39
+    },
+    {
+     "leg": "gold_1700_up",
+     "ticker": "KXGOLD15M-26NOV231700-00",
+     "side": "yes",
+     "status": "settled",
+     "why": null,
+     "n": 6.0,
+     "price": 0.41,
+     "cost": 2.46,
+     "fee": 0.11,
+     "result": "lost",
+     "pnl": -2.57
+    },
+    {
+     "leg": "silver_1700_up",
+     "ticker": "KXSILVER15M-26NOV231700-00",
+     "side": "yes",
+     "status": "settled",
+     "why": null,
+     "n": 5.0,
+     "price": 0.42,
+     "cost": 2.1,
+     "fee": 0.09,
+     "result": "lost",
+     "pnl": -2.19
+    }
+   ],
+   "orders": [
+    {
+     "ticker": "KXGOLD15M-26NOV230530-30",
+     "side": "ask",
+     "count": "4",
+     "price": "0.4200",
+     "expiration_time": 1795428940,
+     "client_order_id": "olyc-6b041238-a0d623"
+    },
+    {
+     "ticker": "KXGOLD15M-26NOV231700-00",
+     "side": "bid",
+     "count": "6",
+     "price": "0.4100",
+     "expiration_time": 1795470340,
+     "client_order_id": "olyc-6b04b3f0-511fb4"
+    },
+    {
+     "ticker": "KXSILVER15M-26NOV231700-00",
+     "side": "bid",
+     "count": "5",
+     "price": "0.4200",
+     "expiration_time": 1795470340,
+     "client_order_id": "olyc-6b04b3f0-65ceef"
+    }
+   ],
+   "won": 0,
+   "settled": 3,
+   "net": -7.15,
+   "restart": [
+    {
+     "bets_today": [
+      1,
+      1
+     ],
+     "day_worst": [
+      -2.39,
+      -2.39
+     ],
+     "week_worst": [
+      -2.39,
+      -2.39
+     ],
+     "open_all": [
+      0,
+      0
+     ],
+     "dd_now": [
+      2.39,
+      2.39
+     ],
+     "tickers_same": true,
+     "done_same": true
+    }
+   ],
+   "pushes": [
+    {
+     "title": "Kalshi LIVE 05:15 ET: 1 bet in",
+     "body": "gold DOWN 05:15-05:30 ET: 4 at 58c ($2.32). Results about 16 minutes after the open."
+    },
+    {
+     "title": "Kalshi LIVE 05:30: gold LOST -$2.39",
+     "body": "Today -$2.39 on 1 bet. Live so far: 1 bet, 0 won (0%), -$2.39."
+    },
+    {
+     "title": "Kalshi LIVE 16:45 ET: 2 bets in",
+     "body": "gold UP 16:45-17:00 ET: 6 at 41c ($2.46); silver UP 16:45-17:00 ET: 5 at 42c ($2.10). Results about 16 minutes after the open."
+    },
+    {
+     "title": "Kalshi LIVE 17:00: gold LOST -$2.57, silver LOST -$2.19",
+     "body": "Today -$7.15 on 3 bets. Live so far: 3 bets, 0 won (0%), -$7.15."
+    },
+    {
+     "title": "Kalshi K8 Mon Nov 23: LIVE -$7.15 | paper -$11.79",
+     "body": "Today: live 3 bets, 0 won, -$7.15; paper 5 bets, 0 won, -$11.79. Since the start: live 3 bets, 0 won, -$7.15 (0%); paper 5 bets, 0 won, -$11.79 (0%). Live is ON. Kill rule: OFF if under 58% won after 60 live bets."
+    }
+   ]
+  },
+  {
+   "source_day": "2026-11-16",
+   "mode": "paper",
+   "armed": false,
+   "bets": [
+    {
+     "leg": "gold_0530_down",
+     "ticker": "KXGOLD15M-26NOV230530-30",
+     "side": "no",
+     "status": "settled",
+     "why": null,
+     "n": 6,
+     "price": 0.41,
+     "cost": 2.46,
+     "fee": 0.11,
+     "result": "won",
+     "pnl": 3.43
+    },
+    {
+     "leg": "silver_0530_down",
+     "ticker": "KXSILVER15M-26NOV230530-30",
+     "side": "no",
+     "status": "settled",
+     "why": null,
+     "n": 5,
+     "price": 0.454,
+     "cost": 2.27,
+     "fee": 0.09,
+     "result": "lost",
+     "pnl": -2.36
+    },
+    {
+     "leg": "silver_1615_down",
+     "ticker": "KXSILVER15M-26NOV231615-15",
+     "side": "no",
+     "status": "settled",
+     "why": null,
+     "n": 4,
+     "price": 0.57,
+     "cost": 2.28,
+     "fee": 0.07,
+     "result": "won",
+     "pnl": 1.65
+    },
+    {
+     "leg": "gold_1700_up",
+     "ticker": "KXGOLD15M-26NOV231700-00",
+     "side": "yes",
+     "status": "settled",
+     "why": null,
+     "n": 5,
+     "price": 0.5,
+     "cost": 2.5,
+     "fee": 0.09,
+     "result": "lost",
+     "pnl": -2.59
+    },
+    {
+     "leg": "silver_1700_up",
+     "ticker": "KXSILVER15M-26NOV231700-00",
+     "side": "yes",
+     "status": "settled",
+     "why": null,
+     "n": 5,
+     "price": 0.43,
+     "cost": 2.15,
+     "fee": 0.09,
+     "result": "lost",
+     "pnl": -2.24
+    }
+   ],
+   "orders": [],
+   "won": 2,
+   "settled": 5,
+   "net": -2.11,
+   "restart": [
+    {
+     "bets_today": [
+      0,
+      0
+     ],
+     "day_worst": [
+      0,
+      0
+     ],
+     "week_worst": [
+      0,
+      0
+     ],
+     "open_all": [
+      0,
+      0
+     ],
+     "dd_now": [
+      0.0,
+      0.0
+     ],
+     "tickers_same": true,
+     "done_same": true
+    }
+   ],
+   "pushes": [
+    {
+     "title": "Kalshi K8 Mon Nov 23: paper -$2.11",
+     "body": "Today: live 0 bets, 0 won, $0.00; paper 5 bets, 2 won, -$2.11. Since the start: live 0 bets, 0 won, $0.00; paper 5 bets, 2 won, -$2.11 (40%). Live is OFF. Kill rule: OFF if under 58% won after 60 live bets."
+    }
+   ]
+  },
+  {
+   "source_day": "2026-11-16",
+   "mode": "live",
+   "armed": true,
+   "bets": [
+    {
+     "leg": "gold_0530_down",
+     "ticker": "KXGOLD15M-26NOV230530-30",
+     "side": "no",
+     "status": "settled",
+     "why": null,
+     "n": 6.0,
+     "price": 0.41,
+     "cost": 2.46,
+     "fee": 0.11,
+     "result": "won",
+     "pnl": 3.43
+    },
+    {
+     "leg": "gold_1700_up",
+     "ticker": "KXGOLD15M-26NOV231700-00",
+     "side": "yes",
+     "status": "settled",
+     "why": null,
+     "n": 5.0,
+     "price": 0.5,
+     "cost": 2.5,
+     "fee": 0.09,
+     "result": "lost",
+     "pnl": -2.59
+    },
+    {
+     "leg": "silver_1700_up",
+     "ticker": "KXSILVER15M-26NOV231700-00",
+     "side": "yes",
+     "status": "settled",
+     "why": null,
+     "n": 5.0,
+     "price": 0.43,
+     "cost": 2.15,
+     "fee": 0.09,
+     "result": "lost",
+     "pnl": -2.24
+    }
+   ],
+   "orders": [
+    {
+     "ticker": "KXGOLD15M-26NOV230530-30",
+     "side": "ask",
+     "count": "6",
+     "price": "0.5900",
+     "expiration_time": 1795428940,
+     "client_order_id": "olyc-6b041238-6e9524"
+    },
+    {
+     "ticker": "KXGOLD15M-26NOV231700-00",
+     "side": "bid",
+     "count": "5",
+     "price": "0.5000",
+     "expiration_time": 1795470340,
+     "client_order_id": "olyc-6b04b3f0-9510cc"
+    },
+    {
+     "ticker": "KXSILVER15M-26NOV231700-00",
+     "side": "bid",
+     "count": "5",
+     "price": "0.4300",
+     "expiration_time": 1795470340,
+     "client_order_id": "olyc-6b04b3f0-1b7051"
+    }
+   ],
+   "won": 1,
+   "settled": 3,
+   "net": -1.4,
+   "restart": [
+    {
+     "bets_today": [
+      1,
+      1
+     ],
+     "day_worst": [
+      3.43,
+      3.43
+     ],
+     "week_worst": [
+      3.43,
+      3.43
+     ],
+     "open_all": [
+      0,
+      0
+     ],
+     "dd_now": [
+      0.0,
+      0.0
+     ],
+     "tickers_same": true,
+     "done_same": true
+    }
+   ],
+   "pushes": [
+    {
+     "title": "Kalshi LIVE 05:15 ET: 1 bet in",
+     "body": "gold DOWN 05:15-05:30 ET: 6 at 41c ($2.46). Results about 16 minutes after the open."
+    },
+    {
+     "title": "Kalshi LIVE 05:30: gold WON +$3.43",
+     "body": "Today +$3.43 on 1 bet. Live so far: 1 bet, 1 won (100%), +$3.43."
+    },
+    {
+     "title": "Kalshi LIVE 16:45 ET: 2 bets in",
+     "body": "gold UP 16:45-17:00 ET: 5 at 50c ($2.50); silver UP 16:45-17:00 ET: 5 at 43c ($2.15). Results about 16 minutes after the open."
+    },
+    {
+     "title": "Kalshi LIVE 17:00: gold LOST -$2.59, silver LOST -$2.24",
+     "body": "Today -$1.40 on 3 bets. Live so far: 3 bets, 1 won (33%), -$1.40."
+    },
+    {
+     "title": "Kalshi K8 Mon Nov 23: LIVE -$1.40 | paper -$2.11",
+     "body": "Today: live 3 bets, 1 won, -$1.40; paper 5 bets, 2 won, -$2.11. Since the start: live 3 bets, 1 won, -$1.40 (33%); paper 5 bets, 2 won, -$2.11 (40%). Live is ON. Kill rule: OFF if under 58% won after 60 live bets."
+    }
+   ]
+  },
+  {
+   "source_day": "2026-11-13",
+   "mode": "paper",
+   "armed": false,
+   "bets": [
+    {
+     "leg": "gold_0530_down",
+     "ticker": "KXGOLD15M-26NOV230530-30",
+     "side": "no",
+     "status": "settled",
+     "why": null,
+     "n": 4,
+     "price": 0.58,
+     "cost": 2.32,
+     "fee": 0.07,
+     "result": "won",
+     "pnl": 1.61
+    },
+    {
+     "leg": "silver_0530_down",
+     "ticker": "KXSILVER15M-26NOV230530-30",
+     "side": "no",
+     "status": "settled",
+     "why": null,
+     "n": 4,
+     "price": 0.53,
+     "cost": 2.12,
+     "fee": 0.07,
+     "result": "won",
+     "pnl": 1.81
+    },
+    {
+     "leg": "silver_1615_down",
+     "ticker": "KXSILVER15M-26NOV231615-15",
+     "side": "no",
+     "status": "skip",
+     "why": "ask 72c above the 70c cap",
+     "n": null,
+     "price": null,
+     "cost": null,
+     "fee": null,
+     "result": null,
+     "pnl": null
+    },
+    {
+     "leg": "gold_1700_up",
+     "ticker": "KXGOLD15M-26NOV231700-00",
+     "side": "yes",
+     "status": "settled",
+     "why": null,
+     "n": 5,
+     "price": 0.448,
+     "cost": 2.24,
+     "fee": 0.09,
+     "result": "won",
+     "pnl": 2.67
+    },
+    {
+     "leg": "silver_1700_up",
+     "ticker": "KXSILVER15M-26NOV231700-00",
+     "side": "yes",
+     "status": "settled",
+     "why": null,
+     "n": 4,
+     "price": 0.52,
+     "cost": 2.08,
+     "fee": 0.07,
+     "result": "won",
+     "pnl": 1.85
+    }
+   ],
+   "orders": [],
+   "won": 4,
+   "settled": 4,
+   "net": 7.94,
+   "restart": [
+    {
+     "bets_today": [
+      0,
+      0
+     ],
+     "day_worst": [
+      0,
+      0
+     ],
+     "week_worst": [
+      0,
+      0
+     ],
+     "open_all": [
+      0,
+      0
+     ],
+     "dd_now": [
+      0.0,
+      0.0
+     ],
+     "tickers_same": true,
+     "done_same": true
+    }
+   ],
+   "pushes": [
+    {
+     "title": "Kalshi K8 Mon Nov 23: paper +$7.94",
+     "body": "Today: live 0 bets, 0 won, $0.00; paper 4 bets, 4 won, +$7.94. Since the start: live 0 bets, 0 won, $0.00; paper 4 bets, 4 won, +$7.94 (100%). Live is OFF. Kill rule: OFF if under 58% won after 60 live bets."
+    }
+   ]
+  },
+  {
+   "source_day": "2026-11-13",
+   "mode": "live",
+   "armed": true,
+   "bets": [
+    {
+     "leg": "gold_0530_down",
+     "ticker": "KXGOLD15M-26NOV230530-30",
+     "side": "no",
+     "status": "settled",
+     "why": null,
+     "n": 4.0,
+     "price": 0.58,
+     "cost": 2.32,
+     "fee": 0.07,
+     "result": "won",
+     "pnl": 1.61
+    },
+    {
+     "leg": "gold_1700_up",
+     "ticker": "KXGOLD15M-26NOV231700-00",
+     "side": "yes",
+     "status": "settled",
+     "why": null,
+     "n": 5.0,
+     "price": 0.448,
+     "cost": 2.24,
+     "fee": 0.09,
+     "result": "won",
+     "pnl": 2.67
+    },
+    {
+     "leg": "silver_1700_up",
+     "ticker": "KXSILVER15M-26NOV231700-00",
+     "side": "yes",
+     "status": "settled",
+     "why": null,
+     "n": 4.0,
+     "price": 0.52,
+     "cost": 2.08,
+     "fee": 0.07,
+     "result": "won",
+     "pnl": 1.85
+    }
+   ],
+   "orders": [
+    {
+     "ticker": "KXGOLD15M-26NOV230530-30",
+     "side": "ask",
+     "count": "4",
+     "price": "0.4200",
+     "expiration_time": 1795428940,
+     "client_order_id": "olyc-6b041238-f305c9"
+    },
+    {
+     "ticker": "KXGOLD15M-26NOV231700-00",
+     "side": "bid",
+     "count": "5",
+     "price": "0.4500",
+     "expiration_time": 1795470340,
+     "client_order_id": "olyc-6b04b3f0-bcaf26"
+    },
+    {
+     "ticker": "KXSILVER15M-26NOV231700-00",
+     "side": "bid",
+     "count": "4",
+     "price": "0.5200",
+     "expiration_time": 1795470340,
+     "client_order_id": "olyc-6b04b3f0-cdbbe1"
+    }
+   ],
+   "won": 3,
+   "settled": 3,
+   "net": 6.13,
+   "restart": [
+    {
+     "bets_today": [
+      1,
+      1
+     ],
+     "day_worst": [
+      1.61,
+      1.61
+     ],
+     "week_worst": [
+      1.61,
+      1.61
+     ],
+     "open_all": [
+      0,
+      0
+     ],
+     "dd_now": [
+      0.0,
+      0.0
+     ],
+     "tickers_same": true,
+     "done_same": true
+    }
+   ],
+   "pushes": [
+    {
+     "title": "Kalshi LIVE 05:15 ET: 1 bet in",
+     "body": "gold DOWN 05:15-05:30 ET: 4 at 58c ($2.32). Results about 16 minutes after the open."
+    },
+    {
+     "title": "Kalshi LIVE 05:30: gold WON +$1.61",
+     "body": "Today +$1.61 on 1 bet. Live so far: 1 bet, 1 won (100%), +$1.61."
+    },
+    {
+     "title": "Kalshi LIVE 16:45 ET: 2 bets in",
+     "body": "gold UP 16:45-17:00 ET: 5 at 45c ($2.24); silver UP 16:45-17:00 ET: 4 at 52c ($2.08). Results about 16 minutes after the open."
+    },
+    {
+     "title": "Kalshi LIVE 17:00: gold WON +$2.67, silver WON +$1.85",
+     "body": "Today +$6.13 on 3 bets. Live so far: 3 bets, 3 won (100%), +$6.13."
+    },
+    {
+     "title": "Kalshi K8 Mon Nov 23: LIVE +$6.13 | paper +$7.94",
+     "body": "Today: live 3 bets, 3 won, +$6.13; paper 4 bets, 4 won, +$7.94. Since the start: live 3 bets, 3 won, +$6.13 (100%); paper 4 bets, 4 won, +$7.94 (100%). Live is ON. Kill rule: OFF if under 58% won after 60 live bets."
+    }
+   ]
+  }
+ ]
+}

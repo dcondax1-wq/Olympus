@@ -38,6 +38,10 @@ app = FastAPI(title="NQ Liquidity Bot")
 from engine import cloud_guard as _cg   # password gate (LE_DASH_PASSWORD) + paper-only cloud mode (LE_CLOUD=1)
 _cg.install(app)
 # ---- END CLOUD GUARD ----
+# ---- CROSS-SITE GUARD ---- (engine/cross_site.py, day-security 2026-11-20): a POST from another web site / a rebinding name is refused
+from engine import cross_site as _xs
+_xs.install(app)
+# ---- END CROSS-SITE GUARD ----
 
 
 @app.middleware("http")

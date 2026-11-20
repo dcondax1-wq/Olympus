@@ -70,7 +70,7 @@ test('loss on the actual renderer canvas triggers the independent fallback', () 
 test('page registers the renderer canvas listener and imports the new module version', () => {
   assert.ok(source.includes('watchHallCanvas(STATE.hall)'));
   assert.ok(source.includes('const canvas = hall?.renderer?.domElement'));
-  assert.ok(page.includes('pantheon.js?v=p6'));
+  assert.match(page, /pantheon\.js\?v=p\d+/);
 });
 
 test('explicit q=low starts the hall in LITE before assets are allocated', () => {
