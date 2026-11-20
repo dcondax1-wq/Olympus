@@ -324,6 +324,18 @@
       var side = String(ps.side || (num(ps.dir) === -1 ? 'SHORT' : 'LONG')).toUpperCase() === 'SHORT' ? 'SHORT' : 'LONG';
       open.push({ key: k, name: k === 'lit' ? 'Zlarior' : 'ATLAS', side: side, qty: num(ps.qty), entry: num(ps.entry), stop: num(ps.stop), target: num(ps.target), pnl: num(ps.unrealized_usd), t: num(ps.entry_t) });
     });
+    /* the PC's other accounts (25K #2, Rapid EOD) when their row carries a position (the same fields); a row the bot cards already showed is skipped */
+    var rows = home.pc_accounts instanceof Array ? home.pc_accounts : home.accounts instanceof Array ? home.accounts : [];
+    cards.forEach(function (c) {
+      if (c.key === 'lit' || c.key === 'atlas') return;
+      for (var i = 0; i < rows.length; i++) {
+        var r = obj(rows[i]); if (String(r.id) !== String(c.key)) continue;
+        var ps = obj(r.position); if (!(num(ps.entry_t) > 0)) break;
+        open.push({ key: c.key, name: acctName(c), side: String(ps.side || (num(ps.dir) === -1 ? 'SHORT' : 'LONG')).toUpperCase() === 'SHORT' ? 'SHORT' : 'LONG', qty: num(ps.qty),
+          entry: num(ps.entry), stop: num(ps.stop), target: num(ps.target), pnl: num(ps.unrealized_usd), t: num(ps.entry_t) });
+        break;
+      }
+    });
     return { t: t, pcT: ages.pc.t, pcAge: ages.pc.age, cloudAge: ages.cloud ? ages.cloud.age : null, running: running, accts: accts, cards: cards, open: open, today: today, win: nextWindow(home, t), truth: !!T, has: true };
   }
   /* one fact of the grid: a label, the number, one small line; a tap opens the app that holds the detail */
@@ -348,12 +360,14 @@
     badge.className = 'g-badge ' + st[1]; badge.textContent = st[2]; line.textContent = st[3];
     clear(dl);
     var old = st[0] === 'stale' || from === 'cache';
+    card.setAttribute('data-many', String((N.cards || []).length >= 3 || (N.open || []).length >= 2));   // olympus2: 3+ accounts / 2+ trades: the compact cockpit
     drawTrade(N, from, old);
     drawMoney(N, from, old);
     if (from !== 'none') {
       /* the owner reads these first (lead, round 4): drawdown left per account and today's $, then the window; the money row above adds balances */
       var dd = N.cards && N.cards.length ? N.cards : (N.accts || []);
-      dd.forEach(function (a) { fact(dl, 'Drawdown left', money(a.room), 'of ' + money(a.mll) + ' max loss, ' + acctName(a), num(a.room) != null && num(a.mll) && a.room / a.mll < 0.35 ? 'down' : '', 'aegis/index.html', 'aegis'); });
+      var many = dd.length >= 3;   // compact: the account's name on top (it never gets cut), the max loss under
+      dd.forEach(function (a) { fact(dl, many ? acctName(a) : 'Drawdown left', money(a.room), many ? 'drawdown left of ' + money(a.mll) : 'of ' + money(a.mll) + ' max loss, ' + acctName(a), num(a.room) != null && num(a.mll) && a.room / a.mll < 0.35 ? 'down' : '', 'aegis/index.html', 'aegis'); });
       if (!dd.length) fact(dl, 'Drawdown left', 'Not in the report', '', '', 'nq/index.html', 'nq');
       fact(dl, old ? 'Last report day' : 'Today', moneyS(N.today), dd.length > 1 ? plural(dd.length, 'account') : 'the eval account', N.today > 0.5 ? 'up' : N.today < -0.5 ? 'down' : '', 'nq/index.html', 'nq');
     }

@@ -70,8 +70,8 @@ def test_static():
           '<html lang="en" data-theme="agora" data-oly-page="gate">' in html and "viewport-fit=cover" in html and 'name="theme-color"' in html and 'name="color-scheme" content="dark"' in html
           and html.count("<h1") == 1 and 'role="status"' in html and 'aria-live="polite"' in html and 'role="dialog"' not in html)
     check("a. one base-path line: gate/ -> '../', the site root (olympus-live.html) -> ''; agora.css + gate.css, then themes, the catalog, hub-status and gate.js load from GATE_BASE, in order (async = false)",
-          r"/\/gate\/(index\.html)?$/.test(p) ? '../' : ''" in html and "window.GATE_BASE = b" in html and "b + 'gate/gate.css?v=g14'" in html and "b + 'olympus/agora.css" in html
-          and "['olympus/themes.js?v=o9', 'pc_feed.js?v=n5', 'olympus/gate-catalog.js?v=nv5', 'olympus/hub-status.js?v=h2', 'gate/gate.js?v=g12', 'olympus/home-fx.js?v=x2']" in html and "s.async = false" in html)
+          r"/\/gate\/(index\.html)?$/.test(p) ? '../' : ''" in html and "window.GATE_BASE = b" in html and "b + 'gate/gate.css?v=g15'" in html and "b + 'olympus/agora.css" in html
+          and "['olympus/themes.js?v=o9', 'pc_feed.js?v=n5', 'olympus/gate-catalog.js?v=nv5', 'olympus/hub-status.js?v=h2', 'gate/gate.js?v=g13', 'olympus/home-fx.js?v=x2']" in html and "s.async = false" in html)
     tiles = re.findall(r'class="g-hub[^"]*" data-hub="(\w+)" data-to="hub/index.html\?h=(\w+)"', html)
     check("a. the hub tiles are plain links in the page (they work even if gate.js fails), in the owner's order (night A 2026-11-16): Bots & Evals (wide) and My Money (wide) first, Kalshi and Worlds near the end, Settings & Help last",
           [t[0] for t in tiles] == HUBS and all(a == b for a, b in tiles) and 'class="g-hub g-wide" data-hub="bots"' in html and 'class="g-hub g-wide" data-hub="money"' in html and html.count('class="g-hline"') == len(HUBS))
@@ -397,6 +397,28 @@ def test_page():
                   and "next gold UP 16:45 ET" in ck["next"][1][1].replace("KALSHI", "Kalshi") and ck["order"] and not errs, (ck, errs[:2]))
             ctx.close()
             s5.shutdown()
+
+            # olympus2 (lead): 4 accounts (Rapid EOD 25K arrives as id "rapid") and trades open on several accounts at once: all shown, compact, the money on the first screen
+            h4 = json.loads(home_json(300))
+            h4["board"]["lit"]["position"] = {"side": "LONG", "qty": 2, "stop": 21380.0, "target": 21650.0, "entry_t": NOW_S - 900, "unrealized_usd": 85.5}
+            h4["board"]["atlas"]["position"] = {"side": "SHORT", "qty": 1, "stop": 21460.0, "target": 21330.0, "entry_t": NOW_S - 300, "unrealized_usd": -22.0}
+            h4["accounts"] = [{"id": "b25k_2", "name": "Zlarior Builder 25K #2", "plan": "Builder 25K", "kind": "eval", "source": "pc", "badge": "LIVE",
+                               "eval": {"start_balance": 25000, "balance": 25120, "to_target": 1380, "target_balance": 26500, "floor": 24000, "room": 1000, "mll": 1000}, "pnl": {"today": 120}},
+                              {"id": "rapid", "name": "Rapid EOD 25K", "plan": "Rapid EOD 25K", "kind": "eval", "source": "pc", "badge": "LIVE",
+                               "eval": {"start_balance": 25000, "balance": 25000, "to_target": 1500, "target_balance": 26500, "floor": 24000, "room": 1000, "mll": 1000}, "pnl": {"today": 0},
+                               "position": {"side": "LONG", "qty": 1, "stop": 21385.0, "target": 21600.0, "entry_t": NOW_S - 600, "unrealized_usd": 30.0}}]
+            s6, o6 = serve({"/home.json": json.dumps(h4)})
+            ctx, p, errs, seen, off = AK.page(br, o6)
+            open_gate(p, o6)
+            p.wait_for_timeout(600)
+            f4 = p.evaluate("() => ({ trades: [...document.querySelectorAll('#nowTrade .g-trow b')].map((e) => e.textContent), cards: [...document.querySelectorAll('#money .g-an')].map((e) => e.textContent),"
+                            " facts: [...document.querySelectorAll('#nowFacts .g-fact')].map((f) => f.textContent), many: document.querySelector('#now').dataset.many,"
+                            " bottom: document.querySelector('#nowFacts').getBoundingClientRect().bottom })")
+            check("c. 4 accounts + 3 open trades: every trade line (Zlarior LONG, ATLAS SHORT, Rapid EOD 25K LONG), 4 cards, a drawdown tile per account named on top, Today for 4 accounts, compact, all money on the first screen",
+                  f4["trades"] == ["Zlarior LONG 2 micros", "ATLAS SHORT 1 micro", "Rapid EOD 25K LONG 1 micro"] and f4["cards"] == ["Zlarior 50K", "ATLAS 25K", "Zlarior 25K #2", "Rapid EOD 25K"]
+                  and f4["facts"][3] == "Rapid EOD 25K$1,000drawdown left of $1,000" and f4["facts"][4].startswith("Today+$392") and f4["many"] == "true" and f4["bottom"] <= 844 and not errs, (f4, errs[:2]))
+            ctx.close()
+            s6.shutdown()
 
             # quiet, old, stopped
             for age, running, state, badge, btn, line in ((2 * 3600, True, "quiet", "Quiet", False, "Last report from your PC 2 hours ago. The bots may still be trading."),
