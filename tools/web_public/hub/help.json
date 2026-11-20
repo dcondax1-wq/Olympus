@@ -434,6 +434,24 @@
     "label": "My accounts (MFFU view)"
    },
    "src": "engine/rapid.py (lit_bank)"
+  },
+  {
+   "id": "steps",
+   "q": "What do I still have to do?",
+   "words": "steps todo to-do waiting owner list tired repeating what next",
+   "where": "Phone: the Your steps page",
+   "steps": [
+    "Open Your steps. Each card says where (PC or phone), why, and the exact line.",
+    "Do them top to bottom. Tap Copy for the line to type.",
+    "Tick Done. The tick stays on this phone."
+   ],
+   "copy": "",
+   "copy_note": "",
+   "link": {
+    "href": "steps.html",
+    "label": "Your steps"
+   },
+   "src": "STATE.md 'Waiting on the owner', hub/steps.json"
   }
  ]
 }
