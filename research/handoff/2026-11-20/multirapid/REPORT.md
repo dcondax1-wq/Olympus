@@ -44,7 +44,7 @@ Files:
   the same plan); inventory lists both (ids rapid / rapid2); remove turns off the right slot; arm(phrase) also arms slot 2
   (START BOT's step_arm and the add box's "Start trading" both call it). The add box (engine/account_box.py) needed no change.
 - tools/live_trades.py (key rapid2), tools/pc_report.py (Rapid named by size), tools/rehearse_day.py (--rapid2).
-- Tests: tests/test_multi_rapid.py (new, 40/40), tests/fixtures/rapid_slot1_baseline.json (frozen output of today's code),
+- Tests: tests/test_multi_rapid.py (new, 41/41), tests/fixtures/rapid_slot1_baseline.json (frozen output of today's code),
   tests/test_rapid_launch.py (from day-rapid), test_rapid25 / test_accounts_cli / test_account_box: "a 2nd Rapid is refused"
   became "a 2nd = Rapid #2, a 3rd is refused".
 
@@ -67,16 +67,16 @@ Files:
 
 | Check | Result |
 |---|---|
-| tests.test_multi_rapid (new) | 40/40 |
+| tests.test_multi_rapid (new) | 41/41 (incl. LIT's hedge close asking both Rapids in one poll) |
 | `python -X utf8 -m tests.test_lit_live --quick` | OK (302 polls, entries 1/1, exits 1/1, 0 errors) |
 | `python -m engine.ninjatrader --selftest` | PASS 79/79 |
 | test_rapid25 / test_rapid_launch / test_rapid | 95/95 / 11/11 / 60/60 |
 | test_accounts_cli / test_account_box / test_onboard / test_multi_account | 40/40 / 41/41 / 27/27 / 55/55 |
 | test_trade_alerts / test_cross_hedge / test_lifecycle | 21/21 / 13/13 / 30/30 |
-| pc area (52 suites, win_scripts never run) | 50/52 before the account_box fix (now 41/41); obsidian_brain g fails the same on origin/pc (vault/ rebuild, not this branch) |
+| pc area (52 suites, win_scripts never run) | 51/52 (account_box 41/41 after its 2nd-Rapid check was updated); obsidian_brain g fails the same on origin/pc (vault/ rebuild, not this branch) |
 | test_brain | 37/38, the same check fails on origin/pc (LIT day-end vs backtest on 7 recent sessions: data, not this branch) |
 | smoke | 7/8 (zenith_mode needs Playwright for Python, not installed here) |
-| Replay: tools/rehearse_day.py --rapid2 --quick (5 real days + 4 scenarios, simulated NinjaTrader) | REPLAY_RESULT |
+| Replay: tools/rehearse_day.py --rapid2 --quick (5 real days + 4 scenarios, simulated NinjaTrader) | 187/187 on the final code (both Rapids: each on its own Name, own tags / state files, one position per account, never long + short across accounts, flat by the close, days under the 30% cap and the soft day, own lifecycle rows; restarts mid-trade 10-02 / 10-13, KILL, FLATTEN, slow-close, 50K passed) |
 
 ## How to roll back
 
