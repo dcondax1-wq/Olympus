@@ -34,7 +34,8 @@ def main():
     check("every archived app (archive team) is in MAP", mine <= set(A.MAP), sorted(mine - set(A.MAP)))
     check("MAP holds only archived apps (+ atlascity, which no door lists)", set(A.MAP) - arc <= {"atlascity"}, sorted(set(A.MAP) - arc - {"atlascity"}))
     miss, links, srcs, dup = [], [], [], []
-    for app, (target, name, src) in A.MAP.items():
+    for app, row in A.MAP.items():
+        target, name, src = row[:3]
         html = open(os.path.join(WEB, app, "index.html"), encoding="utf-8").read()
         if html.count(A.START) != 1 or html.count(A.END) != 1 or A.banner(app) not in html:
             miss.append(app)

@@ -22,7 +22,9 @@ import sys
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "web_public")
 START, END = "<!-- archived:start -->", "<!-- archived:end -->"
 
-# app id -> (live app folder, its name in plain words, the data file the page reads for its numbers or None)
+# app id -> (live app folder, its name in plain words, the data file the page reads for its numbers or None[, overlay css var])
+# overlay css var: a full-screen page whose layout must keep the whole window (Mind) gets the strip floating on top instead of being
+# pushed down, and that var (its own safe-area-top variable) set to the strip's height so its top HUD moves below the strip.
 MAP = {
     "apollo": ("journal", "Journal", "../odeon/trades.json"),
     "epilogue": ("journal", "Journal", "../home.json"),
@@ -55,7 +57,7 @@ MAP = {
     "herald": ("board", "Board", "edition.json"),
     "symposium": ("board", "Board", None),
     "ergasterion": ("board", "Board", None),
-    "mind": ("jarvis", "Jarvis", None),
+    "mind": ("jarvis", "Jarvis", None, "--st"),     # its 3D labels use the full window height: float the strip, push its top HUD by --st
     "bridge": ("jarvis", "Jarvis", None),
     "athena": ("clio", "Clio", None),
     "lyceum": ("clio", "Clio", None),
@@ -83,7 +85,8 @@ LINK = ("margin-left:auto;flex:none;color:var(--oly-th-a11,#dac08b);font-weight:
 # 2) reads the first date-ish field of the page's own data file -> "Archived · its data: Oct 28, 23 days old" (amber when > 2 days).
 JS = ("(function(){var b=document.currentScript.parentNode,h=document.documentElement,d=document.body;try{"
       "var y=function(e){return getComputedStyle(e).overflowY};if(d&&(y(h)==='hidden'||y(d)==='hidden')){h.insertBefore(b,d);"
-      "b.style.position='fixed';b.style.left='0';b.style.right='0';var fit=function(){var H=b.offsetHeight;h.style.paddingTop=H+'px';"
+      "b.style.position='fixed';b.style.left='0';b.style.right='0';var ov=b.getAttribute('data-overlay');var fit=function(){var H=b.offsetHeight;"
+      "if(ov){h.style.setProperty(ov,H+'px');return;}h.style.paddingTop=H+'px';"
       "h.style.boxSizing='border-box';d.style.transform='translateZ(0)';d.style.height=d.style.minHeight=d.style.maxHeight=(innerHeight-H)+'px';if(getComputedStyle(d).position==='fixed')d.style.top=H+'px';};"
       "fit();addEventListener('resize',fit);}}catch(e){}"
       "var s=b.getAttribute('data-src'),o=b.querySelector('[data-age]');if(!s||!o||!window.fetch)return;"
@@ -97,8 +100,8 @@ JS = ("(function(){var b=document.currentScript.parentNode,h=document.documentEl
 
 
 def banner(app: str) -> str:
-    target, name, src = MAP[app]
-    src_attr = f' data-src="{src}"' if src else ""
+    target, name, src = MAP[app][:3]
+    src_attr = (f' data-src="{src}"' if src else "") + (f' data-overlay="{MAP[app][3]}"' if len(MAP[app]) > 3 else "")
     return (f'{START}<aside data-archived="{target}"{src_attr} role="note" aria-label="Archived page" style="{CSS}">'
             f'<span style="min-width:0">Archived<span data-age></span></span>'
             f'<a href="../{target}/" style="{LINK}">{name} &rarr;</a><script>{JS}</script></aside>{END}')
