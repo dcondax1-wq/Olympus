@@ -27,6 +27,16 @@
 | Tests | test_payready (new) 15/15, test_board 59/59, test_trading_page 71/71 |
 | Screens | board_payready_dark/light.png (Board is a dark-only page), trading_payready_dark/light.png |
 
+## Round 3: the audit's MERGE verdicts (Odeon + Why -> Trading; Ares, Kairos, Chronos -> NQ)
+| What | Result |
+|---|---|
+| NQ | GO / WAIT / HALT per account (Ares), the bots' day line with now + today's trades (Kairos), Replay a past day (Chronos, lazy) |
+| Trading | Trade reels, LIVE first (Odeon, lazy, fixed height), Why we win / lose (Why) |
+| Old apps | Untouched, linked from each card; doors.js / apps.js patches in LEAD_WIRES K (archive Why, door shortcuts, launchers -> new place) |
+| No layout jump | The Trading browser suite's CLS check passes (< 0.02); the reels list keeps a fixed height; the past-days card keeps its height until filled |
+| Tests | test_nq_desk 31/31 (4 new round-3 checks), test_trading_merged (new) 6/6, nq_page 70/70, trading_page 71/71; run_area: payready on board + trading, nq_desk / trading_merged / alert_audit on trading, alert_audit on pc |
+| Screens | merge/before_<app>.png (the 5 old apps), merge/after_nq_gate_day_*, after_nq_past_*, after_trading_reels_*, after_trading_why_* (dark + light) |
+
 **Not changed:** no bot process file (tools/pc_report.py is the 15-minute reporter, changed only in the chart-post timing), no engine/, no live_model, no sw.js / build / apps.js / APPS table, no olympus/ kit, no STATE.md (lead's).
 
 ## Tests (all run here)

@@ -180,6 +180,8 @@ def table(rows: list) -> str:
     lines.append(f"| {'TOTAL':<{w}} | {sum(r['passed'] for r in rows):>6} | {sum(r['failed'] for r in rows):>6} | {tot:>7.0f} | "
                  f"{sum(1 for r in rows if r['state'] == 'PASS')}/{len(rows)} suites pass |")
     return "\n".join(lines)
+AREAS["board"].append("payready"); AREAS["trading"] += ["payready", "nq_desk", "trading_merged", "alert_audit"]   # nqdash3 2026-11-20: payout readiness, the NQ desk, the merged Odeon / Why cards, the alert audit; its own line
+AREAS["pc"].append("alert_audit")
 
 
 def main(argv=None) -> int:

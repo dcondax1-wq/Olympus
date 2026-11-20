@@ -34,6 +34,7 @@
 <link rel="stylesheet" href="../nqdeep.css?v=1">
 <link rel="stylesheet" href="../nq/nqdesk.css?v=2">
 <link rel="stylesheet" href="../nq/payready.css?v=1">
+<link rel="stylesheet" href="merged.css?v=2">
 </head>
 <body>
 <main id="app">
@@ -150,6 +151,20 @@
     </div>
   </section>
 
+  <!-- round 3 (Odeon + Why merged here): their files load only when these cards come into view -->
+  <section class="ag-card card mg-lazy" id="reelsCard" aria-labelledby="reelsH">
+    <div class="row"><h2 id="reelsH">Trade reels</h2><span class="pill" id="reelsPill">Replays</span></div>
+    <p class="note">Each trade replayed bar by bar, LIVE first. Tap one to watch it.</p>
+    <div id="reels" class="mg-fixed"><p class="note">Loading when you get here...</p></div>
+    <a class="mg-more" href="../odeon/">Every reel, in 3D (Odeon)</a>
+  </section>
+
+  <section class="ag-card card" id="whyCard" aria-labelledby="whyH">
+    <div class="row"><h2 id="whyH">Why we win, why we lose</h2><span class="pill warn">BACKTEST</span></div>
+    <div id="why"><p class="note">Loading...</p></div>
+    <a class="mg-more" href="../why/">The whole study (Why)</a>
+  </section>
+
   <section class="ag-card card help" id="helpCard" aria-labelledby="helpH">
     <h2 id="helpH">Why was my order rejected?</h2>
     <p class="lead">"Max order quantity, Limit 0, Scope MNQ" on MFFU / Tradovate means: this account may hold 0 contracts right now. It is not a bug in the bot. Usually one of three things:</p>
@@ -172,6 +187,6 @@
 <script src="../edge_chip.js?v=2"></script>
 <script src="../business/payoutcoach.js?v=1"></script>
 <script src="../nqdeep.js?v=1" defer></script>
-<script type="module" src="trading.js?v=9"></script>
+<script type="module" src="trading.js?v=11"></script>
 </body>
 </html>

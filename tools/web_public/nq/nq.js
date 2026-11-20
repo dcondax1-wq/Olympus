@@ -5,7 +5,7 @@
 // ?demo=1 the example; ?demo=1&silent=4d (or 90m, 5h) the example with a silent PC; ?flat=1 the 2D columns; ?howto=1 opens the sheet.
 import * as C from './nqcore.js?v=d4';   // d1 (polish2 2026-11-19): the CME trading day
 import * as T from '../olympus/truth.js';
-import * as D from './nqdesk.js?v=2';
+import * as D from './nqdesk.js?v=4';
 import { unpack as unpackBars } from './nqbars.js?v=b1';     // nqdash3: the accounts strip, the bots' thinking, the quality checks
 
 const O = window.OLYMPUS || null;
@@ -206,6 +206,20 @@ function chartOf(post) {
   } catch (_) { return null; }
 }
 function deskChart() { if (S.demo) return S.fixture && S.fixture.chart ? chartOf(demoHome({ home: S.fixture.chart }, Date.now(), S.silent)) : null; const C2 = window.NQCHART; return C2 && C2.S ? chartOf(C2.S.post) : null; }
+// Chronos: the past days list needs ../odeon/trades.json (~0.5 MB): fetched once, only when its card is about to show (no layout jump: the card keeps its height)
+function watchPast() {
+  if (S.pastWatch) return; S.pastWatch = true;
+  const card = $('pastCard'); if (!card) return;
+  const go = async () => {
+    const box = $('pastDays'); if (!box) return;
+    const od = await getJSON('../odeon/trades.json', 12000);
+    try { D.draw.past(box, D.pastDays(od)); } catch (_) { /* nothing */ }
+    card.classList.remove('dk-lazy');
+  };
+  if (!('IntersectionObserver' in window)) { go(); return; }
+  const io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { io.disconnect(); go(); } }, { rootMargin: '400px 0px' });
+  io.observe(card);
+}
 function deskHome() { return S.demo ? demoHome(S.fixture, Date.now(), S.silent) : S.home; }
 function renderDesk() {
   const nowS = Date.now() / 1000, home = deskHome(), file = S.demo ? (S.fixture && S.fixture.trades_file) || S.tfile : S.tfile;
@@ -220,6 +234,14 @@ function renderDesk() {
     if (box) D.draw.thinking(box, B);
     const p = $('thinkPill'); if (p) { const inT = B.filter((b) => b.phase === 'in').length; p.textContent = inT ? `${inT} in a trade` : S.demo ? 'DEMO' : 'LIVE'; p.className = 'pill ' + (inT ? 'warn' : S.demo ? 'warn' : 'ok'); }
   } catch (_) { /* nothing */ }
+  try {                                   // round 3: Ares (GO / WAIT / HALT per account) and Kairos (the day line)
+    const G = D.gate(D.accounts(home, S.biz, nowS, deskChart()), home, S.news, nowS), box = $('gates');
+    if (box) D.draw.gate(box, G);
+    const p = $('gatePill'), n = G.filter((g) => g.level === 'go').length;
+    if (p) { p.textContent = S.demo ? 'DEMO' : G.length ? `${n} of ${G.length} GO` : '-'; p.className = 'pill ' + (S.demo ? 'warn' : n ? 'ok' : 'warn'); }
+    const dl = $('dayLine'); if (dl) D.draw.day(dl, D.dayLine(home, nowS));
+  } catch (_) { /* nothing */ }
+  watchPast();
   try {
     const Q = D.quality(home, file, S.news, nowS, S.edge, deskChart()), box = $('qual');
     if (box) D.draw.quality(box, Q);

@@ -7,7 +7,8 @@ import * as C from './tradingcore.js';
 import * as T from '../olympus/truth.js';
 import * as DK from '../nq/nqdesk.js?v=2';
 import * as NB from '../nq/nqbars.js?v=b1';
-import * as PR from '../nq/payready.js?v=1';   // nqdash3 round 2: payout readiness per funded account   // the PC's chart post (le-bars): an open trade's stop as it is now and the last price   // nqdash3: the accounts strip (the same cards as the NQ page)
+import * as PR from '../nq/payready.js?v=1';
+import * as MG from './merged.js?v=1';     // round 3: Odeon reels + the Why study as cards   // nqdash3 round 2: payout readiness per funded account   // the PC's chart post (le-bars): an open trade's stop as it is now and the last price   // nqdash3: the accounts strip (the same cards as the NQ page)
 
 const O = window.OLYMPUS || null;
 const $ = (id) => document.getElementById(id);
@@ -385,13 +386,27 @@ function renderPay() {
     const s2 = $('payReadySrc'); if (s2) s2.textContent = src;
   } catch (_) { /* the rest of the page still draws */ }
 }
+// round 3: the reels (Odeon, ~0.5 MB) and the Why study load once, when their card is about to show
+function watchMerged() {
+  if (S.mgWatch) return; S.mgWatch = true;
+  // the Why study is small (~15 KB): drawn with the first paint (no jump); the reels file (~0.5 MB) waits for its card, whose list has a fixed height
+  getJSON('../why/why.json').then((w) => { try { MG.drawWhy($('why'), MG.why(w)); } catch (_) { /* nothing */ } });
+  const jobs = [['reelsCard', async () => { const o = await getJSON('../odeon/trades.json', 12000); MG.drawReels($('reels'), MG.reels(o), 8); }]];
+  for (const [id, job] of jobs) {
+    const card = $(id); if (!card) continue;
+    const go = () => job().catch(() => {}).finally(() => card.classList.remove('mg-lazy'));
+    if (!('IntersectionObserver' in window)) { go(); continue; }
+    const io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { io.disconnect(); go(); } }, { rootMargin: '400px 0px' });
+    io.observe(card);
+  }
+}
 function renderFiltered() { renderCal(); renderTrades(); renderEdge(); renderEquity(); renderDeep(); }
 function render() {
   model();
   $('demo').hidden = !S.demo;
   if (!S.srcPicked) { S.src = C.defaultSrc(S.rows); S.srcPicked = true; }
   if (S.acct !== 'all' && !S.srcPicked2) { S.srcPicked2 = true; if (C.liveAccounts(S.rows).some((a) => a.k === S.acct)) S.src = 'live'; }
-  renderBanner(); renderToday(); renderAccts(); renderPay(); renderFilters(); renderFiltered(); renderStats(); renderRules(); renderTwins();
+  renderBanner(); renderToday(); renderAccts(); renderPay(); watchMerged(); renderFilters(); renderFiltered(); renderStats(); renderRules(); renderTwins();
   const n = C.counts(S.rows);
   say(`${S.live.head} ${n.live} live, ${n.paper} paper and ${n.backtest} backtest trades.${S.demo ? ' Example numbers, not real.' : ''}`);
   S.ready = true;

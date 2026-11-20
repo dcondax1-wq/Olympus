@@ -61,7 +61,7 @@ def last_alert_t():
 Check after: `python -X utf8 -m tests.test_public_build_privacy` (reporter goes through site_privacy.public_status; `na` is a plain time, not private)
 and `python tests/run_area.py pc --only pc_report,bots_back`.
 
-## C. Test lists (tests/run_area.py, shared)
+## C. Test lists (tests/run_area.py): DONE by me in round 3 (one line above main(): board + payready; trading + payready, nq_desk, trading_merged, alert_audit; pc + alert_audit)
 - `AREAS["pc"]`: add `"alert_audit"` (tests/test_alert_audit.py).
 - `AREAS["trading"]`: add `"nq_desk"` (tests/test_nq_desk.py, node only, 1 s).
 
@@ -150,3 +150,44 @@ If the owner taps **YES**, the whole patch is:
 - run `python -X utf8 -m tests.test_funded_life`, `tests.test_account_b_funded`, `tests.test_payready`
 - set the card's status in business/decisions.json.
 If NO: nothing to change (the tracker already shows the $750 ping next to the $1,000 plan).
+
+## K. Round 3: the audit's MERGE verdicts in my folders (revamp-main/AUDIT.md)
+| Old app | Where it lives now | What came over |
+|---|---|---|
+| Ares (GO / WAIT / HALT) | NQ `#gateCard` | Per account, from the posted numbers: HALT (market shut, floor reached, daily loss limit, eval target reached), WAIT (outside the entry window, news within 30 min, stale or missing numbers), GO with the room left. The manual calculator stays at ../ares/ (linked). |
+| Kairos (bots' day) | NQ `#dayCard` | The day from 18:00 to 17:00 ET as one strip: the windows, a now line, today's trades as dots, "Now: <window>. <who trades>". BLITZ left out. Full ring at ../kairos/ (linked). |
+| Chronos (replay a day) | NQ `#pastCard` | The last 8 days with a trade, newest first (bots, $, LIVE), each opens ../chronos/#<day>. Its file loads only when the card is near (no jump). |
+| Odeon (trade reels) | Trading `#reelsCard` | 8 reels, LIVE first (bot, side, day, source, minutes held, MFE / MAE in R, $ and R), each opens ../odeon/#reel=<id>. ~0.5 MB, loads when the card is near; the list has a fixed height (no jump). |
+| Why (win / loss anatomy) | Trading `#whyCard` | The verdict; per bot the headline and where the lost $ went (bars); the careful-human checklist; the "tested" line. Small file, drawn with the page. Full study at ../why/ (linked). |
+The old folders stay as they are (reachable from Archive / their links).
+
+**`tools/web_public/olympus/doors.js` (lead-only):**
+```diff
+-  var ARCHIVE = ['apollo', 'ares', 'delphi', 'epilogue', 'forum', 'kratos', 'labyrinth', 'moirai', 'nemesis', 'odeon', 'pythia', 'argus', 'oracle', 'pantheon',
++  var ARCHIVE = ['apollo', 'ares', 'delphi', 'epilogue', 'forum', 'kratos', 'labyrinth', 'moirai', 'nemesis', 'odeon', 'why', 'pythia', 'argus', 'oracle', 'pantheon',
+```
+In the zeus door's `items` (after "Payout rules"; also point that one at the new tracker):
+```diff
+-        { label: 'Payout rules', greek: 'Trading · payout check', href: 'trading/#rulesCard', app: '', words: 'payout payouts withdraw request rules consistency best day' }
++        { label: 'Payout rules', greek: 'Trading · payout check', href: 'trading/#rulesCard', app: '', words: 'payout payouts withdraw request rules consistency best day' },
++        { label: 'Payout ready?', greek: 'Trading · payout readiness', href: 'trading/#payReadyCard', app: '', words: 'payout ready when request how much days left funded atlas' },
++        { label: 'Can it trade now?', greek: 'NQ · GO / WAIT / HALT', href: 'nq/#gateCard', app: '', words: 'ares go wait halt war room checklist allowed trade now daily loss limit' },
++        { label: "The bots' day", greek: 'NQ · day line', href: 'nq/#dayCard', app: '', words: 'kairos chronos session clock window london new york time now replay day' },
++        { label: 'Trade replays', greek: 'Trading · reels', href: 'trading/#reelsCard', app: '', words: 'odeon replay reel film watch trade bar by bar' },
++        { label: 'Why we win / lose', greek: 'Trading · why', href: 'trading/#whyCard', app: '', words: 'why win lose losers anatomy careful skip reasons' }
+```
+**`tools/web_public/jarvis/apps.js` (lead-only):** launch the new place; the old app keeps its status file:
+```diff
+-  app('odeon', 'Odeon', 'trading', '#d77a7a', 'Every trade, replayed in 3D', { glyph: '\u039e' }),
++  app('odeon', 'Odeon', 'trading', '#d77a7a', 'Trade replays (now on Trading)', { glyph: '\u039e', url: '../trading/#reelsCard', statusUrl: '../odeon/jarvis.json' }),
+-  app('ares', 'Ares', 'trading', '#c8402e', 'The war room: GO, WAIT or HALT', { glyph: '\u039b' }),
++  app('ares', 'Ares', 'trading', '#c8402e', 'GO, WAIT or HALT (now on NQ)', { glyph: '\u039b', url: '../nq/#gateCard', statusUrl: '../ares/jarvis.json' }),
+-  app('chronos', 'Chronos', 'trading', '#d4a574', 'Time and the session clock', { glyph: '\u03a7' }),
++  app('chronos', 'Chronos', 'trading', '#d4a574', 'Replay a past day (now on NQ)', { glyph: '\u03a7', url: '../nq/#pastCard', statusUrl: '../chronos/jarvis.json' }),
+-  app('kairos', 'Kairos', 'trading', '#c8a24a', "The right moment: the bots' day on a 24-hour ring, what they do now", { glyph: 'K' }),
++  app('kairos', 'Kairos', 'trading', '#c8a24a', "The bots' day (now on NQ)", { glyph: 'K', url: '../nq/#dayCard', statusUrl: '../kairos/jarvis.json' }),
+-  app('why', 'Why', 'trading', '#c8a24a', 'Why our trades win and lose, per bot, in plain $', { glyph: '?' }),
++  app('why', 'Why', 'trading', '#c8a24a', 'Why we win and lose (now on Trading)', { glyph: '?', url: '../trading/#whyCard', statusUrl: '../why/jarvis.json' }),
+```
+(Check `defaultStatusUrl` keeps an explicit statusUrl; then run `python tests/run_area.py jarvis --only apps,hub` and `olympus --only site_sweep`.)
+Note: `nq/brief.json` 404s (one console line) until day-brief's file is built; the page handles it.
