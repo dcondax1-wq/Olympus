@@ -407,6 +407,7 @@
         A(q[0], [{ transform: 'translateY(' + q[3] + 'px) scale(' + q[1] + ')' }, { transform: 'translateY(0) scale(' + q[2] + ')' }], T.end + 500, 0, slow);
       });
       A(sky, [{ opacity: 0 }, { opacity: 1 }], 520, 0, 'ease-out');
+      [L1, L2, L3].forEach(function (l, ix) { A(l, [{ opacity: 0 }, { opacity: 1 }], 420, ix * 40, 'ease-out'); });   // the city comes out of the dark with the sky
       A(moon, [{ opacity: 0 }, { opacity: 1 }], 600, 120, 'ease-out');
       A(stars[0], [{ opacity: 0 }, { opacity: 1, offset: 0.3 }, { opacity: 0.55, offset: 0.65 }, { opacity: 1 }], 2000, 100, 'ease-in-out');
       A(stars[1], [{ opacity: 0 }, { opacity: 0.5, offset: 0.25 }, { opacity: 1, offset: 0.55 }, { opacity: 0.6 }], 2000, 160, 'ease-in-out');
