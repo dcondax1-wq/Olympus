@@ -83,7 +83,7 @@ h3 { margin: 16px 0 8px; font: 700 1.0625rem/1.25 var(--serif); color: var(--tex
   font: 600 .8125rem/1.35 var(--mono); color: var(--gold-hi); overflow-wrap: anywhere; word-break: break-word; user-select: all; -webkit-user-select: all; }
 .mn-copy button { flex: none; min-width: 64px; min-height: 44px; border-radius: 10px; border: 1px solid var(--gold); background: transparent; color: var(--gold-hi);
   font: 700 .875rem var(--sans); cursor: pointer; }
-.mn-note { margin: 4px 14px 12px; color: var(--muted); font-size: .8125rem; }
+.mn-note { margin: 4px 14px 12px; color: var(--muted); font-size: .9375rem; }
 .mn-words { margin: 0; display: grid; gap: 6px; }
 .mn-words div { padding: 10px 12px; border-radius: 12px; background: var(--s2); border: 1px solid var(--line); }
 .mn-words div:target { border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold) inset; }
