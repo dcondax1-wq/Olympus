@@ -119,3 +119,12 @@ apollo, ares, delphi, epilogue, forum, kratos, labyrinth, moirai, nemesis, odeon
   - `symposium`: cronos/status.json
 - Heavy pages: jarvis (2.3 MB JS, 286 KB HTML), cities (809 KB JS), datacity, mind (460 KB JS) and tyche/kalshicity/datacity/mind/journal (7-14 backdrop-filter blurs) are the phone-slowdown risks; all but jarvis are in the ARCHIVE list.
 - Not in the 76-app table but have index.html: `jarvis`, `gate`, `hub`, `atlascity`, `pc`.
+
+## What was shipped (night-revamp-main, the lead's call on the proposals above)
+Archived (folded under "Archive" at the end of their door, `olympus/doors.js` ARCHIVE; still in their door, still found by search, every URL works): 45 apps.
+Kept visible, beyond the proposal: `why` (new, owner's win/loss page), `agency` (side income), `kalshicity` + `sibyl` + `tyche` (Kalshi is this week's focus,
+and the Kalshi door needs its 5 shortcuts), `inbox` (alerts), `cities` (Olympus World, the More door's first shortcut, another helper is improving it tonight).
+Visible now: ZEUS 11 (zenith, nq, board, why, trading, aegis, pnyx, demeter, fates, kronos, journal) · Money 7 (business, ledger, hera, chrysos, oikos, agency,
+mercury) · Kalshi 5 · More 8 (compass, helios, inbox, planner, settings, atlas, cities, clio) = 31 of 76.
+Fixed from the bug list: the 16 apps with no `icon.svg` (404 on the hub pages) got a monogram icon; `why` added to the Gate's search catalog.
+Left: the data 404s (`business/business.json`, `cronos/status.json`, ...) are files the publisher writes; not checked on the live site tonight.
