@@ -104,6 +104,9 @@ AREAS["olympus"].append("site_checks")
 AREAS["pc"].append("run_area_fast")       # day-quality round 2: --changed mapper (tests/suite_map.py), parallel lanes, the per-suite browser lock
 AREAS["privacy"].append("status_sign")   # day-security 2026-11-20: signed status posts + no future-dated post (tests/test_status_sign.py); its own line
 AREAS["board"].append("status_sign")
+AREAS["pc"] += ["status_sign", "pc_report_sign", "push_pairing", "datafeed_sign", "nqbars_sign"]   # day-security2 2026-11-20: W3 W4 W6 W7; its own line
+AREAS["privacy"] += ["pc_report_sign", "push_pairing", "datafeed_sign", "nqbars_sign"]
+AREAS["nq"].append("nqbars_sign")
 # suites too long for one budget run BY PARTS, each its own row and budget (night team D 2026-11-16: the whole kit walk, every app +
 # power + tiers + more in one browser, is the longest browser suite); a part is "<suite>:<label>" = python -m tests.test_<suite> <args>
 PARTS = {"olympus_kit": [("a", ["datacity", "mind", "tree"]), ("b", ["oracle", "odeon", "fates"]), ("c", ["hermes", "prometheus", "tyche"]),
