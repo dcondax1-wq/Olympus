@@ -29,3 +29,7 @@ Other version bumps made by the helper (no worker involved): `dionysus/index.htm
 ## Update (Olympus 2, day-kalshi): kalshi.css / kalshi.js are now ?v=k50 (on top of the k48 already on pc)
 `sed -i "s/kalshi-k48/kalshi-k50/; s/kalshi.css?v=k48/kalshi.css?v=k50/; s/kalshi.js?v=k48/kalshi.js?v=k50/" tools/web_public/kalshi/sw.js`
 (test_kalshi_page 347/347 and test_kalshi_k8_dash 52/52 were run with exactly this edit applied locally, then reverted.)
+
+## Update 2 (Olympus 2 PERF, CLS): kalshi.css / kalshi.js are now ?v=k51
+`sed -i -E "s/kalshi-k[0-9]+'/kalshi-k51'/; s/kalshi.css\?v=k[0-9]+/kalshi.css?v=k51/; s/kalshi.js\?v=k[0-9]+/kalshi.js?v=k51/" tools/web_public/kalshi/sw.js`
+(or `python tools/bump_versions.py --apply`). test_kalshi_page 347/347 + test_kalshi_k8_dash 52/52 with exactly this applied locally.

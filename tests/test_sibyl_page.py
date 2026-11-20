@@ -48,6 +48,11 @@ def test_static():
     check("a. fixture.json is exactly what `sibyl.py --fixture` writes (rebuild it with that command when the scanner changes): demo, status sample", json.dumps(fx, sort_keys=True) == json.dumps(fresh, sort_keys=True) and fx["status"] == "sample", fx.get("status"))
     html = AK.read(os.path.join(d, "index.html"))
     check("a. the page order: today (ball), picks, every kind of bet, scoreboard, what could go wrong, how to read this", html.index('id="stage"') < html.index('id="picks"') < html.index('id="list"') < html.index('id="sbCard"') < html.index('id="ownCard"') < html.index('id="riskCard"') < html.index('id="notes"'))
+    sj = AK.read(os.path.join(d, "sibyl.js"))
+    check("a. bar 2026-11-20 (archive page): the archive banner sits above the status line with 44 px links to today's bot (../kalshi/) and the Kalshi desk (../dionysus/); the cards say old bot",
+          "Archive: this page is history (the old crypto bot, retired 2026-11-19)." in html and html.index("archive-banner") < html.index('id="status"') and 'class="ag-btn primary" href="../kalshi/"' in html
+          and 'href="../dionysus/"' in html and "The old bot's last study" in html and "Kalshi is paused" not in html)
+    check("a. bar: nothing readable = a plain sentence (empty()), never 'Something went wrong'; offline is said", "function empty(" in sj and "Something went wrong" not in sj and "You are offline" in sj)
     check("a. the 3D ball is its own module tag (a failed load can never stop the page) and the flat twin exists", 'src="sibylball.js' in html and "SIBYL_BALL_FAIL" in html and 'id="flat"' in html)
     ball = AK.read(os.path.join(d, "sibylball.js"))
     check("a. the ball is light: the OLYMPUS render core + materials, bloom <= .25, a dpr cap <= 1.5, a lathe stand, no per-frame allocation of textures, reads no data and sends nothing",
@@ -217,6 +222,19 @@ def test_page():
             check("c. a broken sibyl.json falls back to the labelled demo, never blank", r[0] is True and r[1] == 3 and not errs, (r, errs[:2]))
             ctx.close()
             srv3.shutdown()
+    finally:
+        srv.shutdown()
+    # ---- bar 2026-11-20: every data file missing (404): the archive banner + one plain sentence, no data card, no JS error, not blank
+    names = ["/sibyl/fixture.json", "/money/sibyl.json", "/money/sibyl_forward.json", "/kalshicity/suggestions.json", "/sibyl/suggestions_fixture.json"]
+    srv, origin = AK.serve({n: None for n in names})
+    try:
+        with AK.browser() as br:
+            ctx, p, errs, seen, off = AK.page(br, origin)
+            AK.open_app(p, origin, APP, "?q=off")
+            e = p.evaluate("() => ({ st: document.querySelector('#status').textContent, cards: [...document.querySelectorAll('#app > section.card')].filter((s) => !s.hidden).length, banner: !!document.querySelector('.archive-banner a[href=\"../kalshi/\"]') })")
+            check("c. bar: no data at all: the status says so in plain words, every data card hides, the archive banner and its K8 link stay, no JS error",
+                  "No Sibyl numbers could be read" in e["st"] and e["cards"] == 0 and e["banner"] and not errs, (e, errs[:3]))
+            ctx.close()
     finally:
         srv.shutdown()
 
