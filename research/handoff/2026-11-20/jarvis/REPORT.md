@@ -108,3 +108,29 @@ Kept with the brain on purpose: follow-ups ("and yesterday?", "why?", "open it")
 "find the jurnal" -> the Journal app first (an app the query names beats a write-up that mentions the word); an Archive idea that is both a
 write-up and a rejected idea is one row (flagged "(Rejected idea)"), so "what did we test about vwap" shows the test runs again; equal
 scores: the asked word earlier in the title first. brain3 349/349 (one pinned "find vwap" order updated, reason in the test).
+
+## 8. Flaky reds made robust (not looser)
+
+- `test_jarvis_talk` "a tap on the core stops her": the test tapped the core's corner (40, 40), which is on the orbiting system dots'
+  path; when a dot passed under it the tap opened the dot. It now taps the middle of the core, where the owner taps. Failed the same
+  way on the commit before this branch (checked on a worktree of 1c6a8bd0).
+- `test_jarvis_talk` "the mic: answered out loud" and "Chrome: said at once": they read the FIRST thing said; the morning briefing
+  (once a day from 07:00 ET) or a spoken bot alert could speak first. Proactive speech is now off in that test (like the bots'
+  rituals already were), and the mic check waits for the answer itself.
+- Real bug found on the way (voice-out.js): "a tap that just started her is not a stop" (450 ms) counted from each sentence chunk while
+  setSpeaking toggled; it now counts from her first word only.
+- `test_jarvis_voice` 47/47 and `test_jarvis_engines` 18/18 passed twice in a row here; no change needed.
+
+## 9. Speed now (same harness as section 2: 390 x 844, mobile + touch, 4x CPU)
+
+| Measure | Before (morning) | Now |
+|---|---|---|
+| First text on screen | 280-380 ms | 170-310 ms |
+| Jarvis ready (first open) | 630-910 ms | 725-750 ms (under 1 s) |
+| First tap -> answer | 4.6-5.3 s | 0.6-0.9 s |
+| JS before the first tap | 2.66 MB | 1.92 MB |
+| Long tasks > 200 ms in the first 6 s | 5-6, one ~2.0 s | 4-5, all 0.24-0.39 s |
+
+## 10. Tests (round 2)
+
+FILL2
