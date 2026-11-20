@@ -44,6 +44,18 @@ Then use the sentence token in the kit classes that hold sentences:
 /* pulse.css:19  */ .pu-ts { font-size: var(--ag-fs-foot, .875rem); }      /* 12 -> 14: business, chrysos, demeter, helios, hera, journal, kronos, ledger, mercury, oikos */
 /* pulse.css:33  */ .pu-empty { ...; font-size: var(--ag-fs-note, .9375rem); }  /* 13 -> 15: aegis, compass, demeter, helios, planner, pnyx */
 ```
+**The AGORA app base sets the sizes, so the apps cannot win.** These rules carry `main#app` id specificity and beat an app's own
+`.note { font-size: 15px }`. I proved this on agency: its own 15 px `.note` stayed at 13 px until I repeated the kit selector. These are the
+lines that keep most pages' status line, notes and footers small (`tools/web_public/olympus/agora.css`):
+```css
+/* :303 */ main#app:where(...) > header.top .brand .sub { font: 400 var(--ag-fs-sub)/1.35 ... }     /* the page's one-line purpose: 14 -> var(--ag-fs-note) */
+/* :309 */ main#app:where(...) > #status.note { ...; font: 400 var(--ag-fs-foot)/1.45 ... }          /* the status / "as of" line: 13 -> var(--ag-fs-note) */
+/* :317 */ main#app:where(...) .ag-card .note { font-size: var(--ag-fs-foot); ... }                  /* every card note: 13 -> var(--ag-fs-note) */
+/* :350 */ main#app:where(...) > .foot { ...; font-size: var(--ag-fs-cap); ... }                     /* the page footer: 12 -> var(--ag-fs-note) */
+```
+These four lines alone lift the main sentences on every AGORA app (aegis, pnyx, demeter, compass, clio, business, chrysos, hera, mercury,
+oikos, planner, settings, helios, kronos, journal, ledger, agency, inbox ...).
+
 Rule for the apps (put it in docs/DESIGN_AGORA.md): **a sentence is never under 15 px. A label of 1-4 words may be 13 px. Nothing is under 12 px.**
 The per-app px lines (e.g. `aegis/aegis.css:24 .note { font-size: 13px }` -> `var(--ag-fs-note)`) are listed in `raw/fixes_design.md`, grouped by rule.
 

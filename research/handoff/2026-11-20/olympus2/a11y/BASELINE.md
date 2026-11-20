@@ -8,6 +8,11 @@ The raw per-team lists with file:line are in `raw/fixes_<team>.md`. Machine data
 `python tools/a11y_sweep.py --compare research/handoff/2026-11-20/olympus2/a11y/baseline.json` (about 9 min, writes scratch/a11y/<time>/COMPARE.md).
 Quick check of a few apps: `python tools/a11y_sweep.py --apps atlas,oikos,journal --quick`. Test of the sweep itself: `python -X utf8 -m tests.test_a11y_sweep`.
 
+**Since the baseline (this branch, day-a11y):** I fixed the three apps nobody owns directly: inbox 85 -> 100, agency 92 -> 96, tyche
+92 (HUD text now rem). A full re-run on this branch averages **87**. The `raw/fixes_<team>.md` lists come from that re-run, which names the
+CSS rule that actually wins (by specificity). The re-run showed that most small notes and footers come from the AGORA app base,
+`olympus/agora.css:303/309/317/350`: FOR_design.md K2.
+
 Known limits (honest): small text and Dynamic Type are measured in Chromium. Real iOS Safari also applies `text-size-adjust` on pages that
 load a11y.js, so those (brackets) are not scored. "Not colour alone" is a heuristic: a word nearby such as "Cash in" can make a flag
 harmless (hera's tiles). Focus is checked on the first 14 Tab stops only. Contrast over images or gradients is reported by axe as
