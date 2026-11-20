@@ -37,7 +37,11 @@ Write-up: `research/writeups/lit-edge-2026-11-20.md`. Rules fixed before the run
 - `python tests/smoke.py`: 7/8 green; `tests.test_zenith_mode` fails with `No module named 'playwright'` (Python
   playwright not installed in this container; unrelated to this work, no screen touched).
 - `python -X utf8 tools/research/litedge.py check`: 631 trades, 0 differ from the live trades.
-- See the bottom of this file for test_lit_live / privacy.
+- `python -m tests.test_lit_live`: stopped by my 15-minute timeout at 2026-07-02 (6,496 polls). It showed 29 differences,
+  first seen between 2026-04-01 and 2026-05-12. This branch changes no engine / live file (`git diff` on engine/,
+  server.py, live_model*.json is empty), so the differences were already on pc. Lead: worth one full run on pc.
+- `python tests/run_area.py privacy`: repo_secrets 12/12 and public_build_privacy pass; private_link and phone_safety
+  can't start here (`No module named 'fastapi'`, missing from this container).
 
 ## Screenshots
 None: no screen changed.
