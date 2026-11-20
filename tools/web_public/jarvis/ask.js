@@ -111,6 +111,7 @@
     btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.2" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="3.2" fill="currentColor"/></svg>';
     btn.addEventListener('click', () => open());
     (o.host || document.body).appendChild(btn);
+    if (!o.host) document.body.classList.add('oly-has-ask');   // QA 2026-11-20: the page's last lines scroll clear of the button
     return btn;
   }
   function close() {
