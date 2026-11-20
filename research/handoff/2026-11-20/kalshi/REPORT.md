@@ -50,3 +50,9 @@ installed in this container (node Playwright is; kalshi_k8_dash ran on it). Smok
 - The PC's own paper ledger since Nov 19 cannot be seen from here (`python -X utf8 -m engine.kalshi_live --clock-report` on the PC).
 - k8.json is refreshed by Claude (fetch + feed), not by the PC (a tracked file the PC rewrites breaks its git pull).
 - Screenshots use the test fixture numbers, not the PC's live card.
+
+## Round 2 (lead, 11:15 UTC)
+| What | Result |
+|---|---|
+| Each leg pauses / resumes itself (pre-registered: last 20 windows, pause at <= 10 won, resume at >= 12; PREREG_legswitch.md) | Walk-forward Aug 3-Nov 20: it **never fired** on the 3 live legs (0 bets skipped, $0 either way); N=10 variant skipped 1 bet that WON. By the pre-registered rule: **display only** (LIVE_ON False). Phone shows each leg's last 20 ("silver UP would pause: won 9 of the last 20"). Patch to make the live bot obey it: LEAD_WIRES.md section 3 (free safety brake; the PC paper ledger needs 20 days first, ~mid-Dec). Tests a1-a5 + s1-s2 |
+| Second clock edge on other Kalshi markets (pre-registered: PREREG_scan.md) | **None.** 120 series listed, 12 usable (BTC, ETH, SOL, XRP, DOGE, BNB, HYPE, NEAR, ZEC, WTI, natgas, copper); S&P / FX / Brent too new, Nasdaq / Dow none settled. 1,982 cells; best BNB UP 22:30 ET 41 of 58 (71%, p 0.0011, ~44x too weak for the bar). 105 cells >= 62% vs ~87 expected by chance = noise. Honest limit: the bar is strict (it would catch silver UP 16:45 but not gold DOWN 05:15). 338 public GETs, 0 errors. research/kalshi_k8_day/scan/SCAN.md |
