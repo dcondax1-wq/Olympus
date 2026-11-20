@@ -646,6 +646,15 @@ def _broker_net(ad) -> tuple[int, list]:
     return net, held
 
 
+def _dt_hm(t) -> str:
+    try:
+        import datetime as _d
+        from zoneinfo import ZoneInfo
+        return _d.datetime.fromtimestamp(int(t), ZoneInfo("America/New_York")).strftime("%H:%M ET")
+    except Exception:
+        return "its end"
+
+
 def _txt(n: int) -> str:
     return "flat" if n == 0 else f"{'LONG' if n > 0 else 'SHORT'} {abs(n)} micros"
 
@@ -685,6 +694,18 @@ def reconcile_tick(bot, c, now: int):
                             f"account {', '.join(held) or 'flat'}, bot ledger {_txt(exp)}", now=now, path=handsoff.path_for(bot))
         except Exception:
             pass
+    try:                                         # the owner's own hand-trade window (engine/hand_hedge.py): no close of his trade
+        from . import hand_hedge
+        hw = hand_hedge.window(now=now) if exp == 0 and net != 0 else None
+    except Exception:
+        hw = None
+    if hw:
+        if not rc.get("hand_said"):
+            rc["hand_said"] = True
+            _notify(bot, f"recon-window:{day}:{net}", "Hand trade left alone",
+                    f"NinjaTrader {getattr(ad, 'account', '')} shows {', '.join(held)}: your hand-trade window is open until "
+                    f"{_dt_hm(hw.get('until'))}, so the bot does not close it. It never takes the other side on another account.")
+        return
     if exp == 0 and net != 0 and c.get("reconcile_flatten") and now - rc["flat_at"] >= 60:
         if rc["flat_tries"] >= 3:
             if rc["flat_tries"] == 3:
