@@ -20,7 +20,7 @@ from ATLAS's first payout.
 ## Method
 
 - **Seats:** tools/money/payday_plan.py, the accounts from today's board, with money_plan's live sizing and MFFU rules.
-  The step is extended to every CME session from Nov 20 2026 to Jun 30 2027 (155 sessions; Thanksgiving and the CME full
+  The step is extended to every CME session from Nov 20 2026 to Jun 30 2027 (156 sessions; Thanksgiving and the CME full
   closures skipped).
 - **Same paths:** every account uses the same 5-session week-block paths (seed 2611), so a bad week hits all of them at
   once.
