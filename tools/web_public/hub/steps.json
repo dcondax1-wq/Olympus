@@ -51,7 +51,8 @@
    ],
    "copy": "Decide atlas-funded-room-40: YES",
    "copy_note": "Or paste this line to Claude in chat.",
-   "src": "research/writeups/atlas-risk-real-fills-2026-11-20.md"
+   "src": "research/writeups/atlas-risk-real-fills-2026-11-20.md",
+   "n": 3
   },
   {
    "id": "phone-remote",
@@ -136,7 +137,8 @@
    ],
    "copy": "git checkout -- tools/web_public/business/dash.json",
    "copy_note": "Safe: it only restores a file the bot builds.",
-   "src": "STATE.md 'Waiting on the owner'"
+   "src": "STATE.md 'Waiting on the owner'",
+   "n": 8
   }
  ]
 }

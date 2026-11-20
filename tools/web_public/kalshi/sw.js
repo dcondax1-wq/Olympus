@@ -9,7 +9,7 @@
 //   (raw.githubusercontent.com / api.github.com) is never touched or cached;
 // - Jarvis's fonts (../jarvis/*.woff2, the page's @font-face) and its three.js (the 3D header, korb.js) are saved here too and
 //   answered from the copy first, so the page keeps its Orbitron / Rajdhani look and its orb offline.
-const CACHE = 'kalshi-k43';                      // = 'kalshi-' + the ?v= of kalshi.css / kalshi.js (index.html, SHELL): a new version, a new cache
+const CACHE = 'kalshi-k44';                      // = 'kalshi-' + the ?v= of kalshi.css / kalshi.js (index.html, SHELL): a new version, a new cache
 const NAV_WAIT_MS = 3500;
 const SHELL = ['./', './index.html', './kalshi.css?v=k43', './kalshi.js?v=k43', './kfx.js?v=k26', './kit.json', '../olympus/warp.css?v=w3', '../olympus/warp.js?v=w3'];
 const FONTS = ['../jarvis/orbitron.woff2', '../jarvis/rajdhani-400.woff2', '../jarvis/rajdhani-500.woff2', '../jarvis/rajdhani-600.woff2',

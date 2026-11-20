@@ -62,7 +62,7 @@
   };
   var DOOR = {        // olympus/doors.js DOORS[].ids (tests.test_warp keeps this copy equal to it)
     zeus: 'zenith nq board why trading aegis pnyx demeter labyrinth fates moirai odeon nemesis kronos apollo journal kratos epilogue ares argus oracle pantheon pythia pheme kairos chronos forum delphi',
-    money: 'business ledger hera plutus chrysos oikos agency mercury mint mintcity harmonia hermes argo arbiter',
+    money: 'business widget ledger hera plutus chrysos oikos agency mercury mint mintcity harmonia hermes argo arbiter',
     kalshi: 'kalshi dionysus kalshicity sibyl tyche',
     more: 'compass helios herald stoa hestia inbox planner mind arena athena lyceum nike gallery polis symposium ergasterion settings bridge atlas cities datacity observatory tree prometheus hephaestus clio archive pinakes colosseum'
   };

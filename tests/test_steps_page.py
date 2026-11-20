@@ -35,8 +35,8 @@ def part_a():
     raw = rd("steps.json")
     data = json.loads(raw)
     items = data["items"]
-    check("a. steps.json valid, 6 items, ids unique, numbered 1..6", len(items) == 6 and len({i["id"] for i in items}) == 6
-          and [i["n"] for i in items] == list(range(1, 7)), [i.get("id") for i in items])
+    check("a. steps.json valid, 8 items, ids unique, numbered 1..8", len(items) == 8 and len({i["id"] for i in items}) == 8
+          and [i["n"] for i in items] == list(range(1, 9)), [i.get("id") for i in items])
     bad = [i["id"] for i in items if not (i.get("where") in ("PC", "Phone") and i.get("title") and i.get("what") and i.get("why")
                                           and i.get("copy") and 2 <= len(i.get("steps") or []) <= 4)]
     check("a. every item: where (PC/Phone), what, why, 2-4 steps, a copy line", not bad, bad)
@@ -82,12 +82,12 @@ def part_c():
             p.wait_for_function("window.STEPS_PAGE && window.STEPS_PAGE.ready")
             n = p.eval_on_selector_all(".st-card", "e => e.length")
             cnt = p.text_content("#count")
-            check("c. 390 px: 6 cards, '6 to do, 0 done'", n == 6 and cnt.strip() == "6 to do, 0 done", (n, cnt))
+            check("c. 390 px: 8 cards, '8 to do, 0 done'", n == 8 and cnt.strip() == "8 to do, 0 done", (n, cnt))
             p.click("#rapid-add .st-copy button")
             p.wait_for_timeout(200)
             check("c. Copy answers (Copied / Selected)", p.text_content("#rapid-add .st-copy button") in ("Copied", "Selected"))
             p.check("#rapid-add .st-done input")
-            check("c. Done tick: card dimmed, count '5 to do, 1 done'", p.text_content("#count").strip() == "5 to do, 1 done"
+            check("c. Done tick: card dimmed, count '7 to do, 1 done'", p.text_content("#count").strip() == "7 to do, 1 done"
                   and p.evaluate("document.getElementById('rapid-add').classList.contains('is-done')"))
             p.reload()
             p.wait_for_function("window.STEPS_PAGE && window.STEPS_PAGE.ready")
