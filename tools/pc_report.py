@@ -349,11 +349,18 @@ def market_open(now=None, env=None) -> bool:
 
 
 def entry_hours(now=None) -> bool:
-    """Weekday 01:50-15:30 ET: the bots' entry hours (a stopped bot then matters)."""
+    """Weekday 01:50-15:30 ET: the bots' entry hours (a stopped bot then matters). Never on a CME holiday closure or after an
+    early halt (redteam 2026-11-20: a bot stopped on Christmas or Thanksgiving afternoon was a "Bot stopped" alarm)."""
     try:
         from zoneinfo import ZoneInfo
         t = dt.datetime.fromtimestamp(now or time.time(), ZoneInfo("America/New_York"))
-        return t.weekday() < 5 and 110 <= t.hour * 60 + t.minute <= 930
+        if not (t.weekday() < 5 and 110 <= t.hour * 60 + t.minute <= 930):
+            return False
+        try:
+            from engine.cme_calendar import halted
+            return not halted(t.timestamp())
+        except Exception:
+            return True
     except Exception:
         return False
 

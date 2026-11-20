@@ -832,6 +832,23 @@ def missed_payload(entry_t, side, reason, usd=None, t=None) -> dict:
 
 
 OWNER_HOLDS = ("paused by you", "owner flattened remotely")     # the owner's own pause / flatten: never a MISSED TRADE alarm
+# redteam 2026-11-20: an entry the bot's own RULES held back on purpose (a guard: soft daily loss / news / the combo's day stop;
+# the sizer's 0 micros: weekly stop, room, eval passed; the equity filter; the 50K's one-position rule; a hedge wait) is not a
+# malfunction: it still goes to the phone at once, but as a quiet "held back" notice (no sound in quiet hours: LIT's 02:00-07:00
+# entries never wake the owner for a rule that worked). A malfunction (feed stale, seen late, refused, never routed, a restart,
+# STARTUP DISARMED, an unknown reason) stays a loud MISSED TRADE.
+RULE_HOLDS = ("GUARD", "size 0", "at 0 instead of", "signals", "one position on the 50K", "HEDGE", "hedge")
+LOUD_HOLDS = ("STARTUP DISARMED", "feed stale", "late", "not chasing", "refused", "never routed", "never took", "restart",
+              "unreadable", "failed")
+
+
+def rule_hold(body: str) -> bool:
+    """True = the bot's own rule held this entry back on purpose (a quiet notice); False = a malfunction (a loud alarm)."""
+    b = str(body or "")
+    why = b.split(":", 1)[1] if b.startswith("The backtest took it") and ":" in b else b
+    if any(w in why for w in LOUD_HOLDS):
+        return False
+    return any(w in why for w in RULE_HOLDS)
 
 
 def _missed_problem(p: dict) -> dict | None:
@@ -845,8 +862,10 @@ def _missed_problem(p: dict) -> dict | None:
     if any(w in body for w in OWNER_HOLDS):
         return None
     et_ = int(k.rsplit(":", 1)[-1]) if k.rsplit(":", 1)[-1].isdigit() else None
-    title = str(p.get("title") or "Missed trade").replace("Missed trade", "MISSED TRADE · Zlarior", 1)
-    return {"key": k, "code": "missed", "bot": "lit", "entry_t": et_, "title": title, "body": body}
+    soft = rule_hold(body)
+    title = str(p.get("title") or "Missed trade").replace("Missed trade", "Held back by a rule · Zlarior" if soft else "MISSED TRADE · Zlarior", 1)
+    return {"key": k, "code": "missed", "bot": "lit", "entry_t": et_, "title": title, "body": body,
+            **({"soft": True, "tags": "pause_button"} if soft else {})}
 
 
 def _default_notify(p: dict):

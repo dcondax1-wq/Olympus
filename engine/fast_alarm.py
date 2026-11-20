@@ -20,6 +20,11 @@ Only while: LE_FAST_ALARM is not "0", notify_settings.json "problems" is on (IMP
 adapter (not paper), a weekday 01:58-15:55 ET (LIT's 02:00-15:30 entry window + its 15:55 flat, ATLAS's windows inside it),
 CME Globex open (engine/live.market_open: holidays / early halts excluded), and the bot started over START_GRACE_S ago.
 Delivery: engine/notify.instant_problem (the private ntfy alert topic, high priority, rings in quiet hours).
+No storm (redteam 2026-11-20): a condition that starts again within REPEAT_S of its last push stays silent (a flapping feed is
+one alarm, not one every minute) unless it stays PERSIST_S (5 min: not a blip, after a "back to normal" the owner must hear it
+again) or is still there REPEAT_S after that push; at most DAY_MAX alarm pushes an ET day (each
+with its one "back to normal"), so a bad night can never use up ntfy's daily room that the trade alerts need. A silent one is
+still in the 15-minute report (its own condition, not skipped as a duplicate).
 Read-only: never starts, stops, arms, routes or sizes anything; it reads bot.health / bot.running / bot.cfg only.
 Driven by engine/watchdog.Watchdog.check (every 30 s, server.py) -> worst case ~2 minutes from the last good poll / bar.
 Tests: python -X utf8 -m tests.test_fast_alarm
@@ -35,6 +40,9 @@ ET = ZoneInfo("America/New_York")
 POLL_LIMIT_S = 90
 FEED_LIMIT_S = 120
 START_GRACE_S = 180
+REPEAT_S = 30 * 60                                    # the same condition again within this of its last push: no new push
+DAY_MAX = 6                                           # alarm pushes (starts) an ET day at most
+PERSIST_S = 5 * 60                                    # a held repeat that lasts this long is pushed anyway (not a blip)
 WIN_FROM, WIN_TO = 1 * 60 + 58, 15 * 60 + 55          # ET minutes, weekdays
 COND = {"bot_down": "bot_down", "feed_stale": "feed_stale", "bot_stopped": "bot_stopped"}   # -> tools/pc_report.py condition code
 TITLE = {"bot_down": "ZEUS not polling", "feed_stale": "FEED STALE", "bot_stopped": "Bot stopped"}
@@ -62,7 +70,7 @@ def _span(s) -> str:
     return f"{s} s" if s < 120 else f"{s // 60} min"
 
 
-def evaluate(bot, now, server_started_at=None, autostart=None) -> dict:
+def evaluate(bot, now, server_started_at=None, autostart=None, run_seen=None) -> dict:
     """{code: text} of what stops the bot from taking a trade right now (empty outside the hours / for a paper bot). Pure.
     server_started_at / autostart (engine/watchdog: this server's start, data/autostart.json = the bot was running and nobody
     pressed Stop / kill since): a bot that is NOT running in the entry hours although it should be -> "bot_stopped"."""
@@ -82,10 +90,15 @@ def evaluate(bot, now, server_started_at=None, autostart=None) -> dict:
     if str(cfg.get("adapter") or "paper") == "paper" or not in_hours(now):
         return out
     started = float(getattr(bot, "started_at", None) or 0)
+    if run_seen:
+        # redteam 2026-11-20: LiveBot.started_at is the trading day's FIRST start (min with the restored state) and
+        # health.last_ok_poll survives a STOP: a START / Re-arm / server restart in the entry hours read "no good poll for
+        # 3 h" before its first poll. The grace and the age count from when this run was first seen running.
+        started = max(started, float(run_seen))
     if not started or now - started < START_GRACE_S:
         return out
     h = getattr(bot, "health", None) or {}
-    last_ok = float(h.get("last_ok_poll") or started)
+    last_ok = max(float(h.get("last_ok_poll") or 0), started)
     age = now - last_ok
     th = getattr(bot, "thread", None)
     dead = th is not None and hasattr(th, "is_alive") and not th.is_alive()
@@ -118,8 +131,35 @@ class FastAlarm:
     def __init__(self, send=None, clock=time.time):
         self.clock = clock
         self._send = send                      # tests: send(payload) -> "sent" | why
-        self.active: dict = {}                 # code -> {"since", "key", "sent"}
+        self.active: dict = {}                 # code -> {"since", "key", "sent", "held"}
         self.last: dict = {}
+        self.pushed: dict = {}                 # code -> time of its last start push (REPEAT_S)
+        self.run_seen = None                   # when the bot was first seen running in this run (a START / restart resets it)
+        self._was_running = False
+        self.day_n: dict = {}                  # ET day -> start pushes that day (DAY_MAX)
+
+    def _may_push(self, code, now, since=None) -> str | None:
+        """None = this start may go to the phone; else why it stays silent (rate limits). since: when this (held) occurrence
+        began: one that lasted PERSIST_S is not a blip and goes out despite the repeat wait (never past DAY_MAX)."""
+        lp = self.pushed.get(code)
+        if lp is not None and now - lp < REPEAT_S and not (since is not None and now - float(since) >= PERSIST_S):
+            return f"held: {code} pushed {_span(now - lp)} ago"
+        day = dt.datetime.fromtimestamp(float(now), ET).date().isoformat()
+        if int(self.day_n.get(day) or 0) >= DAY_MAX:
+            return f"held: {DAY_MAX} alarm pushes today already"
+        return None
+
+    def _start(self, code, text, now, since=None) -> tuple:
+        key = f"fast:{code}:{int(now)}"
+        held = self._may_push(code, now, since)
+        if held:
+            return key, held
+        r = self.send({"key": key, "code": code, "cond": COND[code], "title": TITLE[code], "body": text})
+        if r == "sent":
+            self.pushed[code] = float(now)
+            day = dt.datetime.fromtimestamp(float(now), ET).date().isoformat()
+            self.day_n = {d: n for d, n in self.day_n.items() if d >= day} | {day: int(self.day_n.get(day) or 0) + 1}
+        return key, r
 
     def send(self, p: dict) -> str:
         try:
@@ -137,13 +177,17 @@ class FastAlarm:
         try:
             if not enabled():
                 return done
-            cur = evaluate(bot, now, server_started_at, autostart)
+            running = bool(getattr(bot, "running", False))
+            if running and not self._was_running:
+                self.run_seen = now
+            self._was_running = running
+            cur = evaluate(bot, now, server_started_at, autostart, run_seen=self.run_seen if running else None)
             for code, text in cur.items():
                 a = self.active.get(code)
-                if a is None:
-                    key = f"fast:{code}:{int(now)}"
-                    r = self.send({"key": key, "code": code, "cond": COND[code], "title": TITLE[code], "body": text})
-                    self.active[code] = {"since": int(now), "key": key, "sent": r == "sent"}
+                if a is None or (a.get("held") and not a.get("sent") and self._may_push(code, now, a.get("since")) is None):
+                    key, r = self._start(code, text, now, a.get("since") if a else None)   # new, or a held one that lasted
+                    self.active[code] = {"since": int(a["since"]) if a else int(now), "key": key, "sent": r == "sent",
+                                         "held": str(r).startswith("held")}
                     done.append((key, r))
             for code in [c for c in self.active if c not in cur]:
                 a = self.active.pop(code)

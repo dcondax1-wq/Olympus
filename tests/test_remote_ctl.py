@@ -198,6 +198,16 @@ def main():
               names(calls).count("stop") == 1 and "now flat" in w.notes[-1][1] and not rc.hb_field(w.done)["pending_stop"], calls)
         c.tick()
         check("not stopped twice", names(calls).count("stop") == 1)
+        # redteam 2026-11-20: a 'stop once flat' left in remote_done.json while remote control was off (GitHub-free mode since
+        # 2026-11-08) must never stop today's bot when the backup repo turns remote control back on
+        calls.clear()
+        dd = rc.load_done(w.done)
+        dd["pending_stop"] = {"id": "old-stop-1", "t": int(time.time()) - 5 * 86400}
+        rc.save_done(dd, w.done)
+        c.tick()
+        check("a 5-day-old pending stop: dropped (ignored, named), the bot is NOT stopped",
+              "stop" not in names(calls) and not rc.hb_field(w.done)["pending_stop"]
+              and (rc.load_done(w.done).get("done") or {}).get("old-stop-1", {}).get("status") == "ignored", (calls, rc.load_done(w.done)))
 
         # ---- stop now
         calls.clear()

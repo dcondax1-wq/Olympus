@@ -219,6 +219,18 @@ def do_start(body: dict, local: bool) -> dict:
     return {"ok": False, "lines": [f"NOT STARTED: {err or 'the START step did not begin'}"]}
 
 
+def _running() -> bool:
+    """The bot runs right now (engine/go.bot_running: the server's own /api/live/state; tests stub _S["running"]). An unknown
+    answer is False: the wait below then drops (it never starts a bot it cannot see)."""
+    try:
+        if _S["running"]:
+            return bool(_S["running"]())
+        from engine import go
+        return bool(go.bot_running())
+    except Exception:  # noqa: BLE001
+        return False
+
+
 def _wait(phrase: str) -> None:
     _W.update(state="waiting", t0=_now(), said=None, gen=_W["gen"] + 1)
     gen = _W["gen"]
@@ -227,6 +239,14 @@ def _wait(phrase: str) -> None:
         while _W["gen"] == gen and _now() - _W["t0"] < WAIT_MAX_S:
             _S["sleep"](WAIT_POLL_S)
             if _W["gen"] != gen:
+                return
+            if not _running():
+                # redteam 2026-11-20: it waits for the RUNNING bot to be flat. A bot that is no longer running was stopped
+                # (STOP BOT, HOLD TO KILL, a remote stop / kill, a guard) or crashed: re-arming now would start trading again
+                # against the owner's own stop (onboard.rearm arms at once when no bot runs). Dropped; one tap starts it again.
+                _W.update(state="dropped", said="the bot was stopped while this waited (STOP, kill or a crash): it does not "
+                                                "start by itself. Tap Start trading again to start it.")
+                log({"t": int(_now()), "action": "start", "ok": False, "why": "dropped: the bot was stopped while it waited"})
                 return
             try:
                 r = _rearm(p)

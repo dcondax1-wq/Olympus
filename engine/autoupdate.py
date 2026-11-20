@@ -278,6 +278,18 @@ def extra_flat_reason(bot) -> str | None:
             for lg in list(getattr(getattr(a, "adapter", None), "legs", None) or []):
                 if isinstance(lg, dict) and lg.get("status") in OPEN_LEG:
                     return f"{lab}'s NinjaTrader bracket is {lg.get('status')}"
+        # redteam 2026-11-20: the extra accounts (engine/multi_account: Zlarior 25K #2, the Rapid's LIT lane ...) and the fleet's
+        # followers hold trades of their own (an extra account can be in a LIT trade the bot's own account did not take)
+        for a in list(getattr(getattr(bot, "accts", None), "accounts", None) or []):
+            nm = getattr(a, "name", None) or "an extra account"
+            if getattr(a, "open_t", None) is not None:
+                return f"{nm} has a position open"
+            for lg in list(getattr(getattr(a, "adapter", None), "legs", None) or []):
+                if isinstance(lg, dict) and lg.get("status") in OPEN_LEG:
+                    return f"{nm}'s NinjaTrader bracket is {lg.get('status')}"
+        fl = getattr(bot, "fleet", None)
+        if fl is not None and callable(getattr(fl, "busy", None)) and fl.busy():
+            return "a fleet follower has a position open"
         return None
     except Exception as e:
         return f"cannot tell if the other accounts are flat ({e.__class__.__name__})"
@@ -488,16 +500,50 @@ def fast_forward(sh, branch: str = BRANCH, log=None, skip_sha: str | None = None
             f"{', '.join(list(known)[:6])}" + (f" (git: {out.strip()[-120:]})" if c else ""))
         res["restore"] = dict(known)
 
+    # night-selfheal's proposal (landed by the redteam 2026-11-20): an untracked file the update brings blocks the merge ("untracked
+    # working tree files would be overwritten by merge"); engine/self_heal clears it right here, right before the merge (same bytes:
+    # removed; other bytes: snapshot at refs/olympus/self-heal + a copy in logs/self_heal/keep-*/), and puts it back when the move
+    # fails or is rolled back. data/, owner files and trade journals are never touched (self_heal.never). Never raises.
+    heal_ctx = None
+    try:
+        from . import self_heal
+        heal_ctx, its = self_heal.before_merge(getattr(sh, "cwd", ROOT) or ROOT, sh.git, new, log=log)
+        for it in its:
+            if it.get("status") in ("fixed", "need"):
+                log(f"self-heal before the merge: {it.get('text')}")
+        res["untracked_moved"] = [list(m) for m in (getattr(heal_ctx, "moved", None) or [])]
+    except Exception as e:  # noqa: BLE001
+        log(f"self-heal before the merge skipped ({e.__class__.__name__})")
     c, out = sh.git("merge", "--ff-only", "-q", new)
     if c != 0:
-        log(f"git merge --ff-only refused ({out.strip()[-160:]}): git reset --keep {new[:7]}")
+        log(f"git merge --ff-only refused ({out.strip()}): git reset --keep {new[:7]}")      # the FULL error (it names the files)
         c, out2 = sh.git("reset", "--keep", new)
         if c != 0 or git_head(sh) != new:
             sh.git("reset", "--keep", old)
             put_back(sh, known)
-            return done("failed", f"fast-forward refused: {(out.strip() or out2.strip())[-200:]}", alert=True)
+            restore_untracked(sh, res.pop("untracked_moved", None), new)
+            # the full git error (was its last 200 characters: the file names git lists first were cut, and engine/self_heal
+            # reads them from this reason)
+            return done("failed", f"fast-forward refused: {(out.strip() or out2.strip())}"[:4000], alert=True)
     log(f"fast-forwarded {old[:7]} -> {new[:7]} ({len(changed)} files)")
     return done("updated", f"{old[:7]} -> {new[:7]}")
+
+
+def restore_untracked(sh, moved, new) -> list:
+    """Put back the untracked files the self-heal moved for a merge that failed or was rolled back (engine/self_heal). Never raises."""
+    if not moved:
+        return []
+    try:
+        from . import self_heal
+        ctx = self_heal.Ctx(root=getattr(sh, "cwd", ROOT) or ROOT, apply=True, procs=[], ping=lambda: True, nt=None, temp="", pkgs={},
+                            git=lambda *a, timeout=60, env=None: sh.git(*a, timeout=timeout, env=env), flat=lambda: None)
+        ctx.moved = [tuple(m) for m in moved]
+        back = self_heal.restore_untracked(ctx, new)
+        if back:
+            sh.log(f"self-heal: put back {len(back)} untracked file(s) after the failed update: {', '.join(back[:4])}")
+        return back
+    except Exception:  # noqa: BLE001
+        return []
 
 
 def put_back(sh, restore: dict):
@@ -886,6 +932,7 @@ def run_update(sh: Shell, mode: str = "manual", now=None, flat: str | None = Non
         back = git_head(sh) == old
         if back:
             put_back(sh, ff.get("restore"))             # files checked out from main by hand: as they were before
+            restore_untracked(sh, ff.get("untracked_moved"), new)   # the untracked files the self-heal cleared for the merge
         if "requirements.txt" in changed:
             sh.py(["-m", "pip", "install", "-q", "-r", "requirements.txt"], timeout=900)
         return done("rolled_back" if back else "failed",

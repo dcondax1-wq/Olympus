@@ -299,8 +299,40 @@ def t_fast_alarm():
     b2.started_at = now - 60
     b2.health["last_ok_poll"] = now - 100
     check("no alarm in the first 3 min after a start", FAL.evaluate(b2, now) == {})
+    # redteam 2026-11-20: LiveBot.started_at = the day's FIRST start (min with the restored state) and health.last_ok_poll
+    # survives a STOP: a START / Re-arm at 13:00 after a STOP at 10:00 read "no good poll for 3 h" before its first poll
+    rs = Bot(now)
+    rs.started_at = now - 11 * 3600                        # the day's first start (restored)
+    rs.health["last_ok_poll"] = now - 3 * 3600             # the last poll before the owner's STOP
+    sent_rs = []
+    fr = FAL.FastAlarm(send=lambda p: sent_rs.append(p) or "sent", clock=lambda: now)
+    rs.running = False
+    fr.step(rs, now - 60)                                  # stopped
+    rs.running = True
+    fr.step(rs, now)                                       # START (Re-arm): its first poll is still running
+    fr.step(rs, now + 30)
+    check("START / Re-arm in the entry hours after a long STOP: no 'not polling' before its first poll (grace from this run)",
+          sent_rs == [], sent_rs)
+    rs.health["last_ok_poll"] = now + 50
+    fr.step(rs, now + 90)
+    check("... and none once it polls", sent_rs == [], sent_rs)
+    rs.health["last_ok_poll"] = now + 50
+    fr.step(rs, now + 50 + 200)
+    check("... a run that then really stops polling still alarms (200 s without a good poll)", [p["cond"] for p in sent_rs] == ["bot_down"],
+          sent_rs)
+    st2 = Bot(now)
+    st2.started_at = now - 11 * 3600
+    st2.health["last_ok_poll"] = None
+    fr2 = FAL.FastAlarm(send=lambda p: sent_rs.append(p) or "sent", clock=lambda: now)
+    n0 = len(sent_rs)
+    fr2.step(st2, now)                                     # a server restart: a new process sees the resumed bot running
+    fr2.step(st2, now + 120)
+    check("server restart in the entry hours: no alarm in the new run's grace", len(sent_rs) == n0, sent_rs[n0:])
+    fr2.step(st2, now + 200)
+    check("... it alarms if the resumed bot never polls (stuck from its start)", len(sent_rs) == n0 + 1, sent_rs[n0:])
     sent = []
     fa = FAL.FastAlarm(send=lambda p: sent.append(p) or "sent", clock=lambda: now)
+    fa.run_seen, fa._was_running = now - 3600, True      # the bot has run for an hour when these steps start
     b.health["last_ok_poll"] = now - 100
     b.health["last_1m_bar_t"] = now - now % 60 + 60       # fresh bars for the whole sequence below
     fa.step(b, now)
@@ -325,12 +357,122 @@ def t_fast_alarm():
             os.environ.pop("LE_FAST_ALARM", None)
         else:
             os.environ["LE_FAST_ALARM"] = old
+    # redteam 2026-11-20: the 15-minute report's own "Bot stopped" condition is quiet on CME holidays too (it used weekday hours)
+    from tools import pc_report as PR
+    for lab, t, want in (("Wed 10:00", ts(2026, 11, 18, 10, 0), True), ("Thanksgiving 14:00 (after the 13:00 halt)", ts(2026, 11, 26, 14, 0), False),
+                         ("Christmas 10:00", ts(2026, 12, 25, 10, 0), False), ("New Year's Day 10:00", ts(2027, 1, 1, 10, 0), False),
+                         ("Thanksgiving 10:00 (open until 13:00)", ts(2026, 11, 26, 10, 0), True)):
+        check(f"pc_report.entry_hours {lab}: {want}", PR.entry_hours(t) is want, PR.entry_hours(t))
+    cond = PR.conditions({"market_open": False, "hb_age": 60, "server": True, "entry_hours": PR.entry_hours(ts(2026, 12, 25, 10, 0)),
+                          "hb": {"running": False}})
+    check("... a bot stopped on Christmas Day: no 'Bot stopped' alarm", "bot_stopped" not in cond, cond)
     w_fake = WD.Watchdog(b, send=lambda t: None, clock=lambda: now)
     check("watchdog with a fake clock (tests): no fast alarm (never pushes to the phone)", w_fake.fast is None)
     w_real = WD.Watchdog(SimpleNamespace(running=False, health={}), send=lambda t: None)
     check("the server's watchdog (real clock) carries the fast alarm", isinstance(w_real.fast, FAL.FastAlarm))
     w_real.check()
     check("watchdog.status shows the fast alarm", "fast_alarm" in w_real.status())
+
+
+# ------------------------------------------------------------------------------------------------ 4b. no alarm storm (redteam)
+def t_fast_alarm_storm():
+    """redteam 2026-11-20: a feed that flaps (stale 1 min, fresh 1 min, all morning) used to push a start + a 'back' each
+    time, with no limit, and problem pushes were not counted in ntfy's daily room (the status posts use ~220 of ~250), so a
+    bad night could leave no room for the trade alerts. Now: one alarm per condition per 30 min unless it is still there
+    after that, at most 6 a day, and every problem push is counted in the day's ntfy budget."""
+    now = ts(2026, 11, 18, 9, 0, 40)
+    b = Bot(now)
+    sent = []
+    fa = FAL.FastAlarm(send=lambda p: sent.append(p) or "sent", clock=lambda: now)
+    fa.run_seen, fa._was_running = now - 3600, True      # the bot has run for an hour when these steps start
+    t = now
+    for i in range(30):                                    # 30 flaps: stale 60 s, fresh 60 s (one hour), polls fine
+        b.health["last_ok_poll"] = t - 5
+        b.health["last_1m_bar_t"] = t - t % 60 - 240       # stale
+        fa.step(b, t)
+        t += 60
+        b.health["last_ok_poll"] = t - 5
+        b.health["last_1m_bar_t"] = t - t % 60 - 60        # fresh
+        fa.step(b, t)
+        t += 60
+    starts = [p for p in sent if not p.get("back")]
+    check("flapping feed for an hour: at most 2 alarms (one per 30 min), not 30", 1 <= len(starts) <= 2, [p["key"] for p in sent])
+    check("... each 'back to normal' follows a pushed alarm only", len(sent) - len(starts) <= len(starts), [p["key"] for p in sent])
+    sent.clear()
+    fa = FAL.FastAlarm(send=lambda p: sent.append(p) or "sent", clock=lambda: now)
+    fa.run_seen, fa._was_running = now - 3600, True      # the bot has run for an hour when these steps start
+    b.health["last_1m_bar_t"] = now - now % 60 - 60
+    b.health["last_ok_poll"] = now - 5
+    fa.step(b, now)                                        # healthy
+    b.health["last_1m_bar_t"] = now - now % 60 - 240
+    b.health["last_ok_poll"] = now + 25
+    fa.step(b, now + 30)                                   # stale: pushed
+    b.health["last_1m_bar_t"] = now + 60 - (now + 60) % 60 - 60
+    b.health["last_ok_poll"] = now + 55
+    fa.step(b, now + 60)                                   # fresh: back
+    b.health["last_1m_bar_t"] = now + 120 - (now + 120) % 60 - 240
+    b.health["last_ok_poll"] = now + 115
+    fa.step(b, now + 120)                                  # stale again 90 s after its alarm: held
+    check("the same condition again within 30 min: held (no second alarm yet)", len([p for p in sent if not p.get("back")]) == 1
+          and fa.active.get("feed_stale", {}).get("held"), (sent, fa.active))
+    tt = now + 120 + FAL.PERSIST_S + 1
+    b.health["last_ok_poll"] = tt - 5
+    b.health["last_1m_bar_t"] = tt - tt % 60 - 240
+    fa.step(b, tt)
+    check("... the held repeat still there 5 min later (after a 'back to normal'): pushed then, never silent",
+          len([p for p in sent if not p.get("back")]) == 2 and fa.active["feed_stale"]["sent"], sent)
+    sent.clear()
+    fa = FAL.FastAlarm(send=lambda p: sent.append(p) or "sent", clock=lambda: now)
+    fa.run_seen, fa._was_running = now - 3600, True      # the bot has run for an hour when these steps start
+    t = now
+    for i in range(20):                                    # a lasting flap every 31 min, all day
+        b.health["last_ok_poll"] = t - 5
+        b.health["last_1m_bar_t"] = t - t % 60 - 240
+        fa.step(b, t)
+        b.health["last_1m_bar_t"] = t + 60 - (t + 60) % 60 - 60
+        fa.step(b, t + 60)
+        t += FAL.REPEAT_S + 60
+    check(f"at most {FAL.DAY_MAX} alarm pushes an ET day", len([p for p in sent if not p.get("back")]) == FAL.DAY_MAX,
+          len([p for p in sent if not p.get("back")]))
+    d = tempfile.mkdtemp(prefix="nqstorm_")
+    try:
+        path = os.path.join(d, "instant.json")
+        cfg = {"ntfy": "https://ntfy.invalid", "topic": "t"}
+        n0 = NT.ntfy_today(now, path=path)
+        NT.instant_problem({"key": "fast:bot_down:1", "code": "bot_down", "cond": "bot_down", "title": "x", "body": "y"},
+                           now=now, path=path, cfg=cfg, poster=lambda *a: True)
+        check("a problem push counts in the day's ntfy budget (pc_report keeps room for the trade alerts)",
+              NT.ntfy_today(now, path=path) == n0 + 1, NT.ntfy_today(now, path=path))
+    finally:
+        shutil.rmtree(d, ignore_errors=True)
+
+
+# ------------------------------------------------------------------------------------------------ 3b. rule holds are quiet (redteam)
+def t_rule_holds_quiet():
+    """redteam 2026-11-20: every held-back entry became a loud MISSED TRADE push that rings in quiet hours, also when the bot's
+    own rule held it back on purpose (soft daily loss, weekly stop / size 0, the equity filter, the 50K's one-position rule):
+    a 03:00 ET LIT signal after the weekly stop would wake the owner each time. A rule hold is now a quiet 'held back' notice;
+    a malfunction stays loud."""
+    et_ = ts(2026, 11, 19, 3, 5)
+    s = NT.merge({})
+    for why in ("GUARD today's routed P&L -$520 reached the $500 soft daily loss",
+                "size 0: weekly loss stop reached (-$1,250 this week)",
+                "last 5 signals -2.10R > -1.0R: skipped",
+                "one position on the 50K: ATLAS on Zlarior 50K holds a LONG ema trade from 02:55 ET (conflict rule first_in)"):
+        mp = FA._missed_problem(FA.missed_payload(et_, "", why, None, et_ + 30))
+        m = NT.problem_message(mp, now=et_ + 30, s=s)
+        check(f"rule hold is a quiet notice at 03:05 ET (no ring): {why[:40]}", mp.get("soft") and m["priority"] == "low"
+              and "Held back" in m["title"] and "MISSED" not in m["title"], (mp, m))
+    m10 = NT.problem_message(FA._missed_problem(FA.missed_payload(et_, "", "size 0: weekly loss stop", None, et_)),
+                             now=ts(2026, 11, 19, 10, 0), s=s)
+    check("... by day: a normal-priority notice", m10["priority"] == "default", m10)
+    for why in ("feed stale", "seen 3 min late (restart / feed gap) - not chasing", "refused: REFUSED: NinjaTrader reports every "
+                "connection DISCONNECTED", "STARTUP DISARMED until reconciled: x", "held back by the bot (see the bot log)",
+                "the model entered while the bot was down or its feed was behind: never routed"):
+        mp = FA._missed_problem(FA.missed_payload(et_, "", why, None, et_ + 30))
+        m = NT.problem_message(mp, now=et_ + 30, s=s)
+        check(f"malfunction stays a loud MISSED TRADE that rings at 03:05 ET: {why[:40]}", not mp.get("soft")
+              and m["priority"] == "high" and m["title"].startswith("MISSED TRADE"), (mp, m))
 
 
 # ------------------------------------------------------------------------------------------------ 5. no update under ATLAS
@@ -350,6 +492,19 @@ def t_update_flat():
     check("ATLAS's bracket open at NinjaTrader: no update", "ATLAS's NinjaTrader bracket" in (AU.bot_flat_reason(bot) or ""))
     bot.acct_b = B(legs=[{"status": "closed"}])
     check("ATLAS's closed bracket: flat", AU.bot_flat_reason(bot) is None)
+    # redteam 2026-11-20: an extra account / a fleet follower in a trade of its own keeps the update / restart away too
+    bot.accts = SimpleNamespace(accounts=[SimpleNamespace(name="Zlarior 25K #2", open_t=123, adapter=SimpleNamespace(legs=[]))])
+    check("an extra account holds a position: no update / restart", AU.bot_flat_reason(bot) == "Zlarior 25K #2 has a position open",
+          AU.bot_flat_reason(bot))
+    bot.accts = SimpleNamespace(accounts=[SimpleNamespace(name="Rapid", open_t=None, adapter=SimpleNamespace(legs=[{"status": "pending"}]))])
+    check("an extra account's bracket pending: no update", "Rapid's NinjaTrader bracket is pending" == AU.bot_flat_reason(bot),
+          AU.bot_flat_reason(bot))
+    bot.accts = SimpleNamespace(accounts=[SimpleNamespace(name="Rapid", open_t=None, adapter=SimpleNamespace(legs=[]))])
+    bot.fleet = SimpleNamespace(busy=lambda: True)
+    check("a fleet follower holds a position: no update", AU.bot_flat_reason(bot) == "a fleet follower has a position open",
+          AU.bot_flat_reason(bot))
+    bot.fleet = SimpleNamespace(busy=lambda: False)
+    check("everyone flat: an update may run", AU.bot_flat_reason(bot) is None, AU.bot_flat_reason(bot))
 
 
 # ------------------------------------------------------------------------------------------------ 6. extra accounts
@@ -390,10 +545,29 @@ def t_extra_account():
     check("exit of an entry this account never routed: the safety flatten still goes out", len(ex) == 1, sent)
     check("... and it books $0, not the model's -$250", ex and ex[0].get("pnl") == 0.0, ex)
     check("... no close in its eval book", not acc.closes, acc.closes)
+    # redteam 2026-11-20: the Rapid EOD's LIT lane shares ONE NinjaTrader account with ATLAS's lane (engine/rapid.RapidAtlas):
+    # its "in case" flatten of an entry it never routed is a CLOSEPOSITION of the whole account = it would close ATLAS's trade
+    for lab, partner, want in (("ATLAS's lane holds a position", SimpleNamespace(label="ATLAS Rapid", open_t=clock["t"] - 900,
+                                                                                 adapter=SimpleNamespace(legs=[])), 0),
+                               ("ATLAS's lane has a bracket still closing", SimpleNamespace(label="ATLAS Rapid", open_t=None,
+                                adapter=SimpleNamespace(legs=[{"status": "closing", "entry_t": 1}])), 0),
+                               ("ATLAS's lane is flat", SimpleNamespace(label="ATLAS Rapid", open_t=None,
+                                                                        adapter=SimpleNamespace(legs=[{"status": "closed"}])), 1)):
+        sent.clear()
+        r2 = R()
+        r2.bot = SimpleNamespace(fleet=None, acct_r=partner)
+        lane = MA.Account({**spec, "id": "rapid_lit", "lane": "rapid"}, r2)
+        lane.adapter = SimpleNamespace(route_all_exits=True, send=lambda a: sent.append(a) or {"ok": True})
+        gap2 = {**gap_tr, "entry_t": clock["t"] - 60, "exit_t": clock["t"] + 300}
+        clock["t"] += 400
+        lane._process({**ctx, "res": {"trades": [gap2]}, "now": clock["t"], "start": clock["t"] - 3600})
+        n = len([a for a in sent if a.get("side") == "exit"])
+        check(f"Rapid LIT lane, exit of an entry it never routed, {lab}: {'no CLOSEPOSITION' if not want else 'the safety flatten goes'}",
+              n == want, sent)
 
 
 def main() -> bool:
-    for f in (t_unknown, t_not_routed, t_missed_now, t_fast_alarm, t_update_flat, t_extra_account):
+    for f in (t_unknown, t_not_routed, t_missed_now, t_fast_alarm, t_fast_alarm_storm, t_rule_holds_quiet, t_update_flat, t_extra_account):
         try:
             f()
         except Exception as e:

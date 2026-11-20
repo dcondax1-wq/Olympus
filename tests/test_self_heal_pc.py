@@ -94,6 +94,9 @@ def test_locks(tmp):
           and all(os.path.exists(p) for p in (lk, sc, ref)), r)
     r = SH.fix_git_locks(ctx(root, now, procs=[(7, "git.exe")]))
     check("a. git running: nothing removed (info)", statuses(r) == ["info"] and os.path.exists(lk), r)
+    r = SH.fix_git_locks(ctx(root, now, apply=True, procs=[]))
+    check("a. the running programs cannot be read: nothing removed (a long git may be at work; redteam)",
+          statuses(r) == ["info"] and all(os.path.exists(p) for p in (lk, sc, ref)), r)
     r = SH.fix_git_locks(ctx(root, now, apply=True))
     check("a. apply: index.lock, refs/heads/main.lock and the scratch dir's lock removed", statuses(r) == ["fixed"]
           and not any(os.path.exists(p) for p in (lk, sc, ref)), r)
@@ -188,6 +191,66 @@ def test_update(tmp):
     check("b. up to date: nothing to say", SH.fix_update(ctx(pc3, now, apply=True)) == [])
 
 
+# ------------------------------------------------------------------------------------------------ b2. the gates + the autoupdate hook (redteam)
+def test_update_gates(tmp):
+    """redteam 2026-11-20: the hourly run never moves / removes a file in the update's way (it only names it: removing a file the
+    running bot imports up to a trading day before the update that brings it back could break the bot), never acts 01:50-16:00
+    ET, and never touches the update / pid / clock while a trade may be open on ANY account (LIT's files + every
+    data/ninjatrader_state*.json bracket: ATLAS, the extra accounts, the Rapid lanes). The clearing happens inside the
+    auto-update, right before its merge (night-selfheal's proposal), and is undone when the merge still fails."""
+    up, pc = repo_pair(tmp, "bg")
+    write(os.path.join(pc, "tools", "new_same.py"), "SAME = 1\n")
+    write(os.path.join(pc, "engine", "new_mine.py"), "MINE = 1\n")
+    r = SH.run(ctx(pc, SAT, apply=True, flat=lambda: None), only=["update"])
+    st = {i["key"]: i for i in r["items"]}
+    check("b2. hourly run: the untracked files in the update's way are only named (info), never removed",
+          st.get("update_untracked", {}).get("status") == "info" and os.path.exists(os.path.join(pc, "tools", "new_same.py"))
+          and os.path.exists(os.path.join(pc, "engine", "new_mine.py")), r["items"])
+    write(os.path.join(pc, "data", "autoupdate.json"), json.dumps({"last": {"reason": "fast-forward refused: error: Your local changes "
+                                                                            "to the following files would be overwritten by merge: cache/dash/bt.json"}}))
+    write(os.path.join(pc, "cache", "dash", "bt.json"), '{"v":"pc"}\n')
+    r = SH.run(ctx(pc, TUE, apply=True, flat=lambda: None), only=["update"])
+    check("b2. hourly run in the trading hours (Tue 10:00 ET): the update remedy does nothing at all", r["items"] == []
+          and open(os.path.join(pc, "cache", "dash", "bt.json")).read() == '{"v":"pc"}\n', r["items"])
+    for f in ("update", "pid", "clock"):
+        r = SH.run(ctx(pc, SAT, apply=True, flat=lambda: "ATLAS has a position open"), only=[f])
+        check(f"b2. a trade open: {f} not touched (info only)", [i["status"] for i in r["items"]] == ["info"]
+              and "ATLAS has a position open" in r["items"][0]["text"], r["items"])
+    check("b2. ... the bot-made file stays as the PC wrote it", open(os.path.join(pc, "cache", "dash", "bt.json")).read() == '{"v":"pc"}\n')
+    os.makedirs(os.path.join(pc, "data"), exist_ok=True)
+    json.dump({"legs": [{"status": "protected", "entry_t": 1}]}, open(os.path.join(pc, "data", "ninjatrader_state_acctr.json"), "w"))
+    c0 = ctx(pc, SAT, apply=True)
+    check("b2. trade_open: an open bracket in ANY NinjaTrader state file (the Rapid's ATLAS lane) = not flat",
+          "ninjatrader_state_acctr.json" in (SH.trade_open(c0) or ""), SH.trade_open(c0))
+    json.dump({"legs": [{"status": "closed", "entry_t": 1}]}, open(os.path.join(pc, "data", "ninjatrader_state_acctr.json"), "w"))
+    check("b2. ... a closed one = flat", SH.trade_open(ctx(pc, SAT, apply=True)) is None, SH.trade_open(ctx(pc, SAT, apply=True)))
+    # the auto-update's own fast-forward clears them right before its merge
+    from engine import autoupdate as AU
+    os.remove(os.path.join(pc, "cache", "dash", "bt.json"))
+    g(pc, "checkout", "-q", "--", "cache/dash/bt.json")
+    os.remove(os.path.join(pc, "data", "ninjatrader_state_acctr.json"))
+    os.remove(os.path.join(pc, "data", "autoupdate.json"))
+    logs = []
+    sh = AU.Shell(cwd=pc, log=logs.append)
+    src = {"remote": "origin", "url": None, "branch": "main", "account": None, "label": "origin/main"}
+    ff = AU.fast_forward(sh, "main", src=src)
+    keep = [d for d in os.listdir(os.path.join(pc, "logs", "self_heal")) if d.startswith("keep-")] if os.path.isdir(os.path.join(pc, "logs", "self_heal")) else []
+    mine = os.path.join(pc, "logs", "self_heal", keep[0], "engine", "new_mine.py") if keep else ""
+    check("b2. autoupdate.fast_forward: untracked files in the way cleared right before the merge -> updated",
+          ff["status"] == "updated" and open(os.path.join(pc, "engine", "new_mine.py")).read() == "THEIRS = 1\n"
+          and os.path.isfile(mine) and open(mine).read() == "MINE = 1\n", (ff, logs[-4:]))
+    # a merge that still fails (a data/ file in the way: never touched) -> the moved files are put back, the full git error kept
+    up2, pc2 = repo_pair(tmp, "bg2")
+    write(os.path.join(pc2, "engine", "new_mine.py"), "MINE = 1\n")
+    write(os.path.join(pc2, "data", "board", "shared.jsonl"), '{"mine":1}\n')
+    ff = AU.fast_forward(AU.Shell(cwd=pc2, log=lambda t: None), "main", src=src)
+    check("b2. a data/ file still in the way: not updated, the self-heal's move undone (engine/new_mine.py is back, as it was)",
+          ff["status"] == "failed" and open(os.path.join(pc2, "engine", "new_mine.py")).read() == "MINE = 1\n"
+          and open(os.path.join(pc2, "data", "board", "shared.jsonl")).read() == '{"mine":1}\n', ff)
+    check("b2. ... the reason keeps git's full error (it names the file)", "data/board/shared.jsonl" in ff["reason"]
+          and "untracked" in ff["reason"].lower(), ff["reason"])
+
+
 # ------------------------------------------------------------------------------------------------ c. NinjaTrader order files
 def test_oif(tmp):
     root, nt = os.path.join(tmp, "c"), os.path.join(tmp, "c_nt")
@@ -215,6 +278,8 @@ def test_pid(tmp):
     check("d. the supervisor runs (pid 4242 = powershell.exe): kept", SH.fix_pids(ctx(root, now, apply=True, procs=[(4242, "powershell.exe")])) == []
           and os.path.exists(p))
     check("d. processes unknown: nothing guessed", SH.fix_pids(ctx(root, now, apply=True, procs=[])) == [] and os.path.exists(p))
+    check("d. the pid runs but its name is unreadable (psutil access denied): kept, never guessed (redteam)",
+          SH.fix_pids(ctx(root, now, apply=True, procs=[(4242, "")])) == [] and os.path.exists(p))
     r = SH.fix_pids(ctx(root, now, apply=True, procs=[(4242, "chrome.exe")]))
     check("d. pid reused by another program: removed", statuses(r) == ["fixed"] and "chrome" in r[0]["text"] and not os.path.exists(p), r)
     write(p, "4242\n")
@@ -384,6 +449,13 @@ def test_heal(tmp):
     check("i. heal: pid fixed, server needs you, state + tiny.json written", [i["fault"] for i in r["fixed"]] == ["pid"]
           and [i["fault"] for i in r["need"]] == ["server"] and st["need"] == ["server"] and tn and tn["ok"] is False, (r["items"], st))
     check("i. one board event for what it could not fix (the server: no phone push)", sent == {"board": 1, "push": 0}, sent)
+    got = []
+    it = SH.item("clock", "clock", "need", "the PC clock is 3.0 s behind", "Sync now")
+    night = dt.datetime(2026, 11, 21, 1, 0, tzinfo=ET).timestamp()
+    SH.alert(ctx(root, night, apply=True), it, board=lambda *a: True, push=lambda m: got.append(m) or True)
+    SH.alert(ctx(root, SAT, apply=True), it, board=lambda *a: True, push=lambda m: got.append(m) or True)
+    check("i. a 'needs you' at 01:00 ET is a silent push (quiet hours), at 11:00 a normal high one (redteam)",
+          [m["priority"] for m in got] == ["low", "high"], [m["priority"] for m in got])
     check("i. the ext line says it in plain words", "needs you: the bot server is down" in (tn or {}).get("line", ""), tn)
     r = SH.heal(ctx(root, now + 3600, apply=True, ping=lambda: False), board=board, push=push, disk_free=40.0)
     check("i. the same fault an hour later: no second alert", sent == {"board": 1, "push": 0}, sent)
@@ -456,7 +528,7 @@ def test_wiring(tmp):
 def main() -> int:
     tmp = tempfile.mkdtemp(prefix="lesh_")
     try:
-        for fn in (test_locks, test_update, test_oif, test_pid, test_server, test_pip, test_clock, test_clean, test_heal, test_wiring):
+        for fn in (test_locks, test_update, test_update_gates, test_oif, test_pid, test_server, test_pip, test_clock, test_clean, test_heal, test_wiring):
             try:
                 fn(tmp)
             except Exception as e:  # noqa: BLE001

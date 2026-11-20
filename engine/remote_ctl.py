@@ -60,6 +60,7 @@ CMD_FILE = "control/command.json"
 LOCAL_REF = "refs/le/control"                      # a private ref: never touches FETCH_HEAD, the index or the work tree
 DONE_PATH = os.path.join(ROOT, "data", "remote_done.json")     # gitignored
 MAX_AGE_S = 15 * 60
+PENDING_MAX_S = 18 * 3600                          # a 'stop once flat' older than this is dropped (a session is 02:00-15:55)
 FUTURE_S = 5 * 60
 EVERY_S = 60.0
 KEEP_IDS = 300
@@ -483,6 +484,19 @@ class RemoteControl:
         d = load_done(self.done_path)
         p = d.get("pending_stop")
         if not p:
+            return None
+        try:
+            age = float(now) - float(p.get("t") or 0)
+        except (TypeError, ValueError):
+            age = PENDING_MAX_S + 1
+        if age > PENDING_MAX_S:
+            # redteam 2026-11-20: remote control was OFF on the GitHub-free PC since 2026-11-08 and comes back ON with the
+            # backup repo (control_source): a 'stop once flat' left in data/remote_done.json from then must never stop
+            # today's bot at its first flat moment. One session (02:00-15:55) fits in PENDING_MAX_S; anything older is dropped.
+            d.pop("pending_stop", None)
+            cid = str(p.get("id") or "stop")
+            self._finish(d, cid, "stop", "ignored", f"expired: a stop-once-flat from {int(age // 3600)} h ago was dropped, the bot "
+                                                    "keeps running (send a new stop if you still want it)", now)
             return None
         if getattr(self.bot, "running", False) and self._flat():
             return None
