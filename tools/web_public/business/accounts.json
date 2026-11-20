@@ -81,8 +81,8 @@
   }
  ],
  "decisions": [
-  "Tell Claude: health cover for 2027 (job / parent / spouse / none), and are you under 34? (Maryland deadline Dec 31 for Jan 1)",
-  "Before the first ATLAS payout: open a free brokerage account with a Treasury money fund for the tax pot (Fidelity, Schwab or Vanguard, ~20 min)"
+  "Tell Claude: 2027 health cover (job / parent / spouse / none), under 34? Deadline Dec 31",
+  "Before ATLAS's first payout: open a free brokerage + Treasury fund for the tax pot (20 min)"
  ],
  "limits": "MFFU lets you hold 5 funded accounts: 1 Builder 50K, 2 Builder 25K, 3 Rapid EOD 50K, 3 Rapid EOD 25K (5 in all). Up to 10 evals.",
  "rules": [
