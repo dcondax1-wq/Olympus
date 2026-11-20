@@ -19,7 +19,7 @@ if "%PUB%"=="" goto :nots
 python -X utf8 -m tools.caller.onoff on --public "%PUB%"
 if errorlevel 1 goto :notstarted
 python -X utf8 -m tools.caller.funnel hook "%PUB%"
-start "Olympus caller" /min python -X utf8 -m tools.caller.server --public "%PUB%"
+start "Olympus caller" /min /low python -X utf8 -m tools.caller.server --public "%PUB%"
 echo.
 echo  [OK] AI caller is ON at %PUB%  (CALLER_STOP.bat turns it off)
 echo.

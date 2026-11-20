@@ -28,7 +28,7 @@ def cf_keys(h=None) -> dict:
     return {k: str(j.get(k) or "") for k in ("cf_account", "cf_kv_namespace", "cf_kv_token")}
 
 
-def pull(h=None, opener=None, s=None) -> dict:
+def pull(h=None, opener=None, s=None, leads: dict | None = None) -> dict:
     k = cf_keys(h)
     if not all(k.values()):
         return {"ok": False, "why": "no Cloudflare KV keys yet (CALLER_SETUP.bat)", "added": 0}
@@ -40,6 +40,9 @@ def pull(h=None, opener=None, s=None) -> dict:
         with opener(urllib.request.Request(url, method=method, headers=hdr), timeout=20) as r:
             return r.read().decode()
     s = s or C.settings(h)
+    if leads is None:
+        from . import run as R
+        leads = R.leads_by_phone()       # security review C1: only our own leads' numbers, with their own lead id
     names = [x["name"] for x in json.loads(req(base + "/keys?prefix=c%3A")).get("result", [])]
     added, refused = 0, 0
     for name in names:
@@ -47,7 +50,7 @@ def pull(h=None, opener=None, s=None) -> dict:
         try:
             item = json.loads(req(base + "/values/" + q))
             when = dt.datetime.fromisoformat(str(item["received"]).replace("Z", "+00:00"))
-            ok, _, _ = K.record(item.get("form") or {}, s, h, now=when, ip=str(item.get("ip", "")), ua=str(item.get("ua", "")))
+            ok, _, _ = K.record(item.get("form") or {}, s, h, now=when, ip=str(item.get("ip", "")), ua=str(item.get("ua", "")), leads=leads)
         except (ValueError, KeyError, TypeError):
             ok = False
         added += int(ok)

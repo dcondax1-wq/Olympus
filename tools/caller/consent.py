@@ -56,10 +56,21 @@ def _all(h=None) -> list:
     return out
 
 
-def record(form: dict, s: dict, h=None, now: dt.datetime | None = None, ip: str = "", ua: str = "") -> tuple:
-    """(ok, message, rec). form = {phone, business, signed_name, email?, lead_id?, agree: true, version}. Refuses anything incomplete."""
+CONFIRM_VIAS = ("inbound_call", "owner")
+
+
+def record(form: dict, s: dict, h=None, now: dt.datetime | None = None, ip: str = "", ua: str = "", leads: dict | None = None) -> tuple:
+    """(ok, message, rec). form = {phone, business, signed_name, email?, lead_id?, agree: true, version}. Refuses anything incomplete.
+    SECURITY REVIEW 2026-11-20: anyone on the internet can post this form, for any number. So (1) with `leads` (run.leads_by_phone)
+    the number must be one of OUR leads and lead_id must be that lead's own id (no stranger's number, no other business); (2) a
+    consent is only PENDING: valid_for() needs a confirm row first (the business calls our number from that line = inbound_call, or
+    the owner checks it himself = owner). A forged form therefore never makes a call."""
     now = now or dt.datetime.now(dt.timezone.utc)
     num = G.e164(form.get("phone", ""))
+    if leads is not None and num:
+        lead = leads.get(num)
+        if not lead or str(lead.get("id", "")) != str(form.get("lead_id", "")):
+            return False, ("We could not match this number to your preview. Please call us instead: " + str(s.get("callback_number", ""))), None
     name = re.sub(r"\s+", " ", str(form.get("signed_name", ""))).strip()[:80]
     biz = re.sub(r"\s+", " ", str(form.get("business", ""))).strip()[:120]
     if not num:
@@ -74,14 +85,37 @@ def record(form: dict, s: dict, h=None, now: dt.datetime | None = None, ip: str 
     if window not in WINDOWS:
         return False, "Please pick a time that suits you.", None
     text = text_for(s, "the number I type below", "my business") + f" (Number typed: {num}. Business: {biz or 'not given'}.)"   # what they saw + what they typed
+    try:
+        from .actions import valid_email
+    except ImportError:  # pragma: no cover
+        from actions import valid_email  # type: ignore
     rec = {"id": uuid.uuid4().hex[:12], "kind": "consent", "phone": num, "business": biz, "signed_name": name,
-           "email": str(form.get("email", ""))[:120], "lead_id": str(form.get("lead_id", ""))[:40], "version": CONSENT_VERSION,
+           "email": valid_email(form.get("email", "")), "lead_id": str(form.get("lead_id", ""))[:40], "version": CONSENT_VERSION,
            "window": window, "asked_t": now.isoformat(), "phone_source": "their form",
            "text_sha256": hashlib.sha256(text.encode()).hexdigest(), "text": text, "ts": now.isoformat(), "ip": ip[:64], "ua": ua[:200]}
     with open(_path(h), "a", encoding="utf-8") as f:
         f.write(json.dumps(rec, sort_keys=True) + "\n")
     share(rec, h)
-    return True, "Thank you. Our AI assistant will call you on a weekday between 9 and 5.", rec
+    return True, ("Thank you. To confirm it is really your line, call us once from it: " + str(s.get("callback_number", ""))
+                  + ". Then our AI assistant can call you on a weekday between 9 and 5."), rec
+
+
+def confirm(phone: str, via: str, h=None, now: dt.datetime | None = None, detail: str = "") -> bool:
+    """A pending consent becomes valid: via inbound_call (this number called us; detail = Twilio's StirVerstat) or owner (checked
+    by hand: python -m tools.caller.consent approve <number>). False when there is no consent to confirm."""
+    num = G.e164(phone)
+    if not num or via not in CONFIRM_VIAS or not any(r.get("kind") == "consent" and r.get("phone") == num for r in _all(h)):
+        return False
+    with open(_path(h), "a", encoding="utf-8") as f:
+        f.write(json.dumps({"kind": "confirm", "phone": num, "via": via, "detail": str(detail)[:60],
+                            "ts": (now or dt.datetime.now(dt.timezone.utc)).isoformat()}) + "\n")
+    return True
+
+
+def pending(phone: str, h=None) -> bool:
+    """A consent for this number that is not confirmed yet."""
+    ok, why = valid_for(phone, dt.datetime.now(dt.timezone.utc), {"limits": {"consent_max_age_days": 10 ** 6}}, h)
+    return not ok and why.startswith("not confirmed")
 
 
 def share(rec: dict, h=None) -> str:
@@ -119,6 +153,9 @@ def valid_for(phone: str, now: dt.datetime, s: dict, h=None) -> tuple:
         return False, "consent was given on an old form wording"
     if last_consent.get("text_sha256") != hashlib.sha256(str(last_consent.get("text", "")).encode()).hexdigest():
         return False, "consent record does not match its text"
+    confirmed = [r for r in rows if r.get("kind") == "confirm" and r.get("via") in CONFIRM_VIAS and r["ts"] >= last_consent["ts"]]
+    if not confirmed:
+        return False, "not confirmed yet (the business calls our number once from that line, or the owner approves it)"
     age = (now - dt.datetime.fromisoformat(last_consent["ts"])).days
     if age > int(s["limits"]["consent_max_age_days"]):
         return False, f"consent is {age} days old"
@@ -158,3 +195,25 @@ var b={{phone:f.phone.value,signed_name:f.signed_name.value,window:f.window.valu
 o.textContent="Sending...";fetch(f.dataset.post,{{method:"POST",headers:{{"Content-Type":"application/json"}},body:JSON.stringify(b),referrerPolicy:"no-referrer"}})
 .then(function(r){{return r.json()}}).then(function(j){{o.textContent=j.message;if(j.ok)f.querySelector("button").disabled=true}})
 .catch(function(){{o.textContent="Could not send. Please call us instead."}});}});}})();</script>"""
+
+
+def main(argv=None) -> int:
+    """python -m tools.caller.consent approve <number>   the owner checked this consent himself (e.g. he called them)
+       python -m tools.caller.consent list               every consent, pending or confirmed (on this PC only)"""
+    import sys
+    a = list(sys.argv[1:] if argv is None else argv)
+    if a[:1] == ["approve"] and len(a) == 2:
+        ok = confirm(a[1], "owner")
+        print("[OK] confirmed: the caller may call this number." if ok else "[FIX] no consent for that number.")
+        return 0 if ok else 1
+    if a[:1] == ["list"]:
+        for r in consented_numbers():
+            print(("PENDING  " if pending(r["phone"]) else "OK       ") + f"{r['phone'][-4:]}  {r.get('business', '')[:40]}  {r['ts'][:10]}")
+        return 0
+    print(main.__doc__)
+    return 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+

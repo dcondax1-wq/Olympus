@@ -50,7 +50,8 @@ def turn_off(h=None) -> str:
     st = C.read_json(os.path.join(C.state_dir(h), "state.json"), {}) or {}
     st.update({"on": False, "off_at": dt.datetime.now(dt.timezone.utc).isoformat()})
     _write(st, h)
-    return "Caller OFF. No call will start. (A call already talking finishes its goodbye.)"
+    return ("Caller OFF. No call will start; a call already talking says goodbye at its next turn. The public address (Funnel :10000)"
+            " stays open until CALLER_STOP.bat, which also closes it.")
 
 
 def main(argv=None) -> int:

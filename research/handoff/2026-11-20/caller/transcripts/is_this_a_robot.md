@@ -6,11 +6,11 @@ Outcome **booked**, score **100%** (offline ScriptedBrain, business: Harbor Stre
 **Business:** Wait, is this a robot? Am I talking to a real person?  
 **AI (Ava):** I'll be straight with you: I'm an AI assistant, not a person. Dee is the real person behind Brightline Web Studio, and I can book you a short call with them. Would Wednesday at 10 in the morning or Monday at 2 in the afternoon work for a 15-minute call with Dee?  
 **Business:** Huh. Okay, how much does it cost?  
-**AI (Ava):** The starter site is a one-time setup plus a small monthly fee for hosting and edits; I can text or email the exact price sheet. Dee can walk you through it. Would Wednesday at 10 in the morning or Monday at 2 in the afternoon work for a 15-minute call with Dee?  
+**AI (Ava):** The starter site is a one-time setup plus a small monthly fee for hosting and edits; I can email you the exact price sheet. Dee can walk you through it. Would Wednesday at 10 in the morning or Monday at 2 in the afternoon work for a 15-minute call with Dee?  
 **Business:** Second one, I guess.  
 **AI (Ava):** Great, Monday at 2 in the afternoon. What's the best email for the confirmation and the preview link?  
-**Business:** jane dot doe at gmail dot com  
-**AI (Ava):** Thanks, got it: jane.doe@gmail.com. You're booked for Monday at 2 in the afternoon, the confirmation is on its way. Anything else?  
+**Business:** jane dot doe at example dot com  
+**AI (Ava):** Thanks, got it: jane.doe@example.com. You're booked for Monday at 2 in the afternoon, the confirmation is on its way. Anything else?  
 **Business:** No, thanks, bye.  
 **AI (Ava):** Perfect. Talk soon, and have a great day.  
 
@@ -23,4 +23,4 @@ Outcome **booked**, score **100%** (offline ScriptedBrain, business: Harbor Stre
 | outcome = booked | PASS |
 | short call (<= 16 turns) | PASS |
 
-Actions: email:booking_confirmation: jane.doe@gmail.com; booked: Monday at 2 in the afternoon; ping: Booked: Harbor Street Plumbing Monday at 2 in the afternoon (Frederick)
+Actions: email:booking_confirmation: jane.doe@example.com; booked: Monday at 2 in the afternoon; ping: Booked: Harbor Street Plumbing Monday at 2 in the afternoon (Frederick)

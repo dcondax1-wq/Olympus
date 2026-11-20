@@ -274,8 +274,8 @@ class ClaudeBrain:
                 text += b.text
             elif b.type == "tool_use":
                 inp = b.input if isinstance(b.input, dict) else json.loads(b.input or "{}")
-                if inp.get("email"):
-                    cs.email = str(inp["email"])[:120]
+                if A.valid_email(inp.get("email")):        # one plain address only (a list / newline never reaches the outbox)
+                    cs.email = A.valid_email(inp["email"])
                 if b.name == "book_slot" and cs.email:
                     action = f"book:{int(inp.get('slot', 0))}"
                 elif b.name == "send_email":

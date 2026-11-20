@@ -39,7 +39,7 @@ businesses that signed the "Call me" form**. Full law + sources + cost: `researc
 | `tools/caller/cloudflare/consent.js`, `tools/caller/pull.py` | the Pages Function that takes the form (KV) + the PC puller |
 | `tools/caller/cost.py`, `onoff.py`, `setup_keys.py`, `funnel.py`, `registry.py`, `settings.json` | cost table, switch (START CALLING typed), getpass keys, Funnel address + Twilio hook, DNC stamp, defaults |
 | `CALLER_SETUP.bat`, `CALLER_ON.bat`, `CALLER_STOP.bat` | root bats, ASCII + CRLF |
-| `tests/test_caller.py` | 93 checks, offline, ~10 s |
+| `tests/test_caller.py` | 97 checks, offline, ~10 s |
 | `research/writeups/ai-caller-2026-11-20.md` | owner-plain law + cost + sign-up |
 | `research/handoff/2026-11-20/caller/transcripts/` | 9 sample transcripts + `scores.json` |
 
@@ -48,8 +48,9 @@ businesses that signed the "Call me" form**. Full law + sources + cost: `researc
 Items 2 and 3 are PHASE 2 (outbound). For launch only items 1, 4 (inbound outcomes and emails) and 5 apply.
 
 
-1. **run_area** (one line, own line so it never clashes):
-   `AREAS["agency"].append("caller")      # day-caller 2026-11-20: the consent-first AI caller (tools/caller/), offline`
+1. **run_area** (own lines so they never clash):
+   `AREAS["agency"].append("caller")           # day-caller 2026-11-20: the AI caller (tools/caller/), offline`
+   `AREAS["agency"].append("caller_security")  # day-security2 review of the caller: 25 attack checks`
 2. **Concept pages (day-cities3 wired the slot, 628798aa):** the form now posts to the concept site's OWN `/api/consent`, not the PC.
    A `.ts.net` address on a public page is refused (`tools/site_privacy.py mask_net` would mask it, and it maps the owner's devices).
    - Publisher (lead): copy `tools/caller/cloudflare/consent.js` to `functions/api/consent.js` of the Cloudflare Pages project that
@@ -62,24 +63,32 @@ Items 2 and 3 are PHASE 2 (outbound). For launch only items 1, 4 (inbound outcom
      the real agency name, phone and first name for the repo's caller settings.
    - Until the function is deployed, the slot stays empty. Twilio still reaches the PC over Funnel :10000, but that address appears on
      no page.
-3. **Consent records:** the gate reads `<OLYMPUS_HOME>/caller/consent.jsonl` (append-only, on the PC, never in the public site):
-   `{id, kind:"consent", phone, business, signed_name, email, lead_id, version, window, asked_t, phone_source:"their form", text, text_sha256, ts, ip, ua}`;
-   a revoke is `{kind:"revoke", phone, why, ts}`. For the private **agency-inbox** branch the PC pushes `<OLYMPUS_HOME>/caller/share/` as
-   `caller/`: `caller/consent/<id>.json` = `{id, lead_id, business, asked_t, window, phone_source, version}` (no phone, no name), so the
-   email autopilot stops the sequence for that lead id.
-4. **Email autopilot (day-a11y, its format):** the caller writes `share/outbox/<id>.json` = `{id:"call-...", inbox_id:"", lead_id, kind:
-   demo | booking | payment, subject, body, approved:false, to, from_app:"caller", caller_kind, t}` ("to" = the address said on the call;
-   the body has the CAN-SPAM footer). The PC sends demo / booking / payment drafts by itself (owner's own links). Call outcomes:
-   `share/status/<lead_id>.json` = `{lead_id, s, t, outcome}` with s = called / interested / no (phone key agency.leads.status.v1;
-   "won" stays the owner's). Every call is also one line in `<OLYMPUS_HOME>/caller/inbox/<YYYY-MM-DD>.jsonl` (outcome, actions,
-   transcript file); transcripts stay on the PC.
+3. **H1 (lead decision, security review): NOTHING goes to an agency-inbox branch while `dcondax1-wq/olympus` is public.** Every caller
+   file stays on the PC in `<OLYMPUS_HOME>/caller/`: consent.jsonl, calls.jsonl, inbox/*.jsonl, transcripts/, share/ (outbox drafts,
+   consent copies, lead status). The only export is `python -m tools.caller.export DEST`. It writes `DEST/caller/outcomes.json` =
+   `[{business, outcome, ts}]`, and only after the GitHub API answers `"private": true` for the repo. A public repo, a 404 or no answer
+   is refused (tested). day-a11y: the caller's outbox drafts in `share/outbox/<id>.json` (your format) must be sent by the PC from that
+   folder, not through the branch, until the repo is private.
+4. **Formats (all on the PC):** outbox drafts `share/outbox/<id>.json` = `{id:"call-...", inbox_id:"", lead_id, kind: demo|booking|payment,
+   subject, body, approved:false, to, from_app:"caller", caller_kind, t}`. Lead status `share/status/<lead_id>.json` = `{lead_id, s, t, outcome}`
+   with s = called / interested / no. Consent copy (phase 2) `share/consent/<id>.json` = `{id, lead_id, business, asked_t, window,
+   phone_source, version}`. One line per finished call in `inbox/<YYYY-MM-DD>.jsonl`.
 5. **STATE.md "Waiting on the owner"** (max 5, one line): "AI caller: yes/no to a paid Twilio + Claude API key (~$8/month at 2 calls a
    day); if yes, the 20-minute sign-up in research/writeups/ai-caller-2026-11-20.md part 6, then CALLER_SETUP.bat."
 6. Optional later: a `call-ai` card on the Agency page reading `inbox/*.jsonl` (not built: screens are the lead's).
 
+## Security review applied (day-security2 5b941202)
+
+The review patch is merged by hand onto the newer branch: C1 forged consent (lead match + pending until the business calls in, or
+`python -m tools.caller.consent approve <number>`), H2 inbound caps (3 per number, 40 a day), H3 BoundedServer (16 connections, 15 s)
+plus CALLER_ON `/low` priority, and M1-M4 (one plain email, CallSid used once, 180 s relay tokens, the kill switch mid-call). On top of
+the patch: H1 (above), L4 (`/health` = `{"ok": true}`), L3 (example.com in every transcript), and M5: `speech_filter` swaps any money
+promise (discount, guarantee, refund, free hosting, a $ price that isn't the owner's own price_line) for "<owner> will confirm prices and
+terms by email". The Cloudflare puller is lead-matched too.
+
 ## Tests run here
 
-- `python -X utf8 -m tests.test_caller` -> 93/93
+- `python -X utf8 -m tests.test_caller` -> 97/97; `python -X utf8 -m tests.test_caller_security` -> 25/25
 - `python tests/smoke.py` -> 9/10 (the 1 is `test_zenith_mode`: this container has no Python Playwright; unrelated)
 - `python tests/run_area.py privacy --only repo_secrets` -> 13/13; `python -m tests.test_cold_calls` -> 115/115
 - `python -m tools.caller.simulate` -> 8 personas, all 100%

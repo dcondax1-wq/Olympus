@@ -86,6 +86,8 @@ def ws_recv(sock, limit: int = 65536):
         if op in (1, 2):
             op0 = op
         out += payload
+        if len(out) > limit:                         # security review: fragments can never add up past the limit either
+            raise ConnectionError("message too big")
         if fin:
             return op0 or op, out.decode("utf-8", "replace")
 
@@ -102,6 +104,10 @@ class Caller:
         self.pending = {}            # token -> {"lead", "call_id", "email", "inbound"}
         self.lock = threading.Lock()
         self.hits = []               # consent rate limit
+        self.ip_hits = {}            # security review 2026-11-20: consent posts per client address (last hour)
+        self.day_hits = {"day": "", "n": 0}
+        self.seen_calls = {}         # inbound CallSid -> t (a replayed signed webhook never mints a second relay token)
+        self.inbound_day = {"day": "", "n": 0, "by": {}}
         self.token = C.load_keys(h).get("twilio_token", "")
 
     def s(self):
@@ -112,11 +118,18 @@ class Caller:
 
     def register(self, token, info):
         with self.lock:
-            self.pending[token] = info
+            self.pending[token] = {**info, "_t": time.time()}
+            ttl = int(self.s()["limits"].get("relay_token_s", 180))
+            for k in [k for k, v in self.pending.items() if time.time() - v.get("_t", 0) > ttl]:
+                self.pending.pop(k, None)          # tokens of calls that never connected die too
 
     def take(self, token):
+        """The call's info for a one-time relay token, None when unknown, used or older than relay_token_s."""
         with self.lock:
-            return self.pending.pop(token, None)
+            info = self.pending.pop(token, None)
+        if info and time.time() - info.get("_t", 0) > int(self.s()["limits"].get("relay_token_s", 180)):
+            return None
+        return info
 
     # -- Twilio webhooks
     def inbound_twiml(self, params: dict) -> str:
@@ -126,6 +139,27 @@ class Caller:
                    f"Please email us, or call back on a weekday between 9 and 5. Goodbye.")
             return f'<?xml version="1.0" encoding="UTF-8"?><Response><Say>{T.quoteattr(msg)[1:-1]}</Say><Hangup/></Response>'
         frm = G.e164(params.get("From", ""))
+        sid = str(params.get("CallSid", ""))
+        lim = s["limits"]
+        with self.lock:
+            now = time.time()
+            self.seen_calls = {k: v for k, v in self.seen_calls.items() if now - v < 86400}
+            replay = not sid or sid in self.seen_calls
+            self.seen_calls[sid] = now
+            day = time.strftime("%Y-%m-%d", time.gmtime(now))
+            if self.inbound_day["day"] != day:
+                self.inbound_day = {"day": day, "n": 0, "by": {}}
+            busy = (self.inbound_day["n"] >= int(lim.get("inbound_per_day", 40))
+                    or self.inbound_day["by"].get(frm, 0) >= int(lim.get("inbound_per_number_day", 3)))
+            if not replay and not busy:
+                self.inbound_day["n"] += 1
+                self.inbound_day["by"][frm] = self.inbound_day["by"].get(frm, 0) + 1
+        if replay or busy:                           # a replayed webhook / a caller over today's cap: the short, cheap message
+            msg = (f"Thanks for calling {s.get('agency_name')}. This is an automated message. Please email us, or call back "
+                   f"tomorrow on a weekday between 9 and 5. Goodbye.")
+            return f'<?xml version="1.0" encoding="UTF-8"?><Response><Say>{T.quoteattr(msg)[1:-1]}</Say><Hangup/></Response>'
+        if frm and K.pending(frm, self.h):            # the business confirms its "Call me" form by calling from that line
+            K.confirm(frm, "inbound_call", self.h, detail=str(params.get("StirVerstat", "")))
         lead = dict(R.leads_by_phone().get(frm) or {"phone": frm, "name": "", "state": R.AREA_STATE.get(G.area_code(frm), "MD")})
         tok = secrets.token_urlsafe(18)
         self.register(tok, {"lead": lead, "call_id": params.get("CallSid", ""), "email": "", "inbound": True})
@@ -154,6 +188,10 @@ class Caller:
         cs.start()                                    # the greeting itself was spoken by Twilio (welcomeGreeting = this same line)
         started = time.time()
         try:
+            sock.settimeout(int(s["limits"].get("ws_idle_s", 60)))   # a silent socket never holds a thread forever
+        except OSError:
+            pass
+        try:
             while not cs.ended:
                 op, txt = ws_recv(sock)
                 if op == 8:
@@ -163,6 +201,10 @@ class Caller:
                 except ValueError:
                     continue
                 if m.get("type") == "prompt" and m.get("last", True):
+                    if not self.is_on() and not info.get("inbound"):     # CALLER_STOP / onoff off: the call ends at the next turn
+                        ws_send(sock, json.dumps({"type": "text", "token": "I have to go now. We'll email you. Thanks, goodbye!", "last": True}))
+                        ws_send(sock, json.dumps({"type": "end", "handoffData": json.dumps({"outcome": "stopped"})}))
+                        break
                     r = cs.hear(str(m.get("voicePrompt", ""))[:1000])
                     if r.text:
                         ws_send(sock, json.dumps({"type": "text", "token": r.text, "last": True}))
@@ -185,19 +227,41 @@ class Caller:
         act.inbox({**rec, "summary": " / ".join(t["text"][:80] for t in cs.transcript if t["who"] == "biz")[:400],
                    "transcript_file": os.path.basename(tpath)})
 
-    def consent_post(self, body: dict, ip: str, ua: str) -> tuple:
+    def consent_post(self, body: dict, ip: str, ua: str, origin: str = "") -> tuple:
+        s = self.s()
+        allow = [str(o).rstrip("/").lower() for o in (s.get("consent_origins") or [])]
+        if allow and origin and origin.rstrip("/").lower() not in allow:
+            return 403, {"ok": False, "message": "Please use the form on your preview page."}
         now = time.time()
-        self.hits = [t for t in self.hits if now - t < 60]
-        if len(self.hits) >= 30:
-            return 429, {"ok": False, "message": "Too many requests, please try again in a minute."}
-        self.hits.append(now)
-        ok, msg, _ = K.record(body, self.s(), self.h, ip=ip, ua=ua)
+        lim = s["limits"]
+        with self.lock:
+            self.hits = [t for t in self.hits if now - t < 60]
+            mine = self.ip_hits[ip] = [t for t in self.ip_hits.get(ip, []) if now - t < 3600]
+            day = time.strftime("%Y-%m-%d", time.gmtime(now))
+            if self.day_hits["day"] != day:
+                self.day_hits = {"day": day, "n": 0}
+            if len(self.hits) >= 30 or len(mine) >= int(lim.get("consent_per_ip_hour", 5)) or self.day_hits["n"] >= int(lim.get("consent_per_day", 200)):
+                return 429, {"ok": False, "message": "Too many requests, please try again later."}
+            self.hits.append(now)
+            mine.append(now)
+            self.day_hits["n"] += 1
+            if len(self.ip_hits) > 5000:
+                self.ip_hits = {k: v for k, v in self.ip_hits.items() if v and now - v[-1] < 3600}
+        ok, msg, _ = K.record(body, s, self.h, ip=ip, ua=ua, leads=R.leads_by_phone())
         return (200 if ok else 400), {"ok": ok, "message": msg}
+
+
+def client_ip(headers, peer: str) -> str:
+    """The sender's address. Tailscale Funnel's proxy APPENDS the real client to X-Forwarded-For, so the LAST entry is the one a
+    sender cannot choose (the first ones are whatever the request carried). Not behind a proxy = the socket's peer."""
+    xff = [x.strip() for x in str(headers.get("X-Forwarded-For", "") or "").split(",") if x.strip()]
+    return (xff[-1] if xff else peer)[:64]
 
 
 def make_handler(app: Caller):
     class H(BaseHTTPRequestHandler):
         server_version = "OlympusCaller/1"
+        timeout = 15                             # a slow / idle sender loses its slot after 15 s (the relay sets its own ws_idle_s)
 
         def log_message(self, fmt, *args):      # no request lines (numbers) in the console
             return
@@ -212,7 +276,10 @@ def make_handler(app: Caller):
             self.wfile.write(data)
 
         def _body(self):
-            n = int(self.headers.get("Content-Length") or 0)
+            try:
+                n = int(self.headers.get("Content-Length") or 0)
+            except ValueError:
+                return None
             if n <= 0 or n > MAX_BODY:
                 return None
             return self.rfile.read(n)
@@ -227,7 +294,7 @@ def make_handler(app: Caller):
         def do_GET(self):
             u = urllib.parse.urlparse(self.path)
             if u.path == "/health":
-                return self._send(200, {"ok": True, "kind": "olympus-caller", "on": app.is_on()})
+                return self._send(200, {"ok": True})      # security review L4: nothing about ON/OFF to the internet
             if u.path == "/relay" and self.headers.get("Upgrade", "").lower() == "websocket":
                 tok = (urllib.parse.parse_qs(u.query).get("t") or [""])[0]
                 info = app.take(tok) if tok else None
@@ -253,8 +320,8 @@ def make_handler(app: Caller):
                     body = json.loads(raw.decode())
                 except ValueError:
                     return self._send(400, {"ok": False, "message": "bad form"})
-                code, out = app.consent_post(body if isinstance(body, dict) else {}, self.headers.get("X-Forwarded-For", self.client_address[0]),
-                                             self.headers.get("User-Agent", ""))
+                code, out = app.consent_post(body if isinstance(body, dict) else {}, client_ip(self.headers, self.client_address[0]),
+                                             self.headers.get("User-Agent", ""), self.headers.get("Origin", ""))
                 return self._send(code, out)
             if u.path in ("/voice/inbound", "/voice/status"):
                 params = {k: v[0] for k, v in urllib.parse.parse_qs(raw.decode(), keep_blank_values=True).items()}
@@ -269,10 +336,39 @@ def make_handler(app: Caller):
     return H
 
 
+MAX_CONNECTIONS = 16
+
+
+class BoundedServer(ThreadingHTTPServer):
+    """At most MAX_CONNECTIONS requests at once (security review 2026-11-20): Funnel is public and has no rate limit, and this runs on
+    the TRADING PC; a flood of connections gets closed instead of one thread each eating the bot's CPU and memory."""
+    daemon_threads = True
+
+    def __init__(self, *a, **kw):
+        self._slots = threading.BoundedSemaphore(MAX_CONNECTIONS)
+        super().__init__(*a, **kw)
+
+    def process_request(self, request, client_address):
+        if not self._slots.acquire(blocking=False):
+            self.shutdown_request(request)
+            return
+        try:
+            super().process_request(request, client_address)
+        except Exception:
+            self._slots.release()
+            raise
+
+    def process_request_thread(self, request, client_address):
+        try:
+            super().process_request_thread(request, client_address)
+        finally:
+            self._slots.release()
+
+
 def serve(port: int, app: Caller, host: str = "127.0.0.1", dial_every: int = 60):
     if host not in ("127.0.0.1", "localhost"):
         raise SystemExit("the caller listens on this PC only (127.0.0.1); Tailscale Funnel forwards the public address")
-    httpd = ThreadingHTTPServer((host, port), make_handler(app))
+    httpd = BoundedServer((host, port), make_handler(app))
 
     def dialer():
         while True:

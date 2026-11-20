@@ -28,6 +28,16 @@ STATUS_S = {"booked": "interested", "payment_link": "interested", "demo_sent": "
             "connected": "called", "declined": "no", "opt_out": "no"}
 
 
+EMAIL_RX = __import__("re").compile(r"[A-Za-z0-9._%+\-]{1,64}@[A-Za-z0-9\-]{1,63}(?:\.[A-Za-z0-9\-]{1,63})*\.[A-Za-z]{2,24}")
+
+
+def valid_email(x) -> str:
+    """ONE plain address or '' (security review 2026-11-20: a name, a comma list or a newline from the form or the model never
+    reaches the email autopilot's To: line)."""
+    t = str(x or "").strip()
+    return t if len(t) <= 120 and EMAIL_RX.fullmatch(t) else ""
+
+
 def lead_tz(lead: dict) -> ZoneInfo:
     return ZoneInfo((G.STATE_TZ.get(str(lead.get("state", "")).upper()) or ["America/New_York"])[0])
 
@@ -68,6 +78,7 @@ class Actions:
     def queue_email(self, kind: str, to: str, subject: str, body: str, lead: dict) -> dict:
         footer = (f"\n\n--\n{self.s.get('agency_name')} | {self.s.get('postal_address')} | {self.s.get('callback_number')}\n"
                   "Reply STOP or 'unsubscribe' and we will never email or call again.")
+        to = valid_email(to)
         rec = {"id": "call-" + uuid.uuid4().hex[:12], "inbox_id": "", "lead_id": lead.get("id", ""), "kind": OUTBOX_KIND.get(kind, "other"),
                "subject": subject, "body": body + footer, "approved": False, "to": to, "from_app": "caller", "caller_kind": kind,
                "t": dt.datetime.now(dt.timezone.utc).isoformat()}
@@ -76,7 +87,7 @@ class Actions:
             os.makedirs(os.path.dirname(p), exist_ok=True)
             with open(p, "w", encoding="utf-8") as f:
                 f.write(C.redact(json.dumps(rec, sort_keys=True), self.h))
-        self.done.append(("email:" + kind, to or "(no email yet)"))
+        self.done.append(("email:" + kind, to or "(no valid email yet)"))
         return rec
 
     def demo_url(self, lead: dict) -> str:

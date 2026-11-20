@@ -4,7 +4,7 @@ Outcome **declined**, score **100%** (offline ScriptedBrain, business: Harbor St
 
 **AI (Ava):** Hi, this is Ava, an AI assistant calling for Brightline Web Studio, and this call is recorded and transcribed. Is this Harbor Street Plumbing? You asked us to call about the free website preview we made for you, is now an OK time for two minutes?  
 **Business:** How much?  
-**AI (Ava):** The starter site is a one-time setup plus a small monthly fee for hosting and edits; I can text or email the exact price sheet. Dee can walk you through it. Would Wednesday at 10 in the morning or Monday at 2 in the afternoon work for a 15-minute call with Dee?  
+**AI (Ava):** The starter site is a one-time setup plus a small monthly fee for hosting and edits; I can email you the exact price sheet. Dee can walk you through it. Would Wednesday at 10 in the morning or Monday at 2 in the afternoon work for a 15-minute call with Dee?  
 **Business:** That's more than I want to spend right now.  
 **AI (Ava):** No worries. Is it the timing, or are you happy with how customers find you now? Either way I can just email the preview, no strings.  
 **Business:** No thanks.  

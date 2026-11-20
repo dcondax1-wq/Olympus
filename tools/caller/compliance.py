@@ -168,11 +168,28 @@ def check_disclosure(text: str, s: dict) -> tuple:
 HONEST_ROBOT = "I'm an AI assistant, not a person. {owner} is a real person, and I can book you a short call with them if you'd like."
 
 
+MONEY_PROMISE = re.compile(r"\$\s?\d|\b\d+\s?(%|percent)\s+off\b|\bdiscount|\bguarantee|\brefund|\bmoney[- ]back\b|\bfree\s+(forever|for life|"
+                           r"for a year|for \d+|hosting|setup|of charge)\b|\bno (charge|cost) (ever|at all)\b|\bwaive|\bcoupon|\bdeal\b|\bcheaper\b", re.I)
+MONEY_SAFE = "{owner} will confirm prices and terms by email."
+
+
 def speech_filter(text: str, s: dict) -> tuple:
-    """(safe_text, changed): a reply that claims to be human is replaced by the honest line before it is spoken."""
+    """(safe_text, changed). 1: a reply that claims to be human is replaced by the honest line. 2 (security review M5): a sentence
+    that promises money (a price, a discount, a guarantee, a refund, 'free hosting') is swapped for MONEY_SAFE, unless it is the
+    owner's own price_line from the settings. Runs on every line before it is spoken, whatever the model was talked into."""
     if HUMAN_CLAIM.search(text or ""):
         return HONEST_ROBOT.format(owner=s.get("owner_first_name", "the owner")), True
-    return text, False
+    price = str(s.get("price_line", "")).lower()
+    out, changed = [], False
+    for sent in re.split(r"(?<=[.!?])\s+", str(text or "")):
+        if sent and MONEY_PROMISE.search(sent) and sent.strip().lower() not in price:
+            safe = MONEY_SAFE.format(owner=s.get("owner_first_name", "the owner"))
+            if not out or out[-1] != safe:
+                out.append(safe)
+            changed = True
+        else:
+            out.append(sent)
+    return " ".join(x for x in out if x), changed
 
 
 def is_opt_out(said: str) -> bool:

@@ -4,11 +4,11 @@ Outcome **booked**, score **100%** (offline ScriptedBrain, business: Harbor Stre
 
 **AI (Ava):** Thanks for calling Brightline Web Studio, I'm Ava, an AI assistant, and this call is recorded and transcribed. How can I help you today?  
 **Business:** Hi, I got your postcard. How much is a website?  
-**AI (Ava):** The starter site is a one-time setup plus a small monthly fee for hosting and edits; I can text or email the exact price sheet. Dee can walk you through it. Would Wednesday at 10 in the morning or Monday at 2 in the afternoon work for a 15-minute call with Dee?  
+**AI (Ava):** The starter site is a one-time setup plus a small monthly fee for hosting and edits; I can email you the exact price sheet. Dee can walk you through it. Would Wednesday at 10 in the morning or Monday at 2 in the afternoon work for a 15-minute call with Dee?  
 **Business:** The second one works.  
 **AI (Ava):** Great, Monday at 2 in the afternoon. What's the best email for the confirmation and the preview link?  
-**Business:** It's rosa at rosasbakery dot com  
-**AI (Ava):** Thanks, got it: rosa@rosasbakery.com. You're booked for Monday at 2 in the afternoon, the confirmation is on its way. Anything else?  
+**Business:** It's rosa at example dot com  
+**AI (Ava):** Thanks, got it: rosa@example.com. You're booked for Monday at 2 in the afternoon, the confirmation is on its way. Anything else?  
 **Business:** No, that's all. Thanks!  
 **AI (Ava):** Perfect. Talk soon, and have a great day.  
 
@@ -20,4 +20,4 @@ Outcome **booked**, score **100%** (offline ScriptedBrain, business: Harbor Stre
 | outcome = booked | PASS |
 | short call (<= 16 turns) | PASS |
 
-Actions: email:booking_confirmation: rosa@rosasbakery.com; booked: Monday at 2 in the afternoon; ping: Booked: Harbor Street Plumbing Monday at 2 in the afternoon (Frederick)
+Actions: email:booking_confirmation: rosa@example.com; booked: Monday at 2 in the afternoon; ping: Booked: Harbor Street Plumbing Monday at 2 in the afternoon (Frederick)

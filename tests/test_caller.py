@@ -85,10 +85,15 @@ def new_home(keys=True, on=True, registry=True, cap=20, outbound=True):
     return h
 
 
-def sign(h, phone=NUM, now=None):
+def sign(h, phone=NUM, now=None, confirm=True):
+    """A signed consent; confirm=True also confirms it (security review 2026-11-20: a consent counts only once confirmed)."""
     s = C.settings(h)
-    return K.record({"phone": phone, "business": LEAD["name"], "signed_name": "Tom Harbor", "agree": True, "version": K.CONSENT_VERSION,
-                     "email": "tom@example.com"}, s, h, now=now or dt.datetime(2026, 11, 20, 16, 0, tzinfo=UTC))
+    t = now or dt.datetime(2026, 11, 20, 16, 0, tzinfo=UTC)
+    r = K.record({"phone": phone, "business": LEAD["name"], "signed_name": "Tom Harbor", "agree": True, "version": K.CONSENT_VERSION,
+                  "email": "tom@example.com"}, s, h, now=t)
+    if confirm and r[0]:
+        K.confirm(phone, "owner", h, now=t + dt.timedelta(seconds=1))
+    return r
 
 
 def gate(h, now=TUE_10ET, line="landline", lead=None, calls=None):
@@ -233,8 +238,9 @@ def main() -> int:
             store.pop(name, None)
             return Resp("{}")
         return Resp(store[name])
-    r = PL.pull(hp, opener=opener)
-    check("c. pull: the site's signed forms come from Cloudflare KV into the PC store (bad ones refused), each entry deleted after, Bearer token used",
+    r = PL.pull(hp, opener=opener, leads={NUM: {"id": "osm-n1"}})
+    K.confirm(NUM, "owner", hp, now=dt.datetime(2026, 11, 20, 16, 5, tzinfo=UTC))
+    check("c. pull: the site's signed forms come from Cloudflare KV into the PC store (lead-matched, pending until confirmed; bad ones refused), each entry deleted after, Bearer token used",
           r == {"ok": True, "added": 1, "refused": 1} and not store and K.valid_for(NUM, TUE_10ET, C.settings(hp), hp)[0]
           and all(a == "Bearer cftok" + "z" * 30 for _, _, a in seen) and any(m == "DELETE" for m, _, _ in seen), (r, seen))
     js = open(os.path.join(ROOT, "tools", "caller", "cloudflare", "consent.js"), encoding="utf-8").read()
@@ -412,10 +418,10 @@ def main() -> int:
     ob = [json.load(open(p)) for p in glob.glob(os.path.join(hb, "caller", "share", "outbox", "*.json"))]
     stf = glob.glob(os.path.join(hb, "caller", "share", "status", "*.json"))
     check("i. a booking writes the autopilot's outbox/<id>.json (kind booking, approved false, the 'to' heard on the call) and status s=interested",
-          rb["outcome"] == "booked" and len(ob) == 1 and ob[0]["kind"] == "booking" and ob[0]["approved"] is False and ob[0]["to"] == "tom@harborplumbing.com"
+          rb["outcome"] == "booked" and len(ob) == 1 and ob[0]["kind"] == "booking" and ob[0]["approved"] is False and ob[0]["to"] == "tom@example.com"
           and {"id", "inbox_id", "lead_id", "subject", "body"} <= set(ob[0]) and stf and json.load(open(stf[0]))["s"] == "interested", (ob, stf))
     check("i. spoken emails are understood", B.spoken_email("it's tom at harbor plumbing dot com") == "" and
-          B.spoken_email("tom at harborplumbing dot com") == "tom@harborplumbing.com" and B.spoken_email("x jane.doe@gmail.com y") == "jane.doe@gmail.com")
+          B.spoken_email("tom at harborplumbing dot com") == "tom@harborplumbing.com" and B.spoken_email("x jane.doe@example.com y") == "jane.doe@example.com")
     sl = A.offer_slots(LEAD, TUE_10ET, C.settings(new_home()))
     check("i. two slots, skipping Thanksgiving and the day after (Tue Nov 24 -> Wed 10:00, Mon 14:00)",
           [x["start"][:16] for x in sl] == ["2026-11-25T10:00", "2026-11-30T14:00"], sl)
@@ -440,10 +446,17 @@ def main() -> int:
         r = c.getresponse()
         return r.status, r.read().decode()
     st, body = call("GET", "/health")
-    check("j. /health answers and says nothing about calls", st == 200 and json.loads(body) == {"ok": True, "kind": "olympus-caller", "on": True})
-    form = json.dumps({"phone": "(301) 555-0142", "business": LEAD["name"], "signed_name": "Tom Harbor", "agree": True, "version": K.CONSENT_VERSION}).encode()
+    check("j. /health answers {ok: true} only (not even ON/OFF)", st == 200 and json.loads(body) == {"ok": True})
+    form = json.dumps({"phone": "(301) 555-0142", "business": LEAD["name"], "signed_name": "Tom Harbor", "agree": True, "version": K.CONSENT_VERSION,
+                       "lead_id": LEAD["id"]}).encode()
+    real_leads = SV.R.leads_by_phone
+    SV.R.leads_by_phone = lambda *a, **k: {NUM: dict(LEAD)}         # this test's lead list
     st, body = call("POST", "/consent", form, {"Content-Type": "application/json", "Content-Length": str(len(form))})
-    check("j. POST /consent stores a signed consent", st == 200 and K.valid_for(NUM, TUE_10ET, C.settings(h), h)[0], body)
+    pend = K.valid_for(NUM, TUE_10ET, C.settings(h), h)
+    SV.R.leads_by_phone = real_leads
+    K.confirm(NUM, "owner", h, now=dt.datetime.now(dt.timezone.utc))
+    check("j. POST /consent stores a signed consent: pending until confirmed (security review), then valid",
+          st == 200 and not pend[0] and "not confirmed" in pend[1] and K.valid_for(NUM, dt.datetime.now(dt.timezone.utc), C.settings(h), h)[0], (body, pend))
     st, _ = call("POST", "/consent", b"x" * 5000, {"Content-Length": "5000"})
     check("j. a body over 4 KB is refused", st == 413)
     params = {"CallSid": "CA" + "1" * 32, "From": "+13015550142", "To": "+13015550100"}
@@ -523,6 +536,39 @@ def main() -> int:
     att2 = R.tick(TUE_10ET, fa, pub, h, leads_path=os.path.join(h, "none.json"))
     check("j. a second tick the same day dials nothing", att2 is None and len(fa.dialed) == 1)
     check("j. the line-type lookup is cached (one paid lookup for two ticks)", fa.lookups == [NUM], fa.lookups)
+
+    # ---------------------------------------------------------------- l. what may leave the PC (review H1) + money promises (M5)
+    from tools.caller import export as EX
+    he = new_home()
+    A.Actions(he, C.settings(he)).inbox({"ts": "2026-11-24T15:00:00+00:00", "business": "Harbor", "outcome": "booked", "summary": "secret words",
+                                         "number": NUM, "actions": [["email", "tom@example.com"]]})
+
+    class R2:
+        def __init__(self, b): self.b = b
+        def read(self): return self.b
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+    pub = lambda req, timeout=0: R2(b'{"private": false}')
+    priv = lambda req, timeout=0: R2(b'{"private": true}')
+
+    def nf(req, timeout=0):
+        raise OSError("404")
+    dest = tempfile.mkdtemp()
+    check("l. while the repo is public (or unknown / 404), nothing leaves the PC", not EX.export(dest, he, opener=pub)["ok"]
+          and not EX.export(dest, he, opener=nf)["ok"] and not os.listdir(dest))
+    r = EX.export(dest, he, opener=priv)
+    rows = json.load(open(os.path.join(dest, "caller", "outcomes.json")))
+    check("l. once GitHub says private: only {business, outcome, ts}, no words, number or email", r["ok"] and rows == [{"business": "Harbor",
+          "outcome": "booked", "ts": "2026-11-24T15:00:00+00:00"}], rows)
+    s5 = {**C.settings(he), "price_line": "The starter site is $1,500 once plus $79 a month."}
+    bad = ["Sure, I can give you a 20% discount.", "We guarantee you'll get more customers.", "You get free hosting forever!",
+           "It's only $99 for you today.", "Full refund if you don't like it."]
+    check("l. money promises (discount, guarantee, free hosting, a price the owner did not set, refund) are swapped for 'confirm by email'",
+          all(G.speech_filter(x, s5)[1] and "confirm prices and terms by email" in G.speech_filter(x, s5)[0] and "$" not in G.speech_filter(x, s5)[0] for x in bad),
+          [G.speech_filter(x, s5) for x in bad])
+    check("l. the owner's own price line, and 'free preview', pass untouched",
+          G.speech_filter("The starter site is $1,500 once plus $79 a month. Want the link?", s5) == ("The starter site is $1,500 once plus $79 a month. Want the link?", False)
+          and not G.speech_filter("The preview is free, and I can email it.", s5)[1])
 
     # ---------------------------------------------------------------- k. separation + bats + cost
     srcs = {p: open(p, encoding="utf-8").read() for p in glob.glob(os.path.join(ROOT, "tools", "caller", "*.py"))}
