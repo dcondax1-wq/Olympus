@@ -320,6 +320,11 @@ def t_fast_alarm():
     fr.step(rs, now + 50 + 200)
     check("... a run that then really stops polling still alarms (200 s without a good poll)", [p["cond"] for p in sent_rs] == ["bot_down"],
           sent_rs)
+    n1 = len(sent_rs)
+    rs.running = False                                     # the owner answers the alarm with STOP BOT
+    fr.step(rs, now + 50 + 230)
+    check("... the owner's STOP clears it without a false 'Back to normal: the bot polls again'", len(sent_rs) == n1,
+          sent_rs[n1:])
     st2 = Bot(now)
     st2.started_at = now - 11 * 3600
     st2.health["last_ok_poll"] = None
