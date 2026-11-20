@@ -33,7 +33,7 @@ from tests import agora_kit as AK  # noqa: E402
 APP, NAME = "trading", "Trading"
 check = AK.check
 D = os.path.join(AK.WEB, APP)
-READS = ("../home.json", "./trades.json", "../ledger/rules.json", "../business/accounts.json")
+READS = ("../home.json", "./trades.json", "../ledger/rules.json", "../business/accounts.json", "../nq/fixture.json")   # nq/fixture.json: the accounts strip's DEMO (nqdash3)
 
 
 def test_static():

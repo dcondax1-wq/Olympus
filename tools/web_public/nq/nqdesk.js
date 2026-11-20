@@ -5,7 +5,7 @@
 //   thinking(home, news, file, nowS)   -> per bot: "Before the trade" (lean, today's news, key levels, the window, what it waits for), "In the trade"
 //                                         (entry, stop, target, R so far, time in trade), "After" (result $ and R, the reel link)
 //   quality(home, file, news, nowS)    -> the checks: data freshness, PC heartbeat age, last trade alert, PC-vs-backtest twin mismatches
-//   draw.accounts / draw.thinking / draw.quality(el, model)  -> the cards (textContent / createElement only; no innerHTML)
+//   draw.accounts / draw.thinking / draw.quality(el, model)  -> the cards (textContent / createElement only)
 // Only what the PC and the cloud already publish: home.json with the PC post laid over it (../pc_feed.js homeOver: accounts, board, live.pc.glance =
 // engine/brain_glance, live.reporter), ./news_week.json, ../trading/trades.json. A field that is not there says so; nothing is made up. BLITZ never shows.
 // Read only: it sends nothing. Node-tested (tests/test_nq_desk.py).
@@ -73,7 +73,7 @@ export function accounts(home, biz, nowS) {
     const has = bal !== null;
     if (acc) used.add(acc.id);
     const connT = num(acc && isObj(acc.conn) && acc.conn.t);
-    const age = has ? (connT ? Math.max(0, nowS - connT) : fa.report) : null;
+    const age = has ? Math.max(connT ? nowS - connT : 0, fa.report ?? 0, 0) : null;     // an old report makes every number in it old
     const planned = !has && /buying|planned|plan/i.test(String(p.status || '') + (p.stage || ''));
     out.push({
       key: p.key, name: SHORT[p.key] || p.name || p.key, plan: p.plan || '', stage: funded ? 'Funded' : 'Eval',
@@ -88,7 +88,7 @@ export function accounts(home, biz, nowS) {
   for (const a of list) {
     if (used.has(a.id) || !a.live || a.source === 'cloud' || /blitz/i.test(String(a.id) + a.name) || !isObj(a.eval)) continue;
     if (Object.values(PLAN).some((ids) => ids.includes(a.id))) continue;
-    const e = a.eval, connT = num(isObj(a.conn) && a.conn.t), age = connT ? Math.max(0, nowS - connT) : fa.report;
+    const e = a.eval, connT = num(isObj(a.conn) && a.conn.t), age = Math.max(connT ? nowS - connT : 0, fa.report ?? 0, 0);
     out.push({ key: a.id, name: String(a.name || a.id), plan: a.plan || '', stage: /funded/i.test(e.status || '') ? 'Funded' : 'Eval', has: num(e.balance) !== null,
       balance: num(e.balance), room: num(e.room), mll: num(e.mll), roomFrac: num(e.room) !== null && num(e.mll) ? Math.max(0, Math.min(1, e.room / e.mll)) : null,
       today: num(e.today), goalLabel: 'To pass', goal: num(e.to_target), goalText: num(e.to_target) === null ? '-' : money(e.to_target), payoutText: '',
@@ -107,7 +107,7 @@ export function todayNews(news, nowS) {
 }
 export function nextNews(news, nowS) {
   const d = etParts(nowS).day;
-  return arr(isObj(news) ? news.events : null).filter((e) => isObj(e) && e.date > d).sort((a, b) => (a.date + a.time < b.date + b.time ? -1 : 1))[0] || null;
+  return arr(isObj(news) ? news.events : null).filter((e) => isObj(e) && e.date > d && /high/i.test(e.impact || 'high')).sort((a, b) => (a.date + a.time < b.date + b.time ? -1 : 1))[0] || null;
 }
 /** the lean: the side of the setup it has armed (engine/brain_glance "arm"), else the side its own words name; never guessed */
 export function lean(g, card) {

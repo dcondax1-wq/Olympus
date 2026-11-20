@@ -5,6 +5,7 @@
 // (../pc_feed.js: board_trades + "at", read here once per refresh, used for trades only while it is fresh: C.feedRows).
 import * as C from './tradingcore.js';
 import * as T from '../olympus/truth.js';
+import * as DK from '../nq/nqdesk.js?v=1';   // nqdash3: the accounts strip (the same cards as the NQ page)
 
 const O = window.OLYMPUS || null;
 const $ = (id) => document.getElementById(id);
@@ -336,13 +337,26 @@ function renderDeep() {
   safe(() => D.heat($('dHeat'), R, t)); safe(() => D.streaks($('dStreak'), R, t));
   safe(() => D.extremes($('dExt'), R, t)); safe(() => D.timeline($('dTime'), R, 6, t));
 }
+// nqdash3: the accounts strip. The PC's post laid over home.json the NQ way (pc_feed.js homeOver: the accounts, the payout line); DEMO = the NQ page's example
+function renderAccts() {
+  const box = $('acctStrip'); if (!box) return;
+  try {
+    const now = nowS(), F = window.PC_FEED;
+    let home = S.demo ? agesToTimes(S.nqfx && S.nqfx.home, now) : S.home0;
+    if (!S.demo && S.lite && F && F.homeOver) home = F.homeOver(S.home0, S.lite, now, window.PAYOUT_COACH || null);
+    const A = DK.accounts(home, S.biz, now);
+    DK.draw.accounts(box, A); for (const c of box.children) c.setAttribute('role', 'listitem');
+    const n = A.filter((a) => a.dot === 'live').length, p = $('acctPill');
+    if (p) { p.textContent = S.demo ? 'DEMO' : `${n} of ${A.filter((a) => a.dot !== 'plan').length} live`; p.className = 'pill ' + (S.demo ? 'warn' : n ? 'ok' : 'bad'); }
+  } catch (_) { /* the rest of the page still draws */ }
+}
 function renderFiltered() { renderCal(); renderTrades(); renderEdge(); renderEquity(); renderDeep(); }
 function render() {
   model();
   $('demo').hidden = !S.demo;
   if (!S.srcPicked) { S.src = C.defaultSrc(S.rows); S.srcPicked = true; }
   if (S.acct !== 'all' && !S.srcPicked2) { S.srcPicked2 = true; if (C.liveAccounts(S.rows).some((a) => a.k === S.acct)) S.src = 'live'; }
-  renderBanner(); renderToday(); renderFilters(); renderFiltered(); renderStats(); renderRules(); renderTwins();
+  renderBanner(); renderToday(); renderAccts(); renderFilters(); renderFiltered(); renderStats(); renderRules(); renderTwins();
   const n = C.counts(S.rows);
   say(`${S.live.head} ${n.live} live, ${n.paper} paper and ${n.backtest} backtest trades.${S.demo ? ' Example numbers, not real.' : ''}`);
   S.ready = true;
@@ -363,8 +377,9 @@ function settleBoxes() {
 }
 async function refresh() {
   if (S.forced || document.hidden) return;
-  const home = await withFeed(await getJSON('../home.json'));
+  const raw = await getJSON('../home.json'), home = await withFeed(raw);
   if (home) S.home = home;
+  if (raw) S.home0 = raw;
   render();
 }
 async function boot() {
@@ -380,7 +395,8 @@ async function boot() {
   $('sheetClose').addEventListener('click', closeSheet); $('veil').addEventListener('click', closeSheet);
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSheet(); });
   const [fx, file, home, rules, biz] = await Promise.all([getJSON('./fixture.json'), S.forced ? null : getJSON('./trades.json'), S.forced ? null : getJSON('../home.json'), getJSON('../ledger/rules.json'), getJSON('../business/accounts.json')]);
-  S.fixture = fx; S.file = file; S.home = home; S.rules = rules; S.biz = biz;
+  S.fixture = fx; S.file = file; S.home = home; S.home0 = home; S.rules = rules; S.biz = biz;
+  S.nqfx = (!file || S.forced) ? await getJSON('../nq/fixture.json') : null;
   render();
   if (!S.forced) withFeed(home).then((hm) => { if ((hm !== home || S.lite) && !S.forced) { S.home = hm || S.home; render(); } });
   setInterval(() => { if (!document.hidden) { renderBanner(); renderToday(); } }, 60000);
@@ -389,5 +405,5 @@ async function boot() {
   const A = window.AGORA;
   if (A && A.pull) A.pull(async () => { await refresh(); if (A.toast) A.toast(S.forced ? 'Demo numbers: nothing to refresh' : 'Up to date'); });
 }
-window.TRADING = { S, C, ready: () => S.ready, render, openDay, closeSheet, stepMonth };
+window.TRADING = { S, C, DK, ready: () => S.ready, render, openDay, closeSheet, stepMonth };
 boot().catch((e) => { say('Something went wrong: ' + (e && e.message ? e.message : e)); try { if (O && O.fail) O.fail('Trading could not start'); } catch (_) { /* nothing */ } });
