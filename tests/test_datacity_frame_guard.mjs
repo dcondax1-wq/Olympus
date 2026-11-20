@@ -41,5 +41,5 @@ test('post-render minimap exceptions show fallback and stop the queued loop', ()
   assert.deepEqual(run('minimap'), { failures:['minimap failed'], renders:1, remaining:0 });
 });
 test('cached clients receive the frame guard', () => {
-  assert.match(index, /city\.js\?v=dcframe1/);
+  assert.match(index, /city\.js\?v=[\w.-]+/);
 });

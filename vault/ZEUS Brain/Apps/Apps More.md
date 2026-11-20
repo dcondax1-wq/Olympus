@@ -15,7 +15,7 @@ door: "More"
 | Athena (`athena`) | life | The library: strategy, rules, quiz | `jarvis.json`, `library.json`, `drills.json` | `tests.test_athena_page` |
 | Atlas (`atlas`) | life | A fast map of every Olympus dashboard | bundled fixture / its own files | `tests.test_atlas_armed` |
 | Bridge (`bridge`) | trading | Link ChatGPT: 3 steps, live job status | `status.json`, `jobs.json`, `deliveries.json` | `tests.test_bridge_page` |
-| Cities (`cities`) | trading | A world of city islands | `fixture.json` | `tests.test_cities_page` |
+| Cities (`cities`) | trading | The 3D city of everything: every app, every | `fixture.json` | `tests.test_cities_page` |
 | Clio (`clio`) | trading | The research library: every study in plain words | `fixture.json`, `../writeups/index.json`, `../data.json` | `tests.test_clio_page` |
 | Colosseum (`colosseum`) | trading | Where strategies fight: seven rounds on real stored | `extra.json`, `fixture.json`, `../archive/index.json`, `../home.json` | `tests.test_colosseum_page` |
 | Compass (`compass`) | trading | The next best action: at most five things | `fixture.json`, `../home.json`, `../money/index.json`, `../ledger/rules.json`, `../odeon/trades.json` | `tests.test_compass_page` |

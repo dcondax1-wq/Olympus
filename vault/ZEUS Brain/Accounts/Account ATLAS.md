@@ -54,6 +54,7 @@ stage: "passed"
 | [[Month 2026-08\|2026-08]] | backtest | 18 | +$2,272 |
 | [[Month 2026-09\|2026-09]] | backtest | 17 | -$219 |
 | [[Month 2026-10\|2026-10]] | backtest | 10 | +$5,233 |
+| [[Month 2026-11\|2026-11]] | live | 3 | +$1,510 |
 
 _backtest = the bot's rules replayed on futures data (costs in); paper / live = what the bot really did._
 

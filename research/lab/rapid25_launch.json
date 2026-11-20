@@ -1,0 +1,583 @@
+{
+ "date": "2026-11-20",
+ "design": "research/second/rapid25_launch_design.md",
+ "n_paths": 1000,
+ "costs": [
+  1,
+  10
+ ],
+ "rows": {
+  "R1_lit_only": {
+   "1t": {
+    "eval": {
+     "H1": {
+      "p10": 0.1,
+      "f10": 0.0,
+      "p60": 25.4,
+      "f60": 0.0,
+      "pass_med": 42.0
+     },
+     "H2": {
+      "p10": 0.0,
+      "f10": 0.0,
+      "p60": 42.1,
+      "f60": 0.0,
+      "pass_med": 42.0
+     },
+     "REF": {
+      "p10": 0.1,
+      "f10": 0.0,
+      "p60": 2.9,
+      "f60": 3.5,
+      "pass_med": 47.0
+     }
+    },
+    "life": {
+     "H1": {
+      "usd_m": 221,
+      "owner_6m": 1429,
+      "first_date": null,
+      "first_p25": "2027-04-09",
+      "first_p75": null,
+      "no_pay_6m": 55.0,
+      "lost_6m": 5.6,
+      "fail_before_pay": 5.0,
+      "dll_per_100": 0.0
+     },
+     "H2": {
+      "usd_m": 191,
+      "owner_6m": 1260,
+      "first_date": null,
+      "first_p25": "2027-03-31",
+      "first_p75": null,
+      "no_pay_6m": 50.0,
+      "lost_6m": 14.1,
+      "fail_before_pay": 13.7,
+      "dll_per_100": 0.0
+     },
+     "REF": {
+      "usd_m": -22,
+      "owner_6m": 6,
+      "first_date": null,
+      "first_p25": null,
+      "first_p75": null,
+      "no_pay_6m": 99.3,
+      "lost_6m": 3.6,
+      "fail_before_pay": 40.2,
+      "dll_per_100": 0.0
+     }
+    }
+   },
+   "10t": {
+    "eval": {
+     "H1": {
+      "p10": 0.1,
+      "f10": 0.0,
+      "p60": 25.4,
+      "f60": 0.0,
+      "pass_med": 42.0
+     },
+     "H2": {
+      "p10": 0.0,
+      "f10": 0.0,
+      "p60": 42.1,
+      "f60": 0.0,
+      "pass_med": 42.0
+     },
+     "REF": {
+      "p10": 0.1,
+      "f10": 0.0,
+      "p60": 2.9,
+      "f60": 3.5,
+      "pass_med": 47.0
+     }
+    },
+    "life": {
+     "H1": {
+      "usd_m": 221,
+      "owner_6m": 1429,
+      "first_date": null,
+      "first_p25": "2027-04-09",
+      "first_p75": null,
+      "no_pay_6m": 55.0,
+      "lost_6m": 5.6,
+      "fail_before_pay": 5.0,
+      "dll_per_100": 0.0
+     },
+     "H2": {
+      "usd_m": 191,
+      "owner_6m": 1260,
+      "first_date": null,
+      "first_p25": "2027-03-31",
+      "first_p75": null,
+      "no_pay_6m": 50.0,
+      "lost_6m": 14.1,
+      "fail_before_pay": 13.7,
+      "dll_per_100": 0.0
+     },
+     "REF": {
+      "usd_m": -22,
+      "owner_6m": 6,
+      "first_date": null,
+      "first_p25": null,
+      "first_p75": null,
+      "no_pay_6m": 99.3,
+      "lost_6m": 3.6,
+      "fail_before_pay": 40.2,
+      "dll_per_100": 0.0
+     }
+    }
+   }
+  },
+  "R2_atlas_only": {
+   "1t": {
+    "eval": {
+     "H1": {
+      "p10": 0.0,
+      "f10": 0.0,
+      "p60": 62.2,
+      "f60": 0.1,
+      "pass_med": 41.0
+     },
+     "H2": {
+      "p10": 0.9,
+      "f10": 0.0,
+      "p60": 71.0,
+      "f60": 0.0,
+      "pass_med": 33.0
+     },
+     "REF": {
+      "p10": 0.3,
+      "f10": 0.0,
+      "p60": 13.3,
+      "f60": 34.2,
+      "pass_med": 36.0
+     }
+    },
+    "life": {
+     "H1": {
+      "usd_m": 1090,
+      "owner_6m": 6641,
+      "first_date": "2027-03-09",
+      "first_p25": "2027-02-12",
+      "first_p75": "2027-04-22",
+      "no_pay_6m": 17.0,
+      "lost_6m": 0.9,
+      "fail_before_pay": 1.4,
+      "dll_per_100": 0.0
+     },
+     "H2": {
+      "usd_m": 295,
+      "owner_6m": 1869,
+      "first_date": "2027-04-21",
+      "first_p25": "2027-02-25",
+      "first_p75": null,
+      "no_pay_6m": 40.5,
+      "lost_6m": 1.0,
+      "fail_before_pay": 2.1,
+      "dll_per_100": 0.0
+     },
+     "REF": {
+      "usd_m": -15,
+      "owner_6m": 121,
+      "first_date": null,
+      "first_p25": null,
+      "first_p75": null,
+      "no_pay_6m": 93.9,
+      "lost_6m": 17.3,
+      "fail_before_pay": 82.6,
+      "dll_per_100": 0.0
+     }
+    }
+   },
+   "10t": {
+    "eval": {
+     "H1": {
+      "p10": 0.0,
+      "f10": 0.0,
+      "p60": 48.5,
+      "f60": 0.8,
+      "pass_med": 42.0
+     },
+     "H2": {
+      "p10": 0.8,
+      "f10": 0.0,
+      "p60": 64.2,
+      "f60": 0.7,
+      "pass_med": 34.0
+     },
+     "REF": {
+      "p10": 0.2,
+      "f10": 0.2,
+      "p60": 6.3,
+      "f60": 66.6,
+      "pass_med": 35.0
+     }
+    },
+    "life": {
+     "H1": {
+      "usd_m": 707,
+      "owner_6m": 4347,
+      "first_date": "2027-04-06",
+      "first_p25": "2027-02-25",
+      "first_p75": null,
+      "no_pay_6m": 32.1,
+      "lost_6m": 4.3,
+      "fail_before_pay": 6.8,
+      "dll_per_100": 1.0
+     },
+     "H2": {
+      "usd_m": 141,
+      "owner_6m": 956,
+      "first_date": null,
+      "first_p25": "2027-03-24",
+      "first_p75": null,
+      "no_pay_6m": 62.4,
+      "lost_6m": 8.6,
+      "fail_before_pay": 11.8,
+      "dll_per_100": 0.0
+     },
+     "REF": {
+      "usd_m": -47,
+      "owner_6m": 15,
+      "first_date": null,
+      "first_p25": null,
+      "first_p75": null,
+      "no_pay_6m": 98.6,
+      "lost_6m": 12.0,
+      "fail_before_pay": 96.8,
+      "dll_per_100": 0.06
+     }
+    }
+   }
+  },
+  "R3_both": {
+   "1t": {
+    "eval": {
+     "H1": {
+      "p10": 0.7,
+      "f10": 0.0,
+      "p60": 88.0,
+      "f60": 0.3,
+      "pass_med": 31.0
+     },
+     "H2": {
+      "p10": 5.2,
+      "f10": 0.0,
+      "p60": 89.2,
+      "f60": 0.7,
+      "pass_med": 25.0
+     },
+     "REF": {
+      "p10": 0.6,
+      "f10": 0.3,
+      "p60": 15.0,
+      "f60": 57.2,
+      "pass_med": 33.0
+     }
+    },
+    "life": {
+     "H1": {
+      "usd_m": 2322,
+      "owner_6m": 14052,
+      "first_date": "2027-02-02",
+      "first_p25": "2027-01-14",
+      "first_p75": "2027-02-26",
+      "no_pay_6m": 4.5,
+      "lost_6m": 21.3,
+      "fail_before_pay": 8.4,
+      "dll_per_100": 0.0
+     },
+     "H2": {
+      "usd_m": 1016,
+      "owner_6m": 6226,
+      "first_date": "2027-02-10",
+      "first_p25": "2027-01-19",
+      "first_p75": "2027-03-18",
+      "no_pay_6m": 10.5,
+      "lost_6m": 28.9,
+      "fail_before_pay": 18.4,
+      "dll_per_100": 0.0
+     },
+     "REF": {
+      "usd_m": -12,
+      "owner_6m": 218,
+      "first_date": null,
+      "first_p25": null,
+      "first_p75": null,
+      "no_pay_6m": 91.7,
+      "lost_6m": 28.4,
+      "fail_before_pay": 93.4,
+      "dll_per_100": 0.0
+     }
+    }
+   },
+   "10t": {
+    "eval": {
+     "H1": {
+      "p10": 0.3,
+      "f10": 0.0,
+      "p60": 80.5,
+      "f60": 0.5,
+      "pass_med": 33.0
+     },
+     "H2": {
+      "p10": 4.7,
+      "f10": 0.0,
+      "p60": 85.5,
+      "f60": 2.0,
+      "pass_med": 26.0
+     },
+     "REF": {
+      "p10": 0.3,
+      "f10": 1.3,
+      "p60": 7.5,
+      "f60": 77.0,
+      "pass_med": 29.0
+     }
+    },
+    "life": {
+     "H1": {
+      "usd_m": 1883,
+      "owner_6m": 11428,
+      "first_date": "2027-02-10",
+      "first_p25": "2027-01-20",
+      "first_p75": "2027-03-16",
+      "no_pay_6m": 7.4,
+      "lost_6m": 27.2,
+      "fail_before_pay": 11.7,
+      "dll_per_100": 1.13
+     },
+     "H2": {
+      "usd_m": 800,
+      "owner_6m": 4945,
+      "first_date": "2027-02-18",
+      "first_p25": "2027-01-22",
+      "first_p75": "2027-04-13",
+      "no_pay_6m": 15.1,
+      "lost_6m": 38.0,
+      "fail_before_pay": 25.7,
+      "dll_per_100": 0.0
+     },
+     "REF": {
+      "usd_m": -50,
+      "owner_6m": 68,
+      "first_date": null,
+      "first_p25": null,
+      "first_p75": null,
+      "no_pay_6m": 96.9,
+      "lost_6m": 18.8,
+      "fail_before_pay": 97.8,
+      "dll_per_100": 0.07
+     }
+    }
+   }
+  },
+  "R4_both_bank": {
+   "1t": {
+    "eval": {
+     "H1": {
+      "p10": 2.1,
+      "f10": 0.0,
+      "p60": 85.9,
+      "f60": 1.3,
+      "pass_med": 28.0
+     },
+     "H2": {
+      "p10": 9.1,
+      "f10": 0.0,
+      "p60": 94.0,
+      "f60": 1.4,
+      "pass_med": 20.0
+     },
+     "REF": {
+      "p10": 0.7,
+      "f10": 0.5,
+      "p60": 17.4,
+      "f60": 59.5,
+      "pass_med": 31.0
+     }
+    },
+    "life": {
+     "H1": {
+      "usd_m": 2323,
+      "owner_6m": 14063,
+      "first_date": "2027-01-29",
+      "first_p25": "2027-01-08",
+      "first_p75": "2027-03-04",
+      "no_pay_6m": 4.3,
+      "lost_6m": 21.6,
+      "fail_before_pay": 11.6,
+      "dll_per_100": 0.0
+     },
+     "H2": {
+      "usd_m": 1105,
+      "owner_6m": 6764,
+      "first_date": "2027-02-01",
+      "first_p25": "2027-01-12",
+      "first_p75": "2027-03-05",
+      "no_pay_6m": 7.4,
+      "lost_6m": 31.9,
+      "fail_before_pay": 19.8,
+      "dll_per_100": 0.0
+     },
+     "REF": {
+      "usd_m": -5,
+      "owner_6m": 271,
+      "first_date": null,
+      "first_p25": null,
+      "first_p75": null,
+      "no_pay_6m": 89.3,
+      "lost_6m": 32.8,
+      "fail_before_pay": 92.5,
+      "dll_per_100": 0.0
+     }
+    }
+   },
+   "10t": {
+    "eval": {
+     "H1": {
+      "p10": 1.6,
+      "f10": 0.0,
+      "p60": 79.3,
+      "f60": 3.1,
+      "pass_med": 29.5
+     },
+     "H2": {
+      "p10": 8.0,
+      "f10": 0.0,
+      "p60": 92.0,
+      "f60": 2.7,
+      "pass_med": 21.0
+     },
+     "REF": {
+      "p10": 0.4,
+      "f10": 1.7,
+      "p60": 10.8,
+      "f60": 76.5,
+      "pass_med": 29.0
+     }
+    },
+    "life": {
+     "H1": {
+      "usd_m": 1907,
+      "owner_6m": 11575,
+      "first_date": "2027-02-04",
+      "first_p25": "2027-01-13",
+      "first_p75": "2027-03-18",
+      "no_pay_6m": 8.7,
+      "lost_6m": 28.7,
+      "fail_before_pay": 16.2,
+      "dll_per_100": 1.03
+     },
+     "H2": {
+      "usd_m": 901,
+      "owner_6m": 5553,
+      "first_date": "2027-02-09",
+      "first_p25": "2027-01-15",
+      "first_p75": "2027-03-23",
+      "no_pay_6m": 10.3,
+      "lost_6m": 39.1,
+      "fail_before_pay": 25.4,
+      "dll_per_100": 0.0
+     },
+     "REF": {
+      "usd_m": -49,
+      "owner_6m": 86,
+      "first_date": null,
+      "first_p25": null,
+      "first_p75": null,
+      "no_pay_6m": 96.3,
+      "lost_6m": 24.5,
+      "fail_before_pay": 98.1,
+      "dll_per_100": 0.06
+     }
+    }
+   }
+  }
+ },
+ "judge": {
+  "atlas-on-rapid": "yes",
+  "rapid25-lit-bank": "no",
+  "bank_why_not": [
+   "H1 eval fail 0.5 -> 3.1%"
+  ],
+  "atlas_only_card": false,
+  "dll_days_per_100_max": 1.13,
+  "sizing_patch": true
+ },
+ "took_s": 48,
+ "sizing": {
+  "R5_both_atlas_slip10_10t": {
+   "eval": {
+    "H1": {
+     "p10": 0.3,
+     "f10": 0.0,
+     "p60": 80.5,
+     "f60": 0.5,
+     "pass_med": 33.0
+    },
+    "H2": {
+     "p10": 4.7,
+     "f10": 0.0,
+     "p60": 85.5,
+     "f60": 1.2,
+     "pass_med": 26.0
+    },
+    "REF": {
+     "p10": 0.3,
+     "f10": 1.1,
+     "p60": 7.4,
+     "f60": 72.3,
+     "pass_med": 29.0
+    }
+   },
+   "life": {
+    "H1": {
+     "usd_m": 1742,
+     "owner_6m": 10576,
+     "first_date": "2027-02-10",
+     "first_p25": "2027-01-21",
+     "first_p75": "2027-03-17",
+     "no_pay_6m": 8.6,
+     "lost_6m": 24.0,
+     "fail_before_pay": 11.1,
+     "dll_per_100": 0.0
+    },
+    "H2": {
+     "usd_m": 769,
+     "owner_6m": 4750,
+     "first_date": "2027-02-18",
+     "first_p25": "2027-01-25",
+     "first_p75": "2027-04-09",
+     "no_pay_6m": 14.9,
+     "lost_6m": 34.5,
+     "fail_before_pay": 23.6,
+     "dll_per_100": 0.0
+    },
+    "REF": {
+     "usd_m": -46,
+     "owner_6m": 57,
+     "first_date": null,
+     "first_p25": null,
+     "first_p75": null,
+     "no_pay_6m": 97.0,
+     "lost_6m": 17.1,
+     "fail_before_pay": 97.7,
+     "dll_per_100": 0.02
+    }
+   }
+  }
+ },
+ "cards": {
+  "rapid25-lit-bank": {
+   "recommend": "no",
+   "usd_month_by": {
+    "jan_jun": 24,
+    "jul_oct": 101,
+    "y2021_25": 1
+   },
+   "usd_month": 101
+  }
+ }
+}

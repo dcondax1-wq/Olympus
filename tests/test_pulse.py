@@ -28,7 +28,7 @@ def check(name, ok, *info):
 WEB = AK.WEB
 KIT = os.path.join(WEB, "olympus", "pulse.js")
 PARTS = {"strip", "hero", "accounts", "bots", "stats", "money"}
-APPS = ["aegis", "demeter", "hera", "ledger", "business", "journal", "helios", "compass"]
+APPS = ["aegis", "demeter", "hera", "ledger", "business", "journal", "helios", "compass", "kronos", "pnyx", "chrysos", "mercury", "oikos", "planner"]
 
 
 def mounts(app):
@@ -153,7 +153,7 @@ def test_browser():
                     flat = [x for n in r["nums"] for x in n]
                     tag = f"{app}{' (Ivory)' if theme else ''}"
                     check(f"c. {tag}: the cards fill from home.json (no '-' in the account numbers), no page error",
-                          r["ready"] and any(x in flat for x in ("$1,025", "$887", "$1,463", "-$198", "-$437", "$3,807")) and not errs, r["nums"], errs)
+                          r["ready"] and any(x in flat for x in ("$1,025", "$887", "$1,463", "needs $1,463", "-$135", "-$198", "-$437", "$3,807")) and not errs, r["nums"], errs)
                     check(f"c. {tag}: layout shift {r['cls']:.3f} (< 0.01) while the cards fill; no sideways scroll", r["cls"] < 0.01 and r["side"] <= 0, r["cls"], r["side"])
                     check(f"c. {tag}: every pulse / folded-in link is >= 44 px tall", all(h >= 44 for h in r["links"]), r["links"])
                     if theme:

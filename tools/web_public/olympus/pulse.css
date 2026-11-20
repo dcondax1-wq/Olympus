@@ -53,3 +53,8 @@
 /* "folded in here": the archived apps whose job this page now does (the audit's MERGE verdicts); they stay reachable */
 .folded { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
 .folded a { box-sizing: border-box; min-height: 44px; display: inline-flex; align-items: center; padding: 0 12px; border-radius: 999px; border: 1px solid var(--ag-line); color: var(--ag-soft); text-decoration: none; font: 600 13px/1 var(--ag-sans); }
+/* Oikos: the tax pot link card (a tap target, fixed height) */
+a.taxpot { display: grid; gap: 2px; height: 140px; box-sizing: border-box; text-decoration: none; color: inherit; margin-bottom: 12px; overflow: hidden; }
+.taxpot .tp-k { font: 600 13px/1.3 var(--ag-sans); color: var(--ag-muted); }
+.taxpot .tp-v { font: 700 2rem/1.1 var(--ag-num); color: var(--ag-gold-hi, #dcbd6e); }
+.taxpot .tp-s { font: 400 13px/1.4 var(--ag-sans); color: var(--ag-soft); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }

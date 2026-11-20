@@ -281,6 +281,49 @@ def split_checks(now, L):
     check("ext_hash: the same news -> the same hash (block times and the glance left out); new news -> a new hash",
           R.ext_hash(exts) == R.ext_hash([{**e, "x": {k: ({**v, "t": 1} if isinstance(v, dict) else v) for k, v in e["x"].items()}} for e in exts])
           and R.ext_hash(exts) != R.ext_hash(ext2))
+    ext_open_trade_day()
+
+
+def ext_open_trade_day():
+    """nqdash3 2026-11-20 (the live ATLAS short, 03:45 ET): an open trade's live $ / R changed the ext hash on every 15-minute run, so every run
+    posted the ext (2 parts) and starved the chart candles. Now the hash leaves the open trade's live fields out (tools/pc_report._news_of)."""
+    from tools import pc_report as R
+    import copy
+    T0 = 1795041900                                            # Fri 2026-11-20 03:45 ET
+    def ext(now_usd, r, stop=26420.75, closed=None):
+        tr = [T0, None, -1, 1, 26380.75, stop, 26122.75, None, now_usd, r] if not closed else [T0, closed[0], -1, 1, 26380.75, stop, 26122.75, "TARGET", closed[1], closed[2]]
+        bt = {"acct": "atlas", "src": "live", "side": "SHORT", "open": not closed, "entry_t": T0, "entry": 26380.75, "stop": stop, "usd": tr[8], "r": tr[9]}
+        if closed:
+            bt.update(exit="TARGET", exit_t=closed[0])
+        return [{"v": 1, "kind": R.EXT_KIND, "part": 0, "of": 2, "x": {"at": {"t": 1, "a": [{"id": "atlas", "l4": "6018", "tr": [tr]}]}, "board_trades": [bt],
+                                                                     "mf": {"a": [{"id": "atlas", "eq": [1, 2]}]}}},
+                {"v": 1, "kind": R.EXT_KIND, "part": 1, "of": 2, "x": {"brd": {"t": 5, "ev": []}}}]
+    a, b = ext(50.0, 0.6), ext(194.0, 1.4)
+    c = ext(194.0, 1.4, stop=26379.5)
+    d = ext(194.0, 1.4, stop=26379.5, closed=(T0 + 7200, 516.0, 6.45))
+    check("ext_hash: an open trade's live $ / R moving is NOT news (same hash); its stop moved to break-even IS; its close flips the hash at once",
+          R.ext_hash(a) == R.ext_hash(b) and R.ext_hash(b) != R.ext_hash(c) and R.ext_hash(c) != R.ext_hash(d))
+    check("ext_hash: the posted block keeps the live $ (only the hash skips it)", b[0]["x"]["at"]["a"][0]["tr"][0][8] == 194.0 and copy.deepcopy(b) == b)
+
+    def day(hash_fn):
+        """96 runs (24 h), the trade open from run 0, its $ different every run, its stop moved at run 10, closed at run 60 (the old hash: an ext
+        on each of the 60 open runs, then every 2nd):
+        the run_once rule (due = new news or EXT_EVERY_S since the last ext) -> (ext runs, posts that day: core + ext parts)"""
+        last_h, last_t, runs, posts = None, None, 0, 0
+        for k in range(96):
+            now = T0 + k * 900
+            e = ext(10.0 * k - 300, k / 10, stop=26379.5 if k >= 10 else 26420.75, closed=(T0 + 60 * 900, 516.0, 6.45) if k >= 60 else None)
+            h = hash_fn(e)
+            if h != last_h or last_t is None or now - last_t >= R.EXT_EVERY_S:
+                runs, posts, last_h, last_t = runs + 1, posts + len(e), h, now
+            posts += 1                                         # the core, every run
+        return runs, posts
+    new_runs, new_posts = day(R.ext_hash)
+    import hashlib
+    old_runs, _ = day(lambda e: hashlib.sha1(json.dumps([{k: v for k, v in x["x"].items()} for x in e], sort_keys=True, default=str).encode()).hexdigest())
+    check(f"a trade open all day: the ext goes every 2nd run again ({new_runs} ext runs of 96, was {old_runs}); the day's posts {new_posts} stay well under "
+          f"NTFY_DAY_CAP - TRADE_ALERT_RESERVE = {R.NTFY_DAY_CAP - R.TRADE_ALERT_RESERVE} (room for the chart + the trade alerts)",
+          old_runs >= 60 + 18 and new_runs <= 50 and new_posts <= R.NTFY_DAY_CAP - R.TRADE_ALERT_RESERVE - 30, (new_runs, old_runs, new_posts))
 
 
 def main(argv=None) -> int:
