@@ -117,6 +117,17 @@ def feed_json(balance=321.5):
                        "days": [["2026-11-01", 3.0], ["2026-11-02", 4.5], ["2026-11-03", -1.0]], "stats": {"trades": 100, "staked": 1000.0}})
 
 
+# FX (day-kalshi 2026-11-20): the balance / K8 numbers roll up once after load + idle (olympus/nqfx.js); read the numbers once they have landed
+SETTLED = "() => !window.DIONYSUS.fx || (window.DIONYSUS.fx().started ? window.DIONYSUS.settled() : document.readyState === 'complete' && performance.now() > 4000)"
+
+
+def settle(p):
+    try:
+        p.wait_for_function(SETTLED, timeout=20000)
+    except Exception:  # noqa: BLE001 - the numbers are then read as they are (the check says what it saw)
+        pass
+
+
 def test_page():
     try:
         import playwright  # noqa: F401
@@ -128,6 +139,7 @@ def test_page():
         with AK.browser() as br:
             ctx, p, errs, seen, off = AK.page(br, origin)
             AK.open_app(p, origin, APP, "?demo=1&at=2026-11-05T12:00:00Z")
+            settle(p)
             d = p.evaluate("""() => ({ demo: !document.querySelector('#demo').hidden, name: document.querySelector('#botName').textContent, pill: document.querySelector('#botPill').textContent, bal: document.querySelector('#bal').textContent, tiles: document.querySelector('#heroTiles').innerText, src: document.querySelector('#srcNote').textContent,
               guard: document.querySelector('#guardTitle').textContent, gl: document.querySelector('#guardCard').dataset.level, open: document.querySelectorAll('#open li').length, recent: document.querySelectorAll('#recent li').length, r0: document.querySelector('#recent li b').textContent,
               chips: [...document.querySelectorAll('#sets button')].map((b) => b.textContent), on: document.querySelector('#sets [aria-pressed=true]').textContent, wiText: document.querySelector('#wiText').textContent, scan: document.querySelector('#scan').innerText,
@@ -149,6 +161,7 @@ def test_page():
             # ---- no kalshi.json on the site (404 here): the site's kalshicity mirror takes over, labelled
             ctx, p, errs, seen, off = AK.page(br, origin)
             AK.open_app(p, origin, APP, "?at=2026-11-05T12:00:00Z")
+            settle(p)
             s = p.evaluate("""() => ({ demo: !document.querySelector('#demo').hidden, pill: document.querySelector('#botPill').textContent, bal: document.querySelector('#bal').textContent, src: document.querySelector('#srcNote').textContent, guard: document.querySelector('#guardTitle').textContent,
               gl: document.querySelector('#guardCard').dataset.level, open: document.querySelector('#open').textContent, wi: document.querySelector('#sets [aria-pressed=true]').textContent, scan: document.querySelector('#scan').innerText.includes('95–97¢ bets') })""")
             check("c. the feed was asked on the site (../kalshi.json, absent here), so the kalshicity copy is shown: no DEMO chip, $55.81, 'Retired' (the old crypto bot, 2026-11-19: never 'Paused' / 'Running'), 'the site's copy', the guard says the bot is resting, the real what-if (A) and scan",
@@ -157,6 +170,7 @@ def test_page():
             # ---- the live feed answers (mocked)
             ctx, p, errs, seen, off = AK.page(br, origin, mock={"/kalshi.json": feed_json()})
             AK.open_app(p, origin, APP, "?at=2026-11-05T12:00:00Z")
+            settle(p)
             l = p.evaluate("""() => ({ demo: !document.querySelector('#demo').hidden, pill: document.querySelector('#botPill').textContent, bal: document.querySelector('#bal').textContent, src: document.querySelector('#srcNote').textContent, tiles: document.querySelector('#heroTiles').innerText,
               open: document.querySelector('#open').innerText, recent: document.querySelector('#recent').innerText, guard: document.querySelector('#guardTitle').textContent })""")
             check("c. the old bot's feed (mocked, even one saying 'running'): no DEMO chip, 'Retired', $321.50, 'The old bot's last feed', today +$2.00 (+0.2R) with 1R = $10.00, the open bet risks $4.80, the settled bet with its R, the guard from the site's regime",

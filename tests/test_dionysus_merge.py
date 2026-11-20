@@ -48,11 +48,24 @@ def part_static():
     v = re.findall(r'dionysus\.(css|js)\?v=(\w+)', html)
     check("a. CLS 0 (Olympus 2 PERF): K8 today is on the page from the first paint at its full height (class loading, min-height), never hidden later; the status line keeps 3 lines",
           'class="ag-card card k8 loading" id="k8Card"' in html and ".k8.loading { min-height: 660px; }" in css and "#status { min-height:" in css and "card.hidden = !k" not in js)
-    check("a. ?v bumped: dionysus.css?v=a7, dionysus.js?v=a6", v == [("css", "a7"), ("js", "a6")], v)
+    check("a. ?v bumped: dionysus.css?v=a8, dionysus.js?v=a7 (FX terminal look, 2026-11-20)", v == [("css", "a8"), ("js", "a7")], v)
     check("a. text only (no innerHTML), no 3D, no blur, no new library", "innerHTML" not in js and "three" not in js.lower() and "backdrop-filter" not in css and "blur(" not in css
           and not re.search(r"<script[^>]+src=\"https?:", html))
     check("a. a junk file hides only its own card (try / hide per card)", "$(id).hidden = true" in js)
     check("a. the old folders are still there (sibyl/, kalshicity/ index pages)", os.path.isfile(os.path.join(WEB, "sibyl", "index.html")) and os.path.isfile(os.path.join(WEB, "kalshicity", "index.html")))
+    fx_tag = re.search(r'<script[^>]+nqfx\.js', html)
+    check("a. FX (owner 2026-11-20 'some 3D, some effects'): the kit olympus/nqfx.js?v=n4 is added by dionysus.js after load + idle (no tag in the HTML, so the first paint is unchanged), themed OLYMPUS NIGHT (black, violet, lavender; owner 2026-11-20)",
+          not fx_tag and "const FX_SRC = '../olympus/nqfx.js?v=n4';" in js and "requestIdleCallback" in js and "NQ.theme(FX_COLORS)" in js and "cyan: '#9d59ee'" in js and "#22d3ee" not in js and "NQ.roll(" in js and "NQ.win(" in js)
+    night = css.split("TERMINAL look")[1] if "TERMINAL look" in css else ""
+    cyan = re.findall(r"#(?:22d3ee|67e8f9|3b82f6|070b14|0b1220)\b|34, 211, 238|59, 130, 246", night, re.I)
+    check("a. OLYMPUS NIGHT look (owner 2026-11-20): no cyan / navy in the page's block; black base, violet edges (#3e255e / #4d2e76) and light #9d59ee, mint win, red loss; the html accent is violet, theme-color black",
+          "TERMINAL look" in night + css and not cyan and "--ag-night: #000000" in night and "#3e255e" in night and "#4d2e76" in night and "rgba(157, 89, 238" in night and "--ag-olive: #77db89" in night
+          and "--ag-terra: #ef4444" in night and "'--oly-accent', '#9d59ee'" in html and 'content="#000000"' in html, cyan)
+    motion = css.split("TERMINAL look")[1] if "TERMINAL look" in css else ""
+    anims = [m.start() for m in re.finditer(r"animation:", motion)]
+    np_ = motion.find("@media (prefers-reduced-motion: no-preference)")
+    check("a. FX: every CSS animation of the terminal look sits under prefers-reduced-motion: no-preference (reduced motion = nothing moves); no WebGL of its own",
+          anims and np_ >= 0 and all(a > np_ and a < motion.find("@media (prefers-reduced-motion: reduce)") for a in anims) and "webgl" not in js.lower(), anims)
     check("a. no sw.js of Dionysus's own (nothing for the lead's worker list)", not os.path.exists(os.path.join(D, "sw.js")))
 
 
