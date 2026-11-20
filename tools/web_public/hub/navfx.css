@@ -1,0 +1,61 @@
+/* NAV FX (2026-11-20 day-manual; owner: "It needs some 3D, it needs some effects ... NO GOLD"). Home (gate/), ZEUS (hub/zeus.html), the
+   Website Business HQ (agency/). Active only under html.nfx (navfx.js adds it after the first paint: no JS = the page as before).
+   Colour, glow and transform only (no size, no border width): layout shift 0. Reduced motion: still. Light looks: softer. */
+:root { --nfx-cyan: #22d3ee; --nfx-blue: #3b82f6; --nfx-violet: #8b5cf6; --nfx-cyan-rgb: 34, 211, 238; --nfx-blue-rgb: 59, 130, 246; --nfx-violet-rgb: 139, 92, 246; }
+
+html.nfx:not([data-oly-theme]) body, html.nfx[data-oly-theme="agora"] body { background-color: #0b1220; }
+/* ---- the aurora: one fixed layer behind the page, 3 soft blobs that drift (transform only, GPU) */
+.nfx-aurora { position: fixed; inset: -20vmax; z-index: -1; pointer-events: none; opacity: .55; contain: strict; }
+.nfx-aurora i { position: absolute; width: 70vmax; height: 70vmax; border-radius: 50%; filter: blur(60px); opacity: .32; will-change: transform; }
+.nfx-aurora i:nth-child(1) { left: 0; top: 4vmax; background: radial-gradient(circle, rgba(var(--nfx-cyan-rgb), .55), transparent 62%); animation: nfx-a1 26s ease-in-out infinite alternate; }
+.nfx-aurora i:nth-child(2) { right: 0; top: 20vmax; background: radial-gradient(circle, rgba(var(--nfx-violet-rgb), .5), transparent 62%); animation: nfx-a2 32s ease-in-out infinite alternate; }
+.nfx-aurora i:nth-child(3) { left: 18vmax; bottom: 0; background: radial-gradient(circle, rgba(var(--nfx-blue-rgb), .5), transparent 62%); animation: nfx-a3 38s ease-in-out infinite alternate; }
+@keyframes nfx-a1 { to { transform: translate3d(14vmax, 10vmax, 0) scale(1.1); } }
+@keyframes nfx-a2 { to { transform: translate3d(-16vmax, 8vmax, 0) scale(.95); } }
+@keyframes nfx-a3 { to { transform: translate3d(10vmax, -12vmax, 0) scale(1.08); } }
+html[data-oly-scheme="light"] .nfx-aurora { opacity: .28; }
+html.nfx-lite .nfx-aurora i { filter: none; opacity: .22; }      /* a slow phone / Save-Data: no blur */
+
+/* ---- glass: cards and tiles get a cool glass edge + glow (no gold) */
+html.nfx :is(.g-card.g-now, .zs-acct, .zs-pc, .hq .card, .hq-tile, #doors4.g-qgrid) {
+  border-color: rgba(var(--nfx-cyan-rgb), .28) !important;
+  box-shadow: 0 0 0 1px rgba(var(--nfx-blue-rgb), .10) inset, 0 10px 30px -18px rgba(var(--nfx-blue-rgb), .55), 0 0 22px -12px rgba(var(--nfx-violet-rgb), .6) !important;
+  background-image: linear-gradient(160deg, rgba(var(--nfx-cyan-rgb), .07), rgba(var(--nfx-violet-rgb), .05) 60%, transparent) !important;
+}
+html.nfx .zs-acct { border-left-color: var(--nfx-cyan) !important; }
+html.nfx .hq { --acc: var(--nfx-cyan); }
+html.nfx .hq-go { background: linear-gradient(135deg, var(--nfx-cyan), var(--nfx-blue)) !important; color: #06121f !important; box-shadow: 0 8px 22px -10px rgba(var(--nfx-cyan-rgb), .9); }
+html.nfx .hq-bar::after { background: linear-gradient(90deg, var(--nfx-cyan), var(--nfx-violet)) !important; box-shadow: 0 0 12px rgba(var(--nfx-cyan-rgb), .8); }
+html.nfx .hq-kicker, html.nfx .hq-tile .hq-live { color: var(--nfx-cyan) !important; }
+html.nfx .hq-pipe li.paid b { color: #34d399; }
+html.nfx .zs-bal { text-shadow: 0 0 18px rgba(var(--nfx-cyan-rgb), .35); }
+
+/* ---- glass app icons (Home): the colour lives in --ac (set per icon); a lit top edge, a glow under, a white glyph */
+html.nfx .g-ic { color: #fff; text-shadow: 0 1px 8px rgba(0, 0, 0, .35);
+  background: linear-gradient(150deg, color-mix(in srgb, var(--ac) 78%, #fff) 0%, var(--ac) 45%, color-mix(in srgb, var(--ac) 70%, #020617) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55), inset 0 -10px 18px rgba(2, 6, 23, .25), 0 10px 22px -10px var(--ac), 0 0 18px -6px var(--ac); }
+html.nfx .g-ic::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(180deg, rgba(255, 255, 255, .35), transparent 46%); pointer-events: none; }
+html.nfx .g-ic { position: relative; }
+
+/* ---- 3D tilt (navfx.js sets --rx / --ry from the finger; nothing moves without a touch) */
+html.nfx [data-nfx-tilt] { transform: perspective(600px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform 380ms cubic-bezier(.2, .8, .2, 1); will-change: transform; }
+html.nfx [data-nfx-tilt].nfx-on { transition-duration: 60ms; }
+
+/* ---- the number roll-up: an overlay over the real number (the real text never changes, so VoiceOver and the tests read the final value) */
+.nfx-rolling { position: relative; color: transparent !important; text-shadow: none !important; }
+.nfx-rolling::after { content: attr(data-nfx-roll); position: absolute; left: 0; top: 0; color: var(--nfx-roll-ink); white-space: nowrap; pointer-events: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .nfx-aurora i { animation: none !important; }
+  html.nfx [data-nfx-tilt] { transform: none !important; transition: none !important; }
+}
+
+/* ---- no gold in the default look (owner): the gold tokens turn cyan on these pages; a look the owner picks keeps its own colours */
+html.nfx:not([data-oly-theme]), html.nfx[data-oly-theme="agora"] {
+  --ag-night: #0b1220; --ag-panel: #0f1a2e; --ag-raise: #13213a; --ag-s0: #0b1220; --ag-s1: #0f1a2e; --ag-s2: #13213a; --ag-s3: #182a48; --ag-s4: #1d3254; --ag-line: #24395e;
+  --ag-text: #e8f0fc; --ag-soft: #b9c7de; --ag-muted: #93a4c2; --ag-on-gold: #06121f;
+  --o-bg: #0b1220; --o-surface: #0f1a2e; --o-surface-2: #13213a; --o-surface-3: #182a48; --o-line: rgba(148, 197, 255, .14); --o-line-2: rgba(148, 197, 255, .22); --o-ink: #e8f0fc; --o-ink-2: #b9c7de; --o-muted: #93a4c2;
+  --ag-gold: #22d3ee; --ag-gold-hi: #67e8f9; --ag-gold-rgb: 34, 211, 238; --o-accent: #22d3ee; --o-accent-ink: #67e8f9; --oly-accent: #22d3ee; --ag-line-gold: rgba(34, 211, 238, .32);
+}
+/* the Home's gold temple hero (olympus/home-fx.js): turned to the cool palette with one GPU filter (no repaint of its canvas) */
+html.nfx .hfx-hero { filter: hue-rotate(165deg) saturate(1.15); }

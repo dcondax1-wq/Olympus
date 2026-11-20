@@ -50,6 +50,7 @@
   var l = d.createElement('link'); l.rel = 'stylesheet'; l.setAttribute('blocking', 'render'); l.href = b + 'gate/gate.css?v=g20'; h.appendChild(l);
   var o = d.createElement('link'); o.rel = 'stylesheet'; o.setAttribute('blocking', 'render'); o.href = b + 'olympus/shell.css?v=s6'; h.appendChild(o);   /* night-revamp-main: the one design layer, last */
   var x = d.createElement('link'); x.rel = 'stylesheet'; x.setAttribute('blocking', 'render'); x.href = b + 'olympus/home-fx.css?v=x2'; h.appendChild(x);
+  var nf = d.createElement('link'); nf.rel = 'stylesheet'; nf.setAttribute('blocking', 'render'); nf.href = b + 'hub/navfx.css?v=1'; h.appendChild(nf); d.documentElement.className += ' nfx';   /* NAV FX 2026-11-20: navy + cyan / blue / violet, no gold, from the first frame (no colour flash) */
   var ag = d.createElement('link'); ag.rel = 'stylesheet'; ag.href = b + 'age.css?v=2'; h.appendChild(ag);   /* olympus2: the shared data-age chip */   /* night-effects: the living home (hero, glass doors, intro) */
   try { if (localStorage.getItem('oly.homefx') !== 'off') {   /* olympus2: the intro plays once per New York day ('oly.homefx.day'), never on a repeat visit that day */
     var dk = ''; try { dk = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date()); } catch (e2) { dk = new Date().toDateString(); }
@@ -99,10 +100,10 @@
   <section class="g-four" id="doorsSec" aria-labelledby="doorsH">
     <h2 class="g-h2 g-vh" id="doorsH">Four doors</h2><!-- night-gate: heading for screen readers only (the subtitle names the doors), so Your six stay on the first phone screen -->
     <nav class="g-qgrid" id="doors4" aria-labelledby="doorsH">
-      <a class="g-dr" data-door="zeus" data-to="hub/doors.html#zeus" href="hub/doors.html#zeus"><i class="g-ic" style="--ac:#c8a24a" aria-hidden="true">Ζ</i><b>ZEUS Trading</b><small class="g-qline">Accounts, live bots, trades, brain, rules, payouts</small></a>
-      <a class="g-dr" data-door="money" data-to="hub/doors.html#money" href="hub/doors.html#money"><i class="g-ic" style="--ac:#a0ac6e" aria-hidden="true">$</i><b>Money</b><small class="g-qline">Business, taxes, payouts, fleet plan, household</small></a>
-      <a class="g-dr" data-door="kalshi" data-to="hub/doors.html#kalshi" href="hub/doors.html#kalshi"><i class="g-ic" style="--ac:#c9b94e" aria-hidden="true">⬡</i><b>Kalshi</b><small class="g-qline">The Kalshi bot and its edges (paused)</small></a>
-      <a class="g-dr" data-door="more" data-to="hub/doors.html#more" href="hub/doors.html#more"><i class="g-ic" style="--ac:#d1a06a" aria-hidden="true">⋯</i><b>More</b><small class="g-qline">Research, my day, Jarvis, settings, the rest</small></a>
+      <a class="g-dr" data-door="zeus" data-to="hub/doors.html#zeus" href="hub/doors.html#zeus"><i class="g-ic" style="--ac:#3b82f6" aria-hidden="true">Ζ</i><b>ZEUS Trading</b><small class="g-qline">Accounts, live bots, trades, brain, rules, payouts</small></a>
+      <a class="g-dr" data-door="money" data-to="hub/doors.html#money" href="hub/doors.html#money"><i class="g-ic" style="--ac:#10b981" aria-hidden="true">$</i><b>Money</b><small class="g-qline">Business, taxes, payouts, fleet plan, household</small></a>
+      <a class="g-dr" data-door="kalshi" data-to="hub/doors.html#kalshi" href="hub/doors.html#kalshi"><i class="g-ic" style="--ac:#06b6d4" aria-hidden="true">⬡</i><b>Kalshi</b><small class="g-qline">The Kalshi bot and its edges (paused)</small></a>
+      <a class="g-dr" data-door="more" data-to="hub/doors.html#more" href="hub/doors.html#more"><i class="g-ic" style="--ac:#8b5cf6" aria-hidden="true">⋯</i><b>More</b><small class="g-qline">Research, my day, Jarvis, settings, the rest</small></a>
     </nav>
   </section>
 
@@ -115,14 +116,14 @@
   <section class="g-quick" aria-labelledby="quickH">
     <h2 class="g-h2" id="quickH">Your apps</h2>
     <nav class="g-qgrid" id="quick" aria-labelledby="quickH"><!-- olympus2 2026-11-20 (owner): Cities, Kalshi, the NQ bot, Jarvis first, then the Planner and Business -->
-      <a class="g-q" data-app="cities" data-to="cities/index.html" href="cities/index.html"><i class="g-ic" style="--ac:#b88a50" aria-hidden="true">◈</i><b>Cities</b><small class="g-qline">World, Data City, Kalshi, Atlas, Mint</small></a>
-      <a class="g-q" data-app="kalshi" data-to="kalshi/index.html" href="kalshi/index.html"><i class="g-ic" style="--ac:#8fa07a" aria-hidden="true">K</i><b>Kalshi</b><small class="g-qline">Kalshi bot</small></a>
-      <a class="g-q" data-app="nq" data-to="nq/index.html" href="nq/index.html"><i class="g-ic" style="--ac:#c8a24a" aria-hidden="true">Ν</i><b>NQ bot</b><small class="g-qline">Zlarior · ATLAS right now</small></a>
-      <a class="g-q" data-app="jarvis" data-to="jarvis/index.html" href="jarvis/index.html"><i class="g-ic" style="--ac:#c9a45c" aria-hidden="true">◉</i><b>Jarvis</b><small class="g-qline">Ask anything</small></a>
-      <a class="g-q" data-app="planner" data-to="planner/index.html" href="planner/index.html"><i class="g-ic" style="--ac:#7fa7c2" aria-hidden="true">Π</i><b>My day</b><small class="g-qline">Day and week plan</small></a>
-      <a class="g-q" data-app="business" data-to="business/index.html" href="business/index.html"><i class="g-ic" style="--ac:#c8a24a" aria-hidden="true">B</i><b>Business</b><small class="g-qline">Accounts, payouts, plan</small></a>
-      <a class="g-q" data-app="agency" data-to="agency/index.html" href="agency/index.html"><i class="g-ic" style="--ac:#d08c4a" aria-hidden="true">Ε</i><b>Websites</b><small class="g-qline">Web business HQ</small></a>
-      <a class="g-q g-setup" data-to="hub/setup.html" href="hub/setup.html"><i class="g-ic" style="--ac:#9aa6b2" aria-hidden="true">⚙</i><b>Set up</b><small class="g-qline">iPhone, widget, alerts</small></a>
+      <a class="g-q" data-app="cities" data-to="cities/index.html" href="cities/index.html"><i class="g-ic" style="--ac:#6366f1" aria-hidden="true">◈</i><b>Cities</b><small class="g-qline">World, Data City, Kalshi, Atlas, Mint</small></a>
+      <a class="g-q" data-app="kalshi" data-to="kalshi/index.html" href="kalshi/index.html"><i class="g-ic" style="--ac:#14b8a6" aria-hidden="true">K</i><b>Kalshi</b><small class="g-qline">Kalshi bot</small></a>
+      <a class="g-q" data-app="nq" data-to="nq/index.html" href="nq/index.html"><i class="g-ic" style="--ac:#22d3ee" aria-hidden="true">Ν</i><b>NQ bot</b><small class="g-qline">Zlarior · ATLAS right now</small></a>
+      <a class="g-q" data-app="jarvis" data-to="jarvis/index.html" href="jarvis/index.html"><i class="g-ic" style="--ac:#a855f7" aria-hidden="true">◉</i><b>Jarvis</b><small class="g-qline">Ask anything</small></a>
+      <a class="g-q" data-app="planner" data-to="planner/index.html" href="planner/index.html"><i class="g-ic" style="--ac:#0ea5e9" aria-hidden="true">Π</i><b>My day</b><small class="g-qline">Day and week plan</small></a>
+      <a class="g-q" data-app="business" data-to="business/index.html" href="business/index.html"><i class="g-ic" style="--ac:#3b82f6" aria-hidden="true">B</i><b>Business</b><small class="g-qline">Accounts, payouts, plan</small></a>
+      <a class="g-q" data-app="agency" data-to="agency/index.html" href="agency/index.html"><i class="g-ic" style="--ac:#d946ef" aria-hidden="true">Ε</i><b>Websites</b><small class="g-qline">Web business HQ</small></a>
+      <a class="g-q g-setup" data-to="hub/setup.html" href="hub/setup.html"><i class="g-ic" style="--ac:#64748b" aria-hidden="true">⚙</i><b>Set up</b><small class="g-qline">iPhone, widget, alerts</small></a>
     </nav>
   </section>
 
@@ -164,6 +165,10 @@
 </main>
 <script>(function () { var b = window.GATE_BASE || '', a = document.querySelectorAll('[data-to]'), i;
   for (i = 0; i < a.length; i++) a[i].setAttribute('href', b + a[i].getAttribute('data-to'));
+})();</script>
+<script>(function () { /* NAV FX (2026-11-20, owner: "3D, effects, no gold"): glass icons, aurora, tilt, roll-ups; loaded after the first paint */
+  var b = window.GATE_BASE || '', d = document;
+  var s = d.createElement('script'); s.src = b + 'hub/navfx.js?v=1'; s.defer = true; d.body.appendChild(s);
 })();</script>
 </body>
 </html>
