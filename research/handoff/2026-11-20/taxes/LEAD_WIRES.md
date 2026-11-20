@@ -11,3 +11,7 @@ Optional:
    20 live fund to $5,000 / rest yours; live futures account at $5,000 from payouts + 4 payouts, 1 MNQ per bot, stop $2,500;
    S-corp break-even ~$51k; page business/taxes.html. Owner to-do: tell Claude state + day job."
 3. Owner to-do list (STATE 'Waiting on the owner'): "Tell Claude your state and whether you have a day job (tax pot %)".
+
+Fixed on the way (tests/run_area.py): three `AREAS[...]` lines (home_fx, nqdeep, and my business_taxes) sat after
+`if __name__ == "__main__": sys.exit(main())`, so they never ran. Moved above main. nqdeep 26/26 here; home_fx needs Python
+Playwright, which this container lacks (same ModuleNotFoundError as test_zenith_mode in smoke: environment, not code).
