@@ -89,3 +89,13 @@ Tests after round 2: smoke 9/9; pulse 156/156; settings 92/92; atlas_ui 36/36; b
 kronos 54/54; hera 40/40; fates 79/79; oikos 65/65; journal 86/86; compass 57/57; mercury 40/40; clio 47/47; chrysos 61/61; pnyx 51/51; aegis 53/53;
 demeter 41/41; helios 55/55; planner 170/170; zenith_nq 20/20; zenith_mode 70/70; olympus_shell 42/42; site_sweep 4/4; apps_list 44/44.
 Failing but not mine (same with my changes stashed): olympus_kit Oracle checks (archived 3D page), olympus_a11y (jarvis/classic.css), phone_budget a/f/g (jarvis / nq / gate).
+
+## Round 3 (lead: the kit mounts the worker and Ask Jarvis)
+- `olympus/olympus.js`, once after `load`: (1) registers the ROOT worker (`<site>/sw.js`) when the page has none, on https only, so an app opened from a
+  direct link or its own Home Screen icon works offline next time (PERF LEAD_WIRES 2); (2) mounts the Ask Jarvis button (`jarvis/ask.js?v=1`, team JARVIS)
+  with the page's app id, never on Jarvis or inside its frame, never twice. `jarvis/ask.js` is the byte-identical copy of day-jarvis's file (so this
+  branch has no 404 before both land; git merges identical adds cleanly).
+- The button takes the kit's colours (`--oly-ask-accent / -bg / -text` = gold / card / ink: dark and light). Fixed-element overlap checked on 8 pages:
+  none, except Ledger, where it now stacks 12 px above the + button.
+- Tests: aegis 53/53, ledger 88/88, business 85/85, money_door 48/48, settings 92/92, pulse 156/156, helios 55/55, kronos 54/54, olympus_shell 42/42,
+  site_sweep 4/4, apps_list 44/44.

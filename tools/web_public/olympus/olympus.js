@@ -630,6 +630,24 @@
     if (def && appSubs.length) try { window.dispatchEvent(new CustomEvent('olympus:theme-default')); } catch (e) { /* old browsers */ }
   });
   timer = setTimeout(function () { if (state === 'loading') lift(); }, 12000);   // never a wall: it lifts by itself
+  // day-arenas DESIGN 2026-11-20, once after load (never before the first paint):
+  //  1. PERF LEAD_WIRES 2: an app opened from a direct link or its own Home Screen icon registers the ROOT worker (sw.js next to olympus/)
+  //     when the page has none yet, so it opens offline next time; a no-op when Zenith already registered it, and never off https
+  //  2. JARVIS: the Ask Jarvis button (jarvis/ask.js, team JARVIS) on every kit app, with the app id; never on Jarvis itself or in its frame
+  function afterLoad() {
+    var base = me && me.src ? me.src.replace(/olympus\/olympus\.js.*$/, '') : '';
+    try {
+      if (base && 'serviceWorker' in navigator && location.protocol === 'https:' && !navigator.serviceWorker.controller)
+        navigator.serviceWorker.getRegistration(base).then(function (r) { return r || navigator.serviceWorker.register(base + 'sw.js'); }).catch(function () { return null; });
+    } catch (e) { /* no worker on this browser */ }
+    try {
+      if (base && !framed && id !== 'jarvis' && !d.querySelector('script[src*="jarvis/ask.js"]') && d.body) {
+        var s = d.createElement('script'); s.src = base + 'jarvis/ask.js?v=1'; s.defer = true; if (id) s.setAttribute('data-app', id);
+        d.body.appendChild(s);
+      }
+    } catch (e) { /* the page works without the button */ }
+  }
+  if (d.readyState === 'complete') setTimeout(afterLoad, 0); else window.addEventListener('load', function () { setTimeout(afterLoad, 0); }, { once: true });
   // mounted as soon as the body is parsed (readyState 'interactive' comes before the app's deferred modules run)
   if (d.body) mount(); else { d.addEventListener('readystatechange', mount); d.addEventListener('DOMContentLoaded', mount); }
 })();
