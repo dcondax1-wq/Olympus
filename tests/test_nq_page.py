@@ -35,6 +35,9 @@ def test_static():
     fx = json.loads(AK.read(os.path.join(d, "fixture.json")))
     check("a. the fixture is a DEMO home.json (board, the PC block) with ages instead of dates and a 'not real' note", fx["demo"] is True and "not real" in fx["note"].lower() and "board" in fx["home"] and fx["home"]["live"]["pc"]["t_ago_min"] == 4
           and len(fx["home"]["board"]["trades"]) >= 10)
+    dv = json.loads(AK.read(os.path.join(AK.ROOT, "dashboard_view.json")))
+    check("a. the DEMO follows the owner's view switch: fixture home.hidden_bots == dashboard_view.json hidden_bots (BLITZ off every page, the example too)",
+          fx["home"].get("hidden_bots") == dv.get("hidden_bots"), (fx["home"].get("hidden_bots"), dv.get("hidden_bots")))
     check("a. the page order: the banner, the three columns, the plan, the bots, the trades, the backtest facts, more",
           html.index('id="banner"') < html.index('id="sceneCard"') < html.index('id="planCard"') < html.index('id="bots"') < html.index('id="tradesCard"') < html.index('id="factsCard"') < html.index('id="moreCard"'))
     check("a. the honest words are on the page: the banner sentence, 'Backtest, not a promise', the 5-step button twice (banner + More), the link to the full dashboard",
@@ -230,9 +233,12 @@ def test_page():
             ctx, p, errs, seen, off = AK.page(br, origin)
             AK.open_app(p, origin, APP, "?demo=1&flat=1")
             d = p.evaluate(SNAP)
-            check("c. DEMO (the fixture): the chip, no banner, three flames in the 2D picture, 'Running' x3, three 'Drawdown left ... of ... max loss' lines, two bars per bot",
-                  d["demo"] and not d["banner"] and d["flames"] == 3 and d["legend"] == ["1", "1", "1"] and d["pills"] == ["Running"] * 3 and d["scene"] == "2d" and d["bars"] == 6
-                  and d["dd"] == ["Drawdown left $1,420 of $2,000 max loss", "Drawdown left $840 of $1,000 max loss", "Drawdown left $560 of $1,000 max loss"], d)
+            # night-polish 2026-11-20: the DEMO hides BLITZ too (owner 2026-11-15, dashboard_view.json hidden_bots: BLITZ off every page); was three bots
+            check("c. DEMO (the fixture): the chip, no banner, two flames in the 2D picture (BLITZ hidden), 'Running' x2, two 'Drawdown left ... of ... max loss' lines, two bars per bot",
+                  d["demo"] and not d["banner"] and d["flames"] == 2 and d["legend"] == ["1", "1"] and d["pills"] == ["Running"] * 2 and d["scene"] == "2d" and d["bars"] == 4
+                  and d["dd"] == ["Drawdown left $1,420 of $2,000 max loss", "Drawdown left $840 of $1,000 max loss"], d)
+            bz = p.evaluate("() => document.body.innerText.includes('BLITZ')")
+            check("c. DEMO: the word BLITZ is nowhere on the page (the hidden bot is never shown, the example too)", not bz, bz)
             check("c. DEMO: today's P&L in $ with R, the eval progress, ten trades each with $ (R) and its closing rule, the plan sentence, the three backtest facts under 'Backtest, not a promise'",
                   d["kv"][0] == demo_today() and d["kv"][1].startswith("$2,580 to go to the $3,000 target") and d["dt"][0] == "Today" and len(d["trades"]) == 10 and all(re.search(r"\$[\d,]+ \(~?[+-]?\d+\.\dR\)", x) for x in d["trades"])
                   and len(d["rules"]) == 10 and all(d["rules"]) and "02:00 and 15:30 ET" in d["plan"] and "flat by 15:55 ET" in d["plan"] and d["facts"][0] == "PF 2.91, +$9,919, about $2,670 a month" and len(d["facts"]) == 3
@@ -263,9 +269,9 @@ def test_page():
             ctx, p, errs, seen, off = AK.page(br, origin)
             AK.open_app(p, origin, APP, "?demo=1&flat=1&silent=4d")
             b = p.evaluate(SNAP)
-            check("c. DEMO, PC silent for 4 days: the banner 'Last report from your PC: 4 days ago.' with the honest sentence, Stale x3, no flame anywhere, the numbers stay on the page",
-                  b["banner"] and b["btitle"] == "Last report from your PC: 4 days ago." and b["btext"] == SILENT and b["level"] == "bad" and b["pills"] == ["Stale"] * 3 and b["flames"] == 0 and b["legend"] == ["0", "0", "0"]
-                  and len(b["dd"]) == 3 and "No flame burns" in b["note"] and "(the last report)" in b["dt"][0] and "not known while the PC is silent" in b["planNote"], b)
+            check("c. DEMO, PC silent for 4 days: the banner 'Last report from your PC: 4 days ago.' with the honest sentence, Stale x2 (BLITZ hidden), no flame anywhere, the numbers stay on the page",
+                  b["banner"] and b["btitle"] == "Last report from your PC: 4 days ago." and b["btext"] == SILENT and b["level"] == "bad" and b["pills"] == ["Stale"] * 2 and b["flames"] == 0 and b["legend"] == ["0", "0"]
+                  and len(b["dd"]) == 2 and "No flame burns" in b["note"] and "(the last report)" in b["dt"][0] and "not known while the PC is silent" in b["planNote"], b)
             p.locator("#bannerBtn").click()
             p.wait_for_timeout(300)
             check("c. the banner's button opens the same three steps (howto.json, owner 2026-11-12: BOTS_BACK); the veil closes it", p.evaluate("() => !document.querySelector('#sheet').hidden && document.querySelectorAll('#sheetBody .steps li').length === 3"))
@@ -308,7 +314,7 @@ def test_page():
             p.wait_for_timeout(250)
             jt = p.evaluate("() => document.querySelector('#sheetBody').textContent")
             check("c. home.json is not JSON and howto.json is missing: the DEMO fills the page (never blank), the sheet says where the steps are, no console error",
-                  j["demo"] and len(j["dd"]) == 3 and len(j["trades"]) == 10 and "docs/NQ_BOT_BACK.md" in jt and not errs, (j["demo"], jt, errs[:2]))
+                  j["demo"] and len(j["dd"]) == 2 and len(j["trades"]) == 10 and "docs/NQ_BOT_BACK.md" in jt and not errs, (j["demo"], jt, errs[:2]))
             ctx.close()
             srv4.shutdown()
             # the 3D columns
@@ -317,7 +323,7 @@ def test_page():
             p.wait_for_timeout(2500)
             w = p.evaluate("() => ({ scene: window.NQ.S.scene, three: !document.querySelector('#scene3d').hidden, canvas: !!document.querySelector('#scene3d canvas'), frames: window.NQ3D ? window.NQ3D.frames() : -1, lit: window.NQ3D ? window.NQ3D.lit() : [], svg: getComputedStyle(document.querySelector('#fallback')).visibility })")
             if w["scene"] == "webgl":
-                check("c. 3D: a canvas draws frames, three columns, all three flames burn (all reported 4 minutes ago); the 2D picture steps aside", w["three"] and w["canvas"] and w["frames"] > 1 and w["lit"] == [1, 1, 1], w)
+                check("c. 3D: a canvas draws frames, two columns (BLITZ hidden), both flames burn (all reported 4 minutes ago); the 2D picture steps aside", w["three"] and w["canvas"] and w["frames"] > 1 and w["lit"] == [1, 1], w)
                 AK.shot(p, "nq-3d")
             else:
                 check("c. 3D not available in this browser: the 2D columns stay (never blank)", w["scene"] == "2d" and not w["three"] and w["svg"] == "visible", w)
@@ -327,7 +333,7 @@ def test_page():
             AK.open_app(p, origin, APP, "?demo=1&silent=2d")
             p.wait_for_timeout(1500)
             w2 = p.evaluate("() => ({ scene: window.NQ.S.scene, lit: window.NQ3D ? window.NQ3D.lit() : [] })")
-            check("c. 3D with a silent PC: no flame burns on any column", (w2["scene"] == "webgl" and w2["lit"] == [0, 0, 0]) or w2["scene"] == "2d", w2)
+            check("c. 3D with a silent PC: no flame burns on any column", (w2["scene"] == "webgl" and w2["lit"] == [0, 0]) or w2["scene"] == "2d", w2)
             AK.shot(p, "nq-3d-silent")
             ctx.close()
             ctx, p, errs, seen, off = AK.page(br, origin, w=375, h=667, reduced=True, lite=True)
