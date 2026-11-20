@@ -6,7 +6,14 @@
 // Honest by design: ranges, never promises; the script slots stay [in brackets] for the owner to fill.
 
 export const money = (n) => (typeof n === 'number' && Number.isFinite(n) ? '$' + Math.round(n).toLocaleString('en-US') : '');
-export const range = (o) => (o ? `${money(o.usd_low)}-${money(o.usd_high)}${o.monthly ? ' a month' : ''}` : '');
+// '$1,500-$3,000 + $49-$99 a month', '$500 + $299 a month', '$199-$399 a month'
+const span = (lo, hi) => (lo === hi ? money(lo) : `${money(lo)}-${money(hi)}`);
+export const range = (o) => {
+  if (!o) return '';
+  if (o.monthly) return `${span(o.usd_low, o.usd_high)} a month`;
+  const mo = typeof o.mo_low === 'number' ? ` + ${span(o.mo_low, typeof o.mo_high === 'number' ? o.mo_high : o.mo_low)} a month` : '';
+  return span(o.usd_low, o.usd_high) + mo;
+};
 const arr = (x) => (Array.isArray(x) ? x : []);
 const byId = (list, id) => arr(list).find((x) => x && x.id === id) || null;
 
@@ -15,31 +22,46 @@ export const TRADE_NICHE = { trades_fast: 'plumber', trades_big: 'roofer', healt
 const VISUAL_TRADES = new Set(['trades_big', 'places', 'retail', 'health']);
 
 export function diagnose(a, P) {
+  // the research team's offers (research/handoff/2026-11-20/web/research/offers.json): templated 3D (phone scans, model-viewer, before / after),
+  // the call engine and the text-back retainers; a custom 3D site only as a premium option, never the first offer
   const x = a || {}, offers = arr(P && P.offers), niches = arr(P && P.niches);
   let niche = byId(niches, TRADE_NICHE[x.trade] || 'roofer');
   if (x.trade === 'trades_big' && x.visual === 'yes') niche = byId(niches, x.budget === 'premium' ? 'builder' : 'landscaper') || niche;
+  if (x.trade === 'places' && x.visual !== 'yes') niche = byId(niches, 'realestate') || niche;
   const why = [], addons = [];
   let offer = 'growth';
-  const threeOk = x.visual === 'yes' && VISUAL_TRADES.has(x.trade) && x.budget !== 'tight';
-  if (x.trade === 'food') { offer = 'gbp'; why.push('Restaurants are found on Google Maps first: fix the listing, then the site.'); addons.push('starter'); }
-  else if (x.trade === 'trades_fast') { offer = x.budget === 'premium' || x.site === 'ok' ? 'growth' : 'starter'; why.push('An emergency trade wins on speed, a phone number at the top and reviews: no 3D.'); }
-  else if (threeOk && x.site !== 'none' && x.budget === 'premium') { offer = 'immersive'; why.push('Customers buy what they can see, and the jobs are big: one extra sale pays for the 3D piece.'); }
-  else if (x.visual === 'yes' && VISUAL_TRADES.has(x.trade) && x.budget === 'tight' && x.site !== 'ok') { offer = 'growth'; why.push('A visual business on a tight budget: the Growth site now, the 3D piece once it pays (+$2,500-$6,000).'); addons.push('3d-later'); }
-  else if (threeOk) { offer = 'growth'; why.push('A visual business: start with the Growth site and offer the 3D piece as the next step (+$2,500-$6,000).'); addons.push('3d-later'); }
-  else if (x.site === 'none') { offer = x.budget === 'tight' ? 'starter' : 'growth'; why.push('No website yet: the first site is the whole pitch.'); }
-  else if (x.site === 'old') { offer = 'growth'; why.push('An old or slow site loses calls on phones: the Growth site fixes speed and adds a page per service.'); }
-  else { offer = x.reviews === 'many' ? 'local' : 'gbp'; why.push('Their site is decent: sell results (the Google listing, reviews, town pages), not a new site.'); }
-  if (x.reviews === 'few' && offer !== 'gbp') { addons.push('gbp'); why.push('Under 10 Google reviews: add the Google Business Profile fix and a review routine.'); }
-  if (offer !== 'care' && offer !== 'local') addons.push('care');
-  const o = byId(offers, offer), care = byId(offers, 'care');
-  const extras = addons.map((id) => (id === '3d-later' ? { id, name: '3D piece later', range: '$2,500-$6,000' } : (() => { const ao = byId(offers, id); return ao ? { id, name: ao.name, range: range(ao) } : null; })())).filter(Boolean);
-  const one = o && !o.monthly ? o : null;
-  const total = one ? `${money(one.usd_low)}-${money(one.usd_high)}${care ? ` + ${range(care)}` : ''}` : o ? range(o) : '';
+  const visual = x.visual === 'yes' && VISUAL_TRADES.has(x.trade);
+  if (x.trade === 'food') { offer = 'gbp'; why.push('Restaurants are found on Google Maps first: fix the listing, then a fast menu site. AR menus: demo only (little effect on orders).'); addons.push('starter'); }
+  else if (x.trade === 'trades_fast') {
+    offer = x.site === 'ok' ? 'callengine' : 'starter';
+    why.push('An emergency trade wins on speed, a phone number at the top and reviews: no 3D.');
+    addons.push('textback'); why.push('They miss calls on jobs: missed-call text-back keeps those customers.');
+  }
+  else if (x.site === 'none' && x.budget === 'tight') { offer = 'subsite'; why.push('No site and a tight budget: the site on a subscription, no upfront ($149 a month, 12 months, in writing).'); }
+  else if (visual) {
+    offer = x.trade === 'retail' && x.site === 'ok' ? 'product3d' : 'growth';
+    if (x.trade === 'places' || x.trade === 'health') { addons.push(x.trade === 'places' ? 'scan3d' : 'beforeafter'); }
+    else if (x.trade === 'retail') { if (offer !== 'product3d') addons.push('product3d'); }
+    else { addons.push('beforeafter'); if (x.budget === 'premium') addons.push('scan3d'); }
+    why.push('Customers buy what they can see: sell the templated 3D piece (a phone-scan tour, a product viewer or before / after sliders), not a custom 3D build.');
+    if (x.budget === 'premium' && x.site === 'ok' && (x.trade === 'places' || x.trade === 'trades_big')) { addons.push('immersive'); why.push('Premium and a decent site: a custom 3D site is possible later, only with a fixed written scope and 50% up front.'); }
+  }
+  else if (x.site === 'none') { offer = 'starter'; why.push('No website yet (17% of US small businesses still have none): the Starter site is the whole pitch.'); }
+  else if (x.site === 'old') { offer = 'growth'; why.push('An old or slow site loses calls on phones: the Growth site fixes speed and adds a page per service and town.'); addons.push('a11y'); }
+  else { offer = x.reviews === 'many' ? 'local' : 'callengine'; why.push('Their site is decent: sell results (the Google profile, reviews, calls), not a new site.'); }
+  if (x.reviews === 'few' && !['gbp', 'local', 'callengine'].includes(offer)) { addons.push('local'); why.push('Under 10 Google reviews: add the reviews + Google profile engine (97% of people read local reviews).'); }
+  const o = byId(offers, offer);
+  const extras = [...new Set(addons)].map((id) => { const ao = byId(offers, id); return ao ? { id, name: ao.name, range: range(ao) } : null; }).filter(Boolean);
+  const total = o ? range(o) : '';                                   // a site's own price carries its care plan ($49-$99 a month)
   return { offer: o, price: o ? range(o) : '', monthly: !!(o && o.monthly), total, script: niche ? niche.say : '', niche, three_d: niche ? niche.three_d : '', why, addons: extras };
 }
 
 // a free question -> the niche or the card that answers it
 const TOPIC_WORDS = [
+  ['textback', /\b(missed calls?|text ?back|voicemail)\b/],
+  ['scan3d', /\b(scan|3d tour|virtual tour|walk-?through|gaussian|splat)\b/],
+  ['a11yopener', /\b(accessibility|ada|a11y|speed check|site audit)\b/],
+  ['killers', /\b(scope creep|what kills|mistakes?|fail(s|ing)?)\b/],
   ['price3d', /\b(price|pricing|charge|cost|quote)\b.*\b(3d|three d|immersive|webgl)\b|\b(3d|immersive)\b.*\b(price|pricing|charge|cost|worth)\b/],
   ['when3d', /\b(3d|immersive|three d)\b.*\b(niche|sell|gimmick|worth|when|best|who)\b|\b(best|which|what) (niche|trade|business(es)?)\b.*\b(3d|immersive)\b/],
   ['pricing', /\b(price|pricing|charge|how much|cost|quote|packages?)\b/],

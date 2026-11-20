@@ -138,9 +138,9 @@ ok(/saved copy, offline/.test(offPc.text) && /53 GB free/.test(offPc.text), 'pc 
 // the website business (team web-expert): the same playbook as Agency > Expert
 for (const q of ['how do I price a 3D site', 'what do I say to a roofer', 'best niche for 3D', 'how do I handle objections', 'how do I get more website clients', 'what should I charge for a website']) ok(B.match(q) === 'web', `web: "${q}" -> web`);
 const w1 = await ask('how do I price a 3D site'); console.log('   > ' + w1.replace(/\n/g, '\n     '));
-ok(/^Pricing a 3D \/ immersive site\./.test(w1) && /\$6,000-\$15,000/.test(w1) && /agency\/expert\/playbook\.json/.test(w1), 'web: pricing a 3D site from the playbook, $ + source');
+ok(/^Pricing a 3D \/ immersive site\./.test(w1) && /\$500 \+ \$25 a month/.test(w1) && /\$2,500 for 5-10 products/.test(w1) && /agency\/expert\/playbook\.json/.test(w1), 'web: pricing a 3D site from the playbook (the research numbers), $ + source');
 const w2 = await ask('what do I say to a roofer'); console.log('   > ' + w2.replace(/\n/g, '\n     '));
-ok(/^For a roofer: lead with the Growth site \(\$3,500-\$6,500\)/.test(w2) && /Say: "Most homeowners/.test(w2) && /3D: maybe/.test(w2), 'web: the roofer opener + offer + 3D verdict');
+ok(/^For a roofer: lead with the Growth site \(\$2,500-\$5,000 \+ \$49-\$99 a month\)/.test(w2) && /Say: "Most homeowners/.test(w2) && /3D: maybe/.test(w2), 'web: the roofer opener + offer + 3D verdict');
 const w3 = await ask('best niche for 3D');
 ok(/best trades are the ones where the customer buys a place or an object: Landscaper/.test(w3) && /Skip 3D for Plumber \/ HVAC/.test(w3), 'web: best niches for 3D and the ones to skip');
 // no K8 card anywhere: not this module's answer (the brain answers from kalshi.json, or says it is not connected)

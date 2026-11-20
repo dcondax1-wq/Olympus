@@ -545,9 +545,9 @@ A.web = async (deps, nowD, text) => {
   const offerOf = (id) => arr(P.offers).find((o) => o.id === id);
   if (/\bbest (niche|trade)s?\b|\bwho (should|do) i (sell|target)\b/.test(q) || (hit && hit.item && hit.item.id === 'when3d')) {
     const sells = arr(P.niches).filter((n) => n.three_d === 'sells').map((n) => n.name), gim = arr(P.niches).filter((n) => n.three_d === 'gimmick').map((n) => n.name);
-    const im = offerOf('immersive');
+    const sc = offerOf('scan3d'), pv = offerOf('product3d'), im = offerOf('immersive');
     return { text: [`For 3D, the best trades are the ones where the customer buys a place or an object: ${sells.join(', ')}.`,
-      im ? `Price it as the 3D / immersive site, ${range(im)}, or an add-on of $2,500-$6,000 to a Growth site.` : '',
+      sc && pv ? `Sell templated 3D: a phone-scan tour ${range(sc)}, a 3D product viewer ${range(pv)}.${im ? ` A custom 3D site (${range(im)}) only later, with a fixed scope.` : ''}` : '',
       `Skip 3D for ${gim.join(', ')}: speed, reviews and the Google listing win those calls.`].filter(Boolean).join('\n'), src };
   }
   if (hit && hit.kind === 'niche') {

@@ -2,57 +2,138 @@
  "v": 1,
  "updated": "2026-11-20",
  "about": "The website-business playbook (Agency > Expert, team web-expert 2026-11-20): how to position, price, pitch, build and keep local-business website clients, 3D / immersive sites included. One file: agency/expert/ draws it and Jarvis answers from it (jarvis/biz.js 'web'). Offline, no AI service.",
- "honest": "Prices are typical ranges for a solo studio selling to US local businesses in 2026, not quotes and not promises. Never invent clients, reviews or results; say it is a sales call; stop when asked.",
+ "honest": "Prices are typical 2025-26 ranges for a solo studio selling to US local businesses (mostly vendor numbers, from the research team's brief): say 'about', never promise results. Never invent clients, reviews or results; say it is a sales call; stop when asked; calls and emails by hand only, never cold texts.",
  "offers": [
   {
    "id": "starter",
    "name": "Starter site",
-   "what": "5 pages, mobile first, click-to-call, Google Business Profile linked, contact form, basic local SEO (titles, schema, map).",
+   "what": "5 pages, mobile first, click-to-call, Google profile linked, contact form, basic local SEO. 2 weeks. Always with the care plan.",
    "usd_low": 1500,
    "usd_high": 3000,
+   "mo_low": 49,
+   "mo_high": 99,
    "monthly": 0,
-   "days": 10
+   "days": 14
   },
   {
    "id": "growth",
    "name": "Growth site",
-   "what": "Starter + 10-15 pages (one per service and town), reviews widget, booking or quote form, speed under 2 s on a phone, analytics with a monthly one-page report.",
-   "usd_low": 3500,
-   "usd_high": 6500,
+   "what": "Starter + a page per service and town, reviews on the first screen, booking or quote form, under 2 s on a phone, a monthly proof report.",
+   "usd_low": 2500,
+   "usd_high": 5000,
+   "mo_low": 49,
+   "mo_high": 99,
    "monthly": 0,
    "days": 21
   },
   {
-   "id": "immersive",
-   "name": "3D / immersive site",
-   "what": "Growth site + one 3D piece that sells: a walk-through of the space, a product you can spin, or a scroll story. Built light (loads in under 3 s on a phone), with a plain fallback.",
-   "usd_low": 6000,
-   "usd_high": 15000,
+   "id": "callengine",
+   "name": "Call engine",
+   "what": "Site + Google profile + review requests + an answer to every review + weekly profile posts, with a monthly proof report (calls, reviews, map views in $). The retainer that compounds.",
+   "usd_low": 500,
+   "usd_high": 500,
+   "mo_low": 299,
+   "mo_high": 299,
    "monthly": 0,
-   "days": 35
-  },
-  {
-   "id": "care",
-   "name": "Care plan (retainer)",
-   "what": "Hosting, updates, backups, 2 small changes a month, a monthly report with calls and form leads.",
-   "usd_low": 99,
-   "usd_high": 299,
-   "monthly": 1,
-   "days": 0
+   "days": 14
   },
   {
    "id": "local",
-   "name": "Local growth plan (retainer)",
-   "what": "Care plan + Google Business Profile posts weekly, review requests, 2 new pages a month, rank tracking for 10 town + service searches.",
-   "usd_low": 400,
-   "usd_high": 1200,
+   "name": "Reviews + Google profile engine",
+   "what": "Review requests after every job, an answer to every review, weekly Google profile posts, monthly proof report. Sold with or after a site.",
+   "usd_low": 199,
+   "usd_high": 399,
    "monthly": 1,
    "days": 0
+  },
+  {
+   "id": "care",
+   "name": "Care plan",
+   "what": "Hosting, updates, backups, small changes, the monthly proof report.",
+   "usd_low": 49,
+   "usd_high": 99,
+   "monthly": 1,
+   "days": 0
+  },
+  {
+   "id": "textback",
+   "name": "Missed-call text-back",
+   "what": "A missed call gets a text back in seconds with a booking link (the client's own number and tool, $17-$49 a month). Contractors lose jobs to voicemail.",
+   "usd_low": 199,
+   "usd_high": 199,
+   "mo_low": 149,
+   "mo_high": 149,
+   "monthly": 0,
+   "days": 2
+  },
+  {
+   "id": "a11y",
+   "name": "Accessibility + speed fix",
+   "what": "A free plain-words report as the opener, then a fixed price fix of the common issues and a monthly watch. Say 'common issues fixed', never 'ADA compliant'.",
+   "usd_low": 600,
+   "usd_high": 600,
+   "mo_low": 49,
+   "mo_high": 49,
+   "monthly": 0,
+   "days": 5
+  },
+  {
+   "id": "scan3d",
+   "name": "Phone-scan 3D tour",
+   "what": "A 3D walk-through scanned with a phone (free capture app, free web viewer) for venues, gyms, salons, studios, Airbnbs: undercuts the camera crews that charge thousands.",
+   "usd_low": 500,
+   "usd_high": 500,
+   "mo_low": 25,
+   "mo_high": 25,
+   "monthly": 0,
+   "days": 3
+  },
+  {
+   "id": "product3d",
+   "name": "3D product viewer",
+   "what": "5-10 products you can spin and see in your room (Google's free model-viewer, AR on phones) for furniture, signs, sheds, jewelry, boats, bikes.",
+   "usd_low": 2500,
+   "usd_high": 2500,
+   "mo_low": 49,
+   "mo_high": 49,
+   "monthly": 0,
+   "days": 14
+  },
+  {
+   "id": "beforeafter",
+   "name": "Before / after showcase",
+   "what": "Their phone photos as a slider gallery that sells, for remodelers, landscapers, detailers, med spas, dentists.",
+   "usd_low": 900,
+   "usd_high": 900,
+   "mo_low": 29,
+   "mo_high": 29,
+   "monthly": 0,
+   "days": 5
+  },
+  {
+   "id": "configurator",
+   "name": "Configurator-lite",
+   "what": "Options, a live price, a 3D preview and a quote form for sheds, pergolas, carports, trailers.",
+   "usd_low": 3500,
+   "usd_high": 3500,
+   "mo_low": 99,
+   "mo_high": 99,
+   "monthly": 0,
+   "days": 21
+  },
+  {
+   "id": "subsite",
+   "name": "Site on a subscription",
+   "what": "No upfront: $149 a month for 12 months, buy-out after. For owners who cannot pay $1,500 at once. Put the term in writing.",
+   "usd_low": 149,
+   "usd_high": 149,
+   "monthly": 1,
+   "days": 14
   },
   {
    "id": "gbp",
    "name": "Google Business Profile fix",
-   "what": "Claim / verify, categories, services, 20 photos, Q&A, review link and a review-request card. The fastest win for most trades.",
+   "what": "Claim, categories, services, 20 photos, Q&A, review link and card. The fastest one-time win.",
    "usd_low": 300,
    "usd_high": 750,
    "monthly": 0,
@@ -61,11 +142,20 @@
   {
    "id": "ads",
    "name": "Small-budget ads",
-   "what": "Google Local Services Ads or Search ads on a $500-$1,500 a month budget (paid to Google by the client), set up + managed.",
+   "what": "Google Local Services Ads or Search ads on a $500-$1,500 a month budget (paid to Google by the client), set up and managed.",
    "usd_low": 250,
    "usd_high": 600,
    "monthly": 1,
    "days": 7
+  },
+  {
+   "id": "immersive",
+   "name": "Custom immersive 3D site",
+   "what": "A scroll-story brand site in three.js. A great showcase, a bad FIRST business: 40+ hours and scope creep. Only with a fixed written scope and 50% up front.",
+   "usd_low": 5000,
+   "usd_high": 15000,
+   "monthly": 0,
+   "days": 45
   }
  ],
  "niches": [
@@ -85,7 +175,7 @@
    "group": "trades",
    "three_d": "gimmick",
    "pain": "Emergency calls: speed and trust win; most calls come from Google Maps on a phone.",
-   "hook": "Click-to-call at the top, service-area pages, 24/7 badge, reviews.",
+   "hook": "Click-to-call at the top, service-area pages, reviews, and missed-call text-back ($199 + $149 a month).",
    "offer": "starter",
    "say": "When a pipe bursts, people call the first plumber whose site loads fast and shows a phone number. Yours takes [x] seconds on a phone. I made a preview that loads in under 2: want the link?"
   },
@@ -95,8 +185,8 @@
    "group": "trades",
    "three_d": "sells",
    "pain": "Big-ticket outdoor projects sold on looks; clients cannot picture the result.",
-   "hook": "A 3D yard you can turn, or a scroll story of one finished project.",
-   "offer": "immersive",
+   "hook": "A before / after slider of their own yards (+$900), a phone-scan 3D tour of a finished one later.",
+   "offer": "growth",
    "say": "Your work is visual and your clients spend [x] on a project they cannot picture yet. A 3D walk-through of one of your finished yards lets them see it on their phone. I made a quick preview: can I show you?"
   },
   {
@@ -105,8 +195,8 @@
    "group": "trades",
    "three_d": "sells",
    "pain": "Six-figure jobs; buyers compare portfolios for weeks.",
-   "hook": "3D walk-throughs of past builds and floor plans you can tap.",
-   "offer": "immersive",
+   "hook": "Before / after sliders and a phone-scan 3D tour of a finished build.",
+   "offer": "growth",
    "say": "People spend weeks choosing a builder and compare portfolios at night on their phones. A walk-through of your best build keeps them on your site instead of the next builder's. I made a preview of one: may I send it?"
   },
   {
@@ -125,7 +215,7 @@
    "group": "food",
    "three_d": "gimmick",
    "pain": "Menu, hours and ordering on a phone; Google Maps is the real front door.",
-   "hook": "A fast menu page, online ordering link, the Google profile fixed.",
+   "hook": "The Google listing fixed and a fast menu page. AR menus look fun but research shows little effect: demo only.",
    "offer": "gbp",
    "say": "Most of your guests see your Google listing before your website. Yours is missing [photos / hours / menu]. I can fix the listing this week for a flat fee: want me to show you what is missing?"
   },
@@ -135,8 +225,8 @@
    "group": "places",
    "three_d": "sells",
    "pain": "Couples book after a tour; out-of-town couples cannot visit first.",
-   "hook": "A 3D tour of the space, set up for a ceremony and a reception.",
-   "offer": "immersive",
+   "hook": "A phone-scan 3D tour of the hall ($500 + $25 a month), later a floor planner where couples drag the tables.",
+   "offer": "growth",
    "say": "Couples who cannot visit still book from a tour. A 3D walk-through of your hall set for a wedding lets them stand in it from their sofa. I made a short preview: can I send it?"
   },
   {
@@ -145,8 +235,8 @@
    "group": "places",
    "three_d": "sells",
    "pain": "Listings and the agent's own brand; buyers expect tours.",
-   "hook": "Listing pages with 3D tours and a neighbourhood guide that ranks.",
-   "offer": "immersive",
+   "hook": "A phone-scan 3D tour on their own listing page, a neighbourhood guide that ranks.",
+   "offer": "growth",
    "say": "Buyers expect to walk through a home online first. Your own site sends them to the portal, where the next agent is one tap away. I made a preview with a tour on your page: want to see it?"
   },
   {
@@ -155,7 +245,7 @@
    "group": "retail",
    "three_d": "maybe",
    "pain": "Dealers: inventory and trust; shops: reviews and quick quotes.",
-   "hook": "Dealers: a car you can spin; shops: an instant-quote form and reviews.",
+   "hook": "Small dealers: spins of each car and one 3D scan of the lot; shops: reviews and a quote form.",
    "offer": "growth",
    "say": "Your customers compare three shops on their phone before they call. I made a preview that shows your reviews and a quote form at the top: can I send it?"
   },
@@ -165,8 +255,8 @@
    "group": "retail",
    "three_d": "sells",
    "pain": "Buyers want to see size, finish and how it looks in a room.",
-   "hook": "A product you can spin and zoom, in 3 finishes.",
-   "offer": "immersive",
+   "hook": "5-10 pieces you can spin and place in your room on a phone (model-viewer, AR).",
+   "offer": "product3d",
    "say": "People buying a [table] want to turn it and see the grain. A 3D view of one of your pieces does that on a phone. I made a quick one: can I show you?"
   },
   {
@@ -211,15 +301,15 @@
    "title": "Pricing: three options, middle first",
    "topic": "pricing",
    "say": [
-    "Most [trade] businesses pick the middle one: [Growth] at [$4,500], ready in 3 weeks.",
-    "The first one gets you online; the third one is for when the site itself has to sell the job."
+    "Most [trade] businesses pick the middle one: the Growth site at about [$3,500], ready in 3 weeks, with the care plan.",
+    "If paying it all at once is hard, the same site is $149 a month for 12 months."
    ],
    "do": [
-    "Always show 3 options: Starter $1,500-$3,000, Growth $3,500-$6,500, 3D / immersive $6,000-$15,000.",
-    "Add a care plan ($99-$299 a month) to every site: it is the income that stays.",
-    "Take 50% up front, 50% at launch."
+    "Show 3 options: Starter $1,500, Growth $2,500-$5,000, Call engine $500 + $299 a month.",
+    "Every build sells a monthly plan (care $49-$99, reviews + Google $199-$399): cash stops when sales stop otherwise.",
+    "Fixed packages, 2 revision rounds, extras priced up front; 50% to start, 50% at launch."
    ],
-   "usd": "A solo studio doing 2 Growth sites + 6 care plans a month: about $9,000 + $1,200 a month recurring.",
+   "usd": "Retainers are the business: 10 clients at $300 a month = $3,000 a month before any new build.",
    "avoid": "Hourly prices, or one price with no choice (the client then compares you to cheap builders)."
   },
   {
@@ -227,16 +317,17 @@
    "title": "Pricing a 3D / immersive site",
    "topic": "3d",
    "say": [
-    "The 3D piece is priced on what it sells: if one extra [wedding / build] a year comes from it, it paid for itself.",
-    "It starts at [$6,000] with the full site; the 3D part alone is [$2,500-$6,000]."
+    "The 3D part is priced on what it sells: a phone-scan tour of your hall is $500 + $25 a month; if one extra booking comes from it, it paid for itself.",
+    "For your products: 5-10 pieces customers can spin and see in their room, $2,500 + $49 a month."
    ],
    "do": [
-    "Price 3D as an add-on to a Growth site: +$2,500 (a product you can spin) to +$6,000 (a walk-through of a space).",
-    "Quote a fixed number of rooms / products; extra ones $400-$900 each.",
-    "Always ship a plain fallback and keep the first load under 3 s on a phone."
+    "Phone-scan 3D tour: $500 a scan + $25 a month hosting (freelancers charge $300-$800; camera crews charge thousands).",
+    "3D product viewer (Google's free model-viewer, AR on phones): $2,500 for 5-10 products + $49 a month.",
+    "Configurator-lite (sheds, pergolas, trailers: options, live price, 3D preview, quote): $3,500 + $99 a month.",
+    "Custom immersive brand site: $5,000-$15,000, only with a fixed written scope and 50% up front."
    ],
-   "usd": "3D / immersive: $6,000-$15,000 total; add-on $2,500-$6,000; extra rooms or products $400-$900 each.",
-   "avoid": "3D for trades sold on speed (plumbers, HVAC, lawyers): it slows the site and looks like a gimmick."
+   "usd": "Templated 3D (scans, model-viewer) is the business; custom three.js sites are 40+ hours and a scope-creep trap.",
+   "avoid": "Custom 3D as your first offer, and 3D for trades sold on speed (plumbers, HVAC, lawyers)."
   },
   {
    "id": "when3d",
@@ -247,9 +338,10 @@
     "For an emergency trade I would not do 3D: speed and reviews win that call."
    ],
    "do": [
-    "Sells: venues, real estate, home builders, landscapers / pools, furniture and product makers, showrooms.",
-    "Maybe: dentists / med spas (a calm office tour), gyms, car dealers (a car you can spin).",
-    "Gimmick: plumbers, HVAC, lawyers, accountants, restaurants (fix the Google listing instead)."
+    "Sells: wedding / event venues, gyms, salons, studios, Airbnbs (phone-scan tours); furniture, signs, sheds, jewelry, boats, bikes (product viewer); sheds / trailers (configurator); small dealers (spins + a lot scan).",
+    "Shopify reports about 94% more sales for merchants who add 3D to product pages (its own data): 3D works where people buy a THING or a PLACE.",
+    "Weak: AR menus for restaurants (studies show little effect on orders): demo only.",
+    "Gimmick: plumbers, HVAC, lawyers, accountants: speed, reviews and the Google listing win."
    ],
    "usd": "Only pitch 3D where one extra sale pays for it ($6,000+ jobs).",
    "avoid": "Heavy 3D on the home page with no fallback: a slow phone means a lost lead."
@@ -260,15 +352,31 @@
    "topic": "outreach",
    "say": [
     "Hi, is this the owner of [Business]? This is [me] with [my studio], it is a sales call so I will be quick: I made a free preview of a new site for [Business]. Can I take 30 seconds to tell you why?",
-    "Thanks. I called because [one real issue: no site / slow on phones / no reviews shown]. The preview fixes that."
+    "Thanks. I called because [one real issue: no site / slow on phones / no reviews shown]. The preview fixes that.",
+    "I ran a free accessibility and speed check on your site: it found [n] common issues. Can I send you the one-page report?"
    ],
    "do": [
-    "Call 10:00-11:30 or 14:00-16:00 local time, never during their rush.",
-    "Make the preview before the call (Agency > Demos).",
-    "One goal per call: permission to send the link."
+    "Walk in with a ready demo of THEIR business (their name, their photos, a phone scan of their room): the demo is the pitch.",
+    "Calls and emails by hand only, business numbers only: never cold texts or auto-dialers (TCPA risk).",
+    "Offer your first 2 clients the build at cost for a written review and a case-study page.",
+    "Call 10:00-11:30 or 14:00-16:00 local time; one goal per call: permission to send the link."
    ],
    "usd": "Typical: 1 meeting per 15-25 calls, 1 sale per 4-6 meetings: about 100 calls for one $3,500 site.",
    "avoid": "Calling numbers on the Do Not Call list with a pre-recorded message, or pretending to be a customer."
+  },
+  {
+   "id": "a11yopener",
+   "title": "The accessibility + speed check: the easiest opener",
+   "topic": "outreach",
+   "say": [
+    "I ran a free accessibility and speed check on [Business]'s site. It found [n] common issues that block some customers on phones. Want the one-page report? Fixing them is a flat $600."
+   ],
+   "do": [
+    "Run the check (Agency > Audit), send the plain-words report, offer the fixed-price fix + a $49 a month watch.",
+    "Website accessibility lawsuits: about 3,100-3,900 federal cases in 2025, about 2 in 3 against companies under $50M revenue (Level Access, UsableNet): a real reason to fix, not a scare tactic."
+   ],
+   "usd": "Free report, $600 fix, $49 a month watch.",
+   "avoid": "Saying 'ADA compliant' or 'lawsuit-proof': say 'common issues fixed'."
   },
   {
    "id": "objections",
@@ -314,7 +422,7 @@
     "Right primary category, all services, 20+ real photos, weekly posts, Q&A answered.",
     "A review link + a small card to hand to every happy customer."
    ],
-   "usd": "$300-$750 one time; often the first sale that leads to the site.",
+   "usd": "One-time fix $300-$750; managed profiles go for about $499 a location a month at big agencies: your reviews + Google engine at $199-$399 is the friendly middle.",
    "avoid": "Fake reviews or review gating: against Google's rules and the FTC's."
   },
   {
@@ -325,11 +433,11 @@
     "Ask every happy customer the same day: 'Would you leave us a quick Google review? Here is the link.'"
    ],
    "do": [
-    "A text with the review link after each job (the client sends it).",
-    "Show the newest reviews on the site's first screen.",
-    "Reply to every review within 2 days, the bad ones politely."
+    "A review request after every job (text or email sent by the client's own tool).",
+    "Answer every review within 2 days: 88% of people would use a business that answers all its reviews (BrightLocal 2024).",
+    "Show the newest reviews on the site's first screen."
    ],
-   "usd": "Part of the Local growth plan; going from 10 to 50 reviews is often the biggest lift in calls.",
+   "usd": "97% of people read local reviews (BrightLocal 2026). Sell it as the Reviews + Google profile engine, $199-$399 a month.",
    "avoid": "Paying for reviews or only asking happy customers through a filter."
   },
   {
@@ -367,13 +475,14 @@
    "title": "Retainers: the income that stays",
    "topic": "retainers",
    "say": [
-    "After launch, I keep the site fast, safe and updated, and send you a one-page report every month: [$149] a month."
+    "After launch I keep it fast, safe and updated and send a one-page proof report each month: calls, reviews, map views, in dollars. [$79] a month."
    ],
    "do": [
-    "Every site comes with a care plan; offer the Local growth plan after 60 days with the first report.",
-    "Month-to-month, cancel anytime: it sells better than a contract."
+    "Every site comes with a care plan ($49-$99 a month); offer the reviews + Google engine ($199-$399) with the first proof report.",
+    "The monthly proof report is the anti-churn tool: clients who see calls in $ do not cancel.",
+    "Month-to-month sells better than a contract."
    ],
-   "usd": "20 care plans at $149 = about $3,000 a month before you build anything new.",
+   "usd": "10 clients at $300 a month = $3,000 a month before any new build.",
    "avoid": "Free hosting 'for now': it is hard to start charging later."
   },
   {
@@ -406,6 +515,50 @@
    ],
    "usd": "Deposit 50%, balance at launch; changes after 2 rounds $95 an hour.",
    "avoid": "Starting without the deposit or without the client's photos and logins."
+  },
+  {
+   "id": "textback",
+   "title": "Missed-call text-back: the trades' quick win",
+   "topic": "offers",
+   "say": [
+    "When you are on a roof and miss a call, that customer calls the next roofer. A text back in 10 seconds with a booking link keeps them: $199 to set up, $149 a month."
+   ],
+   "do": [
+    "Use the client's own business number and an off-the-shelf tool ($17-$49 a month).",
+    "Only texts back people who just called (they started the conversation)."
+   ],
+   "usd": "$199 + $149 a month; your cost $17-$49 a month.",
+   "avoid": "Cold texting lists of numbers (TCPA)."
+  },
+  {
+   "id": "scan3d",
+   "title": "Phone-scan 3D tours",
+   "topic": "3d",
+   "say": [
+    "Couples who cannot visit still book from a tour. I can scan your hall with a phone this week and put a 3D walk-through on your site: $500 + $25 a month."
+   ],
+   "do": [
+    "Capture with a free phone app (Gaussian-splat scan), host on a free web viewer; about 2 hours on site.",
+    "Best for venues, gyms, salons, studios, Airbnbs; re-scan when the room changes."
+   ],
+   "usd": "$500 a scan + $25 a month; freelancers charge $300-$800, camera crews charge thousands.",
+   "avoid": "Promising a perfect tour of a dark or cluttered room: tidy and light it first."
+  },
+  {
+   "id": "killers",
+   "title": "What kills small web agencies (and the fix)",
+   "topic": "process",
+   "say": [
+    "The price includes 2 rounds of changes; anything new after that I quote before I start."
+   ],
+   "do": [
+    "Scope creep -> fixed packages, written scope, 2 revision rounds, extras priced up front.",
+    "One-off builds only -> every build sells a monthly plan.",
+    "Custom 3D that takes weeks -> free tools (model-viewer, phone scans) and templates.",
+    "Clients who cannot pay -> qualify: has reviews, a phone line, open 2+ years."
+   ],
+   "usd": "",
+   "avoid": "Starting work without a deposit and a written scope."
   }
  ],
  "diagnose": {
@@ -513,5 +666,6 @@
     ]
    }
   ]
- }
+ },
+ "sources": "Prices and facts: the research team's brief (research/handoff/2026-11-20/web/research/RESEARCH.md, offers.json; 40+ public sources in research/writeups/web-business-2026-11-20.md). Mostly vendor numbers: ranges, say 'about'."
 }
