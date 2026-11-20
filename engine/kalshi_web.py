@@ -1,7 +1,8 @@
 """KALSHI K8 phone page (owner 2026-11-19: "I have no access to my PC right now, we have to find a way on my phone very quick").
 
-The whole Kalshi set-up and arming from the iPhone, over the PC's PRIVATE Tailscale link only (the same host as the phone
-dashboard and the ZEUS Safety page: https://<pc>.<tailnet>.ts.net/kalshi-live/). Installed by engine/phone_safety.install (which
+The whole Kalshi set-up and arming from the iPhone, over the PC's PRIVATE Tailscale link only: the bot server's own port
+https://<pc>.<tailnet>.ts.net:8444/kalshi-live/ (engine/phone_link.py; :443 belongs to the owner's old Jarvis app). Installed by
+engine/phone_safety.install (which
 server.py already calls), so server.py is untouched. It never touches the futures bot, NinjaTrader or any futures setting.
 
   GET  /kalshi-live/         the one-screen page
@@ -10,7 +11,8 @@ server.py already calls), so server.py is untouched. It never touches the future
   POST /kalshi-live/key      {"key_id", "private_key"} -> saved OUTSIDE the repo in OLYMPUS_HOME\\kalshi\\ (kalshi_key.pem + key_id.txt,
                              locked to the Windows user), never logged, never echoed; checked at once with ONE signed read (the balance)
   POST /kalshi-live/arm      {"phrase", "stake"} -> the exact phrase (engine/kalshi_live.PHRASE) arms K8 live at the bet size picked
-                             ($5 / $8 / $10 / $15); the clock loop is started if it is not running. Nothing else can arm
+                             ($1 / $2.50 / $5 / $8 / $10 / $15; the bankroll rule says $2.50 for $55); the clock loop is started if
+                             it is not running. Nothing else can arm
   POST /kalshi-live/stop     {} -> OFF at once, no second tap: disarm + the kill switch; resting orders cancelled in the background
 Every POST must pass check(): the private link (engine/live_site.private_why: the owner's tailnet, signed in, never Funnel), sent by
 this page (engine/phone_safety.origin_why: X-Zeus-Safety header, JSON, same Origin, Sec-Fetch-Site), body <= 8 KB, at most 10
@@ -195,22 +197,22 @@ def key_status(env=None) -> dict:
 
 # ------------------------------------------------------------------------------------------------ the presses
 def bankroll_warn(stake, balance) -> str:
+    """The bankroll rule (engine/kalshi_clock.bankroll_rule: about 4.5% of the account a bet): a warning when the bet is bigger."""
     from engine import kalshi_clock as KC
     b = KL._f(balance)
-    if b is None:
+    if b is None or KC.fits(stake, b):
         return ""
-    need = KC.BANKROLL_PER_15 * stake / 15.0
-    if b < need - 1e-9:
-        return (f"Bet size {KL.money(stake)} needs about {KL.money(need)} on Kalshi; you have {KL.money(b)}. "
-                f"With $100 use $5-8 a bet.")
-    return ""
+    r = KC.bankroll_rule(b)
+    need = stake / KC.BANKROLL["bet_share"]
+    return (f"Bet size {KL.money(stake)} needs about {KL.money(need)} on Kalshi; you have {KL.money(b)}: "
+            f"use {KL.money(r['stake_usd'])} a bet ({r['contracts_at_52c']} contracts).")
 
 
 def do_arm(body) -> dict:
     from engine import kalshi_clock as KC
     stake = KL._f(body.get("stake"))
     if stake not in KC.STAKES:
-        return {"ok": False, "said": "pick a bet size: $5, $8, $10 or $15"}
+        return {"ok": False, "said": "pick a bet size: " + ", ".join(KL.money(x) for x in KC.STAKES)}
     ks = key_status()
     if not ks["ok"]:
         return {"ok": False, "said": "save and check your Kalshi key first (step 1)"}
@@ -262,10 +264,15 @@ def status_view() -> dict:
     A = KL.load_all(state_dir=_S["state_dir"])
     live, why = KL.arm_state(P=P, sha=A["sha"], env=_env())
     nt = s.get("next")
+    bal = KL._f(ks.get("balance"))
+    rule = KC.bankroll_rule(bal if bal is not None else cfg.get("bankroll_usd") or 55.0)
     return {"ok": True, "t": int(now), "phrase": KL.PHRASE, "key": ks, "live": live, "why": why, "stake": cfg["stake_usd"],
             "stakes": list(KC.STAKES), "warn": bankroll_warn(cfg["stake_usd"], ks.get("balance")),
+            "bankroll": {"balance": bal, "configured": cfg.get("bankroll_usd"), "rule": rule, "fits": KC.fits(cfg["stake_usd"], bal)},
+            "dist": KC.kill_distances(_S["state_dir"], cfg, now), "next_t": int(nt) if nt else None, "now_t": int(now),
             "legs": [{"name": KC.LEG[x]["name"], "live": x in cfg["live_legs"]} for x in cfg["paper_legs"]],
             "caps": {"price_cap": cfg["price_cap"], "max_bets_per_day": cfg["max_bets_per_day"], "daily_loss_stop_usd": cfg["daily_loss_stop_usd"],
+                     "week_loss_stop_usd": cfg.get("week_loss_stop_usd"),
                      "kill_after_bets": cfg["kill_after_bets"], "kill_min_win_rate": cfg["kill_min_win_rate"],
                      "kill_drawdown_usd": cfg["kill_drawdown_usd"], "kill_avg_price": cfg["kill_avg_price"],
                      "kill_avg_price_bets": cfg["kill_avg_price_bets"]}, "red_team": KC.RED_TEAM,

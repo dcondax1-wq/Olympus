@@ -59,18 +59,24 @@ LEGS = (   # id, series, window open (local time of tz), side bought (yes = UP, 
 # red team 2026-11-19: no LBMA auction on UK bank holidays (the morning legs skip); CME holidays / early closes (the evening legs skip)
 UK_SKIP = {"2026-12-25", "2026-12-28", "2027-01-01", "2027-03-26", "2027-03-29"}
 CME_SKIP = {"2026-11-26", "2026-11-27", "2026-12-24", "2026-12-25", "2027-01-01", "2027-03-26"}
-STAKES = (5.0, 8.0, 10.0, 15.0)        # the bet sizes the phone page offers
-BANKROLL_PER_15 = 250.0                # "bet size $15 needs about $250; with $100 use $5-8"
-RED_TEAM = "Red team: paper first (about 4 weeks); if you go live now, keep at least $250 and these stops."
+STAKES = (1.0, 2.5, 5.0, 8.0, 10.0, 15.0)   # the bet sizes the phone page offers (the bankroll rule marks the one that fits)
+# THE BANKROLL RULE (night-kalshi8 2026-11-20, owner: "I have $55 and I'm not adding anymore for a while";
+# research/kalshi_k8_monday/size55.py): a quarter of Kelly at a planning win rate 10 points under the friend's months
+# (63% vs 73%, price + fee 53.5c: full Kelly 20%) = about 4.5% of the bankroll a bet; a WEEK stop of 25% of the bankroll
+# (worst case: settled $ this week + every open bet, before every order) so a bad week can never lose more than that.
+BANKROLL = {"bet_share": 0.045, "day_share": 0.15, "week_share": 0.25, "dd_share": 0.30, "min_stake": 1.0, "step": 0.5}
+RED_TEAM = ("Red team: paper first (about 4 weeks). Live with $55: $2.50 a bet (4 contracts), a bad week can lose at most "
+            "25% ($13.75); OFF at -$16.50 from the peak.")
 LEG = {x["id"]: x for x in LEGS}
-DEFAULT = {"version": 1, "strategy": "clock", "source": "research/lab/kalshi_candidates/K8.json", "stake_usd": 15.0, "price_cap": 0.70,
-           "entry_delay_s": 20, "expire_after_s": 40, "max_bets_per_day": 6, "daily_loss_stop_usd": 60.0,
-           "kill_after_bets": 60, "kill_min_win_rate": 0.58, "kill_drawdown_usd": 75.0, "min_fill_share": 0.5,
+DEFAULT = {"version": 1, "strategy": "clock", "source": "research/lab/kalshi_candidates/K8.json", "stake_usd": 2.5, "price_cap": 0.70,
+           "entry_delay_s": 20, "expire_after_s": 40, "max_bets_per_day": 3, "daily_loss_stop_usd": 8.0, "week_loss_stop_usd": 13.75,
+           "bankroll_usd": 55.0,
+           "kill_after_bets": 60, "kill_min_win_rate": 0.58, "kill_drawdown_usd": 16.5, "min_fill_share": 0.5,
            "kill_avg_price_bets": 30, "kill_avg_price": 0.58,
            # red team 2026-11-19 final: silver 05:15 is too thin for $15 at +20 s (36% of days fill by 30 s): paper only
            "live_legs": ["gold_0530_down", "gold_1700_up", "silver_1700_up"],
            "paper_legs": [x["id"] for x in LEGS]}
-HARD = {"stake_usd": 15.0, "price_cap": 0.80, "max_bets_per_day": 8, "daily_loss_stop_usd": 100.0}
+HARD = {"stake_usd": 15.0, "price_cap": 0.80, "max_bets_per_day": 8, "daily_loss_stop_usd": 100.0, "week_loss_stop_usd": 150.0}
 COID = "olyc-"
 SLOT = (10, 45)                 # an order only between open + 10 s and open + 45 s
 TRIES = (0, 10, 20)             # seconds after the entry time: the book is read again when it cannot fill half the bet yet
@@ -84,9 +90,10 @@ PUSH_DAY_MAX = 12
 HEARTBEAT_S = 30
 TAKER_FEE = 0.07
 PLAIN = {"KILL": "the kill switch is on", "NOT_ARMED": "not armed (paper only)", "PAUSED": "paused from the phone or the PC",
-         "STOPPED": "stopped: type the phrase again", "KILL_RULE": "the kill rule (under 58% won after 60 live bets, -$75 from the peak, or over 58c paid on the last 30)",
+         "STOPPED": "stopped: type the phrase again", "KILL_RULE": "the kill rule (under 58% won after 60 live bets, too far below the peak, or over 58c paid on the last 30)",
          "SLOT": "outside the 10-45 s after the open", "PRICE": "the ask is above the price cap", "STAKE": "over the $ per bet",
          "BETS_DAY": "the day's bets are used", "ONE_BET": "already a bet on this market", "DAY_STOP": "today's loss stop",
+         "WEEK_STOP": "this week's loss stop (25% of the bankroll)", "DD_STOP": "the drawdown stop (30% of the bankroll from the peak)",
          "BALANCE": "not enough cash on Kalshi for the bet", "STALE_BOOK": "the prices are too old", "MARKET": "the market is not open",
          "BAD_ORDER": "the order is not valid", "ERROR": "the check hit an error (blocked to be safe)"}
 
@@ -102,8 +109,8 @@ def load_config(path=None, state_dir=None) -> tuple:
     raw = KL._jread(path or CFG_PATH, None)
     cfg, probs = json.loads(json.dumps(DEFAULT)), []
     if isinstance(raw, dict):
-        for k in ("stake_usd", "price_cap", "max_bets_per_day", "daily_loss_stop_usd", "entry_delay_s", "expire_after_s",
-                  "kill_after_bets", "kill_min_win_rate", "kill_drawdown_usd", "min_fill_share", "kill_avg_price_bets", "kill_avg_price"):
+        for k in ("stake_usd", "price_cap", "max_bets_per_day", "daily_loss_stop_usd", "week_loss_stop_usd", "bankroll_usd",
+                  "entry_delay_s", "expire_after_s", "kill_after_bets", "kill_min_win_rate", "kill_drawdown_usd", "min_fill_share", "kill_avg_price_bets", "kill_avg_price"):
             if k in raw:
                 v = KL._f(raw.get(k))
                 if v is None or v <= 0:
@@ -131,7 +138,7 @@ def load_config(path=None, state_dir=None) -> tuple:
         if pick in STAKES:
             cfg["stake_usd"] = pick
         else:
-            probs.append(f"the bet size {pick:g} is not one of $5 / $8 / $10 / $15")
+            probs.append(f"the bet size {pick:g} is not one of " + " / ".join(f"${x:g}" for x in STAKES))
     for k, hi in HARD.items():
         if cfg[k] > hi:
             probs.append(f"{k} = {cfg[k]:g} is above the code's ceiling {hi:g}")
@@ -144,6 +151,24 @@ def load_config(path=None, state_dir=None) -> tuple:
     cfg["kill_avg_price_bets"] = int(cfg["kill_avg_price_bets"])
     cfg["paper_legs"] = sorted(set(cfg["paper_legs"]) | set(cfg["live_legs"]), key=lambda x: [y["id"] for y in LEGS].index(x))
     return cfg, probs
+
+
+def bankroll_rule(bankroll) -> dict:
+    """The sizing + stops for a bankroll of `bankroll` $ (BANKROLL above; $55 -> $2.50 a bet, day stop $8, week stop $13.75,
+    OFF at -$16.50 from the peak, 3 bets a day). Pure; the phone page shows it and research/lab/kalshi_clock.json holds the values."""
+    b = max(0.0, KL._f(bankroll, 0.0) or 0.0)
+    R = BANKROLL
+    stake = max(R["min_stake"], round(b * R["bet_share"] / R["step"]) * R["step"])
+    stake = min(stake, HARD["stake_usd"])
+    return {"bankroll_usd": round(b, 2), "stake_usd": stake, "max_bets_per_day": 3,
+            "daily_loss_stop_usd": round(b * R["day_share"]), "week_loss_stop_usd": round(b * R["week_share"], 2),
+            "kill_drawdown_usd": round(b * R["dd_share"], 2), "contracts_at_52c": int(math.floor(stake / 0.52 + 1e-9))}
+
+
+def fits(stake, balance) -> bool:
+    """True when `stake` is at most what the bankroll rule gives for `balance` (unknown balance = True)."""
+    b = KL._f(balance)
+    return True if b is None else stake <= bankroll_rule(b)["stake_usd"] + 1e-9
 
 
 try:
@@ -184,6 +209,12 @@ def ticker(series: str, open_t: float) -> str:
 def skipped(leg, day: dt.date) -> bool:
     iso_ = day.isoformat()
     return iso_ in (UK_SKIP if leg["skip"] == "uk" else CME_SKIP)
+
+
+def week_of(day) -> str:
+    """The Monday (ISO date) of the ET week of `day` (a date or 'YYYY-MM-DD'): the week stop counts Monday-Friday."""
+    d = day if isinstance(day, dt.date) else dt.date.fromisoformat(str(day)[:10])
+    return (d - dt.timedelta(days=d.weekday())).isoformat()
 
 
 def windows(day: dt.date, cfg) -> list:
@@ -297,6 +328,15 @@ def check_order(o, v) -> tuple:
         worst_day = KL._f(v.get("day_worst"), 0.0) - cost - f
         if worst_day < -min(cfg["daily_loss_stop_usd"], HARD["daily_loss_stop_usd"]) - 1e-9:
             return no("DAY_STOP", f"today could reach {KL.money(worst_day)} (stop -{KL.money(cfg['daily_loss_stop_usd'])})")
+        dd_cap = KL._f(cfg.get("kill_drawdown_usd"))
+        if dd_cap and KL._f(v.get("dd_now")) is not None:
+            dd_worst = KL._f(v.get("dd_now"), 0.0) + KL._f(v.get("open_all"), 0.0) + cost + f
+            if dd_worst > dd_cap + 1e-9:
+                return no("DD_STOP", f"this bet could take the record {KL.money(dd_worst)} below its peak (OFF at -{KL.money(dd_cap)})")
+        wk_stop = min(KL._f(cfg.get("week_loss_stop_usd"), HARD["week_loss_stop_usd"]), HARD["week_loss_stop_usd"])
+        worst_week = KL._f(v.get("week_worst"), 0.0) - cost - f
+        if worst_week < -wk_stop - 1e-9:
+            return no("WEEK_STOP", f"this week could reach {KL.money(worst_week)} (stop -{KL.money(wk_stop)})")
         if cost + f > KL._f(v.get("balance"), 0.0) + 1e-9:
             return no("BALANCE", f"cash on Kalshi {KL.money(v.get('balance'))} is below the bet {KL.money(cost + f)}")
         if now - KL._f(o.get("book_t"), 0.0) > BOOK_MAX_AGE_S:
@@ -366,13 +406,46 @@ def kill_state(state_dir=None, cfg=None) -> tuple:
     return False, f"{s['n']} live bets so far" + (f", {100 * s['rate']:.0f}% won" if s["n"] else "") + (f", {KL.money(-dd)} from the peak" if dd else "")
 
 
+def kill_distances(state_dir=None, cfg=None, now=None) -> dict:
+    """How far each stop is, in plain numbers, on the LIVE ledger (or the PAPER one while nothing is live): for the K8 status card.
+    {"ledger", "day": {used, stop}, "week": {used, stop}, "drawdown": {used, stop}, "win_rate": {n, of, rate, min},
+     "avg_price": {n, of, avg, max}, "last10": [...]}. 'used' = $ lost so far (settled + every open bet, like the order gate)."""
+    cfg = cfg or load_config(state_dir=state_dir)[0]
+    now = time.time() if now is None else now
+    P = paths(state_dir)
+    lr = rows(P["clock_live"])
+    led, rs = ("live", lr) if lr else ("paper", rows(P["clock_paper"]))
+    day = KL.et_day(now)
+    wk = week_of(day)
+
+    def worst(sel):
+        return round(sum(KL._f(r.get("pnl"), 0.0) for r in sel if r.get("result") in ("won", "lost"))
+                     - sum(KL._f(r.get("cost"), 0.0) + KL._f(r.get("fee"), 0.0) for r in sel
+                           if r.get("result") is None and r.get("status") in ("sent", "open")), 2)
+    d = worst([r for r in rs if r.get("day") == day])
+    w = worst([r for r in rs if wk <= str(r.get("day") or "") <= day])
+    s = stats(rs)
+    paid = [KL._f(r.get("price")) for r in sorted((r for r in rs if r.get("result") in ("won", "lost") and KL._f(r.get("price"))),
+                                                  key=lambda r: KL._f(r.get("open_t"), 0.0))][-cfg["kill_avg_price_bets"]:]
+    done = [r for r in rs if r.get("result") in ("won", "lost")]
+    last = [{"day": r.get("day"), "leg": r.get("leg"), "name": LEG.get(r.get("leg"), {}).get("name", r.get("leg")), "n": r.get("n"),
+             "price": r.get("price"), "result": r.get("result"), "pnl": r.get("pnl")}
+            for r in sorted(done, key=lambda r: KL._f(r.get("open_t"), 0.0))[-10:]]
+    return {"ledger": led, "day": {"used": round(max(0.0, -d), 2), "stop": cfg["daily_loss_stop_usd"]},
+            "week": {"used": round(max(0.0, -w), 2), "stop": cfg.get("week_loss_stop_usd") or HARD["week_loss_stop_usd"], "since": wk},
+            "drawdown": {"used": drawdown(rs), "stop": cfg["kill_drawdown_usd"]},
+            "win_rate": {"n": s["n"], "of": cfg["kill_after_bets"], "rate": s["rate"], "min": cfg["kill_min_win_rate"]},
+            "avg_price": {"n": len(paid), "of": cfg["kill_avg_price_bets"], "avg": round(sum(paid) / len(paid), 4) if paid else None,
+                          "max": cfg["kill_avg_price"]}, "last10": last, "net": s["net"]}
+
+
 def describe(cfg) -> list:
     live = [LEG[x]["name"] for x in cfg["live_legs"]]
     paper = [LEG[x]["name"] for x in cfg["paper_legs"] if x not in cfg["live_legs"]]
     return [f"K8 clock bets (Kalshi 15-minute gold / silver), US weekdays, {cfg['entry_delay_s']:.0f} s after each window opens:",
             "  live legs: " + "; ".join(live), *(["  paper only: " + "; ".join(paper)] if paper else []),
             f"  {KL.money(cfg['stake_usd'])} a bet at the best ask, skipped when the ask is above {cfg['price_cap'] * 100:.0f}c; at most "
-            f"{cfg['max_bets_per_day']} bets a day; stop at -{KL.money(cfg['daily_loss_stop_usd'])} a day; OFF after {cfg['kill_after_bets']} "
+            f"{cfg['max_bets_per_day']} bets a day; stop at -{KL.money(cfg['daily_loss_stop_usd'])} a day and -{KL.money(cfg.get('week_loss_stop_usd') or 0)} a week; OFF after {cfg['kill_after_bets']} "
             f"live bets under {100 * cfg['kill_min_win_rate']:.0f}% won, at -{KL.money(cfg['kill_drawdown_usd'])} from the peak, or "
             f"above {100 * cfg['kill_avg_price']:.0f}c paid on average over the last {cfg['kill_avg_price_bets']}; OFF after {ERR_STREAK} errors in a row.",
             "  " + RED_TEAM]
@@ -546,12 +619,19 @@ class ClockLoop:
         killed, kwhy = kill_state(self.state_dir, self.cfg)
         worst = sum(KL._f(r.get("pnl"), 0.0) for r in lr if r.get("result") in ("won", "lost")) \
             - sum(KL._f(r.get("cost"), 0.0) + KL._f(r.get("fee"), 0.0) for r in lr if r.get("result") is None and r.get("status") in ("sent", "open"))
+        wk = week_of(day)
+        allr = rows(self.P["clock_live"])
+        wr = [r for r in allr if str(r.get("day") or "") >= wk and str(r.get("day") or "") <= day]
+        wworst = sum(KL._f(r.get("pnl"), 0.0) for r in wr if r.get("result") in ("won", "lost")) \
+            - sum(KL._f(r.get("cost"), 0.0) + KL._f(r.get("fee"), 0.0) for r in wr if r.get("result") is None and r.get("status") in ("sent", "open"))
         return {"now": now, "cfg": self.cfg, "kill": os.path.exists(self.P["kill"]) or KL.off_by_env(self.env), "live": live and not self.problems,
                 "why": why if not self.problems else "the clock settings have a problem: " + self.problems[0], "stopped": False,
                 "killed": killed, "kill_why": kwhy,
                 "paused": bool(self.st.get("paused_until") and KL._f(self.st["paused_until"], 0) > now),
                 "bets_today": len([r for r in lr if r.get("status") in ("sent", "open", "settled")]),
-                "tickers_today": {r.get("ticker") for r in lr}, "day_worst": worst, "balance": None}
+                "tickers_today": {r.get("ticker") for r in lr}, "day_worst": worst, "week_worst": wworst, "balance": None,
+                "dd_now": drawdown(allr), "open_all": sum(KL._f(r.get("cost"), 0.0) + KL._f(r.get("fee"), 0.0) for r in allr
+                                                          if r.get("result") is None and r.get("status") in ("sent", "open"))}
 
     # ------------------------------------------------------------------ one window: paper rows (+ live orders when armed)
     def entry(self, open_t, ids, last=True) -> list:
@@ -613,6 +693,9 @@ class ClockLoop:
             if not ok:
                 notes.append(f"{leg['name']}: skipped ({words})")
                 self.log({"ev": "live_blocked", "ticker": tk, "code": code})
+                if code == "DD_STOP" and not KL._f(v.get("open_all")):
+                    self.stop_live(f"the drawdown stop: {words}")       # no room left for even one bet: OFF + one push (paper keeps on)
+                    v["live"] = False
                 continue
             r = self.send(o, open_t, lid, day)
             if r:
@@ -621,9 +704,11 @@ class ClockLoop:
                 v["bets_today"] += 1
                 v["tickers_today"].add(tk)
                 v["day_worst"] -= r["cost"] + r["fee"]
+                v["week_worst"] = KL._f(v.get("week_worst"), 0.0) - r["cost"] - r["fee"]
+                v["open_all"] = KL._f(v.get("open_all"), 0.0) + r["cost"] + r["fee"]
                 v["balance"] = (v["balance"] or 0) - r["cost"] - r["fee"]
             if self.st.get("stopped"):
-                break
+                v["live"] = False                    # no more live orders this window; the paper rows of the other legs still go in
         save_rows(self.P["clock_paper"], paper)
         save_rows(self.P["clock_live"], live_rows)
         hm = KL.et_dt(open_t).strftime("%H:%M")

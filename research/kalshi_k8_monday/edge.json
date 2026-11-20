@@ -1,0 +1,2788 @@
+{
+ "variants": 82,
+ "bar_t": 3.234,
+ "find": "2026-08-03..2026-10-21",
+ "held_out": "2026-10-22..2026-11-19",
+ "stake": 2.5,
+ "results": [
+  {
+   "kind": "timing",
+   "what": "+10 s instead of +20 s (6 legs pooled)",
+   "find": {
+    "n": 341,
+    "net_per_1": -0.0231,
+    "t": -1.48,
+    "cheaper_c": -0.15,
+    "fill_rate": 0.988
+   },
+   "hold": {
+    "n": 125,
+    "net_per_1": -0.0295,
+    "t": -1.36,
+    "cheaper_c": -0.53,
+    "fill_rate": 0.984
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "timing",
+   "what": "+40 s instead of +20 s (6 legs pooled)",
+   "find": {
+    "n": 339,
+    "net_per_1": -0.0715,
+    "t": -2.66,
+    "cheaper_c": -0.84,
+    "fill_rate": 0.808
+   },
+   "hold": {
+    "n": 125,
+    "net_per_1": -0.0192,
+    "t": -0.38,
+    "cheaper_c": -0.05,
+    "fill_rate": 0.816
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "cap",
+   "leg": "gold_0530_down",
+   "what": "gold_0530_down: skip asks above 50c",
+   "skipped_find": {
+    "n": 34,
+    "won": 25,
+    "net_usd": 22.78,
+    "net_per_1": 0.2989,
+    "avg_price": 0.5527,
+    "t": 2.25
+   },
+   "skipped_hold": {
+    "n": 16,
+    "won": 14,
+    "net_usd": 17.97,
+    "net_per_1": 0.4853,
+    "avg_price": 0.5819,
+    "t": 3.53
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "cap",
+   "leg": "gold_0530_down",
+   "what": "gold_0530_down: skip asks above 53c",
+   "skipped_find": {
+    "n": 20,
+    "won": 16,
+    "net_usd": 16.67,
+    "net_per_1": 0.3598,
+    "avg_price": 0.5783,
+    "t": 2.36
+   },
+   "skipped_hold": {
+    "n": 15,
+    "won": 13,
+    "net_usd": 16.16,
+    "net_per_1": 0.4638,
+    "avg_price": 0.5853,
+    "t": 3.2
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "cap",
+   "leg": "gold_0530_down",
+   "what": "gold_0530_down: skip asks above 55c",
+   "skipped_find": {
+    "n": 14,
+    "won": 11,
+    "net_usd": 10.14,
+    "net_per_1": 0.3086,
+    "avg_price": 0.593,
+    "t": 1.69
+   },
+   "skipped_hold": {
+    "n": 12,
+    "won": 10,
+    "net_usd": 10.93,
+    "net_per_1": 0.3894,
+    "avg_price": 0.595,
+    "t": 2.22
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "cap",
+   "leg": "gold_0530_down",
+   "what": "gold_0530_down: skip asks above 57c",
+   "skipped_find": {
+    "n": 8,
+    "won": 6,
+    "net_usd": 4.12,
+    "net_per_1": 0.2182,
+    "avg_price": 0.6141,
+    "t": 0.88
+   },
+   "skipped_hold": {
+    "n": 11,
+    "won": 9,
+    "net_usd": 9.24,
+    "net_per_1": 0.3587,
+    "avg_price": 0.5982,
+    "t": 1.9
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "cap",
+   "leg": "gold_0530_down",
+   "what": "gold_0530_down: skip asks above 60c",
+   "skipped_find": {
+    "n": 4,
+    "won": 3,
+    "net_usd": 1.92,
+    "net_per_1": 0.2115,
+    "avg_price": 0.6331,
+    "t": 0.59
+   },
+   "skipped_hold": {
+    "n": 4,
+    "won": 3,
+    "net_usd": 2.01,
+    "net_per_1": 0.2236,
+    "avg_price": 0.6275,
+    "t": 0.63
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "cap",
+   "leg": "silver_0530_down",
+   "what": "silver_0530_down: skip asks above 50c",
+   "skipped_find": {
+    "n": 25,
+    "won": 17,
+    "net_usd": 10.66,
+    "net_per_1": 0.1859,
+    "avg_price": 0.5559,
+    "t": 1.14
+   },
+   "skipped_hold": {
+    "n": 13,
+    "won": 9,
+    "net_usd": 5.8,
+    "net_per_1": 0.1986,
+    "avg_price": 0.5565,
+    "t": 0.84
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "cap",
+   "leg": "silver_0530_down",
+   "what": "silver_0530_down: skip asks above 53c",
+   "skipped_find": {
+    "n": 19,
+    "won": 14,
+    "net_usd": 11.42,
+    "net_per_1": 0.2562,
+    "avg_price": 0.5691,
+    "t": 1.46
+   },
+   "skipped_hold": {
+    "n": 9,
+    "won": 6,
+    "net_usd": 2.4,
+    "net_per_1": 0.1165,
+    "avg_price": 0.5728,
+    "t": 0.41
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "cap",
+   "leg": "silver_0530_down",
+   "what": "silver_0530_down: skip asks above 55c",
+   "skipped_find": {
+    "n": 12,
+    "won": 9,
+    "net_usd": 7.07,
+    "net_per_1": 0.2444,
+    "avg_price": 0.5852,
+    "t": 1.14
+   },
+   "skipped_hold": {
+    "n": 6,
+    "won": 5,
+    "net_usd": 5.15,
+    "net_per_1": 0.3718,
+    "avg_price": 0.5867,
+    "t": 1.24
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "cap",
+   "leg": "silver_0530_down",
+   "what": "silver_0530_down: skip asks above 57c",
+   "skipped_find": {
+    "n": 9,
+    "won": 7,
+    "net_usd": 6.0,
+    "net_per_1": 0.2727,
+    "avg_price": 0.5936,
+    "t": 1.15
+   },
+   "skipped_hold": {
+    "n": 3,
+    "won": 2,
+    "net_usd": 0.16,
+    "net_per_1": 0.0234,
+    "avg_price": 0.6067,
+    "t": 0.04
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "cap",
+   "leg": "silver_0530_down",
+   "what": "silver_0530_down: skip asks above 60c",
+   "skipped_find": {
+    "n": 2,
+    "won": 2,
+    "net_usd": 2.98,
+    "net_per_1": 0.5936,
+    "avg_price": 0.61,
+    "t": 0.0
+   },
+   "skipped_hold": {
+    "n": 2,
+    "won": 1,
+    "net_usd": -1.45,
+    "net_per_1": -0.3258,
+    "avg_price": 0.62,
+    "t": 0.0
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "cap",
+   "leg": "silver_1615_down",
+   "what": "silver_1615_down: skip asks above 50c",
+   "skipped_find": {
+    "n": 31,
+    "won": 26,
+    "net_usd": 28.29,
+    "net_per_1": 0.4117,
+    "avg_price": 0.5802,
+    "t": 3.58
+   },
+   "skipped_hold": {
+    "n": 14,
+    "won": 10,
+    "net_usd": 4.58,
+    "net_per_1": 0.1458,
+    "avg_price": 0.6179,
+    "t": 0.74
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "cap",
+   "leg": "silver_1615_down",
+   "what": "silver_1615_down: skip asks above 53c",
+   "skipped_find": {
+    "n": 23,
+    "won": 19,
+    "net_usd": 17.54,
+    "net_per_1": 0.3408,
+    "avg_price": 0.6006,
+    "t": 2.58
+   },
+   "skipped_hold": {
+    "n": 13,
+    "won": 10,
+    "net_usd": 6.69,
+    "net_per_1": 0.2282,
+    "avg_price": 0.6262,
+    "t": 1.2
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "cap",
+   "leg": "silver_1615_down",
+   "what": "silver_1615_down: skip asks above 55c",
+   "skipped_find": {
+    "n": 17,
+    "won": 15,
+    "net_usd": 15.04,
+    "net_per_1": 0.3962,
+    "avg_price": 0.6202,
+    "t": 3.12
+   },
+   "skipped_hold": {
+    "n": 13,
+    "won": 10,
+    "net_usd": 6.69,
+    "net_per_1": 0.2282,
+    "avg_price": 0.6262,
+    "t": 1.2
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "cap",
+   "leg": "silver_1615_down",
+   "what": "silver_1615_down: skip asks above 57c",
+   "skipped_find": {
+    "n": 13,
+    "won": 12,
+    "net_usd": 12.82,
+    "net_per_1": 0.4393,
+    "avg_price": 0.6367,
+    "t": 3.96
+   },
+   "skipped_hold": {
+    "n": 12,
+    "won": 9,
+    "net_usd": 5.04,
+    "net_per_1": 0.1869,
+    "avg_price": 0.6308,
+    "t": 0.92
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "cap",
+   "leg": "silver_1615_down",
+   "what": "silver_1615_down: skip asks above 60c",
+   "skipped_find": {
+    "n": 10,
+    "won": 9,
+    "net_usd": 8.05,
+    "net_per_1": 0.3667,
+    "avg_price": 0.6522,
+    "t": 2.59
+   },
+   "skipped_hold": {
+    "n": 6,
+    "won": 4,
+    "net_usd": -0.42,
+    "net_per_1": -0.0338,
+    "avg_price": 0.6733,
+    "t": -0.11
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "cap",
+   "leg": "gold_1700_up",
+   "what": "gold_1700_up: skip asks above 50c",
+   "skipped_find": {
+    "n": 30,
+    "won": 22,
+    "net_usd": 18.06,
+    "net_per_1": 0.2658,
+    "avg_price": 0.5657,
+    "t": 1.91
+   },
+   "skipped_hold": {
+    "n": 10,
+    "won": 8,
+    "net_usd": 8.09,
+    "net_per_1": 0.3531,
+    "avg_price": 0.572,
+    "t": 1.52
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "cap",
+   "leg": "gold_1700_up",
+   "what": "gold_1700_up: skip asks above 53c",
+   "skipped_find": {
+    "n": 22,
+    "won": 17,
+    "net_usd": 15.26,
+    "net_per_1": 0.3007,
+    "avg_price": 0.5824,
+    "t": 1.99
+   },
+   "skipped_hold": {
+    "n": 6,
+    "won": 5,
+    "net_usd": 4.69,
+    "net_per_1": 0.3277,
+    "avg_price": 0.6067,
+    "t": 1.18
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "cap",
+   "leg": "gold_1700_up",
+   "what": "gold_1700_up: skip asks above 55c",
+   "skipped_find": {
+    "n": 14,
+    "won": 13,
+    "net_usd": 17.22,
+    "net_per_1": 0.5253,
+    "avg_price": 0.6045,
+    "t": 4.57
+   },
+   "skipped_hold": {
+    "n": 6,
+    "won": 5,
+    "net_usd": 4.69,
+    "net_per_1": 0.3277,
+    "avg_price": 0.6067,
+    "t": 1.18
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "cap",
+   "leg": "gold_1700_up",
+   "what": "gold_1700_up: skip asks above 57c",
+   "skipped_find": {
+    "n": 11,
+    "won": 10,
+    "net_usd": 12.19,
+    "net_per_1": 0.4723,
+    "avg_price": 0.6157,
+    "t": 3.3
+   },
+   "skipped_hold": {
+    "n": 5,
+    "won": 4,
+    "net_usd": 3.04,
+    "net_per_1": 0.2542,
+    "avg_price": 0.614,
+    "t": 0.78
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "cap",
+   "leg": "gold_1700_up",
+   "what": "gold_1700_up: skip asks above 60c",
+   "skipped_find": {
+    "n": 6,
+    "won": 5,
+    "net_usd": 4.35,
+    "net_per_1": 0.3187,
+    "avg_price": 0.6367,
+    "t": 1.21
+   },
+   "skipped_hold": {
+    "n": 3,
+    "won": 3,
+    "net_usd": 3.98,
+    "net_per_1": 0.567,
+    "avg_price": 0.6233,
+    "t": 19.82
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "cap",
+   "leg": "silver_1700_up",
+   "what": "silver_1700_up: skip asks above 50c",
+   "skipped_find": {
+    "n": 31,
+    "won": 25,
+    "net_usd": 25.74,
+    "net_per_1": 0.3716,
+    "avg_price": 0.5733,
+    "t": 3.03
+   },
+   "skipped_hold": {
+    "n": 10,
+    "won": 6,
+    "net_usd": 0.01,
+    "net_per_1": 0.0005,
+    "avg_price": 0.568,
+    "t": 0.0
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "cap",
+   "leg": "silver_1700_up",
+   "what": "silver_1700_up: skip asks above 53c",
+   "skipped_find": {
+    "n": 21,
+    "won": 18,
+    "net_usd": 19.1,
+    "net_per_1": 0.3987,
+    "avg_price": 0.6004,
+    "t": 3.1
+   },
+   "skipped_hold": {
+    "n": 6,
+    "won": 4,
+    "net_usd": 0.49,
+    "net_per_1": 0.0363,
+    "avg_price": 0.605,
+    "t": 0.11
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "cap",
+   "leg": "silver_1700_up",
+   "what": "silver_1700_up: skip asks above 55c",
+   "skipped_find": {
+    "n": 18,
+    "won": 15,
+    "net_usd": 13.79,
+    "net_per_1": 0.3346,
+    "avg_price": 0.6104,
+    "t": 2.31
+   },
+   "skipped_hold": {
+    "n": 4,
+    "won": 3,
+    "net_usd": 0.99,
+    "net_per_1": 0.1099,
+    "avg_price": 0.635,
+    "t": 0.28
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "cap",
+   "leg": "silver_1700_up",
+   "what": "silver_1700_up: skip asks above 57c",
+   "skipped_find": {
+    "n": 14,
+    "won": 12,
+    "net_usd": 11.53,
+    "net_per_1": 0.3551,
+    "avg_price": 0.6236,
+    "t": 2.39
+   },
+   "skipped_hold": {
+    "n": 3,
+    "won": 3,
+    "net_usd": 3.3,
+    "net_per_1": 0.4925,
+    "avg_price": 0.66,
+    "t": 5.06
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "cap",
+   "leg": "silver_1700_up",
+   "what": "silver_1700_up: skip asks above 60c",
+   "skipped_find": {
+    "n": 9,
+    "won": 8,
+    "net_usd": 7.68,
+    "net_per_1": 0.378,
+    "avg_price": 0.6422,
+    "t": 2.46
+   },
+   "skipped_hold": {
+    "n": 2,
+    "won": 2,
+    "net_usd": 1.77,
+    "net_per_1": 0.4184,
+    "avg_price": 0.69,
+    "t": 0.0
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "cap",
+   "leg": "gold_1615_down",
+   "what": "gold_1615_down: skip asks above 50c",
+   "skipped_find": {
+    "n": 29,
+    "won": 21,
+    "net_usd": 13.5,
+    "net_per_1": 0.203,
+    "avg_price": 0.587,
+    "t": 1.41
+   },
+   "skipped_hold": {
+    "n": 13,
+    "won": 7,
+    "net_usd": -4.63,
+    "net_per_1": -0.1617,
+    "avg_price": 0.5992,
+    "t": -0.7
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "cap",
+   "leg": "gold_1615_down",
+   "what": "gold_1615_down: skip asks above 53c",
+   "skipped_find": {
+    "n": 23,
+    "won": 17,
+    "net_usd": 10.32,
+    "net_per_1": 0.1923,
+    "avg_price": 0.6053,
+    "t": 1.23
+   },
+   "skipped_hold": {
+    "n": 11,
+    "won": 6,
+    "net_usd": -4.29,
+    "net_per_1": -0.1766,
+    "avg_price": 0.6127,
+    "t": -0.72
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "cap",
+   "leg": "gold_1615_down",
+   "what": "gold_1615_down: skip asks above 55c",
+   "skipped_find": {
+    "n": 19,
+    "won": 14,
+    "net_usd": 7.27,
+    "net_per_1": 0.1625,
+    "avg_price": 0.6187,
+    "t": 0.96
+   },
+   "skipped_hold": {
+    "n": 9,
+    "won": 6,
+    "net_usd": 0.21,
+    "net_per_1": 0.0106,
+    "avg_price": 0.6278,
+    "t": 0.04
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "cap",
+   "leg": "gold_1615_down",
+   "what": "gold_1615_down: skip asks above 57c",
+   "skipped_find": {
+    "n": 16,
+    "won": 11,
+    "net_usd": 2.24,
+    "net_per_1": 0.0593,
+    "avg_price": 0.6291,
+    "t": 0.31
+   },
+   "skipped_hold": {
+    "n": 7,
+    "won": 5,
+    "net_usd": 0.83,
+    "net_per_1": 0.0547,
+    "avg_price": 0.6471,
+    "t": 0.19
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "cap",
+   "leg": "gold_1615_down",
+   "what": "gold_1615_down: skip asks above 60c",
+   "skipped_find": {
+    "n": 8,
+    "won": 5,
+    "net_usd": -2.3,
+    "net_per_1": -0.1257,
+    "avg_price": 0.6675,
+    "t": -0.46
+   },
+   "skipped_hold": {
+    "n": 6,
+    "won": 4,
+    "net_usd": -0.78,
+    "net_per_1": -0.061,
+    "avg_price": 0.6583,
+    "t": -0.19
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "gold_0530_down",
+   "what": "gold_0530_down: skip when prev_qh = up",
+   "skipped_find": {
+    "n": 37,
+    "won": 28,
+    "net_usd": 40.87,
+    "net_per_1": 0.4801,
+    "avg_price": 0.5104,
+    "t": 3.35
+   },
+   "skipped_hold": {
+    "n": 10,
+    "won": 9,
+    "net_usd": 16.28,
+    "net_per_1": 0.6863,
+    "avg_price": 0.546,
+    "t": 3.95
+   },
+   "kept_find": {
+    "n": 17,
+    "won": 10,
+    "net_usd": 3.31,
+    "net_per_1": 0.0834,
+    "avg_price": 0.5179,
+    "t": 0.36
+   },
+   "kept_hold": {
+    "n": 10,
+    "won": 9,
+    "net_usd": 12.9,
+    "net_per_1": 0.5584,
+    "avg_price": 0.565,
+    "t": 3.0
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "gold_0530_down",
+   "what": "gold_0530_down: skip when prev_qh = down",
+   "skipped_find": {
+    "n": 17,
+    "won": 10,
+    "net_usd": 3.31,
+    "net_per_1": 0.0834,
+    "avg_price": 0.5179,
+    "t": 0.36
+   },
+   "skipped_hold": {
+    "n": 10,
+    "won": 9,
+    "net_usd": 12.9,
+    "net_per_1": 0.5584,
+    "avg_price": 0.565,
+    "t": 3.0
+   },
+   "kept_find": {
+    "n": 37,
+    "won": 28,
+    "net_usd": 40.87,
+    "net_per_1": 0.4801,
+    "avg_price": 0.5104,
+    "t": 3.35
+   },
+   "kept_hold": {
+    "n": 10,
+    "won": 9,
+    "net_usd": 16.28,
+    "net_per_1": 0.6863,
+    "avg_price": 0.546,
+    "t": 3.95
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "gold_0530_down",
+   "what": "gold_0530_down: skip when move_4h = up",
+   "skipped_find": {
+    "n": 28,
+    "won": 18,
+    "net_usd": 12.02,
+    "net_per_1": 0.185,
+    "avg_price": 0.5171,
+    "t": 1.05
+   },
+   "skipped_hold": {
+    "n": 9,
+    "won": 8,
+    "net_usd": 13.4,
+    "net_per_1": 0.6505,
+    "avg_price": 0.5544,
+    "t": 3.28
+   },
+   "kept_find": {
+    "n": 27,
+    "won": 21,
+    "net_usd": 33.6,
+    "net_per_1": 0.5385,
+    "avg_price": 0.5124,
+    "t": 3.34
+   },
+   "kept_hold": {
+    "n": 11,
+    "won": 10,
+    "net_usd": 15.78,
+    "net_per_1": 0.6018,
+    "avg_price": 0.5564,
+    "t": 3.57
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "gold_0530_down",
+   "what": "gold_0530_down: skip when move_4h = down",
+   "skipped_find": {
+    "n": 27,
+    "won": 21,
+    "net_usd": 33.6,
+    "net_per_1": 0.5385,
+    "avg_price": 0.5124,
+    "t": 3.34
+   },
+   "skipped_hold": {
+    "n": 11,
+    "won": 10,
+    "net_usd": 15.78,
+    "net_per_1": 0.6018,
+    "avg_price": 0.5564,
+    "t": 3.57
+   },
+   "kept_find": {
+    "n": 28,
+    "won": 18,
+    "net_usd": 12.02,
+    "net_per_1": 0.185,
+    "avg_price": 0.5171,
+    "t": 1.05
+   },
+   "kept_hold": {
+    "n": 9,
+    "won": 8,
+    "net_usd": 13.4,
+    "net_per_1": 0.6505,
+    "avg_price": 0.5544,
+    "t": 3.28
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "gold_0530_down",
+   "what": "gold_0530_down: skip when session = up",
+   "skipped_find": {
+    "n": 31,
+    "won": 19,
+    "net_usd": 9.14,
+    "net_per_1": 0.1272,
+    "avg_price": 0.5208,
+    "t": 0.75
+   },
+   "skipped_hold": {
+    "n": 6,
+    "won": 5,
+    "net_usd": 6.67,
+    "net_per_1": 0.5004,
+    "avg_price": 0.5733,
+    "t": 1.8
+   },
+   "kept_find": {
+    "n": 24,
+    "won": 20,
+    "net_usd": 36.48,
+    "net_per_1": 0.6571,
+    "avg_price": 0.507,
+    "t": 4.28
+   },
+   "kept_hold": {
+    "n": 14,
+    "won": 13,
+    "net_usd": 22.51,
+    "net_per_1": 0.6721,
+    "avg_price": 0.5479,
+    "t": 4.74
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "gold_0530_down",
+   "what": "gold_0530_down: skip when session = down",
+   "skipped_find": {
+    "n": 24,
+    "won": 20,
+    "net_usd": 36.48,
+    "net_per_1": 0.6571,
+    "avg_price": 0.507,
+    "t": 4.28
+   },
+   "skipped_hold": {
+    "n": 14,
+    "won": 13,
+    "net_usd": 22.51,
+    "net_per_1": 0.6721,
+    "avg_price": 0.5479,
+    "t": 4.74
+   },
+   "kept_find": {
+    "n": 31,
+    "won": 19,
+    "net_usd": 9.14,
+    "net_per_1": 0.1272,
+    "avg_price": 0.5208,
+    "t": 0.75
+   },
+   "kept_hold": {
+    "n": 6,
+    "won": 5,
+    "net_usd": 6.67,
+    "net_per_1": 0.5004,
+    "avg_price": 0.5733,
+    "t": 1.8
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "gold_0530_down",
+   "what": "gold_0530_down: skip when vol_8h = high",
+   "skipped_find": {
+    "n": 22,
+    "won": 17,
+    "net_usd": 27.24,
+    "net_per_1": 0.5263,
+    "avg_price": 0.4952,
+    "t": 2.83
+   },
+   "skipped_hold": {
+    "n": 9,
+    "won": 8,
+    "net_usd": 13.76,
+    "net_per_1": 0.6478,
+    "avg_price": 0.5533,
+    "t": 3.4
+   },
+   "kept_find": {
+    "n": 23,
+    "won": 17,
+    "net_usd": 20.33,
+    "net_per_1": 0.386,
+    "avg_price": 0.5284,
+    "t": 2.13
+   },
+   "kept_hold": {
+    "n": 11,
+    "won": 10,
+    "net_usd": 15.42,
+    "net_per_1": 0.6028,
+    "avg_price": 0.5573,
+    "t": 3.47
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "gold_0530_down",
+   "what": "gold_0530_down: skip when vol_8h = low",
+   "skipped_find": {
+    "n": 23,
+    "won": 17,
+    "net_usd": 20.33,
+    "net_per_1": 0.386,
+    "avg_price": 0.5284,
+    "t": 2.13
+   },
+   "skipped_hold": {
+    "n": 11,
+    "won": 10,
+    "net_usd": 15.42,
+    "net_per_1": 0.6028,
+    "avg_price": 0.5573,
+    "t": 3.47
+   },
+   "kept_find": {
+    "n": 22,
+    "won": 17,
+    "net_usd": 27.24,
+    "net_per_1": 0.5263,
+    "avg_price": 0.4952,
+    "t": 2.83
+   },
+   "kept_hold": {
+    "n": 9,
+    "won": 8,
+    "net_usd": 13.76,
+    "net_per_1": 0.6478,
+    "avg_price": 0.5533,
+    "t": 3.4
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "silver_0530_down",
+   "what": "silver_0530_down: skip when prev_qh = up",
+   "skipped_find": {
+    "n": 27,
+    "won": 22,
+    "net_usd": 35.25,
+    "net_per_1": 0.5617,
+    "avg_price": 0.5125,
+    "t": 3.7
+   },
+   "skipped_hold": {
+    "n": 7,
+    "won": 4,
+    "net_usd": -0.06,
+    "net_per_1": -0.0037,
+    "avg_price": 0.5229,
+    "t": -0.01
+   },
+   "kept_find": {
+    "n": 24,
+    "won": 13,
+    "net_usd": 7.64,
+    "net_per_1": 0.1332,
+    "avg_price": 0.4889,
+    "t": 0.6
+   },
+   "kept_hold": {
+    "n": 12,
+    "won": 7,
+    "net_usd": 2.02,
+    "net_per_1": 0.0749,
+    "avg_price": 0.5279,
+    "t": 0.27
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "silver_0530_down",
+   "what": "silver_0530_down: skip when prev_qh = down",
+   "skipped_find": {
+    "n": 24,
+    "won": 13,
+    "net_usd": 7.64,
+    "net_per_1": 0.1332,
+    "avg_price": 0.4889,
+    "t": 0.6
+   },
+   "skipped_hold": {
+    "n": 12,
+    "won": 7,
+    "net_usd": 2.02,
+    "net_per_1": 0.0749,
+    "avg_price": 0.5279,
+    "t": 0.27
+   },
+   "kept_find": {
+    "n": 27,
+    "won": 22,
+    "net_usd": 35.25,
+    "net_per_1": 0.5617,
+    "avg_price": 0.5125,
+    "t": 3.7
+   },
+   "kept_hold": {
+    "n": 7,
+    "won": 4,
+    "net_usd": -0.06,
+    "net_per_1": -0.0037,
+    "avg_price": 0.5229,
+    "t": -0.01
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "silver_0530_down",
+   "what": "silver_0530_down: skip when move_4h = up",
+   "skipped_find": {
+    "n": 24,
+    "won": 18,
+    "net_usd": 25.82,
+    "net_per_1": 0.4679,
+    "avg_price": 0.4965,
+    "t": 2.53
+   },
+   "skipped_hold": {
+    "n": 6,
+    "won": 3,
+    "net_usd": -1.59,
+    "net_per_1": -0.117,
+    "avg_price": 0.529,
+    "t": -0.28
+   },
+   "kept_find": {
+    "n": 27,
+    "won": 17,
+    "net_usd": 17.07,
+    "net_per_1": 0.2629,
+    "avg_price": 0.5057,
+    "t": 1.35
+   },
+   "kept_hold": {
+    "n": 13,
+    "won": 8,
+    "net_usd": 3.55,
+    "net_per_1": 0.1205,
+    "avg_price": 0.5247,
+    "t": 0.48
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "silver_0530_down",
+   "what": "silver_0530_down: skip when move_4h = down",
+   "skipped_find": {
+    "n": 27,
+    "won": 17,
+    "net_usd": 17.07,
+    "net_per_1": 0.2629,
+    "avg_price": 0.5057,
+    "t": 1.35
+   },
+   "skipped_hold": {
+    "n": 13,
+    "won": 8,
+    "net_usd": 3.55,
+    "net_per_1": 0.1205,
+    "avg_price": 0.5247,
+    "t": 0.48
+   },
+   "kept_find": {
+    "n": 24,
+    "won": 18,
+    "net_usd": 25.82,
+    "net_per_1": 0.4679,
+    "avg_price": 0.4965,
+    "t": 2.53
+   },
+   "kept_hold": {
+    "n": 6,
+    "won": 3,
+    "net_usd": -1.59,
+    "net_per_1": -0.117,
+    "avg_price": 0.529,
+    "t": -0.28
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "silver_0530_down",
+   "what": "silver_0530_down: skip when session = up",
+   "skipped_find": {
+    "n": 25,
+    "won": 19,
+    "net_usd": 27.31,
+    "net_per_1": 0.4734,
+    "avg_price": 0.501,
+    "t": 2.68
+   },
+   "skipped_hold": {
+    "n": 5,
+    "won": 3,
+    "net_usd": 0.52,
+    "net_per_1": 0.0453,
+    "avg_price": 0.5328,
+    "t": 0.1
+   },
+   "kept_find": {
+    "n": 26,
+    "won": 16,
+    "net_usd": 15.58,
+    "net_per_1": 0.2496,
+    "avg_price": 0.5017,
+    "t": 1.23
+   },
+   "kept_hold": {
+    "n": 14,
+    "won": 8,
+    "net_usd": 1.44,
+    "net_per_1": 0.0456,
+    "avg_price": 0.5236,
+    "t": 0.18
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "silver_0530_down",
+   "what": "silver_0530_down: skip when session = down",
+   "skipped_find": {
+    "n": 26,
+    "won": 16,
+    "net_usd": 15.58,
+    "net_per_1": 0.2496,
+    "avg_price": 0.5017,
+    "t": 1.23
+   },
+   "skipped_hold": {
+    "n": 14,
+    "won": 8,
+    "net_usd": 1.44,
+    "net_per_1": 0.0456,
+    "avg_price": 0.5236,
+    "t": 0.18
+   },
+   "kept_find": {
+    "n": 25,
+    "won": 19,
+    "net_usd": 27.31,
+    "net_per_1": 0.4734,
+    "avg_price": 0.501,
+    "t": 2.68
+   },
+   "kept_hold": {
+    "n": 5,
+    "won": 3,
+    "net_usd": 0.52,
+    "net_per_1": 0.0453,
+    "avg_price": 0.5328,
+    "t": 0.1
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "silver_0530_down",
+   "what": "silver_0530_down: skip when vol_8h = high",
+   "skipped_find": {
+    "n": 19,
+    "won": 15,
+    "net_usd": 27.72,
+    "net_per_1": 0.6122,
+    "avg_price": 0.4773,
+    "t": 2.8
+   },
+   "skipped_hold": {
+    "n": 12,
+    "won": 7,
+    "net_usd": 1.02,
+    "net_per_1": 0.0378,
+    "avg_price": 0.5282,
+    "t": 0.14
+   },
+   "kept_find": {
+    "n": 26,
+    "won": 18,
+    "net_usd": 19.68,
+    "net_per_1": 0.3209,
+    "avg_price": 0.5135,
+    "t": 1.77
+   },
+   "kept_hold": {
+    "n": 7,
+    "won": 4,
+    "net_usd": 0.94,
+    "net_per_1": 0.0585,
+    "avg_price": 0.5223,
+    "t": 0.15
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "silver_0530_down",
+   "what": "silver_0530_down: skip when vol_8h = low",
+   "skipped_find": {
+    "n": 26,
+    "won": 18,
+    "net_usd": 19.68,
+    "net_per_1": 0.3209,
+    "avg_price": 0.5135,
+    "t": 1.77
+   },
+   "skipped_hold": {
+    "n": 7,
+    "won": 4,
+    "net_usd": 0.94,
+    "net_per_1": 0.0585,
+    "avg_price": 0.5223,
+    "t": 0.15
+   },
+   "kept_find": {
+    "n": 19,
+    "won": 15,
+    "net_usd": 27.72,
+    "net_per_1": 0.6122,
+    "avg_price": 0.4773,
+    "t": 2.8
+   },
+   "kept_hold": {
+    "n": 12,
+    "won": 7,
+    "net_usd": 1.02,
+    "net_per_1": 0.0378,
+    "avg_price": 0.5282,
+    "t": 0.14
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "silver_1615_down",
+   "what": "silver_1615_down: skip when prev_qh = up",
+   "skipped_find": {
+    "n": 28,
+    "won": 25,
+    "net_usd": 48.27,
+    "net_per_1": 0.7574,
+    "avg_price": 0.5038,
+    "t": 5.4
+   },
+   "skipped_hold": {
+    "n": 11,
+    "won": 9,
+    "net_usd": 15.14,
+    "net_per_1": 0.609,
+    "avg_price": 0.5637,
+    "t": 2.01
+   },
+   "kept_find": {
+    "n": 28,
+    "won": 17,
+    "net_usd": 7.12,
+    "net_per_1": 0.1097,
+    "avg_price": 0.5154,
+    "t": 0.62
+   },
+   "kept_hold": {
+    "n": 8,
+    "won": 4,
+    "net_usd": -1.99,
+    "net_per_1": -0.1048,
+    "avg_price": 0.5413,
+    "t": -0.31
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "silver_1615_down",
+   "what": "silver_1615_down: skip when prev_qh = down",
+   "skipped_find": {
+    "n": 28,
+    "won": 17,
+    "net_usd": 7.12,
+    "net_per_1": 0.1097,
+    "avg_price": 0.5154,
+    "t": 0.62
+   },
+   "skipped_hold": {
+    "n": 8,
+    "won": 4,
+    "net_usd": -1.99,
+    "net_per_1": -0.1048,
+    "avg_price": 0.5413,
+    "t": -0.31
+   },
+   "kept_find": {
+    "n": 28,
+    "won": 25,
+    "net_usd": 48.27,
+    "net_per_1": 0.7574,
+    "avg_price": 0.5038,
+    "t": 5.4
+   },
+   "kept_hold": {
+    "n": 11,
+    "won": 9,
+    "net_usd": 15.14,
+    "net_per_1": 0.609,
+    "avg_price": 0.5637,
+    "t": 2.01
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "silver_1615_down",
+   "what": "silver_1615_down: skip when move_4h = up",
+   "skipped_find": {
+    "n": 23,
+    "won": 19,
+    "net_usd": 33.19,
+    "net_per_1": 0.6168,
+    "avg_price": 0.5132,
+    "t": 3.47
+   },
+   "skipped_hold": {
+    "n": 6,
+    "won": 5,
+    "net_usd": 10.5,
+    "net_per_1": 0.7778,
+    "avg_price": 0.5202,
+    "t": 1.63
+   },
+   "kept_find": {
+    "n": 33,
+    "won": 23,
+    "net_usd": 22.2,
+    "net_per_1": 0.2968,
+    "avg_price": 0.5071,
+    "t": 1.85
+   },
+   "kept_hold": {
+    "n": 13,
+    "won": 8,
+    "net_usd": 2.65,
+    "net_per_1": 0.0873,
+    "avg_price": 0.57,
+    "t": 0.34
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "silver_1615_down",
+   "what": "silver_1615_down: skip when move_4h = down",
+   "skipped_find": {
+    "n": 33,
+    "won": 23,
+    "net_usd": 22.2,
+    "net_per_1": 0.2968,
+    "avg_price": 0.5071,
+    "t": 1.85
+   },
+   "skipped_hold": {
+    "n": 13,
+    "won": 8,
+    "net_usd": 2.65,
+    "net_per_1": 0.0873,
+    "avg_price": 0.57,
+    "t": 0.34
+   },
+   "kept_find": {
+    "n": 23,
+    "won": 19,
+    "net_usd": 33.19,
+    "net_per_1": 0.6168,
+    "avg_price": 0.5132,
+    "t": 3.47
+   },
+   "kept_hold": {
+    "n": 6,
+    "won": 5,
+    "net_usd": 10.5,
+    "net_per_1": 0.7778,
+    "avg_price": 0.5202,
+    "t": 1.63
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "silver_1615_down",
+   "what": "silver_1615_down: skip when session = up",
+   "skipped_find": {
+    "n": 22,
+    "won": 18,
+    "net_usd": 30.68,
+    "net_per_1": 0.5978,
+    "avg_price": 0.5107,
+    "t": 3.24
+   },
+   "skipped_hold": {
+    "n": 7,
+    "won": 5,
+    "net_usd": 8.97,
+    "net_per_1": 0.5596,
+    "avg_price": 0.5359,
+    "t": 1.2
+   },
+   "kept_find": {
+    "n": 34,
+    "won": 24,
+    "net_usd": 24.71,
+    "net_per_1": 0.3197,
+    "avg_price": 0.5089,
+    "t": 2.03
+   },
+   "kept_hold": {
+    "n": 12,
+    "won": 8,
+    "net_usd": 4.18,
+    "net_per_1": 0.1503,
+    "avg_price": 0.565,
+    "t": 0.57
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "silver_1615_down",
+   "what": "silver_1615_down: skip when session = down",
+   "skipped_find": {
+    "n": 34,
+    "won": 24,
+    "net_usd": 24.71,
+    "net_per_1": 0.3197,
+    "avg_price": 0.5089,
+    "t": 2.03
+   },
+   "skipped_hold": {
+    "n": 12,
+    "won": 8,
+    "net_usd": 4.18,
+    "net_per_1": 0.1503,
+    "avg_price": 0.565,
+    "t": 0.57
+   },
+   "kept_find": {
+    "n": 22,
+    "won": 18,
+    "net_usd": 30.68,
+    "net_per_1": 0.5978,
+    "avg_price": 0.5107,
+    "t": 3.24
+   },
+   "kept_hold": {
+    "n": 7,
+    "won": 5,
+    "net_usd": 8.97,
+    "net_per_1": 0.5596,
+    "avg_price": 0.5359,
+    "t": 1.2
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "silver_1615_down",
+   "what": "silver_1615_down: skip when vol_8h = high",
+   "skipped_find": {
+    "n": 21,
+    "won": 17,
+    "net_usd": 26.39,
+    "net_per_1": 0.5429,
+    "avg_price": 0.5018,
+    "t": 2.88
+   },
+   "skipped_hold": {
+    "n": 10,
+    "won": 7,
+    "net_usd": 10.8,
+    "net_per_1": 0.4655,
+    "avg_price": 0.5241,
+    "t": 1.24
+   },
+   "kept_find": {
+    "n": 26,
+    "won": 20,
+    "net_usd": 27.44,
+    "net_per_1": 0.4531,
+    "avg_price": 0.5065,
+    "t": 2.68
+   },
+   "kept_hold": {
+    "n": 9,
+    "won": 6,
+    "net_usd": 2.35,
+    "net_per_1": 0.1138,
+    "avg_price": 0.5878,
+    "t": 0.4
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "silver_1615_down",
+   "what": "silver_1615_down: skip when vol_8h = low",
+   "skipped_find": {
+    "n": 26,
+    "won": 20,
+    "net_usd": 27.44,
+    "net_per_1": 0.4531,
+    "avg_price": 0.5065,
+    "t": 2.68
+   },
+   "skipped_hold": {
+    "n": 9,
+    "won": 6,
+    "net_usd": 2.35,
+    "net_per_1": 0.1138,
+    "avg_price": 0.5878,
+    "t": 0.4
+   },
+   "kept_find": {
+    "n": 21,
+    "won": 17,
+    "net_usd": 26.39,
+    "net_per_1": 0.5429,
+    "avg_price": 0.5018,
+    "t": 2.88
+   },
+   "kept_hold": {
+    "n": 10,
+    "won": 7,
+    "net_usd": 10.8,
+    "net_per_1": 0.4655,
+    "avg_price": 0.5241,
+    "t": 1.24
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "gold_1700_up",
+   "what": "gold_1700_up: skip when prev_qh = up",
+   "skipped_find": {
+    "n": 24,
+    "won": 15,
+    "net_usd": 9.37,
+    "net_per_1": 0.1684,
+    "avg_price": 0.5232,
+    "t": 0.88
+   },
+   "skipped_hold": {
+    "n": 12,
+    "won": 9,
+    "net_usd": 9.65,
+    "net_per_1": 0.3404,
+    "avg_price": 0.5365,
+    "t": 1.36
+   },
+   "kept_find": {
+    "n": 33,
+    "won": 24,
+    "net_usd": 30.63,
+    "net_per_1": 0.3908,
+    "avg_price": 0.5011,
+    "t": 2.53
+   },
+   "kept_hold": {
+    "n": 8,
+    "won": 6,
+    "net_usd": 12.54,
+    "net_per_1": 0.6444,
+    "avg_price": 0.4487,
+    "t": 1.59
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "gold_1700_up",
+   "what": "gold_1700_up: skip when prev_qh = down",
+   "skipped_find": {
+    "n": 33,
+    "won": 24,
+    "net_usd": 30.63,
+    "net_per_1": 0.3908,
+    "avg_price": 0.5011,
+    "t": 2.53
+   },
+   "skipped_hold": {
+    "n": 8,
+    "won": 6,
+    "net_usd": 12.54,
+    "net_per_1": 0.6444,
+    "avg_price": 0.4487,
+    "t": 1.59
+   },
+   "kept_find": {
+    "n": 24,
+    "won": 15,
+    "net_usd": 9.37,
+    "net_per_1": 0.1684,
+    "avg_price": 0.5232,
+    "t": 0.88
+   },
+   "kept_hold": {
+    "n": 12,
+    "won": 9,
+    "net_usd": 9.65,
+    "net_per_1": 0.3404,
+    "avg_price": 0.5365,
+    "t": 1.36
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "gold_1700_up",
+   "what": "gold_1700_up: skip when move_4h = up",
+   "skipped_find": {
+    "n": 26,
+    "won": 16,
+    "net_usd": 11.4,
+    "net_per_1": 0.1851,
+    "avg_price": 0.5052,
+    "t": 1.0
+   },
+   "skipped_hold": {
+    "n": 6,
+    "won": 4,
+    "net_usd": 1.38,
+    "net_per_1": 0.0944,
+    "avg_price": 0.57,
+    "t": 0.26
+   },
+   "kept_find": {
+    "n": 31,
+    "won": 23,
+    "net_usd": 28.6,
+    "net_per_1": 0.395,
+    "avg_price": 0.5148,
+    "t": 2.51
+   },
+   "kept_hold": {
+    "n": 14,
+    "won": 11,
+    "net_usd": 20.81,
+    "net_per_1": 0.627,
+    "avg_price": 0.472,
+    "t": 2.36
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "gold_1700_up",
+   "what": "gold_1700_up: skip when move_4h = down",
+   "skipped_find": {
+    "n": 31,
+    "won": 23,
+    "net_usd": 28.6,
+    "net_per_1": 0.395,
+    "avg_price": 0.5148,
+    "t": 2.51
+   },
+   "skipped_hold": {
+    "n": 14,
+    "won": 11,
+    "net_usd": 20.81,
+    "net_per_1": 0.627,
+    "avg_price": 0.472,
+    "t": 2.36
+   },
+   "kept_find": {
+    "n": 26,
+    "won": 16,
+    "net_usd": 11.4,
+    "net_per_1": 0.1851,
+    "avg_price": 0.5052,
+    "t": 1.0
+   },
+   "kept_hold": {
+    "n": 6,
+    "won": 4,
+    "net_usd": 1.38,
+    "net_per_1": 0.0944,
+    "avg_price": 0.57,
+    "t": 0.26
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "gold_1700_up",
+   "what": "gold_1700_up: skip when session = up",
+   "skipped_find": {
+    "n": 27,
+    "won": 15,
+    "net_usd": 3.67,
+    "net_per_1": 0.058,
+    "avg_price": 0.5119,
+    "t": 0.31
+   },
+   "skipped_hold": {
+    "n": 6,
+    "won": 5,
+    "net_usd": 7.78,
+    "net_per_1": 0.5471,
+    "avg_price": 0.56,
+    "t": 1.41
+   },
+   "kept_find": {
+    "n": 30,
+    "won": 24,
+    "net_usd": 36.33,
+    "net_per_1": 0.5141,
+    "avg_price": 0.5091,
+    "t": 3.44
+   },
+   "kept_hold": {
+    "n": 14,
+    "won": 10,
+    "net_usd": 14.41,
+    "net_per_1": 0.429,
+    "avg_price": 0.4763,
+    "t": 1.59
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "gold_1700_up",
+   "what": "gold_1700_up: skip when session = down",
+   "skipped_find": {
+    "n": 30,
+    "won": 24,
+    "net_usd": 36.33,
+    "net_per_1": 0.5141,
+    "avg_price": 0.5091,
+    "t": 3.44
+   },
+   "skipped_hold": {
+    "n": 14,
+    "won": 10,
+    "net_usd": 14.41,
+    "net_per_1": 0.429,
+    "avg_price": 0.4763,
+    "t": 1.59
+   },
+   "kept_find": {
+    "n": 27,
+    "won": 15,
+    "net_usd": 3.67,
+    "net_per_1": 0.058,
+    "avg_price": 0.5119,
+    "t": 0.31
+   },
+   "kept_hold": {
+    "n": 6,
+    "won": 5,
+    "net_usd": 7.78,
+    "net_per_1": 0.5471,
+    "avg_price": 0.56,
+    "t": 1.41
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "gold_1700_up",
+   "what": "gold_1700_up: skip when vol_8h = high",
+   "skipped_find": {
+    "n": 23,
+    "won": 16,
+    "net_usd": 14.31,
+    "net_per_1": 0.2665,
+    "avg_price": 0.5287,
+    "t": 1.47
+   },
+   "skipped_hold": {
+    "n": 10,
+    "won": 8,
+    "net_usd": 15.87,
+    "net_per_1": 0.6577,
+    "avg_price": 0.495,
+    "t": 2.05
+   },
+   "kept_find": {
+    "n": 24,
+    "won": 17,
+    "net_usd": 20.55,
+    "net_per_1": 0.3577,
+    "avg_price": 0.499,
+    "t": 1.9
+   },
+   "kept_hold": {
+    "n": 10,
+    "won": 7,
+    "net_usd": 6.32,
+    "net_per_1": 0.2669,
+    "avg_price": 0.5078,
+    "t": 0.9
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "gold_1700_up",
+   "what": "gold_1700_up: skip when vol_8h = low",
+   "skipped_find": {
+    "n": 24,
+    "won": 17,
+    "net_usd": 20.55,
+    "net_per_1": 0.3577,
+    "avg_price": 0.499,
+    "t": 1.9
+   },
+   "skipped_hold": {
+    "n": 10,
+    "won": 7,
+    "net_usd": 6.32,
+    "net_per_1": 0.2669,
+    "avg_price": 0.5078,
+    "t": 0.9
+   },
+   "kept_find": {
+    "n": 23,
+    "won": 16,
+    "net_usd": 14.31,
+    "net_per_1": 0.2665,
+    "avg_price": 0.5287,
+    "t": 1.47
+   },
+   "kept_hold": {
+    "n": 10,
+    "won": 8,
+    "net_usd": 15.87,
+    "net_per_1": 0.6577,
+    "avg_price": 0.495,
+    "t": 2.05
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "silver_1700_up",
+   "what": "silver_1700_up: skip when prev_qh = up",
+   "skipped_find": {
+    "n": 31,
+    "won": 23,
+    "net_usd": 26.79,
+    "net_per_1": 0.3762,
+    "avg_price": 0.5214,
+    "t": 2.52
+   },
+   "skipped_hold": {
+    "n": 10,
+    "won": 5,
+    "net_usd": -1.17,
+    "net_per_1": -0.0505,
+    "avg_price": 0.506,
+    "t": -0.16
+   },
+   "kept_find": {
+    "n": 27,
+    "won": 22,
+    "net_usd": 33.86,
+    "net_per_1": 0.5363,
+    "avg_price": 0.5167,
+    "t": 3.63
+   },
+   "kept_hold": {
+    "n": 10,
+    "won": 8,
+    "net_usd": 13.23,
+    "net_per_1": 0.581,
+    "avg_price": 0.504,
+    "t": 2.0
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "silver_1700_up",
+   "what": "silver_1700_up: skip when prev_qh = down",
+   "skipped_find": {
+    "n": 27,
+    "won": 22,
+    "net_usd": 33.86,
+    "net_per_1": 0.5363,
+    "avg_price": 0.5167,
+    "t": 3.63
+   },
+   "skipped_hold": {
+    "n": 10,
+    "won": 8,
+    "net_usd": 13.23,
+    "net_per_1": 0.581,
+    "avg_price": 0.504,
+    "t": 2.0
+   },
+   "kept_find": {
+    "n": 31,
+    "won": 23,
+    "net_usd": 26.79,
+    "net_per_1": 0.3762,
+    "avg_price": 0.5214,
+    "t": 2.52
+   },
+   "kept_hold": {
+    "n": 10,
+    "won": 5,
+    "net_usd": -1.17,
+    "net_per_1": -0.0505,
+    "avg_price": 0.506,
+    "t": -0.16
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "silver_1700_up",
+   "what": "silver_1700_up: skip when move_4h = up",
+   "skipped_find": {
+    "n": 25,
+    "won": 19,
+    "net_usd": 24.35,
+    "net_per_1": 0.4224,
+    "avg_price": 0.518,
+    "t": 2.62
+   },
+   "skipped_hold": {
+    "n": 6,
+    "won": 4,
+    "net_usd": 2.98,
+    "net_per_1": 0.2126,
+    "avg_price": 0.5567,
+    "t": 0.56
+   },
+   "kept_find": {
+    "n": 33,
+    "won": 26,
+    "net_usd": 36.3,
+    "net_per_1": 0.4733,
+    "avg_price": 0.5201,
+    "t": 3.39
+   },
+   "kept_hold": {
+    "n": 14,
+    "won": 9,
+    "net_usd": 9.08,
+    "net_per_1": 0.2845,
+    "avg_price": 0.4829,
+    "t": 1.04
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "silver_1700_up",
+   "what": "silver_1700_up: skip when move_4h = down",
+   "skipped_find": {
+    "n": 33,
+    "won": 26,
+    "net_usd": 36.3,
+    "net_per_1": 0.4733,
+    "avg_price": 0.5201,
+    "t": 3.39
+   },
+   "skipped_hold": {
+    "n": 14,
+    "won": 9,
+    "net_usd": 9.08,
+    "net_per_1": 0.2845,
+    "avg_price": 0.4829,
+    "t": 1.04
+   },
+   "kept_find": {
+    "n": 25,
+    "won": 19,
+    "net_usd": 24.35,
+    "net_per_1": 0.4224,
+    "avg_price": 0.518,
+    "t": 2.62
+   },
+   "kept_hold": {
+    "n": 6,
+    "won": 4,
+    "net_usd": 2.98,
+    "net_per_1": 0.2126,
+    "avg_price": 0.5567,
+    "t": 0.56
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "silver_1700_up",
+   "what": "silver_1700_up: skip when session = up",
+   "skipped_find": {
+    "n": 24,
+    "won": 19,
+    "net_usd": 26.75,
+    "net_per_1": 0.4842,
+    "avg_price": 0.5091,
+    "t": 3.0
+   },
+   "skipped_hold": {
+    "n": 6,
+    "won": 5,
+    "net_usd": 7.81,
+    "net_per_1": 0.5504,
+    "avg_price": 0.5467,
+    "t": 1.65
+   },
+   "kept_find": {
+    "n": 34,
+    "won": 26,
+    "net_usd": 33.9,
+    "net_per_1": 0.4286,
+    "avg_price": 0.5263,
+    "t": 3.07
+   },
+   "kept_hold": {
+    "n": 14,
+    "won": 8,
+    "net_usd": 4.25,
+    "net_per_1": 0.1339,
+    "avg_price": 0.4871,
+    "t": 0.48
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "silver_1700_up",
+   "what": "silver_1700_up: skip when session = down",
+   "skipped_find": {
+    "n": 34,
+    "won": 26,
+    "net_usd": 33.9,
+    "net_per_1": 0.4286,
+    "avg_price": 0.5263,
+    "t": 3.07
+   },
+   "skipped_hold": {
+    "n": 14,
+    "won": 8,
+    "net_usd": 4.25,
+    "net_per_1": 0.1339,
+    "avg_price": 0.4871,
+    "t": 0.48
+   },
+   "kept_find": {
+    "n": 24,
+    "won": 19,
+    "net_usd": 26.75,
+    "net_per_1": 0.4842,
+    "avg_price": 0.5091,
+    "t": 3.0
+   },
+   "kept_hold": {
+    "n": 6,
+    "won": 5,
+    "net_usd": 7.81,
+    "net_per_1": 0.5504,
+    "avg_price": 0.5467,
+    "t": 1.65
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "silver_1700_up",
+   "what": "silver_1700_up: skip when vol_8h = high",
+   "skipped_find": {
+    "n": 22,
+    "won": 18,
+    "net_usd": 25.98,
+    "net_per_1": 0.5092,
+    "avg_price": 0.5314,
+    "t": 3.23
+   },
+   "skipped_hold": {
+    "n": 11,
+    "won": 8,
+    "net_usd": 12.58,
+    "net_per_1": 0.4949,
+    "avg_price": 0.4873,
+    "t": 1.69
+   },
+   "kept_find": {
+    "n": 26,
+    "won": 19,
+    "net_usd": 22.85,
+    "net_per_1": 0.3737,
+    "avg_price": 0.5171,
+    "t": 2.27
+   },
+   "kept_hold": {
+    "n": 9,
+    "won": 5,
+    "net_usd": -0.52,
+    "net_per_1": -0.0253,
+    "avg_price": 0.5267,
+    "t": -0.08
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "silver_1700_up",
+   "what": "silver_1700_up: skip when vol_8h = low",
+   "skipped_find": {
+    "n": 26,
+    "won": 19,
+    "net_usd": 22.85,
+    "net_per_1": 0.3737,
+    "avg_price": 0.5171,
+    "t": 2.27
+   },
+   "skipped_hold": {
+    "n": 9,
+    "won": 5,
+    "net_usd": -0.52,
+    "net_per_1": -0.0253,
+    "avg_price": 0.5267,
+    "t": -0.08
+   },
+   "kept_find": {
+    "n": 22,
+    "won": 18,
+    "net_usd": 25.98,
+    "net_per_1": 0.5092,
+    "avg_price": 0.5314,
+    "t": 3.23
+   },
+   "kept_hold": {
+    "n": 11,
+    "won": 8,
+    "net_usd": 12.58,
+    "net_per_1": 0.4949,
+    "avg_price": 0.4873,
+    "t": 1.69
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "gold_1615_down",
+   "what": "gold_1615_down: skip when prev_qh = up",
+   "skipped_find": {
+    "n": 28,
+    "won": 21,
+    "net_usd": 28.51,
+    "net_per_1": 0.4353,
+    "avg_price": 0.5102,
+    "t": 2.46
+   },
+   "skipped_hold": {
+    "n": 11,
+    "won": 6,
+    "net_usd": 2.26,
+    "net_per_1": 0.0914,
+    "avg_price": 0.5418,
+    "t": 0.26
+   },
+   "kept_find": {
+    "n": 29,
+    "won": 18,
+    "net_usd": 9.83,
+    "net_per_1": 0.1442,
+    "avg_price": 0.5213,
+    "t": 0.84
+   },
+   "kept_hold": {
+    "n": 8,
+    "won": 5,
+    "net_usd": 2.02,
+    "net_per_1": 0.1123,
+    "avg_price": 0.545,
+    "t": 0.33
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "gold_1615_down",
+   "what": "gold_1615_down: skip when prev_qh = down",
+   "skipped_find": {
+    "n": 29,
+    "won": 18,
+    "net_usd": 9.83,
+    "net_per_1": 0.1442,
+    "avg_price": 0.5213,
+    "t": 0.84
+   },
+   "skipped_hold": {
+    "n": 8,
+    "won": 5,
+    "net_usd": 2.02,
+    "net_per_1": 0.1123,
+    "avg_price": 0.545,
+    "t": 0.33
+   },
+   "kept_find": {
+    "n": 28,
+    "won": 21,
+    "net_usd": 28.51,
+    "net_per_1": 0.4353,
+    "avg_price": 0.5102,
+    "t": 2.46
+   },
+   "kept_hold": {
+    "n": 11,
+    "won": 6,
+    "net_usd": 2.26,
+    "net_per_1": 0.0914,
+    "avg_price": 0.5418,
+    "t": 0.26
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "gold_1615_down",
+   "what": "gold_1615_down: skip when move_4h = up",
+   "skipped_find": {
+    "n": 32,
+    "won": 23,
+    "net_usd": 33.42,
+    "net_per_1": 0.4422,
+    "avg_price": 0.5019,
+    "t": 2.62
+   },
+   "skipped_hold": {
+    "n": 2,
+    "won": 2,
+    "net_usd": 8.32,
+    "net_per_1": 1.7778,
+    "avg_price": 0.36,
+    "t": 0.0
+   },
+   "kept_find": {
+    "n": 25,
+    "won": 16,
+    "net_usd": 4.92,
+    "net_per_1": 0.0847,
+    "avg_price": 0.5337,
+    "t": 0.48
+   },
+   "kept_hold": {
+    "n": 17,
+    "won": 9,
+    "net_usd": -4.04,
+    "net_per_1": -0.1062,
+    "avg_price": 0.5647,
+    "t": -0.48
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "gold_1615_down",
+   "what": "gold_1615_down: skip when move_4h = down",
+   "skipped_find": {
+    "n": 25,
+    "won": 16,
+    "net_usd": 4.92,
+    "net_per_1": 0.0847,
+    "avg_price": 0.5337,
+    "t": 0.48
+   },
+   "skipped_hold": {
+    "n": 17,
+    "won": 9,
+    "net_usd": -4.04,
+    "net_per_1": -0.1062,
+    "avg_price": 0.5647,
+    "t": -0.48
+   },
+   "kept_find": {
+    "n": 32,
+    "won": 23,
+    "net_usd": 33.42,
+    "net_per_1": 0.4422,
+    "avg_price": 0.5019,
+    "t": 2.62
+   },
+   "kept_hold": {
+    "n": 2,
+    "won": 2,
+    "net_usd": 8.32,
+    "net_per_1": 1.7778,
+    "avg_price": 0.36,
+    "t": 0.0
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "gold_1615_down",
+   "what": "gold_1615_down: skip when session = up",
+   "skipped_find": {
+    "n": 28,
+    "won": 18,
+    "net_usd": 14.9,
+    "net_per_1": 0.2289,
+    "avg_price": 0.5014,
+    "t": 1.22
+   },
+   "skipped_hold": {
+    "n": 5,
+    "won": 3,
+    "net_usd": 3.51,
+    "net_per_1": 0.3055,
+    "avg_price": 0.532,
+    "t": 0.47
+   },
+   "kept_find": {
+    "n": 29,
+    "won": 21,
+    "net_usd": 23.44,
+    "net_per_1": 0.3419,
+    "avg_price": 0.5297,
+    "t": 2.08
+   },
+   "kept_hold": {
+    "n": 14,
+    "won": 8,
+    "net_usd": 0.77,
+    "net_per_1": 0.0247,
+    "avg_price": 0.5471,
+    "t": 0.1
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "gold_1615_down",
+   "what": "gold_1615_down: skip when session = down",
+   "skipped_find": {
+    "n": 29,
+    "won": 21,
+    "net_usd": 23.44,
+    "net_per_1": 0.3419,
+    "avg_price": 0.5297,
+    "t": 2.08
+   },
+   "skipped_hold": {
+    "n": 14,
+    "won": 8,
+    "net_usd": 0.77,
+    "net_per_1": 0.0247,
+    "avg_price": 0.5471,
+    "t": 0.1
+   },
+   "kept_find": {
+    "n": 28,
+    "won": 18,
+    "net_usd": 14.9,
+    "net_per_1": 0.2289,
+    "avg_price": 0.5014,
+    "t": 1.22
+   },
+   "kept_hold": {
+    "n": 5,
+    "won": 3,
+    "net_usd": 3.51,
+    "net_per_1": 0.3055,
+    "avg_price": 0.532,
+    "t": 0.47
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "gold_1615_down",
+   "what": "gold_1615_down: skip when vol_8h = high",
+   "skipped_find": {
+    "n": 22,
+    "won": 15,
+    "net_usd": 16.58,
+    "net_per_1": 0.3163,
+    "avg_price": 0.5155,
+    "t": 1.57
+   },
+   "skipped_hold": {
+    "n": 11,
+    "won": 6,
+    "net_usd": 2.92,
+    "net_per_1": 0.1164,
+    "avg_price": 0.5282,
+    "t": 0.32
+   },
+   "kept_find": {
+    "n": 26,
+    "won": 18,
+    "net_usd": 17.53,
+    "net_per_1": 0.2899,
+    "avg_price": 0.5037,
+    "t": 1.54
+   },
+   "kept_hold": {
+    "n": 8,
+    "won": 5,
+    "net_usd": 1.36,
+    "net_per_1": 0.0771,
+    "avg_price": 0.5637,
+    "t": 0.23
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "filter",
+   "leg": "gold_1615_down",
+   "what": "gold_1615_down: skip when vol_8h = low",
+   "skipped_find": {
+    "n": 26,
+    "won": 18,
+    "net_usd": 17.53,
+    "net_per_1": 0.2899,
+    "avg_price": 0.5037,
+    "t": 1.54
+   },
+   "skipped_hold": {
+    "n": 8,
+    "won": 5,
+    "net_usd": 1.36,
+    "net_per_1": 0.0771,
+    "avg_price": 0.5637,
+    "t": 0.23
+   },
+   "kept_find": {
+    "n": 22,
+    "won": 15,
+    "net_usd": 16.58,
+    "net_per_1": 0.3163,
+    "avg_price": 0.5155,
+    "t": 1.57
+   },
+   "kept_hold": {
+    "n": 11,
+    "won": 6,
+    "net_usd": 2.92,
+    "net_per_1": 0.1164,
+    "avg_price": 0.5282,
+    "t": 0.32
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "roll",
+   "what": "roll days: natgas UP 17:00-17:15 ET at +20 s",
+   "find": {
+    "n": 10,
+    "won": 10,
+    "net_usd": 5.34,
+    "net_per_1": 0.2585,
+    "avg_price": 0.7968,
+    "t": 5.68
+   },
+   "hold": {
+    "n": 5,
+    "won": 5,
+    "net_usd": 0.67,
+    "net_per_1": 0.0718,
+    "avg_price": 0.926,
+    "t": 4.46
+   },
+   "all_n": 15,
+   "lost": 0,
+   "loss_rate_upper": 0.3895,
+   "breakeven_loss_rate": 0.1494,
+   "avg_price": 0.8399,
+   "usd_month_at_stake": 1.72,
+   "verdict": "fail"
+  },
+  {
+   "kind": "roll",
+   "what": "roll days: WTI DOWN 17:00-17:15 ET at +20 s",
+   "find": {
+    "n": 15,
+    "won": 13,
+    "net_usd": 13.63,
+    "net_per_1": 0.4345,
+    "avg_price": 0.57,
+    "t": 2.41
+   },
+   "hold": {
+    "n": 5,
+    "won": 4,
+    "net_usd": 5.99,
+    "net_per_1": 0.4988,
+    "avg_price": 0.5326,
+    "t": 1.44
+   },
+   "all_n": 20,
+   "lost": 3,
+   "loss_rate_upper": 0.5252,
+   "breakeven_loss_rate": 0.4218,
+   "avg_price": 0.5606,
+   "usd_month_at_stake": 5.61,
+   "verdict": "fail"
+  }
+ ],
+ "baseline": {
+  "all": {
+   "n": 456,
+   "won": 323,
+   "net_usd": 367.93,
+   "net_per_1": 0.3471,
+   "avg_price": 0.5169,
+   "t": 6.51
+  },
+  "find": {
+   "n": 334,
+   "won": 239,
+   "net_usd": 282.89,
+   "net_per_1": 0.3636,
+   "avg_price": 0.5121,
+   "t": 6.01
+  },
+  "hold": {
+   "n": 122,
+   "won": 84,
+   "net_usd": 85.04,
+   "net_per_1": 0.3016,
+   "avg_price": 0.5303,
+   "t": 2.67
+  },
+  "by_leg": {
+   "gold_0530_down": {
+    "find": {
+     "n": 55,
+     "won": 39,
+     "net_usd": 45.62,
+     "net_per_1": 0.3581,
+     "avg_price": 0.5148,
+     "t": 2.94
+    },
+    "hold": {
+     "n": 21,
+     "won": 19,
+     "net_usd": 31.59,
+     "net_per_1": 0.6393,
+     "avg_price": 0.5529,
+     "t": 5.35
+    }
+   },
+   "silver_0530_down": {
+    "find": {
+     "n": 51,
+     "won": 35,
+     "net_usd": 42.89,
+     "net_per_1": 0.3571,
+     "avg_price": 0.5014,
+     "t": 2.66
+    },
+    "hold": {
+     "n": 20,
+     "won": 12,
+     "net_usd": 4.62,
+     "net_per_1": 0.1018,
+     "avg_price": 0.5222,
+     "t": 0.49
+    }
+   },
+   "silver_1615_down": {
+    "find": {
+     "n": 56,
+     "won": 42,
+     "net_usd": 55.39,
+     "net_per_1": 0.4307,
+     "avg_price": 0.5096,
+     "t": 3.58
+    },
+    "hold": {
+     "n": 20,
+     "won": 14,
+     "net_usd": 14.76,
+     "net_per_1": 0.3192,
+     "avg_price": 0.5556,
+     "t": 1.42
+    }
+   },
+   "gold_1700_up": {
+    "find": {
+     "n": 57,
+     "won": 39,
+     "net_usd": 40.0,
+     "net_per_1": 0.2985,
+     "avg_price": 0.5104,
+     "t": 2.49
+    },
+    "hold": {
+     "n": 21,
+     "won": 15,
+     "net_usd": 20.0,
+     "net_per_1": 0.4,
+     "avg_price": 0.5028,
+     "t": 1.84
+    }
+   },
+   "silver_1700_up": {
+    "find": {
+     "n": 58,
+     "won": 45,
+     "net_usd": 60.65,
+     "net_per_1": 0.4514,
+     "avg_price": 0.5192,
+     "t": 4.31
+    },
+    "hold": {
+     "n": 21,
+     "won": 13,
+     "net_usd": 9.79,
+     "net_per_1": 0.2031,
+     "avg_price": 0.5071,
+     "t": 0.95
+    }
+   },
+   "gold_1615_down": {
+    "find": {
+     "n": 57,
+     "won": 39,
+     "net_usd": 38.34,
+     "net_per_1": 0.2868,
+     "avg_price": 0.5158,
+     "t": 2.32
+    },
+    "hold": {
+     "n": 19,
+     "won": 11,
+     "net_usd": 4.28,
+     "net_per_1": 0.1002,
+     "avg_price": 0.5432,
+     "t": 0.41
+    }
+   }
+  }
+ },
+ "passed": [],
+ "closest": [
+  {
+   "what": "gold_1615_down: skip asks above 57c",
+   "skipped_find_t": 0.31,
+   "skipped_find": 0.0593,
+   "skipped_hold": 0.0547,
+   "n_find": 16,
+   "n_hold": 7
+  },
+  {
+   "what": "gold_1700_up: skip when session = up",
+   "skipped_find_t": 0.31,
+   "skipped_find": 0.058,
+   "skipped_hold": 0.5471,
+   "n_find": 27,
+   "n_hold": 6
+  },
+  {
+   "what": "gold_0530_down: skip when prev_qh = down",
+   "skipped_find_t": 0.36,
+   "skipped_find": 0.0834,
+   "skipped_hold": 0.5584,
+   "n_find": 17,
+   "n_hold": 10
+  },
+  {
+   "what": "gold_1615_down: skip when move_4h = down",
+   "skipped_find_t": 0.48,
+   "skipped_find": 0.0847,
+   "skipped_hold": -0.1062,
+   "n_find": 25,
+   "n_hold": 17
+  },
+  {
+   "what": "silver_0530_down: skip when prev_qh = down",
+   "skipped_find_t": 0.6,
+   "skipped_find": 0.1332,
+   "skipped_hold": 0.0749,
+   "n_find": 24,
+   "n_hold": 12
+  },
+  {
+   "what": "silver_1615_down: skip when prev_qh = down",
+   "skipped_find_t": 0.62,
+   "skipped_find": 0.1097,
+   "skipped_hold": -0.1048,
+   "n_find": 28,
+   "n_hold": 8
+  },
+  {
+   "what": "gold_0530_down: skip when session = up",
+   "skipped_find_t": 0.75,
+   "skipped_find": 0.1272,
+   "skipped_hold": 0.5004,
+   "n_find": 31,
+   "n_hold": 6
+  },
+  {
+   "what": "gold_1615_down: skip when prev_qh = down",
+   "skipped_find_t": 0.84,
+   "skipped_find": 0.1442,
+   "skipped_hold": 0.1123,
+   "n_find": 29,
+   "n_hold": 8
+  }
+ ]
+}
