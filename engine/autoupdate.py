@@ -278,6 +278,18 @@ def extra_flat_reason(bot) -> str | None:
             for lg in list(getattr(getattr(a, "adapter", None), "legs", None) or []):
                 if isinstance(lg, dict) and lg.get("status") in OPEN_LEG:
                     return f"{lab}'s NinjaTrader bracket is {lg.get('status')}"
+        # redteam 2026-11-20: the extra accounts (engine/multi_account: Zlarior 25K #2, the Rapid's LIT lane ...) and the fleet's
+        # followers hold trades of their own (an extra account can be in a LIT trade the bot's own account did not take)
+        for a in list(getattr(getattr(bot, "accts", None), "accounts", None) or []):
+            nm = getattr(a, "name", None) or "an extra account"
+            if getattr(a, "open_t", None) is not None:
+                return f"{nm} has a position open"
+            for lg in list(getattr(getattr(a, "adapter", None), "legs", None) or []):
+                if isinstance(lg, dict) and lg.get("status") in OPEN_LEG:
+                    return f"{nm}'s NinjaTrader bracket is {lg.get('status')}"
+        fl = getattr(bot, "fleet", None)
+        if fl is not None and callable(getattr(fl, "busy", None)) and fl.busy():
+            return "a fleet follower has a position open"
         return None
     except Exception as e:
         return f"cannot tell if the other accounts are flat ({e.__class__.__name__})"
