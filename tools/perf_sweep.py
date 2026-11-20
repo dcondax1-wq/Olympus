@@ -3,6 +3,7 @@
 
     python -X utf8 tools/perf_sweep.py [--site tools/web_public] [--pages nq,ledger,...] [--json out.json] [--md out.md]
         [--no-offline] [--net fast3g|none] [--cpu 4] [--check]   (--check: exit 1 when an app breaks its budget in tools/perf_budgets.json)
+    python -X utf8 tools/perf_sweep.py --static --check      no browser, < 1 s: the eager files of each app vs the "static" budgets
 
 The visible apps = olympus/apps-list.js minus olympus/doors.js ARCHIVE (+ jarvis/, gate/, hub/). Built on tools/phone_budget.py (the same
 read-only gzip server, Chromium, Fast-3G line and x4 CPU at 390 x 844, service workers blocked for the cold visit). Per app:
@@ -101,6 +102,31 @@ def row_of(raw: dict, raw2: dict, errors: list, site_base: str = "") -> dict:
               "errors": len(errors), "error_list": errors[:5], "shifts": raw2.get("shifts") or [],
               "top3": [f"{x.get('n', '').replace(site_base, '').split('?')[0]} {int(x.get('t') or 0) // 1024} KB" for x in top]})
     return r
+
+
+def static_rows(site=SITE, pages=None) -> dict:
+    """no browser (< 1 s): what each visible app loads WITHOUT a user action, from its files (phone_budget.static_row: the html's
+    tags, module imports followed): block_kb = what holds the first paint, eager_js_kb, three = three.js eager. The guard that
+    runs at every ship: someone adding three.js or a render-blocking file to an app shows here at once."""
+    out = {}
+    for app, path in (pages or visible_apps(site)):
+        r = PB.static_row(site, path or "root")
+        if "error" not in r:
+            out[app] = {"block_kb": r["block_kb"], "eager_js_kb": r["eager_js_kb"], "three": r["three"]}
+    return out
+
+
+def static_over(rows: dict, budgets: dict) -> dict:
+    b0 = (budgets.get("static") or {}).get("default") or {}
+    bad = {}
+    for app, r in rows.items():
+        b = dict(b0, **((budgets.get("static") or {}).get(app) or {}))
+        why = [f"{k} {r[k]} > {lim}" for k, lim in b.items() if k != "three" and isinstance(r.get(k), (int, float)) and r[k] > lim]
+        if b.get("three") is False and r.get("three"):
+            why.append("three.js loads eagerly")
+        if why:
+            bad[app] = why
+    return bad
 
 
 def load_budgets(path=BUDGETS) -> dict:
@@ -274,7 +300,16 @@ def main(argv=None) -> int:
     ap.add_argument("--net", default="fast3g")
     ap.add_argument("--no-offline", action="store_true")
     ap.add_argument("--check", action="store_true")
+    ap.add_argument("--static", action="store_true", help="no browser: the eager files of every visible app vs the static budgets")
     a = ap.parse_args(argv)
+    if a.static:
+        rows = static_rows(a.site)
+        bad = static_over(rows, load_budgets())
+        for app, r in rows.items():
+            print(f"{app:10} block {r['block_kb']:6.0f} KB  eager JS {r['eager_js_kb']:6.0f} KB  three.js {'eager' if r['three'] else 'no'}"
+                  + (f"   OVER: {'; '.join(bad[app])}" if app in bad else ""))
+        print(f"perf static: {len(rows)} apps, {len(bad)} over budget")
+        return 1 if (a.check and bad) else 0
     pages = visible_apps(a.site)
     if a.pages:
         want = [p.strip() for p in a.pages.split(",") if p.strip()]

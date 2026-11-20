@@ -161,5 +161,67 @@
   "lt_max": 2320,
   "tbt": 6800,
   "heap_mb": 21.8
- }
+ },
+ "static": {
+  "default": {
+   "block_kb": 250,
+   "eager_js_kb": 600,
+   "three": false
+  },
+  "zenith": {
+   "block_kb": 390,
+   "eager_js_kb": 1910
+  },
+  "fates": {
+   "eager_js_kb": 1230,
+   "three": true
+  },
+  "cities": {
+   "eager_js_kb": 1040,
+   "three": true
+  },
+  "ledger": {
+   "block_kb": 340
+  },
+  "inbox": {
+   "block_kb": 300
+  },
+  "settings": {
+   "block_kb": 330
+  },
+  "mercury": {
+   "eager_js_kb": 1120,
+   "three": true
+  },
+  "oikos": {
+   "eager_js_kb": 1160,
+   "three": true
+  },
+  "kronos": {
+   "eager_js_kb": 1500,
+   "three": true
+  },
+  "compass": {
+   "eager_js_kb": 1400,
+   "three": true
+  },
+  "nq": {
+   "block_kb": 300
+  },
+  "business": {
+   "block_kb": 310
+  },
+  "trading": {
+   "block_kb": 290
+  },
+  "tyche": {
+   "block_kb": 320,
+   "eager_js_kb": 1300,
+   "three": true
+  },
+  "jarvis": {
+   "block_kb": 470
+  }
+ },
+ "_note_static": "static: no browser, from the files (tools/perf_sweep.py --static --check). default = the target; an app's own line = today +10% (three: true = allowed for now, an ASK says to make it lazy)."
 }

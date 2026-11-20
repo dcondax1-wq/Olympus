@@ -3,6 +3,7 @@
   a. pure: the visible apps = apps-list minus doors.js ARCHIVE (+ jarvis, gate, hub); file kinds; long tasks -> count / max / TBT;
      a row from raw numbers; budgets (own over default, offline must be ok, sideways never); the table
   b. the real repo's budgets file is valid JSON and names only visible apps
+  d. static (no browser, < 1 s): each app's eager files vs the "static" budgets; the real repo passes; three.js eager is named
   c. one real browser run on a 2-page fixture site (https, as GitHub Pages): a good app (worker-cached, shows "updated 5 min ago")
      opens offline WITH its age; a bad one (console error, 600 px wide, not cached) is caught: errors 1, sideways, offline not ok
     python -X utf8 -m tests.test_perf_sweep
@@ -68,9 +69,19 @@ def main() -> int:
     try:
         bj = json.load(open(P.BUDGETS, encoding="utf-8"))
         check("b. tools/perf_budgets.json is valid and names only visible apps", isinstance(bj.get("default"), dict)
-              and not [k for k in bj if k not in ("default", "_note") and k not in ids], [k for k in bj if k not in ids])
+              and not [k for k in bj if not k.startswith("_") and k not in ("default", "static") and k not in ids]
+          and not [k for k in bj.get("static", {}) if k != "default" and k not in ids], [k for k in bj if k not in ids])
     except (OSError, ValueError) as e:
         check("b. tools/perf_budgets.json is valid", False, repr(e))
+
+    st = P.static_rows()
+    check("d. static (no browser): every visible app has its eager files measured", set(st) == set(ids), sorted(set(ids) - set(st)))
+    bad = P.static_over(st, P.load_budgets())
+    check("d. static: the real repo is within tools/perf_budgets.json 'static' (an app adding three.js or render-blocking KB fails here)", not bad, bad)
+    fake = {"x": {"block_kb": 900, "eager_js_kb": 100, "three": True}, "y": {"block_kb": 10, "eager_js_kb": 10, "three": False}}
+    sb = {"static": {"default": {"block_kb": 250, "eager_js_kb": 600, "three": False}}}
+    check("d. static: over the blocking KB and three.js eager are both named; a lean app passes",
+          P.static_over(fake, sb) == {"x": ["block_kb 900 > 250", "three.js loads eagerly"]}, P.static_over(fake, sb))
 
     site = tempfile.mkdtemp(prefix="le_perfsweep_")
     try:
