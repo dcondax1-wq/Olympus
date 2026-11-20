@@ -22,3 +22,8 @@ WATCH (not actionable yet), REFUTED (checked, not real). Already-known ideas: re
 | 2026-11-20 | engine/lit.py backtest COMM $1.40 vs MFFU's $1.90 MNQ round turn | backtests ~$310-350 a year too rosy | BRANCH next (research cost fix, no live change) |
 | 2026-11-20 | No inactivity guard in engine/live.py / cloud_monitor (2026 replay: 3 gaps of 7+ days) | 7-day rule forfeits sim profits | BRANCH wf-keepalive |
 | 2026-11-20 | rapid_eod_25k block was missing from mffu_rules.json | Rapid rules unchecked | FIXED day-taxes ef9965ed (+ tests/test_account_rules.py 35/35) |
+| 2026-11-20 | ATLAS real fills vs the 1m open: today 22 ticks worse (26,375.50 vs 26,381.00), median 14 ticks over 4 fills | ~$7 a trade on 1 MNQ (~$30-60/month) | WATCH; day-speed proposes datapipe stamps sent_at / fill_mtime in the day bundle (data only, weekend landing) so fast entry can be measured |
+| 2026-11-20 | Update gate replay: day-speed vs pc on today's real 03:45 ATLAS short = SAME (SELL 1, +$514.28; PC booked +$514.18), poll 413 -> 237 ms | proof the speed-up trades identically | BRANCH day-speed 97dea895 (weekend landing) |
+| 2026-11-20 | Site pages polled the old suspended GitHub account (2 x 404 a page) | slow pages, noise | FIXED day-nqdash3 4c191810 (DEV_ONLY gate + test_repo_secrets c); jarvis/data.js fallback still left (only when ntfy is empty) WATCH |
+| 2026-11-20 | Jarvis FX push f39745cd turned the switcher cyan, the very look the owner picked (black/violet/gold) | owner's chosen look lost | HELD back; Jarvis team re-pointing to OLYMPUS NIGHT by 18:30 |
+| 2026-11-20 | Keep-alive warnings told the owner to ask MFFU support (he will not contact MFFU) | owner stuck at day 6 | FIXED wf-keepalive c4717b5a (KEEPALIVE_ON.bat, owner said YES) |
