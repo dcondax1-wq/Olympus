@@ -1483,8 +1483,67 @@
     } catch (_) { /* old browsers: no countdown */ }
     return null;
   }
+  // ---- K8 LIVE DAY (day-kalshi round 3): the next LIVE window (05:15 / 16:45 ET) as a big countdown, what the bot will do there,
+  // the $ left before each stop (and how many $2.50 bets still fit), from the card's dy / wk / dd and the $55 rule. No order, no key.
+  const K8V = { key: '' };
+  const k8Cost = () => { const s = num(K8D.k && K8D.k.s) || 2.5; return s + 0.09; };        // a bet + its worst fee (5 contracts: 9c)
+  function k8NextLive(now) {
+    const legs = k8Legs().filter((L) => L.live);
+    for (let a = 0; a < 9; a++) {
+      const D = k8Day(now + a * 86400000);
+      if (D.wd === 'Sat' || D.wd === 'Sun') continue;
+      const by = {};
+      for (const L of legs) {
+        if (k8Skip(L.sk, D.iso)) continue;
+        const t = tzEpoch(D.y, D.mo, D.d, L.o[0], L.o[1], L.tz);
+        if (t + 20000 > now - 900000) (by[t] = by[t] || []).push(L);
+      }
+      const ts = Object.keys(by).map(Number).sort((x, y) => x - y);
+      for (const t of ts) if (t + 900000 > now) return { t, legs: by[t], D, today: a === 0 };
+    }
+    return null;
+  }
+  function k8Left() {                                 // $ left before each stop: [label, left, stop]
+    const k = K8D.k || {}, R = K8D.j && isObj(K8D.j.rule) ? K8D.j.rule : {};
+    const pair = (a, st) => { const u = num(arr(a)[0]) || 0, s = num(arr(a)[1]) || st; return [Math.max(0, s - u), s]; };
+    return [['Today', ...pair(k.dy, num(R.day_stop) || 8)], ['This week', ...pair(k.wk, num(R.week_stop) || 13.75)], ['From the peak', ...pair(k.dd, num(R.dd_stop) || 19.25)]];
+  }
+  function k8Live(now) {
+    const big = $('#k8d-big'), at = $('#k8d-at'), lab = $('#k8d-lab'), x = $('#k8d-x');
+    if (!big || !x) return;
+    const W = k8NextLive(now);
+    if (!W) { big.textContent = '–'; return; }
+    const s = Math.round((W.t + 20000 - now) / 1000);
+    const hh = Math.floor(Math.max(0, s) / 3600), mm = Math.floor((Math.max(0, s) % 3600) / 60), ss = Math.max(0, s) % 60;
+    const pad = (v) => String(v).padStart(2, '0');
+    const names = W.legs.map((L) => L.n).join(' + ');
+    big.textContent = s > 0 ? `${hh ? hh + ':' : ''}${pad(mm)}:${pad(ss)}` : 'betting now';
+    if (lab) lab.textContent = s > 0 ? `Next live bet: ${names}` : `In the window: ${names}`;
+    if (at) at.textContent = `${W.today ? 'today' : W.D.wd + ' ' + W.D.md} ${k8HM(W.t)} ET (the bot buys at +20 s; results at ${k8HM(W.t + 900000)} ET)`;
+    const st = KLV.j && KLV.j.st, live = st === 'live', left = k8Left(), cost = k8Cost();
+    const fit = Math.max(0, Math.floor(Math.min(left[0][1], left[1][1], left[2][1]) / cost + 1e-9));
+    const used = num(arr(K8D.k && K8D.k.td)[0]) || 0, slots = Math.max(0, 3 - (W.today ? used : 0));
+    const key = [W.t, st, JSON.stringify(left), used, K8D.j ? K8D.j.through : ''].join('|');
+    if (key === K8V.key) return;
+    K8V.key = key;
+    const fair = {};
+    for (const L of k8Legs()) fair[L.c] = L.x || {};
+    const n = W.legs.length, will = n > Math.min(fit, slots) ? Math.min(fit, slots) : n;
+    const what = !live ? `<p class="k8d-w paper"><b>PAPER:</b> at ${esc(k8HM(W.t))}:20 ET it records ${esc(names)} with no money. Real bets start only after you type the phrase on :8444/kalshi-live/.</p>`
+      : will <= 0 ? `<p class="k8d-w stop"><b>It will NOT bet:</b> ${fit <= 0 ? 'a stop is reached (no $2.50 bet fits in the $ left below)' : 'today\'s 3 bets are used'}.</p>`
+        : `<p class="k8d-w live"><b>At ${esc(k8HM(W.t))}:20 ET it buys ${will < n ? will + ' of ' : ''}${esc(names)}</b>: ${W.legs.map((L) => (L.n.indexOf('DOWN') >= 0 ? 'NO' : 'YES')).join(' / ')}, about 4-6 contracts each at up to 70¢, at most $2.50 a bet (+ 7-9¢ fee). It skips a bet if the price is over 70¢ or a stop would be passed. A push comes when it is in, and one with the result.</p>`;
+    const legs = W.legs.map((L) => {
+      const f = fair[L.c], p = num(f.last_c), fc = num(f.fair_c), ed = p != null && fc != null ? Math.round(fc) - Math.round(p) : null;
+      return `<li data-leg="${esc(L.c)}"><span>${esc(L.n)}</span><span>last ${esc(k8c(p))} · fair ${esc(k8c(fc))}${ed == null ? '' : ` · <b class="${ed > 0 ? 'k8-g' : 'k8-r'}">${ed > 0 ? '+' : ed < 0 ? MINUS : ''}${Math.abs(ed)}¢</b>`}</span></li>`;
+    }).join('');
+    const rows = left.map(([t, l, s]) => `<div><dt>${esc(t)}</dt><dd class="${l < cost ? 'red' : l < 2 * cost ? 'hot' : ''}">${esc(usd(l))} <i>of ${esc(usd(s))}</i></dd></div>`).join('');
+    x.innerHTML = what + `<ul class="k8d-l" id="k8d-legs">${legs}</ul><p class="krw-f">Last = what Kalshi takers paid at +20 s on the last day; fair = where the bet breaks even (its win rate minus the fee).</p>`
+      + `<p class="k8w-h">Left before each stop</p><dl class="krw-g k8d-s" id="k8d-s">${rows}</dl>`
+      + `<p class="krw-f" id="k8d-fit">Room for <b>${esc(fmtN(fit))}</b> more $2.50 bet${fit === 1 ? '' : 's'} before the tightest stop${W.today ? `; ${esc(fmtN(slots))} of today's 3 left` : ''}.</p>`;
+  }
   function k8Tick() {
     const now = Date.now();
+    try { k8Live(now); } catch (_) { /* the live-day view never stops the countdown */ }
     try { k8Win(now); } catch (_) { /* the windows list never stops the countdown */ }
     const el = $('#k8s-cd');
     if (!el) return;

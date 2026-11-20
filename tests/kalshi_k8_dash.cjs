@@ -68,7 +68,7 @@ const card = (st, k8, u) => ({ kind: 'kalshi_live_pub', v: 1, st, net: 0, f: 0, 
     return { side: de.scrollWidth <= de.clientWidth, gutter: r.left >= 15.5 && r.right <= W - 15.5, cut }; });
   const shot = async (p, name, at) => {
     if (!SHOTS) return;
-    await p.evaluate((sel) => { const e = document.querySelector(sel) || document.getElementById('k8s'); e.scrollIntoView({ block: sel === '#k8s' ? 'start' : 'end' }); window.scrollBy(0, sel === '#k8s' ? -12 : 12); }, at || '#k8s');
+    await p.evaluate((sel) => { const e = document.querySelector(sel) || document.getElementById('k8s'); const top = sel === '#k8s' || sel === '#k8d'; e.scrollIntoView({ block: top ? 'start' : 'end' }); window.scrollBy(0, top ? -12 : 12); }, at || '#k8s');
     await p.waitForTimeout(400);
     await p.screenshot({ path: path.join(SHOTS, name) });
   };
@@ -148,6 +148,36 @@ const card = (st, k8, u) => ({ kind: 'kalshi_live_pub', v: 1, st, net: 0, f: 0, 
     const ls2 = await T(p, '#k8s-ls');
     step('s2. when the bot obeys the rule: "silver UP paused: won 9 of the last 20 (resumes at 12)"',
       ls2.includes('paused: won 9 of the last 20 (resumes at 12)') && !ls2.includes('shown only'), ls2);
+    await ctx.close();
+
+    // 3c. K8 LIVE DAY (round 3): the big countdown to the next LIVE window, what the bot will do, $ left before each stop, the help box
+    ({ ctx, p } = await open({ at: '2026-11-23T14:30:00-05:00', card: card('paper', k8new({ td: [1, 1, 1.61], dy: [0, 8], wk: [0, 13.75], dd: [0, 19.25] }), '2026-11-23T19:29:00Z'), k8: 'fx' }));
+    let dd = { big: await T(p, '#k8d-big'), lab: await T(p, '#k8d-lab'), at: await T(p, '#k8d-at'), x: await T(p, '#k8d-x'), help: await T(p, '#k8d-help') };
+    step('v1. Mon 14:30 ET, PAPER: big countdown 2:15:20 to the 16:45 live bet (gold UP + silver UP), "PAPER: ... records ... with no money", results at 17:00',
+      /^2:15:(20|19|18)$/.test(dd.big) && dd.lab.includes('gold UP + silver UP') && dd.at.includes('16:45 ET') && dd.at.includes('17:00') && dd.x.includes('PAPER:') && dd.x.includes('no money'), dd);
+    const sl = await p.evaluate(() => [...document.querySelectorAll('#k8d-s div')].map((x) => x.innerText.replace(/\s+/g, ' ')));
+    step('v2. $ left before each stop: today $8.00 of $8.00, week $13.75 of $13.75, from the peak $19.25 of $19.25; room for 3 more bets (2 of today\'s 3 left)',
+      sl.length === 3 && sl[0].includes('$8.00 of $8.00') && sl[1].includes('$13.75 of $13.75') && sl[2].includes('$19.25 of $19.25')
+      && (await T(p, '#k8d-fit')).includes('Room for 3 more') && (await T(p, '#k8d-fit')).includes('2 of today\'s 3 left'), [sl, await T(p, '#k8d-fit')]);
+    const lg2 = await p.evaluate(() => [...document.querySelectorAll('#k8d-legs li')].map((x) => [x.dataset.leg, x.innerText.replace(/\s+/g, ' ')]));
+    step('v3. the 2 legs of the window with the last price vs fair (gold UP last 53¢ · fair 73¢ · +20¢)', lg2.length === 2 && lg2[0][0] === 'g17' && lg2[0][1].includes('last 53¢ · fair 73¢') && lg2[0][1].includes('+20¢'), lg2);
+    step('v4. "If something looks wrong": the PC page STOP (:8444/kalshi-live/), ZEUS Safety PAUSE / KILL, KALSHI_STOP.bat, the Kalshi app; filled bets settle by themselves',
+      dd.help.includes(':8444/kalshi-live/') && dd.help.includes('STOP (off now)') && dd.help.includes('ZEUS Safety') && dd.help.includes('KALSHI_STOP.bat') && dd.help.includes('Kalshi app') && dd.help.includes('settles by itself'), dd.help);
+    await shot(p, 'kalshi-k8-liveday.png', '#k8d');
+    await shot(p, 'kalshi-k8-liveday-help.png', '#k8d-help');
+    await ctx.close();
+    ({ ctx, p } = await open({ at: '2026-11-23T14:30:00-05:00', card: card('live', k8new({ m: 'L', td: [1, 0, -2.15], dy: [2.15, 8], wk: [11.0, 13.75], dd: [11.0, 19.25] }), '2026-11-23T19:29:00Z'), k8: 'fx' }));
+    dd = { x: await T(p, '#k8d-x'), fit: await T(p, '#k8d-fit') };
+    step('v5. LIVE with $2.75 left this week: "At 16:45:20 ET it buys 1 of gold UP + silver UP" (only one $2.59 bet fits), room for 1',
+      dd.x.includes('At 16:45:20 ET it buys 1 of gold UP + silver UP') && dd.fit.includes('Room for 1 more'), dd);
+    await ctx.close();
+    ({ ctx, p } = await open({ at: '2026-11-23T14:30:00-05:00', card: card('live', k8new({ m: 'L', td: [1, 0, -2.15], dy: [2.15, 8], wk: [12.0, 13.75], dd: [12, 19.25] }), '2026-11-23T19:29:00Z'), k8: 'fx' }));
+    dd = { x: await T(p, '#k8d-x') };
+    step('v6. LIVE with $1.75 left this week: "It will NOT bet: a stop is reached"', dd.x.includes('It will NOT bet') && dd.x.includes('a stop is reached'), dd);
+    await ctx.close();
+    ({ ctx, p } = await open({ at: '2026-11-26T08:00:00-05:00', card: card('paper', k8new(), '2026-11-26T12:59:00Z'), k8: 'fx' }));
+    dd = { lab: await T(p, '#k8d-lab'), at: await T(p, '#k8d-at') };
+    step('v7. Thanksgiving Thu 08:00 ET: the evening skips, so the next live bet is Fri 11-27 05:15 gold DOWN', dd.lab.includes('gold DOWN') && dd.at.includes('Fri 11-27') && dd.at.includes('05:15'), dd);
     await ctx.close();
 
     // 4. the verdicts: Watch (within 5 points of a line) and OFF line crossed (win rate, then price creep)
