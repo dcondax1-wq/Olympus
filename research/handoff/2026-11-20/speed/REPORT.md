@@ -81,5 +81,14 @@ the cost study at 3 / 6 / 10 ticks).
 
 ## Tests
 
-Branch unchanged live files. `python tests/smoke.py`, `python tests/run_area.py nq`, `python -X utf8 -m tests.test_lit_live
---quick`, `python -m engine.ninjatrader --selftest`: results in the write-up (research/writeups/nq-speed-fills-2026-11-20.md).
+No live file changed on this branch (only research/, tools/research/, one new test).
+
+| Check | Branch | Copy with patches 1 + 2 applied |
+|---|---|---|
+| tests/test_speed_tail_load.py | 11/11 | 11/11 |
+| `python -m engine.ninjatrader --selftest` | 79 pass / 0 fail | 79 / 0 |
+| `python -X utf8 -m tests.test_lit_live --quick` | OK (120/120 identical, LiveBot 1/1 entry + exit) | OK (same) |
+| tests.test_fast_entry / test_account_b_funded | - | 21/21, 67/67 |
+| tests.test_second_account_b | - | 71 pass / 0 fail, stopped at my 15-min cap before the end |
+| `python tests/smoke.py` | 7/8: test_zenith_mode needs the Python playwright module (missing in this container) | - |
+| `python tests/run_area.py nq` | ran to the 40-min cap; FAIL only in holidays / eval_lifecycle / live_board = `No module named 'fastapi'` (container, not this branch); every other suite PASS | - |
