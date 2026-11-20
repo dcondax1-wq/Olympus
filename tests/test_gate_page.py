@@ -71,7 +71,7 @@ def test_static():
           and html.count("<h1") == 1 and 'role="status"' in html and 'aria-live="polite"' in html and 'role="dialog"' not in html)
     check("a. one base-path line: gate/ -> '../', the site root (olympus-live.html) -> ''; agora.css + gate.css, then themes, the catalog, hub-status and gate.js load from GATE_BASE, in order (async = false)",
           r"/\/gate\/(index\.html)?$/.test(p) ? '../' : ''" in html and "window.GATE_BASE = b" in html and "b + 'gate/gate.css?v=g15'" in html and "b + 'olympus/agora.css" in html
-          and "['olympus/themes.js?v=o9', 'pc_feed.js?v=n5', 'olympus/gate-catalog.js?v=nv5', 'olympus/hub-status.js?v=h2', 'gate/gate.js?v=g13', 'olympus/home-fx.js?v=x2']" in html and "s.async = false" in html)
+          and "['olympus/themes.js?v=o9', 'pc_feed.js?v=n5', 'olympus/gate-catalog.js?v=nv5', 'olympus/hub-status.js?v=h2', 'business/payoutcoach.js?v=1', 'gate/gate.js?v=g14', 'olympus/home-fx.js?v=x2']" in html and "s.async = false" in html)
     tiles = re.findall(r'class="g-hub[^"]*" data-hub="(\w+)" data-to="hub/index.html\?h=(\w+)"', html)
     check("a. the hub tiles are plain links in the page (they work even if gate.js fails), in the owner's order (night A 2026-11-16): Bots & Evals (wide) and My Money (wide) first, Kalshi and Worlds near the end, Settings & Help last",
           [t[0] for t in tiles] == HUBS and all(a == b for a, b in tiles) and 'class="g-hub g-wide" data-hub="bots"' in html and 'class="g-hub g-wide" data-hub="money"' in html and html.count('class="g-hline"') == len(HUBS))
@@ -419,6 +419,19 @@ def test_page():
                   and f4["facts"][3] == "Rapid EOD 25K$1,000drawdown left of $1,000" and f4["facts"][4].startswith("Today+$392") and f4["many"] == "true" and f4["bottom"] <= 844 and not errs, (f4, errs[:2]))
             ctx.close()
             s6.shutdown()
+
+            # olympus2 DATA TRUTH ask: ATLAS funded at $25,401.38 / room $1,401.38: "to payout" = the payout coach's $949 (NQ / Trading / Board), not the PC's raw $1,449
+            hf = json.loads(home_json(300))
+            hf["board"]["atlas"] = {"id": "atlas", "name": "ATLAS", "plan": "MFFU Builder 25K funded", "status": "funded", "stage": "funded", "balance": 25401.38, "room": 1401.38,
+                                    "mll": 1000, "to_target": 1448.62, "today_pnl": 514.18}
+            s7, o7 = serve({"/home.json": json.dumps(hf)})
+            ctx, p, errs, seen, off = AK.page(br, o7)
+            open_gate(p, o7)
+            p.wait_for_timeout(500)
+            goal = p.evaluate("() => [...document.querySelectorAll('#money .g-acct')].map((a) => a.textContent).find((t) => t.indexOf('ATLAS') === 0) || ''")
+            check("c. funded ATLAS: '$949 to payout' from the payout coach (the same as NQ / Trading / Board), never the PC's raw $1,449", "$949 to payout" in goal and "1,449" not in goal and not errs, (goal, errs[:2]))
+            ctx.close()
+            s7.shutdown()
 
             # quiet, old, stopped
             for age, running, state, badge, btn, line in ((2 * 3600, True, "quiet", "Quiet", False, "Last report from your PC 2 hours ago. The bots may still be trading."),

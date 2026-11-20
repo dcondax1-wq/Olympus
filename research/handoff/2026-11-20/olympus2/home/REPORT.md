@@ -45,3 +45,14 @@ Shots: cockpit-1-live, cockpit-2-in-a-trade-decide, cockpit-3-light, cockpit-4-s
 - Tests: test_gate_page 87/87, test_world_page --static 14/14.
 - Shots: cockpit-6-four-accounts-three-trades, cockpit-7-four-accounts-light, cities-ivory-world-card.
 - Waiting on: A11Y FOR_home.md (day-a11y) and PERF ASKS.md (day-quality); not on GitHub yet at 10:30 ET.
+
+## Round 3 (DATA TRUTH ask, ~11:00 ET): one "to payout" number everywhere
+- Widget (Scriptable + Glance) and the Home cockpit used the PC card's raw `to_target` (the $750-ping line, e.g. $1,449) as "to payout".
+  Now both run the payout coach (business/payoutcoach.js, the same inputs as pc_feed.js payoutLines) -> e.g. $949 at $25,401.38 / room $1,401.38,
+  the number NQ / Trading / Board show. Scriptable has no coach: it says "payout: see Olympus" instead of a different number. Glance drops the
+  "% of the way to the payout" bar for funded accounts (it was built on the raw number).
+- Tags: widget w3, glance.html loads ../business/payoutcoach.js?v=1, glance.js 3; gate.js g14 (+ payoutcoach.js in the Home's script list).
+- Tests: test_widget 37/37 (+ parity with pc_feed payoutLines on the fixture: $1,462.80 both, raw line $1,962.80 never shown), test_gate_page 88/88
+  (+ funded ATLAS shows "$949 to payout", never $1,449). Shot: glance-payout-coach.jpg.
+- Not adopted: age.js / age.css (they are on day-nqdash3 only, not on pc yet; loading them now would 404). Once they land on pc, the Home's
+  "Last report X ago" line can switch to OLY_AGE.chip(..., 'pc').

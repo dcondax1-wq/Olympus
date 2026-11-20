@@ -315,7 +315,7 @@
       var a = A[k]; if (!a || !a.has) return;
       var fd = obj(obj(board[k]).funded), funded = a.kind === 'funded' || obj(board[k]).stage === 'funded';
       cards.push({ key: k, name: a.name, size: a.size, kind: funded ? 'funded' : 'eval', balance: num(a.balance), room: num(a.room), mll: num(a.mll), toPass: funded ? null : num(a.toTarget),
-        toAsk: funded ? (num(fd.to_ask) != null ? num(fd.to_ask) : num(a.toTarget)) : null, askAt: funded ? num(fd.ask_at_balance) : null, today: num(a.today) || 0 });
+        toAsk: funded ? coachNeed(a, board[k]) : null, askAt: funded ? num(fd.ask_at_balance) : null, today: num(a.today) || 0 });
     });
     if (T && T.extraOf) { try { T.extraOf(home).forEach(function (a) { cards.push({ key: a.key, name: a.name, size: a.size, kind: a.kind, balance: num(a.balance), room: num(a.room), mll: num(a.mll), toPass: num(a.toTarget), toAsk: null, askAt: null, today: num(a.today) || 0 }); today += num(a.today) || 0; }); } catch (e) { /* the two bots' rows stay */ } }
     var open = [];   // olympus2: the open trade(s) from the board cards (engine/live_board.py position: side, qty, entry, stop, target, unrealized_usd)
@@ -460,6 +460,17 @@
       box.appendChild(k);
     }
     box.hidden = !box.firstChild;
+  }
+  /* olympus2 DATA TRUTH ask: "to payout" on a funded account = the payout coach's need_more (business/payoutcoach.js, the number NQ / Trading /
+     Board show through pc_feed.js payoutLines), never the PC's raw $750-ping line; no coach loaded = no number ("Funded") */
+  function coachNeed(a, card) {
+    var PC = w.PAYOUT_COACH, c = obj(card), bal = num(a.balance);
+    if (!PC || typeof PC.coach !== 'function' || bal == null) return null;
+    var day = '';
+    try { day = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date(nowS() * 1000)); } catch (e) { day = ''; }
+    try { var r = PC.coach({ balance: bal, cycle_start_balance: null, best_day: null, cycle_days: null, payouts_n: null, eligible_from: null, room: num(a.room) },
+      /50K/i.test(String(c.plan || a.size || '')) || num(a.mll) >= 2000 ? 'builder50k' : 'builder25k', day);
+      return r && r.ok && num(r.need_more) != null ? Math.max(0, r.need_more) : null; } catch (e) { return null; }
   }
   function acctName(a) { var n = String(a.name || ''); return a.size && n.indexOf(a.size) < 0 ? n + ' ' + a.size : n; }   // "Zlarior 25K #2" keeps its own size
   function HSok() { return !!(w.OLYMPUS_HUB_STATUS && w.OLYMPUS_HUB_STATUS.shortAge); }
