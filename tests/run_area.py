@@ -293,6 +293,9 @@ AREAS["pc"].append("redteam2_wires")      # day-redteam2 2026-11-20: L2 rapid._o
 AREAS["agency"].append("web_research")   # day-web-research 2026-11-20: the website-business research (RESEARCH.md, writeup, offers.json); its own line
 
 
+AREAS["agency"].append("web_leads")  # day-web-leads 2026-11-20: OpenStreetMap lead finder + agency/leads/ phone list (tools/web_leads.py); its own line
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("area", nargs="?", choices=sorted(list(AREAS) + ["all"]))
