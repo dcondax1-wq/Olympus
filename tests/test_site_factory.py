@@ -104,6 +104,17 @@ def main() -> int:
             band["secret"].append(s["name"])
     check("d2. every site: 'Like this site?' band with 'Call us' + the assistant consent slot (or day-caller's form)", not band["band"], band["band"])
     check("d2. no third-party form service, no secret in any page", not band["form3p"] and not band["secret"], band)
+    # day-caller's form (tools/caller/siteform.py): its two hidden fields get THIS site's lead id + business name; a form without them is refused
+    demo = ('<form class="callme"><input type="hidden" name="lead_id" value=""><input type="hidden" name="business" value="">'
+            '<button type="submit">Have our assistant call me</button></form>')
+    out = F.caller_form(demo, "osm-n1", 'Joe\'s "Diner"')
+    try:
+        F.caller_form("<form></form>", "x", "y")
+        refused = False
+    except ValueError:
+        refused = True
+    check("d2. caller form: per-site lead_id + business filled (escaped), a form without the fields refused",
+          'name="lead_id" value="osm-n1"' in out and 'value="Joe&#x27;s &quot;Diner&quot;"' in out and refused, out)
     ix = json.load(open(os.path.join(AG, "sites", "index.json")))
     check("d2. agency/sites/index.json: every lead id -> its f/<id>/ path (relative to agency/)",
           ix.get("sites") == {L["id"]: "f/%s/" % ids[L["id"]] for L in leads} and all(os.path.isfile(os.path.join(AG, p, "index.html")) for p in ix["sites"].values()))

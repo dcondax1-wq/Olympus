@@ -344,14 +344,34 @@ def agency_cfg() -> dict:
     return c
 
 
-def agency_band(name: str) -> str:
+CALLER_CSS = ("form.callme{display:grid;gap:10px;width:100%;margin-top:6px}form.callme label{display:grid;gap:4px;font-size:.92rem}"
+              "form.callme input:not([type=checkbox]),form.callme select{font:inherit;min-height:44px;border:1px solid var(--line);border-radius:12px;"
+              "padding:0 12px;background:#fff;color:var(--ink);width:100%}.callme-lede{color:var(--soft);margin:0}"
+              ".callme-agree{display:flex!important;grid-template-columns:none!important;gap:10px;align-items:flex-start;font-size:.82rem;color:var(--soft)}"
+              ".callme-agree input{width:22px;height:22px;flex:none;margin-top:2px}form.callme button{font:inherit;font-weight:700;min-height:48px;"
+              "border:0;border-radius:999px;background:var(--brand);color:var(--on)}.callme-out{font-size:.9rem;color:var(--soft)}")
+
+
+def caller_form(html_in: str, lead_id: str, name: str) -> str:
+    """day-caller's consent form (tools/caller/siteform.py) with THIS site's lead id + business name in its two hidden fields."""
+    out = html_in
+    for field, val in (("lead_id", lead_id), ("business", name)):
+        out, n = re.subn(r'(<input type="hidden" name="%s" value=")(")' % field, lambda m: m.group(1) + esc(val) + m.group(2), out, count=1)
+        if not n:
+            raise ValueError(f"caller_html has no hidden {field} field")
+    return out
+
+
+def agency_band(name: str, lead_id: str = "") -> str:
     """'Like this site?' band: 'Call us' (the agency number, a placeholder until set) + 'Have our assistant call me' (day-caller's
     consent form, a marked slot until it arrives). Kept apart from the business's own buttons."""
     c = agency_cfg()
     t = tel(c["phone"])
     call = (f'<a class="call" href="tel:{t}">{icon("phone", 18)}Call us{" " + esc(c["phone_label"]) if c["phone_label"] else ""}</a>' if t else
             '<span class="call ghost" aria-disabled="true" data-slot="agency-phone" style="opacity:.6">Call us (number coming)</span>')
-    form = c["caller_html"] or ('<!-- CALLER-FORM-SLOT: day-caller supplies the consent form (markup, consent text, endpoint). Empty until then. -->'
+    form = (f'<details class="callme-box" style="width:100%"><summary class="call" style="list-style:none;cursor:pointer">'
+            f'Have our assistant call me</summary><style>{CALLER_CSS}</style>{caller_form(c["caller_html"], lead_id, name)}</details>'
+            if c["caller_html"] else "") or ('<!-- CALLER-FORM-SLOT: day-caller supplies the consent form (markup, consent text, endpoint). Empty until then. -->'
                                 '<div id="caller-slot" data-slot="caller-consent" hidden></div>'
                                 '<span class="call ghost" aria-disabled="true" data-slot="caller-button" style="opacity:.6">Have our assistant call me (coming)</span>')
     return (f'<section class="agency" aria-labelledby="h-ag" data-agency="1"><h2 id="h-ag">Like this site for {esc(name)}?</h2>'
@@ -436,7 +456,7 @@ def page(lead: dict, ids: dict) -> str:
 <section aria-labelledby="h-hours"><h2 id="h-hours" class="row" style="align-items:center">{icon("clock", 22)}Hours</h2>{hours_html}</section>
 <section aria-labelledby="h-visit"><h2 id="h-visit">{"Visit or call" if t and addr else "Call" if t else "Visit"}</h2><div class="grid" style="grid-template-columns:1fr">{"".join(visit)}</div>
 <div class="ctas" style="margin-top:16px">{"".join(btns)}</div></section>
-{agency_band(name)}
+{agency_band(name, lead["id"])}
 </div>
 </main>
 <footer class="foot"><div class="wrap">

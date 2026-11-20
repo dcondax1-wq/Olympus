@@ -26,3 +26,9 @@
 - **Agency band** on every concept page ("Like this site for X?"): **Call us** (agency number placeholder: set `phone` in `tools/site_factory_agency.json`, rebuild) and **Have our assistant call me** = a marked slot (`<!-- CALLER-FORM-SLOT -->`, `#caller-slot`) until day-caller sends the consent form; then put its markup in `caller_html` of the same file and rebuild. Placeholders show greyed "(coming)". Maryland: the assistant only calls businesses that ask. No third-party form service, no secret (test d2).
 - **`agency/sites/index.json`** = {"sites": {"<lead id>": "f/<id>/"}} (relative to agency/), for the outreach page + email autopilot. Owner-facing; nothing else links to it.
 - test_site_factory 20/20 static (+ browser 1).
+
+## Caller form wired (day-caller a25838cf)
+- `caller_form()` fills each site's hidden `lead_id` + `business`; refuses a form without them. The form opens from a "Have our assistant call me" button (details/summary) inside the agency band, styled via the callme hooks. Checked at 390 px: no error, no sideways scroll.
+- Stays EMPTY (greyed placeholder) until `tools/site_factory_agency.json` has `caller_html` = `python -m tools.caller.siteform --endpoint <PUBLIC>` output, which needs the PC's Funnel address (owner runs CALLER_ON.bat first). Then `python tools/site_factory.py`.
+- **Blocker for the lead:** `tools/site_privacy.py` mask_net() rewrites every `<pc>.<tailnet>.ts.net` in the published site, so the form's endpoint would be masked at publish and the form would break. Needs a reviewed exception for agency/f/*/index.html's form action (and the PC renamed to a neutral name), or a different public endpoint.
+- day-caller's generated text still carries placeholders ("(555) 555-0100", "YOUR AGENCY"): fill them before turning the form on.
