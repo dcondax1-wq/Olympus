@@ -165,6 +165,33 @@ def part_b(shots: bool):
                           ok_look and wide and small == 0 and cls < 0.05 and not errs, (bg, wide, small, cls, errs[:2]))
                     pg.close()
                 ctx.close()
+            # NAV FX (2026-11-20, owner "3D, effects, no gold"): Home, ZEUS, the Website HQ
+            for rm in ("no-preference", "reduce"):
+                ctx = br.new_context(viewport={"width": 390, "height": 844}, is_mobile=True, has_touch=True, color_scheme="dark", reduced_motion=rm)
+                ctx.route(re.compile(r"^https?://(?!127\.0\.0\.1)"), lambda r: r.fulfill(status=204, body=""))
+                ctx.route(re.compile(r"/agency/my_leads\.json"), lambda r: r.fulfill(status=200, body="{}", content_type="application/json"))
+                ctx.add_init_script(CLS_JS)
+                for url in ("gate/index.html", "hub/zeus.html", "agency/index.html"):
+                    errs: list = []
+                    pg = ctx.new_page()
+                    pg.on("pageerror", lambda e: errs.append(str(e)))
+                    pg.on("console", lambda m: errs.append(m.text) if m.type == "error" and "Failed to load resource" not in m.text else None)
+                    pg.goto(base + url)
+                    pg.wait_for_function("window.NAV_FX && window.NAV_FX.ready", timeout=20000)
+                    pg.wait_for_timeout(1500)
+                    r = pg.evaluate("""(() => { const a = document.querySelector('.nfx-aurora i'); const st = a ? getComputedStyle(a) : null;
+                        const bg = getComputedStyle(document.body).backgroundColor;
+                        return { nfx: document.documentElement.classList.contains('nfx'), aurora: !!a, anim: st ? st.animationName : '', bg,
+                          tilt: document.querySelectorAll('[data-nfx-tilt]').length, rolling: document.querySelectorAll('.nfx-rolling').length,
+                          leads: (document.getElementById('hqPLeads') || {}).textContent || '', cls: window.__cls }; })()""")
+                    still = rm == "reduce"
+                    ok = r["nfx"] and r["aurora"] and r["bg"] == "rgb(0, 0, 0)" and r["cls"] < 0.05 and not errs and r["rolling"] == 0 \
+                        and ((r["anim"] == "none" and r["tilt"] == 0) if still else (r["anim"] != "none" and (r["tilt"] > 0 or url == "hub/zeus.html")))
+                    if url == "agency/index.html":
+                        ok = ok and r["leads"] == "20"
+                    check(f"f. fx {url} [{'reduced motion' if still else 'motion'}]: Olympus Night (black), the aurora {'still' if still else 'moving'}, tilt {'off' if still else 'on'}, CLS {r['cls']:.3f} < 0.05, the real numbers final, no error", ok, (r, errs[:2]))
+                    pg.close()
+                ctx.close()
             # the hub page under a slow phone (4x CPU, ~1.6 Mbps, 150 ms): the gate-nav row fills its reserved slot and nothing shifts (perf ask)
             ctx = br.new_context(viewport={"width": 390, "height": 844}, is_mobile=True, has_touch=True, color_scheme="dark")
             ctx.route(re.compile(r"^https?://(?!127\.0\.0\.1)"), lambda r: r.fulfill(status=204, body=""))
