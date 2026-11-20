@@ -21,3 +21,8 @@
 - `tests/test_public_build_privacy.py` allow_reviewed: business phone/street on `agency/f/<id>/index.html` allowed (they are the business's public OSM listing; needed for click-to-call). The publish scrub leaves them intact (checked).
 - Heads-up (not mine): `site_privacy.PRIVATE_NAMES` has `leads.json`, so the public build drops `agency/leads/leads.json` (the leads page reads it). The factory pages are self-contained, so they are unaffected.
 - Nothing to wire in sw.js/apps.js (the factory must stay off the Home, apps lists and the service worker).
+
+## Add-on (lead 2026-11-20 evening)
+- **Agency band** on every concept page ("Like this site for X?"): **Call us** (agency number placeholder: set `phone` in `tools/site_factory_agency.json`, rebuild) and **Have our assistant call me** = a marked slot (`<!-- CALLER-FORM-SLOT -->`, `#caller-slot`) until day-caller sends the consent form; then put its markup in `caller_html` of the same file and rebuild. Placeholders show greyed "(coming)". Maryland: the assistant only calls businesses that ask. No third-party form service, no secret (test d2).
+- **`agency/sites/index.json`** = {"sites": {"<lead id>": "f/<id>/"}} (relative to agency/), for the outreach page + email autopilot. Owner-facing; nothing else links to it.
+- test_site_factory 20/20 static (+ browser 1).

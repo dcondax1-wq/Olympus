@@ -13,7 +13,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9101,
+   "bytes": 9843,
    "heat": "warm",
    "chain": false
   },
@@ -26,7 +26,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 8712,
+   "bytes": 9464,
    "heat": "cold",
    "chain": false
   },
@@ -39,7 +39,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9113,
+   "bytes": 9861,
    "heat": "warm",
    "chain": true
   },
@@ -52,7 +52,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 8704,
+   "bytes": 9452,
    "heat": "cold",
    "chain": false
   },
@@ -65,7 +65,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9101,
+   "bytes": 9841,
    "heat": "cold",
    "chain": false
   },
@@ -78,7 +78,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 8720,
+   "bytes": 9466,
    "heat": "cold",
    "chain": false
   },
@@ -91,7 +91,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 8764,
+   "bytes": 9532,
    "heat": "cold",
    "chain": false
   },
@@ -104,7 +104,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 8763,
+   "bytes": 9533,
    "heat": "cold",
    "chain": true
   },
@@ -117,7 +117,7 @@
    "town": "Frederick",
    "phone": true,
    "hours": false,
-   "bytes": 10595,
+   "bytes": 11335,
    "heat": "warm",
    "chain": true
   },
@@ -130,7 +130,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": true,
-   "bytes": 9625,
+   "bytes": 10355,
    "heat": "warm",
    "chain": false
   },
@@ -143,7 +143,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 8289,
+   "bytes": 9027,
    "heat": "cold",
    "chain": false
   },
@@ -156,7 +156,7 @@
    "town": "Frederick",
    "phone": true,
    "hours": true,
-   "bytes": 11184,
+   "bytes": 11950,
    "heat": "warm",
    "chain": false
   },
@@ -169,7 +169,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": true,
-   "bytes": 9198,
+   "bytes": 9934,
    "heat": "cold",
    "chain": true
   },
@@ -182,7 +182,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 8441,
+   "bytes": 9189,
    "heat": "cold",
    "chain": true
   },
@@ -195,7 +195,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 8771,
+   "bytes": 9541,
    "heat": "cold",
    "chain": false
   },
@@ -208,7 +208,7 @@
    "town": "Frederick",
    "phone": true,
    "hours": false,
-   "bytes": 10621,
+   "bytes": 11369,
    "heat": "warm",
    "chain": false
   },
@@ -221,7 +221,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 8736,
+   "bytes": 9492,
    "heat": "cold",
    "chain": false
   },
@@ -234,7 +234,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 8824,
+   "bytes": 9616,
    "heat": "cold",
    "chain": false
   },
@@ -247,7 +247,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 8705,
+   "bytes": 9451,
    "heat": "cold",
    "chain": false
   },
@@ -260,7 +260,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 8736,
+   "bytes": 9492,
    "heat": "cold",
    "chain": false
   },
@@ -273,7 +273,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": true,
-   "bytes": 9189,
+   "bytes": 9979,
    "heat": "cold",
    "chain": false
   },
@@ -286,7 +286,7 @@
    "town": "Frederick",
    "phone": true,
    "hours": true,
-   "bytes": 10962,
+   "bytes": 11744,
    "heat": "hot",
    "chain": false
   },
@@ -299,7 +299,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 8724,
+   "bytes": 9476,
    "heat": "cold",
    "chain": false
   },
@@ -312,7 +312,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": true,
-   "bytes": 9227,
+   "bytes": 9967,
    "heat": "cold",
    "chain": true
   },
@@ -325,7 +325,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 8721,
+   "bytes": 9471,
    "heat": "cold",
    "chain": false
   },
@@ -338,7 +338,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": true,
-   "bytes": 9286,
+   "bytes": 10058,
    "heat": "cold",
    "chain": false
   },
@@ -351,7 +351,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9244,
+   "bytes": 10040,
    "heat": "cold",
    "chain": false
   },
@@ -364,7 +364,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 8719,
+   "bytes": 9469,
    "heat": "cold",
    "chain": false
   },
@@ -377,7 +377,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 8722,
+   "bytes": 9478,
    "heat": "cold",
    "chain": false
   },
@@ -390,7 +390,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 8746,
+   "bytes": 9506,
    "heat": "cold",
    "chain": false
   },
@@ -403,7 +403,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 8700,
+   "bytes": 9444,
    "heat": "cold",
    "chain": false
   },
@@ -416,7 +416,7 @@
    "town": "Frederick",
    "phone": true,
    "hours": false,
-   "bytes": 10246,
+   "bytes": 10988,
    "heat": "warm",
    "chain": false
   },
@@ -429,7 +429,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 8665,
+   "bytes": 9445,
    "heat": "cold",
    "chain": false
   },
@@ -442,7 +442,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": true,
-   "bytes": 9653,
+   "bytes": 10401,
    "heat": "warm",
    "chain": false
   },
@@ -455,7 +455,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 8374,
+   "bytes": 9146,
    "heat": "cold",
    "chain": false
   },
@@ -468,7 +468,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9179,
+   "bytes": 9951,
    "heat": "cold",
    "chain": false
   },
@@ -481,7 +481,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 8749,
+   "bytes": 9511,
    "heat": "cold",
    "chain": false
   },
@@ -494,7 +494,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 8699,
+   "bytes": 9441,
    "heat": "cold",
    "chain": false
   },
@@ -507,7 +507,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9167,
+   "bytes": 9933,
    "heat": "cold",
    "chain": false
   },
@@ -520,7 +520,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 8686,
+   "bytes": 9422,
    "heat": "cold",
    "chain": false
   },
@@ -533,7 +533,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 8724,
+   "bytes": 9476,
    "heat": "cold",
    "chain": false
   },
@@ -546,7 +546,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 8323,
+   "bytes": 9077,
    "heat": "cold",
    "chain": false
   },
@@ -559,7 +559,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": true,
-   "bytes": 9811,
+   "bytes": 10631,
    "heat": "warm",
    "chain": false
   },
@@ -572,7 +572,7 @@
    "town": "Frederick",
    "phone": true,
    "hours": true,
-   "bytes": 11148,
+   "bytes": 11906,
    "heat": "warm",
    "chain": false
   },
@@ -585,7 +585,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 8751,
+   "bytes": 9513,
    "heat": "cold",
    "chain": false
   },
@@ -598,7 +598,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": true,
-   "bytes": 9252,
+   "bytes": 10014,
    "heat": "cold",
    "chain": false
   },
@@ -611,7 +611,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 8422,
+   "bytes": 9160,
    "heat": "cold",
    "chain": false
   },
@@ -624,7 +624,7 @@
    "town": "Frederick",
    "phone": true,
    "hours": false,
-   "bytes": 10635,
+   "bytes": 11389,
    "heat": "warm",
    "chain": false
   },
@@ -637,7 +637,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9117,
+   "bytes": 9863,
    "heat": "cold",
    "chain": false
   },
@@ -650,7 +650,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": true,
-   "bytes": 9099,
+   "bytes": 9853,
    "heat": "cold",
    "chain": false
   },
@@ -663,7 +663,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 8681,
+   "bytes": 9415,
    "heat": "cold",
    "chain": false
   },
@@ -676,7 +676,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": true,
-   "bytes": 9297,
+   "bytes": 10045,
    "heat": "warm",
    "chain": true
   },
@@ -689,7 +689,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 8360,
+   "bytes": 9108,
    "heat": "cold",
    "chain": true
   },
@@ -702,7 +702,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 8380,
+   "bytes": 9136,
    "heat": "cold",
    "chain": false
   },
@@ -715,7 +715,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 8439,
+   "bytes": 9217,
    "heat": "cold",
    "chain": false
   },
@@ -728,7 +728,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": true,
-   "bytes": 8851,
+   "bytes": 9593,
    "heat": "warm",
    "chain": false
   },
@@ -741,7 +741,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 8400,
+   "bytes": 9168,
    "heat": "cold",
    "chain": false
   },
@@ -754,7 +754,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 8374,
+   "bytes": 9126,
    "heat": "cold",
    "chain": false
   },
@@ -767,7 +767,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 8403,
+   "bytes": 9165,
    "heat": "cold",
    "chain": false
   },
@@ -780,7 +780,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 8684,
+   "bytes": 9444,
    "heat": "warm",
    "chain": false
   },
@@ -793,7 +793,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9383,
+   "bytes": 10137,
    "heat": "warm",
    "chain": false
   },
@@ -806,7 +806,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9748,
+   "bytes": 10522,
    "heat": "warm",
    "chain": false
   },
@@ -819,7 +819,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 8309,
+   "bytes": 9083,
    "heat": "warm",
    "chain": true
   },
@@ -832,7 +832,7 @@
    "town": "Frederick",
    "phone": true,
    "hours": false,
-   "bytes": 11035,
+   "bytes": 11799,
    "heat": "hot",
    "chain": false
   },
@@ -845,7 +845,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9467,
+   "bytes": 10253,
    "heat": "warm",
    "chain": false
   },
@@ -858,7 +858,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 8332,
+   "bytes": 9116,
    "heat": "warm",
    "chain": false
   },
@@ -871,7 +871,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": true,
-   "bytes": 9625,
+   "bytes": 10407,
    "heat": "warm",
    "chain": false
   }

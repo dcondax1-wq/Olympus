@@ -90,11 +90,28 @@ def main() -> int:
     check("d. gallery: noindex, phone viewport, copy-link + preview", '<meta name="robots" content="noindex' in g and "viewport-fit=cover" in g
           and "Copy link" in g and "iframe" in g and "sandbox" in g)
     check("d. agency/f/ itself lists nothing (no folder index)", "Not found" in read(os.path.join(AG, "f", "index.html")))
+    # d2. the agency band (lead 2026-11-20): Maryland bans cold AI calls -> the assistant only calls a business that asks; consent form
+    #     slot (day-caller fills it), 'Call us' (agency number placeholder); no third-party form service, no secret in the page
+    band = {"band": [], "form3p": [], "secret": []}
+    for s in S:
+        h = read(os.path.join(AG, s["path"], "index.html"))
+        cfg = F.agency_cfg()
+        if 'data-agency="1"' not in h or "Call us" not in h or ("CALLER-FORM-SLOT" not in h if not cfg["caller_html"] else cfg["caller_html"] not in h):
+            band["band"].append(s["name"])
+        if re.search(r"formspree|getform|formsubmit|basin|netlify-form|typeform|jotform|google\.com/forms|hsforms|wufoo", h, re.I):
+            band["form3p"].append(s["name"])
+        if re.search(r"(?:api[_-]?key|secret|token|bearer)\s*[:=]", h, re.I):
+            band["secret"].append(s["name"])
+    check("d2. every site: 'Like this site?' band with 'Call us' + the assistant consent slot (or day-caller's form)", not band["band"], band["band"])
+    check("d2. no third-party form service, no secret in any page", not band["form3p"] and not band["secret"], band)
+    ix = json.load(open(os.path.join(AG, "sites", "index.json")))
+    check("d2. agency/sites/index.json: every lead id -> its f/<id>/ path (relative to agency/)",
+          ix.get("sites") == {L["id"]: "f/%s/" % ids[L["id"]] for L in leads} and all(os.path.isfile(os.path.join(AG, p, "index.html")) for p in ix["sites"].values()))
     # e. hidden: nothing outside the factory links to it (Home, apps lists, sitemaps, service worker)
     hits = []
     for base, _dirs, files in os.walk(os.path.join(ROOT, "tools", "web_public")):
         rel = os.path.relpath(base, AG)
-        if rel == "f" or rel.startswith("f" + os.sep) or rel == "factory":
+        if rel == "f" or rel.startswith("f" + os.sep) or rel in ("factory", "sites"):
             continue
         for fn in files:
             if fn.endswith((".html", ".js", ".json", ".xml", ".txt", ".webmanifest")):

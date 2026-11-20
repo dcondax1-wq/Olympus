@@ -29,6 +29,11 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB = os.path.join(ROOT, "tools", "web_public", "agency")
 LEADS = os.path.join(WEB, "leads", "leads.json")
 IDS = os.path.join(ROOT, "tools", "site_factory_ids.json")
+# the agency band at the bottom of every concept page (lead 2026-11-20). Maryland bans cold AI calls: the assistant (day-caller) may
+# only call a business that ASKS, so the page carries a consent form whose markup / text / endpoint day-caller supplies. Until then
+# AGENCY["caller_html"] is empty and the page holds a clearly marked slot. No third-party form service, no secret in the page.
+AGENCY = {"phone": "", "phone_label": "", "caller_html": ""}
+AGENCY_FILE = os.path.join(ROOT, "tools", "site_factory_agency.json")     # optional: {"phone": "+1...", "caller_html": "<form ...>"}
 BUDGET = 100 * 1024
 VERSION = "f1"
 
@@ -330,6 +335,30 @@ background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(10p
 @media (prefers-reduced-motion:reduce){*,:before,:after{animation:none!important}}"""
 
 
+def agency_cfg() -> dict:
+    c = dict(AGENCY)
+    try:
+        c.update({k: v for k, v in json.load(open(AGENCY_FILE)).items() if k in AGENCY and isinstance(v, str)})
+    except (OSError, ValueError):
+        pass
+    return c
+
+
+def agency_band(name: str) -> str:
+    """'Like this site?' band: 'Call us' (the agency number, a placeholder until set) + 'Have our assistant call me' (day-caller's
+    consent form, a marked slot until it arrives). Kept apart from the business's own buttons."""
+    c = agency_cfg()
+    t = tel(c["phone"])
+    call = (f'<a class="call" href="tel:{t}">{icon("phone", 18)}Call us{" " + esc(c["phone_label"]) if c["phone_label"] else ""}</a>' if t else
+            '<span class="call ghost" aria-disabled="true" data-slot="agency-phone" style="opacity:.6">Call us (number coming)</span>')
+    form = c["caller_html"] or ('<!-- CALLER-FORM-SLOT: day-caller supplies the consent form (markup, consent text, endpoint). Empty until then. -->'
+                                '<div id="caller-slot" data-slot="caller-consent" hidden></div>'
+                                '<span class="call ghost" aria-disabled="true" data-slot="caller-button" style="opacity:.6">Have our assistant call me (coming)</span>')
+    return (f'<section class="agency" aria-labelledby="h-ag" data-agency="1"><h2 id="h-ag">Like this site for {esc(name)}?</h2>'
+            f'<p class="muted" style="margin:0 0 14px">This is a free concept made by an independent web studio, not by the business. '
+            f'If you own {esc(name)}, it can be yours.</p><div class="ctas">{call}{form}</div></section>')
+
+
 def page(lead: dict, ids: dict) -> str:
     niche = niche_of(lead)
     kind, secs = sections_of(lead, niche)
@@ -407,6 +436,7 @@ def page(lead: dict, ids: dict) -> str:
 <section aria-labelledby="h-hours"><h2 id="h-hours" class="row" style="align-items:center">{icon("clock", 22)}Hours</h2>{hours_html}</section>
 <section aria-labelledby="h-visit"><h2 id="h-visit">{"Visit or call" if t and addr else "Call" if t else "Visit"}</h2><div class="grid" style="grid-template-columns:1fr">{"".join(visit)}</div>
 <div class="ctas" style="margin-top:16px">{"".join(btns)}</div></section>
+{agency_band(name)}
 </div>
 </main>
 <footer class="foot"><div class="wrap">
@@ -535,6 +565,13 @@ def build(web=WEB, ids_path=IDS, write_ids=True):
     sites.sort(key=lambda s: (s["town"], s["niche"], s["name"].lower()))
     gdir = os.path.join(web, "factory")
     os.makedirs(gdir, exist_ok=True)
+    # lead id -> its concept site, relative to agency/ (the outreach page + email autopilot link each lead to its own site)
+    sdir = os.path.join(web, "sites")
+    os.makedirs(sdir, exist_ok=True)
+    with open(os.path.join(sdir, "index.json"), "w", encoding="utf-8") as f:
+        json.dump({"v": 1, "kind": "site-factory-index", "note": "owner-facing only: not for search or app lists",
+                   "sites": {s["id"]: s["path"] for s in sorted(sites, key=lambda x: x["id"])}}, f, indent=1)
+        f.write("\n")
     with open(os.path.join(gdir, "sites.json"), "w", encoding="utf-8") as f:
         json.dump({"v": 1, "kind": "site-factory", "version": VERSION, "count": len(sites), "sites": sites}, f, indent=1)
         f.write("\n")
