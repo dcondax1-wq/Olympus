@@ -64,4 +64,7 @@ Tracked files are 789 MB, the git pack 667 MB. Not read by any code on the PC:
 | duplicates (datacity/city.json x2, fx.js x2, tree.json x2, icons x2) | 7 MB | keep one copy, the build copies it |
 | `research/runs/` (2,345 backtest runs) | 246 MB | keep the few the live bot reads (lit_live, lit_2wk_rec, the live variants); the run library to its own branch the dashboard fetches on demand |
 
-The lead decides; a PC clone with `--filter=blob:none` would also skip old versions of all of these.
+History (measured 2026-11-20): the pack holds 266 MB for today's files and **394 MB of old versions only** (old hand-off
+pictures 204 MB, old docs/shots 81 MB, old web builds 46 MB, old research/lab 20 MB). History is never rewritten; the PC can
+drop its own copy of it with a shallow clone (`git fetch --depth=200 olympus pc`, then `git gc --prune=now`; the auto-update
+deepens by itself when it needs more). Never automatic: the lead decides, then one line for the owner.
