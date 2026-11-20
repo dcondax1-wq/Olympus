@@ -11,7 +11,7 @@
 // burst(kind), dispose() } and fires 'nqland'. mount returns false (the box untouched) when WebGL cannot be made.
 import * as THREE from '../jarvis/three.module.min.js';
 
-const BG = 0x14110e, GOLD = new THREE.Color('#e8c26a'), UP = new THREE.Color('#9fd07a'), UPG = new THREE.Color('#d8b55a'), DN = new THREE.Color('#ef7f62');
+const BG = 0x070b14, GOLD = new THREE.Color('#22d3ee'), UP = new THREE.Color('#9fd07a'), UPG = new THREE.Color('#3b82f6'), DN = new THREE.Color('#ef7f62');
 const WIN = new THREE.Color('#7ee08a'), LOSS = new THREE.Color('#ff6f5a'), OPEN = new THREE.Color('#ffd36b');
 const W = 12, HMAX = 2.6, ROWS = 14, DEPTH = 3.2;
 let R = null;
@@ -23,7 +23,7 @@ const reduced = () => media('(prefers-reduced-motion: reduce)');
 function glowTex() {                                   // a soft round dot, drawn here (nothing downloaded)
   const c = document.createElement('canvas'); c.width = c.height = 64;
   const g = c.getContext('2d'), r = g.createRadialGradient(32, 32, 0, 32, 32, 32);
-  r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(0.25, 'rgba(255,240,200,.75)'); r.addColorStop(1, 'rgba(255,220,150,0)');
+  r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(0.25, 'rgba(200,240,255,.75)'); r.addColorStop(1, 'rgba(150,220,255,0)');
   g.fillStyle = r; g.fillRect(0, 0, 64, 64);
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
 }
