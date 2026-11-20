@@ -10,13 +10,14 @@ owner may also type I ACCEPT LIVE RISK in the same box. Then, after an [OK] add,
 (engine/onboard.rearm: the phrase checked, STOP only when flat, then the START BOT arm step for EVERY added account, the new one
 included). Not flat right now (a trade or a LIT entry waiting) = it waits by itself: every 30 s, at most WAIT_MAX_S, the phrase only
 in this server's memory (a restart forgets it), and re-arms the moment the bot is flat. The phrase is never stored, logged or echoed.
-Over the Tailscale link the phrase is refused (the futures bot is armed on the PC only, engine/phone_safety); the add still works.
+Over the owner's private Tailscale link the phrase works too (owner 2026-11-20: "Allow phone arming"): same private_why check as the
+Kalshi page (a device signed in to his tailnet; never the home WiFi, Funnel or another tunnel) + same-origin + rate limit.
 Claude never arms: only the owner's own typed phrase does.
 
   GET  /add-account/         the page
   GET  /add-account/status   the accounts the bot knows (Names masked to the last 4), the MFFU slots, the NinjaTrader Names not added yet
   POST /add-account/add      {"plan": rapideod25 | rapideod | builder25k | builder50k, "name": "<NinjaTrader Name>", "confirm"?: phrase}
-  POST /add-account/start    {"confirm": phrase} start trading every added account now (same Re-arm, waits for flat); PC only
+  POST /add-account/start    {"confirm": phrase} start trading every added account now (same Re-arm, waits for flat)
   POST /add-account/cancel   {} drop a waiting start
 
 Every POST must pass check(): not cloud mode; the private link (engine/live_site.private_why: the PC itself, or a device signed in
@@ -177,7 +178,7 @@ def do_add(body: dict, local: bool = False) -> dict:
         out["started"] = st.get("ok")
         out["lines"] = lines + st["lines"]
     else:
-        lines.append("Next: type I ACCEPT LIVE RISK in the box on the PC and press Start trading (or STOP BOT + START BOT). "
+        lines.append("Next: type I ACCEPT LIVE RISK in the box and press Start trading (or STOP BOT + START BOT). "
                      "Nothing is armed until then.")
     return out
 
@@ -198,9 +199,8 @@ def _phrase_ok(raw) -> str | None:
 
 def do_start(body: dict, local: bool) -> dict:
     """The owner's typed phrase -> Re-arm now (every added account); not flat = wait for flat by itself. Never without the phrase."""
-    if not local:
-        return {"ok": False, "lines": ["Start trading is done on the PC itself (http://localhost:8766/add-account/): the phone may "
-                                       "add, never arm the futures bot. Nothing armed."]}
+    # local = the PC itself; else check() already proved the owner's own signed-in Tailscale device (never the home WiFi,
+    # Funnel or another tunnel). Owner 2026-11-20: "Allow phone arming" - the phrase he types on his phone arms, same as on the PC.
     phrase = _phrase_ok(body.get("confirm"))
     body["confirm"] = None
     if not phrase:
@@ -301,12 +301,12 @@ border:0;border-radius:10px;background:var(--acc);color:#fff}button:disabled{opa
 .row{display:flex;gap:8px}.sec{background:#2b3346;font-size:15px;padding:10px}
 ul{padding-left:18px;margin:6px 0}li{margin:2px 0}small{color:var(--mut)}
 </style></head><body><main>
-<h1>Add account</h1><p class="s">Type the Name. On the PC, also type the phrase: one press adds it AND starts trading (it waits for flat by itself).</p>
+<h1>Add account</h1><p class="s">Type the Name and the phrase: one press adds it AND starts trading (it waits for flat by itself). PC or your Tailscale phone.</p>
 <div class="c"><label for="plan">Plan</label><select id="plan"></select>
 <label for="name">NinjaTrader Name (Accounts tab)</label><input id="name" autocomplete="off" autocapitalize="off" spellcheck="false"
  placeholder="paste or type the Name">
 <div id="seen"></div>
-<label for="ph">Start trading now? Type I ACCEPT LIVE RISK (PC only; empty = just add)</label><input id="ph" autocomplete="off"
+<label for="ph">Start trading now? Type I ACCEPT LIVE RISK (empty = just add)</label><input id="ph" autocomplete="off"
  autocapitalize="characters" spellcheck="false" placeholder="I ACCEPT LIVE RISK">
 <button id="go">Add</button><div class="row"><button id="st" class="sec">Start trading (already added)</button>
 <button id="cx" class="sec">Cancel waiting</button></div><div id="out"></div></div>

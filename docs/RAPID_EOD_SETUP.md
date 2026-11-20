@@ -5,7 +5,7 @@ One Rapid at a time (a 25K or a 50K). Checked end to end on a test PC 2026-11-20
 
 ## 1. Add it (1 minute)
 
-Copy the account Name from NinjaTrader (Accounts tab). Double-click **ADD_ACCOUNT.bat**, type **5**, paste the Name. Easiest: on the PC open **http://localhost:8766/add-account/**, pick Rapid EOD 25K, type or tap the Name, type I ACCEPT LIVE RISK, press **Add + start trading** (one press: adds it, waits for flat, re-arms, trades). The phone link can add only.
+Copy the account Name from NinjaTrader (Accounts tab). Double-click **ADD_ACCOUNT.bat**, type **5**, paste the Name. Easiest: on the PC open **http://localhost:8766/add-account/**, pick Rapid EOD 25K, type or tap the Name, type I ACCEPT LIVE RISK, press **Add + start trading** (one press: adds it, waits for flat, re-arms, trades). Works the same on the phone over your Tailscale link + `/add-account/`.
 
 Good: the window says
 `[OK] Rapid EOD 25K = <Name> ... NOT armed` and

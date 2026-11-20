@@ -9,7 +9,7 @@ Temp files and made-up names only (the test world of tests/test_accounts_cli): n
   d. CHECK THE NAME when NinjaTrader does not show the Name; the status lists NinjaTrader Names not added yet; Names masked
   e. never arms by itself: no arm route; the other PC POSTs stay refused over the link
   f. one press to trading (owner 2026-11-20): Name + the typed phrase on the PC = add, then Re-arm now (engine/onboard.rearm,
-     stubbed here); over Tailscale the phrase is refused (add only); a wrong phrase arms nothing; not flat = waits, starts when
+     stubbed here); over the signed-in Tailscale link too (owner "Allow phone arming"); a wrong phrase arms nothing; not flat = waits, starts when
      flat; Cancel drops it; the phrase never in the log or a reply
 """
 from __future__ import annotations
@@ -107,14 +107,15 @@ def main() -> int:
         r = c.post("/add-account/add", headers={**link, **page_h},
                    json={**good, "confirm": "I ACCEPT LIVE RISK", "armed": True}).json()
         b = rapid.read()
-        check("f. over Tailscale: added, the phrase refused (PC only), nothing re-armed",
-              r["ok"] and r.get("started") is False and calls == [] and any("on the PC itself" in x for x in r["lines"]), r)
+        check("f. over Tailscale (phone): added AND Re-arm now ran once with the phrase",
+              r["ok"] and r.get("started") is True and calls == ["I ACCEPT LIVE RISK"] and any(x.startswith("STARTING") for x in r["lines"]), r)
+        calls.clear()
         check("c. [OK] Rapid EOD 25K, DISARMED, allowlisted",
               r["ok"] and r["lines"][0].startswith("[OK] Rapid EOD 25K") and b and b["account"] == NR
               and b["plan"] == "mffu_rapid_eod_25k" and b["armed"] is False and NR in TC.allowed(), (r, b))
         check("c. the reply prints the rules + slots + the next step (START BOT + the phrase yourself)",
               any("target +$1,500" in x for x in r["lines"]) and any("MFFU slots" in x for x in r["lines"])
-              and "on the PC itself" in r["lines"][-1], r["lines"])
+              and any("Watch it here" in x for x in r["lines"]), r["lines"])
         check("d. CHECK THE NAME: NinjaTrader does not show it", r.get("check_name") is True
               and any(x.startswith("- CHECK THE NAME") for x in r["lines"]), r["lines"])
         r2 = pc.post("/add-account/add", headers=pc_h, json={"plan": "rapideod25", "name": "MFFUEVRPD250000002"}).json()
@@ -158,8 +159,11 @@ def main() -> int:
         n = len(calls)
         _t.sleep(0.2)
         check("f. Cancel: the wait stops, no more re-arm tries", cx["ok"] and AB._W["state"] == "cancelled" and len(calls) == n, (cx, AB._W))
-        r7 = c.post("/add-account/start", headers={**link, **page_h}, json={"confirm": "I ACCEPT LIVE RISK"}).json()
-        check("f. Start trading over Tailscale: refused (PC only)", r7["ok"] is False and "PC itself" in r7["lines"][0], r7)
+        r7 = wifi.post("/add-account/start", headers=pc_h, json={"confirm": "I ACCEPT LIVE RISK"})
+        r8 = c.post("/add-account/start", headers={**link, **page_h, "tailscale-funnel-request": "1"}, json={"confirm": "I ACCEPT LIVE RISK"})
+        r9 = c.post("/add-account/start", headers={**link, **page_h, "origin": "https://evil.example"}, json={"confirm": "I ACCEPT LIVE RISK"})
+        check("f. Start trading still refused from the home WiFi, Funnel and another site", (r7.status_code, r8.status_code, r9.status_code)
+              == (403, 403, 403) and len(calls) == n, (r7.status_code, r8.status_code, r9.status_code))
         st3 = pc.get("/add-account/status").json()
         check("f. status shows the wait state + the START job line", st3.get("wait", {}).get("state") == "cancelled" and "job" in st3, st3.get("wait"))
         AB._S.update(rearm=None, sleep=_t.sleep)
