@@ -85,6 +85,32 @@ def load_key(path: str | None = None) -> str | None:
         return None
 
 
+def ensure_key(path: str | None = None, env=None, say=print) -> str | None:
+    """The PC's key file, made once if missing: Windows PC only (os.name nt) or LE_STATUS_SIGN_KEYGEN=1, never in the cloud
+    (LE_CLOUD / GITHUB_ACTIONS). O_EXCL + 0600, so two runs at once never make two keys. -> the public vk, or None. Never raises."""
+    env = os.environ if env is None else env
+    try:
+        p = path or env.get("LE_STATUS_SIGN_KEY") or DEFAULT_KEY
+        k = load_key(p)
+        if k:
+            return vk_of(k)
+        if env.get("LE_CLOUD") or env.get("GITHUB_ACTIONS") or not (os.name == "nt" or env.get("LE_STATUS_SIGN_KEYGEN") == "1"):
+            return None
+        priv, vk = keygen()
+        os.makedirs(os.path.dirname(p) or ".", exist_ok=True)
+        try:
+            fd = os.open(p, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        except FileExistsError:
+            k = load_key(p)
+            return vk_of(k) if k else None
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            json.dump({"kind": "le-status-sign", "private": priv, "vk": vk, "made": int(time.time())}, fh)
+        say(f"[status_sign] made this PC's status key (private part stays here). Public key starts {vk[:6]}")
+        return vk
+    except Exception:  # noqa: BLE001
+        return None
+
+
 # ------------------------------------------------------------------------------------------------ sign / verify
 def sign_text(text, priv) -> str:
     """The exact text with ,"sg":"..."} at the end. text: a JSON object as a string (or a dict, encoded compactly here)."""
