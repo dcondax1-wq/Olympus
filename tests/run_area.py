@@ -60,6 +60,7 @@ AREAS = {
 AREAS["money"] += ["widget", "money_dash"]      # night-revamp-dash 2026-11-20: the Scriptable widget + Glance page (tools/web_public/widget/)
 AREAS["olympus"].append("olympus_shell")  # night-revamp-main 2026-11-20: the main pages: no sideways scroll, nothing under the bottom bar, keys above the home bar (tools/olympus_shell_audit.py)
 AREAS["olympus"].append("pulse")         # day-arenas 2026-11-20: the shared prop-trader cards in the main apps (olympus/pulse.js), CLS 0, light + dark
+AREAS["olympus"].append("archive_banners")  # day-archive 2026-11-20: the "Archived · data <date>, N days old -> live app" strip on every archived page (tools/archive_banners.py)
 AREAS["olympus"].insert(0, "site_sweep")  # night-siteqa 2026-11-20: every href / src of the main pages + doors.js points at a real file (no browser, 1 s); its own line
 AREAS["pc"].append("disk_clean")        # night-clean 2026-11-19: the weekly container clean (tools/disk_clean.py); its own line, no clash with the pc list
 AREAS["pc"].append("account_box")     # 2026-11-20: the Add account box (engine/account_box.py, /add-account/); its own line
@@ -96,6 +97,8 @@ AREAS["olympus"].append("home_fx")          # night-effects 2026-11-20: the livi
 AREAS["nq"].append("nqdeep")                # night-nqdash2 2026-11-20: Trading deep dive / MFFU payout ranges / NQ news week
 AREAS["money"].append("business_taxes")   # day-taxes 2026-11-20: Taxes page + keep-the-most waterfall (tools/money/keep_most.py)
 AREAS["board"].append("owner_manual")  # day-manual 2026-11-20: hub/manual.html + docs/OWNER_MANUAL.md (browser part under the lock); its own line
+AREAS["olympus"].append("nav_search")     # day-manual NAV 2026-11-20: 67 plain phrasings -> the right place first (olympus/gate-catalog.js findAll); node only
+AREAS["board"].append("nav_pages")       # day-manual NAV 2026-11-20: hub help/steps/manual/zeus/doors: Home first, the OLYMPUS look, 390 px (browser part under the lock)
 AREAS["pc"].append("land_branch")       # 2026-11-20: the lead's landing tool (tools/land_branch.py: preview, merge, known conflicts, fix-ups, plan); its own line
 AREAS["olympus"].append("node_suites")    # day-quality 2026-11-20: the 29 tests/*.mjs no Python suite ran (tests/test_node_suites.py), by part
 AREAS["cities"].append("node_suites")
@@ -105,6 +108,9 @@ AREAS["pc"].append("run_area_fast")       # day-quality round 2: --changed mappe
 AREAS["privacy"].append("status_sign")   # day-security 2026-11-20: signed status posts + no future-dated post (tests/test_status_sign.py); its own line
 AREAS["board"].append("status_sign")
 AREAS["pc"].append("pc_watch")            # day-quality round 3: the cloud PC watch (.github/workflows/pc-watch.yml, docs/PC_WATCH.md)
+AREAS["olympus"].append("perf_sweep")      # day-quality Olympus v2: tools/perf_sweep.py (phone sweep + offline pass, budgets tools/perf_budgets.json)
+AREAS["privacy"].append("scrub_cache")      # day-quality 2026-11-20: site_privacy.scrub's clean-file cache (warm build 67 s -> 29 s)
+AREAS["olympus"].append("offline_apps")    # day-quality Olympus v2: every visible app opens offline after one visit (browser)
 # suites too long for one budget run BY PARTS, each its own row and budget (night team D 2026-11-16: the whole kit walk, every app +
 # power + tiers + more in one browser, is the longest browser suite); a part is "<suite>:<label>" = python -m tests.test_<suite> <args>
 PARTS = {"olympus_kit": [("a", ["datacity", "mind", "tree"]), ("b", ["oracle", "odeon", "fates"]), ("c", ["hermes", "prometheus", "tyche"]),

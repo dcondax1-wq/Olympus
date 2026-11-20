@@ -70,8 +70,8 @@ def test_static():
           '<html lang="en" data-theme="agora" data-oly-page="gate">' in html and "viewport-fit=cover" in html and 'name="theme-color"' in html and 'name="color-scheme" content="dark"' in html
           and html.count("<h1") == 1 and 'role="status"' in html and 'aria-live="polite"' in html and 'role="dialog"' not in html)
     check("a. one base-path line: gate/ -> '../', the site root (olympus-live.html) -> ''; agora.css + gate.css, then themes, the catalog, hub-status and gate.js load from GATE_BASE, in order (async = false)",
-          r"/\/gate\/(index\.html)?$/.test(p) ? '../' : ''" in html and "window.GATE_BASE = b" in html and "b + 'gate/gate.css?v=g13'" in html and "b + 'olympus/agora.css" in html
-          and "['olympus/themes.js?v=o9', 'pc_feed.js?v=pf1', 'olympus/gate-catalog.js?v=nv5', 'olympus/hub-status.js?v=h2', 'gate/gate.js?v=g11', 'olympus/home-fx.js?v=x2']" in html and "s.async = false" in html)
+          r"/\/gate\/(index\.html)?$/.test(p) ? '../' : ''" in html and "window.GATE_BASE = b" in html and "b + 'gate/gate.css?v=g18'" in html and "b + 'olympus/agora.css" in html
+          and "['olympus/themes.js?v=o9', 'pc_feed.js?v=n5', 'olympus/gate-catalog.js?v=nv7', 'olympus/hub-status.js?v=h2', 'age.js?v=1', 'business/payoutcoach.js?v=1', 'gate/gate.js?v=g18', 'olympus/home-fx.js?v=x2', 'olympus/a11y.js']" in html and "s.async = false" in html)
     tiles = re.findall(r'class="g-hub[^"]*" data-hub="(\w+)" data-to="hub/index.html\?h=(\w+)"', html)
     check("a. the hub tiles are plain links in the page (they work even if gate.js fails), in the owner's order (night A 2026-11-16): Bots & Evals (wide) and My Money (wide) first, Kalshi and Worlds near the end, Settings & Help last",
           [t[0] for t in tiles] == HUBS and all(a == b for a, b in tiles) and 'class="g-hub g-wide" data-hub="bots"' in html and 'class="g-hub g-wide" data-hub="money"' in html and html.count('class="g-hline"') == len(HUBS))
@@ -84,13 +84,17 @@ def test_static():
     check("a. the Mix follows the nine hubs: its rows are the catalog's hubs (C.hubs) + This Gate, each app maps to its hub, each hub page (data-oly-page hub-<id>) to its hub,"
           " the combos (written per v1 district) reach every hub through its legacy district, and a mix saved per district reads as its hubs",
           "(C && (C.hubs || C.districts))" in js and "o['hub-' + P[q][0]] = P[q][0]" in js and "c[k] || c[legacyOf(k)]" in js and "dist[legacyOf(k)]" in js)
-    check("a. NAV v3 + the four doors (2026-11-18), the order on the page: the big search FIRST (with an A-Z button), the FOUR DOORS (hub/doors.html#zeus|money|kalshi|more), Pinned, Right now, Your six, Recent, the hubs (+ All apps A to Z), Look, the footer",
+    check("a. NAV v3 + the four doors (2026-11-18), the order on the page (olympus2 2026-11-20: money first): the big search FIRST (with an A-Z button), Right now (the cockpit), the FOUR DOORS (hub/doors.html#zeus|money|kalshi|more), Pinned, Your six, Recent, the hubs (+ All apps A to Z), Look, the footer",
           re.findall(r'class="g-dr" data-door="([a-z]+)" data-to="hub/doors.html#\1"', html) == ["zeus", "money", "kalshi", "more"]
-          and html.index('id="q"') < html.index('id="azBtn"') < html.index('id="doorsSec"') < html.index('id="pinSec"') < html.index('id="now"') < html.index('id="quick"') < html.index('id="recentSec"')
+          and html.index('id="q"') < html.index('id="azBtn"') < html.index('id="now"') < html.index('id="doorsSec"') < html.index('id="pinSec"') < html.index('id="quick"') < html.index('id="recentSec"')
           < html.index('id="hubsH"') < html.index('id="azWide"') < html.index('id="lookSec"') < html.index('class="g-foot"'))
     six = re.findall(r'class="g-q" data-app="([a-z]+)" data-to="([a-z]+)/index.html"', html)
-    check("a. Your six are plain links in the page (one tap, they work without gate.js): Zlarior / ATLAS (NQ), Today (Compass), Money (Ledger), Drawdown (Aegis), My day (Planner), Kalshi",
-          [x[0] for x in six] == ["nq", "compass", "ledger", "aegis", "planner", "kalshi"] and all(a == b for a, b in six) and "Zlarior · ATLAS" in html, six)
+    check("a. Your six are plain links in the page (one tap, they work without gate.js), the owner's order (olympus2): Cities, Kalshi, the NQ bot, Jarvis, then My day (Planner) and Business",
+          [x[0] for x in six] == ["cities", "kalshi", "nq", "jarvis", "planner", "business"] and all(a == b for a, b in six) and "Zlarior · ATLAS" in html, six)
+    check("a. retired apps never show on the Home (search, A to Z, recent, pins): one RETIRED list in gate.js with the owner's 26",
+          all(("%s: 1" % x) in js for x in ("delphi", "stoa", "hestia", "plutus", "argo", "mint", "harmonia", "kairos", "chronos", "lyceum", "polis", "atlascity", "gallery", "mintcity",
+                                           "nike", "arena", "mind", "symposium", "herald", "ergasterion", "observatory", "pheme", "bridge", "arbiter", "hermes", "hephaestus"))
+          and "F.apps.filter(live)" in js and "C.az().filter(live)" in js)
     check("a. the search covers apps, hub tabs and plain actions (C.findAll), each app row has a pin star (44 px), the A to Z sheet (gate/#az) is a dialog built by gate.js",
           "C.findAll" in js and "withStar(row(a), a)" in js and "'gate.pins.v1'" in js and "role', 'dialog'" in js and "#az$" in js and ".g-star" in css and "min-height: 44px" in css)
     hs = AK.read(os.path.join(AK.WEB, "olympus", "hub-status.js"))
@@ -99,9 +103,9 @@ def test_static():
     check("a. ES5 classic scripts (no arrow, let, const, template string, class, spread, .at, lookbehind): Safari 12+ safe, no build step", not es6, es6)
     bad = [p for p in (r"\.innerHTML", r"outerHTML", r"insertAdjacentHTML", r"document\.write", r"\beval\s*\(", r"new Function") if re.search(p, js + nav + cat + html)]
     check("a. no markup from data: text through textContent / createElementNS only", not bad and "textContent" in js and "createElementNS" in js and "textContent" in nav, bad)
-    check("a. read only: no XHR / WebSocket / sendBeacon / POST / cookies / web address; the Gate fetches only home.json (+ the PC's /api/site/live.json when served from the PC, and a HEAD per app link to spot a partial copy)",
+    check("a. read only: no XHR / WebSocket / sendBeacon / POST / cookies / web address; the Gate fetches only home.json, the Decide file and Kalshi's k8.json (olympus2) (+ the PC's /api/site/live.json when served from the PC, and a HEAD per app link to spot a partial copy)",
           not re.search(r"XMLHttpRequest|WebSocket|sendBeacon|method:\s*['\"]POST|document\.cookie|https?://(?!www\.w3\.org)", js + nav + cat + html)
-          and set(re.findall(r"getJSON\(([^)]*)\)", js)) == {"base + 'home.json'", "url", "LIVE_API", "base + 'kalshi.json'", "base + 'money/scoreboard.json'", "base + 'hephaestus/jarvis.json'", "base + 'plutus/jarvis.json'", "base + 'me/me.json'"} and "LIVE_API = '/api/site/live.json'" in js and "method: 'HEAD'" in js and "fetch(" not in nav)
+          and set(re.findall(r"getJSON\(([^)]*)\)", js)) == {"base + 'home.json'", "url", "LIVE_API", "base + 'kalshi.json'", "base + 'money/scoreboard.json'", "base + 'hephaestus/jarvis.json'", "base + 'plutus/jarvis.json'", "base + 'me/me.json'", "base + 'business/decisions.json'", "base + 'kalshi/k8.json'"} and "LIVE_API = '/api/site/live.json'" in js and "method: 'HEAD'" in js and "fetch(" not in nav)
     ls = set(re.findall(r"localStorage\.(\w+)", js + nav))
     check("a. storage: only localStorage 'gate.recent.v1' (and the Gate's 'gate.now.v1'; the Planner's 'planner.today.v1' read only), every call inside try / catch; no sessionStorage / indexedDB",
           ls <= {"getItem", "setItem"} and "'gate.recent.v1'" in js and "'gate.recent.v1'" in nav and "'gate.pins.v1'" in js and "'gate.pins.v1'" in nav and "'gate.now.v1'" in js and "LS_PLAN = 'planner.today.v1'" in js
@@ -117,11 +121,11 @@ def test_static():
           css.count("min-height: 44px") >= 2 and "safe-area-inset" in css and "176px" in css and "prefers-reduced-motion: reduce" in css and 'data-oly-lite="1"' in css and "overflow-x: hidden" in css)
     # night-gate: gate-nav.js keeps its catalog URL ?v=nv2 (bumping it re-versions agora-ui.js in ~50 apps); the site worker bump refreshes the catalog on the phone
     check("a. gate-nav: one classic script, nothing when framed (inside Jarvis), the Home link + breadcrumb + 'Go to' (44 px), the catalog from its own folder (apps-list.js as a fallback)",
-          "if (framed) return;" in nav and "'Go to'" in nav and "min-height:44px" in nav and "olympus/gate-catalog.js?v=nv2" in nav and "olympus/apps-list.js" in nav and "aria-modal" in nav)
+          "if (framed) return;" in nav and "'Go to'" in nav and "min-height:44px" in nav and "olympus/gate-catalog.js?v=nv7" in nav and "olympus/apps-list.js" in nav and "aria-modal" in nav)
     tagged = {}
     for app in TEN:
         h = AK.read(os.path.join(AK.WEB, app, "index.html"))
-        tagged[app] = h.count('<script src="../olympus/gate-nav.js?v=g6" defer></script>') == 1 and ("agora-ui.js" not in h or h.index("agora-ui.js") < h.index("gate-nav.js")) and h.index("gate-nav.js") < (h.index("</body>") if app == "kalshi" else h.index("</head>"))
+        tagged[app] = h.count('<script src="../olympus/gate-nav.js?v=g7" defer></script>') == 1 and ("agora-ui.js" not in h or h.index("agora-ui.js") < h.index("gate-nav.js")) and h.index("gate-nav.js") < (h.index("</body>") if app == "kalshi" else h.index("</head>"))
     check("a. the gate-nav tag (once, deferred, in <head> (Kalshi: its body, since 11-12), after agora-ui.js) in the 10 busiest apps (agora-ui.js adds it to every other AGORA app): " + ", ".join(TEN), all(tagged.values()), tagged)
 
 
@@ -159,10 +163,10 @@ def test_catalog():
     check("b. every app has a plain label (<= 28 characters) and a one-line purpose (<= 60)", not long, long)
     check("b. start (the fallback 'start here' list) = Bots (nq), the dashboard, Jarvis", C["start"] == ["nq", "today", "jarvis"])
     q = C["q"]
-    check("b. the search finds plain words: money -> Mint and Ledger, drawdown -> Aegis, kalshi -> Kalshi first, journal -> the journal first, news -> Pheme / Pythia / Herald",
-          {"mint", "ledger"} <= set(q["money"]) and "aegis" in q["drawdown"] and q["kalshi"][0] == "kalshi" and q["journal"][0] == "journal" and {"pheme", "pythia", "herald"} <= set(q["news"]), q)
+    check("b. the search finds plain words (Mint, Pheme, Herald retired 2026-11-20): money -> Business first + Ledger, drawdown -> Aegis, kalshi -> Kalshi first, journal -> the journal first, news -> Pheme / Pythia / Herald",
+          q["money"][0] == "business" and "ledger" in q["money"] and "aegis" in q["drawdown"] and q["kalshi"][0] == "kalshi" and q["journal"][0] == "journal" and "pythia" in q["news"] and not {"mint", "pheme", "herald"} & set(q["money"] + q["news"]), q)
     check("b. synonyms and AND: discount -> Mercury, chatgpt -> Bridge, 'risk stop' -> Aegis first, nonsense and an empty box find nothing",
-          q["discount"][0] == "mercury" and q["chatgpt"][0] == "bridge" and q["risk stop"][:1] == ["aegis"] and q["zzzz"] == [] and q[""] == [], q)
+          q["discount"][0] == "mercury" and "bridge" not in q["chatgpt"] and q["risk stop"][:1] == ["aegis"] and q["zzzz"] == [] and q[""] == [], q)
     A = C["all"]
     check("b. NAV v3, one search for everything: 'risk' -> the tab Bots & Evals > Risk + Aegis, 'theme' -> the action Change the look, 'payout' -> the action + Ledger first,"
           " 'micros' -> the action + Pnyx, 'health' -> the Me hub, 'all apps' -> All apps A to Z, nonsense -> nothing at all",
@@ -200,7 +204,9 @@ def nav_checks(p, origin):
     p.wait_for_timeout(300)
     az = p.evaluate("() => ({ open: !document.querySelector('#azSheet').hidden, rows: document.querySelectorAll('#azList a.g-row').length, letters: [...document.querySelectorAll('#azList .g-azl')].map((h) => h.textContent),"
                     " first: (document.querySelector('#azList a.g-row') || {}).dataset, h: Math.round(document.querySelector('#azList a.g-row').getBoundingClientRect().height) })")
-    n_apps = len(cat_apps())       # night-gate: every catalog app, counted from the catalog (was a pinned 84)
+    RET = {"delphi", "stoa", "hestia", "plutus", "argo", "mint", "harmonia", "kairos", "chronos", "lyceum", "polis", "atlascity", "gallery", "mintcity", "nike",
+           "arena", "mind", "symposium", "herald", "ergasterion", "observatory", "pheme", "bridge", "arbiter", "hermes", "hephaestus"}
+    n_apps = len([a for a in cat_apps() if a["id"] not in RET])   # every catalog app but the retired ones (olympus2), counted from the catalog
     check(f"c. the A-Z button opens All apps A to Z: every app ({n_apps}) in big rows (>= 56 px) under a letter each, the labs at the end under Workshop",
           az["open"] and az["rows"] == n_apps and az["letters"][0] in ("1", "#", "A") and az["letters"][-1] == "Workshop" and az["h"] >= 56, az)
     t = AK.taps(p)
@@ -308,9 +314,11 @@ def test_page():
                   r["state"] == "on" and r["badge"] == "Bots on" and r["line"] == "The bots are on. Last report 5 minutes ago." and r["facts"][0] == "Drawdown left$1,420of $2,000 max loss, Zlarior 50K"
                   and r["facts"][1] == "Drawdown left$900of $1,000 max loss, ATLAS 25K" and r["facts"][2].startswith("Today+$272") and r["facts"][3] == "Trade windowOpen nowuntil 15:30 ET"
                   and len(r["money"]) == 2 and r["money"][0].startswith("Zlarior 50K, eval: balance $49,420.") and r["money"][1].startswith("ATLAS 25K, eval:") and not r["btn"] and r["truth"], r)
+            ag = p.evaluate("() => { const a = document.querySelector('#nowAge'); return a && !a.hidden ? [a.textContent, a.dataset.level, a.className] : null; }")
+            check("c. olympus2: the PC report's age as the site-wide chip (age.js): 'updated 5 min ago', ok", ag == ["updated 5 min ago", "ok", "oly-age"], ag)
             go = p.evaluate("() => [...document.querySelectorAll('#money a.g-acct, #nowFacts a.g-fact')].map((a) => a.href.replace(location.origin, ''))")
-            check("c. each card / fact is a tap to the app with the detail: the eval cards and drawdown -> Aegis, today -> NQ, the window -> Kairos",
-                  go == ["/aegis/index.html", "/aegis/index.html", "/aegis/index.html", "/aegis/index.html", "/nq/index.html", "/kairos/index.html"], go)
+            check("c. each card / fact is a tap to the app with the detail: the eval cards and drawdown -> Aegis, today -> NQ, the window -> NQ (Kairos retired)",
+                  go == ["/aegis/index.html", "/aegis/index.html", "/aegis/index.html", "/aegis/index.html", "/nq/index.html", "/nq/index.html"], go)
             tiles = p.evaluate("() => [...document.querySelectorAll('.g-hub')].map((a) => [a.dataset.hub, a.href.replace(location.origin, ''), a.querySelector('.g-hline').textContent, a.querySelector('.g-hcount').textContent])")
             # night-gate 2026-11-18: the counts come from the catalog (Board + Trading joined Bots & Evals with the four doors), not pinned numbers
             per = {}
@@ -328,12 +336,14 @@ def test_page():
             check("c. every tap target >= 44 x 44, no sideways scroll, Jarvis's corner free at the end, no console error, nothing off the origin but the PC feed",
                   not t and AK.no_sideways(p) and not AK.corner(p) and not errs and not off, (t[:4], AK.corner(p), errs[:3], off[:3]))
             p.evaluate("() => window.scrollTo(0, 0)")
-            vis = p.evaluate("() => { const r = (s) => document.querySelector(s).getBoundingClientRect(); return [r('#q').top, r('#q').bottom, r('#now').bottom, r('#quick').top]; }")
-            check("c. at 390 x 844 the big search is near the top (one thumb), the Right now card is on the first screen and Your six start on it", vis[0] < 160 and vis[2] <= 844 and vis[3] < 844, vis)
+            vis = p.evaluate("() => { const r = (s) => document.querySelector(s).getBoundingClientRect(); return [r('#q').top, r('#q').bottom, r('#now').bottom, r('#doors4').top, r('#now').top]; }")
+            # olympus2 2026-11-20 (owner: "money first on the home page"): the cockpit sits right under the search, the four doors start on the first screen below it
+            check("c. at 390 x 844 the big search is near the top (one thumb), the Right now cockpit right under it and whole on the first screen, the four doors start on it",
+                  vis[0] < 160 and vis[4] < 240 and vis[2] <= 844 and vis[3] < 844, vis)
             six = p.evaluate("() => [...document.querySelectorAll('#quick .g-q')].map((a) => [a.dataset.app, a.href.replace(location.origin, ''), a.querySelector('.g-qline').textContent])")
-            check("c. Your six, one tap each, with live lines: Zlarior / ATLAS 'Bots on · today +$272', Drawdown '$1,420 / $900 left', Today 'Trade window open until 15:30 ET'",
-                  [x[1] for x in six] == ["/nq/index.html", "/compass/index.html", "/ledger/index.html", "/aegis/index.html", "/planner/index.html", "/kalshi/index.html"]
-                  and six[0][2] == "Bots on · today +$272" and six[3][2] == "$1,420 / $900 left" and six[1][2].startswith("Trade window open until 15:30 ET"), six)
+            check("c. Your six, one tap each (Cities, Kalshi, NQ bot, Jarvis, My day, Business), the NQ bot's live line 'Bots on · today +$272'",
+                  [x[1] for x in six] == ["/cities/index.html", "/kalshi/index.html", "/nq/index.html", "/jarvis/index.html", "/planner/index.html", "/business/index.html"]
+                  and six[2][2] == "Bots on · today +$272", six)
             p.click('#workshopLink')
             p.wait_for_url("**/hub/index.html?h=settings&t=workshop", timeout=30000)
             check("c. the small Workshop link opens Settings & Help on its Workshop tab", "h=settings&t=workshop" in p.url, p.url)
@@ -346,8 +356,8 @@ def test_page():
                 p.fill("#q", q)
                 p.wait_for_timeout(120)
                 res[q] = p.evaluate("() => [[...document.querySelectorAll('#results a.g-row')].map((a) => a.dataset.app), document.querySelector('#results').textContent]")
-            check("c. the search box: money -> Mint + Ledger, drawdown -> Aegis, kalshi -> Kalshi first, journal -> the journal first, nonsense -> a plain 'Nothing found' line",
-                  {"mint", "ledger"} <= set(res["money"][0]) and "aegis" in res["drawdown"][0] and res["kalshi"][0][0] == "kalshi" and res["journal"][0][0] == "journal"
+            check("c. the search box: money -> Ledger (Mint is retired: never shown), drawdown -> Aegis, kalshi -> Kalshi first, journal -> the journal first, nonsense -> a plain 'Nothing found' line",
+                  "ledger" in res["money"][0] and "mint" not in res["money"][0] and "aegis" in res["drawdown"][0] and res["kalshi"][0][0] == "kalshi" and res["journal"][0][0] == "journal"
                   and not res["qqqzz"][0] and "Nothing found" in res["qqqzz"][1], {k: v[0] for k, v in res.items()})
             check("c. each result says which hub it lives in ('in Bots & Evals')", "in Bots & Evals" in p.evaluate("() => { document.querySelector('#q').value = 'journal'; document.querySelector('#q').dispatchEvent(new Event('input')); return document.querySelector('#results').textContent; }"))
             p.fill("#q", "risk guard")
@@ -375,6 +385,61 @@ def test_page():
                   lines["kalshi"] == "Balance $2,411 · today +$3 · 2 open bets" and lines["money"] == "This month +$640 cash · all time +$1,585" and lines["plan"].startswith("On shift now until 16:00"), lines)
             ctx.close()
             s1.shutdown()
+
+            # olympus2: the cockpit lines: an open trade, the next decision, Kalshi K8 today (and nothing when flat / none open)
+            hj = json.loads(home_json(300))
+            hj["board"]["lit"]["position"] = {"side": "LONG", "dir": 1, "qty": 2, "entry": 21410.25, "stop": 21380.0, "target": 21650.0, "entry_t": NOW_S - 900, "unrealized_usd": 85.5}
+            dec = json.dumps({"v": 1, "items": [{"id": "a", "question": "Rapid EOD: ATLAS trades it next to Zlarior from day one?", "status": "open", "recommend": "yes"},
+                                                {"id": "b", "question": "Done one", "status": "yes"}]})
+            k8 = json.dumps({"v": 1, "legs": [{"name": "gold UP 16:45-17:00 ET", "live": True, "tz": "America/New_York", "open": "16:45", "last_day": "x", "last_res": "W"}]})
+            s5, o5 = serve({"/home.json": json.dumps(hj), "/business/decisions.json": dec, "/kalshi/k8.json": k8})
+            ctx, p, errs, seen, off = AK.page(br, o5)
+            open_gate(p, o5)
+            p.wait_for_timeout(600)
+            ck = p.evaluate("() => ({ trade: document.querySelector('#nowTrade').hidden ? '' : document.querySelector('#nowTrade').innerText.replace(/\\s+/g, ' '),"
+                            " next: [...document.querySelectorAll('#nowNext .g-nrow')].map((a) => [a.dataset.go, a.innerText.replace(/\\s+/g, ' ')]),"
+                            " order: document.querySelector('#now').compareDocumentPosition(document.querySelector('#doorsSec')) & 4 })")
+            check("c. olympus2 cockpit: 'Zlarior LONG 2 micros +$86 now stop 21,380 · target 21,650', 'Decide Rapid EOD ... Claude: yes.', 'Kalshi K8 next gold UP 16:45 ET'; Right now before the doors",
+                  ck["trade"].startswith("Zlarior LONG 2 micros +$86 now") and "stop 21,380 · target 21,650" in ck["trade"] and ck["next"][0][0] == "decide"
+                  and "Rapid EOD: ATLAS trades it next to Zlarior from day one? Claude: yes." in ck["next"][0][1] and ck["next"][1][0] == "kalshi"
+                  and "next gold UP 16:45 ET" in ck["next"][1][1].replace("KALSHI", "Kalshi") and ck["order"] and not errs, (ck, errs[:2]))
+            ctx.close()
+            s5.shutdown()
+
+            # olympus2 (lead): 4 accounts (Rapid EOD 25K arrives as id "rapid") and trades open on several accounts at once: all shown, compact, the money on the first screen
+            h4 = json.loads(home_json(300))
+            h4["board"]["lit"]["position"] = {"side": "LONG", "qty": 2, "stop": 21380.0, "target": 21650.0, "entry_t": NOW_S - 900, "unrealized_usd": 85.5}
+            h4["board"]["atlas"]["position"] = {"side": "SHORT", "qty": 1, "stop": 21460.0, "target": 21330.0, "entry_t": NOW_S - 300, "unrealized_usd": -22.0}
+            h4["accounts"] = [{"id": "b25k_2", "name": "Zlarior Builder 25K #2", "plan": "Builder 25K", "kind": "eval", "source": "pc", "badge": "LIVE",
+                               "eval": {"start_balance": 25000, "balance": 25120, "to_target": 1380, "target_balance": 26500, "floor": 24000, "room": 1000, "mll": 1000}, "pnl": {"today": 120}},
+                              {"id": "rapid", "name": "Rapid EOD 25K", "plan": "Rapid EOD 25K", "kind": "eval", "source": "pc", "badge": "LIVE",
+                               "eval": {"start_balance": 25000, "balance": 25000, "to_target": 1500, "target_balance": 26500, "floor": 24000, "room": 1000, "mll": 1000}, "pnl": {"today": 0},
+                               "position": {"side": "LONG", "qty": 1, "stop": 21385.0, "target": 21600.0, "entry_t": NOW_S - 600, "unrealized_usd": 30.0}}]
+            s6, o6 = serve({"/home.json": json.dumps(h4)})
+            ctx, p, errs, seen, off = AK.page(br, o6)
+            open_gate(p, o6)
+            p.wait_for_timeout(600)
+            f4 = p.evaluate("() => ({ trades: [...document.querySelectorAll('#nowTrade .g-trow b')].map((e) => e.textContent), cards: [...document.querySelectorAll('#money .g-an')].map((e) => e.textContent),"
+                            " facts: [...document.querySelectorAll('#nowFacts .g-fact')].map((f) => f.textContent), many: document.querySelector('#now').dataset.many,"
+                            " bottom: document.querySelector('#nowFacts').getBoundingClientRect().bottom })")
+            check("c. 4 accounts + 3 open trades: every trade line (Zlarior LONG, ATLAS SHORT, Rapid EOD 25K LONG), 4 cards, a drawdown tile per account named on top, Today for 4 accounts, compact, all money on the first screen",
+                  f4["trades"] == ["Zlarior LONG 2 micros", "ATLAS SHORT 1 micro", "Rapid EOD 25K LONG 1 micro"] and f4["cards"] == ["Zlarior 50K", "ATLAS 25K", "Zlarior 25K #2", "Rapid EOD 25K"]
+                  and f4["facts"][3] == "Rapid EOD 25K$1,000drawdown left of $1,000" and f4["facts"][4].startswith("Today+$392") and f4["many"] == "true" and f4["bottom"] <= 844 and not errs, (f4, errs[:2]))
+            ctx.close()
+            s6.shutdown()
+
+            # olympus2 DATA TRUTH ask: ATLAS funded at $25,401.38 / room $1,401.38: "to payout" = the payout coach's $949 (NQ / Trading / Board), not the PC's raw $1,449
+            hf = json.loads(home_json(300))
+            hf["board"]["atlas"] = {"id": "atlas", "name": "ATLAS", "plan": "MFFU Builder 25K funded", "status": "funded", "stage": "funded", "balance": 25401.38, "room": 1401.38,
+                                    "mll": 1000, "to_target": 1448.62, "today_pnl": 514.18}
+            s7, o7 = serve({"/home.json": json.dumps(hf)})
+            ctx, p, errs, seen, off = AK.page(br, o7)
+            open_gate(p, o7)
+            p.wait_for_timeout(500)
+            goal = p.evaluate("() => [...document.querySelectorAll('#money .g-acct')].map((a) => a.textContent).find((t) => t.indexOf('ATLAS') === 0) || ''")
+            check("c. funded ATLAS: '$949 to payout' from the payout coach (the same as NQ / Trading / Board), never the PC's raw $1,449", "$949 to payout" in goal and "1,449" not in goal and not errs, (goal, errs[:2]))
+            ctx.close()
+            s7.shutdown()
 
             # quiet, old, stopped
             for age, running, state, badge, btn, line in ((2 * 3600, True, "quiet", "Quiet", False, "Last report from your PC 2 hours ago. The bots may still be trading."),

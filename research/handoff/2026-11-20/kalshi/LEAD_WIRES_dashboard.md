@@ -29,3 +29,15 @@ Other version bumps made by the helper (no worker involved): `dionysus/index.htm
 ## Update (Olympus 2, day-kalshi): kalshi.css / kalshi.js are now ?v=k50 (on top of the k48 already on pc)
 `sed -i "s/kalshi-k48/kalshi-k50/; s/kalshi.css?v=k48/kalshi.css?v=k50/; s/kalshi.js?v=k48/kalshi.js?v=k50/" tools/web_public/kalshi/sw.js`
 (test_kalshi_page 347/347 and test_kalshi_k8_dash 52/52 were run with exactly this edit applied locally, then reverted.)
+
+## Update 2 (Olympus 2 PERF, CLS): kalshi.css / kalshi.js are now ?v=k51
+`sed -i -E "s/kalshi-k[0-9]+'/kalshi-k51'/; s/kalshi.css\?v=k[0-9]+/kalshi.css?v=k51/; s/kalshi.js\?v=k[0-9]+/kalshi.js?v=k51/" tools/web_public/kalshi/sw.js`
+(or `python tools/bump_versions.py --apply`). test_kalshi_page 347/347 + test_kalshi_k8_dash 52/52 with exactly this applied locally.
+
+## Update 3 (Olympus 2 A11Y): kalshi.css / kalshi.js are now ?v=k52 (kalshi/index.html also loads ../olympus/a11y.js)
+`sed -i -E "s/kalshi-k[0-9]+'/kalshi-k52'/; s/kalshi.css\?v=k[0-9]+/kalshi.css?v=k52/; s/kalshi.js\?v=k[0-9]+/kalshi.js?v=k52/" tools/web_public/kalshi/sw.js`
+(or `python tools/bump_versions.py --apply`). If kalshi/sw.js lists its SHELL files, add '../olympus/a11y.js' only if the other pages' workers do.
+
+## Update 4 (owner: Kalshi fast, no jump): kalshi.css / kalshi.js are now ?v=k53
+`sed -i -E "s/kalshi-k[0-9]+'/kalshi-k53'/; s/kalshi.css\?v=k[0-9]+/kalshi.css?v=k53/; s/kalshi.js\?v=k[0-9]+/kalshi.js?v=k53/" tools/web_public/kalshi/sw.js`
+(or `python tools/bump_versions.py --apply`). kalshi/ and dionysus/ now load ../olympus/a11y.css?v=a2 in the head (no text jump).

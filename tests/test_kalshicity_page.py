@@ -57,7 +57,7 @@ def part_a():
     html, css = rd(PAGE, "index.html"), rd(PAGE, "kalshicity.css")
     js = {n: rd(PAGE, n) for n in files if n.endswith(".js")}
     check("a. the kit first (olympus.css, themes.js, olympus.js ?v=o2 with data-app), viewport-fit=cover, theme-color, dark, manifest, icon, apple-touch-icon",
-          '<link rel="stylesheet" href="../olympus/olympus.css?v=o7">' in html and 'src="../olympus/themes.js?v=o9"' in html and 'src="../olympus/olympus.js?v=o15" data-app="kalshicity"' in html
+          '<link rel="stylesheet" href="../olympus/olympus.css?v=o7">' in html and 'src="../olympus/themes.js?v=o9"' in html and 'src="../olympus/olympus.js?v=o18" data-app="kalshicity"' in html
           and "viewport-fit=cover" in html and 'name="theme-color"' in html and 'content="dark"' in html and 'rel="manifest" href="manifest.webmanifest"' in html
           and 'rel="icon" href="icon.svg"' in html and 'rel="apple-touch-icon"' in html)
     check("a. no CDN, no outside script / font / image: every src and href is local", not re.search(r'(src|href)="https?://', html) and not any(re.search(r"import[^;]*['\"]https?://", s) for s in js.values()))
@@ -86,6 +86,13 @@ def part_a():
           and re.fullmatch(r"#[0-9a-f]{6}", j["theme"]) and os.path.getsize(os.path.join(PAGE, "jarvis.json")) < 8192 and not re.search(r"[<>]", json.dumps(j)), j)
     fx = json.loads(rd(PAGE, "fixture.json"))
     check("a. the demo fixture is marked demo, holds a feed, the engine's edges (400+) and a log", fx["demo"] is True and fx["kalshi"]["kind"] == "kalshi" and len(fx["edges"]["edges"]) > 400 and len(fx["log"]) > 5 and len(fx["hyps"]["hyps"]) >= 6 and fx["hyps"]["pair"]["best"] and fx["hyps"]["pair"]["worst"])
+    ag = rd(PAGE, "agora-kalshicity.css")
+    check("a. bar 2026-11-20 (archive page): the archive line + banner at the top with 44 px links to today's bot (../kalshi/) and the Kalshi desk (../dionysus/); the old bot's line says retired",
+          "Archive: this page is history" in html and "retired 2026-11-19" in html and 'href="../kalshi/"' in html and 'href="../dionysus/"' in html and html.index("archive-banner") < html.index('id="verdict"')
+          and "min-height:44px" in ag.split(".arch-btn{", 1)[1].split("}", 1)[0] and "Old bot (retired 2026-11-19)" in js["kalshicity.js"])
+    check("a. bar: no backdrop blur on this page (the last stylesheet turns every one off over the 3D city), and no data = a plain sentence (noData), never a stuck 'Reading the city...'",
+          re.search(r"\*,\*::before,\*::after,\*::backdrop\{-webkit-backdrop-filter:none!important;backdrop-filter:none!important\}", ag) is not None and html.index("agora-kalshicity.css") > html.index("kalshicity.css?")
+          and "function noData(" in js["kalshicity.js"] and "main().catch(" in js["kalshicity.js"] and "You are offline" in js["kalshicity.js"])
     check("a. the render core wiring a new app needs is not edited here (olympus.js APPS, apps.js, sw.js and the build are the lead's): this folder only adds files",
           all(os.path.isfile(os.path.join(PAGE, f)) for f in ("manifest.webmanifest", "icon.svg")))
 
@@ -340,6 +347,8 @@ def run_browser():
                   and p.get_attribute("#wx", "data-wx") == edges["regime"]["state"] and p.inner_text("#wx").split(" ")[0] in ("Clear", "Overcast", "Rain", "Storm"), t)
             ov = p.evaluate(GEOM)
             check("c. home at 390 x 844: inside the 16 px gutters, nothing in the orb's 80 x 160 corner, no sideways scroll", not ov, ov)
+            nb = p.evaluate("() => [...document.querySelectorAll('*')].filter((e) => { const c = getComputedStyle(e), b = c.backdropFilter || c.webkitBackdropFilter; return b && b !== 'none'; }).length")
+            check("c. bar: no element draws a backdrop blur over the 3D city (was 10-12 before 2026-11-20)", nb == 0, nb)
             if shots:
                 os.makedirs(shots, exist_ok=True)
                 p.wait_for_timeout(1500)
@@ -351,7 +360,7 @@ def run_browser():
                 w = p.evaluate(f"KC.where({json.dumps(i)})")
                 hits += bool(w) and p.evaluate(f"KC.pick({w['x']}, {w['y']})") == i
             check("c. picking: the building under a fingertip is found (12 proven edges, projected to the screen and picked back)", hits >= 8, (hits, len(model)))
-            tgt = next(i for i in model if (p.evaluate(f"KC.where({json.dumps(i)})") or {}).get("y", 0) > 300 and p.evaluate(f"(() => {{ const w = KC.where({json.dumps(i)}); return w && w.y < 640 && KC.pick(w.x, w.y) === {json.dumps(i)}; }})()"))
+            tgt = next(i for i in model if (p.evaluate(f"KC.where({json.dumps(i)})") or {}).get("y", 0) > 300 and p.evaluate(f"(() => {{ const w = KC.where({json.dumps(i)}); return w && w.y < 640 && KC.pick(w.x, w.y) === {json.dumps(i)} && (document.elementFromPoint(w.x, w.y) || {{}}).id === 'city'; }})()"))   # a spot of the city a finger can reach (not under a panel)
             w = p.evaluate(f"KC.where({json.dumps(tgt)})")
             p.mouse.click(w["x"], w["y"])
             p.wait_for_function("KC.state().view === 'card'")
@@ -571,6 +580,14 @@ def run_browser():
             ready(p)
             s = st(p)
             check("c. no engine files and no feed: the fixture's recorded demo (DEMO badge, 400+ edges, the going-up and crumbling buildings), still no errors", s["demo"] and p.is_visible("#demo") and s["n"] > 400 and s["scene"]["constructing"] >= 1 and s["hypDemo"] and len(s["labs"]) == 8 and p.inner_text("#tkText").startswith("Demo: ") and not p.errs, (s["demo"], s["n"], p.errs))
+            ctx.close()
+            # ---- bar 2026-11-20: nothing at all (no engine files, no fixture, no feed): one plain sentence, never a stuck 'Reading the city...', no error
+            os.remove(os.path.join(tmp, "nq-dashboard", "kalshicity", "fixture.json"))
+            ctx, p = page()
+            p.goto(base)
+            p.wait_for_function("document.body.dataset.ready === '1' && window.KC && KC.state().ready", timeout=60000)
+            vt = p.inner_text("#vText")
+            check("c. bar: no data at all: the verdict card says so in plain words and points to K8; no JS error", "has no data right now" in vt and "K8" in vt and not p.errs, (vt, p.errs))
             ctx.close()
             live["mode"] = "ok"
             make_site(tmp)
