@@ -481,6 +481,12 @@
       box.appendChild(el('i', 'oly-veil-bar'));
       veil.appendChild(box);
       d.body.appendChild(veil);
+      // day-arenas DESIGN 2026-11-20 (PERF: layout shift 0.3-0.85 on a phone line while the cards fill under the veil): the page's content
+      // is laid out but NOT drawn (visibility, not display) until the veil lifts, so a card that grows as its data arrives cannot count as a
+      // shift; the header stays. Nothing changes for the owner: the veil covers the page in that time anyway. lift() (ready, or the 12 s
+      // fallback) shows it.
+      root.setAttribute('data-oly-veil', '1');
+      if (!d.getElementById('olyVeilHide')) { var vs = el('style'); vs.id = 'olyVeilHide'; vs.textContent = 'html[data-oly-veil] main#app > :not(header.top){visibility:hidden}'; (d.head || d.body).appendChild(vs); }
     }
     if (!framed && id && !d.querySelector('.oly-home')) {
       var a = el('a', 'oly-home'); a.href = '../jarvis/'; a.setAttribute('aria-label', 'Back to Jarvis'); a.title = 'Back to Jarvis';
@@ -557,6 +563,7 @@
   }
   O.seatClear = function () { var a = d.querySelector('.oly-home'); return a ? !covers(a) : true; };
   function lift() {
+    root.removeAttribute('data-oly-veil');
     if (!veil) return;
     var v = veil; veil = null;
     v.classList.add('out');
@@ -577,7 +584,7 @@
     root.setAttribute('data-oly-state', 'failed');
     O.reason = String(msg || 'it did not load');
     if (veil && veil.parentNode) veil.parentNode.removeChild(veil);
-    veil = null;
+    veil = null; root.removeAttribute('data-oly-veil');
     showErr();
   }
   function showErr() {

@@ -54,7 +54,7 @@ function srcWords() {
     phone: `Your Ledger on this phone: ${n} entries, read only.`, file: `A file you imported: ${n} entries${S.ledger.skipped ? `, ${S.ledger.skipped} rows skipped` : ''}. Kept on this phone.`,
     feed: `The scanner's copy of your Ledger export: ${n} entries.` }[S.source];
 }
-function bar(frac, cls) { const b = h('div', 'ag-bar ' + (cls || 'green')); b.setAttribute('role', 'img'); b.appendChild(h('i')); b.firstChild.style.width = Math.round(C.clamp(frac, 0, 1) * 100) + '%'; return b; }
+function bar(frac, cls, label) { const b = h('div', 'ag-bar ' + (cls || 'green')); b.setAttribute('role', 'img'); b.setAttribute('aria-label', label || (Math.round(C.clamp(frac, 0, 1) * 100) + '% full')); b.appendChild(h('i')); b.firstChild.style.width = Math.round(C.clamp(frac, 0, 1) * 100) + '%'; return b; }
 const RISK = { low: ['ok', 'Fine'], med: ['warn', 'Watch'], high: ['bad', 'Act'] };
 
 function renderHero(a) {

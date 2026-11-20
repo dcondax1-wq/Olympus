@@ -2,7 +2,7 @@
 
 Owner: "make Olympus as a whole better." This is the ONE design system every app follows. Live reference: **`/olympus/kit.html`**
 (every token and component as the apps really draw them, with a look picker that previews only; open it at 390 x 844 before you change
-a shared sheet). Older notes it replaces or summarises: `docs/DESIGN_AGORA.md` (the AGORA look), `docs/OLYMPUS_DESIGN.md` (kit history,
+a shared sheet). Slow-network check: `tools/perf_sweep.py` (PERF) or the layout-shift finder in the DESIGN report. Older notes it replaces or summarises: `docs/DESIGN_AGORA.md` (the AGORA look), `docs/OLYMPUS_DESIGN.md` (kit history,
 themes, budgets).
 
 ## 1. The four shared files (load order)
@@ -30,7 +30,7 @@ itself: `<script>OLYMPUS_THEMES.apply('page')</script>` right after `themes.js` 
 | Money up / down | `--ag-olive-text` / `--ag-terra-text` | TEXT colours. `--ag-olive` / `--ag-terra` are FILLS (bars, dots), never text |
 | Warn / info | `--ag-sun` / `--ag-aegean-text` | |
 | Type | `--ag-serif` (titles), `--ag-sans` (body), `--ag-num` (numbers: rounded, `tabular-nums`) | |
-| Sizes | cap 12, foot 13, sub 14, body 15, lead 17, h3 18, h2 22, h1 30, stat 28, hero 44 (`--ag-fs-*`) | **12 px is the floor**: no text smaller (tab-bar labels included) |
+| Sizes | cap 13, foot 14, sub 15, **note 15** (any sentence in a muted colour), body 15, lead 17, h3 18, h2 22, h1 30, stat 28, hero 44 (`--ag-fs-*`) | **a sentence is never under 15 px; a label of 1-4 words may be 13; nothing under 12** (A11Y K2) |
 | Space | 4 px grid `--ag-sp-1..8`, gutter 16 | |
 | Shape | radius small 12, card 16, hero 22, pills 999 | one hairline border per card |
 | Elevation | `--ag-e1..e3` | soft, never a glow |
@@ -50,6 +50,19 @@ itself: `<script>OLYMPUS_THEMES.apply('page')</script>` right after `themes.js` 
   Offline = show the last numbers WITH their age (olympus/truth.js `agesOf`), never a blank card.
 - **Toast / sheet**: `AGORA.toast(text, {kind})`, `AGORA.sheet(...)` (agora-ui.js).
 - **Folded-in apps**: `<nav class="folded">` links to archived apps whose job this page now does (pulse.css).
+- **Data age**: `olympus/age.js` + `age.css` (one format site-wide, from DATA TRUTH): `OLY_AGE.chip(span, seconds, 'pc'|'live'|'bars'|'daily'|'weekly')`
+  -> "updated 4 min ago", amber after a missed report, red when old. The pulse cards and Settings use it.
+
+## 3b. How the kit keeps the page still (layout shift 0 on a phone line)
+
+- **Under the veil** (olympus.js): while the loading veil is up, the page's content (everything but `header.top`) is laid out but not drawn
+  (`html[data-oly-veil]`, visibility); it shows when the app calls `OLYMPUS.ready()` (or the 12 s fallback). Cards that fill as data
+  arrives cannot count as a shift. An app MUST call `OLYMPUS.ready()` after its first real render (Business did not: its veil sat 12 s).
+- **The back row** (agora.css): `header.top` keeps the empty 44 px row the back / crumbs (agora-ui.js, gate-nav.js) fill later.
+- **Late parts reserve their height**: pulse parts have fixed heights; a list that fills late gets a `min-height` of its usual size
+  (Atlas `#needs`, Fates `.hud`). Never insert a block above content already on screen.
+- **3D after idle** (lazy3d.js): window `load` + idle (2 s cap); skipped like LITE on Save-Data, 2G/3G or <= 4 GB memory (never on iPhone Safari).
+- A page without the kit engine (business/plan.html) does the same by hand: `data-oly-veil` on `<html>` until its scripts have drawn (8 s cap).
 
 ## 4. Rules that the audit checks (`python tools/design_audit.py --site <built site>`)
 
