@@ -275,6 +275,8 @@ def test_pid(tmp):
     check("d. the supervisor runs (pid 4242 = powershell.exe): kept", SH.fix_pids(ctx(root, now, apply=True, procs=[(4242, "powershell.exe")])) == []
           and os.path.exists(p))
     check("d. processes unknown: nothing guessed", SH.fix_pids(ctx(root, now, apply=True, procs=[])) == [] and os.path.exists(p))
+    check("d. the pid runs but its name is unreadable (psutil access denied): kept, never guessed (redteam)",
+          SH.fix_pids(ctx(root, now, apply=True, procs=[(4242, "")])) == [] and os.path.exists(p))
     r = SH.fix_pids(ctx(root, now, apply=True, procs=[(4242, "chrome.exe")]))
     check("d. pid reused by another program: removed", statuses(r) == ["fixed"] and "chrome" in r[0]["text"] and not os.path.exists(p), r)
     write(p, "4242\n")

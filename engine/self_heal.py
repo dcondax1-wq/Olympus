@@ -700,6 +700,8 @@ def fix_pids(ctx) -> list:
     name = next((n for q, n in procs if q == pid), None)
     if name is not None and name.split(".")[0] in SUP_NAMES:
         return []                                         # the supervisor runs
+    if name is not None and not name.strip():
+        return []                                         # the pid runs but its name could not be read (access denied): never guess
     why = "is not running" if name is None else f"is now another program ({name})"
     if _act(ctx, f"delete logs/supervisor.pid: pid {pid} {why} (a crash or restart left it; STOP_BOT would wait for that pid)",
             lambda: os.remove(p)):
