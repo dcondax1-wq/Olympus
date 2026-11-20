@@ -1,0 +1,209 @@
+{
+ "title": "Kalshi K8 bankroll rule: $55 start, 3 live legs, 4 weeks",
+ "built": "2026-11-20 tools/money/kalshi_bankroll.py (paper research; nothing live changed)",
+ "start_cash": 55.0,
+ "days": 20,
+ "paths": 20000,
+ "legs": [
+  "A_gold",
+  "B_gold",
+  "B_silver"
+ ],
+ "held_out": {
+  "bets": 105,
+  "days": 35,
+  "win_rate": 0.7619,
+  "avg_win_per_$1": 0.9187,
+  "avg_loss_per_$1": 1.0209,
+  "break_even_win_rate": 0.5264,
+  "net_per_$1": 0.4568
+ },
+ "train": {
+  "bets": 128,
+  "days": 43,
+  "win_rate": 0.6953,
+  "avg_win_per_$1": 0.876,
+  "avg_loss_per_$1": 1.0188,
+  "break_even_win_rate": 0.5377,
+  "net_per_$1": 0.2987
+ },
+ "flip_chance": {
+  "as_tested": 0.0,
+  "half_edge": 0.1545,
+  "no_edge": 0.3091
+ },
+ "table": {
+  "as_tested": {
+   "flat5": {
+    "bust_pct": 0.2,
+    "median_cash": 193.66,
+    "p10_cash": 136.21,
+    "p90_cash": 245.29
+   },
+   "flat8": {
+    "bust_pct": 1.4,
+    "median_cash": 277.04,
+    "p10_cash": 182.4,
+    "p90_cash": 359.63
+   },
+   "flat10": {
+    "bust_pct": 3.2,
+    "median_cash": 331.79,
+    "p10_cash": 206.65,
+    "p90_cash": 435.77
+   },
+   "flat15": {
+    "bust_pct": 7.9,
+    "median_cash": 466.69,
+    "p10_cash": 225.24,
+    "p90_cash": 626.5
+   },
+   "step15pct": {
+    "bust_pct": 0.3,
+    "median_cash": 441.1,
+    "p10_cash": 258.31,
+    "p90_cash": 599.26
+   },
+   "ladder": {
+    "bust_pct": 0.2,
+    "median_cash": 430.29,
+    "p10_cash": 245.98,
+    "p90_cash": 590.76
+   }
+  },
+  "half_edge": {
+   "flat5": {
+    "bust_pct": 2.1,
+    "median_cash": 124.34,
+    "p10_cash": 65.65,
+    "p90_cash": 178.9
+   },
+   "flat8": {
+    "bust_pct": 8.4,
+    "median_cash": 165.09,
+    "p10_cash": 46.61,
+    "p90_cash": 253.45
+   },
+   "flat10": {
+    "bust_pct": 13.6,
+    "median_cash": 190.63,
+    "p10_cash": 3.57,
+    "p90_cash": 301.94
+   },
+   "flat15": {
+    "bust_pct": 24.8,
+    "median_cash": 243.56,
+    "p10_cash": 0.35,
+    "p90_cash": 423.1
+   },
+   "step15pct": {
+    "bust_pct": 4.0,
+    "median_cash": 219.46,
+    "p10_cash": 46.25,
+    "p90_cash": 394.82
+   },
+   "ladder": {
+    "bust_pct": 3.3,
+    "median_cash": 207.09,
+    "p10_cash": 48.47,
+    "p90_cash": 382.23
+   }
+  },
+  "no_edge": {
+   "flat5": {
+    "bust_pct": 21.3,
+    "median_cash": 54.92,
+    "p10_cash": 2.72,
+    "p90_cash": 109.51
+   },
+   "flat8": {
+    "bust_pct": 43.1,
+    "median_cash": 40.46,
+    "p10_cash": 0.41,
+    "p90_cash": 141.73
+   },
+   "flat10": {
+    "bust_pct": 51.8,
+    "median_cash": 4.66,
+    "p10_cash": 0.25,
+    "p90_cash": 160.82
+   },
+   "flat15": {
+    "bust_pct": 65.9,
+    "median_cash": 1.63,
+    "p10_cash": -0.01,
+    "p90_cash": 205.63
+   },
+   "step15pct": {
+    "bust_pct": 32.8,
+    "median_cash": 34.93,
+    "p10_cash": 1.9,
+    "p90_cash": 169.87
+   },
+   "ladder": {
+    "bust_pct": 29.0,
+    "median_cash": 40.13,
+    "p10_cash": 2.08,
+    "p90_cash": 156.96
+   }
+  },
+  "train_months": {
+   "flat5": {
+    "bust_pct": 0.3,
+    "median_cash": 144.83,
+    "p10_cash": 93.53,
+    "p90_cash": 193.5
+   },
+   "flat8": {
+    "bust_pct": 2.5,
+    "median_cash": 198.62,
+    "p10_cash": 113.03,
+    "p90_cash": 276.66
+   },
+   "flat10": {
+    "bust_pct": 4.7,
+    "median_cash": 234.21,
+    "p10_cash": 119.24,
+    "p90_cash": 332.94
+   },
+   "flat15": {
+    "bust_pct": 12.3,
+    "median_cash": 318.81,
+    "p10_cash": 2.69,
+    "p90_cash": 470.75
+   },
+   "step15pct": {
+    "bust_pct": 0.8,
+    "median_cash": 288.2,
+    "p10_cash": 112.19,
+    "p90_cash": 443.85
+   },
+   "ladder": {
+    "bust_pct": 0.5,
+    "median_cash": 275.86,
+    "p10_cash": 99.17,
+    "p90_cash": 431.76
+   }
+  }
+ },
+ "pick": "ladder",
+ "ladder": [
+  {
+   "cash_from": 100.0,
+   "bet": 15.0
+  },
+  {
+   "cash_from": 67.0,
+   "bet": 10.0
+  },
+  {
+   "cash_from": 53.0,
+   "bet": 8.0
+  },
+  {
+   "cash_from": 0.0,
+   "bet": 5.0
+  }
+ ],
+ "plain": "At $15 a bet on $55, one bad week can wipe the pot before the edge shows. Bet about 15% of the cash with the phone picks: $8 from $53, $10 from $67, $15 from $100 (and back down after losses)."
+}
