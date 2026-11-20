@@ -10,6 +10,8 @@ Fake Kalshi, fake clock, temp folders, a FAKE key: no network, no real order (ev
   s. stops      on the $55 settings: day -$8, week -$13.75, from the peak -$19.25, 3 bets a day, one bet a market, the price cap, the
                 win-rate kill (under 58% after 60 bets; not before 60), the price-creep kill (last 30 paid over 58c; not under 30 bets)
   f. fees       4 contracts pay 7c (1.75c each), 1-3 contracts pay 2c each; the paper and live ledgers use exactly that
+  d. data+docs  tools/web_public/kalshi/k8.json is up to date with the recorded public tape, has every field the phone reads, the
+                fair price = win rate - fee; docs/KALSHI.md has the 3 Monday steps, the phrase, the phone pushes, no key
   o. orders     wrong / lower-case phrase, a hand-made arm file, no key on the PC, the kill switch, LE_KALSHI_LIVE=0: no order (paper
                 keeps recording); the only order call in the code sits behind the order gate
 
@@ -314,6 +316,32 @@ def part_orders(tmp):
     check("o4. the Kalshi client with no key refuses to sign an order ('no Kalshi key on this PC')", refused)
 
 
+# ================================================================================================ d. the phone's data + the one doc
+def part_data():
+    sys.path.insert(0, os.path.join(ROOT, "tools"))
+    import kalshi_k8_feed as F
+    p = F.OUT
+    j = json.load(open(p, encoding="utf-8")) if os.path.exists(p) else {}
+    check("d1. tools/web_public/kalshi/k8.json exists and matches the recorded public tape (python tools/kalshi_k8_feed.py --check)",
+          j and F.main(["--check"]) == 0, p)
+    legs = {x.get("id"): x for x in j.get("legs") or []}
+    keys = ("code", "name", "live", "tz", "open", "side", "n", "won", "rate", "avg_c", "fair_c", "r30", "r60", "avg30_c", "last10", "last_c")
+    check("d2. k8.json: the 5 legs (3 live: g5, g17, s17) with every field the page reads; the pool with r30 / r60 / avg30_c / weeks; the rule = $55",
+          set(legs) == set(KC.LEG) and all(all(k in x for k in keys) for x in legs.values())
+          and {x["code"] for x in legs.values() if x["live"]} == {"g5", "g17", "s17"}
+          and all(k in (j.get("pool") or {}) for k in ("n", "won", "r30", "r60", "avg30_c", "weeks", "net_usd"))
+          and (j.get("rule") or {}).get("stake") == 2.5 and (j.get("rule") or {}).get("week_stop") == 13.75 and len(json.dumps(j)) < 20000,
+          {k: [x for x in keys if x not in v] for k, v in legs.items()})
+    fair_ok = all(x["fair_c"] is None or (x["fair_c"] < 100 * x["rate"] and 100 * x["rate"] - x["fair_c"] < 2.5) for x in legs.values())
+    check("d3. the fair price of each leg = its win rate minus the fee (1.75-2c a contract): the price where a bet breaks even", fair_ok,
+          [(x["code"], x["rate"], x["fair_c"]) for x in legs.values()])
+    doc = open(os.path.join(ROOT, "docs", "KALSHI.md"), encoding="utf-8").read()
+    steps = re.findall(r"^\d\. ", doc.split("## Your Monday steps")[1].split("##")[0], re.M) if "## Your Monday steps" in doc else []
+    check("d4. docs/KALSHI.md: what runs where, the files, 3 Monday steps (no more), the phrase as a copy line, the phone pushes; no key, no account id, no email",
+          len(steps) == 3 and "I ACCEPT KALSHI LIVE RISK" in doc and ":8444/kalshi-live/" in doc and "Kalshi LIVE 16:45 ET: 2 bets in" in doc
+          and "data/kalshi_live/" in doc and "PRIVATE KEY" not in doc and "@" not in doc.replace("`", ""), len(steps))
+
+
 def main():
     tmp = tempfile.mkdtemp(prefix="k8day-")
     try:
@@ -322,6 +350,7 @@ def main():
         part_stops(tmp)
         part_fees(tmp)
         part_orders(tmp)
+        part_data()
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     print(f"\n{sum(RES)}/{len(RES)} passed")
