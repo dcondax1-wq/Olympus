@@ -82,6 +82,14 @@ def main():
     d10 = next(x for x in P.days_table(bars) if x["day"] == "2026-11-10")
     check("recap body = 15:55 close - 09:30 open", abs(r["recap"]["body_pts"] - round(d10["rth_close"] - d10["rth_open"], 1)) < 0.06)
 
+    # 5b. yesterday's recap (the cloud gets the day's bars only after 17:05 ET): always there the next morning
+    nx = P.build(at("2026-10-29T07:00"), bars=bars, measured=meas)
+    pr = nx.get("prev_recap") or {}
+    check("prev_recap day", pr.get("day") == "2026-10-28", str(pr.get("day")))
+    check("prev_recap: live wins over its paper twin", [t["src"] for t in pr.get("trades", []) if t["bot"] == "LIT"] == ["live"],
+          str(pr.get("trades")))
+    check("prev_recap traded text", pr.get("traded", "").startswith("Zlarior: 1 trade"), pr.get("traded", ""))
+
     # 6. windows: Thanksgiving early close (13:00 -> windows end 12:45), Monday = no EMA
     t = P.build(at("2026-11-26T07:00"), bars=bars, measured=meas)
     lit = t["bots"][0]

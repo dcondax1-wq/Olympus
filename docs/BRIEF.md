@@ -26,6 +26,7 @@ times = ET wall clock "HH:MM" strings; dates = "YYYY-MM-DD" (ET); `*_t` = unix s
 | `bias` | obj | the pre-registered day call with its measured hit rate |
 | `bots` | list | one entry per bot / leg: window today, what it waits for, levels it watches |
 | `recap` | obj\|null | after the close: what happened vs the brief; null before 16:00 ET |
+| `prev_recap` | obj\|null | (added v 1.1, additive) the same recap for the PREVIOUS trading day + `day`; filled every morning (the cloud gets the day's bars only after the PC pushes them at 17:05 ET, so `recap` can stay empty on the day itself) |
 | `notes` | list[str] | plain-words caveats (max 5) |
 
 ## `data`
@@ -100,9 +101,14 @@ times = ET wall clock "HH:MM" strings; dates = "YYYY-MM-DD" (ET); `*_t` = unix s
 | `took` | list[str] | which levels were taken: "PDH", "PDL", "ONH", "ONL" |
 | `bias_call` | str | the morning call (B1) |
 | `bias_held` | bool\|null | call matched the RTH body; null when the call was none |
+| `alt_call` | str | that day's B2 call |
 | `alt_held` | bool\|null | same for B2 |
-| `trades` | list | `[{bot, account, side, time, r, usd, src}]` today's trades the cloud can see (trades.json live / paper rows); src = `live` / `paper` |
-| `traded` | str | plain words: "Zlarior: no trade. ATLAS: 1 trade (S/R short 10:05, +$212)." or "no trade data for today yet" |
+| `trades` | list | `[{bot, account, side, time, r, usd, src}]` the day's trades the cloud can see (trades.json live / paper rows); src = `live` / `paper`; a bot with live rows shows only those (its paper twin is the same trade) |
+| `traded` | str | plain words: "Zlarior: 1 trade (SHORT 03:43, -$437, live). ATLAS: no trade." or "no trade data for today yet" |
+
+## Results so far (2026-11-20, `research/lab/brief_bias.json`)
+B1 and B2 are NO better than a coin (see the write-up `research/writeups/premarket-brief-2026-11-20.md`): `works` = false,
+`context_only` = true. Readers show the call grey.
 
 ## Example
-`research/handoff/2026-11-20/brief/brief_today.json` (2026-11-20, a normal day) and `brief_tier1.json` (a Tier-1 day).
+`research/handoff/2026-11-20/brief/brief_today.json` (2026-11-20, a normal day) and `brief_tier1.json` (a Tier-1 day: CPI 2026-11-10 at 08:05 ET), `brief_tier1_recap.json` (the same day at 16:30 ET).

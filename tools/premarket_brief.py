@@ -382,7 +382,44 @@ def _trades_today(day: str):
             continue
         out.append({"bot": t.get("bot"), "account": t.get("acct"), "side": t.get("side"), "time": t.get("hm"),
                     "r": _r(t.get("r")), "usd": _r(t.get("usd"), 0), "src": t.get("src")})
-    return out
+    # the paper twin of a trade the PC really took is the same trade: a bot with live rows keeps only those
+    live_bots = {t["bot"] for t in out if t["src"] == "live"}
+    return [t for t in out if t["src"] == "live" or t["bot"] not in live_bots]
+
+
+def _recap(x: dict, prev: dict | None) -> dict:
+    """What happened on day row x vs its brief: the levels taken, did the 08:00 call (B1) and B2 hold, the bots' trades."""
+    on_hi, on_lo = x.get("on_hi"), x.get("on_lo")
+    took = [n for n, cond in (("PDH", prev and x["high"] > prev["high"]), ("PDL", prev and x["low"] < prev["low"]),
+                              ("ONH", on_hi is not None and (x.get("rth_hi") or -1e9) > on_hi),
+                              ("ONL", on_lo is not None and (x.get("rth_lo") or 1e9) < on_lo)) if cond]
+    body = (x["rth_close"] - x["rth_open"]) if (x.get("rth_close") is not None and x.get("rth_open") is not None) else None
+    move = (x["c0755"] - x["o1800"]) if (x.get("c0755") is not None and x.get("o1800") is not None) else None
+    c1 = b1_call(move, x.get("atr"))
+    c2 = b2_call(prev, x.get("atr"))
+
+    def held(c):
+        return None if (c == "none" or body is None or abs(body) < MIN_BODY) else ((c == "up") == (body > 0))
+
+    tr = _trades_today(x["day"])
+    if not tr:
+        traded = "no trade data for this day yet (trades.json is refreshed from the PC's data)"
+    else:
+        parts = []
+        for b in ("LIT", "ATLAS"):
+            mine = [t for t in tr if (t["bot"] or "").upper() == b]
+            lab = "Zlarior" if b == "LIT" else "ATLAS"
+            if not mine:
+                parts.append(f"{lab}: no trade")
+            else:
+                usd = sum((t["usd"] or 0) for t in mine)
+                what = ", ".join(f"{t['side'] or ''} {t['time'] or ''}".strip() for t in mine)
+                money = f"{'+' if usd >= 0 else '-'}${abs(usd):,.0f}"
+                parts.append(f"{lab}: {len(mine)} trade{'s' if len(mine) > 1 else ''} ({what}, {money}, {mine[0]['src']})")
+        traded = ". ".join(parts) + "."
+    return {"rth_open": _r(x.get("rth_open")), "rth_close": _r(x.get("rth_close")), "body_pts": _r(body, 1),
+            "high": _r(x["high"]), "low": _r(x["low"]), "took": took, "bias_call": c1, "bias_held": held(c1),
+            "alt_call": c2, "alt_held": held(c2), "trades": tr or [], "traded": traded}
 
 
 def build(now: int | None = None, bars=None, measured=None) -> dict:
@@ -572,31 +609,11 @@ def build(now: int | None = None, bars=None, measured=None) -> dict:
         phase = "post"
     else:
         phase = "pre"
-    recap = None
-    if phase == "post" and today:
-        took = [n for n, cond in (("PDH", prior and today["high"] > prior["high"]), ("PDL", prior and today["low"] < prior["low"]),
-                                  ("ONH", on_hi is not None and (today.get("rth_hi") or -1e9) > on_hi),
-                                  ("ONL", on_lo is not None and (today.get("rth_lo") or 1e9) < on_lo)) if cond]
-        body = (today["rth_close"] - today["rth_open"]) if (today.get("rth_close") is not None and rth_open is not None) else None
-        held = None if (call == "none" or body is None or abs(body) < MIN_BODY) else ((call == "up") == (body > 0))
-        held2 = None if (call2 == "none" or body is None or abs(body) < MIN_BODY) else ((call2 == "up") == (body > 0))
-        tr = _trades_today(ds)
-        if tr is None or not tr:
-            traded = "no trade data for today yet (trades.json is refreshed from the PC's data)"
-        else:
-            parts = []
-            for b in ("LIT", "ATLAS"):
-                mine = [t for t in tr if (t["bot"] or "").upper() == b]
-                lab = "Zlarior" if b == "LIT" else "ATLAS"
-                if not mine:
-                    parts.append(f"{lab}: no trade")
-                else:
-                    usd = sum((t["usd"] or 0) for t in mine)
-                    parts.append(f"{lab}: {len(mine)} trade{'s' if len(mine) > 1 else ''} ({', '.join((t['side'] or '') + ' ' + (t['time'] or '') for t in mine)}, {usd:+,.0f} $)")
-            traded = ". ".join(parts) + "."
-        recap = {"rth_open": _r(rth_open), "rth_close": _r(today.get("rth_close")), "body_pts": _r(body, 1),
-                 "high": _r(today["high"]), "low": _r(today["low"]), "took": took, "bias_call": call, "bias_held": held,
-                 "alt_held": held2, "trades": tr or [], "traded": traded}
+    recap = _recap(today, prior) if (phase == "post" and today) else None
+    prev_recap = None
+    if prior and prior.get("rth_close") is not None:
+        pp = next((x for x in reversed(days) if x["day"] < prior["day"]), None)
+        prev_recap = {"day": prior["day"], **_recap(prior, pp)}
 
     # ---------------- headline + notes
     hl = []
@@ -624,7 +641,8 @@ def build(now: int | None = None, bars=None, measured=None) -> dict:
             "data": {"bars": "NQ 5m (TradingView CME NQ1! + NinjaTrader)",
                      "bars_to": f"{last_bar[1]:%Y-%m-%d %H:%M}" if last_bar else None, "bars_age_min": bars_age,
                      "vix_date": (mvix or {}).get("date"), "vxn_date": (mvxn or {}).get("date"), "stale": stale},
-            "market": market, "news": news, "bias": bias, "bots": bots, "recap": recap, "notes": notes[:5]}
+            "market": market, "news": news, "bias": bias, "bots": bots, "recap": recap, "prev_recap": prev_recap,
+            "notes": notes[:5]}
 
 
 def dumps(b: dict) -> str:
