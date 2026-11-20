@@ -136,6 +136,14 @@ def part_b_to_e(tmp):
     check("c. no hedge across accounts: a SHORT on the 25K is refused while the 50K's ATLAS is LONG", bool(h) and "Rapid" in str(h), h)
     a2.open_t = None
     a2.prov.pop(T0, None)
+    calls = []
+    for ar in (a1, a2):                                  # both Rapids' ATLAS LONG, Zlarior's LIT goes SHORT on its own account
+        ar.yield_to_lit = (lambda d, sym, now, px=None, any_side=False, ar=ar: calls.append((ar.slot, d)) or False)
+    ok = b._hedge_clear({"dir": -1, "entry_t": T0 + 600, "entry": 25000.0}, "NQ", T0 + 600)
+    check("c. LIT SHORT while both Rapids' ATLAS are LONG: both asked to close in the same poll, LIT waits",
+          ok is False and calls == [("rapid", -1), ("rapid2", -1)], (ok, calls))
+    del a1.yield_to_lit, a2.yield_to_lit
+    b._hedge_wait.clear()
 
     # d. alerts + reports
     check("d. LIT lane alert names: Rapid EOD 25K / Rapid EOD 50K", (l1.name, l2.name) == ("Rapid EOD 25K", "Rapid EOD 50K"),

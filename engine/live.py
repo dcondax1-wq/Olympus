@@ -3227,19 +3227,21 @@ class LiveBot:
         and route LIT only once that close is CONFIRMED flat (pre-launch audit A4, 2026-10-25). True = route LIT now; False =
         wait (this poll routes nothing; the entry deadline decides on later polls). An error while B holds a position fails
         closed (LIT's opposite entry is not routed); with B flat or off, LIT is never held back."""
+        wait_r = False
         for ar in self._rapid_atlases():               # ATLAS on each Rapid EOD holds the other side: closed first
-            try:
+            try:                                        # (every Rapid is asked in the same poll; LIT waits for all of them)
                 ok_r = ar.yield_to_lit(1 if int(ent.get("dir") or 1) == 1 else -1, sym, now, px=ent.get("entry")) is not False
             except Exception as e:
                 self._note_error(f"Rapid EOD ATLAS hedge close failed: {e.__class__.__name__}: {e}")
                 ok_r = getattr(ar, "open_t", None) is None
-            if not ok_r:
-                et_r = int(ent["entry_t"])
-                if et_r not in self._hedge_wait:
-                    self._log("risk", f"HEDGE WAIT: LIT at {_et(et_r):%H:%M} ET is NOT routed until ATLAS's opposite position on the "
-                                      "Rapid EOD is confirmed flat")
-                self._hedge_wait.setdefault(et_r, int(now))
-                return False
+            wait_r = wait_r or not ok_r
+        if wait_r:
+            et_r = int(ent["entry_t"])
+            if et_r not in self._hedge_wait:
+                self._log("risk", f"HEDGE WAIT: LIT at {_et(et_r):%H:%M} ET is NOT routed until ATLAS's opposite position on the "
+                                  "Rapid EOD is confirmed flat")
+            self._hedge_wait.setdefault(et_r, int(now))
+            return False
         ab = self.acct_b
         if ab is None:
             return self._hedge_clear_c(ent, sym, now)   # account C (BLITZ): off = True at once
