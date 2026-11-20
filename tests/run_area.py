@@ -66,6 +66,8 @@ AREAS["pc"] += ["push", "webpush"]
 AREAS["jarvis"].insert(AREAS["jarvis"].index("jarvis_classic"), "jarvis_push")
 # night-fitperf 2026-11-19: edge to edge on the iPhone Home Screen app (dock, app frames, host badge, phantom keyboard) + the start memo; its own line
 AREAS["jarvis"].append("fit_edge")
+AREAS["pc"].append("trade_alerts")    # night-tradealerts 2026-11-20: entry + exit alerts on every account route (tests/test_trade_alerts.py); its own line
+AREAS["board"].append("phone_fit")    # night-tradealerts 2026-11-20: ZEUS / MFFU / Trading / Board at 390 + 430 px with the iPhone safe areas (browser); its own line
 # suites too long for one budget run BY PARTS, each its own row and budget (night team D 2026-11-16: the whole kit walk, every app +
 # power + tiers + more in one browser, is the longest browser suite); a part is "<suite>:<label>" = python -m tests.test_<suite> <args>
 PARTS = {"olympus_kit": [("a", ["datacity", "mind", "tree"]), ("b", ["oracle", "odeon", "fates"]), ("c", ["hermes", "prometheus", "tyche"]),
