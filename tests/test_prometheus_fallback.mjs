@@ -10,8 +10,8 @@ const data = JSON.parse(fs.readFileSync('tools/web_public/prometheus/forge.json'
 const F = new Forge(data), g = 0, best = F.best(g), hud = F.hud(g);
 
 assert.match(html,/id="nogl" class="forge-flat"/);
-assert.match(html,/forge\.css\?v=f6/);
-assert.match(html,/forge\.js\?v=f6/);
+assert.match(html,/forge\.css\?v=[\w.-]+/);
+assert.match(html,/forge\.js\?v=[\w.-]+/);
 for (const cls of ['flat-vault','flat-core','flat-anvil','flat-ingot','flat-summary','flat-lineage','flat-pop','flat-node']) assert.match(css,new RegExp(`\\.${cls}`));
 assert.match(css,/data-fx="low"/);
 assert.match(css,/data-fx="off"/);

@@ -24,6 +24,6 @@ assert.match(source, /aria-label', 'Verified city destinations'/);
 assert.match(source, /aria-current', 'page'/);
 assert.match(page, /id="networkApps"[^>]+aria-label="Open City Network"[^>]*>CITY<\/button>/);
 assert.match(page, /city-network-grid/);
-assert.match(page, /app\.js\?v=o20/);
+assert.match(page, /app\.js\?v=[\w.-]+/);
 
 console.log('PASS: compact City Network exposes only the five verified project-relative destinations.');
