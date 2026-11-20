@@ -5,7 +5,7 @@
   c. a trade-list change moves the money: LIT at 10 ticks a side (stress) gives less than real fills (stored, every market)
   d. the 5th-slot buy (Rapid EOD 50K) is paid from payouts only: on the small run it is never bought before a payout landed,
      and the stored plan keeps MFFU's caps (5 funded, 10 evals, Builder 50K 1, Builder 25K 2)
-  e. the phone file: Dec 2026 - Jun 2027 months, the tax placeholder 35% said, 3 top cards that are open Decide cards
+  e. the phone file: Dec 2026 - Jun 2027 months, the tax set-aside said, 3 top cards that are open Decide cards
     python -X utf8 -m tests.test_fleet_months
 """
 from __future__ import annotations
@@ -83,7 +83,8 @@ def part_d():
 def part_e():
     ms = [m["m"] for m in PHONE["months"]]
     check("e. Dec 2026 - Jun 2027 in the phone file", all(f"{y}" in ms for y in ("2026-12", "2027-01", "2027-03", "2027-06")), ms)
-    check("e. tax placeholder 35% and said so", PHONE["tax"] == 0.35 and "placeholder" in PHONE["tax_note"])
+    check("e. tax set-aside = the model's (35% placeholder until day-taxes publishes) and said so",
+          PHONE["tax"] == FM.TAX == RESULT["tax"] and len(PHONE["tax_note"]) > 10)
     dec = json.load(open(os.path.join(ROOT, "tools", "web_public", "business", "decisions.json"), encoding="utf-8"))
     ids = {c["id"] for c in dec["items"]}
     top = [c["id"] for c in PHONE["top_cards"]]
