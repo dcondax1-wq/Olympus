@@ -797,6 +797,9 @@ BARS_MIN = 12                    # fewer bars than this: no post
 BARS_TAIL_BYTES = 96 * 1024      # only the end of a bar file is read (~2,000 lines)
 BARS_TICK = 0.25                 # NQ / MNQ
 BARS_GAP_CANDLES_S = 3540        # candles: about hourly (the 4th 15-minute run), in the bots' hours only
+BARS_BUSY_GRACE_S = 900          # nqdash3 2026-11-20: an open trade changes the ext's news every run (its live $ in "at"), so every run was a
+                                 # busy run and the candles never went (04:15 -> none at 05:15 / 05:30 / 05:45 with ATLAS short open). Once the
+                                 # candles are 74 min old they go on a busy run too (one extra post that run; the daily caps still hold)
 BARS_GAP_TRADE_S = 300           # a trade opened / closed / moved: at once, but never twice in 5 minutes
 NTFY_DAY_CAP = 250               # ntfy.sh free: messages a UTC day per IP (measured 2026-11-18; the status posts use ~210)
 BARS_DAY_MAX = 24                # chart posts a UTC day, all kinds (lead 2026-11-18: "at most ~24 a day")
@@ -1232,7 +1235,7 @@ def bars_due(state: dict | None, post: dict | None, now: int, market_open_now: b
         return False, f"{BARS_DAY_MAX - BARS_TRADE_RESERVE} candle posts today (the rest is kept for trade levels)"
     if gap < BARS_GAP_CANDLES_S:
         return False, f"candles next in {span(BARS_GAP_CANDLES_S - gap)}"
-    if busy_run:
+    if busy_run and gap < BARS_GAP_CANDLES_S + BARS_BUSY_GRACE_S:
         return False, "this run sent the ext post: the candles go on the next run"
     return True, "hourly candles"
 
