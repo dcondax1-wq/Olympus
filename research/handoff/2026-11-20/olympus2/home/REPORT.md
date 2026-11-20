@@ -34,3 +34,14 @@ visit the same day) · test_live_link 78/78 · test_world_page 30/30 (+ JS p95 a
 
 Shots: cockpit-1-live, cockpit-2-in-a-trade-decide, cockpit-3-light, cockpit-4-stale-3-days, cockpit-5-no-data. Video: home-first-then-repeat.webm
 (first open with the intro, then the same-day repeat without it).
+
+## Round 2 (lead priorities, ~10:00-10:30 ET)
+- **4 accounts + trades on several accounts at once:** the Rapid EOD 25K (PC id "rapid") gets its card, drawdown tile and open-trade line
+  (from its own account row's position); with 3+ accounts or 2+ trades the cockpit goes compact (one line a trade, the account's name on top
+  of its drawdown tile) and all money stays on the first iPhone 13 screen (test: 4 accounts + 3 trades, bottom <= 844 px). gate g13 / css g15.
+- **Ivory / light:** the cockpit was checked for contrast in dark and Ivory (no text under 4.5:1 in #now); the Cities front's Olympus World
+  card now has a light version. The World itself stays a dark HUD over the 3D city (the sky follows the real sun).
+- **World billboards:** the Rapid account reads "Rapid 25K".
+- Tests: test_gate_page 87/87, test_world_page --static 14/14.
+- Shots: cockpit-6-four-accounts-three-trades, cockpit-7-four-accounts-light, cities-ivory-world-card.
+- Waiting on: A11Y FOR_home.md (day-a11y) and PERF ASKS.md (day-quality); not on GitHub yet at 10:30 ET.
