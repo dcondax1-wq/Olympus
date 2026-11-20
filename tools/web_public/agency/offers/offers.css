@@ -27,7 +27,8 @@ main#app > header.top .tags a.tag.back, .tag.back { display: inline-flex; align-
 .big { margin: 0; font: 700 clamp(2.25rem, 1.6rem + 3vw, 3rem)/1.05 var(--ag-num); font-variant-numeric: tabular-nums; color: var(--ag-gold); }
 .pill { display: inline-flex; align-items: center; min-height: 28px; padding: 0 10px; border-radius: 999px; font: 700 .8125rem var(--ag-sans); border: 1px solid var(--ag-line);
   color: var(--ag-soft); background: var(--ag-s1); white-space: nowrap; }
-.pill.warn { color: var(--ag-sun); }
+.pill.warn { color: var(--ag-sun); } main#app .pill.gold, .pill.gold { color: var(--ag-on-gold); background: var(--ag-gold); border-color: transparent; }
+main#app .pkg.picked, .pkg.picked { border-color: var(--ag-gold); box-shadow: inset 0 0 0 1px var(--ag-gold); }
 .goalbar { position: relative; height: 12px; border-radius: 6px; background: var(--ag-s3); margin: 4px 0 22px; }
 .goalbar > i { position: absolute; inset: 0 auto 0 0; width: var(--p, 0%); border-radius: 6px; background: linear-gradient(90deg, var(--ag-bronze), var(--ag-gold)); }
 .goalbar > b { position: absolute; top: 16px; transform: translateX(-100%); font: 600 .8125rem var(--ag-sans); color: var(--ag-muted); }

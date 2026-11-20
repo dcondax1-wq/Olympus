@@ -41,10 +41,13 @@ def static():
         check(f"a. {f} exists", os.path.isfile(os.path.join(D, f)))
     html, js, core, css = read("index.html"), read("offers.js"), read("offerscore.js"), read("offers.css")
     data = json.loads(read("offers.json"))
-    check("a. three packages: Starter site, 3D Showcase, Growth retainer, each with price, days, monthly and what is included",
-          [p["name"] for p in data["packages"]] == ["Starter site", "3D Showcase", "Growth retainer"]
+    check("a. three packages from the research: Starter site $1,500 + $79, Call engine $500 + $299 (most picked), 3D Signature from $2,500 + $79",
+          [(p["name"], p["price"], p["monthly"]) for p in data["packages"]] == [("Starter site", 1500, 79), ("Call engine", 500, 299), ("3D Signature", 2500, 79)]
+          and data["packages"][1].get("badge") == "Most picked" and data["packages"][2].get("from") is True
           and all(p["price"] > 0 and p["days"] > 0 and p["monthly"] > 0 and len(p["includes"]) >= 4 for p in data["packages"]))
-    check("a. prices say where they come from (placeholder until the research numbers)", data.get("source") and "placeholder" in json.dumps(data).lower() or data.get("placeholder") is False)
+    check("a. prices say where they come from (the research estimates) and that they are estimates", data.get("placeholder") is False and "research" in data.get("source", "") and "estimate" in data.get("source", ""))
+    ex = {x["id"]: x for x in data["extras"]}
+    check("a. research extras: missed-call text-back $199 + $149/mo, 3D scan $500, Google profile $499 a location", ex["textback"]["monthly"] == 149 and ex["scan3d"]["price"] == 500 and ex["gbp"]["price"] == 499)
     check("a. the terms cover deposit, revisions, hosting, who owns what", {"deposit", "revisions", "hosting", "ownership"} <= {t["id"] for t in data["terms"]})
     check("a. 'Not legal advice' is on the terms", "Not legal advice" in html and "not legal advice" in html.lower())
     urls = re.findall(r"""(?:fetch|getJSON)\(\s*['"`]([^'"`]+)""", js) + re.findall(r"'(\.\./[^']+\.json)'", js)
@@ -66,10 +69,12 @@ const out = {};
 out.counts = [D.packages.length, D.extras.length, D.terms.length];
 out.m = C.margin({ price: 1000, hours: 10, hard: 100 }, 60);
 out.mlow = C.margin({ price: 300, hours: 10, hard: 0 }, 60);
-out.q = C.quote(D, { package: 'showcase3d', extras: ['gbp', 'model3d', 'nope'], rush: true, discount: 100 }, 60);
+out.q = C.quote(D, { package: 'signature3d', extras: ['gbp', 'scan3d', 'nope'], rush: true, discount: 100 }, 60);
+out.qt = C.quote(D, { package: 'callengine', extras: ['textback'] }, 60);
+out.S = C.summary({ clients: [{ id: 'a', name: 'Roy', monthly: 299, start: '2026-10-05', paid: '2026-10-05' }], sent: 3 }, '2026-11-20', 1763600000);
 out.q0 = C.quote(D, { package: 'starter' }, 60);
 out.text = C.proposalText(out.q0, 'Peak Web', "Roy's Quick Lube", 'Nov 20, 2026');
-out.textG = C.proposalText(C.quote(D, { package: 'growth' }, 60), '', '', '');
+out.textG = C.proposalText(C.quote(D, { package: 'callengine' }, 60), '', '', '');
 out.due = [C.nextDue({ start: '2026-01-31', paid: '' }), C.nextDue({ start: '2026-01-31', paid: '2026-01-31' }), C.nextDue({ start: '2026-01-31', paid: '2026-02-28' }), C.nextDue({ start: '2026-12-15', paid: '2026-12-15' })];
 out.L = C.ledger({ clients: [{ id: 'a', name: 'Roy', monthly: 49, start: '2026-10-05', paid: '2026-10-05' }, { id: 'b', name: 'Bo', monthly: 499, start: '2026-11-25' },
   { id: 'c', name: 'Old', monthly: 99, start: '2026-01-01', active: false }], invoices: [{ id: 'i', client: 'Roy', amount: 250, due: '2026-11-01' }, { id: 'j', client: 'Bo', amount: 500, due: '2026-11-01', paid: '2026-11-03' }] }, '2026-11-20');
@@ -105,14 +110,19 @@ def core():
           m["profit"] == 900 and m["per_hour"] == 90 and m["time_cost"] == 600 and m["over_target"] == 300 and m["ok"], m)
     check("b. margin: $300 for 10 h is below a $60/h target (flagged)", o["mlow"]["ok"] is False and o["mlow"]["per_hour"] == 30)
     q = o["q"]
-    base = 2499 + 149 + 299
+    base = 2500 + 499 + 500
     check("b. quote: package + 2 extras (unknown id dropped) + 25 % rush - $100 discount", q["setup"] == base + round(base * 0.25) - 100 and len(q["lines"]) == 5, (q["setup"], [l["name"] for l in q["lines"]]))
-    check("b. quote: 50 % deposit, the balance at launch, rush halves the days", q["deposit"] + q["balance"] == q["setup"] and abs(q["deposit"] - q["setup"] / 2) <= 1 and q["days"] == -(-(14 + 1 + 2) // 2), (q["deposit"], q["days"]))
+    check("b. quote: 50 % deposit, the balance at launch, rush halves the days", q["deposit"] + q["balance"] == q["setup"] and abs(q["deposit"] - q["setup"] / 2) <= 1 and q["days"] == -(-(14 + 3 + 2) // 2), (q["deposit"], q["days"]))
+    qt = o["qt"]
+    check("b. quote: a monthly extra adds to the monthly plan (Call engine $299 + text-back $149 = $448 a month)", qt["monthly"] == 448 and qt["setup"] == 699 and qt["first_year"] == 699 + 12 * 448, (qt["monthly"], qt["setup"]))
+    Sm = o["S"]
+    check("b. the HQ summary: {n, label, next, t, pipe {proposal, paid}, mrr}: 1 paying, $299/mo, 3 proposals, Roy is late",
+          Sm["n"] == 1 and Sm["mrr"] == 299 and Sm["pipe"] == {"proposal": 3, "paid": 1} and "Roy" in Sm["next"] and Sm["t"] == 1763600000 and "$299" in Sm["label"], Sm)
     check("b. quote: first year = build + 12 months", o["q0"]["first_year"] == o["q0"]["setup"] + 12 * o["q0"]["monthly"])
     t = o["text"]
     check("b. proposal text: names both businesses, the total, the deposit, the days, what is included, valid 14 days, no NaN / undefined",
-          "Roy's Quick Lube" in t and "Peak Web" in t and "$499" in t and "deposit" in t and "working days" in t and "- " in t and "14 days" in t and not re.search(r"NaN|undefined|null", t), t[:300])
-    check("b. proposal text: the Growth retainer says its 3-month minimum; a blank name never prints 'undefined'", "3 months minimum" in o["textG"] and "Your business" in o["textG"] and "undefined" not in o["textG"])
+          "Roy's Quick Lube" in t and "Peak Web" in t and "$1,500" in t and "deposit" in t and "working days" in t and "- " in t and "14 days" in t and not re.search(r"NaN|undefined|null", t), t[:300])
+    check("b. proposal text: the Call engine says its 3-month minimum; a blank name never prints 'undefined'", "3 months minimum" in o["textG"] and "Your business" in o["textG"] and "undefined" not in o["textG"])
     check("b. next due: same day each month, clamped to the month's end (Jan 31 -> Feb 28 -> Mar 31), across the year end",
           o["due"] == ["2026-01-31", "2026-02-28", "2026-03-31", "2027-01-15"], o["due"])
     L = o["L"]
@@ -172,18 +182,18 @@ def browser():
                 p.check("#prExtras input[value=gbp]")
                 p.fill("#prFrom", "Peak Web")
                 p.dispatch_event("#prFrom", "change")
-                check("c. proposal: Starter $499 + Google profile $149 = $648, for Roy's Quick Lube, from Peak Web",
-                      p.text_content("#shTotal") == "$648" and "Roy's Quick Lube" in p.text_content("#shTitle") and "Peak Web" in p.text_content("#shFrom"))
+                check("c. proposal: Starter $1,500 + Google profile $499 = $1,999, for Roy's Quick Lube, from Peak Web",
+                      p.text_content("#shTotal") == "$1,999" and "Roy's Quick Lube" in p.text_content("#shTitle") and "Peak Web" in p.text_content("#shFrom"))
                 check("c. proposal: the margin line is for the owner only (outside the printed sheet)", "/h" in p.text_content("#prMargin") and p.locator("#sheet #prMargin").count() == 0)
                 p.evaluate("() => { window.print = () => { window.__printed = document.getElementById('print').textContent; }; }")
                 p.click("#prPrint")
                 printed = p.evaluate("window.__printed || ''")
-                check("c. Save as PDF prints the proposal sheet (total and name) and not the page", "$648" in printed and "Roy's Quick Lube" in printed and "For you only" not in printed, printed[:120])
+                check("c. Save as PDF prints the proposal sheet (total and name) and not the page", "$1,999" in printed and "Roy's Quick Lube" in printed and "For you only" not in printed, printed[:120])
                 p.click("#prInvoice")
-                check("c. the deposit invoice ($324, due in 7 days) lands in Money", "$324" in p.text_content("#invoices") and not p.is_hidden("#p-mo"))
+                check("c. the deposit invoice ($1,000, due in 7 days) lands in Money", "$1,000" in p.text_content("#invoices") and not p.is_hidden("#p-mo"))
                 p.click("#addClientBox summary")
                 p.fill("#clName", "Bo Bakery")
-                p.select_option("#clPkg", "growth")
+                p.select_option("#clPkg", "callengine")
                 p.fill("#clMonthly", "499")
                 p.click("#clForm button[type=submit]")
                 check("c. a monthly client: MRR $499 on top", p.text_content("#mrrNum") == "$499" and "Bo Bakery" in p.text_content("#clients"))
@@ -192,7 +202,9 @@ def browser():
                 p.reload()
                 p.wait_for_function("document.querySelectorAll('#pkgs .pkg').length === 3", timeout=15000)
                 check("c. saved on the phone: after a reload the client, invoice and agency name are still there",
-                      p.text_content("#mrrNum") == "$499" and "$324" in p.text_content("#invoices") and p.input_value("#prFrom") == "Peak Web")
+                      p.text_content("#mrrNum") == "$499" and "$1,000" in p.text_content("#invoices") and p.input_value("#prFrom") == "Peak Web")
+                summ = p.evaluate("JSON.parse(localStorage.getItem('agency.offers.summary') || 'null')")
+                check("c. the HQ tile key agency.offers.summary: 1 paying, $499/mo, 1 proposal sent (the PDF)", summ and summ["mrr"] == 499 and summ["pipe"] == {"proposal": 1, "paid": 1}, summ)
                 p.click("#tab-tm")
                 p.locator("#terms input").first.check()
                 check("c. terms: ticking one counts it, 'Not legal advice' shown", p.text_content("#termsCount").startswith("1 of") and "Not legal advice" in p.text_content("#p-tm"))

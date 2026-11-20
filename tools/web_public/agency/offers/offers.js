@@ -1,6 +1,6 @@
 // AGENCY · OFFERS page (day-web-offers 2026-11-20). The maths is offerscore.js; this file only draws and saves.
 // Saved: localStorage 'agency.offers.v1' (this phone), download / load a copy as JSON. Text goes in by textContent only.
-import * as C from './offerscore.js?v=1';
+import * as C from './offerscore.js?v=2';
 
 const KEY = 'agency.offers.v1';
 const $ = (id) => document.getElementById(id);
@@ -16,7 +16,13 @@ let toastT = 0;
 function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2600); }
 
 function load() { try { const raw = localStorage.getItem(KEY); if (raw) return C.normState(JSON.parse(raw)); } catch (_) { if (S.mem) return C.normState(S.mem); } return C.emptyState(); }
-function save() { S.mem = S.state; try { localStorage.setItem(KEY, JSON.stringify(S.state)); S.saved = true; } catch (_) { S.saved = false; } }
+function save() {
+  S.mem = S.state;
+  try { localStorage.setItem(KEY, JSON.stringify(S.state)); S.saved = true; } catch (_) { S.saved = false; }
+  // the Agency HQ tile reads this (HUB team): paying clients, MRR, proposals sent, the next step
+  try { localStorage.setItem('agency.offers.summary', JSON.stringify(C.summary(S.state, today(), Date.now() / 1000))); } catch (_) { /* private mode */ }
+}
+function sent() { S.state.sent = (S.state.sent || 0) + 1; save(); }
 function status(extra) {
   const L = C.ledger(S.state, today());
   const bits = [`${L.active} monthly client${L.active === 1 ? '' : 's'}, ${M(L.mrr)} a month`];
@@ -47,8 +53,11 @@ function drawPackages() {
   for (const p of S.data.packages) {
     const m = C.margin(p, hr), mm = C.monthlyMargin(p, hr);
     const c = h('article', 'ag-card card pkg'); c.setAttribute('aria-labelledby', 'pk-' + p.id);
-    const top = h('div', 'row'); const t = h('h2', '', p.name); t.id = 'pk-' + p.id; top.appendChild(t); top.appendChild(h('span', 'pill', `${p.days} day${p.days === 1 ? '' : 's'}`)); c.appendChild(top);
-    const pr = h('p', 'price'); pr.appendChild(h('b', 'ag-num', M(p.price))); pr.appendChild(h('span', '', ' to build')); c.appendChild(pr);
+    if (p.badge) c.classList.add('picked');
+    const top = h('div', 'row'); const t = h('h2', '', p.name); t.id = 'pk-' + p.id; top.appendChild(t);
+    if (p.badge) top.appendChild(h('span', 'pill gold', p.badge));
+    top.appendChild(h('span', 'pill', `${p.days} day${p.days === 1 ? '' : 's'}`)); c.appendChild(top);
+    const pr = h('p', 'price'); if (p.from) pr.appendChild(h('span', '', 'from ')); pr.appendChild(h('b', 'ag-num', M(p.price))); pr.appendChild(h('span', '', ' to set up')); c.appendChild(pr);
     if (p.monthly) c.appendChild(h('p', 'monthly', `then ${M(p.monthly)} a month (${p.monthly_label.toLowerCase()})`));
     c.appendChild(h('p', 'pitch', p.pitch));
     const ul = h('ul', 'inc'); for (const i of p.includes) ul.appendChild(h('li', '', i)); c.appendChild(ul);
@@ -63,7 +72,7 @@ function drawPackages() {
     box.appendChild(c);
   }
   const ex = clear($('extras'));
-  for (const x of S.data.extras) { const li = h('li'); li.appendChild(h('span', '', x.name + (x.per ? ` (per ${x.per})` : ''))); const m = C.margin(x, hr); li.appendChild(h('b', '', `${M(x.price)} · ${perHour(m)}`)); ex.appendChild(li); }
+  for (const x of S.data.extras) { const li = h('li'); li.appendChild(h('span', '', x.name + (x.per ? ` (per ${x.per})` : ''))); const m = C.margin(x, hr); li.appendChild(h('b', '', `${M(x.price)}${x.monthly ? ' + ' + M(x.monthly) + '/mo' : ''} · ${perHour(m)}`)); ex.appendChild(li); }
   $('srcNote').textContent = (/^placeholder/i.test(S.data.source) ? '' : S.data.placeholder ? 'Placeholder prices: ' : 'Prices: ') + S.data.source + (S.data.as_of && !S.data.source.includes(S.data.as_of) ? ` (${S.data.as_of})` : '');
 }
 
@@ -74,13 +83,13 @@ function drawForm() {
   for (const p of S.data.packages) {
     const l = h('label', 'opt'); const r = document.createElement('input'); r.type = 'radio'; r.name = 'pkg'; r.value = p.id; r.checked = p.id === (pick.package || S.data.packages[0].id);
     r.addEventListener('change', () => { pick.package = p.id; drawProposal(); });
-    l.appendChild(r); l.appendChild(h('span', '', `${p.name} · ${M(p.price)}`)); seg.appendChild(l);
+    l.appendChild(r); l.appendChild(h('span', '', `${p.name} · ${M(p.price)} + ${M(p.monthly)}/mo${p.badge ? ' · ' + p.badge : ''}`)); seg.appendChild(l);
   }
   const ex = clear($('prExtras'));
   for (const x of S.data.extras) {
     const l = h('label', 'chk'); const c = document.createElement('input'); c.type = 'checkbox'; c.value = x.id; c.checked = pick.extras.includes(x.id);
     c.addEventListener('change', () => { pick.extras = c.checked ? pick.extras.concat(x.id) : pick.extras.filter((i) => i !== x.id); drawProposal(); });
-    l.appendChild(c); l.appendChild(h('span', '', `${x.name} · ${M(x.price)}`)); ex.appendChild(l);
+    l.appendChild(c); l.appendChild(h('span', '', `${x.name} · ${M(x.price)}${x.monthly ? ' + ' + M(x.monthly) + '/mo' : ''}`)); ex.appendChild(l);
   }
   $('prFrom').value = S.state.agency || '';
 }
@@ -92,10 +101,10 @@ function drawProposal() {
   $('shTitle').textContent = `Website proposal for ${biz}`;
   $('shPitch').textContent = `${q.package.name}: ${q.package.pitch}`;
   const tb = clear($('shLines'));
-  for (const l of q.lines) { const tr = h('tr'); tr.appendChild(h('td', '', l.name)); tr.appendChild(h('td', 'n ag-num', M(l.price))); tb.appendChild(tr); }
+  for (const l of q.lines) { const tr = h('tr'); tr.appendChild(h('td', '', l.name + (l.monthly ? ` (then ${M(l.monthly)} a month)` : ''))); tr.appendChild(h('td', 'n ag-num', M(l.price))); tb.appendChild(tr); }
   $('shTotal').textContent = M(q.setup);
   $('shPay').textContent = `${M(q.deposit)} deposit to start, ${M(q.balance)} when the site goes live.`;
-  $('shMonthly').textContent = q.monthly ? `${q.monthly_label}: ${M(q.monthly)} a month after launch: hosting, updates, small edits. ` + (q.package.id === 'growth' ? '3 months minimum, then 30 days notice.' : 'Stop any time with 30 days notice.') : '';
+  $('shMonthly').textContent = q.monthly ? `Every month after launch: ${M(q.monthly)} (${q.monthly_label.toLowerCase()}${q.monthly_extras.length ? ' + ' + q.monthly_extras.map((x) => x.name.toLowerCase()).join(' + ') : ''}). ` + C.minTerm(q.package) : '';
   $('shDays').textContent = `Ready in about ${q.days} working day${q.days === 1 ? '' : 's'} after the deposit and the photos, logo and words.`;
   const ul = clear($('shInc')); for (const i of q.package.includes) ul.appendChild(h('li', '', i));
   $('shDate').textContent = nice(today());
@@ -113,13 +122,13 @@ function printWith(node, title) {
 function proposalPrint() {
   const q = currentQuote(); if (!q) return;
   const biz = $('prBiz').value.trim() || 'Your business';
-  printWith($('sheet').cloneNode(true), `Proposal ${biz} ${today()}`);
+  printWith($('sheet').cloneNode(true), `Proposal ${biz} ${today()}`); sent();
 }
 async function proposalShare() {
   const q = currentQuote(); if (!q) return;
   const text = C.proposalText(q, S.state.agency, $('prBiz').value.trim(), nice(today()));
-  try { if (navigator.share) { await navigator.share({ title: 'Website proposal', text }); return; } } catch (e) { if (e && e.name === 'AbortError') return; }
-  try { await navigator.clipboard.writeText(text); toast('Copied: paste it in a message or email.'); } catch (_) { toast('Could not copy on this browser.'); }
+  try { if (navigator.share) { await navigator.share({ title: 'Website proposal', text }); sent(); return; } } catch (e) { if (e && e.name === 'AbortError') return; }
+  try { await navigator.clipboard.writeText(text); sent(); toast('Copied: paste it in a message or email.'); } catch (_) { toast('Could not copy on this browser.'); }
 }
 function depositInvoice() {
   const q = currentQuote(); if (!q) return;
@@ -258,7 +267,7 @@ function drawEverything() {
   $('hourly').value = S.state.hourly;
   const sel = clear($('clPkg')); for (const p of S.data.packages) { const o = h('option', '', `${p.name} (${M(p.monthly)})`); o.value = p.id; sel.appendChild(o); }
   $('clMonthly').value = (S.data.packages[0] || {}).monthly || '';
-  drawTop(); drawPackages(); drawForm(); drawProposal(); drawTerms(); drawMoney(); drawGoals(); status();
+  drawTop(); drawPackages(); drawForm(); drawProposal(); drawTerms(); drawMoney(); drawGoals(); status(); save();
 }
 
 async function getJSON(u) { const r = await fetch(u, { cache: 'no-store' }); if (!r.ok) throw new Error(r.status); return r.json(); }

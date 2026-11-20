@@ -31,12 +31,15 @@ function normItem(p, kind) {
   const o = { id: str(p.id, 30), name: str(p.name, 40), price: num(p.price), hours: num(p.hours), hard: num(p.hard) || 0, pitch: str(p.pitch, 300),
     includes: (Array.isArray(p.includes) ? p.includes : []).map((x) => str(x, 140)).filter(Boolean).slice(0, 12) };
   if (!ID.test(o.id) || !o.name || o.price == null || o.price < 0 || o.hours == null || o.hours < 0) return null;
+  o.monthly = Math.max(0, num(p.monthly) || 0);
+  o.monthly_hours = Math.max(0, num(p.monthly_hours) || 0);
+  o.monthly_hard = Math.max(0, num(p.monthly_hard) || 0);
   if (kind === 'package') {
     o.days = Math.max(1, Math.round(num(p.days) || 7));
-    o.monthly = Math.max(0, num(p.monthly) || 0);
-    o.monthly_hours = Math.max(0, num(p.monthly_hours) || 0);
-    o.monthly_hard = Math.max(0, num(p.monthly_hard) || 0);
     o.monthly_label = str(p.monthly_label, 40) || 'Care plan';
+    o.badge = str(p.badge, 24);
+    o.from = p.from === true;
+    o.min_months = Math.max(0, Math.round(num(p.min_months) || 0));
   } else {
     o.days = Math.max(0, Math.round(num(p.days) || 0));
     o.per = str(p.per, 20);
@@ -73,7 +76,9 @@ export function quote(data, pick, hourly) {
   if (!p) return null;
   const ex = (pick && Array.isArray(pick.extras) ? pick.extras : []).map((id) => D.extras.find((x) => x.id === id)).filter(Boolean);
   const lines = [{ id: p.id, name: p.name, price: p.price, hours: p.hours, hard: p.hard, kind: 'package' }]
-    .concat(ex.map((x) => ({ id: x.id, name: x.name, price: x.price, hours: x.hours, hard: x.hard, kind: 'extra' })));
+    .concat(ex.map((x) => ({ id: x.id, name: x.name, price: x.price, hours: x.hours, hard: x.hard, kind: 'extra', monthly: x.monthly })));
+  const monthly = p.monthly + ex.reduce((a, x) => a + x.monthly, 0);
+  const mm = margin({ price: monthly, hours: p.monthly_hours + ex.reduce((a, x) => a + x.monthly_hours, 0), hard: p.monthly_hard + ex.reduce((a, x) => a + x.monthly_hard, 0) }, hourly);
   let setup = lines.reduce((a, l) => a + l.price, 0);
   const hours = lines.reduce((a, l) => a + l.hours, 0), hard = lines.reduce((a, l) => a + l.hard, 0);
   let days = p.days + ex.reduce((a, x) => a + x.days, 0);
@@ -82,9 +87,12 @@ export function quote(data, pick, hourly) {
   if (discount) { lines.push({ id: 'discount', name: 'Discount', price: -discount, hours: 0, hard: 0, kind: 'discount' }); setup -= discount; }
   const m = margin({ price: setup, hours, hard }, hourly);
   const deposit = Math.round(setup * D.deposit);
-  return { package: p, lines, setup: Math.round(setup), monthly: p.monthly, monthly_label: p.monthly_label, first_year: Math.round(setup + 12 * p.monthly),
-    deposit, balance: Math.round(setup - deposit), days, hours, profit: m.profit, per_hour: m.per_hour, ok: m.ok, monthly_margin: monthlyMargin(p, hourly) };
+  return { package: p, lines, setup: Math.round(setup), monthly: Math.round(monthly), monthly_label: p.monthly_label, first_year: Math.round(setup + 12 * monthly),
+    deposit, balance: Math.round(setup - deposit), days, hours, profit: m.profit, per_hour: m.per_hour, ok: m.ok, monthly_margin: mm,
+    monthly_extras: ex.filter((x) => x.monthly > 0).map((x) => ({ name: x.name, monthly: x.monthly })) };
 }
+
+export function minTerm(p) { return p && p.min_months ? `${p.min_months} months minimum, then stop any time with 30 days notice.` : 'Stop any time with 30 days notice.'; }
 
 /** the proposal as plain text: what the client reads in a message or a printed page */
 export function proposalText(q, who, biz, today) {
@@ -92,10 +100,10 @@ export function proposalText(q, who, biz, today) {
   const from = str(who, 60) || 'Your web designer', to = str(biz, 80) || 'Your business';
   const L = [`Website proposal for ${to}`, `From ${from} · ${today || ''}`.trim(), '',
     `Package: ${q.package.name}. ${q.package.pitch}`.trim(), ''];
-  for (const l of q.lines) L.push(`${l.name}: ${money(l.price)}`);
+  for (const l of q.lines) L.push(`${l.name}: ${money(l.price)}` + (l.monthly ? ` + ${money(l.monthly)} a month` : ''));
   L.push('', `Total to build: ${money(q.setup)}. ${money(q.deposit)} deposit to start, ${money(q.balance)} when the site goes live.`);
   if (q.monthly > 0) L.push(`${q.monthly_label}: ${money(q.monthly)} a month after launch (hosting, updates, small edits). `
-    + (q.package.id === 'growth' ? '3 months minimum, then stop any time with 30 days notice.' : 'Stop any time with 30 days notice.'));
+    + minTerm(q.package));
   L.push(`Ready in about ${q.days} working day${q.days === 1 ? '' : 's'} after the deposit and your photos / logo / words.`);
   L.push('', 'Included:');
   for (const i of q.package.includes) L.push(`- ${i}`);
@@ -127,13 +135,14 @@ export function nextDue(c) {
 }
 
 // ------------------------------------------------------------------------------------------------ the phone's state
-export function emptyState() { return { v: 1, hourly: DEFAULT_HOURLY, agency: '', clients: [], invoices: [], terms: {} }; }
+export function emptyState() { return { v: 1, hourly: DEFAULT_HOURLY, agency: '', clients: [], invoices: [], terms: {}, sent: 0 }; }
 let SEQ = 0;
 export function newId(prefix) { SEQ += 1; return `${prefix}${Date.now().toString(36)}${SEQ.toString(36)}`; }
 export function normState(raw) {
   const s = isObj(raw) ? raw : {}, o = emptyState();
   const h = num(s.hourly); if (h != null && h >= 5 && h <= 1000) o.hourly = Math.round(h);
   o.agency = str(s.agency, 60);
+  const sent = num(s.sent); if (sent != null && sent >= 0) o.sent = Math.min(9999, Math.round(sent));
   o.clients = (Array.isArray(s.clients) ? s.clients : []).filter(isObj).map((c) => ({ id: str(c.id, 40), name: str(c.name, 80), package: str(c.package, 30),
     monthly: Math.max(0, Math.round(num(c.monthly) || 0)), start: parts(c.start) ? c.start : '', paid: parts(c.paid) ? c.paid : '', active: c.active !== false,
     note: str(c.note, 200) })).filter((c) => c.id && c.name && c.start).slice(0, 200);
@@ -156,6 +165,14 @@ export function ledger(state, today) {
   return { mrr, active: act.length, rows, overdue: rows.filter((r) => r.late > 0), due_soon: rows.filter((r) => r.soon),
     open_invoices: openInv.map((i) => ({ ...i, late: i.due && today && daysBetween(i.due, today) > 0 ? daysBetween(i.due, today) : 0 })),
     open_total: openInv.reduce((a, i) => a + i.amount, 0), paid_month: paidMonth };
+}
+
+/** the Agency HQ's tile (localStorage 'agency.offers.summary', the HUB team's shape): { n, label, next, t, pipe: { proposal, paid }, mrr } */
+export function summary(state, today, nowS) {
+  const S = normState(state), L = ledger(S, today);
+  const next = L.overdue.length ? `Chase ${L.overdue[0].name}: ${money(L.overdue[0].monthly)} is ${L.overdue[0].late} days late`
+    : L.open_invoices.length ? `${money(L.open_total)} in open invoices` : S.sent ? '' : 'Send your first proposal';
+  return { n: L.active, label: `${L.active} paying, ${money(L.mrr)}/mo`, next, t: Math.round(nowS || 0), pipe: { proposal: S.sent || 0, paid: L.active }, mrr: L.mrr };
 }
 
 /** clients needed per goal: monthly clients of each plan (what they pay a month), or builds a month (what one build costs them) */
