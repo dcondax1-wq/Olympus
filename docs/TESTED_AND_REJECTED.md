@@ -1,4 +1,16 @@
 ## Tested and rejected (don't redo without a new idea)
+- **Payday levers + cross-bot loss cuts (2026-11-20, `payday-plan-2026-11-20.md`, `tools/money/payday_plan.py`,
+  `tools/payday_losses.py`, `research/lab/payday_plan.json` / `payday_losses.json`, Lab rows `research/lab/payday_levers.json`,
+  design `research/lab/payday_design_2026-11-20.md`):** judged on the FIRST PAYOUT date AND the chance of losing the account
+  (today's balances, 1,000 same paths a market; Jul-Oct / Jan-Jun). 8 levers, 0 pass: ATLAS funded 40% of the room (first
+  payout +5 / +5 days, paid by Jan 15 66 -> 58 / 84 -> 81%, lost 10.2 -> 5.8%: safer, later), ask at $1,000 (+2 / +4 days),
+  ATLAS "need" funded size (-$91 / -$70 a month), 25K #2 40% + $300 cap (+5 / +2 days), Rapid ATLAS $150 (+6 / +3 days,
+  -$198 / -$522) or $350 (lost in 6 m 28.9 -> 36.8%), Rapid LIT bank lane (eval lost first 8.4 -> 11.6% Jan-Jun), ATLAS on
+  Zlarior's 50K NOW vs after the pass (nearest miss: sooner, eval deaths 26 -> 8% Jan-Jun, but 6-month lost 8.3 -> 9.7% and
+  2021-25-like 48 -> 63%). Loss cuts: ATLAS stands down after a closed Zlarior loss that day (cut trades +0.82 / +1.07R,
+  -$580 / -$226 a month, funded 25K first payout Jan 4 -> Jan 13) and Zlarior stands down after a closed ATLAS loss
+  (-$1,733 / -$297 / -$212 a month): both rejected. Anatomy: no bucket loses in both 2026 halves except ATLAS VIX < 15
+  (already rejected 2026-11-18).
 - **Zlarior more money, 2 pre-registered batches (2026-11-19, `lit-more-money-2026-11-19.md`, `tools/lit_more_money.py`,
   `research/lit/more_money.json`, designs `research/lit/more_money_design_batch1/2.md`, Lab rows `research/lab/lit_more_money.json`):**
   9 single versions, LIT $/month H1 / H2 / 2021-25 vs today $5,562 / $2,670 / $25: ES (MES) LIT filler on days NQ has not
