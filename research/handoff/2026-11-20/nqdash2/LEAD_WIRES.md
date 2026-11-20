@@ -11,3 +11,5 @@
 Notes
 - Pre-existing, not mine: `tests.test_trading_page --static` has 2 Odeon reel FAILs on pc too (49/51 before and after this branch).
 - nq/?demo=1 still shows the BLITZ card (paper, existing nqcore behaviour); the hidden-bot rule may want it gone there too.
+- Pre-existing layout jump on trading/: the "1. Today" card moves down 130-300 px when the banner / ZEUS edge chip above it fill in
+  (CLS 0.08 on pc, 0.08-0.23 run to run here; the deep dive is below the fold and adds none). A reserved height on #banner / #zeusEdge fixes it.
