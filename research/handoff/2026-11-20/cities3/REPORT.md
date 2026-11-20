@@ -56,3 +56,12 @@ area / LED colour) · test_cities_page 257/257 · test_datacity 194/194 (phone t
 Shots (390x844 @2x unless named): home-1-money-row, home-2-iphone15promax (430x932), world-1-night, world-2-sunset, world-3-day,
 world-4-nq-district, world-5-money-district-day, widget-glance. Videos: world-flyin.webm (16 s, the fly-in at sunset), home-intro.webm (4 s).
 Lead: LEAD_WIRES.md (nothing required).
+
+## Round 4 (lead, 2026-11-20 ~09:30 ET): the owner's money facts back in Right now
+- `#nowFacts` again starts with **Drawdown left $X of $Y max loss, <account>** (one per account, every PC account) and **Today +$X**, then the
+  trade window (it sits next to Today when that row has room, else one full line). The money row above keeps the balances, $ to pass /
+  to payout and today per account; its separate total line is gone (Today is a fact again). Names keep their own size ("Zlarior 25K #2").
+- Fits the first iPhone 13 screen: "Your six" starts at ~834 px (< 844).
+- gate.js g10 -> g11, gate.css g12 -> g13 (pins in tests/test_gate_page.py). Merged origin/pc first (gate head: pc's agora a7 / shell s5).
+- Tests: test_live_link 78/78 (check 9: $1,890 + +$140 in #nowFacts), test_gate_page 85/85, test_home_fx 18/18.
+- Shots: round4-rightnow-dark.jpg, round4-rightnow-light.jpg (Ivory).
