@@ -15,6 +15,7 @@ the bot server, never on a trade: it never starts, stops, arms or routes the bot
                fetched) cannot fast-forward:                                update's -> removed; else moved to logs/self_heal/keep-*/
                "untracked working tree files would be overwritten"        * a bot-made (engine/generated_files) file the last update
                or a bot-made file the last update named                     named: copied to keep-*/, then git checkout HEAD -- it
+                                                                          both snapshot first (a commit at refs/olympus/self-heal)
                a hand edit of any other tracked file                      never touched: the alert names the file
   disk         free space on the bot's drive under 10 GB                  the weekly clean at once; still under 2 GB: alert
   oif          a bot order file (oif_le_*) in NinjaTrader's incoming\     withdrawn (deleted; a copy in logs/self_heal/oif/): it must
@@ -197,9 +198,10 @@ def _git_exe() -> str:
 
 
 def make_git(root: str):
-    def git(*args, timeout=60):
+    def git(*args, timeout=60, env=None):
         try:
             r = subprocess.run([_git_exe(), "-C", root, *args], capture_output=True, text=True, timeout=timeout,
+                               env={**os.environ, **env} if env else None,
                                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0) if os.name == "nt" else 0)
             return r.returncode, (r.stdout or "") + (r.stderr or "")
         except Exception as e:
@@ -402,6 +404,50 @@ def _last_update(ctx) -> dict:
     return (_read_json(os.path.join(ctx.root, "data", "autoupdate.json"), {}) or {}).get("last") or {}
 
 
+SNAP_REF = "refs/olympus/self-heal"           # every file the update remedy moves or resets, as git objects (never lost)
+_WHO = {"GIT_AUTHOR_NAME": "olympus-self-heal", "GIT_AUTHOR_EMAIL": "self-heal@localhost",
+        "GIT_COMMITTER_NAME": "olympus-self-heal", "GIT_COMMITTER_EMAIL": "self-heal@localhost"}
+
+
+def snapshot(ctx, rels) -> str | None:
+    """A commit of these files exactly as they are on disk (a temp index: nothing else in the repo changes), chained at
+    SNAP_REF; the same kind of snapshot engine/autoupdate makes before a connect. Put one back:
+    git checkout refs/olympus/self-heal -- <file>. None = failed (then the remedy does not run)."""
+    rels = [r for r in rels if os.path.isfile(os.path.join(ctx.root, *r.split("/")))]
+    if not rels:
+        return None
+    os.makedirs(ctx.home, exist_ok=True)
+    idx = os.path.join(ctx.home, "snap.idx")
+    try:
+        os.remove(idx)
+    except OSError:
+        pass
+    env = {"GIT_INDEX_FILE": idx}
+    try:
+        c, prev = ctx.git("rev-parse", "--verify", "-q", SNAP_REF)
+        prev = _sha(prev) if c == 0 else None
+        if prev:
+            ctx.git("read-tree", prev, env=env)          # keep the earlier snapshots' files too
+        c, out = ctx.git("update-index", "--add", "--", *rels, env=env)
+        if c != 0:
+            return None
+        c, out = ctx.git("write-tree", env=env)
+        tree = _sha(out) if c == 0 else None
+        if not tree:
+            return None
+        c, out = ctx.git("commit-tree", tree, *(["-p", prev] if prev else []), "-m", f"OLYMPUS self-heal {ctx.stamp}: {', '.join(rels[:6])}",
+                         env=_WHO)
+        commit = _sha(out) if c == 0 else None
+        if not commit or ctx.git("update-ref", SNAP_REF, commit)[0] != 0:
+            return None
+        return commit
+    finally:
+        try:
+            os.remove(idx)
+        except OSError:
+            pass
+
+
 def fix_update(ctx) -> list:
     """The two blockers a self-heal can clear without touching the owner's work: an untracked file the update brings, and a bot-made
     file the last update named as in the way. A hand edit of any other tracked file is only reported (need)."""
@@ -438,6 +484,8 @@ def fix_update(ctx) -> list:
             done = _act(ctx, f"remove {rel}: the update brings the very same file (git would refuse to overwrite it)", lambda p=p: os.remove(p))
         else:
             def move(p=p, rel=rel):
+                if not snapshot(ctx, [rel]):
+                    raise RuntimeError("snapshot failed: the file stays")
                 _copy_keep(ctx, p, rel)
                 os.remove(p)
             done = _act(ctx, f"move {rel} to {_rel(ctx.root, ctx.keep_dir())}/ (the update brings its own copy; yours is kept there)", move)
@@ -454,6 +502,8 @@ def fix_update(ctx) -> list:
     named = [p for p in gen if p in reason] if ("overwritten" in reason or "refused" in reason or "local changes" in reason) else []
     if named:
         def reset():
+            if not snapshot(ctx, named):
+                raise RuntimeError("snapshot failed: the files stay")
             for rel in named:
                 src = os.path.join(ctx.root, *rel.split("/"))
                 if os.path.isfile(src):
@@ -1026,6 +1076,28 @@ def heal(ctx, force_clean: bool = False, board=None, push=None, disk_free=None) 
     return res
 
 
+def _lock(d: str, now) -> str | None:
+    """One self-heal at a time: the lock file's path, or None while another run holds it (a lock over 30 min old is a crash's)."""
+    os.makedirs(d, exist_ok=True)
+    p = os.path.join(d, "run.lock")
+    for _ in range(2):
+        try:
+            fd = os.open(p, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            with os.fdopen(fd, "w") as fh:
+                fh.write(str(int(now)))
+            return p
+        except FileExistsError:
+            try:
+                if time.time() - os.path.getmtime(p) <= 1800:
+                    return None
+                os.remove(p)
+            except OSError:
+                return None
+        except OSError:
+            return None
+    return None
+
+
 def maybe_run(say=print, now=None, root: str = ROOT, env=None, ctx=None) -> dict | None:
     """The 15-minute report's hook (tools/pc_report.py main): at most once an hour, Windows only (LE_SELF_HEAL=1 forces it,
     =0 turns it off). Never raises."""
@@ -1038,8 +1110,17 @@ def maybe_run(say=print, now=None, root: str = ROOT, env=None, ctx=None) -> dict
         st = _read_json(os.path.join(root, LOG_DIR_REL, "state.json"), {}) or {}
         if now - float(st.get("t") or 0) < EVERY_S:
             return None
-        ctx = ctx or Ctx(root=root, now=now, apply=True, env=env)
-        res = heal(ctx)
+        lk = _lock(os.path.join(root, LOG_DIR_REL), now)
+        if lk is None:
+            return None                                   # the 15-minute task and the report keeper started one at the same time
+        try:
+            ctx = ctx or Ctx(root=root, now=now, apply=True, env=env)
+            res = heal(ctx)
+        finally:
+            try:
+                os.remove(lk)
+            except OSError:
+                pass
         if res["fixed"] or res["need"]:
             say(f"  [{'..' if res['need'] else 'OK'}]  self-heal: fixed {len(res['fixed'])}" + (f", needs you: {res['need'][0]['text'][:90]}" if res["need"] else ""))
         return res

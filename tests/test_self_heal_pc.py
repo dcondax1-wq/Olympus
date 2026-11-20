@@ -147,6 +147,8 @@ def test_update(tmp):
     check("b. apply: the identical file removed, the different one moved to keep-*/ with its content",
           not os.path.exists(os.path.join(pc, "tools", "new_same.py")) and not os.path.exists(os.path.join(pc, "engine", "new_mine.py"))
           and os.path.isfile(mine) and open(mine).read() == "MINE = 1\n" and not os.path.exists(os.path.join(keep, "tools", "new_same.py")), r)
+    c, snap = g(pc, "show", f"{SH.SNAP_REF}:engine/new_mine.py")
+    check("b. ... and snapshotted first: git show refs/olympus/self-heal:engine/new_mine.py gives it back", c == 0 and snap == "MINE = 1\n", snap)
     check("b. data/ is never touched: the owner's data/board/shared.jsonl is still there, named as 'needs you'",
           open(os.path.join(pc, "data", "board", "shared.jsonl")).read() == '{"mine":1}\n'
           and any(i["status"] == "need" and "data/board/shared.jsonl" in i["paths"] for i in r), r)
@@ -171,6 +173,8 @@ def test_update(tmp):
     bt = os.path.join(c3.keep_dir(), "cache", "dash", "bt.json")
     check("b. the bot-made file the last update named: back to HEAD, its copy kept", by.get("update_generated", {}).get("status") == "fixed"
           and open(os.path.join(pc2, "cache", "dash", "bt.json")).read() == '{"v":1}\n' and os.path.isfile(bt) and '"pc"' in open(bt).read(), r)
+    c, snap = g(pc2, "show", f"{SH.SNAP_REF}:cache/dash/bt.json")
+    check("b. the bot-made file is in the snapshot too", c == 0 and '"pc"' in snap, snap)
     c, st = g(pc2, "status", "--porcelain", "--untracked-files=no")
     check("b. no other tracked file changed by the self-heal", sorted(ln[3:] for ln in st.splitlines()) == ["README.md", "engine/a.py"], st)
     up3, pc3 = repo_pair(tmp, "b3")
@@ -395,9 +399,15 @@ def test_heal(tmp):
     r = SH.maybe_run(say=SH.SAY_OFF, now=now + 25 * 3600 + 60, root=root, env={"LE_SELF_HEAL": "1"},
                      ctx=ctx(root, now + 25 * 3600 + 60, apply=True, ping=lambda: True))
     check("i. maybe_run: within the hour of the last run -> nothing", r is None)
+    lk = write(os.path.join(root, "logs", "self_heal", "run.lock"), "1")
     r = SH.maybe_run(say=SH.SAY_OFF, now=now + 27 * 3600, root=root, env={"LE_SELF_HEAL": "1"},
                      ctx=ctx(root, now + 27 * 3600, apply=True, ping=lambda: True))
-    check("i. maybe_run: an hour later it runs (server back: nothing needs you)", r is not None and not r["need"], r and r["items"])
+    check("i. maybe_run: another run holds the lock -> nothing (never two at once)", r is None)
+    os.utime(lk, (time.time() - 3600, time.time() - 3600))
+    r = SH.maybe_run(say=SH.SAY_OFF, now=now + 27 * 3600, root=root, env={"LE_SELF_HEAL": "1"},
+                     ctx=ctx(root, now + 27 * 3600, apply=True, ping=lambda: True))
+    check("i. maybe_run: an hour later it runs (a crashed run's 1-hour-old lock taken over; server back: nothing needs you)",
+          r is not None and not r["need"] and not os.path.exists(lk), r and r["items"])
 
 
 # ------------------------------------------------------------------------------------------------ j. the report, the doctor, the board
