@@ -61,3 +61,19 @@ Tests: pulse 128/128 (14 apps, dark + Ivory), kronos 54/54, pnyx 51/51, chrysos 
 planner 170/170, clio 47/47, atlas_ui 36/36 + node atlas hub 4/4.
 Shots: `shots/before-<app>-*.jpg` and `shots/after-<app>-*.jpg` for kronos, pnyx, chrysos, mercury, oikos, planner, clio, settings, atlas.
 LEAD_WIRES: nothing new for round 2 (every folder is in the root worker's OTHER_APPS; `?v=` tags bumped; `pulse.css` / `pulse.js` are now `?v=p2` everywhere).
+
+## Round 3: "Answer these first" (business/plan.html, the Decide cards)
+- The top of the Money Plan page is now **Answer these first (N open)**: the open Decide cards ranked by $ a month, using the fleet plan's
+  whole-fleet number (`business/fleet_plan.json` top_decide, day-fleet) when it is there, else the card's own `usd_month`.
+- The top 3 are marked **Answer now**, each with: $ a month, the question, one plain sentence ("Yes = +$390 a month (fleet plan); risk: a funded
+  Rapid lost in 6 months 38.0% with ATLAS vs 14.1% without"), Claude's call in one line, a **Checked twice** badge when a skeptic write-up is named on the card,
+  the full why / numbers / risk / source folded under "Why and the numbers", and the same Yes / No / Later taps.
+- The rest sit under **Later (8)**, answered or closed cards under **Done (3)** with what you said.
+- The taps are unchanged: same `send()`, one POST to `/inbox/board` from the PC link only; the public site shows "Open on your PC link to answer".
+  The Board and ZEUS Decide boxes look and work exactly as before (the ranked view only turns on with `data-decide-mode="rank"`).
+- Today's ranking with the fleet plan: Rapid ATLAS next to Zlarior +$390, ATLAS on Zlarior's 50K +$209, LIT on the funded 25K +$159 (Claude says NO on that one).
+- No card names the skeptic write-up yet (`atlas-funded-streak-1micro` still cites `atlas-edge-2026-11-20.md`), so no "Checked twice" badge shows today;
+  add the skeptic file to that card's `source` or `notes` and it appears.
+- Also fixed: plan.html never applied a light look (it has no kit engine); it now paints the chosen look itself.
+- Tests: test_decide 31/31 (4 new ranking checks + the page wiring), business_pages 40/40. Shots: `before-plan-*`, `after-plan-*` (public site) and
+  `after-plan-pc-*` (the PC link, with the taps), dark and light. Layout shift 0.
