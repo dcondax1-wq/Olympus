@@ -344,6 +344,31 @@
    "recommend_why": "Same money within 8% when it works, about 25-40x less chance of being wiped out before it can work. The pot is too small for $15 bets.",
    "valued": "2026-11-20 tools/money/kalshi_bankroll.py (the 105 held-out + 128 earlier K8 bets of the 3 live legs, whole days resampled, 20,000 paths of 20 trading days, fees and real prices in)",
    "closed_note": "Replaced the same night by the K8 bot's own sizing (night-kalshi8, engine/kalshi_clock.py BANKROLL): each bet = 4.5% of the cash ($2.50 at $55, grows by itself as the cash grows), with stops at 15% a day, 25% a week and 35% from the peak. An $8 bet would trip the day stop after one loss, so the bot itself would refuse a second $8 bet."
+  },
+  {
+   "id": "atlas-funded-streak-1micro",
+   "question": "ATLAS's funded 25K: after 2 losing trades in a row, trade 1 micro until the next win?",
+   "why": "A losing streak is what drains the $887 room and closes the account. Shrinking to 1 micro during a streak keeps most of the money and loses the account far less often.",
+   "impact": "At real fills (10 ticks a side), from today's account: -$22 a month in a Jan-Jun-like market ($503 -> $481), +$6 Jul-Oct-like ($402 -> $408), -$1 2021-25-like; first payout about a week later (Dec 30 instead of Dec 23 Jan-Jun-like; Jan 12 instead of Jan 7 Jul-Oct-like). With room 40% also on: $478 / $394 a month.",
+   "impact_usd": -22,
+   "options": [
+    "yes",
+    "no",
+    "later"
+   ],
+   "status": "open",
+   "source": "research/writeups/atlas-edge-2026-11-20.md",
+   "applies": "ATLAS's funded sizing: after 2 losing ATLAS trades in a row, 1 micro until a winner (engine/account_b funded preset; Claude builds it only after your yes, Sim check first)",
+   "added": "2026-11-20",
+   "usd_month": -22,
+   "usd_month_by": {
+    "jan_jun": -22,
+    "jul_oct": 6,
+    "y2021_25": -1
+   },
+   "risk": "At real fills the funded 25K is lost in 6 months 12.2% of the time instead of 17.6% (Jan-Jun-like) and 10.9% instead of 21.7% (Jul-Oct-like). With room 40% too: 10.1% and 7.7% (room 40% alone: 11.0% and 14.0%). 2021-25-like: 96% either way.",
+   "recommend": "yes",
+   "recommend_why": "It is the only one of 15 tested changes that passed: at 6 and at 10 ticks, on today's 60% and on room 40%, and again on a second set of random paths. It roughly halves the chance of losing the account before payout in a Jul-Oct-like market for about $20 a month in a Jan-Jun-like one. Best together with the room 40% yes."
   }
  ]
 }
