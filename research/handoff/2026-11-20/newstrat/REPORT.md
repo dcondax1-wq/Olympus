@@ -26,3 +26,4 @@ Tests: see bottom.
 - `python tests/run_area.py privacy`: public_build_privacy 59/59 PASS, repo_secrets 12/12 PASS; private_link and phone_safety
   could not start (`No module named 'fastapi'` in this container), not related to these research-only files.
 - `python -X utf8 research/newstrat/smt.py` reruns in ~10 s and reproduces every number.
+- VIX / VXN: not used by any of the 5 rule sets (lead's 11:13 UTC data note checked), so the fresh CBOE files change nothing.
