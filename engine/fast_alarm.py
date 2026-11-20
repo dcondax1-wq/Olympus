@@ -21,7 +21,8 @@ adapter (not paper), a weekday 01:58-15:55 ET (LIT's 02:00-15:30 entry window + 
 CME Globex open (engine/live.market_open: holidays / early halts excluded), and the bot started over START_GRACE_S ago.
 Delivery: engine/notify.instant_problem (the private ntfy alert topic, high priority, rings in quiet hours).
 No storm (redteam 2026-11-20): a condition that starts again within REPEAT_S of its last push stays silent (a flapping feed is
-one alarm, not one every minute) unless it is still there REPEAT_S after that push; at most DAY_MAX alarm pushes an ET day (each
+one alarm, not one every minute) unless it stays PERSIST_S (5 min: not a blip, after a "back to normal" the owner must hear it
+again) or is still there REPEAT_S after that push; at most DAY_MAX alarm pushes an ET day (each
 with its one "back to normal"), so a bad night can never use up ntfy's daily room that the trade alerts need. A silent one is
 still in the 15-minute report (its own condition, not skipped as a duplicate).
 Read-only: never starts, stops, arms, routes or sizes anything; it reads bot.health / bot.running / bot.cfg only.
@@ -41,6 +42,7 @@ FEED_LIMIT_S = 120
 START_GRACE_S = 180
 REPEAT_S = 30 * 60                                    # the same condition again within this of its last push: no new push
 DAY_MAX = 6                                           # alarm pushes (starts) an ET day at most
+PERSIST_S = 5 * 60                                    # a held repeat that lasts this long is pushed anyway (not a blip)
 WIN_FROM, WIN_TO = 1 * 60 + 58, 15 * 60 + 55          # ET minutes, weekdays
 COND = {"bot_down": "bot_down", "feed_stale": "feed_stale", "bot_stopped": "bot_stopped"}   # -> tools/pc_report.py condition code
 TITLE = {"bot_down": "ZEUS not polling", "feed_stale": "FEED STALE", "bot_stopped": "Bot stopped"}
@@ -129,19 +131,20 @@ class FastAlarm:
         self.pushed: dict = {}                 # code -> time of its last start push (REPEAT_S)
         self.day_n: dict = {}                  # ET day -> start pushes that day (DAY_MAX)
 
-    def _may_push(self, code, now) -> str | None:
-        """None = this start may go to the phone; else why it stays silent (rate limits)."""
+    def _may_push(self, code, now, since=None) -> str | None:
+        """None = this start may go to the phone; else why it stays silent (rate limits). since: when this (held) occurrence
+        began: one that lasted PERSIST_S is not a blip and goes out despite the repeat wait (never past DAY_MAX)."""
         lp = self.pushed.get(code)
-        if lp is not None and now - lp < REPEAT_S:
+        if lp is not None and now - lp < REPEAT_S and not (since is not None and now - float(since) >= PERSIST_S):
             return f"held: {code} pushed {_span(now - lp)} ago"
         day = dt.datetime.fromtimestamp(float(now), ET).date().isoformat()
         if int(self.day_n.get(day) or 0) >= DAY_MAX:
             return f"held: {DAY_MAX} alarm pushes today already"
         return None
 
-    def _start(self, code, text, now) -> tuple:
+    def _start(self, code, text, now, since=None) -> tuple:
         key = f"fast:{code}:{int(now)}"
-        held = self._may_push(code, now)
+        held = self._may_push(code, now, since)
         if held:
             return key, held
         r = self.send({"key": key, "code": code, "cond": COND[code], "title": TITLE[code], "body": text})
@@ -170,8 +173,8 @@ class FastAlarm:
             cur = evaluate(bot, now, server_started_at, autostart)
             for code, text in cur.items():
                 a = self.active.get(code)
-                if a is None or (a.get("held") and not a.get("sent") and self._may_push(code, now) is None):
-                    key, r = self._start(code, text, now)   # new, or a held one still there once its repeat wait is over
+                if a is None or (a.get("held") and not a.get("sent") and self._may_push(code, now, a.get("since")) is None):
+                    key, r = self._start(code, text, now, a.get("since") if a else None)   # new, or a held one that lasted
                     self.active[code] = {"since": int(a["since"]) if a else int(now), "key": key, "sent": r == "sent",
                                          "held": str(r).startswith("held")}
                     done.append((key, r))

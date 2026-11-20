@@ -372,11 +372,11 @@ def t_fast_alarm_storm():
     fa.step(b, now + 120)                                  # stale again 90 s after its alarm: held
     check("the same condition again within 30 min: held (no second alarm yet)", len([p for p in sent if not p.get("back")]) == 1
           and fa.active.get("feed_stale", {}).get("held"), (sent, fa.active))
-    tt = now + 30 + FAL.REPEAT_S + 1
+    tt = now + 120 + FAL.PERSIST_S + 1
     b.health["last_ok_poll"] = tt - 5
     b.health["last_1m_bar_t"] = tt - tt % 60 - 240
     fa.step(b, tt)
-    check("... still stale 30 min after its alarm: it is pushed then (a lasting problem is never silent)",
+    check("... the held repeat still there 5 min later (after a 'back to normal'): pushed then, never silent",
           len([p for p in sent if not p.get("back")]) == 2 and fa.active["feed_stale"]["sent"], sent)
     sent.clear()
     fa = FAL.FastAlarm(send=lambda p: sent.append(p) or "sent", clock=lambda: now)
