@@ -66,7 +66,7 @@ varying vec3 vColor; varying vec4 vData; varying vec4 vState; varying vec3 vLoca
 varying vec4 vLook; varying vec3 vW; varying float vRound; varying float vHalf;
 ${FOG}
 ${HASH}
-float h2(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7)) + vSeed*17.0)*43758.5453); }
+float h2(vec2 p){ vec3 p3 = fract(vec3(p.xyx) * 0.1031 + vSeed * 0.731); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }   // sin-free: stable per cell on every GPU
 vec3 envSky(vec3 d){                                         // the sky the glass reflects (the same blue hour as the sky dome, the city's warm glow low)
   float h = clamp(d.y, -0.4, 1.0);
   vec3 zen = mix(vec3(${NEON ? '0.022,0.032,0.072' : '0.10,0.09,0.20'}), vec3(0.20,0.42,0.80), uDay);
@@ -99,7 +99,8 @@ void main(){
   vec2 wb = smoothstep(lo - fw, lo + fw, f) * (1.0 - smoothstep(hi - fw, hi + fw, f));
   float far = smoothstep(0.32, 0.85, max(fw.x, fw.y));                      // far away the grid melts into its average (no shimmer)
   float win = mix(wb.x * wb.y, 0.3, far) * side * body0 * (1.0 - lobby);
-  float rnd = h2(cell + n.xz*3.1);
+  float face = (n.x > n.z ? 1.0 : 3.0) + (N.x + N.z > 0.0 ? 0.0 : 5.0);       // which wall (a whole number: no per-pixel noise on tapered walls)
+  float rnd = h2(cell + face * 17.3);
   float steady = vLook.y;                                                    // 1 gold, .8 holds in both, .4 one period, .1 none
   // the windows tell the data: lit = holds in 2021-25 and 2026; unstable ideas flicker, gold ones breathe
   float topDark = 1.0 - 0.35 * smoothstep(0.55, 1.0, vLocal.y) * (1.0 - uDay);    // the upper floors go home first
@@ -150,8 +151,8 @@ void main(){
   float sill = mix(0.82 + 0.3 * (1.0 - f.y), 1.0, far);
   col += win * lit * dimW * breathe * sill * wc * mix(2.2, 0.30, uDay);
   // the lobby: a warm bright band at street level, framed by its own entry columns
-  float lob = lobby * side * body0 * step(0.12, hy) * (0.65 + 0.35*step(0.25, fract(gx * 1.5)));
-  col = mix(col, vec3(1.0, 0.82, 0.58) * mix(0.95, 0.45, uDay) * (0.6 + 0.4*h2(vec2(vSeed, 3.0))), lob * 0.85);
+  float lob = lobby * side * body0 * smoothstep(0.1, 0.18, hy) * (1.0 - smoothstep(0.62, 0.7, hy)) * (0.55 + 0.45*smoothstep(0.1, 0.2, abs(fract(gx * 1.5) - 0.5)));
+  col = mix(col, vec3(1.0, 0.82, 0.58) * mix(0.75, 0.4, uDay) * (0.5 + 0.5*h2(vec2(vSeed, 3.0))), lob * 0.6);
   // the idea's colour only as accents: a thin crown light line, faint corner lines on real towers, the roof, the spire
   float tall = smoothstep(4.0, 9.0, H);
   float edge = smoothstep(0.90, 1.0, abs(across) / vHalf) * side * (1.0 - vRound);
