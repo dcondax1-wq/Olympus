@@ -32,7 +32,7 @@ in tests). Nothing needs rotating.
 ### 1. Privacy: what is public
 - **The repo `dcondax1-wq/olympus` is public** (GitHub API: `visibility: public`). `update_source.json` calls it "the private
   backup repo", so the owner thinks it is private. Public in it: the owner's birthday (engine/money_goal.py x3,
-  tests/fixtures/argus/home_real.json x2: "before I turn 19 (Feb 22, 2027)"); the old GitHub handle (= the local part of the owner's
+  tests/fixtures/argus/home_real.json x2: the car goal states an age and an exact date); the old GitHub handle (= the local part of the owner's
   gmail) in ~220 places; the whole strategy, STATE.md, docs, the plan and nickname-level balances. No real account ids, emails,
   phone numbers, tailnet names or keys (checked: site_privacy scan over every tracked file. Hits are test fakes and agency demo
   data, i.e. public business listings).
