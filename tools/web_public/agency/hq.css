@@ -44,3 +44,6 @@
 .hq-crm { margin: 6px 2px 0; font: 700 var(--ag-fs-sub, 1.0625rem)/1.2 var(--ag-serif); color: var(--ag-soft); }
 @media (min-width: 700px) { .hq-tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); } .hq-tile[data-slice="calls"] { grid-column: auto; } }
 @media (prefers-reduced-motion: reduce) { .hq * { transition: none !important; animation: none !important; } }
+/* the Ask Jarvis button (fixed bottom-left, 44 px, olympus.js) sits over the first tile row on the first phone screen (lead review 2026-11-20):
+   on narrow phones the row's left tile keeps its text right of the button */
+@media (max-width: 560px) { .hq-tiles > .hq-tile:first-child { padding-left: 50px; } }
