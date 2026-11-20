@@ -5,6 +5,7 @@
 // ?demo=1 the example; ?demo=1&silent=4d (or 90m, 5h) the example with a silent PC; ?flat=1 the 2D columns; ?howto=1 opens the sheet.
 import * as C from './nqcore.js?v=d4';   // d1 (polish2 2026-11-19): the CME trading day
 import * as T from '../olympus/truth.js';
+import * as D from './nqdesk.js?v=1';     // nqdash3: the accounts strip, the bots' thinking, the quality checks
 
 const O = window.OLYMPUS || null;
 const $ = (id) => document.getElementById(id);
@@ -194,11 +195,33 @@ function closeSheet() {
   try { if (S.last && S.last.focus) S.last.focus(); } catch (_) { /* nothing */ }
 }
 
+// ------------------------------------------------------------------------------------------------ nqdash3: accounts, thinking, quality (nqdesk.js)
+function deskHome() { return S.demo ? demoHome(S.fixture, Date.now(), S.silent) : S.home; }
+function renderDesk() {
+  const nowS = Date.now() / 1000, home = deskHome(), file = S.demo ? (S.fixture && S.fixture.trades_file) || S.tfile : S.tfile;
+  try {
+    const A = D.accounts(home, S.biz, nowS), box = $('acctStrip');
+    if (box) { D.draw.accounts(box, A); for (const c of box.children) c.setAttribute('role', 'listitem'); }
+    const nLive = A.filter((a) => a.dot === 'live').length, p = $('acctPill');
+    if (p) { p.textContent = S.demo ? 'DEMO' : `${nLive} of ${A.filter((a) => a.dot !== 'plan').length} live`; p.className = 'pill ' + (S.demo ? 'warn' : nLive ? 'ok' : 'bad'); }
+  } catch (_) { /* the rest of the page still draws */ }
+  try {
+    const B = D.thinking(home, S.news, file, nowS), box = $('think');
+    if (box) D.draw.thinking(box, B);
+    const p = $('thinkPill'); if (p) { const inT = B.filter((b) => b.phase === 'in').length; p.textContent = inT ? `${inT} in a trade` : S.demo ? 'DEMO' : 'LIVE'; p.className = 'pill ' + (inT ? 'warn' : S.demo ? 'warn' : 'ok'); }
+  } catch (_) { /* nothing */ }
+  try {
+    const Q = D.quality(home, file, S.news, nowS), box = $('qual');
+    if (box) D.draw.quality(box, Q);
+    const p = $('qualPill'); if (p) { p.textContent = `${Q.okN} of ${Q.rows.length} OK`; p.className = 'pill ' + Q.level; }
+  } catch (_) { /* nothing */ }
+}
+
 function render() {
   model();
   const v = S.view;
   $('demo').hidden = !S.demo; try { $('lite').hidden = !(O && O.lite && O.lite()); } catch (_) { $('lite').hidden = true; }
-  renderBanner(); renderScene(); renderPlan(); renderBots(); renderNews(); renderTrades(); renderFacts();
+  renderBanner(); renderDesk(); renderScene(); renderPlan(); renderBots(); renderNews(); renderTrades(); renderFacts();
   say(`${v.headline}${v.tight ? ` ${v.tight.name}: ${v.tight.ddLine}.` : ''}${S.demo ? ' Example numbers.' : ''}`);
   { const el = $('src'); if (el) el.textContent = srcLine(); }
   S.ready = true;
@@ -231,8 +254,9 @@ async function boot() {
   for (const b of document.querySelectorAll('[data-howto]')) b.addEventListener('click', () => openSheet(b));
   $('sheetClose').addEventListener('click', closeSheet); $('veil').addEventListener('click', closeSheet);
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSheet(); else if (e.key === 'Tab' && S.sheet) { e.preventDefault(); try { $('sheetClose').focus(); } catch (_) { /* nothing */ } } });   // the sheet has one control: focus stays on it
-  const [fx, home, howto, news, learned] = await Promise.all([getJSON('./fixture.json'), S.forced ? null : getJSON('../home.json'), getJSON('./howto.json'), getJSON('./news_week.json'), S.forced ? null : getJSON('../hub/learned.json')]);
-  S.fixture = fx; S.howto = howto; S.news = news; S.learned = learned;
+  const [fx, home, howto, news, learned, biz, tfile] = await Promise.all([getJSON('./fixture.json'), S.forced ? null : getJSON('../home.json'), getJSON('./howto.json'), getJSON('./news_week.json'), S.forced ? null : getJSON('../hub/learned.json'),
+    getJSON('../business/accounts.json'), getJSON('../trading/trades.json')]);
+  S.fixture = fx; S.howto = howto; S.news = news; S.learned = learned; S.biz = biz; S.tfile = tfile;
   // the PC's 15-minute status (no GitHub) first, up to 3.5 s, so the first numbers on screen are the real ones; when it is later than
   // that the cloud's copy shows (its source line says so) and the post is laid over it when it arrives, however long ntfy takes
   const post = home ? withPost(home) : Promise.resolve(home);
@@ -247,5 +271,5 @@ async function boot() {
   const A = window.AGORA;                                                // pull down to fetch the newest report (olympus/agora-ui.js)
   if (A && A.pull) A.pull(async () => { try { window.dispatchEvent(new Event('nq-refresh')); } catch (_) { /* the live chart polls by itself */ } await refresh(); if (A.toast) A.toast(S.forced ? 'Demo numbers: nothing to refresh' : 'Up to date'); });
 }
-window.NQ = { S, C, ready: () => S.ready, render, openSheet, closeSheet };
+window.NQ = { S, C, D, ready: () => S.ready, render, openSheet, closeSheet };
 boot().catch((e) => { say('Something went wrong: ' + (e && e.message ? e.message : e)); try { if (O && O.fail) O.fail('NQ could not start'); } catch (_) { /* nothing */ } });

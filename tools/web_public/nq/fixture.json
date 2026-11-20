@@ -34,7 +34,97 @@
       "text": "No more checks today; the next at 11:00 ET on the next trading day."
      },
      "today": []
+    },
+    "glance": {
+     "v": 1,
+     "t_ago_min": 4,
+     "bots": [
+      {
+       "id": "lit",
+       "name": "Zlarior",
+       "on": true,
+       "mode": "LIVE",
+       "wait": "One trade taken today (the limit is one a day). Next chance tomorrow 02:00 ET.",
+       "why": "09:41 LONG setup traded (TIME +0.80R). One trade a day: done until tomorrow.",
+       "arm": [
+        {
+         "side": "LONG",
+         "text": "forming",
+         "trig": "Swept the Asia low; it needs a 5-minute close back above 21,012 to arm."
+        }
+       ],
+       "lv": [
+        [
+         "Asia high",
+         21088.5,
+         42.3
+        ],
+        [
+         "Prev day high",
+         21140.0,
+         93.8
+        ],
+        [
+         "Asia low",
+         20994.25,
+         -52.0
+        ],
+        [
+         "London low",
+         20961.0,
+         -85.2
+        ]
+       ],
+       "day": 312,
+       "room": 1420,
+       "mll": 2000
+      },
+      {
+       "id": "atlas",
+       "name": "ATLAS",
+       "on": true,
+       "mode": "LIVE",
+       "wait": "EMA long running; MACD and S/R wait for their hours.",
+       "arm": [
+        {
+         "side": "LONG",
+         "text": "EMA: entry 21,031.00 · stop 21,016.00 · target 21,061.00",
+         "trig": "EMA entered on the pullback to the 20 EMA."
+        }
+       ],
+       "lv": [
+        [
+         "EMA 20",
+         21028.4,
+         -2.1
+        ],
+        [
+         "S/R 21,080",
+         21080.0,
+         49.5
+        ]
+       ],
+       "pos": {
+        "side": "LONG",
+        "qty": 2,
+        "entry": 21031.0,
+        "stop": 21016.0,
+        "target": 21061.0,
+        "risk_usd": 60,
+        "tgt_usd": 120,
+        "now_usd": 46
+       },
+       "day": -14,
+       "room": 840,
+       "mll": 1000
+      }
+     ]
     }
+   },
+   "reporter": {
+    "t_ago_min": 4,
+    "server": true,
+    "na_ago_min": 18
    }
   },
   "board": {
@@ -51,7 +141,11 @@
     "profit": 420,
     "today_pnl": 312,
     "status": "open",
-    "waiting": "One trade taken today (the limit is one a day). Next chance tomorrow from 02:00 ET."
+    "waiting": "One trade taken today (the limit is one a day). Next chance tomorrow from 02:00 ET.",
+    "window": {
+     "open": false,
+     "text": "next entry window Mon 02:00-15:30 ET"
+    }
    },
    "atlas": {
     "name": "ATLAS",
@@ -63,10 +157,26 @@
     "target_balance": 26500,
     "profit": 210,
     "today_pnl": -60,
-    "status": "open",
-    "waiting": "Done for today (1 trade a day)."
+    "status": "funded",
+    "waiting": "Done for today (1 trade a day).",
+    "window": {
+     "open": true,
+     "text": "London EMA window 02:00-05:00 ET"
+    },
+    "payout_text": "Ask the full $1,000 at a $27,100 balance (payout coach)."
    },
    "trades": [
+    {
+     "acct": "atlas",
+     "src": "live",
+     "key": "ema_lon_vix",
+     "member": "EMA",
+     "side": "LONG",
+     "usd": 46,
+     "r": 0.3,
+     "open": true,
+     "entry_t_ago_min": 18
+    },
     {
      "acct": "lit",
      "src": "live",
@@ -205,6 +315,64 @@
      "entry_t_ago_min": 10216
     }
    ]
-  }
+  },
+  "pc_feed": {
+   "t_ago_min": 4,
+   "report_t_ago_min": 4
+  },
+  "accounts": [
+   {
+    "id": "mffu50k_eval",
+    "name": "Zlarior 50K",
+    "source": "pc",
+    "live": true,
+    "conn": {
+     "t_ago_min": 4
+    },
+    "eval": {
+     "balance": 50420,
+     "room": 1420,
+     "mll": 2000,
+     "to_target": 2580,
+     "today": 312,
+     "status": "open"
+    }
+   },
+   {
+    "id": "b25k_2",
+    "name": "Zlarior 25K #2",
+    "source": "pc",
+    "live": true,
+    "conn": {
+     "t_ago_min": 4
+    },
+    "eval": {
+     "balance": 25118,
+     "room": 1000,
+     "mll": 1000,
+     "to_target": 1382,
+     "today": 0,
+     "status": "open"
+    }
+   },
+   {
+    "id": "atlas",
+    "name": "ATLAS",
+    "source": "pc",
+    "live": true,
+    "from_board": true,
+    "conn": {
+     "t_ago_min": 4
+    },
+    "eval": {
+     "balance": 25210,
+     "room": 840,
+     "mll": 1000,
+     "to_target": 1890,
+     "today": -14,
+     "status": "funded"
+    }
+   }
+  ]
  }
 }
