@@ -17,6 +17,8 @@ const clear = (el) => { while (el.firstChild) el.removeChild(el.firstChild); };
 const S = { fixture: null, home: null, howto: null, demo: false, forced: false, silent: 0, view: null, scene: '2d', ready: false, sheet: false, last: null };
 
 async function getJSON(url, ms) {
+  const E = window.NQ_EARLY && window.NQ_EARLY.json;  // perf: the page head started it already (index.html); used once
+  if (E && E[url]) { const p = E[url]; delete E[url]; try { return await p; } catch (_) { return null; } }
   const ac = typeof AbortController === 'function' ? new AbortController() : null, timer = ac ? setTimeout(() => ac.abort(), ms || 6000) : 0;
   try { const r = await fetch(url, { cache: 'no-cache', ...(ac ? { signal: ac.signal } : {}) }); return r.ok ? await r.json() : null; } catch (_) { return null; } finally { clearTimeout(timer); }
 }
