@@ -25,7 +25,6 @@
 <script src="../olympus/intro-app.js?v=i11" defer></script>
 <script src="../olympus/a11y.js" defer></script>
 <script src="../olympus/agora-ui.js?v=5" defer></script>
-<script src="../olympus/sfx.js?v=s4" defer></script>
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#c8a24a'); r.setProperty('--oly-accent-rgb', '200, 162, 74'); })();</script>
 <link rel="stylesheet" href="mercury.css?v=a1rde">
 <link rel="stylesheet" href="../olympus/shell.css?v=s6"><!-- day-arenas: the one design layer, loaded last -->
@@ -84,7 +83,8 @@
   <section class="pulse" data-pulse="money" data-pulse-app="mercury" aria-label="Real fees and payouts so far" aria-busy="true"><div class="pu-part pu-money"></div></section><!-- day-arenas: olympus/pulse.js -->
 </main>
 <script type="module" src="mercury.js?v=a2"></script>
-<script type="module" src="mercury3d.js?v=a1"></script>
+<!-- perf (day-a11y 2026-11-20, PERF ask 3): the decorative 3D loads through olympus/lazy3d.js: after the first paint, never on LITE or a save-data / slow / small phone -->
+<script src="../olympus/lazy3d.js?v=l2" data-src="mercury3d.js?v=a1" data-skip="lite" defer></script>
 <script type="module" src="../olympus/pulse.js?v=p7"></script>
 </body>
 </html>
