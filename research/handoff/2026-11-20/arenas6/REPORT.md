@@ -13,3 +13,8 @@ Owner 17:00 ET: "organize the dashboard, I want like 6 arenas, that's it, then a
 | Tests | gate_page, apps_list, nav_pages pins updated; new nav_pages check "Home: exactly 6 arenas in this order, plus one Everything else area" (static + 390x844 browser). test_warp a./b. fail the same with my changes stashed (from the merged Zenith page): not this branch. |
 
 Shots: `home-top-*`, `home-arenas-*`, `home-else-*` (dark + light, 390x844 @2x) in this folder.
+
+## Polish (lead, 18:30 ET)
+- Everything else = 10 apps only: Planner, Every trade, Your real money, Live board, 12-month money plan, Inbox, iPhone widget,
+  Kalshi desk, Morning briefing, Settings; then one "See all apps (A to Z)" button (the existing A to Z sheet).
+- Strategy forge (prometheus) hidden from the Home: search, A to Z, pins (gate.js Home-only list). Its page is untouched.

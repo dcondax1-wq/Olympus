@@ -59,7 +59,7 @@
     if (!again) localStorage.setItem('oly.homefx.day', dk);
   } } catch (e) { /* private mode: plain */ }
   var i = d.createElement('link'); i.rel = 'icon'; i.href = b + 'gate/icon.svg'; h.appendChild(i);
-  ['olympus/themes.js?v=o9', 'pc_feed.js?v=n6', 'olympus/gate-catalog.js?v=nv10', 'olympus/hub-status.js?v=h3', 'age.js?v=1', 'business/payoutcoach.js?v=2', 'gate/gate.js?v=g19', 'olympus/home-fx.js?v=x2', 'olympus/a11y.js'].forEach(function (src) { var s = d.createElement('script'); s.src = b + src; s.async = false; h.appendChild(s); });
+  ['olympus/themes.js?v=o9', 'pc_feed.js?v=n6', 'olympus/gate-catalog.js?v=nv10', 'olympus/hub-status.js?v=h3', 'age.js?v=1', 'business/payoutcoach.js?v=2', 'gate/gate.js?v=g20', 'olympus/home-fx.js?v=x2', 'olympus/a11y.js'].forEach(function (src) { var s = d.createElement('script'); s.src = b + src; s.async = false; h.appendChild(s); });
 })();</script>
 <script>(function () {   /* the Launch card + first-day checklist (gate/launch.js, docs/LAUNCH_DAY.md): only when the PC serves the site (/site/) */
   if (!/^\/site\//.test(location.pathname || '')) return;
@@ -99,13 +99,13 @@
     </nav>
   </section>
 
-  <!-- EVERYTHING ELSE: one area for the smaller apps (Planner first, then Trading, Ledger, Board, Hera, the rest A to Z; retired apps hidden) -->
+  <!-- EVERYTHING ELSE: the 10 smaller apps he uses (lead 2026-11-20), then one button to the A to Z sheet (every live app) -->
   <section class="g-else" id="elseSec" aria-labelledby="elseH">
     <h2 class="g-h2" id="elseH">Everything else</h2>
     <nav class="g-elist" id="elseList" aria-labelledby="elseH">
-      <a class="g-eapp" data-to="planner/index.html" href="planner/index.html">My day</a><a class="g-eapp" data-to="trading/index.html" href="trading/index.html">Trades</a><a class="g-eapp" data-to="ledger/index.html" href="ledger/index.html">Real money</a><a class="g-eapp" data-to="board/index.html" href="board/index.html">Board</a><a class="g-eapp" data-to="hera/index.html" href="hera/index.html">Payout plan</a>
+      <a class="g-eapp" data-to="planner/index.html" href="planner/index.html" data-app="planner">Day and week plan</a><a class="g-eapp" data-to="trading/index.html" href="trading/index.html" data-app="trading">Every trade</a><a class="g-eapp" data-to="ledger/index.html" href="ledger/index.html" data-app="ledger">Your real money</a><a class="g-eapp" data-to="board/index.html" href="board/index.html" data-app="board">Live board</a><a class="g-eapp" data-to="hera/index.html" href="hera/index.html" data-app="hera">12-month money plan</a><a class="g-eapp" data-to="inbox/index.html" href="inbox/index.html" data-app="inbox">Inbox</a><a class="g-eapp" data-to="widget/index.html" href="widget/index.html" data-app="widget">iPhone widget</a><a class="g-eapp" data-to="dionysus/index.html" href="dionysus/index.html" data-app="dionysus">Kalshi desk</a><a class="g-eapp" data-to="helios/index.html" href="helios/index.html" data-app="helios">Morning briefing</a><a class="g-eapp" data-to="settings/index.html" href="settings/index.html" data-app="settings">Settings</a>
     </nav>
-    <a class="g-btn g-elsemore" data-to="gate/index.html#az" href="gate/index.html#az">All apps A to Z</a>
+    <a class="g-btn g-elsemore" id="elseAll" data-to="gate/index.html#az" href="gate/index.html#az">See all apps (A to Z)</a>
   </section>
 
 <section class="g-card g-now" id="now" aria-labelledby="nowH" data-state="loading">
@@ -192,7 +192,7 @@
 <script>(function () { /* NAV FX (2026-11-20, owner: "3D, effects, no gold"): glass icons, aurora, tilt, roll-ups; loaded after the first paint */
   var b = window.GATE_BASE || '', d = document;
   var s = d.createElement('script'); s.src = b + 'hub/navfx.js?v=2'; s.defer = true; d.body.appendChild(s);
-  var ar = d.createElement('script'); ar.src = b + 'gate/arenas.js?v=2'; ar.defer = true; d.body.appendChild(ar);   /* the 6 arenas' live lines + Everything else */
+  var ar = d.createElement('script'); ar.src = b + 'gate/arenas.js?v=3'; ar.defer = true; d.body.appendChild(ar);   /* the 6 arenas' live lines + Everything else */
   var dl = d.createElement('link'); dl.rel = 'stylesheet'; dl.href = b + 'olympus/dashfx.css?v=d1'; d.head.appendChild(dl);
   var dx = d.createElement('script'); dx.src = b + 'olympus/dashfx.js?v=d1'; dx.defer = true; d.body.appendChild(dx);   /* DESIGN's glass on the arenas */
 })();</script>

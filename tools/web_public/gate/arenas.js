@@ -8,15 +8,15 @@
  *       Business  the first payout goal: "$X of $2,100" (MFFU funded starts at $0)     (GATE.state.N.cards, the funded card's to-payout)
  *       Jarvis    the last brief line                                                  (nq/brief.json headline)
  *       Cities    a short tagline (static)
- *   - fills "Everything else" from the catalog (olympus/gate-catalog.js): every live app but the 6 and the retired ones, Planner first,
- *     then Trading, Ledger, Board, Hera, then the rest A to Z by its plain name.
+ *   - fills "Everything else" from the catalog (olympus/gate-catalog.js): the 10 smaller apps he uses (FIRST, retired ones skipped);
+ *     every other app sits behind 'See all apps (A to Z)' (the gate.js sheet).
  * Text only through textContent. No storage written. window.GATE_ARENAS (tests). */
 (function () {
   'use strict';
   var d = document, w = window, base = w.GATE_BASE || '';
   if (w.GATE_ARENAS) return;
   var SIX = ['cities', 'kalshi', 'nq', 'jarvis', 'agency', 'business'];
-  var FIRST = ['planner', 'trading', 'ledger', 'board', 'hera'];
+  var FIRST = ['planner', 'trading', 'ledger', 'board', 'hera', 'inbox', 'widget', 'dionysus', 'helios', 'settings'];   // lead 2026-11-20: only these 10, then 'See all apps (A to Z)'
   var PAYOUT_GOAL = 2100;      // MFFU Builder 25K funded: the first (max) payout request at $2,100 profit (CLAUDE.md, docs/ACCOUNT_RULES.md)
   function $(id) { return d.getElementById(id); }
   function num(x) { var n = typeof x === 'number' ? x : parseFloat(x); return isFinite(n) ? n : null; }
@@ -58,15 +58,14 @@
     return out;
   }
 
-  /** Everything else: every live, non-retired catalog app but the 6, Planner / Trading / Ledger / Board / Hera first, then A to Z */
+  /** Everything else: the 10 of FIRST that are live (not retired), in that order */
   function others(C) {
     if (!C || !C.apps) return [];
     var ret = C.retired || function () { return false; }, seen = {};
     var live = C.apps.filter(function (a) { return a && a.id && SIX.indexOf(a.id) < 0 && !ret(a.id) && a.section !== 'workshop' && a.id !== 'today' && !a.fold; });
     var first = [];
     FIRST.forEach(function (id) { live.forEach(function (a) { if (a.id === id && !seen[id]) { first.push(a); seen[id] = 1; } }); });
-    var rest = live.filter(function (a) { return !seen[a.id]; }).sort(function (x, y) { var a = String(x.label).toLowerCase(), b = String(y.label).toLowerCase(); return a < b ? -1 : a > b ? 1 : 0; });
-    return first.concat(rest);
+    return first;      // the rest: the 'See all apps (A to Z)' button
   }
 
   var elseDone = false;

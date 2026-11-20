@@ -100,8 +100,13 @@ def part_arenas():
     check("o. Home: the arenas, then ONE 'Everything else' area (the old app grid, doors and hubs hidden: still in the page for search / A to Z)",
           g.index('id="arenas"') < g.index('id="elseSec"') and 'id="elseH">Everything else</h2>' in g and "g-quick" not in shown and "g-four" not in shown and "g-hubs" not in shown
           and g.index('id="q"') < g.index('id="arenas"'), shown)
-    check("o. Business arena links the Planner at its top; Everything else starts with Planner, Trading, Ledger, Board, Hera",
-          'class="g-asub" data-to="planner/index.html"' in g and re.findall(r'<a class="g-eapp" data-to="([a-z]+)/', g)[:5] == ["planner", "trading", "ledger", "board", "hera"])
+    TEN = ["planner", "trading", "ledger", "board", "hera", "inbox", "widget", "dionysus", "helios", "settings"]
+    check("o. Business arena links the Planner at its top; Everything else = the 10 he uses (Planner ... Settings), then one 'See all apps (A to Z)' button",
+          'class="g-asub" data-to="planner/index.html"' in g and re.findall(r'<a class="g-eapp" data-to="([a-z]+)/', g) == TEN
+          and 'id="elseAll" data-to="gate/index.html#az" href="gate/index.html#az">See all apps (A to Z)</a>' in g)
+    gj = open(os.path.join(WEB, "gate", "gate.js"), encoding="utf-8").read()
+    check("o. the Strategy forge (prometheus) is off the Home: in gate.js's Home-only hidden list (search, A to Z, pins); its page stays",
+          re.search(r"var RETIRED = \{[^}]*\bprometheus: 1", gj) is not None and os.path.exists(os.path.join(WEB, "prometheus", "index.html")))
     d = open(os.path.join(WEB, "olympus", "doors.js"), encoding="utf-8").read()
     check("o. doors.js ARENAS = the same 6 in the same order (the launcher and the Doors page read it); web_next copy byte-identical",
           re.findall(r"\{ id: '([a-z]+)', label: '[^']+', href: '[^']+', line:", d) == ["cities", "kalshi", "nq", "jarvis", "agency", "business"]
@@ -212,9 +217,10 @@ def part_b(shots: bool):
                         pg.wait_for_function("window.GATE_ARENAS && GATE_ARENAS.ready", timeout=20000)
                         a = pg.evaluate("""(() => { const t = [...document.querySelectorAll('.g-arena')]; const vh = innerHeight;
                           return { n: t.length, lines: t.map((x) => (x.querySelector('.g-aline') || {}).textContent || ''), onfirst: t.every((x) => x.getBoundingClientRect().bottom <= vh + 1),
-                                   elseN: document.querySelectorAll('#elseList .g-eapp').length, first: (document.querySelector('#elseList .g-eapp') || {}).textContent }; })()""")
-                        check(f"o. Home at 390 x 844: the 6 arenas each with a live line, all 6 on the first screen; Everything else holds {a['elseN']} apps, Planner first",
-                              a["n"] == 6 and all(a["lines"]) and a["onfirst"] and a["elseN"] >= 20 and a["first"] == "Day and week plan", a)
+                                   elseN: document.querySelectorAll('#elseList .g-eapp').length, first: (document.querySelector('#elseList .g-eapp') || {}).textContent,
+                                   forge: [...document.querySelectorAll('a')].some((x) => (x.getAttribute('href') || '').indexOf('prometheus/') >= 0) }; })()""")
+                        check(f"o. Home at 390 x 844: the 6 arenas each with a live line, all 6 on the first screen; Everything else holds {a['elseN']} apps (10), Planner first, no Strategy forge link anywhere on Home",
+                              a["n"] == 6 and all(a["lines"]) and a["onfirst"] and a["elseN"] == 10 and a["first"] == "Day and week plan" and not a["forge"], a)
                     check(f"f. fx {url} [{'reduced motion' if still else 'motion'}]: Olympus Night (black), the aurora {'still' if still else 'moving'}, tilt {'off' if still else 'on'}, CLS {r['cls']:.3f} < 0.05, the real numbers final, no error", ok, (r, errs[:2]))
                     pg.close()
                 ctx.close()
