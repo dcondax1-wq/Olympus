@@ -168,7 +168,7 @@ export class CityScene {
     for (let i = 0; i < n; i++) {
       const a = Math.random() * Math.PI * 2, h = 0.1 + Math.pow(Math.random(), 0.8) * 0.88, r = 1400, flat = Math.sqrt(1 - h * h);
       p.set([Math.cos(a) * r * flat, h * r, Math.sin(a) * r * flat], i * 3);
-      size[i] = 1.2 + Math.pow(Math.random(), 6) * 2.6; ph[i] = Math.random();             // tiny, a few brighter; each twinkles slowly
+      size[i] = 1.0 + Math.pow(Math.random(), 8) * 2.0; ph[i] = Math.random();             // tiny, a few brighter; each twinkles slowly
     }
     this.stars = points({ position: [p, 3], aSize: [size, 1], aPh: [ph, 1] }, new THREE.ShaderMaterial({ vertexShader: SH.STAR_VS, fragmentShader: SH.STAR_FS,
       uniforms: { ...pick(this.U, 'uTime', 'uPR'), uA: { value: 0.85 } }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));

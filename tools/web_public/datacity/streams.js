@@ -19,7 +19,7 @@ void main(){
   float head = sin(3.14159 * t);
   vColor = aColor; vA = 0.35 + 0.65 * head;
   vec4 mv = modelViewMatrix * vec4(p, 1.0);
-  gl_PointSize = aC.w * uPR * (0.6 + 0.8 * head) * (140.0 / max(1.0, -mv.z));
+  gl_PointSize = min(aC.w * (0.6 + 0.8 * head) * (140.0 / max(1.0, -mv.z)), 7.0) * uPR;     // revamp: never a big bokeh disc near the camera
   gl_Position = projectionMatrix * mv;
 }`;
 const FS = `

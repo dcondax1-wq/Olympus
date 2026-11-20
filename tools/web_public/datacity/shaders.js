@@ -92,8 +92,8 @@ void main(){
   vec2 g = vec2(gx, hy * 1.7);
   vec2 cell = floor(g); vec2 f = fract(g);
   vec2 fw = min(fwidth(g), vec2(1.0));
-  float body0 = 1.0 - step(1.0, vLocal.y);                                  // the crown above the roof has no windows
-  float lobby = 1.0 - step(0.85, hy);                                        // the street floor: a lobby band, no window grid
+  float body0 = 1.0 - step(1.002, vLocal.y);                                // the crown above the roof has no windows (the roof itself, y = 1, is body)
+  float lobby = (1.0 - step(0.85, hy)) * step(2.2, H);                     // the street floor of a real building: a lobby band, no window grid
   // the window grid, anti-aliased (fwidth), each pane soft-edged: mullions and spandrels in between
   vec2 lo = vec2(0.17, 0.26), hi = vec2(0.83, 0.80);
   vec2 wb = smoothstep(lo - fw, lo + fw, f) * (1.0 - smoothstep(hi - fw, hi + fw, f));
@@ -130,6 +130,7 @@ void main(){
   float grain = 0.94 + 0.12 * h2(floor(vLocal.xz*40.0) + floor(hy*6.0));
   float ao = mix(0.42, 1.0, smoothstep(0.0, 4.5, hy)) * mix(0.8, 1.0, smoothstep(0.0, 1.0, vLocal.y));   // the base darker, near the street
   vec3 body = stone * diff * grain * ao;
+  body += stone * vec3(1.0, 0.62, 0.36) * 1.6 * max(dot(N, normalize(uSun)), 0.0) * uDusk * uDay * side;   // the golden hour rakes the facades that face the low sun
   float glassK = clamp(vLook.z * 0.75 + win * 0.6, 0.0, 1.0);                // curtain walls are glass all over, a window is always glass
   float rough = mix(vLook.w, 0.06, glassK);
   float fres = 0.04 + 0.96 * pow(1.0 - NoV, 5.0);
@@ -154,9 +155,9 @@ void main(){
   // the idea's colour only as accents: a thin crown light line, faint corner lines on real towers, the roof, the spire
   float tall = smoothstep(4.0, 9.0, H);
   float edge = smoothstep(0.90, 1.0, abs(across) / vHalf) * side * (1.0 - vRound);
-  float crown = (1.0 - smoothstep(0.0, 0.12 + 0.02*H, (1.0 - vLocal.y) * H)) * side * body0;
+  float crown = (1.0 - smoothstep(0.03, 0.07 + 0.012*H, (1.0 - vLocal.y) * H)) * side * body0;
   float neon = mix(1.0, 0.45, uDay);
-  col += vColor * (edge*0.32*tall + crown*1.1) * neon;
+  col += vColor * (edge*0.3*tall + crown*(0.55 + 0.7*tall)) * neon;
   col += vColor * step(0.985, fract(hy*0.3 - uTime*0.3 + vSeed)) * side * tall * 0.22 * neon;   // the ticker band, a faint thin one
   // the roof: dark gravel, a lighter parapet rim, one plant-room box (offset per building), a hint of the idea's colour
   vec2 rq = abs(vLocal.xz) / vHalf;
@@ -164,8 +165,8 @@ void main(){
   vec2 bo = vLocal.xz / vHalf - (vec2(fract(vSeed*5.3), fract(vSeed*9.1)) - 0.5) * 0.5;
   float plant = 1.0 - smoothstep(0.26, 0.30, max(abs(bo.x), abs(bo.y)));
   vec3 roof = stone * (0.62 + 0.16*parapet + 0.22*plant) * (0.92 + 0.16*h2(vec2(vSeed, 7.0))) + vec3(0.006,0.008,0.012);
-  col = mix(col, roof * ao, (1.0 - side) * body0);
-  col += vColor * (1.0 - body0) * 0.75 * neon;                               // the spire / mast above the roof glows in the idea's colour
+  col = mix(col, roof * ao, 1.0 - side);
+  col += vColor * (1.0 - body0) * side * (0.18 + 0.45 * step(0.6, fract(hy * 1.2 - uTime * 0.15))) * neon;   // the spire / mast: dark, lit rings in the idea's colour
   col += vColor * vData.z * (0.5 + 0.5*sin(uTime*3.2 + vSeed*6.0)) * (0.08 + crown*0.9 + edge*0.4);
   if (uToday > 0.5) {
     float armed = step(0.5, vState.x) * (1.0 - step(1.5, vState.x));
@@ -237,7 +238,7 @@ void main(){
   if (aToday > 1.5) vColor = vec3(${NEON ? '0.35' : '1.0'}, ${NEON ? '0.95' : '0.82'}, ${NEON ? '1.0' : '0.50'});
   vA = p * show;
   vec4 mv = modelViewMatrix * vec4(position,1.0);
-  gl_PointSize = aSize * p * show * uPR * (300.0 / max(1.0, -mv.z));
+  gl_PointSize = min(aSize * p * (300.0 / max(1.0, -mv.z)), 26.0) * show * uPR;
   gl_Position = projectionMatrix * mv;
 }`;
 export const GLOW_FS = `
@@ -256,7 +257,7 @@ void main(){
   float t = fract(uTime * aMove.x + aMove.y);
   vec3 p = vec3(mix(aSeg.x, aSeg.z, t), 0.22, mix(aSeg.y, aSeg.w, t));
   vec4 mv = modelViewMatrix * vec4(p,1.0);
-  gl_PointSize = 3.2 * uPR * (60.0 / max(1.0, -mv.z));
+  gl_PointSize = min(3.2 * (60.0 / max(1.0, -mv.z)), 5.0) * uPR;
   gl_Position = projectionMatrix * mv;
 }`;
 export const FLOW_FS = `
@@ -358,7 +359,7 @@ void main(){
   c += mix(vec3(1.0,0.7,0.45), vec3(1.0,0.97,0.9), uDay) * (pow(s, 700.0)*3.0 + pow(s, 14.0)*0.22) * step(-0.08, sd.y);
   // the moon: a soft disc and a wide faint halo
   float m = max(dot(d, -sd), 0.0);
-  float disc = smoothstep(0.99955, 0.99975, m);
+  float disc = smoothstep(0.99988, 0.99993, m);
   c += vec3(${NEON ? '0.92,0.95,1.0' : '1.0,0.92,0.76'}) * (disc*1.1 + pow(m, 260.0)*0.10 + pow(m, 24.0)*0.035) * (1.0 - uDay) * (1.0 - uCloud*0.7);
   // thin clouds, lit from below by the city (orange underside), drifting
   if (h > 0.0) {
@@ -483,7 +484,7 @@ void main(){
 }`;
 export const STAR_FS = `
 uniform float uA; varying float vA;
-void main(){ vec2 d = gl_PointCoord - 0.5; float a = exp(-dot(d,d)*22.0) * vA * uA; gl_FragColor = vec4(vec3(0.82,0.87,1.0) * a, a); }`;
+void main(){ vec2 d = gl_PointCoord - 0.5; float a = exp(-dot(d,d)*26.0) * vA * uA * 0.6; gl_FragColor = vec4(vec3(0.82,0.87,1.0) * a, a); }`;   // under the bloom threshold: crisp pin-points, no blobs
 export const BLINK_VS = `
 attribute float aPh; uniform float uTime; uniform float uPR; uniform float uGrow; varying float vA;
 void main(){
