@@ -387,20 +387,21 @@ def agency_band(name: str, lead_id: str = "", code: str = "") -> str:
     consent form, a marked slot until it arrives). Kept apart from the business's own buttons."""
     c = agency_cfg()
     t = tel(c["phone"])
-    call = (f'<a class="call" href="tel:{t}">{icon("phone", 18)}Call us{" " + esc(c["phone_label"]) if c["phone_label"] else ""}</a>' if t else
-            '<span class="call ghost" aria-disabled="true" data-slot="agency-phone" style="opacity:.6">Call us (number coming)</span>')
-    form = (f'<details class="callme-box" style="width:100%"><summary class="call" style="list-style:none;cursor:pointer">'
-            f'Have our assistant call me</summary><style>{CALLER_CSS}</style>{caller_form(c["caller_html"], lead_id, name)}</details>'
-            if c["caller_html"] else "") or ('<!-- CALLER-FORM-SLOT: day-caller supplies the consent form (markup, consent text, endpoint). Empty until then. -->'
-                                '<div id="caller-slot" data-slot="caller-consent" hidden></div>'
-                                '<span class="call ghost" aria-disabled="true" data-slot="caller-button" style="opacity:.6">Have our assistant call me (coming)</span>')
+    # lead 2026-11-20: the trading PC's address (Funnel) never goes on public pages, so the consent form stays OFF here; the band is the
+    # agency number, answered by the inbound AI receptionist (only Twilio knows the PC endpoint). caller_form() is kept for later use.
+    shown = esc(c["phone_label"] or c["phone"])
+    call = (f'<a class="call" href="tel:{t}">{icon("phone", 18)}Call {shown}</a><a class="call ghost" href="sms:{t}">Text {shown}</a>' if t else
+            '<span class="call ghost" aria-disabled="true" data-slot="agency-phone" style="opacity:.6">Call or text us (number coming)</span>')
+    line = (f'<p data-line="1" style="margin:0 0 10px">Call or text {shown} - our assistant answers any time.</p>' if t else
+            '<p data-line="0" style="margin:0 0 10px">Call or text us - our assistant answers any time (number coming).</p>')
+    form = ""
     pay = c["pay_url"] if re.match(r"https://[\w.-]+/", c["pay_url"] or "") else ""
     claim = (f'<a class="call" data-claim="1" href="{esc(pay)}" rel="noopener noreferrer" target="_blank">Claim this site</a>' if pay else
-             '<p data-claim="0" style="margin:0 0 10px;font-weight:700">Claim this site: call us / have our assistant call me</p>')
+             '<p data-claim="0" style="margin:0 0 10px;font-weight:700">Claim this site: call or text us</p>')
     return (f'<section class="agency" aria-labelledby="h-ag" data-agency="1"><h2 id="h-ag">Like this site for {esc(name)}?</h2>'
             f'<p class="muted" style="margin:0 0 10px">This is a free concept made by an independent web studio, not by the business. '
             f'If you own {esc(name)}, it can be yours.</p>'
-            f'<p class="offer" style="margin:0 0 12px"><b>{esc(OFFER)}</b></p>{claim}<div class="ctas">{call}{form}</div>'
+            f'<p class="offer" style="margin:0 0 12px"><b>{esc(OFFER)}</b></p>{claim}{line}<div class="ctas">{call}{form}</div>'
             + (f'<p class="muted" data-code="{esc(code)}" style="margin:14px 0 0;font-size:.8rem">Your code: {esc(code)}</p>' if code else "")
             + '</section>')
 

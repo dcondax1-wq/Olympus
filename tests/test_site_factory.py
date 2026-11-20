@@ -95,15 +95,14 @@ def main() -> int:
     band = {"band": [], "form3p": [], "secret": []}
     for s in S:
         h = read(os.path.join(AG, s["path"], "index.html"))
-        cfg = F.agency_cfg()
-        if 'data-agency="1"' not in h or "Call us" not in h or ("CALLER-FORM-SLOT" not in h if not cfg["caller_html"] else cfg["caller_html"] not in h):
+        if 'data-agency="1"' not in h or "Call or text" not in h or "our assistant answers any time" not in h or "callme" in h or "CALLER-FORM" in h:
             band["band"].append(s["name"])
         if re.search(r"formspree|getform|formsubmit|basin|netlify-form|typeform|jotform|google\.com/forms|hsforms|wufoo", h, re.I):
             band["form3p"].append(s["name"])
-        if re.search(r"(?:api[_-]?key|secret|token|bearer)\s*[:=]", h, re.I):
+        if re.search(r"(?:api[_-]?key|secret|token|bearer)\s*[:=]", h, re.I) or re.search(r"\.ts\.net|\b100\.\d{1,3}\.\d{1,3}\.\d{1,3}\b", h):
             band["secret"].append(s["name"])
-    check("d2. every site: 'Like this site?' band with 'Call us' + the assistant consent slot (or day-caller's form)", not band["band"], band["band"])
-    check("d2. no third-party form service, no secret in any page", not band["form3p"] and not band["secret"], band)
+    check("d2. every site: 'Like this site?' band = 'Call or text <agency number> - our assistant answers any time' (no consent form: lead 2026-11-20)", not band["band"], band["band"])
+    check("d2. no third-party form service, no secret, no ts.net / PC address in any page", not band["form3p"] and not band["secret"], band)
     # day-caller's form (tools/caller/siteform.py): its two hidden fields get THIS site's lead id + business name; a form without them is refused
     demo = ('<form class="callme"><input type="hidden" name="lead_id" value=""><input type="hidden" name="business" value="">'
             '<button type="submit">Have our assistant call me</button></form>')
@@ -122,7 +121,7 @@ def main() -> int:
         c = codes.get(s["id"], "")
         if not re.fullmatch(r"[A-Z]{2}-\d+", c) or f"Your code: {c}" not in h or s.get("code") != c:
             cb.append((s["name"], "code"))
-        if F.OFFER not in h or not (('data-claim="1"' in h) if F.agency_cfg()["pay_url"] else "Claim this site: call us / have our assistant call me" in h):
+        if F.OFFER not in h or not (('data-claim="1"' in h) if F.agency_cfg()["pay_url"] else "Claim this site: call or text us" in h):
             cb.append((s["name"], "claim"))
     check("d2. every site: the offer + 'Claim this site' (payment link once set, else call us / assistant) + 'Your code: FR-n'", not cb, cb)
     check("d2. codes are unique and stable (a rebuild keeps them)", len(set(codes.values())) == len(codes) and all(L["id"] in codes for L in leads))

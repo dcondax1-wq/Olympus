@@ -37,3 +37,7 @@
 - Every concept page: the offer "Starter $1,500 + $79/mo, or $149/mo with nothing upfront." + **Claim this site** (a button to `pay_url` in `tools/site_factory_agency.json` once the owner sets an https payment link; until then the line "Claim this site: call us / have our assistant call me").
 - Per-lead code **FR-1 ... FR-67** ("Your code: FR-n", small, in the band), kept forever in `tools/site_factory_codes.json` (2 town letters + next number); in `agency/sites/index.json` ("codes") and the gallery for the postcards.
 - test_site_factory 24/24 (with browser).
+
+## Final for 2026-11-20 (lead decision: no PC address on public pages)
+- The consent form is OFF on every concept page (code `caller_form()` kept, unused). The band is now: offer + "Claim this site" + "Call or text <agency number> - our assistant answers any time" (tel: + sms: buttons once `phone` is set in `tools/site_factory_agency.json`; "number coming" until then) + "Your code: FR-n".
+- Test d2 now fails any page with a form, `.ts.net` or a 100.x.y.z (Tailscale) address. test_site_factory 24/24 with browser.

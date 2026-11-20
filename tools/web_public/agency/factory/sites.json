@@ -13,7 +13,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 10162,
+   "bytes": 9949,
    "heat": "warm",
    "chain": false,
    "code": "FR-52"
@@ -27,7 +27,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9783,
+   "bytes": 9570,
    "heat": "cold",
    "chain": false,
    "code": "FR-60"
@@ -41,7 +41,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 10180,
+   "bytes": 9967,
    "heat": "warm",
    "chain": true,
    "code": "FR-58"
@@ -55,7 +55,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9771,
+   "bytes": 9558,
    "heat": "cold",
    "chain": false,
    "code": "FR-51"
@@ -69,7 +69,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 10160,
+   "bytes": 9947,
    "heat": "cold",
    "chain": false,
    "code": "FR-55"
@@ -83,7 +83,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9785,
+   "bytes": 9572,
    "heat": "cold",
    "chain": false,
    "code": "FR-18"
@@ -97,7 +97,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9851,
+   "bytes": 9638,
    "heat": "cold",
    "chain": false,
    "code": "FR-43"
@@ -111,7 +111,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9850,
+   "bytes": 9637,
    "heat": "cold",
    "chain": true,
    "code": "FR-9"
@@ -125,7 +125,7 @@
    "town": "Frederick",
    "phone": true,
    "hours": false,
-   "bytes": 11654,
+   "bytes": 11441,
    "heat": "warm",
    "chain": true,
    "code": "FR-44"
@@ -139,7 +139,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": true,
-   "bytes": 10674,
+   "bytes": 10461,
    "heat": "warm",
    "chain": false,
    "code": "FR-10"
@@ -153,7 +153,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9346,
+   "bytes": 9133,
    "heat": "cold",
    "chain": false,
    "code": "FR-11"
@@ -167,7 +167,7 @@
    "town": "Frederick",
    "phone": true,
    "hours": true,
-   "bytes": 12269,
+   "bytes": 12056,
    "heat": "warm",
    "chain": false,
    "code": "FR-38"
@@ -181,7 +181,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": true,
-   "bytes": 10253,
+   "bytes": 10040,
    "heat": "cold",
    "chain": true,
    "code": "FR-39"
@@ -195,7 +195,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9508,
+   "bytes": 9295,
    "heat": "cold",
    "chain": true,
    "code": "FR-63"
@@ -209,7 +209,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9858,
+   "bytes": 9645,
    "heat": "cold",
    "chain": false,
    "code": "FR-5"
@@ -223,7 +223,7 @@
    "town": "Frederick",
    "phone": true,
    "hours": false,
-   "bytes": 11688,
+   "bytes": 11475,
    "heat": "warm",
    "chain": false,
    "code": "FR-30"
@@ -237,7 +237,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9809,
+   "bytes": 9596,
    "heat": "cold",
    "chain": false,
    "code": "FR-2"
@@ -251,7 +251,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9935,
+   "bytes": 9722,
    "heat": "cold",
    "chain": false,
    "code": "FR-49"
@@ -265,7 +265,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9770,
+   "bytes": 9557,
    "heat": "cold",
    "chain": false,
    "code": "FR-67"
@@ -279,7 +279,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9811,
+   "bytes": 9598,
    "heat": "cold",
    "chain": false,
    "code": "FR-22"
@@ -293,7 +293,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": true,
-   "bytes": 10298,
+   "bytes": 10085,
    "heat": "cold",
    "chain": false,
    "code": "FR-36"
@@ -307,7 +307,7 @@
    "town": "Frederick",
    "phone": true,
    "hours": true,
-   "bytes": 12063,
+   "bytes": 11850,
    "heat": "hot",
    "chain": false,
    "code": "FR-54"
@@ -321,7 +321,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9795,
+   "bytes": 9582,
    "heat": "cold",
    "chain": false,
    "code": "FR-32"
@@ -335,7 +335,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": true,
-   "bytes": 10286,
+   "bytes": 10073,
    "heat": "cold",
    "chain": true,
    "code": "FR-41"
@@ -349,7 +349,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9788,
+   "bytes": 9575,
    "heat": "cold",
    "chain": false,
    "code": "FR-1"
@@ -363,7 +363,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": true,
-   "bytes": 10377,
+   "bytes": 10164,
    "heat": "cold",
    "chain": false,
    "code": "FR-40"
@@ -377,7 +377,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 10359,
+   "bytes": 10146,
    "heat": "cold",
    "chain": false,
    "code": "FR-29"
@@ -391,7 +391,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9788,
+   "bytes": 9575,
    "heat": "cold",
    "chain": false,
    "code": "FR-33"
@@ -405,7 +405,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9797,
+   "bytes": 9584,
    "heat": "cold",
    "chain": false,
    "code": "FR-66"
@@ -419,7 +419,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9823,
+   "bytes": 9610,
    "heat": "cold",
    "chain": false,
    "code": "FR-6"
@@ -433,7 +433,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9763,
+   "bytes": 9550,
    "heat": "cold",
    "chain": false,
    "code": "FR-62"
@@ -447,7 +447,7 @@
    "town": "Frederick",
    "phone": true,
    "hours": false,
-   "bytes": 11307,
+   "bytes": 11094,
    "heat": "warm",
    "chain": false,
    "code": "FR-31"
@@ -461,7 +461,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9764,
+   "bytes": 9551,
    "heat": "cold",
    "chain": false,
    "code": "FR-12"
@@ -475,7 +475,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": true,
-   "bytes": 10720,
+   "bytes": 10507,
    "heat": "warm",
    "chain": false,
    "code": "FR-28"
@@ -489,7 +489,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9465,
+   "bytes": 9252,
    "heat": "cold",
    "chain": false,
    "code": "FR-23"
@@ -503,7 +503,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 10270,
+   "bytes": 10057,
    "heat": "cold",
    "chain": false,
    "code": "FR-21"
@@ -517,7 +517,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9830,
+   "bytes": 9617,
    "heat": "cold",
    "chain": false,
    "code": "FR-46"
@@ -531,7 +531,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9760,
+   "bytes": 9547,
    "heat": "cold",
    "chain": false,
    "code": "FR-25"
@@ -545,7 +545,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 10252,
+   "bytes": 10039,
    "heat": "cold",
    "chain": false,
    "code": "FR-24"
@@ -559,7 +559,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9739,
+   "bytes": 9526,
    "heat": "cold",
    "chain": false,
    "code": "FR-8"
@@ -573,7 +573,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9795,
+   "bytes": 9582,
    "heat": "cold",
    "chain": false,
    "code": "FR-45"
@@ -587,7 +587,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9396,
+   "bytes": 9183,
    "heat": "cold",
    "chain": false,
    "code": "FR-61"
@@ -601,7 +601,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": true,
-   "bytes": 10950,
+   "bytes": 10737,
    "heat": "warm",
    "chain": false,
    "code": "FR-34"
@@ -615,7 +615,7 @@
    "town": "Frederick",
    "phone": true,
    "hours": true,
-   "bytes": 12225,
+   "bytes": 12012,
    "heat": "warm",
    "chain": false,
    "code": "FR-47"
@@ -629,7 +629,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9832,
+   "bytes": 9619,
    "heat": "cold",
    "chain": false,
    "code": "FR-15"
@@ -643,7 +643,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": true,
-   "bytes": 10333,
+   "bytes": 10120,
    "heat": "cold",
    "chain": false,
    "code": "FR-14"
@@ -657,7 +657,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9479,
+   "bytes": 9266,
    "heat": "cold",
    "chain": false,
    "code": "FR-16"
@@ -671,7 +671,7 @@
    "town": "Frederick",
    "phone": true,
    "hours": false,
-   "bytes": 11706,
+   "bytes": 11493,
    "heat": "warm",
    "chain": false,
    "code": "FR-4"
@@ -685,7 +685,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 10182,
+   "bytes": 9969,
    "heat": "cold",
    "chain": false,
    "code": "FR-37"
@@ -699,7 +699,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": true,
-   "bytes": 10172,
+   "bytes": 9959,
    "heat": "cold",
    "chain": false,
    "code": "FR-42"
@@ -713,7 +713,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9734,
+   "bytes": 9521,
    "heat": "cold",
    "chain": false,
    "code": "FR-13"
@@ -727,7 +727,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": true,
-   "bytes": 10364,
+   "bytes": 10151,
    "heat": "warm",
    "chain": true,
    "code": "FR-20"
@@ -741,7 +741,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9427,
+   "bytes": 9214,
    "heat": "cold",
    "chain": true,
    "code": "FR-59"
@@ -755,7 +755,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9455,
+   "bytes": 9242,
    "heat": "cold",
    "chain": false,
    "code": "FR-53"
@@ -769,7 +769,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9536,
+   "bytes": 9323,
    "heat": "cold",
    "chain": false,
    "code": "FR-64"
@@ -783,7 +783,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": true,
-   "bytes": 9912,
+   "bytes": 9699,
    "heat": "warm",
    "chain": false,
    "code": "FR-17"
@@ -797,7 +797,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9487,
+   "bytes": 9274,
    "heat": "cold",
    "chain": false,
    "code": "FR-65"
@@ -811,7 +811,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9445,
+   "bytes": 9232,
    "heat": "cold",
    "chain": false,
    "code": "FR-50"
@@ -825,7 +825,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9484,
+   "bytes": 9271,
    "heat": "cold",
    "chain": false,
    "code": "FR-26"
@@ -839,7 +839,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9763,
+   "bytes": 9550,
    "heat": "warm",
    "chain": false,
    "code": "FR-56"
@@ -853,7 +853,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 10456,
+   "bytes": 10243,
    "heat": "warm",
    "chain": false,
    "code": "FR-35"
@@ -867,7 +867,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 10841,
+   "bytes": 10628,
    "heat": "warm",
    "chain": false,
    "code": "FR-57"
@@ -881,7 +881,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9400,
+   "bytes": 9187,
    "heat": "warm",
    "chain": true,
    "code": "FR-7"
@@ -895,7 +895,7 @@
    "town": "Frederick",
    "phone": true,
    "hours": false,
-   "bytes": 12118,
+   "bytes": 11905,
    "heat": "hot",
    "chain": false,
    "code": "FR-27"
@@ -909,7 +909,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 10572,
+   "bytes": 10359,
    "heat": "warm",
    "chain": false,
    "code": "FR-19"
@@ -923,7 +923,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9435,
+   "bytes": 9222,
    "heat": "warm",
    "chain": false,
    "code": "FR-48"
@@ -937,7 +937,7 @@
    "town": "Frederick",
    "phone": false,
    "hours": true,
-   "bytes": 10724,
+   "bytes": 10511,
    "heat": "warm",
    "chain": false,
    "code": "FR-3"
