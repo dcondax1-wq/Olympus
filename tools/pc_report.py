@@ -403,6 +403,11 @@ def gather(now=None, root: str = ROOT, env=None, http=None, port=PORT_DEFAULT, f
         except Exception as e:
             snap["live_error"] = f"{e.__class__.__name__}: {str(e)[:120]}"
     snap["alerts_pc"] = _telegram_on(root)
+    try:                                    # self-heal (engine/self_heal.py, night-selfheal): fixed / needs you + what grows on disk, <= 300 bytes
+        from engine import self_heal as _sh
+        snap["sh"] = _sh.read_tiny(root, now)
+    except Exception:
+        snap["sh"] = None
     try:                                    # real fills vs the live loop's plan (tools/fill_check.py, read-only: the bots' own files)
         from tools import fill_check
         snap["fills"] = fill_check.reviews(root, now)
@@ -553,6 +558,8 @@ def full(snap: dict) -> dict:
     life = _life(hb.get("life"))
     if life:
         out["life"] = life
+    if isinstance(snap.get("sh"), dict):     # self-heal's one line (engine/self_heal.read_tiny): rides an ext post, after EXT_ORDER
+        out["sh"] = snap["sh"]
     try:                                           # the MFFU-style account page (engine/mffu_view.py: start, days, trades, best day, equity)
         from engine import mffu_view
         mf = mffu_view.compact(L)
@@ -1957,6 +1964,14 @@ def main(argv=None) -> int:
         try:
             from tools import kalshi_paper as _kp1
             _kp1.maybe_run(say=(lambda *_: None) if a.quiet else print)
+        except Exception:
+            pass
+        # self-heal (engine/self_heal.py, docs/SELF_HEAL.md): at most once an hour, the known PC faults fixed with a logged remedy (stale git
+        # lock, a file in the update's way, stuck order files, stale pid, missing packages, clock) + the weekly disk clean; one alert only
+        # when it could NOT fix something. Never starts, stops, arms or routes the bot; LE_SELF_HEAL=0 = off; soft
+        try:
+            from engine import self_heal as _sh
+            _sh.maybe_run(say=(lambda *_: None) if a.quiet else print)
         except Exception:
             pass
         # Kalshi K8 clock bot (engine/kalshi_clock.py + engine/kalshi_live.py): keeps the paper loop running and brings the LIVE

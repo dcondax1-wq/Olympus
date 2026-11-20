@@ -61,6 +61,8 @@ KINDS += ("risk_alert",)             # night-risk 2026-11-18: engine/circuit_bre
 LOUD = LOUD | {"risk_alert"}
 KINDS += ("weekly_review",)          # tools/weekly_review.py: "Weekly review ready" (Friday ops task on the PC), once a week
 KINDS += ("combo_trade",)            # engine/combo50k.py (OFF by default): "ATLAS on Zlarior 50K: LONG opened" / "Zlarior on its 50K: ..."
+KINDS += ("self_heal",)              # night-selfheal 2026-11-20: engine/self_heal.py, only when it could NOT fix a PC fault (once a day)
+LOUD = LOUD | {"self_heal"}
 
 _CTRL = re.compile(r"[\x00-\x1f\x7f<>]")
 _LOCK_RX = re.compile(r"limit\s*0\b|max(imum)?\s+order\s+quantity|account\s+(is\s+)?(locked|disabled|halted)", re.I)

@@ -46,14 +46,17 @@ order or reads a secret. Tests: tests/test_live_link.py.
 """
 from __future__ import annotations
 
+import datetime as dt
 import ipaddress
 import json
 import math
 import mimetypes
 import os
+import re
 import threading
 import time
 import urllib.request
+from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Request
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse, Response
@@ -72,6 +75,7 @@ GATE = PREFIX + "/gate/"
 LIVE_TTL_S = 15
 KALSHI_TTL_S = 60
 KALSHI_MAX = 300_000
+ET = ZoneInfo("America/New_York")
 FRESH_S = 20 * 60                       # pc_feed.js FRESH_S: a verdict older than this is not laid over home.json
 SAFE_METHODS = ("GET", "HEAD", "OPTIONS")
 PROXY_HEADERS = ("x-forwarded-for", "x-forwarded-host", "x-forwarded-proto", "x-real-ip", "forwarded", "tailscale-user-login",
@@ -292,13 +296,100 @@ def merge_trades(a, b) -> list:
     return sorted(m.values(), key=lambda t: -_truthy_n(t.get("entry_t")))
 
 
+def _js_truthy(v) -> bool:
+    if isinstance(v, (dict, list)):
+        return True
+    if isinstance(v, float) and math.isnan(v):
+        return False
+    return bool(v)
+
+
+def _okn(v) -> bool:
+    """pc_feed.js okN: a real finite number (never a bool, a string or null)."""
+    return isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)
+
+
+def _plus(o, k):
+    """JS +o[k]: a missing key is NaN (None here), null is 0, a numeric string its number."""
+    if not _obj(o) or k not in o:
+        return None
+    return _n(o[k])
+
+
+def _r2(v: float) -> float:
+    return math.floor(v * 100 + 0.5) / 100            # Math.round(v * 100) / 100
+
+
+def _copy(v):
+    return v if v is None else json.loads(json.dumps(v))
+
+
+def _pick(o, keys) -> dict:
+    return {k: _copy(o[k]) for k in keys if o.get(k) is not None}
+
+
+def _num_s(v) -> str:
+    return str(int(v)) if isinstance(v, float) and v.is_integer() else str(v)
+
+
+CAL_CARD = ("windows", "max_micros", "sessions", "max_day", "method", "plan")
+CAL_MEMBER = ("key", "short", "label", "hours", "windows", "window")
+PLAN_PROGRESS = ("sessions", "sessions_max", "min_days", "odds", "expected")
+
+
+def _is_cloud(b) -> bool:
+    return _obj(b) and b.get("where") == "cloud"
+
+
+def _over_cloud(s: dict, l: dict) -> dict:
+    """pc_feed.js overCloud (night-feedsB 2026-11-18): a cloud board under a PC board lends only its calendar and plan."""
+    out = _copy(l)
+    for k in ("lit", "atlas", "blitz"):
+        c = s.get(k) if _obj(s.get(k)) else None
+        o = out.get(k)
+        if c is None or not _obj(o):
+            continue
+        for f in CAL_CARD:
+            if o.get(f) is None and c.get(f) is not None:
+                o[f] = _copy(c[f])
+        if o.get("members") is None and isinstance(c.get("members"), list):
+            o["members"] = [_pick(m, CAL_MEMBER) for m in c["members"] if _obj(m)]
+        cw = c["window"] if _obj(c.get("window")) else None
+        ow = o["window"] if _obj(o.get("window")) else None
+        if cw is not None and ow is not None and ow.get("open_t") is None and _js_truthy(ow.get("open")) == _js_truthy(cw.get("open")) \
+                and str(ow.get("text") or "").strip() == str(cw.get("text") or "").strip()[:60]:
+            if _plus(cw, "open_t") is not None:
+                ow["open_t"] = _plus(cw, "open_t")
+            if _plus(cw, "close_t") is not None:
+                ow["close_t"] = _plus(cw, "close_t")
+    if out.get("hidden_bots") is None and s.get("hidden_bots") is not None:
+        out["hidden_bots"] = _copy(s["hidden_bots"])
+    out["lines"] = _copy(l["lines"]) if isinstance(l.get("lines"), list) else []
+    if _obj(s.get("progress")):
+        p = {}
+        for k, v in s["progress"].items():
+            if not _obj(v):
+                continue
+            p[k] = _pick(v, PLAN_PROGRESS)
+            w = v["week"] if _obj(v.get("week")) else None
+            if w is not None and _plus(w, "lo") is not None and _plus(w, "hi") is not None:
+                p[k]["goal"] = [_plus(w, "lo"), _plus(w, "hi")]
+        out["progress"] = p
+    out["trades"] = merge_trades([t for t in (s.get("trades") or []) if _obj(t) and t.get("src") == "live"], l.get("trades"))
+    out["over_cloud"] = _bt(s) or 1
+    return out
+
+
 def merge_board(site, lite):
+    """pc_feed.js mergeBoard: the PC's board laid over the site's (a cloud build's board never wins; an empty PC lines list wins too)."""
     s = site if _obj(site) and not site.get("error") else None
     l = lite if _obj(lite) and not lite.get("error") else None
-    if not l:
-        return s or (site if site else None)
-    if not s:
+    if l is None:
+        return s if s is not None else (site if _js_truthy(site) else None)
+    if s is None:
         return l
+    if _is_cloud(s) and not _is_cloud(l):
+        return _over_cloud(s, l)
     if _bt(s) > _bt(l) and str(s.get("where") or "").lower() != "cloud":   # a cloud build's board (t = build time) never beats the PC
         return s
     out = dict(s)
@@ -308,10 +399,205 @@ def merge_board(site, lite):
     for k in ("lit", "atlas", "blitz"):
         if _obj(l.get(k)):
             out[k] = {**(s[k] if _obj(s.get(k)) else {}), **l[k]}
-    if isinstance(l.get("lines"), list) and l["lines"]:
+    if isinstance(l.get("lines"), list):           # the PC's newer lines win, an empty list too (= nothing wrong now)
         out["lines"] = l["lines"]
     out["trades"] = merge_trades(s.get("trades"), l.get("trades"))
     return out
+
+
+def _et_parts(t) -> dict:
+    d = dt.datetime.fromtimestamp(float(t), ET)
+    return {"day": d.strftime("%Y-%m-%d"), "hm": d.strftime("%H:%M")}
+
+
+def _cme_day(t) -> str:
+    return _et_parts(float(t) + 6 * 3600)["day"]       # the CME session day: from 18:00 ET on, it is the next day
+
+
+def _add_day(d: str, n: int) -> str:
+    return (dt.date.fromisoformat(d) + dt.timedelta(days=n)).isoformat()
+
+
+_WD = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+
+
+def _is_zlarior(i) -> bool:
+    s = str(i or "").lower()
+    return bool(s) and s != "atlas" and not re.search(r"blitz|acct_c|cloud|paper", s)
+
+
+def _real_trades(lite: dict, bot: str) -> list:
+    out = []
+    at = lite["at"]["a"] if _obj(lite.get("at")) and isinstance(lite["at"].get("a"), list) else None
+    if at is not None:
+        for a in at:
+            if not _obj(a) or not (a.get("id") == "atlas" if bot == "atlas" else _is_zlarior(a.get("id"))):
+                continue
+            tr = a["tr"] if isinstance(a.get("tr"), list) else []
+            for r in tr:
+                if not isinstance(r, list) or not r or _n(r[0]) is None:
+                    continue
+                out.append({"acct": a.get("id"), "entry_t": _n(r[0]), "open": len(r) < 2 or r[1] is None,
+                            "usd": r[8] if len(r) > 8 and _okn(r[8]) else None, "full": len(tr) >= 4})
+        return out
+    bt = lite["board"]["trades"] if _obj(lite.get("board")) and isinstance(lite["board"].get("trades"), list) else []
+    for t in bt:
+        if not _obj(t) or t.get("src") != "live" or _plus(t, "entry_t") is None \
+                or (t.get("acct") != "atlas" if bot == "atlas" else t.get("acct") != "lit"):
+            continue
+        out.append({"acct": t.get("acct"), "entry_t": _plus(t, "entry_t"), "open": _js_truthy(t.get("open")),
+                    "usd": t["usd"] if _okn(t.get("usd")) else None, "full": True})
+    return out
+
+
+def _money_js(v) -> str:
+    return ("-" if v < 0 else "") + "$" + f"{abs(math.floor(v + 0.5)):,}"
+
+
+def week_of(lite: dict, bot: str, goal, today: str, week_usd) -> dict:
+    """pc_feed.js weekOf: this week (Mon-Fri of the CME day) of one bot from the post's REAL trades."""
+    mon = _add_day(today, -dt.date.fromisoformat(today).weekday())
+    days = []
+    for i in range(5):
+        d = _add_day(mon, i)
+        days.append({"day": d, "wd": _WD[dt.date.fromisoformat(d).weekday()], "n": 0, "usd": 0, "future": d > today, "today": d == today})
+    by, partial = {}, False
+    for t in _real_trades(lite, bot):
+        d = _cme_day(t["entry_t"])
+        row = next((x for x in days if x["day"] == d), None)
+        if row is None:
+            continue
+        k = f"{t['acct']}|{d}"
+        by[k] = by.get(k, 0) + 1
+        row["n"] = max(row["n"], by[k])                 # one LIT signal on two Zlarior accounts counts once
+        if not t["open"] and _okn(t["usd"]):
+            row["usd"] = _r2(row["usd"] + t["usd"])
+        if t["full"]:
+            partial = True
+    n = sum(x["n"] for x in days)
+    tot = 0
+    for x in days:
+        tot = tot + x["usd"]
+    usd = week_usd if _okn(week_usd) else _r2(tot)
+    lo, hi = (goal[0] if goal else None), (goal[1] if goal and len(goal) > 1 else None)
+    per_day = 2 if bot == "atlas" else 1
+    left = len([x for x in days if x["day"] >= today])
+    status = "over" if hi is not None and n > hi else ("on_pace" if lo is None or n >= lo or n + left * per_day >= lo else "behind")
+    name = "ATLAS" if bot == "atlas" else "Zlarior"
+    out = {"n": n, "lo": lo, "hi": hi, "status": status, "usd": usd, "days": days, "src": "pc",
+           "sentence": f"{name}: {n} real trade{'' if n == 1 else 's'} this week ({_money_js(usd)})"
+                       + (f", goal {_num_s(lo)}-{_num_s(hi)}" if lo is not None else "") + "."}
+    if partial:
+        out["partial"] = True
+    return out
+
+
+def _short_name(n) -> str:
+    s = re.sub(r"\s*\bBuilder\b\s*", " ", str(n or ""), count=1, flags=re.I)
+    return re.sub(r"\s+", " ", s).strip()
+
+
+_EXTRA_EVAL = ("balance", "floor", "room", "mll", "to_target", "target_balance", "profit")
+
+
+def _extra_cards(lite: dict, b: dict) -> list:
+    """pc_feed.js extraCards: the accounts the PC routes besides the board's two cards, board-shaped (a missing value stays out)."""
+    L = b["lit"] if _obj(b.get("lit")) else {}
+    out = []
+    for a in lite["accounts"] if isinstance(lite.get("accounts"), list) else []:
+        if not _obj(a) or not a.get("id") or a["id"] == "atlas" or a.get("source") == "cloud" or re.search(r"blitz|acct_c", str(a["id"]), re.I):
+            continue
+        e = a["eval"] if _obj(a.get("eval")) else {}
+        p = a["pnl"] if _obj(a.get("pnl")) else {}
+        if a["id"] == "mffu50k_eval" or (_okn(e.get("balance")) and e.get("balance") == L.get("balance") and e.get("floor") == L.get("floor")):
+            continue                                                  # the board's own Zlarior card
+        c = {"id": a["id"], "name": _short_name(a.get("name")) or a["id"], "plan": "MFFU " + re.sub(r"^MFFU\s*", "", str(a.get("plan") or "")),
+             "method": "LIT"}
+        if "badge" in a:
+            c["badge"] = a["badge"]
+        c["source"] = "PC bot"
+        for k in _EXTRA_EVAL:
+            if k in e:
+                c[k] = e[k]
+        if _okn(p.get("today")):
+            c["today_pnl"] = p["today"]
+        elif "today" in e:
+            c["today_pnl"] = e["today"]
+        if "week" in p:
+            c["week_pnl"] = p["week"]
+        c["status"] = e.get("status") or "open"
+        for k in ("session", "dll", "dll_used"):
+            if k in e:
+                c[k] = e[k]
+        c["extra"] = True
+        out.append(c)
+    return out
+
+
+def board_over(site_board, lite, now=None):
+    """pc_feed.js boardOver (night-feedsB 2026-11-18): the post's board over the site's, plus what only the whole post knows: the
+    report time, the price, this week's REAL trades per bot (progress.<bot>.week), the extra accounts and MFFU's inactivity clock."""
+    if not _obj(lite):
+        return site_board if _js_truthy(site_board) else None
+    lb = lite.get("board")
+    b = merge_board(site_board, lb)
+    if not _obj(b) or (b is not lb and not b.get("over_cloud")):
+        return b                                                     # the site's own (newer) board, or an older PC copy under it
+    if b is lb:
+        b = _copy(b)
+    now = float(now) if now is not None else time.time()
+    t = _plus(lite, "t")
+    rt = _plus(lite["reporter"], "t") if _obj(lite.get("reporter")) else None
+    if rt:
+        b["report_t"], b["feed"] = rt, "ntfy"
+    price = _plus(lite, "price")
+    if price is not None and price > 0 and t is not None:
+        b["map"] = {"price": price, "t": t, "bar_hm": _et_parts(t)["hm"], "src": "pc"}
+    today = b["today"] if re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(b.get("today") or "")) else _cme_day(now)
+    if not _obj(b.get("progress")):
+        b["progress"] = {}
+    P = b["progress"]
+    accts = lite["accounts"] if isinstance(lite.get("accounts"), list) else []
+    zw = [a for a in accts if _obj(a) and _is_zlarior(a.get("id")) and a.get("source") != "cloud" and _obj(a.get("pnl")) and _okn(a["pnl"].get("week"))]
+    zsum = 0
+    for a in zw:
+        zsum = zsum + a["pnl"]["week"]
+    wk = {"lit": _r2(zsum) if zw else (b["lit"]["week_pnl"] if _obj(b.get("lit")) and _okn(b["lit"].get("week_pnl")) else None),
+          "atlas": b["atlas"]["week_pnl"] if _obj(b.get("atlas")) and _okn(b["atlas"].get("week_pnl")) else None}
+    dflt = {"lit": [2, 4], "atlas": [3, 4]}
+    for k in ("lit", "atlas"):
+        bk = b.get(k)
+        if not _obj(bk) or (bk.get("configured") is False and not _okn(bk.get("balance"))):
+            continue
+        g = P[k]["goal"] if _obj(P.get(k)) and isinstance(P[k].get("goal"), list) else dflt[k]
+        P[k] = {**(P[k] if _obj(P.get(k)) else {}), "week": week_of(lite, k, g, today, wk[k])}
+        if k == "atlas" and not _okn(b["atlas"].get("week_pnl")):
+            b["atlas"]["week_pnl"] = P[k]["week"]["usd"]
+    ex = _extra_cards(lite, b)
+    for c in ex:                                                     # a Zlarior account trades the same LIT signal: its window and wait
+        if not _obj(b.get("lit")):
+            break
+        for f in ("window", "windows", "waiting"):
+            if c.get(f) is None and b["lit"].get(f) is not None:
+                c[f] = _copy(b["lit"][f])
+    if ex:
+        b["accounts"] = ex
+    at = lite["at"]["a"] if _obj(lite.get("at")) and isinstance(lite["at"].get("a"), list) else []
+    now_day = _et_parts(now)["day"]
+
+    def last_of(i):
+        a = next((x for x in at if _obj(x) and x.get("id") == i), None)
+        ts = [_n(r[0]) for r in (a["tr"] if a is not None and isinstance(a.get("tr"), list) else []) if isinstance(r, list) and r and _okn(_n(r[0]))]
+        return max(ts) if ts else None
+    pairs = [(b.get("lit"), "mffu50k_eval" if any(_obj(x) and x.get("id") == "mffu50k_eval" for x in at) else None), (b.get("atlas"), "atlas")]
+    pairs += [(c, c["id"]) for c in ex]
+    for card, i in pairs:
+        lt = last_of(i) if i else None
+        if not _obj(card) or card.get("quiet_days") is not None or lt is None:
+            continue
+        card["quiet_days"] = max(0, (dt.date.fromisoformat(now_day) - dt.date.fromisoformat(_et_parts(lt)["day"])).days)
+        card["last_trade_day"] = _et_parts(lt)["day"]
+    return b
 
 
 def overlay_home(home, lite, now=None):
@@ -332,7 +618,7 @@ def overlay_home(home, lite, now=None):
         nl["pc_verdict"] = lite["pc_verdict"]
     if _obj(lite.get("reporter")):
         nl["reporter"] = lite["reporter"]
-    return {**home, "live": nl, "board": merge_board(home.get("board"), lite.get("board"))}
+    return {**home, "live": nl, "board": board_over(home.get("board"), lite, now)}
 
 
 # ------------------------------------------------------------------------------------------------ the live payload (cached)
