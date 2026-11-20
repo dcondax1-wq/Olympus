@@ -196,8 +196,9 @@ class Watchdog:
         self._active = keys
         self.issues = issues
         self.last_check = int(now)
-        if getattr(self, "fast", None) is not None:
-            self.fast.step(self.bot, now)    # never raises; read-only (a push to the private ntfy topic)
+        if getattr(self, "fast", None) is not None:    # never raises; read-only (a push to the private ntfy topic)
+            self.fast.step(self.bot, now, server_started_at=self.server_started_at,
+                           autostart=load() if not getattr(self.bot, "running", False) else None)
         if self.keepawake is not None:
             self.keepawake.set(bool(getattr(self.bot, "running", False)))
         return issues

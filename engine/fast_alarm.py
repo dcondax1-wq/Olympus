@@ -9,9 +9,13 @@ later; LIT's entry is not chased after 90 s (engine/live.LIT_MAX_LATE_S), so one
 Conditions (each one push when it starts, one "back to normal" when it clears; the 15-minute report then skips its own copy of
 the same condition: engine/notify.problem_dup):
   bot_down    the bot is running but no good poll for over POLL_LIMIT_S (90 s; a normal gap is <= ~32 s: polls at +2 s and
-              +32 s each minute), or its poll thread is dead. Report condition "bot_down".
+              +32 s each minute; a PC whose last poll itself took long gets 1.5 x that + 35 s), or its poll thread is dead.
+              Report condition "bot_down".
   feed_stale  polls are fine but the NinjaTrader 1-minute feed is behind: the newest 1m bar is over FEED_LIMIT_S (120 s = two
               bars) old, or the bot itself blocked new entries for a stale feed (health feed_block). Report "feed_stale".
+  bot_stopped the bot is NOT running although data/autostart.json says it was (Stop / kill clear that file) and this server
+              started over 3 min ago: a restart that did not resume (no auto-resume, NinjaTrader not connected). Report
+              "bot_stopped". (The server's own "bot NOT resumed" alert is kind "system": since 2026-11-18 not on the phone.)
 Only while: LE_FAST_ALARM is not "0", notify_settings.json "problems" is on (IMPORTANT, default on), the bot runs on a broker
 adapter (not paper), a weekday 01:58-15:55 ET (LIT's 02:00-15:30 entry window + its 15:55 flat, ATLAS's windows inside it),
 CME Globex open (engine/live.market_open: holidays / early halts excluded), and the bot started over START_GRACE_S ago.
@@ -32,8 +36,8 @@ POLL_LIMIT_S = 90
 FEED_LIMIT_S = 120
 START_GRACE_S = 180
 WIN_FROM, WIN_TO = 1 * 60 + 58, 15 * 60 + 55          # ET minutes, weekdays
-COND = {"bot_down": "bot_down", "feed_stale": "feed_stale"}   # fast code -> tools/pc_report.py condition code
-TITLE = {"bot_down": "ZEUS not polling", "feed_stale": "FEED STALE"}
+COND = {"bot_down": "bot_down", "feed_stale": "feed_stale", "bot_stopped": "bot_stopped"}   # -> tools/pc_report.py condition code
+TITLE = {"bot_down": "ZEUS not polling", "feed_stale": "FEED STALE", "bot_stopped": "Bot stopped"}
 
 
 def enabled(env=None) -> bool:
@@ -58,10 +62,21 @@ def _span(s) -> str:
     return f"{s} s" if s < 120 else f"{s // 60} min"
 
 
-def evaluate(bot, now) -> dict:
-    """{code: text} of what stops the bot from taking a trade right now (empty outside the hours / for a paper bot). Pure."""
+def evaluate(bot, now, server_started_at=None, autostart=None) -> dict:
+    """{code: text} of what stops the bot from taking a trade right now (empty outside the hours / for a paper bot). Pure.
+    server_started_at / autostart (engine/watchdog: this server's start, data/autostart.json = the bot was running and nobody
+    pressed Stop / kill since): a bot that is NOT running in the entry hours although it should be -> "bot_stopped"."""
     out: dict = {}
-    if bot is None or not getattr(bot, "running", False):
+    if bot is None:
+        return out
+    if not getattr(bot, "running", False):
+        rec = autostart if isinstance(autostart, dict) else None
+        acfg = (rec or {}).get("cfg") if isinstance((rec or {}).get("cfg"), dict) else None
+        if acfg and str(acfg.get("adapter") or "paper") != "paper" and in_hours(now) and server_started_at \
+                and now - float(server_started_at) >= START_GRACE_S:
+            out["bot_stopped"] = ("The bot is stopped in the entry hours, although it was running and nobody pressed Stop: it "
+                                  "cannot take a trade (a restart that did not resume, or NinjaTrader not connected). On the "
+                                  "PC: GO_LIVE_EVAL.bat (you type the phrase).")
         return out
     cfg = getattr(bot, "cfg", None) or {}
     if str(cfg.get("adapter") or "paper") == "paper" or not in_hours(now):
@@ -74,7 +89,11 @@ def evaluate(bot, now) -> dict:
     age = now - last_ok
     th = getattr(bot, "thread", None)
     dead = th is not None and hasattr(th, "is_alive") and not th.is_alive()
-    if dead or age > POLL_LIMIT_S:
+    try:                                  # a slow PC poll (its own last duration) is not a stuck one: the limit grows with it
+        limit = max(float(POLL_LIMIT_S), 1.5 * float(h.get("poll_ms") or 0) / 1000.0 + 35.0)
+    except (TypeError, ValueError):
+        limit = float(POLL_LIMIT_S)
+    if dead or age > limit:
         err = str(h.get("last_error") or "")[:120]
         out["bot_down"] = (("The bot's poll thread stopped" if dead else f"No good poll for {_span(age)}")
                            + " while it is on in the entry hours: it cannot take a trade."
@@ -111,14 +130,14 @@ class FastAlarm:
         except Exception as e:
             return f"failed: {e.__class__.__name__}"
 
-    def step(self, bot, now=None) -> list:
+    def step(self, bot, now=None, server_started_at=None, autostart=None) -> list:
         """Evaluate and push what changed. -> [(key, result)]. Never raises."""
         now = float(self.clock() if now is None else now)
         done = []
         try:
             if not enabled():
                 return done
-            cur = evaluate(bot, now)
+            cur = evaluate(bot, now, server_started_at, autostart)
             for code, text in cur.items():
                 a = self.active.get(code)
                 if a is None:
@@ -131,7 +150,8 @@ class FastAlarm:
                 if a.get("sent"):
                     key = f"fast:{code}:back:{int(now)}"
                     r = self.send({"key": key, "code": code, "cond": COND[code], "back": True, "title": "Back to normal",
-                                   "body": ("The bot polls again." if code == "bot_down" else "NinjaTrader bars are fresh again.")
+                                   "body": {"bot_down": "The bot polls again.", "bot_stopped": "The bot runs again."}.get(
+                                       code, "NinjaTrader bars are fresh again.")
                                    + f" It was out for {_span(now - a['since'])}.", "tags": "white_check_mark"})
                     done.append((key, r))
             self.last = {"t": int(now), "active": sorted(self.active), "sent": done[-4:]}

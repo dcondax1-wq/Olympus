@@ -261,6 +261,9 @@ def t_fast_alarm():
     b.health["last_ok_poll"] = now - 100
     ev = FAL.evaluate(b, now)
     check("no good poll for 100 s -> bot_down", list(ev) == ["bot_down"] and "100 s" in ev["bot_down"], ev)
+    b.health["poll_ms"] = 60000                            # a PC whose polls take 60 s: 100 s is not stuck yet (limit 125 s)
+    check("slow PC polls (60 s each): no alarm at 100 s", FAL.evaluate(b, now) == {}, FAL.evaluate(b, now))
+    b.health["poll_ms"] = 900
     b.health["last_ok_poll"] = now - 5
     b.thread = SimpleNamespace(is_alive=lambda: False)
     check("poll thread dead -> bot_down", "bot_down" in FAL.evaluate(b, now))
@@ -281,6 +284,14 @@ def t_fast_alarm():
         if bb is not b:
             bb.health["last_ok_poll"] = t - 100
         check(f"no alarm: {lab}", FAL.evaluate(bb, t) == {}, FAL.evaluate(bb, t))
+    st = Bot(now, running=False)
+    rec = {"cfg": {"adapter": "ninjatrader"}, "saved_at": now - 7200}
+    ev = FAL.evaluate(st, now, server_started_at=now - 600, autostart=rec)
+    check("bot stopped in the entry hours while autostart.json says it ran -> bot_stopped", list(ev) == ["bot_stopped"], ev)
+    check("... not after an intentional Stop / kill (no autostart record)", FAL.evaluate(st, now, now - 600, None) == {})
+    check("... not in the first 3 min of the server (the resume is still starting)", FAL.evaluate(st, now, now - 60, rec) == {})
+    check("... not for a paper bot", FAL.evaluate(st, now, now - 600, {"cfg": {"adapter": "paper"}}) == {})
+    check("... not outside the hours", FAL.evaluate(st, ts(2026, 11, 18, 17, 30), now - 600, rec) == {})
     b2 = Bot(now)
     b2.started_at = now - 60
     b2.health["last_ok_poll"] = now - 100

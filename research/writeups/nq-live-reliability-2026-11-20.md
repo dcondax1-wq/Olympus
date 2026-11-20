@@ -21,6 +21,7 @@ Nothing about how Zlarior or ATLAS pick or size trades changed.
 | A backtest trade the bot did not take | told after 16:05 ET (or never: that push type was switched off on Nov 18) | push at once: "MISSED TRADE · Zlarior 06:12 ET: <why>" |
 | A day before the PC kept records (Oct 28) | "missed: PC bot off" (it WAS traded, -$437) | "unknown: check the broker statement" |
 | Zlarior 25K #2 added while the bot ran | booked a -$129.40 trade it never took + sent a close order | fixed: it ignores trades that ended before it joined |
+| A restart that did not bring the bot back, in the entry hours | told at the next 15-min report | push in 3-3.5 min ("Bot stopped") |
 | An update / restart while ATLAS holds a trade | possible (only Zlarior was checked) | never |
 | ATLAS's funded 25K under $100 room | stops for good | your one line below keeps it trading 1 micro (your YES) |
 
@@ -44,7 +45,7 @@ engine/remote_ctl.py and scripts/run_bot.ps1.
 | 3 | NinjaTrader feed stale | Oct 26 (likely) | The bot blocks new entries at once (no Yahoo). NEW: the 1m feed 2 bars behind (120 s) or the bot's own feed block -> "FEED STALE" push. The 15-min report needed a 5-min-old bar first. |
 | 4 | 1m bar late in the file | - | Unchanged and fine: the bot re-polls the moment the 1m file changes (engine/live._await_nt_bar, up to 20 s); a LIT entry is not chased after 90 s (LIT_MAX_LATE_S). |
 | 5 | Auto-update restart in an entry window | - | Unchanged rules: never 01:50-16:00 ET on a weekday (covers LIT 02:00-15:30 and ATLAS), only when flat with no setup armed. NEW: ATLAS (account B), account C and the Rapid lane's open position / open bracket also block it. Remote restart: also refused 01:50-16:00 while the bot runs. |
-| 6 | A restart that does not re-arm | Nov 3 (re-armed by hand that evening) | A real account resumes only with your auto-resume opt-in (engine/autoresume.py); without it an update waits for the Friday / Saturday halt. The board shows hourly evening restarts resuming fine. NEW: an entry the model took before the restart -> MISSED TRADE "the entry came before this bot start at HH:MM ET" (engine/live skipped it silently). |
+| 6 | A restart that does not re-arm | Nov 3 (re-armed by hand that evening) | A real account resumes only with your auto-resume opt-in (engine/autoresume.py); without it an update waits for the Friday / Saturday halt. The board shows hourly evening restarts resuming fine. NEW: a bot still stopped 3 min after a server start in the entry hours while data/autostart.json says it was running (Stop / kill clear it) -> "Bot stopped" push (the server's own "bot NOT resumed" alert is kind "system": off the phone since Nov 18); an entry the model took before the restart -> MISSED TRADE "the entry came before this bot start at HH:MM ET" (engine/live skipped it silently). |
 | 7 | The model entered during a gap (bot down / feed burst) | Oct 26 | NEW: MISSED TRADE "the model entered while the bot was down or its feed was behind" at its exit line; the reason also lands in the audit row. |
 | 8 | Live-only filters | - | None that cuts backtest trades: news guard OFF, calendar guard (0 blocked in the 2026 replay), 1 entry a day = the backtest. Live-only by design: the PC clock off by > 5 s (bad bars), your own pause / remote flatten (never alarmed as missed). |
 | 9 | Room / size 0 skips | - | By design (eval room caps). Was logged "at 0 instead of N" with no reason in the audit ("held back by the bot"). NEW: "size 0: <why>" and a MISSED TRADE push. |
@@ -78,7 +79,11 @@ Real entries (the PC ledger's route time minus the fill bar's open, data/pc_days
 Where the time goes: 2.0 s is the poll offset (engine/live.next_wake: polls at +2 s and +32 s each minute, so that
 NinjaTrader's LE_BarFeed has written the closed 1m bar AND the new minute's open, which LIT sizes from: without that open 26
 of 119 entries in 2026 would size 1-4 micros differently and 17 targets differ, research/lit/live_check.json enter_now); then
-the poll itself. ENTRY_POLL_TIMING
+the poll itself. Measured with engine/poll_timing on the test_lit_live LiveBot harness (paper, Oct 6 + Oct 13 2026, 3,019
+polls, this cloud machine): the entry poll takes 158-285 ms from its start to the order (other polls: median 201 ms, p90 289
+ms): bars merge 68-116 ms (the biggest part), the LIT model 50-128 ms, the 1m bars 23-37 ms, routing 2 ms, the state save 1
+ms. So of the PC's 3-5 s, 2 s is waiting by design and the rest is the PC's own (slower, shared with NinjaTrader) poll plus
+waiting for the minute's first trade. Caching more would save tenths of a second; the 2 s wait is the big part.
 
 **Built, OFF by default: poll on the first tick** (engine/fast_entry.py). The minute's first poll waits for NinjaTrader's files
 instead of the clock: it wakes at +0.15 s and polls the moment the new minute's open and the closed 1m bar are both in the
@@ -88,7 +93,8 @@ LE_POLL_ON_TICK=1). tests/test_fast_entry.py 20/20; OFF = engine/live._sleep_s b
 the $ it saves cannot be measured from 1-minute bars (no tick data), so it needs a Sim day first. LIVE == BACKTEST_RESULT
 
 Not changed: ATLAS (account B) is routed after LIT, the state save, account C, the ES learning refresh and the Bot Brain in
-each poll (engine/live.poll_once). ATLAS_ORDER_NOTE
+each poll (engine/live.poll_once). In the harness the ES refresh and the Bot Brain take 0-3 ms, so moving ATLAS earlier
+gains nothing measurable; its 3-5 s are the same 2 s poll offset + the poll, which the switch above also cuts.
 
 ## Fills (job 3)
 
