@@ -16,6 +16,8 @@ const later = (fn) => { const run = () => { try { fn(); } catch (_) { /* the pag
 const afterLoad = () => new Promise((ok) => { if (document.readyState === 'complete') later(ok); else addEventListener('load', () => later(ok), { once: true }); });
 const usd = (v) => (v == null || !Number.isFinite(+v) ? '-' : (v < 0 ? '-$' : '$') + Math.abs(Math.round(v)).toLocaleString('en-US'));
 let kitP = null;
+// OLYMPUS NIGHT (owner 16:00 ET): the kit's colour slots -> black, violet glow, lavender highlight, a bright gold tip at 100%, mint wins
+export const NIGHT = { base: '#000000', cyan: '#9d59ee', cyanHi: '#dacbf0', blue: '#4d2e76', violet: '#f1c14b', win: '#77db89', loss: '#ef4444', steel: '#898497' };
 /** DESIGN's effects kit (window.OLYMPUS_NQFX) after load + idle; null when it cannot load (every caller then keeps its text) */
 export function kit() {
   if (kitP) return kitP;
@@ -57,6 +59,7 @@ async function fillPayout(card) {
   card.dataset.mfxReady = '1';
   const F = await kit();
   if (!F) return;
+  try { if (F.theme) F.theme(NIGHT); } catch (_) { /* the kit's own colours */ }
   try { if (vault && F.vault) F.vault(vault, { value: frac, label, aria: `Payout goal: ${label}` }); } catch (_) { /* the note says it */ }
   try { if (ring && F.ring) F.ring(ring, { value: early, stroke: 7 }); if (pct && F.roll) F.roll(pct, { to: Math.round(early * 100), from: 0, duration: 1.1 }); } catch (_) { /* the % is written */ }
 }
