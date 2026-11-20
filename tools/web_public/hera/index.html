@@ -28,6 +28,7 @@
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#c96a4a'); r.setProperty('--oly-accent-rgb', '192, 96, 63'); })();</script>
 <link rel="stylesheet" href="hera.css?v=a1qff">
 <link rel="stylesheet" href="../olympus/shell.css?v=s6"><!-- day-arenas: the one design layer, loaded last -->
+<link rel="stylesheet" href="../nq/nqtheme.css?v=3"><link rel="stylesheet" href="../olympus/moneyfx.css?v=1"><!-- day-archive 2026-11-20: navy terminal look + glow (no gold), loaded last -->
 </head>
 <body>
 <main id="app">
@@ -42,6 +43,11 @@
     <p class="lead" id="bigText"></p>
     <div class="seg" id="vers" role="group" aria-label="Which half of 2026 the plan is based on"></div>
     <p class="note" id="bigNote"></p>
+  </section>
+  <section class="ag-card card mfx-card" data-moneyfx="payout" aria-labelledby="mfxH"><!-- day-archive 2026-11-20: payout goal as a 3D vault + the earliest-payout ring (olympus/moneyfx.js) -->
+    <h2 id="mfxH">Payout goal</h2>
+    <div class="mfx-row"><div class="mfx-vault" data-mfx-vault></div><div class="mfx-ring" data-mfx-ring role="img" aria-label="Earliest payout"><b data-mfx-pct>-</b><small>earliest</small></div></div>
+    <p class="note" data-mfx-note style="min-height:4.4em">Loading the funded account...</p>
   </section>
   <section class="pulse" data-pulse="hero:payout,money" data-pulse-app="hera" aria-label="Next payout, fees vs payouts" aria-busy="true"><div class="pu-part pu-hero"></div><div class="pu-part pu-money"></div></section><!-- day-arenas: olympus/pulse.js -->
   <section class="ag-card card" id="nowCard" aria-labelledby="nowH" hidden><!-- day-archive 2026-11-20: the real accounts from the PC's report, with its age -->
@@ -90,5 +96,6 @@
 <script type="module" src="hera.js?v=a1dgk"></script>
 <script type="module" src="../olympus/pulse.js?v=p8"></script>
 <script type="module" src="fleet.js?v=1"></script>
+<script type="module" src="../olympus/moneyfx.js?v=1"></script>
 </body>
 </html>
