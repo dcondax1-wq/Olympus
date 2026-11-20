@@ -1,6 +1,6 @@
 /* OLYMPUS SHELL: the one design layer of the main pages (night-revamp-main, 2026-11-20). Owner: "a whole revamp ... the bottom of my
    screen is still a little funky ... lag, glitches ... make it look good, not like a shitty AI built it."
-   Loaded LAST on the Gate (gate/), Zenith (index.html), Jarvis (jarvis/), the Doors page (hub/doors.html), the hubs (hub/index.html)
+   Loaded LAST on the Gate (gate/), Zenith (index.html: inline copy), the Doors page (hub/doors.html), the hubs (hub/index.html)
    and Settings, so it wins over the older layers without !important wars. Plain CSS, no build. Three parts:
      1. TOKENS   --o-*: colour (from the OLYMPUS look slots --oly-th-*, so every look in themes.js still works), type, spacing (4 px grid),
                  radius, motion, elevation, the safe areas; a light set under html[data-oly-scheme="light"] (the light looks: Ivory, Stocks Light...)

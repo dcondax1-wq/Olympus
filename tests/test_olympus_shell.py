@@ -1,7 +1,8 @@
 """THE MAIN PAGES' SHELL (night-revamp-main, 2026-11-20). Owner: "The bottom of my screen is still a little funky ... lag, glitches."
 The Gate, Zenith, Jarvis, the Doors page, a hub and Settings, in Chromium at 390 x 844 and 430 x 932 with the iPhone's home bar emulated
 (34 px, tools/olympus_shell_audit.py). Fails when:
-  a. static: olympus/shell.css is missing, or a main page does not load it (last), or it loses its tokens / glued bars / reduced-motion rule
+  a. static: olympus/shell.css is missing, or a main page does not load it (last; Zenith inline; Jarvis keeps its own sheets: its offline copy
+     (jarvis/sw.js, lead-only) has no shell.css, so a link would hold its first frame on a slow site), or it loses its tokens / glued bars / reduced-motion rule
   b. a page scrolls sideways
   c. a fixed bottom bar's keys reach into the home bar, or page text hides under a bottom bar at the end of the page
   d. a page error (an uncaught exception), or a 404 on a file that is in the repo's site (the live data files home.json, data.json,
@@ -20,7 +21,7 @@ from tests import agora_kit as AK  # noqa: E402
 check = AK.check
 WEB = AK.WEB
 LIVE = re.compile(r"^(home\.json|data\.json|kalshi\.json|money/|me/me\.json|icons/|alerts\.json|writeups/|status_feed\.json|live\.json|kalshicity/(forward|scan)\.json|kalshi/kit\.json)")
-MAIN = {"jarvis/index.html": "../olympus/shell.css", "hub/doors.html": "../olympus/shell.css",
+MAIN = {"hub/doors.html": "../olympus/shell.css",
         "hub/index.html": "../olympus/shell.css", "settings/index.html": "../olympus/shell.css"}
 
 
