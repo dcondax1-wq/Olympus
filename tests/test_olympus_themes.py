@@ -884,6 +884,9 @@ FIRST_JS = """(() => { const rec = window.__t2first = { first: null }; requestAn
 def test_night_default(br, origin):
     """OLYMPUS NIGHT (owner 2026-11-20): no key, or AGORA saved before the switch -> 'night', painted and saved once; a pick after it stays"""
     out = {}
+    def dark(c):                                  # the page: black (the engine's darkest grid step, e.g. #040305)
+        m = re.match(r"#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$", (c or "").strip().lower())
+        return bool(m) and all(int(x, 16) <= 16 for x in m.groups())
     for case, init in (("empty", ""), ("agora before", "localStorage.setItem('olympus.theme', 'agora');"),
                        ("agora after", "localStorage.setItem('olympus.theme', 'agora'); localStorage.setItem('olympus.theme.night', '1');")):
         ctx = br.new_context(viewport={"width": 390, "height": 844}, service_workers="block")
@@ -895,7 +898,7 @@ def test_night_default(br, origin):
         out[case] = p.evaluate("() => [document.documentElement.getAttribute('data-oly-theme') || '', localStorage.getItem('olympus.theme'), getComputedStyle(document.documentElement).getPropertyValue('--ag-night').trim()]")
         ctx.close()
     check("n. OLYMPUS NIGHT is the default: an empty choice and an AGORA saved before 2026-11-20 both become 'night' (painted, saved, page black); an Agora picked after stays",
-          out["empty"][:2] == ["night", "night"] and out["agora before"][:2] == ["night", "night"] and out["empty"][2].lower() in ("#000000", "#000")
+          out["empty"][:2] == ["night", "night"] and out["agora before"][:2] == ["night", "night"] and dark(out["empty"][2])
           and out["agora after"][1] == "agora" and out["agora after"][0] in ("", "agora"), out)
 
 
