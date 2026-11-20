@@ -33,4 +33,4 @@ cityscene.js etc. unchanged (still imported as ?v=night11). No lead-only file ne
 ## Tests
 - `tests/test_kalshicity_page.py`: 105/105 (was 94/94). Old 3D checks now tap the button first; new: no 3D module/WebGL at load, 2D content + 44 px button on first screen, nothing covers the button, panels work in 2D, the tap starts 3D, nothing remembered unless asked, opt-in remembered -> 3D without a tap, 2D chip forgets + reloads 2D, reduced motion stays 2D, no-data starts no 3D, static source rules.
 - `tests/test_kalshicity_network_switch.mjs`: pass (+4 asserts). `tests/test_kalshicity_freshness.py`: 1/1.
-- `tests/test_kalshicity_skyline.py`: 4 tests, 1 fail + 1 error, the same pre-existing ones as before this change (atlas caption child order in the node stub; tier test) - untouched.
+- `tests/test_kalshicity_skyline.py`: 5 tests, 1 fail + 1 error, the same pre-existing ones as before this change (atlas caption child order in the node stub; tier test) - untouched.
