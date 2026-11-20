@@ -501,7 +501,8 @@ def bet_log(rs, k=5) -> list:
     out = []
     for r in sorted(x, key=lambda r: KL._f(r.get("open_t"), 0.0))[-k:]:
         p = KL._f(r.get("price"))
-        out.append([LEG_CODE.get(r.get("leg"), "?"), str(r.get("day") or "")[5:10], r.get("n"), round(100 * p) if p else None,
+        n = r.get("n")
+        out.append([LEG_CODE.get(r.get("leg"), "?"), str(r.get("day") or "")[5:10], int(n) if isinstance(n, (int, float)) and float(n).is_integer() else n, round(100 * p) if p else None,
                     round(KL._f(r.get("pnl"), 0.0), 2) if r.get("result") else None,
                     "W" if r.get("result") == "won" else "L" if r.get("result") == "lost" else "o"])
     return out
