@@ -24,8 +24,8 @@ const rawLabel = (raw) => (raw && !STAGES.some(([k]) => k === raw) ? ({ called: 
 // the export (CSV, one row per business with its stage): quotes doubled, a formula-looking cell starts with ' (spreadsheet safety)
 export function toCsv(leads, marks) {
   const q = (v) => { let t = String(v == null ? '' : v); if (/^[=+\-@]/.test(t)) t = "'" + t; return '"' + t.replace(/"/g, '""') + '"'; };
-  const head = ['name', 'town', 'kind', 'phone', 'address', 'heat', 'score', 'offer', 'stage', 'stage_date', 'osm'];
-  const rows = leads.map((L) => { const m = marks[L.id] || {}; return [L.name, L.town, L.nicheName, L.phone, L.address, L.heat, L.score, L.offer, m.s ? stageName(m.s) + (rawLabel(m.s) ? ' (' + rawLabel(m.s) + ')' : '') : 'New',
+  const head = ['name', 'town', 'kind', 'phone', 'email', 'address', 'mailable', 'heat', 'score', 'offer', 'stage', 'stage_date', 'osm'];
+  const rows = leads.map((L) => { const m = marks[L.id] || {}; return [L.name, L.town, L.nicheName, L.phone, L.email, L.address, L.mailable ? 'yes' : 'no', L.heat, L.score, L.offer, m.s ? stageName(m.s) + (rawLabel(m.s) ? ' (' + rawLabel(m.s) + ')' : '') : 'New',
     m.t ? new Date(m.t).toISOString().slice(0, 10) : '', L.osm].map(q).join(','); });
   return [head.join(',')].concat(rows).join('\n');
 }
@@ -47,7 +47,8 @@ export function cleanLead(x) {
   return { id: s(x.id, 40) || 'n-' + x.name.slice(0, 30), name: s(x.name, 80), niche: s(x.niche, 20), nicheName: s(x.niche_name, 40) || s(x.niche, 20),
     town: s(x.town, 40), city: s(x.city, 60), phone: s(x.phone, 20), address: s(x.address, 120), hours: s(x.hours, 80), heat: ['hot', 'warm', 'cold'].includes(x.heat) ? x.heat : 'cold',
     score: Number.isFinite(x.score) ? x.score : 0, why: Array.isArray(x.why) ? x.why.filter((w) => typeof w === 'string').slice(0, 5) : [], offer: s(x.offer, 140),
-    trade: s(x.trade, 20), category: s(x.category, 40), osm: /^https:\/\/www\.openstreetmap\.org\/(node|way|relation)\/\d+$/.test(x.osm || '') ? x.osm : '' };
+    trade: s(x.trade, 20), category: s(x.category, 40), email: /^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(x.email || '') ? x.email.slice(0, 80) : '',
+    mailable: x.mailable === true, nearest: x.addr_src === 'nearest', osm: /^https:\/\/www\.openstreetmap\.org\/(node|way|relation)\/\d+$/.test(x.osm || '') ? x.osm : '' };
 }
 // the filters (pure): opts = {town, niche, heat ('', 'hot', 'warm'), status ('', 'todo' = new, or a stage), phone (bool)}
 export function pick(leads, marks, o) {
@@ -58,6 +59,7 @@ export function pick(leads, marks, o) {
     if (o.heat === 'hot' && L.heat !== 'hot') return false;
     if (o.heat === 'warm' && L.heat === 'cold') return false;
     if (o.phone && !L.phone) return false;
+    if (o.mail && !L.mailable) return false;
     if (o.status === 'todo') return !m;
     if (o.status) return m === o.status;
     return true;
@@ -69,12 +71,14 @@ export function handoff(L) {
     address: L.address, notes: 'From OpenStreetMap: no website on the map. Best offer: ' + L.offer }] });
 }
 
-function opts() { return { town: $('fTown').value, niche: $('fNiche').value, heat: $('fHeat').value, status: $('fStatus').value, phone: $('fPhone').checked }; }
+function opts() { return { town: $('fTown').value, niche: $('fNiche').value, heat: $('fHeat').value, status: $('fStatus').value, phone: $('fPhone').checked, mail: !!($('fMail') && $('fMail').checked) }; }
 
 function card(L) {
   const li = h('li', 'lead ' + L.heat); li.dataset.id = L.id;
   const top = h('div', 'lt'); top.appendChild(h('b', 'ln', L.name)); top.appendChild(h('span', 'pill heat ' + L.heat, L.heat === 'hot' ? 'Hot' : L.heat === 'warm' ? 'Warm' : 'Cold')); li.appendChild(top);
   li.appendChild(h('p', 'lk', `${L.nicheName} · ${L.city || L.town}${L.address ? ' · ' + L.address.split(',')[0] : ''}`));
+  if (L.address) li.appendChild(h('p', 'la2', (L.mailable ? 'Mailable: ' : 'Address: ') + L.address + (L.nearest ? ' (nearest address on the map: check it)' : '')));
+  if (L.email) { const e = h('p', 'lk'); e.appendChild(h('span', '', 'Email on the map: ')); const a = h('a', '', L.email); a.href = 'mailto:' + L.email; e.appendChild(a); li.appendChild(e); }
   if (L.why.length) li.appendChild(h('p', 'lw', 'Why: ' + L.why.slice(0, 3).join('; ') + '.'));
   if (L.offer) li.appendChild(h('p', 'lo', 'Offer: ' + L.offer));
   if (L.hours) li.appendChild(h('p', 'lh', 'Hours on the map: ' + L.hours));
@@ -120,7 +124,7 @@ function render() {
 function fillSelect(sel, items) { for (const [v, t] of items) { const o = h('option', '', t); o.value = v; sel.appendChild(o); } }
 
 function bind() {
-  for (const id of ['fTown', 'fNiche', 'fHeat', 'fStatus', 'fPhone']) $(id).addEventListener('change', () => { S.shown = PAGE; render(); });
+  for (const id of ['fTown', 'fNiche', 'fHeat', 'fStatus', 'fPhone', 'fMail']) if ($(id)) $(id).addEventListener('change', () => { S.shown = PAGE; render(); });
   $('more').addEventListener('click', () => { S.shown += PAGE; render(); });
   $('list').addEventListener('change', (e) => {
     const sel = e.target.closest && e.target.closest('select[data-act="stage"]');

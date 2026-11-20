@@ -71,7 +71,13 @@ GROUPS = {"frederick": FREDERICK_AREA, "maryland": MARYLAND, "all": TOWNS}
 STATE = "US-MD"
 GAP_S = 1.1
 BACKOFF_S = (20, 60)        # a busy / timed-out server: wait, then ask it again (polite backoff), then the next server
-SPLIT_BYTES = 300_000       # leads.json over this: one file per town in leads/towns/
+SPLIT_BYTES = 300_000
+# Nominatim reverse geocoding (the missing street addresses). Policy https://operations.osmfoundation.org/policies/nominatim/ :
+# at most 1 request a second, a valid app User-Agent, results cached (this file), the ODbL credit. No bulk: only leads with no address.
+NOMINATIM = "https://nominatim.openstreetmap.org/reverse"
+GEO_CACHE = os.path.join(ROOT, "research", "web_leads", "geocode_cache.json")
+GEO_GAP_S = 1.1
+_GEO_LAST = [0.0]           # the time of the last Nominatim request (monotonic), across every geocode() call       # leads.json over this: one file per town in leads/towns/
 LICENSE = "Data (c) OpenStreetMap contributors, ODbL (openstreetmap.org/copyright)"
 
 # niche: (OSM tag key, regex of values) ... first match wins
@@ -163,7 +169,7 @@ def ask(q: str, http=None, servers=SERVERS, sleep=time.sleep, say=print, backoff
                     st, raw = http(url, body)
                 else:
                     req = urllib.request.Request(url, data=body, headers={"User-Agent": UA, "Accept": "application/json"})
-                    with urllib.request.urlopen(req, timeout=90) as r:
+                    with urllib.request.urlopen(req, timeout=60) as r:
                         st, raw = r.status, r.read()
                 if st == 200:
                     j = json.loads(raw)
@@ -175,8 +181,7 @@ def ask(q: str, http=None, servers=SERVERS, sleep=time.sleep, say=print, backoff
                 busy = e.code in (429, 502, 503, 504)
                 say(f"  [..] {host}: {e.code}")
             except TimeoutError:
-                busy = True
-                say(f"  [..] {host}: timeout")
+                say(f"  [..] {host}: timeout (next server)")
             except Exception as e:  # noqa: BLE001  (refused / closed connection: no point asking again)
                 say(f"  [..] {host}: {e.__class__.__name__}")
             if not busy:
@@ -235,7 +240,17 @@ CHAIN_RX = re.compile(r"^(domino'?s|mcdonald'?s|subway|starbucks|dunkin'?( donut
                       r"7-eleven|cvs( pharmacy)?|walgreens|rite aid|dollar general|dollar tree|family dollar|jiffy lube|valvoline|"
                       r"midas|meineke|pep boys|autozone|advance auto parts|o'?reilly auto parts|great clips|supercuts|sport clips|"
                       r"planet fitness|anytime fitness|la fitness|orangetheory( fitness)?|h&r block|jackson hewitt|state farm|allstate|"
-                      r"applebee'?s|ihop|denny'?s|olive garden|red robin|chili'?s|outback steakhouse|buffalo wild wings|wawa|sheetz|royal farms)\b", re.I)
+                      r"applebee'?s|ihop|denny'?s|olive garden|red robin|chili'?s|outback steakhouse|buffalo wild wings|wawa|sheetz|royal farms|"
+                      # the factory's finds (lead 2026-11-20) + common Maryland chains / franchises / banks / carriers
+                      r"bonefish( grill)?|glory days( grill)?|crunch( fitness)?|bruster'?s( real ice cream)?|exxon|ymca|medstar|anchor bar|"
+                      r"america'?s best wings|shell|bp|sunoco|mobil|chevron|citgo|valero|gulf|panda express|jersey mike'?s|firehouse subs|"
+                      r"potbelly|qdoba|noodles( & company)?|red lobster|longhorn steakhouse|texas roadhouse|cracker barrel|bob evans|"
+                      r"gold'?s gym|snap fitness|massage envy|hand & stone|european wax center|fantastic sams|kumon|mathnasium|liberty tax|"
+                      r"edward jones|re/?max|keller williams|long & foster|coldwell banker|century 21|chase|bank of america|wells fargo|pnc|"
+                      r"m&t( bank)?|td bank|truist|capital one|verizon|at&t|t-mobile|the ups store|fedex|walmart|target|giant|safeway|"
+                      r"weis|food lion|aldi|lidl|costco|home depot|lowe'?s|petsmart|petco|ulta|sephora|gnc|vitamin shoppe|hallmark|"
+                      r"goodwill|dollar general|tj maxx|marshalls|ross|kohl'?s|starbucks|tropical smoothie( cafe)?|smoothie king|"
+                      r"chuck e\.? cheese|dave & buster'?s|cinnabon|auntie anne'?s|baskin|dairy queen|rita'?s|carvel|cold stone)\b", re.I)
 
 
 def lead_of(el: dict, town: str) -> tuple:
@@ -244,7 +259,8 @@ def lead_of(el: dict, town: str) -> tuple:
     name = str(t.get("name") or "").strip()
     if not name:
         return None, "no_name"
-    if t.get("brand") or t.get("brand:wikidata") or t.get("operator:wikidata") or CHAIN_RX.match(name):
+    op = str(t.get("operator") or "").strip()
+    if t.get("brand") or t.get("brand:wikidata") or t.get("operator:wikidata") or CHAIN_RX.match(name) or (op and op.lower() != name.lower() and CHAIN_RX.match(op)):
         return None, "chain"
     if str(t.get("disused") or t.get("abandoned") or "").lower() in ("yes", "true") or "disused:shop" in t:
         return None, "closed"
@@ -255,8 +271,15 @@ def lead_of(el: dict, town: str) -> tuple:
     if real:
         return None, "has_site"
     phone = phone_of(t)
-    street = " ".join(x for x in (str(t.get("addr:housenumber") or ""), str(t.get("addr:street") or "")) if x).strip()
+    hn, road = str(t.get("addr:housenumber") or "").strip(), str(t.get("addr:street") or "").strip()
+    street = " ".join(x for x in (hn, road) if x).strip()
     city = str(t.get("addr:city") or town)
+    zipc = (re.match(r"\d{5}", str(t.get("addr:postcode") or "")) or [""])[0]
+    email = str(t.get("email") or t.get("contact:email") or "").split(";")[0].strip()
+    email = email if re.fullmatch(r"[^@\s]+@[^@\s]+\.[a-z]{2,}", email, re.I) else ""
+    lat, lon = el.get("lat"), el.get("lon")
+    if lat is None and isinstance(el.get("center"), dict):
+        lat, lon = el["center"].get("lat"), el["center"].get("lon")
     hours = str(t.get("opening_hours") or "")[:80]
     score, why = 4, ["no website on the map" if not fb else "only a Facebook page, no real website"]
     if fb:
@@ -270,13 +293,19 @@ def lead_of(el: dict, town: str) -> tuple:
     if street:
         score += 1
         why.append("a street address (real storefront)")
+    if email:
+        score += 1
+        why.append("an email on the map")
     if VALUE[niche]:
         score += VALUE[niche]
         why.append(f"{NAME[niche].lower()}: customers search for this online")
     heat = "hot" if score >= 8 else "warm" if score >= 6 else "cold"
     typ, osm_id = el.get("type", "node"), el.get("id")
     return {"id": f"osm-{typ[0]}{osm_id}", "name": name[:80], "niche": niche, "niche_name": NAME[niche], "kind": kind, "town": town,
-            "city": city[:60], "state": "MD", "phone": phone, "address": (street + (", " + city if street else ""))[:120], "hours": hours,
+            "city": city[:60], "state": "MD", "phone": phone, "email": email[:80], "street": street[:80], "zip": zipc,
+            "address": (street + (", " + city if street else "") + (" MD " + zipc if street and zipc else ""))[:120], "addr_src": "map" if street else "",
+            "lat": round(lat, 6) if isinstance(lat, (int, float)) else None, "lon": round(lon, 6) if isinstance(lon, (int, float)) else None,
+            "mailable": bool(hn and road and city and zipc), "hours": hours,
             "facebook": bool(fb), "trade": TRADE[niche], "category": kind.split("=")[-1].replace("_", " "), "score": score, "heat": heat, "why": why, "offer": OFFER[niche], "offer_usd": OFFER_USD.get(niche, 1500),
             "osm": f"https://www.openstreetmap.org/{typ}/{osm_id}"}, ""
 
@@ -288,10 +317,12 @@ def build(answers: dict, now=None) -> dict:
     seen = set()
     for town, j in answers.items():
         n0 = len(leads)
+        mine_sk = {}
         for el in (j or {}).get("elements") or []:
             L, why = lead_of(el, town)
             if not L:
                 skipped[why] = skipped.get(why, 0) + 1
+                mine_sk[why] = mine_sk.get(why, 0) + 1
                 continue
             key = (L["name"].lower(), L["phone"] or L["address"])
             if key in seen:
@@ -302,7 +333,8 @@ def build(answers: dict, now=None) -> dict:
         mine = leads[n0:]
         towns.append({"town": town, "state": "MD", "businesses": len((j or {}).get("elements") or []), "leads": len(mine),
                       "hot": sum(1 for x in mine if x["heat"] == "hot"), "server": (j or {}).get("_server", ""),
-                      "parts_ok": (j or {}).get("_parts_ok"), "parts": len(kinds()), "missing": (j or {}).get("_failed") or []})
+                      "parts_ok": (j or {}).get("_parts_ok"), "parts": len(kinds()), "missing": (j or {}).get("_failed") or [],
+                      "chains": mine_sk.get("chain", 0), "with_site": mine_sk.get("has_site", 0)})
     leads.sort(key=lambda x: (-x["score"], x["town"], x["name"]))
     return {"v": 1, "kind": "web_leads", "demo": False, "fetched": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
             "source": "OpenStreetMap via the public Overpass API (a few small queries per town)", "license": LICENSE,
@@ -318,6 +350,77 @@ def summary(out: dict) -> dict:
     return {"n": len(L), "label": f"{len(L)} leads found", "next": (f"Call the {hot} hot ones in {towns}" if hot else
             f"Look up and call the best ones in {towns}") if L else "Run the lead finder on the PC",
             "t": int(dt.datetime.now(dt.timezone.utc).timestamp()), "pipe": {"leads": len(L), "called": 0}}
+
+
+def geo_key(lat, lon) -> str:
+    return f"{lat:.5f},{lon:.5f}"
+
+
+def reverse(lat, lon, http=None) -> dict | None:
+    """One Nominatim reverse lookup -> its address dict, or None."""
+    url = NOMINATIM + "?" + urllib.parse.urlencode({"format": "jsonv2", "lat": f"{lat:.6f}", "lon": f"{lon:.6f}", "zoom": 18, "addressdetails": 1})
+    try:
+        if http:
+            st, raw = http(url, None)
+        else:
+            req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "application/json"})
+            with urllib.request.urlopen(req, timeout=30) as r:
+                st, raw = r.status, r.read()
+        if st != 200:
+            return None
+        j = json.loads(raw)
+        return j.get("address") if isinstance(j, dict) and isinstance(j.get("address"), dict) else None
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def geocode(leads: list, cache_path=GEO_CACHE, http=None, sleep=time.sleep, say=print, limit=None) -> dict:
+    """Fill the street / city / ZIP of leads with no street address from their map point (Nominatim reverse, cached, >= 1.1 s apart).
+    The address found is the nearest house number on the map: marked addr_src 'nearest' (check it before mailing).
+    -> {"asked", "cached", "filled", "failed"}"""
+    try:
+        with open(cache_path, encoding="utf-8") as fh:
+            cache = json.load(fh)
+    except (OSError, ValueError):
+        cache = {}
+    st = {"asked": 0, "cached": 0, "filled": 0, "failed": 0}
+    for L in leads:
+        if L.get("street") or L.get("lat") is None or L.get("lon") is None:
+            continue
+        k = geo_key(L["lat"], L["lon"])
+        if k in cache:
+            a = cache[k]
+            st["cached"] += 1
+        else:
+            if limit is not None and st["asked"] >= limit:
+                continue
+            wait = GEO_GAP_S - (time.monotonic() - _GEO_LAST[0])
+            if wait > 0:
+                sleep(wait)
+            _GEO_LAST[0] = time.monotonic()
+            st["asked"] += 1
+            a = reverse(L["lat"], L["lon"], http)
+            if a is None:
+                st["failed"] += 1
+                continue
+            cache[k] = {x: a.get(x) for x in ("house_number", "road", "city", "town", "village", "hamlet", "postcode", "state") if a.get(x)}
+            a = cache[k]
+        hn, road = str(a.get("house_number") or "").split(";")[0].strip(), str(a.get("road") or "").strip()
+        city = str(a.get("city") or a.get("town") or a.get("village") or a.get("hamlet") or L.get("city") or "")
+        zipc = (re.match(r"\d{5}", str(a.get("postcode") or "")) or [""])[0]
+        if road and (str(a.get("state") or "Maryland") == "Maryland"):
+            L["street"] = " ".join(x for x in (hn, road) if x)[:80]
+            L["city"] = city[:60] or L.get("city")
+            L["zip"] = zipc or L.get("zip", "")
+            L["address"] = (L["street"] + ", " + L["city"] + (" MD " + L["zip"] if L["zip"] else ""))[:120]
+            L["addr_src"] = "nearest"
+            L["mailable"] = bool(hn and road and L["city"] and L["zip"])
+            st["filled"] += 1
+    os.makedirs(os.path.dirname(cache_path), exist_ok=True)
+    with open(cache_path, "w", encoding="utf-8") as fh:
+        json.dump(cache, fh, separators=(",", ":"), sort_keys=True)
+    say(f"  [OK] addresses from the map point: {st['filled']} filled ({st['asked']} asked, {st['cached']} from the cache, {st['failed']} failed)")
+    return st
 
 
 def slug(t: str) -> str:
@@ -395,18 +498,20 @@ def save(out: dict, out_path: str):
 
 
 def counts(out: dict) -> str:
-    """A markdown table: leads by town x niche (+ hot, with a phone, the kinds still missing)."""
+    """A markdown table by town: leads, chains dropped, hot, with a phone, with an email, mailable, a column per niche, the kinds missing."""
     L = out.get("leads") or []
     niches = sorted({x.get("niche") for x in L if x.get("niche")})
-    head = "| Town | Leads | Hot | Phone | " + " | ".join(NAME.get(n, n) for n in niches) + " | Kinds missing |"
-    rows = [head, "|" + "---|" * (5 + len(niches))]
+    head = ("| Town | Leads | Chains dropped | Hot | Phone | Email | Mailable | " + " | ".join(NAME.get(n, n) for n in niches) + " | Kinds missing |")
+    rows = [head, "|" + "---|" * (8 + len(niches))]
+    f = lambda xs, k: sum(1 for x in xs if x.get(k))                 # noqa: E731
     for t in sorted(out.get("towns") or [], key=lambda t: t["town"]):
         mine = [x for x in L if x.get("town") == t["town"]]
-        rows.append(f"| {t['town']} | {len(mine)} | {sum(1 for x in mine if x.get('heat') == 'hot')} | {sum(1 for x in mine if x.get('phone'))} | "
-                    + " | ".join(str(sum(1 for x in mine if x.get("niche") == n)) for n in niches)
+        rows.append(f"| {t['town']} | {len(mine)} | {t.get('chains', 0)} | {sum(1 for x in mine if x.get('heat') == 'hot')} | {f(mine, 'phone')} | "
+                    f"{f(mine, 'email')} | {f(mine, 'mailable')} | " + " | ".join(str(sum(1 for x in mine if x.get("niche") == n)) for n in niches)
                     + f" | {', '.join(t.get('missing') or []) or '-'} |")
-    rows.append(f"| **All** | **{len(L)}** | **{sum(1 for x in L if x.get('heat') == 'hot')}** | **{sum(1 for x in L if x.get('phone'))}** | "
-                + " | ".join(f"**{sum(1 for x in L if x.get('niche') == n)}**" for n in niches) + " | |")
+    ch = sum(t.get("chains", 0) for t in out.get("towns") or [])
+    rows.append(f"| **All** | **{len(L)}** | **{ch}** | **{sum(1 for x in L if x.get('heat') == 'hot')}** | **{f(L, 'phone')}** | **{f(L, 'email')}** | "
+                f"**{f(L, 'mailable')}** | " + " | ".join(f"**{sum(1 for x in L if x.get('niche') == n)}**" for n in niches) + " | |")
     return "\n".join(rows)
 
 
@@ -420,10 +525,19 @@ def main(argv=None) -> int:
     ap.add_argument("--fresh", action="store_true", help="start a new list (default: merge into the saved one, town by town)")
     ap.add_argument("--skip-done", action="store_true", help="skip towns already saved with every kind of query answered")
     ap.add_argument("--counts", action="store_true", help="print the leads by town x niche table and stop")
+    ap.add_argument("--no-geocode", action="store_true", help="do not fill missing street addresses (Nominatim reverse)")
+    ap.add_argument("--geocode-only", action="store_true", help="only fill the missing street addresses of the saved list, then stop")
     a = ap.parse_args(argv)
     saved = None if a.fresh else load(a.out)
     if a.counts:
         print(counts(saved or {"towns": [], "leads": []}))
+        return 0
+    if a.geocode_only:
+        if not saved:
+            print("[!!] no saved list to fill")
+            return 2
+        geocode(saved["leads"])
+        save(saved, a.out)
         return 0
     towns = a.town or list(GROUPS[a.group])
     if a.skip_done and saved:
@@ -444,7 +558,10 @@ def main(argv=None) -> int:
             if j is None:
                 print(f"  [!!] {t}: every Overpass server failed; skipped (run it again later or on the PC)")
                 continue
-        out = merge(out, build({t: j}))
+        new = build({t: j})
+        if not a.from_file and not a.no_geocode:
+            geocode(new["leads"])               # the missing street addresses (1 a second, cached)
+        out = merge(out, new)
         save(out, a.out)                      # after every town: a long run can stop and resume (--skip-done)
         got += 1
         tt = next(x for x in out["towns"] if x["town"] == t)

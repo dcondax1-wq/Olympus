@@ -150,11 +150,46 @@ def part_run(tmp):
     check("r5. each town records the kinds answered / missing (offline file = all answered by convention: parts_ok None -> not 'done')", "missing" in tt and "parts" in tt, tt)
 
 
+def part_post(tmp):
+    """Postcards (lead 2026-11-20): chains dropped (tags + names), email kept, the map point kept, missing streets filled by
+    Nominatim reverse (1 a second, cached), mailable = house number + street + town + ZIP."""
+    els = [{"type": "node", "id": 1, "lat": 39.41, "lon": -77.41, "tags": {"name": "Glory Days Grill", "amenity": "restaurant"}},
+           {"type": "node", "id": 2, "lat": 39.41, "lon": -77.41, "tags": {"name": "Sample Cafe (fictional)", "amenity": "cafe", "operator": "Starbucks"}},
+           {"type": "node", "id": 3, "lat": 39.4143, "lon": -77.4105, "tags": {"name": "Example Bakery (fictional)", "shop": "bakery", "contact:email": "hi@example.com"}},
+           {"type": "way", "id": 4, "center": {"lat": 39.42, "lon": -77.42}, "tags": {"name": "Demo Tailor (fictional)", "shop": "tailor", "addr:housenumber": "5",
+            "addr:street": "Main Street", "addr:city": "Frederick", "addr:postcode": "21701-1234", "contact:phone": "301-555-0177"}}]
+    out = W.build({"Frederick": {"elements": els}})
+    by = {L["name"]: L for L in out["leads"]}
+    check("q1. chains dropped by name (Glory Days) and by operator (a cafe run by Starbucks); counted per town",
+          set(by) == {"Example Bakery (fictional)", "Demo Tailor (fictional)"} and out["towns"][0]["chains"] == 2, (sorted(by), out["towns"][0]))
+    b, t = by["Example Bakery (fictional)"], by["Demo Tailor (fictional)"]
+    check("q2. contact:email kept (+1 score), contact:phone kept, the map point kept (way = its center); a full map address with ZIP = mailable",
+          b["email"] == "hi@example.com" and "an email on the map" in b["why"] and b["lat"] == 39.4143 and t["lat"] == 39.42 and t["phone"] == "(301) 555-0177"
+          and t["mailable"] is True and t["zip"] == "21701" and t["address"] == "5 Main Street, Frederick MD 21701" and b["mailable"] is False, (b, t))
+    calls, sleeps = [], []
+
+    def http(url, body):
+        calls.append(url)
+        return 200, json.dumps({"address": {"house_number": "9", "road": "East Patrick Street", "city": "Frederick", "postcode": "21701", "state": "Maryland"}}).encode()
+    cache = os.path.join(tmp, "geo.json")
+    st = W.geocode(out["leads"], cache, http=http, sleep=sleeps.append, say=lambda *a: None)
+    check("q3. Nominatim reverse only for the lead with no street (1 call, nearest address marked, now mailable); the tailor's own address untouched",
+          st["asked"] == 1 and len(calls) == 1 and "nominatim.openstreetmap.org/reverse" in calls[0] and "lat=39.414300" in calls[0]
+          and b["street"] == "9 East Patrick Street" and b["addr_src"] == "nearest" and b["mailable"] and t["addr_src"] == "map", (st, b))
+    b2 = dict(b, street="", mailable=False, addr_src="")
+    st2 = W.geocode([b2, dict(b2, id="z", lat=39.5, lon=-77.5)], cache, http=http, sleep=sleeps.append, say=lambda *a: None)
+    check("q4. the cache: the same point is not asked again; a new point waits until 1.1 s after the previous request, across runs (Nominatim: max 1 a second)",
+          st2["cached"] == 1 and st2["asked"] == 1 and len(calls) == 2 and len(sleeps) == 1 and sleeps[0] >= 1.0, (st2, sleeps))
+    t3 = W.counts({"towns": out["towns"], "leads": out["leads"]})
+    check("q5. the counts table has Chains dropped, Phone, Email, Mailable", all(w in t3 for w in ("Chains dropped", "| Phone |", "| Email |", "| Mailable |")) and "| Frederick | 2 | 2 |" in t3, t3)
+
+
 def main():
     tmp = tempfile.mkdtemp(prefix="webleads-")
     part_finder()
     part_polite(tmp)
     part_run(tmp)
+    part_post(tmp)
     part_page(tmp)
     print(f"\n{sum(RES)}/{len(RES)} passed")
     return 0 if all(RES) else 1

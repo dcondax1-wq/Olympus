@@ -29,3 +29,6 @@ main#app { max-width: 640px; margin: 0 auto; padding: 0 16px 40px; display: flex
 .lead.st-won .ln { color: #77db89; } .lead.st-lost { opacity: .75; }
 #exportBtn { min-height: 44px; margin-top: 8px; } .exbox { width: 100%; margin-top: 8px; font: .8125rem/1.4 ui-monospace, monospace; }
 .lm .lr { font-style: normal; font-size: .8125rem; color: var(--ag-muted, #a39883); }
+.la2 { margin: 3px 0 0; font-size: .9375rem; overflow-wrap: anywhere; }
+#fMail { width: 22px; height: 22px; }
+#list .lk a { display: inline-flex; align-items: center; min-height: 44px; }

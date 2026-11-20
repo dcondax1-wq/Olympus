@@ -29,6 +29,9 @@ const step = (n, ok, info = '') => steps.push([n, !!ok, String(typeof info === '
     await p.goto(origin + '/agency/leads/');
     await p.waitForFunction('window.WEBLEADS && window.WEBLEADS.ready()', null, { timeout: 30000 });
     const T = (s) => p.evaluate((x) => { const e = document.querySelector(x); return e ? e.innerText : null; }, s);
+    const allN = await p.evaluate(() => document.querySelectorAll('#list li.lead').length);
+    step('by default every business shows (postcards need no phone): 4', allN === 4, allN);
+    await p.check('#fPhone');
     let names = await p.evaluate(() => [...document.querySelectorAll('#list li.lead .ln')].map((e) => e.textContent));
     step('the list: the 3 businesses with a phone (the default "only with a phone"), the hot plumber first, its why and offer, a tel: link',
       names.length === 3 && names[0] === 'Example Plumbing Co (fictional)' && (await T('#list li.lead')).includes('Offer: starter site $1,500 (services, service area, quote form')
@@ -36,6 +39,11 @@ const step = (n, ok, info = '') => steps.push([n, !!ok, String(typeof info === '
     step('the status line and the source: "4 businesses with no website in Frederick", OpenStreetMap + the fetch date, the ODbL credit',
       (await T('#status')).includes('4 businesses with no website in Frederick') && (await T('#srcNote')).includes('OpenStreetMap') && (await T('#foot')).includes('OpenStreetMap contributors'), [await T('#status'), await T('#srcNote')]);
     await p.uncheck('#fPhone');
+    await p.check('#fMail');
+    const mailN = await p.evaluate(() => document.querySelectorAll('#list li.lead').length);
+    await p.uncheck('#fMail');
+    const addr = await p.evaluate(() => (document.querySelector('li.lead[data-id="osm-n1001"] .la2') || {}).textContent);
+    step('"Only mailable": none in the fixture (no ZIP on the map); the plumber shows its map address', mailN === 0 && addr === 'Address: 12 Sample St, Frederick', [mailN, addr]);
     names = await p.evaluate(() => [...document.querySelectorAll('#list li.lead .ln')].map((e) => e.textContent));
     step('untick "only with a phone": 4, the auto shop says "No phone on the map: look it up first"', names.length === 4 && (await T('#list')).includes('No phone on the map'), names);
     await p.selectOption('#fHeat', 'hot');
