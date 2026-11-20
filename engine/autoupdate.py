@@ -876,6 +876,125 @@ def source_status(root: str = ROOT, sh=None, state=None, env=None) -> tuple:
 
 
 # ---------------------------------------------------------------------- the update itself
+# ---------------------------------------------------------------------- update gate (updategate 2026-11-20, TOP25 idea #4)
+# 1. Only bot code restarts the bot. Before this every site push (tools/web_public, docs, research ...) restarted the trading server
+#    in the hourly window, up to 01:20 ET, right before London. Now the update is still pulled and tested, but the server keeps
+#    running when EVERY changed path is on the SITE_ONLY list (the live site, docs, research, tests, handoff notes, the Obsidian
+#    vault, *.md at the root). Anything else - engine/, server.py, the models, scripts/, tools/*.py, web/, requirements, a path
+#    nobody listed - restarts as before (fail-safe: unknown = bot code).
+# 2. Before any restart, a fresh python imports the new server (IMPORT_CHECK). A server that cannot even import never gets
+#    started: the update rolls back instead (bad_sha), like a failed self-test.
+# 3. Crash-loop net: after an update that restarted the bot, every server start is counted (DailyUpdater.start, or
+#    `python -m engine.autoupdate --crash-check` from the supervisor). CRASH_RUNS short runs (each start within CRASH_WINDOW_S of the
+#    update) = the new code keeps dying: git goes back to the commit before the update (reset --keep), that commit is marked bad,
+#    ONE phone push, and the server restarts on the old code. A run that lasts CRASH_WINDOW_S clears it.
+SITE_ONLY = ("tools/web_public/", "docs/", "research/", "tests/", "handoff/", "vault/", ".github/")
+BOT_PATHS = ("engine/", "server.py", "live_model", "second_model.json", "accounts/", "scripts/", "requirements", "ninjatrader/",
+             "update_source.json", "web/", "tools/", "money_machines/", "agency/", "data/")      # for the plain reason only
+IMPORT_CHECK = ["-X", "utf8", "-c", "import server; print('[PASS] the bot server imports (%d routes)' % len(server.app.routes))"]
+IMPORT_TIMEOUT_S = 120
+CRASH_RUNS = 3
+CRASH_WINDOW_S = 600
+
+
+def changed_paths(sh, old: str | None, new: str | None) -> list:
+    """The repo paths that differ between two commits ([] when either is unknown or git fails)."""
+    if not old or not new:
+        return []
+    c, out = sh.git("diff", "--name-only", old, new)
+    return [p.strip() for p in (out or "").splitlines() if p.strip()] if c == 0 else []
+
+
+def site_only(path: str) -> bool:
+    p = str(path or "").replace("\\", "/")
+    while p.startswith("./"):
+        p = p[2:]
+    return p.startswith(SITE_ONLY) or ("/" not in p and p.lower().endswith(".md"))
+
+
+def needs_restart(paths) -> tuple:
+    """(restart?, [the paths that need it]). An empty list (nothing known) restarts: never skip a restart by not knowing."""
+    paths = [str(p) for p in (paths or []) if str(p).strip()]
+    if not paths:
+        return True, []
+    bot = [p for p in paths if not site_only(p)]
+    return bool(bot), bot
+
+
+def import_check(sh, argv=None, timeout: float = IMPORT_TIMEOUT_S) -> tuple:
+    """(ok, last words) of a fresh `python -c "import server"` in the new checkout. Skipped (ok) when there is no server.py."""
+    cwd = getattr(sh, "cwd", ROOT) or ROOT
+    if not os.path.exists(os.path.join(cwd, "server.py")):
+        return True, "no server.py"
+    argv = list(argv or IMPORT_CHECK)
+    try:                                               # the PC self-test's sealed child (engine/pc_selftest): temp folders, no
+        import tempfile                                # NinjaTrader folder, no live account / push keys, LE_NO_AUTOSTART, no heartbeat
+        from . import pc_selftest as _pst
+        with tempfile.TemporaryDirectory(prefix="le_import_") as tmp:
+            r = _pst.run_child(argv, timeout, cwd=cwd, python=getattr(sh, "python", sys.executable), env=_pst.child_env(tmp))
+        return r.get("code") == 0, str(r.get("out") or "").strip()[-200:] + (" (timed out)" if r.get("timed_out") else "")
+    except Exception as e:  # noqa: BLE001
+        sh.log(f"sealed import check unavailable ({e.__class__.__name__}): plain child")
+        c, out = sh.py(argv, timeout=timeout)
+        return c == 0, (out or "").strip()[-200:]
+
+
+def crash_check(sh=None, now=None, path: str = STATE_PATH, notify_fn=None, count: bool = True) -> dict:
+    """One server start after an update that restarted the bot. -> {"status": "none" | "counted" | "cleared" | "rolled_back" |
+    "failed", "starts", "reason"}. Never raises. count=False: only look (tests, status)."""
+    now = time.time() if now is None else now
+    out = {"status": "none", "starts": 0, "reason": ""}
+    try:
+        s = load_state(path)
+        g = s.get("crash_guard") if isinstance(s.get("crash_guard"), dict) else None
+        if not g or not g.get("new") or not g.get("old"):
+            return out
+        t0 = float(g.get("t") or 0)
+        if now - t0 > CRASH_WINDOW_S:                 # the new code has run past the window: it is the good one now
+            s.pop("crash_guard", None)
+            save_state(s, path)
+            return {**out, "status": "cleared", "reason": "ran past the crash window"}
+        starts = [float(x) for x in (g.get("starts") or []) if now - float(x) <= CRASH_WINDOW_S]
+        if count:
+            starts.append(float(now))
+        g["starts"] = starts
+        out.update(starts=len(starts))
+        if len(starts) <= CRASH_RUNS:                 # the restart itself + up to CRASH_RUNS-1 short runs: wait
+            s["crash_guard"] = g
+            save_state(s, path)
+            return {**out, "status": "counted", "reason": f"start {len(starts)} since the update"}
+        sh = sh or Shell(log=file_log)
+        head = git_head(sh)
+        if head != g["new"]:
+            s.pop("crash_guard", None)
+            save_state(s, path)
+            return {**out, "status": "cleared", "reason": f"not on the updated commit any more ({str(head)[:7]})"}
+        c, o = sh.git("reset", "--keep", g["old"])
+        back = git_head(sh) == g["old"]
+        s = load_state(path)
+        s.pop("crash_guard", None)
+        if back:
+            s["bad_sha"] = g["new"]
+            s["last"] = {"t": int(now), "mode": "crash", "status": "rolled_back", "old": g["new"], "new": g["old"],
+                         "reason": f"{CRASH_RUNS} short runs in {CRASH_WINDOW_S // 60} min after the update: back to {g['old'][:7]}"}
+            s["history"] = (list(s.get("history") or []) + [s["last"]])[-20:]
+        save_state(s, path)
+        if back and "requirements.txt" in (g.get("changed") or []):
+            sh.py(["-m", "pip", "install", "-q", "-r", "requirements.txt"], timeout=900)
+        title = "Update rolled back" if back else "Update crash loop: ROLLBACK FAILED"
+        body = (f"The new code {g['new'][:7]} kept stopping ({len(starts)} starts in {CRASH_WINDOW_S // 60} min). "
+                + (f"Back on {g['old'][:7]}, the version that ran fine; the bad one is skipped." if back
+                   else f"Could not go back ({(o or '').strip()[-100:]}): fix by hand."))
+        try:
+            (notify_fn or notify)(title, body, key=f"auto:crash:{g['new'][:10]}")
+        except Exception:
+            pass
+        file_log(f"crash loop: {body}")
+        return {**out, "status": "rolled_back" if back else "failed", "reason": body}
+    except Exception as e:  # noqa: BLE001
+        return {**out, "status": "none", "reason": f"crash check skipped ({e.__class__.__name__})"}
+
+
 def selftest_step(sh, old: str | None, args=None, timeout: float = SELFTEST_TIMEOUT_S) -> dict | None:
     """The PC self-test on the new checkout (engine/pc_selftest.py, mode update). None when the checkout has no
     engine/pc_selftest.py (an older main: nothing to run). {"code", "held": the first failing check's label or None,
@@ -958,7 +1077,15 @@ def run_update(sh: Shell, mode: str = "manual", now=None, flat: str | None = Non
             hold_line = next((ln for ln in (st.get("out") or "").splitlines() if ln.startswith(HOLD_MARK)), "")
             return rollback(f"PC self-test failed: {(hold_line[len(HOLD_MARK):].strip() or (st.get('out') or '').strip())[-200:]}",
                             held=st["held"])
-    return done("updated", f"{old[:7]} -> {new[:7]}, self-tests passed", restart=True)
+    restart, bot = needs_restart(changed or changed_paths(sh, old, new))
+    if not restart:
+        return done("updated", f"{old[:7]} -> {new[:7]}, self-tests passed; site / docs only ({len(changed)} files): "
+                               "the bot keeps running", restart=False, site_only=True)
+    ok, words = import_check(sh)
+    sh.log(f"server import check -> {'ok' if ok else 'FAILED'}")
+    if not ok:
+        return rollback(f"the new bot server does not import ({words})", held="Bot server starts (imports)")
+    return done("updated", f"{old[:7]} -> {new[:7]}, self-tests passed", restart=True, changed=changed[:200])
 
 
 def pull(sh: Shell | None = None, branch: str = BRANCH, pip: bool = True) -> dict:
@@ -992,7 +1119,10 @@ def record(res: dict, state: dict | None = None, path: str = STATE_PATH) -> dict
         s["bad_sha"] = res["bad_sha"]
     if res.get("status") == "updated":
         s["updated_at"] = res["t"]
-        s["restart_pending"] = {"sha": res["new"], "from": res["old"], "t": res["t"]}
+        if res.get("restart"):                       # a site-only update keeps the bot running: no restart marker, no crash guard
+            s["restart_pending"] = {"sha": res["new"], "from": res["old"], "t": res["t"]}
+            s["crash_guard"] = {"new": res["new"], "old": res["old"], "t": res["t"], "starts": [],
+                                "changed": [p for p in (res.get("changed") or []) if p == "requirements.txt"]}
         s.pop("bad_sha", None)
     save_state(s, path)
     return s
@@ -1180,6 +1310,14 @@ class DailyUpdater:
             self._stop.wait(self.every_s)
 
     def start(self):
+        try:                                           # a server start after an update: the crash-loop net (crash_check);
+            # LE_CRASH_CHECK=supervisor: run_bot.ps1 already counts each start (--crash-check), so the server only looks
+            cr = crash_check(path=self.state_path, count=os.environ.get("LE_CRASH_CHECK") != "supervisor")
+            if cr.get("status") == "rolled_back":
+                file_log("crash loop rolled back: restarting on the old code")
+                threading.Timer(2.0, lambda: self.exit_fn(RESTART_CODE)).start()
+        except Exception as e:  # noqa: BLE001
+            file_log(f"crash check error: {e.__class__.__name__}")
         if self._thread is None or not self._thread.is_alive():
             self._thread = threading.Thread(target=self._run, name="autoupdate", daemon=True)
             self._thread.start()
@@ -1222,6 +1360,8 @@ def main(argv=None) -> int:
     g.add_argument("--disable", action="store_true")
     g.add_argument("--status", action="store_true")
     g.add_argument("--on-start", action="store_true", help="scripts/run_bot.ps1, before server.py starts")
+    g.add_argument("--crash-check", action="store_true", help="scripts/run_bot.ps1, before EVERY server.py start: count it; "
+                   "after an update, too many short runs = back to the commit before (crash_check)")
     g.add_argument("--check", action="store_true", help="one check now (outside trading hours, when flat)")
     g.add_argument("--pull", action="store_true", help="UPDATE.bat / START BOT: the update now (bot stopped), the same "
                                                       "fast-forward as the auto-update; exit 1 when not updated")
@@ -1255,6 +1395,10 @@ def main(argv=None) -> int:
         print(f"Auto-update is {'ON' if a.enable else 'OFF'}." + (
             " Daily in 17:02-17:50 ET, hourly outside trading time (weekdays 16:00-01:20 ET, all weekend) and when"
             " run_bot.ps1 starts; only when flat; only fast-forwards of main." if a.enable else ""))
+        return 0
+    if a.crash_check:
+        r = crash_check()
+        print(f"crash check: {r['status']}" + (f": {r['reason']}" if r.get("reason") else ""))
         return 0
     if a.on_start or a.check:
         res = run_update(Shell(log=file_log), "start" if a.on_start else "manual", flat=files_flat_reason())

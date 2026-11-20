@@ -5,11 +5,14 @@ updating the files every time we make changes, so do it now."
 
 | What | How it works |
 |---|---|
-| Backup | A **private** copy of everything on your second GitHub account: repo `dcondax1-wq/olympus`. The code the PC runs is on its branch `pc`. |
+| Backup | A copy of everything on your second GitHub account: repo `dcondax1-wq/olympus` (meant to be private; on 2026-11-20 GitHub showed it **public**: research/handoff/2026-11-20/security/REPORT.md, step 1). The code the PC runs is on its branch `pc`. |
 | New code reaches the PC | By itself. The PC checks the backup once a day in the 17:02 ET pause and once an hour outside trading time. |
 | When it never updates | During trading hours (01:50-16:00 ET on weekdays), with a trade open, or with a LIT entry waiting. |
 | Your evals | An eval bot without auto-resume only updates at the weekend (the **Friday or Saturday** 17:02 ET pause), so an update never stops it in the middle of the week. If it does update, your phone says so; start it again before Sunday 6 PM ET. Starting the bot yourself (START BOT) always takes the newest code first. |
 | Safety | After each update it runs its quick self-tests. If one fails, it goes back to the code it had and your phone tells you. |
+| Site-only updates (2026-11-20) | When an update changes only the phone site, docs, research or tests, the PC takes the new files but **the bot keeps running**: no restart before London. Anything else (bot code, models, scripts, a file nobody listed) restarts as before. |
+| A new bot that cannot start | Before any restart, the PC checks that the new bot server starts (a sealed test run). If it can't, the PC stays on the code it had and your phone says "Update held back: Bot server starts". |
+| A new bot that keeps crashing | If the bot stops 3 times within 10 minutes of an update, the PC goes back to the version that ran fine, skips the bad one, and sends you ONE push ("Update rolled back"). |
 | If GitHub ever bans that account too | Nothing breaks: the bot keeps running the code it has, and the code zips (`SETUP_EVERYTHING.bat`) still work. |
 
 ## Your part (once)
@@ -37,3 +40,19 @@ updating the files every time we make changes, so do it now."
 - After the connect, every update is the normal strict one (`fast_forward`: fast-forwards of `olympus/pc` only, a hand
   edit blocks it with an alert, rollback on a failed self-test). GitHub-free mode (`engine/nogithub.py`) only blocks
   origin (the lost account). Tests: `tests.test_autoupdate_source` (real git, 51 checks), `tests.test_autorun`.
+
+## The update gate (2026-11-20, `engine/autoupdate.py`; tests `tests.test_autoupdate_paths`)
+- `needs_restart(changed)`: restart unless EVERY changed path is on `SITE_ONLY` (`tools/web_public/`, `docs/`, `research/`, `tests/`,
+  `handoff/`, `vault/`, `.github/`, root `*.md`). Unknown or empty = restart. A site-only update still runs the self-tests, sets no
+  restart marker and no crash guard, and the DailyUpdater does not exit.
+- `import_check(sh)`: before a restart, `import server` runs in engine/pc_selftest's sealed child. A failure rolls the update back,
+  like a failed self-test (`bad_sha`, held = "Bot server starts (imports)").
+- `crash_check()`: an update that restarted the bot arms `crash_guard` in data/autoupdate.json ({new, old, t, starts}).
+  `DailyUpdater.start()` counts every server start; with `LE_CRASH_CHECK=supervisor`, run_bot.ps1 counts instead through
+  `python -m engine.autoupdate --crash-check`. If it reaches `CRASH_RUNS` + 1 starts within `CRASH_WINDOW_S` (10 min) of the
+  update, it runs `git reset --keep <old>`, sets bad_sha = new, sends one push, and the server restarts (75) on the old code. Past
+  10 min the guard is cleared. It never touches git when HEAD is no longer the updated commit.
+- Known limit: two manual restarts within 10 minutes of an update count as short runs too, so an otherwise good update can be
+  rolled back. The PC then stays on the version before it until a newer `pc` commit lands. Nothing worse happens: the old code is
+  the version that last ran fine.
+
