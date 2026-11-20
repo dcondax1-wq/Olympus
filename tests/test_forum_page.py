@@ -185,7 +185,8 @@ def make_site(tmp, with_pantheon=True, with_home=True):
     root_readers(site)
     if with_pantheon:
         os.makedirs(os.path.join(site, "pantheon"))
-        doc = json.loads(rd(WEB, "pantheon", "pantheon.json"))
+        # the fixture's recorded Council (MIXED 44: fixed numbers), dated now: the real pantheon.json changes every build (day-archive rebuilt it)
+        doc = {**json.loads(rd(WEB, "pantheon", "pantheon.json")), **json.loads(rd(PAGE, "fixture.json"))["pantheon"]}
         doc["demo"] = False
         doc["t"] = int(time.time()) - 3600   # a fresh feed (the repo copy is from Nov 3; an old one is labelled old: check b. old feed)
         with open(os.path.join(site, "pantheon", "pantheon.json"), "w", encoding="utf-8") as fh:
