@@ -142,6 +142,15 @@
    "blocks": {"bot": "atlas", "feature": "mem_same_lost"}},
   {"id": "lit_drift_switch", "title": "Cut Zlarior to paper / half after a rolling loss (drift switch)", "source": "drift-switch-2026-11-17.md"},
   {"id": "lit_walkforward", "title": "Walk-forward re-tuning of Zlarior's knobs", "source": "lit-walkforward-2026-11-17.md"},
-  {"id": "lit_cold_streak_skip", "title": "Skip-mode cold-streak filter (paused 14 weeks)", "source": "CLAUDE_REFERENCE Tested and rejected"}
+  {"id": "lit_cold_streak_skip", "title": "Skip-mode cold-streak filter (paused 14 weeks)", "source": "CLAUDE_REFERENCE Tested and rejected"},
+  {"id": "lit_more_es_filler", "title": "Zlarior + ES (MES) LIT trades on days NQ has not traded yet", "source": "lit-more-money-2026-11-19.md"},
+  {"id": "lit_more_be_frac", "title": "Zlarior breakeven tied to the target (0.25 x target R, 0.5-2R)", "source": "lit-more-money-2026-11-19.md"},
+  {"id": "lit_more_fill_limit_close", "title": "Zlarior limit entry at the 1m CISD close instead of market", "source": "lit-more-money-2026-11-19.md"},
+  {"id": "lit_more_bias_london", "title": "Zlarior NY setups only on London's discount side", "source": "lit-more-money-2026-11-19.md"},
+  {"id": "lit_more_news_after", "title": "Zlarior on Tier-1 news days only setups after the release", "source": "lit-more-money-2026-11-19.md"},
+  {"id": "lit_more_cisd_fail", "title": "Zlarior out on a 5m close back through the CISD level before +0.5R", "source": "lit-more-money-2026-11-19.md"},
+  {"id": "lit_more_es_fail", "title": "Zlarior out when ES breaks its own sweep-window extreme before +0.5R", "source": "lit-more-money-2026-11-19.md"},
+  {"id": "lit_more_smt_filter", "title": "Zlarior only setups with NQ-ES SMT at the sweep", "source": "lit-more-money-2026-11-19.md"},
+  {"id": "lit_more_smt_pick", "title": "Zlarior trades MES instead of MNQ when ES held (SMT pick)", "source": "lit-more-money-2026-11-19.md"}
  ]
 }
