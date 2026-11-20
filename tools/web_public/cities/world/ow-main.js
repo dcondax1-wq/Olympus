@@ -4,7 +4,7 @@
 // the four doors; every app is a tower you tap to open; every learning place is real data. Live: the PC feed (../../pc_feed.js: a bot
 // in a trade pulses), the Board's events, the edge light and the Lab's newest verdicts. Read only: GET only, nothing armed, no orders,
 // text only through textContent, no browser storage. No WebGL (or 3D switched off): a plain list of the same city, never blank.
-import * as C from './ow-core.js?v=w3';
+import * as C from './ow-core.js?v=w4';
 
 const d = document, $ = (s) => d.querySelector(s);
 const O = () => window.OLYMPUS || null;
@@ -42,12 +42,13 @@ async function boot() {
   S.world = w;
   w.places.forEach((p, i) => S.byId.set(p.id, i));
   header();
+  setInterval(() => { if (!d.hidden && S.world) $('#sub').textContent = $('#sub').textContent.replace(/^[^·]*· \d{1,2}:\d{2} ET · /, '').replace(/^/, skyLine()); }, 60000);
   const flat = qs.get('flat') === '1' || !webgl() || (O() && O().fx && O().fx() === 'off' && !qs.get('q'));
   if (flat) { renderFlat(); }
   else {
     try {
       S.plan = C.planWorld(w, { tier: O() && O().lite && O().lite() ? 'low' : 'high' });
-      const M = await import('./ow-scene.js?v=w3');
+      const M = await import('./ow-scene.js?v=w4');
       S.scene = M.createWorld({ canvas: $('#c'), world: w, plan: S.plan, reduced, sky: qs.get('sky') || 'auto', manual: qs.get('clock') === 'manual', tier: O() && O().lite && O().lite() ? 'low' : 'high',
         onTap, onFrame, onUser: () => { hideHint(); if (S.tour) setTour(false); }, onIntroDone: () => { showHint(); snd('chime'); cityBed(); } });
       S.mode = '3d';
@@ -67,7 +68,7 @@ async function boot() {
 // ------------------------------------------------------------------------------------------------ the top bar
 function header() {
   const w = S.world, c = w.counts || {};
-  $('#sub').textContent = `${(w.districts || []).length} districts · ${c.apps || 0} apps · ${c.learning || 0} places learning · ${Number(c.buildings || 0).toLocaleString('en-US')} tests`;
+  $('#sub').textContent = `${skyLine()}${(w.districts || []).length} districts · ${c.apps || 0} apps · ${c.learning || 0} places learning · ${Number(c.buildings || 0).toLocaleString('en-US')} tests`;
   const nav = $('#districts');
   nav.textContent = '';
   for (const dd of w.districts || []) {
@@ -78,6 +79,14 @@ function header() {
     b.onclick = () => goDistrict(dd.id);
     nav.append(b);
   }
+}
+// cities3: the sky in words with the New York time ("Day · 10:12 ET"), refreshed with the header each minute
+function skyLine() {
+  try {
+    const now = new Date(), k = C.skyFor(qs.get('sky') || 'auto', now);
+    const hm = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hour: 'numeric', minute: '2-digit', hour12: false }).format(now);
+    return `${C.skyWords(k, now)} · ${hm} ET · `;
+  } catch (e) { return ''; }
 }
 function pressDistrict(id) { for (const b of d.querySelectorAll('.dch')) b.setAttribute('aria-pressed', String(b.dataset.d === id)); }
 
