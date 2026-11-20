@@ -120,6 +120,9 @@ AREAS["fleet"].append("rapid_launch")       # day-rapid 2026-11-20: Rapid EOD 25
 SLOW = {"olympus_shell", "fit_edge", "jarvis_hub", "phone_e2e", "olympus_kit", "olympus_themes", "olympus_render", "zenith_mode", "ui_polish", "datacity", "jarvis_home"}
 
 
+AREAS["agency"].append("web_audit")         # day-web-audit 2026-11-20: tools/site_audit.py (prospect phone audit -> agency/audit/)
+
+
 def suites_for(area: str) -> list:
     names = []
     for a in (AREAS if area == "all" else [area]):
