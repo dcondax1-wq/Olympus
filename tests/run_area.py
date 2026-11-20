@@ -65,6 +65,7 @@ AREAS["nq"].append("combo_50k")         # night-combolive 2026-11-19: ATLAS + Zl
 AREAS["pc"].append("learn_night")       # the same suite: the PC side (data pipe hook, status ext "zl", datafeed metals, the 15-minute report's imports)
 AREAS["kalshi"].append("kalshi_adapt")  # night-kadapt 2026-11-19: the K8 weekly re-test (engine/kalshi_adapt.py, tools/kalshi_adapt.py); its own line
 AREAS["money"].append("money_ideas")   # night-moneyideas 2026-11-20: money book + Kalshi bankroll ladder (tools/money/money_book.py, kalshi_bankroll.py); its own line
+AREAS["money"].append("fleet_months")  # day-fleet 2026-11-20: the whole fleet month by month to Jun 2027 (tools/money/fleet_months.py, business/fleet_plan.json); its own line
 AREAS["pc"].append("kalshi_adapt")      # the same suite: the PC half (pc_weekly, clock_adapt.json, the ZEUS learned line)
 AREAS["kalshi"].append("kalshi_k8_monday")  # night-kalshi8 2026-11-20: the $55 rule, the edge tests, the Nov 16-19 dry run (research/kalshi_k8_monday/); its own line
 AREAS["nq"].append("live_gap_proposal")  # night-litmore 2026-11-19: live vs backtest gap + the fill_audit "no record" proposal (tools/live_gap_proposal.py); its own line

@@ -327,7 +327,9 @@ def card_effect(base, var, cal, ms, no_side=False):
             round((float(np.median(a if no_side else b)) - float(np.median(b if no_side else a))) / nm),
             "bad_1_in_10_shift": round((float(np.percentile(a if no_side else b, 10)) -
                                         float(np.percentile(b if no_side else a, 10))) / nm),
-            "p_better": round(100.0 * float((d > 0).mean()), 1)}
+            "p_better": round(100.0 * float((d > 0).mean()), 1),
+            "accounts_lost_change": round(sum(float(var["lost"][k].mean() - base["lost"][k].mean()) for k in var["lost"])
+                                          * (-1 if no_side else 1), 2)}
 
 
 # ================================================================================================ one market (a worker)
