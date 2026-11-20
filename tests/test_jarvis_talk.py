@@ -329,8 +329,9 @@ def run(br, url, name, ios, device=None):
     # 7. the mic and hands-free still work
     p.evaluate("window.__said = []; window.__utter = 'is the market open'")
     p.click("#bigmic")
-    p.wait_for_function("window.__said.length >= 1", timeout=10000)
-    check(f"{tag} the mic: tap, heard, answered out loud", "market" in said(p)[0].lower(), said(p))
+    # the answer itself, not whatever was said first: a bot alert (bots.js) may speak in between, which is right (day-jarvis 2026-11-20)
+    p.wait_for_function("window.__said.some((x) => /market/i.test(x.text))", timeout=10000)
+    check(f"{tag} the mic: tap, heard, answered out loud", any("market" in x.lower() for x in said(p)), said(p))
     idle(p)
     n0 = p.evaluate("window.__srStarts")
     p.click("#hf")
