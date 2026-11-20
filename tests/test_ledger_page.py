@@ -59,7 +59,7 @@ def part_a():
     html, css = rd(PAGE, "index.html"), rd(PAGE, "ledger.css")
     js = {n: rd(PAGE, n) for n in files if n.endswith(".js")}
     check("a. the kit first (olympus.css, themes.js, olympus.js ?v=o2 with data-app), viewport-fit=cover, theme-color, dark, manifest, icon, apple-touch-icon, the fx library",
-          '<link rel="stylesheet" href="../olympus/olympus.css?v=o7">' in html and 'src="../olympus/themes.js?v=o9"' in html and 'src="../olympus/olympus.js?v=o22" data-app="ledger"' in html
+          '<link rel="stylesheet" href="../olympus/olympus.css?v=o7">' in html and 'src="../olympus/themes.js?v=o10"' in html and 'src="../olympus/olympus.js?v=o22" data-app="ledger"' in html
           and "viewport-fit=cover" in html and 'name="theme-color"' in html and 'content="dark"' in html and 'rel="manifest" href="manifest.webmanifest"' in html and 'rel="icon" href="icon.svg"' in html
           and 'rel="apple-touch-icon"' in html and "fx-core.js?v=f1" in html and "fx-text.js?v=f1" in html and 'data-oly-fx="odometer"' in html)
     check("a. no CDN, no outside script / font / image: every src and href is local", not re.search(r'(src|href)="https?://', html) and not any(re.search(r"import[^;]*['\"]https?://", s) for s in js.values()))

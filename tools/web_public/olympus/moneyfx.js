@@ -23,7 +23,7 @@ export function kit() {
   if (kitP) return kitP;
   kitP = afterLoad().then(() => new Promise((res) => {
     if (window.OLYMPUS_NQFX) { window.OLYMPUS_NQFX.ready().then(() => res(window.OLYMPUS_NQFX), () => res(null)); return; }
-    const t = document.createElement('script'); t.src = new URL('./nqfx.js?v=n3', import.meta.url).href; t.async = true;
+    const t = document.createElement('script'); t.src = new URL('./nqfx.js?v=n5', import.meta.url).href; t.async = true;
     t.onload = () => { const F = window.OLYMPUS_NQFX; if (!F || !F.ready) { res(null); return; } F.ready().then(() => res(F), () => res(null)); };
     t.onerror = () => res(null); document.head.appendChild(t);
   }));
