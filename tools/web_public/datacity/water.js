@@ -6,8 +6,8 @@
 //   Cranes    gantry cranes on the north quay with blinking red lights (one instanced draw, one for the lights)
 // Decor only (the data ships of LIT's trades are moored in layout.js's pier rows).
 import * as THREE from '../jarvis/three.module.min.js';
-import { FOG, HASH } from './shaders.js';
-import { pick } from './skyline.js';
+import { FOG, HASH } from './shaders.js?v=dcgfx12';
+import { pick } from './skyline.js?v=dcgfx12';
 import { NEON } from './look-mode.js';   // the two looks of the Data City (look-mode.js): neon night (default) or AGORA marble
 
 const SHIPS = { hq: 9, lq: 4 };

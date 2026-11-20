@@ -4,19 +4,19 @@
 import * as THREE from '../jarvis/three.module.min.js';
 import { COLORS } from './util.js';
 import * as SH from './shaders.js?v=dcgfx12';
-import { Skyline, pick } from './skyline.js';
-import { Rays, SunRays, FogLayers, Rain, Traffic, Beam, Billboards } from './fx.js';
+import { Skyline, pick } from './skyline.js?v=dcgfx12';
+import { Rays, SunRays, FogLayers, Rain, Traffic, Beam, Billboards } from './fx.js?v=dcgfx12';
 import { createRenderer } from '../olympus/render.js';          // the OLYMPUS render core: ACES, MSAA, bloom, the film finish, tiers
 import { Landmarks } from './landmarks.js';
-import { Outskirts } from './outskirts.js?v=dcgfx4';
-import { SatelliteTowns } from './towns.js?v=dcgfx4';
+import { Outskirts } from './outskirts.js?v=dcgfx5';
+import { SatelliteTowns } from './towns.js?v=dcgfx5';
 import { Streams } from './streams.js?v=dcgfx4';
 import { routes } from './routes.js';
-import { Cars, Flyers, Airships, Monorail } from './vehicles.js';
-import { River, Ships } from './water.js';
-import { Signs } from './signs.js';
-import { Fireworks } from './fireworks.js';
-import { KitFx } from './kitfx.js';
+import { Cars, Flyers, Airships, Monorail } from './vehicles.js?v=dcgfx12';
+import { River, Ships } from './water.js?v=dcgfx12';
+import { Signs } from './signs.js?v=dcgfx12';
+import { Fireworks } from './fireworks.js?v=dcgfx12';
+import { KitFx } from './kitfx.js?v=dcgfx12';
 import { PROFILES, phoneHint, profileOf } from './caps.js?v=dcgfx2';
 import { Link } from './links.js';
 import { NEON } from './look-mode.js';   // the two looks of the Data City (look-mode.js): neon night (default) or AGORA marble

@@ -6,8 +6,8 @@
 //   Beam        the search beam: a column of light onto the found / opened building, with a ring on the ground
 //   Billboards  holographic boards round the plaza cycling the top discoveries (plain text drawn on a canvas)
 import * as THREE from '../jarvis/three.module.min.js';
-import * as SH from './shaders.js';
-import { pick } from './skyline.js';
+import * as SH from './shaders.js?v=dcgfx12';
+import { pick } from './skyline.js?v=dcgfx12';
 import { NEON } from './look-mode.js';   // the two looks of the Data City (look-mode.js): neon night (default) or AGORA marble
 
 const CARS = { hq: 1500, lq: 420 };
