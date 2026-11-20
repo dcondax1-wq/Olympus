@@ -22,7 +22,8 @@ SITE_WHATIF = os.path.join(AK.WEB, "kalshicity", "whatif.json")
 
 
 def test_static():
-    AK.static_kit(APP, NAME, reads=("../kalshicity/edges.json", "../kalshicity/whatif.json", "../kalshi/k8.json"))   # + K8 today (day-kalshi 2026-11-20)
+    AK.static_kit(APP, NAME, reads=("../kalshicity/edges.json", "../kalshicity/whatif.json", "../kalshi/k8.json",   # + K8 today (day-kalshi 2026-11-20)
+                                    "../kalshicity/learned.json", "../kalshicity/suggestions.json", "../money/sibyl.json", "../money/sibyl_forward.json"))   # + the Kalshi City / Sibyl merge
     js = AK.read(os.path.join(AK.WEB, APP, "dionysus.js"))
     check("a. the bot's feed is the SAME file the Kalshi page reads, this site's ../kalshi.json (the kalshi-feed repo is retired, polish2 2026-11-19), a plain GET; no key, no header, no POST, no web address",
           "const SITE_FEED = '../kalshi.json';" in js and "kalshi-feed/main" not in js and "githubusercontent" not in js and "Authorization" not in js and "headers" not in js.replace("cache: 'no-cache'", ""))

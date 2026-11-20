@@ -997,3 +997,20 @@ html[data-oly-style] .card { background: var(--oly-th-card-bg) !important; borde
   border-radius: var(--oly-th-radius) !important; -webkit-backdrop-filter: var(--oly-th-card-blur); backdrop-filter: var(--oly-th-card-blur); }
 html[data-oly-style] :is(.top h1, .card h2) { font-family: var(--oly-th-display, var(--fh)); font-weight: var(--oly-th-title-weight) !important; text-transform: var(--oly-th-title-case);
   letter-spacing: var(--oly-th-title-track) !important; font-style: var(--oly-th-title-style); }
+/* day-kalshi round 2: each live bet's last 20 windows and the pause rule */
+.k8l { list-style: none; margin: 4px 0 0; padding: 0; font-size: 13.5px; }
+.k8l li { white-space: normal; overflow-wrap: anywhere; padding: 3px 0; border-top: 1px solid var(--line, rgba(127,127,127,.2)); }
+.k8l li.off { color: var(--bad); font-weight: 600; }
+/* day-kalshi round 3: K8 live day */
+.k8d .k8d-cd { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; margin: 6px 0 8px; }
+.k8d .k8d-lab { font-size: 13.5px; opacity: .85; }
+.k8d .k8d-big { font: 800 44px/1.05 var(--fh); font-variant-numeric: tabular-nums; letter-spacing: .5px; }
+.k8d .k8d-at { font-size: 12.5px; opacity: .75; }
+.k8d .k8d-w { margin: 6px 0; font-size: 14px; padding: 8px 10px; border-radius: 10px; border: 1px solid rgba(127,127,127,.25); }
+.k8d .k8d-w.live { border-color: var(--ok); } .k8d .k8d-w.stop { border-color: var(--bad); } .k8d .k8d-w.paper { border-color: var(--warn); }
+.k8d .k8d-l { list-style: none; margin: 4px 0; padding: 0; font-size: 14px; }
+.k8d .k8d-l li { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 3px 0; border-top: 1px solid rgba(127,127,127,.2); }
+.k8d .k8d-s dd i { font-style: normal; font-size: 12px; opacity: .7; }
+.k8d .k8d-s dd.red { color: var(--bad); } .k8d .k8d-s dd.hot { color: var(--warn); }
+.k8d .k8d-help { margin-top: 10px; padding: 8px 10px; border-radius: 10px; border: 1px solid rgba(var(--warn-rgb), .5); }
+.k8d .k8d-help ol { margin: 4px 0 4px 18px; padding: 0; font-size: 13.5px; } .k8d .k8d-help li { margin: 3px 0; white-space: normal; }

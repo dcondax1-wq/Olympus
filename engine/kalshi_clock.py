@@ -453,6 +453,16 @@ def paper_like_live(rs, cfg) -> list:
     return [r for r in rs if r.get("leg") in cfg["live_legs"] and (r.get("cost") is None or KL._f(r.get("cost"), 0.0) <= cap)]
 
 
+def leg_switch(P, cfg) -> list:
+    """[[leg code, won, of, paused 0/1, the live bot obeys it 0/1]] for the live legs, from the paper ledger (every window)."""
+    try:
+        from engine import kalshi_legswitch as LS
+        st = LS.states(rows(P["clock_paper"]), cfg["live_legs"])
+        return [[LEG_CODE.get(lid, "?"), x["won"], x["of"], 1 if x["paused"] else 0, 1 if LS.LIVE_ON else 0] for lid, x in st.items()]
+    except Exception:  # noqa: BLE001
+        return []
+
+
 def edge_health(rs) -> list:
     """[% won on the last 30 settled, % won on the last 60, average price paid on the last 30 in cents] (None while there are none)."""
     done = [r for r in sorted(rs, key=lambda r: KL._f(r.get("open_t"), 0.0)) if r.get("result") in ("won", "lost")]
@@ -499,7 +509,9 @@ def card_k8(state_dir=None, cfg=None, now=None) -> dict | None:
                 "wr": [wr["n"], round(100 * wr["rate"]) if wr["rate"] is not None else None], "lp": 1 if alive else 0,
                 # day-kalshi 2026-11-20: today's stop, edge health (% won on the last 30 / 60, average price paid on the last 30, in c)
                 # and the last 5 bets [leg code, MM-DD, contracts, price c, $, W | L | o (open)] for the phone's bet log
-                "dy": [k["day"]["used"], k["day"]["stop"]], "e": edge_health(rs), "lg": bet_log(rs, 5)}
+                "dy": [k["day"]["used"], k["day"]["stop"]], "e": edge_health(rs), "lg": bet_log(rs, 5),
+                # each live leg's own last-20 record and the pause rule (engine/kalshi_legswitch): [code, won, of, paused 0/1, obeyed 0/1]
+                "ls": leg_switch(P, cfg)}
     except Exception:  # noqa: BLE001
         return None
 

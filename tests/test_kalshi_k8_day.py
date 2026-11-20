@@ -376,6 +376,43 @@ def part_paper_card(tmp):
           and not KC.kill_state(w.sd, cfg)[0], (new, KC.kill_state(w.sd, cfg)))
 
 
+# ================================================================================================ a. each leg's own OFF / ON (round 2)
+def part_legswitch(tmp):
+    from engine import kalshi_legswitch as LS
+    d = LS.decide
+    check("a1. the rule (PREREG_legswitch.md): 10 of the last 20 won -> pause; 11 keeps the state; 12 -> resume; under 20 windows -> never",
+          d([1] * 10 + [0] * 10)["paused"] and d([1] * 11 + [0] * 9, True)["paused"] and not d([1] * 11 + [0] * 9, False)["paused"]
+          and not d([1] * 12 + [0] * 8, True)["paused"] and not d([0] * 19)["paused"])
+    x = LS.replay([1] * 20 + [0] * 11)
+    check("a2. the record is replayed day by day (the path matters): 20 wins then 11 losses -> paused, 'won 9 of the last 20 (resumes at 12)'",
+          x["paused"] and x["why"] == "won 9 of the last 20 (resumes at 12)", x)
+    j = json.load(open(os.path.join(ROOT, "research", "kalshi_k8_day", "legswitch.json"), encoding="utf-8"))
+    check("a3. the walk-forward verdict decides whether the live bot obeys it: legswitch.json = '" + j["verdict"] + "' and LIVE_ON = " + str(LS.LIVE_ON),
+          (j["verdict"] == "ON") == LS.LIVE_ON)
+    cfg = real()
+    w = TC.World(tmp, "lsw", cash=55.0)
+    P = KC.paths(w.sd)
+    os.makedirs(P["dir"], exist_ok=True)
+    rs = []
+    for i in range(20):
+        day = dt.date(2026, 10, 1) + dt.timedelta(days=i)
+        for lid in cfg["live_legs"]:
+            won = (i % 2 == 0) if lid == "silver_1700_up" and i >= 11 else (i % 4 != 3)
+            if lid == "silver_1700_up":
+                won = i < 9
+            r = live_row(str(day), lid, KC.leg_open(KC.LEG[lid], day), result="won" if won else "lost")
+            r["pnl"] = 1.0 if won else -2.15
+            rs.append(r)
+    KC.save_rows(P["clock_paper"], rs)
+    k = KC.card_k8(w.sd, cfg, KC.et_epoch(dt.date(2026, 10, 21), 6, 0))
+    ls = {x[0]: x for x in (k or {}).get("ls") or []}
+    check("a4. the PC card carries each live leg's last 20 [code, won, of, paused, obeyed]: silver UP won 9 of 20 = paused (shown; obeyed only if LIVE_ON)",
+          ls.get("s17", [None, None, None, 0])[1:4] == [9, 20, 1] and ls.get("g5", [0, 0, 0, 1])[3] == 0 and ls["s17"][4] == (1 if LS.LIVE_ON else 0), ls)
+    lw = open(os.path.join(ROOT, "research", "handoff", "2026-11-20", "kalshi", "LEAD_WIRES.md"), encoding="utf-8").read()
+    check("a5. LEAD_WIRES.md has the exact leg_limits patch that makes the live bot obey the rule (only if the owner / lead turns LIVE_ON)",
+          "kalshi_legswitch" in lw and "def leg_limits" in lw and "LS.LIVE_ON" in lw)
+
+
 def main():
     tmp = tempfile.mkdtemp(prefix="k8day-")
     try:
@@ -386,6 +423,7 @@ def main():
         part_orders(tmp)
         part_data()
         part_paper_card(tmp)
+        part_legswitch(tmp)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     print(f"\n{sum(RES)}/{len(RES)} passed")
