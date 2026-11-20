@@ -1060,3 +1060,5 @@ button, input, select { font-size: .9375rem; }
 .k8d .k8d-at { font-size: .9375rem; }
 .oldhead h2 span, .khist span { font-size: .9375rem; }
 #body .wait ul.feat li { font-size: .9375rem; } code#step { font-size: .9375rem; }
+/* CLS: gate-nav.js wraps the back link in a 44 px row with a 6 px gap ~0.4 s in; keep that space from the first paint */
+main > a.olyback { display: flex; align-items: center; min-height: 44px; margin-bottom: 6px; }

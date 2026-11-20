@@ -37,3 +37,7 @@ Other version bumps made by the helper (no worker involved): `dionysus/index.htm
 ## Update 3 (Olympus 2 A11Y): kalshi.css / kalshi.js are now ?v=k52 (kalshi/index.html also loads ../olympus/a11y.js)
 `sed -i -E "s/kalshi-k[0-9]+'/kalshi-k52'/; s/kalshi.css\?v=k[0-9]+/kalshi.css?v=k52/; s/kalshi.js\?v=k[0-9]+/kalshi.js?v=k52/" tools/web_public/kalshi/sw.js`
 (or `python tools/bump_versions.py --apply`). If kalshi/sw.js lists its SHELL files, add '../olympus/a11y.js' only if the other pages' workers do.
+
+## Update 4 (owner: Kalshi fast, no jump): kalshi.css / kalshi.js are now ?v=k53
+`sed -i -E "s/kalshi-k[0-9]+'/kalshi-k53'/; s/kalshi.css\?v=k[0-9]+/kalshi.css?v=k53/; s/kalshi.js\?v=k[0-9]+/kalshi.js?v=k53/" tools/web_public/kalshi/sw.js`
+(or `python tools/bump_versions.py --apply`). kalshi/ and dionysus/ now load ../olympus/a11y.css?v=a2 in the head (no text jump).
