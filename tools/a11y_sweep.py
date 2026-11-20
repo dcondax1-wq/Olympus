@@ -318,6 +318,34 @@ def screen_moves(page) -> float:
         return 0.0
 
 
+def serve_site(AK, over):
+    """the site on a local port (tests/agora_kit.py), with what-if files served under their real type (css / js / html)"""
+    if not over:
+        return AK.serve()
+    import functools
+    import http.server
+    import mimetypes
+    import threading
+
+    class H(AK.Handler):
+        overrides = {}
+
+        def do_GET(self):
+            path = self.path.split("?")[0]
+            if path in over:
+                body = over[path]
+                self.send_response(200)
+                self.send_header("Content-Type", (mimetypes.guess_type(path)[0] or "text/plain") + "; charset=utf-8")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+                return
+            super().do_GET()
+    srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), functools.partial(H, directory=AK.WEB))
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    return srv, f"http://127.0.0.1:{srv.server_address[1]}"
+
+
 _PW = {}
 
 
@@ -537,6 +565,7 @@ def main(argv=None):
     ap.add_argument("--workers", type=int, default=2)
     ap.add_argument("--compare", default="")
     ap.add_argument("--no-lock", action="store_true")
+    ap.add_argument("--override", action="append", default=[], help="SITE_PATH=LOCAL_FILE: serve a proposed file instead (what-if, nothing written)")
     ap.add_argument("--rescore", default="", help="rewrite the reports of an earlier results.json with the current scoring (no browser)")
     a = ap.parse_args(argv)
     if a.rescore:
@@ -560,7 +589,12 @@ def main(argv=None):
     out_dir = a.out or os.path.join(ROOT, "scratch", "a11y", stamp)
     os.makedirs(out_dir, exist_ok=True)
     from tests import agora_kit as AK
-    srv, origin = AK.serve()
+    over = {}
+    for spec in a.override:                 # --override olympus/agora.css=/tmp/agora.css : serve a proposed file in place of the real one (a what-if)
+        site, local = spec.split("=", 1)
+        with open(local, "rb") as fh:
+            over["/" + site.lstrip("/")] = fh.read()
+    srv, origin = serve_site(AK, over)
     import contextlib
     lock = contextlib.nullcontext()
     if not a.no_lock:

@@ -11,6 +11,14 @@ across all pages) and a handful of breakages listed below.
 
 ## Part 1: kit changes (olympus/). Each one fixes many apps at once. Ranked by how many issues it clears.
 
+**Measured, not guessed.** `whatif/` (next to this file) has K1-K6 applied to copies of agora.css, pulse.css, shell.css, a11y.css and a11y.js.
+The sweep served them in place of the real files (`--override`, the repo untouched). Result across all 33 pages: **small text 655 -> 440
+(-33 %)**, page structure / ARIA 51 -> 40 (K1). Issues on your apps 937 -> 776, DATA TRUTH 348 -> 296, KALSHI 187 -> 166. Nothing broke:
+no new contrast, tap or overflow failures. Most scores do not move yet because a rule only scores when it reaches 0-2 issues, and the app
+CSS still holds 13 px lines (Part 2). Reproduce:
+`python tools/a11y_sweep.py $(cat research/handoff/2026-11-20/olympus2/a11y/whatif/args) --compare research/handoff/2026-11-20/olympus2/a11y/baseline.json`
+(the proposed kit files are in `whatif/` next to this file; `diff tools/web_public/olympus/agora.css research/handoff/2026-11-20/olympus2/a11y/whatif/agora.css` shows every line).
+
 ### K1. a11y.js gives every `[aria-live]` list `role=status` + `aria-atomic=true` (it breaks lists for VoiceOver). Fixes ~35 issues on inbox, helios, board.
 `tools/web_public/olympus/a11y.js:211-218` (`toasts()`): a `<ul aria-live="polite">` gets `role="status"`. That removes its list role, so
 axe reports `aria-allowed-role` on the ul and `listitem` on every li. `aria-atomic="true"` also makes VoiceOver re-read the whole list on every
@@ -59,7 +67,7 @@ oikos, planner, settings, helios, kronos, journal, ledger, agency, inbox ...).
 Rule for the apps (put it in docs/DESIGN_AGORA.md): **a sentence is never under 15 px. A label of 1-4 words may be 13 px. Nothing is under 12 px.**
 The per-app px lines (e.g. `aegis/aegis.css:24 .note { font-size: 13px }` -> `var(--ag-fs-note)`) are listed in `raw/fixes_design.md`, grouped by rule.
 
-### K3. Tap targets in the kit: the chip and the segmented control are under 44 px.
+### K3. Tap targets in the kit: the chip and the segmented control are under 44 px (hygiene: no visible page fails on them today, measured).
 ```css
 /* agora.css:146 */ .ag-chip { ...; min-height: 44px; ... }                 /* was 36px */
 /* agora.css:151 */ .ag-seg button, .ag-seg a { ...; min-height: 44px; ... } /* was 38px */
@@ -86,8 +94,9 @@ stops this for every card and list:
 :where(main#app, .ag-card, .card, .ag-list) { grid-template-columns: minmax(0, 1fr); }
 :where(main#app, .ag-card, .card) > * { min-width: 0; }
 ```
-(Safe: it only applies where the element is already `display: grid`. Flex and block ignore grid-template-columns.) The exact per-app fixes
-are in Part 2, verified.
+(Safe: it only applies where the element is already `display: grid`. Flex and block ignore grid-template-columns. The what-if showed no
+regressions.) **It does not fix the three current cases by itself**: atlas `.deck` and journal `li.trade` are not those classes, and
+oikos's overflow is a table. Their exact fixes are in Part 2, verified. K6 only stops new ones in cards.
 
 ### K7. Light theme (Ivory): hard-coded hex ink skips the theme and fails contrast in daylight.
 `mercury/mercury.css:30` `.pill.info { color: #7fa7c2 }` gives 2.51:1 on Ivory's #fffdfa. Use `color: var(--ag-aegean-text)`: themes.js

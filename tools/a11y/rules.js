@@ -122,6 +122,7 @@
     for (var i = 0; i < all.length && culprits.length < 400; i++) {
       var el = all[i], r = el.getBoundingClientRect();
       if (r.right <= W + 1 || r.width === 0) continue;
+      if (el.closest && (function (e) { for (; e && e !== document.body; e = e.parentElement) if (getComputedStyle(e).position === 'fixed') return true; return false; })(el)) continue;  // fixed layers do not widen the page
       // inside a sideways scroller of its own: fine
       var ok = false;
       for (var p = el.parentElement; p && p !== document.body; p = p.parentElement) {
