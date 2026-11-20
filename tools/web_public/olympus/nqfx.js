@@ -22,8 +22,9 @@
   var d = document, me = d.currentScript, BASE = me && me.src ? me.src.replace(/[^\/]*$/, '') : '../olympus/';
   var NS = 'http://www.w3.org/2000/svg';
   var readyP = null;
-  // the NQ look (owner 2026-11-20: no gold): deep navy, electric cyan + blue glows, violet accents, green only for a win
-  var THEME = { base: '#070b14', cyan: '#22d3ee', cyanHi: '#67e8f9', blue: '#3b82f6', violet: '#8b5cf6', win: '#22c55e', loss: '#ef4444', steel: '#9aa4b2' };
+  // OLYMPUS NIGHT (owner 2026-11-20, replaces the cyan set): the slot names stay (cyan = the main glow, blue = the second, violet = the 100% /
+  // accent colour) so a page's NQFX.theme({...}) keeps working; base black, glows violet / lavender, the accent bright gold, mint for a win
+  var THEME = { base: '#000000', cyan: '#9d59ee', cyanHi: '#dacbf0', blue: '#4d2e76', violet: '#f1c14b', win: '#77db89', loss: '#ef4444', steel: '#8d8a9a' };
   function hex(c) { var m = /^#?([0-9a-f]{6})$/i.exec(String(c || '').trim()); if (!m) return null; var n = parseInt(m[1], 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
   function mix(a, b, k) { var x = hex(a), y = hex(b); if (!x || !y) return a; return 'rgb(' + [0, 1, 2].map(function (i) { return Math.round(x[i] + (y[i] - x[i]) * k); }).join(',') + ')'; }
 
