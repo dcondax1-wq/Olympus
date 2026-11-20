@@ -46,7 +46,7 @@ html.framed #app { padding-top: 12px; }
 .filebtn { position: relative; overflow: hidden; cursor: pointer; }
 .filebtn input { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; font-size: 16px; }
 .rule { padding: 12px; border-radius: 14px; background: rgba(var(--j-rgb), .1); border: 1px solid rgba(var(--j-rgb), .4); display: grid; gap: 4px; }
-.rule small { font: 700 12px/1 var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--j-acc); }
+.rule small { font: 700 12px/1 var(--oly-ui, -apple-system, system-ui, sans-serif); letter-spacing: .01em; text-transform: none; color: var(--ag-terra-text, var(--j-acc)); }
 .rule p { margin: 0; font-size: 16px; line-height: 1.35; }
 .rule .why { font-size: 13.5px; color: var(--oly-dim, #c4bbac); }
 #weekLines p { margin: 0 0 6px; font-size: 15px; }
