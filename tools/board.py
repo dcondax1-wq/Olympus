@@ -292,6 +292,7 @@ def main(argv=None) -> int:
     r = sub.add_parser("read")
     r.add_argument("--offline", action="store_true")
     r.add_argument("--json", action="store_true")
+    r.add_argument("--no-data-notes", action="store_true", help="print the DATA line but post no Board note for a stale file")
     n = sub.add_parser("note")
     n.add_argument("text")
     n.add_argument("--acct", default="")
@@ -306,7 +307,20 @@ def main(argv=None) -> int:
     cmd = a.cmd or "read"
     if cmd == "read":
         b = gather(offline=getattr(a, "offline", False))
-        print(json.dumps(b, indent=1, ensure_ascii=False) if getattr(a, "json", False) else "\n".join(lines(b)))
+        dh_line, dh_rows = None, []
+        try:                                         # day-brief 2026-11-20: data health (tools/data_health.py)
+            from tools import data_health as DH
+            dh_rows = DH.check()
+            dh_line = DH.line(dh_rows)
+            posted = DH.note_stale(dh_rows, write=not getattr(a, "no_data_notes", False))
+            if posted and not getattr(a, "no_data_notes", False):
+                dh_line += f" (Board note posted for {len(posted)} newly stale file{'s' if len(posted) > 1 else ''})"
+        except Exception as e:  # noqa: BLE001
+            dh_line = f"DATA  health check failed ({e.__class__.__name__})"
+        if getattr(a, "json", False):
+            print(json.dumps({**b, "data_health": dh_rows}, indent=1, ensure_ascii=False))
+        else:
+            print("\n".join(lines(b) + ([dh_line] if dh_line else [])))
         return 0
     if cmd in ("note", "owner"):
         if cmd == "note":
