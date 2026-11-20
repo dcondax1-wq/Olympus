@@ -1,0 +1,90 @@
+/* NQ TERMINAL LOOK (owner 2026-11-20 15:15 ET: "I don't like the gold-ish theme for the NQ, change all of that"). Loaded LAST on nq/ only:
+   navy base, cyan + blue glows, violet accents, green / red only for $ and R; dark + light (data-oly-scheme="light"). AA text in both. */
+
+html:root[data-theme] {
+  --nq-cyan: #22d3ee; --nq-cyan-rgb: 34, 211, 238; --nq-cyan-hi: #67e8f9; --nq-blue: #3b82f6; --nq-blue-rgb: 59, 130, 246;
+  --nq-violet: #8b5cf6; --nq-violet-rgb: 139, 92, 246; --nq-violet-hi: #a78bfa; --nq-up: #22c55e; --nq-up-text: #4ade80; --nq-dn: #ef4444; --nq-dn-text: #f87171;
+  --ag-night: #060a14; --ag-panel: #0b1222; --ag-raise: #111a2e; --ag-line: #24324d;
+  --ag-s0: #060a14; --ag-s1: #0a1120; --ag-s2: #0e1628; --ag-s3: #141e35; --ag-s4: #1a2640;
+  --ag-line-soft: rgba(148, 163, 184, .09); --ag-line-gold: rgba(34, 211, 238, .34);
+  --ag-text: #e6edf7; --ag-soft: #c4d0e2; --ag-muted: #9aabc4;
+  --ag-gold: #22d3ee; --ag-gold-hi: #67e8f9; --ag-bronze: #3b82f6; --ag-olive: #16a34a; --ag-terra: #dc2626; --ag-aegean: #3b82f6; --ag-sun: #a78bfa;
+  --ag-olive-text: #4ade80; --ag-terra-text: #f87171; --ag-aegean-text: #93c5fd;
+  --ag-gold-rgb: 34, 211, 238; --ag-olive-rgb: 34, 197, 94; --ag-terra-rgb: 239, 68, 68; --ag-sun-rgb: 139, 92, 246; --ag-aegean-rgb: 59, 130, 246;
+  --ag-on-gold: #03131a;
+  --oly-accent: #22d3ee; --oly-accent-rgb: 34, 211, 238;
+  --ag-good: #4ade80; --ag-bad: #f87171; --ag-accent: #22d3ee; --ag-surface: #0b1222; --ag-surface-2: rgba(148, 163, 184, .06); --ag-ink: #e6edf7; --ag-focus: #67e8f9;
+}
+html:root[data-oly-scheme="light"] {
+  --nq-cyan: #0e7490; --nq-cyan-rgb: 14, 116, 144; --nq-cyan-hi: #0891b2; --nq-blue: #1d4ed8; --nq-blue-rgb: 29, 78, 216;
+  --nq-violet: #6d28d9; --nq-violet-rgb: 109, 40, 217; --nq-violet-hi: #7c3aed; --nq-up: #15803d; --nq-up-text: #15803d; --nq-dn: #b91c1c; --nq-dn-text: #b91c1c;
+  --ag-night: #eef3fb; --ag-panel: #ffffff; --ag-raise: #f6f9fe; --ag-line: #c9d5e6;
+  --ag-s0: #eef3fb; --ag-s1: #ffffff; --ag-s2: #f4f7fc; --ag-s3: #e9eff8; --ag-s4: #dfe7f3;
+  --ag-line-soft: rgba(15, 23, 42, .07); --ag-line-gold: rgba(14, 116, 144, .32);
+  --ag-text: #0b1324; --ag-soft: #24314b; --ag-muted: #46546e;
+  --ag-gold: #0e7490; --ag-gold-hi: #0e7490; --ag-bronze: #1d4ed8; --ag-olive: #15803d; --ag-terra: #b91c1c; --ag-aegean: #1d4ed8; --ag-sun: #6d28d9;
+  --ag-olive-text: #15803d; --ag-terra-text: #b91c1c; --ag-aegean-text: #1d4ed8;
+  --ag-gold-rgb: 14, 116, 144; --ag-olive-rgb: 21, 128, 61; --ag-terra-rgb: 185, 28, 28; --ag-sun-rgb: 109, 40, 217; --ag-aegean-rgb: 29, 78, 216;
+  --ag-on-gold: #ffffff;
+  --oly-accent: #0e7490; --oly-accent-rgb: 14, 116, 144;
+  --ag-good: #15803d; --ag-bad: #b91c1c; --ag-accent: #0e7490; --ag-surface: #ffffff; --ag-surface-2: rgba(15, 23, 42, .04); --ag-ink: #0b1324; --ag-focus: #0e7490;
+}
+html[data-theme] body { background: radial-gradient(90% 55% at 15% -8%, rgba(34, 211, 238, .12), transparent 60%), radial-gradient(80% 50% at 95% -5%, rgba(139, 92, 246, .14), transparent 60%), var(--ag-night) !important; }
+html[data-oly-scheme="light"] body { background: radial-gradient(90% 55% at 15% -8%, rgba(14, 116, 144, .08), transparent 60%), radial-gradient(80% 50% at 95% -5%, rgba(109, 40, 217, .07), transparent 60%), var(--ag-night) !important; }
+html[data-theme] .ag-card, html[data-theme] .card,
+html[data-theme][data-oly-style] body :is(.ag-card, .ag-stat, main#app :is(.card, .hero):not(.ag-card)) {
+  background: linear-gradient(180deg, rgba(var(--nq-cyan-rgb), .045), transparent 45%), var(--ag-panel) !important; border: 1px solid rgba(var(--nq-cyan-rgb), .16) !important;
+  box-shadow: 0 1px 0 rgba(148, 163, 184, .06) inset, 0 8px 24px rgba(0, 0, 0, .35) !important; }
+html[data-oly-scheme="light"][data-theme] body :is(.ag-card, .card) { box-shadow: 0 1px 2px rgba(15, 23, 42, .06), 0 6px 18px rgba(15, 23, 42, .07) !important; }
+html[data-theme] .ag-appbar { background: rgba(6, 10, 20, .86) !important; border-color: rgba(var(--nq-cyan-rgb), .18) !important; }
+html[data-oly-scheme="light"] .ag-appbar { background: rgba(255, 255, 255, .9) !important; border-color: var(--ag-line) !important; }
+html[data-theme] .pill.ok { color: var(--nq-up-text); border-color: rgba(34, 197, 94, .5); }
+html[data-theme] .pill.bad { color: var(--nq-dn-text); border-color: rgba(239, 68, 68, .5); }
+html[data-theme] .pill.warn { color: var(--nq-violet-hi); border-color: rgba(var(--nq-violet-rgb), .5); }
+html[data-theme] .btn.primary { background: linear-gradient(90deg, var(--nq-cyan), var(--nq-blue)); color: #03131a; border-color: transparent; }
+html[data-oly-scheme="light"] .btn.primary { color: #ffffff; }
+html[data-theme] .chartbox { background: #050912; border-color: rgba(var(--nq-cyan-rgb), .2); }
+html[data-oly-scheme="light"] .chartbox { background: #ffffff; }
+html[data-theme] .gl-tile { border-color: rgba(var(--nq-cyan-rgb), .3); background: radial-gradient(120% 140% at 0% 0%, rgba(var(--nq-cyan-rgb), .14), transparent 60%), rgba(148, 163, 184, .05); color: var(--ag-text); }
+html[data-theme] .gl-tile[aria-expanded="true"] { border-color: var(--nq-cyan); box-shadow: 0 0 18px rgba(var(--nq-cyan-rgb), .35); }
+html[data-theme] .gl-big { color: var(--ag-text); text-shadow: 0 0 14px rgba(var(--nq-cyan-rgb), .45); }
+html[data-theme] .gl-pct { color: var(--ag-text); }
+html[data-theme] .gl-name, html[data-theme] .gl-unit, html[data-theme] .gl-goal { color: var(--ag-muted); }
+html[data-theme] .gl-track { stroke: rgba(var(--nq-cyan-rgb), .14); }
+html[data-theme] .gl-arc, html[data-theme] .gl-arc.pass, html[data-theme] .gl-arc.fleet { stroke: url(#glGrad); }
+html[data-theme] .gl-arc.done { stroke: var(--nq-violet); }
+html[data-theme] .gl-arc.plan { stroke: var(--ag-muted); }
+html[data-theme] .gl-detail { background: rgba(148, 163, 184, .06); border-color: rgba(var(--nq-cyan-rgb), .25); }
+html[data-theme] .gl-when { color: var(--nq-cyan-hi); }
+html[data-oly-scheme="light"] .gl-when { color: var(--nq-cyan); }
+html[data-theme] .gl-chips li { border-color: rgba(var(--nq-cyan-rgb), .3); }
+html[data-theme] .gl-chips li.ok { border-color: rgba(34, 197, 94, .6); color: var(--nq-up-text); }
+html[data-theme] .gl-chips li.no { border-color: rgba(239, 68, 68, .6); color: var(--nq-dn-text); }
+html[data-oly-scheme="light"] .gl-tile { background: radial-gradient(120% 140% at 0% 0%, rgba(var(--nq-cyan-rgb), .10), transparent 60%), #ffffff; }
+html[data-oly-scheme="light"] .gl-big { text-shadow: none; }
+html[data-theme] .pos { color: var(--nq-up-text) !important; } html[data-theme] .neg { color: var(--nq-dn-text) !important; }
+html[data-theme] .nm-acct, html[data-theme] .nm-stat { background: rgba(148, 163, 184, .06); }
+html[data-theme] .nm-bar i { background: linear-gradient(180deg, var(--nq-cyan-hi), var(--nq-blue)); box-shadow: 0 0 10px rgba(var(--nq-cyan-rgb), .5); }
+html[data-theme] .nm-bar.pos i { background: linear-gradient(180deg, #86efac, #16a34a); box-shadow: 0 0 10px rgba(34, 197, 94, .5); }
+html[data-theme] .nm-bar.neg i { background: linear-gradient(180deg, #fca5a5, #dc2626); box-shadow: 0 0 10px rgba(239, 68, 68, .45); }
+html[data-theme] .nm-bar em, html[data-theme] .nm-bar small, html[data-theme] .nm-k, html[data-theme] .nm-who, html[data-theme] .nm-h, html[data-theme] .nm-stat span { color: var(--ag-muted); }
+html[data-theme] .nm-dial { background: radial-gradient(circle, var(--ag-panel) 58%, transparent 59%), conic-gradient(from 0deg, var(--nq-cyan), var(--nq-violet) var(--p), rgba(var(--nq-cyan-rgb), .12) 0); box-shadow: 0 0 16px rgba(var(--nq-cyan-rgb), .3); }
+html[data-theme] .nm-w { border-color: rgba(var(--nq-cyan-rgb), .3); }
+html[data-theme] .nm-w.on { border-color: var(--nq-cyan); color: var(--nq-cyan-hi); box-shadow: 0 0 10px rgba(var(--nq-cyan-rgb), .4); }
+html[data-oly-scheme="light"] .nm-w.on { color: var(--nq-cyan); }
+html[data-theme] .nm-next.on { color: var(--nq-cyan-hi); } html[data-oly-scheme="light"] .nm-next.on { color: var(--nq-cyan); }
+html[data-theme] .nm-band { border-color: rgba(var(--nq-violet-rgb), .5); color: var(--nq-violet-hi); }
+html[data-theme] .nm-band.high { border-color: rgba(239, 68, 68, .6); color: var(--nq-dn-text); }
+html[data-theme] .nm-band.low, html[data-theme] .nm-band.normal { border-color: rgba(var(--nq-cyan-rgb), .6); color: var(--nq-cyan-hi); }
+html[data-theme] .nm-open { border-color: rgba(var(--nq-cyan-rgb), .55); background: radial-gradient(120% 160% at 0% 0%, rgba(var(--nq-cyan-rgb), .14), transparent 60%), rgba(148, 163, 184, .05); box-shadow: 0 0 16px rgba(var(--nq-cyan-rgb), .22); }
+html[data-theme] .nm-open.pos { border-color: rgba(34, 197, 94, .6); box-shadow: 0 0 16px rgba(34, 197, 94, .22); }
+html[data-theme] .nm-open.neg { border-color: rgba(239, 68, 68, .6); box-shadow: 0 0 16px rgba(239, 68, 68, .2); }
+html[data-theme] .nm-otag { background: rgba(var(--nq-cyan-rgb), .16); color: var(--nq-cyan-hi); }
+html[data-oly-scheme="light"] .nm-otag { color: var(--nq-cyan); }
+html[data-theme] .nm-oname { color: var(--ag-text); }
+html[data-theme] .land, html[data-theme] .vault { background: radial-gradient(120% 90% at 50% 100%, rgba(var(--nq-cyan-rgb), .14), transparent 60%), #050912; }
+html[data-theme] .land-fb path.l { stroke: var(--nq-cyan); filter: drop-shadow(0 0 4px rgba(var(--nq-cyan-rgb), .8)); }
+html[data-theme] .dk-meter i { background: linear-gradient(90deg, var(--nq-cyan), var(--nq-blue)); }
+html[data-theme] .dk-open { border-color: rgba(var(--nq-cyan-rgb), .55); }
+html[data-theme] .dk-dot.stale { background: var(--nq-violet); }
+.gl-g0 { stop-color: var(--nq-cyan); } .gl-g1 { stop-color: var(--nq-blue); }

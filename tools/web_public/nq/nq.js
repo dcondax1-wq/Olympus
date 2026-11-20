@@ -7,7 +7,7 @@ import * as C from './nqcore.js?v=d4';   // d1 (polish2 2026-11-19): the CME tra
 import * as T from '../olympus/truth.js';
 import * as D from './nqdesk.js?v=6';
 import { unpack as unpackBars } from './nqbars.js?v=b1';     // nqdash3: the accounts strip, the bots' thinking, the quality checks
-import * as G from './nqgoals.js?v=5';                       // v4: the goals strip, the numbers card, the bursts
+import * as G from './nqgoals.js?v=6';                       // v4: the goals strip, the numbers card, the bursts
 
 const O = window.OLYMPUS || null;
 const $ = (id) => document.getElementById(id);
@@ -89,9 +89,9 @@ function renderFallback() {
     const x = gap + i * (w + gap), lit = c.lit, mid = x + w / 2;
     svg.appendChild(sv('rect', { x: x + 6, y: 46, width: w - 12, height: base - 46, fill: lit ? '#f3e2b8' : '#d8cfbd', rx: 2 }));
     for (const dx of [14, 23, 32]) svg.appendChild(sv('rect', { x: x + dx - 1, y: 46, width: 1.6, height: base - 46, fill: '#a99f8d', opacity: 0.5 }));
-    svg.appendChild(sv('rect', { x, y: 36, width: w, height: 10, rx: 2, fill: lit ? '#e0b060' : '#bdb3a0' }));
+    svg.appendChild(sv('rect', { x, y: 36, width: w, height: 10, rx: 2, fill: lit ? '#22d3ee' : '#64748b' }));
     svg.appendChild(sv('path', { d: `M${mid - 11} 36c2-6 20-6 22 0z`, fill: '#9c6b3c' }));
-    if (lit) { const f = sv('path', { d: `M${mid} 6c-8 8 0 12-5 22h10c-3-8 3-11-5-22z`, fill: '#e0b060', class: 'flame' }); f.dataset.key = c.key; svg.appendChild(f); }
+    if (lit) { const f = sv('path', { d: `M${mid} 6c-8 8 0 12-5 22h10c-3-8 3-11-5-22z`, fill: '#22d3ee', class: 'flame' }); f.dataset.key = c.key; svg.appendChild(f); }
   });
 }
 function renderScene() {
@@ -367,7 +367,7 @@ function drawLand(chart, list) {
   const lo = Math.min(...c), hi = Math.max(...c), W = 360, H = 240, y = (v) => H - 30 - ((v - lo) / Math.max(1e-9, hi - lo)) * (H - 80);
   const pts = c.map((v, i) => `${((i / (c.length - 1)) * W).toFixed(1)},${y(v).toFixed(1)}`).join(' L');
   const defs = sv('defs', {}), gr = sv('linearGradient', { id: 'landG', x1: 0, y1: 0, x2: 0, y2: 1 });
-  gr.appendChild(sv('stop', { offset: '0', 'stop-color': '#e0b060', 'stop-opacity': '0.45' })); gr.appendChild(sv('stop', { offset: '1', 'stop-color': '#e0b060', 'stop-opacity': '0' }));
+  gr.appendChild(sv('stop', { offset: '0', 'stop-color': '#22d3ee', 'stop-opacity': '0.45' })); gr.appendChild(sv('stop', { offset: '1', 'stop-color': '#8b5cf6', 'stop-opacity': '0' }));
   defs.appendChild(gr); svg.appendChild(defs);
   svg.appendChild(sv('path', { class: 'a', d: `M0,${H} L${pts} L${W},${H} Z` }));
   svg.appendChild(sv('path', { class: 'l', d: `M${pts}` }));

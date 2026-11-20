@@ -243,7 +243,7 @@ def test_page():
                   d["kv"][0] == demo_today() and d["kv"][1].startswith("$2,580 to go to the $3,000 target") and d["dt"][0] == "Today" and len(d["trades"]) == 10 and all(re.search(r"\$[\d,]+ \(~?[+-]?\d+\.\dR\)", x) for x in d["trades"])
                   and len(d["rules"]) == 10 and all(d["rules"]) and "02:00 and 15:30 ET" in d["plan"] and "flat by 15:55 ET" in d["plan"] and d["facts"][0] == "PF 2.91, +$9,919, about $2,670 a month" and len(d["facts"]) == 3
                   and d["pill"] == "Backtest, not a promise" and "1 Jul 2026 to 16 Oct 2026" in d["factNote"], d)
-            check("c. AGORA look: serif title, warm dark body", any(f in d["font"] for f in ("Palatino", "Iowan", "Georgia")) and d["bg"] == "rgb(20, 17, 14)", d)
+            check("c. the NQ terminal look (owner 2026-11-20: no gold): serif title, the navy night body #060a14", any(f in d["font"] for f in ("Palatino", "Iowan", "Georgia")) and d["bg"] == "rgb(6, 10, 20)", d)
             AK.shot(p, "nq-demo")
             # the sheet from the More card
             p.locator("#howBtn").scroll_into_view_if_needed()

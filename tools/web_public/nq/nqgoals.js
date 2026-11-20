@@ -82,7 +82,7 @@ export function goals(accts, pay, plan, nowS, eq, mffu) {
         { label: ck.cons ? `Best day <= 50%: ${ck.cons.ok ? 'ok' : 'not yet'}` : 'Best day <= 50% of the cycle', ok: ck.cons ? !!ck.cons.ok : null },
       ];
       out.push({ key: a.key, name: a.name, kind: 'payout', goal: `Ask ${usd(C.max)} at ${usd(goalAt)}`, left, frac: prof === null ? 0 : clamp01(prof / goalAt),
-        big: left === null ? '-' : left <= 0 ? 'Ready' : usd(left), unit: left !== null && left > 0 ? `to ${usd(goalAt)}` : '', short: `Goal: ask ${usd(C.max)}`,
+        big: left === null ? '-' : left <= 0 ? 'Ready' : usd(left), unit: left !== null && left > 0 ? `to ${usd(goalAt)}` : '', short: `first ask ${usd(C.max)}`,
         lines: [`MFFU shows this funded account as its profit: ${prof === null ? '-' : usd(prof)} (max-loss floor ${usd(floor)}, end-of-day trailing, it stops at +$100).`,
           `Goal: ask ${usd(C.max)} once MFFU shows ${usd(goalAt)} (${usd(C.buffer)} buffer + ${usd(C.max)}); ${usd(C.max * C.split)} to you at the 80% split.`,
           allow === null ? `Earliest: the minimum ${usd(C.min)} ask at ${usd(earlyAt)}.` : allow > 0 ? `Earliest: the minimum ${usd(C.min)} ask at ${usd(earlyAt)}: ${usd(allow)} more.` : `Earliest: MFFU allows an ask now (minimum ${usd(C.min)}).`],
@@ -209,7 +209,7 @@ function ring(frac, kind) {
   const s = sv('svg', { viewBox: '0 0 64 64', class: 'gl-ring', 'aria-hidden': 'true' });
   s.appendChild(sv('circle', { cx: 32, cy: 32, r: 27, class: 'gl-track' }));
   const c = 2 * Math.PI * 27;
-  for (const cls of ['gl-arc glow ' + kind, 'gl-arc ' + kind]) {
+  for (const cls of ['gl-arc glow ' + kind, 'gl-arc ' + kind + (frac >= 1 ? ' done' : '')]) {
     const arc = sv('circle', { cx: 32, cy: 32, r: 27, class: cls, 'stroke-dasharray': `${c.toFixed(1)}`, 'stroke-dashoffset': `${c.toFixed(1)}`, transform: 'rotate(-90 32 32)' });
     arc.style.setProperty('--to', `${(c * (1 - clamp01(frac))).toFixed(1)}`);
     s.appendChild(arc);
@@ -298,7 +298,7 @@ export function drawNumbers(box, N, CL, VX, OP) {
   if (VX) { const v = h('p', 'nm-vix'); v.appendChild(h('b', 'nm-band ' + VX.band, VX.text)); if (VX.target) v.appendChild(h('span', '', ' ' + VX.target)); v.appendChild(h('small', '', ` (VIX of ${VX.date})`)); box.appendChild(v); }
 }
 
-/** a one-shot burst of gold / green sparks from an element (a goal reached, a winning trade). Canvas over the page, removed at the end. */
+/** a one-shot burst of cyan / violet sparks (green on a win) from an element (a goal reached, a winning trade). Canvas over the page, removed at the end. */
 export function burst(at, kind) {
   if (reduced() || !at || typeof document === 'undefined') return false;
   const r = at.getBoundingClientRect(), cv = document.createElement('canvas'), dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -307,7 +307,7 @@ export function burst(at, kind) {
   document.body.appendChild(cv);
   const g = cv.getContext('2d'); if (!g) { cv.remove(); return false; }
   g.scale(dpr, dpr);
-  const cx = r.left + r.width / 2, cy = r.top + r.height / 2, cols = kind === 'win' ? ['#7ee08a', '#c8f0a0', '#e0b060'] : ['#ffd77a', '#e0b060', '#fff2c8'];
+  const cx = r.left + r.width / 2, cy = r.top + r.height / 2, cols = kind === 'win' ? ['#22c55e', '#86efac', '#22d3ee'] : ['#22d3ee', '#8b5cf6', '#67e8f9'];
   const P = Array.from({ length: 70 }, () => { const a = Math.random() * Math.PI * 2, s = 2 + Math.random() * 5; return { x: cx, y: cy, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 2, life: 1, c: cols[(Math.random() * cols.length) | 0], z: 1 + Math.random() * 2.2 }; });
   const t0 = performance.now();
   const step = (t) => {

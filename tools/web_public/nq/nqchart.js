@@ -21,7 +21,7 @@ function tokens() {
   const cs = getComputedStyle(document.documentElement), v = (n, d) => (cs.getPropertyValue(n) || '').trim() || d;
   return { text: v('--ag-text', '#f3ece0'), soft: v('--ag-soft', '#cfc4b2'), muted: v('--ag-muted', '#9a8f7d'), line: v('--ag-line', '#3a3228'),
     up: v('--ag-olive-text', '#a0ac6e'), down: v('--ag-terra-text', '#e08a6b'), good: v('--ag-olive-text', '#a0ac6e'), bad: v('--ag-terra-text', '#e08a6b'),
-    gold: v('--ag-gold-hi', '#dcbd6e'), aegean: v('--ag-aegean-text', '#7fa7c2'), mauve: '#c9a3c4', sand: '#d8c39a', olive: v('--ag-olive', '#7f8a52'), rose: '#d9a3a3',
+    gold: v('--ag-gold-hi', '#dcbd6e'), aegean: v('--ag-aegean-text', '#7fa7c2'), mauve: '#a78bfa', sand: '#60a5fa', olive: v('--ag-olive', '#7f8a52'), rose: '#f0abfc',
     font: getComputedStyle(document.body).fontFamily || 'system-ui, sans-serif' };
 }
 const col = (T, k) => T[k] || T.gold;
@@ -135,12 +135,12 @@ function makeChart(LC, T) {
     },
   });
   const marks = LC.createSeriesMarkers(series, []);
-  // v4 (owner: "light trails on the chart"): the last 3 hours of closes as a glowing gold trail (a wide faint line under a bright one) whose newest
+  // v4 (owner: "light trails on the chart"): the last 3 hours of closes as a glowing cyan trail (a wide faint line under a bright one) whose newest
   // point pulses; no axis label, no crosshair dot, never in the price scale's range. Reduced motion: the trail without the pulse.
   let still = false; try { still = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { /* moving */ }
   const quiet = { priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false, autoscaleInfoProvider: () => null, priceFormat: { type: 'price', precision: 2, minMove: 0.25 } };
-  const glow = chart.addSeries(LC.LineSeries, { ...quiet, color: 'rgba(224,176,96,0.16)', lineWidth: 4, lineType: LC.LineType ? LC.LineType.Curved : 0 }, 0);
-  const trail = chart.addSeries(LC.LineSeries, { ...quiet, color: 'rgba(240,201,106,0.85)', lineWidth: 2, lineType: LC.LineType ? LC.LineType.Curved : 0,
+  const glow = chart.addSeries(LC.LineSeries, { ...quiet, color: 'rgba(34,211,238,0.18)', lineWidth: 4, lineType: LC.LineType ? LC.LineType.Curved : 0 }, 0);
+  const trail = chart.addSeries(LC.LineSeries, { ...quiet, color: 'rgba(103,232,249,0.9)', lineWidth: 2, lineType: LC.LineType ? LC.LineType.Curved : 0,
     lastPriceAnimation: still || !LC.LastPriceAnimationMode ? 0 : LC.LastPriceAnimationMode.OnDataUpdate }, 0);   // OnDataUpdate: a pulse when a new bar lands (Continuous repainted the chart every frame: +400 ms blocking at 4x CPU)
   // the view is set before the price axis has measured its labels: when the plot gets narrower (or the phone turns), set it again,
   // unless the owner moved the chart himself (a drag, a pinch, the wheel: from then on his view is kept)
