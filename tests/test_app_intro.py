@@ -89,10 +89,11 @@ def test_static():
     check("a. small (< 40 KB), no fetch / import / XHR, no network of its own", len(js.encode()) < 40_000 and not re.search(r"fetch\(|import |XMLHttpRequest|WebSocket", js))
     check("a. it takes its identity from the kit (OLYMPUS app / name / glyph / colour) and the sound from OLYMPUS.sfx",
           all(x in js for x in ("O.app", "O.name", "O.glyph", "O.color", "O.sfx(")))
-    check("a. it plays at most once per app per launch (sessionStorage 'oly.intro.<app>'), a 400 ms version after, LITE and reduced motion nothing",
-          all(x in js for x in ("'oly.intro.' + (O.app", "short: 0.4", "full: 2.4", "O.lite()", "why = 'LITE'")))
+    # olympus2 2026-11-20 (owner bar: "intro: skippable, under 1.2 s, never on repeat visits the same day")
+    check("a. it plays once per app per New York day (localStorage 'oly.intro.d.<app>' + sessionStorage 'oly.intro.<app>'), nothing on a repeat visit that day, LITE and reduced motion nothing",
+          all(x in js for x in ("'oly.intro.' + (O.app", "'oly.intro.d.' + (O.app", "why = 'seen today'", "timeZone: 'America/New_York'", "O.lite()", "why = 'LITE'")))
     m = re.search(r"full: ([\d.]+)", js)
-    check("a. the full film is at most 2.5 s (full: %s) and a repeat visit 0.4 s" % m.group(1), m and float(m.group(1)) <= 2.5 and "short: 0.4" in js)
+    check("a. the film is under 1.2 s (full: %s)" % m.group(1), m and float(m.group(1)) < 1.2)
     check("a. the film's sound only plays while the kit's Sound switch allows it (OLYMPUS_SFX.sound()), nothing before a first tap",
           "k.sound && !k.sound()" in js and "W.OLYMPUS_SFX" in js)
     check("a. never under reduced motion / 3D Off (O.reduced), ?q=off, ?intro=0, localStorage 'oly.intro' = off, or automation unless ?intro=1",
@@ -194,12 +195,11 @@ def test_app(br, origin, app):
         check(f"b. {app}: the full film plays and ends", False, e)
     p.reload(wait_until="commit")
     try:
-        p.wait_for_function("window.__olyAppIntro && window.__olyAppIntro.mode", timeout=30000)
-        p.wait_for_function(ENDED, timeout=60000)
+        p.wait_for_function("window.__olyAppIntro && window.__olyAppIntro.state === 'off'", timeout=30000)
         s = p.evaluate(STATE)
-        check(f"b. {app}: the same launch again gets the 400 ms version (short), never the film twice", s["mode"] == "short" and s["state"] in ENDS and s["len"] == 0.4, s)
+        check(f"b. {app}: the same day again plays nothing (seen today), never the film twice", s["state"] == "off" and s["why"] == "seen today", s)
     except Exception as e:
-        check(f"b. {app}: the second open is the short version", False, e)
+        check(f"b. {app}: the second open the same day plays nothing", False, e)
     check(f"b. {app}: no console error from the intro", not mine(errs), mine(errs)[:3])
     ctx.close()
 

@@ -211,13 +211,23 @@ function goDistrict(id) {
 function go(href, i) {
   const url = ROOT + href;
   const W = window.OLYMPUS_WARP;
-  if (W && typeof W.go === 'function') { try { W.go(url, { from: 'world', c: i >= 0 ? place(i).hue : null }); return; } catch (e) { /* our own */ } }
+  if (W && typeof W.go === 'function') { leaving(); try { W.go(url, { from: 'world', c: i >= 0 ? place(i).hue : null }); return; } catch (e) { /* our own */ } }
   if (!S.scene || reduced) { location.href = url; return; }
   const p = S.plan.places[i] || null;
   flash();
   if (p) S.scene.flyTo({ tx: p.x, ty: p.top * 0.6, tz: p.z, dist: 7, yaw: S.scene.pose().yaw, pitch: 0.18 }, { warp: true, ms: 650, lift: -0.2 });
   setTimeout(() => { location.href = url; }, 620);
 }
+// olympus2 2026-11-20 (lead: the World "fast to leave"): any way out (a link, Home, Go to, the warp, the back button) stops the 3D loop first
+function leaving() { if (S.scene && S.scene.halt && !S.left) { S.left = true; try { S.scene.halt(); } catch (e) { /* gone */ } } }
+d.addEventListener('click', (e) => {
+  const a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
+  if (!a || e.defaultPrevented || a.target === '_blank' || e.metaKey || e.ctrlKey) return;
+  const h = a.getAttribute('href') || '';
+  if (h && h[0] !== '#' && !/^javascript:/i.test(h)) leaving();
+}, true);
+addEventListener('pagehide', leaving);
+addEventListener('pageshow', (e) => { if (e.persisted && S.left && S.scene && S.scene.resume) { S.left = false; S.scene.resume(); } });
 function flash() {
   if (reduced) return;
   const f = $('#flash'); f.classList.remove('go'); void f.offsetWidth; f.classList.add('go');

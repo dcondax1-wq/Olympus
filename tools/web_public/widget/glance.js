@@ -41,7 +41,7 @@
     if (c.funded) nm.append(el('span', 'tag bt', 'FUNDED'));
     body.append(nm, el('div', 'bal num', W.usd(c.balance)));
     const g = el('div', 'kv3');
-    g.append(kv('today', W.usd(c.today, true), sgn(c.today)), kv(c.to_label, W.usd(c.to_go), 'gold'), kv('room left', W.usd(c.room), c.room_frac != null && c.room_frac < 0.35 ? 'down' : ''));
+    g.append(kv('today', W.usd(c.today, true), sgn(c.today)), kv(c.to_go == null && c.funded ? 'to payout' : c.to_label, c.to_go == null && c.funded ? 'see NQ' : W.usd(c.to_go), 'gold'), kv('room left', W.usd(c.room), c.room_frac != null && c.room_frac < 0.35 ? 'down' : ''));
     body.append(g);
     const b = el('div', 'bar'); b.setAttribute('role', 'progressbar'); b.setAttribute('aria-label', c.to_label);
     const pct = c.progress != null ? Math.round(c.progress * 100) : 0;
