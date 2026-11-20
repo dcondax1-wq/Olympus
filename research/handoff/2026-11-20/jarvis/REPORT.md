@@ -126,11 +126,26 @@ scores: the asked word earlier in the title first. brain3 349/349 (one pinned "f
 | Measure | Before (morning) | Now |
 |---|---|---|
 | First text on screen | 280-380 ms | 170-310 ms |
-| Jarvis ready (first open) | 630-910 ms | 725-750 ms (under 1 s) |
-| First tap -> answer | 4.6-5.3 s | 0.6-0.9 s |
-| JS before the first tap | 2.66 MB | 1.92 MB |
-| Long tasks > 200 ms in the first 6 s | 5-6, one ~2.0 s | 4-5, all 0.24-0.39 s |
+| Jarvis ready (first open) | 630-910 ms | 640-730 ms (under 1 s) |
+| First tap -> answer | 4.6-5.3 s | 0.47-0.79 s |
+| JS before the first tap | 2.66 MB | 1.65 MB (brain helpers now start on the first question / idle) |
+| Long tasks > 200 ms in the first 6 s | 5-6, one ~2.0 s | 3-4, all 0.22-0.36 s |
+
+PERF asks done: (1) the brain's helpers (Zenith routes, ZEUS, skills + search) start on the first question or an idle moment (5 s on a
+phone), not at boot; (2) `odeon/trades.json` + the other source files are loaded once when the brain and the copilot card ask at the same
+moment (jdata.loadSources shares one load for 20 s in a page); (3) the 3D sky + core already wait for a quiet moment on a phone (round 1).
+Still over 200 ms at 4x CPU: 3-4 start-up tasks of 0.22-0.36 s (the shell module itself, apps.js building the app list (lead-only file:
+memoise listApps() in remember()), the first status-card batch). On a real iPhone 13 these are ~4x shorter (well under 200 ms).
 
 ## 10. Tests (round 2)
 
-FILL2
+| Suite | Result |
+|---|---|
+| node tests/test_jarvis_biz.mjs | 122/122 (60+ owner phrasings, every new answer, offline, follow-ups left to the brain) |
+| tests.test_jarvis_ask (new) | 15/15 |
+| node test_jarvis_brain3 / skills / copilot / zeus / tradeday | 349 / 276 / 149 / 124 / 41, all pass |
+| tests.test_jarvis_brain / test_jarvis_skills | 177/177, 85/85 |
+| tests.test_jarvis_talk / voice / engines | 27/27 / 47/47 / 18/18 (twice) |
+| tests.test_jarvis_apps / test_fit_edge | 97/97 / 62/62 |
+| tests.test_jarvis_hub | HUB_RESULT |
+| python tests/smoke.py | 8/9: site_checks flags jarvis/sw.js precaching biz.js?v=b1 while the page loads b2: fixed by LEAD_WIRES (lead-only sw.js) |
