@@ -69,7 +69,10 @@ def inner():
     from engine import multi_account as MA
     from engine import second
     from engine import sizing as SZ
+    repo_on = dict(AB.FUNDED_ON)                              # test_account_b_funded sets FUNDED_ON to None when it is imported
     from tests.test_account_b_funded import FakeBot, funded_block, eval_block, ts
+    AB.FUNDED_ON.clear()
+    AB.FUNDED_ON.update(repo_on)
     from engine import live
     assert hasattr(AB, "FUNDED_ON"), "not the patched engine"
     sc = second.load_cfg()
