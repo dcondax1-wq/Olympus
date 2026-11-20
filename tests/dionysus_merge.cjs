@@ -53,8 +53,8 @@ const HTML = { status: 200, contentType: 'text/html', body: '<!doctype html><p>n
   try {
     // 1. the site as it is: learned + suggestions present, Sibyl's files missing
     let { p, ctx, off } = await open({});
-    const order = await p.evaluate(() => ['bal', 'k8Card', 'guardCard', 'wiCard', 'scan', 'feeCard', 'ruinCard', 'lessonCard', 'wordsCard', 'foot'].map((i) => { const e = document.getElementById(i); return e ? e.getBoundingClientRect().top + scrollY : -1; }));
-    step('the order: balance, K8 today, the guard, what-if, scan, then fees, going broke, old lessons, words, the foot', order.every((y, i) => y > 0 && (i === 0 || y > order[i - 1])), order);
+    const order = await p.evaluate(() => ['k8Card', 'bal', 'guardCard', 'wiCard', 'scan', 'feeCard', 'ruinCard', 'lessonCard', 'wordsCard', 'foot'].map((i) => { const e = document.getElementById(i); return e ? e.getBoundingClientRect().top + scrollY : -1; }));
+    step('the order: K8 today (first, bar 2026-11-20), the old bot\'s balance, the guard, what-if, scan, then fees, going broke, old lessons, words, the foot', order.every((y, i) => y > 0 && (i === 0 || y > order[i - 1])), order);
     step('K8 today still shows at the top (from ../kalshi/k8.json)', await vis(p, 'k8Card'), await txt(p, 'k8Verdict'));
     const fee = await p.evaluate(() => ({ rows: document.querySelectorAll('#feeRows tr').length, k8: [...document.querySelectorAll('#feeRows tr.k8')].map((t) => t.textContent), lead: document.getElementById('feeLead').textContent, note: document.getElementById('feeNote').textContent }));
     step('fee card: 10 price rows from learned.json, the row nearest K8\'s entry marked (K8), the lead says what K8 must win', await vis(p, 'feeCard') && fee.rows === 10 && fee.k8.length === 1 && /50¢ \(K8\)/.test(fee.k8[0]) && /K8 buys near 5\d¢/.test(fee.lead) && /51\.8%/.test(fee.lead), fee);
