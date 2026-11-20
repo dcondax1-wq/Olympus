@@ -12,7 +12,7 @@ import { RoomEnvironment } from './three-addons/RoomEnvironment.js';
 export function mount(host, o) {
   let renderer;
   try { renderer = new THREE.WebGLRenderer({ antialias: o.tier !== 'low', alpha: true, powerPreference: 'low-power' }); } catch (e) { return null; }
-  const T = Object.assign({ base: '#0b1220', cyan: '#22d3ee', blue: '#3b82f6', violet: '#8b5cf6', steel: '#9aa4b2' }, o.theme || {});
+  const T = Object.assign({ base: '#070b14', cyan: '#22d3ee', blue: '#3b82f6', violet: '#8b5cf6', steel: '#9aa4b2' }, o.theme || {});
   const col = (c) => new THREE.Color(c);
   const pick = o.pick || ((u, h, l) => h), low = o.tier === 'low', reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, pick(2, 1.5, 1)));

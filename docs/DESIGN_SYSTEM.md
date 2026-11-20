@@ -83,14 +83,14 @@ network: it reads this phone's storage only (`olympus.push`, `olympus.pulse.ages
 
 ## 6. NQ effects (`olympus/nqfx.js`, the trading dashboard's "wow" layer)
 
-One classic tag (`<script src="../olympus/nqfx.js?v=n3" defer>`), then `await OLYMPUS_NQFX.ready()`; built on the FX library (docs/OLYMPUS_FX.md:
+One classic tag (`<script src="../olympus/nqfx.js?v=n4" defer>`), then `await OLYMPUS_NQFX.ready()`; built on the FX library (docs/OLYMPUS_FX.md:
 tiers, one frame loop, caps, cleanup). Demo: `/olympus/nqfx-lab.html`. Full guide for the NQ team: `research/handoff/2026-11-20/nq4/FX_API.md`.
 
 The NQ look (owner 2026-11-20: no gold): deep navy, electric cyan `#22d3ee` + blue `#3b82f6` glows, violet `#8b5cf6` accents, green `#22c55e` only for a win.
 
 | Call | Effect |
 |---|---|
-| `NQFX.theme({ base, cyan, blue, violet, win, loss, steel })` | the colours (hex), for the effects started after it |
+| `NQFX.theme({ base, cyan, cyanHi, blue, violet, win, loss, steel })` | the colours (hex), for the effects started after it |
 | `NQFX.win(el, { usd, bigAt })` | green sparks + "Win +$X" toast (confetti from `bigAt`, default $500) |
 | `NQFX.loss(el, { usd })` | a calm "Loss -$X" toast |
 | `NQFX.milestone(el, { text })` | confetti + toast (eval passed, payout ready) |
