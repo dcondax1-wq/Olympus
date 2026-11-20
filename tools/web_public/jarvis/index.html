@@ -110,6 +110,9 @@ window.addEventListener('error', function (e) {
 </script>
 <link rel="stylesheet" id="jcss" href="jarvis.css?v=j24">
 <link rel="stylesheet" id="jhome" href="home3d.css?v=h4">
+<!-- JARVIS FX (day-jarvis 2026-11-20, owner: "3D, effects, no gold"): after the first paint, never holding the start -->
+<link rel="stylesheet" href="../olympus/dashfx.css?v=d1" media="print" onload="this.media='all'"><script src="../olympus/dashfx.js?v=d1" async></script><!-- the DESIGN kit (OLYMPUS NIGHT glass); async, never defer: outside Jarvis's saved copy, a slow line must not hold the start -->
+<link rel="stylesheet" id="jfx" href="jfx.css?v=3" media="print" onload="this.media='all'"><script src="jfx.js?v=2" async></script>
 <!-- quiet-net (night-bugsweep 2026-11-19): Kalshi's state comes from the PC feed first (data.js: when the PC carries Kalshi, kalshi.json
      is not asked at all); the old kalshi-feed repo is on the suspended account and is never asked. data-fresh="site:kalshi.json"
      (night-jarvisfix 2026-11-20): otherwise this site's kalshi.json is asked once per Jarvis load, as data.js promises ("opening Jarvis
@@ -129,7 +132,7 @@ window.addEventListener('error', function (e) {
 [hidden]{display:none!important}
 /* the business chips (day-jarvis 2026-11-20): one scrolling row of the owner's daily questions, in the HTML so they are there at first paint */
 .bizchips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 10px}
-.bchip{min-width:0;min-height:44px;padding:6px 8px;border-radius:12px;border:1px solid var(--oly-th-gold,rgba(200,162,74,.55));background:rgba(20,16,10,.55);color:var(--oly-th-n10,#f3ece0);font:600 15px/1.1 var(--fb,system-ui,sans-serif);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;touch-action:manipulation}
+.bchip{min-width:0;min-height:44px;padding:6px 8px;border-radius:12px;border:1px solid var(--oly-th-gold,rgba(200,162,74,.55));background:rgba(20,16,10,.55);color:var(--oly-th-n37,#f3ece0);font:600 15px/1.1 var(--fb,system-ui,sans-serif);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;touch-action:manipulation}
 .stage-tap{position:absolute;inset:8%;z-index:0;border:0;border-radius:50%;background:transparent;padding:0;margin:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .stage-tap:focus-visible{outline:2px solid var(--oly-th-gold,#dcbd6e);outline-offset:4px}
 /* A11Y 2026-11-20 (FOR_jarvis.md): the hints and status lines the owner reads at 15 px, in rem so they grow with the iPhone text size */
