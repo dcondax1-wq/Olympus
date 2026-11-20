@@ -1910,11 +1910,16 @@ def run_intro(br, url):
     ctx.close()
 
     # 6. a phone that cannot keep up (every frame 80 ms) at the phone's own scale: a quick cut to the reveal, never a slideshow
-    ctx, p, errs = intro_page(br, url, "full", init=[SLOW_FRAMES], cut=True, scale="0.1")
+    ctx, p, errs = intro_page(br, url, "full", init=[SLOW_FRAMES, FADE_PROBE], cut=True, scale="0.1")
     wait(p, INTRO_GONE)
     s = intro_state(p)
+    blk = p.evaluate(BLOCKED)
+    s["blocked"] = blk
+    # its own time (the wall clock less the main thread's blocked time on a loaded test machine, as the fade check above) < 3 s, and the wall
+    # clock < 4.9 s (day-jarvis 2026-11-20: the wall clock alone failed now and then when other browser suites shared the CPU)
     check("o. a phone that cannot keep up: it cuts to the reveal early (before the 3.1 s reveal), never a slideshow",
-          s["st"].get("slow") is True and s["st"]["state"] == "done" and s["pr"]["end"] < BK.limit_ms(3000, "intro slow phone"), s)
+          s["st"].get("slow") is True and s["st"]["state"] == "done" and blk is not None
+          and s["pr"]["end"] - blk < BK.limit_ms(3000, "intro slow phone") and s["pr"]["end"] < BK.limit_ms(4000, "intro slow phone wall", cap=4900), s)
     ctx.close()
 
     # 7. the versions it picks by itself

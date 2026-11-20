@@ -1113,7 +1113,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
         <button class="pillb" id="vset" type="button" title="Voice settings">Voice ⚙</button>
       </div>
       <p class="hint2">Tap to talk · hold for voice mode</p>
-      <div class="bizchips" id="bizchips" role="group" aria-label="Ask about the business"><button class="bchip" type="button" data-say="How are my accounts?">Accounts</button><button class="bchip" type="button" data-say="Is ATLAS in a trade?">In a trade?</button><button class="bchip" type="button" data-say="How much room does Zlarior have?">Room left</button><button class="bchip" type="button" data-say="When is my first payout?">Payout</button><button class="bchip" type="button" data-say="What did the bots do today?">Today</button><button class="bchip" type="button" data-say="What did the bots do this week?">This week</button><button class="bchip" type="button" data-say="What&#39;s on the news today?">News</button><button class="bchip" type="button" data-say="What should I do today?">To-do</button><button class="bchip" type="button" data-say="How&#39;s Kalshi?">Kalshi</button></div>
+      <div class="bizchips" id="bizchips" role="group" aria-label="Ask about the business"><button class="bchip" type="button" data-say="How are my accounts?">Accounts</button><button class="bchip" type="button" data-say="Is ATLAS in a trade?">In a trade?</button><button class="bchip" type="button" data-say="How much room does Zlarior have?">Room left</button><button class="bchip" type="button" data-say="When is my first payout?">Payout</button><button class="bchip" type="button" data-say="What did the bots do today?">Today</button><button class="bchip" type="button" data-say="What did the bots do this week?">This week</button><button class="bchip" type="button" data-say="What did the bots do last week?">Last week</button><button class="bchip" type="button" data-say="What&#39;s on the news today?">News</button><button class="bchip" type="button" data-say="What should I do today?">To-do</button><button class="bchip" type="button" data-say="How&#39;s Kalshi?">Kalshi</button><button class="bchip" type="button" data-say="Is the PC OK?">PC OK?</button><button class="bchip" type="button" data-say="What do you recommend?">Decide</button></div>
       <div class="sugs" id="sugs"></div>
       <div class="talk" id="talk" aria-live="polite"></div>
       <div id="brainp"></div>
@@ -1438,7 +1438,7 @@ ready.vault = Promise.all([load('obsidian', './obsidian.js', (m) => typeof m.cre
     addTodos: (list) => { let n = 0; for (const t of list || []) if (assistant && assistant.addTodo) { assistant.addTodo(t); n++; } return n; },       // "pull my tasks from Obsidian" (memory.js; asks first)
     todos: () => (assistant ? assistant.todos() : []) }); } return vault; }).catch(() => null);
 // the business answers (biz.js, day-jarvis 2026-11-20): accounts, trades, room, payout, news, to-do, Kalshi from the real feeds, before the brain
-ready.biz = load('biz', './biz.js?v=b1', (m) => typeof m.ask === 'function' && typeof m.match === 'function');
+ready.biz = load('biz', './biz.js?v=b2', (m) => typeof m.ask === 'function' && typeof m.match === 'function');
 ready.assist = load('assist', './assist-ui.js', (m) => typeof m.mountObsidianSheet === 'function').then((m) => { assist = m; return m; });
 // the voice (tts.js) and the personal assistant (assistant.js), 2026-11-03: each optional (absent = the old voice, the brain alone)
 let tts = null, assistant = null;
@@ -2706,6 +2706,14 @@ async function briefing() {
   if (S.speakOn()) speak(r.speak || r.text, true); else setState('idle');
 }
 $('#ask').addEventListener('submit', (e) => { e.preventDefault(); const q = $('#q'); ask(q.value); q.value = ''; });
+// ?ask=... (team JARVIS 2026-11-20: "Open Jarvis" in the Ask Jarvis sheet of another app, jarvis/ask.js): asked once, the address cleaned
+safe(() => {
+  const u = new URL(location.href), q = String(u.searchParams.get('ask') || '').replace(/[\u0000-\u001f<>]/g, ' ').trim().slice(0, 200);
+  if (!u.searchParams.has('ask')) return;
+  u.searchParams.delete('ask');
+  history.replaceState(history.state, '', u.pathname + (u.searchParams.toString() ? '?' + u.searchParams.toString() : ''));
+  if (q) setTimeout(() => ask(q), 400);
+});
 
 // ------------------------------------------------------------------ voice out: her voice (voice-out.js + tts.js; Ava Premium, else Samantha ...)
 // Every answer is read while the dock's speaker is on (default on). The waveform on the core and the bars follow her words;

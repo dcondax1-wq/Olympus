@@ -79,3 +79,73 @@ and the hub test's idle-line check failed). Ideas for the lead: memoise apps.js 
 Deliverables here: REPORT.md, LEAD_WIRES.md, 01-12 PNG at 390x844 @2x (answers.json = the exact texts), jarvis-5-questions.webm
 (Accounts, In a trade?, Payout, Today, Kalshi). Python Playwright was missing in this container: `pip install playwright==1.63.0`
 + `PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers` (matches the pre-installed Chromium).
+
+---
+
+# Round 2: team JARVIS (owner 2026-11-20 ~10:00 ET: "Launch a giant team making Olympus as a whole better")
+
+## 5. Jarvis from every app: `jarvis/ask.js`
+
+A 44 px round button (bottom left) on any page that adds one line (`<script src="../jarvis/ask.js" defer data-app="nq">`). A tap opens
+"Ask Jarvis · on NQ" with that page's questions first (NQ: In a trade?, Room left, Today, Accounts, To pass, Edge; Money: First payout,
+Payout now?, Taxes, $ a month, Decide; Kalshi; Hub: To-do, Decide, PC OK?), a text box, the answer with its source + age, and "Open
+Jarvis" (carries the question: `jarvis/?ask=...`, answered once, address cleaned). It loads nothing until tapped, works offline from the
+last PC report this phone saw, never mounts on Jarvis itself, is a real dialog (focus kept inside, Escape closes, focus returns).
+Kit hook and style variables: `research/handoff/2026-11-20/olympus2/jarvis/ASKS.md`. Test: `tests.test_jarvis_ask` 15/15.
+
+## 6. The owner's questions (biz.js), now 17 kinds, 60+ phrasings tested
+
+New: Is the PC OK? (server, NinjaTrader, problems, the self-check line; "Not sure" when the report is old) · What do you recommend?
+(open Decide questions with the advice and $ a month, the parked ones; "Nothing waiting: all 15 answered" today) · Can I ask for a payout?
+(the ZEUS card's own coach line, e.g. "Not yet: need $1,463 more", + $800 to you, $240 tax pot, $560 yours) · Taxes (30% pot, the next
+IRS date, "education, not tax advice") · How did yesterday go? (the PC's daily review) · Last week (every live trade per account from
+the PC's list; paper trades labelled and kept out of the $) · When do the bots trade? · $ a month (ESTIMATE from 1,000 runs, accounts you
+have vs not bought yet; BACKTEST line labelled) · How far to pass? (+ estimated pass date) · Is the edge OK? (both lights, "a warning only").
+Kept with the brain on purpose: follow-ups ("and yesterday?", "why?", "open it"), BLITZ, why / explain / strategy, generic room/target.
+
+## 7. Search red fixed
+
+"find the jurnal" -> the Journal app first (an app the query names beats a write-up that mentions the word); an Archive idea that is both a
+write-up and a rejected idea is one row (flagged "(Rejected idea)"), so "what did we test about vwap" shows the test runs again; equal
+scores: the asked word earlier in the title first. brain3 349/349 (one pinned "find vwap" order updated, reason in the test).
+
+## 8. Flaky reds made robust (not looser)
+
+- `test_jarvis_talk` "a tap on the core stops her": the test tapped the core's corner (40, 40), which is on the orbiting system dots'
+  path; when a dot passed under it the tap opened the dot. It now taps the middle of the core, where the owner taps. Failed the same
+  way on the commit before this branch (checked on a worktree of 1c6a8bd0).
+- `test_jarvis_talk` "the mic: answered out loud" and "Chrome: said at once": they read the FIRST thing said; the morning briefing
+  (once a day from 07:00 ET) or a spoken bot alert could speak first. Proactive speech is now off in that test (like the bots'
+  rituals already were), and the mic check waits for the answer itself.
+- Real bug found on the way (voice-out.js): "a tap that just started her is not a stop" (450 ms) counted from each sentence chunk while
+  setSpeaking toggled; it now counts from her first word only.
+- `test_jarvis_voice` 47/47 and `test_jarvis_engines` 18/18 passed twice in a row here; no change needed.
+
+## 9. Speed now (same harness as section 2: 390 x 844, mobile + touch, 4x CPU)
+
+| Measure | Before (morning) | Now |
+|---|---|---|
+| First text on screen | 280-380 ms | 170-310 ms |
+| Jarvis ready (first open) | 630-910 ms | 640-730 ms (under 1 s) |
+| First tap -> answer | 4.6-5.3 s | 0.47-0.79 s |
+| JS before the first tap | 2.66 MB | 1.65 MB (brain helpers now start on the first question / idle) |
+| Long tasks > 200 ms in the first 6 s | 5-6, one ~2.0 s | 3-4, all 0.22-0.36 s |
+
+PERF asks done: (1) the brain's helpers (Zenith routes, ZEUS, skills + search) start on the first question or an idle moment (5 s on a
+phone), not at boot; (2) `odeon/trades.json` + the other source files are loaded once when the brain and the copilot card ask at the same
+moment (jdata.loadSources shares one load for 20 s in a page); (3) the 3D sky + core already wait for a quiet moment on a phone (round 1).
+Still over 200 ms at 4x CPU: 3-4 start-up tasks of 0.22-0.36 s (the shell module itself, apps.js building the app list (lead-only file:
+memoise listApps() in remember()), the first status-card batch). On a real iPhone 13 these are ~4x shorter (well under 200 ms).
+
+## 10. Tests (round 2)
+
+| Suite | Result |
+|---|---|
+| node tests/test_jarvis_biz.mjs | 122/122 (60+ owner phrasings, every new answer, offline, follow-ups left to the brain) |
+| tests.test_jarvis_ask (new) | 15/15 |
+| node test_jarvis_brain3 / skills / copilot / zeus / tradeday | 349 / 276 / 149 / 124 / 41, all pass |
+| tests.test_jarvis_brain / test_jarvis_skills | 177/177, 85/85 |
+| tests.test_jarvis_talk / voice / engines | 27/27 / 47/47 / 18/18 (twice) |
+| tests.test_jarvis_apps / test_fit_edge | 97/97 / 62/62 |
+| tests.test_jarvis_hub | 272/272 (the intro "slow phone" check now subtracts the blocked main-thread time, like the fade check beside it) |
+| python tests/smoke.py | 8/9: site_checks flags jarvis/sw.js precaching biz.js?v=b1 while the page loads b2: fixed by LEAD_WIRES (lead-only sw.js) |
