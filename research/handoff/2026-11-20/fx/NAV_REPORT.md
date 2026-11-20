@@ -1,4 +1,4 @@
-# NAV FX (day-manual, 2026-11-20): Home, ZEUS, the Website HQ. Owner: "It needs some 3D, it needs some effects ... no gold."
+# NAV FX (day-manual, 2026-11-20): Home, ZEUS, the Website HQ. Owner: "It needs some 3D, it needs some effects"; palette OLYMPUS NIGHT (16:00 ET)
 
 | What | Result |
 |---|---|
@@ -13,3 +13,11 @@
 | Not used yet | DESIGN's olympus/dashfx.js was not on day-arenas at push time; navfx can hand its tilt / reveal to it later |
 | Tests | nav_pages 39/39 (+ 6 fx checks: navy, aurora moving / still, tilt on / off, CLS < 0.05, the real numbers final, both motion settings), gate_page 90/90, zeus 52/52 (navfx.js allowed in its script order), web_hub 23/23, help 35/35, home_fx 19/19, olympus_shell 42/42, test_agency 118/118 |
 | Shots | fx/home, fx/zeus, fx/agency: top + grid, dark + Ivory, 390 x 844 x 2 |
+
+## Palette update: OLYMPUS NIGHT (lead 16:00 ET, replaces the cyan pass)
+Black base, cards #16131e -> #020204, outlines #3e255e / #4d2e76, glows + aurora violet #9d59ee / lavender #dacbf0, bright gold #f1c14b only
+for active + CTA (the HQ's Next-step button, the retainer bar's end, the Next-step label), money mint #77db89, loss #ef4444, text #ebe9f1 /
+#898497; the gold tokens point at the Night gold (not cyan). Home icons = the Jarvis switcher sheet's (dark rounded tile, violet glow inside
+with the app's colour mixed in, thin violet edge, near-white serif glyph, names in small capitals); the temple hero violet (hue-rotate).
+PC SILENT keeps its own red (the glass rule skips .zs-pc.bad). Tests: nav_pages 39/39 (Night = black base), gate_page 90/90, zeus 52/52,
+web_hub 23/23, home_fx 19/19, olympus_shell 42/42. Shots re-taken (fx/home, fx/zeus, fx/agency).

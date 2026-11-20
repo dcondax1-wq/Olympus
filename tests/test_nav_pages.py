@@ -185,11 +185,11 @@ def part_b(shots: bool):
                           tilt: document.querySelectorAll('[data-nfx-tilt]').length, rolling: document.querySelectorAll('.nfx-rolling').length,
                           leads: (document.getElementById('hqPLeads') || {}).textContent || '', cls: window.__cls }; })()""")
                     still = rm == "reduce"
-                    ok = r["nfx"] and r["aurora"] and r["bg"] == "rgb(11, 18, 32)" and r["cls"] < 0.05 and not errs and r["rolling"] == 0 \
+                    ok = r["nfx"] and r["aurora"] and r["bg"] == "rgb(0, 0, 0)" and r["cls"] < 0.05 and not errs and r["rolling"] == 0 \
                         and ((r["anim"] == "none" and r["tilt"] == 0) if still else (r["anim"] != "none" and (r["tilt"] > 0 or url == "hub/zeus.html")))
                     if url == "agency/index.html":
                         ok = ok and r["leads"] == "20"
-                    check(f"f. fx {url} [{'reduced motion' if still else 'motion'}]: navy, the aurora {'still' if still else 'moving'}, tilt {'off' if still else 'on'}, CLS {r['cls']:.3f} < 0.05, the real numbers final, no error", ok, (r, errs[:2]))
+                    check(f"f. fx {url} [{'reduced motion' if still else 'motion'}]: Olympus Night (black), the aurora {'still' if still else 'moving'}, tilt {'off' if still else 'on'}, CLS {r['cls']:.3f} < 0.05, the real numbers final, no error", ok, (r, errs[:2]))
                     pg.close()
                 ctx.close()
             # the hub page under a slow phone (4x CPU, ~1.6 Mbps, 150 ms): the gate-nav row fills its reserved slot and nothing shifts (perf ask)
