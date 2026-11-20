@@ -44,8 +44,15 @@ REPEAT_S = 30 * 60                                    # the same condition again
 DAY_MAX = 6                                           # alarm pushes (starts) an ET day at most
 PERSIST_S = 5 * 60                                    # a held repeat that lasts this long is pushed anyway (not a blip)
 WIN_FROM, WIN_TO = 1 * 60 + 58, 15 * 60 + 55          # ET minutes, weekdays
-COND = {"bot_down": "bot_down", "feed_stale": "feed_stale", "bot_stopped": "bot_stopped"}   # -> tools/pc_report.py condition code
-TITLE = {"bot_down": "ZEUS not polling", "feed_stale": "FEED STALE", "bot_stopped": "Bot stopped"}
+COND = {"bot_down": "bot_down", "feed_stale": "feed_stale", "bot_stopped": "bot_stopped", "halt_open": "halt_open"}   # -> pc_report code
+TITLE = {"bot_down": "ZEUS not polling", "feed_stale": "FEED STALE", "bot_stopped": "Bot stopped",
+         "halt_open": "CLOSE THE TRADE NOW"}
+# redteam2 2026-11-20: a CME half day (Thanksgiving 11-26 halt 13:00, 11-27 and 12-24 13:15 ET). MFFU does NOT auto-close at a
+# half-day halt ("the trader is responsible for closing the positions ... failure ... will result in breaching", help center
+# 'Permitted Times to Trade'); the adapter's own flat (halt - 5 min) only runs while the bot runs. A STOP, a crash / restart
+# that did not resume, or a refused CLOSEPOSITION leaves the broker position open into the halt = the account fails.
+HALT_WARN_MIN = 10                                    # bot NOT running: warn from halt - 10 min
+HALT_LATE_MIN = 4                                     # bot running: its own flat is at halt - 5; still open at halt - 4 = warn
 
 
 def enabled(env=None) -> bool:
@@ -70,6 +77,71 @@ def _span(s) -> str:
     return f"{s} s" if s < 120 else f"{s // 60} min"
 
 
+def _real_positions(folder) -> list:
+    """["SHORT 2 MNQ 12-26 on <acct ..1234>"] for every non-FLAT NinjaTrader position file of a NON-Sim account (outgoing/
+    <instrument>_<account>_Position.txt). Read-only, never raises."""
+    out = []
+    try:
+        from .ninjatrader import is_sim, parse_position
+        og = os.path.join(folder, "outgoing")
+        for n in sorted(os.listdir(og)):
+            if not n.lower().endswith("_position.txt"):
+                continue
+            parts = n[:-len("_position.txt")].rsplit("_", 1)
+            if len(parts) != 2 or not parts[0] or is_sim(parts[1]):
+                continue
+            try:
+                with open(os.path.join(og, n), encoding="utf-8-sig", errors="replace") as fh:
+                    pos = parse_position(fh.read())
+            except OSError:
+                continue
+            if pos and pos["side"] != "FLAT":
+                out.append(f"{pos['side']} {pos['qty']} {parts[0]} on account ..{parts[1][-4:]}")
+    except Exception:
+        pass
+    return out
+
+
+def halt_open(bot, now, folder=None) -> str | None:
+    """A broker position still open just before a CME early close (see HALT_WARN_MIN), else None. Only inside the last
+    HALT_WARN_MIN minutes before the halt of an early-close day (3 days a year here: no file read at any other time)."""
+    try:
+        from . import cme_calendar as C
+        e = dt.datetime.fromtimestamp(float(now), ET)
+        if e.weekday() >= 5 or e.hour >= 18:
+            return None
+        ec = C.early_close(e.date())
+        m = e.hour * 60 + e.minute
+        if ec is None or not (ec - HALT_WARN_MIN <= m < ec):
+            return None
+        running = bool(getattr(bot, "running", False))
+        if running and m < ec - HALT_LATE_MIN:
+            return None                                # the running bot flattens at halt - 5 itself
+        if folder is None:
+            folder = (getattr(bot, "cfg", None) or {}).get("nt_folder")
+        if not folder:
+            from .ninjatrader import default_folder
+            folder = default_folder()
+        pos = _real_positions(folder)
+        if not pos:
+            return None
+        return (f"CME closes early today at {ec // 60:02d}:{ec % 60:02d} ET and MFFU does NOT close trades on a half day: "
+                f"{'; '.join(pos[:3])} is still open" + ("" if running else " and the bot is stopped")
+                + ". Close it in NinjaTrader NOW (right-click the position > Close), or the account fails at the halt.")
+    except Exception:
+        return None
+
+
+def _halt_passed(now) -> bool:
+    try:
+        from . import cme_calendar as C
+        e = dt.datetime.fromtimestamp(float(now), ET)
+        ec = C.early_close(e.date())
+        return ec is not None and e.hour * 60 + e.minute >= ec
+    except Exception:
+        return True
+
+
 def evaluate(bot, now, server_started_at=None, autostart=None, run_seen=None) -> dict:
     """{code: text} of what stops the bot from taking a trade right now (empty outside the hours / for a paper bot). Pure.
     server_started_at / autostart (engine/watchdog: this server's start, data/autostart.json = the bot was running and nobody
@@ -77,6 +149,9 @@ def evaluate(bot, now, server_started_at=None, autostart=None, run_seen=None) ->
     out: dict = {}
     if bot is None:
         return out
+    ho = halt_open(bot, now)
+    if ho:
+        out["halt_open"] = ho                          # whatever else is wrong: this one costs the account
     if not getattr(bot, "running", False):
         rec = autostart if isinstance(autostart, dict) else None
         acfg = (rec or {}).get("cfg") if isinstance((rec or {}).get("cfg"), dict) else None
@@ -145,7 +220,7 @@ class FastAlarm:
         if lp is not None and now - lp < REPEAT_S and not (since is not None and now - float(since) >= PERSIST_S):
             return f"held: {code} pushed {_span(now - lp)} ago"
         day = dt.datetime.fromtimestamp(float(now), ET).date().isoformat()
-        if int(self.day_n.get(day) or 0) >= DAY_MAX:
+        if int(self.day_n.get(day) or 0) >= DAY_MAX and code != "halt_open":   # the account itself: never capped
             return f"held: {DAY_MAX} alarm pushes today already"
         return None
 
@@ -191,6 +266,8 @@ class FastAlarm:
                     done.append((key, r))
             for code in [c for c in self.active if c not in cur]:
                 a = self.active.pop(code)
+                if code == "halt_open" and (not a.get("sent") or _halt_passed(now)):
+                    continue                           # the halt came: "back to normal" would read as "it is closed"
                 if a.get("sent") and code in ("bot_down", "feed_stale") and not running:
                     # cleared because the bot was STOPPED (the owner's STOP / kill, often his answer to this alarm): never a
                     # "Back to normal: the bot polls again" (redteam 2026-11-20); a stop that should not be is "Bot stopped"
@@ -198,7 +275,8 @@ class FastAlarm:
                 if a.get("sent"):
                     key = f"fast:{code}:back:{int(now)}"
                     r = self.send({"key": key, "code": code, "cond": COND[code], "back": True, "title": "Back to normal",
-                                   "body": {"bot_down": "The bot polls again.", "bot_stopped": "The bot runs again."}.get(
+                                   "body": {"bot_down": "The bot polls again.", "bot_stopped": "The bot runs again.",
+                                            "halt_open": "NinjaTrader shows the account flat before the halt."}.get(
                                        code, "NinjaTrader bars are fresh again.")
                                    + f" It was out for {_span(now - a['since'])}.", "tags": "white_check_mark"})
                     done.append((key, r))
