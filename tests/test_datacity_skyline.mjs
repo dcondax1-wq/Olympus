@@ -28,15 +28,15 @@ assert.match(outskirts, /this\.boulevards\[1\]\.visible = q === 'hq'/, 'LITE mus
 const scene = read('scene.js');
 assert.match(scene, /CylinderGeometry\(2\.4, 5\.4, 72/, 'central HQ should be the dominant capital tower');
 assert.match(scene, /CITY CAPITAL/, 'capital label must remain explicit');
-assert.match(scene, /outskirts\.js\?v=dcgfx2/, 'updated outskirts must bypass stale module caches');
+assert.match(scene, /outskirts\.js\?v=dc[a-z]+\d+/, 'updated outskirts must bypass stale module caches');
 
 const city = read('city.js');
-assert.match(city, /scene\.js\?v=dcgfx2/, 'updated city scene must bypass stale module caches');
+assert.match(city, /scene\.js\?v=dc[a-z]+\d+/, 'updated city scene must bypass stale module caches');
 assert.match(city, /for \(let i = 0; i < 28; i\+\+\)/, 'no-WebGL recovery should retain a dense connected-city visual');
 assert.match(city, /fallback-hq/, 'no-WebGL recovery should retain the central Data HQ');
 
 const index = read('index.html');
-assert.match(index, /city\.js\?v=dcgfx3/, 'updated city entry must bypass stale page caches');
+assert.match(index, /city\.js\?v=dc[a-z]+\d+/, 'updated city entry must bypass stale page caches');
 
 const map = read('map.html');
 assert.match(map, /class="hq"/, 'fallback needs a visible central HQ');

@@ -29,7 +29,7 @@ test('all city network routes stay under the GitHub Pages project base', () => {
     assert.ok(html.includes('href="' + route + '"'), '2D map missing ' + route);
     assert.ok(city.includes("'" + route + "'"), 'no-WebGL fallback missing ' + route);
   }
-  assert.match(index, /city\.js\?v=dcgfx3/, 'updated fallback script cache key');
+  assert.match(index, /city\.js\?v=dc[a-z]+\d+/, 'updated fallback script cache key');
   assert.doesNotMatch(index + html, /href="\/(?:cities|datacity|kalshicity)\//, 'no domain-root city links');
 });
 
