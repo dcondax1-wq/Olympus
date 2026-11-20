@@ -13,9 +13,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9843,
+   "bytes": 10162,
    "heat": "warm",
-   "chain": false
+   "chain": false,
+   "code": "FR-52"
   },
   {
    "id": "osm-w450837698",
@@ -26,9 +27,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9464,
+   "bytes": 9783,
    "heat": "cold",
-   "chain": false
+   "chain": false,
+   "code": "FR-60"
   },
   {
    "id": "osm-w435980527",
@@ -39,9 +41,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9861,
+   "bytes": 10180,
    "heat": "warm",
-   "chain": true
+   "chain": true,
+   "code": "FR-58"
   },
   {
    "id": "osm-w1110147752",
@@ -52,9 +55,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9452,
+   "bytes": 9771,
    "heat": "cold",
-   "chain": false
+   "chain": false,
+   "code": "FR-51"
   },
   {
    "id": "osm-w177929217",
@@ -65,9 +69,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9841,
+   "bytes": 10160,
    "heat": "cold",
-   "chain": false
+   "chain": false,
+   "code": "FR-55"
   },
   {
    "id": "osm-n13180550181",
@@ -78,9 +83,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9466,
+   "bytes": 9785,
    "heat": "cold",
-   "chain": false
+   "chain": false,
+   "code": "FR-18"
   },
   {
    "id": "osm-n6309001633",
@@ -91,9 +97,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9532,
+   "bytes": 9851,
    "heat": "cold",
-   "chain": false
+   "chain": false,
+   "code": "FR-43"
   },
   {
    "id": "osm-n12656971528",
@@ -104,9 +111,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9533,
+   "bytes": 9850,
    "heat": "cold",
-   "chain": true
+   "chain": true,
+   "code": "FR-9"
   },
   {
    "id": "osm-n6644337057",
@@ -117,9 +125,10 @@
    "town": "Frederick",
    "phone": true,
    "hours": false,
-   "bytes": 11335,
+   "bytes": 11654,
    "heat": "warm",
-   "chain": true
+   "chain": true,
+   "code": "FR-44"
   },
   {
    "id": "osm-n12699385301",
@@ -130,9 +139,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": true,
-   "bytes": 10355,
+   "bytes": 10674,
    "heat": "warm",
-   "chain": false
+   "chain": false,
+   "code": "FR-10"
   },
   {
    "id": "osm-n12703651207",
@@ -143,9 +153,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9027,
+   "bytes": 9346,
    "heat": "cold",
-   "chain": false
+   "chain": false,
+   "code": "FR-11"
   },
   {
    "id": "osm-n4906433897",
@@ -156,9 +167,10 @@
    "town": "Frederick",
    "phone": true,
    "hours": true,
-   "bytes": 11950,
+   "bytes": 12269,
    "heat": "warm",
-   "chain": false
+   "chain": false,
+   "code": "FR-38"
   },
   {
    "id": "osm-n5506834254",
@@ -169,9 +181,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": true,
-   "bytes": 9934,
+   "bytes": 10253,
    "heat": "cold",
-   "chain": true
+   "chain": true,
+   "code": "FR-39"
   },
   {
    "id": "osm-w469531527",
@@ -182,9 +195,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9189,
+   "bytes": 9508,
    "heat": "cold",
-   "chain": true
+   "chain": true,
+   "code": "FR-63"
   },
   {
    "id": "osm-n11011048864",
@@ -195,9 +209,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9541,
+   "bytes": 9858,
    "heat": "cold",
-   "chain": false
+   "chain": false,
+   "code": "FR-5"
   },
   {
    "id": "osm-n3989088999",
@@ -208,9 +223,10 @@
    "town": "Frederick",
    "phone": true,
    "hours": false,
-   "bytes": 11369,
+   "bytes": 11688,
    "heat": "warm",
-   "chain": false
+   "chain": false,
+   "code": "FR-30"
   },
   {
    "id": "osm-n10005363101",
@@ -221,9 +237,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9492,
+   "bytes": 9809,
    "heat": "cold",
-   "chain": false
+   "chain": false,
+   "code": "FR-2"
   },
   {
    "id": "osm-n9044369665",
@@ -234,9 +251,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9616,
+   "bytes": 9935,
    "heat": "cold",
-   "chain": false
+   "chain": false,
+   "code": "FR-49"
   },
   {
    "id": "osm-w668787730",
@@ -247,9 +265,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9451,
+   "bytes": 9770,
    "heat": "cold",
-   "chain": false
+   "chain": false,
+   "code": "FR-67"
   },
   {
    "id": "osm-n14210558150",
@@ -260,9 +279,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9492,
+   "bytes": 9811,
    "heat": "cold",
-   "chain": false
+   "chain": false,
+   "code": "FR-22"
   },
   {
    "id": "osm-n4842558229",
@@ -273,9 +293,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": true,
-   "bytes": 9979,
+   "bytes": 10298,
    "heat": "cold",
-   "chain": false
+   "chain": false,
+   "code": "FR-36"
   },
   {
    "id": "osm-w177929215",
@@ -286,9 +307,10 @@
    "town": "Frederick",
    "phone": true,
    "hours": true,
-   "bytes": 11744,
+   "bytes": 12063,
    "heat": "hot",
-   "chain": false
+   "chain": false,
+   "code": "FR-54"
   },
   {
    "id": "osm-n4017072689",
@@ -299,9 +321,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9476,
+   "bytes": 9795,
    "heat": "cold",
-   "chain": false
+   "chain": false,
+   "code": "FR-32"
   },
   {
    "id": "osm-n5506834257",
@@ -312,9 +335,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": true,
-   "bytes": 9967,
+   "bytes": 10286,
    "heat": "cold",
-   "chain": true
+   "chain": true,
+   "code": "FR-41"
   },
   {
    "id": "osm-n10005363100",
@@ -325,9 +349,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9471,
+   "bytes": 9788,
    "heat": "cold",
-   "chain": false
+   "chain": false,
+   "code": "FR-1"
   },
   {
    "id": "osm-n5506834256",
@@ -338,9 +363,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": true,
-   "bytes": 10058,
+   "bytes": 10377,
    "heat": "cold",
-   "chain": false
+   "chain": false,
+   "code": "FR-40"
   },
   {
    "id": "osm-n3825506357",
@@ -351,9 +377,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 10040,
+   "bytes": 10359,
    "heat": "cold",
-   "chain": false
+   "chain": false,
+   "code": "FR-29"
   },
   {
    "id": "osm-n4386496493",
@@ -364,9 +391,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9469,
+   "bytes": 9788,
    "heat": "cold",
-   "chain": false
+   "chain": false,
+   "code": "FR-33"
   },
   {
    "id": "osm-w668787726",
@@ -377,9 +405,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9478,
+   "bytes": 9797,
    "heat": "cold",
-   "chain": false
+   "chain": false,
+   "code": "FR-66"
   },
   {
    "id": "osm-n11767212517",
@@ -390,9 +419,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9506,
+   "bytes": 9823,
    "heat": "cold",
-   "chain": false
+   "chain": false,
+   "code": "FR-6"
   },
   {
    "id": "osm-w451651692",
@@ -403,9 +433,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9444,
+   "bytes": 9763,
    "heat": "cold",
-   "chain": false
+   "chain": false,
+   "code": "FR-62"
   },
   {
    "id": "osm-n3989089001",
@@ -416,9 +447,10 @@
    "town": "Frederick",
    "phone": true,
    "hours": false,
-   "bytes": 10988,
+   "bytes": 11307,
    "heat": "warm",
-   "chain": false
+   "chain": false,
+   "code": "FR-31"
   },
   {
    "id": "osm-n12703666958",
@@ -429,9 +461,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9445,
+   "bytes": 9764,
    "heat": "cold",
-   "chain": false
+   "chain": false,
+   "code": "FR-12"
   },
   {
    "id": "osm-n3720819930",
@@ -442,9 +475,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": true,
-   "bytes": 10401,
+   "bytes": 10720,
    "heat": "warm",
-   "chain": false
+   "chain": false,
+   "code": "FR-28"
   },
   {
    "id": "osm-n14213122098",
@@ -455,9 +489,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9146,
+   "bytes": 9465,
    "heat": "cold",
-   "chain": false
+   "chain": false,
+   "code": "FR-23"
   },
   {
    "id": "osm-n14132487603",
@@ -468,9 +503,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9951,
+   "bytes": 10270,
    "heat": "cold",
-   "chain": false
+   "chain": false,
+   "code": "FR-21"
   },
   {
    "id": "osm-n8089684151",
@@ -481,9 +517,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9511,
+   "bytes": 9830,
    "heat": "cold",
-   "chain": false
+   "chain": false,
+   "code": "FR-46"
   },
   {
    "id": "osm-n2340965981",
@@ -494,9 +531,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9441,
+   "bytes": 9760,
    "heat": "cold",
-   "chain": false
+   "chain": false,
+   "code": "FR-25"
   },
   {
    "id": "osm-n2149635901",
@@ -507,9 +545,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9933,
+   "bytes": 10252,
    "heat": "cold",
-   "chain": false
+   "chain": false,
+   "code": "FR-24"
   },
   {
    "id": "osm-n12608708945",
@@ -520,9 +559,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9422,
+   "bytes": 9739,
    "heat": "cold",
-   "chain": false
+   "chain": false,
+   "code": "FR-8"
   },
   {
    "id": "osm-n8073114566",
@@ -533,9 +573,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9476,
+   "bytes": 9795,
    "heat": "cold",
-   "chain": false
+   "chain": false,
+   "code": "FR-45"
   },
   {
    "id": "osm-w451412737",
@@ -546,9 +587,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9077,
+   "bytes": 9396,
    "heat": "cold",
-   "chain": false
+   "chain": false,
+   "code": "FR-61"
   },
   {
    "id": "osm-n4407214117",
@@ -559,9 +601,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": true,
-   "bytes": 10631,
+   "bytes": 10950,
    "heat": "warm",
-   "chain": false
+   "chain": false,
+   "code": "FR-34"
   },
   {
    "id": "osm-n9044369660",
@@ -572,9 +615,10 @@
    "town": "Frederick",
    "phone": true,
    "hours": true,
-   "bytes": 11906,
+   "bytes": 12225,
    "heat": "warm",
-   "chain": false
+   "chain": false,
+   "code": "FR-47"
   },
   {
    "id": "osm-n12753286387",
@@ -585,9 +629,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9513,
+   "bytes": 9832,
    "heat": "cold",
-   "chain": false
+   "chain": false,
+   "code": "FR-15"
   },
   {
    "id": "osm-n12703710401",
@@ -598,9 +643,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": true,
-   "bytes": 10014,
+   "bytes": 10333,
    "heat": "cold",
-   "chain": false
+   "chain": false,
+   "code": "FR-14"
   },
   {
    "id": "osm-n12879908392",
@@ -611,9 +657,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9160,
+   "bytes": 9479,
    "heat": "cold",
-   "chain": false
+   "chain": false,
+   "code": "FR-16"
   },
   {
    "id": "osm-n10985323450",
@@ -624,9 +671,10 @@
    "town": "Frederick",
    "phone": true,
    "hours": false,
-   "bytes": 11389,
+   "bytes": 11706,
    "heat": "warm",
-   "chain": false
+   "chain": false,
+   "code": "FR-4"
   },
   {
    "id": "osm-n4906433896",
@@ -637,9 +685,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9863,
+   "bytes": 10182,
    "heat": "cold",
-   "chain": false
+   "chain": false,
+   "code": "FR-37"
   },
   {
    "id": "osm-n6173171885",
@@ -650,9 +699,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": true,
-   "bytes": 9853,
+   "bytes": 10172,
    "heat": "cold",
-   "chain": false
+   "chain": false,
+   "code": "FR-42"
   },
   {
    "id": "osm-n12703687627",
@@ -663,9 +713,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9415,
+   "bytes": 9734,
    "heat": "cold",
-   "chain": false
+   "chain": false,
+   "code": "FR-13"
   },
   {
    "id": "osm-n13921401901",
@@ -676,9 +727,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": true,
-   "bytes": 10045,
+   "bytes": 10364,
    "heat": "warm",
-   "chain": true
+   "chain": true,
+   "code": "FR-20"
   },
   {
    "id": "osm-w445787157",
@@ -689,9 +741,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9108,
+   "bytes": 9427,
    "heat": "cold",
-   "chain": true
+   "chain": true,
+   "code": "FR-59"
   },
   {
    "id": "osm-w152480035",
@@ -702,9 +755,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9136,
+   "bytes": 9455,
    "heat": "cold",
-   "chain": false
+   "chain": false,
+   "code": "FR-53"
   },
   {
    "id": "osm-w571052456",
@@ -715,9 +769,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9217,
+   "bytes": 9536,
    "heat": "cold",
-   "chain": false
+   "chain": false,
+   "code": "FR-64"
   },
   {
    "id": "osm-n12879908393",
@@ -728,9 +783,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": true,
-   "bytes": 9593,
+   "bytes": 9912,
    "heat": "warm",
-   "chain": false
+   "chain": false,
+   "code": "FR-17"
   },
   {
    "id": "osm-w668787722",
@@ -741,9 +797,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9168,
+   "bytes": 9487,
    "heat": "cold",
-   "chain": false
+   "chain": false,
+   "code": "FR-65"
   },
   {
    "id": "osm-n9044369668",
@@ -754,9 +811,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9126,
+   "bytes": 9445,
    "heat": "cold",
-   "chain": false
+   "chain": false,
+   "code": "FR-50"
   },
   {
    "id": "osm-n3435344894",
@@ -767,9 +825,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9165,
+   "bytes": 9484,
    "heat": "cold",
-   "chain": false
+   "chain": false,
+   "code": "FR-26"
   },
   {
    "id": "osm-w237391676",
@@ -780,9 +839,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9444,
+   "bytes": 9763,
    "heat": "warm",
-   "chain": false
+   "chain": false,
+   "code": "FR-56"
   },
   {
    "id": "osm-n4726959340",
@@ -793,9 +853,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 10137,
+   "bytes": 10456,
    "heat": "warm",
-   "chain": false
+   "chain": false,
+   "code": "FR-35"
   },
   {
    "id": "osm-w435691940",
@@ -806,9 +867,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 10522,
+   "bytes": 10841,
    "heat": "warm",
-   "chain": false
+   "chain": false,
+   "code": "FR-57"
   },
   {
    "id": "osm-n12608708944",
@@ -819,9 +881,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9083,
+   "bytes": 9400,
    "heat": "warm",
-   "chain": true
+   "chain": true,
+   "code": "FR-7"
   },
   {
    "id": "osm-n3712918480",
@@ -832,9 +895,10 @@
    "town": "Frederick",
    "phone": true,
    "hours": false,
-   "bytes": 11799,
+   "bytes": 12118,
    "heat": "hot",
-   "chain": false
+   "chain": false,
+   "code": "FR-27"
   },
   {
    "id": "osm-n13205566127",
@@ -845,9 +909,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 10253,
+   "bytes": 10572,
    "heat": "warm",
-   "chain": false
+   "chain": false,
+   "code": "FR-19"
   },
   {
    "id": "osm-n9044369661",
@@ -858,9 +923,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": false,
-   "bytes": 9116,
+   "bytes": 9435,
    "heat": "warm",
-   "chain": false
+   "chain": false,
+   "code": "FR-48"
   },
   {
    "id": "osm-n10968383678",
@@ -871,9 +937,10 @@
    "town": "Frederick",
    "phone": false,
    "hours": true,
-   "bytes": 10407,
+   "bytes": 10724,
    "heat": "warm",
-   "chain": false
+   "chain": false,
+   "code": "FR-3"
   }
  ]
 }

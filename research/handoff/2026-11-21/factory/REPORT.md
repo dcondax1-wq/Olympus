@@ -32,3 +32,8 @@
 - Stays EMPTY (greyed placeholder) until `tools/site_factory_agency.json` has `caller_html` = `python -m tools.caller.siteform --endpoint <PUBLIC>` output, which needs the PC's Funnel address (owner runs CALLER_ON.bat first). Then `python tools/site_factory.py`.
 - **Blocker for the lead:** `tools/site_privacy.py` mask_net() rewrites every `<pc>.<tailnet>.ts.net` in the published site, so the form's endpoint would be masked at publish and the form would break. Needs a reviewed exception for agency/f/*/index.html's form action (and the PC renamed to a neutral name), or a different public endpoint.
 - day-caller's generated text still carries placeholders ("(555) 555-0100", "YOUR AGENCY"): fill them before turning the form on.
+
+## Claim + codes (lead 2026-11-20 17:32 ET)
+- Every concept page: the offer "Starter $1,500 + $79/mo, or $149/mo with nothing upfront." + **Claim this site** (a button to `pay_url` in `tools/site_factory_agency.json` once the owner sets an https payment link; until then the line "Claim this site: call us / have our assistant call me").
+- Per-lead code **FR-1 ... FR-67** ("Your code: FR-n", small, in the band), kept forever in `tools/site_factory_codes.json` (2 town letters + next number); in `agency/sites/index.json` ("codes") and the gallery for the postcards.
+- test_site_factory 24/24 (with browser).

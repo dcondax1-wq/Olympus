@@ -44,7 +44,7 @@ f.setAttribute('loading','lazy');f.setAttribute('sandbox','allow-scripts');p.app
 function copy(s){if(navigator.clipboard&&navigator.clipboard.writeText)return navigator.clipboard.writeText(s).then(function(){return true},function(){return false});return Promise.resolve(false)}
 function draw(){list.textContent='';var s=(q.value||'').toLowerCase(),k=0;
 D.forEach(function(x){if(cur!=='all'&&x.niche!==cur)return;if(s&&(x.name+' '+x.town+' '+x.kind).toLowerCase().indexOf(s)<0)return;k++;
-var url=BASE+x.path,c=el('article','c');c.appendChild(el('h2',null,x.name));c.appendChild(el('div','m',x.kind+' · '+x.town+(x.hours?' · hours':'')+(x.phone?' · phone':' · no phone on file')));
+var url=BASE+x.path,c=el('article','c');c.appendChild(el('h2',null,x.name+(x.code?'  ·  '+x.code:'')));c.appendChild(el('div','m',x.kind+' · '+x.town+(x.hours?' · hours':'')+(x.phone?' · phone':' · no phone on file')));
 if(x.chain)c.appendChild(el('div','w','Probably a chain: it likely has a website. Check before you send.'));
 var p=el('div','pv');p.setAttribute('data-src','../'+x.path);p.setAttribute('data-name',x.name);c.appendChild(p);if(io)io.observe(p);
 c.appendChild(el('div','u',url));var r=el('div','r'),o=el('a','p','Open');o.href='../'+x.path;o.target='_blank';o.rel='noopener noreferrer';r.appendChild(o);

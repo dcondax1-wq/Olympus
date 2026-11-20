@@ -76,7 +76,7 @@ def main() -> int:
             bad["facts"].append((s["name"], "phone"))
         if L.get("town") and F.esc(L["town"]) not in h:
             bad["facts"].append((s["name"], "town"))
-        if re.search(r"\$\s?\d", vis):
+        if re.search(r"\$\s?\d", re.sub(r'<section class="agency".*?</section>', " ", vis, flags=re.S)):   # the agency offer is ours, not the business's
             bad["facts"].append((s["name"], "a price"))
     check("c. every site: noindex + no referrer", not bad["noindex"], bad["noindex"])
     check("c. no review / testimonial / award / licence / price words", not bad["words"], bad["words"])
@@ -115,6 +115,17 @@ def main() -> int:
         refused = True
     check("d2. caller form: per-site lead_id + business filled (escaped), a form without the fields refused",
           'name="lead_id" value="osm-n1"' in out and 'value="Joe&#x27;s &quot;Diner&quot;"' in out and refused, out)
+    codes = json.load(open(F.CODES))
+    cb = []
+    for s in S:
+        h = read(os.path.join(AG, s["path"], "index.html"))
+        c = codes.get(s["id"], "")
+        if not re.fullmatch(r"[A-Z]{2}-\d+", c) or f"Your code: {c}" not in h or s.get("code") != c:
+            cb.append((s["name"], "code"))
+        if F.OFFER not in h or not (('data-claim="1"' in h) if F.agency_cfg()["pay_url"] else "Claim this site: call us / have our assistant call me" in h):
+            cb.append((s["name"], "claim"))
+    check("d2. every site: the offer + 'Claim this site' (payment link once set, else call us / assistant) + 'Your code: FR-n'", not cb, cb)
+    check("d2. codes are unique and stable (a rebuild keeps them)", len(set(codes.values())) == len(codes) and all(L["id"] in codes for L in leads))
     ix = json.load(open(os.path.join(AG, "sites", "index.json")))
     check("d2. agency/sites/index.json: every lead id -> its f/<id>/ path (relative to agency/)",
           ix.get("sites") == {L["id"]: "f/%s/" % ids[L["id"]] for L in leads} and all(os.path.isfile(os.path.join(AG, p, "index.html")) for p in ix["sites"].values()))

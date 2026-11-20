@@ -32,7 +32,10 @@ IDS = os.path.join(ROOT, "tools", "site_factory_ids.json")
 # the agency band at the bottom of every concept page (lead 2026-11-20). Maryland bans cold AI calls: the assistant (day-caller) may
 # only call a business that ASKS, so the page carries a consent form whose markup / text / endpoint day-caller supplies. Until then
 # AGENCY["caller_html"] is empty and the page holds a clearly marked slot. No third-party form service, no secret in the page.
-AGENCY = {"phone": "", "phone_label": "", "caller_html": ""}
+AGENCY = {"phone": "", "phone_label": "", "caller_html": "", "pay_url": ""}
+# the offer on every concept page (research/writeups/client-plan-2026-11-20.md); pay_url = the owner's payment link (owner step)
+OFFER = "Starter $1,500 + $79/mo, or $149/mo with nothing upfront."
+CODES = os.path.join(ROOT, "tools", "site_factory_codes.json")   # lead id -> short code (FR-27): printed on the postcards too, never changes
 AGENCY_FILE = os.path.join(ROOT, "tools", "site_factory_agency.json")     # optional: {"phone": "+1...", "caller_html": "<form ...>"}
 BUDGET = 100 * 1024
 VERSION = "f1"
@@ -362,7 +365,24 @@ def caller_form(html_in: str, lead_id: str, name: str) -> str:
     return out
 
 
-def agency_band(name: str, lead_id: str = "") -> str:
+def ensure_codes(leads, codes: dict) -> dict:
+    """a short, stable code per lead: 2 letters of the town + the next number for that town (FR-1, FR-2 ...); kept forever."""
+    top = {}
+    for v in codes.values():
+        m = re.fullmatch(r"([A-Z]{2})-(\d+)", v)
+        if m:
+            top[m.group(1)] = max(top.get(m.group(1), 0), int(m.group(2)))
+    for L in sorted(leads, key=lambda x: x["id"]):
+        if L["id"] in codes:
+            continue
+        t = re.sub(r"[^A-Za-z]", "", str(L.get("town") or L.get("city") or "")).upper()
+        pre = (t[:2] if len(t) >= 2 else "XX")
+        top[pre] = top.get(pre, 0) + 1
+        codes[L["id"]] = f"{pre}-{top[pre]}"
+    return codes
+
+
+def agency_band(name: str, lead_id: str = "", code: str = "") -> str:
     """'Like this site?' band: 'Call us' (the agency number, a placeholder until set) + 'Have our assistant call me' (day-caller's
     consent form, a marked slot until it arrives). Kept apart from the business's own buttons."""
     c = agency_cfg()
@@ -374,9 +394,15 @@ def agency_band(name: str, lead_id: str = "") -> str:
             if c["caller_html"] else "") or ('<!-- CALLER-FORM-SLOT: day-caller supplies the consent form (markup, consent text, endpoint). Empty until then. -->'
                                 '<div id="caller-slot" data-slot="caller-consent" hidden></div>'
                                 '<span class="call ghost" aria-disabled="true" data-slot="caller-button" style="opacity:.6">Have our assistant call me (coming)</span>')
+    pay = c["pay_url"] if re.match(r"https://[\w.-]+/", c["pay_url"] or "") else ""
+    claim = (f'<a class="call" data-claim="1" href="{esc(pay)}" rel="noopener noreferrer" target="_blank">Claim this site</a>' if pay else
+             '<p data-claim="0" style="margin:0 0 10px;font-weight:700">Claim this site: call us / have our assistant call me</p>')
     return (f'<section class="agency" aria-labelledby="h-ag" data-agency="1"><h2 id="h-ag">Like this site for {esc(name)}?</h2>'
-            f'<p class="muted" style="margin:0 0 14px">This is a free concept made by an independent web studio, not by the business. '
-            f'If you own {esc(name)}, it can be yours.</p><div class="ctas">{call}{form}</div></section>')
+            f'<p class="muted" style="margin:0 0 10px">This is a free concept made by an independent web studio, not by the business. '
+            f'If you own {esc(name)}, it can be yours.</p>'
+            f'<p class="offer" style="margin:0 0 12px"><b>{esc(OFFER)}</b></p>{claim}<div class="ctas">{call}{form}</div>'
+            + (f'<p class="muted" data-code="{esc(code)}" style="margin:14px 0 0;font-size:.8rem">Your code: {esc(code)}</p>' if code else "")
+            + '</section>')
 
 
 def page(lead: dict, ids: dict) -> str:
@@ -456,7 +482,7 @@ def page(lead: dict, ids: dict) -> str:
 <section aria-labelledby="h-hours"><h2 id="h-hours" class="row" style="align-items:center">{icon("clock", 22)}Hours</h2>{hours_html}</section>
 <section aria-labelledby="h-visit"><h2 id="h-visit">{"Visit or call" if t and addr else "Call" if t else "Visit"}</h2><div class="grid" style="grid-template-columns:1fr">{"".join(visit)}</div>
 <div class="ctas" style="margin-top:16px">{"".join(btns)}</div></section>
-{agency_band(name, lead["id"])}
+{agency_band(name, lead["id"], lead.get("_code", ""))}
 </div>
 </main>
 <footer class="foot"><div class="wrap">
@@ -500,7 +526,7 @@ f.setAttribute('loading','lazy');f.setAttribute('sandbox','allow-scripts');p.app
 function copy(s){if(navigator.clipboard&&navigator.clipboard.writeText)return navigator.clipboard.writeText(s).then(function(){return true},function(){return false});return Promise.resolve(false)}
 function draw(){list.textContent='';var s=(q.value||'').toLowerCase(),k=0;
 D.forEach(function(x){if(cur!=='all'&&x.niche!==cur)return;if(s&&(x.name+' '+x.town+' '+x.kind).toLowerCase().indexOf(s)<0)return;k++;
-var url=BASE+x.path,c=el('article','c');c.appendChild(el('h2',null,x.name));c.appendChild(el('div','m',x.kind+' · '+x.town+(x.hours?' · hours':'')+(x.phone?' · phone':' · no phone on file')));
+var url=BASE+x.path,c=el('article','c');c.appendChild(el('h2',null,x.name+(x.code?'  ·  '+x.code:'')));c.appendChild(el('div','m',x.kind+' · '+x.town+(x.hours?' · hours':'')+(x.phone?' · phone':' · no phone on file')));
 if(x.chain)c.appendChild(el('div','w','Probably a chain: it likely has a website. Check before you send.'));
 var p=el('div','pv');p.setAttribute('data-src','../'+x.path);p.setAttribute('data-name',x.name);c.appendChild(p);if(io)io.observe(p);
 c.appendChild(el('div','u',url));var r=el('div','r'),o=el('a','p','Open');o.href='../'+x.path;o.target='_blank';o.rel='noopener noreferrer';r.appendChild(o);
@@ -560,6 +586,9 @@ def build(web=WEB, ids_path=IDS, write_ids=True):
     leads = load_leads()
     ids = json.load(open(ids_path)) if os.path.exists(ids_path) else {}
     ids = ensure_ids(leads, ids)
+    codes_path = os.path.join(os.path.dirname(ids_path), "site_factory_codes.json")
+    src = codes_path if os.path.exists(codes_path) else CODES
+    codes = ensure_codes(leads, json.load(open(src)) if os.path.exists(src) else {})
     fdir = os.path.join(web, "f")
     os.makedirs(fdir, exist_ok=True)
     keep, sites = set(), []
@@ -568,14 +597,14 @@ def build(web=WEB, ids_path=IDS, write_ids=True):
         keep.add(h)
         d = os.path.join(fdir, h)
         os.makedirs(d, exist_ok=True)
-        txt = page(L, ids)
+        txt = page(dict(L, _code=codes[L["id"]]), ids)
         with open(os.path.join(d, "index.html"), "w", encoding="utf-8", newline="\n") as f:
             f.write(txt)
         n = niche_of(L)
         sites.append({"id": L["id"], "path": f"f/{h}/", "name": L["name"].strip(), "niche": n, "kind": sections_of(L, n)[0],
                       "town": (L.get("town") or L.get("city") or "").strip(), "phone": bool(tel(L.get("phone"))),
                       "hours": parse_hours(L.get("hours")) is not None, "bytes": len(txt.encode("utf-8")), "heat": L.get("heat", ""),
-                      "chain": chain_of(L["name"])})
+                      "chain": chain_of(L["name"]), "code": codes[L["id"]]})
     for x in os.listdir(fdir):                   # a lead that left the list: its site goes too
         p = os.path.join(fdir, x)
         if x not in keep and os.path.isdir(p) and re.fullmatch(r"[a-z2-9]{8}", x):
@@ -590,7 +619,8 @@ def build(web=WEB, ids_path=IDS, write_ids=True):
     os.makedirs(sdir, exist_ok=True)
     with open(os.path.join(sdir, "index.json"), "w", encoding="utf-8") as f:
         json.dump({"v": 1, "kind": "site-factory-index", "note": "owner-facing only: not for search or app lists",
-                   "sites": {s["id"]: s["path"] for s in sorted(sites, key=lambda x: x["id"])}}, f, indent=1)
+                   "sites": {s["id"]: s["path"] for s in sorted(sites, key=lambda x: x["id"])},
+                   "codes": {s["id"]: s["code"] for s in sorted(sites, key=lambda x: x["id"])}}, f, indent=1)
         f.write("\n")
     with open(os.path.join(gdir, "sites.json"), "w", encoding="utf-8") as f:
         json.dump({"v": 1, "kind": "site-factory", "version": VERSION, "count": len(sites), "sites": sites}, f, indent=1)
@@ -598,6 +628,9 @@ def build(web=WEB, ids_path=IDS, write_ids=True):
     with open(os.path.join(gdir, "index.html"), "w", encoding="utf-8") as f:
         f.write(gallery(sites))
     if write_ids:
+        with open(codes_path, "w") as f:
+            json.dump(dict(sorted(codes.items())), f, indent=1)
+            f.write("\n")
         with open(ids_path, "w") as f:
             json.dump(dict(sorted(ids.items())), f, indent=1)
             f.write("\n")
