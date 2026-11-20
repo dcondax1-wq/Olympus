@@ -112,7 +112,7 @@ function renderRuin() {
   $('ruinLead').textContent = `Starting from ${C.usd(r.bank)}, close to K8's $55: the bigger each bet, the more often the money ran out. Small fixed bets almost never went broke.`;
   const ul = $('ruinRows'); clear(ul);
   for (const x of r.rows) { const li = h('li', 'bet ' + (x.ruin > 0.1 ? 'bad' : x.ruin < 0.01 ? 'ok' : '')); li.appendChild(h('b', '', `${C.pct(x.ruin, x.ruin < 0.01 ? 1 : 0)} went broke`)); li.appendChild(h('span', 'note', `${x.policy.replace('(today)', '(what the old bot used)')}${x.median != null ? ' · middle result ' + C.usd(x.median) : ''}`)); ul.appendChild(li); }
-  $('ruinNote').textContent = `A ${r.days || 90}-day simulation of the ${C.OLD_WORD}'s late-favourite bets, ${r.perDay || 12} a day. "Broke" = under ${C.usd(r.floor || 6)}. Looking back, not a promise.`;
+  $('ruinNote').textContent = `A ${r.days || 90}-day simulation of the old bot's late-favourite bets, ${r.perDay || 12} a day (${C.OLD_WORD}). "Broke" = under ${C.usd(r.floor || 6)}. Looking back, not a promise.`;
 }
 function renderLessons() {
   const L = C.oldLessons(S.learned, S.sugg), card = $('lessonCard'); card.hidden = !L; if (!L) return;
