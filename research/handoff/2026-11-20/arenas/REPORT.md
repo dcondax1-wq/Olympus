@@ -37,3 +37,27 @@ Also: the shared design layer `olympus/shell.css` now loads last on all 9 apps (
 
 ## Screenshots
 `shots/before-<app>-dark|light.jpg` and `shots/after-<app>-dark|light.jpg`, 390x844 at 2x, for zenith, business, ledger, aegis, demeter, fates, hera, journal, helios, compass. Numbers (layout shift, long tasks, 404s): `shots/before-numbers.json`, `shots/after-numbers.json`.
+
+## Round 2 (lead's ask, after merging pc): the rest of the KEEP apps
+
+| App | What changed |
+|---|---|
+| Kronos (P&L calendar) | Today / drawdown left / to pass strip at the top; the streak, setups and weekdays card above "Which weekday pays". Light mode (the calendar's green / red days, bars and band follow the look). |
+| Pnyx (rules + size calculator) | Today / drawdown / to pass strip at the top, every account at the end, light mode. Labyrinth (eval sizing) linked as folded in. The 0.15 layout shift seen once in the before run did not come back in 6 runs after (0 every time). |
+| Chrysos (fees vs payouts) | The REAL payouts and fees card (next payout, fees paid, net so far) right under its 12-month estimate, so the estimate sits next to what really happened. Light mode (the warning box was dark-only). |
+| Mercury (prop sales) | Real payouts / fees card at the end (is a deal worth it: what you already paid). Light mode. |
+| Oikos (household) | New **Tax pot 30%** card (Maryland: 30% for the expected year, 40% with a day job, next due Jan 15, 2027) that opens Business > Taxes; prop payouts / fees card. The public site no longer asks for the private `money/household.json` (it was a 404 on every open; the PC's private link still reads it). |
+| Planner | Today strip + what each bot is waiting for, above the day. |
+| Clio (research library) | It downloaded the 8 MB `data.json` on every open next to the small `writeups/index.json`; now `data.json` is only the fallback (long task 84 ms -> 0). The audit's `writeups/index.json` 404 only happens on the raw folder: a real build writes it (checked). Archive and Pinakes linked as folded in. Light mode. |
+| Settings | No change needed: the Sound switch (Auto / On / Off, volume, haptics) is already there and drives the new tap cues. Shots use `?tour=0` (the first-visit tour hid the page). |
+| Atlas | "What needs me now" listed 6 archived research rooms (Odeon, Data City, Daphne, Pantheon...): it now skips the rooms folded under Archive (2 real ones left: Fates' and Kalshi City's feeds are old). Atlas keeps its own dark look (it does not load the AGORA kit). |
+
+The shared design layer `olympus/shell.css` is now on these apps too, and the tap sounds work on every one with pulse cards.
+Merges still open, all in folders other helpers own: Odeon / Why -> trading, Ares / Chronos / Kairos -> nq, Sibyl / Kalshi City -> dionysus.
+
+Round 2 numbers (before -> after, 390x844): layout shift 0 on all 9 after (Pnyx 0.15 once before); Clio's longest task 84 ms -> 0; Kronos keeps
+a ~1.5 s long task when its 3D sundial starts in the headless browser (software WebGL; not changed today).
+Tests: pulse 128/128 (14 apps, dark + Ivory), kronos 54/54, pnyx 51/51, chrysos 61/61, mercury 40/40, oikos 65/65 + household 11/11,
+planner 170/170, clio 47/47, atlas_ui 36/36 + node atlas hub 4/4.
+Shots: `shots/before-<app>-*.jpg` and `shots/after-<app>-*.jpg` for kronos, pnyx, chrysos, mercury, oikos, planner, clio, settings, atlas.
+LEAD_WIRES: nothing new for round 2 (every folder is in the root worker's OTHER_APPS; `?v=` tags bumped; `pulse.css` / `pulse.js` are now `?v=p2` everywhere).
