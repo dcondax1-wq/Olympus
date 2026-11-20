@@ -1141,6 +1141,12 @@ def alert(ctx, it: dict, board=None, push=None) -> dict:
         return res                                       # the 15-minute report already pushes "bot down": never twice
     m = {"key": f"heal:{it['key']}", "kind": "pc_health", "title": "PC self-heal: needs you", "body": text[:500], "priority": "high",
          "tags": "warning", "t": int(ctx.now)}
+    try:                                                 # redteam 2026-11-20: the hourly run also runs at night (16:00-01:50 ET): a
+        from . import notify as _nt                      # "needs you" never rings in the owner's quiet hours (23:00-07:00 ET)
+        if _nt.quiet(ctx.now):
+            m["priority"] = "low"
+    except Exception:  # noqa: BLE001
+        pass
     try:
         if push is None:
             push = _push

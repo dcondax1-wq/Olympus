@@ -449,6 +449,13 @@ def test_heal(tmp):
     check("i. heal: pid fixed, server needs you, state + tiny.json written", [i["fault"] for i in r["fixed"]] == ["pid"]
           and [i["fault"] for i in r["need"]] == ["server"] and st["need"] == ["server"] and tn and tn["ok"] is False, (r["items"], st))
     check("i. one board event for what it could not fix (the server: no phone push)", sent == {"board": 1, "push": 0}, sent)
+    got = []
+    it = SH.item("clock", "clock", "need", "the PC clock is 3.0 s behind", "Sync now")
+    night = dt.datetime(2026, 11, 21, 1, 0, tzinfo=ET).timestamp()
+    SH.alert(ctx(root, night, apply=True), it, board=lambda *a: True, push=lambda m: got.append(m) or True)
+    SH.alert(ctx(root, SAT, apply=True), it, board=lambda *a: True, push=lambda m: got.append(m) or True)
+    check("i. a 'needs you' at 01:00 ET is a silent push (quiet hours), at 11:00 a normal high one (redteam)",
+          [m["priority"] for m in got] == ["low", "high"], [m["priority"] for m in got])
     check("i. the ext line says it in plain words", "needs you: the bot server is down" in (tn or {}).get("line", ""), tn)
     r = SH.heal(ctx(root, now + 3600, apply=True, ping=lambda: False), board=board, push=push, disk_free=40.0)
     check("i. the same fault an hour later: no second alert", sent == {"board": 1, "push": 0}, sent)
