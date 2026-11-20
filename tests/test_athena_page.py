@@ -42,7 +42,7 @@ def rd(name):
 def part_a():
     html = rd("index.html")
     check("a. the OLYMPUS kit: olympus.css, themes.js, olympus.js (data-app) all at ?v=o2",
-          all(s in html for s in ('../olympus/olympus.css?v=o7', '../olympus/themes.js?v=o9', '../olympus/olympus.js?v=o16" data-app="athena"')))
+          all(s in html for s in ('../olympus/olympus.css?v=o7', '../olympus/themes.js?v=o9', '../olympus/olympus.js?v=o17" data-app="athena"')))
     check("a. title Athena, a description, theme-color = the page colour, the Jarvis icon like the siblings",
           "<title>Athena</title>" in html and 'name="description"' in html and 'content="#14110e"' in html and "../jarvis/icon-192.png" in html)
     srcs = re.findall(r'(?:src|href)="([^"]+)"', html)
