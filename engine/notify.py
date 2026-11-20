@@ -481,8 +481,12 @@ def _save_instant(st: dict, path, t_now: float) -> None:
     out = {"keys": {k: v for k, v in keys.items() if (_f(v) or 0) >= cut}}
     for what in ("entries", "exits"):
         out[what] = {k: v for k, v in _d(st.get(what)).items() if (_f(keys.get(k)) or t_now) >= cut}
+    for k in ("ntfy_days", "closes"):                # the day's ntfy count (the budget) and the recent closes (exit_context)
+        if st.get(k):
+            out[k] = st[k]
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    tmp = path + ".tmp"
+    import threading as _th
+    tmp = f"{path}.{os.getpid()}.{_th.get_ident()}.tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(out, fh)
     os.replace(tmp, path)
@@ -506,6 +510,8 @@ def instant_record(p: dict, what: str = "entry", now=None, path=None) -> bool:
         st.setdefault("keys", {})[key] = t_now
         if et_ is not None:
             st.setdefault("entries" if what == "entry" else "exits", {})[key] = et_
+        if what != "entry":
+            _note_close(st, p, t_now)
         _save_instant(st, path, t_now)
         return True
     except Exception:
@@ -531,64 +537,200 @@ def _px(x) -> str:
     return "" if v is None else (f"{v:,.2f}".rstrip("0").rstrip(".") if v % 1 else f"{v:,.0f}")
 
 
-def display_name(p: dict) -> str:
-    """The owner's name of the account a trade notice is about ("Zlarior 50K", "ATLAS 25K funded"; ids masked)."""
+def display_name(p: dict, lane: bool = True) -> str:
+    """The owner's name of the account a trade notice is about ("Zlarior 50K", "ATLAS 25K funded", "Rapid EOD 25K"; ids masked).
+    Order: the combo's bot label ("ATLAS on Zlarior 50K", engine/combo50k), the PC's names.json (engine/mffu_view.push_name: the
+    owner's own names by the last 4 digits), the route's own name ("nm"), else bot + the masked account."""
     p = _d(p)
+    if p.get("who"):
+        return mask_ids(str(p["who"])[:40])
     acct = mask_ids(p.get("account") or "account")
     body0 = str(p.get("body") or "")
-    bot = "ATLAS" if ("ATLAS" in body0 or ":acctb" in str(p.get("key") or "") or "ATLAS" in acct.upper()) else "Zlarior"
+    key = str(p.get("key") or "")
+    bot = "ATLAS" if ("ATLAS" in body0 or key.endswith((":acctb", ":acctr")) or "ATLAS" in acct.upper()) else "Zlarior"
     name = acct if (bot.lower() in acct.lower()) else f"{bot} {acct}"
+    if p.get("nm"):
+        name = str(p["nm"])[:40]
     try:                                    # the owner's own names ("Zlarior 50K", "ATLAS 25K funded"), from the PC's names.json
         from . import mffu_view
         name = mffu_view.push_name(p.get("account")) or name
     except Exception:
         pass
+    if lane and key.endswith(":acctr") and "atlas" not in name.lower():
+        name = f"{name} (ATLAS)"            # ATLAS's lane on the Rapid EOD (engine/rapid.RapidAtlas): the same account as LIT's lane
     return mask_ids(name)
 
 
-EXIT_WORDS = {"TARGET": "Target hit", "STOP": "Stopped out", "BE": "Breakeven stop", "TIME": "Closed on time", "EOD": "Closed at the day's end",
-              "TIME SAFETY": "Closed before the close", "KILL": "Closed by the kill switch", "FLATTEN": "Flattened", "LIT PRIORITY": "Closed for a LIT entry"}
+# the exit's reason in a few words (owner 2026-11-20: "closed LONG +$312 (target)")
+EXIT_WORDS = {"TARGET": "target", "STOP": "stop", "BE": "breakeven", "TIME": "time exit", "EOD": "day's end", "TIME SAFETY": "before the close",
+              "KILL": "kill switch", "KILL SWITCH": "kill switch", "FLATTEN": "flattened", "LIT PRIORITY": "for a LIT entry",
+              "HEDGE": "no-hedge rule", "NO TRADE": "not placed", "CUT": "cut early", "T15": "15-min rule", "TIME STOP": "time stop",
+              "BANK": "banked", "BANK (BEST-DAY ROOM)": "banked (best-day room)", "NEWS": "news"}
+LIVE_SNAP = os.path.join(ROOT, "data", "pc_report", "live.json")   # tools/pc_report: the PC's last full live view (every 15 min)
 
 
-def exit_message(p: dict, now=None, s: dict | None = None) -> dict:
-    """{title, body, priority, tags} for one exit the bot saw: 'Zlarior 50K: LONG closed +$605' / 'Target hit · +2.0R · 6 MNQ ·
-    10:58 AM ET.' (the phone app's exit notice; it replaces the entry's)."""
+def _px2(x) -> str:
+    v = _f(x)
+    return "" if v is None else f"{v:,.2f}"
+
+
+def _contract(p: dict) -> str:
+    c = str(_d(p).get("contract") or "").upper()
+    if c in PT_USD:
+        return c
+    m = re.search(r"\b(MNQ|MES|NQ|ES)\b", str(_d(p).get("body") or ""))
+    return m.group(1) if m else "MNQ"
+
+
+def _norm(s) -> str:
+    return re.sub(r"[^a-z0-9#]+", " ", str(s or "").lower()).strip()
+
+
+def _snap_cards(L: dict) -> list:
+    """[(owner name, last4, card)] of the live view's real accounts: engine/accounts sections + the board's ATLAS card."""
+    out = []
+    try:
+        from . import mffu_view as MV
+    except Exception:
+        return out
+    for a in L.get("accounts") or []:
+        if not isinstance(a, dict) or a.get("error") or a.get("source") in ("cloud", "pc_blitz") or a.get("id") == "acct_c":
+            continue
+        ev = _d(a.get("eval"))
+        card = {"balance": _f(ev.get("balance")), "today": _f(ev.get("today")) if ev else _f(_d(a.get("pnl")).get("today")),
+                "to_pass": _f(ev.get("to_target")) if a.get("kind") != "funded" else None, "kind": a.get("kind")}
+        if card["today"] is None:
+            card["today"] = _f(_d(_d(a.get("pnl")).get("today")).get("usd")) if isinstance(_d(a.get("pnl")).get("today"), dict) else None
+        nm = MV.owner_name(a.get("id"), a.get("name"), a.get("plan"), a.get("kind"))
+        out.append((nm, MV.last4(a.get("broker_account")), card))
+    c = _d(_d(L.get("board")).get("atlas"))
+    if c and not c.get("error") and _f(c.get("balance")) is not None:
+        funded = str(c.get("status") or "").lower() == "funded" or str(c.get("stage") or "").lower() == "funded"
+        f = _d(c.get("funded"))
+        out.append((MV.owner_name("atlas", "ATLAS", c.get("plan") or "Builder 25K", "funded" if funded else "eval"), MV.last4(c.get("broker")),
+                    {"balance": _f(c.get("balance")), "today": _f(c.get("today")) if c.get("today") is not None else _f(c.get("day_pnl")),
+                     "to_pass": None if funded else _f(c.get("to_target")), "kind": "funded" if funded else "eval",
+                     "payout": _f(f.get("max_request")) if f else None}))
+    return out
+
+
+def exit_context(p: dict, path: str | None = None, closes=None) -> dict:
+    """{"day", "balance", "to_pass" / "payout"} of the account after this exit, for 'today +$312, balance $49,505, $3,495 to pass'.
+    The route's own numbers win (payload "day_usd", "balance", "to_pass", "to_payout"); else the PC's last live view
+    (data/pc_report/live.json, every 15 min) + the closes the phone got since that view (this one included: the instant state's
+    "closes"). {} when nothing is known (the alert then says only the trade). Never raises."""
+    p = _d(p)
+    out = {}
+    try:
+        for a, b in (("day_usd", "day"), ("balance", "balance"), ("to_pass", "to_pass"), ("to_payout", "to_payout")):
+            if _f(p.get(a)) is not None:
+                out[b] = _f(p[a])
+        if "balance" in out and ("day" in out or "to_pass" in out):
+            return out
+        try:
+            with open(path or LIVE_SNAP, encoding="utf-8") as fh:
+                L = json.load(fh)
+        except Exception:
+            return out
+        L = _d(L)
+        name = _norm(display_name(dict(p, who=None), lane=False))
+        l4 = None
+        try:
+            from . import mffu_view as MV
+            l4 = MV.last4(p.get("account"))
+        except Exception:
+            pass
+        hit = None
+        for nm, cl4, card in _snap_cards(L):
+            if (l4 and cl4 and l4 == cl4) or (_norm(nm) and _norm(nm) == name):
+                hit = card
+                break
+        if hit is None:
+            return out
+        snap_t = _f(L.get("t")) or 0.0
+        exit_t = _f(p.get("t")) or time.time()
+        try:
+            from .live import trading_day
+        except Exception:
+            trading_day = lambda t: _et(t).date().isoformat()
+        same_day = trading_day(snap_t) == trading_day(exit_t) if snap_t else False
+        usd = _f(p.get("usd")) or 0.0
+        later = [c for c in (closes if closes is not None else _d(_instant_state()).get("closes") or [])
+                 if isinstance(c, dict) and _norm(c.get("nm")) == name and (_f(c.get("t")) or 0) > snap_t and c.get("key") != p.get("key")
+                 and trading_day(_f(c.get("t"))) == trading_day(exit_t)]
+        add = (usd if exit_t > snap_t else 0.0) + sum(_f(c.get("usd")) or 0.0 for c in later)
+        if hit.get("balance") is not None and "balance" not in out:
+            out["balance"] = hit["balance"] + add
+        if "day" not in out:
+            out["day"] = ((hit.get("today") or 0.0) if same_day else 0.0) + add
+        if hit.get("to_pass") is not None and "to_pass" not in out:
+            out["to_pass"] = max(0.0, hit["to_pass"] - add)
+        if hit.get("payout") and "to_payout" not in out:
+            out["payout_ready"] = hit["payout"]
+    except Exception:
+        pass
+    return out
+
+
+def exit_message(p: dict, now=None, s: dict | None = None, ctx: dict | None = None) -> dict:
+    """{title, body, priority, tags} for one exit (owner 2026-11-20): 'Zlarior 50K: closed LONG +$312 (target)' /
+    'today +$312, balance $49,505, $3,495 to pass · +1.6R · 10:58 AM ET.' (the phone app's notice replaces the entry's)."""
     p = _d(p)
     side = str(p.get("side") or "").upper()
     usd = _f(p.get("usd"))
-    title = f"{display_name(p)}: {(side + ' ') if side in ('LONG', 'SHORT') else ''}closed {signed(usd) if usd is not None else ''}".strip()
-    why = EXIT_WORDS.get(str(p.get("exit") or "").upper(), str(p.get("exit") or "").capitalize())
+    reason = str(p.get("exit") or "").upper()
+    why = EXIT_WORDS.get(reason, reason.lower())
+    title = (f"{display_name(p)}: closed {(side + ' ') if side in ('LONG', 'SHORT') else ''}{signed(usd) if usd is not None else ''}"
+             + (f" ({why})" if why else "")).replace("  ", " ")
+    c = exit_context(p) if ctx is None else ctx
+    acct = []
+    if _f(c.get("day")) is not None:
+        acct.append(f"today {signed(c['day'])}")
+    if _f(c.get("balance")) is not None:
+        acct.append(f"balance {money(c['balance'])}")
+    if _f(c.get("to_pass")) is not None:
+        acct.append("target reached" if c["to_pass"] <= 0.5 else f"{money(c['to_pass'])} to pass")
+    elif _f(c.get("to_payout")) is not None:
+        acct.append("payout ready" if c["to_payout"] <= 0.5 else f"{money(c['to_payout'])} to payout")
+    elif _f(c.get("payout_ready")):
+        acct.append(f"payout ready {money(c['payout_ready'])}")
     r = _f(p.get("R") if p.get("R") is not None else p.get("r"))
-    bits = [why, f"{r:+.1f}R" if r is not None else "", _et(p["t"]).strftime("%I:%M %p ET").lstrip("0") if _f(p.get("t")) else ""]
+    q = _f(p.get("qty"))
+    tail = [f"{r:+.1f}R" if r is not None else "", f"{int(q)} {_contract(p)}" if q else "",
+            _et(p["t"]).strftime("%I:%M %p ET").lstrip("0") if _f(p.get("t")) else ""]
+    body = ", ".join(acct)
+    body = " · ".join(x for x in [body, *tail] if x) + "."
     s = s or settings()
     night = quiet(now if now is not None else time.time(), s)
-    return {"title": mask_ids(title), "body": mask_ids(" · ".join(b for b in bits if b) + "."), "priority": "low" if night else "default",
-            "tags": "checkered_flag"}
+    return {"title": mask_ids(title), "body": mask_ids(body), "priority": "low" if night else "default",
+            "tags": "white_check_mark" if (usd or 0) > 0 else ("heavy_minus_sign" if usd is not None and abs(usd) < 0.5 else "x")}
 
 
 def entry_message(p: dict, now=None, s: dict | None = None) -> dict:
-    """{title, body, priority, tags} for one routed entry: 'Zlarior 50K: LONG opened | risk $368 | target +$1,432'."""
+    """{title, body, priority, tags} for one routed / filled entry (owner 2026-11-20):
+    'Zlarior 50K: LONG 4 MNQ @ 21,034.25' / 'stop 21,012.00 (-$178), target 21,090.50 (+$450) · 10:31 AM ET.'"""
     p = _d(p)
     side = str(p.get("side") or "").upper() or ("LONG" if "LONG" in str(p.get("title") or "") else "SHORT")
-    body0 = str(p.get("body") or "")
     name = display_name(p)
-    m = re.search(r"\b(MNQ|MES|NQ|ES)\b", body0)
-    contract = m.group(1) if m else "MNQ"
+    contract = _contract(p)
     q, e, st, tg = _f(p.get("qty")), _f(p.get("entry")), _f(p.get("stop")), _f(p.get("target"))
     usd_pt = PT_USD.get(contract, 2.0)
     risk = abs(e - st) * q * usd_pt if None not in (q, e, st) else None
     gain = abs(tg - e) * q * usd_pt if None not in (q, e, tg) else None
-    title = f"{name}: {side} opened" + (f" | risk ${risk:,.0f}" if risk else "") + (f" | target +${gain:,.0f}" if gain else "")
-    parts = [f"{int(q) if q is not None else ''} {contract}".strip() + (f" at {_px(e)}" if e is not None else "") + "."]
-    if st is not None or tg is not None:
-        parts.append(" ".join(x for x in (f"Stop {_px(st)}," if st is not None else "", f"target {_px(tg)}." if tg is not None else "") if x).rstrip(","))
+    title = f"{name}: {side}" + (f" {int(q)}" if q is not None else "") + f" {contract}" + (f" @ {_px2(e)}" if e is not None else "")
+    parts = []
+    if st is not None:
+        parts.append(f"stop {_px2(st)}" + (f" (-${risk:,.0f})" if risk is not None else ""))
+    if tg is not None:
+        parts.append(f"target {_px2(tg)}" + (f" (+${gain:,.0f})" if gain is not None else ""))
+    body = ", ".join(parts)
     when = _f(p.get("t"))
     if when:
-        parts.append(_et(when).strftime("%I:%M %p ET").lstrip("0") + ".")
+        body = " · ".join(x for x in (body, _et(when).strftime("%I:%M %p ET").lstrip("0")) if x)
     s = s or settings()
     night = quiet(now if now is not None else time.time(), s)
-    return {"title": mask_ids(title), "body": mask_ids(" ".join(x for x in parts if x)), "priority": "low" if night else "high",
-            "tags": "chart_with_upwards_trend" if side == "LONG" else "chart_with_downwards_trend"}
+    return {"title": mask_ids(title), "body": mask_ids((body or "Entered") + "."), "priority": "low" if night else "high",
+            "tags": "chart_with_upwards_trend" if side == "LONG" else "chart_with_downwards_trend", "risk": risk, "gain": gain}
 
 
 def _post(base, topic, msg, timeout=8) -> bool:
@@ -600,33 +742,79 @@ def _post(base, topic, msg, timeout=8) -> bool:
         return 200 <= r.status < 300
 
 
-def instant_entry(p: dict, now=None, path=None, cfg=None, poster=None) -> str:
-    """Send one entry push now (daemon thread from engine/push.pc_notify). Returns why (for tests / logs). Never raises."""
+def _utc_day(t) -> str:
+    return dt.datetime.fromtimestamp(int(t), dt.timezone.utc).strftime("%Y-%m-%d")
+
+
+def ntfy_today(now=None, path=None) -> int:
+    """How many instant trade alerts this PC posted to ntfy this UTC day (ntfy.sh's free cap is per IP and UTC day: the 15-minute
+    report's chart and extra status posts count these and stop early, so the status posts never crowd a trade alert out)."""
     try:
-        if not _real_entry(p):
-            return "not a real-account entry"
+        return int(_d(_instant_state(path).get("ntfy_days")).get(_utc_day(time.time() if now is None else now)) or 0)
+    except Exception:
+        return 0
+
+
+def _instant_send(p: dict, what: str, now=None, path=None, cfg=None, poster=None) -> str:
+    """One trade alert (an entry or an exit) to the private ntfy topic, at once. One per key, ever (fill:<t>[:acct] / out:<t>[:acct]).
+    Never raises."""
+    try:
+        if not real_trade(p) or p.get("kind") != ("fill" if what == "entry" else "outcome"):
+            return "not a real-account entry" if what == "entry" else "not a real-account exit"
         s = settings()
-        if not on("trade_opened", s):
-            return "trade_opened is off"
+        kind = "trade_opened" if what == "entry" else "trade_closed"
+        if not on(kind, s):
+            return f"{kind} is off"
         cfg = cfg if cfg is not None else alert_cfg()
         if not cfg.get("topic"):
             return "no private alert topic on this PC"
         path = path or INSTANT_PATH
         st = _instant_state(path)
-        keys, ents = _d(st.get("keys")), _d(st.get("entries"))
+        keys = _d(st.get("keys"))
         key = str(p.get("key") or "")
         if key and key in keys:
             return "already sent"
-        msg = entry_message(p, now=now, s=s)
+        msg = entry_message(p, now=now, s=s) if what == "entry" else exit_message(p, now=now, s=s)
         ok = (poster or _post)(cfg["ntfy"], cfg["topic"], msg)
         if not ok:
             return "ntfy did not take it (the 15-minute report sends it instead)"
         t_now = time.time() if now is None else float(now)
+        st = _instant_state(path)                  # re-read: another thread may have written meanwhile
+        keys = _d(st.get("keys"))
         keys[key or f"t:{t_now}"] = t_now
-        if _f(p.get("t")) is not None:
-            ents[key or f"t:{t_now}"] = _f(p.get("t"))
-        st.update(keys=keys, entries=ents)
+        et_ = _trade_entry_t(p)
+        if et_ is not None:
+            st.setdefault("entries" if what == "entry" else "exits", {})[key or f"t:{t_now}"] = et_
+        nd = {k: v for k, v in _d(st.get("ntfy_days")).items() if k >= _utc_day(t_now - 3 * 86400)}
+        nd[_utc_day(t_now)] = int(nd.get(_utc_day(t_now)) or 0) + 1
+        st.update(keys=keys, ntfy_days=nd)
+        if what == "exit":
+            _note_close(st, p, t_now)
         _save_instant(st, path, t_now)
         return "sent"
     except Exception as e:
         return f"failed: {e.__class__.__name__}"
+
+
+def _note_close(st: dict, p: dict, t_now: float) -> None:
+    """Remember one close the phone got (name, exit time, $): the next exit's 'today' / balance add it until the next live view."""
+    try:
+        cl = [c for c in st.get("closes") or [] if isinstance(c, dict) and (_f(c.get("t")) or 0) >= t_now - 2 * 86400]
+        if not any(c.get("key") == p.get("key") for c in cl):
+            cl.append({"key": str(p.get("key") or ""), "nm": display_name(dict(p, who=None), lane=False), "t": _f(p.get("t")) or t_now,
+                       "usd": _f(p.get("usd")) or 0.0})
+        st["closes"] = cl[-40:]
+    except Exception:
+        pass
+
+
+def instant_entry(p: dict, now=None, path=None, cfg=None, poster=None) -> str:
+    """Send one entry push now (daemon thread from engine/push.pc_notify). Returns why (for tests / logs). Never raises."""
+    return _instant_send(p, "entry", now=now, path=path, cfg=cfg, poster=poster)
+
+
+def instant_exit(p: dict, now=None, path=None, cfg=None, poster=None) -> str:
+    """Send one exit push now (owner 2026-11-20: "exactly when a trade is taken and closed, results of it"): 'Zlarior 50K: closed
+    LONG +$312 (target)' / 'today +$312, balance $49,505, $3,495 to pass'. The 15-minute report then skips its own close of
+    that trade (apply: instant_sent(..., what="exits")). Never raises."""
+    return _instant_send(p, "exit", now=now, path=path, cfg=cfg, poster=poster)

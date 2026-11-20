@@ -444,6 +444,7 @@ def _open_leg(ad, d=None):
 
 class RapidAtlas(AB.AccountB):
     """ATLAS on the Rapid EOD (LiveBot.acct_r): account B's code on the SAME NinjaTrader account as LIT's lane."""
+    PUSH_SUFFIX = ":acctr"          # its own trade-notice keys (account B's are ":acctb"): both can enter on the same bar
 
     def __init__(self, bot, spec, state_path=None, adapter_factory=None):
         super().__init__(bot, spec, state_path=state_path or _state_path(getattr(bot, "state_path", None)),

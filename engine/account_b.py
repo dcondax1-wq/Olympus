@@ -609,6 +609,7 @@ class AccountB:
                 self.adapter = ADAPTERS[cfg["adapter"]](cfg)
         except Exception as e:
             self.problem = f"adapter failed: {e.__class__.__name__}: {e}"
+        self._wire_push()
         dis = self.disabled_reason()
         ev = self.eval_view()
         if self.funded():
@@ -1627,6 +1628,22 @@ class AccountB:
             return {"ok": False, "error": f"{e.__class__.__name__}: {e}"}
 
     # ---- pushes (the real bot only: LiveBot._push_send)
+    PUSH_SUFFIX = ":acctb"                # the trade notices' key suffix (engine/rapid.RapidAtlas: ":acctr"): one alert per account
+
+    def _wire_push(self):
+        """Owner 2026-11-20 (entry + exit alerts on every account, at the fill): this account's NinjaTrader adapter notifies its own
+        entry fill and bracket exit under this account's name and key (engine/ninjatrader push_as). Before, account B skipped its own
+        notice because the adapter "reports fills", while the adapter (its own state file) never sent one: ATLAS's entries and stop /
+        target exits reached the phone only with the 15-minute report. The real bot only. Never raises."""
+        try:
+            if self.adapter is not None and hasattr(self.adapter, "push_as") and self.real_bot():
+                self.adapter.push_as = {"account": self.label, "suffix": self.PUSH_SUFFIX, "url": "#nq"}
+        except Exception:
+            pass
+
+    def _adapter_pushes(self) -> bool:
+        return bool(getattr(self.adapter, "reports_fills", False) and getattr(self.adapter, "push_as", None))
+
     def _send(self, p):
         try:
             self.bot._push_send(p)
@@ -1643,12 +1660,12 @@ class AccountB:
     def _push_entry(self, act, q):
         try:
             from . import push
-            if getattr(self.adapter, "reports_fills", False):
+            if self._adapter_pushes():         # NinjaTrader notifies the real fill (price, micros) under this account's key
                 return
             p = push.entry_payload(self.label, "LONG" if act["side"] == "buy" else "SHORT", q, act["entry_t"], src="pc",
                                    entry=act.get("entry"), stop=act.get("stop"), target=act.get("target"), strategy=act.get("strategy"))
             p["body"] = f"{p['body']} ({act.get('strategy')})"
-            p["key"] = f"{p['key']}:acctb"
+            p["key"] = f"{p['key']}{self.PUSH_SUFFIX}"
             self._send(p)
         except Exception:
             pass
@@ -1656,12 +1673,15 @@ class AccountB:
     def _push_outcome(self, pv, reason, usd, exit_t, q, et_):
         try:
             from . import push
-            if getattr(self.adapter, "reports_fills", False) and reason not in ("HEDGE", "NO TRADE", "TIME", "CUT", "T15", "KILL SWITCH"):
+            # a bracket exit: NinjaTrader's own notice (push_as) is usually first; this one, the same key, is then a duplicate that
+            # engine/push drops; it still goes when the adapter never sent one (no push_as: a non-NinjaTrader adapter, a harness)
+            if getattr(self.adapter, "reports_fills", False) and reason not in ("HEDGE", "NO TRADE", "TIME", "CUT", "T15", "KILL SWITCH") \
+                    and not self._adapter_pushes():
                 return
             p = push.outcome_payload(self.label, "LONG" if pv.get("dir") == 1 else "SHORT", reason, usd, int(et_), exit_t, src="pc",
                                      qty=q, strategy=pv.get("short"))
             p["body"] = f"{p['body']} ({pv.get('short')})"
-            p["key"] = f"{p['key']}:acctb"
+            p["key"] = f"{p['key']}{self.PUSH_SUFFIX}"
             self._send(p)
         except Exception:
             pass

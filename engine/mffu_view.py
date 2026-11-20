@@ -298,6 +298,9 @@ def push_name(account, path: str | None = None) -> str | None:
             names = {}
         l4 = last4(text)
         nm = _d(names.get("l4")).get(l4) if l4 else None
+        rapid = re.search(r"\brapid\b", text, re.I)
+        if not nm and rapid:                 # ATLAS's lane on the Rapid EOD ("ATLAS Rapid <Name>") is the Rapid, never ATLAS's 25K
+            nm = _d(names.get("id")).get("rapid") or owner_name("rapid", text, text, "funded" if re.search(r"\bfunded\b", text, re.I) else None)
         if not nm and re.match(r"\s*atlas\b", text, re.I):
             nm = _d(names.get("id")).get("atlas")
         if not nm and l4 is None and not re.match(r"\s*fleet\b", text, re.I) and re.search(r"(?:^|[^\w$])\d{2,3}\s*k\b", text, re.I):

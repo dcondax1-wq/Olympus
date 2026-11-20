@@ -271,8 +271,8 @@ def part_c():
             okv = repr(e)
         check("c. VAPID: the JWT verifies with the PC's own public key (k=), aud = the push service", okv is True and kpart == k["public"], okv)
         got = json.loads(decrypt(req.data, ua_key, auth)) if req is not None else {}
-        check("c. the phone decrypts it: 'Zlarior 50K: LONG opened' with risk / target $, the trade's own tag, opens the NQ page",
-              got.get("title") == "Zlarior 50K: LONG opened" and got.get("body", "").startswith("risk $303 · target +$4,557. 6 MNQ at 24,980.25")
+        check("c. the phone decrypts it: 'Zlarior 50K: LONG 6 MNQ @ 24,980.25' with stop / target $, the trade's own tag, opens the NQ page",
+              got.get("title") == "Zlarior 50K: LONG 6 MNQ @ 24,980.25" and got.get("body", "").startswith("stop 24,955.00 (-$303), target 25,360.00 (+$4,557)")
               and got.get("tag") == P.app_trade_tag(p) and got.get("url") == "#nq" and got.get("kind") == "fill", got)
         check("c. under the 4 KB push limit", len(req.data) < 4096, len(req.data))
     finally:
@@ -301,8 +301,8 @@ def part_d():
         sent, send_one = recorder()
         fill2 = P.entry_payload("Zlarior 50K", "SHORT", 4, et0 + 3600, src="pc", entry=25100, stop=25120, target=24900)
         r = P._pc_send(dict(fill2), sender=send_one, ntfy=fake_ntfy)
-        check("d. with a phone: the entry goes to the phone ('Zlarior 50K: SHORT opened'), NOT to ntfy too (one alert, one phone)",
-              r.get("sent") == 1 and len(sent) == 1 and sent[0]["data"]["title"] == "Zlarior 50K: SHORT opened" and len(ntfy) == 1
+        check("d. with a phone: the entry goes to the phone ('Zlarior 50K: SHORT 4 MNQ @ 25,100.00'), NOT to ntfy too (one alert, one phone)",
+              r.get("sent") == 1 and len(sent) == 1 and sent[0]["data"]["title"] == "Zlarior 50K: SHORT 4 MNQ @ 25,100.00" and len(ntfy) == 1
               and r.get("ntfy", "").startswith("skipped"), (r, sent))
         check("d. the same entry from a second path (narrator / NinjaTrader): nothing more", P._pc_send(dict(fill2), sender=send_one, ntfy=fake_ntfy).get("dup")
               and len(sent) == 1 and len(ntfy) == 1)
@@ -312,8 +312,8 @@ def part_d():
         check("d. the 15-minute report drops its own copy of that entry (key time, 90 s), keeps another trade", kept == [f"open:atlas:{et0 + 9000}"], kept)
         out = P.outcome_payload("Zlarior 50K", "SHORT", "TARGET", 605.4, et0 + 3600, et0 + 5400, src="pc", R=2.0, qty=4)
         r = P._pc_send(dict(out), sender=send_one, ntfy=fake_ntfy)
-        check("d. the exit goes to the phone: 'Zlarior 50K: SHORT closed +$605', 'Target hit · +2.0R', in the entry's notification (same tag)",
-              r.get("sent") == 1 and sent[-1]["data"]["title"] == "Zlarior 50K: SHORT closed +$605" and sent[-1]["data"]["body"].startswith("Target hit · +2.0R")
+        check("d. the exit goes to the phone: 'Zlarior 50K: closed SHORT +$605 (target)', '+2.0R · 4 MNQ', in the entry's notification (same tag)",
+              r.get("sent") == 1 and sent[-1]["data"]["title"] == "Zlarior 50K: closed SHORT +$605 (target)" and "+2.0R · 4 MNQ" in sent[-1]["data"]["body"]
               and sent[-1]["data"]["tag"] == sent[0]["data"]["tag"] and len(ntfy) == 1, sent[-1])
         kept = [m["key"] for m in N.apply([{"key": f"close:lit:{et0 + 3600}", "priority": "default"}, {"key": f"close:lit:{et0 + 7777}", "priority": "default"}],
                                           et0, N.merge({"quiet_hours": {"off": True}}))]

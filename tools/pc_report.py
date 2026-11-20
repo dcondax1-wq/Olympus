@@ -788,6 +788,30 @@ NTFY_DAY_CAP = 250               # ntfy.sh free: messages a UTC day per IP (meas
 BARS_DAY_MAX = 24                # chart posts a UTC day, all kinds (lead 2026-11-18: "at most ~24 a day")
 BARS_TRADE_RESERVE = 6           # of those, always left for the trade levels: candles stop at 18 a day
 BARS_DAY_ALL_MAX = NTFY_DAY_CAP - BARS_DAY_MAX   # 226: no chart post once this PC counted this many posts today (the status first)
+# Trade alerts first (owner 2026-11-20: entry + exit pushes "exactly when a trade is taken and closed"): the instant entry / exit
+# alerts (engine/notify.instant_entry / instant_exit, from the bot's own process) count in this PC's day too (engine/notify.ntfy_today),
+# and the extra status posts + the chart stop TRADE_ALERT_RESERVE posts before ntfy's cap, so those posts never use up the last room
+# a trade alert needs (the core status post still goes every run: it is the PC's sign of life).
+TRADE_ALERT_RESERVE = 12
+
+
+def instant_today(now) -> int:
+    """This UTC day's instant trade alerts on ntfy (engine/notify.ntfy_today). 0 when unknown. Never raises."""
+    try:
+        from engine import notify as _n
+        return int(_n.ntfy_today(now))
+    except Exception:  # noqa: BLE001
+        return 0
+
+
+def day_used(work: str, now) -> int:
+    """This PC's ntfy posts this UTC day: the report's own (bars.json "all") + the instant trade alerts. Never raises."""
+    try:
+        st = read_json(os.path.join(work, BARS_STATE), {}) or {}
+        cnt = _d(_d(st.get("days") if isinstance(st, dict) else {}).get(_utc_day(now)))
+        return int(num(cnt.get("all")) or 0) + instant_today(now)
+    except Exception:  # noqa: BLE001
+        return 0
 BARS_STALE_S = 900               # the newest price older than this while the market is open: no post (the core says FEED STALE)
 BARS_TRADES = 12                 # closed trades in one post at most (the newest)
 
@@ -1175,8 +1199,8 @@ def bars_due(state: dict | None, post: dict | None, now: int, market_open_now: b
         return False, "ntfy.sh limit reached today (429): back tomorrow"
     if int(num(cnt.get("bars")) or 0) >= BARS_DAY_MAX:
         return False, f"{BARS_DAY_MAX} chart posts today (the daily share)"
-    if int(num(cnt.get("all")) or 0) >= BARS_DAY_ALL_MAX:
-        return False, f"{BARS_DAY_ALL_MAX} posts today: the status and the pushes first"
+    if int(num(cnt.get("all")) or 0) + int(num(cnt.get("inst")) or 0) >= min(BARS_DAY_ALL_MAX, NTFY_DAY_CAP - TRADE_ALERT_RESERVE):
+        return False, f"{min(BARS_DAY_ALL_MAX, NTFY_DAY_CAP - TRADE_ALERT_RESERVE)} posts today: the status and the pushes first"
     if not post:
         return False, "no NinjaTrader bars on this PC"
     age = int(now) - int(num(post.get("t")) or 0)
@@ -1227,6 +1251,9 @@ def bars_step(work: str, cfg: dict, L: dict | None, now: int, market_open_now: b
         days = {k: dict(v) for k, v in _d(st.get("days")).items() if isinstance(v, dict) and str(k) >= keep}
         cnt = days.setdefault(day, {})
         cnt["all"] = int(num(cnt.get("all")) or 0) + max(0, int(other_posts or 0))
+        inst = instant_today(now)                    # the bot's instant trade alerts today (they keep their room)
+        if inst:
+            cnt["inst"] = inst
         st["days"] = days
         if limited:                                    # the core or a push met ntfy's daily cap this run: no chart today
             st["blocked"] = day
@@ -1752,6 +1779,9 @@ def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, n
     if cfg["status_topic"] and status.get("t"):
         h = ext_hash(exts)
         due = bool(exts) and (h != last.get("ext_h") or not num(last.get("ext_t")) or snap["t"] - float(last["ext_t"]) >= EXT_EVERY_S)
+        if due and not dry and day_used(work, snap["t"]) + len(exts) > NTFY_DAY_CAP - TRADE_ALERT_RESERVE:
+            due = False                               # the last room of ntfy's day stays for the trade alerts
+            rec["ext_held"] = "ntfy budget: the last posts of the day are kept for trade alerts"
         for e in exts if due else []:
             body = json.dumps(e, separators=(",", ":"), default=str, ensure_ascii=False)
             if dry:

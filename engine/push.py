@@ -1036,8 +1036,7 @@ def app_payload(p: dict, now=None) -> dict:
         k = q.get("kind")
         if k == "fill":
             m = notify.entry_message(q, now=now)
-            head, _, rest = m["title"].partition(" | ")
-            q.update(title=head, body=((rest.replace(" | ", " · ") + ". ") if rest else "") + m["body"], silent=m["priority"] == "low")
+            q.update(title=m["title"], body=m["body"], silent=m["priority"] == "low")
         elif k == "outcome":
             m = notify.exit_message(q, now=now)
             q.update(title=m["title"], body=m["body"], silent=m["priority"] == "low")
@@ -1101,9 +1100,9 @@ def pc_notifier() -> Notifier:
     return _PC["notifier"]
 
 
-def _pc_send(payload, sender=None, ntfy=None) -> dict:
-    """pc_notify's worker thread: the phone app first; for an entry the private ntfy alert topic (engine/notify.instant_entry)
-    only when no phone took it (one alert, one phone). A phone that took an entry / exit is recorded (engine/notify.instant_record)
+def _pc_send(payload, sender=None, ntfy=None, ntfy_exit=None) -> dict:
+    """pc_notify's worker thread: the phone app first; for an entry / an exit the private ntfy alert topic (engine/notify.instant_entry /
+    instant_exit) only when no phone took it (one alert, one phone). A phone that took an entry / exit is recorded (engine/notify.instant_record)
     so the 15-minute report does not send its own copy. -> what happened (tests). Never raises."""
     res: dict = {}
     try:
@@ -1120,10 +1119,11 @@ def _pc_send(payload, sender=None, ntfy=None) -> dict:
         k = payload.get("kind")
         if k in ("fill", "outcome") and res.get("sent"):
             notify.instant_record(payload, "entry" if k == "fill" else "exit")
-            if k == "fill":
-                res["ntfy"] = "skipped: the phone app has it"
+            res["ntfy"] = "skipped: the phone app has it"
         elif k == "fill":                        # owner 2026-11-18: every entry on any real account -> phone, at once
             res["ntfy"] = (ntfy or notify.instant_entry)(dict(payload))
+        elif k == "outcome":                     # owner 2026-11-20: ... "and closed, results of it": the exit too, at once
+            res["ntfy"] = (ntfy_exit or notify.instant_exit)(dict(payload))
     except Exception:
         pass
     return res
