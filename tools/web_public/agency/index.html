@@ -29,7 +29,7 @@
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#d08c4a'); r.setProperty('--oly-accent-rgb', '208, 140, 74'); })();</script>
 <link rel="stylesheet" href="agency.css?v=a1q11">
 <link rel="stylesheet" href="hq.css?v=3">
-<script src="hq.js?v=1" defer></script>
+<script src="hq.js?v=2" defer></script>
 </head>
 <body>
 <main id="app">
@@ -52,7 +52,7 @@
       <ol class="hq-pipe" aria-label="Leads, called, proposal, paid">
         <li><b id="hqPLeads">0</b><span>Leads</span></li><li><b id="hqPCalled">0</b><span>Called</span></li><li><b id="hqPProp">0</b><span>Proposal</span></li><li class="paid"><b id="hqPPaid">0</b><span>Paid</span></li>
       </ol>
-      <div class="hq-mrr"><div class="row"><span>Care plans</span><b id="hqMrr">$0 a month</b></div><div class="hq-bar" id="hqBar" role="img" aria-label="Care plans $0 of $1,000 a month: 0%"></div><p class="note" id="hqGoal">Goal $1,000 a month in care plans (about 12 clients on Growth)</p></div>
+      <div class="hq-mrr"><div class="row"><span>Monthly retainers</span><b id="hqMrr">$0 a month</b></div><div class="hq-bar" id="hqBar" role="img" aria-label="Monthly retainers $0 of $3,000 a month: 0%"></div><p class="note" id="hqGoal">Goal $3,000 a month: 10 clients at about $300 (call engine $500 + $299/mo). An estimate, not a promise.</p></div>
     </section>
     <nav class="hq-tiles" aria-label="Your website business">
       <a class="hq-tile" data-slice="expert" href="expert/"><b>Expert</b><small>Ask anything: 3D sites, marketing, pricing, SEO</small><span class="hq-live">Open</span></a>
@@ -65,14 +65,14 @@
     </nav>
     <section class="ag-card card" aria-labelledby="hqWeekH">
       <div class="row"><h2 id="hqWeekH">This week</h2><span class="pill" id="hqWeekCount">0 of 6 done this week</span></div>
-      <p class="note">About 4 hours a week around a day job: evenings, one lunch break, Saturday. Tick each one; the ticks stay on this phone.</p>
+      <p class="note">About 4 hours a week around a day job: evenings, one lunch break, Saturday. Calls and emails by hand only (never auto-dial or mass text). Tick each one; the ticks stay on this phone.</p>
       <ol class="hq-week" id="hqWeek">
-        <li data-day="1"><label><input type="checkbox"><span class="hq-box" aria-hidden="true"></span><span class="hq-day">Mon</span><span class="hq-what">Find 10 new leads <small>(20 min)</small></span></label><a href="leads/" aria-label="Open Leads">&#8250;</a></li>
-        <li data-day="2"><label><input type="checkbox"><span class="hq-box" aria-hidden="true"></span><span class="hq-day">Tue</span><span class="hq-what">Audit 3 of their websites <small>(20 min)</small></span></label><a href="audit/" aria-label="Open Audit">&#8250;</a></li>
-        <li data-day="3"><label><input type="checkbox"><span class="hq-box" aria-hidden="true"></span><span class="hq-day">Wed</span><span class="hq-what">Build or refresh 1 demo site <small>(60 min)</small></span></label><a href="demos/" aria-label="Open Demos">&#8250;</a></li>
-        <li data-day="4"><label><input type="checkbox"><span class="hq-box" aria-hidden="true"></span><span class="hq-day">Thu</span><span class="hq-what">Lunch break: call 5 leads <small>(30 min)</small></span></label><a href="#today" aria-label="Open Call today">&#8250;</a></li>
-        <li data-day="5"><label><input type="checkbox"><span class="hq-box" aria-hidden="true"></span><span class="hq-day">Fri</span><span class="hq-what">Send 2 proposals <small>(30 min)</small></span></label><a href="offers/" aria-label="Open Offers">&#8250;</a></li>
-        <li data-day="6"><label><input type="checkbox"><span class="hq-box" aria-hidden="true"></span><span class="hq-day">Sat</span><span class="hq-what">Learn one thing, post one showcase piece <small>(40 min)</small></span></label><a href="expert/" aria-label="Open Expert">&#8250;</a></li>
+        <li data-day="1"><label><input type="checkbox"><span class="hq-box" aria-hidden="true"></span><span class="hq-day">Mon</span><span class="hq-what">Find 10 leads: good reviews, no or slow website <small>(20 min)</small></span></label><a href="leads/" aria-label="Open Leads">&#8250;</a></li>
+        <li data-day="2"><label><input type="checkbox"><span class="hq-box" aria-hidden="true"></span><span class="hq-day">Tue</span><span class="hq-what">Free accessibility + speed check on 3 of their sites <small>(20 min)</small></span></label><a href="audit/" aria-label="Open Audit">&#8250;</a></li>
+        <li data-day="3"><label><input type="checkbox"><span class="hq-box" aria-hidden="true"></span><span class="hq-day">Wed</span><span class="hq-what">Build a demo of ONE lead’s own business <small>(60 min)</small></span></label><a href="demos/" aria-label="Open Demos">&#8250;</a></li>
+        <li data-day="4"><label><input type="checkbox"><span class="hq-box" aria-hidden="true"></span><span class="hq-day">Thu</span><span class="hq-what">Lunch break: call 5 leads (by hand, business numbers) <small>(30 min)</small></span></label><a href="#today" aria-label="Open Call today">&#8250;</a></li>
+        <li data-day="5"><label><input type="checkbox"><span class="hq-box" aria-hidden="true"></span><span class="hq-day">Fri</span><span class="hq-what">Send 2 proposals: call engine $500 + $299/mo <small>(30 min)</small></span></label><a href="offers/" aria-label="Open Offers">&#8250;</a></li>
+        <li data-day="6"><label><input type="checkbox"><span class="hq-box" aria-hidden="true"></span><span class="hq-day">Sat</span><span class="hq-what">Walk in to 1 business with its demo <small>(60 min)</small></span></label><a href="showcase/" aria-label="Open Showcase">&#8250;</a></li>
       </ol>
     </section>
     <h2 class="hq-crm" id="crmH">Calls and clients (your cold-call list)</h2>

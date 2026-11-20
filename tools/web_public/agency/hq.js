@@ -13,14 +13,14 @@
 (function (root) {
   'use strict';
   var SLICES = ['expert', 'leads', 'audit', 'demos', 'showcase', 'offers'];
-  var GOAL_MRR = 1000;                         // care plans a month: about 12 Growth clients ($79) or 8 Pro ($129)
-  var WEEK = [                                 // a solo owner with a day job: about 4 hours a week, evenings, the lunch break and Saturday
-    { d: 1, slice: 'leads', what: 'Find 10 new leads', mins: 20 },
-    { d: 2, slice: 'audit', what: 'Audit 3 of their websites', mins: 20 },
-    { d: 3, slice: 'demos', what: 'Build or refresh 1 demo site', mins: 60 },
-    { d: 4, slice: 'calls', what: 'Lunch break: call 5 leads', mins: 30 },
-    { d: 5, slice: 'offers', what: 'Send 2 proposals', mins: 30 },
-    { d: 6, slice: 'expert', what: 'Learn one thing, post one showcase piece', mins: 40 }
+  var GOAL_MRR = 3000;                         // retainers a month: 10 clients at about $300 (research 2026-11-20: the 'call engine' $500 + $299/mo is offer #1)
+  var WEEK = [                                 // a solo owner with a day job, about 4 hours a week (research 2026-11-20 'first 5 clients')
+    { d: 1, slice: 'leads', what: 'Find 10 leads: good reviews, no or slow website', mins: 20 },
+    { d: 2, slice: 'audit', what: 'Free accessibility + speed check on 3 of their sites', mins: 20 },
+    { d: 3, slice: 'demos', what: 'Build a demo of ONE lead\u2019s own business', mins: 60 },
+    { d: 4, slice: 'calls', what: 'Lunch break: call 5 leads (by hand, business numbers)', mins: 30 },
+    { d: 5, slice: 'offers', what: 'Send 2 proposals: call engine $500 + $299/mo', mins: 30 },
+    { d: 6, slice: 'showcase', what: 'Walk in to 1 business with its demo', mins: 60 }
   ];
   var CALLED = { contacted: 1, callback: 1, won: 1, lost: 1 };
 
@@ -58,10 +58,10 @@
     if (due.length) next = { text: 'Call back ' + due[0] + (due.length > 1 ? ' (+' + (due.length - 1) + ' more due)' : ''), why: 'You promised a call-back for today.', to: '#today', label: 'Open Call today' };
     else if (S.offers && S.offers.next) next = { text: S.offers.next, why: 'From Offers: a proposal or a client is waiting.', to: 'offers/', label: 'Open Offers' };
     else if (pipe.proposal > 0) next = { text: 'Follow up your ' + plural(pipe.proposal, 'open proposal'), why: 'A short follow-up 2-3 days after a proposal wins most deals.', to: inp.exists && inp.exists.offers ? 'offers/' : '#list', label: 'Open the proposals' };
-    else if (!pipe.leads) next = { text: 'Find your first 20 leads', why: 'Local businesses with no website or a weak one: about 15 minutes.', to: 'leads/', label: 'Open Leads' };
+    else if (!pipe.leads) next = { text: 'Find your first 20 leads', why: 'Good reviews but no website or a slow one (17% of US small businesses have none): about 15 minutes.', to: 'leads/', label: 'Open Leads' };
     else if (pipe.called < 10) next = { text: 'Call 5 leads at lunch', why: plural(pipe.leads - pipe.called > 0 ? pipe.leads - pipe.called : 0, 'lead') + ' not called yet. The opener is ready on each lead.', to: '#today', label: 'Open Call today' };
     else if (!(S.audit && S.audit.n)) next = { text: 'Audit 3 prospects’ websites', why: 'A free audit opens the door: it shows them what they lose.', to: 'audit/', label: 'Open Audit' };
-    else next = { text: 'Build one 3D demo for your best lead', why: 'A demo of their own site is the strongest reason to say yes.', to: 'demos/', label: 'Open Demos' };
+    else next = { text: 'Build one 3D demo for your best lead', why: 'A demo of THEIR business (their name, their photos) is the pitch.', to: 'demos/', label: 'Open Demos' };
     return { pipe: pipe, mrr: mrrAll, goal: GOAL_MRR, pct: Math.min(100, Math.round(100 * mrrAll / GOAL_MRR)), next: next, sums: S, due: due.length };
   }
 
@@ -95,8 +95,8 @@
     var go = $('hqNextGo'); go.href = R.next.to; go.textContent = R.next.label;
     [['leads', 'hqPLeads'], ['called', 'hqPCalled'], ['proposal', 'hqPProp'], ['paid', 'hqPPaid']].forEach(function (p) { $(p[1]).textContent = String(R.pipe[p[0]]); });
     $('hqMrr').textContent = usd(R.mrr) + ' a month';
-    $('hqGoal').textContent = 'Goal ' + usd(R.goal) + ' a month in care plans (about 12 clients on Growth)';
-    var bar = $('hqBar'); bar.style.setProperty('--p', R.pct + '%'); bar.setAttribute('aria-label', 'Care plans ' + usd(R.mrr) + ' of ' + usd(R.goal) + ' a month: ' + R.pct + '%');
+    $('hqGoal').textContent = 'Goal ' + usd(R.goal) + ' a month: 10 clients at about $300 (call engine $500 + $299/mo). An estimate, not a promise.';
+    var bar = $('hqBar'); bar.style.setProperty('--p', R.pct + '%'); bar.setAttribute('aria-label', 'Monthly retainers ' + usd(R.mrr) + ' of ' + usd(R.goal) + ' a month: ' + R.pct + '%');
     SLICES.forEach(function (k) {
       var t = d.querySelector('.hq-tile[data-slice="' + k + '"]'); if (!t) return;
       var line = t.querySelector('.hq-live'), s = R.sums[k];

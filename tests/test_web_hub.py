@@ -90,13 +90,13 @@ def part_b():
     check("b. no data: 0 / 0 / 0 / 0, $0, next = find your first 20 leads -> leads/", n["pipe"] == {"leads": 0, "called": 0, "proposal": 0, "paid": 0} and n["mrr"] == 0
           and n["next"]["to"] == "leads/" and "20 leads" in n["next"]["text"], n)
     d = r["due"]
-    check("b. a due call-back is the next step (by name); won = paid 1, its $79 = MRR", d["next"]["text"].startswith("Call back Joe Plumbing") and d["next"]["to"] == "#today"
-          and d["pipe"] == {"leads": 2, "called": 2, "proposal": 0, "paid": 1} and d["mrr"] == 79 and d["pct"] == 8, d)
+    check("b. a due call-back is the next step (by name); won = paid 1, its $79 = MRR (3% of the $3,000 goal: research 2026-11-20)", d["next"]["text"].startswith("Call back Joe Plumbing") and d["next"]["to"] == "#today"
+          and d["pipe"] == {"leads": 2, "called": 2, "proposal": 0, "paid": 1} and d["mrr"] == 79 and d["pct"] == 3 and d["goal"] == 3000, d)
     p = r["prop"]
     check("b. a priced open lead = 1 proposal -> follow it up", p["pipe"]["proposal"] == 1 and "Follow up your 1 open proposal" == p["next"]["text"], p)
     s = r["sum"]
     check("b. section summaries: Offers' next step + MRR, the most of each stage (no double count), the Leads tile count",
-          s["next"]["text"] == "Send the proposal to Ace Roofing" and s["mrr"] == 300 and s["pipe"] == {"leads": 42, "called": 0, "proposal": 4, "paid": 3} and s["pct"] == 30, s)
+          s["next"]["text"] == "Send the proposal to Ace Roofing" and s["mrr"] == 300 and s["pipe"] == {"leads": 42, "called": 0, "proposal": 4, "paid": 3} and s["pct"] == 10, s)
     j = r["junk"]
     check("b. junk in, sane out (no NaN, no negatives)", j["pipe"] == {"leads": 0, "called": 0, "proposal": 0, "paid": 0} and j["mrr"] == 0, j)
     check("b. ISO week of Fri Nov 20 2026 = 2026-W47", r["wk"] == "2026-W47", r["wk"])
