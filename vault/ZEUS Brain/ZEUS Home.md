@@ -58,7 +58,7 @@ type: "home"
 - 2026-11-20 [[redteam-live-2026-11-20|Red team of tonight's live code]] (finding)
 - 2026-11-20 [[payday-plan-2026-11-20|Payday plan]] (research)
 - 2026-11-20 [[nq-live-reliability-2026-11-20|NQ live bot reliability]] (finding)
-- 2026-11-20 [[money-ideas-2026-11-20|Money ideas]] (research)
+- 2026-11-20 [[money-ideas-2026-11-20|Money ideas]] (finding)
 - 2026-11-20 [[kalshi-k8-monday-2026-11-20|Kalshi K8 for a $55 account, ready by Monday 6 PM]] (research)
 - 2026-11-20 [[atlas-risk-real-fills-2026-11-20|ATLAS funded 25K at real fills]] (finding)
 - 2026-11-20 [[atlas-fills-2026-11-20|ATLAS real fills]] (finding)

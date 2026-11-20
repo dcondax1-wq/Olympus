@@ -1,4 +1,5 @@
 // Run with: node --test tests/test_intro_failed_kit.mjs
+// Section markers: intro-app.js shortened them to '// --- <name>' in e960ee6c (Team FX quality sweep, 2026-11-15).
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import assert from 'node:assert/strict';
@@ -8,7 +9,7 @@ import vm from 'node:vm';
 const source = readFileSync(fileURLToPath(new URL('../tools/web_public/olympus/intro-app.js', import.meta.url)), 'utf8');
 
 test('an already failed kit never mounts a cinematic over Retry', () => {
-  const cutoff = source.indexOf('// ------------------------------------------------------------------ the per-app flavour');
+  const cutoff = source.indexOf('// --- the per-app flavour');
   assert.ok(cutoff > 0);
   const window = { OLYMPUS: { app: 'oracle', state: () => 'failed' } };
   const document = { documentElement: {} };
@@ -18,7 +19,7 @@ test('an already failed kit never mounts a cinematic over Retry', () => {
 });
 
 test('a load failure during a frame ends the intro before drawing another frame', () => {
-  const start = source.indexOf('function frame()'), end = source.indexOf('// ------------------------------------------------------------------ start', start);
+  const start = source.indexOf('function frame()'), end = source.indexOf('// --- start', start);
   assert.ok(start > 0 && end > start);
   const frame = source.slice(start, end);
   const finishes = [];

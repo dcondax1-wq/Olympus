@@ -2,9 +2,10 @@
 tags:
   - zeus/research
   - family/other
-  - verdict/research
+  - verdict/finding
 type: "research"
 date: "2026-11-17"
+status: "finding - nothing the bots do today voids an eval or a payout; two gaps fixed, the 2% price-limit guard still missing"
 source: "research/writeups/mffu-rules-audit-2026-11-17.md"
 aliases:
   - "MFFU rules audit"
@@ -12,14 +13,14 @@ aliases:
 
 # MFFU rules audit
 
-> [!abstract] Verdict: research
-> (no status line)
+> [!info] Verdict: finding
+> finding - nothing the bots do today voids an eval or a payout; two gaps fixed, the 2% price-limit guard still missing
 
 **Full title:** MFFU rules audit (2026-11-17): can anything the bots do void an eval or a payout?
 
 ## Summary
 
-Sources: MFFU's help center (78 articles read directly, help.myfundedfutures.com) and plan pages (myfundedfutures.com/plans/builder, /plans/rapid-eod), all reachable from the sandbox today. Values: research/lit/mffu_rules.json (each with source, status, checked 2026-11-17; the list of changes is in its "changes_2026_11_17").
+78 MFFU help-center articles and the plan pages checked against what the bots do (values in research/lit/mffu_rules.json). Hedging across accounts, max contracts, EOD trailing max loss, daily loss, flat time, holiday half-days, Rapid eval consistency, payouts and account limits are enforced. Fixed: the Rapid funded tier-1 news window had no safety margin and no December / 2027 CPI and jobs dates, and inactivity could cost the ATLAS 25K funded account all its profits with no warning. Missing: no guard for the 2% CME price-limit rule (rare; stand aside on crash days).
 
 ## Links
 

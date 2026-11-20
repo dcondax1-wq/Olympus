@@ -7,27 +7,22 @@ type: "family"
 
 # Research family: other
 
-> [!abstract] 97 write-ups
-> adopt-candidate 15, finding 10, info 16, promising 14, rejected 30, research 12
+> [!abstract] 92 write-ups
+> adopt-candidate 15, finding 11, info 16, promising 14, rejected 31, research 5
 
 | Date | Write-up | Verdict |
 |---|---|---|
 | 2026-11-20 | [[redteam-live-2026-11-20\|Red team of tonight's live code]] | finding |
 | 2026-11-20 | [[nq-live-reliability-2026-11-20\|NQ live bot reliability]] | finding |
-| 2026-11-20 | [[money-ideas-2026-11-20\|Money ideas]] | research |
 | 2026-11-19 | [[third-strategy-2026-11-18\|Third strategy hunt]] | rejected |
 | 2026-11-19 | [[lit-more-money-2026-11-19\|Zlarior]] | rejected |
-| 2026-11-18 | [[zeus-lab-lit-ideas-2026-11-18\|ZEUS Lab]] | research |
-| 2026-11-18 | [[bot-gap-2026-11-18\|What the best trading bots, prop tools and trade journals have that ZEUS did not]] | research |
+| 2026-11-18 | [[zeus-lab-lit-ideas-2026-11-18\|ZEUS Lab]] | rejected |
 | 2026-11-18 | [[blitz-review-2026-11-18\|BLITZ review]] | rejected |
-| 2026-11-17 | [[taxes-2026-11-17\|Taxes for a prop-firm trader]] | research |
 | 2026-11-17 | [[public-strategies-2026-11-17\|Famous published strategies on CME NQ]] | rejected |
 | 2026-11-17 | [[new-strategy-hunt-2026-11-17\|New-strategy hunt]] | rejected |
-| 2026-11-17 | [[more-work-2026-11-17\|More work next to the bots]] | research |
-| 2026-11-17 | [[mffu-rules-audit-2026-11-17\|MFFU rules audit]] | research |
+| 2026-11-17 | [[mffu-rules-audit-2026-11-17\|MFFU rules audit]] | finding |
 | 2026-11-17 | [[lit-walkforward-2026-11-17\|LIT walk-forward re-tuning]] | rejected |
 | 2026-11-17 | [[lit-smart-entries-2026-11-17\|LIT smart entries]] | rejected |
-| 2026-11-17 | [[edge-health-2026-11-17\|Edge health, 2026-11-17]] | research |
 | 2026-11-15 | [[2026-11-15-s2-edge\|S2 edge]] | promising |
 | 2026-11-15 | [[2026-11-15-lit-deep\|LIT deep edge]] | rejected |
 | 2026-11-14 | [[affiliate-income-2026-11-14\|Prop-firm affiliate income]] | info |

@@ -156,7 +156,7 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 | 2026-11-19 | [[one-account-combo-final-2026-11-19\|One account, Zlarior + ATLAS on the Builder 50K]] | research |
 | 2026-11-19 | [[one-account-combo-2026-11-19\|ONE account, several bots]] | research |
 | 2026-11-19 | [[lit-more-money-2026-11-19\|Zlarior]] | rejected |
-| 2026-11-18 | [[zeus-lab-lit-ideas-2026-11-18\|ZEUS Lab]] | research |
+| 2026-11-18 | [[zeus-lab-lit-ideas-2026-11-18\|ZEUS Lab]] | rejected |
 | 2026-11-18 | [[win-loss-anatomy-2026-11-18\|Why we win, why we lose]] | finding |
 | 2026-11-18 | [[setup-grade-2026-11-18\|Setup grade]] | rejected |
 | 2026-11-18 | [[rapid25-lit-lane-2026-11-18\|Rapid EOD 25K]] | research |
