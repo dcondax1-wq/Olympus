@@ -281,7 +281,7 @@ def part_live(tmp):
     g = lr["gold_0530_down"]
     check("e4. the result from Kalshi's own fills: gold WON +$13.44 - fee; one push for the window's result with today's $ and the record",
           g["result"] == "won" and abs(g["pnl"] - round(28 - 14.56 - KC.fee(0.52, 28), 2)) < 0.011 and len(res) == 1
-          and "Live so far: 1 bets, 1 won" in res[0]["body"], (lr, res))
+          and "Live so far: 1 bet, 1 won" in res[0]["body"], (lr, res))
     w.run_until(loop, OPEN_PM + 25)
     pm = [r for r in w.live() if r["leg"].endswith("1700_up")]
     check("e5. the evening: gold + silver UP bought (side bid at the YES ask 50c); the 16:00 silver leg stays paper only",

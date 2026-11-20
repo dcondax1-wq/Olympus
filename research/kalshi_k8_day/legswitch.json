@@ -1,0 +1,271 @@
+{
+ "prereg": "research/kalshi_k8_day/PREREG_legswitch.md",
+ "rules": {
+  "main:live3": {
+   "find": {
+    "skipped": {
+     "n": 0,
+     "won": 0,
+     "net": 0
+    },
+    "kept": {
+     "n": 170,
+     "won": 123,
+     "net": 146.75
+    }
+   },
+   "check": {
+    "skipped": {
+     "n": 0,
+     "won": 0,
+     "net": 0
+    },
+    "kept": {
+     "n": 64,
+     "won": 47,
+     "net": 59.04
+    }
+   },
+   "legs": {
+    "gold_0530_down": {
+     "windows": 80,
+     "paused_days": 0
+    },
+    "gold_1700_up": {
+     "windows": 79,
+     "paused_days": 0
+    },
+    "silver_1700_up": {
+     "windows": 79,
+     "paused_days": 0
+    }
+   }
+  },
+  "main:all5": {
+   "find": {
+    "skipped": {
+     "n": 0,
+     "won": 0,
+     "net": 0
+    },
+    "kept": {
+     "n": 277,
+     "won": 200,
+     "net": 245.03
+    }
+   },
+   "check": {
+    "skipped": {
+     "n": 0,
+     "won": 0,
+     "net": 0
+    },
+    "kept": {
+     "n": 103,
+     "won": 71,
+     "net": 74.22
+    }
+   },
+   "legs": {
+    "gold_0530_down": {
+     "windows": 80,
+     "paused_days": 0
+    },
+    "silver_0530_down": {
+     "windows": 80,
+     "paused_days": 0
+    },
+    "silver_1615_down": {
+     "windows": 79,
+     "paused_days": 0
+    },
+    "gold_1700_up": {
+     "windows": 79,
+     "paused_days": 0
+    },
+    "silver_1700_up": {
+     "windows": 79,
+     "paused_days": 0
+    }
+   }
+  },
+  "n10:live3": {
+   "find": {
+    "skipped": {
+     "n": 1,
+     "won": 1,
+     "net": 1.85
+    },
+    "kept": {
+     "n": 169,
+     "won": 122,
+     "net": 144.9
+    }
+   },
+   "check": {
+    "skipped": {
+     "n": 0,
+     "won": 0,
+     "net": 0
+    },
+    "kept": {
+     "n": 64,
+     "won": 47,
+     "net": 59.04
+    }
+   },
+   "legs": {
+    "gold_0530_down": {
+     "windows": 80,
+     "paused_days": 2
+    },
+    "gold_1700_up": {
+     "windows": 79,
+     "paused_days": 0
+    },
+    "silver_1700_up": {
+     "windows": 79,
+     "paused_days": 0
+    }
+   }
+  },
+  "n10:all5": {
+   "find": {
+    "skipped": {
+     "n": 5,
+     "won": 5,
+     "net": 10.2
+    },
+    "kept": {
+     "n": 272,
+     "won": 195,
+     "net": 234.83
+    }
+   },
+   "check": {
+    "skipped": {
+     "n": 0,
+     "won": 0,
+     "net": 0
+    },
+    "kept": {
+     "n": 103,
+     "won": 71,
+     "net": 74.22
+    }
+   },
+   "legs": {
+    "gold_0530_down": {
+     "windows": 80,
+     "paused_days": 2
+    },
+    "silver_0530_down": {
+     "windows": 80,
+     "paused_days": 4
+    },
+    "silver_1615_down": {
+     "windows": 79,
+     "paused_days": 0
+    },
+    "gold_1700_up": {
+     "windows": 79,
+     "paused_days": 0
+    },
+    "silver_1700_up": {
+     "windows": 79,
+     "paused_days": 0
+    }
+   }
+  },
+  "n30:live3": {
+   "find": {
+    "skipped": {
+     "n": 0,
+     "won": 0,
+     "net": 0
+    },
+    "kept": {
+     "n": 170,
+     "won": 123,
+     "net": 146.75
+    }
+   },
+   "check": {
+    "skipped": {
+     "n": 0,
+     "won": 0,
+     "net": 0
+    },
+    "kept": {
+     "n": 64,
+     "won": 47,
+     "net": 59.04
+    }
+   },
+   "legs": {
+    "gold_0530_down": {
+     "windows": 80,
+     "paused_days": 0
+    },
+    "gold_1700_up": {
+     "windows": 79,
+     "paused_days": 0
+    },
+    "silver_1700_up": {
+     "windows": 79,
+     "paused_days": 0
+    }
+   }
+  },
+  "n30:all5": {
+   "find": {
+    "skipped": {
+     "n": 0,
+     "won": 0,
+     "net": 0
+    },
+    "kept": {
+     "n": 277,
+     "won": 200,
+     "net": 245.03
+    }
+   },
+   "check": {
+    "skipped": {
+     "n": 0,
+     "won": 0,
+     "net": 0
+    },
+    "kept": {
+     "n": 103,
+     "won": 71,
+     "net": 74.22
+    }
+   },
+   "legs": {
+    "gold_0530_down": {
+     "windows": 80,
+     "paused_days": 0
+    },
+    "silver_0530_down": {
+     "windows": 80,
+     "paused_days": 0
+    },
+    "silver_1615_down": {
+     "windows": 79,
+     "paused_days": 0
+    },
+    "gold_1700_up": {
+     "windows": 79,
+     "paused_days": 0
+    },
+    "silver_1700_up": {
+     "windows": 79,
+     "paused_days": 0
+    }
+   }
+  }
+ },
+ "verdict": "OFF for live (display only)",
+ "plain": "Main rule on the 3 live legs: it would have skipped 0 bets in Aug 3-Oct 21 (0 won, +0.00 $) and 0 in Oct 22-Nov 20 (0 won, +0.00 $). Verdict: OFF for live (display only)."
+}

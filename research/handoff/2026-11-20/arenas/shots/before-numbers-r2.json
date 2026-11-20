@@ -1,0 +1,20 @@
+[
+ {
+  "app": "settings",
+  "scheme": "dark",
+  "cls": 0,
+  "long": [],
+  "height": 6272,
+  "errors": [],
+  "bad": []
+ },
+ {
+  "app": "settings",
+  "scheme": "light",
+  "cls": 0,
+  "long": [],
+  "height": 6272,
+  "errors": [],
+  "bad": []
+ }
+]

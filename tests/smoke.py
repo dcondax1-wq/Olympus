@@ -18,6 +18,7 @@ SUITES = [
     ["-X", "utf8", "-m", "tests.test_autoupdate_source"],
     ["-X", "utf8", "-m", "tests.test_apps_list"],
     ["-X", "utf8", "-m", "tests.test_zenith_mode"],
+    ["-X", "utf8", "tools/site_checks.py"],               # day-quality 2026-11-20: Kalshi cache = css/js ?v, worker tags, launcher copies (0.2 s)
 ]
 
 

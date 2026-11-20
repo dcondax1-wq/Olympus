@@ -29,6 +29,9 @@ the bot server, never on a trade: it never starts, stops, arms or routes the bot
   pip          a package of requirements.txt is not installed             pip install of the missing ones only, outside 01:50-16:00 ET
                                                                             on a weekday and with no trade open
   clock        the bot's clock probe (logs/pc_health.json) 2+ s off       w32tm /resync (engine/go.sync_clock); refused: alert
+  site         tools/site_checks.py: a Kalshi cache != its css/js ?v, a      nothing (REPORT ONLY, info, never an alert: the fix is
+               worker precaching an old ?v, launcher copies drifting,       Claude's): named in the HEAL line and the log
+               a bot-like tracked file off engine/generated_files' list
 
 Weekly clean (the PC side of tools/disk_clean.py; CLEAN_STORAGE.bat stays the big manual one): only files that rebuild or are
 rotation output, by age: dated logs (a YYYYMMDD / YYYY-MM-DD name) and logs/*.gz after 30 days (the order audit
@@ -1049,8 +1052,27 @@ def fix_disk(ctx, state: dict, force_clean=False, disk_free=None) -> tuple:
 
 
 # ------------------------------------------------------------------------------------------------ one run
+def fix_site(ctx) -> list:
+    """REPORT ONLY (day-quality 2026-11-20): this week's site faults (tools/site_checks.py): a Kalshi cache name that is not its
+    css/js ?v, a worker precaching an older ?v than its pages load, the phone / PC launcher copies drifting apart, and a tracked
+    file the PC rewrites that is not on the bot-made list (the next update stops on it). Status info: the fix is Claude's, so
+    the owner is never alerted; the PC DOCTOR HEAL line and the log name it. Changes nothing."""
+    try:
+        sys.path.insert(0, ctx.root)
+        from tools import site_checks
+    except Exception:  # noqa: BLE001
+        return []
+    finally:
+        sys.path.pop(0)
+    c, st = ctx.git("status", "--porcelain", "--untracked-files=no")
+    out = []
+    for it in site_checks.run(ctx.root, st if c == 0 else None):
+        out.append(item("site", f"site_{it['kind']}", "info", it["text"], "send Claude this line", it.get("paths")))
+    return out
+
+
 REMEDIES = (("git_lock", fix_git_locks), ("update", fix_update), ("oif", fix_oif), ("pid", fix_pids), ("server", fix_server),
-            ("pip", fix_pip), ("clock", fix_clock))
+            ("pip", fix_pip), ("clock", fix_clock), ("site", fix_site))
 
 
 def run(ctx, state: dict | None = None, force_clean: bool = False, only=None, disk_free=None) -> dict:
