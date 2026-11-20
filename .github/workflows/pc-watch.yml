@@ -1,0 +1,68 @@
+# PC WATCH (owner 2026-11-20, Decide card cloud-alerts: YES): the cloud notices when the trading PC goes silent, with the PC off.
+# Every 30 min on weekdays it runs ONE stdlib script, tools/pc_silent_check.py (docs/PC_WATCH.md): last sign of life = the PC's
+# newest post on the ntfy status topic (and the heartbeat branch, if there is one); older than 20 min inside 01:30-16:00 ET ->
+# "Your PC stopped reporting at HH:MM ET" once, one reminder after 2 h, "reporting again" when back. Nothing else.
+#
+# Safe by construction: read-only token (permissions: contents: read), never commits or pushes (the PC's git pull can never
+# conflict), never publishes a site, never touches cloud-monitor.yml or any other account; no pip install; 3-minute cap.
+# State (who was told what today) lives in the Actions cache; a lost cache never repeats a push (the script reads today's pushes
+# back from the topic). The alert goes to the owner's PRIVATE ntfy topic when the repository secret LE_NTFY_TOPIC holds it,
+# else (plain text: no names, ids or $) to the public status topic.
+#
+# WHERE IT MUST LIVE: GitHub runs a schedule only from the repository's DEFAULT branch. dcondax1-wq/Olympus's default branch is
+# `main` (a stub: "the code is on branch pc"), so this file goes on `main` too; it checks out branch `pc` for the code. Cost:
+# ~34 runs a weekday x ~1 billed minute = ~740 min/month: free on a public repo; on a private repo it is 37% of the free 2,000.
+name: pc-watch
+
+on:
+  schedule:
+    - cron: "7,37 5-21 * * 1-5"      # UTC weekdays 05:07-21:37 = 01:07-17:37 ET in winter (EST), 00:07-16:37 in summer (EDT): covers the
+                                     # script's 01:30-16:00 ET window both ways; runs outside it exit in seconds (no push)
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run: print what it would send, send nothing"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pc-watch
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Code (branch pc, shallow)
+        uses: actions/checkout@v4
+        with:
+          ref: pc
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: State from the last run (Actions cache, never a commit)
+        uses: actions/cache/restore@v4
+        with:
+          path: pcw
+          key: pc-watch-${{ github.run_id }}
+          restore-keys: pc-watch-
+
+      - name: PC silent check
+        continue-on-error: true
+        env:
+          LE_NTFY_TOPIC: ${{ secrets.LE_NTFY_TOPIC }}
+          DRY: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '--dry-run' || '' }}
+        run: |
+          mkdir -p pcw
+          python3 tools/pc_silent_check.py --out pcw $DRY || true
+
+      - name: Save state
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: pcw
+          key: pc-watch-${{ github.run_id }}
