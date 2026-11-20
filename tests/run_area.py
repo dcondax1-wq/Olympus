@@ -60,6 +60,7 @@ AREAS = {
 AREAS["money"] += ["widget", "money_dash"]      # night-revamp-dash 2026-11-20: the Scriptable widget + Glance page (tools/web_public/widget/)
 AREAS["olympus"].append("olympus_shell")  # night-revamp-main 2026-11-20: the main pages: no sideways scroll, nothing under the bottom bar, keys above the home bar (tools/olympus_shell_audit.py)
 AREAS["olympus"].append("pulse")         # day-arenas 2026-11-20: the shared prop-trader cards in the main apps (olympus/pulse.js), CLS 0, light + dark
+AREAS["olympus"].append("archive_banners")  # day-archive 2026-11-20: the "Archived · data <date>, N days old -> live app" strip on every archived page (tools/archive_banners.py)
 AREAS["olympus"].insert(0, "site_sweep")  # night-siteqa 2026-11-20: every href / src of the main pages + doors.js points at a real file (no browser, 1 s); its own line
 AREAS["pc"].append("disk_clean")        # night-clean 2026-11-19: the weekly container clean (tools/disk_clean.py); its own line, no clash with the pc list
 AREAS["pc"].append("account_box")     # 2026-11-20: the Add account box (engine/account_box.py, /add-account/); its own line

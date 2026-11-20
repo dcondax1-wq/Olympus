@@ -84,7 +84,7 @@ LINK = ("margin-left:auto;flex:none;color:var(--oly-th-a11,#dac08b);font-weight:
 JS = ("(function(){var b=document.currentScript.parentNode,h=document.documentElement,d=document.body;try{"
       "var y=function(e){return getComputedStyle(e).overflowY};if(d&&(y(h)==='hidden'||y(d)==='hidden')){h.insertBefore(b,d);"
       "b.style.position='fixed';b.style.left='0';b.style.right='0';var fit=function(){var H=b.offsetHeight;h.style.paddingTop=H+'px';"
-      "h.style.boxSizing='border-box';d.style.transform='translateZ(0)';d.style.height=d.style.minHeight=d.style.maxHeight=(innerHeight-H)+'px';};"
+      "h.style.boxSizing='border-box';d.style.transform='translateZ(0)';d.style.height=d.style.minHeight=d.style.maxHeight=(innerHeight-H)+'px';if(getComputedStyle(d).position==='fixed')d.style.top=H+'px';};"
       "fit();addEventListener('resize',fit);}}catch(e){}"
       "var s=b.getAttribute('data-src'),o=b.querySelector('[data-age]');if(!s||!o||!window.fetch)return;"
       "fetch(s,{cache:'no-cache'}).then(function(r){return r.ok?r.json():null}).then(function(j){if(!j||typeof j!=='object')return;"

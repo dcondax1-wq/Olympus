@@ -42,12 +42,12 @@ def main():
         b = p.chromium.launch(executable_path="/opt/pw-browsers/chromium") if os.path.exists("/opt/pw-browsers/chromium") else p.chromium.launch()
         for i in ids:
             ctx = b.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=1, is_mobile=True, has_touch=True)
-            pg = ctx.new_page(); errs, cons, bad, size = [], [], [], [0]
+            pg = ctx.new_page(); errs, cons, bad, size, big = [], [], [], [0], []
             pg.on("pageerror", lambda e: errs.append(str(e)[:160]))
             pg.on("console", lambda m: m.type == "error" and cons.append(m.text[:160]))
             def resp(r):
                 if r.status >= 400: bad.append(f"{r.status}:{r.url.split(str(port) + '/')[-1][:70]}")
-                try: size[0] += int(r.headers.get("content-length") or 0) or len(r.body())
+                try: n = int(r.headers.get("content-length") or 0) or len(r.body()); size[0] += n; big.append((n, r.url.split(str(port) + '/')[-1][:60]))
                 except Exception: pass
             pg.on("response", resp)
             try: pg.goto(f"http://127.0.0.1:{port}/{i}/", wait_until="load", timeout=20000)
@@ -60,7 +60,7 @@ def main():
             except Exception as e: info = {"sw": 0, "iw": 390, "title": "", "text": "eval " + str(e)[:60], "banner": False}
             t = info["text"]
             row = {"id": i, "kb": round(size[0] / 1024), "errors": errs[:3], "console": cons[:3], "bad": sorted(set(bad))[:6],
-                   "sideways": max(0, info["sw"] - info["iw"]), "title": info["title"], "banner": info["banner"],
+                   "sideways": max(0, info["sw"] - info["iw"]), "top": [f"{k // 1024}K {u}" for k, u in sorted(big, reverse=True)[:4]], "title": info["title"], "banner": info["banner"],
                    "demo": bool(re.search(r"\b(demo|sample|example|fixture|made[- ]up)\b", t, re.I)),
                    "dates": sorted(set(re.findall(r"\b(?:20\d\d-\d\d-\d\d|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]* \d{1,2})\b", t)))[:8],
                    "text": t[:400]}
