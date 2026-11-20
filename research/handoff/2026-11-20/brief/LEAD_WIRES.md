@@ -47,8 +47,6 @@ Run: `python -X utf8 -m tests.test_premarket_brief` (74 checks, ~3 s).
 
 ## 5. Not done here (owned by others)
 - Showing it: day-nqdash3 (nq/, trading/) and day-arenas (helios/) read `tools/web_public/nq/brief.json` per docs/BRIEF.md.
-- Fresh VIX / VXN in the cloud: the files end 2026-10-16 (brief flags it in `data.stale`). Worth a lead look: the
-  CBOE refresh (engine/news.py `_cboe_daily`) is PC-side; until VIX reaches the cloud, LIT's target lines in the brief
-  use the Oct-16 close.
+- VIX / VXN: this branch carries pc's fresh CBOE closes (to 2026-11-19); the brief flags any close older than 4 days in `data.stale`.
 - Smoke: 7/8 here; the red one is `tests.test_zenith_mode` = `No module named 'playwright'` (Python Playwright is not
   installed in this container; browser suite, untouched by this branch).

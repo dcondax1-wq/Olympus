@@ -21,7 +21,7 @@
   bot" thinking, which is how evals get blown.
 
 ## Honest limits
-1. VIX / VXN in the cloud stop at 2026-10-16 (flagged in `data.stale`; LIT target lines use that close).
+1. VIX / VXN: fresh CBOE closes to 2026-11-19 taken from pc (lead's note); bias re-measured, hit rates unchanged (VIX only feeds the subgroups).
 2. The cloud's NQ bars end at the PC's 17:05 push: a morning brief has no overnight session until fresher bars arrive.
 3. Recap trades come from `trades.json` (last refresh 2026-10-28 in this checkout), so most days say "no trade data yet".
 

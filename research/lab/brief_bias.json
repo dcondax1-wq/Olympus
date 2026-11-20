@@ -111,14 +111,14 @@
        "n": 6
       },
       "vix_elevated": {
-       "hit_pct": 100.0,
-       "hits": 1,
-       "n": 1
+       "hit_pct": 40.0,
+       "hits": 2,
+       "n": 5
       },
       "vix_normal": {
-       "hit_pct": 36.8,
-       "hits": 14,
-       "n": 38
+       "hit_pct": 44.4,
+       "hits": 20,
+       "n": 45
       }
      },
      "up_days_pct": 43.4
@@ -234,14 +234,14 @@
        "n": 11
       },
       "vix_elevated": {
-       "hit_pct": 100.0,
-       "hits": 1,
-       "n": 1
+       "hit_pct": 25.0,
+       "hits": 2,
+       "n": 8
       },
       "vix_normal": {
-       "hit_pct": 38.5,
-       "hits": 20,
-       "n": 52
+       "hit_pct": 36.8,
+       "hits": 25,
+       "n": 68
       }
      },
      "up_days_pct": 43.4

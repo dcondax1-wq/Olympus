@@ -50,6 +50,6 @@ and LIT's two target lines = 18:00 open +/- one VIX day move), the gap in points
 That is the thinking a person does before the bell, written down the same way every day.
 
 ## Honest limits
-- VIX / VXN in the cloud end 2026-10-16: the brief says so in `data.stale` (and the LIT target lines use that close).
+- VIX / VXN: fresh CBOE closes to 2026-11-19 (from pc). A close older than 4 days is flagged in `data.stale`.
 - The cloud's NQ bars end at the PC's last push (17:05 ET): a 06:00 ET brief has no overnight yet and says so.
 - Recap trades come from `trades.json` (live + paper rows); when it is old the recap says "no trade data yet".
