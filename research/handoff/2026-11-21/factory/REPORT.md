@@ -39,5 +39,5 @@
 - test_site_factory 24/24 (with browser).
 
 ## Final for 2026-11-20 (lead decision: no PC address on public pages)
-- The consent form is OFF on every concept page (code `caller_form()` kept, unused). The band is now: offer + "Claim this site" + "Call or text <agency number> - our assistant answers any time" (tel: + sms: buttons once `phone` is set in `tools/site_factory_agency.json`; "number coming" until then) + "Your code: FR-n".
+- The consent form is OFF on every concept page (code `caller_form()` kept, unused). The band is now: offer + "Claim this site" + "Call <agency number>: our AI assistant answers" (voice only, a tel: button once `phone` is set in `tools/site_factory_agency.json`; "number coming" until then) + "Your code: FR-n".
 - Test d2 now fails any page with a form, `.ts.net` or a 100.x.y.z (Tailscale) address. test_site_factory 24/24 with browser.
