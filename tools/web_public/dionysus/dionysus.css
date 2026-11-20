@@ -77,3 +77,13 @@ html:not(.framed) #app { padding-bottom: calc(96px + var(--sb)); }
 .k8wl i.w { background: var(--ag-olive-text, #a0ac6e); }
 .k8pool { margin: 6px 0 4px; font-size: 14px; color: var(--ag-soft); } .k8pool b { font-family: var(--ag-num); }
 .k8pool b.ok { color: var(--ag-olive-text, #a0ac6e); } .k8pool b.watch { color: var(--ag-sun, #e0b060); } .k8pool b.off { color: var(--ag-terra-text, #e08a6b); }
+/* merged cards (day-kalshi 2026-11-20): the fee table, the ruin list, the old bot's lessons, Sibyl's picks, the words, the archive links */
+.ftab { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+.ftab th, .ftab td { padding: 7px 6px; text-align: right; border-bottom: 1px solid var(--ag-line); } .ftab th:first-child, .ftab td:first-child { text-align: left; }
+.ftab th { font: 600 12px var(--ag-sans); color: var(--ag-muted); } .ftab td { font-family: var(--ag-num); color: var(--ag-text); }
+.ftab tr.k8 td { color: var(--ag-sun, #e0b060); font-weight: 700; }
+.plain li.bad b { color: var(--ag-terra-text, #e08a6b); } .plain li.ok b { color: var(--ag-olive-text, #a0ac6e); }
+.dots li { background: none; border: 0; padding: 0 0 0 14px; position: relative; } .dots li::before { content: '·'; position: absolute; left: 2px; }
+.words { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; margin: 4px 0 0; font-size: 14px; }
+.words dt { margin-top: 8px; font-weight: 700; color: var(--ag-text); } .words dd { margin: 0; color: var(--ag-soft); }
+.older { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 4px; } .older .btn { min-height: 44px; text-decoration: none; font-size: 14px; }
