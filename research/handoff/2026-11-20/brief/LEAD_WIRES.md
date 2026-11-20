@@ -50,3 +50,38 @@ Run: `python -X utf8 -m tests.test_premarket_brief` (74 checks, ~3 s).
 - VIX / VXN: this branch carries pc's fresh CBOE closes (to 2026-11-19); the brief flags any close older than 4 days in `data.stale`.
 - Smoke: 7/8 here; the red one is `tests.test_zenith_mode` = `No module named 'playwright'` (Python Playwright is not
   installed in this container; browser suite, untouched by this branch).
+
+# ROUND 2: weekly review (ZEUS this week), 2026-11-20
+
+Changed (all on day-brief): `tools/weekly_review.py` (extra blocks, cloud trade list, no churn, Friday-morning session count),
+new `tools/week_more.py`, `tools/web_public/business/week.html` + `week.js` (v=4), `tools/web_public/business/week.json`
+(this week's real data, built from the PC's status post), new test `tests/test_week_more.py` (35/35), existing
+`tests/test_weekly_review.py` still 35/35. Screenshot: `research/handoff/2026-11-20/brief/week_review_2026-11-20.png`
+(full page, 390 px @2x) + `week_review_top.png`.
+
+## 6. Cloud build: run the weekly review too (the PC writes week.json but cannot push; the site only had a Claude-committed copy)
+In the same `LE_DASH_BUILD == "1"` block, after the premarket_brief try (item 1):
+```python
+        try:                                                    # day-brief round 2: business/week.json from the PC's status post
+            from tools import weekly_review as _wr
+            _wr.write(_wr.build())
+        except Exception as _wr_err:  # noqa: BLE001
+            print(f"[weekly_review] skipped: {_wr_err.__class__.__name__}: {_wr_err}")
+```
+~4 s (ntfy read + the two twin replays). `write()` now skips the rewrite when only `built` changed. week.json is already
+in engine/generated_files.py GENERATED (the PC's Friday ops task keeps rewriting it there).
+
+## 7. tests/run_area.py: add to the money area (next to weekly_review)
+```python
+AREAS["money"].append("week_more")          # day-brief 2026-11-20: weekly review round 2 (twins, best/worst, K8, calendar, weekend)
+```
+
+## 8. sw.js (yours): week.js went v=3 -> v=4 in week.html; bump the business cache entry if sw.js lists week.js / week.html.
+
+## Facts worth knowing
+- Thanksgiving Thu Nov 26 is NOT a CME closure: engine/cme_calendar (= the bots) and 5 years of NQ bars say NQ trades
+  until a 13:00 ET halt (the bots stop new trades 12:45); Fri Nov 27 halts 13:15. The page says so ("the stock market is
+  closed; NQ trades until 13:00 ET").
+- This week vs the twin: Zlarior matched its twin (Nov 16 long, -1.01R both). ATLAS matched on Nov 18 (MACD short, -1.04R);
+  ATLAS's twin also had a +6.87R EMA short on Nov 17 08:20, before the funded account was issued (Nov 17 20:26 ET):
+  shown as "not live yet", not "missed".
