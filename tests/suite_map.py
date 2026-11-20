@@ -177,8 +177,8 @@ def suite_info(name: str) -> dict:
             if f.startswith("tests/") and BROWSER_RX.search(s2):
                 browser = True
             st2, m2 = _strings_and_imports(s2)
-            if f not in _FILE_PATHS:
-                _FILE_PATHS[f] = _paths_from_strings(st2)
+            if f not in _FILE_PATHS:                     # from imported code: files only (a folder it names is mostly where it WRITES)
+                _FILE_PATHS[f] = {x for x in _paths_from_strings(st2) if f.startswith("tests/") or "." in x.rsplit("/", 1)[-1]}
             reads |= _FILE_PATHS[f]                      # the data / page files the imported code itself opens
             todo += [(x, depth + 1) for x in m2]
     for h in [r for r in reads if r.startswith("tests/") and r.endswith((".mjs", ".cjs", ".js"))]:
@@ -203,7 +203,7 @@ def hits(changed: str, reads) -> bool:
             continue
         if c == r or c.startswith(r + "/"):              # the file, or a file inside a folder the suite reads
             return True
-        if r.startswith(WP + "/") and r.count("/") >= 3 and c.startswith("/".join(r.split("/")[:3]) + "/") and "." in r.split("/")[-1]:
+        if r.startswith(WP + "/") and r.count("/") >= 3 and c.startswith("/".join(r.split("/")[:3]) + "/") and r.endswith(".html"):
             return True                                  # it reads athena/index.html: any athena/ file can change that page
     return False
 
