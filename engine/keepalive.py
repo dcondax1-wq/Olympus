@@ -93,6 +93,8 @@ Config: data/keepalive.json (gitignored; the start cfg's "keepalive" block in te
   python -X utf8 -m engine.keepalive --plan 2026-11-16           when a keep-alive would act after a last trade that day
   python -X utf8 -m engine.keepalive --on lit --yes              the OWNER's yes (live orders): Claude never runs it
   python -X utf8 -m engine.keepalive --off lit
+  python -X utf8 -m engine.keepalive --on all --yes              every known account at once (KEEPALIVE_ON.bat: the owner
+                                                                 types KEEP ALIVE ON); --off all = KEEPALIVE_OFF.bat
   python -X utf8 -m engine.keepalive --skip lit                  no keep-alive on lit today
   python -X utf8 -m engine.keepalive --traded lit [yyyy-mm-dd]   you traded it by hand (default today, the ET date; never a
                                                                  future day or more than 7 days back): prints the new deadline
@@ -1749,8 +1751,8 @@ def _warn(bot, st, g, P, on, now, out, Q, C) -> bool:
         nd = _date(P["act_day"])
         p = {"key": k, "code": "keepalive", "soft": True, "title": f"{label}: the next session is the last safe day to trade",
              "body": f"{_idle_words(P)}; MFFU's limit is {P['hard']} ({left} days). If the bot does not trade it first, place "
-                     f"1 MNQ by hand on {nd:%a} {nd:%m-%d} (in and out), or turn on its keep-alive trade once MFFU support "
-                     f"says a 1-micro trade is OK."}
+                     f"1 MNQ by hand on {nd:%a} {nd:%m-%d} (in and out), or turn the keep-alive on: KEEPALIVE_ON.bat on the "
+                     f"PC."}
         row = {"key": key, "do": "warn_eve"}
         if not _queue(Q, st, bot, "problem", p, now, row=row):
             return False
@@ -1870,6 +1872,22 @@ def main(argv=None) -> int:
         print(f"last trade {p['last']}: MFFU's literal limit {p['hard']}, cautious deadline {p['deadline']}; the keep-alive acts on "
               f"{p['act_day'] or '-'}" + (f" {_hm(w[0])}-{_hm(w[1])} ET" if w else "") + f" (today {p['today']}: due {p['due']}).")
         print(f"cost: about {money(EXPECTED_COST)} (commission ${COMM:.2f} + 1 tick), at most {money(WORST_COST)} (stop {STOP_PTS:g} pts)")
+        return 0
+    if a.on and a.off:
+        print("NOT changed: use --on or --off, not both.")
+        return 2
+    if "all" in (a.on, a.off):        # KEEPALIVE_ON.bat / KEEPALIVE_OFF.bat: every known account in one go (owner 2026-11-20)
+        C = load_config(None)
+        keys = sorted(known_keys())
+        if a.on and not a.yes:
+            print(f"This lets the bot place a REAL 1-MNQ order on each MFFU account ({', '.join(keys)}) when it has not "
+                  f"traded for days (about -{money(EXPECTED_COST)} each time, at most -{money(WORST_COST)}). The owner's "
+                  f"decision only. Add --yes to switch it on.")
+            return 2
+        for k in keys:
+            C["accounts"][k] = bool(a.on)
+        print(f"keep-alive {'ON' if a.on else 'OFF'} for {', '.join(keys)} ({save_config(C)}); the bot reads it on its "
+              f"next poll")
         return 0
     try:
         for k in (a.on, a.off, a.skip, (a.start or [None])[0], (a.traded or [None])[0]):

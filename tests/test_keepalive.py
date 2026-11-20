@@ -1282,6 +1282,39 @@ def t_cli_safety():
             rc = K.main(["--traded", "x:b25k_2"])
         check("a known key still works (x:b25k_2, lit, atlas, rapid)", rc == 0 and {"lit", "atlas", "rapid", "x:b25k_2"} <= K.known_keys(p),
               buf.getvalue())
+        # KEEPALIVE_ON.bat / KEEPALIVE_OFF.bat (owner's yes 2026-11-20): --on all needs --yes, then every known account
+        outs = []
+        for argv in (["--on", "all"], ["--on", "all", "--off", "lit", "--yes"]):
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                outs.append((K.main(argv), buf.getvalue()))
+        check("--on all without --yes / --on with --off: refused, nothing written",
+              all(rc == 2 for rc, _ in outs) and not os.path.exists(K.CONFIG_PATH)
+              and "REAL 1-MNQ" in outs[0][1] and "NOT changed" in outs[1][1], outs)
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            rc = K.main(["--on", "all", "--yes"])
+        acc = K.load_config(None)["accounts"]
+        want = K.known_keys(p)
+        check("--on all --yes: every known account ON (lit, atlas, rapid, x:b25k_2)",
+              rc == 0 and {"lit", "atlas", "rapid", "x:b25k_2"} <= set(acc) and all(acc.get(k) is True for k in want),
+              (buf.getvalue(), acc))
+        with redirect_stdout(io.StringIO()):
+            rc = K.main(["--off", "all"])
+        acc = K.load_config(None)["accounts"]
+        check("--off all (no --yes needed): every account OFF", rc == 0 and acc and not any(acc.values()), acc)
+        bats = {}
+        for b in ("KEEPALIVE_ON.bat", "KEEPALIVE_OFF.bat"):
+            with open(os.path.join(ROOT, b), "rb") as fh:
+                bats[b] = fh.read()
+        on = bats["KEEPALIVE_ON.bat"].decode()
+        check("KEEPALIVE_ON.bat: CRLF, shows the cost first (--on all without --yes), only the typed phrase KEEP ALIVE ON "
+              "runs --on all --yes; anything else changes nothing",
+              all(b"\r\n" in v and b"\n" not in v.replace(b"\r\n", b"") for v in bats.values())
+              and on.index("engine.keepalive --on all\r") < on.index('"KEEP ALIVE ON"') < on.index("--on all --yes")
+              and on.count("--yes") == 1 and 'if /i not "%OK%"=="KEEP ALIVE ON" goto :no' in on, on[:300])
+        check("KEEPALIVE_OFF.bat: --off all, never --on", "engine.keepalive --off all" in bats["KEEPALIVE_OFF.bat"].decode()
+              and "--on" not in bats["KEEPALIVE_OFF.bat"].decode())
     finally:
         K.state_path_for, K.CONFIG_PATH = old_sp, old_cp
         shutil.rmtree(tmp, ignore_errors=True)
@@ -1352,8 +1385,8 @@ def t_words():
         bot = Bot(env.tmp, env.adapter(), env.now, ka={"accounts": {}})
         replay(env, bot, ts(2026, 11, 19, 9, 25), ts(2026, 11, 19, 9, 40))
         eve = next((p for _, p in env.alerts if "next session" in p.get("title", "")), {})
-        check("OFF 'the next session is the last safe day': '... or turn on its keep-alive trade once MFFU support says a "
-              "1-micro trade is OK'", "once MFFU support says a 1-micro trade is OK" in eve.get("body", ""), eve)
+        check("OFF 'the next session is the last safe day': '... or turn the keep-alive on: KEEPALIVE_ON.bat on the PC' "
+              "(owner 2026-11-20: no MFFU contact)", "or turn the keep-alive on: KEEPALIVE_ON.bat on the PC." in eve.get("body", ""), eve)
     finally:
         K.ALERT_HOOK = None
         env.done()
