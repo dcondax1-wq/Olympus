@@ -1761,10 +1761,13 @@ class AccountB:
                "note": "own account: max 2 trades a day, one position, never opposite to LIT"}
         if self.funded():                 # the funded stage only (the eval's info is exactly as before)
             ev = out["eval"] if isinstance(out["eval"], dict) else {}
+            pct = min(0.6, float(self.spec.get("funded_room_pct") or 0.6))      # the 25K preset's 60%, or the owner's lower share
+            n_ls = self.spec.get("streak_shrink")
             out.update(stage="funded", sizing="funded", funded=compact_tracker(ev.get("funded")),
                        eval_account=(self.spec.get("funded") or {}).get("eval_account"),
-                       note="funded: max 2 trades a day, one position, never opposite to LIT; 60% of the room, a winner <= one max "
-                            "payout request; the bot never requests a payout")
+                       note=f"funded: max 2 trades a day, one position, never opposite to LIT; {pct * 100:.0f}% of the room"
+                            + (f", 1 micro after {int(n_ls)} losing trades in a row until a winner" if n_ls else "")
+                            + ", a winner <= one max payout request; the bot never requests a payout")
             if isinstance(out["eval"], dict):
                 out["eval"] = {k: v for k, v in out["eval"].items() if k != "funded"}
         return out

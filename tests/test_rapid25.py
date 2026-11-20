@@ -383,7 +383,7 @@ def main() -> int:
         st = A._state_raw(T0)
         check("d. eval floor: $1,000 of room at the start (EOD trailing)", abs(float(st["room"]) - 1000.0) < 0.01, st)
         s1 = A.size({"risk_pts": 10.0, "tgt_pts": 20.0}, st)
-        check("b. ATLAS $250 risk on a 10-pt stop: 11 micros (250 / 22.4)", s1["qty"] == 11 and "min $250" in s1["reasons"][0], s1)
+        check("b. ATLAS $250 risk on a 10-pt stop: 9 micros (250 / 26.9: sized on stop + 10 ticks, owner YES 2026-11-20 rapid-atlas-size-10t; was 11 at 1 tick)", s1["qty"] == 9 and "min $250" in s1["reasons"][0], s1)
         s1b = A.size({"risk_pts": 2.0, "tgt_pts": 4.0}, st)
         check("b. ATLAS never above 20 micros (MFFU 2 minis / 20 micros)", s1b["qty"] == 20, s1b)
         ent = {**pos_at(T0, entry=25020.0, stop=24990.0, target=25050.0), "tgt_pts": 30.0}
@@ -489,7 +489,7 @@ def main() -> int:
         fv = FA.funded_view(T0)
         check("f. funded tracker on the shared 25K book: request $600 today", fv["ready"] and fv["request"] == 600.0, fv)
         s3 = FA.size({"risk_pts": 10.0, "tgt_pts": 20.0}, FA._state_raw(T0))
-        check("f. funded ATLAS: $250 risk, no best-day cap", s3["qty"] == 11, s3)
+        check("f. funded ATLAS: $250 risk, no best-day cap (9 micros: sized on stop + 10 ticks, owner YES rapid-atlas-size-10t)", s3["qty"] == 9, s3)
         FA.spec["funded"]["payouts"] = {"2026-10-05": 600.0}
         fs = FA._funded_state(DAY)
         check("d. funded after the first payout: floor locked at start + $100", fs.get("locked") is True
