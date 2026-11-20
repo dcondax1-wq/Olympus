@@ -140,8 +140,18 @@ def atlas_pairs(root: str = ROOT) -> tuple:
         for t in (c.get("trades") if isinstance(c, dict) else None) or []:
             if isinstance(t, dict) and t.get("entry_t") is not None:
                 twin.setdefault(int(t["entry_t"]), []).append(t)
+    out = _atlas_ledger_pairs([r for r in st.get("ledger") or [] if isinstance(r, dict)], tw, twin)
+    # ATLAS + Zlarior on ONE account (engine/combo50k.py, OFF by default): ATLAS's trades on Zlarior's 50K count for ATLAS
+    z = _read(os.path.join(root, "data", "live_state.json"), {})
+    zl = [r for r in (z.get("ledger") if isinstance(z, dict) else None) or [] if isinstance(r, dict) and r.get("combo")]
+    if zl:
+        out += _atlas_ledger_pairs(zl, tw, twin)
+    return out, 0
+
+
+def _atlas_ledger_pairs(ledger: list, tw: dict, twin: dict) -> list:
+    """One account's ATLAS ledger rows -> pairs vs the twin (account B's 25K, or ATLAS's combo rows on the 50K)."""
     entries, out = {}, []
-    ledger = [r for r in st.get("ledger") or [] if isinstance(r, dict)]
     for r in ledger:
         if r.get("side") in ("buy", "sell") and r.get("entry_t") is not None and (r.get("result") or {}).get("ok") is not False:
             entries[int(r["entry_t"])] = r
@@ -174,7 +184,7 @@ def atlas_pairs(root: str = ROOT) -> tuple:
             continue                                     # an old cache row without R, or the twin still open
         out.append({"t": t, "entry_t": et_, "live_r": round(pnl / risk, 3), "twin_r": round(tr, 3),
                     "gap_usd": round(pnl - tr * risk, 2)})
-    return out, 0
+    return out
 
 
 # ------------------------------------------------------------------------------------------------ verdict

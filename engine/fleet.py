@@ -290,7 +290,10 @@ def lead_snapshot(bot, key: str) -> dict | None:
     | None, "closes": {entry_t: {"pnl", "qty", "exit_t", "reason"}}}. None = the lead is off. Never raises."""
     try:
         if key == "zlarior":
-            led = list(getattr(bot, "ledger", None) or [])
+            # Zlarior's OWN trades only: ATLAS's trades on Zlarior's 50K (engine/combo50k.py, ledger rows "combo") are never
+            # copied (no row has the key while the combo is off = today's snapshot); the 50K's position still counts for the
+            # no-hedge rule in lead_positions
+            led = [r for r in (getattr(bot, "ledger", None) or []) if not (isinstance(r, dict) and r.get("combo"))]
             ot = getattr(bot, "_open_routed", None)
             ad = getattr(bot, "adapter", None)
             closes = {}

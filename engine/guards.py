@@ -93,6 +93,23 @@ def config(bot) -> dict:
         # them a second strategy, LIT's own count stays at its max_per_day (dup_problem)
         out["max_per_day"] = max(2, int(out.get("max_per_day") or 1))
         out["second_on"] = True
+    cb = getattr(bot, "combo", None)
+    if cb:
+        # ATLAS + Zlarior on ONE account (engine/combo50k.py, OFF by default): ATLAS's own max (2) on the 50K next to LIT's own
+        n = int((cb.get("guards") or {}).get("atlas_max_per_day", 2))
+        out["max_per_day"] = max(int(_lit_params(bot).get("max_per_day") or 1) + n, int(out.get("max_per_day") or 1))
+        out["second_on"] = True
+        out["second_max"] = n
+        g = cb.get("guards") or {}
+        if g.get("soft_day_usd_both_bots") is not None:      # the soft daily loss both bots count against (never raised)
+            out["daily_loss_usd"] = min(float(out.get("daily_loss_usd") or 1000.0), float(g["soft_day_usd_both_bots"]))
+        if g.get("eval_day_stop_usd") is not None:
+            try:
+                ev = bot._combo_stage() == "eval"
+            except Exception:
+                ev = True
+            if ev:
+                out["combo_day_stop"] = float(g["eval_day_stop_usd"])
     return out
 
 
@@ -355,7 +372,10 @@ def dup_problem(bot, entry_t: int, c, s: dict, src=None) -> str | None:
                 and trading_day(r["entry_t"]) == trading_day(entry_t) and int(r["entry_t"]) not in void]
         if src:
             ns = len({int(r["entry_t"]) for r in rows if r.get("src")})
-            if ns >= 1:
+            if c.get("second_max") is not None:            # the combo (engine/combo50k.py): ATLAS's own max on the 50K
+                if ns >= int(c["second_max"]):
+                    return f"{ns} ATLAS entr{'y' if ns == 1 else 'ies'} already routed today on the 50K (ATLAS max {int(c['second_max'])} a day)"
+            elif ns >= 1:
                 return f"{ns} second-strategy entry already routed today (max 1 a day: the other slot is LIT's)"
         else:
             nl = len({int(r["entry_t"]) for r in rows if not r.get("src")})
@@ -478,6 +498,10 @@ def entry_problems(bot, ent: dict, action: dict, plan_qty, now: int, c: dict | N
         pnl = bot.day_pnl_routed()
         if pnl <= -float(c["daily_loss_usd"]):
             out.append(f"today's routed P&L ${pnl:,.0f} reached the ${float(c['daily_loss_usd']):,.0f} soft daily loss")
+    if c.get("combo_day_stop") is not None:           # engine/combo50k (OFF by default): the eval day stop of both bots
+        pnl = bot.day_pnl_routed()
+        if pnl <= -float(c["combo_day_stop"]):
+            out.append(f"combo eval day stop: today's closed ${pnl:,.0f} <= -${float(c['combo_day_stop']):,.0f} (no new entry of either bot)")
     p = clock_problem(bot, c)
     if p:
         out.append(p)

@@ -292,8 +292,8 @@ def live_trades(store=None, journal_path=None) -> dict:
     legs, orders = _legs_by_entry(store), _orders_by_entry(store)
     by = {}
     for r in rows:
-        if r.get("entry_t") is None:
-            continue
+        if r.get("entry_t") is None or r.get("combo"):
+            continue                       # r["combo"]: ATLAS's trade on the 50K (engine/combo50k.py): not Zlarior's to audit
         x = by.setdefault(int(r["entry_t"]), {"entries": [], "mods": [], "exits": []})
         s = r.get("side")
         (x["entries"] if s in ("buy", "sell") else x["mods"] if s == "modify" else x["exits"] if s == "exit" else []).append(r)
