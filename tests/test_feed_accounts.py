@@ -483,7 +483,7 @@ def part_b(tmp, shots):
         c = ctx_for(False)
         pg = c.new_page()
         pg.on("pageerror", lambda e: errs2.append(str(e)))
-        ok = go("#/today", "() => document.querySelector('#mnCard')")
+        ok = go("#/today", "() => document.querySelector('#mnCard') && !document.querySelector('#page.zs-hold')")   # zenith_settle.js: read the text once Home shows (not under its still copy)
         t = text()
         check("b. no post: Home still draws (Money now from the cloud's copy, which says what it is), no page error", ok and "Money now" in t and not errs2, errs2[:3])
         pg.goto(base + "ares/")
