@@ -97,6 +97,10 @@ backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 .world-fab:active{transform:translateX(-50%) scale(.98)}
 body:not([data-mode=hub]) .world-fab,body[data-ready=false] .world-fab,.hellas-open .world-fab,.athens-open .world-fab{display:none}
 @media (prefers-reduced-motion:reduce){.world-fab:active{transform:translateX(-50%)}.world-fab::after{animation:none;display:none}}
+/* olympus2: the World's entry card in a light look (Ivory and the other light themes): warm paper glass, dark ink, the same photo */
+html[data-oly-scheme=light] .world-fab{background:linear-gradient(180deg,rgba(255,252,244,.94),rgba(246,238,222,.92));border-color:rgba(138,106,31,.38);box-shadow:0 10px 28px rgba(60,40,10,.18),0 0 0 1px rgba(255,255,255,.6) inset}
+html[data-oly-scheme=light] .world-fab .wf-t b{color:#5a4210}html[data-oly-scheme=light] .world-fab .wf-t small{color:#6b5d48}
+html[data-oly-scheme=light] .world-fab .wf-go{background:rgba(138,106,31,.12);color:#7a5a12}html[data-oly-scheme=light] .world-fab::after{background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.55) 48%,transparent 66%)}
 /* --- the minimap (a city only) */
 .mini{position:fixed;right:calc(12px + var(--sr));top:calc(var(--top-h) + 62px + var(--st));z-index:3;width:108px;height:108px;border-radius:14px;border:1px solid var(--line);
 background:rgba(8,6,18,.6);box-shadow:0 6px 24px rgba(0,0,0,.4);cursor:pointer;touch-action:manipulation;display:none}
