@@ -1,5 +1,5 @@
-"""AGENCY 3D website demos (tools/web_public/agency/demos/, day-web-demos 2026-11-20): four sellable one-page sites for FICTIONAL local
-businesses (restaurant, roofer, car detailer, real estate) + the gallery the owner opens in front of a prospect.
+"""AGENCY 3D website demos (tools/web_public/agency/demos/, day-web-demos 2026-11-20): five sellable one-page sites for FICTIONAL local
+businesses (restaurant, roofer, car detailer, real estate, shed configurator) + the gallery the owner opens in front of a prospect.
   a. static (no browser): every page is there, one h1, noindex, the "demo / fictional" strip, 555 phone links, the booking sheet, reviews,
      the map, the drawn 2D picture inside the 3D stage, lazy3d.js loads scene.js after paint, scenes import only local files (three r160 from
      jarvis/, RoomEnvironment from olympus/three-addons), no outside host in any src / import, first-load weight < 400 kB per page (the 3D
@@ -24,7 +24,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 WEB = ROOT / "tools" / "web_public"
 DEMOS_DIR = WEB / "agency" / "demos"
-DEMOS = ["restaurant", "roofer", "detailer", "estate"]
+DEMOS = ["restaurant", "roofer", "detailer", "estate", "shed"]
 RES: list = []
 
 
@@ -59,7 +59,9 @@ def static():
         if not st: probs.append("2D picture in the stage")
         if not re.search(r'<script src="\.\./\.\./\.\./olympus/lazy3d\.js\?v=l2" data-src="scene\.js\?v=\w+" data-near="#stage" data-event="demo3d" defer>', t): probs.append("lazy3d")
         if re.search(r'(?:src|@import)\s*=?\s*["\(]?https?://', t): probs.append("outside src")
-        if not re.search(r'<p class="lead">', t): probs.append("lead")
+        if not re.search(r'<p class="lead"', t): probs.append("lead")
+        if t.count("(sample review)") != 3 or re.search(r'class="who">[^<]*·', t): probs.append("review credits not marked as samples")
+        if 'class="rating"' in t and not re.search(r'<p class="rating">.*?<span data-sample="Sample: [^"]+">', t): probs.append("rating has no sample placeholder")
         if probs: bad[d] = probs
     check("a. each demo: one h1, noindex, the 'Demo site · fictional' strip, 555 numbers, the booking sheet (says nothing is sent), 3 reviews, the map, "
           "the drawn picture inside the stage, the 3D through lazy3d after paint, no outside src", not bad, bad)
@@ -81,9 +83,16 @@ def static():
     thumbs = {d: (DEMOS_DIR / d / "thumb.jpg").stat().st_size for d in DEMOS}
     check("a. the gallery stills are small (< 60 kB each, own renders of the demos)", all(v < 60_000 for v in thumbs.values()), thumbs)
     gt = read(g)
-    check("a. the gallery: the 4 demos linked, a price to build + monthly for each (8 data-price), the pitch lines and client mode",
-          all(f'href="{d}/"' in gt for d in DEMOS) and gt.count("data-price=") == 8 and gt.count('class="pitch owner-only"') == 4 and 'id="client"' in gt
+    check("a. the gallery: the 5 demos linked, a price to build + monthly for each (10 data-price, the research team's offers), the pitch lines and client mode",
+          all(f'href="{d}/"' in gt for d in DEMOS) and gt.count("data-price=") == 10 and gt.count('class="pitch owner-only"') == 5 and 'id="client"' in gt
           and "html.client .owner-only { display: none !important; }" in gt and 'id="theirs"' in gt, gt.count("data-price="))
+    import json as _json
+    try:
+        sm = _json.loads(read(DEMOS_DIR / "summary.json"))
+    except Exception as e:  # noqa: BLE001
+        sm = {"err": str(e)}
+    check("a. summary.json for the Agency HQ tile: n = 5 demos, a short label, a next step, a time", sm.get("n") == len(DEMOS) and 0 < len(str(sm.get("label", "")).split()) <= 6
+          and isinstance(sm.get("next"), str) and isinstance(sm.get("t"), int), sm)
     priv = [str(p.relative_to(WEB)) for p in DEMOS_DIR.rglob("*") if p.is_file() and p.suffix in (".html", ".js", ".css")
             and re.search(r"demetrades|gmail\.com|@[a-z0-9-]+\.(com|net)", read(p), re.I)]
     check("a. no private names or e-mail addresses in the demo files", not priv, priv)
@@ -125,7 +134,7 @@ CLS_INIT = """window.__cls = 0; try { new PerformanceObserver(l => { for (const 
 
 NO_GL = "delete window.WebGLRenderingContext; delete window.WebGL2RenderingContext;"
 
-SECOND_PICK = {"restaurant": ("dish", "pasta"), "roofer": ("shingle", "terracotta"), "detailer": ("finish", "before"), "estate": ("room", "overview")}
+SECOND_PICK = {"restaurant": ("dish", "pasta"), "roofer": ("shingle", "terracotta"), "detailer": ("finish", "before"), "estate": ("room", "overview"), "shed": ("size", "12x16")}
 
 
 def browser():
@@ -169,6 +178,15 @@ def browser():
             picks = p.evaluate("() => Object.assign({}, window.DEMO_PICKS)")
             pressed = p.locator(f'[data-group="{g}"] .pick[data-value="{v}"]').get_attribute("aria-pressed")
             check(f"b. {d}: the '{v}' pick is pressed, remembered and changes the 3D picture", picks.get(g) == v and pressed == "true" and before != after, (picks, pressed))
+            if d == "shed":
+                p0 = p.evaluate("() => document.getElementById('price').textContent")
+                p.locator('#addons [data-addon="porch"]').click()
+                p.locator('[data-group="roof"] .pick[data-value="barn"]').click()
+                p.wait_for_timeout(300)
+                sh = p.evaluate("() => ({ price: document.getElementById('price').textContent, dock: document.getElementById('dockPrice').textContent, total: window.DEMO_PICKS.total, build: document.getElementById('build').value })")
+                # 12x16 $7,900 + 2 windows $350 (on by default) + porch $900 + barn $600 = $9,750
+                check("b. shed: the price adds up live (size + roof + extras), the dock shows it, the quote carries the whole build",
+                      p0 == "$8,250" and sh["price"] == "$9,750" and sh["dock"] == "$9,750" and sh["total"] == 9750 and "Barn roof" in sh["build"] and "Porch" in sh["build"] and "$9,750" in sh["build"], (p0, sh))
             if d == "roofer":
                 s0 = p.locator("#stage").screenshot()
                 p.locator("input[data-ba]").fill("90")
@@ -251,9 +269,9 @@ def browser():
         p.locator("#client").uncheck()
         back = p.evaluate("() => [...document.querySelectorAll('[data-price]')].filter(e => e.getClientRects().length).length")
         r = p.evaluate(PAGE_PROBE)
-        check("b. gallery: 4 demo cards with their stills and 8 prices, no sideways scroll, taps >= 44 px, sentences >= 15 px",
-              g["cards"] == 4 and g["imgs"] >= 2 and g["prices"] == 8 and g["sw"] <= g["cw"] and not r["small"] and not r["tiny"] and not errs3, (g, r["small"], r["tiny"], errs3))
-        check("b. gallery: client mode hides prices and pitch lines, is remembered after a reload, and turns back off", hidden and kept and back == 8, (hidden, kept, back))
+        check("b. gallery: 5 demo cards with their stills and 10 prices, no sideways scroll, taps >= 44 px, sentences >= 15 px",
+              g["cards"] == 5 and g["imgs"] >= 2 and g["prices"] == 10 and g["sw"] <= g["cw"] and not r["small"] and not r["tiny"] and not errs3, (g, r["small"], r["tiny"], errs3))
+        check("b. gallery: client mode hides prices and pitch lines, is remembered after a reload, and turns back off", hidden and kept and back == 10, (hidden, kept, back))
         # Make it theirs: the form builds the link, the demo shows their name / town / phone, markup stays text
         p.fill("#theirs [name=biz]", "Rosa's <img src=x onerror=alert(1)>Pizzeria")
         p.fill("#theirs [name=city]", "Springfield")
@@ -265,10 +283,18 @@ def browser():
         t = p.evaluate("""() => ({ path: location.pathname, logo: document.querySelector('.logo [data-biz]').textContent, strip: document.querySelector('[data-strip]').textContent,
           city: [...document.querySelectorAll('[data-city]')].map(e => e.textContent), imgs: document.querySelectorAll('main img, header img').length,
           tels: [...new Set([...document.querySelectorAll('a[href^="tel:"]')].map(a => a.getAttribute('href')))], shown: [...document.querySelectorAll('a[href^="tel:"]')].some(a => a.textContent.includes('(555) 010-0199')),
-          fict: document.querySelector('[data-fict]').textContent, rev: document.querySelector('[data-reviews]').textContent })""")
+          fict: document.querySelector('[data-fict]').textContent, rev: document.querySelector('[data-reviews]').textContent,
+          rating: document.querySelector('.rating span:last-child').textContent, trust: !!document.querySelector('.trust').getClientRects().length,
+          claims: [...document.querySelectorAll('main')].map(m => m.innerText).join(' ') })""")
         check("b. Make it theirs: the roofer demo opens with their name (markup stripped, 40 characters max), town, phone on every Call link; marked as a sample with sample reviews",
               t["path"].endswith("/roofer/") and t["logo"].startswith("Rosa's") and len(t["logo"]) <= 40 and "<" not in t["logo"] and t["imgs"] == 0 and t["strip"].startswith("Sample site for Rosa's")
               and set(t["city"]) == {"Springfield"} and t["tels"] == ["tel:+15550100199"] and t["shown"] and t["fict"] == "(sample site)" and "samples" in t["rev"], t)
+        made_up = [w for w in ("318 homeowners", "1,200+", "25-year", "25 yr", "$2M", "Google", "Nextdoor") if w in t["claims"]]
+        check("b. Make it theirs: no made-up rating, trust number, warranty, licence or review platform next to the real name (placeholders, trust strip hidden)",
+              t["rating"].startswith("Sample:") and not t["trust"] and not made_up, (t["rating"], t["trust"], made_up))
+        p.goto(base + "shed/?name=Bo%27s%20Barns", wait_until="load")
+        alias = p.evaluate("() => [document.querySelector('.logo [data-biz]').textContent, document.querySelector('.rating span:last-child').textContent]")
+        check("b. Make it theirs: ?name= works like ?biz=", alias[0] == "Bo's Barns" and alias[1].startswith("Sample:"), alias)
         ctx.close()
         b.close()
     srv.shutdown()
