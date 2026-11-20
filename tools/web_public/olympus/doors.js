@@ -55,9 +55,10 @@
       ids: ['kalshi', 'dionysus', 'kalshicity', 'sibyl', 'tyche'] },
     { id: 'more', title: 'More', line: 'Research, my day, Jarvis, settings and everything else', colour: '#9c6b3c',
       items: [
-        { label: 'Olympus World: every app in one giant city', greek: 'World', href: 'cities/world/', app: 'cities', words: 'world city cities giant map districts 3d all apps find' },
         { label: 'My day', greek: 'Planner', href: 'planner/', app: 'planner', words: 'day week plan calendar tasks habits shift' },
         { label: 'Ask Jarvis', greek: 'Jarvis', href: 'jarvis/', app: '', words: 'jarvis ask assistant voice talk' },
+        // day-manual 2026-11-20: 'Set up your iPhone' replaces 'Olympus World' here (the World lives in Cities, on the Home grid): the door stays at 8
+        { label: 'Set up your iPhone: Home Screen, widget, alerts, Siri', greek: 'Set up', href: 'hub/setup.html', app: '', words: 'setup set up iphone phone home screen icon icons app apps widget notifications alerts push siri shortcuts install add' },
         { label: 'Help: how do I...', greek: 'Help', href: 'hub/help.html', app: '', words: 'help how do i questions faq guide lost stuck find steps payout taxes account restart update pause flatten silent holidays kalshi cloudflare address' },
         { label: 'Owner manual: SOS, who is who, money, words', greek: 'Manual', href: 'hub/manual.html', app: '', words: 'manual sos emergency kill stop everything glossary words room drawdown dll eod pf twin edge who accounts bots hours payout tax' },
         { label: 'Your steps: what is left to do', greek: 'Steps', href: 'hub/steps.html', app: '', words: 'steps todo to do waiting list next need' },

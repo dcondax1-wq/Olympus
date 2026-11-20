@@ -148,6 +148,11 @@ def part_c(shots):
                     pg.evaluate("document.querySelector('.hq-tiles').scrollIntoView({block: 'start'})")
                     pg.wait_for_timeout(200)
                     pg.screenshot(path=os.path.join(SHOTS, f"hq-tiles-{'dark' if look == 'agora' else 'light'}.png"))
+                under = pg.evaluate("""(() => { const b = document.querySelector('.oly-ask-btn'); if (!b) return []; const r = b.getBoundingClientRect();
+                    return [...document.querySelectorAll('#hq b, #hq small, #hq span, #hq p')].filter((e) => { const q = e.getBoundingClientRect();
+                      if (!q.width || !e.textContent.trim()) return false; const rg = document.createRange(); rg.selectNodeContents(e);
+                      return [...rg.getClientRects()].some((t) => t.left < r.right && t.right > r.left && t.top < r.bottom && t.bottom > r.top); }).map((e) => e.textContent.slice(0, 30)); })()""")
+                check(f"c. {look}: no HQ text sits under the Ask Jarvis button on the first screen", not under, under)
                 check(f"c. {look}: the next step is filled ({nxt!r}), no sideways scroll, HQ taps >= 44 px, CLS {cls:.3f} < 0.01, no console error",
                       nxt and "Working out" not in nxt and wide and small == 0 and cls < 0.01 and not errs, (nxt, wide, small, cls, errs[:3]))
                 if look == "agora":

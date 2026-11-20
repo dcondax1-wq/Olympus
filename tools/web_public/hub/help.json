@@ -454,6 +454,25 @@
    "src": "agency/hq.js, agency/index.html, research/handoff/2026-11-20/web/hub/REPORT.md"
   },
   {
+   "id": "setup-iphone",
+   "q": "Set up my iPhone (Home Screen, widget, notifications)",
+   "words": "setup set up iphone phone home screen icon icons app apps widget notifications alerts push siri shortcuts install add",
+   "where": "Home > Your apps > Set up (hub/setup.html)",
+   "steps": [
+    "Olympus on the Home Screen: open your Olympus link in Safari, Share, Add to Home Screen, Add. Open it from the icon from now on.",
+    "Add NQ bot, Kalshi, Jarvis and Websites as their own icons: on the Set up page tap Copy its link, paste in Safari, Add to Home Screen.",
+    "Widget: 3 steps with the free Scriptable app. Notifications: Jarvis home > Allow notifications > Allow.",
+    "Siri: Shortcuts app > + > Open URLs with an app's link; say the shortcut's name."
+   ],
+   "copy": "",
+   "copy_note": "",
+   "link": {
+    "href": "setup.html",
+    "label": "Set up your iPhone"
+   },
+   "src": "hub/setup.html, docs/NOTIFICATIONS.md, widget/"
+  },
+  {
    "id": "steps",
    "q": "What do I still have to do?",
    "words": "steps todo to-do waiting owner list tired repeating what next",

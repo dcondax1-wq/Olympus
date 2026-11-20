@@ -12,6 +12,15 @@
  "items": [
   {
    "day": "2026-11-20",
+   "status": "you",
+   "title": "Olympus looks like an iPhone home screen; set up your phone",
+   "what": "Home now shows big app icons, 4 a row (Cities, Kalshi, NQ bot, Jarvis, My day, Business, Websites, Set up) with the four doors in a dock. The new Set up page puts Olympus and the main apps on your Home Screen, adds the widget, turns on notifications and Siri, about 8 minutes in all.",
+   "money": "",
+   "href": "setup.html",
+   "label": "Set up your iPhone"
+  },
+  {
+   "day": "2026-11-20",
    "status": "site",
    "title": "Website business HQ",
    "what": "The Agency app is now your website business HQ: today's next step, the pipeline (leads, called, proposals, paid), monthly retainers against a $3,000 a month goal, 7 big tiles (Expert, Leads, Audit, Demos, Showcase, Offers, Calls) and a 4-hours-a-week plan around your day job. Search 'website', 'audit' or 'proposal' to get there.",
