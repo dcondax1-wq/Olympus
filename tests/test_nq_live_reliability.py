@@ -333,6 +333,76 @@ def t_fast_alarm():
     check("watchdog.status shows the fast alarm", "fast_alarm" in w_real.status())
 
 
+# ------------------------------------------------------------------------------------------------ 4b. no alarm storm (redteam)
+def t_fast_alarm_storm():
+    """redteam 2026-11-20: a feed that flaps (stale 1 min, fresh 1 min, all morning) used to push a start + a 'back' each
+    time, with no limit, and problem pushes were not counted in ntfy's daily room (the status posts use ~220 of ~250), so a
+    bad night could leave no room for the trade alerts. Now: one alarm per condition per 30 min unless it is still there
+    after that, at most 6 a day, and every problem push is counted in the day's ntfy budget."""
+    now = ts(2026, 11, 18, 9, 0, 40)
+    b = Bot(now)
+    sent = []
+    fa = FAL.FastAlarm(send=lambda p: sent.append(p) or "sent", clock=lambda: now)
+    t = now
+    for i in range(30):                                    # 30 flaps: stale 60 s, fresh 60 s (one hour), polls fine
+        b.health["last_ok_poll"] = t - 5
+        b.health["last_1m_bar_t"] = t - t % 60 - 240       # stale
+        fa.step(b, t)
+        t += 60
+        b.health["last_ok_poll"] = t - 5
+        b.health["last_1m_bar_t"] = t - t % 60 - 60        # fresh
+        fa.step(b, t)
+        t += 60
+    starts = [p for p in sent if not p.get("back")]
+    check("flapping feed for an hour: at most 2 alarms (one per 30 min), not 30", 1 <= len(starts) <= 2, [p["key"] for p in sent])
+    check("... each 'back to normal' follows a pushed alarm only", len(sent) - len(starts) <= len(starts), [p["key"] for p in sent])
+    sent.clear()
+    fa = FAL.FastAlarm(send=lambda p: sent.append(p) or "sent", clock=lambda: now)
+    b.health["last_1m_bar_t"] = now - now % 60 - 60
+    b.health["last_ok_poll"] = now - 5
+    fa.step(b, now)                                        # healthy
+    b.health["last_1m_bar_t"] = now - now % 60 - 240
+    b.health["last_ok_poll"] = now + 25
+    fa.step(b, now + 30)                                   # stale: pushed
+    b.health["last_1m_bar_t"] = now + 60 - (now + 60) % 60 - 60
+    b.health["last_ok_poll"] = now + 55
+    fa.step(b, now + 60)                                   # fresh: back
+    b.health["last_1m_bar_t"] = now + 120 - (now + 120) % 60 - 240
+    b.health["last_ok_poll"] = now + 115
+    fa.step(b, now + 120)                                  # stale again 90 s after its alarm: held
+    check("the same condition again within 30 min: held (no second alarm yet)", len([p for p in sent if not p.get("back")]) == 1
+          and fa.active.get("feed_stale", {}).get("held"), (sent, fa.active))
+    tt = now + 30 + FAL.REPEAT_S + 1
+    b.health["last_ok_poll"] = tt - 5
+    b.health["last_1m_bar_t"] = tt - tt % 60 - 240
+    fa.step(b, tt)
+    check("... still stale 30 min after its alarm: it is pushed then (a lasting problem is never silent)",
+          len([p for p in sent if not p.get("back")]) == 2 and fa.active["feed_stale"]["sent"], sent)
+    sent.clear()
+    fa = FAL.FastAlarm(send=lambda p: sent.append(p) or "sent", clock=lambda: now)
+    t = now
+    for i in range(20):                                    # a lasting flap every 31 min, all day
+        b.health["last_ok_poll"] = t - 5
+        b.health["last_1m_bar_t"] = t - t % 60 - 240
+        fa.step(b, t)
+        b.health["last_1m_bar_t"] = t + 60 - (t + 60) % 60 - 60
+        fa.step(b, t + 60)
+        t += FAL.REPEAT_S + 60
+    check(f"at most {FAL.DAY_MAX} alarm pushes an ET day", len([p for p in sent if not p.get("back")]) == FAL.DAY_MAX,
+          len([p for p in sent if not p.get("back")]))
+    d = tempfile.mkdtemp(prefix="nqstorm_")
+    try:
+        path = os.path.join(d, "instant.json")
+        cfg = {"ntfy": "https://ntfy.invalid", "topic": "t"}
+        n0 = NT.ntfy_today(now, path=path)
+        NT.instant_problem({"key": "fast:bot_down:1", "code": "bot_down", "cond": "bot_down", "title": "x", "body": "y"},
+                           now=now, path=path, cfg=cfg, poster=lambda *a: True)
+        check("a problem push counts in the day's ntfy budget (pc_report keeps room for the trade alerts)",
+              NT.ntfy_today(now, path=path) == n0 + 1, NT.ntfy_today(now, path=path))
+    finally:
+        shutil.rmtree(d, ignore_errors=True)
+
+
 # ------------------------------------------------------------------------------------------------ 5. no update under ATLAS
 def t_update_flat():
     class B:
@@ -393,7 +463,7 @@ def t_extra_account():
 
 
 def main() -> bool:
-    for f in (t_unknown, t_not_routed, t_missed_now, t_fast_alarm, t_update_flat, t_extra_account):
+    for f in (t_unknown, t_not_routed, t_missed_now, t_fast_alarm, t_fast_alarm_storm, t_update_flat, t_extra_account):
         try:
             f()
         except Exception as e:

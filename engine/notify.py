@@ -38,6 +38,7 @@ import datetime as dt
 import json
 import os
 import re
+import threading
 import time
 from zoneinfo import ZoneInfo
 
@@ -501,9 +502,29 @@ def _trade_entry_t(p: dict):
     return _f(m.group(1)) if m else (_f(_d(p).get("t")) if _d(p).get("kind") == "fill" else None)
 
 
+# redteam 2026-11-20: the push threads, the fill audit and the watchdog's fast alarm all read-modify-write instant_sent.json in
+# this process: one lock around each read-modify-write (never around a network post), so one thread never drops another's record
+_INSTANT_LOCK = threading.RLock()
+
+
+def _count_ntfy(st: dict, t_now: float) -> None:
+    """One more post to ntfy this UTC day (ntfy_days: the budget tools/pc_report keeps room for; 3 days kept)."""
+    nd = {k: v for k, v in _d(st.get("ntfy_days")).items() if k >= _utc_day(t_now - 3 * 86400)}
+    nd[_utc_day(t_now)] = int(nd.get(_utc_day(t_now)) or 0) + 1
+    st["ntfy_days"] = nd
+
+
 def instant_record(p: dict, what: str = "entry", now=None, path=None) -> bool:
     """The phone app got this entry / exit at once (engine/push.pc_notify): recorded like an instant ntfy entry, so instant_entry
     and the 15-minute report never send the same alert to the phone again. Never raises."""
+    try:
+        with _INSTANT_LOCK:
+            return _instant_record(p, what, now, path)
+    except Exception:
+        return False
+
+
+def _instant_record(p: dict, what: str, now, path) -> bool:
     try:
         path = path or INSTANT_PATH
         st = _instant_state(path)
@@ -783,11 +804,15 @@ def instant_problem(p: dict, now=None, path=None, cfg=None, poster=None) -> str:
         if not ok:
             return "ntfy did not take it (the 15-minute report sends it instead)"
         t_now = time.time() if now is None else float(now)
-        keys[key] = t_now
-        probs[key] = {"t": t_now, "code": p.get("code"), "cond": p.get("cond"), "back": bool(p.get("back")),
-                      "entry_t": _f(p.get("entry_t")), "bot": str(p.get("bot") or "lit")}
-        st.update(keys=keys, problems=probs)
-        _save_instant(st, path, t_now)
+        with _INSTANT_LOCK:
+            st = _instant_state(path)                   # re-read: another thread may have written meanwhile
+            keys, probs = _d(st.get("keys")), _d(st.get("problems"))
+            keys[key] = t_now
+            probs[key] = {"t": t_now, "code": p.get("code"), "cond": p.get("cond"), "back": bool(p.get("back")),
+                          "entry_t": _f(p.get("entry_t")), "bot": str(p.get("bot") or "lit")}
+            st.update(keys=keys, problems=probs)
+            _count_ntfy(st, t_now)                      # redteam 2026-11-20: a problem push uses ntfy's daily room too
+            _save_instant(st, path, t_now)
         return "sent"
     except Exception as e:
         return f"failed: {e.__class__.__name__}"
@@ -853,18 +878,18 @@ def _instant_send(p: dict, what: str, now=None, path=None, cfg=None, poster=None
         if not ok:
             return "ntfy did not take it (the 15-minute report sends it instead)"
         t_now = time.time() if now is None else float(now)
-        st = _instant_state(path)                  # re-read: another thread may have written meanwhile
-        keys = _d(st.get("keys"))
-        keys[key or f"t:{t_now}"] = t_now
-        et_ = _trade_entry_t(p)
-        if et_ is not None:
-            st.setdefault("entries" if what == "entry" else "exits", {})[key or f"t:{t_now}"] = et_
-        nd = {k: v for k, v in _d(st.get("ntfy_days")).items() if k >= _utc_day(t_now - 3 * 86400)}
-        nd[_utc_day(t_now)] = int(nd.get(_utc_day(t_now)) or 0) + 1
-        st.update(keys=keys, ntfy_days=nd)
-        if what == "exit":
-            _note_close(st, p, t_now)
-        _save_instant(st, path, t_now)
+        with _INSTANT_LOCK:
+            st = _instant_state(path)              # re-read: another thread may have written meanwhile
+            keys = _d(st.get("keys"))
+            keys[key or f"t:{t_now}"] = t_now
+            et_ = _trade_entry_t(p)
+            if et_ is not None:
+                st.setdefault("entries" if what == "entry" else "exits", {})[key or f"t:{t_now}"] = et_
+            st.update(keys=keys)
+            _count_ntfy(st, t_now)
+            if what == "exit":
+                _note_close(st, p, t_now)
+            _save_instant(st, path, t_now)
         return "sent"
     except Exception as e:
         return f"failed: {e.__class__.__name__}"
