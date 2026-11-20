@@ -421,6 +421,15 @@ def olympus_tests():
                    == open(p, encoding="utf-8").read() for p in wrote)
         check("tools/control_branch/control/ (the lead pushes it to Olympus branch control) = init_control_branch's files",
               same and "dcondax1-wq/olympus/edit/control/control/command.json" in open(wrote[1], encoding="utf-8").read())
+        js = open(os.path.join(ROOT, "tools", "web_public", "main.js"), encoding="utf-8").read()
+        rcjs = js[js.index("const RC_CMDS"):js.index("VIEWS.settings")]
+        check("phone Remote page: opens github.com/dcondax1-wq/olympus/edit/control/control/command.json (not the old account)",
+              "const RC_REPO = 'dcondax1-wq/olympus'" in rcjs and "/edit/control/control/command.json" in rcjs
+              and "demetrades2000" not in rcjs and "extras?.repo" not in rcjs)
+        first = [ln.split("'")[3] for ln in rcjs.split("const RCTL")[0].splitlines() if ln.strip().startswith("['")][:4]
+        check("phone Remote page: an 'Update now' button next to Status / Pause / Flatten, and the ~60 s / flat / 01:50-16:00 line",
+              first == ["Status", "Update now", "Pause until tomorrow", "Flatten"] and "['update', 'Update now'" in rcjs
+              and "~60 s" in rcjs and "flat" in rcjs and "01:50-16:00 ET on a weekday" in rcjs and "rcWhen" in rcjs, first)
         check("init_control_branch's default remote follows update_source.json (olympus here)",
               icb.default_remote(pc, env) == "olympus" and icb.default_remote(phone, env) == "origin"
               and icb.default_remote(ROOT) == "olympus")

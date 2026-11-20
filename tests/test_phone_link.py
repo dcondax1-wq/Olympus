@@ -98,6 +98,129 @@ check("g. private_why allows <pc>.ts.net:8444 from a tailnet device", L.private_
 hdr2 = dict(hdr, **{"tailscale-funnel-request": "1"})
 check("g. ... but never a Funnel request", L.private_why("127.0.0.1", hdr2) is not None)
 
+# i. Windows review 2026-11-20: the default runner reads UTF-8 (not the cp1252 console page), closes stdin, has a timeout
+import subprocess  # noqa: E402
+seen = {}
+real_run = subprocess.run
+
+
+def spy(cmd, **kw):
+    seen.update(kw)
+    return R(json.dumps({"BackendState": "Running", "User": {"1": {"DisplayName": "\u039d\u0399\u039a\u039f\u03a3"}}}))
+
+
+subprocess.run = spy
+try:
+    got = P._json("ts", ["status", "--json"])
+finally:
+    subprocess.run = real_run
+check("i. default runner: encoding utf-8, errors replace, stdin closed, timeout", seen.get("encoding") == "utf-8"
+      and seen.get("errors") == "replace" and seen.get("stdin") == subprocess.DEVNULL and seen.get("timeout") == P.TIMEOUT, seen)
+check("i. a Greek display name in status --json still reads as Running", got.get("BackendState") == "Running", got)
+out = P._default_runner([sys.executable, "-c", "import sys; sys.stdout.buffer.write('{\"n\": \"\u039d\u03a3\"}'.encode('utf-8'))"])
+check("i. real process: UTF-8 bytes decoded as UTF-8", json.loads(out.stdout) == {"n": "\u039d\u03a3"}, out.stdout)
+P.TIMEOUT, t0 = 1, P.TIMEOUT
+try:
+    out = P._default_runner([sys.executable, "-c", "import sys,time; print('visit https://login.tailscale.com/f/serve?node=abc', flush=True); time.sleep(30)"])
+finally:
+    P.TIMEOUT = t0
+check("i. a hanging tailscale (it asks a question): returncode -9 after the timeout, what it printed kept",
+      out.returncode == -9 and "login.tailscale.com" in (out.stdout or "") and "timed out" in out.stderr, (out.returncode, out.stdout, out.stderr))
+
+# j. serve status --json prints null / {} when nothing is served -> 8444
+for empty in ("null", "{}", ""):
+    calls = []
+
+    def run_e(cmd, empty=empty):
+        calls.append(cmd[1:])
+        if cmd[1:3] == ["status", "--json"]:
+            return R(json.dumps({"BackendState": "Running"}))
+        if cmd[1:4] == ["serve", "status", "--json"]:
+            return R(empty if len([c for c in calls if c[:2] == ["serve", "--bg"]]) == 0 else json.dumps(OURS_8444))
+        return R("")
+    r = P.ensure(env=ENV, runner=run_e, ts="ts", say=lambda *_: None)
+    check("j. nothing served yet (%r): 8444 switched on" % empty, r == {"ok": True, "port": 8444, "why": "switched on"}, r)
+
+# k. a foreground `tailscale serve` session holds 8444 (and even proxies the bot): used, not ours -> 8446
+FG = {"TCP": {"443": {}}, "Web": {H + ":443": {"Handlers": {"/": {"Proxy": "http://127.0.0.1:5000"}}}},
+      "Foreground": {"sess1": {"TCP": {"8444": {"HTTPS": True}},
+                               "Web": {H + ":8444": {"Handlers": {"/": {"Proxy": "http://127.0.0.1:8766"}}}}}}}
+sc = P.scan(FG)
+check("k. foreground ports are used, never 'ours'", 8444 in sc["used"] and sc["ours"] == [] and 443 in sc["used"], sc)
+check("k. odd shapes never raise", P.scan({"Web": None, "TCP": [], "Foreground": {"x": None}, "AllowFunnel": None})["ours"] == [])
+
+
+class RF:
+    def __init__(self, code, out="", err=""):
+        self.returncode, self.stdout, self.stderr = code, out, err
+
+
+def fake_fail(answer, then=None):
+    calls = []
+
+    def runner(cmd):
+        calls.append(cmd[1:])
+        if cmd[1:3] == ["status", "--json"]:
+            return R(json.dumps({"BackendState": "Running"}))
+        if cmd[1:4] == ["serve", "status", "--json"]:
+            n = len([c for c in calls if c[:1] == ["serve"] and "status" not in c])
+            return R(json.dumps(then if (then and n >= 2) else JARVIS))
+        return answer(cmd[1:], calls)
+    return runner, calls
+
+
+# l. a server run as another Windows user: the reason says which user must run it
+run, calls = fake_fail(lambda a, c: RF(1, "", "Access denied: serve config denied"))
+r = P.ensure(env=ENV, runner=run, ts="ts", say=lambda *_: None)
+check("l. serve refused: the reason names the Windows user / Tailscale app", not r["ok"] and "Windows user" in r["why"], r)
+
+# m. an older Tailscale without --yes: asked once more without it
+run, calls = fake_fail(lambda a, c: RF(2, "", "flag provided but not defined: -yes") if "--yes" in a else RF(0), then=OURS_8444)
+r = P.ensure(env=ENV, runner=run, ts="ts", say=lambda *_: None)
+sets = [c for c in calls if c[:1] == ["serve"] and "status" not in c]
+check("m. no --yes flag: retried as `serve --bg --https=8444 http://127.0.0.1:8766`, on",
+      r["ok"] and sets == [["serve", "--bg", "--yes", "--https=8444", "http://127.0.0.1:8766"],
+                           ["serve", "--bg", "--https=8444", "http://127.0.0.1:8766"]], (r, sets))
+
+# n. Tailscale waits for Serve / HTTPS to be switched on for the tailnet: the link reaches the reason
+run, calls = fake_fail(lambda a, c: RF(-9, "Serve is not enabled on your tailnet.\nTo enable, visit:\n  https://login.tailscale.com/f/serve?node=n1\nWaiting...",
+                                       "(timed out after 20 s)"))
+r = P.ensure(env=ENV, runner=run, ts="ts", say=lambda *_: None)
+check("n. waiting for Serve / HTTPS: the reason carries the login.tailscale.com link",
+      not r["ok"] and "https://login.tailscale.com/f/serve?node=n1" in r["why"], r)
+
+# o. at logon Tailscale is not connected yet: start_background tries again (here 3 tries), then stops trying
+answers = [{"ok": False, "port": None, "why": "Tailscale is not signed in / running"}] * 2 + [{"ok": True, "port": 8444, "why": "switched on"}]
+said, slept, real_ensure = [], [], P.ensure
+P.ensure = lambda env=None, say=None: answers.pop(0)
+try:
+    t = P.start_background(env={}, say=said.append, tries=5, wait_s=7, sleep=slept.append, force=True)
+    t.join(5)
+finally:
+    P.ensure = real_ensure
+check("o. not connected at logon: tried again after 7 s twice, then on", slept == [7, 7] and said[-1] == "[phone_link] port 8444: switched on", (slept, said))
+answers = [{"ok": False, "port": None, "why": "Tailscale is not installed on this PC"}] * 3
+slept = []
+P.ensure = lambda env=None, say=None: answers.pop(0)
+try:
+    t = P.start_background(env={}, say=lambda *_: None, tries=5, wait_s=7, sleep=slept.append, force=True)
+    t.join(5)
+finally:
+    P.ensure = real_ensure
+check("o. not installed: no retries", slept == [] and len(answers) == 2, slept)
+
+# p. tailscale.exe: ProgramW6432 (a 32-bit Python's ProgramFiles points to Program Files (x86))
+import tempfile  # noqa: E402
+d = tempfile.mkdtemp(prefix="le_ts_")
+os.makedirs(os.path.join(d, "Tailscale"))
+exe = os.path.join(d, "Tailscale", "tailscale.exe")
+open(exe, "w").close()
+import shutil  # noqa: E402
+if not shutil.which("tailscale"):
+    check("p. found under %ProgramW6432%\\Tailscale", P.find_tailscale({"ProgramW6432": d, "ProgramFiles": "/nope"}) == exe)
+check("p. LE_TAILSCALE wins", P.find_tailscale({"LE_TAILSCALE": exe}) == exe)
+shutil.rmtree(d, ignore_errors=True)
+
 # h. server.py wires it at startup
 src = open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "server.py"), encoding="utf-8").read()
 check("h. server.py starts phone_link at startup", "phone_link" in src and "start_background" in src)
