@@ -79,6 +79,20 @@ def fixture(root):
     w(root, "engine/combo50k.py", '"""ATLAS + Zlarior on ONE account."""\n')
     w(root, "STATE.md", "# STATE\n\nLive: Zlarior.\n")
     w(root, "logs/zeus/review_2026-11-18.json", {"day": "2026-11-18", "text": "Matched the twin."})
+    # day-obsidian2: the loss anatomy rows (a LIT 2026 loser, a 2021-25 loser, a BLITZ winner), news, hard rules
+    cols = ["bot", "day", "span", "entry_t", "exit_t", "side", "exit", "r", "usd", "member", "hm", "session", "vix_band", "d1", "h1",
+            "mfe_r", "mae_r", "news_in", "post_tgt_clean", "rng_atr", "news_next", "pd_tgt_r", "mins"]
+    w(root, "research/anatomy/trades_lit.json", {"cols": cols, "rows": [
+        ["lit", "2026-03-10", "H1", 1773135000, 1773138600, "long", "STOP", -1.0, -400.0, "LIT", "05:30", "London late 05-08", "VIX 15-20", "against", "against",
+         0.7, 1.0, False, False, 0.4, 600, 3.0, 60],
+        ["lit", "2024-05-01", "2021-25", 1714557600, 1714561200, "short", "STOP", -1.0, -300.0, "LIT", "06:00", "London late 05-08", "VIX <15", "with", "with",
+         0.1, 1.0, False, False, 0.2, 600, 3.0, 60]]})
+    w(root, "research/anatomy/trades_blitz.json", {"cols": cols, "rows": [
+        ["blitz", "2026-03-10", "H1", 1773153000, 1773153600, "short", "TARGET", 1.0, 150.0, "BLITZ", "10:30", "NY AM 09:30-11:30", "VIX 15-20", "against", "against",
+         1.2, 0.2, False, None, 0.5, 600, 3.0, 10]]})
+    w(root, "data/news/events.csv", "date,time_et,event,impact,source\n2026-03-10,08:30,CPI (consumer inflation),high,bls.gov\n"
+      "2026-11-18,14:00,FOMC rate decision,high,federalreserve.gov\n2026-11-18,09:00,Some low thing,low,x\n")
+    w(root, "CLAUDE.md", "# brief\n\n## Hard rules\n- **Paper only for Claude:** never arm live.\n- **Stops** 1 tick beyond the sweep extreme,\n  size follows the stop.\n\n## Other\n- not a rule\n")
 
 
 def notes_of(vault):
@@ -133,7 +147,45 @@ def main() -> int:
               and "colorGroups" in open(os.path.join(vault, ".obsidian", "graph.json")).read()
               and "zeus" in open(os.path.join(vault, ".obsidian", "appearance.json")).read()
               and "ZEUS Brain/ZEUS Home.md" in open(os.path.join(vault, ".obsidian", "workspace.json")).read())
-        check("a. no plugin syntax (no dataview blocks)", not any("```dataview" in t for t in N.values()))
+        check("a. no plugin syntax outside ZEUS Dataview (Home and every other note read fine without plugins)",
+              not any("```dataview" in t for k, t in N.items() if k != "ZEUS Dataview.md") and "```dataview" in N.get("ZEUS Dataview.md", ""))
+        # day-obsidian2: the big layer (tools/obsidian_more.py)
+        want2 = ["Trades/Trade 2026-03-10 0530 LIT long.md", "Trades/Trade 2026-03-10 1030 BLITZ short.md", "Trades/Trade 2026-11-18 0942 LIT long paper.md",
+                 "Trades/Trade 2026-11-17 0410 ATLAS short live.md", "Lessons/Lesson worked then turned.md", "Lessons/Lesson never worked.md",
+                 "Lessons/Lesson against both trends.md", "Lessons/Lesson not yet classified.md", "News/News CPI (consumer inflation).md",
+                 "News/News FOMC rate decision.md", "Weeks/Week 2026-W47.md", "Weeks/Week 2026-W11.md", "Decide/Decide d1.md", "Decide/Decide d2.md",
+                 "Rules/Rule Paper only for Claude.md", "Rules/Rule Stops.md", "ZEUS Trades.md", "ZEUS Weeks.md", "ZEUS News.md", "ZEUS Rules.md", "ZEUS Dataview.md"]
+        miss2 = [x for x in want2 if x not in N]
+        check("a2. trades, lessons, news types, weeks, Decide cards, hard rules, hubs are all written", not miss2, miss2)
+        tl = N.get("Trades/Trade 2026-03-10 0530 LIT long.md", "")
+        check("a2. a trade note: number front matter, reason codes (anatomy cause + checklist flag), news, day + week links",
+              "pnl: -400.0" in tl and "cause: \"turned\"" in tl and "[[Lesson worked then turned|turned]]" in tl and "[[Lesson against both trends|against_htf]]" in tl
+              and "[[News CPI (consumer inflation)|CPI (consumer inflation)]]" in tl and "[[Week 2026-W11|2026-W11]]" in tl, tl[:900])
+        check("a2. the low-impact release is left out", not any("Some low thing" in t for t in N.values()))
+        ln_ = N.get("Lessons/Lesson never worked.md", "")
+        lt_ = N.get("Lessons/Lesson worked then turned.md", "")
+        check("a2. lessons recount: 'never' counts the 2021-25 loser, 'turned' the 2026 one with its example",
+              "losers_all: 1" in ln_ and "losers_2026: 0" in ln_ and "losers_2026: 1" in lt_ and "[[Trade 2026-03-10 0530 LIT long|" in lt_, (ln_[:300], lt_[:300]))
+        lf = N.get("Lessons/Lesson against both trends.md", "")
+        check("a2. a checklist lesson weighs losers AND the winners it would skip", "## Would skipping pay?" in lf and "Winners it would have skipped" in lf
+              and "[[Trade 2026-03-10 1030 BLITZ short|" in lf, lf[:600])
+        check("a2. ZEUS Lessons shows the reason-code table", "## Reason codes (recounted on every build)" in les and "[[Lesson never worked" in les)
+        dy = N.get("Days/Day 2026-03-10.md", "")
+        check("a2. a daily note: each bot's day, every trade as a link, the day's lessons, the news, the week",
+              "## What each bot did" in dy and "[[Trade 2026-03-10 0530 LIT long|" in dy and "## Lessons of the day" in dy and "## News" in dy
+              and "[[Week 2026-W11|2026-W11]]" in dy, dy[:900])
+        wk = N.get("Weeks/Week 2026-W47.md", "")
+        check("a2. a weekly review: $ by bot, best / worst, lessons, news, research, decisions added",
+              "## Each bot" in wk and "LIT paper: +$812" in wk and "ATLAS live: -$250" in wk and "## Lessons of the week" in wk
+              and "FOMC rate decision" in wk and "[[lit-test-2026-11-18|" in wk and "[[Decide d1|" in wk, wk[:900])
+        dc = N.get("Decide/Decide d1.md", "")
+        check("a2. a Decide card note links its write-up, strategy and the Decisions hub; Decisions links the card",
+              "status: \"open\"" in dc and "[[lit-test-2026-11-18|" in dc and "[[ZEUS Decisions]]" in dc and "[[Decide d1|" in dec, dc[:600])
+        rl = N.get("Rules/Rule Stops.md", "")
+        check("a2. a hard-rule note (continuation line kept) links what it touches", "size follows the stop" in rl and "[[Zlarior (LIT)]]" in rl
+              and "not a rule" not in N.get("ZEUS Rules.md", "x"), rl[:400])
+        check("a2. Home: this week, what the losses teach, the new hubs", all(x in home for x in ("## This week", "## What the losses teach", "[[ZEUS Trades]]",
+                                                                                                  "[[ZEUS News]]", "[[ZEUS Rules]]", "[[ZEUS Dataview]]")), home[:1200])
         # b.
         r2 = OB.build(vault, root=root)
         check("b. a second build writes nothing and removes nothing", r2["wrote"] == [] and r2["removed"] == [], r2["wrote"][:5])
@@ -186,9 +238,17 @@ def main() -> int:
               and "_brain.build(cfg[\"vault\"], standalone=False)" in os_ and "BRAIN_EVERY_S" in os_)
         src = open(os.path.join(ROOT, "tools", "obsidian_brain.py"), encoding="utf-8").read()
         check("f. no network, no broker / order import, no clock", not re.search(r"urllib|requests|socket|ninjatrader|engine\.live\b|place_order|time\.time|datetime\.now", src))
+        src2 = open(os.path.join(ROOT, "tools", "obsidian_more.py"), encoding="utf-8").read()
+        check("f. the big layer too: no network, no broker, no clock, no live file written",
+              not re.search(r"urllib|requests|socket|ninjatrader|engine\.live\b|place_order|time\.time|\.now\(|today\(|open\([^)]*['\"]w", src2))
         # g.
         real = os.path.join(tmp, "realbuild")
         rr = OB.build(real, root=ROOT)
+        size = sum(os.path.getsize(p) for p in glob.glob(os.path.join(real, "**", "*"), recursive=True) if os.path.isfile(p))
+        check("g. the REAL vault stays under 30 MB and has the big layer (trades, lessons, weeks)", size < 30e6 and rr["notes"] > 900
+              and os.path.isfile(os.path.join(real, OB.SUB, "Lessons", "Lesson never worked.md")), (size, rr["notes"]))
+        rr2 = OB.build(real, root=ROOT)
+        check("b. the REAL repo build is idempotent (a second build writes nothing)", rr2["wrote"] == [], rr2["wrote"][:5])
         check("d. the REAL repo build: every [[link]] resolves", rr["notes"] > 100 and not dangling(real), dangling(real)[:5])
         rf = [f for f in SP.scan(real)]
         check("c. the REAL repo build passes the site privacy scanner", not rf, rf[:3])

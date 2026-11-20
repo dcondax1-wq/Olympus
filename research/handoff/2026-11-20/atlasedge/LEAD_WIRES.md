@@ -17,3 +17,7 @@ For the lead's merge:
   once edge.json carries Nov 19 (no edit needed if it reads `a[3]`).
 - The *_best.json member files and runs/baseline.json were NOT rebuilt (VIX after Oct 16 is not in the repo, so a raw re-run would
   mis-set the VIX targets; the replay with CBOE VIX already exists and was used). They still end Oct 16; nothing reads them for the light now.
+- ROUND 2 (apply-on-yes): research/handoff/2026-11-20/atlasedge/APPLY_ON_YES.md + account_b.patch (engine/account_b.py, OFF by default:
+  FUNDED_ON all None). On the owner's YES: `git apply` the patch, flip the one FUNDED_ON line, run the 3 suites listed there, ship.
+  New suite tests/test_atlas_funded_switches.py (35/35): consider adding "atlas_funded_switches" to the nq area in tests/run_area.py
+  once the patch is in (before that it applies the patch to a temp copy, ~2 min).

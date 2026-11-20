@@ -34,8 +34,8 @@ const svg = illustratedColosseum();
 assert.equal(svg, illustratedColosseum(), 'artwork is deterministic');
 assert.ok(svg.length < 18000, 'illustration remains a small inline asset');
 assert.equal((svg.match(/href="#arena-arch"/g) || []).length, 66, 'three complete vaulted galleries');
-assert.equal((svg.match(/fill="#701e36"/g) || []).length, 4, 'imperial banners');
-assert.equal((svg.match(/fill="#ee9d45"/g) || []).length, 4, 'torch towers');
+assert.equal((svg.match(/<path d="M-15 0H15V78L0 92 -15 78Z"/g) || []).length, 4, 'imperial banners');   // palette moved to the house bronze/gold (2026-11)
+assert.equal((svg.match(/fill="url\(#arena-fire-pool\)"/g) || []).length, 4, 'torch towers');
 assert.ok(!/https?:|<script|<foreignObject|\bon\w+=/i.test(svg.replace('xmlns="http://www.w3.org/2000/svg"', '')), 'art is self-contained and inert');
 console.log(`Arena citadel PASS: HD ${high.calls} calls/${high.triangles} triangles; LITE ${low.calls}/${low.triangles}; fallback ${svg.length} bytes.`);
 

@@ -15,7 +15,8 @@ function fixture() {
     moveTo() {}, lineTo() {}, stroke() {}, closePath() {}, fill() {}, ellipse() { calls.pads++; },
     arc() { calls.arcs++; }, fillText(s) { calls.labels.push(s); },
   };
-  const canvas = { clientWidth: 390, clientHeight: 844, width: 0, height: 0,
+  const canvas = { clientWidth: 390, clientHeight: 844, width: 0, height: 0, attrs: {},
+    setAttribute(k, v) { this.attrs[k] = String(v); },   // fallback.js labels the canvas (role=img + aria-label)
     getContext(kind) { assert.equal(kind, '2d'); return ctx; } };
   return { canvas, calls };
 }
