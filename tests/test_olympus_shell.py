@@ -20,20 +20,25 @@ from tests import agora_kit as AK  # noqa: E402
 check = AK.check
 WEB = AK.WEB
 LIVE = re.compile(r"^(home\.json|data\.json|kalshi\.json|money/|me/me\.json|icons/|alerts\.json|writeups/|status_feed\.json|live\.json|kalshicity/(forward|scan)\.json|kalshi/kit\.json)")
-MAIN = {"index.html": "olympus/shell.css", "jarvis/index.html": "../olympus/shell.css", "hub/doors.html": "../olympus/shell.css",
+MAIN = {"jarvis/index.html": "../olympus/shell.css", "hub/doors.html": "../olympus/shell.css",
         "hub/index.html": "../olympus/shell.css", "settings/index.html": "../olympus/shell.css"}
 
 
 def test_static():
     css = AK.read(os.path.join(WEB, "olympus", "shell.css"))
     check("a. olympus/shell.css: the tokens (colour, type, spacing, radius, motion, safe area), a light set, the glued bars, reduced motion",
-          all(t in css for t in ("--o-bg:", "--o-font:", "--o-4:", "--o-r-md:", "--o-ease:", "--o-sab: env(safe-area-inset-bottom", "--o-bar-total:",
+          all(t in css for t in ("--o-bg:", "--o-font:", "--o-4:", "--o-r-md:", "--o-ease:", "--o-sab: var(--jz-sa-bottom, env(safe-area-inset-bottom", "--o-bar-total:",
                                  'html[data-oly-scheme="light"]', "nav#tabs.tabs", "prefers-reduced-motion: reduce")))
     for page, href in MAIN.items():
         html = AK.read(os.path.join(WEB, page))
         i = html.find(href + "?v=")
         check(f"a. {page} loads the shell layer after its own sheets (last stylesheet in <head>)",
               i > 0 and '<link rel="stylesheet"' not in html[i:html.find("</head>")].split("\n", 1)[-1], href)
+    z, css2 = AK.read(os.path.join(WEB, "index.html")), re.sub(r"/\*.*?\*/", "", css, flags=re.S)
+    zi = z[z.find('<style id="oly-shell">'):z.find("</style>", z.find('<style id="oly-shell">'))]
+    rules = [r.strip() for r in re.findall(r"[^{}]+\{[^{}]*\}", re.sub(r"@media[^{]+\{", "", css2)) if "nav#tabs" in r or "--o-bar-total:" in r]
+    check("a. Zenith carries the shell layer inline (a slow site never holds its first frame), in step with olympus/shell.css",
+          zi and all(" ".join(r.split()) in " ".join(zi.split()) for r in rules) and z.find('<style id="oly-shell">') > z.find("zenith_agora.css"), len(rules))
     gate = AK.read(os.path.join(WEB, "gate", "index.html"))
     check("a. the Gate loads the shell layer right after gate.css (from GATE_BASE)", gate.find("'olympus/shell.css?v=") > gate.find("'gate/gate.css?v="))
 
