@@ -11,6 +11,9 @@ Sources (read only):
                                  (the dates are its medians; the same numbers as the Money plan page, business/plan.html)
   research/lab/fleet_plan.json   tools/money/fleet_plan.py (2026-11-17): the fallback when money_plan.json is missing
   research/lab/rapid25.json      tools/money/rapid25.py: Rapid EOD 25K / 50K eval and funded numbers
+  research/lab/payday_plan.json  tools/money/payday_plan.py (2026-11-20 night-payday): each account's FIRST PAYOUT date from
+                                 today's balances (median + 80% range) and the chance one pays by Dec 31 / Jan 15: the ladder's
+                                 payout milestones use it when present
   tools/web_public/business/accounts.json   the plan (stages, ATLAS funded payouts) and the "decisions"
   tools/board.py gather          the live board: which accounts the PC / owner say passed or are funded
 THE LEAD KEEPS IT CURRENT: edit WEEK below (mark "done": True when a step is finished) and re-run. Estimates only; the dates
@@ -31,6 +34,7 @@ for p in (ROOT, os.path.join(ROOT, "tools"), os.path.join(ROOT, "tools", "money"
 
 FLEET = os.path.join(ROOT, "research", "lab", "fleet_plan.json")
 MONEY = os.path.join(ROOT, "research", "lab", "money_plan.json")
+PAYDAY = os.path.join(ROOT, "research", "lab", "payday_plan.json")   # tools/money/payday_plan.py (2026-11-20): first payout dates
 RAPID25 = os.path.join(ROOT, "research", "lab", "rapid25.json")
 ACCOUNTS = os.path.join(ROOT, "tools", "web_public", "business", "accounts.json")
 OUT = os.path.join(ROOT, "tools", "web_public", "business", "goals.json")
@@ -49,7 +53,7 @@ WEEK = [
      "why": "So the funded 25K's first payout is not blocked when it is ready (~late Dec).", "done": False},
     {"date": "2026-11-18", "what": "Leave the PC and NinjaTrader on every weekday",
      "why": "The bot trades 02:00-15:55 ET by itself and is flat by 15:55. Nothing to click.", "done": False, "every": "every weekday"},
-    {"date": "2026-11-19", "what": "Buy the Rapid EOD 25K ($97.20 with CLUB) from your own money, then add it to the bot",
+    {"date": "2026-11-20", "what": "Rapid EOD 25K bought ($97.20 with CLUB): add it to the bot this morning",
      "why": "Double-click ADD_ACCOUNT.bat, type 5, paste the Name (or: python -X utf8 -m engine.accounts add --plan rapideod25 "
             "--name \"NAME\"). It is added OFF until START BOT + your phrase. Leaves $52.80 of your $150.", "done": False, "id": "buy_r25"},
     {"date": "2026-11-19", "what": "Add Cloudflare Pages (free, 3 steps in docs/HOSTING.md)",
@@ -185,11 +189,55 @@ def _ladder_money(M: dict, is_, payouts_n: int, has_plan) -> tuple:
          "usd": round(F5["spring_net_m"], -2), "done": False},
     ]
     L = [m for m in L if m.get("date")]
+    _payday(L)
     ref = M["rows"][BAD]["fleet"]["five"]
     bad = (f"If the market is like 2021-25 (the bots had no edge): about $0 a month comes in (payouts barely cover the eval "
            f"fees; 6 months end near {usd(round(ref['net_6m'], -2))} after the tax pot) and {round(ref['p_no_pay_6m'])} in 100 runs get "
            f"no payout at all. Keep up to {usd(round(ref['pocket_p95'], -2))} ready for re-buys.")
-    return L, bad, "research/lab/money_plan.json (" + str(M.get("date")) + ")"
+    src = "research/lab/money_plan.json (" + str(M.get("date")) + ")"
+    if os.path.exists(PAYDAY):
+        src += " + research/lab/payday_plan.json (" + str(_load(PAYDAY).get("date")) + ")"
+    return L, bad, src
+
+
+def _range(a: dict) -> str:
+    lo, hi = a.get("first_pay_p10"), a.get("first_pay_p90")
+    if not lo:
+        return ""
+    if hi:
+        return f"8 in 10 runs between {when(lo, False)} and {when(hi, False)}"
+    return f"9 in 10 runs not before {when(lo, False)}, and more than 1 in 10 get none by mid-May"
+
+
+def _payday(L: list, P: dict | None = None) -> None:
+    """research/lab/payday_plan.json (tools/money/payday_plan.py, today's balances): the payout milestones' dates + chances."""
+    P = P if P is not None else _load(PAYDAY)
+    R = ((P.get("rows") or {}).get(MKT) or {})
+    A, F = R.get("accounts") or {}, R.get("fleet") or {}
+    if not A or not F.get("first_any_med"):
+        return
+    by = {m["id"]: m for m in L}
+    a25 = A.get("A25") or {}
+    if "pay1" in by:
+        m = by["pay1"]
+        m["date"] = F["first_any_med"]
+        m["what"] = "First payout: most likely ATLAS's funded 25K"
+        m["detail"] = (f"{F['p_any_by_dec31']:.0f} in 100 runs at least one account pays by Dec 31, {F['p_any_by_jan15']:.0f} by Jan 15 "
+                       f"(payday plan, from today's balances). ATLAS alone: middle {when(a25['first_pay_med'], False)}, "
+                       f"{_range(a25)}. " + m["detail"]) if a25.get("first_pay_med") else m["detail"]
+    if "buy_r50" in by and "pay1" in by:                          # bought from payouts: the session after the first one at the earliest
+        by["buy_r50"]["date"] = max(by["buy_r50"]["date"], after(by["pay1"]["date"], 1))
+    for key, mid, what in (("Z50", "z50_pay", "First payout: Zlarior's funded 50K"), ("N25", "n25_pay", "First payout: Zlarior's 25K #2"),
+                           ("R25", "r25_pay", "First payout: Rapid EOD 25K")):
+        a = A.get(key) or {}
+        if not a.get("first_pay_med"):
+            continue
+        det = (f"Middle case, {_range(a)}; about {usd(a['first_pay_usd'])} to you. {a['p_by_jan15']:.0f} in 100 runs pay by Jan 15; "
+               f"{a['p_lost_before_pay']:.0f} in 100 lose the account first (a re-buy).")
+        if mid in by:
+            by[mid].update(date=a["first_pay_med"], detail=det)
+        else:
+            L.append({"id": mid, "date": a["first_pay_med"], "what": what, "detail": det, "done": False})
 
 
 def build(offline: bool = False, today: str | None = None, fleet=None, r25=None, acc=None, rows=None, pc=None, money=None) -> dict:
