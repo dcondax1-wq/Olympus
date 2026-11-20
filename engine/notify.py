@@ -227,6 +227,8 @@ def apply(msgs, now, s: dict | None = None) -> list:
             continue                                # the phone already got this entry the moment it was routed
         if kind == "trade_closed" and instant_sent(entry_t_of(m), what="exits"):
             continue                                # the phone app already got this exit the moment the bot saw it
+        if kind == "problems" and problem_dup(m, now):
+            continue                                # the PC's fast alarm already sent it (engine/fast_alarm.py, instant_problem)
         if quiet(now, s) and not rings(kind, s) and not m.get("night"):
             if kind in ("trade_opened", "trade_closed") or m.get("priority") in (None, "", "default"):
                 m = {**m, "priority": "low"}
@@ -479,7 +481,7 @@ def _save_instant(st: dict, path, t_now: float) -> None:
     keys = _d(st.get("keys"))
     cut = t_now - INSTANT_KEEP_S
     out = {"keys": {k: v for k, v in keys.items() if (_f(v) or 0) >= cut}}
-    for what in ("entries", "exits"):
+    for what in ("entries", "exits", "problems"):
         out[what] = {k: v for k, v in _d(st.get(what)).items() if (_f(keys.get(k)) or t_now) >= cut}
     os.makedirs(os.path.dirname(path), exist_ok=True)
     tmp = path + ".tmp"
@@ -598,6 +600,76 @@ def _post(base, topic, msg, timeout=8) -> bool:
     req = urllib.request.Request(f"{base}/{topic}", data=msg["body"].encode("utf-8"), headers=h, method="POST")
     with urllib.request.urlopen(req, timeout=timeout) as r:
         return 200 <= r.status < 300
+
+
+# ------------------------------------------------------------------------------------------------ instant problems
+# (night-nqlive 2026-11-20) The bot's own fast alarm (engine/fast_alarm.py: armed but not polling / feed stale in the entry hours,
+# within 2 minutes) and a MISSED TRADE (engine/fill_audit: the bot's model took an entry the bot did not route, with its reason)
+# go to the private ntfy alert topic at once, type "problems" (IMPORTANT, rings in quiet hours). The 15-minute report then skips
+# its own copy of the same problem (apply -> problem_dup): one alert, one phone.
+PROBLEM_DUP_S = 20 * 60              # a report "cond:<code>" / "back:<code>" within this of the fast alarm's own = the same problem
+
+
+def problem_message(p: dict, now=None, s: dict | None = None) -> dict:
+    s = s or settings()
+    night = quiet(now if now is not None else time.time(), s) and not rings("problems", s)
+    return {"title": mask_ids(str(p.get("title") or "Problem"))[:120], "body": mask_ids(str(p.get("body") or ""))[:600],
+            "priority": "low" if night else "high", "tags": str(p.get("tags") or "rotating_light")}
+
+
+def instant_problem(p: dict, now=None, path=None, cfg=None, poster=None) -> str:
+    """Send one problem push now. p: {"key" (unique, sent once), "title", "body", "code" ("missed" | "slip" | "bot_down" |
+    "feed_stale"), "cond" (the report's condition code it stands for, optional), "back" (True for a "back to normal"),
+    "entry_t" (a trade's entry time, optional), "bot" ("lit" default | "atlas")}. Returns why (tests / logs). Never raises."""
+    try:
+        s = settings()
+        if not on("problems", s):
+            return "problems is off"
+        cfg = cfg if cfg is not None else alert_cfg()
+        if not cfg.get("topic"):
+            return "no private alert topic on this PC"
+        path = path or INSTANT_PATH
+        st = _instant_state(path)
+        keys, probs = _d(st.get("keys")), _d(st.get("problems"))
+        key = str(p.get("key") or "")
+        if not key:
+            return "no key"
+        if key in keys:
+            return "already sent"
+        ok = (poster or _post)(cfg["ntfy"], cfg["topic"], problem_message(p, now=now, s=s))
+        if not ok:
+            return "ntfy did not take it (the 15-minute report sends it instead)"
+        t_now = time.time() if now is None else float(now)
+        keys[key] = t_now
+        probs[key] = {"t": t_now, "code": p.get("code"), "cond": p.get("cond"), "back": bool(p.get("back")),
+                      "entry_t": _f(p.get("entry_t")), "bot": str(p.get("bot") or "lit")}
+        st.update(keys=keys, problems=probs)
+        _save_instant(st, path, t_now)
+        return "sent"
+    except Exception as e:
+        return f"failed: {e.__class__.__name__}"
+
+
+def problem_dup(m: dict, now=None, path=None) -> bool:
+    """A 15-minute report push that repeats a problem the fast alarm already sent: "watch:<bot>:<entry_t>:missed|slip" (same
+    entry, same code), "cond:<code>:..." / "back:<code>:..." (same condition within PROBLEM_DUP_S)."""
+    try:
+        k = str(_d(m).get("key") or "")
+        P = _d(_instant_state(path).get("problems")).values()
+        t_now = time.time() if now is None else float(now)
+        parts = k.split(":")
+        if k.startswith("watch:") and len(parts) >= 4:
+            et_, code = _f(parts[2]), parts[3]
+            return et_ is not None and any(isinstance(v, dict) and v.get("code") == code and str(v.get("bot") or "lit") == parts[1]
+                                           and _f(v.get("entry_t")) is not None
+                                           and abs(_f(v.get("entry_t")) - et_) <= INSTANT_MATCH_S for v in P)
+        if k.startswith(("cond:", "back:")) and len(parts) >= 2:
+            back = k.startswith("back:")
+            return any(isinstance(v, dict) and v.get("cond") == parts[1] and bool(v.get("back")) == back
+                       and abs(t_now - (_f(v.get("t")) or 0)) <= PROBLEM_DUP_S for v in P)
+    except Exception:
+        return False
+    return False
 
 
 def instant_entry(p: dict, now=None, path=None, cfg=None, poster=None) -> str:

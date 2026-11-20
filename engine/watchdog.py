@@ -11,7 +11,10 @@ Watchdog: a daemon thread that every `interval_s` checks the bot and sends one a
 to once per 30 min per condition) plus one "recovered" message when it clears:
   * poll_overdue  - bot running and the last successful poll is older than 3 x poll_sec
   * thread_dead   - bot marked running but its poll thread is not alive
-  * stale_feed    - health.stale continuously for > 10 min during 09:00-16:00 ET on a weekday
+  * stale_feed    - health.stale continuously for > 10 min during 02:00-16:00 ET on a weekday
+Since 2026-11-18 these alerts (kind "system") reach the phone app only with LE_PUSH_EXTRA=1 (engine/push.pc_app_ok), so each
+check also runs the fast alarm (engine/fast_alarm.py, 2026-11-20): bot on a broker account in the entry hours but not polling
+for 90 s, or its 1m feed 2 bars behind -> one push to the private ntfy topic within ~2 minutes, one when it clears.
 It also drives engine.keepawake (keep the PC awake exactly while the bot runs).
 """
 from __future__ import annotations
@@ -135,6 +138,13 @@ class Watchdog:
         self.autostart_info: dict = {}
         self._thread = None
         self._stop = threading.Event()
+        self.fast = None                     # the 2-minute phone alarm (engine/fast_alarm.py; LE_FAST_ALARM=0 = off): the real
+        if clock is time.time:               # server only (a test's fake clock / fake bot never pushes to the owner's phone)
+            try:
+                from .fast_alarm import FastAlarm
+                self.fast = FastAlarm(clock=clock)
+            except Exception:
+                self.fast = None
 
     def alert(self, text: str):
         self._print(f"[watchdog] {time.strftime('%Y-%m-%d %H:%M:%S')} {text}")
@@ -186,6 +196,8 @@ class Watchdog:
         self._active = keys
         self.issues = issues
         self.last_check = int(now)
+        if getattr(self, "fast", None) is not None:
+            self.fast.step(self.bot, now)    # never raises; read-only (a push to the private ntfy topic)
         if self.keepawake is not None:
             self.keepawake.set(bool(getattr(self.bot, "running", False)))
         return issues
@@ -211,4 +223,5 @@ class Watchdog:
                 "thread_alive": bool(self._thread and self._thread.is_alive()),
                 "bot_running": bool(getattr(self.bot, "running", False)),
                 "keepawake": self.keepawake.status() if self.keepawake is not None else None,
-                "autostart": self.autostart_info}
+                "autostart": self.autostart_info,
+                "fast_alarm": getattr(getattr(self, "fast", None), "last", None)}

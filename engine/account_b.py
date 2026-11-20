@@ -2126,9 +2126,49 @@ def migrate_local(root: str | None = None, git=None, log=None) -> dict:
         return {"status": "error", "say": f"account B migration failed ({e.__class__.__name__}: {e})"[:200]}
 
 
+MIN_ROOM_CMD = "python -X utf8 -m engine.account_b --min-room 0"
+
+
+def set_min_room(value, path: str | None = None) -> dict:
+    """The owner's switch for ATLAS's stuck line (Decide card atlas-funded-keep-trading, owner YES 2026-11-19): the account_b
+    block's "min_room" in the PC-local data/account_b.json (never second_model.json). 0 = the funded account keeps trading 1
+    micro while that micro's full stop-out still fits the room, instead of stopping for good under $100 (research/writeups/
+    atlas-more-money-2026-11-19.md, A1). "default" removes the key (back to MIN_ROOM = $100). Every other key of the block
+    (armed, account, stage, payouts ...) is kept exactly. The eval stage keeps its own eval_min_room line. Never arms, never
+    routes. Returns {"ok", "say" | "error", "from", "to", "file"}."""
+    old = raw_cfg(path)
+    if not isinstance(old, dict) or not str(old.get("account") or "").strip():
+        return {"ok": False, "error": "ATLAS has no account on this PC yet (account B is off): nothing to change"}
+    raw = str(value).strip().lower() if value is not None else ""
+    was = old.get("min_room")
+    new = dict(old)
+    if raw in ("default", "off", "none"):
+        new.pop("min_room", None)
+        to = None
+    else:
+        v = _num(raw.lstrip("$").replace(",", ""))
+        if v is None or not 0.0 <= float(v) <= 1000.0:
+            return {"ok": False, "error": f"--min-room {value!r}: a number of $ from 0 to 1000 (or default)"}
+        to = float(v)
+        new["min_room"] = to
+    f = write_local(new, path, why=f"min_room {was if was is not None else 'default $100'} -> "
+                                   f"{to if to is not None else 'default $100'} (owner, engine.account_b --min-room)")
+    spec_stage = str(new.get("stage") or "eval").strip().lower()
+    line = (f"${to:,.0f}" if to is not None else f"the default ${MIN_ROOM:,.0f}")
+    say = (f"ATLAS {new.get('account')}: stops for good only when its room is under {line}"
+           + (" (it keeps trading 1 micro while that micro's full stop-out fits the room)" if to == 0 else "")
+           + (". Funded stage: in force once ATLAS is flat (or after a bot restart)." if spec_stage == "funded" else
+              f". Note: the account is in its {spec_stage} stage; the eval's own stuck line (eval_min_room) still applies "
+              "until it is funded."))
+    return {"ok": True, "say": say, "from": was, "to": to, "file": f, "stage": spec_stage}
+
+
 def main(argv=None) -> int:
     import argparse
     ap = argparse.ArgumentParser(prog="python -m engine.account_b", description="ATLAS's account (account B) on this PC")
+    ap.add_argument("--min-room", dest="min_room", default=None,
+                    help="ATLAS's stuck line in $ (0 = keep trading 1 micro while it fits; 'default' = $100). Writes "
+                         "data/account_b.json only (owner YES 2026-11-19, Decide atlas-funded-keep-trading)")
     ap.add_argument("--migrate", action="store_true", help="move a local account_b block out of second_model.json "
                                                             "into data/account_b.json")
     ap.add_argument("--to-funded", action="store_true", help="after ATLAS's eval passed: trade its NEW funded account "
@@ -2140,6 +2180,10 @@ def main(argv=None) -> int:
     ap.add_argument("--payout", help="record one payout MFFU paid on the funded account: yyyy-mm-dd=$")
     ap.add_argument("--funded-status", action="store_true", help="the funded payout tracker now")
     a = ap.parse_args(argv)
+    if a.min_room is not None:
+        r = set_min_room(a.min_room)
+        print(f"  [{'OK' if r['ok'] else 'FIX'}]  {r.get('say') or r.get('error')}")
+        return 0 if r["ok"] else 1
     if a.migrate:
         r = migrate_local()
         print(f"  [{'OK' if r['status'] in ('clean', 'migrated', 'no_git') else '..'}]  {r['say']}")
