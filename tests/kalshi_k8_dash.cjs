@@ -135,6 +135,21 @@ const card = (st, k8, u) => ({ kind: 'kalshi_live_pub', v: 1, st, net: 0, f: 0, 
     await shot(p, 'kalshi-k8-live.png');
     await ctx.close();
 
+    // 3b. each live bet's last 20 windows (card ls): one would pause (display only), the others plain; no ls = no block
+    ({ ctx, p } = await open({ at: '2026-11-23T05:20:00-05:00', card: card('paper', k8new({ ls: [['g5', 15, 20, 0, 0], ['g17', 13, 20, 0, 0], ['s17', 9, 20, 1, 0]] }), '2026-11-23T10:19:00Z'), k8: 'fx' }));
+    const ls = await p.evaluate(() => [...document.querySelectorAll('#k8s-ls li')].map((li) => [li.dataset.leg, li.innerText, li.className]));
+    const lh = await T(p, '#k8s-ls');
+    step('s1. each bet\'s last 20: "gold DOWN: won 15 of the last 20", silver UP in red "would pause: won 9 of the last 20 (resumes at 12)", and it says the bot does not pause on it yet',
+      ls.length === 3 && ls[0][1].includes('won 15 of the last 20') && ls[2][1].includes('would pause: won 9 of the last 20 (resumes at 12)') && ls[2][2] === 'off'
+      && lh.includes('shown only'), [ls, lh]);
+    await shot(p, 'kalshi-k8-legs.png');
+    await ctx.close();
+    ({ ctx, p } = await open({ at: '2026-11-23T05:20:00-05:00', card: card('live', k8new({ m: 'L', ls: [['s17', 9, 20, 1, 1]] }), '2026-11-23T10:19:00Z'), k8: 'fx' }));
+    const ls2 = await T(p, '#k8s-ls');
+    step('s2. when the bot obeys the rule: "silver UP paused: won 9 of the last 20 (resumes at 12)"',
+      ls2.includes('paused: won 9 of the last 20 (resumes at 12)') && !ls2.includes('shown only'), ls2);
+    await ctx.close();
+
     // 4. the verdicts: Watch (within 5 points of a line) and OFF line crossed (win rate, then price creep)
     for (const [e, v, word, name] of [[[61, 66, 50], 'watch', 'Watch', 'h3. 61% won last 30 (within 5 of 58%) = Watch'],
       [[55, 60, 50], 'off', 'OFF line crossed', 'h4. 55% won last 30 (under 58%) = OFF line crossed'],

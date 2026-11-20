@@ -683,7 +683,7 @@ def _cuts(key: str) -> list:
                 for key in keys:
                     v["k8"].pop(key, None)
         return f
-    return {"kalshi_live": [k8("lg"), k8("e", "dy")], "glance": [glance(1000), glance(600)], "mf": [eq(4), eq(0)], "brd": [ev(3), ev(1), ev(0)], "life": [ev(0)],
+    return {"kalshi_live": [k8("lg", "ls"), k8("e", "dy")], "glance": [glance(1000), glance(600)], "mf": [eq(4), eq(0)], "brd": [ev(3), ev(1), ev(0)], "life": [ev(0)],
             "board_trades": [first(1)], "at": [at(2), at(1)], "fq": [fq(2), fq(0)]}.get(key, [])
 
 

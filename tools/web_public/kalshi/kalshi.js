@@ -1648,12 +1648,24 @@
       + row('Paid, last 30', p30 == null ? 'not enough yet' : (Math.round(p30 * 10) / 10) + '¢', 2, `OFF above ${Math.round(C)}¢`)
       + `</div><p class="k8e-v ${vc}"><b>${V}</b>${esc(why)}</p></div>`;
   }
+  function k8Switch() {                              // each live leg's own last 20 windows and the pause rule (card ls: [code, won, of, paused, obeyed])
+    const ls = arr(K8D.k && K8D.k.ls).filter((x) => Array.isArray(x) && num(x[1]) != null && num(x[2]) != null);
+    if (!ls.length) return '';
+    const name = {}; k8Legs().forEach((L) => { name[L.c] = L.n; });
+    const obey = ls.some((x) => x[4] === 1);
+    return `<div class="k8e" id="k8s-ls"><p class="k8w-h">Each bet's last 20 windows · pause at 10 won, resume at 12${obey ? '' : ' (shown only: the bot does not pause on it yet)'}</p><ul class="k8l">`
+      + ls.map((x) => {
+        const n = esc(name[x[0]] || x[0]), w = num(x[1]), o = num(x[2]);
+        const t = o < 20 ? `${n}: ${w} of ${o} so far` : x[3] === 1 ? `${n} ${obey ? 'paused' : 'would pause'}: won ${w} of the last ${o} (resumes at 12)` : `${n}: won ${w} of the last ${o}`;
+        return `<li class="${x[3] === 1 ? 'off' : ''}" data-leg="${esc(String(x[0]))}">${t}</li>`;
+      }).join('') + '</ul></div>';
+  }
   function k8Extra() {
     const el = $('#k8s-y');
     if (!el) return;
     const now = Date.now();
     let h = '';
-    try { h = k8Price(now) + k8Log(now) + k8Health(); } catch (_) { h = ''; }
+    try { h = k8Price(now) + k8Log(now) + k8Health() + k8Switch(); } catch (_) { h = ''; }
     if (el.innerHTML !== h) el.innerHTML = h;
   }
   async function k8Load() {                          // the site's own k8.json (same folder), 3 s at most; not an object = absent
