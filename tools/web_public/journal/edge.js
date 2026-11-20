@@ -235,7 +235,7 @@ function render() {
 }
 
 async function start() {
-  const [edge, trading, odeon] = await Promise.all([getJSON('./edge.json'), getJSON('../trading/trades.json'), getJSON('../odeon/trades.json')]);
+  const [edge, trading, odeon] = await Promise.all([getJSON('./edge.json'), getJSON('../trading/trades.json'), getJSON('../odeon/trades_lite.json').then((x) => x || getJSON('../odeon/trades.json'))]);   // the slim copy first (dogfood 2026-11-20)
   S.edge = edge; S.trading = trading; S.odeon = odeon;
   S.rows = C.rowsFrom(edge);
   S.real = C.realRows(trading, odeon, null, nowS());

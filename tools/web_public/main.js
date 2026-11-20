@@ -550,7 +550,7 @@ function render(soft = false) {
   RTOK++;
   FX?.detachAll();                      // 3D views are kept and re-attached by key when the page draws again
   if (!D) {                             // Home draws from the small home.json (hub.js) while data.json is still on its way
-    if (PAGE === 'today' && window.HOMEJ && window.HUB) { try { VIEWS.today(el); } catch (err) { console.error(err); el.innerHTML = skel(3); } return; }
+    if (PAGE === 'today' && window.HOMEJ && window.HUB) { try { VIEWS.today(el); window.__homeDrawn = true; } catch (err) { console.error(err); el.innerHTML = skel(3); } return; }
     el.innerHTML = skel(3); return;
   }
   if (!soft) { el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; }
@@ -3485,7 +3485,11 @@ async function load(manual = false) {
     status(); actBadge(); if (pushSupport() && Notification.permission === 'granted') pushEnsure(false).catch(() => null);
     if (first) subBar(PAGE, groupOf(PAGE));        // detail pages show previous / next once the lists are known
     if (FX) { FX.mood(moodNow()); if (changed && manual !== 'boot') FX.pulse(); }
-    if (changed && !(PAGE === 'replays' && RP?.timer)) render(!first);
+    // dogfood 2026-11-20 (DESIGN ASKS 11, layout shift ~0.9 on a phone line): Home was already drawn from home.json, which is the SAME
+    // build as this data.json (every Home part reads D || HOMEJ): redrawing it re-ran the entry animation and re-shuffled the cards 10-16 s
+    // after the first paint. Same build = nothing to redraw; a newer build, another page, the minute's refresh and live.json still redraw.
+    const sameHome = first && PAGE === 'today' && window.HOMEJ && window.__homeDrawn && window.HOMEJ.built && window.HOMEJ.built === nd.built;
+    if (changed && !sameHome && !(PAGE === 'replays' && RP?.timer)) render(!first);
     splashDone();
     if (manual === true) toast(changed ? 'Updated' : 'Already up to date');
   } catch (e) {

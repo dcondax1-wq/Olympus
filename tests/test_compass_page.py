@@ -219,7 +219,7 @@ def test_page():
             r = p.evaluate("() => ({ demo: !document.querySelector('#demo').hidden, top: document.querySelector('#top').textContent, acts: [...document.querySelectorAll('#acts .act b')].map((b) => b.textContent), inputs: document.querySelector('#inputs').textContent, j: localStorage.getItem('journal.v1'), l: localStorage.getItem('ledger.v1') })")
             check("c. the real files and the phone's own journal and Ledger: no DEMO chip, the real deal first (ends in 5 h), 2 unrated trades (r1 is rated), the Ledger export 21 days ago, the four files named; the journal and the Ledger are untouched",
                   not r["demo"] and r["top"].startswith("A deal ends in 5 h: Plan sale") and any("Journal 2 unrated trades" in x for x in r["acts"]) and any("last export 21 days ago" in x for x in r["acts"]) and "home.json" in r["inputs"] and "odeon/trades.json" in r["inputs"] and r["j"] == journal and r["l"] == ledger, r)
-            check("c. the real run reads the four files and no console error", all(any(f in u for u in seen) for f in ("home.json", "money/index.json", "rules.json", "odeon/trades.json")) and not off and not errs, (off[:3], errs[:3]))
+            check("c. the real run reads the four files and no console error", all(any(f in u for u in seen) for f in ("home.json", "money/index.json", "rules.json", "odeon/trades")) and not off and not errs, (off[:3], errs[:3]))
             ctx.close()
             srv2.shutdown()
 
