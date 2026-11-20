@@ -23,7 +23,7 @@
   var NS = 'http://www.w3.org/2000/svg';
   var readyP = null;
   // the NQ look (owner 2026-11-20: no gold): deep navy, electric cyan + blue glows, violet accents, green only for a win
-  var THEME = { base: '#0b1220', cyan: '#22d3ee', blue: '#3b82f6', violet: '#8b5cf6', win: '#22c55e', loss: '#f43f5e', steel: '#9aa4b2' };
+  var THEME = { base: '#070b14', cyan: '#22d3ee', cyanHi: '#67e8f9', blue: '#3b82f6', violet: '#8b5cf6', win: '#22c55e', loss: '#ef4444', steel: '#9aa4b2' };
   function hex(c) { var m = /^#?([0-9a-f]{6})$/i.exec(String(c || '').trim()); if (!m) return null; var n = parseInt(m[1], 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
   function mix(a, b, k) { var x = hex(a), y = hex(b); if (!x || !y) return a; return 'rgb(' + [0, 1, 2].map(function (i) { return Math.round(x[i] + (y[i] - x[i]) * k); }).join(',') + ')'; }
 
@@ -63,7 +63,7 @@
       if (blur) { var f = svgNode('filter', { id: id, x: '-20%', y: '-50%', width: '140%', height: '200%' }, defs, ctx); svgNode('feGaussianBlur', { stdDeviation: String(blur) }, f, ctx); }
       var under = svgNode('path', { fill: 'none', stroke: color, 'stroke-width': String(w * 2.2), 'stroke-linecap': 'round', 'stroke-linejoin': 'round', opacity: still ? '.35' : '.25', 'pointer-events': 'none' }, null, ctx);
       if (blur) under.setAttribute('filter', 'url(#' + id + ')');
-      var comet = still ? null : svgNode('path', { fill: 'none', stroke: o.head || '#e0f7ff', 'stroke-width': String(w * 1.6), 'stroke-linecap': 'round', 'pointer-events': 'none' }, null, ctx);
+      var comet = still ? null : svgNode('path', { fill: 'none', stroke: o.head || THEME.cyanHi, 'stroke-width': String(w * 1.6), 'stroke-linecap': 'round', 'pointer-events': 'none' }, null, ctx);
       var glowC = still ? null : svgNode('path', { fill: 'none', stroke: color, 'stroke-width': String(w * 4), 'stroke-linecap': 'round', opacity: '.7', 'pointer-events': 'none' }, null, ctx);
       if (glowC && blur) glowC.setAttribute('filter', 'url(#' + id + ')');
       var len = 0;

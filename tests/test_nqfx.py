@@ -44,7 +44,7 @@ def static():
     gold = [f for f, t in (("nqfx.js", js), ("nqvault3d.js", v3), ("nqfx-lab.html", lab))
             if re.search(r"f2b84b|ffc35a|e3a93a|ffe7a3|9a6a1c|8a5d17|ffe2b0|ffcf5a|242, 184, 75|\bgold\s*[=:(]|coinG|nqv-g", t, re.I)]
     check("a. the NQ look (owner 2026-11-20: no gold): navy / cyan / blue / violet, green only for a win; no gold colour left in the kit files",
-          not gold and all(c in js for c in ("#0b1220", "#22d3ee", "#3b82f6", "#8b5cf6", "#22c55e")) and "theme: function" in js and "FX.define('nqRing'" in js, gold)
+          not gold and all(c in js for c in ("#070b14", "#22d3ee", "#67e8f9", "#3b82f6", "#8b5cf6", "#22c55e", "#ef4444")) and "theme: function" in js and "FX.define('nqRing'" in js, gold)
     ds = (ROOT / "docs" / "DESIGN_SYSTEM.md").read_text(encoding="utf-8")
     api = ROOT / "research" / "handoff" / "2026-11-20" / "nq4" / "FX_API.md"
     verbs = ("theme", "win", "loss", "milestone", "ring", "roll", "trail", "vault")
@@ -118,7 +118,7 @@ def browser():
         check("b. the chart trail: a glow under the line and a moving light over it (4 paths), following a redrawn line",
               n0 == 4 and same and len(seen) > 3, (n0, same, sorted(seen)[:5]))
         col = p.evaluate("() => [...document.querySelectorAll('svg.chart path')].filter(x => x.id !== 'line').map(x => x.getAttribute('stroke'))")
-        check("b. the chart trail is cyan (glow + light), the light's head pale cyan", "#22d3ee" in col and "#e0f7ff" in col, col)
+        check("b. the chart trail is cyan (glow + light), the light's head pale cyan", "#22d3ee" in col and "#67e8f9" in col, col)
         th = p.evaluate("""() => { const N = OLYMPUS_NQFX, before = N.theme().cyan; const after = N.theme({ cyan: '#ff00aa', bad: 'not-a-colour' });
           const svg = document.querySelector('svg.chart'), l2 = document.createElementNS('http://www.w3.org/2000/svg', 'path'); l2.setAttribute('d', 'M0 10 L100 20'); svg.appendChild(l2);
           const h = N.trail(l2); const c = [...svg.querySelectorAll('path')].some(x => x.getAttribute('stroke') === '#ff00aa'); h.stop(); l2.remove(); N.theme({ cyan: before });
