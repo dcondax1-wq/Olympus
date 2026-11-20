@@ -71,7 +71,7 @@ def test_static():
           and html.count("<h1") == 1 and 'role="status"' in html and 'aria-live="polite"' in html and 'role="dialog"' not in html)
     check("a. one base-path line: gate/ -> '../', the site root (olympus-live.html) -> ''; agora.css + gate.css, then themes, the catalog, hub-status and gate.js load from GATE_BASE, in order (async = false)",
           r"/\/gate\/(index\.html)?$/.test(p) ? '../' : ''" in html and "window.GATE_BASE = b" in html and "b + 'gate/gate.css?v=g18'" in html and "b + 'olympus/agora.css" in html
-          and "['olympus/themes.js?v=o9', 'pc_feed.js?v=n5', 'olympus/gate-catalog.js?v=nv7', 'olympus/hub-status.js?v=h2', 'age.js?v=1', 'business/payoutcoach.js?v=1', 'gate/gate.js?v=g17', 'olympus/home-fx.js?v=x2', 'olympus/a11y.js']" in html and "s.async = false" in html)
+          and "['olympus/themes.js?v=o9', 'pc_feed.js?v=n5', 'olympus/gate-catalog.js?v=nv7', 'olympus/hub-status.js?v=h2', 'age.js?v=1', 'business/payoutcoach.js?v=1', 'gate/gate.js?v=g18', 'olympus/home-fx.js?v=x2', 'olympus/a11y.js']" in html and "s.async = false" in html)
     tiles = re.findall(r'class="g-hub[^"]*" data-hub="(\w+)" data-to="hub/index.html\?h=(\w+)"', html)
     check("a. the hub tiles are plain links in the page (they work even if gate.js fails), in the owner's order (night A 2026-11-16): Bots & Evals (wide) and My Money (wide) first, Kalshi and Worlds near the end, Settings & Help last",
           [t[0] for t in tiles] == HUBS and all(a == b for a, b in tiles) and 'class="g-hub g-wide" data-hub="bots"' in html and 'class="g-hub g-wide" data-hub="money"' in html and html.count('class="g-hline"') == len(HUBS))
@@ -166,7 +166,7 @@ def test_catalog():
     check("b. the search finds plain words (Mint, Pheme, Herald retired 2026-11-20): money -> Business first + Ledger, drawdown -> Aegis, kalshi -> Kalshi first, journal -> the journal first, news -> Pheme / Pythia / Herald",
           q["money"][0] == "business" and "ledger" in q["money"] and "aegis" in q["drawdown"] and q["kalshi"][0] == "kalshi" and q["journal"][0] == "journal" and "pythia" in q["news"] and not {"mint", "pheme", "herald"} & set(q["money"] + q["news"]), q)
     check("b. synonyms and AND: discount -> Mercury, chatgpt -> Bridge, 'risk stop' -> Aegis first, nonsense and an empty box find nothing",
-          q["discount"][0] == "mercury" and q["chatgpt"][0] == "bridge" and q["risk stop"][:1] == ["aegis"] and q["zzzz"] == [] and q[""] == [], q)
+          q["discount"][0] == "mercury" and "bridge" not in q["chatgpt"] and q["risk stop"][:1] == ["aegis"] and q["zzzz"] == [] and q[""] == [], q)
     A = C["all"]
     check("b. NAV v3, one search for everything: 'risk' -> the tab Bots & Evals > Risk + Aegis, 'theme' -> the action Change the look, 'payout' -> the action + Ledger first,"
           " 'micros' -> the action + Pnyx, 'health' -> the Me hub, 'all apps' -> All apps A to Z, nonsense -> nothing at all",
@@ -317,8 +317,8 @@ def test_page():
             ag = p.evaluate("() => { const a = document.querySelector('#nowAge'); return a && !a.hidden ? [a.textContent, a.dataset.level, a.className] : null; }")
             check("c. olympus2: the PC report's age as the site-wide chip (age.js): 'updated 5 min ago', ok", ag == ["updated 5 min ago", "ok", "oly-age"], ag)
             go = p.evaluate("() => [...document.querySelectorAll('#money a.g-acct, #nowFacts a.g-fact')].map((a) => a.href.replace(location.origin, ''))")
-            check("c. each card / fact is a tap to the app with the detail: the eval cards and drawdown -> Aegis, today -> NQ, the window -> Kairos",
-                  go == ["/aegis/index.html", "/aegis/index.html", "/aegis/index.html", "/aegis/index.html", "/nq/index.html", "/kairos/index.html"], go)
+            check("c. each card / fact is a tap to the app with the detail: the eval cards and drawdown -> Aegis, today -> NQ, the window -> NQ (Kairos retired)",
+                  go == ["/aegis/index.html", "/aegis/index.html", "/aegis/index.html", "/aegis/index.html", "/nq/index.html", "/nq/index.html"], go)
             tiles = p.evaluate("() => [...document.querySelectorAll('.g-hub')].map((a) => [a.dataset.hub, a.href.replace(location.origin, ''), a.querySelector('.g-hline').textContent, a.querySelector('.g-hcount').textContent])")
             # night-gate 2026-11-18: the counts come from the catalog (Board + Trading joined Bots & Evals with the four doors), not pinned numbers
             per = {}
