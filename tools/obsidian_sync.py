@@ -46,6 +46,7 @@ LEARN = os.path.join(ROOT, "research", "learn", "latest.md")
 BIZ = os.path.join(ROOT, "tools", "web_public", "business")
 STATE = os.path.join(ROOT, "STATE.md")
 EVERY_S = 10 * 60          # at most one sync every 10 minutes (the PC report runs every 15)
+BRAIN_EVERY_S = 60 * 60    # the ZEUS Brain rebuild (tools/obsidian_brain.py) at most once an hour
 KEEP_DAYS = 14             # the Index lists the last 14 days
 BOTS = {"lit": ("Zlarior", "50K"), "atlas": ("ATLAS", "25K"), "blitz": ("BLITZ", "25K")}
 try:
@@ -415,7 +416,17 @@ def maybe_run(now_s=None, say=print, env=None, cfg_path=CFG_PATH) -> dict | None
         if now - float((cfg["last"] or {}).get("t") or 0) < EVERY_S:
             return None
         res = sync(cfg["vault"], now)
-        cfg["last"] = {"t": int(now), "ok": res["ok"], "n": len(res.get("wrote") or []), "why": res.get("why", "")}
+        brain_t = float((cfg["last"] or {}).get("brain_t") or 0)
+        if res["ok"] and now - brain_t >= BRAIN_EVERY_S:      # ZEUS Brain (tools/obsidian_brain.py): <vault>/OLYMPUS/ZEUS Brain, once an hour, soft
+            try:
+                from tools import obsidian_brain as _brain
+                br = _brain.build(cfg["vault"], standalone=False)
+                brain_t = now
+                if br.get("wrote") or br.get("removed"):
+                    say(f"  [OK]  ZEUS Brain: {br['notes']} notes, {len(br['wrote'])} updated in OLYMPUS/ZEUS Brain")
+            except Exception as ex:  # noqa: BLE001
+                say(f"  [..] ZEUS Brain skipped: {ex.__class__.__name__}: {str(ex)[:120]}")
+        cfg["last"] = {"t": int(now), "ok": res["ok"], "n": len(res.get("wrote") or []), "why": res.get("why", ""), "brain_t": int(brain_t)}
         save_cfg(cfg, cfg_path)
         if res["ok"] and res["wrote"]:
             say(f"  [OK]  Obsidian: {len(res['wrote'])} note(s) updated in OLYMPUS/Sync")

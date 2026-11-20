@@ -1,0 +1,102 @@
+{
+ "main": {
+  "id": "zmain",
+  "type": "split",
+  "direction": "vertical",
+  "children": [
+   {
+    "id": "ztabs",
+    "type": "tabs",
+    "children": [
+     {
+      "id": "zhome",
+      "type": "leaf",
+      "state": {
+       "type": "markdown",
+       "state": {
+        "file": "ZEUS Brain/ZEUS Home.md",
+        "mode": "preview",
+        "source": false
+       }
+      }
+     }
+    ]
+   }
+  ]
+ },
+ "left": {
+  "id": "zleft",
+  "type": "split",
+  "direction": "horizontal",
+  "width": 280,
+  "children": [
+   {
+    "id": "zltabs",
+    "type": "tabs",
+    "children": [
+     {
+      "id": "zfiles",
+      "type": "leaf",
+      "state": {
+       "type": "file-explorer",
+       "state": {
+        "sortOrder": "alphabetical"
+       }
+      }
+     },
+     {
+      "id": "zsearch",
+      "type": "leaf",
+      "state": {
+       "type": "search",
+       "state": {
+        "query": "",
+        "matchingCase": false
+       }
+      }
+     }
+    ]
+   }
+  ]
+ },
+ "right": {
+  "id": "zright",
+  "type": "split",
+  "direction": "horizontal",
+  "width": 300,
+  "collapsed": true,
+  "children": [
+   {
+    "id": "zrtabs",
+    "type": "tabs",
+    "children": [
+     {
+      "id": "zback",
+      "type": "leaf",
+      "state": {
+       "type": "backlink",
+       "state": {
+        "file": "ZEUS Brain/ZEUS Home.md",
+        "collapseAll": false
+       }
+      }
+     },
+     {
+      "id": "zlocal",
+      "type": "leaf",
+      "state": {
+       "type": "localgraph",
+       "state": {
+        "file": "ZEUS Brain/ZEUS Home.md"
+       }
+      }
+     }
+    ]
+   }
+  ]
+ },
+ "active": "zhome",
+ "lastOpenFiles": [
+  "ZEUS Brain/ZEUS Home.md"
+ ]
+}

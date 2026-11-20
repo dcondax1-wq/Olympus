@@ -20,6 +20,7 @@ Steps (each soft and its own process with a time limit: one failing never stops 
              on the pulled days -> tools/web_public/hub/learned.json (the ZEUS page card's cloud copy, with its date)
   6 decide   the PC's proposals -> tools/web_public/business/decisions.json (new ids only, status open, the existing schema:
              a "yes" = Claude TESTS it under CLAUDE.md "Strategy changes"; nothing live changes without proof + another yes)
+  + brain    tools/obsidian_brain.py: rebuild the ZEUS Brain vault (vault/: new days, trades, research, lessons, links); --skip brain
   7 report   before / after -> research/learn/night_cloud.json (gitignored) + the printed table
 Research only: never trades, never touches live_model*.json (hashed before / after, a change is reported loudly).
 Tests: python -X utf8 -m tests.test_learn_night (fake steps, no network).
@@ -316,6 +317,14 @@ def run(a, runner=None, say=print, root: str = ROOT, days_dir: str = PC_DAYS, ca
                     break
             res[s] = {"ok": all(r.get("ok") or (s == "pull" and r.get("rc") == 3) for r in rs), "s": round(sum(r.get("s") or 0 for r in rs), 1),
                       "tail": (rs[-1].get("tail") or [])[-4:] if rs else []}
+    skip = {x.strip() for x in (a.skip or "").split(",") if x.strip()}
+    if "brain" not in skip and os.path.isdir(os.path.join(root, "research", "writeups")):
+        try:                                   # ZEUS Brain (tools/obsidian_brain.py): rebuild vault/ with tonight's days, research, lessons
+            from tools import obsidian_brain
+            br = obsidian_brain.build(os.path.join(root, "vault"), root=root)
+            res["brain"] = {"ok": True, "notes": br["notes"], "wrote": len(br["wrote"]), "removed": len(br["removed"])}
+        except Exception as e:  # noqa: BLE001
+            res["brain"] = {"ok": False, "why": f"{e.__class__.__name__}: {e}"[:200]}
     after = snapshot(root)
     h1 = hashes(root)
     rows = changes(before, after)
@@ -332,7 +341,7 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="ZEUS learn night (cloud): pull the PC's days, edge health, anatomy, ZEUS Lab, card, Decide")
     ap.add_argument("--no-pull", action="store_true")
     ap.add_argument("--wait", type=float, default=None, help="minutes to wait for the PC's answer (tools/data_pull.py --wait)")
-    ap.add_argument("--skip", default="", help="comma list of: " + ", ".join(STEPS))
+    ap.add_argument("--skip", default="", help="comma list of: " + ", ".join(STEPS + ("brain",)))
     ap.add_argument("--full", action="store_true", help="the anatomy's rules too (slow)")
     ap.add_argument("--fetch", action="store_true", help="edge health: refresh CBOE's VIX first")
     ap.add_argument("--dry-run", action="store_true")
@@ -350,6 +359,8 @@ def main(argv=None) -> int:
         elif s == "decide":
             txt = (f"+{len(r.get('added') or [])} on the Decide card: {', '.join(r.get('added') or [])}" if r.get("added")
                    else "nothing new for the Decide card") if r.get("ok") else str(r.get("why"))
+        elif s == "brain":
+            txt = (f"ZEUS Brain: {r.get('notes')} notes, {r.get('wrote')} updated, {r.get('removed')} removed (vault/)" if r.get("ok") else str(r.get("why")))
         elif not r.get("ok") and r.get("tail"):
             txt += ": " + " / ".join(r["tail"][-2:])[:160]
         print(f"| {s} | {txt} |")
