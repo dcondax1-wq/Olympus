@@ -29,7 +29,20 @@ if ('serviceWorker' in navigator && location.protocol === 'https:' && !navigator
 ```
 (registers the ROOT worker with its own root scope; a no-op when Zenith already did). Needs patch 1 to be useful.
 
-## 3. Lead-only build path: none needed for perf today
+## 3. Build / publish speed (measured 2026-11-20 in this container: `gh_publish --dry-run` 82 s, of which the site build 68-77 s)
 
-tools/build_web_dashboard.py: no change asked. The publish already gzips; the two unreferenced brand sources
-(olympus/brand/olympus-logo-source.png 901 KB, olympus-logo-1024.png 445 KB, loaded by no page) only cost publish time, not phones.
+Done in tools/ (no lead file): **the privacy scrub was 45 of the build's 77 s** (tools/site_privacy.scrub re-scanned all ~3,900 built
+files on every build, every 15 min on the PC too). It now remembers files it found CLEAN by sha256(path + bytes), under a key of its
+own code + the canary values (logs/site_privacy_cache.json, gitignored; LE_SCRUB_CACHE=0 = off). Measured: build 67 s cold ->
+**29 s warm**, the output identical (3 builds compared file by file; only build timestamps differ); privacy area 7/7 incl.
+public_build_privacy 59/59; tests.test_scrub_cache 7/7. gh_publish's mirror now copies only changed files (was: delete the whole
+Pages copy + copy all, so git re-hashed ~280 MB each publish).
+
+Lead-only, optional (tools/build_web_dashboard.py, ~4-6 s more):
+- lines 945, 1123, 1183, 1212: `json.dump(obj, fh, separators=(",", ":"), default=str)` -> `fh.write(json.dumps(obj, separators=(",", ":"), default=str))`
+  (json.dump streams thousands of small chunks; dumps is one C pass: the 6 dumps took 6.7 s, ~2x faster as one string; data.json is 8.6 MB).
+- `_runs()` (6.7 s) rewrites all 2,345 runs/<id>.json every build: skip the write when `os.path.exists(dst)` holds the same bytes
+  (it already computes `blob`), and do not `rmtree(dest)` first (remove only ids that are gone).
+- 9 helper subprocesses (8.9 s, premarket brief, weekly review ...): fine as they are.
+The two unreferenced brand sources (olympus/brand/olympus-logo-source.png 901 KB, -1024.png 445 KB) are loaded by no page: they only
+cost publish bytes (skip them in the build when convenient).
