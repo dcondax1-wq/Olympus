@@ -357,10 +357,9 @@ def part_d():
         fill4 = P.entry_payload("Zlarior 50K", "LONG", 2, et0 + 20000, src="pc", entry=25000, stop=24990, target=25100)
         t3 = 1795060000 - 1795060000 % 86400 + 8 * 3600                                                 # 03:00 ET: quiet hours
         night = P.app_payload(fill4, now=t3)
-        check("d. quiet hours (23:00-07:00 ET): a trade entry still rings (owner 2026-11-20: entries + results at any hour)",
-              not night.get("silent"), night)
-        N.settings = lambda path=None: N.merge({"ring_in_quiet_hours": ["pc_silent", "account_status", "room_low", "problems"]})
-        check("d. ... and comes without sound once trade_opened is out of ring_in_quiet_hours", P.app_payload(fill4, now=t3).get("silent") is True)
+        check("d. quiet hours (23:00-07:00 ET): the alert still comes, without sound", night.get("silent") is True, night)
+        N.settings = lambda path=None: N.merge({"ring_in_quiet_hours": ["pc_silent", "account_status", "room_low", "problems", *N.TRADE_RING]})
+        check("d. ... and rings once trade_opened is put in ring_in_quiet_hours (the owner's yes / no)", not P.app_payload(fill4, now=t3).get("silent"))
         N.settings = lambda path=None: N.merge({})
         import threading
         q = P.pc_notify(dict(fill4, key="fill:99", account="Paper"))          # Paper: the worker sends nothing anywhere (no network here)

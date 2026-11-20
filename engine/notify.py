@@ -53,14 +53,23 @@ TYPES = ("trade_opened", "trade_closed", "eval_milestones", "account_status", "r
 # owner 2026-11-18 evening: "I want notifications when we get in a trade in any account" -> trade_opened ON, sent the moment the
 # bot routes the entry (instant_entry below, from engine/push.pc_notify), not at the next 15-minute report.
 IMPORTANT = ("trade_opened", "trade_closed", "account_status", "daily_summary", "morning_brief", "pc_silent", "problems")   # problems = emergencies (bot down, NinjaTrader closed)
-# owner 2026-11-20 ("notifications for trade entries, I never got one from today. And results"): a real trade's entry and its
-# result ring at ANY hour (ATLAS enters around 03:00-04:00 ET; its 03:45 entry that day came without sound). Taking them out of
-# ring_in_quiet_hours in notify_settings.json makes them silent at night again.
+# A trade's entry and result in quiet hours (23:00-07:00 ET) come WITHOUT sound but still show (as before 2026-11-20). Putting
+# TRADE_RING in ring_in_quiet_hours (notify_settings.json) makes them ring at night: the owner's yes / no, asked on STATE.md
+# 'Waiting on the owner' (lead 2026-11-20; ATLAS enters around 03:00-04:00 ET, LIT from 02:00 ET on several accounts).
 TRADE_RING = ("trade_opened", "trade_closed")
+# The kinds that go to BOTH phone routes, the Olympus app AND the private ntfy topic (2026-11-20, notify_settings.json trade_routes;
+# a push service's "accepted" only means Apple / Google took it, not that the iPhone showed it): a trade's entry and result, PASSED /
+# FAILED / LOCKED / payout ready, room low, problems (bot down, NinjaTrader closed, FEED STALE), PC silent. Every other kind: Olympus
+# first, ntfy only when no phone took it.
+DUAL_KINDS = ("trade_opened", "trade_closed", "account_status", "room_low", "problems", "pc_silent")
+# trade_routes: "both" (default) = Olympus AND ntfy; "olympus" = Olympus first, ntfy only when no phone took it; "ntfy" = ntfy first,
+# Olympus only when ntfy did not take it. A single-route choice keeps the other as the fallback, so an alert never reaches nobody.
+ROUTES = ("both", "olympus", "ntfy")
 DEFAULTS = {
     "alerts": {k: k in IMPORTANT for k in TYPES},
     "quiet_hours": {"from": "23:00", "to": "07:00"},
-    "ring_in_quiet_hours": ["pc_silent", "account_status", "room_low", "problems", *TRADE_RING],
+    "ring_in_quiet_hours": ["pc_silent", "account_status", "room_low", "problems"],
+    "trade_routes": "both",
     "milestones_pct": [25, 50, 75, 100],
     "room_low_used_pct": [50, 75],
     "daily_summary_at": "16:15",
@@ -147,6 +156,8 @@ def merge(raw) -> dict:
         out["quiet_hours"]["off"] = True
     if isinstance(raw.get("ring_in_quiet_hours"), list):
         out["ring_in_quiet_hours"] = [str(x) for x in raw["ring_in_quiet_hours"] if str(x) in TYPES]
+    if str(raw.get("trade_routes") or "").strip().lower() in ROUTES:
+        out["trade_routes"] = str(raw["trade_routes"]).strip().lower()
     for k in ("milestones_pct", "room_low_used_pct"):
         if isinstance(raw.get(k), list):
             vals = sorted({int(x) for x in raw[k] if isinstance(x, (int, float)) and 0 < x <= 100})
@@ -181,6 +192,20 @@ def rings(kind: str, s: dict | None = None) -> bool:
     return kind in ((s or settings()).get("ring_in_quiet_hours") or ())
 
 
+def trade_routes(s: dict | None = None) -> str:
+    """notify_settings.json trade_routes: "both" (default) | "olympus" | "ntfy" (ROUTES). Never raises."""
+    try:
+        v = str((s or settings()).get("trade_routes") or "both").lower()
+        return v if v in ROUTES else "both"
+    except Exception:
+        return "both"
+
+
+def dual(kind: str) -> bool:
+    """A kind that goes to both phone routes when trade_routes is "both" (DUAL_KINDS)."""
+    return kind in DUAL_KINDS
+
+
 def kind_of(key: str) -> str:
     """The settings type of a PC report push, from its key."""
     k = str(key or "")
@@ -207,6 +232,35 @@ def kind_of(key: str) -> str:
     return "other"
 
 
+# the 15-minute report's account words ("open:<acct>:<t>", tools/pc_report._trade_events) -> the account part of the instant alerts'
+# keys ("fill:<t>" = LIT's primary 50K and the 50K combo on it, ":acctb" = ATLAS's account B, ":acctc" = BLITZ's account C,
+# ":<id>" = an extra account / the Rapid's LIT lane, ":acctr" = the Rapid's ATLAS lane)
+REPORT_ACCT = {"lit": "", "atlas": "acctb", "blitz": "acctc"}
+
+
+def key_acct(key) -> str:
+    """The account part of an instant trade alert's key: "fill:1795164300:acctb" -> "acctb", "out:1795164300:b25k_2" -> "b25k_2",
+    "fill:1795164300" -> "" (LIT's primary account)."""
+    parts = str(key or "").split(":", 2)
+    return parts[2] if len(parts) == 3 and parts[0] in ("fill", "out") else ""
+
+
+def report_acct(m: dict):
+    """The instant key's account part a 15-minute report trade push stands for (REPORT_ACCT; an extra account's id stays itself).
+    None when the push names no account (then any account matches, the old rule)."""
+    m = _d(m)
+    a = m.get("acct")
+    if a is None:
+        k = str(m.get("key") or "")
+        parts = k.split(":")
+        if k.startswith(("open:", "close:")) and len(parts) >= 3:
+            a = parts[1]
+    if a is None or str(a) == "":
+        return None
+    a = str(a)
+    return REPORT_ACCT.get(a, a)
+
+
 def entry_t_of(m: dict):
     """A report push's trade entry time: its "entry_t", else the last number of its key ("open:lit:1795050000")."""
     m = _d(m)
@@ -229,10 +283,12 @@ def apply(msgs, now, s: dict | None = None) -> list:
         kind = m.get("kind") or kind_of(m.get("key"))
         if not on(kind, s):
             continue
-        if kind == "trade_opened" and instant_sent(entry_t_of(m)):
-            continue                                # the phone already got this entry the moment it was routed
-        if kind == "trade_closed" and instant_sent(entry_t_of(m), what="exits"):
-            continue                                # the phone app already got this exit the moment the bot saw it
+        # per account (2026-11-20): LIT enters the 50K, the 25K #2 and the Rapid on the same bar; one account's instant alert never
+        # stands for another's (report_acct / key_acct)
+        if kind == "trade_opened" and instant_sent(entry_t_of(m), acct=report_acct(m)):
+            continue                                # ntfy already got this entry the moment it was routed
+        if kind == "trade_closed" and instant_sent(entry_t_of(m), what="exits", acct=report_acct(m)):
+            continue                                # ntfy already got this exit the moment the bot saw it
         if kind == "problems" and problem_dup(m, now):
             continue                                # the PC's fast alarm already sent it (engine/fast_alarm.py, instant_problem)
         if quiet(now, s) and not rings(kind, s) and not m.get("night"):
@@ -431,10 +487,11 @@ def silent_step(prev: dict | None, seen_t, now, s: dict | None = None, fetched: 
 # Zlarior on each eval, ATLAS on the funded 25K, the extra accounts) already calls engine/push.pc_notify with a "fill"
 # payload; pc_notify hands real-account entries to instant_entry in a daemon thread: one ntfy push to the owner's PRIVATE
 # alert topic (the same OLYMPUS_HOME/ntfy.json the 15-minute report uses), at once. Never raises, never blocks routing.
-# 2026-11-20 (owner: "notifications for trade entries, I never got one from today. And results"): ATLAS's 03:45 ET entry and its
-# 07:10 ET +$514 close went (by every sign in the PC's public posts) only to the one registered Olympus phone: its push service
-# answering "accepted" made ntfy AND the 15-minute report skip their copies, and nothing showed. Since then a trade's entry and exit go to BOTH routes
-# (engine/push._pc_send); logs/notify/trade_alerts.jsonl keeps what each route answered.
+# 2026-11-20 (owner: "notifications for trade entries I never got one from today. And results"): ATLAS's 03:45 ET entry and its
+# 07:10 ET +$514 close reached no phone. Most likely (unconfirmed: the PC's push logs were not read) they went only to the one
+# Olympus phone the PC's public posts listed all night: its push service answering "accepted" made ntfy AND the 15-minute report
+# skip their copies. Since then a trade's entry and exit go to BOTH routes (engine/push._pc_send, notify_settings.json trade_routes);
+# logs/notify/trade_alerts.jsonl keeps what each route answered.
 INSTANT_PATH = os.path.join(ROOT, "logs", "notify", "instant_sent.json")
 TRADE_LOG_NAME = "trade_alerts.jsonl"           # next to INSTANT_PATH (engine/push._trade_log)
 INSTANT_KEEP_S = 3 * 86400
@@ -476,14 +533,17 @@ def _instant_state(path=None) -> dict:
         return {}
 
 
-def instant_sent(entry_t, path=None, now=None, what: str = "entries") -> bool:
+def instant_sent(entry_t, path=None, now=None, what: str = "entries", acct=None) -> bool:
     """True when an instant push went out for a trade entered within INSTANT_MATCH_S of entry_t (the report skips its own copy).
     what: "entries" / "exits" = the private ntfy topic took it; "app_entries" / "app_exits" = only the phone app took it (since
-    2026-11-20 the report still sends its ntfy copy then, engine/push._pc_send)."""
+    2026-11-20 the report still sends its ntfy copy then, engine/push._pc_send). acct: the key's account part (key_acct; "" = LIT's
+    primary, "acctb", "<id>" ...; report_acct of a report push): only that account's alerts count. None = any account."""
     t = _f(entry_t)
     if t is None:
         return False
-    for v in _d(_instant_state(path).get(what)).values():
+    for k, v in _d(_instant_state(path).get(what)).items():
+        if acct is not None and key_acct(k) != str(acct):
+            continue
         if _f(v) is not None and abs(_f(v) - t) <= INSTANT_MATCH_S:
             return True
     return False
@@ -540,7 +600,7 @@ def count_ntfy(now=None, path=None) -> None:
 def instant_record(p: dict, what: str = "entry", now=None, path=None, app_only: bool = False) -> bool:
     """The phone app got this entry / exit at once (engine/push.pc_notify): recorded so the 15-minute report does not send it to the
     phone app again. app_only=True (engine/push._pc_send since 2026-11-20: ntfy did not take it, refused or no topic in the bot's
-    process): "app_entries" / "app_exits", the report still sends its ntfy copy when its own config has a topic (owner 2026-11-20: a
+    process): "app_entries" / "app_exits", the report still sends its ntfy copy when its own config has a topic (2026-11-20: a
     push service's "accepted" is not proof the phone showed it). app_only=False: "entries" / "exits", the report skips it entirely.
     Never raises."""
     try:

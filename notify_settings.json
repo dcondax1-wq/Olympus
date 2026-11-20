@@ -1,5 +1,5 @@
 {
-  "_help": "Phone alerts (engine/notify.py, docs/NOTIFICATIONS.md). true = on, false = off. Times are New York (ET). In quiet hours ordinary alerts arrive WITHOUT sound (summaries and milestones wait for the end); the kinds in ring_in_quiet_hours still ring. Owner 2026-11-18 \"important only\" + every entry the moment it happens (trade_opened, owner 2026-11-18 evening: \"notifications when we get in a trade in any account\"): trade results, pass / fail / locked / payout ready (account_status), PC silent, the daily summary, the 07:30 ET morning brief (morning_brief, morning_brief_at). Problems (bot down / FEED STALE / NinjaTrader closed) stay ON as emergencies (lead 2026-11-18). Set a type to true to get it back (problems = bot down / FEED STALE / NinjaTrader closed). Owner 2026-11-20 (\"notifications for trade entries, I never got one from today. And results\"): a trade's entry and result go to the Olympus app AND the ntfy app, and ring at any hour (trade_opened / trade_closed in ring_in_quiet_hours; take them out for silent nights). Check the routes: python -X utf8 -m engine.alert_check --test.",
+  "_help": "Phone alerts (engine/notify.py, docs/NOTIFICATIONS.md). true = on, false = off. Times are New York (ET). In quiet hours ordinary alerts arrive WITHOUT sound (summaries and milestones wait for the end); the kinds in ring_in_quiet_hours still ring. Owner 2026-11-18 \"important only\" + every entry the moment it happens (trade_opened, owner 2026-11-18 evening: \"notifications when we get in a trade in any account\"): trade results, pass / fail / locked / payout ready (account_status), PC silent, the daily summary, the 07:30 ET morning brief (morning_brief, morning_brief_at). Problems (bot down / FEED STALE / NinjaTrader closed) stay ON as emergencies (lead 2026-11-18). Set a type to true to get it back (problems = bot down / FEED STALE / NinjaTrader closed). Since 2026-11-20 (owner: \"notifications for trade entries I never got one from today. And results\") a trade's entry and result, PASSED / FAILED / LOCKED / payout ready, room low, problems and PC silent go to the Olympus app AND the ntfy app (trade_routes: both; olympus = Olympus first, ntfy only when no phone took it; ntfy = ntfy first, Olympus only when ntfy did not take it). At night trade alerts still show, without sound; add trade_opened / trade_closed to ring_in_quiet_hours to make them ring (the owner's yes / no). Check the routes: python -X utf8 -m engine.alert_check --test.",
   "alerts": {
     "trade_opened": true,
     "trade_closed": true,
@@ -20,10 +20,9 @@
     "pc_silent",
     "account_status",
     "room_low",
-    "problems",
-    "trade_opened",
-    "trade_closed"
+    "problems"
   ],
+  "trade_routes": "both",
   "milestones_pct": [
     25,
     50,

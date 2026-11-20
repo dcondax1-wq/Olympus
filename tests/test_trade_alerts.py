@@ -301,7 +301,7 @@ def part_g(b: Box):
 # ------------------------------------------------------------------------------------------------ h. the miss of 2026-11-20
 ATLAS_ENTRY_T = 1795164300          # Fri 2026-11-20 03:45:00 ET: ATLAS SHORT 1 MNQ @ 26,380.75, stop 26,419.50, target 26,122.75 (LIVE)
 ATLAS_EXIT_T = 1795176603           # 07:10:03 ET: the target filled (+$514.18 after costs; $516 from the fills)
-ATLAS_ID = "MFFUSFBLDR000006018"    # a fake id with the real last 4 (the owner's names.json maps 6018 -> "ATLAS 25K funded")
+ATLAS_ID = "MFFUSFBLDR000006018"    # the test id of atlas() above (this test's names.json maps it to "ATLAS 25K funded")
 
 
 class _Clock:
@@ -362,8 +362,15 @@ def part_h(b: Box):
         check("h. THE MISS: the entry ALSO goes to the private ntfy topic (before: 'skipped: the phone app has it', so nothing showed)",
               len(ent) == 1 and ent[0]["title"] == "ATLAS 25K funded: SHORT 1 MNQ @ 26,380.75"
               and ent[0]["body"].startswith("stop 26,419.50 (-$78), target 26,122.75 (+$516)"), ent)
-        check("h. 03:45 ET is inside quiet hours, yet the entry RINGS on both routes (ntfy high, Olympus not silent; before: low + silent)",
-              ent and ent[0]["priority"] == "high" and sw and not sw[0].get("silent"), (ent[:1], sw[:1]))
+        check("h. 03:45 ET is inside quiet hours: the entry SHOWS on both routes, without sound (ntfy low, Olympus silent): nights stay "
+              "silent as before (lead 2026-11-20; ringing at night is the owner's yes / no)",
+              ent and ent[0]["priority"] == "low" and sw and sw[0].get("silent") is True, (ent[:1], sw[:1]))
+        check("h. the shipped notify_settings.json and the defaults do not ring trades at night; adding TRADE_RING to ring_in_quiet_hours "
+              "makes the same 03:45 entry ring",
+              not any(N.rings(k, N.merge(json.load(open(os.path.join(ROOT, "notify_settings.json"), encoding="utf-8")))) for k in N.TRADE_RING)
+              and not any(N.rings(k, N.merge({})) for k in N.TRADE_RING)
+              and N.entry_message(dict(sw[0], kind="fill") if sw else {}, now=ATLAS_ENTRY_T + 3,
+                                  s=N.merge({"ring_in_quiet_hours": ["problems", *N.TRADE_RING]}))["priority"] == "high")
         so = [p for p in app if p.get("kind") == "outcome"]
         check("h. 07:10:03 ET the target fills: ONE result on the phone app 'ATLAS 25K funded: closed SHORT +$516 (target)' "
               "(account B's own copy of the same close dropped)",
@@ -448,8 +455,9 @@ def part_h3(b: Box):
           and r["warn"] and r["warn"][0].startswith("NO ROUTE") and "Allow notifications" in r["warn"][0], r)
     b.set_settings(json.load(open(os.path.join(ROOT, "notify_settings.json"), encoding="utf-8")))
     r2 = AC.routes(ntfy_cfg={"ntfy": "https://ntfy.sh", "topic": "nq-test-topic-0000"})
-    check("h3. with the ntfy topic and the shipped settings: ok, entries + results on, ring at any hour",
-          r2["ok"] and r2["ntfy"] and r2["trade_opened"] and r2["trade_closed"] and r2["ring_at_night"], r2)
+    check("h3. with the ntfy topic and the shipped settings: ok, entries + results on, silent at night (still shown), both routes",
+          r2["ok"] and r2["ntfy"] and r2["trade_opened"] and r2["trade_closed"] and not r2["ring_at_night"] and r2["trade_routes"] == "both"
+          and any("without sound" in w and "still show" in w for w in r2["warn"]), r2)
 
 
 def part_h4(b: Box):
@@ -463,7 +471,9 @@ def part_h4(b: Box):
     try:
         t = T0 + 9000
         n0 = N.ntfy_today()
-        r = AC.send_test(now=t, poster=lambda base, topic, msg: posts.append(msg) or True, ntfy_cfg=b.cfg)
+        AC._TEST["t"] = None
+        r = AC.send_test(now=t, poster=lambda base, topic, msg: posts.append(msg) or True, ntfy_cfg=b.cfg, http=no_quota,
+                         work=os.path.join(b.dir, "pc_report"))
         check("h4. Send test: the Olympus app gets a TEST entry and a TEST close (the close replaces the entry: same tag)",
               r["app"].get("sent") == 1 and r["app_close"].get("sent") == 1 and len(app) == 2
               and app[0]["title"] == "TEST alert: SHORT 1 MNQ @ 26,380.75" and app[1]["title"] == "TEST alert: closed SHORT +$514 (target)"
@@ -480,8 +490,265 @@ def part_h4(b: Box):
         P.app_send = saved
 
 
+def no_quota(method, url, body=None, headers=None, timeout=15):
+    """ntfy's GET /v1/account in a test: no answer (never the network)."""
+    return 0, "no network in tests"
+
+
+# ------------------------------------------------------------------------------------------------ i. per-account matching
+def part_i(b: Box):
+    """LIT enters the 50K, the 25K #2 and the Rapid on the same bar, ATLAS often within minutes: one account's instant alert must never
+    stand for another's in the 15-minute report (skeptics 2026-11-20: matched on entry time only, so an alert could go missing)."""
+    from tools import pc_report as R
+    t = T0 + 12000
+    atl = P.entry_payload("ATLAS 25K", "SHORT", 1, t, src="pc")
+    atl["key"] += ":acctb"
+    N.instant_record(atl, "entry", app_only=True)                 # ATLAS: only the phone app took it (ntfy refused)
+    check("i. ATLAS's app-only entry does NOT make the report skip the Olympus copy of LIT's entry 30 s later (before: it did)",
+          not R._app_had({"key": f"open:lit:{t + 30}"}) and R._app_had({"key": f"open:atlas:{t}"}))
+    t2 = t + 600
+    a2 = P.entry_payload("ATLAS 25K", "SHORT", 1, t2, src="pc")
+    a2["key"] += ":acctb"
+    N.instant_record(a2, "entry")                                 # ATLAS: ntfy took it ("entries")
+    N.instant_record(P.entry_payload("Zlarior 50K", "LONG", 4, t2, src="pc"), "entry", app_only=True)   # LIT primary: the app only
+    rep = [{"key": f"open:lit:{t2}", "priority": "high"}, {"key": f"open:atlas:{t2}", "priority": "high"}]
+    kept = [m["key"] for m in N.apply(rep, t2 + 300, N.merge({"quiet_hours": {"off": True}}))]
+    check("i. ATLAS's ntfy alert on the same bar never drops LIT's owed ntfy copy (before: both report copies dropped, LIT's entry "
+          "never reached ntfy); ATLAS's own copy is dropped", kept == [f"open:lit:{t2}"] and R._app_had({"key": f"open:lit:{t2}"}), kept)
+    t3 = t2 + 600
+    N.instant_record(P.outcome_payload("ATLAS 25K", "SHORT", "TARGET", 120.0, t3, t3 + 900, src="pc") | {"key": f"out:{t3}:acctb"}, "exit")
+    kept = [m["key"] for m in N.apply([{"key": f"close:lit:{t3}", "priority": "default"}, {"key": f"close:atlas:{t3}", "priority": "default"}],
+                                      t3 + 1200, N.merge({"quiet_hours": {"off": True}}))]
+    check("i. the same for results: ATLAS's ntfy exit drops only ATLAS's report copy", kept == [f"close:lit:{t3}"], kept)
+    p25 = P.entry_payload("Zlarior 25K #2", "LONG", 2, t3, src="pc")
+    p25["key"] += ":b25k_2"
+    N.instant_record(p25, "entry", app_only=True)
+    check("i. the keys' account part: '' = LIT's primary (and the 50K combo), 'acctb' = ATLAS, an extra account's id = itself",
+          N.key_acct(p25["key"]) == "b25k_2" and N.key_acct(f"fill:{t3}") == "" and N.key_acct(f"out:{t3}:acctr") == "acctr"
+          and N.report_acct({"key": f"open:lit:{t3}"}) == "" and N.report_acct({"key": f"close:atlas:{t3}"}) == "acctb"
+          and N.report_acct({"key": "open:blitz:1"}) == "acctc" and N.report_acct({"key": "open:b25k_2:1", "acct": "b25k_2"}) == "b25k_2"
+          and N.report_acct({"key": "guard:dd:x"}) is None)
+    check("i. instant_sent per account: the 25K #2's app-only entry counts for the 25K #2 only; no account = any (the old rule)",
+          N.instant_sent(t3, what="app_entries", acct="b25k_2") and not N.instant_sent(t3, what="app_entries", acct="")
+          and N.instant_sent(t3, what="app_entries"))
+
+
+# ------------------------------------------------------------------------------------------------ j. important alerts on both routes
+IMPORTANT_MSGS = [
+    {"key": "cond:bot_down:{now}", "title": "Bot down", "body": "The bot stopped reporting.", "priority": "high", "tags": "warning"},
+    {"key": "life:atlas:failed:{now}", "title": "ATLAS 25K FAILED", "body": "Stood down.", "priority": "high", "tags": "rotating_light"},
+    {"key": "guard:dd:lit:x:75", "title": "Zlarior 50K room low", "body": "75% of the room used.", "priority": "high"},
+    {"key": "pc_silent:{now}", "title": "PC silent", "body": "No report for 20 min.", "priority": "high"},
+    {"key": "guard:quiet:lit:{now}", "title": "Quiet bot", "body": "No trade today.", "priority": "default"},
+]
+
+
+class RefuseAlerts:
+    """FakeHTTP that refuses every post to the private alert topic (a 429: ntfy's day cap), everything else as test_bots_back's."""
+
+    def __init__(self, topic):
+        from tests import test_bots_back as BB
+        self.inner, self.topic = BB.FakeHTTP(), topic
+
+    def __call__(self, method, url, body=None, headers=None, timeout=15):
+        if method == "POST" and url.endswith("/" + self.topic):
+            self.inner.calls.append({"m": method, "url": url, "h": dict(headers or {})})
+            return 429, "daily quota reached"
+        return self.inner(method, url, body, headers, timeout)
+
+
+def _report_box(b: Box, msgs_of):
+    """test_bots_back's temp bot folder + a run_once whose alerts are msgs_of(now) (R.events stubbed; the rest is the real run)."""
+    from tests import test_bots_back as BB
+    from tools import pc_report as R
+    bb = BB.Box()
+    now = BB.weekday_10am_et()
+    bb.hb(BB.hb_payload(now - 120))
+    bb.topic()
+    cfg = R.load_cfg(bb.env)
+
+    def fake_events(state, snap):
+        ms = [dict(m) for m in msgs_of(snap["t"])]
+        st = {"seen": {**dict((state or {}).get("seen") or {}), **{m["key"]: snap["t"] for m in ms}}, "cond": {}, "seeded": True,
+              "guard": {"sent": {m["key"]: snap["t"] for m in ms if m["key"].startswith("guard:")}}}
+        return st, ms
+    return bb, now, cfg, fake_events
+
+
+def part_j(b: Box):
+    """the important alerts (PASSED / FAILED / LOCKED, problems, room low, PC silent) go to Olympus AND ntfy, like trades (skeptics
+    2026-11-20: they still went Olympus-first, ntfy skipped whenever Apple said 'accepted')"""
+    from tests import test_bots_back as BB
+    from tools import pc_report as R
+    real = R.events
+    msgs_of = lambda now: [{**m, "key": m["key"].format(now=now)} for m in IMPORTANT_MSGS]   # noqa: E731
+    bb, now, cfg, fake = _report_box(b, msgs_of)
+    R.events = fake
+    try:
+        took = []
+        h = BB.FakeHTTP()
+        rec = bb.run(h, now, app_push=lambda m: took.append(m["key"]) or True)
+        titles = sorted(c["h"].get("Title") for c in h.posts(cfg["topic"]))
+        check("j. a phone that accepts: bot down, FAILED, room low and PC silent reach the phone app AND the private ntfy topic "
+              "(before: Olympus only); an ordinary alert ('Quiet bot') stays Olympus-first",
+              len(took) == 5 and titles == sorted(["Bot down", "ATLAS 25K FAILED", "Zlarior 50K room low", "PC silent"]) and rec["sent"] == 9,
+              (took, titles, rec.get("sent")))
+        bars = R.read_json(os.path.join(bb.work, R.BARS_STATE), {}) or {}
+        day = _d(_d(bars.get("days")).get(R._utc_day(now)))
+        check("j. the ntfy day count (the chart's share of the 250) counts the 4 ntfy alert posts, not the 5 Olympus pushes",
+              int(day.get("all") or 0) == len(h.posts()) , (day, len(h.posts())))
+        ref = RefuseAlerts(cfg["topic"])
+        bb.run(ref, now + 900, app_push=lambda m: True)
+        st = R.read_json(os.path.join(bb.work, "state.json"), {})
+        check("j. ntfy refuses (its day cap) but the phone app took them: no retry next run (never to the app twice)",
+              "guard:dd:lit:x:75" in _d(_d(st.get("guard")).get("sent")) and len(ref.inner.posts(cfg["topic"])) == 4, st.get("guard"))
+        bb.run(RefuseAlerts(cfg["topic"]), now + 1800, app_push=lambda m: False)
+        st = R.read_json(os.path.join(bb.work, "state.json"), {})
+        check("j. neither route took it: the guard alert is forgotten so the next run tries again (as before)",
+              "guard:dd:lit:x:75" not in _d(_d(st.get("guard")).get("sent")), st.get("guard"))
+        # an app-had trade result: its ntfy copy is retried for 2 hours, not hours later after ntfy's reset
+        old_t, new_t = now - 5 * 3600, now - 1800
+        for et_ in (old_t, new_t):
+            N.instant_record(P.outcome_payload("Zlarior 50K", "LONG", "TARGET", 100.0, et_, et_ + 600, src="pc"), "exit", app_only=True)
+        trades = [{"key": f"close:lit:{old_t}", "title": "Zlarior 50K closed +$100 (old)", "body": "x", "priority": "default", "ev_t": old_t + 600},
+                  {"key": f"close:lit:{new_t}", "title": "Zlarior 50K closed +$100 (new)", "body": "x", "priority": "default", "ev_t": new_t + 600}]
+        R.events = lambda state, snap: ({"seen": {m["key"]: snap["t"] for m in trades}, "cond": {}, "seeded": True, "guard": {}}, [dict(m) for m in trades])
+        app = []
+        ref = RefuseAlerts(cfg["topic"])
+        bb.run(ref, now + 2700, app_push=lambda m: app.append(m["key"]) or True)
+        st = R.read_json(os.path.join(bb.work, "state.json"), {})
+        check("j. an app-had trade result (the app got it at once): ntfy only, never the app again; ntfy refuses: retried while the "
+              "close is under 2 hours old, not after (skeptic: a late copy landed hours later, after ntfy's reset)",
+              not app and len(ref.inner.posts(cfg["topic"])) == 2 and f"close:lit:{old_t}" in st["seen"] and f"close:lit:{new_t}" not in st["seen"],
+              (app, st.get("seen")))
+    finally:
+        R.events = real
+        bb.cleanup()
+
+
+def _d(x):
+    return x if isinstance(x, dict) else {}
+
+
+# ------------------------------------------------------------------------------------------------ k. trade_routes
+def part_k(b: Box):
+    """notify_settings.json trade_routes: both (default) | olympus | ntfy; a single-route choice keeps the other as the fallback"""
+    from tests import test_bots_back as BB
+    from tools import pc_report as R
+    check("k. trade_routes: default 'both', 'olympus' / 'ntfy' kept, anything else = 'both'",
+          N.trade_routes(N.merge({})) == "both" and N.trade_routes(N.merge({"trade_routes": "Olympus"})) == "olympus"
+          and N.trade_routes(N.merge({"trade_routes": "ntfy"})) == "ntfy" and N.trade_routes(N.merge({"trade_routes": "sms"})) == "both"
+          and json.load(open(os.path.join(ROOT, "notify_settings.json"), encoding="utf-8")).get("trade_routes") == "both")
+    app = []
+    saved = P.app_send
+    P.app_send = phone_accepts(app)
+    try:
+        b.set_settings({"quiet_hours": {"off": True}, "trade_routes": "olympus"})
+        ad = nt_adapter()
+        t = T0 + 20000
+        ad._push_fill(leg(t=t))
+        posts = b.take()
+        kept = N.apply([{"key": f"open:lit:{t}", "priority": "high"}], t + 300, N.merge({"quiet_hours": {"off": True}}))
+        check("k. 'olympus': the phone app took it, so no ntfy post and the report skips its copies (the old one-route rule)",
+              len(app) == 1 and not posts and not kept, (app, posts, kept))
+        b.set_settings({"quiet_hours": {"off": True}, "trade_routes": "ntfy"})
+        ad._push_fill(leg(t=t + 600))
+        check("k. 'ntfy': ntfy took it, so the phone app is not used", len(app) == 1 and len(b.take()) == 1, app)
+        b.ntfy_ok = False
+        ad._push_fill(leg(t=t + 1200))
+        kept = N.apply([{"key": f"open:lit:{t + 1200}", "priority": "high"}], t + 1500, N.merge({"quiet_hours": {"off": True}}))
+        check("k. 'ntfy' and ntfy refuses: the phone app is the fallback, the report still owes only its ntfy copy",
+              len(app) == 2 and not b.take() and len(kept) == 1 and R._app_had(kept[0]), (app, kept))
+        b.ntfy_ok = True
+    finally:
+        P.app_send = saved
+    real = R.events
+    msgs_of = lambda now: [{**IMPORTANT_MSGS[0], "key": f"cond:bot_down:{now}"}]   # noqa: E731
+    bb, now, cfg, fake = _report_box(b, msgs_of)
+    R.events = fake
+    try:
+        took = []
+        b.set_settings({"quiet_hours": {"off": True}, "trade_routes": "olympus"})
+        h = BB.FakeHTTP()
+        bb.run(h, now, app_push=lambda m: took.append(1) or True)
+        check("k. report, 'olympus': a phone took 'Bot down', no ntfy copy", len(took) == 1 and not h.posts(cfg["topic"]))
+        b.set_settings({"quiet_hours": {"off": True}, "trade_routes": "ntfy"})
+        h = BB.FakeHTTP()
+        bb.run(h, now + 900, app_push=lambda m: took.append(1) or True)
+        check("k. report, 'ntfy': ntfy took 'Bot down', the phone app not used", len(took) == 1 and len(h.posts(cfg["topic"])) == 1)
+        ref = RefuseAlerts(cfg["topic"])
+        bb.run(ref, now + 1800, app_push=lambda m: took.append(1) or True)
+        check("k. report, 'ntfy' refused: the phone app is the fallback", len(took) == 2 and len(ref.inner.posts(cfg["topic"])) == 1)
+    finally:
+        R.events = real
+        bb.cleanup()
+
+
+# ------------------------------------------------------------------------------------------------ l. Send test's limits
+def part_l(b: Box):
+    """/api/push/test (engine/alert_check.send_test): one test a minute; the ntfy half waits when the day's ntfy room is down to the
+    trade alerts' reserve (skeptics 2026-11-20: no limit, each tap spent 2 of the posts the trade alerts need)"""
+    from engine import alert_check as AC
+    from tools import pc_report as R
+    app = []
+    saved = P.app_send
+    P.app_send = phone_accepts(app)
+    posts = []
+    poster = lambda base, topic, msg: posts.append(msg) or True   # noqa: E731
+    work = os.path.join(b.dir, "pc_report")
+    os.makedirs(work, exist_ok=True)
+    try:
+        t = T0 + 30000
+        AC._TEST["t"] = None
+        r1 = AC.send_test(now=t, poster=poster, ntfy_cfg=b.cfg, http=no_quota, work=work)
+        r2 = AC.send_test(now=t + 10, poster=poster, ntfy_cfg=b.cfg, http=no_quota, work=work)
+        check("l. a second test within 60 s sends nothing (no Olympus push, no ntfy post) and says when to try again",
+              r1["ntfy"] == "sent" and len(posts) == 2 and len(app) == 2 and r2.get("cooldown") == 51 and "try again in 51 s" in r2["say"],
+              (r1.get("ntfy"), r2))
+        r3 = AC.send_test(now=t + 61, poster=poster, ntfy_cfg=b.cfg, http=no_quota, work=work)
+        check("l. after a minute it works again", r3["ntfy"] == "sent" and len(posts) == 4 and not r3.get("cooldown"), r3)
+        n_today = N.ntfy_today(t + 200)
+        R.write_json(os.path.join(work, R.BARS_STATE), {"days": {R._utc_day(t + 200): {"all": R.NTFY_DAY_CAP - R.TRADE_ALERT_RESERVE - n_today - 1}}})
+        r4 = AC.send_test(now=t + 200, poster=poster, ntfy_cfg=b.cfg, http=no_quota, work=work)
+        check("l. 1 post left before the trade alerts' reserve (this PC's count): the ntfy half is skipped, Olympus still tested",
+              len(posts) == 4 and str(r4["ntfy"]).startswith("skipped: ") and "kept for trade alerts" in r4["ntfy"] and r4["app"].get("sent") == 1,
+              r4)
+        R.write_json(os.path.join(work, R.BARS_STATE), {"days": {}})
+        quota = lambda m, url, body=None, headers=None, timeout=15: (200, json.dumps({"limits": {"messages": 250}, "stats": {"messages": 237, "messages_remaining": 13}})) if url.endswith("/v1/account") else (0, "")   # noqa: E731
+        r5 = AC.send_test(now=t + 300, poster=poster, ntfy_cfg=b.cfg, http=quota, work=work)
+        check("l. ntfy's own count says 13 left (every program on the PC): 13 - 2 < 12 kept for trade alerts, the ntfy half skipped",
+              len(posts) == 4 and "ntfy says 13 posts left" in str(r5["ntfy"]), r5)
+        check("l. the PC dashboard's toast line says what each route answered",
+              r1["say"] == "Olympus: accepted for 1 phone(s), look at the iPhone · ntfy: TEST entry + close sent"
+              and r5["say"].startswith("Olympus: accepted for 1 phone(s)") and "ntfy: skipped: ntfy says 13" in r5["say"], (r1["say"], r5["say"]))
+        js = open(os.path.join(ROOT, "web", "js", "page-settings.js"), encoding="utf-8").read()
+        srv = open(os.path.join(ROOT, "server.py"), encoding="utf-8").read()
+        check("l. the toast shows the reply's 'say' (both routes), not 'Test sent to 0 phone(s)'; the server answers 429 in the cooldown",
+              "r.say ||" in js and "Test sent to ${r.sent} phone(s)" not in js and '"cooldown": r["cooldown"]}, 429)' in srv and '"say": r.get("say")' in srv)
+    finally:
+        P.app_send = saved
+        AC._TEST["t"] = None
+
+
+# ------------------------------------------------------------------------------------------------ m. older notice bug
+def part_m(b: Box):
+    """engine/autoupdate.notify(sync=True) called push._pc_send(p, True): True became the sender and every phone got a TypeError"""
+    from engine import alerts as AL
+    from engine import autoupdate as AU
+    calls = []
+    saved, saved_send = P._pc_send, AL.send
+    P._pc_send = lambda p, *a, **k: calls.append((p.get("kind"), a, k)) or {}
+    AL.send = lambda *a, **k: {}
+    try:
+        AU.notify("Bot update FAILED", "test", key=f"auto:update:test:{T0}", sync=True)
+    finally:
+        P._pc_send, AL.send = saved, saved_send
+    check("m. the sync update notice uses the real sender (no stray True as the sender)", calls == [("pc", (), {})], calls)
+
+
 def main() -> int:
-    for f in (part_a, part_b, part_c, part_d, part_e, part_g, part_h, part_h2, part_h2b, part_h3, part_h4):
+    for f in (part_a, part_b, part_c, part_d, part_e, part_g, part_h, part_h2, part_h2b, part_h3, part_h4, part_i, part_j, part_k, part_l,
+              part_m):
         b = Box()
         try:
             f(b)

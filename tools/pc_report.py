@@ -1558,7 +1558,7 @@ def events(state: dict, snap: dict) -> tuple:
             msgs.append({"key": key, "keys": [key] + ([ev["pair"]] if both else []), "title": ev["title"],
                          "body": ((ev["both"] if both else ev["body"]) + (" " + note if note else "")).strip(),
                          "priority": "high" if key.startswith("open") else "default",
-                         "tags": "chart_with_upwards_trend" if key.startswith("open") else "checkered_flag"})
+                         "tags": "chart_with_upwards_trend" if key.startswith("open") else "checkered_flag", "ev_t": t})
     # real fill vs plan (tools/fill_check.py): every flag of a NinjaTrader trade, once, high priority at any hour (a real account)
     for r in revs:
         try:                            # one odd review never stops the run (the status and the other alerts still go out)
@@ -1827,24 +1827,76 @@ def _app_push(m: dict) -> bool:
         return False
 
 
-def _trade_alert(m: dict) -> bool:
-    """A report alert about a trade's entry or result ("open:<acct>:<t>" / "close:<acct>:<t>"): it goes to ntfy too (2026-11-20)."""
+def _kind(m: dict) -> str:
     try:
         from engine import notify as _n
-        return (m.get("kind") or _n.kind_of(m.get("key"))) in ("trade_opened", "trade_closed")
+        return m.get("kind") or _n.kind_of(m.get("key"))
     except Exception:  # noqa: BLE001
-        return str(m.get("key") or "").startswith(("open:", "close:"))
+        k = str(m.get("key") or "")
+        return "trade_opened" if k.startswith("open:") else "trade_closed" if k.startswith("close:") else "other"
+
+
+def _trade_alert(m: dict) -> bool:
+    """A report alert about a trade's entry or result ("open:<acct>:<t>" / "close:<acct>:<t>"): it goes to ntfy too (2026-11-20)."""
+    return _kind(m) in ("trade_opened", "trade_closed")
+
+
+def _dual_alert(m: dict) -> bool:
+    """An alert for BOTH phone routes (engine/notify.DUAL_KINDS, 2026-11-20): a trade's entry / result, PASSED / FAILED / LOCKED /
+    payout ready (account_status), room low, problems (bot down, NinjaTrader closed, FEED STALE, a fill check, a missed entry) and
+    PC silent. Every other alert: the phone app first, ntfy only when no phone took it."""
+    try:
+        from engine import notify as _n
+        return _n.dual(_kind(m))
+    except Exception:  # noqa: BLE001
+        return _trade_alert(m)
+
+
+def _routes_mode() -> str:
+    """notify_settings.json trade_routes: "both" (default) | "olympus" | "ntfy" (engine/notify.trade_routes). Never raises."""
+    try:
+        from engine import notify as _n
+        return _n.trade_routes()
+    except Exception:  # noqa: BLE001
+        return "both"
 
 
 def _app_had(m: dict) -> bool:
     """The bot's instant path already put this trade alert on the phone app (engine/notify.instant_record app_only: ntfy failed then):
-    the report sends only its ntfy copy."""
+    the report sends only its ntfy copy. Per account (engine/notify.report_acct): another account's alert on the same bar never counts."""
     try:
         from engine import notify as _n
-        kind = m.get("kind") or _n.kind_of(m.get("key"))
-        return _n.instant_sent(_n.entry_t_of(m), what="app_entries" if kind == "trade_opened" else "app_exits")
+        return _n.instant_sent(_n.entry_t_of(m), what="app_entries" if _kind(m) == "trade_opened" else "app_exits",
+                               acct=_n.report_acct(m))
     except Exception:  # noqa: BLE001
         return False
+
+
+def _alert_app(m: dict, app_push, rec: dict, t) -> bool:
+    """One report alert to the phone app (run_once): True = a phone took it. Never raises."""
+    try:
+        ok = bool(app_push(m))
+    except Exception:  # noqa: BLE001
+        ok = False
+    if ok:
+        rec["app_sent"] = int(rec.get("app_sent") or 0) + 1
+        rec["alerts_last"] = {"t": t, "title": m["title"], "via": "app"}
+    return ok
+
+
+def _alert_ntfy(m: dict, cfg: dict, rec: dict, t, http=None) -> bool:
+    """One report alert to the private ntfy topic (run_once): True = ntfy took it; a refusal goes to rec["errors"]."""
+    ok, why = ntfy_post(cfg["ntfy"], cfg["topic"], m["body"], title=m["title"], priority=m.get("priority"), tags=m.get("tags"), http=http)
+    if ok:
+        rec["alerts_last"] = {"t": t, "title": m["title"]}
+    else:
+        rec["errors"].append("alert: " + why)
+    return ok
+
+
+# An app-had trade copy (the phone app got it at once, ntfy refused) is retried on ntfy every 15 minutes only while the trade event
+# is this recent: after ntfy's day cap a late copy would land hours later, after the reset (skeptic 2026-11-20).
+APP_HAD_RETRY_S = 2 * 3600
 
 
 def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, now=None, root: str = ROOT, port=PORT_DEFAULT,
@@ -1922,41 +1974,47 @@ def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, n
     # alerts -> your private topic
     state = read_json(os.path.join(work, "state.json"), {}) or {}
     new_state, msgs = events(state, snap)
-    sent = 0
+    sent = nposted = 0                              # every delivery / the alert posts that used ntfy's day (the chart's share)
+    mode = _routes_mode()
+    ntfy_on = bool(cfg["topic"]) and bool(cfg["on"])
     for m in msgs:
+        # 2026-11-20: a trade's entry / result and the important alerts (_dual_alert: PASSED / FAILED / LOCKED / payout ready, room
+        # low, problems, PC silent) go to the phone app AND to ntfy (a push service's "accepted" is not proof the phone showed it);
+        # every other alert: the phone app first, the ntfy copy only when no phone took it (as before). notify_settings.json
+        # trade_routes "olympus" / "ntfy" puts one route first for those too (the other stays the fallback).
+        dual = _dual_alert(m)
+        both = dual and mode == "both"
+        ntfy_first = dual and mode == "ntfy"
+        trade = _trade_alert(m)
+        had = trade and _app_had(m)                 # the instant path already put this trade on the phone app
         if dry:
             if app_push is not None:
-                say(f"[dry] push -> the phone app (Olympus), {'and' if _trade_alert(m) else 'else'} {cfg['topic'] or 'nothing'}: {m['title']}: {m['body']}")
-            elif cfg["topic"] and cfg["on"]:
+                order = ("ntfy first, else the phone app (Olympus)" if ntfy_first else
+                         f"the phone app (Olympus) {'and' if both else 'else'} ntfy")
+                say(f"[dry] push -> {order} ({cfg['topic'] or 'no topic'}): {m['title']}: {m['body']}")
+            elif ntfy_on:
                 say(f"[dry] push -> {cfg['topic']}: {m['title']}: {m['body']}")
             continue
-        # owner 2026-11-20 ("notifications for trade entries, I never got one from today. And results"): a trade's entry / result
-        # goes to the phone app AND to ntfy (a push service's "accepted" is not proof the phone showed it); every other alert: the
-        # phone app first, the ntfy copy only when no phone took it (as before)
-        trade = _trade_alert(m)
-        took = False
-        if app_push is not None and not (trade and _app_had(m)):    # the instant path already put this trade on the phone app
-            try:
-                took = bool(app_push(m))
-            except Exception:  # noqa: BLE001
-                took = False
-            if took:
-                sent += 1
-                rec["app_sent"] = int(rec.get("app_sent") or 0) + 1
-                rec["alerts_last"] = {"t": snap["t"], "title": m["title"], "via": "app"}
-                if not trade:
-                    continue
-        if not cfg["topic"] or not cfg["on"]:
-            continue
-        ok, why = ntfy_post(cfg["ntfy"], cfg["topic"], m["body"], title=m["title"], priority=m.get("priority"), tags=m.get("tags"), http=http)
-        if ok:
-            sent += 1
-            rec["alerts_last"] = {"t": snap["t"], "title": m["title"]}
+        took = had                                  # the phone app has it (at once, or in this run)
+        nt = None                                   # ntfy: True / False, None = not tried
+        if ntfy_first:
+            nt = _alert_ntfy(m, cfg, rec, snap["t"], http) if ntfy_on else None
+            if not nt and not had and app_push is not None:
+                took = _alert_app(m, app_push, rec, snap["t"])
+                sent += int(took)
         else:
-            rec["errors"].append("alert: " + why)
-            if took:
-                continue                            # the phone app has it: no retry (it would reach the app twice)
-            # not sent: forget it so the next run tries again (conditions keep their state; a trade key is retried)
+            if not had and app_push is not None:
+                took = _alert_app(m, app_push, rec, snap["t"])
+                sent += int(took)
+            if ntfy_on and (both or not took):
+                nt = _alert_ntfy(m, cfg, rec, snap["t"], http)
+        if nt:
+            sent += 1
+            nposted += 1
+        if nt is False and (not took or (had and (both or ntfy_first) and snap["t"] - int(num(m.get("ev_t")) or snap["t"]) <= APP_HAD_RETRY_S)):
+            # not on ntfy: forget it so the next run tries again (conditions keep their state; a trade key is retried). Once one
+            # route took it in this run there is no retry (it would reach the phone app twice); an app-had trade copy is retried for
+            # its ntfy copy only, for APP_HAD_RETRY_S
             if m["key"].startswith(("open:", "close:", "fill:", "watch:")):
                 for k in m.get("keys") or [m["key"]]:
                     new_state["seen"].pop(k, None)
@@ -1969,7 +2027,7 @@ def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, n
     try:
         rec["bars"] = bars_step(work, cfg, snap.get("live") if isinstance(snap.get("live"), dict) else {}, snap["t"],
                                 bool(snap.get("market_open")), dry=dry, http=http, say=say, root=root, nt_folder=_nt_folder(root, env),
-                                other_posts=0 if dry else posted + sent, limited=any("rate limit" in str(e) for e in rec["errors"]),
+                                other_posts=0 if dry else posted + nposted, limited=any("rate limit" in str(e) for e in rec["errors"]),
                                 feed_path=feed_path, busy_run=ext_n > 0, remaining=(rec.get("ntfy_quota") or {}).get("remaining"))
     except Exception as e:  # noqa: BLE001
         rec["bars"] = {"posted": False, "why": f"chart failed softly: {e.__class__.__name__}"}

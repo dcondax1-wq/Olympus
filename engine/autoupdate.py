@@ -1030,7 +1030,7 @@ def notify(title: str, body: str, key: str, sync: bool = False):
         p = push.text_payload("PC", "pc", title, body, key=key, url="#/accounts")
         if sync:
             if not push.pc_notifier().seen(p):
-                push._pc_send(p, True)
+                push._pc_send(p)                 # no sender: the real one (was _pc_send(p, True): True became the sender, TypeError per phone)
         else:
             push.pc_notify(p)
     except Exception:

@@ -315,16 +315,20 @@ async def api_push_save(req: Request):
 
 @app.post("/api/push/test")
 def api_push_test():
-    # 2026-11-20 (owner: "I never got one from today"): a TEST entry + TEST close, the real trade alerts' words, on EVERY route (the
-    # Olympus phones + the private ntfy topic), with what each answered (engine/alert_check; never recorded as a trade)
+    # 2026-11-20 (owner: "notifications for trade entries I never got one from today. And results"): a TEST entry + TEST close, the
+    # real trade alerts' words, on EVERY route (the Olympus phones + the private ntfy topic), with what each answered
+    # (engine/alert_check; never recorded as a trade). One test a minute (no login here: a repeated tap or a script on the home
+    # network must not spend ntfy's day); the ntfy half waits when the day's room is down to the trade alerts' reserve.
     from engine import alert_check
     r = alert_check.send_test()
     a, rt = r.get("app") or {}, r.get("routes") or {}
+    if r.get("cooldown"):
+        return J({"ok": False, "error": r.get("say") or "one test a minute", "cooldown": r["cooldown"]}, 429)
     if not rt.get("phones") and not rt.get("ntfy"):
         return J({"ok": False, "error": "no alert route on this PC: open Olympus from the iPhone's Home Screen and tap Allow notifications, "
                                         "and/or run python tools/pc_report.py --setup", "warn": rt.get("warn")}, 400)
     return J({"ok": bool(a.get("sent")) or r.get("ntfy") == "sent", **{k: a.get(k) for k in ("sent", "devices", "gone", "errors")},
-              "ntfy": r.get("ntfy"), "warn": rt.get("warn")})
+              "ntfy": r.get("ntfy"), "say": r.get("say"), "warn": rt.get("warn")})
 
 
 @app.get("/api/gamma")

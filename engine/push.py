@@ -1105,33 +1105,72 @@ NO_TOPIC = "no private alert topic"         # engine/notify._instant_send's answ
 
 def _pc_send(payload, sender=None, ntfy=None, ntfy_exit=None) -> dict:
     """pc_notify's worker thread. A real trade's ENTRY and EXIT go to BOTH routes: the phone app (Web Push) AND the private ntfy alert
-    topic (engine/notify.instant_entry / instant_exit). Owner 2026-11-20: "notifications for trade entries, I never got one from today.
-    And results": ATLAS's 03:45 ET entry and 07:10 ET +$514 close went to the one registered phone only (until then: ntfy only when no
-    phone took it). A push service's 2xx only means Apple / Google accepted it, not that the phone showed it, and that "accepted" also
-    made the 15-minute report skip its copy, so nothing reached the owner. Now ntfy always gets the trade too; a phone-only delivery is
-    recorded (engine/notify.instant_record app_only) so the report sends just its ntfy copy (or nothing, without a topic).
+    topic (engine/notify.instant_entry / instant_exit). Until 2026-11-20 ntfy got them only when no phone took them, and "took" only
+    meant Apple / Google accepted the push, not that the phone showed it; that "accepted" also made the 15-minute report skip its
+    copy. ATLAS's 03:45 ET entry and 07:10 ET +$514 close that day reached no phone, most likely that way (unconfirmed: the PC's push
+    logs were not read). A phone-only delivery is recorded (engine/notify.instant_record app_only) so the report sends just its ntfy
+    copy (or nothing, without a topic). notify_settings.json trade_routes (engine/notify.trade_routes): "both" (default), "olympus"
+    (the app first, ntfy only when no phone took it) or "ntfy" (ntfy first, the app only when ntfy did not take it).
     Every other notice: the phone app only, as before. Each trade alert's answers -> logs/notify/trade_alerts.jsonl. -> what happened
     (tests). Never raises."""
     res: dict = {}
     n = None
+    k = payload.get("kind")
+    trade = k in ("fill", "outcome")
+    app_ok = True
+
+    tried = []
+
+    def _app() -> dict:
+        tried.append(1)
+        try:
+            return app_send(app_payload(payload), sender=sender) if pc_app_ok(payload) else {"sent": 0, "skipped": "not for the phone"}
+        except Exception as e:  # noqa: BLE001
+            return {"sent": 0, "errors": [e.__class__.__name__]}
+
     try:
         n = pc_notifier()
         if not n.claim(payload):                 # another path / thread already has this notice (same key)
             return {"dup": True}
-        res = app_send(app_payload(payload), sender=sender) if pc_app_ok(payload) else {"sent": 0, "skipped": "not for the phone"}
     except Exception as e:
-        res = {"sent": 0, "errors": [e.__class__.__name__]}
-    k = payload.get("kind")
-    try:
-        from . import notify
-        if k in ("fill", "outcome"):             # owner 2026-11-18 entries, 2026-11-20 exits ("and closed, results of it"): at once
-            res["ntfy"] = ((ntfy or notify.instant_entry) if k == "fill" else (ntfy_exit or notify.instant_exit))(dict(payload))
-            if res.get("sent") and res["ntfy"] != "sent":
-                # the phone app has it, ntfy not (refused, or no topic in THIS process): the report sends only its ntfy copy, if its
-                # own config has a topic (the 15-minute task may see one the server does not), never the app copy again
-                notify.instant_record(payload, "entry" if k == "fill" else "exit", app_only=True)
-    except Exception:
-        pass
+        res, app_ok = {"sent": 0, "errors": [e.__class__.__name__]}, False
+    if not trade:
+        if app_ok:
+            res = _app()
+    else:
+        try:
+            from . import notify
+            what = "entry" if k == "fill" else "exit"
+            mode = notify.trade_routes()
+
+            def _ntfy() -> str:                  # owner 2026-11-18 entries, 2026-11-20 exits ("and closed, results of it"): at once
+                return ((ntfy or notify.instant_entry) if k == "fill" else (ntfy_exit or notify.instant_exit))(dict(payload))
+            if mode == "ntfy":                   # ntfy first; the app only when ntfy did not take it
+                said = _ntfy()
+                if said == "sent":
+                    if app_ok:
+                        res = {"sent": 0, "skipped": "ntfy has it (trade_routes ntfy)"}
+                else:
+                    if app_ok:
+                        res = _app()
+                    if res.get("sent"):
+                        notify.instant_record(payload, what, app_only=True)
+                res["ntfy"] = said
+            else:
+                if app_ok:
+                    res = _app()
+                if mode == "olympus" and res.get("sent"):
+                    notify.instant_record(payload, what)      # one route asked for: the report skips it entirely (the old rule)
+                    res["ntfy"] = "skipped: the phone app has it (trade_routes olympus)"
+                else:
+                    res["ntfy"] = _ntfy()
+                    if res.get("sent") and res["ntfy"] != "sent":
+                        # the phone app has it, ntfy not (refused, or no topic in THIS process): the report sends only its ntfy copy, if
+                        # its own config has a topic (the 15-minute task may see one the server does not), never the app copy again
+                        notify.instant_record(payload, what, app_only=True)
+        except Exception:
+            if app_ok and not tried:             # never lose the phone app copy to a fault on the ntfy side
+                res = _app()
     try:
         if n is not None:
             from . import notify as _n
@@ -1140,7 +1179,7 @@ def _pc_send(payload, sender=None, ntfy=None, ntfy_exit=None) -> dict:
             del n.log[:-50]
     except Exception:
         pass
-    if k in ("fill", "outcome"):
+    if trade:
         _trade_log(payload, res)
     return res
 
@@ -1179,7 +1218,8 @@ def _trade_log(payload: dict, res: dict) -> None:
 
 def pc_notify(payload: dict) -> dict | None:
     """PC side, in a background thread (the push service never delays order routing): pc_app_ok notices to the phone app; every
-    real-account entry and exit also to the private ntfy alert topic (_pc_send, since 2026-11-20 whatever the app said). Never raises."""
+    real-account entry and exit also to the private ntfy alert topic (_pc_send, since 2026-11-20 whatever the app said; trade_routes
+    in notify_settings.json can pick one route first). Never raises."""
     try:
         if pc_notifier().seen(payload):
             return {"dup": True}
