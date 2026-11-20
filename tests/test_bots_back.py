@@ -595,6 +595,12 @@ const fake = async (u) => { calls.push(u); if (u.endsWith('status_feed.json')) r
 out.fetched = (await F.fetchLatest({ fetch: fake })) ? (await F.fetchLatest({ fetch: fake })).t : null;
 out.fetchCalls = calls.slice(0, 3);
 out.fetchFail = await F.fetchLatest({ fetch: async () => { throw new Error('offline'); } });
+const calls2 = [];
+const fake2 = async (u) => { calls2.push(u); if (u.endsWith('status_feed.json')) return { ok: true, json: async () => ({ ntfy: 'https://ntfy.sh', topic: 'olympus-nq-status-0123456789abcdef' }) };
+  if (u.includes('since=70m')) return { ok: true, text: async () => '' }; if (u.includes('since=latest')) return { ok: true, text: async () => line(ext({ brd: {} }, 0, rt), 1) };
+  return { ok: true, text: async () => nd }; };
+const q = await F.fetchLatest({ fetch: fake2 });
+out.quiet = { t: q ? q.t : null, last: calls2[calls2.length - 1] };
 console.log(JSON.stringify(out));
 """
 
@@ -619,9 +625,10 @@ def node_runs(node):
         lite = json.load(open(lite_path, encoding="utf-8"))
         check("parseLatest: the newest PC status wins, junk / other kinds / t null are ignored", o["parsed"]["t"] == lite["t"] and o["parsed"]["board"]["lit"]["room"] == 2000
               and o["parsedEmpty"] is None, o["parsed"].get("t"))
-        check("feedUrls: a 70-minute window (core + ext) then since=latest (the core alone); http / odd topics refused",
+        check("feedUrls: a 70-minute window (core + ext), since=latest (the core alone), then the last 12 hours (a quiet PC's last real post, day-archive); http / odd topics refused",
               o["urls"] == ["https://ntfy.sh/olympus-nq-status-0123456789abcdef/json?poll=1&since=70m",
-                            "https://ntfy.sh/olympus-nq-status-0123456789abcdef/json?poll=1&since=latest"] and o["badUrls"] == [[], [], []], o["urls"])
+                            "https://ntfy.sh/olympus-nq-status-0123456789abcdef/json?poll=1&since=latest",
+                            "https://ntfy.sh/olympus-nq-status-0123456789abcdef/json?poll=1&since=12h"] and o["badUrls"] == [[], [], []], o["urls"])
         sp = o["split"]
         check("split merge: the newest ext per part laid into the core (brd, glance -> pc.glance, kalshi_rewards, learn); per part the "
               "newest ext wins whole (an older part 0 is not mixed in, so its mf is not used); an ext over 2 h older is ignored; "
@@ -636,6 +643,8 @@ def node_runs(node):
               o["canon"]["room"] == 2000 and o["canon"]["t"] == lite["t"] and o["canon"]["age"] == 120 and "2 minutes" in o["canon"]["line"], o["canon"])
         check("an older PC status never replaces newer site numbers", o["notOlder"] is True and o["mergeSiteNewer"] == 7)
         check("toLive keeps the site's board sections for board.js", o["toLive"] == {"levels": [1, 2]})
+        check("fetchLatest, PC quiet for over 70 minutes (no post in the window, 'latest' is only an ext part): the last 12 hours give its last real post (day-archive)",
+              o["quiet"]["t"] is not None and "since=12h" in o["quiet"]["last"], o["quiet"])
         check("fetchLatest: status_feed.json, then ntfy (the 70-minute window refused -> since=latest); offline -> null",
               o["fetched"] == lite["t"] and o["fetchCalls"][0] == "status_feed.json" and "since=70m" in o["fetchCalls"][1] and "since=latest" in o["fetchCalls"][2]
               and o["fetchFail"] is None, o)

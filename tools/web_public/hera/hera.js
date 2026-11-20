@@ -2,6 +2,7 @@
 // Reads the site's plutus/roadmap.json (a study, not a promise); fixture.json = a saved copy (DEMO) when it is missing. Read only: it sends nothing and keeps nothing.
 // Text only through textContent / createElementNS. window.HERA is the test hook.
 import * as C from './heracore.js';
+import * as T from '../olympus/truth.js';
 
 const O = window.OLYMPUS || null;
 const $ = (id) => document.getElementById(id);
@@ -100,6 +101,7 @@ function render() {
   renderChips();
   const hd = C.headline(S.road, S.key); $('big').textContent = C.money(hd.mid); $('bigText').textContent = hd.text;
   $('bigNote').textContent = `${S.road.title || 'Money plan'}, updated ${S.road.updated || 'recently'}. A study of 2026 paper results, not a promise.`;
+  const old = S.demo ? '' : C.studyAge(S.road, S.today); if (old) $('bigNote').textContent += ' ' + old;
   drawChart(v); renderMonth(v); renderCash(); renderCalendar(); renderBuy();
   const cv = $('cav'); clear(cv); for (const c of S.road.caveats) cv.appendChild(h('li', '', c));
   say(hd.text);
@@ -118,6 +120,18 @@ async function boot() {
   const m = parseInt(q.get('month'), 10); S.month = Number.isFinite(m) && m > 0 ? m : C.version(road, S.key).months.length;
   $('mslider').addEventListener('input', (e) => { S.month = parseInt(e.target.value, 10) || 1; const v = C.version(S.road, S.key); drawChart(v); renderMonth(v); });
   render();
+  if (!forced) renderNow().catch(() => { /* the plan still shows */ });
+}
+// day-archive 2026-11-20: the real accounts (the PC's last report laid over home.json, the same as Demeter / Ledger), with how old they are
+async function renderNow() {
+  const home = await getJSON('../home.json'); if (!home) return;
+  const fed = await T.withPcFeed(home), nowS = Math.floor(Date.now() / 1000), A = T.accountsOf(fed);
+  const rows = C.payoutNow([A.lit, A.atlas, ...T.extraOf(fed)]); if (!rows.length) return;
+  const ul = $('nowList'); clear(ul); for (const r of rows) ul.appendChild(h('li', '', r.line));
+  const ag = T.agesOf(fed, nowS), pc = ag && ag.pc;
+  if (pc && pc.t) $('nowNote').textContent = `From the PC's report ${pc.words || T.ageWords(nowS - pc.t)} ago${pc.age > T.FRESH_S ? ' (the PC has not reported since: these are its last numbers)' : ''}. ` + $('nowNote').textContent;
+  $('nowCard').hidden = false;
+  S.now = rows;
 }
 window.HERA = { S, C, ready: () => S.ready, render };
 boot().catch((e) => { say('Something went wrong: ' + (e && e.message ? e.message : e)); try { if (O && O.fail) O.fail('Hera could not start'); } catch (_) { /* nothing */ } });

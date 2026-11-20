@@ -111,3 +111,35 @@ export function jarvisCard(road, key, today) {
     kpis: [{ label: 'Typical 12 months', value: hd ? money(hd.mid) : 'n/a' }, { label: 'Bad run', value: hd ? money(hd.lo) : 'n/a' }, { label: 'First payout', value: nx ? dayWord(nx.typical) : 'n/a' }],
     lines: [str(hd ? hd.text : 'The money plan is not published yet.', 118), str(nx ? `Next: ${nx.short} first payout ${dayWord(nx.typical)} (typical).` : '', 118)].filter(Boolean), t: 1793394000, theme: '#14110e' };
 }
+
+// ------------------------------------------------------------------------------------------------ day-archive 2026-11-20: the real accounts, now
+// MFFU Builder payout rule (the same numbers as Demeter, demetercore.js PLANS): the first payout needs profit above the buffer plus the
+// minimum request; at least 2 trading days in the cycle and the best day at most 50% of the cycle's profit. Pure (the page passes accounts
+// from olympus/truth.js accountsOf + extraOf, laid over by the PC's status post).
+export const PAYOUT = { '50K': { target: 3000, buffer: 2100, min: 500, max: 2000 }, '25K': { target: 1500, buffer: 1100, min: 250, max: 1000 } };
+/** -> [{ key, name, kind, line, toGo, askAt }] for every real account (paper / BLITZ left out). */
+export function payoutNow(accts) {
+  const out = [];
+  for (const a of Array.isArray(accts) ? accts : []) {
+    if (!a || !a.has || a.paper || a.key === 'blitz') continue;
+    const size = a.size === '50K' || num(a.start) === 50000 ? '50K' : '25K', P = PAYOUT[size], need = P.buffer + P.min, start = num(a.start) || (size === '50K' ? 50000 : 25000);
+    const profit = num(a.profit) != null ? num(a.profit) : num(a.balance) != null ? num(a.balance) - start : null;
+    const name = `${a.name}${a.name && a.name.includes(size) ? '' : ' ' + size}`;
+    if (a.kind === 'funded') {
+      const toGo = profit == null ? null : Math.max(0, need - profit);
+      const line = toGo === 0 ? `${name} (funded): ${money(profit)} profit, past the ${money(need)} the first payout needs. Ask for ${money(P.min)} to ${money(P.max)} (you keep 80%).`
+        : `${name} (funded): ${money(profit)} profit of the ${money(need)} the first payout needs (${money(P.buffer)} buffer + ${money(P.min)} minimum): ${money(toGo)} to go, ask at a ${money(start + need)} balance.`;
+      out.push({ key: a.key, name, kind: 'funded', line, toGo, askAt: start + need });
+    } else {
+      const toPass = num(a.toTarget) != null ? Math.max(0, num(a.toTarget)) : profit != null ? Math.max(0, P.target - profit) : null;
+      out.push({ key: a.key, name, kind: 'eval', toGo: toPass, askAt: null,
+        line: `${name} (eval): ${toPass == null ? 'the target' : money(toPass)} to pass, then ${money(need)} of funded profit for the first payout (${money(P.buffer)} buffer + ${money(P.min)} minimum).` });
+    }
+  }
+  return out;
+}
+/** how old the study is, in whole days, and what it still assumes */
+export function studyAge(road, today) {
+  const d = road && road.updated ? daysBetween(String(road.updated).slice(0, 10), today) : null;
+  return d == null ? '' : d > 7 ? `This study is from ${dayWord(String(road.updated).slice(0, 10))} (${d} days old): it still plans BLITZ and ATLAS as an eval. Your real accounts are in "First payouts, now".` : '';
+}
