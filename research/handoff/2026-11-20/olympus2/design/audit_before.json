@@ -1,23 +1,20 @@
 [
  {
   "kit": {
-   "agora": false,
-   "shell": false,
+   "agora": true,
+   "shell": true,
    "pulse": false
   },
   "lightReady": false,
   "sideways": 0,
-  "fcp": 192,
+  "fcp": 116,
   "small": [
-   "#plStat:38",
-   "#plFind:38",
-   "#olyLauncherBtn:40",
-   "#refresh:38"
+   "#olyLauncherBtn:40"
   ],
-  "smallN": 4,
+  "smallN": 1,
   "tiny": 10,
   "fonts": [
-   "-apple-system 204",
+   "-apple-system 205",
    "SF Pro Rounded 7",
    "Iowan Old Style 6",
    "system-ui 3"
@@ -32,57 +29,47 @@
    "18pxx2"
   ],
   "bg": "rgb(7, 6, 5)",
-  "h": 3998,
+  "h": 4018,
   "app": "zenith",
   "scheme": "dark",
-  "cls": 0,
-  "longest": 160,
+  "cls": 0.02,
+  "longest": 168,
   "errors": [],
   "bad": []
  },
  {
   "kit": {
-   "agora": false,
-   "shell": false,
+   "agora": true,
+   "shell": true,
    "pulse": false
   },
   "lightReady": false,
   "sideways": 0,
-  "fcp": 84,
+  "fcp": 120,
   "small": [
-   "#plStat:38",
-   "#plFind:38",
-   "#olyLauncherBtn:40",
-   "#refresh:38"
+   "#olyLauncherBtn:40"
   ],
-  "smallN": 4,
+  "smallN": 1,
   "tiny": 10,
   "fonts": [
-   "-apple-system 204",
+   "-apple-system 205",
    "SF Pro Rounded 7",
    "Iowan Old Style 6",
    "system-ui 3"
   ],
-  "lowContrastN": 30,
-  "lowContrast": [
-   "em 3.1:Today \u00b7 all bots",
-   ".up 2.6:+$514",
-   "small 2.1:1 trade closed or open",
-   "em 3.1:Window open \u00b7 closes in",
-   "b 1.2:5h 40m",
-   "small 2.1:Zlarior"
-  ],
+  "lowContrastN": 0,
+  "lowContrast": [],
   "radii": [
    "20pxx5",
    "16pxx4",
    "18pxx2"
   ],
   "bg": "rgb(247, 244, 238)",
-  "h": 3998,
+  "h": 4018,
   "app": "zenith",
   "scheme": "light",
-  "cls": 0,
-  "longest": 121,
+  "cls": 0.02,
+  "longest": 138,
   "errors": [],
   "bad": []
  },
@@ -128,7 +115,7 @@
   },
   "lightReady": true,
   "sideways": 0,
-  "fcp": 116,
+  "fcp": 120,
   "small": [],
   "smallN": 0,
   "tiny": 9,
@@ -153,37 +140,6 @@
    "404 business/business.json",
    "404 kalshi.json"
   ]
- },
- {
-  "kit": {
-   "agora": true,
-   "shell": false,
-   "pulse": false
-  },
-  "lightReady": true,
-  "sideways": 0,
-  "fcp": 400,
-  "small": [],
-  "smallN": 0,
-  "tiny": 0,
-  "fonts": [
-   "-apple-system 117",
-   "SF Pro Rounded 73",
-   "Iowan Old Style 15"
-  ],
-  "lowContrastN": 0,
-  "lowContrast": [],
-  "radii": [
-   "20pxx10"
-  ],
-  "bg": "rgb(20, 17, 14)",
-  "h": 6086,
-  "app": "plan",
-  "scheme": "dark",
-  "cls": 0,
-  "longest": 0,
-  "errors": [],
-  "bad": []
  },
  {
   "kit": {
@@ -207,6 +163,37 @@
   "radii": [
    "20pxx10"
   ],
+  "bg": "rgb(20, 17, 14)",
+  "h": 6086,
+  "app": "plan",
+  "scheme": "dark",
+  "cls": 0,
+  "longest": 0,
+  "errors": [],
+  "bad": []
+ },
+ {
+  "kit": {
+   "agora": true,
+   "shell": false,
+   "pulse": false
+  },
+  "lightReady": true,
+  "sideways": 0,
+  "fcp": 444,
+  "small": [],
+  "smallN": 0,
+  "tiny": 0,
+  "fonts": [
+   "-apple-system 117",
+   "SF Pro Rounded 73",
+   "Iowan Old Style 15"
+  ],
+  "lowContrastN": 0,
+  "lowContrast": [],
+  "radii": [
+   "20pxx10"
+  ],
   "bg": "rgb(249, 247, 241)",
   "h": 6086,
   "app": "plan",
@@ -224,7 +211,7 @@
   },
   "lightReady": true,
   "sideways": 0,
-  "fcp": 112,
+  "fcp": 132,
   "small": [],
   "smallN": 0,
   "tiny": 5,
@@ -244,7 +231,7 @@
   "app": "ledger",
   "scheme": "dark",
   "cls": 0,
-  "longest": 1090,
+  "longest": 1470,
   "errors": [],
   "bad": [
    "404 kalshi.json",
@@ -259,7 +246,7 @@
   },
   "lightReady": true,
   "sideways": 0,
-  "fcp": 100,
+  "fcp": 140,
   "small": [],
   "smallN": 0,
   "tiny": 5,
@@ -279,7 +266,7 @@
   "app": "ledger",
   "scheme": "light",
   "cls": 0,
-  "longest": 1089,
+  "longest": 1341,
   "errors": [],
   "bad": [
    "404 kalshi.json",
@@ -294,7 +281,7 @@
   },
   "lightReady": true,
   "sideways": 0,
-  "fcp": 100,
+  "fcp": 104,
   "small": [],
   "smallN": 0,
   "tiny": 0,
@@ -314,7 +301,7 @@
   "app": "aegis",
   "scheme": "dark",
   "cls": 0,
-  "longest": 118,
+  "longest": 133,
   "errors": [],
   "bad": []
  },
@@ -326,7 +313,7 @@
   },
   "lightReady": true,
   "sideways": 0,
-  "fcp": 80,
+  "fcp": 144,
   "small": [],
   "smallN": 0,
   "tiny": 0,
@@ -346,7 +333,7 @@
   "app": "aegis",
   "scheme": "light",
   "cls": 0,
-  "longest": 109,
+  "longest": 140,
   "errors": [],
   "bad": []
  },
@@ -358,7 +345,7 @@
   },
   "lightReady": true,
   "sideways": 0,
-  "fcp": 88,
+  "fcp": 96,
   "small": [],
   "smallN": 0,
   "tiny": 0,
@@ -389,7 +376,7 @@
   },
   "lightReady": true,
   "sideways": 0,
-  "fcp": 68,
+  "fcp": 104,
   "small": [],
   "smallN": 0,
   "tiny": 0,
@@ -420,7 +407,7 @@
   },
   "lightReady": false,
   "sideways": 0,
-  "fcp": 100,
+  "fcp": 96,
   "small": [],
   "smallN": 0,
   "tiny": 3,
@@ -439,7 +426,7 @@
   "app": "fates",
   "scheme": "dark",
   "cls": 0,
-  "longest": 1639,
+  "longest": 2080,
   "errors": [],
   "bad": []
  },
@@ -451,7 +438,7 @@
   },
   "lightReady": false,
   "sideways": 0,
-  "fcp": 156,
+  "fcp": 128,
   "small": [],
   "smallN": 0,
   "tiny": 3,
@@ -470,7 +457,7 @@
   "app": "fates",
   "scheme": "light",
   "cls": 0,
-  "longest": 1568,
+  "longest": 1827,
   "errors": [],
   "bad": []
  },
@@ -482,7 +469,7 @@
   },
   "lightReady": true,
   "sideways": 0,
-  "fcp": 132,
+  "fcp": 136,
   "small": [],
   "smallN": 0,
   "tiny": 16,
@@ -514,7 +501,7 @@
   },
   "lightReady": true,
   "sideways": 0,
-  "fcp": 116,
+  "fcp": 104,
   "small": [],
   "smallN": 0,
   "tiny": 16,
@@ -546,7 +533,7 @@
   },
   "lightReady": true,
   "sideways": 0,
-  "fcp": 120,
+  "fcp": 152,
   "small": [],
   "smallN": 0,
   "tiny": 0,
@@ -577,7 +564,7 @@
   },
   "lightReady": true,
   "sideways": 0,
-  "fcp": 140,
+  "fcp": 160,
   "small": [],
   "smallN": 0,
   "tiny": 0,
@@ -610,7 +597,7 @@
   },
   "lightReady": true,
   "sideways": 0,
-  "fcp": 100,
+  "fcp": 116,
   "small": [],
   "smallN": 0,
   "tiny": 0,
@@ -630,7 +617,39 @@
   "app": "helios",
   "scheme": "dark",
   "cls": 0,
-  "longest": 120,
+  "longest": 123,
+  "errors": [],
+  "bad": []
+ },
+ {
+  "kit": {
+   "agora": true,
+   "shell": true,
+   "pulse": true
+  },
+  "lightReady": true,
+  "sideways": 0,
+  "fcp": 116,
+  "small": [],
+  "smallN": 0,
+  "tiny": 0,
+  "fonts": [
+   "-apple-system 89",
+   "SF Pro Rounded 23",
+   "Iowan Old Style 19"
+  ],
+  "lowContrastN": 0,
+  "lowContrast": [],
+  "radii": [
+   "20pxx9",
+   "24pxx1"
+  ],
+  "bg": "rgb(249, 247, 241)",
+  "h": 4436,
+  "app": "helios",
+  "scheme": "light",
+  "cls": 0,
+  "longest": 130,
   "errors": [],
   "bad": []
  },
@@ -645,38 +664,6 @@
   "fcp": 108,
   "small": [],
   "smallN": 0,
-  "tiny": 0,
-  "fonts": [
-   "-apple-system 89",
-   "SF Pro Rounded 23",
-   "Iowan Old Style 19"
-  ],
-  "lowContrastN": 0,
-  "lowContrast": [],
-  "radii": [
-   "20pxx9",
-   "24pxx1"
-  ],
-  "bg": "rgb(249, 247, 241)",
-  "h": 4436,
-  "app": "helios",
-  "scheme": "light",
-  "cls": 0,
-  "longest": 121,
-  "errors": [],
-  "bad": []
- },
- {
-  "kit": {
-   "agora": true,
-   "shell": true,
-   "pulse": true
-  },
-  "lightReady": true,
-  "sideways": 0,
-  "fcp": 84,
-  "small": [],
-  "smallN": 0,
   "tiny": 3,
   "fonts": [
    "-apple-system 87",
@@ -694,7 +681,7 @@
   "app": "compass",
   "scheme": "dark",
   "cls": 0,
-  "longest": 150,
+  "longest": 168,
   "errors": [],
   "bad": []
  },
@@ -706,7 +693,7 @@
   },
   "lightReady": true,
   "sideways": 0,
-  "fcp": 104,
+  "fcp": 116,
   "small": [],
   "smallN": 0,
   "tiny": 3,
@@ -726,7 +713,135 @@
   "app": "compass",
   "scheme": "light",
   "cls": 0,
-  "longest": 143,
+  "longest": 152,
+  "errors": [],
+  "bad": []
+ },
+ {
+  "kit": {
+   "agora": true,
+   "shell": true,
+   "pulse": true
+  },
+  "lightReady": true,
+  "sideways": 0,
+  "fcp": 120,
+  "small": [],
+  "smallN": 0,
+  "tiny": 27,
+  "fonts": [
+   "-apple-system 94",
+   "SF Pro Rounded 28",
+   "Iowan Old Style 8"
+  ],
+  "lowContrastN": 0,
+  "lowContrast": [],
+  "radii": [
+   "20pxx4",
+   "22pxx1"
+  ],
+  "bg": "rgb(20, 17, 14)",
+  "h": 3313,
+  "app": "kronos",
+  "scheme": "dark",
+  "cls": 0,
+  "longest": 1553,
+  "errors": [],
+  "bad": []
+ },
+ {
+  "kit": {
+   "agora": true,
+   "shell": true,
+   "pulse": true
+  },
+  "lightReady": true,
+  "sideways": 0,
+  "fcp": 128,
+  "small": [],
+  "smallN": 0,
+  "tiny": 27,
+  "fonts": [
+   "-apple-system 94",
+   "SF Pro Rounded 28",
+   "Iowan Old Style 8"
+  ],
+  "lowContrastN": 0,
+  "lowContrast": [],
+  "radii": [
+   "20pxx4",
+   "24pxx1"
+  ],
+  "bg": "rgb(249, 247, 241)",
+  "h": 3313,
+  "app": "kronos",
+  "scheme": "light",
+  "cls": 0,
+  "longest": 1605,
+  "errors": [],
+  "bad": []
+ },
+ {
+  "kit": {
+   "agora": true,
+   "shell": true,
+   "pulse": true
+  },
+  "lightReady": true,
+  "sideways": 0,
+  "fcp": 96,
+  "small": [],
+  "smallN": 0,
+  "tiny": 3,
+  "fonts": [
+   "-apple-system 76",
+   "SF Pro Rounded 39",
+   "Iowan Old Style 11"
+  ],
+  "lowContrastN": 0,
+  "lowContrast": [],
+  "radii": [
+   "20pxx7",
+   "22pxx1"
+  ],
+  "bg": "rgb(20, 17, 14)",
+  "h": 3680,
+  "app": "pnyx",
+  "scheme": "dark",
+  "cls": 0,
+  "longest": 0,
+  "errors": [],
+  "bad": []
+ },
+ {
+  "kit": {
+   "agora": true,
+   "shell": true,
+   "pulse": true
+  },
+  "lightReady": true,
+  "sideways": 0,
+  "fcp": 120,
+  "small": [],
+  "smallN": 0,
+  "tiny": 3,
+  "fonts": [
+   "-apple-system 76",
+   "SF Pro Rounded 39",
+   "Iowan Old Style 11"
+  ],
+  "lowContrastN": 0,
+  "lowContrast": [],
+  "radii": [
+   "20pxx7",
+   "24pxx1"
+  ],
+  "bg": "rgb(249, 247, 241)",
+  "h": 3680,
+  "app": "pnyx",
+  "scheme": "light",
+  "cls": 0,
+  "longest": 0,
   "errors": [],
   "bad": []
  },
@@ -739,134 +854,6 @@
   "lightReady": true,
   "sideways": 0,
   "fcp": 112,
-  "small": [],
-  "smallN": 0,
-  "tiny": 27,
-  "fonts": [
-   "-apple-system 94",
-   "SF Pro Rounded 28",
-   "Iowan Old Style 8"
-  ],
-  "lowContrastN": 0,
-  "lowContrast": [],
-  "radii": [
-   "20pxx4",
-   "22pxx1"
-  ],
-  "bg": "rgb(20, 17, 14)",
-  "h": 3313,
-  "app": "kronos",
-  "scheme": "dark",
-  "cls": 0,
-  "longest": 1457,
-  "errors": [],
-  "bad": []
- },
- {
-  "kit": {
-   "agora": true,
-   "shell": true,
-   "pulse": true
-  },
-  "lightReady": true,
-  "sideways": 0,
-  "fcp": 124,
-  "small": [],
-  "smallN": 0,
-  "tiny": 27,
-  "fonts": [
-   "-apple-system 94",
-   "SF Pro Rounded 28",
-   "Iowan Old Style 8"
-  ],
-  "lowContrastN": 0,
-  "lowContrast": [],
-  "radii": [
-   "20pxx4",
-   "24pxx1"
-  ],
-  "bg": "rgb(249, 247, 241)",
-  "h": 3313,
-  "app": "kronos",
-  "scheme": "light",
-  "cls": 0,
-  "longest": 1523,
-  "errors": [],
-  "bad": []
- },
- {
-  "kit": {
-   "agora": true,
-   "shell": true,
-   "pulse": true
-  },
-  "lightReady": true,
-  "sideways": 0,
-  "fcp": 84,
-  "small": [],
-  "smallN": 0,
-  "tiny": 3,
-  "fonts": [
-   "-apple-system 76",
-   "SF Pro Rounded 39",
-   "Iowan Old Style 11"
-  ],
-  "lowContrastN": 0,
-  "lowContrast": [],
-  "radii": [
-   "20pxx7",
-   "22pxx1"
-  ],
-  "bg": "rgb(20, 17, 14)",
-  "h": 3680,
-  "app": "pnyx",
-  "scheme": "dark",
-  "cls": 0,
-  "longest": 0,
-  "errors": [],
-  "bad": []
- },
- {
-  "kit": {
-   "agora": true,
-   "shell": true,
-   "pulse": true
-  },
-  "lightReady": true,
-  "sideways": 0,
-  "fcp": 108,
-  "small": [],
-  "smallN": 0,
-  "tiny": 3,
-  "fonts": [
-   "-apple-system 76",
-   "SF Pro Rounded 39",
-   "Iowan Old Style 11"
-  ],
-  "lowContrastN": 0,
-  "lowContrast": [],
-  "radii": [
-   "20pxx7",
-   "24pxx1"
-  ],
-  "bg": "rgb(249, 247, 241)",
-  "h": 3680,
-  "app": "pnyx",
-  "scheme": "light",
-  "cls": 0,
-  "longest": 0,
-  "errors": [],
-  "bad": []
- },
- {
-  "kit": {
-   "agora": true,
-   "shell": true,
-   "pulse": true
-  },
-  "lightReady": true,
-  "sideways": 0,
-  "fcp": 92,
   "small": [],
   "smallN": 0,
   "tiny": 0,
@@ -886,7 +873,7 @@
   "app": "chrysos",
   "scheme": "dark",
   "cls": 0,
-  "longest": 89,
+  "longest": 118,
   "errors": [],
   "bad": []
  },
@@ -918,7 +905,7 @@
   "app": "chrysos",
   "scheme": "light",
   "cls": 0,
-  "longest": 95,
+  "longest": 105,
   "errors": [],
   "bad": []
  },
@@ -950,7 +937,7 @@
   "app": "mercury",
   "scheme": "dark",
   "cls": 0,
-  "longest": 105,
+  "longest": 174,
   "errors": [],
   "bad": []
  },
@@ -962,7 +949,7 @@
   },
   "lightReady": true,
   "sideways": 0,
-  "fcp": 96,
+  "fcp": 112,
   "small": [],
   "smallN": 0,
   "tiny": 0,
@@ -984,7 +971,7 @@
   "app": "mercury",
   "scheme": "light",
   "cls": 0,
-  "longest": 125,
+  "longest": 103,
   "errors": [],
   "bad": []
  },
@@ -996,7 +983,7 @@
   },
   "lightReady": true,
   "sideways": 0,
-  "fcp": 96,
+  "fcp": 116,
   "small": [],
   "smallN": 0,
   "tiny": 8,
@@ -1016,7 +1003,7 @@
   "app": "oikos",
   "scheme": "dark",
   "cls": 0,
-  "longest": 273,
+  "longest": 390,
   "errors": [],
   "bad": [
    "404 money/household.json"
@@ -1050,7 +1037,7 @@
   "app": "oikos",
   "scheme": "light",
   "cls": 0,
-  "longest": 304,
+  "longest": 292,
   "errors": [],
   "bad": [
    "404 money/household.json"
@@ -1064,7 +1051,7 @@
   },
   "lightReady": true,
   "sideways": 0,
-  "fcp": 120,
+  "fcp": 108,
   "small": [],
   "smallN": 0,
   "tiny": 0,
@@ -1095,7 +1082,7 @@
   },
   "lightReady": true,
   "sideways": 0,
-  "fcp": 80,
+  "fcp": 96,
   "small": [],
   "smallN": 0,
   "tiny": 0,
@@ -1126,7 +1113,7 @@
   },
   "lightReady": true,
   "sideways": 0,
-  "fcp": 76,
+  "fcp": 84,
   "small": [],
   "smallN": 0,
   "tiny": 0,
@@ -1157,7 +1144,7 @@
   },
   "lightReady": true,
   "sideways": 0,
-  "fcp": 96,
+  "fcp": 104,
   "small": [],
   "smallN": 0,
   "tiny": 0,
@@ -1190,17 +1177,9 @@
   },
   "lightReady": false,
   "sideways": 0,
-  "fcp": 100,
-  "small": [
-   "#grain:31",
-   "#saver:31",
-   "#intro:31",
-   "#trans:31",
-   "#sfxOn:31",
-   "#ambient:31",
-   "#haptics:31"
-  ],
-  "smallN": 7,
+  "fcp": 128,
+  "small": [],
+  "smallN": 0,
   "tiny": 4,
   "fonts": [
    "-apple-system 112",
@@ -1230,17 +1209,9 @@
   },
   "lightReady": false,
   "sideways": 0,
-  "fcp": 112,
-  "small": [
-   "#grain:31",
-   "#saver:31",
-   "#intro:31",
-   "#trans:31",
-   "#sfxOn:31",
-   "#ambient:31",
-   "#haptics:31"
-  ],
-  "smallN": 7,
+  "fcp": 148,
+  "small": [],
+  "smallN": 0,
   "tiny": 4,
   "fonts": [
    "-apple-system 112",
@@ -1302,7 +1273,7 @@
   },
   "lightReady": false,
   "sideways": 0,
-  "fcp": 128,
+  "fcp": 60,
   "small": [],
   "smallN": 0,
   "tiny": 0,
@@ -1322,7 +1293,7 @@
   "app": "atlas",
   "scheme": "light",
   "cls": 0,
-  "longest": 55,
+  "longest": 0,
   "errors": [],
   "bad": []
  }

@@ -31,7 +31,8 @@ new PerformanceObserver(l=>{for(const e of l.getEntries())window.__lt.push(Math.
 PROBE = r"""() => {
   const W = innerWidth, de = document.documentElement, out = {};
   const sheets = [...document.querySelectorAll('link[rel=stylesheet]')].map((l) => l.getAttribute('href') || '');
-  out.kit = { agora: sheets.some((h) => /olympus\/agora\.css/.test(h)), shell: sheets.some((h) => /olympus\/shell\.css/.test(h)), pulse: sheets.some((h) => /olympus\/pulse\.css/.test(h)) };
+  // Zenith carries the shell layer inline (<style id="oly-shell">) and AGORA as its own zenith_agora.css layer: both count
+  out.kit = { agora: sheets.some((h) => /olympus\/agora\.css|zenith_agora\.css/.test(h)), shell: sheets.some((h) => /olympus\/shell\.css/.test(h)) || !!document.getElementById('oly-shell'), pulse: sheets.some((h) => /olympus\/pulse\.css/.test(h)) };
   out.lightReady = de.hasAttribute('data-oly-light');
   out.sideways = Math.max(de.scrollWidth, document.body ? document.body.scrollWidth : 0) - W;
   const fcp = performance.getEntriesByName('first-contentful-paint')[0]; out.fcp = fcp ? Math.round(fcp.startTime) : null;
