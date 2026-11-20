@@ -18,3 +18,5 @@ tools/pc_report.py / engine/self_heal.py changes since this morning's pc (1c6a8b
 
 Tests on review-batch3 (this container): test_cross_site 17/17, test_rapid 60/60, test_rapid25 94/94, test_redteam2_live 15/15,
 test_account_b_min_room 21/21, python -m engine.ninjatrader --selftest EXIT 0; the rest below.
+
+Later on the branch: test_account_b_funded 71/71, test_live_publish 86/86, test_self_heal_pc 90/90, test_second_account_b ended on a PASS line (no FAIL), test_atlas_funded_switches 37/37 with the 1b test patch (35/37 without).
