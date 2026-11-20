@@ -7,7 +7,7 @@ import * as C from './nqcore.js?v=d4';   // d1 (polish2 2026-11-19): the CME tra
 import * as T from '../olympus/truth.js';
 import * as D from './nqdesk.js?v=7';
 import { unpack as unpackBars } from './nqbars.js?v=b1';     // nqdash3: the accounts strip, the bots' thinking, the quality checks
-import * as G from './nqgoals.js?v=8';                       // v4: the goals strip, the numbers card, the bursts
+import * as G from './nqgoals.js?v=9';                       // v4: the goals strip, the numbers card, the bursts
 
 const O = window.OLYMPUS || null;
 const $ = (id) => document.getElementById(id);
@@ -290,7 +290,7 @@ function renderV4(home, file, nowS) {
   if (box) G.drawGoals(box, list, $('goalDetail'), { open: V4.open, onOpen: (k) => { V4.open = k; } });
   const fa = D.feedAge(home, nowS), age = $('goalAge');
   if (age) { age.textContent = S.demo ? 'DEMO' : fa.fromPc ? D.updated(fa.report) : 'plan + cloud copy'; age.className = 'pill ' + (S.demo ? 'warn' : fa.fromPc ? D.ageLevel(fa.report, 'pc') : 'warn'); }
-  const real = G.realRows(file, chart);
+  const real = G.realRows(file, chart, G.fundedSince(S.lite));   // ATLAS's passed-eval trades are not the funded account's
   // below the first screen: the numbers card and the landscape draw when the main thread is free (perf: one long task less at load)
   later(() => {
     const nb = $('nums'); if (nb) G.drawNumbers(nb, G.numbers(A, real, nowS), G.clock(nowS), G.vixLine(S.brief), G.opens(A));

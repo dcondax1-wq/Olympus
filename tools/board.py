@@ -95,6 +95,16 @@ def _unsigned(evs: list) -> list:
     return out
 
 
+def bot_stopped(lite: dict | None) -> str:
+    """'' when the PC's bot runs live; else why its numbers are its paper twin's (pc.running false, or the paper adapter)"""
+    pc = B._d(B._d(lite).get("pc"))
+    if not pc:
+        return ""
+    if pc.get("running") is False:
+        return "bot stopped: paper numbers"
+    return "bot on the paper adapter: paper numbers" if str(pc.get("adapter") or "").lower() == "paper" else ""
+
+
 def lite_live(lite: dict | None, plan_accounts=None) -> dict:
     """{plan key: {balance, room, floor, to_pass, stage, t, name}} from the PC's live numbers: the board cards (lit, atlas) and
     every PC account of "accounts" (b25k_2 ...). Matched to the plan by the PC id / Name (engine/board_events.plan_key), never
@@ -165,7 +175,12 @@ def gather(offline: bool = False, hb=None, lite=None, now=None) -> dict:
     for k, v in live_nt.items():                            # the PC's own board rows (plan + events on the PC): only where no live card
         if k not in live and (B._f(v.get("t")) or 0) >= 0:
             live[k] = {**v, "src": "PC board"}
-    for k, v in lite_live(lite, plan_doc.get("accounts")).items():   # the PC's live account numbers win over both
+    stop = bot_stopped(lite)
+    if stop:                                                 # finder round 2026-11-20: a stopped bot posts its PAPER twin's numbers (the 50K's
+        notes.append(f"{stop}: the PC's account numbers are not used; the last LIVE ones are shown")   # room $1,771 vs the real $1,025)
+        for k, v in live.items():
+            v["stopped"] = stop
+    for k, v in ({} if stop else lite_live(lite, plan_doc.get("accounts"))).items():   # the PC's live account numbers win over both
         if (B._f(v.get("t")) or 0) >= (B._f(B._d(live.get(k)).get("t")) or 0) or B._d(live.get(k)).get("src") == "PC board":
             live[k] = v
     events = B.merge(published().get("events") or [], ev_hb, ev_nt, B.load(plan_doc=plan_doc))
@@ -179,6 +194,8 @@ def gather(offline: bool = False, hb=None, lite=None, now=None) -> dict:
     if lite is None and not offline:
         notes.append("ntfy status feed: nothing in the last 12 h")
     board = B.public(B.build(events=events, plan_doc=plan_doc, live=live, pc={"t": pc_t, "via": via}, now=now, src="cloud"))
+    if stop:
+        board["bot_stopped"] = stop
     board["sources"] = {"heartbeat_t": int(hb_t) if hb_t else None, "ntfy_t": int(rep_t or lite_t) if (rep_t or lite_t) else None,
                         "plan_updated": plan_doc.get("updated"), "notes": notes}
     return board
@@ -209,6 +226,8 @@ def lines(board: dict, now=None) -> list:
         head += ": STALE, PC SILENT. Live numbers below are old or from the plan." if age > B.STALE_S else ": fresh"
     else:
         head += "PC never reported here: STALE, PC SILENT. Numbers below are the plan / owner-typed only."
+    if board.get("bot_stopped"):
+        head += f" | {str(board['bot_stopped']).upper()}: not the accounts' truth; the last LIVE numbers are shown"
     out.append(head)
     for n in B._d(board.get("sources")).get("notes") or []:
         out.append("  (" + n + ")")

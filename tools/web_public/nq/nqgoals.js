@@ -124,7 +124,18 @@ export function goals(accts, pay, plan, nowS, eq, mffu) {
 // ------------------------------------------------------------------------------------------------ the numbers
 const ACCT_OF = { z50k: 'zlarior', zlarior: 'zlarior', lit: 'zlarior', mffu50k_eval: 'zlarior', z25k2: 'fresh25', b25k_2: 'fresh25', atlas25f: 'atlas', atlas: 'atlas', acct_b: 'atlas', rapid25: 'rapid1', rapid: 'rapid1' };
 /** one list of REAL fills (no paper, no backtest): the trade file's live rows + the PC's chart post closed trades, one per account and exit minute */
-export function realRows(file, chart) {
+// a funded account starts at $0 (MFFU's own view): its trades that closed before it was funded are the EVAL's (finder round 2026-11-20: ATLAS's
+// passed-eval +$1,792 was counted in the funded account's week). since = { atlas: { day, t } } from the PC (life.acc.since / mf sd): fundedSince()
+export const FUNDED_SINCE = { atlas: { day: '2026-11-17', t: null } };
+export function fundedSince(lite) {
+  const L = isObj(lite) ? lite : {}, life = isObj(L.life) && isObj(L.life.acc) ? L.life.acc : {}, mf = arr(isObj(L.mf) ? L.mf.a : null);
+  const out = { atlas: { ...FUNDED_SINCE.atlas } }, li = ['atlas', 'acct_b'].map((i) => life[i]).find((x) => isObj(x) && /funded/i.test(String(x.stage || '')));
+  const m = mf.find((x) => isObj(x) && ['atlas', 'acct_b'].includes(String(x.id)) && isObj(x.f));
+  if (li && num(li.since) !== null) out.atlas = { day: etParts(num(li.since)).day, t: num(li.since) };
+  else if (m && /^\d{4}-\d{2}-\d{2}$/.test(String(m.sd || ''))) out.atlas = { day: m.sd, t: null };
+  return out;
+}
+export function realRows(file, chart, since) {
   const out = [], seen = new Set();
   const add = (k, xt, day, usdV, r, side) => {
     const key = ACCT_OF[k] || k, id = `${key}:${Math.round((num(xt) || 0) / 60)}`;
@@ -133,6 +144,12 @@ export function realRows(file, chart) {
   };
   for (const t of arr(isObj(file) ? file.trades : file)) if (isObj(t) && t.src === 'live') add(t.ak || t.acct, t.xt || t.t, t.day, t.usd, t.r, t.side);
   for (const t of arr(isObj(chart) ? chart.closed : null)) if (isObj(t)) add(t.k, t.xt, '', t.usd, t.r, num(t.s) < 0 ? 'SHORT' : 'LONG');
+  const S = isObj(since) ? since : FUNDED_SINCE;
+  for (const r of out) {
+    const f = S[r.key]; if (!f) continue;
+    const before = f.t !== null && f.t !== undefined && r.xt ? r.xt < f.t : r.day && r.day <= f.day;
+    if (before) { r.key = r.key + '_eval'; r.era = 'eval'; }
+  }
   return out.sort((a, b) => (a.xt || 0) - (b.xt || 0));
 }
 /** the Monday of the ET week of day d */

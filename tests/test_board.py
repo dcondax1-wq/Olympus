@@ -217,6 +217,15 @@ def part_d():
     z = {r["key"]: r for r in b["accounts"]}["zlarior"]
     check("d. the ntfy feed alone: PC fresh via ntfy, Zlarior's live card, the pass event", b["pc"]["via"] == "ntfy" and not b["pc"]["stale"]
           and z["balance"] == 49900 and any(e["kind"] == "eval_passed" for e in b["events"]), (b["pc"], z))
+    # finder round 2026-11-20: a STOPPED bot (pc.running false, the paper adapter) posts its paper twin's numbers (room $1,771 vs the real $1,025):
+    # the read keeps the last LIVE numbers (the PC's board rows) and says so in its header
+    stp = {**lite, "pc": {"running": False, "adapter": "paper"}, "board": {"t": NOW - 90, "lit": {"balance": 49938, "room": 1771, "to_target": 3062}}}
+    bs = T.gather(offline=False, hb={"present": True, "t": NOW - 120, "board": {"accounts": [{"key": "zlarior", "src": "PC live", "balance": 49192.78, "room": 1024.58,
+                                                                                            "to_pass": 3807.22, "src_t": NOW - 4000}]}}, lite=stp, now=NOW)
+    zs = {r["key"]: r for r in bs["accounts"]}["zlarior"]
+    head = T.lines(bs, now=NOW)[0]
+    check("d. a stopped bot's paper numbers ($49,938, room $1,771) are not taken: the last LIVE ones ($49,192.78, room $1,024.58) stay, the header says 'BOT STOPPED: PAPER NUMBERS'",
+          zs["balance"] == 49192.78 and zs["room"] == 1024.58 and "BOT STOPPED: PAPER NUMBERS" in head and T.bot_stopped(lite) == "", (zs, head))
     part_d_funded(T)
     shared = os.environ["LE_BOARD_SHARED"]
     T.write_note("ATLAS 26,946.10 passed, ends 6017 MFFUEVBLDR000006017", kind="owner_note", acct="atlas", src="owner", via="chat", now=NOW - 50)
