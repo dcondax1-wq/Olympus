@@ -105,13 +105,18 @@ import(process.argv[2]).then((D) => {
   const B2 = D.thinking(home, news, file, now, chart), A2 = D.accounts(home, biz, now, chart);
   o.real = B2[1].inTrade; o.realLean = B2[1].before.lean; o.realAcct = A2.map((a) => [a.key, a.open ? [a.open.side, a.open.qty, a.open.entry, Math.round(a.open.now), a.open.stopMoved] : null]);
   o.realLit = B2[0].phase;
-  // the day-brief helper's brief.json (contract not out yet: two likely shapes), and its absence
-  const brief1 = { day: '2026-11-20', bias: { side: 'long', why: 'Above the overnight VWAP; Asia low swept' }, levels: [{ label: 'ONH', price: 26468.5 }],
-    bots: [{ id: 'lit', waiting: 'a London sweep' }, { id: 'atlas', bias: { call: 'SHORT', text: 'under the 20 EMA' } }], recap: { lit: 'Took the 09:00 long, +0.8R.' } };
+  // the day-brief helper's brief.json (docs/BRIEF.md v 1): its own examples (tests/fixtures/brief, copied from day-brief), and its absence
+  const fs = require('fs'), FX = (n) => JSON.parse(fs.readFileSync(process.argv[3] + '/' + n + '.json', 'utf8'));
+  const bToday = FX('brief_today'), bT1 = FX('brief_tier1'), bRecap = FX('brief_tier1_recap');
   const h3 = JSON.parse(JSON.stringify(home)); delete h3.live.pc.glance; delete h3.board.lit.waiting;   // no glance, no card words: the brief fills in (the bot's own live words win when there)
-  const Bb = D.thinking(h3, news, file, now, null, brief1);
-  o.brief = [Bb[0].before.bias, Bb[0].before.levels, Bb[0].before.waiting, Bb[0].before.recap, Bb[1].before.bias && Bb[1].before.bias.side];
-  o.briefOld = D.thinking(h3, news, file, now, null, { ...brief1, day: '2026-11-19' })[0].before.bias;
+  const atDay = (d, hm) => Date.parse(d + 'T' + hm + ':00-05:00') / 1000;
+  const n1 = atDay(bT1.day, '07:00'), Bb = D.thinking(h3, null, file, n1, null, bT1), Bt = D.thinking(h3, null, file, atDay(bToday.day, '07:00'), null, bToday);
+  o.brief = { t1: [Bb[0].before.bias, Bb[0].before.news, Bb[0].before.levels.length, Bb[0].before.waiting.slice(0, 20), Bb[0].before.briefHead, Bb[1].before.waiting.slice(0, 40), Bb[1].before.briefHead],
+    today: [Bt[0].before.bias && Bt[0].before.bias.side, Bt[0].before.bias && Bt[0].before.bias.context, Bt[0].before.stale] };
+  o.briefRecap = D.briefFor(bRecap, 'lit', atDay(bRecap.day, '16:40')).recap;
+  o.briefOld = D.thinking(h3, null, file, atDay(bT1.day, '07:00') + 2 * 86400, null, bT1)[0].before.bias;
+  o.briefV2 = D.briefFor({ ...bT1, v: 2 }, 'lit', n1);
+  o.briefJunk = [D.briefFor('x', 'lit', now), D.briefFor({ v: 1, bots: 5, bias: 7, market: { levels: [null, 1, [2]] } }, 'lit', now)];
   o.briefNone = D.thinking(h3, news, file, now, null, null)[0].before.bias;
   o.briefJunk = [D.briefFor('x', 'lit', now), D.briefFor({ bots: 5, bias: 7, levels: [null, 1, [2]] }, 'lit', now)];
   // N accounts from the feed (the PC adds the Rapid EOD 25K today, id "rapid", and maybe a 3rd Builder): every one gets a tile
@@ -152,7 +157,7 @@ def test_core():
         h = os.path.join(tmp, "h.cjs")
         with open(h, "w", encoding="utf-8") as fh:
             fh.write(HARNESS)
-        r = subprocess.run([exe, h, m], capture_output=True, text=True, timeout=60)
+        r = subprocess.run([exe, h, m, os.path.join(ROOT, "tests", "fixtures", "brief")], capture_output=True, text=True, timeout=60)
         if r.returncode:
             check("the node harness runs", False, r.stderr[-800:])
             return
@@ -193,12 +198,17 @@ def test_core():
           and "edge" not in q, o["qe"])
     check("d. chart candles in the bots' hours (Fri 10:30 ET): 95 min old -> amber with the age and the time; 30 min -> ok",
           o["qb"]["level"] == "warn" and o["qb"]["value"].startswith("last bar 1 h 35 min ago (8:55 AM ET)") and o["qb2"]["level"] == "ok", (o["qb"], o["qb2"]))
-    br = o["brief"]
-    check("c. brief.json (day-brief) when there: the morning bias (LONG + why), its levels, what LIT waits for and the recap when the glance has none; "
-          "ATLAS's own bias call (SHORT)", br[0] == {"side": "LONG", "text": "Above the overnight VWAP; Asia low swept", "conf": None}
-          and br[1] == [{"label": "ONH", "px": 26468.5, "dist": None}] and br[2] == "a London sweep" and br[3] == "Took the 09:00 long, +0.8R." and br[4] == "SHORT", br)
-    check("c. ... yesterday's brief or none: no bias line, nothing breaks; junk briefs read as nothing", o["briefOld"] is None and o["briefNone"] is None
-          and o["briefJunk"][0] is None and o["briefJunk"][1]["bias"] is None and o["briefJunk"][1]["levels"] == [], (o["briefOld"], o["briefJunk"]))
+    br = o["brief"]["t1"]
+    check("c. brief.json (docs/BRIEF.md v 1, day-brief's Tier-1 example): no bias call -> 'no call: <why_none>' shown as CONTEXT (context_only); "
+          "today's CPI 08:30 (Tier 1); its levels; LIT's waiting_for; the headline once (LIT), ATLAS's legs joined",
+          br[0]["side"] == "NONE" and br[0]["context"] is True and br[0]["text"].startswith("no call: the overnight move") and br[1][0]["time"] == "08:30"
+          and "CPI" in br[1][0]["title"] and "(Tier 1)" in br[1][0]["title"] and br[2] >= 4 and br[3].startswith("A sweep of a level") and br[4] and br[5].startswith("EMA: ")
+          and br[6] == "", br)
+    check("c. ... today's example: the call is shown as context (works = false), the stale-data lines come through",
+          o["brief"]["today"][1] is True and isinstance(o["brief"]["today"][2], list), o["brief"]["today"])
+    check("c. ... after the close the recap's 'traded' line; a 2-day-old brief, another contract version or junk read as nothing; no brief = no line",
+          o["briefRecap"].startswith("no trade data") and o["briefOld"] is None and o["briefV2"] is None and o["briefNone"] is None
+          and o["briefJunk"][0] is None and o["briefJunk"][1]["bias"] is None and o["briefJunk"][1]["levels"] == [], (o["briefRecap"], o["briefOld"], o["briefJunk"]))
     check("b. N accounts: the PC's Rapid EOD 25K (id 'rapid') fills the planned Rapid tile with its numbers, the extra Builder keeps its own tile",
           ["rapid1", "live", 25000] in o["n4"] and ["xtra9", "live", 50100] in o["n4"] and len(o["n4"]) == 5 and o["n4"][-1][0] == "xtra9", o["n4"])
     gt = {g[0]: g for g in o["gate"]}
