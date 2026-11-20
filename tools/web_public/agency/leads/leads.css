@@ -24,3 +24,7 @@ main#app { max-width: 640px; margin: 0 auto; padding: 0 16px 40px; display: flex
 .how li { font-size: .9375rem; margin: 6px 0; } .how code { font-size: .875rem; overflow-wrap: anywhere; }
 .foot { font-size: .875rem; text-align: center; color: var(--ag-muted, #a39883); }
 .la a.btn { color: inherit; text-decoration: none; }
+.lm { display: flex; align-items: center; gap: 10px; margin-top: 8px; font-size: .9375rem; }
+.lm select.stage { min-height: 44px; font-size: 1rem; flex: 1 1 auto; }
+.lead.st-won .ln { color: #77db89; } .lead.st-lost { opacity: .75; }
+#exportBtn { min-height: 44px; margin-top: 8px; } .exbox { width: 100%; margin-top: 8px; font: .8125rem/1.4 ui-monospace, monospace; }

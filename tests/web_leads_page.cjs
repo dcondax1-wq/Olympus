@@ -46,17 +46,28 @@ const step = (n, ok, info = '') => steps.push([n, !!ok, String(typeof info === '
     names = await p.evaluate(() => [...document.querySelectorAll('#list li.lead .ln')].map((e) => e.textContent));
     step('Kind = Salon / beauty: the nail salon', names.length === 1 && names[0] === 'Test Nails (fictional)', names);
     await p.selectOption('#fNiche', '');
-    await p.click('li.lead[data-id="osm-n1004"] button[data-mark="interested"]');
-    step('mark "Interested": pressed, the tile counts 1, and the default "To call" view drops it',
-      (await T('#tiles')).includes('Interested\n1') && !(await p.$('li.lead[data-id="osm-n1004"]')), await T('#tiles'));
+    await p.selectOption('li.lead[data-id="osm-n1004"] select.stage', 'replied');
+    step('stage "Replied" on the nail salon: the Contacted tile counts 1 and the default "New" view drops it',
+      (await T('#tiles')).includes('Contacted\n1') && !(await p.$('li.lead[data-id="osm-n1004"]')), await T('#tiles'));
     await p.reload(); await p.waitForFunction('window.WEBLEADS && window.WEBLEADS.ready()');
-    await p.selectOption('#fStatus', 'interested');
+    await p.selectOption('#fStatus', 'replied');
     names = await p.evaluate(() => [...document.querySelectorAll('#list li.lead .ln')].map((e) => e.textContent));
     const sum = await p.evaluate(() => JSON.parse(localStorage.getItem('agency.leads.summary') || 'null'));
-    step('the Agency HQ tile summary on the phone: {n 4, "4 leads found", next, t, pipe {leads 4, called 1}}',
-      sum && sum.n === 4 && sum.label === '4 leads found' && typeof sum.next === 'string' && sum.pipe.leads === 4 && sum.pipe.called === 1 && sum.t > 1.7e9, sum);
-    step('after a reload the mark is still there (saved on this phone only): Status = Interested shows the nail salon',
-      names.length === 1 && names[0] === 'Test Nails (fictional)' && (await p.getAttribute('li.lead button[data-mark="interested"]', 'aria-pressed')) === 'true', names);
+    step('the Agency HQ tile summary on the phone: {n 4, "4 leads found", next, t, pipe {leads 4, called 1, replied 1, ...}}',
+      sum && sum.n === 4 && sum.label === '4 leads found' && typeof sum.next === 'string' && sum.pipe.leads === 4 && sum.pipe.called === 1 && sum.pipe.replied === 1 && sum.t > 1.7e9, sum);
+    step('after a reload the stage is still there (saved on this phone only): Status = Replied shows the nail salon, its select says Replied',
+      names.length === 1 && names[0] === 'Test Nails (fictional)' && (await p.inputValue('li.lead select.stage')) === 'replied', names);
+    const st = await p.evaluate(() => [...document.querySelectorAll('li.lead select.stage option')].map((o) => o.textContent));
+    step('the 7 stages: New, Demo ready, Contacted, Replied, Call booked, Won, Lost', JSON.stringify(st) === JSON.stringify(['New', 'Demo ready', 'Contacted', 'Replied', 'Call booked', 'Won', 'Lost']), st);
+    await p.click('#exportBtn');
+    const csv = await p.inputValue('#exportBox');
+    step('Export: a CSV with a header, one row per business (4), the stage ("Replied" for the salon, "New" for the others)',
+      csv.split('\n')[0].startsWith('name,town,kind,phone') && csv.split('\n').length === 5 && csv.includes('"Test Nails (fictional)"') && csv.includes('"Replied"') && csv.includes('"New"'), csv.slice(0, 300));
+    const mig = await p.evaluate(() => JSON.stringify(window.WEBLEADS.migrate({ a: { s: 'called', t: 5 }, b: { s: 'interested' }, c: { s: 'no' }, d: { s: 'junk' } })));
+    step('old marks carry over: Called -> Contacted, Interested -> Replied, Not interested -> Lost; junk dropped',
+      mig === JSON.stringify({ a: { s: 'contacted', t: 5 }, b: { s: 'replied', t: 0 }, c: { s: 'lost', t: 0 } }), mig);
+    const inj = await p.evaluate(() => window.WEBLEADS.toCsv([{ name: '=HYPERLINK("x")', town: 'T' }], {}));
+    step('the export is spreadsheet-safe: a cell that looks like a formula starts with a quote mark', inj.includes(`"'=HYPERLINK(""x"")"`), inj);
     const geo = await p.evaluate(() => ({ side: document.documentElement.scrollWidth <= innerWidth, small: [...document.querySelectorAll('#list button, #list a, select, #fPhone')].filter((e) => { const r = e.getBoundingClientRect(); return r.width && r.height < 43.5 && e.id !== 'fPhone'; }).length }));
     step('390 px: no sideways scroll, every button / link / select at least 44 px tall', geo.side && geo.small === 0, geo);
     if (process.env.SHOTS) { await p.selectOption('#fStatus', 'todo'); await p.evaluate(() => { const e = document.getElementById('listCard'); e.scrollIntoView({ block: 'start' }); scrollBy(0, -12); }); await p.waitForTimeout(600); await p.screenshot({ path: path.join(process.env.SHOTS, 'leads-list.png') }); }
