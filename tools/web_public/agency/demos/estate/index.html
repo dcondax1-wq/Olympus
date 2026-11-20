@@ -25,7 +25,7 @@
 .agent { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 12px; align-items: center; }
 .agent .av { width: 56px; height: 56px; border-radius: 50%; background: #2f5d50; color: #fff; display: grid; place-items: center; font: 700 1.25rem/1 system-ui; }
 </style>
-<link rel="stylesheet" href="../demo.css?v=d1">
+<link rel="stylesheet" href="../demo.css?v=d2">
 <script src="../demo.js?v=d2" defer></script>
 <script src="../../../olympus/lazy3d.js?v=l2" data-src="scene.js?v=e1" data-near="#stage" data-event="demo3d" defer></script>
 </head>
@@ -47,6 +47,7 @@
     <div class="facts"><div><b>2</b><span>beds</span></div><div><b>1.5</b><span>baths</span></div><div><b>1,180</b><span>sq ft</span></div><div><b>32 m²</b><span>terrace</span></div></div>
     <p class="lead">Walk through every room from your phone: tap a room, look around, then book the viewing that matters.</p>
 
+    <div class="show">
     <div id="stage" class="stage" style="--stage-ratio: 4 / 3.4" role="img" aria-label="The flat in 3D. Tap a room below to walk in; drag sideways to look around.">
       <svg class="pic" viewBox="0 0 400 340" aria-hidden="true">
         <rect width="400" height="340" fill="#eef1f1"/>
@@ -73,6 +74,7 @@
       <button class="pick" type="button" data-value="terrace" aria-pressed="false" data-note="Terrace · 32 m², south-facing, river view at sunset">Terrace</button>
     </div>
     <p class="pick-note" data-note-for="room" aria-live="polite"></p>
+    </div>
     <div class="cta">
       <a class="btn primary" href="#book" data-book="In-person viewing">Book a viewing</a>
       <a class="btn ghost" href="tel:+15550100163">Call the agent</a>

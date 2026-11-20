@@ -29,7 +29,7 @@ h1, h2 { font-weight: 800; letter-spacing: -.02em; }
 .trust b { display: block; font: 800 1.5rem/1.1 var(--display); color: var(--ink); }
 .trust span { font-size: .8125rem; color: var(--soft); }
 </style>
-<link rel="stylesheet" href="../demo.css?v=d1">
+<link rel="stylesheet" href="../demo.css?v=d2">
 <script src="../demo.js?v=d2" defer></script>
 <script src="../../../olympus/lazy3d.js?v=l2" data-src="scene.js?v=f1" data-near="#stage" data-event="demo3d" defer></script>
 </head>
@@ -54,6 +54,7 @@ h1, h2 { font-weight: 800; letter-spacing: -.02em; }
     </div>
     <p class="rating"><span class="stars" aria-hidden="true">★★★★★</span><span>4.9 from 318 homeowners</span></p>
 
+    <div class="show">
     <div id="stage" class="stage" style="--stage-ratio: 4 / 3.3" role="img" aria-label="A house: the old storm-worn roof on one side, the new roof on the other. Use the slider to compare.">
       <svg class="pic" viewBox="0 0 400 330" aria-hidden="true" preserveAspectRatio="xMidYMid slice">
         <rect width="400" height="205" fill="#cfe2ef"/><rect y="205" width="400" height="125" fill="#b9cfa4"/>
@@ -79,6 +80,7 @@ h1, h2 { font-weight: 800; letter-spacing: -.02em; }
       <button class="pick" type="button" data-value="terracotta" aria-pressed="false" data-note="Terracotta · Mediterranean red, a statement roof"><span class="sw" style="background:#9a4a32"></span>Terracotta</button>
     </div>
     <p class="pick-note" data-note-for="shingle" aria-live="polite"></p>
+    </div>
   </div></section>
 
   <section><div class="wrap">

@@ -16,7 +16,7 @@
   --accent: #e8894a; --on-accent: #1a1410; --accent-text: #f0a36c; --stage: radial-gradient(120% 90% at 50% 30%, #3a2a1e, #140f0b 70%); --map-bg: #2a211a;
   --display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif; }
 </style>
-<link rel="stylesheet" href="../demo.css?v=d1">
+<link rel="stylesheet" href="../demo.css?v=d2">
 <script src="../demo.js?v=d2" defer></script>
 <script src="../../../olympus/lazy3d.js?v=l2" data-src="scene.js?v=r1" data-near="#stage" data-event="demo3d" defer></script>
 </head>
@@ -41,6 +41,7 @@
     </div>
     <p class="rating"><span class="stars" aria-hidden="true">★★★★★</span><span>4.8 from 640 reviews</span></p>
 
+    <div class="show">
     <div id="stage" class="stage" role="img" aria-label="Tonight's dish on the plate. Drag sideways to turn it.">
       <svg class="pic" viewBox="0 0 400 340" aria-hidden="true">
         <defs><radialGradient id="pl" cx="50%" cy="40%" r="60%"><stop offset="0" stop-color="#fbf7f0"/><stop offset="1" stop-color="#d9d1c4"/></radialGradient>
@@ -64,6 +65,7 @@
       <button class="pick" type="button" data-value="tiramisu" aria-pressed="false" data-note="Tiramisu · mascarpone, espresso, cocoa · $9">Tiramisu</button>
     </div>
     <p class="pick-note" data-note-for="dish" aria-live="polite"></p>
+    </div>
   </div></section>
 
   <section id="menu"><div class="wrap">

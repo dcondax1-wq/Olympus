@@ -122,3 +122,11 @@ dialog.sheet::backdrop { background: rgba(0, 0, 0, .5); }
 .done p { color: var(--soft); margin-top: 6px; }
 .fine { font-size: .9375rem; color: var(--soft); }
 .stage:not(.gl-on) .tag3d, .stage:not(.gl-on) .hint { display: none; }
+/* wide screens (a laptop in a pitch): text on the left, the 3D on the right, both above the fold */
+@media (min-width: 900px) {
+  .hero .wrap { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); column-gap: 48px; align-items: start; }
+  .hero .wrap > :not(.show) { grid-column: 1; }
+  .hero .show { grid-column: 2; grid-row: 1 / span 20; }
+  .hero .show .stage { margin-top: 0; }
+  .hero { padding-top: 40px; }
+}

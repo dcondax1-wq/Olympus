@@ -24,7 +24,7 @@ h1, h2 { font-weight: 800; text-transform: uppercase; letter-spacing: .01em; }
 .pkg.best { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
 .pkg .flag { justify-self: start; padding: 2px 10px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font: 700 .75rem/1.6 system-ui; }
 </style>
-<link rel="stylesheet" href="../demo.css?v=d1">
+<link rel="stylesheet" href="../demo.css?v=d2">
 <script src="../demo.js?v=d2" defer></script>
 <script src="../../../olympus/lazy3d.js?v=l2" data-src="scene.js?v=c2" data-near="#stage" data-event="demo3d" defer></script>
 </head>
@@ -49,6 +49,7 @@ h1, h2 { font-weight: 800; text-transform: uppercase; letter-spacing: .01em; }
     </div>
     <p class="rating"><span class="stars" aria-hidden="true">★★★★★</span><span>5.0 from 207 drivers</span></p>
 
+    <div class="show">
     <div id="stage" class="stage" style="--stage-ratio: 4 / 3" role="img" aria-label="A car in the showroom. Drag sideways to turn it; pick a paint and the finish below.">
       <svg class="pic" viewBox="0 0 400 300" aria-hidden="true">
         <defs><linearGradient id="gl" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
@@ -73,6 +74,7 @@ h1, h2 { font-weight: 800; text-transform: uppercase; letter-spacing: .01em; }
       <button class="pick" type="button" data-value="blue" aria-pressed="false"><span class="sw" style="background:#1d3a6e"></span>Midnight</button>
     </div>
     <p class="pick-note" data-note-for="finish" aria-live="polite"></p>
+    </div>
   </div></section>
 
   <section id="packages"><div class="wrap">

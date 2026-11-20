@@ -33,6 +33,7 @@ nothing, says so), a "Demo site · fictional" strip with a link back to the gall
 | No WebGL / lost context | the drawn SVG picture stays; picks, the roof slider and the room buttons still work on it |
 | Taps / text | every button and pick >= 44 px, every sentence >= 15 px, no sideways scroll |
 | Reduced motion | no auto-turn, camera cuts instead of flights |
+| Laptop (1280 x 800) | headline + buttons on the left, the whole 3D stage + picks on the right, above the fold |
 | Network | nothing asked from another host (system fonts; Directions is a plain link) |
 | Battery | renders only while the stage is on screen and the tab is visible; stops when nothing moves |
 
@@ -42,7 +43,7 @@ stage: drag to turn with pan-y scroll, eye / orbit cameras, flyTo, pause off scr
 `tests/test_web_demos.py` (40 checks) + its line in `tests/run_area.py` (AREAS 'agency').
 
 ## Tests
-`web_demos` 41/41 · `smoke` 10/10 · `public_build_privacy` 59/59 (it first caught the made-up house numbers; removed).
+`web_demos` 42/42 · `smoke` 10/10 · `public_build_privacy` 59/59 (it first caught the made-up house numbers; removed).
 
 ## Not done / next
 - Prices: swap in the research team's numbers when RESEARCH.md lands (`data-price` in `agency/demos/index.html`).

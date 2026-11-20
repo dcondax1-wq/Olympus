@@ -211,6 +211,18 @@ def browser():
                   r2["three"] != "on" and not r2["gl"] and r2["picOpacity"] == "1" and ok_pick and not errs2, (r2["three"], r2["picOpacity"], ok_pick, errs2[:2]))
             ctx.close()
 
+        # a laptop (1280 x 800): text left, the 3D right, both above the fold, no sideways scroll
+        ctx = b.new_context(viewport={"width": 1280, "height": 800})
+        p = ctx.new_page()
+        wide = {}
+        for d in DEMOS:
+            p.goto(base + d + "/", wait_until="load")
+            wide[d] = p.evaluate("""() => { const s = document.querySelector('#stage').getBoundingClientRect(), h = document.querySelector('h1').getBoundingClientRect();
+              return { side: s.left > h.right - 1, fold: s.top < 800 && s.bottom <= 800, sw: document.documentElement.scrollWidth <= innerWidth }; }""")
+        check("b. a laptop (1280 x 800): the headline left and the whole 3D stage right, above the fold, no sideways scroll",
+              all(v["side"] and v["fold"] and v["sw"] for v in wide.values()), wide)
+        ctx.close()
+
         # reduced motion: no auto-turn
         ctx = b.new_context(viewport={"width": 390, "height": 844}, reduced_motion="reduce")
         p = ctx.new_page()
