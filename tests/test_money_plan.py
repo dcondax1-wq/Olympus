@@ -112,6 +112,8 @@ def part_b():
         v = lab.get(did) or {}
         if "tools/atlas_risk.py" in str(it.get("valued") or ""):     # valued at ATLAS's real fills (2026-11-20, night-atlasrisk)
             v = (json.loads(rd(ROOT, "research", "second", "atlas_risk.json")).get("cards") or {}).get(did) or {}
+        elif "tools/money/rapid25_launch.py" in str(it.get("valued") or ""):   # the Rapid 25K launch check (2026-11-20, day-rapid)
+            v = (json.loads(rd(ROOT, "research", "lab", "rapid25_launch.json")).get("cards") or {}).get(did) or {}
         if v.get("usd_month") != it.get("usd_month") or v.get("recommend") != it.get("recommend"):
             bad.append((did, "not the lab numbers", v.get("usd_month"), it.get("usd_month")))
     check("b. every valued item: $ a month (= impact_usd, Jul-Oct-like), the 3 markets, risk words, Claude's yes / no / later + why, "
