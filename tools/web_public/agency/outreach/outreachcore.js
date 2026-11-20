@@ -106,3 +106,20 @@ export function normState(raw) {
 
 /** the step a tap on Called / Left voicemail / Emailed records: the one the plan says is next (first / bump / last) */
 export function emailStep(p) { return p && (p.step === 'bump' || p.step === 'last') ? p.step : p && p.step === 'wait' ? (p.day === 7 ? 'last' : 'bump') : 'first'; }
+
+// ------------------------------------------------------------------------------------------------ the PC's email autopilot (counts only)
+/** the newest "le-mail" post in an ntfy /json?poll=1 answer (agency/autopilot on the PC posts counts only: no name, no address, no words) */
+export function parseMail(ndjson) {
+  let best = null;
+  for (const line of String(ndjson || '').split('\n')) {
+    let m = null; try { m = JSON.parse(line); } catch (_) { continue; }
+    if (!m || m.event !== 'message' || typeof m.message !== 'string') continue;
+    let j = null; try { j = JSON.parse(m.message); } catch (_) { continue; }
+    if (!isObj(j) || j.kind !== 'le-mail' || !(+j.t > 0)) continue;
+    const clean = {}; for (const k of ['t', 'mode', 'day', 'new', 'cap', 'followup', 'replies_today', 'interested', 'questions', 'optouts', 'bounces', 'suppressed', 'contacted', 'queue'])
+      clean[k] = k === 'mode' ? (['off', 'dry', 'live'].includes(j.mode) ? j.mode : 'off') : k === 'day' ? str(j.day, 10) : Math.max(0, Math.round(+j[k] || 0));
+    if (!best || clean.t > best.t) best = clean;
+  }
+  return best;
+}
+export const CALL_LINE = 'Prefer a quick call? On your draft site, tap "Have our assistant call me" and pick a time that suits you.';

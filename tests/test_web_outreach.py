@@ -58,7 +58,10 @@ def static():
     check("a. delivery checklist: the client buys the domain, free hosting, Google Business Profile, who does each step", any(d["who"] == "client" and "domain" in d["step"] for d in W["delivery"])
           and any("free" in d["step"] and "hosting" in d["step"] for d in W["delivery"]) and any("Google Business Profile" in d["step"] for d in W["delivery"]) and {d["who"] for d in W["delivery"]} == {"owner", "client", "claude"})
     check("a. status marks go to the Leads page's key, the owner's details to its own key", "'agency.leads.status.v1'" in js and "'agency.outreach.v1'" in js)
-    check("a. reads only its own files (scripts, leads, offers, the factory's sites index)", set(re.findall(r"getJSON\('([^']+)'\)", js)) == {"scripts.json", "../leads/leads.json", "../offers/offers.json", "../sites/index.json"})
+    check("a. reads only its own files (scripts, leads, offers, the factory's sites index) + the site's public status channel for the autopilot counts",
+          set(re.findall(r"getJSON\('([^']+)'\)", js)) == {"scripts.json", "../leads/leads.json", "../offers/offers.json", "../sites/index.json", "../../status_feed.json"}
+          and js.count("fetch(") == 2 and "json?poll=1" in js)
+    check("a. the autopilot card's numbers keep their place from the first paint (tiles with '-')", "autoTiles(null)" in js and 'id="autoNums" hidden' not in html)
     check("a. no innerHTML, no paid service", "innerHTML" not in js + core and not re.search(r"stripe|paypal|twilio|sendgrid|mailchimp", allt.lower()))
     off = json.loads(open(os.path.join(ROOT, "tools", "web_public", "agency", "offers", "offers.json"), encoding="utf-8").read())
     st = [p for p in off["packages"] if p["id"] == "starter"][0]
@@ -89,6 +92,9 @@ o.t = { n: T.length, first: T.slice(0, 2).map((r) => [r.L.id, r.p.step]), ids: T
 o.ids = { no: L[5].id, yes: L[6].id, due: L[7].id, wait: L[8].id };
 o.junk = [C.normState(null), C.normState({ me: { your_name: '<b>x</b>', evil: 1 }, touches: { a: [{ d: 'x', k: 'first' }, { d: '2026-01-01', k: 'hack' }, { d: '2026-01-02', k: 'bump' }] }, checks: { d1: true, d2: 'yes' } })];
 o.step = [C.emailStep({ step: 'first' }), C.emailStep({ step: 'bump' }), C.emailStep({ step: 'wait', day: 7 })];
+const nd = [JSON.stringify({ event: 'message', message: JSON.stringify({ kind: 'le-live', t: 9 }) }), JSON.stringify({ event: 'message', message: JSON.stringify({ kind: 'le-mail', t: 100, mode: 'live', new: 7, cap: 20, name: 'Joe', queue: 3 }) }),
+  JSON.stringify({ event: 'message', message: JSON.stringify({ kind: 'le-mail', t: 50, mode: 'dry', new: 1 }) }), 'junk'].join('\n');
+o.mail = C.parseMail(nd);
 console.log(JSON.stringify(o));
 """
 
@@ -135,6 +141,8 @@ def core():
     check("b. junk state never throws: unknown fields, bad dates and kinds dropped, markup stripped", j[0] == {"v": 1, "me": {}, "touches": {}, "checks": {}}
           and j[1]["touches"] == {"a": [{"d": "2026-01-02", "k": "bump"}]} and j[1]["checks"] == {"d1": True} and "<" not in j[1]["me"].get("your_name", "") and "evil" not in j[1]["me"], j[1])
     check("b. a tap records the step the plan is on (first / bump / last)", o["step"] == ["first", "bump", "last"], o["step"])
+    m = o["mail"] or {}
+    check("b. the autopilot counts: the newest 'le-mail' post, numbers only (an extra field like a name is dropped)", m.get("t") == 100 and m.get("new") == 7 and m.get("mode") == "live" and "name" not in m, m)
 
 
 def browser():

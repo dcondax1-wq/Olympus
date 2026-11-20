@@ -43,7 +43,10 @@ async function copy(text, what) {
 function wordsFor(L) {
   const W = S.words, v = C.varsFor(L, meVars(), { sites: S.sites, base: S.base, offers: S.offers }), p = C.plan(L, S.marks[L.id], S.st.touches[L.id], today());
   const step = C.emailStep(p), mail = W.email.find((e) => e.id === step) || W.email[0];
-  return { v, p, opener: C.fill(W.phone.opener, v), vm: C.fill(W.phone.voicemail, v), subject: C.fill(mail.subject, v), body: C.fill(mail.body, v), mailLabel: mail.label };
+  let body = C.fill(mail.body, v);
+  // the business's own concept site has the "Have our assistant call me" button (day-caller: the AI calls only those who asked, Maryland law)
+  if (step === 'first' && v.demo_own && !body.includes(C.CALL_LINE)) body = body.replace('\n\nWould a 10-minute call', '\n\n' + C.CALL_LINE + '\n\nWould a 10-minute call');
+  return { v, p, opener: C.fill(W.phone.opener, v), vm: C.fill(W.phone.voicemail, v), subject: C.fill(mail.subject, v), body, mailLabel: mail.label };
 }
 function btn(text, cls, fn, label) { const b = h('button', 'ag-btn ' + (cls || ''), text); b.type = 'button'; b.addEventListener('click', fn); if (label) b.setAttribute('aria-label', label); return b; }
 function mark(L, s) {
@@ -173,6 +176,7 @@ function wire() {
   $('printInv').addEventListener('click', () => printNode($('invoice').cloneNode(true), `Invoice ${$('cBiz').value.trim() || ''}`.trim()));
 }
 function drawAll() {
+  if (!$('autoNums').firstChild) autoTiles(null);
   for (const k of Object.keys(C.ME_DEFAULTS)) $(k).value = S.st.me[k] || '';
   const seg = clear($('cPlan'));
   for (const [id, t] of PLANS) {
@@ -182,6 +186,27 @@ function drawAll() {
   drawToday(); drawWords(); drawClose();
 }
 
+// the PC's email autopilot: its counts from the public status channel the site already reads (status_feed.json), at most once a visit
+async function drawAuto() {
+  const box = $('auto'), feed = await getJSON('../../status_feed.json');
+  let a = null;
+  if (feed && /^https:\/\//.test(feed.ntfy || '') && /^[\w-]{16,}$/.test(feed.topic || '')) {
+    try { const r = await fetch(`${String(feed.ntfy).replace(/\/+$/, '')}/${feed.topic}/json?poll=1&since=26h`, { cache: 'no-store' }); if (r.ok) a = C.parseMail(await r.text()); } catch (_) { a = null; }
+  }
+  const st = $('autoState');
+  if (!a) { st.textContent = 'Off, or the PC has not reported today. To turn it on: EMAIL_SETUP.bat on the PC (it stays off until you type SEND EMAILS).'; autoTiles(null); return; }
+  const ago = Math.max(0, Math.round((Date.now() / 1000 - a.t) / 60));
+  st.textContent = (a.mode === 'live' ? 'ON: emailing businesses' : a.mode === 'dry' ? 'DRY RUN: test emails to you only' : 'OFF') + ` · ${ago < 90 ? ago + ' min' : Math.round(ago / 60) + ' h'} ago`;
+  autoTiles(a); box.dataset.mode = a.mode;
+}
+// the six tiles exist from the first paint ('-' until the PC's numbers arrive): nothing below moves
+function autoTiles(a) {
+  const t = clear($('autoNums'));
+  for (const [k, v] of [['New today', a ? `${a.new} / ${a.cap}` : '-'], ['Follow-ups', a ? a.followup : '-'], ['Replies today', a ? a.replies_today : '-'],
+    ['Interested', a ? a.interested : '-'], ['Never again', a ? a.suppressed : '-'], ['Waiting', a ? a.queue : '-']]) {
+    const d = h('div', 'tile'); d.appendChild(h('small', '', k)); d.appendChild(h('b', '', v)); t.appendChild(d);
+  }
+}
 async function getJSON(u) { try { const r = await fetch(u, { cache: 'no-cache' }); return r.ok ? await r.json() : null; } catch (_) { return null; } }
 async function start() {
   load(); wire();
@@ -194,6 +219,7 @@ async function start() {
   if (sites && sites.sites) S.sites = Array.isArray(sites.sites) ? Object.fromEntries(sites.sites.filter((x) => x && x.id && x.url).map((x) => [x.id, x.url])) : sites.sites;
   const dl = clear($('bizList')); for (const x of S.leads.slice(0, 300)) { const o = document.createElement('option'); o.value = x.name; dl.appendChild(o); }
   drawAll(); summary(); lift();
+  drawAuto();
   const tab = (location.hash || '').slice(1); if (['today', 'words', 'close', 'me'].includes(tab)) setTab(tab);
 }
 start();

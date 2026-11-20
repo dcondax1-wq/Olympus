@@ -128,3 +128,7 @@ main#app .pill.hot, .pill.hot { color: var(--ag-on-gold); background: var(--ag-g
   .print .n { text-align: right; }
   .print ul { padding-left: 16pt; }
 }
+
+/* the autopilot card: its height is reserved (3 tile rows once filled) so nothing below jumps when the PC's numbers arrive */
+.auto .tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.auto .tile b { font-size: 1.25rem; }
