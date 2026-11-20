@@ -1,0 +1,6 @@
+{
+ "id": "noop-0",
+ "ts": 0,
+ "cmd": "none",
+ "help": "Replace this file with the JSON from the phone app (System > Remote): status | update | pause | flatten | stop | kill | restart | start (Sim only). Each command runs once, within 15 min of its ts."
+}
