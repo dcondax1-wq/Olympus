@@ -21,7 +21,7 @@ Timing: the PC takes the 16:00 ET update; H1 must be on pc before Wed 11-25 even
 Checks run on the final code (this container): tests.test_redteam2_live 15/15, tests.test_nq_live_reliability 119/119 (the
 fast alarm's own suite), python -m engine.ninjatrader --selftest EXIT 0, tests.test_holiday_replay 9/9, tests.test_holidays
 19/19, tests.test_account_box 40/40, tests.test_multi_account --quick 49/49, tests.test_rapid 60/60, tests.test_rapid25 94/94,
-tests.test_mffu_rules 55 ok / 0 FAIL / 3 WARN, tests.test_lit_live --quick (see the write-up), tests/smoke.py 7/8 (test_zenith_mode
+tests.test_mffu_rules 55 ok / 0 FAIL / 3 WARN, tests.test_lit_live --quick OK (120/120 day-end trades identical, 489 intraday polls 0 differences, LiveBot 1/1 entries + exits, 0 errors), tests/smoke.py 7/8 (test_zenith_mode
 needs the python playwright module, not in this container: unrelated). Not run: test_win_scripts (never), browser suites.
 
 ## H1 + H2: the engine/fast_alarm.py diff (vs origin/pc)
