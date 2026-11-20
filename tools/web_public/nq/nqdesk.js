@@ -186,7 +186,7 @@ export function quality(home, file, news, nowS) {
   const tDay = isObj(file) && isObj(file.data_branch) ? file.data_branch.to : null;
   const fileAge = tDay ? Math.max(0, (Date.parse(etParts(nowS).day) - Date.parse(tDay)) / 86400) : null;
   rows.push({ k: 'data', label: 'Site data', value: `${built ? 'home.json ' + ageText(nowS - built) : 'home.json date unknown'}${tDay ? ` · trades to ${tDay}` : ' · no data-branch upload in trades.json'}`,
-    level: lvl((built === null || nowS - built < 6 * 3600) && fileAge !== null && fileAge <= 3, true), note: 'the cloud build + the nightly trade upload' });
+    level: lvl(built !== null && nowS - built < 6 * 3600 && fileAge !== null && fileAge <= 3, true), note: 'the cloud build + the nightly trade upload' });
   const na = num(rep.na);
   let alertT = na, how = 'the PC says';
   if (!alertT) {
