@@ -41,3 +41,19 @@ Tests: see bottom.
 Baseline check: the no-guard ATLAS funded row reproduces atlas-health-2026-11-18 exactly (8.5 / 9.2 / 94.5% lost).
 Fresh VIX (lead's pc merge, to Nov 19) used. Files: `research/regime_guard/`, `research/writeups/regime-guard-2026-11-20.md`,
 +1 line docs/TESTED_AND_REJECTED.md. No Decide card. LEAD_WIRES: still none.
+
+# Round 3 (lead): skeptic check of today's passing card + Rapid spot check
+
+| Card | Verdict | Numbers (10 ticks, today's funded 25K, $ a month / lost in 6 months) |
+|---|---|---|
+| atlas-funded-streak-1micro | **WEAKER THAN CLAIMED** | Reproduced exactly (H1 $503/17.6% -> $481/12.2%, H2 $402/21.7% -> $408/10.9%). Holds on 2 more seeds. Day-shuffled paths: H2 $372/23.5% -> $319/18.5% (-$53). Jan-Jun-like: flat room 40% beats it ($527/11.0%). With room 40%: H2 14.0% -> 7.7% at $0, H1 -$49 |
+| rapid25-lit-bank | **NO HOLDS** | pre-registered 1-pt eval-fail limit broken (H1 0.5 -> 3.1%); close call (+$24/+$101) |
+| atlas-on-rapid | **YES HOLDS** | $1,883 vs $221, $800 vs $191; no payout 7.4 vs 55%, 15.1 vs 50% |
+
+Code read: no look-ahead, same trades / costs / paths in both arms, floor math untouched. Live build must copy: streak updated
+at session end; a breakeven scratch (-$3.80) counts as a loss. Neighbours: not a knife edge (2 -> 2 micros, 3 -> 1 micro close).
+Card text edited in tools/web_public/business/decisions.json (risk + recommend_why; recommend stays yes; $ unchanged);
+test_decide 14/14. Write-up research/writeups/skeptic-atlas-streak-2026-11-20.md, code research/skeptic/streak.py.
+Installed numba in this container (pip, free) to run the card's own tool.
+Screenshot: NOT taken (the local page server + browser step was refused in this container) - lead: one 390x844 @2 shot of
+business/plan.html with the streak card open, text-only change.
