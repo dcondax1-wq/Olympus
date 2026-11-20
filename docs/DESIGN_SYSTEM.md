@@ -80,3 +80,21 @@ itself: `<script>OLYMPUS_THEMES.apply('page')</script>` right after `themes.js` 
 Look (Theme, Quality, Reading), Sound (Sounds and touch), Alerts (Alerts and briefing, Phone notifications: on/off on this phone, link to the
 card, the PC's `notify_settings.json` for the alert types), Data (How old the numbers are, storage, caches, export). Settings never uses the
 network: it reads this phone's storage only (`olympus.push`, `olympus.pulse.ages`).
+
+## 6. NQ effects (`olympus/nqfx.js`, the trading dashboard's "wow" layer)
+
+One classic tag (`<script src="../olympus/nqfx.js?v=n1" defer>`), then `await OLYMPUS_NQFX.ready()`; built on the FX library (docs/OLYMPUS_FX.md:
+tiers, one frame loop, caps, cleanup). Demo: `/olympus/nqfx-lab.html`. Full guide for the NQ team: `research/handoff/2026-11-20/nq4/FX_API.md`.
+
+| Call | Effect |
+|---|---|
+| `NQFX.win(el, { usd, bigAt })` | sparks + "Win +$X" toast (confetti from `bigAt`, default $500) |
+| `NQFX.loss(el, { usd })` | a calm "Loss -$X" toast |
+| `NQFX.milestone(el, { text })` | confetti + toast (eval passed, payout ready) |
+| `NQFX.ring(host, { value })` | the glowing goal ring (`progressRing`), `call('set', v)` |
+| `NQFX.roll(el, { to })` | number roll-up (`countUp`), `call('set', v)` |
+| `NQFX.trail(pathEl, opts)` | `chartTrail`: a light runs along an SVG chart line, glow under it, follows redraws |
+| `NQFX.vault(host, { value, label })` | `payoutVault`: drawn vault first, 3D door + gold coins after load + idle (`nqvault3d.js`), `call('set', v, label)` |
+
+Low tier = the phone tier (30 fps, pixel ratio 1, no reflections); reduced motion = everything still at its final state; no WebGL / Save-Data / 2G-3G =
+the drawn vault. The 3D import waits for load + idle, so no long task over 200 ms lands before it (tests/test_nqfx.py).

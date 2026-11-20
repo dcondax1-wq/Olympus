@@ -286,6 +286,8 @@ AREAS["pc"].append("cross_site")
 AREAS["pc"].append("redteam2_live")       # day-redteam2 2026-11-20: half-day halt alarm + TRADE HAS NO STOP alarm (engine/fast_alarm.py)
 AREAS["nq"].append("redteam2_live")
 AREAS["pc"].append("redteam2_wires")      # day-redteam2 2026-11-20: L2 rapid._other_names covers the extra accounts
+AREAS["agency"].append("web_demos")      # day-web-demos 2026-11-20: the 4 sellable 3D website demos + gallery (tools/web_public/agency/demos/); its own line
+AREAS["olympus"].append("nqfx")           # day-arenas 2026-11-20: the NQ dashboard effects kit (olympus/nqfx.js, nqvault3d.js, nqfx-lab.html); its own line
 
 
 def main(argv=None) -> int:
