@@ -6,7 +6,7 @@
   --nfx-gold: #f1c14b; --nfx-gold-ink: #ebbf4f; --nfx-mint: #77db89; --nfx-line: #3e255e; --nfx-line-2: #4d2e76; --nfx-card-a: #16131e; --nfx-card-b: #020204; }   /* the old cyan names now hold the Night violet / lavender */
 
 /* ---- the aurora: one fixed layer behind the page, 3 soft blobs that drift (transform only, GPU) */
-.nfx-aurora { position: fixed; inset: -20vmax; z-index: -1; pointer-events: none; opacity: .5; contain: strict; }
+.nfx-aurora { position: fixed; inset: -20vmax; z-index: -1; pointer-events: none; opacity: .5; contain: strict; overflow: hidden; }   /* overflow: the blobs never count as page width (QUALITY 2026-11-20, phone_fit) */
 .nfx-aurora i { position: absolute; width: 70vmax; height: 70vmax; border-radius: 50%; filter: blur(60px); opacity: .32; will-change: transform; }
 .nfx-aurora i:nth-child(1) { left: 0; top: 4vmax; background: radial-gradient(circle, rgba(var(--nfx-cyan-rgb), .55), transparent 62%); animation: nfx-a1 26s ease-in-out infinite alternate; }
 .nfx-aurora i:nth-child(2) { right: 0; top: 20vmax; background: radial-gradient(circle, rgba(var(--nfx-violet-rgb), .5), transparent 62%); animation: nfx-a2 32s ease-in-out infinite alternate; }

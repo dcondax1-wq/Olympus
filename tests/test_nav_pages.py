@@ -14,6 +14,8 @@ import os
 import re
 import sys
 import threading
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from tests.page_bg import PAGE_BG_JS, night_black  # noqa: E402  (the effective page background: OLYMPUS NIGHT paints <html>)
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB = os.path.join(ROOT, "tools", "web_public")
@@ -204,12 +206,12 @@ def part_b(shots: bool):
                     pg.wait_for_function("window.NAV_FX && window.NAV_FX.ready", timeout=20000)
                     pg.wait_for_timeout(1500)
                     r = pg.evaluate("""(() => { const a = document.querySelector('.nfx-aurora i'); const st = a ? getComputedStyle(a) : null;
-                        const bb = getComputedStyle(document.body).backgroundColor, bg = bb === "rgba(0, 0, 0, 0)" ? getComputedStyle(document.documentElement).backgroundColor : bb;
+                        const bg = """ + PAGE_BG_JS + """;
                         return { nfx: document.documentElement.classList.contains('nfx'), aurora: !!a, anim: st ? st.animationName : '', bg,
                           tilt: document.querySelectorAll('[data-nfx-tilt]').length, rolling: document.querySelectorAll('.nfx-rolling').length,
                           leads: (document.getElementById('hqPLeads') || {}).textContent || '', cls: window.__cls }; })()""")
                     still = rm == "reduce"
-                    ok = r["nfx"] and r["aurora"] and all(int(x) < 16 for x in re.findall(r"\d+", r["bg"])[:3]) and r["cls"] < 0.05 and not errs and r["rolling"] == 0 \
+                    ok = r["nfx"] and r["aurora"] and night_black(r["bg"]) and r["cls"] < 0.05 and not errs and r["rolling"] == 0 \
                         and ((r["anim"] == "none" and r["tilt"] == 0) if still else (r["anim"] != "none" and (r["tilt"] > 0 or url == "hub/zeus.html")))
                     if url == "agency/index.html":
                         ok = ok and r["leads"] == "20"

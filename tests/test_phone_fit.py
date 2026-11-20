@@ -88,6 +88,7 @@ MEASURE = r"""(() => {
   let last = 0, lastEl = '';
   for (const e of document.querySelectorAll('main *, body > *:not(script):not(style)')) {
     if (inBar(e) || !vis(e)) continue;
+    { const cs = getComputedStyle(e); if (cs.position === 'fixed' && cs.pointerEvents === 'none') continue; }   // full-screen decor (an aurora canvas) is not a line of the page
     const shut = e.closest('details:not([open])');
     if (shut && !e.closest('summary')) continue;                 // a closed details' body is not on screen
     const own = [...e.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim()) || /^(A|BUTTON|INPUT|SELECT|IMG|SVG|CANVAS)$/.test(e.tagName);

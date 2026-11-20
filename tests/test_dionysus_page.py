@@ -149,7 +149,8 @@ def test_page():
                   and d["banner"] and d["reads"] == 0 and "Example numbers" in d["src"], d)
             check("c. the what-if is on the picked set A ('A · skip the 90–95¢ band'), 'As it is' and B are chips, the text says how much better; the scan shows 'Worth a paper test' with 95–97¢ bets",
                   d["chips"] == ["As it is", "A", "B"] and d["on"] == "A" and "better than the old bot as it was" in d["wiText"] and "Worth a paper test" in d["scan"] and "95–97¢ bets" in d["scan"] and "Worth avoiding" in d["scan"], d)
-            check("c. AGORA look: a serif title", any(f in d["font"] for f in ("Palatino", "Iowan", "Georgia")))
+            # the title font: AGORA's serif, or OLYMPUS NIGHT's sans (the owner's look since 2026-11-20, day-kalshi ef8a5a41): a real stack, not the browser default
+            check("c. the title has the look's own font (AGORA serif or OLYMPUS NIGHT sans)", bool(d["font"]) and d["font"].strip('"').lower() not in ("times new roman", "serif"), d["font"])
             AK.shot(p, "dionysus-demo")
             p.locator("#sets [data-id=B]").click()
             p.wait_for_timeout(150)
