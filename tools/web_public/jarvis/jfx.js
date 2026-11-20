@@ -38,6 +38,8 @@
     requestAnimationFrame(step);
   }
   function scan() {
+    var z = d.querySelectorAll('.zeus-card:not([data-dfx])');                  // the kit's glass on the ZEUS card (olympus/dashfx: it wires added nodes)
+    for (var j = 0; j < z.length; j++) z[j].setAttribute('data-dfx', 'glass');
     if (reduce()) return;
     var list = d.querySelectorAll(SEL);
     for (var i = 0; i < list.length; i++) {

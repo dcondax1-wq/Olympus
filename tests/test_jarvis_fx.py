@@ -37,11 +37,12 @@ def read(*p):
 
 def part_a():
     page = read(JV, "index.html")
-    check("a. jfx.css after the first paint (media=print, swapped on load) and jfx.js deferred: the start is not held",
-          '<link rel="stylesheet" id="jfx" href="jfx.css?v=2" media="print" onload="this.media=\'all\'">' in page and '<script src="jfx.js?v=1" defer></script>' in page)
+    check("a. the kit (olympus/dashfx) and jfx.css after the first paint (media=print, swapped on load), the scripts deferred: the start is not held",
+          '<link rel="stylesheet" id="jfx" href="jfx.css?v=3" media="print" onload="this.media=\'all\'">' in page and '<script src="jfx.js?v=2" defer></script>' in page
+          and 'href="../olympus/dashfx.css?v=d1" media="print"' in page and '<script src="../olympus/dashfx.js?v=d1" defer></script>' in page)
     css, js = read(JV, "jfx.css"), read(JV, "jfx.js")
     check("a. OLYMPUS NIGHT in jfx.css: bright gold, violet ring, violet outlines, mint; no cyan / navy left over",
-          all(x in css for x in ("#f1c14b", "#ebbf4f", "#9d59ee", "#4d2e76", "#462a6a", "#77db89")) and not re.search(r"#22d3ee|#3b82f6|#8b5cf6|--oly-th-a\d+:", css))
+          all(x in css for x in ("#f1c14b", "#9d59ee", "#3e255e", "#16131e", "#020204", "#77db89", "#ef4444")) and not re.search(r"#22d3ee|#3b82f6|#8b5cf6|--oly-th-a\d+:", css))
     sw = read(JV, "switcher.js")
     check("a. the switcher's colours are the owner's (left as they were): only the 3D lean hook added", "${c.dataset.lean || ''}" in sw and "#22d3ee" not in sw and "NOGOLD" not in sw)
     check("a. jfx.js: classic script, no innerHTML, no network", "innerHTML" not in js and "fetch(" not in js and not re.search(r"^\s*(import|export)\s", js, re.M))
@@ -108,10 +109,11 @@ def main():
             p.wait_for_timeout(2500)
             z = {k: colours(p, s, ps) for k, s, ps in (("card", ".zeus-card", None), ("title", ".zeus-t", None), ("edge", ".zeus-card", "::before"),
                                                       ("kbox", "#kbox", None), ("nbox", "#nbox", None), ("orb", ".nx-orb", "::after"))}
-            check("b. ZEUS: black glass, a violet outline and top edge (violet -> gold line), the title bright gold", "rgb(157, 89, 238)" in z["card"] and "rgb(77, 46, 118)" in z["card"]
-                  and "linear-gradient" in z["edge"] and "rgb(241, 193, 75)" in z["title"], z)
-            check("b. the KALSHI / NQ tiles glow: gold / violet side bar, violet outline, a glow layer", "radial-gradient" in (z["kbox"] or "") and "rgb(241, 193, 75)" in (z["kbox"] or "")
-                  and "rgb(70, 42, 106)" in (z["kbox"] or "") and "rgb(157, 89, 238)" in (z["nbox"] or ""), {k: z[k] for k in ("kbox", "nbox")})
+            check("b. ZEUS: the kit's glass (data-dfx=glass: near-black violet card, #3e255e outline, the travelling violet / gold edge), the title bright gold",
+                  p.evaluate("document.querySelector('.zeus-card').getAttribute('data-dfx')") == "glass" and "rgb(62, 37, 94)" in z["card"] and "rgb(22, 19, 30)" in z["card"]
+                  and "conic-gradient" in z["edge"] and "rgb(241, 193, 75)" in z["title"], z)
+            check("b. the KALSHI / NQ tiles: NIGHT glass (#16131e -> #020204, #3e255e outline), gold / violet side bar, a violet glow layer", "radial-gradient" in (z["kbox"] or "") and "rgb(241, 193, 75)" in (z["kbox"] or "")
+                  and "rgb(62, 37, 94)" in (z["kbox"] or "") and "rgb(22, 19, 30)" in (z["kbox"] or "") and "rgb(157, 89, 238)" in (z["nbox"] or ""), {k: z[k] for k in ("kbox", "nbox")})
             check("b. no cyan / navy left on the ZEUS card or the tiles", not any(re.search(r"rgba?\(34, 211, 238|rgba?\(59, 130, 246|rgba?\(20, 28, 58", x or "") for x in z.values()), z)
             fin = p.evaluate("[...document.querySelectorAll('.zeus-b, .zeus-d, .hc-n, .tile .t-v > b, #npnl, #kusd')].map((e) => e.textContent)")
             rolls = p.evaluate("window.__rolls")

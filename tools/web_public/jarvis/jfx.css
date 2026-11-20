@@ -3,62 +3,47 @@
    violet ring #9d59ee, the bright gold accent #f1c14b / #ebbf4f, mint #77db89 for a gain.
    Loaded after the first paint (media=print swap), so the start is unchanged. Only transform and opacity animate; no blur over content;
    reduced motion = everything still. Pairs with jfx.js (number roll-ups, the finger tilt on the switcher's cards).
-     ZEUS      the accounts card: black glass, a violet -> gold edge, a light sweep, the title in bright gold with a violet glow
+     ZEUS      the accounts card: the kit's glass (olympus/dashfx: near-black violet, the travelling violet / gold edge), the title bright gold
      cards     the KALSHI / NQ tiles, bot cards and tiles: black glass with a violet outline and a glow that breathes, a 3D press
      switcher  unchanged (the palette's source); its cards lean in 3D under the finger with a glare (jfx.js) */
-:root { --jfx-cy: #f1c14b; --jfx-cy-rgb: 241,193,75; --jfx-bl: #4d2e76; --jfx-bl-rgb: 77,46,118; --jfx-vi: #9d59ee; --jfx-vi-rgb: 157,89,238; --jfx-up: #77db89; --jfx-dn: #ff7a7a; }
+:root { --jfx-cy: var(--dfx-gold, #f1c14b); --jfx-vi: var(--dfx-glow, #9d59ee); --jfx-up: var(--dfx-good, #77db89); --jfx-dn: var(--dfx-bad, #ef4444); }
 
-/* ---------------------------------------------------------------- ZEUS, the accounts card */
-html:root[data-oly-page="jarvis"] .zeus-card { position: relative; isolation: isolate;
-  background: linear-gradient(160deg, rgba(20,10,34,.94) 0%, rgba(6,4,12,.95) 60%, rgba(20,12,40,.95) 100%);
-  border: 1px solid #4d2e76; border-top: 2px solid var(--jfx-vi);
-  box-shadow: 0 0 0 1px rgba(var(--jfx-vi-rgb),.18), 0 10px 32px rgba(var(--jfx-cy-rgb),.13), 0 2px 22px rgba(var(--jfx-vi-rgb),.16), inset 0 1px 0 rgba(255,255,255,.06); }
-html:root[data-oly-page="jarvis"] .zeus-card::before { content: ""; position: absolute; left: 0; right: 0; top: -2px; height: 2px; z-index: 1; pointer-events: none;
-  background: linear-gradient(90deg, var(--jfx-vi), #ebbf4f 55%, var(--jfx-cy)); }
-html:root[data-oly-page="jarvis"] .zeus-card::after { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 45%; z-index: 0; pointer-events: none;
-  background: linear-gradient(100deg, transparent, rgba(var(--jfx-cy-rgb),.09) 45%, rgba(255,255,255,.07) 50%, transparent);
-  transform: translateX(-120%); animation: jfx-sweep 7s ease-in-out 1.2s infinite; }
+/* ---------------------------------------------------------------- ZEUS, the accounts card: the kit's glass (olympus/dashfx.css, data-dfx="glass" set by
+   jfx.js: near-black violet card, deep violet outline, the travelling violet / gold edge light); here only what is ZEUS's own */
+html:root[data-oly-page="jarvis"] .zeus-card[data-dfx] { border-top-width: 1px; }
 html:root[data-oly-page="jarvis"] .zeus-card > * { position: relative; z-index: 1; }
-html:root[data-oly-page="jarvis"] .zeus-card.bad { border-color: #ff5a4f; border-top-color: #ff5a4f; box-shadow: 0 0 0 1px rgba(255,90,79,.3), 0 10px 32px rgba(255,90,79,.16); }
-html:root[data-oly-page="jarvis"] .zeus-card.bad::before { background: #ff5a4f; }
-html:root[data-oly-page="jarvis"] .zeus-t { background: linear-gradient(90deg, #f1c14b, #ebbf4f); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 0 10px rgba(var(--jfx-vi-rgb),.55)); }
-html:root[data-oly-page="jarvis"] .zeus-row { border-top-color: rgba(var(--jfx-vi-rgb),.18); }
-html:root[data-oly-page="jarvis"] .zeus-n small.passed { color: #120a1e; background: var(--jfx-cy); border-color: var(--jfx-cy); }
+html:root[data-oly-page="jarvis"] .zeus-card.bad { border-color: #ef4444; box-shadow: 0 0 0 1px rgba(239,68,68,.3), 0 10px 32px rgba(239,68,68,.16); }
+html:root[data-oly-page="jarvis"] .zeus-t { color: var(--dfx-gold, #f1c14b); text-shadow: 0 0 14px rgba(157,89,238,.55); }
+html:root[data-oly-page="jarvis"] .zeus-row { border-top-color: rgba(70,42,106,.7); }
+html:root[data-oly-page="jarvis"] .zeus-n small.passed { color: #000; background: var(--dfx-gold, #f1c14b); border-color: var(--dfx-gold, #f1c14b); }
+html:root[data-oly-page="jarvis"] .zeus-n small.eval, html:root[data-oly-page="jarvis"] .zeus-n small.plan { color: var(--dfx-hi, #dacbf0); }
+html:root[data-oly-page="jarvis"] .zeus-n, html:root[data-oly-page="jarvis"] .zeus-b { color: var(--dfx-text, #ebe9f1); }
 html:root[data-oly-page="jarvis"] .zeus-d.pos, html:root[data-oly-page="jarvis"] .zeus-b.pos { color: var(--jfx-up); text-shadow: 0 0 12px rgba(119,219,137,.35); }
-html:root[data-oly-page="jarvis"] .zeus-d.neg, html:root[data-oly-page="jarvis"] .zeus-b.neg { color: var(--jfx-dn); text-shadow: 0 0 12px rgba(255,122,122,.3); }
-html:root[data-oly-page="jarvis"] .zeus-g, html:root[data-oly-page="jarvis"] .zeus-more, html:root[data-oly-page="jarvis"] .zeus-d, html:root[data-oly-page="jarvis"] .zeus-none { color: #b8c4dc; }
-@keyframes jfx-sweep { 0%, 62% { transform: translateX(-120%); opacity: 0; } 66% { opacity: 1; } 92% { transform: translateX(260%); opacity: 1; } 100% { transform: translateX(260%); opacity: 0; } }
+html:root[data-oly-page="jarvis"] .zeus-d.neg, html:root[data-oly-page="jarvis"] .zeus-b.neg { color: var(--jfx-dn); text-shadow: 0 0 12px rgba(239,68,68,.3); }
+html:root[data-oly-page="jarvis"] .zeus-g, html:root[data-oly-page="jarvis"] .zeus-more, html:root[data-oly-page="jarvis"] .zeus-d, html:root[data-oly-page="jarvis"] .zeus-none { color: var(--dfx-muted, #898497); }
 
-/* ---------------------------------------------------------------- the bot cards and the tiles: glowing glass */
-html:root[data-oly-page="jarvis"] .hc-bot, html:root[data-oly-page="jarvis"] #hfirst .tile, html:root[data-oly-page="jarvis"] .tiles .tile {
-  position: relative; isolation: isolate; overflow: hidden;
-  background: linear-gradient(155deg, rgba(24,12,40,.88), rgba(6,4,12,.92) 65%, rgba(24,14,48,.9));
-  border: 1px solid #462a6a;
-  box-shadow: 0 0 0 1px rgba(var(--jfx-vi-rgb),.16), 0 0 22px rgba(var(--jfx-cy-rgb),.16), 0 10px 28px rgba(var(--jfx-bl-rgb),.2), inset 0 1px 0 rgba(var(--jfx-cy-rgb),.35);
-  transition: transform .18s cubic-bezier(.2,.8,.2,1.2), box-shadow .25s ease; transform: perspective(700px) translateZ(0); }
-html:root[data-oly-page="jarvis"] .hc-bot::before, html:root[data-oly-page="jarvis"] #hfirst .tile::before, html:root[data-oly-page="jarvis"] .tiles .tile::before {
-  content: ""; position: absolute; inset: -40% -20% auto -20%; height: 90%; z-index: -1; pointer-events: none;
-  background: radial-gradient(closest-side, rgba(var(--jfx-cy-rgb),.3), transparent 72%); opacity: .8; animation: jfx-breathe 5.5s ease-in-out infinite; }
-html:root[data-oly-page="jarvis"] .hc-bot:nth-child(2n)::before, html:root[data-oly-page="jarvis"] .tiles .tile:nth-child(2n)::before { background: radial-gradient(closest-side, rgba(var(--jfx-vi-rgb),.34), transparent 72%); animation-delay: -2.5s; }
-html:root[data-oly-page="jarvis"] .hc-bot:active, html:root[data-oly-page="jarvis"] #hfirst .tile:active, html:root[data-oly-page="jarvis"] .tiles .tile:active, html:root[data-oly-page="jarvis"] .kbox:active {
-  transform: perspective(700px) rotateX(5deg) scale(.975); box-shadow: 0 0 0 1px rgba(var(--jfx-cy-rgb),.4), 0 4px 18px rgba(var(--jfx-cy-rgb),.22); }
-html:root[data-oly-page="jarvis"] .hc-n.up, html:root[data-oly-page="jarvis"] .tile .up { color: var(--jfx-up); text-shadow: 0 0 14px rgba(119,219,137,.4); }
-html:root[data-oly-page="jarvis"] .hc-n.dn, html:root[data-oly-page="jarvis"] .tile .dn { color: var(--jfx-dn); text-shadow: 0 0 14px rgba(255,122,122,.35); }
-/* KALSHI TODAY / NQ BOTS TODAY (.kbox: its ::before is the side bar, so the glow is a background layer here) */
-html:root[data-oly-page="jarvis"] .hsec .kbox[type] { border-radius: 12px; border: 1px solid #462a6a; border-left: 3px solid var(--jfx-cy);
-  background: radial-gradient(120% 90% at 0% 0%, rgba(var(--jfx-cy-rgb),.2), transparent 60%), linear-gradient(155deg, rgba(24,12,40,.9), rgba(6,4,12,.94) 65%, rgba(24,14,48,.92));
-  box-shadow: 0 0 0 1px rgba(var(--jfx-vi-rgb),.16), 0 0 22px rgba(var(--jfx-cy-rgb),.16), 0 10px 28px rgba(var(--jfx-bl-rgb),.2), inset 0 1px 0 rgba(var(--jfx-cy-rgb),.35);
+/* ---------------------------------------------------------------- the bot cards, tiles and KALSHI / NQ: the same NIGHT glass, by hand (their ::before
+   is taken: the side bar), with a violet glow that breathes and a 3D press */
+html:root[data-oly-page="jarvis"] .hc-bot, html:root[data-oly-page="jarvis"] #hfirst .tile, html:root[data-oly-page="jarvis"] .tiles .tile, html:root[data-oly-page="jarvis"] .hsec .kbox[type] {
+  position: relative; isolation: isolate; overflow: hidden; border-radius: 14px;
+  background: radial-gradient(120% 70% at 50% -20%, rgba(157,89,238,.22), transparent 62%), radial-gradient(120% 55% at 50% -12%, rgba(35,29,22,.75), transparent 62%), linear-gradient(180deg, #16131e, #020204);
+  border: 1px solid #3e255e;
+  box-shadow: 0 0 0 1px rgba(77,46,118,.25) inset, 0 10px 30px -14px rgba(157,89,238,.45), 0 0 18px rgba(157,89,238,.12);
   transition: transform .18s cubic-bezier(.2,.8,.2,1.2); }
-html:root[data-oly-page="jarvis"] .hsec #nbox[type] { border-color: #4d2e76; border-left-color: var(--jfx-vi);
-  background: radial-gradient(120% 90% at 0% 0%, rgba(var(--jfx-vi-rgb),.24), transparent 60%), linear-gradient(155deg, rgba(24,12,40,.9), rgba(6,4,12,.94) 65%, rgba(24,14,48,.92)); }
+html:root[data-oly-page="jarvis"] .hsec .kbox[type] { border-left: 3px solid var(--jfx-cy); }
+html:root[data-oly-page="jarvis"] .hsec #nbox[type] { border-left-color: var(--jfx-vi); }
+html:root[data-oly-page="jarvis"] .hsec #nbox[type]::after { animation-delay: -2.7s; }
 html:root[data-oly-page="jarvis"] .hsec .kbox[type]::before { background: linear-gradient(180deg, var(--jfx-cy), var(--jfx-vi)); }
-html:root[data-oly-page="jarvis"] .hsec .kbox[type]:active { transform: perspective(700px) rotateX(6deg) scale(.975); }
-html:root[data-oly-scheme="light"][data-oly-page="jarvis"] .hsec .kbox[type] { background: linear-gradient(160deg, #ffffff, #f6f0ff 70%, #fbf6ea); border-color: rgba(77,46,118,.3); box-shadow: 0 6px 20px rgba(77,46,118,.1); }
-@keyframes jfx-breathe { 0%, 100% { opacity: .55; transform: translateY(0) scale(1); } 50% { opacity: .95; transform: translateY(6%) scale(1.06); } }
-
-html:root[data-oly-page="jarvis"] #npnl.up, html:root[data-oly-page="jarvis"] #kpct.up { text-shadow: 0 0 16px rgba(119,219,137,.45); }
-html:root[data-oly-page="jarvis"] #npnl.dn, html:root[data-oly-page="jarvis"] #kpct.dn { text-shadow: 0 0 16px rgba(255,122,122,.4); }
+html:root[data-oly-page="jarvis"] .hsec .kbox[type] small { color: var(--dfx-hi, #dacbf0); }
+html:root[data-oly-page="jarvis"] .hsec .kbox[type] em { color: var(--dfx-muted, #898497); }
+html:root[data-oly-page="jarvis"] .hc-bot:active, html:root[data-oly-page="jarvis"] #hfirst .tile:active, html:root[data-oly-page="jarvis"] .tiles .tile:active, html:root[data-oly-page="jarvis"] .hsec .kbox[type]:active {
+  transform: perspective(700px) rotateX(6deg) scale(.975); }
+html:root[data-oly-page="jarvis"] .hc-n.up, html:root[data-oly-page="jarvis"] .tile .up, html:root[data-oly-page="jarvis"] #npnl.up, html:root[data-oly-page="jarvis"] #kpct.up { color: var(--jfx-up); text-shadow: 0 0 14px rgba(119,219,137,.4); }
+html:root[data-oly-page="jarvis"] .hc-n.dn, html:root[data-oly-page="jarvis"] .tile .dn, html:root[data-oly-page="jarvis"] #npnl.dn, html:root[data-oly-page="jarvis"] #kpct.dn { color: var(--jfx-dn); text-shadow: 0 0 14px rgba(239,68,68,.35); }
+/* the breathing glow: box-shadow is not transform / opacity, so it breathes through a ::after layer's opacity */
+html:root[data-oly-page="jarvis"] .hc-bot::after, html:root[data-oly-page="jarvis"] .hsec .kbox[type]::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: -1;
+  background: radial-gradient(90% 60% at 50% 0%, rgba(157,89,238,.22), transparent 70%); animation: jfx-breathe 5.5s ease-in-out infinite; }
+@keyframes jfx-breathe { 0%, 100% { opacity: .45; } 50% { opacity: 1; } }
 
 /* ---------------------------------------------------------------- the $ roll-up (jfx.js): the real number stays in the text (readers, tests); the
    rolling one is drawn over it until it lands */
@@ -74,13 +59,12 @@ html:root[data-oly-page="jarvis"] #npnl.dn, html:root[data-oly-page="jarvis"] #k
 /* ---------------------------------------------------------------- the Ivory (light) look: ink, not glow */
 html:root[data-oly-scheme="light"][data-oly-page="jarvis"] .zeus-card, html:root[data-oly-scheme="light"][data-oly-page="jarvis"] .hc-bot, html:root[data-oly-scheme="light"][data-oly-page="jarvis"] .tiles .tile, html:root[data-oly-scheme="light"][data-oly-page="jarvis"] #hfirst .tile, html:root[data-oly-scheme="light"][data-oly-page="jarvis"] .kbox {
   background: linear-gradient(160deg, #ffffff, #f6f0ff 70%, #fbf6ea); color: #0f172a; border-color: rgba(77,46,118,.3); box-shadow: 0 6px 20px rgba(77,46,118,.1), 0 1px 0 rgba(255,255,255,.9) inset; }
-html:root[data-oly-scheme="light"][data-oly-page="jarvis"] .zeus-t { background: linear-gradient(90deg, #8a5a00, #6b2fb3); -webkit-background-clip: text; background-clip: text; filter: none; }
+html:root[data-oly-scheme="light"][data-oly-page="jarvis"] .zeus-t { color: #6b2fb3; text-shadow: none; }
 html:root[data-oly-scheme="light"][data-oly-page="jarvis"] .zeus-g, html:root[data-oly-scheme="light"][data-oly-page="jarvis"] .zeus-more, html:root[data-oly-scheme="light"][data-oly-page="jarvis"] .zeus-d, html:root[data-oly-scheme="light"][data-oly-page="jarvis"] .zeus-none, html:root[data-oly-scheme="light"][data-oly-page="jarvis"] .zeus-pc.wait { color: #334155; }
 html:root[data-oly-scheme="light"][data-oly-page="jarvis"] .zeus-d.pos, html:root[data-oly-scheme="light"][data-oly-page="jarvis"] .hc-n.up { color: #047857; text-shadow: none; }
 html:root[data-oly-scheme="light"][data-oly-page="jarvis"] .zeus-d.neg, html:root[data-oly-scheme="light"][data-oly-page="jarvis"] .hc-n.dn { color: #be123c; text-shadow: none; }
 
 @media (prefers-reduced-motion: reduce) {
-  html:root[data-oly-page="jarvis"] .zeus-card::after, html:root[data-oly-page="jarvis"] .hc-bot::before, html:root[data-oly-page="jarvis"] .tiles .tile::before, html:root[data-oly-page="jarvis"] #hfirst .tile::before { animation: none; }
-  html:root[data-oly-page="jarvis"] .zeus-card::after { opacity: 0; }
+  html:root[data-oly-page="jarvis"] .hc-bot::after, html:root[data-oly-page="jarvis"] .hsec .kbox[type]::after { animation: none; opacity: .7; }
 }
-html[data-fx="low"] .zeus-card::after, html[data-fx="low"] .hc-bot::before, html[data-fx="low"] .tiles .tile::before { animation: none; }
+html[data-fx="low"] .hc-bot::after, html[data-fx="low"] .hsec .kbox[type]::after { animation: none; opacity: .7; }
