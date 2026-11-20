@@ -84,7 +84,7 @@ for (const q of ['is everything ok', 'and yesterday?', 'why?', 'what about atlas
 const say = {};
 for (const q of Object.keys(Q).filter((q) => Q[q])) { const r = await B.ask(q, deps); say[q] = r; console.log('   > ' + r.text.replace(/\n/g, '\n     ')); }
 const T = (q) => say[q].text;
-ok(/3 accounts/.test(T('How are my accounts?')) && /\$24,887/.test(T('How are my accounts?')) && /\$49,193/.test(T('How are my accounts?')) && /Zlarior 25K #2/.test(T('How are my accounts?')), 'accounts: 3 accounts with $ balances');
+ok(/3 accounts/.test(T('How are my accounts?')) && /ATLAS 25K funded: -\$113, today \$0, floor -\$1,000 \(\$887 room left\)\. Earliest payout at \$1,350 \(\$1,463 to go\); goal \$1,000 at \$2,100 \(you get \$800\)/.test(T('How are my accounts?')) && !/\$24,887/.test(T('How are my accounts?')) && /\$49,193/.test(T('How are my accounts?')) && /Zlarior 25K #2/.test(T('How are my accounts?')), 'accounts: 3 accounts with $ balances, the funded one from $0 the way MFFU shows it (owner 2026-11-20)');
 ok(/Source: PC report, 5 min ago/.test(T('How are my accounts?')), 'accounts: source + age line');
 ok(/ATLAS 25K: YES, short 1 micro from 26,380\.75, about \+\$181 open right now \(\+2\.7R\)/.test(T('Is ATLAS in a trade?')) && /can no longer lose/.test(T('Is ATLAS in a trade?')) && !/Zlarior/.test(T('Is ATLAS in a trade?')), 'in a trade: ATLAS position in $, locked stop, ATLAS only');
 ok(/Zlarior 50K: \$1,025 of \$2,000 drawdown left/.test(T('How much room does Zlarior have?')) && /Zlarior 25K #2: \$1,000 of \$1,000/.test(T('How much room does Zlarior have?')) && !/ATLAS/.test(T('How much room does Zlarior have?')), 'room: both Zlarior accounts, not ATLAS');
@@ -120,7 +120,7 @@ const B3 = await import(path.join(WEB, 'jarvis', 'biz.js') + '?d=2');
 ok(/^Nothing waiting: all 2 answered \(1 yes, 0 no, 1 later\)/.test((await B3.ask('decide card', { ...deps, storage: { getItem: () => null, setItem: () => {} } })).text), 'decide: all answered');
 decide = DECIDE;
 const pn = await ask('can I ask for a payout'); console.log('   > ' + pn.replace(/\n/g, '\n     '));
-ok(/^ATLAS 25K: /.test(pn) && /\$800 to you \(80%\); set \$240 aside for taxes \(30%\), \$560 is yours/.test(pn) && /payoutcoach/.test(pn), 'payout now: the ZEUS card coach line + the tax pot');
+ok(/^ATLAS 25K funded: -\$113,.*goal \$1,000 at \$2,100 \(you get \$800\)/.test(pn) && /\nATLAS 25K: Not yet: need \$1,463 more/.test(pn) && !/\$24,887/.test(pn) && /\$800 to you \(80%\); set \$240 aside for taxes \(30%\), \$560 is yours/.test(pn) && /payoutcoach/.test(pn), 'payout now: the ZEUS card coach line + the tax pot');
 const tx = await ask('taxes on a $1,000 payout'); console.log('   > ' + tx.replace(/\n/g, '\n     '));
 ok(/put \$300 in the tax pot \(30%\), \$700 is yours/.test(tx) && /Next estimated-tax date: Fri Jan 15 2027/.test(tx) && /not tax advice/.test(tx), 'taxes: the amount asked, the next IRS date, not advice');
 ok(B.nextTaxDate('2026-11-20') === '2027-01-15' && B.nextTaxDate('2026-04-16') === '2026-06-15' && B.nextTaxDate('2027-05-20') === '2027-06-15', 'next IRS dates (weekends move to Monday)');
