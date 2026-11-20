@@ -5,7 +5,8 @@
 // ?demo=1 the example; ?demo=1&silent=4d (or 90m, 5h) the example with a silent PC; ?flat=1 the 2D columns; ?howto=1 opens the sheet.
 import * as C from './nqcore.js?v=d4';   // d1 (polish2 2026-11-19): the CME trading day
 import * as T from '../olympus/truth.js';
-import * as D from './nqdesk.js?v=1';     // nqdash3: the accounts strip, the bots' thinking, the quality checks
+import * as D from './nqdesk.js?v=2';
+import { unpack as unpackBars } from './nqbars.js?v=b1';     // nqdash3: the accounts strip, the bots' thinking, the quality checks
 
 const O = window.OLYMPUS || null;
 const $ = (id) => document.getElementById(id);
@@ -196,22 +197,31 @@ function closeSheet() {
 }
 
 // ------------------------------------------------------------------------------------------------ nqdash3: accounts, thinking, quality (nqdesk.js)
+// the PC's chart post (nqchart.js keeps it in window.NQCHART.S.post): its open trades with the stop as it is now and the last bar's close
+function chartOf(post) {
+  try {
+    if (!post || typeof post !== 'object') return null;
+    const b = unpackBars(post), last = b.length ? b[b.length - 1][4] : null;
+    return { opens: Array.isArray(post.open) ? post.open : [], last, t: +post.t || (b.length ? b[b.length - 1][0] + 300 : null) };
+  } catch (_) { return null; }
+}
+function deskChart() { if (S.demo) return S.fixture && S.fixture.chart ? chartOf(demoHome({ home: S.fixture.chart }, Date.now(), S.silent)) : null; const C2 = window.NQCHART; return C2 && C2.S ? chartOf(C2.S.post) : null; }
 function deskHome() { return S.demo ? demoHome(S.fixture, Date.now(), S.silent) : S.home; }
 function renderDesk() {
   const nowS = Date.now() / 1000, home = deskHome(), file = S.demo ? (S.fixture && S.fixture.trades_file) || S.tfile : S.tfile;
   try {
-    const A = D.accounts(home, S.biz, nowS), box = $('acctStrip');
+    const A = D.accounts(home, S.biz, nowS, deskChart()), box = $('acctStrip');
     if (box) { D.draw.accounts(box, A); for (const c of box.children) c.setAttribute('role', 'listitem'); }
     const nLive = A.filter((a) => a.dot === 'live').length, p = $('acctPill');
     if (p) { p.textContent = S.demo ? 'DEMO' : `${nLive} of ${A.filter((a) => a.dot !== 'plan').length} live`; p.className = 'pill ' + (S.demo ? 'warn' : nLive ? 'ok' : 'bad'); }
   } catch (_) { /* the rest of the page still draws */ }
   try {
-    const B = D.thinking(home, S.news, file, nowS), box = $('think');
+    const B = D.thinking(home, S.news, file, nowS, deskChart()), box = $('think');
     if (box) D.draw.thinking(box, B);
     const p = $('thinkPill'); if (p) { const inT = B.filter((b) => b.phase === 'in').length; p.textContent = inT ? `${inT} in a trade` : S.demo ? 'DEMO' : 'LIVE'; p.className = 'pill ' + (inT ? 'warn' : S.demo ? 'warn' : 'ok'); }
   } catch (_) { /* nothing */ }
   try {
-    const Q = D.quality(home, file, S.news, nowS), box = $('qual');
+    const Q = D.quality(home, file, S.news, nowS, S.edge, deskChart()), box = $('qual');
     if (box) D.draw.quality(box, Q);
     const p = $('qualPill'); if (p) { p.textContent = `${Q.okN} of ${Q.rows.length} OK`; p.className = 'pill ' + Q.level; }
   } catch (_) { /* nothing */ }
@@ -241,6 +251,7 @@ function tryScene() {
   try { if (M.mount($('scene3d'), S.view.columns)) { S.scene = 'webgl'; $('scene3d').hidden = false; $('fallback').style.visibility = 'hidden'; renderScene(); } } catch (_) { S.scene = '2d'; }
 }
 window.addEventListener('nq3d', tryScene);
+window.addEventListener('nq-bars', () => { if (S.ready) renderDesk(); });   // a new chart post (nqchart.js): the open trade's stop and $ now
 
 async function refresh() {
   if (S.forced || document.hidden) return;
@@ -254,9 +265,9 @@ async function boot() {
   for (const b of document.querySelectorAll('[data-howto]')) b.addEventListener('click', () => openSheet(b));
   $('sheetClose').addEventListener('click', closeSheet); $('veil').addEventListener('click', closeSheet);
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSheet(); else if (e.key === 'Tab' && S.sheet) { e.preventDefault(); try { $('sheetClose').focus(); } catch (_) { /* nothing */ } } });   // the sheet has one control: focus stays on it
-  const [fx, home, howto, news, learned, biz, tfile] = await Promise.all([getJSON('./fixture.json'), S.forced ? null : getJSON('../home.json'), getJSON('./howto.json'), getJSON('./news_week.json'), S.forced ? null : getJSON('../hub/learned.json'),
-    getJSON('../business/accounts.json'), getJSON('../trading/trades.json')]);
-  S.fixture = fx; S.howto = howto; S.news = news; S.learned = learned; S.biz = biz; S.tfile = tfile;
+  const [fx, home, howto, news, learned, biz, tfile, edge] = await Promise.all([getJSON('./fixture.json'), S.forced ? null : getJSON('../home.json'), getJSON('./howto.json'), getJSON('./news_week.json'), S.forced ? null : getJSON('../hub/learned.json'),
+    getJSON('../business/accounts.json'), getJSON('../trading/trades.json'), getJSON('../edge.json')]);
+  S.fixture = fx; S.howto = howto; S.news = news; S.learned = learned; S.biz = biz; S.tfile = tfile; S.edge = edge;
   // the PC's 15-minute status (no GitHub) first, up to 3.5 s, so the first numbers on screen are the real ones; when it is later than
   // that the cloud's copy shows (its source line says so) and the post is laid over it when it arrives, however long ntfy takes
   const post = home ? withPost(home) : Promise.resolve(home);

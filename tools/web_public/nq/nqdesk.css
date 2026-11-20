@@ -19,6 +19,7 @@
 .dk-meter { height: 6px; border-radius: 999px; background: var(--ag-line); overflow: hidden; }
 .dk-meter i { display: block; height: 100%; width: var(--w, 0); border-radius: inherit; background: var(--ag-olive-text, #8fa05a); transform-origin: left; animation: dk-grow .9s cubic-bezier(.2, .7, .2, 1) both; }
 .dk-meter i.warn { background: var(--ag-sun, #d9a441); } .dk-meter i.bad { background: var(--ag-terra-text, #c0603c); }
+.dk-open { margin: 0; font-size: 12px; color: var(--ag-soft); overflow-wrap: anywhere; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--ag-gold, #c8a24a); animation: dk-in .5s ease both; }
 .dk-age, .dk-none { margin: 0; font-size: 12px; color: var(--ag-muted); }
 .dk-legend { margin: 0; font-size: 12px; color: var(--ag-muted); display: flex; flex-wrap: wrap; gap: 4px 14px; }
 .dk-legend span { display: inline-flex; align-items: center; gap: 6px; }

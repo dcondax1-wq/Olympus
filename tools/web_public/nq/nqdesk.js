@@ -51,12 +51,28 @@ export function feedAge(home, nowS) {
 }
 function dotOf(age) { return age === null ? 'off' : age <= FRESH_S ? 'live' : 'stale'; }
 
+// ------------------------------------------------------------------------------------------------ the PC's chart post (le-bars): the open trades
+// chart = { opens: post.open (rows {k, s, q, t, e, sl, tp, be}), last: the last bar's close, t: the post's data time } (the page decodes the bars
+// with nqbars.js and hands this in). The freshest word on an open trade: its stop as it is NOW (a moved stop), and the $ at the last bar.
+const CHART_ACCT = { z50k: 'zlarior', z25k2: 'fresh25', atlas25f: 'atlas', rapid25: 'rapid1', rapid: 'rapid1' };
+export function chartOpen(chart, pick, nowS) {
+  if (!isObj(chart)) return null;
+  const r = arr(chart.opens).find((x) => isObj(x) && pick(String(x.k || '')) && num(x.e) !== null && num(x.t) !== null);
+  if (!r) return null;
+  const dir = num(r.s) < 0 ? -1 : 1, q = num(r.q) || 1, e = num(r.e), sl = num(r.sl), tp = num(r.tp), last = num(chart.last);
+  const moved = !!r.be || (sl !== null && (dir > 0 ? sl >= e : sl <= e));
+  return { k: r.k, side: dir > 0 ? 'LONG' : 'SHORT', qty: q, entry: e, stop: sl, target: tp, stopMoved: moved,
+    locked: moved && sl !== null ? (sl - e) * dir * q * 2 : null, target_usd: tp !== null ? Math.abs(tp - e) * q * 2 : null,
+    now: last !== null ? (last - e) * dir * q * 2 : null, last, lastAge: num(chart.t) ? Math.max(0, nowS - chart.t) : null,
+    since: Math.max(0, nowS - r.t) };
+}
+
 // ------------------------------------------------------------------------------------------------ 1. the accounts strip
 const PLAN = { zlarior: ['mffu50k_eval', 'lit'], fresh25: ['b25k_2'], atlas: ['atlas', 'acct_b'], rapid1: ['rapid'] };
 const SHORT = { zlarior: 'Zlarior 50K', fresh25: 'Zlarior 25K #2', atlas: 'ATLAS 25K', rapid1: 'Rapid EOD 25K' };
 const BOARD_OF = { zlarior: 'lit', atlas: 'atlas' };
 
-export function accounts(home, biz, nowS) {
+export function accounts(home, biz, nowS, chart) {
   const h = isObj(home) ? home : {}, board = isObj(h.board) ? h.board : {}, list = arr(h.accounts).filter(isObj);
   const plan = arr(isObj(biz) ? biz.accounts : null).filter((a) => isObj(a) && !/blitz/i.test(String(a.key) + a.name));
   const order = plan.length ? plan : Object.keys(PLAN).map((key) => ({ key, name: SHORT[key], pc: PLAN[key] }));
@@ -81,6 +97,7 @@ export function accounts(home, biz, nowS) {
       goalLabel: funded ? 'To payout' : 'To pass', goal, goalText: goal === null ? (funded && card && card.payout_text ? 'see payout line' : '-') : goal <= 0 ? (funded ? 'Payout ready' : 'Target reached') : money(goal),
       payoutText: funded && card && card.payout_text ? String(card.payout_text) : '',
       dot: has ? dotOf(age) : planned ? 'plan' : 'off', ageText: has ? ageText(age) : planned ? 'plan only: no PC numbers yet' : 'no PC numbers',
+      open: chartOpen(chart, (k) => CHART_ACCT[k] === p.key, nowS),
     });
   }
   out.sort((a, b) => (a.dot === 'plan') - (b.dot === 'plan'));
@@ -128,7 +145,7 @@ function reelOf(file, bot, entryT) {
   return r && r.odeon ? '../odeon/#reel=' + encodeURIComponent(r.odeon) : '';
 }
 
-export function thinking(home, news, file, nowS) {
+export function thinking(home, news, file, nowS, chart) {
   const h = isObj(home) ? home : {}, live = isObj(h.live) ? h.live : {}, board = isObj(h.board) ? h.board : {};
   const glance = isObj(live.pc) && isObj(live.pc.glance) ? live.pc.glance : null, fa = feedAge(h, nowS);
   const day = etParts(nowS).day, tn = todayNews(news, nowS), nx = nextNews(news, nowS);
@@ -139,6 +156,7 @@ export function thinking(home, news, file, nowS) {
     const tr = tradesOf(h, bot), open = tr.find((t) => t.open), closed = tr.filter((t) => !t.open && num(t.exit_t)).sort((a, b) => b.exit_t - a.exit_t);
     const last = closed.find((t) => etParts(t.exit_t).day === day) || null;
     const pos = g && isObj(g.pos) ? g.pos : null;
+    const co = chartOpen(chart, (k) => (bot.id === 'atlas' ? /^atlas/.test(k) : /^z/.test(k)), nowS);
     const L = lean(g, card);
     const before = {
       lean: L, news: tn, next: nx ? `${nd(nx.date)} ${nx.time} ET, ${nx.title}` : '',
@@ -149,12 +167,17 @@ export function thinking(home, news, file, nowS) {
       log: arr(g && g.log).slice(0, 3).filter(Array.isArray).map((x) => `${x[0] ? x[0] + ' ' : ''}${x[1] || ''}`),
     };
     let inTrade = null;
-    if (pos || open) {
+    if (co) {                                  // the chart post: the stop as it is now and the $ at the last bar
+      const risk = num(pos && pos.risk_usd);
+      inTrade = { ...co, risk, r: risk && co.now !== null ? co.now / risk : null, src: 'chart' };
+      if (inTrade.since === null && open) inTrade.since = Math.max(0, nowS - (+open.entry_t || nowS));
+    } else if (pos || open) {
       const p = pos || {}, side = String(p.side || (open && open.side) || '').toUpperCase();
       const risk = num(p.risk_usd), now = num(p.now_usd) ?? num(open && open.usd), et = num(open && open.entry_t);
       inTrade = { side, qty: num(p.qty), entry: num(p.entry), stop: num(p.stop), target: num(p.target), risk, target_usd: num(p.tgt_usd), now,
-        r: risk && now !== null ? now / risk : num(open && open.r), since: et ? Math.max(0, nowS - et) : null };
+        r: risk && now !== null ? now / risk : num(open && open.r), since: et ? Math.max(0, nowS - et) : null, stopMoved: false, locked: null, lastAge: null };
     }
+    if (inTrade && inTrade.side) before.lean = { side: inTrade.side, why: 'in this trade now.', trig: '' };
     const after = last ? { usd: num(last.usd), r: num(last.r), exit: String(last.exit || ''), side: String(last.side || '').toUpperCase(), at: hmET(last.exit_t),
       reel: reelOf(file, bot, +last.entry_t || 0) } : null;
     const phase = inTrade ? 'in' : after ? 'after' : 'before';
@@ -175,7 +198,7 @@ export function twinCheck(file) {
   }
   return { n: live.length, match, miss, none, bad };
 }
-export function quality(home, file, news, nowS) {
+export function quality(home, file, news, nowS, edge, chart) {
   const h = isObj(home) ? home : {}, fa = feedAge(h, nowS), live = isObj(h.live) ? h.live : {}, rep = isObj(live.reporter) ? live.reporter : {};
   const rows = [];
   rows.push({ k: 'report', label: 'PC report', value: fa.report === null ? 'not received on this page' : ageText(fa.report),
@@ -199,6 +222,21 @@ export function quality(home, file, news, nowS) {
     level: tw.miss ? 'bad' : tw.n && tw.match ? 'ok' : 'warn', note: tw.bad[0] || 'same side and same exit as the replay = the bot does what the backtest does', bad: tw.bad });
   const news0 = isObj(news) && news.to ? news.to : null;
   rows.push({ k: 'news', label: 'News calendar', value: news0 ? `covers to ${news0}` : 'missing', level: news0 && news0 >= etParts(nowS).day ? 'ok' : 'warn', note: "the bot's high-impact US list" });
+  // the chart candles (the PC's le-bars post): about hourly while the bots trade (01:50-16:10 ET weekdays), at once on an entry / exit / stop move
+  if (isObj(chart) && num(chart.t)) {
+    const ca = Math.max(0, nowS - chart.t), p = etParts(nowS), inHours = !/Sat|Sun/.test(p.wd) && p.hm >= '01:50' && p.hm <= '16:10';
+    rows.push({ k: 'bars', label: 'Chart candles', value: `last bar ${ageText(ca)} (${hmET(chart.t)})`, level: !inHours || ca <= 80 * 60 ? 'ok' : ca <= 3 * 3600 ? 'warn' : 'bad',
+      note: inHours ? 'the PC sends candles about hourly while the bots trade, and at once on each entry, exit or stop move' : 'outside the bots\' hours the candles rest' });
+  }
+  // the edge check's inputs (../edge.json, tools/edge_health.py): LIT re-runs on the newest bars; ATLAS reads a stored backtest run that stops when it
+  // was made (2026-11-20: Oct 16, LEAD_WIRES nqdash3 F), so its "last 40 sessions" are not the latest 40
+  const eh = isObj(edge) && isObj(edge.eh) ? edge.eh : null;
+  if (eh) {
+    const today = etParts(nowS).day, old = (d) => (d ? Math.round((Date.parse(today) - Date.parse(d)) / 86400000) : null);
+    const ad = Array.isArray(eh.a) ? eh.a[3] : null, lo = old(eh.d), ao = old(ad), worstD = Math.max(lo ?? 99, ao ?? 99);
+    rows.push({ k: 'edge', label: 'Edge check data', value: `LIT to ${eh.d || '?'}${ad ? ` · ATLAS to ${ad}` : ''}`, level: worstD <= 4 ? 'ok' : worstD <= 10 ? 'warn' : 'bad',
+      note: ao !== null && ao > 4 ? `ATLAS's edge light uses a backtest that stops ${ao} days ago: read its PF as old` : 'the ZEUS edge chip on Trading reads this' });
+  }
   const worst = rows.some((r) => r.level === 'bad') ? 'bad' : rows.some((r) => r.level === 'warn') ? 'warn' : 'ok';
   return { rows, level: worst, okN: rows.filter((r) => r.level === 'ok').length };
 }
@@ -226,6 +264,12 @@ function drawAccounts(box, list) {
     if (a.roomFrac !== null) {
       const m = el('div', 'dk-meter'); m.setAttribute('role', 'img'); m.setAttribute('aria-label', `${Math.round(a.roomFrac * 100)} percent of the max loss left`);
       const i = el('i', a.roomFrac < 0.3 ? 'bad' : a.roomFrac < 0.55 ? 'warn' : 'ok'); i.style.setProperty('--w', `${Math.round(a.roomFrac * 100)}%`); m.appendChild(i); c.appendChild(m);
+    }
+    if (a.open) {
+      const o = a.open, t = el('p', 'dk-open');
+      t.appendChild(el('b', 'dk-side ' + o.side.toLowerCase(), `${o.side} ${o.qty}`));
+      t.appendChild(document.createTextNode(` @ ${px(o.entry)}${o.now !== null ? ` · ${money(o.now, true)}` : ''}${o.stopMoved ? ' · stop at break-even' : ''}`));
+      c.appendChild(t);
     }
     c.appendChild(el('p', 'dk-age', a.ageText));
     box.appendChild(c);
@@ -263,8 +307,13 @@ function drawThinking(box, bots, opts) {
       const x = b.inTrade, s = el('section', 'dk-sec live'); s.appendChild(el('p', 'dk-eye', PH.in));
       const big = el('p', 'dk-big ag-num ' + (x.now > 0 ? 'pos' : x.now < 0 ? 'neg' : '')); big.textContent = `${x.side} ${x.now !== null ? money(x.now, true) : ''} ${x.r !== null ? rText(x.r) : ''}`.replace(/\s+/g, ' ').trim(); s.appendChild(big);
       const kv = el('dl', 'dk-kv');
-      for (const [k, v] of [['Entry', px(x.entry)], ['Stop', `${px(x.stop)}${x.risk !== null ? ` (-${money(x.risk)})` : ''}`], ['Target', `${px(x.target)}${x.target_usd !== null ? ` (+${money(x.target_usd)})` : ''}`], ['In trade', x.since !== null ? mins(x.since) : '-']]) { kv.appendChild(el('dt', '', k)); kv.appendChild(el('dd', 'ag-num', v)); }
-      s.appendChild(kv); c.appendChild(s);
+      const stopTxt = x.stopMoved ? `${px(x.stop)} · moved to break-even${x.locked !== null && Math.abs(x.locked) >= 1 ? ` (${money(x.locked, true)} locked)` : ''}`
+        : `${px(x.stop)}${x.risk !== null ? ` (-${money(x.risk)})` : ''}`;
+      for (const [k, v] of [['Size', x.qty ? `${x.qty} MNQ` : '-'], ['Entry', px(x.entry)], ['Stop', stopTxt], ['Target', `${px(x.target)}${x.target_usd !== null ? ` (+${money(x.target_usd)})` : ''}`],
+        ['Open $', x.now !== null ? `${money(x.now, true)}${x.last !== undefined && x.last !== null ? ` at ${px(x.last)}` : ''}` : '-'], ['In trade', x.since !== null ? mins(x.since) : '-']]) { kv.appendChild(el('dt', '', k)); kv.appendChild(el('dd', 'ag-num' + (k === 'Stop' && x.stopMoved ? ' pos' : ''), v)); }
+      s.appendChild(kv);
+      if (x.lastAge !== null) s.appendChild(el('p', 'dk-note', `Open $ is at the last chart bar from the PC (${ageText(x.lastAge)}); the close alert brings the final $ and R.`));
+      c.appendChild(s);
     }
     if (b.after) {
       const x = b.after, s = el('section', 'dk-sec'); s.appendChild(el('p', 'dk-eye', PH.after));

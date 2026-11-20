@@ -20,7 +20,7 @@ from tests import test_trade_alerts as T
 from engine import push as P
 
 RES = []
-ROUTES = {"part_a": ["Zlarior 50K"], "part_b": ["Zlarior 25K #2"], "part_c": ["ATLAS 25K funded"], "part_c_time": ["ATLAS 25K funded"],
+ROUTES = {"part_real": ["ATLAS 25K funded"], "part_a": ["Zlarior 50K"], "part_b": ["Zlarior 25K #2"], "part_c": ["ATLAS 25K funded"], "part_c_time": ["ATLAS 25K funded"],
           "part_d": ["Rapid EOD 25K"], "part_e": ["ATLAS on Zlarior 50K"]}
 SIDE = re.compile(r"\b(LONG|SHORT)\b")
 USD = re.compile(r"[+-]\$[\d,]+")
@@ -61,6 +61,20 @@ def patched(mod, cls, meth, reps):
     ns = {}
     exec("class _X:\n" + src, vars(M), ns)   # noqa: S102 - our own repo's source + the patch above
     return ns["_X"].__dict__[meth]
+
+
+def part_real(b):
+    """the lead's live case (2026-11-20): ATLAS short 1 MNQ @ 26,380.75 at 03:45 ET, stop moved to 26,379.50 (break-even), target 26,122.75.
+    Its close comes from NinjaTrader's bracket: here the target fills (+$516). stop0 = the stop it was routed with (a 40-point stop, as an example:
+    the chart feed only carries the moved one), so R = 258 / 40 = +6.45R."""
+    b.live(T.T0 - 600, [], atlas={"balance": 24887.0, "profit": -113.0, "today_pnl": 0.0, "status": "funded", "broker": "MFFUSFBLDR000006018",
+                                  "funded": {"max_request": 0}})
+    a = T.atlas()
+    t = T.T0 + 60
+    lg = T.leg(t=t, d=-1, q=1, fill=26380.75, stop=26420.75, target=26122.75)
+    lg["stop"] = 26379.5                                   # moved to break-even since
+    a.adapter._push_fill(dict(lg, stop=26420.75))
+    a.adapter._push_exit(lg, "TARGET", {"avg": 26122.75, "filled": 1})
 
 
 def part_c_time(b):
@@ -171,6 +185,9 @@ def _main(table, today) -> int:
         print("today, without the patch, these closes have no R:", today or "none")
     if "--json" in sys.argv:
         print(json.dumps(table, indent=1))
+    real = next((r for r in table if r["route"] == "ATLAS 25K funded" and r["via"] == "web push" and "26,380.75" in r["entry"]), None)
+    check("the real case: entry 'ATLAS 25K funded: SHORT 1 MNQ @ 26,380.75'; close 'closed SHORT +$516 (target)' with +6.5R",
+          bool(real) and real["close"] == "ATLAS 25K funded: closed SHORT +$516 (target)" and "+6.5R" in real["close_body"], real)
     n, k = len(RES), sum(RES)
     print(f"\nalert audit: {k}/{n} " + ("ALL PASS" if k == n else "FAILED"))
     return 0 if k == n else 1

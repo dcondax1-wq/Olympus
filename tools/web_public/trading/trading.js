@@ -5,7 +5,8 @@
 // (../pc_feed.js: board_trades + "at", read here once per refresh, used for trades only while it is fresh: C.feedRows).
 import * as C from './tradingcore.js';
 import * as T from '../olympus/truth.js';
-import * as DK from '../nq/nqdesk.js?v=1';   // nqdash3: the accounts strip (the same cards as the NQ page)
+import * as DK from '../nq/nqdesk.js?v=2';
+import * as NB from '../nq/nqbars.js?v=b1';   // the PC's chart post (le-bars): an open trade's stop as it is now and the last price   // nqdash3: the accounts strip (the same cards as the NQ page)
 
 const O = window.OLYMPUS || null;
 const $ = (id) => document.getElementById(id);
@@ -344,11 +345,27 @@ function renderAccts() {
     const now = nowS(), F = window.PC_FEED;
     let home = S.demo ? agesToTimes(S.nqfx && S.nqfx.home, now) : S.home0;
     if (!S.demo && S.lite && F && F.homeOver) home = F.homeOver(S.home0, S.lite, now, window.PAYOUT_COACH || null);
-    const A = DK.accounts(home, S.biz, now);
+    let chart = S.chart;
+    if (S.demo && S.nqfx && S.nqfx.chart) { const cp = agesToTimes(S.nqfx.chart, now), b = NB.unpack(cp); chart = { opens: cp.open || [], last: b.length ? b[b.length - 1][4] : null, t: +cp.t || null }; }
+    const A = DK.accounts(home, S.biz, now, chart);
     DK.draw.accounts(box, A); for (const c of box.children) c.setAttribute('role', 'listitem');
     const n = A.filter((a) => a.dot === 'live').length, p = $('acctPill');
     if (p) { p.textContent = S.demo ? 'DEMO' : `${n} of ${A.filter((a) => a.dot !== 'plan').length} live`; p.className = 'pill ' + (S.demo ? 'warn' : n ? 'ok' : 'bad'); }
   } catch (_) { /* the rest of the page still draws */ }
+}
+// the chart post, read like the NQ page's live chart does (../status_feed.json -> ntfy "<topic>-bars"): only its open trades and last close are used here
+async function fetchChart() {
+  try {
+    const feed = await getJSON('../status_feed.json');
+    for (const u of NB.feedUrls(feed)) {
+      const ac = typeof AbortController === 'function' ? new AbortController() : null, tm = ac ? setTimeout(() => ac.abort(), 8000) : 0;
+      let txt = null;
+      try { const r = await fetch(u, { cache: 'no-store', ...(ac ? { signal: ac.signal } : {}) }); txt = r.ok ? await r.text() : null; } catch (_) { txt = null; } finally { clearTimeout(tm); }
+      const p = txt ? NB.parse(txt) : null;
+      if (p) { const b = NB.unpack(p); return { opens: Array.isArray(p.open) ? p.open : [], last: b.length ? b[b.length - 1][4] : null, t: +p.t || null }; }
+    }
+  } catch (_) { /* no chart post: the strip shows the report's numbers alone */ }
+  return null;
 }
 function renderFiltered() { renderCal(); renderTrades(); renderEdge(); renderEquity(); renderDeep(); }
 function render() {
@@ -380,6 +397,7 @@ async function refresh() {
   const raw = await getJSON('../home.json'), home = await withFeed(raw);
   if (home) S.home = home;
   if (raw) S.home0 = raw;
+  { const c = await fetchChart(); if (c) S.chart = c; }
   render();
 }
 async function boot() {
@@ -398,6 +416,7 @@ async function boot() {
   S.fixture = fx; S.file = file; S.home = home; S.home0 = home; S.rules = rules; S.biz = biz;
   S.nqfx = (!file || S.forced) ? await getJSON('../nq/fixture.json') : null;
   render();
+  if (!S.forced) fetchChart().then((c) => { if (c) { S.chart = c; renderAccts(); } });
   if (!S.forced) withFeed(home).then((hm) => { if ((hm !== home || S.lite) && !S.forced) { S.home = hm || S.home; render(); } });
   setInterval(() => { if (!document.hidden) { renderBanner(); renderToday(); } }, 60000);
   setInterval(refresh, 5 * 60000);

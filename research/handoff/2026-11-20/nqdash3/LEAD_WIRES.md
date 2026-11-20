@@ -74,3 +74,35 @@ Version tags I bumped in my own pages: `nq/index.html` nq.js `?v=r13` (was r12),
 Committed the lead's fresh export (with the PC data branch: 303 trades, z50k + atlas25f LIVE). This container cannot fetch the `data` branch, so
 `tools/trading_export.py --check` here says STALE; the trading test now accepts that case (built with the data branch, everything else equal to a
 local build). Re-run `python tools/trading_export.py --fetch` on a machine with the branch whenever you like: the test no longer pins its content.
+
+## F. ATLAS edge chip "data to Oct 16 (old)": root cause + refresh plan (not done here: it moves pinned research numbers)
+- `tools/edge_health.py` re-runs LIT on the newest bars, but ATLAS is the **stored run** `atlas_deep_zombie` (`atlas_trades()` -> `runlib.load`),
+  built 2026-11-15 on data that ends **2026-10-16**. A fresh re-score does not help: its inputs end there too.
+  - the ATLAS member trades are stored files `research/second/{ema,md,sr}_best.json` (`second_mix.second_units`)
+  - the session list is the stored run `research/runs/baseline.json` (`lit_final.SESS`)
+  - re-scoring the zombie variant takes 6 s, rebuilding the units 4 s (both measured here), and both still end Oct 16.
+- To refresh (cloud, research files only, no bot file):
+  1. re-run each ATLAS member's research backtest on `data/NQ_5m.csv` (now to 2026-11-19) -> `research/second/*_best.json`
+  2. `python tools/runlib.py baseline` (the session list to Nov 19)
+  3. delete `research/runs/_cache/second_mix_units.pkl`, then `python -X utf8 tools/atlas_deep.py save`
+  4. `python tools/edge_health.py` -> `tools/web_public/edge.json` (ATLAS "data to" = Nov 19).
+  Steps 1-2 change the H1 / H2 numbers that several suites pin (trading_page b, atlas_deep, second...): run the money, trading and nq areas after.
+- Meanwhile the NQ page's Quality card shows it as a red row ("Edge check data: LIT to Nov 19 · ATLAS to Oct 16: read its PF as old").
+
+## G. Chart candles stopped while a trade was open (04:15 -> nothing at 05:15 / 05:30 / 05:45): FIXED in `tools/pc_report.py` (tools/, not engine/)
+- Cause: candles never go on a run that also sent the "ext" post (`busy_run`). An open trade changes the ext's news every run (its live $ in
+  the `at` block feeds `ext_hash`), so the ext went on every run, every run was busy, and the candles starved for as long as the trade was open.
+- Fix (commit on day-nqdash3): new `BARS_BUSY_GRACE_S = 900`. Once the candles are 74 min old they go on a busy run too: one extra post that run.
+  The daily caps (24 chart posts, 18 candle posts, 226 all posts) are unchanged.
+  `tests.test_pc_bars` 75/75, with a new "trade open all day" day: the old code sent **0** candle posts that day, the new code one about every 75 min.
+- It reaches the PC with the normal auto-update (branch pc). The bot process does not use this file; it is the 15-minute reporter.
+- Worth a later look: with the ext on every run, the simulation spends ntfy's daily share by ~12:20 ET (3 posts a run). The status post is
+  protected, so the PC never looks silent, but the chart stops for the rest of the day. A better root fix is to leave the open trade's live $
+  out of `ext_hash` (the core post already carries it). I did not make that change; it is your call.
+- The page now says the candle age plainly: the Quality card's "Chart candles: last bar 1 h 35 min ago (8:55 AM ET)" (amber after 80 min
+  in the bots' hours), on top of the chart's own "These are the PC's last bars (..., ... ago)".
+
+## H. Small wording nit (bot side, optional)
+A stop moved to break-even that fills more than 1 point past the entry is called "(stop)" in the close push. Example: the live ATLAS short,
+stop 26,379.50 vs entry 26,380.75, gives "closed SHORT +$2 (stop)". `_push_exit` decides "BE" only within 1.0 pt. To say "(break-even)",
+use `abs(ex - fill) <= 1.0 or float(lg.get("stop") or 0) != float(lg.get("stop0") or 0)` for the BE test. That is a judgement call, so there is no proof suite for it.

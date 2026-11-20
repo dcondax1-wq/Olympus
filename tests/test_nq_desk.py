@@ -94,11 +94,19 @@ import(process.argv[2]).then((D) => {
   o.lit = B[0]; o.atlas = B[1];
   const Q = D.quality(home, file, news, now);
   o.q = Q.rows.map((r) => [r.k, r.level, r.value]); o.qlevel = Q.level;
+  o.qb = D.quality(home, file, news, now, null, { opens: [], last: 1, t: now - 95 * 60 }).rows.find((r) => r.k === 'bars');
+  o.qb2 = D.quality(home, file, news, now, null, { opens: [], last: 1, t: now - 30 * 60 }).rows.find((r) => r.k === 'bars');
+  const Qe = D.quality(home, file, news, now, { eh: { d: '2026-11-19', a: ['A', 1.9, 2.8, '2026-10-16'] } }); o.qe = Qe.rows.find((r) => r.k === 'edge');
   const h2 = JSON.parse(JSON.stringify(home)); delete h2.live.reporter.na; h2.pc_feed.report_t = now - 7200; h2.live.pc.t = now - 7200;
   const Q2 = D.quality(h2, { trades: [] }, null, now); o.q2 = Q2.rows.map((r) => [r.k, r.level, r.value]); o.q2level = Q2.level;
   o.stale = D.accounts(h2, biz, now).map((a) => a.dot);
+  // the lead's real case (2026-11-20 03:45 ET): ATLAS short 1 MNQ @ 26,380.75, stop moved to 26,379.50, target 26,122.75, last bar 26,283.75
+  const chart = { opens: [{ k: 'atlas25f', s: -1, q: 1, t: now - 85 * 60, e: 26380.75, sl: 26379.5, tp: 26122.75, be: 1 }, { k: 'blitz', s: 1, q: 1, t: now, e: 1 }], last: 26283.75, t: now - 180 };
+  const B2 = D.thinking(home, news, file, now, chart), A2 = D.accounts(home, biz, now, chart);
+  o.real = B2[1].inTrade; o.realLean = B2[1].before.lean; o.realAcct = A2.map((a) => [a.key, a.open ? [a.open.side, a.open.qty, a.open.entry, Math.round(a.open.now), a.open.stopMoved] : null]);
+  o.realLit = B2[0].phase;
   const junk = [null, undefined, 7, 'x', [], {}, { board: 5, live: [], accounts: 'no' }, { accounts: [null, 4, { id: 'mffu50k_eval' }], live: { pc: { glance: { bots: [null, { id: 'lit', arm: 'x', lv: [null, [1]] }] } } } }];
-  o.junk = junk.map((j) => { try { return [D.accounts(j, j, now).length, D.thinking(j, j, j, now).length, D.quality(j, j, j, now).rows.length]; } catch (e) { return 'THROW ' + e.message; } });
+  o.junk = junk.map((j) => { try { return [D.accounts(j, j, now, j).length, D.thinking(j, j, j, now, j).length, D.quality(j, j, j, now).rows.length]; } catch (e) { return 'THROW ' + e.message; } });
   o.words = [D.money(-0.2), D.money(1234.5, true), D.rText(0.5), D.rText(-1.03), D.ageText(30), D.ageText(4 * 60), D.ageText(2 * 3600 + 600), D.mins(1500)];
   console.log(JSON.stringify(o));
 }).catch((e) => { console.error(e); process.exit(1); });
@@ -153,11 +161,24 @@ def test_core():
           q["report"][1] == "ok" and q["report"][2] == "4 min ago" and q["beat"][1] == "ok" and q["alert"][1] == "ok" and q["alert"][2].startswith("30 min ago"), o["q"])
     check("d. twins: 1 match, 1 differ (live STOP vs twin TARGET), 1 no twin -> red; the worst level wins",
           q["twin"][2] == "1 match · 1 differ · 1 no twin yet" and q["twin"][1] == "bad" and o["qlevel"] == "bad", (q["twin"], o["qlevel"]))
+    check("d. the edge check's data: LIT to Nov 19, ATLAS to Oct 16 (35 days) -> red, and it says ATLAS's PF is old; no edge.json -> no row",
+          o["qe"]["value"] == "LIT to 2026-11-19 · ATLAS to 2026-10-16" and o["qe"]["level"] == "bad" and "35 days ago" in o["qe"]["note"]
+          and "edge" not in q, o["qe"])
+    check("d. chart candles in the bots' hours (Fri 10:30 ET): 95 min old -> amber with the age and the time; 30 min -> ok",
+          o["qb"]["level"] == "warn" and o["qb"]["value"].startswith("last bar 1 h 35 min ago (8:55 AM ET)") and o["qb2"]["level"] == "ok", (o["qb"], o["qb2"]))
     q2 = {r[0]: r for r in o["q2"]}
     check("d. a 2-hour-old report: report amber, a 2-hour-old heartbeat red (the bot beats every 5 min); without reporter.na the last alert is the "
           "newest trade event (ATLAS's entry 25 min ago); no news file -> amber",
           q2["report"][1] == "warn" and q2["beat"][1] == "bad" and q2["alert"][1] == "ok" and q2["alert"][2].startswith("25 min ago") and q2["news"][1] == "warn"
           and q2["twin"][2] == "no LIVE trade in trades.json", o["q2"])
+    R = o["real"]
+    check("c. the real open trade (ATLAS short 1 MNQ @ 26,380.75, 03:45 ET): from the chart post the stop as it is NOW (26,379.50) says 'moved to break-even' "
+          "(+$2.50 locked), target 26,122.75 (+$516), open $ at the last bar 26,283.75 = +$194, 85 min in trade; the lean card says it is in this SHORT",
+          R["side"] == "SHORT" and R["qty"] == 1 and R["entry"] == 26380.75 and R["stop"] == 26379.5 and R["stopMoved"] is True and R["locked"] == 2.5
+          and R["target"] == 26122.75 and R["target_usd"] == 516 and R["now"] == 194 and R["since"] == 85 * 60 and R["lastAge"] == 180
+          and o["realLean"]["side"] == "SHORT", (R, o["realLean"]))
+    check("c. ... the accounts strip puts it on the ATLAS tile only (BLITZ's chart row never shows)",
+          [a for a in o["realAcct"] if a[1]] == [["atlas", ["SHORT", 1, 26380.75, 194, True]]] and o["realLit"] == "after", o["realAcct"])
     check("e. junk input never throws", all(isinstance(j, list) for j in o["junk"]), o["junk"])
     check("words: $ and R and ages", o["words"] == ["$0", "+$1,235", "+0.5R", "-1.0R", "just now", "4 min ago", "2 h 10 min ago", "25 min"], o["words"])
 
