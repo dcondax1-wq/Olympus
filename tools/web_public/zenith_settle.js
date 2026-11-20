@@ -20,7 +20,7 @@
   if (framed) { window.ZENITH_SETTLE = { holds: 0, released: 0, done: true, longest: 0, log: [], framed: true }; return; }
   var QUIET = 300, MAX_HOLD = 3000, STARTUP = 25000, t0 = performance.now();
   var S = window.ZENITH_SETTLE = { holds: 0, released: 0, done: false, longest: 0, log: [] };
-  var snap = null, ghost = null, quietT = 0, heldAt = 0, drawn = false, settledFull = false, snapQ = 0;
+  var capT = 0, snap = null, ghost = null, quietT = 0, heldAt = 0, drawn = false, settledFull = false, snapQ = 0;
   var css = document.createElement('style');
   css.textContent = '#page.zs-hold { visibility: hidden; }' +
     '.zs-ghost { position: absolute !important; margin: 0 !important; z-index: 2; pointer-events: auto; contain: layout paint; }' +
@@ -36,6 +36,8 @@
     if (S.done || ghost || !home() || !hasHome()) return;
     var c = pg.cloneNode(true);
     c.classList.add('zs-ghost'); c.classList.remove('zs-hold');     // readable by a screen reader while it stands in (the real page is hidden)
+    var fx = c.querySelectorAll('[data-dfx]');                // dashfx: the copy keeps the glass look but nothing in it rolls, rises or tilts
+    for (var f = 0; f < fx.length; f++) { if (/(^|\s)glass(\s|$)/.test(fx[f].getAttribute('data-dfx'))) fx[f].setAttribute('data-dfx', 'glass'); else fx[f].removeAttribute('data-dfx'); }
     var a = pg.querySelectorAll('canvas'), b = c.querySelectorAll('canvas');
     for (var i = 0; i < a.length && i < b.length; i++) {
       try { if (a[i].width && a[i].height) { b[i].width = a[i].width; b[i].height = a[i].height; b[i].getContext('2d').drawImage(a[i], 0, 0); } } catch (e) { /* a WebGL or tainted canvas: left blank */ }
@@ -55,11 +57,12 @@
     ghost = snap; snap = null; heldAt = performance.now(); S.holds++;
     place(ghost);
     pg.classList.add('zs-hold');
+    capT = setTimeout(release, MAX_HOLD);                       // the hard cap, even when no further change comes
     ghost.addEventListener('pointerdown', release, { once: true }); ghost.addEventListener('focusin', release, { once: true });   // a tap or a focus: the real page at once
     return true;
   }
   function release() {
-    clearTimeout(quietT); quietT = 0;
+    clearTimeout(quietT); quietT = 0; clearTimeout(capT); capT = 0;
     if (!ghost) return;
     S.longest = Math.max(S.longest, Math.round(performance.now() - heldAt)); if (S.log.length < 40) S.log.push([Math.round(heldAt), Math.round(performance.now())]);
     pg.classList.remove('zs-hold');
@@ -70,11 +73,23 @@
     if (S.done) stop();
   }
   function stop() { S.done = true; mo.disconnect(); release(); snap = null; }
+  // the dashboard FX layer (olympus/dashfx.js) only adds its own classes (dfx-*) and custom properties (--dfx-*): transform / opacity, never layout
+  function fxOnly(m) {
+    var o = m.oldValue || '', n = m.target.getAttribute(m.attributeName) || '';
+    if (m.attributeName === 'class') {
+      var a = o.split(/\s+/).filter(Boolean), b = n.split(/\s+/).filter(Boolean), i;
+      for (i = 0; i < a.length; i++) if (b.indexOf(a[i]) < 0 && a[i].indexOf('dfx-') !== 0) return false;
+      for (i = 0; i < b.length; i++) if (a.indexOf(b[i]) < 0 && b[i].indexOf('dfx-') !== 0) return false;
+      return true;
+    }
+    if (m.attributeName === 'style') { var strip = function (x) { return x.replace(/--dfx-[\w-]+\s*:[^;]*;?/g, '').replace(/\s+/g, ''); }; return strip(o) === strip(n); }
+    return false;
+  }
   // a change that can move something: an element added / removed, or a class / style / hidden change (not text, not the copy itself)
   function moves(list) {
     for (var i = 0; i < list.length; i++) {
       var m = list[i];
-      if (m.type === 'attributes') { if (m.target !== pg) return true; continue; }
+      if (m.type === 'attributes') { if (m.target !== pg && !fxOnly(m)) return true; continue; }
       var n, j;
       for (j = 0; j < m.addedNodes.length; j++) { n = m.addedNodes[j]; if (n.nodeType === 1) return true; }
       for (j = 0; j < m.removedNodes.length; j++) { n = m.removedNodes[j]; if (n.nodeType === 1) return true; }
@@ -92,7 +107,7 @@
     clearTimeout(quietT);
     quietT = setTimeout(release, now - heldAt > MAX_HOLD ? 0 : QUIET);
   });
-  mo.observe(pg, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style', 'hidden'] });
+  mo.observe(pg, { childList: true, subtree: true, attributes: true, attributeOldValue: true, attributeFilter: ['class', 'style', 'hidden'] });
   window.addEventListener('hashchange', function () { release(); snap = null; });
   setTimeout(function () { if (!S.done) stop(); }, STARTUP + 1000);
 })();

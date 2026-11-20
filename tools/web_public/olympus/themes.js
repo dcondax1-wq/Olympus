@@ -132,8 +132,7 @@
     return t;
   }
 
-  /** OLYMPUS NIGHT: the gold family keeps its bright accent (accent / hi / pale) but its dark steps become violet (outlines, glows), so a
-   *  sheet that used AGORA's bronze or a dark gold for a background or a border gets deep violet, never brown */
+  /** OLYMPUS NIGHT: the gold family's dark steps become violet (never a brown card) */
   function nightLook(t) {
     var V = { deep: '#1a1029', bronze: '#4d2e76' };
     t.ramp.a.deep = V.deep; t.ramp.a.bronze = V.bronze;
@@ -207,12 +206,10 @@
         neb1: '40,60,120', neb2: '156,122,38', neb3: '60,90,160', grid: '.04', scan: '0' } }),
     /* the twelve style looks (2026-11-14, the lead's specs; contrast fixed where it failed AA: Amber's muted, Stocks Light's blue / green,
        Neo Brutal's pink text on yellow (pink stays the button), Carbon Red's red text, Sunset's lower sky darkened) */
-    /* OLYMPUS NIGHT (owner 2026-11-20, from his Jarvis app-switcher screenshot: "whatever these colors are I like"): the kit's default look.
-       Pure black, near-black violet cards, deep violet outlines and glows, small BRIGHT gold accents (chip borders, CTA text, the selected
-       dock item), mint for profit, red for loss. Gold is never a card colour: the gold family's dark steps (AGORA's bronze / deep) are violet. */
+    /* OLYMPUS NIGHT (owner 2026-11-20): the default look; gold only as a bright accent, its dark steps violet (nightLook) */
     nightLook(look({ id: 'night', group: 'dark', name: 'Olympus Night', tag: 'Black · violet glow · bright gold accents · default', scheme: 'dark',
-      c: { bg: '#000000', card: '#0d0b13', line: '#3e255e', text: '#ebe9f1', soft: '#c8c3d4', muted: '#898497', accent: '#f1c14b', up: '#77db89', down: '#ef4444', warn: '#b98af5' },
-      s: { page: 'radial-gradient(120% 50% at 50% -8%, #231d16 0%, transparent 58%), linear-gradient(180deg, #000000, #000000)',
+      c: { bg: '#000000', card: '#0d0b13', line: '#3e255e', text: '#ebe9f1', soft: '#c8c3d4', muted: '#898497', accent: '#f1c14b', up: '#77db89', down: '#ef4444', warn: '#f1c14b' },
+      s: { page: 'radial-gradient(120% 50% at 50% -8%, #1a1029 0%, transparent 58%), linear-gradient(180deg, #000000, #000000)',
         card: 'linear-gradient(180deg, #16131e, #020204)', border: '1px solid #3e255e', radius: '20px', radiusS: '14px', radiusL: '24px',
         shadow: '0 0 0 1px rgba(157, 89, 238, .06), 0 10px 30px rgba(0, 0, 0, .55), 0 0 24px rgba(157, 89, 238, .10)', blur: 'none',
         title: SANS, weight: '700', track: '-.01em', btn: '#f1c14b', btnFg: '#000000' } })),
@@ -530,14 +527,15 @@
   // A choice saved before AGORA (2026-11-09) may be 'olympus' only because that used to be the default (Jarvis wrote it when a Jarvis colour
   // was picked): it reads as the default (AGORA) until the owner picks a theme again; every pick after that is marked (VKEY) and wins.
   var VKEY = 'olympus.theme.v';
-  // OLYMPUS NIGHT is the owner's default (2026-11-20): an empty choice, or AGORA saved before that day, becomes 'night' once and is saved
-  // (so the FIRST PAINT copy in each page's <head> paints it from the next load); 'olympus.theme.night' = 1 marks it, so a later pick of
-  // Agora (or anything) is the owner's and stays
-  var NIGHTKEY = 'olympus.theme.night', PREFERRED = 'night';
+  // NIGHT = the unsaved default (Classic Jarvis stays on); a pick sets NIGHTKEY; NIGHTV undoes 35ce192b's saved 'night' once
+  var NIGHTKEY = 'olympus.theme.night', NIGHTV = 'olympus.theme.night.v', PREFERRED = 'night';
+  function lightPhone() { try { return !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches); } catch (e) { return false; } }
+  function implicit() { var v = get(KEY); return get(NIGHTKEY) !== '1' && (!v || v === DEFAULT || (v === 'olympus' && get(VKEY) !== '2')); }
   function stored() {
-    var v = get(KEY);
-    if (get(NIGHTKEY) !== '1' && (!v || v === DEFAULT || (v === 'olympus' && get(VKEY) !== '2'))) { put(KEY, PREFERRED); put(NIGHTKEY, '1'); v = PREFERRED; }
-    if (v === 'olympus' && get(VKEY) !== '2') return DEFAULT; return by[v] ? v : DEFAULT;
+    if (get(KEY) === PREFERRED && get(NIGHTKEY) === '1' && get(NIGHTV) !== '2') { del(KEY); del(NIGHTKEY); put(NIGHTV, '2'); }
+    // not on a light phone (light pages follow it) nor on Jarvis
+    if (implicit()) return pageId() === 'jarvis' || lightPhone() ? DEFAULT : PREFERRED;
+    var v = get(KEY); if (v === 'olympus' && get(VKEY) !== '2') return DEFAULT; return by[v] ? v : DEFAULT;
   }
   /* MIX (2026-11-14, owner via the lead: "a combined type of thing where some dashboards have others"): besides one look for everything
    * ('olympus.theme'), 'olympus.themeMix' = { district: { trading: 'amber', money: 'stocks', life: 'forest', worlds: 'aurora' },
@@ -608,7 +606,7 @@
    * loads after its first frame (the Gate, the hubs, the dashboard, Jarvis, Kalshi) paints the copy of the look IT gets (FIRST PAINT above). */
   function putLook(w, id, P) { if (id !== DEFAULT) put(LOOK_KEY + '.' + w + '.' + id, JSON.stringify({ id: id, scheme: P.scheme, meta: P.meta, style: P.style, vars: P.vars, jarvis: P.jarvis })); }
   function inUse() {
-    var u = {}, m = readMix(), k; u[stored()] = 1;
+    var u = {}, m = readMix(), k; u[stored()] = 1; if (implicit()) u[PREFERRED] = 1;
     if (m) { for (k in (m.district || {})) if (by[m.district[k]]) u[m.district[k]] = 1; for (k in (m.app || {})) if (by[m.app[k]]) u[m.app[k]] = 1; }
     return u;
   }
@@ -712,7 +710,7 @@
     set: function (id) {
       if (!by[id]) id = DEFAULT;
       previewId = null;
-      put(KEY, id); put(VKEY, '2'); del(MIXKEY);
+      put(KEY, id); put(VKEY, '2'); put(NIGHTKEY, '1'); put(NIGHTV, '2'); del(MIXKEY);
       cacheLooks();                                            // every page's <head> can wear the new look from its first frame
       if (effective() !== cur && where) { apply(where, applyOpts); emit(); }
       return id;
