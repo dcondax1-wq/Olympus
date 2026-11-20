@@ -226,12 +226,15 @@ def reporter():
         h2 = FakeHTTP()
         b.run(h2, now + 900)
         k2 = [json.loads(c["body"]).get("kind") for c in h2.posts(feed["topic"])]
+        h25 = FakeHTTP()
+        b.run(h25, now + 1800)
+        k25 = [json.loads(c["body"]).get("kind") for c in h25.posts(feed["topic"])]
         h3 = FakeHTTP()
-        b.run(h3, now + 1800)
+        b.run(h3, now + 2700)
         k3 = [json.loads(c["body"]).get("kind") for c in h3.posts(feed["topic"])]
-        check("status: the ext goes every 2nd run (29 min) when its news is the same; the core every run, carrying xt",
-              k2 == ["le-live"] and k3[-1] == "le-live" and "le-live-ext" in k3
-              and json.loads(h2.posts(feed["topic"])[-1]["body"]).get("xt") == now, (k2, k3))
+        check("status: the ext goes every 3rd run (44 min, EXT_EVERY_S; was every 2nd until the 2026-11-20 ntfy cap) when its news is the same; the core every run, carrying xt",
+              k2 == ["le-live"] and k25 == ["le-live"] and k3[-1] == "le-live" and "le-live-ext" in k3
+              and json.loads(h2.posts(feed["topic"])[-1]["body"]).get("xt") == now, (k2, k25, k3))
         shutil.rmtree(b.work)
         shutil.move(b.work + ".keep", b.work)
         check("first run with trades: what is there is only recorded (no trade push)", not [c for c in h.posts(cfg["topic"]) if "trade" in c["h"].get("Title", "")],

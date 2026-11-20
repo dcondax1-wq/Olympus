@@ -413,6 +413,34 @@ def part_legswitch(tmp):
           "kalshi_legswitch" in lw and "def leg_limits" in lw and "LS.LIVE_ON" in lw)
 
 
+# ================================================================================================ g. the go-live checklist's PC facts (Olympus 2)
+def part_golive(tmp):
+    cfg = real()
+    w = TC.World(tmp, "golive", cash=55.0)
+    P = KC.paths(w.sd)
+    os.makedirs(P["dir"], exist_ok=True)
+    KC.save_rows(P["clock_paper"], [live_row("2026-11-20", "gold_0530_down", KC.london_epoch(dt.date(2026, 11, 20), 10, 15), pnl=1.0, result="won")])
+    yes = KC.setup_flag("key", w.env), KC.setup_flag("alerts", w.env)
+    os.makedirs(os.path.join(w.home), exist_ok=True)
+    with open(os.path.join(w.home, "ntfy.json"), "w", encoding="utf-8") as fh:
+        json.dump({"topic": "t-test"}, fh)
+    al = KC.setup_flag("alerts", w.env)
+    shutil.rmtree(os.path.join(w.home, "kalshi"))
+    no = KC.setup_flag("key", w.env)
+    check("g1. the checklist's PC facts: a key on the PC = 1 (yes/no only), none = 0; alerts topic set = 1, none = 0",
+          yes == (1, 0) and al == 1 and no == 0, (yes, al, no))
+    old_env = dict(os.environ)
+    try:
+        os.environ["OLYMPUS_HOME"] = w.home
+        k = KC.card_k8(w.sd, cfg, KC.et_epoch(dt.date(2026, 11, 20), 9, 0))
+    finally:
+        os.environ.clear()
+        os.environ.update(old_env)
+    raw = json.dumps(k)
+    check("g2. the PC card carries kk / al as 0 / 1 and never a key, key id, path or topic", k and k.get("kk") in (0, 1) and k.get("al") in (0, 1)
+          and TL.KEY_ID not in raw and "PRIVATE" not in raw and "t-test" not in raw and w.home not in raw, raw[:300])
+
+
 def main():
     tmp = tempfile.mkdtemp(prefix="k8day-")
     try:
@@ -424,6 +452,7 @@ def main():
         part_data()
         part_paper_card(tmp)
         part_legswitch(tmp)
+        part_golive(tmp)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     print(f"\n{sum(RES)}/{len(RES)} passed")
