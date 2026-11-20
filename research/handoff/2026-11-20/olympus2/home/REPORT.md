@@ -56,3 +56,13 @@ Shots: cockpit-1-live, cockpit-2-in-a-trade-decide, cockpit-3-light, cockpit-4-s
   (+ funded ATLAS shows "$949 to payout", never $1,449). Shot: glance-payout-coach.jpg.
 - Not adopted: age.js / age.css (they are on day-nqdash3 only, not on pc yet; loading them now would 404). Once they land on pc, the Home's
   "Last report X ago" line can switch to OLY_AGE.chip(..., 'pc').
+
+## Round 4 (PERF ask, ~12:00 ET): the Cities front's long tasks
+PERF measured `cities/` (the island map) with a 4.1 s worst task. Profiled at 4x CPU, 390 px: the 2D map (cities/agoramap.js) repainted its
+whole cached "still" layer ~45 times while loading (the opening camera flight + ~500 data updates as the cities stream in) and kept redrawing a
+phone-size canvas ~33 times a second forever. Fixes (agoramap.js g7):
+- during a camera flight the cached picture is moved / zoomed to the new camera (one drawImage), repainted only past 0.8-1.5x zoom;
+- new data repaints once it has been quiet for 0.3 s (2 s at most), not on every update;
+- 3 s after the last touch / flight the map holds still (the sea and boats are decoration) until the next touch, flight or data.
+Result (15 s after open, 4x CPU): long tasks 99 -> 26, their total 10.7 s -> 2.7 s, full repaints 45 -> 3. Left: two ~0.35 s tasks at boot
+(three.js parse + building the 3D hub), not changed today. test_cities_page 257/257.
