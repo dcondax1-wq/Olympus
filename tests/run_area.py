@@ -244,3 +244,5 @@ AREAS["nq"].append("nqdeep")                # night-nqdash2 2026-11-20: Trading 
 AREAS["olympus"].append("node_suites")    # day-quality 2026-11-20: the 29 tests/*.mjs no Python suite ran (tests/test_node_suites.py), by part
 AREAS["cities"].append("node_suites")
 PARTS["node_suites"] = [("datacity", ["datacity"]), ("apps", ["apps"])]
+AREAS["pc"].append("site_checks")         # day-quality 2026-11-20: tools/site_checks.py (Kalshi cache = css/js ?v, worker tags, launcher drift, generated gap) + self_heal 'site'
+AREAS["olympus"].append("site_checks")
