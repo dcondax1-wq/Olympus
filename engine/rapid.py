@@ -61,7 +61,8 @@ PLANS = {
     "mffu_rapid_eod_50k": {"plan": "rapideod50k", "label": "Rapid EOD 50K", "start": 50000.0, "target": 3000.0,
                            "atlas_usd": ATLAS_USD, "buffer": BUFFER, "cushion": CUSHION, "since": 500.0, "eval_min_room": 200.0},
     "mffu_rapid_eod_25k": {"plan": "rapideod25k", "label": "Rapid EOD 25K", "start": 25000.0, "target": 1500.0,
-                           "atlas_usd": 250.0, "buffer": 1100.0, "cushion": 500.0, "since": 250.0, "eval_min_room": 100.0},
+                           "atlas_usd": 250.0, "buffer": 1100.0, "cushion": 500.0, "since": 250.0, "eval_min_room": 100.0,
+                           "mffu_dll": 500.0},   # owner 2026-11-20: bought WITH MFFU's daily loss limit $500 (a soft pause, never a fail)
 }
 
 
@@ -206,8 +207,10 @@ def rules_more(blk: dict) -> str:
     min days, the 16:10 flat, the funded news ban and the payout line were in the docs only)."""
     P = plan_info(blk)
     keep = float(P["start"]) + float(P["buffer"]) + float(P["cushion"])
-    return (f"{MIN_DAYS}+ trading days to pass, flat by 15:55 ET (MFFU: 16:10), no MFFU daily loss (the bot stops at "
-            f"-${float((_ma_presets().get(P['preset']) or {}).get('rules', {}).get('dll') or 0):,.0f}); funded: flat 3 min before to "
+    bot_dll = float((_ma_presets().get(P['preset']) or {}).get('rules', {}).get('dll') or 0)
+    mffu = (f"MFFU daily loss ${float(P['mffu_dll']):,.0f} = a pause for the day, never a fail (the bot sizes so a full stop "
+            f"keeps the day above -${bot_dll:,.0f})") if P.get("mffu_dll") else f"no MFFU daily loss (the bot stops at -${bot_dll:,.0f})"
+    return (f"{MIN_DAYS}+ trading days to pass, flat by 15:55 ET (MFFU: 16:10), {mffu}; funded: flat 3 min before to "
             f"2.5 min after CPI / jobs / Fed, payouts of what is above ${keep:,.0f} (${PAY_MIN:,.0f} min, {SPLIT:.0%} to you)")
 
 

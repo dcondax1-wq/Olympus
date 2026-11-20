@@ -37,7 +37,8 @@
     rapideod50k: { ...RAPID, key: 'rapideod50k', label: 'Rapid EOD 50K', size: '50K', start: 50000, target: 3000, mll: 2000, max_minis: 3, max_micros: 30,
                    buffer: 2100, next_since: 500, pay_min: 500, pay_max: null, funded_max: 3 },
     rapideod25k: { ...RAPID, key: 'rapideod25k', label: 'Rapid EOD 25K', size: '25K', start: 25000, target: 1500, mll: 1000, max_minis: 2, max_micros: 20,
-                   buffer: 1100, next_since: 250, pay_min: 500, pay_max: null, funded_max: 3 },
+                   buffer: 1100, next_since: 250, pay_min: 500, pay_max: null, funded_max: 3,
+                   dll: 500, dll_soft: true },   // owner 2026-11-20: bought the 25K WITH MFFU's daily loss limit, $500 (soft pause)
   };
   const FLAT = { mffu: 16 * 60 + 10, bot: 15 * 60 + 55, last_entry: 15 * 60 + 30, open: 18 * 60 };   // ET minutes (STRATEGY.md: entries to 15:30, flat 15:55)
   // CME equity futures holiday hours the bot meets (engine/cme_calendar.py: halts 13:00 / 13:15 ET, full closures). MFFU does NOT

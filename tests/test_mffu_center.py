@@ -283,10 +283,10 @@ def part_c2(r):
     R = {a["key"]: a for a in rp.get("accts") or []}.get("rapid1") or {}
     t, ru = R.get("target") or {}, R.get("rules") or {}
     check("c. the Rapid EOD 25K once the PC reports it (id rapid): ONE 'Rapid EOD 25K' Evaluation card on the plan row, no longer in the "
-          "PLAN list; MFFU's rules: $1,500 target, 4 days, 30%, no DLL, floor locks at $25,100, news allowed in the eval",
+          "PLAN list; MFFU's rules: $1,500 target, 4 days, 30%, DLL $500 soft pause (owner bought the DLL version), floor locks at $25,100, news allowed in the eval",
           [x["key"] for x in rp.get("accts") or []] == ["zlarior", "atlas", "rapid1", "fresh25"] and R.get("name") == "Rapid EOD 25K"
           and (R.get("chip") or {}).get("text") == "Evaluation" and not rp.get("planned") and (t.get("v"), t.get("min_days"), t.get("cons")) == (1500, 4, 0.3)
-          and (R.get("money") or {}).get("lock_at") == 25100 and "None on Rapid EOD 25K" in (ru.get("dll") or ["", ""])[1]
+          and (R.get("money") or {}).get("lock_at") == 25100 and "used today" in (ru.get("dll") or ["", ""])[1] and "None on" not in (ru.get("dll") or ["", ""])[1]
           and "Allowed on Rapid EOD 25K evaluations" in (ru.get("news") or ["", ""])[1] and ["0004", "Rapid EOD 25K"] in (rp.get("decoder") or []),
           {"keys": [x["key"] for x in rp.get("accts") or []], "planned": rp.get("planned"), "card": R})
 
