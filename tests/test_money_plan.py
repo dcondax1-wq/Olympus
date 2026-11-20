@@ -151,6 +151,11 @@ def part_c():
 
 
 def part_d():
+    try:                    # the plan's Rapid spec walks the BLITZ stream (tools/blitz25k_lib, numba); numba is not in requirements*.txt,
+        import numba        # noqa: F401  so a cloud box without it skips d instead of crashing the suite
+    except ImportError as e:
+        print(f"[SKIP] d. the Rapid EOD 25K spec = the engine preset (numba missing: {e}; pip install numba to run it)")
+        return
     sys.path.insert(0, os.path.join(ROOT, "tools", "money"))
     import money_plan as MP
     from engine import multi_account as MA, rapid as RP

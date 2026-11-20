@@ -246,7 +246,18 @@ def live_bundle(tmp):
     from tools import odeon_export as OE, trading_export as TE
     pcd = os.path.join(tmp, "pc_days")
     make_pc_days(pcd)
-    ob = OE.build(1, 1, cloud=False, pc_days=pcd)
+    # the fixture days' only bars are the fixture's own: the repo's TradingView files (data/NQ_1m.csv, NQ_5m.csv) are cut before DAY1,
+    # else a data refresh past DAY2 (Nov 19, 2026-11-20) hands DAY2 real bars and the "no bars yet -> replay later" case disappears
+    cut, read = ts(DAY1, 0, 0) - 6 * 3600, OE._read_csv
+
+    def read_cut(path, a, z):
+        out = read(path, a, z)
+        return {k: v for k, v in out.items() if k < cut} if path in (OE.BARS_1M, OE.BARS_5M) else out
+    OE._read_csv = read_cut
+    try:
+        ob = OE.build(1, 1, cloud=False, pc_days=pcd)
+    finally:
+        OE._read_csv = read
     op = os.path.join(tmp, "odeon.json")
     OE.write(ob, op)
     old = TE.ODEON

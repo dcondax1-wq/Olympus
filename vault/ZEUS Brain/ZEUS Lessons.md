@@ -111,6 +111,7 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 - 2026-11-19 [[lit-more-money-2026-11-19|Zlarior]] ([[Family other|other]])
 - 2026-11-19 [[kalshi-edge-K7-2026-11-18|Kalshi K7]] ([[Family kalshi|kalshi]])
 - 2026-11-19 [[kalshi-edge-K6-2026-11-18|Kalshi edge, team K6]] ([[Family kalshi|kalshi]])
+- 2026-11-18 [[zeus-lab-lit-ideas-2026-11-18|ZEUS Lab]] ([[Family other|other]])
 - 2026-11-18 [[setup-grade-2026-11-18|Setup grade]] ([[Family risk|risk]])
 - 2026-11-18 [[lit-ideas-2026-11-18b|Zlarior ideas night 2]] ([[Family risk|risk]])
 - 2026-11-18 [[kalshi-best-shot-rewards-2026-11-18|Kalshi best shot]] ([[Family kalshi|kalshi]])

@@ -2,10 +2,11 @@
 tags:
   - zeus/research
   - family/other
-  - verdict/research
+  - verdict/rejected
   - bot/zlarior
 type: "research"
 date: "2026-11-18"
+status: "rejected - all 10 new Zlarior ideas rejected; none goes to shadow; nothing live changed"
 source: "research/writeups/zeus-lab-lit-ideas-2026-11-18.md"
 aliases:
   - "ZEUS Lab"
@@ -13,8 +14,8 @@ aliases:
 
 # ZEUS Lab
 
-> [!abstract] Verdict: research
-> (no status line)
+> [!failure] Verdict: rejected
+> rejected - all 10 new Zlarior ideas rejected; none goes to shadow; nothing live changed
 
 **Full title:** ZEUS Lab - 10 new Zlarior (LIT) ideas, 2026-11-18
 

@@ -209,12 +209,22 @@ def test_behaviour(br, origin):
     ctx, p, errs = page(br, origin)
     p.goto(f"{origin}/oracle/?intro=1&demo=1", wait_until="commit")
     p.wait_for_function("window.__olyAppIntro && window.__olyAppIntro.frames > 1", timeout=30000)
-    t0 = time.time()
+    # counted in the page's own rAF frames from the tap to the intro's end event (dispatched once the overlay is removed): 0.6 s at 60 Hz
+    # = 36 frames. On this shared box with SwiftShader the app's own boot holds the main thread for 0.6-2.4 s right then (seen with no
+    # tap at all), so no timer and no frame can run and a wall clock measures the box, not the skip; a frame count does not. A skip that
+    # never came would end as 'done' / 'deadline', not 'skipped'.
+    p.evaluate("""() => { const m = window.__tapM = { f: 0, tapF: null, endF: null, tapT: null, endT: null };
+      const f = () => { m.f++; if (m.endF === null) requestAnimationFrame(f); }; requestAnimationFrame(f);
+      addEventListener('pointerdown', (e) => { if (m.tapF === null) { m.tapF = m.f; m.tapT = e.timeStamp; } }, true);
+      addEventListener('oly:app-intro-end', () => { if (m.endF === null) { m.endF = m.f; m.endT = performance.now(); } }); }""")
     p.mouse.click(195, 420)
     p.wait_for_function(GONE, timeout=8000)
-    gone_ms = (time.time() - t0) * 1000
+    m = p.evaluate("() => window.__tapM")
+    frames = m["endF"] - m["tapF"] if m["tapF"] is not None and m["endF"] is not None else None
     s = p.evaluate(STATE)
-    check("c. a tap skips the film at once (state skipped, the overlay gone within 0.6 s of the tap)", s["state"] == "skipped" and gone_ms < 600, (s, gone_ms))
+    check("c. a tap skips the film at once (state skipped, the overlay gone within 36 frames = 0.6 s at 60 Hz of the tap)",
+          s["state"] == "skipped" and frames is not None and frames <= 36,
+          (s, frames, round(m["endT"] - m["tapT"]) if None not in (m["endT"], m["tapT"]) else None))
     check("c. the skip tap is not an app tap (no page error, the app is not in an error state)", not mine(errs) and p.evaluate("OLYMPUS.state()") != "failed", errs[:3])
     ctx.close()
     ctx, p, errs = page(br, origin)
