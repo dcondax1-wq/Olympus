@@ -4,7 +4,8 @@
   b. sources   PC post -> LIVE / src PC; home.json only -> PAPER / SITE; nothing -> the saved copy as CACHED with its age; none -> null
   c. kalshi    the next K8 clock window: London 10:15 = 05:15 ET in November, 04:00 ET in July = the same 05:15 local ET slot,
                16:00 ET; weekends and the CME Thanksgiving skip (Nov 26) roll to the next one
-  d. draw      the whole script inside a fake Scriptable (tests/widget_harness.cjs): small / medium / large draw the balances, $ to
+  d. draw      the whole script inside a fake Scriptable (tests/widget_harness.cjs): small / medium / large draw the balances (medium:
+               every account one line each since cities3 2026-11-20), $ to
                pass / to payout, Kalshi, the source tag + age; no "undefined" / "NaN"; tap -> the site; refresh ~15 min; the cache
                written; offline draws "No account numbers yet" and OFFLINE
   e. privacy   the widget files carry no broker account id, no email, no private ntfy alert topic (tools/site_privacy detectors)
@@ -77,7 +78,7 @@ def main() -> int:
     check("c. the feed URL from status_feed.json (70-minute window), the public default topic otherwise",
           d["feed"][0] == "https://ntfy.sh/abc/json?poll=1&since=70m" and "olympus-nq-status-" in d["feed"][1], d["feed"])
 
-    for fam, need in (("small", ["$3,807 to pass", "Zlarior 50K"]), ("medium", ["$49,193", "$1,963 to payout", "+1 more: tap to open", "Kalshi"]),
+    for fam, need in (("small", ["$3,807 to pass", "Zlarior 50K"]), ("medium", ["$49,193", "$1,963 to payout", "Zlarior 25K #2", "$25,000", "Kalshi"]),
                       ("large", ["$49,193", "$24,887", "$25,000", "$1,500 to pass", "drawdown room 51%", "NQ"])):
         r = node("draw", LITE, HOME, fam, "-")
         txt = " | ".join(r["texts"])
