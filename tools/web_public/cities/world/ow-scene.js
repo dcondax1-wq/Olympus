@@ -26,7 +26,7 @@ export function skyFor(sky, date) {
   } catch (e) { return 0; }
 }
 
-function prism() {
+function prism(box) {
   // revamp-cities (2026-11-20): one prism for every building piece. 8 walls round a square whose corners are cut by the instance's
   // chamfer (0 = a box: the 4 corner walls have no width and are skipped in the shader; 0.3 = an octagon) + a roof fan; the taper
   // narrows the top (1 = a pyramid). aCorner = (sx, sz, which side of the cut: 0 the x wall, 1 the z wall, 2 the roof's centre),
@@ -45,14 +45,20 @@ function prism() {
     if (n[0] * out[0] + n[1] * out[1] + n[2] * out[2] >= 0) I.push(a, b, c); else I.push(a, c, b);
   };
   for (let k = 0; k < 8; k++) {
+    if (box && kinds[k] === 2) continue;                                    // a plain box: no corner walls (20 vertices, 10 triangles)
     const va = ring[k], vb = ring[(k + 1) % 8], kind = kinds[k];
     const a0 = vert(va, 0, kind, 0), b0 = vert(vb, 0, kind, 1), b1 = vert(vb, 1, kind, 1), a1 = vert(va, 1, kind, 0);
     const qa = at(va, 0.2), qb = at(vb, 0.2), mid = [(qa[0] + qb[0]) / 2, 0, (qa[1] + qb[1]) / 2];
     tri(a0, b0, b1, va, vb, vb, 0, 0, 1, mid); tri(a0, b1, a1, va, vb, va, 0, 1, 1, mid);
   }
-  const c0 = vert([0, 0, 2], 1, 3, 0);
-  const rv = ring.map((v) => vert(v, 1, 3, 0));
-  for (let k = 0; k < 8; k++) tri(c0, rv[k], rv[(k + 1) % 8], [0, 0, 2], ring[k], ring[(k + 1) % 8], 1, 1, 1, [0, 1, 0]);
+  if (box) {
+    const rv = [0, 2, 4, 6].map((k) => vert(ring[k], 1, 3, 0)), rk = [0, 2, 4, 6].map((k) => ring[k]);
+    tri(rv[0], rv[1], rv[2], rk[0], rk[1], rk[2], 1, 1, 1, [0, 1, 0]); tri(rv[0], rv[2], rv[3], rk[0], rk[2], rk[3], 1, 1, 1, [0, 1, 0]);
+  } else {
+    const c0 = vert([0, 0, 2], 1, 3, 0);
+    const rv = ring.map((v) => vert(v, 1, 3, 0));
+    for (let k = 0; k < 8; k++) tri(c0, rv[k], rv[(k + 1) % 8], [0, 0, 2], ring[k], ring[(k + 1) % 8], 1, 1, 1, [0, 1, 0]);
+  }
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(P, 3));
   g.setAttribute('aCorner', new THREE.Float32BufferAttribute(A, 3));
@@ -105,15 +111,23 @@ export function createWorld(opts) {
     placeTex.needsUpdate = true; texDirty = false;
   }
   // ---- buildings and their reflection in the wet streets / the sea
-  const box = prism();
-  const bGeo = instanced(box, [['iPos', plan.pos, 3], ['iSize', plan.size, 3], ['iInfo', plan.info, 4], ['iTint', plan.tint, 3], ['iMisc', plan.misc, 4],
-    ['iShape', plan.shape || new Float32Array(plan.n * 2), 2]], plan.n);
+  // two batches (revamp-cities perf): plain boxes (10 triangles) and shaped pieces (octagons, tapers, caps: 32), each one draw + its mirror
+  const shp = plan.shape || new Float32Array(plan.n * 2);
+  const split = [[], []];
+  for (let k = 0; k < plan.n; k++) split[shp[k * 2] > 0.004 || shp[k * 2 + 1] > 0.004 ? 1 : 0].push(k);
+  const pick = (arr, size, ids) => { const o = new Float32Array(ids.length * size); ids.forEach((k, j) => { for (let c = 0; c < size; c++) o[j * size + c] = arr[k * size + c]; }); return o; };
+  const bGeos = split.map((ids, kind) => instanced(prism(kind === 0), [['iPos', pick(plan.pos, 3, ids), 3], ['iSize', pick(plan.size, 3, ids), 3], ['iInfo', pick(plan.info, 4, ids), 4],
+    ['iTint', pick(plan.tint, 3, ids), 3], ['iMisc', pick(plan.misc, 4, ids), 4], ['iShape', pick(shp, 2, ids), 2]], ids.length));
   const STREET = new THREE.Color(0.95, 0.5, 0.2);                            // sodium
   const bU = { ...U, ...PU, uStreet: { value: STREET } };
   const bMat = new THREE.ShaderMaterial({ vertexShader: SH.BUILD_VS, fragmentShader: SH.BUILD_FS, uniforms: bU, extensions: { derivatives: true } });
   const mMat = new THREE.ShaderMaterial({ vertexShader: SH.BUILD_VS, fragmentShader: SH.BUILD_FS, uniforms: bU, defines: { MIRROR: 1 }, side: THREE.BackSide, extensions: { derivatives: true } });
-  const buildings = new THREE.Mesh(bGeo, bMat); buildings.frustumCulled = false;
-  const mirror = new THREE.Mesh(bGeo, mMat); mirror.frustumCulled = false; mirror.renderOrder = -2;
+  const buildings = new THREE.Group(), mirror = new THREE.Group();
+  for (const g of bGeos) {
+    const b = new THREE.Mesh(g, bMat), m = new THREE.Mesh(g, mMat);
+    b.frustumCulled = m.frustumCulled = false; m.renderOrder = -2;
+    buildings.add(b); mirror.add(m);
+  }
   scene.add(mirror, buildings);
   // ---- the ground: one plane, streets and glow drawn by its shader from a small light map of the city
   const E = R + 60, S = opts.tier === 'low' ? 512 : 1024;

@@ -133,8 +133,9 @@ void main() {
   vec3 L = lightDir();
   float ndl = max(dot(N, L), 0.0);
   vec3 col = alb * (mix(grdAmb, skyAmb, hemi) + lightCol() * ndl * 2.2);
-  col += alb * uStreet * 0.9 * exp(-vW.y * 0.6) * (1.0 - vRoof);                   // street light washing the lowest floors
-  float ao = mix(0.35, 1.0, smoothstep(0.0, 1.6, vW.y)) * mix(1.0, 0.82, (1.0 - vRoof) * exp(-vW.y * 0.2));
+  float wy = abs(vW.y);                                                             // the mirror pass has y < 0: never exp() of a big positive
+  col += alb * uStreet * 0.9 * exp(-wy * 0.6) * (1.0 - vRoof);                   // street light washing the lowest floors
+  float ao = mix(0.35, 1.0, smoothstep(0.0, 1.6, wy)) * mix(1.0, 0.82, (1.0 - vRoof) * exp(-wy * 0.2));
   col *= ao;
   // the sky in the glass (fresnel), the moon / sun glint at the edges
   vec3 R = reflect(-V, N);
