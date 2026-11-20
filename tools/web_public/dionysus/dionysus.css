@@ -103,3 +103,80 @@ main#app .ag-card .note, main#app > .foot { font-size: .9375rem; }
 main#app header.top .brand p.sub, main#app p#status, main#app #status.note { font-size: .9375rem; }
 main#app .tile span { font-size: .8125rem; }
 main#app .tile span { font-size: .9375rem; }
+
+/* ================================================================================================ TERMINAL look (day-kalshi FX 2026-11-20, owner: "it needs some 3D, some effects")
+   Dionysus only (this sheet is loaded by this page alone; agora.css / olympus.css untouched): NO GOLD. Navy base #070b14 / #0b1220, electric cyan #22d3ee
+   + blue #3b82f6 light, violet #8b5cf6 accents; green #22c55e only for a win, red #f43f5e only for a loss. Cards: a thin cyan -> blue -> violet gradient
+   border + a soft cyan / blue box-shadow; a 3D tilt on press; a still perspective grid under the page. Motion (the hero sheen) only under
+   prefers-reduced-motion: no-preference; the effects themselves (number roll, win sparks) come from olympus/nqfx.js after the first paint. */
+html:root[data-theme="agora"] {
+  --ag-night: #070b14; --ag-panel: #0b1220; --ag-raise: #101a2e; --ag-line: #1e2d4a; --ag-s0: #070b14; --ag-s1: #0b1220; --ag-s2: #0e1729; --ag-s3: #121d33; --ag-s4: #16233d;
+  --ag-line-soft: rgba(103, 232, 249, .08); --ag-line-gold: rgba(34, 211, 238, .38);
+  --ag-text: #e6f1ff; --ag-soft: #b9c7dd; --ag-muted: #93a4bf;
+  --ag-gold: #22d3ee; --ag-gold-hi: #67e8f9; --ag-gold-rgb: 34, 211, 238; --ag-bronze: #3b82f6; --ag-aegean: #3b82f6; --ag-aegean-text: #7dd3fc; --ag-aegean-rgb: 59, 130, 246;
+  --ag-olive: #22c55e; --ag-olive-text: #4ade80; --ag-olive-rgb: 34, 197, 94; --ag-terra: #f43f5e; --ag-terra-text: #fb7185; --ag-terra-rgb: 244, 63, 94;
+  --ag-sun: #a78bfa; --ag-sun-rgb: 139, 92, 246; --ag-on-gold: #070b14;
+  --ag-shadow: 0 8px 24px rgba(2, 6, 18, .55);
+  --dx-cyan: #22d3ee; --dx-blue: #3b82f6; --dx-violet: #8b5cf6; --dx-win: #22c55e; --dx-loss: #f43f5e; --dx-tile: #0d1628;
+  --dx-edge: linear-gradient(135deg, rgba(34, 211, 238, .6), rgba(59, 130, 246, .28) 45%, rgba(139, 92, 246, .55));
+  --dx-light: 0 0 0 1px rgba(34, 211, 238, .05), 0 10px 30px rgba(2, 6, 18, .6), 0 0 22px rgba(34, 211, 238, .10), 0 0 40px rgba(59, 130, 246, .08);
+  --oly-accent: #22d3ee; --oly-accent-rgb: 34, 211, 238;
+}
+html { background: #070b14; }
+html[data-theme="agora"] body { background: radial-gradient(120% 60% at 50% -12%, #13254a 0%, #0b1220 38%, #070b14 72%) fixed, #070b14; }
+/* the 3D floor: a still perspective grid of faint cyan lines fading into the dark (one fixed layer, painted once, never animated) */
+body::before { content: ""; position: fixed; left: -50%; right: -50%; bottom: -10vh; height: 62vh; z-index: 0; pointer-events: none;
+  background: linear-gradient(rgba(34, 211, 238, .10) 1px, transparent 1px) 0 0 / 56px 56px, linear-gradient(90deg, rgba(59, 130, 246, .10) 1px, transparent 1px) 0 0 / 56px 56px;
+  transform: perspective(420px) rotateX(62deg); transform-origin: 50% 100%;
+  -webkit-mask-image: linear-gradient(to top, rgba(0, 0, 0, .9), transparent 78%); mask-image: linear-gradient(to top, rgba(0, 0, 0, .9), transparent 78%); }
+html[data-oly-lite="1"] body::before { display: none; }
+/* cards: navy glass, a thin gradient edge (padding-box / border-box layers, no extra node), cyan / blue light */
+main#app .ag-card.card { border: 1px solid transparent; background: linear-gradient(180deg, #101a2e, #0b1220) padding-box, var(--dx-edge) border-box; box-shadow: var(--dx-light);
+  transition: transform .18s ease-out, box-shadow .18s ease-out; }
+main#app .ag-card.card:active { transform: perspective(900px) rotateX(2.2deg) translateZ(-6px); box-shadow: var(--dx-light), 0 0 30px rgba(34, 211, 238, .16); }
+main#app .ag-card.card.k8 { background: linear-gradient(180deg, #0f1c33, #0a1222) padding-box, linear-gradient(135deg, rgba(34, 211, 238, .8), rgba(59, 130, 246, .4) 50%, rgba(139, 92, 246, .7)) border-box;
+  box-shadow: var(--dx-light), 0 0 34px rgba(34, 211, 238, .14); }
+main#app .ag-card.card.hero { overflow: hidden; background: linear-gradient(160deg, #13234a 0%, #0c1527 55%, #110f2c 100%) padding-box, var(--dx-edge) border-box; }
+#guardCard[data-level="bad"] { background: linear-gradient(180deg, #101a2e, #0b1220) padding-box, linear-gradient(135deg, rgba(244, 63, 94, .6), rgba(139, 92, 246, .4)) border-box !important; }
+#guardCard[data-level="warn"] { background: linear-gradient(180deg, #101a2e, #0b1220) padding-box, linear-gradient(135deg, rgba(139, 92, 246, .7), rgba(59, 130, 246, .4)) border-box !important; }
+#guardCard[data-level="ok"] { background: linear-gradient(180deg, #101a2e, #0b1220) padding-box, linear-gradient(135deg, rgba(34, 197, 94, .55), rgba(34, 211, 238, .4)) border-box !important; }
+/* the hero sheen: a soft diagonal band of light; it sweeps only when motion is welcome (transform only: compositor, no layout) */
+main#app .card.hero::after { content: ""; position: absolute; inset: -40% auto -40% -60%; width: 45%; pointer-events: none; z-index: 0;
+  background: linear-gradient(100deg, transparent, rgba(103, 232, 249, .09) 40%, rgba(139, 92, 246, .10) 60%, transparent); transform: translateX(0) skewX(-12deg); }
+main#app .card.hero > * { position: relative; z-index: 1; }
+@media (prefers-reduced-motion: no-preference) {
+  main#app .card.hero::after { animation: dx-sheen 7s ease-in-out 1.2s infinite; }
+  @keyframes dx-sheen { 0% { transform: translateX(0) skewX(-12deg); } 55%, 100% { transform: translateX(420%) skewX(-12deg); } }
+  main#app .k8wl i.w.today { animation: dx-pulse 2.4s ease-in-out infinite; }
+  @keyframes dx-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, .0); } 50% { box-shadow: 0 0 10px 2px rgba(34, 197, 94, .45); } }
+}
+@media (prefers-reduced-motion: reduce) { main#app .ag-card.card, main#app .ag-card.card:active { transition: none; transform: none; } }
+html[data-oly-lite="1"] main#app .card.hero::after { display: none; }
+/* the numbers: cyan -> blue ink, tabular, a little light */
+main#app .big { background: linear-gradient(90deg, #67e8f9, #22d3ee 35%, #3b82f6 80%, #8b5cf6); -webkit-background-clip: text; background-clip: text; color: transparent; font-variant-numeric: tabular-nums;
+  filter: drop-shadow(0 0 14px rgba(34, 211, 238, .28)); }
+.ag-title { color: #e6f1ff; } .ag-title::after { background: linear-gradient(90deg, #22d3ee, #3b82f6 60%, rgba(139, 92, 246, 0)); width: 64px; }
+.card h2 { color: #e6f1ff; letter-spacing: .01em; }
+.brand img { box-shadow: 0 0 0 1px rgba(34, 211, 238, .35), 0 0 18px rgba(34, 211, 238, .25); }
+/* surfaces that were warm brown: navy tiles with a faint cyan edge */
+.tile, .plain li, .banner, .pill { background: var(--dx-tile); border-color: #1e2d4a; }
+.tile { box-shadow: inset 0 1px 0 rgba(103, 232, 249, .06); }
+.dots li { background: none; }
+.banner { border: 1px dashed rgba(59, 130, 246, .55); }
+.tag.demo { color: #070b14; background: #8b5cf6; }
+.pill.ok { color: #4ade80; border-color: rgba(34, 197, 94, .45); } .pill.bad { color: #fb7185; border-color: rgba(244, 63, 94, .45); }
+.pill.warn { color: #c4b5fd; border-color: rgba(139, 92, 246, .55); } .pill.info { color: #7dd3fc; border-color: rgba(59, 130, 246, .5); }
+.btn { background: #0f1a30; border-color: rgba(34, 211, 238, .35); color: #e6f1ff; box-shadow: 0 0 14px rgba(34, 211, 238, .08); }
+.btn[aria-pressed="true"], .btn.on, .ag-chip[aria-pressed="true"] { border-color: #22d3ee; color: #67e8f9; background: #0c2236; box-shadow: 0 0 16px rgba(34, 211, 238, .22); }
+:focus-visible { outline-color: #22d3ee; }
+/* K8: the W / L chips are little 3D keys (top light, bottom shade); today's win glows green */
+.k8wl i { color: #070b14; background: linear-gradient(180deg, #fb7185, #e11d48); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .25), 0 2px 0 #7f1d3a; }
+.k8wl i.w { background: linear-gradient(180deg, #4ade80, #16a34a); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), 0 2px 0 #14532d; }
+.k8leg { border-top-color: rgba(34, 211, 238, .12); }
+.k8pool b { display: inline-block; min-width: 3.4ch; text-align: right; font-variant-numeric: tabular-nums; }
+.k8pool b.ok { color: #4ade80; } .k8pool b.watch { color: #c4b5fd; } .k8pool b.off { color: #fb7185; }
+.ftab tr.k8 td { color: #67e8f9; } .ftab th, .ftab td { border-bottom-color: #1e2d4a; }
+.sblock.watch h3 { color: #c4b5fd; }
+/* the shared header's "Go to" button and the page icon in the same navy / cyan (this page only) */
+html[data-theme="agora"] .gn-go { background: rgba(11, 18, 32, .86); border-color: rgba(34, 211, 238, .35); }
+.brand img { filter: hue-rotate(180deg) saturate(1.2); }
