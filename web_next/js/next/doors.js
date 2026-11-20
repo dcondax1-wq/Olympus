@@ -35,6 +35,7 @@
     { id: 'money', title: 'Money', line: 'Business, taxes, payouts, the fleet plan and the household', colour: '#7f8a52',
       items: [
         { label: 'Business', greek: 'Business', href: 'business/', app: 'business', words: 'business money models next step side income' },
+        { label: 'Widget + Glance', greek: 'Widget', href: 'widget/', app: 'widget', words: 'widget glance home screen scriptable accounts iphone' },
         { label: 'Real money', greek: 'Ledger', href: 'ledger/', app: 'ledger', words: 'money cash fees payouts profit net spend paid scoreboard' },
         { label: 'Taxes', greek: 'Business · Taxes', href: 'business/taxes.html', app: '', words: 'taxes tax irs estimated quarterly 30% pot set aside' },
         { label: 'Payout plan', greek: 'Hera', href: 'hera/', app: 'hera', words: 'payout payouts plan 12 month what to buy next roadmap' },
@@ -43,7 +44,7 @@
         { label: 'More work', greek: 'Business · More Work', href: 'business/work.html', app: '', words: 'work jobs side work freelance agency websites income' },
         { label: 'Work week', greek: 'Business · Work Week', href: 'business/schedule.html', app: '', words: 'schedule week calendar checks review payout day' }
       ],
-      ids: ['business', 'ledger', 'hera', 'plutus', 'chrysos', 'oikos', 'agency', 'mercury', 'mint', 'mintcity', 'harmonia', 'hermes', 'argo', 'arbiter'] },
+      ids: ['business', 'widget', 'ledger', 'hera', 'plutus', 'chrysos', 'oikos', 'agency', 'mercury', 'mint', 'mintcity', 'harmonia', 'hermes', 'argo', 'arbiter'] },
     { id: 'kalshi', title: 'Kalshi', line: 'The Kalshi bot and its edges. Paused: paper only, no real bets', colour: '#b5a642',
       items: [
         { label: 'Kalshi bot', greek: 'Kalshi', href: 'kalshi/', app: 'kalshi', words: 'kalshi bot balance bets open p&l paused rewards' },

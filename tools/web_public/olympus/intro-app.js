@@ -30,6 +30,7 @@
 
   // --- the per-app flavour: [scene, tagline, first sound]
   var FLAVOUR = {
+    widget: ['columns', 'Your accounts at a glance', 'tick'],
     why: ['columns', 'See why we win', 'tick'],
     board: ['columns', 'Read the board', 'tick'],
     business: ['columns', 'Count the ventures', 'tap'],
