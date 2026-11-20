@@ -1,0 +1,1709 @@
+{
+ "v": 1,
+ "date": "2026-11-20",
+ "start": "2026-11-20",
+ "end": "2027-06-30",
+ "sessions": 156,
+ "n": 1000,
+ "months": [
+  "2026-11",
+  "2026-12",
+  "2027-01",
+  "2027-02",
+  "2027-03",
+  "2027-04",
+  "2027-05",
+  "2027-06"
+ ],
+ "markets": {
+  "H2": "Jul-Oct 2026-like",
+  "HALF": "half that edge",
+  "REF": "2021-25-like"
+ },
+ "tax": 0.35,
+ "tax_note": "35% set aside = the middle of day-taxes' Maryland pot (30% with no day job, 40% with one) until you say which",
+ "bank_lag_sessions": 3,
+ "seed": 2611,
+ "names": {
+  "Z50": "Zlarior 50K",
+  "N25": "Zlarior 25K #2",
+  "A25": "ATLAS funded 25K",
+  "R25": "Rapid EOD 25K",
+  "R2": "Rapid EOD 50K (5th slot, from payouts)",
+  "Z50b": "2nd Builder 50K (if MFFU says yes)"
+ },
+ "built_by": "tools/money/fleet_months.py",
+ "fills": {
+  "real": "ATLAS 10 ticks a side (its measured fills), LIT as stored (1 + 1 tick)",
+  "stress": "LIT at 10 ticks a side too"
+ },
+ "caps": {
+  "funded": 5,
+  "evals": 10,
+  "per_plan": {
+   "builder50k": 1,
+   "builder25k": 2,
+   "rapideod25": 3,
+   "rapideod50": 3
+  }
+ },
+ "prices": {
+  "builder50k": 91.8,
+  "builder25k": 63.0,
+  "rapideod25": 97.2,
+  "rapideod50": 165.0
+ },
+ "zero_cards": {
+  "cloud-alerts": "no $ change (it protects against a silent PC)",
+  "drop-lucid-account4": "no $ change (a page fix)"
+ },
+ "rows": {
+  "real": {
+   "H2": {
+    "span": "H2",
+    "fills": "real",
+    "summary": {
+     "months": [
+      {
+       "month": "2026-11",
+       "median": 14,
+       "bad_1_in_10": 3,
+       "good_1_in_10": 23,
+       "mean": 13,
+       "payouts_before_tax_median": 0,
+       "fees_mean": 0.18,
+       "k8_mean": 13.14,
+       "p_any_cash": 0.0
+      },
+      {
+       "month": "2026-12",
+       "median": 74,
+       "bad_1_in_10": -29,
+       "good_1_in_10": 954,
+       "mean": 344,
+       "payouts_before_tax_median": 0,
+       "fees_mean": 98.31,
+       "k8_mean": 47.99,
+       "p_any_cash": 48.6
+      },
+      {
+       "month": "2027-01",
+       "median": 572,
+       "bad_1_in_10": -28,
+       "good_1_in_10": 2858,
+       "mean": 1120,
+       "payouts_before_tax_median": 800,
+       "fees_mean": 91.18,
+       "k8_mean": 41.48,
+       "p_any_cash": 73.6
+      },
+      {
+       "month": "2027-02",
+       "median": 1523,
+       "bad_1_in_10": 0,
+       "good_1_in_10": 5454,
+       "mean": 2161,
+       "payouts_before_tax_median": 2338,
+       "fees_mean": 46.22,
+       "k8_mean": 40.2,
+       "p_any_cash": 81.0
+      },
+      {
+       "month": "2027-03",
+       "median": 2731,
+       "bad_1_in_10": 63,
+       "good_1_in_10": 8784,
+       "mean": 3666,
+       "payouts_before_tax_median": 4152,
+       "fees_mean": 46.58,
+       "k8_mean": 43.59,
+       "p_any_cash": 89.0
+      },
+      {
+       "month": "2027-04",
+       "median": 3434,
+       "bad_1_in_10": 291,
+       "good_1_in_10": 9104,
+       "mean": 4067,
+       "payouts_before_tax_median": 5304,
+       "fees_mean": 48.9,
+       "k8_mean": 39.38,
+       "p_any_cash": 90.7
+      },
+      {
+       "month": "2027-05",
+       "median": 3548,
+       "bad_1_in_10": 65,
+       "good_1_in_10": 9221,
+       "mean": 4155,
+       "payouts_before_tax_median": 5473,
+       "fees_mean": 55.65,
+       "k8_mean": 36.29,
+       "p_any_cash": 89.6
+      },
+      {
+       "month": "2027-06",
+       "median": 3874,
+       "bad_1_in_10": 266,
+       "good_1_in_10": 9555,
+       "mean": 4451,
+       "payouts_before_tax_median": 5977,
+       "fees_mean": 56.5,
+       "k8_mean": 35.92,
+       "p_any_cash": 90.5
+      }
+     ],
+     "total_median": 19510,
+     "total_bad": 6886,
+     "total_good": 33483,
+     "total_mean": 19976,
+     "per_month_mean": 2497,
+     "p_total_below_0": 0.1,
+     "k8_total_mean": 298,
+     "accounts": {
+      "A25": {
+       "name": "ATLAS funded 25K",
+       "total_median": 2366,
+       "total_bad": 977,
+       "total_mean": 2112,
+       "per_month_mean": 264,
+       "p_paid": 98.3,
+       "first_pay_med": "2027-01-07",
+       "lost_or_failed_mean": 0.3,
+       "rebuys_mean": 0.98,
+       "fees_mean": 61.74
+      },
+      "N25": {
+       "name": "Zlarior 25K #2",
+       "total_median": 1560,
+       "total_bad": -63,
+       "total_mean": 1602,
+       "per_month_mean": 200,
+       "p_paid": 89.4,
+       "first_pay_med": "2027-02-02",
+       "lost_or_failed_mean": 0.2,
+       "rebuys_mean": 0.66,
+       "fees_mean": 41.58
+      },
+      "R25": {
+       "name": "Rapid EOD 25K",
+       "total_median": 4301,
+       "total_bad": 462,
+       "total_mean": 4368,
+       "per_month_mean": 546,
+       "p_paid": 92.1,
+       "first_pay_med": "2027-02-16",
+       "lost_or_failed_mean": 0.52,
+       "rebuys_mean": 0.58,
+       "fees_mean": 56.08
+      },
+      "Z50": {
+       "name": "Zlarior 50K",
+       "total_median": 3889,
+       "total_bad": 948,
+       "total_mean": 3445,
+       "per_month_mean": 431,
+       "p_paid": 94.8,
+       "first_pay_med": "2027-02-11",
+       "lost_or_failed_mean": 0.09,
+       "rebuys_mean": 0.75,
+       "fees_mean": 69.13
+      },
+      "R2": {
+       "name": "Rapid EOD 50K (5th slot, from payouts)",
+       "total_median": 7840,
+       "total_bad": 462,
+       "total_mean": 8151,
+       "per_month_mean": 1019,
+       "p_paid": 92.6,
+       "first_pay_med": "2027-03-18",
+       "lost_or_failed_mean": 0.25,
+       "rebuys_mean": 1.3,
+       "fees_mean": 215.0
+      }
+     },
+     "next_buy": {
+      "what": "Rapid EOD 50K",
+      "price": 165.0,
+      "code": "CLUB",
+      "p_bought": 99.9,
+      "date_med": "2027-01-05",
+      "date_p10": "2026-12-14",
+      "date_p90": "2027-02-12"
+     }
+    },
+    "k8": {
+     "stake": 2.5,
+     "bankroll": 55,
+     "kill_from_peak": 19.25,
+     "level": "as_tested"
+    },
+    "cards": {
+     "zlarior-atlas-50k": {
+      "what": "ATLAS on Zlarior's 50K once funded (LIT + ATLAS $500)",
+      "usd_month_mean": 209,
+      "usd_month_median_shift": 203,
+      "bad_1_in_10_shift": 183,
+      "p_better": 83.6,
+      "accounts_lost_change": 0.04
+     },
+     "atlas-on-rapid": {
+      "what": "Rapid: ATLAS next to Zlarior (built ON; NO = LIT alone)",
+      "usd_month_mean": 390,
+      "usd_month_median_shift": 405,
+      "bad_1_in_10_shift": 151,
+      "p_better": 89.1,
+      "accounts_lost_change": 0.33
+     },
+     "rapid25-lit-bank": {
+      "what": "Rapid 25K: LIT 1 micro banked at the day's room",
+      "usd_month_mean": 53,
+      "usd_month_median_shift": 60,
+      "bad_1_in_10_shift": 57,
+      "p_better": 54.6,
+      "accounts_lost_change": 0.04
+     },
+     "zlarior-funded25": {
+      "what": "ATLAS's funded 25K: LIT trades it too",
+      "usd_month_mean": 159,
+      "usd_month_median_shift": 116,
+      "bad_1_in_10_shift": 22,
+      "p_better": 73.9,
+      "accounts_lost_change": 0.02
+     },
+     "atlas-funded-room-40": {
+      "what": "ATLAS's funded 25K at 40% of the room",
+      "usd_month_mean": -54,
+      "usd_month_median_shift": -51,
+      "bad_1_in_10_shift": -36,
+      "p_better": 30.5,
+      "accounts_lost_change": -0.12
+     },
+     "atlas-funded-streak-1micro": {
+      "what": "ATLAS's funded 25K: 1 micro after 2 losses in a row",
+      "usd_month_mean": -27,
+      "usd_month_median_shift": -38,
+      "bad_1_in_10_shift": 39,
+      "p_better": 35.9,
+      "accounts_lost_change": -0.15
+     },
+     "payout-ping-1000": {
+      "what": "Ask at $1,000 instead of $750 (both 25Ks)",
+      "usd_month_mean": -25,
+      "usd_month_median_shift": -23,
+      "bad_1_in_10_shift": -8,
+      "p_better": 40.3,
+      "accounts_lost_change": -0.03
+     },
+     "keep-1000-rapid": {
+      "what": "Keep $1,000 in each Rapid at payouts",
+      "usd_month_mean": 15,
+      "usd_month_median_shift": 24,
+      "bad_1_in_10_shift": 24,
+      "p_better": 31.7,
+      "accounts_lost_change": -0.17
+     },
+     "ask-mffu-parallel": {
+      "what": "A written MFFU yes -> a 2nd Builder 50K eval now",
+      "usd_month_mean": 38,
+      "usd_month_median_shift": 43,
+      "bad_1_in_10_shift": 42,
+      "p_better": 40.4,
+      "accounts_lost_change": -0.01
+     }
+    },
+    "secs": 83
+   },
+   "HALF": {
+    "span": "HALF",
+    "fills": "real",
+    "summary": {
+     "months": [
+      {
+       "month": "2026-11",
+       "median": 6,
+       "bad_1_in_10": -13,
+       "good_1_in_10": 15,
+       "mean": 1,
+       "payouts_before_tax_median": 0,
+       "fees_mean": 5.91,
+       "k8_mean": 6.34,
+       "p_any_cash": 0.1
+      },
+      {
+       "month": "2026-12",
+       "median": -36,
+       "bad_1_in_10": -206,
+       "good_1_in_10": 369,
+       "mean": 37,
+       "payouts_before_tax_median": 0,
+       "fees_mean": 123.68,
+       "k8_mean": 21.15,
+       "p_any_cash": 21.1
+      },
+      {
+       "month": "2027-01",
+       "median": -43,
+       "bad_1_in_10": -229,
+       "good_1_in_10": 901,
+       "mean": 183,
+       "payouts_before_tax_median": 0,
+       "fees_mean": 140.05,
+       "k8_mean": 15.47,
+       "p_any_cash": 27.8
+      },
+      {
+       "month": "2027-02",
+       "median": -24,
+       "bad_1_in_10": -257,
+       "good_1_in_10": 1421,
+       "mean": 356,
+       "payouts_before_tax_median": 0,
+       "fees_mean": 140.86,
+       "k8_mean": 12.48,
+       "p_any_cash": 35.5
+      },
+      {
+       "month": "2027-03",
+       "median": 0,
+       "bad_1_in_10": -300,
+       "good_1_in_10": 1886,
+       "mean": 624,
+       "payouts_before_tax_median": 0,
+       "fees_mean": 159.3,
+       "k8_mean": 12.03,
+       "p_any_cash": 44.5
+      },
+      {
+       "month": "2027-04",
+       "median": 19,
+       "bad_1_in_10": -291,
+       "good_1_in_10": 1972,
+       "mean": 653,
+       "payouts_before_tax_median": 0,
+       "fees_mean": 145.22,
+       "k8_mean": 9.78,
+       "p_any_cash": 47.1
+      },
+      {
+       "month": "2027-05",
+       "median": 37,
+       "bad_1_in_10": -296,
+       "good_1_in_10": 2691,
+       "mean": 842,
+       "payouts_before_tax_median": 0,
+       "fees_mean": 141.81,
+       "k8_mean": 7.09,
+       "p_any_cash": 49.5
+      },
+      {
+       "month": "2027-06",
+       "median": 52,
+       "bad_1_in_10": -299,
+       "good_1_in_10": 2995,
+       "mean": 926,
+       "payouts_before_tax_median": 525,
+       "fees_mean": 145.18,
+       "k8_mean": 5.93,
+       "p_any_cash": 50.3
+      }
+     ],
+     "total_median": 1987,
+     "total_bad": -657,
+     "total_good": 10524,
+     "total_mean": 3621,
+     "per_month_mean": 453,
+     "p_total_below_0": 21.1,
+     "k8_total_mean": 90,
+     "accounts": {
+      "A25": {
+       "name": "ATLAS funded 25K",
+       "total_median": 211,
+       "total_bad": -504,
+       "total_mean": 433,
+       "per_month_mean": 54,
+       "p_paid": 69.5,
+       "first_pay_med": "2027-02-05",
+       "lost_or_failed_mean": 2.05,
+       "rebuys_mean": 4.82,
+       "fees_mean": 303.66
+      },
+      "N25": {
+       "name": "Zlarior 25K #2",
+       "total_median": 394,
+       "total_bad": -126,
+       "total_mean": 539,
+       "per_month_mean": 67,
+       "p_paid": 57.0,
+       "first_pay_med": "2027-03-12",
+       "lost_or_failed_mean": 0.42,
+       "rebuys_mean": 0.97,
+       "fees_mean": 61.17
+      },
+      "R25": {
+       "name": "Rapid EOD 25K",
+       "total_median": -194,
+       "total_bad": -292,
+       "total_mean": 568,
+       "per_month_mean": 71,
+       "p_paid": 38.2,
+       "first_pay_med": "2027-03-31",
+       "lost_or_failed_mean": 0.93,
+       "rebuys_mean": 2.01,
+       "fees_mean": 195.47
+      },
+      "Z50": {
+       "name": "Zlarior 50K",
+       "total_median": 948,
+       "total_bad": -184,
+       "total_mean": 1315,
+       "per_month_mean": 164,
+       "p_paid": 68.1,
+       "first_pay_med": "2027-03-19",
+       "lost_or_failed_mean": 0.31,
+       "rebuys_mean": 1.22,
+       "fees_mean": 111.54
+      },
+      "R2": {
+       "name": "Rapid EOD 50K (5th slot, from payouts)",
+       "total_median": -165,
+       "total_bad": -660,
+       "total_mean": 675,
+       "per_month_mean": 84,
+       "p_paid": 28.9,
+       "first_pay_med": "2027-04-23",
+       "lost_or_failed_mean": 0.45,
+       "rebuys_mean": 2.0,
+       "fees_mean": 330.17
+      }
+     },
+     "next_buy": {
+      "what": "Rapid EOD 50K",
+      "price": 165.0,
+      "code": "CLUB",
+      "p_bought": 86.2,
+      "date_med": "2027-02-04",
+      "date_p10": "2026-12-17",
+      "date_p90": "2027-05-13"
+     }
+    },
+    "k8": {
+     "stake": 2.5,
+     "bankroll": 55,
+     "kill_from_peak": 19.25,
+     "level": "half_edge"
+    },
+    "cards": {
+     "zlarior-atlas-50k": {
+      "what": "ATLAS on Zlarior's 50K once funded (LIT + ATLAS $500)",
+      "usd_month_mean": -22,
+      "usd_month_median_shift": -51,
+      "bad_1_in_10_shift": -20,
+      "p_better": 31.7,
+      "accounts_lost_change": 0.52
+     },
+     "atlas-on-rapid": {
+      "what": "Rapid: ATLAS next to Zlarior (built ON; NO = LIT alone)",
+      "usd_month_mean": 33,
+      "usd_month_median_shift": 19,
+      "bad_1_in_10_shift": -17,
+      "p_better": 34.3,
+      "accounts_lost_change": 0.77
+     },
+     "rapid25-lit-bank": {
+      "what": "Rapid 25K: LIT 1 micro banked at the day's room",
+      "usd_month_mean": 17,
+      "usd_month_median_shift": 21,
+      "bad_1_in_10_shift": -5,
+      "p_better": 40.1,
+      "accounts_lost_change": 0.17
+     },
+     "zlarior-funded25": {
+      "what": "ATLAS's funded 25K: LIT trades it too",
+      "usd_month_mean": 89,
+      "usd_month_median_shift": 78,
+      "bad_1_in_10_shift": 20,
+      "p_better": 73.8,
+      "accounts_lost_change": -0.9
+     },
+     "atlas-funded-room-40": {
+      "what": "ATLAS's funded 25K at 40% of the room",
+      "usd_month_mean": -14,
+      "usd_month_median_shift": -7,
+      "bad_1_in_10_shift": 0,
+      "p_better": 45.3,
+      "accounts_lost_change": -0.31
+     },
+     "atlas-funded-streak-1micro": {
+      "what": "ATLAS's funded 25K: 1 micro after 2 losses in a row",
+      "usd_month_mean": 21,
+      "usd_month_median_shift": 27,
+      "bad_1_in_10_shift": 24,
+      "p_better": 64.9,
+      "accounts_lost_change": -0.88
+     },
+     "payout-ping-1000": {
+      "what": "Ask at $1,000 instead of $750 (both 25Ks)",
+      "usd_month_mean": -9,
+      "usd_month_median_shift": -7,
+      "bad_1_in_10_shift": -2,
+      "p_better": 28.8,
+      "accounts_lost_change": -0.07
+     },
+     "keep-1000-rapid": {
+      "what": "Keep $1,000 in each Rapid at payouts",
+      "usd_month_mean": 0,
+      "usd_month_median_shift": -2,
+      "bad_1_in_10_shift": -2,
+      "p_better": 10.3,
+      "accounts_lost_change": -0.08
+     },
+     "ask-mffu-parallel": {
+      "what": "A written MFFU yes -> a 2nd Builder 50K eval now",
+      "usd_month_mean": 10,
+      "usd_month_median_shift": 17,
+      "bad_1_in_10_shift": -3,
+      "p_better": 31.9,
+      "accounts_lost_change": 0.02
+     }
+    },
+    "secs": 98
+   },
+   "REF": {
+    "span": "REF",
+    "fills": "real",
+    "summary": {
+     "months": [
+      {
+       "month": "2026-11",
+       "median": -2,
+       "bad_1_in_10": -62,
+       "good_1_in_10": 9,
+       "mean": -11,
+       "payouts_before_tax_median": 0,
+       "fees_mean": 11.91,
+       "k8_mean": -0.14,
+       "p_any_cash": 0.2
+      },
+      {
+       "month": "2026-12",
+       "median": -159,
+       "bad_1_in_10": -362,
+       "good_1_in_10": 1,
+       "mean": -152,
+       "payouts_before_tax_median": 0,
+       "fees_mean": 195.67,
+       "k8_mean": -0.43,
+       "p_any_cash": 8.0
+      },
+      {
+       "month": "2027-01",
+       "median": -162,
+       "bad_1_in_10": -378,
+       "good_1_in_10": 0,
+       "mean": -158,
+       "payouts_before_tax_median": 0,
+       "fees_mean": 201.34,
+       "k8_mean": -0.18,
+       "p_any_cash": 7.0
+      },
+      {
+       "month": "2027-02",
+       "median": -189,
+       "bad_1_in_10": -378,
+       "good_1_in_10": 0,
+       "mean": -164,
+       "payouts_before_tax_median": 0,
+       "fees_mean": 218.83,
+       "k8_mean": -0.28,
+       "p_any_cash": 7.8
+      },
+      {
+       "month": "2027-03",
+       "median": -223,
+       "bad_1_in_10": -441,
+       "good_1_in_10": 0,
+       "mean": -183,
+       "payouts_before_tax_median": 0,
+       "fees_mean": 254.63,
+       "k8_mean": 0.03,
+       "p_any_cash": 8.8
+      },
+      {
+       "month": "2027-04",
+       "median": -218,
+       "bad_1_in_10": -417,
+       "good_1_in_10": 0,
+       "mean": -158,
+       "payouts_before_tax_median": 0,
+       "fees_mean": 233.43,
+       "k8_mean": 0.03,
+       "p_any_cash": 9.6
+      },
+      {
+       "month": "2027-05",
+       "median": -218,
+       "bad_1_in_10": -441,
+       "good_1_in_10": 0,
+       "mean": -153,
+       "payouts_before_tax_median": 0,
+       "fees_mean": 234.39,
+       "k8_mean": 0.06,
+       "p_any_cash": 9.3
+      },
+      {
+       "month": "2027-06",
+       "median": -218,
+       "bad_1_in_10": -441,
+       "good_1_in_10": 0,
+       "mean": -161,
+       "payouts_before_tax_median": 0,
+       "fees_mean": 235.75,
+       "k8_mean": 0.0,
+       "p_any_cash": 8.3
+      }
+     ],
+     "total_median": -1347,
+     "total_bad": -1874,
+     "total_good": -231,
+     "total_mean": -1141,
+     "per_month_mean": -143,
+     "p_total_below_0": 92.4,
+     "k8_total_mean": -1,
+     "accounts": {
+      "A25": {
+       "name": "ATLAS funded 25K",
+       "total_median": -693,
+       "total_bad": -1008,
+       "total_mean": -536,
+       "per_month_mean": -67,
+       "p_paid": 30.5,
+       "first_pay_med": "2027-02-16",
+       "lost_or_failed_mean": 3.12,
+       "rebuys_mean": 11.65,
+       "fees_mean": 733.89
+      },
+      "N25": {
+       "name": "Zlarior 25K #2",
+       "total_median": -126,
+       "total_bad": -189,
+       "total_mean": -50,
+       "per_month_mean": -6,
+       "p_paid": 10.5,
+       "first_pay_med": "2027-04-12",
+       "lost_or_failed_mean": 0.45,
+       "rebuys_mean": 1.76,
+       "fees_mean": 110.88
+      },
+      "R25": {
+       "name": "Rapid EOD 25K",
+       "total_median": -292,
+       "total_bad": -486,
+       "total_mean": -304,
+       "per_month_mean": -38,
+       "p_paid": 3.3,
+       "first_pay_med": "2027-03-30",
+       "lost_or_failed_mean": 0.26,
+       "rebuys_mean": 3.45,
+       "fees_mean": 335.15
+      },
+      "Z50": {
+       "name": "Zlarior 50K",
+       "total_median": -275,
+       "total_bad": -367,
+       "total_mean": -105,
+       "per_month_mean": -13,
+       "p_paid": 11.2,
+       "first_pay_med": "2027-04-13",
+       "lost_or_failed_mean": 0.42,
+       "rebuys_mean": 2.58,
+       "fees_mean": 236.75
+      },
+      "R2": {
+       "name": "Rapid EOD 50K (5th slot, from payouts)",
+       "total_median": 0,
+       "total_bad": -676,
+       "total_mean": -145,
+       "per_month_mean": -18,
+       "p_paid": 1.3,
+       "first_pay_med": "2027-04-30",
+       "lost_or_failed_mean": 0.05,
+       "rebuys_mean": 1.03,
+       "fees_mean": 169.29
+      }
+     },
+     "next_buy": {
+      "what": "Rapid EOD 50K",
+      "price": 165.0,
+      "code": "CLUB",
+      "p_bought": 26.0,
+      "date_med": "2027-01-29",
+      "date_p10": "2026-12-09",
+      "date_p90": "2027-05-21"
+     }
+    },
+    "k8": {
+     "stake": 2.5,
+     "bankroll": 55,
+     "kill_from_peak": 19.25,
+     "level": "no_edge"
+    },
+    "cards": {
+     "zlarior-atlas-50k": {
+      "what": "ATLAS on Zlarior's 50K once funded (LIT + ATLAS $500)",
+      "usd_month_mean": -13,
+      "usd_month_median_shift": -10,
+      "bad_1_in_10_shift": -8,
+      "p_better": 6.7,
+      "accounts_lost_change": 0.41
+     },
+     "atlas-on-rapid": {
+      "what": "Rapid: ATLAS next to Zlarior (built ON; NO = LIT alone)",
+      "usd_month_mean": -32,
+      "usd_month_median_shift": -32,
+      "bad_1_in_10_shift": -44,
+      "p_better": 5.1,
+      "accounts_lost_change": 0.21
+     },
+     "rapid25-lit-bank": {
+      "what": "Rapid 25K: LIT 1 micro banked at the day's room",
+      "usd_month_mean": 1,
+      "usd_month_median_shift": -2,
+      "bad_1_in_10_shift": -4,
+      "p_better": 23.1,
+      "accounts_lost_change": 0.1
+     },
+     "zlarior-funded25": {
+      "what": "ATLAS's funded 25K: LIT trades it too",
+      "usd_month_mean": 27,
+      "usd_month_median_shift": 19,
+      "bad_1_in_10_shift": 14,
+      "p_better": 72.5,
+      "accounts_lost_change": -0.74
+     },
+     "atlas-funded-room-40": {
+      "what": "ATLAS's funded 25K at 40% of the room",
+      "usd_month_mean": 6,
+      "usd_month_median_shift": 5,
+      "bad_1_in_10_shift": 8,
+      "p_better": 59.0,
+      "accounts_lost_change": -0.24
+     },
+     "atlas-funded-streak-1micro": {
+      "what": "ATLAS's funded 25K: 1 micro after 2 losses in a row",
+      "usd_month_mean": 19,
+      "usd_month_median_shift": 21,
+      "bad_1_in_10_shift": 20,
+      "p_better": 78.7,
+      "accounts_lost_change": -0.71
+     },
+     "payout-ping-1000": {
+      "what": "Ask at $1,000 instead of $750 (both 25Ks)",
+      "usd_month_mean": 0,
+      "usd_month_median_shift": 0,
+      "bad_1_in_10_shift": 1,
+      "p_better": 10.7,
+      "accounts_lost_change": -0.03
+     },
+     "keep-1000-rapid": {
+      "what": "Keep $1,000 in each Rapid at payouts",
+      "usd_month_mean": 0,
+      "usd_month_median_shift": 0,
+      "bad_1_in_10_shift": 0,
+      "p_better": 0.5,
+      "accounts_lost_change": -0.01
+     },
+     "ask-mffu-parallel": {
+      "what": "A written MFFU yes -> a 2nd Builder 50K eval now",
+      "usd_month_mean": -5,
+      "usd_month_median_shift": -9,
+      "bad_1_in_10_shift": -10,
+      "p_better": 12.4,
+      "accounts_lost_change": 0.07
+     }
+    },
+    "secs": 107
+   }
+  },
+  "stress": {
+   "H2": {
+    "span": "H2",
+    "fills": "stress",
+    "summary": {
+     "months": [
+      {
+       "month": "2026-11",
+       "median": 14,
+       "bad_1_in_10": 2,
+       "good_1_in_10": 23,
+       "mean": 12,
+       "payouts_before_tax_median": 0,
+       "fees_mean": 1.38,
+       "k8_mean": 13.14,
+       "p_any_cash": 0.0
+      },
+      {
+       "month": "2026-12",
+       "median": 67,
+       "bad_1_in_10": -44,
+       "good_1_in_10": 914,
+       "mean": 313,
+       "payouts_before_tax_median": 0,
+       "fees_mean": 107.14,
+       "k8_mean": 47.99,
+       "p_any_cash": 47.4
+      },
+      {
+       "month": "2027-01",
+       "median": 542,
+       "bad_1_in_10": -63,
+       "good_1_in_10": 2652,
+       "mean": 990,
+       "payouts_before_tax_median": 800,
+       "fees_mean": 102.75,
+       "k8_mean": 41.48,
+       "p_any_cash": 71.0
+      },
+      {
+       "month": "2027-02",
+       "median": 1093,
+       "bad_1_in_10": -29,
+       "good_1_in_10": 4906,
+       "mean": 1907,
+       "payouts_before_tax_median": 1600,
+       "fees_mean": 57.65,
+       "k8_mean": 40.2,
+       "p_any_cash": 77.7
+      },
+      {
+       "month": "2027-03",
+       "median": 2041,
+       "bad_1_in_10": 30,
+       "good_1_in_10": 8045,
+       "mean": 3157,
+       "payouts_before_tax_median": 3200,
+       "fees_mean": 61.35,
+       "k8_mean": 43.59,
+       "p_any_cash": 85.4
+      },
+      {
+       "month": "2027-04",
+       "median": 2746,
+       "bad_1_in_10": 46,
+       "good_1_in_10": 8384,
+       "mean": 3513,
+       "payouts_before_tax_median": 4174,
+       "fees_mean": 55.45,
+       "k8_mean": 39.38,
+       "p_any_cash": 88.2
+      },
+      {
+       "month": "2027-05",
+       "median": 2796,
+       "bad_1_in_10": 43,
+       "good_1_in_10": 8611,
+       "mean": 3622,
+       "payouts_before_tax_median": 4281,
+       "fees_mean": 64.19,
+       "k8_mean": 36.29,
+       "p_any_cash": 87.6
+      },
+      {
+       "month": "2027-06",
+       "median": 3014,
+       "bad_1_in_10": 0,
+       "good_1_in_10": 8749,
+       "mean": 3857,
+       "payouts_before_tax_median": 4677,
+       "fees_mean": 69.51,
+       "k8_mean": 35.92,
+       "p_any_cash": 87.0
+      }
+     ],
+     "total_median": 16346,
+     "total_bad": 5164,
+     "total_good": 31081,
+     "total_mean": 17372,
+     "per_month_mean": 2171,
+     "p_total_below_0": 0.1,
+     "k8_total_mean": 298,
+     "accounts": {
+      "A25": {
+       "name": "ATLAS funded 25K",
+       "total_median": 2366,
+       "total_bad": 977,
+       "total_mean": 2112,
+       "per_month_mean": 264,
+       "p_paid": 98.3,
+       "first_pay_med": "2027-01-07",
+       "lost_or_failed_mean": 0.3,
+       "rebuys_mean": 0.98,
+       "fees_mean": 61.74
+      },
+      "N25": {
+       "name": "Zlarior 25K #2",
+       "total_median": 1465,
+       "total_bad": -63,
+       "total_mean": 1334,
+       "per_month_mean": 167,
+       "p_paid": 84.0,
+       "first_pay_med": "2027-02-08",
+       "lost_or_failed_mean": 0.31,
+       "rebuys_mean": 0.79,
+       "fees_mean": 49.9
+      },
+      "R25": {
+       "name": "Rapid EOD 25K",
+       "total_median": 3442,
+       "total_bad": -97,
+       "total_mean": 3684,
+       "per_month_mean": 460,
+       "p_paid": 90.4,
+       "first_pay_med": "2027-02-19",
+       "lost_or_failed_mean": 0.72,
+       "rebuys_mean": 0.79,
+       "fees_mean": 76.89
+      },
+      "Z50": {
+       "name": "Zlarior 50K",
+       "total_median": 3072,
+       "total_bad": 726,
+       "total_mean": 3015,
+       "per_month_mean": 377,
+       "p_paid": 91.9,
+       "first_pay_med": "2027-02-12",
+       "lost_or_failed_mean": 0.19,
+       "rebuys_mean": 0.99,
+       "fees_mean": 90.97
+      },
+      "R2": {
+       "name": "Rapid EOD 50K (5th slot, from payouts)",
+       "total_median": 6362,
+       "total_bad": -165,
+       "total_mean": 6929,
+       "per_month_mean": 866,
+       "p_paid": 89.8,
+       "first_pay_med": "2027-03-23",
+       "lost_or_failed_mean": 0.37,
+       "rebuys_mean": 1.45,
+       "fees_mean": 239.91
+      }
+     },
+     "next_buy": {
+      "what": "Rapid EOD 50K",
+      "price": 165.0,
+      "code": "CLUB",
+      "p_bought": 99.8,
+      "date_med": "2027-01-06",
+      "date_p10": "2026-12-14",
+      "date_p90": "2027-02-15"
+     }
+    },
+    "k8": {
+     "stake": 2.5,
+     "bankroll": 55,
+     "kill_from_peak": 19.25,
+     "level": "as_tested"
+    },
+    "cards": {},
+    "secs": 18
+   },
+   "HALF": {
+    "span": "HALF",
+    "fills": "stress",
+    "summary": {
+     "months": [
+      {
+       "month": "2026-11",
+       "median": 5,
+       "bad_1_in_10": -46,
+       "good_1_in_10": 15,
+       "mean": -1,
+       "payouts_before_tax_median": 0,
+       "fees_mean": 8.03,
+       "k8_mean": 6.34,
+       "p_any_cash": 0.1
+      },
+      {
+       "month": "2026-12",
+       "median": -51,
+       "bad_1_in_10": -249,
+       "good_1_in_10": 347,
+       "mean": 9,
+       "payouts_before_tax_median": 0,
+       "fees_mean": 144.36,
+       "k8_mean": 21.15,
+       "p_any_cash": 20.9
+      },
+      {
+       "month": "2027-01",
+       "median": -62,
+       "bad_1_in_10": -268,
+       "good_1_in_10": 807,
+       "mean": 124,
+       "payouts_before_tax_median": 0,
+       "fees_mean": 159.46,
+       "k8_mean": 15.47,
+       "p_any_cash": 26.7
+      },
+      {
+       "month": "2027-02",
+       "median": -63,
+       "bad_1_in_10": -312,
+       "good_1_in_10": 1187,
+       "mean": 247,
+       "payouts_before_tax_median": 0,
+       "fees_mean": 157.26,
+       "k8_mean": 12.48,
+       "p_any_cash": 31.6
+      },
+      {
+       "month": "2027-03",
+       "median": -47,
+       "bad_1_in_10": -325,
+       "good_1_in_10": 1474,
+       "mean": 453,
+       "payouts_before_tax_median": 0,
+       "fees_mean": 175.87,
+       "k8_mean": 12.03,
+       "p_any_cash": 38.4
+      },
+      {
+       "month": "2027-04",
+       "median": -43,
+       "bad_1_in_10": -325,
+       "good_1_in_10": 1524,
+       "mean": 414,
+       "payouts_before_tax_median": 0,
+       "fees_mean": 167.49,
+       "k8_mean": 9.78,
+       "p_any_cash": 36.9
+      },
+      {
+       "month": "2027-05",
+       "median": 0,
+       "bad_1_in_10": -349,
+       "good_1_in_10": 1958,
+       "mean": 573,
+       "payouts_before_tax_median": 0,
+       "fees_mean": 164.28,
+       "k8_mean": 7.09,
+       "p_any_cash": 42.5
+      },
+      {
+       "month": "2027-06",
+       "median": 0,
+       "bad_1_in_10": -354,
+       "good_1_in_10": 2085,
+       "mean": 607,
+       "payouts_before_tax_median": 0,
+       "fees_mean": 167.44,
+       "k8_mean": 5.93,
+       "p_any_cash": 43.1
+      }
+     ],
+     "total_median": 1006,
+     "total_bad": -1005,
+     "total_good": 7703,
+     "total_mean": 2427,
+     "per_month_mean": 303,
+     "p_total_below_0": 33.1,
+     "k8_total_mean": 90,
+     "accounts": {
+      "A25": {
+       "name": "ATLAS funded 25K",
+       "total_median": 211,
+       "total_bad": -504,
+       "total_mean": 433,
+       "per_month_mean": 54,
+       "p_paid": 69.5,
+       "first_pay_med": "2027-02-05",
+       "lost_or_failed_mean": 2.05,
+       "rebuys_mean": 4.82,
+       "fees_mean": 303.66
+      },
+      "N25": {
+       "name": "Zlarior 25K #2",
+       "total_median": -63,
+       "total_bad": -189,
+       "total_mean": 304,
+       "per_month_mean": 38,
+       "p_paid": 44.0,
+       "first_pay_med": "2027-03-18",
+       "lost_or_failed_mean": 0.58,
+       "rebuys_mean": 1.51,
+       "fees_mean": 94.94
+      },
+      "R25": {
+       "name": "Rapid EOD 25K",
+       "total_median": -194,
+       "total_bad": -292,
+       "total_mean": 368,
+       "per_month_mean": 46,
+       "p_paid": 34.1,
+       "first_pay_med": "2027-03-29",
+       "lost_or_failed_mean": 0.96,
+       "rebuys_mean": 2.26,
+       "fees_mean": 219.87
+      },
+      "Z50": {
+       "name": "Zlarior 50K",
+       "total_median": 673,
+       "total_bad": -367,
+       "total_mean": 838,
+       "per_month_mean": 105,
+       "p_paid": 54.4,
+       "first_pay_med": "2027-03-22",
+       "lost_or_failed_mean": 0.5,
+       "rebuys_mean": 2.0,
+       "fees_mean": 183.32
+      },
+      "R2": {
+       "name": "Rapid EOD 50K (5th slot, from payouts)",
+       "total_median": -165,
+       "total_bad": -660,
+       "total_mean": 394,
+       "per_month_mean": 49,
+       "p_paid": 23.0,
+       "first_pay_med": "2027-04-22",
+       "lost_or_failed_mean": 0.48,
+       "rebuys_mean": 2.08,
+       "fees_mean": 342.38
+      }
+     },
+     "next_buy": {
+      "what": "Rapid EOD 50K",
+      "price": 165.0,
+      "code": "CLUB",
+      "p_bought": 78.6,
+      "date_med": "2027-01-29",
+      "date_p10": "2026-12-17",
+      "date_p90": "2027-05-17"
+     }
+    },
+    "k8": {
+     "stake": 2.5,
+     "bankroll": 55,
+     "kill_from_peak": 19.25,
+     "level": "half_edge"
+    },
+    "cards": {},
+    "secs": 20
+   },
+   "REF": {
+    "span": "REF",
+    "fills": "stress",
+    "summary": {
+     "months": [
+      {
+       "month": "2026-11",
+       "median": -3,
+       "bad_1_in_10": -66,
+       "good_1_in_10": 9,
+       "mean": -14,
+       "payouts_before_tax_median": 0,
+       "fees_mean": 15.06,
+       "k8_mean": -0.14,
+       "p_any_cash": 0.2
+      },
+      {
+       "month": "2026-12",
+       "median": -204,
+       "bad_1_in_10": -391,
+       "good_1_in_10": -3,
+       "mean": -190,
+       "payouts_before_tax_median": 0,
+       "fees_mean": 232.03,
+       "k8_mean": -0.43,
+       "p_any_cash": 8.0
+      },
+      {
+       "month": "2027-01",
+       "median": -216,
+       "bad_1_in_10": -388,
+       "good_1_in_10": -4,
+       "mean": -193,
+       "payouts_before_tax_median": 0,
+       "fees_mean": 228.07,
+       "k8_mean": -0.18,
+       "p_any_cash": 5.9
+      },
+      {
+       "month": "2027-02",
+       "median": -223,
+       "bad_1_in_10": -441,
+       "good_1_in_10": 0,
+       "mean": -196,
+       "payouts_before_tax_median": 0,
+       "fees_mean": 243.18,
+       "k8_mean": -0.28,
+       "p_any_cash": 7.1
+      },
+      {
+       "month": "2027-03",
+       "median": -281,
+       "bad_1_in_10": -475,
+       "good_1_in_10": -63,
+       "mean": -234,
+       "payouts_before_tax_median": 0,
+       "fees_mean": 286.79,
+       "k8_mean": 0.03,
+       "p_any_cash": 7.1
+      },
+      {
+       "month": "2027-04",
+       "median": -223,
+       "bad_1_in_10": -441,
+       "good_1_in_10": 0,
+       "mean": -200,
+       "payouts_before_tax_median": 0,
+       "fees_mean": 254.38,
+       "k8_mean": 0.03,
+       "p_any_cash": 7.8
+      },
+      {
+       "month": "2027-05",
+       "median": -223,
+       "bad_1_in_10": -470,
+       "good_1_in_10": -63,
+       "mean": -210,
+       "payouts_before_tax_median": 0,
+       "fees_mean": 257.51,
+       "k8_mean": 0.06,
+       "p_any_cash": 6.1
+      },
+      {
+       "month": "2027-06",
+       "median": -240,
+       "bad_1_in_10": -451,
+       "good_1_in_10": 0,
+       "mean": -217,
+       "payouts_before_tax_median": 0,
+       "fees_mean": 263.52,
+       "k8_mean": 0.0,
+       "p_any_cash": 6.3
+      }
+     ],
+     "total_median": -1593,
+     "total_bad": -2151,
+     "total_good": -637,
+     "total_mean": -1454,
+     "per_month_mean": -182,
+     "p_total_below_0": 95.7,
+     "k8_total_mean": -1,
+     "accounts": {
+      "A25": {
+       "name": "ATLAS funded 25K",
+       "total_median": -693,
+       "total_bad": -1008,
+       "total_mean": -536,
+       "per_month_mean": -67,
+       "p_paid": 30.5,
+       "first_pay_med": "2027-02-16",
+       "lost_or_failed_mean": 3.12,
+       "rebuys_mean": 11.65,
+       "fees_mean": 733.89
+      },
+      "N25": {
+       "name": "Zlarior 25K #2",
+       "total_median": -189,
+       "total_bad": -252,
+       "total_mean": -139,
+       "per_month_mean": -17,
+       "p_paid": 4.3,
+       "first_pay_med": "2027-03-18",
+       "lost_or_failed_mean": 0.45,
+       "rebuys_mean": 2.58,
+       "fees_mean": 162.67
+      },
+      "R25": {
+       "name": "Rapid EOD 25K",
+       "total_median": -389,
+       "total_bad": -486,
+       "total_mean": -349,
+       "per_month_mean": -44,
+       "p_paid": 2.2,
+       "first_pay_med": "2027-03-19",
+       "lost_or_failed_mean": 0.22,
+       "rebuys_mean": 3.89,
+       "fees_mean": 377.72
+      },
+      "Z50": {
+       "name": "Zlarior 50K",
+       "total_median": -367,
+       "total_bad": -551,
+       "total_mean": -282,
+       "per_month_mean": -35,
+       "p_paid": 6.5,
+       "first_pay_med": "2027-04-07",
+       "lost_or_failed_mean": 0.51,
+       "rebuys_mean": 3.89,
+       "fees_mean": 357.1
+      },
+      "R2": {
+       "name": "Rapid EOD 50K (5th slot, from payouts)",
+       "total_median": 0,
+       "total_bad": -660,
+       "total_mean": -146,
+       "per_month_mean": -18,
+       "p_paid": 0.3,
+       "first_pay_med": "2027-05-20",
+       "lost_or_failed_mean": 0.04,
+       "rebuys_mean": 0.9,
+       "fees_mean": 149.16
+      }
+     },
+     "next_buy": {
+      "what": "Rapid EOD 50K",
+      "price": 165.0,
+      "code": "CLUB",
+      "p_bought": 19.4,
+      "date_med": "2027-01-13",
+      "date_p10": "2026-12-08",
+      "date_p90": "2027-04-19"
+     }
+    },
+    "k8": {
+     "stake": 2.5,
+     "bankroll": 55,
+     "kill_from_peak": 19.25,
+     "level": "no_edge"
+    },
+    "cards": {},
+    "secs": 21
+   }
+  }
+ },
+ "secs": 107,
+ "ranked_cards": [
+  {
+   "id": "atlas-on-rapid",
+   "what": "Rapid: ATLAS next to Zlarior (built ON; NO = LIT alone)",
+   "by_market": {
+    "H2": {
+     "what": "Rapid: ATLAS next to Zlarior (built ON; NO = LIT alone)",
+     "usd_month_mean": 390,
+     "usd_month_median_shift": 405,
+     "bad_1_in_10_shift": 151,
+     "p_better": 89.1,
+     "accounts_lost_change": 0.33
+    },
+    "HALF": {
+     "what": "Rapid: ATLAS next to Zlarior (built ON; NO = LIT alone)",
+     "usd_month_mean": 33,
+     "usd_month_median_shift": 19,
+     "bad_1_in_10_shift": -17,
+     "p_better": 34.3,
+     "accounts_lost_change": 0.77
+    },
+    "REF": {
+     "what": "Rapid: ATLAS next to Zlarior (built ON; NO = LIT alone)",
+     "usd_month_mean": -32,
+     "usd_month_median_shift": -32,
+     "bad_1_in_10_shift": -44,
+     "p_better": 5.1,
+     "accounts_lost_change": 0.21
+    }
+   },
+   "usd_month": 390,
+   "usd_month_half": 33,
+   "usd_month_ref": -32
+  },
+  {
+   "id": "zlarior-funded25",
+   "what": "ATLAS's funded 25K: LIT trades it too",
+   "by_market": {
+    "H2": {
+     "what": "ATLAS's funded 25K: LIT trades it too",
+     "usd_month_mean": 159,
+     "usd_month_median_shift": 116,
+     "bad_1_in_10_shift": 22,
+     "p_better": 73.9,
+     "accounts_lost_change": 0.02
+    },
+    "HALF": {
+     "what": "ATLAS's funded 25K: LIT trades it too",
+     "usd_month_mean": 89,
+     "usd_month_median_shift": 78,
+     "bad_1_in_10_shift": 20,
+     "p_better": 73.8,
+     "accounts_lost_change": -0.9
+    },
+    "REF": {
+     "what": "ATLAS's funded 25K: LIT trades it too",
+     "usd_month_mean": 27,
+     "usd_month_median_shift": 19,
+     "bad_1_in_10_shift": 14,
+     "p_better": 72.5,
+     "accounts_lost_change": -0.74
+    }
+   },
+   "usd_month": 159,
+   "usd_month_half": 89,
+   "usd_month_ref": 27
+  },
+  {
+   "id": "zlarior-atlas-50k",
+   "what": "ATLAS on Zlarior's 50K once funded (LIT + ATLAS $500)",
+   "by_market": {
+    "H2": {
+     "what": "ATLAS on Zlarior's 50K once funded (LIT + ATLAS $500)",
+     "usd_month_mean": 209,
+     "usd_month_median_shift": 203,
+     "bad_1_in_10_shift": 183,
+     "p_better": 83.6,
+     "accounts_lost_change": 0.04
+    },
+    "HALF": {
+     "what": "ATLAS on Zlarior's 50K once funded (LIT + ATLAS $500)",
+     "usd_month_mean": -22,
+     "usd_month_median_shift": -51,
+     "bad_1_in_10_shift": -20,
+     "p_better": 31.7,
+     "accounts_lost_change": 0.52
+    },
+    "REF": {
+     "what": "ATLAS on Zlarior's 50K once funded (LIT + ATLAS $500)",
+     "usd_month_mean": -13,
+     "usd_month_median_shift": -10,
+     "bad_1_in_10_shift": -8,
+     "p_better": 6.7,
+     "accounts_lost_change": 0.41
+    }
+   },
+   "usd_month": 209,
+   "usd_month_half": -22,
+   "usd_month_ref": -13
+  },
+  {
+   "id": "rapid25-lit-bank",
+   "what": "Rapid 25K: LIT 1 micro banked at the day's room",
+   "by_market": {
+    "H2": {
+     "what": "Rapid 25K: LIT 1 micro banked at the day's room",
+     "usd_month_mean": 53,
+     "usd_month_median_shift": 60,
+     "bad_1_in_10_shift": 57,
+     "p_better": 54.6,
+     "accounts_lost_change": 0.04
+    },
+    "HALF": {
+     "what": "Rapid 25K: LIT 1 micro banked at the day's room",
+     "usd_month_mean": 17,
+     "usd_month_median_shift": 21,
+     "bad_1_in_10_shift": -5,
+     "p_better": 40.1,
+     "accounts_lost_change": 0.17
+    },
+    "REF": {
+     "what": "Rapid 25K: LIT 1 micro banked at the day's room",
+     "usd_month_mean": 1,
+     "usd_month_median_shift": -2,
+     "bad_1_in_10_shift": -4,
+     "p_better": 23.1,
+     "accounts_lost_change": 0.1
+    }
+   },
+   "usd_month": 53,
+   "usd_month_half": 17,
+   "usd_month_ref": 1
+  },
+  {
+   "id": "atlas-funded-room-40",
+   "what": "ATLAS's funded 25K at 40% of the room",
+   "by_market": {
+    "H2": {
+     "what": "ATLAS's funded 25K at 40% of the room",
+     "usd_month_mean": -54,
+     "usd_month_median_shift": -51,
+     "bad_1_in_10_shift": -36,
+     "p_better": 30.5,
+     "accounts_lost_change": -0.12
+    },
+    "HALF": {
+     "what": "ATLAS's funded 25K at 40% of the room",
+     "usd_month_mean": -14,
+     "usd_month_median_shift": -7,
+     "bad_1_in_10_shift": 0,
+     "p_better": 45.3,
+     "accounts_lost_change": -0.31
+    },
+    "REF": {
+     "what": "ATLAS's funded 25K at 40% of the room",
+     "usd_month_mean": 6,
+     "usd_month_median_shift": 5,
+     "bad_1_in_10_shift": 8,
+     "p_better": 59.0,
+     "accounts_lost_change": -0.24
+    }
+   },
+   "usd_month": -54,
+   "usd_month_half": -14,
+   "usd_month_ref": 6
+  },
+  {
+   "id": "atlas-funded-streak-1micro",
+   "what": "ATLAS's funded 25K: 1 micro after 2 losses in a row",
+   "by_market": {
+    "H2": {
+     "what": "ATLAS's funded 25K: 1 micro after 2 losses in a row",
+     "usd_month_mean": -27,
+     "usd_month_median_shift": -38,
+     "bad_1_in_10_shift": 39,
+     "p_better": 35.9,
+     "accounts_lost_change": -0.15
+    },
+    "HALF": {
+     "what": "ATLAS's funded 25K: 1 micro after 2 losses in a row",
+     "usd_month_mean": 21,
+     "usd_month_median_shift": 27,
+     "bad_1_in_10_shift": 24,
+     "p_better": 64.9,
+     "accounts_lost_change": -0.88
+    },
+    "REF": {
+     "what": "ATLAS's funded 25K: 1 micro after 2 losses in a row",
+     "usd_month_mean": 19,
+     "usd_month_median_shift": 21,
+     "bad_1_in_10_shift": 20,
+     "p_better": 78.7,
+     "accounts_lost_change": -0.71
+    }
+   },
+   "usd_month": -27,
+   "usd_month_half": 21,
+   "usd_month_ref": 19
+  },
+  {
+   "id": "ask-mffu-parallel",
+   "what": "A written MFFU yes -> a 2nd Builder 50K eval now",
+   "by_market": {
+    "H2": {
+     "what": "A written MFFU yes -> a 2nd Builder 50K eval now",
+     "usd_month_mean": 38,
+     "usd_month_median_shift": 43,
+     "bad_1_in_10_shift": 42,
+     "p_better": 40.4,
+     "accounts_lost_change": -0.01
+    },
+    "HALF": {
+     "what": "A written MFFU yes -> a 2nd Builder 50K eval now",
+     "usd_month_mean": 10,
+     "usd_month_median_shift": 17,
+     "bad_1_in_10_shift": -3,
+     "p_better": 31.9,
+     "accounts_lost_change": 0.02
+    },
+    "REF": {
+     "what": "A written MFFU yes -> a 2nd Builder 50K eval now",
+     "usd_month_mean": -5,
+     "usd_month_median_shift": -9,
+     "bad_1_in_10_shift": -10,
+     "p_better": 12.4,
+     "accounts_lost_change": 0.07
+    }
+   },
+   "usd_month": 38,
+   "usd_month_half": 10,
+   "usd_month_ref": -5
+  },
+  {
+   "id": "payout-ping-1000",
+   "what": "Ask at $1,000 instead of $750 (both 25Ks)",
+   "by_market": {
+    "H2": {
+     "what": "Ask at $1,000 instead of $750 (both 25Ks)",
+     "usd_month_mean": -25,
+     "usd_month_median_shift": -23,
+     "bad_1_in_10_shift": -8,
+     "p_better": 40.3,
+     "accounts_lost_change": -0.03
+    },
+    "HALF": {
+     "what": "Ask at $1,000 instead of $750 (both 25Ks)",
+     "usd_month_mean": -9,
+     "usd_month_median_shift": -7,
+     "bad_1_in_10_shift": -2,
+     "p_better": 28.8,
+     "accounts_lost_change": -0.07
+    },
+    "REF": {
+     "what": "Ask at $1,000 instead of $750 (both 25Ks)",
+     "usd_month_mean": 0,
+     "usd_month_median_shift": 0,
+     "bad_1_in_10_shift": 1,
+     "p_better": 10.7,
+     "accounts_lost_change": -0.03
+    }
+   },
+   "usd_month": -25,
+   "usd_month_half": -9,
+   "usd_month_ref": 0
+  },
+  {
+   "id": "keep-1000-rapid",
+   "what": "Keep $1,000 in each Rapid at payouts",
+   "by_market": {
+    "H2": {
+     "what": "Keep $1,000 in each Rapid at payouts",
+     "usd_month_mean": 15,
+     "usd_month_median_shift": 24,
+     "bad_1_in_10_shift": 24,
+     "p_better": 31.7,
+     "accounts_lost_change": -0.17
+    },
+    "HALF": {
+     "what": "Keep $1,000 in each Rapid at payouts",
+     "usd_month_mean": 0,
+     "usd_month_median_shift": -2,
+     "bad_1_in_10_shift": -2,
+     "p_better": 10.3,
+     "accounts_lost_change": -0.08
+    },
+    "REF": {
+     "what": "Keep $1,000 in each Rapid at payouts",
+     "usd_month_mean": 0,
+     "usd_month_median_shift": 0,
+     "bad_1_in_10_shift": 0,
+     "p_better": 0.5,
+     "accounts_lost_change": -0.01
+    }
+   },
+   "usd_month": 15,
+   "usd_month_half": 0,
+   "usd_month_ref": 0
+  },
+  {
+   "id": "cloud-alerts",
+   "what": "no $ change (it protects against a silent PC)",
+   "usd_month": 0,
+   "usd_month_half": 0,
+   "usd_month_ref": 0
+  },
+  {
+   "id": "drop-lucid-account4",
+   "what": "no $ change (a page fix)",
+   "usd_month": 0,
+   "usd_month_half": 0,
+   "usd_month_ref": 0
+  }
+ ],
+ "check": {
+  "n": 12,
+  "span": "H2",
+  "fills": "real",
+  "total_median": 23778,
+  "total_mean": 20551,
+  "months_median": [
+   17,
+   70,
+   1340,
+   1602,
+   2978,
+   3021,
+   3528,
+   4963
+  ],
+  "r2_date_med": "2027-01-07"
+ }
+}

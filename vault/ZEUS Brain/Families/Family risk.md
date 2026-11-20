@@ -7,11 +7,14 @@ type: "family"
 
 # Research family: risk
 
-> [!abstract] 65 write-ups
-> adopt-candidate 27, adopted 1, finding 6, info 3, promising 3, rejected 15, research 10
+> [!abstract] 68 write-ups
+> adopt-candidate 27, adopted 1, finding 8, info 3, promising 3, rejected 16, research 10
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-20 | [[rapid50-ready-2026-11-20\|Rapid EOD 50K readiness]] | finding |
+| 2026-11-20 | [[rapid-launch-2026-11-20\|Rapid EOD 25K launch check]] | finding |
+| 2026-11-20 | [[lit-eval-rescue-2026-11-20\|Zlarior eval rescue]] | rejected |
 | 2026-11-19 | [[one-account-combo-redteam-2026-11-19\|Red team]] | research |
 | 2026-11-19 | [[one-account-combo-final-2026-11-19\|One account, Zlarior + ATLAS on the Builder 50K]] | research |
 | 2026-11-19 | [[one-account-combo-2026-11-19\|ONE account, several bots]] | research |

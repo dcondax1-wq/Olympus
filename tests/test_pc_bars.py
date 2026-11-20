@@ -470,7 +470,7 @@ def day_sim():
             shutil.rmtree(nt_dir, ignore_errors=True)
             return nt_folder(nt_dir, walk(end, 180, seed=t % 89), [(end + 60 * i, 21100.0, 21101.0, 21099.0, 21100.5) for i in range((t - end) // 60)])
 
-        def one_day(name, trail=False, fast=False):
+        def one_day(name, trail=False, fast=False, ext_always=False):
             work, http, rows, status = os.path.join(tmp, name), FakeHTTP(), [], 0
             prev_ht = None
             for k in range(96):
@@ -480,7 +480,8 @@ def day_sim():
                     L = day_L(tc, trail)
                     mo = R.market_open(tc, env={})
                     changed = R._bars_hashes({"ac": None, **{kk: v for kk, v in zip(("ac", "open", "closed"), R.chart_trades(L, tc)) if v}})[1] != prev_ht
-                    ext = (not alone) and (k % 2 == 0 or changed)      # the ext post: every 2nd run, or at once when its news (a trade) changed
+                    ext = (not alone) and (k % 2 == 0 or changed or ext_always)   # the ext post: every 2nd run, or at once when its news changed
+                    #                                                                    (ext_always: a trade open all day, its live $ changes every run)
                     other = 0 if alone else 1 + (2 if ext else 0) + (1 if changed and k else 0)   # core + 2 ext parts + a trade push
                     status += other
                     d = bars_at(tc)
@@ -502,9 +503,22 @@ def day_sim():
               and st["days"]["2026-11-18"].get("candles") == len(cand), (status, st.get("days")))
         check("b. ... every entry / exit / stop move went out on the first run after it (ATLAS 03:12 + 03:44, Zlarior 09:47, the BE stop 10:20, the exit 11:02)",
               all(r and r["posted"] and r["kind"] == "trades" for r in first_after), [(et_str(r["t"]), r["posted"], r["why"]) for r in first_after if r])
-        check("b. ... candles only in the bots' hours (01:50-16:10 ET), never on a run that sent the ext post, never twice within 59 minutes; nothing while the market is closed",
-              all(r["hours"] and not r["ext"] for r in cand) and all(b["t"] - a["t"] >= R.BARS_GAP_CANDLES_S for a, b in zip(cand, cand[1:]))
+        gap_before = {r["t"]: (r["t"] - prev["t"]) if prev else 10 ** 9 for prev, r in zip([None] + cand[:-1], cand)}
+        check("b. ... candles only in the bots' hours (01:50-16:10 ET), on a run that sent the ext post only once they are 74 min old (BARS_BUSY_GRACE_S), "
+              "never twice within 59 minutes; nothing while the market is closed",
+              all(r["hours"] and (not r["ext"] or gap_before[r["t"]] >= R.BARS_GAP_CANDLES_S + R.BARS_BUSY_GRACE_S) for r in cand) and all(b["t"] - a["t"] >= R.BARS_GAP_CANDLES_S for a, b in zip(cand, cand[1:]))
               and not any(r["posted"] and not r["mo"] for r in rows) and any(not r["mo"] for r in rows), [(et_str(r["t"]), r["ext"]) for r in cand])
+        rows4, _h4, _s4, _st4 = one_day("open_all_day", ext_always=True)
+        c4 = [r for r in rows4 if r["posted"] and r["kind"] == "candles"]
+        a4 = [r for r in rows4 if r["posted"]]                       # every chart post carries the candles (a trade-level one too)
+        g4 = [b["t"] - a["t"] for a, b in zip(c4, c4[1:])]
+        ga4 = [(b["t"] - a["t"], b["t"]) for a, b in zip(a4, a4[1:]) if a["hours"]]     # the overnight gap is the market, not this
+        capped = next((r["t"] for r in rows4 if "posts today" in r["why"]), None)
+        check(f"b. a trade open all day (the ext goes on EVERY run, nqdash3 2026-11-20: before, no candle went from 04:15 on): {len(c4)} candle posts "
+              f"({', '.join(et_str(r['t']) for r in c4)}), candle posts never closer than 74 min, the chart never older than 90 min until ntfy's daily share runs out"
+              f"{' at ' + et_str(capped) if capped else ''} (3 posts a run all day = the status and the pushes keep the rest)",
+              len(c4) >= 4 and len(c4) <= R.BARS_DAY_MAX - R.BARS_TRADE_RESERVE and all(g >= R.BARS_GAP_CANDLES_S + R.BARS_BUSY_GRACE_S for g in g4)
+              and all(g <= 5400 or (capped and t >= capped) for g, t in ga4), [(et_str(r["t"]), r["kind"]) for r in a4])
         rows2, http2, status2, st2 = one_day("trail", trail=True)
         p2 = [r for r in rows2 if r["posted"]]
         check(f"b. the worst day (the stop moves on every run 02:00-16:00 ET = 56 changes): still exactly 24 chart posts, then nothing (cap), no 429",

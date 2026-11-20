@@ -41,6 +41,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
+from tools import obsidian_more  # noqa: E402  the big layer: trades, lessons, news, weeks, Decide cards, rules, Dataview
+
 SUB = "ZEUS Brain"                      # standalone: <vault>/ZEUS Brain; inside the owner's vault: <vault>/OLYMPUS/ZEUS Brain
 PC_SUB = os.path.join("OLYMPUS", "ZEUS Brain")
 REPO_VAULT = os.path.join(ROOT, "vault")
@@ -131,6 +133,8 @@ def front(tags, **kv) -> str:
         if isinstance(v, list):
             lines.append(f"{k}:")
             lines += [f"  - {yq(x)}" for x in v]
+        elif isinstance(v, (int, float)) and not isinstance(v, bool):
+            lines.append(f"{k}: {v}")            # a real number, so Dataview can sum / sort it
         else:
             lines.append(f"{k}: {yq(v)}")
     return "\n".join(lines + ["---", ""])
@@ -359,7 +363,9 @@ class Brain:
     # -- names known before the text is written (so every note can link to the rest)
     def plan_names(self):
         self.days = sorted({t["day"] for t in self.trades} | {et_day_hm(e["t"])[0] for e in self.events}
-                           | {w["date"] for w in self.W if re.match(r"^20\d\d-\d\d-\d\d$", w["date"])} | set(self.reviews))
+                           | {w["date"] for w in self.W if re.match(r"^20\d\d-\d\d-\d\d$", w["date"])} | set(self.reviews)
+                           | self.more.days())
+        self.day_set = set(self.days)
         self.months = sorted({d[:7] for d in self.days})
         self.families = sorted({w["family"] for w in self.W})
         self.accounts = [a for a in (self.board.get("accounts") or self.plan.get("accounts") or []) if isinstance(a, dict) and a.get("name")]
@@ -574,7 +580,7 @@ class Brain:
         for w in self.W:
             wd.setdefault(w["date"], []).append(w)
         for i, d in enumerate(self.days):
-            tr = [t for t in self.trades if t["day"] == d]
+            tr = self.more.by_day.get(d, [])
             ev = [e for e in self.events if et_day_hm(e["t"])[0] == d]
             rv = self.reviews.get(d)
             nav = [link(f"Day {self.days[i - 1]}", "<- " + self.days[i - 1]) if i else "", link(f"Month {d[:7]}", d[:7]),
@@ -584,14 +590,11 @@ class Brain:
                 k = f"{t.get('bot')} {t.get('src') or ''}".strip()
                 tot[k] = tot.get(k, 0.0) + float(t.get("usd") or 0)
             tags = ["zeus/day"] + sorted({f"bot/{tagify(t.get('bot'))}" for t in tr}) + (["zeus/review"] if rv else [])
-            lines = [front(tags, type="day", date=d), f"# {d}", "", " · ".join(x for x in nav if x), ""]
+            lines = [front(tags, type="day", date=d, week=self.more_week(d), trades=len(tr), pnl=round(sum(float(t.get("usd") or 0) for t in tr), 2)),
+                     f"# {d}", "", " · ".join(x for x in nav if x), ""]
             if tot:
                 lines += [callout("money", "The day in $", [" · ".join(f"{b}: {usd(v, True)}" for b, v in sorted(tot.items()))]), ""]
-            if tr:
-                bl = {"LIT": "Zlarior (LIT)", "ATLAS": "ATLAS", "BLITZ": "BLITZ (paper)"}
-                lines += ["## Trades", "", md_table(["Time", "Bot", "Source", "Side", "Micros", "Exit", "R", "$"],
-                                                    [[t.get("hm"), link(bl[t.get("bot")]) if t.get("bot") in bl else t.get("bot"), t.get("src"),
-                                                      t.get("side"), t.get("q"), t.get("k"), t.get("r"), usd(t.get("usd"), True)] for t in tr]), ""]
+            lines += self.more.day_extra(d)
             if ev:
                 lines += ["## Board", ""] + [f"- {et_day_hm(e['t'])[1]} ET · {e.get('kind')} ({e.get('src')}): {unlink_md(oneline(e.get('text'), 300))}" for e in ev] + [""]
             if rv:
@@ -604,17 +607,20 @@ class Brain:
             ds = [d for d in self.days if d.startswith(m)]
             rows = []
             for d in ds:
-                tr = [t for t in self.trades if t["day"] == d]
+                tr = self.more.by_day.get(d, [])
                 rows.append([link(f"Day {d}", d), len(tr), usd(sum(float(t.get("usd") or 0) for t in tr), True) if tr else "-",
                              len([w for w in self.W if w["date"] == d])])
             self.add("Months", f"Month {m}", "\n".join([front(["zeus/month"], type="month", month=m), f"# {m}", "",
-                                                         md_table(["Day", "Trades", "Net $", "Write-ups"], rows), "", f"Back to {link('ZEUS Home')}"]))
+                                                         md_table(["Day", "Trades", "Net $", "Write-ups"], rows), "",
+                                                         "Weeks: " + " · ".join(link("Week " + w, w) for w in sorted({self.more_week(d) for d in ds})), "",
+                                                         f"Back to {link('ZEUS Home')}"]))
 
     # ================================================================ hubs
     def lessons(self):
         lines = [front(["zeus/lessons"], type="lessons"), "# ZEUS Lessons", "",
                  callout("tip", "This note grows by itself", ["Every night it is rebuilt from the loss anatomy, the rejected list and the newest write-ups. "
                                                               "Don't redo a rejected idea without a new angle."]), ""]
+        lines += self.more.lessons_block()
         lines += ["## Why we lose (loss clusters)", "", f"_Built {self.explain.get('built', '-')}, research/anatomy/explain.json._", ""]
         for b, v in sorted((self.explain.get("bots") or {}).items()):
             nm = {"lit": "Zlarior (LIT)", "atlas": "ATLAS", "blitz": "BLITZ (paper)"}.get(b)
@@ -650,7 +656,8 @@ class Brain:
             for i in groups[st]:
                 src = os.path.basename(str(i.get("source") or ""))[:-3] if str(i.get("source") or "").endswith(".md") else ""
                 body = [f"**Why:** {unlink_md(i.get('why'))}" if i.get("why") else "", f"**Impact:** {unlink_md(i.get('impact'))}" if i.get("impact") else "",
-                        f"Added {i.get('added')}" + (f" · write-up {self.wl(src)}" if src in self.Wby else "") + (f" · id `{i.get('id')}`" if i.get("id") else "")]
+                        f"Added {i.get('added')}" + (f" · write-up {self.wl(src)}" if src in self.Wby else "") + (f" · id `{i.get('id')}`" if i.get("id") else ""),
+                        f"Card: {link(self.more.decide_name(i), 'open the card note')}" if i.get("id") else ""]
                 lines += [callout({"open": "question", "yes": "success", "no": "failure"}.get(st, "note"), unlink_md(oneline(i.get("question"), 200)), [b for b in body if b], "-" if st != "open" else ""), ""]
         lines += [f"Back to {link('ZEUS Home')}"]
         self.add("", "ZEUS Decisions", "\n".join(lines))
@@ -713,7 +720,9 @@ class Brain:
                      f"{len(self.accounts)} accounts · {len(STRAT)} strategies · {len(self.W)} write-ups · {len(self.days)} days · "
                      f"{len(self.R)} rejected idea families · {len(opn)} open decisions",
                      f"Data up to {self.days[-1] if self.days else '-'}. Generated by tools/obsidian_brain.py: don't edit here, write in {INBOX}/."]), "",
-                 "## Accounts", "", md_table(["Account", "Plan", "Stage", "Balance", "Room", "To pass"], accts) or "_no accounts published_", "",
+                 "## Accounts", "", md_table(["Account", "Plan", "Stage", "Balance", "Room", "To pass"], accts) or "_no accounts published_", ""]
+        lines += self.more.home_block()
+        lines += [
                  "## Strategies and bots", ""] + strat + ["",
                  "## The big notes", "",
                  f"- {link('ZEUS Decisions')}: {len(opn)} open",
@@ -728,14 +737,26 @@ class Brain:
         lines += ["## Your notes (Inbox)", ""] + ([f"- {link(n)}" for n in self.inbox] or [f"_Write anything in {INBOX}/: it is never overwritten._"])
         self.add("", "ZEUS Home", "\n".join(lines))
 
+    def more_week(self, d: str) -> str:
+        return obsidian_more.iso_week(d)
+
     def build(self, inbox_names=()):
         self.inbox = sorted(inbox_names)
+        self.more = obsidian_more.More(self, sys.modules[__name__])
         self.plan_names()
         self.research()
         self.families_notes()
         self.strategies()
         self.account_notes()
+        self.more.trade_notes()
+        self.more.lesson_notes()
+        self.more.news_notes()
+        self.more.decide_notes()
+        self.more.rule_notes()
         self.day_notes()
+        self.more.week_notes()
+        self.more.trades_hub()
+        self.more.dataview()
         self.lessons()
         self.decisions_note()
         self.apps()
@@ -768,7 +789,13 @@ GRAPH = {"collapse-filter": False, "search": "", "showTags": False, "showAttachm
              {"query": "tag:#verdict/rejected", "color": {"a": 1, "rgb": 14433340}},
              {"query": "tag:#zeus/research", "color": {"a": 1, "rgb": 3900150}},
              {"query": "tag:#zeus/day", "color": {"a": 1, "rgb": 9807270}},
-             {"query": "tag:#market/kalshi", "color": {"a": 1, "rgb": 10181046}}],
+             {"query": "tag:#market/kalshi", "color": {"a": 1, "rgb": 10181046}},
+             {"query": "tag:#zeus/lesson", "color": {"a": 1, "rgb": 16750848}},
+             {"query": "tag:#zeus/news", "color": {"a": 1, "rgb": 12517567}},
+             {"query": "tag:#zeus/week", "color": {"a": 1, "rgb": 5025616}},
+             {"query": "tag:#zeus/decide OR tag:#zeus/rule", "color": {"a": 1, "rgb": 16766720}},
+             {"query": "tag:#result/win", "color": {"a": 1, "rgb": 2271778}},
+             {"query": "tag:#result/loss", "color": {"a": 1, "rgb": 13382451}}],
          "collapse-display": False, "showArrow": False, "textFadeMultiplier": 0, "nodeSizeMultiplier": 1.1, "lineSizeMultiplier": 1,
          "collapse-forces": True, "centerStrength": 0.5, "repelStrength": 12, "linkStrength": 1, "linkDistance": 160, "scale": 0.6, "close": False}
 

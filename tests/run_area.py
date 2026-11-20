@@ -3,6 +3,7 @@
     python tests/run_area.py jarvis|olympus|zenith|kalshi|cities|nq|pc|all [options]
     python tests/run_area.py --list                    the areas and their suites
     python tests/run_area.py jarvis --only hub,home    only suites whose name contains one of these
+    python tests/run_area.py pc --skip a,b             leave these suites out (default: win_scripts; --skip '' runs it)
     options: --budget SEC      per-suite time budget (default 900; the slow browser suites get 3x); over it the suite's OWN process group
                                is stopped and the row says TIMEOUT
              --gate N          wait until the 1-minute load average is below N before each suite (default 2 x cpus; 0 = no gate)
@@ -11,7 +12,13 @@
              --fast            BK_FAST=1: browser suites open contexts at scale 1 with reduced motion (tests/browser_kit.py)
              --skip-load R     a browser suite exits with a SKIP when load per cpu is above R (BK_MAX_LOAD)
 Writes scratch/results/<area>-<time>.json and .md (a table: suite, passed, failed, seconds, state) and prints it.
-Safe next to other agents: it runs ONE suite at a time, never lists or signals any process but its own child, and the child
+Faster landing (day-quality round 2, 2026-11-20):
+             --changed BASE    only the suites that read a file changed since BASE (tests/suite_map.py: imports + path strings; a
+                               file no suite maps, or a shared kit file, runs the whole area), the skipped ones are printed with why
+             --jobs N          plain suites N at once (default cpus-1); browser suites stay one at a time in their own lane
+             --no-lock         do not take /tmp/olympus_browser.lock (--lock PATH, --lock-wait SEC 2400); by default the runner takes it
+                               ONLY around each browser suite, so no outer `flock` is needed (an outer one is recognised, no deadlock)
+Safe next to other agents: it runs ONE browser suite at a time, never lists or signals any process but its own child, and the child
 inherits no secrets beyond the environment it already had.
 """
 from __future__ import annotations
@@ -52,6 +59,7 @@ AREAS = {
 }
 AREAS["money"] += ["widget", "money_dash"]      # night-revamp-dash 2026-11-20: the Scriptable widget + Glance page (tools/web_public/widget/)
 AREAS["olympus"].append("olympus_shell")  # night-revamp-main 2026-11-20: the main pages: no sideways scroll, nothing under the bottom bar, keys above the home bar (tools/olympus_shell_audit.py)
+AREAS["olympus"].append("pulse")         # day-arenas 2026-11-20: the shared prop-trader cards in the main apps (olympus/pulse.js), CLS 0, light + dark
 AREAS["olympus"].insert(0, "site_sweep")  # night-siteqa 2026-11-20: every href / src of the main pages + doors.js points at a real file (no browser, 1 s); its own line
 AREAS["pc"].append("disk_clean")        # night-clean 2026-11-19: the weekly container clean (tools/disk_clean.py); its own line, no clash with the pc list
 AREAS["pc"].append("account_box")     # 2026-11-20: the Add account box (engine/account_box.py, /add-account/); its own line
@@ -65,8 +73,12 @@ AREAS["nq"].append("combo_50k")         # night-combolive 2026-11-19: ATLAS + Zl
 AREAS["pc"].append("learn_night")       # the same suite: the PC side (data pipe hook, status ext "zl", datafeed metals, the 15-minute report's imports)
 AREAS["kalshi"].append("kalshi_adapt")  # night-kadapt 2026-11-19: the K8 weekly re-test (engine/kalshi_adapt.py, tools/kalshi_adapt.py); its own line
 AREAS["money"].append("money_ideas")   # night-moneyideas 2026-11-20: money book + Kalshi bankroll ladder (tools/money/money_book.py, kalshi_bankroll.py); its own line
+AREAS["money"].append("fleet_months")  # day-fleet 2026-11-20: the whole fleet month by month to Jun 2027 (tools/money/fleet_months.py, business/fleet_plan.json); its own line
 AREAS["pc"].append("kalshi_adapt")      # the same suite: the PC half (pc_weekly, clock_adapt.json, the ZEUS learned line)
 AREAS["kalshi"].append("kalshi_k8_monday")  # night-kalshi8 2026-11-20: the $55 rule, the edge tests, the Nov 16-19 dry run (research/kalshi_k8_monday/); its own line
+AREAS["kalshi"].append("kalshi_k8_dash")    # day-kalshi 2026-11-20: the K8 day dashboard (Kalshi page K8 card + Dionysus "K8 today"; node Playwright); its own line
+AREAS["kalshi"].append("kalshi_k8_day")  # day-kalshi 2026-11-20: Monday rehearsal, every stop on $55, restarts, no order without key + phrase; its own line
+AREAS["kalshi"] += ["dionysus_page", "dionysus_merge"]  # day-kalshi 2026-11-20: Dionysus absorbs Kalshi City + Sibyl as plain cards (node Playwright); its own line
 AREAS["nq"].append("live_gap_proposal")  # night-litmore 2026-11-19: live vs backtest gap + the fill_audit "no record" proposal (tools/live_gap_proposal.py); its own line
 AREAS["nq"] += ["nq_live_reliability", "fast_entry"]   # night-nqlive 2026-11-20: missed-trade alarms + audit fixes, poll-on-tick (OFF); own line
 AREAS["pc"] += ["nq_live_reliability", "account_b_min_room"]   # the same suite (fast alarm, autoupdate flat, datafeed gaps) + ATLAS min_room CLI
@@ -80,11 +92,23 @@ AREAS["jarvis"].append("fit_edge")
 AREAS["pc"].append("trade_alerts")    # night-tradealerts 2026-11-20: entry + exit alerts on every account route (tests/test_trade_alerts.py); its own line
 AREAS["board"].append("phone_fit")    # night-tradealerts 2026-11-20: ZEUS / MFFU / Trading / Board at 390 + 430 px with the iPhone safe areas (browser); its own line
 AREAS["board"].append("steps_page")   # night-ownersteps 2026-11-20: hub/steps.html "Your steps" (browser part under the lock); its own line
+AREAS["olympus"].append("home_fx")          # night-effects 2026-11-20: the living hero on the Gate + Doors (tests/test_home_fx.py)
+AREAS["nq"].append("nqdeep")                # night-nqdash2 2026-11-20: Trading deep dive / MFFU payout ranges / NQ news week
+AREAS["money"].append("business_taxes")   # day-taxes 2026-11-20: Taxes page + keep-the-most waterfall (tools/money/keep_most.py)
+AREAS["board"].append("owner_manual")  # day-manual 2026-11-20: hub/manual.html + docs/OWNER_MANUAL.md (browser part under the lock); its own line
+AREAS["pc"].append("land_branch")       # 2026-11-20: the lead's landing tool (tools/land_branch.py: preview, merge, known conflicts, fix-ups, plan); its own line
+AREAS["olympus"].append("node_suites")    # day-quality 2026-11-20: the 29 tests/*.mjs no Python suite ran (tests/test_node_suites.py), by part
+AREAS["cities"].append("node_suites")
+AREAS["pc"].append("site_checks")         # day-quality 2026-11-20: tools/site_checks.py (Kalshi cache = css/js ?v, worker tags, launcher drift, generated gap) + self_heal 'site'
+AREAS["olympus"].append("site_checks")
+AREAS["pc"].append("run_area_fast")       # day-quality round 2: --changed mapper (tests/suite_map.py), parallel lanes, the per-suite browser lock
 # suites too long for one budget run BY PARTS, each its own row and budget (night team D 2026-11-16: the whole kit walk, every app +
 # power + tiers + more in one browser, is the longest browser suite); a part is "<suite>:<label>" = python -m tests.test_<suite> <args>
 PARTS = {"olympus_kit": [("a", ["datacity", "mind", "tree"]), ("b", ["oracle", "odeon", "fates"]), ("c", ["hermes", "prometheus", "tyche"]),
                          ("power", ["power", "tiers"]), ("more", ["more"])]}
+PARTS["node_suites"] = [("datacity", ["datacity"]), ("apps", ["apps"])]
 PARTS["combo_50k"] = [("sep", ["--seg", "2026-09-02"]), ("oct", ["--seg", "2026-10-02", "--scenario"])]   # night-combolive: one eval segment each
+AREAS["fleet"].append("rapid_launch")       # day-rapid 2026-11-20: Rapid EOD 25K launch check (tools/money/rapid25_launch.py)
 SLOW = {"olympus_shell", "fit_edge", "jarvis_hub", "phone_e2e", "olympus_kit", "olympus_themes", "olympus_render", "zenith_mode", "ui_polish", "datacity", "jarvis_home"}
 
 
@@ -168,6 +192,72 @@ def run_one(name: str, budget: float, env: dict, args=()) -> dict:
             "tail": "\n".join((out or "").strip().splitlines()[-12:]), "fails": [ln[:240] for ln in (out or "").splitlines() if ln.startswith("[FAIL]")][:8]}
 
 
+def run_all(names: list, a, env: dict, jobs: int) -> list:
+    """Plain suites on `jobs` workers; browser suites (tests/suite_map.is_browser) one at a time in their own lane, each under the
+    browser lock (taken per suite, so other helpers' browser runs interleave; an outer flock of this process tree is recognised).
+    The load gate applies to the browser lane only. Rows come back in the area's order."""
+    import threading
+    from concurrent.futures import ThreadPoolExecutor
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import browser_lock
+    import suite_map
+    tasks = []                                            # (index, suite, part name, args, browser)
+    for n in names:
+        br = suite_map.is_browser(n)
+        for label, args in PARTS.get(n, [("", [])]):
+            tasks.append((len(tasks), n, f"{n}:{label}" if label else n, args, br))
+    out = [None] * len(tasks)
+    say = threading.Lock()
+
+    def report(i, r):
+        out[i] = r
+        with say:
+            print(f"  {r['suite']}: {r['state']} {r['passed']} ok / {r['failed']} bad in {r['seconds']}s"
+                  + (f" ({r['note']})" if r.get("note") else ""), flush=True)
+            for f in r["fails"][:3]:
+                print("     " + f, flush=True)
+
+    def plain(t):
+        i, n, nm, args, _br = t
+        report(i, run_one(nm, a.budget * (3 if n in SLOW else 1), env, args))
+
+    def browser_lane(ts):
+        for i, n, nm, args, _br in ts:
+            g = gate(a.gate, a.gate_wait)
+            if g == "loaded" and a.strict:
+                report(i, {"suite": nm, "passed": 0, "failed": 0, "seconds": 0, "state": "SKIP (machine too loaded)", "exit": None, "tail": "", "fails": []})
+                continue
+            try:
+                if a.no_lock:
+                    r = run_one(nm, a.budget * (3 if n in SLOW else 1), env, args)
+                    how = "off"
+                else:
+                    t0 = time.time()
+                    with browser_lock.hold(a.lock, a.lock_wait) as how:
+                        waited = time.time() - t0
+                        r = run_one(nm, a.budget * (3 if n in SLOW else 1), env, args)
+                    if waited >= 5:
+                        g = (g + "; " if g else "") + f"lock wait {waited:.0f}s"
+            except TimeoutError as e:
+                r = {"suite": nm, "passed": 0, "failed": 0, "seconds": 0, "state": "SKIP (browser lock busy)", "exit": None, "tail": str(e), "fails": []}
+            if g:
+                r["note"] = "ran loaded" if g == "loaded" else g
+            report(i, r)
+
+    br_tasks = [t for t in tasks if t[4]]
+    pl_tasks = [t for t in tasks if not t[4]]
+    lane = threading.Thread(target=browser_lane, args=(br_tasks,), daemon=True)
+    lane.start()
+    if jobs <= 1:
+        for t in pl_tasks:
+            plain(t)
+    else:
+        with ThreadPoolExecutor(max_workers=jobs) as ex:
+            list(ex.map(plain, pl_tasks))
+    lane.join()
+    return [r for r in out if r is not None]
+
+
 def table(rows: list) -> str:
     w = max([len(r["suite"]) for r in rows] + [5])
     lines = [f"| {'suite':<{w}} | passed | failed | seconds | state |", f"|{'-' * (w + 2)}|-------:|-------:|--------:|-------|"]
@@ -177,6 +267,10 @@ def table(rows: list) -> str:
     lines.append(f"| {'TOTAL':<{w}} | {sum(r['passed'] for r in rows):>6} | {sum(r['failed'] for r in rows):>6} | {tot:>7.0f} | "
                  f"{sum(1 for r in rows if r['state'] == 'PASS')}/{len(rows)} suites pass |")
     return "\n".join(lines)
+AREAS["board"].append("payready"); AREAS["trading"] += ["payready", "nq_desk", "trading_merged", "alert_audit"]   # nqdash3 2026-11-20: payout readiness, the NQ desk, the merged Odeon / Why cards, the alert audit; its own line
+AREAS["pc"].append("alert_audit")
+AREAS["nq"].append("premarket_brief")       # day-brief 2026-11-20: nq/brief.json contract + pre-registered bias (tools/premarket_brief.py)
+AREAS["money"].append("week_more")          # day-brief 2026-11-20: weekly review round 2 (twins, best/worst, K8, calendar, weekend)
 
 
 def main(argv=None) -> int:
@@ -184,12 +278,18 @@ def main(argv=None) -> int:
     ap.add_argument("area", nargs="?", choices=sorted(list(AREAS) + ["all"]))
     ap.add_argument("--list", action="store_true")
     ap.add_argument("--only", default="")
+    ap.add_argument("--skip", default="win_scripts", help="suites to leave out, comma list of exact names (default win_scripts: never in a cloud run)")
     ap.add_argument("--budget", type=float, default=900)
     ap.add_argument("--gate", type=float, default=2.0 * CPUS)
     ap.add_argument("--gate-wait", type=float, default=300)
     ap.add_argument("--strict", action="store_true")
     ap.add_argument("--fast", action="store_true")
     ap.add_argument("--skip-load", type=float, default=0)
+    ap.add_argument("--changed", default="", metavar="BASE", help="only the suites that read a file changed since BASE (tests/suite_map.py)")
+    ap.add_argument("--jobs", type=int, default=max(1, CPUS - 1), help="plain (non-browser) suites at once (default cpus-1; 1 = the old serial run)")
+    ap.add_argument("--no-lock", action="store_true", help="do not take the browser lock around browser suites")
+    ap.add_argument("--lock", default="/tmp/olympus_browser.lock")
+    ap.add_argument("--lock-wait", type=float, default=2400)
     a = ap.parse_args(argv)
     if a.list or not a.area:
         for k in list(AREAS) + ["all"]:
@@ -199,29 +299,32 @@ def main(argv=None) -> int:
     if a.only:
         keys = [k.strip() for k in a.only.split(",") if k.strip()]
         names = [n for n in names if any(k in n for k in keys)]
+    skip = {k.strip() for k in a.skip.split(",") if k.strip()}
+    names = [n for n in names if n not in skip]
     env = dict(os.environ)
     if a.fast:
         env["BK_FAST"] = "1"
     if a.skip_load:
         env["BK_MAX_LOAD"] = str(a.skip_load)
+    if a.changed:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import suite_map
+        plan = suite_map.select(names, suite_map.changed_since(a.changed))
+        if plan["fallback"]:
+            print(f"--changed {a.changed}: {plan['fallback']}", flush=True)
+        else:
+            print(f"--changed {a.changed}: {len(plan['run'])} of {len(names)} suites read a changed file", flush=True)
+            for n, why in plan["skipped"].items():
+                print(f"  skip {n}: {why}", flush=True)
+            for n in plan["run"]:
+                print(f"  run  {n}: reads {plan['why'][n]}", flush=True)
+        names = plan["run"]
     rows = []
     stamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-    print(f"area {a.area}: {len(names)} suites, load {load1():.1f} on {CPUS} cpus, budget {a.budget:.0f}s each (slow browser suites x3)", flush=True)
-    for n in names:
-        g = gate(a.gate, a.gate_wait)
-        if g == "loaded" and a.strict:
-            rows.append({"suite": n, "passed": 0, "failed": 0, "seconds": 0, "state": "SKIP (machine too loaded)", "exit": None, "tail": "", "fails": []})
-            print(f"  {n}: SKIP, machine too loaded (load {load1():.0f})", flush=True)
-            continue
-        for label, args in PARTS.get(n, [("", [])]):
-            nm = f"{n}:{label}" if label else n
-            r = run_one(nm, a.budget * (3 if n in SLOW else 1), env, args)
-            if g:
-                r["note"] = "ran loaded" if g == "loaded" else g
-            rows.append(r)
-            print(f"  {nm}: {r['state']} {r['passed']} ok / {r['failed']} bad in {r['seconds']}s", flush=True)
-            for f in r["fails"][:3]:
-                print("     " + f, flush=True)
+    jobs = max(1, a.jobs)
+    print(f"area {a.area}: {len(names)} suites, load {load1():.1f} on {CPUS} cpus, budget {a.budget:.0f}s each (slow browser suites x3), "
+          f"{jobs} plain suite(s) at once, browser suites one at a time{'' if a.no_lock else ' under ' + a.lock}", flush=True)
+    rows = run_all(names, a, env, jobs)
     out = os.path.join(ROOT, "scratch", "results")
     os.makedirs(out, exist_ok=True)
     md = table(rows)
@@ -235,5 +338,3 @@ def main(argv=None) -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
-AREAS["olympus"].append("home_fx")          # night-effects 2026-11-20: the living hero on the Gate + Doors (tests/test_home_fx.py)
-AREAS["nq"].append("nqdeep")                # night-nqdash2 2026-11-20: Trading deep dive / MFFU payout ranges / NQ news week

@@ -12,6 +12,7 @@ type: "kalshi"
 
 ## The docs
 
+- **KALSHI: the one page (K8 gold/silver clock bets, $55, live from Monday 2026-11-23)** (`docs/KALSHI.md`): Updated 2026-11-20 (day-kalshi). Older Kalshi docs (KALSHI_GO_LIVE, KALSHI_VM_UPDATE, KALSHICITY, KALSHI_PUBLISH, the planner comparison) are about the retired crypto bot on the Oracle VM and the old kalshi-feed; **this page is the current one**.
 - **KALSHI CITY** (`docs/KALSHICITY.md`): A night city built from the Kalshi bot's bets, plus the engine that keeps learning which slices of those bets have an edge. Read only: it reads the public `kalshi-feed` (`kalshi.json`), never calls Kalshi, never holds a key, never places an order.
 - **Kalshi: going live with real money (risk rules)** (`docs/KALSHI_GO_LIVE.md`): 2026-11-13, team K1. For the owner's real-money Kalshi account and the bot on the Oracle VM. Paper research only from here: nothing in this repo can reach the VM, place an order or read a key. **You apply these rules yourself**, through the "kalshi-server" chat on the VM.
 - **Kalshi page and Planner: what the best apps have, what we have, what was added (2026-11-03)** (`docs/KALSHI_PLANNER_COMPARISON.md`): Screens (iPhone 13 profile, 390 x 844, WebKit): `research/handoff/2026-11-03/kalshi_planner/`.

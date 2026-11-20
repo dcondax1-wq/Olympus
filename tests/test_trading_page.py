@@ -33,7 +33,7 @@ from tests import agora_kit as AK  # noqa: E402
 APP, NAME = "trading", "Trading"
 check = AK.check
 D = os.path.join(AK.WEB, APP)
-READS = ("../home.json", "./trades.json", "../ledger/rules.json", "../business/accounts.json")
+READS = ("../home.json", "./trades.json", "../ledger/rules.json", "../business/accounts.json", "../nq/fixture.json", "../status_feed.json", "../odeon/trades.json", "../why/why.json")   # nqdash3: the strip's DEMO + the chart topic (an open trade's stop now)
 
 
 def test_static():
@@ -54,7 +54,9 @@ def test_static():
           and {t["bot"] for t in tj["trades"]} == {"LIT", "ATLAS"} and {t["src"] for t in tj["trades"]} <= {"backtest", "paper", "live"}
           and "blitz" not in json.dumps(tj).lower() and set(tj["sources"]) == {"backtest", "paper", "live"})
     r = subprocess.run([sys.executable, os.path.join(AK.ROOT, "tools", "trading_export.py"), "--check"], capture_output=True, text=True)
-    check("a. trades.json is current (tools/trading_export.py --check)", r.returncode == 0, r.stdout + r.stderr)
+    fresh_ok, why = current_or_branch_built(tj)
+    check("a. trades.json is current (tools/trading_export.py --check), or built on a machine that had the PC's data branch: then everything but the "
+          "data branch's LIVE rows is the same as a local build", r.returncode == 0 or fresh_ok, r.stdout + r.stderr + why)
     check("a. the calendar is Mon-Fri (5 columns, 44 px cells at 320 px) with arrows and swipe; the day sheet is a labelled dialog",
           html.count("<span>") >= 5 and "repeat(5, minmax(0, 1fr))" in AK.read(os.path.join(D, "trading.css")) and 'id="calPrev"' in html and "touchend" in js
           and 'role="dialog"' in html and 'aria-modal="true"' in html and "'Escape'" in js)
@@ -64,6 +66,26 @@ def test_static():
           "the cards under them wait unseen until the first draw; trading.js lets them go after the first draw / the chip's data",
           "html:not(.tr-drawn) #banner" in css and "html:not(.tr-drawn) #status" in css and "html:not(.tr-edge) #zeusEdge[hidden]" in css
           and "html:not(.tr-drawn) #todayCard" in css and "settleBoxes()" in js and "'tr-drawn'" in js and "'tr-edge'" in js)
+
+
+PINNED = os.path.join(AK.ROOT, "tests", "fixtures", "trading", "trades_pinned.json")   # nqdash3 2026-11-20: the pinned-number checks read this copy,
+# so the real trades.json can be refreshed (a fresh export with the data branch adds LIVE rows and moves the newest-trade / twin / last-live answers)
+
+
+def _no_branch(b: dict) -> dict:
+    """the bundle without what only the PC's data branch adds (its LIVE rows, accts, data_branch, n)"""
+    rows = [t for t in b.get("trades") or [] if not (t.get("src") == "live" and str(t.get("id", "")).startswith("live.") and t.get("ak"))]
+    return {k: v for k, v in b.items() if k not in ("trades", "n", "accts", "data_branch", "upto")} | {"trades": [t for t in rows if t.get("src") != "live"]}
+
+
+def current_or_branch_built(tj: dict) -> tuple:
+    """(ok, why): the committed file was built WITH the data branch and this machine has none -> compare the rest"""
+    from tools import trading_export as TE, live_trades as LT
+    if not tj.get("data_branch") or LT.days(LT.PC_DAYS):
+        return False, ""
+    local = TE.build()
+    same = _no_branch(json.loads(TE.dump(local))) == _no_branch(tj)
+    return same, "" if same else " (and the non-data-branch part differs from a local build)"
 
 
 HARNESS = r"""
@@ -117,8 +139,24 @@ import(process.argv[2]).then((C) => {
 """
 
 
-def test_rules():
+def test_rules_real():
+    """the real (refreshable) trades.json: shape only, no pinned dates"""
     o = AK.node(APP, HARNESS, os.path.join(D, "trades.json"), os.path.join(AK.WEB, "ledger", "rules.json"), os.path.join(AK.WEB, "business", "accounts.json"))
+    if o is None or "_error" in o:
+        check("b. real file: the node harness runs", o is None, (o or {}).get("_error"))
+        return
+    c, rc, ref = o["counts"], o["recent"], o["ref"]
+    want = [[ref[k]["trades"], ref[k]["net"], ref[k]["pf"], ref[k]["win_pct"], ref[k]["max_dd"], ref[k]["best_day"], ref[k]["worst_day"]] for k in ("h1", "h2")]
+    check("b. real file: backtest + paper + live rows, LIVE first; LIT H1 / H2 = the research file; last 30 newest first with Odeon links; junk never throws",
+          c["backtest"] > 250 and c["live"] >= 1 and o["def"] == "live" and o["lit"] == want and rc[0] == 30 and rc[1] and rc[2] >= 1
+          and o["merge"][2] is False and all(j == [0, 0, 0, 0, 2, 2, 0] for j in o["junk"]), (c, rc, o["merge"]))
+    check("b. real file: every twin row has a verdict; 'Last live data' names a day", all(t[2] in ("ok", "warn", "bad") and t[3] for t in o["twins"])
+          and o["lastLive"][1].startswith("Last live data: ") and o["lastLive"][2] == "Last live data: none yet.", (o["twins"][:3], o["lastLive"]))
+
+
+def test_rules():
+    """pinned numbers on tests/fixtures/trading/trades_pinned.json (the 28 Oct live trade, its paper twin, its reel)"""
+    o = AK.node(APP, HARNESS, PINNED, os.path.join(AK.WEB, "ledger", "rules.json"), os.path.join(AK.WEB, "business", "accounts.json"))
     if o is None:
         check("b. node tests skipped: no node", True)
         return
@@ -339,7 +377,9 @@ def test_live():
               and '"balance"' not in bundle_txt and FULL_A not in json.dumps(ob) and FULL_B not in json.dumps(ob))
         # 3. graceful: no data branch yet (today) = the same trades.json as before
         check("d. no data branch yet: trades.json builds the same as without it (no crash, no live rows invented)",
-              TE.dump(TE.build(os.path.join(tmp, "missing"))) == AK.read(os.path.join(D, "trades.json")) and LT.load(os.path.join(tmp, "missing")) == [])
+              _no_branch(TE.build(os.path.join(tmp, "missing"))) == _no_branch(json.loads(AK.read(os.path.join(D, "trades.json"))))
+              and TE.build(os.path.join(tmp, "missing"))["data_branch"] is None and not any(str(t["id"]).startswith("live.z") for t in TE.build(os.path.join(tmp, "missing"))["trades"])
+              and LT.load(os.path.join(tmp, "missing")) == [])
         # 4. the page core: feed rows (fresh only), merge per account, dedupe against the file and the board copy
         fp, np_ = os.path.join(tmp, "trades.json"), os.path.join(tmp, "feed.ndjson")
         with open(fp, "w") as fh:
@@ -479,6 +519,7 @@ def test_browser():
 if __name__ == "__main__":
     test_static()
     test_rules()
+    test_rules_real()
     test_live()
     if "--static" not in sys.argv:
         test_browser()
