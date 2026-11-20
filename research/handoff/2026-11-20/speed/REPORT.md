@@ -16,6 +16,16 @@ proposed today.**
 Next: nothing for you. The lead wires the 2 speed-ups (no trade changes). Fast entry stays OFF unless you want to try it
 as a test (your yes/no, through the lead).
 
+## Round 2 (afternoon, for the lead)
+
+| What | Result |
+|---|---|
+| The 2 speed-ups, now in the bot files on day-speed | same trades and same state on every replayed poll, LIT and ATLAS; full LIT test 120/120; bot's poll 504 -> 206 ms |
+| Fast entry | Decide card added (open): ~$100 a month central, $0-$161 range, recommend a 2-week test |
+| Today's ATLAS short replay + exact PC fill times | tonight, once the PC sends today's files |
+
+Details: LEAD_WIRES.md "ROUND 2". Nothing merges until the lead reviews and a red team checks it.
+
 ## 1. The live loop, measured (job 1)
 
 Order of events on the PC for an entry (engine/live.py `_loop` / `poll_once`, engine/ninjatrader.py `send`):

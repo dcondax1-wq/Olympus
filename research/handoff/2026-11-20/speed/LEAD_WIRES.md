@@ -62,3 +62,34 @@ tests/test_speed_tail_load.py; research/handoff/2026-11-20/speed/{REPORT.md, LEA
 patch_2_hist_cap.diff, replay_*.json}; research/writeups/nq-speed-fills-2026-11-20.md.
 
 Lead: after merging, rerun `python tools/writeups_index.py` (new write-up research/writeups/nq-speed-fills-2026-11-20.md; not run on this branch to keep INDEX.md free of merge conflicts with the other day helpers).
+
+## ROUND 2 (2026-11-20 afternoon): patches 1 + 2 APPLIED on day-speed (lead review + red team before any merge)
+
+Branch: `day-speed` (this session may only push day-speed; the lead asked for day-speed2). origin/pc merged first (bbec63b0),
+then ONE bot-file commit "speed round 2: patches 1 (tail reader) + 2 (history cap) applied to the bot files": engine/ninjatrader.py
+(`NinjaTraderBars.load` + `TAIL_FULL_EVERY_S` / `TAIL_MAX_GROWTH`) and engine/live.py (`HIST_KEEP_DAYS` + 5 lines in `_read_hist`).
+Cherry-pick that commit alone if you want it without the research files. Undo on the PC without code: start cfg
+`"hist_keep_days": 0` turns patch 2 off; patch 1 has no switch (revert the commit).
+
+| Proof "no decision change" | Patched (day-speed) | Unpatched origin/pc |
+|---|---|---|
+| tests.test_lit_live FULL | 120/120 day-end trades identical; intraday 9,923 polls 0 differences (+29 on the known 2026-04-03); LiveBot 2/2 entries + exits | (the same numbers are the shipped baseline) |
+| Replay through the REAL file path, LIT + ATLAS (account B paper), 2026-11-06 / 16 / 17 / 18, 3,072 polls | LIT ledger, ATLAS ledger, log lines, LIT state on every poll: identical to unpatched | ATLAS Nov 6 04:00 SELL (stop 27,078.75) and Nov 17 08:20 SELL (stop 27,432.75) = the real live stops; Zlarior Nov 16 06:16 BUY (stop 27,735.25) |
+| Poll time in that replay (median / p90) | 206 / 622 ms | 504 / 961 ms |
+| engine.ninjatrader --selftest | 79 pass / 0 fail | - |
+| tail reader (tests/test_speed_tail_load.py) | 17/17: appends, torn line, trim, same-length in-place fix, junk, empty; NEW: read while being written in pieces (never a cut bar), file shorter than the tail, missing file, restart mid-stream | - |
+| history cap (tests/test_speed_hist_cap.py) | 6/6: last 150 days only, exactly today's newest rows, hist_keep_days 0 = all, ES / 1h never cut, LIT window <= 69 days in 2026 | - |
+| ATLAS / Rapid / multi-account / NT suites | account_b_funded 67/67, account_b_local 28/28, account_b_min_room 21/21, acctb_not_placed 44/44, atlas_armed PASS, atlas_funded_switches 35/35, combo_50k 56/56, combo_account 45/45, datafeed 42/42, fast_entry 21/21, fleet 131/131, lit25 26/26, multi_account 55/55, nq_live_reliability 119/119, nt_exec_audit 46/46, nt_outgoing 26/26, nt_roll_guard 10/10, pc_bars 75/75, rapid 60/60, rapid25 94/94, rapid_launch 11/11 | - |
+| Pre-existing fails (same on unpatched origin/pc) | test_second_account_b 114/115 (d. "2026-08-18 25K pass lock"), test_poll_timing 14/15 ("other threads named with their CPU") | the same 2 fail there |
+
+Found on the way (not fixed, not mine): engine/account_b.AccountB.start raises `TypeError: unsupported format string passed
+to NoneType.__format__` when its block has no eval_start (room None in the "ready" line, account_b.py ~line 626): account B then
+does not start ("account B NOT started" in the log). The PC's real block has eval_start, so ATLAS runs; a block written without
+it would silently not trade.
+
+Fast entry: Decide card `fast-entry` added to tools/web_public/business/decisions.json (status open, $0 / ~$100 / ~$161 a month,
+recommend yes as a 2-week test, tests.test_decide 14/14). Apply note (after the owner's YES): on the PC, `python -X utf8 -m
+engine.fast_entry --on`; off again `--off`.
+
+Still coming tonight (16:05 ET check-in): today's 03:45 ET ATLAS short through the patched vs unpatched loop (needs today's
+bars from the PC) and the PC's exact open -> sent -> filled times (tools/research/fill_timing.py).
