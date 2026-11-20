@@ -235,6 +235,50 @@ function onFrame() {
   const now = performance.now();
   if (now - S.labelsAt > 240) { S.labelsAt = now; chooseLabelSet(); }
   placeLabels();
+  placeBills();
+}
+// cities3 2026-11-20: the district billboards = real text pinned over the ZEUS (NQ), Kalshi bot and Business (Money) towers, live numbers from
+// the PC feed and kalshi.json (C.billboards). Three projections a frame; transform only (no layout); hidden off screen or under the top bar.
+const BILLS = [['nq', 'hub/zeus.html', '#ffc65a'], ['kalshi', 'kalshi/', '#7aa7ff'], ['money', 'business/', '#5fe0a0']];
+function billBox() {
+  let box = $('#bills');
+  if (box) return box;
+  box = el('div'); box.id = 'bills'; box.setAttribute('aria-live', 'off');
+  for (const [k, href, c] of BILLS) {
+    const i = S.plan ? S.plan.places.findIndex((p) => p.raw && p.raw.href === href) : -1;
+    const b = el('a', 'bill'); b.dataset.k = k; b.dataset.i = String(i); b.href = ROOT + href; b.style.setProperty('--c', c); b.hidden = true;
+    b.append(el('b', 'bt'), el('span', 'bl')); box.append(b);
+  }
+  $('#labels').after(box);
+  return box;
+}
+function fillBills(bb) {
+  const box = billBox();
+  for (const b of box.children) {
+    const parts = String(bb[b.dataset.k] || '').split(/\s+·\s+/).filter(Boolean);
+    b.dataset.has = parts.length > 1 ? '1' : '';
+    b.querySelector('.bt').textContent = parts[0] || '';
+    b.querySelector('.bl').textContent = parts.slice(1, 5).join('\n');
+  }
+}
+function placeBills() {
+  const box = $('#bills'); if (!box || !S.scene || !S.plan) return;
+  const top = S.topB || ($('#top') ? $('#top').getBoundingClientRect().bottom : 0), H = innerHeight, W = innerWidth, pose = S.scene.pose();
+  const show = !S.history && S.sel < 0 && !S.tour;
+  for (const b of box.children) {
+    const i = +b.dataset.i, p = S.plan.places[i];
+    let vis = show && b.dataset.has === '1' && !!p;
+    if (vis) {
+      const q = S.scene.project(p.x, p.top + 3, p.z);
+      vis = q.front && q.sx > 20 && q.sx < W - 20 && q.sy > top + 70 && q.sy < H - 120 && pose.dist > 28;
+      if (vis) {
+        const hw = (b.offsetWidth || 160) / 2, x = Math.max(hw + 8, Math.min(W - hw - 8, q.sx));
+        b.style.transform = `translate(${Math.round(x)}px, ${Math.round(q.sy)}px) translate(-50%, -100%)`;
+        b._r = [x - hw, q.sy - (b.offsetHeight || 70) - 8, x + hw, q.sy + 4];
+      }
+    }
+    if (b.hidden === vis) b.hidden = !vis;
+  }
 }
 function chooseLabelSet() {
   const sc = S.scene, w = S.world, pose = sc.pose(), R = w.R || 130;
@@ -257,6 +301,9 @@ function chooseLabelSet() {
     if (pose.dist > 55) for (const dd of w.districts || []) for (const q of dd.quarters || []) if (q.id !== 'apps') add('q' + dd.id + q.id, q.x, 6, q.z, q.name, 'q', dd.hue);
   }
   const hb = $('#top').getBoundingClientRect().bottom;                       // never under the glass top bar
+  S.topB = hb;
+  const bills = [...(($('#bills') || {}).children || [])].filter((b) => !b.hidden && b._r).map((b) => b._r);   // cities3: no label under a billboard
+  if (bills.length) for (let k = cands.length - 1; k >= 0; k--) { const c = cands[k]; if (c.cls !== 'sel' && bills.some((r) => c.sx + c.w / 2 > r[0] && c.sx - c.w / 2 < r[2] && c.sy > r[1] && c.sy - c.h < r[3])) cands.splice(k, 1); }
   const keep = C.chooseLabels(cands, 16, W, H, hb + 4);
   S.labelKeys = keep.map((k) => cands.find((c) => c.key === k));
 }
@@ -416,7 +463,8 @@ async function live() {
   const [lite, board, edge, lab] = await Promise.all([
     (feedP || Promise.resolve()).then(() => (window.PC_FEED ? Promise.race([window.PC_FEED.fetchLatest({ feedUrl: ROOT + 'status_feed.json' }), new Promise((r) => setTimeout(() => r(null), 9000))]) : null)).catch(() => null),
     getJSON(ROOT + 'board/board.json', 8000), getJSON(ROOT + 'edge.json', 8000), getJSON(ROOT + 'business/lab.json', 8000)]);
-  S.live = { ...S.live, lite, board, edge, lab, t: now };
+  const kal = await getJSON(ROOT + 'kalshi.json', 6000);   // cities3: the Kalshi district's live line
+  S.live = { ...S.live, lite, board, edge, lab, kal, t: now };
   // the PC
   const pcl = C.pcLine(lite || (board && board.pc && board.pc.t ? { t: board.pc.t } : null), now);
   const pc = $('#pc');
@@ -437,9 +485,12 @@ async function live() {
   if (S.scene && S.scene.setDisplay) {
     const dist = (id) => (S.world.districts || []).find((x) => x.id === id) || {};
     const learn = (id) => (S.world.places || []).filter((p) => p.district === id && p.kind !== 'app').length;
-    S.scene.setDisplay(1, parts.length ? parts.join(' · ') : 'ZEUS · NQ · ' + $('#pcText').textContent);
-    S.scene.setDisplay(2, 'KALSHI · ' + (dist('kalshi').apps || 0) + ' apps · ' + learn('kalshi') + ' places learning');
-    S.scene.setDisplay(3, 'MONEY · ' + (dist('money').apps || 0) + ' apps · ' + learn('money') + ' places learning');
+    const bb = C.billboards(lite, kal, now);     // cities3: live numbers from the PC feed and kalshi.json; the old district counts when there are none
+    S.live.bill = bb;
+    fillBills(bb);
+    S.scene.setDisplay(1, parts.length ? parts.join(' · ') : (bb.nq && bb.nq !== 'NQ' ? bb.nq : 'ZEUS · NQ · ' + $('#pcText').textContent));
+    S.scene.setDisplay(2, bb.kalshi || 'KALSHI · ' + (dist('kalshi').apps || 0) + ' apps · ' + learn('kalshi') + ' places learning');
+    S.scene.setDisplay(3, bb.money || 'MONEY · ' + (dist('money').apps || 0) + ' apps · ' + learn('money') + ' places learning');
   }
   chip.textContent = parts.join(' · ');
   chip.classList.toggle('on', parts.length > 0);
