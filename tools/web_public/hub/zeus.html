@@ -90,7 +90,7 @@ body { font: 400 var(--ag-fs-body, .9375rem)/1.45 var(--ag-sans, -apple-system, 
 .zs-top h3 { margin: 0; flex: 1; min-width: 0; font: 700 var(--ag-fs-lead, 1.0625rem)/1.2 var(--ag-serif, Georgia, serif); overflow-wrap: anywhere; }
 .zs-chip { flex: none; font: 700 .75rem/1 var(--ag-sans, system-ui); padding: 5px 10px; border-radius: 999px; border: 1px solid currentColor; }
 .zs-chip.eval { color: var(--ag-aegean-text, #7fa7c2); } .zs-chip.funded { color: var(--ag-olive-text, #a0ac6e); }
-.zs-chip.passed { color: #14110e; background: var(--ag-gold, #c8a24a); border-color: var(--ag-gold, #c8a24a); } .zs-chip.failed { color: #fff; background: #b33a2e; border-color: #b33a2e; }
+.zs-chip.passed { color: var(--ag-on-gold, #14110e); background: var(--ag-gold, #c8a24a); border-color: var(--ag-gold, #c8a24a); } .zs-chip.failed { color: #fff; background: #b33a2e; border-color: #b33a2e; }
 .zs-mid { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
 .zs-bal { font: 700 1.5rem/1.1 var(--ag-sans, system-ui); font-variant-numeric: tabular-nums; }
 .zs-today { font-weight: 600; color: var(--ag-soft, #cfc4b2); font-variant-numeric: tabular-nums; } .zs-today.pos { color: #8fbf6a; } .zs-today.neg { color: #ff8a7a; }
@@ -103,7 +103,7 @@ body { font: 400 var(--ag-fs-body, .9375rem)/1.45 var(--ag-sans, -apple-system, 
 .zs-wins { display: grid; gap: 8px; }
 .zs-win { display: flex; flex-direction: column; gap: 2px; padding: 10px 14px; border-radius: 14px; background: var(--ag-s1, #1b1713); border: 1px solid var(--ag-line, #3a3228); }
 .zs-win b { font: 700 var(--ag-fs-lead, 1.0625rem)/1.2 var(--ag-serif, Georgia, serif); color: var(--ag-gold-hi, #dcbd6e); }
-.zs-win.open { border-color: #8fbf6a; } .zs-win.open span { color: #a9d68a; font-weight: 600; }
+.zs-win.open { border-color: var(--ag-olive, #8fbf6a); } .zs-win.open span { color: var(--ag-olive-text, #a9d68a); font-weight: 600; }
 .zs-win small { color: var(--ag-muted, #a89c88); font-size: var(--ag-fs-foot, .8125rem); overflow-wrap: anywhere; }
 .zs-notes { margin-top: 10px; }
 .zs-notes ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
