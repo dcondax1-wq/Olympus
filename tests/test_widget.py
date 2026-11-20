@@ -80,9 +80,9 @@ def main() -> int:
 
     for fam, par, need in (("small", "-", ["$3,807 to pass", "Zlarior 50K"]),
                            ("medium", "classic", ["$49,193", "payout: see Olympus", "Zlarior 25K #2", "$25,000", "Kalshi"]),
-                           ("large", "classic", ["$49,193", "$24,887", "$25,000", "$1,500 to pass", "drawdown room 51%", "NQ"]),
-                           ("medium", "-", ["$49,193", "$24,887", "room $1,025", "NQ bot", "Decide"]),
-                           ("large", "-", ["$49,193", "$24,887", "$25,000", "room $887", "Kalshi", "Websites", "Planner", "NQ 26431.00"])):
+                           ("large", "classic", ["$49,193", "-$113", "$25,000", "$1,500 to pass", "drawdown room 51%", "NQ"]),
+                           ("medium", "-", ["$49,193", "-$113", "room $1,025", "NQ bot", "Decide"]),
+                           ("large", "-", ["$49,193", "-$113", "$25,000", "room $887", "Kalshi", "Websites", "Planner", "NQ 26431.00"])):
         r = node("draw", LITE, HOME, fam, par)
         fam = fam if par == "-" else fam + " classic"
         txt = " | ".join(r["texts"])
@@ -105,6 +105,10 @@ def main() -> int:
         v = [None, None, out.stderr[-300:], None]
     check("c. funded 'to payout' = the payout coach (pc_feed payoutLines), not the PC's raw $750-ping line (%s)" % v,
           v[0] is not None and abs(v[0] - v[1]) < 0.01 and v[2].endswith(" to payout") and v[0] != v[3], v)
+    # owner 2026-11-20: MFFU sim-FUNDED accounts start at $0: funded ATLAS 25K at $24,887 reads -$113 (balance - $25,000); evals keep their balance
+    r = node("draw", LITE, HOME, "large", "-")
+    check("g. funded = balance - start (ATLAS -$113, never $24,887); evals unchanged ($49,193, $25,000)",
+          "-$113" in r["texts"] and "$24,887" not in r["texts"] and "$49,193" in r["texts"] and "$25,000" in r["texts"], r["texts"])
     # widget2 2026-11-20 (owner: "half my home screen ... easily access buttons"): every button is its own link to the right Olympus page
     want = {"NQ bot": "nq/", "Kalshi": "kalshi/", "Cities": "cities/", "Jarvis": "jarvis/", "Planner": "planner/", "Business": "business/",
             "Websites": "agency/", "Decide": "board/#decide"}

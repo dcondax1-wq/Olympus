@@ -15,3 +15,6 @@ Shots: `setup-light.png`, `setup-dark.png` (390 wide, no sideways scroll, no err
 
 LEAD: nothing to wire (no sw.js / apps.js change needed; if sw.js precaches `widget/olympus-widget.js?v=w3`, bump to `w4` and add `widget/setup.html`).
 Note: Scriptable cannot import a script from a URL by itself; the one tap copies + opens a new blank script, owner pastes.
+
+## Fix 2 (owner correction, 2026-11-20): MFFU funded accounts start at $0
+Funded accounts show **balance - start** (start = plan size, 25K -> $25,000; fallback balance - profit). ATLAS at $25,401 reads $401; the fixture ATLAS ($24,887) reads -$113. Evals unchanged. The rule is in `card()` of `olympus-widget.js`, so the Scriptable widget, Glance and the business pages that use `OLY_WIDGET` all follow it (`raw_balance` keeps the broker number; the payout coach still gets the raw balance). Mirrors the coming `PC_FEED.mffuView`. test_widget 56/56; money area 17/18 (same pre-existing money_dash lab.html fail).

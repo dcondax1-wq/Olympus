@@ -97,9 +97,13 @@
     const base = tgt != null && okN(c.profit) && bal != null ? bal - c.profit : null;   // the start balance
     const goal = tgt != null && base != null ? tgt - base : null;
     const done = goal && okN(c.to_target) ? Math.max(0, Math.min(1, 1 - c.to_target / goal)) : null;
+    // owner 2026-11-20: MFFU sim-FUNDED accounts start at $0 (MFFU shows the profit as the balance): funded = balance - start
+    // (ATLAS 25K at $25,401 reads $401); start = the plan size (25K -> $25,000), else balance - profit. Evals unchanged.
+    const k = String(c.plan || '').match(/(\d+)\s*K/i), start = k ? +k[1] * 1000 : base;
+    const shown = funded && bal != null && okN(start) && start > 0 ? Math.round((bal - start) * 100) / 100 : bal;
     return {
       name: String(c.name || 'Account'), plan: String(c.plan || ''), short: shortPlan(c.plan), funded,
-      balance: bal, today: okN(c.today_pnl) ? c.today_pnl : null, week: okN(c.week_pnl) ? c.week_pnl : null,
+      balance: shown, raw_balance: bal, today: okN(c.today_pnl) ? c.today_pnl : null, week: okN(c.week_pnl) ? c.week_pnl : null,
       // funded (olympus2 DATA TRUTH ask): the payout coach's need_more (business/payoutcoach.js, the number NQ / Trading / Board show), never the PC's
       // raw $750-ping line; no coach here (Scriptable) = no number ('payout: see Olympus')
       to_go: funded ? coachNeed(c, cx) : okN(c.to_target) ? Math.max(0, c.to_target) : null, to_label: funded ? 'to payout' : 'to pass',
