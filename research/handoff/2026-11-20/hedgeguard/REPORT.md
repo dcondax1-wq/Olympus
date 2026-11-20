@@ -37,7 +37,7 @@ None). account_b / account_c call `ac.opposite_open` only when `b.accts` exists 
 |---|---|
 | tests.test_hand_hedge (new, also run by tests.test_cross_hedge) | 14/14 (4 red on the code before: 1 hand LONG vs bot SHORT, 6 hand NQ mini, 8 stale notice, 11 window) |
 | tests.test_cross_hedge (the night-rehearse suite, unchanged checks) | 13/13 + hand trades |
-| the rest | see the end of this file (filled in after the run) |
+| engine.ninjatrader --selftest / test_multi_account (full) / test_fleet / test_rapid25 / test_rapid / test_guards / test_nq_live_reliability / test_redteam2_live / test_lit_live --quick | EXIT 0 / 55/55 / 131/131 / 94/94 / 60/60 / 69/69 / 119/119 / 15/15 / OK |
 
 Checks in test_hand_hedge: hand LONG 2 MNQ on the 25K #2 + bot SHORT on the 50K = refused (account named by its last 4);
 same side allowed; an extra account's own position skipped; a position a bot lane explains left to the ledger checks; Sim101
