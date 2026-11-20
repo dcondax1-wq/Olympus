@@ -270,7 +270,7 @@ def table(rows: list) -> str:
                  f"{sum(1 for r in rows if r['state'] == 'PASS')}/{len(rows)} suites pass |")
     return "\n".join(lines)
 AREAS["board"].append("payready"); AREAS["trading"] += ["payready", "nq_desk", "trading_merged", "alert_audit"]   # nqdash3 2026-11-20: payout readiness, the NQ desk, the merged Odeon / Why cards, the alert audit; its own line
-AREAS["pc"].append("alert_audit")
+AREAS["pc"].append("alert_audit"); AREAS["pc"].append("ntfy_budget")   # 2026-11-20 ntfy cap: tools/pc_report.py ext_hash + ntfy_quota
 AREAS["trading"].append("truth_check"); AREAS["board"].append("truth_check")   # Olympus 2 data truth (tools/truth_check.py, age.js), offline
 AREAS["nq"].append("premarket_brief")       # day-brief 2026-11-20: nq/brief.json contract + pre-registered bias (tools/premarket_brief.py)
 AREAS["money"].append("week_more")          # day-brief 2026-11-20: weekly review round 2 (twins, best/worst, K8, calendar, weekend)
