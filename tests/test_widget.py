@@ -127,6 +127,9 @@ def main() -> int:
     for f in ("index.html", "glance.html"):
         h = read(os.path.join(WEB, f))
         check(f"e. {f}: title, viewport-fit=cover, light + dark", "<title>" in h and "viewport-fit=cover" in h and "light dark" in h)
+    gh, gj = read(os.path.join(WEB, "glance.html")), read(os.path.join(WEB, "glance.js"))
+    check("e. olympus2: Glance loads the payout coach and the site-wide age chip (age.js / age.css) and uses OLY_AGE.chip for the report age",
+          "../business/payoutcoach.js" in gh and "../age.js?v=1" in gh and "../age.css?v=1" in gh and "A.chip(ageEl" in gj)
     print(f"{sum(RES)} passed, {len(RES) - sum(RES)} failed")
     return 0 if all(RES) else 1
 

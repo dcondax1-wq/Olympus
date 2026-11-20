@@ -79,3 +79,9 @@ A11Y sweep (`tools/a11y_sweep.py --quick`, their branch, my files): **gate 82 ->
 7. Dynamic Type: the gate loads a11y.js; widget text moved to rem.
 Left: cities filter chips' 13 px labels (short labels), the quality button's "LITE" 11.3 px (drawn by the kit), widget code block 12 px.
 Tests: gate 88/88, widget 37/37, cities 257/257, datacity 194/194. Tags: gate.js g15, gate.css g17 (+ olympus/a11y.js in the Home's list).
+
+## Round 6 (~12:30 ET): merged pc (age.js 58d8d701), the shared data-age chip
+- Home: "Right now" shows the PC report age as the site-wide chip (`age.js` / `age.css`: "updated 5 min ago", amber after 20 min, red after 1 h)
+  between the title and the badge; the plain sentence stays. Glance: "PC report updated 2 min ago" in the same chip.
+- Tags: gate.js g16, gate.css g18, the Home's script list + age.js (+ age.css link); glance.js 4.
+- Tests: test_gate_page 89/89 (+ chip text/level), test_home_fx 19/19, test_live_link 78/78, test_widget 38/38 (+ static pin).

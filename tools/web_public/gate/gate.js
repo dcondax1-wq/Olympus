@@ -357,6 +357,9 @@
     else st = ['on', 'ok', 'Bots on', 'The bots are on. Last report ' + words + ' ago.'];
     if (from === 'cache') st[3] = 'No new numbers reached this page. The last ones this phone saw are below.';
     card.setAttribute('data-state', st[0]);
+    /* olympus2 DATA TRUTH: the PC report's age as the one site-wide chip (age.js: "updated 5 min ago", amber after 20 min, red after 1 h) */
+    var ag = $('nowAge'), A = w.OLY_AGE, ageS = from === 'cache' && N.pcT != null ? Math.max(0, nowS() - N.pcT) : N.pcAge;
+    if (ag && A && A.chip && from !== 'none' && ageS != null) { A.chip(ag, ageS, 'pc'); ag.id = 'nowAge'; ag.hidden = false; } else if (ag) ag.hidden = true;
     badge.className = 'g-badge ' + st[1]; badge.textContent = st[2]; line.textContent = st[3];
     clear(dl);
     var old = st[0] === 'stale' || from === 'cache';
