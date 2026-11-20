@@ -51,7 +51,13 @@ nothing extra.
 
 - `odeon/trades.json` stops at **2026-10-28** (23 days): `tools/odeon_export.py` reads LIT from `research/lab/replays.json`, which has not
   been rebuilt since. Trading, Journal, Kronos and NQ read this file too. A rebuild of the replays then `python tools/odeon_export.py` refreshes it.
-- `pantheon/pantheon.json` built **2026-11-03** (17 days): the Pantheon builder stopped. Forum now labels it old; Cities and Datacity read it too.
+- `pantheon/pantheon.json` was built **2026-11-03** (17 days old). Rebuilt today on this branch (`python -m tools.pantheon --no-research`,
+  8/8 free sources). Whatever ran it daily (CRONOS on the PC?) stopped on Nov 3: worth a look, or it goes stale again. Forum now labels
+  a read 2+ days old as old either way.
+- `pythia/events.json` (the risk calendar Helios, Planner, Jarvis and Hub read) is correct as committed (Nov 10). Regenerating it from
+  today's `data/news/events.csv` would have marked FOMC **minutes** days (Nov 18, Dec 30, Feb 17) as "FOMC decision" red days: fixed in
+  `tools/money/pythia_dates.py` (selftest ALL PASS + a guard). A regen now adds the real CPI / PPI dates through March, but 5 suites pin
+  the file's exact contents (helios, planner, polis_life, pythia, zeus_hub): do it with those owners.
 - `plutus/roadmap.json` updated **2026-11-04** (16 days): Hera, Demeter and Ledger read it for the payout plan ("first payout about 2026-12-16").
 - `kalshi.json` (site root) is a 404 until the Kalshi bot's feed is connected (Monday per STATE): Inbox, Stoa, Tyche, Polis, Hermes,
   Ergasterion and Symposium each log one console 404 until then. By design; no change made.

@@ -1,7 +1,7 @@
 {
  "v": 1,
  "built": "2026-11-10",
- "last_bar_day": "2026-11-19",
+ "last_bar_day": "2026-10-16",
  "usd_per_point": 2.0,
  "last_n": 8,
  "min_bars": 90,
@@ -11,22 +11,22 @@
  },
  "label": "History, not a forecast: how far NQ travelled on past release days. A range is not a profit or a loss.",
  "baseline": {
-  "days": 1123,
+  "days": 1103,
   "day": {
-   "n": 1123,
-   "avg": 305.1,
-   "median": 264.0
+   "n": 1103,
+   "avg": 299.6,
+   "median": 262.2
   },
   "window": {
    "08:30": {
-    "n": 1123,
-    "avg": 58.9,
-    "median": 45.5
+    "n": 1103,
+    "avg": 58.4,
+    "median": 45.0
    },
    "14:00": {
-    "n": 1123,
-    "avg": 58.8,
-    "median": 47.8
+    "n": 1103,
+    "avg": 58.1,
+    "median": 47.5
    }
   }
  },
@@ -34,41 +34,33 @@
   "cpi": {
    "label": "CPI (consumer prices)",
    "time": "08:30",
-   "n_listed": 49,
-   "n_with_data": 36,
+   "n_listed": 36,
+   "n_with_data": 35,
    "all": {
     "day": {
-     "n": 36,
-     "avg": 373.7,
-     "median": 327.0
+     "n": 35,
+     "avg": 368.1,
+     "median": 326.0
     },
     "window": {
-     "n": 36,
-     "avg": 181.5,
-     "median": 160.2
+     "n": 35,
+     "avg": 177.0,
+     "median": 159.8
     }
    },
    "last": {
     "day": {
      "n": 8,
-     "avg": 407.9,
+     "avg": 388.4,
      "median": 330.4
     },
     "window": {
      "n": 8,
-     "avg": 208.3,
-     "median": 227.2
+     "avg": 181.9,
+     "median": 179.2
     }
    },
    "rows": [
-    {
-     "date": "2026-11-10",
-     "time": "08:30",
-     "day_range": 572.75,
-     "window_range": 338.5,
-     "day_usd": 1146,
-     "window_usd": 677
-    },
     {
      "date": "2026-09-11",
      "time": "08:30",
@@ -124,47 +116,47 @@
      "window_range": 148.75,
      "day_usd": 613,
      "window_usd": 298
+    },
+    {
+     "date": "2026-02-13",
+     "time": "08:30",
+     "day_range": 416.75,
+     "window_range": 127.75,
+     "day_usd": 834,
+     "window_usd": 256
     }
    ]
   },
   "nfp": {
    "label": "Jobs report (NFP)",
    "time": "08:30",
-   "n_listed": 50,
-   "n_with_data": 35,
+   "n_listed": 37,
+   "n_with_data": 34,
    "all": {
     "day": {
-     "n": 35,
-     "avg": 423.9,
-     "median": 365.8
+     "n": 34,
+     "avg": 423.6,
+     "median": 365.1
     },
     "window": {
-     "n": 35,
-     "avg": 162.4,
-     "median": 153.5
+     "n": 34,
+     "avg": 162.6,
+     "median": 154.9
     }
    },
    "last": {
     "day": {
      "n": 8,
-     "avg": 539.0,
-     "median": 400.5
+     "avg": 535.3,
+     "median": 385.8
     },
     "window": {
      "n": 8,
-     "avg": 176.6,
-     "median": 178.4
+     "avg": 184.1,
+     "median": 192.4
     }
    },
    "rows": [
-    {
-     "date": "2026-11-06",
-     "time": "08:30",
-     "day_range": 436.5,
-     "window_range": 153.5,
-     "day_usd": 873,
-     "window_usd": 307
-    },
     {
      "date": "2026-10-02",
      "time": "08:30",
@@ -220,47 +212,47 @@
      "window_range": 290.5,
      "day_usd": 650,
      "window_usd": 581
+    },
+    {
+     "date": "2026-02-11",
+     "time": "08:30",
+     "day_range": 407.0,
+     "window_range": 213.25,
+     "day_usd": 814,
+     "window_usd": 426
     }
    ]
   },
   "ppi": {
    "label": "PPI (producer prices)",
    "time": "08:30",
-   "n_listed": 50,
-   "n_with_data": 37,
+   "n_listed": 37,
+   "n_with_data": 36,
    "all": {
     "day": {
-     "n": 37,
-     "avg": 362.2,
-     "median": 298.5
+     "n": 36,
+     "avg": 347.5,
+     "median": 296.0
     },
     "window": {
-     "n": 37,
-     "avg": 113.0,
-     "median": 93.8
+     "n": 36,
+     "avg": 110.2,
+     "median": 93.2
     }
    },
    "last": {
     "day": {
      "n": 8,
-     "avg": 571.9,
-     "median": 532.4
+     "avg": 519.8,
+     "median": 483.9
     },
     "window": {
      "n": 8,
-     "avg": 148.1,
-     "median": 149.9
+     "avg": 140.9,
+     "median": 147.8
     }
    },
    "rows": [
-    {
-     "date": "2026-11-13",
-     "time": "08:30",
-     "day_range": 893.75,
-     "window_range": 214.25,
-     "day_usd": 1788,
-     "window_usd": 428
-    },
     {
      "date": "2026-10-15",
      "time": "08:30",
@@ -316,6 +308,14 @@
      "window_range": 63.0,
      "day_usd": 703,
      "window_usd": 126
+    },
+    {
+     "date": "2026-03-18",
+     "time": "08:30",
+     "day_range": 477.25,
+     "window_range": 156.5,
+     "day_usd": 954,
+     "window_usd": 313
     }
    ]
   },
@@ -323,40 +323,32 @@
    "label": "FOMC decision",
    "time": "14:00",
    "n_listed": 56,
-   "n_with_data": 41,
+   "n_with_data": 40,
    "all": {
     "day": {
-     "n": 41,
-     "avg": 383.8,
+     "n": 40,
+     "avg": 387.4,
      "median": 342.0
     },
     "window": {
-     "n": 41,
-     "avg": 152.5,
+     "n": 40,
+     "avg": 153.0,
      "median": 132.0
     }
    },
    "last": {
     "day": {
      "n": 8,
-     "avg": 422.6,
+     "avg": 427.4,
      "median": 409.6
     },
     "window": {
      "n": 8,
-     "avg": 156.0,
-     "median": 132.5
+     "avg": 150.1,
+     "median": 115.6
     }
    },
    "rows": [
-    {
-     "date": "2026-10-28",
-     "time": "14:00",
-     "day_range": 239.0,
-     "window_range": 132.5,
-     "day_usd": 478,
-     "window_usd": 265
-    },
     {
      "date": "2026-09-16",
      "time": "14:00",
@@ -412,6 +404,14 @@
      "window_range": 138.5,
      "day_usd": 684,
      "window_usd": 277
+    },
+    {
+     "date": "2025-10-29",
+     "time": "14:00",
+     "day_range": 277.25,
+     "window_range": 85.25,
+     "day_usd": 554,
+     "window_usd": 170
     }
    ]
   }
@@ -674,12 +674,12 @@
    "source": "bls.gov"
   },
   {
-   "date": "2026-12-04",
-   "time": "08:30",
-   "title": "Non-Farm Payrolls (jobs report)",
-   "kind": "nfp",
+   "date": "2026-11-18",
+   "time": "14:00",
+   "title": "Fed meeting minutes (Oct 27-28)",
+   "kind": "minutes",
    "impact": "high",
-   "source": "bls.gov release schedule (fetched 2026-11-17)"
+   "source": "federalreserve.gov"
   },
   {
    "date": "2026-12-09",
@@ -687,47 +687,7 @@
    "title": "FOMC rate decision + projections",
    "kind": "fomc",
    "impact": "high",
-   "source": "federalreserve.gov FOMC calendar (fetched 2026-11-17)"
-  },
-  {
-   "date": "2026-12-10",
-   "time": "08:30",
-   "title": "CPI (consumer inflation)",
-   "kind": "cpi",
-   "impact": "high",
-   "source": "bls.gov release schedule (fetched 2026-11-17)"
-  },
-  {
-   "date": "2026-12-15",
-   "time": "08:30",
-   "title": "PPI (producer inflation)",
-   "kind": "ppi",
-   "impact": "med",
-   "source": "bls.gov release schedule (fetched 2026-11-17)"
-  },
-  {
-   "date": "2027-01-08",
-   "time": "08:30",
-   "title": "Non-Farm Payrolls (jobs report)",
-   "kind": "nfp",
-   "impact": "high",
-   "source": "bls.gov release schedule (fetched 2026-11-17)"
-  },
-  {
-   "date": "2027-01-13",
-   "time": "08:30",
-   "title": "CPI (consumer inflation)",
-   "kind": "cpi",
-   "impact": "high",
-   "source": "bls.gov release schedule (fetched 2026-11-17)"
-  },
-  {
-   "date": "2027-01-14",
-   "time": "08:30",
-   "title": "PPI (producer inflation)",
-   "kind": "ppi",
-   "impact": "med",
-   "source": "bls.gov release schedule (fetched 2026-11-17)"
+   "source": "federalreserve.gov"
   },
   {
    "date": "2027-01-27",
@@ -735,87 +695,15 @@
    "title": "FOMC rate decision",
    "kind": "fomc",
    "impact": "high",
-   "source": "federalreserve.gov FOMC calendar (fetched 2026-11-17)"
-  },
-  {
-   "date": "2027-02-05",
-   "time": "08:30",
-   "title": "Non-Farm Payrolls (jobs report)",
-   "kind": "nfp",
-   "impact": "high",
-   "source": "bls.gov release schedule (fetched 2026-11-17)"
-  },
-  {
-   "date": "2027-02-11",
-   "time": "08:30",
-   "title": "CPI (consumer inflation)",
-   "kind": "cpi",
-   "impact": "high",
-   "source": "bls.gov release schedule (fetched 2026-11-17)"
-  },
-  {
-   "date": "2027-02-12",
-   "time": "08:30",
-   "title": "PPI (producer inflation)",
-   "kind": "ppi",
-   "impact": "med",
-   "source": "bls.gov release schedule (fetched 2026-11-17)"
-  },
-  {
-   "date": "2027-03-05",
-   "time": "08:30",
-   "title": "Non-Farm Payrolls (jobs report)",
-   "kind": "nfp",
-   "impact": "high",
-   "source": "bls.gov release schedule (fetched 2026-11-17)"
-  },
-  {
-   "date": "2027-03-10",
-   "time": "08:30",
-   "title": "CPI (consumer inflation)",
-   "kind": "cpi",
-   "impact": "high",
-   "source": "bls.gov release schedule (fetched 2026-11-17)"
-  },
-  {
-   "date": "2027-03-12",
-   "time": "08:30",
-   "title": "PPI (producer inflation)",
-   "kind": "ppi",
-   "impact": "med",
-   "source": "bls.gov release schedule (fetched 2026-11-17)"
+   "source": "federalreserve.gov"
   },
   {
    "date": "2027-03-17",
    "time": "14:00",
-   "title": "FOMC rate decision",
+   "title": "FOMC rate decision + projections",
    "kind": "fomc",
    "impact": "high",
-   "source": "federalreserve.gov FOMC calendar (fetched 2026-11-17)"
-  },
-  {
-   "date": "2027-04-02",
-   "time": "08:30",
-   "title": "Non-Farm Payrolls (jobs report)",
-   "kind": "nfp",
-   "impact": "high",
-   "source": "bls.gov release schedule (fetched 2026-11-17)"
-  },
-  {
-   "date": "2027-04-13",
-   "time": "08:30",
-   "title": "CPI (consumer inflation)",
-   "kind": "cpi",
-   "impact": "high",
-   "source": "bls.gov release schedule (fetched 2026-11-17)"
-  },
-  {
-   "date": "2027-04-14",
-   "time": "08:30",
-   "title": "PPI (producer inflation)",
-   "kind": "ppi",
-   "impact": "med",
-   "source": "bls.gov release schedule (fetched 2026-11-17)"
+   "source": "federalreserve.gov"
   },
   {
    "date": "2027-04-28",
@@ -823,87 +711,15 @@
    "title": "FOMC rate decision",
    "kind": "fomc",
    "impact": "high",
-   "source": "federalreserve.gov FOMC calendar (fetched 2026-11-17)"
-  },
-  {
-   "date": "2027-05-07",
-   "time": "08:30",
-   "title": "Non-Farm Payrolls (jobs report)",
-   "kind": "nfp",
-   "impact": "high",
-   "source": "bls.gov release schedule (fetched 2026-11-17)"
-  },
-  {
-   "date": "2027-05-12",
-   "time": "08:30",
-   "title": "CPI (consumer inflation)",
-   "kind": "cpi",
-   "impact": "high",
-   "source": "bls.gov release schedule (fetched 2026-11-17)"
-  },
-  {
-   "date": "2027-05-13",
-   "time": "08:30",
-   "title": "PPI (producer inflation)",
-   "kind": "ppi",
-   "impact": "med",
-   "source": "bls.gov release schedule (fetched 2026-11-17)"
-  },
-  {
-   "date": "2027-06-04",
-   "time": "08:30",
-   "title": "Non-Farm Payrolls (jobs report)",
-   "kind": "nfp",
-   "impact": "high",
-   "source": "bls.gov release schedule (fetched 2026-11-17)"
+   "source": "federalreserve.gov"
   },
   {
    "date": "2027-06-09",
    "time": "14:00",
-   "title": "FOMC rate decision",
+   "title": "FOMC rate decision + projections",
    "kind": "fomc",
    "impact": "high",
-   "source": "federalreserve.gov FOMC calendar (fetched 2026-11-17)"
-  },
-  {
-   "date": "2027-06-10",
-   "time": "08:30",
-   "title": "CPI (consumer inflation)",
-   "kind": "cpi",
-   "impact": "high",
-   "source": "bls.gov release schedule (fetched 2026-11-17)"
-  },
-  {
-   "date": "2027-06-11",
-   "time": "08:30",
-   "title": "PPI (producer inflation)",
-   "kind": "ppi",
-   "impact": "med",
-   "source": "bls.gov release schedule (fetched 2026-11-17)"
-  },
-  {
-   "date": "2027-07-02",
-   "time": "08:30",
-   "title": "Non-Farm Payrolls (jobs report)",
-   "kind": "nfp",
-   "impact": "high",
-   "source": "bls.gov release schedule (fetched 2026-11-17)"
-  },
-  {
-   "date": "2027-07-14",
-   "time": "08:30",
-   "title": "CPI (consumer inflation)",
-   "kind": "cpi",
-   "impact": "high",
-   "source": "bls.gov release schedule (fetched 2026-11-17)"
-  },
-  {
-   "date": "2027-07-15",
-   "time": "08:30",
-   "title": "PPI (producer inflation)",
-   "kind": "ppi",
-   "impact": "med",
-   "source": "bls.gov release schedule (fetched 2026-11-17)"
+   "source": "federalreserve.gov"
   },
   {
    "date": "2027-07-28",
@@ -911,87 +727,15 @@
    "title": "FOMC rate decision",
    "kind": "fomc",
    "impact": "high",
-   "source": "federalreserve.gov FOMC calendar (fetched 2026-11-17)"
-  },
-  {
-   "date": "2027-08-06",
-   "time": "08:30",
-   "title": "Non-Farm Payrolls (jobs report)",
-   "kind": "nfp",
-   "impact": "high",
-   "source": "bls.gov release schedule (fetched 2026-11-17)"
-  },
-  {
-   "date": "2027-08-10",
-   "time": "08:30",
-   "title": "PPI (producer inflation)",
-   "kind": "ppi",
-   "impact": "med",
-   "source": "bls.gov release schedule (fetched 2026-11-17)"
-  },
-  {
-   "date": "2027-08-11",
-   "time": "08:30",
-   "title": "CPI (consumer inflation)",
-   "kind": "cpi",
-   "impact": "high",
-   "source": "bls.gov release schedule (fetched 2026-11-17)"
-  },
-  {
-   "date": "2027-09-03",
-   "time": "08:30",
-   "title": "Non-Farm Payrolls (jobs report)",
-   "kind": "nfp",
-   "impact": "high",
-   "source": "bls.gov release schedule (fetched 2026-11-17)"
-  },
-  {
-   "date": "2027-09-10",
-   "time": "08:30",
-   "title": "PPI (producer inflation)",
-   "kind": "ppi",
-   "impact": "med",
-   "source": "bls.gov release schedule (fetched 2026-11-17)"
-  },
-  {
-   "date": "2027-09-14",
-   "time": "08:30",
-   "title": "CPI (consumer inflation)",
-   "kind": "cpi",
-   "impact": "high",
-   "source": "bls.gov release schedule (fetched 2026-11-17)"
+   "source": "federalreserve.gov"
   },
   {
    "date": "2027-09-15",
    "time": "14:00",
-   "title": "FOMC rate decision",
+   "title": "FOMC rate decision + projections",
    "kind": "fomc",
    "impact": "high",
-   "source": "federalreserve.gov FOMC calendar (fetched 2026-11-17)"
-  },
-  {
-   "date": "2027-10-08",
-   "time": "08:30",
-   "title": "Non-Farm Payrolls (jobs report)",
-   "kind": "nfp",
-   "impact": "high",
-   "source": "bls.gov release schedule (fetched 2026-11-17)"
-  },
-  {
-   "date": "2027-10-14",
-   "time": "08:30",
-   "title": "CPI (consumer inflation)",
-   "kind": "cpi",
-   "impact": "high",
-   "source": "bls.gov release schedule (fetched 2026-11-17)"
-  },
-  {
-   "date": "2027-10-15",
-   "time": "08:30",
-   "title": "PPI (producer inflation)",
-   "kind": "ppi",
-   "impact": "med",
-   "source": "bls.gov release schedule (fetched 2026-11-17)"
+   "source": "federalreserve.gov"
   },
   {
    "date": "2027-10-27",
@@ -999,64 +743,16 @@
    "title": "FOMC rate decision",
    "kind": "fomc",
    "impact": "high",
-   "source": "federalreserve.gov FOMC calendar (fetched 2026-11-17)"
+   "source": "federalreserve.gov"
   },
   {
-   "date": "2027-11-05",
-   "time": "08:30",
-   "title": "Non-Farm Payrolls (jobs report)",
-   "kind": "nfp",
-   "impact": "high",
-   "source": "bls.gov release schedule (fetched 2026-11-17)"
-  },
-  {
-   "date": "2027-11-10",
-   "time": "08:30",
-   "title": "CPI (consumer inflation)",
-   "kind": "cpi",
-   "impact": "high",
-   "source": "bls.gov release schedule (fetched 2026-11-17)"
-  },
-  {
-   "date": "2027-11-12",
-   "time": "08:30",
-   "title": "PPI (producer inflation)",
-   "kind": "ppi",
-   "impact": "med",
-   "source": "bls.gov release schedule (fetched 2026-11-17)"
-  },
-  {
-   "date": "2027-11-17",
+   "date": "2027-12-08",
    "time": "14:00",
-   "title": "FOMC rate decision",
+   "title": "FOMC rate decision + projections",
    "kind": "fomc",
    "impact": "high",
-   "source": "federalreserve.gov FOMC calendar (fetched 2026-11-17)"
-  },
-  {
-   "date": "2027-12-03",
-   "time": "08:30",
-   "title": "Non-Farm Payrolls (jobs report)",
-   "kind": "nfp",
-   "impact": "high",
-   "source": "bls.gov release schedule (fetched 2026-11-17)"
-  },
-  {
-   "date": "2027-12-10",
-   "time": "08:30",
-   "title": "CPI (consumer inflation)",
-   "kind": "cpi",
-   "impact": "high",
-   "source": "bls.gov release schedule (fetched 2026-11-17)"
-  },
-  {
-   "date": "2027-12-15",
-   "time": "08:30",
-   "title": "PPI (producer inflation)",
-   "kind": "ppi",
-   "impact": "med",
-   "source": "bls.gov release schedule (fetched 2026-11-17)"
+   "source": "federalreserve.gov"
   }
  ],
- "calendar_last_date": "2027-12-15"
+ "calendar_last_date": "2027-12-08"
 }
