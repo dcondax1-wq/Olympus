@@ -1024,13 +1024,15 @@ def file_log(text: str):
 
 
 def notify(title: str, body: str, key: str, sync: bool = False):
-    """Phone push (kind 'pc', always pushed) + the bot's chat alert. sync=True when no server keeps the process alive."""
+    """Phone push (kind 'pc': it reaches the Olympus app only with LE_PUSH_EXTRA=1, engine/push.pc_app_ok; by default it does not)
+    + the bot's chat alert. sync=True when no server keeps the process alive."""
     try:
         from . import push
         p = push.text_payload("PC", "pc", title, body, key=key, url="#/accounts")
         if sync:
             if not push.pc_notifier().seen(p):
-                push._pc_send(p)                 # no sender: the real one (was _pc_send(p, True): True became the sender, TypeError per phone)
+                push._pc_send(p)                 # no sender: the real one (was _pc_send(p, True): with LE_PUSH_EXTRA=1, True became
+                                                 # the sender, a TypeError per phone; without it pc_app_ok drops kind 'pc' first)
         else:
             push.pc_notify(p)
     except Exception:

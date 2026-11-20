@@ -21,8 +21,8 @@ Within about 5 minutes your PC sends **"Olympus notifications are on"**. The car
 | the important alerts of the PC's 15-minute report (your `notify_settings.json` types that are on: trade results, PASSED / FAILED / LOCKED / payout ready, the 16:15 day summary, the 07:30 morning brief, bot down / NinjaTrader closed / FEED STALE, and "Back to normal", which replaces its problem) | the same words as before | NQ page or Board |
 
 Never for Paper, Sim or BLITZ. Quiet hours (23:00-07:00 ET) = the notification still comes, without sound (trade entries and
-results too; to make them ring at night, add `trade_opened` / `trade_closed` to `ring_in_quiet_hours`: the owner's yes / no on
-STATE.md). Tap one and Olympus opens at its page. Entries and exits arrive seconds after the bot routes / sees them; the report's
+results too; ringing at night is the owner's yes / no on STATE.md, and Claude makes the change: a hand edit of the tracked
+`notify_settings.json` on the PC stops its auto-update). Tap one and Olympus opens at its page. Entries and exits arrive seconds after the bot routes / sees them; the report's
 alerts every 15 minutes.
 
 ## Important alerts on both apps, the rest Olympus first (2026-11-20)
@@ -30,8 +30,10 @@ alerts every 15 minutes.
 The PC still has your private ntfy alert topic (the ntfy app, if you follow it: `python tools/pc_report.py --setup` on the PC prints
 the topic to follow).
 
-- **A trade's entry and result, PASSED / FAILED / LOCKED / payout ready, room low, problems (bot down, NinjaTrader closed, FEED
-  STALE) and PC silent go to Olympus AND to ntfy** (`trade_routes: "both"` in `notify_settings.json`). Until 2026-11-20 they went to
+- **A trade's entry and result, PASSED / FAILED / LOCKED / payout ready, no trade for 5+ days on an account, the 15-minute report's
+  problems (bot down, NinjaTrader closed, FEED STALE) and room low (if you turn it on) go to Olympus AND to ntfy**
+  (`trade_routes: "both"` in `notify_settings.json`). Problems the PC's fast alarm already sent in the entry hours stay on ntfy
+  only; "Back to normal" stays Olympus first (so a flap at night is not 4 sounds); PC silent comes from the cloud, on ntfy. Until 2026-11-20 they went to
   ntfy only when no phone "took" them, and "took" meant only that Apple's push service accepted them, not that the iPhone showed
   them. That day ATLAS's 03:45 ET entry and 07:10 ET +$514 result reached no phone; most likely (unconfirmed: the PC's push logs
   were not read) they were accepted for the one registered Olympus phone, and ntfy and the 15-minute report skipped their copies.
@@ -87,7 +89,7 @@ PC silent, account status, room low and problems), milestones, summary time. Cod
 
 **Default since 2026-11-18 (owner: "important only", then "notifications when we get in a trade in any account" the same
 evening)**: ON = trade opened, trade closed (the result), account_status (PASSED, FAILED, LOCKED, LOST, target reached, payout
-READY), the daily summary, the 07:30 morning brief, PC silent, problems (bot down, FEED STALE, NinjaTrader closed). OFF = 25/50/75 %
+READY, and since 2026-11-20 "no trade for N days" on an account (5+ days; MFFU closes an eval after 7); before it was "other", off), the daily summary, the 07:30 morning brief, PC silent, problems (bot down, FEED STALE, NinjaTrader closed). OFF = 25/50/75 %
 milestones, room low, other. Trade opened / closed ring in quiet hours only when they are in `ring_in_quiet_hours`. Turn one back
 on with `true` in `notify_settings.json`. The PC
 ops task's critical alerts that repeat until "Got it" (unprotected position, KILL fired, drawdown left, engine/alerts_plus.py)

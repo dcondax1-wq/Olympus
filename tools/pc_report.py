@@ -1842,12 +1842,12 @@ def _trade_alert(m: dict) -> bool:
 
 
 def _dual_alert(m: dict) -> bool:
-    """An alert for BOTH phone routes (engine/notify.DUAL_KINDS, 2026-11-20): a trade's entry / result, PASSED / FAILED / LOCKED /
-    payout ready (account_status), room low, problems (bot down, NinjaTrader closed, FEED STALE, a fill check, a missed entry) and
-    PC silent. Every other alert: the phone app first, ntfy only when no phone took it."""
+    """An alert for BOTH phone routes (engine/notify.dual, 2026-11-20): a trade's entry / result, PASSED / FAILED / LOCKED / payout
+    ready / a quiet eval (account_status), room low (when turned on), problems (bot down, NinjaTrader closed, FEED STALE, a fill
+    check, a missed entry). Every other alert, "Back to normal" included: the phone app first, ntfy only when no phone took it."""
     try:
         from engine import notify as _n
-        return _n.dual(_kind(m))
+        return _n.dual(_kind(m), m.get("key"))
     except Exception:  # noqa: BLE001
         return _trade_alert(m)
 
@@ -1863,7 +1863,9 @@ def _routes_mode() -> str:
 
 def _app_had(m: dict) -> bool:
     """The bot's instant path already put this trade alert on the phone app (engine/notify.instant_record app_only: ntfy failed then):
-    the report sends only its ntfy copy. Per account (engine/notify.report_acct): another account's alert on the same bar never counts."""
+    the report sends only its ntfy copy. Per account (engine/notify.acct_match): ATLAS's alert never counts for LIT's row on the same
+    bar; the report's one "lit" row counts every LIT account's (the 50K, the 25K #2, the Rapid's LIT lane: the report files them all
+    under "lit")."""
     try:
         from engine import notify as _n
         return _n.instant_sent(_n.entry_t_of(m), what="app_entries" if _kind(m) == "trade_opened" else "app_exits",

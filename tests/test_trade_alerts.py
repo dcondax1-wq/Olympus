@@ -67,7 +67,7 @@ class Box:
                               ntfy_exit=lambda p: N.instant_exit(p, cfg=self.cfg, poster=poster))
         P.pc_notify = run
         with open(MV.NAMES_FILE, "w", encoding="utf-8") as fh:
-            json.dump({"l4": {"6016": "Zlarior 50K", "2222": "Zlarior 25K #2", "6018": "ATLAS 25K funded", "5555": "Rapid EOD 25K"},
+            json.dump({"l4": {"9998": "Zlarior 50K", "2222": "Zlarior 25K #2", "9999": "ATLAS 25K funded", "5555": "Rapid EOD 25K"},
                        "id": {"atlas": "ATLAS 25K funded", "rapid": "Rapid EOD 25K"}}, fh)
 
     def set_settings(self, raw):
@@ -87,7 +87,7 @@ class Box:
         shutil.rmtree(self.dir, ignore_errors=True)
 
 
-def nt_adapter(account="MFFUEVBLDR000006016", push_as=None, real=True):
+def nt_adapter(account="MFFUEVBLDR000009998", push_as=None, real=True):
     """A NinjaTrader adapter without NinjaTrader: only what its phone notices use."""
     from engine import ninjatrader as NT
     ad = object.__new__(NT.NinjaTraderAdapter)
@@ -115,7 +115,7 @@ def split(posts):
 # ------------------------------------------------------------------------------------------------ a. LIT primary
 def part_a(b: Box):
     b.live(T0 - 600, [{"id": "mffu50k_eval", "name": "MFFU 50K", "plan": "MFFU Builder 50K", "kind": "eval", "source": "pc",
-                       "broker_account": "MFFUEVBLDR000006016", "eval": {"balance": 49193.0, "today": 0.0, "to_target": 3807.0}}])
+                       "broker_account": "MFFUEVBLDR000009998", "eval": {"balance": 49193.0, "today": 0.0, "to_target": 3807.0}}])
     ad = nt_adapter()
     ad._push_fill(leg())
     ad._push_fill(leg())                               # NinjaTrader reports the same fill twice (two legs, a retry)
@@ -132,7 +132,7 @@ def part_a(b: Box):
           and ex[0]["body"].startswith("today +$312, balance $49,505, $3,495 to pass"), ex)
     check("a. the entry rings (high), the exit is a normal push; no account id anywhere",
           ent and ex and ent[0]["priority"] == "high" and ex[0]["priority"] == "default"
-          and not any("000006016" in m["title"] + m["body"] for m in ent + ex))
+          and not any("000009998" in m["title"] + m["body"] for m in ent + ex))
 
 
 # ------------------------------------------------------------------------------------------------ b. an extra account
@@ -177,7 +177,7 @@ def part_b(b: Box):
 
 
 # ------------------------------------------------------------------------------------------------ c. account B (ATLAS)
-def atlas(cls=None, label="ATLAS 25K", account="MFFUSFBLDR000006018"):
+def atlas(cls=None, label="ATLAS 25K", account="MFFUSFBLDR000009999"):
     from engine import account_b as AB
     from engine import live as L
     cls = cls or AB.AccountB
@@ -192,7 +192,7 @@ def atlas(cls=None, label="ATLAS 25K", account="MFFUSFBLDR000006018"):
 
 
 def part_c(b: Box):
-    b.live(T0 - 600, [], atlas={"balance": 26050.0, "profit": 1050.0, "today_pnl": 0.0, "status": "funded", "broker": "MFFUSFBLDR000006018",
+    b.live(T0 - 600, [], atlas={"balance": 26050.0, "profit": 1050.0, "today_pnl": 0.0, "status": "funded", "broker": "MFFUSFBLDR000009999",
                                 "funded": {"max_request": 0}})
     a = atlas()
     check("c. ATLAS: account B now gives its adapter its own name + key (before: neither sent a NinjaTrader fill)",
@@ -301,7 +301,7 @@ def part_g(b: Box):
 # ------------------------------------------------------------------------------------------------ h. the miss of 2026-11-20
 ATLAS_ENTRY_T = 1795164300          # Fri 2026-11-20 03:45:00 ET: ATLAS SHORT 1 MNQ @ 26,380.75, stop 26,419.50, target 26,122.75 (LIVE)
 ATLAS_EXIT_T = 1795176603           # 07:10:03 ET: the target filled (+$514.18 after costs; $516 from the fills)
-ATLAS_ID = "MFFUSFBLDR000006018"    # the test id of atlas() above (this test's names.json maps it to "ATLAS 25K funded")
+ATLAS_ID = "MFFUSFBLDR000009999"    # the test id of atlas() above (this test's names.json maps it to "ATLAS 25K funded")
 
 
 class _Clock:
@@ -359,7 +359,8 @@ def part_h(b: Box):
         check("h. 2026-11-20 03:45 ET, ATLAS LIVE short, ONE Olympus phone that accepts: the phone app gets the entry "
               "'ATLAS 25K funded: SHORT 1 MNQ @ 26,380.75' (as before)",
               len(sw) == 1 and sw[0]["title"] == "ATLAS 25K funded: SHORT 1 MNQ @ 26,380.75", sw)
-        check("h. THE MISS: the entry ALSO goes to the private ntfy topic (before: 'skipped: the phone app has it', so nothing showed)",
+        check("h. the most likely miss (unconfirmed: the PC's push logs were not read): the entry ALSO goes to the private ntfy topic "
+              "(before, ntfy skipped it whenever a phone accepted: 'skipped: the phone app has it')",
               len(ent) == 1 and ent[0]["title"] == "ATLAS 25K funded: SHORT 1 MNQ @ 26,380.75"
               and ent[0]["body"].startswith("stop 26,419.50 (-$78), target 26,122.75 (+$516)"), ent)
         check("h. 03:45 ET is inside quiet hours: the entry SHOWS on both routes, without sound (ntfy low, Olympus silent): nights stay "
@@ -375,7 +376,8 @@ def part_h(b: Box):
         check("h. 07:10:03 ET the target fills: ONE result on the phone app 'ATLAS 25K funded: closed SHORT +$516 (target)' "
               "(account B's own copy of the same close dropped)",
               len(so) == 1 and so[0]["title"] == "ATLAS 25K funded: closed SHORT +$516 (target)", so)
-        check("h. THE MISS: the result ALSO goes to ntfy, $ first, with today / balance: 'today +$516, balance $25,403'",
+        check("h. the same for the result (most likely miss, unconfirmed): it ALSO goes to ntfy, $ first, with today / balance: "
+              "'today +$516, balance $25,403'",
               len(ex) == 1 and ex[0]["title"] == "ATLAS 25K funded: closed SHORT +$516 (target)"
               and ex[0]["body"].startswith("today +$516, balance $25,403") and ex[0]["priority"] == "default", ex)
         check("h. no account id in any alert (only the owner's name)",
@@ -526,11 +528,55 @@ def part_i(b: Box):
     check("i. the keys' account part: '' = LIT's primary (and the 50K combo), 'acctb' = ATLAS, an extra account's id = itself",
           N.key_acct(p25["key"]) == "b25k_2" and N.key_acct(f"fill:{t3}") == "" and N.key_acct(f"out:{t3}:acctr") == "acctr"
           and N.report_acct({"key": f"open:lit:{t3}"}) == "" and N.report_acct({"key": f"close:atlas:{t3}"}) == "acctb"
-          and N.report_acct({"key": "open:blitz:1"}) == "acctc" and N.report_acct({"key": "open:b25k_2:1", "acct": "b25k_2"}) == "b25k_2"
-          and N.report_acct({"key": "guard:dd:x"}) is None)
-    check("i. instant_sent per account: the 25K #2's app-only entry counts for the 25K #2 only; no account = any (the old rule)",
-          N.instant_sent(t3, what="app_entries", acct="b25k_2") and not N.instant_sent(t3, what="app_entries", acct="")
-          and N.instant_sent(t3, what="app_entries"))
+          and N.report_acct({"key": "open:blitz:1"}) == "acctc" and N.report_acct({"key": "guard:dd:x"}) is None)
+    check("i. acct_match: the report's 'lit' row ('') takes any LIT-family key (the 50K, the 25K #2, the Rapid's LIT lane), never "
+          "ATLAS's (acctb, acctr) or BLITZ's (acctc); 'acctb' takes ATLAS's only",
+          N.acct_match(f"fill:{t3}", "") and N.acct_match(f"fill:{t3}:b25k_2", "") and N.acct_match(f"out:{t3}:rapid", "")
+          and not N.acct_match(f"fill:{t3}:acctb", "") and not N.acct_match(f"fill:{t3}:acctr", "") and not N.acct_match(f"fill:{t3}:acctc", "")
+          and N.acct_match(f"fill:{t3}:acctb", "acctb") and not N.acct_match(f"fill:{t3}", "acctb") and N.acct_match(f"fill:{t3}:acctb", None))
+    check("i. instant_sent per account: the 25K #2's app-only entry counts for the report's one LIT row (it cannot tell the LIT "
+          "accounts apart), never for ATLAS's row; no account = any (the old rule)",
+          N.instant_sent(t3, what="app_entries", acct="b25k_2") and N.instant_sent(t3, what="app_entries", acct="")
+          and not N.instant_sent(t3, what="app_entries", acct="acctb") and N.instant_sent(t3, what="app_entries"))
+
+
+def part_i2(b: Box):
+    """the 25K #2 trades and the 50K does not (its order refused, its account off, its day stop first, passed / locked): the 25K #2's
+    own alerts went out at once. The 15-minute report has ONE LIT row per bar (engine/live_board.trade_log files every PC LIT account
+    under "lit", named as the 50K): it must not come back 15 minutes later as a false "Zlarior 50K opened / closed" on both apps
+    (skeptic 2026-11-20: with the exact per-account match it did; the old time-only rule did not)."""
+    from tools import pc_report as R
+    card = {"room": 2000.0, "mll": 2000.0, "today_pnl": 0.0}
+
+    def report(t):
+        row = {"acct": "lit", "src": "live", "entry_t": t, "side": "SHORT", "qty": 2, "entry": 21000.0, "stop": 21020.0, "target": 20900.0,
+               "exit": "OPEN", "open": True}
+        st, m1 = R.events({"seen": {}, "cond": {}, "seeded": True}, {"t": t + 300, "live": {"board": {"lit": card, "trades": [row]}}})
+        closed = {**row, "open": False, "exit": "TARGET", "exit_t": t + 1800, "usd": 514.0, "exit_px": 20900.0}
+        st, m2 = R.events(st, {"t": t + 2100, "live": {"board": {"lit": card, "trades": [closed]}}})
+        return [m["key"] for m in m1 + m2 if m["key"].startswith(("open:", "close:"))]
+    t0 = T0 + 30000
+    check("i2. control: with no instant alert at all, the report sends the LIT row's entry and its result (one each)",
+          report(t0) == [f"open:lit:{t0}", f"close:lit:{t0}"], report(t0))
+    t = t0 + 7200
+    p = P.entry_payload("Zlarior 25K #2", "SHORT", 2, t, src="pc")
+    p["key"] += ":b25k_2"
+    N.instant_record(p, "entry")                                  # ntfy took the 25K #2's entry at once
+    o = P.outcome_payload("Zlarior 25K #2", "SHORT", "TARGET", 514.0, t, t + 1800, src="pc")
+    o["key"] += ":b25k_2"
+    N.instant_record(o, "exit")                                   # ... and its result
+    kept = report(t)
+    check("i2. the 25K #2's entry + result already sent at once, the 50K had no trade: the report sends NO 'Zlarior 50K opened' and "
+          "NO 'Zlarior 50K closed +$514' copy (before this fix: both, on both apps, with the 50K's day and room)", kept == [], kept)
+    t2 = t + 7200
+    p2 = P.entry_payload("Zlarior 25K #2", "LONG", 2, t2, src="pc")
+    p2["key"] += ":b25k_2"
+    N.instant_record(p2, "entry", app_only=True)                  # only the phone app took it (ntfy refused)
+    a2 = P.entry_payload("ATLAS 25K", "LONG", 1, t2 + 3600, src="pc")
+    a2["key"] += ":acctb"
+    N.instant_record(a2, "entry", app_only=True)
+    check("i2. the 25K #2's app-only entry: the report's LIT row sends only its ntfy copy (not Olympus again); ATLAS's app-only entry "
+          "never counts for a LIT row", R._app_had({"key": f"open:lit:{t2}"}) and not R._app_had({"key": f"open:lit:{t2 + 3600}"}))
 
 
 # ------------------------------------------------------------------------------------------------ j. important alerts on both routes
@@ -539,7 +585,8 @@ IMPORTANT_MSGS = [
     {"key": "life:atlas:failed:{now}", "title": "ATLAS 25K FAILED", "body": "Stood down.", "priority": "high", "tags": "rotating_light"},
     {"key": "guard:dd:lit:x:75", "title": "Zlarior 50K room low", "body": "75% of the room used.", "priority": "high"},
     {"key": "pc_silent:{now}", "title": "PC silent", "body": "No report for 20 min.", "priority": "high"},
-    {"key": "guard:quiet:lit:{now}", "title": "Quiet bot", "body": "No trade today.", "priority": "default"},
+    {"key": "guard:day:{now}", "title": "Day summary", "body": "Zlarior 50K +$0 today.", "priority": "default"},
+    {"key": "back:bot_down:{now}", "title": "Back to normal", "body": "The bot reports again.", "priority": "default"},
 ]
 
 
@@ -589,13 +636,14 @@ def part_j(b: Box):
         h = BB.FakeHTTP()
         rec = bb.run(h, now, app_push=lambda m: took.append(m["key"]) or True)
         titles = sorted(c["h"].get("Title") for c in h.posts(cfg["topic"]))
-        check("j. a phone that accepts: bot down, FAILED, room low and PC silent reach the phone app AND the private ntfy topic "
-              "(before: Olympus only); an ordinary alert ('Quiet bot') stays Olympus-first",
-              len(took) == 5 and titles == sorted(["Bot down", "ATLAS 25K FAILED", "Zlarior 50K room low", "PC silent"]) and rec["sent"] == 9,
+        check("j. a phone that accepts: bot down, FAILED and room low reach the phone app AND the private ntfy topic (before: Olympus "
+              "only; a 'pc_silent:' key too, though the report makes none: PC silent comes from the cloud, on ntfy); the day summary "
+              "and 'Back to normal' stay Olympus-first (no second sound for an all-clear at night)",
+              len(took) == 6 and titles == sorted(["Bot down", "ATLAS 25K FAILED", "Zlarior 50K room low", "PC silent"]) and rec["sent"] == 10,
               (took, titles, rec.get("sent")))
         bars = R.read_json(os.path.join(bb.work, R.BARS_STATE), {}) or {}
         day = _d(_d(bars.get("days")).get(R._utc_day(now)))
-        check("j. the ntfy day count (the chart's share of the 250) counts the 4 ntfy alert posts, not the 5 Olympus pushes",
+        check("j. the ntfy day count (the chart's share of the 250) counts the 4 ntfy alert posts, not the 6 Olympus pushes",
               int(day.get("all") or 0) == len(h.posts()) , (day, len(h.posts())))
         ref = RefuseAlerts(cfg["topic"])
         bb.run(ref, now + 900, app_push=lambda m: True)
@@ -732,7 +780,8 @@ def part_l(b: Box):
 
 # ------------------------------------------------------------------------------------------------ m. older notice bug
 def part_m(b: Box):
-    """engine/autoupdate.notify(sync=True) called push._pc_send(p, True): True became the sender and every phone got a TypeError"""
+    """engine/autoupdate.notify(sync=True) called push._pc_send(p, True): with LE_PUSH_EXTRA=1, True became the sender and every
+    phone got a TypeError (by default engine/push.pc_app_ok drops kind 'pc' before any sender is used)"""
     from engine import alerts as AL
     from engine import autoupdate as AU
     calls = []
@@ -746,9 +795,69 @@ def part_m(b: Box):
     check("m. the sync update notice uses the real sender (no stray True as the sender)", calls == [("pc", (), {})], calls)
 
 
+QUIET_CARD = {"id": "lit", "name": "Zlarior", "plan": "MFFU Builder 50K", "badge": "LIVE", "status": "open", "balance": 49193.0,
+              "floor": 47193.0, "room": 2000.0, "mll": 2000.0, "today_pnl": 0.0, "dll": 1000.0, "dll_used": 0.0, "trades_today": 0,
+              "quiet_days": 6, "eval_start": "2026-11-02", "to_target": 3807.0, "position": None}
+
+
+def part_n(b: Box):
+    """MFFU's 7-day rule (owner 2026-11-20: "if a account hasn't traded in 7 days it needs a very small trade to reset counter?"):
+    tools/pc_guard's "no trade for N days" alert (key guard:quiet:<acct>:<day>) was kind "other", OFF in the shipped
+    notify_settings.json, so notify.apply dropped it before either route. Now account_status (on, both apps). The real events() +
+    apply() with the shipped settings, then run_once's real routes, a phone that accepts."""
+    from tests import test_bots_back as BB
+    from tools import pc_report as R
+    shipped = json.load(open(os.path.join(ROOT, "notify_settings.json"), encoding="utf-8"))
+    b.set_settings(shipped)
+    check("n. guard:quiet: is account_status (was 'other', OFF), on in the shipped settings",
+          N.kind_of("guard:quiet:lit:2026-11-20") == "account_status" and N.on("account_status", N.merge(shipped))
+          and not N.on("other", N.merge(shipped)))
+    real = R.events
+    bb, now, cfg, _fake = _report_box(b, lambda now: [])
+
+    def with_quiet_lit(state, snap):
+        lv = dict(snap.get("live") or {})
+        bd = {**dict(lv.get("board") or {}), "lit": {**dict(_d(lv.get("board")).get("lit") or {}), **QUIET_CARD}}
+        return real({**dict(state or {}), "seeded": True}, {**snap, "mode": "LIVE", "hb_age": 60, "live": {**lv, "board": bd}})
+    R.events = with_quiet_lit
+    try:
+        took = []
+        h = BB.FakeHTTP()
+        bb.run(h, now, app_push=lambda m: took.append(dict(m)) or True)
+        app_q = [m for m in took if str(m.get("key") or "").startswith("guard:quiet:lit:")]
+        nt_q = [c for c in h.posts(cfg["topic"]) if "no trade for 6 days" in str(c["h"].get("Title"))]
+        check("n. a live 50K eval 6 days without a trade, 10:00 ET: 'Zlarior 50K: no trade for 6 days' reaches the phone app AND the "
+              "ntfy app, high priority, with MFFU's 7-day rule and the by-hand fix in it (before: dropped, no phone got it)",
+              len(app_q) == 1 and len(nt_q) == 1 and app_q[0].get("priority") == "high"
+              and "MFFU can close an eval after 7 days" in app_q[0].get("body", "") and "by hand" in app_q[0].get("body", ""),
+              ([m.get("key") for m in took], [c["h"].get("Title") for c in h.posts(cfg["topic"])]))
+    finally:
+        R.events = real
+        bb.cleanup()
+
+
+def part_o(b: Box):
+    """nights: an all-clear never doubles; the self-check and the settings file never tell the owner to edit a tracked file on the PC
+    (engine/autoupdate skips every update after a local edit: 'local changes in tracked files')"""
+    from engine import alert_check as AC
+    check("o. 'Back to normal' / 'PC back' stay Olympus first; the problem itself goes to both apps (a FEED STALE flap at night: 3 "
+          "sounds, not 4)", not N.dual("problems", "back:feed_stale:1") and not N.dual("pc_silent", "pc_back:1")
+          and N.dual("problems", "cond:feed_stale:1") and N.dual("account_status", "life:x") and not N.dual("daily_summary", "guard:day:x"))
+    shipped = json.load(open(os.path.join(ROOT, "notify_settings.json"), encoding="utf-8"))
+    b.set_settings(shipped)
+    r = AC.routes(ntfy_cfg={"ntfy": "https://ntfy.sh", "topic": "nq-test-topic-0000"})
+    w = " ".join(r["warn"])
+    check("o. the self-check's night line says 'tell Claude', never 'add ... to ring_in_quiet_hours in notify_settings.json'",
+          "tell Claude" in w and "ring_in_quiet_hours" not in w and "Do not edit the settings file on the PC" in w, r["warn"])
+    hp = shipped.get("_help", "")
+    check("o. notify_settings.json's help: ringing at night is the owner's yes / no and Claude changes the file (no hand edit on the PC); "
+          "PC silent named as the cloud's, on ntfy", "add trade_opened / trade_closed to ring_in_quiet_hours" not in hp
+          and "never a hand edit on the PC" in hp and "PC silent comes from the cloud, on ntfy" in hp, hp[-600:])
+
+
 def main() -> int:
-    for f in (part_a, part_b, part_c, part_d, part_e, part_g, part_h, part_h2, part_h2b, part_h3, part_h4, part_i, part_j, part_k, part_l,
-              part_m):
+    for f in (part_a, part_b, part_c, part_d, part_e, part_g, part_h, part_h2, part_h2b, part_h3, part_h4, part_i, part_i2, part_j, part_k,
+              part_l, part_m, part_n, part_o):
         b = Box()
         try:
             f(b)

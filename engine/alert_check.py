@@ -66,11 +66,14 @@ def routes(ntfy_cfg=None) -> dict:
         if not out[k]:
             w.append(f"{k} is OFF in notify_settings.json: no {word} alerts.")
     if not out["ring_at_night"]:
-        w.append("Trade alerts come without sound 23:00-07:00 ET, they still show (to ring: add trade_opened / trade_closed to "
-                 "ring_in_quiet_hours in notify_settings.json).")
+        # never "edit notify_settings.json" here: it is a tracked file, and an edit on the PC makes engine/autoupdate skip every update
+        # ("local changes in tracked files") until it is undone (skeptic 2026-11-20)
+        w.append("Trade alerts come without sound 23:00-07:00 ET, they still show. To make them ring at night, tell Claude yes "
+                 "(STATE.md 'Waiting on the owner'); Claude changes it. Do not edit the settings file on the PC: that stops the "
+                 "PC's auto-update.")
     if out.get("trade_routes") in ("olympus", "ntfy"):
-        w.append(f"trade_routes is '{out['trade_routes']}' in notify_settings.json: trades and the important alerts go there first, "
-                 "the other app only when that one did not take it.")
+        w.append(f"trade_routes is '{out['trade_routes']}': trades and the important alerts go to that app first, the other app "
+                 "only when that one did not take it.")
     out["ok"] = bool(out["phones"] or out["ntfy"]) and out["trade_opened"] and out["trade_closed"]
     return out
 

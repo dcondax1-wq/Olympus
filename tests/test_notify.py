@@ -87,14 +87,16 @@ def settings():
                                         "guard:goal:lit:2026-11-02:100", "life:passed:atlas:a", "life:locked:atlas:a",
                                         "life:payout_ready:x:f50:abc:2026-11-13", "pc_silent:2026-11-16:1", "guard:brief:2026-11-18")}
     check("a. push keys -> types", list(kinds.values()) == ["trade_opened", "trade_closed", "eval_milestones", "room_low", "room_low",
-                                                             "daily_summary", "problems", "problems", "other", "other",
+                                                             "daily_summary", "problems", "problems", "other", "account_status",
                                                              "account_status", "account_status", "account_status", "account_status",
                                                              "pc_silent", "morning_brief"], kinds)
     every = [{"key": k, "priority": "default"} for k in kinds]
     kept = [m["key"] for m in N.apply(every, at(2026, 11, 17, 10, 0), N.merge({}))]
     check("a. 'important only' defaults: entries (owner 2026-11-18 evening), trade results, target reached, PASSED / LOCKED / payout READY, the day "
-          "summary, the morning brief, PC silent + problems (bot down, fill size) are kept; 25-75 %, room low, other are dropped",
-          kept == ["open:lit:1", "close:atlas:2", "guard:day:2026-11-16", "cond:bot_down:1", "fill:lit:1:size", "guard:goal:lit:2026-11-02:100", "life:passed:atlas:a",
+          "summary, the morning brief, PC silent + problems (bot down, fill size), a quiet eval (MFFU's 7-day rule, account_status since "
+          "2026-11-20: as 'other' it was dropped) are kept; 25-75 %, room low, other are dropped",
+          kept == ["open:lit:1", "close:atlas:2", "guard:day:2026-11-16", "cond:bot_down:1", "fill:lit:1:size", "guard:quiet:lit:d",
+                   "guard:goal:lit:2026-11-02:100", "life:passed:atlas:a",
                    "life:locked:atlas:a", "life:payout_ready:x:f50:abc:2026-11-13", "pc_silent:2026-11-16:1", "guard:brief:2026-11-18"], kept)
     night, day = at(2026, 11, 17, 3, 10), at(2026, 11, 17, 10, 0)
     check("a. quiet hours over midnight: 03:10 and 23:30 quiet, 07:00 and 10:00 not", N.quiet(night, S) and N.quiet(at(2026, 11, 17, 23, 30), S)
@@ -102,9 +104,10 @@ def settings():
     msgs = [{"key": "open:lit:1", "priority": "high"}, {"key": "cond:bot_down:1", "priority": "high"}, {"key": "guard:dd:lit:x:75", "priority": "high"},
             {"key": "guard:roll:late", "priority": "high"}, {"key": "guard:quiet:lit:d", "priority": "default"}, {"key": "guard:ready", "priority": "low", "night": True}]
     q = {m["key"]: m["priority"] for m in N.apply(msgs, night, ALL)}
-    check("a. 03:10: the trade and an ordinary push lose their sound (they still show); problems, room low and a high 'other' keep it",
+    check("a. 03:10: the trade and an ordinary push lose their sound (they still show); problems, room low, account status (a quiet "
+          "eval; tools/pc_guard never sends it in quiet hours) and a high 'other' keep it",
           q == {"open:lit:1": "low", "cond:bot_down:1": "high", "guard:dd:lit:x:75": "high", "guard:roll:late": "high",
-                "guard:quiet:lit:d": "low", "guard:ready": "low"}, q)
+                "guard:quiet:lit:d": "default", "guard:ready": "low"}, q)
     ring = N.merge({**ALL, "ring_in_quiet_hours": ["pc_silent", "account_status", "room_low", "problems", *N.TRADE_RING]})
     check("a. trade_opened put in ring_in_quiet_hours: the 03:10 entry rings (the owner's yes / no, STATE.md)",
           {m["key"]: m["priority"] for m in N.apply(msgs, night, ring)}["open:lit:1"] == "high")

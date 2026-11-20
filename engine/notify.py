@@ -59,8 +59,10 @@ IMPORTANT = ("trade_opened", "trade_closed", "account_status", "daily_summary", 
 TRADE_RING = ("trade_opened", "trade_closed")
 # The kinds that go to BOTH phone routes, the Olympus app AND the private ntfy topic (2026-11-20, notify_settings.json trade_routes;
 # a push service's "accepted" only means Apple / Google took it, not that the iPhone showed it): a trade's entry and result, PASSED /
-# FAILED / LOCKED / payout ready, room low, problems (bot down, NinjaTrader closed, FEED STALE), PC silent. Every other kind: Olympus
-# first, ntfy only when no phone took it.
+# FAILED / LOCKED / payout ready / a quiet eval (account_status), room low (OFF by default), the 15-minute report's problems (bot
+# down, NinjaTrader closed, FEED STALE; the ones engine/fast_alarm already sent in the entry hours are dropped by problem_dup and
+# stay on ntfy only; "Back to normal" stays Olympus first, NOT_DUAL_KEYS), pc_silent (the report makes no such key: PC silent comes
+# from the cloud's tools/pc_silent_check.py, on ntfy). Every other kind: Olympus first, ntfy only when no phone took it.
 DUAL_KINDS = ("trade_opened", "trade_closed", "account_status", "room_low", "problems", "pc_silent")
 # trade_routes: "both" (default) = Olympus AND ntfy; "olympus" = Olympus first, ntfy only when no phone took it; "ntfy" = ntfy first,
 # Olympus only when ntfy did not take it. A single-route choice keeps the other as the fallback, so an alert never reaches nobody.
@@ -201,9 +203,16 @@ def trade_routes(s: dict | None = None) -> str:
         return "both"
 
 
-def dual(kind: str) -> bool:
-    """A kind that goes to both phone routes when trade_routes is "both" (DUAL_KINDS)."""
-    return kind in DUAL_KINDS
+# "Back to normal" (back:<code>) and "PC back" (pc_back:) are problems / pc_silent by kind but stay Olympus first, as before: the
+# problem itself already goes to both apps, and a second copy of the all-clear would add one more sound at night (skeptic
+# 2026-11-20: a FEED STALE flap at 00:15 ET would be 4 sounds; it is 3, it was 2 before both routes).
+NOT_DUAL_KEYS = ("back:", "pc_back:")
+
+
+def dual(kind: str, key=None) -> bool:
+    """An alert that goes to both phone routes when trade_routes is "both": its kind is in DUAL_KINDS and its key is not an all-clear
+    (NOT_DUAL_KEYS)."""
+    return kind in DUAL_KINDS and not str(key or "").startswith(NOT_DUAL_KEYS)
 
 
 def kind_of(key: str) -> str:
@@ -225,6 +234,8 @@ def kind_of(key: str) -> str:
         return "morning_brief"
     if k.startswith("breaker:"):                    # engine/circuit_breaker: live vs twin SIZE DOWN / PAUSE advice for an account
         return "account_status"
+    if k.startswith("guard:quiet:"):                # tools/pc_guard: a live eval 5+ days without a trade (MFFU closes an eval after 7;
+        return "account_status"                     # high from day 6, never in quiet hours). Was "other" (OFF): it reached no phone
     if k.startswith(("cond:", "back:", "fill:", "watch:", "risk:")):    # risk:throttle: engine/msg_throttle runaway orders
         return "problems"
     if k.startswith(("pc_silent:", "pc_back:")):
@@ -236,6 +247,22 @@ def kind_of(key: str) -> str:
 # keys ("fill:<t>" = LIT's primary 50K and the 50K combo on it, ":acctb" = ATLAS's account B, ":acctc" = BLITZ's account C,
 # ":<id>" = an extra account / the Rapid's LIT lane, ":acctr" = the Rapid's ATLAS lane)
 REPORT_ACCT = {"lit": "", "atlas": "acctb", "blitz": "acctc"}
+# The report's "lit" row stands for EVERY LIT account: engine/live_board.trade_log files all the PC's LIT trades (the 50K, the 25K #2,
+# the Rapid's LIT lane) under "lit", one row per bar, labelled as the 50K. So for that row any LIT-family instant alert counts (every
+# key whose account part is not one of these); ATLAS (acctb) and BLITZ (acctc) keep the exact match (skeptic 2026-11-20: with an
+# exact "" match, the 25K #2's own entry / result came back 15 minutes later as a false "Zlarior 50K opened / closed" on both apps).
+NOT_LIT = ("acctb", "acctc", "acctr")
+
+
+def acct_match(key, acct) -> bool:
+    """Whether an instant alert's key counts for a report push's account (report_acct): None = any account (the old rule), "" (the
+    report's "lit" row) = any LIT-family key (not NOT_LIT), else the exact account part ("acctb" = ATLAS only)."""
+    if acct is None:
+        return True
+    ka = key_acct(key)
+    if str(acct) == "":
+        return ka not in NOT_LIT
+    return ka == str(acct)
 
 
 def key_acct(key) -> str:
@@ -283,8 +310,8 @@ def apply(msgs, now, s: dict | None = None) -> list:
         kind = m.get("kind") or kind_of(m.get("key"))
         if not on(kind, s):
             continue
-        # per account (2026-11-20): LIT enters the 50K, the 25K #2 and the Rapid on the same bar; one account's instant alert never
-        # stands for another's (report_acct / key_acct)
+        # per account (2026-11-20): ATLAS's instant alert never stands for LIT's report copy on the same bar, nor LIT's for ATLAS's;
+        # the report's one "lit" row stands for every LIT account (acct_match)
         if kind == "trade_opened" and instant_sent(entry_t_of(m), acct=report_acct(m)):
             continue                                # ntfy already got this entry the moment it was routed
         if kind == "trade_closed" and instant_sent(entry_t_of(m), what="exits", acct=report_acct(m)):
@@ -536,13 +563,13 @@ def _instant_state(path=None) -> dict:
 def instant_sent(entry_t, path=None, now=None, what: str = "entries", acct=None) -> bool:
     """True when an instant push went out for a trade entered within INSTANT_MATCH_S of entry_t (the report skips its own copy).
     what: "entries" / "exits" = the private ntfy topic took it; "app_entries" / "app_exits" = only the phone app took it (since
-    2026-11-20 the report still sends its ntfy copy then, engine/push._pc_send). acct: the key's account part (key_acct; "" = LIT's
-    primary, "acctb", "<id>" ...; report_acct of a report push): only that account's alerts count. None = any account."""
+    2026-11-20 the report still sends its ntfy copy then, engine/push._pc_send). acct: report_acct of a report push (acct_match:
+    "" = the report's "lit" row = any LIT account's alert, "acctb" = ATLAS's only, ...). None = any account."""
     t = _f(entry_t)
     if t is None:
         return False
     for k, v in _d(_instant_state(path).get(what)).items():
-        if acct is not None and key_acct(k) != str(acct):
+        if not acct_match(k, acct):
             continue
         if _f(v) is not None and abs(_f(v) - t) <= INSTANT_MATCH_S:
             return True

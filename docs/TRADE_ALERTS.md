@@ -16,22 +16,24 @@ Two pushes per trade, per account, within seconds:
   Never Paper, Sim or BLITZ.
 - **One push per event and route.** The entry and the exit of a trade each go out once per route (keyed by the fill, per account). Two
   accounts entering on the same bar get one push each. The 15-minute report skips its own copy of a trade ntfy already got, matched by
-  entry time AND account (since 2026-11-20: before, one account's alert on the same bar made the report drop another account's copy).
+  entry time. ATLAS's alert and LIT's never stand for each other (since 2026-11-20). The report has only one LIT row per bar (it files
+  the 50K, the 25K #2 and the Rapid's LIT lane all under "lit", named as the 50K), so any LIT account's alert on that bar counts for it.
 - **The numbers.** Entry: your $ risk to the stop and your $ to the target (distance x micros x $2). Exit: the $ from the real fills (before
   commission). Today's $, balance and $ to pass come from the PC's last 15-minute account view, plus every close the phone got since then.
   A funded account shows its balance, and "payout ready $X" once a payout can be requested, instead of "to pass".
 - **How it arrives (since 2026-11-20): on BOTH routes.** The Olympus phone app (Web Push) AND your private ntfy alert topic (the ntfy app),
-  for trades and for the important alerts (PASSED / FAILED / LOCKED / payout ready, room low, bot down / NinjaTrader closed / FEED STALE,
-  PC silent). Before, ntfy got them only when no Olympus phone "took" them, and "took" only meant Apple's push service accepted them. On
+  for trades and for the 15-minute report's important alerts (PASSED / FAILED / LOCKED / payout ready, no trade for 5+ days on an account,
+  bot down / NinjaTrader closed / FEED STALE, and room low if you turn it on). Problems the PC's fast alarm already sent in the entry
+  hours stay on ntfy only; "Back to normal" stays Olympus first; PC silent comes from the cloud, on ntfy. Before, ntfy got them only when no Olympus phone "took" them, and "took" only meant Apple's push service accepted them. On
   Fri 2026-11-20 ATLAS's 03:45 ET entry and its 07:10 ET +$514 result reached no phone. Most likely (unconfirmed: the PC's push logs were
   not read) they went to the one Olympus phone the PC's public posts listed all night, Apple said "accepted", and ntfy and the 15-minute
   report both skipped their copies. The ntfy route reaches you only if the ntfy app follows your alert topic (`python tools/pc_report.py
   --setup` prints it). If the phone app took a trade but ntfy refused it at that moment (a limit, the network), the 15-minute report sends
   the ntfy copy (not the app copy again), retried for 2 hours at most. `trade_routes` in `notify_settings.json`: `"both"` (default),
   `"olympus"` (Olympus first, ntfy only when no phone took it) or `"ntfy"` (ntfy first, Olympus only when ntfy did not take it).
-- **At night** (quiet hours, 23:00-07:00 ET): entries and results still show, without sound, like other ordinary alerts. To make them ring
-  at night, add `trade_opened` / `trade_closed` to `ring_in_quiet_hours` (the owner's yes / no on STATE.md; ATLAS enters around 03:00-04:00
-  ET, LIT from 02:00 ET on several accounts at once, so that can be several sounds a night).
+- **At night** (quiet hours, 23:00-07:00 ET): entries and results still show, without sound, like other ordinary alerts. Ringing at night
+  is the owner's yes / no (STATE.md 'Waiting on the owner'; ATLAS enters around 03:00-04:00 ET, LIT from 02:00 ET on several accounts at
+  once, so that can be several sounds a night). On a yes Claude adds `trade_opened` / `trade_closed` to `ring_in_quiet_hours`.
 
 ## Check it yourself
 
@@ -50,14 +52,16 @@ Two pushes per trade, per account, within seconds:
 
 ## Turning one off
 
-On the PC, edit `notify_settings.json` in the bot folder (create it if missing). It applies at once, with no restart.
+Best: tell Claude what to change; Claude changes `notify_settings.json` in the repo and the PC takes it with its next update. A hand
+edit of `notify_settings.json` in the bot folder on the PC applies at once, with no restart, BUT the file is tracked: the PC's
+auto-update then skips every update ("local changes in tracked files") until the edit is undone (`git checkout -- notify_settings.json`).
 
 ```json
 {"alerts": {"trade_opened": true, "trade_closed": false}}
 ```
 
 - `trade_opened: false` = no entry pushes. `trade_closed: false` = no exit pushes.
-- Ring for trade alerts at night: add `trade_opened` / `trade_closed` to `ring_in_quiet_hours` (default: silent at night, still shown).
+- Ring for trade alerts at night: `trade_opened` / `trade_closed` in `ring_in_quiet_hours` (default: silent at night, still shown).
 - One app only first: `{"trade_routes": "olympus"}` or `{"trade_routes": "ntfy"}` (the other app stays the fallback).
 - Quiet hours: `{"quiet_hours": {"from": "22:00", "to": "06:30"}}`, or `{"quiet_hours": {"off": true}}` for sound all day.
 - The other alert types (PASSED / FAILED, the 16:15 day summary, the 07:30 brief, PC silent, problems) are in the same file
@@ -74,9 +78,10 @@ room a trade alert needs. The main 15-minute status post still goes every run, b
 - Words and numbers: `engine/notify.py` (`entry_message`, `exit_message`, `exit_context`, `instant_entry`, `instant_exit`, `ntfy_today`).
 - Sending: `engine/push.py` (`pc_notify` → `_pc_send`: a trade's entry / exit to the phone app AND ntfy (`notify.trade_routes`), every
   other notice the app only; de-duplicated by key; `_trade_log`). Phone-only deliveries: `notify.instant_record(app_only=True)` →
-  `app_entries` / `app_exits`, read by `tools/pc_report.py` `_app_had` (the report then sends only its ntfy copy). Matching is per account:
-  `notify.report_acct` ("lit" → the primary's bare key, "atlas" → `:acctb`, "blitz" → `:acctc`) vs `notify.key_acct`. The report's
-  important kinds: `notify.DUAL_KINDS`, `pc_report._dual_alert`. Self-check: `engine/alert_check.py` (`ntfy_room`, `TEST_COOLDOWN_S`).
+  `app_entries` / `app_exits`, read by `tools/pc_report.py` `_app_had` (the report then sends only its ntfy copy). Matching by account:
+  `notify.acct_match` (`notify.report_acct`: "lit" → "" = any LIT-family key, i.e. not `notify.NOT_LIT` `:acctb` / `:acctc` / `:acctr`;
+  "atlas" → `:acctb` only; "blitz" → `:acctc` only; `notify.key_acct`). The report's important alerts: `notify.dual` (`DUAL_KINDS`,
+  minus `NOT_DUAL_KEYS` "back:" / "pc_back:"), `pc_report._dual_alert`. The quiet-eval alert `guard:quiet:` is `account_status`. Self-check: `engine/alert_check.py` (`ntfy_room`, `TEST_COOLDOWN_S`).
 - Routes: the bot's own NinjaTrader adapter (`engine/ninjatrader.py` `_push_fill` / `_push_exit`). A sub-account's adapter notifies under
   its own name and key through `push_as`, set by `engine/account_b.py` (ATLAS, key `:acctb`; the Rapid's ATLAS lane `:acctr`) and
   `engine/multi_account.py` (extra accounts and the Rapid's LIT lane, key `:<id>`). Before 2026-11-20, ATLAS on NinjaTrader sent **no**
