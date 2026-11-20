@@ -1,4 +1,14 @@
 ## Tested and rejected (don't redo without a new idea)
+- **ATLAS more money (2026-11-19, `atlas-more-money-2026-11-19.md`, `tools/atlas_more.py`, `research/second/atlas_more.json`, Lab
+  kind `atlas_more`, design `research/second/atlas_more_design.md`):** 10 pre-registered ideas (14 variants) on the FUNDED 25K
+  from today's $887 room (600 week-block paths, live stuck stop, costs in). Rejected: thin-room sit-outs (only MACD / EMA
+  out while the room is under $300 / $500 / $700: Jul-Oct -$6 to -$63 a month, more lost or no-payout), no stuck stop + 40%
+  of the room (first payout +3 / +7 sessions), ATLAS v2 hunts x0.5 on the funded account (+$51 / +$93 / +$18 a month but
+  4.5-4.7 trades a week, Jul-Oct lost 10.5 -> 12.2%, real-order Jan-Jun lost 0 -> 3.8%, Jan-Jun fixed $ down; fresh Oct
+  19 - Nov 19 hunts -1.1R / 0R), v2 as built (+ min_room $200: Jul-Oct lost 16.8%), Asia hunt only (Jul-Oct lost 18%),
+  flat 3 min before CPI / jobs / FOMC (-$82 a month Jul-Oct, 25 trades cut) and the same unless +1R (-$47). Passed: no
+  funded stuck stop (A1, +$10 / +$3 / +$4, lost 9.8 -> 7.7%, never worse on a path) -> Decide card atlas-funded-keep-trading.
+  The armed-setup block costs nothing (without it funded $ is lower). Members: none to drop (fresh 5 weeks ATLAS PF 1.99).
 - **BLITZ review (2026-11-18, `blitz-review-2026-11-18.md`, `tools/blitz_review.py`, `research/scalp/blitz_review.json`, Lab kind
   `blitz_idea`):** 8 pre-declared EXIT ideas on today's BLITZ (account C, $150, costs in): out at minute 10 / 15 if in a loss and
   never +0.5R, out at minute 10 if never +0.25R (H1 pick: +$22 Jan-Jun, -$292/mo Jul-Oct, 2-week fails 21.7 -> 40.6%), out on a

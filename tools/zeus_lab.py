@@ -19,6 +19,9 @@ Built on what exists (nothing re-implemented):
   funded     kind atlas_funded = a protective rule family on ATLAS's FUNDED 25K (tools/atlas_health.py, its stored verdict:
              member pause / edge-light size / day loss cap / smaller risk in a hole / skips; the family's Jan-Jun pick, the
              funded gate incl. the live stuck stop, and it must act in Jul-Oct; "cells" = versions scored).
+  more       kind atlas_more = one of the 10 pre-registered "more money" ideas for ATLAS's FUNDED 25K (tools/atlas_more.py,
+             its stored verdict research/second/atlas_more.json: stuck line, thin-room sit-outs, the hunts as funded members, a
+             tier-1 news exit; funded $ from today's account, week-block bootstrap, random controls; "cells" = versions scored).
   grade      kind setup_grade = the human setup grade A / B / C for Zlarior or ATLAS (tools/setup_grade.py, its stored
              verdict research/lab/setup_grade.json; "variant" = which grade + use, "cells" = every variant it tried).
   re-test    the REAL backtests through engine/learn_loop's runners: LIT = tools/lit_edge.evaluate (run lit_live re-walked:
@@ -76,10 +79,12 @@ EDGE = os.path.join(ROOT, "research", "lab", "edge_health.json")
 ZEUS_QUEUE = os.path.join(ROOT, "research", "zeus_queue.jsonl")         # night-learn's daily review proposals (tools/data_pull.py)
 VERSION = 1
 RUNNABLE = ("lit_tilt", "atlas_tilt", "lit_x", "atlas_member", "lit_idea", "atlas_funded", "anatomy", "setup_grade",
-            "new_strategy", "blitz_idea")
+            "new_strategy", "blitz_idea", "atlas_more")
 FUNDED_FAMILIES = ("M", "L", "D", "S", "K")   # tools/atlas_health.FAMILY
 GRADE_VARIANTS = ("h1:skipC", "h1:size", "all7:skipC", "all7:size")          # tools/setup_grade.py
-CELL_KINDS = ("atlas_member", "atlas_funded", "setup_grade", "new_strategy")  # kinds that count every version they searched
+CELL_KINDS = ("atlas_member", "atlas_funded", "setup_grade", "new_strategy", "atlas_more")  # kinds that count every version they searched
+MORE_IDEAS = ("A1_stuck_off", "A2_stuck_50", "A3_thin_macd", "A4_thin_no_ema", "A5_stuck_off_room40", "B1_v2_hunts", "B2_v2_full",
+              "B3_asia_hunt", "C1_news_flat", "C2_news_flat_notbe")   # tools/atlas_more.py (2026-11-19, ATLAS funded 25K)
 NEW_FAMILIES = ("pcm", "cam", "tds")          # tools/third_strategy.py (a standalone third strategy, bot "third")
 KINDS = RUNNABLE + ("parked",)
 BOTS = ("lit", "atlas", "kalshi", "third", "blitz")
@@ -182,6 +187,8 @@ def load_registry(path: str = REGISTRY) -> tuple:
             er.append(f"setup_grade is for bot lit or atlas and needs variant in {GRADE_VARIANTS} (tools/setup_grade.py)")
         if e.get("kind") == "new_strategy" and (e.get("bot") != "third" or e.get("family") not in NEW_FAMILIES):
             er.append(f"new_strategy is for bot third and needs family in {NEW_FAMILIES} (tools/third_strategy.py)")
+        if e.get("kind") == "atlas_more" and (e.get("bot") != "atlas" or e.get("family") not in MORE_IDEAS):
+            er.append(f"atlas_more is for bot atlas and needs family in {MORE_IDEAS} (tools/atlas_more.py)")
         if e.get("kind") == "blitz_idea" and (e.get("bot") != "blitz" or e.get("idea") not in BLITZ_IDEAS):
             er.append(f"blitz_idea is for bot blitz and needs idea in {BLITZ_IDEAS} (tools/blitz_review.py)")
         if e.get("kind") == "parked" and not e.get("parked_why"):
@@ -482,6 +489,9 @@ def run_one(e: dict, C, rules: dict) -> dict:
     if e["kind"] == "new_strategy":                                            # tools/third_strategy.py (2026-11-19)
         from tools import third_strategy as TS
         return TS.lab_result(e)
+    if e["kind"] == "atlas_more":                                              # tools/atlas_more.py (2026-11-19, ATLAS funded 25K)
+        from tools import atlas_more as AM
+        return AM.lab_result(e)
     if e["kind"] == "blitz_idea":                                              # tools/blitz_review.py (2026-11-18, BLITZ paper)
         from tools import blitz_review as BR
         return BR.lab_result(e)
