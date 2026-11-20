@@ -1105,10 +1105,10 @@ class NinjaTraderAdapter:
 
     # ------------------------------------------------------------------ phone notifications (engine/push.py)
     def _push_account(self):
+        if self.sim:
+            return self.account                  # "Sim101" (a Sim account is never a phone alert: engine/notify.real_trade)
         if self.push_as:
             return str(self.push_as.get("account") or self.account)
-        if self.sim:
-            return self.account                  # "Sim101"
         try:
             from . import push
             from .lab_adapter import live_model

@@ -274,7 +274,10 @@ def part_g(b: Box):
     p = P.entry_payload("Paper", "LONG", 1, t + 180, src="pc", entry=1, stop=0, target=2)
     P.pc_notify(p)
     P.pc_notify(dict(p, account="MFFU 25K", key=f"fill:{t + 181}:acctc", strategy="BLITZ"))
-    check("g. never for Sim / Paper / BLITZ", not b.take())
+    sub_sim = nt_adapter("Sim102", push_as={"account": "ATLAS 25K", "suffix": ":acctb"}, real=False)
+    sub_sim.sim = True
+    sub_sim._push_fill(leg(t=t + 150))
+    check("g. never for Sim / Paper / BLITZ (a sub-account's Sim adapter too, whatever its route calls it)", not b.take())
     import time
     now = time.time()
     n0 = N.ntfy_today()
