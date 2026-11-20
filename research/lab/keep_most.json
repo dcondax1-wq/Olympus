@@ -1,0 +1,1171 @@
+{
+ "built": "2026-11-20",
+ "note": "education, not tax advice; single filer; federal + a flat 5% state on AGI minus the standard deduction",
+ "years": {
+  "2026": {
+   "std": 16100.0,
+   "ltcg0": 49450.0,
+   "ltcg15": 545500.0,
+   "ss_base": 184500.0,
+   "k401_deferral": 24500.0,
+   "k401_catchup50": 8000.0,
+   "k415c": 72000.0,
+   "ira": 7500.0,
+   "hsa_self": 4400.0,
+   "hsa_family": 8750.0,
+   "qbi_threshold": 201750.0,
+   "src": "IRS IR-2025-103 + Rev. Proc. 2025-32; IRS Notice 2025-67 (retirement); Rev. Proc. 2025-19 (HSA); SSA 2026 COLA",
+   "brackets": [
+    [
+     12400,
+     0.1
+    ],
+    [
+     50400,
+     0.12
+    ],
+    [
+     105700,
+     0.22
+    ],
+    [
+     201775,
+     0.24
+    ],
+    [
+     256225,
+     0.32
+    ],
+    [
+     640600,
+     0.35
+    ],
+    [
+     null,
+     0.37
+    ]
+   ]
+  },
+  "2027": {
+   "std": 16100.0,
+   "ltcg0": 49450.0,
+   "ltcg15": 545500.0,
+   "ss_base": 184500.0,
+   "k401_deferral": 24500.0,
+   "k401_catchup50": 8000.0,
+   "k415c": 72000.0,
+   "ira": 7500.0,
+   "hsa_self": 4400.0,
+   "hsa_family": 8750.0,
+   "qbi_threshold": 201750.0,
+   "src": "2027 not confirmed: 2026 table used (check IRS 2027 inflation release)",
+   "estimated": true,
+   "brackets": [
+    [
+     12400,
+     0.1
+    ],
+    [
+     50400,
+     0.12
+    ],
+    [
+     105700,
+     0.22
+    ],
+    [
+     201775,
+     0.24
+    ],
+    [
+     256225,
+     0.32
+    ],
+    [
+     640600,
+     0.35
+    ],
+    [
+     null,
+     0.37
+    ]
+   ]
+  }
+ },
+ "set_aside_2026": [
+  {
+   "profit": 5000,
+   "day_job": 0.0,
+   "state": "none",
+   "safe_pct": 14.1,
+   "safe_total": 706.48,
+   "with_qbi_pct": 14.1,
+   "with_qbi_total": 706.48,
+   "se": 706.48,
+   "marginal": 0.1
+  },
+  {
+   "profit": 5000,
+   "day_job": 0.0,
+   "state": "typical 5%",
+   "safe_pct": 14.1,
+   "safe_total": 706.48,
+   "with_qbi_pct": 14.1,
+   "with_qbi_total": 706.48,
+   "se": 706.48,
+   "marginal": 0.1
+  },
+  {
+   "profit": 5000,
+   "day_job": 50000.0,
+   "state": "none",
+   "safe_pct": 25.3,
+   "safe_total": 1264.09,
+   "with_qbi_pct": 23.1,
+   "with_qbi_total": 1152.57,
+   "se": 706.48,
+   "marginal": 0.12
+  },
+  {
+   "profit": 5000,
+   "day_job": 50000.0,
+   "state": "typical 5%",
+   "safe_pct": 29.9,
+   "safe_total": 1496.43,
+   "with_qbi_pct": 27.7,
+   "with_qbi_total": 1384.91,
+   "se": 706.48,
+   "marginal": 0.12
+  },
+  {
+   "profit": 15000,
+   "day_job": 0.0,
+   "state": "none",
+   "safe_pct": 14.1,
+   "safe_total": 2119.43,
+   "with_qbi_pct": 14.1,
+   "with_qbi_total": 2119.43,
+   "se": 2119.43,
+   "marginal": 0.1
+  },
+  {
+   "profit": 15000,
+   "day_job": 0.0,
+   "state": "typical 5%",
+   "safe_pct": 14.1,
+   "safe_total": 2119.43,
+   "with_qbi_pct": 14.1,
+   "with_qbi_total": 2119.43,
+   "se": 2119.43,
+   "marginal": 0.1
+  },
+  {
+   "profit": 15000,
+   "day_job": 50000.0,
+   "state": "none",
+   "safe_pct": 25.3,
+   "safe_total": 3792.26,
+   "with_qbi_pct": 23.1,
+   "with_qbi_total": 3457.7,
+   "se": 2119.43,
+   "marginal": 0.12
+  },
+  {
+   "profit": 15000,
+   "day_job": 50000.0,
+   "state": "typical 5%",
+   "safe_pct": 29.9,
+   "safe_total": 4489.27,
+   "with_qbi_pct": 27.7,
+   "with_qbi_total": 4154.71,
+   "se": 2119.43,
+   "marginal": 0.12
+  },
+  {
+   "profit": 30000,
+   "day_job": 0.0,
+   "state": "none",
+   "safe_pct": 18.1,
+   "safe_total": 5416.92,
+   "with_qbi_pct": 17.3,
+   "with_qbi_total": 5181.31,
+   "se": 4238.86,
+   "marginal": 0.1
+  },
+  {
+   "profit": 30000,
+   "day_job": 0.0,
+   "state": "typical 5%",
+   "safe_pct": 20.0,
+   "safe_total": 6005.95,
+   "with_qbi_pct": 19.2,
+   "with_qbi_total": 5770.34,
+   "se": 4238.86,
+   "marginal": 0.1
+  },
+  {
+   "profit": 30000,
+   "day_job": 50000.0,
+   "state": "none",
+   "safe_pct": 29.1,
+   "safe_total": 8722.58,
+   "with_qbi_pct": 25.0,
+   "with_qbi_total": 7495.84,
+   "se": 4238.86,
+   "marginal": 0.22
+  },
+  {
+   "profit": 30000,
+   "day_job": 50000.0,
+   "state": "typical 5%",
+   "safe_pct": 33.7,
+   "safe_total": 10116.61,
+   "with_qbi_pct": 29.6,
+   "with_qbi_total": 8889.87,
+   "se": 4238.86,
+   "marginal": 0.22
+  },
+  {
+   "profit": 60000,
+   "day_job": 0.0,
+   "state": "none",
+   "safe_pct": 21.6,
+   "safe_total": 12989.07,
+   "with_qbi_pct": 20.1,
+   "with_qbi_total": 12037.2,
+   "se": 8477.73,
+   "marginal": 0.12
+  },
+  {
+   "profit": 60000,
+   "day_job": 0.0,
+   "state": "typical 5%",
+   "safe_pct": 25.0,
+   "safe_total": 14972.13,
+   "with_qbi_pct": 23.4,
+   "with_qbi_total": 14020.26,
+   "se": 8477.73,
+   "marginal": 0.12
+  },
+  {
+   "profit": 60000,
+   "day_job": 50000.0,
+   "state": "none",
+   "safe_pct": 31.8,
+   "safe_total": 19095.18,
+   "with_qbi_pct": 27.7,
+   "with_qbi_total": 16641.69,
+   "se": 8477.73,
+   "marginal": 0.22
+  },
+  {
+   "profit": 60000,
+   "day_job": 50000.0,
+   "state": "typical 5%",
+   "safe_pct": 36.5,
+   "safe_total": 21883.24,
+   "with_qbi_pct": 32.4,
+   "with_qbi_total": 19429.75,
+   "se": 8477.73,
+   "marginal": 0.22
+  },
+  {
+   "profit": 100000,
+   "day_job": 0.0,
+   "state": "none",
+   "safe_pct": 25.7,
+   "safe_total": 25745.3,
+   "with_qbi_pct": 22.4,
+   "with_qbi_total": 22364.55,
+   "se": 14129.55,
+   "marginal": 0.22
+  },
+  {
+   "profit": 100000,
+   "day_job": 0.0,
+   "state": "typical 5%",
+   "safe_pct": 29.6,
+   "safe_total": 29587.06,
+   "with_qbi_pct": 26.2,
+   "with_qbi_total": 26206.31,
+   "se": 14129.55,
+   "marginal": 0.22
+  },
+  {
+   "profit": 100000,
+   "day_job": 50000.0,
+   "state": "none",
+   "safe_pct": 33.3,
+   "safe_total": 33348.0,
+   "with_qbi_pct": 28.9,
+   "with_qbi_total": 28887.11,
+   "se": 14129.55,
+   "marginal": 0.24
+  },
+  {
+   "profit": 100000,
+   "day_job": 50000.0,
+   "state": "typical 5%",
+   "safe_pct": 38.0,
+   "safe_total": 37994.76,
+   "with_qbi_pct": 33.5,
+   "with_qbi_total": 33533.87,
+   "se": 14129.55,
+   "marginal": 0.24
+  }
+ ],
+ "set_aside_2027": [
+  {
+   "profit": 5000,
+   "day_job": 0.0,
+   "state": "none",
+   "safe_pct": 14.1,
+   "safe_total": 706.48,
+   "with_qbi_pct": 14.1,
+   "with_qbi_total": 706.48,
+   "se": 706.48,
+   "marginal": 0.1
+  },
+  {
+   "profit": 5000,
+   "day_job": 0.0,
+   "state": "typical 5%",
+   "safe_pct": 14.1,
+   "safe_total": 706.48,
+   "with_qbi_pct": 14.1,
+   "with_qbi_total": 706.48,
+   "se": 706.48,
+   "marginal": 0.1
+  },
+  {
+   "profit": 5000,
+   "day_job": 50000.0,
+   "state": "none",
+   "safe_pct": 25.3,
+   "safe_total": 1264.09,
+   "with_qbi_pct": 23.1,
+   "with_qbi_total": 1152.57,
+   "se": 706.48,
+   "marginal": 0.12
+  },
+  {
+   "profit": 5000,
+   "day_job": 50000.0,
+   "state": "typical 5%",
+   "safe_pct": 29.9,
+   "safe_total": 1496.43,
+   "with_qbi_pct": 27.7,
+   "with_qbi_total": 1384.91,
+   "se": 706.48,
+   "marginal": 0.12
+  },
+  {
+   "profit": 15000,
+   "day_job": 0.0,
+   "state": "none",
+   "safe_pct": 14.1,
+   "safe_total": 2119.43,
+   "with_qbi_pct": 14.1,
+   "with_qbi_total": 2119.43,
+   "se": 2119.43,
+   "marginal": 0.1
+  },
+  {
+   "profit": 15000,
+   "day_job": 0.0,
+   "state": "typical 5%",
+   "safe_pct": 14.1,
+   "safe_total": 2119.43,
+   "with_qbi_pct": 14.1,
+   "with_qbi_total": 2119.43,
+   "se": 2119.43,
+   "marginal": 0.1
+  },
+  {
+   "profit": 15000,
+   "day_job": 50000.0,
+   "state": "none",
+   "safe_pct": 25.3,
+   "safe_total": 3792.26,
+   "with_qbi_pct": 23.1,
+   "with_qbi_total": 3457.7,
+   "se": 2119.43,
+   "marginal": 0.12
+  },
+  {
+   "profit": 15000,
+   "day_job": 50000.0,
+   "state": "typical 5%",
+   "safe_pct": 29.9,
+   "safe_total": 4489.27,
+   "with_qbi_pct": 27.7,
+   "with_qbi_total": 4154.71,
+   "se": 2119.43,
+   "marginal": 0.12
+  },
+  {
+   "profit": 30000,
+   "day_job": 0.0,
+   "state": "none",
+   "safe_pct": 18.1,
+   "safe_total": 5416.92,
+   "with_qbi_pct": 17.3,
+   "with_qbi_total": 5181.31,
+   "se": 4238.86,
+   "marginal": 0.1
+  },
+  {
+   "profit": 30000,
+   "day_job": 0.0,
+   "state": "typical 5%",
+   "safe_pct": 20.0,
+   "safe_total": 6005.95,
+   "with_qbi_pct": 19.2,
+   "with_qbi_total": 5770.34,
+   "se": 4238.86,
+   "marginal": 0.1
+  },
+  {
+   "profit": 30000,
+   "day_job": 50000.0,
+   "state": "none",
+   "safe_pct": 29.1,
+   "safe_total": 8722.58,
+   "with_qbi_pct": 25.0,
+   "with_qbi_total": 7495.84,
+   "se": 4238.86,
+   "marginal": 0.22
+  },
+  {
+   "profit": 30000,
+   "day_job": 50000.0,
+   "state": "typical 5%",
+   "safe_pct": 33.7,
+   "safe_total": 10116.61,
+   "with_qbi_pct": 29.6,
+   "with_qbi_total": 8889.87,
+   "se": 4238.86,
+   "marginal": 0.22
+  },
+  {
+   "profit": 60000,
+   "day_job": 0.0,
+   "state": "none",
+   "safe_pct": 21.6,
+   "safe_total": 12989.07,
+   "with_qbi_pct": 20.1,
+   "with_qbi_total": 12037.2,
+   "se": 8477.73,
+   "marginal": 0.12
+  },
+  {
+   "profit": 60000,
+   "day_job": 0.0,
+   "state": "typical 5%",
+   "safe_pct": 25.0,
+   "safe_total": 14972.13,
+   "with_qbi_pct": 23.4,
+   "with_qbi_total": 14020.26,
+   "se": 8477.73,
+   "marginal": 0.12
+  },
+  {
+   "profit": 60000,
+   "day_job": 50000.0,
+   "state": "none",
+   "safe_pct": 31.8,
+   "safe_total": 19095.18,
+   "with_qbi_pct": 27.7,
+   "with_qbi_total": 16641.69,
+   "se": 8477.73,
+   "marginal": 0.22
+  },
+  {
+   "profit": 60000,
+   "day_job": 50000.0,
+   "state": "typical 5%",
+   "safe_pct": 36.5,
+   "safe_total": 21883.24,
+   "with_qbi_pct": 32.4,
+   "with_qbi_total": 19429.75,
+   "se": 8477.73,
+   "marginal": 0.22
+  },
+  {
+   "profit": 100000,
+   "day_job": 0.0,
+   "state": "none",
+   "safe_pct": 25.7,
+   "safe_total": 25745.3,
+   "with_qbi_pct": 22.4,
+   "with_qbi_total": 22364.55,
+   "se": 14129.55,
+   "marginal": 0.22
+  },
+  {
+   "profit": 100000,
+   "day_job": 0.0,
+   "state": "typical 5%",
+   "safe_pct": 29.6,
+   "safe_total": 29587.06,
+   "with_qbi_pct": 26.2,
+   "with_qbi_total": 26206.31,
+   "se": 14129.55,
+   "marginal": 0.22
+  },
+  {
+   "profit": 100000,
+   "day_job": 50000.0,
+   "state": "none",
+   "safe_pct": 33.3,
+   "safe_total": 33348.0,
+   "with_qbi_pct": 28.9,
+   "with_qbi_total": 28887.11,
+   "se": 14129.55,
+   "marginal": 0.24
+  },
+  {
+   "profit": 100000,
+   "day_job": 50000.0,
+   "state": "typical 5%",
+   "safe_pct": 38.0,
+   "safe_total": 37994.76,
+   "with_qbi_pct": 33.5,
+   "with_qbi_total": 33533.87,
+   "se": 14129.55,
+   "marginal": 0.24
+  }
+ ],
+ "pot_pct": {
+  "5000": {
+   "no_job_no_state": 15,
+   "no_job_5pct": 15,
+   "job_no_state": 30,
+   "job_5pct": 30
+  },
+  "15000": {
+   "no_job_no_state": 15,
+   "no_job_5pct": 15,
+   "job_no_state": 30,
+   "job_5pct": 30
+  },
+  "30000": {
+   "no_job_no_state": 20,
+   "no_job_5pct": 20,
+   "job_no_state": 30,
+   "job_5pct": 35
+  },
+  "60000": {
+   "no_job_no_state": 25,
+   "no_job_5pct": 25,
+   "job_no_state": 35,
+   "job_5pct": 40
+  },
+  "100000": {
+   "no_job_no_state": 30,
+   "no_job_5pct": 30,
+   "job_no_state": 35,
+   "job_5pct": 40
+  }
+ },
+ "solo401k": [
+  {
+   "profit": 5000,
+   "solo401k_max": 4647.0,
+   "sep_max": 929.0,
+   "tax_saved_if_maxed": 0.0,
+   "tax_saved_10pct": 0.0,
+   "tax_saved_10pct_day_job": 48.0
+  },
+  {
+   "profit": 15000,
+   "solo401k_max": 13940.0,
+   "sep_max": 2788.0,
+   "tax_saved_if_maxed": 0.0,
+   "tax_saved_10pct": 0.0,
+   "tax_saved_10pct_day_job": 144.0
+  },
+  {
+   "profit": 30000,
+   "solo401k_max": 27881.0,
+   "sep_max": 5576.0,
+   "tax_saved_if_maxed": 942.45,
+   "tax_saved_10pct": 240.0,
+   "tax_saved_10pct_day_job": 528.0
+  },
+  {
+   "profit": 60000,
+   "solo401k_max": 35652.0,
+   "sep_max": 11152.0,
+   "tax_saved_if_maxed": 3238.74,
+   "tax_saved_10pct": 576.0,
+   "tax_saved_10pct_day_job": 1056.0
+  },
+  {
+   "profit": 100000,
+   "solo401k_max": 43087.0,
+   "sep_max": 18587.0,
+   "tax_saved_if_maxed": 5243.17,
+   "tax_saved_10pct": 1760.0,
+   "tax_saved_10pct_day_job": 1810.96
+  }
+ ],
+ "scorp": [
+  {
+   "profit": 30000,
+   "salary": 30000,
+   "sole_prop_tax": 5181,
+   "scorp_tax_plus_costs": 8330,
+   "saved": -3149
+  },
+  {
+   "profit": 60000,
+   "salary": 30000,
+   "sole_prop_tax": 12037,
+   "scorp_tax_plus_costs": 10767,
+   "saved": 1270
+  },
+  {
+   "profit": 80000,
+   "salary": 40000,
+   "sole_prop_tax": 16647,
+   "scorp_tax_plus_costs": 14503,
+   "saved": 2144
+  },
+  {
+   "profit": 100000,
+   "salary": 50000,
+   "sole_prop_tax": 22365,
+   "scorp_tax_plus_costs": 19858,
+   "saved": 2506
+  },
+  {
+   "profit": 150000,
+   "salary": 75000,
+   "sole_prop_tax": 37608,
+   "scorp_tax_plus_costs": 33382,
+   "saved": 4226
+  }
+ ],
+ "scorp_break_even": 51000,
+ "s1256": [
+  {
+   "amount": 5000,
+   "day_job": 0.0,
+   "prop_pct": 14.1,
+   "prop_tax": 706.48,
+   "s1256_pct": 0.0,
+   "s1256_tax": 0.0,
+   "kept_more": 706
+  },
+  {
+   "amount": 5000,
+   "day_job": 50000.0,
+   "prop_pct": 23.1,
+   "prop_tax": 1152.57,
+   "s1256_pct": 4.8,
+   "s1256_tax": 240.0,
+   "kept_more": 913
+  },
+  {
+   "amount": 15000,
+   "day_job": 0.0,
+   "prop_pct": 14.1,
+   "prop_tax": 2119.43,
+   "s1256_pct": 0.0,
+   "s1256_tax": 0.0,
+   "kept_more": 2119
+  },
+  {
+   "amount": 15000,
+   "day_job": 50000.0,
+   "prop_pct": 23.1,
+   "prop_tax": 3457.7,
+   "s1256_pct": 4.8,
+   "s1256_tax": 720.0,
+   "kept_more": 2738
+  },
+  {
+   "amount": 30000,
+   "day_job": 0.0,
+   "prop_pct": 17.3,
+   "prop_tax": 5181.31,
+   "s1256_pct": 0.0,
+   "s1256_tax": 0.0,
+   "kept_more": 5181
+  },
+  {
+   "amount": 30000,
+   "day_job": 50000.0,
+   "prop_pct": 25.0,
+   "prop_tax": 7495.84,
+   "s1256_pct": 12.0,
+   "s1256_tax": 3607.5,
+   "kept_more": 3888
+  },
+  {
+   "amount": 60000,
+   "day_job": 0.0,
+   "prop_pct": 20.1,
+   "prop_tax": 12037.2,
+   "s1256_pct": 1.3,
+   "s1256_tax": 790.0,
+   "kept_more": 11247
+  },
+  {
+   "amount": 60000,
+   "day_job": 50000.0,
+   "prop_pct": 27.7,
+   "prop_tax": 16641.69,
+   "s1256_pct": 15.1,
+   "s1256_tax": 9030.0,
+   "kept_more": 7612
+  },
+  {
+   "amount": 100000,
+   "day_job": 0.0,
+   "prop_pct": 22.4,
+   "prop_tax": 22364.55,
+   "s1256_pct": 7.8,
+   "s1256_tax": 7787.5,
+   "kept_more": 14577
+  },
+  {
+   "amount": 100000,
+   "day_job": 50000.0,
+   "prop_pct": 28.9,
+   "prop_tax": 28887.11,
+   "s1256_pct": 16.1,
+   "s1256_tax": 16150.0,
+   "kept_more": 12737
+  }
+ ],
+ "live": {
+  "stats": {
+   "LIT H1": {
+    "trades": 80,
+    "per_week": 3.1,
+    "pf": 2.74,
+    "usd_month": 799,
+    "max_dd": -776
+   },
+   "ATLAS H1": {
+    "trades": 112,
+    "per_week": 4.3,
+    "pf": 2.83,
+    "usd_month": 1360,
+    "max_dd": -714
+   },
+   "LIT+ATLAS H1": {
+    "trades": 192,
+    "per_week": 7.4,
+    "pf": 2.8,
+    "usd_month": 2159,
+    "max_dd": -901
+   },
+   "LIT H2": {
+    "trades": 40,
+    "per_week": 2.2,
+    "pf": 2.51,
+    "usd_month": 688,
+    "max_dd": -534
+   },
+   "ATLAS H2": {
+    "trades": 51,
+    "per_week": 2.8,
+    "pf": 3.14,
+    "usd_month": 854,
+    "max_dd": -539
+   },
+   "LIT+ATLAS H2": {
+    "trades": 91,
+    "per_week": 5.1,
+    "pf": 2.8,
+    "usd_month": 1542,
+    "max_dd": -715
+   },
+   "LIT 2021-25": {
+    "trades": 511,
+    "per_week": 2.0,
+    "pf": 1.02,
+    "usd_month": 7,
+    "max_dd": -3141
+   },
+   "ATLAS 2021-25": {
+    "trades": 1125,
+    "per_week": 4.3,
+    "pf": 1.17,
+    "usd_month": 117,
+    "max_dd": -2858
+   },
+   "LIT+ATLAS 2021-25": {
+    "trades": 1636,
+    "per_week": 6.3,
+    "pf": 1.12,
+    "usd_month": 123,
+    "max_dd": -4795
+   }
+  },
+  "ruin": {
+   "LIT H1": [
+    {
+     "bank": 1000,
+     "lost_half_pct": 18.7,
+     "down_after_year_pct": 18.7,
+     "median_year": 8844,
+     "bad_10pct_year": -575
+    },
+    {
+     "bank": 2000,
+     "lost_half_pct": 5.3,
+     "down_after_year_pct": 5.4,
+     "median_year": 9410,
+     "bad_10pct_year": 4563
+    },
+    {
+     "bank": 3000,
+     "lost_half_pct": 1.3,
+     "down_after_year_pct": 1.4,
+     "median_year": 9377,
+     "bad_10pct_year": 5284
+    },
+    {
+     "bank": 5000,
+     "lost_half_pct": 0.0,
+     "down_after_year_pct": 0.1,
+     "median_year": 9439,
+     "bad_10pct_year": 5385
+    },
+    {
+     "bank": 10000,
+     "lost_half_pct": 0.0,
+     "down_after_year_pct": 0.1,
+     "median_year": 9439,
+     "bad_10pct_year": 5385
+    }
+   ],
+   "ATLAS H1": [
+    {
+     "bank": 1000,
+     "lost_half_pct": 0.3,
+     "down_after_year_pct": 0.3,
+     "median_year": 15602,
+     "bad_10pct_year": 12013
+    },
+    {
+     "bank": 2000,
+     "lost_half_pct": 0.0,
+     "down_after_year_pct": 0.0,
+     "median_year": 15586,
+     "bad_10pct_year": 12044
+    },
+    {
+     "bank": 3000,
+     "lost_half_pct": 0.0,
+     "down_after_year_pct": 0.0,
+     "median_year": 15586,
+     "bad_10pct_year": 12044
+    },
+    {
+     "bank": 5000,
+     "lost_half_pct": 0.0,
+     "down_after_year_pct": 0.0,
+     "median_year": 15586,
+     "bad_10pct_year": 12044
+    },
+    {
+     "bank": 10000,
+     "lost_half_pct": 0.0,
+     "down_after_year_pct": 0.0,
+     "median_year": 15586,
+     "bad_10pct_year": 12044
+    }
+   ],
+   "LIT+ATLAS H1": [
+    {
+     "bank": 1000,
+     "lost_half_pct": 2.1,
+     "down_after_year_pct": 2.1,
+     "median_year": 24541,
+     "bad_10pct_year": 18726
+    },
+    {
+     "bank": 2000,
+     "lost_half_pct": 0.1,
+     "down_after_year_pct": 0.1,
+     "median_year": 24536,
+     "bad_10pct_year": 19224
+    },
+    {
+     "bank": 3000,
+     "lost_half_pct": 0.0,
+     "down_after_year_pct": 0.0,
+     "median_year": 24623,
+     "bad_10pct_year": 19408
+    },
+    {
+     "bank": 5000,
+     "lost_half_pct": 0.0,
+     "down_after_year_pct": 0.0,
+     "median_year": 24623,
+     "bad_10pct_year": 19408
+    },
+    {
+     "bank": 10000,
+     "lost_half_pct": 0.0,
+     "down_after_year_pct": 0.0,
+     "median_year": 24623,
+     "bad_10pct_year": 19408
+    }
+   ],
+   "LIT H2": [
+    {
+     "bank": 1000,
+     "lost_half_pct": 13.7,
+     "down_after_year_pct": 13.7,
+     "median_year": 7874,
+     "bad_10pct_year": -543
+    },
+    {
+     "bank": 2000,
+     "lost_half_pct": 2.1,
+     "down_after_year_pct": 2.1,
+     "median_year": 8153,
+     "bad_10pct_year": 4645
+    },
+    {
+     "bank": 3000,
+     "lost_half_pct": 0.5,
+     "down_after_year_pct": 0.6,
+     "median_year": 8075,
+     "bad_10pct_year": 4940
+    },
+    {
+     "bank": 5000,
+     "lost_half_pct": 0.0,
+     "down_after_year_pct": 0.0,
+     "median_year": 8126,
+     "bad_10pct_year": 4845
+    },
+    {
+     "bank": 10000,
+     "lost_half_pct": 0.0,
+     "down_after_year_pct": 0.0,
+     "median_year": 8126,
+     "bad_10pct_year": 4845
+    }
+   ],
+   "ATLAS H2": [
+    {
+     "bank": 1000,
+     "lost_half_pct": 2.7,
+     "down_after_year_pct": 2.7,
+     "median_year": 10041,
+     "bad_10pct_year": 6581
+    },
+    {
+     "bank": 2000,
+     "lost_half_pct": 0.3,
+     "down_after_year_pct": 0.3,
+     "median_year": 10043,
+     "bad_10pct_year": 6838
+    },
+    {
+     "bank": 3000,
+     "lost_half_pct": 0.1,
+     "down_after_year_pct": 0.1,
+     "median_year": 10085,
+     "bad_10pct_year": 6924
+    },
+    {
+     "bank": 5000,
+     "lost_half_pct": 0.0,
+     "down_after_year_pct": 0.0,
+     "median_year": 10105,
+     "bad_10pct_year": 6881
+    },
+    {
+     "bank": 10000,
+     "lost_half_pct": 0.0,
+     "down_after_year_pct": 0.0,
+     "median_year": 10105,
+     "bad_10pct_year": 6881
+    }
+   ],
+   "LIT+ATLAS H2": [
+    {
+     "bank": 1000,
+     "lost_half_pct": 13.5,
+     "down_after_year_pct": 13.5,
+     "median_year": 17725,
+     "bad_10pct_year": -546
+    },
+    {
+     "bank": 2000,
+     "lost_half_pct": 1.9,
+     "down_after_year_pct": 1.9,
+     "median_year": 18298,
+     "bad_10pct_year": 12914
+    },
+    {
+     "bank": 3000,
+     "lost_half_pct": 0.6,
+     "down_after_year_pct": 0.6,
+     "median_year": 18300,
+     "bad_10pct_year": 13324
+    },
+    {
+     "bank": 5000,
+     "lost_half_pct": 0.0,
+     "down_after_year_pct": 0.0,
+     "median_year": 18391,
+     "bad_10pct_year": 13284
+    },
+    {
+     "bank": 10000,
+     "lost_half_pct": 0.0,
+     "down_after_year_pct": 0.0,
+     "median_year": 18391,
+     "bad_10pct_year": 13284
+    }
+   ],
+   "LIT 2021-25": [
+    {
+     "bank": 1000,
+     "lost_half_pct": 64.5,
+     "down_after_year_pct": 68.0,
+     "median_year": -526,
+     "bad_10pct_year": -655
+    },
+    {
+     "bank": 2000,
+     "lost_half_pct": 35.9,
+     "down_after_year_pct": 53.6,
+     "median_year": -125,
+     "bad_10pct_year": -1111
+    },
+    {
+     "bank": 3000,
+     "lost_half_pct": 17.3,
+     "down_after_year_pct": 50.7,
+     "median_year": -15,
+     "bad_10pct_year": -1549
+    },
+    {
+     "bank": 5000,
+     "lost_half_pct": 2.4,
+     "down_after_year_pct": 50.3,
+     "median_year": -9,
+     "bad_10pct_year": -1505
+    },
+    {
+     "bank": 10000,
+     "lost_half_pct": 0.0,
+     "down_after_year_pct": 50.5,
+     "median_year": -12,
+     "bad_10pct_year": -1489
+    }
+   ],
+   "ATLAS 2021-25": [
+    {
+     "bank": 1000,
+     "lost_half_pct": 48.2,
+     "down_after_year_pct": 49.7,
+     "median_year": 31,
+     "bad_10pct_year": -667
+    },
+    {
+     "bank": 2000,
+     "lost_half_pct": 27.4,
+     "down_after_year_pct": 33.0,
+     "median_year": 1112,
+     "bad_10pct_year": -1122
+    },
+    {
+     "bank": 3000,
+     "lost_half_pct": 13.3,
+     "down_after_year_pct": 25.3,
+     "median_year": 1309,
+     "bad_10pct_year": -1539
+    },
+    {
+     "bank": 5000,
+     "lost_half_pct": 2.7,
+     "down_after_year_pct": 22.8,
+     "median_year": 1346,
+     "bad_10pct_year": -912
+    },
+    {
+     "bank": 10000,
+     "lost_half_pct": 0.0,
+     "down_after_year_pct": 23.8,
+     "median_year": 1342,
+     "bad_10pct_year": -852
+    }
+   ],
+   "LIT+ATLAS 2021-25": [
+    {
+     "bank": 1000,
+     "lost_half_pct": 60.8,
+     "down_after_year_pct": 61.8,
+     "median_year": -543,
+     "bad_10pct_year": -773
+    },
+    {
+     "bank": 2000,
+     "lost_half_pct": 40.1,
+     "down_after_year_pct": 44.1,
+     "median_year": 637,
+     "bad_10pct_year": -1221
+    },
+    {
+     "bank": 3000,
+     "lost_half_pct": 25.9,
+     "down_after_year_pct": 33.7,
+     "median_year": 1114,
+     "bad_10pct_year": -1656
+    },
+    {
+     "bank": 5000,
+     "lost_half_pct": 9.1,
+     "down_after_year_pct": 28.6,
+     "median_year": 1301,
+     "bad_10pct_year": -2034
+    },
+    {
+     "bank": 10000,
+     "lost_half_pct": 0.3,
+     "down_after_year_pct": 28.9,
+     "median_year": 1287,
+     "bad_10pct_year": -1472
+    }
+   ]
+  }
+ },
+ "waterfall": {
+  "1000": {
+   "received": 800.0,
+   "tax_pot": 240.0,
+   "eval_reserve": 80.0,
+   "retirement": 80.0,
+   "live_fund": 160.0,
+   "yours": 240.0
+  },
+  "5000": {
+   "received": 4000.0,
+   "tax_pot": 1200.0,
+   "eval_reserve": 320.0,
+   "retirement": 400.0,
+   "live_fund": 800.0,
+   "yours": 1280.0
+  },
+  "1000_buckets_full": {
+   "received": 800.0,
+   "tax_pot": 240.0,
+   "eval_reserve": 0.0,
+   "retirement": 80.0,
+   "live_fund": 0.0,
+   "yours": 480.0
+  }
+ }
+}

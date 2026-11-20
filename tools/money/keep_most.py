@@ -1,0 +1,333 @@
+"""Keep the most of every payout (2026-11-20, day-taxes). Education, not tax advice.
+
+Owner (2026-11-20): "When we get payouts, I need you to find the best way ... what to do, when to start getting money into
+a live account ... maximize how much we keep."
+
+One file, no network, no secrets. Prints / writes research/lab/keep_most.json:
+  1. tax(): 2026 / 2027 federal income tax + self-employment tax on a Schedule C profit, with and without a day job, for a
+     no-income-tax state and a typical 5% state -> the set-aside % per payout at $5k / $15k / $30k / $60k / $100k a year.
+  2. ladder: Solo 401(k) room and tax saved, S-corp break-even profit (payroll + extra costs < SE tax saved).
+  3. section 1256 (a personal futures account) blended rate vs the same $ as prop income.
+  4. live account: risk of ruin at 1 MNQ from the repo's real trades (research/anatomy, costs in), week-block bootstrap,
+     per span (2026 Jan-Jun = H1, Jul-Oct = H2, 2021-25), bankrolls $1,000 - $10,000.
+  5. waterfall(): the split of a payout the day it lands.
+Numbers: IRS Rev. Proc. 2025-32 (2026, incl. the 2025 law) and Rev. Proc. 2026-xx (2027) - sources in
+research/writeups/keep-the-most-2026-11-20.md. Run: python -X utf8 tools/money/keep_most.py [--quick]
+"""
+from __future__ import annotations
+
+import json
+import os
+import random
+import sys
+from collections import defaultdict
+
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+OUT = os.path.join(ROOT, "research", "lab", "keep_most.json")
+
+# ---- federal tables, single filer ---------------------------------------------------------------------------------
+# 2026: IRS Rev. Proc. 2025-32 / IR-2025-103 (Oct 9, 2025), SSA 2026 COLA fact sheet; 2027: see YEARS[2027]["src"].
+YEARS = {
+    2026: {
+        "std": 16100.0,
+        "brackets": [(12400, .10), (50400, .12), (105700, .22), (201775, .24), (256225, .32), (640600, .35), (None, .37)],
+        "ltcg0": 49450.0, "ltcg15": 545500.0,
+        "ss_base": 184500.0,
+        "k401_deferral": 24500.0, "k401_catchup50": 8000.0, "k415c": 72000.0, "ira": 7500.0,
+        "hsa_self": 4400.0, "hsa_family": 8750.0,
+        "qbi_threshold": 201750.0,
+        "src": "IRS IR-2025-103 + Rev. Proc. 2025-32; IRS Notice 2025-67 (retirement); Rev. Proc. 2025-19 (HSA); SSA 2026 COLA",
+    },
+}
+# 2027 is filled in from the IRS release when it is out; until then the 2026 table is used and flagged.
+YEARS[2027] = dict(YEARS[2026], src="2027 not confirmed: 2026 table used (check IRS 2027 inflation release)", estimated=True)
+
+SE_FACTOR = 0.9235
+SS_RATE, MED_RATE, ADD_MED, ADD_MED_AT = 0.124, 0.029, 0.009, 200000.0
+NIIT, NIIT_AT = 0.038, 200000.0
+LEVELS = [5000, 15000, 30000, 60000, 100000]
+DAY_JOB = 50000.0          # the "with a day job" case: $50,000 W-2 wages
+STATE = {"none": 0.0, "typical 5%": 0.05}
+
+
+def bracket_tax(taxable, y):
+    t, lo = 0.0, 0.0
+    for hi, r in YEARS[y]["brackets"]:
+        top = taxable if hi is None else min(taxable, hi)
+        if top > lo:
+            t += (top - lo) * r
+        if hi is None or taxable <= hi:
+            break
+        lo = hi
+    return t
+
+
+def marginal(taxable, y):
+    for hi, r in YEARS[y]["brackets"]:
+        if hi is None or taxable < hi:
+            return r
+    return .37
+
+
+def se_tax(profit, wages=0.0, y=2026):
+    base = max(0.0, profit) * SE_FACTOR
+    if base < 400:
+        return 0.0
+    ss = SS_RATE * max(0.0, min(base, YEARS[y]["ss_base"] - wages))
+    med = MED_RATE * base + ADD_MED * max(0.0, wages + base - max(ADD_MED_AT, wages))
+    return ss + med
+
+
+def tax(profit, wages=0.0, state=0.0, y=2026, qbi=True, pretax_retire=0.0, se_retire=None):
+    """Federal + state tax caused by `profit` of Schedule C income on top of `wages`. pretax_retire = traditional Solo
+    401(k) / SEP money (lowers income tax, not SE tax). qbi=False is the safe default for the set-aside (QBI for prop
+    payouts is likely but unsettled). Returns the total and the parts, all for the WHOLE return minus the wages-only one."""
+    def full(p, retire):
+        se = se_tax(p, wages, y)
+        agi = wages + p - se / 2 - retire
+        before_qbi = max(0.0, agi - YEARS[y]["std"])
+        q = 0.0
+        if qbi and p > 0:
+            qbi_income = max(0.0, p - se / 2 - retire)
+            q = min(0.2 * qbi_income, 0.2 * before_qbi)
+        taxable = max(0.0, before_qbi - q)
+        inc = bracket_tax(taxable, y)
+        st = state * max(0.0, agi - YEARS[y]["std"])
+        return {"se": se, "income": inc, "state": st, "qbi": q, "taxable": taxable, "agi": agi}
+    a, b = full(profit, pretax_retire), full(0.0, 0.0)
+    parts = {k: round(a[k] - b[k], 2) for k in ("se", "income", "state")}
+    total = round(sum(parts.values()), 2)
+    return {"profit": profit, "wages": wages, "state_rate": state, **parts, "total": total,
+            "pct": round(100 * total / profit, 1) if profit else 0.0, "marginal": marginal(a["taxable"], y),
+            "qbi": round(a["qbi"], 2), "agi": round(a["agi"], 2)}
+
+
+def set_aside_table(y=2026):
+    rows = []
+    for p in LEVELS:
+        for job in (0.0, DAY_JOB):
+            for sname, s in STATE.items():
+                safe = tax(p, job, s, y, qbi=False)
+                likely = tax(p, job, s, y, qbi=True)
+                rows.append({"profit": p, "day_job": job, "state": sname, "safe_pct": safe["pct"], "safe_total": safe["total"],
+                             "with_qbi_pct": likely["pct"], "with_qbi_total": likely["total"], "se": safe["se"],
+                             "marginal": safe["marginal"]})
+    return rows
+
+
+def pot_pct(profit, day_job=False, state=False, y=2026):
+    """The set-aside % rounded UP to the next 5 (safe default: no QBI)."""
+    pct = tax(profit, DAY_JOB if day_job else 0.0, 0.05 if state else 0.0, y, qbi=False)["pct"]
+    return int(-(-pct // 5) * 5)
+
+
+# ---- the ladder: Solo 401(k), S-corp ------------------------------------------------------------------------------
+def solo401k(profit, y=2026, age50=False):
+    se = se_tax(profit, 0.0, y)
+    net = max(0.0, profit - se / 2)
+    employer = 0.20 * net                     # 25% of W-2 pay for a corporation = 20% of net SE earnings for a sole prop
+    employee = min(YEARS[y]["k401_deferral"] + (YEARS[y]["k401_catchup50"] if age50 else 0), net)
+    room = min(YEARS[y]["k415c"] + (YEARS[y]["k401_catchup50"] if age50 else 0), employee + employer, net)
+    sep = min(employer, YEARS[y]["k415c"])
+    return {"profit": profit, "solo401k_max": round(room, 0), "sep_max": round(sep, 0)}
+
+
+def retire_saving(profit, put_in, wages=0.0, state=0.0, y=2026):
+    a = tax(profit, wages, state, y, qbi=True)
+    b = tax(profit, wages, state, y, qbi=True, pretax_retire=put_in)
+    return round(a["total"] - b["total"], 2)
+
+
+SCORP_COSTS = {"payroll_service": 600.0, "extra_return_prep": 1000.0, "state_fees_low": 100.0, "state_fees_high": 800.0,
+               "unemployment_tax": 420.0}
+
+
+def scorp(profit, salary_share=0.5, min_salary=30000.0, state_fee=300.0, y=2026):
+    """S-corp vs sole prop: salary = max(min_salary, share x profit) but never more than profit. Payroll tax 15.3% on the
+    salary (employer half deductible), the rest is a distribution with no SE tax. QBI shrinks (salary is not QBI)."""
+    sole = tax(profit, 0.0, 0.0, y, qbi=True)
+    sal = min(profit, max(min_salary, salary_share * profit))
+    fica = 0.124 * min(sal, YEARS[y]["ss_base"]) + 0.029 * sal
+    costs = SCORP_COSTS["payroll_service"] + SCORP_COSTS["extra_return_prep"] + SCORP_COSTS["unemployment_tax"] + state_fee
+    k1 = profit - sal - fica / 2 - costs          # employer half of FICA + costs are corporate deductions
+    agi = sal + max(0.0, k1)
+    before_qbi = max(0.0, agi - YEARS[y]["std"])
+    q = min(0.2 * max(0.0, k1), 0.2 * before_qbi)
+    inc = bracket_tax(max(0.0, before_qbi - q), y)
+    s_total = fica + inc + costs
+    return {"profit": profit, "salary": round(sal), "sole_prop_tax": round(sole["total"]), "scorp_tax_plus_costs": round(s_total),
+            "saved": round(sole["total"] - s_total)}
+
+
+def scorp_break_even(y=2026):
+    for p in range(10000, 300001, 1000):
+        if scorp(p, y=y)["saved"] > 0:
+            return p
+    return None
+
+
+# ---- section 1256 vs prop income ----------------------------------------------------------------------------------
+def s1256(gain, wages=0.0, y=2026):
+    """Tax on `gain` of 60/40 futures profit (no SE tax) on top of wages: 60% at the LTCG rate, 40% ordinary; NIIT over
+    $200k MAGI. Returns the total and the blended %."""
+    std = YEARS[y]["std"]
+    st, lt = 0.4 * gain, 0.6 * gain
+    base_ord = max(0.0, wages - std)
+    ord_with = max(0.0, wages + st - std)          # the standard deduction is used by ordinary income first
+    ord_tax = bracket_tax(ord_with, y) - bracket_tax(base_ord, y)
+    lt_taxable = max(0.0, wages + gain - std) - ord_with
+    stack = ord_with                               # LT gains sit on top of ordinary income
+    lt0 = max(0.0, min(lt_taxable, YEARS[y]["ltcg0"] - stack))
+    lt20 = max(0.0, (stack + lt_taxable) - max(stack, YEARS[y]["ltcg15"]))
+    lt15 = lt_taxable - lt0 - lt20
+    lt_tax = 0.15 * lt15 + 0.20 * lt20
+    niit = NIIT * max(0.0, min(gain, wages + gain - NIIT_AT))
+    total = ord_tax + lt_tax + niit
+    return {"gain": gain, "total": round(total, 2), "pct": round(100 * total / gain, 1) if gain else 0.0}
+
+
+def compare_1256(y=2026):
+    rows = []
+    for p in LEVELS:
+        for job in (0.0, DAY_JOB):
+            prop = tax(p, job, 0.0, y, qbi=True)
+            fut = s1256(p, job, y)
+            rows.append({"amount": p, "day_job": job, "prop_pct": prop["pct"], "prop_tax": prop["total"],
+                         "s1256_pct": fut["pct"], "s1256_tax": fut["total"], "kept_more": round(prop["total"] - fut["total"])})
+    return rows
+
+
+# ---- live account: risk of ruin at 1 MNQ --------------------------------------------------------------------------
+MNQ_PT = 2.0
+EXTRA_COST = 0.0     # the anatomy $ already include commission + slippage, scaled per micro
+
+
+def load_trades():
+    out = defaultdict(list)    # (bot, span) -> [(day, usd at 1 MNQ)]
+    for bot in ("lit", "atlas"):
+        p = os.path.join(ROOT, "research", "anatomy", f"trades_{bot}.json")
+        d = json.load(open(p, encoding="utf-8"))
+        c = {k: i for i, k in enumerate(d["cols"])}
+        for r in d["rows"]:
+            if bot == "lit":
+                usd = r[c["usd"]] / max(1, r[c["qty"]])
+            else:
+                micros = r[c["risk_usd"]] / (r[c["risk_pts"]] * MNQ_PT)
+                usd = r[c["usd"]] / micros if micros > 0 else 0.0
+            out[(bot, r[c["span"]])].append((r[c["day"]], usd - EXTRA_COST))
+    return out
+
+
+def weeks(trades):
+    import datetime as dt
+    w = defaultdict(float)
+    for day, usd in trades:
+        d = dt.date.fromisoformat(day)
+        w[d.isocalendar()[:2]] += usd
+    return list(w.values())
+
+
+def span_weeks_count(span):
+    return {"H1": 26, "H2": 18, "2021-25": 260}.get(span, 52)
+
+
+def ruin(week_pnls, n_active_weeks, n_cal_weeks, bank, horizon=52, n=4000, seed=7, floor_share=0.5):
+    """Week-block bootstrap: each simulated week is a random calendar week of the span (weeks with no trade count as $0).
+    Lost = the balance touches floor_share x bank (you stop and rethink) at any week-end within `horizon` weeks."""
+    rng = random.Random(seed)
+    pool = list(week_pnls) + [0.0] * max(0, n_cal_weeks - n_active_weeks)
+    lost = down = 0
+    ends = []
+    for _ in range(n):
+        b = bank
+        hit = False
+        for _w in range(horizon):
+            b += pool[rng.randrange(len(pool))]
+            if b <= floor_share * bank:
+                hit = True
+                break
+        lost += hit
+        down += (b < bank)
+        ends.append(b - bank)
+    ends.sort()
+    return {"bank": bank, "lost_half_pct": round(100 * lost / n, 1), "down_after_year_pct": round(100 * down / n, 1),
+            "median_year": round(ends[len(ends) // 2]), "bad_10pct_year": round(ends[len(ends) // 10])}
+
+
+def live_table(quick=False):
+    T = load_trades()
+    out = {}
+    stats = {}
+    for span in ("H1", "H2", "2021-25"):
+        combo = T[("lit", span)] + T[("atlas", span)]
+        for name, tr in (("LIT", T[("lit", span)]), ("ATLAS", T[("atlas", span)]), ("LIT+ATLAS", combo)):
+            wk = weeks(tr)
+            cal = span_weeks_count(span)
+            tot = sum(u for _, u in tr)
+            wins = sum(u for _, u in tr if u > 0)
+            loss = -sum(u for _, u in tr if u < 0)
+            # worst peak-to-trough on the real order
+            eq = pk = dd = 0.0
+            for _, u in sorted(tr):
+                eq += u
+                pk = max(pk, eq)
+                dd = min(dd, eq - pk)
+            stats[f"{name} {span}"] = {"trades": len(tr), "per_week": round(len(tr) / cal, 1), "pf": round(wins / loss, 2) if loss else None,
+                                       "usd_month": round(tot / cal * 52 / 12), "max_dd": round(dd)}
+            rows = [ruin(wk, len(wk), cal, b, n=1500 if quick else 4000) for b in (1000, 2000, 3000, 5000, 10000)]
+            out[f"{name} {span}"] = rows
+    return {"stats": stats, "ruin": out}
+
+
+# ---- the waterfall ------------------------------------------------------------------------------------------------
+LIVE_TARGET = 5000.0     # LIT + ATLAS at 1 MNQ each: lose-half in a year 0% (2026-like) / 9% (2021-25-like), live_table()
+RESERVE_TARGET = 320.0   # cash for eval buys + re-buys (fleet plan 2026-11-17)
+
+
+def waterfall(received, pot=30, reserve=10, retire=10, live=20, live_banked=0.0, live_target=LIVE_TARGET,
+              reserve_banked=0.0, reserve_target=RESERVE_TARGET):
+    """What to do with `received` (what MFFU sent, after its 80/90% cut) the day it lands, in this order:
+    1. tax pot `pot`% (set-aside table, rounded up), 2. eval reserve `reserve`% until it holds reserve_target,
+    3. retirement `retire`% (Roth IRA / Solo 401(k)), 4. live-account fund `live`% until it holds live_target,
+    5. the rest is yours. A bucket that is full gives its share back to you."""
+    r = float(received)
+    tax_amt = round(r * pot / 100, 2)
+    res = round(min(r * reserve / 100, max(0.0, reserve_target - reserve_banked)), 2)
+    ret = round(r * retire / 100, 2)
+    lv = round(min(r * live / 100, max(0.0, live_target - live_banked)), 2)
+    return {"received": r, "tax_pot": tax_amt, "eval_reserve": res, "retirement": ret, "live_fund": lv,
+            "yours": round(r - tax_amt - res - ret - lv, 2)}
+
+
+def main(argv):
+    quick = "--quick" in argv
+    out = {
+        "built": "2026-11-20", "note": "education, not tax advice; single filer; federal + a flat 5% state on AGI minus the standard deduction",
+        "years": {str(k): {kk: vv for kk, vv in v.items() if kk != "brackets"} | {"brackets": v["brackets"]} for k, v in YEARS.items()},
+        "set_aside_2026": set_aside_table(2026),
+        "set_aside_2027": set_aside_table(2027),
+        "pot_pct": {f"{p}": {"no_job_no_state": pot_pct(p), "no_job_5pct": pot_pct(p, state=True), "job_no_state": pot_pct(p, True),
+                             "job_5pct": pot_pct(p, True, True)} for p in LEVELS},
+        "solo401k": [solo401k(p) | {"tax_saved_if_maxed": retire_saving(p, solo401k(p)["solo401k_max"]),
+                                    "tax_saved_10pct": retire_saving(p, 0.10 * p),
+                                    "tax_saved_10pct_day_job": retire_saving(p, 0.10 * p, DAY_JOB)} for p in LEVELS],
+        "scorp": [scorp(p) for p in (30000, 60000, 80000, 100000, 150000)],
+        "scorp_break_even": scorp_break_even(),
+        "s1256": compare_1256(),
+        "live": live_table(quick),
+        "waterfall": {"1000": waterfall(800), "5000": waterfall(4000), "1000_buckets_full": waterfall(800, live_banked=LIVE_TARGET, reserve_banked=RESERVE_TARGET)},
+    }
+    os.makedirs(os.path.dirname(OUT), exist_ok=True)
+    with open(OUT, "w", encoding="utf-8") as fh:
+        json.dump(out, fh, indent=1)
+    return out
+
+
+if __name__ == "__main__":
+    o = main(sys.argv[1:])
+    print(json.dumps({k: o[k] for k in ("pot_pct", "solo401k", "scorp", "scorp_break_even", "waterfall")}, indent=1))
+    print(json.dumps(o["live"]["stats"], indent=1))
+    for k, v in o["live"]["ruin"].items():
+        print(k, [(r["bank"], r["lost_half_pct"], r["down_after_year_pct"], r["median_year"], r["bad_10pct_year"]) for r in v])
+    for r in o["s1256"]:
+        print("1256", r)
