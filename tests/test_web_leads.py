@@ -80,6 +80,11 @@ def part_polite(tmp):
     check("p3. every server failed: exit 2 and the old leads.json is left as it was (stale beats invented)", rc == 2 and json.load(open(out)) == {"keep": 1}, rc)
     rc = W.main(["--town", "Frederick", "--from-file", FX, "--out", out])
     check("p4. --from-file (offline) writes the list", rc == 0 and len(json.load(open(out))["leads"]) == 4)
+    sm = json.load(open(os.path.join(tmp, "summary.json")))
+    L = json.load(open(out))["leads"]
+    check("p4b. summary.json beside it for the Agency HQ tile {n, label, next, t, pipe}; offers carry the research prices (starter site $1,500, gym site + 3D $2,500)",
+          sm["n"] == 4 and sm["label"] == "4 leads found" and sm["pipe"] == {"leads": 4, "called": 0} and "hot" in sm["next"]
+          and all(x["offer_usd"] in (1500, 2500) and "$" in x["offer"] for x in L) and next(x for x in L if x["niche"] == "fitness")["offer_usd"] == 2500, (sm, [x["offer"] for x in L]))
     q = W.parts(None, "Bel Air")[0]
     check("p5. a town without a preset box: the town's area by name inside Maryland (US-MD)", 'area["name"="Bel Air"]' in q and '"ISO3166-2"="US-MD"' in q, q)
 

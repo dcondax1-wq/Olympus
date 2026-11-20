@@ -30,3 +30,11 @@ I did not invent businesses. The owner's PC (home internet) makes the full list 
 politeness (query count, server order, >= 1 s gaps, UA), stale-beats-invented, the page in node Playwright (filters, a mark kept after a
 reload, Call with script -> the call app on the plumber with the contractor script, no-file sentence, 44 px, no JS error). Registered in
 tests/run_area.py AREAS["agency"] (own line above main()). Screenshots: leads-list.png, leads-call.png (fictional fixture).
+
+## Update (lead relays)
+- Best offer per lead now carries the research team's prices (RESEARCH.md on day-archive): starter site $1,500 (gym: site + phone-scan
+  3D tour $2,500) + the right monthly add-on (reviews & Google profile $199-$399/mo, missed-call text-back $97-$149/mo for trades,
+  a $300-$800 3D tour for salons). `offer_usd` = the build price.
+- The Agency HQ tile: the page writes localStorage `agency.leads.summary` {n, label "67 leads found", next, t, pipe {leads, called}}
+  on every change; the finder also writes a static `agency/leads/summary.json` of the same shape (called 0: the marks live on the phone).
+- Tests 23/23.

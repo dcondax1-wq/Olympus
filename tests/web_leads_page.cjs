@@ -31,7 +31,7 @@ const step = (n, ok, info = '') => steps.push([n, !!ok, String(typeof info === '
     const T = (s) => p.evaluate((x) => { const e = document.querySelector(x); return e ? e.innerText : null; }, s);
     let names = await p.evaluate(() => [...document.querySelectorAll('#list li.lead .ln')].map((e) => e.textContent));
     step('the list: the 3 businesses with a phone (the default "only with a phone"), the hot plumber first, its why and offer, a tel: link',
-      names.length === 3 && names[0] === 'Example Plumbing Co (fictional)' && (await T('#list li.lead')).includes('Offer: lead site')
+      names.length === 3 && names[0] === 'Example Plumbing Co (fictional)' && (await T('#list li.lead')).includes('Offer: starter site $1,500 (services, service area, quote form')
       && !!(await p.$('#list li.lead a[href="tel:+13015550101"], #list li.lead a[href^="tel:"]')), names);
     step('the status line and the source: "4 businesses with no website in Frederick", OpenStreetMap + the fetch date, the ODbL credit',
       (await T('#status')).includes('4 businesses with no website in Frederick') && (await T('#srcNote')).includes('OpenStreetMap') && (await T('#foot')).includes('OpenStreetMap contributors'), [await T('#status'), await T('#srcNote')]);
@@ -52,6 +52,9 @@ const step = (n, ok, info = '') => steps.push([n, !!ok, String(typeof info === '
     await p.reload(); await p.waitForFunction('window.WEBLEADS && window.WEBLEADS.ready()');
     await p.selectOption('#fStatus', 'interested');
     names = await p.evaluate(() => [...document.querySelectorAll('#list li.lead .ln')].map((e) => e.textContent));
+    const sum = await p.evaluate(() => JSON.parse(localStorage.getItem('agency.leads.summary') || 'null'));
+    step('the Agency HQ tile summary on the phone: {n 4, "4 leads found", next, t, pipe {leads 4, called 1}}',
+      sum && sum.n === 4 && sum.label === '4 leads found' && typeof sum.next === 'string' && sum.pipe.leads === 4 && sum.pipe.called === 1 && sum.t > 1.7e9, sum);
     step('after a reload the mark is still there (saved on this phone only): Status = Interested shows the nail salon',
       names.length === 1 && names[0] === 'Test Nails (fictional)' && (await p.getAttribute('li.lead button[data-mark="interested"]', 'aria-pressed')) === 'true', names);
     const geo = await p.evaluate(() => ({ side: document.documentElement.scrollWidth <= innerWidth, small: [...document.querySelectorAll('#list button, #list a, select, #fPhone')].filter((e) => { const r = e.getBoundingClientRect(); return r.width && r.height < 43.5 && e.id !== 'fPhone'; }).length }));

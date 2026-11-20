@@ -46,8 +46,9 @@
     "a street address (real storefront)",
     "health: customers search for this online"
    ],
-   "offer": "patient site: services, new-patient form, insurance, map",
-   "osm": "https://www.openstreetmap.org/node/3712918480"
+   "offer": "starter site $1,500 (services, new-patient form, insurance, map) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/3712918480",
+   "offer_usd": 1500
   },
   {
    "id": "osm-w177929215",
@@ -72,8 +73,9 @@
     "opening hours listed (open, active)",
     "a street address (real storefront)"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/way/177929215"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/way/177929215",
+   "offer_usd": 1500
   },
   {
    "id": "osm-w237391676",
@@ -97,8 +99,9 @@
     "a street address (real storefront)",
     "health: customers search for this online"
    ],
-   "offer": "patient site: services, new-patient form, insurance, map",
-   "osm": "https://www.openstreetmap.org/way/237391676"
+   "offer": "starter site $1,500 (services, new-patient form, insurance, map) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/way/237391676",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n6644337057",
@@ -122,8 +125,9 @@
     "a phone to call",
     "a street address (real storefront)"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/node/6644337057"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/6644337057",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n4906433897",
@@ -148,8 +152,9 @@
     "opening hours listed (open, active)",
     "a street address (real storefront)"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/node/4906433897"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/4906433897",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n3989088999",
@@ -173,8 +178,9 @@
     "a phone to call",
     "a street address (real storefront)"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/node/3989088999"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/3989088999",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n13921401901",
@@ -199,8 +205,9 @@
     "a street address (real storefront)",
     "gym / fitness: customers search for this online"
    ],
-   "offer": "class site: schedule, trial-pass form, coaches",
-   "osm": "https://www.openstreetmap.org/node/13921401901"
+   "offer": "site + 3D tour $2,500 (schedule, trial-pass form, a phone-scan 3D tour of the gym)",
+   "osm": "https://www.openstreetmap.org/node/13921401901",
+   "offer_usd": 2500
   },
   {
    "id": "osm-n4726959340",
@@ -224,8 +231,9 @@
     "a street address (real storefront)",
     "health: customers search for this online"
    ],
-   "offer": "patient site: services, new-patient form, insurance, map",
-   "osm": "https://www.openstreetmap.org/node/4726959340"
+   "offer": "starter site $1,500 (services, new-patient form, insurance, map) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/4726959340",
+   "offer_usd": 1500
   },
   {
    "id": "osm-w435691940",
@@ -249,8 +257,9 @@
     "a street address (real storefront)",
     "health: customers search for this online"
    ],
-   "offer": "patient site: services, new-patient form, insurance, map",
-   "osm": "https://www.openstreetmap.org/way/435691940"
+   "offer": "starter site $1,500 (services, new-patient form, insurance, map) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/way/435691940",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n13205566127",
@@ -274,8 +283,9 @@
     "a street address (real storefront)",
     "health: customers search for this online"
    ],
-   "offer": "patient site: services, new-patient form, insurance, map",
-   "osm": "https://www.openstreetmap.org/node/13205566127"
+   "offer": "starter site $1,500 (services, new-patient form, insurance, map) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/13205566127",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n9044369660",
@@ -300,8 +310,9 @@
     "opening hours listed (open, active)",
     "a street address (real storefront)"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/node/9044369660"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/9044369660",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n10985323450",
@@ -325,8 +336,9 @@
     "a phone to call",
     "a street address (real storefront)"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/node/10985323450"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/10985323450",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n10968383678",
@@ -350,8 +362,9 @@
     "opening hours listed (open, active)",
     "health: customers search for this online"
    ],
-   "offer": "patient site: services, new-patient form, insurance, map",
-   "osm": "https://www.openstreetmap.org/node/10968383678"
+   "offer": "starter site $1,500 (services, new-patient form, insurance, map) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/10968383678",
+   "offer_usd": 1500
   },
   {
    "id": "osm-w1192730404",
@@ -375,8 +388,9 @@
     "a street address (real storefront)",
     "auto: customers search for this online"
    ],
-   "offer": "service site: services + prices, book a repair, hours, map",
-   "osm": "https://www.openstreetmap.org/way/1192730404"
+   "offer": "starter site $1,500 (services + prices, book a repair, map) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/way/1192730404",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n12699385301",
@@ -400,8 +414,9 @@
     "opening hours listed (open, active)",
     "a street address (real storefront)"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/node/12699385301"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/12699385301",
+   "offer_usd": 1500
   },
   {
    "id": "osm-w435980527",
@@ -425,8 +440,9 @@
     "a street address (real storefront)",
     "auto: customers search for this online"
    ],
-   "offer": "service site: services + prices, book a repair, hours, map",
-   "osm": "https://www.openstreetmap.org/way/435980527"
+   "offer": "starter site $1,500 (services + prices, book a repair, map) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/way/435980527",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n12879908393",
@@ -450,8 +466,9 @@
     "opening hours listed (open, active)",
     "gym / fitness: customers search for this online"
    ],
-   "offer": "class site: schedule, trial-pass form, coaches",
-   "osm": "https://www.openstreetmap.org/node/12879908393"
+   "offer": "site + 3D tour $2,500 (schedule, trial-pass form, a phone-scan 3D tour of the gym)",
+   "osm": "https://www.openstreetmap.org/node/12879908393",
+   "offer_usd": 2500
   },
   {
    "id": "osm-n3989089001",
@@ -474,8 +491,9 @@
     "no website on the map",
     "a phone to call"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/node/3989089001"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/3989089001",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n3720819930",
@@ -499,8 +517,9 @@
     "opening hours listed (open, active)",
     "a street address (real storefront)"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/node/3720819930"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/3720819930",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n12608708944",
@@ -523,8 +542,9 @@
     "no website on the map",
     "health: customers search for this online"
    ],
-   "offer": "patient site: services, new-patient form, insurance, map",
-   "osm": "https://www.openstreetmap.org/node/12608708944"
+   "offer": "starter site $1,500 (services, new-patient form, insurance, map) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/12608708944",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n9044369661",
@@ -547,8 +567,9 @@
     "no website on the map",
     "health: customers search for this online"
    ],
-   "offer": "patient site: services, new-patient form, insurance, map",
-   "osm": "https://www.openstreetmap.org/node/9044369661"
+   "offer": "starter site $1,500 (services, new-patient form, insurance, map) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/9044369661",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n4407214117",
@@ -572,8 +593,9 @@
     "opening hours listed (open, active)",
     "a street address (real storefront)"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/node/4407214117"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/4407214117",
+   "offer_usd": 1500
   },
   {
    "id": "osm-w177929217",
@@ -596,8 +618,9 @@
     "no website on the map",
     "a street address (real storefront)"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/way/177929217"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/way/177929217",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n5506834254",
@@ -620,8 +643,9 @@
     "no website on the map",
     "opening hours listed (open, active)"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/node/5506834254"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/5506834254",
+   "offer_usd": 1500
   },
   {
    "id": "osm-w450837698",
@@ -644,8 +668,9 @@
     "no website on the map",
     "auto: customers search for this online"
    ],
-   "offer": "service site: services + prices, book a repair, hours, map",
-   "osm": "https://www.openstreetmap.org/way/450837698"
+   "offer": "starter site $1,500 (services + prices, book a repair, map) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/way/450837698",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n4842558229",
@@ -668,8 +693,9 @@
     "no website on the map",
     "opening hours listed (open, active)"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/node/4842558229"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/4842558229",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n4017072689",
@@ -692,8 +718,9 @@
     "no website on the map",
     "opening hours listed (open, active)"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/node/4017072689"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/4017072689",
+   "offer_usd": 1500
   },
   {
    "id": "osm-w445787157",
@@ -716,8 +743,9 @@
     "no website on the map",
     "gym / fitness: customers search for this online"
    ],
-   "offer": "class site: schedule, trial-pass form, coaches",
-   "osm": "https://www.openstreetmap.org/way/445787157"
+   "offer": "site + 3D tour $2,500 (schedule, trial-pass form, a phone-scan 3D tour of the gym)",
+   "osm": "https://www.openstreetmap.org/way/445787157",
+   "offer_usd": 2500
   },
   {
    "id": "osm-w1110147752",
@@ -740,8 +768,9 @@
     "no website on the map",
     "auto: customers search for this online"
    ],
-   "offer": "service site: services + prices, book a repair, hours, map",
-   "osm": "https://www.openstreetmap.org/way/1110147752"
+   "offer": "starter site $1,500 (services + prices, book a repair, map) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/way/1110147752",
+   "offer_usd": 1500
   },
   {
    "id": "osm-w152480035",
@@ -764,8 +793,9 @@
     "no website on the map",
     "gym / fitness: customers search for this online"
    ],
-   "offer": "class site: schedule, trial-pass form, coaches",
-   "osm": "https://www.openstreetmap.org/way/152480035"
+   "offer": "site + 3D tour $2,500 (schedule, trial-pass form, a phone-scan 3D tour of the gym)",
+   "osm": "https://www.openstreetmap.org/way/152480035",
+   "offer_usd": 2500
   },
   {
    "id": "osm-n5506834257",
@@ -788,8 +818,9 @@
     "no website on the map",
     "opening hours listed (open, active)"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/node/5506834257"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/5506834257",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n5506834256",
@@ -812,8 +843,9 @@
     "no website on the map",
     "opening hours listed (open, active)"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/node/5506834256"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/5506834256",
+   "offer_usd": 1500
   },
   {
    "id": "osm-w571052456",
@@ -836,8 +868,9 @@
     "no website on the map",
     "gym / fitness: customers search for this online"
    ],
-   "offer": "class site: schedule, trial-pass form, coaches",
-   "osm": "https://www.openstreetmap.org/way/571052456"
+   "offer": "site + 3D tour $2,500 (schedule, trial-pass form, a phone-scan 3D tour of the gym)",
+   "osm": "https://www.openstreetmap.org/way/571052456",
+   "offer_usd": 2500
   },
   {
    "id": "osm-n3825506357",
@@ -860,8 +893,9 @@
     "no website on the map",
     "a street address (real storefront)"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/node/3825506357"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/3825506357",
+   "offer_usd": 1500
   },
   {
    "id": "osm-w668787722",
@@ -884,8 +918,9 @@
     "no website on the map",
     "gym / fitness: customers search for this online"
    ],
-   "offer": "class site: schedule, trial-pass form, coaches",
-   "osm": "https://www.openstreetmap.org/way/668787722"
+   "offer": "site + 3D tour $2,500 (schedule, trial-pass form, a phone-scan 3D tour of the gym)",
+   "osm": "https://www.openstreetmap.org/way/668787722",
+   "offer_usd": 2500
   },
   {
    "id": "osm-n9044369668",
@@ -908,8 +943,9 @@
     "no website on the map",
     "gym / fitness: customers search for this online"
    ],
-   "offer": "class site: schedule, trial-pass form, coaches",
-   "osm": "https://www.openstreetmap.org/node/9044369668"
+   "offer": "site + 3D tour $2,500 (schedule, trial-pass form, a phone-scan 3D tour of the gym)",
+   "osm": "https://www.openstreetmap.org/node/9044369668",
+   "offer_usd": 2500
   },
   {
    "id": "osm-n14132487603",
@@ -932,8 +968,9 @@
     "no website on the map",
     "a street address (real storefront)"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/node/14132487603"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/14132487603",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n2149635901",
@@ -956,8 +993,9 @@
     "no website on the map",
     "a street address (real storefront)"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/node/2149635901"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/2149635901",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n12703710401",
@@ -980,8 +1018,9 @@
     "no website on the map",
     "opening hours listed (open, active)"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/node/12703710401"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/12703710401",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n3435344894",
@@ -1004,8 +1043,9 @@
     "no website on the map",
     "gym / fitness: customers search for this online"
    ],
-   "offer": "class site: schedule, trial-pass form, coaches",
-   "osm": "https://www.openstreetmap.org/node/3435344894"
+   "offer": "site + 3D tour $2,500 (schedule, trial-pass form, a phone-scan 3D tour of the gym)",
+   "osm": "https://www.openstreetmap.org/node/3435344894",
+   "offer_usd": 2500
   },
   {
    "id": "osm-n4906433896",
@@ -1028,8 +1068,9 @@
     "no website on the map",
     "a street address (real storefront)"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/node/4906433896"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/4906433896",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n6173171885",
@@ -1052,8 +1093,9 @@
     "no website on the map",
     "opening hours listed (open, active)"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/node/6173171885"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/6173171885",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n13180550181",
@@ -1076,8 +1118,9 @@
     "no website on the map",
     "a street address (real storefront)"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/node/13180550181"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/13180550181",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n6309001633",
@@ -1099,8 +1142,9 @@
    "why": [
     "no website on the map"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/node/6309001633"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/6309001633",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n12656971528",
@@ -1122,8 +1166,9 @@
    "why": [
     "no website on the map"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/node/12656971528"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/12656971528",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n12703651207",
@@ -1145,8 +1190,9 @@
    "why": [
     "no website on the map"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/node/12703651207"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/12703651207",
+   "offer_usd": 1500
   },
   {
    "id": "osm-w469531527",
@@ -1168,8 +1214,9 @@
    "why": [
     "no website on the map"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/way/469531527"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/way/469531527",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n11011048864",
@@ -1191,8 +1238,9 @@
    "why": [
     "no website on the map"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/node/11011048864"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/11011048864",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n10005363101",
@@ -1214,8 +1262,9 @@
    "why": [
     "no website on the map"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/node/10005363101"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/10005363101",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n9044369665",
@@ -1237,8 +1286,9 @@
    "why": [
     "no website on the map"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/node/9044369665"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/9044369665",
+   "offer_usd": 1500
   },
   {
    "id": "osm-w668787730",
@@ -1260,8 +1310,9 @@
    "why": [
     "no website on the map"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/way/668787730"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/way/668787730",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n14210558150",
@@ -1283,8 +1334,9 @@
    "why": [
     "no website on the map"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/node/14210558150"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/14210558150",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n10005363100",
@@ -1306,8 +1358,9 @@
    "why": [
     "no website on the map"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/node/10005363100"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/10005363100",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n4386496493",
@@ -1329,8 +1382,9 @@
    "why": [
     "no website on the map"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/node/4386496493"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/4386496493",
+   "offer_usd": 1500
   },
   {
    "id": "osm-w668787726",
@@ -1352,8 +1406,9 @@
    "why": [
     "no website on the map"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/way/668787726"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/way/668787726",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n11767212517",
@@ -1375,8 +1430,9 @@
    "why": [
     "no website on the map"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/node/11767212517"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/11767212517",
+   "offer_usd": 1500
   },
   {
    "id": "osm-w451651692",
@@ -1398,8 +1454,9 @@
    "why": [
     "no website on the map"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/way/451651692"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/way/451651692",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n12703666958",
@@ -1421,8 +1478,9 @@
    "why": [
     "no website on the map"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/node/12703666958"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/12703666958",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n14213122098",
@@ -1444,8 +1502,9 @@
    "why": [
     "no website on the map"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/node/14213122098"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/14213122098",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n8089684151",
@@ -1467,8 +1526,9 @@
    "why": [
     "no website on the map"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/node/8089684151"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/8089684151",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n2340965981",
@@ -1490,8 +1550,9 @@
    "why": [
     "no website on the map"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/node/2340965981"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/2340965981",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n12608708945",
@@ -1513,8 +1574,9 @@
    "why": [
     "no website on the map"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/node/12608708945"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/12608708945",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n8073114566",
@@ -1536,8 +1598,9 @@
    "why": [
     "no website on the map"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/node/8073114566"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/8073114566",
+   "offer_usd": 1500
   },
   {
    "id": "osm-w451412737",
@@ -1559,8 +1622,9 @@
    "why": [
     "no website on the map"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/way/451412737"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/way/451412737",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n12753286387",
@@ -1582,8 +1646,9 @@
    "why": [
     "no website on the map"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/node/12753286387"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/12753286387",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n12879908392",
@@ -1605,8 +1670,9 @@
    "why": [
     "no website on the map"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/node/12879908392"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/12879908392",
+   "offer_usd": 1500
   },
   {
    "id": "osm-n12703687627",
@@ -1628,8 +1694,9 @@
    "why": [
     "no website on the map"
    ],
-   "offer": "1-page site: menu, hours, map, online-order link + Google profile",
-   "osm": "https://www.openstreetmap.org/node/12703687627"
+   "offer": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+   "osm": "https://www.openstreetmap.org/node/12703687627",
+   "offer_usd": 1500
   }
  ]
 }

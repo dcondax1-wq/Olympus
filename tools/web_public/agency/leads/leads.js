@@ -3,6 +3,7 @@
 const $ = (id) => document.getElementById(id);
 const MARK_KEY = 'agency.leads.status.v1';
 const HANDOFF_KEY = 'agency.calls.handoff.v1';
+const SUM_KEY = 'agency.leads.summary';   // the Agency HQ tile (hub team): {n, label, next, t, pipe {leads, called}}
 const PAGE = 25;
 const S = { j: null, marks: {}, shown: PAGE, ready: false };
 const MARKS = [['called', 'Called'], ['interested', 'Interested'], ['no', 'Not interested']];
@@ -77,6 +78,13 @@ function render() {
   $('listN').textContent = `(${v.length})`;
   $('more').hidden = v.length <= S.shown;
   const n = (k) => leads.filter((L) => ((S.marks[L.id] || {}).s || '') === k).length, todo = leads.filter((L) => !(S.marks[L.id] || {}).s).length;
+  try {
+    if (S.j) {
+      const called = leads.filter((L) => (S.marks[L.id] || {}).s).length, hot = leads.filter((L) => L.heat === 'hot' && L.phone && !(S.marks[L.id] || {}).s).length;
+      localStorage.setItem(SUM_KEY, JSON.stringify({ n: leads.length, label: `${leads.length} leads found`, next: hot ? `Call the ${hot} hot one${hot === 1 ? '' : 's'}` : todo ? `${todo} still to call` : 'Run the finder for a new town',
+        t: Math.round(Date.now() / 1000), pipe: { leads: leads.length, called } }));
+    }
+  } catch (_) { /* private mode: the tile reads summary.json instead */ }
   const tiles = $('tiles'); clear(tiles);
   for (const [k, val] of [['To call', todo], ['Hot', leads.filter((L) => L.heat === 'hot').length], ['Called', n('called')], ['Interested', n('interested')]]) {
     const t = h('div', 'tile'); t.appendChild(h('small', '', k)); t.appendChild(h('b', '', val)); tiles.appendChild(t);

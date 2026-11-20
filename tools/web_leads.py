@@ -62,15 +62,18 @@ NICHES = [
     ("services", "shop", r"^(dry_cleaning|laundry|tailor|florist|pet_grooming|photo|copyshop|funeral_directors)$"),
     ("retail", "shop", r".+"),
 ]
-OFFER = {"food": "1-page site: menu, hours, map, online-order link + Google profile",
-         "contractor": "lead site: services, service area, quote form, reviews",
-         "beauty": "booking site: services + prices, online booking, Instagram feed",
-         "auto": "service site: services + prices, book a repair, hours, map",
-         "fitness": "class site: schedule, trial-pass form, coaches",
-         "health": "patient site: services, new-patient form, insurance, map",
-         "pro": "trust site: services, about, contact form, reviews",
-         "services": "1-page site: services + prices, hours, map, contact form",
-         "retail": "shop site: hours, map, what's in stock, Google profile"}
+# best offer per niche (research/handoff/2026-11-20/web/research/RESEARCH.md on day-archive: starter site $1,500 for 5 pages / 2 weeks;
+# reviews + Google profile $199-$399 a month; phone-scan 3D tour $300-$800 for places people visit; missed-call text-back $97-$149 a month)
+OFFER = {"food": "starter site $1,500 (menu, hours, map, online-order link) + reviews & Google profile $199-$399/mo",
+         "contractor": "starter site $1,500 (services, service area, quote form, reviews) + missed-call text-back $97-$149/mo",
+         "beauty": "starter site $1,500 with online booking + phone-scan 3D tour of the salon $300-$800",
+         "auto": "starter site $1,500 (services + prices, book a repair, map) + reviews & Google profile $199-$399/mo",
+         "fitness": "site + 3D tour $2,500 (schedule, trial-pass form, a phone-scan 3D tour of the gym)",
+         "health": "starter site $1,500 (services, new-patient form, insurance, map) + reviews & Google profile $199-$399/mo",
+         "pro": "starter site $1,500 (services, about, contact form) + reviews & Google profile $199-$399/mo",
+         "services": "starter site $1,500 (services + prices, hours, map, contact form) + Google profile $199-$399/mo",
+         "retail": "starter site $1,500 (hours, map, what's in stock) + Google profile $199-$399/mo"}
+OFFER_USD = {"fitness": 2500}                         # the build price (the monthly add-on is in the words)
 TRADE = {"food": "restaurant", "beauty": "salon", "contractor": "contractor", "health": "medical", "auto": "auto", "fitness": "fitness",
          "retail": "retail", "services": "retail", "pro": "professional"}           # agency/callrules.json trades (the call script)
 VALUE = {"contractor": 2, "health": 2, "auto": 1, "beauty": 1, "fitness": 1, "pro": 1, "food": 0, "services": 0, "retail": 0}
@@ -212,7 +215,7 @@ def lead_of(el: dict, town: str) -> tuple:
     typ, osm_id = el.get("type", "node"), el.get("id")
     return {"id": f"osm-{typ[0]}{osm_id}", "name": name[:80], "niche": niche, "niche_name": NAME[niche], "kind": kind, "town": town,
             "city": city[:60], "state": "MD", "phone": phone, "address": (street + (", " + city if street else ""))[:120], "hours": hours,
-            "facebook": bool(fb), "trade": TRADE[niche], "category": kind.split("=")[-1].replace("_", " "), "score": score, "heat": heat, "why": why, "offer": OFFER[niche],
+            "facebook": bool(fb), "trade": TRADE[niche], "category": kind.split("=")[-1].replace("_", " "), "score": score, "heat": heat, "why": why, "offer": OFFER[niche], "offer_usd": OFFER_USD.get(niche, 1500),
             "osm": f"https://www.openstreetmap.org/{typ}/{osm_id}"}, ""
 
 
@@ -245,6 +248,16 @@ def build(answers: dict, now=None) -> dict:
             "towns": towns, "skipped": skipped, "leads": leads}
 
 
+def summary(out: dict) -> dict:
+    """The Agency HQ tile's shape (the hub team): {n, label, next, t, pipe {leads, called}}. Called = 0 here (the phone keeps the marks)."""
+    L = out.get("leads") or []
+    hot = sum(1 for x in L if x.get("heat") == "hot" and x.get("phone"))
+    towns = ", ".join(t["town"] for t in out.get("towns") or [])
+    return {"n": len(L), "label": f"{len(L)} leads found", "next": (f"Call the {hot} hot ones in {towns}" if hot else
+            f"Look up and call the best ones in {towns}") if L else "Run the lead finder on the PC",
+            "t": int(dt.datetime.now(dt.timezone.utc).timestamp()), "pipe": {"leads": len(L), "called": 0}}
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--town", action="append", help="a Maryland town / city (repeat); default: " + ", ".join(TOWNS))
@@ -275,6 +288,8 @@ def main(argv=None) -> int:
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
     with open(a.out, "w", encoding="utf-8") as fh:
         json.dump(out, fh, indent=1, ensure_ascii=False)
+    with open(os.path.join(os.path.dirname(a.out), "summary.json"), "w", encoding="utf-8") as fh:
+        json.dump(summary(out), fh)
     for t in out["towns"]:
         print(f"[OK] {t['town']}: {t['businesses']} businesses on the map, {t['leads']} with no website ({t['hot']} hot) via {t['server']}")
     print(f"[OK] {len(out['leads'])} leads -> {os.path.relpath(a.out, ROOT)}; left out: {out['skipped']}")
