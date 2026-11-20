@@ -63,15 +63,22 @@ const step = (n, ok, info = '') => steps.push([n, !!ok, String(typeof info === '
     const csv = await p.inputValue('#exportBox');
     step('Export: a CSV with a header, one row per business (4), the stage ("Replied" for the salon, "New" for the others)',
       csv.split('\n')[0].startsWith('name,town,kind,phone') && csv.split('\n').length === 5 && csv.includes('"Test Nails (fictional)"') && csv.includes('"Replied"') && csv.includes('"New"'), csv.slice(0, 300));
-    const mig = await p.evaluate(() => JSON.stringify(window.WEBLEADS.migrate({ a: { s: 'called', t: 5 }, b: { s: 'interested' }, c: { s: 'no' }, d: { s: 'junk' } })));
-    step('old marks carry over: Called -> Contacted, Interested -> Replied, Not interested -> Lost; junk dropped',
-      mig === JSON.stringify({ a: { s: 'contacted', t: 5 }, b: { s: 'replied', t: 0 }, c: { s: 'lost', t: 0 } }), mig);
+    const mig = await p.evaluate(() => [JSON.stringify(window.WEBLEADS.migrate({ a: { s: 'called', t: 5 }, b: { s: 'voicemail' }, c: { s: 7 } })),
+      ['called', 'interested', 'no', 'voicemail', 'emailed', 'won', 'mystery', 'booked', ''].map(window.WEBLEADS.stageOf).join(',')]);
+    step('outreach shares the key (agency.leads.status.v1): its values are kept as written (called / voicemail ...), shown as stages: called, voicemail, emailed, unknown -> Contacted; interested -> Replied; no -> Lost; won -> Won',
+      mig[0] === JSON.stringify({ a: { s: 'called', t: 5 }, b: { s: 'voicemail', t: 0 } }) && mig[1] === 'contacted,replied,lost,contacted,contacted,won,contacted,booked,', mig);
+    await p.evaluate(() => { const m = JSON.parse(localStorage.getItem('agency.leads.status.v1') || '{}'); m['osm-n1001'] = { s: 'voicemail', t: Date.now() }; localStorage.setItem('agency.leads.status.v1', JSON.stringify(m)); });
+    await p.reload(); await p.waitForFunction('window.WEBLEADS && window.WEBLEADS.ready()');
+    await p.selectOption('#fStatus', 'contacted');
+    const vm = await p.evaluate(() => { const li = document.querySelector('li.lead[data-id="osm-n1001"]'); return li ? [li.querySelector('select.stage').value, (li.querySelector('.lr') || {}).textContent] : null; });
+    const kept = await p.evaluate(() => JSON.parse(localStorage.getItem('agency.leads.status.v1'))['osm-n1001'].s);
+    step('an outreach "voicemail" shows under Contacted with "outreach: voicemail left", and the stored value stays "voicemail"', vm && vm[0] === 'contacted' && vm[1] === 'outreach: voicemail left' && kept === 'voicemail', [vm, kept]);
     const inj = await p.evaluate(() => window.WEBLEADS.toCsv([{ name: '=HYPERLINK("x")', town: 'T' }], {}));
     step('the export is spreadsheet-safe: a cell that looks like a formula starts with a quote mark', inj.includes(`"'=HYPERLINK(""x"")"`), inj);
     const geo = await p.evaluate(() => ({ side: document.documentElement.scrollWidth <= innerWidth, small: [...document.querySelectorAll('#list button, #list a, select, #fPhone')].filter((e) => { const r = e.getBoundingClientRect(); return r.width && r.height < 43.5 && e.id !== 'fPhone'; }).length }));
     step('390 px: no sideways scroll, every button / link / select at least 44 px tall', geo.side && geo.small === 0, geo);
     if (process.env.SHOTS) { await p.selectOption('#fStatus', 'todo'); await p.evaluate(() => { const e = document.getElementById('listCard'); e.scrollIntoView({ block: 'start' }); scrollBy(0, -12); }); await p.waitForTimeout(600); await p.screenshot({ path: path.join(process.env.SHOTS, 'leads-list.png') }); }
-    await p.selectOption('#fStatus', 'todo');
+    await p.selectOption('#fStatus', '');
     await p.click('li.lead[data-id="osm-n1001"] button[data-act="call"]');
     await p.waitForURL(/call\.html\?handoff=1/, { timeout: 20000 });
     await p.waitForFunction('window.CALLS && window.CALLS.ready()', null, { timeout: 30000 });

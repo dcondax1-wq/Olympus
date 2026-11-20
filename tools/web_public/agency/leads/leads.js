@@ -8,21 +8,24 @@ const PAGE = 25;
 const S = { j: null, marks: {}, shown: PAGE, ready: false };
 // the pipeline (lead 2026-11-20 Website Factory): new (no entry) -> demo ready -> contacted -> replied -> call booked -> won / lost; old marks carry over
 export const STAGES = [['demo', 'Demo ready'], ['contacted', 'Contacted'], ['replied', 'Replied'], ['booked', 'Call booked'], ['won', 'Won'], ['lost', 'Lost']];
-const OLD = { called: 'contacted', interested: 'replied', no: 'lost' };
-export function migrate(m) {
+// the SAME key as agency/outreach/ (day-a11y): {id: {s, t}}. Their values are kept as written; shown here as a stage:
+// called -> Contacted, interested -> Replied, no -> Lost, voicemail / emailed -> Contacted, won -> Won, anything unknown -> Contacted.
+const OLD = { called: 'contacted', interested: 'replied', no: 'lost', voicemail: 'contacted', emailed: 'contacted' };
+export function stageOf(raw) { return !raw ? '' : STAGES.some(([k]) => k === raw) ? raw : OLD[raw] || 'contacted'; }
+export function migrate(m) {                 // keeps every entry with a text status (never rewrites another app's value)
   const out = {};
   for (const [id, v] of Object.entries(m && typeof m === 'object' ? m : {})) {
-    const st = v && typeof v === 'object' ? (OLD[v.s] || v.s) : null;
-    if (STAGES.some(([k]) => k === st)) out[id] = { s: st, t: Number.isFinite(v.t) ? v.t : 0 };
+    if (v && typeof v === 'object' && typeof v.s === 'string' && v.s) out[id] = Object.assign({}, v, { s: v.s.slice(0, 20), t: Number.isFinite(v.t) ? v.t : 0 });
   }
   return out;
 }
-const stageName = (k) => (STAGES.find(([x]) => x === k) || [k, 'New'])[1];
+const stageName = (k) => (STAGES.find(([x]) => x === stageOf(k)) || [k, 'New'])[1];
+const rawLabel = (raw) => (raw && !STAGES.some(([k]) => k === raw) ? ({ called: 'called', interested: 'interested', no: 'not interested', voicemail: 'voicemail left', emailed: 'emailed' }[raw] || raw) : '');
 // the export (CSV, one row per business with its stage): quotes doubled, a formula-looking cell starts with ' (spreadsheet safety)
 export function toCsv(leads, marks) {
   const q = (v) => { let t = String(v == null ? '' : v); if (/^[=+\-@]/.test(t)) t = "'" + t; return '"' + t.replace(/"/g, '""') + '"'; };
   const head = ['name', 'town', 'kind', 'phone', 'address', 'heat', 'score', 'offer', 'stage', 'stage_date', 'osm'];
-  const rows = leads.map((L) => { const m = marks[L.id] || {}; return [L.name, L.town, L.nicheName, L.phone, L.address, L.heat, L.score, L.offer, m.s ? stageName(m.s) : 'New',
+  const rows = leads.map((L) => { const m = marks[L.id] || {}; return [L.name, L.town, L.nicheName, L.phone, L.address, L.heat, L.score, L.offer, m.s ? stageName(m.s) + (rawLabel(m.s) ? ' (' + rawLabel(m.s) + ')' : '') : 'New',
     m.t ? new Date(m.t).toISOString().slice(0, 10) : '', L.osm].map(q).join(','); });
   return [head.join(',')].concat(rows).join('\n');
 }
@@ -49,7 +52,7 @@ export function cleanLead(x) {
 // the filters (pure): opts = {town, niche, heat ('', 'hot', 'warm'), status ('', 'todo' = new, or a stage), phone (bool)}
 export function pick(leads, marks, o) {
   return leads.filter((L) => {
-    const m = (marks[L.id] || {}).s || '';
+    const m = stageOf((marks[L.id] || {}).s || '');
     if (o.town && L.town !== o.town) return false;
     if (o.niche && L.niche !== o.niche) return false;
     if (o.heat === 'hot' && L.heat !== 'hot') return false;
@@ -84,9 +87,10 @@ function card(L) {
   li.appendChild(act);
   const mk = h('label', 'lm'); mk.appendChild(h('span', '', 'Stage'));
   const sel = h('select', 'stage'); sel.dataset.act = 'stage'; sel.setAttribute('aria-label', 'Stage of ' + L.name);
-  const cur = (S.marks[L.id] || {}).s || '';
+  const raw = (S.marks[L.id] || {}).s || '', cur = stageOf(raw);
   for (const [k, t] of [['', 'New']].concat(STAGES)) { const o = h('option', '', t); o.value = k; if (k === cur) o.selected = true; sel.appendChild(o); }
   mk.appendChild(sel); li.classList.toggle('st-' + (cur || 'new'), true);
+  if (rawLabel(raw)) mk.appendChild(h('i', 'lr', 'outreach: ' + rawLabel(raw)));
   li.appendChild(mk);
   return li;
 }
@@ -98,10 +102,10 @@ function render() {
   if (!v.length) ul.appendChild(h('li', 'note', leads.length ? 'Nobody matches these filters.' : 'No businesses yet.'));
   $('listN').textContent = `(${v.length})`;
   $('more').hidden = v.length <= S.shown;
-  const n = (k) => leads.filter((L) => ((S.marks[L.id] || {}).s || '') === k).length, todo = leads.filter((L) => !(S.marks[L.id] || {}).s).length;
+  const n = (k) => leads.filter((L) => stageOf((S.marks[L.id] || {}).s || '') === k).length, todo = leads.filter((L) => !(S.marks[L.id] || {}).s).length;
   try {
     if (S.j) {
-      const called = leads.filter((L) => ['contacted', 'replied', 'booked', 'won', 'lost'].includes((S.marks[L.id] || {}).s)).length, hot = leads.filter((L) => L.heat === 'hot' && L.phone && !(S.marks[L.id] || {}).s).length;
+      const called = leads.filter((L) => ['contacted', 'replied', 'booked', 'won', 'lost'].includes(stageOf((S.marks[L.id] || {}).s))).length, hot = leads.filter((L) => L.heat === 'hot' && L.phone && !(S.marks[L.id] || {}).s).length;
       const stages = {}; for (const [k] of STAGES) stages[k] = n(k);
       localStorage.setItem(SUM_KEY, JSON.stringify({ n: leads.length, label: `${leads.length} leads found`, next: hot ? `Call the ${hot} hot one${hot === 1 ? '' : 's'}` : todo ? `${todo} still new` : 'Run the finder for a new town',
         t: Math.round(Date.now() / 1000), pipe: { leads: leads.length, called, ...stages } }));
@@ -172,5 +176,5 @@ async function boot() {
   say(`${S.leads.length} businesses with no website${towns.length ? ' in ' + towns.join(', ') : ''}. Tap Call with script, then set its stage.`);
   S.ready = true;
 }
-window.WEBLEADS = { S, pick, handoff, cleanLead, valid, migrate, toCsv, STAGES, ready: () => S.ready };
+window.WEBLEADS = { S, pick, handoff, cleanLead, valid, migrate, stageOf, toCsv, STAGES, ready: () => S.ready };
 boot().catch((e) => { say('Something went wrong: ' + (e && e.message ? e.message : e)); S.ready = true; });
