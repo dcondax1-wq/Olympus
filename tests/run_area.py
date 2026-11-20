@@ -90,6 +90,7 @@ AREAS["olympus"].append("home_fx")          # night-effects 2026-11-20: the livi
 AREAS["nq"].append("nqdeep")                # night-nqdash2 2026-11-20: Trading deep dive / MFFU payout ranges / NQ news week
 AREAS["money"].append("business_taxes")   # day-taxes 2026-11-20: Taxes page + keep-the-most waterfall (tools/money/keep_most.py)
 AREAS["board"].append("owner_manual")  # day-manual 2026-11-20: hub/manual.html + docs/OWNER_MANUAL.md (browser part under the lock); its own line
+AREAS["pc"].append("land_branch")       # 2026-11-20: the lead's landing tool (tools/land_branch.py: preview, merge, known conflicts, fix-ups, plan); its own line
 # suites too long for one budget run BY PARTS, each its own row and budget (night team D 2026-11-16: the whole kit walk, every app +
 # power + tiers + more in one browser, is the longest browser suite); a part is "<suite>:<label>" = python -m tests.test_<suite> <args>
 PARTS = {"olympus_kit": [("a", ["datacity", "mind", "tree"]), ("b", ["oracle", "odeon", "fates"]), ("c", ["hermes", "prometheus", "tyche"]),
