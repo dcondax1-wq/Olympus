@@ -500,6 +500,8 @@ def fix_update(ctx) -> list:
     c, st = ctx.git("status", "--porcelain", "--untracked-files=no")
     gen, other = generated_files.split_dirty(st) if c == 0 else ([], [])
     named = [p for p in gen if p in reason] if ("overwritten" in reason or "refused" in reason or "local changes" in reason) else []
+    need += [p for p in named if re.search(r"journal|trade", p, re.I)]      # a trade journal is never reset by the self-heal
+    named = [p for p in named if not re.search(r"journal|trade", p, re.I)]
     if named:
         def reset():
             if not snapshot(ctx, named):

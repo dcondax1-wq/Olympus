@@ -112,6 +112,7 @@ def repo_pair(tmp, name):
     write(os.path.join(up, "README.md"), "one\n")
     write(os.path.join(up, "engine", "a.py"), "A = 1\n")
     write(os.path.join(up, "cache", "dash", "bt.json"), '{"v":1}\n')
+    write(os.path.join(up, "data", "lit_journal.jsonl"), '{"j":1}\n')
     write(os.path.join(up, ".gitignore"), "logs/\n")
     g(up, "add", "-A")
     g(up, "commit", "-qm", "one")
@@ -121,6 +122,7 @@ def repo_pair(tmp, name):
     write(os.path.join(up, "data", "board", "shared.jsonl"), '{"k":1}\n')
     write(os.path.join(up, "engine", "a.py"), "A = 2\n")
     write(os.path.join(up, "cache", "dash", "bt.json"), '{"v":2}\n')
+    write(os.path.join(up, "data", "lit_journal.jsonl"), '{"j":1}\n{"j":2}\n')
     g(up, "add", "-A")
     g(up, "commit", "-qm", "two")
     g(pc, "fetch", "-q", "origin")
@@ -161,14 +163,18 @@ def test_update(tmp):
     write(os.path.join(pc2, "README.md"), "my own edit\n")
     write(os.path.join(pc2, "engine", "a.py"), "A = 2\n")                 # checked out from main by hand = the new version
     write(os.path.join(pc2, "cache", "dash", "bt.json"), '{"v":"pc"}\n')  # bot-made (engine/generated_files)
+    write(os.path.join(pc2, "data", "lit_journal.jsonl"), '{"j":1}\n{"pc":1}\n')   # bot-made too, but a trade journal
     os.makedirs(os.path.join(pc2, "data"), exist_ok=True)
     json.dump({"last": {"status": "failed", "reason": "fast-forward refused: error: Your local changes to the following files would be "
-                                                      "overwritten by merge: cache/dash/bt.json"}}, open(os.path.join(pc2, "data", "autoupdate.json"), "w"))
+                                                      "overwritten by merge: cache/dash/bt.json data/lit_journal.jsonl"}}, open(os.path.join(pc2, "data", "autoupdate.json"), "w"))
     c3 = ctx(pc2, now, apply=True)
     r = SH.fix_update(c3)
     by = {i["key"]: i for i in r}
-    check("b. a hand edit of README.md: never touched, named (needs you)", by.get("update_blocked", {}).get("paths") == ["README.md"]
+    check("b. a hand edit of README.md: never touched, named (needs you)", "README.md" in by.get("update_blocked", {}).get("paths", [])
           and open(os.path.join(pc2, "README.md")).read() == "my own edit\n", r)
+    check("b. the trade journal the update named: never reset, named instead (its PC lines kept)",
+          "data/lit_journal.jsonl" in by.get("update_blocked", {}).get("paths", [])
+          and open(os.path.join(pc2, "data", "lit_journal.jsonl")).read() == '{"j":1}\n{"pc":1}\n', r)
     check("b. a file already at the new version is not reported", "engine/a.py" not in by.get("update_blocked", {}).get("paths", []), r)
     bt = os.path.join(c3.keep_dir(), "cache", "dash", "bt.json")
     check("b. the bot-made file the last update named: back to HEAD, its copy kept", by.get("update_generated", {}).get("status") == "fixed"
@@ -176,7 +182,7 @@ def test_update(tmp):
     c, snap = g(pc2, "show", f"{SH.SNAP_REF}:cache/dash/bt.json")
     check("b. the bot-made file is in the snapshot too", c == 0 and '"pc"' in snap, snap)
     c, st = g(pc2, "status", "--porcelain", "--untracked-files=no")
-    check("b. no other tracked file changed by the self-heal", sorted(ln[3:] for ln in st.splitlines()) == ["README.md", "engine/a.py"], st)
+    check("b. no other tracked file changed by the self-heal", sorted(ln[3:] for ln in st.splitlines()) == ["README.md", "data/lit_journal.jsonl", "engine/a.py"], st)
     up3, pc3 = repo_pair(tmp, "b3")
     g(pc3, "merge", "--ff-only", "-q", "origin/main")
     check("b. up to date: nothing to say", SH.fix_update(ctx(pc3, now, apply=True)) == [])
