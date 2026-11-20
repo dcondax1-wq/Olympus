@@ -23,7 +23,7 @@
 .pu-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; height: 30px; padding: 0 14px; margin-bottom: 2px; }
 .pu-stats .pu-head, .pu-money .pu-head { padding: 0; }
 .pu-title { margin: 0; font: 600 var(--ag-fs-h3, 1.125rem)/1.2 var(--ag-serif, Georgia, serif); color: var(--ag-text, #f3ece0); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pu-more { flex: none; display: inline-flex; align-items: center; min-height: 30px; padding: 0 4px; color: var(--ag-gold, #c8a24a); font: 600 var(--ag-fs-foot, .8125rem)/1 var(--ag-sans, system-ui); text-decoration: none; }
+.pu-more { flex: none; display: inline-flex; align-items: center; min-height: 44px; margin: -7px -4px; padding: 0 8px; color: var(--ag-gold, #c8a24a); font: 600 var(--ag-fs-foot, .8125rem)/1 var(--ag-sans, system-ui); text-decoration: none; }
 /* rows */
 .pu-list { list-style: none; margin: 0; padding: 0; }
 .pu-row { height: 58px; box-sizing: border-box; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 0 14px; border-top: 1px solid var(--ag-line-soft, rgba(243, 236, 224, .07)); }
@@ -47,7 +47,7 @@
 .pu-bk { color: var(--ag-muted, #a89c88); }
 .pu-note { margin: 8px 0 0; color: var(--ag-muted, #a89c88); font: 400 var(--ag-fs-cap, .75rem)/1.4 var(--ag-sans, system-ui); }
 .pu-stats .pu-note { height: 2.8em; overflow: hidden; }
-/* before the data: a quiet shimmer-free placeholder (no animation: battery, reduced motion) */
+/* before the data: a quiet placeholder, nothing moves (battery, reduced motion) */
 .pulse:not(.ready) .pu-part { opacity: .55; }
 .pulse a:focus-visible { outline: 2px solid var(--ag-gold, #c8a24a); outline-offset: 2px; border-radius: 6px; }
 /* "folded in here": the archived apps whose job this page now does (the audit's MERGE verdicts); they stay reachable */
