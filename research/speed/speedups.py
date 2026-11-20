@@ -106,23 +106,46 @@ def nt_tail_load():
 HIST_KEEP_DAYS = 150        # LIT and ATLAS read from engine/lit_live.window_start: the previous month's first day - 8 days (<= ~70 days)
 
 
+def _read_hist_capped(self, sym, tf):
+    """engine.live.LiveBot._read_hist with the cap of patch_2_hist_cap.diff (before the archive merge)."""
+    import pandas as pd
+    from engine import live, pcbars
+    path = os.path.join(live.DATA_DIR, f"{sym}_{tf}.csv")
+    if not os.path.exists(path):
+        df = pd.DataFrame(columns=["time", "open", "high", "low", "close", "volume"])
+    else:
+        st_ = os.stat(path)
+        hit = getattr(self, "_hist_cache", {}).get(path)
+        if hit and hit[0] == (st_.st_mtime_ns, st_.st_size):
+            df = hit[1]
+        else:
+            df = pd.read_csv(path)
+            df = df[~((df["high"] == df["low"]) & (df["volume"] <= 0))]
+            if self.no_yahoo:
+                df = pcbars.tidy(df)
+                self._hist_cache = {**getattr(self, "_hist_cache", {}), path: ((st_.st_mtime_ns, st_.st_size), df)}
+    keep = self.cfg.get("hist_keep_days", HIST_KEEP_DAYS)
+    if keep and tf in ("1m", "5m") and sym == self.cfg.get("sym", "NQ") and len(df):
+        cut = int(self.clock()) - int(float(keep) * 86400)
+        if int(df["time"].min()) < cut:
+            df = df[df["time"] >= cut]
+    if self.no_yahoo and tf in ("1m", "5m"):
+        arc = self._archive(sym, tf)
+        if len(arc):
+            df, sh = pcbars.merge_basis(df, arc)
+            if sh:
+                self._nt_note(f"basis:{sym}:{tf}", "warn", f"{sym} {tf}: the TradingView history sits {-sh:+.2f} pts from "
+                              "NinjaTrader's bars (a contract roll): history back-adjusted onto NinjaTrader's contract", every_s=86400)
+    return df
+
+
 @reg
 def hist_cap():
-    """engine.live.LiveBot._read_hist returns the TradingView export (5 years of 5m, all of 2026 in 1m) + the archive every
-    poll; the poll then merges, de-duplicates, sorts and cleans all of it, and LIT / ATLAS keep only their window. Capped to the
-    last HIST_KEEP_DAYS days of the bot's clock (still 2x the longest window)."""
+    """The bot's own NQ 1m / 5m history (TradingView export: 5 years of 5m, all of 2026 in 1m) capped to the last
+    HIST_KEEP_DAYS days of the bot's clock BEFORE the per-poll archive merge, de-duplicate, sort and clean."""
     from engine import live
     old = live.LiveBot._read_hist
-
-    def capped(self, sym, tf):
-        df = old(self, sym, tf)
-        if df is None or not len(df):
-            return df
-        cut = int(self.clock()) - HIST_KEEP_DAYS * 86400
-        if int(df["time"].iloc[0]) >= cut:
-            return df
-        return df[df["time"] >= cut]
-    live.LiveBot._read_hist = capped
+    live.LiveBot._read_hist = _read_hist_capped
 
     def undo():
         live.LiveBot._read_hist = old

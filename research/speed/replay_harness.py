@@ -156,11 +156,11 @@ def run(days, patches=(), quiet=False, offset=2.0, cfg_extra=None):
                 errors.append(f"{int(t)} {e.__class__.__name__}: {e}")
             wall = (time.perf_counter() - w0) * 1000
             ps = bot.health.get("poll_stages") or {}
-            rows.append({"t": int(t), "wall_ms": round(wall, 1), "total_ms": ps.get("total_ms"), "lit_ms": ps.get("lit_ms"),
+            rows.append({"t": int(t), "wall_ms": round(wall, 1), "state": str((bot.state or {}).get("model_state"))[:80], "total_ms": ps.get("total_ms"), "lit_ms": ps.get("lit_ms"),
                          "stages": {s["name"]: s["ms"] for s in ps.get("stages") or []}})
         led = [{k: r.get(k) for k in ("side", "qty", "stop", "target", "entry_t", "pnl", "t", "reason", "px")}
                for r in bot.ledger]
-        sig = [l["text"] for l in list(bot.log) if l.get("kind") in ("signal", "route", "trade", "entry", "exit")]
+        sig = [l["text"] for l in reversed(list(bot.log)) if l.get("type") in ("order", "signal", "trade", "risk")]
         return {"days": list(days), "patches": list(patches), "polls": len(rows), "errors": errors[:10], "n_errors": len(errors),
                 "ledger": led, "signals": sig, "rows": rows}
     finally:
