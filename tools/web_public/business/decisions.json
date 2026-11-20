@@ -301,7 +301,7 @@
     "no",
     "later"
    ],
-   "status": "open",
+   "status": "yes",
    "source": "research/writeups/atlas-more-money-2026-11-19.md",
    "applies": "data/account_b.json \"min_room\": 0 (built key: the funded stuck line $100 -> none; Claude changes it only after your yes)",
    "added": "2026-11-19",
@@ -314,7 +314,9 @@
    "risk": "None found: a 1-micro trade only goes on when its full stop-out fits the room; a stranded account still holds one of the 2 funded 25K places until you close it",
    "recommend": "yes",
    "recommend_why": "It never pays less on any of the 600 test paths; it only keeps alive an account the bot would abandon. Small money, no downside.",
-   "valued": "2026-11-19 tools/atlas_more.py (600 week-block paths from today's account, MFFU Builder 25K funded rules, costs in)"
+   "valued": "2026-11-19 tools/atlas_more.py (600 week-block paths from today's account, MFFU Builder 25K funded rules, costs in)",
+   "answered": "2026-11-19 ~20:00 ET in chat (\"Yes\")",
+   "closed_note": "Owner YES. To apply: data/account_b.json on the PC \"min_room\": 0 (no CLI yet: next chat adds `python -m engine.account_b --min-room 0` and gives the owner the one line at the PC)."
   }
  ]
 }
