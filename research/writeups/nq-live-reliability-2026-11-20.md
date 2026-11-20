@@ -86,10 +86,10 @@ ms. So of the PC's 3-5 s, 2 s is waiting by design and the rest is the PC's own 
 waiting for the minute's first trade. Caching more would save tenths of a second; the 2 s wait is the big part.
 
 **Built, OFF by default: poll on the first tick** (engine/fast_entry.py). The minute's first poll waits for NinjaTrader's files
-instead of the clock: it wakes at +0.15 s and polls the moment the new minute's open and the closed 1m bar are both in the
+instead of the clock: it wakes at +0.15 s and polls the moment the new minute's open and the closed 1m bar (at a 5m close also the 5m bar) are in the
 files (checked every 50 ms), at the latest at the usual +2 s. Same bars, same open, same decisions, only earlier: up to
 ~1.8 s on an active minute. Switch: `python -X utf8 -m engine.fast_entry --on` (or the start cfg "poll_on_tick", or env
-LE_POLL_ON_TICK=1). tests/test_fast_entry.py 20/20; OFF = engine/live._sleep_s byte-for-byte today's wait. Not turned on:
+LE_POLL_ON_TICK=1). tests/test_fast_entry.py 21/21; OFF = engine/live._sleep_s byte-for-byte today's wait. Not turned on:
 the $ it saves cannot be measured from 1-minute bars (no tick data), so it needs a Sim day first. LIVE == BACKTEST_RESULT
 
 Not changed: ATLAS (account B) is routed after LIT, the state save, account C, the ES learning refresh and the Bot Brain in

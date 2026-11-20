@@ -90,6 +90,15 @@ It pushes to your private ntfy topic when the GitHub secret **LE_NTFY_TOPIC** ho
 variables -> Actions -> New secret, the topic name your ntfy app follows); without it the plain alert (no $, no names, no ids)
 goes to the public status topic.
 
+**Within 2 minutes from the PC itself (2026-11-20, type `problems`, ON, rings in quiet hours; research/writeups/
+nq-live-reliability-2026-11-20.md).** The bot on a broker account in the entry hours (weekdays 01:58-15:55 ET, CME open):
+`ZEUS not polling` (no good poll for 90 s, or its poll thread died), `FEED STALE` (the 1m NinjaTrader feed 2 bars behind, or the
+bot blocked entries for it), `Bot stopped` (3 min after a server start it is still stopped although nobody pressed Stop), each
+once with one `Back to normal` (engine/fast_alarm.py, run by the server's watchdog every 30 s; `LE_FAST_ALARM=0` = off). And
+`MISSED TRADE · Zlarior 06:12 ET: <why>` the moment the bot's own model took an entry it did not route (feed stale, seen late,
+size 0, a guard, a gap, a restart; never for your own pause; engine/fill_audit). The 15-minute report then skips its own copy of
+the same problem (engine/notify.problem_dup): one alert, one phone.
+
 ---
 
 ## History: the old Home Screen app (gone since 2026-11-08)

@@ -104,6 +104,28 @@ def main() -> bool:
         w = FE.first_tick_wait(feed, "NQ", c(), clock=c, sleep=c.sleep)
         check("a stop request ends the wait at once (no tick watch after the stop)", w == (0.0, b) and abs(c.t - (b + 0.15)) < 1e-6,
               c.t - b)
+        # a 5m close (b5 % 300 == 0): the 5m bar file must have changed too (LIT's setups / ATLAS read it)
+        b5 = b + 3 * 60 + 60 * ((300 - (b + 240) % 300) // 60)
+        while b5 % 300:
+            b5 += 60
+        p5 = os.path.join(d, "MNQ_5m.csv")
+        with open(p5, "w") as fh:
+            fh.write("time,open,high,low,close,volume\n")
+        os.utime(p5, (b5 - 300 + 0.5, b5 - 300 + 0.5))
+
+        def tick5_1m():
+            with open(p1, "w") as fh:
+                fh.write("x\n")
+            os.utime(p1, (b5 + 0.3, b5 + 0.3))
+            with open(po, "w") as fh:
+                fh.write(f"{b5},27000.25\n")
+
+        def tick5_5m():
+            os.utime(p5, (b5 + 0.9, b5 + 0.9))
+        c = Clock(b5 - 28.0, [(b5 + 0.3, tick5_1m), (b5 + 0.9, tick5_5m)])
+        w = FE.first_tick_wait(feed, "NQ", c(), clock=c, sleep=c.sleep)
+        check("at a 5m close it also waits for the 5m bar file (+0.9 s here)", w == (0.0, b5) and b5 + 0.9 <= c.t < b5 + 1.0, c.t - b5)
+        os.remove(p5)
         c = Clock(b + 0.8)
         w = FE.first_tick_wait(feed, "NQ", c(), clock=c, sleep=c.sleep, done=b)
         check("this minute's first poll already ran on its tick: next wait is the +32 s poll (no 2nd first poll)",

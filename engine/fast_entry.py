@@ -7,8 +7,8 @@ entries (data/pc_days ledger rows, 2026-11-06..18): the market order left 3-5 s 
 (Zlarior) and 9-15 ticks (ATLAS) worse than that open, against 1 tick in the backtest's costs.
 
 ON: the minute's first poll waits for the files instead of the clock: it wakes at the boundary + 0.15 s and polls the moment
-NinjaTrader's <ROOT>_1m_open.csv names the new minute AND the 1m bar file changed after the boundary (checked every 50 ms),
-at the latest at the usual +2 s. Same bars, same forming open, same decisions (a poll is a pure function of the bars): only
+NinjaTrader's <ROOT>_1m_open.csv names the new minute AND the 1m bar file changed after the boundary (at a 5m close the 5m bar
+file too; checked every 50 ms), at the latest at the usual +2 s. Same bars, same forming open, same decisions (a poll is a pure function of the bars): only
 earlier, by up to ~1.8 s on an active minute. The +32 s poll, the 1m-bar re-poll (engine/live._await_nt_bar), paper / Yahoo
 / Tradovate feeds are unchanged. Only with data_source "ninjatrader".
 
@@ -90,6 +90,7 @@ def first_tick_wait(feed, sym: str, now: float, offsets=(2.0, 32.0), clock=time.
         p1 = feed.file_for(sym, 1) if feed is not None else None
         if not p1:
             return None
+        p5 = feed.file_for(sym, 5) if int(b) % 300 == 0 else None     # a 5m close too: its 5m bar must be in (LIT / ATLAS)
         sleep = sleep or time.sleep
         t = float(clock())
         if b + margin > t and sleep(b + margin - t):
@@ -102,9 +103,10 @@ def first_tick_wait(feed, sym: str, now: float, offsets=(2.0, 32.0), clock=time.
             fo = feed.forming_open(sym, now=int(t))
             try:
                 m1 = os.stat(p1).st_mtime
+                m5 = os.stat(p5).st_mtime if p5 else b
             except OSError:
-                m1 = 0.0
-            if fo and int(fo[0]) == int(b) and m1 >= b:
+                m1 = m5 = 0.0
+            if fo and int(fo[0]) == int(b) and m1 >= b and m5 >= b:
                 return 0.0, b
             if sleep(step):
                 return 0.0, b
