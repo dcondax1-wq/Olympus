@@ -25,12 +25,12 @@ Nothing about how Zlarior or ATLAS pick or size trades changed.
 | An update / restart while ATLAS holds a trade | possible (only Zlarior was checked) | never |
 | ATLAS's funded 25K under $100 room | stops for good | your one line below keeps it trading 1 micro (your YES) |
 
-Fills (real NinjaTrader prices): Zlarior's only fill was 3 ticks worse than the bar open ($1.50 on 1 micro). ATLAS's three
+Fills (real NinjaTrader prices): Zlarior's only fill was 3 ticks worse than the backtest's price ($1.50 on 1 micro). ATLAS's three
 fills were 9, 11 and 15 ticks worse ($9, $11, $15 on 2 micros), while its backtest counts 1 tick. Only 3 trades, but all
 three the same way: if it holds, ATLAS earns about $5 a micro less per trade than the backtest says.
 
 **Next for you:** at the PC when ATLAS is flat: `python -X utf8 -m engine.account_b --min-room 0`. Keep the PC on and
-NinjaTrader open in the entry hours (02:00-15:30 ET): most missed trades were the PC being off (Nov 7-17).
+NinjaTrader open in the entry hours (02:00-15:30 ET): the Nov 10 and Nov 11 misses were the PC being off (Nov 7-17).
 
 ## Every way a backtest trade can miss the account (job 1)
 
