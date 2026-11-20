@@ -123,10 +123,30 @@ def home_fixture(now):
             "live": {"pc": {"t": now - 120}}}
 
 
+# the browser part serves its OWN copy of every feed the pulse reads (home.json, trading/trades.json, ledger/rules.json), so the expected
+# numbers below never move when a fresh export lands (round 5, 2026-11-20: a fresh trades.json broke the old "any known value" check)
+TRADES_FIXTURE = {"v": 1, "trades": (
+    [{"src": "backtest", "bot": "LIT", "m": "", "day": d, "usd": u, "t": i} for i, (d, u) in enumerate(
+        [("2026-01-05", 400), ("2026-01-06", 300), ("2026-01-07", 200), ("2026-01-08", -150), ("2026-01-09", -150)])]
+    + [{"src": "backtest", "bot": "ATLAS", "m": "EMA", "day": d, "usd": u, "t": 10 + i} for i, (d, u) in enumerate(
+        [("2026-01-12", 90), ("2026-01-13", -60), ("2026-01-14", -60), ("2026-01-15", -60), ("2026-01-16", -60)])]
+    + [{"src": "live", "bot": "LIT", "m": "", "day": "2026-10-28", "hm": "03:43", "side": "SHORT", "k": "STOP", "usd": -437, "t": 1793173380}])}
+RULES_FIXTURE = {"plans": {"builder_50k": {"price_owner": 91.8, "payout": {"buffer": 2100, "min": 500, "max": 2000, "split": 0.8}},
+                           "builder_25k": {"price_owner": 63, "payout": {"buffer": 1100, "min": 250, "max": 1000, "split": 0.8}}},
+                 "accounts": {"lit50k": {"plan": "builder_50k", "price": 91.8}, "atlas25k": {"plan": "builder_25k", "price": 43}}}
+# what each mounted part must show from those feeds (exact, in page order). Zlarior: $1,025 of $2,000 left, $3,807 to pass; ATLAS funded at
+# $24,887: the payout needs $1,463 more; fees $91.80 + $43 = $135 (no Ledger on a fresh phone); trades: 1 real loss of $437, LIT 60%, ATLAS EMA 20%.
+# A bare '-' is allowed only where the card has no number yet by design ("To you" before a payout is ready).
+EXPECT = {"strip": ["$0", "$1,025", "$3,807"], "hero:room": ["$1,025"], "hero:pass": ["$3,807"], "hero:payout": ["$1,463"], "hero:net": ["-$135"],
+          "hero:last": ["-$437"], "hero:today": ["$0"], "accounts": ["$0", "$0"], "bots": [],
+          "money": ["needs $1,463", "-", "$135", "-$135"], "stats": ["1 loss", "-$437", "60%", "20%"]}
+
+
 def test_browser():
     import time
     now = int(time.time())
-    srv, origin = AK.serve(overrides={"/home.json": json.dumps(home_fixture(now)), "/status_feed.json": None})
+    srv, origin = AK.serve(overrides={"/home.json": json.dumps(home_fixture(now)), "/status_feed.json": None,
+                                      "/trading/trades.json": json.dumps(TRADES_FIXTURE), "/ledger/rules.json": json.dumps(RULES_FIXTURE)})
     LS = """window.__cls = 0; try { new PerformanceObserver((l) => { for (const e of l.getEntries()) if (!e.hadRecentInput) window.__cls += e.value; }).observe({ type: 'layout-shift', buffered: true }); } catch (e) {}
       try { localStorage.setItem('olympus.intro.seen', '1'); %s } catch (e) {}"""
     try:
@@ -145,15 +165,19 @@ def test_browser():
                     p.wait_for_timeout(1200)
                     r = p.evaluate("""() => { const secs = [...document.querySelectorAll('section.pulse')];
                       const nums = secs.map((s) => [...s.querySelectorAll('.pu-tv, .pu-hv, .pu-re')].map((e) => e.textContent));
+                      const parts = secs.flatMap((s) => { const spec = String(s.dataset.pulse).split(',').map((x) => x.trim()); const boxes = [...s.querySelectorAll(':scope > .pu-part')];
+                        return boxes.map((b, i) => [spec[i] || b.dataset.part, [...b.querySelectorAll('.pu-tv, .pu-hv, .pu-re')].map((e) => e.textContent)]); });
                       const links = [...document.querySelectorAll('section.pulse a, nav.folded a')].map((a) => Math.round(a.getBoundingClientRect().height));
                       const ink = secs[0] ? getComputedStyle(secs[0].querySelector('.pu-tv, .pu-hv') || secs[0]).color : '';
                       const bg = getComputedStyle(document.body).backgroundColor;
-                      return { ready: secs.length > 0 && secs.every((s) => s.classList.contains('ready')), nums, links, cls: window.__cls,
+                      return { ready: secs.length > 0 && secs.every((s) => s.classList.contains('ready')), nums, parts, links, cls: window.__cls,
                         side: document.documentElement.scrollWidth - innerWidth, ink, bg }; }""")
-                    flat = [x for n in r["nums"] for x in n]
                     tag = f"{app}{' (Ivory)' if theme else ''}"
-                    check(f"c. {tag}: the cards fill from home.json (no '-' in the account numbers), no page error",
-                          r["ready"] and any(x in flat for x in ("$1,025", "$887", "$1,463", "needs $1,463", "-$135", "-$198", "-$437", "$3,807")) and not errs, r["nums"], errs)
+                    bad = [(spec, vals, EXPECT.get(spec)) for spec, vals in r["parts"] if vals != EXPECT.get(spec)]
+                    check(f"c. {tag}: every card shows its feed's exact numbers ({', '.join(spec for spec, _ in r['parts'])}), no page error",
+                          r["ready"] and r["parts"] and not bad and not errs, bad or r["parts"], errs)
+                    check(f"c. {tag}: no '-' placeholder left in a headline, the strip, an account row or the trades card (a real negative like -$437 is fine)",
+                          not [v for spec, vals in r["parts"] if spec != "money" for v in vals if v.strip() == "-"], r["parts"])
                     check(f"c. {tag}: layout shift {r['cls']:.3f} (< 0.01) while the cards fill; no sideways scroll", r["cls"] < 0.01 and r["side"] <= 0, r["cls"], r["side"])
                     check(f"c. {tag}: every pulse / folded-in link is >= 44 px tall", all(h >= 44 for h in r["links"]), r["links"])
                     if theme:
