@@ -160,3 +160,16 @@ memoise listApps() in remember()), the first status-card batch). On a real iPhon
 - `python tools/a11y_sweep.py --apps jarvis --quick` (day-a11y): score 82 -> 92, small text 25 -> 9; the 9 left are the ZEUS card's rows and
   edge chip (olympus kit, DESIGN). Dynamic Type stays "(not scored)" because a11y.js covers it on the iPhone; moving jarvis.css px -> rem
   is the lasting fix (a later pass, with the cache bump).
+
+## 12. The switcher (owner 12:04 ET: "funky"), jarvis/switcher.js
+
+- Order everywhere (cards, quick row, chips): Daily = Cities, Kalshi, NQ, Jarvis, ZEUS, Planner, Business; then ZEUS Trading, Money, Kalshi,
+  More; then one Archive group at the very end (olympus/doors.js ARCHIVE). Exported FIRST / HIDE / CITY_PARTS; the hub test reads them.
+- Cities is one entry (Data City, Kalshi City, Atlas City, Mint City, World never get their own card); 28 retired apps hidden (their pages
+  still work); the app on screen keeps its card even if hidden. 78 -> 51 entries.
+- No vertical group label on the right edge; a card with no status or only "Waiting for / Not yet / Loading" shows the app's purpose at
+  16 px and "No news yet" (never a giant truncated headline); the quick row never overlaps (no auto-centring, 10 px gaps, 46 px buttons),
+  the orb is hidden while the sheet is open.
+- Shots: research/handoff/2026-11-20/olympus2/jarvis/switcher-before.png, switcher-after.png, switcher-after2.png, switcher-after-kalshi-card.png.
+- Tests: home_agora 44/44, apps_list 44/44, hub 270/272 on the tree before the last two pin commits (both pins fixed after). Known
+  intermittent: run A "#setApps [data-rm=x-bare]" timeout (seen twice today, once before any switcher change).
