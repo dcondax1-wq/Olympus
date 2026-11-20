@@ -14,3 +14,8 @@ Lead-only files I did not touch. Exact edits:
 
 No engine / live-bot file was edited. engine/self_heal.py got one new REPORT-ONLY check ("site", status info, never an alert,
 changes nothing): it is not on the never-edit list, but the lead may want to read `fix_site` (20 lines) before it reaches the PC.
+
+4. **CLAUDE.md "Saving usage" (lead file, optional one-line edit)**: the runner now takes the browser lock per browser suite
+   itself, so `Browser suites only when screens changed, always under flock -w 2400 /tmp/olympus_browser.lock` can become
+   `Browser suites only when screens changed; tests/run_area.py takes the browser lock itself (no flock wrapper); landing:
+   python tests/run_area.py <area> --changed <base_sha>`. The same sentence in .claude/skills/land-helper is still correct as is.
