@@ -1,8 +1,8 @@
 """AGENCY: the local-business website machine (owner 2026-11-14: "I want a website building machine").
 
 Find local businesses that need a website (OpenStreetMap, free), build each one a fast demo site, write the pitch,
-keep the pipeline in the OLYMPUS Agency page. Python stdlib only. Nothing here sends an email, places a call or texts
-anyone: it prepares the words and the owner sends / calls himself.
+keep the pipeline in the OLYMPUS Agency page. Python stdlib only. Nothing here places a call or texts anyone. The one sender is
+agency/autopilot (email only, OFF until EMAIL_SETUP.bat + the typed phrase SEND EMAILS, docs/EMAIL_AUTOPILOT.md); the rest prepares the words.
 
     python -m agency.run --city "Fort Collins, CO"        the whole day's batch (leads -> 3 demo sites -> pitch kits -> CRM data)
     python -m agency.leads --city "Fort Collins, CO"      only the lead list (CSV + JSON)
