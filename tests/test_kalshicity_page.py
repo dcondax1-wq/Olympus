@@ -364,7 +364,8 @@ def run_browser():
                   p.is_visible(".archive-banner") and p.inner_text("#vText") != "Reading the city..." and re.search(r"\d", p.inner_text("#oMore")) and p.inner_text("#pBestV").startswith("+$")
                   and p.inner_text("#show3d") == "Show the 3D city" and b3 and b3["height"] >= 44 and b3["width"] >= 44 and b3["y"] + b3["height"] <= 844 and not p.is_visible("#to2d"), (p.inner_text("#vText")[:80], b3))
             ov = p.evaluate(GEOM)
-            check("c. ...the 2D page sits inside the 16 px gutters, out of the orb's corner, no sideways scroll", not ov, ov)
+            uncovered = p.evaluate("['show3d', 'districtSelect'].every((id) => { const b = document.getElementById(id).getBoundingClientRect(), e = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2); return e && (e.id === id || e.closest('#' + id)); })")
+            check("c. ...the 2D page sits inside the 16 px gutters, out of the orb's corner, no sideways scroll; nothing lies over the 3D button or the district switch", not ov and uncovered, (ov, uncovered))
             if shots:
                 p.screenshot(path=os.path.join(shots, "kalshicity-2d.png"))
             p.click("[data-view=board]")
