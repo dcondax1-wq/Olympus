@@ -70,8 +70,8 @@ def test_static():
           '<html lang="en" data-theme="agora" data-oly-page="gate">' in html and "viewport-fit=cover" in html and 'name="theme-color"' in html and 'name="color-scheme" content="dark"' in html
           and html.count("<h1") == 1 and 'role="status"' in html and 'aria-live="polite"' in html and 'role="dialog"' not in html)
     check("a. one base-path line: gate/ -> '../', the site root (olympus-live.html) -> ''; agora.css + gate.css, then themes, the catalog, hub-status and gate.js load from GATE_BASE, in order (async = false)",
-          r"/\/gate\/(index\.html)?$/.test(p) ? '../' : ''" in html and "window.GATE_BASE = b" in html and "b + 'gate/gate.css?v=g12'" in html and "b + 'olympus/agora.css" in html
-          and "['olympus/themes.js?v=o9', 'pc_feed.js?v=pf1', 'olympus/gate-catalog.js?v=nv5', 'olympus/hub-status.js?v=h2', 'gate/gate.js?v=g10', 'olympus/home-fx.js?v=x2']" in html and "s.async = false" in html)
+          r"/\/gate\/(index\.html)?$/.test(p) ? '../' : ''" in html and "window.GATE_BASE = b" in html and "b + 'gate/gate.css?v=g13'" in html and "b + 'olympus/agora.css" in html
+          and "['olympus/themes.js?v=o9', 'pc_feed.js?v=pf1', 'olympus/gate-catalog.js?v=nv5', 'olympus/hub-status.js?v=h2', 'gate/gate.js?v=g11', 'olympus/home-fx.js?v=x2']" in html and "s.async = false" in html)
     tiles = re.findall(r'class="g-hub[^"]*" data-hub="(\w+)" data-to="hub/index.html\?h=(\w+)"', html)
     check("a. the hub tiles are plain links in the page (they work even if gate.js fails), in the owner's order (night A 2026-11-16): Bots & Evals (wide) and My Money (wide) first, Kalshi and Worlds near the end, Settings & Help last",
           [t[0] for t in tiles] == HUBS and all(a == b for a, b in tiles) and 'class="g-hub g-wide" data-hub="bots"' in html and 'class="g-hub g-wide" data-hub="money"' in html and html.count('class="g-hline"') == len(HUBS))
@@ -301,16 +301,16 @@ def test_page():
             ctx, p, errs, seen, off = AK.page(br, origin)
             open_gate(p, origin)
             r = p.evaluate(NOWCARD)
-            # cities3 2026-11-20 (owner: "one-glance money row"): each account is a card in #money (balance, drawdown left, to pass, today); facts = the window
-            check("c. fresh report (5 min): 'Bots on', 'The bots are on. Last report 5 minutes ago.', the money row: Zlarior 50K $49,420 drawdown $1,420 of $2,000, ATLAS 25K $900 of $1,000, "
-                  "today +$272 for 2 accounts; the window open until 15:30 ET; no button; through truth.js",
-                  r["state"] == "on" and r["badge"] == "Bots on" and r["line"] == "The bots are on. Last report 5 minutes ago." and len(r["money"]) == 2
-                  and r["money"][0].startswith("Zlarior 50K, eval: balance $49,420. Drawdown left $1,420 of $2,000 max loss, Zlarior.") and r["money"][0].endswith("Today +$312.")
-                  and "Drawdown left $900 of $1,000 max loss, ATLAS." in r["money"][1] and r["total"] == "Today · 2 accounts+$272"
-                  and r["facts"] == ["Trade windowOpen nowuntil 15:30 ET"] and not r["btn"] and r["truth"], r)
-            go = p.evaluate("() => [...document.querySelectorAll('#nowFacts a.g-fact, #money a.g-acct')].map((a) => a.href.replace(location.origin, ''))")
-            check("c. each card / fact is a tap to the app with the detail: an eval -> Aegis (drawdown), the window -> Kairos",
-                  go == ["/aegis/index.html", "/aegis/index.html", "/kairos/index.html"], go)
+            # cities3 2026-11-20 (owner: "one-glance money row"): a card per account in #money (balance, to pass, today); round 4 (lead): the owner's
+            # money facts stay first in #nowFacts: drawdown left per account, today's $, then the window
+            check("c. fresh report (5 min): 'Bots on', 'The bots are on. Last report 5 minutes ago.', drawdown $1,420 of $2,000 and $900 of $1,000, today +$272, the window open "
+                  "until 15:30 ET; the money row: Zlarior 50K $49,420 and ATLAS 25K; no button; through truth.js",
+                  r["state"] == "on" and r["badge"] == "Bots on" and r["line"] == "The bots are on. Last report 5 minutes ago." and r["facts"][0] == "Drawdown left$1,420of $2,000 max loss, Zlarior 50K"
+                  and r["facts"][1] == "Drawdown left$900of $1,000 max loss, ATLAS 25K" and r["facts"][2].startswith("Today+$272") and r["facts"][3] == "Trade windowOpen nowuntil 15:30 ET"
+                  and len(r["money"]) == 2 and r["money"][0].startswith("Zlarior 50K, eval: balance $49,420.") and r["money"][1].startswith("ATLAS 25K, eval:") and not r["btn"] and r["truth"], r)
+            go = p.evaluate("() => [...document.querySelectorAll('#money a.g-acct, #nowFacts a.g-fact')].map((a) => a.href.replace(location.origin, ''))")
+            check("c. each card / fact is a tap to the app with the detail: the eval cards and drawdown -> Aegis, today -> NQ, the window -> Kairos",
+                  go == ["/aegis/index.html", "/aegis/index.html", "/aegis/index.html", "/aegis/index.html", "/nq/index.html", "/kairos/index.html"], go)
             tiles = p.evaluate("() => [...document.querySelectorAll('.g-hub')].map((a) => [a.dataset.hub, a.href.replace(location.origin, ''), a.querySelector('.g-hline').textContent, a.querySelector('.g-hcount').textContent])")
             # night-gate 2026-11-18: the counts come from the catalog (Board + Trading joined Bots & Evals with the four doors), not pinned numbers
             per = {}
@@ -387,7 +387,7 @@ def test_page():
                 check(f"c. a report {age // 60} min old (running {running}): '{badge}', '{line[:40]}...', the 'Bring the bots back' button {'shown (-> nq/ 5 steps)' if btn else 'hidden'}",
                       r["state"] == state and r["badge"] == badge and r["line"] == line and r["btn"] == btn and (not btn or r["href"] == f"{o2}/nq/index.html?howto=1") and not errs, (r, errs[:2]))
                 if state == "stale":
-                    check("c. old numbers are labelled as the last report day, not 'Today'", r["total"].startswith("Last report day"), r["total"])
+                    check("c. old numbers are labelled as the last report day, not 'Today'", any(f.startswith("Last report day") for f in r["facts"]), r["facts"])
                     bl = p.evaluate("() => document.querySelector('#hl-bots').textContent")
                     check("c. ... and the Bots & Evals tile says so: 'Old numbers (3 d ago) · 2 evals active ...'", bl.startswith("Old numbers (3 d ago) · 2 evals active"), bl)
                 ctx.close()
@@ -411,7 +411,7 @@ def test_page():
             r = p.evaluate(NOWCARD)
             foot = p.evaluate("() => document.querySelector('#nowFoot').textContent")
             check("c. offline-ish: no home.json but this phone saw numbers before -> they are shown, said to be the last ones seen, with their age",
-                  r["line"].startswith("No new numbers reached this page") and r["money"] and "Drawdown left $1,500 of $2,000" in r["money"][0] and foot == "Saved on this phone 2 hours ago." and not errs, (r, foot))
+                  r["line"].startswith("No new numbers reached this page") and r["facts"][0].startswith("Drawdown left$1,500") and r["money"] and foot == "Saved on this phone 2 hours ago." and not errs, (r, foot))
             ctx.close()
             ctx, p, errs, seen, off = AK.page(br, o4)
             p.add_init_script("Storage.prototype.getItem = function () { throw new Error('blocked'); }; Storage.prototype.setItem = function () { throw new Error('blocked'); };")
