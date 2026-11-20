@@ -191,7 +191,7 @@ def atlas(cls=None, label="ATLAS 25K", account="MFFUSFBLDR000006018"):
 
 
 def part_c(b: Box):
-    b.live(T0 - 600, [], atlas={"balance": 26050.0, "profit": 1050.0, "today": 0.0, "status": "funded", "broker": "MFFUSFBLDR000006018",
+    b.live(T0 - 600, [], atlas={"balance": 26050.0, "profit": 1050.0, "today_pnl": 0.0, "status": "funded", "broker": "MFFUSFBLDR000006018",
                                 "funded": {"max_request": 0}})
     a = atlas()
     check("c. ATLAS: account B now gives its adapter its own name + key (before: neither sent a NinjaTrader fill)",

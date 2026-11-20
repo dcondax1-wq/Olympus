@@ -609,7 +609,7 @@ def _snap_cards(L: dict) -> list:
         funded = str(c.get("status") or "").lower() == "funded" or str(c.get("stage") or "").lower() == "funded"
         f = _d(c.get("funded"))
         out.append((MV.owner_name("atlas", "ATLAS", c.get("plan") or "Builder 25K", "funded" if funded else "eval"), MV.last4(c.get("broker")),
-                    {"balance": _f(c.get("balance")), "today": _f(c.get("today")) if c.get("today") is not None else _f(c.get("day_pnl")),
+                    {"balance": _f(c.get("balance")), "today": next((_f(c.get(k)) for k in ("today_pnl", "today", "day_pnl") if _f(c.get(k)) is not None), None),
                      "to_pass": None if funded else _f(c.get("to_target")), "kind": "funded" if funded else "eval",
                      "payout": _f(f.get("max_request")) if f else None}))
     return out
