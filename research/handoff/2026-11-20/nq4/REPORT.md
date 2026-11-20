@@ -58,3 +58,15 @@ The shots use the PC's real 2026-11-20 post (`tests/fixtures/truth/pc_post.json`
 - Version tags in `nq/index.html`: nq.js r22, nqchart.js c5, nqgoals.css v3, nqland.js v1. nq.js imports nqgoals.js v4.
 - No sw.js, apps.js or build_web_dashboard edits. Nothing for LEAD_WIRES.
 - Read only. No orders, no storage, no new fetch target except `../business/goals.json` (already published).
+
+## Round 3 (lead + owner corrections, before 21:00 ET)
+
+| What | Result |
+|---|---|
+| ATLAS in MFFU's own terms (owner) | A sim-funded account starts at $0, so it shows **$401**. Max-loss floor -$1,000, end-of-day trailing, stops at +$100. **Goal: ask $1,000 at $2,100** ($800 to you), $1,699 to go. **Earliest: $250 at $1,350**, $949 more (the coach's number). Uses `PC_FEED.mffuView` once pc_feed.js has it (day-archive); until then the same arithmetic in `nqgoals.js`. |
+| Honest dates (lead) | ATLAS: "about Dec 18-31 (estimate, 2026-like market)", from the ATLAS cost study. Evals: the plan's simulated dates (`goals.json`: Nov 30 / Dec 10). The goals no longer extrapolate a pace from a few days. |
+| DESIGN's kit (day-arenas merged) | New "ATLAS first payout" card: `NQFX.vault` (a drawn vault at once, then the 3D door and coins after load + idle) at 19%, "$401 of $2,100". Win and goal bursts use `NQFX.win` / `NQFX.milestone`; our own canvas burst is the fallback without the kit. Rings and roll-ups stay plain SVG/CSS: 5 rings on the first screen are cheaper that way. |
+| Eager JS budget | The kit (`nqfx.js`) and the payout rules (`payready_late.js`) now load after the first paint. Eager JS is 593 KB, under the 600 KB budget. `perf_sweep --static` is green. |
+| Still open | The accounts strip (nqdesk) still shows ATLAS as $25,401. It will switch with `PC_FEED.mffuView` across pages (archive team). |
+
+Tests: nq_goals 34, nq_page 70, nq_chart 45, nq_desk 32, truth_check 11, nqfx 15, smoke 10/10, site_checks fine.

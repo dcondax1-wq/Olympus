@@ -1,8 +1,9 @@
 """NQ v4 GOALS + NUMBERS (owner 2026-11-20 15:00 ET: "you should have goals on the NQ dashboard ... more data ... make it look cool").
 tools/web_public/nq/nqgoals.js (+ nqgoals.css, nqland.js the 3D price landscape), on the PC's real post of 2026-11-20 ~10:20 ET
 (tests/fixtures/truth/pc_post.json: ATLAS funded $25,401.38, Zlarior 50K $49,192.78, 25K #2 $25,000).
-  a. node    the goals: ATLAS first (the plan's first ask $1,000 at $27,100: $1,698.62 left, 19%; the minimum $250 ask at $26,350 = the payout
-             coach's $948.62; 2 traded days + best day <= 50%; a date range at today's pace), Zlarior 50K +$3,807 to pass, 25K #2 +$1,500, the Rapid
+  a. node    the goals: ATLAS first in MFFU's own terms (a sim-funded account starts at $0: "$401"; the GOAL = ask $1,000 at $2,100: $1,698.62
+             left, 19%, $800 to you; earliest = the $250 minimum at $1,350 = the payout coach's $948.62; floor -$1,000 EOD trailing, stops at +$100;
+             2 traded days + best day <= 50%; the cost study's date 'about Dec 18-31 (estimate, 2026-like market)', never a few days' pace), Zlarior 50K +$3,807 to pass, 25K #2 +$1,500, the Rapid
              planned (4+ days, best day <= 30% = $450), the fleet (1 of 5 funded slots, goals.json's $5,200 a month); never "to payout $X" but the coach's
   b. node    the numbers: today's / this week's P&L per account (the PC's today + the week's earlier real fills), win rate + PF over real fills only,
              the last 10; the session clock (London / New York windows, the next one, weekends); the VIX band and the LIT target size
@@ -78,15 +79,17 @@ def test_node():
     keys = [g["key"] for g in o["goals"]]
     a = G.get("atlas", {})
     check("a. the order: ATLAS's payout first, then the evals, the planned Rapid, the fleet last", keys[0] == "atlas" and keys[-1] == "fleet" and keys.index("rapid1") > keys.index("fresh25"), keys)
-    check("a. ATLAS: the plan's first ask $1,000 at $27,100: $1,698.62 left, 19% of the way from $25,000; '$800 to you at the 80% split'",
+    check("a. ATLAS in MFFU's terms: profit $401 shown as its balance; the goal ask $1,000 at $2,100: $1,698.62 left, 19%; '$800 to you at the 80% split'",
           a.get("kind") == "payout" and abs(a.get("left", 0) - 1698.62) < 0.01 and abs(a.get("frac", 0) - 401.38 / 2100) < 1e-6 and a.get("big") == "$1,699"
-          and a.get("goal") == "Ask $1,000 at $27,100" and "$800 to you at the 80% split" in a["lines"][0], a)
-    check("a. ... the minimum $250 ask at $26,350: '$949 more' (= the payout coach's need_more, the 'to payout' every page shows)",
-          "The minimum $250 ask is possible at $26,350: $949 more." in a["lines"][1], a.get("lines"))
+          and a.get("goal") == "Ask $1,000 at $2,100" and abs(a.get("balance", 0) - 401.38) < 0.01 and a.get("goalAt") == 2100 and a.get("earliest") == 1350
+          and "$800 to you at the 80% split" in a["lines"][1] and "its profit: $401 (max-loss floor" in a["lines"][0] and "it stops at +$100" in a["lines"][0], a)
+    check("a. ... earliest: the minimum $250 ask at $1,350: '$949 more' (= the payout coach's need_more, the 'to payout' every page shows)",
+          "Earliest: the minimum $250 ask at $1,350: $949 more." in a["lines"][2], a.get("lines"))
     check("a. ... the rules as chips: traded days (the PC's tracker) and the best day <= 50%",
           len(a.get("chips", [])) == 2 and a["chips"][0]["label"].startswith("Traded days") and "Best day <= 50%" in a["chips"][1]["label"], a.get("chips"))
-    check("a. ... the date at today's pace as a range and an estimate ('about Dec 3-14 at today's pace (estimate)': +$200.69 a traded day over 2 days)",
-          a.get("when", "").startswith("about Dec ") and a["when"].endswith("at today's pace (estimate)"), a.get("when"))
+    check("a. ... the date: the ATLAS cost study's simulated 'about Dec 18-31 (estimate, 2026-like market)' (a 3-day pace over-promised); evals: the plan's dates",
+          a.get("when") == "about Dec 18-31 (estimate, 2026-like market)" and G["zlarior"]["when"] == "plan: about Dec 10 (estimate)"
+          and G["fresh25"]["when"] == "plan: about Nov 30 (estimate)", (a.get("when"), G["zlarior"].get("when"), G["fresh25"].get("when")))
     z, f, rp, fl = G.get("zlarior", {}), G.get("fresh25", {}), G.get("rapid1", {}), G.get("fleet", {})
     check("a. Zlarior 50K: +$3,807 to pass at $53,000, 0% (the balance is under the $50,000 start), drawdown left $1,025 in its line",
           z.get("big") == "+$3,807" and z.get("goal") == "Pass at $53,000" and z.get("frac") == 0 and "Drawdown left $1,025" in z["lines"][0], z)
@@ -104,9 +107,9 @@ def test_node():
            and not TC.NOT_STATE.search(txt[max(0, m.start() - 40):m.end() + 12])]
     check("a. ... and no balance-looking $ that is not a target / ask / start", bad == [], bad)
     na = {g["key"]: g for g in o["noPlan"]}.get("atlas", {})
-    check("a. without the PC's tracker (no payready row) ATLAS still has its goal from the board balance and the plan constants; no date made up",
-          abs(na.get("left", 0) - 1698.62) < 0.01 and "The minimum $250 ask is possible at $26,350: $949 more." in na["lines"][1] and na["chips"][0]["ok"] is None
-          and na.get("when") in ("not enough days yet for a pace",), na)
+    check("a. without the PC's tracker (no payready row) ATLAS still has its goal from the board balance ($25,401 -> MFFU's $401) and the plan constants",
+          abs(na.get("left", 0) - 1698.62) < 0.01 and "Earliest: the minimum $250 ask at $1,350: $949 more." in na["lines"][2] and na["chips"][0]["ok"] is None
+          and na.get("when") == "about Dec 18-31 (estimate, 2026-like market)", na)
     w = o["when"]
     check("a. when(): reached / a range at a pace (Nov 27 - Dec 3 for $1,000 at $200 a day from Fri Nov 20: 5 to 9 trading days) / the plan's date when the pace is negative / no pace",
           w[0]["text"] == "reached" and w[1]["text"] == "about Nov 27 - Dec 3 at today's pace (estimate)" and w[2]["text"] == "plan: about Dec 10 (estimate)"
@@ -200,12 +203,19 @@ def test_page():
             p.locator('#goals .gl-tile[data-key="atlas"]').click()
             p.wait_for_timeout(300)
             d = p.evaluate(SNAP)
-            check("c. tap ATLAS: its rules open below (the $1,000 ask at $27,100, $800 to you, the $250 minimum at $26,350, the date estimate), aria-expanded",
-                  "Ask $1,000 at $27,100" in d["detail"] and "$800 to you" in d["detail"] and "$26,350: $949 more" in d["detail"] and "(estimate)" in d["detail"]
+            check("c. tap ATLAS: its rules open below (MFFU's $401, the $1,000 ask at $2,100, $800 to you, the $250 minimum at $1,350, the date estimate), aria-expanded",
+                  "Ask $1,000 at $2,100" in d["detail"] and "$800 to you" in d["detail"] and "$1,350: $949 more" in d["detail"] and "Dec 18-31 (estimate" in d["detail"]
+                  and "its profit: $401" in d["detail"]
                   and {x["key"]: x for x in d["tiles"]}["atlas"]["exp"] == "true", d["detail"])
             p.locator('#goals .gl-tile[data-key="atlas"]').click()
             p.wait_for_timeout(200)
             check("c. tap it again: closed", p.evaluate(SNAP)["detail"] == "")
+            p.evaluate("document.querySelector('#vaultCard').scrollIntoView()")
+            p.wait_for_function("window.OLYMPUS_NQFX && document.querySelector('#vault').getAttribute('aria-label')", timeout=30000)
+            v = p.evaluate("() => ({ hidden: document.querySelector('#vaultCard').hidden, pill: document.querySelector('#vaultPill').textContent, note: document.querySelector('#vaultNote').textContent, aria: document.querySelector('#vault').getAttribute('aria-label') || '', h: document.querySelector('#vault').getBoundingClientRect().height, kids: document.querySelector('#vault').children.length })")
+            check("c. the ATLAS payout vault (DESIGN's NQFX.vault): 19%, MFFU's $401 of $2,100, $800 to you, the study's date; a fixed 4:3 box drawn at once",
+                  not v["hidden"] and v["pill"] == "19%" and "MFFU shows $401 of profit" in v["note"] and "$1,699 to go" in v["note"] and "Dec 18-31" in v["note"]
+                  and "$401 of $2,100" in v["aria"] and 200 <= v["h"] <= 341 and v["kids"] >= 1, v)
             p.evaluate("document.querySelector('#numCard').scrollIntoView()")
             p.wait_for_timeout(1500)
             n = p.evaluate(SNAP)
