@@ -39,20 +39,26 @@ BUDGETS = os.path.join(ROOT, "tools", "perf_budgets.json")
 EXTRA_PAGES = ["jarvis", "gate", "hub"]
 IMG = (".png", ".jpg", ".jpeg", ".webp", ".avif", ".gif", ".svg", ".ico")
 FONT = (".woff2", ".woff", ".ttf", ".otf")
+# files the publish build writes (tools/build_web_dashboard.py, gh_publish): a 404 on them in the repo tree is expected, not an app error
+BUILT = re.compile(r"/(home|data|kalshi|live|status)\.json|/money/[^/?]+\.json|/me/me\.json|/hub/learned\.json|/push_relay\.json|/charts/")
 AGE_RX = re.compile(r"(\b\d+\s*(?:s|sec|min|m|h|hr|hour|hours|d|day|days)\s+ago\b|\bas of\b|\bupdated\b|\blast (?:data|update|seen|report)|\bjust now\b|\bstale\b|\bold\b)", re.I)
 
 MORE = r"""
 (() => {
-  window.__ps = { lt: [], cls: 0, err: [] };
+  window.__ps = { lt: [], cls: 0, err: [], shifts: [] };
+  const who = (n) => { try { if (!n || !n.tagName) return '?'; let s = n.tagName.toLowerCase() + (n.id ? '#' + n.id : '') +
+    (n.className && typeof n.className === 'string' ? '.' + n.className.trim().split(/\s+/).slice(0, 2).join('.') : '');
+    const p = n.parentElement; return (p && p.tagName ? (p.id ? '#' + p.id : p.tagName.toLowerCase()) + ' > ' : '') + s; } catch (e) { return '?'; } };
   try { new PerformanceObserver((l) => { for (const e of l.getEntries()) window.__ps.lt.push([e.startTime, e.duration]); })
     .observe({ type: 'longtask', buffered: true }); } catch (e) {}
-  try { new PerformanceObserver((l) => { for (const e of l.getEntries()) if (!e.hadRecentInput) window.__ps.cls += e.value; })
+  try { new PerformanceObserver((l) => { for (const e of l.getEntries()) if (!e.hadRecentInput) { window.__ps.cls += e.value;
+      if (e.value >= 0.02) window.__ps.shifts.push([Math.round(e.startTime), +e.value.toFixed(3), (e.sources || []).slice(0, 2).map((x) => who(x.node)).join(' + ')]); } })
     .observe({ type: 'layout-shift', buffered: true }); } catch (e) {}
 })();
 """
 COLLECT2 = r"""
-(() => ({ lt: (window.__ps || {}).lt || [], cls: (window.__ps || {}).cls || 0,
-  sideways: Math.max(document.documentElement.scrollWidth, document.body ? document.body.scrollWidth : 0) > window.innerWidth + 1,
+(() => ({ lt: (window.__ps || {}).lt || [], cls: (window.__ps || {}).cls || 0, shifts: ((window.__ps || {}).shifts || []).sort((a, b) => b[1] - a[1]).slice(0, 4),
+  sideways: Math.max(document.documentElement.scrollWidth, document.body ? document.body.scrollWidth : 0) > Math.min(window.innerWidth, screen.width || 1e9) + 1,
   sw: !!(navigator.serviceWorker && navigator.serviceWorker.controller) }))()
 """
 
@@ -91,7 +97,7 @@ def row_of(raw: dict, raw2: dict, errors: list, site_base: str = "") -> dict:
     r.update(long_tasks(raw2.get("lt")))
     r.update({"img_kb": round(by.get("img", 0) / 1024, 1), "font_kb": round(by.get("font", 0) / 1024, 1), "css_kb": round(by.get("css", 0) / 1024, 1),
               "data_kb": round(by.get("data", 0) / 1024, 1), "cls": round(float(raw2.get("cls") or 0), 3), "sideways": bool(raw2.get("sideways")),
-              "errors": len(errors), "error_list": errors[:5],
+              "errors": len(errors), "error_list": errors[:5], "shifts": raw2.get("shifts") or [],
               "top3": [f"{x.get('n', '').replace(site_base, '').split('?')[0]} {int(x.get('t') or 0) // 1024} KB" for x in top]})
     return r
 
@@ -169,7 +175,17 @@ def cold(br, url, cpu, net, base):
     pg = ctx.new_page()
     errs = []
     pg.on("pageerror", lambda e: errs.append("page: " + str(e).splitlines()[0][:160]))
-    pg.on("console", lambda m: errs.append("console: " + m.text[:160]) if m.type == "error" else None)
+    built = []
+
+    def on_console(m):
+        if m.type != "error":
+            return
+        u = (m.location or {}).get("url", "") if isinstance(m.location, dict) else ""
+        if "Failed to load resource" in m.text and BUILT.search(u or ""):
+            built.append(u.replace(base, "").split("?")[0])
+            return
+        errs.append("console: " + m.text[:120] + (f" [{u.replace(base, '').split('?')[0]}]" if u else ""))
+    pg.on("console", on_console)
     try:
         cdp = ctx.new_cdp_session(pg)
         cdp.send("Network.enable")
@@ -180,7 +196,9 @@ def cold(br, url, cpu, net, base):
             cdp.send("Network.emulateNetworkConditions", PB.NET[net])
         pg.goto(url, wait_until="load", timeout=120000)
         pg.wait_for_timeout(PB.SETTLE_MS)
-        return row_of(pg.evaluate(PB.COLLECT), pg.evaluate(COLLECT2), errs, base)
+        r = row_of(pg.evaluate(PB.COLLECT), pg.evaluate(COLLECT2), errs, base)
+        r["built_404"] = sorted(set(built))                 # built at publish time: not counted as errors
+        return r
     except Exception as e:  # noqa: BLE001
         return {"error": str(e).splitlines()[0][:200]}
     finally:
