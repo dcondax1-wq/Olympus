@@ -41,7 +41,7 @@
         { label: 'Payout plan', greek: 'Hera', href: 'hera/', app: 'hera', words: 'payout payouts plan 12 month what to buy next roadmap' },
         { label: 'Fleet plan', greek: 'Business · Fleet Plan', href: 'business/plan.html', app: '', words: 'fleet plan accounts 6 months buy rapid builder monte carlo' },
         { label: 'Household', greek: 'Oikos', href: 'oikos/', app: 'oikos', words: 'household bills budget leaks buckets home spending' },
-        { label: 'More work', greek: 'Business · More Work', href: 'business/work.html', app: '', words: 'work jobs side work freelance agency websites income' },
+        { label: 'Websites: your web business HQ', greek: 'Agency', href: 'agency/', app: 'agency', words: 'website websites web 3d site sites marketing leads audit proposal proposals clients agency design build retainer care plan more work side income' },   // day-web-hub 2026-11-20: replaces 'More work' (business/work.html still in Business), the door stays at 8
       ],
       ids: ['business', 'widget', 'ledger', 'hera', 'plutus', 'chrysos', 'oikos', 'agency', 'mercury', 'mint', 'mintcity', 'harmonia', 'hermes', 'argo', 'arbiter'] },
     { id: 'kalshi', title: 'Kalshi', line: 'The Kalshi bot and its edges. Paused: paper only, no real bets', colour: '#b5a642',

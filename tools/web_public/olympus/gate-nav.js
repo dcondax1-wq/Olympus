@@ -195,7 +195,7 @@
     if (w.OLYMPUS_GATE && w.OLYMPUS_GATE.hubs) { S.cat = w.OLYMPUS_GATE; if (then) then(); return; }
     if (S.catTried) { if (then) then(); return; }
     S.catTried = true;
-    var s = el('script'); s.src = root + 'olympus/gate-catalog.js?v=nv7'; s.async = true;
+    var s = el('script'); s.src = root + 'olympus/gate-catalog.js?v=nv8'; s.async = true;
     s.onload = function () { S.cat = w.OLYMPUS_GATE || null; if (then) then(); else refresh(); };
     s.onerror = function () {
       var s2 = el('script'); s2.src = root + 'olympus/apps-list.js'; s2.async = true;

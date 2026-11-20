@@ -48,7 +48,7 @@ def catalog():
     if not exe:
         return None
     r = subprocess.run([exe, "-e", "process.stdout.write(JSON.stringify((() => { const G = require(process.argv[1]); return { apps: G.apps, districts: G.districts, start: G.start,"
-                        " q: Object.fromEntries(['money', 'drawdown', 'kalshi', 'journal', 'news', 'discount', 'chatgpt', 'zzzz', '', 'risk stop'].map((q) => [q, G.find(q, 8).map((a) => a.id)])), all: Object.fromEntries(['risk', 'theme', 'payout', 'micros', 'health', 'all apps', 'zzzz'].map((q) => { const r = G.findAll(q); return [q, { hubs: r.hubs.map((h) => h.id), actions: r.actions.map((x) => x.id), apps: r.apps.map((a) => a.id), tabs: r.tabs.map((t) => t.id) }]; })), az: G.az().map((a) => a.id), quick: G.quick, actions: G.actions }; })()))", CAT],
+                        " q: Object.fromEntries(['money', 'drawdown', 'kalshi', 'journal', 'news', 'discount', 'chatgpt', 'zzzz', '', 'risk stop'].map((q) => [q, G.find(q, 8).map((a) => a.id)])), all: Object.fromEntries(['risk', 'theme', 'payout', 'micros', 'health', 'all apps', 'zzzz'].map((q) => { const r = G.findAll(q); return [q, { hubs: r.hubs.map((h) => h.id), actions: r.actions.map((x) => x.id), apps: r.apps.map((a) => a.id), tabs: r.tabs.map((t) => t.id) }]; })), az: G.az().map((a) => a.id), retired: G.RETIRED || [], quick: G.quick, actions: G.actions }; })()))", CAT],
                        capture_output=True, text=True, timeout=60)
     return json.loads(r.stdout) if r.returncode == 0 else {"_error": r.stderr[-500:]}
 
@@ -121,7 +121,7 @@ def test_static():
           css.count("min-height: 44px") >= 2 and "safe-area-inset" in css and "176px" in css and "prefers-reduced-motion: reduce" in css and 'data-oly-lite="1"' in css and "overflow-x: hidden" in css)
     # night-gate: gate-nav.js keeps its catalog URL ?v=nv2 (bumping it re-versions agora-ui.js in ~50 apps); the site worker bump refreshes the catalog on the phone
     check("a. gate-nav: one classic script, nothing when framed (inside Jarvis), the Home link + breadcrumb + 'Go to' (44 px), the catalog from its own folder (apps-list.js as a fallback)",
-          "if (framed) return;" in nav and "'Go to'" in nav and "min-height:44px" in nav and "olympus/gate-catalog.js?v=nv7" in nav and "olympus/apps-list.js" in nav and "aria-modal" in nav)
+          "if (framed) return;" in nav and "'Go to'" in nav and "min-height:44px" in nav and "olympus/gate-catalog.js?v=nv8" in nav and "olympus/apps-list.js" in nav and "aria-modal" in nav)
     tagged = {}
     for app in TEN:
         h = AK.read(os.path.join(AK.WEB, app, "index.html"))
@@ -173,7 +173,9 @@ def test_catalog():
           "bots/risk" in A["risk"]["tabs"] and "aegis" in A["risk"]["apps"] and A["theme"]["actions"][:1] == ["act-look"] and A["payout"]["actions"][:1] == ["act-payout"] and A["payout"]["apps"][0] == "ledger"
           and A["micros"]["actions"][:1] == ["act-micros"] and "pnyx" in A["micros"]["apps"] and A["health"]["hubs"] == ["me"] and A["all apps"]["actions"][:1] == ["act-az"]
           and not any(A["zzzz"].values()), A)
-    check(f"b. All apps A to Z holds every app once ({len(apps)}), sorted by plain label, the labs last", sorted(C["az"]) == sorted(ids) and len(C["az"]) == len(ids) and set(C["az"][-len(LABS | {'gallery'}):]) == LABS | {"gallery"}, C["az"][:5])
+    live = [i for i in ids if i not in C["retired"]]   # olympus2 (owner 2026-11-20): retired apps leave A to Z (their URLs still open)
+    check(f"b. All apps A to Z holds every live app once ({len(live)} of {len(apps)}; {len(C['retired'])} retired), sorted by plain label, the labs last",
+          sorted(C["az"]) == sorted(live) and len(C["az"]) == len(live) and set(C["az"][-len(LABS):]) == LABS, C["az"][:5])
     bad_act = [x["id"] for x in C["actions"] if not os.path.isfile(os.path.join(AK.WEB, x["path"].split("?")[0].split("#")[0]))]
     check("b. every plain action opens a page of the site (read only: none trades or changes a bot); Your six are catalog apps", not bad_act and all(k[0] in ids for k in C["quick"]) and len(C["quick"]) == 6, bad_act)
 
@@ -204,7 +206,7 @@ def nav_checks(p, origin):
     p.wait_for_timeout(300)
     az = p.evaluate("() => ({ open: !document.querySelector('#azSheet').hidden, rows: document.querySelectorAll('#azList a.g-row').length, letters: [...document.querySelectorAll('#azList .g-azl')].map((h) => h.textContent),"
                     " first: (document.querySelector('#azList a.g-row') || {}).dataset, h: Math.round(document.querySelector('#azList a.g-row').getBoundingClientRect().height) })")
-    RET = {"delphi", "stoa", "hestia", "plutus", "argo", "mint", "harmonia", "kairos", "chronos", "lyceum", "polis", "atlascity", "gallery", "mintcity", "nike",
+    RET = {"datacity", "kalshicity", "delphi", "stoa", "hestia", "plutus", "argo", "mint", "harmonia", "kairos", "chronos", "lyceum", "polis", "atlascity", "gallery", "mintcity", "nike",
            "arena", "mind", "symposium", "herald", "ergasterion", "observatory", "pheme", "bridge", "arbiter", "hermes", "hephaestus"}
     n_apps = len([a for a in cat_apps() if a["id"] not in RET])   # every catalog app but the retired ones (olympus2), counted from the catalog
     check(f"c. the A-Z button opens All apps A to Z: every app ({n_apps}) in big rows (>= 56 px) under a letter each, the labs at the end under Workshop",
@@ -215,7 +217,7 @@ def nav_checks(p, origin):
     p.fill("#azQ", "kals")
     p.wait_for_timeout(150)
     f = p.evaluate("() => [...document.querySelectorAll('#azList a.g-row')].map((a) => a.dataset.app)")
-    check("c. the filter box narrows the A to Z list ('kals' -> the few Kalshi apps: the bot, the desk, Kalshi City ...)", {"kalshi", "kalshicity", "dionysus"} <= set(f) and len(f) <= 6, f)
+    check("c. the filter box narrows the A to Z list ('kals' -> the few Kalshi apps: the bot, the desk ...; Kalshi City retired)", {"kalshi", "dionysus"} <= set(f) and "kalshicity" not in f and len(f) <= 6, f)
     p.click("#azList button.g-star[data-pin='kalshi']")
     p.keyboard.press("Escape")
     p.wait_for_timeout(200)

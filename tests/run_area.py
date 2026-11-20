@@ -100,6 +100,7 @@ AREAS["money"].append("business_taxes")   # day-taxes 2026-11-20: Taxes page + k
 AREAS["board"].append("owner_manual")  # day-manual 2026-11-20: hub/manual.html + docs/OWNER_MANUAL.md (browser part under the lock); its own line
 AREAS["olympus"].append("nav_search")     # day-manual NAV 2026-11-20: 67 plain phrasings -> the right place first (olympus/gate-catalog.js findAll); node only
 AREAS["board"].append("nav_pages")       # day-manual NAV 2026-11-20: hub help/steps/manual/zeus/doors: Home first, the OLYMPUS look, 390 px (browser part under the lock)
+AREAS["agency"].append("web_hub")         # day-web-hub 2026-11-20: the Website Business HQ on agency/index.html (browser part under the lock)
 AREAS["pc"].append("land_branch")       # 2026-11-20: the lead's landing tool (tools/land_branch.py: preview, merge, known conflicts, fix-ups, plan); its own line
 AREAS["olympus"].append("node_suites")    # day-quality 2026-11-20: the 29 tests/*.mjs no Python suite ran (tests/test_node_suites.py), by part
 AREAS["cities"].append("node_suites")
