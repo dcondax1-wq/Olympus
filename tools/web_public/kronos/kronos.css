@@ -59,7 +59,7 @@ details > summary { min-height: 44px; display: flex; align-items: center; cursor
 .band .range { position: absolute; top: 5px; height: 12px; border-radius: 99px; background: var(--ag-bronze); opacity: .8; }
 .band .mk { position: absolute; top: 0; width: 3px; height: 22px; margin-left: -1px; border-radius: 2px; background: var(--ag-text); } .band .mk.zero { background: var(--ag-muted); } .band .mk.p20 { background: var(--ag-terra); } .band .mk.p50 { background: var(--ag-gold); }
 .brow2 { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; } .brow2 b { font-size: 14px; text-align: right; }
-.ag-bar > i { transition: width .45s ease-out; }
+.ag-bar > i { transition: width var(--ag-d3, 340ms) var(--ag-ease, ease-out); }
 @media (max-width: 400px) { .brow { grid-template-columns: 64px minmax(0, 1fr) auto; } }
 @media (prefers-reduced-motion: reduce) { .ag-bar > i { transition: none; } }
 html[data-oly-lite="1"] .ag-card { box-shadow: none; }

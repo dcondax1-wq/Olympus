@@ -158,9 +158,27 @@ def part_d():
           and (first_open in ln[0] if first_open else N_OPEN == 0), ln)
 
 
+# the browser part serves its OWN decisions.json: the real cards, every one set open (2026-11-20 the owner answered all of them, and a page
+# with 0 open cards hides the box, so a check pinned to the live file had nothing to tap). E_OPEN = the cards the page must show.
+E_DOC = json.loads(open(os.path.join(BIZ, "decisions.json"), encoding="utf-8").read())
+E_DOC["items"] = [dict(d, status="open") for d in E_DOC.get("items", [])]
+E_OPEN = len(E_DOC["items"])
+
+
 class Site(http.server.SimpleHTTPRequestHandler):
     """The public site at /, the PC link's copy at /site/ (same files), and POST /inbox/board answered like the PC."""
     posts: list = []
+
+    def do_GET(self):
+        if self.path.split("?")[0].endswith("/business/decisions.json"):
+            out = json.dumps(E_DOC).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(out)))
+            self.end_headers()
+            self.wfile.write(out)
+            return
+        super().do_GET()
 
     def log_message(self, *a):
         pass
@@ -208,7 +226,7 @@ def part_e():
               return { n: its.length, btn, h, hidden: document.getElementById('decide').hidden, imp: its[0].querySelector('.dc-imp').textContent,
                        why: its[0].querySelector('.dc-why').textContent, wide: document.documentElement.scrollWidth <= window.innerWidth + 1 }; })()""")
             check("e. ZEUS on the PC link (390 px): 7 decisions, each Yes / No / Later >= 44 px, why + $ impact, no sideways scroll",
-                  r["n"] == N_OPEN and all(b == ["Yes", "No", "Later"] for b in r["btn"]) and r["h"] >= 44 and not r["hidden"] and r["imp"].startswith("$: ")
+                  r["n"] == E_OPEN and all(b == ["Yes", "No", "Later"] for b in r["btn"]) and r["h"] >= 44 and not r["hidden"] and r["imp"].startswith("$: ")
                   and r["why"].startswith("Why: ") and r["wide"], r)
             p.click("#decide .dc-item[data-id='payout-ping-1000'] button[data-ans='yes']")
             p.wait_for_function("document.querySelector(\"#decide .dc-item[data-id='payout-ping-1000'] .dc-sent\")")
@@ -227,7 +245,7 @@ def part_e():
                        off: its.map((i) => (i.querySelector('.dc-off b') || {}).textContent), q: its.length ? its[0].querySelector('.dc-q').textContent : '',
                        wide: document.documentElement.scrollWidth <= window.innerWidth + 1, wait: document.getElementById('waiting').textContent }; })()""")
             check("e. the Board on the public site: 'Open on your PC link to answer' + the exact question, no buttons, nothing posted, no sideways scroll",
-                  r2["n"] == N_OPEN and r2["btns"] == 0 and all(x == "Open on your PC link to answer" for x in r2["off"]) and r2["q"].startswith("Funded 25K: ask for the full $1,000")
+                  r2["n"] == E_OPEN and r2["btns"] == 0 and all(x == "Open on your PC link to answer" for x in r2["off"]) and r2["q"].startswith("Funded 25K: ask for the full $1,000")
                   and len(Site.posts) == 1 and r2["wide"] and "ATLAS trades on" not in r2["wait"], r2)
             check("e. no page errors", not errs, errs)
             br.close()

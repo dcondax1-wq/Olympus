@@ -654,3 +654,11 @@ html[data-oly-style] :is(#page .card, .mn-card, .sd-card, .zh-hero, .su-sun, .zn
 html[data-oly-style] :is(#page h1, #page h2, #page h3, .pl-hi > b, .zn-nq-t, header.top h1) { font-weight: var(--oly-th-title-weight) !important; text-transform: var(--oly-th-title-case); letter-spacing: var(--oly-th-title-track) !important;
   font-style: var(--oly-th-title-style); }
 html[data-oly-style] :is(.btn.primary, .mg-btn.primary, .zn-nq-a) { background: var(--oly-th-btn-bg) !important; color: var(--oly-th-btn-fg) !important; border: var(--oly-th-btn-border) !important; box-shadow: none !important; }
+/* day-arenas DESIGN 2026-11-20 (layout shift 0.15 at 4 s on Home): the "PC silent" banner has the SAME one-row shape as the calm strip
+   (title + link side by side), so when it replaces the strip after the PC's grace time nothing below it moves. Its title says the age in the
+   warn / bad colour; the long sentence stays for VoiceOver (visually hidden) and on the NQ page. */
+.zn-nq[data-level="warn"], .zn-nq[data-level="bad"] { grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 8px 8px 8px 14px; }
+.zn-nq[data-level="warn"] .zn-nq-t, .zn-nq[data-level="bad"] .zn-nq-t { font-size: 15.5px; }
+.zn-nq[data-level="warn"] .zn-nq-t { color: var(--oly-th-warn, #e0b060); } .zn-nq[data-level="bad"] .zn-nq-t { color: var(--oly-th-r10, #e08a6b); }
+.zn-nq[data-level="warn"] .zn-nq-x, .zn-nq[data-level="bad"] .zn-nq-x { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.zn-nq[data-level="warn"] .zn-nq-a, .zn-nq[data-level="bad"] .zn-nq-a { padding: 0 14px; font-size: 14px; }

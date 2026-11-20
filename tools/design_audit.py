@@ -38,7 +38,9 @@ PROBE = r"""() => {
   const vis = (e) => { const r = e.getBoundingClientRect(); const cs = getComputedStyle(e); return r.width > 0 && r.height > 0 && cs.visibility !== 'hidden' && cs.display !== 'none' && +cs.opacity > 0.05; };
   const taps = [...document.querySelectorAll('a[href], button, [role=button], [role=tab], input:not([type=hidden]), select, summary')].filter(vis);
   // a switch / checkbox inside a row label that is >= 44 px tall: the whole row is the tap target (iOS Settings style)
-  out.small = taps.filter((e) => { const r = e.getBoundingClientRect(); const lab = e.closest('label'); return r.height < 43.5 && !e.closest('p, li > span, .pu-note') && !(lab && lab.getBoundingClientRect().height >= 43.5); })
+  // an invisible ring (::before / ::after, position absolute, a negative inset) widens the tap: count it (Zenith's header keys)
+  const ring = (e) => Math.max(0, ...['::before', '::after'].map((p) => { const c = getComputedStyle(e, p); return c.content !== 'none' && c.position === 'absolute' && parseFloat(c.top) < 0 ? -2 * parseFloat(c.top) : 0; }));
+  out.small = taps.filter((e) => { const r = e.getBoundingClientRect(); const lab = e.closest('label'); return r.height + ring(e) < 43.5 && !e.closest('p, li > span, .pu-note') && !(lab && lab.getBoundingClientRect().height >= 43.5); })
     .slice(0, 400).map((e) => (e.id ? '#' + e.id : (e.className && typeof e.className === 'string' ? '.' + e.className.split(' ')[0] : e.tagName.toLowerCase())) + ':' + Math.round(e.getBoundingClientRect().height));
   out.smallN = out.small.length; out.small = [...new Set(out.small)].slice(0, 8);
   const texts = []; const tw = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
