@@ -6,6 +6,7 @@
 // Prints one JSON line: {"steps": [[name, ok, info]], "errors": [...]}.
 const http = require('http'), fs = require('fs'), path = require('path');
 const { chromium } = require('playwright');
+const { PAGE_BG, nightBlack } = require('./page_bg.cjs');   // the effective page background (OLYMPUS NIGHT paints <html>)
 const [dir, fxPath] = [path.resolve(process.argv[2]), process.argv[3]];
 const SHOTS = process.argv.indexOf('--shots') > 0 ? process.argv[process.argv.indexOf('--shots') + 1] : '';
 const FX = fs.readFileSync(fxPath, 'utf8');
@@ -245,10 +246,11 @@ const card = (st, k8, u) => ({ kind: 'kalshi_live_pub', v: 1, st, net: 0, f: 0, 
       const cards = ['k8top', 'k8d', 'k8s', 'kgo'].map((id) => getComputedStyle(document.getElementById(id)));
       const isGold = (c) => (String(c).match(/\d+(\.\d+)?/g) || []).reduce((acc, v, k, a) => acc || (k % 4 === 0 && +a[k] > 180 && +a[k + 1] >= 130 && +a[k + 1] <= 200 && +a[k + 2] < 130), false); const gold = cards.some((cs) => isGold(cs.borderTopColor) || isGold(cs.color) || isGold(cs.backgroundColor));
       return { on: window.KALSHI_FX.on, after: h.getBoundingClientRect().top >= top.getBoundingClientRect().bottom - 1, h: Math.round(h.getBoundingClientRect().height), px, gold,
-        bg: getComputedStyle(document.body).backgroundColor, role: h.getAttribute('role'), label: h.getAttribute('aria-label') }; });
+        role: h.getAttribute('role'), label: h.getAttribute('aria-label') }; });
+    fx.bg = await p.evaluate(PAGE_BG);
     step('fx1. the orb hero sits right AFTER the K8 today card (140 px, kept from the first paint), runs after load (KALSHI_FX.on), draws (lit pixels), role img + a label',
       fx.on && fx.after && fx.h === 140 && fx.px > 200 && fx.role === 'img' && /K8/.test(fx.label), fx);
-    step('fx2. OLYMPUS NIGHT: a black page, no gold on the K8 cards (borders / text / backgrounds; gold only as small accents)', !fx.gold && fx.bg.indexOf('rgb(0, 0, 0)') === 0, fx);
+    step('fx2. OLYMPUS NIGHT: a black page, no gold on the K8 cards (borders / text / backgrounds; gold only as small accents)', !fx.gold && nightBlack(fx.bg), fx);
     await p.waitForTimeout(1600);
     const nq = await p.evaluate(() => ({ kit: !!window.OLYMPUS_NQFX, nq: !!(window.KALSHI_FX && window.KALSHI_FX.nq), seen: sessionStorage.getItem('kalshi.fx.seen'), pnl: document.getElementById('k8top-pnl').textContent }));
     step('fx3. the effects kit (olympus/nqfx.js) arrives after the hero; today\'s gold DOWN win gets its spark once (remembered for the visit); the $ line ends right after the roll',

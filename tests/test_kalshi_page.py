@@ -60,6 +60,8 @@ from zoneinfo import ZoneInfo
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 from engine import kalshi_publish as kp  # noqa: E402
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from tests.page_bg import PAGE_BG_JS, night_black  # noqa: E402  (the effective page background: OLYMPUS NIGHT paints <html>)
 
 KS = os.path.join(ROOT, "tools", "web_public", "kalshi")
 JV_ICON = os.path.join(ROOT, "tools", "web_public", "jarvis", "icon-192.png")
@@ -921,9 +923,9 @@ def run_browser(url, tmp):
         # ---- h. its own theme (owner 2026-11-02 "everything its own dashboard"): Jarvis's theme never changes it
         open_("ok", sample(time.time()))
         acc = lambda: p.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--c').trim()")  # noqa: E731
-        bg = lambda: p.evaluate("getComputedStyle(document.body).backgroundColor")  # noqa: E731
+        bg = lambda: p.evaluate(PAGE_BG_JS)  # noqa: E731
         check("h. the Kalshi theme (OLYMPUS NIGHT violet #9d59ee) on its black background", p.get_attribute("html", "data-theme") == "kalshi"
-              and acc() == "#9d59ee" and bg() == "rgb(0, 0, 0)", (acc(), bg()))
+              and acc() == "#9d59ee" and night_black(bg()), (acc(), bg()))
         for val in ("reactor", '"reactor-ice"', "eclipse"):
             p.evaluate(f"localStorage.setItem('jtheme', {json.dumps(val)})")
             p.reload()
@@ -1253,9 +1255,9 @@ def part_k(br, url, tmp):
     SITE["mode"] = "down"
     q.reload(wait_until="commit")
     retry = until("!!document.querySelector('button') && /Retry/.test(document.body.innerText)", 10000)
-    bg = q.evaluate("getComputedStyle(document.body).backgroundColor") if retry else ""
+    bg = q.evaluate(PAGE_BG_JS) if retry else ""
     check("k. offline with no saved copy: a small dark page with Retry, never a browser error or a white screen",
-          retry and "can’t reach the internet" in q.inner_text("body") and bg == "rgb(0, 0, 0)", (retry, bg))
+          retry and "can’t reach the internet" in q.inner_text("body") and night_black(bg), (retry, bg))
     shot(q, "k2_retry")
     SITE["mode"] = "ok"
     q.click("text=Retry")

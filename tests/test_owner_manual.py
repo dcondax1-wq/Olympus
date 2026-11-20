@@ -19,6 +19,8 @@ import os
 import re
 import sys
 import threading
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from tests.page_bg import PAGE_BG_JS, night_black  # noqa: E402  (the effective page background: OLYMPUS NIGHT paints <html>)
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB = os.path.join(ROOT, "tools", "web_public")
@@ -243,7 +245,7 @@ def part_c(shots: bool):
                 pg.reload()
                 pg.wait_for_function("window.OWNER_MANUAL && window.OWNER_MANUAL.ready", timeout=8000)
                 ok = (pg.text_content("h1") or "").strip() == "Owner manual" and pg.eval_on_selector_all(".mn-sos details", "e => e.length") == 10 \
-                    and "20, 17, 14" in pg.evaluate("getComputedStyle(document.body).backgroundColor")
+                    and (night_black(bg := pg.evaluate(PAGE_BG_JS)) or "20, 17, 14" in bg)   # the saved look: OLYMPUS NIGHT (the default) or AGORA
             except Exception as e:  # noqa: BLE001
                 ok = str(e)[:200]
             check("c. offline: the page, its css and js load from the saved copy (manual-sw.js)", ok is True, ok)

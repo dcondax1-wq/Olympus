@@ -159,7 +159,11 @@ def part_b(tmp):
         print("[SKIP] b. node render: node not installed")
         return
     from tests import test_space_ui as SU
-    now = int(time.time())
+    from datetime import datetime as _dt
+    from zoneinfo import ZoneInfo as _Z
+    # a fixed weekday mid-session (Wed 2026-11-18 11:00 ET): the bot lines ('Bot stopped', 'Bot quiet') read the market clock, and on a
+    # real Friday evening / weekend they rightly say 'off for the weekend' (QUALITY 2026-11-20)
+    now = int(_dt(2026, 11, 18, 11, 0, tzinfo=_Z("America/New_York")).timestamp())
     b2, b3 = SU.boards(now)
     b2["lit"]["badge"], b2["atlas"]["badge"] = "LIVE", "SIM"
     b3["lit"]["badge"], b3["atlas"]["badge"] = "LIVE", "SIM"
