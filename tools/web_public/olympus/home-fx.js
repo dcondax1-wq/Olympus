@@ -28,6 +28,8 @@
   var LITE = FXL === 'low';
   function isLight() { return R.getAttribute('data-oly-scheme') === 'light'; }
   var PAGE = R.getAttribute('data-oly-page') || '';
+  /* automation (navigator.webdriver) reads the Right now numbers at once: no count-up there unless ?hfx=1 (the warp's rule) */
+  var AUTO = !!(W.navigator && W.navigator.webdriver) && !/[?&]hfx=1/.test(W.location.search || '');
   R.classList.add('hfx');
   if (reduced() || R.hasAttribute('data-oly-warp')) R.classList.remove('hfx-intro');   // the warp has its own arrival
   /* hfx-intro stays on: removing it later restyles the whole page (a 70 ms task on a slow phone); the stagger only targets fixed sections */
@@ -117,7 +119,7 @@
       g.globalCompositeOperation = 'source-over';
       if (T.c) {                              // the temple rises from its steps, then sits a little farther away than the page (parallax)
         var tw = T.w, th = T.h, x0 = w - tw * 0.94 - px * 7, y0 = h * 0.035 + s * 0.42 - py * 4, rh = th * tt;
-        if (rh > 1) { g.globalAlpha = (L ? 0.42 : 0.4) * (0.4 + 0.6 * tt); g.drawImage(T.c, 0, (th - rh) * dpr, tw * dpr, rh * dpr, x0, y0 + th - rh, tw, rh); }
+        if (rh > 1) { g.globalAlpha = (L ? 0.4 : 0.34) * (0.4 + 0.6 * tt); g.drawImage(T.c, 0, (th - rh) * dpr, tw * dpr, rh * dpr, x0, y0 + th - rh, tw, rh); }
       }
       g.globalCompositeOperation = L ? 'source-over' : 'lighter';
       for (var k = 0; k < motes.length; k++) {
@@ -258,7 +260,7 @@
       var key = (cell && cell.getAttribute('data-go') || '') + '|' + (lab ? lab.textContent : '') + '|' + (sub ? sub.textContent : '');
       var to = parseFloat(m[2].replace(/,/g, '')) * (m[1] === '-' || m[1] === '−' ? -1 : 1), from = key in seen ? seen[key] : 0;
       seen[key] = to;
-      if (from === to || reduced() || Math.abs(to) < 1) continue;
+      if (from === to || reduced() || AUTO || Math.abs(to) < 1) continue;
       var sign = m[1] === '+' ? '+' : '';
       tweens.push({ el: el, from: Math.abs(from), to: Math.abs(to), sign: m[1] === '+' ? '+' : m[1] ? m[1] : sign, final: txt, ms: from === 0 ? 900 : 600, t0: 0 });
       el.textContent = fmt(m[1], Math.abs(from));
