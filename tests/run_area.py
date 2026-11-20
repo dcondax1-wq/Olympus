@@ -3,7 +3,6 @@
     python tests/run_area.py jarvis|olympus|zenith|kalshi|cities|nq|pc|all [options]
     python tests/run_area.py --list                    the areas and their suites
     python tests/run_area.py jarvis --only hub,home    only suites whose name contains one of these
-    python tests/run_area.py pc --skip a,b             leave these suites out (default: win_scripts; --skip '' runs it)
     options: --budget SEC      per-suite time budget (default 900; the slow browser suites get 3x); over it the suite's OWN process group
                                is stopped and the row says TIMEOUT
              --gate N          wait until the 1-minute load average is below N before each suite (default 2 x cpus; 0 = no gate)
@@ -81,6 +80,9 @@ AREAS["jarvis"].append("fit_edge")
 AREAS["pc"].append("trade_alerts")    # night-tradealerts 2026-11-20: entry + exit alerts on every account route (tests/test_trade_alerts.py); its own line
 AREAS["board"].append("phone_fit")    # night-tradealerts 2026-11-20: ZEUS / MFFU / Trading / Board at 390 + 430 px with the iPhone safe areas (browser); its own line
 AREAS["board"].append("steps_page")   # night-ownersteps 2026-11-20: hub/steps.html "Your steps" (browser part under the lock); its own line
+AREAS["olympus"].append("home_fx")          # night-effects 2026-11-20: the living hero on the Gate + Doors (tests/test_home_fx.py)
+AREAS["nq"].append("nqdeep")                # night-nqdash2 2026-11-20: Trading deep dive / MFFU payout ranges / NQ news week
+AREAS["money"].append("business_taxes")   # day-taxes 2026-11-20: Taxes page + keep-the-most waterfall (tools/money/keep_most.py)
 # suites too long for one budget run BY PARTS, each its own row and budget (night team D 2026-11-16: the whole kit walk, every app +
 # power + tiers + more in one browser, is the longest browser suite); a part is "<suite>:<label>" = python -m tests.test_<suite> <args>
 PARTS = {"olympus_kit": [("a", ["datacity", "mind", "tree"]), ("b", ["oracle", "odeon", "fates"]), ("c", ["hermes", "prometheus", "tyche"]),
@@ -185,7 +187,6 @@ def main(argv=None) -> int:
     ap.add_argument("area", nargs="?", choices=sorted(list(AREAS) + ["all"]))
     ap.add_argument("--list", action="store_true")
     ap.add_argument("--only", default="")
-    ap.add_argument("--skip", default="win_scripts", help="suites to leave out, comma list of exact names (default win_scripts: never in a cloud run)")
     ap.add_argument("--budget", type=float, default=900)
     ap.add_argument("--gate", type=float, default=2.0 * CPUS)
     ap.add_argument("--gate-wait", type=float, default=300)
@@ -201,8 +202,6 @@ def main(argv=None) -> int:
     if a.only:
         keys = [k.strip() for k in a.only.split(",") if k.strip()]
         names = [n for n in names if any(k in n for k in keys)]
-    skip = {k.strip() for k in a.skip.split(",") if k.strip()}
-    names = [n for n in names if n not in skip]
     env = dict(os.environ)
     if a.fast:
         env["BK_FAST"] = "1"
@@ -239,10 +238,3 @@ def main(argv=None) -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
-AREAS["olympus"].append("home_fx")          # night-effects 2026-11-20: the living hero on the Gate + Doors (tests/test_home_fx.py)
-AREAS["nq"].append("nqdeep")                # night-nqdash2 2026-11-20: Trading deep dive / MFFU payout ranges / NQ news week
-AREAS["olympus"].append("node_suites")    # day-quality 2026-11-20: the 29 tests/*.mjs no Python suite ran (tests/test_node_suites.py), by part
-AREAS["cities"].append("node_suites")
-PARTS["node_suites"] = [("datacity", ["datacity"]), ("apps", ["apps"])]
-AREAS["pc"].append("site_checks")         # day-quality 2026-11-20: tools/site_checks.py (Kalshi cache = css/js ?v, worker tags, launcher drift, generated gap) + self_heal 'site'
-AREAS["olympus"].append("site_checks")
