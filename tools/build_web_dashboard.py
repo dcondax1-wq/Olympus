@@ -1226,6 +1226,8 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
         try:
             from tools.money import dash_build as _dash_build
             _dash_build.main([])
+            from tools import nqdash_export as _nqx            # night-nqdash2: business/payday.json + nq/news_week.json
+            _nqx.main([])
         except Exception as _dash_err:  # noqa: BLE001
             print(f"[dash_build] skipped: {_dash_err.__class__.__name__}: {_dash_err}")
     for app in ("jarvis", "gate", "hub", "kalshi", "datacity", "mind", "tree", "oracle", "odeon", "fates", "hermes", "prometheus", "tyche", "pantheon", "olympus", "assets", "arena", "bridge", "ares", "plutus", "athena", "forum", "labyrinth", "argus", "nemesis", "chronos", "hephaestus", "cities", "kalshicity", "settings", "inbox", "ledger", "journal", "observatory", "atlas", "atlascity", "pc", "delphi", "pnyx", "planner", "hestia", "demeter", "apollo", "hera", "dionysus", "clio", "mint", "mintcity", "mercury", "chrysos", "sibyl", "oikos", "arbiter", "stoa", "aegis", "lyceum", "nike", "kronos", "moirai", "epilogue", "argo", "kratos", "pythia", "gallery", "kairos", "compass", "pheme", "harmonia", "helios", "ergasterion", "archive", "pinakes", "colosseum", "nq", "symposium", "herald", "polis", "agency", "business", "trading", "board", "why", "widget"):

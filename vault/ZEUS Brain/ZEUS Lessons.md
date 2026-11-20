@@ -55,8 +55,9 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 
 ## Rejected idea families
 
-46 entries from docs/TESTED_AND_REJECTED.md, newest first.
+47 entries from docs/TESTED_AND_REJECTED.md, newest first.
 
+- **ATLAS real-fill fixes** · [[ATLAS]] · [[atlas-fills-2026-11-20|ATLAS real fills]]
 - **Payday levers + cross-bot loss cuts** · [[ATLAS]] · [[payday-plan-2026-11-20|Payday plan]]
 - **Zlarior more money, 2 pre-registered batches** · [[Zlarior (LIT)]] · [[lit-more-money-2026-11-19|Zlarior]]
 - **ATLAS more money** · [[ATLAS]] · [[atlas-more-money-2026-11-19|ATLAS more money]]

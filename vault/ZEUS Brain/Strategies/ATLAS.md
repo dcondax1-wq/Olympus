@@ -62,6 +62,10 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 
 ## Tested and rejected
 
+> [!failure]- ATLAS real-fill fixes
+> ATLAS's 3 real entries filled 10 / 12 / 16 ticks past the 5m open (market order 3-5 s after a 5m close, price still running our way). Judged at 6 AND 10 ticks a side vs today at the same cost (funded 25K, fixed view, 2026 halves + 2021-25): 0 of 6 pass. Limit at the open 5 min (misses 17-18% of 2026's trades = the runners, funded $550 -> $314 a month Jan-Jun at 6 ticks), limit 4 ticks worse (-$272), enter on the 1m close +60 s (Jul-Oct +$57, Jan-Jun -$75, 2021-25 untestable: no 1m bars), skip a signal bar > 2x its 20-bar median (skips 30%, good trades), member hours picked on Jan-Jun (Jul-Oct -$164: overfit), London pause before 08:00 ET (Jul-Oct $438 -> $74). Post-hoc, never eligible: ...
+> Write-ups: [[atlas-fills-2026-11-20|ATLAS real fills]]
+
 > [!failure]- Payday levers + cross-bot loss cuts
 > judged on the FIRST PAYOUT date AND the chance of losing the account (today's balances, 1,000 same paths a market; Jul-Oct / Jan-Jun). 8 levers, 0 pass: ATLAS funded 40% of the room (first payout +5 / +5 days, paid by Jan 15 66 -> 58 / 84 -> 81%, lost 10.2 -> 5.8%: safer, later), ask at $1,000 (+2 / +4 days), ATLAS "need" funded size (-$91 / -$70 a month), 25K #2 40% + $300 cap (+5 / +2 days), Rapid ATLAS $150 (+6 / +3 days, -$198 / -$522) or $350 (lost in 6 m 28.9 -> 36.8%), Rapid LIT bank lane (eval lost first 8.4 -> 11.6% Jan-Jun), ATLAS on Zlarior's 50K NOW vs after the pass (nearest miss: sooner, eval deaths 26 -> 8% Jan-Jun, but 6-month lost 8.3 -> 9.7% and 2021-25-like 48 -> 63%). ...
 > Write-ups: [[payday-plan-2026-11-20|Payday plan]]
@@ -122,6 +126,8 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-20 | [[atlas-risk-real-fills-2026-11-20\|ATLAS funded 25K at real fills]] | finding |
+| 2026-11-20 | [[atlas-fills-2026-11-20\|ATLAS real fills]] | finding |
 | 2026-11-19 | [[one-account-combo-redteam-2026-11-19\|Red team]] | research |
 | 2026-11-19 | [[one-account-combo-final-2026-11-19\|One account, Zlarior + ATLAS on the Builder 50K]] | research |
 | 2026-11-19 | [[one-account-combo-2026-11-19\|ONE account, several bots]] | research |
@@ -160,10 +166,8 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 | 2026-10-25 | [[atlas-v2\|ATLAS v2]] | promising |
 | 2026-10-24 | [[atlas-chatgpt-breakouts\|ChatGPT's 10 ATLAS breakout templates]] | rejected |
 | 2026-10-23 | [[stophunt-audit\|STOP-HUNT audit]] | finding |
-| 2026-10-23 | [[stophunt\|STOP-HUNT family]] | promising |
-| 2026-10-23 | [[hq-continuation\|HQ continuation]] | rejected |
 
-... and 12 older (see the families).
+... and 14 older (see the families).
 
 ## Links
 

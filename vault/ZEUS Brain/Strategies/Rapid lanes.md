@@ -40,6 +40,7 @@ _No period table published for this one yet; see the write-ups._
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-20 | [[atlas-risk-real-fills-2026-11-20\|ATLAS funded 25K at real fills]] | finding |
 | 2026-11-19 | [[one-account-combo-2026-11-19\|ONE account, several bots]] | research |
 | 2026-11-18 | [[rapid25-lit-lane-2026-11-18\|Rapid EOD 25K]] | research |
 | 2026-11-17 | [[rule-native-2026-11-17\|Rule-native search]] | adopt-candidate |

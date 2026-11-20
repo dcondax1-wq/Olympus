@@ -31,7 +31,7 @@ import { Orbit } from './controls.js';
 import { Tour, shots } from './tour.js';
 import { MODES, flight } from './fly.js';
 import { Minimap } from './minimap.js?v=dcgfx3';
-import { etClock, sunOf, weatherOf } from './sky.js?v=dcgfx12';
+import { etClock, sunOf, weatherOf } from './sky.js?v=dcgfx13';
 import { applyTheme, watchTheme } from './theme.js';
 import * as UI from './ui.js';
 import * as PN from './panels.js';

@@ -6,14 +6,14 @@ type: "decisions"
 
 # ZEUS Decisions
 
-> [!question] 11 open
+> [!question] 10 open
 > Answer on the Decide card (Business app). A yes means Claude tests it; nothing live changes without proof.
 
 ## Open
 
 > [!question] Funded 25K: ask for the full $1,000 payout (at balance $27,100) instead of pinging you at $750?
 > **Why:** The bot pings you when $750 sits above the $1,100 buffer; waiting for the full $1,000 (balance $27,100) means fewer, bigger requests.
-> **Impact:** -$9 a month in a Jul-Oct-like market (-$11 Jan-Jun-like, -$6 2021-25-like); first payout about 2 trading days later.
+> **Impact:** -$9 a month in a Jul-Oct-like market (-$11 Jan-Jun-like, -$6 2021-25-like); first payout about 2 trading days later. At real fills on ATLAS's 25K (10 ticks a side): about the same money (+$8 a month Jan-Jun-like, -$1 Jul-Oct-like), lost in 6 months 21.7% -> 20.7% (17.6% -> 16.0%), first payout 2-3 trading days later; with room 40% it adds almost nothing (14.0% -> 13.1%).
 > Added 2026-11-17 · write-up [[payout-policy-funded25-2026-11-17|Funded Builder 25K payout policy]] · id `payout-ping-1000`
 
 > [!question] Funded 25K: Zlarior (LIT) trades it too, next to ATLAS?
@@ -28,7 +28,7 @@ type: "decisions"
 
 > [!question] Rapid EOD: ATLAS trades it next to Zlarior from day one?
 > **Why:** On the Rapid 25K the 30% best-day rule skips most of Zlarior's trades: alone it passes in about 42 trading days, with ATLAS about 25.
-> **Impact:** +$817 a month in a Jul-Oct-like market (+$2,084 Jan-Jun-like, +$7 2021-25-like); first payout about 39 trading days sooner.
+> **Impact:** At real fills (ATLAS 10 ticks a side): +$609 a month in a Jul-Oct-like market (+$1,662 Jan-Jun-like, -$28 2021-25-like); first payout about Feb 18 with ATLAS, while without it half the runs see no payout in 6 months. At backtest fills it was +$817 a month (+$2,084 Jan-Jun-like, +$7 2021-25-like).
 > Added 2026-11-16 · write-up [[stack-one-account-2026-11-16|More strategies on ONE MFFU account]] · id `atlas-on-rapid`
 
 > [!question] Rapid funded payouts: always leave $1,000 above the buffer in each Rapid?
@@ -48,7 +48,7 @@ type: "decisions"
 
 > [!question] ATLAS's funded 25K: risk 40% of the room a trade instead of 60% (safer, but the first payout comes later)?
 > **Why:** The bot stops ATLAS for good once the funded room is under $100. Smaller trades make that rarer, but each win is smaller, so payouts come later.
-> **Impact:** -$26 a month in a Jul-Oct-like market (-$25 Jan-Jun-like, $0 2021-25-like); first payout about 5 trading days later.
+> **Impact:** At real fills (10 ticks a side): +$24 a month in a Jan-Jun-like market ($503 -> $527), -$9 Jul-Oct-like ($402 -> $393), -$3 2021-25-like; first payout 3-8 trading days later (Dec 29 instead of Dec 23 Jan-Jun-like; Jan 19 instead of Jan 7 Jul-Oct-like). At backtest fills it was -$26 a month, 5 trading days later.
 > Added 2026-11-19 · write-up [[atlas-health-2026-11-18|ATLAS health]] · id `atlas-funded-room-40`
 
 > [!question] Business page: drop 'Account #4 = LucidPro 50K' and show your MFFU next buys instead (Rapid EOD 25K now, then a fresh Builder 50K and a Rapid EOD 50K from payouts)?
@@ -61,16 +61,11 @@ type: "decisions"
 > **Impact:** +$696 a month in a Jul-Oct-like market (+$392 if the live account after payout 5 is worth nothing), +$1,649 Jan-Jun-like (+$466), +$26 2021-25-like; 2022-like -$141; after the extra eval fees.
 > Added 2026-11-19 · write-up [[one-account-combo-final-2026-11-19|One account, Zlarior + ATLAS on the Builder 50K]] · id `zlarior-atlas-50k`
 
-> [!question] Kalshi K8: start at $8 a bet (not $15) and step up with the cash: $10 from $67, $15 from $100?
-> **Why:** $15 a bet on $55 means 3 losses in a row (the test had a streak of 8) leave too little to bet. Betting about 15% of the cash keeps the pot alive while it grows.
-> **Impact:** Chance the $55 is wiped out in the first 4 weeks: 7.9% -> 0.2% as tested, 24.8% -> 3.3% if the edge is half as good; median after 4 weeks $467 -> $430 (-$37) if the edge holds.
-> Added 2026-11-20 · write-up [[money-ideas-2026-11-20|Money ideas]] · id `kalshi-stake-ladder`
-
 ## Yes
 
 > [!success]- ATLAS's funded 25K: keep trading 1 micro when the room drops under $100, instead of stopping for good?
 > **Why:** Today the bot gives the funded account up at $100 of room. Small 1-micro trades that still fit can climb back: about 1 in 5 such accounts recover in a 2026-like market.
-> **Impact:** +$3 a month in a Jul-Oct-like market (+$10 Jan-Jun-like, +$4 2021-25-like); chance of losing the account in 6 months 10.5% -> 9.5% (9.8% -> 7.7% Jan-Jun-like); first payout unchanged.
+> **Impact:** +$3 a month in a Jul-Oct-like market (+$10 Jan-Jun-like, +$4 2021-25-like); chance of losing the account in 6 months 10.5% -> 9.5% (9.8% -> 7.7% Jan-Jun-like); first payout unchanged. At real fills (10 ticks a side): +$6 a month Jul-Oct-like (+$14 Jan-Jun-like, +$1 2021-25-like); chance of losing the account 23.5% -> 21.7% (20.3% -> 17.6% Jan-Jun-like); first payout unchanged.
 > Added 2026-11-19 · write-up [[atlas-more-money-2026-11-19|ATLAS more money]] · id `atlas-funded-keep-trading`
 
 ## Done
@@ -79,5 +74,10 @@ type: "decisions"
 > **Why:** Two strategies give about 2 winning days a week instead of 1, which the payout rules need. ATLAS in the eval fails more, so funded only.
 > **Impact:** +$451 a month in a Jul-Oct-like market (+$422 Jan-Jun-like, +$2 2021-25-like); first payout about 9 trading days sooner.
 > Added 2026-11-16 · write-up [[stack-one-account-2026-11-16|More strategies on ONE MFFU account]] · id `atlas-on-50k-funded`
+
+> [!note]- Kalshi K8: start at $8 a bet (not $15) and step up with the cash: $10 from $67, $15 from $100?
+> **Why:** $15 a bet on $55 means 3 losses in a row (the test had a streak of 8) leave too little to bet. Betting about 15% of the cash keeps the pot alive while it grows.
+> **Impact:** Chance the $55 is wiped out in the first 4 weeks: 7.9% -> 0.2% as tested, 24.8% -> 3.3% if the edge is half as good; median after 4 weeks $467 -> $430 (-$37) if the edge holds.
+> Added 2026-11-20 · write-up [[money-ideas-2026-11-20|Money ideas]] · id `kalshi-stake-ladder`
 
 Back to [[ZEUS Home]]

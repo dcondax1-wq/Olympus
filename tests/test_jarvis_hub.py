@@ -265,7 +265,7 @@ def part_a():
           and "background:#000" in sw and "location.reload()" in sw)
     check("a. worker v14: data.js, jarvis.css, the fonts, every separate part, switcher.js, the new brain's obsidian.js / memory.js / "
           "assist-ui.js and voice-mode.js in SHELL, each saved on its own (a missing part is skipped)",
-          "const CACHE = 'jarvis-v74';" in sw and all(f"'./{f}'" in sw for f in ("data.js", "switcher.js", "obsidian.js", "memory.js", "assist-ui.js", "voice-mode.js", "tools.js", "voice-out.js") + PARTS + FONTS)
+          "const CACHE = 'jarvis-v75';" in sw and all(f"'./{f}'" in sw for f in ("data.js", "switcher.js", "obsidian.js", "memory.js", "assist-ui.js", "voice-mode.js", "tools.js", "voice-out.js") + PARTS + FONTS)
           and f"'./{JCSS}'" in sw and "SHELL.map((u) => c.add(new Request(u, { cache: 'reload' })).catch(() => null))" in sw)
     shell = re.search(r"const SHELL = \[([^\]]*)\]", sw)
     shell_files = re.findall(r"'\./([^'?]+)", shell.group(1)) if shell else []
@@ -844,7 +844,7 @@ def run_c(br, url):
         const reg = await Promise.race([navigator.serviceWorker.ready, new Promise((ok) => setTimeout(() => ok(null), 6000))]);
         if (!reg) return 'no worker';
         for (let i = 0; i < 30; i++) {
-          const c = await caches.open('jarvis-v74');
+          const c = await caches.open('jarvis-v75');
           const got = await Promise.all(['./index.html', './data.js', './%s', './orbitron.woff2', './rajdhani-500.woff2'].map((u) => c.match(u)));
           if (got.every(Boolean)) return 'ok';
           await new Promise((ok) => setTimeout(ok, 200));
@@ -1593,7 +1593,7 @@ def part_intro_files():
     # intro script keeps the overlay, its deadlines and the skip, and waits for the entry at most 1.2 s); the shell's size stays put
     ef = os.path.join(JV, "entry.js")
     ejs = open(ef, encoding="utf-8").read() if os.path.exists(ef) else ""
-    tag = '<script src="entry.js?v=e1" defer id="olyEntryJs"></script>'
+    tag = '<script src="entry.js?v=e2" defer id="olyEntryJs"></script>'
     check("o. the entry (v3): jarvis/entry.js, deferred right after the overlay (before the intro script and Jarvis's module), under 56 KB, no fetch / "
           "import / font file (OLYMPUS is its own outlines, Cinzel OFL), Safari 16 safe, canvases at most 2x, nothing drawn per frame (no "
           "requestAnimationFrame, no WebGL): Web Animations only; the intro script waits for it at most 1.2 s",
