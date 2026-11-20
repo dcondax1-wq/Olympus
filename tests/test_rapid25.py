@@ -128,8 +128,8 @@ def ready_checks(tmp):
               r["ok"] and any("CHECK THE NAME" in x and "does not show" in x for x in r.get("notes") or []), r.get("notes"))
         AC.remove(TC.N25 + "X")
         with open(os.path.join(os.environ["NINJATRADER_FOLDER"], "le_feed", "accounts.csv"), "a") as fh:
-            fh.write(f"MFFUEVRPD251190004,{int(__import__('time').time())},25000,0,0,25000\n")
-        r = AC.add("rapideod25", "MFFUEVRPD251190004")
+            fh.write(f"MFFUEVRPD250000004,{int(__import__('time').time())},25000,0,0,25000\n")
+        r = AC.add("rapideod25", "MFFUEVRPD250000004")
         notes = r.get("notes") or []
         check("i. the Name NinjaTrader shows at $25,000: no CHECK THE NAME warning", r["ok"] and not any("CHECK THE NAME" in x for x in notes), notes)
         check("i. the [OK] lines also print min days, the flat time, the funded news ban and the payout line",
@@ -139,15 +139,15 @@ def ready_checks(tmp):
               AC.slots_text())
         lines = G.phrase_also_arms()
         check("i. START BOT step 3 lists the Rapid EOD 25K (Zlarior + ATLAS, its Name) before the phrase",
-              any("Zlarior + ATLAS" in x and "Rapid EOD 25K" in x and "MFFUEVRPD251190004" in x for x in lines), lines)
+              any("Zlarior + ATLAS" in x and "Rapid EOD 25K" in x and "MFFUEVRPD250000004" in x for x in lines), lines)
         out = io.StringIO()
         with contextlib.redirect_stdout(out):
             rc = G.run(dry=True, inp=lambda *_a: "no", pull=False)
         txt = out.getvalue()
         check("i. START BOT dry run, phrase NOT typed: the Rapid is listed at 3/4 and stays DISARMED",
-              "Rapid EOD 25K  MFFUEVRPD251190004" in txt and txt.find("Rapid EOD 25K") > txt.find("3/4 Real money")
+              "Rapid EOD 25K  MFFUEVRPD250000004" in txt and txt.find("Rapid EOD 25K") > txt.find("3/4 Real money")
               and "Nothing is armed" in txt and rapid.read()["armed"] is False, (rc, txt[-900:]))
-        AC.remove("MFFUEVRPD251190004")
+        AC.remove("MFFUEVRPD250000004")
         check("i. no Rapid: step 3 lists nothing extra", not [x for x in G.phrase_also_arms() if "Rapid" in x], G.phrase_also_arms())
     finally:
         for k, v in keep.items():
