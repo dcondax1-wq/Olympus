@@ -47,10 +47,10 @@
   /* perf v2: blocking=render keeps the first paint for the two sheets (a script-inserted sheet does not block it in Chromium: the page painted
      unstyled and then jumped, CLS 0.27 on the phone) */
   var k = d.createElement('link'); k.rel = 'stylesheet'; k.setAttribute('blocking', 'render'); k.href = b + 'olympus/agora.css?v=a9'; h.appendChild(k);
-  var l = d.createElement('link'); l.rel = 'stylesheet'; l.setAttribute('blocking', 'render'); l.href = b + 'gate/gate.css?v=g20'; h.appendChild(l);
+  var l = d.createElement('link'); l.rel = 'stylesheet'; l.setAttribute('blocking', 'render'); l.href = b + 'gate/gate.css?v=g21'; h.appendChild(l);
   var o = d.createElement('link'); o.rel = 'stylesheet'; o.setAttribute('blocking', 'render'); o.href = b + 'olympus/shell.css?v=s6'; h.appendChild(o);   /* night-revamp-main: the one design layer, last */
   var x = d.createElement('link'); x.rel = 'stylesheet'; x.setAttribute('blocking', 'render'); x.href = b + 'olympus/home-fx.css?v=x2'; h.appendChild(x);
-  var nf = d.createElement('link'); nf.rel = 'stylesheet'; nf.setAttribute('blocking', 'render'); nf.href = b + 'hub/navfx.css?v=4'; h.appendChild(nf); d.documentElement.className += ' nfx';   /* NAV FX 2026-11-20: navy + cyan / blue / violet, no gold, from the first frame (no colour flash) */
+  var nf = d.createElement('link'); nf.rel = 'stylesheet'; nf.setAttribute('blocking', 'render'); nf.href = b + 'hub/navfx.css?v=5'; h.appendChild(nf); d.documentElement.className += ' nfx';   /* NAV FX 2026-11-20: navy + cyan / blue / violet, no gold, from the first frame (no colour flash) */
   var ag = d.createElement('link'); ag.rel = 'stylesheet'; ag.href = b + 'age.css?v=2'; h.appendChild(ag);   /* olympus2: the shared data-age chip */   /* night-effects: the living home (hero, glass doors, intro) */
   try { if (localStorage.getItem('oly.homefx') !== 'off') {   /* olympus2: the intro plays once per New York day ('oly.homefx.day'), never on a repeat visit that day */
     var dk = ''; try { dk = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date()); } catch (e2) { dk = new Date().toDateString(); }
@@ -59,7 +59,7 @@
     if (!again) localStorage.setItem('oly.homefx.day', dk);
   } } catch (e) { /* private mode: plain */ }
   var i = d.createElement('link'); i.rel = 'icon'; i.href = b + 'gate/icon.svg'; h.appendChild(i);
-  ['olympus/themes.js?v=o9', 'pc_feed.js?v=n6', 'olympus/gate-catalog.js?v=nv9', 'olympus/hub-status.js?v=h3', 'age.js?v=1', 'business/payoutcoach.js?v=2', 'gate/gate.js?v=g19', 'olympus/home-fx.js?v=x2', 'olympus/a11y.js'].forEach(function (src) { var s = d.createElement('script'); s.src = b + src; s.async = false; h.appendChild(s); });
+  ['olympus/themes.js?v=o9', 'pc_feed.js?v=n6', 'olympus/gate-catalog.js?v=nv10', 'olympus/hub-status.js?v=h3', 'age.js?v=1', 'business/payoutcoach.js?v=2', 'gate/gate.js?v=g19', 'olympus/home-fx.js?v=x2', 'olympus/a11y.js'].forEach(function (src) { var s = d.createElement('script'); s.src = b + src; s.async = false; h.appendChild(s); });
 })();</script>
 <script>(function () {   /* the Launch card + first-day checklist (gate/launch.js, docs/LAUNCH_DAY.md): only when the PC serves the site (/site/) */
   if (!/^\/site\//.test(location.pathname || '')) return;
@@ -70,7 +70,7 @@
 <main id="gate" class="g-main">
   <header class="g-head">
     <h1 class="g-title">Olympus</h1>
-    <p class="g-sub">Your money first. Search, or open a door below.</p>
+    <p class="g-sub">Your 6 arenas, then everything else. Or search.</p>
   </header>
 
   <section class="g-find" aria-labelledby="findH">
@@ -85,7 +85,30 @@
   </section>
 
   <!-- olympus2 2026-11-20 (owner: "money first on the home page"): Right now = the daily cockpit, right under the search, before the doors -->
-  <section class="g-card g-now" id="now" aria-labelledby="nowH" data-state="loading">
+    <!-- THE 6 ARENAS (owner 2026-11-20 17:00 ET: "organize the dashboard, I want like 6 arenas, that's it, then a separate area for the smaller stuff").
+       Plain links (they work without any script); gate/arenas.js writes one live line each from the data this page already reads. -->
+  <section class="g-arenas" id="arenas" aria-labelledby="arenasH">
+    <h2 class="g-h2 g-vh" id="arenasH">Your 6 arenas</h2>
+    <nav class="g-agrid" aria-labelledby="arenasH">
+      <div class="g-arena" data-arena="cities" data-dfx="glass"><a class="g-amain" data-to="cities/index.html" href="cities/index.html"><i class="g-ic g-aic" style="--ac:#6366f1" aria-hidden="true">◈</i><b>Cities</b><small class="g-aline" id="arena-cities">The 3D world of all your apps</small></a></div>
+      <div class="g-arena" data-arena="kalshi" data-dfx="glass"><a class="g-amain" data-to="kalshi/index.html" href="kalshi/index.html"><i class="g-ic g-aic" style="--ac:#14b8a6" aria-hidden="true">K</i><b>Kalshi</b><small class="g-aline" id="arena-kalshi">The K8 clock bets</small></a></div>
+      <div class="g-arena" data-arena="nq" data-dfx="glass"><a class="g-amain" data-to="nq/index.html" href="nq/index.html"><i class="g-ic g-aic" style="--ac:#9d59ee" aria-hidden="true">Ν</i><b>NQ Bot</b><small class="g-aline" id="arena-nq">Zlarior + ATLAS right now</small></a></div>
+      <div class="g-arena" data-arena="jarvis" data-dfx="glass"><a class="g-amain" data-to="jarvis/index.html" href="jarvis/index.html"><i class="g-ic g-aic" style="--ac:#a855f7" aria-hidden="true">◉</i><b>Jarvis</b><small class="g-aline" id="arena-jarvis">Ask anything</small></a></div>
+      <div class="g-arena" data-arena="agency" data-dfx="glass"><a class="g-amain" data-to="agency/index.html" href="agency/index.html"><i class="g-ic g-aic" style="--ac:#d946ef" aria-hidden="true">Ε</i><b>Websites</b><small class="g-aline" id="arena-agency">Your website business HQ</small></a></div>
+      <div class="g-arena" data-arena="business" data-dfx="glass"><a class="g-amain" data-to="business/index.html" href="business/index.html"><i class="g-ic g-aic" style="--ac:#3b82f6" aria-hidden="true">B</i><b>Business</b><small class="g-aline" id="arena-business">Accounts, payouts, plan</small></a><a class="g-asub" data-to="planner/index.html" href="planner/index.html">Planner</a></div>
+    </nav>
+  </section>
+
+  <!-- EVERYTHING ELSE: one area for the smaller apps (Planner first, then Trading, Ledger, Board, Hera, the rest A to Z; retired apps hidden) -->
+  <section class="g-else" id="elseSec" aria-labelledby="elseH">
+    <h2 class="g-h2" id="elseH">Everything else</h2>
+    <nav class="g-elist" id="elseList" aria-labelledby="elseH">
+      <a class="g-eapp" data-to="planner/index.html" href="planner/index.html">My day</a><a class="g-eapp" data-to="trading/index.html" href="trading/index.html">Trades</a><a class="g-eapp" data-to="ledger/index.html" href="ledger/index.html">Real money</a><a class="g-eapp" data-to="board/index.html" href="board/index.html">Board</a><a class="g-eapp" data-to="hera/index.html" href="hera/index.html">Payout plan</a>
+    </nav>
+    <a class="g-btn g-elsemore" data-to="gate/index.html#az" href="gate/index.html#az">All apps A to Z</a>
+  </section>
+
+<section class="g-card g-now" id="now" aria-labelledby="nowH" data-state="loading">
     <div class="g-nowhead"><h2 id="nowH">Right now</h2><span class="oly-age" id="nowAge" hidden></span><span class="g-badge" id="nowBadge">Checking</span></div><!-- olympus2: the PC report age in the one site-wide format (age.js) -->
     <p class="g-nowline" id="nowLine" role="status" aria-live="polite">Looking for the bots' numbers...</p>
     <div class="g-trade" id="nowTrade" hidden></div><!-- olympus2: the open trade, if any -->
@@ -97,7 +120,7 @@
   </section>
 
   <!-- THE FOUR DOORS (2026-11-18, night-org, docs/ORGANIZATION.md, olympus/doors.js): everything lives behind one of these; plain links -->
-  <section class="g-four" id="doorsSec" aria-labelledby="doorsH">
+  <section class="g-four" id="doorsSec" aria-labelledby="doorsH" hidden>
     <h2 class="g-h2 g-vh" id="doorsH">Four doors</h2><!-- night-gate: heading for screen readers only (the subtitle names the doors), so Your six stay on the first phone screen -->
     <nav class="g-qgrid" id="doors4" aria-labelledby="doorsH">
       <a class="g-dr" data-door="zeus" data-to="hub/doors.html#zeus" href="hub/doors.html#zeus"><i class="g-ic" style="--ac:#3b82f6" aria-hidden="true">Ζ</i><b>ZEUS Trading</b><small class="g-qline">Accounts, live bots, trades, brain, rules, payouts</small></a>
@@ -113,7 +136,7 @@
   </section>
 
 
-  <section class="g-quick" aria-labelledby="quickH">
+  <section class="g-quick" aria-labelledby="quickH" hidden>
     <h2 class="g-h2" id="quickH">Your apps</h2>
     <nav class="g-qgrid" id="quick" aria-labelledby="quickH"><!-- olympus2 2026-11-20 (owner): Cities, Kalshi, the NQ bot, Jarvis first, then the Planner and Business -->
       <a class="g-q" data-app="cities" data-to="cities/index.html" href="cities/index.html"><i class="g-ic" style="--ac:#6366f1" aria-hidden="true">◈</i><b>Cities</b><small class="g-qline">World, Data City, Kalshi, Atlas, Mint</small></a>
@@ -132,7 +155,7 @@
     <div class="g-chips" id="recent"></div>
   </section>
 
-  <section class="g-hubs" aria-labelledby="hubsH">
+  <section class="g-hubs" aria-labelledby="hubsH" hidden>
     <h2 class="g-h2" id="hubsH">Your hubs</h2>
     <p class="g-hint" id="hubsHint">Money and the two bots first. Each hub is one of your jobs; everything else lives inside them.</p>
     <nav class="g-hubgrid" id="hubs" aria-labelledby="hubsH">
@@ -168,7 +191,10 @@
 })();</script>
 <script>(function () { /* NAV FX (2026-11-20, owner: "3D, effects, no gold"): glass icons, aurora, tilt, roll-ups; loaded after the first paint */
   var b = window.GATE_BASE || '', d = document;
-  var s = d.createElement('script'); s.src = b + 'hub/navfx.js?v=1'; s.defer = true; d.body.appendChild(s);
+  var s = d.createElement('script'); s.src = b + 'hub/navfx.js?v=2'; s.defer = true; d.body.appendChild(s);
+  var ar = d.createElement('script'); ar.src = b + 'gate/arenas.js?v=2'; ar.defer = true; d.body.appendChild(ar);   /* the 6 arenas' live lines + Everything else */
+  var dl = d.createElement('link'); dl.rel = 'stylesheet'; dl.href = b + 'olympus/dashfx.css?v=d1'; d.head.appendChild(dl);
+  var dx = d.createElement('script'); dx.src = b + 'olympus/dashfx.js?v=d1'; dx.defer = true; d.body.appendChild(dx);   /* DESIGN's glass on the arenas */
 })();</script>
 </body>
 </html>

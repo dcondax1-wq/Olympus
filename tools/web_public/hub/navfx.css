@@ -18,7 +18,7 @@ html[data-oly-scheme="light"] .nfx-aurora { opacity: .28; }
 html.nfx-lite .nfx-aurora i { filter: none; opacity: .22; }      /* a slow phone / Save-Data: no blur */
 
 /* ---- glass: cards and tiles get a cool glass edge + glow (no gold) */
-html.nfx :is(.g-card.g-now, .zs-acct, .zs-pc:not(.bad), .hq .card, .hq-tile, #doors4.g-qgrid) {
+html.nfx :is(.g-card.g-now, .zs-acct, .zs-pc:not(.bad), .hq .card, .hq-tile, #doors4.g-qgrid, .g-arena) {
   border-color: var(--nfx-line) !important;
   background-color: var(--nfx-card-b) !important; background-image: linear-gradient(170deg, var(--nfx-card-a), var(--nfx-card-b)) !important;
   box-shadow: 0 0 0 1px rgba(var(--nfx-violet-rgb), .06) inset, 0 12px 30px -20px rgba(var(--nfx-violet-rgb), .7), 0 0 24px -14px rgba(var(--nfx-violet-rgb), .55) !important;
@@ -42,7 +42,10 @@ html.nfx .g-ic { position: relative; color: #ebe9f1; text-shadow: 0 0 12px rgba(
   box-shadow: inset 0 1px 0 rgba(218, 203, 240, .22), 0 10px 22px -12px rgba(var(--nfx-violet-rgb), .9), 0 0 16px -8px rgba(var(--nfx-violet-rgb), .8); }
 html.nfx .g-ic::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(180deg, rgba(218, 203, 240, .16), transparent 45%); pointer-events: none; }
 html.nfx #quick .g-q b, html.nfx #doors4 .g-dr b { font: 700 .875rem/1.2 var(--ag-serif) !important; letter-spacing: .03em; text-transform: uppercase; color: #ebe9f1 !important; }
-html.nfx #quick .g-q:active .g-ic, html.nfx #doors4 .g-dr:active .g-ic { border-color: var(--nfx-gold); }
+html.nfx #quick .g-q:active .g-ic, html.nfx #doors4 .g-dr:active .g-ic, html.nfx .g-amain:active .g-ic { border-color: var(--nfx-gold); }
+html.nfx .g-amain b { text-transform: uppercase; font-size: 1rem; }
+html.nfx .g-eapp { background: var(--nfx-card-a); border-color: var(--nfx-line); }
+html.nfx .g-eapp:nth-child(-n+5) { border-color: var(--nfx-line-2); }
 
 /* ---- 3D tilt (navfx.js sets --rx / --ry from the finger; nothing moves without a touch) */
 html.nfx [data-nfx-tilt] { transform: perspective(600px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform 380ms cubic-bezier(.2, .8, .2, 1); will-change: transform; }
