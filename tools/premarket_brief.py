@@ -329,7 +329,8 @@ def _accounts():
     lit, atlas, rapid = [], [], []
     for a in acc:
         name, plan, stage = a.get("name") or "", a.get("plan") or "", a.get("stage") or ""
-        label = f"{name} ({plan.replace('MFFU ', '')}, {stage})" if plan else name
+        short = plan.replace("MFFU ", "")
+        label = (f"{name} ({stage})" if short == name else f"{name} ({short}, {stage})") if plan else name
         k = a.get("key")
         if k == "atlas":
             atlas.append(label)
@@ -440,8 +441,8 @@ def build(now: int | None = None, bars=None, measured=None) -> dict:
     last = last_bar[5] if last_bar else None
     bars_age = int((now - last_bar[0] - 300) / 60) if last_bar else None
     if bars_age is not None and bars_age > 90 and not (now_et.weekday() >= 5 or _closed(ds)):
-        stale.append(f"NQ bars end {last_bar[1]:%Y-%m-%d %H:%M} ET ({bars_age // 60} h old): today's overnight is not in the "
-                     "cloud data yet (the PC pushes its bars after 17:05 ET)")
+        stale.append(f"NQ bars end {last_bar[1]:%Y-%m-%d %H:%M} ET: today's session is not in the cloud data yet "
+                     "(the PC pushes its bars after 17:05 ET)")
     atr = (today or {}).get("atr") if today else None
     if atr is None and days:
         tail = [x for x in days if x["day"] < ds][-ATR_N:]
@@ -639,7 +640,7 @@ def build(now: int | None = None, bars=None, measured=None) -> dict:
             "weekday": day.strftime("%a"), "phase": phase, "early_close": _hm(_early(ds)) if _early(ds) is not None else None,
             "headline": headline,
             "data": {"bars": "NQ 5m (TradingView CME NQ1! + NinjaTrader)",
-                     "bars_to": f"{last_bar[1]:%Y-%m-%d %H:%M}" if last_bar else None, "bars_age_min": bars_age,
+                     "bars_to": f"{last_bar[1]:%Y-%m-%d %H:%M}" if last_bar else None,
                      "vix_date": (mvix or {}).get("date"), "vxn_date": (mvxn or {}).get("date"), "stale": stale},
             "market": market, "news": news, "bias": bias, "bots": bots, "recap": recap, "prev_recap": prev_recap,
             "notes": notes[:5]}

@@ -34,7 +34,7 @@ times = ET wall clock "HH:MM" strings; dates = "YYYY-MM-DD" (ET); `*_t` = unix s
 |---|---|---|
 | `bars` | str | "NQ 5m (TradingView CME NQ1! + NinjaTrader)" |
 | `bars_to` | str | ET "YYYY-MM-DD HH:MM" of the last 5m bar used |
-| `bars_age_min` | int | minutes from that bar to the build time |
+| (no age field) | | age = `built_at` - `bars_to`: compute it on the page (an age field would churn the file every build) |
 | `vix_date` / `vxn_date` | str\|null | date of the VIX / VXN daily close used |
 | `stale` | list[str] | plain-words warnings, e.g. "VIX is from 2026-10-16 (35 days old)"; empty = all fresh |
 

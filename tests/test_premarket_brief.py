@@ -70,6 +70,11 @@ def main():
         P.write(b2, p)
         check("no rewrite when only built_at changes", open(p).read() == m1)
 
+    # 3b. no churn between two cloud builds 30 min apart when no new bar arrived (only built_at differs)
+    c1 = P.build(at("2026-11-20T06:10"), bars=bars, measured=meas)
+    c2 = P.build(at("2026-11-20T06:40"), bars=bars, measured=meas)
+    check("no churn: 06:10 vs 06:40", {**c1, "built_at": 0} == {**c2, "built_at": 0})
+
     # 4. no look-ahead: a brief at 08:05 never sees a bar that closes after 08:05
     bars_to = dt.datetime.strptime(b["data"]["bars_to"], "%Y-%m-%d %H:%M")
     check("no future bars", bars_to <= dt.datetime(2026, 11, 10, 8, 0), b["data"]["bars_to"])
