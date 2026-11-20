@@ -59,6 +59,11 @@ def test_static():
           html.count("<span>") >= 5 and "repeat(5, minmax(0, 1fr))" in AK.read(os.path.join(D, "trading.css")) and 'id="calPrev"' in html and "touchend" in js
           and 'role="dialog"' in html and 'aria-modal="true"' in html and "'Escape'" in js)
     check("a. a trade opens in Odeon by its reel id (../odeon/#reel=)", "../odeon/#reel=" in core)
+    css = AK.read(os.path.join(D, "trading.css"))
+    check("a. no layout jump (night-polish 2026-11-20, CLS was 0.08-0.23): the status line, the banner and the ZEUS edge chip keep their height from the first frame, "
+          "the cards under them wait unseen until the first draw; trading.js lets them go after the first draw / the chip's data",
+          "html:not(.tr-drawn) #banner" in css and "html:not(.tr-drawn) #status" in css and "html:not(.tr-edge) #zeusEdge[hidden]" in css
+          and "html:not(.tr-drawn) #todayCard" in css and "settleBoxes()" in js and "'tr-drawn'" in js and "'tr-edge'" in js)
 
 
 HARNESS = r"""
@@ -387,6 +392,12 @@ def test_browser():
                       st["accts"] == 2 and st["days"] >= 20 and st["btn"] >= 1 and st["trades"] >= 1 and st["stats"] == 2 and st["rules"] == 2 and st["twins"] >= 1 and st["paths"] >= 1
                       and "BLITZ" not in st["text"].upper().replace("BLITZ", "BLITZ") and "blitz" not in st["text"].lower(), {k: v for k, v in st.items() if k != "text"})
                 check(f"c. {w}px: no sideways scroll, taps >= 44 px, clear of the Jarvis corner", AK.no_sideways(p) and not AK.taps(p) and not AK.corner(p), (AK.taps(p), AK.corner(p)))
+                if w == 390:
+                    # night-polish 2026-11-20: '1. Today' no longer moves down 130-300 px when the banner / ZEUS edge chip fill in (CLS was 0.08-0.23)
+                    p.wait_for_function("document.documentElement.classList.contains('tr-edge')", timeout=15000)
+                    cls = p.evaluate("""() => new Promise((res) => { let v = 0, n = []; const o = new PerformanceObserver((l) => { for (const e of l.getEntries()) if (!e.hadRecentInput) { v += e.value; n.push(Math.round(e.value * 1000) / 1000); } });
+                        o.observe({ type: 'layout-shift', buffered: true }); setTimeout(() => { o.disconnect(); res({ cls: Math.round(v * 1000) / 1000, n }); }, 400); })""")
+                    check("c. 390px: no layout jump while the banner and the ZEUS edge chip fill in (CLS < 0.02, the first visit too)", cls["cls"] < 0.02, cls)
                 # backtest: the arrows walk the months, a day opens its sheet
                 p.click("#fSrc button[data-k=backtest]")
                 p.wait_for_timeout(200)
