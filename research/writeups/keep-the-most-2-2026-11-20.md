@@ -3,7 +3,7 @@ title: Keep the most, part 2 - 2027 health cover, the MFFU question list, Saver'
 family: money
 date: 2026-11-20
 status: info - education, not tax or insurance advice. Research + plain owner steps only; nothing filed, no account opened, nothing live changed. Ideas #6, #7, #19, #20, #25 of research/handoff/2026-11-20/TOP25_IDEAS.txt.
-summary: Maryland. (6) Health cover for 2027 - Maryland Health Connection open enrollment Nov 1 2026 - Jan 15 2027, enroll by Dec 31 for Jan 1; enhanced federal credits expired, Maryland Premium Assistance replaces them (100% under 200% FPL = $31,920) and the Young Adult Subsidy (18-33, fades to 37); Medicaid at <= $1,835 a month current income. Worth ~$1,500-4,000 a year if he has no cover. (7) One MFFU message drafted (live move freezes other accounts? bot on live? 1099 gross/net, one or two forms? EIN?). (19) 2027 Saver's Match: at $30k profit, $7,500 traditional Solo 401(k) gets the full $1,000 match + ~$1,204 tax saved vs ~$508 with Roth only. (20) Close 2026: log ~$315+ of 2026 evals, Claude plan, PC share; keep 2026 tax $0 -> no 2027 penalty; buy gear in January. (25) Tax pot in a Treasury money fund (~3.5-3.9%, mostly Maryland-tax-free) at a big broker, Rise -> bank the same day. Math: tools/money/keep_most.py magi_dial / savers_match -> research/lab/keep_most.json.
+summary: Maryland. (6) Health cover for 2027 - Maryland Health Connection open enrollment Nov 1 2026 - Jan 15 2027, enroll by Dec 31 for Jan 1; enhanced federal credits expired, Maryland Premium Assistance replaces them (100% under 200% FPL = $31,920) and the Young Adult Subsidy (18-33, fades to 37); Medicaid at <= $1,835 a month current income. Worth ~$1,500-4,000 a year if he has no cover. (7) MFFU's 5 questions answered from its public pages (owner won't contact MFFU): live move = other accounts dormant; bots allowed on live; likely two 1099s (Rise + MFFU) for your 80/90% only; payouts to an LLC likely not possible (S-corp on hold); 10 evals at once OK. (19) 2027 Saver's Match: at $30k profit, $7,500 traditional Solo 401(k) gets the full $1,000 match + ~$1,204 tax saved vs ~$508 with Roth only. (20) Close 2026: log ~$315+ of 2026 evals, Claude plan, PC share; keep 2026 tax $0 -> no 2027 penalty; buy gear in January. (25) Tax pot in a Treasury money fund (~3.5-3.9%, mostly Maryland-tax-free) at a big broker, Rise -> bank the same day. Math: tools/money/keep_most.py magi_dial / savers_match -> research/lab/keep_most.json.
 ---
 
 # Keep the most, part 2 (2026-11-20)
@@ -19,12 +19,11 @@ Nothing here opens an account or files anything; the owner does each step himsel
 | **2027 Saver's Match** (free federal money) | **up to $1,000 a year**: at $30k profit put $7,500 in a *traditional* Solo 401(k) -> $1,000 match + ~$1,204 less tax; Roth-only gets ~$508 | open the Solo 401(k) in 2027; claim on the 2027 return |
 | **Close 2026 on purpose** | keeps 2026 tax at $0 -> no 2027 penalty at all; ~$80 - $150 by buying gear in January | **Dec 31** |
 | **Tax pot in a Treasury money fund** | about $120 - $200 a year, mostly free of Maryland tax | before the first payout |
-| **One message to MFFU** (draft below) | protects about $1,500 - $2,500 a month of 2027 payouts | send this week |
+| **MFFU questions, answered from its public pages** | plan the 5th Builder payout: going live parks the other sim accounts (about $1,500 - $2,500 a month at stake); S-corp step on hold | nothing to send |
 
 **Owner to-do (max 3):**
 1. Tell Claude: do you have health cover for 2027 (job / parent / spouse / none), and are you under 34?
-2. Copy the MFFU message below into MFFU support chat and paste their answer back here.
-3. Before the first payout: open a free brokerage account with a Treasury money fund for the tax pot (Fidelity, Schwab or Vanguard; 20 minutes).
+2. Before the first payout: open a free brokerage account with a Treasury money fund for the tax pot (Fidelity, Schwab or Vanguard; 20 minutes).
 
 ## 6. 2027 health cover (Maryland)
 
@@ -48,26 +47,24 @@ expected January payout can be counted and Medicaid is re-checked, so treat it a
 plan you pay yourself are deductible (self-employed health insurance deduction, Schedule 1) only for months with no
 employer plan available. $ effect: ~$1,500-4,000 a year if uninsured (idea #6 estimate); $0 if he already has cover.
 
-## 7. The MFFU support message (draft - the owner sends it himself)
+## 7. MFFU's answers from its public pages (owner 2026-11-20: "I'm not contacting MFFU")
 
-> Hi, I trade Builder accounts (a 50K eval, two 25K, one funded) and a Rapid EOD 25K, all with an automated strategy on
-> NinjaTrader that I set up myself. Before my first payouts, could you confirm in writing:
-> 1. When a Builder account moves to live after its 5th payout, do my other sim-funded and eval accounts pause or go
->    dormant? Can I keep trading them, and what happens to their balances?
-> 2. Is my automated strategy (my own settings, NinjaTrader) allowed on the live account, including while I am not at
->    the screen?
-> 3. Is the 1099 for the GROSS amount you pay out or NET of your 20% / 10% split? Will I get one form, or one from MFFU
->    (ACH payouts) and another from Rise?
-> 4. Can payouts be made to a business (an LLC or S-corp with its own EIN and W-9) instead of to me personally?
-> 5. Is it OK to run a 2nd Builder 50K eval and a 2nd 25K eval while my current ones are running (within the 10-eval limit)?
-> Thank you!
+Checked 2026-11-20 on help.myfundedfutures.com, myfundedfutures.com/terms and Rise's help center; stored in
+research/lit/mffu_rules.json `owner_questions_2026_11_20` (+ `sim_live_together` updated).
 
-Why each one is worth asking: (1) MFFU's rulebook says once live, sim accounts go dormant (research/lit/mffu_rules.json
-`sim_live_together`) - that could stop about $1,500-2,500 a month of 2027 fleet payouts, so the 5th payout of each Builder
-should be planned around the answer; (2) the rulebook only says live automation "must follow CME rules"; (3) the form
-should match what lands (80% / 90%): if the 1099 shows the gross, the 20% they keep must be shown as not his income, or he
-over-pays ~$1,000-5,000 or gets an IRS letter; (4) unblocks the S-corp step later (~$1,460 a year at $60k); (5) is the
-already-approved ask-mffu-parallel card. No account ids, no name - he sends it from his own login.
+| Question | Answer | Confidence | What we assume |
+|---|---|---|---|
+| 1. A Builder goes live after its 5th payout: what happens to the others? | Other sim-funded accounts go **dormant (not closed)** and are moved into the one live account; evals stay dormant (a just-passed eval can be refunded instead); you cannot refuse the move or trade sim and live at once. Rapid: all sim trading and new buys stop while live, up to $5,000 of sim profit goes to a Reserve, several Rapids combine into one live account. Builder balances and a way back to sim: not stated | confirmed / unknown (balances) | **The 5th payout on any Builder ends all our other MFFU income streams.** Take every other account's payout first and time the 5th one on purpose |
+| 2. Bot on the live account, unattended? | Automated strategies **allowed** (no HFT, nothing that exploits sim fills); live must follow CME rules; only the owner trades it, no shared devices. Nothing public about unattended | confirmed / unknown (unattended) | Same bot, same rules; the owner stays the one who arms it (project rule) |
+| 3. 1099: gross or net, one form or two? | Rise payouts: Rise's tax department sends the 1099 (it names 1099-NEC / 1099-K, only for money paid through Rise). ACH/Plaid payouts: MFFU sends its own. A mixed year = **likely two forms**, each for what you actually received (your 80% / 90%) | confirmed (who) / likely (two, net) | Report the total of both forms on one Schedule C; if a form ever shows more than landed, keep the bank records and back out the difference |
+| 4. Payouts to an LLC / EIN? | Terms: every account belongs to **one verified individual**, KYC once per person; no business-account page | likely **no** | **S-corp step on hold** (part 1 ladder): it cannot receive MFFU payouts. An LLC adds $400 a year in Maryland for no tax gain, so skip it too |
+| 5. Parallel evals? | Up to **10 active evals**; sim-funded max Builder 50K x1, Builder 25K x2, 5 in all; one live account. Conflict: the Builder 50K guide says "only one Sim Funded account may be active per user at any time on the Builder Plan" | confirmed / conflict | Buying a 2nd eval is fine; a 2nd Builder 50K cannot become funded while the first is; the guide's "one funded" line contradicts today's 50K + 25K setup - the limits article (newer, specific) is what we follow |
+| Contractor status | Public Terms: no partnership / agency / joint venture; the Simulated Trader Agreement (signed at the first payout via Rise) is not public | likely | Self-employment income, Schedule C + SE (as in part 1) |
+
+$ effect: the live move matters most - with 4-5 funded accounts paying ~$1,500-2,500 a month in 2027, the first Builder's
+5th payout parks the rest. Ordering the payouts (every other account requests before the 5th Builder payout is asked)
+keeps that money. The S-corp loss is small (~$1,460 a year at $60k, part 1) and the live futures account (part 1) is the
+better way to cut the SE tax anyway.
 
 ## 19. 2027 Saver's Match with a traditional Solo 401(k)
 

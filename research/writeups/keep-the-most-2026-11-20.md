@@ -117,7 +117,7 @@ be taxed at 22%+. Traditional money also lowers AGI, which raises ACA marketplac
 S-corp model (keep_most.scorp): salary = the larger of $30,000 or 50% of profit (IRS: a "reasonable salary" is required;
 distributions can be reclassified as wages), 15.3% payroll tax on the salary, QBI shrinks (salary is not QBI), extra costs
 $600 payroll service + $1,000 extra return + $221 Maryland unemployment tax (2.6% of $8,500) + $300 SDAT report = $2,121 a
-year; Maryland state + county tax is the same on salary and K-1 income (in the model on both sides). **Unsettled / check first:** whether MFFU (and Rise) will pay a business (W-9
+year; Maryland state + county tax is the same on salary and K-1 income (in the model on both sides). **Checked 2026-11-20 (part 2, section 7): likely NOT** - MFFU's Terms say every account belongs to one verified individual. Was: whether MFFU (and Rise) will pay a business (W-9
 with an EIN) rather than the person on the account - if not, the S-corp cannot receive the payouts. Safe default: stay a
 sole proprietor until a CPA confirms both.
 
