@@ -33,8 +33,9 @@ def test_static():
     for page, href in MAIN.items():
         html = AK.read(os.path.join(WEB, page))
         i = html.find(href + "?v=")
-        check(f"a. {page} loads the shell layer after its own sheets (last stylesheet in <head>)",
-              i > 0 and '<link rel="stylesheet"' not in html[i:html.find("</head>")].split("\n", 1)[-1], href)
+        after = [ln for ln in html[i:html.find("</head>")].split("\n")[1:] if "home-fx.css" not in ln]   # night-effects: only the home's effects layer may sit on top
+        check(f"a. {page} loads the shell layer after its own sheets (last stylesheet in <head>, the home-fx effects layer aside)",
+              i > 0 and '<link rel="stylesheet"' not in "\n".join(after), href)
     z, css2 = AK.read(os.path.join(WEB, "index.html")), re.sub(r"/\*.*?\*/", "", css, flags=re.S)
     zi = z[z.find('<style id="oly-shell">'):z.find("</style>", z.find('<style id="oly-shell">'))]
     rules = [r.strip() for r in re.findall(r"[^{}]+\{[^{}]*\}", re.sub(r"@media[^{]+\{", "", css2)) if "nav#tabs" in r or "--o-bar-total:" in r]
