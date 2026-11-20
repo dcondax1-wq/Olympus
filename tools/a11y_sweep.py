@@ -101,7 +101,7 @@ AXE_CAT = {
     "target-size": None,   # ours (44 px) is stricter than axe's 24 px
 }
 OWN_CAT = {"tap-target": "tap", "small-text": "text", "tiny-text": "text", "fixed-text": "dyntype", "h-scroll": "hscroll", "bottom-bar": "bottom",
-           "motion": "motion", "color-only": "color", "no-focus": "focus"}
+           "motion": "motion", "color-only": "color", "no-focus": "focus", "truncated": "text"}
 CATS = ["contrast", "names", "forms", "headings", "zoom", "structure", "tap", "text", "dyntype", "hscroll", "bottom", "motion", "color", "focus"]
 CAT_WORDS = {"contrast": "text contrast (AA)", "names": "names for VoiceOver", "forms": "labelled fields", "headings": "headings in order",
              "zoom": "pinch zoom", "structure": "page structure / ARIA", "tap": "tap targets 44 px", "text": "text size 15 px", "dyntype": "Dynamic Type",
@@ -221,6 +221,10 @@ FOCUS_JS = r"""() => {
 
 INIT_JS = r"""(() => { let n = 0; const raf = window.requestAnimationFrame; window.__olyRaf = () => n;
   window.requestAnimationFrame = function (cb) { n++; return raf.call(window, cb); };
+  window.__olyCls = 0; window.__olyShifts = [];
+  try { new PerformanceObserver((l) => { for (const e of l.getEntries()) { if (e.hadRecentInput) continue; window.__olyCls += e.value;
+    for (const s of (e.sources || [])) { const n = s.node; if (n && n.nodeType === 1) window.__olyShifts.push([(n.id ? '#' + n.id : n.tagName.toLowerCase() + (n.className && typeof n.className === 'string' ? '.' + n.className.trim().split(/\s+/)[0] : '')), e.value]); } } })
+    .observe({ type: 'layout-shift', buffered: true }); } catch (e) {}
   try { localStorage.setItem('olympus.theme', '%s'); localStorage.setItem('olympus.theme.v', '2'); } catch (e) {} })();"""
 
 AXE_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"]
@@ -241,6 +245,12 @@ def check_page(page, origin, path, scr) -> dict:
     raf = page.evaluate("() => window.__olyRaf ? window.__olyRaf() : 0") - r0
     out = page.evaluate("(o) => window.__olyA11y.run(o)", {"layout": True, "vw": w, "motion": mo == "reduce", "rafPerSec": 0, "color": what == "full"})
     res["meta"] = out["meta"]
+    try:
+        cls = page.evaluate("() => [window.__olyCls || 0, (window.__olyShifts || []).slice(0, 8)]")
+        res["meta"]["cls"] = round(cls[0], 3)
+        res["meta"]["shifts"] = cls[1]
+    except Exception:  # noqa: BLE001
+        pass
     res["meta"]["raf"] = raf
     found = [(rule, it) for rule, items in out["rules"].items() for it in items]
     if mo == "reduce":
@@ -426,7 +436,9 @@ def summarise(app, path, per_screen):
     for it in lst:
         it["fix"] = fix_for(it["rule"], it)
     return {"path": path, "owner": OWNER.get(app, "a11y"), "score": score, "counts": n, "a11y_js": kit, "issues": lst, "errors": errors,
-            "looks": {s["screen"]: [s.get("meta", {}).get(k) for k in ("theme", "scheme", "bg", "raf")] for s in per_screen},
+            "looks": {s["screen"]: [s.get("meta", {}).get(k) for k in ("theme", "scheme", "bg", "raf", "cls")] for s in per_screen},
+            "cls": max([s.get("meta", {}).get("cls", 0) or 0 for s in per_screen] or [0]),
+            "shifts": next((s["meta"]["shifts"] for s in per_screen if s.get("meta", {}).get("cls", 0) and s["meta"]["cls"] >= 0.1), []),
             "raf": max([s.get("meta", {}).get("raf", 0) for s in per_screen] or [0])}
 
 
@@ -583,7 +595,7 @@ def main(argv=None):
     apps = visible_apps()
     if a.apps:
         want = [x.strip() for x in a.apps.split(",") if x.strip()]
-        apps = [x for x in apps if x[0] in want] + [(w, f"{w}/") for w in want if w not in [x[0] for x in apps] and os.path.isdir(os.path.join(WEB, w))]
+        apps = [x for x in apps if x[0] in want] + [(w, w) for w in want if w.endswith(".html")] + [(w, f"{w}/") for w in want if w not in [x[0] for x in apps] and os.path.isdir(os.path.join(WEB, w))]
     scrs = screens(a.quick)
     stamp = datetime.datetime.now().strftime("%Y%m%d-%H%M")
     out_dir = a.out or os.path.join(ROOT, "scratch", "a11y", stamp)
