@@ -162,7 +162,7 @@ def test_static():
           "min-height: 44px" in css and "min-height: 60px" in css and "prefers-reduced-motion: reduce" in css and 'data-oly-lite="1"' in css and "html[data-oly-style]" in css
           and all(sel.strip().startswith(("@", "html", ".me-", "}")) or not sel.strip() for sel in re.findall(r"(?m)^([^{}\n]+)\{", re.sub(r"/\*.*?\*/", "", css, flags=re.S))))
     check("a. the hub page loads me.css after hub.css and me.js (deferred) before hub.js; a Me chip in the plain hub list",
-          hub_html.index('href="hub.css?v=h4"') < hub_html.index('href="me.css?v=m2"') < hub_html.index("</head>")
+          hub_html.index('href="hub.css?v=h5"') < hub_html.index('href="me.css?v=m2"') < hub_html.index("</head>")
           and hub_html.index('<script src="me.js?v=m2" defer></script>') < hub_html.index('<script src="hub.js?v=h4" defer></script>') and 'data-hub="me" href="index.html?h=me"' in hub_html)
     check("a. hub.js hands a PAGE hub (page: 'me') to OLYMPUS_ME_PAGE.mount (no tabs), with the Me icon",
           "if (H.page)" in hub_js and "MP.mount(panel, { base: base, now: nowS, hub: H, done:" in hub_js and "me: ['M20 6.5" in hub_js)

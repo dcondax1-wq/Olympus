@@ -106,6 +106,11 @@
 .dk-table th:first-child, .dk-table td:first-child { text-align: left; overflow-wrap: anywhere; }
 .dk-wrap { overflow-x: auto; }
 main#app { padding-bottom: max(24px, calc(env(safe-area-inset-bottom, 0px) + 24px)); }
+/* night-siteqa 2026-11-20: hold each card's room from the first paint, so the cards under it do not jump down when dash.json lands
+   (My Accounts measured CLS 0.20 on a slow phone: the empty cockpit grew 420 px). Heights = the drawn card at 390 px, a little under. */
+[data-dash]:empty, [data-dash]:has(> .dk-skel:only-child) { min-height: 380px; }
+[data-dash="cockpit"]:empty, [data-dash="cockpit"]:has(> .dk-skel:only-child), [data-dash="payday"]:empty, [data-dash="edge"]:empty, [data-dash="trades"]:empty { min-height: 520px; }
+[data-dash="labboard"]:empty, [data-dash="equity"]:empty { min-height: 440px; }
 @media (max-width: 360px) { .dk-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (prefers-reduced-motion: reduce) {
   .dk-card { transition: none; opacity: 1; transform: none; }
