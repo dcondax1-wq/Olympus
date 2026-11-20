@@ -464,7 +464,7 @@ void main() {
   // a streak: long along the road (a long exposure's trail), thin across it, never thinner than about a pixel
   vec4 mv = viewMatrix * vec4(c, 1.0);
   float wid = max(0.07, -mv.z * 0.0024) * uSize;
-  float len = 0.35 + abs(aLine.w) * 0.11;
+  float len = 0.5 + abs(aLine.w) * 0.16;
   vec3 across = normalize(cross(dir, normalize(cameraPosition - c)) + 1e-5);
   vec3 wp = c + dir * (position.y - 0.5) * len + across * position.x * wid;
   vUv = position.xy;
@@ -474,7 +474,7 @@ void main() {
 `;
 export const TRAFFIC_FS = /* glsl */`
 varying vec3 vC; varying vec2 vUv;
-void main() { float t = clamp(vUv.y + 0.5, 0.0, 1.0); float a = exp(-vUv.x * vUv.x * 14.0) * pow(t, 2.2) * (1.0 - smoothstep(0.92, 1.0, t) * 0.4); gl_FragColor = vec4(vC * a * 1.3, 1.0); }
+void main() { float t = clamp(vUv.y + 0.5, 0.0, 1.0); float a = exp(-vUv.x * vUv.x * 14.0) * pow(t, 2.2) * (1.0 - smoothstep(0.92, 1.0, t) * 0.4); gl_FragColor = vec4(vC * a * 2.2, 1.0); }
 `;
 
 // ------------------------------------------------------------------------------------------------ searchlight beams

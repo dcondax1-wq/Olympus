@@ -209,7 +209,7 @@ export function planWorld(w, opts) {
     for (let i = -kk; i <= kk; i++) for (let j = -kk; j <= kk; j++) {
       const x = tx + i * step + (tr() - 0.5) * 0.6, z = tz + j * step + (tr() - 0.5) * 0.6;
       const dd = Math.hypot(x - tx, z - tz) / trad;
-      if (dd > 1 || tr() > (low ? 0.16 : 0.3) * (1.15 - dd * 0.5)) continue;
+      if (dd > 1 || tr() > (low ? 0.14 : 0.2) * (1.15 - dd * 0.5)) continue;
       const core = Math.exp(-dd * dd * 5);
       const h = (0.8 + Math.pow(tr(), 2) * 2.5) * (1 + core * (4 + tr() * 7));
       const c = mixc(warm[(((i + j) % 3) + 3) % 3], dh, 0.2);
