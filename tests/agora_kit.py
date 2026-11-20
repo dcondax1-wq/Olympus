@@ -77,8 +77,8 @@ def static_kit(app, name, reads=(), storage=None, allow_urls=()):
     check(f"a. the files: {', '.join(names)}", all(os.path.isfile(os.path.join(d, n)) for n in names), [n for n in names if not os.path.isfile(os.path.join(d, n))])
     html, js, core, css = (read(os.path.join(d, n)) for n in ("index.html", f"{app}.js", f"{app}core.js", f"{app}.css"))
     lines = html.splitlines()
-    i = next((n for n, ln in enumerate(lines) if "../olympus/olympus.js?v=o20" in ln), -1)
-    check(f'a. the kit: olympus.css?v=o7, agora.css after it, themes.js, olympus.js?v=o20 data-app="{app}", the intro tag on the very next line',
+    i = next((n for n, ln in enumerate(lines) if "../olympus/olympus.js?v=o21" in ln), -1)
+    check(f'a. the kit: olympus.css?v=o7, agora.css after it, themes.js, olympus.js?v=o21 data-app="{app}", the intro tag on the very next line',
           html.index("../olympus/olympus.css?v=o7") < html.index("../olympus/agora.css") < html.index(f"{app}.css") and "../olympus/themes.js?v=o9" in html
           and f'data-app="{app}"' in lines[i] and lines[i + 1].strip() == INCLUDE and html.count("intro-app.js") == 1, lines[i:i + 2])
     # the sound kit: olympus.js loads olympus/sfx.js on the first sound (day-a11y 2026-11-20, PERF ask 4: no parser-loaded 103 KB on every open);
