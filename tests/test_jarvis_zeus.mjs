@@ -117,7 +117,12 @@ for (const q of ['how are my accounts', 'did zeus trade today', 'how much to pas
 
 // ---------------------------------------------------------------------------------------------- 3b. night-zask: what's trading, trades per week, health
 {
-  const EDGE = JSON.parse(fs.readFileSync(path.join(WP, 'edge.json'), 'utf8'));
+  // a frozen copy of edge.json as of 2026-11-19 06:44 (data to Nov 6): the published file is refreshed by the PC / the nightly run
+  // (02d1a12c moved it to Nov 19), and these checks pin numbers; the live file only has to keep the shape
+  const EDGE = JSON.parse(fs.readFileSync(path.join(ROOT, 'tests', 'fixtures', 'jarvis_zeus_edge.json'), 'utf8'));
+  const REAL = JSON.parse(fs.readFileSync(path.join(WP, 'edge.json'), 'utf8'));
+  check('the published edge.json keeps the shape zeus.js reads (bots.lit / bots.atlas: tpw, win, pf, usd_month, to, light)',
+    ['lit', 'atlas'].every((k) => REAL.bots && REAL.bots[k] && ['tpw', 'win', 'pf', 'usd_month', 'to', 'light'].every((f) => REAL.bots[k][f] != null)), Object.keys(REAL.bots || {}));
   const K = [["what's trading", 'trading'], ["what's on what account", 'trading'], ['which bot is on which account', 'trading'], ['what is each account trading', 'trading'], ['what bots are on my accounts', 'trading'],
     ['trades per week', 'perf'], ['average trades a week', 'perf'], ['how many trades a week', 'perf'], ['trades week', 'perf'], ['how is it doing', 'perf'], ['how is atlas doing', 'perf'], ['zlarior stats', 'perf'], ['win rate of zlarior', 'perf'],
     ['health', 'health'], ['zeus health', 'health'], ['edge health', 'health'], ['is the edge ok', 'health'], ["how's the edge", 'health']];

@@ -314,8 +314,8 @@ def account_rows(board: dict, plan: dict, tr: list, have_trades: bool, week: dic
     for r in board.get("accounts") or []:
         k = str(r.get("key"))
         a = _d(pa.get(k))
-        if a.get("status") == "waiting" and r.get("balance") is None:
-            continue                                   # a planned account not bought yet: not part of this week
+        if a.get("status") in ("waiting", "buying", "planned") and r.get("balance") is None:
+            continue                                   # a planned account not bought yet ("buying" since 91297b48): not part of this week
         mine = [x for x in tr if x["acct"] == k]
         st = stats(mine)
         end = _f(r.get("balance"))

@@ -771,6 +771,11 @@ def open_me(p, origin, q=""):
 
 
 def test_page():
+    try:
+        import playwright  # noqa: F401
+    except ImportError:
+        print("[SKIP] page tests skipped: no Playwright (the PC has none; run them where Chromium is, under the browser lock)")
+        return
     from tools import me_hub
     doc = me_hub.build(NOW, None, full_inputs())
     srv, origin = AK.serve({"/me/me.json": json.dumps(doc)})

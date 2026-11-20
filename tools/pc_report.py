@@ -403,6 +403,11 @@ def gather(now=None, root: str = ROOT, env=None, http=None, port=PORT_DEFAULT, f
         except Exception as e:
             snap["live_error"] = f"{e.__class__.__name__}: {str(e)[:120]}"
     snap["alerts_pc"] = _telegram_on(root)
+    try:                                    # self-heal (engine/self_heal.py, night-selfheal): fixed / needs you + what grows on disk, <= 300 bytes
+        from engine import self_heal as _sh
+        snap["sh"] = _sh.read_tiny(root, now)
+    except Exception:
+        snap["sh"] = None
     try:                                    # real fills vs the live loop's plan (tools/fill_check.py, read-only: the bots' own files)
         from tools import fill_check
         snap["fills"] = fill_check.reviews(root, now)
@@ -553,6 +558,8 @@ def full(snap: dict) -> dict:
     life = _life(hb.get("life"))
     if life:
         out["life"] = life
+    if isinstance(snap.get("sh"), dict):     # self-heal's one line (engine/self_heal.read_tiny): rides an ext post, after EXT_ORDER
+        out["sh"] = snap["sh"]
     try:                                           # the MFFU-style account page (engine/mffu_view.py: start, days, trades, best day, equity)
         from engine import mffu_view
         mf = mffu_view.compact(L)
@@ -1994,6 +2001,14 @@ def main(argv=None) -> int:
         try:
             from engine import kalshi_live as _klv
             _klv.maybe_run(say=(lambda *_: None) if a.quiet else print)
+        except Exception:
+            pass
+        # self-heal (engine/self_heal.py, docs/SELF_HEAL.md), LAST: it may run pip for a few minutes. At most once an hour the known PC
+        # faults get their logged remedy (stale git lock, a file in the update's way, stuck order files, stale pid, missing packages,
+        # clock) + the weekly disk clean; one alert only when it could NOT fix something. Never starts, stops, arms or routes the bot; LE_SELF_HEAL=0 = off; soft
+        try:
+            from engine import self_heal as _sh
+            _sh.maybe_run(say=(lambda *_: None) if a.quiet else print)
         except Exception:
             pass
     return 0
