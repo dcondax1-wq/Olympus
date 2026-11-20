@@ -93,3 +93,15 @@ engine.fast_entry --on`; off again `--off`.
 
 Still coming tonight (16:05 ET check-in): today's 03:45 ET ATLAS short through the patched vs unpatched loop (needs today's
 bars from the PC) and the PC's exact open -> sent -> filled times (tools/research/fill_timing.py).
+
+## ROUND 2 evening additions
+
+- Today's 03:45 ET ATLAS short (Fri 2026-11-20) through origin/pc e3bf212d vs day-speed 77cead01, on the PC's own bars of
+  today (data/pc_days/2026-11-20/bars, appended to a scratch copy of data/): tools/update_gate.py SAME, 768 polls; both trade
+  SELL 1, stop 26,419.50, target 26,122.75, exit TARGET +$514.28 = the PC's real trade (PC booked +$514.18, its BE modify row
+  is not in the replay ledger). research/handoff/2026-11-20/updategate-replay/gate_fri_2026-11-20.json.
+- Today's real fill: 26,375.50 vs the 1m open 26,381.00 = 22 ticks (5th fill; ATLAS median now 14 ticks).
+  tools/research/fill_timing.py now reads the day bundles' trades.jsonl.gz -> research/handoff/2026-11-20/speed/fill_timing.json.
+- Proposal (lead's call, engine/datapipe.py): put the NinjaTrader legs' sent_at / fill_mtime (logs/exec_audit/legs.json,
+  account ids cut) into the day bundle, so the cloud can split open -> sent -> filled; today only the post-fill ledger stamp
+  travels. Needed to measure fast entry if the owner says yes.

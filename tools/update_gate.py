@@ -177,10 +177,11 @@ def main(argv=None) -> int:
     ap.add_argument("--sessions", type=int, default=10)
     ap.add_argument("--days", help="comma list instead of the last --sessions sessions")
     ap.add_argument("--max-polls", type=int, help="tests only")
+    ap.add_argument("--data-dir", help="bars to replay (default: this checkout's data/)")
     ap.add_argument("--json")
     ap.add_argument("--keep", action="store_true", help="keep the scratch worktrees (debugging)")
     a = ap.parse_args(argv)
-    res = run_gate(a.base, a.candidate, a.sessions, a.days.split(",") if a.days else None, a.max_polls, a.keep)
+    res = run_gate(a.base, a.candidate, a.sessions, a.days.split(",") if a.days else None, a.max_polls, a.keep, a.data_dir)
     print(f"  update gate: {res['verdict']}  {res.get('why', '')}")
     print(f"  base {res['base'][:10]} -> candidate {res['candidate'][:10]}, sessions {', '.join(res.get('days') or [])}")
     for d in res.get("trades") or []:
