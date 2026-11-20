@@ -47,8 +47,11 @@ export function payoutOf(a, rules) {
   const P = payPlan(a.size, rules), start = num(a.start), bal = num(a.balance);
   if (start == null || bal == null) return null;
   const line = start + P.buffer, over = bal - line;
-  if (over >= P.min) { const ask = Math.min(P.max, Math.floor(over)); return { ready: true, ask, toYou: Math.round(ask * P.split), need: 0, line, min: P.min }; }
-  return { ready: false, ask: 0, toYou: 0, need: Math.max(0, Math.ceil(line + P.min - bal)), line: line + P.min, min: P.min };
+  // the GOAL (owner 2026-11-20): the full max request, because only 5 sim payouts come before live: buffer + max (25K: $1,000 at $27,100,
+  // $800 to you); 'need' / 'line' stay the EARLIEST possible (the minimum request)
+  const goal = { ask: P.max, at: line + P.max, toYou: Math.round(P.max * P.split), need: Math.max(0, Math.ceil(line + P.max - bal)) };
+  if (over >= P.min) { const ask = Math.min(P.max, Math.floor(over)); return { ready: true, ask, toYou: Math.round(ask * P.split), need: 0, line, min: P.min, goal }; }
+  return { ready: false, ask: 0, toYou: 0, need: Math.max(0, Math.ceil(line + P.min - bal)), line: line + P.min, min: P.min, goal };
 }
 
 /** trades.json -> streak, last trade, win rate by setup and weekday. Real = live + paper; the replay fills in when real trades are too few */
@@ -131,7 +134,7 @@ export function hero(m, kind) {
   const nm = (a) => `${a.name}${a.size && !String(a.name).includes(a.size) ? ' ' + a.size : ''}`;
   if (kind === 'today') return { label: 'Today, every real account', value: m.today == null ? '-' : usdS(m.today), tone: m.today > 0 ? 'good' : m.today < 0 ? 'bad' : '', sub: `${m.accts.length} accounts · ${m.ages ? m.ages.pc.text : 'no PC report yet'}` };
   if (kind === 'pass') { const a = m.pass; return a ? { label: `To pass · ${nm(a)}`, value: usd(Math.max(0, a.toTarget)), tone: '', sub: `of the ${usd(a.target)} target · drawdown left ${usd(a.room)}` } : { label: 'To pass', value: '-', sub: 'No eval running', tone: '' }; }
-  if (kind === 'payout') { const x = m.pay; return x ? (x.p.ready ? { label: `Payout ready · ${nm(x.a)}`, value: usd(x.p.ask), tone: 'good', sub: `about ${usd(x.p.toYou)} to you after the 80% split` } : { label: `Next payout · ${nm(x.a)}`, value: usd(x.p.need), tone: '', sub: `more profit needed: ask at ${usd(x.p.line)} balance (min ${usd(x.p.min)})` }) : { label: 'Next payout', value: '-', sub: 'Payouts start once an eval passes', tone: '' }; }
+  if (kind === 'payout') { const x = m.pay; return x ? (x.p.ready ? { label: `Payout ready · ${nm(x.a)}`, value: usd(x.p.ask), tone: 'good', sub: `about ${usd(x.p.toYou)} to you after the 80% split` } : { label: `Payout goal · ${nm(x.a)}`, value: `${usd(x.p.goal.need)} to go`, tone: '', sub: `Goal: ${usd(x.p.goal.ask)} at ${usd(x.p.goal.at)} (you get ${usd(x.p.goal.toYou)}). Earliest: ${usd(x.p.min)} at ${usd(x.p.line)} (${usd(x.p.need)} to go)` }) : { label: 'Next payout', value: '-', sub: 'Payouts start once an eval passes', tone: '' }; }
   if (kind === 'net') return { label: 'Net: payouts minus fees', value: usdS(m.fees.net), tone: m.fees.net >= 0 ? 'good' : 'bad', sub: `fees ${usd(m.fees.fees)} · payouts ${usd(m.fees.payouts)} · from ${m.fees.src}` };
   if (kind === 'last') { const t = m.stats.last; return t ? { label: `Last trade · ${t.src === 'live' ? 'real' : 'paper'}`, value: usdS(t.usd), tone: t.usd > 0 ? 'good' : t.usd < 0 ? 'bad' : '', sub: `${dayWord(t.day)} ${t.hm || ''} · ${t.bot} ${String(t.side || '').toLowerCase()} · ${t.k || ''}`.replace(/\s+/g, ' ') } : { label: 'Last trade', value: '-', sub: 'No trade yet', tone: '' }; }
   const a = m.tight;   // room
@@ -172,7 +175,7 @@ export function render(root, m, parts, app) {
         const li = el('li', 'pu-row'), main = el('div', 'pu-rm');
         const nm = el('span', 'pu-rt', `${a.name}${String(a.name).includes(a.size) ? '' : ' ' + a.size} `); nm.appendChild(el('span', 'pu-badge ' + a.kind, a.kind === 'funded' ? 'Funded' : 'Eval')); main.appendChild(nm);
         const pay = a.kind === 'funded' ? payoutOf(a, m._rules) : null;
-        main.appendChild(el('span', 'pu-rs', `Room ${usd(a.room)} of ${usd(a.mll)} · ${a.kind === 'funded' ? (pay ? (pay.ready ? `payout ready ${usd(pay.ask)}` : `payout needs ${usd(pay.need)}`) : 'funded') : `${usd(Math.max(0, a.toTarget || 0))} to pass`}`));
+        main.appendChild(el('span', 'pu-rs', `Room ${usd(a.room)} of ${usd(a.mll)} · ${a.kind === 'funded' ? (pay ? (pay.ready ? `payout ready ${usd(pay.ask)}` : `payout goal ${usd(pay.goal.need)} to go`) : 'funded') : `${usd(Math.max(0, a.toTarget || 0))} to pass`}`));
         li.append(main, el('span', 'pu-re ' + toneOf(a.today), usdS(a.today || 0)));
         ul.appendChild(li);
       }
@@ -201,7 +204,7 @@ export function render(root, m, parts, app) {
     } else if (part === 'money') {
       box.appendChild(head('Payouts and fees', app, part));
       const g = el('div', 'pu-grid'), x = m.pay, F = m.fees;
-      g.append(tile('Next payout', x ? (x.p.ready ? usd(x.p.ask) : `needs ${usd(x.p.need)}`) : '-', x ? (x.p.ready ? `ready now · ${x.a.name}` : `ask at ${usd(x.p.line)} · ${x.a.name}`) : 'after an eval passes', x && x.p.ready ? 'good' : ''),
+      g.append(tile('Payout goal', x ? (x.p.ready ? usd(x.p.ask) : `${usd(x.p.goal.need)} to go`) : '-', x ? (x.p.ready ? `ready now · ${x.a.name}` : `Goal: ${usd(x.p.goal.ask)} at ${usd(x.p.goal.at)} (you get ${usd(x.p.goal.toYou)}). Earliest: ${usd(x.p.min)} at ${usd(x.p.line)} (${usd(x.p.need)} to go)`) : 'after an eval passes', x && x.p.ready ? 'good' : ''),
         tile('To you', x && x.p.ready ? usd(x.p.toYou) : '-', '80% split, before tax'),
         tile('Fees paid', usd(F.fees), F.src, 'bad'),
         tile('Net so far', usdS(F.net), `payouts ${usd(F.payouts)}`, toneOf(F.net)));
