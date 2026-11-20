@@ -14,3 +14,9 @@ Measured at 390 x 844, local copy of tools/web_public (external hosts blocked).
 
 Tests (with the lead's sw.js edit applied locally, then reverted): test_kalshi_page 347/347, test_kalshi_k8_dash 52/52,
 test_kalshi_k8_day 50/50, test_kalshi_clock 40/40, test_kalshi_live 83/83.
+
+## CLS (PERF ask, phone profile: CPU x4, 400 ms / 200 KB/s)
+| Page | Before | After | What |
+|---|---|---|---|
+| dionysus/ | 0.897 | 0.059 | K8 today on the page from the first paint at full height (never hidden later; no data = one line + link); status keeps 3 lines. Rest 0.058 = the header crumbs (NAV: gate-nav.js inserts nav.gn-crumbs ~3.3 s) |
+| kalshi/ | 0.469 | 0.105 | live-day box, windows list and K8 extras keep their height until first filled. Rest = the header (same NAV crumbs) |
