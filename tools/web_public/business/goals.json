@@ -21,7 +21,7 @@
    "funded"
   ]
  ],
- "pc": "PC: no report seen from the cloud (check the PC)",
+ "pc": "PC: reporting",
  "week": [
   {
    "date": "2026-11-18",
@@ -197,7 +197,7 @@
   ]
  ],
  "decisions": [
-  "Tell Claude: 2027 health cover (job / parent / spouse / none), under 34? Deadline Dec 31",
+  "Add the Rapid 25K: ADD_ACCOUNT.bat -> 5 -> its Name, then STOP + START BOT (this weekend)",
   "Before ATLAS's first payout: open a free brokerage + Treasury fund for the tax pot (20 min)"
  ],
  "sources": [

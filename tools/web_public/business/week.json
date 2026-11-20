@@ -1,16 +1,16 @@
 {
  "v": 1,
  "title": "ZEUS this week",
- "built": "2026-11-20 14:20 ET",
+ "built": "2026-11-20 16:25 ET",
  "built_by": "tools/weekly_review.py",
  "week": {
   "from": "2026-11-16",
   "to": "2026-11-20",
   "label": "Nov 16 - Nov 20",
-  "complete": false,
-  "sessions_done": 4
+  "complete": true,
+  "sessions_done": 5
  },
- "pc": "PC last reported Nov 20 9:30 ET",
+ "pc": "PC last reported Nov 20 16:15 ET",
  "accounts": [
   {
    "key": "zlarior",
@@ -18,7 +18,7 @@
    "plan": "MFFU Builder 50K",
    "stage": "eval",
    "end": 49192.78,
-   "src": "PC live, Nov 20 9:27 ET",
+   "src": "PC live, Nov 20 16:13 ET",
    "room": 1024.58,
    "to_pass": 3807.22,
    "trades": 1,
@@ -47,7 +47,7 @@
    "plan": "MFFU Builder 25K (funded)",
    "stage": "funded",
    "end": 25401.38,
-   "src": "PC live, Nov 20 9:27 ET",
+   "src": "PC live, Nov 20 16:13 ET",
    "room": 1401.38,
    "to_pass": null,
    "trades": 2,
@@ -61,7 +61,7 @@
    "start": 25000.0,
    "wins": 1,
    "losses": 1,
-   "r_week": 5.59,
+   "r_week": 1.94,
    "room_start": 1000.0,
    "consistency": {
     "rule": "funded: best day at most 50% of the cycle profit",
@@ -75,7 +75,7 @@
    "plan": "MFFU Builder 25K",
    "stage": "eval",
    "end": 25000.0,
-   "src": "PC live, Nov 20 9:27 ET",
+   "src": "PC live, Nov 20 16:13 ET",
    "room": 1000.0,
    "to_pass": 1500.0,
    "trades": 0,
@@ -113,10 +113,10 @@
     4.98
    ],
    "exp_src": "backtest_live.json (2026 Jul-Oct / Jan-Jun)",
-   "exp_usd_week": 306.0,
+   "exp_usd_week": 382.0,
    "plan_usd_month": 1656.0,
    "verdict": "behind",
-   "why": "-$129 this week"
+   "why": "1 trades (target 2-4); -$129 this week"
   },
   {
    "name": "ATLAS",
@@ -134,10 +134,10 @@
     2.75
    ],
    "exp_src": "edge_health.json (40-session medians, 2026)",
-   "exp_usd_week": 92.0,
+   "exp_usd_week": 115.0,
    "plan_usd_month": 500.0,
    "verdict": "ahead",
-   "why": "+$401 vs about $92 expected"
+   "why": "+$401 vs about $115 expected"
   }
  ],
  "light": {
@@ -147,14 +147,14 @@
  "changes": {
   "n": 200,
   "items": [
-   "Owner to-do: MFFU question dropped (owner 14:30: answer it from research), health cover + tax-pot...",
-   "Website business HQ (Agency - 'Websites'): research (15 offers, 40+ sources), expert (diagnosis +...",
-   "WEB demos: laptop layout (text left, 3D right, above the fold); demo.css d2; tests 42",
-   "WEB demos: Make it theirs (the prospect's name, town and phone in the demo from the gallery, text...",
-   "Web leads: research prices on every offer (starter site $1,500 + the right monthly add-on), Agency...",
-   "WEB demos: 4 sellable 3D website demos (restaurant, roofer, detailer, real estate) + the gallery...",
-   "Web leads: first real list (Frederick, partial: 67 businesses with no website, 2 hot, OSM via the...",
-   "Web leads (Agency): free OpenStreetMap lead finder (businesses with no website, scored, best..."
+   "Land OLYMPUS NIGHT round 1 (Board/Ledger/Hera, Trading/Business/Planner, Kalshi/Dionysus,...",
+   "Kalshi OLYMPUS NIGHT: black base, night cards, violet edges + glows, lavender, gold only on...",
+   "Dionysus FX: OLYMPUS NIGHT look (owner palette: black base, #16131e - #020204 cards, violet edges...",
+   "NAV FX - OLYMPUS NIGHT (owner 16:00 ET): black base, violet glass + outlines, violet/lavender...",
+   "FX - OLYMPUS NIGHT (owner 16:00 ET): panelfx violet/lavender glow + bright-gold accents (no cyan),...",
+   "Kalshi FX: refreshed phone screenshots; Dionysus FX work in progress snapshot",
+   "Kalshi FX (owner: 3D + effects, no gold): navy terminal look violet-led, glowing K8 cards, orb...",
+   "Board, Ledger, Hera FX in OLYMPUS NIGHT (owner 16:00 ET): moneyfx.css = black + violet glass..."
   ]
  },
  "next": {
@@ -174,14 +174,14 @@
    }
   ],
   "decisions": [
-   "Tell Claude: 2027 health cover (job / parent / spouse / none), under 34? Deadline Dec 31",
+   "Add the Rapid 25K: ADD_ACCOUNT.bat - 5 - its Name, then STOP + START BOT (this weekend)",
    "Before ATLAS's first payout: open a free brokerage + Treasury fund for the tax pot (20 min)"
   ],
   "steps": []
  },
  "pace": {
-  "usd_month": 1470.0,
-  "line": "On pace for $1,470 a month (estimate: this week's +$272 x 4.3; one week is noise, the plan says about $2,156). Eval $ is not cash until the account passes and pays out.",
+  "usd_month": 1180.0,
+  "line": "On pace for $1,180 a month (estimate: this week's +$272 x 4.3; one week is noise, the plan says about $2,156). Eval $ is not cash until the account passes and pays out.",
   "basis": "this week"
  },
  "twins": {
@@ -277,7 +277,7 @@
   "time": "03:45",
   "side": "SHORT",
   "usd": 514.18,
-  "r": 6.63,
+  "r": 2.98,
   "exit": "TARGET",
   "mfe_r": null,
   "cause": "target",
@@ -344,12 +344,10 @@
   }
  ],
  "weekend": [],
- "missing": [
-  "PC live numbers: last report Nov 20 9:30 ET (4 h ago)"
- ],
+ "missing": [],
  "sources": {
   "trades": "PC status post",
   "plan_updated": "2026-11-20",
-  "board_pc": "Nov 20 9:30 ET"
+  "board_pc": "Nov 20 16:15 ET"
  }
 }
