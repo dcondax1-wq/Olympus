@@ -130,7 +130,7 @@
 
   // ---------------------------------------------------------------- the sheet
   var CSS = [
-    '.oly-lbtn{display:inline-grid;grid-auto-flow:column;align-items:center;justify-content:center;gap:7px;min-width:40px;height:40px;padding:0 11px;border-radius:12px;cursor:pointer;color:var(--ink-2,var(--oly-th-n30, #cfc4b2));',
+    '.oly-lbtn{display:inline-grid;grid-auto-flow:column;align-items:center;justify-content:center;gap:7px;min-width:44px;height:44px;padding:0 11px;border-radius:12px;cursor:pointer;color:var(--ink-2,var(--oly-th-n30, #cfc4b2));',
     'background:var(--oly-th-n4, #1d1914);border:1px solid var(--oly-th-n8, #3a3228);font:700 12px/1 var(--oly-th-display, "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif);letter-spacing:.04em;transition:color .2s,border-color .2s}',
     '.oly-lbtn:hover,.oly-lbtn:focus-visible{color:var(--oly-th-n37, #f3ece0);border-color:var(--oly-th-a8, #c8a24a)}',
     '.oly-lbtn svg{width:18px;height:18px;display:block}.oly-lbtn .t{display:none}@media(min-width:900px){.oly-lbtn .t{display:inline}}',

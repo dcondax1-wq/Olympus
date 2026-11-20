@@ -97,6 +97,15 @@ let SLOW_UNTIL = 0;       // the site was just slow (the page waited NAV_WAIT_MS
 const COPY_CLIENTS = new Map();   // a page (client id) answered from the saved copy -> until when its data.json / home.json are too
 const BADGE = 'le-badge', BADGE_URL = './__badge';
 const OTHER_APPS = ['gate/', 'hub/', 'jarvis/', 'planner/', 'kalshi/', 'datacity/', 'mind/', 'tree/', 'oracle/', 'odeon/', 'fates/', 'hermes/', 'prometheus/', 'tyche/', 'pantheon/', 'olympus/', 'arena/', 'bridge/', 'ares/', 'plutus/', 'athena/', 'forum/', 'labyrinth/', 'argus/', 'nemesis/', 'chronos/', 'hephaestus/', 'cities/', 'kalshicity/', 'settings/', 'inbox/', 'ledger/', 'journal/', 'observatory/', 'atlascity/', 'delphi/', 'pnyx/', 'pc/', 'atlas/', 'hestia/', 'demeter/', 'apollo/', 'hera/', 'dionysus/', 'clio/', 'mint/', 'mintcity/', 'mercury/', 'chrysos/', 'sibyl/', 'oikos/', 'arbiter/', 'stoa/', 'aegis/', 'lyceum/', 'nike/', 'kronos/', 'moirai/', 'epilogue/', 'argo/', 'kratos/', 'pythia/', 'gallery/', 'kairos/', 'compass/', 'pheme/', 'harmonia/', 'helios/', 'ergasterion/', 'archive/', 'pinakes/', 'colosseum/', 'nq/', 'symposium/', 'herald/', 'polis/', 'agency/', 'business/', 'trading/', 'assets/', 'board/', 'why/', 'widget/']; // own folders (own workers or none): never handled or cached here
+const OWN_WORKER = ['jarvis/', 'kalshi/', 'hub/manual'];   // these folders have their own service worker (a worker a folder registers itself takes over its own scope anyway)
+const APP_CACHE = 'le-apps-v1', APP_MAX = 400;                          // not 'le-public-*': a cache-name bump keeps the apps' last copies
+const appNetFirst = (req) => fetch(req).then((r) => {
+  if (r && r.ok && r.type === 'basic') { const c = r.clone(); caches.open(APP_CACHE).then((x) => x.put(req, c).then(() => x.keys()).then((ks) => {
+    if (ks.length > APP_MAX) return Promise.all(ks.slice(0, ks.length - APP_MAX).map((k) => x.delete(k)));
+  })).catch(() => null); }
+  return r;
+}, () => caches.open(APP_CACHE).then((c) => c.match(req).then((hit) => hit || c.match(req, { ignoreSearch: true })))
+  .then((hit) => hit || (req.mode === 'navigate' ? offlinePage() : Response.error())));
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png?v=p111030', './icons/apple-touch-icon.png?v=p111030', './icons/icon-512.png?v=p111030', './zenith-icon.webp?v=1'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => null)); self.skipWaiting(); });
 self.addEventListener('activate', (e) => {
@@ -121,7 +130,13 @@ self.addEventListener('fetch', (e) => {
   // never cached, never answered from a cache (an old copy would look live). Cross-origin requests are not touched anyway.
   if (req.method !== 'GET' || url.origin !== location.origin || url.pathname.endsWith('live.json') || url.pathname.endsWith('status_feed.json')) return;
   const home = new URL(self.registration.scope).pathname, rel = url.pathname.slice(home.length);
-  if (OTHER_APPS.some((d) => rel === d.slice(0, -1) || rel.startsWith(d))) return;
+  if (OTHER_APPS.some((d) => rel === d.slice(0, -1) || rel.startsWith(d))) {
+    // perf/offline 2026-11-20: an app folder = network FIRST (online: exactly as before, always fresh), its last good copy when the
+    // network fails (offline after one visit). The apps with their own worker (OWN_WORKER) are never touched.
+    if (OWN_WORKER.some((d) => rel === d.slice(0, -1) || rel.startsWith(d)) || req.headers.has('range')) return;   // range = audio/video: the browser's own path
+    e.respondWith(appNetFirst(req));
+    return;
+  }
   const put = (key, res) => { if (res && res.ok) { const c = res.clone(); caches.open(CACHE).then((x) => x.put(key, c)).catch(() => null); } return res; };
   const isData = url.pathname.endsWith('data.json') || url.pathname.endsWith('home.json'), isPage = rel === '' || rel === 'index.html';
   if (isData || isPage) {
