@@ -96,9 +96,9 @@ local build). Re-run `python tools/trading_export.py --fetch` on a machine with 
   The daily caps (24 chart posts, 18 candle posts, 226 all posts) are unchanged.
   `tests.test_pc_bars` 75/75, with a new "trade open all day" day: the old code sent **0** candle posts that day, the new code one about every 75 min.
 - It reaches the PC with the normal auto-update (branch pc). The bot process does not use this file; it is the 15-minute reporter.
-- Worth a later look: with the ext on every run, the simulation spends ntfy's daily share by ~12:20 ET (3 posts a run). The status post is
-  protected, so the PC never looks silent, but the chart stops for the rest of the day. A better root fix is to leave the open trade's live $
-  out of `ext_hash` (the core post already carries it). I did not make that change; it is your call.
+- ROOT fix done too (lead 06:03 ET): `ext_hash` leaves an open trade's live $ / R out (`_news_of`: `at` open rows keep [entry_t .. kind], `board_trades`
+  open rows drop usd / r / live keys). The ext is back to every 2nd run with a trade open; an entry, a moved stop / target or a close still
+  posts it at once. The posted blocks still carry the live $. The grace guard stays as a backstop. Tests: test_live_publish (2 new checks, 86/86).
 - The page now says the candle age plainly: the Quality card's "Chart candles: last bar 1 h 35 min ago (8:55 AM ET)" (amber after 80 min
   in the bots' hours), on top of the chart's own "These are the PC's last bars (..., ... ago)".
 

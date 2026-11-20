@@ -748,11 +748,31 @@ def merged(snap: dict, max_bytes: int = MAX_STATUS_BYTES) -> dict:
     return pc_feed.merge(core, exts)
 
 
+LIVE_KEYS = ("usd", "r", "R", "pnl", "unrealized_usd", "usd_now", "now_usd", "mfe", "mae", "last", "px")
+
+
+def _news_of(k, v):
+    """One ext block as news: an OPEN trade's live $ / R (they move every run while it is open) left out, so only an entry, an exit, a moved
+    stop / target or a new day moves the hash (engine/mffu_view.py: "only what changes when a trade closes or a day ends"). The live $ still
+    rides in the posted block and in the core (nqdash3 2026-11-20: an open ATLAS short made every 15-minute run an ext run)."""
+    if k == "at" and isinstance(v, dict):                     # engine/feed_trades: tr = [entry_t, exit_t, dir, qty, entry, stop, target, kind, usd, r]
+        a = []
+        for row in v.get("a") or []:
+            if isinstance(row, dict):
+                row = {**row, "tr": [(x[:8] if isinstance(x, list) and len(x) >= 2 and x[1] is None else x) for x in row.get("tr") or []]}
+            a.append(row)
+        return {**{x: y for x, y in v.items() if x != "t"}, "a": a}
+    if k == "board_trades" and isinstance(v, list):
+        return [({x: y for x, y in t.items() if x not in LIVE_KEYS} if isinstance(t, dict) and (t.get("open") is True or str(t.get("exit") or "").upper() == "OPEN") else t)
+                for t in v]
+    return {a: b for a, b in v.items() if a != "t"} if isinstance(v, dict) else v
+
+
 def ext_hash(exts) -> str:
-    """The ext's news (block times and the brain glance left out): a new hash = post the ext now, not at the next EXT_EVERY_S."""
+    """The ext's news (block times, the brain glance and an open trade's live $ / R left out: _news_of): a new hash = post the ext now, not at
+    the next EXT_EVERY_S."""
     import hashlib
-    keep = [{k: ({a: b for a, b in v.items() if a != "t"} if isinstance(v, dict) else v) for k, v in _d(e.get("x")).items()
-             if k not in ("glance",)} for e in exts or []]
+    keep = [{k: _news_of(k, v) for k, v in _d(e.get("x")).items() if k not in ("glance",)} for e in exts or []]
     return hashlib.sha1(json.dumps(keep, sort_keys=True, default=str).encode("utf-8")).hexdigest()[:16]
 
 
