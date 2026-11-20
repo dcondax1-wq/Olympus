@@ -89,6 +89,20 @@ def static():
     check("summarise: the contrast fix names an exact colour", "#" in fx and ":1" in fx, fx)
 
 
+def what_if():
+    """--override: a proposed kit file is served in place of the real one, under its real type (the repo untouched)"""
+    import urllib.request
+    from tests import agora_kit as AK
+    srv, origin = S.serve_site(AK, {"/olympus/agora.css": b"/* proposed */"})
+    try:
+        r = urllib.request.urlopen(origin + "/olympus/agora.css?v=a7", timeout=10)
+        body, ctype = r.read(), r.headers.get("Content-Type", "")
+        r2 = urllib.request.urlopen(origin + "/olympus/olympus.css", timeout=10).read()
+    finally:
+        srv.shutdown()
+    check("what-if: the proposed agora.css is served as text/css, other files are the real ones", body == b"/* proposed */" and ctype.startswith("text/css") and len(r2) > 100, (body[:30], ctype))
+
+
 def serve(files):
     d = tempfile.mkdtemp(prefix="a11y-")
     for name, body in files.items():
@@ -131,6 +145,7 @@ def browser():
 
 if __name__ == "__main__":
     static()
+    what_if()
     if "--static" not in sys.argv:
         browser()
     print(f"\n{'ALL PASS' if not FAILS else str(len(FAILS)) + ' FAILED'}")
