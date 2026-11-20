@@ -4,11 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>3D website demos · Olympus Agency</title>
-<meta name="description" content="Four 3D website demos for local businesses (fictional): restaurant, roofer, car detailer, real estate. Open one on your phone in front of the owner.">
+<meta name="description" content="Five 3D website demos for local businesses (fictional): restaurant, roofer, car detailer, real estate, shed builder. Open one on your phone in front of the owner.">
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#101114">
 <meta name="color-scheme" content="dark">
-<!-- AGENCY demos gallery (agency/demos/index.html, day-web-demos 2026-11-20): the owner opens this on his phone in front of a prospect.
+<!-- prices: the research team's offers.json (day-archive 3110fc34, 2026-11-20): starter site $1,500 + $79/mo, before / after add-on $900 + $29/mo,
+     phone-scan 3D tour $500 a scan + $25/mo, configurator-lite $3,500 + $99/mo.
+     AGENCY demos gallery (agency/demos/index.html, day-web-demos 2026-11-20): the owner opens this on his phone in front of a prospect.
      Each card = a real one-page site for a FICTIONAL business, what it shows, what to say in 10 seconds, and what it sells for.
      "Client mode" hides the prices and the pitch lines (remembered on this phone). No 3D on this page: the pictures are stills of each demo. -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23d08c4a'/%3E%3C/svg%3E">
@@ -53,7 +55,7 @@ html.client .owner-only { display: none !important; }
   <div class="top">
     <a class="back owner-only" href="../">‹ Agency</a>
     <h1>3D websites, live on your phone.</h1>
-    <p class="lead soft" style="margin-top:10px">Four real one-page sites for local businesses. Open one, hand the phone over, let them turn it. Every business here is fictional.</p>
+    <p class="lead soft" style="margin-top:10px">Five real one-page sites for local businesses. Open one, hand the phone over, let them turn it. Every business here is fictional.</p>
     <label class="mode"><span>Client mode: hide prices and pitch lines</span><input type="checkbox" id="client"></label>
   </div>
 
@@ -64,7 +66,7 @@ html.client .owner-only { display: none !important; }
         <span class="kind">Restaurant · café · bakery</span>
         <h2>Lantern &amp; Thyme</h2>
         <p class="what">Tonight's dishes turn in 3D on a plate, the menu, reviews, map, and "Book a table" in two taps.</p>
-        <div class="sell owner-only"><div><b data-price="restaurant.setup">$1,800</b><span>to build</span></div><div><b data-price="restaurant.month">$99/mo</b><span>hosting + menu updates</span></div></div>
+        <div class="sell owner-only"><div><b data-price="restaurant.setup">$1,500</b><span>starter site</span></div><div><b data-price="restaurant.month">$79/mo</b><span>care plan: hosting + menu updates</span></div></div>
         <p class="pitch owner-only"><em>Say in 10 seconds</em>"Your customers decide on their phone. This lets them see the dish and book before they've left the sofa."</p>
         <a class="btn primary" href="restaurant/">Open the demo</a>
       </div>
@@ -75,7 +77,7 @@ html.client .owner-only { display: none !important; }
         <span class="kind">Roofer · contractor · remodeler</span>
         <h2>Northgable Roofing</h2>
         <p class="what">Slide from the storm-worn roof to the new one on a 3D house, pick the shingle colour, book a free check.</p>
-        <div class="sell owner-only"><div><b data-price="roofer.setup">$2,900</b><span>to build</span></div><div><b data-price="roofer.month">$149/mo</b><span>hosting + leads to your phone</span></div></div>
+        <div class="sell owner-only"><div><b data-price="roofer.setup">$2,400</b><span>site $1,500 + before / after $900</span></div><div><b data-price="roofer.month">$108/mo</b><span>care $79 + new roof pairs $29</span></div></div>
         <p class="pitch owner-only"><em>Say in 10 seconds</em>"One extra roof a year pays for this ten times. Homeowners pick their colour here, then call you, not the next roofer."</p>
         <a class="btn primary" href="roofer/">Open the demo</a>
       </div>
@@ -86,7 +88,7 @@ html.client .owner-only { display: none !important; }
         <span class="kind">Car detailer · dealer · wrap shop</span>
         <h2>Glossworks Detail Studio</h2>
         <p class="what">The car turns in a 3D showroom: flip before / after ceramic, change the paint, see the packages, book a bay.</p>
-        <div class="sell owner-only"><div><b data-price="detailer.setup">$1,500</b><span>to build</span></div><div><b data-price="detailer.month">$79/mo</b><span>hosting + booking</span></div></div>
+        <div class="sell owner-only"><div><b data-price="detailer.setup">$2,400</b><span>site $1,500 + before / after $900</span></div><div><b data-price="detailer.month">$108/mo</b><span>care $79 + new car pairs $29</span></div></div>
         <p class="pitch owner-only"><em>Say in 10 seconds</em>"Your Instagram shows the shine. This turns that shine into bookings, with the price on the page."</p>
         <a class="btn primary" href="detailer/">Open the demo</a>
       </div>
@@ -97,9 +99,20 @@ html.client .owner-only { display: none !important; }
         <span class="kind">Real estate · venue · rentals</span>
         <h2>Willow Row Lofts</h2>
         <p class="what">Walk room to room in 3D from the listing: overview from above, then living, kitchen, bedroom and terrace.</p>
-        <div class="sell owner-only"><div><b data-price="estate.setup">$3,500</b><span>agent site</span></div><div><b data-price="estate.listing">$450</b><span>per listing walk-through</span></div></div>
-        <p class="pitch owner-only"><em>Say in 10 seconds</em>"Buyers walk through on the train and only book the viewings they mean. Your listings get the clicks."</p>
+        <div class="sell owner-only"><div><b data-price="estate.setup">$500</b><span>per phone-scan 3D tour</span></div><div><b data-price="estate.listing">$25/mo</b><span>hosting per tour</span></div></div>
+        <p class="pitch owner-only"><em>Say in 10 seconds</em>"I scan your space with a phone in two hours; buyers walk through it on the train and only book the viewings they mean."</p>
         <a class="btn primary" href="estate/">Open the demo</a>
+      </div>
+    </article>
+    <article class="demo">
+      <a class="shot" href="shed/" aria-label="Open the shed builder demo"><img src="shed/thumb.jpg" width="560" height="449" alt="The shed builder demo: a red shed in 3D with the price beside it" loading="lazy"></a>
+      <div class="in">
+        <span class="kind">Sheds · pergolas · carports · trailers</span>
+        <h2>Cedar Hollow Sheds</h2>
+        <p class="what">Build-your-own: size, roof, colour and extras change the shed in 3D and the price live; the build goes with the quote.</p>
+        <div class="sell owner-only"><div><b data-price="shed.setup">$3,500</b><span>configurator-lite</span></div><div><b data-price="shed.month">$99/mo</b><span>hosting + price updates</span></div></div>
+        <p class="pitch owner-only"><em>Say in 10 seconds</em>"Your customers price their own shed at 10 pm and send you the build. Builders who do this say their leads double."</p>
+        <a class="btn primary" href="shed/">Open the demo</a>
       </div>
     </article>
   </div>
@@ -110,7 +123,7 @@ html.client .owner-only { display: none !important; }
       <label class="field">Business name<input name="biz" maxlength="40" autocomplete="off" placeholder="e.g. Rosa's Pizzeria" required></label>
       <div class="two-col"><label class="field">Town<input name="city" maxlength="30" autocomplete="off" placeholder="e.g. Springfield"></label>
         <label class="field">Their phone<input name="tel" type="tel" maxlength="16" autocomplete="off" placeholder="555 010 0199"></label></div>
-      <label class="field">Demo<select name="demo"><option value="restaurant">Restaurant · café</option><option value="roofer">Roofer · contractor</option><option value="detailer">Detailer · dealer</option><option value="estate">Real estate · venue</option></select></label>
+      <label class="field">Demo<select name="demo"><option value="restaurant">Restaurant · café</option><option value="roofer">Roofer · contractor</option><option value="detailer">Detailer · dealer</option><option value="estate">Real estate · venue</option><option value="shed">Sheds · builders</option></select></label>
       <div class="two-col"><button class="btn primary" type="submit">Open their demo</button><button class="btn ghost" type="button" id="copy">Copy the link</button></div>
       <p class="fine" id="copied" role="status" aria-live="polite"></p>
     </form>
