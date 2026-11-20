@@ -49,3 +49,7 @@ Rule: send 2 batches of 100 (a follow-up card goes on day 10 to anyone who did n
 - **Sat 12:00 ET:** security check of the AI caller (it would run on the trading PC).
 - **Your 30-minute setup (any time after):** then Claude mails the first 100 cards (best niches first: trades and contractors, dentists and health, salons, auto, restaurants).
 - **Day 10:** follow-up cards. **Week 2-4:** measure by card code, then scale or change.
+
+## Must happen before the first card is mailed (privacy)
+
+The concept sites must live on a **neutral web address**, not on the Olympus site: today they sit under the owner's personal GitHub address next to his trading dashboards, and that address shows his handle. Fix (free): a separate Cloudflare Pages project or a separate neutral GitHub organisation (e.g. a name like <agency>-sites), set as `public_base` in tools/site_factory_agency.json. The postcard and email tools refuse to send while it is missing (rule added 2026-11-20 17:40 ET). Owner step: create the free account (5 minutes); Claude publishes there. A real domain (~$12 a year) is optional and nicer.
