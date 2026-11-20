@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Agency</title>
+<title>Websites · Agency</title>
 <meta name="description" content="OLYMPUS AGENCY: the website-agency pipeline. Local businesses that need a website, their demo sites, the 30-second opener and the email, and every stage from new lead to won, with the dollars. Your notes stay in this browser.">
 <meta name="theme-color" content="#14110e">
 <meta name="mobile-web-app-capable" content="yes">
@@ -28,14 +28,55 @@
 <script src="../olympus/sfx.js?v=s4" defer></script>
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#d08c4a'); r.setProperty('--oly-accent-rgb', '208, 140, 74'); })();</script>
 <link rel="stylesheet" href="agency.css?v=a1q11">
+<link rel="stylesheet" href="hq.css?v=1">
+<script src="hq.js?v=1" defer></script>
 </head>
 <body>
 <main id="app">
   <header class="top">
-    <div class="brand"><img src="icon.svg" alt="" width="44" height="44"><div><h1 class="ag-title">Agency</h1><p class="sub">Websites for local businesses</p></div></div>
+    <div class="brand"><img src="icon.svg" alt="" width="44" height="44"><div><h1 class="ag-title">Agency</h1><p class="sub">Your website business HQ</p></div></div>
     <div class="tags"><span id="demo" class="tag demo" hidden>DEMO</span><span id="sample" class="tag" hidden>SAMPLE CITY</span><span id="lite" class="tag" hidden>LITE</span></div>
   </header>
   <p id="status" class="note" role="status" aria-live="polite">Loading...</p>
+
+  <!-- WEBSITE BUSINESS HQ (2026-11-20 day-web-hub): hq.js fills it; every box keeps its height while numbers arrive (no layout jump). The CRM below is unchanged. -->
+  <section class="hq" id="hq" aria-label="Website business HQ">
+    <section class="ag-card card hq-next" aria-labelledby="hqNextH">
+      <p class="hq-kicker" id="hqNextH">Next step today</p>
+      <p class="hq-next-text" id="hqNextText">Working out your next step...</p>
+      <p class="hq-next-why" id="hqNextWhy">Loading your pipeline...</p>
+      <a class="hq-go" id="hqNextGo" href="#today">Open Call today</a>
+    </section>
+    <section class="ag-card card" aria-labelledby="hqPipeH">
+      <h2 id="hqPipeH">Pipeline</h2>
+      <ol class="hq-pipe" aria-label="Leads, called, proposal, paid">
+        <li><b id="hqPLeads">0</b><span>Leads</span></li><li><b id="hqPCalled">0</b><span>Called</span></li><li><b id="hqPProp">0</b><span>Proposal</span></li><li class="paid"><b id="hqPPaid">0</b><span>Paid</span></li>
+      </ol>
+      <div class="hq-mrr"><div class="row"><span>Care plans</span><b id="hqMrr">$0 a month</b></div><div class="hq-bar" id="hqBar" role="img" aria-label="Care plans $0 of $1,000 a month: 0%"></div><p class="note" id="hqGoal">Goal $1,000 a month in care plans (about 12 clients on Growth)</p></div>
+    </section>
+    <nav class="hq-tiles" aria-label="Your website business">
+      <a class="hq-tile" data-slice="expert" href="expert/"><b>Expert</b><small>Ask anything: 3D sites, marketing, pricing, SEO</small><span class="hq-live">Open</span></a>
+      <a class="hq-tile" data-slice="leads" href="leads/"><b>Leads</b><small>Free local business finder (OpenStreetMap)</small><span class="hq-live">Open</span></a>
+      <a class="hq-tile" data-slice="audit" href="audit/"><b>Audit</b><small>Check a prospect’s site: what they lose</small><span class="hq-live">Open</span></a>
+      <a class="hq-tile" data-slice="demos" href="demos/"><b>Demos</b><small>4 3D sites to show on a call</small><span class="hq-live">Open</span></a>
+      <a class="hq-tile" data-slice="showcase" href="showcase/"><b>Showcase</b><small>Your own agency website</small><span class="hq-live">Open</span></a>
+      <a class="hq-tile" data-slice="offers" href="offers/"><b>Offers</b><small>Packages, proposals, monthly care plans</small><span class="hq-live">Open</span></a>
+      <a class="hq-tile" data-slice="calls" href="#today"><b>Calls</b><small>Who to call today, the opener, the email</small><span class="hq-live">Open</span></a>
+    </nav>
+    <section class="ag-card card" aria-labelledby="hqWeekH">
+      <div class="row"><h2 id="hqWeekH">This week</h2><span class="pill" id="hqWeekCount">0 of 6 done this week</span></div>
+      <p class="note">About 4 hours a week around a day job: evenings, one lunch break, Saturday. Tick each one; the ticks stay on this phone.</p>
+      <ol class="hq-week" id="hqWeek">
+        <li data-day="1"><label><input type="checkbox"><span class="hq-day">Mon</span><span class="hq-what">Find 10 new leads <small>(20 min)</small></span></label><a href="leads/" aria-label="Open Leads">&#8250;</a></li>
+        <li data-day="2"><label><input type="checkbox"><span class="hq-day">Tue</span><span class="hq-what">Audit 3 of their websites <small>(20 min)</small></span></label><a href="audit/" aria-label="Open Audit">&#8250;</a></li>
+        <li data-day="3"><label><input type="checkbox"><span class="hq-day">Wed</span><span class="hq-what">Build or refresh 1 demo site <small>(60 min)</small></span></label><a href="demos/" aria-label="Open Demos">&#8250;</a></li>
+        <li data-day="4"><label><input type="checkbox"><span class="hq-day">Thu</span><span class="hq-what">Lunch break: call 5 leads <small>(30 min)</small></span></label><a href="#today" aria-label="Open Call today">&#8250;</a></li>
+        <li data-day="5"><label><input type="checkbox"><span class="hq-day">Fri</span><span class="hq-what">Send 2 proposals <small>(30 min)</small></span></label><a href="offers/" aria-label="Open Offers">&#8250;</a></li>
+        <li data-day="6"><label><input type="checkbox"><span class="hq-day">Sat</span><span class="hq-what">Learn one thing, post one showcase piece <small>(40 min)</small></span></label><a href="expert/" aria-label="Open Expert">&#8250;</a></li>
+      </ol>
+    </section>
+    <h2 class="hq-crm" id="crmH">Calls and clients (your cold-call list)</h2>
+  </section>
 
   <section class="ag-card card hero" aria-labelledby="heroH">
     <div class="row"><h2 id="heroH">This month</h2><span class="pill" id="goalPill">...</span></div>
