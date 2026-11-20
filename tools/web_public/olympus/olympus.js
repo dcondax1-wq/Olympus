@@ -41,7 +41,7 @@
     board: ['Board', '▤', '#c8a24a'],
     business: ['Business', 'B', '#c8a24a'],
     trading: ['Trading', 'T', '#c8a24a'],
-    agency: ['Agency', 'Ε', '#d08c4a'],
+    agency: ['Websites', 'Ε', '#d08c4a'],
     polis: ['Polis', 'Πλ', '#e0b060'],
     herald: ['Herald', 'Η', '#c8a24a'],
     symposium: ['Symposium', 'Σ', '#d9b25a'],

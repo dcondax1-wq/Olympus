@@ -137,7 +137,7 @@ console.log(JSON.stringify({ doors: D.DOORS.map((d) => ({ id: d.id, title: d.tit
         check(f"d. {name} is the four doors (same ids, same app lists as olympus/doors.js)", got == want, got)
     lj = read(WEB, "launcher.js")
     check("d. the launcher loads doors.js with the list (async; olympus/doors.js on the phone, /js/next/doors.js on the PC) and groups by it",
-          "'olympus/doors.js?v=d10'" in lj and "'/js/next/doors.js?v=d10'" in lj and "D.DOORS.map" in lj and "OLYMPUS_DOORS" in lj)
+          "'olympus/doors.js?v=d11'" in lj and "'/js/next/doors.js?v=d11'" in lj and "D.DOORS.map" in lj and "OLYMPUS_DOORS" in lj)
 
 
 # ------------------------------------------------------------------ c. browser

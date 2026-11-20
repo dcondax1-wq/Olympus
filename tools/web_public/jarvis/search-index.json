@@ -1,4 +1,4 @@
-{"v":1,"kinds":["app","writeup","run","rejected","event","quiz","money","kalshi","term","rule"],"counts":{"app":77,"writeup":244,"run":633,"rejected":121,"event":42,"quiz":20,"money":40,"kalshi":11,"term":46,"rule":11},"sha":"1c1b6edee864","docs":[
+{"v":1,"kinds":["app","writeup","run","rejected","event","quiz","money","kalshi","term","rule"],"counts":{"app":77,"writeup":244,"run":633,"rejected":121,"event":42,"quiz":20,"money":40,"kalshi":11,"term":46,"rule":11},"sha":"592b79bc6f02","docs":[
 [0,"Zenith","NQ bots · Zlarior · ATLAS. ZEUS Trading district, Trading","zenith","","the apps list + OLYMPUS_MAP.md"],
 [0,"Oracle","The market radar, live. ZEUS Trading district, Trading","oracle","","the apps list + OLYMPUS_MAP.md"],
 [0,"Odeon","Every trade, replayed in 3D. ZEUS Trading district, Trading","odeon","","the apps list + OLYMPUS_MAP.md"],
@@ -63,7 +63,7 @@
 [0,"Symposium","Meet everyone who works for you, and talk to them. More district, Life","symposium","","the apps list + OLYMPUS_MAP.md"],
 [0,"Herald","The daily paper: who built what, the day, the verdicts, all sourced. More district, Life","herald","","the apps list + OLYMPUS_MAP.md"],
 [0,"Polis","The city of OLYMPUS: every app a building under the real New York sky. More district, Life","polis","","the apps list + OLYMPUS_MAP.md"],
-[0,"Agency","Website agency: leads, demo sites, calls and the $ pipeline. Money district, Money","agency","","the apps list + OLYMPUS_MAP.md"],
+[0,"Websites","Website business HQ: next step, leads, audits, 3D demos, offers, calls. Money district, Money","agency","","the apps list + OLYMPUS_MAP.md"],
 [0,"Business","Every money model: next step, what is missing, $ estimate. Money district, Money","business","","the apps list + OLYMPUS_MAP.md"],
 [0,"Trading","Every trade: today, calendar, stats, payout rules. ZEUS Trading district, Trading","trading","","the apps list + OLYMPUS_MAP.md"],
 [0,"Board","What the bot, you and Claude know: accounts, events, notes. ZEUS Trading district, Trading","board","","the apps list + OLYMPUS_MAP.md"],
