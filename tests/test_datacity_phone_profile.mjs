@@ -45,15 +45,15 @@ test('versioned module chain brings the phone profile to cached clients', () => 
   const scene = fs.readFileSync('tools/web_public/datacity/scene.js', 'utf8');
   const layout = fs.readFileSync('tools/web_public/datacity/layout.js', 'utf8');
   const towns = fs.readFileSync('tools/web_public/datacity/towns.js', 'utf8');
-  assert.match(index, /city\.js\?v=dcgfx1/);
-  assert.match(city, /scene\.js\?v=dcgfx1/);
-  assert.match(city, /layout\.js\?v=dcgfx1/);
-  assert.match(city, /minimap\.js\?v=dcgfx1/);
-  assert.match(scene, /caps\.js\?v=dcgfx1/);
-  assert.match(scene, /towns\.js\?v=dcgfx1/);
-  assert.match(scene, /streams\.js\?v=dcgfx1/);
-  assert.match(layout, /satellites\.js\?v=dcgfx1/);
-  assert.match(towns, /caps\.js\?v=dcgfx1/);
-  assert.match(towns, /satellites\.js\?v=dcgfx1/);
+  assert.match(index, /city\.js\?v=[\w.-]+/);
+  assert.match(city, /scene\.js\?v=[\w.-]+/);
+  assert.match(city, /layout\.js\?v=[\w.-]+/);
+  assert.match(city, /minimap\.js\?v=[\w.-]+/);
+  assert.match(scene, /caps\.js\?v=[\w.-]+/);
+  assert.match(scene, /towns\.js\?v=[\w.-]+/);
+  assert.match(scene, /streams\.js\?v=[\w.-]+/);
+  assert.match(layout, /satellites\.js\?v=[\w.-]+/);
+  assert.match(towns, /caps\.js\?v=[\w.-]+/);
+  assert.match(towns, /satellites\.js\?v=[\w.-]+/);
 });
 

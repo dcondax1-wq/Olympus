@@ -3,6 +3,7 @@
     python tests/run_area.py jarvis|olympus|zenith|kalshi|cities|nq|pc|all [options]
     python tests/run_area.py --list                    the areas and their suites
     python tests/run_area.py jarvis --only hub,home    only suites whose name contains one of these
+    python tests/run_area.py pc --skip a,b             leave these suites out (default: win_scripts; --skip '' runs it)
     options: --budget SEC      per-suite time budget (default 900; the slow browser suites get 3x); over it the suite's OWN process group
                                is stopped and the row says TIMEOUT
              --gate N          wait until the 1-minute load average is below N before each suite (default 2 x cpus; 0 = no gate)
@@ -91,6 +92,11 @@ AREAS["money"].append("business_taxes")   # day-taxes 2026-11-20: Taxes page + k
 PARTS = {"olympus_kit": [("a", ["datacity", "mind", "tree"]), ("b", ["oracle", "odeon", "fates"]), ("c", ["hermes", "prometheus", "tyche"]),
                          ("power", ["power", "tiers"]), ("more", ["more"])]}
 PARTS["combo_50k"] = [("sep", ["--seg", "2026-09-02"]), ("oct", ["--seg", "2026-10-02", "--scenario"])]   # night-combolive: one eval segment each
+AREAS["olympus"].append("node_suites")    # day-quality 2026-11-20: the 29 tests/*.mjs no Python suite ran (tests/test_node_suites.py), by part
+AREAS["cities"].append("node_suites")
+PARTS["node_suites"] = [("datacity", ["datacity"]), ("apps", ["apps"])]
+AREAS["pc"].append("site_checks")         # day-quality 2026-11-20: tools/site_checks.py (Kalshi cache = css/js ?v, worker tags, launcher drift, generated gap) + self_heal 'site'
+AREAS["olympus"].append("site_checks")
 SLOW = {"olympus_shell", "fit_edge", "jarvis_hub", "phone_e2e", "olympus_kit", "olympus_themes", "olympus_render", "zenith_mode", "ui_polish", "datacity", "jarvis_home"}
 
 
@@ -190,6 +196,7 @@ def main(argv=None) -> int:
     ap.add_argument("area", nargs="?", choices=sorted(list(AREAS) + ["all"]))
     ap.add_argument("--list", action="store_true")
     ap.add_argument("--only", default="")
+    ap.add_argument("--skip", default="win_scripts", help="suites to leave out, comma list of exact names (default win_scripts: never in a cloud run)")
     ap.add_argument("--budget", type=float, default=900)
     ap.add_argument("--gate", type=float, default=2.0 * CPUS)
     ap.add_argument("--gate-wait", type=float, default=300)
@@ -205,6 +212,8 @@ def main(argv=None) -> int:
     if a.only:
         keys = [k.strip() for k in a.only.split(",") if k.strip()]
         names = [n for n in names if any(k in n for k in keys)]
+    skip = {k.strip() for k in a.skip.split(",") if k.strip()}
+    names = [n for n in names if n not in skip]
     env = dict(os.environ)
     if a.fast:
         env["BK_FAST"] = "1"
