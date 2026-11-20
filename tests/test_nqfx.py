@@ -36,12 +36,18 @@ def static():
     check("a. the vault module imports only local files (three r160 from jarvis/, RoomEnvironment)",
           set(imp) == {"../jarvis/three.module.min.js", "./three-addons/RoomEnvironment.js"}, imp)
     js = (OLY / "nqfx.js").read_text(encoding="utf-8")
-    check("a. nqfx.js: classic script on fx-core (defines chartTrail + payoutVault with a still version), the 3D after load + idle, never with no WebGL / weak line",
-          "FX.define('chartTrail'" in js and "FX.define('payoutVault'" in js and js.count("still: function") == 2 and "requestIdleCallback" in js
+    check("a. nqfx.js: classic script on fx-core (defines chartTrail + payoutVault + nqRing, each with a still version), the 3D after load + idle, never with no WebGL / weak line",
+          "FX.define('chartTrail'" in js and "FX.define('payoutVault'" in js and js.count("still: function") == 3 and "requestIdleCallback" in js
           and "WebGLRenderingContext" in js and "saveData" in js and not re.search(r"^\s*import\s", js, re.M))
+    lab = (OLY / "nqfx-lab.html").read_text(encoding="utf-8")
+    v3 = (OLY / "nqvault3d.js").read_text(encoding="utf-8")
+    gold = [f for f, t in (("nqfx.js", js), ("nqvault3d.js", v3), ("nqfx-lab.html", lab))
+            if re.search(r"f2b84b|ffc35a|e3a93a|ffe7a3|9a6a1c|8a5d17|ffe2b0|ffcf5a|242, 184, 75|\bgold\s*[=:(]|coinG|nqv-g", t, re.I)]
+    check("a. the NQ look (owner 2026-11-20: no gold): navy / cyan / blue / violet, green only for a win; no gold colour left in the kit files",
+          not gold and all(c in js for c in ("#0b1220", "#22d3ee", "#3b82f6", "#8b5cf6", "#22c55e")) and "theme: function" in js and "FX.define('nqRing'" in js, gold)
     ds = (ROOT / "docs" / "DESIGN_SYSTEM.md").read_text(encoding="utf-8")
     api = ROOT / "research" / "handoff" / "2026-11-20" / "nq4" / "FX_API.md"
-    verbs = ("win", "loss", "milestone", "ring", "roll", "trail", "vault")
+    verbs = ("theme", "win", "loss", "milestone", "ring", "roll", "trail", "vault")
     check("a. the API is documented: DESIGN_SYSTEM.md section 6 and nq4/FX_API.md name every verb",
           "## 6. NQ effects" in ds and api.exists() and all(f"NQFX.{v}(" in ds and f"NQFX.{v}(" in api.read_text(encoding="utf-8") for v in verbs))
 
@@ -111,6 +117,19 @@ def browser():
             p.wait_for_timeout(300)
         check("b. the chart trail: a glow under the line and a moving light over it (4 paths), following a redrawn line",
               n0 == 4 and same and len(seen) > 3, (n0, same, sorted(seen)[:5]))
+        col = p.evaluate("() => [...document.querySelectorAll('svg.chart path')].filter(x => x.id !== 'line').map(x => x.getAttribute('stroke'))")
+        check("b. the chart trail is cyan (glow + light), the light's head pale cyan", "#22d3ee" in col and "#e0f7ff" in col, col)
+        th = p.evaluate("""() => { const N = OLYMPUS_NQFX, before = N.theme().cyan; const after = N.theme({ cyan: '#ff00aa', bad: 'not-a-colour' });
+          const svg = document.querySelector('svg.chart'), l2 = document.createElementNS('http://www.w3.org/2000/svg', 'path'); l2.setAttribute('d', 'M0 10 L100 20'); svg.appendChild(l2);
+          const h = N.trail(l2); const c = [...svg.querySelectorAll('path')].some(x => x.getAttribute('stroke') === '#ff00aa'); h.stop(); l2.remove(); N.theme({ cyan: before });
+          return [before, after.cyan, 'bad' in after, c, N.theme().cyan]; }""")
+        check("b. NQFX.theme({...}) overrides a colour for the next effects (bad values ignored) and can be put back", th == ["#22d3ee", "#ff00aa", False, True, "#22d3ee"], th)
+        for _ in range(5):
+            p.click("#ringUp")
+        p.wait_for_timeout(1800)
+        px = p.evaluate("""() => { const c = document.querySelector('#ring canvas'), g = c.getContext('2d'); const d = g.getImageData(0, 0, c.width, c.height).data; let v = 0, y = 0;
+          for (let i = 0; i < d.length; i += 4) { if (d[i + 3] < 200) continue; if (d[i] > 110 && d[i + 2] > 200 && d[i + 1] < 120) v++; if (d[i] > 180 && d[i + 1] > 140 && d[i + 2] < 90) y++; } return [v, y]; }""")
+        check("b. the goal ring at 100% is violet (no gold pixels)", px[0] > 200 and px[1] == 0, px)
         # moments
         p.click("#pnlUp")
         p.click("#loss")
