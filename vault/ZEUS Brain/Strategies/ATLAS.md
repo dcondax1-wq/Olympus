@@ -135,6 +135,7 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-20 | [[skeptic-live-patches-2026-11-20\|Skeptic check of the two live sizing patches]] | research |
 | 2026-11-20 | [[skeptic-atlas-streak-2026-11-20\|Skeptic check of Decide card atlas-funded-streak-1micro]] | research |
 | 2026-11-20 | [[regime-guard-2026-11-20\|Regime guard]] | rejected |
 | 2026-11-20 | [[atlas-risk-real-fills-2026-11-20\|ATLAS funded 25K at real fills]] | finding |
@@ -174,9 +175,8 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 | 2026-10-28 | [[scalp-na-mffu\|BLITZ]] | promising |
 | 2026-10-27 | [[b-holds-vs-lit-priority\|B-holds vs LIT priority]] | rejected |
 | 2026-10-26 | [[atlas-funded\|ATLAS's funded account]] | adopt-candidate |
-| 2026-10-25 | [[live-learning\|Live learning]] | info |
 
-... and 17 older (see the families).
+... and 18 older (see the families).
 
 ## Links
 

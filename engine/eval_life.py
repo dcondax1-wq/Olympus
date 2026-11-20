@@ -483,7 +483,7 @@ def set_anchor(balance, floor, as_of, account: str | None = None, path: str | No
     return 0
 
 
-SITE_HOME = "https://demetrades2000-coder.github.io/nq-dashboard/home.json"
+SITE_HOME = "https://dcondax1-wq.github.io/home.json"
 
 
 def anchors_from_board(home: dict) -> list:

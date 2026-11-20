@@ -64,7 +64,35 @@ def fetch_lite(get=None) -> dict | None:
     except Exception:  # noqa: BLE001
         return None
     from tools import pc_feed                      # the core post + its newest ext post(s) merged (the old single post as it was)
-    return pc_feed.pick(msgs) if ok else None
+    from tools import status_sign as S             # day-security 2026-11-20: anyone can post to the public topic
+    vk = S.feed_vk(STATUS_FEED)
+    lite = pc_feed.pick(S.filter_msgs(msgs, vk)) if ok else None    # never a future-dated post; with a pinned vk only signed ones
+    if isinstance(lite, dict) and vk:
+        _SIGNED[id(lite)] = lite                   # kept beside the post, never in it (the post's own keys stay exactly as posted)
+    return lite
+
+
+_SIGNED: dict = {}                                 # posts fetch_lite checked against the pinned vk (held, so an id is never reused)
+
+
+def signed(lite) -> bool:
+    return isinstance(lite, dict) and _SIGNED.get(id(lite)) is lite
+
+
+UNSIGNED = "ntfy-unsigned"
+UNSIGNED_NOTE = ("ntfy status feed is NOT signed yet (anyone can post there): its events, owner notes and Decide taps are "
+                 "marked [ntfy-unsigned] and not counted as owner notes; act on them only after the owner confirms in chat")
+
+
+def _unsigned(evs: list) -> list:
+    """Events read from an unsigned public post: labelled, and never an open owner note (board_events skips data.via)."""
+    out = []
+    for e in evs or []:
+        e = dict(e)
+        e["src"] = UNSIGNED
+        e["data"] = {**B._d(e.get("data")), "via": UNSIGNED}
+        out.append(e)
+    return out
 
 
 def lite_live(lite: dict | None, plan_accounts=None) -> dict:
@@ -127,6 +155,9 @@ def gather(offline: bool = False, hb=None, lite=None, now=None) -> dict:
     pcb = B._d(hb.get("board")) if hb.get("present") else {}
     ev_hb = pcb.get("events") or []
     ev_nt, live_nt = B.from_status(B._d(B._d(lite).get("brd")))
+    if lite is not None and not signed(lite):
+        ev_nt = _unsigned(ev_nt)
+        notes.append(UNSIGNED_NOTE)
     live = {}
     for r in pcb.get("accounts") or []:                     # the PC's own rows (its emit()s), as of its heartbeat
         if isinstance(r, dict) and r.get("key") and r.get("src") in ("PC", "PC live") and B._f(r.get("balance")) is not None:

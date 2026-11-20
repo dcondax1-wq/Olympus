@@ -234,7 +234,7 @@ def moves(tr: dict, models: list, rd: list) -> list:
     if len(prod) > 4:
         out.append({"id": "m-shop-rest", "what": f"Upload the other {len(prod) - 4} products (site templates, social kit, agency kit, planner).", "minutes": 60, "usd": [0, 50],
                     "where": "Business > Ready to upload"})
-    out.append({"id": "m-account4", "what": f"Account #4: not yet. Buy the LucidPro 50K about {a4.get('buy_on') or 'after the first payout'} (money in the bank first).",
+    out.append({"id": "m-account4", "what": f"Next buy after the Rapid EOD 25K: the Rapid EOD 50K about {a4.get('buy_on') or 'after the first payout'} (money in the bank first; MFFU only).",
                 "minutes": 0, "usd": [0, 0], "where": "Business > Trading money"})
     return out[:7]
 
@@ -259,13 +259,16 @@ def prop_plan(sample: bool = False, path: str | None = None) -> dict | None:
                      "y1_p10": p.get("y1_p10"), "ref_usd_month": (ref.get(n) or {}).get("usd_month_y1")})
     na = d.get("new_account") or {}
     out = {"label": "ESTIMATE", "span": "Jul-Oct 2026 replay (the check half)", "source": "tools/money/payout_plan.py -> research/lab/payout_plan.json",
-           "table": rows, "new_account": {"plan": na.get("plan"), "price": na.get("price")},
+           # MFFU only (owner 2026-11-20, Decide drop-lucid-account4): the next account is an MFFU Rapid EOD 50K at $165 (CLUB); the research
+           # table below was priced with a $134.40 copy account, so its fees are about $31 a buy low (said in the notes)
+           "table": rows, "new_account": {"plan": "MFFU Rapid EOD 50K", "price": 165.0, "research_price": na.get("price")},
            "rules": ["Buy the next account only from a payout that reached your bank: one new account per payout, and only when "
                      "the payout money holds two of its price (one to buy, one kept for a re-buy).",
-                     "MFFU funds only ONE Builder 50K a person: account #3 and up are LucidPro 50K copies of Zlarior (Lucid allows 5 funded).",
+                     "MFFU only (owner 2026-11-20): the next accounts are the Rapid EOD 25K now, then the Rapid EOD 50K and a fresh Builder 50K from payouts.",
                      "Stop rule: at most 2 re-buys from your own pocket ($183.60); past that stop and rethink.",
                      "Prop money: you can lose only the fees, never more; a bad week inside an account is the firm's money."],
-           "notes": ["Every account copies the SAME Zlarior signal (daily correlation about 0.94): a bad week hits all of them at once, "
+           "notes": ["The table was worked out at $134.40 an account (an older plan); the MFFU Rapid EOD 50K costs $165, about $31 more a buy.",
+                     "Every account copies the SAME Zlarior signal (daily correlation about 0.94): a bad week hits all of them at once, "
                      "so more accounts multiply the good months AND the empty ones.",
                      "Backtest of 2026 (where LIT works); on 2021-25 (no edge) the same plan makes about $0 a month. Nothing is promised.",
                      "ATLAS's $ is the stored research estimate (a different bot), added from month 3."]}

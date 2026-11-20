@@ -1,22 +1,22 @@
 ---
 tags:
   - zeus/decide
-  - decide/open
+  - decide/yes
 type: "decide"
 id: "cloud-alerts"
-status: "open"
+status: "yes"
 usd_month: 0
 recommend: "yes"
 ---
 
 # Decide: Let the cloud watch your PC (a tiny free check every 30 min on the backup GitHub repo) so you get a push if the PC goes silent?
 
-> [!question] OPEN · $0 a month
+> [!success] YES · $0 a month
 > Answer it on the Decide card (Business app): YES / NO / LATER.
 
 |  |  |
 |---|---|
-| Status | open |
+| Status | yes |
 | $ a month | $0 |
 | Claude recommends | yes |
 | $ a month by market | jan-jun: $0 · jul-oct: $0 · 2021-25: $0 |

@@ -151,7 +151,11 @@ def part_d():
     from tools import board as T
     b = B.build(events=evs, plan_doc=PLAN, now=NOW + 5)
     ln = [x for x in T.lines(b, now=NOW + 5) if x.startswith("DECIDE CARD")]
-    check("d. board.py read: one DECIDE CARD line with the open count and ids", ln and f"{N_OPEN} open" in ln[0] and "payout-ping-1000" in ln[0], ln)
+    # 2026-11-20 lead: the owner answered every card (0 open is a real state): the line then says "0 open" and lists no ids
+    first_open = next((c["id"] for c in json.load(open(os.path.join(ROOT, "tools", "web_public", "business", "decisions.json"), encoding="utf-8"))["items"]
+                       if c.get("status") == "open"), None)
+    check("d. board.py read: one DECIDE CARD line with the open count and ids", ln and f"{N_OPEN} open" in ln[0]
+          and (first_open in ln[0] if first_open else N_OPEN == 0), ln)
 
 
 class Site(http.server.SimpleHTTPRequestHandler):
@@ -231,11 +235,43 @@ def part_e():
         srv.shutdown()
 
 
+def part_f():
+    """day-arenas 2026-11-20: business/plan.html's "Answer these first" (decide.js data-decide-mode="rank"): open cards by $ a month (the fleet
+    plan's top_decide number first, else usd_month), top 3 = answer now, the rest later, answered / closed = done; the skeptic badge."""
+    r = node("""
+      const doc = { items: [
+        { id: 'a', question: 'qa', status: 'open', usd_month: 50, risk: 'lost 10% -> 12% (Jul-Oct-like; more); x' },
+        { id: 'b', question: 'qb', status: 'open', usd_month: 600, source: 'research/writeups/skeptic-atlas-streak-2026-11-20.md' },
+        { id: 'c', question: 'qc', status: 'open', usd_month: -20 }, { id: 'd', question: 'qd', status: 'open', usd_month: 10 },
+        { id: 'e', question: 'qe', status: 'done', usd_month: 900 }, { id: 'f', question: 'qf', status: 'open', usd_month: 300 } ] };
+      const fleet = { top_decide: [{ id: 'a', usd: 700 }] };
+      const R = D.rank(doc, fleet, { f: { answer: 'yes', t: 9 }, d: { answer: 'later', t: 3 } });
+      const R0 = D.rank(doc, null, {});
+      out({ now: R.now.map((x) => x.item.id), later: R.later.map((x) => x.item.id), done: R.done.map((x) => x.item.id), by: R.now.map((x) => x.by),
+            s: R.now[0].sentence, twice: R.now.map((x) => x.twice), now0: R0.now.map((x) => x.item.id), junk: D.rank(null, 5, null) });
+    """)
+    check("f. rank: open cards by $ a month, the fleet plan's number first (a: $700 beats its own $50); top 3 answer now; an answered card (yes) is done, 'later' stays open",
+          r.get("now") == ["a", "b", "d"] and r.get("later") == ["c"] and r.get("done") == ["e", "f"] and r.get("by") == ["fleet plan", "this card", "this card"], r)
+    check("f. without the fleet plan: the cards' own usd_month (b $600, f $300, a $50)", r.get("now0") == ["b", "f", "a"], r)
+    check("f. one plain sentence: 'Yes = +$700 a month (fleet plan); risk: <first clause, brackets closed>.'",
+          r.get("s") == "Yes = +$700 a month (fleet plan); risk: lost 10% -> 12% (Jul-Oct-like).", r.get("s"))
+    check("f. 'checked twice' only when a skeptic write-up is named on the card", r.get("twice") == [False, True, False], r.get("twice"))
+    check("f. junk in -> empty lists, no throw", r.get("junk") == {"now": [], "later": [], "done": []}, r.get("junk"))
+    html = rd(BIZ, "plan.html")
+    check("f. plan.html mounts the ranked view near the top (data-decide-mode=\"rank\", decisions.json + fleet_plan.json) and loads decide.js",
+          'data-decide-mode="rank"' in html and 'data-decide-fleet="fleet_plan.json"' in html and '<script src="decide.js?v=' in html
+          and html.index('id="decide"') < html.index('id="mktH"'))
+    js = rd(BIZ, "decide.js")
+    check("f. the tap is unchanged: the ranked view uses the same itemView / send (one POST /inbox/board, X-Olympus-Inbox)",
+          js.count("fetch('/inbox/board'") == 1 and "mountRanked" in js and "itemView(r.item, st, pc)" in js)
+
+
 def main():
     part_a()
     part_b()
     part_c()
     part_d()
+    part_f()
     if not os.environ.get("DECIDE_NO_BROWSER"):
         part_e()
     n = sum(RES)

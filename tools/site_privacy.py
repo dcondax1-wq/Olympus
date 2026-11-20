@@ -41,7 +41,8 @@ PRIVATE_NAMES = {"household.json", "agency.json", "day.json", "inbox.json", "cal
                  "invoices.json", "clients.json", "crm.json", "leads.json", "tv.json", "tv_device.json", "autostart.json", "live_state.json",
                  "push.json", "push_pc_key.json", "push_sent.json", "memory.db", "goals_money.json", "money_rules.json", "fleet.json",
                  "health.json", "cards.json", "card_tracker.json", "heartbeat_last.json", "heartbeat.json", ".env",
-                 "me.json"}                                    # the Me hub (tools/me_hub.py -> data/me/, 2026-11-15: its name was missing)
+                 "me.json",                                    # the Me hub (tools/me_hub.py -> data/me/, 2026-11-15: its name was missing)
+                 "status_sign.json"}                           # the PC's status-topic signing key (tools/status_sign.py, day-security 2026-11-20)
 DATA_EXT = (".json", ".jsonl", ".csv", ".txt", ".md")
 PRIVATE_PREFIXES = ("household", "health_", "cards_", "card_tracker", "bank_", "statement_")      # data files only
 PRIVATE_SUFFIXES = (".ics", ".ofx", ".qfx", ".qbo", ".pem", ".key", ".p12", ".pfx", ".env", ".jsonl", ".db", ".sqlite", ".kdbx")
@@ -49,7 +50,8 @@ PRIVATE_SUFFIXES = (".ics", ".ofx", ".qfx", ".qbo", ".pem", ".key", ".p12", ".pf
 PRIVATE_KINDS = {"olympus-household", "olympus-money-ledger", "olympus-day", "olympus-inbox", "olympus-health", "olympus-cards",
                  "olympus-card-tracker", "olympus-agency", "olympus-agency-summary", "agency-summary", "olympus-calendars",
                  # the Me hub's own files (tools/me_hub.py, me_cards.py, me_home.py, me_health.py; 2026-11-15: these kinds were missing)
-                 "olympus-me", "olympus-me-cards", "olympus-home", "olympus-health-history"}
+                 "olympus-me", "olympus-me-cards", "olympus-home", "olympus-health-history",
+                 "le-status-sign"}                                # tools/status_sign.py key file (day-security 2026-11-20)
 SECRET_KEYS = {"telegram_token", "telegram_chat", "discord_webhook", "vapid_private", "private_key", "netlify_token", "api_key", "apikey",
                "api_secret", "client_secret", "password", "passwd", "kalshi_key", "kalshi_key_id", "kalshi_private_key", "tradovate_password",
                "access_token", "refresh_token", "auth_token", "webhook_key", "push_subs"}

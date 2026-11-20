@@ -82,17 +82,17 @@ def test_static():
     doors_static(ids)
     ph, pc = read(WEB, "index.html"), read(NEXT, "index.html")
     check("b. the phone dashboard has ONE tag, launcher.js (deferred); the list is loaded by the launcher, async, so a slow site never holds Zenith back",
-          '<script src="launcher.js?v=l19" defer></script>' in ph and "apps-list" not in ph and "olympus/apps-list.js?v=l9" in read(WEB, "launcher.js"))
-    check("b. the PC dashboard has ONE tag, js/next/launcher.js (the list comes from js/next/apps-list.js, in the worker's ASSETS)", '<script src="/js/next/launcher.js?v=l19" defer></script>' in pc and "apps-list" not in pc and "/js/next/apps-list.js?v=l9" in read(NEXT, "js", "next", "launcher.js"))
+          '<script src="launcher.js?v=l20" defer></script>' in ph and "apps-list" not in ph and "olympus/apps-list.js?v=l9" in read(WEB, "launcher.js"))
+    check("b. the PC dashboard has ONE tag, js/next/launcher.js (the list comes from js/next/apps-list.js, in the worker's ASSETS)", '<script src="/js/next/launcher.js?v=l20" defer></script>' in pc and "apps-list" not in pc and "/js/next/apps-list.js?v=l9" in read(NEXT, "js", "next", "launcher.js"))
     sw = read(NEXT, "sw.js")
     v = re.search(r"const SHELL = 'le-shell-next-v(\d+)'", sw)
-    check("b. the PC worker caches both files and its version is bumped (v34 or later)", "'/js/next/apps-list.js?v=l9'" in sw and "'/js/next/launcher.js?v=l19'" in sw and v and int(v.group(1)) >= 34)
+    check("b. the PC worker caches both files and its version is bumped (v34 or later)", "'/js/next/apps-list.js?v=l9'" in sw and "'/js/next/launcher.js?v=l20'" in sw and v and int(v.group(1)) >= 34)
     check("b. the root worker is untouched by the launcher (it fetches versioned files at run time; olympus/ is skipped on purpose)", "launcher" not in read(WEB, "sw.js") and "apps-list" not in read(WEB, "sw.js"))
     js = read(WEB, "launcher.js")
     check("b. launcher.js: read-only (no POST, no orders), every storage call in try, Safari 16 safe (no lookbehind, ?., ??, .at())",
           not re.search(r"method:\s*['\"](POST|PUT|DELETE)", js) and not re.search(r"\(\?<[=!]|\?\?|\.at\(|[\w)\]]\?\.[A-Za-z_$]", js) and js.count("localStorage.") == 2 and "try {" in js)
     check("b. launcher.js: the keys oly.launcher.recent / oly.launcher.status, the public site URL for the PC, the status fetch is lazy (only on open)",
-          "'oly.launcher.recent'" in js and "'oly.launcher.status'" in js and "https://demetrades2000-coder.github.io/nq-dashboard/" in js and js.index("function loadStatus") < js.index("function open()") and "loadStatus();" in js[js.index("function open()"):])
+          "'oly.launcher.recent'" in js and "'oly.launcher.status'" in js and "https://dcondax1-wq.github.io/" in js and js.index("function loadStatus") < js.index("function open()") and "loadStatus();" in js[js.index("function open()"):])
 
 
 def doors_static(ids):
@@ -162,7 +162,7 @@ def page(br, origin, fx=None, reduced=False, width=390, height=844):
     ctx = br.new_context(viewport={"width": width, "height": height}, device_scale_factor=2, is_mobile=width < 600, has_touch=width < 600,
                          reduced_motion="reduce" if reduced else "no-preference")
     # PC: the public site is another origin: answer its status cards from the local tree so the dots can be checked; everything else off-origin is refused
-    pub = "https://demetrades2000-coder.github.io/nq-dashboard/"
+    pub = "https://dcondax1-wq.github.io/"
 
     def route(r):
         u = r.request.url
@@ -304,9 +304,9 @@ def test_pc(br, origin):
     S = p.evaluate("OLYMPUS_LAUNCHER.state()")
     j = p.evaluate("(() => { const a = document.querySelector('.oly-l .oly-jv'); return [a.href, a.target, a.rel]; })()")
     t = p.evaluate("(() => { const a = document.querySelector('.oly-l .oly-tile[data-app=oracle]'); return [a.href, a.target, a.rel]; })()")
-    check("c. PC: the button is in the top bar; the sheet's links go to the public site (https://demetrades2000-coder.github.io/nq-dashboard/<app>/) in a new tab",
-          inbar and S["pc"] and S["tiles"] == NTILES and j[0] == "https://demetrades2000-coder.github.io/nq-dashboard/jarvis/" and j[1] == "_blank" and "noopener" in j[2]
-          and t[0] == "https://demetrades2000-coder.github.io/nq-dashboard/oracle/" and t[1] == "_blank", (inbar, S, j, t))
+    check("c. PC: the button is in the top bar; the sheet's links go to the public site (https://dcondax1-wq.github.io/<app>/) in a new tab",
+          inbar and S["pc"] and S["tiles"] == NTILES and j[0] == "https://dcondax1-wq.github.io/jarvis/" and j[1] == "_blank" and "noopener" in j[2]
+          and t[0] == "https://dcondax1-wq.github.io/oracle/" and t[1] == "_blank", (inbar, S, j, t))
     until(p, DOTS)
     dots = p.evaluate("[...document.querySelectorAll('.oly-l .oly-tile')].map((t) => t.dataset.status).filter(Boolean)")
     check("c. PC: the status dots are read from the public site's jarvis.json files (cross-origin) and cached", len(dots) >= 10 and p.evaluate("!!localStorage.getItem('oly.launcher.status')"), len(dots))

@@ -170,6 +170,11 @@ def main() -> int:
     check("b. the owner's git name(s) and email(s) are in no tracked file (git metadata only)", not names, names[:8])
     check("b. no personal folder (C:\\Users\\<name>\\, /Users/<name>/) outside tests/", not folders, folders[:8])
     check("b. no age phrase (with the goal's date it gives the birthday away) in the public sources", not ages, ages[:6])
+    old_site = [f for f in files if f.endswith((".bat", ".ps1")) or (f.startswith("engine/") and f.endswith(".py"))]
+    old_site = [f for f in old_site if "-coder.github.io" in (open(os.path.join(ROOT, f), encoding="utf-8", errors="ignore").read()
+                                                            if os.path.exists(os.path.join(ROOT, f)) else "")]
+    check("c. no .bat / .ps1 / engine file fetches from the OLD GitHub account's site (deleted: anyone could take the name; day-security W5)",
+          not old_site, old_site[:8])
     check("b. no Tailscale address or tailnet name (they map the owner's devices) outside tests/", not nets, nets[:6])
     extra = sorted(f for f in ids_where if f not in ACCOUNT_FILES_OK)
     if can_ids:

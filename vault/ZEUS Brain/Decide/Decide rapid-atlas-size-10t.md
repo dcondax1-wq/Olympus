@@ -1,10 +1,10 @@
 ---
 tags:
   - zeus/decide
-  - decide/open
+  - decide/yes
 type: "decide"
 id: "rapid-atlas-size-10t"
-status: "open"
+status: "yes"
 added: "2026-11-20"
 usd_month: -31
 recommend: "yes"
@@ -12,12 +12,12 @@ recommend: "yes"
 
 # Decide: Rapid 25K: size ATLAS for its real fills (assume a 10-tick worse stop)?
 
-> [!question] OPEN · -$31 a month
+> [!success] YES · -$31 a month
 > Answer it on the Decide card (Business app): YES / NO / LATER.
 
 |  |  |
 |---|---|
-| Status | open |
+| Status | yes |
 | Added | 2026-11-20 |
 | $ a month | -$31 |
 | Claude recommends | yes |

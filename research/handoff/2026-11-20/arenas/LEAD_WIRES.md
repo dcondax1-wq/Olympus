@@ -22,3 +22,10 @@ Lead-only files this branch needs touched. Nothing below was edited by the helpe
 
 ## 5. Optional (not lead-only, left for whoever owns them)
 - `tests/run_area.py` now lists `pulse` in the `olympus` area (one line, done here).
+
+## Round 3 (the Decide view, business/plan.html)
+- Door shortcut: if a door / hub tile says "Answer 3 cards" (or similar) and should land on the new ranked view, point it at
+  `business/plan.html#decide` (the section id is `decide`). I did not find such a tile in my folders; the Board and ZEUS keep their own Decide box.
+- Optional: `board/index.html` line 73 and `hub/zeus.html` line 131 load `../business/decide.js?v=2`; bump both to `?v=4` so phones get the
+  same file as plan.html. Nothing changes on those two pages (the ranked look only turns on with `data-decide-mode="rank"`; the tap and its
+  POST are byte-for-byte the same), so this is housekeeping, not required. I did not edit them (board/ and hub/ are not mine).

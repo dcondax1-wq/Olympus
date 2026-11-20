@@ -50,13 +50,13 @@ def test_browser():
             ctx, p, errs, seen, off = AK.page(br, origin)
             p.goto(f"{origin}/gate/?now={GP.NOW}&hfx=1")
             p.wait_for_function("window.GATE && window.GATE.ready()", timeout=60000, polling=200)
-            mid = p.evaluate("[...document.querySelectorAll('#nowFacts .g-fv')].map((e) => e.textContent)")
+            mid = p.evaluate("[...document.querySelectorAll('#nowFacts .g-fv, #money .g-mv, #money .g-mtv')].map((e) => e.textContent)")
             p.wait_for_timeout(1600)
-            end = p.evaluate("[...document.querySelectorAll('#nowFacts .g-fv')].map((e) => e.textContent)")
+            end = p.evaluate("[...document.querySelectorAll('#nowFacts .g-fv, #money .g-mv, #money .g-mtv')].map((e) => e.textContent)")
             s = state(p)
             check("b. Gate: the hero canvas draws, the loop runs, nothing frozen", s and s["hero"] and s["draws"] > 5 and not s["still"] and p.locator(".hfx-hero canvas").count() == 1, s)
-            check("b. Gate: Right now money counts up and lands on the exact text ($1,420 drawdown left, +$272 today)",
-                  "$1,420" in end and "+$272" in end and mid != end, (mid, end))
+            check("b. Gate: the money row counts up and lands on the exact text ($49,420 Zlarior's balance, +$272 today; cities3)",
+                  "$49,420" in end and "+$272" in end and mid != end, (mid, end))
             ring = p.evaluate("(() => { const r = document.querySelector('#nowFacts .hfx-ring'); return r && { win: r.getAttribute('data-win'), off: +r.querySelector('.hfx-rv').getAttribute('stroke-dashoffset') }; })()")
             check("b. Gate: the trade-window ring sits on the open window (part used)", ring and ring["win"] == "open" and 0 < ring["off"] < 76, ring)
             check("b. Gate: the 'Bots on' badge pulses (live)", p.evaluate("getComputedStyle(document.querySelector('#nowBadge'), '::after').animationName") == "hfx-ping")

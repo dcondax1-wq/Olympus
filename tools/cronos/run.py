@@ -24,7 +24,7 @@ from tools.cronos import fresh, registry
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 WEB = os.path.join(ROOT, "tools", "web_public")
 DEFAULT_OUT = os.path.join(ROOT, "research", "cronos", "out")
-SITE_DATA_URL = "https://demetrades2000-coder.github.io/nq-dashboard/data.json"   # the public site's data.json (paper ledger)
+SITE_DATA_URL = "https://dcondax1-wq.github.io/data.json"   # the public site's data.json (paper ledger)
 LOG_TAIL = 40
 
 

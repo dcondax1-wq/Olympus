@@ -1,10 +1,10 @@
 ---
 tags:
   - zeus/decide
-  - decide/open
+  - decide/later
 type: "decide"
 id: "zlarior-atlas-50k"
-status: "open"
+status: "later"
 added: "2026-11-19"
 usd_month: 696
 recommend: "yes"
@@ -12,12 +12,12 @@ recommend: "yes"
 
 # Decide: Zlarior's Builder 50K: ATLAS trades it too (one position at a time, first bot in keeps it; ATLAS at half its size until the eval passes, full size once funded)?
 
-> [!question] OPEN · +$696 a month
+> [!note] LATER · +$696 a month
 > Answer it on the Decide card (Business app): YES / NO / LATER.
 
 |  |  |
 |---|---|
-| Status | open |
+| Status | later |
 | Added | 2026-11-19 |
 | $ a month | +$696 |
 | Claude recommends | yes |
