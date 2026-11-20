@@ -2072,9 +2072,10 @@ def part_rewards(br, url, tmp):
               and isinstance(copy.get("backtest"), dict) and bool(copy["backtest"].get("text")), str(copy)[:200])
         open_()
         t = p.inner_text("#krw")
-        check("rw1. the card is under the PAUSED note, the K8 live day (day-kalshi) and the K8 status card (night-kalshi8): 'Rewards test (paper)', Earned, Fills, Net, Days, '$0 at risk', 'saved copy', the backtest line",
-              p.evaluate("document.querySelector('#kpaused').nextElementSibling.id") == "k8d" and p.evaluate("document.querySelector('#k8d').nextElementSibling.id") == "k8s"
-              and p.evaluate("document.querySelector('#k8s').nextElementSibling.id") == "krw" and "Rewards test (paper)" in t
+        order = p.evaluate("[...document.querySelectorAll('main > section, main > div, main > h2')].map((e) => e.id).filter(Boolean).slice(0, 7).join(' ')")
+        check("rw1. K8 first (Olympus 2): live day, K8 status, the go-live checklist, then 'History and tests' with the PAUSED note and this card: "
+              "'Rewards test (paper)', Earned, Fills, Net, Days, '$0 at risk', 'saved copy', the backtest line",
+              order.startswith("k8d k8s kgo khist kpaused krw") and "Rewards test (paper)" in t
               and all(w in t for w in ("Earned", "Fills", "Net", "Days", "$0 at risk", "saved copy", "Backtest (30 days)")), t[:300])
         check("rw1. the numbers are the copy's ($ earned, fill $)", ("$%.2f" % copy["paper"]["reward"]) in t, t[:200])
         k0 = p.inner_text("#kpaused")
