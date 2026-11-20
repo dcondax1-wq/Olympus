@@ -241,6 +241,23 @@ export function planWorld(w, opts) {
     stats: { instances: n, data, filler: n - data, places: N } };
 }
 
+/** the sky for the market clock (US Eastern): the NQ cash session 9:30-16:00 on a weekday = golden hour (1), an hour round it = blue
+ * hour (0.5), else night (0). sky: 'night' | 'blue' | 'dusk' forces one (the ?sky= query, captures); anything else = the clock. */
+export function skyFor(sky, date) {
+  if (sky === 'night') return 0;
+  if (sky === 'blue') return 0.5;
+  if (sky === 'dusk' || sky === 'day') return 1;
+  try {
+    const f = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', weekday: 'short', hour: 'numeric', minute: 'numeric', hour12: false });
+    const parts = Object.fromEntries(f.formatToParts(date || new Date()).map((x) => [x.type, x.value]));
+    if (parts.weekday === 'Sat' || parts.weekday === 'Sun') return 0;
+    const m = (+parts.hour % 24) * 60 + +parts.minute;
+    if (m >= 570 && m < 960) return 1;
+    if (m >= 510 && m < 1020) return 0.5;
+    return 0;
+  } catch (e) { return 0; }
+}
+
 // ------------------------------------------------------------------------------------------------ the camera
 export function poseToCam(p) {
   const cp = Math.cos(p.pitch), ty = p.ty || 0;

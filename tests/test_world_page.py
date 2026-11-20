@@ -44,8 +44,23 @@ def test_static():
           and not re.search(r"\b(place_order|submit_order|arm_live)\b", main + scene + core))
     check("a. phone-safe: the render core caps the pixel ratio at 2 (maxDpr: 2), tiers (onTier: no mirror and fewer lights on low), reduced motion = no flyover",
           "maxDpr: 2" in scene and "rc.onTier(applyTier)" in scene and "mirror.visible = !lowT" in scene and "prefers-reduced-motion" in main and "reduced ? 1 : " in scene)
+    # revamp-cities 2026-11-20 (owner: "looks like a 2000's computer built it"): the look's parts stay in (research/handoff/2026-11-20/revamp-cities/LOOK.md)
+    check("a. revamp look: one prism for shaped towers (chamfer / taper, a box batch of 10 triangles), lit floors with a far fallback, the market-clock sky (uDusk), "
+          "clouds, the far shore, satellite towns, LED bands, aircraft, light-streak traffic",
+          "function prism(box)" in scene and "iShape" in scene and "onFar" in sh and "uDusk" in sh and "FAR_FS" in sh and "uTowns" in sh and "BAND_FS" in sh
+          and "PLANE_FS" in sh and "setDisplay" in scene and "towns" in core and "setDisplay(0, l.text)" in main)
+    check("a. the reflection pass never takes exp() of a big positive (the NaN bloom blobs of the first try): heights are abs()'d", "float wy = abs(vW.y);" in sh and "exp(-vW.y" not in sh)
+    check("a. reduced motion: the LED text stands still, no aircraft", "reduced ? 0 : 0.035 / rep" in scene and "planes.visible = !reduced" in scene)
+    try:
+        out = subprocess.run(["node", "--input-type=module", "-e", "import {skyFor} from './ow-core.js'; const t = (s) => skyFor('auto', new Date(s));"
+                              "console.log(JSON.stringify([t('2026-11-20T15:00:00Z'), t('2026-11-20T14:00:00Z'), t('2026-11-21T15:00:00Z'), t('2026-11-20T03:00:00Z'), skyFor('night'), skyFor('dusk')]))"],
+                             cwd=D, capture_output=True, text=True, timeout=60).stdout.strip()
+        check("a. the sky follows the market clock (ET): Fri 10:00 golden hour, 9:00 blue hour, Saturday night, 22:00 night; ?sky= forces it (%s)" % out, out == "[1,0.5,0,0,0,1]", out)
+    except (OSError, subprocess.SubprocessError) as e:
+        check("a. the market-clock sky (node not found: skipped)", True, str(e))
     cities = AK.read(os.path.join(AK.WEB, "cities", "index.html"))
-    check("a. the Cities app's front screen links Olympus World (world/)", 'href="world/"' in cities)
+    check("a. the Cities app's front screen links Olympus World (world/), as a card with a real frame of the 3D city (world-card.jpg)", 'href="world/"' in cities
+          and "world-card.jpg" in cities and os.path.isfile(os.path.join(AK.WEB, "cities", "world-card.jpg")) and os.path.isfile(os.path.join(D, "poster.jpg")))
     w = json.load(open(os.path.join(D, "world.json"), encoding="utf-8"))
     check("a. world.json: 'olympus-world', 4 districts, hundreds of places (%d)" % len(w.get("places", [])), w.get("kind") == "olympus-world" and len(w["districts"]) == 4 and len(w["places"]) > 300)
 

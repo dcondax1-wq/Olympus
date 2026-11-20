@@ -5,26 +5,11 @@
 import * as THREE from '../../jarvis/three.module.min.js';
 import { createRenderer } from '../../olympus/render.js';
 import * as SH from './ow-shaders.js?v=w3';
-import { poseToCam, lerpPose, ease, warpCurve, clampPose, homePose, overviewPose, districtPose, placePose, clamp, hex, rng } from './ow-core.js?v=w3';
+import { poseToCam, lerpPose, ease, warpCurve, clampPose, homePose, overviewPose, districtPose, placePose, clamp, hex, rng, skyFor } from './ow-core.js?v=w3';
 
 const MOON = new THREE.Vector3(0.28, 0.2, -1).normalize();
 
-/** the sky for the market clock (US Eastern): the NQ cash session 9:30-16:00 on a weekday = golden hour (1), an hour round it = blue
- * hour (0.5), else night (0). sky: 'night' | 'blue' | 'dusk' forces one (the ?sky= query, captures); anything else = the clock. */
-export function skyFor(sky, date) {
-  if (sky === 'night') return 0;
-  if (sky === 'blue') return 0.5;
-  if (sky === 'dusk' || sky === 'day') return 1;
-  try {
-    const f = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', weekday: 'short', hour: 'numeric', minute: 'numeric', hour12: false });
-    const parts = Object.fromEntries(f.formatToParts(date || new Date()).map((x) => [x.type, x.value]));
-    if (parts.weekday === 'Sat' || parts.weekday === 'Sun') return 0;
-    const m = (+parts.hour % 24) * 60 + +parts.minute;
-    if (m >= 570 && m < 960) return 1;
-    if (m >= 510 && m < 1020) return 0.5;
-    return 0;
-  } catch (e) { return 0; }
-}
+
 
 function prism(box) {
   // revamp-cities (2026-11-20): one prism for every building piece. 8 walls round a square whose corners are cut by the instance's
@@ -222,7 +207,7 @@ export function createWorld(opts) {
   const dn = bandSpec.length, dA = new Float32Array(dn * 4), dB = new Float32Array(dn * 4), dC = new Float32Array(dn * 3), dP = new Float32Array(dn);
   bandSpec.forEach((b, k) => {
     const circ = 2 * Math.PI * b.r, rep = Math.max(1, Math.round(circ / (b.h * 16)));
-    dA.set([b.x, b.y, b.z, b.r], k * 4); dB.set([b.h, b.row, rep, 0.035 / rep], k * 4); dC.set(b.col, k * 3); dP[k] = b.place;
+    dA.set([b.x, b.y, b.z, b.r], k * 4); dB.set([b.h, b.row, rep, reduced ? 0 : 0.035 / rep], k * 4);            // reduced motion: the text stands still dC.set(b.col, k * 3); dP[k] = b.place;
   });
   const bandGeo = new THREE.CylinderGeometry(1, 1, 1, 32, 1, true).translate(0, 0.5, 0);
   const bands = new THREE.Mesh(instanced(bandGeo, [['aBand', dA, 4], ['aBand2', dB, 4], ['aCol', dC, 3], ['aPlace', dP, 1]], dn),
@@ -265,7 +250,7 @@ export function createWorld(opts) {
   }
   const planes = new THREE.Mesh(instanced(new THREE.PlaneGeometry(1, 1), [['aPlane', pA, 4], ['aKind', pK, 1]], pn * 3),
     new THREE.ShaderMaterial({ vertexShader: SH.PLANE_VS, fragmentShader: SH.PLANE_FS, uniforms: { ...U }, ...additive }));
-  planes.renderOrder = 6; planes.frustumCulled = false;
+  planes.renderOrder = 6; planes.frustumCulled = false; planes.visible = !reduced;
   scene.add(planes);
   // ---- warp streaks (view space)
   const wn = opts.tier === 'low' ? 220 : 480, wS = new Float32Array(wn * 4), wC = new Float32Array(wn * 3), wr = rng(5);
