@@ -70,6 +70,10 @@ details.ex-card[open] > summary::after { content: "\2212"; }
 .ex-offers td.p { width: 36%; overflow-wrap: anywhere; color: var(--ag-gold-hi, #dcbd6e); font-weight: 700; }
 .ex-foot { margin-top: 26px; color: var(--ag-muted, #a89c88); font-size: .9375rem; }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+/* the room the playbook fills (measured at 390 px), held only while empty: the fill does not move the page (CLS) */
+.ex-wait { min-height: 462px; margin: 0; }
+#cards:empty { min-height: 1536px; } #nichelist:empty { min-height: 1020px; } #offers:empty { min-height: 2542px; } #honest:empty { min-height: 152px; }
+@media (min-width: 700px) { .ex-wait { min-height: 444px; } }
 </style>
 <script type="module" src="expert.js?v=1"></script>
 <script src="../../olympus/themes.js?v=o9" defer></script>
@@ -83,7 +87,7 @@ details.ex-card[open] > summary::after { content: "\2212"; }
   <p class="ex-sub">Sell, price, build and market websites (3D too) to local businesses. The exact words to say and the $ ranges. Jarvis answers from the same playbook.</p>
 
   <h2 class="ex-h2" id="diagnose">Diagnose a prospect in 5 taps</h2>
-  <section class="ex-card" id="dx" aria-live="polite"><p class="ex-step">Loading...</p></section>
+  <section class="ex-card" id="dx" aria-live="polite"><p class="ex-step ex-wait">Loading...</p></section>
 
   <h2 class="ex-h2" id="playbooks">Playbooks</h2>
   <input class="ex-search" id="find" type="search" placeholder="Search: pricing, 3D, roofer, reviews..." aria-label="Search the playbooks" autocomplete="off">

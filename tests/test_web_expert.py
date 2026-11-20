@@ -18,6 +18,7 @@ import re
 import subprocess
 import sys
 import threading
+import time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB = os.path.join(ROOT, "tools", "web_public")
@@ -142,6 +143,18 @@ def part_c():
                     check("c[ivory]. the Ivory look paints the page light", sum(rgb) / 3 > 180, m["bg"])
                 check(f"c[{look}]. no page errors", not errs, errs[:3])
                 ctx.close()
+            # the fill must not move the page: expert.js arriving late (a slow phone) after the first paint, layout shift < 0.02 at 390 px
+            ctx = b.new_context(viewport={"width": 390, "height": 844}, is_mobile=True, has_touch=True, service_workers="block")
+            ctx.route(re.compile(r"^https?://(?!127\.0\.0\.1)"), lambda r: r.abort())
+            ctx.route(re.compile(r".*/agency/expert/(expert\.js|playbook\.json).*"), lambda r: (time.sleep(0.4), r.continue_()))
+            ctx.add_init_script("window.__cls = 0; new PerformanceObserver((l) => { for (const e of l.getEntries()) if (!e.hadRecentInput) window.__cls += e.value; }).observe({ type: 'layout-shift', buffered: true });")
+            p = ctx.new_page()
+            p.goto(url, wait_until="load")
+            p.wait_for_function("window.EXPERT && window.EXPERT.ready", timeout=20000)
+            p.wait_for_timeout(800)
+            cls = p.evaluate("window.__cls")
+            check("c. the playbook fills without moving the page (layout shift < 0.02 with a late script)", cls < 0.02, cls)
+            ctx.close()
             b.close()
     finally:
         srv.shutdown()
