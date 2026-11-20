@@ -111,6 +111,15 @@ LEAD_WIRES #1 (the ZEUS tile straight to ZEUS) cuts 1 tap off 5 of them.
 - hub/zeus.js (v=7): the room line. tests: test_nav_search.py, test_nav_pages.py (new); test_help_page / test_zeus_hub: themes.js allowed.
 - Shots: before/ and after/ (390x844, deviceScaleFactor 2, dark + light).
 
+## Follow-up (lead, 15:03 UTC)
+
+| What | Result |
+|---|---|
+| What's new page | `hub/whatsnew.html` + `whatsnew.json` (24 lines: today + this week, newest first) + `whatsnew.js`: each line = status (On the site now / Comes with the PC's next update / Needs your yes / Your step / Tested: nothing changed), the $ first where it is money, plain words, one "where to tap" button. "Needs me" filter (4 lines today). Linked from Help ("What's new") and the search ("what's new", "what changed"). No security details on the public page (the security report's holes are left out on purpose). |
+| docs/OLYMPUS_MAP.md | Still generated (`tools/olympus_map_build.py`): + "What each door opens first, and what is folded under Archive" (29 open first, 48 archived, from doors.js ARCHIVE) + "Merged: where a folded app lives now" (Ares / Kairos / Chronos -> NQ cards, Odeon / Why -> Trading cards, Sibyl / Kalshi City -> Dionysus, Apollo / Epilogue / Kratos / Nemesis -> Journal, Pythia / Delphi / Forum -> Helios, Plutus / Argo -> Hera, Labyrinth -> Pnyx; every anchor checked). tests.test_olympus_map 7/7 (it was 6/7: the doc was stale). |
+| Accessibility (own pass while day-a11y's list is pending) | axe-core 4.10.2 WCAG A + AA on help, steps, manual, zeus, doors, whatsnew, the bots hub, in the default look and Ivory: 0 violations, after fixing 3 contrast fails on ZEUS under Ivory (Passed chip, the open-window text: now through the look tokens). |
+| Tests | nav_pages 22/22 (+ whatsnew: content, links, privacy, the filter, both looks), nav_search 4/4 (70 phrasings), help 35/35, zeus 52/52, olympus_map 7/7 |
+
 ## Not done (honest)
 - Gate search UI (gate/gate.js, Home team) is unchanged: it already draws actions first and opens the first row on Enter, so the catalog fix
   reaches it as is. A "?find=words" deep link is an ask (ASKS.md #2).
