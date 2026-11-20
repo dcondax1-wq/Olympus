@@ -3305,8 +3305,10 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('mess
 // The PC bot reads control/command.json on the `control` branch of the repo it updates from every ~60 s. This page builds
 // the exact JSON (a fresh id + ts) and opens GitHub's editor for that file; the owner pastes and commits. Nothing here talks
 // to the PC or holds a token: GitHub (the owner's own login) carries the command. A command expires 15 min after it is made.
-// 2026-11-20: the PC updates from the backup repo dcondax1-wq/olympus (update_source.json), and engine/remote_ctl.control_source
-// reads its `control` branch; the old account (extras.repo) is gone, so the editor link is fixed to Olympus.
+// 2026-11-20: the PC updates from the backup repo (update_source.json: <second account>/olympus) and
+// engine/remote_ctl.control_source reads ITS `control` branch; the old account (extras.repo) is gone. This site is public,
+// so the backup account's name is not in this file (the public-page tests forbid it): the owner types "<account>/olympus"
+// once on this page (saved on the phone only), or a build may pass extras.control_repo.
 const RC_CMDS = [
   ['status', 'Status', 'A fresh heartbeat now and a phone notice with what the bot is doing', ''],
   ['update', 'Update now', 'Get the newest bot version now (self-tests first, rolls back on failure), then a restart', 'gated'],
@@ -3322,10 +3324,10 @@ const RC_CMDS = [
   ['resume', 'Resume entries', 'Lift the pause: new entries allowed again', ''],
 ];
 const RCTL = { cmd: store.get('rcCmd', 'status'), made: null };
-const RC_REPO = 'dcondax1-wq/olympus';
+const RC_REPO_OK = /^[A-Za-z0-9][A-Za-z0-9_.-]{0,38}\/olympus$/i;   // <account>/olympus: the backup repo, nothing else
 const RC_WHEN = 'The PC acts within ~60 s; Update now and Restart only when the bot is flat, never 01:50-16:00 ET on a weekday.';
-const rcRepo = () => RC_REPO;
-const rcEdit = () => `https://github.com/${rcRepo()}/edit/control/control/command.json`;
+const rcRepo = () => { const r = String(store.get('rcRepo', '') || D?.extras?.control_repo || '').trim(); return RC_REPO_OK.test(r) ? r : ''; };
+const rcEdit = () => rcRepo() ? `https://github.com/${rcRepo()}/edit/control/control/command.json` : '';
 function rcBuild(cmd) {
   const ts = Math.floor(Date.now() / 1000), rnd = Math.random().toString(36).slice(2, 6);
   const c = { stopnow: 'stop', pausetom: 'pause', pauseat: 'pause', resume: 'resume_entries' }[cmd] || cmd;
@@ -3374,7 +3376,9 @@ VIEWS.remote = (el) => {
       <div class="rc-act"><button class="btn primary rc-big" type="button" id="rcGo">${icon('ext')}Copy and open GitHub</button>
         <button class="btn ghost" type="button" id="rcCopy">${icon('check')}Copy only</button>
         <button class="btn ghost" type="button" id="rcNew">${icon('refresh')}New id</button></div>
-      <div class="note">Opens <span class="mono">${esc(rcEdit().replace('https://', ''))}</span> (sign in once as <b>dcondax1-wq</b>; the GitHub app works too: repo <b>olympus</b>, branch <b>control</b>, file <b>control/command.json</b>, the pencil).</div></div>
+      ${rcRepo() ? `<div class="note">Opens <span class="mono" style="overflow-wrap:anywhere">${esc(rcEdit().replace('https://', ''))}</span> (signed in as the backup account; the GitHub app works too: repo <b>olympus</b>, branch <b>control</b>, file <b>control/command.json</b>, the pencil). <button class="btn ghost" type="button" id="rcRepoEdit">Change repo</button></div>`
+        : `<label class="row"><span><b>Once: your backup repo</b><span class="small mut">The repo the PC updates from: your second GitHub account, a slash, olympus. Saved on this phone only.</span></span><input type="text" id="rcRepo" autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="account/olympus" value=""></label>
+        <div class="rc-act"><button class="btn ghost" type="button" id="rcRepoSave">${icon('check')}Save repo</button></div>`}</div>
     <div class="card"><div class="card-h"><h3>3 · Paste and commit</h3></div>
       <ol class="list"><li>In the editor, select all the text and paste (replace everything).</li>
         <li>Tap <b>Commit changes</b> (straight to the <b>control</b> branch).</li>
@@ -3387,9 +3391,18 @@ VIEWS.remote = (el) => {
   const copy = (t) => navigator.clipboard?.writeText ? navigator.clipboard.writeText(t) : Promise.reject(new Error('no clipboard'));
   $('#rcGo').onclick = () => {                 // copy and open in the same tap (a popup after an await is blocked on iOS)
     const t = fresh();
+    if (!rcEdit()) { copy(t).catch(() => null); toast('Copied. Type your backup repo below first (account/olympus), then tap again', 4500); $('#rcRepo')?.focus(); return; }
     copy(t).then(() => toast('Copied: paste it in the editor and commit')).catch(() => toast('Copy the text above by hand', 4000));
     window.open(rcEdit(), '_blank', 'noopener');
   };
+  const rs = $('#rcRepoSave');
+  if (rs) rs.onclick = () => {
+    const v = String($('#rcRepo').value || '').trim().replace(/^https?:\/\/github\.com\//i, '').replace(/\.git$|\/+$/g, '');
+    if (!RC_REPO_OK.test(v)) { toast('Write it as account/olympus', 3500); return; }
+    store.set('rcRepo', v); toast('Saved on this phone'); render(true);
+  };
+  const re = $('#rcRepoEdit');
+  if (re) re.onclick = () => { store.set('rcRepo', ''); render(true); };
   $('#rcCopy').onclick = () => { const t = fresh(); copy(t).then(() => toast('Copied')).catch(() => toast('Select the text above and copy it', 4000)); };
   $('#rcNew').onclick = () => { rcBuild(RCTL.cmd); $('#rcJson').textContent = RCTL.made.json; toast('New id and time'); };
 };

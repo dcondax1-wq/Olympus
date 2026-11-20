@@ -74,14 +74,15 @@ def control_source(cwd: str = ROOT, env=None, remote: str = "origin") -> dict:
     (engine/autoupdate.source: update_source.json names the backup repo, remote "olympus"), so the phone's command reaches
     the PC through the repo it really updates from; origin is the lost account since 2026-11-14. Without the file, or with
     LE_UPDATE_SOURCE=origin: origin. Any other remote passed in is used as given. url: the fallback when that remote is not
-    in the PC's git config yet (None for origin). Never raises."""
+    in the PC's git config yet (None for origin). label: "olympus (control)" (no account name). Never raises."""
     if remote and remote != "origin":
         return {"remote": remote, "url": None, "label": f"{remote} ({BRANCH})"}
     try:
-        from .autoupdate import _repo_words, source
+        from .autoupdate import source
         s = source(cwd, env)
         if s.get("remote") and s["remote"] != "origin":
-            return {"remote": s["remote"], "url": s.get("url") or None, "label": f"{_repo_words(s.get('url'))} ({BRANCH})"}
+            # the label rides in the heartbeat to the public site: the remote's name only, never the account in the URL
+            return {"remote": s["remote"], "url": s.get("url") or None, "label": f"{s['remote']} ({BRANCH})"}
     except Exception:
         pass
     return {"remote": "origin", "url": None, "label": f"origin ({BRANCH})"}

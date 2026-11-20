@@ -423,9 +423,19 @@ def olympus_tests():
               same and "dcondax1-wq/olympus/edit/control/control/command.json" in open(wrote[1], encoding="utf-8").read())
         js = open(os.path.join(ROOT, "tools", "web_public", "main.js"), encoding="utf-8").read()
         rcjs = js[js.index("const RC_CMDS"):js.index("VIEWS.settings")]
-        check("phone Remote page: opens github.com/dcondax1-wq/olympus/edit/control/control/command.json (not the old account)",
-              "const RC_REPO = 'dcondax1-wq/olympus'" in rcjs and "/edit/control/control/command.json" in rcjs
-              and "demetrades2000" not in rcjs and "extras?.repo" not in rcjs)
+        check("phone Remote page: opens github.com/<account>/olympus/edit/control/control/command.json (the backup, not the old "
+              "account); the account name is typed once on the phone, never in this public file",
+              "/edit/control/control/command.json" in rcjs and "store.get('rcRepo'" in rcjs and "extras?.repo " not in rcjs
+              and "demetrades2000" not in rcjs and "dcondax" not in js.lower() and "id=\"rcRepoSave\"" in rcjs)
+        rx = [ln for ln in rcjs.splitlines() if ln.startswith("const RC_REPO_OK")][0].split("=", 1)[1].split(";")[0].strip()
+        node = shutil.which("node")
+        if node:
+            r = subprocess.run([node, "-e", f"const R={rx}; process.stdout.write(JSON.stringify(['a-b/olympus','A1/Olympus','x/other','olympus','a/b/olympus','<x>/olympus'].map(v=>R.test(v))))"],
+                               capture_output=True, text=True, timeout=30)
+            check("phone Remote page: only '<account>/olympus' is accepted as the repo", r.stdout == "[true,true,false,false,false,false]", r.stdout + r.stderr)
+        check("heartbeat 'via' label: the remote's name only, never the account in the URL (it reaches the public site)",
+              src["label"] == "olympus (control)" and rc.hb_field(done, env)["via"] == "olympus (control)"
+              and "dcondax" not in json.dumps(rc.hb_field(done, env)), src)
         first = [ln.split("'")[3] for ln in rcjs.split("const RCTL")[0].splitlines() if ln.strip().startswith("['")][:4]
         check("phone Remote page: an 'Update now' button next to Status / Pause / Flatten, and the ~60 s / flat / 01:50-16:00 line",
               first == ["Status", "Update now", "Pause until tomorrow", "Flatten"] and "['update', 'Update now'" in rcjs
