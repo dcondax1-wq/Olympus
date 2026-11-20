@@ -299,8 +299,40 @@ def t_fast_alarm():
     b2.started_at = now - 60
     b2.health["last_ok_poll"] = now - 100
     check("no alarm in the first 3 min after a start", FAL.evaluate(b2, now) == {})
+    # redteam 2026-11-20: LiveBot.started_at = the day's FIRST start (min with the restored state) and health.last_ok_poll
+    # survives a STOP: a START / Re-arm at 13:00 after a STOP at 10:00 read "no good poll for 3 h" before its first poll
+    rs = Bot(now)
+    rs.started_at = now - 11 * 3600                        # the day's first start (restored)
+    rs.health["last_ok_poll"] = now - 3 * 3600             # the last poll before the owner's STOP
+    sent_rs = []
+    fr = FAL.FastAlarm(send=lambda p: sent_rs.append(p) or "sent", clock=lambda: now)
+    rs.running = False
+    fr.step(rs, now - 60)                                  # stopped
+    rs.running = True
+    fr.step(rs, now)                                       # START (Re-arm): its first poll is still running
+    fr.step(rs, now + 30)
+    check("START / Re-arm in the entry hours after a long STOP: no 'not polling' before its first poll (grace from this run)",
+          sent_rs == [], sent_rs)
+    rs.health["last_ok_poll"] = now + 50
+    fr.step(rs, now + 90)
+    check("... and none once it polls", sent_rs == [], sent_rs)
+    rs.health["last_ok_poll"] = now + 50
+    fr.step(rs, now + 50 + 200)
+    check("... a run that then really stops polling still alarms (200 s without a good poll)", [p["cond"] for p in sent_rs] == ["bot_down"],
+          sent_rs)
+    st2 = Bot(now)
+    st2.started_at = now - 11 * 3600
+    st2.health["last_ok_poll"] = None
+    fr2 = FAL.FastAlarm(send=lambda p: sent_rs.append(p) or "sent", clock=lambda: now)
+    n0 = len(sent_rs)
+    fr2.step(st2, now)                                     # a server restart: a new process sees the resumed bot running
+    fr2.step(st2, now + 120)
+    check("server restart in the entry hours: no alarm in the new run's grace", len(sent_rs) == n0, sent_rs[n0:])
+    fr2.step(st2, now + 200)
+    check("... it alarms if the resumed bot never polls (stuck from its start)", len(sent_rs) == n0 + 1, sent_rs[n0:])
     sent = []
     fa = FAL.FastAlarm(send=lambda p: sent.append(p) or "sent", clock=lambda: now)
+    fa.run_seen, fa._was_running = now - 3600, True      # the bot has run for an hour when these steps start
     b.health["last_ok_poll"] = now - 100
     b.health["last_1m_bar_t"] = now - now % 60 + 60       # fresh bars for the whole sequence below
     fa.step(b, now)
@@ -343,6 +375,7 @@ def t_fast_alarm_storm():
     b = Bot(now)
     sent = []
     fa = FAL.FastAlarm(send=lambda p: sent.append(p) or "sent", clock=lambda: now)
+    fa.run_seen, fa._was_running = now - 3600, True      # the bot has run for an hour when these steps start
     t = now
     for i in range(30):                                    # 30 flaps: stale 60 s, fresh 60 s (one hour), polls fine
         b.health["last_ok_poll"] = t - 5
@@ -358,6 +391,7 @@ def t_fast_alarm_storm():
     check("... each 'back to normal' follows a pushed alarm only", len(sent) - len(starts) <= len(starts), [p["key"] for p in sent])
     sent.clear()
     fa = FAL.FastAlarm(send=lambda p: sent.append(p) or "sent", clock=lambda: now)
+    fa.run_seen, fa._was_running = now - 3600, True      # the bot has run for an hour when these steps start
     b.health["last_1m_bar_t"] = now - now % 60 - 60
     b.health["last_ok_poll"] = now - 5
     fa.step(b, now)                                        # healthy
@@ -380,6 +414,7 @@ def t_fast_alarm_storm():
           len([p for p in sent if not p.get("back")]) == 2 and fa.active["feed_stale"]["sent"], sent)
     sent.clear()
     fa = FAL.FastAlarm(send=lambda p: sent.append(p) or "sent", clock=lambda: now)
+    fa.run_seen, fa._was_running = now - 3600, True      # the bot has run for an hour when these steps start
     t = now
     for i in range(20):                                    # a lasting flap every 31 min, all day
         b.health["last_ok_poll"] = t - 5

@@ -70,7 +70,7 @@ def _span(s) -> str:
     return f"{s} s" if s < 120 else f"{s // 60} min"
 
 
-def evaluate(bot, now, server_started_at=None, autostart=None) -> dict:
+def evaluate(bot, now, server_started_at=None, autostart=None, run_seen=None) -> dict:
     """{code: text} of what stops the bot from taking a trade right now (empty outside the hours / for a paper bot). Pure.
     server_started_at / autostart (engine/watchdog: this server's start, data/autostart.json = the bot was running and nobody
     pressed Stop / kill since): a bot that is NOT running in the entry hours although it should be -> "bot_stopped"."""
@@ -90,10 +90,15 @@ def evaluate(bot, now, server_started_at=None, autostart=None) -> dict:
     if str(cfg.get("adapter") or "paper") == "paper" or not in_hours(now):
         return out
     started = float(getattr(bot, "started_at", None) or 0)
+    if run_seen:
+        # redteam 2026-11-20: LiveBot.started_at is the trading day's FIRST start (min with the restored state) and
+        # health.last_ok_poll survives a STOP: a START / Re-arm / server restart in the entry hours read "no good poll for
+        # 3 h" before its first poll. The grace and the age count from when this run was first seen running.
+        started = max(started, float(run_seen))
     if not started or now - started < START_GRACE_S:
         return out
     h = getattr(bot, "health", None) or {}
-    last_ok = float(h.get("last_ok_poll") or started)
+    last_ok = max(float(h.get("last_ok_poll") or 0), started)
     age = now - last_ok
     th = getattr(bot, "thread", None)
     dead = th is not None and hasattr(th, "is_alive") and not th.is_alive()
@@ -129,6 +134,8 @@ class FastAlarm:
         self.active: dict = {}                 # code -> {"since", "key", "sent", "held"}
         self.last: dict = {}
         self.pushed: dict = {}                 # code -> time of its last start push (REPEAT_S)
+        self.run_seen = None                   # when the bot was first seen running in this run (a START / restart resets it)
+        self._was_running = False
         self.day_n: dict = {}                  # ET day -> start pushes that day (DAY_MAX)
 
     def _may_push(self, code, now, since=None) -> str | None:
@@ -170,7 +177,11 @@ class FastAlarm:
         try:
             if not enabled():
                 return done
-            cur = evaluate(bot, now, server_started_at, autostart)
+            running = bool(getattr(bot, "running", False))
+            if running and not self._was_running:
+                self.run_seen = now
+            self._was_running = running
+            cur = evaluate(bot, now, server_started_at, autostart, run_seen=self.run_seen if running else None)
             for code, text in cur.items():
                 a = self.active.get(code)
                 if a is None or (a.get("held") and not a.get("sent") and self._may_push(code, now, a.get("since")) is None):
