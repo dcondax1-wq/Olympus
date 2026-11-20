@@ -34,3 +34,7 @@ the trade's micros halved via risk x2, out = trade removed).
 5. Trades a week: >= 2.0 in H1 and H2 for each bot.
 6. Placebo: the same count of random days (40 draws) - the version's 2021-25 $ gain beats >= 90% of them.
 A Decide card only for a full pass.
+
+## Addendum before the first run (data check, 06:35 ET): NQ daily bars start 2021-10-18, so the 252-session percentile of
+G2 / G3 uses all sessions so far once there are >= 60 (expanding window until 252). Days with < 60 sessions of history
+(to ~2022-01) get no flag (treated as normal). RV20 / ER20 need 21 closes. Nothing else changes.
