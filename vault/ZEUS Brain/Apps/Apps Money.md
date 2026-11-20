@@ -13,7 +13,7 @@ door: "Money"
 | Agency (`agency`) | money | Website agency: leads, demo sites, calls and the | `fixture.json`, `my_leads.json`, `leads.json`, `callrules.json`, `callscript.json`, ... | `tests.test_agency` |
 | Arbiter (`arbiter`) | money | Paper-only spreads and funding: net yearly return after | `fixture.json`, `../money/arbiter.json` | `tests.test_arbiter_page` |
 | Argo (`argo`) | money | The voyage: your money goals as islands, honest | `fixture.json`, `../home.json`, `../ledger/rules.json` | `tests.test_argo_page` |
-| Business (`business`) | money | Every money model: next step, what is missing | `accounts.json`, `../home.json`, `business.json`, `fixture.json`, `goals.json`, ... | `tests.test_business` |
+| Business (`business`) | money | Every money model: next step, what is missing | `accounts.json`, `../home.json`, `business.json`, `fixture.json`, `dash.json`, ... | `tests.test_business` |
 | Chrysos (`chrysos`) | money | Prop-firm fleet planner: fees against payouts, break-even (estimate) | `fixture.json`, `../money/chrysos.json` | `tests.test_chrysos_page` |
 | Harmonia (`harmonia`) | money | The balance: what leans on the NQ bots | `fixture.json`, `../home.json`, `../money/index.json` | `tests.test_harmonia_page` |
 | Hera (`hera`) | money | The 12-month money plan, payouts, what to buy | `fixture.json`, `../plutus/roadmap.json` | `tests.test_hera_page` |
@@ -24,5 +24,6 @@ door: "Money"
 | Mint City (`mintcity`) | money | The five money machines as a marble city | `fixture.json`, `../money/index.json` | `tests.test_mintcity_page` |
 | Oikos (`oikos`) | money | The household: where money leaks, tax set-aside, buckets | `../money/household.json`, `fixture.json`, `../money/oikos.json`, `../ledger/rules.json`, `oikos-${S.today}.json` | `tests.test_oikos_page` |
 | Plutus (`plutus`) | money | The money plan: accounts and payouts | `../data.json`, `jarvis.json`, `plans.json` | `tests.test_plutus_page` |
+| Widget (`widget`) | money | Your accounts as an iPhone widget + the | bundled fixture / its own files | `tests.test_widget` |
 
 Back to [[ZEUS Apps]]

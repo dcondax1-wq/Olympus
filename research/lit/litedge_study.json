@@ -1,0 +1,673 @@
+{
+ "fill_map": [
+  {
+   "kind": "ticks",
+   "off": 1,
+   "wait_min": 1,
+   "H1": {
+    "fill_pct": 94.9,
+    "n": 79,
+    "missed_trades_usd": -8,
+    "missed_winners": 2,
+    "price_gain_usd": 215,
+    "net_if_skip_missed_usd": 223
+   },
+   "H2": {
+    "fill_pct": 97.5,
+    "n": 40,
+    "missed_trades_usd": 483,
+    "missed_winners": 1,
+    "price_gain_usd": 82,
+    "net_if_skip_missed_usd": -401
+   }
+  },
+  {
+   "kind": "ticks",
+   "off": 1,
+   "wait_min": 3,
+   "H1": {
+    "fill_pct": 97.5,
+    "n": 79,
+    "missed_trades_usd": 940,
+    "missed_winners": 2,
+    "price_gain_usd": 226,
+    "net_if_skip_missed_usd": -714
+   },
+   "H2": {
+    "fill_pct": 97.5,
+    "n": 40,
+    "missed_trades_usd": 483,
+    "missed_winners": 1,
+    "price_gain_usd": 82,
+    "net_if_skip_missed_usd": -401
+   }
+  },
+  {
+   "kind": "ticks",
+   "off": 1,
+   "wait_min": 5,
+   "H1": {
+    "fill_pct": 97.5,
+    "n": 79,
+    "missed_trades_usd": 940,
+    "missed_winners": 2,
+    "price_gain_usd": 226,
+    "net_if_skip_missed_usd": -714
+   },
+   "H2": {
+    "fill_pct": 97.5,
+    "n": 40,
+    "missed_trades_usd": 483,
+    "missed_winners": 1,
+    "price_gain_usd": 82,
+    "net_if_skip_missed_usd": -401
+   }
+  },
+  {
+   "kind": "ticks",
+   "off": 2,
+   "wait_min": 1,
+   "H1": {
+    "fill_pct": 86.1,
+    "n": 79,
+    "missed_trades_usd": 12670,
+    "missed_winners": 8,
+    "price_gain_usd": 349,
+    "net_if_skip_missed_usd": -12321
+   },
+   "H2": {
+    "fill_pct": 95.0,
+    "n": 40,
+    "missed_trades_usd": 1720,
+    "missed_winners": 2,
+    "price_gain_usd": 162,
+    "net_if_skip_missed_usd": -1558
+   }
+  },
+  {
+   "kind": "ticks",
+   "off": 2,
+   "wait_min": 3,
+   "H1": {
+    "fill_pct": 92.4,
+    "n": 79,
+    "missed_trades_usd": 5415,
+    "missed_winners": 6,
+    "price_gain_usd": 406,
+    "net_if_skip_missed_usd": -5009
+   },
+   "H2": {
+    "fill_pct": 95.0,
+    "n": 40,
+    "missed_trades_usd": 1720,
+    "missed_winners": 2,
+    "price_gain_usd": 162,
+    "net_if_skip_missed_usd": -1558
+   }
+  },
+  {
+   "kind": "ticks",
+   "off": 2,
+   "wait_min": 5,
+   "H1": {
+    "fill_pct": 92.4,
+    "n": 79,
+    "missed_trades_usd": 5415,
+    "missed_winners": 6,
+    "price_gain_usd": 406,
+    "net_if_skip_missed_usd": -5009
+   },
+   "H2": {
+    "fill_pct": 97.5,
+    "n": 40,
+    "missed_trades_usd": 483,
+    "missed_winners": 1,
+    "price_gain_usd": 164,
+    "net_if_skip_missed_usd": -319
+   }
+  },
+  {
+   "kind": "ticks",
+   "off": 4,
+   "wait_min": 1,
+   "H1": {
+    "fill_pct": 79.7,
+    "n": 79,
+    "missed_trades_usd": 12166,
+    "missed_winners": 11,
+    "price_gain_usd": 674,
+    "net_if_skip_missed_usd": -11492
+   },
+   "H2": {
+    "fill_pct": 92.5,
+    "n": 40,
+    "missed_trades_usd": 2299,
+    "missed_winners": 3,
+    "price_gain_usd": 322,
+    "net_if_skip_missed_usd": -1977
+   }
+  },
+  {
+   "kind": "ticks",
+   "off": 4,
+   "wait_min": 3,
+   "H1": {
+    "fill_pct": 86.1,
+    "n": 79,
+    "missed_trades_usd": 4911,
+    "missed_winners": 9,
+    "price_gain_usd": 788,
+    "net_if_skip_missed_usd": -4123
+   },
+   "H2": {
+    "fill_pct": 92.5,
+    "n": 40,
+    "missed_trades_usd": 2299,
+    "missed_winners": 3,
+    "price_gain_usd": 322,
+    "net_if_skip_missed_usd": -1977
+   }
+  },
+  {
+   "kind": "ticks",
+   "off": 4,
+   "wait_min": 5,
+   "H1": {
+    "fill_pct": 88.6,
+    "n": 79,
+    "missed_trades_usd": 5204,
+    "missed_winners": 8,
+    "price_gain_usd": 796,
+    "net_if_skip_missed_usd": -4408
+   },
+   "H2": {
+    "fill_pct": 95.0,
+    "n": 40,
+    "missed_trades_usd": 1063,
+    "missed_winners": 2,
+    "price_gain_usd": 326,
+    "net_if_skip_missed_usd": -737
+   }
+  },
+  {
+   "kind": "ticks",
+   "off": 8,
+   "wait_min": 1,
+   "H1": {
+    "fill_pct": 60.8,
+    "n": 79,
+    "missed_trades_usd": 24091,
+    "missed_winners": 22,
+    "price_gain_usd": 912,
+    "net_if_skip_missed_usd": -23179
+   },
+   "H2": {
+    "fill_pct": 77.5,
+    "n": 40,
+    "missed_trades_usd": 2758,
+    "missed_winners": 6,
+    "price_gain_usd": 492,
+    "net_if_skip_missed_usd": -2266
+   }
+  },
+  {
+   "kind": "ticks",
+   "off": 8,
+   "wait_min": 3,
+   "H1": {
+    "fill_pct": 74.7,
+    "n": 79,
+    "missed_trades_usd": 17182,
+    "missed_winners": 16,
+    "price_gain_usd": 1332,
+    "net_if_skip_missed_usd": -15850
+   },
+   "H2": {
+    "fill_pct": 90.0,
+    "n": 40,
+    "missed_trades_usd": 2302,
+    "missed_winners": 4,
+    "price_gain_usd": 624,
+    "net_if_skip_missed_usd": -1678
+   }
+  },
+  {
+   "kind": "ticks",
+   "off": 8,
+   "wait_min": 5,
+   "H1": {
+    "fill_pct": 77.2,
+    "n": 79,
+    "missed_trades_usd": 16856,
+    "missed_winners": 15,
+    "price_gain_usd": 1352,
+    "net_if_skip_missed_usd": -15504
+   },
+   "H2": {
+    "fill_pct": 92.5,
+    "n": 40,
+    "missed_trades_usd": 2299,
+    "missed_winners": 3,
+    "price_gain_usd": 644,
+    "net_if_skip_missed_usd": -1655
+   }
+  },
+  {
+   "kind": "risk",
+   "off": 0.1,
+   "wait_min": 1,
+   "H1": {
+    "fill_pct": 40.5,
+    "n": 79,
+    "missed_trades_usd": 26104,
+    "missed_winners": 30,
+    "price_gain_usd": 1142,
+    "net_if_skip_missed_usd": -24961
+   },
+   "H2": {
+    "fill_pct": 32.5,
+    "n": 40,
+    "missed_trades_usd": 3346,
+    "missed_winners": 14,
+    "price_gain_usd": 464,
+    "net_if_skip_missed_usd": -2881
+   }
+  },
+  {
+   "kind": "risk",
+   "off": 0.1,
+   "wait_min": 3,
+   "H1": {
+    "fill_pct": 55.7,
+    "n": 79,
+    "missed_trades_usd": 18640,
+    "missed_winners": 25,
+    "price_gain_usd": 1603,
+    "net_if_skip_missed_usd": -17037
+   },
+   "H2": {
+    "fill_pct": 65.0,
+    "n": 40,
+    "missed_trades_usd": 4506,
+    "missed_winners": 9,
+    "price_gain_usd": 817,
+    "net_if_skip_missed_usd": -3688
+   }
+  },
+  {
+   "kind": "risk",
+   "off": 0.1,
+   "wait_min": 5,
+   "H1": {
+    "fill_pct": 59.5,
+    "n": 79,
+    "missed_trades_usd": 19213,
+    "missed_winners": 25,
+    "price_gain_usd": 1668,
+    "net_if_skip_missed_usd": -17545
+   },
+   "H2": {
+    "fill_pct": 72.5,
+    "n": 40,
+    "missed_trades_usd": 5147,
+    "missed_winners": 8,
+    "price_gain_usd": 919,
+    "net_if_skip_missed_usd": -4227
+   }
+  },
+  {
+   "kind": "risk",
+   "off": 0.25,
+   "wait_min": 1,
+   "H1": {
+    "fill_pct": 7.6,
+    "n": 79,
+    "missed_trades_usd": 32793,
+    "missed_winners": 42,
+    "price_gain_usd": 636,
+    "net_if_skip_missed_usd": -32157
+   },
+   "H2": {
+    "fill_pct": 10.0,
+    "n": 40,
+    "missed_trades_usd": 5726,
+    "missed_winners": 17,
+    "price_gain_usd": 348,
+    "net_if_skip_missed_usd": -5378
+   }
+  },
+  {
+   "kind": "risk",
+   "off": 0.25,
+   "wait_min": 3,
+   "H1": {
+    "fill_pct": 27.8,
+    "n": 79,
+    "missed_trades_usd": 29692,
+    "missed_winners": 36,
+    "price_gain_usd": 1924,
+    "net_if_skip_missed_usd": -27767
+   },
+   "H2": {
+    "fill_pct": 30.0,
+    "n": 40,
+    "missed_trades_usd": 2388,
+    "missed_winners": 12,
+    "price_gain_usd": 1180,
+    "net_if_skip_missed_usd": -1208
+   }
+  },
+  {
+   "kind": "risk",
+   "off": 0.25,
+   "wait_min": 5,
+   "H1": {
+    "fill_pct": 31.6,
+    "n": 79,
+    "missed_trades_usd": 30527,
+    "missed_winners": 36,
+    "price_gain_usd": 2194,
+    "net_if_skip_missed_usd": -28333
+   },
+   "H2": {
+    "fill_pct": 32.5,
+    "n": 40,
+    "missed_trades_usd": 2385,
+    "missed_winners": 11,
+    "price_gain_usd": 1278,
+    "net_if_skip_missed_usd": -1107
+   }
+  },
+  {
+   "kind": "risk",
+   "off": 0.5,
+   "wait_min": 1,
+   "H1": {
+    "fill_pct": 0.0,
+    "n": 79,
+    "missed_trades_usd": 34261,
+    "missed_winners": 47,
+    "price_gain_usd": 0,
+    "net_if_skip_missed_usd": -34261
+   },
+   "H2": {
+    "fill_pct": 2.5,
+    "n": 40,
+    "missed_trades_usd": 10359,
+    "missed_winners": 20,
+    "price_gain_usd": 214,
+    "net_if_skip_missed_usd": -10145
+   }
+  },
+  {
+   "kind": "risk",
+   "off": 0.5,
+   "wait_min": 3,
+   "H1": {
+    "fill_pct": 3.8,
+    "n": 79,
+    "missed_trades_usd": 32895,
+    "missed_winners": 45,
+    "price_gain_usd": 698,
+    "net_if_skip_missed_usd": -32197
+   },
+   "H2": {
+    "fill_pct": 12.5,
+    "n": 40,
+    "missed_trades_usd": 7796,
+    "missed_winners": 18,
+    "price_gain_usd": 1125,
+    "net_if_skip_missed_usd": -6671
+   }
+  },
+  {
+   "kind": "risk",
+   "off": 0.5,
+   "wait_min": 5,
+   "H1": {
+    "fill_pct": 10.1,
+    "n": 79,
+    "missed_trades_usd": 34239,
+    "missed_winners": 45,
+    "price_gain_usd": 1666,
+    "net_if_skip_missed_usd": -32573
+   },
+   "H2": {
+    "fill_pct": 17.5,
+    "n": 40,
+    "missed_trades_usd": 5228,
+    "missed_winners": 16,
+    "price_gain_usd": 1748,
+    "net_if_skip_missed_usd": -3480
+   }
+  }
+ ],
+ "timing": {
+  "by_hour_et": {
+   "02-03": {
+    "H1": {
+     "n": 33,
+     "usd": 16834,
+     "avg_r": 1.03
+    },
+    "H2": {
+     "n": 13,
+     "usd": 6307,
+     "avg_r": 1.66
+    }
+   },
+   "04-07": {
+    "H1": {
+     "n": 30,
+     "usd": 10675,
+     "avg_r": 0.53
+    },
+    "H2": {
+     "n": 19,
+     "usd": 3728,
+     "avg_r": 0.37
+    }
+   },
+   "08-09": {
+    "H1": {
+     "n": 11,
+     "usd": 4737,
+     "avg_r": 1.37
+    },
+    "H2": {
+     "n": 5,
+     "usd": -975,
+     "avg_r": -0.74
+    }
+   },
+   "10-15": {
+    "H1": {
+     "n": 6,
+     "usd": 1654,
+     "avg_r": 0.45
+    },
+    "H2": {
+     "n": 3,
+     "usd": 859,
+     "avg_r": 1.62
+    }
+   }
+  },
+  "by_minutes_after_sweep": {
+   "20-40": {
+    "H1": {
+     "n": 3,
+     "usd": 2741,
+     "avg_r": 2.88
+    },
+    "H2": {
+     "n": 5,
+     "usd": 3832,
+     "avg_r": 2.39
+    }
+   },
+   "40-60": {
+    "H1": {
+     "n": 16,
+     "usd": 3131,
+     "avg_r": 0.63
+    },
+    "H2": {
+     "n": 5,
+     "usd": 380,
+     "avg_r": 0.12
+    }
+   },
+   "<=20": {
+    "H1": {
+     "n": 1,
+     "usd": -346,
+     "avg_r": -1.02
+    }
+   },
+   ">60": {
+    "H1": {
+     "n": 60,
+     "usd": 28375,
+     "avg_r": 0.83
+    },
+    "H2": {
+     "n": 30,
+     "usd": 5707,
+     "avg_r": 0.57
+    }
+   }
+  }
+ },
+ "cold_run": {
+  "twin_since_oct19": [
+   {
+    "day": "2026-10-26",
+    "et": "08:37",
+    "entry_t": 1793018220,
+    "side": "SHORT",
+    "exit": "BE",
+    "r": 0.0,
+    "qty_lit": 1,
+    "pnl_lit": 0.6,
+    "risk_pts": 68.5
+   },
+   {
+    "day": "2026-10-27",
+    "et": "06:12",
+    "entry_t": 1793095920,
+    "side": "SHORT",
+    "exit": "STOP",
+    "r": -1.01,
+    "qty_lit": 1,
+    "pnl_lit": -137.4,
+    "risk_pts": 67.75
+   },
+   {
+    "day": "2026-10-28",
+    "et": "03:43",
+    "entry_t": 1793173380,
+    "side": "SHORT",
+    "exit": "STOP",
+    "r": -1.02,
+    "qty_lit": 4,
+    "pnl_lit": -347.6,
+    "risk_pts": 42.5
+   },
+   {
+    "day": "2026-11-03",
+    "et": "15:39",
+    "entry_t": 1793738340,
+    "side": "LONG",
+    "exit": "EOD",
+    "r": 0.2,
+    "qty_lit": 1,
+    "pnl_lit": 27.6,
+    "risk_pts": 68.0
+   },
+   {
+    "day": "2026-11-10",
+    "et": "03:33",
+    "entry_t": 1794299580,
+    "side": "LONG",
+    "exit": "STOP",
+    "r": -1.02,
+    "qty_lit": 2,
+    "pnl_lit": -230.8,
+    "risk_pts": 56.75
+   },
+   {
+    "day": "2026-11-11",
+    "et": "03:56",
+    "entry_t": 1794387360,
+    "side": "SHORT",
+    "exit": "CUT_T15",
+    "r": -0.32,
+    "qty_lit": 1,
+    "pnl_lit": -41.9,
+    "risk_pts": 66.5
+   },
+   {
+    "day": "2026-11-16",
+    "et": "06:16",
+    "entry_t": 1794827760,
+    "side": "LONG",
+    "exit": "STOP",
+    "r": -1.01,
+    "qty_lit": 1,
+    "pnl_lit": -128.9,
+    "risk_pts": 63.5
+   }
+  ],
+  "last7_usd": -858,
+  "last7_r": -4.18,
+  "last7_winners": 2,
+  "2026": {
+   "windows": 114,
+   "share_r_le_last7": 0.088,
+   "share_wins_le_last7": 0.202,
+   "share_both": 0.088,
+   "worst7_r": -6.16,
+   "longest_no_target": 20,
+   "trades": 120,
+   "target_rate": 0.208
+  },
+  "2021-26": {
+   "windows": 625,
+   "share_r_le_last7": 0.078,
+   "share_wins_le_last7": 0.184,
+   "share_both": 0.078,
+   "worst7_r": -7.3,
+   "longest_no_target": 42,
+   "trades": 631,
+   "target_rate": 0.119
+  },
+  "anatomy_2026": {
+   "winners": {
+    "n": 67,
+    "avg_stop_pts": 46.1,
+    "avg_planned_r": 5.99,
+    "avg_mfe_r": 3.45,
+    "share_before_8et": 0.75,
+    "share_long": 0.45,
+    "avg_depth_atr": 2.4
+   },
+   "losers": {
+    "n": 53,
+    "avg_stop_pts": 50.3,
+    "avg_planned_r": 5.54,
+    "avg_mfe_r": 0.33,
+    "share_before_8et": 0.85,
+    "share_long": 0.47,
+    "avg_depth_atr": 2.56
+   },
+   "exits": {
+    "BE": 35,
+    "TARGET": 25,
+    "STOP": 39,
+    "CUT_T15": 13,
+    "EOD": 8
+   }
+  }
+ }
+}

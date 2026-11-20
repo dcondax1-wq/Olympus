@@ -1,0 +1,869 @@
+{
+ "n": 1000,
+ "rows": {
+  "10t | week blocks seed 23 (card) | base": {
+   "H1": {
+    "usd_m": 503,
+    "lost_6m": 17.6,
+    "first_k": 23,
+    "avg_q": 2.1
+   },
+   "H2": {
+    "usd_m": 402,
+    "lost_6m": 21.7,
+    "first_k": 32,
+    "avg_q": 2.22
+   },
+   "REF": {
+    "usd_m": 19,
+    "lost_6m": 98.8,
+    "first_k": null,
+    "avg_q": 2.95
+   }
+  },
+  "10t | week blocks seed 23 (card) | E3 2 losses -> 1 micro (card)": {
+   "H1": {
+    "usd_m": 481,
+    "lost_6m": 12.2,
+    "first_k": 27,
+    "avg_q": 1.77
+   },
+   "H2": {
+    "usd_m": 408,
+    "lost_6m": 10.9,
+    "first_k": 35,
+    "avg_q": 1.79
+   },
+   "REF": {
+    "usd_m": 18,
+    "lost_6m": 96.3,
+    "first_k": null,
+    "avg_q": 1.96
+   }
+  },
+  "10t | week blocks seed 23 (card) | 1 loss -> 1 micro": {
+   "H1": {
+    "usd_m": 457,
+    "lost_6m": 10.8,
+    "first_k": 31,
+    "avg_q": 1.54
+   },
+   "H2": {
+    "usd_m": 304,
+    "lost_6m": 10.9,
+    "first_k": 46,
+    "avg_q": 1.45
+   },
+   "REF": {
+    "usd_m": 21,
+    "lost_6m": 92.9,
+    "first_k": null,
+    "avg_q": 1.65
+   }
+  },
+  "10t | week blocks seed 23 (card) | 3 losses -> 1 micro": {
+   "H1": {
+    "usd_m": 491,
+    "lost_6m": 14.8,
+    "first_k": 25,
+    "avg_q": 1.9
+   },
+   "H2": {
+    "usd_m": 418,
+    "lost_6m": 13.9,
+    "first_k": 33,
+    "avg_q": 1.98
+   },
+   "REF": {
+    "usd_m": 18,
+    "lost_6m": 97.6,
+    "first_k": null,
+    "avg_q": 2.25
+   }
+  },
+  "10t | week blocks seed 23 (card) | 2 losses -> 2 micros": {
+   "H1": {
+    "usd_m": 499,
+    "lost_6m": 15.0,
+    "first_k": 24,
+    "avg_q": 1.93
+   },
+   "H2": {
+    "usd_m": 422,
+    "lost_6m": 11.8,
+    "first_k": 33,
+    "avg_q": 1.91
+   },
+   "REF": {
+    "usd_m": 19,
+    "lost_6m": 97.1,
+    "first_k": null,
+    "avg_q": 2.34
+   }
+  },
+  "10t | week blocks seed 23 (card) | 2 losses -> 3 micros": {
+   "H1": {
+    "usd_m": 502,
+    "lost_6m": 16.7,
+    "first_k": 24,
+    "avg_q": 2.01
+   },
+   "H2": {
+    "usd_m": 426,
+    "lost_6m": 12.2,
+    "first_k": 32,
+    "avg_q": 1.99
+   },
+   "REF": {
+    "usd_m": 18,
+    "lost_6m": 98.6,
+    "first_k": null,
+    "avg_q": 2.57
+   }
+  },
+  "10t | week blocks seed 23 (card) | 2 losses of the same leg -> 1 micro (leg reset)": {
+   "H1": {
+    "usd_m": 523,
+    "lost_6m": 10.3,
+    "first_k": 25,
+    "avg_q": 1.68
+   },
+   "H2": {
+    "usd_m": 318,
+    "lost_6m": 18.1,
+    "first_k": 42,
+    "avg_q": 1.74
+   },
+   "REF": {
+    "usd_m": 21,
+    "lost_6m": 96.4,
+    "first_k": null,
+    "avg_q": 2.14
+   }
+  },
+  "10t | week blocks seed 23 (card) | flat 50% of room": {
+   "H1": {
+    "usd_m": 517,
+    "lost_6m": 14.1,
+    "first_k": 25,
+    "avg_q": 2.06
+   },
+   "H2": {
+    "usd_m": 401,
+    "lost_6m": 17.6,
+    "first_k": 36,
+    "avg_q": 2.15
+   },
+   "REF": {
+    "usd_m": 17,
+    "lost_6m": 98.7,
+    "first_k": null,
+    "avg_q": 2.76
+   }
+  },
+  "10t | week blocks seed 23 (card) | flat 40% of room": {
+   "H1": {
+    "usd_m": 527,
+    "lost_6m": 11.0,
+    "first_k": 26,
+    "avg_q": 2.01
+   },
+   "H2": {
+    "usd_m": 393,
+    "lost_6m": 14.0,
+    "first_k": 40,
+    "avg_q": 2.03
+   },
+   "REF": {
+    "usd_m": 16,
+    "lost_6m": 98.2,
+    "first_k": null,
+    "avg_q": 2.54
+   }
+  },
+  "10t | week blocks seed 23 (card) | flat 30% of room": {
+   "H1": {
+    "usd_m": 522,
+    "lost_6m": 9.9,
+    "first_k": 27,
+    "avg_q": 1.93
+   },
+   "H2": {
+    "usd_m": 351,
+    "lost_6m": 14.4,
+    "first_k": 50,
+    "avg_q": 1.82
+   },
+   "REF": {
+    "usd_m": 14,
+    "lost_6m": 98.1,
+    "first_k": null,
+    "avg_q": 2.29
+   }
+  },
+  "10t | week blocks seed 101 | base": {
+   "H1": {
+    "usd_m": 505,
+    "lost_6m": 18.2,
+    "first_k": 23,
+    "avg_q": 2.09
+   },
+   "H2": {
+    "usd_m": 395,
+    "lost_6m": 23.5,
+    "first_k": 34,
+    "avg_q": 2.22
+   },
+   "REF": {
+    "usd_m": 18,
+    "lost_6m": 98.9,
+    "first_k": null,
+    "avg_q": 2.96
+   }
+  },
+  "10t | week blocks seed 101 | E3 2 losses -> 1 micro (card)": {
+   "H1": {
+    "usd_m": 476,
+    "lost_6m": 13.3,
+    "first_k": 27,
+    "avg_q": 1.77
+   },
+   "H2": {
+    "usd_m": 404,
+    "lost_6m": 12.5,
+    "first_k": 36,
+    "avg_q": 1.79
+   },
+   "REF": {
+    "usd_m": 19,
+    "lost_6m": 95.8,
+    "first_k": null,
+    "avg_q": 1.97
+   }
+  },
+  "10t | week blocks seed 7919 | base": {
+   "H1": {
+    "usd_m": 497,
+    "lost_6m": 18.6,
+    "first_k": 23,
+    "avg_q": 2.1
+   },
+   "H2": {
+    "usd_m": 389,
+    "lost_6m": 23.8,
+    "first_k": 36,
+    "avg_q": 2.21
+   },
+   "REF": {
+    "usd_m": 20,
+    "lost_6m": 99.3,
+    "first_k": null,
+    "avg_q": 3.0
+   }
+  },
+  "10t | week blocks seed 7919 | E3 2 losses -> 1 micro (card)": {
+   "H1": {
+    "usd_m": 471,
+    "lost_6m": 14.5,
+    "first_k": 27,
+    "avg_q": 1.77
+   },
+   "H2": {
+    "usd_m": 400,
+    "lost_6m": 11.7,
+    "first_k": 36,
+    "avg_q": 1.79
+   },
+   "REF": {
+    "usd_m": 20,
+    "lost_6m": 96.6,
+    "first_k": null,
+    "avg_q": 1.97
+   }
+  },
+  "10t | day blocks seed 23 | base": {
+   "H1": {
+    "usd_m": 473,
+    "lost_6m": 20.5,
+    "first_k": 24,
+    "avg_q": 2.1
+   },
+   "H2": {
+    "usd_m": 372,
+    "lost_6m": 23.5,
+    "first_k": 36,
+    "avg_q": 2.22
+   },
+   "REF": {
+    "usd_m": 14,
+    "lost_6m": 99.4,
+    "first_k": null,
+    "avg_q": 2.92
+   }
+  },
+  "10t | day blocks seed 23 | E3 2 losses -> 1 micro (card)": {
+   "H1": {
+    "usd_m": 450,
+    "lost_6m": 16.6,
+    "first_k": 27,
+    "avg_q": 1.73
+   },
+   "H2": {
+    "usd_m": 319,
+    "lost_6m": 18.5,
+    "first_k": 41,
+    "avg_q": 1.79
+   },
+   "REF": {
+    "usd_m": 15,
+    "lost_6m": 97.3,
+    "first_k": null,
+    "avg_q": 1.95
+   }
+  },
+  "10t | 2021-25 by year, week blocks | base": {
+   "Y21-22": {
+    "usd_m": 14,
+    "lost_6m": 99.3,
+    "first_k": null,
+    "avg_q": 2.5
+   },
+   "Y2023": {
+    "usd_m": 18,
+    "lost_6m": 99.5,
+    "first_k": null,
+    "avg_q": 3.35
+   },
+   "Y2024": {
+    "usd_m": 16,
+    "lost_6m": 99.6,
+    "first_k": null,
+    "avg_q": 3.09
+   },
+   "Y2025": {
+    "usd_m": 29,
+    "lost_6m": 97.2,
+    "first_k": null,
+    "avg_q": 2.8
+   }
+  },
+  "10t | 2021-25 by year, week blocks | E3 2 losses -> 1 micro (card)": {
+   "Y21-22": {
+    "usd_m": 15,
+    "lost_6m": 93.6,
+    "first_k": null,
+    "avg_q": 1.75
+   },
+   "Y2023": {
+    "usd_m": 18,
+    "lost_6m": 98.1,
+    "first_k": null,
+    "avg_q": 2.13
+   },
+   "Y2024": {
+    "usd_m": 11,
+    "lost_6m": 98.6,
+    "first_k": null,
+    "avg_q": 2.06
+   },
+   "Y2025": {
+    "usd_m": 38,
+    "lost_6m": 89.0,
+    "first_k": null,
+    "avg_q": 1.89
+   }
+  },
+  "6t | week blocks seed 23 (card) | base": {
+   "H1": {
+    "usd_m": 538,
+    "lost_6m": 12.9,
+    "first_k": 22,
+    "avg_q": 2.1
+   },
+   "H2": {
+    "usd_m": 437,
+    "lost_6m": 16.8,
+    "first_k": 31,
+    "avg_q": 2.24
+   },
+   "REF": {
+    "usd_m": 26,
+    "lost_6m": 97.7,
+    "first_k": null,
+    "avg_q": 2.99
+   }
+  },
+  "6t | week blocks seed 23 (card) | E3 2 losses -> 1 micro (card)": {
+   "H1": {
+    "usd_m": 512,
+    "lost_6m": 9.2,
+    "first_k": 26,
+    "avg_q": 1.77
+   },
+   "H2": {
+    "usd_m": 435,
+    "lost_6m": 7.8,
+    "first_k": 33,
+    "avg_q": 1.8
+   },
+   "REF": {
+    "usd_m": 25,
+    "lost_6m": 92.3,
+    "first_k": null,
+    "avg_q": 1.97
+   }
+  },
+  "6t | week blocks seed 23 (card) | 1 loss -> 1 micro": {
+   "H1": {
+    "usd_m": 492,
+    "lost_6m": 8.1,
+    "first_k": 30,
+    "avg_q": 1.54
+   },
+   "H2": {
+    "usd_m": 337,
+    "lost_6m": 6.6,
+    "first_k": 43,
+    "avg_q": 1.45
+   },
+   "REF": {
+    "usd_m": 30,
+    "lost_6m": 87.3,
+    "first_k": null,
+    "avg_q": 1.67
+   }
+  },
+  "6t | week blocks seed 23 (card) | 3 losses -> 1 micro": {
+   "H1": {
+    "usd_m": 524,
+    "lost_6m": 11.1,
+    "first_k": 23,
+    "avg_q": 1.91
+   },
+   "H2": {
+    "usd_m": 445,
+    "lost_6m": 10.9,
+    "first_k": 32,
+    "avg_q": 1.98
+   },
+   "REF": {
+    "usd_m": 27,
+    "lost_6m": 94.4,
+    "first_k": null,
+    "avg_q": 2.27
+   }
+  },
+  "6t | week blocks seed 23 (card) | 2 losses -> 2 micros": {
+   "H1": {
+    "usd_m": 529,
+    "lost_6m": 12.1,
+    "first_k": 23,
+    "avg_q": 1.94
+   },
+   "H2": {
+    "usd_m": 452,
+    "lost_6m": 7.3,
+    "first_k": 32,
+    "avg_q": 1.92
+   },
+   "REF": {
+    "usd_m": 26,
+    "lost_6m": 95.1,
+    "first_k": null,
+    "avg_q": 2.36
+   }
+  },
+  "6t | week blocks seed 23 (card) | 2 losses -> 3 micros": {
+   "H1": {
+    "usd_m": 536,
+    "lost_6m": 12.5,
+    "first_k": 23,
+    "avg_q": 2.02
+   },
+   "H2": {
+    "usd_m": 456,
+    "lost_6m": 8.8,
+    "first_k": 31,
+    "avg_q": 2.0
+   },
+   "REF": {
+    "usd_m": 26,
+    "lost_6m": 96.4,
+    "first_k": null,
+    "avg_q": 2.6
+   }
+  },
+  "6t | week blocks seed 23 (card) | 2 losses of the same leg -> 1 micro (leg reset)": {
+   "H1": {
+    "usd_m": 549,
+    "lost_6m": 7.9,
+    "first_k": 23,
+    "avg_q": 1.69
+   },
+   "H2": {
+    "usd_m": 349,
+    "lost_6m": 12.2,
+    "first_k": 38,
+    "avg_q": 1.75
+   },
+   "REF": {
+    "usd_m": 28,
+    "lost_6m": 94.1,
+    "first_k": null,
+    "avg_q": 2.13
+   }
+  },
+  "6t | week blocks seed 23 (card) | flat 50% of room": {
+   "H1": {
+    "usd_m": 550,
+    "lost_6m": 10.4,
+    "first_k": 23,
+    "avg_q": 2.07
+   },
+   "H2": {
+    "usd_m": 438,
+    "lost_6m": 12.6,
+    "first_k": 34,
+    "avg_q": 2.17
+   },
+   "REF": {
+    "usd_m": 26,
+    "lost_6m": 96.8,
+    "first_k": null,
+    "avg_q": 2.85
+   }
+  },
+  "6t | week blocks seed 23 (card) | flat 40% of room": {
+   "H1": {
+    "usd_m": 553,
+    "lost_6m": 8.9,
+    "first_k": 25,
+    "avg_q": 2.02
+   },
+   "H2": {
+    "usd_m": 433,
+    "lost_6m": 9.5,
+    "first_k": 37,
+    "avg_q": 2.06
+   },
+   "REF": {
+    "usd_m": 25,
+    "lost_6m": 96.7,
+    "first_k": null,
+    "avg_q": 2.61
+   }
+  },
+  "6t | week blocks seed 23 (card) | flat 30% of room": {
+   "H1": {
+    "usd_m": 552,
+    "lost_6m": 7.1,
+    "first_k": 25,
+    "avg_q": 1.95
+   },
+   "H2": {
+    "usd_m": 390,
+    "lost_6m": 10.0,
+    "first_k": 46,
+    "avg_q": 1.85
+   },
+   "REF": {
+    "usd_m": 26,
+    "lost_6m": 95.7,
+    "first_k": null,
+    "avg_q": 2.36
+   }
+  },
+  "6t | week blocks seed 101 | base": {
+   "H1": {
+    "usd_m": 536,
+    "lost_6m": 13.7,
+    "first_k": 22,
+    "avg_q": 2.1
+   },
+   "H2": {
+    "usd_m": 431,
+    "lost_6m": 18.6,
+    "first_k": 32,
+    "avg_q": 2.24
+   },
+   "REF": {
+    "usd_m": 25,
+    "lost_6m": 97.7,
+    "first_k": null,
+    "avg_q": 3.02
+   }
+  },
+  "6t | week blocks seed 101 | E3 2 losses -> 1 micro (card)": {
+   "H1": {
+    "usd_m": 509,
+    "lost_6m": 10.0,
+    "first_k": 25,
+    "avg_q": 1.77
+   },
+   "H2": {
+    "usd_m": 434,
+    "lost_6m": 7.7,
+    "first_k": 34,
+    "avg_q": 1.8
+   },
+   "REF": {
+    "usd_m": 29,
+    "lost_6m": 91.8,
+    "first_k": null,
+    "avg_q": 1.98
+   }
+  },
+  "6t | week blocks seed 7919 | base": {
+   "H1": {
+    "usd_m": 540,
+    "lost_6m": 13.1,
+    "first_k": 22,
+    "avg_q": 2.11
+   },
+   "H2": {
+    "usd_m": 428,
+    "lost_6m": 17.7,
+    "first_k": 33,
+    "avg_q": 2.22
+   },
+   "REF": {
+    "usd_m": 30,
+    "lost_6m": 97.6,
+    "first_k": null,
+    "avg_q": 3.06
+   }
+  },
+  "6t | week blocks seed 7919 | E3 2 losses -> 1 micro (card)": {
+   "H1": {
+    "usd_m": 509,
+    "lost_6m": 10.0,
+    "first_k": 26,
+    "avg_q": 1.78
+   },
+   "H2": {
+    "usd_m": 427,
+    "lost_6m": 8.1,
+    "first_k": 35,
+    "avg_q": 1.8
+   },
+   "REF": {
+    "usd_m": 27,
+    "lost_6m": 93.6,
+    "first_k": null,
+    "avg_q": 1.98
+   }
+  },
+  "6t | day blocks seed 23 | base": {
+   "H1": {
+    "usd_m": 513,
+    "lost_6m": 15.3,
+    "first_k": 23,
+    "avg_q": 2.11
+   },
+   "H2": {
+    "usd_m": 409,
+    "lost_6m": 17.8,
+    "first_k": 33,
+    "avg_q": 2.24
+   },
+   "REF": {
+    "usd_m": 21,
+    "lost_6m": 98.4,
+    "first_k": null,
+    "avg_q": 2.98
+   }
+  },
+  "6t | day blocks seed 23 | E3 2 losses -> 1 micro (card)": {
+   "H1": {
+    "usd_m": 487,
+    "lost_6m": 11.9,
+    "first_k": 26,
+    "avg_q": 1.74
+   },
+   "H2": {
+    "usd_m": 351,
+    "lost_6m": 12.1,
+    "first_k": 38,
+    "avg_q": 1.79
+   },
+   "REF": {
+    "usd_m": 23,
+    "lost_6m": 93.3,
+    "first_k": null,
+    "avg_q": 1.95
+   }
+  },
+  "6t | 2021-25 by year, week blocks | base": {
+   "Y21-22": {
+    "usd_m": 20,
+    "lost_6m": 97.7,
+    "first_k": null,
+    "avg_q": 2.56
+   },
+   "Y2023": {
+    "usd_m": 28,
+    "lost_6m": 98.1,
+    "first_k": null,
+    "avg_q": 3.41
+   },
+   "Y2024": {
+    "usd_m": 25,
+    "lost_6m": 98.3,
+    "first_k": null,
+    "avg_q": 3.15
+   },
+   "Y2025": {
+    "usd_m": 39,
+    "lost_6m": 95.4,
+    "first_k": null,
+    "avg_q": 2.84
+   }
+  },
+  "6t | 2021-25 by year, week blocks | E3 2 losses -> 1 micro (card)": {
+   "Y21-22": {
+    "usd_m": 23,
+    "lost_6m": 88.8,
+    "first_k": null,
+    "avg_q": 1.74
+   },
+   "Y2023": {
+    "usd_m": 23,
+    "lost_6m": 97.2,
+    "first_k": null,
+    "avg_q": 2.17
+   },
+   "Y2024": {
+    "usd_m": 18,
+    "lost_6m": 96.3,
+    "first_k": null,
+    "avg_q": 2.06
+   },
+   "Y2025": {
+    "usd_m": 50,
+    "lost_6m": 83.7,
+    "first_k": null,
+    "avg_q": 1.89
+   }
+  },
+  "10t | week blocks seed 23 | room 40%": {
+   "H1": {
+    "usd_m": 527,
+    "lost_6m": 11.0,
+    "first_k": 26,
+    "avg_q": 2.01
+   },
+   "H2": {
+    "usd_m": 393,
+    "lost_6m": 14.0,
+    "first_k": 40,
+    "avg_q": 2.03
+   },
+   "REF": {
+    "usd_m": 16,
+    "lost_6m": 98.2,
+    "first_k": null,
+    "avg_q": 2.54
+   }
+  },
+  "10t | week blocks seed 23 | room 40% + E3": {
+   "H1": {
+    "usd_m": 478,
+    "lost_6m": 10.1,
+    "first_k": 31,
+    "avg_q": 1.71
+   },
+   "H2": {
+    "usd_m": 394,
+    "lost_6m": 7.7,
+    "first_k": 41,
+    "avg_q": 1.68
+   },
+   "REF": {
+    "usd_m": 18,
+    "lost_6m": 94.9,
+    "first_k": null,
+    "avg_q": 1.78
+   }
+  },
+  "10t | week blocks seed 101 | room 40%": {
+   "H1": {
+    "usd_m": 515,
+    "lost_6m": 13.8,
+    "first_k": 25,
+    "avg_q": 2.01
+   },
+   "H2": {
+    "usd_m": 392,
+    "lost_6m": 16.4,
+    "first_k": 40,
+    "avg_q": 2.03
+   },
+   "REF": {
+    "usd_m": 17,
+    "lost_6m": 98.5,
+    "first_k": null,
+    "avg_q": 2.54
+   }
+  },
+  "10t | week blocks seed 101 | room 40% + E3": {
+   "H1": {
+    "usd_m": 473,
+    "lost_6m": 11.1,
+    "first_k": 30,
+    "avg_q": 1.71
+   },
+   "H2": {
+    "usd_m": 390,
+    "lost_6m": 9.0,
+    "first_k": 41,
+    "avg_q": 1.67
+   },
+   "REF": {
+    "usd_m": 19,
+    "lost_6m": 95.2,
+    "first_k": null,
+    "avg_q": 1.8
+   }
+  },
+  "10t | day blocks seed 23 | room 40%": {
+   "H1": {
+    "usd_m": 478,
+    "lost_6m": 17.1,
+    "first_k": 27,
+    "avg_q": 2.01
+   },
+   "H2": {
+    "usd_m": 358,
+    "lost_6m": 16.5,
+    "first_k": 42,
+    "avg_q": 2.01
+   },
+   "REF": {
+    "usd_m": 12,
+    "lost_6m": 99.4,
+    "first_k": null,
+    "avg_q": 2.52
+   }
+  },
+  "10t | day blocks seed 23 | room 40% + E3": {
+   "H1": {
+    "usd_m": 452,
+    "lost_6m": 13.5,
+    "first_k": 30,
+    "avg_q": 1.67
+   },
+   "H2": {
+    "usd_m": 313,
+    "lost_6m": 11.8,
+    "first_k": 47,
+    "avg_q": 1.65
+   },
+   "REF": {
+    "usd_m": 15,
+    "lost_6m": 96.7,
+    "first_k": null,
+    "avg_q": 1.77
+   }
+  }
+ }
+}

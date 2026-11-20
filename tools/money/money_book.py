@@ -27,9 +27,10 @@ OWNER_PRICE = {"builder50k": 91.80, "builder25k": 63.0, "rapideod25": 97.20, "ra
 LABEL = {"builder50k": "Builder 50K", "builder25k": "Builder 25K", "rapideod25": "Rapid EOD 25K", "rapideod50": "Rapid EOD 50K"}
 PLAN_CAP = {"builder50k": 1, "builder25k": 2, "rapideod25": 3, "rapideod50": 3}
 # $ a month to the owner per slot (after the fee and MFFU's cut, before the tax pot), Jul-Oct 2026-like market: Rapid EOD
-# 50K $2,812 / 25K $972 (research/writeups/rapid-25k-vs-50k-2026-11-17.md, LIT + ATLAS); Builder 50K $818 / 25K $352
-# (research/writeups/eval-cost.md, one slot for 6 months). Used only to RANK slots; in a 2021-25-like market all are ~$0.
-USD_MONTH = {"rapideod50": 2812.0, "rapideod25": 972.0, "builder50k": 818.0, "builder25k": 352.0}
+# 50K $2,295 / 25K $800 at ATLAS's real fills (10 ticks a side; research/writeups/rapid50-ready-2026-11-20.md, LIT + ATLAS;
+# was $2,812 / $972 at backtest fills); Builder 50K $818 / 25K $352 (research/writeups/eval-cost.md, one slot for 6 months).
+# Used only to RANK slots; in a 2021-25-like market all are ~$0.
+USD_MONTH = {"rapideod50": 2295.0, "rapideod25": 800.0, "builder50k": 818.0, "builder25k": 352.0}
 
 # Today's fleet (board.py read 2026-11-19 21:47 ET + STATE.md): stage 'funded' or 'eval'.
 TODAY = [
