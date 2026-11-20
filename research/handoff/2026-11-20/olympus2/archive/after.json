@@ -1,7 +1,7 @@
 [
  {
   "id": "agency",
-  "kb": 621,
+  "kb": 620,
   "errors": [],
   "console": [
    "Failed to load resource: the server responded with a status of 404 (Not Found)"
@@ -24,16 +24,16 @@
  },
  {
   "id": "apollo",
-  "kb": 1471,
+  "kb": 993,
   "errors": [],
   "console": [],
   "bad": [],
   "sideways": 0,
   "top": [
    "477K odeon/trades.json",
-   "477K odeon/trades.json",
    "103K olympus/sfx.js?v=s4",
-   "74K olympus/themes.js?v=o9"
+   "74K olympus/themes.js?v=o9",
+   "46K olympus/agora.css?v=a7"
   ],
   "title": "Apollo",
   "banner": true,
@@ -51,7 +51,7 @@
  },
  {
   "id": "arbiter",
-  "kb": 541,
+  "kb": 540,
   "errors": [],
   "console": [],
   "bad": [],
@@ -70,7 +70,7 @@
  },
  {
   "id": "archive",
-  "kb": 2225,
+  "kb": 2231,
   "errors": [],
   "console": [],
   "bad": [],
@@ -78,8 +78,8 @@
   "top": [
    "654K jarvis/three.module.min.js",
    "379K archive/index.json",
-   "379K archive/index.json",
-   "151K archive/runs-0.json"
+   "151K archive/runs-0.json",
+   "143K archive/runs-1.json"
   ],
   "title": "Archive",
   "banner": true,
@@ -88,7 +88,7 @@
    "2026-11-20",
    "Nov 20"
   ],
-  "text": "Archived \u00b7 data Nov 20, today Clio \u2192 Home \u203a Research Archive Every idea we tested and the $ it made or lost. Search here before testing anything again. Go to 2,345 runs, 224 write-ups, 121 rejected ideas and 15 datasets: everything we ever tested, in one library. What we tested 2,345 runs, 224 write-ups, 121 rejected ideas and 15 datasets: everything we ever tested, in one library. Runs 2,345 98 a"
+  "text": "Archived \u00b7 data Nov 20, today Clio \u2192 Home \u203a Research Archive Every idea we tested and the $ it made or lost. Search here before testing anything again. Go to Library loaded: 2,345 runs. What we tested 2,345 runs, 224 write-ups, 121 rejected ideas and 15 datasets: everything we ever tested, in one library. Runs 2,345 98 adopted \u00b7 1,712 rejected Write-ups 224 plain-language stories Rejected ideas 12"
  },
  {
   "id": "arena",
@@ -111,7 +111,7 @@
  },
  {
   "id": "ares",
-  "kb": 1677,
+  "kb": 1509,
   "errors": [],
   "console": [],
   "bad": [],
@@ -119,8 +119,8 @@
   "top": [
    "654K jarvis/three.module.min.js",
    "150K home.json",
-   "150K home.json",
-   "103K olympus/sfx.js?v=s4"
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9"
   ],
   "title": "Ares",
   "banner": true,
@@ -130,16 +130,16 @@
  },
  {
   "id": "argo",
-  "kb": 842,
+  "kb": 691,
   "errors": [],
   "console": [],
   "bad": [],
   "sideways": 0,
   "top": [
    "150K home.json",
-   "150K home.json",
    "103K olympus/sfx.js?v=s4",
-   "74K olympus/themes.js?v=o9"
+   "74K olympus/themes.js?v=o9",
+   "46K olympus/agora.css?v=a7"
   ],
   "title": "Argo",
   "banner": true,
@@ -151,7 +151,7 @@
  },
  {
   "id": "argus",
-  "kb": 1704,
+  "kb": 1553,
   "errors": [],
   "console": [],
   "bad": [],
@@ -159,8 +159,8 @@
   "top": [
    "654K jarvis/three.module.min.js",
    "150K home.json",
-   "150K home.json",
-   "103K olympus/sfx.js?v=s4"
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9"
   ],
   "title": "Argus",
   "banner": true,
@@ -170,7 +170,7 @@
  },
  {
   "id": "athena",
-  "kb": 1578,
+  "kb": 1579,
   "errors": [],
   "console": [],
   "bad": [],
@@ -189,7 +189,7 @@
  },
  {
   "id": "atlascity",
-  "kb": 180,
+  "kb": 181,
   "errors": [],
   "console": [],
   "bad": [],
@@ -208,7 +208,7 @@
  },
  {
   "id": "bridge",
-  "kb": 379,
+  "kb": 380,
   "errors": [],
   "console": [],
   "bad": [],
@@ -227,7 +227,7 @@
  },
  {
   "id": "chronos",
-  "kb": 2405,
+  "kb": 1927,
   "errors": [],
   "console": [],
   "bad": [],
@@ -235,8 +235,8 @@
   "top": [
    "654K jarvis/three.module.min.js",
    "477K odeon/trades.json",
-   "477K odeon/trades.json",
-   "103K olympus/sfx.js?v=s4"
+   "103K olympus/sfx.js?v=s4",
+   "90K olympus/polis-life.js?v=pl4"
   ],
   "title": "Chronos",
   "banner": true,
@@ -246,7 +246,7 @@
  },
  {
   "id": "colosseum",
-  "kb": 2952,
+  "kb": 2816,
   "errors": [],
   "console": [],
   "bad": [],
@@ -267,16 +267,16 @@
  },
  {
   "id": "delphi",
-  "kb": 872,
+  "kb": 721,
   "errors": [],
   "console": [],
   "bad": [],
   "sideways": 0,
   "top": [
    "150K home.json",
-   "150K home.json",
    "103K olympus/sfx.js?v=s4",
-   "74K olympus/themes.js?v=o9"
+   "74K olympus/themes.js?v=o9",
+   "46K olympus/agora.css?v=a7"
   ],
   "title": "Delphi",
   "banner": true,
@@ -290,7 +290,7 @@
  },
  {
   "id": "epilogue",
-  "kb": 2651,
+  "kb": 2500,
   "errors": [],
   "console": [],
   "bad": [],
@@ -299,7 +299,7 @@
    "654K jarvis/three.module.min.js",
    "477K odeon/trades.json",
    "150K home.json",
-   "150K home.json"
+   "136K assets/tex/wood_c.webp"
   ],
   "title": "Epilogue",
   "banner": true,
@@ -313,7 +313,7 @@
  },
  {
   "id": "ergasterion",
-  "kb": 3207,
+  "kb": 3206,
   "errors": [],
   "console": [
    "Failed to load resource: the server responded with a status of 404 (Not Found)"
@@ -336,7 +336,7 @@
  },
  {
   "id": "forum",
-  "kb": 1580,
+  "kb": 1557,
   "errors": [],
   "console": [],
   "bad": [],
@@ -355,7 +355,7 @@
  },
  {
   "id": "gallery",
-  "kb": 1385,
+  "kb": 1384,
   "errors": [],
   "console": [],
   "bad": [],
@@ -374,7 +374,7 @@
  },
  {
   "id": "harmonia",
-  "kb": 1589,
+  "kb": 1580,
   "errors": [],
   "console": [],
   "bad": [],
@@ -395,7 +395,7 @@
  },
  {
   "id": "hephaestus",
-  "kb": 1282,
+  "kb": 1267,
   "errors": [],
   "console": [],
   "bad": [],
@@ -414,7 +414,7 @@
  },
  {
   "id": "herald",
-  "kb": 2189,
+  "kb": 2162,
   "errors": [],
   "console": [],
   "bad": [],
@@ -444,7 +444,7 @@
    "Failed to load resource: the server responded with a status of 404 (Not Found)"
   ],
   "bad": [
-   "404:kalshi.json?t=29919925"
+   "404:kalshi.json?t=29919930"
   ],
   "sideways": 0,
   "top": [
@@ -464,7 +464,7 @@
  },
  {
   "id": "hestia",
-  "kb": 1303,
+  "kb": 1151,
   "errors": [],
   "console": [],
   "bad": [],
@@ -472,8 +472,8 @@
   "top": [
    "477K odeon/trades.json",
    "150K home.json",
-   "150K home.json",
-   "103K olympus/sfx.js?v=s4"
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9"
   ],
   "title": "Hestia",
   "banner": true,
@@ -486,7 +486,7 @@
  },
  {
   "id": "inbox",
-  "kb": 612,
+  "kb": 611,
   "errors": [],
   "console": [
    "Failed to load resource: the server responded with a status of 404 (Not Found)"
@@ -509,7 +509,7 @@
  },
  {
   "id": "kairos",
-  "kb": 3379,
+  "kb": 2901,
   "errors": [],
   "console": [],
   "bad": [],
@@ -517,8 +517,8 @@
   "top": [
    "654K jarvis/three.module.min.js",
    "477K odeon/trades.json",
-   "477K odeon/trades.json",
-   "260K assets/tex/grass_c.webp"
+   "260K assets/tex/grass_c.webp",
+   "161K assets/tex/cobble_c.webp"
   ],
   "title": "Kairos",
   "banner": true,
@@ -526,11 +526,11 @@
   "dates": [
    "Oct 28"
   ],
-  "text": "Archived \u00b7 data Oct 28, 23 days old NQ bots \u2192 Home \u203a Today \u203a The bots' day Kairos What time it is for trading in New York, and when the bots can trade. Go to Fri 12:26 New York time. New York afternoon. Entries are open. Next: No new trades in 3 h 4 min. Right now Entries open Fri 12:26 ET New York afternoon: entries are open New York afternoon. LIT can still enter until 15:30. BLITZ (paper) check"
+  "text": "Archived \u00b7 data Oct 28, 23 days old NQ bots \u2192 Home \u203a Today \u203a The bots' day Kairos What time it is for trading in New York, and when the bots can trade. Go to Fri 12:30 New York time. New York afternoon. Entries are open. Next: No new trades in 3 h 0 min. Right now Entries open Fri 12:30 ET New York afternoon: entries are open New York afternoon. LIT can still enter until 15:30. BLITZ (paper) check"
  },
  {
   "id": "kratos",
-  "kb": 2378,
+  "kb": 1900,
   "errors": [],
   "console": [],
   "bad": [],
@@ -538,8 +538,8 @@
   "top": [
    "654K jarvis/three.module.min.js",
    "477K odeon/trades.json",
-   "477K odeon/trades.json",
-   "103K olympus/sfx.js?v=s4"
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9"
   ],
   "title": "Kratos",
   "banner": true,
@@ -554,7 +554,7 @@
  },
  {
   "id": "labyrinth",
-  "kb": 2409,
+  "kb": 1931,
   "errors": [],
   "console": [],
   "bad": [],
@@ -562,18 +562,18 @@
   "top": [
    "654K jarvis/three.module.min.js",
    "477K odeon/trades.json",
-   "477K odeon/trades.json",
-   "150K home.json"
+   "150K home.json",
+   "103K olympus/sfx.js?v=s4"
   ],
   "title": "Labyrinth",
   "banner": true,
   "demo": false,
   "dates": [],
-  "text": "Labyrinth Pick a trade size: see your odds to pass the eval and the $ you could lose. Tap Best size. LITE Live running now 50K $50K 25K $25K 50K tight $50K A good size: 50% reach the target within 15 trades (about 4 weeks at 2-4 a week), 16% hit the floor. Reach the target 50% Hit the floor 16% Trades to pass 9 Drawdown left $1,900 of $2,000 max loss Worst trade -$827 one bad trade at this size Fe"
+  "text": "Labyrinth Pick a trade size: see your odds to pass the eval and the $ you could lose. Tap Best size. LITE Reading the trades... Reach the target - Hit the floor - Trades to pass - Drawdown left - Worst trade - Fees to pass - Risk of ruin - - Best size - Sizes Danger The march Rules Walk it Size 1.00x 0.5x 1x 1.5x Sweet spot Risk cap per trade Off $150 $300 $500 $750 $1,000 Look ahead 8 trades 15 t"
  },
  {
   "id": "lyceum",
-  "kb": 3191,
+  "kb": 3190,
   "errors": [],
   "console": [],
   "bad": [],
@@ -592,7 +592,7 @@
  },
  {
   "id": "mind",
-  "kb": 1730,
+  "kb": 1715,
   "errors": [],
   "console": [],
   "bad": [],
@@ -609,11 +609,11 @@
   "dates": [
    "2026-11-20"
   ],
-  "text": "Jarvis memory #research #playbook Kalshi Daily notes OLYMPUS MIND Demo HD Time-lapse Home Notes Days Learned Graph Review 9+ Teach Stats Look Demo \u00b7 Connect your vault in Jarvis \u22ef \u2192 Connect Obsidian Jarvis learned You move leg day to Thursdays now Today 1 Learned \u00b7 24 min ago You move leg day to Thursdays now Edited \u00b7 46 min ago LIT untested entry ideas Edited \u00b7 1 h ago Uprisk - where the funded m"
+  "text": "Jarvis memory #playbook Kalshi Daily notes Inbox OLYMPUS MIND Demo HD Time-lapse Home Notes Days Learned Graph Review 9+ Teach Stats Look Demo \u00b7 Connect your vault in Jarvis \u22ef \u2192 Connect Obsidian Jarvis learned You move leg day to Thursdays now Today 1 Learned \u00b7 24 min ago You move leg day to Thursdays now Edited \u00b7 46 min ago LIT untested entry ideas Edited \u00b7 1 h ago Uprisk - where the funded money"
  },
  {
   "id": "mint",
-  "kb": 1858,
+  "kb": 1848,
   "errors": [],
   "console": [],
   "bad": [],
@@ -627,14 +627,12 @@
   "title": "Mint",
   "banner": true,
   "demo": true,
-  "dates": [
-   "Nov 20"
-  ],
-  "text": "Archived \u00b7 data Nov 20, today Business \u2192 Home \u203a My Money Mint All 5 ways you could earn, in $ a month (ESTIMATE). Do the \"What to do today\" list. Go to About $1,494 a month, but in the worst case you could lose about $42 a month. At best about $2,544 a month. These are example numbers, not real finds. Combined estimate Example estimate $1,494 About $1,494 a month, but in the worst case you could l"
+  "dates": [],
+  "text": "Archived Business \u2192 Home \u203a My Money Mint All 5 ways you could earn, in $ a month (ESTIMATE). Do the \"What to do today\" list. Go to About $1,494 a month, but in the worst case you could lose about $42 a month. At best about $2,544 a month. These are example numbers, not real finds. Combined estimate Example estimate $1,494 About $1,494 a month, but in the worst case you could lose about $42 a month"
  },
  {
   "id": "mintcity",
-  "kb": 2519,
+  "kb": 2509,
   "errors": [],
   "console": [],
   "bad": [],
@@ -648,10 +646,8 @@
   "title": "Mint City",
   "banner": true,
   "demo": true,
-  "dates": [
-   "Nov 20"
-  ],
-  "text": "Archived \u00b7 data Nov 20, today Business \u2192 Home \u203a Worlds \u203a Mint City Mint City Your 5 ways to earn as a 3D city. Taller building = more $ a month (ESTIMATE). Tap one. Go to About $1,494 a month (an estimate). Worst case: you could lose about $42 a month; at best about $2,544. Example numbers, not real finds. The golden pillar Example estimate $1,494 About $1,494 a month (an estimate). Worst case: yo"
+  "dates": [],
+  "text": "Archived Business \u2192 Home \u203a Worlds \u203a Mint City Mint City Your 5 ways to earn as a 3D city. Taller building = more $ a month (ESTIMATE). Tap one. Go to About $1,494 a month (an estimate). Worst case: you could lose about $42 a month; at best about $2,544. Example numbers, not real finds. The golden pillar Example estimate $1,494 About $1,494 a month (an estimate). Worst case: you could lose about $4"
  },
  {
   "id": "moirai",
@@ -677,7 +673,7 @@
  },
  {
   "id": "nemesis",
-  "kb": 2530,
+  "kb": 2042,
   "errors": [],
   "console": [],
   "bad": [],
@@ -685,30 +681,27 @@
   "top": [
    "654K jarvis/three.module.min.js",
    "477K odeon/trades.json",
-   "477K odeon/trades.json",
-   "150K home.json"
+   "150K home.json",
+   "103K olympus/sfx.js?v=s4"
   ],
   "title": "Nemesis",
   "banner": true,
   "demo": false,
-  "dates": [
-   "Nov 1",
-   "Oct 26"
-  ],
-  "text": "Nemesis Why each loss happened, and its $ LITE Oct 26 - Nov 1: 2 losses, -$1,264. Biggest leak: Heavy size, -$138. Fallen 2 Lost -$1,264 Leaks cost -$138 11% of the money lost was avoidable: $138 of $1,264. The rest was the plan working as designed, a normal loss. Your live eval now: balance $49,900, floor $48,000, room $1,900. Fallen Leaks Vow About \u2039 Oct 26 - Nov 1 2 fallen of 2 trades \u203a All pla"
+  "dates": [],
+  "text": "Nemesis Why each loss happened, and its $ LITE Reading the trades... Fallen - Lost - Leaks cost - Fallen Leaks Vow About \u2039 - \u203a All plan loss (normal) leak (small mistake) rule break \u039d OLYMPUS Nemesis"
  },
  {
   "id": "nike",
-  "kb": 1900,
+  "kb": 1422,
   "errors": [],
   "console": [],
   "bad": [],
   "sideways": 0,
   "top": [
    "477K odeon/trades.json",
-   "477K odeon/trades.json",
    "150K home.json",
-   "109K olympus/polis.js?v=p1"
+   "109K olympus/polis.js?v=p1",
+   "103K olympus/sfx.js?v=s4"
   ],
   "title": "Nike",
   "banner": true,
@@ -721,13 +714,13 @@
  },
  {
   "id": "observatory",
-  "kb": 752,
+  "kb": 751,
   "errors": [],
   "console": [],
   "bad": [],
   "sideways": 0,
   "top": [
-   "202K cities/cities.json?observed=5983985",
+   "202K cities/cities.json?observed=5983986",
    "103K olympus/sfx.js?v=s4",
    "74K olympus/themes.js?v=o9",
    "46K olympus/agora.css?v=a7"
@@ -739,11 +732,11 @@
    "Nov 10",
    "Nov 20"
   ],
-  "text": "Archived Clio \u2192 Home Observatory Is every data feed the apps read working? See what is broken, fix that first. Read only Go to Last scan Nov 20, 2026, 5:26 PM \u00b7 refreshes while open every five minutes Feeds answering 5 of 5 All answer; 3 to look at: Data City, Arena, Learning. Data City Look Cities Working Arena Look Oracle Working Learning Look Scan sources Export review Need a look 3 from this s"
+  "text": "Archived Clio \u2192 Home Observatory Is every data feed the apps read working? See what is broken, fix that first. Read only Go to Last scan Nov 20, 2026, 5:31 PM \u00b7 refreshes while open every five minutes Feeds answering 5 of 5 All answer; 3 to look at: Data City, Arena, Learning. Data City Look Cities Working Arena Look Oracle Working Learning Look Scan sources Export review Need a look 3 from this s"
  },
  {
   "id": "odeon",
-  "kb": 2330,
+  "kb": 1852,
   "errors": [],
   "console": [],
   "bad": [],
@@ -751,8 +744,8 @@
   "top": [
    "654K jarvis/three.module.min.js",
    "477K odeon/trades.json",
-   "477K odeon/trades.json",
-   "103K olympus/sfx.js?v=s4"
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9"
   ],
   "title": "Odeon",
   "banner": true,
@@ -771,7 +764,7 @@
   "sideways": 0,
   "top": [
    "654K jarvis/three.module.min.js",
-   "150K home.json?t=1795195598896",
+   "150K home.json?t=1795195878831",
    "103K olympus/sfx.js?v=s4",
    "74K olympus/themes.js?v=o9"
   ],
@@ -785,7 +778,7 @@
  },
  {
   "id": "pantheon",
-  "kb": 1425,
+  "kb": 1393,
   "errors": [],
   "console": [],
   "bad": [],
@@ -808,9 +801,7 @@
   "id": "pc",
   "kb": 7,
   "errors": [],
-  "console": [
-   "Failed to load resource: the server responded with a status of 404 (File not found)"
-  ],
+  "console": [],
   "bad": [],
   "sideways": 0,
   "top": [
@@ -824,7 +815,7 @@
  },
  {
   "id": "pheme",
-  "kb": 1468,
+  "kb": 1453,
   "errors": [],
   "console": [],
   "bad": [],
@@ -850,7 +841,7 @@
  },
  {
   "id": "pinakes",
-  "kb": 2398,
+  "kb": 2247,
   "errors": [],
   "console": [],
   "bad": [],
@@ -859,7 +850,7 @@
    "654K jarvis/three.module.min.js",
    "175K assets/tex/mosaic_c.webp",
    "149K pinakes/catalog.json",
-   "149K pinakes/catalog.json"
+   "136K assets/tex/wood_c.webp"
   ],
   "title": "Pinakes",
   "banner": true,
@@ -872,7 +863,7 @@
  },
  {
   "id": "plutus",
-  "kb": 1456,
+  "kb": 1429,
   "errors": [],
   "console": [],
   "bad": [],
@@ -898,7 +889,7 @@
  },
  {
   "id": "polis",
-  "kb": 2825,
+  "kb": 2824,
   "errors": [],
   "console": [
    "Failed to load resource: the server responded with a status of 404 (Not Found)"
@@ -921,7 +912,7 @@
  },
  {
   "id": "prometheus",
-  "kb": 1753,
+  "kb": 1584,
   "errors": [],
   "console": [],
   "bad": [],
@@ -929,8 +920,8 @@
   "top": [
    "654K jarvis/three.module.min.js",
    "169K prometheus/forge.json",
-   "169K prometheus/forge.json",
-   "103K olympus/sfx.js?v=s4"
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9"
   ],
   "title": "The Forge",
   "banner": true,
@@ -940,7 +931,7 @@
  },
  {
   "id": "pythia",
-  "kb": 1754,
+  "kb": 1740,
   "errors": [],
   "console": [],
   "bad": [],
@@ -956,17 +947,17 @@
   "demo": false,
   "dates": [
    "Dec 3",
-   "Nov 10",
    "Nov 20",
    "Nov 25",
    "Nov 26",
+   "Nov 27",
    "November 20"
   ],
-  "text": "Archived \u00b7 data Nov 10, 10 days old Morning brief \u2192 Home \u203a Today \u203a Risk calendar Pythia Big news days in the next 14 days. Red means be careful that day. Go to Pythia: Light day today in New York. Friday, November 20. Today Light day Friday, November 20 \u00b7 12:27 PM ET now 9:30 AM ET \u00b7 Monthly options expiration (third Friday) Low Options expire today, so volume is heavier and price can get pinned n"
+  "text": "Archived Morning brief \u2192 Home \u203a Today \u203a Risk calendar Pythia Big news days in the next 14 days. Red means be careful that day. Go to Pythia: Light day today in New York. Friday, November 20. Today Light day Friday, November 20 \u00b7 12:31 PM ET now 9:30 AM ET \u00b7 Monthly options expiration (third Friday) Low Options expire today, so volume is heavier and price can get pinned near big levels into the clo"
  },
  {
   "id": "stoa",
-  "kb": 2547,
+  "kb": 2396,
   "errors": [],
   "console": [
    "Failed to load resource: the server responded with a status of 404 (Not Found)"
@@ -991,7 +982,7 @@
  },
  {
   "id": "symposium",
-  "kb": 4082,
+  "kb": 4081,
   "errors": [],
   "console": [
    "Failed to load resource: the server responded with a status of 404 (Not Found)"
@@ -1014,7 +1005,7 @@
  },
  {
   "id": "tree",
-  "kb": 2160,
+  "kb": 2142,
   "errors": [],
   "console": [],
   "bad": [],
@@ -1035,13 +1026,13 @@
  },
  {
   "id": "tyche",
-  "kb": 1497,
+  "kb": 1486,
   "errors": [],
   "console": [
    "Failed to load resource: the server responded with a status of 404 (Not Found)"
   ],
   "bad": [
-   "404:kalshi.json?t=29919927"
+   "404:kalshi.json?t=29919932"
   ],
   "sideways": 0,
   "top": [
@@ -1058,7 +1049,7 @@
  },
  {
   "id": "why",
-  "kb": 266,
+  "kb": 250,
   "errors": [],
   "console": [],
   "bad": [],
