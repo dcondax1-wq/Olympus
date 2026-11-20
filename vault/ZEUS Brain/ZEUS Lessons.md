@@ -15,9 +15,9 @@ Every losing trade gets ONE main cause and the checklist flags; each lesson note
 
 | Lesson | Losers in all backtests | Losers 2026 | $ 2026 |
 |---|---|---|---|
-| [[Lesson never worked\|never]] | 1319 | 182 | -$38,216 |
+| [[Lesson never worked\|never]] | 1319 | 184 | -$38,515 |
 | [[Lesson worked then turned\|turned]] | 624 | 82 | -$20,656 |
-| [[Lesson shaken out\|wick]] | 186 | 15 | -$3,418 |
+| [[Lesson shaken out\|wick]] | 186 | 16 | -$3,531 |
 | [[Lesson news hit\|news]] | 16 | 3 | -$1,143 |
 | [[Lesson not yet classified\|unclassified]] | 0 | 0 | $0 |
 | [[Lesson against both trends\|against_htf]] | 561 | 76 | -$15,118 |
@@ -71,8 +71,9 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 
 ## Rejected idea families
 
-47 entries from docs/TESTED_AND_REJECTED.md, newest first.
+49 entries from docs/TESTED_AND_REJECTED.md, newest first.
 
+- **ATLAS edge at real fills** · [[ATLAS]] · [[atlas-edge-2026-11-20|ATLAS edge at real fills]]
 - **ATLAS real-fill fixes** · [[ATLAS]] · [[atlas-fills-2026-11-20|ATLAS real fills]]
 - **Payday levers + cross-bot loss cuts** · [[ATLAS]] · [[payday-plan-2026-11-20|Payday plan]]
 - **Zlarior more money, 2 pre-registered batches** · [[Zlarior (LIT)]] · [[lit-more-money-2026-11-19|Zlarior]]
@@ -92,6 +93,7 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 - **Walk-forward re-tuning** · [[lit-walkforward-2026-11-17|LIT walk-forward re-tuning]]
 - **Rule-native layer** · [[BLITZ (paper)]], [[Rapid lanes]] · [[rule-native-2026-11-17|Rule-native search]]
 - **Published models as taught: ICT 2022, Silver Bullet, Mech/IFVG, continuation, ...**
+- **ICT ATM range + ES/NQ SMT as the trigger, MES, Judas swing** · [[Rapid lanes]] · [[newstrat-ict-smt-2026-11-20|New strategy for the extra accounts]]
 - **92 confluences; 6 daily-bias methods; grade/confidence sizing; partials and ...**
 - **Fixed 10–15 pt stops: wicked out, lose money. Structural stops are rarely ≤15 ...**
 - **Target variants: no cap / draw mode / "last real pool" all worse**
@@ -123,6 +125,8 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 
 ## Rejected in the write-ups
 
+- 2026-11-20 [[newstrat-ict-smt-2026-11-20|New strategy for the extra accounts]] ([[Family other|other]])
+- 2026-11-20 [[atlas-edge-2026-11-20|ATLAS edge at real fills]] ([[Family second|second]])
 - 2026-11-19 [[third-strategy-2026-11-18|Third strategy hunt]] ([[Family other|other]])
 - 2026-11-19 [[lit-more-money-2026-11-19|Zlarior]] ([[Family other|other]])
 - 2026-11-19 [[kalshi-edge-K7-2026-11-18|Kalshi K7]] ([[Family kalshi|kalshi]])

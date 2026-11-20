@@ -5,13 +5,13 @@ tags:
 type: "lesson"
 code: "never"
 losers_all: 1319
-losers_2026: 182
-usd_2026: -38216
+losers_2026: 184
+usd_2026: -38515
 ---
 
 # Lesson: It never worked
 
-> [!tip] Code `never` · 182 losers in 2026 (-$38,216) · 1319 in all backtests
+> [!tip] Code `never` · 184 losers in 2026 (-$38,515) · 1319 in all backtests
 > It never worked: less than +0.5R in our favour before the stop.
 > **What it teaches:** A real stop: the idea was wrong. Normal cost of the strategy; only a filter proven on both halves may cut it.
 
@@ -45,11 +45,14 @@ _Backtests with costs in: LIT at its live size, ATLAS at $250 a trade, BLITZ at 
 | [[Month 2026-08\|2026-08]] | 12 | -$2,844 | ATLAS, BLITZ, LIT |
 | [[Month 2026-09\|2026-09]] | 26 | -$4,627 | ATLAS, BLITZ, LIT |
 | [[Month 2026-10\|2026-10]] | 8 | -$2,070 | ATLAS, BLITZ, LIT |
+| [[Month 2026-11\|2026-11]] | 2 | -$298 | ATLAS, LIT |
 
 ## Examples
 
 ### Newest
 
+- [[Trade 2026-11-16 0616 LIT long live|2026-11-16 06:16 LIT]] -$129 (live)
+- [[Trade 2026-11-06 0400 ATLAS short live|2026-11-06 04:00 ATLAS]] -$169 (live)
 - [[Trade 2026-10-27 0612 LIT short paper|2026-10-27 06:12 LIT]] -$827 (paper)
 - [[Trade 2026-10-09 0205 ATLAS short|2026-10-09 02:05 ATLAS]] -$495 (backtest)
 - [[Trade 2026-10-08 1530 BLITZ short|2026-10-08 15:30 BLITZ]] -$14 (backtest)
@@ -60,8 +63,6 @@ _Backtests with costs in: LIT at its live size, ATLAS at $250 a trade, BLITZ at 
 - [[Trade 2026-10-05 0835 LIT short|2026-10-05 08:35 LIT]] -$164 (backtest)
 - [[Trade 2026-09-29 1400 BLITZ short|2026-09-29 14:00 BLITZ]] -$92 (backtest)
 - [[Trade 2026-09-29 1300 BLITZ short|2026-09-29 13:00 BLITZ]] -$39 (backtest)
-- [[Trade 2026-09-29 1130 BLITZ short|2026-09-29 11:30 BLITZ]] -$46 (backtest)
-- [[Trade 2026-09-28 1100 BLITZ short|2026-09-28 11:00 BLITZ]] -$150 (backtest)
 
 ### Biggest
 

@@ -98,6 +98,9 @@ AREAS["cities"].append("node_suites")
 PARTS["node_suites"] = [("datacity", ["datacity"]), ("apps", ["apps"])]
 AREAS["pc"].append("site_checks")         # day-quality 2026-11-20: tools/site_checks.py (Kalshi cache = css/js ?v, worker tags, launcher drift, generated gap) + self_heal 'site'
 AREAS["olympus"].append("site_checks")
+AREAS["fleet"].append("rapid_launch")       # day-rapid 2026-11-20: Rapid EOD 25K launch check (tools/money/rapid25_launch.py)
+AREAS["pc"].append("alert_audit")          # day-nqdash3 2026-11-20: entry + close alerts on every account route (R patches pending)
+AREAS["trading"].append("nq_desk")         # day-nqdash3 2026-11-20: nq/nqdesk.js accounts strip, thinking cards, quality card (node, 1 s)
 SLOW = {"olympus_shell", "fit_edge", "jarvis_hub", "phone_e2e", "olympus_kit", "olympus_themes", "olympus_render", "zenith_mode", "ui_polish", "datacity", "jarvis_home"}
 
 

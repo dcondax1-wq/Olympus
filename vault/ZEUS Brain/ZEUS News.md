@@ -14,8 +14,8 @@ type: "hub"
 |---|---|---|---|---|
 | [[News FOMC rate decision\|FOMC rate decision]] | 56 | 2027-11-17 | 25 | +$6,193 |
 | [[News FOMC press conference\|FOMC press conference]] | 56 | 2027-11-17 | 25 | +$6,193 |
-| [[News FOMC minutes\|FOMC minutes]] | 10 | 2027-12-08 | 0 | $0 |
-| [[News Jobs report (NFP)\|Jobs report (NFP)]] | 50 | 2027-12-03 | 24 | +$3,887 |
+| [[News FOMC minutes\|FOMC minutes]] | 10 | 2027-12-08 | 1 | -$113 |
+| [[News Jobs report (NFP)\|Jobs report (NFP)]] | 50 | 2027-12-03 | 25 | +$3,718 |
 | [[News ADP jobs\|ADP jobs]] | 1 | 2026-11-04 | 0 | $0 |
 | [[News CPI (consumer inflation)\|CPI (consumer inflation)]] | 50 | 2027-12-10 | 17 | +$7,210 |
 | [[News PPI (producer inflation)\|PPI (producer inflation)]] | 2 | 2026-11-13 | 6 | +$97 |

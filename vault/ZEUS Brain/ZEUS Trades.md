@@ -7,19 +7,24 @@ type: "hub"
 
 # ZEUS Trades
 
-> [!money] 628 trade notes
+> [!money] 632 trade notes
 > Every published trade (live, paper, backtest at the account's size) + the 2026 backtests of the loss anatomy. Losers carry reason codes (see the lessons).
 
 | Bot | Source | Trades | Won | PF | Net $ |
 |---|---|---|---|---|---|
-| [[Zlarior (LIT)]] | live | 1 | 0% | 0.00 | -$437 |
+| [[Zlarior (LIT)]] | live | 2 | 0% | 0.00 | -$566 |
 | [[Zlarior (LIT)]] | paper | 3 | 0% | 0.00 | -$1,538 |
 | [[Zlarior (LIT)]] | backtest | 120 | 56% | 4.19 | +$43,820 |
+| [[ATLAS]] | live | 3 | 33% | 6.36 | +$1,510 |
 | [[ATLAS]] | backtest | 175 | 55% | 2.96 | +$67,787 |
 | [[BLITZ (paper)]] | backtest | 329 | 55% | 1.58 | +$7,657 |
 
 ## Live and paper (newest first)
 
+- [[Trade 2026-11-18 0450 ATLAS short live|2026-11-18 04:50 ATLAS]] · live · STOP · -$113
+- [[Trade 2026-11-17 0820 ATLAS short live|2026-11-17 08:20 ATLAS]] · live · TARGET · +$1,792
+- [[Trade 2026-11-16 0616 LIT long live|2026-11-16 06:16 LIT]] · live · STOP · -$129
+- [[Trade 2026-11-06 0400 ATLAS short live|2026-11-06 04:00 ATLAS]] · live · STOP · -$169
 - [[Trade 2026-10-28 0343 LIT short paper|2026-10-28 03:43 LIT]] · paper · STOP · -$699
 - [[Trade 2026-10-28 0343 LIT short live|2026-10-28 03:43 LIT]] · live · STOP · -$437
 - [[Trade 2026-10-27 0612 LIT short paper|2026-10-27 06:12 LIT]] · paper · STOP · -$827

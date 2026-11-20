@@ -5,13 +5,13 @@ tags:
 type: "lesson"
 code: "wick"
 losers_all: 186
-losers_2026: 15
-usd_2026: -3418
+losers_2026: 16
+usd_2026: -3531
 ---
 
 # Lesson: Shaken out
 
-> [!tip] Code `wick` · 15 losers in 2026 (-$3,418) · 186 in all backtests
+> [!tip] Code `wick` · 16 losers in 2026 (-$3,531) · 186 in all backtests
 > Shaken out: stopped, then price went on to our target.
 > **What it teaches:** The stop sits 1 tick beyond the sweep (hard rule). Wider stops were tested and rejected; this is the price of tight stops.
 
@@ -44,11 +44,13 @@ _Backtests with costs in: LIT at its live size, ATLAS at $250 a trade, BLITZ at 
 | [[Month 2026-07\|2026-07]] | 1 | -$481 | ATLAS |
 | [[Month 2026-08\|2026-08]] | 1 | -$225 | LIT |
 | [[Month 2026-10\|2026-10]] | 1 | -$177 | BLITZ |
+| [[Month 2026-11\|2026-11]] | 1 | -$113 | ATLAS |
 
 ## Examples
 
 ### Newest
 
+- [[Trade 2026-11-18 0450 ATLAS short live|2026-11-18 04:50 ATLAS]] -$113 (live)
 - [[Trade 2026-10-15 1200 BLITZ long|2026-10-15 12:00 BLITZ]] -$177 (backtest)
 - [[Trade 2026-08-13 0607 LIT long|2026-08-13 06:07 LIT]] -$225 (backtest)
 - [[Trade 2026-07-28 0515 ATLAS short|2026-07-28 05:15 ATLAS]] -$481 (backtest)
@@ -60,7 +62,6 @@ _Backtests with costs in: LIT at its live size, ATLAS at $250 a trade, BLITZ at 
 - [[Trade 2026-04-17 0215 ATLAS long|2026-04-17 02:15 ATLAS]] -$227 (backtest)
 - [[Trade 2026-04-14 1100 BLITZ long|2026-04-14 11:00 BLITZ]] -$76 (backtest)
 - [[Trade 2026-03-27 1300 BLITZ short|2026-03-27 13:00 BLITZ]] -$111 (backtest)
-- [[Trade 2026-03-20 1100 BLITZ short|2026-03-20 11:00 BLITZ]] -$147 (backtest)
 
 ### Biggest
 

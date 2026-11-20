@@ -6,7 +6,7 @@ type: "decisions"
 
 # ZEUS Decisions
 
-> [!question] 10 open
+> [!question] 12 open
 > Answer on the Decide card (Business app). A yes means Claude tests it; nothing live changes without proof.
 
 ## Open
@@ -25,12 +25,12 @@ type: "decisions"
 
 > [!question] Rapid 25K: Zlarior trades 1 micro and takes profit at the day's room (instead of skipping most trades)?
 > **Why:** Today the 30% best-day guard skips 60-65% of Zlarior's trades there. Banking at the room passes and pays sooner, but fails a little more.
-> **Impact:** +$83 a month in a Jul-Oct-like market (+$10 Jan-Jun-like, +$7 2021-25-like); first payout about 5 trading days sooner.
-> Added 2026-11-18 · write-up [[rapid25-lit-lane-2026-11-18|Rapid EOD 25K]] · id `rapid25-lit-bank`
+> **Impact:** At real fills (ATLAS 10 ticks a side): +$101 a month in a Jul-Oct-like market (+$24 Jan-Jun-like, +$1 2021-25-like); first payout about 6-9 days sooner. At backtest fills it was +$83.
+> Added 2026-11-18 · write-up [[rapid-launch-2026-11-20|Rapid EOD 25K launch check]] · id `rapid25-lit-bank`
 > Card: [[Decide rapid25-lit-bank|open the card note]]
 
 > [!question] Rapid EOD: ATLAS trades it next to Zlarior from day one?
-> **Why:** On the Rapid 25K the 30% best-day rule skips most of Zlarior's trades: alone it passes in about 42 trading days, with ATLAS about 25.
+> **Why:** On the Rapid 25K the 30% best-day rule skips most of Zlarior's trades. Launch check 2026-11-20 at real fills: LIT alone passes the eval in only 25-42% of runs within 60 trading days, ATLAS alone 49-64%, both together 81-86% (median 26-33 days).
 > **Impact:** At real fills (ATLAS 10 ticks a side): +$609 a month in a Jul-Oct-like market (+$1,662 Jan-Jun-like, -$28 2021-25-like); first payout about Feb 18 with ATLAS, while without it half the runs see no payout in 6 months. At backtest fills it was +$817 a month (+$2,084 Jan-Jun-like, +$7 2021-25-like).
 > Added 2026-11-16 · write-up [[stack-one-account-2026-11-16|More strategies on ONE MFFU account]] · id `atlas-on-rapid`
 > Card: [[Decide atlas-on-rapid|open the card note]]
@@ -70,6 +70,18 @@ type: "decisions"
 > **Impact:** +$696 a month in a Jul-Oct-like market (+$392 if the live account after payout 5 is worth nothing), +$1,649 Jan-Jun-like (+$466), +$26 2021-25-like; 2022-like -$141; after the extra eval fees.
 > Added 2026-11-19 · write-up [[one-account-combo-final-2026-11-19|One account, Zlarior + ATLAS on the Builder 50K]] · id `zlarior-atlas-50k`
 > Card: [[Decide zlarior-atlas-50k|open the card note]]
+
+> [!question] ATLAS's funded 25K: after 2 losing trades in a row, trade 1 micro until the next win?
+> **Why:** A losing streak is what drains the $887 room and closes the account. Shrinking to 1 micro during a streak keeps most of the money and loses the account far less often.
+> **Impact:** At real fills (10 ticks a side), from today's account: -$22 a month in a Jan-Jun-like market ($503 -> $481), +$6 Jul-Oct-like ($402 -> $408), -$1 2021-25-like; first payout about a week later (Dec 30 instead of Dec 23 Jan-Jun-like; Jan 12 instead of Jan 7 Jul-Oct-like). With room 40% also on: $478 / $394 a month.
+> Added 2026-11-20 · write-up [[atlas-edge-2026-11-20|ATLAS edge at real fills]] · id `atlas-funded-streak-1micro`
+> Card: [[Decide atlas-funded-streak-1micro|open the card note]]
+
+> [!question] Rapid 25K: size ATLAS for its real fills (assume a 10-tick worse stop)?
+> **Why:** ATLAS's real fills are ~10 ticks worse than its backtest, so a full stop costs up to a third more than planned and can push the day past MFFU's $500 pause.
+> **Impact:** -$31 a month in a Jul-Oct-like market (-$141 Jan-Jun-like, +$4 2021-25-like); fewer Rapids lost; same first payout date.
+> Added 2026-11-20 · write-up [[rapid-launch-2026-11-20|Rapid EOD 25K launch check]] · id `rapid-atlas-size-10t`
+> Card: [[Decide rapid-atlas-size-10t|open the card note]]
 
 ## Yes
 

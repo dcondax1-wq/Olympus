@@ -26,7 +26,7 @@ recommend: "yes"
 
 ## Why
 
-On the Rapid 25K the 30% best-day rule skips most of Zlarior's trades: alone it passes in about 42 trading days, with ATLAS about 25.
+On the Rapid 25K the 30% best-day rule skips most of Zlarior's trades. Launch check 2026-11-20 at real fills: LIT alone passes the eval in only 25-42% of runs within 60 trading days, ATLAS alone 49-64%, both together 81-86% (median 26-33 days).
 
 ## Impact
 
@@ -34,7 +34,7 @@ At real fills (ATLAS 10 ticks a side): +$609 a month in a Jul-Oct-like market (+
 
 ## Risk
 
-At real fills: a funded Rapid lost in 6 months 38.0% with ATLAS vs 14.1% without (Jul-Oct-like; 27.2% vs 5.6% Jan-Jun-like), but without ATLAS half the runs never get paid; no payout in 6 months 15.1% vs 50.0%. A $150 ATLAS lane is safer (28.8% lost) but pays $93-366 a month less.
+At real fills: a funded Rapid lost in 6 months 38.0% with ATLAS vs 14.1% without (Jul-Oct-like; 27.2% vs 5.6% Jan-Jun-like), but without ATLAS half the runs never get paid; no payout in 6 months 15.1% vs 50.0%. A $150 ATLAS lane is safer (28.8% lost) but pays $93-366 a month less. Launch check (same paths): ATLAS alone makes $707 / $141 a month, below both together, so no ATLAS-only option. With both, 12% / 26% of runs lose the first Rapid before any payout (re-buy $97.20).
 
 ## Why Claude recommends that
 

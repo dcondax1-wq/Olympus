@@ -19,7 +19,7 @@ _No backtest trade on these days._
 
 ## 2026 trades on these days
 
-_none_
+- [[Trade 2026-11-18 0450 ATLAS short live|2026-11-18 04:50 ATLAS]] -$113
 
 ## Releases (newest first)
 

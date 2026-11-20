@@ -64,6 +64,7 @@ _From research/anatomy/explain.json (costs in)._
 | [[Month 2026-10\|2026-10]] | backtest | 8 | +$6,660 |
 | [[Month 2026-10\|2026-10]] | live | 1 | -$437 |
 | [[Month 2026-10\|2026-10]] | paper | 3 | -$1,538 |
+| [[Month 2026-11\|2026-11]] | live | 1 | -$129 |
 
 _backtest = the bot's rules replayed on futures data (costs in); paper / live = what the bot really did._
 

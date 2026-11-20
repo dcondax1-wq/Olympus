@@ -23,6 +23,7 @@ last: "2027-12-03"
 
 ## 2026 trades on these days
 
+- [[Trade 2026-11-06 0400 ATLAS short live|2026-11-06 04:00 ATLAS]] -$169
 - [[Trade 2026-10-02 0334 LIT long|2026-10-02 03:34 LIT]] +$771 · released during the trade
 - [[Trade 2026-10-02 0310 ATLAS long|2026-10-02 03:10 ATLAS]] +$1,546 · released during the trade
 - [[Trade 2026-09-04 0326 LIT short|2026-09-04 03:26 LIT]] -$468
@@ -63,7 +64,7 @@ last: "2027-12-03"
 - 2027-02-05 08:30 ET · Non-Farm Payrolls (jobs report)
 - 2027-01-08 08:30 ET · Non-Farm Payrolls (jobs report)
 - 2026-12-04 08:30 ET · Non-Farm Payrolls (jobs report)
-- 2026-11-06 08:30 ET · Non-Farm Payrolls (jobs report)
+- [[Day 2026-11-06|2026-11-06]] 08:30 ET · Non-Farm Payrolls (jobs report)
 - [[Day 2026-10-02|2026-10-02]] 08:30 ET · Non-Farm Payrolls (jobs report)
 - [[Day 2026-09-04|2026-09-04]] 08:30 ET · Non-Farm Payrolls (jobs report)
 - [[Day 2026-08-07|2026-08-07]] 08:30 ET · Non-Farm Payrolls (jobs report)
