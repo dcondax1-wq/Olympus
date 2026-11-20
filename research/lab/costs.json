@@ -1,0 +1,40 @@
+{
+ "v": 1,
+ "built": "2026-11-20T18:58:13+00:00",
+ "what": "Alarm only: is each bot still profitable at its real measured fill cost? Changes no bot.",
+ "rule": "RED last-40 PF < 1.0; AMBER < 1.3 or < half of 2026 H1; needs 5+ real fills",
+ "bots": {
+  "atlas": {
+   "bot": "ATLAS",
+   "flag": "NOT ENOUGH FILLS",
+   "line": "ATLAS at real costs: NOT ENOUGH FILLS \u00b7 last 40 sessions PF 2.27 vs 2026 H1 2.57 at +11 ticks a fill (median of 3) \u00b7 data to 2026-11-18",
+   "fills": {
+    "n": 3,
+    "med": 11.0,
+    "src": "research/second/atlas_fills_why.json (2026-11-20)"
+   },
+   "pf40": 2.27,
+   "pf_2026_h1": 2.57,
+   "n40": 28,
+   "data_to": "2026-11-18",
+   "trades_src": "run atlas_fresh_fixed",
+   "stop_ticks": 2
+  },
+  "zlarior": {
+   "bot": "Zlarior",
+   "flag": "NOT ENOUGH FILLS",
+   "line": "Zlarior at real costs: NOT ENOUGH FILLS \u00b7 last 40 sessions PF 3.38 vs 2026 H1 3.2 at +3 ticks a fill (median of 1) \u00b7 data to 2026-11-16",
+   "fills": {
+    "n": 1,
+    "med": 3.0,
+    "src": "research/second/atlas_fills_why.json (2026-11-20)"
+   },
+   "pf40": 3.38,
+   "pf_2026_h1": 3.2,
+   "n40": 19,
+   "data_to": "2026-11-16",
+   "trades_src": "run lit_live + edge_health fresh trades",
+   "stop_ticks": 2
+  }
+ }
+}
