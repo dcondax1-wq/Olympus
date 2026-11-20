@@ -6,7 +6,8 @@
 import * as C from './tradingcore.js';
 import * as T from '../olympus/truth.js';
 import * as DK from '../nq/nqdesk.js?v=2';
-import * as NB from '../nq/nqbars.js?v=b1';   // the PC's chart post (le-bars): an open trade's stop as it is now and the last price   // nqdash3: the accounts strip (the same cards as the NQ page)
+import * as NB from '../nq/nqbars.js?v=b1';
+import * as PR from '../nq/payready.js?v=1';   // nqdash3 round 2: payout readiness per funded account   // the PC's chart post (le-bars): an open trade's stop as it is now and the last price   // nqdash3: the accounts strip (the same cards as the NQ page)
 
 const O = window.OLYMPUS || null;
 const $ = (id) => document.getElementById(id);
@@ -367,13 +368,30 @@ async function fetchChart() {
   } catch (_) { /* no chart post: the strip shows the report's numbers alone */ }
   return null;
 }
+// payout readiness (../nq/payready.js): the PC's funded tracker from its ntfy post (S.lite = mf + board), the coach's MFFU rules; DEMO = the NQ example
+function renderPay() {
+  const box = $('payReady'); if (!box) return;
+  try {
+    const td = C.etParts ? C.etParts(nowS()).day : new Date().toISOString().slice(0, 10);
+    let lite = S.lite, src = "From your PC's 15-minute report (its funded tracker). MFFU's rules as the payout coach codes them.";
+    if (S.demo) {
+      lite = JSON.parse(JSON.stringify((S.nqfx && S.nqfx.payready_lite) || {})); src = 'EXAMPLE numbers (DEMO).';
+      for (const r of (lite.mf && lite.mf.a) || []) if (typeof r.lt_days_ago === 'number') { const t = new Date(td + 'T12:00:00Z'); t.setUTCDate(t.getUTCDate() - r.lt_days_ago); r.lt = t.toISOString().slice(0, 10); }
+    } else if (!lite) src = "Your PC's report has not arrived on this page yet: the tracker fills in from it.";
+    const L = PR.model(lite, S.demo ? null : S.home0, S.biz, window.PAYOUT_COACH || null, td);
+    PR.draw(box, L);
+    const p = $('payReadyPill'), ready = L.filter((a) => a.status === 'ready').length;
+    if (p) { p.textContent = ready ? `${ready} READY` : L.length ? 'Not yet' : 'No funded account'; p.className = 'pill ' + (ready ? 'ok' : 'warn'); }
+    const s2 = $('payReadySrc'); if (s2) s2.textContent = src;
+  } catch (_) { /* the rest of the page still draws */ }
+}
 function renderFiltered() { renderCal(); renderTrades(); renderEdge(); renderEquity(); renderDeep(); }
 function render() {
   model();
   $('demo').hidden = !S.demo;
   if (!S.srcPicked) { S.src = C.defaultSrc(S.rows); S.srcPicked = true; }
   if (S.acct !== 'all' && !S.srcPicked2) { S.srcPicked2 = true; if (C.liveAccounts(S.rows).some((a) => a.k === S.acct)) S.src = 'live'; }
-  renderBanner(); renderToday(); renderAccts(); renderFilters(); renderFiltered(); renderStats(); renderRules(); renderTwins();
+  renderBanner(); renderToday(); renderAccts(); renderPay(); renderFilters(); renderFiltered(); renderStats(); renderRules(); renderTwins();
   const n = C.counts(S.rows);
   say(`${S.live.head} ${n.live} live, ${n.paper} paper and ${n.backtest} backtest trades.${S.demo ? ' Example numbers, not real.' : ''}`);
   S.ready = true;

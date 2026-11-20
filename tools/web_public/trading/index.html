@@ -33,6 +33,7 @@
 <link rel="stylesheet" href="trading.css?v=4">
 <link rel="stylesheet" href="../nqdeep.css?v=1">
 <link rel="stylesheet" href="../nq/nqdesk.css?v=2">
+<link rel="stylesheet" href="../nq/payready.css?v=1">
 </head>
 <body>
 <main id="app">
@@ -62,6 +63,13 @@
     <div class="row"><h2 id="acctH">Accounts</h2><span class="pill" id="acctPill">Loading</span></div>
     <div class="dk-strip" id="acctStrip" role="list" aria-label="Each MFFU account"></div>
     <p class="dk-legend" aria-hidden="true"><span><i class="dk-dot live"></i>live</span><span><i class="dk-dot stale"></i>stale (no report for 20 min)</span><span><i class="dk-dot plan"></i>planned</span></p>
+  </section>
+
+  <!-- nqdash3 round 2 (../nq/payready.js): payout readiness per funded account -->
+  <section class="ag-card card" id="payReadyCard" aria-labelledby="payReadyH">
+    <div class="row"><h2 id="payReadyH">Payout readiness</h2><span class="pill" id="payReadyPill"></span></div>
+    <div id="payReady" class="pr-list"></div>
+    <p class="note" id="payReadySrc"></p>
   </section>
 
   <section class="ag-card card filters" id="filterCard" aria-label="What to show">
@@ -162,7 +170,8 @@
   <div class="sheetbody" id="sheetBody"></div>
 </section>
 <script src="../edge_chip.js?v=2"></script>
+<script src="../business/payoutcoach.js?v=1"></script>
 <script src="../nqdeep.js?v=1" defer></script>
-<script type="module" src="trading.js?v=8"></script>
+<script type="module" src="trading.js?v=9"></script>
 </body>
 </html>

@@ -18,6 +18,15 @@
 | Root fix (lead asked) | tools/pc_report.ext_hash leaves an open trade's live $ / R out (the `at` and `board_trades` blocks), as it already did for block times and the glance. An open trade no longer makes every run an ext run. Open all day: 48 ext runs of 96 (old: 78), 192 posts that day vs a 238 limit. A stop move or a close still flips the hash at once. test_live_publish 86/86, test_pc_bars 75/75, pc_publish / bots_back / datafeed 198/0, mffu_view 22/22 |
 | ATLAS edge chip "data to Oct 16" | Cause: its stored backtest run and member trade files end Oct 16 (a re-score still ends there). Refresh plan in LEAD_WIRES F (moves pinned research numbers, so not done on a live day). Quality card shows it red meanwhile |
 
+## Round 2: payout readiness (board/ + trading/)
+| What | Result |
+|---|---|
+| Card per funded account (ATLAS now; others the day they are funded) | Eligible yes / no + the exact reason; 6 MFFU rule rows with the numbers (first-request date, traded days, cycle profit, 50% consistency, above the $1,100 buffer vs the $250 minimum, max request incl. the PC's own); "$X more / N more traded days until you can ask for $1,000"; projected date at the bot's recent pace; inactivity countdown; the 5 MFFU request steps |
+| Data | Only the PC post (mf `f` + `eq` + `lt`, board balance / room) and business/payoutcoach.js (the MFFU rules already coded). Nothing missing; a missing block says "Waiting for the PC" |
+| Payout-ready alert | Already exists (lifecycle / funded_life push at $750 above the buffer). Card payout-ping-1000 = 1-line patch in LEAD_WIRES J if the owner taps YES (recommendation NO) |
+| Tests | test_payready (new) 15/15, test_board 59/59, test_trading_page 71/71 |
+| Screens | board_payready_dark/light.png (Board is a dark-only page), trading_payready_dark/light.png |
+
 **Not changed:** no bot process file (tools/pc_report.py is the 15-minute reporter, changed only in the chart-post timing), no engine/, no live_model, no sw.js / build / apps.js / APPS table, no olympus/ kit, no STATE.md (lead's).
 
 ## Tests (all run here)

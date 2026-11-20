@@ -456,5 +456,44 @@
   ],
   "closed": [],
   "note": "EXAMPLE: the lead's real case of 2026-11-20 (ATLAS short 1 MNQ @ 26,380.75, stop moved to 26,379.50, target 26,122.75)"
+ },
+ "payready_lite": {
+  "note": "EXAMPLE: ATLAS funded 25K, allowed but smaller ($26,520 balance)",
+  "board": {
+   "atlas": {
+    "status": "funded",
+    "balance": 26520,
+    "room": 1420,
+    "mll": 1000,
+    "plan": "MFFU Builder 25K funded"
+   }
+  },
+  "mf": {
+   "a": [
+    {
+     "id": "atlas",
+     "nm": "ATLAS 25K funded",
+     "l4": "0000",
+     "lt_days_ago": 1,
+     "eq": [
+      650,
+      840,
+      1010,
+      1190,
+      1300,
+      1520
+     ],
+     "f": {
+      "cp": 1520,
+      "bd": 420,
+      "cd": 5,
+      "pn": 0,
+      "mr": 420,
+      "st": "building",
+      "ft": "2026-11-10"
+     }
+    }
+   ]
+  }
  }
 }

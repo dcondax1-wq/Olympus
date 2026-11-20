@@ -120,3 +120,33 @@ use `abs(ex - fill) <= 1.0 or float(lg.get("stop") or 0) != float(lg.get("stop0"
   (the bot's live words win); the recap in "After". When BRIEF.md lands, check the field names against `briefFor` (tests/test_nq_desk "brief" checks).
 - Accounts: the strip takes N accounts from the feed. The Rapid EOD 25K arrives with PC id `rapid` and fills the planned Rapid tile. Any other PC
   account the plan file does not name gets its own tile after it. Tested in test_nq_desk (27/27).
+
+## J. Round 2: payout readiness (board/ + trading/), and the payout-ready alert proposal (card payout-ping-1000)
+**Built:** `nq/payready.js` + `nq/payready.css` (pure core + drawing), mounted on Board (`board/payready_mount.js`, after the Payouts card; board.js
+dispatches `board-data`, bumped b9) and Trading (`#payReadyCard` after the accounts strip, trading.js v9, loads `business/payoutcoach.js?v=1`).
+Per funded account it shows:
+- eligible yes / no with the exact first reason (payoutcoach.js rules = engine/payout_coach.py)
+- 6 rule rows: first-request date, traded days, cycle profit, consistency 50%, above the buffer vs the minimum, max request (with the PC's `mr`)
+- "$X more / N more traded days until you can ask for $Y" (Y = the playbook's full max: $1,000 at $27,100 on the 25K)
+- the projected date at the last `eq` days' pace (or "not at the recent pace")
+- the inactivity line
+- the 5 MFFU steps (docs/FUNDED_25K_PLAYBOOK.md section 5)
+The Rapid says "rules not coded yet" (payoutcoach.js has Builder plans only). Board has no light theme (dark page), so its light screenshot looks dark.
+
+**Fields:** none missing. mf `f` (cp, bd, cd, ef, pn, mr, ft), mf `lt` + `eq`, and the board card's balance / room are all in today's post.
+One gap for later accounts: `eq` has only 8 points (EQ_N), so the pace covers at most the last 7 traded days. That is fine for a projection.
+
+**Payout-ready alert:** it already exists. engine/lifecycle `payout_ready` and engine/funded_life push "PAYOUT READY: request" once $750 (25K) /
+$1,500 (50K) sits above the buffer, through notify kind "life:" (always on, "important only"). The open card **payout-ping-1000** asks only
+whether to wait for the full $1,000. Recommendation in the card: **NO** (keep $750: same money or a bit more, 2-5 trading days sooner).
+If the owner taps **YES**, the whole patch is:
+```diff
+--- engine/funded_life.py   PLANS["builder25k"]
+-                   "max_payouts": 5, "max_micros": 20, "ask_above": 750.0, "typical_day": 150.0, "price": 63.00,
++                   "max_payouts": 5, "max_micros": 20, "ask_above": 1000.0, "typical_day": 150.0, "price": 63.00,
+```
+- then in `tests/test_funded_life.py` line 83: `ask_at_balance == 26850` -> `27100`, and the title "payout line $26,850" -> "$27,100"
+- `nq/payready.js` `PING_ABOVE.builder25k` 750 -> 1000 (the card's ping line)
+- run `python -X utf8 -m tests.test_funded_life`, `tests.test_account_b_funded`, `tests.test_payready`
+- set the card's status in business/decisions.json.
+If NO: nothing to change (the tracker already shows the $750 ping next to the $1,000 plan).
