@@ -1427,6 +1427,9 @@ def hrest(p):
     hframes(p, 3)
 
 
+NO_KIT = "**/olympus/people.js*"   # the shared People kit (cities/people-talk.js loadKit imports it when it is on the site)
+
+
 def sec_l(br, base, C, days, picks, ids):
     """Hellas in Chromium at 390 x 844: the honest counter, budgets at every level (measured), streaming, levels and crumbs, search, voyage, walking, the map, fallbacks."""
     errs = []
@@ -1435,6 +1438,11 @@ def sec_l(br, base, C, days, picks, ids):
     HN = "({ calls: window.__hellas.calls(), tris: window.__hellas.tris() })"
     for q in ("high", "low"):
         ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2 if q == "high" else 1, has_touch=True, is_mobile=True)
+        # night-polish 2026-11-20: these contexts test OUR chat (keeper, townspeople, Talk in walk mode), so the shared People kit is kept off,
+        # as their words say ("no kit loaded"). The page loads olympus/people.js whenever it is on the site, and since the kit answers ANY
+        # keeper:<polis-id> / villager:<app-id> it took every talk: our card stayed hidden and the keeper check crashed on a null <h3>.
+        # The kit path keeps its own checks below (a stubbed OLYMPUS_PEOPLE).
+        ctx.route(NO_KIT, lambda r: r.abort())
         p = ctx.new_page()
         p.on("pageerror", lambda e: errs.append(str(e)))
         p.on("console", lambda m: errs.append(m.text) if m.type == "error" and "Failed to load resource" not in m.text else None)
@@ -1818,6 +1826,7 @@ def sec_l(br, base, C, days, picks, ids):
     ctx.close()
     # Athens without the kit: figures, own chat on the villager card, people strip and Talk in walk mode
     ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2, has_touch=True, is_mobile=True)
+    ctx.route(NO_KIT, lambda r: r.abort())       # without the kit, as it says (the real kit answers every villager:<app-id>)
     p = ctx.new_page()
     p.on("pageerror", lambda e: errs2.append(str(e)))
     p.goto(base + "?athens=1&first=0&q=high&light=day", wait_until="domcontentloaded")
