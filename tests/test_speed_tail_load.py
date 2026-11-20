@@ -205,6 +205,64 @@ def main():
         s = time.perf_counter(); SU.tail_load(P2.b, big); tb += time.perf_counter() - s
     ok, info = P2.same(big)
     check(f"i. 21,000-line file: today {ta / 20 * 1000:.0f} ms a read, tail {tb / 20 * 1000:.0f} ms (identical)", ok and tb < ta, info)
+
+    # ---------------------------------------------------------------- round 2: restart / partial file / missing file
+    import threading
+    q = os.path.join(d, "le_feed", "NQ_15m.csv")
+    with open(q, "w") as fh:
+        fh.writelines(lines[:500])
+    P3 = Pair(d)
+    P3.same(q)
+    stop, bad = threading.Event(), []
+
+    def writer():                                         # appends in small pieces (torn lines on purpose), like a slow disk
+        k = 0
+        while not stop.is_set() and k < 400:
+            ln = line(t0 + 60 * (10_000 + k), 27000 + (k % 13))
+            with open(q, "a") as fh:
+                fh.write(ln[:7]); fh.flush()
+                fh.write(ln[7:]); fh.flush()
+            k += 1
+    th = threading.Thread(target=writer)
+    th.start()
+    good_px = set()
+    n_reads = 0
+    while th.is_alive():
+        for rd in (SU.tail_load(P3.b, q), P3.c.load(q)):
+            n_reads += 1
+            if rd is None:
+                bad.append("None while being written")
+                continue
+            # every bar read must be a whole line the writer wrote (no cut number such as 2700 for 27003)
+            tail = rd[rd["time"] >= t0 + 60 * 10_000]
+            for r in tail.itertuples():
+                k = (int(r.time) - (t0 + 60 * 10_000)) // 60
+                if abs(r.open - (27000 + (k % 13))) > 1e-9 or abs(r.high - (27002 + (k % 13))) > 1e-9:
+                    bad.append(f"bar {k}: {r.open} / {r.high}")
+    th.join()
+    bump(q)
+    ok, info = P3.same(q)
+    check(f"j. file read while being appended in pieces ({n_reads} reads): never a cut bar, equal at the end", ok and not bad,
+          info or "; ".join(bad[:3]))
+    with open(q, "r+") as fh:                             # k. same file, cut shorter than the last read's end
+        fh.truncate(os.path.getsize(q) // 3)
+    bump(q)
+    ok, info = P3.same(q)
+    check("k. file shorter than the tail already read (same file id): full read", ok, info)
+    os.remove(q)                                          # l. missing file, then back
+    x = legacy_load(P3.a, q); y = SU.tail_load(P3.b, q); z = P3.c.load(q)
+    check("l. missing file: None like today", x is None and y is None and z is None)
+    with open(q, "w") as fh:
+        fh.writelines(lines[:300])
+    ok, info = P3.same(q)
+    check("l2. file back after missing", ok, info)
+    P4 = Pair(d)                                          # m. a bot restart (new reader) mid-stream
+    with open(q, "a") as fh:
+        fh.writelines(lines[300:320])
+    bump(q)
+    ok, info = P4.same(q)
+    ok2, info2 = P3.same(q)
+    check("m. restart: a new reader and the old one both equal today's", ok and ok2, info or info2)
     print(f"\n{'ALL OK' if not FAIL else 'FAILED: ' + ', '.join(FAIL)}")
     return 1 if FAIL else 0
 
