@@ -299,7 +299,7 @@
     txt(f, srcTag + ' · ' + (m && m.t ? ago(d.now - m.t) : '—'), small ? 8 : 9, m && !m.stale ? P.muted : P.warn, { semi: true });
     f.addSpacer();
     const rd = new Date(d.now * 1000), hm = pad(rd.getHours()) + ':' + pad(rd.getMinutes());
-    txt(f, '↻ ' + hm, small ? 8 : 9, P.muted);
+    txt(f, (small ? '↻ ' : 'Updated ') + hm, small ? 8 : 9, P.muted);   // olympus2: a plain 'last updated' line (the phone's clock when the widget drew)
   }
   function acctRow(w, c, wide, big) {
     const r = w.addStack(); r.layoutVertically(); r.spacing = 2;

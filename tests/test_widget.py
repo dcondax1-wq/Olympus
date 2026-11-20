@@ -87,6 +87,8 @@ def main() -> int:
         check(f"d. {fam}: source tag + age, tap opens the site, refresh in ~15 min, last copy saved",
               any(t.startswith(("LIVE · PC", "PC · OLD", "PAPER · SITE")) for t in r["texts"]) and r["url"].startswith("https://dcondax1-wq.github.io/")
               and 14 * 60e3 < r["refresh"] <= 15 * 60e3 and r["cached"] == 1, r)
+        if fam != "small":   # olympus2 2026-11-20: a plain 'last updated' line on medium and large
+            check(f"d. {fam}: a 'Updated hh:mm' line", any(re.fullmatch(r"Updated \d\d:\d\d", t) for t in r["texts"]), txt)
     r = node("draw", "-", "-", "large", "light")
     check("d. offline + nothing saved: says so, OFFLINE tag, saves nothing", "OFFLINE · —" in r["texts"] and r["cached"] == 0
           and any("No account numbers yet" in t for t in r["texts"]), r["texts"])

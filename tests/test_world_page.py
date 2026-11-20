@@ -145,6 +145,8 @@ def test_page():
                 pass
             check("b. frame rate in headless (software GL, no GPU, 390 x 844, low tier): %.1f fps and %.2f ms of JavaScript a frame (median); it keeps drawing (the phone's GPU is far faster, the JS is the part a phone pays the same)" % (fps, s2["scene"]["jsMs"]),
                   fps >= 0.5 / mult and s2["scene"]["jsMs"] < 8 * mult, (fps, s2["scene"]))
+            check("b. olympus2: JavaScript per frame at the slow end (p95 %.2f ms) stays far under a 60 Hz frame (16.7 ms); triangles %d under the phone cap (400,000)" % (s2["scene"].get("jsP95", -1), s2["scene"]["triangles"]),
+                  0 <= s2["scene"].get("jsP95", -1) < 16.7 * mult and s2["scene"]["triangles"] < 400_000, s2["scene"])
             check("b. labels over the city (%d) and the learning ticker has a dated line" % s2["labels"], s2["labels"] >= 3 and re.match(r"^[A-Z][a-z]{2} \d+ · ", s2["ticker"] or ""), (s2["labels"], s2["ticker"]))
             AK.shot(p, "world-low-home")
             s3 = tap_place(p, "app:hub-zeus-html")
