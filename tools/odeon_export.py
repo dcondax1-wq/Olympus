@@ -645,11 +645,26 @@ def build(n_lit: int = 42, n_atlas: int = 14, data_path: str | None = None, extr
             "trades": uniq}
 
 
+LITE_DROP = ("bars", "events", "levels")      # the replay's chart data: only Odeon's theater draws it
+
+
+def lite(bundle: dict) -> dict:
+    """trades_lite.json (dogfood 2026-11-20): the same trades without their chart data. Compass, Mnemosyne, Kronos and the journal's edge
+    read only the numbers (day, $, R, risk, side, src, ids): 489 KB -> ~10x smaller on their first open; Odeon keeps the full file."""
+    out = {k: v for k, v in bundle.items() if k != "trades"}
+    out["trades"] = [{k: v for k, v in t.items() if k not in LITE_DROP} for t in bundle.get("trades") or []]
+    out["lite"] = True
+    return out
+
+
 def write(bundle: dict, out: str) -> int:
     os.makedirs(os.path.dirname(os.path.abspath(out)), exist_ok=True)
     txt = json.dumps(bundle, separators=(",", ":"), sort_keys=True, ensure_ascii=False)
     with open(out, "w", encoding="utf-8", newline="\n") as fh:
         fh.write(txt)
+    if out.endswith("trades.json"):              # its slim twin next to it, written with it every time
+        with open(out[:-len("trades.json")] + "trades_lite.json", "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(json.dumps(lite(bundle), separators=(",", ":"), sort_keys=True, ensure_ascii=False))
     return len(txt.encode("utf-8"))
 
 

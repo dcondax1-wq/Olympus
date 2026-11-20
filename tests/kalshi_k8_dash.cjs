@@ -182,11 +182,11 @@ const card = (st, k8, u) => ({ kind: 'kalshi_live_pub', v: 1, st, net: 0, f: 0, 
 
     // 3d. Olympus 2: K8 first (no old-bot numbers above the fold), the header says K8's state, the Monday go-live checklist
     ({ ctx, p } = await open({ at: '2026-11-23T09:00:00-05:00', card: card('paper', k8new({ kk: 1, al: 0, lp: 1, s: 2.5 }), '2026-11-23T13:59:00Z'), k8: 'fx' }));
-    const top = await p.evaluate(() => ({ order: [...document.querySelectorAll('main > section, main > div, main > h2')].map((e) => e.id).filter(Boolean).slice(0, 4),
+    const top = await p.evaluate(() => ({ order: [...document.querySelectorAll('main > section, main > div, main > h2')].map((e) => e.id).filter(Boolean).slice(0, 5),
       sub: document.getElementById('k8sub').innerText, oldTop: Math.round(document.getElementById('sub').getBoundingClientRect().top + scrollY),
       khist: Math.round(document.getElementById('khist').getBoundingClientRect().top + scrollY) }));
-    step('c1. K8 first: live day, K8 status, the go-live checklist, then "History and tests"; the header says "K8 gold & silver bot · PAPER"; the old bot\'s status line is far below the fold (> 844 px)',
-      top.order.join(' ') === 'k8d k8s kgo khist' && top.sub.includes('K8 gold & silver bot') && top.sub.includes('PAPER') && top.oldTop > 844 && top.khist > 844, top);
+    step('c1. K8 first: K8 today, live day, K8 status, the go-live checklist, then "History and tests"; the header says "K8 gold & silver bot · PAPER"; the old bot\'s status line is far below the fold (> 844 px)',
+      top.order.join(' ') === 'k8top k8d k8s kgo khist' && top.sub.includes('K8 gold & silver bot') && top.sub.includes('PAPER') && top.oldTop > 844 && top.khist > 844, top);
     const items = () => p.evaluate(() => [...document.querySelectorAll('#kgo-l li')].map((li) => { const i = li.querySelector('input'); return [i.dataset.kgo, i.checked, i.disabled, li.innerText.replace(/\s+/g, ' ')]; }));
     let it = await items();
     const by = Object.fromEntries(it.map((x) => [x[0], x]));
@@ -212,6 +212,29 @@ const card = (st, k8, u) => ({ kind: 'kalshi_live_pub', v: 1, st, net: 0, f: 0, 
     it = await items();
     step('c6. an old PC card (no kk / al): those items are yours to tick (enabled), nothing claims "from your PC" for them',
       !it.find((x) => x[0] === 'key')[2] && !it.find((x) => x[0] === 'alerts')[2] && !it.find((x) => x[0] === 'key')[3].includes('from your PC'), it);
+    await ctx.close();
+
+    // 3e. K8 TODAY at the top (Olympus 2): above the fold at 390 x 844, LIVE + the PC data's age, the next market, today's 3 legs, $ today / week / since the start
+    ({ ctx, p } = await open({ at: '2026-11-23T05:20:00-05:00', card: card('live', k8new({ m: 'L', pn: [0, -4.3, 12.1], lg: [['g5', '11-23', 4, 52, null, 'o']] }), '2026-11-23T10:19:00Z'), k8: 'fx' }));
+    const tp = await p.evaluate(() => { const c = document.getElementById('k8top'), r = c.getBoundingClientRect();
+      return { bottom: Math.round(r.bottom + scrollY), m: document.getElementById('k8top-m').textContent, age: document.getElementById('k8top-age').textContent, next: document.getElementById('k8top-next').textContent,
+        legs: [...document.querySelectorAll('#k8top-legs li[data-leg]')].map((li) => [li.dataset.leg, li.querySelector('em').textContent]), pnl: document.getElementById('k8top-pnl').textContent,
+        go: document.getElementById('k8top-go').getAttribute('href'), goh: Math.round(document.getElementById('k8top-go').getBoundingClientRect().height) }; });
+    step('top1. K8 today at the top, all above the fold (bottom < 844 px): LIVE, "PC data ...", Next = gold DOWN 05:15 ET, betting now (05:20, inside its window), the 3 legs '
+      + '(gold DOWN in: 4 at 52¢, result 05:30; the 16:45 legs in 11h 25m), Live $ today / this week / since the start, the checklist link (44 px)',
+      tp.bottom < 844 && tp.m === 'LIVE' && /PC data/.test(tp.age) && tp.next === 'Next: gold DOWN · 05:15 ET · betting now'
+      && tp.legs.length === 3 && tp.legs[0][0] === 'g5' && tp.legs[0][1] === 'in: 4 at 52¢, result 05:30' && tp.legs[1][1].startsWith('in 11h')
+      && tp.pnl.includes('Live $: today $0.00') && tp.pnl.includes('this week −$4.30') && tp.pnl.includes('since the start +$12.10') && tp.go === '#kgo' && tp.goh >= 44, tp);
+    await shot(p, 'kalshi-k8-top.png', '#k8top');
+    await ctx.close();
+    ({ ctx, p } = await open({ at: '2026-11-23T18:00:00-05:00', card: card('paper', k8new({ pn: [-0.98, -0.98, 3.2] }), '2026-11-23T22:59:00Z'), k8: 'fx' }));
+    const tp2 = await p.evaluate(() => ({ hd: (document.querySelector('#k8top-legs li.hd') || {}).textContent, next: document.getElementById('k8top-next').textContent, pnl: document.getElementById('k8top-pnl').textContent }));
+    step('top2. Mon 18:00 ET after the bets: the next weekday (Tue 05:15) is next and its windows are listed; Paper $ today −$0.98',
+      tp2.next.includes('Tue') && tp2.next.includes('05:15') && tp2.hd && tp2.hd.includes('Tue') && tp2.pnl.includes('Paper $: today −$0.98'), tp2);
+    await ctx.close();
+    ({ ctx, p } = await open({ at: '2026-11-23T05:20:00-05:00', k8: 'fx' }));
+    step('top3. no PC card: "no PC data yet", "Paper $: no settled bets yet", the 3 legs from the clock', (await T(p, '#k8top-age')) === 'no PC data yet'
+      && (await T(p, '#k8top-pnl')).includes('no settled bets yet') && (await p.$$('#k8top-legs li[data-leg]')).length === 3, await T(p, '#k8top'));
     await ctx.close();
 
     // 4. the verdicts: Watch (within 5 points of a line) and OFF line crossed (win rate, then price creep)

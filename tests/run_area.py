@@ -59,6 +59,8 @@ AREAS = {
 }
 AREAS["money"] += ["widget", "money_dash"]      # night-revamp-dash 2026-11-20: the Scriptable widget + Glance page (tools/web_public/widget/)
 AREAS["olympus"].append("olympus_shell")  # night-revamp-main 2026-11-20: the main pages: no sideways scroll, nothing under the bottom bar, keys above the home bar (tools/olympus_shell_audit.py)
+AREAS["agency"].append("web_expert")       # team web-expert 2026-11-20: agency/expert/ (the playbook, the 5-tap diagnosis) + Jarvis 'web' answers
+AREAS["jarvis"].append("jarvis_shortcuts")  # team JARVIS 2026-11-20: the Siri / Shortcuts page + the "Add to Home Screen" hint
 AREAS["olympus"].append("pulse")         # day-arenas 2026-11-20: the shared prop-trader cards in the main apps (olympus/pulse.js), CLS 0, light + dark
 AREAS["olympus"].append("archive_banners")  # day-archive 2026-11-20: the "Archived · data <date>, N days old -> live app" strip on every archived page (tools/archive_banners.py)
 AREAS["olympus"].insert(0, "site_sweep")  # night-siteqa 2026-11-20: every href / src of the main pages + doors.js points at a real file (no browser, 1 s); its own line
@@ -67,6 +69,7 @@ AREAS["pc"].append("account_box")     # 2026-11-20: the Add account box (engine/
 AREAS["pc"].append("phone_link")      # 2026-11-20: the bot server's own private Tailscale port :8444 (engine/phone_link.py)
 AREAS["pc"].append("self_heal_pc")    # night-selfheal 2026-11-20: the PC self-heal (engine/self_heal.py, docs/SELF_HEAL.md); its own line
 AREAS["pc"].append("remote_ctl")      # night-phonectl 2026-11-20: phone remote through the backup repo (olympus/control, engine/remote_ctl.py)
+AREAS["agency"].append("web_offers")   # day-web-offers 2026-11-20: Agency Offers (agency/offers/): packages, proposal, terms, invoices + retainers, goal
 AREAS["pc"].append("obsidian_brain")    # night-obsidian 2026-11-20: ZEUS Brain, the generated Obsidian vault (tools/obsidian_brain.py, vault/); its own line
 AREAS["nq"].append("why_page")          # night-anatomy 2026-11-18: why we win / lose (tools/win_loss_anatomy.py, tools/web_public/why/); its own line
 AREAS["nq"].append("learn_night")       # night-learnloop 2026-11-19: ZEUS learned (engine/zeus_learn.py) + tools/learn_night.py + metals feed + speed; its own line
@@ -95,10 +98,12 @@ AREAS["board"].append("phone_fit")    # night-tradealerts 2026-11-20: ZEUS / MFF
 AREAS["board"].append("steps_page")   # night-ownersteps 2026-11-20: hub/steps.html "Your steps" (browser part under the lock); its own line
 AREAS["olympus"].append("home_fx")          # night-effects 2026-11-20: the living hero on the Gate + Doors (tests/test_home_fx.py)
 AREAS["nq"].append("nqdeep")                # night-nqdash2 2026-11-20: Trading deep dive / MFFU payout ranges / NQ news week
-AREAS["money"].append("business_taxes")   # day-taxes 2026-11-20: Taxes page + keep-the-most waterfall (tools/money/keep_most.py)
+AREAS["money"].append("business_taxes")
+AREAS["money"].append("account_rules")   # day-taxes 2026-11-20: bot constants = research/lit/mffu_rules.json (docs/ACCOUNT_RULES.md)   # day-taxes 2026-11-20: Taxes page + keep-the-most waterfall (tools/money/keep_most.py)
 AREAS["board"].append("owner_manual")  # day-manual 2026-11-20: hub/manual.html + docs/OWNER_MANUAL.md (browser part under the lock); its own line
 AREAS["olympus"].append("nav_search")     # day-manual NAV 2026-11-20: 67 plain phrasings -> the right place first (olympus/gate-catalog.js findAll); node only
 AREAS["board"].append("nav_pages")       # day-manual NAV 2026-11-20: hub help/steps/manual/zeus/doors: Home first, the OLYMPUS look, 390 px (browser part under the lock)
+AREAS["agency"].append("web_hub")         # day-web-hub 2026-11-20: the Website Business HQ on agency/index.html (browser part under the lock)
 AREAS["pc"].append("land_branch")       # 2026-11-20: the lead's landing tool (tools/land_branch.py: preview, merge, known conflicts, fix-ups, plan); its own line
 AREAS["olympus"].append("node_suites")    # day-quality 2026-11-20: the 29 tests/*.mjs no Python suite ran (tests/test_node_suites.py), by part
 AREAS["cities"].append("node_suites")
@@ -118,6 +123,9 @@ PARTS = {"olympus_kit": [("a", ["datacity", "mind", "tree"]), ("b", ["oracle", "
 PARTS["combo_50k"] = [("sep", ["--seg", "2026-09-02"]), ("oct", ["--seg", "2026-10-02", "--scenario"])]   # night-combolive: one eval segment each
 AREAS["fleet"].append("rapid_launch")       # day-rapid 2026-11-20: Rapid EOD 25K launch check (tools/money/rapid25_launch.py)
 SLOW = {"olympus_shell", "fit_edge", "jarvis_hub", "phone_e2e", "olympus_kit", "olympus_themes", "olympus_render", "zenith_mode", "ui_polish", "datacity", "jarvis_home"}
+
+
+AREAS["agency"].append("web_audit")         # day-web-audit 2026-11-20: tools/site_audit.py (prospect phone audit -> agency/audit/)
 
 
 def suites_for(area: str) -> list:
@@ -276,6 +284,7 @@ def table(rows: list) -> str:
                  f"{sum(1 for r in rows if r['state'] == 'PASS')}/{len(rows)} suites pass |")
     return "\n".join(lines)
 AREAS["board"].append("payready"); AREAS["trading"] += ["payready", "nq_desk", "trading_merged", "alert_audit"]   # nqdash3 2026-11-20: payout readiness, the NQ desk, the merged Odeon / Why cards, the alert audit; its own line
+AREAS["trading"] += ["nq_goals"]   # day-nqdash3 v4 2026-11-20: the NQ money goals strip, the numbers card, the 3D price landscape (tools/web_public/nq/nqgoals.js, nqland.js)
 AREAS["pc"].append("alert_audit"); AREAS["pc"].append("ntfy_budget")   # 2026-11-20 ntfy cap: tools/pc_report.py ext_hash + ntfy_quota
 AREAS["trading"].append("truth_check"); AREAS["board"].append("truth_check")   # Olympus 2 data truth (tools/truth_check.py, age.js), offline
 AREAS["nq"].append("premarket_brief")       # day-brief 2026-11-20: nq/brief.json contract + pre-registered bias (tools/premarket_brief.py)
@@ -286,8 +295,15 @@ AREAS["pc"].append("redteam2_live")       # day-redteam2 2026-11-20: half-day ha
 AREAS["nq"].append("redteam2_live")
 AREAS["pc"].append("redteam2_wires")      # day-redteam2 2026-11-20: L2 rapid._other_names covers the extra accounts
 AREAS["agency"].append("web_research")   # day-web-research 2026-11-20: the website-business research (RESEARCH.md, writeup, offers.json); its own line
+AREAS["agency"].append("web_demos")      # day-web-demos 2026-11-20: the 4 sellable 3D website demos + gallery (tools/web_public/agency/demos/); its own line
 AREAS["olympus"].append("site_refresh")   # day-archive 2026-11-20: tools/site_refresh.py, the CRONOS-era builders at site-build time (never fatal); its own line
+AREAS["olympus"].append("nqfx")           # day-arenas 2026-11-20: the NQ dashboard effects kit (olympus/nqfx.js, nqvault3d.js, nqfx-lab.html); its own line
 
+
+AREAS["agency"].append("web_leads")  # day-web-leads 2026-11-20: OpenStreetMap lead finder + agency/leads/ phone list (tools/web_leads.py); its own line
+
+
+AREAS["agency"].append("web_showcase")   # day-web 2026-11-20: the owner's agency website (tools/web_public/agency/showcase/)
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])

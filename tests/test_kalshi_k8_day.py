@@ -441,6 +441,25 @@ def part_golive(tmp):
           and TL.KEY_ID not in raw and "PRIVATE" not in raw and "t-test" not in raw and w.home not in raw, raw[:300])
 
 
+# ================================================================================================ h. the Home / widget contract of kalshi/k8.json (Olympus 2)
+def part_widget():
+    j = json.load(open(os.path.join(ROOT, "tools", "web_public", "kalshi", "k8.json"), encoding="utf-8"))
+    legs = j.get("legs") or []
+    live = [x for x in legs if x.get("live")]
+    ok = all(isinstance(x.get("live"), bool) and re.fullmatch(r"\d{1,2}:\d{2}", str(x.get("open") or "")) and x.get("tz") in ("Europe/London", "America/New_York")
+             and isinstance(x.get("name"), str) and re.search(r"\d{1,2}:\d{2}-\d{1,2}:\d{2} ET$", x["name"]) and x.get("last_res") in ("W", "L", None)
+             and (x.get("last_day") is None or re.fullmatch(r"\d{4}-\d{2}-\d{2}", x["last_day"])) for x in legs)
+    check("h1. kalshi/k8.json keeps what the Home gate (gate/gate.js k8Today) and the widget read: legs[] with live (bool), open 'HH:MM', tz, "
+          "name '... HH:MM-HH:MM ET', last_day 'YYYY-MM-DD', last_res W/L; exactly 3 live legs (05:15 London 10:15 + 2 x 16:45 ET)",
+          ok and len(live) == 3 and sorted(x["open"] for x in live) == ["10:15", "16:45", "16:45"] and j.get("kind") == "k8_plan", [(x.get("code"), x.get("open"), x.get("tz")) for x in legs])
+    cfg = real()
+    rs = [dict(live_row("2026-11-23", "gold_0530_down", KC.london_epoch(MON, 10, 15), pnl=1.61, result="won")),
+          dict(live_row("2026-11-20", "gold_1700_up", KC.et_epoch(dt.date(2026, 11, 20), 16, 45), pnl=-2.19, result="lost")),
+          dict(live_row("2026-11-24", "gold_0530_down", KC.london_epoch(dt.date(2026, 11, 24), 10, 15), pnl=2.0, result="won"))]
+    check("h2. the card's pn = [$ today, $ this week, $ since the start] of settled bets (Mon 11-23 at noon: today +1.61, this week +1.61 (Fri's -2.19 is last week), since the start every settled row +1.42)",
+          KC.pnl_now(rs, KC.et_epoch(MON, 12, 0)) == [1.61, 1.61, 1.42], KC.pnl_now(rs, KC.et_epoch(MON, 12, 0)))
+
+
 def main():
     tmp = tempfile.mkdtemp(prefix="k8day-")
     try:
@@ -453,6 +472,7 @@ def main():
         part_paper_card(tmp)
         part_legswitch(tmp)
         part_golive(tmp)
+        part_widget()
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     print(f"\n{sum(RES)}/{len(RES)} passed")

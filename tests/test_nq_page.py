@@ -25,7 +25,7 @@ SILENT = "The bots may still be trading; this page just is not hearing from them
 
 
 def test_static():
-    AK.static_kit(APP, NAME, reads=("../home.json", "./howto.json", "./news_week.json", "../hub/learned.json", "../business/accounts.json", "../trading/trades.json", "../edge.json", "./brief.json", "../odeon/trades.json"))   # + the news week and real fills (night-nqdash2); the account list + twins (nqdash3)
+    AK.static_kit(APP, NAME, reads=("../home.json", "./howto.json", "./news_week.json", "../hub/learned.json", "../business/accounts.json", "../trading/trades.json", "../edge.json", "./brief.json", "../odeon/trades.json", "../business/goals.json"))   # + the news week and real fills (night-nqdash2); the account list + twins (nqdash3); the money goals ladder (v4)
     d = os.path.join(AK.WEB, APP)
     js, core, scene, html, css = (AK.read(os.path.join(d, n)) for n in ("nq.js", "nqcore.js", "nqscene.js", "index.html", "nq.css"))
     check("a. it never reads the 8 MB data.json: only home.json, its howto.json and its fixture", "data.json" not in re.sub(r"//[^\n]*", "", js + core) and "../home.json" in js)
@@ -243,7 +243,7 @@ def test_page():
                   d["kv"][0] == demo_today() and d["kv"][1].startswith("$2,580 to go to the $3,000 target") and d["dt"][0] == "Today" and len(d["trades"]) == 10 and all(re.search(r"\$[\d,]+ \(~?[+-]?\d+\.\dR\)", x) for x in d["trades"])
                   and len(d["rules"]) == 10 and all(d["rules"]) and "02:00 and 15:30 ET" in d["plan"] and "flat by 15:55 ET" in d["plan"] and d["facts"][0] == "PF 2.91, +$9,919, about $2,670 a month" and len(d["facts"]) == 3
                   and d["pill"] == "Backtest, not a promise" and "1 Jul 2026 to 16 Oct 2026" in d["factNote"], d)
-            check("c. AGORA look: serif title, warm dark body", any(f in d["font"] for f in ("Palatino", "Iowan", "Georgia")) and d["bg"] == "rgb(20, 17, 14)", d)
+            check("c. NQ terminal look (owner 2026-11-20: no gold): serif title, navy body", any(f in d["font"] for f in ("Palatino", "Iowan", "Georgia")) and d["bg"] == "rgb(7, 11, 20)", d)
             AK.shot(p, "nq-demo")
             # the sheet from the More card
             p.locator("#howBtn").scroll_into_view_if_needed()

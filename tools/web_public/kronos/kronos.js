@@ -101,7 +101,8 @@ async function startDial() {
   const flat = () => { S.flat = true; $('flat').removeAttribute('hidden'); canvas.hidden = true; renderFlat(); };
   if (q === 'off' || q === 'flat') { flat(); return; }
   try {
-    for (let k = 0; k < 25 && !window.KRONOS_DIAL && !window.KRONOS_DIAL_FAIL; k++) await new Promise((r) => setTimeout(r, 100));
+    // lazy3d.js imports the dial after the first paint (or not at all: LITE, a slow / save-data phone), then fires 'kronos-dial'; 12 s at most
+    if (!window.KRONOS_DIAL && !window.KRONOS_DIAL_FAIL) await new Promise((r) => { const t = setTimeout(r, 12000); window.addEventListener('kronos-dial', () => { clearTimeout(t); r(); }, { once: true }); });
     if (!window.KRONOS_DIAL) throw new Error('the 3D module did not load');
     S.dial = window.KRONOS_DIAL.createDial(canvas, { reduced: RM() }); if (O && O.mode) O.mode(S.dial.lite);
     $('flat').setAttribute('hidden', ''); pushDial();
@@ -120,7 +121,7 @@ function stepMonth(n) { const months = C.monthsWithData(S.v.dm, S.today ? C.mont
 
 async function boot() {
   const q = new URLSearchParams(location.search), forced = q.get('demo') === '1', at = q.get('at');
-  const [fx, real] = await Promise.all([getJSON('./fixture.json'), forced ? null : getJSON('../odeon/trades.json')]);
+  const [fx, real] = await Promise.all([getJSON('./fixture.json'), forced ? null : getJSON('../odeon/trades_lite.json').then((x) => x || getJSON('../odeon/trades.json'))]);   // the slim copy first (dogfood 2026-11-20)
   S.fixture = fx; const data = C.chooseData(real, fx); if (!data) throw new Error('no numbers');
   S.data = data;
   const now = at && Number.isFinite(Date.parse(at)) ? Date.parse(at) / 1000 : Date.now() / 1000;

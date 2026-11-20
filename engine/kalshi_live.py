@@ -113,7 +113,7 @@ PROGRAM_END_S = 15 * 60
 PUSH_DAY_MAX = 10                       # non-stop pushes per ET day (stops always go)
 FILL_PUSH_GAP_S, FILL_PUSH_DAY_MAX = 3600, 6
 HEARTBEAT_STALE_S = 300
-CARD_MAX = 480                          # 200 + the K8 status block (about 130 bytes, night-kalshi8) + day stop, edge health, last 5 bets (day-kalshi)
+CARD_MAX = 600                          # 200 + the K8 status block (about 130 bytes, night-kalshi8) + day stop, edge health, last 5 bets, per-leg last 20, checklist flags, $ today/week/all (day-kalshi)
 TICKER_RX = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}")
 PLAIN = {
     "KILL": "the kill switch is on", "NOT_ARMED": "not armed: type the phrase on the PC", "STOPPED": "stopped: type the phrase again",

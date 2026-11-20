@@ -138,3 +138,13 @@ Fix: hub/index.html reserves the Home / Go to row (`<div class="gn-row" data-gn-
 instead of inserting a row (any page can use it); hub.css (h6) holds each hub's Right now height while its numbers load and keeps the blocks
 below (All hubs, Also useful, the footer) invisible until hub.js (h5) marks hb-done (a 6 s failsafe). tests.test_nav_pages 26/26 (+ 4 slow-phone
 CLS checks). Pins moved: test_hubs (h6/g7/h5), test_me_hub + test_gate_page (catalog nv6 in gate-nav: my earlier bump).
+
+## iPhone home screen + Set up your iPhone (lead 19:18 UTC)
+
+| What | Result |
+|---|---|
+| hub/setup.html | "Set up your iPhone", 5 steps: Olympus on the Home Screen (Safari > Share > Add to Home Screen), NQ bot / Kalshi / Jarvis / Websites as their own icons (each has its own manifest + icon; Open + "Copy its link" built from the page's own address: no address in the page), the widget (widget/, 3 steps; switch to widget/setup.html when cities3 lands it), notifications (Jarvis > Allow notifications; ntfy as the backup, never twice), Siri (Shortcuts > Open URLs; voice questions to Jarvis not built yet: said plainly). |
+| Linked | Home grid (Set up icon), Help (item setup-iphone, 28 questions), Doors > More ("Set up your iPhone" replaces "Olympus World": the World is inside Cities, on the Home grid; the door stays at 8), search (act-setup: setup, iphone, home screen, widget, notifications, siri), What's new. |
+| Home (gate/) | Your apps + the four doors as an iOS home screen: 62 px app icons with the launcher's glyph + colour, 4 a row at 390 px, the name under the icon (2 lines max), one tap = open; the doors in a dock tray; the live lines stay for VoiceOver (Right now above shows them). Apps: Cities, Kalshi, NQ bot, Jarvis, My day, Business, Websites, Set up. Search stays on top. Same ids / links / data hooks: gate.js untouched. |
+| Versions | gate.css g20, catalog nv9 everywhere (gate/index.html, hub/index.html, gate-nav.js), doors.js d11 (hub/doors.html; launcher.js still d9: lead line), web_next doors.js copied. |
+| Tests | gate_page 90/90 (pins: 8 apps + Set up, 12 icons, g20, nv9), nav_pages 33/33 (+ setup: steps, links, privacy, look, 390 px), help 35/35, nav_search 6/6, web_hub 21/21, home_fx 19/19, apps_list 44/44, hubs 99/100 (gate.css colour literal check: the icon text colour #1b1610 + gradients are literal; red on pc before too), smoke 10/10. Shots: after/home-grid-*, setup-*, setup-apps-*. |
