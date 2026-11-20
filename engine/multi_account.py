@@ -544,6 +544,24 @@ class Account:
             return None
         return getattr(getattr(self.router, "bot", None), "acct_r", None)
 
+    def _shared_holds(self) -> str | None:
+        """Why the other strategy on this SAME account holds it now (a position, or a NinjaTrader bracket still open / pending /
+        closing), else None. Unknown = held (a CLOSEPOSITION that may close the other bot's trade is never sent on a guess)."""
+        try:
+            sh = self.shared()
+            if sh is None:
+                return None
+            nm = getattr(sh, "label", None) or "the other strategy on this account"
+            if getattr(sh, "open_t", None) is not None:
+                return f"{nm} holds a position here"
+            from .ninjatrader import OPEN_STATUSES
+            for lg in list(getattr(getattr(sh, "adapter", None), "legs", None) or []):
+                if isinstance(lg, dict) and lg.get("status") in OPEN_STATUSES:
+                    return f"{nm}'s NinjaTrader bracket is {lg.get('status')}"
+            return None
+        except Exception as e:  # noqa: BLE001
+            return f"the other strategy's state is unknown ({e.__class__.__name__})"
+
     def all_closes(self) -> list:
         """This account's closes + the shared strategy's (one balance, one floor, one day P&L)."""
         sh = self.shared()
@@ -999,6 +1017,13 @@ class Account:
                 continue
             routed = ("entry", tr["entry_t"]) in self.seen
             if not routed and self.spec["adapter"] == "paper":
+                continue
+            if not routed and (held := self._shared_holds()):
+                # redteam 2026-11-20: the "in case" flatten of an entry this lane never routed is a CLOSEPOSITION of the whole
+                # account: on an account the other strategy shares (the Rapid's ATLAS lane, ATLAS's funded 25K) it would close
+                # THAT trade. No position of ours exists for an entry we never routed: nothing is sent.
+                self.log("risk", f"exit {tr['exit_reason']} for the entry at {_et(tr['entry_t']):%H:%M} ET this account never routed: "
+                                 f"no flatten ({held}; it would close that trade)")
                 continue
             qty = tr["qty"]
             if self.open_t == tr["entry_t"]:

@@ -448,6 +448,19 @@ def t_update_flat():
     check("ATLAS's bracket open at NinjaTrader: no update", "ATLAS's NinjaTrader bracket" in (AU.bot_flat_reason(bot) or ""))
     bot.acct_b = B(legs=[{"status": "closed"}])
     check("ATLAS's closed bracket: flat", AU.bot_flat_reason(bot) is None)
+    # redteam 2026-11-20: an extra account / a fleet follower in a trade of its own keeps the update / restart away too
+    bot.accts = SimpleNamespace(accounts=[SimpleNamespace(name="Zlarior 25K #2", open_t=123, adapter=SimpleNamespace(legs=[]))])
+    check("an extra account holds a position: no update / restart", AU.bot_flat_reason(bot) == "Zlarior 25K #2 has a position open",
+          AU.bot_flat_reason(bot))
+    bot.accts = SimpleNamespace(accounts=[SimpleNamespace(name="Rapid", open_t=None, adapter=SimpleNamespace(legs=[{"status": "pending"}]))])
+    check("an extra account's bracket pending: no update", "Rapid's NinjaTrader bracket is pending" == AU.bot_flat_reason(bot),
+          AU.bot_flat_reason(bot))
+    bot.accts = SimpleNamespace(accounts=[SimpleNamespace(name="Rapid", open_t=None, adapter=SimpleNamespace(legs=[]))])
+    bot.fleet = SimpleNamespace(busy=lambda: True)
+    check("a fleet follower holds a position: no update", AU.bot_flat_reason(bot) == "a fleet follower has a position open",
+          AU.bot_flat_reason(bot))
+    bot.fleet = SimpleNamespace(busy=lambda: False)
+    check("everyone flat: an update may run", AU.bot_flat_reason(bot) is None, AU.bot_flat_reason(bot))
 
 
 # ------------------------------------------------------------------------------------------------ 6. extra accounts
@@ -488,6 +501,25 @@ def t_extra_account():
     check("exit of an entry this account never routed: the safety flatten still goes out", len(ex) == 1, sent)
     check("... and it books $0, not the model's -$250", ex and ex[0].get("pnl") == 0.0, ex)
     check("... no close in its eval book", not acc.closes, acc.closes)
+    # redteam 2026-11-20: the Rapid EOD's LIT lane shares ONE NinjaTrader account with ATLAS's lane (engine/rapid.RapidAtlas):
+    # its "in case" flatten of an entry it never routed is a CLOSEPOSITION of the whole account = it would close ATLAS's trade
+    for lab, partner, want in (("ATLAS's lane holds a position", SimpleNamespace(label="ATLAS Rapid", open_t=clock["t"] - 900,
+                                                                                 adapter=SimpleNamespace(legs=[])), 0),
+                               ("ATLAS's lane has a bracket still closing", SimpleNamespace(label="ATLAS Rapid", open_t=None,
+                                adapter=SimpleNamespace(legs=[{"status": "closing", "entry_t": 1}])), 0),
+                               ("ATLAS's lane is flat", SimpleNamespace(label="ATLAS Rapid", open_t=None,
+                                                                        adapter=SimpleNamespace(legs=[{"status": "closed"}])), 1)):
+        sent.clear()
+        r2 = R()
+        r2.bot = SimpleNamespace(fleet=None, acct_r=partner)
+        lane = MA.Account({**spec, "id": "rapid_lit", "lane": "rapid"}, r2)
+        lane.adapter = SimpleNamespace(route_all_exits=True, send=lambda a: sent.append(a) or {"ok": True})
+        gap2 = {**gap_tr, "entry_t": clock["t"] - 60, "exit_t": clock["t"] + 300}
+        clock["t"] += 400
+        lane._process({**ctx, "res": {"trades": [gap2]}, "now": clock["t"], "start": clock["t"] - 3600})
+        n = len([a for a in sent if a.get("side") == "exit"])
+        check(f"Rapid LIT lane, exit of an entry it never routed, {lab}: {'no CLOSEPOSITION' if not want else 'the safety flatten goes'}",
+              n == want, sent)
 
 
 def main() -> bool:
