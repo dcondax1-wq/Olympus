@@ -298,8 +298,10 @@ TAPS = """() => { const bad = [];
     const cs = getComputedStyle(e); if (cs.display === 'none' || cs.visibility === 'hidden') continue; const r = e.getBoundingClientRect();
     if (r.width && r.height && (r.height < 43.5 || r.width < 43.5)) bad.push((e.id || e.className || e.tagName) + ' ' + Math.round(r.width) + 'x' + Math.round(r.height)); }
   return bad; }"""
-CORNER = """() => { const W = innerWidth, H = innerHeight, bad = []; window.scrollTo(0, document.documentElement.scrollHeight);
+CORNER = """() => { const W = innerWidth, H = innerHeight, bad = [], de = document.documentElement, was = de.classList.contains('framed');
+  de.classList.add('framed'); void de.offsetHeight; window.scrollTo(0, document.documentElement.scrollHeight);   // as inside Jarvis (the orb's seat; alone the page ends 96 px up)
   for (const e of document.querySelectorAll('button, input, textarea, label.filebtn')) { const r = e.getBoundingClientRect(); if (!r.width) continue; if (r.right > W - 80 && r.bottom > H - 160 && r.left < W && r.top < H) bad.push(e.id || e.className); }
+  if (!was) de.classList.remove('framed');
   return bad; }"""
 
 

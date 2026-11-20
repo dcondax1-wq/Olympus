@@ -66,11 +66,11 @@ SCROLLER = """window.__scroller = () => { const se = document.scrollingElement; 
 
 # at the very end of the page: the lowest readable thing vs the fixed bottom bars and the home bar
 MEASURE = r"""(sb) => {
-  const H = innerHeight, W = innerWidth, de = document.documentElement;
+  const H = innerHeight, W = innerWidth, de = document.documentElement, C = new Map(), gcs = (e) => { let x = C.get(e); if (!x) { x = getComputedStyle(e); C.set(e, x); } return x; };
   const nm = (e) => (e.tagName + (e.id ? '#' + e.id : '') + (typeof e.className === 'string' && e.className.trim() ? '.' + e.className.trim().split(/\s+/).slice(0, 2).join('.') : '')).slice(0, 48);
   const bars = [], fixedAll = [];
   for (const e of document.querySelectorAll('body *')) {
-    const s = getComputedStyle(e);
+    const s = gcs(e);
     if (s.position !== 'fixed' && s.position !== 'sticky') continue;
     if (s.position === 'fixed') fixedAll.push(e);
     if (s.display === 'none' || s.visibility === 'hidden' || +s.opacity < 0.05) continue;
@@ -101,9 +101,9 @@ MEASURE = r"""(sb) => {
     if (r.height < 2 || r.width < 2) continue;
     let top = r.top, bot = r.bottom, gone = false;
     for (let p = e; p && p !== de; p = p.parentElement) {
-      const s = getComputedStyle(p);
+      const s = gcs(p);
       if (s.display === 'none' || s.visibility === 'hidden' || +s.opacity < 0.05) { gone = true; break; }
-      if (p !== e && p !== document.body && (s.overflowY !== 'visible' || s.overflowX !== 'visible')) { const q = p.getBoundingClientRect(); top = Math.max(top, q.top); bot = Math.min(bot, q.bottom); }
+      if (p !== document.body && (s.overflowY !== 'visible' || s.overflowX !== 'visible')) { const q = p.getBoundingClientRect(); top = Math.max(top, q.top); bot = Math.min(bot, q.bottom); }
       if (s.clipPath && s.clipPath !== 'none' && /inset\(50%|circle\(0/.test(s.clipPath)) { gone = true; break; }
       if (s.clip && s.clip !== 'auto') { gone = true; break; }
     }
@@ -117,21 +117,21 @@ MEASURE = r"""(sb) => {
            scrolls: sc.scrollHeight > sc.clientHeight + 4 };
 }"""
 
-WIDE = r"""(() => { const W = innerWidth, out = [];
-  for (const e of document.querySelectorAll('body *')) { const r = e.getBoundingClientRect(), s = getComputedStyle(e);
+WIDE = r"""(() => { const W = innerWidth, out = [], C = new Map(), gcs = (e) => { let x = C.get(e); if (!x) { x = getComputedStyle(e); C.set(e, x); } return x; };
+  for (const e of document.querySelectorAll('body *')) { const r = e.getBoundingClientRect(), s = gcs(e);
     if (s.position === 'fixed' || r.width < 1 || s.visibility === 'hidden') continue;
-    let p = e.parentElement, clip = false; while (p && p !== document.body) { const o = getComputedStyle(p).overflowX; if (o === 'auto' || o === 'scroll' || o === 'hidden' || o === 'clip') { clip = true; break; } p = p.parentElement; }
+    let p = e.parentElement, clip = false; while (p && p !== document.body) { const o = gcs(p).overflowX; if (o === 'auto' || o === 'scroll' || o === 'hidden' || o === 'clip') { clip = true; break; } p = p.parentElement; }
     if (!clip && r.right > 0 && (r.right > W + 1.5 || r.left < -1.5)) out.push((e.tagName + '.' + (typeof e.className === 'string' ? e.className : '')).slice(0, 40) + ' ' + Math.round(r.left) + '..' + Math.round(r.right)); if (out.length > 4) break; }
   return out; })()"""
 
 # text cut inside its own box (overflow hidden, no ellipsis), a control cut by its row, a control off the screen sideways
-CLIP = r"""(() => { const W = innerWidth, H = innerHeight, out = [];
+CLIP = r"""(() => { const W = innerWidth, H = innerHeight, out = [], C = new Map(), gcs = (e) => { let x = C.get(e); if (!x) { x = getComputedStyle(e); C.set(e, x); } return x; };
   const nm = (e) => (e.tagName + (e.id ? '#' + e.id : '') + (typeof e.className === 'string' && e.className.trim() ? '.' + e.className.trim().split(/\s+/).slice(0, 2).join('.') : '')).slice(0, 48);
-  const shown = (e) => { for (let p = e; p && p !== document.documentElement; p = p.parentElement) { const s = getComputedStyle(p);
+  const shown = (e) => { for (let p = e; p && p !== document.documentElement; p = p.parentElement) { const s = gcs(p);
       if (s.display === 'none' || s.visibility === 'hidden' || +s.opacity < 0.05) return false; if (p.tagName === 'DETAILS' && !p.open && !e.closest('summary')) return false; } return true; };
   for (const e of document.querySelectorAll('body *')) {
     if (out.length > 7) break;
-    const s = getComputedStyle(e); if (s.display === 'inline' || s.display === 'contents' || s.display === 'none') continue;
+    const s = gcs(e); if (s.display === 'inline' || s.display === 'contents' || s.display === 'none') continue;
     const r = e.getBoundingClientRect(); if (r.width < 4 || r.height < 4) continue;
     const own = [...e.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim());
     const ctl = /^(BUTTON|A|SELECT|INPUT|LABEL|SUMMARY)$/.test(e.tagName) || e.getAttribute('role') === 'button' || e.getAttribute('role') === 'tab';
@@ -141,11 +141,11 @@ CLIP = r"""(() => { const W = innerWidth, H = innerHeight, out = [];
       if (shown(e)) out.push('cut below: ' + nm(e) + ' "' + e.textContent.trim().slice(0, 30) + '" ' + e.scrollHeight + '>' + e.clientHeight); continue; }
     if (ctl) {
       if (s.position !== 'fixed' && r.right > 0 && (r.right > W + 1 || r.left < -1) && r.top < H * 4) {
-        let sc = false; for (let p = e.parentElement; p && p !== document.body; p = p.parentElement) { const o = getComputedStyle(p).overflowX; if (o === 'auto' || o === 'scroll') { sc = true; break; } }
+        let sc = false; for (let p = e.parentElement; p && p !== document.body; p = p.parentElement) { const o = gcs(p).overflowX; if (o === 'auto' || o === 'scroll') { sc = true; break; } }
         if (!sc && shown(e)) out.push('off screen: ' + nm(e) + ' "' + e.textContent.trim().slice(0, 30) + '" ' + Math.round(r.left) + '..' + Math.round(r.right));
         continue; }
       for (let p = e.parentElement; p && p !== document.documentElement; p = p.parentElement) {
-        const q = getComputedStyle(p);
+        const q = gcs(p);
         if (q.overflowX === 'auto' || q.overflowX === 'scroll' || q.overflowY === 'auto' || q.overflowY === 'scroll') break;
         if (q.overflowX === 'hidden' || q.overflowX === 'clip' || q.overflowY === 'hidden' || q.overflowY === 'clip') {
           const b = p.getBoundingClientRect();
@@ -197,7 +197,7 @@ def run(pages, combos, throttle=0, shots=None, wait_ms=3000):
                     p.on("console", lambda m, errs=errs: errs.append(m.text[:200]) if m.type == "error" and "Failed to load resource" not in m.text else None)
                     p.on("pageerror", lambda e, errs=errs: errs.append("pageerror: " + str(e)[:200]))
                     p.on("response", lambda r, bad=bad: bad.append(f"{r.status} {r.url[len(base):][:100]}") if r.status >= 400 and r.url.startswith(base) else None)
-                    p.on("requestfailed", lambda r, bad=bad: bad.append(f"failed {r.url[len(base):][:100]} {r.failure}") if r.url.startswith(base) else None)
+                    p.on("requestfailed", lambda r, bad=bad: bad.append(f"failed {r.url[len(base):][:100]} {r.failure}") if r.url.startswith(base) and r.method != "HEAD" else None)   # a HEAD probe (does week.html exist?) reads as ERR_ABORTED in Chromium though it answered 200
                     cdp = ctx.new_cdp_session(p)
                     try:
                         cdp.send("Emulation.setSafeAreaInsetsOverride", {"insets": INSETS})
@@ -218,7 +218,7 @@ def run(pages, combos, throttle=0, shots=None, wait_ms=3000):
                         cls = p.evaluate("[window.__cls, window.__shifts.slice(0, 6), window.__lt]")
                         clip = p.evaluate(CLIP)
                         if shots and cb == "390d":
-                            p.screenshot(path=os.path.join(shots, f"{name}.png"))
+                            p.screenshot(path=os.path.join(shots, f"{name}.jpg"), quality=80)
                         p.evaluate(SCROLLER + "; window.__scroller().scrollTop = 1e7; window.scrollTo(0, 1e7)")
                         p.wait_for_timeout(700)
                         m = p.evaluate(MEASURE, sb)
