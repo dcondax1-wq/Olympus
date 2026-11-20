@@ -29,7 +29,7 @@ if (mode === 'pure') {
   };
   process.stdout.write(JSON.stringify(out));
 } else if (mode === 'draw') {
-  const texts = [], urls = [], images = [];
+  const texts = [], urls = [], images = [], symbols = [];
   let widget = null, presented = null;
   class Stack {
     constructor() { this.kids = []; }
@@ -46,7 +46,7 @@ if (mode === 'pure') {
   }
   const files = {};
   const ctx = {
-    ListWidget, console,
+    ListWidget, console, SFSymbol: { named: (n) => { symbols.push(n); return { image: { sf: n } }; } },
     Request: class { constructor(u) { this.url = u; urls.push(u); } loadString() {
       const u = this.url;
       if (u.includes('ntfy')) return lite ? Promise.resolve(lite) : Promise.reject(new Error('offline'));
@@ -63,7 +63,10 @@ if (mode === 'pure') {
     FileManager: { local: () => ({ documentsDirectory: () => '/docs', joinPath: (a, b) => a + '/' + b, fileExists: (p) => p in files,
       readString: (p) => files[p], writeString: (p, s) => { files[p] = s; } }) },
     Script: { setWidget: (w) => { widget = w; }, complete: () => {
-      process.stdout.write(JSON.stringify({ texts, urls, url: widget && widget.url, images: images.length, presented, cached: Object.keys(files).length,
+      const links = [], walk = (n) => { if (!n || !n.kids) return; if (n !== widget && n.url) links.push({ url: n.url, text: flat(n).join(' ') }); n.kids.forEach(walk); };
+      const flat = (n) => (n.text != null ? [n.text] : n.kids ? [].concat(...n.kids.map(flat)) : []);
+      walk(widget);
+      process.stdout.write(JSON.stringify({ texts, urls, url: widget && widget.url, links, symbols, images: images.length, presented, cached: Object.keys(files).length,
         refresh: widget && widget.refreshAfterDate ? widget.refreshAfterDate.getTime() - Date.now() : null }));
     } },
     config: { runsInWidget: a3 !== 'app', widgetFamily: a3 === 'app' ? undefined : a3 },
