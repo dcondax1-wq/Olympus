@@ -2,7 +2,7 @@
  * A page's optional 3D module (and three.js behind it, ~165 kB over the wire, ~650 kB to parse) used to be a plain
  * <script type="module"> tag: fetched at once, fighting the first paint for a slow line. This classic script imports it later:
  *
- *   <script src="../olympus/lazy3d.js?v=l1" data-src="nqscene.js?v=a1" data-near="#scene3d" data-skip="lite" data-fail="NQ3D_FAIL" defer></script>
+ *   <script src="../olympus/lazy3d.js?v=l2" data-src="nqscene.js?v=a1" data-near="#scene3d" data-skip="lite" data-fail="NQ3D_FAIL" defer></script>
  *
  *   data-src    the module, relative to the page (it registers itself and fires its event exactly as before: the page code is unchanged)
  *   data-near   the element the 3D draws into: the import waits until it is within one screen of the viewport (none / missing = at once)

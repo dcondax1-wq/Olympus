@@ -1,6 +1,6 @@
 /* OLYMPUS gate-nav (2026-11-12; v2 2026-11-14, docs/OLYMPUS_IA_V2.md): breadcrumbs back home and a "Go to..." sheet, on any app. One line in the app's <head>,
  * after agora-ui.js (agora-ui.js also adds it by itself to every AGORA-shell app):
- *     <script src="../olympus/gate-nav.js?v=g6" defer></script>
+ *     <script src="../olympus/gate-nav.js?v=g7" defer></script>
  * - Breadcrumbs: Home > Hub > app. The app's existing back link ("< Olympus" from the AGORA shell, or an own "Olympus" link) becomes "< Home" and opens the
  *   home (gate/); then the app's hub (a link to hub/?h=<hub>&t=<its tab>) and the app's plain name. A page with no back link gets a slim row (crumbs on the
  *   left, Go to on the right) above its header: in the page flow, never floating over its content. On a hub page (hub/?h=...): Home > Hub.

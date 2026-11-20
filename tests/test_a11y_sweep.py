@@ -95,7 +95,7 @@ def what_if():
     from tests import agora_kit as AK
     srv, origin = S.serve_site(AK, {"/olympus/agora.css": b"/* proposed */"})
     try:
-        r = urllib.request.urlopen(origin + "/olympus/agora.css?v=a7", timeout=10)
+        r = urllib.request.urlopen(origin + "/olympus/agora.css?v=a8", timeout=10)
         body, ctype = r.read(), r.headers.get("Content-Type", "")
         r2 = urllib.request.urlopen(origin + "/olympus/olympus.css", timeout=10).read()
     finally:

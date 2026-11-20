@@ -15,13 +15,13 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="../jarvis/apple-touch-icon.png">
 <link rel="stylesheet" href="../olympus/olympus.css?v=o7">
-<link rel="stylesheet" href="../olympus/agora.css?v=a7">
+<link rel="stylesheet" href="../olympus/agora.css?v=a8">
 <script src="../olympus/quiet-net.js?v=q9"></script>
 <script src="../olympus/themes.js?v=o9"></script>
-<script src="../olympus/olympus.js?v=o15" data-app="cities"></script>
+<script src="../olympus/olympus.js?v=o16" data-app="cities"></script>
 <script src="../olympus/a11y.js" defer></script>
-<script src="../olympus/gate-nav.js?v=g6" defer></script><!-- the way back to the Gate + Go to (olympus/gate-nav.js) -->
-<script src="../olympus/intro-app.js?v=i10" defer></script>
+<script src="../olympus/gate-nav.js?v=g7" defer></script><!-- the way back to the Gate + Go to (olympus/gate-nav.js) -->
+<script src="../olympus/intro-app.js?v=i11" defer></script>
 <script src="../olympus/sfx.js?v=s4" async></script>
 <script src="frame-safe.js?v=1" defer></script><!-- cities3: the parent's bottom safe area when framed in Jarvis (the dock off the home bar) -->
 <script src="../olympus/fx-core.js?v=f1" defer></script>
@@ -258,7 +258,7 @@ body[data-mode=city] .tab.on{background:linear-gradient(145deg,rgba(255,198,74,.
 @media (max-width:360px){body[data-mode=city] .mini{width:96px;height:96px}}
 </style>
 <link rel="stylesheet" href="./world.css?v=w3">
-<link rel="stylesheet" href="./agora-cities.css?v=g4">
+<link rel="stylesheet" href="./agora-cities.css?v=g5">
 </head>
 <body data-mode="hub" data-ready="false">
 <canvas id="amap" aria-label="The Olympus archipelago: six district islands with 173 cities. Tap a city to open it, or use Find."></canvas>
@@ -339,7 +339,7 @@ async function recover() {
 }
 // Module import settles before its asynchronous boot does. Watch readiness itself.
 setTimeout(recover, 18000);
-import('./app.js?v=o26').catch(recover);
+import('./app.js?v=o27').catch(recover);
 </script>
 <script type="module" src="./athens-entry.js?v=t5"></script>
 <script type="module" src="./hellas-entry.js?v=h1"></script>
