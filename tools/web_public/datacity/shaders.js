@@ -17,7 +17,7 @@ uniform vec3 uFog; uniform float uFogD; uniform float uHaze;
 float fogAmount(float d, float y){                            // distance fog + a height fog that lies on the ground (the skyline in depth layers)
   float f = 1.0 - exp(-uFogD*uFogD*d*d);
   float hf = (0.25 + uHaze*0.8) * exp(-max(y, 0.0)*0.06) * (1.0 - exp(-d*0.0030));
-  return clamp(f + hf*0.45, 0.0, 1.0);
+  return clamp(f + hf*0.45 + smoothstep(650.0, 1350.0, d), 0.0, 1.0);        // all fog before the ground's edge (no seam at the horizon)
 }`;
 export const HASH = `float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7)))*43758.5453); }
 float noise(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f);
@@ -98,7 +98,7 @@ void main(){
   vec2 lo = vec2(0.17, 0.26), hi = vec2(0.83, 0.80);
   vec2 wb = smoothstep(lo - fw, lo + fw, f) * (1.0 - smoothstep(hi - fw, hi + fw, f));
   float far = smoothstep(0.32, 0.85, max(fw.x, fw.y));                      // far away the grid melts into its average (no shimmer)
-  float win = mix(wb.x * wb.y, 0.36, far) * side * body0 * (1.0 - lobby);
+  float win = mix(wb.x * wb.y, 0.3, far) * side * body0 * (1.0 - lobby);
   float rnd = h2(cell + n.xz*3.1);
   float steady = vLook.y;                                                    // 1 gold, .8 holds in both, .4 one period, .1 none
   // the windows tell the data: lit = holds in 2021-25 and 2026; unstable ideas flicker, gold ones breathe
@@ -111,7 +111,7 @@ void main(){
   float fired = step(1.5, vState.x) * uToday;
   lit = max(lit, fired * step(rnd, 0.92));
   lit = mix(lit, max(litAvg, fired * 0.9), far);
-  float dimW = mix(0.30 + 0.70 * h2(cell * 3.7 + 1.3), 0.62, far);          // some panes bright, most dim (blinds, lamps)
+  float dimW = mix(0.30 + 0.70 * h2(cell * 3.7 + 1.3), 0.7, far);          // some panes bright, most dim (blinds, lamps)
   // warm homes / cool offices, the idea's colour in the light (class reads as the tint)
   float office = step(0.5, fract(vSeed * 7.31 + 0.2));
   vec3 warm = vec3(1.0, 0.80, 0.54), cool = vec3(0.80, 0.89, 1.0);
@@ -148,7 +148,7 @@ void main(){
   vec3 pane = env * (0.22 + 0.6*fres) * mix(0.55, 0.95, uDay) + vec3(0.008,0.012,0.022);
   col = mix(col, pane, win * (0.55 + 0.35*vLook.z));
   float sill = mix(0.82 + 0.3 * (1.0 - f.y), 1.0, far);
-  col += win * lit * dimW * breathe * sill * wc * mix(1.75, 0.30, uDay);
+  col += win * lit * dimW * breathe * sill * wc * mix(2.2, 0.30, uDay);
   // the lobby: a warm bright band at street level, framed by its own entry columns
   float lob = lobby * side * body0 * step(0.12, hy) * (0.65 + 0.35*step(0.25, fract(gx * 1.5)));
   col = mix(col, vec3(1.0, 0.82, 0.58) * mix(0.95, 0.45, uDay) * (0.6 + 0.4*h2(vec2(vSeed, 3.0))), lob * 0.85);
@@ -164,8 +164,10 @@ void main(){
   float parapet = smoothstep(0.78, 0.86, max(rq.x, rq.y));
   vec2 bo = vLocal.xz / vHalf - (vec2(fract(vSeed*5.3), fract(vSeed*9.1)) - 0.5) * 0.5;
   float plant = 1.0 - smoothstep(0.26, 0.30, max(abs(bo.x), abs(bo.y)));
-  vec3 roof = stone * (0.62 + 0.16*parapet + 0.22*plant) * (0.92 + 0.16*h2(vec2(vSeed, 7.0))) + vec3(0.006,0.008,0.012);
+  vec3 roof = stone * (0.85 + 0.2*parapet + 0.3*plant) * (0.9 + 0.2*h2(vec2(vSeed, 7.0))) + vec3(0.016,0.016,0.020) * (1.0 - uDay);   // lit a little by the city's glow
   col = mix(col, roof * ao, 1.0 - side);
+  float rimL = smoothstep(0.86, 0.95, max(rq.x, rq.y)) * (1.0 - side) * (1.0 - vRound);
+  col += vColor * rimL * 0.32 * neon;                                         // a thin roof outline in the idea's colour (reads from the overview)
   col += vColor * (1.0 - body0) * side * (0.18 + 0.45 * step(0.6, fract(hy * 1.2 - uTime * 0.15))) * neon;   // the spire / mast: dark, lit rings in the idea's colour
   col += vColor * vData.z * (0.5 + 0.5*sin(uTime*3.2 + vSeed*6.0)) * (0.08 + crown*0.9 + edge*0.4);
   if (uToday > 0.5) {
@@ -210,18 +212,19 @@ void main(){
   vec2 f = fract(g), fw = min(fwidth(g), vec2(1.0));
   vec2 wb = smoothstep(vec2(0.2,0.28) - fw, vec2(0.2,0.28) + fw, f) * (1.0 - smoothstep(vec2(0.8,0.76) - fw, vec2(0.8,0.76) + fw, f));
   float far = smoothstep(0.32, 0.85, max(fw.x, fw.y));
-  float win = mix(wb.x*wb.y, 0.34, far) * step(0.85, vW.y);
+  float win = mix(wb.x*wb.y, 0.3, far) * step(0.85, vW.y);
   float lit = mix(step(hash(floor(g)), vMeta.x), vMeta.x, far);
-  float dimW = mix(0.3 + 0.7*hash(floor(g)*3.7 + 1.3), 0.62, far);
+  float dimW = mix(0.3 + 0.7*hash(floor(g)*3.7 + 1.3), 0.7, far);
   float diff = 0.55 + 0.45*max(dot(normalize(vN), normalize(vec3(-0.45,0.62,-0.35))), 0.0);
   vec3 stone = mix(vec3(${NEON ? '0.050,0.066,0.098' : '0.11,0.095,0.085'}), vec3(${NEON ? '0.30,0.33,0.37' : '0.52,0.47,0.40'}), uDay);
   float ao = mix(0.42, 1.0, smoothstep(0.0, 4.5, vW.y));
   vec3 wc = mix(mix(vec3(1.0,0.80,0.54), vec3(0.80,0.89,1.0), step(0.5, hash(floor(g*0.25)))), vColor*1.15 + 0.08, 0.30);
   vec3 col = mix(stone, vColor*0.2, 0.1)*diff*ao;
   col = mix(col, vec3(0.03,0.04,0.07)*mix(1.0, 5.0, uDay), side*win*0.6);
-  col += side*win*lit*dimW*wc*mix(1.75, 0.3, uDay);
-  col += vColor * side * (1.0 - smoothstep(0.0, 0.18, 1.0 - vY)) * 0.8 * (1.0 - uDay*0.55);
-  col = mix(col, col*0.7 + vColor*0.08, 1.0 - side);
+  col += side*win*lit*dimW*wc*mix(2.2, 0.3, uDay);
+  float hTop = vW.y / max(vY, 0.001);
+  col += vColor * side * (1.0 - smoothstep(0.03, 0.12, (1.0 - vY) * hTop)) * 0.4 * (1.0 - uDay*0.55);   // the thin crown line, as the full buildings
+  col = mix(col, stone * 0.95 + vec3(0.016,0.016,0.020) * (1.0 - uDay), 1.0 - side);         // dark roofs, as the full buildings
   if (uToday > 0.5) col = col * mix(0.3, 1.0, step(0.5, vMeta.y)) + vec3(${NEON ? '0.3,' : ''}0.95,${NEON ? '1.0' : '0.75,0.40'}) * step(1.5, vMeta.y) * 0.25;
   col *= mix(1.0, 0.12, vMeta.z);
   col = mix(col, uFog, fogAmount(vFD, vW.y));
@@ -333,7 +336,7 @@ void main(){
   float k = floor(along / 6.0), d = fract(along / 6.0) - 0.5;
   float sideL = mod(k, 2.0) < 1.0 ? -0.42 : 0.42;
   float pool = exp(-(d*d*36.0*6.0/9.0 + (ac - sideL)*(ac - sideL)*9.0)) * (1.0 - uDay*0.85);
-  pool = mix(pool, 0.14, smoothstep(0.4, 1.6, fwA));                         // far: the pools melt into a warm line (no crawling dots)
+  pool = mix(pool, 0.34, smoothstep(0.4, 1.6, fwA));                         // far: the pools melt into a warm line (no crawling dots)
   col += vec3(1.0, 0.66, 0.36) * (pool * (0.55 + 0.25*uWet) + 0.05) * (1.0 - uDay*0.85);   // from above the avenues read as warm lit lines
   col += vec3(0.9, 0.86, 0.75) * lane * 0.12 + vec3(0.06) * kerb * mix(0.4, 1.0, uDay);
   col += (vec3(1.0,0.68,0.40) * 0.10 + uAccent * 0.04) * sheen * (1.0 - uDay*0.7);
@@ -351,7 +354,7 @@ void main(){
   vec3 mid = mix(vec3(${NEON ? '0.062,0.098,0.18' : '0.24,0.17,0.25'}), vec3(0.46,0.64,0.88), uDay);
   vec3 c = mix(uFog, mid, smoothstep(0.0, 0.24, h));
   c = mix(c, zen, smoothstep(0.2, 0.8, h));
-  c += vec3(1.0,0.60,0.35) * ${NEON ? '0.14' : '0.18'} * exp(-max(h, 0.0)*11.0) * (1.0 - uDay) * (1.0 - uCloud*0.4) * step(-0.02, h);
+  c += vec3(1.0,0.60,0.35) * ${NEON ? '0.16' : '0.2'} * exp(-max(h, 0.0)*9.0) * smoothstep(-0.005, 0.06, h) * (1.0 - uDay) * (1.0 - uCloud*0.4);   // the city's glow, rising soft from the skyline (no seam on the far ground)
   vec3 sd = normalize(uSun);
   float s = max(dot(d, sd), 0.0);
   c += vec3(1.0,0.48,0.25) * uDusk * 0.55 * exp(-abs(h)*5.0) * (0.35 + 0.65*pow(s, 3.0));
@@ -373,7 +376,7 @@ void main(){
   }
   vec3 grey = vec3(dot(c, vec3(0.333))) * 0.75 + 0.03;
   c = mix(c, grey, uCloud * 0.6);
-  c = mix(c, uFog, smoothstep(0.02, -0.04, h));                          // below the horizon: the fog itself (no seam with the far city)
+  c = mix(c, uFog, smoothstep(0.01, -0.03, h));                          // below the horizon: the fog itself (no seam with the far city)
   c += vec3(0.65,0.72,1.0) * uFlash * (0.5 + 0.5*smoothstep(-0.1, 0.5, h));
   gl_FragColor = vec4(c, 1.0);
 }`;
@@ -458,8 +461,9 @@ void main(){
   vec2 p = vW.xz;
   float w = noise(p*0.15 + vec2(uTime*0.15, uTime*0.07)) * 0.6 + noise(p*0.6 - uTime*0.25) * 0.4;
   float streak = pow(noise(vec2(p.x*0.5, p.y*0.05 + uTime*0.3)), 6.0);
-  vec3 col = mix(vec3(${NEON ? '0.004' : '0.05'},${NEON ? '0.02' : '0.11'},${NEON ? '0.05' : '0.12'}), vec3(${NEON ? '0.12' : '0.18'},${NEON ? '0.3' : '0.44'},${NEON ? '0.45' : '0.48'}), uDay) + vec3(${NEON ? '0.02' : '0.05'},0.08,${NEON ? '0.14' : '0.08'}) * w;
-  col += uAccent * streak * 0.9 + vec3(1.0,${NEON ? '0.4' : '0.74'},${NEON ? '0.55' : '0.46'}) * pow(noise(vec2(p.x*0.4 + 9.0, p.y*0.06 - uTime*0.2)), 7.0) * 0.6;
+  vec3 col = mix(vec3(${NEON ? '0.012,0.018,0.032' : '0.05,0.11,0.12'}), vec3(${NEON ? '0.20,0.27,0.36' : '0.18,0.44,0.48'}), uDay) + vec3(0.02,0.03,0.05) * w;
+  col = mix(col, uFog * 0.9, 0.35);                                                     // the water mirrors the horizon's colour
+  col += (vec3(1.0,0.68,0.40) * 0.55 + uAccent * 0.25) * streak * (1.0 - uDay*0.7) + vec3(0.75,0.85,1.0) * pow(noise(vec2(p.x*0.4 + 9.0, p.y*0.06 - uTime*0.2)), 7.0) * 0.35;
   gl_FragColor = vec4(mix(col, uFog, fogAmount(vFD, 0.0)), 1.0);
 }`;
 export const TOWER_VS = `attribute vec3 aL; varying vec3 vL; void main(){ vL = aL; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }`;
