@@ -100,8 +100,15 @@ def part_c():
               (RP.SPLIT, RP.BEST_DAY, RP.MIN_DAYS) == (f["split"], e["consistency"], e["min_days"]), (RP.SPLIT, RP.BEST_DAY, RP.MIN_DAYS))
     f50, f25 = V(RB["rapid_eod_50k"]["sim_funded"]), V(RB["rapid_eod_25k"]["sim_funded"])
     check("c. rapid 50K payout min = MFFU", RP.PAY_MIN == f50["payout_min"], (RP.PAY_MIN, f50["payout_min"]))
-    check("c. rapid 25K: 'since the last payout' line = MFFU's 25K payout minimum",
-          RP.PLANS["mffu_rapid_eod_25k"]["since"] == f25["payout_min"], (RP.PLANS["mffu_rapid_eod_25k"]["since"], f25["payout_min"]))
+    check("c. rapid 25K: $500 payout minimum and >= $250 net since the last payout = MFFU",
+          RP.PAY_MIN == f25["payout_min"] and RP.PLANS["mffu_rapid_eod_25k"]["since"] == f25["next_payout_since"], (RP.PAY_MIN, RP.PLANS["mffu_rapid_eod_25k"]["since"], f25))
+    check("c. rapid 25K: ATLAS lane $250 a trade, keep $500 above the buffer (bot policy, stricter than MFFU's $100)",
+          RP.PLANS["mffu_rapid_eod_25k"]["atlas_usd"] == 250.0 and RP.PLANS["mffu_rapid_eod_25k"]["cushion"] == 500.0)
+    from engine import multi_account as MA
+    for key, rk, firm_dll in (("mffu_rapid_eod_50k", "rapid_eod_50k", None), ("mffu_rapid_eod_25k", "rapid_eod_25k", 500.0)):
+        bot = MA.PRESETS[key]["rules"]["dll"]
+        check(f"c. {key}: the bot's own day stop (${bot:,.0f}) is at or inside MFFU's (none, or the $500 option)",
+              firm_dll is None or bot <= firm_dll, (bot, firm_dll))
     d25 = V(RB["rapid_eod_25k"].get("dll_option"))
     check("c. rapid 25K: the owner's MFFU daily loss option ($500, a pause) is the one in the rulebook",
           d25 and RP.PLANS["mffu_rapid_eod_25k"].get("mffu_dll") == d25.get("amount"), (d25, RP.PLANS["mffu_rapid_eod_25k"].get("mffu_dll")))
