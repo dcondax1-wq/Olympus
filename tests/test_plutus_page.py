@@ -212,8 +212,13 @@ def part_d(tmp, doc):
             br = browser(pw)
             errs = []
             ctx, p = open_page(br, url, errs, "__plutus")
-            check("d. loads at 390 x 844: the 3D vault is up (WebGL), plans.json read, no OFFLINE tag, PUBLISHED DATA tag shown",
-                  p.evaluate("window.__plutus.ready3d") and p.evaluate("window.__plutus.src") == "file" and not p.is_visible("#demo") and p.is_visible("#livetag") and p.is_hidden("#nogl"))
+            check("d. loads at 390 x 844: the 3D vault is up (WebGL), plans.json read, no OFFLINE tag; the ~9 MB data.json is NOT asked on open (day-archive)",
+                  p.evaluate("window.__plutus.ready3d") and p.evaluate("window.__plutus.src") == "file" and not p.is_visible("#demo") and p.is_hidden("#nogl")
+                  and not p.evaluate("performance.getEntriesByType('resource').some((e) => /data\\.json/.test(e.name))"))
+            tab(p, "notes")
+            try: p.wait_for_function("window.__plutus.live", timeout=8000)
+            except Exception: pass
+            check("d. the Notes tab loads data.json: PUBLISHED DATA tag shown", p.is_visible("#livetag"))
             check("d. no sideways scroll", p.evaluate("document.documentElement.scrollWidth <= innerWidth"))
             for t in ("plan", "money", "risk", "notes"):
                 tab(p, t)

@@ -207,6 +207,7 @@ def tab(p, t):
 def part_d(tmp, rules):
     from playwright.sync_api import sync_playwright
     srv1, url = site(tmp, "ares", "s1", True)
+    shutil.copy(os.path.join(tmp, "s1", "data.json"), os.path.join(tmp, "s1", "home.json"))   # the real site has both (day-archive: home.json is read first)
     srv2, url_off = site(tmp, "ares", "s2", False, drop=("rules.json", "jarvis.json"))
     try:
         with sync_playwright() as pw:

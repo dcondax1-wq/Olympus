@@ -20,6 +20,7 @@ import os
 import re
 import shutil
 import subprocess
+import time
 import sys
 import tempfile
 import threading
@@ -115,6 +116,16 @@ def part_b():
           js["ids"] == ["council", "fear", "calendar", "money", "eval", "plan"] and js["stats"][:5] == ["MIXED 44", "VIX 21.15", "Tomorrow 08:15", "10y 4.94%", "$2,071 room"] and all(x > 40 for x in js["bodyLen"]), js["stats"])
     check("b. tones: VIX 12 / 17 calm, 22 watch, 30 storm; a calendar release today = caution, tomorrow = watch, later = calm; council 70 calm / 50 watch / 30 storm; room $300 storm, $900 watch, $2,000 calm",
           js["vix"] == ["calm", "calm", "watch", "storm"] and js["cal"] == ["storm", "watch", "calm"] and js["council"] == ["calm", "watch", "storm"] and js["room"] == ["storm", "watch", "calm"], (js["vix"], js["cal"], js["council"], js["room"]))
+    old = node("""const F = await import(url + '/forumcore.js'); const fx = JSON.parse(fs.readFileSync(dir + '/fixture.json', 'utf8'));
+      const now = Date.UTC(2026, 10, 20, 15), aged = (d) => ({ ...fx.pantheon, t: Math.floor(now / 1000) - d * 86400 }), p = { day: '2026-11-20', h: 10, dow: 5 };
+      const pick = (b) => b.map((x) => [x.id, x.tone, x.stat]);
+      out({ fresh: pick(F.brief(aged(0), fx.home, p, now)), old: pick(F.brief(aged(17), fx.home, p, now)), built: F.panAge({ built: '2026-11-03 11:40 ET' }, now),
+        gateOld: F.newsGate(aged(17), now), gateFresh: F.newsGate(aged(0), now).has, noClock: F.panAge(aged(17)) });""")
+    check("b. old feed (day-archive): a Pantheon reading 17 days old is labelled 'Old: 17 days' on its four tablets (info tone) and the news gate says it is old; "
+          "a fresh one reads as before; no clock passed in = unchanged (the core stays pure)",
+          not old.get("error") and old["fresh"][0][2] == "MIXED 44" and [x[2] for x in old["old"][:4]] == ["Old: 17 days"] * 4 and [x[1] for x in old["old"][:4]] == ["info"] * 4
+          and old["old"][4][2] == "$2,071 room" and old["built"] in (16, 17) and old["gateOld"]["has"] is False and "17 days old" in old["gateOld"]["line"] and old["gateFresh"] is True
+          and old["noClock"] is None, old)
     check("b. missing or junk data never crashes: six honest 'no data' tablets (info tone), the plan tablet always there", [x[0] for x in js["missing"]] == ["council", "fear", "calendar", "money", "eval", "plan"]
           and [x[1] for x in js["missing"]] == ["info"] * 6 and js["junk"] == ["info"] * 6 and js["oath"] == 3, (js["missing"], js["junk"]))
     dk = node("""const F = await import(url + '/forumcore.js');
@@ -174,8 +185,10 @@ def make_site(tmp, with_pantheon=True, with_home=True):
     root_readers(site)
     if with_pantheon:
         os.makedirs(os.path.join(site, "pantheon"))
-        doc = json.loads(rd(WEB, "pantheon", "pantheon.json"))
+        # the fixture's recorded Council (MIXED 44: fixed numbers), dated now: the real pantheon.json changes every build (day-archive rebuilt it)
+        doc = {**json.loads(rd(WEB, "pantheon", "pantheon.json")), **json.loads(rd(PAGE, "fixture.json"))["pantheon"]}
         doc["demo"] = False
+        doc["t"] = int(time.time()) - 3600   # a fresh feed (the repo copy is from Nov 3; an old one is labelled old: check b. old feed)
         with open(os.path.join(site, "pantheon", "pantheon.json"), "w", encoding="utf-8") as fh:
             json.dump(doc, fh)
     if with_home:
