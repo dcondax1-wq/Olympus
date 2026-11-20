@@ -48,6 +48,40 @@ def run(*cmd, cwd=None, check=True):
     return subprocess.run(cmd, cwd=cwd, check=check, text=True, capture_output=True)
 
 
+def mirror(out, repo, skip=SKIP):
+    """out -> repo (keep .git, never runs/): copy only files whose bytes differ, delete only files that are gone. Before
+    (2026-11-20) the whole Pages copy was deleted and every file copied again: git then re-hashed ~280 MB of new mtimes on every
+    publish. -> (copied, removed)."""
+    import filecmp
+    want = set()
+    copied = removed = 0
+    for base, dirs, files in os.walk(out):
+        rel_base = os.path.relpath(base, out).replace(os.sep, "/")
+        rel_base = "" if rel_base == "." else rel_base + "/"
+        dirs[:] = [d for d in dirs if not (rel_base + d + "/").startswith(skip)]
+        for f in files:
+            rel = rel_base + f
+            want.add(rel)
+            src, dst = os.path.join(base, f), os.path.join(repo, *rel.split("/"))
+            if os.path.isfile(dst) and os.path.getsize(dst) == os.path.getsize(src) and filecmp.cmp(src, dst, shallow=False):
+                continue
+            os.makedirs(os.path.dirname(dst), exist_ok=True)
+            shutil.copy2(src, dst)
+            copied += 1
+    for base, dirs, files in os.walk(repo, topdown=False):
+        rel_base = os.path.relpath(base, repo).replace(os.sep, "/")
+        if rel_base == ".git" or rel_base.startswith(".git/"):
+            continue
+        rel_base = "" if rel_base == "." else rel_base + "/"
+        for f in files:
+            if rel_base + f not in want and rel_base + f != ".nojekyll":
+                os.remove(os.path.join(base, f))
+                removed += 1
+        if rel_base and not os.listdir(base):
+            os.rmdir(base)
+    return copied, removed
+
+
 def pushes_today(log_path, today):
     try:
         with open(log_path, encoding="utf-8") as fh:
@@ -101,20 +135,9 @@ def main(argv=None):
                 with open(p, "w", encoding="utf-8") as fh:
                     json.dump(d, fh, separators=(",", ":"))
                 changed += n
-    # mirror out -> repo (keep .git), never runs/
-    for entry in os.listdir(REPO):
-        if entry != ".git":
-            p = os.path.join(REPO, entry)
-            shutil.rmtree(p) if os.path.isdir(p) else os.remove(p)
-    for base, dirs, files in os.walk(out):
-        rel_base = os.path.relpath(base, out).replace(os.sep, "/")
-        rel_base = "" if rel_base == "." else rel_base + "/"
-        dirs[:] = [d for d in dirs if not (rel_base + d + "/").startswith(SKIP)]
-        for f in files:
-            dst = os.path.join(REPO, rel_base, f)
-            os.makedirs(os.path.dirname(dst), exist_ok=True)
-            shutil.copy2(os.path.join(base, f), dst)
-    open(os.path.join(REPO, ".nojekyll"), "w").close()
+    copied, removed = mirror(out, REPO)
+    open(os.path.join(REPO, ".nojekyll"), "a").close()
+    print(f"[OK] mirror: {copied} file(s) copied, {removed} removed (unchanged files untouched)")
     print(f"[OK] site copied ({changed} cloud 'not connected' flags set to unknown)")
     if a.dry_run:
         return 0

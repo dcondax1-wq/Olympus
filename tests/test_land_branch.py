@@ -262,7 +262,7 @@ def part_f(tmp):
     os.makedirs(root)
     g(root, "init", "-q", "-b", "pc")
     w(root, LB.GATE, gate_html("o9", "g9"))
-    w(root, "tools/web_public/hub/index.html", '<link rel="stylesheet" href="../olympus/shell.css?v=s4">\n')
+    w(root, "tools/web_public/hub/index.html", '<link rel="stylesheet" href="../olympus/shell.css?v=s6">\n')
     for rel in ("tools/web_public/olympus/themes.js", "tools/web_public/gate/gate.js", "tools/web_public/pc_feed.js", "tools/web_public/olympus/shell.css"):
         w(root, rel, "x\n")
     g(root, "add", "-A")
@@ -270,7 +270,7 @@ def part_f(tmp):
     base = g(root, "rev-parse", "HEAD")
     for rel in ("tools/web_public/olympus/themes.js", "tools/web_public/gate/gate.js", "tools/web_public/olympus/shell.css"):
         w(root, rel, "y\n")
-    w(root, "tools/web_public/hub/index.html", '<link rel="stylesheet" href="../olympus/shell.css?v=s5">\n')     # what the bump wrote
+    w(root, "tools/web_public/hub/index.html", '<link rel="stylesheet" href="../olympus/shell.css?v=s6">\n')     # what the bump wrote
     w(root, LB.GATE, gate_html("o10", "g9"))
     notes = LB.check_gate(root, LB.Git(root), base, set(LB.Git(root).changed_since(base)))
     check("f. gate: gate.js changed, ?v not moved -> the next tag (g10); shell.css -> s5 as the other pages (never s4, an old copy's tag);"

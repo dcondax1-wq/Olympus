@@ -38,7 +38,7 @@ FILES = {
     "tools/web_public/gamma/index.html": ('<html><head>\n<script src="../olympus/a11y.js" defer></script>\n' + OLY + '\n'
                                           '<script src="../olympus/intro-app.js?v=i1" defer></script>\n</head></html>\n'),                                        # a11y BEFORE the kit tag: complete
     "tools/web_public/delta/index.html": ('<html><head>\r\n' + OLY + '<script type="module" src="main.js"></script>\r\n</head></html>\r\n'),                          # CRLF, shares its line
-    "tools/web_public/eps/index.html": '<html><head><script src="../olympus/a11y.js?v=a1" defer></script>' + OLY + '<script src="../olympus/intro-app.js" defer></script></head></html>\n',
+    "tools/web_public/eps/index.html": '<html><head><script src="../olympus/a11y.js?v=a2" defer></script>' + OLY + '<script src="../olympus/intro-app.js" defer></script></head></html>\n',
     "tools/web_public/bridge/index.html": "<html><head><title>no kit</title></head></html>\n",
     "tools/web_public/kalshi/index.html": "<html><head><title>no kit</title></head></html>\n",
     "tools/web_public/jarvis/index.html": '<html><head><script src="../olympus/sfx.js?v=s1"></script></head></html>\n',

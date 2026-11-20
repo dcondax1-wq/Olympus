@@ -48,7 +48,10 @@ def read(*p, mode="r"):
 def _ntiles():
     import re as _re
     t = open(os.path.join(ROOT, "tools", "web_public", "olympus", "apps-list.js"), encoding="utf-8").read()
-    return len(set(_re.findall(r'"id":\s*"([a-z0-9]+)"', t)) - {"zenith"})
+    d = open(os.path.join(ROOT, "tools", "web_public", "olympus", "doors.js"), encoding="utf-8").read()
+    m = _re.search(r"var RETIRED = \[([^\]]*)\]", d)              # 2026-11-20: retired apps are shown nowhere (owner: "the forges and stuff we don't need")
+    ret = set(_re.findall(r"'([a-z0-9]+)'", m.group(1))) if m else set()
+    return len(set(_re.findall(r'"id":\s*"([a-z0-9]+)"', t)) - {"zenith"} - ret)
 
 
 NTILES = _ntiles()
@@ -82,11 +85,11 @@ def test_static():
     doors_static(ids)
     ph, pc = read(WEB, "index.html"), read(NEXT, "index.html")
     check("b. the phone dashboard has ONE tag, launcher.js (deferred); the list is loaded by the launcher, async, so a slow site never holds Zenith back",
-          '<script src="launcher.js?v=l20" defer></script>' in ph and "apps-list" not in ph and "olympus/apps-list.js?v=l9" in read(WEB, "launcher.js"))
-    check("b. the PC dashboard has ONE tag, js/next/launcher.js (the list comes from js/next/apps-list.js, in the worker's ASSETS)", '<script src="/js/next/launcher.js?v=l20" defer></script>' in pc and "apps-list" not in pc and "/js/next/apps-list.js?v=l9" in read(NEXT, "js", "next", "launcher.js"))
+          '<script src="launcher.js?v=l21" defer></script>' in ph and "apps-list" not in ph and "olympus/apps-list.js?v=l9" in read(WEB, "launcher.js"))
+    check("b. the PC dashboard has ONE tag, js/next/launcher.js (the list comes from js/next/apps-list.js, in the worker's ASSETS)", '<script src="/js/next/launcher.js?v=l21" defer></script>' in pc and "apps-list" not in pc and "/js/next/apps-list.js?v=l9" in read(NEXT, "js", "next", "launcher.js"))
     sw = read(NEXT, "sw.js")
     v = re.search(r"const SHELL = 'le-shell-next-v(\d+)'", sw)
-    check("b. the PC worker caches both files and its version is bumped (v34 or later)", "'/js/next/apps-list.js?v=l9'" in sw and "'/js/next/launcher.js?v=l20'" in sw and v and int(v.group(1)) >= 34)
+    check("b. the PC worker caches both files and its version is bumped (v34 or later)", "'/js/next/apps-list.js?v=l9'" in sw and "'/js/next/launcher.js?v=l21'" in sw and v and int(v.group(1)) >= 34)
     check("b. the root worker is untouched by the launcher (it fetches versioned files at run time; olympus/ is skipped on purpose)", "launcher" not in read(WEB, "sw.js") and "apps-list" not in read(WEB, "sw.js"))
     js = read(WEB, "launcher.js")
     check("b. launcher.js: read-only (no POST, no orders), every storage call in try, Safari 16 safe (no lookbehind, ?., ??, .at())",
@@ -121,10 +124,10 @@ console.log(JSON.stringify({ doors: D.DOORS.map((d) => ({ id: d.id, title: d.tit
     bad = [(d["id"], it["href"]) for d in D for it in d["items"] if not exists(it["href"]) and not it["href"].startswith("planner/")]
     check("d. each door: 5-8 shortcuts, each a plain label + its Greek / page name + a page that exists in the site",
           all(5 <= len(d["items"]) <= 8 and all(it["label"] and it["greek"] and it["words"] for it in d["items"]) for d in D) and not bad, bad)
-    check("d. plain words: 'payout' finds the payout rules, Ledger and Hera; 'taxes' the Taxes page; 'accounts' My Accounts; 'kalshi' all five Kalshi apps; 'brain' the bot's brain; 'drawdown' Aegis; 'fleet plan' the Fleet Plan",
+    check("d. plain words: 'payout' finds the payout rules, Ledger and Hera; 'taxes' the Taxes page; 'accounts' My Accounts; 'kalshi' the Kalshi apps (Kalshi City lives inside Cities since 2026-11-20); 'drawdown' Aegis; 'fleet plan' the Fleet Plan",
           "trading/#rulesCard" in o["payout"]["items"] and {"ledger", "hera"} <= set(o["payout"]["apps"]) and "business/taxes.html" in o["taxes"]["items"]
-          and "business/accounts.html" in o["accounts"]["items"] and {"kalshi", "dionysus", "kalshicity", "sibyl", "tyche"} <= set(o["kalshi"]["apps"])
-          and "index.html#/brain" in o["brain"]["items"] and "aegis" in o["drawdown"]["apps"] and "business/plan.html" in o["fleet"]["items"], o)
+          and "business/accounts.html" in o["accounts"]["items"] and {"kalshi", "dionysus", "sibyl", "tyche"} <= set(o["kalshi"]["apps"])
+          and "aegis" in o["drawdown"]["apps"] and "business/plan.html" in o["fleet"]["items"], o)
     def ids_of(src, pat):
         m = re.search(pat, src, re.S)
         return re.findall(r"\{\s*id:\s*'([a-z]+)'[^}]*?ids:\s*\[([^\]]*)\]", m.group(0)) if m else []
@@ -134,7 +137,7 @@ console.log(JSON.stringify({ doors: D.DOORS.map((d) => ({ id: d.id, title: d.tit
         check(f"d. {name} is the four doors (same ids, same app lists as olympus/doors.js)", got == want, got)
     lj = read(WEB, "launcher.js")
     check("d. the launcher loads doors.js with the list (async; olympus/doors.js on the phone, /js/next/doors.js on the PC) and groups by it",
-          "'olympus/doors.js?v=d8'" in lj and "'/js/next/doors.js?v=d8'" in lj and "D.DOORS.map" in lj and "OLYMPUS_DOORS" in lj)
+          "'olympus/doors.js?v=d9'" in lj and "'/js/next/doors.js?v=d9'" in lj and "D.DOORS.map" in lj and "OLYMPUS_DOORS" in lj)
 
 
 # ------------------------------------------------------------------ c. browser
@@ -234,12 +237,12 @@ def test_phone(br, origin):
     p.fill(".oly-l .oly-sr input", "zzzz"); p.wait_for_timeout(150)
     check("c. phone: no match = a plain line, never an empty sheet", p.is_visible(".oly-l .oly-em") and "No app matches" in p.inner_text(".oly-l .oly-em"))
     p.fill(".oly-l .oly-sr input", ""); p.wait_for_timeout(100)
-    p.evaluate("document.querySelector('.oly-l .oly-tile[data-app=mind]').addEventListener('click', (e) => e.preventDefault(), true)")
-    tap(p, ".oly-l .oly-tile[data-app=mind]"); p.wait_for_timeout(200)
+    p.evaluate("document.querySelector('.oly-l .oly-tile[data-app=tree]').addEventListener('click', (e) => e.preventDefault(), true)")
+    tap(p, ".oly-l .oly-tile[data-app=tree]"); p.wait_for_timeout(200)
     rec = p.evaluate("JSON.parse(localStorage.getItem('oly.launcher.recent'))")
-    check("c. phone: opening an app records it in oly.launcher.recent (newest first, 4 kept) and closes the sheet", rec[:1] == ["mind"] and not p.evaluate("OLYMPUS_LAUNCHER.isOpen()"), rec)
+    check("c. phone: opening an app records it in oly.launcher.recent (newest first, 4 kept) and closes the sheet", rec[:1] == ["tree"] and not p.evaluate("OLYMPUS_LAUNCHER.isOpen()"), rec)
     p.focus("#olyLauncherBtn"); tap(p, "#olyLauncherBtn"); until(p, OPEN_FULL + " && !!document.querySelector('.oly-l .oly-rc .oly-chip')")
-    check("c. phone: 'Recent' shows it first the next time", p.locator(".oly-l .oly-rc .oly-chip").first.get_attribute("data-app") == "mind")
+    check("c. phone: 'Recent' shows it first the next time", p.locator(".oly-l .oly-rc .oly-chip").first.get_attribute("data-app") == "tree")
     until(p, IN_SHEET, 10000)                                  # the sheet moves the focus inside itself 30 ms after it opens; Escape is heard there
     p.keyboard.press("Escape"); until(p, "!OLYMPUS_LAUNCHER.isOpen()", 10000)
     esc = p.evaluate("[OLYMPUS_LAUNCHER.isOpen(), document.activeElement && (document.activeElement.id || document.activeElement.className || document.activeElement.tagName)]")
@@ -269,7 +272,7 @@ def test_phone(br, origin):
 
 
 def test_gone(br, origin):
-    """night-bugsweep 2026-11-19: an app folder that is not on this site (mind/ on the public site: its jarvis.json is a 404) is asked once, then
+    """night-bugsweep 2026-11-19: an app folder that is not on this site (tree/ on the public site: its jarvis.json is a 404) is asked once, then
     not again for a day (a 404 in the console on every Refresh before); its dot stays grey ('none'); the other dots are asked as usual."""
     ctx, p, errs = page(br, origin)
     asked = []
@@ -277,20 +280,20 @@ def test_gone(br, origin):
     def r404(r):
         asked.append(r.request.url)
         return r.fulfill(status=404, content_type="text/plain", body="404: Not Found")
-    ctx.route(re.compile(r".*/mind/jarvis\.json(\?.*)?$"), r404)                # later routes win over page()'s own
+    ctx.route(re.compile(r".*/tree/jarvis\.json(\?.*)?$"), r404)                # later routes win over page()'s own
     p.goto(origin + "/", wait_until="commit")
     p.wait_for_selector("#olyLauncherBtn", timeout=120000, state="attached")
     tap(p, "#olyLauncherBtn"); until(p, OPEN_FULL)
-    ok1 = until(p, "(() => { const s = JSON.parse(localStorage.getItem('oly.launcher.status') || '{}'); return !!(s.mind && s.mind.gone) && !!s.oracle; })()")
+    ok1 = until(p, "(() => { const s = JSON.parse(localStorage.getItem('oly.launcher.status') || '{}'); return !!(s.tree && s.tree.gone) && !!s.oracle; })()")
     first = len(asked)
-    p.evaluate("(() => { const s = JSON.parse(localStorage.getItem('oly.launcher.status')); for (const k in s) if (k !== 'mind') s[k].at = 1; localStorage.setItem('oly.launcher.status', JSON.stringify(s)); })()")
+    p.evaluate("(() => { const s = JSON.parse(localStorage.getItem('oly.launcher.status')); for (const k in s) if (k !== 'tree') s[k].at = 1; localStorage.setItem('oly.launcher.status', JSON.stringify(s)); })()")
     p.reload(wait_until="commit")
     p.wait_for_selector("#olyLauncherBtn", timeout=120000, state="attached")
     tap(p, "#olyLauncherBtn"); until(p, OPEN_FULL)
     ok2 = until(p, "(() => { const s = JSON.parse(localStorage.getItem('oly.launcher.status') || '{}'); return !!s.oracle && s.oracle.at > 1; })()")
     p.wait_for_timeout(300)
-    dot = p.evaluate("(document.querySelector('.oly-l .oly-tile[data-app=mind]') || {dataset: {}}).dataset.status || ''")
-    check("c. phone: a folder not on the site (mind/jarvis.json 404) is asked once, then not again for a day while the other dots refresh; its dot stays grey",
+    dot = p.evaluate("(document.querySelector('.oly-l .oly-tile[data-app=tree]') || {dataset: {}}).dataset.status || ''")
+    check("c. phone: a folder not on the site (tree/jarvis.json 404) is asked once, then not again for a day while the other dots refresh; its dot stays grey",
           ok1 and ok2 and first == 1 and len(asked) == 1 and dot == "none" and not [e for e in errs if "launcher" in e.lower()], (ok1, ok2, first, len(asked), dot))
     ctx.close()
 

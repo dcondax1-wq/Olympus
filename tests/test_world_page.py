@@ -34,8 +34,8 @@ def test_static():
     have = [f for f in FILES if os.path.isfile(os.path.join(D, f))]
     check("a. the files are there (%s)" % ", ".join(FILES), len(have) == len(FILES), sorted(set(FILES) - set(have)))
     html, main, scene, core, sh = (AK.read(os.path.join(D, f)) for f in ("index.html", "ow-main.js", "ow-scene.js", "ow-core.js", "ow-shaders.js"))
-    check("a. the kit: olympus.js as the Cities app, gate-nav (Home + Go to), the page's own module last", 'src="../../olympus/olympus.js?v=o15" data-app="cities"' in html
-          and "../../olympus/gate-nav.js" in html and html.rindex('src="ow-main.js?v=w4"') > html.index("olympus.js"))
+    check("a. the kit: olympus.js as the Cities app, gate-nav (Home + Go to), the page's own module last", 'src="../../olympus/olympus.js?v=o18" data-app="cities"' in html
+          and "../../olympus/gate-nav.js" in html and html.rindex('src="ow-main.js?v=w5"') > html.index("olympus.js"))
     check("a. three.js r160 from the site (../../jarvis/three.module.min.js, vendored, MIT) and the OLYMPUS render core; no CDN, no http(s) address in the code",
           "from '../../jarvis/three.module.min.js'" in scene and "from '../../olympus/render.js'" in scene and not re.search(r"https?://", main + scene + core + sh))
     check("a. instanced: one InstancedBufferGeometry per kind (buildings, halos, traffic, beams, rings, streaks), never a mesh per building",
@@ -145,6 +145,8 @@ def test_page():
                 pass
             check("b. frame rate in headless (software GL, no GPU, 390 x 844, low tier): %.1f fps and %.2f ms of JavaScript a frame (median); it keeps drawing (the phone's GPU is far faster, the JS is the part a phone pays the same)" % (fps, s2["scene"]["jsMs"]),
                   fps >= 0.5 / mult and s2["scene"]["jsMs"] < 8 * mult, (fps, s2["scene"]))
+            check("b. olympus2: JavaScript per frame at the slow end (p95 %.2f ms) stays far under a 60 Hz frame (16.7 ms); triangles %d under the phone cap (400,000)" % (s2["scene"].get("jsP95", -1), s2["scene"]["triangles"]),
+                  0 <= s2["scene"].get("jsP95", -1) < 16.7 * mult and s2["scene"]["triangles"] < 400_000, s2["scene"])
             check("b. labels over the city (%d) and the learning ticker has a dated line" % s2["labels"], s2["labels"] >= 3 and re.match(r"^[A-Z][a-z]{2} \d+ · ", s2["ticker"] or ""), (s2["labels"], s2["ticker"]))
             AK.shot(p, "world-low-home")
             s3 = tap_place(p, "app:hub-zeus-html")
@@ -160,7 +162,8 @@ def test_page():
             p.wait_for_timeout(300)
             k = p.evaluate("""() => ({ title: document.querySelector('#cardName').textContent, apps: [...document.querySelectorAll('#cardBody .applist')][0].querySelectorAll('button').length,
               pressed: document.querySelector('.dch[aria-pressed=true]').dataset.d, sc: OWORLD.state().scene })""")
-            check("b. the Kalshi district button flies there (a warp) and its card lists its 5 apps and its learning quarters", k["title"] == "Kalshi" and k["apps"] == 5 and k["pressed"] == "kalshi"
+            n_k = sum(1 for x in json.load(open(os.path.join(D, "world.json"), encoding="utf-8"))["places"] if x.get("district") == "kalshi" and x.get("kind") == "app")
+            check("b. the Kalshi district button flies there (a warp) and its card lists its %d apps (world.json) and its learning quarters" % n_k, k["title"] == "Kalshi" and k["apps"] == n_k and k["pressed"] == "kalshi"
                   and (k["sc"]["tween"] or k["sc"]["warp"] >= 0), k)
             p.wait_for_function("() => !OWORLD.state().scene.tween", timeout=60000, polling=250)
             pose = p.evaluate("() => OWORLD.pose()")

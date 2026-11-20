@@ -162,8 +162,8 @@ def test_static():
           "min-height: 44px" in css and "min-height: 60px" in css and "prefers-reduced-motion: reduce" in css and 'data-oly-lite="1"' in css and "html[data-oly-style]" in css
           and all(sel.strip().startswith(("@", "html", ".me-", "}")) or not sel.strip() for sel in re.findall(r"(?m)^([^{}\n]+)\{", re.sub(r"/\*.*?\*/", "", css, flags=re.S))))
     check("a. the hub page loads me.css after hub.css and me.js (deferred) before hub.js; a Me chip in the plain hub list",
-          hub_html.index('href="hub.css?v=h5"') < hub_html.index('href="me.css?v=m2"') < hub_html.index("</head>")
-          and hub_html.index('<script src="me.js?v=m2" defer></script>') < hub_html.index('<script src="hub.js?v=h4" defer></script>') and 'data-hub="me" href="index.html?h=me"' in hub_html)
+          hub_html.index('href="hub.css?v=h6"') < hub_html.index('href="me.css?v=m2"') < hub_html.index("</head>")
+          and hub_html.index('<script src="me.js?v=m2" defer></script>') < hub_html.index('<script src="hub.js?v=h5" defer></script>') and 'data-hub="me" href="index.html?h=me"' in hub_html)
     check("a. hub.js hands a PAGE hub (page: 'me') to OLYMPUS_ME_PAGE.mount (no tabs), with the Me icon",
           "if (H.page)" in hub_js and "MP.mount(panel, { base: base, now: nowS, hub: H, done:" in hub_js and "me: ['M20 6.5" in hub_js)
     check("a. the catalog: the hub 'me' (Me, its question, page 'me', 8 areas, no apps, legacy life for old themes), findHubs; the hub-status line meOf",
@@ -172,7 +172,7 @@ def test_static():
     check("a. the home: the Me tile (after Bots, Money and Today since night A 2026-11-16, a plain link to hub/?h=me), its line from the private me/me.json, its size ('8 areas') and the search finds page hubs",
           gate_html.index('data-hub="today"') < gate_html.index('class="g-hub" data-hub="me" data-to="hub/index.html?h=me"') < gate_html.index('data-hub="plan"')
           and "getJSON(base + 'me/me.json')" in gate_js and "H.size || plural(H.count, 'app')" in gate_js and "C.findHubs ? C.findHubs(q) : []" in gate_js and "ME: X.ME" in gate_js)
-    check("a. gate-nav: Go to shows a hub's size (the Me hub: its areas, not '0 apps') and loads the catalog ?v=me1", "h.size || (h.count + ' apps')" in nav and "gate-catalog.js?v=nv2" in nav)
+    check("a. gate-nav: Go to shows a hub's size (the Me hub: its areas, not '0 apps') and loads the catalog ?v=me1", "h.size || (h.count + ' apps')" in nav and "gate-catalog.js?v=nv7" in nav)
     pr = AK.read(os.path.join(ROOT, "tools", "pc_report.py"))
     hook = pr[pr.index("def main("):]
     check("a. the PC report's 15-minute task calls me_hub.maybe_run softly (after calendar_sync, never on --dry-run, inside try)",

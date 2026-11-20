@@ -103,6 +103,9 @@ def new_page(br, url, mode):
                         " localStorage.setItem('jarvis.intro', 'off'); } catch (e) {}")
     ctx.add_init_script("window.__iosRule = false; window.__voicesEmpty = false;")
     ctx.add_init_script("try { localStorage.setItem('jarvis.bots.set', JSON.stringify({ on: true, plan: false, recap: false, rituals: false })); } catch (e) {}")
+    # the morning briefing (once a day from 07:00 ET) and the spoken alerts talk on their own: off here like the rituals above, so her first
+    # words are the answer the test asked for (day-jarvis 2026-11-20: a briefing spoken in the slow test voice held the answer past 15 s)
+    ctx.add_init_script("try { localStorage.setItem('jarvis.alerts.v1', JSON.stringify({ speak: false, brief: false, quiet: false, from: '22:00', to: '07:00' })); } catch (e) {}")
     if os.environ.get("JARVIS_TEST_LITE") == "1":
         ctx.add_init_script("try { localStorage.setItem('jfx', 'off'); localStorage.setItem('jarvis.no3d', '1'); } catch (e) {}")
     ctx.add_init_script(T.MOCK)
