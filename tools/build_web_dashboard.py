@@ -1221,11 +1221,13 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     # 2026-11-03: the OLYMPUS apps Jarvis opens full screen: Data City, Mind (the Obsidian brain), the strategy tree ...;
     # olympus/ is their shared kit (tokens, fonts, the loading veil, the one 3D-quality setting: docs/OLYMPUS_DESIGN.md)
     # assets/ (Round 5, 2026-11-11): the CC0 art every scene shares (audio, the rigged cast, PBR surfaces, HDRIs, props; docs/ASSETS_LICENSES.md)
-    try:                                    # night-revamp-dash 2026-11-20: business/dash.json follows the research files
-        from tools.money import dash_build as _dash_build
-        _dash_build.main([])
-    except Exception as _dash_err:  # noqa: BLE001
-        print(f"[dash_build] skipped: {_dash_err.__class__.__name__}: {_dash_err}")
+    if os.environ.get("LE_DASH_BUILD") == "1":   # cloud builds only (tools/gh_publish.py sets it): on the PC this tracked file would be
+        # rewritten every build and block its auto-update (engine/generated_files.py lists it too). night-revamp-dash 2026-11-20
+        try:
+            from tools.money import dash_build as _dash_build
+            _dash_build.main([])
+        except Exception as _dash_err:  # noqa: BLE001
+            print(f"[dash_build] skipped: {_dash_err.__class__.__name__}: {_dash_err}")
     for app in ("jarvis", "gate", "hub", "kalshi", "datacity", "mind", "tree", "oracle", "odeon", "fates", "hermes", "prometheus", "tyche", "pantheon", "olympus", "assets", "arena", "bridge", "ares", "plutus", "athena", "forum", "labyrinth", "argus", "nemesis", "chronos", "hephaestus", "cities", "kalshicity", "settings", "inbox", "ledger", "journal", "observatory", "atlas", "atlascity", "pc", "delphi", "pnyx", "planner", "hestia", "demeter", "apollo", "hera", "dionysus", "clio", "mint", "mintcity", "mercury", "chrysos", "sibyl", "oikos", "arbiter", "stoa", "aegis", "lyceum", "nike", "kronos", "moirai", "epilogue", "argo", "kratos", "pythia", "gallery", "kairos", "compass", "pheme", "harmonia", "helios", "ergasterion", "archive", "pinakes", "colosseum", "nq", "symposium", "herald", "polis", "agency", "business", "trading", "board", "why", "widget"):
         src_dir = os.path.join(WEB, app)
         if os.path.isdir(src_dir):

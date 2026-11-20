@@ -38,6 +38,7 @@ GENERATED = (
     "research/lit/live_exit_route.json", "research/lit/rehearsal.json",
     "tools/web_hub_snapshot.json",        # tools/build_web_dashboard.py
     "tools/web_public/business/week.json",   # tools/weekly_review.py (Friday ops task: ZEUS this week)
+    "tools/web_public/business/dash.json",   # tools/money/dash_build.py (run by tools/build_web_dashboard.py, 2026-11-20)
 )
 
 

@@ -71,8 +71,9 @@ def main(argv=None):
     out = os.path.join(WORK, "out")
     shutil.rmtree(out, ignore_errors=True)
     os.makedirs(out, exist_ok=True)
+    env = dict(os.environ, LE_DASH_BUILD="1")   # the cloud build refreshes business/dash.json (never on the PC: tools/build_web_dashboard.py)
     r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "pc_publish.py"), "--work", WORK, "--provider", "folder",
-                        "--folder", out, "--force", "--strict"], cwd=ROOT, text=True, capture_output=True)
+                        "--folder", out, "--force", "--strict"], cwd=ROOT, text=True, capture_output=True, env=env)
     if r.returncode:
         print("[FIX] build failed:\n" + r.stdout[-800:] + r.stderr[-800:])
         return 1
