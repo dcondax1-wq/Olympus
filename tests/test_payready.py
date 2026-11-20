@@ -50,6 +50,8 @@ import(process.argv[2]).then((M) => {
   // 5. no tracker block yet: says what is missing, never invents
   o.wait = M.model(lite(25000, null, [0, 0]), null, biz, coach, today)[0];
   o.ids = A.map((a) => a.id);
+  // TODAY (2026-11-20 10:20 ET, the PC's post): ATLAS won +$514.18 -> $25,401.38, room $1,401.38; cycle +$401, best day $514, 2 days
+  o.today = M.model(lite(25401.38, { cp: 401, bd: 514, cd: 2, ef: '2026-11-20', pn: 0, mr: 0, st: 'consistency' }, [0, -113, 401]), null, biz, coach, today)[0];
   o.pace = [M.pace([0, 100, 300]), M.pace([1, 2]), M.pace(null)];
   o.td = [M.addTradingDays('2026-11-20', 1), M.addTradingDays('2026-11-20', 6)];
   o.junk = [null, undefined, 5, 'x', {}, { mf: { a: [null, 4, { id: 'atlas', f: 'x' }] }, board: 7 }].map((j) => { try { return M.model(j, j, j, coach, today).length; } catch (e) { return 'THROW ' + e.message; } });
@@ -94,8 +96,8 @@ def test_core():
     chk = {c[0]: c for c in a[7]}
     check("b. ATLAS today ($24,887, -$113): Not yet, reason = the first-request date (first trade Thu 19 Nov + 2 days = Sat -> the next weekday, Mon 23 Nov)",
           a[1] == "Not yet" and a[2].startswith("First request from 2026-11-23") and chk["first"][1] is False and "Mon, Nov 23" in chk["first"][2], a)
-    check("b. ... '$2,213 more / 1 more traded day until you can ask for $1,000' (= balance $27,100, the playbook's ask); every rule row has its number",
-          a[3] == "$2,213 more / 1 more traded day until you can ask for $1,000" and a[4] == 2213 and a[5] == 1
+    check("b. ... '$1,463 more / 1 more traded day until MFFU allows a payout' (= the coach's need_more, the same 'to payout' every page shows); every rule row has its number",
+          a[3] == "$1,463 more / 1 more traded day until MFFU allows a payout" and a[4] == 1463 and a[5] == 1
           and chk["days"][2] == "1 (2 needed)" and chk["profit"][2] == "-$113" and chk["buffer"][2].startswith("$0 (minimum request $250)") and chk["max"][2] == "$0", a)
     check("b. ... losing pace: the projection says so instead of a date; the 5 MFFU steps are there", a[6].startswith("not at the recent pace: -$56 a day") and a[8] == 5, a[6])
     r = o["ready"]
@@ -114,6 +116,11 @@ def test_core():
           and c["need"]["usd"] == 500, (c["verdict"], cc["cons"], c["need"]))
     check("b. no tracker block from the PC: 'Waiting for the PC', names what is missing, no numbers made up",
           o["wait"]["verdict"] == "Waiting for the PC" and "funded tracker (mf.f)" in o["wait"]["reason"] and o["wait"]["has"] is False, o["wait"])
+    t = o["today"]
+    check("b. TODAY's ATLAS (+$514 -> $25,401.38): 'Not yet', '$949 more until MFFU allows a payout' (balance $26,350 = the same 'To payout $949' the "
+          "accounts strip and the ZEUS card show), the 50% rule red (best day $514 > half of the cycle's $401), the plan's $1,000 ask at $27,100 ($1,699 more)",
+          t["verdict"] == "Not yet" and t["need"]["text"] == "$949 more until MFFU allows a payout" and t["need"]["okBal"] == 26350
+          and next(x for x in t["checks"] if x["k"] == "cons")["ok"] is False and "$1,699 more" in t["need"]["planText"] and "$27,100" in t["need"]["planText"], (t["need"], t["checks"]))
     check("b. the Rapid: says its payout rules are not coded yet (no guess)", o["now"][1][1] == "Not coded yet", o["now"][1])
     check("b. the bot's own ping ($750 above the buffer) and the open card payout-ping-1000 are named", "payout-ping-1000" in r["ping"] and "$750" in r["ping"], r["ping"])
     check("b. pace and trading days", o["pace"] == [{"per": 150, "days": 2}, None, None] and o["td"] == ["2026-11-23", "2026-11-30"], (o["pace"], o["td"]))

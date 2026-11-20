@@ -83,7 +83,7 @@
         if (!r) { r = { key, name: l.name || key, plan: l.plan || '', last: null, not_in_plan: true }; rows.set(key, r); b.accounts.push(r); }
         let stage = l.stage === 'funded' ? 'funded' : l.stage === 'failed' ? 'failed' : (r.chip === 'PASSED' && l.stage === 'eval' && (l.to_target == null || l.to_target <= 0)) ? 'passed' : 'eval';
         if (stage === 'eval' && l.to_target != null && l.to_target <= 0) stage = 'passed';
-        Object.assign(r, { stage, chip: chipOf(stage, '', false), balance: l.balance, floor: l.floor, room: stage === 'passed' ? null : l.room,
+        Object.assign(r, { stage, chip: chipOf(stage, '', false), balance: l.balance, floor: l.floor, room: stage === 'passed' ? null : l.room, today: l.today, card: l.card || null,
                            to_pass: stage === 'funded' ? null : stage === 'passed' ? 0 : l.to_target, locked: false, src: 'PC live (ntfy)', src_t: l.t || t, plan_only: false });
       }
     }
