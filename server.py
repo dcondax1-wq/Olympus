@@ -975,6 +975,19 @@ REMOTE = _rc.RemoteControl(BOT, hooks={"kill": _remote_kill, "stop": _remote_sto
                                        "start": _botctl_start, "beat": HEARTBEAT.beat},
                            log=lambda t: print(t, flush=True))
 app.router.add_event_handler("startup", REMOTE.start)
+
+
+def _phone_link_startup():
+    """engine/phone_link.py: the bot server's own private Tailscale https port (:8444) when 443 belongs to another app.
+    Windows only, background thread, never touches 443 or Funnel, never blocks or breaks the bot."""
+    try:
+        from engine import phone_link as _pl
+        _pl.start_background(say=lambda t: print(t, flush=True))
+    except Exception as _pl_err:  # noqa: BLE001
+        print(f"[phone_link] not started: {_pl_err.__class__.__name__}: {_pl_err}", flush=True)
+
+
+app.router.add_event_handler("startup", _phone_link_startup)
 # "I'm here" check-in, pause until, hands-off score (engine/presence_api.py: /api/next/presence|pause|handsoff; files only)
 try:
     from engine import presence_api as _pa
