@@ -136,7 +136,7 @@ def part_c():
                 m = p.evaluate("""() => ({ sw: document.documentElement.scrollWidth, w: innerWidth, bg: getComputedStyle(document.body).backgroundColor,
                   small: [...document.querySelectorAll('button, a, summary, input')].filter((e) => { const r = e.getBoundingClientRect(); return r.width && r.height < 44; }).map((e) => e.tagName + ':' + e.textContent.slice(0, 20)),
                   tiny: [...document.querySelectorAll('p, li, span, td, summary, button')].filter((e) => e.getClientRects().length && e.textContent.trim().length > 12 && parseFloat(getComputedStyle(e).fontSize) < 15).map((e) => e.tagName + ':' + e.textContent.slice(0, 24)).slice(0, 5) })""")
-                check(f"c[{look}]. no sideways scroll at 390 px, every control 44 px+, sentences 15 px+", m["sw"] <= m["w"] and not m["small"] and not m["tiny"], m)
+                check(f"c[{look}]. no sideways scroll at 390 px, every control 44 px+, sentences 15 px+", m["sw"] <= 390 and m["w"] <= 390 and not m["small"] and not m["tiny"], m)
                 if look == "ivory":
                     rgb = [int(x) for x in re.findall(r"\d+", m["bg"])[:3]]
                     check("c[ivory]. the Ivory look paints the page light", sum(rgb) / 3 > 180, m["bg"])
