@@ -193,3 +193,16 @@ html:root main#app :is(.win small, .rowbtn small, .dayhead) { font-size: var(--a
 html:root main#app section.pulse .pu-title { white-space: normal; overflow: visible; text-overflow: clip; }   /* the headline is never cut */
 html:root main#app section.pulse { min-height: 15.75rem; }   /* the pulse card fills in after its feed: hold its place so Quick add does not jump (PERF: CLS 0.29) */
 html:root main#app > header.top .brand { padding-right: 84px; }   /* the sundial (canvas#scene, 76 px, bottom-right of the header) never covers the subtitle */
+
+/* ---- no gold (owner 2026-11-20 "NO GOLD"): the Planner keeps its own sea-blue accent; the kit's gold tokens point at it (!important beats the
+   theme engine's inline tokens, as nq/nqtheme.css does). Light looks get the darker ink so text stays 4.5:1. */
+:root {
+  --ag-gold: #7fa7c2 !important; --ag-gold-hi: #a9c6d9 !important; --ag-gold-rgb: 127, 167, 194 !important; --ag-line-gold: rgba(127, 167, 194, .32) !important;
+  --ag-on-gold: #0b1620 !important; --oly-th-a8: #7fa7c2 !important; --oly-th-a8-rgb: 127, 167, 194 !important; --oly-th-a9: #a9c6d9 !important;
+  --oly-th-a5: #4b7a99 !important; --oly-th-a10: #a9c6d9 !important; --oly-th-a11: #c4dbe8 !important; --ag-bronze: #4b7a99 !important;
+  --ag-sun: #a0ac6e !important; --ag-sun-rgb: 160, 172, 110 !important; --acc: #7fa7c2 !important;
+}
+html[data-oly-scheme="light"] {
+  --ag-gold: #2b5f86 !important; --ag-gold-hi: #3d78a4 !important; --ag-gold-rgb: 43, 95, 134 !important; --ag-on-gold: #ffffff !important;
+  --oly-th-a8: #2b5f86 !important; --oly-th-a9: #3d78a4 !important; --ag-sun: #4f5a2c !important; --acc: #2b5f86 !important;
+}
