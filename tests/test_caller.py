@@ -174,16 +174,57 @@ def main() -> int:
     check("c. each consent leaves a share/consent/<id>.json for the email autopilot: lead_id, asked_t, window, phone_source, and NO phone / name / email",
           len(sh) == 1 and shared.get("phone_source") == "their form" and shared.get("window") == "any" and "asked_t" in shared
           and not ({"phone", "signed_name", "email", "text"} & set(shared)), shared)
-    sf = SF.build("https://olympus-caller.example.ts.net:10000", C.settings(h))
+    real = {**C.settings(h), "callback_number": "(301) 662-0100", "owner_first_name": "Dee"}
+    sf = SF.build(s=real)
     ch = sf["caller_html"]
-    check("c. siteform: inline markup for the site factory slot, posts to <endpoint>/consent, hidden lead_id + business, no third-party URL, no key",
-          'data-post="https://olympus-caller.example.ts.net:10000/consent"' in ch and 'name="lead_id"' in ch and 'name="business"' in ch
+    check("c. siteform: inline markup for the site factory slot, posts to the site's own /api/consent (no PC address), hidden lead_id + business, no third party, no key",
+          'data-post="/api/consent"' in ch and 'name="lead_id"' in ch and 'name="business"' in ch and ".ts.net" not in ch
           and not re.search(r"<script[^>]+src=|formspree|googleapis|AC[0-9a-f]{32}|sk-ant-", ch) and sf["caller_button"] == K.BUTTON)
+    for bad_ep, why in (("https://olympus-caller.tail1234.ts.net:10000", "a Tailscale address (the privacy pass masks it)"),
+                        ("http://evil.example/x?y", "a non-https endpoint")):
+        try:
+            SF.build(bad_ep, real)
+            check(f"c. siteform refuses {why}", False)
+        except SystemExit:
+            check(f"c. siteform refuses {why}", True)
     try:
-        SF.build("http://evil.example/x?y")
-        check("c. siteform refuses a non-https or odd endpoint", False)
+        SF.build(s={**real, "callback_number": "(555) 555-0100"})
+        check("c. siteform refuses placeholder agency details ((555) 555-0100 / YOUR AGENCY) in the consent text", False)
     except SystemExit:
-        check("c. siteform refuses a non-https or odd endpoint", True)
+        check("c. siteform refuses placeholder agency details ((555) 555-0100 / YOUR AGENCY) in the consent text", True)
+    from tools.caller import pull as PL
+    hp = new_home()
+    with open(os.path.join(hp, "caller.json"), "w") as f:
+        json.dump({**FAKE_KEYS, "cf_account": "acct1", "cf_kv_namespace": "ns1", "cf_kv_token": "cftok" + "z" * 30}, f)
+    store = {"c:2026-11-20T16:00:00Z:ab": json.dumps({"form": {"phone": "(301) 555-0142", "signed_name": "Tom Harbor", "agree": True,
+                                                             "version": K.CONSENT_VERSION, "window": "morning", "lead_id": "osm-n1"},
+                                                    "received": "2026-11-20T16:00:00Z", "ip": "1.2.3.4", "ua": "x"}),
+             "c:2026-11-20T16:01:00Z:cd": json.dumps({"form": {"phone": "12", "agree": True}, "received": "2026-11-20T16:01:00Z"})}
+    seen = []
+
+    class Resp:
+        def __init__(self, b): self.b = b.encode()
+        def read(self): return self.b
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+
+    def opener(req, timeout=0):
+        seen.append((req.get_method(), req.full_url, req.headers.get("Authorization")))
+        u = urllib.parse.unquote(req.full_url)
+        if "/keys?" in req.full_url:
+            return Resp(json.dumps({"result": [{"name": k} for k in store]}))
+        name = u.split("/values/")[1]
+        if req.get_method() == "DELETE":
+            store.pop(name, None)
+            return Resp("{}")
+        return Resp(store[name])
+    r = PL.pull(hp, opener=opener)
+    check("c. pull: the site's signed forms come from Cloudflare KV into the PC store (bad ones refused), each entry deleted after, Bearer token used",
+          r == {"ok": True, "added": 1, "refused": 1} and not store and K.valid_for(NUM, TUE_10ET, C.settings(hp), hp)[0]
+          and all(a == "Bearer cftok" + "z" * 30 for _, _, a in seen) and any(m == "DELETE" for m, _, _ in seen), (r, seen))
+    js = open(os.path.join(ROOT, "tools", "caller", "cloudflare", "consent.js"), encoding="utf-8").read()
+    check("c. the Cloudflare function checks the same rules (agree true, full name, 10-digit phone, version), caps 5 a day per IP, holds no secret",
+          "b.agree !== true" in js and K.CONSENT_VERSION in js and "n >= 5" in js and "env.CONSENT" in js and not re.search(r"token|secret|sk-ant|AC[0-9a-f]{32}", js, re.I))
 
     # ---------------------------------------------------------------- d. hours
     h = new_home()
@@ -314,7 +355,7 @@ def main() -> int:
     finally:
         os.environ.pop("OLYMPUS_HOME", None)
         shutil.rmtree(os.path.join(ROOT, "scratch_should_not_exist"), ignore_errors=True)
-    asked = iter(["AC" + "b2" * 16, "c3" * 16, "(301) 555-0100", "sk-ant-zzz" + "q" * 20])
+    asked = iter(["AC" + "b2" * 16, "c3" * 16, "(301) 555-0100", "sk-ant-zzz" + "q" * 20, "", "", ""])
     hk = tempfile.mkdtemp()
     os.environ["OLYMPUS_HOME"] = hk
     import contextlib

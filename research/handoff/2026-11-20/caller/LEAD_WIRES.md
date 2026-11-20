@@ -23,9 +23,10 @@ businesses that signed the "Call me" form**. Full law + sources + cost: `researc
 | `tools/caller/run.py` | `plan()` / `tick()` (one dial per minute max), `--dry` |
 | `tools/caller/simulate.py` | 8 scripted owners, transcripts + scores (`--llm` = Claude brain) |
 | `tools/caller/siteform.py` | the concept-page form JSON for the site factory |
+| `tools/caller/cloudflare/consent.js`, `tools/caller/pull.py` | the Pages Function that takes the form (KV) + the PC puller |
 | `tools/caller/cost.py`, `onoff.py`, `setup_keys.py`, `funnel.py`, `registry.py`, `settings.json` | cost table, switch (START CALLING typed), getpass keys, Funnel address + Twilio hook, DNC stamp, defaults |
 | `CALLER_SETUP.bat`, `CALLER_ON.bat`, `CALLER_STOP.bat` | root bats, ASCII + CRLF |
-| `tests/test_caller.py` | 87 checks, offline, ~10 s |
+| `tests/test_caller.py` | 91 checks, offline, ~10 s |
 | `research/writeups/ai-caller-2026-11-20.md` | owner-plain law + cost + sign-up |
 | `research/handoff/2026-11-20/caller/transcripts/` | 8 sample transcripts + `scores.json` |
 
@@ -33,14 +34,18 @@ businesses that signed the "Call me" form**. Full law + sources + cost: `researc
 
 1. **run_area** (one line, own line so it never clashes):
    `AREAS["agency"].append("caller")      # day-caller 2026-11-20: the consent-first AI caller (tools/caller/), offline`
-2. **Concept pages (day-cities3, agreed 2026-11-20):** the slot `<div id="caller-slot">` takes
-   `python -m tools.caller.siteform --endpoint <PUBLIC>` -> `{"caller_html", "caller_button", "caller_fields"}`; put `caller_html` in
-   `tools/site_factory_agency.json` and fill the two hidden inputs per site: `lead_id` (the Leads id, osm-n...) and `business`.
-   `<PUBLIC>` = the Funnel address CALLER_ON.bat shows (`https://<pc>.<tailnet>.ts.net:10000`); it is unknown until the PC runs it, so the
-   slot stays empty (no form = no outbound calls; inbound still works). Button text: exactly "Have our assistant call me" (the Day-0 email
-   names it). Form fields: business phone, full name (signature), best time (any / morning 9-12 / afternoon 12-5), optional email, the
-   consent checkbox with the exact text (`consent.CONSENT_TEXT`, version `v2-2026-11-20`). Inline only, no third party, no secret.
-   Privacy: rename the PC in Tailscale to something neutral (e.g. olympus-caller) before Funnel: the address appears on every concept page.
+2. **Concept pages (day-cities3 wired the slot, 628798aa):** the form now posts to the concept site's OWN `/api/consent`, not the PC.
+   A `.ts.net` address on a public page is refused (`tools/site_privacy.py mask_net` would mask it, and it maps the owner's devices).
+   - Publisher (lead): copy `tools/caller/cloudflare/consent.js` to `functions/api/consent.js` of the Cloudflare Pages project that
+     serves `agency/f/`, and bind one KV namespace as `CONSENT` (free tier). It re-checks the form, caps 5 a day per IP, stores
+     30 days, and holds no secret.
+   - The PC's caller pulls the KV entries every minute into `consent.jsonl` and deletes them (`tools/caller/pull.py`, with a Cloudflare
+     token that has "Workers KV Storage: Edit"; CALLER_SETUP.bat asks for it as optional keys 5-7).
+   - Markup: `python -m tools.caller.siteform` -> `{"caller_html", ...}` for `tools/site_factory_agency.json`. It refuses to run while
+     agency/config.json still holds placeholders (YOUR AGENCY, (555) 555-0100), so generate it where the real config exists, or give Claude
+     the real agency name, phone and first name for the repo's caller settings.
+   - Until the function is deployed, the slot stays empty. Twilio still reaches the PC over Funnel :10000, but that address appears on
+     no page.
 3. **Consent records:** the gate reads `<OLYMPUS_HOME>/caller/consent.jsonl` (append-only, on the PC, never in the public site):
    `{id, kind:"consent", phone, business, signed_name, email, lead_id, version, window, asked_t, phone_source:"their form", text, text_sha256, ts, ip, ua}`;
    a revoke is `{kind:"revoke", phone, why, ts}`. For the private **agency-inbox** branch the PC pushes `<OLYMPUS_HOME>/caller/share/` as
@@ -58,7 +63,7 @@ businesses that signed the "Call me" form**. Full law + sources + cost: `researc
 
 ## Tests run here
 
-- `python -X utf8 -m tests.test_caller` -> 87/87
+- `python -X utf8 -m tests.test_caller` -> 91/91
 - `python tests/smoke.py` -> 9/10 (the 1 is `test_zenith_mode`: this container has no Python Playwright; unrelated)
 - `python tests/run_area.py privacy --only repo_secrets` -> 13/13; `python -m tests.test_cold_calls` -> 115/115
 - `python -m tools.caller.simulate` -> 8 personas, all 100%

@@ -36,17 +36,22 @@ def save(keys: dict, h=None) -> str:
 
 def main(ask=getpass.getpass) -> int:
     print("AI caller keys (Enter keeps the one already saved). Nothing you paste is shown.")
-    sid = ask("1/4 Twilio Account SID (starts with AC): ").strip()
-    tok = ask("2/4 Twilio Auth Token: ").strip()
-    frm = ask("3/4 Your Twilio phone number (+1...): ").strip()
-    ant = ask("4/4 Claude API key (starts with sk-ant-): ").strip()
+    sid = ask("1/7 Twilio Account SID (starts with AC): ").strip()
+    tok = ask("2/7 Twilio Auth Token: ").strip()
+    frm = ask("3/7 Your Twilio phone number (+1...): ").strip()
+    ant = ask("4/7 Claude API key (starts with sk-ant-): ").strip()
+    print("Optional, for the concept sites' form (Cloudflare KV; Enter skips):")
+    cfa = ask("5/7 Cloudflare Account ID: ").strip()
+    cfn = ask("6/7 Cloudflare KV namespace ID (the one bound as CONSENT): ").strip()
+    cft = ask("7/7 Cloudflare token with Workers KV Storage: Edit: ").strip()
     if sid and not re.fullmatch(r"AC[0-9a-fA-F]{32}", sid):
         print("[FIX] That SID does not look right (AC + 32 letters/numbers). Nothing saved.")
         return 1
     if frm and not G.e164(frm):
         print("[FIX] That phone number does not look like +1 and 10 digits. Nothing saved.")
         return 1
-    p = save({"twilio_sid": sid, "twilio_token": tok, "twilio_from": G.e164(frm) if frm else "", "anthropic_key": ant})
+    p = save({"twilio_sid": sid, "twilio_token": tok, "twilio_from": G.e164(frm) if frm else "", "anthropic_key": ant,
+              "cf_account": cfa, "cf_kv_namespace": cfn, "cf_kv_token": cft})
     k = C.load_keys()
     print(f"[OK] Saved in {p} (outside the repo). Number ends ...{k['twilio_from'][-4:] if k['twilio_from'] else '----'}; "
           f"all 4 keys {'present' if C.keys_ready() else 'NOT all present yet'}.")

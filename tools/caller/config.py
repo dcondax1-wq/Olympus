@@ -13,7 +13,7 @@ import re
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
-SECRET_KEYS = ("twilio_sid", "twilio_token", "twilio_from", "anthropic_key")
+SECRET_KEYS = ("twilio_sid", "twilio_token", "twilio_from", "anthropic_key", "cf_account", "cf_kv_namespace", "cf_kv_token")
 
 
 def home() -> str:

@@ -278,6 +278,9 @@ def serve(port: int, app: Caller, host: str = "127.0.0.1", dial_every: int = 60)
         while True:
             time.sleep(dial_every)
             try:
+                if app.adapter is not None:
+                    from . import pull as P
+                    P.pull(app.h)                 # the concept sites' signed forms (Cloudflare KV) -> consent.jsonl
                 if app.is_on() and app.adapter is not None:
                     R.tick(app.clock(), app.adapter, app.public, app.h, register=app.register)
             except Exception as e:  # never crash the server; the reason goes to the log without secrets
