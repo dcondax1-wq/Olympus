@@ -161,7 +161,7 @@ void main() {
     float run = hash12(vec2(floor(id.x / 2.0), id.y) + seed * 41.0);
     float runOn = step(run, lf);
     float on = runOn * step(0.12, hash12(id + seed * 113.0)) + (1.0 - runOn) * step(0.96, hash12(id * 1.3 + seed));
-    float onFar = mix(lf, runOn, 0.5);
+    float onFar = mix(lf, runOn, mix(0.22, 0.5, detail * 2.0));
     float flick = step(0.996, hash12(id * 1.7 + seed)) * step(0.0, sin(uTime * 0.35 + run * 50.0));
     on = max(on * (1.0 - flick), flick * (1.0 - on));
     // one colour temperature per building (cool offices in glass, warm homes in stone), a little variety per floor
@@ -279,7 +279,7 @@ void main() {
     col = mix(col, block * 1.8 + vec3(0.004), pave);
     vec3 sodium = uStreet;
     float lampAvg = mix(0.14, 1.0, detail);                // far away: the lamps' average, not a moire
-    col += sodium * mix(0.16, lamps * 0.55, detail) * (st + pave * 0.8) * lampAvg * (1.0 - uDusk * 0.7);
+    col += sodium * mix(0.06, lamps * 0.5, detail) * (st + pave * 0.8) * lampAvg * (1.0 - uDusk * 0.7) * mix(1.0, 0.5, smoothstep(60.0, 260.0, cameraPosition.y));
     col += sodium * lampCore * 2.4 * (1.0 - uDusk * 0.5);
     col += glow * (0.05 + 0.22 * st);
     col += vec3(1.0, 0.82, 0.55) * lanes * 0.12;
