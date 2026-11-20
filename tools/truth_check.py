@@ -133,6 +133,19 @@ def truth_of(L: dict | None, now: float) -> dict:
                "to_target": _f(ev.get("to_target")) if a else _f(_d(card).get("to_target")),
                "today": _f(ev.get("today")) if a else _f(_d(card).get("today_pnl")),
                "funded": "funded" in str(ev.get("status") or _d(card).get("status") or "").lower(), "t": rt, "age": now - rt if rt else None}
+        if row["funded"]:                     # the ONE "to payout" (pc_feed.js payoutLines = the payout coach's need_more on the mf tracker)
+            f = next((_d(r.get("f")) for r in _l(_d(L.get("mf")).get("a")) if isinstance(r, dict) and r.get("id") in spec["pc"] and r.get("f")), None)
+            if f:
+                try:
+                    from engine import payout_coach as PCo
+                    st = {"balance": bal, "cycle_start_balance": (bal - _f(f.get("cp"))) if _f(f.get("cp")) is not None else None, "best_day": _f(f.get("bd")),
+                          "cycle_days": _f(f.get("cd")), "eligible_from": f.get("ef"), "payouts_n": _f(f.get("pn")), "room": row["room"]}
+                    c = PCo.coach(st, "builder50k" if spec["plan"] == "builder50k" else "builder25k",
+                                  dt.datetime.fromtimestamp(now, dt.timezone(dt.timedelta(hours=-5))).strftime("%Y-%m-%d"))
+                    if c.get("ok"):
+                        row["to_payout"] = 0.0 if c.get("eligible") else round(float(c.get("need_more") or 0), 2)
+                except Exception:  # noqa: BLE001
+                    pass
         tr = [x for i in spec["pc"] for x in _l(_d(at.get(i)).get("tr")) if isinstance(x, list) and len(x) >= 9 and x[1]]
         if tr:
             x = max(tr, key=lambda r: r[1])
@@ -241,6 +254,7 @@ VISIBLE = ["", "nq/", "board/", "trading/", "aegis/", "pnyx/", "demeter/", "fate
            "business/mffu.html", "hera/", "oikos/", "chrysos/", "mercury/", "compass/", "planner/", "helios/", "clio/", "atlas/", "widget/", "gate/"]
 SIZE_OF = {"builder50k": (46000, 56000), "builder25k": (23000, 29000), "rapideod25": (23000, 29000)}
 MONEY_RX = re.compile(r"\$\s?(\d{1,3}(?:,\d{3})+(?:\.\d{1,2})?|\d{4,6}(?:\.\d{1,2})?)")
+PAYOUT_RX = re.compile(r"to payout\s*:?\s*\$\s?([\d,]+(?:\.\d+)?)", re.I)
 ROOM_RX = re.compile(r"(?:drawdown left|room left|room|cushion)\s*:?\s*\$\s?([\d,]+(?:\.\d+)?)", re.I)
 NOT_STATE = re.compile(r"target|floor|buffer|start|payout line|ask at|pass at|goal|line|max|plan|limit|at \$|reach|net|\bPF\b|a month|/mo|backtest|research|"
                        r"\bH[12]\b|20\d\d|best close|above \$|under \$|over \$|\+\$|you wrote|owner_note|typed|· you\b", re.I)
@@ -261,7 +275,7 @@ def page_checks(site: str, T: dict, pages=None, wait_ms=7000) -> list:
         for path in pages or VISIBLE:
             p = ctx.new_page()
             url = site.rstrip("/") + "/" + path
-            row = {"page": path or "(root)", "url": url, "bad_balances": [], "bad_rooms": [], "demo": False, "names": [], "error": None, "missing": []}
+            row = {"page": path or "(root)", "url": url, "bad_balances": [], "bad_rooms": [], "demo": False, "names": [], "error": None, "missing": [], "bad_payout": []}
             try:
                 p.goto(url, wait_until="load", timeout=45000)
                 p.wait_for_timeout(wait_ms)
@@ -278,7 +292,14 @@ def page_checks(site: str, T: dict, pages=None, wait_ms=7000) -> list:
                     v = float(m.group(1).replace(",", ""))
                     if 50 <= v <= 3000 and room_ok and not any(abs(v - r) <= 1 for r in room_ok):
                         row["bad_rooms"].append({"value": v, "context": txt[max(0, m.start() - 40):m.end() + 20].replace("\n", " ").strip()})
-                row["demo"] = bool(re.search(r"\bDEMO\b|Example numbers|EXAMPLE", txt))
+                dm = re.search(r"\bDEMO\b|Example numbers|EXAMPLE", txt)
+                row["demo"] = bool(dm)
+                pay_ok = {round(r["to_payout"]) for r in T.values() if r.get("to_payout") is not None}
+                for m in PAYOUT_RX.finditer(txt):
+                    v = float(m.group(1).replace(",", ""))
+                    if pay_ok and not any(abs(v - x) <= 1 for x in pay_ok):
+                        row["bad_payout"].append({"value": v, "context": txt[max(0, m.start() - 50):m.end() + 10].replace("\n", " ").strip()})
+                row["demo_ctx"] = txt[max(0, dm.start() - 50):dm.end() + 70].replace("\n", " ").strip() if dm else ""
                 if path in MUST_SHOW:                  # my pages: every account's balance (and ATLAS's today) must be on screen
                     flat = txt.replace(",", "")
                     row["missing"] = [f"{r['name']} {money(r['balance'])}" for r in T.values() if str(int(round(r["balance"]))) not in flat
@@ -300,24 +321,25 @@ def report_md(R: dict, now: float) -> str:
     T = R["truth"]
     lines = [f"# Truth check ({dt.datetime.fromtimestamp(now, dt.timezone.utc):%Y-%m-%d %H:%M} UTC)", "",
              "Read only (tools/truth_check.py). TRUTH = the PC's own 15-minute report; every other number is checked against it.", "",
-             "## The truth now (PC report)", "", "| account | balance | room | to pass / payout | today | last trade | age |", "|---|---|---|---|---|---|---|"]
+             "## The truth now (PC report)", "", "| account | balance | room | to pass | to payout (coach) | today | last trade | age |", "|---|---|---|---|---|---|---|---|"]
     for k, r in T.items():
         last = r.get("last")
-        lines.append(f"| {r['name']} | {money(r['balance'])} | {money(r['room'])} | {money(r['to_target'])} | {money(r['today'])} | "
+        lines.append(f"| {r['name']} | {money(r['balance'])} | {money(r['room'])} | {'-' if r['funded'] else money(r['to_target'])} | {money(r.get('to_payout')) if r['funded'] else '-'} | {money(r['today'])} | "
                      f"{(last['day'] + ' ' + money(last['usd'])) if last else '-'} | {age_words(r['age'])} |")
     lines += ["", f"## Problems ({len(R['problems'])})", "", "| level | where | what | shown | should be |", "|---|---|---|---|---|"]
     for p in R["problems"]:
         lines.append(f"| {p['level']} | {p['where']} | {p['what']} | {p['wrong']} | {p['right']} |")
     lines += ["", f"## Notes ({len(R['info'])})", ""] + [f"- {p['where']}: {p['what']}" for p in R["info"]]
     if R.get("pages") is not None:
-        lines += ["", "## Pages (390 x 844, after their feeds load)", "", "| page | wrong balance-like $ | wrong room $ | DEMO shown | accounts named | missing (nq / trading / board) |", "|---|---|---|---|---|---|"]
+        lines += ["", "## Pages (390 x 844, after their feeds load)", "", "| page | wrong balance-like $ | wrong room $ | wrong to payout | DEMO shown | accounts named | missing (nq / trading / board) |", "|---|---|---|---|---|---|---|"]
         for p in R["pages"]:
             if p["error"]:
                 lines.append(f"| {p['page']} | error: {p['error']} | | | |")
                 continue
             bb = "; ".join(f"{money(x['value'])} ({x['context'][:70]})" for x in p["bad_balances"][:3]) or "-"
             rr = "; ".join(f"{money(x['value'])} ({x['context'][:60]})" for x in p["bad_rooms"][:3]) or "-"
-            lines.append(f"| {p['page']} | {bb} | {rr} | {'YES' if p['demo'] else '-'} | {', '.join(p['names']) or '-'} | {'; '.join(p.get('missing') or []) or '-'} |")
+            pp = "; ".join(f"{money(x['value'])} ({x['context'][:60]})" for x in p.get("bad_payout") or []) or "-"
+            lines.append(f"| {p['page']} | {bb} | {rr} | {pp} | {('YES: ' + p.get('demo_ctx', '')[:90]) if p['demo'] else '-'} | {', '.join(p['names']) or '-'} | {'; '.join(p.get('missing') or []) or '-'} |")
     return "\n".join(lines) + "\n"
 
 
@@ -340,7 +362,7 @@ def main(argv=None) -> int:
         open(a.md, "w", encoding="utf-8").write(report_md(R, now))
     if a.json:
         json.dump(R, open(a.json, "w"), indent=1, default=str)
-    nb = len(R["problems"]) + sum(1 for p in R.get("pages") or [] if p["bad_balances"] or p["bad_rooms"] or p["error"] or p.get("missing"))
+    nb = len(R["problems"]) + sum(1 for p in R.get("pages") or [] if p["bad_balances"] or p["bad_rooms"] or p["error"] or p.get("missing") or p.get("bad_payout"))
     print(f"truth check: {len(R['truth'])} accounts in the PC report, {len(R['problems'])} feed problems, {len(R['info'])} notes"
           + (f", {sum(1 for p in R['pages'] if p['bad_balances'] or p['bad_rooms'])} pages with a wrong $" if a.pages else "") + f" -> {a.md}")
     return 0 if nb >= 0 else 1

@@ -36,6 +36,10 @@ def main():
     check("a. the truth from the PC post: ATLAS $25,401.38, room $1,401.38, today +$514.18, last trade 2026-11-20 +$514.18 (TARGET)",
           a.get("balance") == 25401.38 and a.get("room") == 1401.38 and a.get("today") == 514.18 and a.get("last", {}).get("day") == "2026-11-20"
           and a["last"]["usd"] == 514.18 and a.get("funded") is True, a)
+    check("a. ATLAS 'to payout' = the payout coach's need_more on the PC's tracker (the number pc_feed.js payoutLines gives every page): $948.62, not the PC's own $1,448.62 ping line",
+          a.get("to_payout") == 948.62 and a.get("to_target") == 1448.62, (a.get("to_payout"), a.get("to_target")))
+    pr = [float(m.group(1).replace(",", "")) for m in TC.PAYOUT_RX.finditer("ATLAS LIVE FUNDED $25,401 TODAY +$514 TO PAYOUT $1,449 ROOM LEFT $1,401 · To payout $949")]
+    check("c. the 'to payout' scanner reads both pages' words (Glance $1,449 vs NQ / Board $949)", pr == [1449.0, 949.0], pr)
     check("a. ... Zlarior 50K $49,192.78 / $1,024.58, 25K #2 $25,000; no Rapid yet (not on the PC)", T["z50k"]["balance"] == 49192.78 and T["z50k"]["room"] == 1024.58
           and T["z25k2"]["balance"] == 25000 and "rapid" not in T, sorted(T))
     R = TC.feed_checks(os.path.join(FX, "site"), now, os.path.join(FX, "pc_post.json"))

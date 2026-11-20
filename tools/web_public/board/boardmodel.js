@@ -108,6 +108,20 @@
 
   function fresh(t, nowS) { return !!t && nowS - t <= STALE_S; }
 
+  // truth (Olympus 2, 2026-11-20): a typed / copied row older than the owner's plan file must not override the stage the plan already moved on
+  // (ATLAS: typed 'PASSED, locked' on Nov 17, the plan says 'funded' since that night): the plan's later stage wins, its numbers keep their age
+  function planStage(board, plan) {
+    const P = isObj(plan) && Array.isArray(plan.accounts) ? plan.accounts : [];
+    const pt = isObj(plan) && plan.updated ? Date.parse(String(plan.updated).length <= 10 ? plan.updated + 'T00:00:00-05:00' : plan.updated) / 1000 : NaN;
+    for (const r of isObj(board) && Array.isArray(board.accounts) ? board.accounts : []) {
+      const p = P.find((x) => isObj(x) && x.key === r.key);
+      if (!p || String(p.stage) !== 'funded' || r.stage === 'funded' || r.stage === 'failed') continue;
+      if (!(pt > (num(r.src_t) || 0)) || (isObj(r.last) && num(r.last.t) > pt)) continue;     // only a plan NEWER than the row (and its last event) wins
+      Object.assign(r, { stage: 'funded', chip: chipOf('funded', '', false), locked: false, to_pass: null, stage_src: 'plan' });
+    }
+    return board;
+  }
+
   function pick(src, nowS) {
     const s = isObj(src) ? src : {};
     const now = nowS || Math.floor(Date.now() / 1000);
@@ -119,11 +133,12 @@
     if (site && site.src === 'pc' && fresh(num(site.pc && site.pc.t), now)) return { mode: 'pc', label: 'LIVE from your PC', board: site };
     if (lite && fresh(liteT, now)) {
       const base = site || (isObj(s.plan) ? planBoard(s.plan, now) : null) || planBoard({}, now);
-      return { mode: 'pc', label: 'LIVE from your PC (status feed)', board: overlayLite(base, lite) };
+      return { mode: 'pc', label: 'LIVE from your PC (status feed)', board: planStage(overlayLite(base, lite), s.plan) };
     }
     if (site) {
       const b = JSON.parse(JSON.stringify(site));
       if (lite && liteT > (num(b.pc && b.pc.t) || 0)) b.pc = { t: liteT, via: 'ntfy', stale: true };
+      planStage(b, s.plan);
       return { mode: 'copy', label: 'Board copy from ' + ago(now - T(site)) + ' (the PC is not live here)', board: b };
     }
     if (isObj(s.plan) && Array.isArray(s.plan.accounts)) return { mode: 'plan', label: 'PLAN only: no live numbers from the PC', board: planBoard(s.plan, now) };
@@ -150,7 +165,7 @@
   KIND_WORDS.risk_alert = 'Risk alert';           // night-risk: engine/circuit_breaker (live vs twin advice) + engine/msg_throttle
   LOUD.add('risk_alert');
 
-  const api = { STALE_S, pick, planBoard, overlayLite, silent, ago, usd, chipOf, KIND_WORDS, LOUD, SRC_WORDS, num };
+  const api = { STALE_S, pick, planBoard, planStage, overlayLite, silent, ago, usd, chipOf, KIND_WORDS, LOUD, SRC_WORDS, num };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.BOARD_MODEL = api;
 })(typeof window !== 'undefined' ? window : globalThis);
