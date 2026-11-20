@@ -315,7 +315,7 @@
       var a = A[k]; if (!a || !a.has) return;
       var fd = obj(obj(board[k]).funded), funded = a.kind === 'funded' || obj(board[k]).stage === 'funded';
       cards.push({ key: k, name: a.name, size: a.size, kind: funded ? 'funded' : 'eval', balance: num(a.balance), room: num(a.room), mll: num(a.mll), toPass: funded ? null : num(a.toTarget),
-        toAsk: funded ? num(fd.to_ask) : null, askAt: funded ? num(fd.ask_at_balance) : null, today: num(a.today) || 0 });
+        toAsk: funded ? (num(fd.to_ask) != null ? num(fd.to_ask) : num(a.toTarget)) : null, askAt: funded ? num(fd.ask_at_balance) : null, today: num(a.today) || 0 });
     });
     if (T && T.extraOf) { try { T.extraOf(home).forEach(function (a) { cards.push({ key: a.key, name: a.name, size: a.size, kind: a.kind, balance: num(a.balance), room: num(a.room), mll: num(a.mll), toPass: num(a.toTarget), toAsk: null, askAt: null, today: num(a.today) || 0 }); today += num(a.today) || 0; }); } catch (e) { /* the two bots' rows stay */ } }
     return { t: t, pcT: ages.pc.t, pcAge: ages.pc.age, cloudAge: ages.cloud ? ages.cloud.age : null, running: running, accts: accts, cards: cards, today: today, win: nextWindow(home, t), truth: !!T, has: true };
