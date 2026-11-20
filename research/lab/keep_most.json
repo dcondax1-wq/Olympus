@@ -1264,5 +1264,87 @@
    "live_fund": 0.0,
    "yours": 480.0
   }
- }
+ },
+ "savers_match_2027": [
+  {
+   "profit": 20000,
+   "magi_before": 18587,
+   "roth_2000": {
+    "put_in": 2000.0,
+    "match": 1000.0,
+    "tax_saved": 0.0
+   },
+   "full_match_at": {
+    "put_in": 2000.0,
+    "magi": 16587,
+    "match": 1000.0,
+    "tax_saved": 319.96,
+    "gain": 1319.96
+   }
+  },
+  {
+   "profit": 25000,
+   "magi_before": 23234,
+   "roth_2000": {
+    "put_in": 2000.0,
+    "match": 817.75,
+    "tax_saved": 0.0
+   },
+   "full_match_at": {
+    "put_in": 3000.0,
+    "magi": 20234,
+    "match": 1000.0,
+    "tax_saved": 481.5,
+    "gain": 1481.5
+   }
+  },
+  {
+   "profit": 30000,
+   "magi_before": 27881,
+   "roth_2000": {
+    "put_in": 2000.0,
+    "match": 507.96,
+    "tax_saved": 0.0
+   },
+   "full_match_at": {
+    "put_in": 7500.0,
+    "magi": 20381,
+    "match": 1000.0,
+    "tax_saved": 1203.75,
+    "gain": 2203.75
+   }
+  },
+  {
+   "profit": 40000,
+   "magi_before": 37174,
+   "roth_2000": {
+    "put_in": 2000.0,
+    "match": 0.0,
+    "tax_saved": 0.0
+   },
+   "full_match_at": {
+    "put_in": 17000.0,
+    "magi": 20174,
+    "match": 1000.0,
+    "tax_saved": 2801.68,
+    "gain": 3801.68
+   }
+  },
+  {
+   "profit": 50000,
+   "magi_before": 46468,
+   "roth_2000": {
+    "put_in": 2000.0,
+    "match": 0.0,
+    "tax_saved": 0.0
+   },
+   "full_match_at": {
+    "put_in": 26000.0,
+    "magi": 20468,
+    "match": 1000.0,
+    "tax_saved": 4394.88,
+    "gain": 5394.88
+   }
+  }
+ ]
 }
