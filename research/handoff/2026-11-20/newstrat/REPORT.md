@@ -27,3 +27,17 @@ Tests: see bottom.
   could not start (`No module named 'fastapi'` in this container), not related to these research-only files.
 - `python -X utf8 research/newstrat/smt.py` reruns in ~10 s and reproduces every number.
 - VIX / VXN: not used by any of the 5 rule sets (lead's 11:13 UTC data note checked), so the fresh CBOE files change nothing.
+
+# Round 2 (lead): regime guard. Result: nothing passed, nothing changed
+
+| What | Result |
+|---|---|
+| 4 pre-registered pre-session signals x half / sit out (8 versions) | **0 pass** |
+| Do they tell 2021-25 days from 2026 days? | No: "bad" days are as common or more common in 2026 (G1 flags 65% of Jul-Oct) |
+| LIT in a 2021-25 market | guard turns +$2,065 into -$1,801..-$5,933 (LIT's old-year profit sits on the flagged days) |
+| ATLAS funded 25K lost in 6 months, 2021-25 market | 94.5% -> best 85.7% (G3 sit out), which costs $70-105 a month funded in 2026 |
+| Post-hoc lead | ATLAS trades worse on chop days in all 3 periods (ZEUS Lab paper candidate, not a switch) |
+
+Baseline check: the no-guard ATLAS funded row reproduces atlas-health-2026-11-18 exactly (8.5 / 9.2 / 94.5% lost).
+Fresh VIX (lead's pc merge, to Nov 19) used. Files: `research/regime_guard/`, `research/writeups/regime-guard-2026-11-20.md`,
++1 line docs/TESTED_AND_REJECTED.md. No Decide card. LEAD_WIRES: still none.
