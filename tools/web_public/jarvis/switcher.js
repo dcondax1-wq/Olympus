@@ -55,7 +55,10 @@ const DIST = [
 ];
 const DGROUP = { trading: 'zeus', money: 'money' };
 // the switcher's order (owner 2026-11-20): Cities, Kalshi, the NQ bot, Jarvis, the Planner, Business, then ZEUS (Zenith); then the doors
-export const FIRST = ['cities', 'kalshi', 'nq', 'home', 'planner', 'business', 'agency', 'zenith'];
+export const FIRST = ['cities', 'kalshi', 'nq', 'home', 'agency', 'business'];
+// owner 2026-11-20 17:00 ET ("6 arenas, that's it, then a separate area for the smaller stuff"): FIRST is the six arenas; everything else is
+// ONE "More" group, the Planner first, then Zenith, then the rest in door order (olympus/doors.js), the archived apps at its end
+export const MORE_FIRST = ['planner', 'zenith'];
 export const HIDE = new Set(['delphi', 'stoa', 'hestia', 'plutus', 'argo', 'mint', 'harmonia', 'kairos', 'chronos', 'lyceum', 'polis', 'atlascity', 'gallery', 'mintcity',
   'nike', 'arena', 'mind', 'symposium', 'herald', 'ergasterion', 'observatory', 'pheme', 'bridge', 'arbiter', 'hermes', 'hephaestus', 'datacity', 'kalshicity']);
 export const CITY_PARTS = new Set(['datacity', 'kalshicity', 'atlascity', 'mintcity', 'world', 'cities-world']);
@@ -248,10 +251,12 @@ export function mountSwitcher(opts = {}) {
       const first = FIRST.map((id) => all.find((a) => a.id === id)).filter(Boolean);
       // olympus/doors.js ARCHIVE (the weak / duplicate apps): one "Archive" group at the very end (lead QA 2026-11-20), never right after Business
       const arch = (a) => { try { const D = win.OLYMPUS_DOORS; return !!(D && typeof D.archived === 'function' && D.archived(a.id)); } catch (_) { return false; } };
-      const rest = all.filter((a) => !FIRST.includes(a.id) && !arch(a)), archived = all.filter((a) => !FIRST.includes(a.id) && arch(a));
-      const out = first.length ? [{ g: { id: 'daily', name: 'Daily' }, apps: first }] : [];
-      for (const d of DIST) { const apps = rest.filter((a) => distOf(a) === d.id); if (apps.length) out.push({ g: { id: d.id, name: d.title }, apps }); }
-      if (archived.length) out.push({ g: { id: 'archive', name: 'Archive' }, apps: archived });
+      const rest = all.filter((a) => !FIRST.includes(a.id) && !MORE_FIRST.includes(a.id) && !arch(a)), archived = all.filter((a) => !FIRST.includes(a.id) && !MORE_FIRST.includes(a.id) && arch(a));
+      const out = first.length ? [{ g: { id: 'daily', name: 'Arenas' }, apps: first }] : [];
+      const more = MORE_FIRST.map((id) => all.find((a) => a.id === id)).filter(Boolean);
+      for (const d of DIST) for (const a of rest) if (distOf(a) === d.id) more.push(a);
+      more.push(...archived);
+      if (more.length) out.push({ g: { id: 'more', name: 'More' }, apps: more });
       return out;
     }
     const s = typeof opts.sections === 'function' ? call(opts.sections, all) : null;
