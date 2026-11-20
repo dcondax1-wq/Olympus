@@ -187,6 +187,13 @@ CENTER = """
   out.snap = pick(run(null, NOW, { board: { kind: 'olympus-board', t: NOW - 86400, accounts: [{ key: 'zlarior', balance: 49000, src: 'PC live', src_t: NOW - 86400 }] } }));
   out.none = pick(run(null, NOW));
   out.twice = pick(run(mod((l) => { l.accounts[0].eval.balance = 49192.5; })));
+  // night-rapidready 2026-11-20: the Rapid EOD 25K bought tonight, once the PC reports it (id "rapid" = accounts.json pc)
+  out.rapid = pick(X.center({ lite: (() => { const l = JSON.parse(JSON.stringify(lite0));
+    l.accounts.push({ id: 'rapid', name: 'Rapid EOD 25K', plan: 'Rapid EOD 25K', kind: 'eval', source: 'pc', badge: 'LIVE', conn: { present: true, t: fx.now, running: true, connected: true },
+      eval: { start_balance: 25000, balance: 25384.1, profit: 384.1, to_target: 1115.9, target_balance: 26500, floor: 24384.1, room: 1000, mll: 1000, dll: 500, dll_used: 0, today: 384.1, session: 1, status: 'open' },
+      pnl: { today: 384.1 }, running: true, trades: [], days: [] });
+    l.mf.a.push({ id: 'rapid', nm: 'Rapid EOD 25K', sd: '2026-11-20', l4: '0004', td: 1, lt: '2026-11-19', bd: ['2026-11-19', 384], wd: ['2026-11-19', 384], n: 1, w: 1 });
+    return l; })(), plan, coach: C, M, today: X.etDate(NOW) }, NOW));
   console.log('@@' + JSON.stringify(out));
 """
 
@@ -272,6 +279,16 @@ def part_c2(r):
     tw = r.get("twice") or {}
     check("c. the 50K's ledger row a few cents off its board card (seen twice): still ONE Zlarior 50K card, 3 cards in all",
           [x["key"] for x in tw.get("accts") or []] == ["zlarior", "atlas", "fresh25"], [x["key"] for x in tw.get("accts") or []])
+    rp = r.get("rapid") or {}
+    R = {a["key"]: a for a in rp.get("accts") or []}.get("rapid1") or {}
+    t, ru = R.get("target") or {}, R.get("rules") or {}
+    check("c. the Rapid EOD 25K once the PC reports it (id rapid): ONE 'Rapid EOD 25K' Evaluation card on the plan row, no longer in the "
+          "PLAN list; MFFU's rules: $1,500 target, 4 days, 30%, no DLL, floor locks at $25,100, news allowed in the eval",
+          [x["key"] for x in rp.get("accts") or []] == ["zlarior", "atlas", "rapid1", "fresh25"] and R.get("name") == "Rapid EOD 25K"
+          and (R.get("chip") or {}).get("text") == "Evaluation" and not rp.get("planned") and (t.get("v"), t.get("min_days"), t.get("cons")) == (1500, 4, 0.3)
+          and (R.get("money") or {}).get("lock_at") == 25100 and "None on Rapid EOD 25K" in (ru.get("dll") or ["", ""])[1]
+          and "Allowed on Rapid EOD 25K evaluations" in (ru.get("news") or ["", ""])[1] and ["0004", "Rapid EOD 25K"] in (rp.get("decoder") or []),
+          {"keys": [x["key"] for x in rp.get("accts") or []], "planned": rp.get("planned"), "card": R})
 
 
 def part_d():

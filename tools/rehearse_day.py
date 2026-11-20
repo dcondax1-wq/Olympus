@@ -71,6 +71,7 @@ DAYS = [("2026-09-07", "early close (Labor Day: CME halts 13:00 ET, like Thanksg
         ("2026-10-13", "LIT's big winner")]
 MAX_STATUS_BYTES = 3900
 FLAT_LAST = 16 * 60 + 10             # MFFU: flat by 16:10 ET
+RAPID_BEST_DAY = 0.3 * 1500.0        # MFFU Rapid EOD 25K eval: best day <= 30% of the profit (= $450 at the $1,500 target)
 
 
 def ts(day: str, hh: int, mm: int = 0, ss: int = 0) -> int:
@@ -442,6 +443,22 @@ def lanes(bot) -> dict:
     return out
 
 
+def rapid_both_open(bot):
+    """The Rapid's two lanes both holding / sending at this poll (a position, an entry or a close not confirmed yet at
+    NinjaTrader, or the model's open trade): {lane: what} when BOTH are, else None."""
+    from engine.rapid import _open_leg
+    lit_l = next((a for a in (getattr(bot.accts, "accounts", None) or []) if a.spec.get("lane") == "rapid"), None)
+    ar = getattr(bot, "acct_r", None)
+    if lit_l is None or ar is None:
+        return None
+    busy = {}
+    for k, o in (("LIT lane", lit_l), ("ATLAS lane", ar)):
+        lg = _open_leg(getattr(o, "adapter", None))
+        if o.open_t is not None or lg:
+            busy[k] = {"open_t": o.open_t, "leg": (lg or {}).get("status")}
+    return busy if len(busy) == 2 else None
+
+
 def positions(rig) -> dict:
     """NinjaTrader (the fake) positions: {account: signed qty}."""
     out = {}
@@ -514,6 +531,7 @@ def run_day(rig, day, label, F: Findings, quick=False, restart_at=None, kill_at=
     halt = C.early_close(day)
     flat_mod = C.flat_cut(day, 955)
     t_open_lane, nt_sizes, flattened = {}, [], False
+    rapid_two = []
     for t in polls:
         rig.hold = {a: z for a, (f, z) in (hold or {}).items() if t >= f}
         rig.walk(t - 3 - 60)                         # the 1m bar that just closed trades through NinjaTrader
@@ -532,6 +550,10 @@ def run_day(rig, day, label, F: Findings, quick=False, restart_at=None, kill_at=
             hedges.append((hm(t), dict(pos)))
         for a, q in pos.items():
             t_open_lane.setdefault(a, []).append((t, q))
+        if rig.rapid:                                # the Rapid: ONE position on the account (LIT lane or ATLAS lane, never both)
+            two = rapid_both_open(bot)
+            if two:
+                rapid_two.append((hm(t), two))
         mod = dt.datetime.fromtimestamp(t, ET).hour * 60 + dt.datetime.fromtimestamp(t, ET).minute
         if pos and (mod >= flat_mod and mod < 17 * 60):
             flat_by.setdefault("late", []).append((hm(t), dict(pos)))
@@ -566,6 +588,13 @@ def run_day(rig, day, label, F: Findings, quick=False, restart_at=None, kill_at=
         after = [z for z in entries_of(bot) if z[1] > getattr(bot, "_rh_flat_t", 0)]
         F.check(f"{day} after the FLATTEN: no new entry on any account for the rest of the day", not after, after)
     sizes = size_checks(bot, day, F)
+    rapid_day = None
+    if rig.rapid:
+        F.check(f"{day} Rapid 25K: one position at a time on its account (LIT lane and ATLAS lane never both open / working)",
+                not rapid_two, rapid_two[:5])
+        rapid_day = round(sum(p for bk, _t, p, _l in closes_of(bot) if bk == "rapid"), 2)
+        F.check(f"{day} Rapid 25K: the day's $ (both lanes) ${rapid_day:,.2f} stays under MFFU's 30% best day "
+                f"(${RAPID_BEST_DAY:,.0f} = 30% x $1,500)", rapid_day <= RAPID_BEST_DAY + 1e-9, rapid_day)
     F.check(f"{day} the ntfy status payload stays under {MAX_STATUS_BYTES:,} bytes (largest {max(nt_sizes or [(0, 0)])[0]:,} of "
             f"{len(nt_sizes)} samples, mid-trade included)", nt_sizes and max(nt_sizes)[0] < MAX_STATUS_BYTES, nt_sizes[-5:])
     life = life_checks(rig, bot, day, F, skip=("lit",) if passed50 else ())
@@ -573,7 +602,7 @@ def run_day(rig, day, label, F: Findings, quick=False, restart_at=None, kill_at=
     board = board_checks(rig, bot, day, F)
     return {"day": day, "label": label, "rapid": rig.rapid, "polls": len(polls), "errors": [e[:2] for e in errors],
             "hedges": hedges, "fill_hedges": rig.fill_hedges, "sizes": sizes, "ntfy_bytes": max(nt_sizes or [(0, 0)])[0],
-            "life": life, "coach": coach, "board": board, "trades": trade_rows(bot)}
+            "life": life, "coach": coach, "board": board, "trades": trade_rows(bot), "rapid_day": rapid_day}
 
 
 def entries_of(bot) -> list:
@@ -731,12 +760,15 @@ def load_frames(days):
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--rapid", action="store_true", help="add the Rapid EOD 25K (LIT + ATLAS lanes)")
-    ap.add_argument("--days", default="", help="comma list of yyyy-mm-dd (default: the 5 rehearsal days)")
+    ap.add_argument("--days", default="", help="comma list of yyyy-mm-dd (default: the 5 rehearsal days; any other day "
+                                               "with bars in data/ is replayed too, e.g. the newest week)")
     ap.add_argument("--quick", action="store_true", help="polls every minute only around trades / closes, else every 5 min")
     ap.add_argument("--full", action="store_true", help="every minute from 18:00 the evening before (the default starts at 01:50)")
     ap.add_argument("--scenarios", default="all", help="comma list of " + ", ".join(SCENARIOS) + " (all / none)")
     a = ap.parse_args(argv)
-    days = [(d, lbl, {}) for d, lbl in DAYS if not a.days or d in a.days.split(",")]
+    want_days = [x.strip() for x in a.days.split(",") if x.strip()]
+    days = [(d, lbl, {}) for d, lbl in DAYS if not want_days or d in want_days]
+    days += [(d, "recent day (newest bars)", {}) for d in want_days if d not in dict(DAYS)]   # any other day of data/
     pick = list(SCENARIOS) if a.scenarios == "all" else [] if a.scenarios == "none" else a.scenarios.split(",")
     days += [(SCENARIOS[k][0], SCENARIOS[k][1], SCENARIOS[k][2]) for k in pick]
     F = Findings()
