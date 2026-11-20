@@ -120,7 +120,7 @@ def part_b():
           not re.search(r"innerHTML|outerHTML|insertAdjacentHTML|document\.write", js))
     check("b. read only: one GET of help.json, no POST, no localStorage, no outside script",
           js.count("fetch(") == 1 and "fetch('help.json" in js and "POST" not in js and "localStorage" not in js
-          and not re.search(r'<script src="https?:', html) and [x for x in re.findall(r'<script src="([^"]+)"', html) if "olympus/warp.js" not in x] == ["help.js?v=8"], re.findall(r'<script src="([^"]+)"', html))   # + the world-to-world jump (olympus/warp.js, tests.test_warp)
+          and not re.search(r'<script src="https?:', html) and [x for x in re.findall(r'<script src="([^"]+)"', html) if "olympus/warp.js" not in x and "olympus/themes.js" not in x] == ["help.js?v=8"], re.findall(r'<script src="([^"]+)"', html))   # + the world-to-world jump (olympus/warp.js, tests.test_warp) + the OLYMPUS look (olympus/themes.js, day-manual NAV 2026-11-20)
     z, dr, biz = rd(HUB, "zeus.html"), rd(HUB, "doors.html"), rd(WEB, "business", "index.html")
     check("b. linked: ZEUS (a Help button), the Doors page (top + bottom), Business (a Help card)",
           '<a href="help.html" id="helpBtn">Help</a>' in z and 'id="helpLink"' in dr and dr.count('href="help.html"') >= 2 and 'href="../hub/help.html"' in biz)

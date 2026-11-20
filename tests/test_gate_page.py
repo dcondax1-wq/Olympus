@@ -71,7 +71,7 @@ def test_static():
           and html.count("<h1") == 1 and 'role="status"' in html and 'aria-live="polite"' in html and 'role="dialog"' not in html)
     check("a. one base-path line: gate/ -> '../', the site root (olympus-live.html) -> ''; agora.css + gate.css, then themes, the catalog, hub-status and gate.js load from GATE_BASE, in order (async = false)",
           r"/\/gate\/(index\.html)?$/.test(p) ? '../' : ''" in html and "window.GATE_BASE = b" in html and "b + 'gate/gate.css?v=g18'" in html and "b + 'olympus/agora.css" in html
-          and "['olympus/themes.js?v=o9', 'pc_feed.js?v=n5', 'olympus/gate-catalog.js?v=nv5', 'olympus/hub-status.js?v=h2', 'age.js?v=1', 'business/payoutcoach.js?v=1', 'gate/gate.js?v=g18', 'olympus/home-fx.js?v=x2', 'olympus/a11y.js']" in html and "s.async = false" in html)
+          and "['olympus/themes.js?v=o9', 'pc_feed.js?v=n5', 'olympus/gate-catalog.js?v=nv7', 'olympus/hub-status.js?v=h2', 'age.js?v=1', 'business/payoutcoach.js?v=1', 'gate/gate.js?v=g18', 'olympus/home-fx.js?v=x2', 'olympus/a11y.js']" in html and "s.async = false" in html)
     tiles = re.findall(r'class="g-hub[^"]*" data-hub="(\w+)" data-to="hub/index.html\?h=(\w+)"', html)
     check("a. the hub tiles are plain links in the page (they work even if gate.js fails), in the owner's order (night A 2026-11-16): Bots & Evals (wide) and My Money (wide) first, Kalshi and Worlds near the end, Settings & Help last",
           [t[0] for t in tiles] == HUBS and all(a == b for a, b in tiles) and 'class="g-hub g-wide" data-hub="bots"' in html and 'class="g-hub g-wide" data-hub="money"' in html and html.count('class="g-hline"') == len(HUBS))
@@ -121,11 +121,11 @@ def test_static():
           css.count("min-height: 44px") >= 2 and "safe-area-inset" in css and "176px" in css and "prefers-reduced-motion: reduce" in css and 'data-oly-lite="1"' in css and "overflow-x: hidden" in css)
     # night-gate: gate-nav.js keeps its catalog URL ?v=nv2 (bumping it re-versions agora-ui.js in ~50 apps); the site worker bump refreshes the catalog on the phone
     check("a. gate-nav: one classic script, nothing when framed (inside Jarvis), the Home link + breadcrumb + 'Go to' (44 px), the catalog from its own folder (apps-list.js as a fallback)",
-          "if (framed) return;" in nav and "'Go to'" in nav and "min-height:44px" in nav and "olympus/gate-catalog.js?v=nv2" in nav and "olympus/apps-list.js" in nav and "aria-modal" in nav)
+          "if (framed) return;" in nav and "'Go to'" in nav and "min-height:44px" in nav and "olympus/gate-catalog.js?v=nv7" in nav and "olympus/apps-list.js" in nav and "aria-modal" in nav)
     tagged = {}
     for app in TEN:
         h = AK.read(os.path.join(AK.WEB, app, "index.html"))
-        tagged[app] = h.count('<script src="../olympus/gate-nav.js?v=g6" defer></script>') == 1 and ("agora-ui.js" not in h or h.index("agora-ui.js") < h.index("gate-nav.js")) and h.index("gate-nav.js") < (h.index("</body>") if app == "kalshi" else h.index("</head>"))
+        tagged[app] = h.count('<script src="../olympus/gate-nav.js?v=g7" defer></script>') == 1 and ("agora-ui.js" not in h or h.index("agora-ui.js") < h.index("gate-nav.js")) and h.index("gate-nav.js") < (h.index("</body>") if app == "kalshi" else h.index("</head>"))
     check("a. the gate-nav tag (once, deferred, in <head> (Kalshi: its body, since 11-12), after agora-ui.js) in the 10 busiest apps (agora-ui.js adds it to every other AGORA app): " + ", ".join(TEN), all(tagged.values()), tagged)
 
 
@@ -163,10 +163,10 @@ def test_catalog():
     check("b. every app has a plain label (<= 28 characters) and a one-line purpose (<= 60)", not long, long)
     check("b. start (the fallback 'start here' list) = Bots (nq), the dashboard, Jarvis", C["start"] == ["nq", "today", "jarvis"])
     q = C["q"]
-    check("b. the search finds plain words: money -> Mint and Ledger, drawdown -> Aegis, kalshi -> Kalshi first, journal -> the journal first, news -> Pheme / Pythia / Herald",
-          {"mint", "ledger"} <= set(q["money"]) and "aegis" in q["drawdown"] and q["kalshi"][0] == "kalshi" and q["journal"][0] == "journal" and {"pheme", "pythia", "herald"} <= set(q["news"]), q)
+    check("b. the search finds plain words (Mint, Pheme, Herald retired 2026-11-20): money -> Business first + Ledger, drawdown -> Aegis, kalshi -> Kalshi first, journal -> the journal first, news -> Pheme / Pythia / Herald",
+          q["money"][0] == "business" and "ledger" in q["money"] and "aegis" in q["drawdown"] and q["kalshi"][0] == "kalshi" and q["journal"][0] == "journal" and "pythia" in q["news"] and not {"mint", "pheme", "herald"} & set(q["money"] + q["news"]), q)
     check("b. synonyms and AND: discount -> Mercury, chatgpt -> Bridge, 'risk stop' -> Aegis first, nonsense and an empty box find nothing",
-          q["discount"][0] == "mercury" and q["chatgpt"][0] == "bridge" and q["risk stop"][:1] == ["aegis"] and q["zzzz"] == [] and q[""] == [], q)
+          q["discount"][0] == "mercury" and "bridge" not in q["chatgpt"] and q["risk stop"][:1] == ["aegis"] and q["zzzz"] == [] and q[""] == [], q)
     A = C["all"]
     check("b. NAV v3, one search for everything: 'risk' -> the tab Bots & Evals > Risk + Aegis, 'theme' -> the action Change the look, 'payout' -> the action + Ledger first,"
           " 'micros' -> the action + Pnyx, 'health' -> the Me hub, 'all apps' -> All apps A to Z, nonsense -> nothing at all",

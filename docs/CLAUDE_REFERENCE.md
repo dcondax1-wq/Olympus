@@ -834,6 +834,13 @@ The long list moved on 2026-11-18 to `docs/TESTED_AND_REJECTED.md` (heading "## 
   (20 s in the test). Jarvis always starts on its own screen (the address never keeps #zenith; an old #hash is cleaned at
   start), keeps one dashboard loaded at a time (one iPhone web process), shows a Reload note if its script has not started in
   8 s, and the manifest has no #shortcuts. Recovery on the phone: delete the Home Screen icon, re-add from Safari.
+- **Ask Jarvis on every app (team JARVIS 2026-11-20, `jarvis/ask.js`, test `tests.test_jarvis_ask`):** `<script src="../jarvis/ask.js" defer
+  data-app="<id>">` mounts a 44 px button (bottom left; `data-auto="off"` + `OLY_ASK.mount()` for the kit); its sheet shows that app's
+  questions (BY_APP in ask.js), answers through biz.js with `liveFromLite(PC post)` (pc_feed.js fetchLatest, saved in 'jarvis.biz.lite' for
+  offline), "Open Jarvis" -> `jarvis/?ask=` (index.html asks it once and cleans the address). Never on Jarvis itself. biz.js grew to 17 kinds
+  (pc, decide, payoutnow = pc_feed payoutLines + payoutcoach.js, taxes, review, last week from the PC's `at` list, window, month, pass, edge).
+  brain.js starts its helpers (Zenith routes, ZEUS, skills) on the first ask or an idle moment (o.lazy false = at once); jdata.loadSources
+  shares one load between callers within 20 s in a page.
 - **Jarvis business answers (day-jarvis 2026-11-20, `jarvis/biz.js`, test `node tests/test_jarvis_biz.mjs`):** the owner's daily
   questions answered BEFORE the brain (think() in index.html asks biz.match first): accounts, in a trade (board card position + the
   chart feed's open trades, $ from the price at $2/pt), room (only when an account is named; generic room/target stays with the

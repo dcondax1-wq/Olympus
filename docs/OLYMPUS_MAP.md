@@ -12,7 +12,7 @@ Data: apps only read published JSON (and bundled `fixture.json` / demo fallbacks
 | Apollo (`apollo`) | ZEUS Trading | trading | Your weekly review and the one rule for | `fixture.json`, `../odeon/trades.json` | `tests.test_apollo_page` |
 | Ares (`ares`) | ZEUS Trading | trading | The war room: GO, WAIT or HALT | `../data.json`, `jarvis.json`, `rules.json`, `../home.json` | `tests.test_ares_page` |
 | Argus (`argus`) | ZEUS Trading | trading | The hundred eyes: what to fix | bundled fixture / its own files | `tests.test_argus_page` |
-| Board (`board`) | ZEUS Trading | trading | What the bot, you and Claude know: accounts | `board.json`, `../business/accounts.json`, `fixture.json` | `tests.test_board` |
+| Board (`board`) | ZEUS Trading | trading | What the bot, you and Claude know: accounts | `board.json`, `../business/accounts.json`, `fixture.json`, `../nq/fixture.json` | `tests.test_board` |
 | Chronos (`chronos`) | ZEUS Trading | trading | Time and the session clock | `../odeon/trades.json`, `fixture.json` | `tests.test_chronos_page` |
 | Delphi (`delphi`) | ZEUS Trading | trading | The oracle's briefing: plan, target, go / no-go | `fixture.json`, `../home.json`, `../ledger/rules.json` | `tests.test_delphi_page` |
 | Demeter (`demeter`) | ZEUS Trading | trading | Account health: drawdown dials, payout rules | `fixture.json`, `../home.json`, `../ledger/rules.json`, `../plutus/roadmap.json` | `tests.test_demeter_page` |
@@ -26,14 +26,14 @@ Data: apps only read published JSON (and bundled `fixture.json` / demo fallbacks
 | Labyrinth (`labyrinth`) | ZEUS Trading | trading | The risk maze: size your eval | `../odeon/trades.json`, `../home.json`, `fixture.json` | `tests.test_labyrinth_page` |
 | Moirai (`moirai`) | ZEUS Trading | trading | The three fates: pass, bust and time of | `fixture.json`, `../ledger/rules.json` | `tests.test_moirai_page` |
 | Nemesis (`nemesis`) | ZEUS Trading | trading | The fallen trades: what went wrong | `../odeon/trades.json`, `../home.json`, `fixture.json` | `tests.test_nemesis_page` |
-| NQ (`nq`) | ZEUS Trading | trading | The NQ bots, right now: status, drawdown left | `../home.json`, `fixture.json`, `howto.json`, `news_week.json`, `../hub/learned.json` | `tests.test_nq_page` |
+| NQ (`nq`) | ZEUS Trading | trading | The NQ bots, right now: status, drawdown left | `../odeon/trades.json`, `../home.json`, `fixture.json`, `howto.json`, `news_week.json`, ... | `tests.test_nq_page` |
 | Odeon (`odeon`) | ZEUS Trading | trading | Every trade, replayed in 3D | `trades.json` | `tests.test_odeon_page` |
 | Oracle (`oracle`) | ZEUS Trading | trading | The market radar, live | bundled fixture / its own files | `tests.test_oracle_page` |
 | Pantheon (`pantheon`) | ZEUS Trading | trading | The data gods: rates, liquidity, fear | `jarvis.json`, `pantheon.json`, `fixture.json` | `tests.test_pantheon` |
 | Pheme (`pheme`) | ZEUS Trading | trading | The word on the street: releases, and NQ's | `fixture.json`, `stats.json` | `tests.test_pheme_page` |
 | Pnyx (`pnyx`) | ZEUS Trading | money | Prop-firm rules and risk calculator: stop to micros | `fixture.json`, `../home.json`, `../ledger/rules.json` | `tests.test_pnyx_page` |
 | Pythia (`pythia`) | ZEUS Trading | trading | The risk calendar: the next 14 days, and | `fixture.json`, `events.json`, `../home.json` | `tests.test_pythia_page` |
-| Trading (`trading`) | ZEUS Trading | trading | Every trade: today, calendar, stats, payout rules | `../home.json`, `fixture.json`, `trades.json`, `../ledger/rules.json`, `../business/accounts.json` | `tests.test_trading_page` |
+| Trading (`trading`) | ZEUS Trading | trading | Every trade: today, calendar, stats, payout rules | `../status_feed.json`, `../why/why.json`, `../odeon/trades.json`, `../home.json`, `fixture.json`, ... | `tests.test_trading_page` |
 | Why (`why`) | ZEUS Trading | trading | Why our trades win and lose, per bot | `why.json` | `tests.test_why_page` |
 | Zenith (`zenith`) | ZEUS Trading | trading | NQ bots · Zlarior · ATLAS | data.json, home.json, live.json (the bot feeds) | `tests.test_zenith_mode` |
 | Agency (`agency`) | Money | money | Website agency: leads, demo sites, calls and the | `fixture.json`, `my_leads.json`, `leads.json`, `callrules.json`, `callscript.json`, ... | `tests.test_agency` |
@@ -42,7 +42,7 @@ Data: apps only read published JSON (and bundled `fixture.json` / demo fallbacks
 | Business (`business`) | Money | money | Every money model: next step, what is missing | `accounts.json`, `../home.json`, `business.json`, `fixture.json`, `dash.json`, ... | `tests.test_business` |
 | Chrysos (`chrysos`) | Money | money | Prop-firm fleet planner: fees against payouts, break-even (estimate) | `fixture.json`, `../money/chrysos.json` | `tests.test_chrysos_page` |
 | Harmonia (`harmonia`) | Money | money | The balance: what leans on the NQ bots | `fixture.json`, `../home.json`, `../money/index.json` | `tests.test_harmonia_page` |
-| Hera (`hera`) | Money | money | The 12-month money plan, payouts, what to buy | `fixture.json`, `../plutus/roadmap.json` | `tests.test_hera_page` |
+| Hera (`hera`) | Money | money | The 12-month money plan, payouts, what to buy | `../business/fleet_plan.json`, `fixture.json`, `../plutus/roadmap.json` | `tests.test_hera_page` |
 | Hermes (`hermes`) | Money | money | OLYMPUS Wrapped: your money | `jarvis.json`, `wrapped.json`, `demo.json`, `../fates/jarvis.json`, `../datacity/discoveries.json` | `tests.test_hermes` |
 | Ledger (`ledger`) | Money | money | Your real money: fees, payouts, net profit | `../home.json`, `rules.json`, `fixture.json`, `../plutus/roadmap.json`, `../money/scoreboard.json`, ... | `tests.test_ledger_page` |
 | Mercury (`mercury`) | Money | money | Deal watcher: sales, codes, free resets, rule changes | `fixture.json`, `../money/mercury.json` | `tests.test_mercury_page` |
@@ -51,8 +51,8 @@ Data: apps only read published JSON (and bundled `fixture.json` / demo fallbacks
 | Oikos (`oikos`) | Money | money | The household: where money leaks, tax set-aside, buckets | `../money/household.json`, `fixture.json`, `../money/oikos.json`, `../ledger/rules.json`, `oikos-${S.today}.json` | `tests.test_oikos_page` |
 | Plutus (`plutus`) | Money | money | The money plan: accounts and payouts | `../data.json`, `jarvis.json`, `plans.json` | `tests.test_plutus_page` |
 | Widget (`widget`) | Money | money | Your accounts as an iPhone widget + the | bundled fixture / its own files | `tests.test_widget` |
-| Dionysus (`dionysus`) | Kalshi | money | The Kalshi desk: guard, what-if, scan. Suggestions only | `fixture.json`, `../kalshicity/edges.json`, `../kalshicity/whatif.json` | `tests.test_dionysus_page` |
-| Kalshi (`kalshi`) | Kalshi | money | Kalshi bot · from your PC | `../kalshicity/forward.json`, `../kalshicity/scan.json` | `tests.test_kalshi_page` |
+| Dionysus (`dionysus`) | Kalshi | money | The Kalshi desk: guard, what-if, scan. Suggestions only | `fixture.json`, `../kalshicity/edges.json`, `../kalshicity/whatif.json`, `../kalshi/k8.json`, `../kalshicity/learned.json`, ... | `tests.test_dionysus_page` |
+| Kalshi (`kalshi`) | Kalshi | money | Kalshi bot · from your PC | bundled fixture / its own files | `tests.test_kalshi_page` |
 | Kalshi City (`kalshicity`) | Kalshi | money | The Kalshi bot's edges as a night city | `fixture.json`, `edges.json`, `learning_log.json`, `hypotheses.json`, `learned.json` | `tests.test_kalshicity_page` |
 | Sibyl (`sibyl`) | Kalshi | money | Prediction-market edges after fees: paper picks, ruin odds | `fixture.json`, `../money/sibyl.json`, `../money/sibyl_forward.json`, `../kalshicity/suggestions.json`, `suggestions_fixture.json` | `tests.test_sibyl_page` |
 | Tyche (`tyche`) | Kalshi | money | The Kalshi bets as a 3D fortune wheel | bundled fixture / its own files | `tests.test_tyche_page` |
@@ -68,7 +68,7 @@ Data: apps only read published JSON (and bundled `fixture.json` / demo fallbacks
 | Data City (`datacity`) | More | trading | Every combo tested, as a city | `fixture.json`, `city.json`, `jarvis.json`, `../data.json`, `../pantheon/pantheon.json` | `tests.test_datacity` |
 | Ergasterion (`ergasterion`) | More | trading | The workshop: every AI worker, what it does | `builders.json`, `fixture.json`, `queue.json`, `../home.json`, `../money/index.json`, ... | `tests.test_ergasterion_page` |
 | Agora Gallery (`gallery`) | More | life | Every 3D shape of the Agora on a | `fixture.json` | covered by `tests.test_olympus_kit` |
-| Helios (`helios`) | More | trading | The morning briefing: today, drawdown, deals, plan | `fixture.json`, `../pythia/events.json`, `../home.json`, `../money/index.json` | `tests.test_helios_page` |
+| Helios (`helios`) | More | trading | The morning briefing: today, drawdown, deals, plan | `../nq/brief.json`, `fixture.json`, `../pythia/events.json`, `../home.json`, `../money/index.json` | `tests.test_helios_page` |
 | Hephaestus (`hephaestus`) | More | trading | The forge: tune the dials | `data.json`, `fixture.json` | `tests.test_hephaestus_page` |
 | Herald (`herald`) | More | life | The daily paper: who built what, the day | `edition.json`, `editions/index.json`, `fixture.json`, `editions/${date}.json` | `tests.test_herald_page` |
 | Hestia (`hestia`) | More | trading | Today at home: what to do right now | `fixture.json`, `../home.json`, `../odeon/trades.json` | `tests.test_hestia_page` |
@@ -87,6 +87,42 @@ Data: apps only read published JSON (and bundled `fixture.json` / demo fallbacks
 | Daphne (`tree`) | More | trading | The strategy tree search | `jarvis.json`, `tree.json` | `tests.test_strategytree` |
 
 77 apps. Rebuild the registry list after editing `jarvis/apps.js` or `olympus.js`: `python tools/apps_list_build.py`; recount: `python tools/apps_list_build.py --check`.
+
+## What each door opens first, and what is folded under Archive (2026-11-20)
+
+The Doors page, the launcher and Jarvis's switcher show a door's visible apps first and fold the rest under "Archive" at its end
+(`tools/web_public/olympus/doors.js` ARCHIVE). Nothing is deleted: every URL works and search finds every app.
+
+| Door | Open first | Archive (folded) |
+|---|---|---|
+| ZEUS Trading | Aegis, Board, Demeter, Fates, Kronos, Mnemosyne, NQ, Pnyx, Trading, Zenith | Apollo, Ares, Argus, Chronos, Delphi, Epilogue, Forum, Kairos, Kratos, Labyrinth, Moirai, Nemesis, Odeon, Oracle, Pantheon, Pheme, Pythia, Why |
+| Money | Agency, Business, Chrysos, Hera, Ledger, Mercury, Oikos, Widget | Arbiter, Argo, Harmonia, Hermes, Mint, Mint City, Plutus |
+| Kalshi | Dionysus, Kalshi, Tyche | Kalshi City, Sibyl |
+| More | Atlas, Cities, Clio, Compass, Helios, Inbox, Planner, Settings | Agora Gallery, Archive, Arena, Athena, Bridge, Colosseum, Daphne, Data City, Ergasterion, Hephaestus, Herald, Hestia, Lyceum, Mind, Nike, Observatory, Pinakes, Polis, Prometheus, Stoa, Symposium |
+
+29 apps open first, 48 folded under Archive.
+
+## Merged: where a folded app lives now
+
+| Old app | Now on | What is there |
+|---|---|---|
+| Ares | nq/#gateCard | NQ page: GO / WAIT / HALT per account |
+| Kairos | nq/#dayCard | NQ page: the bots' day strip (windows, now line, trades) |
+| Chronos | nq/#pastCard | NQ page: the last 8 trading days, each opens its replay |
+| Odeon | trading/#reelsCard | Trading: 8 trade reels, live first |
+| Why | trading/#whyCard | Trading: why trades win and lose, per bot |
+| Sibyl | dionysus/ | Kalshi desk: paper picks |
+| Kalshi City | dionysus/ | Kalshi desk: the edges map |
+| Apollo | journal/ | Journal: the week review |
+| Epilogue | journal/ | Journal: the week in 60 seconds |
+| Kratos | journal/ | Journal: habits and what they cost |
+| Nemesis | journal/ | Journal: losing trades |
+| Pythia | helios/ | Morning brief: the market-risk calendar, next 5 days |
+| Delphi | helios/ | Morning brief: the plan and go / no-go |
+| Forum | helios/ | Morning brief: the market morning notes |
+| Plutus | hera/ | Payout plan |
+| Argo | hera/ | Payout plan |
+| Labyrinth | pnyx/ | Rules and size calculator: eval sizing |
 
 ## Where the organizing code lives
 

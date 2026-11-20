@@ -46,7 +46,9 @@ def part_static():
     check("a. 'Older pages (archive)' links ../sibyl/ and ../kalshicity/", 'Older pages (archive)' in html and 'href="../sibyl/"' in html and 'href="../kalshicity/"' in html)
     check("a. the old bot's numbers are labelled as retired history", html.count("Old bot (retired)") >= 2 and "OLD = 'old bot (retired)'" in core)
     v = re.findall(r'dionysus\.(css|js)\?v=(\w+)', html)
-    check("a. ?v bumped: dionysus.css?v=a4, dionysus.js?v=a5", v == [("css", "a4"), ("js", "a5")], v)
+    check("a. CLS 0 (Olympus 2 PERF): K8 today is on the page from the first paint at its full height (class loading, min-height), never hidden later; the status line keeps 3 lines",
+          'class="ag-card card k8 loading" id="k8Card"' in html and ".k8.loading { min-height: 660px; }" in css and "#status { min-height:" in css and "card.hidden = !k" not in js)
+    check("a. ?v bumped: dionysus.css?v=a7, dionysus.js?v=a6", v == [("css", "a7"), ("js", "a6")], v)
     check("a. text only (no innerHTML), no 3D, no blur, no new library", "innerHTML" not in js and "three" not in js.lower() and "backdrop-filter" not in css and "blur(" not in css
           and not re.search(r"<script[^>]+src=\"https?:", html))
     check("a. a junk file hides only its own card (try / hide per card)", "$(id).hidden = true" in js)

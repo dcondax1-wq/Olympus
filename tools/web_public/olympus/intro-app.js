@@ -1,5 +1,5 @@
 /* OLYMPUS app intro (olympus/intro-app.js, JOB 33a; docs/CLAUDE_REFERENCE.md "App intros"): the 1.15 s entrance every app plays the first time it opens each day.
- * One deferred line in each app's index.html after olympus.js: <script src="../olympus/intro-app.js?v=i10" defer></script>
+ * One deferred line in each app's index.html after olympus.js: <script src="../olympus/intro-app.js?v=i11" defer></script>
  * Pages WITHOUT the kit name themselves on the tag (data-app / data-name / data-glyph / data-color; Bridge, Kalshi).
  *   film   the app's flavour scene (FLAVOUR) + its glyph from particles; the name letter by letter with a light sweep, a tagline; fade out
  *   once   the 1.15 s film once per app per New York day (localStorage 'oly.intro.d.<app>' + sessionStorage 'oly.intro.<app>'), then nothing that day
