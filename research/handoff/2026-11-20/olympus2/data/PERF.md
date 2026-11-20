@@ -27,3 +27,23 @@ Left (not in my slice):
 - The remaining NQ shift 0.059 is the kit's app bar inserted after load (perf ask DESIGN 1).
 - (*) Board's largest paint here is the "PC SILENT" banner, because the local test cannot reach the PC feed. On the live site the accounts
   draw from the site copy at once.
+
+# A11Y (day-a11y's tools/a11y_sweep.py --quick, 6 screens each)
+| page | before | after |
+|---|---|---|
+| trading | 77 | **92** |
+| nq | 85 | **92** |
+| board | 85 | **96** |
+Fixed:
+- The heat map's "few trades" contrast: a token, not opacity .55 (was 3.95:1 in daylight).
+- `role="listitem"` removed from the account `<article>`s (the strip is a labelled group).
+- The stats table's empty first header now reads "Measure" to VoiceOver.
+- Board's live feed: the live region moved to a wrapper, so the list keeps its role.
+- Body text at 15 px across nq / trading / board / payready / nqdesk / nqdeep, and the kit's 13 px card notes overridden on my pages.
+
+Kept small on purpose:
+- NQ's status / source lines (13 px) and the chart's "As of" line: they sit above the live chart, which must stay on the first 390 x 844 screen
+  (test_nq_chart 44/44).
+- Short labels: ticks, chips, table cells (13 px).
+
+Left for others: the shared edge chip (`edge_chip.js`, 13.6 px) and the kit's pill / note sizes (design team).

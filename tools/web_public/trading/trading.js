@@ -229,7 +229,7 @@ function renderStats() {
     const card = h('article', 'stat'); card.dataset.bot = x.bot;
     card.appendChild(h('h3', '', x.bot === 'LIT' ? 'Zlarior · LIT' : 'ATLAS (3 members)'));
     const tbl = h('table', 'st'), head = h('tr');
-    for (const t of ['', 'H1', 'H2']) head.appendChild(h('th', '', t));
+    for (const t of ['', 'H1', 'H2']) { const th = h('th', '', t); if (!t) th.appendChild(h('span', 'ag-sr', 'Measure')); head.appendChild(th); }
     tbl.appendChild(h('thead')).appendChild(head);
     const body = h('tbody'), a = C.statLines(x.h1), b = C.statLines(x.h2);
     for (let i = 0; i < a.length; i++) { const tr = h('tr'); tr.appendChild(h('th', '', a[i][0])); tr.appendChild(h('td', '', a[i][1])); tr.appendChild(h('td', '', b[i][1])); body.appendChild(tr); }
@@ -352,7 +352,7 @@ function renderAccts() {
     let chart = S.chart;
     if (S.demo && S.nqfx && S.nqfx.chart) { const cp = agesToTimes(S.nqfx.chart, now), b = NB.unpack(cp); chart = { opens: cp.open || [], last: b.length ? b[b.length - 1][4] : null, t: +cp.t || null }; }
     const A = DK.accounts(home, S.biz, now, chart);
-    DK.draw.accounts(box, A); for (const c of box.children) c.setAttribute('role', 'listitem');
+    DK.draw.accounts(box, A);
     const n = A.filter((a) => a.dot === 'live').length, p = $('acctPill');
     if (p) { p.textContent = S.demo ? 'DEMO' : `${n} of ${A.filter((a) => a.dot !== 'plan').length} live`; p.className = 'pill ' + (S.demo ? 'warn' : n ? 'ok' : 'bad'); }
   } catch (_) { /* the rest of the page still draws */ }

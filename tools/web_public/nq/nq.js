@@ -227,7 +227,7 @@ function renderDesk() {
   const nowS = Date.now() / 1000, home = deskHome(), file = S.demo ? (S.fixture && S.fixture.trades_file) || S.tfile : S.tfile;
   try {
     const A = D.accounts(home, S.biz, nowS, deskChart()), box = $('acctStrip');
-    if (box) { D.draw.accounts(box, A); for (const c of box.children) c.setAttribute('role', 'listitem'); }
+    if (box) D.draw.accounts(box, A);
     const nLive = A.filter((a) => a.dot === 'live').length, p = $('acctPill');
     if (p) { p.textContent = S.demo ? 'DEMO' : `${nLive} of ${A.filter((a) => a.dot !== 'plan').length} live`; p.className = 'pill ' + (S.demo ? 'warn' : nLive ? 'ok' : 'bad'); }
   } catch (_) { /* the rest of the page still draws */ }
