@@ -1,21 +1,21 @@
 {
  "v": 1,
- "built": "2026-11-19T23:40:36+00:00",
- "today": "2026-11-19",
+ "built": "2026-11-20T11:07:47+00:00",
+ "today": "2026-11-20",
  "what": "Edge health: a WARNING light for LIT, not a trading switch. Paper research; changes no bot.",
  "freshness": {
   "rows": {
    "data/NQ_1m.csv (TradingView)": "2026-11-19 16:59 ET",
    "data/NQ_5m.csv (TradingView)": "2026-11-19 16:55 ET",
    "data/ES_5m.csv (TradingView)": "2026-10-16 15:55 ET",
-   "PC NinjaTrader bars 1m (heartbeat)": "2026-11-06 16:59 ET",
-   "PC NinjaTrader bars 5m (heartbeat)": "2026-11-06 16:55 ET",
+   "PC NinjaTrader bars 1m (heartbeat)": null,
+   "PC NinjaTrader bars 5m (heartbeat)": null,
    "VIX (data/VIX_1d.csv)": "2026-10-16",
-   "VIX (with CBOE)": "2026-10-16"
+   "VIX (with CBOE)": "2026-11-19"
   },
   "export_end": "2026-11-19",
   "bars_end": "2026-11-19",
-  "today": "2026-11-19",
+  "today": "2026-11-20",
   "sessions_missing": 0
  },
  "basis_shift": {
@@ -107,28 +107,7 @@
    "risk_pts": 63.5
   }
  ],
- "pc_backtest_fresh": [
-  {
-   "day": "2026-10-26",
-   "status": "missed",
-   "note": "the backtest traded BE +0.01R; the bot did not"
-  },
-  {
-   "day": "2026-10-27",
-   "status": "missed",
-   "note": "the backtest traded STOP -1.00R; the bot did not"
-  },
-  {
-   "day": "2026-10-28",
-   "status": "missed",
-   "note": "the backtest traded STOP -1.01R; the bot did not"
-  },
-  {
-   "day": "2026-11-03",
-   "status": "missed",
-   "note": "the backtest traded TIME +0.21R; the bot did not"
-  }
- ],
+ "pc_backtest_fresh": [],
  "lit": {
   "run": "lit_live settings (live_model.json lit), engine/lit.run_x",
   "last_day": "2026-11-19",
@@ -595,39 +574,39 @@
   }
  },
  "atlas": {
-  "run": "atlas_deep_zombie",
-  "last_day": "2026-10-16",
+  "run": "atlas_fresh_fixed",
+  "last_day": "2026-11-19",
   "windows": {
    "20": {
     "now": {
-     "n": 12,
-     "tpw": 3.0,
-     "win": 66.7,
-     "pf": 2.87,
-     "pf_r": 3.4,
-     "usd_month": 1382,
-     "r_sum": 8.74,
-     "r_avg": 0.728
+     "n": 14,
+     "tpw": 3.5,
+     "win": 35.7,
+     "pf": 1.76,
+     "pf_r": 1.82,
+     "usd_month": 1367,
+     "r_sum": 7.56,
+     "r_avg": 0.54
     },
     "dist": {
      "tpw": {
       "2021-25": {
        "p10": 3.75,
-       "median": 4.5,
+       "median": 4.75,
        "p90": 5.5,
-       "n": 1053
+       "n": 1058
       },
       "2026 H1": {
        "p10": 3.25,
        "median": 4.25,
-       "p90": 4.75,
+       "p90": 5.0,
        "n": 128
       },
       "2026 H2": {
-       "p10": 1.75,
+       "p10": 2.0,
        "median": 3.0,
        "p90": 3.75,
-       "n": 78
+       "n": 102
       }
      },
      "win": {
@@ -635,121 +614,121 @@
        "p10": 23.5,
        "median": 37.5,
        "p90": 50.0,
-       "n": 1053
+       "n": 1058
       },
       "2026 H1": {
-       "p10": 38.2,
-       "median": 52.6,
+       "p10": 38.48,
+       "median": 53.3,
        "p90": 66.7,
        "n": 128
       },
       "2026 H2": {
-       "p10": 31.89,
-       "median": 55.9,
-       "p90": 65.02,
-       "n": 78
+       "p10": 33.3,
+       "median": 54.5,
+       "p90": 66.46,
+       "n": 102
       }
      },
      "pf": {
       "2021-25": {
        "p10": 0.28,
-       "median": 1.03,
-       "p90": 2.26,
-       "n": 1053
+       "median": 0.99,
+       "p90": 2.54,
+       "n": 1058
       },
       "2026 H1": {
-       "p10": 1.19,
-       "median": 2.85,
-       "p90": 5.24,
+       "p10": 0.69,
+       "median": 2.99,
+       "p90": 6.23,
        "n": 128
       },
       "2026 H2": {
-       "p10": 0.55,
-       "median": 2.62,
-       "p90": 7.45,
-       "n": 78
+       "p10": 0.71,
+       "median": 2.61,
+       "p90": 5.78,
+       "n": 102
       }
      },
      "pf_r": {
       "2021-25": {
        "p10": 0.32,
-       "median": 1.01,
+       "median": 1.0,
        "p90": 2.49,
-       "n": 1053
+       "n": 1058
       },
       "2026 H1": {
        "p10": 0.82,
-       "median": 2.8,
-       "p90": 5.81,
+       "median": 2.9,
+       "p90": 5.93,
        "n": 128
       },
       "2026 H2": {
-       "p10": 0.85,
-       "median": 2.6,
-       "p90": 6.0,
-       "n": 78
+       "p10": 0.9,
+       "median": 2.62,
+       "p90": 5.87,
+       "n": 102
       }
      },
      "usd_month": {
       "2021-25": {
-       "p10": -1879.0,
-       "median": 79.0,
-       "p90": 2394.0,
-       "n": 1053
+       "p10": -1935.9,
+       "median": -26.5,
+       "p90": 2882.6,
+       "n": 1058
       },
       "2026 H1": {
-       "p10": 426.2,
-       "median": 3086.5,
-       "p90": 6181.1,
+       "p10": -660.8,
+       "median": 2600.0,
+       "p90": 5519.9,
        "n": 128
       },
       "2026 H2": {
-       "p10": -566.0,
-       "median": 1446.0,
-       "p90": 4784.1,
-       "n": 78
+       "p10": -301.3,
+       "median": 1698.5,
+       "p90": 3612.0,
+       "n": 102
       }
      },
      "r_avg": {
       "2021-25": {
-       "p10": -0.45,
-       "median": 0.01,
+       "p10": -0.46,
+       "median": 0.0,
        "p90": 0.75,
-       "n": 1053
+       "n": 1058
       },
       "2026 H1": {
        "p10": -0.1,
        "median": 0.79,
-       "p90": 1.63,
+       "p90": 1.54,
        "n": 128
       },
       "2026 H2": {
-       "p10": -0.07,
-       "median": 0.61,
-       "p90": 1.89,
-       "n": 78
+       "p10": -0.04,
+       "median": 0.7,
+       "p90": 1.79,
+       "n": 102
       }
      }
     },
     "now_rank_in_2026": {
-     "pf": 52,
-     "usd_month": 22
+     "pf": 23,
+     "usd_month": 20
     },
     "now_rank_in_2021_25": {
-     "pf": 95,
-     "usd_month": 78
+     "pf": 78,
+     "usd_month": 75
     }
    },
    "40": {
     "now": {
-     "n": 24,
-     "tpw": 3.0,
-     "win": 58.3,
-     "pf": 1.41,
-     "pf_r": 1.89,
-     "usd_month": 411,
-     "r_sum": 7.96,
-     "r_avg": 0.332
+     "n": 27,
+     "tpw": 3.38,
+     "win": 48.1,
+     "pf": 2.27,
+     "pf_r": 2.38,
+     "usd_month": 1797,
+     "r_sum": 19.15,
+     "r_avg": 0.709
     },
     "dist": {
      "tpw": {
@@ -757,19 +736,19 @@
        "p10": 4.0,
        "median": 4.5,
        "p90": 5.38,
-       "n": 1033
+       "n": 1038
       },
       "2026 H1": {
-       "p10": 3.71,
-       "median": 4.25,
-       "p90": 4.75,
+       "p10": 3.75,
+       "median": 4.38,
+       "p90": 4.88,
        "n": 128
       },
       "2026 H2": {
-       "p10": 2.46,
-       "median": 3.0,
+       "p10": 2.5,
+       "median": 3.12,
        "p90": 3.38,
-       "n": 78
+       "n": 102
       }
      },
      "win": {
@@ -777,121 +756,121 @@
        "p10": 27.8,
        "median": 37.1,
        "p90": 47.1,
-       "n": 1033
+       "n": 1038
       },
       "2026 H1": {
        "p10": 35.9,
-       "median": 49.3,
-       "p90": 61.1,
+       "median": 49.35,
+       "p90": 61.59,
        "n": 128
       },
       "2026 H2": {
        "p10": 50.0,
-       "median": 52.2,
-       "p90": 58.3,
-       "n": 78
+       "median": 53.6,
+       "p90": 60.0,
+       "n": 102
       }
      },
      "pf": {
       "2021-25": {
-       "p10": 0.51,
-       "median": 1.07,
-       "p90": 1.84,
-       "n": 1033
+       "p10": 0.45,
+       "median": 1.06,
+       "p90": 1.95,
+       "n": 1038
       },
       "2026 H1": {
-       "p10": 1.39,
-       "median": 2.86,
-       "p90": 3.52,
+       "p10": 0.97,
+       "median": 2.75,
+       "p90": 3.86,
        "n": 128
       },
       "2026 H2": {
-       "p10": 1.4,
-       "median": 2.8,
-       "p90": 5.39,
-       "n": 78
+       "p10": 1.6,
+       "median": 2.73,
+       "p90": 5.33,
+       "n": 102
       }
      },
      "pf_r": {
       "2021-25": {
        "p10": 0.47,
        "median": 1.06,
-       "p90": 1.94,
-       "n": 1033
+       "p90": 1.95,
+       "n": 1038
       },
       "2026 H1": {
        "p10": 1.05,
-       "median": 2.83,
+       "median": 2.82,
        "p90": 3.64,
        "n": 128
       },
       "2026 H2": {
-       "p10": 1.67,
-       "median": 3.09,
-       "p90": 5.4,
-       "n": 78
+       "p10": 1.7,
+       "median": 2.88,
+       "p90": 5.38,
+       "n": 102
       }
      },
      "usd_month": {
       "2021-25": {
-       "p10": -1339.0,
-       "median": 163.0,
-       "p90": 1674.2,
-       "n": 1033
+       "p10": -1548.5,
+       "median": 134.5,
+       "p90": 1927.3,
+       "n": 1038
       },
       "2026 H1": {
-       "p10": 880.0,
-       "median": 3070.0,
-       "p90": 4243.3,
+       "p10": -83.0,
+       "median": 2668.0,
+       "p90": 3802.1,
        "n": 128
       },
       "2026 H2": {
-       "p10": 411.0,
-       "median": 2248.0,
-       "p90": 4291.3,
-       "n": 78
+       "p10": 595.7,
+       "median": 1954.5,
+       "p90": 3678.7,
+       "n": 102
       }
      },
      "r_avg": {
       "2021-25": {
-       "p10": -0.34,
+       "p10": -0.35,
        "median": 0.04,
-       "p90": 0.49,
-       "n": 1033
+       "p90": 0.5,
+       "n": 1038
       },
       "2026 H1": {
-       "p10": 0.03,
+       "p10": 0.04,
        "median": 0.8,
-       "p90": 1.16,
+       "p90": 1.12,
        "n": 128
       },
       "2026 H2": {
-       "p10": 0.28,
-       "median": 0.89,
-       "p90": 1.87,
-       "n": 78
+       "p10": 0.3,
+       "median": 0.77,
+       "p90": 1.81,
+       "n": 102
       }
      }
     },
     "now_rank_in_2026": {
-     "pf": 11,
-     "usd_month": 3
+     "pf": 35,
+     "usd_month": 30
     },
     "now_rank_in_2021_25": {
-     "pf": 72,
-     "usd_month": 59
+     "pf": 96,
+     "usd_month": 88
     }
    },
    "60": {
     "now": {
-     "n": 39,
-     "tpw": 3.25,
-     "win": 59.0,
-     "pf": 2.26,
-     "pf_r": 2.26,
-     "usd_month": 1271,
-     "r_sum": 17.45,
-     "r_avg": 0.447
+     "n": 38,
+     "tpw": 3.17,
+     "win": 50.0,
+     "pf": 1.98,
+     "pf_r": 2.17,
+     "usd_month": 1253,
+     "r_sum": 21.31,
+     "r_avg": 0.561
     },
     "dist": {
      "tpw": {
@@ -899,99 +878,99 @@
        "p10": 4.08,
        "median": 4.5,
        "p90": 5.25,
-       "n": 1013
+       "n": 1018
       },
       "2026 H1": {
-       "p10": 3.67,
-       "median": 4.33,
-       "p90": 4.67,
+       "p10": 3.83,
+       "median": 4.42,
+       "p90": 4.75,
        "n": 128
       },
       "2026 H2": {
-       "p10": 2.75,
-       "median": 2.92,
+       "p10": 2.83,
+       "median": 3.08,
        "p90": 3.42,
-       "n": 78
+       "n": 102
       }
      },
      "win": {
       "2021-25": {
-       "p10": 30.2,
+       "p10": 30.0,
        "median": 37.0,
-       "p90": 45.1,
-       "n": 1013
+       "p90": 45.8,
+       "n": 1018
       },
       "2026 H1": {
-       "p10": 35.8,
-       "median": 50.45,
-       "p90": 57.7,
+       "p10": 35.94,
+       "median": 50.9,
+       "p90": 57.94,
        "n": 128
       },
       "2026 H2": {
-       "p10": 48.57,
+       "p10": 48.6,
        "median": 52.9,
-       "p90": 58.59,
-       "n": 78
+       "p90": 58.5,
+       "n": 102
       }
      },
      "pf": {
       "2021-25": {
-       "p10": 0.58,
-       "median": 1.09,
-       "p90": 1.62,
-       "n": 1013
+       "p10": 0.61,
+       "median": 1.12,
+       "p90": 1.69,
+       "n": 1018
       },
       "2026 H1": {
-       "p10": 1.45,
-       "median": 2.54,
-       "p90": 3.4,
+       "p10": 1.18,
+       "median": 2.63,
+       "p90": 3.54,
        "n": 128
       },
       "2026 H2": {
-       "p10": 2.14,
-       "median": 3.51,
-       "p90": 4.73,
-       "n": 78
+       "p10": 1.99,
+       "median": 2.87,
+       "p90": 4.84,
+       "n": 102
       }
      },
      "pf_r": {
       "2021-25": {
        "p10": 0.61,
        "median": 1.1,
-       "p90": 1.68,
-       "n": 1013
+       "p90": 1.69,
+       "n": 1018
       },
       "2026 H1": {
-       "p10": 1.24,
-       "median": 2.6,
-       "p90": 3.48,
+       "p10": 1.26,
+       "median": 2.58,
+       "p90": 3.49,
        "n": 128
       },
       "2026 H2": {
-       "p10": 2.35,
-       "median": 3.59,
-       "p90": 4.72,
-       "n": 78
+       "p10": 2.07,
+       "median": 2.94,
+       "p90": 4.49,
+       "n": 102
       }
      },
      "usd_month": {
       "2021-25": {
-       "p10": -1065.6,
-       "median": 209.0,
-       "p90": 1300.6,
-       "n": 1013
+       "p10": -1084.9,
+       "median": 290.5,
+       "p90": 1398.1,
+       "n": 1018
       },
       "2026 H1": {
-       "p10": 1014.3,
-       "median": 2815.0,
-       "p90": 3958.5,
+       "p10": 442.7,
+       "median": 2496.5,
+       "p90": 3742.0,
        "n": 128
       },
       "2026 H2": {
-       "p10": 1333.0,
-       "median": 3296.0,
-       "p90": 4416.7,
-       "n": 78
+       "p10": 1117.0,
+       "median": 1801.0,
+       "p90": 3822.3,
+       "n": 102
       }
      },
      "r_avg": {
@@ -999,71 +978,71 @@
        "p10": -0.25,
        "median": 0.06,
        "p90": 0.37,
-       "n": 1013
+       "n": 1018
       },
       "2026 H1": {
-       "p10": 0.15,
-       "median": 0.72,
-       "p90": 1.14,
+       "p10": 0.16,
+       "median": 0.75,
+       "p90": 1.11,
        "n": 128
       },
       "2026 H2": {
-       "p10": 0.59,
-       "median": 1.2,
-       "p90": 1.51,
-       "n": 78
+       "p10": 0.46,
+       "median": 0.74,
+       "p90": 1.49,
+       "n": 102
       }
      }
     },
     "now_rank_in_2026": {
-     "pf": 35,
-     "usd_month": 19
+     "pf": 43,
+     "usd_month": 32
     },
     "now_rank_in_2021_25": {
-     "pf": 100,
-     "usd_month": 89
+     "pf": 97,
+     "usd_month": 85
     }
    }
   },
   "light": {
    "how": "ATLAS's own last 40 sessions, R a week at a fixed size; cuts from ATLAS's 2021-25 only (GREEN above its best-10% line, RED at or below its median)",
    "cuts": {
-    "green_above_r_week": 2.14,
+    "green_above_r_week": 2.18,
     "red_at_or_below_r_week": 0.17,
     "sessions": 40
    },
    "now": {
-    "day": "2026-10-16",
-    "light": "AMBER",
-    "r_week": 0.99
+    "day": "2026-11-19",
+    "light": "GREEN",
+    "r_week": 2.39
    },
    "rates": {
     "2021-25": {
      "GREEN": 10.0,
-     "AMBER": 39.9,
-     "RED": 50.1,
-     "n": 1033
+     "AMBER": 40.2,
+     "RED": 49.8,
+     "n": 1038
     },
     "2026 H1": {
-     "GREEN": 71.9,
-     "AMBER": 16.4,
-     "RED": 11.7,
+     "GREEN": 73.4,
+     "AMBER": 15.6,
+     "RED": 10.9,
      "n": 128
     },
     "2026 H2": {
-     "GREEN": 64.1,
-     "AMBER": 35.9,
+     "GREEN": 61.8,
+     "AMBER": 38.2,
      "RED": 0.0,
-     "n": 78
+     "n": 102
     }
    },
    "red_runs": {
     "2021-25": {
-     "stretches": 27,
-     "longest": 138
+     "stretches": 25,
+     "longest": 143
     },
     "2026 H1": {
-     "stretches": 4,
+     "stretches": 3,
      "longest": 8
     },
     "2026 H2": {
@@ -1073,14 +1052,14 @@
    }
   },
   "card": {
-   "light": "AMBER",
-   "data_to": "2026-10-16",
-   "pf_r40": 1.89,
-   "pf_r40_2026_h1": 2.83,
+   "light": "GREEN",
+   "data_to": "2026-11-19",
+   "pf_r40": 2.38,
+   "pf_r40_2026_h1": 2.82,
    "pf_r40_2021_25": 1.06,
-   "r_week40": 0.99,
-   "tpw40": 3.0,
-   "usd_pf40_eval_sized": 1.41
+   "r_week40": 2.39,
+   "tpw40": 3.38,
+   "usd_pf40_eval_sized": 2.27
   }
  },
  "light": {
@@ -2503,7 +2482,7 @@
     "reclaim": 0.393
    },
    "2026 H2": {
-    "vix": 16.972,
+    "vix": 16.98,
     "rth_rng": 1.435,
     "on_share": 0.69,
     "er": 0.123,
@@ -2511,7 +2490,7 @@
    }
   },
   "now_values": {
-   "vix": 18.253,
+   "vix": 18.2727,
    "rth_rng": 1.6608,
    "on_share": 0.657,
    "er": 0.1228,
@@ -2541,14 +2520,14 @@
   "export": "TradingView CME_MINI:NQ1! 1-minute chart (all hours, B-ADJ off), Export chart data from Nov 19 to today, save in data/tv_exports/, then: python data/import_futures.py csv NQ data/tv_exports/<file>.csv (5m and ES1! 5m the same way). Or start the PC bot: its heartbeat pushes the NinjaTrader bars.",
   "note": "A warning, not a switch: the bots trade the same either way. GREEN = LIT's last 40 sessions look like 2026, RED = like 2021-25 (about $0). Past weeks do not forecast the next ones; it says what the market has been.",
   "atlas": {
-   "light": "AMBER",
-   "data_to": "2026-10-16",
-   "pf_r40": 1.89,
-   "pf_r40_2026_h1": 2.83,
+   "light": "GREEN",
+   "data_to": "2026-11-19",
+   "pf_r40": 2.38,
+   "pf_r40_2026_h1": 2.82,
    "pf_r40_2021_25": 1.06,
-   "r_week40": 0.99,
-   "tpw40": 3.0,
-   "usd_pf40_eval_sized": 1.41
+   "r_week40": 2.39,
+   "tpw40": 3.38,
+   "usd_pf40_eval_sized": 2.27
   }
  },
  "tiny": {
@@ -2559,11 +2538,11 @@
    3.9
   ],
   "a": [
-   "A",
-   1.9,
+   "G",
+   2.4,
    2.8,
-   "2026-10-16"
+   "2026-11-19"
   ],
-  "t": 1795131636
+  "t": 1795172867
  }
 }
