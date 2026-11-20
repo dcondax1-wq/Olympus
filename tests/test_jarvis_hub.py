@@ -1575,7 +1575,8 @@ def run_switcher(br, url):
     rm = p.evaluate("""() => ({ t: getComputedStyle(document.getElementById('nxRoot')).transitionDuration, sw: document.documentElement.scrollWidth, W: innerWidth,
       open: document.getElementById('nxRoot').classList.contains('on'), tf: [...document.querySelectorAll('#nxTrack .nx-card')].map((c) => c.style.transform).filter(Boolean).length })""")
     check("n. reduced motion: no transitions and no card tilt; 375 x 667: no sideways scroll with the switcher open (Enter/Space opens it too)",
-          rm["open"] and all(float(x.rstrip("s") or 0) == 0 for x in rm["t"].split(",")) and rm["tf"] == 0 and rm["sw"] <= rm["W"], rm)
+          # (no transition = none longer than 10 ms: the kit's olympus/a11y.css sets 0.001s under reduced motion so transitionend still fires)
+          rm["open"] and all(float(x.strip().rstrip("s") or 0) <= 0.01 for x in rm["t"].split(",")) and rm["tf"] == 0 and rm["sw"] <= rm["W"], rm)
     ctx.close()
 
 
