@@ -41,7 +41,7 @@
 // v17 (2026-11-03 evening): smart-mode tools (tools.js), Jarvis talks by default (voice-out.js, jarvis.css?v=j13).
 // v24 (2026-11-04, bug hunt): bots.js + bots-ui.js (Jarvis x the bots), transitions.js?v=t1, briefing.js?v=r1, home3d.js + home3d.css?v=h1, the voice engines (voice-engines.js, prosody.js, kokoro-engine.js, kalshi-brain.js: the 115 MB model is never in this cache) and olympus/themes.js join the saved parts.
 // v22 (2026-11-04): the Bridge is a built-in app; Jarvis opens the ChatGPT wizard (brain.js, modes.js, apps.js).
-// v44 (2026-11-16 night A + D): Classic Jarvis look (classic.css?v=c1, only when picked), the PC feed (../pc_feed.js?v=n1), fresh index.html / data.js / jdata.js. Also the files the page loads that were missing (olympus day / env-kit / quiet-net / truth, copilot), backdrop b4, briefing r2, courtyard q6d.
+// v44 (2026-11-16 night A + D): Classic Jarvis look (classic.css?v=c1, only when picked), the PC feed (../pc_feed.js?v=n6), fresh index.html / data.js / jdata.js. Also the files the page loads that were missing (olympus day / env-kit / quiet-net / truth, copilot), backdrop b4, briefing r2, courtyard q6d.
 // v45 (night W2): jdata.js (PC-only files only on /site/), router.js ("how" is not "show"), switcher.js (sticky Jarvis button), ../olympus/render.js (stats reset after the env bake), search-index.json.
 // v46 (2026-11-17): plainer first-screen words in index.html.
 try { importScripts('./push-sw.js?v=p1'); } catch (e) { /* notifications are optional (night-webpush 2026-11-19) */ }
