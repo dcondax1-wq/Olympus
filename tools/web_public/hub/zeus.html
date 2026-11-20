@@ -95,6 +95,8 @@ body { font: 400 var(--ag-fs-body, .9375rem)/1.45 var(--ag-sans, -apple-system, 
 .zs-bal { font: 700 1.5rem/1.1 var(--ag-sans, system-ui); font-variant-numeric: tabular-nums; }
 .zs-today { font-weight: 600; color: var(--ag-soft, #cfc4b2); font-variant-numeric: tabular-nums; } .zs-today.pos { color: #8fbf6a; } .zs-today.neg { color: #ff8a7a; }
 .zs-goal { margin: 4px 0 0; overflow-wrap: anywhere; }
+.zs-room { margin: 2px 0 0; color: var(--ag-soft, #cfc4b2); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.zs-room.low { color: var(--ag-terra-text, #e08a6b); font-weight: 600; }
 .zs-src { margin: 4px 0 0; color: var(--ag-muted, #a89c88); font-size: var(--ag-fs-foot, .8125rem); overflow-wrap: anywhere; }
 .zs-empty { color: var(--ag-soft, #cfc4b2); }
 #edgeChip { margin-top: 4px; }
@@ -144,7 +146,7 @@ body { font: 400 var(--ag-fs-body, .9375rem)/1.45 var(--ag-sans, -apple-system, 
 <script src="../business/decide.js?v=5" defer></script>
 <script src="../olympus/zeus_core.js?v=5" defer></script>
 <script src="../olympus/acct_live.js?v=1" defer></script>
-<script src="zeus.js?v=6" defer></script>
+<script src="zeus.js?v=7" defer></script>
 <script src="../olympus/warp.js?v=w3" defer></script><!-- the world-to-world jump (olympus/warp.js; the kit apps get it through themes.js) -->
 <script src="../olympus/themes.js?v=o9" defer></script><!-- the theme engine: the look picked on the Gate (Ivory, Stocks Light ...) paints this page too -->
 <script>window.addEventListener('DOMContentLoaded', function () { try { if (window.OLYMPUS_THEMES && window.OLYMPUS_THEMES.apply) window.OLYMPUS_THEMES.apply('page', { meta: true }); } catch (e) { /* the default look */ } });</script>
