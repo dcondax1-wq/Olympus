@@ -21,6 +21,7 @@ import shutil
 import sys
 import tempfile
 import threading
+import urllib.parse
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "tools"))
@@ -82,6 +83,10 @@ def main() -> int:
           and not A.blocked({"status": 200, "title": "Joe's Plumbing", "text": "We fix pipes"}))
     check("b. accessibility is a headline card with the ADA number and its source", "Accessibility: 55/100" in page and "5,000" in page
           and A.SOURCES["ada"][1] in page)
+    check("b. review: the ADA sources link the exact 2025 reports (not a home page); basics say 'on the home page'",
+          all(urllib.parse.urlsplit(A.SOURCES[k][1]).path.strip("/") for k in ("ada", "ada_fed")) and "on the home page" in page)
+    check("a. robots.txt is checked for the same name the tool sends (UA token), imported at module top",
+          (A.ROBOT_NAME + "/") in A.UA_PHONE and callable(A.robots_ok))
     check("b. index: lists the audit and how to run one", 'href="a-com.html"' in idx and "tools/site_audit.py" in idx and "<script" not in idx)
 
     site = tempfile.mkdtemp(prefix="le_webaudit_site_")
