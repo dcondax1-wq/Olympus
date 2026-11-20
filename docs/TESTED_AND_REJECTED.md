@@ -134,6 +134,9 @@
   Lead only: BLITZ max 3/day on the Rapid (chance-level by count; 2021-25 2-week eval fails 2.9% -> 6.0%). Watch on paper.
 - Published models as taught: ICT 2022, Silver Bullet, Mech/IFVG, continuation, ATM 5m/1m with a sharp V (0.2–1.5 trades/wk,
   PF ~1).
+- **ICT ATM range + ES/NQ SMT as the trigger, MES, Judas swing (2026-11-20, `newstrat-ict-smt-2026-11-20.md`):** 5 pre-registered
+  sets, $250, costs in: every SMT set loses all 3 periods (PF 0.57-0.99, gross 0.59-1.05), MES not cleaner (10-tick stress
+  -$3.7k..-$10.1k), Judas control +$1,672 Jan-Jun then -$2,244 Jul-Oct / -$11,472 2021-25. Rapid 25K eval pass 0-5%. 0 pass.
 - 92 confluences; 6 daily-bias methods; grade/confidence sizing; partials and trails.
 - Fixed 10–15 pt stops: wicked out, lose money. Structural stops are rarely ≤15 pts.
 - Target variants: no cap / draw mode / "last real pool" all worse (2026 PF 1.6–2.2 vs 3.48).
