@@ -163,7 +163,7 @@ def main() -> int:
                     limit = min(m["barTop"], m["H"] - sb)
                     check(f"b. {name} {w}x{h}: the last line ends above the bottom bars and the home bar ({round(m['last'])} <= {round(limit)})",
                           m["last"] <= limit + 0.5, (m["lastEl"], m["bars"], m["H"], sb))
-                    band = m["H"] - sb - m["last"]
+                    band = limit - m["last"]      # to the top of the lowest bar (the Ask button / orb) or the home bar: a page with an Ask button 128 px up can not end lower
                     check(f"d. {name} {w}x{h}: no empty band at the end (the 'funky' bottom): {round(band)} px between the last line and the home bar <= {BAND_MAX}",
                           band <= BAND_MAX, (m["lastEl"], m["bars"]))
                     check(f"c. {name} {w}x{h}: no page errors", not errs, errs[:3])
