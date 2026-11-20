@@ -1537,7 +1537,7 @@
       return `<li data-leg="${esc(L.c)}"><span>${esc(L.n)}</span><span>last ${esc(k8c(p))} · fair ${esc(k8c(fc))}${ed == null ? '' : ` · <b class="${ed > 0 ? 'k8-g' : 'k8-r'}">${ed > 0 ? '+' : ed < 0 ? MINUS : ''}${Math.abs(ed)}¢</b>`}</span></li>`;
     }).join('');
     const rows = left.map(([t, l, s]) => `<div><dt>${esc(t)}</dt><dd class="${l < cost ? 'red' : l < 2 * cost ? 'hot' : ''}">${esc(usd(l))} <i>of ${esc(usd(s))}</i></dd></div>`).join('');
-    x.innerHTML = what + `<ul class="k8d-l" id="k8d-legs">${legs}</ul><p class="krw-f">Last = what Kalshi takers paid at +20 s on the last day; fair = where the bet breaks even (its win rate minus the fee).</p>`
+    x.innerHTML = what + `<ul class="k8d-l" id="k8d-legs">${legs}</ul><p class="krw-f">Last = what Kalshi takers paid at +20 s on the leg's last day${K8D.j && typeof K8D.j.through === 'string' ? ' (Kalshi numbers through ' + esc(K8D.j.through.slice(5, 10)) + ')' : ' (no Kalshi numbers on this site yet)'}; fair = where the bet breaks even (its win rate minus the fee).</p>`
       + `<p class="k8w-h">Left before each stop</p><dl class="krw-g k8d-s" id="k8d-s">${rows}</dl>`
       + `<p class="krw-f" id="k8d-fit">Room for <b>${esc(fmtN(fit))}</b> more $2.50 bet${fit === 1 ? '' : 's'} before the tightest stop${W.today ? `; ${esc(fmtN(slots))} of today's 3 left` : ''}.</p>`;
   }
