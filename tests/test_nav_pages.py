@@ -179,7 +179,7 @@ def part_b(shots: bool):
                     small = pg.evaluate(f"[...document.querySelectorAll('{navsel} a, {navsel} button')].filter(e => {{ const r = e.getBoundingClientRect(); return r.width > 0 && (r.height < 44 || r.width < 44); }}).length")
                     cls = pg.evaluate("window.__cls")
                     if shots:
-                        pg.screenshot(path=os.path.join(SHOTS, f"{p}-{'dark' if look == 'agora' else 'light'}.png"))
+                        pg.screenshot(path=os.path.join(SHOTS, re.sub(r'[<>:"|?*\\/]', "_", f"{p}-{'dark' if look == 'agora' else 'light'}.png")))   # Windows-safe names (a '?' broke the PC auto-update, 2026-11-20)
                     check(f"b. {p} [{look}]: wears the look ({bg}), no sideways scroll, top-row taps >= 44 px, CLS {cls:.3f} < 0.05, no console error",
                           ok_look and wide and small == 0 and cls < 0.05 and not errs, (bg, wide, small, cls, errs[:2]))
                     pg.close()
