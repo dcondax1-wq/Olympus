@@ -117,7 +117,7 @@ def test_static():
           css.count("min-height: 44px") >= 2 and "safe-area-inset" in css and "176px" in css and "prefers-reduced-motion: reduce" in css and 'data-oly-lite="1"' in css and "overflow-x: hidden" in css)
     # night-gate: gate-nav.js keeps its catalog URL ?v=nv2 (bumping it re-versions agora-ui.js in ~50 apps); the site worker bump refreshes the catalog on the phone
     check("a. gate-nav: one classic script, nothing when framed (inside Jarvis), the Home link + breadcrumb + 'Go to' (44 px), the catalog from its own folder (apps-list.js as a fallback)",
-          "if (framed) return;" in nav and "'Go to'" in nav and "min-height:44px" in nav and "olympus/gate-catalog.js?v=nv2" in nav and "olympus/apps-list.js" in nav and "aria-modal" in nav)
+          "if (framed) return;" in nav and "'Go to'" in nav and "min-height:44px" in nav and "olympus/gate-catalog.js?v=nv6" in nav and "olympus/apps-list.js" in nav and "aria-modal" in nav)
     tagged = {}
     for app in TEN:
         h = AK.read(os.path.join(AK.WEB, app, "index.html"))
