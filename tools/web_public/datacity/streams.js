@@ -25,9 +25,9 @@ void main(){
 const FS = `
 varying vec3 vColor; varying float vA; uniform float uDay;
 void main(){ vec2 d = gl_PointCoord - 0.5; float a = exp(-dot(d, d) * 14.0) * vA;
-  gl_FragColor = vec4(vColor * a * mix(1.9, 0.9, uDay), 1.0); }`;
+  gl_FragColor = vec4(vColor * a * mix(1.2, 0.6, uDay), 1.0); }`;
 const LVS = `attribute vec3 aColor; varying vec3 vColor; void main(){ vColor = aColor; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
-const LFS = `varying vec3 vColor; uniform float uDay; void main(){ gl_FragColor = vec4(vColor * mix(0.5, 0.2, uDay), 1.0); }`;
+const LFS = `varying vec3 vColor; uniform float uDay; void main(){ gl_FragColor = vec4(vColor * mix(0.16, 0.08, uDay), 1.0); }`;       // revamp: hairlines, the pulses carry the motion
 
 export class Streams {
   /** L: layout(); lm: Landmarks (gate / temple positions); U: the scene uniforms (uTime, uPR, uDay, uFlow); quality */
