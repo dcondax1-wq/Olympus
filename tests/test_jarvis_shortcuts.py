@@ -73,7 +73,8 @@ def main():
             m = p.evaluate("""() => ({ sw: document.documentElement.scrollWidth, small: [...document.querySelectorAll('button, a')].filter((e) => { const r = e.getBoundingClientRect(); return r.width && r.height < 44; }).length,
               tiny: [...document.querySelectorAll('p, li, code, h2')].filter((e) => e.getClientRects().length && parseFloat(getComputedStyle(e).fontSize) < 15).length, text: document.body.innerText })""")
             check("b. no sideways scroll at 390 px, 44 px+ buttons and links, 15 px+ text", m["sw"] <= 390 and m["small"] == 0 and m["tiny"] == 0, {k: m[k] for k in ("sw", "small", "tiny")})
-            check("a. no account ids on the page (names and dollars only)", not re.search(r"mffu|b25k|eval_|\b\d{4,}\b", re.sub(r"https?://\S+", " ", m["text"].lower())), None)
+            _ids = re.findall(r"mffu|b25k|eval_|\b\d{4,}\b", re.sub(r"https?://\S+", " ", m["text"].lower()))
+            check("a. no account ids on the page (names and dollars only)", not _ids, _ids[:5])
             p.locator(".sc-copy button").first.click()
             try:                                            # the clipboard answers a moment later
                 p.wait_for_function("['Copied', 'Selected'].includes(document.querySelector('.sc-copy button').textContent)", timeout=5000)
