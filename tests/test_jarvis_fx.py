@@ -1,12 +1,12 @@
-"""JARVIS FX (day-jarvis 2026-11-20, owner via lead: "It needs some 3D, it needs some effects ... NO GOLD"): jarvis/jfx.css + jarvis/jfx.js,
-the switcher without gold (jarvis/switcher.js) and the cyan / violet temple mark (jarvis/mark.svg). Chromium at 390 x 844 on the hub test's
+"""JARVIS FX (day-jarvis 2026-11-20, owner via lead: "It needs some 3D, it needs some effects"): jarvis/jfx.css + jarvis/jfx.js in OLYMPUS NIGHT,
+the switcher's own colours the owner picked for the site (black, violet outlines, violet ring #9d59ee, bright gold #f1c14b, mint #77db89). Chromium at 390 x 844 on the hub test's
 site copy (tests.test_jarvis_hub), the PC's post fed from a fixture:
-  a. the files: the FX sheet and script never hold the first paint (media=print swap, defer); no gold in them; the switcher's CSS has no gold
-     except a warning's amber; the temple mark has no gold
-  b. Jarvis home: the ZEUS card is navy glass with a cyan edge and a cyan -> violet title; the KALSHI / NQ tiles glow; no gold on the card,
-     tiles, orb ring or title mark; the $ roll-up draws over the number while the real text is the final value all along, and lands
-  c. the switcher: a card leans in 3D under the finger (rotateX / rotateY, a glare) and lets go on lift; the orb ring is cyan / violet
-  d. reduced motion: no roll-ups; Ivory (light): blue / violet ink, no gold accent; no page errors
+  a. the files: the FX sheet and script never hold the first paint (media=print swap, defer); the palette is OLYMPUS NIGHT (no cyan / navy);
+     the switcher is left as the owner liked it (only the lean hook)
+  b. Jarvis home: the ZEUS card is black glass with a violet outline and edge, the title bright gold; the KALSHI / NQ tiles glow gold / violet;
+     the $ roll-up draws over the number while the real text is the final value all along, and lands
+  c. the switcher: a card leans in 3D under the finger (rotateX / rotateY, a glare) and lets go on lift
+  d. reduced motion: no roll-ups; no page errors
     python -X utf8 -m tests.test_jarvis_fx      (~60 s)
 """
 from __future__ import annotations
@@ -38,15 +38,12 @@ def read(*p):
 def part_a():
     page = read(JV, "index.html")
     check("a. jfx.css after the first paint (media=print, swapped on load) and jfx.js deferred: the start is not held",
-          '<link rel="stylesheet" id="jfx" href="jfx.css?v=1" media="print" onload="this.media=\'all\'">' in page and '<script src="jfx.js?v=1" defer></script>' in page)
-    css, js, mark = read(JV, "jfx.css"), read(JV, "jfx.js"), read(JV, "mark.svg")
-    check("a. no gold in jfx.css, jfx.js or the temple mark (cyan / blue / violet)", not GOLD.search(css) and not GOLD.search(js) and not GOLD.search(mark)
-          and "#22d3ee" in css and "#8b5cf6" in css and "#22d3ee" in mark, [GOLD.findall(x)[:3] for x in (css, js, mark)])
+          '<link rel="stylesheet" id="jfx" href="jfx.css?v=2" media="print" onload="this.media=\'all\'">' in page and '<script src="jfx.js?v=1" defer></script>' in page)
+    css, js = read(JV, "jfx.css"), read(JV, "jfx.js")
+    check("a. OLYMPUS NIGHT in jfx.css: bright gold, violet ring, violet outlines, mint; no cyan / navy left over",
+          all(x in css for x in ("#f1c14b", "#ebbf4f", "#9d59ee", "#4d2e76", "#462a6a", "#77db89")) and not re.search(r"#22d3ee|#3b82f6|#8b5cf6|--oly-th-a\d+:", css))
     sw = read(JV, "switcher.js")
-    block = sw[sw.index("const CSS = `"):sw.index("`;", sw.index("const CSS = `"))]
-    left = [ln[:90] for ln in block.splitlines() if GOLD.search(ln) and not re.search(r"\.warn\b|lv-warn", ln)]
-    check("a. the switcher's CSS: no gold except a warning's amber; its accents are --nx-hi (cyan) / --nx-vi (violet)", not left and "--nx-hi:#22d3ee" in block, left[:3])
-    check("a. the temple mark in the title and the footer is mark.svg (not the gold icon)", page.count('src="mark.svg?v=1"') == 2)
+    check("a. the switcher's colours are the owner's (left as they were): only the 3D lean hook added", "${c.dataset.lean || ''}" in sw and "#22d3ee" not in sw and "NOGOLD" not in sw)
     check("a. jfx.js: classic script, no innerHTML, no network", "innerHTML" not in js and "fetch(" not in js and not re.search(r"^\s*(import|export)\s", js, re.M))
 
 
@@ -111,11 +108,11 @@ def main():
             p.wait_for_timeout(2500)
             z = {k: colours(p, s, ps) for k, s, ps in (("card", ".zeus-card", None), ("title", ".zeus-t", None), ("edge", ".zeus-card", "::before"),
                                                       ("kbox", "#kbox", None), ("nbox", "#nbox", None), ("orb", ".nx-orb", "::after"))}
-            check("b. ZEUS: navy glass, a cyan top edge, the cyan -> violet gradient title", "rgb(34, 211, 238)" in z["card"] and "linear-gradient" in z["edge"]
-                  and "rgb(103, 232, 249)" in z["title"] and "rgb(167, 139, 250)" in z["title"], z)
-            check("b. the KALSHI / NQ tiles glow (a cyan / violet layer and edge)", "radial-gradient" in (z["kbox"] or "") and "rgb(34, 211, 238)" in (z["kbox"] or "")
-                  and "rgb(139, 92, 246)" in (z["nbox"] or ""), {k: z[k] for k in ("kbox", "nbox")})
-            check("b. no gold on the ZEUS card, its title, the tiles or the orb ring", not any(is_gold(x) for x in z.values()), z)
+            check("b. ZEUS: black glass, a violet outline and top edge (violet -> gold line), the title bright gold", "rgb(157, 89, 238)" in z["card"] and "rgb(77, 46, 118)" in z["card"]
+                  and "linear-gradient" in z["edge"] and "rgb(241, 193, 75)" in z["title"], z)
+            check("b. the KALSHI / NQ tiles glow: gold / violet side bar, violet outline, a glow layer", "radial-gradient" in (z["kbox"] or "") and "rgb(241, 193, 75)" in (z["kbox"] or "")
+                  and "rgb(70, 42, 106)" in (z["kbox"] or "") and "rgb(157, 89, 238)" in (z["nbox"] or ""), {k: z[k] for k in ("kbox", "nbox")})
+            check("b. no cyan / navy left on the ZEUS card or the tiles", not any(re.search(r"rgba?\(34, 211, 238|rgba?\(59, 130, 246|rgba?\(20, 28, 58", x or "") for x in z.values()), z)
             fin = p.evaluate("[...document.querySelectorAll('.zeus-b, .zeus-d, .hc-n, .tile .t-v > b, #npnl, #kusd')].map((e) => e.textContent)")
             rolls = p.evaluate("window.__rolls")
             mid = [r for r in rolls if r[0] != r[1]]
@@ -139,8 +136,6 @@ def main():
                 after = p.evaluate("(id) => { const c = document.querySelector(`.nx-card[data-nx=\"${id}\"]`); return { t: c.style.transform, on: c.classList.contains('jfx-tilt') }; }", box["id"])
             check("c. a switcher card leans in 3D under the finger (rotateX + rotateY, a glare) and lets go on lift",
                   tilt and "rotateX(" in tilt["t"] and tilt["on"] and tilt["glare"] and not after["on"] and "rotateX(" not in after["t"], (tilt, box))
-            ring = colours(p, ".nx-orb", "::after")
-            check("c. the orb's ring is cyan / violet", "rgb(34, 211, 238)" in (ring or "") and not is_gold(ring), ring)
             check("b-c. no page errors", not errs, errs[:3])
             ctx.close()
             # d. reduced motion, Ivory
@@ -151,10 +146,8 @@ def main():
             ctx.close()
             ctx, p, errs = page(H, br, host, v, ivory=True)
             p.wait_for_timeout(1500)
-            acc = p.evaluate("(() => { const c = getComputedStyle(document.documentElement); return [c.getPropertyValue('--c').trim(), c.getPropertyValue('--oly-th-a8').trim(), c.getPropertyValue('--oly-th-a7').trim(),"
-                             " getComputedStyle(document.querySelector('.pm[aria-current=\"page\"]') || document.body).backgroundImage + getComputedStyle(document.querySelector('.pm[aria-current=\"page\"]') || document.body).backgroundColor]; })()")
-            hexgold = [x for x in acc[:3] if GOLD.search(x) or re.match(r"#(?:[6-9a-f][0-9a-f])(?:[4-9a-f][0-9a-f])(?:[0-3][0-9a-f])$", x, re.I)]
-            check("d. Ivory (light): the accent is blue / violet ink, not gold (the current-page pill too)", not hexgold and not is_gold(acc[3]) and p.evaluate("document.documentElement.dataset.olyScheme") == "light", acc)
+            check("d. Ivory (light): the cards are light paper with a violet outline (not the dark glass)", "rgb(255, 255, 255)" in (colours(p, ".zeus-card") or "")
+                  or "linear-gradient(160deg, rgb(255, 255, 255)" in (colours(p, ".zeus-card") or ""), colours(p, ".zeus-card"))
             check("d. no page errors (reduced motion, Ivory)", not errs, errs[:3])
             ctx.close()
             br.close()

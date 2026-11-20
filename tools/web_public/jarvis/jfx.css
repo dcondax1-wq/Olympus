@@ -1,49 +1,40 @@
-/* JARVIS FX (day-jarvis 2026-11-20, owner via lead: "It needs some 3D, it needs some effects ... NO GOLD").
+/* JARVIS FX (day-jarvis 2026-11-20, owner via lead: "It needs some 3D, it needs some effects"), in OLYMPUS NIGHT: the switcher's own colours,
+   which the owner picked for the whole site ("Whatever these colors are I like"): black, violet outlines #3e255e / #462a6a / #4d2e76, the
+   violet ring #9d59ee, the bright gold accent #f1c14b / #ebbf4f, mint #77db89 for a gain.
    Loaded after the first paint (media=print swap), so the start is unchanged. Only transform and opacity animate; no blur over content;
    reduced motion = everything still. Pairs with jfx.js (number roll-ups, the finger tilt on the switcher's cards).
-     palette   cyan #22d3ee / blue #3b82f6 / violet #8b5cf6 accents on navy glass; green only for a gain, red for a loss
-     ZEUS      the accounts card: navy glass, a cyan -> violet edge, a light sweep, the title in a cyan -> violet gradient
-     cards     the bot cards and tiles: glass with a glowing edge, a lift on press, the $ glows by its sign
-     switcher  the orb's ring cyan / violet (no gold); its cards a soft glass glow, tilted in 3D under the finger (jfx.js)
-     icons     the temple mark cyan / violet (mark.svg) */
-:root { --jfx-cy: #22d3ee; --jfx-cy-rgb: 34,211,238; --jfx-bl: #3b82f6; --jfx-bl-rgb: 59,130,246; --jfx-vi: #8b5cf6; --jfx-vi-rgb: 139,92,246; --jfx-up: #34d399; --jfx-dn: #fb7185; }
-
-/* AGORA look, NO GOLD (owner 2026-11-20 via lead, "it needs some 3D, it needs some effects"): Jarvis's palette is navy glass with cyan / blue / violet
-   accents. Every colour in this sheet (and switcher.js, the ZEUS card) is var(--oly-th-<slot>, <AGORA literal>), so defining the slots here
-   recolours them all; the slots are the Midnight theme's navy neutrals + greens / reds with a violet -> blue -> cyan accent ramp at the same
-   lightness steps (contrast unchanged). The default look (no theme picked) takes these; a dark theme the owner picks still paints its own
-   (inline, it wins); the light look (Ivory) gets blue / violet ink instead of gold (!important: Ivory's own slots are gold). */
-:root:not([data-oly-scheme="light"]):not([data-jlook="classic"]) { --oly-th-n0: #05080f; --oly-th-n0-rgb: 5,8,15; --oly-th-n1: #070c15; --oly-th-n1-rgb: 7,12,21; --oly-th-n2: #0a101c; --oly-th-n2-rgb: 10,16,28; --oly-th-n3: #0d1423; --oly-th-n3-rgb: 13,20,35; --oly-th-n4: #121b2d; --oly-th-n4-rgb: 18,27,45; --oly-th-n5: #172136; --oly-th-n5-rgb: 23,33,54; --oly-th-n6: #1d2940; --oly-th-n6-rgb: 29,41,64; --oly-th-n7: #233149; --oly-th-n7-rgb: 35,49,73; --oly-th-n8: #2a3852; --oly-th-n8-rgb: 42,56,82; --oly-th-n9: #313f58; --oly-th-n9-rgb: 49,63,88; --oly-th-n10: #37455f; --oly-th-n10-rgb: 55,69,95; --oly-th-n11: #3e4c65; --oly-th-n11-rgb: 62,76,101; --oly-th-n12: #45526c; --oly-th-n12-rgb: 69,82,108; --oly-th-n13: #4c5972; --oly-th-n13-rgb: 76,89,114; --oly-th-n14: #525f79; --oly-th-n14-rgb: 82,95,121; --oly-th-n15: #59667f; --oly-th-n15-rgb: 89,102,127; --oly-th-n16: #606d86; --oly-th-n16-rgb: 96,109,134; --oly-th-n17: #66738c; --oly-th-n17-rgb: 102,115,140; --oly-th-n18: #6d7a92; --oly-th-n18-rgb: 109,122,146; --oly-th-n19: #748099; --oly-th-n19-rgb: 116,128,153; --oly-th-n20: #98a2b4; --oly-th-n20-rgb: 152,162,180; --oly-th-n21: #97a1b6; --oly-th-n21-rgb: 151,161,182; --oly-th-n22: #97a2b6; --oly-th-n22-rgb: 151,162,182; --oly-th-n23: #96a1b8; --oly-th-n23-rgb: 150,161,184; --oly-th-n24: #95a1b9; --oly-th-n24-rgb: 149,161,185; --oly-th-n25: #9da8be; --oly-th-n25-rgb: 157,168,190; --oly-th-n26: #a5afc4; --oly-th-n26-rgb: 165,175,196; --oly-th-n27: #acb6c9; --oly-th-n27-rgb: 172,182,201; --oly-th-n28: #b4bdcf; --oly-th-n28-rgb: 180,189,207; --oly-th-n29: #bcc5d4; --oly-th-n29-rgb: 188,197,212; --oly-th-n30: #c3ccda; --oly-th-n30-rgb: 195,204,218; --oly-th-n31: #cbd2df; --oly-th-n31-rgb: 203,210,223; --oly-th-n32: #d2d8e4; --oly-th-n32-rgb: 210,216,228; --oly-th-n33: #d9dee9; --oly-th-n33-rgb: 217,222,233; --oly-th-n34: #e0e5ed; --oly-th-n34-rgb: 224,229,237; --oly-th-n35: #e7ebf2; --oly-th-n35-rgb: 231,235,242; --oly-th-n36: #eef1f7; --oly-th-n36-rgb: 238,241,247; --oly-th-n37: #f3f6fb; --oly-th-n37-rgb: 243,246,251; --oly-th-n38: #f7f9fc; --oly-th-n38-rgb: 247,249,252; --oly-th-n39: #fbfcfe; --oly-th-n39-rgb: 251,252,254; --oly-th-n40: #ffffff; --oly-th-n40-rgb: 255,255,255; --oly-th-g0: #123a26; --oly-th-g0-rgb: 18,58,38; --oly-th-g1: #133e28; --oly-th-g1-rgb: 19,62,40; --oly-th-g2: #113d24; --oly-th-g2-rgb: 17,61,36; --oly-th-g3: #103b22; --oly-th-g3-rgb: 16,59,34; --oly-th-g4: #269453; --oly-th-g4-rgb: 38,148,83; --oly-th-g5: #2cb061; --oly-th-g5-rgb: 44,176,97; --oly-th-g6: #34c66d; --oly-th-g6-rgb: 52,198,109; --oly-th-g7: #3fd276; --oly-th-g7-rgb: 63,210,118; --oly-th-g8: #49dd7f; --oly-th-g8-rgb: 73,221,127; --oly-th-g9: #63e392; --oly-th-g9-rgb: 99,227,146; --oly-th-g10: #7ee8a5; --oly-th-g10-rgb: 126,232,165; --oly-th-g11: #99edb9; --oly-th-g11-rgb: 153,237,185; --oly-th-g12: #b4f2cc; --oly-th-g12-rgb: 180,242,204; --oly-th-g13: #c2f5d6; --oly-th-g13-rgb: 194,245,214; --oly-th-g14: #c2f5d6; --oly-th-g14-rgb: 194,245,214; --oly-th-g15: #c2f5d6; --oly-th-g15-rgb: 194,245,214; --oly-th-r0: #4a1820; --oly-th-r0-rgb: 74,24,32; --oly-th-r1: #4e1a22; --oly-th-r1-rgb: 78,26,34; --oly-th-r2: #5d2028; --oly-th-r2-rgb: 93,32,40; --oly-th-r3: #62232a; --oly-th-r3-rgb: 98,35,42; --oly-th-r4: #963740; --oly-th-r4-rgb: 150,55,64; --oly-th-r5: #af414a; --oly-th-r5-rgb: 175,65,74; --oly-th-r6: #c74b54; --oly-th-r6-rgb: 199,75,84; --oly-th-r7: #df545e; --oly-th-r7-rgb: 223,84,94; --oly-th-r8: #f6838a; --oly-th-r8-rgb: 246,131,138; --oly-th-r9: #fa858d; --oly-th-r9-rgb: 250,133,141; --oly-th-r10: #ff7a82; --oly-th-r10-rgb: 255,122,130; --oly-th-r11: #ff9399; --oly-th-r11-rgb: 255,147,153; --oly-th-r12: #ffabb0; --oly-th-r12-rgb: 255,171,176; --oly-th-r13: #ffc3c7; --oly-th-r13-rgb: 255,195,199; --oly-th-r14: #ffd0d3; --oly-th-r14-rgb: 255,208,211; --oly-th-r15: #ffd0d3; --oly-th-r15-rgb: 255,208,211; --oly-th-a0: #1a1240; --oly-th-a0-rgb: 26,18,64; --oly-th-a1: #1e1650; --oly-th-a1-rgb: 30,22,80; --oly-th-a2: #221a5c; --oly-th-a2-rgb: 34,26,92; --oly-th-a3: #271f6a; --oly-th-a3-rgb: 39,31,106; --oly-th-a4: #2c2478; --oly-th-a4-rgb: 44,36,120; --oly-th-a5: #6d4fe0; --oly-th-a5-rgb: 109,79,224; --oly-th-a6: #5865f2; --oly-th-a6-rgb: 88,101,242; --oly-th-a7: #3b8ff6; --oly-th-a7-rgb: 59,143,246; --oly-th-a8: #22d3ee; --oly-th-a8-rgb: 34,211,238; --oly-th-a9: #34d9f0; --oly-th-a9-rgb: 52,217,240; --oly-th-a10: #52e0f4; --oly-th-a10-rgb: 82,224,244; --oly-th-a11: #72e6f7; --oly-th-a11-rgb: 114,230,247; --oly-th-a12: #93edfa; --oly-th-a12-rgb: 147,237,250; --oly-th-a13: #b2f2fb; --oly-th-a13-rgb: 178,242,251; --oly-th-a14: #cdf7fd; --oly-th-a14-rgb: 205,247,253; --oly-th-a15: #e2fbfe; --oly-th-a15-rgb: 226,251,254; --oly-th-warn: #fb923c; --oly-th-warn-rgb: 251,146,60;
-  --c3: var(--oly-th-a10); --cr3: var(--oly-th-a13-rgb); --tint: var(--oly-th-a14); --neb2: var(--oly-th-a8-rgb); --neb1: var(--oly-th-a5-rgb); --gold: var(--oly-th-a8); --oly-th-gold: rgba(34,211,238,.5); }
-html[data-oly-scheme="light"] { --oly-th-a0: #cbd6f0 !important; --oly-th-a0-rgb: 203,214,240 !important; --oly-th-a1: #c1ceec !important; --oly-th-a1-rgb: 193,206,236 !important; --oly-th-a2: #adbde4 !important; --oly-th-a2-rgb: 173,189,228 !important; --oly-th-a3: #adbde4 !important; --oly-th-a3-rgb: 173,189,228 !important; --oly-th-a4: #acbce2 !important; --oly-th-a4-rgb: 172,188,226 !important; --oly-th-a5: #8d71cf !important; --oly-th-a5-rgb: 141,113,207 !important; --oly-th-a6: #7153b9 !important; --oly-th-a6-rgb: 113,83,185 !important; --oly-th-a7: #2a5697 !important; --oly-th-a7-rgb: 42,86,151 !important; --oly-th-a8: #0d3570 !important; --oly-th-a8-rgb: 13,53,112 !important; --oly-th-a9: #0c326a !important; --oly-th-a9-rgb: 12,50,106 !important; --oly-th-a10: #0d3570 !important; --oly-th-a10-rgb: 13,53,112 !important; --oly-th-a11: #0c326c !important; --oly-th-a11-rgb: 12,50,108 !important; --oly-th-a12: #0b3067 !important; --oly-th-a12-rgb: 11,48,103 !important; --oly-th-a13: #0a2e63 !important; --oly-th-a13-rgb: 10,46,99 !important; --oly-th-a14: #092b5f !important; --oly-th-a14-rgb: 9,43,95 !important; --oly-th-a15: #092b5e !important; --oly-th-a15-rgb: 9,43,94 !important; --oly-th-warn: #9a3412 !important; --oly-th-warn-rgb: 154,52,18 !important; !important; --oly-th-gold: rgba(37,99,235,.45) !important; !important; --c: var(--oly-th-a8) !important; --c2: var(--oly-th-a5) !important; --c3: var(--oly-th-a10) !important; --cr: var(--oly-th-a8-rgb) !important; --cr2: var(--oly-th-a5-rgb) !important; --cr3: var(--oly-th-a13-rgb) !important; --tint: var(--oly-th-a14) !important; --neb1: var(--oly-th-a5-rgb) !important; --neb2: var(--oly-th-a8-rgb) !important; --dim3: var(--oly-th-a2) !important; --oly-th-gold: rgba(37,99,235,.45) !important; }
+     ZEUS      the accounts card: black glass, a violet -> gold edge, a light sweep, the title in bright gold with a violet glow
+     cards     the KALSHI / NQ tiles, bot cards and tiles: black glass with a violet outline and a glow that breathes, a 3D press
+     switcher  unchanged (the palette's source); its cards lean in 3D under the finger with a glare (jfx.js) */
+:root { --jfx-cy: #f1c14b; --jfx-cy-rgb: 241,193,75; --jfx-bl: #4d2e76; --jfx-bl-rgb: 77,46,118; --jfx-vi: #9d59ee; --jfx-vi-rgb: 157,89,238; --jfx-up: #77db89; --jfx-dn: #ff7a7a; }
 
 /* ---------------------------------------------------------------- ZEUS, the accounts card */
 html:root[data-oly-page="jarvis"] .zeus-card { position: relative; isolation: isolate;
-  background: linear-gradient(160deg, rgba(16,22,48,.94) 0%, rgba(10,10,28,.95) 60%, rgba(20,12,40,.95) 100%);
-  border: 1px solid rgba(var(--jfx-cy-rgb),.32); border-top: 2px solid var(--jfx-cy);
+  background: linear-gradient(160deg, rgba(20,10,34,.94) 0%, rgba(6,4,12,.95) 60%, rgba(20,12,40,.95) 100%);
+  border: 1px solid #4d2e76; border-top: 2px solid var(--jfx-vi);
   box-shadow: 0 0 0 1px rgba(var(--jfx-vi-rgb),.18), 0 10px 32px rgba(var(--jfx-cy-rgb),.13), 0 2px 22px rgba(var(--jfx-vi-rgb),.16), inset 0 1px 0 rgba(255,255,255,.06); }
 html:root[data-oly-page="jarvis"] .zeus-card::before { content: ""; position: absolute; left: 0; right: 0; top: -2px; height: 2px; z-index: 1; pointer-events: none;
-  background: linear-gradient(90deg, var(--jfx-cy), var(--jfx-bl) 50%, var(--jfx-vi)); }
+  background: linear-gradient(90deg, var(--jfx-vi), #ebbf4f 55%, var(--jfx-cy)); }
 html:root[data-oly-page="jarvis"] .zeus-card::after { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 45%; z-index: 0; pointer-events: none;
   background: linear-gradient(100deg, transparent, rgba(var(--jfx-cy-rgb),.09) 45%, rgba(255,255,255,.07) 50%, transparent);
   transform: translateX(-120%); animation: jfx-sweep 7s ease-in-out 1.2s infinite; }
 html:root[data-oly-page="jarvis"] .zeus-card > * { position: relative; z-index: 1; }
 html:root[data-oly-page="jarvis"] .zeus-card.bad { border-color: #ff5a4f; border-top-color: #ff5a4f; box-shadow: 0 0 0 1px rgba(255,90,79,.3), 0 10px 32px rgba(255,90,79,.16); }
 html:root[data-oly-page="jarvis"] .zeus-card.bad::before { background: #ff5a4f; }
-html:root[data-oly-page="jarvis"] .zeus-t { background: linear-gradient(90deg, #67e8f9, #a78bfa); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 0 10px rgba(var(--jfx-cy-rgb),.35)); }
-html:root[data-oly-page="jarvis"] .zeus-row { border-top-color: rgba(var(--jfx-cy-rgb),.14); }
-html:root[data-oly-page="jarvis"] .zeus-n small.passed { color: #061018; background: var(--jfx-cy); border-color: var(--jfx-cy); }
-html:root[data-oly-page="jarvis"] .zeus-d.pos, html:root[data-oly-page="jarvis"] .zeus-b.pos { color: var(--jfx-up); text-shadow: 0 0 12px rgba(52,211,153,.35); }
-html:root[data-oly-page="jarvis"] .zeus-d.neg, html:root[data-oly-page="jarvis"] .zeus-b.neg { color: var(--jfx-dn); text-shadow: 0 0 12px rgba(251,113,133,.3); }
+html:root[data-oly-page="jarvis"] .zeus-t { background: linear-gradient(90deg, #f1c14b, #ebbf4f); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 10px rgba(var(--jfx-vi-rgb),.55)); }
+html:root[data-oly-page="jarvis"] .zeus-row { border-top-color: rgba(var(--jfx-vi-rgb),.18); }
+html:root[data-oly-page="jarvis"] .zeus-n small.passed { color: #120a1e; background: var(--jfx-cy); border-color: var(--jfx-cy); }
+html:root[data-oly-page="jarvis"] .zeus-d.pos, html:root[data-oly-page="jarvis"] .zeus-b.pos { color: var(--jfx-up); text-shadow: 0 0 12px rgba(119,219,137,.35); }
+html:root[data-oly-page="jarvis"] .zeus-d.neg, html:root[data-oly-page="jarvis"] .zeus-b.neg { color: var(--jfx-dn); text-shadow: 0 0 12px rgba(255,122,122,.3); }
 html:root[data-oly-page="jarvis"] .zeus-g, html:root[data-oly-page="jarvis"] .zeus-more, html:root[data-oly-page="jarvis"] .zeus-d, html:root[data-oly-page="jarvis"] .zeus-none { color: #b8c4dc; }
 @keyframes jfx-sweep { 0%, 62% { transform: translateX(-120%); opacity: 0; } 66% { opacity: 1; } 92% { transform: translateX(260%); opacity: 1; } 100% { transform: translateX(260%); opacity: 0; } }
 
 /* ---------------------------------------------------------------- the bot cards and the tiles: glowing glass */
 html:root[data-oly-page="jarvis"] .hc-bot, html:root[data-oly-page="jarvis"] #hfirst .tile, html:root[data-oly-page="jarvis"] .tiles .tile {
   position: relative; isolation: isolate; overflow: hidden;
-  background: linear-gradient(155deg, rgba(20,28,58,.88), rgba(10,12,30,.92) 65%, rgba(24,14,48,.9));
-  border: 1px solid rgba(var(--jfx-cy-rgb),.26);
+  background: linear-gradient(155deg, rgba(24,12,40,.88), rgba(6,4,12,.92) 65%, rgba(24,14,48,.9));
+  border: 1px solid #462a6a;
   box-shadow: 0 0 0 1px rgba(var(--jfx-vi-rgb),.16), 0 0 22px rgba(var(--jfx-cy-rgb),.16), 0 10px 28px rgba(var(--jfx-bl-rgb),.2), inset 0 1px 0 rgba(var(--jfx-cy-rgb),.35);
   transition: transform .18s cubic-bezier(.2,.8,.2,1.2), box-shadow .25s ease; transform: perspective(700px) translateZ(0); }
 html:root[data-oly-page="jarvis"] .hc-bot::before, html:root[data-oly-page="jarvis"] #hfirst .tile::before, html:root[data-oly-page="jarvis"] .tiles .tile::before {
@@ -52,22 +43,22 @@ html:root[data-oly-page="jarvis"] .hc-bot::before, html:root[data-oly-page="jarv
 html:root[data-oly-page="jarvis"] .hc-bot:nth-child(2n)::before, html:root[data-oly-page="jarvis"] .tiles .tile:nth-child(2n)::before { background: radial-gradient(closest-side, rgba(var(--jfx-vi-rgb),.34), transparent 72%); animation-delay: -2.5s; }
 html:root[data-oly-page="jarvis"] .hc-bot:active, html:root[data-oly-page="jarvis"] #hfirst .tile:active, html:root[data-oly-page="jarvis"] .tiles .tile:active, html:root[data-oly-page="jarvis"] .kbox:active {
   transform: perspective(700px) rotateX(5deg) scale(.975); box-shadow: 0 0 0 1px rgba(var(--jfx-cy-rgb),.4), 0 4px 18px rgba(var(--jfx-cy-rgb),.22); }
-html:root[data-oly-page="jarvis"] .hc-n.up, html:root[data-oly-page="jarvis"] .tile .up { color: var(--jfx-up); text-shadow: 0 0 14px rgba(52,211,153,.4); }
-html:root[data-oly-page="jarvis"] .hc-n.dn, html:root[data-oly-page="jarvis"] .tile .dn { color: var(--jfx-dn); text-shadow: 0 0 14px rgba(251,113,133,.35); }
+html:root[data-oly-page="jarvis"] .hc-n.up, html:root[data-oly-page="jarvis"] .tile .up { color: var(--jfx-up); text-shadow: 0 0 14px rgba(119,219,137,.4); }
+html:root[data-oly-page="jarvis"] .hc-n.dn, html:root[data-oly-page="jarvis"] .tile .dn { color: var(--jfx-dn); text-shadow: 0 0 14px rgba(255,122,122,.35); }
 /* KALSHI TODAY / NQ BOTS TODAY (.kbox: its ::before is the side bar, so the glow is a background layer here) */
-html:root[data-oly-page="jarvis"] .hsec .kbox[type] { border-radius: 12px; border: 1px solid rgba(var(--jfx-cy-rgb),.3); border-left: 3px solid var(--jfx-cy);
-  background: radial-gradient(120% 90% at 0% 0%, rgba(var(--jfx-cy-rgb),.2), transparent 60%), linear-gradient(155deg, rgba(20,28,58,.9), rgba(10,12,30,.94) 65%, rgba(24,14,48,.92));
+html:root[data-oly-page="jarvis"] .hsec .kbox[type] { border-radius: 12px; border: 1px solid #462a6a; border-left: 3px solid var(--jfx-cy);
+  background: radial-gradient(120% 90% at 0% 0%, rgba(var(--jfx-cy-rgb),.2), transparent 60%), linear-gradient(155deg, rgba(24,12,40,.9), rgba(6,4,12,.94) 65%, rgba(24,14,48,.92));
   box-shadow: 0 0 0 1px rgba(var(--jfx-vi-rgb),.16), 0 0 22px rgba(var(--jfx-cy-rgb),.16), 0 10px 28px rgba(var(--jfx-bl-rgb),.2), inset 0 1px 0 rgba(var(--jfx-cy-rgb),.35);
   transition: transform .18s cubic-bezier(.2,.8,.2,1.2); }
-html:root[data-oly-page="jarvis"] .hsec #nbox[type] { border-color: rgba(var(--jfx-vi-rgb),.34); border-left-color: var(--jfx-vi);
-  background: radial-gradient(120% 90% at 0% 0%, rgba(var(--jfx-vi-rgb),.24), transparent 60%), linear-gradient(155deg, rgba(20,28,58,.9), rgba(10,12,30,.94) 65%, rgba(24,14,48,.92)); }
+html:root[data-oly-page="jarvis"] .hsec #nbox[type] { border-color: #4d2e76; border-left-color: var(--jfx-vi);
+  background: radial-gradient(120% 90% at 0% 0%, rgba(var(--jfx-vi-rgb),.24), transparent 60%), linear-gradient(155deg, rgba(24,12,40,.9), rgba(6,4,12,.94) 65%, rgba(24,14,48,.92)); }
 html:root[data-oly-page="jarvis"] .hsec .kbox[type]::before { background: linear-gradient(180deg, var(--jfx-cy), var(--jfx-vi)); }
 html:root[data-oly-page="jarvis"] .hsec .kbox[type]:active { transform: perspective(700px) rotateX(6deg) scale(.975); }
-html:root[data-oly-scheme="light"][data-oly-page="jarvis"] .hsec .kbox[type] { background: linear-gradient(160deg, #ffffff, #eef4ff 70%, #f3efff); border-color: rgba(37,99,235,.3); box-shadow: 0 6px 20px rgba(37,99,235,.1); }
+html:root[data-oly-scheme="light"][data-oly-page="jarvis"] .hsec .kbox[type] { background: linear-gradient(160deg, #ffffff, #f6f0ff 70%, #fbf6ea); border-color: rgba(77,46,118,.3); box-shadow: 0 6px 20px rgba(77,46,118,.1); }
 @keyframes jfx-breathe { 0%, 100% { opacity: .55; transform: translateY(0) scale(1); } 50% { opacity: .95; transform: translateY(6%) scale(1.06); } }
 
-html:root[data-oly-page="jarvis"] #npnl.up, html:root[data-oly-page="jarvis"] #kpct.up { text-shadow: 0 0 16px rgba(52,211,153,.45); }
-html:root[data-oly-page="jarvis"] #npnl.dn, html:root[data-oly-page="jarvis"] #kpct.dn { text-shadow: 0 0 16px rgba(251,113,133,.4); }
+html:root[data-oly-page="jarvis"] #npnl.up, html:root[data-oly-page="jarvis"] #kpct.up { text-shadow: 0 0 16px rgba(119,219,137,.45); }
+html:root[data-oly-page="jarvis"] #npnl.dn, html:root[data-oly-page="jarvis"] #kpct.dn { text-shadow: 0 0 16px rgba(255,122,122,.4); }
 
 /* ---------------------------------------------------------------- the $ roll-up (jfx.js): the real number stays in the text (readers, tests); the
    rolling one is drawn over it until it lands */
@@ -75,25 +66,15 @@ html:root[data-oly-page="jarvis"] #npnl.dn, html:root[data-oly-page="jarvis"] #k
 .jfx-roll.on { -webkit-text-fill-color: transparent; }
 .jfx-roll.on::after { content: attr(data-roll); position: absolute; left: 0; right: 0; top: 0; white-space: nowrap; text-align: inherit; -webkit-text-fill-color: currentColor; pointer-events: none; }
 
-/* ---------------------------------------------------------------- the switcher: orb ring and cards */
-.nx-orb::after { border-color: rgba(var(--jfx-cy-rgb),.55) !important; border-top-color: var(--jfx-cy) !important; border-bottom-color: rgba(var(--jfx-vi-rgb),.55) !important; }
-.nx-orb::before { border-color: rgba(var(--jfx-vi-rgb),.35) !important; border-left-color: rgba(var(--jfx-cy-rgb),.85) !important; }
-.nx-orb .nx-core { box-shadow: 0 0 18px rgba(var(--jfx-cy-rgb),.35), 0 4px 14px rgba(0,0,0,.32); }
-.nx-orb .nx-core svg { fill: #7dd3fc; }
-.nx-orb:focus-visible { outline-color: var(--jfx-cy); }
-.nx-card { box-shadow: 0 0 0 1px rgba(var(--nx-acr, var(--jfx-cy-rgb)),.22), 0 14px 40px rgba(var(--nx-acr, var(--jfx-vi-rgb)),.2), 0 0 26px rgba(var(--jfx-cy-rgb),.1), inset 0 1px 0 rgba(255,255,255,.08) !important; }
-.nx-card.now { border-color: var(--jfx-cy) !important; box-shadow: 0 0 0 1px rgba(var(--jfx-cy-rgb),.5), 0 0 34px rgba(var(--jfx-cy-rgb),.28), 0 14px 40px rgba(var(--jfx-vi-rgb),.22) !important; }
+/* ---------------------------------------------------------------- the switcher: kept exactly as the owner liked it; only the glare of the 3D lean */
 .nx-card .jfx-glare { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .2s ease;
   background: radial-gradient(circle at var(--jgx, 50%) var(--jgy, 30%), rgba(255,255,255,.16), transparent 55%); }
 .nx-card.jfx-tilt .jfx-glare { opacity: 1; }
 
-/* ---------------------------------------------------------------- the temple mark (mark.svg: the Home Screen icon, cyan / violet, no gold) */
-html:root[data-oly-page="jarvis"] .jtitle img, html:root[data-oly-page="jarvis"] .htop img { filter: drop-shadow(0 0 8px rgba(var(--jfx-cy-rgb),.4)); }
-
 /* ---------------------------------------------------------------- the Ivory (light) look: ink, not glow */
 html:root[data-oly-scheme="light"][data-oly-page="jarvis"] .zeus-card, html:root[data-oly-scheme="light"][data-oly-page="jarvis"] .hc-bot, html:root[data-oly-scheme="light"][data-oly-page="jarvis"] .tiles .tile, html:root[data-oly-scheme="light"][data-oly-page="jarvis"] #hfirst .tile, html:root[data-oly-scheme="light"][data-oly-page="jarvis"] .kbox {
-  background: linear-gradient(160deg, #ffffff, #eef4ff 70%, #f3efff); color: #0f172a; border-color: rgba(37,99,235,.3); box-shadow: 0 6px 20px rgba(37,99,235,.1), 0 1px 0 rgba(255,255,255,.9) inset; }
-html:root[data-oly-scheme="light"][data-oly-page="jarvis"] .zeus-t { background: linear-gradient(90deg, #0e7490, #6d28d9); -webkit-background-clip: text; background-clip: text; filter: none; }
+  background: linear-gradient(160deg, #ffffff, #f6f0ff 70%, #fbf6ea); color: #0f172a; border-color: rgba(77,46,118,.3); box-shadow: 0 6px 20px rgba(77,46,118,.1), 0 1px 0 rgba(255,255,255,.9) inset; }
+html:root[data-oly-scheme="light"][data-oly-page="jarvis"] .zeus-t { background: linear-gradient(90deg, #8a5a00, #6b2fb3); -webkit-background-clip: text; background-clip: text; filter: none; }
 html:root[data-oly-scheme="light"][data-oly-page="jarvis"] .zeus-g, html:root[data-oly-scheme="light"][data-oly-page="jarvis"] .zeus-more, html:root[data-oly-scheme="light"][data-oly-page="jarvis"] .zeus-d, html:root[data-oly-scheme="light"][data-oly-page="jarvis"] .zeus-none, html:root[data-oly-scheme="light"][data-oly-page="jarvis"] .zeus-pc.wait { color: #334155; }
 html:root[data-oly-scheme="light"][data-oly-page="jarvis"] .zeus-d.pos, html:root[data-oly-scheme="light"][data-oly-page="jarvis"] .hc-n.up { color: #047857; text-shadow: none; }
 html:root[data-oly-scheme="light"][data-oly-page="jarvis"] .zeus-d.neg, html:root[data-oly-scheme="light"][data-oly-page="jarvis"] .hc-n.dn { color: #be123c; text-shadow: none; }
