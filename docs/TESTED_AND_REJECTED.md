@@ -1,4 +1,11 @@
 ## Tested and rejected (don't redo without a new idea)
+- **ATLAS edge at real fills (2026-11-20, `atlas-edge-2026-11-20.md`, `tools/atlas_edge.py`, `research/second/atlas_edge.json`,
+  design `research/second/atlas_edge_design.md`)**: 14 of 15 fail at 6 and 10 ticks on 60% and 40% sizing. Limit at the 5m open /
+  1-2 ticks better with a 1-2 min timeout (only ~52% fill, the runners are missed: funded $151-285 a month Jan-Jun-like vs $503),
+  limit 2 min then market, the next 5m open, per leg +0 / +5 min (picked +0), drop EMA (-$301 a month Jul-Oct-like), EMA half
+  size, the day stop after a loss (re-check at real fills), 3 losses -> 3 sessions off, a weekly cap at 35% of the room. Info
+  only (1m bars, 2021-25 untestable): EMA +60 s, per-leg minute (MACD +1: Jul-Oct $436 vs $402). ES versions of the 3 legs
+  (`tools/atlas_es.py`): PF 0.60-0.84 in 2026 at 3 ES ticks, all lose at 10. Passed: 2 losses in a row -> 1 micro (Decide card).
 - **ATLAS real-fill fixes (2026-11-20, `atlas-fills-2026-11-20.md`, `tools/atlas_fills.py`, `research/second/atlas_fills.json`,
   design `research/second/atlas_fills_design.md`):** ATLAS's 3 real entries filled 10 / 12 / 16 ticks past the 5m open (market
   order 3-5 s after a 5m close, price still running our way). Judged at 6 AND 10 ticks a side vs today at the same cost (funded

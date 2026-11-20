@@ -16,7 +16,7 @@ What it does
     TradingView 5m + 1m history with the PC's NinjaTrader bars appended (same price basis, checked). Up to the last export
     it must equal run lit_live trade for trade (checked, else it stops). Days without 1m bars execute on 5m (the engine's rule).
     Rolling 20 / 40 / 60-session trades/week, win %, PF, $/month (the LIT size rule of run lit_live), vs the same windows over
-    2026 H1, 2026 H2 and 2021-25. ATLAS: the stored run atlas_deep_zombie (not re-run on fresh bars).
+    2026 H1, 2026 H2 and 2021-25. ATLAS: the stored run atlas_fresh_fixed (tools/atlas_edge_fresh.py save: fixed $250, to the newest bars).
  3. Regime light: five simple day features (VIX, RTH range %, overnight share of the day's range, RTH trend efficiency,
     prior-day sweep reclaim rate), each a 40-session mean. Each feature's cut is picked on 2021-25 (no edge) vs 2026 H1
     (edge) only; the features that separate them well are kept; the light is checked on 2026 H2 (never used to pick) and the
@@ -50,7 +50,7 @@ OUT = os.path.join(ROOT, "research", "lab", "edge_health.json")
 SITE = os.path.join(ROOT, "tools", "web_public", "edge.json")                # the chip's cloud copy (edge_chip.js)
 CACHE = os.path.join(ROOT, "research", "runs", "_cache", "edge")          # gitignored
 CBOE_VIX = "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv"
-ATLAS_RUN = "atlas_deep_zombie"
+ATLAS_RUN = "atlas_fresh_fixed"   # 2026-11-20 day-atlasedge: fixed $250, data to the newest bars (was atlas_deep_zombie, eval path to Oct 16)
 WINDOWS = (20, 40, 60)
 FEAT_N = 40                                    # sessions per feature mean
 SPANS = {"2021-25": ("2021-01-01", "2025-12-31"), "2026 H1": ("2026-01-01", "2026-06-30"), "2026 H2": ("2026-07-01", "2026-12-31")}
