@@ -1,7 +1,7 @@
 /* OLYMPUS NQ FX (tools/web_public/olympus/nqfx.js, day-arenas 2026-11-20; docs/DESIGN_SYSTEM.md section 6, docs/OLYMPUS_FX.md).
  * The trading dashboard's effects, on the kit's FX library (fx-core.js: tiers, ONE frame loop, caps, cleanup, reduced motion = off).
  * A classic script; it loads fx-core / fx-text / fx-burst itself when the page has not:
- *   <script src="../olympus/nqfx.js?v=n1" defer></script>      then   await OLYMPUS_NQFX.ready()
+ *   <script src="../olympus/nqfx.js?v=n3" defer></script>      then   await OLYMPUS_NQFX.ready()
  *
  *   NQFX.theme({ base, cyan, blue, violet, win, loss, steel })   the colours (the NQ look: navy, cyan, blue, violet; green only for a win)
  *   NQFX.win(el, { usd, bigAt: 500 })       green sparks from el, a toast "Win +$123"; confetti too when usd >= bigAt

@@ -339,7 +339,7 @@ function fxKit() {
   fxP = new Promise((res) => {
     if (window.OLYMPUS_NQFX) { res(window.OLYMPUS_NQFX); return; }
     later(() => {
-      const t = document.createElement('script'); t.src = '../olympus/nqfx.js?v=n1'; t.async = true;
+      const t = document.createElement('script'); t.src = '../olympus/nqfx.js?v=n3'; t.async = true;
       t.onload = () => { const F = window.OLYMPUS_NQFX; if (!F || !F.ready) { res(null); return; } F.ready().then(() => res(F), () => res(null)); };
       t.onerror = () => res(null);
       document.head.appendChild(t);
