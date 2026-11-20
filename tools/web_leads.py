@@ -164,13 +164,22 @@ def site_of(tags: dict) -> tuple:
                                          for k in ("website", "contact:website", "url")))), fb
 
 
+# chains the map often leaves without brand tags (they have corporate sites: never a lead)
+CHAIN_RX = re.compile(r"^(domino'?s|mcdonald'?s|subway|starbucks|dunkin'?( donuts)?|pizza hut|papa john'?s|wendy'?s|burger king|taco bell|"
+                      r"chick-fil-a|kfc|popeyes|chipotle|panera( bread)?|arby'?s|sonic( drive-in)?|five guys|jimmy john'?s|little caesars|"
+                      r"7-eleven|cvs( pharmacy)?|walgreens|rite aid|dollar general|dollar tree|family dollar|jiffy lube|valvoline|"
+                      r"midas|meineke|pep boys|autozone|advance auto parts|o'?reilly auto parts|great clips|supercuts|sport clips|"
+                      r"planet fitness|anytime fitness|la fitness|orangetheory( fitness)?|h&r block|jackson hewitt|state farm|allstate|"
+                      r"applebee'?s|ihop|denny'?s|olive garden|red robin|chili'?s|outback steakhouse|buffalo wild wings|wawa|sheetz|royal farms)\b", re.I)
+
+
 def lead_of(el: dict, town: str) -> tuple:
     """(lead dict | None, reason it was left out)"""
     t = el.get("tags") or {}
     name = str(t.get("name") or "").strip()
     if not name:
         return None, "no_name"
-    if t.get("brand") or t.get("brand:wikidata") or t.get("operator:wikidata"):
+    if t.get("brand") or t.get("brand:wikidata") or t.get("operator:wikidata") or CHAIN_RX.match(name):
         return None, "chain"
     if str(t.get("disused") or t.get("abandoned") or "").lower() in ("yes", "true") or "disused:shop" in t:
         return None, "closed"
@@ -227,7 +236,8 @@ def build(answers: dict, now=None) -> dict:
             leads.append(L)
         mine = leads[n0:]
         towns.append({"town": town, "state": "MD", "businesses": len((j or {}).get("elements") or []), "leads": len(mine),
-                      "hot": sum(1 for x in mine if x["heat"] == "hot"), "server": (j or {}).get("_server", "")})
+                      "hot": sum(1 for x in mine if x["heat"] == "hot"), "server": (j or {}).get("_server", ""),
+                      "parts_ok": (j or {}).get("_parts_ok"), "parts": len(parts())})
     leads.sort(key=lambda x: (-x["score"], x["town"], x["name"]))
     return {"v": 1, "kind": "web_leads", "demo": False, "fetched": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
             "source": "OpenStreetMap via the public Overpass API (one query per town)", "license": LICENSE,

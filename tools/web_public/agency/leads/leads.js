@@ -121,7 +121,7 @@ async function boot() {
   fillSelect($('fTown'), towns.map((t) => [t, t + ', MD']));
   fillSelect($('fNiche'), Object.keys(niches).sort().map((k) => [k, niches[k]]));
   const when = typeof j.fetched === 'string' ? j.fetched.slice(0, 10) : '';
-  $('srcNote').textContent = `${j.demo ? 'EXAMPLE list (made-up businesses): run the finder for real ones. ' : ''}From OpenStreetMap${when ? ', fetched ' + when : ''}. ${(j.towns || []).map((t) => `${t.town}: ${t.leads} of ${t.businesses} businesses have no website`).join('; ')}.`;
+  $('srcNote').textContent = `${j.demo ? 'EXAMPLE list (made-up businesses): run the finder for real ones. ' : ''}From OpenStreetMap${when ? ', fetched ' + when : ''}. ${(j.towns || []).map((t) => `${t.town}: ${t.leads} of ${t.businesses} businesses have no website${Number.isFinite(t.parts_ok) && Number.isFinite(t.parts) && t.parts_ok < t.parts ? ` (partial: ${t.parts_ok} of ${t.parts} kinds of business answered; run the finder again on the PC)` : ''}`).join('; ')}.`;
   render();
   say(`${S.leads.length} businesses with no website${towns.length ? ' in ' + towns.join(', ') : ''}. Tap Call with script, then mark how it went.`);
   S.ready = true;

@@ -3,9 +3,9 @@
 ## $ first
 The lead finder is free: OpenStreetMap + the public Overpass API, no key, no paid service. In Maryland towns most small businesses
 on the map have no website tag. Each one is a cold call for a $500-$2,000 site (the offers team sets prices). The tool and the
-phone list are done and tested. **No real list is published yet:** from this cloud machine every public Overpass server failed
+phone list are done and tested. **A first real list is published (partial):** a second try from the cloud got Frederick's food, health, gym and auto businesses (3 of 6 query types answered via the maps.mail.ru mirror): **67 businesses with no website tag, 2 hot** (agency/leads/leads.json, one chain removed by name). Before that, from this cloud machine every public Overpass server failed
 today (overpass-api.de and kumi: connection closed / timeout; the maps.mail.ru mirror: one tiny query worked, then 504 within 1 s).
-I did not invent businesses. The owner's PC (home internet) makes the real list in about a minute:
+I did not invent businesses. The owner's PC (home internet) makes the full list (shops, trades, offices too, + Annapolis and Hagerstown) in about a minute:
 
     python tools/web_leads.py                       # Frederick, Annapolis, Hagerstown
     python tools/web_leads.py --town "Bel Air" --bbox 39.50,-76.38,39.57,-76.31   # any town: its map box
