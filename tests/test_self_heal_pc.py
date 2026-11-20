@@ -188,6 +188,66 @@ def test_update(tmp):
     check("b. up to date: nothing to say", SH.fix_update(ctx(pc3, now, apply=True)) == [])
 
 
+# ------------------------------------------------------------------------------------------------ b2. the gates + the autoupdate hook (redteam)
+def test_update_gates(tmp):
+    """redteam 2026-11-20: the hourly run never moves / removes a file in the update's way (it only names it: removing a file the
+    running bot imports up to a trading day before the update that brings it back could break the bot), never acts 01:50-16:00
+    ET, and never touches the update / pid / clock while a trade may be open on ANY account (LIT's files + every
+    data/ninjatrader_state*.json bracket: ATLAS, the extra accounts, the Rapid lanes). The clearing happens inside the
+    auto-update, right before its merge (night-selfheal's proposal), and is undone when the merge still fails."""
+    up, pc = repo_pair(tmp, "bg")
+    write(os.path.join(pc, "tools", "new_same.py"), "SAME = 1\n")
+    write(os.path.join(pc, "engine", "new_mine.py"), "MINE = 1\n")
+    r = SH.run(ctx(pc, SAT, apply=True, flat=lambda: None), only=["update"])
+    st = {i["key"]: i for i in r["items"]}
+    check("b2. hourly run: the untracked files in the update's way are only named (info), never removed",
+          st.get("update_untracked", {}).get("status") == "info" and os.path.exists(os.path.join(pc, "tools", "new_same.py"))
+          and os.path.exists(os.path.join(pc, "engine", "new_mine.py")), r["items"])
+    write(os.path.join(pc, "data", "autoupdate.json"), json.dumps({"last": {"reason": "fast-forward refused: error: Your local changes "
+                                                                            "to the following files would be overwritten by merge: cache/dash/bt.json"}}))
+    write(os.path.join(pc, "cache", "dash", "bt.json"), '{"v":"pc"}\n')
+    r = SH.run(ctx(pc, TUE, apply=True, flat=lambda: None), only=["update"])
+    check("b2. hourly run in the trading hours (Tue 10:00 ET): the update remedy does nothing at all", r["items"] == []
+          and open(os.path.join(pc, "cache", "dash", "bt.json")).read() == '{"v":"pc"}\n', r["items"])
+    for f in ("update", "pid", "clock"):
+        r = SH.run(ctx(pc, SAT, apply=True, flat=lambda: "ATLAS has a position open"), only=[f])
+        check(f"b2. a trade open: {f} not touched (info only)", [i["status"] for i in r["items"]] == ["info"]
+              and "ATLAS has a position open" in r["items"][0]["text"], r["items"])
+    check("b2. ... the bot-made file stays as the PC wrote it", open(os.path.join(pc, "cache", "dash", "bt.json")).read() == '{"v":"pc"}\n')
+    os.makedirs(os.path.join(pc, "data"), exist_ok=True)
+    json.dump({"legs": [{"status": "protected", "entry_t": 1}]}, open(os.path.join(pc, "data", "ninjatrader_state_acctr.json"), "w"))
+    c0 = ctx(pc, SAT, apply=True)
+    check("b2. trade_open: an open bracket in ANY NinjaTrader state file (the Rapid's ATLAS lane) = not flat",
+          "ninjatrader_state_acctr.json" in (SH.trade_open(c0) or ""), SH.trade_open(c0))
+    json.dump({"legs": [{"status": "closed", "entry_t": 1}]}, open(os.path.join(pc, "data", "ninjatrader_state_acctr.json"), "w"))
+    check("b2. ... a closed one = flat", SH.trade_open(ctx(pc, SAT, apply=True)) is None, SH.trade_open(ctx(pc, SAT, apply=True)))
+    # the auto-update's own fast-forward clears them right before its merge
+    from engine import autoupdate as AU
+    os.remove(os.path.join(pc, "cache", "dash", "bt.json"))
+    g(pc, "checkout", "-q", "--", "cache/dash/bt.json")
+    os.remove(os.path.join(pc, "data", "ninjatrader_state_acctr.json"))
+    os.remove(os.path.join(pc, "data", "autoupdate.json"))
+    logs = []
+    sh = AU.Shell(cwd=pc, log=logs.append)
+    src = {"remote": "origin", "url": None, "branch": "main", "account": None, "label": "origin/main"}
+    ff = AU.fast_forward(sh, "main", src=src)
+    keep = [d for d in os.listdir(os.path.join(pc, "logs", "self_heal")) if d.startswith("keep-")] if os.path.isdir(os.path.join(pc, "logs", "self_heal")) else []
+    mine = os.path.join(pc, "logs", "self_heal", keep[0], "engine", "new_mine.py") if keep else ""
+    check("b2. autoupdate.fast_forward: untracked files in the way cleared right before the merge -> updated",
+          ff["status"] == "updated" and open(os.path.join(pc, "engine", "new_mine.py")).read() == "THEIRS = 1\n"
+          and os.path.isfile(mine) and open(mine).read() == "MINE = 1\n", (ff, logs[-4:]))
+    # a merge that still fails (a data/ file in the way: never touched) -> the moved files are put back, the full git error kept
+    up2, pc2 = repo_pair(tmp, "bg2")
+    write(os.path.join(pc2, "engine", "new_mine.py"), "MINE = 1\n")
+    write(os.path.join(pc2, "data", "board", "shared.jsonl"), '{"mine":1}\n')
+    ff = AU.fast_forward(AU.Shell(cwd=pc2, log=lambda t: None), "main", src=src)
+    check("b2. a data/ file still in the way: not updated, the self-heal's move undone (engine/new_mine.py is back, as it was)",
+          ff["status"] == "failed" and open(os.path.join(pc2, "engine", "new_mine.py")).read() == "MINE = 1\n"
+          and open(os.path.join(pc2, "data", "board", "shared.jsonl")).read() == '{"mine":1}\n', ff)
+    check("b2. ... the reason keeps git's full error (it names the file)", "data/board/shared.jsonl" in ff["reason"]
+          and "untracked" in ff["reason"].lower(), ff["reason"])
+
+
 # ------------------------------------------------------------------------------------------------ c. NinjaTrader order files
 def test_oif(tmp):
     root, nt = os.path.join(tmp, "c"), os.path.join(tmp, "c_nt")
@@ -456,7 +516,7 @@ def test_wiring(tmp):
 def main() -> int:
     tmp = tempfile.mkdtemp(prefix="lesh_")
     try:
-        for fn in (test_locks, test_update, test_oif, test_pid, test_server, test_pip, test_clock, test_clean, test_heal, test_wiring):
+        for fn in (test_locks, test_update, test_update_gates, test_oif, test_pid, test_server, test_pip, test_clock, test_clean, test_heal, test_wiring):
             try:
                 fn(tmp)
             except Exception as e:  # noqa: BLE001

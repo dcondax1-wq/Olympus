@@ -292,6 +292,7 @@ class Ctx:
         self.say = say
         self.stamp = _et(self.now).strftime("%Y%m%d-%H%M")
         self.home = os.path.join(root, LOG_DIR_REL)
+        self.moved: list = []                # fix_update: [(rel, copy path or None)] it moved / removed (restore_untracked)
 
     def procs(self) -> list:
         if self._procs is None:
@@ -454,15 +455,22 @@ def snapshot(ctx, rels) -> str | None:
             pass
 
 
-def fix_update(ctx) -> list:
+def fix_update(ctx, untracked: str = "apply", generated: bool = True, new: str | None = None) -> list:
     """The two blockers a self-heal can clear without touching the owner's work: an untracked file the update brings, and a bot-made
-    file the last update named as in the way. A hand edit of any other tracked file is only reported (need)."""
-    ref = update_ref(ctx)
-    if not ref:
-        return []
+    file the last update named as in the way. A hand edit of any other tracked file is only reported (need).
+    untracked: "apply" (move / remove them; engine/autoupdate.fast_forward calls it so right before its `git merge --ff-only`, and
+    puts them back with restore_untracked when the merge still fails) | "report" (the hourly run, redteam 2026-11-20: only names
+    them; removing a file the running bot may import an hour or a trading day before the update that brings it back could break
+    the bot) | "off". generated: part b (the last update's named bot-made files). new: the commit the update moves to (else the
+    update source's ref). Moved / removed files are listed in ctx.moved [(rel, copy path or None)]."""
+    if new is None:
+        ref = update_ref(ctx)
+        if not ref:
+            return []
+        c2, new = ctx.git("rev-parse", ref)
+        new = _sha(new) if c2 == 0 else None
     c, head = ctx.git("rev-parse", "HEAD")
-    c2, new = ctx.git("rev-parse", ref)
-    head, new = _sha(head) if c == 0 else None, _sha(new) if c2 == 0 else None
+    head = _sha(head) if c == 0 else None
     if not head or not new or head == new:
         return []
     if ctx.git("merge-base", "--is-ancestor", head, new)[0] != 0:
@@ -472,10 +480,11 @@ def fix_update(ctx) -> list:
     c, added = ctx.git("diff", "--name-only", "--diff-filter=A", head, new)
     added = [p.strip() for p in added.splitlines() if p.strip()] if c == 0 else []
     in_way = []
-    for i in range(0, len(added), 200):
+    for i in range(0, len(added), 200) if untracked != "off" else ():
         c, un = ctx.git("ls-files", "--others", "--exclude-standard", "--", *added[i:i + 200])
         in_way += [p.strip() for p in un.splitlines() if p.strip()] if c == 0 else []
-    fixed, need = [], []
+    fixed, need, later = [], [], []
+    moved = ctx.moved
     for rel in in_way:
         p = os.path.join(ctx.root, *rel.split("/"))
         if not os.path.isfile(p):
@@ -483,29 +492,42 @@ def fix_update(ctx) -> list:
         if never(rel):
             need.append(rel)
             continue
+        if untracked != "apply":
+            later.append(rel)                             # the next update clears it right before its merge
+            continue
         c, mine = ctx.git("hash-object", "--", rel)
         c2, theirs = ctx.git("rev-parse", f"{new}:{rel}")
         same = c == 0 and c2 == 0 and _sha(mine) and _sha(mine) == _sha(theirs)
         if same:
-            done = _act(ctx, f"remove {rel}: the update brings the very same file (git would refuse to overwrite it)", lambda p=p: os.remove(p))
+            def rm(p=p, rel=rel):
+                os.remove(p)
+                moved.append((rel, None))
+            done = _act(ctx, f"remove {rel}: the update brings the very same file (git would refuse to overwrite it)", rm)
         else:
             def move(p=p, rel=rel):
                 if not snapshot(ctx, [rel]):
                     raise RuntimeError("snapshot failed: the file stays")
-                _copy_keep(ctx, p, rel)
+                cp = _copy_keep(ctx, p, rel)
                 os.remove(p)
+                moved.append((rel, cp))
             done = _act(ctx, f"move {rel} to {_rel(ctx.root, ctx.keep_dir())}/ (the update brings its own copy; yours is kept there)", move)
         (fixed if done else need).append(rel)
     if fixed:
         out.append(item("update", "update_untracked", "fixed" if ctx.apply else "would",
                         f"{'cleared' if ctx.apply else 'would clear'} {len(fixed)} untracked file(s) in the update's way: {', '.join(fixed[:3])}"
                         + (f" (copies in {_rel(ctx.root, ctx.keep_dir())})" if ctx.apply else ""), paths=fixed))
+    if later:
+        out.append(item("update", "update_untracked", "info",
+                        f"{len(later)} untracked file(s) in the update's way ({', '.join(later[:3])}): the next auto-update clears them "
+                        "right before its merge (copies kept)", paths=later))
     # b. a bot-made tracked file the LAST update named as in the way (a write between the update's reset and its merge)
     from . import generated_files
     reason = str(_last_update(ctx).get("reason") or "")
-    c, st = ctx.git("status", "--porcelain", "--untracked-files=no")
-    gen, other = generated_files.split_dirty(st) if c == 0 else ([], [])
-    named = [p for p in gen if p in reason] if ("overwritten" in reason or "refused" in reason or "local changes" in reason) else []
+    gen, other = [], []                                   # (the autoupdate's own call: it handles its dirty files itself)
+    if generated:
+        c, st = ctx.git("status", "--porcelain", "--untracked-files=no")
+        gen, other = generated_files.split_dirty(st) if c == 0 else ([], [])
+    named = [p for p in gen if p in reason] if generated and ("overwritten" in reason or "refused" in reason or "local changes" in reason) else []
     need += [p for p in named if re.search(r"journal|trade", p, re.I)]      # a trade journal is never reset by the self-heal
     named = [p for p in named if not re.search(r"journal|trade", p, re.I)]
     if named:
@@ -543,6 +565,83 @@ def fix_update(ctx) -> list:
                         f"the auto-update is held back by a local change it may not touch: {', '.join(need[:3])}",
                         "send Claude this line: 'update blocked by " + ", ".join(need[:2]) + "' (keep or drop the change)", need))
     return out
+
+
+def restore_untracked(ctx, new: str | None = None) -> list:
+    """Put back the untracked files fix_update moved / removed (ctx.moved), when the merge they were moved for still failed:
+    the copy kept in keep-*/, else (a removed identical file) the update's own blob. -> the paths put back. Never raises."""
+    back = []
+    for rel, cp in list(getattr(ctx, "moved", None) or []):
+        p = os.path.join(ctx.root, *rel.split("/"))
+        try:
+            if os.path.exists(p):
+                continue
+            os.makedirs(os.path.dirname(p), exist_ok=True)
+            if cp and os.path.isfile(cp):
+                shutil.copy2(cp, p)
+            elif new:
+                c, _o = ctx.git("cat-file", "-e", f"{new}:{rel}")
+                if c != 0:
+                    continue
+                r = subprocess.run([_git_exe(), "-C", ctx.root, "show", f"{new}:{rel}"], capture_output=True, timeout=60,
+                                   creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0) if os.name == "nt" else 0)
+                if r.returncode != 0:
+                    continue
+                with open(p, "wb") as fh:
+                    fh.write(r.stdout)
+            else:
+                continue
+            back.append(rel)
+        except Exception:  # noqa: BLE001
+            continue
+    ctx.moved = []
+    return back
+
+
+def before_merge(root: str, git, new: str, log=None, now=None):
+    """engine/autoupdate.fast_forward's hook, right before `git merge --ff-only <new>` (night-selfheal's proposal, landed by the
+    redteam 2026-11-20): the untracked files the update brings are cleared (same bytes: removed; other bytes: snapshot + copy in
+    logs/self_heal/keep-*/, then removed). The update already checked flat / the hours. -> (ctx, items); the caller passes ctx to
+    restore_untracked when the merge still fails. Never raises: (None, []) on any problem (the merge then says why itself)."""
+    try:
+        ctx = Ctx(root=root, now=now, apply=True, git=lambda *a, timeout=60, env=None: git(*a, timeout=timeout, env=env),
+                  say=log or SAY_OFF, flat=lambda: None, procs=[], ping=lambda: True, nt=None, temp="", pkgs={})
+        items = fix_update(ctx, untracked="apply", generated=False, new=new)
+        return ctx, items
+    except Exception:  # noqa: BLE001
+        return None, []
+
+
+GATED = ("update", "pid", "clock")              # never while a trade may be open (redteam 2026-11-20); update also never 01:50-16:00
+
+
+def trade_open(ctx) -> str | None:
+    """Why a trade may be open now (None = flat): LIT's own files (engine/autoupdate.files_flat_reason) + every NinjaTrader state
+    file of the bot (data/ninjatrader_state*.json: LIT, ATLAS, account C, the extra accounts, the Rapid lanes). Unreadable = not flat."""
+    if ctx.flat is not None:
+        return ctx.flat()
+    try:
+        why = _flat_reason(ctx.root, ctx.now)
+    except Exception as e:  # noqa: BLE001
+        return f"cannot tell if flat ({e.__class__.__name__})"
+    if why:
+        return why
+    import glob
+    for p in sorted(glob.glob(os.path.join(ctx.root, "data", "ninjatrader_state*.json"))):
+        try:
+            with open(p, encoding="utf-8") as fh:
+                d = json.load(fh)
+        except FileNotFoundError:
+            continue
+        except Exception:  # noqa: BLE001
+            return f"{os.path.basename(p)} unreadable"
+        for lg in (d.get("legs") if isinstance(d, dict) else None) or []:
+            if isinstance(lg, dict) and lg.get("status") in OPEN_LEGS:
+                return f"an open NinjaTrader bracket ({os.path.basename(p)})"
+    return None
+
+
+OPEN_LEGS = ("entry_sent", "pending", "cancel_pending", "protected", "unprotected", "closing")   # engine/ninjatrader.OPEN_STATUSES
 
 
 # ------------------------------------------------------------------------------------------------ 3. NinjaTrader order files
@@ -664,7 +763,7 @@ def fix_pip(ctx) -> list:
         return [item("pip", "pip", "info", f"{len(miss)} package(s) missing ({', '.join(miss[:3])}): installed after 16:00 ET", paths=miss)]
     why = None
     try:
-        why = ctx.flat() if ctx.flat else _flat_reason(ctx.root, ctx.now)
+        why = trade_open(ctx)
     except Exception:
         why = None
     if why:
@@ -953,11 +1052,20 @@ def run(ctx, state: dict | None = None, force_clean: bool = False, only=None, di
     """Every remedy once (dry run unless ctx.apply). Never raises: a remedy that crashes is one 'info' item."""
     state = {} if state is None else state
     items = []
+    busy = None
     for name, fn in REMEDIES:
         if only and name not in only:
             continue
         try:
-            items += fn(ctx) or []
+            if name in GATED:
+                if name == "update" and in_trading(ctx.now):
+                    continue                              # the update itself waits for 16:00 ET: nothing to clear before it
+                if busy is None:
+                    busy = trade_open(ctx) or ""
+                if busy:
+                    items.append(item(name, name, "info", f"not now: {busy} (never touched while a trade may be open)"))
+                    continue
+            items += (fix_update(ctx, untracked="report") if name == "update" else fn(ctx)) or []
         except Exception as e:  # noqa: BLE001
             items.append(item(name, name, "info", f"check failed softly ({e.__class__.__name__}: {str(e)[:80]})"))
     cl = None

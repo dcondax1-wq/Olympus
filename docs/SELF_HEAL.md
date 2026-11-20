@@ -12,13 +12,14 @@ It never starts, stops, arms or routes the bot, never writes an order, never run
 | Fault | What it does |
 |---|---|
 | A stale git lock (`.git/index.lock` ...) left by a killed git: every later update fails | Deletes it when it is 10+ minutes old and no git is running |
-| A file in the update's way (git: "untracked files would be overwritten") | Same bytes as the update's: removed. Different: moved to `logs/self_heal/keep-<time>/` (your copy kept) |
+| A file in the update's way (git: "untracked files would be overwritten") | Cleared by the auto-update itself, right before its merge (redteam 2026-11-20): same bytes as the update's: removed; different: moved to `logs/self_heal/keep-<time>/` (your copy kept); put back when the merge still fails or is rolled back. The hourly run only names it (a file removed an hour or a trading day before the update that brings it back could break the running bot) |
 | A bot-made file (cache, VIX / GEX data, check reports) the last update tripped on | Copied to `keep-<time>/`, then put back to the committed version (the bot rewrites it anyway) |
 | (both rows above) | First a snapshot commit of the file at `refs/olympus/self-heal` (as the auto-update's connect does). Get one back: `git checkout refs/olympus/self-heal -- <file>` |
 | A bot order file NinjaTrader never processed (it was closed) | Withdrawn after 2 minutes (copy in `logs/self_heal/oif/`), so it can never fill late. The adapter's own rule, also when no bot runs |
 | `logs/supervisor.pid` naming a process that is gone or another program (after a crash / restart) | Deleted (STOP_BOT would otherwise wait for, then stop, that program) |
 | A Python package from requirements.txt missing | Installed, only after 16:00 ET on weekdays (or the weekend) and with no trade open |
 | The PC clock 2+ seconds off internet time | `w32tm /resync` (Windows' own clock sync) |
+| (every row that changes the bot's folder or clock: the update, the pid file, the clock) | Never while a trade may be open on ANY account (LIT's files + every `data/ninjatrader_state*.json` bracket: ATLAS, the extra accounts, the Rapid lanes); the update rows never 01:50-16:00 ET on a weekday (redteam 2026-11-20) |
 | Disk: the weekly clean (and at once when under 10 GB free) | Removes only old files that rebuild or are rotation output (below) |
 
 The weekly clean (outside 01:50-16:00 ET on weekdays): dated logs and old `.gz` logs after 30 days (the order audit after 365),
