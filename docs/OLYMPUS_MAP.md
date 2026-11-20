@@ -26,7 +26,7 @@ Data: apps only read published JSON (and bundled `fixture.json` / demo fallbacks
 | Labyrinth (`labyrinth`) | ZEUS Trading | trading | The risk maze: size your eval | `../odeon/trades.json`, `../home.json`, `fixture.json` | `tests.test_labyrinth_page` |
 | Moirai (`moirai`) | ZEUS Trading | trading | The three fates: pass, bust and time of | `fixture.json`, `../ledger/rules.json` | `tests.test_moirai_page` |
 | Nemesis (`nemesis`) | ZEUS Trading | trading | The fallen trades: what went wrong | `../odeon/trades.json`, `../home.json`, `fixture.json` | `tests.test_nemesis_page` |
-| NQ (`nq`) | ZEUS Trading | trading | The NQ bots, right now: status, drawdown left | `../home.json`, `fixture.json`, `howto.json` | `tests.test_nq_page` |
+| NQ (`nq`) | ZEUS Trading | trading | The NQ bots, right now: status, drawdown left | `../home.json`, `fixture.json`, `howto.json`, `news_week.json`, `../hub/learned.json` | `tests.test_nq_page` |
 | Odeon (`odeon`) | ZEUS Trading | trading | Every trade, replayed in 3D | `trades.json` | `tests.test_odeon_page` |
 | Oracle (`oracle`) | ZEUS Trading | trading | The market radar, live | bundled fixture / its own files | `tests.test_oracle_page` |
 | Pantheon (`pantheon`) | ZEUS Trading | trading | The data gods: rates, liquidity, fear | `jarvis.json`, `pantheon.json`, `fixture.json` | `tests.test_pantheon` |
@@ -39,7 +39,7 @@ Data: apps only read published JSON (and bundled `fixture.json` / demo fallbacks
 | Agency (`agency`) | Money | money | Website agency: leads, demo sites, calls and the | `fixture.json`, `my_leads.json`, `leads.json`, `callrules.json`, `callscript.json`, ... | `tests.test_agency` |
 | Arbiter (`arbiter`) | Money | money | Paper-only spreads and funding: net yearly return after | `fixture.json`, `../money/arbiter.json` | `tests.test_arbiter_page` |
 | Argo (`argo`) | Money | money | The voyage: your money goals as islands, honest | `fixture.json`, `../home.json`, `../ledger/rules.json` | `tests.test_argo_page` |
-| Business (`business`) | Money | money | Every money model: next step, what is missing | `accounts.json`, `../home.json`, `business.json`, `fixture.json`, `goals.json`, ... | `tests.test_business` |
+| Business (`business`) | Money | money | Every money model: next step, what is missing | `accounts.json`, `../home.json`, `business.json`, `fixture.json`, `dash.json`, ... | `tests.test_business` |
 | Chrysos (`chrysos`) | Money | money | Prop-firm fleet planner: fees against payouts, break-even (estimate) | `fixture.json`, `../money/chrysos.json` | `tests.test_chrysos_page` |
 | Harmonia (`harmonia`) | Money | money | The balance: what leans on the NQ bots | `fixture.json`, `../home.json`, `../money/index.json` | `tests.test_harmonia_page` |
 | Hera (`hera`) | Money | money | The 12-month money plan, payouts, what to buy | `fixture.json`, `../plutus/roadmap.json` | `tests.test_hera_page` |
@@ -50,6 +50,7 @@ Data: apps only read published JSON (and bundled `fixture.json` / demo fallbacks
 | Mint City (`mintcity`) | Money | money | The five money machines as a marble city | `fixture.json`, `../money/index.json` | `tests.test_mintcity_page` |
 | Oikos (`oikos`) | Money | money | The household: where money leaks, tax set-aside, buckets | `../money/household.json`, `fixture.json`, `../money/oikos.json`, `../ledger/rules.json`, `oikos-${S.today}.json` | `tests.test_oikos_page` |
 | Plutus (`plutus`) | Money | money | The money plan: accounts and payouts | `../data.json`, `jarvis.json`, `plans.json` | `tests.test_plutus_page` |
+| Widget (`widget`) | Money | money | Your accounts as an iPhone widget + the | bundled fixture / its own files | `tests.test_widget` |
 | Dionysus (`dionysus`) | Kalshi | money | The Kalshi desk: guard, what-if, scan. Suggestions only | `fixture.json`, `../kalshicity/edges.json`, `../kalshicity/whatif.json` | `tests.test_dionysus_page` |
 | Kalshi (`kalshi`) | Kalshi | money | Kalshi bot · from your PC | `../kalshicity/forward.json`, `../kalshicity/scan.json` | `tests.test_kalshi_page` |
 | Kalshi City (`kalshicity`) | Kalshi | money | The Kalshi bot's edges as a night city | `fixture.json`, `edges.json`, `learning_log.json`, `hypotheses.json`, `learned.json` | `tests.test_kalshicity_page` |
@@ -60,7 +61,7 @@ Data: apps only read published JSON (and bundled `fixture.json` / demo fallbacks
 | Athena (`athena`) | More | life | The library: strategy, rules, quiz | `jarvis.json`, `library.json`, `drills.json` | `tests.test_athena_page` |
 | Atlas (`atlas`) | More | life | A fast map of every Olympus dashboard | bundled fixture / its own files | `tests.test_atlas_armed` |
 | Bridge (`bridge`) | More | trading | Link ChatGPT: 3 steps, live job status | `status.json`, `jobs.json`, `deliveries.json` | `tests.test_bridge_page` |
-| Cities (`cities`) | More | trading | A world of city islands | `fixture.json` | `tests.test_cities_page` |
+| Cities (`cities`) | More | trading | The 3D city of everything: every app, every | `fixture.json` | `tests.test_cities_page` |
 | Clio (`clio`) | More | trading | The research library: every study in plain words | `fixture.json`, `../writeups/index.json`, `../data.json` | `tests.test_clio_page` |
 | Colosseum (`colosseum`) | More | trading | Where strategies fight: seven rounds on real stored | `extra.json`, `fixture.json`, `../archive/index.json`, `../home.json` | `tests.test_colosseum_page` |
 | Compass (`compass`) | More | trading | The next best action: at most five things | `fixture.json`, `../home.json`, `../money/index.json`, `../ledger/rules.json`, `../odeon/trades.json` | `tests.test_compass_page` |
@@ -85,7 +86,7 @@ Data: apps only read published JSON (and bundled `fixture.json` / demo fallbacks
 | Symposium (`symposium`) | More | life | Meet everyone who works for you, and talk | `fixture.json` | `tests.test_symposium_page` |
 | Daphne (`tree`) | More | trading | The strategy tree search | `jarvis.json`, `tree.json` | `tests.test_strategytree` |
 
-76 apps. Rebuild the registry list after editing `jarvis/apps.js` or `olympus.js`: `python tools/apps_list_build.py`; recount: `python tools/apps_list_build.py --check`.
+77 apps. Rebuild the registry list after editing `jarvis/apps.js` or `olympus.js`: `python tools/apps_list_build.py`; recount: `python tools/apps_list_build.py --check`.
 
 ## Where the organizing code lives
 

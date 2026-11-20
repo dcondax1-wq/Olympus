@@ -6,6 +6,8 @@
 The city of the day is a pure function of the date and the list of city ids in cities.json: FNV-1a (32 bit) of "cities:<date>"
 modulo the number of cities. util.js `cityOfDay()` does the same in the page, so the card and the page's Today chip agree.
 `publish(out)` writes the card into a built site folder (<out>/cities/jarvis.json); read-only, nothing else is touched.
+The same card (without its "open" route) also goes to cities/world/jarvis.json (2026-11-20): the Cities door opens the 3D World
+(jarvis/apps.js url ../cities/world/), and the launcher's / hub's status dot reads <path>jarvis.json.
 The Jarvis card contract is docs/JARVIS_APPS.md (<= 8 KB, plain text, kpis <= 3, lines <= 3).
 """
 from __future__ import annotations
@@ -19,6 +21,7 @@ from datetime import datetime
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PAGE = os.path.join(ROOT, "tools", "web_public", "cities")
 STALE_AFTER = 129600           # 36 h: the card is rewritten with every site publish
+WORLD_THEME = "#04060d"        # cities/world/index.html theme-color (the World's top colour)
 
 
 def hash32(s: str) -> int:
@@ -101,19 +104,29 @@ def write(path: str, card: dict) -> None:
         fh.write(dumps(card))
 
 
+def write_both(d: str, card: dict) -> None:
+    """<d>/jarvis.json (the Cities card) and, when the World is there, <d>/world/jarvis.json (the same card, no "open" route:
+    the World's own deep links are #p= / #d=, so a tap on the card just opens the World)."""
+    write(os.path.join(d, "jarvis.json"), card)
+    if os.path.isdir(os.path.join(d, "world")):
+        world = {k: v for k, v in card.items() if k != "open"}
+        world["theme"] = WORLD_THEME
+        write(os.path.join(d, "world", "jarvis.json"), world)
+
+
 def publish(out: str) -> str:
     """Write <out>/cities/jarvis.json (the card for today) when the site build has the Cities page; returns a one-line status."""
     d = os.path.join(out, "cities")
     if not os.path.isdir(d):
         return "no cities folder in the build: skipped"
     card = build()
-    write(os.path.join(d, "jarvis.json"), card)
+    write_both(d, card)
     return f"city of the day {card['open'][1:]}"
 
 
 def main(argv: list[str]) -> int:
     card = build(argv[0] if argv else None)
-    write(os.path.join(PAGE, "jarvis.json"), card)
+    write_both(PAGE, card)
     print(f"cities card: {card['status']['label']} ({card['open']})")
     return 0
 

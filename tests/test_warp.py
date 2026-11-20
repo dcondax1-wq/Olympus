@@ -5,7 +5,7 @@ through a cross-document View Transition into the next world, each family with i
   a. static: warp.js is ES5 / Safari 16 safe, no WebGL, no network but the page itself, devicePixelRatio capped at 2; its door
      table equals olympus/doors.js; themes.js carries the exact WARP BOOT copy and loads warp.js; agora.css, jarvis.css, kalshi.css
      and zenith_agora.css @import warp.css first; warp.css opts in (@view-transition, type oly-warp), has every family's arrival,
-     a reduced-motion fade and the 3D Off fade; the pages without themes.js (Doors, ZEUS hub, Help, Atlas) load warp.js; the
+     a reduced-motion fade and the 3D Off fade; the pages without themes.js (ZEUS hub, Help, Atlas) and the Doors load warp.js; the
      launcher copies stay byte-identical; the family of every kind of address
   b. the jump (iPhone size, 2x): Doors page -> NQ: the overlay and its canvas (<= 2x pixels) draw frames, the page goes at ~250 ms,
      NQ arrives through a View Transition typed oly-warp with family zeus (ow-old + ow-zeus), nothing is left behind, no page
@@ -97,9 +97,15 @@ def test_static():
     check("a. warp.css: reduced motion and 3D Off = a 200 ms fade (nothing scales, no shape); only transform / opacity move",
           "ow-fade-in .2s" in rm and "transform: none !important" in rm and 'data-fx="off"' in rm
           and not re.search(r"@keyframes[^{]*\{[^}]*(clip-path|width|height|left|top|filter)\s*:", css))
-    pages = ["hub/doors.html", "hub/zeus.html", "hub/help.html", "atlas/index.html"]
-    check("a. the pages without themes.js load warp.js themselves (Doors, the ZEUS hub, Help, Atlas)",
+    pages = ["hub/zeus.html", "hub/help.html", "atlas/index.html"]
+    check("a. the pages without themes.js load warp.js themselves (the ZEUS hub, Help, Atlas)",
           all('src="../olympus/warp.js?v=w3" defer' in read(WEB, *p.split("/")) and "olympus/themes.js?v=" not in read(WEB, *p.split("/")) for p in pages))
+    # night-polish 2026-11-20: the Doors load the theme engine (they stayed dark under Ivory); their own warp.js tag comes BEFORE themes.js,
+    # so themes.js's loader finds it and never adds warp.js a second time
+    dh = read(WEB, "hub", "doors.html")
+    check("a. the Doors load warp.js themselves, then themes.js (one warp.js, the light looks reach the Doors)",
+          dh.count('src="../olympus/warp.js?v=w3" defer') == 1 and "olympus/themes.js?v=" in dh
+          and dh.find('src="../olympus/warp.js?v=w3"') < dh.find("olympus/themes.js?v="))
     check("a. launcher.js stays byte-identical in both dashboards", read(WEB, "launcher.js") == read(ROOT, "web_next", "js", "next", "launcher.js"))
     # phone QA 2026-11-19: a jump INTO Olympus World was a View Transition the page refused ("ViewTransition opt-in disabled") and the kit
     # showed "Cities could not load"; the World now opts in like every app, and a skipped transition is never a page failure
