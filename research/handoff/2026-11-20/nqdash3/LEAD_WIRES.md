@@ -106,3 +106,17 @@ local build). Re-run `python tools/trading_export.py --fetch` on a machine with 
 A stop moved to break-even that fills more than 1 point past the entry is called "(stop)" in the close push. Example: the live ATLAS short,
 stop 26,379.50 vs entry 26,380.75, gives "closed SHORT +$2 (stop)". `_push_exit` decides "BE" only within 1.0 pt. To say "(break-even)",
 use `abs(ex - fill) <= 1.0 or float(lg.get("stop") or 0) != float(lg.get("stop0") or 0)` for the BE test. That is a judgement call, so there is no proof suite for it.
+
+## I. brief.json (helper day-brief) and N accounts
+- `nq/nq.js` reads `./brief.json` when present (`nqdesk.briefFor`). A missing file, yesterday's brief or junk changes nothing.
+  Its contract (docs/BRIEF.md on day-brief) was not pushed when I wrote this, so the reader takes the likely shapes:
+  - `day`
+  - `bias` {side|call, why|text, conf}
+  - `levels` [{label|name, price|px, dist}] or [[label, px, dist]]
+  - `news` [{date, time, title}]
+  - `bots` as a list [{id, waiting, bias, levels}] or a map
+  - `recap` (a string or {lit, atlas})
+  Shown as: a "Morning brief: LONG/SHORT why" line under the bot's own lean; levels / news / waiting only where the PC's own glance has none
+  (the bot's live words win); the recap in "After". When BRIEF.md lands, check the field names against `briefFor` (tests/test_nq_desk "brief" checks).
+- Accounts: the strip takes N accounts from the feed. The Rapid EOD 25K arrives with PC id `rapid` and fills the planned Rapid tile. Any other PC
+  account the plan file does not name gets its own tile after it. Tested in test_nq_desk (27/27).

@@ -216,7 +216,7 @@ function renderDesk() {
     if (p) { p.textContent = S.demo ? 'DEMO' : `${nLive} of ${A.filter((a) => a.dot !== 'plan').length} live`; p.className = 'pill ' + (S.demo ? 'warn' : nLive ? 'ok' : 'bad'); }
   } catch (_) { /* the rest of the page still draws */ }
   try {
-    const B = D.thinking(home, S.news, file, nowS, deskChart()), box = $('think');
+    const B = D.thinking(home, S.news, file, nowS, deskChart(), S.brief), box = $('think');
     if (box) D.draw.thinking(box, B);
     const p = $('thinkPill'); if (p) { const inT = B.filter((b) => b.phase === 'in').length; p.textContent = inT ? `${inT} in a trade` : S.demo ? 'DEMO' : 'LIVE'; p.className = 'pill ' + (inT ? 'warn' : S.demo ? 'warn' : 'ok'); }
   } catch (_) { /* nothing */ }
@@ -265,9 +265,9 @@ async function boot() {
   for (const b of document.querySelectorAll('[data-howto]')) b.addEventListener('click', () => openSheet(b));
   $('sheetClose').addEventListener('click', closeSheet); $('veil').addEventListener('click', closeSheet);
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSheet(); else if (e.key === 'Tab' && S.sheet) { e.preventDefault(); try { $('sheetClose').focus(); } catch (_) { /* nothing */ } } });   // the sheet has one control: focus stays on it
-  const [fx, home, howto, news, learned, biz, tfile, edge] = await Promise.all([getJSON('./fixture.json'), S.forced ? null : getJSON('../home.json'), getJSON('./howto.json'), getJSON('./news_week.json'), S.forced ? null : getJSON('../hub/learned.json'),
-    getJSON('../business/accounts.json'), getJSON('../trading/trades.json'), getJSON('../edge.json')]);
-  S.fixture = fx; S.howto = howto; S.news = news; S.learned = learned; S.biz = biz; S.tfile = tfile; S.edge = edge;
+  const [fx, home, howto, news, learned, biz, tfile, edge, brief] = await Promise.all([getJSON('./fixture.json'), S.forced ? null : getJSON('../home.json'), getJSON('./howto.json'), getJSON('./news_week.json'), S.forced ? null : getJSON('../hub/learned.json'),
+    getJSON('../business/accounts.json'), getJSON('../trading/trades.json'), getJSON('../edge.json'), getJSON('./brief.json')]);
+  S.fixture = fx; S.howto = howto; S.news = news; S.learned = learned; S.biz = biz; S.tfile = tfile; S.edge = edge; S.brief = brief;   // brief.json: the day-brief helper's pre-market brief (optional)
   // the PC's 15-minute status (no GitHub) first, up to 3.5 s, so the first numbers on screen are the real ones; when it is later than
   // that the cloud's copy shows (its source line says so) and the post is laid over it when it arrives, however long ntfy takes
   const post = home ? withPost(home) : Promise.resolve(home);

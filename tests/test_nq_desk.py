@@ -105,6 +105,19 @@ import(process.argv[2]).then((D) => {
   const B2 = D.thinking(home, news, file, now, chart), A2 = D.accounts(home, biz, now, chart);
   o.real = B2[1].inTrade; o.realLean = B2[1].before.lean; o.realAcct = A2.map((a) => [a.key, a.open ? [a.open.side, a.open.qty, a.open.entry, Math.round(a.open.now), a.open.stopMoved] : null]);
   o.realLit = B2[0].phase;
+  // the day-brief helper's brief.json (contract not out yet: two likely shapes), and its absence
+  const brief1 = { day: '2026-11-20', bias: { side: 'long', why: 'Above the overnight VWAP; Asia low swept' }, levels: [{ label: 'ONH', price: 26468.5 }],
+    bots: [{ id: 'lit', waiting: 'a London sweep' }, { id: 'atlas', bias: { call: 'SHORT', text: 'under the 20 EMA' } }], recap: { lit: 'Took the 09:00 long, +0.8R.' } };
+  const h3 = JSON.parse(JSON.stringify(home)); delete h3.live.pc.glance; delete h3.board.lit.waiting;   // no glance, no card words: the brief fills in (the bot's own live words win when there)
+  const Bb = D.thinking(h3, news, file, now, null, brief1);
+  o.brief = [Bb[0].before.bias, Bb[0].before.levels, Bb[0].before.waiting, Bb[0].before.recap, Bb[1].before.bias && Bb[1].before.bias.side];
+  o.briefOld = D.thinking(h3, news, file, now, null, { ...brief1, day: '2026-11-19' })[0].before.bias;
+  o.briefNone = D.thinking(h3, news, file, now, null, null)[0].before.bias;
+  o.briefJunk = [D.briefFor('x', 'lit', now), D.briefFor({ bots: 5, bias: 7, levels: [null, 1, [2]] }, 'lit', now)];
+  // N accounts from the feed (the PC adds the Rapid EOD 25K today, id "rapid", and maybe a 3rd Builder): every one gets a tile
+  const h4 = JSON.parse(JSON.stringify(home));
+  h4.accounts.push({ id: 'rapid', name: 'Rapid EOD 25K', source: 'pc', live: true, conn: { t: now - 240 }, eval: { balance: 25000, room: 1000, mll: 1000, to_target: 1500, today: 0, status: 'open' } });
+  o.n4 = D.accounts(h4, biz, now).map((a) => [a.key, a.dot, a.balance]);
   const junk = [null, undefined, 7, 'x', [], {}, { board: 5, live: [], accounts: 'no' }, { accounts: [null, 4, { id: 'mffu50k_eval' }], live: { pc: { glance: { bots: [null, { id: 'lit', arm: 'x', lv: [null, [1]] }] } } } }];
   o.junk = junk.map((j) => { try { return [D.accounts(j, j, now, j).length, D.thinking(j, j, j, now, j).length, D.quality(j, j, j, now).rows.length]; } catch (e) { return 'THROW ' + e.message; } });
   o.words = [D.money(-0.2), D.money(1234.5, true), D.rText(0.5), D.rText(-1.03), D.ageText(30), D.ageText(4 * 60), D.ageText(2 * 3600 + 600), D.mins(1500)];
@@ -166,6 +179,14 @@ def test_core():
           and "edge" not in q, o["qe"])
     check("d. chart candles in the bots' hours (Fri 10:30 ET): 95 min old -> amber with the age and the time; 30 min -> ok",
           o["qb"]["level"] == "warn" and o["qb"]["value"].startswith("last bar 1 h 35 min ago (8:55 AM ET)") and o["qb2"]["level"] == "ok", (o["qb"], o["qb2"]))
+    br = o["brief"]
+    check("c. brief.json (day-brief) when there: the morning bias (LONG + why), its levels, what LIT waits for and the recap when the glance has none; "
+          "ATLAS's own bias call (SHORT)", br[0] == {"side": "LONG", "text": "Above the overnight VWAP; Asia low swept", "conf": None}
+          and br[1] == [{"label": "ONH", "px": 26468.5, "dist": None}] and br[2] == "a London sweep" and br[3] == "Took the 09:00 long, +0.8R." and br[4] == "SHORT", br)
+    check("c. ... yesterday's brief or none: no bias line, nothing breaks; junk briefs read as nothing", o["briefOld"] is None and o["briefNone"] is None
+          and o["briefJunk"][0] is None and o["briefJunk"][1]["bias"] is None and o["briefJunk"][1]["levels"] == [], (o["briefOld"], o["briefJunk"]))
+    check("b. N accounts: the PC's Rapid EOD 25K (id 'rapid') fills the planned Rapid tile with its numbers, the extra Builder keeps its own tile",
+          ["rapid1", "live", 25000] in o["n4"] and ["xtra9", "live", 50100] in o["n4"] and len(o["n4"]) == 5 and o["n4"][-1][0] == "xtra9", o["n4"])
     q2 = {r[0]: r for r in o["q2"]}
     check("d. a 2-hour-old report: report amber, a 2-hour-old heartbeat red (the bot beats every 5 min); without reporter.na the last alert is the "
           "newest trade event (ATLAS's entry 25 min ago); no news file -> amber",

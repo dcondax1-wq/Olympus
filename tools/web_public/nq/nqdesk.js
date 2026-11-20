@@ -114,6 +114,29 @@ export function accounts(home, biz, nowS, chart) {
   return out;
 }
 
+// ------------------------------------------------------------------------------------------------ the pre-market brief (./brief.json, helper day-brief)
+// Read when present, never needed: its contract (docs/BRIEF.md on day-brief) was not out when this was written, so the reader takes the likely
+// shapes and ignores the rest. -> { bias: {side, text} | null, levels: [{label, px, dist}], news: [{time, title, past}], waiting: '', recap: '', day }
+const pickArr = (o, ...ks) => { for (const k of ks) if (Array.isArray(o && o[k])) return o[k]; return []; };
+const pickStr = (o, ...ks) => { for (const k of ks) { const v = o && o[k]; if (typeof v === 'string' && v.trim()) return v.trim(); } return ''; };
+export function briefFor(brief, botId, nowS) {
+  if (!isObj(brief)) return null;
+  const day = pickStr(brief, 'day', 'date', 'session');
+  if (day && nowS && day !== etParts(nowS).day) return null;           // yesterday's brief is not today's plan
+  const bots = brief.bots, b = Array.isArray(bots) ? bots.find((x) => isObj(x) && String(x.id || x.key || x.bot || '').toLowerCase().startsWith(botId)) || null
+    : isObj(bots) ? bots[botId] || bots[botId === 'lit' ? 'zlarior' : botId] || null : null;
+  const bz = isObj(b && b.bias) ? b.bias : isObj(brief.bias) ? brief.bias : null, bs = typeof brief.bias === 'string' ? brief.bias : '';
+  const side = String((bz && (bz.side || bz.call || bz.dir)) || bs || '').toUpperCase().match(/LONG|SHORT|NEUTRAL|FLAT/);
+  const bias = side ? { side: side[0] === 'FLAT' ? 'NEUTRAL' : side[0], text: pickStr(bz, 'why', 'text', 'reason', 'line') , conf: num(bz && (bz.conf ?? bz.confidence ?? bz.score)) } : null;
+  const levels = pickArr(b, 'levels').concat(b && pickArr(b, 'levels').length ? [] : pickArr(brief, 'levels', 'key_levels')).map((x) => (Array.isArray(x)
+    ? { label: String(x[0] || ''), px: num(x[1]), dist: num(x[2]) } : isObj(x) ? { label: String(x.label || x.name || ''), px: num(x.px ?? x.price ?? x.level), dist: num(x.dist ?? x.pts) } : null))
+    .filter((x) => x && x.px !== null).slice(0, 6);
+  const hm = nowS ? etParts(nowS).hm : '';
+  const news = pickArr(brief, 'news', 'events').filter(isObj).filter((e) => !e.date || !day || e.date === day)
+    .map((e) => ({ time: String(e.time || e.hm || ''), title: String(e.title || e.name || ''), past: !!(e.time && hm && e.time < hm) })).filter((e) => e.title);
+  return { bias, levels, news, waiting: pickStr(b, 'waiting', 'wait', 'waiting_for'), recap: pickStr(b, 'recap', 'after') || pickStr(isObj(brief.recap) ? brief.recap : null, botId) || (typeof brief.recap === 'string' ? brief.recap : ''), day };
+}
+
 // ------------------------------------------------------------------------------------------------ 2. the thinking, per bot
 const BOTS = [{ id: 'lit', name: 'Zlarior', what: 'LIT', acct: ['lit', 'zlarior'] }, { id: 'atlas', name: 'ATLAS', what: 'EMA · MACD · S/R', acct: ['atlas'] }];
 
@@ -145,7 +168,7 @@ function reelOf(file, bot, entryT) {
   return r && r.odeon ? '../odeon/#reel=' + encodeURIComponent(r.odeon) : '';
 }
 
-export function thinking(home, news, file, nowS, chart) {
+export function thinking(home, news, file, nowS, chart, brief) {
   const h = isObj(home) ? home : {}, live = isObj(h.live) ? h.live : {}, board = isObj(h.board) ? h.board : {};
   const glance = isObj(live.pc) && isObj(live.pc.glance) ? live.pc.glance : null, fa = feedAge(h, nowS);
   const day = etParts(nowS).day, tn = todayNews(news, nowS), nx = nextNews(news, nowS);
@@ -157,13 +180,15 @@ export function thinking(home, news, file, nowS, chart) {
     const last = closed.find((t) => etParts(t.exit_t).day === day) || null;
     const pos = g && isObj(g.pos) ? g.pos : null;
     const co = chartOpen(chart, (k) => (bot.id === 'atlas' ? /^atlas/.test(k) : /^z/.test(k)), nowS);
-    const L = lean(g, card);
+    const L = lean(g, card), bf = briefFor(brief, bot.id, nowS);
+    const lv = arr(g && g.lv).slice(0, 6).filter((x) => Array.isArray(x) && num(x[1]) !== null).map((x) => ({ label: String(x[0] || ''), px: num(x[1]), dist: num(x[2]) }));
     const before = {
-      lean: L, news: tn, next: nx ? `${nd(nx.date)} ${nx.time} ET, ${nx.title}` : '',
-      levels: arr(g && g.lv).slice(0, 6).filter((x) => Array.isArray(x) && num(x[1]) !== null).map((x) => ({ label: String(x[0] || ''), px: num(x[1]), dist: num(x[2]) })),
+      lean: L, news: tn.length || !bf ? tn : bf.news, next: nx ? `${nd(nx.date)} ${nx.time} ET, ${nx.title}` : '',
+      bias: bf && bf.bias ? bf.bias : null, recap: bf ? bf.recap : '',
+      levels: lv.length ? lv : bf ? bf.levels : [],
       window: String((card && isObj(card.window) && card.window.text) || (card && isObj(card.window) && card.window.open ? 'In its entry window now' : '') || ''),
       windowOpen: !!(card && isObj(card.window) && card.window.open),
-      waiting: String((g && g.wait) || (card && card.waiting) || ''), why: String((g && g.why) || ''),
+      waiting: String((g && g.wait) || (card && card.waiting) || (bf && bf.waiting) || ''), why: String((g && g.why) || ''),
       log: arr(g && g.log).slice(0, 3).filter(Array.isArray).map((x) => `${x[0] ? x[0] + ' ' : ''}${x[1] || ''}`),
     };
     let inTrade = null;
@@ -292,6 +317,8 @@ function drawThinking(box, bots, opts) {
     const L = b.before.lean, ln = el('p', 'dk-lean'); ln.appendChild(el('b', 'dk-side ' + (L.side ? L.side.toLowerCase() : 'none'), L.side ? `Lean ${L.side}` : 'No lean'));
     ln.appendChild(document.createTextNode(' ' + L.why)); bf.appendChild(ln);
     if (L.trig) bf.appendChild(el('p', 'dk-note', L.trig));
+    if (b.before.bias) { const z = b.before.bias, p = el('p', 'dk-line'); p.appendChild(el('b', '', 'Morning brief: '));
+      p.appendChild(el('span', 'dk-side ' + (z.side === 'NEUTRAL' ? 'none' : z.side.toLowerCase()), z.side)); p.appendChild(document.createTextNode(' ' + (z.text || ''))); bf.appendChild(p); }
     if (b.before.waiting) { const w = el('p', 'dk-line'); w.appendChild(el('b', '', 'Waiting for: ')); w.appendChild(document.createTextNode(b.before.waiting)); bf.appendChild(w); }
     if (b.before.window) { const w = el('p', 'dk-line'); w.appendChild(el('b', '', b.before.windowOpen ? 'Window: open now. ' : 'Window: ')); w.appendChild(document.createTextNode(b.before.window)); bf.appendChild(w); }
     const nw = el('p', 'dk-line'); nw.appendChild(el('b', '', 'News today: '));
@@ -319,6 +346,7 @@ function drawThinking(box, bots, opts) {
       const x = b.after, s = el('section', 'dk-sec'); s.appendChild(el('p', 'dk-eye', PH.after));
       s.appendChild(el('p', 'dk-big ag-num ' + (x.usd > 0 ? 'pos' : x.usd < 0 ? 'neg' : ''), `${money(x.usd, true)} ${rText(x.r)}`.trim()));
       s.appendChild(el('p', 'dk-note', `${x.side} closed by ${x.exit.toLowerCase() || 'the bot'} at ${x.at}.`));
+      if (b.before.recap) s.appendChild(el('p', 'dk-note', b.before.recap));
       if (x.reel) { const a = el('a', 'dk-reel', 'Watch the replay'); a.href = x.reel; s.appendChild(a); } else s.appendChild(el('p', 'dk-note', "Replay after tonight's data upload."));
       c.appendChild(s);
     }
