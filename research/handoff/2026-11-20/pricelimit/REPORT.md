@@ -60,7 +60,7 @@ help.myfundedfutures.com/en/articles/9698984-2-price-limit-rule (dated 2026-08-2
 | `python -X utf8 -m tests.test_lit_live --quick` | OK |
 | `python -m engine.ninjatrader --selftest` | PASS 79/79 |
 | test_rapid25 / test_account_b_funded / test_multi_rapid / test_rapid / test_rapid_launch | 95/95 / 71/71 / 41/41 / 60/60 / 12/12 |
-| others | OTHERS_RESULT |
+| test_multi_account / test_cross_hedge / test_trade_alerts / test_notify / test_lifecycle / test_accounts_cli / test_account_box / test_lit25 | 55/55 / 13/13 / 21/21 / 96/96 / 30/30 / 40/40 / 41/41 / 26/26 |
 
 ## Gaps (for the lead)
 
