@@ -70,8 +70,8 @@ def test_static():
           '<html lang="en" data-theme="agora" data-oly-page="gate">' in html and "viewport-fit=cover" in html and 'name="theme-color"' in html and 'name="color-scheme" content="dark"' in html
           and html.count("<h1") == 1 and 'role="status"' in html and 'aria-live="polite"' in html and 'role="dialog"' not in html)
     check("a. one base-path line: gate/ -> '../', the site root (olympus-live.html) -> ''; agora.css + gate.css, then themes, the catalog, hub-status and gate.js load from GATE_BASE, in order (async = false)",
-          r"/\/gate\/(index\.html)?$/.test(p) ? '../' : ''" in html and "window.GATE_BASE = b" in html and "b + 'gate/gate.css?v=g17'" in html and "b + 'olympus/agora.css" in html
-          and "['olympus/themes.js?v=o9', 'pc_feed.js?v=n5', 'olympus/gate-catalog.js?v=nv5', 'olympus/hub-status.js?v=h2', 'business/payoutcoach.js?v=1', 'gate/gate.js?v=g15', 'olympus/home-fx.js?v=x2', 'olympus/a11y.js']" in html and "s.async = false" in html)
+          r"/\/gate\/(index\.html)?$/.test(p) ? '../' : ''" in html and "window.GATE_BASE = b" in html and "b + 'gate/gate.css?v=g18'" in html and "b + 'olympus/agora.css" in html
+          and "['olympus/themes.js?v=o9', 'pc_feed.js?v=n5', 'olympus/gate-catalog.js?v=nv5', 'olympus/hub-status.js?v=h2', 'age.js?v=1', 'business/payoutcoach.js?v=1', 'gate/gate.js?v=g17', 'olympus/home-fx.js?v=x2', 'olympus/a11y.js']" in html and "s.async = false" in html)
     tiles = re.findall(r'class="g-hub[^"]*" data-hub="(\w+)" data-to="hub/index.html\?h=(\w+)"', html)
     check("a. the hub tiles are plain links in the page (they work even if gate.js fails), in the owner's order (night A 2026-11-16): Bots & Evals (wide) and My Money (wide) first, Kalshi and Worlds near the end, Settings & Help last",
           [t[0] for t in tiles] == HUBS and all(a == b for a, b in tiles) and 'class="g-hub g-wide" data-hub="bots"' in html and 'class="g-hub g-wide" data-hub="money"' in html and html.count('class="g-hline"') == len(HUBS))
@@ -89,8 +89,12 @@ def test_static():
           and html.index('id="q"') < html.index('id="azBtn"') < html.index('id="now"') < html.index('id="doorsSec"') < html.index('id="pinSec"') < html.index('id="quick"') < html.index('id="recentSec"')
           < html.index('id="hubsH"') < html.index('id="azWide"') < html.index('id="lookSec"') < html.index('class="g-foot"'))
     six = re.findall(r'class="g-q" data-app="([a-z]+)" data-to="([a-z]+)/index.html"', html)
-    check("a. Your six are plain links in the page (one tap, they work without gate.js): Zlarior / ATLAS (NQ), Today (Compass), Money (Ledger), Drawdown (Aegis), My day (Planner), Kalshi",
-          [x[0] for x in six] == ["nq", "compass", "ledger", "aegis", "planner", "kalshi"] and all(a == b for a, b in six) and "Zlarior · ATLAS" in html, six)
+    check("a. Your six are plain links in the page (one tap, they work without gate.js), the owner's order (olympus2): Cities, Kalshi, the NQ bot, Jarvis, then My day (Planner) and Business",
+          [x[0] for x in six] == ["cities", "kalshi", "nq", "jarvis", "planner", "business"] and all(a == b for a, b in six) and "Zlarior · ATLAS" in html, six)
+    check("a. retired apps never show on the Home (search, A to Z, recent, pins): one RETIRED list in gate.js with the owner's 26",
+          all(("%s: 1" % x) in js for x in ("delphi", "stoa", "hestia", "plutus", "argo", "mint", "harmonia", "kairos", "chronos", "lyceum", "polis", "atlascity", "gallery", "mintcity",
+                                           "nike", "arena", "mind", "symposium", "herald", "ergasterion", "observatory", "pheme", "bridge", "arbiter", "hermes", "hephaestus"))
+          and "F.apps.filter(live)" in js and "C.az().filter(live)" in js)
     check("a. the search covers apps, hub tabs and plain actions (C.findAll), each app row has a pin star (44 px), the A to Z sheet (gate/#az) is a dialog built by gate.js",
           "C.findAll" in js and "withStar(row(a), a)" in js and "'gate.pins.v1'" in js and "role', 'dialog'" in js and "#az$" in js and ".g-star" in css and "min-height: 44px" in css)
     hs = AK.read(os.path.join(AK.WEB, "olympus", "hub-status.js"))
@@ -200,7 +204,9 @@ def nav_checks(p, origin):
     p.wait_for_timeout(300)
     az = p.evaluate("() => ({ open: !document.querySelector('#azSheet').hidden, rows: document.querySelectorAll('#azList a.g-row').length, letters: [...document.querySelectorAll('#azList .g-azl')].map((h) => h.textContent),"
                     " first: (document.querySelector('#azList a.g-row') || {}).dataset, h: Math.round(document.querySelector('#azList a.g-row').getBoundingClientRect().height) })")
-    n_apps = len(cat_apps())       # night-gate: every catalog app, counted from the catalog (was a pinned 84)
+    RET = {"delphi", "stoa", "hestia", "plutus", "argo", "mint", "harmonia", "kairos", "chronos", "lyceum", "polis", "atlascity", "gallery", "mintcity", "nike",
+           "arena", "mind", "symposium", "herald", "ergasterion", "observatory", "pheme", "bridge", "arbiter", "hermes", "hephaestus"}
+    n_apps = len([a for a in cat_apps() if a["id"] not in RET])   # every catalog app but the retired ones (olympus2), counted from the catalog
     check(f"c. the A-Z button opens All apps A to Z: every app ({n_apps}) in big rows (>= 56 px) under a letter each, the labs at the end under Workshop",
           az["open"] and az["rows"] == n_apps and az["letters"][0] in ("1", "#", "A") and az["letters"][-1] == "Workshop" and az["h"] >= 56, az)
     t = AK.taps(p)
@@ -308,6 +314,8 @@ def test_page():
                   r["state"] == "on" and r["badge"] == "Bots on" and r["line"] == "The bots are on. Last report 5 minutes ago." and r["facts"][0] == "Drawdown left$1,420of $2,000 max loss, Zlarior 50K"
                   and r["facts"][1] == "Drawdown left$900of $1,000 max loss, ATLAS 25K" and r["facts"][2].startswith("Today+$272") and r["facts"][3] == "Trade windowOpen nowuntil 15:30 ET"
                   and len(r["money"]) == 2 and r["money"][0].startswith("Zlarior 50K, eval: balance $49,420.") and r["money"][1].startswith("ATLAS 25K, eval:") and not r["btn"] and r["truth"], r)
+            ag = p.evaluate("() => { const a = document.querySelector('#nowAge'); return a && !a.hidden ? [a.textContent, a.dataset.level, a.className] : null; }")
+            check("c. olympus2: the PC report's age as the site-wide chip (age.js): 'updated 5 min ago', ok", ag == ["updated 5 min ago", "ok", "oly-age"], ag)
             go = p.evaluate("() => [...document.querySelectorAll('#money a.g-acct, #nowFacts a.g-fact')].map((a) => a.href.replace(location.origin, ''))")
             check("c. each card / fact is a tap to the app with the detail: the eval cards and drawdown -> Aegis, today -> NQ, the window -> Kairos",
                   go == ["/aegis/index.html", "/aegis/index.html", "/aegis/index.html", "/aegis/index.html", "/nq/index.html", "/kairos/index.html"], go)
@@ -333,9 +341,9 @@ def test_page():
             check("c. at 390 x 844 the big search is near the top (one thumb), the Right now cockpit right under it and whole on the first screen, the four doors start on it",
                   vis[0] < 160 and vis[4] < 240 and vis[2] <= 844 and vis[3] < 844, vis)
             six = p.evaluate("() => [...document.querySelectorAll('#quick .g-q')].map((a) => [a.dataset.app, a.href.replace(location.origin, ''), a.querySelector('.g-qline').textContent])")
-            check("c. Your six, one tap each, with live lines: Zlarior / ATLAS 'Bots on · today +$272', Drawdown '$1,420 / $900 left', Today 'Trade window open until 15:30 ET'",
-                  [x[1] for x in six] == ["/nq/index.html", "/compass/index.html", "/ledger/index.html", "/aegis/index.html", "/planner/index.html", "/kalshi/index.html"]
-                  and six[0][2] == "Bots on · today +$272" and six[3][2] == "$1,420 / $900 left" and six[1][2].startswith("Trade window open until 15:30 ET"), six)
+            check("c. Your six, one tap each (Cities, Kalshi, NQ bot, Jarvis, My day, Business), the NQ bot's live line 'Bots on · today +$272'",
+                  [x[1] for x in six] == ["/cities/index.html", "/kalshi/index.html", "/nq/index.html", "/jarvis/index.html", "/planner/index.html", "/business/index.html"]
+                  and six[2][2] == "Bots on · today +$272", six)
             p.click('#workshopLink')
             p.wait_for_url("**/hub/index.html?h=settings&t=workshop", timeout=30000)
             check("c. the small Workshop link opens Settings & Help on its Workshop tab", "h=settings&t=workshop" in p.url, p.url)
@@ -348,8 +356,8 @@ def test_page():
                 p.fill("#q", q)
                 p.wait_for_timeout(120)
                 res[q] = p.evaluate("() => [[...document.querySelectorAll('#results a.g-row')].map((a) => a.dataset.app), document.querySelector('#results').textContent]")
-            check("c. the search box: money -> Mint + Ledger, drawdown -> Aegis, kalshi -> Kalshi first, journal -> the journal first, nonsense -> a plain 'Nothing found' line",
-                  "ledger" in set(res["money"][0]) and "aegis" in res["drawdown"][0] and res["kalshi"][0][0] == "kalshi" and res["journal"][0][0] == "journal"
+            check("c. the search box: money -> Ledger (Mint is retired: never shown), drawdown -> Aegis, kalshi -> Kalshi first, journal -> the journal first, nonsense -> a plain 'Nothing found' line",
+                  "ledger" in res["money"][0] and "mint" not in res["money"][0] and "aegis" in res["drawdown"][0] and res["kalshi"][0][0] == "kalshi" and res["journal"][0][0] == "journal"
                   and not res["qqqzz"][0] and "Nothing found" in res["qqqzz"][1], {k: v[0] for k, v in res.items()})
             check("c. each result says which hub it lives in ('in Bots & Evals')", "in Bots & Evals" in p.evaluate("() => { document.querySelector('#q').value = 'journal'; document.querySelector('#q').dispatchEvent(new Event('input')); return document.querySelector('#results').textContent; }"))
             p.fill("#q", "risk guard")
