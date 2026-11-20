@@ -24,13 +24,22 @@ type: "home"
 > [!money] [[Week 2026-W47|2026-W47]]: 0 trades · $0
 > [[Week 2026-W47|2026-W47]] · [[Week 2026-W46|2026-W46]] · [[Week 2026-W45|2026-W45]] · [[Week 2026-W44|2026-W44]] · [[Week 2026-W43|2026-W43]] · [[Week 2026-W42|2026-W42]] · [[Week 2026-W41|2026-W41]] · [[Week 2026-W40|2026-W40]]
 
+## Real trades (live + paper)
+
+> [!money] 4 trades · -$1,975
+> [[Trade 2026-10-28 0343 LIT short paper|2026-10-28 03:43 LIT paper]]: -$699 (turned)
+> [[Trade 2026-10-28 0343 LIT short live|2026-10-28 03:43 LIT live]]: -$437 (turned)
+> [[Trade 2026-10-27 0612 LIT short paper|2026-10-27 06:12 LIT paper]]: -$827 (never)
+> [[Trade 2026-10-19 0309 LIT short paper|2026-10-19 03:09 LIT paper]]: -$11 (turned)
+
 ## What the losses teach
 
-- [[Lesson never worked|never]]: 182 losers in 2026, -$38,216
-- [[Lesson worked then turned|turned]]: 82 losers in 2026, -$20,656
-- [[Lesson shaken out|wick]]: 15 losers in 2026, -$3,418
-- [[Lesson news hit|news]]: 3 losers in 2026, -$1,143
-- [[Lesson not yet classified|unclassified]]: 0 losers in 2026, $0
+_2026 losing trades (backtests at account size + paper + live), one main reason each:_
+
+- [[Lesson never worked|never]]: 182 losers, -$38,216. A real stop: the idea was wrong.
+- [[Lesson worked then turned|turned]]: 82 losers, -$20,656. The trade was right for a while.
+- [[Lesson shaken out|wick]]: 15 losers, -$3,418. The stop sits 1 tick beyond the sweep (hard rule).
+- [[Lesson news hit|news]]: 3 losers, -$1,143. Look at the news note of that release type: is the bot worse on those days on BOTH halves of 2026 and 2021-25?
 
 ## More hubs
 

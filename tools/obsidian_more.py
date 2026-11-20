@@ -775,8 +775,15 @@ class More:
             tr = [t for d in b.days if a <= d <= z for t in self.by_day.get(d, [])]
             out += ["## This week", "", ob.callout("money", f"{ob.link('Week ' + wk, wk)}: {len(tr)} trades · {ob.usd(sum(t['usd'] for t in tr), True)}",
                                                    [" · ".join(ob.link("Week " + w, w) for w in reversed(self.week_list[-8:]))]), ""]
+        real = sorted([t for t in self.trades if t["src"] != "backtest"], key=lambda t: (t["day"], t["hm"], t["name"]), reverse=True)
+        if real:
+            out += ["## Real trades (live + paper)", "",
+                    ob.callout("money", f"{len(real)} trades · {ob.usd(sum(t['usd'] for t in real), True)}",
+                               [f"{self.trade_link(t, t['day'] + ' ' + t['hm'] + ' ' + t['bot'] + ' ' + t['src'])}: {ob.usd(t['usd'], True)}"
+                                + (f" ({t['cause']})" if t["cause"] else "") for t in real[:6]]), ""]
         top = sorted([x for x in self.lesson_summary if x[1] in LESSON], key=lambda x: (x[4], x[0]))[:5]
-        out += ["## What the losses teach", ""] + [f"- {ob.link(nm, code)}: {n26} losers in 2026, {ob.usd(u, True)}" for nm, code, _, n26, u in top] + [""]
+        out += ["## What the losses teach", "", "_2026 losing trades (backtests at account size + paper + live), one main reason each:_", ""]
+        out += [f"- {ob.link(nm, code)}: {n26} losers, {ob.usd(u, True)}. {re.match(r"^(.*?[.?!])(\s|$)", LESSON[code][2]).group(1)}" for nm, code, _, n26, u in top if n26] + [""]
         out += ["## More hubs", "",
                 f"- {ob.link('ZEUS Trades')}: {len(self.trades)} trade notes · {ob.link('ZEUS Weeks')}: {len(self.week_list)} weekly reviews",
                 f"- {ob.link('ZEUS News')}: {len(self.news)} releases, {len(self.news_types)} types · {ob.link('ZEUS Rules')}: {len(self.rule_names)} hard rules",

@@ -789,7 +789,13 @@ GRAPH = {"collapse-filter": False, "search": "", "showTags": False, "showAttachm
              {"query": "tag:#verdict/rejected", "color": {"a": 1, "rgb": 14433340}},
              {"query": "tag:#zeus/research", "color": {"a": 1, "rgb": 3900150}},
              {"query": "tag:#zeus/day", "color": {"a": 1, "rgb": 9807270}},
-             {"query": "tag:#market/kalshi", "color": {"a": 1, "rgb": 10181046}}],
+             {"query": "tag:#market/kalshi", "color": {"a": 1, "rgb": 10181046}},
+             {"query": "tag:#zeus/lesson", "color": {"a": 1, "rgb": 16750848}},
+             {"query": "tag:#zeus/news", "color": {"a": 1, "rgb": 12517567}},
+             {"query": "tag:#zeus/week", "color": {"a": 1, "rgb": 5025616}},
+             {"query": "tag:#zeus/decide OR tag:#zeus/rule", "color": {"a": 1, "rgb": 16766720}},
+             {"query": "tag:#result/win", "color": {"a": 1, "rgb": 2271778}},
+             {"query": "tag:#result/loss", "color": {"a": 1, "rgb": 13382451}}],
          "collapse-display": False, "showArrow": False, "textFadeMultiplier": 0, "nodeSizeMultiplier": 1.1, "lineSizeMultiplier": 1,
          "collapse-forces": True, "centerStrength": 0.5, "repelStrength": 12, "linkStrength": 1, "linkDistance": 160, "scale": 0.6, "close": False}
 
