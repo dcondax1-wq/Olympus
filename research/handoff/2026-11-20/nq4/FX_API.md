@@ -2,7 +2,7 @@
 
 > **Update 15:15 ET (owner): no gold on NQ.** The kit is now navy / electric cyan `#22d3ee` + blue `#3b82f6` glows / violet `#8b5cf6` accents,
 > green `#22c55e` only for a win. Vault = titanium door with a cyan light seam, glowing cyan / blue crystal bars, a cyan / violet spark shower.
-> Ring = cyan -> blue gradient, violet at 100%. Trail = cyan. Every colour is a parameter: `NQFX.theme({...})`. Load `nqfx.js?v=n3`.
+> Ring = cyan -> blue gradient, violet at 100%. Trail = cyan. Every colour is a parameter: `NQFX.theme({...})`. Load `nqfx.js?v=n4`.
 
 For the nqdash3 team. Files are kit-side (`tools/web_public/olympus/`); you only add one tag and call the verbs from `nq/`.
 Live demo of every effect: **`/olympus/nqfx-lab.html`** (`?tier=ultra|high|low|off` to force a tier). Tests: `python -X utf8 -m tests.test_nqfx`.
@@ -10,7 +10,7 @@ Live demo of every effect: **`/olympus/nqfx-lab.html`** (`?tier=ultra|high|low|o
 ## Load it
 
 ```html
-<script src="../olympus/nqfx.js?v=n3" defer></script>   <!-- loads fx-core / fx-text / fx-burst itself if the page has not -->
+<script src="../olympus/nqfx.js?v=n4" defer></script>   <!-- loads fx-core / fx-text / fx-burst itself if the page has not -->
 ```
 ```js
 await OLYMPUS_NQFX.ready();          // resolves to OLYMPUS_FX (or null if the kit could not load: every verb is then a harmless no-op)
@@ -21,7 +21,7 @@ const NQFX = window.OLYMPUS_NQFX;
 
 | Call | What it does | Notes |
 |---|---|---|
-| `NQFX.theme({ base, cyan, blue, violet, win, loss, steel })` | sets the colours (hex `#rrggbb`), returns the palette | defaults: `#0b1220 #22d3ee #3b82f6 #8b5cf6 #22c55e #f43f5e #9aa4b2`; call it before starting effects (running ones keep theirs) |
+| `NQFX.theme({ base, cyan, cyanHi, blue, violet, win, loss, steel })` | sets the colours (hex `#rrggbb`), returns the palette | defaults: `#070b14 #22d3ee #3b82f6 #8b5cf6 #22c55e #ef4444 #9aa4b2 (cyanHi #67e8f9), the same values as nq/nqtheme.css`; call it before starting effects (running ones keep theirs) |
 | `NQFX.win(el, { usd, bigAt: 500, text: 'Win' })` | green sparks from `el`, a toast "Win +$180"; green / cyan confetti too when `usd >= bigAt` | call it when a trade closes green |
 | `NQFX.loss(el, { usd, text: 'Loss' })` | a calm red toast "Loss -$95", no celebration | |
 | `NQFX.milestone(el, { text })` | cyan / blue / violet confetti from `el` + a toast | eval passed, payout ready, new equity high |

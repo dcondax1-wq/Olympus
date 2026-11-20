@@ -182,11 +182,11 @@ const card = (st, k8, u) => ({ kind: 'kalshi_live_pub', v: 1, st, net: 0, f: 0, 
 
     // 3d. Olympus 2: K8 first (no old-bot numbers above the fold), the header says K8's state, the Monday go-live checklist
     ({ ctx, p } = await open({ at: '2026-11-23T09:00:00-05:00', card: card('paper', k8new({ kk: 1, al: 0, lp: 1, s: 2.5 }), '2026-11-23T13:59:00Z'), k8: 'fx' }));
-    const top = await p.evaluate(() => ({ order: [...document.querySelectorAll('main > section, main > div, main > h2')].map((e) => e.id).filter(Boolean).slice(0, 5),
+    const top = await p.evaluate(() => ({ order: [...document.querySelectorAll('main > section, main > div, main > h2')].map((e) => e.id).filter(Boolean).slice(0, 6),
       sub: document.getElementById('k8sub').innerText, oldTop: Math.round(document.getElementById('sub').getBoundingClientRect().top + scrollY),
       khist: Math.round(document.getElementById('khist').getBoundingClientRect().top + scrollY) }));
     step('c1. K8 first: K8 today, live day, K8 status, the go-live checklist, then "History and tests"; the header says "K8 gold & silver bot · PAPER"; the old bot\'s status line is far below the fold (> 844 px)',
-      top.order.join(' ') === 'k8top k8d k8s kgo khist' && top.sub.includes('K8 gold & silver bot') && top.sub.includes('PAPER') && top.oldTop > 844 && top.khist > 844, top);
+      top.order.join(' ') === 'k8top k8fx k8d k8s kgo khist' && top.sub.includes('K8 gold & silver bot') && top.sub.includes('PAPER') && top.oldTop > 844 && top.khist > 844, top);
     const items = () => p.evaluate(() => [...document.querySelectorAll('#kgo-l li')].map((li) => { const i = li.querySelector('input'); return [i.dataset.kgo, i.checked, i.disabled, li.innerText.replace(/\s+/g, ' ')]; }));
     let it = await items();
     const by = Object.fromEntries(it.map((x) => [x[0], x]));
@@ -235,6 +235,34 @@ const card = (st, k8, u) => ({ kind: 'kalshi_live_pub', v: 1, st, net: 0, f: 0, 
     ({ ctx, p } = await open({ at: '2026-11-23T05:20:00-05:00', k8: 'fx' }));
     step('top3. no PC card: "no PC data yet", "Paper $: no settled bets yet", the 3 legs from the clock', (await T(p, '#k8top-age')) === 'no PC data yet'
       && (await T(p, '#k8top-pnl')).includes('no settled bets yet') && (await p.$$('#k8top-legs li[data-leg]')).length === 3, await T(p, '#k8top'));
+    await ctx.close();
+
+    // 3f. FX (Olympus 2, owner "some 3D, some effects", no gold): the orb hero after the K8 card, started after load + idle; reduced motion = still
+    ({ ctx, p } = await open({ at: '2026-11-23T05:20:00-05:00', card: card('live', k8new({ m: 'L', pn: [1.61, -2.69, 12.1], lg: [['g5', '11-23', 4, 52, 1.61, 'W']] }), '2026-11-23T10:19:00Z'), k8: 'fx' }));
+    await p.waitForFunction('window.KALSHI_FX && window.KALSHI_FX.on', null, { timeout: 15000 }).catch(() => null);
+    const fx = await p.evaluate(() => { const h = document.getElementById('k8fx'), c = document.getElementById('k8fx-c'), top = document.getElementById('k8top');
+      const px = (() => { try { const g = c.getContext('2d'), d = g.getImageData(0, 0, c.width, c.height).data; let n = 0; for (let i = 3; i < d.length; i += 4) if (d[i] > 20) n++; return n; } catch (e) { return -1; } })();
+      const cards = ['k8top', 'k8d', 'k8s', 'kgo'].map((id) => getComputedStyle(document.getElementById(id)));
+      const isGold = (c) => (String(c).match(/\d+(\.\d+)?/g) || []).reduce((acc, v, k, a) => acc || (k % 4 === 0 && +a[k] > 180 && +a[k + 1] >= 130 && +a[k + 1] <= 200 && +a[k + 2] < 130), false); const gold = cards.some((cs) => isGold(cs.borderTopColor) || isGold(cs.color) || isGold(cs.backgroundColor));
+      return { on: window.KALSHI_FX.on, after: h.getBoundingClientRect().top >= top.getBoundingClientRect().bottom - 1, h: Math.round(h.getBoundingClientRect().height), px, gold,
+        bg: getComputedStyle(document.body).backgroundColor, role: h.getAttribute('role'), label: h.getAttribute('aria-label') }; });
+    step('fx1. the orb hero sits right AFTER the K8 today card (140 px, kept from the first paint), runs after load (KALSHI_FX.on), draws (lit pixels), role img + a label',
+      fx.on && fx.after && fx.h === 140 && fx.px > 200 && fx.role === 'img' && /K8/.test(fx.label), fx);
+    step('fx2. OLYMPUS NIGHT: a black page, no gold on the K8 cards (borders / text / backgrounds; gold only as small accents)', !fx.gold && fx.bg.indexOf('rgb(0, 0, 0)') === 0, fx);
+    await p.waitForTimeout(1600);
+    const nq = await p.evaluate(() => ({ kit: !!window.OLYMPUS_NQFX, nq: !!(window.KALSHI_FX && window.KALSHI_FX.nq), seen: sessionStorage.getItem('kalshi.fx.seen'), pnl: document.getElementById('k8top-pnl').textContent }));
+    step('fx3. the effects kit (olympus/nqfx.js) arrives after the hero; today\'s gold DOWN win gets its spark once (remembered for the visit); the $ line ends right after the roll',
+      nq.kit && nq.nq && /g5@11-23/.test(nq.seen || '') && nq.pnl.includes('since the start +$12.10') && nq.pnl.includes('today +$1.61'), nq);
+    await shot(p, 'kalshi-fx-top.png', '#k8top');
+    await ctx.close();
+    ctx = await br.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
+    await ctx.route('**/*', (r) => (r.request().url().startsWith(origin) ? r.continue() : r.abort()));
+    p = await ctx.newPage();
+    await p.goto(origin + '/kalshi/');
+    await p.waitForTimeout(3500);
+    const rm = await p.evaluate(() => { const c = document.getElementById('k8fx-c'); let px = -1; try { const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; px = 0; for (let i = 3; i < d.length; i += 4) if (d[i] > 20) px++; } catch (e) { px = -1; }
+      return { on: window.KALSHI_FX && window.KALSHI_FX.on, px, kit: !!window.OLYMPUS_NQFX }; });
+    step('fx4. reduced motion: one still frame (lit pixels), no running loop, the effects kit not loaded', rm.on === false && rm.px > 200 && !rm.kit, rm);
     await ctx.close();
 
     // 4. the verdicts: Watch (within 5 points of a line) and OFF line crossed (win rate, then price creep)

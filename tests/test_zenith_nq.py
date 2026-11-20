@@ -63,7 +63,9 @@ def part_a():
     check("a. the strip's CSS is in the AGORA layer: a 44 px link, serif title, warm colours, hidden off Home", bool(rule) and "min-height: 44px" in rule.group(0) and ".zn-nq[hidden] { display: none; }" in css and "Iowan Old Style" in css.split(".zn-nq-t {")[1][:200]
           and not cold(css[css.index("/* ---- the NQ note above Home"):]))
     hero = rd("zenith_hero.js")
-    check("a. the Home curve (zenith_hero.js) has no cold colour left: bronze to olive / terracotta line, gold target, marble grid", not cold(hero) and "'#9c6b3c'" in hero and "'#a3ae6b' : '#e0795a'" in hero, cold(hero))
+    # OLYMPUS NIGHT (owner 2026-11-20) replaced AGORA's bronze: the curve runs violet into mint / red, the target line is violet
+    check("a. the Home curve (zenith_hero.js) wears OLYMPUS NIGHT: violet to mint / red line, a violet target, no AGORA bronze",
+          "lg.addColorStop(0, '#4d2e76'); lg.addColorStop(1, up ? '#77db89' : '#ef4444')" in hero and "rgba(157,89,238,.6)" in hero and "'#9c6b3c'" not in hero, cold(hero))
     check("a. no cold colour in zenith_nq.js, zenith_money.js, zenith.js, zenith.css, polish.css; the accent rgb token is gold (200,162,74; a theme slot's fallback)",
           not any(cold(rd(n)) for n in ("zenith_nq.js", "zenith_money.js", "zenith.js", "zenith.css", "polish.css")) and "--zn-accent-rgb:var(--oly-th-a8-rgb, 200,162,74)" in css and "109,124,255" not in css,
           {n: cold(rd(n))[:3] for n in ("zenith_nq.js", "zenith_money.js", "zenith.js", "zenith.css", "polish.css")})
@@ -71,8 +73,8 @@ def part_a():
     fb = src[src.index("function reactorFb("):src.index("function reactorFb(") + 2600]
     sp = src[src.index("const cv = $('#spCv')"):src.index("const cv = $('#spCv')") + 3200]
     check("a. the eval arc on Home (reactorFb) and the intro (stars, halo) are re-toned: no cold colour", not cold(fb) and not cold(sp), (cold(fb), cold(sp)))
-    check("a. changed files are re-versioned so a phone does not keep the old copy: zenith_hero.js?v=5, zenith_money.js?v=4, zenith_agora.css?v=a5df (AGORA v2 Home layer; day-arenas DESIGN)",
-          'src="zenith_hero.js?v=5"' in idx and 'src="zenith_money.js?v=4"' in idx and 'href="zenith_agora.css?v=a5df"' in idx)
+    check("a. changed files are re-versioned so a phone does not keep the old copy: zenith_hero.js?v=6, zenith_money.js?v=4, zenith_agora.css?v=a5df (AGORA v2 Home layer; day-arenas DESIGN)",
+          'src="zenith_hero.js?v=6"' in idx and 'src="zenith_money.js?v=4"' in idx and 'href="zenith_agora.css?v=a5df"' in idx)
 
 
 NODE = r"""
@@ -144,7 +146,7 @@ def part_c(tmp, shots):
             check("c. Home with a fresh report (1 minute old): the calm strip above the page, no banner, the visible link 'Open the new NQ page' (44 px tall) that goes to nq/",
                   A and not A["hidden"] and A["level"] == "ok" and A["title"] == "Zlarior and ATLAS on one page" and A["link"] == "Open the new NQ page" and A["href"].endswith("/nq/") and A["h"] >= 44 and A["w"] >= 44 and A["above"]
                   and A["next"] == "page" and A["top"] < 400 and A["x"] <= 0, A)
-            check("c. AGORA look: the strip's title is the serif", any(f in A["font"] for f in ("Palatino", "Iowan", "Georgia")), A["font"])
+            check("c. OLYMPUS NIGHT look (the default since 2026-11-20): the strip's title is the system sans", any(f in A["font"] for f in ("-apple-system", "system-ui", "SF Pro")), A["font"])
             sh(pg, "zenith_nq_fresh.png")
             pg.evaluate("() => { location.hash = '#/perf'; }")
             pg.wait_for_timeout(1300)

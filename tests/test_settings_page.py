@@ -54,7 +54,7 @@ def part_a():
     html, css = rd(PAGE, "index.html"), rd(PAGE, "settings.css")
     js = {n: rd(PAGE, n) for n in files if n.endswith(".js")}
     check("a. the kit first (olympus.css, themes.js, olympus.js ?v=o2 with data-app='settings'), viewport-fit=cover, theme-color, dark, manifest, icon, apple-touch-icon",
-          '<link rel="stylesheet" href="../olympus/olympus.css?v=o7">' in html and 'src="../olympus/themes.js?v=o9"' in html and 'src="../olympus/olympus.js?v=o21" data-app="settings"' in html
+          '<link rel="stylesheet" href="../olympus/olympus.css?v=o7">' in html and 'src="../olympus/themes.js?v=o10"' in html and 'src="../olympus/olympus.js?v=o22" data-app="settings"' in html
           and "viewport-fit=cover" in html and 'name="theme-color"' in html and 'content="dark"' in html and 'rel="manifest" href="manifest.webmanifest"' in html
           and 'rel="icon" href="icon.svg"' in html and 'rel="apple-touch-icon"' in html and "fx-core.js?v=f1" in html and "sfx.js" in html)
     check("a. no CDN, no outside script / font / image: every src and href is local", not re.search(r'(src|href)="https?://', html))
@@ -322,8 +322,9 @@ def part_c():
             p.click("#clearAll")
             p.click("#shYes")
             keys = p.evaluate("Object.keys(localStorage).sort()")
+            # (2026-11-20) the theme engine writes the default look back at once (OLYMPUS NIGHT, saved so every page's first frame paints it): not a leftover choice
             check("c. Clear all: Mind's, Jarvis's and Olympus' saved choices are gone, the two secrets stay untouched (and are never shown)",
-                  "mind.x" not in keys and "mind.imported" not in keys and "jarvis.mode" not in keys and "olympus.theme" not in keys and p.evaluate("localStorage.getItem('jarvis.smart')") is not None
+                  "mind.x" not in keys and "mind.imported" not in keys and "jarvis.mode" not in keys and ("olympus.theme" not in keys or p.evaluate("localStorage.getItem('olympus.theme')") == "night") and p.evaluate("localStorage.getItem('jarvis.smart')") is not None
                   and p.evaluate("localStorage.getItem('jarvis.vault')") is not None and "Cleared" in p.inner_text("#ioNote") and "SECRET" not in p.content(), keys)
             # ---- System
             p.click("#t-system")

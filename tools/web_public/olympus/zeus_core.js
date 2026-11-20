@@ -82,7 +82,7 @@
   var d = document, me = d.currentScript && d.currentScript.src ? d.currentScript.src : null;
   function url(rel) { try { return new URL(rel, me || d.baseURI).href; } catch (e) { return rel; } }
   // the models this file needs, in the order the ZEUS page loads them (boardmodel after mffumodel)
-  var DEPS = [['PC_FEED', '../pc_feed.js?v=n6'], ['PAYOUT_COACH', '../business/payoutcoach.js?v=2'], ['MFFU_MODEL', '../business/mffumodel.js?v=2'],
+  var DEPS = [['PC_FEED', '../pc_feed.js?v=n7'], ['PAYOUT_COACH', '../business/payoutcoach.js?v=2'], ['MFFU_MODEL', '../business/mffumodel.js?v=2'],
               ['BOARD_MODEL', '../board/boardmodel.js?v=b6'], ['EDGE_CHIP', '../edge_chip.js?v=1']];
   var needP = null;
   function need() {
@@ -120,25 +120,26 @@
   }
 
   // ------------------------------------------------------------------------------------------------ the home card
-  var CSS = '.zeus-card{display:block;margin:0 0 12px;padding:0;border-radius:16px;background:rgba(27,23,19,.92);color:#f3ece0;border:1px solid rgba(200,162,74,.45);'
-    + 'border-top:3px solid #c8a24a;box-shadow:0 6px 22px rgba(0,0,0,.28);overflow:hidden;font:400 15px/1.4 -apple-system,system-ui,"Helvetica Neue",Arial,sans-serif;text-align:left}'
+  // OLYMPUS NIGHT (owner 2026-11-20): near-black violet card, violet edge glow, bright gold name, mint for good (no brown / marble)
+  var CSS = '.zeus-card{display:block;margin:0 0 12px;padding:0;border-radius:16px;background:linear-gradient(180deg,#16131e,#020204);color:#ebe9f1;border:1px solid #3e255e;'
+    + 'border-top:3px solid #9d59ee;box-shadow:0 6px 22px rgba(0,0,0,.45),0 0 22px rgba(157,89,238,.14);overflow:hidden;font:400 15px/1.4 -apple-system,system-ui,"Helvetica Neue",Arial,sans-serif;text-align:left}'
     + '.zeus-card.bad{border-color:#ff5a4f;border-top-color:#ff5a4f}'
     + '.zeus-go{display:block;padding:10px 14px 6px;color:inherit;text-decoration:none;-webkit-tap-highlight-color:transparent}.zeus-go:active{background:rgba(255,255,255,.05)}'
     + '.zeus-h{display:flex;align-items:center;gap:10px;min-height:28px}'
-    + '.zeus-t{font:700 19px/1 "Iowan Old Style",Palatino,Georgia,serif;letter-spacing:.08em;color:#dcbd6e}'
-    + '.zeus-pc{flex:1;min-width:0;display:flex;align-items:center;gap:6px;font-weight:600;color:#a9c47e;overflow-wrap:anywhere}'
-    + '.zeus-dot{flex:none;width:9px;height:9px;border-radius:50%;background:#8fbf6a}'
+    + '.zeus-t{font:700 19px/1 "Iowan Old Style",Palatino,Georgia,serif;letter-spacing:.08em;color:#f1c14b}'
+    + '.zeus-pc{flex:1;min-width:0;display:flex;align-items:center;gap:6px;font-weight:600;color:#77db89;overflow-wrap:anywhere}'
+    + '.zeus-dot{flex:none;width:9px;height:9px;border-radius:50%;background:#77db89}'
     + '.zeus-pc.bad{color:#fff;background:#8f1d1d;border:2px solid #ff5a4f;border-radius:10px;padding:6px 10px;font-size:15px}.zeus-pc.bad .zeus-dot{background:#ff5a4f}'
-    + '.zeus-pc.wait{color:#cfc4b2}.zeus-pc.wait .zeus-dot{background:#a89c88}'
-    + '.zeus-more{flex:none;color:#cfc4b2;font-size:13px;white-space:nowrap}'
+    + '.zeus-pc.wait{color:#c8c3d4}.zeus-pc.wait .zeus-dot{background:#898497}'
+    + '.zeus-more{flex:none;color:#c8c3d4;font-size:13px;white-space:nowrap}'
     + '.zeus-rows{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:4px}'
-    + '.zeus-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 10px;padding:4px 0 0;line-height:1.3;border-top:1px solid rgba(200,184,150,.16)}'
+    + '.zeus-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 10px;padding:4px 0 0;line-height:1.3;border-top:1px solid rgba(157,89,238,.18)}'
     + '.zeus-n{font-weight:700;overflow-wrap:anywhere}.zeus-n small{margin-left:6px;font:700 12px/1 system-ui,sans-serif;padding:3px 7px;border-radius:999px;border:1px solid currentColor;vertical-align:2px}'
-    + '.zeus-n small.eval{color:var(--ag-aegean-text,#7fa7c2)}.zeus-n small.funded{color:var(--ag-olive-text,#a0ac6e)}.zeus-n small.passed{color:#14110e;background:#c8a24a;border-color:#c8a24a}.zeus-n small.failed{color:#fff;background:#b33a2e;border-color:#b33a2e}'
+    + '.zeus-n small.eval{color:var(--ag-aegean-text,#7fa7c2)}.zeus-n small.funded{color:var(--ag-olive-text,#a0ac6e)}.zeus-n small.passed{color:#000;background:#f1c14b;border-color:#f1c14b}.zeus-n small.failed{color:#fff;background:#b33a2e;border-color:#b33a2e}'
     + '.zeus-b{font-weight:700;font-variant-numeric:tabular-nums;text-align:right}'
-    + '.zeus-g{color:#cfc4b2;font-size:13px;min-width:0;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}'
-    + '.zeus-d{font-size:13px;font-weight:600;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;color:#cfc4b2}.zeus-d.pos{color:#8fbf6a}.zeus-d.neg{color:#ff8a7a}'
-    + '.zeus-none{margin:8px 0 0;color:#cfc4b2;font-size:13.5px}'
+    + '.zeus-g{color:#c8c3d4;font-size:13px;min-width:0;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}'
+    + '.zeus-d{font-size:13px;font-weight:600;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;color:#c8c3d4}.zeus-d.pos{color:#77db89}.zeus-d.neg{color:#f87171}'
+    + '.zeus-none{margin:8px 0 0;color:#c8c3d4;font-size:13.5px}'
     + '.zeus-edge{padding:0 14px 8px}.zeus-edge:empty,.zeus-edge[hidden]{display:none}'
     // the edge chip on one line per bot here (its light first; the numbers and the help one tap away, on the chip or the ZEUS page)
     + '.zeus-card .zeus-edge.edge-chip{margin:0}.zeus-card .zeus-edge.edge-chip>button{padding:5px 10px;min-height:44px}'

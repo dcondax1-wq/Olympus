@@ -89,6 +89,7 @@ import(process.argv[2]).then((D) => {
   const o = {};
   const A = D.accounts(home, biz, now);
   o.acc = A.map((a) => [a.key, a.name, a.stage, a.balance, a.room, a.goalLabel, a.goalText, a.today, a.dot]);
+  o.mffu = A.filter((a) => a.mffu).map((a) => [a.key, a.balance, a.floor]);
   o.accAge = A.map((a) => a.ageText);
   const B = D.thinking(home, news, file, now);
   o.lit = B[0]; o.atlas = B[1];
@@ -169,6 +170,8 @@ def test_core():
           [a[0] for a in acc] == ["zlarior", "atlas", "fresh25", "rapid1", "xtra9"] and not any("BLITZ" in a[1] for a in acc), acc)
     check("b. Zlarior 50K: balance, room left, to pass, today, live dot", acc[0] == ["zlarior", "Zlarior 50K", "Eval", 49193, 1025, "To pass", "$3,807", -50, "live"], acc[0])
     check("b. ATLAS funded: 'To payout' from the board card (the payout coach's number), not 'To pass'", acc[1][2] == "Funded" and acc[1][5] == "To payout" and acc[1][6] == "$2,213", acc[1])
+    check("b. ATLAS funded in MFFU's own terms (owner 2026-11-20: a sim-funded account starts at $0): $24,887 -> -$113, floor -$1,000; the evals keep their balance",
+          acc[1][3] == -113 and o["mffu"] == [["atlas", -113, -1000]] and acc[0][3] == 49193, (acc[1], o["mffu"]))
     check("b. Zlarior 25K #2 last heard 3 h ago: red 'old' dot (over 1 h, age.js limits) and the site-wide words 'updated 3 h ago'", acc[2][8] == "old" and o["accAge"][2] == "updated 3 h ago", (acc[2], o["accAge"][2]))
     check("b. Rapid EOD 25K with no PC numbers: plan dot, says 'plan only'", acc[3][8] == "plan" and acc[3][3] is None and "plan only" in o["accAge"][3], (acc[3], o["accAge"][3]))
     check("b. a 2-hour-old report turns every PC account stale (the planned one stays plan)", o["stale"][:3] == ["old", "old", "old"] and o["stale"][3] == "plan", o["stale"])
