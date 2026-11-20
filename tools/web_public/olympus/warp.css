@@ -53,7 +53,7 @@
 :root:is([data-oly-warp="home"], [data-oly-warp-back], [data-oly-page="jarvis"]:not([data-oly-warp]), [data-oly-page="gate"]:not([data-oly-warp])):is(.oly-warp-vt, :active-view-transition-type(oly-warp), .oly-warp-in)::after {
   box-shadow: 0 0 0 1px var(--ow-b), 0 0 22px 3px var(--ow-a), inset 0 0 22px 3px var(--ow-a), 0 0 0 18px rgba(255, 244, 216, .05); animation-name: ow-ring-home; }
 :root:is([data-oly-warp="zeus"], [data-oly-page="today"]:not([data-oly-warp]), [data-oly-page="zeus"]:not([data-oly-warp])):not([data-oly-warp-back]):is(.oly-warp-vt, :active-view-transition-type(oly-warp), .oly-warp-in)::after {
-  width: 40vmin; height: 70vmin; margin: -35vmin 0 0 -20vmin; border-radius: 0; box-shadow: none; background: linear-gradient(180deg, #fff 0, var(--ow-b) 55%, var(--ow-a) 100%);
+  width: 30vmin; height: 64vmin; margin: -32vmin 0 0 -15vmin; border-radius: 0; box-shadow: none; background: linear-gradient(180deg, #f4f8ff 0, var(--ow-b) 50%, rgba(0, 0, 0, 0) 100%);
   -webkit-clip-path: polygon(58% 0, 22% 54%, 46% 54%, 34% 100%, 80% 38%, 55% 38%, 74% 0); clip-path: polygon(58% 0, 22% 54%, 46% 54%, 34% 100%, 80% 38%, 55% 38%, 74% 0); animation-name: ow-bolt; }
 :root[data-oly-warp="money"]:not([data-oly-warp-back]):is(.oly-warp-vt, :active-view-transition-type(oly-warp), .oly-warp-in)::after { border-radius: 12%; animation-name: ow-diamond; }
 :root[data-oly-warp="kalshi"]:not([data-oly-warp-back]):is(.oly-warp-vt, :active-view-transition-type(oly-warp), .oly-warp-in)::after {
@@ -86,7 +86,7 @@
 @keyframes ow-flash-out { 0% { opacity: .7; transform: scale(1); } 100% { opacity: 0; transform: scale(1.4); } }
 @keyframes ow-ring { 0% { opacity: 0; transform: scale(.12); } 18% { opacity: .7; } 100% { opacity: 0; transform: scale(3.4); } }
 @keyframes ow-ring-home { 0% { opacity: 0; transform: scale(3.2); } 30% { opacity: .75; } 100% { opacity: 0; transform: scale(.5); } }
-@keyframes ow-bolt { 0% { opacity: 0; transform: scale(.4); } 10% { opacity: .8; } 22% { opacity: .2; } 32% { opacity: .75; } 44% { opacity: .25; } 54% { opacity: .6; transform: scale(1.1); } 100% { opacity: 0; transform: scale(1.9); } }
+@keyframes ow-bolt { 0% { opacity: 0; transform: scale(.5); } 10% { opacity: .55; } 22% { opacity: .12; } 32% { opacity: .5; } 44% { opacity: .15; } 54% { opacity: .4; transform: scale(1.1); } 100% { opacity: 0; transform: scale(1.7); } }
 @keyframes ow-diamond { 0% { opacity: 0; transform: rotate(45deg) scale(.1); } 18% { opacity: .75; } 100% { opacity: 0; transform: rotate(225deg) scale(3.2); } }
 @keyframes ow-wheel { 0% { opacity: 0; transform: rotate(0) scale(.2); } 18% { opacity: .6; } 100% { opacity: 0; transform: rotate(160deg) scale(2.6); } }
 @keyframes ow-skyline { 0% { opacity: 0; transform: scaleY(.1); } 22% { opacity: .85; } 60% { opacity: .65; transform: scaleY(1); } 100% { opacity: 0; transform: translateY(-18%) scale(1.15, 1.2); } }
