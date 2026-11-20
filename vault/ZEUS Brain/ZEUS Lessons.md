@@ -9,6 +9,22 @@ type: "lessons"
 > [!tip] This note grows by itself
 > Every night it is rebuilt from the loss anatomy, the rejected list and the newest write-ups. Don't redo a rejected idea without a new angle.
 
+## Reason codes (recounted on every build)
+
+Every losing trade gets ONE main cause and the checklist flags; each lesson note keeps its own counts and examples.
+
+| Lesson | Losers in all backtests | Losers 2026 | $ 2026 |
+|---|---|---|---|
+| [[Lesson never worked\|never]] | 1319 | 182 | -$38,216 |
+| [[Lesson worked then turned\|turned]] | 624 | 82 | -$20,656 |
+| [[Lesson shaken out\|wick]] | 186 | 15 | -$3,418 |
+| [[Lesson news hit\|news]] | 16 | 3 | -$1,143 |
+| [[Lesson not yet classified\|unclassified]] | 0 | 0 | $0 |
+| [[Lesson against both trends\|against_htf]] | 561 | 76 | -$15,118 |
+| [[Lesson late entry\|late]] | 600 | 81 | -$9,029 |
+| [[Lesson news soon\|news_soon]] | 12 | 2 | -$655 |
+| [[Lesson no room\|no_room]] | 192 | 16 | -$3,028 |
+
 ## Why we lose (loss clusters)
 
 _Built 2026-11-19 01:42, research/anatomy/explain.json._
