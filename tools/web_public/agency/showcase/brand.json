@@ -109,39 +109,19 @@
       "color": "#ff8a5c"
     },
     {
-      "slug": "salon",
-      "label": "Salon / barber",
-      "color": "#ff5ca8"
-    },
-    {
-      "slug": "home-services",
-      "label": "Plumber / HVAC",
+      "slug": "roofer",
+      "label": "Roofer / contractor",
       "color": "#5cc8ff"
     },
     {
-      "slug": "dentist",
-      "label": "Dentist",
-      "color": "#7cffd1"
-    },
-    {
-      "slug": "gym",
-      "label": "Gym / coach",
-      "color": "#ffd25c"
-    },
-    {
-      "slug": "real-estate",
-      "label": "Real estate",
-      "color": "#b49cff"
-    },
-    {
-      "slug": "landscaping",
-      "label": "Landscaping",
-      "color": "#8dff7c"
-    },
-    {
-      "slug": "auto",
-      "label": "Auto shop",
+      "slug": "detailer",
+      "label": "Car detailer",
       "color": "#ff6b6b"
+    },
+    {
+      "slug": "estate",
+      "label": "Real estate / venue",
+      "color": "#b49cff"
     }
   ],
   "_prices_note": "Starting prices from the research (offers.json, Nov 20): care plans run $79-299 a month. Change any number here."

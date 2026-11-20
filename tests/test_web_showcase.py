@@ -47,7 +47,7 @@ def test_static():
     B = json.load(open(os.path.join(D, "brand.json"), encoding="utf-8"))
     check("a. brand.json: a name, a tagline, contact placeholders, 3 offers with numeric prices (one marked best), a 6-step week, 8 demos with slugs + colours",
           B.get("name") and B.get("tagline") and B.get("phone") and B.get("email") and len(B["offers"]) == 3 and all(isinstance(o["price"], (int, float)) for o in B["offers"])
-          and sum(1 for o in B["offers"] if o.get("best")) == 1 and len(B["week"]) == 6 and len(B["demos"]) == 8
+          and sum(1 for o in B["offers"] if o.get("best")) == 1 and len(B["week"]) == 6 and len(B["demos"]) == 4  # the 4 demos that exist (restaurant, roofer, detailer, estate)
           and all(re.fullmatch(r"[a-z0-9-]+", x["slug"]) and re.fullmatch(r"#[0-9a-fA-F]{6}", x["color"]) for x in B["demos"]), B.get("name"))
     check("a. prices follow the research (offers.json, Nov 20): Starter site $1,500 + $79/mo, Call engine $500 setup + $299/mo (most picked), 3D Signature from $2,500",
           [(o["id"], o["price"], o["monthly"]) for o in B["offers"]] == [("starter", 1500, 79), ("engine", 500, 299), ("signature", 2500, 79)] and B["offers"][1].get("best") and B["offers"][2].get("from"))
@@ -104,7 +104,7 @@ def test_page():
         check("b. brand.json applied: the name in the header and title, the changed price ($1,234), JSON-LD follows, the plan picker lists the offers",
               r["name"] == "Bright Pixel Studio" and r["title"].startswith("Bright Pixel Studio") and "$1,234" in r["prices"] and r["ld"]["name"] == "Bright Pixel Studio"
               and r["sel"] == ["starter", "engine", "signature", "unsure"] and r["week"] == 6, r)
-        check("b. the demo list: one card per demo, each opening ../demos/#<slug>", r["demos"] == 8 and r["href"] == "../demos/#restaurant", r)
+        check("b. the demo list: one card per demo, each opening its own demo page ../demos/<slug>/", r["demos"] == 4 and r["href"] == "../demos/restaurant/", r)
         # the contact form
         p.click("#offerList [data-offer=signature]")
         p.fill("input[name=name]", "Ana"); p.fill("input[name=biz]", "Ana's Tacos"); p.select_option("#kindSel", "Restaurant"); p.fill("textarea[name=msg]", "online menu")
@@ -123,7 +123,7 @@ def test_page():
         p.wait_for_function("window.__showcase.three === 'live' || window.__showcase.three === 'failed' || window.__showcase.three === 'still'", timeout=60000)
         s3 = p.evaluate("window.__showcase")
         check("b. the 3D city came up after the page (state live), with a canvas and floating demo names that open demos",
-              s3["three"] == "live" and p.locator("#stage canvas").count() == 1 and p.evaluate("[...document.querySelectorAll('#tags a')].every((a) => a.getAttribute('href').startsWith('../demos/#'))"), s3)
+              s3["three"] == "live" and p.locator("#stage canvas").count() == 1 and p.evaluate("[...document.querySelectorAll('#tags a')].every((a) => a.getAttribute('href').startsWith('../demos/'))"), s3)
         check("b. no console error, nothing off the site", not errs and not off, (errs[:3], off[:3]))
         ctx.close()
 

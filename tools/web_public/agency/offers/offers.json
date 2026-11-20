@@ -38,7 +38,7 @@
       "monthly_hours": 2,
       "monthly_hard": 50,
       "monthly_label": "Call engine plan",
-      "badge": "Most picked",
+      "badge": "Recommended",
       "min_months": 3,
       "pitch": "More calls from the map: site + Google profile + review requests + every review answered. It compounds: more reviews, more map calls, and it rarely cancels.",
       "includes": [

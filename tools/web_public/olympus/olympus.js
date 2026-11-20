@@ -489,7 +489,7 @@
       if (!d.getElementById('olyVeilHide')) { var vs = el('style'); vs.id = 'olyVeilHide'; vs.textContent = 'html[data-oly-veil] main#app > :not(header.top){visibility:hidden}'; (d.head || d.body).appendChild(vs); }
     }
     if (!framed && id && !d.querySelector('.oly-home')) {
-      var a = el('a', 'oly-home'); a.href = '../jarvis/'; a.setAttribute('aria-label', 'Back to Jarvis'); a.title = 'Back to Jarvis';
+      var a = el('a', 'oly-home'); a.href = me && me.src ? new URL('../jarvis/', me.src).href : '../jarvis/';   // from the kit's own URL: right at any folder depth (agency/offers/) a.setAttribute('aria-label', 'Back to Jarvis'); a.title = 'Back to Jarvis';
       a.appendChild(el('span', 'oly-home-o', 'Ο'));
       d.body.appendChild(a);
       seatWatch(a);

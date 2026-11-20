@@ -43,7 +43,7 @@ def static():
     data = json.loads(read("offers.json"))
     check("a. three packages from the research: Starter site $1,500 + $79, Call engine $500 + $299 (most picked), 3D Signature from $2,500 + $79",
           [(p["name"], p["price"], p["monthly"]) for p in data["packages"]] == [("Starter site", 1500, 79), ("Call engine", 500, 299), ("3D Signature", 2500, 79)]
-          and data["packages"][1].get("badge") == "Most picked" and data["packages"][2].get("from") is True
+          and data["packages"][1].get("badge") == "Recommended" and data["packages"][2].get("from") is True
           and all(p["price"] > 0 and p["days"] > 0 and p["monthly"] > 0 and len(p["includes"]) >= 4 for p in data["packages"]))
     check("a. prices say where they come from (the research estimates) and that they are estimates", data.get("placeholder") is False and "research" in data.get("source", "") and "estimate" in data.get("source", ""))
     ex = {x["id"]: x for x in data["extras"]}
