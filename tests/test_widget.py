@@ -84,7 +84,7 @@ def main() -> int:
         check(f"d. {fam}: draws {need}", all(n in r["texts"] for n in need), txt)
         check(f"d. {fam}: no undefined / NaN / null in what it draws", not re.search(r"undefined|NaN|null|\[object", txt), txt)
         check(f"d. {fam}: source tag + age, tap opens the site, refresh in ~15 min, last copy saved",
-              any(t.startswith(("LIVE · PC", "PAPER · SITE")) for t in r["texts"]) and r["url"].startswith("https://dcondax1-wq.github.io/")
+              any(t.startswith(("LIVE · PC", "PC · OLD", "PAPER · SITE")) for t in r["texts"]) and r["url"].startswith("https://dcondax1-wq.github.io/")
               and 14 * 60e3 < r["refresh"] <= 15 * 60e3 and r["cached"] == 1, r)
     r = node("draw", "-", "-", "large", "light")
     check("d. offline + nothing saved: says so, OFFLINE tag, saves nothing", "OFFLINE · —" in r["texts"] and r["cached"] == 0

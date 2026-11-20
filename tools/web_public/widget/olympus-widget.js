@@ -285,7 +285,7 @@
   }
   function footer(w, d, small) {
     const f = w.addStack(); f.centerAlignContent();
-    const m = d.m, srcTag = m ? (m.src === 'PC' ? 'LIVE · PC' : m.src === 'SITE' ? 'PAPER · SITE' : 'CACHED') : 'OFFLINE';
+    const m = d.m, srcTag = m ? (m.src === 'PC' ? (m.stale ? 'PC · OLD' : 'LIVE · PC') : m.src === 'SITE' ? 'PAPER · SITE' : 'CACHED') : 'OFFLINE';
     txt(f, srcTag + ' · ' + (m && m.t ? ago(d.now - m.t) : '—'), small ? 8 : 9, m && !m.stale ? P.muted : P.warn, { semi: true });
     f.addSpacer();
     const rd = new Date(d.now * 1000), hm = pad(rd.getHours()) + ':' + pad(rd.getMinutes());

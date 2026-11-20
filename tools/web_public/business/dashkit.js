@@ -153,7 +153,7 @@
     const d = await W.load({ site: '../', cached });
     box.replaceChildren();
     const m = d.m;
-    const kind = !m ? 'OFFLINE' : m.src === 'PC' ? 'LIVE' : m.src === 'SITE' ? 'PAPER' : 'CACHED';
+    const kind = !m ? 'OFFLINE' : m.src === 'PC' ? (m.stale ? 'STALE' : 'LIVE') : m.src === 'SITE' ? 'PAPER' : 'CACHED';   // STALE = the PC's post is over 20 min old
     head(box, 'Your accounts now', kind, m && m.t ? ago(d.now - m.t) : '', m ? m.pc.label + (m.src === 'PC' ? ' · from your PC' : '') : '');
     if (!m || !m.accounts.length) { empty(box, 'No account numbers yet: the PC has not posted and the site has none.'); return; }
     try { if (m.src !== 'CACHED') localStorage.setItem('oly.glance.v1', JSON.stringify(m)); } catch (_) { /* private mode */ }
@@ -197,7 +197,7 @@
     const P = D.plan;
     if (!P) { empty(box, 'No money plan yet (research/lab/money_plan.json).'); return; }
     const M = (P.by_market || {})[mk || 'H2'] || { accounts: [] };
-    head(box, 'Payday calendar', 'ESTIMATE', ageOf(P.built), 'First payout per account: the dot = the middle of 1,000 runs of a market like ' + ((P.markets || {})[mk || 'H2'] || 'Jul-Oct 2026') + ', the bar = the middle half of the runs.');
+    head(box, 'Payday calendar', 'ESTIMATE', ageOf(P.built), 'First payout per account: the dot = the middle of 1,000 runs of a market like ' + String((P.markets || {})[mk || 'H2'] || '2026 Jul-Oct').replace(/-like$/, '') + ', the bar = the middle half of the runs.');
     const rows = M.accounts.filter((a) => a.first_pay);
     if (!rows.length) { empty(box, 'No payout dates in this plan.'); return; }
     const T = (s) => Date.parse(s + 'T12:00:00Z') / 86400000;

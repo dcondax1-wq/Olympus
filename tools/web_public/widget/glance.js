@@ -56,7 +56,7 @@
     const m = d.m, now = d.now;
     const src = $('src');
     if (!m) { src.textContent = 'OFFLINE'; src.className = 'tag bad'; $('accts').replaceChildren(el('p', 'muted', 'No numbers yet: no signal and no saved copy. Pull to refresh when you are online.')); return; }
-    src.textContent = m.src === 'PC' ? 'LIVE · PC' : m.src === 'SITE' ? 'PAPER · SITE' : 'CACHED';
+    src.textContent = m.src === 'PC' ? (m.stale ? 'PC · OLD' : 'LIVE · PC') : m.src === 'SITE' ? 'PAPER · SITE' : 'CACHED';
     src.className = 'tag ' + (m.src === 'PC' && !m.stale ? 'live' : m.src === 'CACHED' ? 'cached' : 'paper');
     const t = $('today'); t.textContent = W.usd(m.today, true); t.className = 'g-big num ' + sgn(m.today);
     $('pcDot').className = 'dot ' + (m.pc.level || 'warn') + (m.pc.on ? ' pulse' : '');

@@ -13,7 +13,7 @@
 .dk-tag small { font-weight: 600; letter-spacing: 0; text-transform: none; opacity: .9; }
 .dk-tag.live { color: var(--ag-olive-text, #a0ac6e); } .dk-tag.paper, .dk-tag.cached, .dk-tag.offline { color: var(--oly-th-warn, #e0b25a); }
 .dk-tag.backtest { color: var(--ag-aegean-text, #7fa7c2); } .dk-tag.estimate { color: var(--ag-gold, #c8a24a); } .dk-tag.funded { color: var(--ag-gold-hi, #dcbd6e); }
-.dk-tag.offline, .dk-tag.cached { color: var(--ag-terra-text, #e08a6b); }
+.dk-tag.offline, .dk-tag.cached, .dk-tag.stale { color: var(--ag-terra-text, #e08a6b); }
 .pos { color: var(--ag-olive-text, #a0ac6e); } .neg { color: var(--ag-terra-text, #e08a6b); } .warn { color: var(--oly-th-warn, #e0b25a); }
 .dk-card .muted, .dk-tcard .muted { color: var(--ag-muted, #a89c88); }
 
