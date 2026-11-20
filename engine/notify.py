@@ -775,10 +775,14 @@ PROBLEM_DUP_S = 20 * 60              # a report "cond:<code>" / "back:<code>" wi
 
 
 def problem_message(p: dict, now=None, s: dict | None = None) -> dict:
+    """A problem push's words. p["soft"] (engine/fill_audit.rule_hold: an entry the bot's own rule held back on purpose) = no
+    sound in quiet hours and normal priority by day; every other problem is high and rings in quiet hours ("problems" in
+    ring_in_quiet_hours, the default)."""
     s = s or settings()
-    night = quiet(now if now is not None else time.time(), s) and not rings("problems", s)
+    soft = bool(p.get("soft"))
+    night = quiet(now if now is not None else time.time(), s) and (soft or not rings("problems", s))
     return {"title": mask_ids(str(p.get("title") or "Problem"))[:120], "body": mask_ids(str(p.get("body") or ""))[:600],
-            "priority": "low" if night else "high", "tags": str(p.get("tags") or "rotating_light")}
+            "priority": "low" if night else ("default" if soft else "high"), "tags": str(p.get("tags") or "rotating_light")}
 
 
 def instant_problem(p: dict, now=None, path=None, cfg=None, poster=None) -> str:

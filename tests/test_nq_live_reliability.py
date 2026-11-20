@@ -403,6 +403,34 @@ def t_fast_alarm_storm():
         shutil.rmtree(d, ignore_errors=True)
 
 
+# ------------------------------------------------------------------------------------------------ 3b. rule holds are quiet (redteam)
+def t_rule_holds_quiet():
+    """redteam 2026-11-20: every held-back entry became a loud MISSED TRADE push that rings in quiet hours, also when the bot's
+    own rule held it back on purpose (soft daily loss, weekly stop / size 0, the equity filter, the 50K's one-position rule):
+    a 03:00 ET LIT signal after the weekly stop would wake the owner each time. A rule hold is now a quiet 'held back' notice;
+    a malfunction stays loud."""
+    et_ = ts(2026, 11, 19, 3, 5)
+    s = NT.merge({})
+    for why in ("GUARD today's routed P&L -$520 reached the $500 soft daily loss",
+                "size 0: weekly loss stop reached (-$1,250 this week)",
+                "last 5 signals -2.10R > -1.0R: skipped",
+                "one position on the 50K: ATLAS on Zlarior 50K holds a LONG ema trade from 02:55 ET (conflict rule first_in)"):
+        mp = FA._missed_problem(FA.missed_payload(et_, "", why, None, et_ + 30))
+        m = NT.problem_message(mp, now=et_ + 30, s=s)
+        check(f"rule hold is a quiet notice at 03:05 ET (no ring): {why[:40]}", mp.get("soft") and m["priority"] == "low"
+              and "Held back" in m["title"] and "MISSED" not in m["title"], (mp, m))
+    m10 = NT.problem_message(FA._missed_problem(FA.missed_payload(et_, "", "size 0: weekly loss stop", None, et_)),
+                             now=ts(2026, 11, 19, 10, 0), s=s)
+    check("... by day: a normal-priority notice", m10["priority"] == "default", m10)
+    for why in ("feed stale", "seen 3 min late (restart / feed gap) - not chasing", "refused: REFUSED: NinjaTrader reports every "
+                "connection DISCONNECTED", "STARTUP DISARMED until reconciled: x", "held back by the bot (see the bot log)",
+                "the model entered while the bot was down or its feed was behind: never routed"):
+        mp = FA._missed_problem(FA.missed_payload(et_, "", why, None, et_ + 30))
+        m = NT.problem_message(mp, now=et_ + 30, s=s)
+        check(f"malfunction stays a loud MISSED TRADE that rings at 03:05 ET: {why[:40]}", not mp.get("soft")
+              and m["priority"] == "high" and m["title"].startswith("MISSED TRADE"), (mp, m))
+
+
 # ------------------------------------------------------------------------------------------------ 5. no update under ATLAS
 def t_update_flat():
     class B:
@@ -463,7 +491,7 @@ def t_extra_account():
 
 
 def main() -> bool:
-    for f in (t_unknown, t_not_routed, t_missed_now, t_fast_alarm, t_fast_alarm_storm, t_update_flat, t_extra_account):
+    for f in (t_unknown, t_not_routed, t_missed_now, t_fast_alarm, t_fast_alarm_storm, t_rule_holds_quiet, t_update_flat, t_extra_account):
         try:
             f()
         except Exception as e:
