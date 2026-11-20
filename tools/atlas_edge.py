@@ -543,17 +543,52 @@ def nq_span(U, a, z):
 
 def main(argv=None):
     ap = argparse.ArgumentParser()
-    ap.add_argument("cmd", choices=["run", "es", "show"])
+    ap.add_argument("cmd", choices=["run", "es", "posthoc", "show"])
     ap.add_argument("--n", type=int, default=1000)
     a = ap.parse_args(argv)
     if a.cmd == "run":
         cmd_run(a.n)
+    elif a.cmd == "posthoc":
+        cmd_posthoc(a.n)
     elif a.cmd == "es":
         cmd_es()
     else:
         o = json.load(open(OUT, encoding="utf-8"))
         print(json.dumps({"passers": o.get("passers")}, indent=1))
     return 0
+
+
+
+# ================================================================================================ post-hoc (after the run: shown, never eligible)
+POST_HOC = {"PH1_streak1_1micro": {"streak_shrink": 1}, "PH2_streak3_1micro": {"streak_shrink": 3},
+            "PH3_E3_other_seed": {"streak_shrink": 2}}
+
+
+def cmd_posthoc(n_paths=1000, log=print):
+    import builder_levers as BL
+    out = {"note": "post-hoc, added after E3 passed: neighbours and a second path seed; shown, never eligible", "rows": {}}
+    for nm, g in POST_HOC.items():
+        if nm == "PH3_E3_other_seed":
+            old = BL.A4.SEED_LIFE
+            BL.A4.SEED_LIFE = old + 7919
+            AR()._C.pop(("fctx", n_paths), None)
+        try:
+            row = {}
+            for n in JUDGE:
+                T = to_T(opt_units("base", n)[0])
+                row[f"{n}t"] = {"guard": score(T, n_paths, guard=g)}
+                if nm == "PH3_E3_other_seed":
+                    row[f"{n}t"]["base"] = score(T, n_paths)
+                log(f"{nm} {n}t guard: " + line(row[f"{n}t"]["guard"]))
+                if "base" in row[f"{n}t"]:
+                    log(f"{nm} {n}t base : " + line(row[f"{n}t"]["base"]))
+            out["rows"][nm] = row
+        finally:
+            if nm == "PH3_E3_other_seed":
+                BL.A4.SEED_LIFE = old
+                AR()._C.pop(("fctx", n_paths), None)
+    save(out, "posthoc")
+    return out
 
 
 if __name__ == "__main__":
