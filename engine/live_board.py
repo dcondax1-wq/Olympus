@@ -307,6 +307,10 @@ def lit_now(pc: dict, accounts, now: int, brain: dict | None = None) -> dict:
            "session": _i(ev.get("session"), _i(sev.get("session"))), "sessions": _i(ev.get("sessions"), SESSIONS_GOAL),
            "dll": _f(ev.get("dll"), P["dll"]), "dll_used": _f(ev.get("dll_used")),
            "max_day": P["max_day"], "trades_today": _i(br.get("day_trades"), 0)}
+    if a.get("source") == "cloud":           # display truth (2026-11-20): the cloud's paper twin is not the 50K: no account $ on the card
+        for k in ("balance", "floor", "room", "to_target", "profit", "today_pnl", "week_pnl", "dll_used"):
+            out[k] = None
+        out["badge"], room = "PAPER", None
     out["room_frac"] = None if room is None or not out["mll"] else round(max(0.0, min(1.0, room / out["mll"])), 4)
     st = _d(br.get("stage"))
     out["stage"] = {"key": st.get("key"), "label": st.get("label"), "n": st.get("n"), "of": len(_l(br.get("stages"))) or None,

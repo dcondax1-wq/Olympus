@@ -122,7 +122,10 @@ def main() -> int:
         check("stats computed", secs[0]["stats"]["n"] == 2 and secs[0]["stats"]["wins"] == 1, secs[0]["stats"])
         check("cloud paper section from the ledger", secs[1]["badge"] == "PAPER" and secs[1]["stats"]["n"] == 1, secs[1].get("stats"))
         old = accounts.build_accounts({"last_run": now, "pc": {"present": True, "t": now - 60}}, lm, now=now)
-        check("old heartbeat (no acct): section still renders, flagged", old[0]["conn"]["has_detail"] is False and old[0]["eval"]["balance"] == 49900.0, old[0].get("eval"))
+        check("old heartbeat (no acct): section still renders, flagged, and shows NO account numbers (display truth 2026-11-20: the eval built "
+          "from eval_prior_pnl alone showed $49,900 under the real id while the account was $49,192.78)",
+          old[0]["conn"]["has_detail"] is False and old[0]["eval"] is None and old[0]["pnl"] is None and old[0]["no_pc_numbers"] is True
+          and old[0]["badge"] is None, old[0].get("eval"))
         cfg2 = accounts.accounts_cfg({"accounts": [{"id": "a"}, {"id": "b", "name": "B"}]})
         check("accounts list from live_model.json", [x["id"] for x in cfg2] == ["a", "b"] and accounts.accounts_cfg({})[0]["id"] == "mffu50k_eval")
 

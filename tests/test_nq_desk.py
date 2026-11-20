@@ -169,9 +169,9 @@ def test_core():
           [a[0] for a in acc] == ["zlarior", "atlas", "fresh25", "rapid1", "xtra9"] and not any("BLITZ" in a[1] for a in acc), acc)
     check("b. Zlarior 50K: balance, room left, to pass, today, live dot", acc[0] == ["zlarior", "Zlarior 50K", "Eval", 49193, 1025, "To pass", "$3,807", -50, "live"], acc[0])
     check("b. ATLAS funded: 'To payout' from the board card (the payout coach's number), not 'To pass'", acc[1][2] == "Funded" and acc[1][5] == "To payout" and acc[1][6] == "$2,213", acc[1])
-    check("b. Zlarior 25K #2 last heard 3 h ago: stale dot (its own conn time)", acc[2][8] == "stale" and o["accAge"][2] == "3 h ago", (acc[2], o["accAge"][2]))
+    check("b. Zlarior 25K #2 last heard 3 h ago: red 'old' dot (over 1 h, age.js limits) and the site-wide words 'updated 3 h ago'", acc[2][8] == "old" and o["accAge"][2] == "updated 3 h ago", (acc[2], o["accAge"][2]))
     check("b. Rapid EOD 25K with no PC numbers: plan dot, says 'plan only'", acc[3][8] == "plan" and acc[3][3] is None and "plan only" in o["accAge"][3], (acc[3], o["accAge"][3]))
-    check("b. a 2-hour-old report turns every PC account stale (the planned one stays plan)", o["stale"][:3] == ["stale", "stale", "stale"] and o["stale"][3] == "plan", o["stale"])
+    check("b. a 2-hour-old report turns every PC account stale (the planned one stays plan)", o["stale"][:3] == ["old", "old", "old"] and o["stale"][3] == "plan", o["stale"])
     L = o["lit"]
     bf = L["before"]
     check("c. LIT before: lean SHORT from its armed setup (with the trigger), what it waits for, the open window",
@@ -190,7 +190,7 @@ def test_core():
     check("c. ATLAS with no armed setup: its lean comes from its own words (LONG), never invented", o["atlas"]["before"]["lean"]["side"] == "LONG", o["atlas"]["before"]["lean"])
     q = {r[0]: r for r in o["q"]}
     check("d. quality on a fresh feed: report 4 min (ok), heartbeat 2 min (ok), last alert 30 min ago from the PC's reporter.na",
-          q["report"][1] == "ok" and q["report"][2] == "4 min ago" and q["beat"][1] == "ok" and q["alert"][1] == "ok" and q["alert"][2].startswith("30 min ago"), o["q"])
+          q["report"][1] == "ok" and q["report"][2] == "updated 4 min ago" and q["beat"][1] == "ok" and q["alert"][1] == "ok" and q["alert"][2].startswith("30 min ago"), o["q"])
     check("d. twins: 1 match, 1 differ (live STOP vs twin TARGET), 1 no twin -> red; the worst level wins",
           q["twin"][2] == "1 match · 1 differ · 1 no twin yet" and q["twin"][1] == "bad" and o["qlevel"] == "bad", (q["twin"], o["qlevel"]))
     check("d. the edge check's data: LIT to Nov 19, ATLAS to Oct 16 (35 days) -> red, and it says ATLAS's PF is old; no edge.json -> no row",
@@ -223,9 +223,9 @@ def test_core():
     check("r3. Chronos -> past days newest first with their bots, $ and LIVE flag, each a ../chronos/#day link; BLITZ never",
           [(d["day"], d["bots"], d["usd"], d["real"], d["href"]) for d in o["past"]] == [("2026-10-28", "Zlarior + ATLAS", -337, True, "../chronos/#2026-10-28"), ("2026-10-27", "Zlarior", 300, False, "../chronos/#2026-10-27")], o["past"])
     q2 = {r[0]: r for r in o["q2"]}
-    check("d. a 2-hour-old report: report amber, a 2-hour-old heartbeat red (the bot beats every 5 min); without reporter.na the last alert is the "
+    check("d. a 2-hour-old report: report red (over 1 h, age.js), a 2-hour-old heartbeat red (the bot beats every 5 min); without reporter.na the last alert is the "
           "newest trade event (ATLAS's entry 25 min ago); no news file -> amber",
-          q2["report"][1] == "warn" and q2["beat"][1] == "bad" and q2["alert"][1] == "ok" and q2["alert"][2].startswith("25 min ago") and q2["news"][1] == "warn"
+          q2["report"][1] == "bad" and q2["beat"][1] == "bad" and q2["alert"][1] == "ok" and q2["alert"][2].startswith("25 min ago") and q2["news"][1] == "warn"
           and q2["twin"][2] == "no LIVE trade in trades.json", o["q2"])
     R = o["real"]
     check("c. the real open trade (ATLAS short 1 MNQ @ 26,380.75, 03:45 ET): from the chart post the stop as it is NOW (26,379.50) says 'moved to break-even' "

@@ -79,8 +79,8 @@ const card = (st, k8, u) => ({ kind: 'kalshi_live_pub', v: 1, st, net: 0, f: 0, 
     const rows = await p.evaluate(() => [...document.querySelectorAll('#k8s-w li')].map((li) => [li.dataset.leg, li.className, li.querySelector('b').textContent, li.querySelector('em').textContent]));
     step('w1. Fri 11-20 03:00 ET: today\'s 5 windows in New York time, a countdown each (gold DOWN 05:15 in 2h 15m, silver DOWN 16:00 in 13h 0m, the two UP legs 16:45 in 13h 45m)',
       w.includes('Today, Fri 11-20') && JSON.stringify(rows) === JSON.stringify([['g5', 'lv', '05:15', 'in 2h 15m'], ['s5', 'pp', '05:15', 'in 2h 15m'], ['s16', 'pp', '16:00', 'in 13h 0m'], ['g17', 'lv', '16:45', 'in 13h 45m'], ['s17', 'lv', '16:45', 'in 13h 45m']]), rows);
-    const pap = await p.evaluate(() => { const a = getComputedStyle(document.querySelector('#k8s-w li.lv')), b = getComputedStyle(document.querySelector('#k8s-w li.pp')); return [parseFloat(a.fontSize), parseFloat(b.fontSize), +b.opacity]; });
-    step('w2. the 2 paper legs are smaller and greyed and say "paper only"', pap[1] < pap[0] && pap[2] < 1 && (w.match(/paper only/g) || []).length === 2, pap);
+    const pap = await p.evaluate(() => { const a = getComputedStyle(document.querySelector('#k8s-w li.lv')), b = getComputedStyle(document.querySelector('#k8s-w li.pp')); return [parseFloat(a.fontSize), parseFloat(b.fontSize), +b.opacity, a.color, b.color]; });
+    step('w2. the 2 paper legs are smaller and greyed by a muted colour (no stacked opacity: A11Y contrast) and say "paper only"', pap[1] < pap[0] && pap[2] === 1 && pap[3] !== pap[4] && (w.match(/paper only/g) || []).length === 2, pap);
     step('d1. old PC card + no k8.json: no price-vs-fair, no bet log (lg missing), edge health says "No numbers yet"; the old card text stays (PAPER, $55.00, the week / peak bars)',
       !(await p.$('#k8s-pf')) && !(await p.$('#k8s-log')) && y.includes('No numbers yet') && all.includes('PAPER') && all.includes('$55.00') && all.includes('−$4.30 of −$13.75') && all.includes('−$6.20 of −$19.25'), y);
     step('b1. old card: the today bar falls back to the day stop (−$8.00) with nothing used', all.includes('Today (day stop)') && all.includes('$0.00 of −$8.00'), all.slice(0, 600));
@@ -180,6 +180,40 @@ const card = (st, k8, u) => ({ kind: 'kalshi_live_pub', v: 1, st, net: 0, f: 0, 
     step('v7. Thanksgiving Thu 08:00 ET: the evening skips, so the next live bet is Fri 11-27 05:15 gold DOWN', dd.lab.includes('gold DOWN') && dd.at.includes('Fri 11-27') && dd.at.includes('05:15'), dd);
     await ctx.close();
 
+    // 3d. Olympus 2: K8 first (no old-bot numbers above the fold), the header says K8's state, the Monday go-live checklist
+    ({ ctx, p } = await open({ at: '2026-11-23T09:00:00-05:00', card: card('paper', k8new({ kk: 1, al: 0, lp: 1, s: 2.5 }), '2026-11-23T13:59:00Z'), k8: 'fx' }));
+    const top = await p.evaluate(() => ({ order: [...document.querySelectorAll('main > section, main > div, main > h2')].map((e) => e.id).filter(Boolean).slice(0, 4),
+      sub: document.getElementById('k8sub').innerText, oldTop: Math.round(document.getElementById('sub').getBoundingClientRect().top + scrollY),
+      khist: Math.round(document.getElementById('khist').getBoundingClientRect().top + scrollY) }));
+    step('c1. K8 first: live day, K8 status, the go-live checklist, then "History and tests"; the header says "K8 gold & silver bot · PAPER"; the old bot\'s status line is far below the fold (> 844 px)',
+      top.order.join(' ') === 'k8d k8s kgo khist' && top.sub.includes('K8 gold & silver bot') && top.sub.includes('PAPER') && top.oldTop > 844 && top.khist > 844, top);
+    const items = () => p.evaluate(() => [...document.querySelectorAll('#kgo-l li')].map((li) => { const i = li.querySelector('input'); return [i.dataset.kgo, i.checked, i.disabled, li.innerText.replace(/\s+/g, ' ')]; }));
+    let it = await items();
+    const by = Object.fromEntries(it.map((x) => [x[0], x]));
+    step('c2. the checklist reads the PC: key saved = ticked "from your PC", PC running = ticked, $2.50 = ticked, alerts = "the PC says not yet", phrase = not yet (PAPER); the deposit is yours to tick; 3 of 6',
+      it.length === 6 && by.key[1] && by.key[2] && by.key[3].includes('from your PC') && by.pc[1] && by.stake[1] && !by.alerts[1] && by.alerts[3].includes('the PC says not yet')
+      && !by.live[1] && by.live[2] && !by.dep[1] && !by.dep[2] && (await T(p, '#kgo-n')) === '3 of 6', it);
+    await p.click('#kgo-l input[data-kgo="dep"]');
+    await p.reload(); await p.waitForTimeout(2500);
+    it = await items();
+    step('c3. ticking "the $55" is kept on this phone (still ticked after a reload): 4 of 6; "Untick mine" clears it again',
+      it.find((x) => x[0] === 'dep')[1] && it.find((x) => x[0] === 'dep')[3].includes('ticked by you') && (await T(p, '#kgo-n')) === '4 of 6', it);
+    await p.click('#kgo-reset');
+    step('c3b. after "Untick mine": 3 of 6', (await T(p, '#kgo-n')) === '3 of 6', await T(p, '#kgo-n'));
+    const kg = await p.evaluate(() => [...document.querySelectorAll('#kgo-l label')].map((l) => Math.round(l.getBoundingClientRect().height)));
+    step('c4. every checklist row is a tap target of at least 44 px', kg.length === 6 && Math.min(...kg) >= 44, kg);
+    await shot(p, 'kalshi-golive.png', '#kgo');
+    await ctx.close();
+    ({ ctx, p } = await open({ at: '2026-11-23T09:00:00-05:00', card: card('live', k8new({ m: 'L', kk: 1, al: 1, lp: 1, s: 2.5 }), '2026-11-23T13:59:00Z'), k8: 'fx' }));
+    await p.click('#kgo-l input[data-kgo="dep"]');
+    step('c5. LIVE with everything on the PC + the deposit ticked: "ready"; the header says LIVE', (await T(p, '#kgo-n')) === 'ready' && (await T(p, '#k8sub')).includes('LIVE'), [await T(p, '#kgo-n'), await T(p, '#k8sub')]);
+    await ctx.close();
+    ({ ctx, p } = await open({ at: '2026-11-23T09:00:00-05:00', card: card('paper', k8old, '2026-11-23T13:59:00Z'), k8: 'fx' }));
+    it = await items();
+    step('c6. an old PC card (no kk / al): those items are yours to tick (enabled), nothing claims "from your PC" for them',
+      !it.find((x) => x[0] === 'key')[2] && !it.find((x) => x[0] === 'alerts')[2] && !it.find((x) => x[0] === 'key')[3].includes('from your PC'), it);
+    await ctx.close();
+
     // 4. the verdicts: Watch (within 5 points of a line) and OFF line crossed (win rate, then price creep)
     for (const [e, v, word, name] of [[[61, 66, 50], 'watch', 'Watch', 'h3. 61% won last 30 (within 5 of 58%) = Watch'],
       [[55, 60, 50], 'off', 'OFF line crossed', 'h4. 55% won last 30 (under 58%) = OFF line crossed'],
@@ -212,8 +246,9 @@ const card = (st, k8, u) => ({ kind: 'kalshi_live_pub', v: 1, st, net: 0, f: 0, 
     await ctx.close();
     for (const k of ['404', 'junk']) {
       ({ ctx, p } = await open({ app: 'dionysus', at: '2026-11-23T10:30:00Z', k8: k }));
-      step(`dz2. Dionysus with k8.json ${k === '404' ? 'missing' : 'junk (HTML)'}: the panel hides, the desk still renders`,
-        await p.evaluate(() => document.getElementById('k8Card').hidden && document.getElementById('bal').textContent.startsWith('$')));
+      step(`dz2. Dionysus with k8.json ${k === '404' ? 'missing' : 'junk (HTML)'}: the panel stays in its place (no layout jump) with one plain line + the Kalshi page link, no legs; the desk still renders`,
+        await p.evaluate(() => { const c = document.getElementById('k8Card'); return !c.hidden && c.classList.contains('none') && !c.classList.contains('loading') && document.getElementById('k8Legs').hidden
+          && c.innerText.includes('not on this site right now') && !!c.querySelector('a[href="../kalshi/"]') && document.getElementById('bal').textContent.startsWith('$'); }));
       await ctx.close();
     }
   } catch (e) {
