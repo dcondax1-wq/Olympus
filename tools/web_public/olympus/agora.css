@@ -400,3 +400,11 @@ html[data-oly-style] .ag-toast { border-radius: var(--oly-th-radius-s, var(--oly
 body.oly-has-ask main, body.oly-has-ask #app { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
 /* the button steps aside while an app's own sheet is open (it sat on Planner's sheet Save button) */
 body:has(.sheet:not([hidden]), .ag-sheet:not([hidden])) .oly-ask-btn { display: none; }
+
+/* OLYMPUS NIGHT (owner 2026-11-20, themes.js 'night'): gold is a small bright accent on black, never a tint: the kit's faint gold washes
+   (hero glow, selection, pressed rows) become violet under this look, so no card reads brown */
+html[data-oly-theme="night"] .ag-card.ag-hero, html[data-oly-theme="night"] .ag-hero {
+  background: radial-gradient(130% 90% at 0% 0%, rgba(157, 89, 238, .16), rgba(157, 89, 238, 0) 60%), linear-gradient(180deg, #16131e, #020204); border-color: #462a6a; }
+html[data-oly-theme="night"] ::selection { background: rgba(157, 89, 238, .38); }
+html[data-oly-theme="night"] :is(a, button).ag-row:active { background: rgba(157, 89, 238, .1); }
+html[data-oly-theme="night"] .ag-chip[aria-pressed="true"], html[data-oly-theme="night"] .ag-chip.on { background: #1a1029; }

@@ -37,13 +37,13 @@ KIT = os.path.join(WEB, "olympus")
 BASE = os.path.join(ROOT, "tests", "fixtures", "olympus_default_vars.json")
 RES: list = []
 PLAIN = ["agora", "ivory", "midnight", "terminal", "carbon", "royal"]            # 2026-11-14: the colour looks
-STYLED = ["aurora", "amber", "lime", "stocks", "editorial", "brutal", "noir", "sunset", "ocean", "carbonred", "forest", "rosegold",      # the style looks
+STYLED = ["night", "aurora", "amber", "lime", "stocks", "editorial", "brutal", "noir", "sunset", "ocean", "carbonred", "forest", "rosegold",      # the style looks
           "swiss", "paperdark", "solarized", "nord", "cyber", "deco", "zen", "desert", "monoblack", "monowhite", "vapor", "bullion", "wallstreet", "marble"]
 OLD = ["olympus", "zeus", "poseidon", "hades", "athena", "apollo", "artemis"]      # 2026-11-03, kept for Jarvis / Settings
 IDS = PLAIN + STYLED + OLD
 LIGHT = ["ivory", "stocks", "editorial", "brutal", "swiss", "zen", "desert", "monowhite", "vapor", "marble", "athena"]
 DEFAULT_ID = "agora"                 # AGORA is the default since 2026-11-09 (docs/DESIGN_AGORA.md); "olympus" is the old violet look, selectable
-NAMES = {"ivory": "Ivory", "midnight": "Midnight", "terminal": "Terminal", "carbon": "Carbon", "royal": "Royal", "aurora": "Glass Aurora", "amber": "Amber",
+NAMES = {"night": "Olympus Night", "ivory": "Ivory", "midnight": "Midnight", "terminal": "Terminal", "carbon": "Carbon", "royal": "Royal", "aurora": "Glass Aurora", "amber": "Amber",
          "lime": "Lime", "stocks": "Stocks Light", "editorial": "Editorial", "brutal": "Neo Brutal", "noir": "Noir Gold", "sunset": "Sunset", "ocean": "Ocean",
          "carbonred": "Carbon Red", "forest": "Forest", "rosegold": "Rose Gold", "swiss": "Swiss", "paperdark": "Paper Dark", "solarized": "Solarized", "nord": "Nord",
          "cyber": "Cyber Minimal", "deco": "Art Deco", "zen": "Zen", "desert": "Desert", "monoblack": "Mono Black", "monowhite": "Mono White", "vapor": "Vapor Soft",
@@ -275,7 +275,10 @@ def ctx_page(br, origin, theme=None, extra=""):
     ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2, is_mobile=True, has_touch=True, service_workers="block")
     ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith(origin) else r.abort())
     # the theme is set once per tab (a reload keeps what the page chose)
-    init = ("try { sessionStorage.setItem('jarvis.booted', '1'); localStorage.setItem('jarvis.seen', JSON.stringify('j9')); localStorage.setItem('jarvis.intro', 'off');"
+    # OLYMPUS NIGHT (2026-11-20) is the owner's default: an empty or AGORA choice moves to 'night' once (themes.js stored()); these checks are about
+    # the engine's own rules, so they run with that one-time switch already done (the marker): no key / 'agora' = the default that paints nothing.
+    # test_night_default() checks the switch itself.
+    init = ("try { sessionStorage.setItem('jarvis.booted', '1'); localStorage.setItem('jarvis.seen', JSON.stringify('j9')); localStorage.setItem('jarvis.intro', 'off'); localStorage.setItem('olympus.theme.night', '1');"
             " if (!sessionStorage.getItem('t.theme')) { sessionStorage.setItem('t.theme', '1');"
             + (f" localStorage.setItem('olympus.theme', {json.dumps(theme)});" if theme else " localStorage.removeItem('olympus.theme');") + " } } catch (e) {}")
     ctx.add_init_script(init + extra)
@@ -770,7 +773,7 @@ def test_same_as_before(br):
         for origin in (o_raw, o_now):
             ctx = br.new_context(viewport={"width": 390, "height": 844}, is_mobile=True, has_touch=True, service_workers="block", reduced_motion="reduce")
             ctx.route("**/*", (lambda o: lambda r: r.continue_() if r.request.url.startswith(o) else r.abort())(origin))
-            ctx.add_init_script("try { sessionStorage.setItem('jarvis.booted', '1'); localStorage.setItem('jarvis.seen', JSON.stringify('j9')); localStorage.setItem('jarvis.intro', 'off'); } catch (e) {}")
+            ctx.add_init_script("try { sessionStorage.setItem('jarvis.booted', '1'); localStorage.setItem('jarvis.seen', JSON.stringify('j9')); localStorage.setItem('jarvis.intro', 'off'); localStorage.setItem('olympus.theme.night', '1'); } catch (e) {}")
             if name == "jarvis":                 # Jarvis's AGORA look (Classic, the default since 2026-11-18, is its own violet palette, not the slots' AGORA literals)
                 ctx.add_init_script("try { localStorage.setItem('jarvis.look', 'agora'); } catch (e) {}")
             p = ctx.new_page()
@@ -863,7 +866,7 @@ def look_page(br, origin, set_id, url, init="", size=(390, 844)):
     ctx = br.new_context(viewport={"width": size[0], "height": size[1]}, device_scale_factor=1, is_mobile=True, has_touch=True, service_workers="block", reduced_motion="reduce")
     ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith(origin) else r.abort())
     ctx.add_init_script("try { sessionStorage.setItem('jarvis.booted', '1'); localStorage.setItem('jarvis.seen', JSON.stringify('j9')); localStorage.setItem('jarvis.intro', 'off');"
-                        " localStorage.setItem('olympus.intro', 'off'); } catch (e) {}" + init)
+                        " localStorage.setItem('olympus.intro', 'off'); localStorage.setItem('olympus.theme.night', '1'); } catch (e) {}" + init)
     p = ctx.new_page()
     p.set_default_timeout(60000)
     errs: list = []
@@ -876,6 +879,27 @@ def look_page(br, origin, set_id, url, init="", size=(390, 844)):
 
 FIRST_JS = """(() => { const rec = window.__t2first = { first: null }; requestAnimationFrame(() => { const r = document.documentElement;
   rec.first = { theme: r.getAttribute('data-oly-theme'), bg: getComputedStyle(r).backgroundColor, body: document.body ? getComputedStyle(document.body).backgroundColor : '' }; }); })();"""
+
+
+def test_night_default(br, origin):
+    """OLYMPUS NIGHT (owner 2026-11-20): no key, or AGORA saved before the switch -> 'night', painted and saved once; a pick after it stays"""
+    out = {}
+    def dark(c):                                  # the page: black (the engine's darkest grid step, e.g. #040305)
+        m = re.match(r"#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$", (c or "").strip().lower())
+        return bool(m) and all(int(x, 16) <= 16 for x in m.groups())
+    for case, init in (("empty", ""), ("agora before", "localStorage.setItem('olympus.theme', 'agora');"),
+                       ("agora after", "localStorage.setItem('olympus.theme', 'agora'); localStorage.setItem('olympus.theme.night', '1');")):
+        ctx = br.new_context(viewport={"width": 390, "height": 844}, service_workers="block")
+        ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith(origin) else r.abort())
+        ctx.add_init_script("if (!sessionStorage.getItem('t.n')) { sessionStorage.setItem('t.n', '1'); try { localStorage.clear(); " + init + " } catch (e) {} }")
+        p = ctx.new_page()
+        p.goto(origin + "/ledger/", wait_until="load")
+        p.wait_for_timeout(1500)
+        out[case] = p.evaluate("() => [document.documentElement.getAttribute('data-oly-theme') || '', localStorage.getItem('olympus.theme'), getComputedStyle(document.documentElement).getPropertyValue('--ag-night').trim()]")
+        ctx.close()
+    check("n. OLYMPUS NIGHT is the default: an empty choice and an AGORA saved before 2026-11-20 both become 'night' (painted, saved, page black); an Agora picked after stays",
+          out["empty"][:2] == ["night", "night"] and out["agora before"][:2] == ["night", "night"] and dark(out["empty"][2])
+          and out["agora after"][1] == "agora" and out["agora after"][0] in ("", "agora"), out)
 
 
 def test_first_frame(br, origin):
@@ -1025,6 +1049,7 @@ def main():
         if not only or "same" in only:
             test_same_as_before(br)
         if not only or "first" in only:
+            test_night_default(br, origin)
             test_first_frame(br, origin)
         if not only or "picker" in only:
             test_picker(br, origin)
