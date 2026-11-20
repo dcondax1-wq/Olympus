@@ -9,19 +9,54 @@ import { poseToCam, lerpPose, ease, warpCurve, clampPose, homePose, overviewPose
 
 const MOON = new THREE.Vector3(0.28, 0.2, -1).normalize();
 
-function boxNoFloor() {
-  // a unit box standing on y = 0 (x, z in -0.5..0.5), its 5 visible faces (no floor): 20 vertices, 10 triangles
-  const P = [], N = [], I = [];
-  const face = (n, a, b, c, d) => { const o = P.length / 3; P.push(...a, ...b, ...c, ...d); for (let k = 0; k < 4; k++) N.push(...n); I.push(o, o + 1, o + 2, o, o + 2, o + 3); };
-  const x0 = -0.5, x1 = 0.5, z0 = -0.5, z1 = 0.5;
-  face([1, 0, 0], [x1, 0, z1], [x1, 0, z0], [x1, 1, z0], [x1, 1, z1]);
-  face([-1, 0, 0], [x0, 0, z0], [x0, 0, z1], [x0, 1, z1], [x0, 1, z0]);
-  face([0, 0, 1], [x0, 0, z1], [x1, 0, z1], [x1, 1, z1], [x0, 1, z1]);
-  face([0, 0, -1], [x1, 0, z0], [x0, 0, z0], [x0, 1, z0], [x1, 1, z0]);
-  face([0, 1, 0], [x0, 1, z1], [x1, 1, z1], [x1, 1, z0], [x0, 1, z0]);
+/** the sky for the market clock (US Eastern): the NQ cash session 9:30-16:00 on a weekday = golden hour (1), an hour round it = blue
+ * hour (0.5), else night (0). sky: 'night' | 'blue' | 'dusk' forces one (the ?sky= query, captures); anything else = the clock. */
+export function skyFor(sky, date) {
+  if (sky === 'night') return 0;
+  if (sky === 'blue') return 0.5;
+  if (sky === 'dusk' || sky === 'day') return 1;
+  try {
+    const f = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', weekday: 'short', hour: 'numeric', minute: 'numeric', hour12: false });
+    const parts = Object.fromEntries(f.formatToParts(date || new Date()).map((x) => [x.type, x.value]));
+    if (parts.weekday === 'Sat' || parts.weekday === 'Sun') return 0;
+    const m = (+parts.hour % 24) * 60 + +parts.minute;
+    if (m >= 570 && m < 960) return 1;
+    if (m >= 510 && m < 1020) return 0.5;
+    return 0;
+  } catch (e) { return 0; }
+}
+
+function prism() {
+  // revamp-cities (2026-11-20): one prism for every building piece. 8 walls round a square whose corners are cut by the instance's
+  // chamfer (0 = a box: the 4 corner walls have no width and are skipped in the shader; 0.3 = an octagon) + a roof fan; the taper
+  // narrows the top (1 = a pyramid). aCorner = (sx, sz, which side of the cut: 0 the x wall, 1 the z wall, 2 the roof's centre),
+  // aFace = (wall kind: 0 x, 1 z, 2 corner, 3 roof; the share along the wall). 48 vertices, 32 triangles.
+  const ring = [[1, -1, 0], [1, 1, 0], [1, 1, 1], [-1, 1, 1], [-1, 1, 0], [-1, -1, 0], [-1, -1, 1], [1, -1, 1]];
+  const kinds = [0, 2, 1, 2, 0, 2, 1, 2];                                   // the wall from ring[k] to ring[k+1]
+  const at = (v, c) => (v[2] === 0 ? [v[0] * 0.5, v[1] * (0.5 - c)] : v[2] === 1 ? [v[0] * (0.5 - c), v[1] * 0.5] : [0, 0]);
+  const P = [], A = [], F = [], I = [];
+  const vert = (v, y, kind, along) => { P.push(0, y, 0); A.push(v[0], v[1], v[2]); F.push(kind, along); return P.length / 3 - 1; };
+  const tri = (a, b, c, va, vb, vc, ya, yb, yc, out) => {
+    // wind each triangle so its normal points out (checked on a sample chamfer of 0.2)
+    const p = (v, y) => { const q = at(v, 0.2); return [q[0], y, q[1]]; };
+    const pa = p(va, ya), pb = p(vb, yb), pc = p(vc, yc);
+    const u = [pb[0] - pa[0], pb[1] - pa[1], pb[2] - pa[2]], w = [pc[0] - pa[0], pc[1] - pa[1], pc[2] - pa[2]];
+    const n = [u[1] * w[2] - u[2] * w[1], u[2] * w[0] - u[0] * w[2], u[0] * w[1] - u[1] * w[0]];
+    if (n[0] * out[0] + n[1] * out[1] + n[2] * out[2] >= 0) I.push(a, b, c); else I.push(a, c, b);
+  };
+  for (let k = 0; k < 8; k++) {
+    const va = ring[k], vb = ring[(k + 1) % 8], kind = kinds[k];
+    const a0 = vert(va, 0, kind, 0), b0 = vert(vb, 0, kind, 1), b1 = vert(vb, 1, kind, 1), a1 = vert(va, 1, kind, 0);
+    const qa = at(va, 0.2), qb = at(vb, 0.2), mid = [(qa[0] + qb[0]) / 2, 0, (qa[1] + qb[1]) / 2];
+    tri(a0, b0, b1, va, vb, vb, 0, 0, 1, mid); tri(a0, b1, a1, va, vb, va, 0, 1, 1, mid);
+  }
+  const c0 = vert([0, 0, 2], 1, 3, 0);
+  const rv = ring.map((v) => vert(v, 1, 3, 0));
+  for (let k = 0; k < 8; k++) tri(c0, rv[k], rv[(k + 1) % 8], [0, 0, 2], ring[k], ring[(k + 1) % 8], 1, 1, 1, [0, 1, 0]);
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(P, 3));
-  g.setAttribute('normal', new THREE.Float32BufferAttribute(N, 3));
+  g.setAttribute('aCorner', new THREE.Float32BufferAttribute(A, 3));
+  g.setAttribute('aFace', new THREE.Float32BufferAttribute(F, 2));
   g.setIndex(I);
   return g;
 }
@@ -46,9 +81,12 @@ export function createWorld(opts) {
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(55, 1, 0.5, 6000);
   const rc = createRenderer({ canvas, scene, camera, env: 'none', bloomMax: 0.8, maxDpr: 2, quality: opts.quality || undefined,
-    bloom: { strength: 0.62, radius: 0.62, threshold: 0.8 }, grade: { vignette: 0.34, grain: 0.018, saturation: 1.1, aberration: 0.0008 } });
+    bloom: { strength: 0.5, radius: 0.55, threshold: 0.95 }, grade: { vignette: 0.3, grain: 0.014, saturation: 1.06, aberration: 0.0005 } });
   // ---- shared uniforms
-  const U = { uTime: { value: 0 }, uMoonDir: { value: MOON }, uFogDensity: { value: 0.0016 }, uDay: { value: 1e4 }, uWarp: { value: 0 } };
+  const U = { uTime: { value: 0 }, uMoonDir: { value: MOON }, uFogDensity: { value: 0.0016 }, uDay: { value: 1e4 }, uWarp: { value: 0 }, uDusk: { value: 0 } };
+  // the sky follows the market clock (revamp-cities): the NQ cash session = golden hour, the hours round it = blue hour, else night
+  let dusk = skyFor(opts.sky), duskTo = dusk;
+  U.uDusk.value = dusk;
   const TW = 64, TH = Math.max(1, Math.ceil(plan.slots / TW));
   const tex = new Uint8Array(TW * TH * 4);
   const placeTex = new THREE.DataTexture(tex, TW, TH, THREE.RGBAFormat);
@@ -67,9 +105,11 @@ export function createWorld(opts) {
     placeTex.needsUpdate = true; texDirty = false;
   }
   // ---- buildings and their reflection in the wet streets / the sea
-  const box = boxNoFloor();
-  const bGeo = instanced(box, [['iPos', plan.pos, 3], ['iSize', plan.size, 3], ['iInfo', plan.info, 4], ['iTint', plan.tint, 3], ['iMisc', plan.misc, 4]], plan.n);
-  const bU = { ...U, ...PU, uMoonCol: { value: new THREE.Color(0.10, 0.13, 0.24) }, uStreet: { value: new THREE.Color(0.55, 0.32, 0.17) } };
+  const box = prism();
+  const bGeo = instanced(box, [['iPos', plan.pos, 3], ['iSize', plan.size, 3], ['iInfo', plan.info, 4], ['iTint', plan.tint, 3], ['iMisc', plan.misc, 4],
+    ['iShape', plan.shape || new Float32Array(plan.n * 2), 2]], plan.n);
+  const STREET = new THREE.Color(0.95, 0.5, 0.2);                            // sodium
+  const bU = { ...U, ...PU, uStreet: { value: STREET } };
   const bMat = new THREE.ShaderMaterial({ vertexShader: SH.BUILD_VS, fragmentShader: SH.BUILD_FS, uniforms: bU, extensions: { derivatives: true } });
   const mMat = new THREE.ShaderMaterial({ vertexShader: SH.BUILD_VS, fragmentShader: SH.BUILD_FS, uniforms: bU, defines: { MIRROR: 1 }, side: THREE.BackSide, extensions: { derivatives: true } });
   const buildings = new THREE.Mesh(bGeo, bMat); buildings.frustumCulled = false;
@@ -86,8 +126,9 @@ export function createWorld(opts) {
   const border = (world.districts || []).map((d, k, all) => { const a = hex(d.hue), b = hex(all[(k + all.length - 1) % all.length].hue); return new THREE.Vector3((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2); });
   while (border.length < 4) border.push(new THREE.Vector3());
   const arcs = (world.districts || []).map((d) => d.a0); while (arcs.length < 4) arcs.push(99);
+  const townVecs = Array.from({ length: 18 }, (_, k) => { const t = (plan.towns || [])[k]; return t ? new THREE.Vector4(t[0], t[1], t[2], 1) : new THREE.Vector4(0, 0, 0, 0); });
   const gMat = new THREE.ShaderMaterial({ vertexShader: SH.GROUND_VS, fragmentShader: SH.GROUND_FS, transparent: true, extensions: { derivatives: true },
-    uniforms: { ...U, uGlow: { value: glowTex }, uLand: { value: landTex }, uGlowRect: { value: new THREE.Vector4(-E, -E, 2 * E, 2 * E) }, uCell: { value: C }, uPlaza: { value: PL }, uR: { value: R },
+    uniforms: { ...U, uStreet: { value: STREET }, uTowns: { value: townVecs }, uGlow: { value: glowTex }, uLand: { value: landTex }, uGlowRect: { value: new THREE.Vector4(-E, -E, 2 * E, 2 * E) }, uCell: { value: C }, uPlaza: { value: PL }, uR: { value: R },
       uArcs: { value: new THREE.Vector4(...arcs.slice(0, 4)) }, uBorder: { value: border.slice(0, 4) } } });
   const ground = new THREE.Mesh(new THREE.PlaneGeometry(5200, 5200).rotateX(-Math.PI / 2), gMat);
   ground.renderOrder = 1; ground.frustumCulled = false;
@@ -97,6 +138,11 @@ export function createWorld(opts) {
   const sky = new THREE.Mesh(new THREE.SphereGeometry(2400, 32, 16), new THREE.ShaderMaterial({ vertexShader: SH.SKY_VS, fragmentShader: SH.SKY_FS, uniforms: skyU, side: THREE.BackSide, depthWrite: false }));
   sky.renderOrder = -10; sky.frustumCulled = false;
   scene.add(sky);
+  // ---- the far shore: other towns and hills on the horizon, one draw
+  const far = new THREE.Mesh(new THREE.CylinderGeometry(1500, 1500, 70, 256, 1, true).translate(0, 35, 0),
+    new THREE.ShaderMaterial({ vertexShader: SH.FAR_VS, fragmentShader: SH.FAR_FS, uniforms: { ...U }, side: THREE.BackSide, depthWrite: false }));
+  far.renderOrder = -9; far.frustumCulled = false;
+  scene.add(far);
   // ---- halos: each place's light in the haze
   const hn = plan.halos.length, hA = new Float32Array(hn * 4), hC = new Float32Array(hn * 4), hP = new Float32Array(hn);
   plan.halos.forEach((h, k) => { hA.set([h[0], h[1], h[2], h[3]], k * 4); hC.set([h[4], h[5], h[6], h[7]], k * 4); hP[k] = h[8]; });
@@ -335,7 +381,7 @@ export function createWorld(opts) {
   // ------------------------------------------------------------------------------------------------ the loop
   const INTRO = 3.6;
   const startPose = { ...pose };
-  let frames = 0, fps = 0, tPrevFrame = 0, bloomNow = 0.62;
+  let frames = 0, fps = 0, tPrevFrame = 0, bloomNow = 0.5, skyAt = 0;
   const works = new Float32Array(60);
   const dists = plan.places.map((p) => Math.hypot(p.x, p.z) / R);
   function frame(dt, t) {
@@ -375,8 +421,10 @@ export function createWorld(opts) {
     stepFx(dt);
     focus += (focusTo - focus) * (1 - Math.exp(-Math.min(dt, 0.1) * 7));
     U.uWarp.value = warp;
+    if (t0 - skyAt > 30000) { skyAt = t0; duskTo = skyFor(opts.sky); }        // the market clock, checked every 30 s
+    if (Math.abs(duskTo - dusk) > 1e-4) { dusk += (duskTo - dusk) * (1 - Math.exp(-Math.min(dt, 0.1) * 0.8)); U.uDusk.value = dusk; }
     warpMesh.visible = warp > 0.01;
-    const bs = 0.62 + warp * 0.18;
+    const bs = 0.5 + warp * 0.18;
     if (Math.abs(bs - bloomNow) > 0.004) { bloomNow = bs; rc.setBloom({ strength: bs }); }
     applyCam();
     if (opts.onFrame) opts.onFrame(dt, t);
@@ -455,6 +503,8 @@ export function createWorld(opts) {
     /** ?clock=manual: advance the clock by ms and draw that frame now (frame-by-frame capture: smooth video on a machine without a GPU) */
     step(ms, noDraw) { if (!manual) return false; vnow += ms; frame(Math.min(ms, 100) / 1000, vnow / 1000); if (!noDraw) rc.draw(); return true; },
     /** the share of the screen height the subject moves up (a card covers the bottom): 0..0.3 */
+    /** the sky: 'night' | 'blue' | 'dusk' (golden hour) | 'auto' (the market clock) */
+    setSky(k) { opts.sky = k; duskTo = skyFor(k); if (reduced || manual) { dusk = duskTo; U.uDusk.value = dusk; } },
     setFocus(f, now) { focusTo = clamp(+f || 0, 0, 0.3); if (reduced || now) focus = focusTo; },
     skipIntro() { if (introT >= 0) { introT = -1; grow.fill(1); texDirty = true; pose = clampPose(homePose(world), world); } },
     state() {
@@ -462,7 +512,7 @@ export function createWorld(opts) {
       const ws = Array.from(works.slice(0, Math.min(frames, works.length))).sort((a, b) => a - b), jsMs = ws.length ? ws[ws.length >> 1] : 0;
       return { frames, fps: Math.round(fps * 10) / 10, jsMs: Math.round(jsMs * 100) / 100, tier: rc.quality(), calls: st.calls, triangles: st.triangles,
         instances: plan.n, places: N, selected, intro: introT >= 0, warp, tween: !!tween, tour: !!tour, history: !!history, pose: { ...pose },
-        mirror: mirror.visible, traffic: traffic.geometry.instanceCount, dpr: st.dpr, bloom: st.bloom, compiled: st.compiled };
+        mirror: mirror.visible, traffic: traffic.geometry.instanceCount, dusk: Math.round(dusk * 100) / 100, dpr: st.dpr, bloom: st.bloom, compiled: st.compiled };
     },
     dispose() {
       rc.stop();

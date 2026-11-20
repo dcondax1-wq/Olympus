@@ -48,7 +48,7 @@ async function boot() {
     try {
       S.plan = C.planWorld(w, { tier: O() && O().lite && O().lite() ? 'low' : 'high' });
       const M = await import('./ow-scene.js?v=w1');
-      S.scene = M.createWorld({ canvas: $('#c'), world: w, plan: S.plan, reduced, manual: qs.get('clock') === 'manual', tier: O() && O().lite && O().lite() ? 'low' : 'high',
+      S.scene = M.createWorld({ canvas: $('#c'), world: w, plan: S.plan, reduced, sky: qs.get('sky') || 'auto', manual: qs.get('clock') === 'manual', tier: O() && O().lite && O().lite() ? 'low' : 'high',
         onTap, onFrame, onUser: () => { hideHint(); if (S.tour) setTour(false); }, onIntroDone: () => showHint() });
       S.mode = '3d';
       setTimeout(() => d.body.classList.add('live3d'), 6000);                 // the first frame normally lifts the poster (onFrame); never stuck on it
