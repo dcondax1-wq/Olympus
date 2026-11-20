@@ -22,3 +22,7 @@ No Decide card (no full pass). No live file, engine file, account or screen touc
 STATE.md left to the lead (one line for "Recently done": "newstrat ICT ATM + SMT: 0 of 5 pass, nothing changed").
 
 Tests: see bottom.
+- `python tests/smoke.py`: 7/8 green; test_zenith_mode = `No module named 'playwright'` (container, no screen touched).
+- `python tests/run_area.py privacy`: public_build_privacy 59/59 PASS, repo_secrets 12/12 PASS; private_link and phone_safety
+  could not start (`No module named 'fastapi'` in this container), not related to these research-only files.
+- `python -X utf8 research/newstrat/smt.py` reruns in ~10 s and reproduces every number.
