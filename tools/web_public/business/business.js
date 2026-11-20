@@ -228,7 +228,10 @@ function renderProp(p) {
 }
 
 (async function main() {
-  const ownRaw = await getJSON('./business.json');
+  // day-arenas 2026-11-20 (audit: 404 business/business.json): the PC's own business.json is private and never on the public site
+  // (tools/biz_publish.py, gitignored), so the public site does not ask for it at all; the PC's own link and a test server still do
+  const priv = /^(localhost|127\.|10\.|192\.168\.|100\.)|\.ts\.net$/.test(location.hostname) || /[?&]own=1/.test(location.search);
+  const ownRaw = priv ? await getJSON('./business.json') : null;
   const own = C.clean(ownRaw);
   const raw = own ? ownRaw : await getJSON('./fixture.json');
   const doc = own || C.clean(raw);

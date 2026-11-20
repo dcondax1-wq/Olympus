@@ -53,6 +53,12 @@
   </section>
 
   <section class="pulse" data-pulse="strip,bots,stats" data-pulse-app="helios" aria-label="Today, the bots, the trades" aria-busy="true"><div class="pu-part pu-strip"></div><div class="pu-part pu-bots"></div><div class="pu-part pu-stats"></div><p class="pu-note pu-age"></p></section><!-- day-arenas: olympus/pulse.js -->
+  <section class="ag-card card" id="riskWeek" aria-labelledby="rwH"><!-- day-arenas: Pythia's risk calendar folded in (riskweek.js) -->
+    <div class="row"><h2 id="rwH">Market risk, next 5 trading days</h2><a class="pill" href="../pythia/" data-oly-cue="tap">Pythia &rsaquo;</a></div>
+    <ul aria-live="polite"></ul>
+    <p class="note">Red = a big release (CPI, jobs, Fed). LIT trades its normal rules on every one of these days; the choice to sit out is yours.</p>
+    <nav class="folded" aria-label="Briefings folded into Helios"><a href="../pythia/">Pythia: 14 days</a><a href="../delphi/">Delphi: go / no-go</a><a href="../forum/">Forum: the desk</a></nav>
+  </section>
   <section class="ag-card card" aria-labelledby="accH">
     <h2 id="accH">Drawdown left</h2>
     <ul class="cards" id="accts"></ul>
@@ -92,5 +98,6 @@
 <script src="../olympus/lazy3d.js?v=l1" data-src="sunload.js?v=a1" data-skip="lite" data-event="helios-sun" defer></script>
 <script type="module" src="helios.js?v=r7"></script>
 <script type="module" src="../olympus/pulse.js?v=p1"></script>
+<script type="module" src="riskweek.js?v=1"></script>
 </body>
 </html>

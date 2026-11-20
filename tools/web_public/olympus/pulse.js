@@ -142,7 +142,7 @@ const LINKS = { accounts: '../aegis/', bots: '../nq/', stats: '../journal/', mon
 function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
 function head(title, app, part) {
   const h = el('div', 'pu-head'); h.appendChild(el('h2', 'pu-title', title));
-  const href = LINKS[part]; if (href && !href.includes(`/${app}/`)) { const a = el('a', 'pu-more', 'Open ›'); a.href = href; a.setAttribute('data-oly-cue', 'tap'); h.appendChild(a); }
+  const href = LINKS[part]; if (href && !href.includes(`/${app}/`)) { const a = el('a', 'pu-more', 'Open ›'); a.href = href; a.setAttribute('data-oly-cue', 'open'); h.appendChild(a); }
   return h;
 }
 function tile(label, value, sub, tone) {
@@ -237,7 +237,19 @@ export async function mountAll(force) {
   }
   if (typeof window !== 'undefined') window.OLYMPUS_PULSE = { model: m, mountAll };
 }
+// subtle UI sounds (owner 2026-11-20): every button / tab / segment on a page with a pulse mount gives the kit's soft 'tap' cue through
+// OLYMPUS.cue, so the Settings Sound switch, LITE, reduced motion and the iPhone ringer switch all still decide (silent before the first tap)
+export function wireCues(doc) {
+  doc.addEventListener('click', (e) => {
+    try {
+      const t = e.target && e.target.closest && e.target.closest('button, [role="tab"], [role="radio"], summary, a.pu-more, .seg > *');
+      if (!t || t.closest('[data-oly-cue]') || t.disabled) return;
+      const O = window.OLYMPUS; if (O && typeof O.cue === 'function') O.cue('tap');
+    } catch (x) { /* no sound kit on this page */ }
+  }, { passive: true });
+}
 if (typeof document !== 'undefined') {
+  if (document.querySelector('[data-pulse]')) wireCues(document);
   const go = () => mountAll().catch(() => {});
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go, { once: true }); else go();
   let hid = 0;
