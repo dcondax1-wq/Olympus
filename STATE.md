@@ -147,7 +147,7 @@ Rules: MFFU ONLY ("We stick with MFFU"). Limits: max 5 sim-funded, Builder 1x50K
 1. Rapid EOD 25K (bought): on the phone (Tailscale link + /add-account/) or the PC (http://localhost:8766/add-account/) -> Rapid EOD 25K -> type/tap the Name + type I ACCEPT LIVE RISK -> Add + start trading (it waits for flat by itself).
 2. Sim101 test of the 50K combo (Claude sends 3 steps when night-combolive lands); then the zlarior-atlas-50k card once the 50K passes.
 3. Kalshi live (owner: "trading by Monday 6 pm", $55): kalshi.com API key -> phone: PC link + :8444/kalshi-live/ -> paste, Save (Key OK $55) -> pick $2.50 -> type the phrase. Never in chat.
-4. Backup repo private (optional): flip dcondax1-wq/olympus to private, then double-click GITHUB_SIGNIN.bat at the PC.
+4. Tell Claude your Maryland county + whether you have a day job (tax pot 30% without one, 40% with one: research/writeups/keep-the-most-2026-11-20.md, phone business/taxes.html). Optional later: Backup repo private (optional): flip dcondax1-wq/olympus to private, then double-click GITHUB_SIGNIN.bat at the PC.
 5. Decide card: Claude now says YES to "ATLAS's funded 25K: risk 40% of the room" (at real fills it loses the account about a third less often for the same $: atlas-risk-real-fills-2026-11-20.md). Anything else open there (yes/no/later) is not urgent.
 - Older asks (moved 2026-11-19, many done or stale): docs/STATE_HISTORY.md section 'Waiting on the owner (old list)'.
 ## Built, waiting for the PC
