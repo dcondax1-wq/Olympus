@@ -20,3 +20,10 @@ test_kalshi_k8_day 50/50, test_kalshi_clock 40/40, test_kalshi_live 83/83.
 |---|---|---|---|
 | dionysus/ | 0.897 | 0.059 | K8 today on the page from the first paint at full height (never hidden later; no data = one line + link); status keeps 3 lines. Rest 0.058 = the header crumbs (NAV: gate-nav.js inserts nav.gn-crumbs ~3.3 s) |
 | kalshi/ | 0.469 | 0.105 | live-day box, windows list and K8 extras keep their height until first filled. Rest = the header (same NAV crumbs) |
+
+## A11Y (FOR_kalshi.md, tools/a11y_sweep.py --apps kalshi,dionysus --quick from day-a11y)
+| Page | Before | After | What |
+|---|---|---|---|
+| kalshi/ | 71 (136 issues) | 100 (4 left, Dynamic Type notes) | a11y.js loaded; text in rem (15 px sentences, >= 13 px labels); muted colour instead of stacked opacity (paper legs, "done", notes); history links 44 px; "+$5.54" signed |
+| dionysus/ | 92 (69) | 100 (4) | text in rem; .note / status / tiles / scan / lessons / words 15 px over the kit's smaller defaults |
+CLS after the bigger text: kalshi 0.093, dionysus 0.059 (rest = the header crumbs, NAV).
