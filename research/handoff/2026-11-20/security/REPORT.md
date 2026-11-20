@@ -1,3 +1,23 @@
+# Security round 2, 2026-11-20 (day-security2)
+
+## For the owner
+
+| What | Result |
+|---|---|
+| The PC signs its public status, chart and data posts | Built and tested. Once it has signed for 6 h, the phone and Claude ignore fake posts |
+| Strangers getting your trade alerts / pushing your phone off | Built. Your phone stays with no action; a new phone needs a code your PC sends to you |
+| If signing ever fails | Everything works as today: posts go out unsigned, trade alerts are never touched |
+| Bot answers your home WiFi (W2) | Not changed yet: one question for you below |
+
+1. Nothing to do now.
+2. Later, if you want it: "Yes, close the WiFi door." The bot then opens on your phone only with your PC link (the :8444 one).
+3. A new phone or iPad later: your current phone gets an 8-digit code. Type it on the new one.
+
+## Detail (for the lead)
+See LEAD_WIRES.md, round 2 (top). Tests run on this branch:
+
+---
+
 # Security check, 2026-11-20 (day-security)
 
 ## For the owner (read this part)
