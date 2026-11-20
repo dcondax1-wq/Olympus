@@ -2,7 +2,7 @@
 one-sided Bonferroni on the cluster t (one cluster = one day, verify.py), found on the OLDER weeks (Aug 3 - Oct 21) and checked
 once on the HELD-OUT newest weeks (Oct 22 - Nov 19). The variant list was written down before any result was read.
 
-Variants (82):
+Variants (84):
   timing   +10 s and +40 s vs today's +20 s, the 6 metals legs pooled (paired: the same bets, only the price differs;
            a bet with no fill at that time counts as $0)                                                              2
   caps     per leg, skip asks above 50 / 53 / 55 / 57 / 60c (do the skipped bets lose?)                         6 x 5 = 30
@@ -11,12 +11,14 @@ Variants (82):
            open for the evening legs) up/down; the 8-hour realised volatility above/below the leg's own median of the
            20 bet days before (no look-ahead). Skip one side of each split (do the skipped bets lose?)        6 x 4 x 2 = 48
   rolls    natural gas UP and WTI DOWN 17:00-17:15 ET on the 5th-9th business day, at the +20 s price            2
+  streaks  (added after the dry run showed the evening legs losing 7 of 8 on Nov 16-19, so only the find period is clean)
+           pause a leg for one bet after its last 2 / 3 bets all lost, the 6 legs pooled                           2
 Holiday / early-close skips are a safety rule (no CME close to lean on), not testable: Labor Day is the only US holiday in
 the sample. They stay in the executor's calendar.
 
 PASS = find period: t >= bar (a filter / cap: the SKIPPED bets lose with t <= -bar) AND held out: the same sign and at least
 5% per $1, on at least 6 bets. All-win samples (t is infinite) use the exact binomial bound instead: the one-sided
-(1 - 0.05/82) upper bound of the loss rate must be under the break-even loss rate.
+(1 - 0.05/84) upper bound of the loss rate must be under the break-even loss rate.
 
     python research/kalshi_k8_monday/edge.py    -> research/kalshi_k8_monday/edge.json
 """
@@ -38,7 +40,7 @@ sys.path.insert(0, os.path.join(D.ROOT, "research", "kalshi_edge_K8"))
 import k8lib  # noqa: E402
 
 OUT = os.path.join(D.HERE, "edge.json")
-M = 2 + 30 + 48 + 2
+M = 2 + 30 + 48 + 2 + 2
 BAR = float(D.V.bar_t(M))
 STAKE = 2.5
 CAPS = (0.50, 0.53, 0.55, 0.57, 0.60)
@@ -166,6 +168,17 @@ def main():
                 out["results"].append({"kind": "filter", "leg": lid, "what": f"{lid}: skip when {ft} = {v}", "skipped_find": s_of(f),
                                        "skipped_hold": s_of(h), "kept_find": s_of(kf), "kept_hold": s_of(kh),
                                        "verdict": verdict(s_of(f), s_of(h), -1)})
+    # streaks: pause a leg for its next bet after its last k bets lost
+    for k in (2, 3):
+        sk = []
+        for lid in D.LEGS:
+            seq = sorted((r for r in rows20 if r["leg"] == lid and r.get("n")), key=lambda r: r["o"])
+            for i, r in enumerate(seq):
+                if i >= k and all(not x["won"] for x in seq[i - k:i]):
+                    sk.append(r)
+        f, h = split(sk)
+        out["results"].append({"kind": "streak", "what": f"pause a leg for one bet after {k} losses in a row (6 legs pooled)",
+                               "skipped_find": s_of(f), "skipped_hold": s_of(h), "verdict": verdict(s_of(f), s_of(h), -1)})
     # rolls
     T = D.tape()
     roll = set()
@@ -217,7 +230,7 @@ def main():
     print("bar", round(BAR, 2), "passed", out["passed"])
     print(json.dumps(out["baseline"]["find"]), json.dumps(out["baseline"]["hold"]))
     for r in out["results"]:
-        if r["kind"] in ("timing", "roll"):
+        if r["kind"] in ("timing", "roll", "streak"):
             print(json.dumps(r, default=str))
     for c in out["closest"]:
         print(c)

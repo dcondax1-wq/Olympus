@@ -113,7 +113,7 @@ PROGRAM_END_S = 15 * 60
 PUSH_DAY_MAX = 10                       # non-stop pushes per ET day (stops always go)
 FILL_PUSH_GAP_S, FILL_PUSH_DAY_MAX = 3600, 6
 HEARTBEAT_STALE_S = 300
-CARD_MAX = 200
+CARD_MAX = 320                          # 200 + the K8 status block (about 130 bytes, night-kalshi8)
 TICKER_RX = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}")
 PLAIN = {
     "KILL": "the kill switch is on", "NOT_ARMED": "not armed: type the phrase on the PC", "STOPPED": "stopped: type the phrase again",
@@ -1746,13 +1746,14 @@ def card(P, ex=None, now=None) -> dict:
                   "cap": caps["capital_cap_usd"], "stop": caps["daily_loss_stop_usd"]})
     if state == "stopped":
         c["why"] = re.sub(r"[^A-Za-z0-9 $+.,:()%-]", "", str((st.get("stopped") or {}).get("why") or ""))[:40]
-    try:                                    # K8 clock bets: [settled bets, won, net $] live and paper
+    try:                                    # K8 clock bets (night-kalshi8): the phone's 'K8 status' block (engine/kalshi_clock.card_k8)
         from engine import kalshi_clock as KC
-        CP = KC.paths(P["dir"] if P["dir"] != STATE_DIR else None)
-        for k, path in (("cl", CP["clock_live"]), ("cp", CP["clock_paper"])):
-            s_ = KC.stats(KC.rows(path))
-            if s_["n"] or s_["open"]:
-                c[k] = [s_["n"], s_["won"], s_["net"]]
+        k8 = KC.card_k8(P["dir"] if P["dir"] != STATE_DIR else None, now=now)
+        if k8:
+            c["k8"] = k8
+            c["u"] = iso(now)
+            if state == "off":
+                c["st"] = "paper"           # not armed, but the K8 paper loop runs / has a ledger: the phone shows it (was dropped as 'off')
     except Exception:  # noqa: BLE001
         pass
     while len(json.dumps(c, separators=(",", ":"))) > CARD_MAX and c.get("why"):
@@ -1779,8 +1780,16 @@ def read_card(now=None, state_dir=None):
                 c = card(P, now=now)
             if c.get("st") in ("live", "paused") and not loop_alive(P, now):
                 c = dict(c, st="idle")              # armed, but no loop on the PC right now (a PC restart)
+            try:                                    # the K8 block is always fresh (the maker loop that writes card.json is idle)
+                from engine import kalshi_clock as KC
+                k8 = KC.card_k8(P["dir"] if P["dir"] != STATE_DIR else None, now=now)
+                if k8:
+                    c = dict(c, k8=k8, st="paper" if c.get("st") == "off" else c.get("st"))
+            except Exception:  # noqa: BLE001
+                pass
             return c
-        return {"kind": "kalshi_live_pub", "v": 1, "st": "off", "u": iso(now)}
+        c = card(P, now=now)                        # no card file (the maker loop never ran): the K8 clock card, or {st: off}
+        return c if c.get("st") != "off" else {"kind": "kalshi_live_pub", "v": 1, "st": "off", "u": iso(now)}
     except Exception:  # noqa: BLE001
         return None
 
@@ -2154,7 +2163,12 @@ def main(argv=None) -> int:
     if a.clock_loop or a.clock_report:
         from engine import kalshi_clock
         if a.clock_report:
-            for ln in kalshi_clock.describe(kalshi_clock.load_config(state_dir=sd)[0]) + kalshi_clock.report_lines(sd):
+            ccfg = kalshi_clock.load_config(state_dir=sd)[0]
+            k = kalshi_clock.kill_distances(sd, ccfg)
+            stops = [f"How far each stop is ({k['ledger']}): today {money(-k['day']['used'])} of {money(-k['day']['stop'])}, this week "
+                     f"{money(-k['week']['used'])} of {money(-k['week']['stop'])}, from the peak {money(-k['drawdown']['used'])} of "
+                     f"{money(-k['drawdown']['stop'])}; last 10: " + ("".join("W" if r["result"] == "won" else "L" for r in k["last10"]) or "none")]
+            for ln in kalshi_clock.describe(ccfg) + kalshi_clock.report_lines(sd) + stops + kalshi_clock.files_lines(sd):
                 print("  " + ln)
             return 0
         print(f"{iso(time.time())} kalshi clock loop: {kalshi_clock.run(state_dir=sd)}", flush=True)

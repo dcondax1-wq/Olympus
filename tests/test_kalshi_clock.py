@@ -24,6 +24,7 @@ No network, no real key, no real order; Claude never arms (every arm here is the
 from __future__ import annotations
 
 import datetime as dt
+import json
 import os
 import re
 import shutil
@@ -544,6 +545,13 @@ def part_sizing(tmp):
         total = round(sum(r.get("pnl") or 0 for r in w.live()), 2)
         stops = [p for p in w.pushes[pushes0:] if "STOPPED" in p["title"]]
         live_now = KL.arm_state(P=KC.paths(w.sd), env=w.env)[0]
+        card = KL.read_card(now=w.clock(), state_dir=w.sd)
+        k8 = (card or {}).get("k8") or {}
+        check("s5. the PC's public card carries the K8 status block (live ledger, bankroll $55, $2.50 a bet, today, the last 10 as W/L, week + "
+              "drawdown used vs the stop, the next window) inside the card budget; no ticker, no order id",
+              k8.get("m") == "L" and k8.get("b") == 55 and k8.get("s") == 2.5 and set(k8.get("l") or "") == {"L"} and len(k8.get("l") or "") == min(10, len([r for r in w.live() if r.get("status") == "settled"]))
+              and k8["wk"][1] == 13.75 and k8["dd"][1] == 16.5 and k8.get("nx") and len(json.dumps(card, separators=(",", ":"))) <= KL.CARD_MAX
+              and "KXGOLD" not in json.dumps(card) and "ord" not in json.dumps(card), card)
         check("s4. the next week: the week stop resets (Monday's bet goes in), then the drawdown stop turns live OFF before the record can "
               "pass -$16.50 from the peak (one STOPPED push); the total loss never passes 30% of $55",
               total >= -16.5 - 1e-9 and total < week and stops and not live_now and "drawdown" in stops[0]["title"], (total, week, [p["title"] for p in w.pushes[pushes0:]], live_now))

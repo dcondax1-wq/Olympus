@@ -45,6 +45,8 @@ from engine import kalshi_live as KL  # noqa: E402
 
 RES: list = []
 AS_OF = dt.date(2026, 11, 18)
+REAL_CFG = KC.CFG_PATH                                   # what the owner arms ($55 rule since night-kalshi8): the hash checks guard it
+KC.CFG_PATH = os.path.join(ROOT, "tests", "fixtures", "kalshi_live", "clock_15.json")   # the rules' $ maths at the $15 test settings
 CFG = KC.load_config()[0]
 ID_RX = re.compile(r"[a-z0-9][a-z0-9_-]{1,39}")
 
@@ -374,7 +376,7 @@ def part_pc(tmp):
     now = et_epoch(AS_OF, 18, 0)
     sd = os.path.join(tmp, "pc_state")
     root = make_root(os.path.join(tmp, "pc"), decisions={"v": 1, "kind": "olympus-decisions", "items": []})
-    armed = tree_hash(KC.CFG_PATH, KL.CAND_DIR)
+    armed = tree_hash(REAL_CFG, KC.CFG_PATH, KL.CAND_DIR)
     fk = FakeKalshi(tape)
     r = KA.pc_weekly(sd, root, now=now, env={}, http=fk, sleep=lambda s: None)
     d = KA.adapt_doc(sd)
@@ -445,7 +447,7 @@ def part_pc(tmp):
           KA.as_of_day(et_epoch(AS_OF, 17, 6)) == AS_OF and KA.as_of_day(et_epoch(AS_OF, 16, 50)) == AS_OF - dt.timedelta(days=1)
           and KA.as_of_day(et_epoch(dt.date(2026, 11, 22), 12, 0)) == dt.date(2026, 11, 20))
     check("e9. what the owner armed is untouched: research/lab/kalshi_clock.json and kalshi_candidates/ hash the same",
-          tree_hash(KC.CFG_PATH, KL.CAND_DIR) == armed)
+          tree_hash(REAL_CFG, KC.CFG_PATH, KL.CAND_DIR) == armed)
 
 
 # ================================================================================================ f. ZEUS learned
@@ -507,7 +509,7 @@ def part_cloud(tmp):
             fh.write(json.dumps(r) + "\n")
     rep, dpath = os.path.join(tmp, "lab", "kalshi_adapt.json"), os.path.join(tmp, "biz", "decisions.json")
     KA._jwrite(dpath, {"v": 1, "kind": "olympus-decisions", "updated": "2026-11-18", "items": [{"id": "payout-ping-1000", "status": "open"}]})
-    armed = tree_hash(KC.CFG_PATH, KL.CAND_DIR)
+    armed = tree_hash(REAL_CFG, KC.CFG_PATH, KL.CAND_DIR)
     out = TA.run(as_of="2026-11-18", offline=True, report_path=rep, decisions_path=dpath, read_dirs=[rd], cache=os.path.join(tmp, "cache_w"),
                  now=et_epoch(AS_OF, 20, 0), say=lambda *a: None)
     doc, dec = KA._jread(rep), KA._jread(dpath)
@@ -525,7 +527,7 @@ def part_cloud(tmp):
     check("g3. the printed table: per leg 8 / 4 weeks, $ a month, the price paid, what is in force, the scan and the calendar line",
           any("silver UP 16:45-17:00 ET" in x and "OFF" in x for x in tb) and any(x.strip().startswith("scan: 384 rules") for x in tb)
           and any("calendar:" in x for x in tb), "\n".join(tb))
-    check("g4. the cloud run never touches what the owner armed (kalshi_clock.json, kalshi_candidates/)", tree_hash(KC.CFG_PATH, KL.CAND_DIR) == armed)
+    check("g4. the cloud run never touches what the owner armed (kalshi_clock.json, kalshi_candidates/)", tree_hash(REAL_CFG, KC.CFG_PATH, KL.CAND_DIR) == armed)
 
 
 def main():

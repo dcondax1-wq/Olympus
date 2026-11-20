@@ -11,8 +11,8 @@ Market ticker = SERIES-YYMONDDHHMM-MM of the window's close, e.g. KXGOLD15M-26NO
 PAPER (always on, public data, no key): at every window's +20 s it records ticker, side, best ask, contracts, cost; after the
 settle the result and $ (fee in). Ledger data/kalshi_live/clock_paper.json. One phone push a day (the day summary).
 LIVE (OFF by default): the SAME code path, then one real order per leg, only when the owner armed it with the typed phrase
-(engine/kalshi_live.PHRASE, at the PC: KALSHI_LIVE.bat; on the phone: the private Tailscale page /kalshi-live/,
-engine/kalshi_web.py). The order: limit at the best ask, good till +40 s after the open (then Kalshi cancels the rest), never a
+(engine/kalshi_live.PHRASE, at the PC: KALSHI_LIVE.bat; on the phone: the private Tailscale page
+https://<pc>.<tailnet>.ts.net:8444/kalshi-live/, engine/kalshi_web.py + engine/phone_link.py; :443 is the owner's old Jarvis app). The order: limit at the best ask, good till +40 s after the open (then Kalshi cancels the rest), never a
 market order. Checked in code before EVERY order (check_order): armed, kill switch, phone pause, the window's 10-35 s slot, ask
 <= the price cap (70c), contracts x price <= $15, at most 6 bets a day, one bet per market, today's worst case (settled $ - every
 open bet) never below -$60, cash on Kalshi >= the bet, prices <= 10 s old, market open, the kill rule (after 60 live bets, under
@@ -439,6 +439,31 @@ def kill_distances(state_dir=None, cfg=None, now=None) -> dict:
                           "max": cfg["kill_avg_price"]}, "last10": last, "net": s["net"]}
 
 
+def card_k8(state_dir=None, cfg=None, now=None) -> dict | None:
+    """The K8 block of the PC's public card (engine/kalshi_live.card, the phone's 'K8 status' card), about 130 bytes:
+    {m: L (live ledger) | P (paper), nx: next window (epoch), b: bankroll $, s: $ a bet, td: [bets, won, net $] today,
+     l: the last 10 results (W / L, oldest first), wk: [$ used, stop] this week, dd: [$ below the peak, kill], wr: [bets, % won],
+     lp: 1 while the clock loop runs}. None when K8 has no ledger and no loop. No ticker, no id, no key."""
+    try:
+        cfg = cfg or load_config(state_dir=state_dir)[0]
+        now = time.time() if now is None else now
+        P = paths(state_dir)
+        alive = loop_alive(P, now)
+        if not (alive or os.path.exists(P["clock_paper"]) or os.path.exists(P["clock_live"])):
+            return None
+        k = kill_distances(state_dir, cfg, now)
+        rs = rows(P["clock_live"] if k["ledger"] == "live" else P["clock_paper"])
+        td = stats(rs, KL.et_day(now))
+        nx, _ = next_window(now, cfg)
+        wr = k["win_rate"]
+        return {"m": "L" if k["ledger"] == "live" else "P", "nx": int(nx) if nx else None, "b": cfg.get("bankroll_usd"), "s": cfg["stake_usd"],
+                "td": [td["n"], td["won"], td["net"]], "l": "".join("W" if r["result"] == "won" else "L" for r in k["last10"]),
+                "wk": [k["week"]["used"], k["week"]["stop"]], "dd": [k["drawdown"]["used"], k["drawdown"]["stop"]],
+                "wr": [wr["n"], round(100 * wr["rate"]) if wr["rate"] is not None else None], "lp": 1 if alive else 0}
+    except Exception:  # noqa: BLE001
+        return None
+
+
 def describe(cfg) -> list:
     live = [LEG[x]["name"] for x in cfg["live_legs"]]
     paper = [LEG[x]["name"] for x in cfg["paper_legs"] if x not in cfg["live_legs"]]
@@ -467,6 +492,41 @@ def report_lines(state_dir=None) -> list:
             t = stats([r for r in rs if r.get("leg") == lid])
             if t["n"] or t["open"]:
                 out.append(f"  {LEG[lid]['name']:<26} {t['n']:>3} bets, {t['won']:>3} won, {KL.money(t['net'], True):>9}")
+    return out
+
+
+# the Kalshi data on the PC, one map (night-kalshi8 2026-11-20, "organization"): data/kalshi_live/ = K8 (clock_*, adapt*) + the
+# idle maker executor + the phone page; data/kalshi_rewards/ + data/kalshi_k1/ = the two older paper tests. Never the key (that
+# lives in %USERPROFILE%\.olympus\kalshi\). Shown by `python -X utf8 -m engine.kalshi_live --clock-report`.
+FILES = (
+    ("clock_paper.json", "K8 paper bets: every window, every leg (no money)"),
+    ("clock_live.json", "K8 real bets (only after the phrase)"),
+    ("clock_state.json", "K8 loop heartbeat, clock offset, windows done"),
+    ("clock_stake.json", "the bet size picked on the phone page"),
+    ("clock_adapt.json", "the weekly re-test's cuts (only ever smaller)"),
+    ("adapt_state.json", "when the weekly re-test last ran"),
+    ("adapt/tape.jsonl", "public Kalshi tape the re-test reads (kept under 3 MB)"),
+    ("arm.json", "the arm record (a hash, never the phrase)"),
+    ("KILL", "the kill switch (STOP on the phone writes it)"),
+    ("CLOCK_OFF", "K8 loop switched off on this PC"),
+    ("log.jsonl", "every event (rotates at 2 MB)"),
+    ("web_log.jsonl", "phone page presses (never the key)"),
+    ("clock_loop.log", "the loop's own output (rotates at 1 MB)"),
+    ("card.json", "the small public card for the phone"),
+)
+
+
+def files_lines(state_dir=None) -> list:
+    d = KL.paths(state_dir)["dir"]
+    out = [f"Kalshi files on this PC ({d}):"]
+    for name, what in FILES:
+        fp = os.path.join(d, *name.split("/"))
+        try:
+            sz = os.path.getsize(fp)
+            have = f"{sz / 1024:.0f} KB" if sz >= 1024 else f"{sz} B"
+        except OSError:
+            have = "-"
+        out.append(f"  {name:<18} {have:>8}  {what}")
     return out
 
 
@@ -588,7 +648,7 @@ class ClockLoop:
         if live or not self.st.get("stop_pushed_for") == why:
             self.st["stop_pushed_for"] = why
             self.push("stop", f"Kalshi K8 STOPPED: {why}"[:110], "Live clock bets are OFF (paper keeps recording). Open bets settle by "
-                      "themselves within 15 minutes. To restart: the phone page /kalshi-live/ or KALSHI_LIVE.bat, type the phrase.",
+                      "themselves within 15 minutes. To restart: the phone page (your PC link :8444/kalshi-live/) or KALSHI_LIVE.bat, type the phrase.",
                       priority="high", tags="warning")
 
     def controls(self):
@@ -954,6 +1014,11 @@ def spawn(state_dir=None) -> int:
     import subprocess
     P = paths(state_dir)
     os.makedirs(P["dir"], exist_ok=True)
+    try:                                                     # keep the loop's own output small (data map: clock_loop.log)
+        if os.path.getsize(P["clock_out"]) > 1_000_000:
+            os.replace(P["clock_out"], P["clock_out"] + ".1")
+    except OSError:
+        pass
     out = open(P["clock_out"], "a", encoding="utf-8")
     cmd = [sys.executable, "-X", "utf8", "-m", "engine.kalshi_live", "--clock-loop"] + (["--state-dir", state_dir] if state_dir else [])
     kw = {"cwd": KL.ROOT, "stdout": out, "stderr": out, "stdin": subprocess.DEVNULL}

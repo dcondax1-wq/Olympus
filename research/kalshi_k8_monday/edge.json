@@ -1,6 +1,6 @@
 {
- "variants": 82,
- "bar_t": 3.234,
+ "variants": 84,
+ "bar_t": 3.241,
  "find": "2026-08-03..2026-10-21",
  "held_out": "2026-10-22..2026-11-19",
  "stake": 2.5,
@@ -2528,6 +2528,48 @@
    "verdict": "fail"
   },
   {
+   "kind": "streak",
+   "what": "pause a leg for one bet after 2 losses in a row (6 legs pooled)",
+   "skipped_find": {
+    "n": 22,
+    "won": 19,
+    "net_usd": 36.99,
+    "net_per_1": 0.6978,
+    "avg_price": 0.5109,
+    "t": 3.95
+   },
+   "skipped_hold": {
+    "n": 15,
+    "won": 10,
+    "net_usd": 9.44,
+    "net_per_1": 0.2731,
+    "avg_price": 0.5267,
+    "t": 0.92
+   },
+   "verdict": "fail"
+  },
+  {
+   "kind": "streak",
+   "what": "pause a leg for one bet after 3 losses in a row (6 legs pooled)",
+   "skipped_find": {
+    "n": 3,
+    "won": 3,
+    "net_usd": 7.74,
+    "net_per_1": 1.0661,
+    "avg_price": 0.4767,
+    "t": 5.69
+   },
+   "skipped_hold": {
+    "n": 4,
+    "won": 3,
+    "net_usd": 1.35,
+    "net_per_1": 0.1561,
+    "avg_price": 0.6125,
+    "t": 0.34
+   },
+   "verdict": "fail"
+  },
+  {
    "kind": "roll",
    "what": "roll days: natgas UP 17:00-17:15 ET at +20 s",
    "find": {
@@ -2548,7 +2590,7 @@
    },
    "all_n": 15,
    "lost": 0,
-   "loss_rate_upper": 0.3895,
+   "loss_rate_upper": 0.3905,
    "breakeven_loss_rate": 0.1494,
    "avg_price": 0.8399,
    "usd_month_at_stake": 1.72,
@@ -2575,7 +2617,7 @@
    },
    "all_n": 20,
    "lost": 3,
-   "loss_rate_upper": 0.5252,
+   "loss_rate_upper": 0.526,
    "breakeven_loss_rate": 0.4218,
    "avg_price": 0.5606,
    "usd_month_at_stake": 5.61,
