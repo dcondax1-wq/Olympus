@@ -897,9 +897,18 @@ def test_night_default(br, origin):
         p.wait_for_timeout(1500)
         out[case] = p.evaluate("() => [document.documentElement.getAttribute('data-oly-theme') || '', localStorage.getItem('olympus.theme'), getComputedStyle(document.documentElement).getPropertyValue('--ag-night').trim()]")
         ctx.close()
-    check("n. OLYMPUS NIGHT is the default: an empty choice and an AGORA saved before 2026-11-20 both become 'night' (painted, saved, page black); an Agora picked after stays",
-          out["empty"][:2] == ["night", "night"] and out["agora before"][:2] == ["night", "night"] and dark(out["empty"][2])
-          and out["agora after"][1] == "agora" and out["agora after"][0] in ("", "agora"), out)
+    ctx = br.new_context(viewport={"width": 390, "height": 844}, service_workers="block")
+    ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith(origin) else r.abort())
+    ctx.add_init_script("if (!sessionStorage.getItem('t.n')) { sessionStorage.setItem('t.n', '1'); try { localStorage.clear(); } catch (e) {} }")
+    p = ctx.new_page()
+    p.goto(origin + "/jarvis/", wait_until="load")
+    p.wait_for_timeout(2500)
+    out["jarvis"] = p.evaluate("() => [document.documentElement.getAttribute('data-oly-theme') || '', localStorage.getItem('olympus.theme'), document.documentElement.getAttribute('data-jlook') || '']")
+    ctx.close()
+    check("n. OLYMPUS NIGHT is the default look (painted, page black) but never saved as a choice; an AGORA saved before 2026-11-20 shows night too; "
+          "an Agora picked after stays; the Jarvis page keeps the default, so Classic Jarvis stays on",
+          out["empty"][:2] == ["night", None] and out["agora before"][:2] == ["night", "agora"] and dark(out["empty"][2])
+          and out["agora after"][1] == "agora" and out["agora after"][0] in ("", "agora") and out["jarvis"][0] in ("", "agora") and out["jarvis"][1:] == [None, "classic"], out)
 
 
 def test_first_frame(br, origin):

@@ -322,9 +322,8 @@ def part_c():
             p.click("#clearAll")
             p.click("#shYes")
             keys = p.evaluate("Object.keys(localStorage).sort()")
-            # (2026-11-20) the theme engine writes the default look back at once (OLYMPUS NIGHT, saved so every page's first frame paints it): not a leftover choice
             check("c. Clear all: Mind's, Jarvis's and Olympus' saved choices are gone, the two secrets stay untouched (and are never shown)",
-                  "mind.x" not in keys and "mind.imported" not in keys and "jarvis.mode" not in keys and ("olympus.theme" not in keys or p.evaluate("localStorage.getItem('olympus.theme')") == "night") and p.evaluate("localStorage.getItem('jarvis.smart')") is not None
+                  "mind.x" not in keys and "mind.imported" not in keys and "jarvis.mode" not in keys and "olympus.theme" not in keys and p.evaluate("localStorage.getItem('jarvis.smart')") is not None
                   and p.evaluate("localStorage.getItem('jarvis.vault')") is not None and "Cleared" in p.inner_text("#ioNote") and "SECRET" not in p.content(), keys)
             # ---- System
             p.click("#t-system")

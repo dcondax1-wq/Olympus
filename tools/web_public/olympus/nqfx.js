@@ -1,29 +1,13 @@
-/* OLYMPUS NQ FX (tools/web_public/olympus/nqfx.js, day-arenas 2026-11-20; docs/DESIGN_SYSTEM.md section 6, docs/OLYMPUS_FX.md).
- * The trading dashboard's effects, on the kit's FX library (fx-core.js: tiers, ONE frame loop, caps, cleanup, reduced motion = off).
- * A classic script; it loads fx-core / fx-text / fx-burst itself when the page has not:
- *   <script src="../olympus/nqfx.js?v=n3" defer></script>      then   await OLYMPUS_NQFX.ready()
- *
- *   NQFX.theme({ base, cyan, blue, violet, win, loss, steel })   the colours (the NQ look: navy, cyan, blue, violet; green only for a win)
- *   NQFX.win(el, { usd, bigAt: 500 })       green sparks from el, a toast "Win +$123"; confetti too when usd >= bigAt
- *   NQFX.loss(el, { usd })                  a calm red toast "-$80", no celebration
- *   NQFX.milestone(el, { text })            confetti + a toast (eval passed, payout ready, new high)
- *   NQFX.ring(host, { value, stroke })      the glowing goal ring (0..1), cyan -> blue as it fills, violet at 100%; .call('set', v)
- *   NQFX.roll(el, { to, from, duration })   the number rolls up to `to` ($ , . % kept); .call('set', v)
- *   NQFX.trail(pathEl, { color, seconds, width })   a cyan light trail runs along an SVG chart line (<path> / <polyline>), glow under it
- *   NQFX.vault(host, { value, label })      the payout-goal hero: a titanium 3D vault door with a cyan seam + glowing crystal bars (three.js,
- *                                           after load + idle, never blocks the first paint); the door opens, the bars stack with value
- * Every call returns the FX handle { stop(), call(verb, ...), tier }. Tiers follow the owner's quality setting (OLYMPUS.fx()): ultra / high /
- * low (30 fps, fewer particles, pixel ratio 1) / off; prefers-reduced-motion = off: nothing moves, the ring / number / vault show their final
- * state still, toasts show plain. No WebGL, a lost context, Save-Data or a 2G / 3G line: the vault stays its drawn 2D picture.
- */
+/* OLYMPUS NQ FX (olympus/nqfx.js; docs/DESIGN_SYSTEM.md section 6, research/handoff/2026-11-20/nq4/FX_API.md): the trading dashboard's
+ * effects on fx-core.js. NQFX.theme / win / loss / milestone / ring / roll / trail / vault; each returns an FX handle { stop(), call() }.
+ * Tiers follow OLYMPUS.fx(); reduced motion = still final states; no WebGL / Save-Data / 2G-3G = the drawn vault. */
 (function () {
   'use strict';
   if (window.OLYMPUS_NQFX) return;
   var d = document, me = d.currentScript, BASE = me && me.src ? me.src.replace(/[^\/]*$/, '') : '../olympus/';
   var NS = 'http://www.w3.org/2000/svg';
   var readyP = null;
-  // OLYMPUS NIGHT (owner 2026-11-20, replaces the cyan set): the slot names stay (cyan = the main glow, blue = the second, violet = the 100% /
-  // accent colour) so a page's NQFX.theme({...}) keeps working; base black, glows violet / lavender, the accent bright gold, mint for a win
+  // OLYMPUS NIGHT (slot names kept for NQFX.theme callers)
   var THEME = { base: '#000000', cyan: '#9d59ee', cyanHi: '#dacbf0', blue: '#4d2e76', violet: '#f1c14b', win: '#77db89', loss: '#ef4444', steel: '#8d8a9a' };
   function hex(c) { var m = /^#?([0-9a-f]{6})$/i.exec(String(c || '').trim()); if (!m) return null; var n = parseInt(m[1], 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
   function mix(a, b, k) { var x = hex(a), y = hex(b); if (!x || !y) return a; return 'rgb(' + [0, 1, 2].map(function (i) { return Math.round(x[i] + (y[i] - x[i]) * k); }).join(',') + ')'; }
