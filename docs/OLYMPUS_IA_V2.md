@@ -33,16 +33,16 @@ Kalshi + the orb's favourites + added dashboards); every other app is under "All
 | Hub | The question it answers | Tabs (one per job) | Apps | Live line on the home tile |
 |---|---|---|---|---|
 | **Today** | What is happening, and what do I do now? | Do now · Morning brief · News and market | 15 | the trade window + my shift |
-| **Bots & Evals** | Are my bots on, and how is each eval doing? | Bots now · Risk · Pass odds · Trades · Review | 16 | "2 evals active, $1,145 / $822 left" (+ "Quiet / Old numbers" with the age) |
+| **Bots & Evals** | Are my bots on, and how is each eval doing? | Bots now · Risk · Pass odds · Trades · Review | 19 | "2 evals active, $1,145 / $822 left" (+ "Quiet / Old numbers" with the age) |
 | **Kalshi** | How is the Kalshi bot doing, and where is an edge? | The bot · Edges | 3 | balance, today, open bets (`kalshi.json`) |
-| **My Money** | What have I really made and spent, and what is next? | Real money · Plan and payouts · Household · Ideas and deals | 13 | this month / all time, cash only (`money/scoreboard.json`) |
+| **My Money** | What have I really made and spent, and what is next? | Real money · Plan and payouts · Household · Ideas and deals | 14 | this month / all time, cash only (`money/scoreboard.json`) |
 | **Plan & Day** | What is on my calendar and my list? | Calendar and tasks · Habits and progress | 5 | shift, next event, tasks done (the Planner's `planner.today.v1`, this phone) |
 | **Research** | What have we tested, and what works? | Library · Strategy search · Data | 8 | the live LIT numbers from Hephaestus's card |
 | **Jarvis** | Ask anything. Who works for me? | Ask · Your AI team | 4 | "Ask anything · your AI team" |
 | **Worlds** | The 3D places (optional, for fun) | Most visited · Numbers as places | 8 | (static) |
-| **Settings & Help** | Change the look, start the PC, find any app | Settings · Help and every app (A to Z list of all 84) · Workshop | 12 | the current theme |
+| **Settings & Help** | Change the look, start the PC, find any app | Settings · Help and every app (A to Z list of all 88) · Workshop | 12 | the current theme |
 
-86 entries (82 + Agency 2026-11-14 + Business 2026-11-15 + Board and Trading 2026-11-18), each in exactly one hub (checked by `tests/test_hubs.py`). A few also appear as "Also useful here, from other hubs" (for example Kalshi City
+88 entries (82 + Agency 2026-11-14 + Business 2026-11-15 + Board and Trading 2026-11-18 + Why and Widget 2026-11-20), each in exactly one hub (checked by `tests/test_hubs.py`). A few also appear as "Also useful here, from other hubs" (for example Kalshi City
 and Tyche on the Kalshi hub, Aegis and NQ on Today), so the 3D views and cross-job tools are one tap from where you need them.
 
 ## The tenth hub: Me (2026-11-14, team ME1, docs/ME_HUB.md)
@@ -119,6 +119,7 @@ Also shown here (they live in another hub): Bots right now (`nq`), Risk guard (`
 |  | Losing trades (Nemesis, `nemesis`) | also | What went wrong, trade by trade | `../odeon/trades.json`, `../home.json`, `fixture.json` |
 |  | P&L calendar (Kronos, `kronos`) | also | Daily P&L, best weekday and hour | `fixture.json`, `../odeon/trades.json` |
 |  | Every trade (Trading, `trading`) | also | Today's $, the calendar, the stats and the payout rules | `../home.json`, `fixture.json`, `trades.json`, `../ledger/rules.json`, `../business/accounts.json` |
+|  | Why we win and lose (Why, `why`; 2026-11-20) | also | Why our trades win and lose, per bot | `why.json` |
 | Review | Weekly review (Apollo, `apollo`) | **best** | The week's review and one rule for next week | `fixture.json`, `../odeon/trades.json` |
 |  | Trade journal (Mnemosyne, `journal`) | also | A 10-second journal: what your habits cost | `../odeon/trades.json`, `fixture.json`, `mnemosyne-journal.json` |
 |  | Discipline score (Kratos, `kratos`) | also | A 0-100 score a day: plan, stop, size, hours | `fixture.json`, `../odeon/trades.json` |
@@ -143,6 +144,7 @@ Also shown here (they live in another hub): Kalshi City (`kalshicity`), Fortune 
 | Real money | Your real money (Ledger, `ledger`) | **best** | Fees, payouts and net profit | `../home.json`, `rules.json`, `fixture.json`, `../plutus/roadmap.json`, `ledger-${S.model.today}.json` |
 |  | Balance check (Harmonia, `harmonia`) | also | What leans on the NQ bots, and what is left | `fixture.json`, `../home.json`, `../money/index.json` |
 |  | Money, wrapped (Hermes, `hermes`) | folded into Your real money | Your money story, wrapped | `jarvis.json`, `wrapped.json`, `demo.json`, `../fates/jarvis.json`, `../datacity/discoveries.json` |
+|  | iPhone widget (Widget, `widget`; 2026-11-20) | also | Your accounts on the Home Screen, plus the Glance page | `../home.json`, `../status_feed.json`, `../kalshi/rewards.json` (the Scriptable script and `glance.html`) |
 | Plan and payouts | 12-month money plan (Hera, `hera`) | **best** | Payouts, and what to buy next | `fixture.json`, `../plutus/roadmap.json` |
 |  | Prop-firm planner (Chrysos, `chrysos`) | also | Fees against payouts, break-even | `fixture.json`, `../money/chrysos.json` |
 |  | Money goals (Argo, `argo`) | also | Your goals as islands, honest ETAs | `fixture.json`, `../home.json`, `../ledger/rules.json` |
