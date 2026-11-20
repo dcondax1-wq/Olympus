@@ -1,0 +1,12 @@
+/* ZEUS Brain snippet (tools/obsidian_brain.py) */
+/* Turn on: Settings -> Appearance -> CSS snippets -> zeus. Works with the default theme, light and dark. */
+.theme-dark, .theme-light { --zeus-gold: #d4a72c; --zeus-blue: #3b82f6; }
+.callout[data-callout="zeus"] { --callout-color: 212, 167, 44; --callout-icon: lucide-zap; border-left: 4px solid var(--zeus-gold); }
+.callout[data-callout="money"] { --callout-color: 34, 160, 90; --callout-icon: lucide-circle-dollar-sign; }
+.markdown-rendered h1 { color: var(--zeus-gold); letter-spacing: .02em; border-bottom: 1px solid var(--background-modifier-border); padding-bottom: .2em; }
+.markdown-rendered h2 { color: var(--zeus-blue); }
+.markdown-rendered table { font-size: .92em; }
+.markdown-rendered td:last-child { font-variant-numeric: tabular-nums; }
+.tag[href^="#verdict/rejected"] { background: rgba(220, 60, 60, .15); color: rgb(220, 60, 60); }
+.tag[href^="#verdict/adopt"] { background: rgba(34, 160, 90, .15); color: rgb(34, 160, 90); }
+.tag[href^="#zeus/"] { background: rgba(212, 167, 44, .15); color: var(--zeus-gold); }

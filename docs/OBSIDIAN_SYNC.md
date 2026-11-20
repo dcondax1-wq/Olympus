@@ -25,3 +25,7 @@ Jarvis already reads the same vault through GitHub (docs/JARVIS_OBSIDIAN.md): wi
 Jarvis on the phone too ("what did the bots do yesterday", "open tasks").
 
 Code: `tools/obsidian_sync.py` (hook in `tools/pc_report.py`). Test: `python -X utf8 -m tests.test_obsidian_sync`.
+
+**ZEUS Brain (2026-11-20):** the same hook also rebuilds `OLYMPUS/ZEUS Brain/` once an hour (every account, strategy, research
+write-up, day, lesson and decision, all linked) and adds the `zeus` CSS snippet to `.obsidian/snippets/` (only if you have none
+of that name). `docs/ZEUS_BRAIN.md`.
