@@ -1021,7 +1021,7 @@ a.lnk { color: var(--accent-2); text-decoration: underline; text-decoration-colo
    so the FIRST PAINT copy above paints nothing then; this paints the engine's saved copy of 'night', which it writes on every apply) */
 (function () { try {
   var ls = window.localStorage, v = ls.getItem('olympus.theme'), d = document.documentElement, k, on = window.__olyPaint || [];
-  if ((v && v !== 'agora') || ls.getItem('olympus.theme.night') === '1' || ls.getItem('le.theme') === '"light"' || ls.getItem('olympus.themeMix')) return;
+  if ((v && v !== 'agora') || ls.getItem('olympus.theme.night') === '1' || ls.getItem('le.theme') === '"light"' || ls.getItem('olympus.themeMix') || (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches)) return;
   var c = JSON.parse(ls.getItem('olympus.theme.look.page.night') || 'null'); if (!c || !c.vars) return;
   for (k in c.vars) { d.style.setProperty(k, c.vars[k]); on.push(k); }
   d.setAttribute('data-oly-theme', 'night'); d.setAttribute('data-oly-scheme', 'dark'); if (c.style) d.setAttribute('data-oly-style', c.style);
