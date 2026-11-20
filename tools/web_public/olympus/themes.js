@@ -132,6 +132,17 @@
     return t;
   }
 
+  /** OLYMPUS NIGHT: the gold family keeps its bright accent (accent / hi / pale) but its dark steps become violet (outlines, glows), so a
+   *  sheet that used AGORA's bronze or a dark gold for a background or a border gets deep violet, never brown */
+  function nightLook(t) {
+    var V = { deep: '#1a1029', bronze: '#4d2e76' };
+    t.ramp.a.deep = V.deep; t.ramp.a.bronze = V.bronze;
+    t.tokens.edge = 'rgba(157, 89, 238, .42)'; t.tokens.glow = '#9d59ee';
+    t.jarvis.c2 = '#9d59ee'; t.jarvis.cr2 = '157,89,238'; t.jarvis.dim3 = '#462a6a'; t.jarvis.neb1 = '72,48,129'; t.jarvis.neb2 = '35,29,22'; t.jarvis.neb3 = '77,46,118';
+    t.scene = { fog: '#000000', sky: '#0b0714', emissive: '#9d59ee', bloom: '#dacbf0' };
+    for (var k in t.scene) t.tokens[k] = t.scene[k];
+    return t;
+  }
   /* ------------------------------------------------------------------ the themes (data only) */
   var THEMES = [
     { id: 'agora', name: 'Agora', greek: 'ΑΓΟΡΑ', tag: 'Marble · bronze · gold · default', scheme: 'dark',
@@ -196,6 +207,15 @@
         neb1: '40,60,120', neb2: '156,122,38', neb3: '60,90,160', grid: '.04', scan: '0' } }),
     /* the twelve style looks (2026-11-14, the lead's specs; contrast fixed where it failed AA: Amber's muted, Stocks Light's blue / green,
        Neo Brutal's pink text on yellow (pink stays the button), Carbon Red's red text, Sunset's lower sky darkened) */
+    /* OLYMPUS NIGHT (owner 2026-11-20, from his Jarvis app-switcher screenshot: "whatever these colors are I like"): the kit's default look.
+       Pure black, near-black violet cards, deep violet outlines and glows, small BRIGHT gold accents (chip borders, CTA text, the selected
+       dock item), mint for profit, red for loss. Gold is never a card colour: the gold family's dark steps (AGORA's bronze / deep) are violet. */
+    nightLook(look({ id: 'night', group: 'dark', name: 'Olympus Night', tag: 'Black · violet glow · bright gold accents · default', scheme: 'dark',
+      c: { bg: '#000000', card: '#0d0b13', line: '#3e255e', text: '#ebe9f1', soft: '#c8c3d4', muted: '#898497', accent: '#f1c14b', up: '#77db89', down: '#ef4444', warn: '#b98af5' },
+      s: { page: 'radial-gradient(120% 50% at 50% -8%, #231d16 0%, transparent 58%), linear-gradient(180deg, #000000, #000000)',
+        card: 'linear-gradient(180deg, #16131e, #020204)', border: '1px solid #3e255e', radius: '20px', radiusS: '14px', radiusL: '24px',
+        shadow: '0 0 0 1px rgba(157, 89, 238, .06), 0 10px 30px rgba(0, 0, 0, .55), 0 0 24px rgba(157, 89, 238, .10)', blur: 'none',
+        title: SANS, weight: '700', track: '-.01em', btn: '#f1c14b', btnFg: '#000000' } })),
     look({ id: 'aurora', group: 'dark', name: 'Glass Aurora', tag: 'Frosted glass · violet and teal light', scheme: 'dark',
       c: { bg: '#0d1020', card: 'rgba(255, 255, 255, .07)', line: 'rgba(255, 255, 255, .16)', text: '#f5f6ff', soft: '#dcdff2', muted: '#c3c7e2', accent: '#9ad8ff', up: '#3ccf7a', down: '#ff7b72' },
       s: { page: 'radial-gradient(120% 60% at 10% 0%, #2c2060 0%, transparent 60%), radial-gradient(100% 60% at 100% 30%, #0a424a 0%, transparent 55%), linear-gradient(180deg, #0b0b1a, #0d1020)',
@@ -510,7 +530,15 @@
   // A choice saved before AGORA (2026-11-09) may be 'olympus' only because that used to be the default (Jarvis wrote it when a Jarvis colour
   // was picked): it reads as the default (AGORA) until the owner picks a theme again; every pick after that is marked (VKEY) and wins.
   var VKEY = 'olympus.theme.v';
-  function stored() { var v = get(KEY); if (v === 'olympus' && get(VKEY) !== '2') return DEFAULT; return by[v] ? v : DEFAULT; }
+  // OLYMPUS NIGHT is the owner's default (2026-11-20): an empty choice, or AGORA saved before that day, becomes 'night' once and is saved
+  // (so the FIRST PAINT copy in each page's <head> paints it from the next load); 'olympus.theme.night' = 1 marks it, so a later pick of
+  // Agora (or anything) is the owner's and stays
+  var NIGHTKEY = 'olympus.theme.night', PREFERRED = 'night';
+  function stored() {
+    var v = get(KEY);
+    if (get(NIGHTKEY) !== '1' && (!v || v === DEFAULT || (v === 'olympus' && get(VKEY) !== '2'))) { put(KEY, PREFERRED); put(NIGHTKEY, '1'); v = PREFERRED; }
+    if (v === 'olympus' && get(VKEY) !== '2') return DEFAULT; return by[v] ? v : DEFAULT;
+  }
   /* MIX (2026-11-14, owner via the lead: "a combined type of thing where some dashboards have others"): besides one look for everything
    * ('olympus.theme'), 'olympus.themeMix' = { district: { trading: 'amber', money: 'stocks', life: 'forest', worlds: 'aurora' },
    * app: { nq: 'terminal', gate: 'aurora' }, of: { nq: 'trading', helios: 'trading', ... } } gives a district or one app its own look:
