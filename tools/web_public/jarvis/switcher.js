@@ -239,7 +239,8 @@ export function mountSwitcher(opts = {}) {
   const call = (f, ...a) => { try { return typeof f === 'function' ? f(...a) : undefined; } catch (e) { console.error(e); return undefined; } };
   // owner 2026-11-20 ("funky"): retired apps out of the switcher (their pages still work), the cities as ONE entry (cities/), never their
   // own cards (Data City, Kalshi City, Atlas City, Mint City, the World live inside it)
-  const given = () => { const l = call(opts.apps); return Array.isArray(l) ? l.filter((a) => a && a.id && !HIDE.has(a.id) && !CITY_PARTS.has(a.id)) : []; };
+  // (the app on screen stays, even a hidden one opened from the home grid: its card says NOW and the swipe starts from it)
+  const given = () => { const l = call(opts.apps), cur = call(opts.active) || 'home'; return Array.isArray(l) ? l.filter((a) => a && a.id && (a.id === cur || (!HIDE.has(a.id) && !CITY_PARTS.has(a.id)))) : []; };
   // the apps in their groups (opts.sections), else one list: every app of opts.apps() once (one left out goes at the end)
   function sections() {
     const all = given();
