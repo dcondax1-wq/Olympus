@@ -54,7 +54,7 @@ CASES = {
     "update the pc": "hub/help.html#update", "holidays": "hub/help.html#holidays",
     # the rest of the site
     "my accounts": "business/accounts.html", "zeus": "hub/zeus.html", "board": "board/", "kalshi": "kalshi/", "journal": "journal/",
-    "news today": "pheme/", "how many micros": "pnyx/index.html", "change theme": "gate/index.html#lookSec", "dark mode": "gate/index.html#lookSec",
+    "news today": "pythia/", "how many micros": "pnyx/index.html", "change theme": "gate/index.html#lookSec", "dark mode": "gate/index.html#lookSec",
     "all apps": "gate/index.html#az", "weekly review": "apollo/",
     # what's new (2026-11-20 lead follow-up)
     "what's new": "hub/whatsnew.html", "what changed": "hub/whatsnew.html", "whats new this week": "hub/whatsnew.html",
@@ -68,7 +68,9 @@ const first = (q) => { const r = G.findAll(q, 8);
 const qs = JSON.parse(process.argv[2]);
 const pins = {}; for (const q of ['kalshi', 'theme', 'payout', 'micros', 'all apps', 'health', 'money', 'drawdown', 'journal', 'news']) {
   const r = G.findAll(q, 8); pins[q] = { hubs: r.hubs.map((h) => h.id), actions: r.actions.map((x) => x.id), apps: r.apps.map((a) => a.id), find: G.find(q, 8).map((a) => a.id) }; }
-console.log(JSON.stringify({ first: Object.fromEntries(qs.map((q) => [q, first(q)])), pins, actions: G.actions.map((a) => [a.id, a.path]) }));
+const order = {}; for (const q of ['kalshi', 'city', 'jarvis', 'bot', 'plan', 'money']) order[q] = G.find(q, 3).map((a) => a.id);
+const az = G.az().map((a) => a.id);
+console.log(JSON.stringify({ order, az, retired: G.RETIRED, first: Object.fromEntries(qs.map((q) => [q, first(q)])), pins, actions: G.actions.map((a) => [a.id, a.path]) }));
 """
 
 
@@ -88,9 +90,14 @@ def main():
           p["kalshi"]["actions"] == [] and p["kalshi"]["apps"][0] == "kalshi" and p["theme"]["actions"][:1] == ["act-look"]
           and p["payout"]["actions"][:1] == ["act-payout"] and p["payout"]["apps"][0] == "ledger" and p["micros"]["actions"][:1] == ["act-micros"]
           and p["all apps"]["actions"][:1] == ["act-az"] and p["health"]["hubs"] == ["me"], p)
-    check("b. old pins: money -> Mint + Ledger, drawdown -> Aegis, journal first, news -> Pheme / Pythia / Herald (find)",
-          {"mint", "ledger"} <= set(p["money"]["find"]) and "aegis" in p["drawdown"]["find"] and p["journal"]["find"][0] == "journal"
-          and {"pheme", "pythia", "herald"} <= set(p["news"]["find"]), p)
+    check("b. old pins: money -> Business first + Ledger, drawdown -> Aegis, journal first, news -> Pythia (Mint, Pheme, Herald are retired 2026-11-20)",
+          p["money"]["find"][0] == "business" and "ledger" in p["money"]["find"] and "aegis" in p["drawdown"]["find"] and p["journal"]["find"][0] == "journal"
+          and "pythia" in p["news"]["find"] and not {"mint", "pheme", "herald"} & set(p["money"]["find"] + p["news"]["find"]), p)
+    ret = set(d["retired"])
+    check(f"d. {len(ret)} retired apps never show in A to Z or any of the 70 phrasings' first results", not ret & set(d["az"]) and len(ret) >= 28, ret & set(d["az"]))
+    o = d["order"]
+    check("d. the owner's order: kalshi -> Kalshi, city -> Cities, jarvis -> Jarvis, bot -> NQ first, plan -> Planner, money -> Business",
+          o["kalshi"][0] == "kalshi" and o["city"][0] == "cities" and o["jarvis"][0] == "jarvis" and o["bot"][0] == "nq" and o["plan"][0] == "planner" and o["money"][0] == "business", o)
     miss = []
     helpids = {i["id"] for i in json.load(open(os.path.join(WEB, "hub", "help.json"), encoding="utf-8"))["items"]}
     js_routes = {"gate/index.html#az", "index.html#/brain"}          # opened by the page's own script (the A-Z sheet, the dashboard view)
