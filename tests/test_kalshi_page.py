@@ -420,12 +420,12 @@ def part_a():
           and "env(safe-area-inset-left" in css and "env(safe-area-inset-bottom" in css and "viewport-fit=cover" in html
           and "@media (prefers-reduced-motion: no-preference)" in css and "animation:" not in pre)
     agora = css
-    check("a. its own look (AGORA 2026-11-09): marble / bronze / gold tokens, olive gains, terracotta losses, no neon, no HUD clip, no glow tick",
+    check("a. its own look: the AGORA tokens underneath, then the owner's 2026-11-20 terminal layer on top (navy #070b14, violet #a78bfa lead, no gold), no neon green, no HUD clip",
           ':root, :root[data-theme="kalshi"]' in css and "--bg: var(--oly-th-n3, #14110e);" in css and "--c: var(--oly-th-a8, #c8a24a);" in css and "--cy: var(--oly-th-info, #4b7a99);" in css
-          and "#1fe5a6" not in css + agora and "#38e1ff" not in css + agora and "clip-path" not in css + agora and "text-shadow: 0" not in css
-          and "AGORA layer" in css)
+          and "#1fe5a6" not in css + agora and "#38e1ff" not in css + agora and "clip-path" not in css + agora
+          and "AGORA layer" in css and "Olympus 2 FX" in css and "--c: #a78bfa;" in css and "--bg: #070b14;" in css)
     check("a. its own top colour = its background (Jarvis's status-bar strip takes it); the theme set before paint, never Jarvis's 'jtheme'",
-          '<meta name="theme-color" content="#14110e">' in html and "d.setAttribute('data-theme', 'kalshi')" in html
+          '<meta name="theme-color" content="#070b14">' in html and "d.setAttribute('data-theme', 'kalshi')" in html
           and html.index("data-theme', 'kalshi'") < html.index('href="kalshi.css') and "jtheme" not in html + js)
     check("a. its own header: a column mark and the plain name Kalshi; no ticker tape, no aurora, no 3D orb",
           'class="mark"' in html and "<h1>Kalshi</h1>" in html and 'id="tape"' not in html and 'class="aurora"' not in html and "korb.js" not in html)
@@ -605,8 +605,8 @@ def run_browser(url, tmp):
         rb, rtr = realbot(time.time())
         open_("ok", rb)
         body = p.locator("#body").text_content()
-        check("d. LIVE · real money: a calm badge (AGORA gold/olive, not red)", " ".join(p.locator("#mode").text_content().split()) == "LIVE · real money"
-              and p.evaluate("getComputedStyle(document.getElementById('mode')).color") in ("rgb(224, 194, 122)", "rgb(200, 162, 74)", "rgb(127, 138, 82)"), (p.inner_text("#mode"), p.evaluate("getComputedStyle(document.getElementById('mode')).color")))
+        check("d. LIVE · real money: a calm badge (the terminal violet / green, not red)", " ".join(p.locator("#mode").text_content().split()) == "LIVE · real money"
+              and p.evaluate("getComputedStyle(document.getElementById('mode')).color") in ("rgb(196, 181, 253)", "rgb(167, 139, 250)", "rgb(34, 197, 94)"), (p.inner_text("#mode"), p.evaluate("getComputedStyle(document.getElementById('mode')).color")))
         today = dt.datetime.now(NY).date().isoformat()
         tw = sum(1 for x in rtr if x["pnl"] is not None and x["pnl"] > 0 and et_day(x["t"]) == today)
         tl = sum(1 for x in rtr if x["pnl"] is not None and x["pnl"] < 0 and et_day(x["t"]) == today)
@@ -922,13 +922,13 @@ def run_browser(url, tmp):
         open_("ok", sample(time.time()))
         acc = lambda: p.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--c').trim()")  # noqa: E731
         bg = lambda: p.evaluate("getComputedStyle(document.body).backgroundColor")  # noqa: E731
-        check("h. the Kalshi theme (AGORA gold #c8a24a) on its own top colour's background", p.get_attribute("html", "data-theme") == "kalshi"
-              and acc() == "#c8a24a" and bg() == "rgb(20, 17, 14)", (acc(), bg()))
+        check("h. the Kalshi theme (the terminal violet #a78bfa, owner 2026-11-20: no gold) on its navy background", p.get_attribute("html", "data-theme") == "kalshi"
+              and acc() == "#a78bfa" and bg() == "rgb(7, 11, 20)", (acc(), bg()))
         for val in ("reactor", '"reactor-ice"', "eclipse"):
             p.evaluate(f"localStorage.setItem('jtheme', {json.dumps(val)})")
             p.reload()
             ready(p)
-            check(f"h. Jarvis's jtheme {val} leaves it as it is", p.get_attribute("html", "data-theme") == "kalshi" and acc() == "#c8a24a")
+            check(f"h. Jarvis's jtheme {val} leaves it as it is", p.get_attribute("html", "data-theme") == "kalshi" and acc() == "#a78bfa")
         p.evaluate("localStorage.removeItem('jtheme')")
 
         # ---- v3. alerts, live edge, Kelly, by market, by price, calibration (contract v3, 2026-11-03)
@@ -1061,7 +1061,7 @@ def run_browser(url, tmp):
             const a = [r.getPropertyValue('--c').trim(), r.getPropertyValue('--cr').trim(), r.getPropertyValue('--cy').trim(), JSON.stringify(o)];
             window.applyTheme(null); return a.concat([getComputedStyle(document.documentElement).getPropertyValue('--c').trim()]); }""")
         check("x. applyTheme(tokens): hex colours only (a CSS-looking value is dropped), null = the Kalshi colours again",
-              th[0] == "#ff00aa" and th[1] == "255,0,170" and th[2] == "#4b7a99" and "accent2" not in th[3] and th[4] == "#c8a24a", th)
+              th[0] == "#ff00aa" and th[1] == "255,0,170" and th[2] == "#4b7a99" and "accent2" not in th[3] and th[4] == "#a78bfa", th)
         check("x. the header mark is the plain SVG column: no 3D orb canvas (AGORA)", p.evaluate("!document.querySelector('canvas.orb') && !!document.querySelector('.mark svg')"))
         # a v2 feed: the same sections from the recent trades list, said so; no alerts list -> a losing run is found
         lose = [{"t": n3 - 600 * i, "ticker": f"KXHYPE15M-X{i}", "title": "HYPE up or down", "side": "yes", "action": "buy", "contracts": 10,
@@ -2072,10 +2072,10 @@ def part_rewards(br, url, tmp):
               and isinstance(copy.get("backtest"), dict) and bool(copy["backtest"].get("text")), str(copy)[:200])
         open_()
         t = p.inner_text("#krw")
-        order = p.evaluate("[...document.querySelectorAll('main > section, main > div, main > h2')].map((e) => e.id).filter(Boolean).slice(0, 8).join(' ')")
+        order = p.evaluate("[...document.querySelectorAll('main > section, main > div, main > h2')].map((e) => e.id).filter(Boolean).slice(0, 9).join(' ')")
         check("rw1. K8 first (Olympus 2): live day, K8 status, the go-live checklist, then 'History and tests' with the PAUSED note and this card: "
               "'Rewards test (paper)', Earned, Fills, Net, Days, '$0 at risk', 'saved copy', the backtest line",
-              order.startswith("k8top k8d k8s kgo khist kpaused krw") and "Rewards test (paper)" in t
+              order.startswith("k8top k8fx k8d k8s kgo khist kpaused krw") and "Rewards test (paper)" in t
               and all(w in t for w in ("Earned", "Fills", "Net", "Days", "$0 at risk", "saved copy", "Backtest (30 days)")), t[:300])
         check("rw1. the numbers are the copy's ($ earned, fill $)", ("$%.2f" % copy["paper"]["reward"]) in t, t[:200])
         k0 = p.inner_text("#kpaused")

@@ -44,3 +44,6 @@ Other version bumps made by the helper (no worker involved): `dionysus/index.htm
 
 ## Update 5 (Olympus 2, K8 today at the top): kalshi.css / kalshi.js are now ?v=k54
 Same one-liner with k54 (sed -E on CACHE + both SHELL entries), or `python tools/bump_versions.py --apply`.
+
+## Update 6 (Olympus 2 FX: terminal look + orb hero): kalshi.css / kalshi.js are now ?v=k55; theme-color #070b14
+`python tools/bump_versions.py --apply` (or the sed -E one-liner with k55). kalshi.js loads ../olympus/nqfx.js?v=n4 by itself after load + idle.
