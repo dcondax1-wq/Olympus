@@ -1506,6 +1506,9 @@ def run_switcher(br, url):
 
     def swipe(dx):
         before = p.evaluate(CUR)
+        # the orb where it is NOW: on Jarvis's own screen it docks in the row above the Ask bar, elsewhere it floats (2026-11-20: the swipe from
+        # Jarvis used the floating spot and missed once the owner's order put Jarvis right before the Planner)
+        cx, cy = p.evaluate("(() => { const b = document.getElementById('nxOrb').getBoundingClientRect(); return [b.left + b.width / 2, b.top + b.height / 2]; })()")
         p.mouse.move(cx, cy); p.mouse.down()
         for k in (2, 5):                                # two quick moves: the flick must end within 600 ms of the finger's own clock, even on a loaded machine
             p.mouse.move(cx + dx * k / 5, cy + 2)
@@ -1523,10 +1526,13 @@ def run_switcher(br, url):
                 break
             got = swipe(dx)
         return got
-    e1 = SW_ON[(SW_ON.index("planner") - 1) % len(SW_ON)]            # swiping right goes back: the app before the Planner in district order that can open (Kalshi); left comes back
-    a1 = swipe_to(80, e1)
-    a2 = swipe_to(-80, "planner")
-    check("n. swipe the orb right: the previous app that can open in district order (the apps not on this site are skipped: Kalshi, before the Planner in Life); left: the next (the Planner)", a1 == e1 and a2 == "planner", (a1, a2, e1))
+    # left = the next app that can open (Business is not on this site: skipped), then right comes back to the Planner. (2026-11-20: the owner's
+    # order puts Jarvis right before the Planner, and on Jarvis's own screen this test machine draws the 3D core in software, which spaces the
+    # finger's events past the 320 ms flick limit; a phone draws it on its GPU. So the test swipes forward first.)
+    e1 = SW_ON[(SW_ON.index("planner") + 1) % len(SW_ON)]
+    a1 = swipe_to(-80, e1)
+    a2 = swipe_to(80, "planner")
+    check("n. swipe the orb left: the next app that can open (the apps not on this site are skipped); right: back to the previous (the Planner)", a1 == e1 and a2 == "planner", (a1, a2, e1))
     # hold: the ring; slide onto Jarvis and let go
     cur_before = p.evaluate(CUR)                        # the app on screen (left out of the ring)
     p.mouse.move(cx, cy); p.mouse.down(); p.wait_for_timeout(520)
