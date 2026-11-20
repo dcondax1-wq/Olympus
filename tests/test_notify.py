@@ -492,8 +492,8 @@ def instant():
         why = N.instant_entry(p, now=day, path=path, cfg=cfg, poster=poster)
         msg = sent[0][2] if sent else {}
         check("g. a real entry goes out at once to the private topic, $ first, ids masked, sound on in the day",
-              why == "sent" and len(sent) == 1 and sent[0][1] == cfg["topic"] and msg["title"].startswith("Zlarior ...6016: LONG opened | risk $303")
-              and "MFFUEVBLDR" not in msg["title"] + msg["body"] and "Stop 24,955" in msg["body"] and msg["priority"] == "high", (why, msg))
+              why == "sent" and len(sent) == 1 and sent[0][1] == cfg["topic"] and msg["title"] == "Zlarior ...6016: LONG 6 MNQ @ 24,980.25"
+              and "MFFUEVBLDR" not in msg["title"] + msg["body"] and msg["body"].startswith("stop 24,955.00 (-$303), target 25,360.00 (+$4,557)") and msg["priority"] == "high", (why, msg))
         check("g. the same entry twice: one push", N.instant_entry(p, now=day, path=path, cfg=cfg, poster=poster) == "already sent" and len(sent) == 1)
         check("g. the 15-minute report then skips that entry (90 s match), keeps other trades",
               N.instant_sent(1795050000 + 40, path=path) and not N.instant_sent(1795050000 + 400, path=path))
@@ -509,7 +509,7 @@ def instant():
               kept == ["open:atlas:1795059999", "close:lit:1795050030"], kept)
         atl = dict(p, key="fill:1795051000:acctb", t=1795051000, account="ATLAS 25K", body="Entered 2 MNQ (ATLAS)", side="SHORT")
         N.instant_entry(atl, now=day, path=path, cfg=cfg, poster=poster)
-        check("g. ATLAS's entry is named ATLAS, short arrow", len(sent) == 2 and sent[1][2]["title"].startswith("ATLAS 25K: SHORT opened")
+        check("g. ATLAS's entry is named ATLAS, short arrow", len(sent) == 2 and sent[1][2]["title"].startswith("ATLAS 25K: SHORT 6 MNQ @ ")
               and sent[1][2]["tags"] == "chart_with_downwards_trend", sent[-1])
         night = at(2026, 11, 18, 3, 10)
         N.instant_entry(dict(p, key="fill:1795060000", t=1795060000), now=night, path=path, cfg=cfg, poster=poster)

@@ -945,6 +945,10 @@ class NinjaTraderAdapter:
         self.clock = clock or time.time
         self._sleep = time.sleep                       # the self-test swaps in a simulated NinjaTrader here
         self._alert_fn = None                          # None = the bot's phone alerts (guard kind); the self-test captures
+        # phone notices of a SUB-account's adapter (owner 2026-11-20: entry + exit alerts on every account, the moment NinjaTrader
+        # fills): {"account": its label, "suffix": ":acctb" / ":<id>", "nm": the owner's name} set by its route (engine/account_b,
+        # engine/rapid, engine/multi_account) for the real bot only; None = only the bot's own adapter (STATE_PATH) notifies
+        self.push_as = None
         self.lock = threading.RLock()
         self.trace = deque(maxlen=300)
         self.legs: list = []                           # open brackets we placed (one per instrument)
@@ -1102,7 +1106,9 @@ class NinjaTraderAdapter:
     # ------------------------------------------------------------------ phone notifications (engine/push.py)
     def _push_account(self):
         if self.sim:
-            return self.account                  # "Sim101"
+            return self.account                  # "Sim101" (a Sim account is never a phone alert: engine/notify.real_trade)
+        if self.push_as:
+            return str(self.push_as.get("account") or self.account)
         try:
             from . import push
             from .lab_adapter import live_model
@@ -1113,11 +1119,21 @@ class NinjaTraderAdapter:
     def _push(self, make):
         """Send one phone notification (background thread, once per key). Only the real bot: never the self-test or a
         harness with its own state file. Never raises."""
-        if self._alert_fn is not None or self.readonly or self.state_path != STATE_PATH:
+        pa = self.push_as if isinstance(self.push_as, dict) else None
+        if self._alert_fn is not None or self.readonly or (self.state_path != STATE_PATH and pa is None):
             return
         try:
             from . import push
-            push.pc_notify(make(push))
+            p = make(push)
+            if pa is not None and p.get("kind") in ("fill", "outcome"):    # a sub-account: its own key (one alert per account)
+                p["key"] = f"{p['key']}{pa.get('suffix') or ''}"
+                p["tag"] = f"{p.get('tag', '')}{(pa.get('suffix') or '').replace(':', '-')}"
+                for k in ("nm", "url"):
+                    if pa.get(k):
+                        p[k] = pa[k]
+            elif pa is not None:
+                return                               # its route sends its own other notices
+            push.pc_notify(p)
         except Exception:
             pass
 

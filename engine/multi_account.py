@@ -1197,6 +1197,17 @@ class AccountRouter:
         except Exception:
             pass
 
+    def _wire_push(self, acc):
+        """Owner 2026-11-20 (entry + exit alerts on every account, the moment it happens): the account's NinjaTrader adapter notifies
+        its entry fill and its bracket exit (stop / target) under the account's own name and key, so the exit reaches the phone at
+        the fill, not when the model sees the bar close. notify_entry / notify_outcome below send the same keys: engine/push keeps
+        whichever comes first (one alert per trade and account). The real bot only. Never raises."""
+        try:
+            if acc.adapter is not None and hasattr(acc.adapter, "push_as") and self.real_bot():
+                acc.adapter.push_as = {"account": acc.name, "suffix": f":{acc.id}", "url": "#/accounts"}
+        except Exception:
+            pass
+
     def _tag(self, p, acc):
         p["key"] = f"{p['key']}:{acc.id}"
         p["tag"] = f"{p.get('tag', '')}-{acc.id}"
@@ -1255,6 +1266,7 @@ class AccountRouter:
                     acc.adapter = ADAPTERS[cfg["adapter"]](cfg)
             except Exception as e:
                 acc.problem = f"adapter failed: {e.__class__.__name__}: {e}"
+            self._wire_push(acc)
             dis = acc.disabled_reason()
             self.log("system" if not dis else "risk", f"[{acc.name}] {acc.label()} {acc.spec.get('nt_account') or ''} "
                      f"{acc.spec['firm']} {acc.spec['plan']}, mode {acc.mode}, eval from {acc.start_day() or '?'}: "

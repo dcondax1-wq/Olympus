@@ -5,6 +5,8 @@
   c. node, the pure part: entry windows (LIT 02:00-15:30; ATLAS MACD / EMA not Mondays / S/R; weekend, Thanksgiving closed, the
      Nov 27 early close ends entries 13:00; the PC's own window wins), news notes (7 days), PC line (fresh / silent / never),
      account rows from the real MFFU_MODEL.cards (matched by PC id: the 25K #2 eval on its own row, ATLAS funded = payout text)
+  f. the Accounts view (2026-11-20, olympus/acct_live.js): Live feed newest first (entries + exits of every account), the open trade's live $,
+     the last trades per account, BLITZ out (the phone sizes + safe areas: tests/test_phone_fit.py)
   e. the homes' ZEUS card (olympus/zeus_core.js, 2026-11-18 night-zcard): node summary() = the page's rows; Zenith (index.html#/today)
      starts with it as #page's first child (gone on other pages, back on Home), Jarvis has it right under the greeting (before the tiles):
      PC reported, 3 account lines with $ to pass / payout + today's $, the edge chip, a tap -> hub/zeus.html; silent = red PC SILENT
@@ -88,9 +90,10 @@ def part_a():
           "F.fetchLatest(" in core and "url('../board/board.json')" in core and "url('../business/accounts.json')" in core and "BM.pick(" in core and "MM.cards(" in core
           and "ZC.summary(" in js and "ZC.fetchAll(" in js and "'../pythia/events.json'" in js and "BM.pick(" not in js and "MM.cards(" not in js)
     order = [m for m in re.findall(r'<script src="([^"?]+)', html) if m != "../olympus/warp.js"]   # the world-to-world jump (tests.test_warp) is not data
-    check("a. scripts: pc_feed, payoutcoach, mffumodel, boardmodel (after mffumodel), edge_chip, the Decide card, the shared zeus_core, zeus.js last",
+    check("a. scripts: pc_feed, payoutcoach, mffumodel, boardmodel (after mffumodel), edge_chip, the Decide card, the shared zeus_core, the Accounts "
+          "view's acct_live (2026-11-20), zeus.js last",
           order == ["../pc_feed.js", "../business/payoutcoach.js", "../business/mffumodel.js", "../board/boardmodel.js", "../edge_chip.js",
-                    "../business/decide.js", "../olympus/zeus_core.js", "zeus.js"], order)
+                    "../business/decide.js", "../olympus/zeus_core.js", "../olympus/acct_live.js", "zeus.js"], order)
     check("a. the ZEUS edge chip mounts here (data-edge-chip, ../edge.json)", 'id="edgeChip" data-edge-chip data-edge-src="../edge.json"' in html)
     hrefs = re.findall(r'class="zs-btn"(?: id="\w+")? href="([^"]+)"', html)
     want = ["../business/mffu.html", "../trading/", "../index.html#/brain", "../board/", "../business/lab.html", "../business/accounts.html#coach", "../business/week.html"]
@@ -112,6 +115,42 @@ def part_a():
     check("a. top to bottom: Right now (PC + accounts + edge chip), Today, Open (buttons), footer",
           html.index('id="pc"') < html.index('id="accts"') < html.index('id="edgeChip"') < html.index('id="wins"') < html.index('id="notes"')
           < html.index('class="zs-btns"') < html.index('class="zs-foot"'))
+
+
+def part_f():
+    """f. the Accounts view (2026-11-20, night-tradealerts: olympus/acct_live.js): the Live feed strip, the open trade with its live $, the last
+    5 trades per account, matched to the plan row by the PC id; text only, no network."""
+    al = rd(WEB, "olympus", "acct_live.js")
+    check("f. acct_live.js: pure (no DOM, no fetch, no storage, no innerHTML, no outside address)",
+          not re.search(r"document\.|fetch\(|localStorage|innerHTML|https?://", al))
+    html = rd(HUB, "zeus.html")
+    check("f. the page: Accounts first (PC line, Live feed, the account cards held by two placeholders from the first paint), reduce-motion respected",
+          html.index('id="hLive"') < html.index('id="pc"') < html.index('id="feed"') < html.index('id="accts"') and ">Accounts</h2>" in html
+          and html.count('class="zs-acct skel"') == 2 and "prefers-reduced-motion: reduce" in html)
+    al_path = os.path.join(WEB, "olympus", "acct_live.js")
+    js = json.dumps
+    script = (f"const A = require({js(al_path)}); const now = 1795050000;"
+              "const plan = { accounts: [{ key: 'zlarior', name: 'Zlarior', pc: ['mffu50k_eval', 'lit'] }, { key: 'fresh25', name: 'Zlarior 25K #2', pc: ['b25k_2'] },"
+              " { key: 'blitz', name: 'BLITZ', pc: ['acct_c'] }] };"
+              "const lite = { price: 21051.5, t: now - 60, at: { a: [{ id: 'mffu50k_eval', tr: [[now - 90000, now - 89000, 1, 4, 21010, 20990, 21060, 'TARGET', 398.1, 2.5],"
+              " [now - 9000, now - 8000, -1, 4, 21100, 21120, 21040, 'STOP', -163.8, -1], [now - 3000, null, 1, 4, 21034.25, 21012, 21090.5, null, null, null]] },"
+              " { id: 'b25k_2', tr: [[now - 2900, now - 1200, 1, 2, 21036, 21014, 21090.5, 'TARGET', 214.1, 2.4]] }, { id: 'acct_c', tr: [[now - 100, null, 1, 9, 1, 0, 2]] }] } };"
+              "const r = A.trades(lite, plan); const o = A.open(r, 'zlarior', lite.price, lite.t, now);"
+              "console.log('@@' + JSON.stringify({ n: r.length, keys: [...new Set(r.map((x) => x.key))], names: [...new Set(r.map((x) => x.name))],"
+              " feed: A.feed(r, now, 4).map((e) => e.kind + '|' + e.name + '|' + e.text), o, last: A.last(r, 'zlarior', 5, now).map((t) => t.usd),"
+              " stale: A.open(r, 'zlarior', lite.price, now - 7200, now).live }));")
+    p = subprocess.run(["node", "-e", script], capture_output=True, text=True, timeout=60)
+    m = [ln for ln in p.stdout.splitlines() if ln.startswith("@@")]
+    v = json.loads(m[-1][2:]) if m else {"error": p.stderr[-300:]}
+    check("f. trades: every real account's newest trades by the plan row's PC ids (Zlarior 50K, Zlarior 25K #2), BLITZ left out",
+          v.get("n") == 4 and v.get("keys") == ["zlarior", "fresh25"] and v.get("names") == ["Zlarior 50K", "Zlarior 25K #2"], v)
+    check("f. Live feed: newest first, entries AND exits across accounts ('closed LONG +$214 (target)', 'LONG 2 @ 21,036.00')",
+          v.get("feed") == ["exit|Zlarior 25K #2|closed LONG +$214 (target)", "entry|Zlarior 25K #2|LONG 2 @ 21,036.00", "entry|Zlarior 50K|LONG 4 @ 21,034.25",
+                            "exit|Zlarior 50K|closed SHORT -$164 (stop)"], v.get("feed"))
+    o = v.get("o") or {}
+    check("f. the open trade: LONG 4 @ 21,034.25, live +$138 at the PC's 21,051.50, stop -$178, target +$450; an old price = no live $",
+          o.get("text") == "LONG 4 @ 21,034.25" and o.get("live") == 138 and o.get("risk") == -178 and o.get("gain") == 450 and v.get("stale") is None, v)
+    check("f. the last trades, newest first, the open one left out", v.get("last") == [-163.8, 398.1], v.get("last"))
 
 
 def part_b():
@@ -369,6 +408,7 @@ def main():
     part_b()
     part_c()
     part_e_static()
+    part_f()
     if not os.environ.get("ZEUS_NO_BROWSER"):
         part_d()
         part_e_browser()
