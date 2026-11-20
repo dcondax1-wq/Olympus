@@ -5,7 +5,7 @@ import os
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(HERE, *[".."] * 4, "tools"))
+sys.path.insert(0, os.path.join(HERE, *[".."] * 5, "tools"))
 import archive_banners as A  # noqa: E402
 
 # id -> (data it shows, verdict, why).  Verdicts: KEEP-ARCHIVED (reachable, banner, fixed) / RETIRE? (proposal for the lead/owner) / VISIBLE (not archived)
@@ -81,7 +81,9 @@ def main():
             "data files from the live site (dcondax1-wq.github.io), 2.5 s after load (`scan.py`). KB = bytes the page pulled on open (JS, CSS, data, images).\n"
             f"Verdicts: VISIBLE {n['VISIBLE']} (not archived), KEEP-ARCHIVED {n['KEEP-ARCHIVED']} (reachable from the Archive fold, banner + fixes), "
             f"RETIRE? {n['RETIRE?']} (proposal: drop from doors and search; the folder and URL stay, banner points to the live app; LEAD_WIRES.md).\n"
-            "Page errors: 0 before and after on every page. Sideways scroll: 0 px everywhere.\n\n")
+            "Page errors: 0 before and after on every page. Sideways scroll: 0 px everywhere. Left 404s: kalshi.json (the Kalshi feed, not connected "
+            "until Monday: by design); agency/my_leads.json shows here because this scan is not on github.io (on the site it is no longer asked); "
+            "pc's favicon is fixed after the scan. Ares 'before' KB is low because the scan's 6 s abort cut its 8.8 MB data.json short; on a phone it was ~10 MB.\n\n")
     open(os.path.join(HERE, "INVENTORY.md"), "w").write(head + "\n".join(rows) + "\n")
     print("INVENTORY.md", len(rows) - 2, "rows")
 
