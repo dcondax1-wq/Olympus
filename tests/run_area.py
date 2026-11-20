@@ -237,3 +237,6 @@ if __name__ == "__main__":
     sys.exit(main())
 AREAS["olympus"].append("home_fx")          # night-effects 2026-11-20: the living hero on the Gate + Doors (tests/test_home_fx.py)
 AREAS["nq"].append("nqdeep")                # night-nqdash2 2026-11-20: Trading deep dive / MFFU payout ranges / NQ news week
+AREAS["olympus"].append("node_suites")    # day-quality 2026-11-20: the 29 tests/*.mjs no Python suite ran (tests/test_node_suites.py), by part
+AREAS["cities"].append("node_suites")
+PARTS["node_suites"] = [("datacity", ["datacity"]), ("apps", ["apps"])]

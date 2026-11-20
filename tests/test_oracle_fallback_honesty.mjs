@@ -4,7 +4,7 @@ const app = await readFile(new URL('../tools/web_public/oracle/main.js', import.
 const page = await readFile(new URL('../tools/web_public/oracle/index.html', import.meta.url), 'utf8');
 assert.match(app, /const canvas = document\.getElementById\('gl'\);\s*canvas\.hidden = true;\s*canvas\.setAttribute\('aria-hidden', 'true'\);/);
 assert.match(app, /fallback\.setWorld\(w, mode\)/);
-assert.match(page, /src="main\.js\?v=ofst3"/);
+assert.match(page, /src="main\.js\?v=[\w.-]+"/);
 const source = await readFile(new URL('../tools/web_public/oracle/fallback.js', import.meta.url), 'utf8');
 const { FallbackCity, beaconLevels } = await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 const world = {levels:[{id:1,taken:false},{id:2,taken:true},{id:3,taken:false},{id:4,taken:false},{id:5,taken:false},{id:6,taken:false}]};

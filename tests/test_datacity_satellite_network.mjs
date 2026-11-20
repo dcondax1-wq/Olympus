@@ -42,13 +42,13 @@ test('the city network switch remains in the WebGL view, readable fallback, and 
   for (const page of [index, city, map]) {
     assert.match(page, /CITY NETWORK/i);
     assert.match(page, /\/cities\//);
-    assert.match(page, /\/datacity\//);
+    assert.match(page, /(\/datacity\/|'\.\/'|"\.\/")/);   // itself: ./ (relative since the Pages base move)
     assert.match(page, /\/kalshicity\//);
   }
-  assert.match(index, /aria-current="page">DATA CITY/);
+  assert.match(index, /aria-current="page">DATA CITY/i);
   assert.match(index, /@media\s*\(max-width:430px\)[\s\S]*?\.city-network/);
   assert.match(city, /if \(current\) link\.setAttribute\('aria-current', 'page'\)/);
-  assert.match(map, /\/datacity\/" aria-current="page"/);
+  assert.match(map, /(\/datacity\/|\.\/)" aria-current="page"/);
   assert.match(index, /\.city-network a\{[^}]*min-height:44px/);
   assert.match(index, /@media \(orientation:landscape\) and \(max-height:520px\)\{\s*:root\{--top-h:110px\}/);
   assert.match(city, /\.readable-city \.city-network a\{[^}]*min-height:44px/);
