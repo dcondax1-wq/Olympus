@@ -33,10 +33,10 @@ Test: `python tests/run_area.py olympus --only site_refresh` (5/5, no network).
 Not needed: changed files are app JS with bumped ?v= (hera a1dgi, kronos a3, journal j1ge) and network-first data.
 
 ## 4. MFFU view of a funded sim (owner 15:05 ET: "the funded account sims start at 0")
-- `tools/web_public/jarvis/sw.js` (lead-only): its precache names `../pc_feed.js?v=n5`; change it to `?v=n6` and bump the jarvis cache
-  name, or Jarvis keeps the copy without `mffuView`. Every other page / script was bumped to n6 on this branch.
+- `pc_feed.js` keeps `?v=n5` (jarvis/sw.js precaches that tag; site_checks wants them equal). Pages fall back safely on an old copy
+  for the 10 minutes GitHub Pages caches it. Optional: `python tools/bump_versions.py --apply` + the jarvis cache name, when convenient.
 - The helper for the NQ, widget and Jarvis teams: `PC_FEED.mffuView(acct)` (classic `window.PC_FEED`, `require('pc_feed.js')`, or
-  `import '../pc_feed.js?v=n6'` then `globalThis.PC_FEED`). Input any account row `{ kind|stage|status, size|plan|name, balance,
+  `import '../pc_feed.js?v=n5'` then `globalThis.PC_FEED`). Input any account row `{ kind|stage|status, size|plan|name, balance,
   start|start_balance, floor?, room? }`. Output `{ funded, size, start, balance, profit, floor, mll, lock, earliest: { ask, at, toYou,
   need, ready }, goal: { ask, at, toYou, need, ready } }`. Funded: balance = profit (25,401 -> 401; a balance already under half the
   plan size is taken as MFFU terms), floor in the same terms, locked at most +$100. Eval: balance as is, earliest / goal null.
