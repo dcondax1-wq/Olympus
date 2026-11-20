@@ -192,9 +192,18 @@ def card_doc(S: dict, src: str) -> dict:
         if b.get("hidden"):
             continue
         td, r20 = b.get("today") or {}, ((b.get("roll") or {}).get("20") or {})
-        bots.append({"key": k, "name": b.get("name"), "today_n": td.get("n"), "today_usd": td.get("usd"), "paper": td.get("paper"),
-                     "edge": (b.get("edge") or {}).get("light"), "verdict": b.get("verdict"),
-                     "last20": {x: r20.get(x) for x in ("n", "win", "pf", "usd")}, "why": (b.get("anatomy") or {}).get("say") or None})
+        row = {"key": k, "name": b.get("name"), "today_n": td.get("n"), "today_usd": td.get("usd"), "paper": td.get("paper"),
+               "edge": (b.get("edge") or {}).get("light"), "verdict": b.get("verdict"),
+               "last20": {x: r20.get(x) for x in ("n", "win", "pf", "usd")}, "why": (b.get("anatomy") or {}).get("say") or None}
+        if k != "k8":       # night-atlasfills 2026-11-20: "real slippage so far" (engine/zeus_learn.fills, the PC's real fills)
+            try:
+                from tools import fill_cost
+                fc = fill_cost.block(b.get("fills"))
+                if fc:
+                    row["fills"] = fc
+            except Exception:  # noqa: BLE001
+                pass
+        bots.append(row)
     doc = {"v": 1, "kind": "zeus-learned-card", "day": S.get("day"), "t": int(S.get("t") or 0),
            "built": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d %H:%M UTC"), "src": src, "line": S.get("line"),
            "market": (S.get("regime") or {}).get("tag"), "bots": bots, "proposals": len(S.get("proposals") or []),
