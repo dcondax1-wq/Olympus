@@ -217,7 +217,7 @@ def part_d():
     js = open(os.path.join(PAGE, "forge.js"), encoding="utf-8").read()
     check("d. three.js from ../jarvis/ (no CDN), reduced motion, and the auto LITE steps of the OLYMPUS render core (onQuality) in the page",
           "from '../jarvis/three.module.min.js'" in js and "prefers-reduced-motion" in js and "../olympus/render.js" in js and "onQuality" in js and "http" not in
-          js.replace("https://demetrades2000-coder.github.io", ""))
+          js.replace("https://dcondax1-wq.github.io", ""))
 
 
 # ------------------------------------------------------------------------------------------------ e. the page in Chromium

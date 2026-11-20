@@ -1,10 +1,10 @@
 ---
 tags:
   - zeus/decide
-  - decide/open
+  - decide/no
 type: "decide"
 id: "keep-1000-rapid"
-status: "open"
+status: "no"
 added: "2026-11-16"
 usd_month: -20
 recommend: "no"
@@ -12,12 +12,12 @@ recommend: "no"
 
 # Decide: Rapid funded payouts: always leave $1,000 above the buffer in each Rapid?
 
-> [!question] OPEN · -$20 a month
+> [!failure] NO · -$20 a month
 > Answer it on the Decide card (Business app): YES / NO / LATER.
 
 |  |  |
 |---|---|
-| Status | open |
+| Status | no |
 | Added | 2026-11-16 |
 | $ a month | -$20 |
 | Claude recommends | no |

@@ -47,8 +47,8 @@ if SEALED:
     CONFIG_PATH, SENT_PATH, PC_KEY_PATH = (os.path.join(_tempfile.gettempdir(), f"le_selftest_{os.path.basename(_p)}")
                                            for _p in (CONFIG_PATH, SENT_PATH, PC_KEY_PATH))
 RELAY_PATH = os.path.join(ROOT, "tools", "web_public", "push_relay.json")
-APP_URL = "https://demetrades2000-coder.github.io/nq-dashboard/"
-SUBJECT = os.environ.get("LE_PUSH_SUBJECT") or "https://demetrades2000-coder.github.io"   # VAPID "sub" claim: a contact URL, host only
+APP_URL = "https://dcondax1-wq.github.io/"
+SUBJECT = os.environ.get("LE_PUSH_SUBJECT") or "https://dcondax1-wq.github.io"   # VAPID "sub" claim: a contact URL, host only
 TTL_S = 6 * 3600
 MAX_SUBS = 10
 # push services a subscription may point at (the relay is public: nothing else is ever POSTed to)

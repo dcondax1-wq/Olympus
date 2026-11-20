@@ -80,7 +80,7 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   old PC (stop, auto-resume off, logon tasks removed, untracked `data/` + `.env.local.ps1` zipped to OneDrive\BOT_MOVE),
   2 = set up the new PC (winget Git/Python, clone, restore, ONE_TIME_SETUP). Never two PCs on the same accounts.
   **Fresh start, no old PC (2026-11-04, Surface overheating):** `-Fresh` / menu 3 / `FRESH_START.bat` / the one line
-  `powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://demetrades2000-coder.github.io/nq-dashboard/pc/FRESH_START.ps1 | iex"`
+  `powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://dcondax1-wq.github.io/pc/FRESH_START.ps1 | iex"`
   (site `pc/`: `tools/web_public/pc/FRESH_START.ps1` + a build copy of `scripts/move_bot.ps1`; plain files, no worker bump).
   Refuses (exit 1) when a DIFFERENT host's heartbeat (published `home.json` live.pc.t/host) is under 6 min old, or the site
   copy is under 20 min old and showed it alive (`-Force` overrides; unreadable = asks for SHUT DOWN). Then Git/Python, clone,
@@ -89,7 +89,7 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   (Sim101 default, never arms live). Tests: `tests/test_fresh_start.py` (`LE_HEARTBEAT_FILE`, `LE_FAKE_HOST`), `test_win_scripts`.
 - **Merges:** each merge restarts the PC's bot server once (when flat) and runs ~5 min of self-tests on a 3.6 GB PC: batch
   changes into one merge when possible.
-- **Verify live** after a publish: the file on `https://demetrades2000-coder.github.io/nq-dashboard/...` (e.g. the worker's
+- **Verify live** after a publish: the file on `https://dcondax1-wq.github.io/...` (e.g. the worker's
   `CACHE` name), then one WebKit open of the live page.
 - **Eval cards (owner 2026-11-03):** no "session X of 10" bars / dots / counters on any card (phone, PC copies, Jarvis);
   the room is shown as **"Drawdown left $X of $max loss"** (= balance - the MFFU max-loss floor, the number MFFU shows).
@@ -869,7 +869,7 @@ The long list moved on 2026-11-18 to `docs/TESTED_AND_REJECTED.md` (heading "## 
     - motion:'always' by default (the old app ignored the OS setting); "Calm motion" follows the iPhone.
   - **`apps.js`:** the registry and the `jarvis.json` live-card contract (`docs/JARVIS_APPS.md`), plus the Ascend slot.
     - No same-origin guessing.
-    - Same-site apps get a warning, because every page on demetrades2000-coder.github.io can read Jarvis's and the
+    - Same-site apps get a warning, because every page on dcondax1-wq.github.io can read Jarvis's and the
       Planner's saved keys.
     - Ascend must be hosted on another origin.
   - **`zenith-mode.js` + Zenith's `embed.js`:**
@@ -2104,7 +2104,7 @@ The app folder `tools/web_public/<id>/` (index.html, jarvis.json, manifest, icon
      `icons.js`, `viz.js` (SVG charts), `trades.js`, `datahub.js` (Results, Variants, Lessons, Study), `modpages.js` (Rules,
      Cold-Streak, Risk & Sizing). API: `engine/next_api.py` (`/api/next/*`, read-only, from research/lab + research/study).
    - The Today page hero is the 3D Live Oracle (see the 3D layer below). Next: polish ideas only (per-module live badges).
-2. **PC-off web dashboard (done 2026-10-17):** https://demetrades2000-coder.github.io/nq-dashboard/, a Home Screen app (PWA) in the
+2. **PC-off web dashboard (done 2026-10-17):** https://dcondax1-wq.github.io/, a Home Screen app (PWA) in the
    same dark design. One static page `tools/web_public/index.html` (+ manifest, sw.js) reads only `data.json`, built by
    `tools/build_web_dashboard.py` on every cloud-monitor run: live state + recent bars + pools, results, every replay trade with
    its report, replays (`tools/export_replays.py` → `research/lab/replays.json`, rerun after a new export), variants, lessons,

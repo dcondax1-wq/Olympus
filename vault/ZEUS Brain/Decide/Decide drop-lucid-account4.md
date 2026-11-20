@@ -1,10 +1,10 @@
 ---
 tags:
   - zeus/decide
-  - decide/open
+  - decide/yes
 type: "decide"
 id: "drop-lucid-account4"
-status: "open"
+status: "yes"
 added: "2026-11-19"
 usd_month: 0
 recommend: "yes"
@@ -12,12 +12,12 @@ recommend: "yes"
 
 # Decide: Business page: drop 'Account #4 = LucidPro 50K' and show your MFFU next buys instead (Rapid EOD 25K now, then a fresh Builder 50K and a Rapid EOD 50K from payouts)?
 
-> [!question] OPEN · $0 a month
+> [!success] YES · $0 a month
 > Answer it on the Decide card (Business app): YES / NO / LATER.
 
 |  |  |
 |---|---|
-| Status | open |
+| Status | yes |
 | Added | 2026-11-19 |
 | $ a month | $0 |
 | Claude recommends | yes |

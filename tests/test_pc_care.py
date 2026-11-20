@@ -74,7 +74,7 @@ def static():
           re.search(rb'if exist "%~dp0scripts\\pc_care\.ps1" goto :local', bat)
           and re.search(rb'-ExecutionPolicy Bypass -File "%~dp0scripts\\pc_care\.ps1" %\* & echo\. & pause & exit /b', bat) is not None)
     check("PC_CARE.bat: alone (downloaded from the site) it fetches pc/pc_care.ps1 with -UseBasicParsing and runs it",
-          b"https://demetrades2000-coder.github.io/nq-dashboard/pc/pc_care.ps1" in bat and b"-UseBasicParsing" in bat and bat.count(b"-ExecutionPolicy Bypass") == 3)
+          b"https://dcondax1-wq.github.io/pc/pc_care.ps1" in bat and b"-UseBasicParsing" in bat and bat.count(b"-ExecutionPolicy Bypass") == 3)
     check("site copy tools/web_public/pc/PC_CARE.bat is the same file as PC_CARE.bat", os.path.exists(os.path.join(WEB, "PC_CARE.bat")) and rb(os.path.join(WEB, "PC_CARE.bat")) == bat)
     check("site copy tools/web_public/pc/pc_care.ps1 is the same file as scripts/pc_care.ps1", os.path.exists(os.path.join(WEB, "pc_care.ps1")) and rb(os.path.join(WEB, "pc_care.ps1")) == rb(PS1))
     page = open(os.path.join(WEB, "index.html"), encoding="utf-8").read()

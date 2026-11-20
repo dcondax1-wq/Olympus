@@ -363,7 +363,7 @@ def entries():
     # folder under tools/web_public/ (meta description + jarvis.json card), docs/CLAUDE_REFERENCE.md, docs/JARVIS_OBSIDIAN.md, handoff/ONBOARD.md)
     WP = "tools/web_public/"
     REF = "docs/CLAUDE_REFERENCE.md"
-    SITE = "https://demetrades2000-coder.github.io/nq-dashboard/"
+    SITE = "https://dcondax1-wq.github.io/"
 
     def app(id, title, short, look, body=(), tags=(), src=(), quiz=None):
         add(id, "olympus", title, short, [*body, "Open it when: " + look[0], "The one thing to look at: " + look[1]], tags, src, quiz=quiz)

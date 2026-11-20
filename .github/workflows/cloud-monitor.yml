@@ -1,6 +1,6 @@
 # Cloud paper monitor: runs the live paper bot's decision loop on a schedule so it works with the PC off.
 # Publishes README.md + chart.png + state.json to the `dashboard` branch (open it in the GitHub app), and the web dashboard
-# (tools/web_public + data.json, a Home Screen app) to demetrades2000-coder.github.io/nq-dashboard.
+# (tools/web_public + data.json, a Home Screen app) to dcondax1-wq.github.io.
 # Paper only - never places orders. Free: about 1,200-1,500 of the 2,000 monthly Actions minutes for private repos, plus the
 # fast-entry watcher (last step) capped at 550 a month (~1,800 in all, tests/test_lit_watch.py).
 # Phone notifications (free Web Push to the Home Screen app, docs/NOTIFICATIONS.md): automatic. The app posts its subscription

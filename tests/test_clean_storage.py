@@ -68,7 +68,7 @@ def static():
           re.search(rb'if exist "%~dp0scripts\\clean_storage\.ps1" goto :local', bat)
           and re.search(rb'-ExecutionPolicy Bypass -File "%~dp0scripts\\clean_storage\.ps1" %\* & echo\. & pause & exit /b', bat) is not None)
     check("CLEAN_STORAGE.bat: alone (downloaded from the site) it fetches pc/clean_storage.ps1 with -UseBasicParsing and runs it",
-          b"https://demetrades2000-coder.github.io/nq-dashboard/pc/clean_storage.ps1" in bat and b"-UseBasicParsing" in bat
+          b"https://dcondax1-wq.github.io/pc/clean_storage.ps1" in bat and b"-UseBasicParsing" in bat
           and bat.count(b"-ExecutionPolicy Bypass") == 3)
     check("site copy tools/web_public/pc/CLEAN_STORAGE.bat is the same file as CLEAN_STORAGE.bat",
           os.path.exists(os.path.join(WEB, "CLEAN_STORAGE.bat")) and rb(os.path.join(WEB, "CLEAN_STORAGE.bat")) == bat)

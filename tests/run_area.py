@@ -273,6 +273,11 @@ AREAS["board"].append("payready"); AREAS["trading"] += ["payready", "nq_desk", "
 AREAS["pc"].append("alert_audit")
 AREAS["nq"].append("premarket_brief")       # day-brief 2026-11-20: nq/brief.json contract + pre-registered bias (tools/premarket_brief.py)
 AREAS["money"].append("week_more")          # day-brief 2026-11-20: weekly review round 2 (twins, best/worst, K8, calendar, weekend)
+AREAS["privacy"].append("cross_site")   # day-security 2026-11-20: the bot server refuses POSTs from other web sites (engine/cross_site.py)
+AREAS["pc"].append("cross_site")
+AREAS["pc"].append("redteam2_live")       # day-redteam2 2026-11-20: half-day halt alarm + TRADE HAS NO STOP alarm (engine/fast_alarm.py)
+AREAS["nq"].append("redteam2_live")
+AREAS["pc"].append("redteam2_wires")      # day-redteam2 2026-11-20: L2 rapid._other_names covers the extra accounts
 
 
 def main(argv=None) -> int:

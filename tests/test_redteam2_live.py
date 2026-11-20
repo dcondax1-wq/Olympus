@@ -142,7 +142,7 @@ def t_restart(tmp):
           "('entry_sent', write-ahead)", pos.get("side") == "SHORT" and not working
           and [lg["status"] for lg in st["legs"]] == ["entry_sent"], (pos, working, st.get("legs")))
     # the same files as they would sit on the owner's PC for a real account (the adapter's live gate keeps tests on Sim)
-    real = "MFFUFUNDB25K7775678"
+    real = "MFFUFUNDB25K0000678"
     st["account"] = real
     json.dump(st, open(cfg["nt_state_path"], "w"))
     _pos(folder, inst, real, f"SHORT;2;{fake.price}")
@@ -152,7 +152,7 @@ def t_restart(tmp):
     e90 = ns(stopped, T + 90, state_dir=sd) if ns else None
     check("bot stopped 90 s after that entry, real account short with no bracket -> 'TRADE HAS NO STOP' alarm "
           "(not in the first 60 s: a running adapter is still placing it)", e30 is None and e90 and "NO stop" in e90
-          and "..5678" in e90, (e30, e90))
+          and "..0678" in e90, (e30, e90))
     run = types.SimpleNamespace(running=True, cfg={"adapter": "ninjatrader", "nt_folder": folder})
     check("bot running again -> no 'no stop' alarm (its first tick places the bracket)", ns is not None and ns(run, T + 90, state_dir=sd) is None)
     st["day"] = "2026-11-20"

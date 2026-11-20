@@ -103,13 +103,13 @@ the same problem (engine/notify.problem_dup): one alert, one phone.
 
 ## History: the old Home Screen app (gone since 2026-11-08)
 
-Until 2026-11-08 the notifications went to the old Liquidity Home Screen app on demetrades2000-coder.github.io, with keys handed
+Until 2026-11-08 the notifications went to the old Liquidity Home Screen app on dcondax1-wq.github.io, with keys handed
 out by a GitHub Actions cloud monitor. That GitHub account was suspended, so the site, the cloud monitor and the key hand-off are
 gone; the text below is kept only as a record (`engine/push.py` keeps that code for its tests, the PC no longer uses it).
 
 ### What the old app showed
 
-**What you get.** Your Home Screen app (Liquidity, https://demetrades2000-coder.github.io/nq-dashboard/) shows:
+**What you get.** Your Home Screen app (Liquidity, https://dcondax1-wq.github.io/) shows:
 
 | When | Title | Text |
 |---|---|---|

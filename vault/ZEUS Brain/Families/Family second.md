@@ -7,11 +7,12 @@ type: "family"
 
 # Research family: second
 
-> [!abstract] 5 write-ups
-> finding 2, rejected 2, research 1
+> [!abstract] 6 write-ups
+> finding 2, rejected 2, research 2
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-20 | [[skeptic-live-patches-2026-11-20\|Skeptic check of the two live sizing patches]] | research |
 | 2026-11-20 | [[skeptic-atlas-streak-2026-11-20\|Skeptic check of Decide card atlas-funded-streak-1micro]] | research |
 | 2026-11-20 | [[atlas-risk-real-fills-2026-11-20\|ATLAS funded 25K at real fills]] | finding |
 | 2026-11-20 | [[atlas-fills-2026-11-20\|ATLAS real fills]] | finding |

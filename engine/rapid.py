@@ -149,6 +149,13 @@ def _other_names() -> dict:
         out["ATLAS (25K)"] = out["ATLAS (25K)"] or (AB.raw_cfg() or {}).get("account")
     except Exception:
         pass
+    try:                       # redteam2 2026-11-20: the extra accounts too (Zlarior 25K #2, account C), as account_cli does
+        from . import account_cli
+        for r in account_cli.inventory():
+            if r.get("role") not in ("main", "b", "rapid") and r.get("name"):
+                out.setdefault(f"the account {r.get('id')}", r["name"])
+    except Exception:
+        pass
     return out
 
 
