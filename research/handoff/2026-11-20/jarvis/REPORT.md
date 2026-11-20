@@ -149,3 +149,14 @@ memoise listApps() in remember()), the first status-card batch). On a real iPhon
 | tests.test_jarvis_apps / test_fit_edge | 97/97 / 62/62 |
 | tests.test_jarvis_hub | 272/272 (the intro "slow phone" check now subtracts the blocked main-thread time, like the fade check beside it) |
 | python tests/smoke.py | 8/9: site_checks flags jarvis/sw.js precaching biz.js?v=b1 while the page loads b2: fixed by LEAD_WIRES (lead-only sw.js) |
+
+## 11. Accessibility (A11Y's FOR_jarvis.md)
+
+- The core (`#stage`) was a `role="button"` with buttons inside it (VoiceOver read one big button, the inner ones were lost): it is a plain
+  box now with one real `<button aria-label="Talk to Jarvis">` inside (Enter / Space / VoiceOver), its click still reaching the stage's handler.
+- `olympus/a11y.js` loaded (the iPhone's text size reaches Jarvis's px text).
+- Hints and status lines (the tap hint, the system rows, the timeline, the home cards, the plan, the footer, the app tiles) at 15 px in rem,
+  in index.html's inline style (jarvis.css keeps its cached ?v).
+- `python tools/a11y_sweep.py --apps jarvis --quick` (day-a11y): score 82 -> 92, small text 25 -> 9; the 9 left are the ZEUS card's rows and
+  edge chip (olympus kit, DESIGN). Dynamic Type stays "(not scored)" because a11y.js covers it on the iPhone; moving jarvis.css px -> rem
+  is the lasting fix (a later pass, with the cache bump).

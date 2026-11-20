@@ -123,12 +123,19 @@ window.addEventListener('error', function (e) {
 <script src="../pc_feed.js?v=n5" id="pcFeedJs" async></script>
 <script src="../olympus/themes.js?v=o9" id="olyThemesJs" async></script>
 <script src="../olympus/sfx.js?v=s4" id="olySfxJs" async></script>
+<script src="../olympus/a11y.js" async></script>
 <style>.booted #bootfx{display:none}
 /* the start note works without jarvis.css (the stylesheet may be what did not arrive) */
 [hidden]{display:none!important}
 /* the business chips (day-jarvis 2026-11-20): one scrolling row of the owner's daily questions, in the HTML so they are there at first paint */
 .bizchips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 10px}
 .bchip{min-width:0;min-height:44px;padding:6px 8px;border-radius:12px;border:1px solid var(--oly-th-gold,rgba(200,162,74,.55));background:rgba(20,16,10,.55);color:var(--oly-th-n10,#f3ece0);font:600 15px/1.1 var(--fb,system-ui,sans-serif);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;touch-action:manipulation}
+.stage-tap{position:absolute;inset:8%;z-index:0;border:0;border-radius:50%;background:transparent;padding:0;margin:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.stage-tap:focus-visible{outline:2px solid var(--oly-th-gold,#dcbd6e);outline-offset:4px}
+/* A11Y 2026-11-20 (FOR_jarvis.md): the hints and status lines the owner reads at 15 px, in rem so they grow with the iPhone text size */
+.hint2,#p-addons>.qby,.hc-bot.hc-wide .hc-sub,#p-system .srow .st,#when{font-size:.9375rem}
+.pm.main,.wnb .wn-t{font-size:.9375rem}
+.tl-row small,.hc-row small,#hfirst .tile .t-s,#planBox li span,.jx-pro .t,#proLine .t,#proLine button.t,.srows .srow .sn small,.hfoot .foot,#olyApps .og-t .og-s,#olyApps .og-t .og-v,#sec-apps .hub-directory summary span,#p-system .srow .st{font-size:.9375rem}
 .bchip:active{transform:scale(.97);background:rgba(200,162,74,.22)}
 .boot{position:fixed;left:16px;right:16px;bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:95;padding:12px 14px;border-radius:14px;background:rgba(29,25,20,.96);border:1px solid rgba(200,162,74,.5);color:#f3ece0;font:15px/1.35 -apple-system,system-ui,sans-serif;display:flex;gap:10px;align-items:center;justify-content:space-between}
 .boot small{display:block;margin-top:4px;color:#9a8f7d;font-size:12px;word-break:break-word}
@@ -1082,7 +1089,8 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
       <section class="hsec" id="sec-talk" aria-labelledby="secTalkH">
       <h2 class="hsec-h" id="secTalkH">Talk to Jarvis</h2>
       <div class="stagebox">
-      <div class="stage" id="stage" role="button" tabindex="0" aria-label="Talk to Jarvis">
+      <div class="stage" id="stage">
+        <button type="button" class="stage-tap" id="stageTap" aria-label="Talk to Jarvis"></button>
         <div class="core" id="core" aria-hidden="true">
           <div class="orb" id="orb">
             <svg viewBox="0 0 400 400" aria-hidden="true">
@@ -2886,7 +2894,8 @@ $('#stage').addEventListener('click', () => {
   if (speaking && vo && vo.since() < 450) return;      // this tap just started a waiting answer ("TAP TO HEAR"): not a stop
   if (speaking) { hush(); setState('idle'); return; } if (rec) { stopListening(); return; } listen('tap');
 });
-$('#stage').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('#stage').click(); } });
+// (A11Y 2026-11-20: the stage is no longer a role=button holding other buttons; the real button #stageTap inside it takes Enter / Space and
+// VoiceOver, and its click reaches the stage's own handler above)
 
 // ------------------------------------------------------------------ the ⋯ menu (pill keys), the command palette, toasts
 function moreKeys() {

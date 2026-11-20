@@ -7,6 +7,7 @@ Round 1 (biz.js?v=b1, backdrop ?v=b6, jarvis-v79) is already on pc. Round 2 (tea
 1. `const CACHE = 'jarvis-v80';` and put `'jarvis-v79'` first in `OLD`.
 2. In `SHELL`: `'./biz.js?v=b1'` becomes `'./biz.js?v=b2'` (index.html now asks for b2; biz.js changed a lot).
 3. In `SHELL`: add `'./ask.js'` (the Ask Jarvis button script; other apps load it from `../jarvis/ask.js`).
+4. In `SHELL`: add `'../olympus/a11y.js'` and `'../olympus/a11y.css'` (A11Y: index.html now loads the kit's a11y.js; it pulls a11y.css next to itself).
 
 ## Other apps (DESIGN team / the kit, not lead-only)
 
