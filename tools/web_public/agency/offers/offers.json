@@ -1,0 +1,53 @@
+{
+  "v": 1,
+  "placeholder": true,
+  "source": "Placeholder prices (day-web-offers, 2026-11-20). They will be replaced from the research team's RESEARCH.md. Starter matches the Agency CRM's Starter ($499 + $49).",
+  "as_of": "2026-11-20",
+  "deposit": 0.5,
+  "packages": [
+    {
+      "id": "starter", "name": "Starter site", "price": 499, "hours": 8, "hard": 20, "days": 7,
+      "monthly": 49, "monthly_hours": 0.75, "monthly_hard": 3, "monthly_label": "Care plan",
+      "pitch": "A fast, clean site that gets the phone ringing: built from the demo they already saw.",
+      "includes": ["Up to 3 pages: home, services, contact", "Tap-to-call and a contact form that emails them", "Their logo, photos and words",
+        "Works great on phones; loads in about a second", "Their own domain set up (domain cost included the first year)",
+        "Google Business Profile linked", "Care plan: hosting, security updates, small edits every month"]
+    },
+    {
+      "id": "showcase3d", "name": "3D Showcase", "price": 2499, "hours": 30, "hard": 60, "days": 14,
+      "monthly": 99, "monthly_hours": 1.5, "monthly_hard": 5, "monthly_label": "Care plan",
+      "pitch": "The site people remember: their product, space or work in 3D you can spin with a finger, still fast on a phone.",
+      "includes": ["Everything in Starter, up to 6 pages", "One interactive 3D scene: product, room, vehicle or menu item (from photos or a model)",
+        "A still-image fallback for old phones and reduced motion", "Scroll story on the home page (what they do, in 3 steps)",
+        "Quote or booking request form", "Speed checked on a real phone before launch", "Care plan: hosting, updates, one small 3D change a quarter"]
+    },
+    {
+      "id": "growth", "name": "Growth retainer", "price": 999, "hours": 12, "hard": 20, "days": 10,
+      "monthly": 499, "monthly_hours": 6, "monthly_hard": 10, "monthly_label": "Growth retainer",
+      "pitch": "A site that keeps bringing customers: a new page or offer every month, local search, reviews and a monthly report in plain words.",
+      "includes": ["A Starter-size site to begin (or a takeover of their current one)", "Every month: one new service page or seasonal offer",
+        "Google Business Profile posts and review replies (drafted, they approve)", "Local search basics: page titles, map listing, citations",
+        "One-page report each month: calls, form leads, where they came from", "Minimum 3 months, then month to month"]
+    }
+  ],
+  "extras": [
+    { "id": "gbp", "name": "Google Business Profile set-up", "price": 149, "hours": 2, "hard": 0, "days": 1 },
+    { "id": "logo", "name": "Simple logo refresh", "price": 199, "hours": 3, "hard": 0, "days": 2 },
+    { "id": "copy", "name": "Words written for them (per page)", "price": 79, "hours": 1, "hard": 0, "days": 0, "per": "page" },
+    { "id": "booking", "name": "Online booking or quote form", "price": 149, "hours": 2, "hard": 0, "days": 1 },
+    { "id": "model3d", "name": "Extra 3D model", "price": 299, "hours": 4, "hard": 20, "days": 2 },
+    { "id": "photos", "name": "Phone photo session (on site, 1 hour)", "price": 249, "hours": 3, "hard": 0, "days": 1 },
+    { "id": "spanish", "name": "Spanish version of the site", "price": 299, "hours": 4, "hard": 0, "days": 3 }
+  ],
+  "terms": [
+    { "id": "deposit", "title": "50 % deposit to start", "text": "Work starts when the deposit is paid. The other half is due the day the site goes live, before it is switched on." },
+    { "id": "scope", "title": "What is included is written down", "text": "The proposal lists the pages and features. Anything new (an extra page, a shop, a new 3D model) is quoted first, in writing, before any work." },
+    { "id": "revisions", "title": "Two rounds of changes", "text": "Two rounds of changes are included before launch. More rounds are billed by the hour at your rate, agreed first." },
+    { "id": "content", "title": "Client sends photos, logo and words", "text": "The clock starts when the client sends their photos, logo and words (or buys the writing / photo extras). Late content moves the date, not the price." },
+    { "id": "hosting", "title": "Hosting and the domain", "text": "The domain is registered in the client's name. Hosting is part of the monthly plan; if they stop paying, the site is handed over or switched off after 30 days notice." },
+    { "id": "ownership", "title": "Who owns what", "text": "Once paid in full, the client owns their words, photos, logo and domain. You keep the right to reuse your own code and templates and to show the site in your portfolio." },
+    { "id": "monthly", "title": "Monthly plan: cancel with 30 days notice", "text": "The care plan or retainer is billed on the same day each month. Either side can stop it with 30 days notice; the Growth retainer has a 3-month minimum." },
+    { "id": "late", "title": "Late payment", "text": "An invoice is due in 14 days. After 30 days late, edits pause until it is paid." },
+    { "id": "access", "title": "Logins stay with the client", "text": "The client keeps the passwords for their domain and Google account; you get your own login, never theirs." }
+  ]
+}
