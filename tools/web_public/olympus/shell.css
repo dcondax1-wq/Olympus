@@ -43,8 +43,9 @@
   --o-shadow-1: 0 1px 2px rgba(0, 0, 0, .28);
   --o-shadow-2: 0 6px 20px rgba(0, 0, 0, .28);
   /* the iPhone's safe areas and the bottom bar */
-  --o-sat: env(safe-area-inset-top, 0px);
-  --o-sab: env(safe-area-inset-bottom, 0px);
+  /* inside Jarvis, Zenith reads the phone's safe areas from --jz-sa-* (index.html: set once, never doubled) */
+  --o-sat: var(--jz-sa-top, env(safe-area-inset-top, 0px));
+  --o-sab: var(--jz-sa-bottom, env(safe-area-inset-bottom, 0px));
   --o-bar-h: 56px;                                   /* the bar's keys, above the home bar */
   --o-bar-total: calc(var(--o-bar-h) + var(--o-sab)); /* what the page must leave free at its end */
 }
