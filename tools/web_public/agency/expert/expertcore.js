@@ -24,6 +24,7 @@ export function diagnose(a, P) {
   if (x.trade === 'food') { offer = 'gbp'; why.push('Restaurants are found on Google Maps first: fix the listing, then the site.'); addons.push('starter'); }
   else if (x.trade === 'trades_fast') { offer = x.budget === 'premium' || x.site === 'ok' ? 'growth' : 'starter'; why.push('An emergency trade wins on speed, a phone number at the top and reviews: no 3D.'); }
   else if (threeOk && x.site !== 'none' && x.budget === 'premium') { offer = 'immersive'; why.push('Customers buy what they can see, and the jobs are big: one extra sale pays for the 3D piece.'); }
+  else if (x.visual === 'yes' && VISUAL_TRADES.has(x.trade) && x.budget === 'tight' && x.site !== 'ok') { offer = 'growth'; why.push('A visual business on a tight budget: the Growth site now, the 3D piece once it pays (+$2,500-$6,000).'); addons.push('3d-later'); }
   else if (threeOk) { offer = 'growth'; why.push('A visual business: start with the Growth site and offer the 3D piece as the next step (+$2,500-$6,000).'); addons.push('3d-later'); }
   else if (x.site === 'none') { offer = x.budget === 'tight' ? 'starter' : 'growth'; why.push('No website yet: the first site is the whole pitch.'); }
   else if (x.site === 'old') { offer = 'growth'; why.push('An old or slow site loses calls on phones: the Growth site fixes speed and adds a page per service.'); }

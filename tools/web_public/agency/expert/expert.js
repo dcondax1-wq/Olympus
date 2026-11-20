@@ -70,9 +70,9 @@ function drawCards(q) {
   const hit = t ? find(t, S.P) : null;
   let list = S.P.cards.filter((c) => !t || JSON.stringify(c).toLowerCase().includes(t));
   if (hit && hit.kind === 'card' && !list.includes(hit.item)) list = [hit.item].concat(list);
-  if (!list.length) { box.append(el('p', 'ex-step', `Nothing on "${t}". Try: pricing, 3D, objections, reviews, ads.`)); return; }
+  if (hit && hit.kind === 'niche') { const n = nicheEl(hit.item); n.open = true; box.append(n); }          // a trade asked for: its card first
+  if (!list.length && !box.children.length) { box.append(el('p', 'ex-step', `Nothing on "${t}". Try: pricing, 3D, objections, reviews, ads, or a trade (roofer, dentist).`)); return; }
   for (const c of list) { const d = cardEl(c); if (t && list.length <= 3) d.open = true; box.append(d); }
-  if (hit && hit.kind === 'niche') { const n = nicheEl(hit.item); n.open = true; box.prepend(n); }
 }
 function nicheEl(n) {
   const d = el('details', 'ex-card'); d.id = 'ni-' + n.id;
