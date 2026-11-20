@@ -20,7 +20,7 @@ WEB = os.path.join(ROOT, "tools", "web_public")
 HUB = os.path.join(WEB, "hub")
 SHOTS = os.path.join(ROOT, "research", "handoff", "2026-11-20", "olympus2", "nav", "after")
 RES: list = []
-PAGES = {"help": ".hp-nav", "steps": ".st-nav", "manual": ".mn-top", "zeus": ".zs-nav", "doors": "nav", "whatsnew": ".wn-nav"}
+PAGES = {"help": ".hp-nav", "steps": ".st-nav", "manual": ".mn-top", "zeus": ".zs-nav", "doors": "nav", "whatsnew": ".wn-nav", "setup": ".su-nav"}
 CLS_JS = """window.__cls = 0; new PerformanceObserver(l => { for (const e of l.getEntries()) if (!e.hadRecentInput) window.__cls += e.value; })
   .observe({type: 'layout-shift', buffered: true});"""
 
@@ -75,6 +75,21 @@ def part_wn():
           and dh.index('id="startHere"') < dh.index('id="doorGrid"'), st)
 
 
+def part_setup():
+    h, js = rd("setup.html"), rd("setup.js")
+    check("s. Set up your iPhone: 5 steps (Home Screen, the 4 app icons, widget, notifications, Siri), each app Open + Copy its link",
+          all(f'id="{x}"' in h for x in ("home", "apps", "widget", "alerts", "siri")) and re.findall(r'data-copy="([a-z]+)/"', h) == ["nq", "kalshi", "jarvis", "agency"]
+          and 'href="../widget/"' in h and 'href="../jarvis/index.html#pushCard"' in h)
+    check("s. no address in the page (the links are built from the page's own address), textContent only, nothing sent, no storage",
+          not PRIVATE.search(h + js) and "github.io" not in h and not re.search(r"innerHTML|localStorage|fetch\(|method:", js))
+    doors = open(os.path.join(WEB, "olympus", "doors.js"), encoding="utf-8").read()
+    more = re.search(r"\{ id: 'more'.*?items: \[(.*?)\],\s*ids:", doors, re.S).group(1)
+    check("s. linked: Help item, the Doors 'More' (still <= 8 shortcuts), the Home grid (Set up icon), the search", '"href": "setup.html"' in rd("help.json")
+          and "href: 'hub/setup.html'" in more and len(re.findall(r"\{ label:", more)) <= 8
+          and 'data-to="hub/setup.html"' in open(os.path.join(WEB, "gate", "index.html"), encoding="utf-8").read()
+          and "'hub/setup.html'" in open(os.path.join(WEB, "olympus", "gate-catalog.js"), encoding="utf-8").read())
+
+
 def part_a():
     first = {}
     for p in PAGES:
@@ -86,7 +101,7 @@ def part_a():
     want = {"help": ["zeus.html", "steps.html", "manual.html"], "steps": ["zeus.html", "help.html", "manual.html"], "manual": ["zeus.html", "help.html"]}
     bad = {p: [h for h in want[p] if f'href="{h}"' not in trio[p]] for p in trio}
     check("a. help / steps / manual: the top row links ZEUS and each other", not any(bad.values()), bad)
-    nolook = [p for p in ("help", "steps", "zeus", "manual", "doors", "whatsnew") if "olympus.theme.look." not in rd(p + ".html") or "olympus/themes.js" not in rd(p + ".html")]
+    nolook = [p for p in ("help", "steps", "zeus", "manual", "doors", "whatsnew", "setup") if "olympus.theme.look." not in rd(p + ".html") or "olympus/themes.js" not in rd(p + ".html")]
     check("a. help, steps, zeus, manual, doors carry the OLYMPUS look (first-paint copy + themes.js)", not nolook, nolook)
 
 
@@ -174,6 +189,7 @@ def part_b(shots: bool):
 
 def main():
     part_a()
+    part_setup()
     part_wn()
     if not os.environ.get("NAV_NO_BROWSER"):
         part_b("--shots" in sys.argv)

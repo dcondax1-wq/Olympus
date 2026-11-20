@@ -116,12 +116,37 @@ def build(n: int = 1000, n_threads: int = 400, seed: int = SEED, live_path: str 
     return doc
 
 
-def write(doc: dict, out_dir: str = WEB, name: str = "fates.json", jarvis: bool = True) -> int:
+FIRST = "eval:zlarior:2026"     # the scenario the page opens on (fates-core parseRoute: no #route = Zlarior, 2026)
+
+
+def split(doc: dict, out_dir: str) -> dict:
+    """the open scenario keeps its threads in fates.json; every other scenario's threads go to threads/<key>.json (the page fetches one when
+    it is picked). day-a11y 2026-11-20, PERF ask 6: fates.json was 772 KB (171 KB gz, largest paint 9.5 s) and ~98 % of it was threads
+    of scenarios nobody had opened yet. Returns the light doc; the full doc is unchanged."""
+    light = dict(doc)
+    light["scenarios"] = {}
+    tdir = os.path.join(out_dir, "threads")
+    os.makedirs(tdir, exist_ok=True)
+    for f in os.listdir(tdir):                       # no stale files from an older build
+        if f.endswith(".json"):
+            os.remove(os.path.join(tdir, f))
+    for key, s in doc["scenarios"].items():
+        if key == FIRST or "threads" not in s or len(json.dumps(s["threads"], separators=(",", ":"))) < 2000:   # tiny ones stay inline
+            light["scenarios"][key] = s
+            continue
+        fn = key.replace(":", "_") + ".json"
+        with open(os.path.join(tdir, fn), "w", encoding="utf-8") as fh:
+            json.dump(s["threads"], fh, separators=(",", ":"))
+        light["scenarios"][key] = {k: v for k, v in s.items() if k != "threads"} | {"threads_url": "threads/" + fn}
+    return light
+
+
+def write(doc: dict, out_dir: str = WEB, name: str = "fates.json", jarvis: bool = True, split_threads: bool = True) -> int:
     os.makedirs(out_dir, exist_ok=True)
     bad = EX.validate(doc)
     if bad:
         raise SystemExit("FATES JSON failed its checks: " + "; ".join(bad))
-    size = EX.dump(doc, os.path.join(out_dir, name))
+    size = EX.dump(split(doc, out_dir) if split_threads else doc, os.path.join(out_dir, name))
     if jarvis:
         with open(os.path.join(out_dir, "jarvis.json"), "w", encoding="utf-8") as fh:
             json.dump(EX.jarvis_card(doc), fh, separators=(",", ":"))
@@ -138,9 +163,21 @@ def main(argv=None):
     ap.add_argument("--live", default=None, help="a saved live.json instead of the published feed")
     ap.add_argument("--no-fetch", action="store_true", help="never fetch the feed (fallback numbers unless --live)")
     ap.add_argument("--no-jarvis", action="store_true")
+    ap.add_argument("--one-file", action="store_true", help="keep every scenario's threads in fates.json (no threads/ split)")
+    ap.add_argument("--split-only", action="store_true", help="split an existing full fates.json into fates.json + threads/ (no rebuild)")
     a = ap.parse_args(argv)
+    if a.split_only:
+        p = os.path.join(a.out, a.name)
+        with open(p, encoding="utf-8") as fh:
+            full = json.load(fh)
+        if any("threads_url" in s for s in full["scenarios"].values()):
+            print("already split:", p)
+            return
+        size = EX.dump(split(full, a.out), p)
+        print(f"-> {p} ({size / 1e3:.0f} KB) + {a.out}/threads/")
+        return
     doc = build(a.n, a.threads, a.seed, a.live, not a.no_fetch)
-    size = write(doc, a.out, a.name, not a.no_jarvis)
+    size = write(doc, a.out, a.name, not a.no_jarvis, not a.one_file)
     print(f"-> {os.path.join(a.out, a.name)} ({size / 1e3:.0f} KB, {doc['build_seconds']}s)")
 
 

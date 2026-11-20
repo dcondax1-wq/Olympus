@@ -1,7 +1,7 @@
 [
  {
   "id": "agency",
-  "kb": 621,
+  "kb": 620,
   "errors": [],
   "console": [
    "Failed to load resource: the server responded with a status of 404 (Not Found)"
@@ -10,6 +10,12 @@
    "404:agency/my_leads.json"
   ],
   "sideways": 0,
+  "top": [
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9",
+   "64K agency/leads.json",
+   "46K olympus/agora.css?v=a7"
+  ],
   "title": "Agency",
   "banner": false,
   "demo": true,
@@ -18,11 +24,17 @@
  },
  {
   "id": "apollo",
-  "kb": 991,
+  "kb": 990,
   "errors": [],
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "477K odeon/trades.json",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9",
+   "46K olympus/agora.css?v=a7"
+  ],
   "title": "Apollo",
   "banner": false,
   "demo": false,
@@ -38,11 +50,17 @@
  },
  {
   "id": "arbiter",
-  "kb": 538,
+  "kb": 537,
   "errors": [],
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9",
+   "46K olympus/agora.css?v=a7",
+   "44K olympus/olympus.js?v=o15"
+  ],
   "title": "Arbiter",
   "banner": false,
   "demo": true,
@@ -51,11 +69,17 @@
  },
  {
   "id": "archive",
-  "kb": 2230,
+  "kb": 2229,
   "errors": [],
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "379K archive/index.json",
+   "151K archive/runs-0.json",
+   "143K archive/runs-1.json"
+  ],
   "title": "Archive",
   "banner": false,
   "demo": false,
@@ -71,6 +95,12 @@
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9",
+   "51K olympus/render.js"
+  ],
   "title": "ARENA",
   "banner": false,
   "demo": true,
@@ -79,24 +109,36 @@
  },
  {
   "id": "ares",
-  "kb": 1460,
+  "kb": 1355,
   "errors": [],
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9",
+   "46K olympus/agora.css?v=a7"
+  ],
   "title": "Ares",
   "banner": false,
   "demo": false,
   "dates": [],
-  "text": "Ares LIVE ACCOUNT Zlarior 50K: $49,193, floor $48,168 DRAWDOWN LEFT \u00b7 LIVE $1,025 left of $2,000 MNQ NQ Long Short Entry Stop (1 tick past the sweep high/low) Risk this much of the $ room left: 40% NO SIZE Enter your entry and your stop. A stop-out costs - One contract risks - Risk budget - Room to the floor $1,025 Room after a stop-out - Full stop-outs left - What a win must be worth enter entry "
+  "text": "Ares Check a trade before you take it: type entry and stop, get GO, WAIT or HALT and the $ at risk. DRAWDOWN LEFT $2,000 left of $2,000 MNQ NQ Long Short Entry Stop (1 tick past the sweep high/low) Risk this much of the $ room left: 40% NO SIZE Enter your entry and your stop. A stop-out costs - One contract risks - Risk budget - Room to the floor $2,000 Room after a stop-out - Full stop-outs left "
  },
  {
   "id": "argo",
-  "kb": 689,
+  "kb": 688,
   "errors": [],
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "150K home.json",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9",
+   "46K olympus/agora.css?v=a7"
+  ],
   "title": "Argo",
   "banner": false,
   "demo": false,
@@ -105,24 +147,36 @@
  },
  {
   "id": "argus",
-  "kb": 1445,
+  "kb": 1545,
   "errors": [],
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "150K home.json",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9"
+  ],
   "title": "Argus",
   "banner": false,
   "demo": false,
   "dates": [],
-  "text": "Argus 25 checks on the bots, PC and data, Fri 09:50 ET. Fix the top one first. Drawdown left, both evals $2,426 of $3,000 max loss across 2 evals 3 red and 13 amber. First: Cloud monitor, late 2.8 hours. 1 Cloud monitor: late 2.8 hours Ask Claude to check the cloud monitor on GitHub Actions. The cloud monitor last ran 2.8 hours ago. It should run every 15 minutes. Fix it 2 Arena: very old Ask Clau"
+  "text": "Argus Checking the bots, PC and data... ... Fix this first 0 All lights Since yesterday Money"
  },
  {
   "id": "athena",
-  "kb": 1580,
+  "kb": 1571,
   "errors": [],
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "168K athena/library.json?v=a6",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9"
+  ],
   "title": "Athena",
   "banner": false,
   "demo": false,
@@ -138,6 +192,12 @@
   ],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "150K home.json?atlas_city=5983985",
+   "14K atlascity/city.css?v=5",
+   "8K atlascity/city.js?v=5",
+   "4K atlascity/"
+  ],
   "title": "ATLAS Strategy City \u00b7 OLYMPUS",
   "banner": false,
   "demo": false,
@@ -151,6 +211,12 @@
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "163K bridge/jobs.json",
+   "103K olympus/sfx.js?v=s4",
+   "51K bridge/",
+   "38K olympus/intro-app.js?v=i10"
+  ],
   "title": "Bridge \u00b7 OLYMPUS",
   "banner": false,
   "demo": false,
@@ -159,11 +225,17 @@
  },
  {
   "id": "chronos",
-  "kb": 1934,
+  "kb": 1924,
   "errors": [],
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "477K odeon/trades.json",
+   "103K olympus/sfx.js?v=s4",
+   "90K olympus/polis-life.js?v=pl4"
+  ],
   "title": "Chronos",
   "banner": false,
   "demo": false,
@@ -172,11 +244,17 @@
  },
  {
   "id": "colosseum",
-  "kb": 2816,
+  "kb": 2813,
   "errors": [],
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "379K archive/index.json",
+   "151K archive/runs-0.json",
+   "150K home.json"
+  ],
   "title": "Colosseum",
   "banner": false,
   "demo": false,
@@ -185,11 +263,17 @@
  },
  {
   "id": "delphi",
-  "kb": 764,
+  "kb": 719,
   "errors": [],
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "150K home.json",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9",
+   "46K olympus/agora.css?v=a7"
+  ],
   "title": "Delphi",
   "banner": false,
   "demo": false,
@@ -201,11 +285,17 @@
  },
  {
   "id": "epilogue",
-  "kb": 2542,
+  "kb": 2497,
   "errors": [],
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "477K odeon/trades.json",
+   "150K home.json",
+   "136K assets/tex/wood_c.webp"
+  ],
   "title": "Epilogue",
   "banner": false,
   "demo": true,
@@ -213,11 +303,11 @@
    "Nov 16",
    "Nov 22"
   ],
-  "text": "Home \u203a Bots & Evals Epilogue Your week in 60 seconds: $ won or lost per account. Read it on Sunday. Go to Week of Nov 16 to Nov 22: +$272 on 0 trades. The week Week of Nov 16 to Nov 22: +$272 on 0 trades. The week so far (Monday to Sunday). Paper and real trades only. Profit and loss by account MFFU 50K -$129 (~-0.3R) The account reported this figure; no trade list yet (R is an estimate). 1R on th"
+  "text": "Home \u203a Bots & Evals Epilogue Your week in 60 seconds: $ won or lost per account. Read it on Sunday. Go to Week of Nov 16 to Nov 22: no trades. A quiet week is a valid week. The week Week of Nov 16 to Nov 22: no trades. A quiet week is a valid week. The week so far (Monday to Sunday). Paper and real trades only. Profit and loss by account MFFU 50K $0 (~0.0R) The account reported this figure; no tra"
  },
  {
   "id": "ergasterion",
-  "kb": 3249,
+  "kb": 3203,
   "errors": [],
   "console": [
    "Failed to load resource: the server responded with a status of 404 (Not Found)"
@@ -226,6 +316,12 @@
    "404:kalshi.json"
   ],
   "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "485K assets/people/cast.glb?v=3",
+   "169K prometheus/forge.json",
+   "150K home.json"
+  ],
   "title": "Ergasterion",
   "banner": false,
   "demo": true,
@@ -233,28 +329,40 @@
    "Dec 31",
    "Jan 15"
   ],
-  "text": "Home \u203a Jarvis Ergasterion Every AI helper: what it is doing now and what it made. Tap a worker to see its work. Go to 4 of 15 workers need a look. 4 working, 2 idle, 5 showing sample data, 4 stale. The helpers today Look once 4 of 15 workers need a look 4 working, 2 idle, 5 showing sample data, 4 stale. The floor Money hall Trading hall Research hall Library Front door Chrysanthe Hermolaos Manto P"
+  "text": "Home \u203a Jarvis Ergasterion Every AI helper: what it is doing now and what it made. Tap a worker to see its work. Go to 6 of 15 workers need a look. 2 working, 2 idle, 5 showing sample data, 6 stale. The helpers today Look once 6 of 15 workers need a look 2 working, 2 idle, 5 showing sample data, 6 stale. The floor Money hall Trading hall Research hall Library Front door Chrysanthe Hermolaos Manto P"
  },
  {
   "id": "forum",
-  "kb": 1599,
+  "kb": 1553,
   "errors": [],
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "150K home.json",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9"
+  ],
   "title": "Forum",
   "banner": false,
   "demo": false,
   "dates": [],
-  "text": "Forum A 2-minute morning read before you trade. Press Start. LITE 09:50 ET \u00b7 The market is open Bot flat in 6 h 05 min Forum streak 0 days Drawdown left today $1,025 of $2,000 max loss The bot may enter now. The window closes at 15:30 ET, in 5 h 40 min. One trade a day at most. Good morning, trader. MIXED 44: The gods are split. Six tablets on the way to the temple. Read them, seal the oath, and t"
+  "text": "Forum A 2-minute morning read before you trade. Press Start. LITE --:-- ET Forum streak 0 days Good morning, trader. Six short cards: today's risk, $ room left and the plan. Read them, tick today's promises, and you are ready. Start the briefing \u0393 OLYMPUS Forum"
  },
  {
   "id": "gallery",
-  "kb": 1382,
+  "kb": 1381,
   "errors": [],
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9",
+   "71K olympus/shapes3d.js"
+  ],
   "title": "Agora Gallery",
   "banner": false,
   "demo": false,
@@ -263,11 +371,17 @@
  },
  {
   "id": "harmonia",
-  "kb": 1578,
+  "kb": 1577,
   "errors": [],
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "150K home.json",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9"
+  ],
   "title": "Harmonia",
   "banner": false,
   "demo": false,
@@ -281,6 +395,12 @@
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9",
+   "51K olympus/render.js"
+  ],
   "title": "Hephaestus",
   "banner": false,
   "demo": false,
@@ -289,11 +409,17 @@
  },
  {
   "id": "herald",
-  "kb": 2160,
+  "kb": 2159,
   "errors": [],
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "171K assets/tex/roof_c.webp",
+   "165K assets/tex/paving_c.webp",
+   "128K assets/env/hdri/golden.hdr"
+  ],
   "title": "Herald",
   "banner": false,
   "demo": false,
@@ -312,9 +438,15 @@
    "Failed to load resource: the server responded with a status of 404 (Not Found)"
   ],
   "bad": [
-   "404:kalshi.json?t=29919771"
+   "404:kalshi.json?t=29919930"
   ],
   "sideways": 0,
+  "top": [
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9",
+   "46K olympus/agora.css?v=a7",
+   "44K olympus/olympus.js?v=o15"
+  ],
   "title": "HERMES \u00b7 OLYMPUS Wrapped",
   "banner": false,
   "demo": true,
@@ -326,11 +458,17 @@
  },
  {
   "id": "hestia",
-  "kb": 1150,
+  "kb": 1149,
   "errors": [],
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "477K odeon/trades.json",
+   "150K home.json",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9"
+  ],
   "title": "Hestia",
   "banner": false,
   "demo": false,
@@ -341,7 +479,7 @@
  },
  {
   "id": "inbox",
-  "kb": 612,
+  "kb": 611,
   "errors": [],
   "console": [
    "Failed to load resource: the server responded with a status of 404 (Not Found)"
@@ -350,6 +488,12 @@
    "404:kalshi.json"
   ],
   "sideways": 0,
+  "top": [
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9",
+   "46K olympus/agora.css?v=a7",
+   "44K olympus/olympus.js?v=o15"
+  ],
   "title": "(23) Inbox",
   "banner": false,
   "demo": false,
@@ -358,24 +502,36 @@
  },
  {
   "id": "kairos",
-  "kb": 2944,
+  "kb": 2898,
   "errors": [],
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "477K odeon/trades.json",
+   "260K assets/tex/grass_c.webp",
+   "161K assets/tex/cobble_c.webp"
+  ],
   "title": "Kairos",
   "banner": false,
   "demo": false,
   "dates": [],
-  "text": "Home \u203a Today \u203a The bots' day Kairos What time it is for trading in New York, and when the bots can trade. Go to Fri 09:51 New York time. New York morning. Entries are open. Next: New York afternoon in 2 h 9 min. Right now Entries open Fri 09:51 ET New York morning: entries are open New York morning. LIT can still enter if it has not traded today. BLITZ (paper) starts checking at 11:00. The bot say"
+  "text": "Home \u203a Today \u203a The bots' day Kairos What time it is for trading in New York, and when the bots can trade. Go to Fri 12:30 New York time. New York afternoon. Entries are open. Next: No new trades in 3 h 0 min. Right now Entries open Fri 12:30 ET New York afternoon: entries are open New York afternoon. LIT can still enter until 15:30. BLITZ (paper) checks every 30 minutes until 15:30. The bot says: "
  },
  {
   "id": "kratos",
-  "kb": 1898,
+  "kb": 1897,
   "errors": [],
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "477K odeon/trades.json",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9"
+  ],
   "title": "Kratos",
   "banner": false,
   "demo": false,
@@ -389,24 +545,36 @@
  },
  {
   "id": "labyrinth",
-  "kb": 1974,
+  "kb": 1929,
   "errors": [],
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "477K odeon/trades.json",
+   "150K home.json",
+   "103K olympus/sfx.js?v=s4"
+  ],
   "title": "Labyrinth",
   "banner": false,
   "demo": false,
   "dates": [],
-  "text": "Labyrinth Pick a trade size: see your odds to pass the eval and the $ you could lose. Tap Best size. LITE Live running now 50K $50K 25K $25K 50K tight $50K A good size: 50% reach the target within 15 trades (about 4 weeks at 2-4 a week), 16% hit the floor. Reach the target 50% Hit the floor 16% Trades to pass 9 Drawdown left $1,025 of $2,000 max loss Worst trade -$827 one bad trade at this size Fe"
+  "text": "Labyrinth Pick a trade size: see your odds to pass the eval and the $ you could lose. Tap Best size. LITE Reading the trades... Reach the target - Hit the floor - Trades to pass - Drawdown left - Worst trade - Fees to pass - Risk of ruin - - Best size - Sizes Danger The march Rules Walk it Size 1.00x 0.5x 1x 1.5x Sweet spot Risk cap per trade Off $150 $300 $500 $750 $1,000 Look ahead 8 trades 15 t"
  },
  {
   "id": "lyceum",
-  "kb": 3189,
+  "kb": 3188,
   "errors": [],
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "477K odeon/trades.json",
+   "178K assets/tex/cloth_c.webp",
+   "175K assets/tex/mosaic_c.webp"
+  ],
   "title": "Lyceum",
   "banner": false,
   "demo": false,
@@ -415,26 +583,38 @@
  },
  {
   "id": "mind",
-  "kb": 1727,
+  "kb": 1713,
   "errors": [],
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "219K mind/starter/starter_pack.js",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9"
+  ],
   "title": "OLYMPUS Mind",
   "banner": false,
   "demo": true,
   "dates": [
    "2026-11-20"
   ],
-  "text": "Jarvis memory Kalshi Goals #playbook Inbox Daily notes Business OLYMPUS MIND Demo HD Time-lapse Home Notes Days Learned Graph Review 9+ Teach Stats Look Demo \u00b7 Connect your vault in Jarvis \u22ef \u2192 Connect Obsidian Jarvis learned You move leg day to Thursdays now Today 1 Learned \u00b7 24 min ago You move leg day to Thursdays now Edited \u00b7 46 min ago LIT untested entry ideas Edited \u00b7 1 h ago Uprisk - where t"
+  "text": "Jarvis memory #research #playbook Kalshi Goals Daily notes Business Inbox OLYMPUS MIND Demo HD Time-lapse Home Notes Days Learned Graph Review 9+ Teach Stats Look Demo \u00b7 Connect your vault in Jarvis \u22ef \u2192 Connect Obsidian Jarvis learned You move leg day to Thursdays now Today 1 Learned \u00b7 24 min ago You move leg day to Thursdays now Edited \u00b7 46 min ago LIT untested entry ideas Edited \u00b7 1 h ago Uprisk"
  },
  {
   "id": "mint",
-  "kb": 1846,
+  "kb": 1845,
   "errors": [],
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "165K assets/tex/paving_c.webp",
+   "128K assets/env/hdri/golden.hdr",
+   "106K olympus/three-addons/GLTFLoader.js"
+  ],
   "title": "Mint",
   "banner": false,
   "demo": true,
@@ -443,11 +623,17 @@
  },
  {
   "id": "mintcity",
-  "kb": 2507,
+  "kb": 2506,
   "errors": [],
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "171K assets/tex/roof_c.webp",
+   "165K assets/tex/paving_c.webp",
+   "161K assets/tex/cobble_c.webp"
+  ],
   "title": "Mint City",
   "banner": false,
   "demo": true,
@@ -456,11 +642,17 @@
  },
  {
   "id": "moirai",
-  "kb": 1197,
+  "kb": 1196,
   "errors": [],
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9",
+   "46K olympus/agora.css?v=a7"
+  ],
   "title": "Moirai",
   "banner": false,
   "demo": false,
@@ -472,27 +664,36 @@
  },
  {
   "id": "nemesis",
-  "kb": 2095,
+  "kb": 2039,
   "errors": [],
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "477K odeon/trades.json",
+   "150K home.json",
+   "103K olympus/sfx.js?v=s4"
+  ],
   "title": "Nemesis",
   "banner": false,
   "demo": false,
-  "dates": [
-   "Nov 1",
-   "Oct 26"
-  ],
-  "text": "Nemesis Why each loss happened, and its $ LITE Oct 26 - Nov 1: 2 losses, -$1,264. Biggest leak: Heavy size, -$138. Fallen 2 Lost -$1,264 Leaks cost -$138 11% of the money lost was avoidable: $138 of $1,264. The rest was the plan working as designed, a normal loss. Your live eval now: balance $49,193, floor $48,168, room $1,025. Fallen Leaks Vow About \u2039 Oct 26 - Nov 1 2 fallen of 2 trades \u203a All pla"
+  "dates": [],
+  "text": "Nemesis Why each loss happened, and its $ LITE Reading the trades... Fallen - Lost - Leaks cost - Fallen Leaks Vow About \u2039 - \u203a All plan loss (normal) leak (small mistake) rule break \u039d OLYMPUS Nemesis \u039f"
  },
  {
   "id": "nike",
-  "kb": 1420,
+  "kb": 1419,
   "errors": [],
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "477K odeon/trades.json",
+   "150K home.json",
+   "109K olympus/polis.js?v=p1",
+   "103K olympus/sfx.js?v=s4"
+  ],
   "title": "Nike",
   "banner": false,
   "demo": false,
@@ -503,11 +704,17 @@
  },
  {
   "id": "observatory",
-  "kb": 750,
+  "kb": 749,
   "errors": [],
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "202K cities/cities.json?observed=5983986",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9",
+   "46K olympus/agora.css?v=a7"
+  ],
   "title": "Observatory \u00b7 OLYMPUS",
   "banner": false,
   "demo": true,
@@ -515,15 +722,21 @@
    "Nov 10",
    "Nov 20"
   ],
-  "text": "Home Observatory Is every data feed the apps read working? See what is broken, fix that first. Read only Go to Last scan Nov 20, 2026, 2:51 PM \u00b7 refreshes while open every five minutes Feeds answering 5 of 5 All answer; 3 to look at: Data City, Arena, Learning. Data City Look Cities Working Arena Look Oracle Working Learning Look Scan sources Export review Need a look 3 from this scan Scans saved "
+  "text": "Home Observatory Is every data feed the apps read working? See what is broken, fix that first. Read only Go to Last scan Nov 20, 2026, 5:31 PM \u00b7 refreshes while open every five minutes Feeds answering 5 of 5 All answer; 3 to look at: Data City, Arena, Learning. Data City Look Cities Working Arena Look Oracle Working Learning Look Scan sources Export review Need a look 3 from this scan Scans saved "
  },
  {
   "id": "odeon",
-  "kb": 1852,
+  "kb": 1850,
   "errors": [],
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "477K odeon/trades.json",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9"
+  ],
   "title": "Odeon",
   "banner": false,
   "demo": false,
@@ -534,24 +747,38 @@
  },
  {
   "id": "oracle",
-  "kb": 1637,
+  "kb": 1592,
   "errors": [],
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "150K home.json?t=1795195878386",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9"
+  ],
   "title": "OLYMPUS Oracle",
   "banner": false,
   "demo": false,
-  "dates": [],
-  "text": "26,150 26,200 26,300 26,350 Premarket high 26,370.75 NY 08:30 high 26,339.25 26,261.00 Oracle LAST SEEN Fri 09:27 Replay a day Prophecy HD NQ 26,261.00 P&L today $0 5/10 5m CISD A 5-minute candle closed back the other way: the turn has started Next Waiting for the limit order to be armed (it waits up to 30 minutes) 5m CISD already closed through 26,117.50: see the setup card. No sweep yet today (n"
+  "dates": [
+   "2026-11-19"
+  ],
+  "text": "26,300 26,400 26,600 26,700 26,800 equal highs 26,724.75 26,508.75 Oracle LAST SEEN Thu 16:55 Replay a day Prophecy HD NQ 26,508.75 P&L today $0 1/10 Levels Watching the price levels where stops are likely to sit Next A sweep of equal highs \u2191 216.00 pts ($432 per micro) New session: waiting for the first bars of 2026-11-19. Entries from 02:00 ET. No sweep yet today (no grab of an old high/low) Rep"
  },
  {
   "id": "pantheon",
-  "kb": 1399,
+  "kb": 1390,
   "errors": [],
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9",
+   "51K olympus/render.js"
+  ],
   "title": "Pantheon",
   "banner": false,
   "demo": false,
@@ -567,6 +794,9 @@
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "7K pc/"
+  ],
   "title": "Start the bot on this PC",
   "banner": false,
   "demo": false,
@@ -580,6 +810,12 @@
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9",
+   "51K olympus/render.js"
+  ],
   "title": "Pheme",
   "banner": false,
   "demo": false,
@@ -594,11 +830,17 @@
  },
  {
   "id": "pinakes",
-  "kb": 2240,
+  "kb": 2239,
   "errors": [],
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "175K assets/tex/mosaic_c.webp",
+   "144K pinakes/catalog.json",
+   "136K assets/tex/wood_c.webp"
+  ],
   "title": "Pinakes",
   "banner": false,
   "demo": true,
@@ -609,11 +851,17 @@
  },
  {
   "id": "plutus",
-  "kb": 10062,
+  "kb": 10021,
   "errors": [],
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "8636K data.json",
+   "654K jarvis/three.module.min.js",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9"
+  ],
   "title": "Plutus",
   "banner": false,
   "demo": false,
@@ -629,7 +877,7 @@
  },
  {
   "id": "polis",
-  "kb": 2820,
+  "kb": 2821,
   "errors": [],
   "console": [
    "Failed to load resource: the server responded with a status of 404 (Not Found)"
@@ -638,6 +886,12 @@
    "404:kalshi.json"
   ],
   "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "485K assets/people/cast.glb?v=3",
+   "150K home.json",
+   "139K ergasterion/queue.json"
+  ],
   "title": "Polis",
   "banner": false,
   "demo": false,
@@ -651,6 +905,12 @@
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "169K prometheus/forge.json",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9"
+  ],
   "title": "The Forge",
   "banner": false,
   "demo": false,
@@ -659,11 +919,17 @@
  },
  {
   "id": "pythia",
-  "kb": 1783,
+  "kb": 1738,
   "errors": [],
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "150K home.json",
+   "103K olympus/sfx.js?v=s4",
+   "90K olympus/polis-life.js?v=pl4"
+  ],
   "title": "Pythia",
   "banner": false,
   "demo": false,
@@ -672,13 +938,14 @@
    "Nov 20",
    "Nov 25",
    "Nov 26",
+   "Nov 27",
    "November 20"
   ],
-  "text": "Home \u203a Today \u203a Risk calendar Pythia Big news days in the next 14 days. Red means be careful that day. Go to Pythia: Light day today in New York. Friday, November 20. Today Light day Friday, November 20 \u00b7 9:52 AM ET now 9:30 AM ET \u00b7 Monthly options expiration (third Friday) Low Options expire today, so volume is heavier and price can get pinned near big levels into the close. LIT has no news pause "
+  "text": "Home \u203a Today \u203a Risk calendar Pythia Big news days in the next 14 days. Red means be careful that day. Go to Pythia: Light day today in New York. Friday, November 20. Today Light day Friday, November 20 \u00b7 12:31 PM ET now 9:30 AM ET \u00b7 Monthly options expiration (third Friday) Low Options expire today, so volume is heavier and price can get pinned near big levels into the close. LIT has no news pause"
  },
  {
   "id": "stoa",
-  "kb": 2394,
+  "kb": 2393,
   "errors": [],
   "console": [
    "Failed to load resource: the server responded with a status of 404 (Not Found)"
@@ -687,6 +954,12 @@
    "404:kalshi.json"
   ],
   "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "171K assets/tex/roof_c.webp",
+   "165K assets/tex/paving_c.webp",
+   "150K home.json"
+  ],
   "title": "Stoa",
   "banner": false,
   "demo": false,
@@ -695,7 +968,7 @@
  },
  {
   "id": "symposium",
-  "kb": 4119,
+  "kb": 4078,
   "errors": [],
   "console": [
    "Failed to load resource: the server responded with a status of 404 (Not Found)"
@@ -704,19 +977,31 @@
    "404:kalshi.json"
   ],
   "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "485K assets/people/cast.glb?v=3",
+   "477K odeon/trades.json",
+   "379K archive/index.json"
+  ],
   "title": "Symposium",
   "banner": false,
   "demo": true,
   "dates": [],
-  "text": "Home \u203a Jarvis Symposium Every helper app as a person. Tap one to hear what it does. Go to 38 people in the hall. 3 working, 7 blocked, 8 showing sample data (not real). The hall Voices: off Show the 3D hall Phoibos Telamon Asterope Eutychos Chrysanthe Hermolaos Manto Pheidon Dikaios Metis Pyrrhos Chalkeus Horaios Kalamos Epistates Ergane Kallias Pelagia Ariston Phaidon Philon Myron Thalia Nikias X"
+  "text": "Home \u203a Jarvis Symposium Every helper app as a person. Tap one to hear what it does. Go to 38 people in the hall. 3 working, 9 blocked, 10 showing sample data (not real). The hall Voices: off Show the 3D hall Phoibos Telamon Asterope Eutychos Chrysanthe Hermolaos Manto Pheidon Dikaios Metis Pyrrhos Chalkeus Horaios Kalamos Epistates Ergane Kallias Pelagia Ariston Phaidon Philon Myron Thalia Nikias "
  },
  {
   "id": "tree",
-  "kb": 2157,
+  "kb": 2139,
   "errors": [],
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "705K tree/tree.json",
+   "654K jarvis/three.module.min.js",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9"
+  ],
   "title": "DAPHNE",
   "banner": false,
   "demo": false,
@@ -733,14 +1018,20 @@
    "Failed to load resource: the server responded with a status of 404 (Not Found)"
   ],
   "bad": [
-   "404:kalshi.json?t=29919772"
+   "404:kalshi.json?t=29919932"
   ],
   "sideways": 0,
+  "top": [
+   "654K jarvis/three.module.min.js",
+   "103K olympus/sfx.js?v=s4",
+   "74K olympus/themes.js?v=o9",
+   "51K olympus/render.js"
+  ],
   "title": "OLYMPUS Tyche",
   "banner": false,
   "demo": true,
   "dates": [],
-  "text": "3m 26s 7m 08s 11m 36s 37m 56s 2h 04m 3h 14m 4h 39m 5h 19m 21h 59m 2d 0h 3d 1h Tyche Not linked yet: demo HD Balance $1,780.16 Today +$33.41 Week +$379.53 This week is +27.1% of the bankroll. At this pace about +$1,643.36 a month (a rate, not a promise). Open 13 Win rate 67.7% ROI +11.7% Details Kalshi \u203a Next settles 3m 26s Bitcoin up or down \u00b7 15 min Kelly \u00bc \u00bc \u00bd Full \u00bc Kelly: $250.00 on 13 bets (h"
+  "text": "3m 26s 7m 08s 11m 36s 37m 56s 2h 04m 3h 14m 4h 39m 5h 19m 21h 59m 2d 0h 3d 1h Tyche Not linked yet: demo HD Balance $1,758.69 Today +$11.94 Week +$358.06 This week is +25.6% of the bankroll. At this pace about +$1,550.40 a month (a rate, not a promise). Open 13 Win rate 67.5% ROI +11.3% Details Kalshi \u203a Next settles 3m 26s Bitcoin up or down \u00b7 15 min Kelly \u00bc \u00bc \u00bd Full \u00bc Kelly: $250.00 on 13 bets (h"
  },
  {
   "id": "why",
@@ -749,6 +1040,12 @@
   "console": [],
   "bad": [],
   "sideways": 0,
+  "top": [
+   "74K olympus/themes.js?v=o9",
+   "46K olympus/agora.css?v=a7",
+   "37K olympus/warp.js?v=w3",
+   "19K olympus/a11y.js"
+  ],
   "title": "Why",
   "banner": false,
   "demo": false,

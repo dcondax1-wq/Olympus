@@ -1,0 +1,159 @@
+{
+ "v": 1,
+ "built": "2026-11-20",
+ "source": "research/writeups/web-business-2026-11-20.md",
+ "estimate": true,
+ "note": "Ranges from public, mostly vendor sources; ESTIMATES, not promises.",
+ "offers": [
+  {
+   "rank": 1,
+   "offer": "Call engine: site + Google profile + review requests + answer every review",
+   "detail": "Call engine: site + Google profile + review requests + answer every review (any local service)",
+   "price": "$500 setup + $299/mo",
+   "year1_usd": "about $4,100",
+   "months_to_first_1000": "1",
+   "owner_effort": "2 h/month a client",
+   "why": "Compounds: more reviews, more map calls, rarely cancels. Tool cost $29-75/mo"
+  },
+  {
+   "rank": 2,
+   "offer": "Starter site + care plan",
+   "detail": "Starter site + care plan (the 17% with no site, or a broken one)",
+   "price": "$1,500 + $79/mo",
+   "year1_usd": "about $2,450",
+   "months_to_first_1000": "1",
+   "owner_effort": "6-10 h a build (meetings, photos)",
+   "why": "Easiest yes. Always attach the care plan"
+  },
+  {
+   "rank": 3,
+   "offer": "Missed-call text-back + booking link",
+   "detail": "Missed-call text-back + booking link (plumbers, HVAC, roofers, detailers)",
+   "price": "$199 setup + $149/mo (tool $17-49)",
+   "year1_usd": "about $1,600 net",
+   "months_to_first_1000": "1",
+   "owner_effort": "2 h setup",
+   "why": "Contractors lose jobs to voicemail. Business numbers only, replies to people who called"
+  },
+  {
+   "rank": 4,
+   "offer": "Accessibility + speed fix",
+   "detail": "Accessibility + speed fix (door opener; any business with a site)",
+   "price": "free report, $600 fix + $49/mo watch",
+   "year1_usd": "about $1,190",
+   "months_to_first_1000": "1-2",
+   "owner_effort": "3 h",
+   "why": "The free report starts conversations. Say \"common issues fixed\", never \"compliant\""
+  },
+  {
+   "rank": 5,
+   "offer": "Phone-scan 3D tour",
+   "detail": "Phone-scan 3D tour (wedding / event venues, gyms, studios, salons, Airbnbs)",
+   "price": "$500 a scan + $25/mo hosting",
+   "year1_usd": "about $800 (+ re-scans)",
+   "months_to_first_1000": "1-2",
+   "owner_effort": "2 h a scan on site",
+   "why": "Free app + free web viewer vs Matterport crews. Get written permission to scan"
+  },
+  {
+   "rank": 6,
+   "offer": "Site on a subscription, no upfront",
+   "detail": "Site on a subscription, no upfront (owners who cannot pay $1,500 at once)",
+   "price": "$149/mo, 12-month term, buy-out after 12",
+   "year1_usd": "about $1,790",
+   "months_to_first_1000": "2",
+   "owner_effort": "6-10 h a build",
+   "why": "Cash comes slowly; write the term and ownership into the contract"
+  },
+  {
+   "rank": 7,
+   "offer": "3D product viewer for small makers",
+   "detail": "3D product viewer for small makers (furniture, signs, sheds, jewelry, boats, bikes)",
+   "price": "$2,500 for 5-10 products + $49/mo",
+   "year1_usd": "about $3,090",
+   "months_to_first_1000": "2-3",
+   "owner_effort": "8 h (scanning products)",
+   "why": "`<model-viewer>` (free, AR on phones) instead of a $25K configurator"
+  },
+  {
+   "rank": 8,
+   "offer": "Before / after showcase",
+   "detail": "Before / after showcase (remodelers, landscapers, detailers, med-spas, dentists)",
+   "price": "$900 add-on (+$29/mo for new pairs)",
+   "year1_usd": "about $1,250",
+   "months_to_first_1000": "1-2",
+   "owner_effort": "3 h",
+   "why": "Their phone photos become a slider gallery that sells; an add-on to #1 or #2"
+  },
+  {
+   "rank": 9,
+   "offer": "Shed / pergola / carport / trailer \"configurator-lite\"",
+   "detail": "Shed / pergola / carport / trailer \"configurator-lite\" (options, live price, 3D preview, quote form)",
+   "price": "$3,500 + $99/mo",
+   "year1_usd": "about $4,700",
+   "months_to_first_1000": "3-4",
+   "owner_effort": "12 h",
+   "why": "Vendors say leads double; most small builders still use a PDF price list"
+  },
+  {
+   "rank": 10,
+   "offer": "Virtual showroom for small dealers",
+   "detail": "Virtual showroom for small dealers (used cars, RVs, boats, trailers: spins + one splat of the lot)",
+   "price": "$1,500 setup + $199/mo",
+   "year1_usd": "about $3,890",
+   "months_to_first_1000": "3",
+   "owner_effort": "10 h + monthly reshoots",
+   "why": "Big dealers pay $300+/mo for software; small lots have nothing"
+  },
+  {
+   "rank": 11,
+   "offer": "Venue floor planner",
+   "detail": "Venue floor planner (banquet halls, wedding barns: drag tables, 3D view, send to the venue)",
+   "price": "$2,000 + $49/mo",
+   "year1_usd": "about $2,590",
+   "months_to_first_1000": "3",
+   "owner_effort": "10 h",
+   "why": "Saves the venue site visits; pairs with #5"
+  },
+  {
+   "rank": 12,
+   "offer": "Service-area pages pack",
+   "detail": "Service-area pages pack (one page per town + service for trades)",
+   "price": "$750 + $99/mo",
+   "year1_usd": "about $1,940",
+   "months_to_first_1000": "2",
+   "owner_effort": "4 h",
+   "why": "Needs real, different content per page (no copy-paste spam)"
+  },
+  {
+   "rank": 13,
+   "offer": "Monthly \"proof report\"",
+   "detail": "Monthly \"proof report\" (calls, reviews, map views, site visits in plain $) for every retainer",
+   "price": "included; it is the anti-churn tool",
+   "year1_usd": "keeps #1-#3 alive",
+   "months_to_first_1000": "-",
+   "owner_effort": "0.5 h a client (automated)",
+   "why": "Clients cancel when they cannot see results"
+  },
+  {
+   "rank": 14,
+   "offer": "Rank-and-rent lead site",
+   "detail": "Rank-and-rent lead site (own a site for one high-ticket trade in one town, rent it)",
+   "price": "$500-$1,500/mo rent or about $50 a lead",
+   "year1_usd": "$0 for 4-9 months, then $6,000+",
+   "months_to_first_1000": "6-9",
+   "owner_effort": "20 h up front",
+   "why": "Slow and uncertain (Google may never rank it). Do it after 5 retainers"
+  },
+  {
+   "rank": 15,
+   "offer": "Custom immersive 3D brand site",
+   "detail": "Custom immersive 3D brand site (scroll story, three.js)",
+   "price": "$5,000-$15,000",
+   "year1_usd": "one-off",
+   "months_to_first_1000": "3-6",
+   "owner_effort": "40+ h, high scope-creep risk",
+   "why": "Great showcase, bad first business. Only with a fixed scope and 50% up front"
+  }
+ ]
+}
