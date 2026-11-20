@@ -10,7 +10,7 @@
 // cyan / blue / violet), loaded after load + idle, never on the first paint; the boxes have a fixed size (no layout shift); reduced motion
 // and no WebGL get the still 2D picture (the kit's rule); without the kit the note still says every number. Read only.
 import * as T from './truth.js';
-import '../pc_feed.js?v=n5';
+import '../pc_feed.js?v=n7';
 
 const later = (fn) => { const run = () => { try { fn(); } catch (_) { /* the page still works */ } }; if (typeof requestIdleCallback === 'function') requestIdleCallback(run, { timeout: 1500 }); else setTimeout(run, 80); };
 const afterLoad = () => new Promise((ok) => { if (document.readyState === 'complete') later(ok); else addEventListener('load', () => later(ok), { once: true }); });

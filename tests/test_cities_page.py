@@ -65,7 +65,7 @@ def part_a():
     check("a. every file of the page is there", all(os.path.isfile(os.path.join(PAGE, n)) for n in need), [n for n in need if not os.path.isfile(os.path.join(PAGE, n))])
     html = read(os.path.join(PAGE, "index.html"))
     check("a. the OLYMPUS kit ?v=o2 (css, themes, olympus.js with data-app=cities), module app, manifest, icon",
-          'olympus.css?v=o7' in html and 'themes.js?v=o9' in html and 'olympus.js?v=o21" data-app="cities"' in html and 'type="module"' in html
+          'olympus.css?v=o7' in html and 'themes.js?v=o9' in html and 'olympus.js?v=o22" data-app="cities"' in html and 'type="module"' in html
           and 'rel="manifest"' in html and 'icon.svg' in html)
     check("a. phone viewport with safe areas, theme-color, dark scheme, reduced motion", 'viewport-fit=cover' in html and 'name="theme-color"' in html
           and 'safe-area-inset-bottom' in html and 'prefers-reduced-motion' in html and 'color-scheme' in html)

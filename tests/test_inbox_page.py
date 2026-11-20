@@ -52,7 +52,7 @@ def part_a():
     html, css = rd(PAGE, "index.html"), rd(PAGE, "inbox.css")
     js = {n: rd(PAGE, n) for n in files if n.endswith(".js")}
     check("a. the kit first (olympus.css, themes.js, olympus.js ?v=o2 with data-app='inbox'), viewport-fit=cover, theme-color, manifest, icon, apple-touch-icon",
-          '<link rel="stylesheet" href="../olympus/olympus.css?v=o7">' in html and 'src="../olympus/themes.js?v=o9"' in html and 'src="../olympus/olympus.js?v=o21" data-app="inbox"' in html
+          '<link rel="stylesheet" href="../olympus/olympus.css?v=o7">' in html and 'src="../olympus/themes.js?v=o9"' in html and 'src="../olympus/olympus.js?v=o22" data-app="inbox"' in html
           and "viewport-fit=cover" in html and 'name="theme-color"' in html and 'rel="manifest" href="manifest.webmanifest"' in html and 'rel="icon" href="icon.svg"' in html and 'rel="apple-touch-icon"' in html)
     check("a. no CDN: every src and href in the page is local", not re.search(r'(src|href)="https?://', html))
     check("a. no innerHTML / insertAdjacentHTML / document.write", not any(re.search(r"innerHTML|insertAdjacentHTML|document\.write", s) for s in js.values()))
