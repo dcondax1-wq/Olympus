@@ -79,7 +79,7 @@ sentence (pulse heights re-reserved for it), K3 chips and segments 44 px, K4 tab
 sideways blowout), K8 signs on money in Hera / Ledger / Oikos (+ / minus, not colour alone), K9 a11y.js on Zenith and Atlas; per app: Atlas
 `.deck`, Oikos table + named bars, Journal trades, Kronos calendar roles. A11Y's own sweep tool is not on its branch yet, so their compare is not re-run.
 
-**DATA**: the age component is now the kit's (`olympus/age.js` + `age.css`, same API); the pulse cards and Settings show "updated X ago" with it.
+**DATA**: the age component stays at the root (`age.js` + `age.css`, DATA owns it; my font-token edit applied there, ?v=2); the pulse cards and Settings show "updated X ago" with it.
 Helios no longer draws the cloud's paper twin ($49,900) as Zlarior's tree (the grove is left out, as on Aegis).
 
 **Bug I caught in my own edit**: a comment hid Hera's "Running total" tile for one push; Hera's test caught it, fixed (40/40).

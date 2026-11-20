@@ -50,7 +50,7 @@ itself: `<script>OLYMPUS_THEMES.apply('page')</script>` right after `themes.js` 
   Offline = show the last numbers WITH their age (olympus/truth.js `agesOf`), never a blank card.
 - **Toast / sheet**: `AGORA.toast(text, {kind})`, `AGORA.sheet(...)` (agora-ui.js).
 - **Folded-in apps**: `<nav class="folded">` links to archived apps whose job this page now does (pulse.css).
-- **Data age**: `olympus/age.js` + `age.css` (one format site-wide, from DATA TRUTH): `OLY_AGE.chip(span, seconds, 'pc'|'live'|'bars'|'daily'|'weekly')`
+- **Data age**: `age.js` + `age.css` at the site root (one format site-wide, DATA TRUTH owns them): `OLY_AGE.chip(span, seconds, 'pc'|'live'|'bars'|'daily'|'weekly')`
   -> "updated 4 min ago", amber after a missed report, red when old. The pulse cards and Settings use it.
 
 ## 3b. How the kit keeps the page still (layout shift 0 on a phone line)

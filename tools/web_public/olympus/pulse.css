@@ -1,4 +1,4 @@
-@import url("age.css?v=1");   /* the kit's data-age chip (olympus/age.js) */
+@import url("../age.css?v=2");   /* the site's data-age chip (root age.js + age.css, DATA TRUTH) */
 /* OLYMPUS PULSE (day-arenas 2026-11-20): the shared prop-trader cards (olympus/pulse.js). AGORA tokens only, so every look (dark and light) follows.
    Every part has a FIXED height before and after its data arrives (single-line texts, ellipsis): filling it in moves nothing below (CLS 0). */
 .pulse { display: grid; gap: 12px; margin: 0 0 16px; min-width: 0; }
