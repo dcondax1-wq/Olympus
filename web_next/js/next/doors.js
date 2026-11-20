@@ -25,9 +25,9 @@
         { label: 'Bots right now', greek: 'NQ', href: 'nq/', app: 'nq', words: 'bots live on off running pc zlarior atlas lit status drawdown ninjatrader' },
         { label: 'Room left on each account', greek: 'MFFU view', href: 'business/mffu.html', app: '', words: 'room drawdown left lose floor open trade live' },
         { label: 'Decide cards', greek: 'Board · Decide', href: 'board/index.html#decide', app: '', words: 'decide decisions yes no questions' },
-        { label: "Bot's brain", greek: 'Zenith · Brain', href: 'index.html#/brain', app: '', words: 'brain thinking setups levels sweep why waiting' },
         { label: 'Trades', greek: 'Trading', href: 'trading/', app: 'trading', words: 'trades history calendar stats fills today pnl p&l' },
         { label: 'Drawdown left', greek: 'Aegis', href: 'aegis/', app: 'aegis', words: 'risk drawdown stop loss max loss limit room guard dll mll' },
+        { label: 'Rules', greek: 'Pnyx', href: 'pnyx/', app: 'pnyx', words: 'rules prop firm mffu calculator micros contracts size stop' },
         { label: 'Payout rules', greek: 'Trading · payout check', href: 'trading/#rulesCard', app: '', words: 'payout payouts withdraw request rules consistency best day payout ready readiness when request how much days left' }
       ],
       ids: ['zenith', 'nq', 'board', 'why', 'trading', 'aegis', 'pnyx', 'demeter', 'labyrinth', 'fates', 'moirai', 'odeon', 'nemesis', 'kronos', 'apollo', 'journal',
