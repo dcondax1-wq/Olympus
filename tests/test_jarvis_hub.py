@@ -1230,12 +1230,14 @@ def sw_view(active="home"):
     dist = {a["id"]: a["dist"] for a in _REG["apps"]}
     doors = [d["id"] for d in _REG["dists"] if any(dist.get(i) == d["id"] for i in vis if i not in first and i not in arc)]
     rest = [i for d in doors for i in vis if i not in first and i not in arc and dist.get(i) == d]
-    archived = [i for i in vis if i not in first and i in arc]
+    vs = set(vis)
+    archived = [a["id"] for a in SORTED_APPS if a["id"] in vs and a["id"] not in first and a["id"] in arc]   # the Archive group keeps apps.js order
     return {"order": first + rest + archived, "chips": (["daily"] if first else []) + doors + (["archive"] if archived else []),
             "first_money": next((i for i in rest if dist.get(i) == "money"), None)}
 SW_HOME, SW_DC = sw_view("home"), sw_view("datacity")
 SW_NAMES_HOME = [NX_LABEL.get(i, next((a["name"] for a in _REG["apps"] if a["id"] == i), i).upper()) for i in SW_HOME["order"]]
 SW_ON = [i for i in SW_HOME["order"] if i in ON_SITE]
+SW_DC_LIT = "archive" if "datacity" in set(_REG["sw"]["archive"]) else D_DATACITY        # the open Data City's group chip
 MONEY_FIRST = next(a["id"] for a in SORTED_APPS if a["group"] == "money")       # the first MONEY app: the group chip glides its card to the middle
 # each tile's colour: its accent in apps.js as "r,g,b" (read, never typed: the AGORA accents of 2026-11, commit 45637b2, replaced the old neon)
 ACR = {a["id"]: ",".join(str(int(a["accent"][k:k + 2], 16)) for k in (1, 3, 5)) for a in _REG["apps"] if re.fullmatch(r"#[0-9a-fA-F]{6}", a["accent"] or "")}
@@ -1304,7 +1306,7 @@ def run_olympus(br, url):
           q: [...row.querySelectorAll('.nx-qb')].map((b) => [b.dataset.nx, Math.round(b.getBoundingClientRect().height)]), seps: row.querySelectorAll('.nx-qs').length,
           scroll: [row.scrollWidth, row.clientWidth, getComputedStyle(row).overflowX], sw: document.documentElement.scrollWidth }; })()""")
     check("p. the orb is organised by the four doors: headings and chips (ZEUS Trading, Money, Kalshi, More; Data City's door, More, lit), the not-yet apps dimmed, Data City NOW",
-          o["heads"] == [] and [c[0] for c in o["chips"]] == SW_DC["chips"] and [c[0] for c in o["chips"] if c[1]] == [D_DATACITY] and all(c[2] >= 44 for c in o["chips"])
+          o["heads"] == [] and [c[0] for c in o["chips"]] == SW_DC["chips"] and [c[0] for c in o["chips"] if c[1]] == [SW_DC_LIT] and all(c[2] >= 44 for c in o["chips"])
           and sorted(o["off"]) == sorted(i for i in SW_DC["order"] if i not in ON_SITE) and o["now"] and o["now"].get("nx") == "datacity", o)
     check("p. the quick row: every app in group order with separators, 44 px+ buttons, one scrollable line (no page sideways scroll)",
           [x[0] for x in o["q"]] == SW_DC["order"] and o["seps"] == len(SW_DC["chips"]) - 1 and all(x[1] >= 44 for x in o["q"])
