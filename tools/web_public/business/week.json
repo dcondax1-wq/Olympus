@@ -1,7 +1,7 @@
 {
  "v": 1,
  "title": "ZEUS this week",
- "built": "2026-11-20 16:25 ET",
+ "built": "2026-11-20 17:10 ET",
  "built_by": "tools/weekly_review.py",
  "week": {
   "from": "2026-11-16",
@@ -10,7 +10,7 @@
   "complete": true,
   "sessions_done": 5
  },
- "pc": "PC last reported Nov 20 16:15 ET",
+ "pc": "PC last reported Nov 20 17:00 ET",
  "accounts": [
   {
    "key": "zlarior",
@@ -18,7 +18,7 @@
    "plan": "MFFU Builder 50K",
    "stage": "eval",
    "end": 49192.78,
-   "src": "PC live, Nov 20 16:13 ET",
+   "src": "PC live, Nov 20 16:57 ET",
    "room": 1024.58,
    "to_pass": 3807.22,
    "trades": 1,
@@ -47,7 +47,7 @@
    "plan": "MFFU Builder 25K (funded)",
    "stage": "funded",
    "end": 25401.38,
-   "src": "PC live, Nov 20 16:13 ET",
+   "src": "PC live, Nov 20 16:57 ET",
    "room": 1401.38,
    "to_pass": null,
    "trades": 2,
@@ -61,7 +61,7 @@
    "start": 25000.0,
    "wins": 1,
    "losses": 1,
-   "r_week": 1.94,
+   "r_week": 5.59,
    "room_start": 1000.0,
    "consistency": {
     "rule": "funded: best day at most 50% of the cycle profit",
@@ -70,12 +70,38 @@
    "status_line": "Payout: Not yet: need $949 more."
   },
   {
+   "key": "rapid1",
+   "name": "Rapid EOD 25K",
+   "plan": "MFFU Rapid EOD 25K",
+   "stage": "eval",
+   "end": 25000.0,
+   "src": "PC live, Nov 20 16:57 ET",
+   "room": 1000.0,
+   "to_pass": 1500.0,
+   "trades": 0,
+   "win_pct": null,
+   "usd_week": 0,
+   "best_day": null,
+   "strat": "Zlarior",
+   "start": 25000.0,
+   "wins": 0,
+   "losses": 0,
+   "r_week": null,
+   "room_start": 1000.0,
+   "to_pass_start": 1500.0,
+   "consistency": {
+    "rule": "Rapid EOD eval: best day at most 30% of the profit",
+    "line": "No trading day this week."
+   },
+   "status_line": "$1,500 to pass, $1,000 of room above the floor"
+  },
+  {
    "key": "fresh25",
    "name": "Zlarior 25K #2",
    "plan": "MFFU Builder 25K",
    "stage": "eval",
    "end": 25000.0,
-   "src": "PC live, Nov 20 16:13 ET",
+   "src": "PC live, Nov 20 16:57 ET",
    "room": 1000.0,
    "to_pass": 1500.0,
    "trades": 0,
@@ -147,14 +173,14 @@
  "changes": {
   "n": 200,
   "items": [
-   "Land OLYMPUS NIGHT round 1 (Board/Ledger/Hera, Trading/Business/Planner, Kalshi/Dionysus,...",
-   "Kalshi OLYMPUS NIGHT: black base, night cards, violet edges + glows, lavender, gold only on...",
-   "Dionysus FX: OLYMPUS NIGHT look (owner palette: black base, #16131e - #020204 cards, violet edges...",
-   "NAV FX - OLYMPUS NIGHT (owner 16:00 ET): black base, violet glass + outlines, violet/lavender...",
-   "FX - OLYMPUS NIGHT (owner 16:00 ET): panelfx violet/lavender glow + bright-gold accents (no cyan),...",
-   "Kalshi FX: refreshed phone screenshots; Dionysus FX work in progress snapshot",
-   "Kalshi FX (owner: 3D + effects, no gold): navy terminal look violet-led, glowing K8 cards, orb...",
-   "Board, Ledger, Hera FX in OLYMPUS NIGHT (owner 16:00 ET): moneyfx.css = black + violet glass..."
+   "Huge idea B deep dive: NT8 prop-rule add-on - crowded (free MIT Risk Guardian, $29.99-49/mo and...",
+   "Decide card copilot-test (owner's 'something huge' ask): free 30-day Prop Slot Planner test,...",
+   "Huge-idea check: Prop Co-Pilot (crowded; test only the payout/slot planner, $0 30-day kill test),...",
+   "Ledger: Rapid added but refused 'not armed' after START BOT (16:42 report)",
+   "Findings ledger: dedupe, + ATLAS fill slippage, update-gate SAME, old-account polls fixed, Jarvis...",
+   "Land DESIGN kit (dashfx d1, OLYMPUS NIGHT default look, Zenith speed) + NQ MFFU-terms strip / no...",
+   "Owner answers 16:30 ET: keep-alive YES (lands OFF this weekend; KEEPALIVE_ON.bat on wf-keepalive),...",
+   "DESIGN kit: OLYMPUS NIGHT painted by the engine (agora.css / gate-nav keep their AGORA fallbacks,..."
   ]
  },
  "next": {
@@ -174,7 +200,7 @@
    }
   ],
   "decisions": [
-   "Add the Rapid 25K: ADD_ACCOUNT.bat - 5 - its Name, then STOP + START BOT (this weekend)",
+   "Rapid 25K: Sat STOP BOT, START BOT, type your phrase (skip if Claude says it fixed itself)",
    "Before ATLAS's first payout: open a free brokerage + Treasury fund for the tax pot (20 min)"
   ],
   "steps": []
@@ -277,7 +303,7 @@
   "time": "03:45",
   "side": "SHORT",
   "usd": 514.18,
-  "r": 2.98,
+  "r": 6.63,
   "exit": "TARGET",
   "mfe_r": null,
   "cause": "target",
@@ -301,10 +327,10 @@
   "mode": "paper",
   "loss_used": 0.0,
   "loss_stop": 13.75,
-  "last": "WWWLLLL",
-  "bets_total": 7,
-  "won_pct": 43,
-  "line": "K8 (paper): $0 of the $13.75 weekly loss stop used; last 7 bets WWWLLLL; 7 bets so far, 43% won."
+  "last": "WWWLLLLW",
+  "bets_total": 8,
+  "won_pct": 50,
+  "line": "K8 (paper): $0 of the $13.75 weekly loss stop used; last 8 bets WWWLLLLW; 8 bets so far, 50% won."
  },
  "calendar": [
   {
@@ -343,11 +369,18 @@
    "news": []
   }
  ],
- "weekend": [],
+ "weekend": [
+  {
+   "id": "copilot-test",
+   "question": "Big idea: run a free 30-day test of a 'Prop Slot Planner' page for other prop traders (faceless brand, no name), plus 1 short video a day?",
+   "usd_month": 600.0,
+   "src": "Decide card"
+  }
+ ],
  "missing": [],
  "sources": {
   "trades": "PC status post",
   "plan_updated": "2026-11-20",
-  "board_pc": "Nov 20 16:15 ET"
+  "board_pc": "Nov 20 17:00 ET"
  }
 }
