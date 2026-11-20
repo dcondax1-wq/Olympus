@@ -22,7 +22,7 @@ an area; the old long brief is its last section).
 ## Saving usage (owner 2026-11-15)
 - At most 2-3 helpers, only for real work; cheaper models for mechanical jobs; never re-run a huge finished helper.
 - Run only the touched area's tests: `python tests/smoke.py` first (2 min), then `python tests/run_area.py <area>`.
-  Browser suites only when screens changed, always under `flock -w 2400 /tmp/olympus_browser.lock`. Never run test_win_scripts.
+  Browser suites only when screens changed; run_area takes the browser lock itself (landing: `run_area.py <area> --changed <base>`). Never run test_win_scripts.
 - Ship with one command: `python tools/ship.py` (tests touched areas, pushes Olympus pc only, optional zip).
 - Free disk weekly: `python tools/disk_clean.py` (dry run first).
 

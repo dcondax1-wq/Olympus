@@ -108,11 +108,6 @@ PARTS = {"olympus_kit": [("a", ["datacity", "mind", "tree"]), ("b", ["oracle", "
                          ("power", ["power", "tiers"]), ("more", ["more"])]}
 PARTS["node_suites"] = [("datacity", ["datacity"]), ("apps", ["apps"])]
 PARTS["combo_50k"] = [("sep", ["--seg", "2026-09-02"]), ("oct", ["--seg", "2026-10-02", "--scenario"])]   # night-combolive: one eval segment each
-AREAS["olympus"].append("node_suites")    # day-quality 2026-11-20: the 29 tests/*.mjs no Python suite ran (tests/test_node_suites.py), by part
-AREAS["cities"].append("node_suites")
-PARTS["node_suites"] = [("datacity", ["datacity"]), ("apps", ["apps"])]
-AREAS["pc"].append("site_checks")         # day-quality 2026-11-20: tools/site_checks.py (Kalshi cache = css/js ?v, worker tags, launcher drift, generated gap) + self_heal 'site'
-AREAS["olympus"].append("site_checks")
 AREAS["fleet"].append("rapid_launch")       # day-rapid 2026-11-20: Rapid EOD 25K launch check (tools/money/rapid25_launch.py)
 SLOW = {"olympus_shell", "fit_edge", "jarvis_hub", "phone_e2e", "olympus_kit", "olympus_themes", "olympus_render", "zenith_mode", "ui_polish", "datacity", "jarvis_home"}
 
