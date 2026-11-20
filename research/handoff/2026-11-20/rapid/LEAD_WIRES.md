@@ -42,3 +42,49 @@ Then Sim check (`tools/rehearse_day.py --rapid`), tests.test_rapid25.
 
 ## 6. Cosmetic (not changed): the trades page / PC report call it "Rapid 25K" (tools/live_trades.ACCOUNTS), the phone alerts
 "Rapid EOD 25K". Same account, both clearly the Rapid; unify only if the owner asks.
+
+---------------------------------------------------------------------------------------------------------------------------
+# ROUND 2 (2026-11-20, Rapid EOD 50K readiness; write-up research/writeups/rapid50-ready-2026-11-20.md)
+
+## R2-1 BLOCKER before the owner buys the 50K (~late Dec): two Rapids at once
+Today: engine/account_cli._add_rapid refuses a 2nd Rapid ("one Rapid only"); data/rapid.json = one block; LiveBot.acct_r = one
+RapidAtlas; LIT lane id "rapid"; ATLAS order tag "acctr_", state live_state_acctr.json, push suffix ":acctr". With the 25K added
+today, `/add-account/` -> Rapid EOD 50K answers NOT ADDED. Worth it: the 25K keeps ATLAS (+$609-1,662/mo vs LIT alone) AND the
+50K gets it (+$1,500-4,100/mo vs LIT alone). Live code (engine/live.py, engine/rapid.py) = the lead's, Sim first. Spec:
+  a. engine/rapid.py: slots "rapid" (data/rapid.json, unchanged = the 25K today, nothing migrates) and "rapid2"
+     (data/rapid2.json). read/save/path/off take slot=; LANE_ID per slot ("rapid" / "rapid2"); RapidAtlas per slot with tag
+     "acctr_" / "acctr2_", PUSH_SUFFIX ":acctr" / ":acctr2", state suffix "_acctr" / "_acctr2". Name must differ from every
+     other account incl. the other Rapid (name_problem already takes others).
+  b. engine/live.py: acct_r -> list self.acct_rs (one RapidAtlas per slot) at 372 / 651 (_start_rapid loops slots) / 721
+     (tick each) / 772 (flatten each) / 2732-2780 (_rapid_block -> blocks; lane_spec per slot) / 2841. One position per
+     NinjaTrader account is per Rapid (each pair LIT lane + RapidAtlas shares only its own account).
+  c. engine/account_cli._add_rapid: when slot "rapid" is taken by another Name, use "rapid2" (refuse only when both are taken;
+     MFFU caps 3 per size, 5 funded in all, already checked); remove() frees the right slot.
+  d. labels: tools/live_trades.ACCOUNTS: acct_key maps ANY id starting "rapid" to "Rapid 25K" (line 46) -> map by the slot's
+     plan: add ("rapid50", ("Rapid 50K", None, ("rapid2", "acctr2"))) or read the block's plan; engine/go.py:602 and
+     launch_check.py:202 list every slot; board accounts.json row "Rapid EOD 50K" pc id "rapid2".
+  e. tests: tests/test_rapid_launch.py pattern with TWO blocks (25K "Sim205" + 50K "Sim206"): both LIT lanes and both ATLAS
+     lanes start; ATLAS on one never blocked by LIT on the other; one position per account each; alerts "Rapid EOD 25K" /
+     "Rapid EOD 50K"; PC report labels "Rapid 25K" / "Rapid 50K"; removing one leaves the other; old single data/rapid.json =
+     byte-identical behaviour (tests.test_rapid, test_rapid25, test_trade_alerts, test_cross_hedge green); tools/rehearse_day.py
+     --rapid with both.
+  Fallback if not built in time: buy the 50K anyway and make IT the Rapid (LIT + ATLAS), the 25K becomes a LIT-only extra
+  account (preset mffu_rapid_eod_25k): $4,944 + $221 vs $1,883 + $803 a month (Jan-Jun-like) / $2,274 + $191 vs $800 + $791
+  (Jul-Oct-like). Needs a CLI path to move the 25K to an extra (account_cli has none for a Rapid preset).
+
+## R2-2 if the owner buys the DLL version of the 50K: engine/rapid.PLANS["mffu_rapid_eod_50k"] add "mffu_dll": 1000.0
+(= the bot's own $1,000 day stop; the [OK] line then says "MFFU daily loss $1,000 = a pause"). No sizing change. Test: the
+25K pattern in tests/test_rapid_launch f with plan_info("mffu_rapid_eod_50k")["mffu_dll"] == 1000.0.
+
+## R2-3 10-tick ATLAS sizing on the 50K too (passes the pre-set bar: lost 22.7 -> 19.4% / 26.6 -> 22.7%, $ -3% / -1%)
+Same patch as section 3 above, plus "atlas_slip": 2.5 in PLANS["mffu_rapid_eod_50k"]; covered by the existing
+rapid-atlas-size-10t card if its text says "Rapid 25K and 50K" (suggested: question "Rapid accounts: size ATLAS for its real
+fills (assume a 10-tick worse stop)?", risk + "50K: lost 22.7% -> 19.4% / 26.6% -> 22.7% for -$149 / -$21 a month").
+
+## R2-4 changed on this branch (no live file)
+tools/money/money_book.py USD_MONTH re-set to real fills (rapideod50 2,812 -> 2,295; rapideod25 972 -> 800): next_buy still
+waits for the 50K (tests.test_money_ideas 17/17). tools/money/rapid25_launch.py r50 -> research/lab/rapid50_launch.json.
+money-ideas-2026-11-20.md's "-$1,840 a month" is ~-$1,495 at real fills (H2); its text not edited (another helper's write-up).
+
+## R2-5 STATE.md line
+- 2026-11-20 Rapid EOD 50K ready check (day-rapid, rapid50-ready-2026-11-20.md): 5th slot stays the Rapid 50K at real fills ($4,944 / $2,274 a month with ATLAS on a 10-tick stop vs a 2nd Rapid 25K $1,742 / $769); eval ~23 trading days (92-94%), 1st payout ~40-48 trading days after the buy, 9-16% lose it first. Rules = code. BLOCKER: bot runs one Rapid only -> multi-Rapid build (LEAD_WIRES R2-1) before the buy.

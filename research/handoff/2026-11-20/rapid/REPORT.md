@@ -31,3 +31,26 @@ All at ATLAS's real fills (10 ticks a side); $ after MFFU's 90% and fees, before
   test_trade_alerts 21/21, test_decide 13/14 (a: the source file must exist on the merged tree; it does on this branch -> 14/14 after the write-up commit).
 - Nothing live touched: no engine file, live_model*, accounts, server, sw.js.
 - Screenshots (390x844 @2): rapid25-lit-bank.png, atlas-on-rapid.png (business/plan.html Decide list).
+
+---------------------------------------------------------------------------------------------------------------------------
+# Round 2: Rapid EOD 50K (the 5th funded slot)
+
+| What | Result |
+|---|---|
+| 50K vs a 2nd Rapid 25K | **50K wins**: $4,944 / $2,274 a month vs $1,742 / $769 (Jan-Jun / Jul-Oct-like, real fills) |
+| What it trades | LIT + ATLAS $500 (LIT alone $803 / $791, ATLAS alone $2,666 / $545) |
+| Size | ATLAS on a 10-tick stop: -1 to -3% $, fewer 50Ks lost (26.6% -> 22.7% Jul-Oct-like) |
+| Eval | passes 92-94%, ~23 trading days |
+| First payout | ~40-48 trading days after the buy (bought Dec 24: ~Feb 22 - Mar 4) |
+| Lose it before a payout | 9-16% |
+| Rules vs code | all match |
+| **Blocker** | the bot runs ONE Rapid: the 50K would be refused next to the 25K. Lead builds two-Rapid support first (LEAD_WIRES R2-1) |
+
+### The day he buys it (only after the lead says two Rapids work)
+1. MFFU checkout: Rapid EOD 50K, the cheaper version (the $1,000 daily loss version is fine: the bot already stops at -$1,000), code `CLUB`, paid from kept payouts ($165).
+2. Phone: PC link + `/add-account/` -> Rapid EOD 50K -> tap the Name -> type `I ACCEPT LIVE RISK` -> Add + start trading.
+3. Tell Claude "50K added: DLL yes/no" so the $1,000 pause line is recorded; first alert should say "Rapid EOD 50K".
+
+Files: research/second/rapid50_launch_design.md (09348676, before any run), tools/money/rapid25_launch.py r50,
+research/lab/rapid50_launch.json, research/writeups/rapid50-ready-2026-11-20.md, tools/money/money_book.py (USD_MONTH at real fills).
+Tests: test_money_ideas 17/17, test_rapid_launch 11/11.
