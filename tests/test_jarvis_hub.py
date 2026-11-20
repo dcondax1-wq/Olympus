@@ -1536,7 +1536,7 @@ def run_switcher(br, url):
     p.mouse.up(); p.wait_for_timeout(450)
     cur = p.evaluate("(document.querySelector('#modes [aria-current=\"page\"]') || {dataset: {}}).dataset.app")
     check("n. hold: the ring fans out Jarvis, the districts that have an app that can open, and Search (44 px+ each, on screen, none on another); slide onto Jarvis and let go: Jarvis",
-          sorted(b["id"] for b in ring) == sorted((["home"] if cur_before != "home" else []) + [d for d in D_ALL5 if any(a["dist"] == d and a["id"] in ON_SITE and a["id"] != cur_before for a in _REG["apps"])] + ["SEARCH"]) and all(b["w"] >= 44 and 0 <= b["x"] <= 390 and 0 <= b["y"] <= 844 for b in ring)
+          sorted(b["id"] for b in ring) == sorted((["home"] if cur_before != "home" else []) + [d for d in D_ALL5 if any(a["dist"] == d and a["id"] in ON_SITE and a["id"] != cur_before and a["id"] not in _SWH for a in _REG["apps"])] + ["SEARCH"]) and all(b["w"] >= 44 and 0 <= b["x"] <= 390 and 0 <= b["y"] <= 844 for b in ring)
           and all((a["x"] - b["x"]) ** 2 + (a["y"] - b["y"]) ** 2 >= 44 ** 2 for i, a in enumerate(ring) for b in ring[i + 1:])
           and cur == "home" and p.evaluate("!document.querySelector('.nx-fan.on')"), (ring, cur))
     # drag: move it (kept on this phone)
