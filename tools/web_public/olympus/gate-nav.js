@@ -10,6 +10,7 @@
  * - NAV v3 (2026-11-15, docs/OLYMPUS_NAV.md): the sheet's search finds apps, hub tabs and plain actions (C.findAll); with an empty box: Pinned first
  *   (the owner's favourites, 'gate.pins.v1', the same list as the Gate), a 'Pin this app' star for the app you are on, the hubs, Recent (6), All apps A to Z
  *   (the Gate's sheet, gate/#az) and Home.
+ * - A page may reserve the row from its first paint: <div class="gn-row" data-gn-slot></div> (min-height 44px in its own CSS); the row is built in it (CLS 0).
  * Classic script, ES5, no markup from data (textContent / createElementNS), same-origin files only, no other storage, no network but the catalog file. */
 (function () {
   'use strict';
@@ -163,11 +164,15 @@
       } else {
         // 3. no back link: a slim row of our own, in the page flow. A header that floats over a scene as a panel (Cities) takes it as its first line;
         //    a header that floats as a row over a full-bleed picture (Polis over its sky) gets the row above that picture, so nothing is covered.
-        var row2 = el('div', 'gn-row'), gl = gateLink(); row2.appendChild(gl); crumbsAround(gl); row2.appendChild(goButton(false));
-        var cs = head ? w.getComputedStyle(head) : null, floats = cs && /fixed|absolute|sticky/.test(cs.position || '');
+        // a page that reserved the row from its first paint (<div class="gn-row" data-gn-slot>, hub/index.html: perf ask 2026-11-20, CLS 0) gets it filled in place
+        var slot0 = d.querySelector('[data-gn-slot]');
+        if (slot0 && !slot0.firstChild) { var gl0 = gateLink(); slot0.appendChild(gl0); crumbsAround(gl0); slot0.appendChild(goButton(false)); slot0.removeAttribute('aria-hidden'); }
+        var row2 = slot0 ? null : el('div', 'gn-row'), gl = slot0 ? null : gateLink(); if (row2) { row2.appendChild(gl); crumbsAround(gl); row2.appendChild(goButton(false)); }
+        var cs = !row2 ? null : head ? w.getComputedStyle(head) : null, floats = cs && /fixed|absolute|sticky/.test(cs.position || '');
         var rowFlex = cs && /flex/.test(cs.display || '') && !/column/.test(cs.flexDirection || '');
         var host = floats && rowFlex && head.offsetParent && head.offsetParent !== d.body && head.offsetParent.parentNode ? head.offsetParent : null;
-        if (host) { row2.className += ' gn-own'; host.parentNode.insertBefore(row2, host); }
+        if (!row2) { /* filled the reserved slot */ }
+        else if (host) { row2.className += ' gn-own'; host.parentNode.insertBefore(row2, host); }
         else if (floats) head.insertBefore(row2, head.firstChild);
         else if (head && head.parentNode) head.parentNode.insertBefore(row2, head);
         else { row2.className += ' gn-own'; d.body.insertBefore(row2, d.body.firstChild); }

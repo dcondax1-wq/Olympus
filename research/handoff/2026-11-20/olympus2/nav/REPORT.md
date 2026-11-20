@@ -124,3 +124,17 @@ LEAD_WIRES #1 (the ZEUS tile straight to ZEUS) cuts 1 tap off 5 of them.
 - Gate search UI (gate/gate.js, Home team) is unchanged: it already draws actions first and opens the first row on Enter, so the catalog fix
   reaches it as is. A "?find=words" deep link is an ask (ASKS.md #2).
 - A bottom bar on the hub pages: none of them has one today (only the Gate / Zenith), so nothing sits under a bar; not added.
+
+## PERF ask: gate-nav breadcrumbs shift the page (15:28 UTC)
+
+Measured at 390 px, 4x CPU, ~1.6 Mbps / 150 ms (gate-nav lands at ~1.6-3.9 s there):
+| Page | Before (CLS) | After |
+|---|---|---|
+| hub/index.html?h=bots | 0.50 (0.03 gate-nav row + 0.26 tabs/panel above the visible "All hubs" + 0.21 Right now facts) | 0.000 |
+| hub/?h=settings / me / list | 0.03-0.05 | 0.000 |
+| Agora apps (aegis, helios, demeter) | 0.058 at the moment gate-nav lands | unchanged here: the SAME 0.058 happens with gate-nav blocked, so it is agora-ui.js filling the header (PERF's DESIGN ask #1); once settled gate-nav changes the header height by 0 px (135 -> 135) |
+
+Fix: hub/index.html reserves the Home / Go to row (`<div class="gn-row" data-gn-slot>`); gate-nav.js (g7) fills a `[data-gn-slot]` in place
+instead of inserting a row (any page can use it); hub.css (h6) holds each hub's Right now height while its numbers load and keeps the blocks
+below (All hubs, Also useful, the footer) invisible until hub.js (h5) marks hb-done (a 6 s failsafe). tests.test_nav_pages 26/26 (+ 4 slow-phone
+CLS checks). Pins moved: test_hubs (h6/g7/h5), test_me_hub + test_gate_page (catalog nv6 in gate-nav: my earlier bump).
