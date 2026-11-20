@@ -8,7 +8,7 @@ const $ = (id) => document.getElementById(id);
 function h(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = String(text); return e; }
 const clear = (el) => { while (el.firstChild) el.removeChild(el.firstChild); };
 const sign = (v) => (v > 0 ? 'pos' : v < 0 ? 'neg' : '');
-const S = { book: null, edges: null, whatif: null, fixture: null, demo: false, pick: '', now: 0, ready: false, hl: null, wi: null, g: null };
+const S = { k8: null, book: null, edges: null, whatif: null, fixture: null, demo: false, pick: '', now: 0, ready: false, hl: null, wi: null, g: null };
 const SRC = { feed: 'Live feed', site: 'The site\'s copy (the live feed was not reachable)', demo: 'Example numbers' };
 
 async function getJSON(url, ms) {
@@ -71,9 +71,29 @@ function renderScan() {
   if (hl.edges != null) box.appendChild(h('p', 'note', `${hl.edges} kinds of bet checked, ${hl.proven} look proven. Looking back, not a promise.`));
 }
 
+function renderK8() {                       // K8 today: the site's ../kalshi/k8.json (Kalshi's public results); absent = the panel hides
+  const card = $('k8Card'), k = S.k8 ? C.k8Panel(S.k8, S.now * 1000) : null;
+  card.hidden = !k;
+  if (!k) return;
+  $('k8Note').textContent = `Kalshi's public results${k.through ? ' through ' + k.through : ''}, not our bets. Fair = the price where the bet breaks even after the fee.`;
+  const ul = $('k8Legs'); clear(ul);
+  for (const L of k.legs) {
+    const li = h('li', 'k8leg'); li.appendChild(h('b', '', `${L.at ? L.at + ' ET ' : ''}${L.name}`));
+    li.appendChild(h('span', 'note', `fair ${L.fair == null ? '–' : L.fair + '¢'}${L.rate == null ? '' : ` · won ${Math.round(L.rate * 100)}%${L.n ? ' of ' + L.n : ''}`}`));
+    const wl = h('span', 'k8wl'); for (const c of L.last10.split('')) wl.appendChild(h('i', c === 'W' ? 'w' : 'l', c)); if (!L.last10) wl.appendChild(h('span', 'note', 'no results yet'));
+    li.appendChild(wl); ul.appendChild(li);
+  }
+  const pc = (x) => (x == null ? '–' : Math.round(x * 100) + '%');
+  const pr = $('k8Pool'); clear(pr);
+  pr.appendChild(h('span', '', 'All legs, won last 30: ')); pr.appendChild(h('b', k.l30, pc(k.r30))); pr.appendChild(h('span', '', ' · last 60: ')); pr.appendChild(h('b', k.l60, pc(k.r60)));
+  pr.appendChild(h('span', '', ` · OFF under ${Math.round(k.min * 100)}%`));
+  const v = $('k8Verdict'); v.textContent = k.verdict; v.className = 'pill ' + ({ ok: 'ok', watch: 'warn', off: 'bad' }[k.level] || '');
+  $('k8Noise').textContent = k.noise; $('k8Noise').hidden = !k.noise;
+}
+
 function render() {
   $('demo').hidden = !S.demo; try { $('lite').hidden = !(O && O.lite && O.lite()); } catch (_) { $('lite').hidden = true; }
-  renderHero(); renderGuard(); renderBets(); renderWhatIf(); renderScan();
+  renderHero(); renderK8(); renderGuard(); renderBets(); renderWhatIf(); renderScan();
   say(`${S.book.name}: balance ${C.usd(S.book.balance)}. ${S.g.title}. ${S.g.text}`);
   S.ready = true;
   try { if (O && O.ready) O.ready(); } catch (_) { /* the veil lifts by itself */ }
@@ -82,7 +102,9 @@ function render() {
 async function boot() {
   const q = new URLSearchParams(location.search), forced = q.get('demo') === '1', at = q.get('at');
   S.now = at && Number.isFinite(Date.parse(at)) ? Date.parse(at) / 1000 : Date.now() / 1000;
-  const [fx, feed, edges, wi] = await Promise.all([getJSON('./fixture.json'), forced ? null : getFeed(5000), forced ? null : getJSON('../kalshicity/edges.json'), forced ? null : getJSON('../kalshicity/whatif.json')]);
+  const [fx, feed, edges, wi, k8] = await Promise.all([getJSON('./fixture.json'), forced ? null : getFeed(5000), forced ? null : getJSON('../kalshicity/edges.json'), forced ? null : getJSON('../kalshicity/whatif.json'),
+    forced ? null : getJSON('../kalshi/k8.json', 3000)]);
+  S.k8 = k8 && typeof k8 === 'object' && !Array.isArray(k8) ? k8 : null;
   S.fixture = fx; const book = C.chooseBook(feed, edges, fx); if (!book) throw new Error('no numbers');
   S.book = book; S.demo = book.src === 'demo';
   S.edges = S.demo ? (fx && fx.edges) || null : edges; S.whatif = S.demo ? (fx && fx.whatif) || null : wi;

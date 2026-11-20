@@ -27,7 +27,7 @@
 <script src="../olympus/agora-ui.js?v=4" defer></script>
 <script src="../olympus/sfx.js?v=s4" defer></script>
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#b77a8a'); r.setProperty('--oly-accent-rgb', '183, 122, 138'); })();</script>
-<link rel="stylesheet" href="dionysus.css?v=a1q">
+<link rel="stylesheet" href="dionysus.css?v=a1r">
 </head>
 <body>
 <main id="app">
@@ -43,6 +43,13 @@
     <div class="tiles" id="heroTiles"></div>
     <p class="note" id="srcNote"></p>
     <p class="banner">Suggestions only. Nothing on this page places, changes or stops a bet.</p>
+  </section>
+  <section class="ag-card card k8" id="k8Card" aria-labelledby="k8H" hidden>
+    <div class="row"><h2 id="k8H">K8 today</h2><span class="pill" id="k8Verdict">...</span></div>
+    <p class="note" id="k8Note"></p>
+    <ul class="plain" id="k8Legs"></ul>
+    <p class="k8pool" id="k8Pool"></p>
+    <p class="lead" id="k8Noise"></p>
   </section>
   <section class="ag-card card" id="guardCard" aria-labelledby="guardH">
     <div class="row"><h2 id="guardH">The guard</h2><span class="pill" id="guardPill">...</span></div>
@@ -71,6 +78,6 @@
 
   <p class="foot" id="foot">Dionysus reads the public Kalshi feed and the site's own Kalshi study files, read only. It sends nothing and cannot place or change a bet. Kalshi runs on real money: the study looks back, it is not a promise.</p>
 </main>
-<script type="module" src="dionysus.js?v=a2"></script>
+<script type="module" src="dionysus.js?v=a3"></script>
 </body>
 </html>
