@@ -460,11 +460,17 @@ def _pc_section(meta: dict, pc: dict, lm: dict, today: str, now: int) -> dict:
     pos = (acct or {}).get("position")
     if pos and pos.get("note"):
         pos = {**pos}
-    return {**meta, "badge": "LIVE" if badge == "LIVE ACCOUNT" else badge, "broker_account": ak.get("name"), "adapter": adapter,
-            "conn": conn, "eval": eval_view(days, start, today, now, plan=(acct or {}).get("plan_rules"),
-                                            anchor=((acct or {}).get("eval") or {}).get("anchor"))
+    # DISPLAY TRUTH (2026-11-20, data truth): with no account detail from the PC (the cloud build, an old heartbeat) there are no account
+    # numbers. Before, the eval was built from live_model's eval_prior_pnl + nothing, and home.json showed it under the REAL id
+    # (mffu50k_eval: $49,900 / $1,900 room, the PAPER badge) while the real account was $49,192.78. Pages now fall back to the PC's
+    # 15-minute post (pc_feed.js accountsOver) or show nothing. The cloud's own paper row (CLOUD_PAPER) is unchanged. Display only.
+    no_pc = not conn["has_detail"]
+    return {**meta, "badge": None if no_pc else "LIVE" if badge == "LIVE ACCOUNT" else badge, "broker_account": ak.get("name"), "adapter": adapter,
+            "conn": conn, "no_pc_numbers": True if no_pc else None,
+            "eval": None if no_pc else eval_view(days, start, today, now, plan=(acct or {}).get("plan_rules"),
+                                                   anchor=((acct or {}).get("eval") or {}).get("anchor"))
             if meta.get("kind") in ("eval", "funded") else None,
-            "pnl": _pnl_views(days, today), "position": pos, "orders": list((acct or {}).get("orders") or []),
+            "pnl": None if no_pc else _pnl_views(days, today), "position": pos, "orders": list((acct or {}).get("orders") or []),
             "trades": trades, "days": [[d, round(v, 2)] for d, v in sorted(days.items()) if d != "0000-00-00"],
             "stats": stats(trades, days), "kill": bool((acct or {}).get("kill")), "running": (acct or {}).get("running")}
 
