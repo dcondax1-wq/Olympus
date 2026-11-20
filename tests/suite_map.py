@@ -149,6 +149,8 @@ def _apps() -> set:
 
 
 _CACHE: dict = {}
+# suites whose path strings are fixtures about OTHER files (the mapper's own test): only their imports count
+FIXTURE_STRINGS = {"run_area_fast"}
 _FILE_PATHS: dict = {}
 
 
@@ -159,7 +161,7 @@ def suite_info(name: str) -> dict:
     rel = f"tests/test_{name}.py"
     src = _read(os.path.join(ROOT, rel))
     strings, mods = _strings_and_imports(src)
-    reads = {rel} | _paths_from_strings(strings)
+    reads = {rel} | (set() if name in FIXTURE_STRINGS else _paths_from_strings(strings))
     browser = bool(BROWSER_RX.search(src))
     seen = set()
     todo = [(m, 0) for m in mods]
