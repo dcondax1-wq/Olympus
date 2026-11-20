@@ -54,7 +54,7 @@ def test_static():
     check("a. the files: hub/index.html, hub.js, hub.css, icon.svg, olympus/hub-status.js, docs/OLYMPUS_IA_V2.md",
           all(os.path.isfile(os.path.join(H, n)) for n in names) and os.path.isfile(HSJ) and os.path.isfile(os.path.join(AK.ROOT, "docs", "OLYMPUS_IA_V2.md")))
     html, js, css, hs, nav, cat = (AK.read(p) for p in (os.path.join(H, "index.html"), os.path.join(H, "hub.js"), os.path.join(H, "hub.css"), HSJ, NAV, CAT))
-    order = ["../olympus/agora.css?v=a9", "hub.css?v=h6", "me.css?v=m2", "../olympus/themes.js?v=o10", "../olympus/gate-catalog.js?v=nv9", "../olympus/hub-status.js?v=h4",
+    order = ["../olympus/agora.css?v=a9", "hub.css?v=h6", "me.css?v=m2", "../olympus/themes.js?v=o9", "../olympus/gate-catalog.js?v=nv10", "../olympus/hub-status.js?v=h3",
              '../olympus/gate-nav.js?v=g8" data-app="hub" defer', "me.js?v=m2", "hub.js?v=h5"]
     pos = [html.find(x) for x in order]
     check("a. the page loads agora.css, hub.css, me.css, the theme engine, the catalog, hub-status, gate-nav (data-app=hub, deferred), me.js (the Me hub) and hub.js, in that order, all in <head>",

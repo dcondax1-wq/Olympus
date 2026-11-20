@@ -54,7 +54,7 @@ def _ntiles():
     return len(set(_re.findall(r'"id":\s*"([a-z0-9]+)"', t)) - {"zenith"} - ret)
 
 
-NTILES = _ntiles()
+NTILES = _ntiles() + 1   # + the Jarvis tile in the Arenas row (owner 2026-11-20: 6 arenas first; Jarvis has no app-list row, doors.js gives it)
 
 
 def test_static():
@@ -137,7 +137,7 @@ console.log(JSON.stringify({ doors: D.DOORS.map((d) => ({ id: d.id, title: d.tit
         check(f"d. {name} is the four doors (same ids, same app lists as olympus/doors.js)", got == want, got)
     lj = read(WEB, "launcher.js")
     check("d. the launcher loads doors.js with the list (async; olympus/doors.js on the phone, /js/next/doors.js on the PC) and groups by it",
-          "'olympus/doors.js?v=d11'" in lj and "'/js/next/doors.js?v=d11'" in lj and "D.DOORS.map" in lj and "OLYMPUS_DOORS" in lj)
+          "'olympus/doors.js?v=d12'" in lj and "'/js/next/doors.js?v=d12'" in lj and "D.DOORS.map" in lj and "OLYMPUS_DOORS" in lj)
 
 
 # ------------------------------------------------------------------ c. browser
@@ -215,7 +215,7 @@ def test_phone(br, origin):
     j = p.evaluate("(() => { const a = document.querySelector('.oly-l .oly-jv'); return { href: a.getAttribute('href'), target: a.target, text: a.textContent }; })()")
     check("c. phone: the sheet opens with the big 'Open Olympus (Jarvis)' button (jarvis/, this tab) and all app tiles", S["open"] and not S["pc"] and S["tiles"] == NTILES and j["href"] == "jarvis/" and not j["target"] and "Open Olympus (Jarvis)" in j["text"], (S, j))
     g = p.evaluate("[...document.querySelectorAll('.oly-l section')].map((s) => [s.dataset.group, s.querySelectorAll('.oly-tile').length])")
-    check("c. phone: the four doors (ZEUS Trading, Money, Kalshi, More) with their apps; Zenith itself is not in it", [x[0] for x in g] == ["zeus", "money", "kalshi", "more"] and sum(x[1] for x in g) == NTILES and p.locator('.oly-l .oly-tile[data-app=zenith]').count() == 0, g)
+    check("c. phone: the 6 arenas first (owner 2026-11-20), then the four doors (ZEUS Trading, Money, Kalshi, More) with their other apps; Zenith itself is not in it", [x[0] for x in g] == ["arenas", "zeus", "money", "kalshi", "more"] and g[0][1] == 6 and sum(x[1] for x in g) == NTILES and p.locator('.oly-l .oly-tile[data-app=zenith]').count() == 0, g)
     dk = p.evaluate("[...document.querySelectorAll('.oly-l section[data-group=money] .oly-dk')].map((a) => [a.querySelector('b').textContent, a.getAttribute('href')])")
     check("c. phone: each door starts with its shortcuts in plain words (Money: Taxes -> business/taxes.html), its heading opens the Doors page",
           ["Taxes", "business/taxes.html"] in dk and p.evaluate("document.querySelector('.oly-l section[data-group=zeus] h3 a').getAttribute('href')") == "hub/doors.html#zeus", dk)

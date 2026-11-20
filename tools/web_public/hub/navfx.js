@@ -24,7 +24,7 @@
   }
 
   /* ---- tilt: pointer position -> --rx / --ry (max 7 deg); back to flat on leave */
-  var TILT = '.g-ic, #doors4.g-qgrid, .hq-tile';   // small things only: a tilting big card reads as a glitch (and shifts what is measured on it)
+  var TILT = '.g-ic, #doors4.g-qgrid, .hq-tile, .g-arena';   // small things only: a tilting big card reads as a glitch (and shifts what is measured on it)
   function tiltOn(el) {
     if (el.__nfx) return; el.__nfx = 1; el.setAttribute('data-nfx-tilt', '');
     var host = el.classList.contains('g-ic') ? el.parentNode : el;

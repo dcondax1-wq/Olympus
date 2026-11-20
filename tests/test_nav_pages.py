@@ -71,7 +71,7 @@ def part_wn():
     check("o. the Doors page and the search share one RETIRED list and one FIRST order", re.sub(r"\s+", "", grab(dj, "RETIRED")) == re.sub(r"\s+", "", grab(cat, "RETIRED"))
           and re.sub(r"\s+", "", grab(dj, "FIRST")) == re.sub(r"\s+", "", grab(cat, "FIRST")))
     st = re.findall(r'data-first="([a-z]+)"', dh)
-    check("o. Doors 'Start here': Cities, Kalshi, NQ bot, Jarvis, Planner, Business, before the four doors", st == ["cities", "kalshi", "nq", "jarvis", "planner", "business"]
+    check("o. Doors 'Your 6 arenas': Cities, Kalshi, NQ Bot, Jarvis, Websites, Business, before the four doors", st == ["cities", "kalshi", "nq", "jarvis", "agency", "business"]
           and dh.index('id="startHere"') < dh.index('id="doorGrid"'), st)
 
 
@@ -88,6 +88,30 @@ def part_setup():
           and "href: 'hub/setup.html'" in more and len(re.findall(r"\{ label:", more)) <= 8
           and 'data-to="hub/setup.html"' in open(os.path.join(WEB, "gate", "index.html"), encoding="utf-8").read()
           and "'hub/setup.html'" in open(os.path.join(WEB, "olympus", "gate-catalog.js"), encoding="utf-8").read())
+
+
+def part_arenas():
+    """owner 2026-11-20 17:00 ET: I want like 6 arenas, that is it, then a separate area for the smaller stuff"""
+    g = open(os.path.join(WEB, "gate", "index.html"), encoding="utf-8").read()
+    ar = re.findall(r'<div class="g-arena" data-arena="([a-z]+)"', g)
+    check("o. Home: exactly 6 arenas in this order: Cities, Kalshi, NQ Bot, Jarvis, Websites, Business", ar == ["cities", "kalshi", "nq", "jarvis", "agency", "business"], ar)
+    vis = [m for m in re.findall(r'<section class="([^"]+)"[^>]*?( hidden)?>', g)]
+    shown = [c for c, h in vis if not h]
+    check("o. Home: the arenas, then ONE 'Everything else' area (the old app grid, doors and hubs hidden: still in the page for search / A to Z)",
+          g.index('id="arenas"') < g.index('id="elseSec"') and 'id="elseH">Everything else</h2>' in g and "g-quick" not in shown and "g-four" not in shown and "g-hubs" not in shown
+          and g.index('id="q"') < g.index('id="arenas"'), shown)
+    TEN = ["planner", "trading", "ledger", "board", "hera", "inbox", "widget", "dionysus", "helios", "settings"]
+    check("o. Business arena links the Planner at its top; Everything else = the 10 he uses (Planner ... Settings), then one 'See all apps (A to Z)' button",
+          'class="g-asub" data-to="planner/index.html"' in g and re.findall(r'<a class="g-eapp" data-to="([a-z]+)/', g) == TEN
+          and 'id="elseAll" data-to="gate/index.html#az" href="gate/index.html#az">See all apps (A to Z)</a>' in g)
+    gj = open(os.path.join(WEB, "gate", "gate.js"), encoding="utf-8").read()
+    check("o. the Strategy forge (prometheus) is off the Home: in gate.js's Home-only hidden list (search, A to Z, pins); its page stays",
+          re.search(r"var RETIRED = \{[^}]*\bprometheus: 1", gj) is not None and os.path.exists(os.path.join(WEB, "prometheus", "index.html")))
+    d = open(os.path.join(WEB, "olympus", "doors.js"), encoding="utf-8").read()
+    check("o. doors.js ARENAS = the same 6 in the same order (the launcher and the Doors page read it); web_next copy byte-identical",
+          re.findall(r"\{ id: '([a-z]+)', label: '[^']+', href: '[^']+', line:", d) == ["cities", "kalshi", "nq", "jarvis", "agency", "business"]
+          and d == open(os.path.join(ROOT, "web_next", "js", "next", "doors.js"), encoding="utf-8").read()
+          and open(os.path.join(WEB, "launcher.js"), encoding="utf-8").read() == open(os.path.join(ROOT, "web_next", "js", "next", "launcher.js"), encoding="utf-8").read())
 
 
 def part_a():
@@ -160,7 +184,7 @@ def part_b(shots: bool):
                     small = pg.evaluate(f"[...document.querySelectorAll('{navsel} a, {navsel} button')].filter(e => {{ const r = e.getBoundingClientRect(); return r.width > 0 && (r.height < 44 || r.width < 44); }}).length")
                     cls = pg.evaluate("window.__cls")
                     if shots:
-                        pg.screenshot(path=os.path.join(SHOTS, f"{p}-{'dark' if look == 'agora' else 'light'}.png"))
+                        pg.screenshot(path=os.path.join(SHOTS, re.sub(r'[<>:"|?*\\/]', "_", f"{p}-{'dark' if look == 'agora' else 'light'}.png")))   # Windows-safe names (a '?' broke the PC auto-update, 2026-11-20)
                     check(f"b. {p} [{look}]: wears the look ({bg}), no sideways scroll, top-row taps >= 44 px, CLS {cls:.3f} < 0.05, no console error",
                           ok_look and wide and small == 0 and cls < 0.05 and not errs, (bg, wide, small, cls, errs[:2]))
                     pg.close()
@@ -180,15 +204,23 @@ def part_b(shots: bool):
                     pg.wait_for_function("window.NAV_FX && window.NAV_FX.ready", timeout=20000)
                     pg.wait_for_timeout(1500)
                     r = pg.evaluate("""(() => { const a = document.querySelector('.nfx-aurora i'); const st = a ? getComputedStyle(a) : null;
-                        const bg = getComputedStyle(document.body).backgroundColor;
+                        const bb = getComputedStyle(document.body).backgroundColor, bg = bb === "rgba(0, 0, 0, 0)" ? getComputedStyle(document.documentElement).backgroundColor : bb;
                         return { nfx: document.documentElement.classList.contains('nfx'), aurora: !!a, anim: st ? st.animationName : '', bg,
                           tilt: document.querySelectorAll('[data-nfx-tilt]').length, rolling: document.querySelectorAll('.nfx-rolling').length,
                           leads: (document.getElementById('hqPLeads') || {}).textContent || '', cls: window.__cls }; })()""")
                     still = rm == "reduce"
-                    ok = r["nfx"] and r["aurora"] and r["bg"] == "rgb(0, 0, 0)" and r["cls"] < 0.05 and not errs and r["rolling"] == 0 \
+                    ok = r["nfx"] and r["aurora"] and all(int(x) < 16 for x in re.findall(r"\d+", r["bg"])[:3]) and r["cls"] < 0.05 and not errs and r["rolling"] == 0 \
                         and ((r["anim"] == "none" and r["tilt"] == 0) if still else (r["anim"] != "none" and (r["tilt"] > 0 or url == "hub/zeus.html")))
                     if url == "agency/index.html":
                         ok = ok and r["leads"] == "20"
+                    if url == "gate/index.html" and not still:
+                        pg.wait_for_function("window.GATE_ARENAS && GATE_ARENAS.ready", timeout=20000)
+                        a = pg.evaluate("""(() => { const t = [...document.querySelectorAll('.g-arena')]; const vh = innerHeight;
+                          return { n: t.length, lines: t.map((x) => (x.querySelector('.g-aline') || {}).textContent || ''), onfirst: t.every((x) => x.getBoundingClientRect().bottom <= vh + 1),
+                                   elseN: document.querySelectorAll('#elseList .g-eapp').length, first: (document.querySelector('#elseList .g-eapp') || {}).textContent,
+                                   forge: [...document.querySelectorAll('a')].some((x) => (x.getAttribute('href') || '').indexOf('prometheus/') >= 0) }; })()""")
+                        check(f"o. Home at 390 x 844: the 6 arenas each with a live line, all 6 on the first screen; Everything else holds {a['elseN']} apps (10), Planner first, no Strategy forge link anywhere on Home",
+                              a["n"] == 6 and all(a["lines"]) and a["onfirst"] and a["elseN"] == 10 and a["first"] == "Day and week plan" and not a["forge"], a)
                     check(f"f. fx {url} [{'reduced motion' if still else 'motion'}]: Olympus Night (black), the aurora {'still' if still else 'moving'}, tilt {'off' if still else 'on'}, CLS {r['cls']:.3f} < 0.05, the real numbers final, no error", ok, (r, errs[:2]))
                     pg.close()
                 ctx.close()
@@ -216,6 +248,7 @@ def part_b(shots: bool):
 
 def main():
     part_a()
+    part_arenas()
     part_setup()
     part_wn()
     if not os.environ.get("NAV_NO_BROWSER"):
