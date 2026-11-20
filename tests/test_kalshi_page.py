@@ -2119,8 +2119,9 @@ def part_rewards(br, url, tmp):
               and isinstance(copy.get("backtest"), dict) and bool(copy["backtest"].get("text")), str(copy)[:200])
         open_()
         t = p.inner_text("#krw")
-        check("rw1. the card is under the PAUSED note: 'Rewards test (paper)', Earned, Fills, Net, Days, '$0 at risk', 'saved copy', the backtest line",
-              p.evaluate("document.querySelector('#kpaused').nextElementSibling.id") == "krw" and "Rewards test (paper)" in t
+        check("rw1. the card is under the PAUSED note and the K8 status card (night-kalshi8): 'Rewards test (paper)', Earned, Fills, Net, Days, '$0 at risk', 'saved copy', the backtest line",
+              p.evaluate("document.querySelector('#kpaused').nextElementSibling.id") == "k8s"
+              and p.evaluate("document.querySelector('#k8s').nextElementSibling.id") == "krw" and "Rewards test (paper)" in t
               and all(w in t for w in ("Earned", "Fills", "Net", "Days", "$0 at risk", "saved copy", "Backtest (30 days)")), t[:300])
         check("rw1. the numbers are the copy's ($ earned, fill $)", ("$%.2f" % copy["paper"]["reward"]) in t, t[:200])
         k0 = p.inner_text("#kpaused")
@@ -2169,8 +2170,9 @@ def part_rewards(br, url, tmp):
         check("k1b. the PC's ext post fills the K1 card: Signals 14, Settled 6, Net -$0.80, 2.5 Days, -$0.12 per $1, 'from the PC', age shown",
               all(w in kt for w in ("14", "6", "−$0.80", "2.5", "−$0.12 per $1", "from the PC", "updated")) and "K1 rules (−$0.80 over 2.5 days)" in p.inner_text("#kpaused"), kt[:300])
         # Kalshi LIVE executor (engine/kalshi_live.py, night-klive): OFF = the plain PAUSED line; its PC card (key kalshi_live) = LIVE / STOPPED
-        check("kl0. no PC card: the status line says plainly 'PAUSED: ready to go live when you type the phrase' and '$0 at risk'",
-              "PAUSED: ready to go live when you type the phrase" in k0 and "$0 at risk" in k0, k0[:300])
+        check("kl0. no PC card: the status line says plainly 'PAPER: the PC records every window with no money' (night-kalshi8), "
+              "'Live only when you type the phrase' and '$0 at risk'",
+              "PAPER: the PC records every window with no money" in k0 and "Live only when you type the phrase" in k0 and "$0 at risk" in k0, k0[:300])
         # phone QA 2026-11-19: the live line names the bot the owner knows (K8, gold and silver) and, with the PC's Kalshi numbers in, the
         # header says the PC runs Kalshi (with their age) instead of the old kalshi-server's "Not connected yet"
         sub = p.inner_text("#sub")
@@ -2193,6 +2195,21 @@ def part_rewards(br, url, tmp):
         kl = p.inner_text("#kpaused")
         check("kl2. after a stop: 'Kalshi: STOPPED (daily loss stop ...)': it is OFF, today -$8.40, type the phrase on the PC to restart",
               "KALSHI: STOPPED" in kl.upper() and all(w in kl for w in ("daily loss stop", "OFF", "−$8.40", "type the phrase", "No new orders")), kl[:400])
+        # K8 status card (night-kalshi8): the card's k8 block = mode, bankroll, a bet, today, next window, last 10, week / peak stops
+        k8 = {"m": "P", "nx": 4102444800, "b": 55, "s": 2.5, "td": [3, 2, 1.85], "l": "WWLWLLWWWL", "wk": [4.3, 13.75], "dd": [6.2, 16.5],
+              "wr": [41, 71], "lp": 1}
+        R["ntfy"] = json.dumps({"event": "message", "time": 1, "message": json.dumps({"kind": "le-live-ext", "t": 2, "part": 0, "of": 1, "x": {
+            "kalshi_live": {"kind": "kalshi_live_pub", "v": 1, "st": "paper", "u": "2099-02-01T00:00:00+00:00", "k8": k8}}})}) + "\n"
+        open_()
+        p.wait_for_function("document.querySelectorAll('#k8s .k8s-l span').length === 10", timeout=20000)
+        kt = p.inner_text("#k8s")
+        geo = p.evaluate("""() => { const W = window.innerWidth, de = document.documentElement, e = document.getElementById('k8s'), r = e.getBoundingClientRect();
+            return [de.scrollWidth <= de.clientWidth, r.left >= 15.5 && r.right <= W - 15.5]; }""")
+        check("kl3. a PAPER card with the K8 block fills the K8 status card: PAPER, $55.00 bankroll, $2.50 a bet, today 3 bets +$1.85, a next-window "
+              "countdown, the last 10 (W/L), this week $4.30 of $13.75 and the peak $6.20 of $16.50; 41 bets 71% won; inside the gutters",
+              all(w in kt for w in ("PAPER", "$55.00", "$2.50", "3 bets, +$1.85", "Next window", "−$4.30 of −$13.75", "−$6.20 of −$16.50", "41 bets, 71% won"))
+              and p.evaluate("document.querySelectorAll('#k8s .k8s-l span.w').length") == 6 and geo == [True, True]
+              and "running on the PC with no money" in p.inner_text("#kpaused"), (kt[:400], geo))
         R["ntfy"] = None
         bad = dict(copy, paper=dict(copy["paper"], reward="<img src=x onerror=window.__pwn=1>"),
                    backtest={"text": "<script>window.__pwn=1</script>bad"})
