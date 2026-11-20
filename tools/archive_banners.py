@@ -29,7 +29,7 @@ MAP = {
     "apollo": ("journal", "Journal", "../odeon/trades.json"),
     "epilogue": ("journal", "Journal", "../home.json"),
     "kratos": ("journal", "Journal", "../odeon/trades.json"),
-    "nemesis": ("journal", "Journal", "../odeon/trades.json"),
+    "nemesis": ("journal", "Journal", "../odeon/trades.json", "--archived-h"),   # float, push nothing: its 3D arena has 11 px to spare under its panel
     "nike": ("journal", "Journal", "../odeon/trades.json"),
     "ares": ("nq", "NQ bots", "../home.json"),
     "kairos": ("nq", "NQ bots", "../odeon/trades.json"),
@@ -102,9 +102,20 @@ JS = ("(function(){var b=document.currentScript.parentNode,h=document.documentEl
       "if(n>2)o.style.color='var(--oly-th-warn,#e0b060)';}).catch(function(){});})();")
 
 
+def uses_oly_st(app: str) -> bool:
+    """the page's own CSS / JS reads the kit's safe-top variable (--oly-st): its top HUD then moves under the strip by itself, so a
+    full-screen page keeps its whole window (3D size, taps) and the strip floats (day-archive: Nemesis's arena lost 45 px when pushed)"""
+    d = os.path.join(ROOT, app)
+    for f in sorted(os.listdir(d)) if os.path.isdir(d) else []:
+        if f.endswith((".css", ".js")) and "--oly-st" in open(os.path.join(d, f), encoding="utf-8", errors="ignore").read():
+            return True
+    return False
+
+
 def banner(app: str) -> str:
     target, name, src = MAP[app][:3]
-    src_attr = (f' data-src="{src}"' if src else "") + (f' data-overlay="{MAP[app][3]}"' if len(MAP[app]) > 3 else "")
+    over = MAP[app][3] if len(MAP[app]) > 3 else ("--oly-st" if uses_oly_st(app) else "")
+    src_attr = (f' data-src="{src}"' if src else "") + (f' data-overlay="{over}"' if over else "")
     return (f'{START}<aside data-archived="{target}"{src_attr} role="note" aria-label="Archived page" style="{CSS}">'
             f'<span style="min-width:0">Archived<span data-age></span></span>'
             f'<a href="../{target}/" style="{LINK}">{name} &rarr;</a><script>{JS}</script></aside>{END}')
