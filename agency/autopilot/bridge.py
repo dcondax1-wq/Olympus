@@ -89,7 +89,7 @@ def write_and_push(url: str, wd: str, files: dict, message: str) -> str:
             os.makedirs(os.path.dirname(p), exist_ok=True)
             with open(p, "w", encoding="utf-8") as fh:
                 json.dump(data, fh, indent=1, ensure_ascii=False)
-        paths = [x for x in ("inbox", "sent", "status.json") if os.path.exists(os.path.join(wd, x))]   # a missing pathspec aborts the whole add
+        paths = [x for x in ("inbox", "sent", "status.json", "caller", "postcards") if os.path.exists(os.path.join(wd, x))]   # a missing pathspec aborts the whole add
         if paths:
             git(["add", "-A", *paths], wd)
         if git(["diff", "--cached", "--quiet"], wd).returncode == 0:

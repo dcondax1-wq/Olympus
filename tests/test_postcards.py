@@ -9,6 +9,7 @@ c. the gate + the limits: OFF by default; TEST mode = 3 a day with a test_ key; 
    20 a day, 100 a week, weekdays after 10:00 ET, once a day
 d. the provider call: Lob's form (4x6, First Class, marketing, to / from, front / back PNG), the key only in the Basic auth header
 e. no secret: the key is in postcards.json only (not the state, not an error, not the printed output, not the repo)
+g. the code (FR-27) on both sides, the batch order (trades, health, salons, auto, food; chains skipped), the day-10 card, the results table
 f. the Windows side: POSTCARD_SETUP.bat (installs Pillow + segno, setup -> samples -> the task), POSTCARD_STOP.bat, CRLF
 """
 from __future__ import annotations
@@ -192,6 +193,56 @@ def main():
               "pip install --user --quiet segno pillow" in s and s.index("postcards.py setup") < s.index("postcards.py samples") < s.index("agency_mail_task.ps1") < s.index("postcards.py status")
               and "if errorlevel 1 goto :end" in s)
         check("f. POSTCARD_STOP.bat: OFF", "postcards.py stop" in bt.decode())
+        # ---------------------------------------------------------------- g. codes, the batch order, the day-10 card, the results table
+        H = os.environ["OLYMPUS_HOME"]
+        for f_ in ("agency_mail_state.json", "agency_never.json"):
+            if os.path.exists(os.path.join(H, f_)):
+                os.remove(os.path.join(H, f_))
+        gl = [{"id": f"G{i}", "name": nm, "address": f"{10 + i} Market Street, Frederick", "city": "Frederick", "state": "MD", "heat": "cold",
+               "_niche": ni, "_code": f"FR-{i + 1}"} for i, (nm, ni) in enumerate((("Rosa Pizza", "food"), ("Main St Dental", "health"), ("Ace Roofing", "trades"),
+               ("Glow Salon", "beauty"), ("Quick Lube Pro", "auto"), ("Corner Books", "retail"), ("Subway", "food")))]
+        gl[6]["_chain"] = True
+        gs = {L["id"]: f"f/{'abcdefgh'[:7]}{i + 2}/" for i, L in enumerate(gl)}
+        got, skip = P.pick(gl, {}, {"lead_ids": set(), "emails": set()}, gs, 50)
+        check("g. batch order: trades, dentists / health, salons, auto, restaurants, then the rest; chains skipped",
+              [x[0]["name"] for x in got] == ["Ace Roofing", "Main St Dental", "Glow Salon", "Quick Lube Pro", "Rosa Pizza", "Corner Books"]
+              and skip.get("a chain (has a website already)") == 1, ([x[0]["name"] for x in got], skip))
+        u, own = P.demo_url(gl[0], gs, "https://example.org/site")
+        check("g. the factory's own site path f/<id>/ is the QR link", own and u == "https://example.org/site/agency/f/abcdefg2/", u)
+        a1, b1 = P.render(gl[0], cfg, u)
+        a2, b2 = P.render(dict(gl[0], _code=""), cfg, u)
+        a3, b3 = P.render(gl[0], cfg, u, follow=True)
+        diff = lambda x, y: x.tobytes() != y.tobytes()  # noqa: E731
+        check("g. the code (FR-1) is printed on both sides; the day-10 card has its own words", diff(a1, a2) and diff(b1, b2) and diff(a1, a3) and diff(b1, b3)
+              and a3.size == (P.W, P.H))
+        gcalls = []
+
+        def gsend(c, to, front, back, lid):
+            gcalls.append(lid)
+            return {"id": f"psc_g{len(gcalls)}", "test": False}
+        gst = {"phrase": "SEND POSTCARDS"}
+        r = P.run_once(live, gst, gl, gs, now=T(2026, 11, 23, 11), send=gsend)
+        check("g. card 1 to the 6 mailable businesses, the code kept with each card", len(r["sent"]) == 6 and gst["sent"]["G2"]["code"] == "FR-3", r)
+        os.makedirs(os.path.join(H, "caller", "share", "consent"), exist_ok=True)
+        json.dump({"id": "c1", "lead_id": "G1", "business": "Main St Dental"}, open(os.path.join(H, "caller", "share", "consent", "c1.json"), "w"))
+        json.dump({"replied": {"G3": "question"}}, open(os.path.join(H, "agency_mail_state.json"), "w"))
+        json.dump({"FR-5": "claimed"}, open(os.path.join(H, "postcards_responses.json"), "w"))
+        gcalls.clear()
+        r = P.run_once(live, gst, gl, gs, now=T(2026, 12, 2, 11), send=gsend)
+        check("g. no day-10 card before day 10", not any(x.get("step") == "day10" for x in r["sent"]), r["sent"])
+        r = P.run_once(live, gst, gl, gs, now=T(2026, 12, 3, 11), send=gsend)
+        f10 = sorted(k for k in gst["sent"] if k.endswith("#f10"))
+        check("g. day 10: a second card only to the ones that have not answered (not the call-me, not the email reply, not the claimed one)",
+              f10 == ["G0#f10", "G2#f10", "G5#f10"], f10)
+        r = P.run_once(live, gst, gl, gs, now=T(2026, 12, 4, 11), send=gsend)
+        check("g. never a third card", not any(x.get("step") == "day10" for x in r["sent"]), r["sent"])
+        res = P.results(gst, gl)
+        rows = {x["code"]: x for x in res["rows"]}
+        check("g. the results table by code: responded / call me / claimed, card 1 + the day-10 date",
+              rows["FR-2"]["call_me"] and rows["FR-2"]["responded"] and rows["FR-4"]["responded"] and not rows["FR-4"]["call_me"] and rows["FR-5"]["claimed"]
+              and rows["FR-1"]["day10"] == "2026-12-03" and rows["FR-1"]["card1"] == "2026-11-23" and not rows["FR-1"]["responded"]
+              and res["totals"]["businesses"] == 6 and res["totals"]["cards"] == 9 and "FR-1" in P.results_text(res), res["totals"])
+        check("g. the results file has no street address", "Market Street" not in json.dumps(res))
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 

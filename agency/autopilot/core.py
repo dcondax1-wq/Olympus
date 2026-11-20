@@ -96,7 +96,7 @@ def cfg_problems(c: dict) -> list:
 
 
 def empty_state() -> dict:
-    return {"v": 1, "sent": {}, "suppress": [], "replied": {}, "days": {}, "last_uid": 0, "inbox": [], "outbox_done": {}, "pending": [], "flagged": [], "notes": {}}
+    return {"v": 1, "sent": {}, "suppress": [], "replied": {}, "days": {}, "last_uid": 0, "inbox": [], "outbox_done": {}, "pending": [], "flagged": [], "notes": {}, "caller_pushed": {}, "pc_from": {}}
 
 
 def norm_state(raw) -> dict:
@@ -204,7 +204,7 @@ def fill(text: str, v: dict) -> str:
 def demo_for(L: dict, sites: dict, base: str) -> tuple:
     b = str(base or "").rstrip("/")
     own = (sites or {}).get(L.get("id")) or L.get("demo_url")
-    if isinstance(own, str) and re.match(r"^(https://|\.\./|/|sites/)", own):
+    if isinstance(own, str) and re.match(r"^(https://|\.\./|/|sites/|f/[a-z2-9]{8}/)", own):
         return (own if own.startswith("https://") else b + "/agency/" + re.sub(r"^(\.\./)+|^/?agency/", "", own.lstrip("/"))), True
     d = NICHE_DEMO.get(L.get("niche") or "", "")
     return b + "/agency/demos/" + (d + "/" if d else ""), False
