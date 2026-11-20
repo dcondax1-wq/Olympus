@@ -15,6 +15,14 @@ One Decide card added (atlas-funded-streak-1micro, open, recommend yes). Nothing
 | (e) funded guards | 2 losses -> 1 micro PASSES. Day stop after a loss, 3-loss pause, 35% weekly cap: fail |
 | (f) payout path | Today: 1st Dec 23 / Jan 7, 2nd Jan 27 / Feb 22, lost before the 1st 13.9 / 16.7%. With the new rule + room 40%: 1st Jan 6 / Jan 20, 2nd Feb 11 / Mar 8, lost before the 1st 8.5 / 6.4% |
 
+**Add-on (lead): is the edge holding on fresh data to Nov 19? Yes.** At 10 ticks, ATLAS's last 40 sessions (Sep 25 - Nov 19)
+made PF 2.01, $1,568 a month at $250 a trade: 26th percentile of 2026's 40-session stretches, 92nd of 2021-25's. Per leg: EMA
+PF 2.62, MACD 1.37 (softest, as in Jul-Oct), S/R 2.70 (its 4 fresh trades lost $110 a month: noise). No leg failing, no card.
+The phone's edge check now reads run atlas_fresh_fixed (fixed $250, to Nov 19) instead of the eval-path run to Oct 16:
+ATLAS AMBER -> **GREEN, PF 2.4 vs 2026 2.8, data to Nov 19**. LIT's half unchanged. One pin moved (tests/test_edge_chip a: 1.89 / 1.41
+-> 2.38 / 2.27, reason in the line). Tests: test_edge_chip 30/30, test_zeus_hub 36/36, test_journal_edge 31/31,
+test_learn_night 64/64, test_datafeed 42/42, test_kalshi_k8_monday 14/14, test_clean_storage 60/60, test_public_build_privacy 59/59.
+
 Pre-registered: research/second/atlas_edge_design.md (commit 5b511c92, pushed before any run). Gate at 6 AND 10 ticks, on
 60% AND 40% sizing, 1,000 paths a market, both 2026 halves and 2021-25. Post-hoc checks of the passer (second path seed,
 neighbours 1 / 3 losses) agree; shown, never used for the verdict.

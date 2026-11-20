@@ -2,7 +2,7 @@
 title: ATLAS edge at real fills - 1 of 15 changes passes (after 2 losses in a row, 1 micro until a win); limit orders, later entries, dropping / halving EMA and ES legs all fail
 family: second
 date: 2026-11-20
-status: one Decide card (atlas-funded-streak-1micro, recommend yes, open). Nothing live changed. 14 rejected (TESTED_AND_REJECTED). ES legs: no.
+status: one Decide card (atlas-funded-streak-1micro, recommend yes, open). Nothing live changed. 14 rejected (TESTED_AND_REJECTED). ES legs: no. Fresh data to Nov 19: edge holding (edge check AMBER -> GREEN).
 summary: Pre-registered (research/second/atlas_edge_design.md, commit 5b511c92, before any run), judged at 6 and 10 ticks a side on today's funded 25K ($887 room) with both today's 60% sizing and the room-40% card. Passes - E3, after 2 losing ATLAS trades in a row trade 1 micro until the next winner. At 10 ticks from today's account the chance of losing the funded 25K in 6 months goes 17.6 -> 12.2% (Jan-Jun-like) and 21.7 -> 10.9% (Jul-Oct-like) for $503 -> $481 / $402 -> $408 a month; first payout about a week later (Dec 30 / Jan 12). With room 40% as well: 10.1 / 7.7% lost, $478 / $394. Holds on a second set of random paths; neighbours (1 and 3 losses) behave monotonically. Fails - limit orders at or better than the 5m open with 1-2 minute timeouts (only ~52% of signals fill; missed winners cost $28-37k at $250 a trade over 2021-26), limit then market, the next 5m open, per-leg minutes (MACD +1 minute looks good on Jul-Oct but needs 1m bars, info only), dropping or halving EMA (the leg that loses most to slippage, but also the 2026 earner), day stop after a loss, 3-loss pause, a weekly cap. ES versions of all 3 legs lose in 2026 (PF 0.6-0.9 vs NQ 1.2-3.3).
 runs: tools/atlas_edge.py run / posthoc / es -> research/second/atlas_edge.json; tools/atlas_es.py run -> research/second/atlas_es_trades.json
 ---
@@ -126,8 +126,33 @@ the same as today.
 Limits of the proof: it is a sizing rule on the Monte Carlo, the streak is updated at the end of each session (live it
 would update after each trade, which can only act sooner), and 2021-25 stays a losing market for ATLAS either way.
 
+## Is ATLAS's edge holding? (lead's add-on: fresh data to Nov 19)
+
+**Holding.** Stored research trades to Oct 16 + the live-code replay Oct 19 - Nov 19 (research/second/atlas_more_fresh.json,
+CBOE VIX appended, parity with the stored trades on Oct 7 / 13 / 15). $250 a trade, member alone; ATLAS = one position, max 2
+a day (tools/atlas_edge_fresh.py -> research/second/atlas_edge_fresh.json). Last 40 sessions = Sep 25 - Nov 19.
+
+| At 10 ticks a side (6 / 1 in the json) | Last 40 sessions | Fresh Oct 19 - Nov 19 | 2026 to Oct 16 | 2021-25 | Last 40 vs every 40-session stretch: 2026 / 2021-25 |
+|---|---|---|---|---|---|
+| ATLAS | 26 trades, PF 2.01, $1,568 a month | 17, PF 1.76, $1,578 | PF 2.29, $2,184 | PF 0.86, -$479 | 26th / 92nd percentile |
+| EMA | 14, PF 2.62, $1,015 | 9, PF 1.86, $843 | PF 2.19, $1,064 | PF 0.75, -$433 | 29th / 94th |
+| MACD | 11, PF 1.37, $333 | 6, PF 1.48, $466 | PF 2.49, $862 | PF 0.95, -$58 | 35th / 71st |
+| S/R | 7, PF 2.70, $509 | 4, PF 0.78, -$110 | PF 2.68, $586 | PF 0.91, -$80 | 62nd / 89th |
+
+Plain words: the last 40 sessions are an ordinary 2026 stretch (a quarter of 2026's stretches were weaker) and better than
+9 in 10 stretches of 2021-25, even at 10 ticks. No leg is failing: MACD is the softest (PF 1.37 at 10 ticks, it was PF 1.13
+in Jul-Oct too), S/R's 4 fresh trades lost $110 a month but its last 40 is PF 2.7 (4 trades are noise). No Decide card.
+
+The phone's edge check read the eval-path run atlas_deep_zombie (data to Oct 16, eval sizing). It now reads
+`atlas_fresh_fixed` (tools/atlas_edge_fresh.py save: the live ATLAS units at a fixed $250, to Nov 19; the fresh weeks have
+no stored LIT trades, so the never-opposite-LIT block is not applied there). The light: **AMBER -> GREEN, last 40 sessions
+R-PF 2.38 vs 2026 H1 2.82, data to Nov 19** (cuts from ATLAS's own 2021-25: GREEN above 2.18 R a week; now 2.39). LIT's half
+of the file is unchanged (same windows, cuts and line).
+
 ## Files
 
 tools/atlas_edge.py (new), tools/atlas_es.py (new, helper), research/second/atlas_edge_design.md, research/second/atlas_edge.json,
-research/second/atlas_es_trades.json, tools/web_public/business/decisions.json (one new open card). No engine file, no
+research/second/atlas_es_trades.json, tools/web_public/business/decisions.json (one new open card), tools/atlas_edge_fresh.py,
+research/second/atlas_edge_fresh.json, research/runs/atlas_fresh_fixed.json, tools/edge_health.py (ATLAS_RUN), research/lab/edge_health.json,
+tools/web_public/edge.json, tests/test_edge_chip.py (one pin, reason in the line). No engine file, no
 live_model*.json, no second_model.json, no accounts file changed.

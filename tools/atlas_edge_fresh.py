@@ -4,7 +4,10 @@ $250 a trade, and where the last 40 sit among every earlier 40-session stretch (
 Trades: the stored research rows (research/second/{ema,md,sr}_best.json, to Oct 16) + the live-code replay Oct 19 - Nov 19
 (research/second/atlas_more_fresh.json, tools/atlas_more.py fresh: engine/second.run, CBOE VIX appended, parity on
 Oct 7 / 13 / 15 = the stored trades). Member alone; ATLAS = the three, one position, max 2 a day (LIT's block not applied).
-RESEARCH ONLY.   python -X utf8 tools/atlas_edge_fresh.py   -> research/second/atlas_edge_fresh.json
+RESEARCH ONLY.   python -X utf8 tools/atlas_edge_fresh.py        -> research/second/atlas_edge_fresh.json
+                 python -X utf8 tools/atlas_edge_fresh.py save   -> stored run atlas_fresh_fixed (what tools/edge_health.py reads):
+                 the live ATLAS account units (never opposite LIT to Oct 16; the fresh weeks have no stored LIT trades, so no block)
+                 + the fresh replay's units, one position, max 2 a day, each trade at a FIXED $250 (r = net R at the backtest cost).
 """
 from __future__ import annotations
 
@@ -117,5 +120,39 @@ def main():
     print("last40", out["last40"], "fresh trades", out["n_fresh"], "wrote", os.path.relpath(OUT, ROOT))
 
 
+RUN_ID = "atlas_fresh_fixed"
+
+
+def save():
+    from tools import atlas_more as AM
+    from tools import atlas_revive as RV
+    from tools import runlib as rl
+    _, fs = rows()
+    S = [d for d in sessions(fs) if d >= "2021-01-01"]
+    F = AM.fresh_units()
+    U = [u for u in AM.base_units() if u["day"] <= "2026-10-16"] + [u for m in ("EMA", "MD", "SR") for u in F.get(m, []) if u["day"] > "2026-10-16"]
+    T = []
+    for u in RV.one_pos(U):
+        loss1 = (float(u["risk"]) + TICK) * PV + COMM
+        q = int(250.0 // loss1)
+        if q <= 0:
+            continue
+        pnl = q * (float(u["pts"]) * PV - COMM)
+        T.append({"day": u["day"], "entry_t": int(u["entry_t"]), "exit_t": int(u["exit_t"]), "dir": int(u["dir"]),
+                  "r": round(float(RV.r_net(u)), 3), "pnl": round(pnl, 2), "risk_pts": float(u["risk"]), "qty": q,
+                  "risk_usd": round(q * loss1, 2), "half": False, "exit": str(u.get("exit", "")), "trigger": u["src"], "mfe": None,
+                  "mae": None, "bars_held": None, "regime": "", "mult": None, "low": round(q * (min(0.0, float(u["w1"])) * PV - COMM), 2)})
+    rl.save(RUN_ID, "ATLAS at a fixed $250 a trade, to the newest bars (edge-health input)", "other",
+            "Is ATLAS's edge holding on the newest data? (lead 2026-11-20)", params={}, sizing={"usd": 250, "size": "fixed"},
+            trades=T, scored=rl.score(T, S), status="info",
+            verdict="Fixed-size view of the live ATLAS units to the newest bars; replaces atlas_deep_zombie (eval path, data to Oct 16) as the edge check's ATLAS input.",
+            notes="tools/atlas_edge_fresh.py save: stored research trades to Oct 16 + the live-code replay Oct 19 - Nov 19 (research/second/atlas_more_fresh.json).",
+            writeup="atlas-edge-2026-11-20", tags=["second", "atlas", "edge_health"])
+    print("saved", RUN_ID, len(T), "trades", S[0], "->", S[-1])
+
+
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) > 1 and sys.argv[1] == "save":
+        save()
+    else:
+        main()
