@@ -126,11 +126,14 @@ export function payoutNow(accts) {
     const profit = num(a.profit) != null ? num(a.profit) : num(a.balance) != null ? num(a.balance) - start : null;
     const name = `${a.name}${a.name && a.name.includes(size) ? '' : ' ' + size}`;
     if (a.kind === 'funded') {
-      const toGo = profit == null ? null : Math.max(0, need - profit);
-      const line = toGo === 0 ? `${name} (funded): ${money(profit)} profit, past the ${money(need)} the first payout needs. Ask for ${money(P.min)} to ${money(P.max)} (you keep 80%).`
-        : `${name} (funded): goal ${money(P.max)} at ${money(start + P.buffer + P.max)} (you get ${money(P.max * 0.8)}), ${money(Math.max(0, P.buffer + P.max - profit))} to go. Earliest: ${money(P.min)} at ${money(start + need)} (${money(toGo)} to go).`;
-      // goal = the full max request (only 5 sim payouts before live, owner 2026-11-20); earliest = buffer + minimum
-      out.push({ key: a.key, name, kind: 'funded', line, toGo, askAt: start + need, goalAt: start + P.buffer + P.max, goalToGo: profit == null ? null : Math.max(0, P.buffer + P.max - profit) });
+      // MFFU's own terms (pc_feed.js mffuView, passed in as a.view; else the same math here): a sim-funded account starts at $0, so its
+      // balance is its profit and the payout lines are profit levels (25K: earliest $250 at $1,350, goal $1,000 at $2,100)
+      const V = a.view && a.view.funded ? a.view : null, bal = V ? num(V.balance) : profit;
+      const E = V ? V.earliest : { ask: P.min, at: need, need: bal == null ? null : Math.max(0, Math.ceil(need - bal)) };
+      const G = V ? V.goal : { ask: P.max, at: P.buffer + P.max, toYou: Math.round(P.max * 0.8), need: bal == null ? null : Math.max(0, Math.ceil(P.buffer + P.max - bal)) };
+      const line = bal == null ? `${name} (funded): no balance yet.` : bal >= G.at ? `${name} (funded): balance ${money(bal)}: the full ${money(G.ask)} payout can be requested (you get ${money(G.toYou)}).`
+        : `${name} (funded): balance ${money(bal)} (a funded sim starts at $0). Goal: ${money(G.ask)} at ${money(G.at)} (you get ${money(G.toYou)}), ${money(G.need)} to go. Earliest: ${money(E.ask)} at ${money(E.at)} (${money(E.need)} to go).`;
+      out.push({ key: a.key, name, kind: 'funded', line, balance: bal, toGo: E.need, askAt: E.at, goalAt: G.at, goalToGo: G.need });
     } else {
       const toPass = num(a.toTarget) != null ? Math.max(0, num(a.toTarget)) : profit != null ? Math.max(0, P.target - profit) : null;
       out.push({ key: a.key, name, kind: 'eval', toGo: toPass, askAt: null,

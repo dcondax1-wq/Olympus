@@ -3,6 +3,7 @@
 // Text only through textContent / createElementNS. window.HERA is the test hook.
 import * as C from './heracore.js';
 import * as T from '../olympus/truth.js';
+import '../pc_feed.js?v=n5';      // PC_FEED.mffuView: MFFU's own view of an account (day-archive 2026-11-20)
 
 const O = window.OLYMPUS || null;
 const $ = (id) => document.getElementById(id);
@@ -126,7 +127,8 @@ async function boot() {
 async function renderNow() {
   const home = await getJSON('../home.json'); if (!home) return;
   const fed = await T.withPcFeed(home), nowS = Math.floor(Date.now() / 1000), A = T.accountsOf(fed);
-  const rows = C.payoutNow([A.lit, A.atlas, ...T.extraOf(fed)]); if (!rows.length) return;
+  const F = globalThis.PC_FEED, view = (a) => (a && F && F.mffuView ? { ...a, view: F.mffuView(a) } : a);
+  const rows = C.payoutNow([A.lit, A.atlas, ...T.extraOf(fed)].map(view)); if (!rows.length) return;
   const ul = $('nowList'); clear(ul); for (const r of rows) ul.appendChild(h('li', '', r.line));
   const ag = T.agesOf(fed, nowS), pc = ag && ag.pc;
   if (pc && pc.t) $('nowNote').textContent = `From the PC's report ${pc.words || T.ageWords(nowS - pc.t)} ago${pc.age > T.FRESH_S ? ' (the PC has not reported since: these are its last numbers)' : ''}. ` + $('nowNote').textContent;

@@ -600,6 +600,8 @@ const fake2 = async (u) => { calls2.push(u); if (u.endsWith('status_feed.json'))
   if (u.includes('since=70m')) return { ok: true, text: async () => '' }; if (u.includes('since=latest')) return { ok: true, text: async () => line(ext({ brd: {} }, 0, rt), 1) };
   return { ok: true, text: async () => nd }; };
 const q = await F.fetchLatest({ fetch: fake2 });
+out.mv = [F.mffuView({ kind: 'funded', size: '25K', balance: 25401.38, start: 25000, room: 1401.38 }), F.mffuView({ kind: 'funded', plan: 'MFFU Builder 25K', balance: 401.38 }),
+  F.mffuView({ kind: 'eval', size: '50K', balance: 49192.78, start: 50000, room: 1024.58 }), F.mffuView({ kind: 'funded', size: '50K', balance: 52300, start: 50000 }), F.mffuView(null)];
 out.quiet = { t: q ? q.t : null, last: calls2[calls2.length - 1] };
 console.log(JSON.stringify(out));
 """
@@ -643,6 +645,14 @@ def node_runs(node):
               o["canon"]["room"] == 2000 and o["canon"]["t"] == lite["t"] and o["canon"]["age"] == 120 and "2 minutes" in o["canon"]["line"], o["canon"])
         check("an older PC status never replaces newer site numbers", o["notOlder"] is True and o["mergeSiteNewer"] == 7)
         check("toLive keeps the site's board sections for board.js", o["toLive"] == {"levels": [1, 2]})
+        mv = o["mv"]
+        check("mffuView: a FUNDED sim the way MFFU shows it (starts at $0): ATLAS 25,401 -> balance $401, floor -$1,000, earliest $250 at $1,350 ($949), "
+              "goal $1,000 at $2,100 ($800 to you, $1,699 to go); the same from a balance already in MFFU terms; an EVAL keeps $49,193 and no payout; "
+              "a 50K funded at +$2,300 is past its $2,600 earliest? no ($300 to go), goal $2,000 at $4,100",
+              mv[0]["balance"] == 401.38 and mv[0]["floor"] == -1000 and mv[0]["earliest"] == {"ask": 250, "at": 1350, "toYou": 200, "need": 949, "ready": False}
+              and mv[0]["goal"] == {"ask": 1000, "at": 2100, "toYou": 800, "need": 1699, "ready": False} and mv[1] == mv[0]
+              and mv[2]["funded"] is False and mv[2]["balance"] == 49192.78 and mv[2]["goal"] is None
+              and mv[3]["balance"] == 2300 and mv[3]["earliest"]["need"] == 300 and mv[3]["goal"]["at"] == 4100 and mv[4] is None, mv)
         check("fetchLatest, PC quiet for over 70 minutes (no post in the window, 'latest' is only an ext part): the last 12 hours give its last real post (day-archive)",
               o["quiet"]["t"] is not None and "since=12h" in o["quiet"]["last"], o["quiet"])
         check("fetchLatest: status_feed.json, then ntfy (the 70-minute window refused -> since=latest); offline -> null",

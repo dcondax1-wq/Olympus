@@ -96,8 +96,8 @@ def test_core():
     check("b. three real accounts (Zlarior, ATLAS, Zlarior 25K #2); today = their sum (-120 + 45 + 0 = -75)", o["n"] == 3 and abs(o["today"] + 75) < 0.01, o["n"], o["today"])
     check("b. drawdown left: the tightest account by share left: Zlarior (51% of $2,000) before ATLAS (89% of $1,000)", o["tight"] == "Zlarior", o["tight"])
     check("b. to pass: the nearest eval in $ (Zlarior 25K #2: $1,500 < Zlarior's $3,807)", o["pass"] == ["Zlarior 25K #2", 1500], o["pass"])
-    check("b. the funded payout: earliest = ATLAS needs $1,463 more ($25,000 + $1,100 buffer + $250 min = $26,350); GOAL = the full $1,000 at $27,100 ($800 to you), $2,213 to go (day-archive: only 5 sim payouts)",
-          o["pay"] == ["ATLAS", False, 1463, 26350, 2213, 27100, 800], o["pay"])
+    check("b. the funded payout in MFFU's terms (a sim-funded account starts at $0: balance -$113): earliest = $1,463 more to $1,350 ($1,100 buffer + $250 min); GOAL = the full $1,000 at $2,100 ($800 to you), $2,213 to go",
+          o["pay"] == ["ATLAS", False, 1463, 1350, 2213, 2100, 800], o["pay"])
     check("b. fees from the price list when the Ledger is empty: $91.80 + $43 + the 25K #2 at $63 = $197.80; net -$197.80",
           abs(o["fees"]["fees"] - 197.8) < 0.01 and o["fees"]["payouts"] == 0 and abs(o["fees"]["net"] + 197.8) < 0.01 and "price list" in o["fees"]["src"], o["fees"])
     check("b. the phone's Ledger wins: fees + resets $141.80 (expenses are not fees), payouts $800, net $658.20",
