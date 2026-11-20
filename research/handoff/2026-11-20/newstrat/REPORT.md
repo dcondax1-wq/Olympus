@@ -57,3 +57,12 @@ test_decide 14/14. Write-up research/writeups/skeptic-atlas-streak-2026-11-20.md
 Installed numba in this container (pip, free) to run the card's own tool.
 Screenshot: NOT taken (the local page server + browser step was refused in this container) - lead: one 390x844 @2 shot of
 business/plan.html with the streak card open, text-only change.
+
+# Round 4 (lead): skeptic of the live patches + card rapid-atlas-size-10t
+
+| Item | Verdict |
+|---|---|
+| card rapid-atlas-size-10t | **HOLDS** (lost Rapids down on week blocks, day blocks and another seed; -$31..38 / -$93..141 a month; $500-pause days -> 0) |
+| atlasedge account_b.patch, switch ON | **FIX FIRST**: FUNDED_ON also reaches a funded combo 50K via combo50k.ab_spec -> scope the default to plan builder25k (one line in the write-up). Otherwise never larger (3,168 states), eval untouched, Rapid untouched, restart-safe |
+| day-rapid engine/rapid.py atlas_slip patch | **SAFE** |
+Write-up research/writeups/skeptic-live-patches-2026-11-20.md.
