@@ -395,3 +395,8 @@ html[data-oly-style] .ag-sheet { border-radius: var(--oly-th-radius-l, var(--oly
 html[data-oly-style] .ag-toast { border-radius: var(--oly-th-radius-s, var(--oly-th-radius)); }
 /* the Ask Jarvis button (jarvis/ask.js, mounted by olympus.js on every kit app) follows the look: gold accent, card surface, text ink */
 :root { --oly-ask-accent: var(--ag-gold); --oly-ask-bg: var(--ag-panel); --oly-ask-text: var(--ag-text); }
+
+/* 2026-11-20 phone QA: the fixed Ask Jarvis button (jarvis/ask.js, bottom-left, 44 px) never sits on the page's last lines */
+body.oly-has-ask main, body.oly-has-ask #app { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
+/* the button steps aside while an app's own sheet is open (it sat on Planner's sheet Save button) */
+body:has(.sheet:not([hidden]), .ag-sheet:not([hidden])) .oly-ask-btn { display: none; }
