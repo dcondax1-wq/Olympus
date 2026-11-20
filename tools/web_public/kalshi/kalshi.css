@@ -999,5 +999,5 @@ html[data-oly-style] :is(.top h1, .card h2) { font-family: var(--oly-th-display,
   letter-spacing: var(--oly-th-title-track) !important; font-style: var(--oly-th-title-style); }
 /* day-kalshi round 2: each live bet's last 20 windows and the pause rule */
 .k8l { list-style: none; margin: 4px 0 0; padding: 0; font-size: 13.5px; }
-.k8l li { padding: 3px 0; border-top: 1px solid var(--line, rgba(127,127,127,.2)); }
+.k8l li { white-space: normal; overflow-wrap: anywhere; padding: 3px 0; border-top: 1px solid var(--line, rgba(127,127,127,.2)); }
 .k8l li.off { color: var(--bad); font-weight: 600; }

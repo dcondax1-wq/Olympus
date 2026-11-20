@@ -66,9 +66,9 @@ const card = (st, k8, u) => ({ kind: 'kalshi_live_pub', v: 1, st, net: 0, f: 0, 
   const geo = (p) => p.evaluate(() => { const W = innerWidth, de = document.documentElement, e = document.getElementById('k8s'), r = e.getBoundingClientRect();
     const cut = [...e.querySelectorAll('li, dd, span, b, p')].filter((x) => x.scrollWidth > x.clientWidth + 1 && getComputedStyle(x).display !== 'inline').length;
     return { side: de.scrollWidth <= de.clientWidth, gutter: r.left >= 15.5 && r.right <= W - 15.5, cut }; });
-  const shot = async (p, name) => {
+  const shot = async (p, name, at) => {
     if (!SHOTS) return;
-    await p.evaluate(() => { document.getElementById('k8s').scrollIntoView({ block: 'start' }); window.scrollBy(0, -12); });
+    await p.evaluate((sel) => { const e = document.querySelector(sel) || document.getElementById('k8s'); e.scrollIntoView({ block: sel === '#k8s' ? 'start' : 'end' }); window.scrollBy(0, sel === '#k8s' ? -12 : 12); }, at || '#k8s');
     await p.waitForTimeout(400);
     await p.screenshot({ path: path.join(SHOTS, name) });
   };
@@ -142,7 +142,7 @@ const card = (st, k8, u) => ({ kind: 'kalshi_live_pub', v: 1, st, net: 0, f: 0, 
     step('s1. each bet\'s last 20: "gold DOWN: won 15 of the last 20", silver UP in red "would pause: won 9 of the last 20 (resumes at 12)", and it says the bot does not pause on it yet',
       ls.length === 3 && ls[0][1].includes('won 15 of the last 20') && ls[2][1].includes('would pause: won 9 of the last 20 (resumes at 12)') && ls[2][2] === 'off'
       && lh.includes('shown only'), [ls, lh]);
-    await shot(p, 'kalshi-k8-legs.png');
+    await shot(p, 'kalshi-k8-legs.png', '#k8s-ls');
     await ctx.close();
     ({ ctx, p } = await open({ at: '2026-11-23T05:20:00-05:00', card: card('live', k8new({ m: 'L', ls: [['s17', 9, 20, 1, 1]] }), '2026-11-23T10:19:00Z'), k8: 'fx' }));
     const ls2 = await T(p, '#k8s-ls');
