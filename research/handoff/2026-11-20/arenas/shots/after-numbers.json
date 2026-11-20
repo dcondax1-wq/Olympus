@@ -1,0 +1,317 @@
+[
+ {
+  "app": "zenith",
+  "scheme": "dark",
+  "cls": 0,
+  "long": [
+   51,
+   140,
+   117,
+   94
+  ],
+  "height": 4084,
+  "errors": [],
+  "bad": []
+ },
+ {
+  "app": "zenith",
+  "scheme": "light",
+  "cls": 0,
+  "long": [
+   50,
+   121,
+   98,
+   85
+  ],
+  "height": 4084,
+  "errors": [],
+  "bad": []
+ },
+ {
+  "app": "business",
+  "scheme": "dark",
+  "cls": 0,
+  "long": [],
+  "height": 14262,
+  "errors": [
+   "Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "bad": [
+   "404 business/business.json"
+  ]
+ },
+ {
+  "app": "business",
+  "scheme": "light",
+  "cls": 0,
+  "long": [],
+  "height": 14262,
+  "errors": [
+   "Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "bad": [
+   "404 business/business.json"
+  ]
+ },
+ {
+  "app": "ledger",
+  "scheme": "dark",
+  "cls": 0,
+  "long": [
+   111,
+   1150,
+   153,
+   149,
+   144,
+   143,
+   144,
+   130,
+   124,
+   144,
+   140,
+   139,
+   139,
+   134,
+   129,
+   146,
+   137,
+   147,
+   144,
+   153,
+   140,
+   158,
+   131,
+   136,
+   146,
+   156
+  ],
+  "height": 3232,
+  "errors": [
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "bad": [
+   "404 kalshi.json",
+   "404 money/scoreboard.json"
+  ]
+ },
+ {
+  "app": "ledger",
+  "scheme": "light",
+  "cls": 0,
+  "long": [
+   104,
+   1110,
+   147,
+   143,
+   130,
+   143,
+   125,
+   131,
+   132,
+   129,
+   127,
+   130,
+   139,
+   135,
+   127,
+   147,
+   144,
+   149,
+   137,
+   125,
+   162,
+   147,
+   143,
+   148,
+   151,
+   159,
+   145
+  ],
+  "height": 3248,
+  "errors": [
+   "Failed to load resource: the server responded with a status of 404 (File not found)",
+   "Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "bad": [
+   "404 kalshi.json",
+   "404 money/scoreboard.json"
+  ]
+ },
+ {
+  "app": "aegis",
+  "scheme": "dark",
+  "cls": 0,
+  "long": [
+   120
+  ],
+  "height": 3728,
+  "errors": [],
+  "bad": []
+ },
+ {
+  "app": "aegis",
+  "scheme": "light",
+  "cls": 0,
+  "long": [
+   114
+  ],
+  "height": 3728,
+  "errors": [],
+  "bad": []
+ },
+ {
+  "app": "demeter",
+  "scheme": "dark",
+  "cls": 0,
+  "long": [],
+  "height": 3146,
+  "errors": [],
+  "bad": []
+ },
+ {
+  "app": "demeter",
+  "scheme": "light",
+  "cls": 0,
+  "long": [],
+  "height": 3146,
+  "errors": [],
+  "bad": []
+ },
+ {
+  "app": "fates",
+  "scheme": "dark",
+  "cls": 0,
+  "long": [
+   178,
+   1767,
+   194,
+   328,
+   203,
+   216,
+   233,
+   211,
+   204,
+   221,
+   206,
+   198,
+   223,
+   183,
+   200,
+   194,
+   184,
+   185
+  ],
+  "height": 844,
+  "errors": [],
+  "bad": []
+ },
+ {
+  "app": "fates",
+  "scheme": "light",
+  "cls": 0,
+  "long": [
+   223,
+   1790,
+   232,
+   352,
+   258,
+   204,
+   201,
+   198,
+   194,
+   201,
+   188,
+   283,
+   170,
+   191,
+   182,
+   159,
+   177,
+   181
+  ],
+  "height": 844,
+  "errors": [],
+  "bad": []
+ },
+ {
+  "app": "hera",
+  "scheme": "dark",
+  "cls": 0,
+  "long": [],
+  "height": 3234,
+  "errors": [],
+  "bad": []
+ },
+ {
+  "app": "hera",
+  "scheme": "light",
+  "cls": 0,
+  "long": [],
+  "height": 3234,
+  "errors": [],
+  "bad": []
+ },
+ {
+  "app": "journal",
+  "scheme": "dark",
+  "cls": 0,
+  "long": [],
+  "height": 10282,
+  "errors": [],
+  "bad": []
+ },
+ {
+  "app": "journal",
+  "scheme": "light",
+  "cls": 0,
+  "long": [],
+  "height": 10282,
+  "errors": [],
+  "bad": []
+ },
+ {
+  "app": "helios",
+  "scheme": "dark",
+  "cls": 0,
+  "long": [
+   151
+  ],
+  "height": 4036,
+  "errors": [],
+  "bad": []
+ },
+ {
+  "app": "helios",
+  "scheme": "light",
+  "cls": 0,
+  "long": [
+   138
+  ],
+  "height": 4036,
+  "errors": [],
+  "bad": []
+ },
+ {
+  "app": "compass",
+  "scheme": "dark",
+  "cls": 0,
+  "long": [
+   151
+  ],
+  "height": 3201,
+  "errors": [],
+  "bad": []
+ },
+ {
+  "app": "compass",
+  "scheme": "light",
+  "cls": 0,
+  "long": [
+   150
+  ],
+  "height": 3201,
+  "errors": [],
+  "bad": []
+ }
+]
