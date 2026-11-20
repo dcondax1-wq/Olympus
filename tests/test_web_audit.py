@@ -61,6 +61,9 @@ def main() -> int:
     L = A.losses(slow)
     check("a. 3 losses, ranked: slow first (with Google's number), then no padlock / tap-to-call; each cites a source",
           len(L) == 3 and "7.5 s" in L[0]["title"] and "112 %" in L[0]["money"] and all(x["src"] and all(s in A.SOURCES for s in x["src"]) for x in L), L)
+    acc = A.losses({"lcp_s": 1.2, "cls": 0, "a11y": 70, "basics": g})
+    check("a. accessibility under 90 is a loss with the ADA lawsuit number (cited)", len(acc) == 1 and "5,000" in acc[0]["money"]
+          and "ada" in acc[0]["src"], acc)
     check("a. a fast complete page has nothing big to lose", A.losses(fast) == [], A.losses(fast))
     check("a. the $ estimate only with visitors + value", "estimate" not in L[0] and "$" in A.losses(slow, 1500, 120)[0].get("estimate", ""))
     m = dict(slow, final_url="http://bad.example/", fcp_s=3.1, tbt_ms=1200, mb=4.2, requests=80, sideways=True, small_text=3, zoom_blocked=True,
@@ -77,6 +80,8 @@ def main() -> int:
     check("a. a bot wall is not audited: 403 / 'Access Denied' / 'Just a moment' are caught, a normal page is not",
           A.blocked({"status": 403}) and A.blocked({"status": 200, "title": "Access Denied"}) and A.blocked({"status": 200, "text": "Just a moment..."})
           and not A.blocked({"status": 200, "title": "Joe's Plumbing", "text": "We fix pipes"}))
+    check("b. accessibility is a headline card with the ADA number and its source", "Accessibility: 55/100" in page and "5,000" in page
+          and A.SOURCES["ada"][1] in page)
     check("b. index: lists the audit and how to run one", 'href="a-com.html"' in idx and "tools/site_audit.py" in idx and "<script" not in idx)
 
     site = tempfile.mkdtemp(prefix="le_webaudit_site_")
@@ -103,7 +108,8 @@ def main() -> int:
         check("c. its 3 losses: no padlock (plain http), the missing basics, no tap-to-call (the jump is measured above, ranked 4th)",
               "padlock" in titles.lower() and "tap-to-call" in titles and "basics" in titles, titles)
         check("c. files: <slug>.html + .png + audits.json + index.html", all(os.path.isfile(os.path.join(out, f)) for f in
-              ("slow-shop.html", "slow-shop.png", "audits.json", "index.html")) and json.load(open(os.path.join(out, "audits.json")))[0]["slug"] == "slow-shop")
+              ("slow-shop.html", "slow-shop.png", "audits.json", "index.html", "summary.json"))
+              and json.load(open(os.path.join(out, "summary.json")))["n"] == 1 and json.load(open(os.path.join(out, "audits.json")))[0]["slug"] == "slow-shop")
     finally:
         shutil.rmtree(site, ignore_errors=True)
         shutil.rmtree(out, ignore_errors=True)

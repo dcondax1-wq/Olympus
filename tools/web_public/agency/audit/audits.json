@@ -5,7 +5,7 @@
   "url": "https://www.starbucks.com/",
   "when": "2026-11-20",
   "grade": "D",
-  "lcp_s": 7.83,
+  "lcp_s": 8.05,
   "cls": 0.24,
   "a11y": 100
  },
@@ -15,7 +15,7 @@
   "url": "https://www.ikea.com/us/en/",
   "when": "2026-11-20",
   "grade": "D",
-  "lcp_s": 35.01,
+  "lcp_s": 35.03,
   "cls": 0.0,
   "a11y": 100
  }

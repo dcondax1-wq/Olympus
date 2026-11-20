@@ -60,6 +60,8 @@ SOURCES = {
                "https://www.thinkwithgoogle.com/consumer-insights/consumer-trends/mobile-search-trends-consumers-to-stores/"),
     "vitals": ("Google web.dev, Core Web Vitals: good = largest paint within 2.5 s, layout shift under 0.1, quick response to taps; "
                "Google uses these for search ranking.", "https://web.dev/articles/vitals"),
+    "ada": ("UsableNet and Level Access lawsuit tracking, 2025: about 3,100-3,900 federal website accessibility (ADA) lawsuits, over "
+            "5,000 counting state courts; about 2 in 3 were against companies under $50M revenue.", "https://www.usablenet.com/"),
     "webaim": ("WebAIM Million, 2024: 95.9 % of the top one million home pages had detectable accessibility (WCAG) failures.",
                "https://webaim.org/projects/million/"),
 }
@@ -235,10 +237,12 @@ def losses(m: dict, visitors: int | None = None, value: float | None = None) -> 
         out.append({"w": 55 + int(min(40, cls * 100)), "title": f"The page jumps while it loads (layout shift {cls:.2f})",
                     "why": "Buttons move as pictures and banners arrive, so people tap the wrong thing; Google's bar is under 0.1.",
                     "money": "Google uses this in its ranking (Core Web Vitals): a jumpy page sits lower in search.", "src": ["vitals"]})
-    if (m.get("a11y") or 100) < 80:
-        out.append({"w": 50 + (80 - m["a11y"]), "title": f"Hard to use for many people (accessibility {m['a11y']}/100)",
-                    "why": "Low contrast, unlabeled buttons or tiny tap targets: older customers and anyone on a sunny street struggle.",
-                    "money": "About 96 % of top home pages fail basic accessibility checks (WebAIM): fixing it is a real edge.", "src": ["webaim"]})
+    if (m.get("a11y") if m.get("a11y") is not None else 100) < 90:
+        out.append({"w": 70 + (90 - m["a11y"]), "title": f"Hard to use for some customers, and a legal risk (accessibility {m['a11y']}/100)",
+                    "why": "Low contrast, unlabeled buttons or tiny tap targets: older customers and screen-reader users struggle, and "
+                           "these are the problems website accessibility lawsuits cite.",
+                    "money": "Over 5,000 website accessibility (ADA) lawsuits were filed in 2025, about 2 in 3 against companies under "
+                             "$50M revenue; about 96 % of top home pages fail basic checks.", "src": ["ada", "webaim"]})
     if m.get("zoom_blocked") or m.get("sideways") or (m.get("small_taps") or 0) >= 10:
         bits = [x for x, on in (("pinch-zoom is blocked", m.get("zoom_blocked")), ("the page scrolls sideways", m.get("sideways")),
                                 (f"{m.get('small_taps')} buttons / links are smaller than a fingertip", (m.get("small_taps") or 0) >= 10)) if on]
@@ -271,7 +275,7 @@ def page_html(m: dict, name: str, png: str, when: str) -> str:
         refs = "<sup>" + ",".join(f'<a href="#s{used.index(s) + 1}">{used.index(s) + 1}</a>' for s in x["src"]) + "</sup>"
         rows.append(f'<li><h3>{i}. {e(x["title"])}</h3><p>{e(x["why"])}</p><p class="m">{e(x["money"])}{refs}</p>'
                     + (f'<p class="est">{e(x["estimate"])}</p>' if x.get("estimate") else "") + "</li>")
-    for s in ("vitals",):
+    for s in ("ada", "vitals"):
         if s not in used:
             used.append(s)
 
@@ -320,10 +324,14 @@ sup a{{color:var(--mut);text-decoration:none;padding:0 1px}}.src{{font-size:13px
 
 <div class="card"><h2 style="margin-top:0">3 things that lose you customers</h2><ol class="loss">{"".join(rows) or "<li><h3>Nothing big: this page does the basics well.</h3></li>"}</ol></div>
 
+<div class="card"><h2 style="margin-top:0">Accessibility: {m.get("a11y", 0)}/100 <span class="{"ok" if (m.get("a11y") or 0) >= 90 else "bad"}">{"good" if (m.get("a11y") or 0) >= 90 else "needs work"}</span></h2>
+<p>Can everyone use this page, including people with poor eyesight or a screen reader? Over 5,000 website accessibility (ADA)
+lawsuits were filed in 2025, about 2 in 3 against companies under $50M revenue.<sup><a href="#s{used.index("ada") + 1}">{used.index("ada") + 1}</a></sup>
+{m.get("a11y_n", 0)} kinds of problem found by automatic WCAG 2 A/AA checks (axe-core).</p><ul class="chk">{ax or "<li class='ok'>No automatic accessibility problems found.</li>"}</ul></div>
+
 <h2>Speed on a phone</h2><div class="card"><table>{sp}</table></div>
 <h2>On a phone</h2><div class="card"><ul class="chk">{ph}</ul></div>
 <h2>The basics a customer looks for</h2><div class="card"><ul class="chk">{bl}</ul></div>
-<h2>Easy for everyone to use: {m.get("a11y", 0)}/100</h2><div class="card"><p class="sub">Automatic WCAG 2 A/AA checks (axe-core). {m.get("a11y_n", 0)} kinds of problem found.</p><ul class="chk">{ax or "<li class='ok'>No automatic accessibility problems found.</li>"}</ul></div>
 <h2>What a phone visitor sees first</h2><img class="shot" src="{e(png)}" alt="The page on a phone screen, as it looked during the check" width="390" height="844">
 
 <h2>Where the numbers come from</h2><ol class="src">{src}</ol>
@@ -459,6 +467,9 @@ def write_index(out: str):
         rows = []
     with open(os.path.join(out, "index.html"), "w", encoding="utf-8") as fh:
         fh.write(index_html(rows))
+    with open(os.path.join(out, "summary.json"), "w", encoding="utf-8") as fh:      # the Agency HQ tile (HUB team's shape)
+        json.dump({"n": len(rows), "label": f"{len(rows)} website check{'s' if len(rows) != 1 else ''}",
+                   "next": "Check a prospect's site: python tools/site_audit.py <their URL>", "t": int(time.time())}, fh)
 
 
 def audit(url: str, out: str = OUT, slug: str | None = None, name: str | None = None, robots: bool = True, visitors=None, value=None,
