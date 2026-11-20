@@ -18,7 +18,7 @@ card. Offline: temp folders, fake pushes / steps, a fake clock; never the networ
      data_pull.import_metals appends to data/metals/<SYM>_1m.csv once (idempotent)
   g. the cloud: tools/learn_night.py plan (pull, edge, anatomy, lab, learned, decide), fake steps, the card learned.json from the
      PC's learn.json, the Decide card gets the proposal once (test_decide's schema), hidden bots never, dry run writes nothing
-  h. the ZEUS page: node learned() (feed vs cloud, newer wins, old flag), the card section, text only, zeus.js?v=4
+  h. the ZEUS page: node learned() (feed vs cloud, newer wins, old flag), the card section, text only, zeus.js?v>=4 (v=5 since 405abfad)
   i. faster thinking: the 15-minute report in a fresh process imports no numpy / pandas / openpyxl (the light calendar, atlas.json
      read directly, a lazy numpy in health_band, the business workbook cached on disk); pct_of = the numpy version; the data
      pipe's every-tick collect uses a key index (same rows); the ops tick's internet probes run side by side
@@ -444,8 +444,8 @@ def part_h():
     # polish2 2026-11-19: the card stayed hidden when there was no nightly line yet; now a calm placeholder from the first paint
     sec = re.search(r'<section id="learned"[^>]*>', html)
     box = re.search(r'<div id="learnBox" class="zs-learn wait"[^>]*><p class="zs-goal">([^<]*)</p><p class="zs-src">([^<]*)</p></div>', html)
-    check("h. zeus.html: the 'ZEUS learned' section is shown from the first paint with its box holding the calm placeholder; zeus.js?v=4",
-          sec and "hidden" not in sec.group(0) and box and box.group(1) == "First nightly report after today's close" and "zeus.js?v=4" in html, (sec and sec.group(0), box and box.groups()))
+    check("h. zeus.html: the 'ZEUS learned' section is shown from the first paint with its box holding the calm placeholder; zeus.js?v>=4",
+          sec and "hidden" not in sec.group(0) and box and box.group(1) == "First nightly report after today's close" and int((re.search(r"zeus\.js\?v=(\d+)", html) or [0, 0])[1]) >= 4, (sec and sec.group(0), box and box.groups()))
     check("h. zeus.js: no nightly line = the same placeholder words (LEARN_WAIT), never a hidden card",
           "if (!L) { box.className = 'zs-learn wait';" in js and "sec.hidden = true" not in js and box and "'First nightly report after today\\'s close'" in js)
     check("h. zeus.js: text only (no innerHTML / eval), reads learned.json next to the page", not re.search(r"innerHTML|insertAdjacentHTML|\beval\(", js)

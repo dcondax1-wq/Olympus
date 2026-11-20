@@ -1,4 +1,15 @@
 ## Tested and rejected (don't redo without a new idea)
+- **ATLAS real-fill fixes (2026-11-20, `atlas-fills-2026-11-20.md`, `tools/atlas_fills.py`, `research/second/atlas_fills.json`,
+  design `research/second/atlas_fills_design.md`):** ATLAS's 3 real entries filled 10 / 12 / 16 ticks past the 5m open (market
+  order 3-5 s after a 5m close, price still running our way). Judged at 6 AND 10 ticks a side vs today at the same cost (funded
+  25K, fixed view, 2026 halves + 2021-25): 0 of 6 pass. Limit at the open 5 min (misses 17-18% of 2026's trades = the runners,
+  funded $550 -> $314 a month Jan-Jun at 6 ticks), limit 4 ticks worse (-$272), enter on the 1m close +60 s (Jul-Oct +$57,
+  Jan-Jun -$75, 2021-25 untestable: no 1m bars), skip a signal bar > 2x its 20-bar median (skips 30%, good trades), member
+  hours picked on Jan-Jun (Jul-Oct -$164: overfit), London pause before 08:00 ET (Jul-Oct $438 -> $74). Post-hoc, never
+  eligible: limit 60 s then market (-$105 Jan-Jun); "F3 if a 1-minute-later entry slips only 3 ticks" = a question for real
+  fills. Costs (no fix): at 10 ticks a side ATLAS still makes $512 / $404 a month funded (vs $588 / $494) but lost in 6 months
+  from today's room 7.7 -> 17.7% / 9.5 -> 23.0%, 2021-24 PF 1.06 -> 0.80. Re-test only with 10+ real fills (and poll-on-tick
+  engine/fast_entry priced on tick-time fills).
 - **Payday levers + cross-bot loss cuts (2026-11-20, `payday-plan-2026-11-20.md`, `tools/money/payday_plan.py`,
   `tools/payday_losses.py`, `research/lab/payday_plan.json` / `payday_losses.json`, Lab rows `research/lab/payday_levers.json`,
   design `research/lab/payday_design_2026-11-20.md`):** judged on the FIRST PAYOUT date AND the chance of losing the account
