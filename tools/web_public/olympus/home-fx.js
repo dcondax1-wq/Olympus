@@ -33,7 +33,7 @@
   R.classList.add('hfx');
   if (reduced() || R.hasAttribute('data-oly-warp')) R.classList.remove('hfx-intro');   // the warp has its own arrival
   /* hfx-intro stays on: removing it later restyles the whole page (a 70 ms task on a slow phone); the stagger only targets fixed sections */
-  var ST = { frames: 0, draws: 0, still: false, why: '', hero: false, tweens: 0, slow: 0 };
+  var ST = { frames: 0, draws: 0, still: false, why: '', hero: false, tweens: 0, slow: 0, maxDraw: 0 };
   var now = function () { return W.performance && performance.now ? performance.now() : Date.now(); };
 
   /* ------------------------------------------------------------------ the one loop */
@@ -146,6 +146,7 @@
         if (lastDraw && t - lastDraw < gap) return;
         var ddt = lastDraw ? Math.min(80, t - lastDraw) : 16; lastDraw = t;
         var c0 = now(); draw(t, ddt); var cost = now() - c0;
+        if (n > 5 && cost > ST.maxDraw) ST.maxDraw = Math.round(cost * 10) / 10;
         if (cost > 24 && !intro) { slow += 3; }
       },
       still: function (why) { ST.still = true; ST.why = why || ''; R.setAttribute('data-hfx', 'still'); draw((t0 || 0) + 4000, 0); },
@@ -311,7 +312,7 @@
     if (d.readyState === 'complete') setTimeout(later, 1500); else W.addEventListener('load', function () { setTimeout(later, 1500); });
   }
   W.OLYMPUS_HOMEFX = {
-    state: function () { return { mode: MODE, page: PAGE, hero: ST.hero, still: ST.still, why: ST.why, frames: ST.frames, draws: ST.draws, tweens: tweens.length, slow: ST.slow, running: !!raf, lite: LITE }; },
+    state: function () { return { mode: MODE, page: PAGE, hero: ST.hero, still: ST.still, why: ST.why, frames: ST.frames, draws: ST.draws, tweens: tweens.length, slow: ST.slow, running: !!raf, lite: LITE, maxDraw: ST.maxDraw }; },
     still: function () { if (hero) hero.still('api'); },
     go: kick
   };

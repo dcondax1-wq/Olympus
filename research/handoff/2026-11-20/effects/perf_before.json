@@ -3,12 +3,12 @@
   "longtasks_after_load": 0,
   "blocked_ms_after_load": 0,
   "worst_ms": 0,
-  "all_longtasks": 4,
-  "frames": 381,
+  "all_longtasks": 3,
+  "frames": 373,
   "frames_over_50ms": 3,
   "sideways": false,
   "fx": "",
-  "load_ms": 443,
+  "load_ms": 391,
   "errors": []
  },
  "gate-light": {
@@ -16,11 +16,11 @@
   "blocked_ms_after_load": 0,
   "worst_ms": 0,
   "all_longtasks": 3,
-  "frames": 378,
+  "frames": 374,
   "frames_over_50ms": 3,
   "sideways": false,
   "fx": "",
-  "load_ms": 440,
+  "load_ms": 451,
   "errors": []
  },
  "doors-dark": {
@@ -28,23 +28,23 @@
   "blocked_ms_after_load": 0,
   "worst_ms": 0,
   "all_longtasks": 0,
-  "frames": 373,
+  "frames": 369,
   "frames_over_50ms": 1,
   "sideways": false,
   "fx": "",
-  "load_ms": 146,
+  "load_ms": 142,
   "errors": []
  },
  "doors-light": {
   "longtasks_after_load": 0,
   "blocked_ms_after_load": 0,
   "worst_ms": 0,
-  "all_longtasks": 0,
-  "frames": 374,
-  "frames_over_50ms": 0,
+  "all_longtasks": 1,
+  "frames": 369,
+  "frames_over_50ms": 1,
   "sideways": false,
   "fx": "",
-  "load_ms": 154,
+  "load_ms": 191,
   "errors": []
  }
 }

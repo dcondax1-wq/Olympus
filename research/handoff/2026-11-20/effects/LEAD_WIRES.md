@@ -13,3 +13,5 @@ Branch `night-effects`. Nothing here touches sw.js, build_web_dashboard.py, jarv
    revamp look). 3D effects Off (`jfx` = off) and reduced motion already give the still frame; 3D effects Low gives fewer motes, 1.5x pixels.
 6. **Sound on the home** plays only if Sound is switched ON in Settings (`olympus.sfx` s = true, not muted). With no choice the home does not
    load the sound engine at all: its first-tap start was a 217 ms task at 4x CPU.
+7. **Doors under a light look:** hub/doors.html loads no olympus/themes.js, so it stays dark when the owner picks Ivory (true before this branch too). Loading themes.js there is a one-line change if wanted.
+8. **Measure again:** `python tools/fx_home_perf.py --tag after --json FILE` (long tasks at 4x CPU, dark + Ivory); `python tools/fx_home_shots.py DIR` (screenshots + 6 s video with live fixture numbers).
