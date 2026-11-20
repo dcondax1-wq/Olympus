@@ -1347,7 +1347,7 @@
   // the retired kalshi-feed repo (suspended account, 2026-11-19), so it will never exist again: the page no longer asks for it and says so plainly.
   function fwdStrip() {
     return '<div class="wi-fwd" id="wi-fwd"><b>Forward test</b> · retired: it counted the old Kalshi bot\'s new bets, and that bot\'s feed was switched off on 2026-11-19. '
-      + 'The K8 gold and silver bot is tested on paper on the PC instead (the K8 status card at the top).</div>';
+      + 'The K8 gold and silver bot is tested on paper on your home computer instead (the K8 status card at the top).</div>';
   }
 
   // ---- "Rewards test (paper)" (owner 2026-11-17): tools/kalshi_rewards_paper.py keeps pretend two-sided orders on Kalshi's paid-liquidity markets.

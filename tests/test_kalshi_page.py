@@ -340,6 +340,15 @@ def release():
     FEED["held"] = []
 
 
+def old_bot_text(p):
+    """The OLD kalshi-server bot's own words (as in check b: its card, the sub line, the foot): #sub + #body + #foot without the K8
+    sections (K8 runs on the owner's PC, so they say 'PC' on purpose: #kpaused, #k8d, #k8s, the K8 status / live-day cards)."""
+    return p.evaluate("""() => { const b = document.querySelector('#body'); const c = b ? b.cloneNode(true) : document.createElement('div');
+      c.querySelectorAll('#kpaused, #k8d, #k8s, .k8d, .k8s').forEach((e) => e.remove());
+      const t = (s) => { const e = document.querySelector(s); return e ? e.innerText : ''; };
+      return t('#sub') + ' ' + c.textContent + ' ' + t('#foot'); }""")
+
+
 def text(p, sel="#body"):
     return p.locator(sel).inner_text()
 
@@ -834,7 +843,9 @@ def run_browser(url, tmp):
         check("f. stale (an hour old): amber pill, the note says the bot stopped sending, numbers still shown",
               "NOT UPDATING" in p.inner_text("#sub").upper() and p.locator("#pill.warn").count() == 1 and "every minute" in p.inner_text(".note.warn")
               and "1 h ago" in p.inner_text(".note.warn") and "$512.34" in text(p) and p.get_attribute("#body", "data-state") == "stale"
-              and not re.search(r"\bPC\b", text(p)))
+              and not re.search(r"\bPC\b", old_bot_text(p)),
+              (p.inner_text("#sub"), p.locator("#pill.warn").count(), p.inner_text(".note.warn")[:200] if p.locator(".note.warn").count() else None,
+               p.get_attribute("#body", "data-state"), "$512.34" in text(p), re.findall(r".{60}\bPC\b.{20}", old_bot_text(p))[:3]))
         shot(p, "5_stale")
         open_("ok", {**sample(time.time()), "running": False})
         check("f. the bot says it stopped: red Stopped pill", p.locator("#pill.bad").inner_text().upper() == "STOPPED")
@@ -1875,7 +1886,7 @@ def part_whatif(br, url, tmp):
     # ---- the forward test strip at the bottom of the card: RETIRED 2026-11-20 (kalshicity/forward.json came only from the retired kalshi-feed repo)
     strip0 = p.inner_text("#sec-whatif #wi-fwd")
     asked = p.evaluate("performance.getEntriesByType('resource').map((r) => r.name).filter((u) => /forward\\.json|scan\\.json/.test(u))")
-    check("w3. forward strip: says plainly it is retired (the old bot's feed was switched off on 2026-11-19, K8 is tested on paper on the PC), never 'collecting: 0 bets'; "
+    check("w3. forward strip: says plainly it is retired (the old bot's feed was switched off on 2026-11-19, K8 is tested on paper on the home computer), never 'collecting: 0 bets'; "
           "the page never asks for kalshicity/forward.json or scan.json",
           "forward test" in strip0.lower() and "retired" in strip0 and "2026-11-19" in strip0 and "collecting" not in strip0
           and p.locator("#sec-whatif > .wi-fwd:last-child").count() == 1 and not asked, (strip0, asked))
@@ -1999,7 +2010,7 @@ def part_scan(br, url, tmp):
         q.goto(page_url)
         ready(q, 20000)
         q.wait_for_selector("#sec-scan")
-        q.wait_for_function("document.querySelector('#sec-scan .sc-l').textContent.indexOf('Looking back') >= 0", timeout=60000)
+        q.wait_for_function("document.querySelector('#sec-scan').textContent.indexOf('Looking back') >= 0", timeout=60000)
         q.click("#sec-scan .sc-h >> nth=0")
         sw = q.evaluate("[document.documentElement.scrollWidth, innerWidth, Math.max(...[...document.querySelectorAll('#sec-scan *')].map((e) => e.getBoundingClientRect().right))]")
         check("s6. 375 x 667: the card (rows open) fits, no sideways scroll, nothing past the right edge", sw[0] <= sw[1] and sw[2] <= sw[1] + 0.5, sw)
@@ -2061,8 +2072,8 @@ def part_rewards(br, url, tmp):
               and isinstance(copy.get("backtest"), dict) and bool(copy["backtest"].get("text")), str(copy)[:200])
         open_()
         t = p.inner_text("#krw")
-        check("rw1. the card is under the PAUSED note and the K8 status card (night-kalshi8): 'Rewards test (paper)', Earned, Fills, Net, Days, '$0 at risk', 'saved copy', the backtest line",
-              p.evaluate("document.querySelector('#kpaused').nextElementSibling.id") == "k8s"
+        check("rw1. the card is under the PAUSED note, the K8 live day (day-kalshi) and the K8 status card (night-kalshi8): 'Rewards test (paper)', Earned, Fills, Net, Days, '$0 at risk', 'saved copy', the backtest line",
+              p.evaluate("document.querySelector('#kpaused').nextElementSibling.id") == "k8d" and p.evaluate("document.querySelector('#k8d').nextElementSibling.id") == "k8s"
               and p.evaluate("document.querySelector('#k8s').nextElementSibling.id") == "krw" and "Rewards test (paper)" in t
               and all(w in t for w in ("Earned", "Fills", "Net", "Days", "$0 at risk", "saved copy", "Backtest (30 days)")), t[:300])
         check("rw1. the numbers are the copy's ($ earned, fill $)", ("$%.2f" % copy["paper"]["reward"]) in t, t[:200])
