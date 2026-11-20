@@ -627,9 +627,10 @@ def node_runs(node):
         lite = json.load(open(lite_path, encoding="utf-8"))
         check("parseLatest: the newest PC status wins, junk / other kinds / t null are ignored", o["parsed"]["t"] == lite["t"] and o["parsed"]["board"]["lit"]["room"] == 2000
               and o["parsedEmpty"] is None, o["parsed"].get("t"))
-        check("feedUrls: a 70-minute window (core + ext), since=latest (the core alone), then the last 12 hours (a quiet PC's last real post, day-archive); http / odd topics refused",
+        check("feedUrls: a 70-minute window (core + ext), since=latest (the core alone), then the last 3 hours, then 12 hours (a quiet PC's last real post, day-archive); http / odd topics refused",
               o["urls"] == ["https://ntfy.sh/olympus-nq-status-0123456789abcdef/json?poll=1&since=70m",
                             "https://ntfy.sh/olympus-nq-status-0123456789abcdef/json?poll=1&since=latest",
+                            "https://ntfy.sh/olympus-nq-status-0123456789abcdef/json?poll=1&since=3h",
                             "https://ntfy.sh/olympus-nq-status-0123456789abcdef/json?poll=1&since=12h"] and o["badUrls"] == [[], [], []], o["urls"])
         sp = o["split"]
         check("split merge: the newest ext per part laid into the core (brd, glance -> pc.glance, kalshi_rewards, learn); per part the "
@@ -654,7 +655,7 @@ def node_runs(node):
               and mv[2]["funded"] is False and mv[2]["balance"] == 49192.78 and mv[2]["goal"] is None
               and mv[3]["balance"] == 2300 and mv[3]["earliest"]["need"] == 300 and mv[3]["goal"]["at"] == 4100 and mv[4] is None, mv)
         check("fetchLatest, PC quiet for over 70 minutes (no post in the window, 'latest' is only an ext part): the last 12 hours give its last real post (day-archive)",
-              o["quiet"]["t"] is not None and "since=12h" in o["quiet"]["last"], o["quiet"])
+              o["quiet"]["t"] is not None and "since=3h" in o["quiet"]["last"], o["quiet"])
         check("fetchLatest: status_feed.json, then ntfy (the 70-minute window refused -> since=latest); offline -> null",
               o["fetched"] == lite["t"] and o["fetchCalls"][0] == "status_feed.json" and "since=70m" in o["fetchCalls"][1] and "since=latest" in o["fetchCalls"][2]
               and o["fetchFail"] is None, o)
