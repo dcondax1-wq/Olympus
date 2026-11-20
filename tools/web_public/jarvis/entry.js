@@ -368,9 +368,8 @@
     for (var c = 0; c < word.length; c++) { xs.push(xu); xu += GL[word[c]][0] + trk + (KERN[word.substr(c, 2)] || 0); }
     var wx0 = ax - (wordU / 2) * u, letters = [], gmask = '', blur = Math.max(6, fs * 0.16);
     var sw = wordU * u + blur * 6, sh = fs + blur * 6, soft = can(hin, wx0 - blur * 3, wy - 0.73 * fs - blur * 3, sw, sh, 0.5), sfg = soft.g;
-    var sfs = soft.width / sw;
-    sfg.shadowColor = 'rgba(255,200,120,.9)'; sfg.shadowBlur = blur * sfs * 1.5; sfg.shadowOffsetX = sw * 3 * sfs;
-    sfg.fillStyle = '#fff';
+    var tiny = cnv(null, 0, 0, sw, sh, Math.min(0.2, 3 / blur)), tyg = tiny.g;           // drawn tiny, then smoothed up: a blur in every browser
+    tyg.fillStyle = 'rgba(255,206,130,.9)';
     for (var c2 = 0; c2 < word.length; c2++) {
       var G = GL[word[c2]], lx = wx0 + (xs[c2] + G[1]) * u - 2, lw2 = (G[2] - G[1]) * u + 4, lt = wy - 0.73 * fs - 2, lh2 = 0.76 * fs + 4;
       var lc = can(hin, lx, lt, lw2, lh2, dpr), lg2 = lc.g, path = new Path2D(G[3]);
@@ -379,9 +378,11 @@
       lg2.fillStyle = lin(lg2, 0, -700, 0, 0, [0, '#fff8e6', 0.2, '#f4e0aa', 0.48, '#dcb468', 0.74, '#b88a3c', 0.92, '#9c7030', 1, '#c9a050']); lg2.fill(path);
       lg2.save(); lg2.clip(path); lg2.translate(0, 24); lg2.fillStyle = 'rgba(255,250,232,.5)'; lg2.fill(path); lg2.restore();
       letters.push(lc);
-      sfg.save(); sfg.translate(-sw * 3 + blur * 3 + (xs[c2] - xs[0]) * u, blur * 3 + 0.73 * fs); sfg.scale(u, u); sfg.fill(path); sfg.restore();
+      tyg.save(); tyg.translate(blur * 3 + xs[c2] * u, blur * 3 + 0.73 * fs); tyg.scale(u, u); tyg.fill(path); tyg.restore();
       gmask += '<path transform="translate(' + ((xs[c2]) * u).toFixed(2) + ' ' + (0.73 * fs).toFixed(2) + ') scale(' + u.toFixed(5) + ')" d="' + G[3] + '"/>';
     }
+    sfg.imageSmoothingEnabled = true; sfg.drawImage(tiny, 0, 0, sw, sh); sfg.globalCompositeOperation = 'lighter'; sfg.globalAlpha = 0.6; sfg.drawImage(tiny, -1, 0, sw + 2, sh);
+    tiny.width = tiny.height = 0;
     // the light sweep over the word: a band of light masked to the letters (one svg mask for the whole word) and a thin lens streak
     var gwW = wordU * u + 2, gm2 = 'url("data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + (GL.O[1] * u).toFixed(2) + ' 0 ' + gwW.toFixed(2) + ' ' + (0.76 * fs).toFixed(2) + '">' + gmask + '</svg>') + '")';
     var gl = el('div', 'oly-gl', 'position:absolute;overflow:hidden;left:' + (wx0 - 1).toFixed(1) + 'px;top:' + (wy - 0.73 * fs).toFixed(1) + 'px;width:' + gwW.toFixed(1) + 'px;height:' + (0.76 * fs).toFixed(1) + 'px;-webkit-mask:' + gm2 + ' 0 0/100% 100% no-repeat;mask:' + gm2 + ' 0 0/100% 100% no-repeat', hin);
