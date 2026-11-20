@@ -86,3 +86,10 @@ no values, only names.
 - `python tests/smoke.py`: 7/8. The one red is `test_zenith_mode`: `No module named 'playwright'` in this container (Python
   playwright not installed), unrelated to this change.
 - Area runs: see the end of this file.
+- `python tests/run_area.py privacy`: 5/5 suites, 163/163 (public_build_privacy 59, private_link 35, repo_secrets 12,
+  phone_safety 28, status_sign 29).
+- `run_area.py board --only board,bots_back,payout_coach,edge_chip,decide,status_sign` (BOARD_NO_BROWSER=1): 243/243 after one
+  fix (test_board pins the post's exact keys, so the "signed" mark now sits beside the post). `zenith --only feed_accounts`: 25/25.
+  Browser suites were not run: no screen changed.
+- Trade-off: until the vk is pinned, the owner's real phone notes that reach Claude only through the status channel are labelled
+  `[ntfy-unsigned]` and not counted as "not answered" (they still show in the events). See LEAD_WIRES, last section.
