@@ -91,6 +91,7 @@ const RX = [
 export function match(text) {
   const q = ' ' + String(text || '').toLowerCase().replace(/[’']/g, "'").replace(/[?!.,]/g, ' ').replace(/\s+/g, ' ') + ' ';
   if (/\b(open|show|go to|launch)\s+(the\s+)?(kalshi|planner|zenith|nq|app)\b/.test(q) && !/\bin a trade\b/.test(q)) return null;   // app switching stays the shell's
+  if (/\b(hide|show|mask|unhide|blur)\b/.test(q)) return null;                          // the brain's hide / show my balance switch
   if (/\bblitz\b/.test(q)) return null;                                    // BLITZ is hidden: the old brain keeps its rule
   if (/\b(why|explain|strategy|rules?|game ?plan|how does|backtest|chart)\b/.test(q) && !/\bin a trade\b/.test(q)) return null;   // the brain keeps the deeper answers
   for (const [id, rx] of RX) if (rx.test(q)) return id;

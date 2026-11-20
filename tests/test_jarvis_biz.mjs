@@ -38,7 +38,7 @@ const deps = { facts: () => ({ live }), now: () => NOW, fetch: fakeFetch, storag
 const Q = {
   'How are my accounts?': 'accounts', 'Is ATLAS in a trade?': 'intrade', 'How much room does Zlarior have?': 'room', 'When is my first payout?': 'payout',
   'What did the bots do today?': 'bots', 'What did the bots do this week?': 'bots', "What's on the news today?": 'news', 'What should I do today?': 'steps', "How's Kalshi?": 'kalshi',
-  'open kalshi': null, 'how is blitz': null, 'explain the strategy': null, 'hello': null,
+  'open kalshi': null, 'hide my balance': null, 'show my balance': null, 'how is blitz': null, 'explain the strategy': null, 'hello': null,
 };
 for (const [q, id] of Object.entries(Q)) ok(B.match(q) === id, `match "${q}" -> ${id}`);
 
