@@ -51,8 +51,9 @@ def part_a():
           ac.get("light") in ("GREEN", "AMBER", "RED") and isinstance(ac.get("pf_r40"), (int, float)) and isinstance(ac.get("pf_r40_2026_h1"), (int, float))
           and "usd_pf40_eval_sized" in ac and (d["atlas"].get("light") or {}).get("cuts"), ac)
     w = d["atlas"]["windows"]["40"]["now"]
-    check("a. ATLAS last 40 R-PF = R won / R lost of the stored run (the atlas-revive number 1.89, not the $ PF 1.41)",
-          w.get("pf_r") is not None and abs(w["pf_r"] - 1.89) < 0.05 and abs((w.get("pf") or 0) - 1.41) < 0.05, w)
+    # pin moved 2026-11-20 (day-atlasedge): ATLAS input is now run atlas_fresh_fixed (fixed $250, data to Nov 19), was the eval-path run to Oct 16 (1.89 / 1.41)
+    check("a. ATLAS last 40 R-PF = R won / R lost of the stored run (atlas_fresh_fixed to Nov 19: R-PF 2.38, $ PF 2.27 at a fixed $250)",
+          w.get("pf_r") is not None and abs(w["pf_r"] - 2.38) < 0.05 and abs((w.get("pf") or 0) - 2.27) < 0.05, w)
     site = json.loads(read(EH.SITE))
     check("a. tools/web_public/edge.json = the tiny result of the committed run", site.get("kind") == "le-edge" and site.get("eh") == d.get("tiny")
           and EH._bytes(site["eh"]) <= 120, site)
