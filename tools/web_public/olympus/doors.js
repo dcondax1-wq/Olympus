@@ -28,7 +28,7 @@
         { label: 'Trades', greek: 'Trading', href: 'trading/', app: 'trading', words: 'trades history calendar stats fills today pnl p&l' },
         { label: 'Drawdown left', greek: 'Aegis', href: 'aegis/', app: 'aegis', words: 'risk drawdown stop loss max loss limit room guard dll mll' },
         { label: 'Rules', greek: 'Pnyx', href: 'pnyx/', app: 'pnyx', words: 'rules prop firm mffu calculator micros contracts size stop' },
-        { label: 'Payout ready?', greek: 'Trading · payout readiness', href: 'trading/#payReadyCard', app: '', words: 'payout ready when request how much days left funded atlas payouts withdraw rules consistency best day' }
+        { label: 'Payout rules', greek: 'Trading · payout check', href: 'trading/#rulesCard', app: '', words: 'payout payouts withdraw request rules consistency best day payout ready readiness when request how much days left' }
       ],
       ids: ['zenith', 'nq', 'board', 'why', 'trading', 'aegis', 'pnyx', 'demeter', 'labyrinth', 'fates', 'moirai', 'odeon', 'nemesis', 'kronos', 'apollo', 'journal',
         'kratos', 'epilogue', 'ares', 'argus', 'oracle', 'pantheon', 'pythia', 'pheme', 'kairos', 'chronos', 'forum', 'delphi'] },
