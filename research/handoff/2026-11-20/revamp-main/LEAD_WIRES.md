@@ -7,7 +7,7 @@ The lead-only files this branch needs touched. Nothing here was edited by the he
 - Line 49: put `'jarvis-v71'` at the front of the `OLD` list.
 - Why: `core-visual.js` and `home3d.js` are cached with no `?v=` (SHELL, line 53). They changed: the 3D orb and the constellation pause while you scroll.
   Without a new cache name the installed app keeps the old, laggy copies. (`backdrop.js` is now `?v=b5` in `jarvis/index.html`, so that one refreshes by itself.)
-- Optional, same edit: add `'../olympus/shell.css?v=s3'` to `SHELL` so the new design layer opens offline.
+- No `shell.css` entry needed: Jarvis does not load `olympus/shell.css` (a link held its first paint on a slow site, jarvis_hub j).
 
 ## 2. `tools/web_public/sw.js` (the Zenith site worker)
 - Line 94: `const CACHE = 'le-public-v157';` -> `'le-public-v158'`, so the root `index.html` with the new tab bar replaces the cached one.
