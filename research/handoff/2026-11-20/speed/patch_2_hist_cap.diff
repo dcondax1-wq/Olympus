@@ -1,0 +1,24 @@
+--- a/engine/live.py	2026-11-20 11:36:32.107216915 +0000
++++ b/engine/live.py	2026-11-20 11:36:32.124572656 +0000
+@@ -157,6 +157,9 @@
+ 
+ 
+ STATE_PATH = os.path.join(DATA_DIR, "live_state.json")
++# day-speed 2026-11-20: the bot's own NQ 1m / 5m history is cut to the last 150 days before the per-poll archive merge,
++# de-duplicate, sort and clean (LIT and ATLAS read from lit_live.window_start: <= ~70 days). Start cfg "hist_keep_days": 0 = all.
++HIST_KEEP_DAYS = 150
+ ET_TZ = ZoneInfo("America/New_York")
+ LIVE_DEFAULTS = {
+     "sym": "NQ", "tf": "5m", "poll_sec": 60, "adapter": "paper", "params": {}, "armed": False,
+@@ -414,6 +417,11 @@
+                 if self.no_yahoo:
+                     df = pcbars.tidy(df)
+                     self._hist_cache = {**getattr(self, "_hist_cache", {}), path: ((st_.st_mtime_ns, st_.st_size), df)}
++        keep = self.cfg.get("hist_keep_days", HIST_KEEP_DAYS)
++        if keep and tf in ("1m", "5m") and sym == self.cfg.get("sym", "NQ") and len(df):
++            cut = int(self.clock()) - int(float(keep) * 86400)
++            if int(df["time"].min()) < cut:
++                df = df[df["time"] >= cut]
+         if self.no_yahoo and tf in ("1m", "5m"):
+             # TradingView export + the bot's own NinjaTrader archive (bridges the export's end once LE_BarFeed's 30 days move on)
+             arc = self._archive(sym, tf)

@@ -1,0 +1,278 @@
+{
+ "base3b": {
+  "label": "today (OFF, +2 s)",
+  "polls": 2304,
+  "errors": 0,
+  "poll_median_ms": 493.65,
+  "poll_p90_ms": 646.5,
+  "signal_to_route_median_ms": 487.0,
+  "ledger": [
+   {
+    "side": "buy",
+    "qty": 5,
+    "stop": 27735.25,
+    "target": 28174.0,
+    "entry_t": 1794827760,
+    "pnl": null,
+    "t": 1794827762,
+    "reason": null,
+    "px": null
+   },
+   {
+    "side": "exit",
+    "qty": 5,
+    "stop": null,
+    "target": null,
+    "entry_t": 1794827760,
+    "pnl": -647.0,
+    "t": 1794830402,
+    "reason": "STOP",
+    "px": null
+   }
+  ],
+  "same_ledger_as_today": true,
+  "same_model_state_every_poll": true,
+  "route_s_after_bar_open": [
+   2
+  ],
+  "stages_median_ms": {
+   "1m bars": 241.0,
+   "1m bars > bars: merge": 220.0,
+   "bars: merge": 151.0,
+   "1m bars > bars: merge > NinjaTrader feed": 100.0,
+   "1m bars > bars: merge > NinjaTrader feed > feed checks": 90.0,
+   "1m bars > bars: merge > NinjaTrader feed > feed checks > bar file parse": 81.0,
+   "LIT model (lit_live.run)": 65.0,
+   "bars: merge > history file": 51.0,
+   "bars: merge > history + feed merge": 51.0,
+   "bars: merge > history file > history + feed merge": 51,
+   "1m bars > bars: merge > history + feed merge": 46.0,
+   "1m bars > bars: merge > history file": 44.0,
+   "1m bars > bars: merge > history file > history + feed merge": 44,
+   "bars: merge > clean bars": 28.0,
+   "1m bars > bars: merge > clean bars": 24.0,
+   "1m bars > bars: merge > NinjaTrader feed > bar archive": 9.0
+  }
+ },
+ "tail3": {
+  "label": "patch 1 tail reader",
+  "polls": 2304,
+  "errors": 0,
+  "poll_median_ms": 425.15,
+  "poll_p90_ms": 542.0,
+  "signal_to_route_median_ms": 416.0,
+  "ledger": [
+   {
+    "side": "buy",
+    "qty": 5,
+    "stop": 27735.25,
+    "target": 28174.0,
+    "entry_t": 1794827760,
+    "pnl": null,
+    "t": 1794827762,
+    "reason": null,
+    "px": null
+   },
+   {
+    "side": "exit",
+    "qty": 5,
+    "stop": null,
+    "target": null,
+    "entry_t": 1794827760,
+    "pnl": -647.0,
+    "t": 1794830402,
+    "reason": "STOP",
+    "px": null
+   }
+  ],
+  "same_ledger_as_today": true,
+  "same_model_state_every_poll": null,
+  "route_s_after_bar_open": [
+   2
+  ],
+  "stages_median_ms": {
+   "1m bars": 162.5,
+   "bars: merge": 153.0,
+   "1m bars > bars: merge": 142.0,
+   "LIT model (lit_live.run)": 65.0,
+   "bars: merge > history + feed merge": 58.0,
+   "bars: merge > history file": 53.0,
+   "bars: merge > history file > history + feed merge": 53,
+   "1m bars > bars: merge > history + feed merge": 46.0,
+   "1m bars > bars: merge > history file": 45.0,
+   "1m bars > bars: merge > history file > history + feed merge": 45,
+   "bars: merge > clean bars": 30.0,
+   "1m bars > bars: merge > clean bars": 25.0,
+   "1m bars > bars: merge > NinjaTrader feed": 23.0,
+   "1m bars > bars: merge > NinjaTrader feed > feed checks": 13.0,
+   "1m bars > bars: merge > NinjaTrader feed > bar archive": 9.0,
+   "1m bars > bars: merge > NinjaTrader feed > feed checks > bar file parse": 5.0
+  }
+ },
+ "cap3": {
+  "label": "patch 2 history cap",
+  "polls": 2304,
+  "errors": 0,
+  "poll_median_ms": 300.9,
+  "poll_p90_ms": 446.4,
+  "signal_to_route_median_ms": 293.0,
+  "ledger": [
+   {
+    "side": "buy",
+    "qty": 5,
+    "stop": 27735.25,
+    "target": 28174.0,
+    "entry_t": 1794827760,
+    "pnl": null,
+    "t": 1794827762,
+    "reason": null,
+    "px": null
+   },
+   {
+    "side": "exit",
+    "qty": 5,
+    "stop": null,
+    "target": null,
+    "entry_t": 1794827760,
+    "pnl": -647.0,
+    "t": 1794830402,
+    "reason": "STOP",
+    "px": null
+   }
+  ],
+  "same_ledger_as_today": true,
+  "same_model_state_every_poll": true,
+  "route_s_after_bar_open": [
+   2
+  ],
+  "stages_median_ms": {
+   "1m bars": 185.0,
+   "1m bars > bars: merge": 175.0,
+   "1m bars > bars: merge > NinjaTrader feed": 101.0,
+   "1m bars > bars: merge > NinjaTrader feed > feed checks": 91.0,
+   "1m bars > bars: merge > NinjaTrader feed > feed checks > bar file parse": 82.0,
+   "LIT model (lit_live.run)": 47.0,
+   "1m bars > bars: merge > history file": 32.0,
+   "bars: merge": 31.0,
+   "1m bars > bars: merge > history file > history + feed merge": 28,
+   "1m bars > bars: merge > history + feed merge": 26.0,
+   "1m bars > bars: merge > clean bars": 14.0,
+   "bars: merge > history file": 10.0,
+   "1m bars > bars: merge > NinjaTrader feed > bar archive": 9.0,
+   "bars: merge > history + feed merge": 8.0,
+   "bars: merge > history file > history + feed merge": 8,
+   "bars: merge > NinjaTrader feed": 4.0
+  }
+ },
+ "both3": {
+  "label": "patches 1+2",
+  "polls": 2304,
+  "errors": 0,
+  "poll_median_ms": 219.25,
+  "poll_p90_ms": 334.6,
+  "signal_to_route_median_ms": 211.0,
+  "ledger": [
+   {
+    "side": "buy",
+    "qty": 5,
+    "stop": 27735.25,
+    "target": 28174.0,
+    "entry_t": 1794827760,
+    "pnl": null,
+    "t": 1794827762,
+    "reason": null,
+    "px": null
+   },
+   {
+    "side": "exit",
+    "qty": 5,
+    "stop": null,
+    "target": null,
+    "entry_t": 1794827760,
+    "pnl": -647.0,
+    "t": 1794830402,
+    "reason": "STOP",
+    "px": null
+   }
+  ],
+  "same_ledger_as_today": true,
+  "same_model_state_every_poll": true,
+  "route_s_after_bar_open": [
+   2
+  ],
+  "stages_median_ms": {
+   "1m bars": 107.0,
+   "1m bars > bars: merge": 97.0,
+   "LIT model (lit_live.run)": 50.0,
+   "1m bars > bars: merge > history file": 32.0,
+   "bars: merge": 31.0,
+   "1m bars > bars: merge > history file > history + feed merge": 28,
+   "1m bars > bars: merge > history + feed merge": 25.0,
+   "1m bars > bars: merge > NinjaTrader feed": 23.0,
+   "1m bars > bars: merge > clean bars": 15.0,
+   "1m bars > bars: merge > NinjaTrader feed > feed checks": 13.0,
+   "bars: merge > history file": 11.0,
+   "1m bars > bars: merge > NinjaTrader feed > bar archive": 9.0,
+   "bars: merge > history file > history + feed merge": 9,
+   "bars: merge > history + feed merge": 8.0,
+   "bars: merge > NinjaTrader feed > feed checks": 4.0,
+   "bars: merge > NinjaTrader feed": 4.0
+  }
+ },
+ "fast3": {
+  "label": "fast entry ON (+0.2 s)",
+  "polls": 2304,
+  "errors": 0,
+  "poll_median_ms": 505.9,
+  "poll_p90_ms": 656.3,
+  "signal_to_route_median_ms": 497.0,
+  "ledger": [
+   {
+    "side": "buy",
+    "qty": 5,
+    "stop": 27735.25,
+    "target": 28174.0,
+    "entry_t": 1794827760,
+    "pnl": null,
+    "t": 1794827760,
+    "reason": null,
+    "px": null
+   },
+   {
+    "side": "exit",
+    "qty": 5,
+    "stop": null,
+    "target": null,
+    "entry_t": 1794827760,
+    "pnl": -647.0,
+    "t": 1794830400,
+    "reason": "STOP",
+    "px": null
+   }
+  ],
+  "same_ledger_as_today": true,
+  "same_model_state_every_poll": null,
+  "route_s_after_bar_open": [
+   0
+  ],
+  "stages_median_ms": {
+   "1m bars": 243.0,
+   "1m bars > bars: merge": 223.0,
+   "bars: merge": 162.0,
+   "1m bars > bars: merge > NinjaTrader feed": 100.0,
+   "1m bars > bars: merge > NinjaTrader feed > feed checks": 90.0,
+   "1m bars > bars: merge > NinjaTrader feed > feed checks > bar file parse": 82.0,
+   "LIT model (lit_live.run)": 64.0,
+   "bars: merge > history + feed merge": 58.0,
+   "bars: merge > history file": 52.0,
+   "bars: merge > history file > history + feed merge": 52,
+   "1m bars > bars: merge > history + feed merge": 47.0,
+   "1m bars > bars: merge > history file": 45.0,
+   "1m bars > bars: merge > history file > history + feed merge": 45,
+   "bars: merge > clean bars": 30.0,
+   "1m bars > bars: merge > clean bars": 24.0,
+   "1m bars > bars: merge > NinjaTrader feed > bar archive": 9.0
+  }
+ },
+ "_note": "research/speed/replay_harness.py, days 2026-11-16..18, 2,304 polls each, this cloud machine with 3 replays running at once (absolute ms are high; differences are what count). Real LiveBot, paper, LE_BarFeed-format files growing bar by bar."
+}

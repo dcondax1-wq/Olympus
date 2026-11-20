@@ -1,0 +1,77 @@
+--- a/engine/ninjatrader.py	2026-11-20 11:17:42.145640023 +0000
++++ b/engine/ninjatrader.py	2026-11-20 11:17:42.164929269 +0000
+@@ -2717,7 +2717,15 @@
+                 return txt.strip().splitlines()[0].strip()
+         return None
+ 
++    TAIL_FULL_EVERY_S = 900.0    # day-speed 2026-11-20: a full read at least every 15 min (backstop)
++    TAIL_MAX_GROWTH = 16384      # more than ~350 new lines at once (a catch-up / rewrite): full read
++
+     def load(self, path):
++        """The bar file as a frame. LE_BarFeed / LE_Feed append one line per closed bar; a file that only GREW since the
++        last read (same file id, same first 256 bytes, same 64 bytes before the old end, < 16 KB more, a full read in the
++        last 15 min) is parsed from the last complete line on (~5 ms instead of ~70 ms for 21,000 1m lines); a trim,
++        rewrite or replace is a full read exactly as before. Same frame either way (tests/test_speed_tail_load.py)."""
++        import io
+         import pandas as pd
+         try:
+             st = os.stat(path)
+@@ -2728,26 +2736,44 @@
+         if hit and hit[0] == key:
+             return hit[1]
+         cols = ["time", "open", "high", "low", "close", "volume"]
++        tails = self.__dict__.setdefault("_tail", {})
++        prev = tails.get(path)
+         try:
+-            df = pd.read_csv(path, header=None, names=cols, usecols=range(6), on_bad_lines="skip", dtype=str,
+-                             engine="python")
+-        except Exception:
++            with open(path, "rb") as fh:
++                head = fh.read(256)
++                same = bool(prev) and st.st_ino == prev["ino"] and prev["off"] <= st.st_size <= prev["off"] + self.TAIL_MAX_GROWTH \
++                    and time.time() - prev["full_t"] < self.TAIL_FULL_EVERY_S \
++                    and len(head) >= len(prev["head"]) and head[:len(prev["head"])] == prev["head"]
++                if same and prev["off"] > 0:
++                    fh.seek(max(0, prev["off"] - 64))
++                    same = fh.read(prev["off"] - max(0, prev["off"] - 64)) == prev["tailfp"]
++                if same:
++                    fh.seek(prev["off"])
++                    new, base, off0 = fh.read(), prev["raw"], prev["off"]
++                else:
++                    fh.seek(0)
++                    new, base, off0 = fh.read(), None, 0
++        except OSError:
+             return None
+         # (2026-11-03) every line LE_Feed / LE_BarFeed writes ends with "\n": a last line without it is still being
+-        # appended, and a cut number ("21000.5" read as "2100") would parse as a valid but wrong close. Dropped; the
++        # appended, and a cut number ("21000.5" read as "2100") would parse as a valid but wrong close. Not parsed; the
+         # next read (the file's size changes, so the cache misses) has it whole.
++        cut = new.rfind(b"\n") + 1
++        body = new[:cut]
+         try:
+-            with open(path, "rb") as fh:
+-                fh.seek(-1, os.SEEK_END)
+-                torn = fh.read(1) not in (b"\n", b"\r")
+-        except OSError:
+-            torn = False
+-        if torn and len(df):
+-            df = df.iloc[:-1]
++            part = pd.read_csv(io.BytesIO(body), header=None, names=cols, usecols=range(6), on_bad_lines="skip", dtype=str,
++                               engine="python") if body.strip() else pd.DataFrame(columns=cols, dtype=str)
++        except Exception:
++            return None
+         for c in cols:
+-            df[c] = pd.to_numeric(df[c], errors="coerce")
+-        df = df.dropna(subset=["time", "open", "high", "low", "close"])          # header row, half-written last line
+-        df["volume"] = df["volume"].fillna(0.0)
++            part[c] = pd.to_numeric(part[c], errors="coerce")
++        part = part.dropna(subset=["time", "open", "high", "low", "close"])          # header row, junk line
++        part["volume"] = part["volume"].fillna(0.0)
++        raw = part if base is None else pd.concat([base, part], ignore_index=True)
++        tails[path] = {"off": off0 + cut, "head": head, "raw": raw, "ino": st.st_ino,
++                       "tailfp": ((prev["tailfp"] if base is not None else b"") + body)[-64:],
++                       "full_t": prev["full_t"] if base is not None else time.time()}
++        df = raw.copy()
+         df["time"] = df["time"].astype("int64")
+         df = df.drop_duplicates("time", keep="last").sort_values("time").reset_index(drop=True)
+         for c in ("open", "high", "low", "close", "volume"):
