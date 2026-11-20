@@ -38,7 +38,7 @@ ${FOG}
 void main(){
   float fa = fogAmount(vFD, 0.0);
   if (vPart > 0.5) {                                   // revamp 2026-11-20: the light on the road (head-light wash ahead, a red tail streak behind)
-    float head = step(vPart, 1.5);
+    float head = step(0.0, vL.x);
     float u = head > 0.5 ? (vL.x - 0.45) / 2.4 : (-0.45 - vL.x) / 1.7;
     float a = pow(clamp(1.0 - u, 0.0, 1.0), 2.2) * exp(-vL.z * vL.z * (head > 0.5 ? 9.0 : 22.0)) * (1.0 - uDay * 0.8) * (1.0 - fa);
     vec3 c = head > 0.5 ? vec3(1.0, 0.93, 0.78) * 0.55 : vec3(1.0, 0.08, 0.06) * 0.8;
@@ -54,19 +54,19 @@ void main(){
   gl_FragColor = vec4(mix(col, uFog, fa), 1.0);
 }`;
 
-/** a car (a box) + two flat quads on the road: the head-light wash ahead (aPart 1) and the tail streak behind (aPart 2) */
+/** a car (a box without its bottom) + one flat quad on the road (aPart 1): the head-light wash ahead, the red tail streak behind; 12 triangles as before */
 function carGeo() {
   const b = new THREE.BoxGeometry(0.9, 0.32, 0.46);
   b.translate(0, 0.16, 0);
-  const pos = [...b.attributes.position.array], nor = [...b.attributes.normal.array], idx = [...b.index.array], part = new Array(pos.length / 3).fill(0);
+  const pos = [...b.attributes.position.array], nor = [...b.attributes.normal.array], part = new Array(pos.length / 3).fill(0);
+  const idx = [...b.index.array.slice(0, 18), ...b.index.array.slice(24)];            // no bottom face (never seen): the light quad costs no triangle
   const quad = (x0, x1, hw, k) => {
     const base = pos.length / 3;
     pos.push(x0, 0.012, -hw, x1, 0.012, -hw, x1, 0.012, hw, x0, 0.012, hw);
     for (let i = 0; i < 4; i++) { nor.push(0, 1, 0); part.push(k); }
     idx.push(base, base + 2, base + 1, base, base + 3, base + 2);
   };
-  quad(0.45, 2.85, 0.42, 1);
-  quad(-2.15, -0.45, 0.24, 2);
+  quad(-2.15, 2.85, 0.42, 1);                                                          // one quad: the head-light wash ahead, the tail streak behind
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
   g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));

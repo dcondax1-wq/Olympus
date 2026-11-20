@@ -169,7 +169,8 @@ void main(){
   col = mix(col, roof * ao, 1.0 - side);
   float rimL = smoothstep(0.86, 0.95, max(rq.x, rq.y)) * (1.0 - side) * (1.0 - vRound);
   col += vColor * rimL * 0.32 * neon;                                         // a thin roof outline in the idea's colour (reads from the overview)
-  col += vColor * (1.0 - body0) * side * (0.18 + 0.45 * step(0.6, fract(hy * 1.2 - uTime * 0.15))) * neon;   // the spire / mast: dark, lit rings in the idea's colour
+  float slim = 1.0 - smoothstep(0.12, 0.24, vHalf);                          // a real spire / mast (a wide penthouse stays dark stone)
+  col += vColor * (1.0 - body0) * side * slim * (0.18 + 0.45 * step(0.6, fract(hy * 1.2 - uTime * 0.15))) * neon;   // the spire / mast: dark, lit rings in the idea's colour
   col += vColor * vData.z * (0.5 + 0.5*sin(uTime*3.2 + vSeed*6.0)) * (0.08 + crown*0.9 + edge*0.4);
   if (uToday > 0.5) {
     float armed = step(0.5, vState.x) * (1.0 - step(1.5, vState.x));
