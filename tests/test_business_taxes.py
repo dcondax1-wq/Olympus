@@ -106,6 +106,54 @@ def part_b():
           o["usd"] == ["$300", "$1,960", "$308.63"] and o["fmt"] == "Jan 15, 2027" and o["pct"] == 30, o)
 
 
+NODE_D = r"""
+const T = require(process.argv[1]);
+console.log(JSON.stringify({
+  w1: T.waterfall(800, 30, 0, 0), w5: T.waterfall(4000, 30, 0, 0), full: T.waterfall(800, 30, 5000, 320), near: T.waterfall(800, 30, 4900, 300),
+  junk: T.waterfall('x', 30, 'y', -5),
+  p: [T.potPct(5000, false, false), T.potPct(30000, false, true), T.potPct(30000, true, true), T.potPct(60000, true, false), T.potPct(100000, true, true), T.potPct('x')],
+}));
+"""
+
+
+def part_d():
+    """2026-11-20 keep-the-most: the payout waterfall and the set-aside % table (tools/money/keep_most.py)."""
+    r = subprocess.run(["node", "-e", NODE_D, os.path.join(BIZ, "taxes.js")], capture_output=True, text=True, timeout=60)
+    if r.returncode != 0:
+        check("d. node runs the waterfall", False, r.stderr[-400:])
+        return
+    o = json.loads(r.stdout)
+    w1, w5, full, near = o["w1"], o["w5"], o["full"], o["near"]
+    check("d. $800 landed -> $240 tax / $80 reserve / $80 retirement / $160 live / $240 yours",
+          (w1["pot"], w1["reserve"], w1["retire"], w1["live"], w1["yours"]) == (240, 80, 80, 160, 240), w1)
+    check("d. $4,000 landed -> $1,200 / $320 (reserve capped) / $400 / $800 / $1,280",
+          (w5["pot"], w5["reserve"], w5["retire"], w5["live"], w5["yours"]) == (1200, 320, 400, 800, 1280), w5)
+    check("d. full buckets give their share back: $800 -> $480 yours; near-full buckets take only what is missing",
+          full["yours"] == 480 and full["live"] == 0 and full["reserve"] == 0 and near["live"] == 100 and near["reserve"] == 20, (full, near))
+    check("d. junk gives 0 everywhere", all(o["junk"][k] == 0 for k in ("pot", "reserve", "retire", "live", "yours")), o["junk"])
+    check("d. set-aside %: $5k only trading 15, $30k + state 20, $30k job + state 35, $60k job 35, $100k job + state 40, unknown 20",
+          o["p"] == [15, 20, 35, 35, 40, 20], o["p"])
+    html = read(BIZ, "taxes.html")
+    check("d. the page has the waterfall, the %-table, the no-penalty card, the ladder, the live trigger and 'Tell Claude your state'",
+          all(x in html for x in ('id="wfYours"', 'id="s-pct"', 'id="s-pen"', 'id="s-ladder"', 'id="s-live"', "Tell Claude your state", "$5,000 in the live fund")))
+
+
+def part_e():
+    """tools/money/keep_most.py: the tax math behind the page (2026 + 2027 IRS tables)."""
+    from tools.money import keep_most as K
+    t = K.tax(30000, 0, 0, 2026, qbi=False)
+    check("e. $30,000 profit, no job, 2026: SE tax $4,239 + income tax $1,178 = $5,417 (18.1%)",
+          abs(t["se"] - 4238.9) < 1 and abs(t["total"] - 5416.92) < 1, t)
+    check("e. SE tax stops at the Social Security base ($184,500 2026, $192,300 2027); 2027 std deduction $16,600",
+          K.YEARS[2026]["ss_base"] == 184500 and K.YEARS[2027]["ss_base"] == 192300 and K.YEARS[2027]["std"] == 16600)
+    f = K.s1256(30000, 0, 2026)
+    check("e. $30,000 of 60/40 futures gains with no other income: $0 federal (all in the 0% band)", f["total"] == 0, f)
+    check("e. the set-aside % the page uses = keep_most.pot_pct", [K.pot_pct(5000), K.pot_pct(30000, True, True), K.pot_pct(100000, True, True)] == [15, 35, 40])
+    w = K.waterfall(800)
+    check("e. waterfall($800) = 240 / 80 / 80 / 160 / 240", (w["tax_pot"], w["eval_reserve"], w["retirement"], w["live_fund"], w["yours"]) == (240, 80, 80, 160, 240), w)
+    check("e. S-corp break-even near $50,000 profit", 40000 <= K.scorp_break_even() <= 60000, K.scorp_break_even())
+
+
 class Quiet(http.server.SimpleHTTPRequestHandler):
     def log_message(self, *a):
         pass
@@ -156,6 +204,8 @@ def part_c():
 def main():
     part_a()
     part_b()
+    part_d()
+    part_e()
     if "--browser" in sys.argv:
         part_c()
     ok = all(RES)

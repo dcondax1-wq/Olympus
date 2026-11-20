@@ -39,8 +39,16 @@ YEARS = {
         "src": "IRS IR-2025-103 + Rev. Proc. 2025-32; IRS Notice 2025-67 (retirement); Rev. Proc. 2025-19 (HSA); SSA 2026 COLA",
     },
 }
-# 2027 is filled in from the IRS release when it is out; until then the 2026 table is used and flagged.
-YEARS[2027] = dict(YEARS[2026], src="2027 not confirmed: 2026 table used (check IRS 2027 inflation release)", estimated=True)
+YEARS[2027] = {
+    "std": 16600.0,
+    "brackets": [(12800, .10), (52025, .12), (109125, .22), (208325, .24), (264550, .32), (661375, .35), (None, .37)],
+    "ltcg0": 51050.0, "ltcg15": 563200.0,
+    "ss_base": 192300.0,
+    "k401_deferral": 25500.0, "k401_catchup50": 8500.0, "k415c": 75000.0, "ira": 7500.0,
+    "hsa_self": 4500.0, "hsa_family": 9000.0,
+    "qbi_threshold": 208300.0,
+    "src": "IRS IR-2026-133 + Rev. Proc. 2026-35 (Nov 5, 2026); IR-2026-136 + Notice 2026-66 (Nov 12, 2026); Rev. Proc. 2026-24 (HSA); SS base from IRS Pub 15 2027 draft",
+}
 
 SE_FACTOR = 0.9235
 SS_RATE, MED_RATE, ADD_MED, ADD_MED_AT = 0.124, 0.029, 0.009, 200000.0
