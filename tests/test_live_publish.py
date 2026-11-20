@@ -471,9 +471,10 @@ def main(argv=None) -> int:
               "_lp.Publisher(BOT, HEARTBEAT" in srv and "LIVEPUB.start()" in srv and '"live_publish": LIVEPUB.status()' in srv)
         check(".gitignore: the scratch git dir is ignored", "data/live_pub.git/" in read(".gitignore"))
         lj, idx, sw, more = read("tools/web_public/live.js"), read("tools/web_public/index.html") + read("tools/web_public/main.js"), read("tools/web_public/sw.js"), read("tools/web_public/more.js")   # main.js: the page's own script (QA Round 7)
-        check("phone: live.js polls the API (raw fallback), 30-60 s, on focus, merges into D / HOMEJ, redraws Home",
-              "contents/live.json?ref=live" in lj and "raw.githubusercontent.com" in lj and "visibilitychange" in lj
-              and "LIVE.every = rem > 30 ? 30 : 60" in lj and "LIVE.apply(D)" in lj and "render(true)" in lj)
+        check("phone: live.js reads the PC's status post (ntfy via pc_feed.js); the old GitHub live.json (the suspended account: two 404s a page, "
+              "dogfood 2026-11-20) only on a local test server; on focus, merges into D / HOMEJ, redraws Home",
+              "PC_FEED.fetchLatest()" in lj and "if (!DEV_ONLY) throw" in lj and "DEV_ONLY = /^(127\\.0\\.0\\.1|localhost)$/" in lj
+              and "visibilitychange" in lj and "LIVE.apply(D)" in lj and "render(true)" in lj)
         check("phone: index.html loads live.js and applies it after every data.json / home.json load",
               'src="live.js?v=' in idx and "window.LIVE.apply(D)" in idx and "window.LIVE.apply(j)" in idx)
         check("phone: SW cache bumped to v15+, live.json network-only",

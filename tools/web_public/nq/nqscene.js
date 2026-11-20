@@ -7,7 +7,7 @@
 import * as THREE from '../jarvis/three.module.min.js';
 import { createStage, shaftGeo, latheGeo, boxGeo, mergeParts, flameMesh, mat4 } from '../olympus/hero-stage.js';
 
-const WARM = new THREE.Color('#e6f6ff'), SHADE = new THREE.Color('#8f8678'), GOLD = 0x22d3ee;
+const WARM = new THREE.Color('#e6f6ff'), SHADE = new THREE.Color('#8f8678'), GOLD = 0x22d3ee;   // owner 2026-11-20: the NQ terminal look (cyan flame, no gold)
 const R0 = 0.42, SH = 3.7, GAP = 2.75;
 let R = null;
 
