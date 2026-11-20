@@ -40,7 +40,8 @@ EXTRA_PAGES = ["jarvis", "gate", "hub"]
 IMG = (".png", ".jpg", ".jpeg", ".webp", ".avif", ".gif", ".svg", ".ico")
 FONT = (".woff2", ".woff", ".ttf", ".otf")
 # files the publish build writes (tools/build_web_dashboard.py, gh_publish): a 404 on them in the repo tree is expected, not an app error
-BUILT = re.compile(r"/(home|data|kalshi|live|status)\.json|/money/[^/?]+\.json|/me/me\.json|/hub/learned\.json|/push_relay\.json|/charts/")
+BUILT = re.compile(r"/(home|data|kalshi|live|status)\.json|/money/[^/?]+\.json|/me/me\.json|/hub/learned\.json|/push_relay\.json|/charts/|/icons/|/writeups/index\.json"
+                   r"|/kalshi/kit\.json|/agency/my_leads\.json|/business/business\.json")
 AGE_RX = re.compile(r"(\b\d+\s*(?:s|sec|min|m|h|hr|hour|hours|d|day|days)\s+ago\b|\bas of\b|\bupdated\b|\blast (?:data|update|seen|report)|\bjust now\b|\bstale\b|\bold\b)", re.I)
 
 MORE = r"""

@@ -1,0 +1,165 @@
+{
+ "_note": "tools/perf_sweep.py --check budgets on the phone profile (390 x 844, CPU x4, Fast 3G, cold). 'default' = the target on that line; an app's own numbers = today's value +15% where it is over the target (a regression guard, to be lowered as the ASKS land). offline: must open offline after one visit (red for every app but zenith / jarvis / kalshi until LEAD_WIRES 1 lands). Baseline 2026-11-20: research/handoff/2026-11-20/olympus2/perf/BASELINE.md",
+ "default": {
+  "fcp_ms": 2500,
+  "lcp_ms": 4000,
+  "kb": 500,
+  "js_kb": 1000,
+  "lt_max": 200,
+  "tbt": 300,
+  "cls": 0.1,
+  "heap_mb": 12,
+  "errors": 0,
+  "sideways": false,
+  "offline": true
+ },
+ "zenith": {
+  "kb": 940,
+  "js_kb": 2410,
+  "cls": 0.32
+ },
+ "fates": {
+  "fcp_ms": 3340,
+  "lcp_ms": 10880,
+  "kb": 670,
+  "js_kb": 1450,
+  "lt_max": 2110,
+  "tbt": 4850,
+  "heap_mb": 17.6
+ },
+ "cities": {
+  "js_kb": 1370,
+  "lt_max": 4740,
+  "tbt": 9250,
+  "heap_mb": 16.6
+ },
+ "journal": {
+  "lcp_ms": 5030,
+  "cls": 0.23
+ },
+ "ledger": {
+  "fcp_ms": 3160,
+  "lcp_ms": 6120,
+  "js_kb": 1640,
+  "lt_max": 1550,
+  "tbt": 3920
+ },
+ "inbox": {
+  "cls": 0.82
+ },
+ "settings": {
+  "fcp_ms": 3280,
+  "lt_max": 270
+ },
+ "planner": {
+  "lcp_ms": 6230,
+  "cls": 0.33
+ },
+ "demeter": {
+  "lcp_ms": 4820,
+  "cls": 0.98
+ },
+ "hera": {
+  "lcp_ms": 4670,
+  "cls": 0.28
+ },
+ "dionysus": {
+  "cls": 1.03
+ },
+ "pnyx": {
+  "cls": 0.24
+ },
+ "mercury": {
+  "lcp_ms": 4670,
+  "js_kb": 1290,
+  "lt_max": 570,
+  "tbt": 1150
+ },
+ "chrysos": {
+  "lcp_ms": 4910,
+  "js_kb": 1570,
+  "lt_max": 380,
+  "tbt": 540,
+  "cls": 0.87
+ },
+ "oikos": {
+  "lcp_ms": 7290,
+  "js_kb": 1320,
+  "lt_max": 590,
+  "tbt": 760,
+  "cls": 0.23
+ },
+ "aegis": {
+  "lcp_ms": 5160,
+  "js_kb": 1680,
+  "lt_max": 440,
+  "tbt": 470,
+  "cls": 0.42
+ },
+ "kronos": {
+  "lcp_ms": 6730,
+  "kb": 750,
+  "js_kb": 1680,
+  "lt_max": 1660,
+  "tbt": 4830,
+  "cls": 0.95
+ },
+ "compass": {
+  "lcp_ms": 9080,
+  "kb": 680,
+  "js_kb": 1580,
+  "lt_max": 400,
+  "cls": 0.53
+ },
+ "helios": {
+  "lcp_ms": 5630,
+  "kb": 590,
+  "js_kb": 1710,
+  "lt_max": 270,
+  "cls": 0.31
+ },
+ "nq": {
+  "lcp_ms": 7460,
+  "kb": 1090,
+  "js_kb": 2030,
+  "lt_max": 930,
+  "tbt": 2300,
+  "cls": 0.67,
+  "heap_mb": 13.9
+ },
+ "agency": {
+  "cls": 1.09
+ },
+ "business": {
+  "fcp_ms": 3150,
+  "cls": 0.12
+ },
+ "trading": {
+  "fcp_ms": 2980,
+  "lcp_ms": 6670,
+  "lt_max": 340,
+  "tbt": 570
+ },
+ "board": {
+  "cls": 0.76
+ },
+ "clio": {
+  "cls": 0.81
+ },
+ "kalshi": {
+  "cls": 0.26
+ },
+ "tyche": {
+  "lcp_ms": 12930,
+  "js_kb": 1600,
+  "lt_max": 3850,
+  "tbt": 7920
+ },
+ "jarvis": {
+  "kb": 1810,
+  "js_kb": 3170,
+  "lt_max": 2320,
+  "tbt": 6800,
+  "heap_mb": 21.8
+ }
+}
