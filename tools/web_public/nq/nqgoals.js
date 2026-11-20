@@ -307,7 +307,7 @@ export function burst(at, kind) {
   document.body.appendChild(cv);
   const g = cv.getContext('2d'); if (!g) { cv.remove(); return false; }
   g.scale(dpr, dpr);
-  const cx = r.left + r.width / 2, cy = r.top + r.height / 2, cols = kind === 'win' ? ['#22c55e', '#86efac', '#22d3ee'] : ['#22d3ee', '#8b5cf6', '#67e8f9'];
+  const cx = r.left + r.width / 2, cy = r.top + r.height / 2, cols = kind === 'win' ? ['#77db89', '#b7f0c2', '#f1c14b'] : ['#9d59ee', '#dacbf0', '#f1c14b'];
   const P = Array.from({ length: 70 }, () => { const a = Math.random() * Math.PI * 2, s = 2 + Math.random() * 5; return { x: cx, y: cy, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 2, life: 1, c: cols[(Math.random() * cols.length) | 0], z: 1 + Math.random() * 2.2 }; });
   const t0 = performance.now();
   const step = (t) => {
