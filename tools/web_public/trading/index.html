@@ -32,6 +32,7 @@
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#c8a24a'); r.setProperty('--oly-accent-rgb', '200, 162, 74'); })();</script>
 <link rel="stylesheet" href="trading.css?v=4">
 <link rel="stylesheet" href="../nqdeep.css?v=1">
+<link rel="stylesheet" href="../nq/nqdesk.css?v=2">
 </head>
 <body>
 <main id="app">
@@ -54,6 +55,13 @@
     <p class="note">MFFU rule: be flat by 16:10 ET; no orders 16:10-18:00 ET. LIT itself is flat by 15:55 ET. Holidays can close earlier.</p>
     <div class="accts" id="accts"></div>
     <p class="note" id="todaySrc"></p>
+  </section>
+
+  <!-- nqdash3 2026-11-20 (../nq/nqdesk.js): every MFFU account, its balance, room left, to pass / to payout, today's $, a live / stale dot -->
+  <section class="ag-card card" id="acctCard" aria-labelledby="acctH">
+    <div class="row"><h2 id="acctH">Accounts</h2><span class="pill" id="acctPill">Loading</span></div>
+    <div class="dk-strip" id="acctStrip" role="list" aria-label="Each MFFU account"></div>
+    <p class="dk-legend" aria-hidden="true"><span><i class="dk-dot live"></i>live</span><span><i class="dk-dot stale"></i>stale (no report for 20 min)</span><span><i class="dk-dot plan"></i>planned</span></p>
   </section>
 
   <section class="ag-card card filters" id="filterCard" aria-label="What to show">
@@ -155,6 +163,6 @@
 </section>
 <script src="../edge_chip.js?v=2"></script>
 <script src="../nqdeep.js?v=1" defer></script>
-<script type="module" src="trading.js?v=6"></script>
+<script type="module" src="trading.js?v=8"></script>
 </body>
 </html>
