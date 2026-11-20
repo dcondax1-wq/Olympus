@@ -1096,10 +1096,29 @@ class AccountB:
         return self.open_t is None or int(self.open_t) != et_
 
     # ---- one poll
+    def _price_limit(self, now) -> str | None:
+        """MFFU's 2% price-limit rule (engine/price_limit.py): this account's FUNDED stage only. None = may trade."""
+        try:
+            if not self.funded():
+                return None
+            from . import price_limit as _pl
+            return _pl.blocked(int(now))
+        except Exception:
+            return None
+
     def tick(self, df5, df1, sym, now):
         """After LIT's routing and state save: manage B's open position, then maybe a new entry. Never raises."""
         if self.problem or self.adapter is None:
             return
+        try:                                              # MFFU's 2% price-limit rule, funded only: an open position is closed
+            pl = self._price_limit(now) if self.open_t is not None else None
+            if pl:
+                pv = self.prov.get(int(self.open_t)) or {}
+                if not ((pv.get("closing") or {}) and not pv["closing"].get("done")):
+                    self.log("risk", f"{pl}: flattening")
+                    self.flatten(int(self.open_t), "PRICE LIMIT", sym, now)
+        except Exception as e:
+            self.log("error", f"price-limit flatten failed: {e.__class__.__name__}: {e}")
         try:
             from . import second as _second
             self.reconcile_unplaced(now)                  # an entry the broker never took is not a position
@@ -1458,6 +1477,9 @@ class AccountB:
                 if h:
                     out.append(f"Tier-1 news within {int(c.get('news_min') or 2)} min: {h}")
             out += G._owner_blocks(self.bot, c, int(now))
+            pl = self._price_limit(now)
+            if pl:
+                out.append(pl)
             return "GUARD " + "; ".join(out) if out else None
         except Exception as e:
             self.log("error", f"guards failed ({e.__class__.__name__}: {e}): entry NOT routed (account B fails closed)")

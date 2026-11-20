@@ -1353,6 +1353,12 @@ class LiveBot:
             self._combo_sync()                # the owner's combo switch (OFF: no file = nothing changes)
             if self.combo is not None or self._combo_live():
                 self._combo_frames = (df_full, df1, int(now))   # _combo_refresh: ATLAS's trade on this poll's bars
+        if model == "lit":                    # MFFU's 2% price-limit rule (engine/price_limit.py): one reading per poll, before
+            try:                              # any account routes; only FUNDED accounts act on it (no entry, flatten)
+                from . import price_limit as _pl
+                self.health["price_limit"] = _pl.update(df_full, df1, now) or None
+            except Exception as e:
+                self._note_error(f"price-limit reading failed: {e.__class__.__name__}: {e}")
         self._route_signals(res, sym, now, secs)
         self.health["lit_ms"] = int((time.perf_counter() - t0) * 1000)   # poll start -> LIT decided and routed
         self._guards_tick(now)
@@ -3301,6 +3307,14 @@ class LiveBot:
         lb = self._life_block(now)
         if lb:
             return lb
+        try:                                    # MFFU's 2% price-limit rule (engine/price_limit.py): Zlarior's own account once FUNDED
+            if self._combo_stage() == "funded":
+                from . import price_limit as _pl
+                pl = _pl.blocked(now)
+                if pl:
+                    return pl
+        except Exception as e:
+            self._note_error(f"price-limit check failed: {e.__class__.__name__}: {e}")
         try:
             from . import guards
             return guards.entry_block(self, ent, self._entry_action(ent, q, sym), q, now)

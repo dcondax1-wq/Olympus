@@ -102,6 +102,10 @@ SCENARIOS = {
     "kill": ("2026-10-07", "KILL at 11:00 with LIT long on both evals and ATLAS long on the funded 25K",
              {"kill_at": ts("2026-10-07", 11, 0, 3)}),
     "flatten": ("2026-10-13", "phone FLATTEN at 07:30 with LIT short on both evals", {"flatten_at": ts("2026-10-13", 7, 30, 3)}),
+    # MFFU's 2% price-limit rule (engine/price_limit.py) forced at 04:20 while ATLAS's FUNDED 25K is long (04:10): funded
+    # accounts flat + no entry after it (LIT's 04:32 short skips the funded 25K's LIT lane); the evals trade as usual
+    "pricelimit": ("2026-10-06", "MFFU 2% price-limit rule tripped at 04:20 (ATLAS funded long, LIT short 04:32)",
+                   {"pl_at": ts("2026-10-06", 4, 20, 3)}),
 }
 RESTART = {"2026-10-02": ts("2026-10-02", 5, 0, 3), "2026-10-13": ts("2026-10-13", 7, 0, 3)}   # STOP + START mid-trade
 
@@ -502,9 +506,14 @@ def poll_times(day: str, quick: bool, want: list, full: bool = False) -> list:
 
 
 # ================================================================================================ one day
+FUNDED_LANES = ("ATLAS funded 25K (B)", "LIT on funded 25K")
+
+
 def run_day(rig, day, label, F: Findings, quick=False, restart_at=None, kill_at=None, want=(), hold=None, passed50=False,
-            flatten_at=None, full=False):
+            flatten_at=None, full=False, pl_at=None):
     from engine import cme_calendar as C
+    from engine import price_limit as PL
+    PL.reset()
     from engine.tradovate import LIVE_PHRASE
     print(f"\n== {day}: {label}" + (" (+ Rapid EOD 25K)" if rig.rapid else "") + (" (+ Rapid EOD 50K #2)" if rig.rapid2 else ""),
           flush=True)
@@ -545,6 +554,7 @@ def run_day(rig, day, label, F: Findings, quick=False, restart_at=None, kill_at=
     flat_mod = C.flat_cut(day, 955)
     t_open_lane, nt_sizes, flattened = {}, [], False
     rapid_two, rapid2_two = [], []
+    pl_first = None                                  # the first poll MFFU's 2% price-limit rule blocked funded accounts
     for t in polls:
         rig.hold = {a: z for a, (f, z) in (hold or {}).items() if t >= f}
         rig.walk(t - 3 - 60)                         # the 1m bar that just closed trades through NinjaTrader
@@ -584,6 +594,10 @@ def run_day(rig, day, label, F: Findings, quick=False, restart_at=None, kill_at=
         if restart_at and t >= restart_at and not getattr(bot, "_rh_restarted", False):
             bot = restart(rig, bot, body, state_path, day, F)
             bot._rh_restarted = True
+        if pl_at and t >= pl_at and not PL._STICKY:          # the forced crash reading (scenario "pricelimit")
+            PL._STICKY[PL.trading_day(t)] = {"pct": -0.0481, "ref": 25000.0, "t": int(t), "forced": True}
+        if PL._STICKY and pl_first is None:
+            pl_first = min(int(v["t"]) for v in PL._STICKY.values())
         if kill_at and t >= kill_at and not killed:
             killed = True
             kill_check(rig, bot, day, F)
@@ -603,6 +617,20 @@ def run_day(rig, day, label, F: Findings, quick=False, restart_at=None, kill_at=
     if flattened:
         after = [z for z in entries_of(bot) if z[1] > getattr(bot, "_rh_flat_t", 0)]
         F.check(f"{day} after the FLATTEN: no new entry on any account for the rest of the day", not after, after)
+    if pl_first is not None:                        # MFFU's 2% price-limit rule hit today (forced or real)
+        L2 = lanes(bot)
+        fund = [k for k in FUNDED_LANES if k in L2]
+        after = [z for z in entries_of(bot) if z[0] in fund and z[1] >= pl_first]
+        F.check(f"{day} price-limit rule from {hm(pl_first)}: no new entry on a FUNDED account ({', '.join(fund)})", not after, after)
+        late = [(k, o.open_t) for k in fund for o, _a in [L2[k]] if getattr(o, "open_t", None) is not None]
+        F.check(f"{day} price-limit rule: every FUNDED account flat by the end of the day's polls", not late, late)
+        ex = [r for k in fund for r in (getattr(L2[k][0], "ledger", None) or []) if r.get("side") == "exit" and r.get("reason") == "PRICE LIMIT"]
+        print(f"    price limit from {hm(pl_first)}: {len(ex)} funded position(s) closed with reason PRICE LIMIT")
+        if pl_at:
+            F.check(f"{day} price-limit rule: the funded position open at {hm(pl_at)} was closed for it (reason PRICE LIMIT)",
+                    len(ex) >= 1, ex[:2])
+            ev = [z for z in entries_of(bot) if z[0] not in fund and z[1] >= pl_first]
+            F.check(f"{day} price-limit rule: the EVAL accounts keep trading (MFFU names funded accounts only)", len(ev) >= 1, ev)
     sizes = size_checks(bot, day, F)
     rapid_day = None
     if rig.rapid:
