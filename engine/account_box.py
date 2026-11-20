@@ -3,12 +3,21 @@
 One small page on the PC bot server, on the PC itself (http://localhost:8766/add-account/) or over the owner's PRIVATE Tailscale link
 (https://<pc>.<tailnet>.ts.net/add-account/): pick the plan, type (or tap) the NinjaTrader Name, press Add. It runs the SAME code as
 ADD_ACCOUNT.bat (engine/account_cli.add: name / size / MFFU slot / one-Rapid checks, CHECK THE NAME warning) and shows [OK] or
-NOT ADDED in plain words. It NEVER arms: the account is added DISARMED and joins at the next START BOT, after the owner types
-I ACCEPT LIVE RISK himself (Start page on the PC, START_BOT.bat). There is no arm button here on purpose.
+NOT ADDED in plain words. The account is added DISARMED.
+
+One press to trading (owner 2026-11-20: "if I enter the account name it will start trading automatically"): on the PC itself the
+owner may also type I ACCEPT LIVE RISK in the same box. Then, after an [OK] add, the page runs the dashboard's own "Re-arm now"
+(engine/onboard.rearm: the phrase checked, STOP only when flat, then the START BOT arm step for EVERY added account, the new one
+included). Not flat right now (a trade or a LIT entry waiting) = it waits by itself: every 30 s, at most WAIT_MAX_S, the phrase only
+in this server's memory (a restart forgets it), and re-arms the moment the bot is flat. The phrase is never stored, logged or echoed.
+Over the Tailscale link the phrase is refused (the futures bot is armed on the PC only, engine/phone_safety); the add still works.
+Claude never arms: only the owner's own typed phrase does.
 
   GET  /add-account/         the page
   GET  /add-account/status   the accounts the bot knows (Names masked to the last 4), the MFFU slots, the NinjaTrader Names not added yet
-  POST /add-account/add      {"plan": rapideod25 | rapideod | builder25k | builder50k, "name": "<NinjaTrader Name>"}
+  POST /add-account/add      {"plan": rapideod25 | rapideod | builder25k | builder50k, "name": "<NinjaTrader Name>", "confirm"?: phrase}
+  POST /add-account/start    {"confirm": phrase} start trading every added account now (same Re-arm, waits for flat); PC only
+  POST /add-account/cancel   {} drop a waiting start
 
 Every POST must pass check(): not cloud mode; the private link (engine/live_site.private_why: the PC itself, or a device signed in
 to the owner's tailnet; never the home WiFi, never Funnel / another tunnel); sent by this page (X-Add-Account: 1 header, JSON,
@@ -32,12 +41,14 @@ except Exception:  # noqa: BLE001
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PREFIX = "/add-account"
-ACTIONS = ("add",)
+ACTIONS = ("add", "start", "cancel")
+WAIT_MAX_S, WAIT_POLL_S = 8 * 3600, 30.0
 HEADER = "x-add-account"
 MAX_BODY = 2048
 RATE_N, RATE_S = 8, 600
 PLAN_ORDER = ("rapideod25", "rapideod", "builder25k", "builder50k")
-_S: dict = {"installed": False, "log": None}
+_S: dict = {"installed": False, "log": None, "rearm": None, "flat": None, "running": None, "sleep": time.sleep}
+_W: dict = {"state": None, "t0": None, "said": None, "gen": 0}
 _LOCK = threading.Lock()
 _HITS: list = []
 
@@ -145,7 +156,7 @@ def allowed(method: str, path: str) -> bool:
 
 
 # ------------------------------------------------------------------------------------------------ the work (engine/account_cli)
-def do_add(body: dict) -> dict:
+def do_add(body: dict, local: bool = False) -> dict:
     """Exactly ADD_ACCOUNT.bat: engine/account_cli.add(plan, name). Never arms. Reply: {ok, lines: [...]}."""
     from engine import account_cli as ac
     plan = str(body.get("plan") or "").strip().lower()
@@ -160,8 +171,96 @@ def do_add(body: dict) -> dict:
                                        "Nothing changed, the bot keeps trading as before. Fix the Name and press Add again."]}
     lines = [r.get("say") or "[OK]"] + [f"- {n}" for n in (r.get("notes") or [])] + [r.get("slots") or ac.slots_text()]
     check_name = any(str(n).startswith("CHECK THE NAME") for n in (r.get("notes") or []))
-    lines.append("Next: STOP BOT when flat, then START BOT and type I ACCEPT LIVE RISK yourself. Nothing is armed until then.")
-    return {"ok": True, "check_name": check_name, "lines": lines}
+    out = {"ok": True, "check_name": check_name, "lines": lines}
+    if str(body.get("confirm") or "").strip():
+        st = do_start(body, local)
+        out["started"] = st.get("ok")
+        out["lines"] = lines + st["lines"]
+    else:
+        lines.append("Next: type I ACCEPT LIVE RISK in the box on the PC and press Start trading (or STOP BOT + START BOT). "
+                     "Nothing is armed until then.")
+    return out
+
+
+# ------------------------------------------------------------------------------------------------ one press to trading
+def _rearm(phrase: str) -> dict:
+    if _S["rearm"]:
+        return _S["rearm"](phrase)
+    from engine import onboard, start_api
+    return onboard.rearm(phrase, stop_fn=start_api._stop_fn(), flat_reason=start_api._flat_reason)
+
+
+def _phrase_ok(raw) -> str | None:
+    from engine import go
+    p = go.typed_phrase(str(raw or ""))
+    return p if p == go.LIVE_PHRASE else None
+
+
+def do_start(body: dict, local: bool) -> dict:
+    """The owner's typed phrase -> Re-arm now (every added account); not flat = wait for flat by itself. Never without the phrase."""
+    if not local:
+        return {"ok": False, "lines": ["Start trading is done on the PC itself (http://localhost:8766/add-account/): the phone may "
+                                       "add, never arm the futures bot. Nothing armed."]}
+    phrase = _phrase_ok(body.get("confirm"))
+    body["confirm"] = None
+    if not phrase:
+        return {"ok": False, "lines": ["Type I ACCEPT LIVE RISK exactly to start trading. Nothing armed."]}
+    r = _rearm(phrase)
+    if r.get("ok"):
+        _W.update(state="started", t0=_now(), said=r.get("say"), gen=_W["gen"] + 1)
+        return {"ok": True, "lines": ["STARTING: " + (r.get("say") or "START runs now with your phrase."),
+                                      "Watch it here (Bot line below) or on the Start page; your phone gets the usual alerts."]}
+    err = str(r.get("error") or "")
+    if err.startswith("Not flat"):
+        _wait(phrase)
+        return {"ok": True, "waiting": True,
+                "lines": [f"WAITING: {err.split(':', 1)[0]}. It starts by itself the moment the bot is flat (checks every "
+                          f"{int(WAIT_POLL_S)} s, up to {WAIT_MAX_S // 3600} h). Press Cancel to drop it. Nothing armed yet."]}
+    return {"ok": False, "lines": [f"NOT STARTED: {err or 'the START step did not begin'}"]}
+
+
+def _wait(phrase: str) -> None:
+    _W.update(state="waiting", t0=_now(), said=None, gen=_W["gen"] + 1)
+    gen = _W["gen"]
+
+    def run(p=phrase):
+        while _W["gen"] == gen and _now() - _W["t0"] < WAIT_MAX_S:
+            _S["sleep"](WAIT_POLL_S)
+            if _W["gen"] != gen:
+                return
+            try:
+                r = _rearm(p)
+            except Exception as e:  # noqa: BLE001
+                r = {"ok": False, "error": f"re-arm failed ({e.__class__.__name__})"}
+            if r.get("ok"):
+                _W.update(state="started", said=r.get("say"))
+                log({"t": int(_now()), "action": "start", "ok": True, "why": "waited for flat"})
+                return
+            if not str(r.get("error") or "").startswith("Not flat"):
+                _W.update(state="failed", said=str(r.get("error"))[:200])
+                log({"t": int(_now()), "action": "start", "ok": False, "why": scrub(r.get("error"))[:120]})
+                return
+        if _W["gen"] == gen:
+            _W.update(state="gave_up", said=f"still not flat after {WAIT_MAX_S // 3600} h: press Start trading again")
+    threading.Thread(target=run, name="account_box_wait", daemon=True).start()
+
+
+def do_cancel() -> dict:
+    was = _W["state"] == "waiting"
+    _W.update(state="cancelled" if was else _W["state"], gen=_W["gen"] + 1)
+    return {"ok": True, "lines": ["Cancelled: it will not start by itself. Nothing armed." if was else "Nothing was waiting."]}
+
+
+def bot_line() -> dict:
+    w = dict(_W)
+    w.pop("gen", None)
+    try:
+        from engine import go
+        j = go.job_status()
+        job = {"step": j.get("step"), "state": j.get("state"), "say": j.get("say"), "last": (j.get("lines") or [""])[-1][:160]}
+    except Exception:  # noqa: BLE001
+        job = None
+    return {"wait": w, "job": job}
 
 
 def status_view() -> dict:
@@ -185,7 +284,7 @@ def status_view() -> dict:
     plans = [{"id": k, "label": ac.PLANS[k]["label"], "price": ac.PLANS[k]["price"], "bots": ac.PLANS[k]["bots"]} for k in PLAN_ORDER]
     accts = [{"name": mask(r["name"]), "plan": ac.PLANS.get(r["plan"], {}).get("label", str(r["plan"])), "stage": r["stage"],
               "role": r["role"], "armed": r.get("armed"), "sim": r.get("sim")} for r in rows]
-    return {"ok": True, "plans": plans, "accounts": accts, "slots": ac.slots_text(rows), "nt_new": seen}
+    return {"ok": True, "plans": plans, "accounts": accts, "slots": ac.slots_text(rows), "nt_new": seen, **bot_line()}
 
 
 PAGE = """<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -199,13 +298,19 @@ border:1px solid var(--line);background:#0b0d11;color:var(--fg)}button{width:100
 border:0;border-radius:10px;background:var(--acc);color:#fff}button:disabled{opacity:.5}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.chip{width:auto;margin:0;padding:8px 10px;font-size:14px;background:#26304a}
 #out div{margin:3px 0;white-space:pre-wrap}.ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}
+.row{display:flex;gap:8px}.sec{background:#2b3346;font-size:15px;padding:10px}
 ul{padding-left:18px;margin:6px 0}li{margin:2px 0}small{color:var(--mut)}
 </style></head><body><main>
-<h1>Add account</h1><p class="s">Adds it DISARMED. Nothing trades until START BOT and you type the live phrase yourself.</p>
+<h1>Add account</h1><p class="s">Type the Name. On the PC, also type the phrase: one press adds it AND starts trading (it waits for flat by itself).</p>
 <div class="c"><label for="plan">Plan</label><select id="plan"></select>
 <label for="name">NinjaTrader Name (Accounts tab)</label><input id="name" autocomplete="off" autocapitalize="off" spellcheck="false"
  placeholder="paste or type the Name">
-<div id="seen"></div><button id="go">Add</button><div id="out"></div></div>
+<div id="seen"></div>
+<label for="ph">Start trading now? Type I ACCEPT LIVE RISK (PC only; empty = just add)</label><input id="ph" autocomplete="off"
+ autocapitalize="characters" spellcheck="false" placeholder="I ACCEPT LIVE RISK">
+<button id="go">Add</button><div class="row"><button id="st" class="sec">Start trading (already added)</button>
+<button id="cx" class="sec">Cancel waiting</button></div><div id="out"></div></div>
+<div class="c"><b>Bot</b><div id="bot"><small>…</small></div></div>
 <div class="c"><b>The bot knows</b><ul id="acc"><li><small>loading…</small></li></ul><small id="slots"></small></div>
 </main><script>
 const $=id=>document.getElementById(id);
@@ -219,16 +324,22 @@ $('slots').textContent=d.slots||'';
 $('seen').innerHTML=d.nt_new.length?'<small>NinjaTrader shows, not added yet (tap one):</small><div class="chips">'+d.nt_new.map(a=>
 '<button class="chip" data-n="'+esc(a.name)+'">'+esc(a.name)+(a.balance!=null?' · $'+Math.round(a.balance).toLocaleString():'')+'</button>').join('')+'</div>':'';
 document.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{$('name').value=b.dataset.n});
+const w=d.wait||{},j=d.job||{};const W={waiting:'<span class="warn">Waiting for flat, then it starts by itself</span>',started:'<span class="ok">Started: '+esc(w.said||'')+'</span>',
+failed:'<span class="bad">Did not start: '+esc(w.said||'')+'</span>',gave_up:'<span class="bad">'+esc(w.said||'')+'</span>',cancelled:'Waiting cancelled'}[w.state]||'';
+$('bot').innerHTML=(W?'<div>'+W+'</div>':'')+(j.step?'<div><small>START step: '+esc(j.state||'')+(j.say?' · '+esc(j.say):'')+(j.last?' · '+esc(j.last):'')+'</small></div>':'')||'<small>no start running</small>';
 }catch(e){$('acc').innerHTML='<li class="bad">PC not reachable</li>'}}
-$('go').onclick=async()=>{const name=$('name').value.trim(),plan=$('plan').value;
-if(!name){$('out').innerHTML='<div class="bad">Type the Name first.</div>';return}
-$('go').disabled=true;$('out').innerHTML='<div><small>checking…</small></div>';
-try{const r=await fetch('add',{method:'POST',headers:{'Content-Type':'application/json','X-Add-Account':'1'},body:JSON.stringify({plan,name})});
-const d=await r.json();const L=d.lines||[(d.ok?'[OK]':'[NOT ADDED] ')+(d.error||'')];
-$('out').innerHTML=L.map(l=>'<div class="'+(/^\\[OK\\]/.test(l)?'ok':/NOT ADDED|refused|private/i.test(l)?'bad':/CHECK THE NAME/.test(l)?'warn':'')+'">'+esc(l)+'</div>').join('');
-if(d.ok)$('name').value='';load();}catch(e){$('out').innerHTML='<div class="bad">PC not reachable: nothing changed.</div>'}
-$('go').disabled=false};
-load();
+function show(L){$('out').innerHTML=L.map(l=>'<div class="'+(/^(\\[OK\\]|STARTING)/.test(l)?'ok':/NOT ADDED|NOT STARTED|NOT DONE|refused|private/i.test(l)?'bad':/CHECK THE NAME|WAITING/.test(l)?'warn':'')+'">'+esc(l)+'</div>').join('')}
+async function post(path,body){const r=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json','X-Add-Account':'1'},body:JSON.stringify(body)});
+const d=await r.json();return d.lines?d:{...d,lines:[(d.ok?'[OK] ':'[NOT DONE] ')+(d.error||'')]}}
+async function press(btn,fn){btn.disabled=true;$('out').innerHTML='<div><small>working…</small></div>';
+try{const d=await fn();show(d.lines);if(d.ok)$('ph').value='';load()}catch(e){show(['[NOT DONE] PC not reachable: nothing changed.'])}btn.disabled=false}
+$('go').onclick=()=>{const name=$('name').value.trim(),plan=$('plan').value,confirm=$('ph').value;
+if(!name){show(['[NOT ADDED] Type the Name first.']);return}
+press($('go'),async()=>{const d=await post('add',{plan,name,confirm});if(d.ok)$('name').value='';return d})};
+$('st').onclick=()=>press($('st'),()=>post('start',{confirm:$('ph').value}));
+$('cx').onclick=()=>press($('cx'),()=>post('cancel',{}));
+$('ph').oninput=()=>{$('go').textContent=$('ph').value.trim()?'Add + start trading':'Add'};
+load();setInterval(load,15000);
 </script></body></html>"""
 
 
@@ -272,11 +383,15 @@ def install(app) -> dict:
         if code is not None:
             log({"t": int(_now()), "action": str(action)[:12], "ok": False, "why": str(body.get("error"))[:120]})
             return JSONResponse(body, status_code=code, headers=nostore)
+        from engine import cloud_guard
+        local = cloud_guard.local_only(request) is None
         try:
-            out = do_add(body)
+            out = do_add(body, local) if action == "add" else do_start(body, local) if action == "start" else do_cancel()
         except Exception as e:  # noqa: BLE001
-            out = {"ok": False, "lines": [f"[NOT ADDED] it did not run ({e.__class__.__name__}); use ADD_ACCOUNT.bat. Nothing changed."]}
+            out = {"ok": False, "lines": [f"[NOT DONE] it did not run ({e.__class__.__name__}); use ADD_ACCOUNT.bat / START BOT."]}
+        body.pop("confirm", None)
         log({"t": int(_now()), "action": action, "plan": str(body.get("plan"))[:16], "name": mask(body.get("name")),
+             "started": out.get("started"), "waiting": out.get("waiting"),
              "ok": bool(out.get("ok")), "why": "" if out.get("ok") else scrub((out.get("lines") or [""])[0])[:120]})
         return JSONResponse(out, status_code=200, headers=nostore)
 
