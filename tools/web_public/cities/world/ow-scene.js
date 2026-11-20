@@ -74,10 +74,18 @@ export function createWorld(opts) {
   const rc = createRenderer({ canvas, scene, camera, env: 'none', bloomMax: 0.8, maxDpr: 2, quality: opts.quality || undefined,
     bloom: { strength: 0.5, radius: 0.55, threshold: 0.95 }, grade: { vignette: 0.3, grain: 0.014, saturation: 1.06, aberration: 0.0005 } });
   // ---- shared uniforms
-  const U = { uTime: { value: 0 }, uMoonDir: { value: MOON }, uFogDensity: { value: 0.0016 }, uDay: { value: 1e4 }, uWarp: { value: 0 }, uDusk: { value: 0 }, uNoon: { value: 0 } };
+  const U = { uTime: { value: 0 }, uMoonDir: { value: MOON }, uFogDensity: { value: 0.0016 }, uDay: { value: 1e4 }, uWarp: { value: 0 }, uDusk: { value: 0 }, uNoon: { value: 0 }, uSunDir: { value: new THREE.Vector3(0.42, 0.075, -1).normalize() }, uLightDir: { value: new THREE.Vector3() }, uLightCol: { value: new THREE.Vector3() } };
   // the sky follows the market clock (revamp-cities): the NQ cash session = golden hour, the hours round it = blue hour, else night
   let dusk = skyFor(opts.sky), duskTo = dusk;
-  const setLightK = (v) => { U.uDusk.value = Math.min(1, v); U.uNoon.value = Math.max(0, Math.min(1, v - 1)); };   // cities3: 0 night .. 1 golden .. 2 day
+  const SUN0 = new THREE.Vector3(0.42, 0.075, -1).normalize(), SUN1 = new THREE.Vector3(0.5, 0.62, -0.62).normalize();
+  const LC0 = new THREE.Vector3(0.12, 0.15, 0.26), LC1 = new THREE.Vector3(1.25, 0.66, 0.34), LC2 = new THREE.Vector3(1.7, 1.52, 1.28);
+  const setLightK = (v) => {   // cities3: 0 night .. 1 golden .. 2 day; the sun, the key light's direction and colour once here, not per pixel
+    const dk = Math.min(1, v), nn = Math.max(0, Math.min(1, v - 1));
+    U.uDusk.value = dk; U.uNoon.value = nn;
+    U.uSunDir.value.copy(SUN0).lerp(SUN1, nn).normalize();
+    U.uLightDir.value.copy(U.uMoonDir.value).normalize().lerp(U.uSunDir.value, dk).normalize();
+    U.uLightCol.value.copy(LC0).lerp(LC1, dk).lerp(LC2, nn);
+  };
   setLightK(dusk);
   const TW = 64, TH = Math.max(1, Math.ceil(plan.slots / TW));
   const tex = new Uint8Array(TW * TH * 4);

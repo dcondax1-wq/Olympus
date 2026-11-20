@@ -17,18 +17,18 @@ uniform float uDusk;
 uniform float uNoon;   // cities3: the real New York daylight on top of uDusk (0 = dusk / night as before .. 1 = full day)
 float hash12(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 float hash13(vec3 p3) { p3 = fract(p3 * 0.1031); p3 += dot(p3, p3.zyx + 31.32); return fract((p3.x + p3.y) * p3.z); }
-vec3 sunDir() { return normalize(mix(vec3(0.42, 0.075, -1.0), vec3(0.5, 0.62, -0.62), uNoon)); }
-vec3 lightDir() { return normalize(mix(uMoonDir, sunDir(), uDusk)); }
-vec3 lightCol() { return mix(mix(vec3(0.12, 0.15, 0.26), vec3(1.25, 0.66, 0.34), uDusk), vec3(1.7, 1.52, 1.28), uNoon); }
+uniform vec3 uSunDir; uniform vec3 uLightDir; uniform vec3 uLightCol;   // cities3: worked out once a frame on the CPU (ow-scene.js setLightK), not per pixel
+vec3 sunDir() { return uSunDir; }
+vec3 lightDir() { return uLightDir; }
+vec3 lightCol() { return uLightCol; }
 vec3 daySky(vec3 d) {
   float h = d.y;
   vec3 c = mix(vec3(0.44, 0.52, 0.62), vec3(0.20, 0.38, 0.70), smoothstep(0.0, 0.3, h));
   c = mix(c, vec3(0.09, 0.22, 0.55), smoothstep(0.3, 0.95, h));
-  float s = max(dot(d, sunDir()), 0.0);
-  c += vec3(1.0, 0.92, 0.75) * (pow(s, 8.0) * 0.25 + pow(s, 600.0) * 4.0);
-  return mix(c, vec3(0.20, 0.22, 0.25), 1.0 - smoothstep(-0.3, 0.0, h));
+  return mix(c, vec3(0.20, 0.22, 0.25), 1.0 - smoothstep(-0.3, 0.0, h));     // the sun's glow is drawn once on the dome (SKY_FS), not in every reflection / fog lookup
 }
 vec3 skyCol(vec3 d) {
+  if (uNoon > 0.999) return daySky(d);                 // full day: the night sky is not worked out (uniform branch, the same for every pixel)
   float h = d.y;
   vec3 zen = mix(vec3(0.0030, 0.0055, 0.018), vec3(0.016, 0.042, 0.13), uDusk);
   vec3 mid = mix(vec3(0.010, 0.016, 0.044), vec3(0.07, 0.10, 0.24), uDusk);
@@ -40,7 +40,7 @@ vec3 skyCol(vec3 d) {
   c += vec3(1.0, 0.5, 0.2) * (pow(s, 14.0) * 0.3 + pow(s, 120.0) * 1.0) * uDusk * smoothstep(-0.05, 0.12, 0.35 - h);
   c += vec3(0.05, 0.08, 0.15) * pow(max(dot(d, uMoonDir), 0.0), 20.0) * 0.6 * (1.0 - uDusk);
   c = mix(c, mix(vec3(0.008, 0.009, 0.016), vec3(0.05, 0.05, 0.07), uDusk), 1.0 - smoothstep(-0.3, 0.0, h));
-  return mix(c, daySky(d), uNoon);
+  return uNoon > 0.001 ? mix(c, daySky(d), uNoon) : c;
 }
 vec3 fogged(vec3 col, vec3 wp) {
   vec3 dv = wp - cameraPosition;
@@ -371,7 +371,7 @@ void main() {
     float n = vn(uv) * 0.55 + vn(uv * 2.3 + 7.1) * 0.3 + (uAurora > 0.0 ? vn(uv * 5.1 + 3.3) * 0.15 : 0.075);
     cover = smoothstep(0.5, 0.82, n) * smoothstep(0.02, 0.12, d.y) * (1.0 - smoothstep(0.45, 0.95, d.y) * 0.6);
     vec3 under = mix(mix(vec3(0.07, 0.035, 0.022), vec3(0.75, 0.38, 0.2), uDusk) * exp(-d.y * 3.0) + mix(vec3(0.012, 0.014, 0.026), vec3(0.2, 0.2, 0.3), uDusk), vec3(0.92, 0.94, 0.98), uNoon);
-    float rim = pow(max(dot(d, normalize(mix(uMoonDir, sunDir(), uDusk))), 0.0), 6.0);
+    float rim = pow(max(dot(d, uLightDir), 0.0), 6.0);
     col = mix(col, under + lightCol() * rim * 0.25, cover * 0.85);
   }
   // stars (a few, between the clouds) and a faint Milky Way, night only
@@ -388,6 +388,8 @@ void main() {
   float m = dot(d, uMoonDir);
   col += (vec3(0.95, 0.93, 0.85) * smoothstep(0.99955, 0.99975, m) * 3.0 * (1.0 - cover * 0.7) + vec3(0.2, 0.25, 0.4) * pow(max(m, 0.0), 300.0)) * night;
   col += mix(vec3(4.0, 2.2, 1.0), vec3(3.0, 2.9, 2.6), uNoon) * smoothstep(0.99968, 0.99985, dot(d, sunDir())) * uDusk;
+  float sd = max(dot(d, sunDir()), 0.0);
+  col += vec3(1.0, 0.92, 0.75) * (pow(sd, 8.0) * 0.25 + pow(sd, 600.0) * 4.0) * uNoon;
   gl_FragColor = vec4(col, 1.0);
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
