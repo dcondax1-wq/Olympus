@@ -76,9 +76,8 @@ html[data-oly-scheme="light"] {
   html:root:not(#o) .toast { bottom: calc(var(--o-bar-total) + 12px); }
 }
 
-/* Jarvis (jarvis/ .dock): its keys sat 18 px from the edge, inside the home bar's swipe area; now they end where the home bar starts.
-   The solid base under the dock (.dockfade::after) already runs to the edge, so nothing shows through below. */
-html[data-oly-page="jarvis"] { --dock-b: max(8px, calc(env(safe-area-inset-bottom, 0px) - 6px), var(--host-lift, 0px)); }
+/* Jarvis (jarvis/ .dock) keeps its own place (jarvis.css --dock-b: 18 px up on an iPhone, its solid base to the edge): the owner asked for
+   it low ("the dock sits way above the bottom with an empty black band under it", 2026-11-19; tests.test_fit_edge) */
 
 /* ---------------------------------------------------------------- 3. calm */
 @media (prefers-reduced-motion: reduce) {

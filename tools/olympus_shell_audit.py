@@ -4,7 +4,7 @@ For each MAIN page (Gate, Zenith, Jarvis, Doors, a hub, Settings) in Chromium at
 home-bar inset emulated (34 px, CDP Emulation.setSafeAreaInsetsOverride when the browser has it):
   - console errors, page errors, failed requests (404 / 500)
   - sideways scroll (document wider than the screen)
-  - fixed bottom bars that do not clear the home bar, and page content hidden under a fixed bottom bar at the end of the page
+  - fixed bottom bars whose keys reach the home indicator (lower than 21 px from the edge), and page content hidden under a fixed bottom bar at the end of the page
   - speed at 4x CPU throttle: time to load, long tasks (count, total ms), frames dropped while scrolling
   - optional screenshots (--shots DIR --tag before|after), dark and light
 
@@ -48,7 +48,7 @@ PROBE = r"""(inset) => {
     let lowest = 0;
     el.querySelectorAll('a,button,input,[role=button],[role=tab]').forEach(c => { const q = c.getBoundingClientRect(); if (q.width && q.height) lowest = Math.max(lowest, q.bottom); });
     out.bars.push({ sel: (el.id ? '#' + el.id : el.tagName.toLowerCase() + (el.className && typeof el.className === 'string' ? '.' + el.className.trim().split(/\s+/).join('.') : '')),
-      top: Math.round(r.top), gap: Math.round(H - r.bottom), lowestTap: Math.round(lowest), clears: lowest === 0 || lowest <= H - inset + 1 });
+      top: Math.round(r.top), gap: Math.round(H - r.bottom), lowestTap: Math.round(lowest), clears: lowest === 0 || lowest <= H - 21 });     // above the home indicator (its top is ~13 px up; the owner wants bars low, not floating)
   }
   // at the end of the page, nothing readable may hide under a bottom bar
   if (fixed.length) {

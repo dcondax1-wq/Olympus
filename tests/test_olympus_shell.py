@@ -28,7 +28,7 @@ def test_static():
     css = AK.read(os.path.join(WEB, "olympus", "shell.css"))
     check("a. olympus/shell.css: the tokens (colour, type, spacing, radius, motion, safe area), a light set, the glued bars, reduced motion",
           all(t in css for t in ("--o-bg:", "--o-font:", "--o-4:", "--o-r-md:", "--o-ease:", "--o-sab: env(safe-area-inset-bottom", "--o-bar-total:",
-                                 'html[data-oly-scheme="light"]', "nav#tabs.tabs", "prefers-reduced-motion: reduce", "--dock-b:")))
+                                 'html[data-oly-scheme="light"]', "nav#tabs.tabs", "prefers-reduced-motion: reduce")))
     for page, href in MAIN.items():
         html = AK.read(os.path.join(WEB, page))
         i = html.find(href + "?v=")
