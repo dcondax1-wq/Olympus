@@ -7,18 +7,15 @@
 /* ================================================================================================ 1. tokens */
 @import url("warp.css?v=w3"); /* the world-to-world arrival (olympus/warp.js): render-blocking, before the first frame */
 :root, :root[data-theme="agora"] {
-  /* colour: OLYMPUS NIGHT (owner 2026-11-20; the kit default, themes.js 'night' paints the same family): black page, near-black violet
-     panels, deep violet lines, bright gold accents only, mint / red for money; the token NAMES stay (apps use --ag-gold ...).
-     every text token is >= 4.5:1 on every surface below */
-  --ag-night: var(--oly-th-n3, #000000); --ag-panel: var(--oly-th-n4, #0d0b13); --ag-raise: var(--oly-th-n5, #16131e); --ag-line: var(--oly-th-n8, #3e255e);
-  --ag-s0: var(--oly-th-n3, #000000); --ag-s1: var(--oly-th-n4, #0b0910); --ag-s2: var(--oly-th-n4, #100d17); --ag-s3: var(--oly-th-n6, #16131e); --ag-s4: var(--oly-th-n7, #1d1828);      /* surfaces, low to high */
-  --ag-line-soft: rgba(var(--oly-th-n37-rgb, 235, 233, 241), .07); --ag-line-gold: rgba(157, 89, 238, .38);   /* the name stays: a violet outline now */
-  --ag-text: var(--oly-th-n37, #ebe9f1); --ag-soft: var(--oly-th-n30, #c8c3d4); --ag-muted: var(--oly-th-n24, #898497);                                     /* muted: 5.1:1 even on --ag-s4 */
-  --ag-gold: var(--oly-th-a8, #f1c14b); --ag-gold-hi: var(--oly-th-a10, #f4cc6b); --ag-bronze: var(--oly-th-a5, #4d2e76); --ag-olive: var(--oly-th-g6, #77db89); --ag-terra: var(--oly-th-r8, #ef4444); --ag-aegean: var(--oly-th-info, #4b7a99); --ag-sun: var(--oly-th-warn, #b98af5);
-  --ag-violet: #9d59ee; --ag-violet-rgb: 157, 89, 238; --ag-lavender: #dacbf0; --ag-violet-line: #462a6a;   /* OLYMPUS NIGHT glows / rings / outlines */
-  --ag-olive-text: var(--oly-th-g8, #77db89); --ag-terra-text: var(--oly-th-r10, #f87171); --ag-aegean-text: var(--oly-th-infot, #7fa7c2);                   /* text-safe ink (fills keep the base colours) */
-  --ag-gold-rgb: var(--oly-th-a8-rgb, 241, 193, 75); --ag-olive-rgb: var(--oly-th-g6-rgb, 119, 219, 137); --ag-terra-rgb: var(--oly-th-r8-rgb, 239, 68, 68); --ag-sun-rgb: var(--oly-th-warn-rgb, 185, 138, 245); --ag-aegean-rgb: var(--oly-th-info-rgb, 75, 122, 153);
-  --ag-on-gold: var(--oly-th-n3, #000000);
+  /* colour: warm night, marble panels, bronze lines; every text token is >= 4.5:1 on every surface below (docs/DESIGN_AGORA.md table) */
+  --ag-night: var(--oly-th-n3, #14110e); --ag-panel: var(--oly-th-n4, #1d1914); --ag-raise: var(--oly-th-n5, #26211b); --ag-line: var(--oly-th-n8, #3a3228);
+  --ag-s0: var(--oly-th-n3, #14110e); --ag-s1: var(--oly-th-n4, #1b1713); --ag-s2: var(--oly-th-n4, #221d17); --ag-s3: var(--oly-th-n6, #2b241d); --ag-s4: var(--oly-th-n7, #332b22);      /* surfaces, low to high */
+  --ag-line-soft: rgba(var(--oly-th-n37-rgb, 243, 236, 224), .07); --ag-line-gold: rgba(var(--oly-th-a8-rgb, 200, 162, 74), .32);
+  --ag-text: var(--oly-th-n37, #f3ece0); --ag-soft: var(--oly-th-n30, #cfc4b2); --ag-muted: var(--oly-th-n24, #a89c88);                                     /* muted: 5.1:1 even on --ag-s4 */
+  --ag-gold: var(--oly-th-a8, #c8a24a); --ag-gold-hi: var(--oly-th-a10, #dcbd6e); --ag-bronze: var(--oly-th-a5, #9c6b3c); --ag-olive: var(--oly-th-g6, #7f8a52); --ag-terra: var(--oly-th-r8, #c96a4a); --ag-aegean: var(--oly-th-info, #4b7a99); --ag-sun: var(--oly-th-warn, #e0b060);
+  --ag-olive-text: var(--oly-th-g8, #a0ac6e); --ag-terra-text: var(--oly-th-r10, #e08a6b); --ag-aegean-text: var(--oly-th-infot, #7fa7c2);                   /* text-safe ink (fills keep the base colours) */
+  --ag-gold-rgb: var(--oly-th-a8-rgb, 200, 162, 74); --ag-olive-rgb: var(--oly-th-g6-rgb, 127, 138, 82); --ag-terra-rgb: var(--oly-th-r8-rgb, 201, 106, 74); --ag-sun-rgb: var(--oly-th-warn-rgb, 224, 176, 96); --ag-aegean-rgb: var(--oly-th-info-rgb, 75, 122, 153);
+  --ag-on-gold: var(--oly-th-n3, #1b1610);
   /* type: serif display, system sans body, rounded tabular numbers. rem based (dynamic type / browser text size follow) */
   --ag-serif: var(--oly-th-display, 'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif);
   --ag-sans: var(--oly-th-body, -apple-system,'SF Pro Text',system-ui,'Helvetica Neue',Arial,sans-serif);

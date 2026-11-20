@@ -14,6 +14,10 @@
   'use strict';
   var pg = document.getElementById('page');
   if (!pg || !window.MutationObserver || window.ZENITH_SETTLE) return;
+  // inside Jarvis (Zenith in a frame) nothing is held: the frame is a second view whose own start-up the owner does not watch, and its
+  // host reads the frame's text at once (tests/test_zenith_mode.py e.)
+  var framed = false; try { framed = window.top !== window || document.documentElement.classList.contains('framed'); } catch (e) { framed = true; }
+  if (framed) { window.ZENITH_SETTLE = { holds: 0, released: 0, done: true, longest: 0, log: [], framed: true }; return; }
   var QUIET = 300, MAX_HOLD = 3000, STARTUP = 25000, t0 = performance.now();
   var S = window.ZENITH_SETTLE = { holds: 0, released: 0, done: false, longest: 0, log: [] };
   var snap = null, ghost = null, quietT = 0, heldAt = 0, drawn = false, settledFull = false, snapQ = 0;
