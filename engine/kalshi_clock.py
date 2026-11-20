@@ -417,7 +417,7 @@ def kill_distances(state_dir=None, cfg=None, now=None) -> dict:
     now = time.time() if now is None else now
     P = paths(state_dir)
     lr = rows(P["clock_live"])
-    led, rs = ("live", lr) if lr else ("paper", rows(P["clock_paper"]))
+    led, rs = ("live", lr) if lr else ("paper", paper_like_live(rows(P["clock_paper"]), cfg))
     day = KL.et_day(now)
     wk = week_of(day)
 
@@ -442,6 +442,40 @@ def kill_distances(state_dir=None, cfg=None, now=None) -> dict:
                           "max": cfg["kill_avg_price"]}, "last10": last, "net": s["net"]}
 
 
+LEG_CODE = {"gold_0530_down": "g5", "silver_0530_down": "s5", "silver_1615_down": "s16", "gold_1700_up": "g17", "silver_1700_up": "s17"}
+
+
+def paper_like_live(rs, cfg) -> list:
+    """The paper rows the phone shows while nothing is live: only the live legs, only bets the size of today's stake (the old $15
+    paper rows of Nov 19 and the paper-only legs gave a -$30 'from the peak' on a $55 card; day-kalshi 2026-11-20). Display only:
+    no stop ever reads the paper ledger (kill_state and the order gate read clock_live.json)."""
+    cap = KL._f(cfg.get("stake_usd"), 2.5) + 1e-6
+    return [r for r in rs if r.get("leg") in cfg["live_legs"] and (r.get("cost") is None or KL._f(r.get("cost"), 0.0) <= cap)]
+
+
+def edge_health(rs) -> list:
+    """[% won on the last 30 settled, % won on the last 60, average price paid on the last 30 in cents] (None while there are none)."""
+    done = [r for r in sorted(rs, key=lambda r: KL._f(r.get("open_t"), 0.0)) if r.get("result") in ("won", "lost")]
+
+    def rate(k):
+        x = done[-k:]
+        return round(100 * sum(1 for r in x if r["result"] == "won") / len(x)) if x else None
+    paid = [KL._f(r.get("price")) for r in done[-30:] if KL._f(r.get("price"))]
+    return [rate(30), rate(60), round(100 * sum(paid) / len(paid), 1) if paid else None]
+
+
+def bet_log(rs, k=5) -> list:
+    """The last k bets (settled or open), oldest first: [leg code, MM-DD, contracts, price c, $ (None while open), W | L | o]."""
+    x = [r for r in rs if r.get("result") in ("won", "lost") or (r.get("result") is None and r.get("status") in ("sent", "open"))]
+    out = []
+    for r in sorted(x, key=lambda r: KL._f(r.get("open_t"), 0.0))[-k:]:
+        p = KL._f(r.get("price"))
+        out.append([LEG_CODE.get(r.get("leg"), "?"), str(r.get("day") or "")[5:10], r.get("n"), round(100 * p) if p else None,
+                    round(KL._f(r.get("pnl"), 0.0), 2) if r.get("result") else None,
+                    "W" if r.get("result") == "won" else "L" if r.get("result") == "lost" else "o"])
+    return out
+
+
 def card_k8(state_dir=None, cfg=None, now=None) -> dict | None:
     """The K8 block of the PC's public card (engine/kalshi_live.card, the phone's 'K8 status' card), about 130 bytes:
     {m: L (live ledger) | P (paper), nx: next window (epoch), b: bankroll $, s: $ a bet, td: [bets, won, net $] today,
@@ -455,14 +489,17 @@ def card_k8(state_dir=None, cfg=None, now=None) -> dict | None:
         if not (alive or os.path.exists(P["clock_paper"]) or os.path.exists(P["clock_live"])):
             return None
         k = kill_distances(state_dir, cfg, now)
-        rs = rows(P["clock_live"] if k["ledger"] == "live" else P["clock_paper"])
+        rs = rows(P["clock_live"]) if k["ledger"] == "live" else paper_like_live(rows(P["clock_paper"]), cfg)
         td = stats(rs, KL.et_day(now))
-        nx, _ = next_window(now, cfg)
+        nx, _ = next_window(now, dict(cfg, paper_legs=list(cfg["live_legs"])))     # the next LIVE window (05:15 / 16:45 ET), not paper-only 16:00
         wr = k["win_rate"]
         return {"m": "L" if k["ledger"] == "live" else "P", "nx": int(nx) if nx else None, "b": cfg.get("bankroll_usd"), "s": cfg["stake_usd"],
                 "td": [td["n"], td["won"], td["net"]], "l": "".join("W" if r["result"] == "won" else "L" for r in k["last10"]),
                 "wk": [k["week"]["used"], k["week"]["stop"]], "dd": [k["drawdown"]["used"], k["drawdown"]["stop"]],
-                "wr": [wr["n"], round(100 * wr["rate"]) if wr["rate"] is not None else None], "lp": 1 if alive else 0}
+                "wr": [wr["n"], round(100 * wr["rate"]) if wr["rate"] is not None else None], "lp": 1 if alive else 0,
+                # day-kalshi 2026-11-20: today's stop, edge health (% won on the last 30 / 60, average price paid on the last 30, in c)
+                # and the last 5 bets [leg code, MM-DD, contracts, price c, $, W | L | o (open)] for the phone's bet log
+                "dy": [k["day"]["used"], k["day"]["stop"]], "e": edge_health(rs), "lg": bet_log(rs, 5)}
     except Exception:  # noqa: BLE001
         return None
 
@@ -880,7 +917,7 @@ class ClockLoop:
             for hm, rr in sorted(by_t.items()):
                 self.push("result", f"Kalshi LIVE {hm}: " + ", ".join(f"{LEG[r['leg']]['name'].split()[0]} {'WON' if r['result'] == 'won' else 'LOST'} "
                                                                     f"{KL.money(r['pnl'], True)}" for r in rr)[:110],
-                          f"Today {KL.money(d['net'], True)} on {d['n']} bets. Live so far: {s['n']} bets, {s['won']} won"
+                          f"Today {KL.money(d['net'], True)} on {d['n']} bet{'' if d['n'] == 1 else 's'}. Live so far: {s['n']} bet{'' if s['n'] == 1 else 's'}, {s['won']} won"
                           + (f" ({100 * s['rate']:.0f}%)" if s["n"] else "") + f", {KL.money(s['net'], True)}.", tags="moneybag")
             killed, why = kill_state(self.state_dir, self.cfg)
             if killed:

@@ -86,3 +86,36 @@ export function jarvisCard(book, g) {
   return { v: 1, name: 'Dionysus', status: { level: lvl, label: str(g.title, 48) }, kpis: [{ label: 'Balance', value: usd(book.balance) }, { label: 'Today', value: usdS(book.today) }, { label: 'Week', value: usdS(book.week) }],
     lines: [str(g.text, 118), str('Suggestions only: nothing here changes a bet.', 118)], t: 1793394000, theme: '#14110e' };
 }
+
+// ------------------------------------------------------------------------------------------------ K8 today (day-kalshi 2026-11-20)
+// The site's ../kalshi/k8.json (Kalshi's PUBLIC results at the K8 bot's +20 s price: the strategy's health, not our bets). The 3 live legs
+// with today's New York time, the fair (break-even) price, the last 10 W / L; the pool's win rate last 30 / 60 vs the 58% OFF line; the
+// noise sentence. Not an object, or no live leg = null (the panel hides). nowMs picks the day for the time (London legs move with the clocks).
+const K8_ET = (y, mo, d, h, mi, tz) => {   // the epoch (ms) of a wall time in a time zone, no library
+  let g = Date.UTC(y, mo, d, h, mi);
+  for (let k = 0; k < 2; k++) {
+    const p = {};
+    for (const x of new Intl.DateTimeFormat('en-US', { timeZone: tz, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).formatToParts(new Date(g))) p[x.type] = +x.value || 0;
+    g += Date.UTC(y, mo, d, h, mi) - Date.UTC(p.year, p.month - 1, p.day, p.hour % 24, p.minute);
+  }
+  return g;
+};
+export function k8Panel(j, nowMs) {
+  if (!isObj(j) || !Array.isArray(j.legs)) return null;
+  const now = num(nowMs) == null ? Date.now() : num(nowMs), p = {};
+  try { for (const x of new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date(now))) p[x.type] = +x.value; } catch (_) { return null; }
+  const legs = j.legs.filter((x) => isObj(x) && x.live === true).slice(0, 5).map((x) => {
+    const m = /^(\d{1,2}):(\d{2})$/.exec(String(x.open || '')), tz = x.tz === 'Europe/London' ? 'Europe/London' : 'America/New_York';
+    let at = '';
+    if (m) { try { at = new Date(K8_ET(p.year, p.month - 1, p.day, +m[1], +m[2], tz)).toLocaleTimeString('en-GB', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }); } catch (_) { at = ''; } }
+    const name = str(x.name, 60).replace(/\s*\d{1,2}:\d{2}(-\d{1,2}:\d{2})?\s*ET\s*$/, '') || 'K8 leg', fair = num(x.fair_c);
+    return { name, at, fair: fair == null ? null : Math.round(fair), last10: String(x.last10 || '').replace(/[^WL]/g, '').slice(-10), rate: num(x.rate), n: num(x.n) };
+  });
+  if (!legs.length) return null;
+  const pool = isObj(j.pool) ? j.pool : {}, min = isObj(j.rule) && num(j.rule.min_win) != null ? num(j.rule.min_win) : 0.58;
+  const r30 = num(pool.r30), r60 = num(pool.r60), W = min * 100;
+  const lv = (x) => (x == null ? '' : x * 100 < W ? 'off' : x * 100 < W + 5 ? 'watch' : 'ok');
+  const worst = [lv(r30), lv(r60)].indexOf('off') >= 0 ? 'off' : [lv(r30), lv(r60)].indexOf('watch') >= 0 ? 'watch' : r30 == null && r60 == null ? '' : 'ok';
+  return { legs, r30, r60, min, l30: lv(r30), l60: lv(r60), level: worst, verdict: { ok: 'Healthy', watch: 'Watch', off: 'OFF line crossed', '': 'No numbers yet' }[worst],
+    noise: str(isObj(j.noise) ? j.noise.plain : '', 300), through: str(j.through, 10) };
+}
