@@ -324,6 +324,9 @@ def main():
         co = w.ctl(bot, hooks, env={})
         check("off unless LE_REMOTE=1 (no thread)", co.start() is False and not rc.enabled({}) and rc.enabled({"LE_REMOTE": "1"}))
 
+        # ---- 2026-11-20: the control branch of the backup repo (update_source.json: remote "olympus"), origin = lost account
+        olympus_tests()
+
         # ---- real LiveBot + the fake NinjaTrader: kill and flatten mid-trade
         live_tests(w)
 
@@ -342,6 +345,167 @@ def main():
     n, ok = len(RES), sum(RES)
     print(f"\n{ok}/{n} remote-control checks passed")
     return 0 if ok == n else 1
+
+
+def olympus_tests():
+    """The PC updates from the backup repo (update_source.json names remote "olympus"); origin is the lost account and
+    GitHub-free mode is on. server.py still builds RemoteControl(BOT, ...) with the default remote "origin": the controller
+    resolves it to olympus (engine/remote_ctl.control_source) and reads olympus/control:control/command.json."""
+    tmp = tempfile.mkdtemp(prefix="le_rco_")
+    try:
+        bare, pc, phone = (os.path.join(tmp, n) for n in ("olympus.git", "pc", "phone"))
+        subprocess.run(["git", "init", "-q", "--bare", bare], check=True)
+        for d in (pc, phone):
+            subprocess.run(["git", "init", "-q", d], check=True)
+            git(d, "config", "user.name", "t")
+            git(d, "config", "user.email", "t@t")
+            git(d, "remote", "add", "olympus", bare)
+        git(pc, "remote", "add", "origin", os.path.join(tmp, "lost-account.git"))     # never there: a fetch from it fails
+        with open(os.path.join(pc, "update_source.json"), "w", encoding="utf-8") as f:
+            json.dump({"v": 1, "remote": "olympus", "url": bare, "branch": "pc", "account": "owner2"}, f)
+        env = {"LE_REMOTE": "1", "LE_SUPERVISED": "1", "LE_NO_GITHUB": "1", "LE_AUTOUPDATE_LOCAL_OK": "1"}
+        done = os.path.join(tmp, "remote_done.json")
+        notes = []
+        sat = dt.datetime(2026, 11, 21, 12, 0, tzinfo=ET).timestamp()       # Saturday noon: outside trading hours
+        wed = dt.datetime(2026, 11, 18, 10, 0, tzinfo=ET).timestamp()       # Wednesday 10:00 ET: trading hours
+        now = [sat]
+
+        def send(obj):
+            git(phone, "fetch", "-q", "olympus", "control")
+            if not git(phone, "rev-parse", "FETCH_HEAD").returncode:
+                git(phone, "checkout", "-q", "-B", "control", "FETCH_HEAD")
+            else:
+                git(phone, "checkout", "-q", "--orphan", "control")
+            os.makedirs(os.path.join(phone, "control"), exist_ok=True)
+            with open(os.path.join(phone, "control", "command.json"), "w", encoding="utf-8") as f:
+                f.write(json.dumps(obj))
+            git(phone, "add", "-A")
+            git(phone, "commit", "-q", "-m", "cmd")
+            r = git(phone, "push", "-q", "olympus", "control")
+            assert not r.returncode, r.stderr
+
+        hooks, calls = recorder()
+        upd = {"n": 0}
+
+        def fake_update():
+            upd["n"] += 1
+            return {"status": "up_to_date", "reason": "at the newest pc version"}
+        hooks["update"] = fake_update
+        bot = FakeBot(running=True, position=None)
+
+        def ctl(**kw):
+            return rc.RemoteControl(bot, hooks=hooks, cwd=pc, done_path=done, log=lambda t: None, env=env,
+                                    notify=lambda t, b, k: notes.append((t, b)), clock=lambda: now[0], **kw)
+        src = rc.control_source(pc, env)
+        check("control_source: update_source.json names olympus -> the control branch is read from olympus (not origin)",
+              src["remote"] == "olympus" and src["url"] == bare and "(control)" in src["label"], src)
+        check("control_source: LE_UPDATE_SOURCE=origin / no update_source.json / another remote passed in -> as before",
+              rc.control_source(pc, {**env, "LE_UPDATE_SOURCE": "origin"})["remote"] == "origin"
+              and rc.control_source(phone, env)["remote"] == "origin" and rc.control_source(pc, env, "backup2")["remote"] == "backup2")
+        check("GitHub-free mode: remote control ON when it reads the backup repo, OFF when it would read origin (lost account)",
+              rc.enabled(env, pc) and not rc.enabled(env, phone) and not rc.enabled({**env, "LE_REMOTE": "0"}, pc))
+        c, c0 = ctl(), ctl()
+        c0._run = lambda: None                       # start() decides on/off; no real thread in the test
+        check("RemoteControl keeps the default remote 'origin' (server.py unchanged), resolves olympus, starts in GitHub-free mode",
+              c.remote == "origin" and c0.start() is True, c.remote)
+        # the lead's control branch (tools/init_control_branch.py --remote olympus): an expired no-op, silent
+        r = icb.init(pc, "olympus")
+        out = c.tick()
+        check("olympus/control made by init_control_branch: the expired no-op is ignored silently (no notice, no hook)",
+              r["status"] == "created" and out == [] and not notes and not [x for x in calls if x[0] != "beat"], (r, out, notes))
+        tpl = json.loads(git(pc, "show", f"{rc.LOCAL_REF}:{rc.CMD_FILE}").stdout)
+        check("the template command is a no-op that is already expired", tpl.get("cmd") == "none" and not tpl.get("ts"), tpl)
+        shipped = os.path.join(ROOT, "tools", "control_branch", "control")
+        wrote = icb.write_files(os.path.join(tmp, "out"))
+        same = all(open(os.path.join(shipped, os.path.basename(p)), encoding="utf-8").read()
+                   == open(p, encoding="utf-8").read() for p in wrote)
+        check("tools/control_branch/control/ (the lead pushes it to Olympus branch control) = init_control_branch's files",
+              same and "dcondax1-wq/olympus/edit/control/control/command.json" in open(wrote[1], encoding="utf-8").read())
+        js = open(os.path.join(ROOT, "tools", "web_public", "main.js"), encoding="utf-8").read()
+        rcjs = js[js.index("const RC_CMDS"):js.index("VIEWS.settings")]
+        check("phone Remote page: opens github.com/<account>/olympus/edit/control/control/command.json (the backup, not the old "
+              "account); the account name is typed once on the phone, never in this public file",
+              "/edit/control/control/command.json" in rcjs and "store.get('rcRepo'" in rcjs and "extras?.repo " not in rcjs
+              and "demetrades2000" not in rcjs and "dcondax" not in js.lower() and "id=\"rcRepoSave\"" in rcjs)
+        rx = [ln for ln in rcjs.splitlines() if ln.startswith("const RC_REPO_OK")][0].split("=", 1)[1].split(";")[0].strip()
+        node = shutil.which("node")
+        if node:
+            r = subprocess.run([node, "-e", f"const R={rx}; process.stdout.write(JSON.stringify(['a-b/olympus','A1/Olympus','x/other','olympus','a/b/olympus','<x>/olympus'].map(v=>R.test(v))))"],
+                               capture_output=True, text=True, timeout=30)
+            check("phone Remote page: only '<account>/olympus' is accepted as the repo", r.stdout == "[true,true,false,false,false,false]", r.stdout + r.stderr)
+        check("heartbeat 'via' label: the remote's name only, never the account in the URL (it reaches the public site)",
+              src["label"] == "olympus (control)" and rc.hb_field(done, env)["via"] == "olympus (control)"
+              and "dcondax" not in json.dumps(rc.hb_field(done, env)), src)
+        first = [ln.split("'")[3] for ln in rcjs.split("const RCTL")[0].splitlines() if ln.strip().startswith("['")][:4]
+        check("phone Remote page: an 'Update now' button next to Status / Pause / Flatten, and the ~60 s / flat / 01:50-16:00 line",
+              first == ["Status", "Update now", "Pause until tomorrow", "Flatten"] and "['update', 'Update now'" in rcjs
+              and "~60 s" in rcjs and "flat" in rcjs and "01:50-16:00 ET on a weekday" in rcjs and "rcWhen" in rcjs, first)
+        check("init_control_branch's default remote follows update_source.json (olympus here)",
+              icb.default_remote(pc, env) == "olympus" and icb.default_remote(phone, env) == "origin"
+              and icb.default_remote(ROOT) == "olympus")
+        # a fresh status: fetched from olympus, run once
+        sc = cmd("status", ts=now[0])
+        send(sc)
+        out = c.tick()
+        again = c.tick()
+        check("status on olympus/control: fetched and run once (origin never read), notice sent; the next tick runs nothing",
+              len(out) == 1 and out[0][:3] == (sc["id"], "status", "done") and again == [] and notes
+              and notes[-1][0] == "Remote status: done", (out, again, notes[-1:]))
+        check("the heartbeat block says where commands come from",
+              "via" in rc.hb_field(done, env) and rc.load_done(done)["last"]["id"] == sc["id"])
+        # a stale command: refused (ignored with a notice), never run
+        calls.clear()
+        st = cmd("flatten", ts=now[0] - 20 * 60)
+        send(st)
+        out = c.tick()
+        check("a 20 min old flatten on olympus/control: ignored 'too old', the flatten hook never runs",
+              out and out[0][2] == "ignored" and "too old" in out[0][3] and "flatten" not in names(calls), out)
+        # start on a real account: refused, whatever else the command carries
+        bot.running = False
+        calls.clear()
+        send(cmd("start", ts=now[0], account="MFFU-BUILDER-50K", adapter="ninjatrader", armed=True, confirm="I AM PRESENT"))
+        out = c.tick()
+        check("start on a real account through olympus: refused, the start hook never called",
+              out and out[0][2] == "refused" and "REAL account" in out[0][3] and "start" not in names(calls), out)
+        bot.running = True
+        # Update now: flat + Saturday -> runs once; Wednesday 10:00 ET -> refused (trading hours), no update
+        send(cmd("update", ts=now[0]))
+        out = c.tick()
+        check("Update now from olympus: flat and outside 01:50-16:00 ET -> the update runs once, done",
+              out and out[0][1:3] == ("update", "done") and upd["n"] == 1 and "exit" not in names(calls), out)
+        now[0] = wed
+        send(cmd("update", ts=now[0]))
+        out = c.tick()
+        check("Update now on a weekday at 10:00 ET: refused (trading hours), no update run",
+              out and out[0][2] == "refused" and "trading hours" in out[0][3] and upd["n"] == 1, out)
+        now[0] = sat + 3600
+        bot.state["position"] = {"entry_t": 3, "dir": 1, "qty": 1}
+        send(cmd("update", ts=now[0]))
+        out = c.tick()
+        check("Update now in a trade: refused 'not flat', no update run",
+              out and out[0][2] == "refused" and "not flat" in out[0][3] and upd["n"] == 1, out)
+        bot.state["position"] = None
+        # a fetch error never carries the repo URL (the heartbeat's "error" reaches the public site)
+        from engine import heartbeat as _hb
+        old_run = _hb.run_cmd
+        _hb.run_cmd = lambda *a, **k: _hb.Ran(128, b"", b"fatal: unable to access 'https://someone@github.com/someone/olympus.git/': "
+                                                         b"Could not resolve host: github.com")
+        try:
+            bad = rc.fetch(pc, "olympus")
+        finally:
+            _hb.run_cmd = old_run
+        check("fetch errors: no repo URL / account name in the error text (it reaches the public site)",
+              not bad["ok"] and "someone" not in bad["error"] and "<the repo>" in bad["error"]
+              and "Could not resolve host" in bad["error"], bad)
+        # a PC whose git has no 'olympus' remote yet: the URL from update_source.json is used instead
+        git(pc, "remote", "remove", "olympus")
+        s2 = cmd("status", ts=now[0])
+        send(s2)
+        out = c.tick()
+        check("no 'olympus' remote in the PC's git yet: fetched by the update_source.json URL, run once",
+              len(out) == 1 and out[0][:3] == (s2["id"], "status", "done"), (out, rc.load_done(done).get("fetch")))
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
 
 
 def pause_tests(w, bot, hooks, calls):

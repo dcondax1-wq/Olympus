@@ -1,7 +1,11 @@
 """Remote control of the PC bot from the phone, free, through GitHub (docs/REMOTE_CONTROL.md).
 
 The owner edits ONE file, control/command.json on the branch `control` of this repo, in the GitHub app or on github.com
-(the phone app's Remote page builds the exact JSON and opens the editor). The PC server (a daemon thread, like the
+(the phone app's Remote page builds the exact JSON and opens the editor). Which repo (2026-11-20, control_source): the one
+the PC updates from. With update_source.json (the backup repo since 2026-11-14: remote "olympus" = dcondax1-wq/olympus) the
+branch `control` of THAT repo, so https://github.com/dcondax1-wq/olympus/edit/control/control/command.json; without the
+file (or LE_UPDATE_SOURCE=origin) origin as before. GitHub-free mode (engine/nogithub.py) only turns it off when that
+would be origin (the lost account), exactly like the auto-update. The PC server (a daemon thread, like the
 auto-update one; on only with LE_REMOTE=1, which scripts/run_bot.ps1 sets) fetches that branch every ~60 s with the PC's
 own git credentials (the same ones the heartbeat pushes with), reads the file and runs each new command once:
 
@@ -12,8 +16,9 @@ own git credentials (the same ones the heartbeat pushes with), reads the file an
   kill      = HOLD TO KILL: flatten everything (NinjaTrader FLATTENEVERYTHING), stop, auto-resume OFF, autostart cleared
   stop      stop the bot once it is flat (a position / an armed setup finishes first); "now": true flattens and stops now
   flatten   close the open position now; the bot keeps running, no new entry until the next trading day
-  update    the auto-update now (engine/autoupdate.run_update: flat, outside 01:50-16:00 ET on a weekday, main only,
-            fast-forward only, self-tests, roll back on failure), then a restart when it updated
+  update    the auto-update now (engine/autoupdate.run_update: flat, outside 01:50-16:00 ET on a weekday, the update
+            source only (the backup's pc branch), fast-forward only, self-tests, roll back on failure), then a restart when
+            it updated
   restart   restart the server (exit 75; run_bot.ps1 starts it again) when flat, supervised, and (while the bot runs)
             outside 01:50-16:00 ET on a weekday; the auto-resume brings an opted-in eval back
   status    push a fresh heartbeat now + a phone notice with the bot's status
@@ -64,11 +69,31 @@ HANDSOFF_CMDS = ("kill", "stop", "flatten", "pause")
 ID_RE = re.compile(r"^[A-Za-z0-9._:\-]{1,64}$")
 
 
-def enabled(env=None) -> bool:
+def control_source(cwd: str = ROOT, env=None, remote: str = "origin") -> dict:
+    """Where the control branch is fetched from: {"remote", "url", "label"}. The default "origin" follows the update source
+    (engine/autoupdate.source: update_source.json names the backup repo, remote "olympus"), so the phone's command reaches
+    the PC through the repo it really updates from; origin is the lost account since 2026-11-14. Without the file, or with
+    LE_UPDATE_SOURCE=origin: origin. Any other remote passed in is used as given. url: the fallback when that remote is not
+    in the PC's git config yet (None for origin). label: "olympus (control)" (no account name). Never raises."""
+    if remote and remote != "origin":
+        return {"remote": remote, "url": None, "label": f"{remote} ({BRANCH})"}
+    try:
+        from .autoupdate import source
+        s = source(cwd, env)
+        if s.get("remote") and s["remote"] != "origin":
+            # the label rides in the heartbeat to the public site: the remote's name only, never the account in the URL
+            return {"remote": s["remote"], "url": s.get("url") or None, "label": f"{s['remote']} ({BRANCH})"}
+    except Exception:
+        pass
+    return {"remote": "origin", "url": None, "label": f"origin ({BRANCH})"}
+
+
+def enabled(env=None, root: str = ROOT) -> bool:
     env = os.environ if env is None else env
     try:
         from . import nogithub
-        if nogithub.active(env):         # GitHub-free mode (engine/nogithub.py)
+        # GitHub-free mode (engine/nogithub.py) blocks origin only (the lost account); the backup repo still carries commands
+        if nogithub.active(env, root) and control_source(root, env)["remote"] == "origin":
             return False
     except Exception:
         pass
@@ -80,18 +105,25 @@ def _hm(t) -> str:
 
 
 # ---------------------------------------------------------------------- reading the command file
-def fetch(cwd: str = ROOT, remote: str = "origin", branch: str = BRANCH, timeout=60) -> dict:
-    """git fetch the control branch into LOCAL_REF and read control/command.json. {"ok", "text" | "error", "commit"}."""
+def fetch(cwd: str = ROOT, remote: str = "origin", branch: str = BRANCH, timeout=60, url: str | None = None) -> dict:
+    """git fetch the control branch into LOCAL_REF and read control/command.json. {"ok", "text" | "error", "commit"}.
+    url (control_source): used instead when `remote` is not in this checkout's git config (a PC not connected yet)."""
     try:
         # (2026-11-03) the network step goes through heartbeat.run_cmd: on Windows subprocess.run(timeout=) waits without a
         # limit for its pipes while git-remote-https / the credential manager hang, which would stall this thread and with
         # it every phone command (kill included). run_cmd uses temp files, kills the whole tree at the timeout, never prompts.
         from .heartbeat import _NET_CFG, _git_env, run_cmd
-        r = run_cmd(["git", *_NET_CFG, "fetch", "-q", "--no-tags", remote, f"+refs/heads/{branch}:{LOCAL_REF}"], cwd=cwd,
-                    timeout=timeout, env=_git_env())
+
+        def _go(where):
+            return run_cmd(["git", *_NET_CFG, "fetch", "-q", "--no-tags", where, f"+refs/heads/{branch}:{LOCAL_REF}"], cwd=cwd,
+                           timeout=timeout, env=_git_env())
+        r = _go(remote)
+        if r.returncode and url and "does not appear to be a git repository" in (r.err or "").lower():
+            r = _go(url)
         if r.returncode:
-            err = r.err
-            return {"ok": False, "error": "no control branch yet (tools/init_control_branch.py makes it)"
+            # the error rides in the heartbeat to the public site: never the repo URL (it carries the account name)
+            err = re.sub(r"(?i)\b(https?|ssh|git)://\S+|[\w.-]+@github\.com[:/]\S+", "<the repo>", r.err or "")
+            return {"ok": False, "error": f"no control branch yet on {remote} (python tools/init_control_branch.py makes it)"
                     if "couldn't find remote ref" in err.lower() else (err[-200:] or "git fetch failed")}
         c = subprocess.run(["git", "rev-parse", LOCAL_REF], cwd=cwd, capture_output=True, text=True, timeout=30)
         s = subprocess.run(["git", "show", f"{LOCAL_REF}:{CMD_FILE}"], cwd=cwd, capture_output=True, timeout=30)
@@ -190,7 +222,7 @@ def hb_field(path: str | None = None, env=None, now=None) -> dict:
     line = None
     if last.get("cmd"):
         line = f"remote: last cmd {last['cmd']} {last.get('status') or 'done'} at {_hm(last.get('t') or 0)} ET"
-    out = {"on": enabled(env), "last": line, "status": last.get("status"), "t": last.get("t"),
+    out = {"on": enabled(env), "via": control_source(ROOT, env)["label"], "last": line, "status": last.get("status"), "t": last.get("t"),
            "pending_stop": bool(d.get("pending_stop")), "error": (d.get("fetch") or {}).get("error")}
     out.update(_extras(os.path.dirname(path or DONE_PATH), now))
     return out
@@ -470,7 +502,8 @@ class RemoteControl:
         self.busy = True
         try:
             self.pending_tick(now)
-            f = fetch(self.cwd, self.remote, self.branch)
+            src = control_source(self.cwd, self._env(), self.remote)     # the backup repo when update_source.json names it
+            f = fetch(self.cwd, src["remote"], self.branch, url=src["url"])
             d = load_done(self.done_path)
             if not f["ok"]:
                 if (d.get("fetch") or {}).get("error") != f["error"]:
@@ -533,9 +566,11 @@ class RemoteControl:
             self._stop.wait(self.every_s)
 
     def start(self) -> bool:
-        if not enabled(self._env()):
+        if not enabled(self._env(), self.cwd):
             self.log("[remote] off (scripts/run_bot.ps1 sets LE_REMOTE=1)")
             return False
+        self.log(f"[remote] on: reads control/command.json from {control_source(self.cwd, self._env(), self.remote)['label']} "
+                 f"every ~{int(self.every_s)} s")
         if self._thread is None or not self._thread.is_alive():
             self._thread = threading.Thread(target=self._run, name="remote", daemon=True)
             self._thread.start()

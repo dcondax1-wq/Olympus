@@ -1,12 +1,16 @@
 """Create the `control` branch for the phone remote control (engine/remote_ctl.py, docs/REMOTE_CONTROL.md).
 
-    python tools/init_control_branch.py              make it on origin if it does not exist yet (never overwrites)
+    python tools/init_control_branch.py              make it if it does not exist yet (never overwrites), on the remote
+                                                     the PC reads (engine/remote_ctl.control_source: "olympus" when
+                                                     update_source.json names the backup repo, else origin)
     python tools/init_control_branch.py --dry-run    show what would be pushed, push nothing
-    python tools/init_control_branch.py --remote R   another remote (default origin)
+    python tools/init_control_branch.py --remote R   another remote
+    python tools/init_control_branch.py --write DIR  write the two files to DIR/control/ (no git; the lead can push them)
 
 The branch holds two files, in one orphan commit (no history of main, nothing else):
-  control/command.json   a blank command ({"id": "", "cmd": "none"}): the PC ignores it. The owner replaces it from the
-                         GitHub app with the JSON the phone app's Remote page builds.
+  control/command.json   an expired no-op ({"id": "noop-0", "ts": 0, "cmd": "none"}): the PC ignores it silently. The
+                         owner replaces it from the GitHub app with the JSON the phone app's Remote page builds
+                         (https://github.com/dcondax1-wq/olympus/edit/control/control/command.json).
   control/README.md      the three steps, the commands, the rules.
 Git plumbing only (hash-object, mktree, commit-tree, push): the work tree, the index and the current branch are never
 touched. Run by the cloud monitor workflow on each run (a no-op once the branch exists) or on the PC.
@@ -21,20 +25,26 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BRANCH = "control"
-TEMPLATE = {"id": "", "ts": 0, "cmd": "none",
-            "help": "Replace this file with the JSON from the phone app (System > Remote): kill | stop | flatten | update | "
-                    "restart | status | start (Sim only). Each command runs once, within 15 min of its ts."}
+EDIT_URL = "https://github.com/dcondax1-wq/olympus/edit/control/control/command.json"
+# an expired no-op: "cmd": "none" is skipped silently (engine/remote_ctl.screen 'blank'), and ts 0 is long expired anyway
+TEMPLATE = {"id": "noop-0", "ts": 0, "cmd": "none",
+            "help": "Replace this file with the JSON from the phone app (System > Remote): status | update | pause | flatten | "
+                    "stop | kill | restart | start (Sim only). Each command runs once, within 15 min of its ts."}
 README = """# Remote control (phone -> PC bot)
 
 The PC bot reads `control/command.json` on this branch every ~60 s (engine/remote_ctl.py, on with LE_REMOTE=1).
 
-1. Phone app -> System -> **Remote**: tap the command; it builds the JSON with a fresh id and time. Tap **Copy**.
-2. Tap **Open the GitHub editor** (or open this file in the GitHub app: branch `control`, `control/command.json`, edit).
-3. Select all, paste, **Commit changes**. Within about a minute the phone gets a notice with the result.
+1. Phone app -> System -> **Remote**: tap the command (Status, Update now, Pause, Flatten, ...). Tap **Copy and open GitHub**.
+2. GitHub opens this file's editor (""" + EDIT_URL + """; in the GitHub app: branch `control`,
+   `control/command.json`, the pencil). Select all, paste.
+3. **Commit changes**. Within about a minute the phone gets a notice with the result.
+
+The PC acts within ~60 s; update / restart only when the bot is flat, and never 01:50-16:00 ET on a weekday.
 
 Commands: `kill` (flatten everything + stop + auto-resume off), `stop` (after flat; `"now": true` flattens first),
 `flatten` (close the position, keep running, no new entry today), `update` / `restart` (only when flat, outside trading
-hours), `status` (a fresh heartbeat + a notice), `start` (Sim accounts only, never a real account).
+hours), `status` (a fresh heartbeat + a notice), `pause` (no new entries until a time), `start` (Sim accounts only,
+never a real account).
 
 Rules: every command needs a new `id` and a `ts` within the last 15 minutes; an id runs once. No command changes the
 config or the strategy, and nothing here can start a real account. See docs/REMOTE_CONTROL.md.
@@ -76,7 +86,33 @@ def build_commit(cwd: str) -> str:
     return commit
 
 
-def init(cwd: str = ROOT, remote: str = "origin", dry_run: bool = False, branch: str = BRANCH) -> dict:
+def default_remote(cwd: str = ROOT, env=None) -> str:
+    """The remote the PC reads commands from (engine/remote_ctl.control_source): the backup repo's remote when
+    update_source.json names it, else origin."""
+    try:
+        if ROOT not in sys.path:
+            sys.path.insert(0, ROOT)
+        from engine.remote_ctl import control_source
+        return control_source(cwd, env)["remote"]
+    except Exception:
+        return "origin"
+
+
+def write_files(out_dir: str) -> list:
+    """The branch's two files under out_dir/control/ (for a push with plain git). Returns the paths."""
+    d = os.path.join(out_dir, "control")
+    os.makedirs(d, exist_ok=True)
+    paths = []
+    for name, data in (("command.json", json.dumps(TEMPLATE, indent=1) + "\n"), ("README.md", README)):
+        p = os.path.join(d, name)
+        with open(p, "w", encoding="utf-8", newline="\n") as f:
+            f.write(data)
+        paths.append(p)
+    return paths
+
+
+def init(cwd: str = ROOT, remote: str | None = None, dry_run: bool = False, branch: str = BRANCH) -> dict:
+    remote = remote or default_remote(cwd)
     ex = exists(cwd, remote, branch)
     if ex is None:
         return {"ok": False, "status": "error", "reason": f"cannot reach {remote}"}
@@ -94,10 +130,15 @@ def init(cwd: str = ROOT, remote: str = "origin", dry_run: bool = False, branch:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="create the control branch for the phone remote control")
-    ap.add_argument("--remote", default="origin")
+    ap.add_argument("--remote", default=None, help="default: the remote the PC reads (olympus with update_source.json)")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--cwd", default=ROOT)
+    ap.add_argument("--write", metavar="DIR", help="only write DIR/control/command.json + README.md (no git)")
     a = ap.parse_args(argv)
+    if a.write:
+        for p in write_files(a.write):
+            print(f"wrote {p}")
+        return 0
     r = init(a.cwd, a.remote, a.dry_run)
     print(f"control branch: {r['status']}: {r['reason']}")
     return 0 if r["ok"] else 1
