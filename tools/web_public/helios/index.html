@@ -29,7 +29,7 @@
 <script src="../olympus/gate-nav.js?v=g6" defer></script><!-- the way back to the Gate + Go to (olympus/gate-nav.js) -->
 <script src="../olympus/sfx.js?v=s4" defer></script>
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#c8a24a'); r.setProperty('--oly-accent-rgb', '200, 162, 74'); })();</script>
-<link rel="stylesheet" href="helios.css?v=a4qd">
+<link rel="stylesheet" href="helios.css?v=a4qe">
 <link rel="stylesheet" href="../olympus/shell.css?v=s4"><!-- day-arenas: the one design layer, loaded last -->
 </head>
 <body>
@@ -54,6 +54,10 @@
   </section>
 
   <section class="pulse" data-pulse="strip,bots,stats" data-pulse-app="helios" aria-label="Today, the bots, the trades" aria-busy="true"><div class="pu-part pu-strip"></div><div class="pu-part pu-bots"></div><div class="pu-part pu-stats"></div><p class="pu-note pu-age"></p></section><!-- day-arenas: olympus/pulse.js -->
+  <section class="ag-card card" id="nqBrief" aria-labelledby="brH"><!-- day-arenas: the NQ pre-market brief (brief.js, ../nq/brief.json from day-brief) -->
+    <div class="row"><h2 id="brH">NQ before the open</h2><span class="br-day"></span></div>
+    <div class="br-body" aria-live="polite"></div>
+  </section>
   <section class="ag-card card" id="riskWeek" aria-labelledby="rwH"><!-- day-arenas: Pythia's risk calendar folded in (riskweek.js) -->
     <div class="row"><h2 id="rwH">Market risk, next 5 trading days</h2><a class="pill" href="../pythia/" data-oly-cue="tap">Pythia &rsaquo;</a></div>
     <ul aria-live="polite"></ul>
@@ -100,5 +104,6 @@
 <script type="module" src="helios.js?v=r7"></script>
 <script type="module" src="../olympus/pulse.js?v=p1"></script>
 <script type="module" src="riskweek.js?v=1"></script>
+<script type="module" src="brief.js?v=1"></script>
 </body>
 </html>

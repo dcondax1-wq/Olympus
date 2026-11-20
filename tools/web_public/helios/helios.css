@@ -100,3 +100,12 @@ html:not(.framed) #app { padding-bottom: calc(96px + var(--sb)); }
 .rw-dot.bad { background: var(--ag-terra); } .rw-dot.warn { background: var(--ag-sun); } .rw-dot.ok { background: var(--ag-olive); } .rw-dot.info { background: var(--ag-aegean); }
 .rw-empty { grid-template-columns: 1fr; color: var(--ag-muted); font-size: 13px; }
 #riskWeek .row > a.pill { min-height: 44px; text-decoration: none; }
+/* day-arenas: the NQ pre-market brief (brief.js, ../nq/brief.json). Fixed height: CLS 0; long lines end in ... */
+#nqBrief .br-body { height: 300px; overflow: hidden; display: grid; align-content: start; gap: 0; }
+.br-head { margin: 4px 0 8px; font: 600 16px/1.35 var(--ag-sans); color: var(--ag-text); height: 2.7em; overflow: hidden; }
+.br-row { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 10px; height: 40px; align-items: center; border-top: 1px solid var(--ag-line-soft, rgba(243, 236, 224, .07)); }
+.br-k { font: 600 13px/1.2 var(--ag-sans); color: var(--ag-muted); }
+.br-v { font: 500 14px/1.3 var(--ag-sans); color: var(--ag-text); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.br-row.grey .br-v { color: var(--ag-muted); }
+.br-stale { margin-top: 8px; height: 2.8em; overflow: hidden; }
+.br-day { font: 600 13px/1 var(--ag-sans); color: var(--ag-muted); }

@@ -14,6 +14,8 @@ Branch `day-arenas`. Nothing in the bot, the engine, the live files or the lead-
 | Business | Today strip + payouts/fees on top. **Fix:** the loading veil sat 12 s on every open (the page never told the kit it was ready); now it lifts at once. **Fix:** the public site no longer asks for the private `business.json` (the audit's 404). Harmonia, Mint linked as folded in. |
 | Journal | Last trade headline + streak / setups / weekdays card. Light mode checked. Apollo, Epilogue, Kratos, Nemesis linked as folded in (Journal already had their week review and habit cost). |
 | Helios | Today strip, the bots, the trades card, and **Pythia's market-risk calendar for the next 5 trading days** (red / amber / calm, the biggest release and its time). Pythia, Delphi, Forum linked as folded in. |
+| Helios (lead's ask) | New card **NQ before the open**: reads `nq/brief.json` (day-brief, docs/BRIEF.md v1): headline, where price sits, the 4 nearest levels, today's news, next Tier-1 release, the day bias shown grey as context (no better than a coin), stale-data warning. Without the file: "the brief is on its way". |
+| Hera (lead's ask) | New card **The fleet, month by month**: reads `business/fleet_plan.json` (day-fleet) loosely (months with median / bad case, next buy, top 3 Decide cards by $). The file is not on day-fleet yet, so today it shows "Plan coming"; checked with a sample file too. |
 | Compass | **Fix:** it said "Bot not connected" while the PC was live (it read the old cloud copy); it now reads the PC's own status like Aegis and Helios. Today strip, bots and every account added. Light mode fixed. Stoa, Hestia, Inbox linked. |
 | Fates | Stays a dark 3D stage by design (light theme keeps its dark stage). Moirai and Labyrinth linked inside its Lab sheet. |
 | Zenith (Home) | **Fix:** Home jumped twice on open (the NQ strip grew to a 2-line "PC silent" banner from the old cloud copy, then shrank when the PC's live status arrived): layout shift 0.30 -> 0. The honest banner still shows if the PC really is silent after 4 s. |
@@ -24,6 +26,7 @@ Also: the shared design layer `olympus/shell.css` now loads last on all 9 apps (
 - Ledger and Fates still have one long task (about 1.1 s and 1.7 s in the headless browser) when their 3D scene starts; headless software rendering inflates this a lot, a real iPhone GPU is much faster. I did not change the 3D scenes today (risk).
 - Win rate by setup / weekday comes from the 2026 replay (295 trades) and says so on the card: there are only 4 real + paper trades so far. It switches to real trades by itself at 20.
 - Ledger's `money/scoreboard.json` and `kalshi.json` 404 only on a local build (the publisher writes them on the real site). Clio's `writeups/index.json` exists in a real build: not a kit issue.
+- I did not touch `business/taxes.html` or `business/keep.html` (day-taxes owns them).
 - The merged apps are linked, not deleted: every old URL still works.
 
 ## Tests

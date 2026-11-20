@@ -27,7 +27,7 @@
 <script src="../olympus/agora-ui.js?v=4" defer></script>
 <script src="../olympus/sfx.js?v=s4" defer></script>
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#c96a4a'); r.setProperty('--oly-accent-rgb', '192, 96, 63'); })();</script>
-<link rel="stylesheet" href="hera.css?v=a1qd">
+<link rel="stylesheet" href="hera.css?v=a1qe">
 <link rel="stylesheet" href="../olympus/shell.css?v=s4"><!-- day-arenas: the one design layer, loaded last -->
 </head>
 <body>
@@ -45,6 +45,10 @@
     <p class="note" id="bigNote"></p>
   </section>
   <section class="pulse" data-pulse="hero:payout,money" data-pulse-app="hera" aria-label="Next payout, fees vs payouts" aria-busy="true"><div class="pu-part pu-hero"></div><div class="pu-part pu-money"></div></section><!-- day-arenas: olympus/pulse.js -->
+  <section class="ag-card card" id="fleetPlan" aria-labelledby="fpH"><!-- day-arenas: the fleet cash plan (fleet.js, ../business/fleet_plan.json from day-fleet) -->
+    <h2 id="fpH">The fleet, month by month (estimate)</h2>
+    <div class="fp-body" aria-live="polite"></div>
+  </section>
   <section class="ag-card card" aria-labelledby="chartH">
     <h2 id="chartH">The 12 months</h2>
     <svg id="chart" class="chart" viewBox="0 0 360 220" role="img" aria-label="Cash to you over 12 months"></svg>
@@ -81,5 +85,6 @@
 </main>
 <script type="module" src="hera.js?v=a1d"></script>
 <script type="module" src="../olympus/pulse.js?v=p1"></script>
+<script type="module" src="fleet.js?v=1"></script>
 </body>
 </html>

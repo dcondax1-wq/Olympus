@@ -62,3 +62,15 @@ details { display: block; }
 /* night-siteqa 2026-11-20: alone (not framed in Jarvis) the corner holds only the 44 px OLYMPUS seal: 96 px + the home bar clears it, the 176 px
    seat (Jarvis's orb) stays for the framed page; no empty band at the end (owner: the bottom looked "funky"; same rule as trading.css) */
 html:not(.framed) #app { padding-bottom: calc(96px + var(--sb)); }
+/* day-arenas: the fleet cash plan (fleet.js, ../business/fleet_plan.json from day-fleet); fixed height, CLS 0 */
+#fleetPlan .fp-body { height: 330px; overflow: hidden; }
+.fp-empty { margin: 8px 0 0; color: var(--ag-muted); font-size: 14px; line-height: 1.45; }
+.fp-months { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 6px; height: 150px; margin-top: 8px; }
+.fp-m { display: grid; grid-template-rows: 16px 1fr 16px; justify-items: center; min-width: 0; }
+.fp-bars { position: relative; width: 70%; max-width: 28px; height: 100%; }
+.fp-bars i { position: absolute; left: 0; right: 0; bottom: 0; border-radius: 4px 4px 2px 2px; min-height: 2px; }
+.fp-mid { background: var(--ag-gold, #c8a24a); opacity: .9; } .fp-bad { background: var(--ag-bronze, #9c6b3c); left: 25% !important; right: 25% !important; z-index: 1; }
+.fp-v, .fp-k { font: 600 11px/16px var(--ag-num); color: var(--ag-soft); white-space: nowrap; font-variant-numeric: tabular-nums; } .fp-k { color: var(--ag-muted); }
+.fp-next { margin: 8px 0 4px; font: 600 14px/1.35 var(--ag-sans); color: var(--ag-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fp-card { display: flex; justify-content: space-between; gap: 10px; height: 30px; align-items: center; border-top: 1px solid var(--ag-line-soft, rgba(243, 236, 224, .07)); font-size: 13px; color: var(--ag-soft); }
+.fp-card span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
