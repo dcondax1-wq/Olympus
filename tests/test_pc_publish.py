@@ -121,12 +121,16 @@ def main() -> int:
         env_on = {"LE_NO_GITHUB": "1", "LE_HEARTBEAT": "1", "LE_LIVE_PUBLISH": "1", "LE_REMOTE": "1"}
         from engine import live_publish, remote_ctl, autoupdate, heartbeat
         check("GitHub-free mode switches the phone live push, the remote control and the auto-update FROM ORIGIN off (they would need the old account)",
-              not live_publish.enabled(env_on) and not remote_ctl.enabled(env_on)
+              not live_publish.enabled(env_on) and not remote_ctl.enabled(env_on, root=tmp)
               and not autoupdate.is_enabled({"enabled": True}, env_on, root=tmp))
         # 2026-11-14 (owner: "keep it on GitHub in case we get banned ... I'm not updating the files every time"): with the
         # backup repo in update_source.json the auto-update runs in GitHub-free mode too (tests/test_autoupdate_source.py)
         check("GitHub-free mode keeps the auto-update ON when the code names the backup repo (update_source.json)",
               autoupdate.is_enabled({"enabled": True}, env_on) and autoupdate.source()["remote"] != "origin")
+        # 2026-11-20: the phone remote control follows the same source (engine/remote_ctl.control_source: the backup's
+        # branch control), so it stays ON in GitHub-free mode too (tests/test_remote_ctl.py olympus_tests)
+        check("GitHub-free mode keeps the remote control ON when the code names the backup repo (reads olympus/control)",
+              remote_ctl.enabled(env_on) and remote_ctl.control_source(env=env_on)["remote"] == autoupdate.source()["remote"])
         check("... and changes nothing when the mode is off (old behaviour)",
               live_publish.enabled({"LE_HEARTBEAT": "1", "LE_NO_GITHUB": "0"}) and remote_ctl.enabled({"LE_REMOTE": "1", "LE_NO_GITHUB": "0"})
               and autoupdate.is_enabled({"enabled": True}, {"LE_NO_GITHUB": "0"}))

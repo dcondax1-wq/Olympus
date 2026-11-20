@@ -7,9 +7,9 @@ Before 2026-11-18 a PC without the marker kept pushing its heartbeat to the susp
 "Heartbeat to the cloud" on UPDATE / HEALTH CHECK). When on, nothing in the bot talks to origin GitHub:
   * the heartbeat still runs (same payload, same bars) but "pushes" to the local folder logs/pc_hb/ (local_push), which
     tools/pc_publish.py reads instead of the heartbeat branch;
-  * the phone live.json push and the phone remote control (control branch) stay off; the git auto-update stays off
-    only from origin (the lost account): from the backup repo in update_source.json it runs (2026-11-14,
-    engine/autoupdate.py source(), docs/AUTO_UPDATE.md).
+  * the phone live.json push stays off; the git auto-update and the phone remote control (control branch) stay off
+    only from origin (the lost account): from the backup repo in update_source.json they run (2026-11-14,
+    engine/autoupdate.py source(), docs/AUTO_UPDATE.md; remote control 2026-11-20, engine/remote_ctl.control_source).
 It touches no trading code: strategy, sizing, orders, live_model*.json are exactly the same. Never raises.
 """
 from __future__ import annotations
