@@ -54,8 +54,8 @@ const DIST = [
   { id: 'more', title: 'More', colour: '#9c6b3c', ids: ['compass', 'helios', 'herald', 'stoa', 'hestia', 'inbox', 'planner', 'mind', 'arena', 'athena', 'lyceum', 'nike', 'gallery', 'polis', 'symposium', 'ergasterion', 'settings', 'bridge', 'atlas', 'cities', 'datacity', 'observatory', 'tree', 'prometheus', 'hephaestus', 'clio', 'archive', 'pinakes', 'colosseum'] },
 ];
 const DGROUP = { trading: 'zeus', money: 'money' };
-// the switcher's order (owner 2026-11-20): Cities, Kalshi, the NQ bot, Jarvis / ZEUS first; then the Planner and Business; then the doors
-export const FIRST = ['cities', 'kalshi', 'nq', 'home', 'zenith', 'planner', 'business'];
+// the switcher's order (owner 2026-11-20): Cities, Kalshi, the NQ bot, Jarvis, the Planner, Business, then ZEUS (Zenith); then the doors
+export const FIRST = ['cities', 'kalshi', 'nq', 'home', 'planner', 'business', 'zenith'];
 export const HIDE = new Set(['delphi', 'stoa', 'hestia', 'plutus', 'argo', 'mint', 'harmonia', 'kairos', 'chronos', 'lyceum', 'polis', 'atlascity', 'gallery', 'mintcity',
   'nike', 'arena', 'mind', 'symposium', 'herald', 'ergasterion', 'observatory', 'pheme', 'bridge', 'arbiter', 'hermes', 'hephaestus', 'datacity', 'kalshicity']);
 export const CITY_PARTS = new Set(['datacity', 'kalshicity', 'atlascity', 'mintcity', 'world', 'cities-world']);

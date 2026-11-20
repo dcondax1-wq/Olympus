@@ -1482,7 +1482,7 @@ def run_switcher(br, url):
       name: (c.querySelector('.nx-nm b') || {}).textContent, val: (c.querySelector('.nx-val') || {}).textContent || '', now: c.classList.contains('now'),
       lines: [...c.querySelectorAll('.nx-ln')].map((l) => l.textContent) }))""")
     names = [c["name"] for c in cards]
-    check("n. tap: the switcher opens with the daily apps first (switcher.js FIRST: Cities, Kalshi, NQ, Jarvis, ZEUS, Planner, Business), then every shown app of apps.js in its door order, and + ADD, Jarvis's card marked NOW",
+    check("n. tap: the switcher opens with the daily apps first (switcher.js FIRST: Cities, Kalshi, NQ, Jarvis, Planner, Business, ZEUS), then every shown app of apps.js in its door order, and + ADD, Jarvis's card marked NOW",
           names == SW_NAMES_HOME + ["ADD"] and [c["now"] for c in cards].count(True) == 1 and cards[names.index("JARVIS")]["now"], (names, SW_NAMES_HOME, cards[:2]))
     nq = next((c for c in cards if c["id"] == "zenith"), {})
     cal = next((c for c in cards if c["id"] == "planner"), {})
