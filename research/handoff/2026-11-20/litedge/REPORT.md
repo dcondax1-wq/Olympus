@@ -28,6 +28,26 @@ Write-up: `research/writeups/lit-edge-2026-11-20.md`. Rules fixed before the run
 - All 5 pre-registered ideas (table above). (c) bias and the rest of (d) news were not re-run: every input listed was
   already rejected (sources in the write-up). "ATM model ICT": no codable definition, not tested.
 
+## Round 2: eval rescue (write-up research/writeups/lit-eval-rescue-2026-11-20.md)
+**Keep both evals as they are.** 1,000 paths, both evals on one Monte Carlo, re-buy on a blow in the $ numbers.
+
+| Account / choice | Pass (60 sessions) | Blow | Median sessions | $ a month (Jan-Jun / Jul-Oct-like) |
+|---|---:|---:|---:|---:|
+| 50K today (room 0.4) | 72% / 71% | 25% / 24% | 14 / 16 | **$728 / $699** |
+| 50K room 0.3 | 78% / 74% | 11% / 10% | 19 / 23 | $679 / $622 |
+| 50K room 0.2 | 76% / 64% | 3% / 3% | 27 / 31 | $614 / $540 |
+| 50K pause on edge light | 60% / 50% | 14% / 15% | 21 / 22 | $557 / $477 |
+| 25K today | 87% / 83% | 3% / 2% | 9 / 8 | **$357 / $308** |
+| 25K room 0.3 / 0.2 / pause | 88-74% / 81-66% | 0-1% | 9-24 | $297-345 / $252-289 |
+| +10 ticks (today) | 50K 66% / 65%, 25K 83% / 79% | 32% / 29%, 5% / 3% | same | $623 / $638, $296 / $275 |
+
+Edge light is GREEN today (1.88 vs 1.16 R a week), so a pause would not start. No Decide card (no variant earns more in
+either half). Tool: tools/research/rescue.py (its "today" equals research/lab/lit_two_evals.json exactly);
+results research/lit/rescue.json; design research/lit/rescue_design_2026-11-20.md (committed before the run).
+Extra for the TESTED_AND_REJECTED paste: "Zlarior eval rescue (2026-11-20, lit-eval-rescue-2026-11-20.md): from the
+50K hole + fresh 25K #2, room_f 0.3 / 0.2 / pause-on-edge-light vs today, re-buy on a blow: today highest $ in both
+halves (50K $728 / $699, 25K $357 / $308 a month); room 0.3 halves the 50K blow (25 -> 11%) for -$49 / -$77."
+
 ## Files
 - `tools/research/litedge.py` (check / run / study; reuses tools/lit_more_money scoring; `check`: 631 trades, 0 differ)
 - `research/lit/litedge.json` (ideas + stress), `research/lit/litedge_study.json` (fill map, timing map, cold run)
