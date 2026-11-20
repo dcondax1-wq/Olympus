@@ -67,4 +67,15 @@ and the hub test's idle-line check failed). Ideas for the lead: memoise apps.js 
 
 ## 4. Tests
 
-FILL
+| Suite | Result |
+|---|---|
+| `python tests/smoke.py` | 8/8 green |
+| `python -X utf8 -m tests.test_jarvis_hub` | 271/272. Run 2: only fail = 'hide my balance' caught by biz.js (fixed). Run 3: only fail = o. intro frame timing on a loaded machine ("cuts to the reveal early": ms 3517 vs 3.1 s); it passed in run 2 with the same intro code, so I read it as timing-flaky. Not touched by this branch |
+| `python -X utf8 -m tests.test_jarvis_apps` | 97/97 |
+| `node tests/test_jarvis_biz.mjs` (new) | 32/32 |
+| node: copilot / skills / tradeday / zeus | 149 / 276 / 41 / 124, all pass |
+| node: brain3 | 346 passed, 3 failed: the same 3 search failures on `pc` (not this branch) |
+
+Deliverables here: REPORT.md, LEAD_WIRES.md, 01-12 PNG at 390x844 @2x (answers.json = the exact texts), jarvis-5-questions.webm
+(Accounts, In a trade?, Payout, Today, Kalshi). Python Playwright was missing in this container: `pip install playwright==1.63.0`
++ `PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers` (matches the pre-installed Chromium).
