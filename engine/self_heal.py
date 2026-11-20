@@ -44,7 +44,7 @@ Sizes (logs, data, research, runs, zips, __pycache__, .git, NinjaTrader) go to t
   python -X utf8 -m engine.self_heal --clean       dry run of the weekly clean, with sizes; --clean --apply frees it
   python -X utf8 -m engine.self_heal --sizes       what grows in the bot folder
   python -X utf8 -m engine.self_heal --status      the last run
-LE_SELF_HEAL=0 = off. It runs by itself on Windows only (LE_SELF_HEAL=1 forces it elsewhere). Files: logs/self_heal/ (gitignored):
+LE_SELF_HEAL=0 = off. It runs by itself on Windows only (LE_SELF_HEAL=1 forces it elsewhere), never in a PC self-test's child. Files: logs/self_heal/ (gitignored):
 state.json, tiny.json (the ext line), heal-YYYYMM.log, keep-*/ and oif/ (copies). Tests: tests/test_self_heal_pc.py (temp folders).
 """
 from __future__ import annotations
@@ -894,7 +894,7 @@ def sizes(ctx, budget_s: float = 4.0) -> dict:
     tot, ok = du(ctx.root, budget_s * 3)
     out["bot"] = gb(tot) if ok else f"{gb(tot)}+"
     if ctx.nt and os.path.isdir(ctx.nt):
-        n, ok = du(ctx.nt, budget_s, skip={"db"})
+        n, ok = du(ctx.nt, budget_s)                        # NinjaTrader's own folder, its db (history cache) included: measured, never cleaned
         out["nt"] = gb(n) if ok else f"{gb(n)}+"
     try:
         out["free"] = round(shutil.disk_usage(ctx.root).free / GB, 1)
@@ -1104,8 +1104,8 @@ def maybe_run(say=print, now=None, root: str = ROOT, env=None, ctx=None) -> dict
     try:
         env = os.environ if env is None else env
         sw = str(env.get("LE_SELF_HEAL", "")).strip()
-        if sw == "0" or (os.name != "nt" and sw != "1" and ctx is None):
-            return None
+        if sw == "0" or (os.name != "nt" and sw != "1" and ctx is None) or (env.get("LE_SELFTEST_CHILD") == "1" and ctx is None):
+            return None                                   # off, not the Windows PC, or a PC self-test's child (sealed temp folders)
         now = time.time() if now is None else now
         st = _read_json(os.path.join(root, LOG_DIR_REL, "state.json"), {}) or {}
         if now - float(st.get("t") or 0) < EVERY_S:

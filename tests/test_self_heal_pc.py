@@ -394,6 +394,9 @@ def test_heal(tmp):
     SH.heal(ctx(root2, now), board=board, push=push, disk_free=40.0)
     check("i. a dry run writes nothing (no state, no log)", not os.path.exists(os.path.join(root2, "logs")))
     check("i. maybe_run: off on a non-Windows box unless LE_SELF_HEAL=1", os.name == "nt" or SH.maybe_run(say=SH.SAY_OFF, now=now, root=root2, env={}) is None)
+    check("i. maybe_run: never inside a PC self-test's child (LE_SELFTEST_CHILD=1)",
+          SH.maybe_run(say=SH.SAY_OFF, now=now, root=root2, env={"LE_SELF_HEAL": "1", "LE_SELFTEST_CHILD": "1"}) is None
+          and not os.path.exists(os.path.join(root2, "logs")))
     check("i. maybe_run: LE_SELF_HEAL=0 = off", SH.maybe_run(say=SH.SAY_OFF, now=now, root=root2, env={"LE_SELF_HEAL": "0"},
                                                              ctx=ctx(root2, now, apply=True)) is None)
     r = SH.maybe_run(say=SH.SAY_OFF, now=now + 25 * 3600 + 60, root=root, env={"LE_SELF_HEAL": "1"},

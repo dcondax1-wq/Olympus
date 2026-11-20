@@ -1966,19 +1966,19 @@ def main(argv=None) -> int:
             _kp1.maybe_run(say=(lambda *_: None) if a.quiet else print)
         except Exception:
             pass
-        # self-heal (engine/self_heal.py, docs/SELF_HEAL.md): at most once an hour, the known PC faults fixed with a logged remedy (stale git
-        # lock, a file in the update's way, stuck order files, stale pid, missing packages, clock) + the weekly disk clean; one alert only
-        # when it could NOT fix something. Never starts, stops, arms or routes the bot; LE_SELF_HEAL=0 = off; soft
-        try:
-            from engine import self_heal as _sh
-            _sh.maybe_run(say=(lambda *_: None) if a.quiet else print)
-        except Exception:
-            pass
         # Kalshi K8 clock bot (engine/kalshi_clock.py + engine/kalshi_live.py): keeps the paper loop running and brings the LIVE
         # loop back after a PC restart ONLY while the owner's typed phrase is on record; OFF by default; never touches the futures bot
         try:
             from engine import kalshi_live as _klv
             _klv.maybe_run(say=(lambda *_: None) if a.quiet else print)
+        except Exception:
+            pass
+        # self-heal (engine/self_heal.py, docs/SELF_HEAL.md), LAST: it may run pip for a few minutes. At most once an hour the known PC
+        # faults get their logged remedy (stale git lock, a file in the update's way, stuck order files, stale pid, missing packages,
+        # clock) + the weekly disk clean; one alert only when it could NOT fix something. Never starts, stops, arms or routes the bot; LE_SELF_HEAL=0 = off; soft
+        try:
+            from engine import self_heal as _sh
+            _sh.maybe_run(say=(lambda *_: None) if a.quiet else print)
         except Exception:
             pass
     return 0
