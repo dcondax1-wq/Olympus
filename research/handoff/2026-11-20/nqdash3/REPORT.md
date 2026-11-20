@@ -37,6 +37,15 @@
 | Tests | test_nq_desk 31/31 (4 new round-3 checks), test_trading_merged (new) 6/6, nq_page 70/70, trading_page 71/71; run_area: payready on board + trading, nq_desk / trading_merged / alert_audit on trading, alert_audit on pc |
 | Screens | merge/before_<app>.png (the 5 old apps), merge/after_nq_gate_day_*, after_nq_past_*, after_trading_reels_*, after_trading_why_* (dark + light) |
 
+## Round 4: the live chart back on the first phone screen
+test_nq_chart failed 2 checks on the merged tree. Both are fixed without touching the test: 44/44.
+- `nq.js` named the chart module in two comments (the test keeps nq.js free of any link to it). Reworded.
+- My cards pushed the chart to y = 1221. The chart box now ends at 826 of 844 px again. Only 18 px are left, so even a one-line accounts row
+  would push it off; the accounts strip, GO / WAIT / HALT and the day line now sit right under the chart.
+- Order: banner -> live chart -> accounts -> GO / WAIT / HALT -> the bots' day -> the columns ...
+- Tests: nq_chart 44/44, nq_page 70/70, nq_desk 32/32.
+- Screens: nq_first_screen_dark/light.png, nq_accounts_dark/light.png.
+
 **Not changed:** no bot process file (tools/pc_report.py is the 15-minute reporter, changed only in the chart-post timing), no engine/, no live_model, no sw.js / build / apps.js / APPS table, no olympus/ kit, no STATE.md (lead's).
 
 ## Tests (all run here)

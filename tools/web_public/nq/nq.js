@@ -197,7 +197,7 @@ function closeSheet() {
 }
 
 // ------------------------------------------------------------------------------------------------ nqdash3: accounts, thinking, quality (nqdesk.js)
-// the PC's chart post (nqchart.js keeps it in window.NQCHART.S.post): its open trades with the stop as it is now and the last bar's close
+// the PC's chart post (the live chart module keeps it in window.NQCHART.S.post): its open trades with the stop as it is now and the last bar's close
 function chartOf(post) {
   try {
     if (!post || typeof post !== 'object') return null;
@@ -273,7 +273,7 @@ function tryScene() {
   try { if (M.mount($('scene3d'), S.view.columns)) { S.scene = 'webgl'; $('scene3d').hidden = false; $('fallback').style.visibility = 'hidden'; renderScene(); } } catch (_) { S.scene = '2d'; }
 }
 window.addEventListener('nq3d', tryScene);
-window.addEventListener('nq-bars', () => { if (S.ready) renderDesk(); });   // a new chart post (nqchart.js): the open trade's stop and $ now
+window.addEventListener('nq-bars', () => { if (S.ready) renderDesk(); });   // a new chart post (the live chart module): the open trade's stop and $ now
 
 async function refresh() {
   if (S.forced || document.hidden) return;
