@@ -318,7 +318,13 @@
         toAsk: funded ? (num(fd.to_ask) != null ? num(fd.to_ask) : num(a.toTarget)) : null, askAt: funded ? num(fd.ask_at_balance) : null, today: num(a.today) || 0 });
     });
     if (T && T.extraOf) { try { T.extraOf(home).forEach(function (a) { cards.push({ key: a.key, name: a.name, size: a.size, kind: a.kind, balance: num(a.balance), room: num(a.room), mll: num(a.mll), toPass: num(a.toTarget), toAsk: null, askAt: null, today: num(a.today) || 0 }); today += num(a.today) || 0; }); } catch (e) { /* the two bots' rows stay */ } }
-    return { t: t, pcT: ages.pc.t, pcAge: ages.pc.age, cloudAge: ages.cloud ? ages.cloud.age : null, running: running, accts: accts, cards: cards, today: today, win: nextWindow(home, t), truth: !!T, has: true };
+    var open = [];   // olympus2: the open trade(s) from the board cards (engine/live_board.py position: side, qty, entry, stop, target, unrealized_usd)
+    ['lit', 'atlas'].forEach(function (k) {
+      var ps = obj(obj(board[k]).position); if (!(num(ps.entry_t) > 0)) return;
+      var side = String(ps.side || (num(ps.dir) === -1 ? 'SHORT' : 'LONG')).toUpperCase() === 'SHORT' ? 'SHORT' : 'LONG';
+      open.push({ key: k, name: k === 'lit' ? 'Zlarior' : 'ATLAS', side: side, qty: num(ps.qty), entry: num(ps.entry), stop: num(ps.stop), target: num(ps.target), pnl: num(ps.unrealized_usd), t: num(ps.entry_t) });
+    });
+    return { t: t, pcT: ages.pc.t, pcAge: ages.pc.age, cloudAge: ages.cloud ? ages.cloud.age : null, running: running, accts: accts, cards: cards, open: open, today: today, win: nextWindow(home, t), truth: !!T, has: true };
   }
   /* one fact of the grid: a label, the number, one small line; a tap opens the app that holds the detail */
   function fact(box, label, value, sub, cls, to, key) {
@@ -342,6 +348,7 @@
     badge.className = 'g-badge ' + st[1]; badge.textContent = st[2]; line.textContent = st[3];
     clear(dl);
     var old = st[0] === 'stale' || from === 'cache';
+    drawTrade(N, from, old);
     drawMoney(N, from, old);
     if (from !== 'none') {
       /* the owner reads these first (lead, round 4): drawdown left per account and today's $, then the window; the money row above adds balances */
@@ -354,6 +361,7 @@
     fact(dl, 'Trade window', W.open ? 'Open now' : W.label.replace(/ 02:00-15:30 ET$/, ' 02:00 ET'), W.open ? 'until 15:30 ET' : inWords(W.inS), '', 'kairos/index.html', 'kairos');
     if (dl.lastChild) { dl.lastChild.setAttribute('data-win', W.open ? 'open' : 'shut'); dl.lastChild.setAttribute('data-ins', String(Math.round(W.inS || 0))); }   /* night-effects: the market-clock ring (olympus/home-fx.js) */
     drawExtra(dl);
+    drawNext();
     dl.hidden = false; dl.removeAttribute('aria-hidden');
     btn.hidden = !(st[0] === 'stale');
     if (from === 'none') foot.textContent = 'This copy of the site has no live numbers. Bots & Evals shows the full status where it can.';
@@ -398,6 +406,47 @@
     box.appendChild(strip);
     box.setAttribute('data-n', String(cards.length));
   }
+  /* olympus2: the open trade, if any, as one bold line under the status ("Zlarior LONG 2 micros · +$85 now · stop 21,340"); hidden when flat or old */
+  function drawTrade(N, from, old) {
+    var box = $('nowTrade'); if (!box) return;
+    clear(box);
+    var list = from === 'none' || old ? [] : (N.open || []);
+    box.hidden = !list.length;
+    list.forEach(function (o) {
+      var r = el('a', 'g-trow ' + (o.side === 'SHORT' ? 'short' : 'long')); r.href = base + 'nq/index.html'; r.setAttribute('data-go', 'nq');
+      r.appendChild(el('i', 'g-tdot'));
+      r.appendChild(el('b', '', o.name + ' ' + o.side + (o.qty ? ' ' + plural(o.qty, 'micro') : '')));
+      if (o.pnl != null) r.appendChild(el('span', 'g-tpnl ' + (o.pnl > 0.5 ? 'up' : o.pnl < -0.5 ? 'down' : ''), moneyS(o.pnl) + ' now'));
+      var px = function (v) { return v == null ? '' : v.toLocaleString('en-US', { maximumFractionDigits: 2 }); };
+      if (o.stop != null) r.appendChild(el('small', '', 'stop ' + px(o.stop) + (o.target != null ? ' · target ' + px(o.target) : '')));
+      box.appendChild(r);
+    });
+  }
+  /* olympus2: the next thing to do (the top open Decide card) and Kalshi K8 today, one line each under the facts */
+  function drawNext() {
+    var box = $('nowNext'); if (!box) return;
+    clear(box);
+    var X = S.extra || {}, D = X.D, K8 = X.K8;
+    if (D) {
+      var a = el('a', 'g-nrow g-ndec'); a.href = base + 'business/plan.html'; a.setAttribute('data-go', 'decide');
+      a.appendChild(el('b', '', 'Decide' + (D.n > 1 ? ' (' + D.n + ')' : '')));
+      a.appendChild(el('span', '', D.q + (D.rec === 'yes' ? ' Claude: yes.' : D.rec === 'no' ? ' Claude: no.' : '')));
+      box.appendChild(a);
+    } else if (X.decOk) {
+      var z = el('a', 'g-nrow g-ndec'); z.href = base + 'business/plan.html'; z.setAttribute('data-go', 'decide');
+      z.appendChild(el('b', '', 'Decide')); z.appendChild(el('span', '', 'Nothing waiting on you.')); box.appendChild(z);
+    }
+    if (K8) {
+      var k = el('a', 'g-nrow g-nk8'); k.href = base + 'kalshi/index.html'; k.setAttribute('data-go', 'kalshi');
+      k.appendChild(el('b', '', 'Kalshi K8'));
+      var parts = [];
+      if (K8.won + K8.lost) parts.push('today ' + K8.won + ' won, ' + K8.lost + ' lost');
+      parts.push(K8.next ? 'next ' + K8.next.name + ' ' + K8.next.at : 'no more windows today');
+      k.appendChild(el('span', '', parts.join(' · ')));
+      box.appendChild(k);
+    }
+    box.hidden = !box.firstChild;
+  }
   function acctName(a) { var n = String(a.name || ''); return a.size && n.indexOf(a.size) < 0 ? n + ' ' + a.size : n; }   // "Zlarior 25K #2" keeps its own size
   function HSok() { return !!(w.OLYMPUS_HUB_STATUS && w.OLYMPUS_HUB_STATUS.shortAge); }
   /* Kalshi and the plan: only when they have something real (kalshi.json reached the page; the Planner's summary is today's) */
@@ -425,12 +474,43 @@
     if (live.board && !live.board.error) out.board = live.board;
     return out;
   }
+  /* olympus2 2026-11-20 (owner: "the home page as the daily cockpit"): the next thing to decide = the first OPEN Decide card (business/decisions.json,
+     the same file the Board and the Decide page read), else nothing */
+  function nextDecision(doc) {
+    var items = doc && doc.items instanceof Array ? doc.items : [];
+    for (var i = 0; i < items.length; i++) { var it = items[i]; if (it && it.id && it.question && String(it.status || 'open') === 'open') return { id: String(it.id), q: String(it.question), rec: String(it.recommend || ''), n: items.filter(function (x) { return x && String(x.status || 'open') === 'open'; }).length }; }
+    return null;
+  }
+  /* Kalshi K8 today (kalshi/k8.json: Kalshi's public results at the bot's entry, per leg): the live legs' result today + the next live window in ET */
+  function zoneMin(t, tz) {   // minutes past midnight + the date key of epoch t in a time zone
+    try { var p = {}; new Intl.DateTimeFormat('en-US', { timeZone: tz, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).formatToParts(new Date(t * 1000)).forEach(function (x) { p[x.type] = x.value; });
+      return { m: (parseInt(p.hour, 10) % 24) * 60 + parseInt(p.minute, 10), day: p.year + '-' + p.month + '-' + p.day }; } catch (e) { return null; }
+  }
+  function k8Today(doc, t) {
+    var legs = doc && doc.legs instanceof Array ? doc.legs.filter(function (l) { return l && l.live && /^\d{1,2}:\d{2}$/.test(String(l.open || '')); }) : [];
+    if (!legs.length) return null;
+    var et = zoneMin(t, 'America/New_York'); if (!et) return null;
+    var res = [], next = null;
+    legs.forEach(function (l) {
+      if (l.last_day === et.day && (l.last_res === 'W' || l.last_res === 'L')) res.push(l.last_res);
+      var z = zoneMin(t, l.tz || 'America/New_York'); if (!z) return;
+      var hm = String(l.open).split(':'), openM = parseInt(hm[0], 10) * 60 + parseInt(hm[1], 10), inMin = openM - z.m;
+      if (inMin > 0 && (!next || inMin < next.inMin)) next = { inMin: inMin, name: String(l.name || '').replace(/\s*\d{1,2}:\d{2}-\d{1,2}:\d{2}\s*ET\s*$/, ''), at: Math.round(et.m + inMin) };
+    });
+    var hhmm = function (m) { m = ((m % 1440) + 1440) % 1440; return (m < 600 ? '0' : '') + Math.floor(m / 60) + ':' + (m % 60 < 10 ? '0' : '') + (m % 60); };
+    var wd = new Date(t * 1000).toLocaleDateString('en-US', { timeZone: 'America/New_York', weekday: 'short' });
+    if (wd === 'Sat' || wd === 'Sun') next = null;
+    return { won: res.filter(function (x) { return x === 'W'; }).length, lost: res.filter(function (x) { return x === 'L'; }).length, next: next ? { name: next.name, at: hhmm(next.at) + ' ET' } : null };
+  }
   /* the other sources of the home: Kalshi's feed copy, the money scoreboard, two status cards; the Planner's summary from this phone */
   function loadExtra(then) {
     var HS = w.OLYMPUS_HUB_STATUS;
     if (!HS) { then(); return; }
-    var got = { k: null, sb: null, me: null, cards: {} }, left = 5;
-    var one = function () { left--; if (left > 0) return; var t = nowS(); S.extra = { K: HS.kalshiOf(got.k, t), M: HS.moneyOf(got.sb), P: HS.planOf(lsGet(LS_PLAN), t), ME: HS.meOf ? HS.meOf(got.me, t) : null, cards: got.cards }; then(); };
+    var got = { k: null, sb: null, me: null, cards: {}, dec: null, k8: null }, left = 7;
+    var one = function () { left--; if (left > 0) return; var t = nowS(); S.extra = { K: HS.kalshiOf(got.k, t), M: HS.moneyOf(got.sb), P: HS.planOf(lsGet(LS_PLAN), t), ME: HS.meOf ? HS.meOf(got.me, t) : null, cards: got.cards,
+      D: nextDecision(got.dec), decOk: !!(got.dec && got.dec.items instanceof Array), K8: k8Today(got.k8, t) }; then(); };
+    getJSON(base + 'business/decisions.json').then(function (j) { got.dec = j; one(); });   // olympus2: the next thing to decide (the top open Decide card)
+    getJSON(base + 'kalshi/k8.json').then(function (j) { got.k8 = j; one(); });             // olympus2: Kalshi K8 today (the live legs' results and the next window)
     getJSON(base + 'kalshi.json').then(function (j) { got.k = j; one(); });
     getJSON(base + 'me/me.json').then(function (j) { got.me = j; one(); });   // the Me hub's tiles: only the PC's own link serves it (a 404 elsewhere)
     getJSON(base + 'money/scoreboard.json').then(function (j) { got.sb = j; one(); });
