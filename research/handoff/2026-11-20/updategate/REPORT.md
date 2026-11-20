@@ -62,3 +62,8 @@ Nothing for you to do.
   shows the repo as public (security REPORT, owner step 1).
 
 ## Test run (pc area, every suite but win_scripts)
+`run_area.py pc --only <all 67 pc suites but win_scripts>` (BOARD_NO_BROWSER=1): **65/67 suites, 3,002 passed / 2 failed**. Both reds
+fail the same way on base olympus/pc e3bf212d, without this branch:
+- `obsidian_brain` g: the committed vault/ is older than a fresh build. Fix: `python tools/obsidian_brain.py`.
+- `land_branch` f: the gate page's shell.css `?v` tag check (a pin from the lead's landing tool).
+Nothing in this branch touches either.
