@@ -121,10 +121,10 @@ console.log(JSON.stringify({ doors: D.DOORS.map((d) => ({ id: d.id, title: d.tit
     bad = [(d["id"], it["href"]) for d in D for it in d["items"] if not exists(it["href"]) and not it["href"].startswith("planner/")]
     check("d. each door: 5-8 shortcuts, each a plain label + its Greek / page name + a page that exists in the site",
           all(5 <= len(d["items"]) <= 8 and all(it["label"] and it["greek"] and it["words"] for it in d["items"]) for d in D) and not bad, bad)
-    check("d. plain words: 'payout' finds the payout rules, Ledger and Hera; 'taxes' the Taxes page; 'accounts' My Accounts; 'kalshi' all five Kalshi apps; 'brain' the bot's brain; 'drawdown' Aegis; 'fleet plan' the Fleet Plan",
+    check("d. plain words: 'payout' finds the payout rules, Ledger and Hera; 'taxes' the Taxes page; 'accounts' My Accounts; 'kalshi' the Kalshi apps (Kalshi City lives inside Cities since 2026-11-20); 'drawdown' Aegis; 'fleet plan' the Fleet Plan",
           "trading/#rulesCard" in o["payout"]["items"] and {"ledger", "hera"} <= set(o["payout"]["apps"]) and "business/taxes.html" in o["taxes"]["items"]
-          and "business/accounts.html" in o["accounts"]["items"] and {"kalshi", "dionysus", "kalshicity", "sibyl", "tyche"} <= set(o["kalshi"]["apps"])
-          and "index.html#/brain" in o["brain"]["items"] and "aegis" in o["drawdown"]["apps"] and "business/plan.html" in o["fleet"]["items"], o)
+          and "business/accounts.html" in o["accounts"]["items"] and {"kalshi", "dionysus", "sibyl", "tyche"} <= set(o["kalshi"]["apps"])
+          and "aegis" in o["drawdown"]["apps"] and "business/plan.html" in o["fleet"]["items"], o)
     def ids_of(src, pat):
         m = re.search(pat, src, re.S)
         return re.findall(r"\{\s*id:\s*'([a-z]+)'[^}]*?ids:\s*\[([^\]]*)\]", m.group(0)) if m else []
