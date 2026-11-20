@@ -245,9 +245,13 @@ export function mountSwitcher(opts = {}) {
   function sections() {
     const all = given();
     if (opts.districts !== false) {
-      const first = FIRST.map((id) => all.find((a) => a.id === id)).filter(Boolean), rest = all.filter((a) => !FIRST.includes(a.id));
+      const first = FIRST.map((id) => all.find((a) => a.id === id)).filter(Boolean);
+      // olympus/doors.js ARCHIVE (the weak / duplicate apps): one "Archive" group at the very end (lead QA 2026-11-20), never right after Business
+      const arch = (a) => { try { const D = win.OLYMPUS_DOORS; return !!(D && typeof D.archived === 'function' && D.archived(a.id)); } catch (_) { return false; } };
+      const rest = all.filter((a) => !FIRST.includes(a.id) && !arch(a)), archived = all.filter((a) => !FIRST.includes(a.id) && arch(a));
       const out = first.length ? [{ g: { id: 'daily', name: 'Daily' }, apps: first }] : [];
       for (const d of DIST) { const apps = rest.filter((a) => distOf(a) === d.id); if (apps.length) out.push({ g: { id: d.id, name: d.title }, apps }); }
+      if (archived.length) out.push({ g: { id: 'archive', name: 'Archive' }, apps: archived });
       return out;
     }
     const s = typeof opts.sections === 'function' ? call(opts.sections, all) : null;

@@ -1186,7 +1186,8 @@ def _registry():
                           "import('./apps.js').then((m) => console.log(JSON.stringify({ groups: m.GROUPS.map((g) => ({ id: g.id, name: g.name })), apps: m.BUILT_INS.map((a) => ({ id: a.id, name: a.name, group: a.group, accent: a.accent || '', dist: d.DOORS.some((x) => x.ids.indexOf(a.id) >= 0) ? d.doorOf(a.id) : a.group === 'trading' ? 'zeus' : a.group === 'money' ? 'money' : 'more' })), dists: d.DOORS.map((x) => ({ id: x.id, title: x.title })) })))"],
                          cwd=JV, capture_output=True, text=True, timeout=60, check=True).stdout
     reg = json.loads(out)
-    sw = subprocess.run(["node", "--input-type=module", "-e", "import('./switcher.js').then((m) => console.log(JSON.stringify({ first: m.FIRST, hide: [...m.HIDE], parts: [...m.CITY_PARTS] })))"],
+    sw = subprocess.run(["node", "--input-type=module", "-e", "import { createRequire } from 'module'; const d = createRequire(process.cwd() + '/')('../olympus/doors.js');"
+                         "import('./switcher.js').then((m) => console.log(JSON.stringify({ first: m.FIRST, hide: [...m.HIDE], parts: [...m.CITY_PARTS], archive: d.ARCHIVE || [] })))"],
                         cwd=JV, capture_output=True, text=True, timeout=60, check=True).stdout
     reg["sw"] = json.loads(sw)
     return reg
@@ -1225,10 +1226,13 @@ _SWH = set(_REG["sw"]["hide"]) | set(_REG["sw"]["parts"])
 def sw_view(active="home"):
     vis = ["home"] + [a["id"] for a in D_SORTED if a["id"] == active or a["id"] not in _SWH]
     first = [i for i in _REG["sw"]["first"] if i in vis]
-    rest = [i for i in vis if i not in first]
+    arc = set(_REG["sw"]["archive"])                             # olympus/doors.js ARCHIVE: one Archive group at the very end
     dist = {a["id"]: a["dist"] for a in _REG["apps"]}
-    doors = [d["id"] for d in _REG["dists"] if any(dist.get(i) == d["id"] for i in rest)]
-    return {"order": first + rest, "chips": (["daily"] if first else []) + doors, "first_money": next((i for i in rest if dist.get(i) == "money"), None)}
+    doors = [d["id"] for d in _REG["dists"] if any(dist.get(i) == d["id"] for i in vis if i not in first and i not in arc)]
+    rest = [i for d in doors for i in vis if i not in first and i not in arc and dist.get(i) == d]
+    archived = [i for i in vis if i not in first and i in arc]
+    return {"order": first + rest + archived, "chips": (["daily"] if first else []) + doors + (["archive"] if archived else []),
+            "first_money": next((i for i in rest if dist.get(i) == "money"), None)}
 SW_HOME, SW_DC = sw_view("home"), sw_view("datacity")
 SW_NAMES_HOME = [NX_LABEL.get(i, next((a["name"] for a in _REG["apps"] if a["id"] == i), i).upper()) for i in SW_HOME["order"]]
 SW_ON = [i for i in SW_HOME["order"] if i in ON_SITE]
@@ -1350,7 +1354,7 @@ def run_olympus(br, url):
     check("p. Search on the ring opens the switcher with the search box ready", p.evaluate("document.activeElement && document.activeElement.id") == "nxFind")
     heads = p.evaluate("[...document.querySelectorAll('#nxTrack .nx-gl')].map((h) => h.textContent)")
     chips2 = p.evaluate("[...document.querySelectorAll('#nxGroups .nx-gb')].map((b) => b.dataset.nxJump)")
-    check("p. the whole switcher: the added apps sit in More (the doors stay in order), no vertical headings", heads == [] and chips2[-1] == "more" and chips2[0] == "daily", (heads, chips2))
+    check("p. the whole switcher: the added apps sit in More (the doors stay in order), no vertical headings", heads == [] and chips2[0] == "daily" and chips2[-1] in ("more", "archive"), (heads, chips2))
     check("p. no page errors", not errs, errs)
     ctx.close()
 
