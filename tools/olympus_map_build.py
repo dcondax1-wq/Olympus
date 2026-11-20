@@ -11,6 +11,8 @@ Sources (all in the repo, nothing is typed by hand):
                                       (money -> Money, trading -> ZEUS Trading, else More)
   * tools/web_public/<id>/*.js|html   the published JSON files an app reads (getJSON / fetch / load string literals ending .json), then its fixture.json
   * tests/test_<id>_page.py | test_<id>.py | any test_*<id>*.py   the test that covers it, else the kit test
+  * tools/web_public/olympus/doors.js ARCHIVE                    which apps open first in their door and which are folded under "Archive"
+  * MERGED below (2026-11-20, from the day helpers' hand-offs)     where a folded app's content lives now (a card on a main page)
 After editing jarvis/apps.js or the Atlas districts: run this, then `python tools/apps_list_build.py`.
 """
 from __future__ import annotations
@@ -46,6 +48,28 @@ FOOT = """
 | This map | `tools/olympus_map_build.py` -> `docs/OLYMPUS_MAP.md` | `tests.test_olympus_map` |
 """
 FALLBACK_DATA = "bundled fixture / its own files"
+# where a folded app lives now (2026-11-20). Sources: research/handoff/2026-11-20/nqdash3/LEAD_WIRES.md (Ares, Kairos, Chronos -> NQ; Odeon,
+# Why -> Trading), kalshi/LEAD_WIRES_merge.md (Sibyl, Kalshi City -> Dionysus), arenas/REPORT.md (folded-in links: Journal, Helios, Hera,
+# Pnyx). [old id, the page it lives on now (site path), the card / what is there]. The old URL always still works.
+MERGED = [
+    ("ares", "nq/#gateCard", "NQ page: GO / WAIT / HALT per account"),
+    ("kairos", "nq/#dayCard", "NQ page: the bots' day strip (windows, now line, trades)"),
+    ("chronos", "nq/#pastCard", "NQ page: the last 8 trading days, each opens its replay"),
+    ("odeon", "trading/#reelsCard", "Trading: 8 trade reels, live first"),
+    ("why", "trading/#whyCard", "Trading: why trades win and lose, per bot"),
+    ("sibyl", "dionysus/", "Kalshi desk: paper picks"),
+    ("kalshicity", "dionysus/", "Kalshi desk: the edges map"),
+    ("apollo", "journal/", "Journal: the week review"),
+    ("epilogue", "journal/", "Journal: the week in 60 seconds"),
+    ("kratos", "journal/", "Journal: habits and what they cost"),
+    ("nemesis", "journal/", "Journal: losing trades"),
+    ("pythia", "helios/", "Morning brief: the market-risk calendar, next 5 days"),
+    ("delphi", "helios/", "Morning brief: the plan and go / no-go"),
+    ("forum", "helios/", "Morning brief: the market morning notes"),
+    ("plutus", "hera/", "Payout plan"),
+    ("argo", "hera/", "Payout plan"),
+    ("labyrinth", "pnyx/", "Rules and size calculator: eval sizing"),
+]
 MAX_DATA = 5
 
 
@@ -119,6 +143,35 @@ def test_of(app_id):
     return f"`tests.{hits[0]}`" if hits else "covered by `tests.test_olympus_kit`"
 
 
+def parse_archive(src):
+    """the ids in olympus/doors.js ARCHIVE (folded under "Archive" at the end of their door)."""
+    m = re.search(r"var ARCHIVE = \[(.*?)\];", src, re.S)
+    return re.findall(r"'([a-z0-9_-]+)'", m.group(1)) if m else []
+
+
+def shown_part(apps, zones):
+    """Open first vs Archive, per door, + where each merged app lives now (names only: no `(id)` cells, the app table stays the one list)."""
+    arc = set(parse_archive(read(os.path.join(WEB, "olympus", "doors.js"))))
+    names = {a[0]: a[1] for a in apps}
+    out = ["", "## What each door opens first, and what is folded under Archive (2026-11-20)", "",
+           "The Doors page, the launcher and Jarvis's switcher show a door's visible apps first and fold the rest under \"Archive\" at its end",
+           "(`tools/web_public/olympus/doors.js` ARCHIVE). Nothing is deleted: every URL works and search finds every app.", "",
+           "| Door | Open first | Archive (folded) |", "|---|---|---|"]
+    for zid, title, _ in zones:
+        ids = sorted((a[0] for a in apps if zone_of(a[0], a[2], zones) == title), key=lambda i: names[i].lower())
+        vis = ", ".join(names[i] for i in ids if i not in arc) or "-"
+        hid = ", ".join(names[i] for i in ids if i in arc) or "-"
+        out.append(f"| {title} | {vis} | {hid} |")
+    nv = sum(1 for a in apps if a[0] not in arc)
+    out += ["", f"{nv} apps open first, {len(apps) - nv} folded under Archive.", "",
+            "## Merged: where a folded app lives now", "",
+            "| Old app | Now on | What is there |", "|---|---|---|"]
+    for aid, where, what in MERGED:
+        if aid in names:
+            out.append(f"| {names[aid]} | {where} | {what} |")
+    return "\n".join(out) + "\n"
+
+
 def build():
     apps = parse_apps(read(os.path.join(WEB, "jarvis", "apps.js")))
     zones = parse_zones(read(os.path.join(WEB, "atlas", "atlas.js")))
@@ -131,7 +184,7 @@ def build():
     table = ["| App (id) | District | Group | What it is | Data it reads | Test |", "|---|---|---|---|---|---|"] + [r[2] for r in rows]
     n = len(apps)
     foot = f"\n{n} apps. Rebuild the registry list after editing `jarvis/apps.js` or `olympus.js`: `python tools/apps_list_build.py`; recount: `python tools/apps_list_build.py --check`.\n"
-    return HEAD + "\n" + "\n".join(table) + "\n" + foot + FOOT
+    return HEAD + "\n" + "\n".join(table) + "\n" + foot + shown_part(apps, zones) + FOOT
 
 
 def main(argv=None):
@@ -172,6 +225,8 @@ def selftest():
     n = len(parse_apps(read(os.path.join(WEB, "jarvis", "apps.js"))))
     ck("the real map has one row per BUILT_INS app and the four doors", real.count("\n| ") >= n and n > 30 and all(f"| {d} |" in real for d in ("ZEUS Trading", "Money", "Kalshi", "More")), n)
     ck("deterministic", build() == real)
+    ck("archive: parsed from doors.js; the map has the Open first / Archive table and the merged list",
+       parse_archive("var ARCHIVE = ['a', 'b',\n 'c'];") == ["a", "b", "c"] and "| Door | Open first | Archive (folded) |" in real and "| Odeon | trading/#reelsCard |" in real)
     print(f"\n{'ALL PASS' if not bad else str(len(bad)) + ' FAILED'}")
     return 0 if not bad else 1
 

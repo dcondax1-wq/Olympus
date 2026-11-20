@@ -1,7 +1,7 @@
 """Live data for the phone app, straight from the PC, every minute, free (owner 2026-10-21: "everything needs to refresh
 and pull all the time").
 
-Why this route. The phone app (https://demetrades2000-coder.github.io/nq-dashboard/) is a static GitHub Pages site in the
+Why this route. The phone app (https://dcondax1-wq.github.io/) is a static GitHub Pages site in the
 PUBLIC repo demetrades2000-coder/nq-dashboard, branch main, force-pushed by the cloud monitor
 (.github/workflows/cloud-monitor.yml "Publish web dashboard", deploy key DASH_DEPLOY_KEY). The cloud runs only every ~30 min
 in 01:30-16:40 ET (Actions minutes are nearly used up), so data.json is up to ~30 min old and nothing moves overnight.

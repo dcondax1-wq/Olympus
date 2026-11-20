@@ -69,7 +69,10 @@ def inner():
     from engine import multi_account as MA
     from engine import second
     from engine import sizing as SZ
+    repo_on = dict(AB.FUNDED_ON)                              # test_account_b_funded sets FUNDED_ON to None when it is imported
     from tests.test_account_b_funded import FakeBot, funded_block, eval_block, ts
+    AB.FUNDED_ON.clear()
+    AB.FUNDED_ON.update(repo_on)
     from engine import live
     assert hasattr(AB, "FUNDED_ON"), "not the patched engine"
     sc = second.load_cfg()
@@ -91,9 +94,17 @@ def inner():
 
     # ---- a. OFF by default
     print("a. OFF by default", flush=True)
-    check("a. FUNDED_ON ships all OFF (None)", all(v is None for v in AB.FUNDED_ON.values()) and set(AB.FUNDED_ON) == {"funded_room_pct", "streak_shrink"}, AB.FUNDED_ON)
-    s0 = AB.normalize(funded_block(), sc)
-    check("a. a funded block without the keys: neither key in the spec, no problem", s0 and not s0.get("problem")
+    # 2026-11-20 lead: FUNDED_ON flipped ON after the owner's YES (both cards; skeptic code review skeptic-live-patches-2026-11-20.md).
+    # "OFF = today" is now proved with an explicit null in the block (the per-account off switch), not with the repo default.
+    check("a. FUNDED_ON ships ON after the owner's YES: room 40% + 1 micro after 2 losses", AB.FUNDED_ON == {"funded_room_pct": 0.4, "streak_shrink": 2}, AB.FUNDED_ON)
+    sd = AB.normalize(funded_block(), sc)
+    check("a. a funded 25K block without the keys gets the repo defaults (0.4, 2), no problem", sd and not sd.get("problem")
+          and sd.get("funded_room_pct") == 0.4 and sd.get("streak_shrink") == 2, sd and (sd.get("problem"), sd.get("funded_room_pct"), sd.get("streak_shrink")))
+    s50 = AB.normalize({**funded_block(), "plan": "builder50k"}, sc)
+    check("a. a Builder 50K block (e.g. a funded combo 50K) never gets the repo defaults (no card covers it)", s50 is not None
+          and "funded_room_pct" not in s50 and "streak_shrink" not in s50, s50 and (s50.get("funded_room_pct"), s50.get("streak_shrink")))
+    s0 = AB.normalize(funded_block(funded_room_pct=None, streak_shrink=None), sc)   # OFF for this account = today's sizing
+    check("a. a funded block with null keys: neither key in the spec, no problem", s0 and not s0.get("problem")
           and "funded_room_pct" not in s0 and "streak_shrink" not in s0, s0 and s0.get("problem"))
     bad = [(room, risk, tgt, cum) for room, risk, tgt, cum in grid
            if int(AB.funded_qty(s0, {"risk_pts": risk, "tgt_pts": tgt}, st_of(room, cum, streak=9), base=base)["qty"]) != want(risk, tgt, st_of(room, cum))]
@@ -152,7 +163,7 @@ def inner():
         B3._load()
         st3 = B3._funded_state("2026-11-13")
         check("b. only this account's own closes: another account Name never reads that file (streak 0)", B3.closes == [] and st3.get("loss_streak") == 0, (len(B3.closes), st3.get("loss_streak")))
-        s_off = AB.normalize(funded_block(), sc)
+        s_off = AB.normalize(funded_block(funded_room_pct=None, streak_shrink=None), sc)
         B4 = AB.AccountB(FakeBot(now), s_off, state_path=p)
         B4._load()
         check("b. switch OFF: the funded state has no loss_streak key (today's state, unchanged)", "loss_streak" not in (B4._funded_state("2026-11-13") or {}))
@@ -161,7 +172,7 @@ def inner():
 
     # ---- c. the streak size
     print("c. the streak size", flush=True)
-    s2 = AB.normalize(funded_block(streak_shrink=2), sc)
+    s2 = AB.normalize(funded_block(streak_shrink=2, funded_room_pct=None), sc)   # the streak alone vs today's 60%
     errs, n_shrunk = [], 0
     for room, risk, tgt, cum in grid:
         q_today = want(risk, tgt, st_of(room, cum))

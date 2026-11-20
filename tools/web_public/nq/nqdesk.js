@@ -32,6 +32,10 @@ export function ageText(s) {
   if (n < 48 * 3600) { const h = Math.floor(n / 3600), m = Math.round((n % 3600) / 60); return m && h < 6 ? `${h} h ${m} min ago` : `${h} h ago`; }
   return `${Math.round(n / 86400)} days ago`;
 }
+/** data freshness in the site-wide words (../age.js: "updated 4 min ago"); ageText stays for the time since an event */
+export const updated = (s) => (num(s) === null ? 'age unknown' : num(s) < 90 ? 'updated just now' : 'updated ' + ageText(s));
+export const AGE_LIMITS = { pc: [20 * 60, 60 * 60], bars: [80 * 60, 3 * 3600], daily: [26 * 3600, 3 * 86400] };   // = age.js LIMITS (tests/test_truth_check)
+export function ageLevel(s, kind) { const n = num(s), L = AGE_LIMITS[kind] || AGE_LIMITS.daily; return n === null ? 'warn' : n > L[1] ? 'bad' : n > L[0] ? 'warn' : 'ok'; }
 export function etParts(tS) {
   try {
     const p = Object.fromEntries(new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', weekday: 'short' })
@@ -49,7 +53,7 @@ export function feedAge(home, nowS) {
   const bt = num(isObj(live.pc) && live.pc.t);
   return { report: rt ? Math.max(0, nowS - rt) : null, beat: bt ? Math.max(0, nowS - bt) : null, fromPc: !!rt };
 }
-function dotOf(age) { return age === null ? 'off' : age <= FRESH_S ? 'live' : 'stale'; }
+function dotOf(age) { if (age === null) return 'off'; const l = ageLevel(age, 'pc'); return l === 'ok' ? 'live' : l === 'warn' ? 'stale' : 'old'; }
 
 // ------------------------------------------------------------------------------------------------ the PC's chart post (le-bars): the open trades
 // chart = { opens: post.open (rows {k, s, q, t, e, sl, tp, be}), last: the last bar's close, t: the post's data time } (the page decodes the bars
@@ -96,7 +100,7 @@ export function accounts(home, biz, nowS, chart) {
       has, balance: bal, room, mll, roomFrac: room !== null && mll ? Math.max(0, Math.min(1, room / mll)) : null, today,
       goalLabel: funded ? 'To payout' : 'To pass', goal, goalText: goal === null ? (funded && card && card.payout_text ? 'see payout line' : '-') : goal <= 0 ? (funded ? 'Payout ready' : 'Target reached') : money(goal),
       payoutText: funded && card && card.payout_text ? String(card.payout_text) : '',
-      dot: has ? dotOf(age) : planned ? 'plan' : 'off', ageText: has ? ageText(age) : planned ? 'plan only: no PC numbers yet' : 'no PC numbers',
+      dot: has ? dotOf(age) : planned ? 'plan' : 'off', ageText: has ? updated(age) : planned ? 'plan only: no PC numbers yet' : 'no PC numbers', ageS: age,
       open: chartOpen(chart, (k) => CHART_ACCT[k] === p.key, nowS),
     });
   }
@@ -109,32 +113,40 @@ export function accounts(home, biz, nowS, chart) {
     out.push({ key: a.id, name: String(a.name || a.id), plan: a.plan || '', stage: /funded/i.test(e.status || '') ? 'Funded' : 'Eval', has: num(e.balance) !== null,
       balance: num(e.balance), room: num(e.room), mll: num(e.mll), roomFrac: num(e.room) !== null && num(e.mll) ? Math.max(0, Math.min(1, e.room / e.mll)) : null,
       today: num(e.today), goalLabel: 'To pass', goal: num(e.to_target), goalText: num(e.to_target) === null ? '-' : money(e.to_target), payoutText: '',
-      dot: dotOf(age), ageText: ageText(age) });
+      dot: dotOf(age), ageText: updated(age) });
   }
   return out;
 }
 
-// ------------------------------------------------------------------------------------------------ the pre-market brief (./brief.json, helper day-brief)
-// Read when present, never needed: its contract (docs/BRIEF.md on day-brief) was not out when this was written, so the reader takes the likely
-// shapes and ignores the rest. -> { bias: {side, text} | null, levels: [{label, px, dist}], news: [{time, title, past}], waiting: '', recap: '', day }
+// ------------------------------------------------------------------------------------------------ the pre-market brief (./brief.json, docs/BRIEF.md v 1)
+// Built by tools/premarket_brief.py (helper day-brief). Read when present, never needed. Contract rules followed: any field may be null, unknown
+// fields ignored, v must be 1, data.stale lines shown, a bias call with context_only = true is shown grey as context, never as advice.
+// -> { bias: {side LONG|SHORT|NONE, text, context, verdict} | null, levels, news, waiting, recap, stale[], headline, day }
 const pickArr = (o, ...ks) => { for (const k of ks) if (Array.isArray(o && o[k])) return o[k]; return []; };
 const pickStr = (o, ...ks) => { for (const k of ks) { const v = o && o[k]; if (typeof v === 'string' && v.trim()) return v.trim(); } return ''; };
 export function briefFor(brief, botId, nowS) {
-  if (!isObj(brief)) return null;
-  const day = pickStr(brief, 'day', 'date', 'session');
-  if (day && nowS && day !== etParts(nowS).day) return null;           // yesterday's brief is not today's plan
-  const bots = brief.bots, b = Array.isArray(bots) ? bots.find((x) => isObj(x) && String(x.id || x.key || x.bot || '').toLowerCase().startsWith(botId)) || null
-    : isObj(bots) ? bots[botId] || bots[botId === 'lit' ? 'zlarior' : botId] || null : null;
-  const bz = isObj(b && b.bias) ? b.bias : isObj(brief.bias) ? brief.bias : null, bs = typeof brief.bias === 'string' ? brief.bias : '';
-  const side = String((bz && (bz.side || bz.call || bz.dir)) || bs || '').toUpperCase().match(/LONG|SHORT|NEUTRAL|FLAT/);
-  const bias = side ? { side: side[0] === 'FLAT' ? 'NEUTRAL' : side[0], text: pickStr(bz, 'why', 'text', 'reason', 'line') , conf: num(bz && (bz.conf ?? bz.confidence ?? bz.score)) } : null;
-  const levels = pickArr(b, 'levels').concat(b && pickArr(b, 'levels').length ? [] : pickArr(brief, 'levels', 'key_levels')).map((x) => (Array.isArray(x)
-    ? { label: String(x[0] || ''), px: num(x[1]), dist: num(x[2]) } : isObj(x) ? { label: String(x.label || x.name || ''), px: num(x.px ?? x.price ?? x.level), dist: num(x.dist ?? x.pts) } : null))
-    .filter((x) => x && x.px !== null).slice(0, 6);
+  if (!isObj(brief) || (brief.v !== undefined && brief.v !== 1)) return null;
+  const day = pickStr(brief, 'day'), today = nowS ? etParts(nowS).day : '';
+  // the brief's day is the CME trading day (after 18:00 ET it is tomorrow's): today's or a day up to 3 ahead is current, an older one is not
+  if (day && today && (day < today || (Date.parse(day) - Date.parse(today)) / 86400000 > 3)) return null;
+  const legs = pickArr(brief, 'bots').filter((x) => isObj(x) && String(x.id || '').toLowerCase().startsWith(botId) && x.state !== 'off_today');
+  const B = isObj(brief.bias) ? brief.bias : null, call = String((B && B.call) || '').toLowerCase();
+  const bias = B ? { side: call === 'up' ? 'LONG' : call === 'down' ? 'SHORT' : 'NONE', context: B.context_only !== false,
+    text: call === 'up' || call === 'down' ? pickStr(B, 'verdict', 'rule') : `no call: ${pickStr(B, 'why_none') || 'none today'}`, verdict: pickStr(B, 'verdict') } : null;
+  const mk = isObj(brief.market) ? brief.market : {};
+  let levels = [];
+  for (const l of legs) for (const w of pickArr(l, 'watch')) if (isObj(w) && num(w.price) !== null && !levels.some((x) => x.label === w.name)) levels.push({ label: String(w.name || ''), px: num(w.price), dist: null });
+  const last = num(mk.last);
+  if (!levels.length) levels = pickArr(mk, 'levels').filter(isObj).map((x) => ({ label: String(x.name || ''), px: num(x.price), dist: num(x.dist_pts) }));
+  levels = levels.filter((x) => x.px !== null).map((x) => ({ ...x, dist: x.dist ?? (last !== null ? Math.round((x.px - last) * 10) / 10 : null) })).slice(0, 6);
   const hm = nowS ? etParts(nowS).hm : '';
-  const news = pickArr(brief, 'news', 'events').filter(isObj).filter((e) => !e.date || !day || e.date === day)
-    .map((e) => ({ time: String(e.time || e.hm || ''), title: String(e.title || e.name || ''), past: !!(e.time && hm && e.time < hm) })).filter((e) => e.title);
-  return { bias, levels, news, waiting: pickStr(b, 'waiting', 'wait', 'waiting_for'), recap: pickStr(b, 'recap', 'after') || pickStr(isObj(brief.recap) ? brief.recap : null, botId) || (typeof brief.recap === 'string' ? brief.recap : ''), day };
+  const news = pickArr(isObj(brief.news) ? brief.news : null, 'today').filter(isObj)
+    .map((e) => ({ time: String(e.time || ''), title: `${e.event || ''}${num(e.tier) === 1 ? ' (Tier 1)' : ''}`, past: !!(e.time && hm && day === today && e.time < hm) })).filter((e) => e.title.trim());
+  const waiting = legs.length > 1 ? legs.map((l) => `${String(l.name || l.id).replace(/^ATLAS /, '')}: ${String(l.waiting_for || '').slice(0, 110)}`).join(' · ')
+    : legs.length ? String(legs[0].waiting_for || '') : '';
+  const R = isObj(brief.recap) ? brief.recap : null;
+  return { bias, levels, news, waiting, recap: R ? pickStr(R, 'traded') : '', stale: pickArr(isObj(brief.data) ? brief.data : null, 'stale').map(String).slice(0, 3),
+    headline: pickStr(brief, 'headline'), day };
 }
 
 // ------------------------------------------------------------------------------------------------ 2. the thinking, per bot
@@ -184,7 +196,7 @@ export function thinking(home, news, file, nowS, chart, brief) {
     const lv = arr(g && g.lv).slice(0, 6).filter((x) => Array.isArray(x) && num(x[1]) !== null).map((x) => ({ label: String(x[0] || ''), px: num(x[1]), dist: num(x[2]) }));
     const before = {
       lean: L, news: tn.length || !bf ? tn : bf.news, next: nx ? `${nd(nx.date)} ${nx.time} ET, ${nx.title}` : '',
-      bias: bf && bf.bias ? bf.bias : null, recap: bf ? bf.recap : '',
+      bias: bf && bf.bias ? bf.bias : null, recap: bf ? bf.recap : '', briefHead: bf && bot.id === 'lit' ? bf.headline : '', stale: bf && bot.id === 'lit' ? bf.stale : [],
       levels: lv.length ? lv : bf ? bf.levels : [],
       window: String((card && isObj(card.window) && card.window.text) || (card && isObj(card.window) && card.window.open ? 'In its entry window now' : '') || ''),
       windowOpen: !!(card && isObj(card.window) && card.window.open),
@@ -226,9 +238,9 @@ export function twinCheck(file) {
 export function quality(home, file, news, nowS, edge, chart) {
   const h = isObj(home) ? home : {}, fa = feedAge(h, nowS), live = isObj(h.live) ? h.live : {}, rep = isObj(live.reporter) ? live.reporter : {};
   const rows = [];
-  rows.push({ k: 'report', label: 'PC report', value: fa.report === null ? 'not received on this page' : ageText(fa.report),
-    level: fa.report === null ? 'bad' : lvl(fa.report <= FRESH_S, fa.report <= 3 * 3600), note: 'every 15 min from your PC' });
-  rows.push({ k: 'beat', label: 'Bot heartbeat', value: fa.beat === null ? 'unknown' : ageText(fa.beat),
+  rows.push({ k: 'report', label: 'PC report', value: fa.report === null ? 'not received on this page' : updated(fa.report),
+    level: fa.report === null ? 'bad' : ageLevel(fa.report, 'pc'), note: 'every 15 min from your PC' });
+  rows.push({ k: 'beat', label: 'Bot heartbeat', value: fa.beat === null ? 'unknown' : updated(fa.beat),
     level: fa.beat === null ? 'warn' : lvl(fa.beat <= BEAT_STALE_S, fa.beat <= 3600), note: 'the bot beats every 5 min' });
   const built = h.built ? Date.parse(h.built) / 1000 : null;
   const tDay = isObj(file) && isObj(file.data_branch) ? file.data_branch.to : null;
@@ -269,7 +281,7 @@ export function quality(home, file, news, nowS, edge, chart) {
 // ------------------------------------------------------------------------------------------------ drawing (DOM only from here)
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = String(text); return e; };
 const clear = (n) => { while (n.firstChild) n.removeChild(n.firstChild); };
-const DOT = { live: 'Live: the PC reported in the last 20 min', stale: 'Stale: the PC has not reported for over 20 min', plan: 'Planned: no PC numbers yet', off: 'No PC numbers' };
+const DOT = { live: 'Live: the PC reported in the last 20 min', stale: 'Getting old: no PC report for over 20 min', old: 'Old: no PC report for over an hour', plan: 'Planned: no PC numbers yet', off: 'No PC numbers' };
 
 function drawAccounts(box, list) {
   clear(box);
@@ -317,8 +329,11 @@ function drawThinking(box, bots, opts) {
     const L = b.before.lean, ln = el('p', 'dk-lean'); ln.appendChild(el('b', 'dk-side ' + (L.side ? L.side.toLowerCase() : 'none'), L.side ? `Lean ${L.side}` : 'No lean'));
     ln.appendChild(document.createTextNode(' ' + L.why)); bf.appendChild(ln);
     if (L.trig) bf.appendChild(el('p', 'dk-note', L.trig));
-    if (b.before.bias) { const z = b.before.bias, p = el('p', 'dk-line'); p.appendChild(el('b', '', 'Morning brief: '));
-      p.appendChild(el('span', 'dk-side ' + (z.side === 'NEUTRAL' ? 'none' : z.side.toLowerCase()), z.side)); p.appendChild(document.createTextNode(' ' + (z.text || ''))); bf.appendChild(p); }
+    if (b.before.briefHead) bf.appendChild(el('p', 'dk-line dk-brief', b.before.briefHead));
+    if (b.before.bias) { const z = b.before.bias, p = el('p', 'dk-line' + (z.context ? ' dk-ctx' : '')); p.appendChild(el('b', '', z.context ? 'Morning brief (context, no better than a coin): ' : 'Morning brief: '));
+      if (z.side !== 'NONE') p.appendChild(el('span', 'dk-side ' + (z.context ? 'none' : z.side.toLowerCase()), z.side === 'LONG' ? 'UP' : 'DOWN'));
+      p.appendChild(document.createTextNode(' ' + (z.text || ''))); bf.appendChild(p); }
+    for (const st of b.before.stale || []) bf.appendChild(el('p', 'dk-note warn', 'Brief data: ' + st));
     if (b.before.waiting) { const w = el('p', 'dk-line'); w.appendChild(el('b', '', 'Waiting for: ')); w.appendChild(document.createTextNode(b.before.waiting)); bf.appendChild(w); }
     if (b.before.window) { const w = el('p', 'dk-line'); w.appendChild(el('b', '', b.before.windowOpen ? 'Window: open now. ' : 'Window: ')); w.appendChild(document.createTextNode(b.before.window)); bf.appendChild(w); }
     const nw = el('p', 'dk-line'); nw.appendChild(el('b', '', 'News today: '));
@@ -418,7 +433,7 @@ export function gate(accts, home, news, nowS) {
     if (a.has && a.today !== null && a.today <= -dll) halt(`Daily loss limit hit (${money(a.today)} of -${money(dll)}): MFFU pauses it for the day.`);
     if (a.has && a.stage === 'Eval' && a.goal !== null && a.goal <= 0) halt('Target reached: stop this eval and ask MFFU for the funded account.');
     if (!a.has) wait('No numbers from the PC for this account yet.');
-    else if (a.dot === 'stale') wait(`The PC's numbers are ${a.ageText}: check the PC before trusting GO.`);
+    else if (a.dot === 'stale' || a.dot === 'old') wait(`The PC last reported ${ageText(a.ageS)} (it reports every 15 min): check the PC before trusting GO.`);
     if (['winddown', 'flat', 'idle'].includes(ph.id)) wait(`${ph.label} (${ph.who}).`);
     else if (ph.id === 'asia') wait('Before 02:00 ET: LIT takes no real entry yet.');
     if (soon) wait(`${soon.title} at ${soon.time} ET (within 30 min): spreads jump, stops slip.`);

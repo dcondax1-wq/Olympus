@@ -7,7 +7,7 @@ The full picture is in `docs/KALSHI_PUBLISH.md`.
 
 ## 3 steps
 1. **Owner:** in the Claude app, open the kalshi-server chat and paste the line from `python tools/kalshi_kit/print_sha.py`:
-   `Set up Jarvis for my Kalshi bot by following https://demetrades2000-coder.github.io/nq-dashboard/kalshi/SETUP.md (sha256 <hex>)`
+   `Set up Jarvis for my Kalshi bot by following https://dcondax1-wq.github.io/kalshi/SETUP.md (sha256 <hex>)`
 2. **The chat** follows `public/SETUP.md`. It fetches `kalshi_status_vm.py`, checks the hash, shows the JSON that will be
    public, and shows the owner one public deploy-key line.
    **Owner:** on GitHub, make the empty public repo `kalshi-feed` and add that key to it (Settings → Deploy keys, tick
@@ -29,7 +29,7 @@ The full picture is in `docs/KALSHI_PUBLISH.md`.
   makes no Kalshi API call. It runs nice'd, at most once a minute.
 - **Its own repo.** The deploy key can write only `kalshi-feed`, never the phone app's site (`nq-dashboard`). A
   compromised server could change the numbers, not the app. **Never turn on GitHub Pages for `kalshi-feed`:** every Pages
-  site of the account is served from demetrades2000-coder.github.io, the same origin as Jarvis, so the key could then
+  site of the account is served from dcondax1-wq.github.io, the same origin as Jarvis, so the key could then
   publish pages that read Jarvis's saved keys.
 - **A pinned script.** The owner's paste line carries the script's SHA-256, and SETUP.md stops on a mismatch. Cron runs
   the local copy, which never updates itself.

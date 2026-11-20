@@ -91,7 +91,7 @@ def test_static():
     check("a. the card sits after the banner and before the columns, with its chips, chart box, as-of line, trades list and the attribution link (TradingView + tradingview.com)",
           html.index('id="banner"') < html.index('id="chartCard"') < html.index('id="sceneCard"') and all(f'id="{i}"' in html for i in ("chartChips", "chartBox", "chartAsOf", "chartTrades", "chartPill", "chartWhole"))
           and re.search(r'<a class="attrib"[^>]+href="https://www\.tradingview\.com/"[^>]*>Chart: TradingView Lightweight Charts', html))
-    check("a. its own module after nq.js (a chart failure never touches the rest of the page), the stylesheet bumped", html.index('src="nq.js') < html.index('src="nqchart.js?v=') and "nq.css?v=a4q" in html
+    check("a. its own module after nq.js (a chart failure never touches the rest of the page), the stylesheet bumped", html.index('src="nq.js') < html.index('src="nqchart.js?v=') and "nq.css?v=a4r" in html
           and "nqchart" not in AK.read(os.path.join(D, "nq.js")))
     bad = [p for p in (r"\.innerHTML", r"outerHTML", r"insertAdjacentHTML", r"document\.write", r"\beval\s*\(", r"new Function", r"\bimport\s*\(") if re.search(p, js) or re.search(p, core)]
     check("a. text only through textContent (no innerHTML / eval / dynamic import), no storage, sends nothing (GET only, no POST / beacon / socket)",
@@ -329,9 +329,10 @@ def test_page(shots=False):
             ctx, p, errs, seen, off = page(br, mock={bars_url: "{}", core_url: "{}"})
             open_chart(p, origin)
             n = p.evaluate(SNAP)
-            check("c. the PC has not sent bars: 'Waiting for the PC', the plain sentence, no candles drawn, the chips without counts, no list, a small box",
+            check("c. the PC has not sent bars: 'Waiting for the PC', the plain sentence, no candles drawn, the chips without counts, no list; the box keeps "
+                  "its height (300-441 px: perf 2026-11-20, a late shrink was a 0.38 layout shift)",
                   n["state"] == "none" and n["pill"] == "Waiting for the PC" and n["msg"].startswith("The PC has not sent chart bars yet") and n["data"] == 0 and n["marks"] == 0
-                  and all(c[3] == "" for c in n["chips"]) and not n["rows"] and n["empty"] and n["box"] < 260 and not n["asOf"] and not errs, (errs[:3], n))
+                  and all(c[3] == "" for c in n["chips"]) and not n["rows"] and n["empty"] and 300 <= n["box"] <= 441 and not n["asOf"] and not errs, (errs[:3], n))
             check("c. ... taps >= 44 px, no sideways scroll", not AK.taps(p) and AK.no_sideways(p), AK.taps(p)[:3])
             shot(p, "nq-chart-waiting", shots)
             ctx.close()
@@ -350,6 +351,18 @@ def test_page(shots=False):
             x = p.evaluate(SNAP)
             check("c. ntfy cannot be reached: 'Could not reach the PC's chart feed', no chart, no console error", x["state"] == "none" and x["msg"].startswith("Could not reach the PC's chart feed")
                   and x["data"] == 0 and not errs, x)
+            ctx.close()
+            # phone QA 2026-11-20 12:20: an exit on the newest bar ("+$514.18") was cut by the price axis; its whole tag stays inside the plot
+            lastp = PR.pack_bars(info["bars"], [], [{**info["closed"][2], "xt": info["bars"][179][0] + 120, "x": info["bars"][179][4], "usd": 514.18, "r": 2.0, "why": "TARGET"}],
+                                 {"atlas25f": ["ATLAS funded 25K", "ATLAS", "SIM"]}, now=now, data_t=now - 20, sym="MNQ 12-26", forming=True, day=PR._cme_day(now), trades_t=now - 60)
+            ctx, p, errs, seen, off = page(br, mock={bars_url: ndjson(lastp), core_url: "{}"})
+            open_chart(p, origin)
+            fit = p.evaluate("""() => { const S = window.NQCHART.S, ts = S.chart.timeScale(), cx = document.createElement('canvas').getContext('2d');
+              cx.font = '11px ' + getComputedStyle(document.body).fontFamily;
+              return S.marks.markers().filter((m) => m.text).map((m) => [m.text, Math.round(ts.timeToCoordinate(m.time) + cx.measureText(m.text).width / 2), Math.round(ts.width())]); }""")
+            check("c. an exit on the newest bar: its '+$514' tag ends inside the plot (left of the price axis), the newest bar still in view",
+                  fit and all(x[1] <= x[2] - 2 for x in fit) and any(x[0].startswith("+$514") for x in fit) and not errs, (fit, errs[:2]))
+            shot(p, "nq-chart-lastexit", shots)
             ctx.close()
             # 375 x 667, LITE, reduced motion: still the chart, no sideways scroll
             ctx, p, errs, seen, off = page(br, w=375, h=667, reduced=True, lite=True, mock={bars_url: ndjson(post), core_url: "{}"})

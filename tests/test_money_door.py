@@ -39,7 +39,7 @@ def part_a():
           len(rows) == 2 and all(r["pass_typical"] < r["payout_typical"] < r["bank_typical"] and r["pass_slow"] >= r["pass_typical"]
                                  and r["payout_slow"] >= r["payout_typical"] for r in rows), [r["text"] for r in rows])
     check("a. the first ask: $1,500 -> $1,200 to you (50K), $750 -> $600 (25K); funded $546 + $338 a month (roadmap H2)",
-          [(r["request"], r["to_you"]) for r in rows] == [(1500.0, 1200.0), (750.0, 600.0)] and d["funded_month"] == 884.0 and d["funded_month_with_4"] == 1694.0)
+          [(r["request"], r["to_you"]) for r in rows] == [(1500.0, 1200.0), (750.0, 600.0)] and d["funded_month"] == 884.0 and d["funded_month_with_4"] == 2853.0)   # + the Rapid EOD 50K ~$1,969 a month (drop-lucid-account4, 2026-11-20)
     check("a. sessions skip weekends and the Thanksgiving closure (Wed 11-25 + 1 session = Fri 11-27; Fri 11-20 + 1 = Mon 11-23)",
           PP.sessions_after("2026-11-25", 1) == "2026-11-27" and PP.sessions_after("2026-11-20", 1) == "2026-11-23" and PP.business_after("2026-11-20", 4) == "2026-11-26")
     lost = PP.plan([{"name": "X", "plan": "builder25k", "room": 0, "to_target": 900}], "2026-11-16")
@@ -48,7 +48,11 @@ def part_a():
     check("a. a funded account at $3,000: 2 sessions to the $3,600 ask line (the 2-day minimum)", f["state"] == "funded" and f["sessions_to_payout"] == 2 and f["pass_typical"] is None, f)
     check("a. account #4 is bought on the earliest bank date of a first payout", d["account4"]["buy_on"] == min(r["bank_typical"] for r in rows))
     fast = PP.plan([{"name": "A", "plan": "builder25k", "stage": "funded", "profit": 1850, "room": 900}], "2026-11-16")
-    check("a. a bank date inside Nov 19 - Dec 1 says buy in the Black Friday sale", fast["account4"]["in_sale"] and "Black Friday" in fast["account4"]["text"], fast["account4"])
+    # owner 2026-11-20 (Decide drop-lucid-account4: YES, MFFU only): the line is the MFFU next buys, never a LucidPro; no sale is claimed
+    check("a. the next-buys line is MFFU only: the Rapid EOD 25K now, then the Rapid EOD 50K ($165, code CLUB) on the first bank date, then a fresh Builder 50K; no Lucid, no sale claim",
+          fast["account4"]["text"].startswith("Next buys (MFFU only): the Rapid EOD 25K now") and "Rapid EOD 50K about " + fast["account4"]["buy_on"] in fast["account4"]["text"]
+          and "$165 with code CLUB" in fast["account4"]["text"] and "fresh Builder 50K" in fast["account4"]["text"] and "lucid" not in json.dumps(fast).lower()
+          and fast["account4"]["in_sale"] is False and "lost" not in lost["account4"]["text"] and lost["account4"]["text"].startswith("Next buys (MFFU only)"), fast["account4"])
     home = json.load(open(os.path.join(ROOT, "tests", "fixtures", "argus", "home_real.json"), encoding="utf-8"))
     acc = PP.accounts_from_home(home)
     check("a. home.json -> Zlarior (LIT) 50K + ATLAS 25K, the cloud paper account left out, no broker id anywhere in the plan",
@@ -179,8 +183,9 @@ def part_d():
           len(prods) == 8 and [r["id"] for r in prods[:4]] == ["prop-trader-bundle", "prop-eval-tracker", "eval-risk-calculator", "eval-rules-explained"]
           and {r["kind"] for r in d["ready"]} == {"product", "gigs", "content", "sites"} and all(len(r["steps"]) >= 3 for r in d["ready"]), [r["id"] for r in d["ready"]])
     mv = d["moves"]
-    check("d. this week's money moves: 1-7, unique ids, each with minutes and a $ range, account #4 says not yet",
-          1 <= len(mv) <= 7 and len({m["id"] for m in mv}) == len(mv) and all(m["usd"][0] <= m["usd"][1] for m in mv) and any("not yet" in m["what"] for m in mv))
+    check("d. this week's money moves: 1-7, unique ids, each with minutes and a $ range, the next MFFU buy (Rapid EOD 50K) waits for money in the bank",
+          1 <= len(mv) <= 7 and len({m["id"] for m in mv}) == len(mv) and all(m["usd"][0] <= m["usd"][1] for m in mv) and any("Rapid EOD 50K" in m["what"] and "money in the bank first" in m["what"] for m in mv)
+          and not any("lucid" in m["what"].lower() for m in mv))
     rows = d["ideas"]["rows"]
     check("d. 6 researched ideas ranked 1-6, 2 marked as new models, each of those with a starter kit and a model card on the page",
           [r["rank"] for r in rows] == list(range(1, 7)) and [r["id"] for r in rows if r["model"]] == ["ai_training", "user_testing"]
@@ -223,7 +228,7 @@ def part_e():
             AK.open_app(p, origin, "business")
             door = p.inner_text("#door")
             check("e. DEMO: the door shows the first payout, funded $ a month, account #4, the business estimate and the $197.80 spent",
-                  "$1,200 about" in door and "$884 a month" in door and "$1,694 a month" in door and "$0-3,250 a month" in door and "$198" in door, door)
+                  "$1,200 about" in door and "$884 a month" in door and "$2,853 a month" in door and "With the Rapid EOD 50K too" in door and "$0-3,250 a month" in door and "$198" in door, door)
             check("e. DEMO: 2 trading rows from the DEMO plan, 11 ready items, 6 ideas",
                   p.locator("#trade .acct").count() == 2 and p.inner_text("#tradeSrc") == "DEMO evals"
                   and p.locator("#ready > details").count() == 11 and p.locator("#ideas tbody tr").count() == 6, p.inner_text("#tradeSrc"))
@@ -251,7 +256,7 @@ def part_e():
                   p.inner_text("#tradeSrc") == "your evals" and "Zlarior (LIT)" in t and "$1,133" in t and "$1,351" in t and not BROKER_ID.search(p.inner_text("body"))
                   and not errs, (t[:300], errs[:3]))
             check("e. the live plan's account #4 rule is shown (it follows your evals); an old home.json says it is a snapshot",
-                  p.inner_text("#acct4").startswith("Account #4:") and "These eval numbers are a snapshot" in t, (p.inner_text("#acct4"), t[:200]))   # home_real.json: built 2026-11-03
+                  p.inner_text("#acct4").startswith("Next buys (MFFU only):") and "These eval numbers are a snapshot" in t, (p.inner_text("#acct4"), t[:200]))   # home_real.json: built 2026-11-03
             ctx.close()
             # the PC's own business.json, 6 days old: a SNAPSHOT tag and a plain line; its own to-dos are shown (they are the owner's)
             import biz_publish as BP

@@ -1,10 +1,10 @@
 ---
 tags:
   - zeus/decide
-  - decide/open
+  - decide/yes
 type: "decide"
 id: "atlas-on-rapid"
-status: "open"
+status: "yes"
 added: "2026-11-16"
 usd_month: 609
 recommend: "yes"
@@ -12,12 +12,12 @@ recommend: "yes"
 
 # Decide: Rapid EOD: ATLAS trades it next to Zlarior from day one?
 
-> [!question] OPEN · +$609 a month
+> [!success] YES · +$609 a month
 > Answer it on the Decide card (Business app): YES / NO / LATER.
 
 |  |  |
 |---|---|
-| Status | open |
+| Status | yes |
 | Added | 2026-11-16 |
 | $ a month | +$609 |
 | Claude recommends | yes |

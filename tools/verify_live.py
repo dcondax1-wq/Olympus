@@ -40,7 +40,7 @@ except Exception:                                   # pragma: no cover
     ET = timezone.utc
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-LIVE = "https://demetrades2000-coder.github.io/nq-dashboard/"
+LIVE = "https://dcondax1-wq.github.io/"
 HEARTBEAT = "https://raw.githubusercontent.com/demetrades2000-coder/nq-liquidity-engine/heartbeat/heartbeat.json"
 UA = "olympus-verify-live/1 (read only)"
 DATA_FILES = ["data.json", "home.json", "odeon/trades.json", "plutus/plans.json", "bridge/jobs.json", "kalshicity/edges.json", "kalshicity/learning_log.json",

@@ -1,10 +1,10 @@
 ---
 tags:
   - zeus/decide
-  - decide/open
+  - decide/no
 type: "decide"
 id: "zlarior-funded25"
-status: "open"
+status: "no"
 added: "2026-11-17"
 usd_month: 125
 recommend: "no"
@@ -12,12 +12,12 @@ recommend: "no"
 
 # Decide: Funded 25K: Zlarior (LIT) trades it too, next to ATLAS?
 
-> [!question] OPEN · +$125 a month
+> [!failure] NO · +$125 a month
 > Answer it on the Decide card (Business app): YES / NO / LATER.
 
 |  |  |
 |---|---|
-| Status | open |
+| Status | no |
 | Added | 2026-11-17 |
 | $ a month | +$125 |
 | Claude recommends | no |

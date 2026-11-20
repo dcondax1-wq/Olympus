@@ -4,7 +4,8 @@
   b. sources   PC post -> LIVE / src PC; home.json only -> PAPER / SITE; nothing -> the saved copy as CACHED with its age; none -> null
   c. kalshi    the next K8 clock window: London 10:15 = 05:15 ET in November, 04:00 ET in July = the same 05:15 local ET slot,
                16:00 ET; weekends and the CME Thanksgiving skip (Nov 26) roll to the next one
-  d. draw      the whole script inside a fake Scriptable (tests/widget_harness.cjs): small / medium / large draw the balances, $ to
+  d. draw      the whole script inside a fake Scriptable (tests/widget_harness.cjs): small / medium / large draw the balances (medium:
+               every account one line each since cities3 2026-11-20), $ to
                pass / to payout, Kalshi, the source tag + age; no "undefined" / "NaN"; tap -> the site; refresh ~15 min; the cache
                written; offline draws "No account numbers yet" and OFFLINE
   e. privacy   the widget files carry no broker account id, no email, no private ntfy alert topic (tools/site_privacy detectors)
@@ -56,7 +57,7 @@ def main() -> int:
     z, at = m["accounts"][0], m["accounts"][1]
     check("a. Zlarior: balance / $ to pass / room from the PC card", z["balance"] == 49192.78 and z["to_go"] == 3807.22 and z["to_label"] == "to pass"
           and z["room"] == 1024.58 and 0.5 < z["room_frac"] < 0.52, z)
-    check("a. ATLAS funded: $ to payout", at["funded"] and at["to_label"] == "to payout" and at["to_go"] == 1962.8, at)
+    check("a. ATLAS funded: no payout coach in plain node (Scriptable) -> no number, never the PC's raw $750-ping line ($1,962.80)", at["funded"] and at["to_label"] == "to payout" and at["to_go"] is None, at)
     check("b. PC post -> LIVE, src PC, fresh, the PC verdict label", m["src"] == "PC" and not m["stale"] and m["pc"]["label"] == "TRADING YOUR EVAL"
           and all(a["badge"] == "LIVE" for a in m["accounts"]), m["pc"])
     s = d["site_only"]
@@ -77,7 +78,7 @@ def main() -> int:
     check("c. the feed URL from status_feed.json (70-minute window), the public default topic otherwise",
           d["feed"][0] == "https://ntfy.sh/abc/json?poll=1&since=70m" and "olympus-nq-status-" in d["feed"][1], d["feed"])
 
-    for fam, need in (("small", ["$3,807 to pass", "Zlarior 50K"]), ("medium", ["$49,193", "$1,963 to payout", "+1 more: tap to open", "Kalshi"]),
+    for fam, need in (("small", ["$3,807 to pass", "Zlarior 50K"]), ("medium", ["$49,193", "payout: see Olympus", "Zlarior 25K #2", "$25,000", "Kalshi"]),
                       ("large", ["$49,193", "$24,887", "$25,000", "$1,500 to pass", "drawdown room 51%", "NQ"])):
         r = node("draw", LITE, HOME, fam, "-")
         txt = " | ".join(r["texts"])
@@ -86,6 +87,20 @@ def main() -> int:
         check(f"d. {fam}: source tag + age, tap opens the site, refresh in ~15 min, last copy saved",
               any(t.startswith(("LIVE · PC", "PC · OLD", "PAPER · SITE")) for t in r["texts"]) and r["url"].startswith("https://dcondax1-wq.github.io/")
               and 14 * 60e3 < r["refresh"] <= 15 * 60e3 and r["cached"] == 1, r)
+        if fam != "small":   # olympus2 2026-11-20: a plain 'last updated' line on medium and large
+            check(f"d. {fam}: a 'Updated hh:mm' line", any(re.fullmatch(r"Updated \d\d:\d\d", t) for t in r["texts"]), txt)
+    # olympus2 DATA TRUTH ask: a funded card's "to payout" = the payout coach's need_more, the same number pc_feed.js payoutLines gives NQ / Trading / Board
+    js = ("global.PAYOUT_COACH = require('./tools/web_public/business/payoutcoach.js'); const W = require('./tools/web_public/widget/olympus-widget.js');"
+          "const PF = require('./tools/web_public/pc_feed.js'); const fs = require('fs'); const lite = W.parseLite(fs.readFileSync(%s, 'utf8'));"
+          "const m = W.fromLite(lite, %d); const b = JSON.parse(JSON.stringify(lite.board)); PF.payoutLines(b, [], lite, global.PAYOUT_COACH, '2026-11-20');"
+          "const a = m.accounts.find((x) => x.funded); console.log(JSON.stringify([a.to_go, b.atlas.to_target, W.goalText(a), b.atlas.pc_to_target]));") % (json.dumps(LITE), NOW)
+    out = subprocess.run(["node", "-e", js], cwd=ROOT, capture_output=True, text=True, timeout=60)
+    try:
+        v = json.loads(out.stdout.strip())
+    except ValueError:
+        v = [None, None, out.stderr[-300:], None]
+    check("c. funded 'to payout' = the payout coach (pc_feed payoutLines), not the PC's raw $750-ping line (%s)" % v,
+          v[0] is not None and abs(v[0] - v[1]) < 0.01 and v[2].endswith(" to payout") and v[0] != v[3], v)
     r = node("draw", "-", "-", "large", "light")
     check("d. offline + nothing saved: says so, OFFLINE tag, saves nothing", "OFFLINE · —" in r["texts"] and r["cached"] == 0
           and any("No account numbers yet" in t for t in r["texts"]), r["texts"])
@@ -112,6 +127,9 @@ def main() -> int:
     for f in ("index.html", "glance.html"):
         h = read(os.path.join(WEB, f))
         check(f"e. {f}: title, viewport-fit=cover, light + dark", "<title>" in h and "viewport-fit=cover" in h and "light dark" in h)
+    gh, gj = read(os.path.join(WEB, "glance.html")), read(os.path.join(WEB, "glance.js"))
+    check("e. olympus2: Glance loads the payout coach and the site-wide age chip (age.js / age.css) and uses OLY_AGE.chip for the report age",
+          "../business/payoutcoach.js" in gh and "../age.js?v=1" in gh and "../age.css?v=2" in gh and "A.chip(ageEl" in gj)
     print(f"{sum(RES)} passed, {len(RES) - sum(RES)} failed")
     return 0 if all(RES) else 1
 

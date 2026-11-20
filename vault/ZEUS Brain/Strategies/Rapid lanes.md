@@ -44,6 +44,7 @@ _No period table published for this one yet; see the write-ups._
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-20 | [[skeptic-live-patches-2026-11-20\|Skeptic check of the two live sizing patches]] | research |
 | 2026-11-20 | [[skeptic-atlas-streak-2026-11-20\|Skeptic check of Decide card atlas-funded-streak-1micro]] | research |
 | 2026-11-20 | [[rapid50-ready-2026-11-20\|Rapid EOD 50K readiness]] | finding |
 | 2026-11-20 | [[rapid-launch-2026-11-20\|Rapid EOD 25K launch check]] | finding |

@@ -544,8 +544,9 @@ def part_i(tmp):
     nt = o["note"]
     check("i. the daily Council note for Jarvis: a title with the date, 3-4 lines, each at most 120 characters, the text is the lines", nt["title"].startswith("Council note") and 3 <= nt["lines"] <= 4 and nt["max"] <= 120 and nt["first"].startswith("Council 2026-") and nt["text"], nt)
     rm = o["remember"]
+    REAL_LABEL = json.loads(open(os.path.join(ROOT, "tools", "web_public", "pantheon", "pantheon.json"), encoding="utf-8").read())["council"]["label"]   # the published verdict (was pinned to MIXED, the Nov 3 build's)
     check("i. this phone remembers the last verdict ('pantheon.last') and the flips ('pantheon.flips', newest first, kept to 12), nothing else; a damaged key is just forgotten",
-          rm[0] is False and rm[1] is True and rm[2] == "MIXED" and rm[3] == "RISK-ON" and rm[4] == 1 and rm[5] is False and rm[6] == 1 and rm[7] == ["pantheon.flips", "pantheon.last"] and o["junk"] is False, rm)
+          rm[0] is False and rm[1] is True and rm[2] == REAL_LABEL and rm[3] == "RISK-ON" and rm[4] == 1 and rm[5] is False and rm[6] == 1 and rm[7] == ["pantheon.flips", "pantheon.last"] and o["junk"] is False, rm)
 
 
 def part_j(tmp):

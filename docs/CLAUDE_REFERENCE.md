@@ -80,7 +80,7 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   old PC (stop, auto-resume off, logon tasks removed, untracked `data/` + `.env.local.ps1` zipped to OneDrive\BOT_MOVE),
   2 = set up the new PC (winget Git/Python, clone, restore, ONE_TIME_SETUP). Never two PCs on the same accounts.
   **Fresh start, no old PC (2026-11-04, Surface overheating):** `-Fresh` / menu 3 / `FRESH_START.bat` / the one line
-  `powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://demetrades2000-coder.github.io/nq-dashboard/pc/FRESH_START.ps1 | iex"`
+  `powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://dcondax1-wq.github.io/pc/FRESH_START.ps1 | iex"`
   (site `pc/`: `tools/web_public/pc/FRESH_START.ps1` + a build copy of `scripts/move_bot.ps1`; plain files, no worker bump).
   Refuses (exit 1) when a DIFFERENT host's heartbeat (published `home.json` live.pc.t/host) is under 6 min old, or the site
   copy is under 20 min old and showed it alive (`-Force` overrides; unreadable = asks for SHUT DOWN). Then Git/Python, clone,
@@ -89,7 +89,7 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   (Sim101 default, never arms live). Tests: `tests/test_fresh_start.py` (`LE_HEARTBEAT_FILE`, `LE_FAKE_HOST`), `test_win_scripts`.
 - **Merges:** each merge restarts the PC's bot server once (when flat) and runs ~5 min of self-tests on a 3.6 GB PC: batch
   changes into one merge when possible.
-- **Verify live** after a publish: the file on `https://demetrades2000-coder.github.io/nq-dashboard/...` (e.g. the worker's
+- **Verify live** after a publish: the file on `https://dcondax1-wq.github.io/...` (e.g. the worker's
   `CACHE` name), then one WebKit open of the live page.
 - **Eval cards (owner 2026-11-03):** no "session X of 10" bars / dots / counters on any card (phone, PC copies, Jarvis);
   the room is shown as **"Drawdown left $X of $max loss"** (= balance - the MFFU max-loss floor, the number MFFU shows).
@@ -834,6 +834,23 @@ The long list moved on 2026-11-18 to `docs/TESTED_AND_REJECTED.md` (heading "## 
   (20 s in the test). Jarvis always starts on its own screen (the address never keeps #zenith; an old #hash is cleaned at
   start), keeps one dashboard loaded at a time (one iPhone web process), shows a Reload note if its script has not started in
   8 s, and the manifest has no #shortcuts. Recovery on the phone: delete the Home Screen icon, re-add from Safari.
+- **Ask Jarvis on every app (team JARVIS 2026-11-20, `jarvis/ask.js`, test `tests.test_jarvis_ask`):** `<script src="../jarvis/ask.js" defer
+  data-app="<id>">` mounts a 44 px button (bottom left; `data-auto="off"` + `OLY_ASK.mount()` for the kit); its sheet shows that app's
+  questions (BY_APP in ask.js), answers through biz.js with `liveFromLite(PC post)` (pc_feed.js fetchLatest, saved in 'jarvis.biz.lite' for
+  offline), "Open Jarvis" -> `jarvis/?ask=` (index.html asks it once and cleans the address). Never on Jarvis itself. biz.js grew to 17 kinds
+  (pc, decide, payoutnow = pc_feed payoutLines + payoutcoach.js, taxes, review, last week from the PC's `at` list, window, month, pass, edge).
+  brain.js starts its helpers (Zenith routes, ZEUS, skills) on the first ask or an idle moment (o.lazy false = at once); jdata.loadSources
+  shares one load between callers within 20 s in a page.
+- **Jarvis business answers (day-jarvis 2026-11-20, `jarvis/biz.js`, test `node tests/test_jarvis_biz.mjs`):** the owner's daily
+  questions answered BEFORE the brain (think() in index.html asks biz.match first): accounts, in a trade (board card position + the
+  chart feed's open trades, $ from the price at $2/pt), room (only when an account is named; generic room/target stays with the
+  brain's BLITZ rules), first payout (business/payday.json H2 row), bots today/week (PC report trades, paper ones labelled, not in
+  the $), news (nq/news_week.json + pythia/events.json), to-do (hub/steps.json + its Done ticks 'oly-steps-done-v1' + open
+  decisions), Kalshi (the PC report's kalshi_live.k8 card; none = null = the brain). Every reply ends with one `Source: ..., <age>`
+  line (voice reads the answer without it); files kept slimmed in localStorage 'jarvis.biz.<name>' for offline. 9 chips = a 3x3
+  grid `#bizchips` in the HTML (first paint). Phone speed: the 3D sky (backdrop.js) and the 3D core wait for 6 s after the start
+  + 2.5 s without input on a coarse-pointer phone (re-checked before each heavy step), the sky is never built with effects off,
+  app status cards load 6 per idle slice, the star loop's layout read is once a second.
 - **Jarvis v2 (2026-11-01 sprint, owner: "the same sick looking Jarvis with all the features it had before ... switch
   between that mode, zenith mode"):** it rebuilds the owner's old PC voice assistant on the phone (spec, look and features:
   `docs/JARVIS_OLD_LOOK.md`). Modules in `tools/web_public/jarvis/`:
@@ -859,7 +876,7 @@ The long list moved on 2026-11-18 to `docs/TESTED_AND_REJECTED.md` (heading "## 
     - motion:'always' by default (the old app ignored the OS setting); "Calm motion" follows the iPhone.
   - **`apps.js`:** the registry and the `jarvis.json` live-card contract (`docs/JARVIS_APPS.md`), plus the Ascend slot.
     - No same-origin guessing.
-    - Same-site apps get a warning, because every page on demetrades2000-coder.github.io can read Jarvis's and the
+    - Same-site apps get a warning, because every page on dcondax1-wq.github.io can read Jarvis's and the
       Planner's saved keys.
     - Ascend must be hosted on another origin.
   - **`zenith-mode.js` + Zenith's `embed.js`:**
@@ -2094,7 +2111,7 @@ The app folder `tools/web_public/<id>/` (index.html, jarvis.json, manifest, icon
      `icons.js`, `viz.js` (SVG charts), `trades.js`, `datahub.js` (Results, Variants, Lessons, Study), `modpages.js` (Rules,
      Cold-Streak, Risk & Sizing). API: `engine/next_api.py` (`/api/next/*`, read-only, from research/lab + research/study).
    - The Today page hero is the 3D Live Oracle (see the 3D layer below). Next: polish ideas only (per-module live badges).
-2. **PC-off web dashboard (done 2026-10-17):** https://demetrades2000-coder.github.io/nq-dashboard/, a Home Screen app (PWA) in the
+2. **PC-off web dashboard (done 2026-10-17):** https://dcondax1-wq.github.io/, a Home Screen app (PWA) in the
    same dark design. One static page `tools/web_public/index.html` (+ manifest, sw.js) reads only `data.json`, built by
    `tools/build_web_dashboard.py` on every cloud-monitor run: live state + recent bars + pools, results, every replay trade with
    its report, replays (`tools/export_replays.py` → `research/lab/replays.json`, rerun after a new export), variants, lessons,

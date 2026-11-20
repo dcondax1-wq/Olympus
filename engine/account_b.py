@@ -99,6 +99,11 @@ MAX_PER_DAY = 2
 MAX_AGE_S = 45                  # a 5m open seen later than this is not probed (the research fills at the open)
 MIN_ROOM = 100.0
 ZOMBIE_ON = {"eval_min_room": 200.0, "last_bullet": 0.8}      # owner "Fix atlas" 2026-11-15 (atlas-deep.md)
+# ATLAS funded-stage switches (2026-11-20), OFF = None. The lead flips one value after the owner's YES on its Decide card:
+#   "funded_room_pct": 0.4   card atlas-funded-room-40     (risk 40% of the room a trade instead of the preset's 60%)
+#   "streak_shrink": 2       card atlas-funded-streak-1micro (after 2 losing trades in a row, 1 micro until a winner)
+# A key in the account_b block overrides this (null there = off for that account). Funded stage only.
+FUNDED_ON = {"funded_room_pct": 0.4, "streak_shrink": 2}   # owner YES 2026-11-20 ~08:00 ET in chat (both cards; skeptic code review: research/writeups/skeptic-live-patches-2026-11-20.md)
 CLOSE_RETRY_S = 10              # an unconfirmed close of B's position is re-sent at most this often (pre-launch audit A4)
 TICK, PV, COMM = 0.25, 2.0, 1.90
 ADAPTER_FACTORY = None          # tests: (spec, adapter cfg) -> adapter; None = engine/live.ADAPTERS
@@ -280,6 +285,23 @@ def normalize(ab: dict | None, scfg: dict | None = None, lit_account: str | None
             out["problem"] = out["problem"] or f"last_bullet {ab.get('last_bullet')!r} must be a share of the room in (0, 1]"
         else:
             out["last_bullet"] = float(lb)
+    # funded-stage switches (2026-11-20, research/writeups/atlas-edge-2026-11-20.md / atlas-risk-real-fills-2026-11-20.md):
+    # FUNDED_ON (repo default, None = OFF) unless the block has the key; OFF = today's behaviour, unchanged
+    # repo defaults apply to the Builder 25K funded account only (day-newstrat skeptic 2026-11-20: never a funded combo 50K via
+    # engine/combo50k.ab_spec, which no card covers); a key in the block still overrides for any plan
+    sw = {k: (ab.get(k) if k in ab else (FUNDED_ON.get(k) if plan == "builder25k" else None)) for k in FUNDED_ON}
+    if sw["funded_room_pct"] is not None:                  # "room 40%": share of the room a funded trade may risk
+        fp = _num(sw["funded_room_pct"])
+        if fp is None or not 0.1 <= fp <= 0.6:
+            out["problem"] = out["problem"] or f"funded_room_pct {sw['funded_room_pct']!r} must be a share of the room in [0.1, 0.6]"
+        else:
+            out["funded_room_pct"] = float(fp)
+    if sw["streak_shrink"] is not None:                    # after N losing closed trades in a row: 1 micro until a winner
+        ss = _num(sw["streak_shrink"])
+        if ss is None or int(ss) != ss or not 1 <= int(ss) <= 10:
+            out["problem"] = out["problem"] or f"streak_shrink {sw['streak_shrink']!r} must be a whole number of losses (1-10)"
+        else:
+            out["streak_shrink"] = int(ss)
     out["keys"] = [k for k in keys if isinstance(S.get(k), dict) and S[k].get("on", True) and not S[k].get("cloud_only")]
     # the stage (2026-10-26): "eval" (absent = the eval, exactly as before) or "funded" (python -m engine.account_b --to-funded)
     stage = str(ab.get("stage") or "eval").strip().lower()
@@ -457,7 +479,34 @@ def funded_cfg(spec: dict, base: dict | None = None) -> dict:
     s = MA.normalize({"id": "acctb", "preset": spec["preset"], "mode": "funded", "adapter": "paper"})
     c = MA.sizing_cfg(base, s)
     c["mode"] = "funded"
+    if spec.get("funded_room_pct") is not None:            # OFF by default: the preset's own share (25K: 0.6)
+        c["funded"] = {**(c.get("funded") or {}), "pct": min(float((c.get("funded") or {}).get("pct", 0.6)), float(spec["funded_room_pct"]))}
     return c
+
+
+def loss_streak(closes, start: str | None = None) -> int:
+    """Losing closed trades in a row at the end of account B's own closes ([day, exit_t, pnl, entry_t], this account
+    only: _load drops another account's file), since the funded start; a close with pnl >= 0 ends the streak."""
+    n = 0
+    rows = sorted((c for c in closes or [] if len(c) >= 3 and c[1] is not None and c[2] is not None
+                   and (not start or str(c[0]) >= str(start))), key=lambda c: int(c[1]))
+    for c in reversed(rows):
+        if float(c[2]) < 0:
+            n += 1
+        else:
+            break
+    return n
+
+
+def streak_cap(r: dict, spec: dict, state: dict) -> dict:
+    """streak_shrink (OFF by default): after N losing trades in a row, 1 micro until the next winner. Only lowers a size of
+    2+ to 1: never below 1 micro, never above the size it was given."""
+    n = spec.get("streak_shrink")
+    q = int(r.get("qty") or 0)
+    ls = int((state or {}).get("loss_streak") or 0)
+    if not n or q <= 1 or ls < int(n):
+        return r
+    return {**r, "qty": 1, "reasons": list(r.get("reasons") or []) + [f"loss streak: {ls} losing trades in a row (>= {int(n)}): 1 micro until a winner"]}
 
 
 def funded_qty(spec: dict, trade: dict, state: dict | None, base: dict | None = None, key: str | None = None) -> dict:
@@ -487,6 +536,7 @@ def funded_qty(spec: dict, trade: dict, state: dict | None, base: dict | None = 
     r = _weighted(r, weight(spec, key))
     if int(r.get("qty") or 0) > q0:
         r = {**r, "qty": q0, "reasons": list(r.get("reasons") or []) + [f"member weight: never above the funded caps -> {q0}"]}
+    r = streak_cap(r, spec, state)
     return dll_guard(r, float(risk), R, state)
 
 
@@ -741,6 +791,8 @@ class AccountB:
                 st["room"] = round(float(st["balance"]) + float(st["cum"]) - lock, 2)
                 st["locked"] = True
         st["n_today"] = self.entries_today(today)
+        if self.spec.get("streak_shrink"):
+            st["loss_streak"] = loss_streak(self.closes, F["start"])
         return st
 
     def _state_raw(self, now=None):
@@ -1709,10 +1761,13 @@ class AccountB:
                "note": "own account: max 2 trades a day, one position, never opposite to LIT"}
         if self.funded():                 # the funded stage only (the eval's info is exactly as before)
             ev = out["eval"] if isinstance(out["eval"], dict) else {}
+            pct = min(0.6, float(self.spec.get("funded_room_pct") or 0.6))      # the 25K preset's 60%, or the owner's lower share
+            n_ls = self.spec.get("streak_shrink")
             out.update(stage="funded", sizing="funded", funded=compact_tracker(ev.get("funded")),
                        eval_account=(self.spec.get("funded") or {}).get("eval_account"),
-                       note="funded: max 2 trades a day, one position, never opposite to LIT; 60% of the room, a winner <= one max "
-                            "payout request; the bot never requests a payout")
+                       note=f"funded: max 2 trades a day, one position, never opposite to LIT; {pct * 100:.0f}% of the room"
+                            + (f", 1 micro after {int(n_ls)} losing trades in a row until a winner" if n_ls else "")
+                            + ", a winner <= one max payout request; the bot never requests a payout")
             if isinstance(out["eval"], dict):
                 out["eval"] = {k: v for k, v in out["eval"].items() if k != "funded"}
         return out

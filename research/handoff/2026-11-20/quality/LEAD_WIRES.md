@@ -19,3 +19,13 @@ changes nothing): it is not on the never-edit list, but the lead may want to rea
    itself, so `Browser suites only when screens changed, always under flock -w 2400 /tmp/olympus_browser.lock` can become
    `Browser suites only when screens changed; tests/run_area.py takes the browser lock itself (no flock wrapper); landing:
    python tests/run_area.py <area> --changed <base_sha>`. The same sentence in .claude/skills/land-helper is still correct as is.
+
+5. **PC watch on `main` (round 3)**: GitHub runs a schedule only from the default branch, and Olympus's default is `main` (a stub).
+   After landing day-quality on pc, with the owner's OK to touch `main` (one file only):
+   ```bash
+   git fetch origin main && git checkout -B pcw-main FETCH_HEAD
+   git checkout pc -- .github/workflows/pc-watch.yml
+   git commit -m "PC watch: cloud push when the PC goes silent (docs/PC_WATCH.md on pc)" && git push origin HEAD:main
+   git checkout pc && git branch -D pcw-main
+   ```
+   Then the owner's 2 steps in docs/PC_WATCH.md (Actions on, secret LE_NTFY_TOPIC). Optional: one Run workflow (dry run).

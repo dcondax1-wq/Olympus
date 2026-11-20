@@ -7,7 +7,7 @@ The first time: connect GitHub in ChatGPT, give it the rules, then use **Test th
 Folder names must be the job id in lowercase letters, numbers and dashes; a folder or a file that is not is skipped and `bridge_ingest.py` says so.
 
 ChatGPT's finished work lands here, one folder per task (the task ids on the Olympus Bridge page,
-https://demetrades2000-coder.github.io/nq-dashboard/bridge/). Two ways in:
+https://dcondax1-wq.github.io/bridge/). Two ways in:
 
 1. **ChatGPT Codex** (best): connect GitHub in ChatGPT, open this repo, and let Codex open a pull request on a
    `chatgpt/<task>` branch that only adds files under `handoff/inbox/<task>/`. Claude reviews and wires it in.

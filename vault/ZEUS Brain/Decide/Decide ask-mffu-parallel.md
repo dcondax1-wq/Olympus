@@ -1,10 +1,10 @@
 ---
 tags:
   - zeus/decide
-  - decide/open
+  - decide/yes
 type: "decide"
 id: "ask-mffu-parallel"
-status: "open"
+status: "yes"
 added: "2026-11-17"
 usd_month: 56
 recommend: "yes"
@@ -12,12 +12,12 @@ recommend: "yes"
 
 # Decide: Ask MFFU to say yes in writing: a 2nd Builder 50K and a 2nd 25K eval while the current ones run?
 
-> [!question] OPEN · +$56 a month
+> [!success] YES · +$56 a month
 > Answer it on the Decide card (Business app): YES / NO / LATER.
 
 |  |  |
 |---|---|
-| Status | open |
+| Status | yes |
 | Added | 2026-11-17 |
 | $ a month | +$56 |
 | Claude recommends | yes |

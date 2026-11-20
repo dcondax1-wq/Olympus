@@ -191,3 +191,16 @@ In the zeus door's `items` (after "Payout rules"; also point that one at the new
 ```
 (Check `defaultStatusUrl` keeps an explicit statusUrl; then run `python tests/run_area.py jarvis --only apps,hub` and `olympus --only site_sweep`.)
 Note: `nq/brief.json` 404s (one console line) until day-brief's file is built; the page handles it.
+
+## L. brief.json aligned to docs/BRIEF.md v 1 (day-brief), 12:40 UTC
+`nqdesk.briefFor` now reads the contract as written:
+- checks `v == 1`; the day is today or up to 3 days ahead (the CME day rolls at 18:00)
+- `headline` once, on the Zlarior card
+- `bias.call` up / down / none: shown GREY as "context, no better than a coin" while `context_only` (today: always); `why_none` when there is no call
+- `data.stale` lines in amber
+- `news.today` with "(Tier 1)"
+- the bot's `watch` levels, else `market.levels`
+- `waiting_for` per bot, with ATLAS's 3 legs joined; legs with state `off_today` are skipped
+- `recap.traded` in "After"
+The bot's own live words (brain glance / board card) still win over the brief. Tested on day-brief's own examples, copied to
+tests/fixtures/brief/ (test_nq_desk 32/32). Screens: nq_brief_dark/light.png (today's example placed by hand for the shot, not committed).
