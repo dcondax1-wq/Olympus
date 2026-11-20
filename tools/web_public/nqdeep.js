@@ -8,7 +8,7 @@
 //   core.streaks(rows)             current / longest win+loss, the last 30 as W/L/B     core.extremes(rows, n)   best and worst n trades
 //   core.heat(rows)                win % by hour (ET) x weekday, with n per cell       core.twinR(rows, bot, ak)   LIVE R vs BACKTEST R, same days
 //   core.timeline(r)               the levels box of one trade (entry, stop, target, exit; start and end)   core.fillLine(learned, bot)
-//   core.payout(acct, plan, nowDay) payout progress + the date range (payday plan p10 / median / p90)        core.checklist(acct, R, today)
+//   core.payout(key, plan, market, nowDay)  the first payout's date range (payday plan p10 / median / p90)   core.planId(name)
 //   core.weekNews(news, nowDay)    the week's high-impact US events                    core.tag(rows) / core.ageWords(sec)
 (function (root) {
   'use strict';
@@ -149,9 +149,18 @@
 
   // ---------------------------------------------------------------------------------------------- payout progress (payday plan)
   const PLAN_KEY = { z50k: 'Z50', z25k2: 'N25', atlas25f: 'A25', rapid25: 'R25' };
+  /** an account's display name -> the payday plan id (Z50 / N25 / A25 / R25), or '' */
+  function planId(name) {
+    const n = String(name || '').toLowerCase();
+    if (/blitz/.test(n)) return '';
+    if (/rapid/.test(n)) return 'R25';
+    if (/atlas/.test(n)) return 'A25';
+    if (/zlarior|lit/.test(n)) return /#\s*2|25k/.test(n) ? 'N25' : 'Z50';
+    return '';
+  }
   /** an account card ({key, plan / rules, balance, start, stage}) + the payday plan rows of one market -> progress + date range */
   function payout(key, plan, market, nowDay) {
-    const P = isObj(plan) ? plan : {}, M = market || 'H2', id = PLAN_KEY[key] || key;
+    const P = isObj(plan) ? plan : {}, M = market || 'H2', id = PLAN_KEY[key] || planId(key) || key;
     const a = isObj(P.rows) && isObj(P.rows[M]) && isObj(P.rows[M].accounts) ? P.rows[M].accounts[id] : null;
     if (!isObj(a)) return null;
     const d = (k) => (isDay(a[k]) ? a[k] : '');
@@ -165,45 +174,6 @@
       text: med ? `First payout most likely ${shortDay(med)} (between ${shortDay(lo) || 'soon'} and ${hi ? shortDay(hi) : 'later'})${num(a.first_pay_usd) != null ? ', about ' + money(a.first_pay_usd) : ''}` : 'No payout date in the plan yet' };
   }
   const obj = (x) => (isObj(x) ? x : {});
-
-  // ---------------------------------------------------------------------------------------------- the MFFU rules checklist
-  /** one account's MFFU rules as pass / warn / bad lines. acct = the account center card (business/mffucenter.js center().accounts[i]):
-   *  {rules: RULES row, balance, start, high/peak, today, open, contracts, stage, days, bestDay, profit}; nowS = the clock (16:10 ET flat). */
-  function checklist(acct, nowS) {
-    const A = obj(acct), R = obj(A.rules), out = [];
-    const add = (id, label, level, value) => out.push({ id, label, level, value: str(value, 140) });
-    const bal = num(A.balance), start = num(R.start), today = num(A.today), mll = num(R.mll), dll = num(R.dll);
-    const floor = num(A.floor) != null ? num(A.floor) : (start != null && mll != null ? start - mll : null);
-    if (dll != null) {
-      const used = today != null && today < 0 ? -today : 0, left = dll - used;
-      add('dll', `Daily loss limit ${money(dll)}${R.dll_soft ? ' (soft: the day stops, the account lives)' : ''}`, left <= 0 ? 'bad' : left < dll * 0.35 ? 'warn' : 'ok', today == null ? 'today not reported' : `${money(left)} left today`);
-    } else add('dll', 'Daily loss limit', 'ok', 'none on this plan');
-    if (floor != null && bal != null) { const room = bal - floor; add('mll', `Max loss (floor ${money(floor)})`, room <= 0 ? 'bad' : room < (mll || 1) * 0.3 ? 'warn' : 'ok', `${money(room)} above the floor`); }
-    else add('mll', 'Max loss', 'unknown', 'balance not reported yet');
-    const maxC = num(R.max_micros), q = num(A.contracts);
-    if (maxC != null) add('size', `Contracts: at most ${maxC} MNQ (${num(R.max_minis) || maxC / 10} NQ)`, q != null && q > maxC ? 'bad' : 'ok', q != null ? `${q} MNQ open now` : 'none open');
-    const et = etMod(nowS), wd = etWd(nowS);
-    const closed = wd === 6 || (wd === 0 && et < 1080) || (wd === 5 && et >= 970) || (et >= 970 && et < 1080);
-    add('flat', 'Flat by 16:10 ET (no orders 16:10-18:00 ET)', closed && num(A.contracts) > 0 ? 'bad' : (et >= 940 && et < 970 && num(A.contracts) > 0) ? 'warn' : 'ok', closed ? 'market closed for MFFU now' : `${flatIn(et)} to the 16:10 flat`);
-    const cons = num(R.eval_cons) != null && /eval/i.test(String(A.stage || 'eval')) ? num(R.eval_cons) : num(R.cons);
-    const best = num(A.bestDay), prof = num(A.profit);
-    if (cons != null) {
-      if (best == null || prof == null || prof <= 0) add('cons', `Best day at most ${Math.round(cons * 100)}% of the profit`, 'unknown', 'needs a profit first');
-      else { const sh = best / prof; add('cons', `Best day at most ${Math.round(cons * 100)}% of the profit`, sh > cons ? 'bad' : sh > cons * 0.85 ? 'warn' : 'ok', `best day ${money(best)} = ${Math.round(sh * 100)}% of ${money(prof)}${sh > cons ? ': keep trading, more days fix it' : ''}`); }
-    }
-    if (num(R.min_days) != null) { const d = num(A.days); add('days', `At least ${R.min_days} trading day${R.min_days === 1 ? '' : 's'}`, d == null ? 'unknown' : d >= R.min_days ? 'ok' : 'warn', d == null ? 'not reported' : `${plural(d, 'day')} so far`); }
-    if (num(R.inactivity_days) != null) { const idle = num(A.idleDays); add('idle', `Trade at least once every ${R.inactivity_days} days`, idle == null ? 'unknown' : idle >= R.inactivity_days - 1 ? 'bad' : idle >= R.inactivity_days - 3 ? 'warn' : 'ok', idle == null ? 'last trade not known' : idle === 0 ? 'traded today' : `last trade ${plural(idle, 'day')} ago`); }
-    if (R.family === 'rapid' && R.news_funded === false) add('news', 'Funded: no trades around Tier-1 news', 'info', 'Rapid funded only; the eval may trade news');
-    const bad = out.filter((x) => x.level === 'bad').length, warn = out.filter((x) => x.level === 'warn').length;
-    return { items: out, bad, warn, text: bad ? `${plural(bad, 'rule')} broken or at the limit` : warn ? `${plural(warn, 'rule')} close to the limit` : 'Every rule OK' };
-  }
-  function etParts(nowS) {
-    const v = num(nowS); if (v == null) return null;
-    try { const p = {}; for (const x of new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hourCycle: 'h23', hour: '2-digit', minute: '2-digit', weekday: 'short' }).formatToParts(new Date(v * 1000))) p[x.type] = x.value; return { mod: (parseInt(p.hour, 10) % 24) * 60 + parseInt(p.minute, 10), wd: WD.indexOf(p.weekday) }; } catch (_) { return null; }
-  }
-  const etMod = (s) => { const p = etParts(s); return p ? p.mod : 600; };
-  const etWd = (s) => { const p = etParts(s); return p ? p.wd : 3; };
-  const flatIn = (mod) => { const m = (970 - mod + 1440) % 1440, h = Math.floor(m / 60), r = m % 60; return h ? `${h} h ${r} min` : `${r} min`; };
 
   // ---------------------------------------------------------------------------------------------- the news week (data.json news)
   /** data.json news (tools/news_hub.hub_for_dashboard) -> this week's high-impact US events, Mon-Fri, {day, hm, title, impact, past} */
@@ -228,7 +198,7 @@
   }
   function addDays(day, n) { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(day); return new Date(Date.UTC(+m[1], +m[2] - 1, +m[3] + n)).toISOString().slice(0, 10); }
 
-  const core = { dist, underwater, twinR, streaks, extremes, heat, timeline, fillLine, payout, checklist, weekNews, tag, ageWords, money, moneyS, rTxt, shortDay, SRC, PLAN_KEY };
+  const core = { dist, underwater, twinR, streaks, extremes, heat, timeline, fillLine, payout, planId, weekNews, tag, ageWords, money, moneyS, rTxt, shortDay, SRC, PLAN_KEY };
 
   // ================================================================================================ the chart style (DOM only)
   const NS = 'http://www.w3.org/2000/svg';
@@ -366,13 +336,6 @@
     box.appendChild(g); box.appendChild(el('p', 'nqd-note', 'Levels only (the site keeps each trade\'s prices, not its minute bars): red dash = stop, green dash = target, line = entry to exit.'));
     return R;
   }
-  /** the rules checklist (list) */
-  function drawChecklist(box, C, title) {
-    clear(box); if (title) box.appendChild(el('h3', 'nqd-h', title));
-    const ul = el('ul', 'nqd-check'); ul.setAttribute('aria-label', C.text);
-    for (const x of C.items) { const li = el('li'); li.dataset.level = x.level; li.appendChild(el('span', 'ic', x.level === 'ok' ? '✓' : x.level === 'bad' ? '✕' : x.level === 'warn' ? '!' : 'i')); const d = el('div'); d.appendChild(el('b', '', x.label)); d.appendChild(el('span', '', x.value)); li.appendChild(d); ul.appendChild(li); }
-    box.appendChild(ul); box.appendChild(el('p', `nqd-note ${C.bad ? 'neg' : C.warn ? 'warn' : 'pos'}`, C.text)); return C;
-  }
   /** the payout date range bar: today .. p90 with the p10-p90 band and the median dot */
   function drawPayout(box, P) {
     clear(box); if (!P) { empty(box, 'No payout plan for this account yet.'); return null; }
@@ -398,7 +361,7 @@
     }
     box.appendChild(ol); return N;
   }
-  const draw = { underwater: drawUnderwater, twin: drawTwin, dist: drawDist, heat: drawHeat, streaks: drawStreaks, extremes: drawExtremes, timeline: drawTimeline, checklist: drawChecklist, payout: drawPayout, news: drawNews };
+  const draw = { underwater: drawUnderwater, twin: drawTwin, dist: drawDist, heat: drawHeat, streaks: drawStreaks, extremes: drawExtremes, timeline: drawTimeline, payout: drawPayout, news: drawNews };
 
   const api = { core, draw, v: 1 };
   if (typeof module === 'object' && module.exports) module.exports = api;
