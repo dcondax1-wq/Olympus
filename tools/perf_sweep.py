@@ -4,6 +4,9 @@
     python -X utf8 tools/perf_sweep.py [--site tools/web_public] [--pages nq,ledger,...] [--json out.json] [--md out.md]
         [--no-offline] [--net fast3g|none] [--cpu 4] [--check]   (--check: exit 1 when an app breaks its budget in tools/perf_budgets.json)
     python -X utf8 tools/perf_sweep.py --static --check      no browser, < 1 s: the eager files of each app vs the "static" budgets
+    python -X utf8 tools/perf_sweep.py --lock --compare --md after.md --json after.json
+                                                             ONE command after a landing: the sweep (taking the browser lock itself),
+                                                             then before -> after per app vs research/.../perf/baseline.json
 
 The visible apps = olympus/apps-list.js minus olympus/doors.js ARCHIVE (+ jarvis/, gate/, hub/). Built on tools/phone_budget.py (the same
 read-only gzip server, Chromium, Fast-3G line and x4 CPU at 390 x 844, service workers blocked for the cold visit). Per app:
@@ -36,6 +39,9 @@ sys.path.insert(0, os.path.join(ROOT, "tools"))
 import phone_budget as PB  # noqa: E402
 
 SITE = os.path.join(ROOT, "tools", "web_public")
+BASELINE = os.path.join(ROOT, "research", "handoff", "2026-11-20", "olympus2", "perf", "baseline.json")
+DIFF_KEYS = (("fcp_ms", "first paint ms"), ("lcp_ms", "largest paint ms"), ("kb", "KB first open"), ("lt_max", "longest task ms"),
+             ("tbt", "TBT ms"), ("cls", "CLS"), ("errors", "errors"))
 BUDGETS = os.path.join(ROOT, "tools", "perf_budgets.json")
 EXTRA_PAGES = ["jarvis", "gate", "hub"]
 IMG = (".png", ".jpg", ".jpeg", ".webp", ".avif", ".gif", ".svg", ".ico")
@@ -127,6 +133,33 @@ def static_over(rows: dict, budgets: dict) -> dict:
         if why:
             bad[app] = why
     return bad
+
+
+def compare(before: dict, after: dict) -> tuple:
+    """(table lines, {app: [what got worse]}) before -> after per app; a change under 10% (or 0.02 CLS, 100 ms) is shown as '='"""
+    def fmt(k, a, b):
+        if not isinstance(a, (int, float)) or not isinstance(b, (int, float)):
+            return f"{a if a is not None else '-'} -> {b if b is not None else '-'}"
+        small = abs(b - a) <= (0.02 if k == "cls" else max(100 if k.endswith("ms") or k in ("tbt", "lt_max") else 0, abs(a) * 0.10))
+        arrow = "=" if small else ("better" if b < a else "WORSE")
+        return f"{a:g} -> {b:g} {arrow}"
+    head = "| app | " + " | ".join(h for _k, h in DIFF_KEYS) + " | offline |"
+    out, worse = [head, "|" + "---|" * (len(DIFF_KEYS) + 2)], {}
+    for app in list(after) + [a for a in before if a not in after]:
+        a, b = before.get(app) or {}, after.get(app) or {}
+        if "error" in b or not b:
+            out.append(f"| {app} | not measured now{': ' + b['error'][:40] if b.get('error') else ''} |" + " |" * len(DIFF_KEYS))
+            continue
+        cells = [fmt(k, a.get(k), b.get(k)) for k, _h in DIFF_KEYS]
+        w = [h for (k, h), c in zip(DIFF_KEYS, cells) if c.endswith("WORSE")]
+        oa, ob = a.get("offline") or "-", b.get("offline") or "-"
+        oa, ob = ("ok" if oa == "ok" else "no"), ("ok" if ob == "ok" else "no")
+        if oa == "ok" and ob != "ok":
+            w.append("offline")
+        if w:
+            worse[app] = w
+        out.append(f"| {app} | " + " | ".join(cells) + f" | {oa} -> {ob} |")
+    return out, worse
 
 
 def load_budgets(path=BUDGETS) -> dict:
@@ -268,6 +301,31 @@ def offline(br, url, home=None) -> dict:
         ctx.close()
 
 
+def offline_sweep(site, pages, say=print) -> dict:
+    """only the offline leg for each app (tests/test_offline_apps.py): {app: {"offline", "offline_sw", "offline_age"}}"""
+    from playwright.sync_api import sync_playwright
+    srv, base = serve_https(os.path.abspath(site))
+    out = {}
+    try:
+        with sync_playwright() as pw:
+            br = launch(pw)
+            for app, path in pages:
+                out[app] = offline(br, base + "/" + path + PB.QUERY, base + "/" + PB.QUERY)
+                say(f"{app}: {out[app]}")
+            br.close()
+    finally:
+        srv.shutdown()
+    return out
+
+
+def patch_in(site=SITE) -> bool:
+    """the root worker answers app folders (LEAD_WIRES 1 of the perf hand-off, appNetFirst) = every app must open offline"""
+    try:
+        return "appNetFirst" in open(os.path.join(site, "sw.js"), encoding="utf-8").read()
+    except OSError:
+        return False
+
+
 def sweep(site, pages, cpu=4, net="fast3g", do_offline=True, say=print) -> list:
     from playwright.sync_api import sync_playwright
     srv, base = serve_https(os.path.abspath(site))
@@ -300,6 +358,9 @@ def main(argv=None) -> int:
     ap.add_argument("--net", default="fast3g")
     ap.add_argument("--no-offline", action="store_true")
     ap.add_argument("--check", action="store_true")
+    ap.add_argument("--compare", nargs="?", const=BASELINE, default=None, metavar="BEFORE.json",
+                    help="after the sweep: before -> after per app vs a saved run (default: today's baseline.json)")
+    ap.add_argument("--lock", action="store_true", help="take /tmp/olympus_browser.lock around the browser run (tests/browser_lock.py)")
     ap.add_argument("--static", action="store_true", help="no browser: the eager files of every visible app vs the static budgets")
     a = ap.parse_args(argv)
     if a.static:
@@ -314,7 +375,13 @@ def main(argv=None) -> int:
     if a.pages:
         want = [p.strip() for p in a.pages.split(",") if p.strip()]
         pages = [p for p in pages if p[0] in want] + [(w, w + "/") for w in want if w not in {p[0] for p in pages}]
-    rows = sweep(a.site, pages, a.cpu, a.net, not a.no_offline)
+    if a.lock:
+        sys.path.insert(0, os.path.join(ROOT, "tests"))
+        import browser_lock
+        with browser_lock.hold(browser_lock.DEFAULT, 2400):
+            rows = sweep(a.site, pages, a.cpu, a.net, not a.no_offline)
+    else:
+        rows = sweep(a.site, pages, a.cpu, a.net, not a.no_offline)
     budgets = load_budgets()
     lines = table(rows)
     bad = {app: over(app, r, budgets) for app, r in rows}
@@ -328,7 +395,23 @@ def main(argv=None) -> int:
     if a.md:
         with open(a.md, "w", encoding="utf-8") as fh:
             fh.write("\n".join(lines) + "\n")
-    print(f"perf sweep: {len(rows)} apps, {len(bad)} over budget")
+    worse = {}
+    if a.compare:
+        try:
+            with open(a.compare, encoding="utf-8") as fh:
+                bj = json.load(fh)
+            before = bj.get("rows", bj) if isinstance(bj, dict) else {}
+        except (OSError, ValueError) as e:
+            before = {}
+            print(f"compare: cannot read {a.compare} ({e.__class__.__name__})")
+        clines, worse = compare(before, {k: v for k, v in rows})
+        print("\n## Before -> after (vs " + os.path.relpath(a.compare, ROOT) + ")\n" + "\n".join(clines))
+        for app, w in worse.items():
+            print(f"WORSE {app}: {', '.join(w)}")
+        if a.md:
+            with open(a.md, "a", encoding="utf-8") as fh:
+                fh.write("\n## Before -> after (vs " + os.path.relpath(a.compare, ROOT) + ")\n\n" + "\n".join(clines) + "\n")
+    print(f"perf sweep: {len(rows)} apps, {len(bad)} over budget" + (f", {len(worse)} worse than before" if a.compare else ""))
     return 1 if (a.check and bad) else 0
 
 

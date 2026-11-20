@@ -4,6 +4,7 @@
      a row from raw numbers; budgets (own over default, offline must be ok, sideways never); the table
   b. the real repo's budgets file is valid JSON and names only visible apps
   d. static (no browser, < 1 s): each app's eager files vs the "static" budgets; the real repo passes; three.js eager is named
+  e. compare (the one-command after-landing check): before -> after per app vs baseline.json, what got worse
   c. one real browser run on a 2-page fixture site (https, as GitHub Pages): a good app (worker-cached, shows "updated 5 min ago")
      opens offline WITH its age; a bad one (console error, 600 px wide, not cached) is caught: errors 1, sideways, offline not ok
     python -X utf8 -m tests.test_perf_sweep
@@ -82,6 +83,13 @@ def main() -> int:
     sb = {"static": {"default": {"block_kb": 250, "eager_js_kb": 600, "three": False}}}
     check("d. static: over the blocking KB and three.js eager are both named; a lean app passes",
           P.static_over(fake, sb) == {"x": ["block_kb 900 > 250", "three.js loads eagerly"]}, P.static_over(fake, sb))
+
+    before = {"a": {"lcp_ms": 5000, "cls": 0.5, "offline": "ok", "kb": 100}, "b": {"lcp_ms": 3000, "cls": 0.1, "offline": "error x", "kb": 100}}
+    after = {"a": {"lcp_ms": 7000, "cls": 0.05, "offline": "blank", "kb": 105}, "b": {"lcp_ms": 3050, "cls": 0.1, "offline": "ok", "kb": 50}}
+    cl, worse = P.compare(before, after)
+    check("e. compare: before -> after per app; worse LCP and a lost offline are named, small moves are '=', wins 'better'",
+          worse == {"a": ["largest paint ms", "offline"]} and "0.5 -> 0.05 better" in cl[2] and "3000 -> 3050 =" in cl[3]
+          and "100 -> 50 better" in cl[3] and cl[3].endswith("no -> ok |"), (cl, worse))
 
     site = tempfile.mkdtemp(prefix="le_perfsweep_")
     try:
