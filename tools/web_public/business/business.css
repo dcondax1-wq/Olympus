@@ -84,3 +84,6 @@ html[data-oly-lite="1"] .ag-card { box-shadow: none; }
 .door2 { display: grid; gap: 4px; min-height: 44px; padding: 12px 14px; text-decoration: none; color: inherit; align-content: start; }
 .door2 h2 { margin: 0; font-size: 16px; color: var(--ag-gold); }
 .door2 .note { font-size: 12px; }
+/* night-siteqa 2026-11-20: "<- Business" on every Business page in the gold of the AGORA links (it showed the browser's default blue / purple, underlined) */
+main#app a.back { color: var(--ag-gold-hi, var(--ag-gold, #dcbd6e)); text-decoration: none; font-weight: 600; }
+main#app a.back:active { opacity: .7; }

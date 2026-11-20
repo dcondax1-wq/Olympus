@@ -159,8 +159,21 @@ CLIP = r"""(() => { const W = innerWidth, H = innerHeight, out = [], C = new Map
 
 
 class Quiet(http.server.SimpleHTTPRequestHandler):
+    HOME = None          # --home-fixture: /home.json = the Gate tests' fresh fixture (fake numbers), so the Home screenshot shows a live card
+
     def log_message(self, *a):
         pass
+
+    def do_GET(self):
+        if self.HOME and self.path.split("?")[0] == "/home.json":
+            body = self.HOME.encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
+        super().do_GET()
 
     def end_headers(self):
         self.send_header("Cache-Control", "no-store")
@@ -258,7 +271,14 @@ def main():
     ap.add_argument("--throttle", type=float, default=0)
     ap.add_argument("--shots")
     ap.add_argument("--json")
+    ap.add_argument("--home-fixture", action="store_true")
     a = ap.parse_args()
+    if a.home_fixture:                 # the shape of tests/test_gate_page.home_json, at the real clock (fake numbers)
+        n = int(time.time())
+        Quiet.HOME = json.dumps({"built": time.strftime("%Y-%m-%dT%H:%M:%S+00:00", time.gmtime(n - 600)), "live": {"pc": {"t": n - 240, "running": True}},
+                                 "board": {"t": n - 600, "data_t": n - 240, "running": True,
+                                           "lit": {"id": "lit", "name": "Zlarior", "room": 1024, "mll": 2000, "balance": 49193, "today_pnl": 120},
+                                           "atlas": {"id": "atlas", "name": "ATLAS", "room": 1080, "mll": 1000, "today_pnl": -40}}})
     pages = [x for s in a.set.split(",") for x in SETS[s]]
     if a.only:
         pages = [x for x in pages if x[0] in a.only.split(",")]
