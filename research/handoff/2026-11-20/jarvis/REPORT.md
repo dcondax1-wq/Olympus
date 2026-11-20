@@ -79,3 +79,32 @@ and the hub test's idle-line check failed). Ideas for the lead: memoise apps.js 
 Deliverables here: REPORT.md, LEAD_WIRES.md, 01-12 PNG at 390x844 @2x (answers.json = the exact texts), jarvis-5-questions.webm
 (Accounts, In a trade?, Payout, Today, Kalshi). Python Playwright was missing in this container: `pip install playwright==1.63.0`
 + `PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers` (matches the pre-installed Chromium).
+
+---
+
+# Round 2: team JARVIS (owner 2026-11-20 ~10:00 ET: "Launch a giant team making Olympus as a whole better")
+
+## 5. Jarvis from every app: `jarvis/ask.js`
+
+A 44 px round button (bottom left) on any page that adds one line (`<script src="../jarvis/ask.js" defer data-app="nq">`). A tap opens
+"Ask Jarvis · on NQ" with that page's questions first (NQ: In a trade?, Room left, Today, Accounts, To pass, Edge; Money: First payout,
+Payout now?, Taxes, $ a month, Decide; Kalshi; Hub: To-do, Decide, PC OK?), a text box, the answer with its source + age, and "Open
+Jarvis" (carries the question: `jarvis/?ask=...`, answered once, address cleaned). It loads nothing until tapped, works offline from the
+last PC report this phone saw, never mounts on Jarvis itself, is a real dialog (focus kept inside, Escape closes, focus returns).
+Kit hook and style variables: `research/handoff/2026-11-20/olympus2/jarvis/ASKS.md`. Test: `tests.test_jarvis_ask` 15/15.
+
+## 6. The owner's questions (biz.js), now 17 kinds, 60+ phrasings tested
+
+New: Is the PC OK? (server, NinjaTrader, problems, the self-check line; "Not sure" when the report is old) · What do you recommend?
+(open Decide questions with the advice and $ a month, the parked ones; "Nothing waiting: all 15 answered" today) · Can I ask for a payout?
+(the ZEUS card's own coach line, e.g. "Not yet: need $1,463 more", + $800 to you, $240 tax pot, $560 yours) · Taxes (30% pot, the next
+IRS date, "education, not tax advice") · How did yesterday go? (the PC's daily review) · Last week (every live trade per account from
+the PC's list; paper trades labelled and kept out of the $) · When do the bots trade? · $ a month (ESTIMATE from 1,000 runs, accounts you
+have vs not bought yet; BACKTEST line labelled) · How far to pass? (+ estimated pass date) · Is the edge OK? (both lights, "a warning only").
+Kept with the brain on purpose: follow-ups ("and yesterday?", "why?", "open it"), BLITZ, why / explain / strategy, generic room/target.
+
+## 7. Search red fixed
+
+"find the jurnal" -> the Journal app first (an app the query names beats a write-up that mentions the word); an Archive idea that is both a
+write-up and a rejected idea is one row (flagged "(Rejected idea)"), so "what did we test about vwap" shows the test runs again; equal
+scores: the asked word earlier in the title first. brain3 349/349 (one pinned "find vwap" order updated, reason in the test).
