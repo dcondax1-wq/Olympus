@@ -79,11 +79,11 @@
     '.gn-dist{display:flex;flex-direction:column;justify-content:center;min-height:56px;padding:6px 14px;border-radius:14px;border:1px solid var(--ag-line,var(--oly-th-n8, #3a3228));background:var(--ag-s2,var(--oly-th-n5, #26211b));color:var(--ag-text,var(--oly-th-n37, #f3ece0));text-decoration:none;font:600 1rem/1.2 var(--ag-serif,var(--oly-th-display, "Iowan Old Style",Palatino,Georgia,serif))}',
     '.gn-dist small{display:block;margin-top:2px;color:var(--ag-muted,var(--oly-th-n24, #a89c88));font:400 .75rem/1.25 var(--ag-sans,-apple-system,system-ui,sans-serif)}',
     '.gn-dist.gn-here{border-color:var(--ag-gold,var(--oly-th-a8, #c8a24a))}',
-    '.gn-crumbs{display:flex;align-items:center;min-width:0;max-width:100%;gap:0;overflow:hidden}',
+    '.gn-crumbs{display:flex;align-items:center;min-width:0;max-width:100%;gap:0;overflow:hidden;margin-left:-8px;padding-left:8px}',   // night-siteqa: the back link's own -8px margin sits inside the clip (its left edge and tap highlight were cut)
     'main#app>header.top.ag-hasnav>.gn-crumbs{grid-column:1;grid-row:1;justify-self:start}',
     '.gn-crumbs>.ag-navback,.gn-crumbs>.gn-back,.gn-crumbs>a.olyback{flex:none}',
     '.gn-sep{flex:none;padding:0 3px;color:var(--ag-muted,var(--oly-th-n24, #a89c88));font:400 1.0625rem/1 var(--ag-sans,-apple-system,system-ui,sans-serif)}',
-    '.gn-crumb{display:inline-flex;align-items:center;min-height:44px;min-width:44px;padding:0 6px;border-radius:10px;color:var(--ag-gold,var(--oly-th-a8, #c8a24a));font:600 .9375rem/1.1 var(--ag-sans,-apple-system,system-ui,sans-serif);text-decoration:none;white-space:nowrap;flex:none}',
+    '.gn-crumb{display:inline-block;min-height:44px;min-width:44px;padding:0 6px;border-radius:10px;color:var(--ag-gold,var(--oly-th-a8, #c8a24a));font:600 .9375rem/44px var(--ag-sans,-apple-system,system-ui,sans-serif);text-decoration:none;white-space:nowrap;flex:0 1 auto;overflow:hidden;text-overflow:ellipsis}',   // night-siteqa: on a 390 px phone the hub name ends in "..." instead of a hard cut ("Bots & Eva")
     '.gn-cur{flex:0 3 auto;min-width:0;padding:0 4px;color:var(--ag-soft,var(--oly-th-n30, #cfc4b2));font:400 .9375rem/1.1 var(--ag-sans,-apple-system,system-ui,sans-serif);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
     '.gn-crumb:empty,.gn-cur:empty,.gn-sep.gn-off{display:none}',
     '.gn-empty{margin:10px 2px;color:var(--ag-soft,var(--oly-th-n30, #cfc4b2))}',
