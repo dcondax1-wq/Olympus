@@ -2,7 +2,8 @@
 
 Owner: "It needs some 3D, it needs some effects." NO GOLD.
 
-- **Look:** Trading and Business load `nq/nqtheme.css` last: navy, cyan #22d3ee, blue #3b82f6 and violet #8b5cf6, with green / red only for $. The Planner keeps its sea blue: every kit gold token now points at #7fa7c2 (planner.css), and the sundial lost its gold.
+- **Palette update (16:00 ET, OLYMPUS NIGHT):** the effects are now violet #9d59ee / lavender #dacbf0 with bright-gold #f1c14b accents (the top-edge light, the chart trail, a few aurora motes); card rings are violet #4d2e76. No cyan is left in the layer. The Planner is fully Night in planner.css: black base, #16131e -> #020204 glass cards, #3e255e lines, a gold accent only on active / CTA, mint #77db89 / red #ef4444 for money, text #ebe9f1 / #898497. Trading and Business follow nq/nqtheme.css, which the NQ team re-points to Night.
+- **Look (first push):** Trading and Business load `nq/nqtheme.css` last: navy, cyan #22d3ee, blue #3b82f6 and violet #8b5cf6, with green / red only for $. The Planner keeps its sea blue: every kit gold token now points at #7fa7c2 (planner.css), and the sundial lost its gold.
 - **Effects:** one layer, `trading/panelfx.js` (+ `panelfx.css`, which it injects after the paint), loaded deferred at the end of each page:
   - a particle aurora behind the cards: a fixed 2D canvas, so no WebGL is needed; 1/3 resolution, ~24 fps, paused when the tab is hidden;
   - glass cards with a soft glow and a light along the top edge;

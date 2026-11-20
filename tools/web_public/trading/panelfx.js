@@ -1,5 +1,5 @@
 /* PANEL FX (day-a11y 2026-11-20, owner: "It needs some 3D, it needs some effects"): one small effects layer for Trading, Business and Planner.
- *   <script src="../trading/panelfx.js?v=1" data-look="nq|planner" data-burst="1" defer></script>   (it adds panelfx.css itself, after the paint)
+ *   <script src="../trading/panelfx.js?v=1" data-look="night" data-burst="1" defer></script>   (it adds panelfx.css itself, after the paint)
  * What it adds, all AFTER the page has painted (first paint unchanged, nothing changes size: no layout shift):
  *   aurora    a soft particle aurora behind the cards (2D canvas, fixed, 1/3 resolution, ~24 fps, pauses in a hidden tab) once the page has loaded
  *             and the phone is idle; reduced motion / Save-Data / a slow line / small memory = one still frame
@@ -17,7 +17,8 @@
   if (window.PANELFX) return;
   var W = window, D = document, me = D.currentScript;
   var LOOK = (me && me.getAttribute('data-look')) || 'nq', BURST = !!(me && me.getAttribute('data-burst'));
-  var COLS = LOOK === 'planner' ? ['127,167,194', '75,122,153', '160,172,110', '201,106,74'] : ['34,211,238', '59,130,246', '139,92,246', '103,232,249'];
+  // OLYMPUS NIGHT (owner 2026-11-20, the Jarvis switcher's colours, every dashboard): violet glow, lavender light, a few bright-gold motes
+  var COLS = ['157,89,238', '218,203,240', '125,70,200', '241,193,75'];
   var st = { aurora: 'none', rolled: 0, revealed: 0, charts: 0, burst: false, stopped: false, frames: 0 };
   var raf = 0, cv = null, io = null, rio = null, mo = null;
 
@@ -82,7 +83,7 @@
     lines.sort(function (a, b) { return b.getTotalLength() - a.getTotalLength(); });
     lines.slice(0, 12).forEach(function (p) { if (!p.classList.contains('pfx-line')) { p.classList.add('pfx-line'); st.charts += 1; } });   // 12 at most: a glow filter costs GPU on a phone
     var N = W.OLYMPUS_NQFX;
-    if (lines.length && N && N.trail && !reduced() && !lines[0].__pfxTrail) { lines[0].__pfxTrail = 1; try { N.trail(lines[0], { seconds: 3.2 }); } catch (e) { /* the glow stays */ } }
+    if (lines.length && N && N.trail && !reduced() && !lines[0].__pfxTrail) { lines[0].__pfxTrail = 1; try { N.trail(lines[0], { seconds: 3.2, color: '#f1c14b' }); } catch (e) { /* the glow stays */ } }
   }
 
   // ---------------------------------------------------------------- numbers roll up once, when first seen
@@ -134,7 +135,7 @@
 
   function start() {
     // the look half (panelfx.css, next to this file) arrives after the first paint too: never render-blocking
-    if (me && me.src && !D.getElementById('pfxCss')) { var l = D.createElement('link'); l.id = 'pfxCss'; l.rel = 'stylesheet'; l.href = me.src.replace(/panelfx\.js[^\/]*$/, 'panelfx.css?v=1'); D.head.appendChild(l); }
+    if (me && me.src && !D.getElementById('pfxCss')) { var l = D.createElement('link'); l.id = 'pfxCss'; l.rel = 'stylesheet'; l.href = me.src.replace(/panelfx\.js[^\/]*$/, 'panelfx.css?v=2'); D.head.appendChild(l); }
     D.documentElement.classList.add('pfx'); D.documentElement.setAttribute('data-pfx-look', LOOK);
     aurora();
     var go = function () { charts(); watch(); burst(); };

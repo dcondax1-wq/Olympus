@@ -16,7 +16,7 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 WEB = os.path.join(ROOT, "tools", "web_public")
-PAGES = {"trading/": "nq", "business/": "nq", "business/accounts.html": "nq", "business/mffu.html": "nq", "planner/": "planner"}
+PAGES = {"trading/": "night", "business/": "night", "business/accounts.html": "night", "business/mffu.html": "night", "planner/": "night"}   # OLYMPUS NIGHT everywhere (owner 2026-11-20)
 FAILS: list = []
 N = [0]
 
@@ -40,11 +40,13 @@ def static():
         tag = re.search(r'<script src="(?:\.\./trading/)?panelfx\.js\?v=\d+" data-look="(\w+)"[^>]*defer></script>', html)
         check(f"a. {page}: panelfx.js deferred at the end of the body, look '{look}'", bool(tag) and tag.group(1) == look and html.index("panelfx.js") > html.index("</main>"))
         check(f"a. {page}: no render-blocking effects stylesheet (panelfx.js adds it after the paint)", "panelfx.css" not in html)
-        if look == "nq":
+        if page != "planner/":
             check(f"a. {page}: the navy trading-terminal look (nq/nqtheme.css) loaded last in <head>", '../nq/nqtheme.css' in html and html.index("nqtheme.css") > html.index("agora.css") and html.index("nqtheme.css") < html.index("</head>"))
     pl = read("planner/planner.css")
-    check("a. planner: the kit's gold tokens point at its sea blue (no gold)", "--ag-gold: #7fa7c2 !important" in pl and "--oly-th-a8: #7fa7c2 !important" in pl)
-    check("a. planner sundial: no gold left in the drawing", not re.search(r"#c8a24a|#e0b060", read("planner/plannerscene.js")))
+    check("a. planner: OLYMPUS NIGHT tokens (black, violet glass #16131e -> #020204, violet lines, bright-gold accent, mint profit)",
+          all(x in pl for x in ("--ag-night: #000000 !important", "linear-gradient(180deg, #16131e, #020204)", "--ag-line: #3e255e !important", "--ag-gold: #f1c14b !important", "--ag-olive-text: #77db89 !important")))
+    check("a. planner sundial: no old brown gold left in the drawing", not re.search(r"#c8a24a|#e0b060", read("planner/plannerscene.js")))
+    check("a. the effects are violet / lavender / bright gold (no cyan)", "157, 89, 238" in css and "241, 193, 75" in css and "34, 211, 238" not in css and "34,211,238" not in js)
     check("a. the layer: no network, no storage, no innerHTML", not re.search(r"fetch\(|XMLHttpRequest|localStorage|sessionStorage|innerHTML", js))
     check("a. the layer: reduced motion honoured (JS still frame + CSS)", "prefers-reduced-motion" in js and "prefers-reduced-motion" in css and "st.aurora = 'still'" in js)
     check("a. the aurora is out of the layout before its css lands (inline position:fixed)", "position:fixed" in js)
