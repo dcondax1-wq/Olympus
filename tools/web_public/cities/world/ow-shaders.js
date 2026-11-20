@@ -21,14 +21,14 @@ vec3 lightDir() { return normalize(mix(uMoonDir, sunDir(), uDusk)); }
 vec3 lightCol() { return mix(vec3(0.12, 0.15, 0.26), vec3(1.25, 0.66, 0.34), uDusk); }
 vec3 skyCol(vec3 d) {
   float h = d.y;
-  vec3 zen = mix(vec3(0.0030, 0.0055, 0.018), vec3(0.030, 0.062, 0.16), uDusk);
-  vec3 mid = mix(vec3(0.010, 0.016, 0.044), vec3(0.11, 0.15, 0.30), uDusk);
-  vec3 hor = mix(vec3(0.040, 0.036, 0.075), vec3(0.46, 0.27, 0.19), uDusk);
-  vec3 c = mix(hor, mid, smoothstep(0.0, 0.2, h));
+  vec3 zen = mix(vec3(0.0030, 0.0055, 0.018), vec3(0.016, 0.042, 0.13), uDusk);
+  vec3 mid = mix(vec3(0.010, 0.016, 0.044), vec3(0.07, 0.10, 0.24), uDusk);
+  vec3 hor = mix(vec3(0.040, 0.036, 0.075), vec3(0.42, 0.20, 0.12), uDusk);
+  vec3 c = mix(hor, mid, smoothstep(0.0, mix(0.2, 0.12, uDusk), h));
   c = mix(c, zen, smoothstep(0.16, 0.8, h));
   c += mix(vec3(0.16, 0.075, 0.036), vec3(0.42, 0.17, 0.06), uDusk) * exp(-max(h, 0.0) * 11.0);   // the city's own light (dusk: the sun) low in the haze
   float s = max(dot(d, sunDir()), 0.0);
-  c += vec3(1.0, 0.55, 0.24) * (pow(s, 7.0) * 0.32 + pow(s, 90.0) * 1.2) * uDusk;
+  c += vec3(1.0, 0.5, 0.2) * (pow(s, 14.0) * 0.3 + pow(s, 120.0) * 1.0) * uDusk * smoothstep(-0.05, 0.12, 0.35 - h);
   c += vec3(0.05, 0.08, 0.15) * pow(max(dot(d, uMoonDir), 0.0), 20.0) * 0.6 * (1.0 - uDusk);
   c = mix(c, mix(vec3(0.008, 0.009, 0.016), vec3(0.05, 0.05, 0.07), uDusk), 1.0 - smoothstep(-0.3, 0.0, h));
   return c;
@@ -37,7 +37,7 @@ vec3 fogged(vec3 col, vec3 wp) {
   vec3 dv = wp - cameraPosition;
   float d = length(dv);
   float hfade = exp(-max(wp.y, 0.0) * 0.022);
-  float f = 1.0 - exp(-pow(d * uFogDensity, 1.35) * (0.35 + 0.9 * hfade));
+  float f = 1.0 - exp(-pow(d * uFogDensity * mix(1.0, 0.72, uDusk), 1.35) * (0.35 + 0.9 * hfade));
   vec3 dir = dv / max(d, 1e-3);
   vec3 far = skyCol(vec3(dir.x, max(dir.y, 0.0) * 0.4 + 0.015, dir.z));
   vec3 fc = mix(mix(vec3(0.006, 0.009, 0.020), vec3(0.05, 0.05, 0.085), uDusk), far, smoothstep(0.25, 0.95, f));
@@ -377,7 +377,7 @@ void main() {
   // the moon and its halo (night); at dusk the sun's disc sits on the horizon
   float m = dot(d, uMoonDir);
   col += (vec3(0.95, 0.93, 0.85) * smoothstep(0.99955, 0.99975, m) * 3.0 * (1.0 - cover * 0.7) + vec3(0.2, 0.25, 0.4) * pow(max(m, 0.0), 300.0)) * night;
-  col += vec3(4.0, 2.2, 1.0) * smoothstep(0.99945, 0.9997, dot(d, sunDir())) * uDusk;
+  col += vec3(4.0, 2.2, 1.0) * smoothstep(0.99968, 0.99985, dot(d, sunDir())) * uDusk;
   gl_FragColor = vec4(col, 1.0);
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
