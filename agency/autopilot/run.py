@@ -17,7 +17,6 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import getpass
-import hashlib
 import json
 import os
 import random
@@ -115,17 +114,9 @@ def site_data() -> tuple:
 
 
 def post_public(counts: dict) -> bool:
-    """the counts (no names, no addresses, no words) on the public status topic the site already reads (status_feed.json)"""
-    feed = read_json(os.path.join(WEB, "status_feed.json"), {}) or {}
-    base, topic = str(feed.get("ntfy") or "").rstrip("/"), str(feed.get("topic") or "")
-    if not base.startswith("https://") or not re.fullmatch(r"[A-Za-z0-9_-]{16,}", topic):
-        return False
-    try:
-        req = urllib.request.Request(f"{base}/{topic}", data=json.dumps(counts, separators=(",", ":")).encode(), method="POST")
-        with urllib.request.urlopen(req, timeout=15) as r:
-            return r.status == 200
-    except Exception:  # noqa: BLE001
-        return False
+    """the counts as the PC report's tiny card (data/agency_mail/summary.json -> pc_report's ext block "am"): no post of its own on ntfy"""
+    from . import card
+    return card.write_card(counts, ROOT)
 
 
 def notify_owner(text: str) -> bool:
@@ -254,12 +245,12 @@ def run_once(cfg: dict, state: dict, leads: list, words: dict, offers: dict, sit
         err = push(files, f"agency mail {day}: {len(res['inbox'])} in, {len(res['sent'])} out")
         if err:
             res["errors"].append("branch: " + redact(err, cfg))
-    hk = hashlib.sha1(json.dumps({k: v for k, v in counts.items() if k != "t"}, sort_keys=True).encode()).hexdigest()[:12]
-    if public and hk != state.get("public_hash"):
-        if public(counts):
-            state["public_hash"] = hk
+    if public:
+        public(counts)                                    # the PC report's tiny card (agency/autopilot/card.py), never an ntfy post of its own
     want = [x for x in res["inbox"] if x["class"] in ("interested", "question")]
-    if notify and (want or held):
+    sent_notes = (state.setdefault("notes", {}) if isinstance(state.get("notes"), dict) else state.update(notes={}) or state["notes"])
+    if notify and (want or held) and int(sent_notes.get(day, 0)) < 4:     # 4 pushes a day at most: the PC shares ntfy's per-IP budget with the bot's alerts
+        state["notes"] = {day: int(sent_notes.get(day, 0)) + 1}
         parts = [f"{len(want)} repl{'y' if len(want) == 1 else 'ies'} to answer ({', '.join(x['business'] for x in want[:3])})"] if want else []
         if held:
             parts.append(f"{len(held)} draft{'s' if len(held) > 1 else ''} wait for your OK")

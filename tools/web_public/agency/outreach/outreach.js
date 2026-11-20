@@ -186,13 +186,11 @@ function drawAll() {
   drawToday(); drawWords(); drawClose();
 }
 
-// the PC's email autopilot: its counts from the public status channel the site already reads (status_feed.json), at most once a visit
+// the PC's email autopilot: its tiny card "am" rides the PC report (pc_feed.js merges it into the lite live.json); no fetch of its own
 async function drawAuto() {
-  const box = $('auto'), feed = await getJSON('../../status_feed.json');
+  const box = $('auto'), F = window.PC_FEED;
   let a = null;
-  if (feed && /^https:\/\//.test(feed.ntfy || '') && /^[\w-]{16,}$/.test(feed.topic || '')) {
-    try { const r = await fetch(`${String(feed.ntfy).replace(/\/+$/, '')}/${feed.topic}/json?poll=1&since=26h`, { cache: 'no-store' }); if (r.ok) a = C.parseMail(await r.text()); } catch (_) { a = null; }
-  }
+  try { const lite = F && F.fetchLatest ? await F.fetchLatest({ feedUrl: '../../status_feed.json' }) : null; a = C.parseCard(lite && lite.am); } catch (_) { a = null; }
   const st = $('autoState');
   if (!a) { st.textContent = 'Off, or the PC has not reported today. To turn it on: EMAIL_SETUP.bat on the PC (it stays off until you type SEND EMAILS).'; autoTiles(null); return; }
   const ago = Math.max(0, Math.round((Date.now() / 1000 - a.t) / 60));

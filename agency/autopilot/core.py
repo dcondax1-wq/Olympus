@@ -96,7 +96,7 @@ def cfg_problems(c: dict) -> list:
 
 
 def empty_state() -> dict:
-    return {"v": 1, "sent": {}, "suppress": [], "replied": {}, "days": {}, "last_uid": 0, "inbox": [], "outbox_done": {}, "pending": [], "flagged": []}
+    return {"v": 1, "sent": {}, "suppress": [], "replied": {}, "days": {}, "last_uid": 0, "inbox": [], "outbox_done": {}, "pending": [], "flagged": [], "notes": {}}
 
 
 def norm_state(raw) -> dict:

@@ -267,6 +267,27 @@ def main():
         check("h. Claude's draft (another clone's commit) is read back, the PC's answer lands on top without losing it", not e2 and [d["id"] for d in ob] == ["d9"]
               and not err3 and "outbox/d9.json" in ls2 and "sent/d9.json" in ls2, (e2, ob, err3, ls2))
 
+        # ---------------------------------------------------------------- j. the PC report's card (no ntfy post of its own)
+        from agency.autopilot import card
+        croot = os.path.join(tmp, "croot")
+        ok = card.write_card(core.public_counts(st, live, 7), croot)
+        cd = card.read_card(card.path(croot))
+        raw = open(card.path(croot), encoding="utf-8").read()
+        check("j. the card for the PC report: written, < 120 bytes, numbers + the mode only, read back fresh", ok and len(raw) < 120 and cd and cd["m"] == "live" and cd["q"] == 7
+              and not any(isinstance(v, str) and v not in ("live", "dry", "off") for v in cd.values()), (len(raw), cd))
+        os.utime(card.path(croot), (1, 1))
+        check("j. a card older than 2 days is not sent", card.read_card(card.path(croot)) is None)
+        rsrc = open(os.path.join(ROOT, "agency", "autopilot", "run.py"), encoding="utf-8").read()
+        check("j. the autopilot never posts to the public status topic itself (only the PC report does)", "status_feed.json" not in rsrc and "card.write_card" in rsrc)
+        nn = []
+        sx = core.norm_state(json.loads(json.dumps(st)))
+        sx["notes"] = {}
+        for k in range(8):
+            FakeIMAP.box = [(1000 + k, raw_mail(f"Owner Seven <owner7@shop7.example>", "Re: draft", "How much is it?"))]
+            sx["replied"].pop("L07", None)
+            run.run_once(live, sx, leads, words, offers, {}, now=T(2026, 12, 1, 18, k), smtp_factory=FakeSMTP, imap_factory=FakeIMAP, notify=nn.append, public=None)
+        check("j. at most 4 phone pushes a day (the PC shares ntfy's per-IP budget with the bot's alerts)", len(nn) == 4, len(nn))
+
         # ---------------------------------------------------------------- i. the Windows side
         bs, bt = open(os.path.join(ROOT, "EMAIL_SETUP.bat"), "rb").read(), open(os.path.join(ROOT, "EMAIL_STOP.bat"), "rb").read()
         ps = open(os.path.join(ROOT, "scripts", "agency_mail_task.ps1"), encoding="utf-8").read()

@@ -54,6 +54,11 @@ The PC keeps its own clone in `%USERPROFILE%\.olympus\agency_inbox` and pushes p
 - `optout`, `bounce` and `not_now` get no answer.
 
 ## The page
-`agency/outreach/` (owner only) shows the autopilot's numbers. The PC posts **counts only** (kind `le-mail`: new / cap, follow-ups, replies, interested, never-again, waiting) on the site's public status channel, the one `status_feed.json` names. It never posts a name, an address or a word of a reply.
+`agency/outreach/` (owner only) shows the autopilot's numbers. The autopilot posts **nothing** to ntfy itself, because the PC shares ntfy's 250-a-day per-IP budget with the bot's alerts. Instead:
+- after each pass it writes the tiny card `data/agency_mail/summary.json` (`agency/autopilot/card.py`: numbers and the mode only, under 120 bytes);
+- the PC report carries it in its existing ext block as `am` (patch: `research/handoff/2026-11-20/web/outreach/LEAD_WIRES.md` #7);
+- the page reads it through `pc_feed.js`.
+
+Phone pushes for replies that need the owner go to his private topic, 4 a day at most.
 
 Tests: `python -X utf8 -m tests.test_agency_autopilot` (fake Gmail, a temp home, a local bare git repo; never the network).

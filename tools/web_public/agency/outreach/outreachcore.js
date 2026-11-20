@@ -108,18 +108,11 @@ export function normState(raw) {
 export function emailStep(p) { return p && (p.step === 'bump' || p.step === 'last') ? p.step : p && p.step === 'wait' ? (p.day === 7 ? 'last' : 'bump') : 'first'; }
 
 // ------------------------------------------------------------------------------------------------ the PC's email autopilot (counts only)
-/** the newest "le-mail" post in an ntfy /json?poll=1 answer (agency/autopilot on the PC posts counts only: no name, no address, no words) */
-export function parseMail(ndjson) {
-  let best = null;
-  for (const line of String(ndjson || '').split('\n')) {
-    let m = null; try { m = JSON.parse(line); } catch (_) { continue; }
-    if (!m || m.event !== 'message' || typeof m.message !== 'string') continue;
-    let j = null; try { j = JSON.parse(m.message); } catch (_) { continue; }
-    if (!isObj(j) || j.kind !== 'le-mail' || !(+j.t > 0)) continue;
-    const clean = {}; for (const k of ['t', 'mode', 'day', 'new', 'cap', 'followup', 'replies_today', 'interested', 'questions', 'optouts', 'bounces', 'suppressed', 'contacted', 'queue'])
-      clean[k] = k === 'mode' ? (['off', 'dry', 'live'].includes(j.mode) ? j.mode : 'off') : k === 'day' ? str(j.day, 10) : Math.max(0, Math.round(+j[k] || 0));
-    if (!best || clean.t > best.t) best = clean;
-  }
-  return best;
+/** the PC report's "am" card (agency/autopilot/card.py: t, m, n, c, f, r, i, s, q) -> the page's names; numbers only, anything else dropped */
+export function parseCard(am) {
+  if (!isObj(am) || !(+am.t > 0)) return null;
+  const n = (k) => Math.max(0, Math.round(+am[k] || 0));
+  return { t: +am.t, mode: ['off', 'dry', 'live'].includes(am.m) ? am.m : 'off', new: n('n'), cap: n('c') || 20, followup: n('f'), replies_today: n('r'),
+    interested: n('i'), suppressed: n('s'), queue: n('q') };
 }
 export const CALL_LINE = 'Prefer a quick call? On your draft site, tap "Have our assistant call me" and pick a time that suits you.';
