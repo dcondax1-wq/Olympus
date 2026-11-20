@@ -250,7 +250,7 @@ function show3d(on, keep) {
   if (!S.load3d) {
     S.load3d = true;
     window.addEventListener('nqchart3d', mount3d, { once: true });
-    const t = document.createElement('script'); t.type = 'module'; t.src = new URL('./nqchart3d.js?v=1', import.meta.url).href;
+    const t = document.createElement('script'); t.type = 'module'; t.src = new URL('./nqchart3d.js?v=2', import.meta.url).href;
     t.onerror = () => { S.load3d = false; S.view3d = false; setToggle(); };
     document.head.appendChild(t);
   }

@@ -4,7 +4,7 @@
 // exit, red = a losing exit, violet = an entry, gold-tipped and pulsing = an open trade) on a black floor with a violet grid fading into the fog.
 // Palette "OLYMPUS NIGHT" (owner 16:00 ET): black, violet #9d59ee / lavender #dacbf0, gold #f1c14b only as the small last-price accent.
 // The camera orbits slowly; a swipe / drag turns it (the auto orbit comes back ~4 s later). Loaded only when the owner taps the chart's 3D toggle
-// (nqchart.js adds the module tag). Phone (<= 600 px or Save-Data): pixel ratio <= 1.5, no antialias, ~30 fps. Paused off-screen / in a hidden
+// (nqchart.js adds the module tag). Phone (<= 600 px or Save-Data): antialiased, pixel ratio <= 2, ~30 fps. Paused off-screen / in a hidden
 // tab; reduced motion = a still frame (a drag still turns it). Read only: no fetch, no storage, no DOM text (the page sets the aria label).
 // Registers window.NQCHART3D = { mount(box, data) -> bool, update(data), dispose() } and fires 'nqchart3d'. mount returns false (the box
 // untouched) when WebGL cannot be made. data = { candles: [{time, open, high, low, close}], markers: [{time, kind, usd, open}], last }.
@@ -50,9 +50,9 @@ function mount(box, data) {
   if (!box) return false;
   const phone = isPhone(), still = media('(prefers-reduced-motion: reduce)');
   let renderer;
-  try { renderer = new THREE.WebGLRenderer({ antialias: !phone, alpha: false, powerPreference: 'low-power' }); } catch (_) { return false; }
+  try { renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'low-power' }); } catch (_) { return false; }
   if (!renderer || !renderer.getContext()) return false;
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, phone ? 1.5 : 2));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.setClearColor(0x000000, 1);
   const cv = renderer.domElement; cv.style.display = 'block'; cv.style.width = '100%'; cv.style.height = '100%'; cv.style.touchAction = 'none';
   box.appendChild(cv);
@@ -154,13 +154,13 @@ function update(data) {
 function place(t) {
   const cam = R.camera, auto = R.still ? 0 : Math.sin(((t - R.t0) / 1000) * (Math.PI * 2 / 26)) * 0.42;
   if (!R.drag && performance.now() > R.userUntil) { R.userYaw *= 0.97; R.userPitch *= 0.97; }   // the auto orbit comes back gently
-  const yaw = auto + R.userYaw, pitch = 0.12 + R.userPitch;
+  const yaw = auto + R.userYaw, pitch = 0.2 + R.userPitch;
   // the fit (coordinator 2026-11-20: "too small and dim"): the bars fill ~80% of the box width and the day's price range ~55% of its height;
   // the day group is stretched in y to that height, the camera looks at its middle (a little above, so the beacons have room)
   const vf = (cam.fov * Math.PI) / 180, hf = 2 * Math.atan(Math.tan(vf / 2) * cam.aspect);
-  const d = (W / 0.8 / 2) / Math.tan(hf / 2) + D / 2, visH = 2 * d * Math.tan(vf / 2), sy = (0.55 * visH) / (H1 - H0);
+  const d = (W / 0.8 / 2) / Math.tan(hf / 2) + D / 2, visH = 2 * d * Math.tan(vf / 2), sy = (0.74 * visH) / (H1 - H0);   // lead 2026-11-20: fill the card (was 55%: the bottom third sat empty)
   R.day.scale.y = sy; R.day.position.y = -H0 * sy + 0.05;
-  const ty = ((H0 + H1) / 2) * sy + R.day.position.y + 0.06 * visH;
+  const ty = ((H0 + H1) / 2) * sy + R.day.position.y + 0.02 * visH;
   cam.position.set(Math.sin(yaw) * Math.cos(pitch) * d, ty + Math.sin(pitch) * d, Math.cos(yaw) * Math.cos(pitch) * d);
   cam.lookAt(0, ty, 0);
 }
