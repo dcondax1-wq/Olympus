@@ -47,6 +47,7 @@ from tools.caller import run as R  # noqa: E402
 from tools.caller import server as SV  # noqa: E402
 from tools.caller import setup_keys as SK  # noqa: E402
 from tools.caller import simulate as SIM  # noqa: E402
+from tools.caller import siteform as SF  # noqa: E402
 from tools.caller import telephony as T  # noqa: E402
 
 RES = []
@@ -166,6 +167,23 @@ def main() -> int:
     html = K.consent_form_html(C.settings(h), LEAD, "https://pc.example.ts.net:10000/consent")
     check("c. the demo-page form shows the full consent wording, a required box and a typed-name signature, and posts to /consent",
           "artificial voice" in html and 'name="agree" required' in html and 'name="signed_name" required' in html and "/consent" in html)
+    check("c. the button is exactly 'Have our assistant call me' (the Day-0 email names it) and the consent text quotes it",
+          ">Have our assistant call me</button>" in html and K.BUTTON in K.CONSENT_TEXT)
+    sh = glob.glob(os.path.join(h, "caller", "share", "consent", "*.json"))
+    shared = json.load(open(sh[0])) if sh else {}
+    check("c. each consent leaves a share/consent/<id>.json for the email autopilot: lead_id, asked_t, window, phone_source, and NO phone / name / email",
+          len(sh) == 1 and shared.get("phone_source") == "their form" and shared.get("window") == "any" and "asked_t" in shared
+          and not ({"phone", "signed_name", "email", "text"} & set(shared)), shared)
+    sf = SF.build("https://olympus-caller.example.ts.net:10000", C.settings(h))
+    ch = sf["caller_html"]
+    check("c. siteform: inline markup for the site factory slot, posts to <endpoint>/consent, hidden lead_id + business, no third-party URL, no key",
+          'data-post="https://olympus-caller.example.ts.net:10000/consent"' in ch and 'name="lead_id"' in ch and 'name="business"' in ch
+          and not re.search(r"<script[^>]+src=|formspree|googleapis|AC[0-9a-f]{32}|sk-ant-", ch) and sf["caller_button"] == K.BUTTON)
+    try:
+        SF.build("http://evil.example/x?y")
+        check("c. siteform refuses a non-https or odd endpoint", False)
+    except SystemExit:
+        check("c. siteform refuses a non-https or odd endpoint", True)
 
     # ---------------------------------------------------------------- d. hours
     h = new_home()
@@ -184,6 +202,11 @@ def main() -> int:
           and not G.in_calling_hours("TX", dt.datetime(2026, 11, 24, 15, 30, tzinfo=UTC), hrs)[0]
           and G.in_calling_hours("TX", dt.datetime(2026, 11, 24, 17, 30, tzinfo=UTC), hrs)[0])
     check("d. the gate itself refuses a Saturday call", gate(h, now=et(2026, 11, 28, 11)).blocked_by == "hours")
+    morning = {**LEAD, "call_window": "morning"}
+    check("d. 'Best time: morning' = 9-12 only, 'afternoon' = 12-5 only (their pick on the form)",
+          gate(h, lead=morning, now=et(2026, 11, 24, 10)).ok and gate(h, lead=morning, now=et(2026, 11, 24, 14)).blocked_by == "their time window"
+          and gate(h, lead={**LEAD, "call_window": "afternoon"}, now=et(2026, 11, 24, 10)).blocked_by == "their time window"
+          and gate(h, lead={**LEAD, "call_window": "afternoon"}, now=et(2026, 11, 24, 14)).ok)
     hol = G.federal_holidays(2026)
     check("d. 2026 federal holidays include MLK Jan 19, Memorial May 25, Labor Sep 7, Thanksgiving Nov 26 + Nov 27, Jul 3 (observed)",
           {dt.date(2026, 1, 19), dt.date(2026, 5, 25), dt.date(2026, 9, 7), dt.date(2026, 11, 26), dt.date(2026, 11, 27), dt.date(2026, 7, 3)} <= hol)
@@ -327,6 +350,13 @@ def main() -> int:
     check("i. bookings ping the phone once each and queue a confirmation email (dry: no network)",
           all(sum(1 for a in r["actions"] if a[0] == "ping" and a[1].startswith("Booked")) == (1 if r["outcome"] == "booked" else 0) for r in res)
           and all(any(a[0] == "email:booking_confirmation" for a in r["actions"]) for r in res if r["outcome"] == "booked"))
+    hb = new_home()
+    rb = SIM.run_one("curious_books", SIM.PERSONAS["curious_books"], B.ScriptedBrain(), hb, {**C.settings(hb), **SIM.SIM_SETTINGS})
+    ob = [json.load(open(p)) for p in glob.glob(os.path.join(hb, "caller", "share", "outbox", "*.json"))]
+    stf = glob.glob(os.path.join(hb, "caller", "share", "status", "*.json"))
+    check("i. a booking writes the autopilot's outbox/<id>.json (kind booking, approved false, the 'to' heard on the call) and status s=interested",
+          rb["outcome"] == "booked" and len(ob) == 1 and ob[0]["kind"] == "booking" and ob[0]["approved"] is False and ob[0]["to"] == "tom@harborplumbing.com"
+          and {"id", "inbox_id", "lead_id", "subject", "body"} <= set(ob[0]) and stf and json.load(open(stf[0]))["s"] == "interested", (ob, stf))
     check("i. spoken emails are understood", B.spoken_email("it's tom at harbor plumbing dot com") == "" and
           B.spoken_email("tom at harborplumbing dot com") == "tom@harborplumbing.com" and B.spoken_email("x jane.doe@gmail.com y") == "jane.doe@gmail.com")
     sl = A.offer_slots(LEAD, TUE_10ET, C.settings(new_home()))

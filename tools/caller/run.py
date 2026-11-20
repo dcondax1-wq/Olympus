@@ -41,6 +41,7 @@ def lead_for(consent_rec: dict, idx: dict) -> dict:
     lead.setdefault("phone", consent_rec["phone"])
     lead.setdefault("name", consent_rec.get("business", ""))
     lead.setdefault("id", consent_rec.get("lead_id", ""))
+    lead["call_window"] = consent_rec.get("window", "any")
     if not lead.get("state"):
         lead["state"] = AREA_STATE.get(G.area_code(consent_rec["phone"]), "")
     return lead

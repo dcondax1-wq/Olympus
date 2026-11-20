@@ -22,9 +22,11 @@ except ImportError:  # pragma: no cover
     import compliance as G  # type: ignore
     import config as C  # type: ignore
 
-CONSENT_VERSION = "v1-2026-11-20"
+CONSENT_VERSION = "v2-2026-11-20"
+BUTTON = "Have our assistant call me"
+WINDOWS = {"morning": (9, 12), "afternoon": (12, 17), "any": (9, 17)}
 CONSENT_TEXT = (
-    "By typing my name and tapping \"Call me\", I agree that {agency} may call me at {phone} using an AI assistant "
+    "By typing my name and tapping \"Have our assistant call me\", I agree that {agency} may call me at {phone} using an AI assistant "
     "(an artificial voice) and an automated dialing system, to talk about the website preview it made for {business}. "
     "The call is recorded and transcribed. I do not have to agree to this to buy anything. "
     "I can say \"stop\" on the call, or email or call {callback} at any time, and you will never call again."
@@ -68,13 +70,29 @@ def record(form: dict, s: dict, h=None, now: dt.datetime | None = None, ip: str 
         return False, "Please type your full name as your signature.", None
     if form.get("version") != CONSENT_VERSION:
         return False, "This form is out of date; please reload the page.", None
-    text = text_for(s, num, biz)
+    window = str(form.get("window") or "any")
+    if window not in WINDOWS:
+        return False, "Please pick a time that suits you.", None
+    text = text_for(s, "the number I type below", "my business") + f" (Number typed: {num}. Business: {biz or 'not given'}.)"   # what they saw + what they typed
     rec = {"id": uuid.uuid4().hex[:12], "kind": "consent", "phone": num, "business": biz, "signed_name": name,
            "email": str(form.get("email", ""))[:120], "lead_id": str(form.get("lead_id", ""))[:40], "version": CONSENT_VERSION,
+           "window": window, "asked_t": now.isoformat(), "phone_source": "their form",
            "text_sha256": hashlib.sha256(text.encode()).hexdigest(), "text": text, "ts": now.isoformat(), "ip": ip[:64], "ua": ua[:200]}
     with open(_path(h), "a", encoding="utf-8") as f:
         f.write(json.dumps(rec, sort_keys=True) + "\n")
+    share(rec, h)
     return True, "Thank you. Our AI assistant will call you on a weekday between 9 and 5.", rec
+
+
+def share(rec: dict, h=None) -> str:
+    """The copy the PC pushes to the private 'agency-inbox' branch as caller/consent/<id>.json, so the email autopilot stops the email
+    sequence for this lead. No phone, no name, no email in it: only what the autopilot needs."""
+    d = os.path.join(C.state_dir(h), "share", "consent")
+    os.makedirs(d, exist_ok=True)
+    p = os.path.join(d, f"{rec['id']}.json")
+    with open(p, "w", encoding="utf-8") as f:
+        json.dump({k: rec.get(k, "") for k in ("id", "lead_id", "business", "asked_t", "window", "phone_source", "version")}, f, sort_keys=True)
+    return p
 
 
 def revoke(phone: str, why: str, h=None, now: dt.datetime | None = None) -> None:
@@ -117,23 +135,26 @@ def consented_numbers(h=None) -> list:
     return list(best.values())
 
 
-def consent_form_html(s: dict, lead: dict, post_url: str) -> str:
-    """The block a demo site shows under 'Want to talk about it?'. Plain HTML + a tiny fetch(), no tracking, no third party."""
+def consent_form_html(s: dict, lead: dict | None, post_url: str) -> str:
+    """The block for the concept page's caller slot (day-cities3: tools/site_factory_agency.json "caller_html"). Inline HTML + JS only,
+    no third party, no secret. The site factory fills the hidden inputs lead_id and business per site (empty here when lead is None).
+    It posts JSON to <post_url> (the caller's public Funnel address + /consent)."""
     e = html.escape
-    sample = text_for(s, "the number below", lead.get("name", "my business"))
-    return f"""<section class="callme" aria-labelledby="callme-h">
-  <h2 id="callme-h">Want a quick call about this preview?</h2>
-  <p>Our AI assistant can call your business line on a weekday between 9 and 5 to answer questions and book a time with {e(s.get('owner_first_name', 'us'))}. Or call us yourself: {e(s.get('callback_number', ''))}.</p>
-  <form id="callme" data-version="{CONSENT_VERSION}">
-    <label>Business phone (a landline) <input name="phone" type="tel" required autocomplete="tel"></label>
-    <label>Your full name (this is your signature) <input name="signed_name" required autocomplete="name"></label>
-    <label>Email (optional) <input name="email" type="email" autocomplete="email"></label>
-    <input type="hidden" name="business" value="{e(lead.get('name', ''))}"><input type="hidden" name="lead_id" value="{e(lead.get('id', ''))}">
-    <label class="agree"><input type="checkbox" name="agree" required> {e(sample)}</label>
-    <button type="submit">Call me</button>
-    <p class="callme-out" role="status"></p>
-  </form>
-  <script>document.getElementById("callme").addEventListener("submit",async function(ev){{ev.preventDefault();var f=ev.target,o=f.querySelector(".callme-out");
-  var b={{phone:f.phone.value,signed_name:f.signed_name.value,email:f.email.value,business:f.business.value,lead_id:f.lead_id.value,agree:f.agree.checked,version:f.dataset.version}};
-  try{{var r=await fetch({json.dumps(post_url)},{{method:"POST",headers:{{"Content-Type":"application/json"}},body:JSON.stringify(b)}});o.textContent=(await r.json()).message}}catch(e){{o.textContent="Could not send. Please call us instead."}}}});</script>
-</section>"""
+    lead = lead or {}
+    sample = text_for(s, "the number I type below", "my business")
+    return f"""<form id="callme" class="callme" data-version="{CONSENT_VERSION}" data-post="{e(post_url)}">
+<p class="callme-lede">Our AI assistant can call your business line on a weekday between 9 and 5 to answer questions and book a short call with {e(s.get('owner_first_name', 'us'))}. Or call us yourself: {e(s.get('callback_number', ''))}.</p>
+<label>Business phone <input name="phone" type="tel" required autocomplete="tel" inputmode="tel"></label>
+<label>Your full name (your signature) <input name="signed_name" required autocomplete="name"></label>
+<label>Best time <select name="window"><option value="any">Any time 9-5</option><option value="morning">Morning (9-12)</option><option value="afternoon">Afternoon (12-5)</option></select></label>
+<label>Email (optional) <input name="email" type="email" autocomplete="email"></label>
+<input type="hidden" name="lead_id" value="{e(lead.get('id', ''))}"><input type="hidden" name="business" value="{e(lead.get('name', ''))}">
+<label class="callme-agree"><input type="checkbox" name="agree" required> <span>{e(sample)}</span></label>
+<button type="submit">{BUTTON}</button>
+<p class="callme-out" role="status" aria-live="polite"></p>
+</form>
+<script>(function(){{var f=document.getElementById("callme");if(!f)return;f.addEventListener("submit",function(ev){{ev.preventDefault();var o=f.querySelector(".callme-out");
+var b={{phone:f.phone.value,signed_name:f.signed_name.value,window:f.window.value,email:f.email.value,lead_id:f.lead_id.value,business:f.business.value,agree:f.agree.checked,version:f.dataset.version}};
+o.textContent="Sending...";fetch(f.dataset.post,{{method:"POST",headers:{{"Content-Type":"application/json"}},body:JSON.stringify(b),referrerPolicy:"no-referrer"}})
+.then(function(r){{return r.json()}}).then(function(j){{o.textContent=j.message;if(j.ok)f.querySelector("button").disabled=true}})
+.catch(function(){{o.textContent="Could not send. Please call us instead."}});}});}})();</script>"""

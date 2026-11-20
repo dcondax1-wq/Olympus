@@ -1,7 +1,8 @@
 """What a call can DO: offer 2 time slots, book one, queue the demo / confirmation / payment-link email, write the inbox, ping the phone.
 
-Email: never sent from here. Each email is one line in <home>/caller/outbox.jsonl in the email autopilot's queue format (day-a11y team,
-research/handoff/2026-11-20/caller/LEAD_WIRES.md): {"v":1, "id", "kind", "to", "subject", "body", "lead_id", "ts", "from_app":"caller"}.
+Email: never sent from here. Each email is <home>/caller/share/outbox/<id>.json in the email autopilot's outbox format (day-a11y
+docs/EMAIL_AUTOPILOT.md): {"id", "inbox_id", "lead_id", "kind": demo|booking|payment, "subject", "body", "approved": false} + "to"
+(the address said on the call); the PC sends demo / booking / payment drafts by itself when every link is the owner's own.
 Inbox: every finished call is one line in <home>/caller/inbox/<YYYY-MM-DD>.jsonl, the 'agency-inbox' branch record format.
 Phone ping: one ntfy push per booking to the owner's PRIVATE topic (<home>/ntfy.json, the file the PC report uses). Read-only use of it.
 """
@@ -20,6 +21,11 @@ try:
 except ImportError:  # pragma: no cover
     import compliance as G  # type: ignore
     import config as C  # type: ignore
+
+
+OUTBOX_KIND = {"demo_link": "demo", "booking_confirmation": "booking", "payment_link": "payment"}
+STATUS_S = {"booked": "interested", "payment_link": "interested", "demo_sent": "called", "callback_requested": "called",
+            "connected": "called", "declined": "no", "opt_out": "no"}
 
 
 def lead_tz(lead: dict) -> ZoneInfo:
@@ -62,10 +68,14 @@ class Actions:
     def queue_email(self, kind: str, to: str, subject: str, body: str, lead: dict) -> dict:
         footer = (f"\n\n--\n{self.s.get('agency_name')} | {self.s.get('postal_address')} | {self.s.get('callback_number')}\n"
                   "Reply STOP or 'unsubscribe' and we will never email or call again.")
-        rec = {"v": 1, "id": uuid.uuid4().hex[:12], "kind": kind, "to": to, "subject": subject, "body": body + footer,
-               "lead_id": lead.get("id", ""), "ts": dt.datetime.now(dt.timezone.utc).isoformat(), "from_app": "caller", "status": "queued"}
-        if to:
-            self._append("outbox.jsonl", rec)
+        rec = {"id": "call-" + uuid.uuid4().hex[:12], "inbox_id": "", "lead_id": lead.get("id", ""), "kind": OUTBOX_KIND.get(kind, "other"),
+               "subject": subject, "body": body + footer, "approved": False, "to": to, "from_app": "caller", "caller_kind": kind,
+               "t": dt.datetime.now(dt.timezone.utc).isoformat()}
+        if to:      # the email autopilot's outbox/<id>.json (day-a11y docs/EMAIL_AUTOPILOT.md); "to" is the address said on the call
+            p = os.path.join(C.state_dir(self.h), "share", "outbox", rec["id"] + ".json")
+            os.makedirs(os.path.dirname(p), exist_ok=True)
+            with open(p, "w", encoding="utf-8") as f:
+                f.write(C.redact(json.dumps(rec, sort_keys=True), self.h))
         self.done.append(("email:" + kind, to or "(no email yet)"))
         return rec
 
@@ -111,7 +121,13 @@ class Actions:
 
     def inbox(self, rec: dict):
         day = str(rec.get("ts", dt.datetime.now(dt.timezone.utc).isoformat()))[:10]
-        self._append(os.path.join("inbox", f"{day}.jsonl"), {"v": 1, "app": "caller", **rec})
+        st = STATUS_S.get(rec.get("outcome", ""), "called")
+        self._append(os.path.join("inbox", f"{day}.jsonl"), {"v": 1, "app": "caller", "s": st, **rec})
+        if rec.get("lead_id"):     # the shared lead status (phone key agency.leads.status.v1): {lead_id: {s, t}}
+            p = os.path.join(C.state_dir(self.h), "share", "status", f"{rec['lead_id']}.json")
+            os.makedirs(os.path.dirname(p), exist_ok=True)
+            with open(p, "w", encoding="utf-8") as f:
+                json.dump({"lead_id": rec["lead_id"], "s": st, "t": rec.get("ts", ""), "outcome": rec.get("outcome", "")}, f)
 
     def ping(self, text: str):
         self.done.append(("ping", text))

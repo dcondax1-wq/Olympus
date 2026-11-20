@@ -27,7 +27,7 @@ ASSUME = {                       # per dial
     "in_tokens_uncached": 1600, "in_tokens_cached": 900, "out_tokens": 160,     # per turn, incl. low-effort thinking
     "book_of_connect": 0.25,     # GUESS for people who asked us to call
     "close_of_booked": 0.30,     # GUESS
-    "sale_setup": 499, "sale_monthly": 49,       # agency/config.example.json Starter
+    "sale_setup": 1500, "sale_monthly": 79,     # agency/offers/offers.json Starter
     "lookup_share": 0.5,         # half the dials are follow-ups or cached numbers
     "weekdays": 22,
 }

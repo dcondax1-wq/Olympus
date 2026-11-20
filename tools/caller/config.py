@@ -2,7 +2,8 @@
 
 home    = OLYMPUS_HOME or %USERPROFILE%\\.olympus        (outside the repo)
 keys    = <home>/caller.json   {"twilio_sid", "twilio_token", "twilio_from", "anthropic_key"}   written by setup_keys.py (getpass)
-state   = <home>/caller/       state.json (on/off, cap), calls.jsonl, consent.jsonl, dnc.txt, registry/<area>.txt, outbox.jsonl
+state   = <home>/caller/       state.json (on/off, cap), calls.jsonl, consent.jsonl, dnc.txt, registry/<area>.txt,
+          share/ (what the PC pushes to the private agency-inbox branch: outbox/<id>.json, consent/<id>.json, status/<lead_id>.json)
 """
 from __future__ import annotations
 

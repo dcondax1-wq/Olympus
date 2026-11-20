@@ -297,6 +297,10 @@ def check_outbound(lead: dict, now_utc: dt.datetime, line_type: str, consent_ok:
                     f"{lt} ({'business landline OK' if lt == 'landline' else 'only landlines, never mobile / VoIP / unknown'})"))
     hrs = in_calling_hours(lead.get("state", ""), now_utc, s["hours"])
     oks.append(step("hours", hrs[0], hrs[1]))
+    win = {"morning": ("09:00", "12:00"), "afternoon": ("12:00", "17:00")}.get(str(lead.get("call_window") or "any"))
+    if win:
+        w = in_calling_hours(lead.get("state", ""), now_utc, {**s["hours"], "start": win[0], "end": win[1] if win[1] != "12:00" else "12:05"})
+        oks.append(step("their time window", w[0], f"they asked for the {lead['call_window']}: " + w[1]))
     mine = sorted([c for c in calls if c.get("dir") == "out" and c.get("number") == num], key=lambda c: c.get("ts", ""))
     if not mine:
         oks.append(step("attempts", True, "first call"))
