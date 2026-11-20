@@ -2543,6 +2543,7 @@ Promise.all([ready.brain, within(ready.vault, 4000), within(ready.assistant, 400
   ready.assist.then(() => { mountModesUI(); mountBotsUI(); setTimeout(() => thinkSlot(true), 4000); });
   ready.bots.then(() => { mountBotsUI(); setTimeout(botsTick, 3000); });
   setTimeout(tourHint, 7000);
+  setTimeout(pinHint, 12000);
   ready.assist.then((a) => { if (a && !proUI) { proUI = safe(() => a.mountProactive({ brain: () => brain, anchor: $('#sugs'), onAsk: (t) => ask(t) }), null); if (proUI) safe(() => proUI.render()); } });
 });
 D.onChange(({ source }) => { if (proUI) safe(() => proUI.render()); if (modesUI) safe(() => modesUI.render()); if (source === 'live') botsTick(); });
@@ -2954,6 +2955,19 @@ function offerAlerts() {                              // the first reminder: a t
 ready.assistant.then((a) => { if (!a) return; bootDone.then(() => setTimeout(checkReminders, 2500)); setInterval(checkReminders, 15000); });
 document.addEventListener('visibilitychange', () => { if (visible()) setTimeout(checkReminders, 800); });
 // the "What's new" note (2026-11-10): a slim banner in the page flow under the header, never over content; one tap on x = gone; once per version
+// "Pin to Home Screen" (team JARVIS 2026-11-20, owner: "work like a real app from the home screen"): once, on an iPhone / iPad in Safari (not
+// already opened from the Home Screen), after the tour hint's turn; a tap on the button opens the Siri shortcuts page. 'jarvis.pinHint' = seen.
+function pinHint(n = 0) {
+  try {
+    const ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const standalone = navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+    if (!ios || standalone || raw('jarvis.pinHint') || active !== 'home' || !visible() || n > 6) return;
+    const wn = document.getElementById('wnb'), t = document.getElementById('toast');
+    if ((wn && !wn.hidden) || (t && !t.hidden) || root.hasAttribute('data-intro')) { setTimeout(() => pinHint(n + 1), 5000); return; }
+    rawSet('jarvis.pinHint', '1');
+    banner('Tap Share, then "Add to Home Screen": Jarvis opens like an app. Siri can ask it too.', 'Make it an app:', ['Siri shortcuts', () => { location.href = 'shortcuts.html'; }]);
+  } catch (_) { /* never in the way */ }
+}
 function banner(text, label, action) {
   const host = $('#home .hbody') || $('#home .home-in');
   if (!host) return;
