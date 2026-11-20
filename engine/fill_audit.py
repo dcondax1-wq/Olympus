@@ -858,6 +858,18 @@ def _default_notify(p: dict):
         _nt.instant_problem(mp)
 
 
+def _notify_for(bot):
+    """The sender for this bot's notices: a paper bot keeps the old path only (no MISSED TRADE on the ntfy topic for a test
+    / paper run); a broker bot gets the default (app notice + the instant problem push). None = the default."""
+    try:
+        if str(((getattr(bot, "cfg", None) or {}).get("adapter")) or "paper") == "paper":
+            from engine import push
+            return push.pc_notify
+    except Exception:
+        pass
+    return None
+
+
 def send_alerts(payloads: list, store=None, notify=None) -> list:
     """Send each notice once (own sent list + engine/push's de-dup by key). notify(payload) for tests. The default also sends a
     missed trade to the private ntfy topic at once (_missed_problem; the 15-minute report skips its copy)."""
@@ -941,7 +953,7 @@ def session_alerts(bot, store=None, now=None, notify=None) -> list:
     for p in pays:
         if p["key"] not in seen:
             seen.add(p["key"]); uniq.append(p)
-    return send_alerts(uniq, store, notify)
+    return send_alerts(uniq, store, notify if notify is not None else _notify_for(bot))
 
 
 # ================================================================================================ nightly drift summary
@@ -1149,7 +1161,7 @@ class Watcher:
         if after or new_exit or not self.last:
             rep = audit(store=self.store, now=now, eval_start=self._eval_start())
             res["audit"] = rep["summary"]["text"]
-            res["alerts"] = send_alerts(alert_payloads(rep["rows"], now), self.store)
+            res["alerts"] = send_alerts(alert_payloads(rep["rows"], now), self.store, _notify_for(self.bot))
             try:                     # live learning (engine/live_learning.py): learned costs + the trade review journal
                 from engine import live_learning
                 live_learning.pc_update(fa_store=self.store, now=now)

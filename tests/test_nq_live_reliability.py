@@ -215,6 +215,9 @@ def t_missed_now():
             FA.send_alerts([p, own], store=d)
         finally:
             push.pc_notify, NT.instant_problem = orig_pc, orig_ip
+        from engine import push as _push
+        check("a paper bot keeps the old sender only (no MISSED TRADE ntfy for paper / test runs)",
+              FA._notify_for(Bot(now, adapter="paper")) is _push.pc_notify and FA._notify_for(b) is None)
         check("the default sender: app notice for both, ntfy for the real miss only",
               sent.count(("ntfy", p["key"])) == 1 and ("ntfy", own["key"]) not in sent and ("app", own["key"]) in sent, sent)
         # notify.instant_problem + the report's dedupe
