@@ -246,8 +246,9 @@ const card = (st, k8, u) => ({ kind: 'kalshi_live_pub', v: 1, st, net: 0, f: 0, 
     await ctx.close();
     for (const k of ['404', 'junk']) {
       ({ ctx, p } = await open({ app: 'dionysus', at: '2026-11-23T10:30:00Z', k8: k }));
-      step(`dz2. Dionysus with k8.json ${k === '404' ? 'missing' : 'junk (HTML)'}: the panel hides, the desk still renders`,
-        await p.evaluate(() => document.getElementById('k8Card').hidden && document.getElementById('bal').textContent.startsWith('$')));
+      step(`dz2. Dionysus with k8.json ${k === '404' ? 'missing' : 'junk (HTML)'}: the panel stays in its place (no layout jump) with one plain line + the Kalshi page link, no legs; the desk still renders`,
+        await p.evaluate(() => { const c = document.getElementById('k8Card'); return !c.hidden && c.classList.contains('none') && !c.classList.contains('loading') && document.getElementById('k8Legs').hidden
+          && c.innerText.includes('not on this site right now') && !!c.querySelector('a[href="../kalshi/"]') && document.getElementById('bal').textContent.startsWith('$'); }));
       await ctx.close();
     }
   } catch (e) {

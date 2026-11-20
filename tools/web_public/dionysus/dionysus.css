@@ -91,3 +91,7 @@ html:not(.framed) #app { padding-bottom: calc(96px + var(--sb)); }
 /* bar 2026-11-20: the one link from the old bot's card to today's bot (K8) */
 .lnk { margin: 0; }
 .hero h2 { overflow-wrap: anywhere; }
+/* CLS 0 (Olympus 2 PERF): K8 today keeps its place from the first paint */
+.k8.loading { min-height: 660px; }
+.k8.loading .lnk { visibility: hidden; }
+#status { min-height: calc(3 * 1.45em); }
