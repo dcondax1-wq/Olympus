@@ -24,6 +24,10 @@ runs: tests.test_lit_live (full, heavy.sh), tests.test_nq_live_reliability, test
 | C9 | medium | **False 'Bot stopped' alarm on CME holidays.** tools/pc_report.entry_hours (its "Bot stopped" condition) was weekday 01:50-15:30 only: a bot stopped on Christmas Day, New Year's Day or Thanksgiving afternoon (after the 13:00 halt; next Thursday) alarmed. Now a holiday closure / early halt (engine/cme_calendar.halted) is never entry hours. The fast alarm already used engine/live.market_open. | abb2d0d0 |
 | P5 | (proposal) | night-selfheal's proposal landed: engine/autoupdate.fast_forward clears untracked files the update brings right before `git merge --ff-only` (same bytes: removed; other bytes: snapshot + copy kept), puts them back when the merge still fails or the update rolls back, and keeps git's FULL merge error (it was cut to its last 200 characters: the file names git lists first were lost, and self_heal reads them from that reason). | 9529550b |
 
+**Timing (for the lead):** the PC's HOURLY auto-update stops at 01:20 ET (engine/autoupdate HOURLY_MARGIN: 30 min before the
+01:50 blackout), so a ship after ~01:20 reaches the PC only with the phone's "Update now" (or UPDATE.bat) before 01:50, else after
+16:00 ET Friday.
+
 Not critical, checked and fine: phone_link (Windows only, daemon thread, every Tailscale call has a 20 s timeout, never 443 / Funnel, its
 failure cannot reach the server start); remote_ctl control_source (the expired no-op on olympus/control is "blank" = silent; an
 invalid id is never re-notified; update / restart stay gated to flat + outside 01:50-16:00); account_box arming (the typed phrase
