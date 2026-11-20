@@ -36,7 +36,7 @@ const nowS = () => Math.floor(Date.now() / 1000);
 let feedLib = null;
 function loadFeedLib() {
   if (window.PC_FEED) return Promise.resolve(window.PC_FEED);
-  if (!feedLib) feedLib = new Promise((res) => { try { const sc = document.createElement('script'); sc.src = '../pc_feed.js?v=n5'; sc.async = true; sc.onload = () => res(window.PC_FEED || null); sc.onerror = () => res(null); document.head.appendChild(sc); } catch (_) { res(null); } });
+  if (!feedLib) feedLib = new Promise((res) => { try { const sc = document.createElement('script'); sc.src = '../pc_feed.js?v=n6'; sc.async = true; sc.onload = () => res(window.PC_FEED || null); sc.onerror = () => res(null); document.head.appendChild(sc); } catch (_) { res(null); } });
   return feedLib;
 }
 async function withFeed(home) {
