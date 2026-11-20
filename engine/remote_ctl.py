@@ -121,7 +121,8 @@ def fetch(cwd: str = ROOT, remote: str = "origin", branch: str = BRANCH, timeout
         if r.returncode and url and "does not appear to be a git repository" in (r.err or "").lower():
             r = _go(url)
         if r.returncode:
-            err = r.err
+            # the error rides in the heartbeat to the public site: never the repo URL (it carries the account name)
+            err = re.sub(r"(?i)\b(https?|ssh|git)://\S+|[\w.-]+@github\.com[:/]\S+", "<the repo>", r.err or "")
             return {"ok": False, "error": f"no control branch yet on {remote} (python tools/init_control_branch.py makes it)"
                     if "couldn't find remote ref" in err.lower() else (err[-200:] or "git fetch failed")}
         c = subprocess.run(["git", "rev-parse", LOCAL_REF], cwd=cwd, capture_output=True, text=True, timeout=30)

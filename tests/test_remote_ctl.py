@@ -485,6 +485,18 @@ def olympus_tests():
         check("Update now in a trade: refused 'not flat', no update run",
               out and out[0][2] == "refused" and "not flat" in out[0][3] and upd["n"] == 1, out)
         bot.state["position"] = None
+        # a fetch error never carries the repo URL (the heartbeat's "error" reaches the public site)
+        from engine import heartbeat as _hb
+        old_run = _hb.run_cmd
+        _hb.run_cmd = lambda *a, **k: _hb.Ran(128, b"", b"fatal: unable to access 'https://someone@github.com/someone/olympus.git/': "
+                                                         b"Could not resolve host: github.com")
+        try:
+            bad = rc.fetch(pc, "olympus")
+        finally:
+            _hb.run_cmd = old_run
+        check("fetch errors: no repo URL / account name in the error text (it reaches the public site)",
+              not bad["ok"] and "someone" not in bad["error"] and "<the repo>" in bad["error"]
+              and "Could not resolve host" in bad["error"], bad)
         # a PC whose git has no 'olympus' remote yet: the URL from update_source.json is used instead
         git(pc, "remote", "remove", "olympus")
         s2 = cmd("status", ts=now[0])
