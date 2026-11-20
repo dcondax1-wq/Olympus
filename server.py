@@ -315,14 +315,16 @@ async def api_push_save(req: Request):
 
 @app.post("/api/push/test")
 def api_push_test():
-    from engine import push
-    cfg = push.pc_config()
-    if not push.enabled(cfg):
-        return J({"ok": False, "error": "no phone yet: open Olympus from the iPhone's Home Screen and tap Allow notifications (the PC picks it up within 5 minutes)"}, 400)
-    n = push.pc_notifier()
-    n.cfg = cfg
-    r = n.notify(push.text_payload("PC", "test", "Test · PC bot", "Notifications from the PC bot work.", key=f"test:{int(time.time())}"))
-    return J({"ok": bool(r.get("sent")), **{k: r.get(k) for k in ("sent", "devices", "gone", "errors")}})
+    # 2026-11-20 (owner: "I never got one from today"): a TEST entry + TEST close, the real trade alerts' words, on EVERY route (the
+    # Olympus phones + the private ntfy topic), with what each answered (engine/alert_check; never recorded as a trade)
+    from engine import alert_check
+    r = alert_check.send_test()
+    a, rt = r.get("app") or {}, r.get("routes") or {}
+    if not rt.get("phones") and not rt.get("ntfy"):
+        return J({"ok": False, "error": "no alert route on this PC: open Olympus from the iPhone's Home Screen and tap Allow notifications, "
+                                        "and/or run python tools/pc_report.py --setup", "warn": rt.get("warn")}, 400)
+    return J({"ok": bool(a.get("sent")) or r.get("ntfy") == "sent", **{k: a.get(k) for k in ("sent", "devices", "gone", "errors")},
+              "ntfy": r.get("ntfy"), "warn": rt.get("warn")})
 
 
 @app.get("/api/gamma")

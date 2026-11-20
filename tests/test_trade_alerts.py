@@ -58,7 +58,8 @@ class Box:
         P._PC["notifier"] = None
         self.posts = []
         self.payloads = []
-        poster = lambda base, topic, msg: self.posts.append(msg) or True   # noqa: E731
+        self.ntfy_ok = True                                                  # False: ntfy.sh refuses (a 429, the network)
+        poster = lambda base, topic, msg: (self.posts.append(msg) or True) if self.ntfy_ok else False   # noqa: E731
 
         def run(payload):
             self.payloads.append(dict(payload))
@@ -297,8 +298,190 @@ def part_g(b: Box):
           "day_used(work, snap[\"t\"]) + len(exts) > NTFY_DAY_CAP - TRADE_ALERT_RESERVE" in src)
 
 
+# ------------------------------------------------------------------------------------------------ h. the miss of 2026-11-20
+ATLAS_ENTRY_T = 1795164300          # Fri 2026-11-20 03:45:00 ET: ATLAS SHORT 1 MNQ @ 26,380.75, stop 26,419.50, target 26,122.75 (LIVE)
+ATLAS_EXIT_T = 1795176603           # 07:10:03 ET: the target filled (+$514.18 after costs; $516 from the fills)
+ATLAS_ID = "MFFUSFBLDR000006018"    # a fake id with the real last 4 (the owner's names.json maps 6018 -> "ATLAS 25K funded")
+
+
+class _Clock:
+    """engine/notify's clock at a chosen time (quiet hours are decided by the wall clock, not by the trade's time)."""
+
+    def __init__(self, t):
+        import time as _t
+        self.t, self._t = float(t), _t
+
+    def time(self):
+        return self.t
+
+    def __getattr__(self, k):
+        return getattr(self._t, k)
+
+
+def phone_accepts(app):
+    """engine/push.app_send as when ONE Olympus phone is registered and its push service answers 201 ("accepted"): what the PC
+    saw at 03:45 and 07:10 ET (the public status listed one phone all night and never dropped it)."""
+    def fake(payload, cfg=None, sender=None, path=None):
+        app.append(dict(payload))
+        return {"sent": 1, "devices": 1, "gone": [], "errors": []}
+    return fake
+
+
+def replay_atlas(b: Box, app: list):
+    """Today's ATLAS trade through its real route (account B's NinjaTrader adapter with push_as), the shipped notify_settings.json,
+    one phone that accepts every push. -> (entry ntfy posts, exit ntfy posts, the notify module's clock)."""
+    raw = json.load(open(os.path.join(ROOT, "notify_settings.json"), encoding="utf-8"))
+    b.set_settings(raw)                                       # the PC's own settings file (quiet hours 23:00-07:00 ET)
+    b.live(ATLAS_ENTRY_T - 300, [], atlas={"balance": 24887.20, "profit": -112.80, "today_pnl": 0.0, "status": "funded", "broker": ATLAS_ID,
+                                           "funded": {"max_request": 0}})
+    a = atlas(label=f"ATLAS {ATLAS_ID}", account=ATLAS_ID)  # engine/account_b.load_spec: label = "ATLAS <account>"
+    lg = leg(t=ATLAS_ENTRY_T, d=-1, q=1, fill=26380.75, stop=26419.5, target=26122.75)
+    N.time = _Clock(ATLAS_ENTRY_T + 3)                          # 03:45:03 ET: NinjaTrader reports the fill
+    a.adapter.clock = lambda: ATLAS_ENTRY_T + 3
+    a.adapter._push_fill(lg)
+    ent = b.take()
+    lg["stop"] = 26379.5                                      # moved to break-even at ~04:00
+    N.time = _Clock(ATLAS_EXIT_T)                             # 07:10:03 ET: the target leg fills
+    a.adapter.clock = lambda: ATLAS_EXIT_T
+    a.adapter._push_exit(lg, "TARGET", {"avg": 26122.75, "filled": 1})
+    a._push_outcome({"dir": -1, "short": "EMA"}, "TARGET", 514.18, ATLAS_EXIT_T, 1, ATLAS_ENTRY_T)   # account B's own copy (same key)
+    return ent, b.take()
+
+
+def part_h(b: Box):
+    import time as real_time
+    app = []
+    saved = P.app_send
+    P.app_send = phone_accepts(app)
+    try:
+        ent, ex = replay_atlas(b, app)
+        sw = [p for p in app if p.get("kind") == "fill"]
+        check("h. 2026-11-20 03:45 ET, ATLAS LIVE short, ONE Olympus phone that accepts: the phone app gets the entry "
+              "'ATLAS 25K funded: SHORT 1 MNQ @ 26,380.75' (as before)",
+              len(sw) == 1 and sw[0]["title"] == "ATLAS 25K funded: SHORT 1 MNQ @ 26,380.75", sw)
+        check("h. THE MISS: the entry ALSO goes to the private ntfy topic (before: 'skipped: the phone app has it', so nothing showed)",
+              len(ent) == 1 and ent[0]["title"] == "ATLAS 25K funded: SHORT 1 MNQ @ 26,380.75"
+              and ent[0]["body"].startswith("stop 26,419.50 (-$78), target 26,122.75 (+$516)"), ent)
+        check("h. 03:45 ET is inside quiet hours, yet the entry RINGS on both routes (ntfy high, Olympus not silent; before: low + silent)",
+              ent and ent[0]["priority"] == "high" and sw and not sw[0].get("silent"), (ent[:1], sw[:1]))
+        so = [p for p in app if p.get("kind") == "outcome"]
+        check("h. 07:10:03 ET the target fills: ONE result on the phone app 'ATLAS 25K funded: closed SHORT +$516 (target)' "
+              "(account B's own copy of the same close dropped)",
+              len(so) == 1 and so[0]["title"] == "ATLAS 25K funded: closed SHORT +$516 (target)", so)
+        check("h. THE MISS: the result ALSO goes to ntfy, $ first, with today / balance: 'today +$516, balance $25,403'",
+              len(ex) == 1 and ex[0]["title"] == "ATLAS 25K funded: closed SHORT +$516 (target)"
+              and ex[0]["body"].startswith("today +$516, balance $25,403") and ex[0]["priority"] == "default", ex)
+        check("h. no account id in any alert (only the owner's name)",
+              not any(ATLAS_ID in json.dumps(x) for x in ent + ex + [{k: p.get(k) for k in ("title", "body")} for p in app]))
+        rep = [{"key": f"open:atlas:{ATLAS_ENTRY_T}", "priority": "high"}, {"key": f"close:atlas:{ATLAS_ENTRY_T}", "priority": "default"}]
+        kept = [m["key"] for m in N.apply(rep, ATLAS_EXIT_T + 300, N.settings())]
+        check("h. the 04:00 / 07:15 reports then skip their copies (ntfy already has both: one alert per route, no repeat)", kept == [], kept)
+        lines = [json.loads(x) for x in open(os.path.join(b.dir, N.TRADE_LOG_NAME), encoding="utf-8")]
+        mine = [r for r in lines if str(r.get("key", "")).startswith(("fill:1795164300", "out:1795164300"))]
+        check("h. each route's answer is kept on disk (logs/notify/trade_alerts.jsonl): app sent 1, ntfy sent, for the entry and the "
+              "result; no id, no topic", len(mine) == 2 and all(r["app"].get("sent") == 1 and r["ntfy"] == "sent" and "warn" not in r for r in mine)
+              and not any(ATLAS_ID in json.dumps(r) or b.cfg["topic"] in json.dumps(r) for r in lines), lines)
+    finally:
+        P.app_send = saved
+        N.time = real_time
+
+
+def part_h2(b: Box):
+    """the same morning, but ntfy.sh refuses at the fill (a 429): the phone app has it, the 15-minute report still sends its ntfy copy
+    (before: the app's 201 counted as delivered and the report dropped its copy too)."""
+    import time as real_time
+    from tools import pc_report as R
+    app = []
+    saved = P.app_send
+    P.app_send = phone_accepts(app)
+    b.ntfy_ok = False
+    try:
+        ent, ex = replay_atlas(b, app)
+        check("h2. ntfy refuses at 03:45 and 07:10: nothing on ntfy yet, the phone app has both", not ent and not ex and len(app) == 2, (ent, ex, app))
+        rep = [{"key": f"open:atlas:{ATLAS_ENTRY_T}", "priority": "high"}, {"key": f"close:atlas:{ATLAS_ENTRY_T}", "priority": "default"}]
+        kept = N.apply(rep, ATLAS_EXIT_T + 300, N.settings())
+        check("h2. the 15-minute report KEEPS its copies of that entry and result (they still owe ntfy)",
+              [m["key"] for m in kept] == [m["key"] for m in rep], kept)
+        check("h2. ... and sends them to ntfy only, not to the phone app again (it had them)",
+              all(R._trade_alert(m) and R._app_had(m) for m in kept) and not R._app_had({"key": f"open:atlas:{ATLAS_ENTRY_T + 3600}"}), kept)
+        lines = [json.loads(x) for x in open(os.path.join(b.dir, N.TRADE_LOG_NAME), encoding="utf-8")]
+        check("h2. the log says what ntfy answered", len(lines) == 2 and all(str(r["ntfy"]).startswith("ntfy did not") for r in lines), lines)
+    finally:
+        P.app_send = saved
+        N.time = real_time
+        b.ntfy_ok = True
+
+
+def part_h2b(b: Box):
+    """the bot server sees NO ntfy topic (another user profile / OLYMPUS_HOME than the 15-minute task): the phone app has the trade,
+    and the report, which may see the topic, still owes its ntfy copy (never the app copy again)"""
+    import time as real_time
+    from tools import pc_report as R
+    app = []
+    saved = P.app_send
+    P.app_send = phone_accepts(app)
+    b.cfg = {}
+    try:
+        ent, ex = replay_atlas(b, app)
+        rep = [{"key": f"open:atlas:{ATLAS_ENTRY_T}", "priority": "high"}, {"key": f"close:atlas:{ATLAS_ENTRY_T}", "priority": "default"}]
+        kept = N.apply(rep, ATLAS_EXIT_T + 300, N.settings())
+        check("h2b. no topic in the bot's process: the report keeps both copies for its own ntfy topic, not for the app",
+              not ent and not ex and len(app) == 2 and [m["key"] for m in kept] == [m["key"] for m in rep] and all(R._app_had(m) for m in kept),
+              (ent, ex, kept))
+    finally:
+        P.app_send = saved
+        N.time = real_time
+
+
+def part_h3(b: Box):
+    """no route at all on the PC (no phone, no ntfy topic): the alert is logged with a warning, and the self-check says NO ROUTE"""
+    from engine import alert_check as AC
+    b.cfg = {}
+    ad = nt_adapter()
+    ad._push_fill(leg(t=T0 + 7000))
+    lines = [json.loads(x) for x in open(os.path.join(b.dir, N.TRADE_LOG_NAME), encoding="utf-8")]
+    check("h3. a trade alert that reached no route is logged with a warning (app: no phone, ntfy: no topic)",
+          len(lines) == 1 and lines[0].get("warn") and lines[0]["app"].get("skipped") == "no phone"
+          and str(lines[0]["ntfy"]).startswith(P.NO_TOPIC), lines)
+    r = AC.routes(ntfy_cfg={})
+    check("h3. the self-check: NO ROUTE, in plain words, with the fix", not r["ok"] and r["phones"] == 0 and not r["ntfy"]
+          and r["warn"] and r["warn"][0].startswith("NO ROUTE") and "Allow notifications" in r["warn"][0], r)
+    b.set_settings(json.load(open(os.path.join(ROOT, "notify_settings.json"), encoding="utf-8")))
+    r2 = AC.routes(ntfy_cfg={"ntfy": "https://ntfy.sh", "topic": "nq-test-topic-0000"})
+    check("h3. with the ntfy topic and the shipped settings: ok, entries + results on, ring at any hour",
+          r2["ok"] and r2["ntfy"] and r2["trade_opened"] and r2["trade_closed"] and r2["ring_at_night"], r2)
+
+
+def part_h4(b: Box):
+    """the owner's self-check (python -X utf8 -m engine.alert_check --test, the PC dashboard's Send test): a TEST entry + close on
+    BOTH routes, the real alerts' words, never recorded as a trade"""
+    from engine import alert_check as AC
+    app = []
+    saved = P.app_send
+    P.app_send = phone_accepts(app)
+    posts = []
+    try:
+        t = T0 + 9000
+        n0 = N.ntfy_today()
+        r = AC.send_test(now=t, poster=lambda base, topic, msg: posts.append(msg) or True, ntfy_cfg=b.cfg)
+        check("h4. Send test: the Olympus app gets a TEST entry and a TEST close (the close replaces the entry: same tag)",
+              r["app"].get("sent") == 1 and r["app_close"].get("sent") == 1 and len(app) == 2
+              and app[0]["title"] == "TEST alert: SHORT 1 MNQ @ 26,380.75" and app[1]["title"] == "TEST alert: closed SHORT +$514 (target)"
+              and app[0]["tag"] == app[1]["tag"] and all(p["body"].startswith(AC.TEST_WORDS) for p in app), app)
+        check("h4. ... and the ntfy app gets the same two, marked TEST, counted in the day's ntfy budget",
+              r["ntfy"] == "sent" and len(posts) == 2 and all(m["body"].startswith(AC.TEST_WORDS) for m in posts)
+              and N.ntfy_today() == n0 + 2, (r, posts))
+        check("h4. a test is never a trade: the 15-minute report's matching is untouched",
+              not N.instant_sent(t) and not N.instant_sent(t, what="exits") and not N.instant_sent(t, what="app_entries"))
+        txt = "\n".join(AC.describe(r))
+        check("h4. the console lines say which route took it, without the topic", "Olympus app: accepted for 1 phone" in txt
+              and "ntfy: the TEST entry and close went" in txt and b.cfg["topic"] not in txt, txt)
+    finally:
+        P.app_send = saved
+
+
 def main() -> int:
-    for f in (part_a, part_b, part_c, part_d, part_e, part_g):
+    for f in (part_a, part_b, part_c, part_d, part_e, part_g, part_h, part_h2, part_h2b, part_h3, part_h4):
         b = Box()
         try:
             f(b)

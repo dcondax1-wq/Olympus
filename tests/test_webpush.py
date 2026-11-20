@@ -290,6 +290,10 @@ def part_d():
         def fake_ntfy(p):                      # the real instant_entry (its filters), a fake ntfy post
             return N.instant_entry(p, cfg={"ntfy": "https://ntfy.sh", "topic": "nq-test-topic-0000"},
                                    poster=lambda base, topic, msg: ntfy.append(msg) or True)
+
+        def fake_ntfy_exit(p):                 # the real instant_exit, a fake post (never this PC's real topic)
+            return N.instant_exit(p, cfg={"ntfy": "https://ntfy.sh", "topic": "nq-test-topic-0000"},
+                                  poster=lambda base, topic, msg: ntfy.append(msg) or True)
         et0 = 1795050000
         fill = P.entry_payload("Zlarior 50K", "LONG", 6, et0, src="pc", entry=24980.25, stop=24955, target=25360)
         r = P._pc_send(dict(fill), sender=recorder()[1], ntfy=fake_ntfy)
@@ -300,21 +304,24 @@ def part_d():
         P._write_private(P.CONFIG_PATH, f)
         sent, send_one = recorder()
         fill2 = P.entry_payload("Zlarior 50K", "SHORT", 4, et0 + 3600, src="pc", entry=25100, stop=25120, target=24900)
-        r = P._pc_send(dict(fill2), sender=send_one, ntfy=fake_ntfy)
-        check("d. with a phone: the entry goes to the phone ('Zlarior 50K: SHORT 4 MNQ @ 25,100.00'), NOT to ntfy too (one alert, one phone)",
-              r.get("sent") == 1 and len(sent) == 1 and sent[0]["data"]["title"] == "Zlarior 50K: SHORT 4 MNQ @ 25,100.00" and len(ntfy) == 1
-              and r.get("ntfy", "").startswith("skipped"), (r, sent))
-        check("d. the same entry from a second path (narrator / NinjaTrader): nothing more", P._pc_send(dict(fill2), sender=send_one, ntfy=fake_ntfy).get("dup")
-              and len(sent) == 1 and len(ntfy) == 1)
-        check("d. instant_entry would refuse it too (recorded as sent)", fake_ntfy(dict(fill2)) == "already sent" and len(ntfy) == 1)
+        r = P._pc_send(dict(fill2), sender=send_one, ntfy=fake_ntfy, ntfy_exit=fake_ntfy_exit)
+        check("d. with a phone: the entry goes to the phone ('Zlarior 50K: SHORT 4 MNQ @ 25,100.00') AND to ntfy (2026-11-20: a push "
+              "service's 'accepted' is not proof the phone showed it)",
+              r.get("sent") == 1 and len(sent) == 1 and sent[0]["data"]["title"] == "Zlarior 50K: SHORT 4 MNQ @ 25,100.00" and len(ntfy) == 2
+              and ntfy[-1]["title"] == "Zlarior 50K: SHORT 4 MNQ @ 25,100.00" and r.get("ntfy") == "sent", (r, sent))
+        check("d. the same entry from a second path (narrator / NinjaTrader): nothing more",
+              P._pc_send(dict(fill2), sender=send_one, ntfy=fake_ntfy, ntfy_exit=fake_ntfy_exit).get("dup") and len(sent) == 1 and len(ntfy) == 2)
+        check("d. instant_entry would refuse it too (recorded as sent)", fake_ntfy(dict(fill2)) == "already sent" and len(ntfy) == 2)
         kept = [m["key"] for m in N.apply([{"key": f"open:lit:{et0 + 3600 + 30}", "priority": "high"}, {"key": f"open:atlas:{et0 + 9000}", "priority": "high"}],
                                           et0, N.merge({"quiet_hours": {"off": True}}))]
         check("d. the 15-minute report drops its own copy of that entry (key time, 90 s), keeps another trade", kept == [f"open:atlas:{et0 + 9000}"], kept)
         out = P.outcome_payload("Zlarior 50K", "SHORT", "TARGET", 605.4, et0 + 3600, et0 + 5400, src="pc", R=2.0, qty=4)
-        r = P._pc_send(dict(out), sender=send_one, ntfy=fake_ntfy)
-        check("d. the exit goes to the phone: 'Zlarior 50K: closed SHORT +$605 (target)', '+2.0R · 4 MNQ', in the entry's notification (same tag)",
+        r = P._pc_send(dict(out), sender=send_one, ntfy=fake_ntfy, ntfy_exit=fake_ntfy_exit)
+        check("d. the exit goes to the phone: 'Zlarior 50K: closed SHORT +$605 (target)', '+2.0R · 4 MNQ', in the entry's notification "
+              "(same tag), AND to ntfy",
               r.get("sent") == 1 and sent[-1]["data"]["title"] == "Zlarior 50K: closed SHORT +$605 (target)" and "+2.0R · 4 MNQ" in sent[-1]["data"]["body"]
-              and sent[-1]["data"]["tag"] == sent[0]["data"]["tag"] and len(ntfy) == 1, sent[-1])
+              and sent[-1]["data"]["tag"] == sent[0]["data"]["tag"] and len(ntfy) == 3 and ntfy[-1]["title"] == "Zlarior 50K: closed SHORT +$605 (target)"
+              and r.get("ntfy") == "sent", (r, sent[-1]))
         kept = [m["key"] for m in N.apply([{"key": f"close:lit:{et0 + 3600}", "priority": "default"}, {"key": f"close:lit:{et0 + 7777}", "priority": "default"}],
                                           et0, N.merge({"quiet_hours": {"off": True}}))]
         check("d. the report drops its own copy of that exit, keeps another one", kept == [f"close:lit:{et0 + 7777}"], kept)
@@ -323,14 +330,14 @@ def part_d():
               and P.app_trade_tag(P.outcome_payload("Zlarior 25K #2", "SHORT", "STOP", -50, et0 + 3600, et0 + 4000)) == P.app_trade_tag(b1))
         fail_sent, send500 = recorder(500)
         fill3 = P.entry_payload("Zlarior 50K", "LONG", 2, et0 + 7200, src="pc", entry=25000, stop=24990, target=25100)
-        r = P._pc_send(dict(fill3), sender=send500, ntfy=fake_ntfy)
-        check("d. the phone's push service fails (500): the entry goes to ntfy instead (never lost, never twice)", len(fail_sent) == 1 and r.get("ntfy") == "sent"
-              and len(ntfy) == 2, r)
+        r = P._pc_send(dict(fill3), sender=send500, ntfy=fake_ntfy, ntfy_exit=fake_ntfy_exit)
+        check("d. the phone's push service fails (500): the entry still goes to ntfy (never lost, never twice)", len(fail_sent) == 1 and r.get("ntfy") == "sent"
+              and len(ntfy) == 4, r)
         n0 = len(sent)
         for i, a in enumerate(("Paper", "Sim101", "BLITZ 25K (SIM)")):
-            P._pc_send(dict(fill, key=f"fill:{et0 + 100 + i}", account=a), sender=send_one, ntfy=fake_ntfy)
-        P._pc_send(dict(fill, key=f"fill:{et0 + 200}", strategy="BLITZ"), sender=send_one, ntfy=fake_ntfy)
-        check("d. Paper / Sim101 / BLITZ entries: never to the phone, never to ntfy", len(sent) == n0 and len(ntfy) == 2, (len(sent), len(ntfy)))
+            P._pc_send(dict(fill, key=f"fill:{et0 + 100 + i}", account=a), sender=send_one, ntfy=fake_ntfy, ntfy_exit=fake_ntfy_exit)
+        P._pc_send(dict(fill, key=f"fill:{et0 + 200}", strategy="BLITZ"), sender=send_one, ntfy=fake_ntfy, ntfy_exit=fake_ntfy_exit)
+        check("d. Paper / Sim101 / BLITZ entries: never to the phone, never to ntfy", len(sent) == n0 and len(ntfy) == 4, (len(sent), len(ntfy)))
         ops = P.text_payload("PC", "ops", "Day summary", "x", key="ops:eod:1")
         r = P._pc_send(dict(ops), sender=send_one)
         os.environ["LE_PUSH_EXTRA"] = "1"
@@ -342,12 +349,19 @@ def part_d():
         check("d. a test notice always goes (pc_send_now)", r.get("sent") == 1, r)
         N.settings = lambda path=None: N.merge({"alerts": {"trade_closed": False}, "quiet_hours": {"off": True}})
         n0 = len(sent)
-        P._pc_send(P.outcome_payload("Zlarior 50K", "LONG", "STOP", -300, et0 + 7200, et0 + 7300), sender=send_one, ntfy=fake_ntfy)
-        check("d. trade_closed switched off in notify_settings.json: no exit push", len(sent) == n0)
+        nn = len(ntfy)
+        P._pc_send(P.outcome_payload("Zlarior 50K", "LONG", "STOP", -300, et0 + 7200, et0 + 7300), sender=send_one, ntfy=fake_ntfy,
+                   ntfy_exit=fake_ntfy_exit)
+        check("d. trade_closed switched off in notify_settings.json: no exit push (phone or ntfy)", len(sent) == n0 and len(ntfy) == nn)
         N.settings = lambda path=None: N.merge({})
         fill4 = P.entry_payload("Zlarior 50K", "LONG", 2, et0 + 20000, src="pc", entry=25000, stop=24990, target=25100)
-        night = P.app_payload(fill4, now=1795060000 - 1795060000 % 86400 + 8 * 3600)                    # 03:00 ET: quiet hours
-        check("d. quiet hours (23:00-07:00 ET): the alert still comes, without sound", night.get("silent") is True, night)
+        t3 = 1795060000 - 1795060000 % 86400 + 8 * 3600                                                 # 03:00 ET: quiet hours
+        night = P.app_payload(fill4, now=t3)
+        check("d. quiet hours (23:00-07:00 ET): a trade entry still rings (owner 2026-11-20: entries + results at any hour)",
+              not night.get("silent"), night)
+        N.settings = lambda path=None: N.merge({"ring_in_quiet_hours": ["pc_silent", "account_status", "room_low", "problems"]})
+        check("d. ... and comes without sound once trade_opened is out of ring_in_quiet_hours", P.app_payload(fill4, now=t3).get("silent") is True)
+        N.settings = lambda path=None: N.merge({})
         import threading
         q = P.pc_notify(dict(fill4, key="fill:99", account="Paper"))          # Paper: the worker sends nothing anywhere (no network here)
         workers = [t for t in threading.enumerate() if t.name == "push"]
@@ -394,8 +408,10 @@ def part_e():
         cfg = R.load_cfg(b.env)
         rec = b.run(h, now + 900, app_push=lambda m: took.append(m) or True)
         alerts = [c for c in h.posts() if not c["url"].endswith("/" + R.status_feed()["topic"])]
-        check("e. a closed trade with a phone on: the phone app takes it, no ntfy copy (the status posts are the only posts)",
-              any(" closed " in m["title"] for m in took) and not alerts and rec.get("app_sent", 0) >= 1, (took[-1:], alerts, rec.get("app_sent")))
+        check("e. a closed trade with a phone on: the phone app takes it AND its ntfy copy goes (2026-11-20: a trade's result reaches "
+              "both routes; one post, to the private topic)",
+              any(" closed " in m["title"] for m in took) and len(alerts) == 1 and "closed" in alerts[0]["h"].get("Title", "")
+              and alerts[0]["url"].endswith("/" + cfg["topic"]) and rec.get("app_sent", 0) >= 1, (took[-1:], alerts, rec.get("app_sent")))
         hb3 = json.loads(json.dumps(hb2))
         hb3["acct"]["trades"].append({"day": "2026-11-12", "entry_t": now + 2000, "exit_t": now + 2300, "side": "LONG", "qty": 3, "entry": 25010.0,
                                       "exit_px": 25000.0, "pnl": -60.0, "r": -1.0, "exit": "STOP"})
