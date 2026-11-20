@@ -49,7 +49,7 @@ async function boot() {
       S.plan = C.planWorld(w, { tier: O() && O().lite && O().lite() ? 'low' : 'high' });
       const M = await import('./ow-scene.js?v=w3');
       S.scene = M.createWorld({ canvas: $('#c'), world: w, plan: S.plan, reduced, sky: qs.get('sky') || 'auto', manual: qs.get('clock') === 'manual', tier: O() && O().lite && O().lite() ? 'low' : 'high',
-        onTap, onFrame, onUser: () => { hideHint(); if (S.tour) setTour(false); }, onIntroDone: () => showHint() });
+        onTap, onFrame, onUser: () => { hideHint(); if (S.tour) setTour(false); }, onIntroDone: () => { showHint(); snd('chime'); cityBed(); } });
       S.mode = '3d';
       setTimeout(() => d.body.classList.add('live3d'), 6000);                 // the first frame normally lifts the poster (onFrame); never stuck on it
       if (reduced) showHint();
@@ -138,7 +138,7 @@ function openPlace(i, o) {
   if (S.scene) { S.scene.select(i); if (!o || o.fly !== false) flyPlace(i, true); }
   pressDistrict(p.district);
   try { history.replaceState(null, '', '#p=' + encodeURIComponent(p.id)); } catch (e) { /* fine */ }
-  if (window.OLYMPUS_SFX && window.OLYMPUS_SFX.cue) try { window.OLYMPUS_SFX.cue('tap'); } catch (e) { /* no sound */ }
+  snd('open');
 }
 function flyPlace(i, already) {
   if (!S.scene) { if (!already) openPlace(i); return; }
@@ -212,8 +212,16 @@ function go(href, i) {
 function flash() {
   if (reduced) return;
   const f = $('#flash'); f.classList.remove('go'); void f.offsetWidth; f.classList.add('go');
-  if (window.OLYMPUS_SFX && window.OLYMPUS_SFX.cue) try { window.OLYMPUS_SFX.cue('whoosh'); } catch (e) { /* no sound */ }
+  snd('swipe');
 }
+
+// cities3 2026-11-20 (owner: "sounds ... tasteful, optional"): every World sound asks the Settings Sound switch first (ON only when the owner turned
+// it on: the engine's own setting, read through its API, no storage here), never while Jarvis talks. A quiet city bed once the city is up.
+function soundOn() {
+  try { const X = window.OLYMPUS_SFX; if (!X || !X.ambientState || (window.OLYMPUS_QUIET && window.OLYMPUS_QUIET())) return false; const st = X.ambientState(); return st.sound === true && !(X.state && X.state().muted); } catch (e) { return false; }
+}
+function snd(name) { if (soundOn()) try { window.OLYMPUS_SFX.play(name); } catch (e) { /* no sound */ } }
+function cityBed() { if (soundOn() && !reduced) try { window.OLYMPUS_SFX.ambient('city'); } catch (e) { /* no sound */ } }
 
 // ------------------------------------------------------------------------------------------------ taps, labels
 function onTap(x, y) {
