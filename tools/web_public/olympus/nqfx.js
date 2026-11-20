@@ -162,7 +162,7 @@
       if (still || weak() || !(window.WebGLRenderingContext || window.WebGL2RenderingContext)) { host.setAttribute('data-nqfx-vault', '2d'); return api; }
       var go = function () {
         if (dead || d.hidden) return;
-        import(BASE + 'nqvault3d.js?v=n2').then(function (m) {
+        import(BASE + 'nqvault3d.js?v=n3').then(function (m) {
           if (dead) return;
           three = m.mount(host, { value: value, tier: ctx.tier, pick: ctx.pick, tick: ctx.ticker, add: ctx.add, theme: Object.assign({}, THEME),
             lost: function () { three = null; pic.el.style.opacity = '1'; host.setAttribute('data-nqfx-vault', '2d'); } });

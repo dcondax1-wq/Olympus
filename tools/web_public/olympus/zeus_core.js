@@ -31,12 +31,28 @@
   }
 
   // the PC line from the Board's pick (same STALE_S = 30 min): {silent, text}
-  function pcLine(BM, res, nowS) {
+  // the bot's own state in the PC's post (finder round 2026-11-20: the card stayed green "PC reported 7 min ago" while the bot was STOPPED):
+  // pc.running false or the paper adapter = stopped; red in the bots' hours (weekdays 01:50-16:10 ET), amber outside them
+  function inHours(nowS) {
+    try {
+      var p = {};
+      new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
+        .formatToParts(new Date(nowS * 1000)).forEach(function (x) { p[x.type] = x.value; });
+      var m = +p.hour * 60 + +p.minute;
+      return ['Sat', 'Sun'].indexOf(p.weekday) < 0 && m >= 110 && m <= 970;
+    } catch (e) { return true; }
+  }
+  function pcLine(BM, res, nowS, lite) {
     var b = res && res.board, t = b && b.pc && okN(+b.pc.t) && +b.pc.t > 0 ? +b.pc.t : null;
     var age = t ? nowS - t : null, silent = age == null || age > (BM && BM.STALE_S || 1800);
-    return { silent: silent, age_s: age, mode: res ? res.mode : 'none',
+    var pc = isObj(lite) && isObj(lite.pc) ? lite.pc : null;
+    var stopped = !silent && !!pc && (pc.running === false || String(pc.adapter || '').toLowerCase() === 'paper');
+    var hours = inHours(nowS);
+    return { silent: silent, stopped: stopped, level: silent ? 'bad' : stopped ? (hours ? 'bad' : 'warn') : 'good', age_s: age, mode: res ? res.mode : 'none',
              text: !t ? 'PC SILENT: your PC has never reported here. The bots may not be running.'
-               : silent ? 'PC SILENT: last report ' + ago(age) + '. On the PC: STOP BOT, then START BOT.' : 'PC reported ' + ago(age) };
+               : silent ? 'PC SILENT: last report ' + ago(age) + '. On the PC: STOP BOT, then START BOT.'
+               : stopped ? 'BOT STOPPED: PC reported ' + ago(age) + (hours ? ', the bot is not trading. On the PC: START BOT.' : ', the bot is off (market quiet).')
+               : 'PC reported ' + ago(age) };
   }
 
   // one account row from an MFFU_MODEL card: {name, chip, cls, balance, goal, today, src}
@@ -49,8 +65,11 @@
     else if (st === 'passed') goal = 'Passed: waiting for MFFU\'s funded account';
     else goal = c.target && okN(c.target.left) ? usd(c.target.left) + ' to pass' : 'To pass: no live balance yet';
     var today = c.dll && okN(c.dll.today) ? c.dll.today : null;
+    // MFFU's own view of a sim-FUNDED account (owner 2026-11-20): its profit is the balance (ATLAS $401, not $25,401): PC_FEED.mffuView
+    var bv = c.balance ? c.balance.v : null, F = root.PC_FEED;
+    if (cls === 'funded' && okN(bv) && F && typeof F.mffuView === 'function') { var mv = F.mffuView({ kind: 'funded', plan: c.plan, name: c.name, balance: bv }); if (mv && okN(mv.balance)) bv = mv.balance; }
     var src = c.balance && c.balance.src ? c.balance.src + (c.age_s != null ? ' · ' + ago(c.age_s) : '') : 'no number yet';
-    return { key: c.key, name: c.name, chip: chip, cls: cls, balance: c.balance ? c.balance.v : null, goal: goal, today: today,
+    return { key: c.key, name: c.name, chip: chip, cls: cls, balance: bv, goal: goal, today: today,
              todayText: today == null ? 'Today: -' : 'Today: ' + usd(today, true), src: src, planOnly: !!c.planOnly };
   }
 
@@ -70,10 +89,10 @@
     try { res = BM ? BM.pick({ site: o.site, lite: o.lite, plan: o.plan }, now) : null; } catch (e) { res = null; }
     try { if (MM) cards = MM.cards({ lite: o.lite, plan: o.plan, board: o.site, coach: coach, today: todayET(now) }, now) || []; } catch (e) { cards = []; }
     var rows = cards.filter(function (c) { return isObj(c) && !/blitz|paper|cloud/i.test(String(c.key)); }).map(function (c) { return acctRow(c, now); });
-    return { pc: pcLine(BM, res, now), rows: rows, mode: res ? res.mode : 'none', label: res ? res.label : '' };
+    return { pc: pcLine(BM, res, now, o.lite), rows: rows, mode: res ? res.mode : 'none', label: res ? res.label : '' };
   }
 
-  var API = { usd: usd, ago: ago, pcLine: pcLine, acctRow: acctRow, summary: summary, todayET: todayET };
+  var API = { usd: usd, ago: ago, inHours: inHours, pcLine: pcLine, acctRow: acctRow, summary: summary, todayET: todayET };
   root.ZEUS_CORE = API;
   if (typeof module === 'object' && module && module.exports) module.exports = API;
   if (typeof document === 'undefined') return;
@@ -82,7 +101,7 @@
   var d = document, me = d.currentScript && d.currentScript.src ? d.currentScript.src : null;
   function url(rel) { try { return new URL(rel, me || d.baseURI).href; } catch (e) { return rel; } }
   // the models this file needs, in the order the ZEUS page loads them (boardmodel after mffumodel)
-  var DEPS = [['PC_FEED', '../pc_feed.js?v=n7'], ['PAYOUT_COACH', '../business/payoutcoach.js?v=2'], ['MFFU_MODEL', '../business/mffumodel.js?v=2'],
+  var DEPS = [['PC_FEED', '../pc_feed.js?v=n7'], ['PAYOUT_COACH', '../business/payoutcoach.js?v=2'], ['MFFU_MODEL', '../business/mffumodel.js?v=3'],
               ['BOARD_MODEL', '../board/boardmodel.js?v=b6'], ['EDGE_CHIP', '../edge_chip.js?v=1']];
   var needP = null;
   function need() {
@@ -172,9 +191,10 @@
   function draw(c, s) {
     if (!c || !s) return;
     var pcEl = c.querySelector('.zeus-pc'), rowsEl = c.querySelector('.zeus-rows');
-    c.classList.toggle('bad', !!s.pc.silent);
-    pcEl.className = 'zeus-pc ' + (s.pc.silent ? 'bad' : 'good');
-    pcEl.setAttribute('role', s.pc.silent ? 'alert' : 'status');
+    var lvl = s.pc.level || (s.pc.silent ? 'bad' : 'good');
+    c.classList.toggle('bad', lvl === 'bad'); c.classList.toggle('warn', lvl === 'warn');
+    pcEl.className = 'zeus-pc ' + lvl;
+    pcEl.setAttribute('role', lvl === 'good' ? 'status' : 'alert');
     // the card's short form (the fix, STOP BOT then START BOT, is in the aria label and on the ZEUS page)
     pcEl.replaceChildren(el('i', 'zeus-dot'), el('span', '', s.pc.silent ? s.pc.text.replace(/\. On the PC: .*$/, '') : s.pc.text));
     rowsEl.replaceChildren();
