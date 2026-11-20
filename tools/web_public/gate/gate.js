@@ -365,7 +365,9 @@
   function drawMoney(N, from, old) {
     var box = $('money'); if (!box) return;
     clear(box);
-    var cards = from === 'none' ? [] : (N.cards || []);
+    var cards = from === 'none' ? [] : (N.cards || (N.accts || []).map(function (a) {   // a copy this phone saved before the money row: the drawdown it knew
+      return { key: a.key, name: a.name, size: '', kind: 'eval', balance: null, room: num(a.room), mll: num(a.mll), toPass: null, toAsk: null, today: null };
+    }));
     var tot = el('div', 'g-mtot');
     var tv = num(N.today) || 0;
     tot.appendChild(el('span', 'g-mtl', (old ? 'Last report day' : 'Today') + ' · ' + plural(cards.length, 'account')));
@@ -375,7 +377,7 @@
     cards.forEach(function (c) {
       var a = el('a', 'g-acct g-acct-' + c.kind); a.setAttribute('role', 'listitem');
       a.href = base + (c.kind === 'funded' ? 'business/mffu.html' : 'aegis/index.html'); a.setAttribute('data-go', c.key);
-      a.setAttribute('aria-label', c.name + ' ' + (c.size || '') + ', ' + (c.kind === 'funded' ? 'funded' : 'eval') + ': balance ' + (c.balance != null ? money(c.balance) : 'unknown') + '. Drawdown left ' + money(c.room) + ' of ' + money(c.mll) + ' max loss, ' + c.name + '. Today ' + moneyS(c.today) + '.');
+      a.setAttribute('aria-label', c.name + ' ' + (c.size || '') + ', ' + (c.kind === 'funded' ? 'funded' : 'eval') + ': balance ' + (c.balance != null ? money(c.balance) : 'unknown') + '. Drawdown left ' + money(c.room) + ' of ' + money(c.mll) + ' max loss, ' + c.name + '.' + (c.today != null ? ' Today ' + moneyS(c.today) + '.' : ''));
       var top = el('span', 'g-atop'); top.appendChild(el('b', 'g-an', c.name + (c.size ? ' ' + c.size : ''))); top.appendChild(el('i', 'g-ak', c.kind === 'funded' ? 'Funded' : 'Eval')); a.appendChild(top);
       a.appendChild(el('span', 'g-mv g-abal', c.balance != null ? money(c.balance) : '—'));
       var frac = c.room != null && c.mll ? Math.max(0, Math.min(1, c.room / c.mll)) : 0;
@@ -383,7 +385,7 @@
       a.appendChild(el('span', 'g-aln', 'Room ' + (c.room != null ? money(c.room) : '—') + (c.mll ? ' of ' + (c.mll % 1000 === 0 ? c.mll / 1000 + 'K' : money(c.mll)) : '')));
       var goal = c.kind === 'funded' ? (c.toAsk != null ? (c.toAsk <= 0 ? 'Payout ready' : money(c.toAsk) + ' to payout') : 'Funded') : (c.toPass != null ? (c.toPass <= 0 ? 'Target hit' : money(c.toPass) + ' to pass') : '');
       if (goal) a.appendChild(el('span', 'g-aln g-agoal', goal));
-      a.appendChild(el('span', 'g-aday ' + (c.today > 0.5 ? 'up' : c.today < -0.5 ? 'down' : ''), 'today ' + moneyS(c.today)));
+      if (c.today != null) a.appendChild(el('span', 'g-aday ' + (c.today > 0.5 ? 'up' : c.today < -0.5 ? 'down' : ''), (old ? 'last day ' : 'today ') + moneyS(c.today)));
       strip.appendChild(a);
     });
     var X = S.extra, K = X && X.K;
