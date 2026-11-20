@@ -164,7 +164,7 @@ def fix_for(rule, it):
     if rule == "bottom-bar":
         return f"`{where} {{ padding-bottom: calc(<its padding> + env(safe-area-inset-bottom)); }}`"
     if rule == "motion":
-        if "requestAnimationFrame" in it.get("text", ""):
+        if it.get("sel") == "screen":
             return "stop the draw loop when `matchMedia('(prefers-reduced-motion: reduce)').matches`: draw one still frame, then redraw only on data change / tap"
         if "3D" in d:
             return f"`@media (prefers-reduced-motion: reduce) {{ {where} {{ transform: none; }} }}`"
@@ -200,7 +200,7 @@ SRC_JS = r"""(args) => {            // the CSS rule that sets `prop` on the elem
   const walk = (list, href) => { for (const r of list) { if (r.cssRules && !r.selectorText) { try { walk(r.cssRules, href); } catch (e) {} continue; }
     if (!r.selectorText || !r.style) continue; const v = r.style.getPropertyValue(prop); if (!v) continue;
     let ok = false; try { ok = el.matches(r.selectorText); } catch (e) {}
-    if (ok) best = (href ? href.split('/').slice(-2).join('/') : 'inline <style>') + ' :: ' + r.selectorText.slice(0, 90) + ' { ' + prop + ': ' + v + ' }'; } };
+    if (ok) best = (href ? new URL(href).pathname.replace(/^\//, '') + (new URL(href).search) : 'inline <style>') + ' :: ' + r.selectorText.slice(0, 90) + ' { ' + prop + ': ' + v + ' }'; } };
   for (const s of document.styleSheets) { try { walk(s.cssRules, s.href); } catch (e) {} }
   if (el.style && el.style.getPropertyValue(prop)) best = 'style="" :: ' + prop + ': ' + el.style.getPropertyValue(prop);
   return best;
@@ -235,10 +235,16 @@ def check_page(page, origin, path, scr) -> dict:
     r0 = page.evaluate("() => window.__olyRaf ? window.__olyRaf() : 0")
     page.wait_for_timeout(1000)
     raf = page.evaluate("() => window.__olyRaf ? window.__olyRaf() : 0") - r0
-    out = page.evaluate("(o) => window.__olyA11y.run(o)", {"layout": True, "vw": w, "motion": mo == "reduce", "rafPerSec": raf, "color": what == "full"})
+    out = page.evaluate("(o) => window.__olyA11y.run(o)", {"layout": True, "vw": w, "motion": mo == "reduce", "rafPerSec": 0, "color": what == "full"})
     res["meta"] = out["meta"]
     res["meta"]["raf"] = raf
     found = [(rule, it) for rule, items in out["rules"].items() for it in items]
+    if mo == "reduce":
+        moved = screen_moves(page)
+        res["meta"]["moved"] = moved
+        if moved >= 0.01:
+            found.append(("motion", {"sel": "screen", "text": "still moving", "detail": f"{moved * 100:.0f}% of the screen changed in 1 s with reduced motion on"
+                                     + (f" (a requestAnimationFrame loop draws {raf}/s)" if raf >= 20 else "")}))
     if what == "full":
         # Dynamic Type: the root font size x 1.25, which text did not grow
         page.evaluate("() => window.__olyA11y.snapshotSizes()")
@@ -292,6 +298,22 @@ def check_page(page, origin, path, scr) -> dict:
     return res
 
 
+def screen_moves(page) -> float:
+    """the share of the screen's pixels that change over one second (reduced motion on: a still page is ~0; a ticking clock is far below 1 %)"""
+    try:
+        import io
+        import numpy as np
+        from PIL import Image
+        a = np.asarray(Image.open(io.BytesIO(page.screenshot(animations="allow"))).convert("RGB"), dtype=np.int16)
+        page.wait_for_timeout(1000)
+        b = np.asarray(Image.open(io.BytesIO(page.screenshot(animations="allow"))).convert("RGB"), dtype=np.int16)
+        if a.shape != b.shape:
+            return 0.0
+        return float((np.abs(a - b).max(axis=2) > 16).mean())
+    except Exception:  # noqa: BLE001
+        return 0.0
+
+
 _PW = {}
 
 
@@ -333,6 +355,21 @@ def category(rule):
     return "structure"
 
 
+def has_a11y_js(path) -> bool:
+    """the page loads the kit's olympus/a11y.js: on a touch phone it scales ALL text (px too) by iOS text-size-adjust, so px text still grows there"""
+    f = os.path.join(WEB, path + "index.html" if path.endswith("/") else path)
+    try:
+        return "olympus/a11y.js" in open(f, encoding="utf-8").read()
+    except OSError:
+        return False
+
+
+def score_of(n, kit) -> int:
+    """each rule 1 (clean) / 0.5 (1-2 issues) / 0 (3+), the mean x 100. Dynamic Type is not scored on a page with a11y.js (see has_a11y_js)"""
+    cats = [c for c in CATS if not (kit and c == "dyntype")]
+    return round(100 * sum(1.0 if n[c] == 0 else 0.5 if n[c] <= 2 else 0.0 for c in cats) / len(cats))
+
+
 def summarise(app, path, per_screen):
     issues = {}
     errors = [f"{s['screen']}: {s['error']}" for s in per_screen if s.get("error")]
@@ -350,13 +387,13 @@ def summarise(app, path, per_screen):
     for it in issues.values():
         n[it["cat"]] += 1
     ran_full = any(s["screen"].startswith("390-") and s["screen"].endswith("-rm") and not s.get("error") for s in per_screen)
-    pts = [1.0 if n[c] == 0 else 0.5 if n[c] <= 2 else 0.0 for c in CATS]
-    score = round(100 * sum(pts) / len(pts)) if ran_full else 0
+    kit = has_a11y_js(path)
+    score = score_of(n, kit) if ran_full else 0
     rank = {"contrast": 0, "names": 1, "hscroll": 2, "tap": 3, "text": 4, "bottom": 5, "motion": 6, "forms": 7, "focus": 8, "dyntype": 9, "color": 10, "headings": 11, "zoom": 12, "structure": 13}
     lst = sorted(issues.values(), key=lambda x: (rank[x["cat"]], -len(x["screens"])))
     for it in lst:
         it["fix"] = fix_for(it["rule"], it)
-    return {"path": path, "owner": OWNER.get(app, "a11y"), "score": score, "counts": n, "issues": lst, "errors": errors,
+    return {"path": path, "owner": OWNER.get(app, "a11y"), "score": score, "counts": n, "a11y_js": kit, "issues": lst, "errors": errors,
             "looks": {s["screen"]: [s.get("meta", {}).get(k) for k in ("theme", "scheme", "bg", "raf")] for s in per_screen},
             "raf": max([s.get("meta", {}).get("raf", 0) for s in per_screen] or [0])}
 
@@ -370,10 +407,11 @@ def write_reports(out_dir, data):
     L = [f"# OLYMPUS accessibility sweep ({data['when']}, commit {data['commit']})", "",
          f"`python tools/a11y_sweep.py{' --quick' if data['quick'] else ''}`: {len(apps)} pages x {data['screens']} screens "
          "(320 / 390 / 430 px, dark AGORA + light Ivory, reduced motion on + off), axe-core " + data["axe"] + " + our iPhone rules (tools/a11y/rules.js).",
-         "Score = the 14 rules below, each 1 (clean) / 0.5 (1-2 issues) / 0 (3+), averaged x 100. An issue is one element failing one rule (on any screen).", "",
+         "Score = the 14 rules below, each 1 (clean) / 0.5 (1-2 issues) / 0 (3+), averaged x 100. An issue is one element failing one rule (on any screen).",
+         "Dynamic Type in (brackets) = not scored: the page loads olympus/a11y.js, which on the iPhone grows px text too (iOS text-size-adjust); still worth moving to rem.", "",
          "| App | Team | Score | " + " | ".join(CATS) + " |", "|---|---|---|" + "---|" * len(CATS)]
     for app, a in sorted(apps.items(), key=lambda kv: kv[1]["score"]):
-        L.append(f"| {app} | {a['owner']} | **{a['score']}** | " + " | ".join(str(a["counts"][c]) if a["counts"][c] else "." for c in CATS) + " |")
+        L.append(f"| {app} | {a['owner']} | **{a['score']}** | " + " | ".join((f"({a['counts'][c]})" if c == "dyntype" and a.get("a11y_js") else str(a["counts"][c])) if a["counts"][c] else "." for c in CATS) + " |")
     avg = round(sum(a["score"] for a in apps.values()) / max(1, len(apps)))
     tot = {c: sum(a["counts"][c] for a in apps.values()) for c in CATS}
     L += ["", f"**Average {avg}.** Issues per rule over all pages: " + ", ".join(f"{CAT_WORDS[c]} {tot[c]}" for c in CATS if tot[c]) + ".", ""]
@@ -405,6 +443,69 @@ def write_reports(out_dir, data):
             T.append("")
         with open(os.path.join(out_dir, f"issues_{t}.md"), "w", encoding="utf-8") as fh:
             fh.write("\n".join(T) + "\n")
+        F = [f"# The fix list for team {t} ({data['when']}, generated by `python tools/a11y_sweep.py`)", "",
+             "One line per CSS rule to change (file:line, the apps it fixes), most important first, then the one-off elements. Dynamic Type lines are left out",
+             "for pages that load olympus/a11y.js (px text grows there on the iPhone).", ""] + team_fixes(data, t)
+        with open(os.path.join(out_dir, f"fixes_{t}.md"), "w", encoding="utf-8") as fh:
+            fh.write("\n".join(F) + "\n")
+
+
+def locate(src, page=""):
+    """'olympus/agora.css?v=a7 :: .ag-chip { min-height: 36px }' -> ('tools/web_public/olympus/agora.css', line) or (file, 0) / ('', 0)"""
+    src = (src or "").replace("inline <style> :: ", (page or "index.html") + " :: ")
+    m = re.match(r"([^ ]+?)(?:\?[^ ]*)? :: (.+?) \{ ([\w-]+): (.+) \}$", src)
+    if not m:
+        return "", 0
+    f = os.path.join(WEB, m.group(1))
+    if not os.path.isfile(f):
+        return "", 0
+    sel, prop = m.group(2).strip(), m.group(3)
+    try:
+        lines = open(f, encoding="utf-8").read().split("\n")
+    except OSError:
+        return "", 0
+    first = sel.split(",")[0].strip()
+    for i, ln in enumerate(lines):
+        if first in ln and (prop in ln or "{" in ln):
+            for j in range(i, min(i + 6, len(lines))):
+                if prop + ":" in lines[j].replace(" :", ":") or "font:" in lines[j]:
+                    return os.path.relpath(f, ROOT), j + 1
+            return os.path.relpath(f, ROOT), i + 1
+    return os.path.relpath(f, ROOT), 0
+
+
+def team_fixes(data, team):
+    """the fix list for one team: one line per CSS rule to change (file:line, every app and element it fixes), then the per-element ones"""
+    by_src, rest = {}, []
+    for app, a in data["apps"].items():
+        if a["owner"] != team:
+            continue
+        for it in a["issues"]:
+            if it["cat"] == "dyntype" and a.get("a11y_js"):
+                continue
+            if it.get("src") and " :: " in it["src"]:
+                k = (it["rule"], it["src"])
+                e = by_src.setdefault(k, {"apps": set(), "els": [], "it": it, "page": a["path"] + "index.html" if a["path"].endswith("/") else a["path"]})
+                e["apps"].add(app)
+                if len(e["els"]) < 2:
+                    e["els"].append(f"{app}: \"{md_escape(it.get('text'))[:40]}\"")
+            else:
+                rest.append((app, it))
+    rank = {c: i for i, c in enumerate(["contrast", "names", "hscroll", "tap", "bottom", "motion", "color", "focus", "forms", "text", "headings", "structure", "zoom", "dyntype"])}
+    L = []
+    for (rule, src), e in sorted(by_src.items(), key=lambda kv: (rank[kv[1]["it"]["cat"]], -len(kv[1]["apps"]))):
+        f, ln = locate(src, e["page"])
+        where = f"`{f}:{ln}`" if f and ln else f"`{src.split(' :: ')[0]}`"
+        L.append(f"- [{e['it']['cat']}] {where} `{md_escape(src.split(' :: ', 1)[1])[:120]}` ({rule}; {', '.join(sorted(e['apps']))}; e.g. {'; '.join(e['els'])}) "
+                 f"{md_escape(e['it'].get('detail'))[:70]}\n  - fix: {md_escape(e['it']['fix'])}")
+    seen = set()
+    for app, it in sorted(rest, key=lambda x: (rank[x[1]["cat"]], x[0])):
+        k = (app, it["rule"], it["sel"][:40])
+        if k in seen:
+            continue
+        seen.add(k)
+        L.append(f"- [{it['cat']}] {app} `{md_escape(it['sel'])[:110]}` \"{md_escape(it.get('text'))[:40]}\" ({it['rule']}) {md_escape(it.get('detail'))[:80]}\n  - fix: {md_escape(it['fix'])}")
+    return L
 
 
 def compare(old_path, data):
@@ -432,7 +533,20 @@ def main(argv=None):
     ap.add_argument("--workers", type=int, default=2)
     ap.add_argument("--compare", default="")
     ap.add_argument("--no-lock", action="store_true")
+    ap.add_argument("--rescore", default="", help="rewrite the reports of an earlier results.json with the current scoring (no browser)")
     a = ap.parse_args(argv)
+    if a.rescore:
+        with open(a.rescore, encoding="utf-8") as fh:
+            data = json.load(fh)
+        for app, r in data["apps"].items():
+            r["a11y_js"] = has_a11y_js(r["path"])
+            r["score"] = score_of(r["counts"], r["a11y_js"])
+        out_dir = a.out or os.path.dirname(os.path.abspath(a.rescore))
+        with open(os.path.join(out_dir, "results.json"), "w", encoding="utf-8") as fh:
+            json.dump(data, fh, indent=1)
+        write_reports(out_dir, data)
+        print(f"rescored: {out_dir}/REPORT.md")
+        return 0
     apps = visible_apps()
     if a.apps:
         want = [x.strip() for x in a.apps.split(",") if x.strip()]

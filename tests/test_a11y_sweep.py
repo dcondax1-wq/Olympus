@@ -83,7 +83,8 @@ def static():
     per = [{"screen": "390-dark-rm", "issues": [{"rule": "tap-target", "sel": "a", "detail": "30x30"}, {"rule": "tap-target", "sel": "a", "detail": "30x30"},
                                                {"rule": "color-contrast", "sel": "p", "detail": "#444444 on #111111 = 1.9:1, need 4.5 (16px)"}, {"rule": "region", "sel": "x"}]}]
     s = S.summarise("compass", "compass/", per)
-    check("summarise: one issue per element + rule, ignored axe rules dropped, score 13 of 14 rules", len(s["issues"]) == 2 and s["score"] == round(100 * 13 / 14), (len(s["issues"]), s["score"]))
+    check("summarise: one issue per element + rule, ignored axe rules dropped, contrast + tap down to 0.5 (compass loads a11y.js: Dynamic Type not scored, 13 rules)", len(s["issues"]) == 2 and s["score"] == round(100 * 12 / 13) and s["a11y_js"], (len(s["issues"]), s["score"]))
+    check("score_of: 14 rules without a11y.js, 13 with", S.score_of({c: 0 for c in S.CATS} | {"dyntype": 5}, False) == round(100 * 13 / 14) and S.score_of({c: 0 for c in S.CATS} | {"dyntype": 5}, True) == 100)
     fx = [i["fix"] for i in s["issues"] if i["rule"] == "color-contrast"][0]
     check("summarise: the contrast fix names an exact colour", "#" in fx and ":1" in fx, fx)
 

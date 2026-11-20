@@ -90,8 +90,8 @@
       var par = el.parentElement && el.parentElement.closest(CLICK);
       var r = el.getBoundingClientRect();
       if (!onScreenish(r)) continue;
-      if (r.width >= 44 && r.height >= 44) continue;
-      if (par && vis(par)) { var pr = par.getBoundingClientRect(); if (pr.width >= 44 && pr.height >= 44) continue; }
+      if (r.width >= 43.5 && r.height >= 43.5) continue;
+      if (par && vis(par)) { var pr = par.getBoundingClientRect(); if (pr.width >= 43.5 && pr.height >= 43.5) continue; }
       out.push({ sel: sel(el), text: txt(el), detail: Math.round(r.width) + 'x' + Math.round(r.height) });
     }
     return out;
@@ -154,11 +154,24 @@
   function bottomBars() {
     var meta = document.querySelector('meta[name=viewport]'), cover = meta && /viewport-fit\s*=\s*cover/.test(meta.getAttribute('content') || '');
     if (!cover) return [];
-    var rules = cssRules(), safe = rules.filter(function (r) { return /safe-area-inset-bottom/.test(r.cssText); });
+    // a rule is safe when it uses env(safe-area-inset-bottom) itself or through a custom property (--sab: env(...); padding: var(--sab))
+    var rules = cssRules(), vars = {}, grew = true;
+    while (grew) {
+      grew = false;
+      rules.forEach(function (r) {
+        for (var i = 0; i < r.style.length; i++) {
+          var k = r.style[i]; if (k.indexOf('--') !== 0 || vars[k]) continue;
+          var v = r.style.getPropertyValue(k);
+          if (/safe-area-inset-bottom/.test(v) || Object.keys(vars).some(function (n) { return v.indexOf('var(' + n) >= 0; })) { vars[k] = 1; grew = true; }
+        }
+      });
+    }
+    var names = Object.keys(vars);
+    var safe = rules.filter(function (r) { var t = r.cssText; return /safe-area-inset-bottom/.test(t) || names.some(function (n) { return t.indexOf('var(' + n) >= 0 && !/^\s*--/.test(t.split('{')[1] || ''); }); });
     var out = [], all = document.body.getElementsByTagName('*'), H = innerHeight;
     for (var i = 0; i < all.length; i++) {
       var el = all[i], s = getComputedStyle(el);
-      if (s.position !== 'fixed' && s.position !== 'sticky') continue;
+      if (s.position !== 'fixed' && !(s.position === 'sticky' && s.bottom !== 'auto')) continue;
       if (!vis(el)) continue;
       var r = el.getBoundingClientRect();
       if (r.bottom < H - 6 || r.height > H * 0.6 || r.height < 8) continue;
