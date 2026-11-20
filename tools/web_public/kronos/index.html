@@ -18,8 +18,8 @@
      Read only: it reads the site's odeon/trades.json (real and paper trades; the backtest on request) and fixture.json (DEMO, never blank) and sends nothing. Text only through textContent / createElementNS. -->
 <script>(function () { var d = document.documentElement; try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
 <link rel="stylesheet" href="../olympus/olympus.css?v=o7">
-<link rel="stylesheet" href="../olympus/agora.css?v=a7">
-<link rel="stylesheet" href="../olympus/pulse.css?v=p3">
+<link rel="stylesheet" href="../olympus/agora.css?v=a8">
+<link rel="stylesheet" href="../olympus/pulse.css?v=p5">
 <script src="../olympus/themes.js?v=o9"></script>
 <script src="../olympus/olympus.js?v=o15" data-app="kronos"></script>
 <script src="../olympus/intro-app.js?v=i10" defer></script>
@@ -53,7 +53,7 @@
   </section>
   <section class="ag-card card" aria-labelledby="monthTitle">
     <div class="row"><button class="btn step" id="prevM" type="button" aria-label="Previous month">&lsaquo;</button><h2 id="monthTitle">Month</h2><button class="btn step" id="nextM" type="button" aria-label="Next month">&rsaquo;</button></div>
-    <div class="grid" id="grid" role="grid" aria-label="Daily profit and loss"></div>
+    <div class="grid" id="grid" role="list" aria-label="Daily profit and loss"></div>
     <div class="tiles" id="monthTiles"></div>
     <p class="note" id="monthNote"></p>
   </section>
@@ -81,6 +81,6 @@
 </main>
 <script type="module" src="kronos.js?v=a1"></script>
 <script type="module" src="kronosdial.js?v=q6c" onerror="window.KRONOS_DIAL_FAIL = 1"></script>
-<script type="module" src="../olympus/pulse.js?v=p3"></script>
+<script type="module" src="../olympus/pulse.js?v=p5"></script>
 </body>
 </html>

@@ -30,10 +30,11 @@
     var pc = $('agePc'), cl = $('ageCloud'), seen = $('ageSeen'), lvl = $('ageSt'); if (!pc) return;
     if (!a) { pc.textContent = 'not seen yet'; cl.textContent = 'not seen yet'; seen.textContent = 'Open Aegis, Helios or any money app once.'; lvl.textContent = '—'; return; }
     var pcAge = a.pcT ? now - a.pcT : null;
-    pc.textContent = ago(pcAge); cl.textContent = ago(a.cloudT ? now - a.cloudT : null);
+    var AG = window.OLY_AGE;   // the kit's one age format (the root age.js) when it is on the page
+    if (AG) { AG.chip(pc, pcAge, 'pc'); AG.chip(cl, a.cloudT ? now - a.cloudT : null, 'daily'); } else { pc.textContent = ago(pcAge); cl.textContent = ago(a.cloudT ? now - a.cloudT : null); }
     seen.textContent = 'Checked ' + ago(a.seen ? now - a.seen : null) + ' when an app was open. A live account number is from the PC report; older than 20 min means the PC is quiet.';
-    lvl.textContent = pcAge == null ? 'No PC report' : pcAge <= 1200 ? 'Live' : pcAge <= 129600 ? 'Quiet' : 'Old';
-    lvl.className = 'st ' + (pcAge != null && pcAge <= 1200 ? 'on' : pcAge != null && pcAge <= 129600 ? 'warn' : 'off');
+    lvl.textContent = pcAge == null ? 'No PC report' : pcAge <= 1200 ? 'Live' : pcAge <= 3600 ? 'Quiet' : 'Old';   // the same limits as age.js 'pc'
+    lvl.className = 'st ' + (pcAge != null && pcAge <= 1200 ? 'on' : pcAge != null && pcAge <= 3600 ? 'warn' : 'off');
   }
   function go() { push(); age(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go();

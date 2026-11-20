@@ -12,6 +12,7 @@
 //   <section class="pulse" data-pulse="strip,accounts,stats" data-pulse-app="aegis"></section>   + <script type="module" src="../olympus/pulse.js">
 // The markup reserves each part's height in pulse.css before data arrives, so filling it in moves nothing (CLS 0).
 import * as T from './truth.js';
+import '../age.js';          // the site's one data-age format (root age.js, DATA TRUTH) (window.OLY_AGE: "updated 4 min ago", amber / red per kind)
 
 const isObj = (x) => !!x && typeof x === 'object' && !Array.isArray(x);
 const num = T.num;
@@ -208,7 +209,13 @@ export function render(root, m, parts, app) {
     } else continue;
     root.appendChild(box);
   }
-  if (m.ages && parts.some((p) => /^(accounts|bots)/.test(p))) root.appendChild(el('p', 'pu-note pu-age', m.ages.line));
+  if (m.ages && parts.some((p) => /^(accounts|bots)/.test(p))) {
+    // one age format everywhere (the root age.js): the chip says how old the PC's numbers are, amber after a missed report, red after an hour
+    const A = typeof window !== 'undefined' ? window.OLY_AGE : globalThis.OLY_AGE, p = el('p', 'pu-note pu-age');
+    if (A) { p.appendChild(A.chip(el('span'), m.ages.pc.age, 'pc')); p.appendChild(document.createTextNode(` PC report${m.ages.cloud.t != null ? ' · cloud copy ' + m.ages.cloud.words + ' old' : ''}`)); }
+    else p.textContent = m.ages.line;
+    root.appendChild(p);
+  }
 }
 
 async function getJSON(u) { try { const r = await fetch(u, { cache: 'no-cache' }); return r.ok ? await r.json() : null; } catch (e) { return null; } }

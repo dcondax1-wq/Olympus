@@ -220,3 +220,4 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .gauge [data-warn="1"] .v, .gauge [data-id="dd"][data-warn="1"] .v, .gauge [data-id="odds"][data-warn="1"] .v { color: var(--ag-terra-text, #e08a6b); }
 .verdict b.v, .cap .k.v { color: #c9a06a; }
 .lab .folded { padding: 0 12px 12px; }  /* day-arenas: Moirai / Labyrinth folded in */
+@media (min-height: 701px) { .hud { min-height: 276px; box-sizing: border-box; } }   /* day-arenas DESIGN: the HUD reserves its filled height (layout shift 0.07 when fates.json lands late on a phone line) */

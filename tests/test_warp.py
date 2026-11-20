@@ -98,11 +98,13 @@ def test_static():
           "ow-fade-in .2s" in rm and "transform: none !important" in rm and 'data-fx="off"' in rm
           and not re.search(r"@keyframes[^{]*\{[^}]*(clip-path|width|height|left|top|filter)\s*:", css))
     pages = ["hub/zeus.html", "hub/help.html", "atlas/index.html"]
-    # day-manual NAV 2026-11-20: ZEUS and Help now load the theme engine too (they stayed dark under Ivory): their warp.js tag comes FIRST, like the Doors
-    wp = lambda h: h.index('src="../olympus/warp.js?v=w3" defer') if 'src="../olympus/warp.js?v=w3" defer' in h else -1
-    check("a. ZEUS, Help and Atlas load warp.js themselves (before themes.js where a page loads the theme engine: one warp.js)",
-          all(wp(read(WEB, *p.split("/"))) >= 0 and ("olympus/themes.js?v=" not in read(WEB, *p.split("/"))
-              or wp(read(WEB, *p.split("/"))) < read(WEB, *p.split("/")).index('<script src="../olympus/themes.js?v=')) for p in pages))
+    # 2026-11-20 (DESIGN + NAV): these pages now load themes.js too (the light looks reach them); the Doors rule below holds for them:
+    # exactly one warp.js tag of their own, placed BEFORE themes.js, so themes.js's loader finds it and never adds a second one
+    def doors_rule(t):
+        w, th = t.find('src="../olympus/warp.js?v=w3"'), t.find("olympus/themes.js?v=")
+        return t.count('src="../olympus/warp.js?v=w3" defer') == 1 and (th < 0 or w < th)
+    check("a. the ZEUS hub, Help and Atlas load warp.js themselves, once, before themes.js when they load it (the Doors rule)",
+          all(doors_rule(read(WEB, *p.split("/"))) for p in pages), [p for p in pages if not doors_rule(read(WEB, *p.split("/")))])
     # night-polish 2026-11-20: the Doors load the theme engine (they stayed dark under Ivory); their own warp.js tag comes BEFORE themes.js,
     # so themes.js's loader finds it and never adds warp.js a second time
     dh = read(WEB, "hub", "doors.html")
