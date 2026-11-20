@@ -35,6 +35,9 @@ function drawStep() {
 function focusFirst() { const b = $('dx').querySelector('button, h3'); if (b && b.focus) try { b.focus({ preventScroll: true }); } catch (_) { b.focus(); } }
 function drawResult() {
   const box = $('dx'), d = diagnose(S.answers, S.P);
+  // the Agency HQ tile (HUB team): how many prospects were diagnosed on this phone, and the last offer
+  try { const k = 'agency.expert.summary', o = JSON.parse(localStorage.getItem(k) || '{}') || {}; const n = (+o.dx || 0) + 1;
+    localStorage.setItem(k, JSON.stringify({ n, dx: n, label: n === 1 ? 'prospect diagnosed' : 'prospects diagnosed', next: d.offer ? `Last: ${d.offer.name}, ${d.price}` : '', t: Math.floor(Date.now() / 1000) })); } catch (_) { /* private mode */ }
   box.classList.add('ex-res');
   const h = el('h3', '', d.offer ? d.offer.name : 'No offer'); h.tabIndex = -1;
   box.append(el('p', 'ex-step', 'The offer to lead with'), h, el('p', 'ex-price', `${d.price}${d.offer && d.offer.days ? ` · ready in about ${d.offer.days} days` : ''}`));
