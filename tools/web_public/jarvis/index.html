@@ -1386,14 +1386,6 @@ function whenQuiet(fn) {
   go();
 }
 
-// day-jarvis 2026-11-20 (speed): the parts nobody needs for the first look (voice, the Obsidian vault and memory, the assistant, tools,
-// modes, the bots' alerts, the Kalshi brain) load in the first quiet moment after the start, or just after the first tap's answer,
-// instead of with the page: the first taps answer in about a second on a phone, not five. Each still falls back exactly as before.
-const lazyQ = []; let lazyGo = false;
-function flushLazy() { if (lazyGo) return; lazyGo = true; while (lazyQ.length) safe(lazyQ.shift()); }
-const later = (name, path, ok) => new Promise((res) => { const f = () => res(load(name, path, ok)); if (lazyGo) f(); else lazyQ.push(f); });
-window.addEventListener('pointerdown', () => setTimeout(flushLazy, 900), { once: true, capture: true, passive: true });
-window.addEventListener('keydown', () => setTimeout(flushLazy, 900), { once: true, capture: true });
 
 // ------------------------------------------------------------------ settings kept on this phone
 let vo = null;                                               // her voice out (voice-out.js): the switch, the iPhone's unlock, speaking
@@ -1441,16 +1433,16 @@ const ready = {
 const within = (p, ms) => Promise.race([p, new Promise((ok) => setTimeout(() => ok(null), ms))]);
 // the owner's Obsidian vault and Jarvis's memory (obsidian.js + memory.js) and their screens (assist-ui.js): each optional
 let vault = null, assist = null, obsUI = null, proUI = null;
-ready.vault = Promise.all([later('obsidian', './obsidian.js', (m) => typeof m.createVault === 'function'), later('memory', './memory.js', (m) => typeof m.createMemory === 'function')])
+ready.vault = Promise.all([load('obsidian', './obsidian.js', (m) => typeof m.createVault === 'function'), load('memory', './memory.js', (m) => typeof m.createMemory === 'function')])
   .then(([ob, me]) => { if (ob && me) { vault = ob.createVault(); brainDeps.memory = window.__jarvisMemory = me.createMemory({ vault,
     addTodos: (list) => { let n = 0; for (const t of list || []) if (assistant && assistant.addTodo) { assistant.addTodo(t); n++; } return n; },       // "pull my tasks from Obsidian" (memory.js; asks first)
     todos: () => (assistant ? assistant.todos() : []) }); } return vault; }).catch(() => null);
 // the business answers (biz.js, day-jarvis 2026-11-20): accounts, trades, room, payout, news, to-do, Kalshi from the real feeds, before the brain
 ready.biz = load('biz', './biz.js?v=b1', (m) => typeof m.ask === 'function' && typeof m.match === 'function');
-ready.assist = later('assist', './assist-ui.js', (m) => typeof m.mountObsidianSheet === 'function').then((m) => { assist = m; return m; });
+ready.assist = load('assist', './assist-ui.js', (m) => typeof m.mountObsidianSheet === 'function').then((m) => { assist = m; return m; });
 // the voice (tts.js) and the personal assistant (assistant.js), 2026-11-03: each optional (absent = the old voice, the brain alone)
 let tts = null, assistant = null;
-ready.tts = later('tts', './tts.js', (m) => typeof m.createSpeaker === 'function').then((m) => { tts = m; return m; });
+ready.tts = load('tts', './tts.js', (m) => typeof m.createSpeaker === 'function').then((m) => { tts = m; return m; });
 // his voice (2026-11-18, owner: "it sounds like a bot, it should sound like a person"; Male, British): the AI voice George on the phone
 // (neural-voice.js + its worker: Kokoro, downloaded once on first use, about 117 MB, with a progress line) and the words a person says
 // (speech-text.js: "-$113" -> "minus a hundred and thirteen dollars"). One setting: AI voice (George) / iPhone voice / Off. Until the
@@ -1458,8 +1450,8 @@ ready.tts = later('tts', './tts.js', (m) => typeof m.createSpeaker === 'function
 // silence. Both optional: absent = the iPhone voice, the old cleaned text.
 let nv = null, nvMod = null, nvPlayer = null, nvLine = null, spx = null, lastEngine = '';
 const voiceTest = () => (D.LS.get('jarvis.voiceEngine', {}) || {}).prosody === false;     // tests: the base chunker on the original words
-ready.speech = later('speech', './speech-text.js', (m) => typeof m.createSpeechText === 'function').then((m) => { spx = m ? safe(() => m.createSpeechText(), null) : null; return spx; });
-ready.nv = later('nv', './neural-voice.js', (m) => typeof m.createNeuralVoice === 'function').then((m) => {
+ready.speech = load('speech', './speech-text.js', (m) => typeof m.createSpeechText === 'function').then((m) => { spx = m ? safe(() => m.createSpeechText(), null) : null; return spx; });
+ready.nv = load('nv', './neural-voice.js', (m) => typeof m.createNeuralVoice === 'function').then((m) => {
   if (!m) return null;
   nvMod = m;
   safe(() => m.migrate());
@@ -1489,7 +1481,7 @@ function nvState(st) {                                  // it could not start: s
   if (!$('#voice').hidden) safe(renderVoiceNote);
 }
 function voiceFellBack(e, id) { if (id === 'kokoro') lastEngine = 'phone'; }     // a late or failed piece: the iPhone voice said the rest (no toast)
-ready.voiceout = later('voiceout', './voice-out.js', (m) => typeof m.createVoiceOut === 'function').then((m) => {
+ready.voiceout = load('voiceout', './voice-out.js', (m) => typeof m.createVoiceOut === 'function').then((m) => {
   if (m) vo = safe(() => m.createVoiceOut({ cfg: S.vcfg, cloud: cloudVoice, micBusy: () => !!rec || !!(vm && vm.isOpen()),
     prosody: () => (voiceTest() ? null : spx), player: () => nvPlayer, unlock: () => { if (nvPlayer) nvPlayer.unlock(); },
     onFallback: voiceFellBack, onEngine: (id) => { lastEngine = id || ''; },
@@ -1497,7 +1489,7 @@ ready.voiceout = later('voiceout', './voice-out.js', (m) => typeof m.createVoice
   renderSpk();
   return vo;
 });
-ready.assistant = later('assistant', './assistant.js', (m) => typeof m.createAssistant === 'function')
+ready.assistant = load('assistant', './assistant.js', (m) => typeof m.createAssistant === 'function')
   .then((m) => { if (m) { assistant = safe(() => m.createAssistant(), null); if (assistant) brainDeps.assistant = assistant; } return assistant; });
 // the tools (tools.js, 2026-11-03): smart mode's function calls, and the no-key weather / Wikipedia / units / time zones. The
 // phone's location is asked for only when he wants the weather without naming a city (and only once he allows it).
@@ -1505,12 +1497,12 @@ const geoHere = () => new Promise((ok, no) => {
   if (!navigator.geolocation) { no(new Error('no geolocation')); return; }
   navigator.geolocation.getCurrentPosition((p) => ok({ lat: p.coords.latitude, lon: p.coords.longitude }), no, { timeout: 8000, maximumAge: 30 * 60e3 });
 });
-ready.tools = later('tools', './tools.js', (m) => typeof m.createTools === 'function')
+ready.tools = load('tools', './tools.js', (m) => typeof m.createTools === 'function')
   .then((m) => { const t = m ? safe(() => m.createTools({ geo: geoHere }), null) : null; if (t) brainDeps.tools = t; return t; });
 // the modes (modes.js, 2026-11-03): Trading / Research / Business / Life / Auto and "think for me". The rules read the brain's
 // facts plus the research apps' last live cards (apps.js, kept on this phone); optional (absent = the brain as before).
 let modesI = null, modesUI = null;
-ready.modes = later('modes', './modes.js', (m) => typeof m.createModes === 'function').then((m) => {
+ready.modes = load('modes', './modes.js', (m) => typeof m.createModes === 'function').then((m) => {
   if (m) modesI = safe(() => m.createModes({ cards: (ids) => { const o = {}; for (const id of ids || []) { const c = cardOf(id); if (c) o[id] = c; } return o; } }), null);
   if (modesI) brainDeps.modes = modesI;
   return modesI;
@@ -1519,7 +1511,7 @@ ready.modes = later('modes', './modes.js', (m) => typeof m.createModes === 'func
 // 01:45 plan and 16:05 recap, the Bots panel in Trading mode). Optional (absent = the brain as before). Read only: nothing arms or orders.
 // Spoken alerts go through speak() above, only while she is idle (never over the mic, voice mode or another answer).
 let botsI = null, botsUI = null;
-ready.bots = later('bots', './bots.js', (m) => typeof m.createBots === 'function').then((m) => {
+ready.bots = load('bots', './bots.js', (m) => typeof m.createBots === 'function').then((m) => {
   if (m) botsI = safe(() => m.createBots({ speak: (t) => speak(t, false), hidden: () => S.hideMoney(),
     busy: () => state !== 'idle' || listening || speaking || !!rec || !!(vm && vm.isOpen()),
     onEvent: (e) => toast(e.text, e.kind === 'plan' || e.kind === 'recap' ? e.kind[0].toUpperCase() + e.kind.slice(1) : 'Bot alert'),
@@ -1527,7 +1519,7 @@ ready.bots = later('bots', './bots.js', (m) => typeof m.createBots === 'function
   if (botsI) brainDeps.bots = botsI;
   return botsI;
 });
-ready.botsui = later('botsui', './bots-ui.js', (m) => typeof m.mountBots === 'function');
+ready.botsui = load('botsui', './bots-ui.js', (m) => typeof m.mountBots === 'function');
 // first open: one slim note (in the flow, under the first screen) offers the Settings app's one-minute tour (once per phone: 'jarvis.tour.seen'; never when the tour was done there already)
 function tourHint(n = 0) {
   if (!FIRST_RUN || raw('jarvis.tour.seen') || raw('olympus.tour.done') || active !== 'home' || !visible() || n > 8) return;
@@ -1561,7 +1553,7 @@ function botsHeld() {
 // the spoken alerts (paused / resumed, the balance floor, a daily loss, a big loss, a new DO MORE / STOP lesson, the risk of ruin), Think for me items.
 // Optional (absent = the brain as before). Read only: nothing here orders, sizes or changes anything; every size is "suggestion, your call".
 let kbI = null, kbLoaded = 0;
-ready.kbrain = later('kbrain', './kalshi-brain.js', (m) => typeof m.createKalshiBrain === 'function').then((m) => {
+ready.kbrain = load('kbrain', './kalshi-brain.js', (m) => typeof m.createKalshiBrain === 'function').then((m) => {
   if (m) kbI = safe(() => m.createKalshiBrain({ speak: (t) => speak(t, false), hidden: () => S.hideMoney(),
     busy: () => state !== 'idle' || listening || speaking || !!rec || !!(vm && vm.isOpen()), onEvent: (e) => toast(e.text, 'KALSHI ALERT') }), null);
   if (kbI) { brainDeps.kalshiBrain = kbI; kbLoad().then(() => setTimeout(kbTick, 2500)); }
@@ -1996,8 +1988,6 @@ function mountCore3d() {
 // the 3D core loads once the boot screen is gone (its first frames would hold up the boot log)
 let bootEnd = null;
 const bootDone = new Promise((ok) => { bootEnd = ok; });
-bootDone.then(() => whenQuiet(flushLazy));
-setTimeout(flushLazy, 12000);                                 // never later than 12 s, whatever happens
 ready.core.then((m) => { if (m) bootDone.then(() => (phoneNow() ? whenQuiet(mountCore3d) : mountCore3d())); });
 bootDone.then(() => setTimeout(voiceMod, 1500));
 let coreRT = 0;
