@@ -243,13 +243,19 @@ def proc_names() -> list:
         return []
 
 
-def ping_server(port: int = PORT, timeout: float = 4.0) -> bool:
-    try:
-        req = urllib.request.Request(f"http://127.0.0.1:{port}/api/health/ping", headers={"User-Agent": "olympus-self-heal/1"})
-        with urllib.request.urlopen(req, timeout=timeout) as r:
-            return r.status == 200
-    except Exception:
-        return False
+def ping_server(port: int = PORT, timeout: float = 4.0, tries: int = 2) -> bool:
+    """The bot server answers /api/health/ping (two tries 3 s apart: a busy moment is not "down")."""
+    for i in range(tries):
+        try:
+            req = urllib.request.Request(f"http://127.0.0.1:{port}/api/health/ping", headers={"User-Agent": "olympus-self-heal/1"})
+            with urllib.request.urlopen(req, timeout=timeout) as r:
+                if r.status == 200:
+                    return True
+        except Exception:
+            pass
+        if i + 1 < tries:
+            time.sleep(3)
+    return False
 
 
 def nt_folder(env=None) -> str | None:
