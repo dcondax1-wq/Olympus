@@ -74,7 +74,7 @@ export function goals(accts, pay, plan, nowS, eq) {
       ];
       const w = when(left, pr && pr.pace ? pr.pace : pc, today, ladder(LADDER_OF[a.key]));
       out.push({ key: a.key, name: a.name, kind: 'payout', goal: `Ask ${usd(C.max)} at ${usd(askBal)}`, left, frac: bal === null ? 0 : clamp01((bal - C.start) / (askBal - C.start)),
-        big: left === null ? '-' : left <= 0 ? 'Ready' : usd(left), unit: left !== null && left > 0 ? 'left' : '',
+        big: left === null ? '-' : left <= 0 ? 'Ready' : usd(left), unit: left !== null && left > 0 ? `to ${usd(askBal)}` : '', short: `First ask: ${usd(C.max)}`,
         lines: [`First payout: ask ${usd(C.max)} once the balance reaches ${usd(askBal)} (${usd(C.buffer)} buffer + ${usd(C.max)}); ${usd(C.max * C.split)} to you at the 80% split.`,
           allow === null ? `The minimum ${usd(C.min)} ask is possible at ${usd(okBal)}.` : allow > 0 ? `The minimum ${usd(C.min)} ask is possible at ${usd(okBal)}: ${usd(allow)} more.` : `MFFU allows an ask now (minimum ${usd(C.min)}).`],
         chips, when: w.text, level: left !== null && left <= 0 ? 'ok' : 'go', has: bal !== null, balance: bal });
@@ -141,6 +141,17 @@ export function numbers(accts, rows, nowS) {
     net: r2(gw - gl), last: R.slice(-10).reverse(), week: r2(per.reduce((s, p) => s + p.week, 0)), from: R.length ? R[0].day : '' };
 }
 
+/** the open trades with their live $ and R (the PC's chart post: entry, stop, last price; 1 MNQ point = $2) */
+export function opens(accts) {
+  return arr(accts).filter((a) => isObj(a) && isObj(a.open)).map((a) => {
+    const o = a.open, risk = num(o.entry) !== null && num(o.stop) !== null && !o.stopMoved ? Math.abs(o.entry - o.stop) * (o.qty || 1) * 2 : null;
+    const r = risk && num(o.now) !== null ? r2(o.now / risk) : null;
+    return { key: a.key, name: a.name, side: o.side, qty: o.qty, entry: o.entry, now: num(o.now), r, target: num(o.target_usd), locked: num(o.locked), moved: !!o.stopMoved,
+      text: `${o.side} ${o.qty} @ ${num(o.entry) !== null ? o.entry.toLocaleString('en-US', { minimumFractionDigits: 2 }) : '-'}`,
+      sub: o.stopMoved ? `stop moved: ${num(o.locked) !== null ? usd(o.locked, true) + ' locked in' : 'at break-even or better'}` : num(o.target_usd) !== null ? `target ${usd(o.target_usd, true)}` : '' };
+  });
+}
+
 // ------------------------------------------------------------------------------------------------ the session clock and the VIX band
 const ENTRY = [{ id: 'london', label: 'London', from: 120, to: 480 }, { id: 'ny', label: 'New York', from: 480, to: 930 }];
 export function clock(nowS) {
@@ -187,9 +198,12 @@ export function roll(el, to, fmt, ms) {
 function ring(frac, kind) {
   const s = sv('svg', { viewBox: '0 0 64 64', class: 'gl-ring', 'aria-hidden': 'true' });
   s.appendChild(sv('circle', { cx: 32, cy: 32, r: 27, class: 'gl-track' }));
-  const c = 2 * Math.PI * 27, arc = sv('circle', { cx: 32, cy: 32, r: 27, class: 'gl-arc ' + kind, 'stroke-dasharray': `${c.toFixed(1)}`, 'stroke-dashoffset': `${c.toFixed(1)}`, transform: 'rotate(-90 32 32)' });
-  arc.style.setProperty('--to', `${(c * (1 - clamp01(frac))).toFixed(1)}`);
-  s.appendChild(arc);
+  const c = 2 * Math.PI * 27;
+  for (const cls of ['gl-arc glow ' + kind, 'gl-arc ' + kind]) {
+    const arc = sv('circle', { cx: 32, cy: 32, r: 27, class: cls, 'stroke-dasharray': `${c.toFixed(1)}`, 'stroke-dashoffset': `${c.toFixed(1)}`, transform: 'rotate(-90 32 32)' });
+    arc.style.setProperty('--to', `${(c * (1 - clamp01(frac))).toFixed(1)}`);
+    s.appendChild(arc);
+  }
   return s;
 }
 
@@ -212,7 +226,7 @@ export function drawGoals(box, list, detail, opts) {
     b.setAttribute('aria-label', `${g.name}: ${g.goal}. ${g.big} ${g.unit}. ${Math.round(g.frac * 100)} percent. ${g.when}`);
     const r = h('span', 'gl-rw'); r.appendChild(ring(g.frac, g.kind)); const pct = h('b', 'gl-pct ag-num'); r.appendChild(pct); b.appendChild(r);
     const t = h('span', 'gl-txt'); t.appendChild(h('span', 'gl-name', g.name));
-    const br = h('span', 'gl-bigrow'), big = h('span', 'gl-big ag-num'); br.appendChild(big); br.appendChild(h('span', 'gl-unit', g.unit)); t.appendChild(br); t.appendChild(h('span', 'gl-goal', g.goal));
+    const br = h('span', 'gl-bigrow'), big = h('span', 'gl-big ag-num'); br.appendChild(big); br.appendChild(h('span', 'gl-unit', g.unit)); t.appendChild(br); t.appendChild(h('span', 'gl-goal', g.short || g.goal));
     b.appendChild(t);
     b.addEventListener('click', () => { open = open === g.key ? null : g.key; show(g, b); if (o.onOpen) o.onOpen(open); });
     box.appendChild(b);
@@ -224,8 +238,16 @@ export function drawGoals(box, list, detail, opts) {
   requestAnimationFrame(() => box.classList.add('gl-on'));
 }
 
-export function drawNumbers(box, N, CL, VX) {
+export function drawNumbers(box, N, CL, VX, OP) {
   clear(box);
+  for (const o of arr(OP)) {
+    const d = h('div', 'nm-open ' + (o.now > 0.5 ? 'pos' : o.now < -0.5 ? 'neg' : ''));
+    d.appendChild(h('span', 'nm-otag', 'OPEN')); d.appendChild(h('b', 'nm-oname', `${o.name}: ${o.text}`));
+    const v = h('b', 'nm-onow ag-num'); d.appendChild(v); roll(v, o.now ?? 0, (x) => usd(x, true));
+    d.appendChild(h('span', 'nm-or ag-num', o.r !== null ? `${o.r >= 0 ? '+' : ''}${o.r.toFixed(2)}R live` : ''));
+    if (o.sub) d.appendChild(h('small', 'nm-osub', o.sub));
+    box.appendChild(d);
+  }
   const grid = h('div', 'nm-grid');
   for (const p of N.per) {
     const c = h('div', 'nm-acct'); c.appendChild(h('span', 'nm-name', p.name));

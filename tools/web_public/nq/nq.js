@@ -7,7 +7,7 @@ import * as C from './nqcore.js?v=d4';   // d1 (polish2 2026-11-19): the CME tra
 import * as T from '../olympus/truth.js';
 import * as D from './nqdesk.js?v=6';
 import { unpack as unpackBars } from './nqbars.js?v=b1';     // nqdash3: the accounts strip, the bots' thinking, the quality checks
-import * as G from './nqgoals.js?v=1';                       // v4: the goals strip, the numbers card, the bursts
+import * as G from './nqgoals.js?v=4';                       // v4: the goals strip, the numbers card, the bursts
 import { model as payModel } from './payready.js?v=2';       // the funded account's payout tracker (the same rules as the Board / Trading)
 
 const O = window.OLYMPUS || null;
@@ -281,16 +281,21 @@ function renderV4(home, file, nowS) {
   if (box) G.drawGoals(box, list, $('goalDetail'), { open: V4.open, onOpen: (k) => { V4.open = k; } });
   const fa = D.feedAge(home, nowS), age = $('goalAge');
   if (age) { age.textContent = S.demo ? 'DEMO' : fa.fromPc ? D.updated(fa.report) : 'plan + cloud copy'; age.className = 'pill ' + (S.demo ? 'warn' : fa.fromPc ? D.ageLevel(fa.report, 'pc') : 'warn'); }
-  const real = G.realRows(file, chart), N = G.numbers(A, real, nowS), nb = $('nums');
-  if (nb) G.drawNumbers(nb, N, G.clock(nowS), G.vixLine(S.brief));
-  const np = $('numPill'); if (np) { np.textContent = S.demo ? 'DEMO' : 'REAL FILLS'; np.className = 'pill ' + (S.demo ? 'warn' : 'ok'); }
+  const real = G.realRows(file, chart);
+  // below the first screen: the numbers card and the landscape draw when the main thread is free (perf: one long task less at load)
+  later(() => {
+    const nb = $('nums'); if (nb) G.drawNumbers(nb, G.numbers(A, real, nowS), G.clock(nowS), G.vixLine(S.brief), G.opens(A));
+    const np = $('numPill'); if (np) { np.textContent = S.demo ? 'DEMO' : 'REAL FILLS'; np.className = 'pill ' + (S.demo ? 'warn' : 'ok'); }
+    drawLand(chart, list);
+  });
   // bursts: a new winning real trade, or a goal ring crossing a quarter, since the page opened (never on the first draw)
   const wins = real.filter((r) => r.usd > 0.5).length, fr = Object.fromEntries(list.map((g) => [g.key, Math.floor(g.frac * 4)]));
   if (V4.wins !== null && wins > V4.wins) { G.burst($('goalCard'), 'win'); try { if (window.NQLAND) window.NQLAND.burst('win'); } catch (_) { /* nothing */ } }
   else if (V4.fracs) for (const k in fr) if (fr[k] > (V4.fracs[k] ?? 9)) { G.burst(box && box.querySelector(`[data-key="${k}"]`), 'goal'); try { if (window.NQLAND) window.NQLAND.burst('goal'); } catch (_) { /* nothing */ } break; }
   V4.wins = wins; V4.fracs = fr;
-  drawLand(chart, list);
 }
+const later = (fn) => { const run = () => { try { fn(); } catch (_) { /* the rest of the page still draws */ } };
+  if (typeof requestIdleCallback === 'function') requestIdleCallback(run, { timeout: 1200 }); else setTimeout(run, 60); };
 function landData(list) {
   const M = window.NQCHART && window.NQCHART.S && window.NQCHART.S.model;
   const candles = M && Array.isArray(M.candles) ? M.candles : [], close = new Map(candles.map((c) => [c.time, c.close]));

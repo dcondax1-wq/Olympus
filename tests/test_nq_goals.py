@@ -51,7 +51,9 @@ const brief = require(path.join(W, 'nq', 'brief.json'));
     mon0300: G.clock(et('2026-11-23T03:00:00-05:00')), fri1600: G.clock(et('2026-11-20T16:00:00-05:00')) };
   console.log(JSON.stringify({ A: A.map((a) => [a.key, a.stage, a.has, a.balance, a.goal, a.today]), goals, noPlan, N, real, clocks, vix: G.vixLine(brief), none: G.vixLine({}),
     when: [G.when(0, null, '2026-11-20', ''), G.when(1000, { per: 200, days: 4 }, '2026-11-20', ''), G.when(1000, { per: -10, days: 4 }, '2026-11-20', '~Dec 10'), G.when(1000, null, '2026-11-20', '')],
-    span: [G.span('2026-12-18', '2026-12-31'), G.span('2026-12-29', '2027-01-06')] }));
+    span: [G.span('2026-12-18', '2026-12-31'), G.span('2026-12-29', '2027-01-06')],
+    opens: G.opens([{ key: 'zlarior', name: 'Zlarior 50K', open: { side: 'SHORT', qty: 6, entry: 21555.5, stop: 21574, target_usd: 735, now: 315, stopMoved: false } },
+      { key: 'atlas', name: 'ATLAS 25K', open: { side: 'LONG', qty: 2, entry: 100, stop: 101, now: 40, stopMoved: true, locked: 4 } }, { key: 'fresh25', name: 'x' }]) }));
 })().catch((e) => { console.log(JSON.stringify({ err: String(e && e.stack || e) })); });
 """
 
@@ -125,6 +127,10 @@ def test_node():
     check("b. ... Wed 17:00 ET: next London 02:00 ET in 9 h 0 min; Mon 03:00 London open; Fri 16:00 and Saturday: the window is on Monday, weekend said",
           C["wed1700"]["next"]["text"] == "Next entry window: London 02:00 ET (in 9 h 0 min)" and C["mon0300"]["next"]["open"] and C["mon0300"]["windows"][0]["on"]
           and C["fri1600"]["next"]["text"].endswith("on Monday") and C["sat1200"]["phase"] == "Weekend: no trading" and C["sat1200"]["next"]["text"].endswith("on Monday"), C)
+    op = o["opens"]
+    check("b. the open trade, live: SHORT 6 @ 21,555.50 = +$315 = +1.42R (risk 18.5 pts x 6 x $2 = $222), target +$735; a moved stop says what is locked in, no R",
+          len(op) == 2 and op[0]["r"] == 1.42 and op[0]["text"] == "SHORT 6 @ 21,555.50" and op[0]["sub"] == "target +$735" and op[1]["r"] is None
+          and op[1]["sub"] == "stop moved: +$4 locked in", op)
     v = o["vix"]
     check("b. VIX 28.4 (elevated) of 2026-11-19 and the LIT target size: the 18:00 open +/- 475 pts; no brief = no line",
           v["text"] == "VIX 28.4 (elevated)" and "+/- 475 pts" in v["target"] and "banked at 8R" in v["target"] and v["date"] == "2026-11-19" and o["none"] is None, v)
@@ -148,7 +154,7 @@ SNAP = """() => { const r = (s) => { const e = document.querySelector(s); return
   return { tiles, goalBottom: r('#goalCard').bottom + scrollY, chartTop: r('#chartCard').top + scrollY, boxBottom: r('#chartBox').bottom + scrollY, box: r('#chartBox').height,
     detail: document.querySelector('#goalDetail').hidden ? '' : document.querySelector('#goalDetail').textContent, age: document.querySelector('#goalAge').textContent,
     nums: document.querySelectorAll('#nums .nm-acct').length, stats: [...document.querySelectorAll('#nums .nm-stat b')].map((b) => b.textContent),
-    clock: (document.querySelector('#nums .nm-next') || {}).textContent || '', vix: (document.querySelector('#nums .nm-vix') || {}).textContent || '',
+    clock: (document.querySelector('#nums .nm-next') || {}).textContent || '', open: [...document.querySelectorAll('#nums .nm-open')].map((d) => d.textContent), vix: (document.querySelector('#nums .nm-vix') || {}).textContent || '',
     land: !!window.NQLAND, land3d: !document.querySelector('#land3d').hidden, fb: getComputedStyle(document.querySelector('#landFb')).visibility,
     fbPaths: document.querySelectorAll('#landFb path').length, bursts: document.querySelectorAll('.gl-burst').length, cls: window.__cls || 0 }; }"""
 CLS = """(() => { window.__cls = 0; try { new PerformanceObserver((l) => { for (const e of l.getEntries()) if (!e.hadRecentInput) window.__cls += e.value; })
@@ -203,8 +209,8 @@ def test_page():
             p.evaluate("document.querySelector('#numCard').scrollIntoView()")
             p.wait_for_timeout(1500)
             n = p.evaluate(SNAP)
-            check("c. the numbers card: today / this week per account, win rate + PF + real fills + net, the session clock, the VIX band",
-                  n["nums"] >= 3 and len(n["stats"]) == 4 and n["stats"][0].endswith("%") and "window" in n["clock"] and n["vix"].startswith("VIX 28.4 (elevated)"), n)
+            check("c. the numbers card: the open trade with its live $ and R, today / this week per account, win rate + PF + real fills + net, the session clock, the VIX band",
+                  n["nums"] >= 3 and len(n["stats"]) == 4 and any("Zlarior 50K: SHORT 6" in x and "R live" in x for x in n["open"]) and n["stats"][0].endswith("%") and "window" in n["clock"] and n["vix"].startswith("VIX 28.4 (elevated)"), n)
             p.evaluate("document.querySelector('#landCard').scrollIntoView()")
             p.wait_for_function("window.NQLAND || document.querySelectorAll('#landFb path').length > 0", timeout=30000)
             p.wait_for_timeout(2500)
@@ -225,6 +231,19 @@ def test_page():
             check("c. reduced motion + LITE: '$1,699' at once, no burst canvas, the 3D not fetched, the 2D landscape drawn, no error",
                   {x["key"]: x for x in r["tiles"]}["atlas"]["big"] == "$1,699" and r["bursts"] == 0 and not r["land"] and r["fbPaths"] >= 2
                   and not any("nqland" in u for u in seen) and not errs, (r, errs[:2]))
+            ctx.close()
+    finally:
+        srv.shutdown()
+    # the DEMO (no home.json: the perf sweep's page): the thinking cards' long values must still wrap (a global no-wrap on .dk-kv made it 407 px wide)
+    srv, origin = AK.serve({"/home.json": None})
+    try:
+        with AK.browser() as br:
+            ctx, p, errs, seen, off = AK.page(br, origin)
+            AK.open_app(p, origin, "nq")
+            p.wait_for_timeout(1500)
+            check("c. the DEMO page (no home.json): the goals strip draws, no sideways scroll at 390 px, no console error",
+                  p.evaluate("document.querySelectorAll('#goals .gl-tile').length") >= 4 and AK.no_sideways(p)
+                  and p.evaluate("document.documentElement.scrollWidth") <= 390 and not errs, (p.evaluate("document.documentElement.scrollWidth"), errs[:2]))
             ctx.close()
     finally:
         srv.shutdown()
