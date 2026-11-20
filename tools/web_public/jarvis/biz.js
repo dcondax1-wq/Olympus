@@ -215,17 +215,25 @@ export const MFFU_FUNDED = { '25K': { start: 25000, mll: 1000, buffer: 1100, pay
 export function fundedView(a, feed) {
   if (!isObj(a) || a.stage !== 'funded' || num(a.balance) == null) return null;
   const P = MFFU_FUNDED[/50\s*k/i.test(`${a.name || ''} ${a.plan || ''}`) ? '50K' : '25K'];
-  let profit = null;
+  let profit = null, mv = null;
   const F = feed || globalThis.PC_FEED;
-  if (F && typeof F.mffuView === 'function') { try { const v = F.mffuView(a); if (isObj(v) && num(v.profit) != null) profit = num(v.profit); else if (isObj(v) && num(v.balance) != null) profit = num(v.balance); else if (num(v) != null) profit = num(v); } catch (_) { profit = null; } }
+  if (F && typeof F.mffuView === 'function') { try { mv = F.mffuView({ ...a, kind: 'funded' }); } catch (_) { mv = null; } }
+  if (isObj(mv) && num(mv.profit) != null) profit = num(mv.profit); else if (isObj(mv) && num(mv.balance) != null) profit = num(mv.balance); else if (num(mv) != null) profit = num(mv);
+  if (!isObj(mv)) mv = null;
   if (profit == null) profit = a.balance > P.start / 2 ? Math.round((a.balance - P.start) * 100) / 100 : a.balance;   // already MFFU's view
-  const early = P.buffer + P.pay_min, goal = P.buffer + P.pay_max;
-  return { profit, floor: -P.mll, room: profit + P.mll, early, earlyPay: P.pay_min, goal, goalPay: P.pay_max, toYou: P.pay_max * 0.8, toEarly: Math.max(0, early - profit), toGoal: Math.max(0, goal - profit) };
+  // the floor trails up with the best balance: from the PC's room when it has one, else the plan's -$1,000 / -$2,000
+  const floor = mv && num(mv.floor) != null ? num(mv.floor) : num(a.room) != null ? Math.round((profit - num(a.room)) * 100) / 100 : -P.mll;
+  const at = (k, d) => (mv && isObj(mv[k]) && num(mv[k].at) != null ? num(mv[k].at) : d);
+  const early = at('earliest', P.buffer + P.pay_min), goal = at('goal', P.buffer + P.pay_max);
+  const earlyPay = mv && isObj(mv.earliest) && num(mv.earliest.ask) != null ? num(mv.earliest.ask) : P.pay_min;
+  const goalPay = mv && isObj(mv.goal) && num(mv.goal.ask) != null ? num(mv.goal.ask) : P.pay_max;
+  const toYou = mv && isObj(mv.goal) && num(mv.goal.toYou) != null ? num(mv.goal.toYou) : goalPay * 0.8;
+  return { profit, floor, room: Math.round((profit - floor) * 100) / 100, early, earlyPay, goal, goalPay, toYou, toEarly: Math.max(0, early - profit), toGoal: Math.max(0, goal - profit) };
 }
 export function fundedLine(a, feed) {
   const v = fundedView(a, feed); if (!v) return '';
   const left = (n) => (n > 0 ? ` (${usd(n)} to go)` : ' (reached)');
-  return `${a.name} funded: ${usd(v.profit)}, today ${usd(a.today || 0, true)}, floor -${usd(-v.floor)} (${usd(v.room)} room left). Earliest payout at ${usd(v.early)}${left(v.toEarly)}; goal ${usd(v.goalPay)} at ${usd(v.goal)} (you get ${usd(v.toYou)}), ${v.toGoal > 0 ? `${usd(v.toGoal)} to go` : 'reached'}.`;
+  return `${a.name} funded: ${usd(v.profit)}, today ${usd(a.today || 0, true)}, floor ${v.floor < 0 ? '-' + usd(-v.floor) : usd(v.floor)} (${usd(v.room)} room left). Earliest payout at ${usd(v.early)}${left(v.toEarly)}; goal ${usd(v.goalPay)} at ${usd(v.goal)} (you get ${usd(v.toYou)}), ${v.toGoal > 0 ? `${usd(v.toGoal)} to go` : 'reached'}.`;
 }
 
 // ------------------------------------------------------------------------------------------------ the answers
