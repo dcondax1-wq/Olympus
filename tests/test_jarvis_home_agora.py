@@ -65,7 +65,8 @@ def part_b():
     bad = []
     for f in files:
         t = read(JV, f)
-        for pat, why in [(r"#(?:a855f7|7c3aed|22d3ee|ff2bd6|1ff5a4|4fe3ff|34f5b0|ff7a1a)\b", "neon hex"), (r"125,\s*211,\s*252", "cyan fallback"), (r"text-shadow:\s*0 0", "glow text-shadow"),
+        # cyan #22d3ee allowed since 2026-11-20 (owner: no gold, cyan / blue / violet accents)
+        for pat, why in [(r"#(?:a855f7|7c3aed|ff2bd6|1ff5a4|4fe3ff|34f5b0|ff7a1a)\b", "neon hex"), (r"125,\s*211,\s*252", "cyan fallback"), (r"text-shadow:\s*0 0", "glow text-shadow"),
                          (r"(?:Orbitron|Rajdhani)", "techno font"), (r"\bblur\((?:[3-9]\d)px", "heavy blur"), (r"\b(?:holographic|cyber|quantum)\b", "banned word")]:
             if re.search(pat, t) and not (f == "jarvis.css" and why == "techno font"):
                 bad.append((f, why))
