@@ -149,15 +149,15 @@ def main() -> int:
                     p.wait_for_timeout(2500)
                     sb = INSETS["bottom"] if inset else 0
                     if shots:
-                        p.screenshot(path=os.path.join(shots, f"{name}_{w}x{h}_{tag}_top.png"))
+                        p.screenshot(path=os.path.join(shots, f"{name}_{w}x{h}_{tag}_top.jpg"), quality=78)
                         if name == "zeus" and w == SIZES[0][0]:
-                            p.screenshot(path=os.path.join(shots, f"{name}_{w}x{h}_{tag}_full.png"), full_page=True)
+                            p.screenshot(path=os.path.join(shots, f"{name}_{w}x{h}_{tag}_full.jpg"), full_page=True, quality=70)
                     p.evaluate("window.scrollTo(0, document.documentElement.scrollHeight)")
                     p.wait_for_timeout(600)
                     m = p.evaluate(MEASURE)
                     wide = p.evaluate(WIDE)
                     if shots:
-                        p.screenshot(path=os.path.join(shots, f"{name}_{w}x{h}_{tag}_end.png"))
+                        p.screenshot(path=os.path.join(shots, f"{name}_{w}x{h}_{tag}_end.jpg"), quality=78)
                     check(f"a. {name} {w}x{h}: no sideways scroll (page {m['sw']} px on a {m['W']} px phone)", m["sw"] <= m["W"] + 1 and not wide, (m["sw"], wide))
                     limit = min(m["barTop"], m["H"] - sb)
                     check(f"b. {name} {w}x{h}: the last line ends above the bottom bars and the home bar ({round(m['last'])} <= {round(limit)})",
