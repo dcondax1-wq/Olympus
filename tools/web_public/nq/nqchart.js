@@ -21,7 +21,7 @@ function tokens() {
   const cs = getComputedStyle(document.documentElement), v = (n, d) => (cs.getPropertyValue(n) || '').trim() || d;
   return { text: v('--ag-text', '#f3ece0'), soft: v('--ag-soft', '#cfc4b2'), muted: v('--ag-muted', '#9a8f7d'), line: v('--ag-line', '#3a3228'),
     up: v('--ag-olive-text', '#a0ac6e'), down: v('--ag-terra-text', '#e08a6b'), good: v('--ag-olive-text', '#a0ac6e'), bad: v('--ag-terra-text', '#e08a6b'),
-    gold: v('--ag-gold-hi', '#dcbd6e'), aegean: v('--ag-aegean-text', '#7fa7c2'), mauve: '#a78bfa', sand: '#60a5fa', olive: v('--ag-olive', '#7f8a52'), rose: '#f0abfc',
+    gold: v('--ag-gold-hi', '#67e8f9'), aegean: v('--ag-aegean-text', '#7fa7c2'), mauve: '#a78bfa', sand: '#60a5fa', olive: v('--ag-olive', '#7f8a52'), rose: '#f0abfc',
     font: getComputedStyle(document.body).fontFamily || 'system-ui, sans-serif' };
 }
 const col = (T, k) => T[k] || T.gold;
