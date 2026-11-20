@@ -139,7 +139,12 @@
     var md = /^(\d{4})-(\d{2})-(\d{2})$/.exec(day);
     var when = md ? MON[+md[2] - 1] + ' ' + (+md[3]) : day;
     var old = md && okN(nowS) ? (nowS - Date.parse(day + 'T22:00:00Z') / 1000) > 4 * 86400 : false;
-    return { day: day, when: when, rows: rows, ideas: ideas, old: !!old, t: okN(t) ? t : null,
+    // real fill cost per bot (tools/fill_cost.py via learned.json bots[].fills.line, night-atlasfills 2026-11-20)
+    var fills = (c && Array.isArray(c.bots) ? c.bots : []).map(function (b) {
+      return isObj(b) && isObj(b.fills) && typeof b.fills.line === 'string' && b.fills.line
+        ? { name: String(b.name || b.id || ''), text: b.fills.line } : null;
+    }).filter(Boolean).slice(0, 4);
+    return { day: day, when: when, rows: rows, ideas: ideas, old: !!old, t: okN(t) ? t : null, fills: fills,
              src: useZ ? 'From your PC\'s nightly learning (live feed)' : 'Cloud copy (Claude\'s nightly run' + (c.built ? ', ' + c.built : '') + ')' };
   }
 
@@ -292,6 +297,7 @@
     var ul = el('ul');
     L.rows.forEach(function (r) { var li = el('li'); li.appendChild(el('b', '', r.name + ' ')); li.appendChild(d.createTextNode(r.text)); ul.appendChild(li); });
     box.appendChild(ul);
+    (L.fills || []).forEach(function (f) { box.appendChild(el('p', 'zs-src', (f.name ? f.name + ': ' : '') + f.text)); });
     if (L.ideas) box.appendChild(el('p', 'zs-idea', L.ideas + ' idea' + (L.ideas === 1 ? '' : 's') + ' for you on the Decide card: a yes only lets Claude test it.'));
     box.appendChild(el('p', 'zs-src', L.src + '. Advice only: ZEUS changed nothing.'));
   }
