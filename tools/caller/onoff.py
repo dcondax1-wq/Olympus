@@ -41,7 +41,9 @@ def turn_on(typed: str, cap: int, public: str = "", h=None) -> tuple:
         return False, f"Not started: the daily cap must be 1 to {hard}."
     st = {"on": True, "since": dt.datetime.now(dt.timezone.utc).isoformat(), "daily_cap": int(cap), "public": public, "mode": "consent_only"}
     _write(st, h)
-    return True, f"Caller ON: consent-only, at most {cap} dials a day, weekdays 9-5 their time. CALLER_STOP.bat turns it off."
+    if s.get("outbound_enabled") is not True:
+        return True, "Caller ON: the AI receptionist answers calls to your agency number. It makes no outbound calls (phase 2). CALLER_STOP.bat turns it off."
+    return True, f"Caller ON: answers calls, and calls back only businesses that signed the form: at most {cap} a day, weekdays 9-5 their time."
 
 
 def turn_off(h=None) -> str:
@@ -66,7 +68,7 @@ def main(argv=None) -> int:
         return 0
     s = C.settings()
     cap = a.cap or int(input(f"Daily cap (1-{s['limits']['daily_cap_max']}, Enter = {s['limits']['daily_cap']}): ").strip() or s["limits"]["daily_cap"])
-    typed = input(f"Type {PHRASE} to let the AI assistant call businesses that signed the consent form: ")
+    typed = input(f"Type {PHRASE} to turn the AI assistant on: ")
     ok, msg = turn_on(typed, cap, a.public)
     print(msg)
     return 0 if ok else 1

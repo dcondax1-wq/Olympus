@@ -24,6 +24,8 @@ PLACEHOLDER = re.compile(r"YOUR |\(555\)|555-01|the owner|example\.com", re.I)
 
 
 def build(endpoint: str = "/api/consent", s: dict | None = None) -> dict:
+    # PHASE 2. The concept sites are on GitHub Pages, so in practice the endpoint is the Pages Function's full URL
+    # (https://<project>.pages.dev/api/consent) with ALLOWED_ORIGIN pinned to the sites' origin (cloudflare/consent.js).
     """endpoint: the concept site's own Pages Function (default, same origin: no PC address on a public page), or a full https URL.
     A Tailscale (.ts.net) address is refused: the publish privacy pass masks it, and it maps the owner's devices."""
     ep = endpoint.rstrip("/")

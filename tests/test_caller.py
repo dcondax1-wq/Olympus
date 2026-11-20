@@ -63,12 +63,13 @@ def check(name, ok, info=""):
     print(("[PASS] " if ok else "[FAIL] ") + name + ("" if ok else f"  -> {str(info)[:600]}"), flush=True)
 
 
-def new_home(keys=True, on=True, registry=True, cap=20):
+def new_home(keys=True, on=True, registry=True, cap=20, outbound=True):
     h = tempfile.mkdtemp(prefix="caller-test-")
     os.makedirs(os.path.join(h, "caller"), exist_ok=True)
     with open(os.path.join(h, "caller", "settings.json"), "w") as f:
         json.dump({"agency_name": "Brightline Web Studio", "owner_first_name": "Dee", "callback_number": "(301) 555-0100",
-                   "postal_address": "1 Example St, Frederick, MD 21701", "payment_link": "https://example.com/pay"}, f)
+                   "postal_address": "1 Example St, Frederick, MD 21701", "payment_link": "https://example.com/pay",
+                   "outbound_enabled": outbound}, f)
     if keys:
         with open(os.path.join(h, "caller.json"), "w") as f:
             json.dump(FAKE_KEYS, f)
@@ -127,6 +128,20 @@ def main() -> int:
     cs.start()
     out = cs.hear("Are you a real person?").text
     check("a. even a model that lies is overruled: the spoken text says AI, and the replacement is counted", "AI assistant" in out and cs.filtered == 1, out)
+
+    # ---------------------------------------------------------------- launch = inbound only (lead 2026-11-20)
+    hi = new_home(outbound=False)
+    sign(hi)
+    fa0 = T.FakeAdapter({NUM: "landline"})
+    check("launch: the repo default is inbound only (outbound_enabled false); even ON + consent + landline, the gate and the dialer make no outbound call",
+          C.read_json(os.path.join(ROOT, "tools", "caller", "settings.json"))["outbound_enabled"] is False
+          and gate(hi).blocked_by == "switch" and "inbound only" in " ".join(gate(hi).reasons)
+          and R.tick(TUE_10ET, fa0, "https://x.example", hi, leads_path=os.path.join(hi, "none.json")) is None and fa0.dialed == [])
+    os.environ["OLYMPUS_HOME"] = hi
+    try:
+        check("launch: CALLER_ON says the receptionist answers and makes no outbound calls", "no outbound calls" in O.turn_on("START CALLING", 20, h=hi)[1])
+    finally:
+        os.environ.pop("OLYMPUS_HOME", None)
 
     # ---------------------------------------------------------------- b. never a wireless number
     h = new_home()
@@ -223,8 +238,9 @@ def main() -> int:
           r == {"ok": True, "added": 1, "refused": 1} and not store and K.valid_for(NUM, TUE_10ET, C.settings(hp), hp)[0]
           and all(a == "Bearer cftok" + "z" * 30 for _, _, a in seen) and any(m == "DELETE" for m, _, _ in seen), (r, seen))
     js = open(os.path.join(ROOT, "tools", "caller", "cloudflare", "consent.js"), encoding="utf-8").read()
-    check("c. the Cloudflare function checks the same rules (agree true, full name, 10-digit phone, version), caps 5 a day per IP, holds no secret",
-          "b.agree !== true" in js and K.CONSENT_VERSION in js and "n >= 5" in js and "env.CONSENT" in js and not re.search(r"token|secret|sk-ant|AC[0-9a-f]{32}", js, re.I))
+    check("c. the Cloudflare function checks the same rules (agree true, full name, 10-digit phone, version), caps 5 a day per IP, CORS pinned to ALLOWED_ORIGIN only (never *), holds no secret",
+          "b.agree !== true" in js and K.CONSENT_VERSION in js and "n >= 5" in js and "env.CONSENT" in js and 'request.headers.get("Origin") !== env.ALLOWED_ORIGIN' in js and js.count("ALLOWED_ORIGIN") >= 4
+          and '"*"' not in js and not re.search(r"token|secret|sk-ant|AC[0-9a-f]{32}", js, re.I))
 
     # ---------------------------------------------------------------- d. hours
     h = new_home()
@@ -384,8 +400,8 @@ def main() -> int:
         res = SIM.run_all()
     finally:
         socket.socket.connect = real
-    check("i. the simulator runs with the network cut: 8 personas (busy, rude, curious, robot, nephew, how much, ready to pay, human trap)",
-          len(res) == 8 and {"busy", "rude_opt_out", "is_this_a_robot", "nephew_does_sites", "how_much_declines"} <= {r["persona"] for r in res})
+    check("i. the simulator runs with the network cut: 9 personas (1 inbound) (busy, rude, curious, robot, nephew, how much, ready to pay, human trap)",
+          len(res) == 9 and {"busy", "rude_opt_out", "is_this_a_robot", "nephew_does_sites", "how_much_declines"} <= {r["persona"] for r in res})
     check("i. every persona scores 100% (disclosure, honesty, opt-out, no pushing, outcome)", all(r["score"] == 100 for r in res),
           [(r["persona"], r["score"], {k: v for k, v in r["checks"].items() if not v}) for r in res if r["score"] < 100])
     check("i. bookings ping the phone once each and queue a confirmation email (dry: no network)",

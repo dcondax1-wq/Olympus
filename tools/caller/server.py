@@ -278,6 +278,8 @@ def serve(port: int, app: Caller, host: str = "127.0.0.1", dial_every: int = 60)
         while True:
             time.sleep(dial_every)
             try:
+                if app.s().get("outbound_enabled") is not True:
+                    continue                      # launch = inbound only; outbound is phase 2
                 if app.adapter is not None:
                     from . import pull as P
                     P.pull(app.h)                 # the concept sites' signed forms (Cloudflare KV) -> consent.jsonl

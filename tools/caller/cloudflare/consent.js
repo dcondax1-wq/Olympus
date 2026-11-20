@@ -1,10 +1,19 @@
 // Cloudflare Pages Function for the concept sites: POST /api/consent (same origin as the page, so no PC address on any public page).
 // It only checks and stores the signed "Have our assistant call me" form in the KV namespace bound as CONSENT; the PC's caller pulls
 // and deletes the entries (tools/caller/pull.py) and keeps the real record on the PC. Nothing private is stored in this file. Free tier: 1,000 KV writes a day.
-// Wiring (the lead / publisher): copy to functions/api/consent.js of the Pages project and bind a KV namespace named CONSENT.
+// Wiring (PHASE 2, the lead / publisher): copy to functions/api/consent.js of a Pages project, bind a KV namespace named CONSENT, and set
+// the variable ALLOWED_ORIGIN to the concept sites' origin (e.g. https://<user>.github.io). The sites are on GitHub Pages, so this is a
+// cross-origin POST: only that one origin gets CORS; any other Origin is refused (403) before anything is stored.
 const VERSION = "v2-2026-11-20";
+const cors = (env) => ({ "Access-Control-Allow-Origin": env.ALLOWED_ORIGIN || "null", "Access-Control-Allow-Methods": "POST",
+                         "Access-Control-Allow-Headers": "Content-Type", "Access-Control-Max-Age": "86400", "Vary": "Origin" });
+export async function onRequestOptions({ request, env }) {
+  if (!env.ALLOWED_ORIGIN || request.headers.get("Origin") !== env.ALLOWED_ORIGIN) return new Response(null, { status: 403 });
+  return new Response(null, { status: 204, headers: cors(env) });
+}
 export async function onRequestPost({ request, env }) {
-  const say = (ok, message, status) => new Response(JSON.stringify({ ok, message }), { status, headers: { "Content-Type": "application/json" } });
+  const say = (ok, message, status) => new Response(JSON.stringify({ ok, message }), { status, headers: { "Content-Type": "application/json", ...cors(env) } });
+  if (!env.ALLOWED_ORIGIN || request.headers.get("Origin") !== env.ALLOWED_ORIGIN) return say(false, "Not allowed.", 403);
   const raw = await request.text();
   if (raw.length > 4096) return say(false, "Too big.", 413);
   let b;

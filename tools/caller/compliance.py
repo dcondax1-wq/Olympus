@@ -284,8 +284,9 @@ def check_outbound(lead: dict, now_utc: dt.datetime, line_type: str, consent_ok:
     made_today = sum(1 for c in calls if c.get("dir") == "out" and str(c.get("ts", ""))[:10] == today_utc.isoformat())
     oks = [
         step("number", bool(num), "a US number" if num else "not a valid US number"),
-        step("switch", bool(st.get("on")) and s.get("outbound_mode") == "consent_only",
-             "caller is ON (consent-only)" if st.get("on") else "caller is OFF (CALLER_ON.bat + START CALLING)"),
+        step("switch", bool(st.get("on")) and s.get("outbound_mode") == "consent_only" and s.get("outbound_enabled") is True,
+             ("outbound is OFF: launch is inbound only (phase 2 needs outbound_enabled: true)" if s.get("outbound_enabled") is not True
+              else "caller is ON (consent-only)" if st.get("on") else "caller is OFF (CALLER_ON.bat + START CALLING)")),
         step("daily cap", made_today < cap, f"{made_today} of {cap} today"),
         step("consent", bool(consent_ok[0]), consent_ok[1]),
         step("our do-not-call list", num not in dnc_numbers(h), "not on it" if num not in dnc_numbers(h) else "ON our do-not-call list: never"),
