@@ -20,7 +20,7 @@ WEB = os.path.join(ROOT, "tools", "web_public")
 HUB = os.path.join(WEB, "hub")
 SHOTS = os.path.join(ROOT, "research", "handoff", "2026-11-20", "olympus2", "nav", "after")
 RES: list = []
-PAGES = {"help": ".hp-nav", "steps": ".st-nav", "manual": ".mn-top", "zeus": ".zs-nav", "doors": "nav"}
+PAGES = {"help": ".hp-nav", "steps": ".st-nav", "manual": ".mn-top", "zeus": ".zs-nav", "doors": "nav", "whatsnew": ".wn-nav"}
 CLS_JS = """window.__cls = 0; new PerformanceObserver(l => { for (const e of l.getEntries()) if (!e.hadRecentInput) window.__cls += e.value; })
   .observe({type: 'layout-shift', buffered: true});"""
 
@@ -35,6 +35,38 @@ def rd(n):
         return f.read()
 
 
+PRIVATE = re.compile(r"ts\.net|tailscale\.net|@[A-Za-z0-9-]+\.[a-z]{2,}|dcondax1|demetrades|\b100\.\d{1,3}\.\d{1,3}\.\d{1,3}\b|\b[A-Z]{3,6}\d{8,}\b|MFFUEVRPD|\bPA-?\d{4,}", re.I)
+
+
+def part_wn():
+    import json
+    raw = rd("whatsnew.json")
+    d = json.loads(raw)
+    items = d["items"]
+    bad = [i.get("title") for i in items if not (re.match(r"^2026-\d\d-\d\d$", i.get("day", "")) and i.get("status") in d["status"]
+                                                and i.get("title") and i.get("what") and i.get("href") and i.get("label"))]
+    check(f"w. whatsnew.json: {len(items)} items, each with a day, a known status, title, what, where to tap", len(items) >= 15 and not bad, bad)
+    miss = []
+    for i in items:
+        path, _, frag = i["href"].partition("#")
+        f = os.path.normpath(os.path.join(HUB, path.split("?")[0]))
+        if path.endswith("/"):
+            f = os.path.join(f, "index.html")
+        if not os.path.exists(f):
+            miss.append(i["href"])
+        elif frag and path.split("?")[0] != "help.html" and f'id="{frag}"' not in open(f, encoding="utf-8").read():
+            miss.append(i["href"])
+        elif frag and path.split("?")[0] == "help.html" and frag not in {x["id"] for x in json.loads(rd("help.json"))["items"]}:
+            miss.append(i["href"])
+    check("w. every 'where to tap' opens a page that exists, with its #anchor", not miss, miss)
+    check("w. no private ids, emails, tailnet names or IPs; no security details on the public page",
+          not PRIVATE.search(raw + rd("whatsnew.html") + rd("whatsnew.js")) and not re.search(r"vulnerab|exploit|stranger|hidden request", raw, re.I), PRIVATE.findall(raw))
+    js = rd("whatsnew.js")
+    check("w. whatsnew.js: textContent only, one GET, no storage, nothing sent", not re.search(r"innerHTML|outerHTML|insertAdjacentHTML|localStorage|method:", js)
+          and js.count("fetch(") == 1)
+    check("w. linked from Help", 'href="whatsnew.html"' in rd("help.html"))
+
+
 def part_a():
     first = {}
     for p in PAGES:
@@ -46,7 +78,7 @@ def part_a():
     want = {"help": ["zeus.html", "steps.html", "manual.html"], "steps": ["zeus.html", "help.html", "manual.html"], "manual": ["zeus.html", "help.html"]}
     bad = {p: [h for h in want[p] if f'href="{h}"' not in trio[p]] for p in trio}
     check("a. help / steps / manual: the top row links ZEUS and each other", not any(bad.values()), bad)
-    nolook = [p for p in ("help", "steps", "zeus", "manual", "doors") if "olympus.theme.look." not in rd(p + ".html") or "olympus/themes.js" not in rd(p + ".html")]
+    nolook = [p for p in ("help", "steps", "zeus", "manual", "doors", "whatsnew") if "olympus.theme.look." not in rd(p + ".html") or "olympus/themes.js" not in rd(p + ".html")]
     check("a. help, steps, zeus, manual, doors carry the OLYMPUS look (first-paint copy + themes.js)", not nolook, nolook)
 
 
@@ -70,7 +102,7 @@ def part_b(shots: bool):
         with sync_playwright() as pw:
             br = pw.chromium.launch()
             for look in ("agora", "ivory"):
-                ctx = br.new_context(viewport={"width": 390, "height": 844}, is_mobile=True, has_touch=True, device_scale_factor=2 if shots else 1)
+                ctx = br.new_context(viewport={"width": 390, "height": 844}, is_mobile=True, has_touch=True, color_scheme="dark", device_scale_factor=2 if shots else 1)
                 ctx.route(re.compile(r"^https?://(?!127\.0\.0\.1)"), lambda r: r.fulfill(status=204, body=""))
                 ctx.add_init_script(CLS_JS)
                 if look != "agora":
@@ -86,6 +118,14 @@ def part_b(shots: bool):
                     pg.on("console", lambda m: errs.append(m.text) if m.type == "error" and "Failed to load resource" not in m.text else None)
                     pg.goto(base + f"hub/{p}.html")
                     pg.wait_for_timeout(1800)
+                    if p == "whatsnew":
+                        n_all = pg.eval_on_selector_all(".wn-item", "e => e.length")
+                        pg.click("#fYou")
+                        n_you = pg.eval_on_selector_all(".wn-item", "e => e.length")
+                        tags = pg.eval_on_selector_all(".wn-item .wn-tag", "e => [...new Set(e.map(x => x.textContent))]")
+                        pg.click("#fAll")
+                        check(f"b. whatsnew [{look}]: {n_all} lines; 'Needs me' shows only your steps / your yes ({n_you}: {tags})",
+                              n_all >= 15 and 0 < n_you < n_all and set(tags) <= {"Needs your yes", "Your step"}, (n_all, n_you, tags))
                     bg = pg.evaluate("getComputedStyle(document.body).backgroundColor")
                     nums = [int(x) for x in re.findall(r"\d+", bg)[:3]]
                     lum = sum(nums) / 3 if nums else 0
@@ -109,6 +149,7 @@ def part_b(shots: bool):
 
 def main():
     part_a()
+    part_wn()
     if not os.environ.get("NAV_NO_BROWSER"):
         part_b("--shots" in sys.argv)
     n = sum(RES)

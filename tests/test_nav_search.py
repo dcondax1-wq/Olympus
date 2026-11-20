@@ -56,6 +56,8 @@ CASES = {
     "my accounts": "business/accounts.html", "zeus": "hub/zeus.html", "board": "board/", "kalshi": "kalshi/", "journal": "journal/",
     "news today": "pheme/", "how many micros": "pnyx/index.html", "change theme": "gate/index.html#lookSec", "dark mode": "gate/index.html#lookSec",
     "all apps": "gate/index.html#az", "weekly review": "apollo/",
+    # what's new (2026-11-20 lead follow-up)
+    "what's new": "hub/whatsnew.html", "what changed": "hub/whatsnew.html", "whats new this week": "hub/whatsnew.html",
 }
 
 JS = r"""

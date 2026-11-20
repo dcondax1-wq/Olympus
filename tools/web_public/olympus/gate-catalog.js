@@ -221,6 +221,7 @@
     ['act-sos', 'Emergency: what to do', '10 cards, 3 steps each: PC off, stuck trade, disconnected...', 'hub/manual.html#sos', 'emergency sos panic wrong broken problem stuck disconnected disconnect error urgent ninjatrader nt'],
     ['act-kill', 'Stop everything now', 'The kill switch: flatten every account, stop the bot', 'hub/manual.html#sos-8', 'stop kill everything halt flatten close all bot bots shut off switch out', 'bot bots'],
     ['act-manual', 'Owner manual', 'Who is who, a normal day, money, every word explained', 'hub/manual.html', 'manual guide who is explain meaning means glossary words word mean define definition'],
+    ['act-new', "What's new", 'What changed in Olympus and the bots, newest first', 'hub/whatsnew.html', 'new changed changes change updates latest recent whats week'],
     ['act-steps', 'Your steps', 'What you still have to do, in order', 'hub/steps.html', 'steps todo to-do waiting owner list next need'],
     ['act-add', 'Add an account', 'Pick the plan, the Name, your phrase: 3 steps', 'hub/manual.html#sos-9', 'add new account accounts buy bought rapid builder eval start'],
     ['act-passed', 'My eval passed: what now', 'Upgrade at MFFU, then move the bot (4 steps)', 'hub/help.html#eval-passed', 'eval passed pass funded upgrade now'],
