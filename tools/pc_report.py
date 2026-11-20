@@ -1862,14 +1862,14 @@ def _routes_mode() -> str:
 
 
 def _app_had(m: dict) -> bool:
-    """The bot's instant path already put this trade alert on the phone app (engine/notify.instant_record app_only: ntfy failed then):
-    the report sends only its ntfy copy. Per account (engine/notify.acct_match): ATLAS's alert never counts for LIT's row on the same
-    bar; the report's one "lit" row counts every LIT account's (the 50K, the 25K #2, the Rapid's LIT lane: the report files them all
-    under "lit")."""
+    """The bot's instant path already put this trade alert on the phone app and ntfy did not take it (engine/notify.instant_record
+    app_only): the report sends only its ntfy copy (engine/notify.report_copy == "ntfy"). Per account: ATLAS's alert never counts for
+    LIT's row on the same bar. The report's one "lit" row is titled the 50K, so only the 50K's own app-only alert earns that copy; an
+    extra LIT account's (the 25K #2, the Rapid's LIT lane) makes notify.apply drop the row instead (skeptic 2026-11-20: it came back
+    on ntfy as a false "Zlarior 50K opened / closed" with the 50K's day $ and room)."""
     try:
         from engine import notify as _n
-        return _n.instant_sent(_n.entry_t_of(m), what="app_entries" if _kind(m) == "trade_opened" else "app_exits",
-                               acct=_n.report_acct(m))
+        return _n.report_copy(m, kind=_kind(m)) == "ntfy"
     except Exception:  # noqa: BLE001
         return False
 

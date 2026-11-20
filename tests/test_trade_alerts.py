@@ -575,8 +575,122 @@ def part_i2(b: Box):
     a2 = P.entry_payload("ATLAS 25K", "LONG", 1, t2 + 3600, src="pc")
     a2["key"] += ":acctb"
     N.instant_record(a2, "entry", app_only=True)
-    check("i2. the 25K #2's app-only entry: the report's LIT row sends only its ntfy copy (not Olympus again); ATLAS's app-only entry "
-          "never counts for a LIT row", R._app_had({"key": f"open:lit:{t2}"}) and not R._app_had({"key": f"open:lit:{t2 + 3600}"}))
+    check("i2. the 25K #2's app-only entry (ntfy refused it): the report's LIT row sends NO copy at all, not even to ntfy (it would be "
+          "titled the 50K, with the 50K's day $ and room; round-2 skeptics: it went to ntfy as 'Zlarior 50K SHORT opened'); ATLAS's "
+          "app-only entry never counts for a LIT row",
+          f"open:lit:{t2}" not in report(t2) and not R._app_had({"key": f"open:lit:{t2}"}) and N.report_copy({"key": f"open:lit:{t2}"}) == "none"
+          and N.report_copy({"key": f"open:lit:{t2 + 3600}"}) == "both", report(t2))
+
+
+def part_i3(b: Box):
+    """round-2 skeptics 2026-11-20 (HIGH): the 25K #2 trades and the 50K does not; the Olympus app takes the 25K #2's instant alerts,
+    ntfy refuses them at that moment (a 429, a timeout). They were recorded app-only, the report's one LIT row matched them and
+    its real run_once posted ITS ntfy copy, written from the 50K's card: 'Zlarior 50K SHORT opened ...' / 'Zlarior 50K closed +$514 |
+    day +$0 | room $2,000'. Now the row sends nothing (its Olympus alert already showed, with the 25K #2's own name) and the bot
+    tries the 25K #2's own ntfy alert once more (engine/push._pc_send retry_s), so the ntfy copy keeps its real name."""
+    from tools import pc_report as R
+    app = []
+    saved_app, saved_run = P.app_send, P.pc_notify
+    P.app_send = phone_accepts(app)
+    card = {"room": 2000.0, "mll": 2000.0, "today_pnl": 0.0, "plan": "MFFU Builder 50K"}
+    t = T0 + 60000
+
+    def rows(et_):
+        op = {"acct": "lit", "src": "live", "entry_t": et_, "side": "SHORT", "qty": 2, "entry": 21000.0, "stop": 21020.0,
+              "target": 20900.0, "exit": "OPEN", "open": True}
+        return op, {**op, "open": False, "exit": "TARGET", "exit_t": et_ + 1800, "usd": 514.0, "exit_px": 20900.0}
+
+    def trade_25k(et_, acc):
+        lg = leg(t=et_, d=-1, q=2, fill=21000.0, stop=21020.0, target=20900.0)
+        acc.adapter.clock = lambda: et_ + 3
+        acc.adapter._push_fill(lg)
+        acc.adapter._push_exit(lg, "TARGET", {"avg": 20900.0, "filled": 2})
+
+    def report_run(et_):
+        """the REAL 15-minute run (run_once, real events() on a board with the LIT row: open, then closed) -> (ntfy titles, app keys)"""
+        op, cl = rows(et_)
+        real = R.events
+        st0 = {"seen": {}, "cond": {}, "seeded": True}
+        bb, now, cfg, _f = _report_box(b, lambda now: [])
+        titles, took = [], []
+        try:
+            for brd, dt_ in (([op], 300), ([cl], 2100)):
+                def ev(state, snap, brd=brd, dt_=dt_):
+                    st1, ms = real(st0, {"t": et_ + dt_, "live": {"board": {"lit": card, "trades": brd}}})
+                    st0.clear()
+                    st0.update(st1)
+                    ms = [m for m in ms if m["key"].startswith(("open:", "close:"))]
+                    return {"seen": {m["key"]: snap["t"] for m in ms}, "cond": {}, "seeded": True, "guard": {}}, ms
+                R.events = ev
+                h = BB_http()
+                bb.run(h, now, app_push=lambda m: took.append(m["key"]) or True)
+                titles += [c["h"].get("Title", "") for c in h.posts(cfg["topic"])]
+        finally:
+            R.events = real
+            bb.cleanup()
+        return titles, took
+
+    try:
+        r = router()
+        acc = Acc("b25k_2", "MFFUEVBLDR000002222")
+        acc.adapter = nt_adapter(acc.name, real=False)
+        r._wire_push(acc)
+        b.ntfy_ok = False
+        trade_25k(t, acc)
+        check("i3. setup: the 25K #2's entry + result reached the Olympus app with its own name, ntfy refused both (recorded app-only)",
+              len(app) == 2 and all(a["title"].startswith("Zlarior 25K #2") for a in app) and not b.take()
+              and N.instant_keys(t, what="app_entries", acct="") == [f"fill:{t}:b25k_2"], [a.get("title") for a in app])
+        titles, took = report_run(t)
+        check("i3. the real 15-minute run: NO ntfy post titled 'Zlarior 50K' and no second Olympus copy (before: 'Zlarior 50K SHORT "
+              "opened' and 'Zlarior 50K closed +$514 | day +$0 | room $2,000' on ntfy)",
+              not [x for x in titles if x.startswith("Zlarior") and not x.startswith("Zlarior 25K #2")] and not took, (titles, took))
+        # control: the 50K's OWN app-only alert still earns the report's ntfy copy (its name is the row's name)
+        t2 = t + 7200
+        b.ntfy_ok = False
+        nt_adapter()._push_fill(leg(t=t2, d=-1, q=2, fill=21000.0, stop=21020.0, target=20900.0))
+        b.ntfy_ok = True
+        app.clear()
+        titles, took = report_run(t2)
+        check("i3. control: the 50K's own entry, app-only -> the report sends its ntfy copy (titled the 50K), never the app again",
+              len([x for x in titles if x.startswith("Zlarior 50K") and "opened" in x]) == 1 and not [k for k in took if k.startswith("open:")],
+              (titles, took))
+        # the bot's own retry: the 25K #2's ntfy alert once more, under its real name
+        calls = []
+
+        def flaky(base, topic, msg):
+            calls.append(msg)
+            return len(calls) > 1                                 # refused at once, taken on the retry
+
+        P.pc_notify = lambda payload: P._pc_send(dict(payload), ntfy=lambda p: N.instant_entry(p, cfg=b.cfg, poster=flaky),
+                                                 ntfy_exit=lambda p: N.instant_exit(p, cfg=b.cfg, poster=flaky), retry_s=0)
+        t3 = t + 14400
+        acc.adapter.clock = lambda: t3 + 3
+        acc.adapter._push_fill(leg(t=t3, d=-1, q=2, fill=21000.0, stop=21020.0, target=20900.0))
+        lines = [json.loads(x) for x in open(os.path.join(b.dir, N.TRADE_LOG_NAME), encoding="utf-8")]
+        check("i3. the 25K #2's ntfy alert refused at once: tried once more by the bot, under its own name ('Zlarior 25K #2: SHORT "
+              "2 MNQ'), recorded as sent, the report skips the row; the log keeps both answers",
+              len(calls) == 2 and calls[1]["title"].startswith("Zlarior 25K #2: SHORT 2 MNQ") and N.instant_keys(t3) == [f"fill:{t3}:b25k_2"]
+              and N.report_copy({"key": f"open:lit:{t3}"}) == "none" and lines[-1]["ntfy"] == "sent"
+              and str(lines[-1].get("ntfy_first")).startswith("ntfy did not"), ([c["title"] for c in calls], lines[-1]))
+        calls.clear()
+        t4 = t + 21600
+        nt_adapter()._push_fill(leg(t=t4, d=-1, q=2, fill=21000.0, stop=21020.0, target=20900.0))
+        check("i3. the 50K's (and ATLAS's) refused ntfy alert is NOT retried by the bot: the report sends that copy under the right name",
+              len(calls) == 1 and N.report_copy({"key": f"open:lit:{t4}"}) == "ntfy", len(calls))
+        check("i3. a retry never re-sends what ntfy already took, and never runs for 'no topic' / 'off'",
+              N.instant_entry(dict(P.entry_payload("Zlarior 25K #2", "SHORT", 2, t3, src="pc"), key=f"fill:{t3}:b25k_2", retry=True),
+                              cfg=b.cfg, poster=flaky) == "already sent"
+              and not P._retry_owed({"key": f"fill:{t3}:b25k_2"}, P.NO_TOPIC + " on this PC")
+              and not P._retry_owed({"key": f"fill:{t3}:b25k_2"}, "trade_opened is off")
+              and P._retry_owed({"key": f"out:{t3}:acctr"}, "failed: URLError") and not P._retry_owed({"key": f"out:{t3}:acctb"}, "failed: URLError"))
+    finally:
+        P.app_send, P.pc_notify = saved_app, saved_run
+        b.ntfy_ok = True
+
+
+def BB_http():
+    from tests import test_bots_back as BB
+    return BB.FakeHTTP()
 
 
 # ------------------------------------------------------------------------------------------------ j. important alerts on both routes
@@ -856,7 +970,7 @@ def part_o(b: Box):
 
 
 def main() -> int:
-    for f in (part_a, part_b, part_c, part_d, part_e, part_g, part_h, part_h2, part_h2b, part_h3, part_h4, part_i, part_i2, part_j, part_k,
+    for f in (part_a, part_b, part_c, part_d, part_e, part_g, part_h, part_h2, part_h2b, part_h3, part_h4, part_i, part_i2, part_i3, part_j, part_k,
               part_l, part_m, part_n, part_o):
         b = Box()
         try:

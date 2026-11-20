@@ -30,7 +30,7 @@ alerts every 15 minutes.
 The PC still has your private ntfy alert topic (the ntfy app, if you follow it: `python tools/pc_report.py --setup` on the PC prints
 the topic to follow).
 
-- **A trade's entry and result, PASSED / FAILED / LOCKED / payout ready, no trade for 5+ days on an account, the 15-minute report's
+- **A trade's entry and result, PASSED / FAILED / LOCKED / payout ready, no trade for 5+ days (the 50K, ATLAS, the 25K #2, the Rapid EOD), the 15-minute report's
   problems (bot down, NinjaTrader closed, FEED STALE) and room low (if you turn it on) go to Olympus AND to ntfy**
   (`trade_routes: "both"` in `notify_settings.json`). Problems the PC's fast alarm already sent in the entry hours stay on ntfy
   only; "Back to normal" stays Olympus first (so a flap at night is not 4 sounds); PC silent comes from the cloud, on ntfy. Until 2026-11-20 they went to
@@ -42,8 +42,9 @@ the topic to follow).
 - `trade_routes: "olympus"` = Olympus first, ntfy only when no phone took it; `"ntfy"` = ntfy first, Olympus only when ntfy did not
   take it. Pick one once the test below shows which app works.
 - **Every other alert** goes to **Olympus first**, and to ntfy **only when no phone took it** (as before).
-- Once one route took an alert, the 15-minute report does not send it again. One exception: a trade the Olympus app got at once but
-  ntfy refused is retried on ntfy every 15 minutes for 2 hours.
+- Once one route took an alert, the 15-minute report does not send it again. One exception: a 50K or ATLAS trade the Olympus app got
+  at once but ntfy refused is retried on ntfy every 15 minutes for 2 hours. For the 25K #2 and the Rapid EOD the bot itself tries the
+  ntfy alert once more a minute later, under the account's own name (the report's one LIT row could only call it "Zlarior 50K").
 - Check the routes: first tap **Send a test** on the Olympus card (tests Olympus alone, from the phone). Then on the PC:
   `python -X utf8 -m engine.alert_check --test` (or PC dashboard Settings > Send test, once a minute at most): one TEST entry + close
   on each route, and what each answered (docs/TRADE_ALERTS.md "Check it yourself").
@@ -89,9 +90,11 @@ PC silent, account status, room low and problems), milestones, summary time. Cod
 
 **Default since 2026-11-18 (owner: "important only", then "notifications when we get in a trade in any account" the same
 evening)**: ON = trade opened, trade closed (the result), account_status (PASSED, FAILED, LOCKED, LOST, target reached, payout
-READY, and since 2026-11-20 "no trade for N days" on an account (5+ days; MFFU closes an eval after 7); before it was "other", off), the daily summary, the 07:30 morning brief, PC silent, problems (bot down, FEED STALE, NinjaTrader closed). OFF = 25/50/75 %
-milestones, room low, other. Trade opened / closed ring in quiet hours only when they are in `ring_in_quiet_hours`. Turn one back
-on with `true` in `notify_settings.json`. The PC
+READY, and since 2026-11-20 "no trade for N days" (5+ days, per account: the 50K, ATLAS, the 25K #2, the Rapid EOD; MFFU can close
+an account after 7 days without a trade, and a funded one then loses ALL its profits; the count knows only the bot's own trades;
+before it was "other", off), the daily summary, the 07:30 morning brief, PC silent, problems (bot down, FEED STALE, NinjaTrader closed). OFF = 25/50/75 %
+milestones, room low, other. Trade opened / closed ring in quiet hours only when they are in `ring_in_quiet_hours`. To turn one back
+on, tell Claude: Claude changes `notify_settings.json` in the repo (a hand edit on the PC stops the auto-update). The PC
 ops task's critical alerts that repeat until "Got it" (unprotected position, KILL fired, drawdown left, engine/alerts_plus.py)
 do not go through these settings and still ring.
 

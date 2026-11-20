@@ -68,7 +68,7 @@ def part_real(b):
     """the lead's live case (2026-11-20): ATLAS short 1 MNQ @ 26,380.75 at 03:45 ET, stop moved to 26,379.50 (break-even), target 26,122.75.
     Its close comes from NinjaTrader's bracket: here the target fills (+$516). stop0 = the stop it was routed with (a 40-point stop, as an example:
     the chart feed only carries the moved one), so R = 258 / 40 = +6.45R."""
-    b.live(T.T0 - 600, [], atlas={"balance": 24887.0, "profit": -113.0, "today_pnl": 0.0, "status": "funded", "broker": "MFFUSFBLDR000006018",
+    b.live(T.T0 - 600, [], atlas={"balance": 24887.0, "profit": -113.0, "today_pnl": 0.0, "status": "funded", "broker": "MFFUSFBLDR000009999",
                                   "funded": {"max_request": 0}})
     a = T.atlas()
     t = T.T0 + 60
@@ -80,7 +80,7 @@ def part_real(b):
 
 def part_c_time(b):
     """ATLAS's own time-exit close with the provenance the bot really stores (engine/account_b.py line ~1192: risk_pts, qty)"""
-    b.live(T.T0 - 600, [], atlas={"balance": 26050.0, "profit": 1050.0, "today_pnl": 0.0, "status": "funded", "broker": "MFFUSFBLDR000006018",
+    b.live(T.T0 - 600, [], atlas={"balance": 26050.0, "profit": 1050.0, "today_pnl": 0.0, "status": "funded", "broker": "MFFUSFBLDR000009999",
                                   "funded": {"max_request": 0}})
     a = T.atlas()
     a.adapter = object()

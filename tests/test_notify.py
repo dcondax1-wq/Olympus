@@ -491,7 +491,7 @@ def instant():
     try:
         path = os.path.join(tmp, "instant.json")
         N.settings = lambda path=None: N.merge({})
-        p = {"kind": "fill", "key": "fill:1795050000", "t": 1795050000, "account": "MFFUEVBLDR123456016", "side": "LONG", "qty": 6,
+        p = {"kind": "fill", "key": "fill:1795050000", "t": 1795050000, "account": "MFFUEVBLDR123459998", "side": "LONG", "qty": 6,
              "entry": 24980.25, "stop": 24955, "target": 25360, "body": "Entered 6 MNQ", "title": "LONG · x"}
         sent = []
         poster = lambda base, topic, msg: sent.append((base, topic, msg)) or True
@@ -500,7 +500,7 @@ def instant():
         why = N.instant_entry(p, now=day, path=path, cfg=cfg, poster=poster)
         msg = sent[0][2] if sent else {}
         check("g. a real entry goes out at once to the private topic, $ first, ids masked, sound on in the day",
-              why == "sent" and len(sent) == 1 and sent[0][1] == cfg["topic"] and msg["title"] == "Zlarior ...6016: LONG 6 MNQ @ 24,980.25"
+              why == "sent" and len(sent) == 1 and sent[0][1] == cfg["topic"] and msg["title"] == "Zlarior ...9998: LONG 6 MNQ @ 24,980.25"
               and "MFFUEVBLDR" not in msg["title"] + msg["body"] and msg["body"].startswith("stop 24,955.00 (-$303), target 25,360.00 (+$4,557)") and msg["priority"] == "high", (why, msg))
         check("g. the same entry twice: one push", N.instant_entry(p, now=day, path=path, cfg=cfg, poster=poster) == "already sent" and len(sent) == 1)
         check("g. the 15-minute report then skips that entry (90 s match), keeps other trades",
@@ -544,7 +544,7 @@ def instant():
         src = open(P.__file__, encoding="utf-8").read()
         check("g. engine/push.pc_notify hands every fill to its own daemon thread (never delays routing): the phone app AND "
               "instant_entry (ntfy), whatever the app said (2026-11-20; tests.test_webpush + test_trade_alerts prove it)",
-              'threading.Thread(target=_pc_send, args=(dict(payload),), name="push", daemon=True)' in src
+              'threading.Thread(target=_pc_send, args=(dict(payload),), kwargs={"retry_s": NTFY_RETRY_S}, name="push", daemon=True)' in src
               and '(ntfy or notify.instant_entry) if k == "fill"' in src)
         home = os.path.join(tmp, "olympus")
         os.makedirs(home)
