@@ -105,3 +105,22 @@ bars from the PC) and the PC's exact open -> sent -> filled times (tools/researc
 - Proposal (lead's call, engine/datapipe.py): put the NinjaTrader legs' sent_at / fill_mtime (logs/exec_audit/legs.json,
   account ids cut) into the day bundle, so the cloud can split open -> sent -> filled; today only the post-fill ledger stamp
   travels. Needed to measure fast entry if the owner says yes.
+
+## Fill times in the day bundle (lead YES 2026-11-20 evening, data only) - commit 858111c6
+
+- engine/datapipe.py `day_fills(day)` -> `fills.jsonl.gz` in the day bundle, packed by BOTH `datapipe.pack_day` (nightly) and
+  `datafeed.pack_day` (the ntfy answer the PC actually uses). One row per MARKET entry order of the day, every account
+  (Zlarior main, ATLAS acctb_, account C, fleet tags): `sent_t` = the OIF file name's millisecond stamp (logs/ninjatrader_oif.log,
+  written by the adapter since October), `fill_t` / `fill_px` / `filled` / `state` = NinjaTrader's own outgoing order-state file
+  (time = its mtime, archived every minute in logs/exec_audit/orders.jsonl), `leg_sent_t` = the adapter leg's sent_at when
+  logs/exec_audit/legs.json has it; `sent_s_after_open`, `fill_s_after_sent`. Account names = last 4 (scrub). Read-only: it
+  reads files the PC already writes; no file in the trade path changed (engine/live.py, ninjatrader.py, account_b.py untouched by
+  this commit). A bad value packs the day without fill rows, never raises. NinjaTrader gives no separate exchange timestamp in
+  the ATI files: the order-state file time is the best "order's own" time available.
+- tools/fill_speed.py: per account, entries, seconds open -> sent and sent -> filled (median / worst), ticks past the fill bar's
+  open (median / worst), $ past the backtest's 1 tick (median / worst / total). Days packed before this change fall back to the
+  ledger stamp ("stamp only"). Today: atlas 4 entries, median 14 / worst 22 ticks, $45.50 past the backtest in total; zlarior 1
+  entry, 4 ticks, $1.50. Seconds appear from the first day packed with this code (the PC needs the update).
+- Proof: tests/test_datapipe_fills.py 15/15; test_datapipe 36/36, test_datafeed 42/42, test_fill_audit 30/30,
+  test_nq_live_reliability 119/119; smoke 9/10 (test_zenith_mode: no playwright module in this container);
+  update gate origin/pc e3bf212d vs 858111c6 on today's bars: SAME, 768 polls (updategate-replay/gate_fri_fills.json).
