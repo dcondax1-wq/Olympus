@@ -100,3 +100,30 @@ def nt_tail_load():
     def undo():
         nt.NinjaTraderBars.load = old
     return undo
+
+
+# ------------------------------------------------------------------ 2. history: keep the last 150 days in the poll
+HIST_KEEP_DAYS = 150        # LIT and ATLAS read from engine/lit_live.window_start: the previous month's first day - 8 days (<= ~70 days)
+
+
+@reg
+def hist_cap():
+    """engine.live.LiveBot._read_hist returns the TradingView export (5 years of 5m, all of 2026 in 1m) + the archive every
+    poll; the poll then merges, de-duplicates, sorts and cleans all of it, and LIT / ATLAS keep only their window. Capped to the
+    last HIST_KEEP_DAYS days of the bot's clock (still 2x the longest window)."""
+    from engine import live
+    old = live.LiveBot._read_hist
+
+    def capped(self, sym, tf):
+        df = old(self, sym, tf)
+        if df is None or not len(df):
+            return df
+        cut = int(self.clock()) - HIST_KEEP_DAYS * 86400
+        if int(df["time"].iloc[0]) >= cut:
+            return df
+        return df[df["time"] >= cut]
+    live.LiveBot._read_hist = capped
+
+    def undo():
+        live.LiveBot._read_hist = old
+    return undo

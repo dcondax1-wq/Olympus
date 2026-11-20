@@ -192,8 +192,9 @@ def main(argv=None):
     ap.add_argument("--days", default="2026-11-16,2026-11-17,2026-11-18")
     ap.add_argument("--patch", action="append", default=[])
     ap.add_argument("--out")
+    ap.add_argument("--offset", type=float, default=2.0, help="seconds after each minute the poll runs (2.0 = today; 0.2 = fast entry)")
     a = ap.parse_args(argv)
-    res = run(a.days.split(","), a.patch)
+    res = run(a.days.split(","), a.patch, offset=a.offset)
     s = summary(res)
     print(json.dumps({"polls": s["polls"], "errors": res["n_errors"], "wall_median_ms": s["wall_median_ms"],
                       "wall_p90_ms": s["wall_p90_ms"], "lit_median_ms": s["lit_median_ms"], "ledger": len(res["ledger"])}))

@@ -26,6 +26,46 @@ import speedups as SU  # noqa: E402
 FAIL = []
 
 
+def legacy_load(self, path):
+    """engine/ninjatrader.NinjaTraderBars.load as of 2026-11-20 (before the tail reader), verbatim."""
+    import pandas as pd
+    try:
+        st = os.stat(path)
+    except OSError:
+        return None
+    key = (st.st_mtime_ns, st.st_size)
+    hit = self._cache.get(path)
+    if hit and hit[0] == key:
+        return hit[1]
+    cols = ["time", "open", "high", "low", "close", "volume"]
+    try:
+        df = pd.read_csv(path, header=None, names=cols, usecols=range(6), on_bad_lines="skip", dtype=str,
+                         engine="python")
+    except Exception:
+        return None
+    # (2026-11-03) every line LE_Feed / LE_BarFeed writes ends with "\n": a last line without it is still being
+    # appended, and a cut number ("21000.5" read as "2100") would parse as a valid but wrong close. Dropped; the
+    # next read (the file's size changes, so the cache misses) has it whole.
+    try:
+        with open(path, "rb") as fh:
+            fh.seek(-1, os.SEEK_END)
+            torn = fh.read(1) not in (b"\n", b"\r")
+    except OSError:
+        torn = False
+    if torn and len(df):
+        df = df.iloc[:-1]
+    for c in cols:
+        df[c] = pd.to_numeric(df[c], errors="coerce")
+    df = df.dropna(subset=["time", "open", "high", "low", "close"])          # header row, half-written last line
+    df["volume"] = df["volume"].fillna(0.0)
+    df["time"] = df["time"].astype("int64")
+    df = df.drop_duplicates("time", keep="last").sort_values("time").reset_index(drop=True)
+    for c in ("open", "high", "low", "close", "volume"):
+        df[c] = df[c].astype(float)
+    self._cache[path] = (key, df)
+    return df
+
+
 def check(name, ok, info=""):
     print(f"  [{'OK' if ok else 'FAIL'}] {name}" + (f"  ({info})" if info and not ok else ""))
     if not ok:
@@ -37,20 +77,25 @@ def line(t, px, v=10):
 
 
 class Pair:
+    """Today's reader (legacy_load, frozen copy) vs the research tail reader AND engine.ninjatrader's load as it is now
+    (after the lead applies patch_1_tail_load.diff it is the tail reader too: both must equal the frozen copy)."""
     def __init__(self, folder):
-        self.a = NinjaTraderBars(folder=folder)          # today's reader
-        self.b = NinjaTraderBars(folder=folder)          # the tail reader
+        self.a = NinjaTraderBars(folder=folder)
+        self.b = NinjaTraderBars(folder=folder)
+        self.c = NinjaTraderBars(folder=folder)
 
     def same(self, path):
-        x = self.a.load(path)
-        y = SU.tail_load(self.b, path)
-        if x is None or y is None:
-            return x is None and y is None, "one is None"
-        try:
-            assert_frame_equal(x, y, check_dtype=True)
-            return True, ""
-        except AssertionError as e:
-            return False, str(e)[:300]
+        x = legacy_load(self.a, path)
+        for y in (SU.tail_load(self.b, path), self.c.load(path)):
+            if x is None or y is None:
+                if not (x is None and y is None):
+                    return False, "one is None"
+                continue
+            try:
+                assert_frame_equal(x, y, check_dtype=True)
+            except AssertionError as e:
+                return False, str(e)[:300]
+        return True, ""
 
 
 def bump(path):
@@ -128,8 +173,13 @@ def main():
         fh.writelines(L)
     bump(p)
     SU.FULL_EVERY_S, keep_full = 0.0, SU.FULL_EVERY_S      # the 15-min backstop due: the same-length correction is read
+    keep_cls = getattr(NinjaTraderBars, "TAIL_FULL_EVERY_S", None)
+    if keep_cls is not None:
+        NinjaTraderBars.TAIL_FULL_EVERY_S = 0.0
     ok, info = P.same(p)
     SU.FULL_EVERY_S = keep_full
+    if keep_cls is not None:
+        NinjaTraderBars.TAIL_FULL_EVERY_S = keep_cls
     check("f. rewrite in place, same head + length, a bar 10 lines back corrected: read by the 15-min full read", ok, info)
     with open(p, "w") as fh:                              # g. empty file
         pass
@@ -151,7 +201,7 @@ def main():
         with open(big, "a") as fh:
             fh.write(line(t0 + 60 * (21000 + k), 27000))
         bump(big)
-        s = time.perf_counter(); P2.a.load(big); ta += time.perf_counter() - s
+        s = time.perf_counter(); legacy_load(P2.a, big); ta += time.perf_counter() - s
         s = time.perf_counter(); SU.tail_load(P2.b, big); tb += time.perf_counter() - s
     ok, info = P2.same(big)
     check(f"i. 21,000-line file: today {ta / 20 * 1000:.0f} ms a read, tail {tb / 20 * 1000:.0f} ms (identical)", ok and tb < ta, info)
