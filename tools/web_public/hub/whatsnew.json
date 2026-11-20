@@ -12,6 +12,42 @@
  "items": [
   {
    "day": "2026-11-20",
+   "status": "site",
+   "title": "Your apps in your order, clutter gone",
+   "what": "Cities, Kalshi, NQ bot and Jarvis come first everywhere (Home, the Jarvis switcher, search, the Doors page), then Planner and Business, then the rest. 28 apps you don't use (the forges, old duplicates) are hidden; their links still open. Cities is one entry with the World, Data City, Kalshi City, Atlas City and Mint City inside.",
+   "money": "",
+   "href": "../gate/index.html",
+   "label": "Home"
+  },
+  {
+   "day": "2026-11-20",
+   "status": "site",
+   "title": "Data City no longer goes black when you drag",
+   "what": "On the phone the 3D city lowered its sharpness while you dragged and blanked the picture for a frame; it now redraws straight away.",
+   "money": "",
+   "href": "../cities/index.html",
+   "label": "Cities"
+  },
+  {
+   "day": "2026-11-20",
+   "status": "site",
+   "title": "Every app opens with no signal",
+   "what": "After one visit, all 32 apps open offline with their last numbers (before: only 3). Online nothing changes: always the newest copy.",
+   "money": "",
+   "href": "../nq/index.html",
+   "label": "NQ bot"
+  },
+  {
+   "day": "2026-11-20",
+   "status": "site",
+   "title": "Faster and easier to read",
+   "what": "NQ opens with 340 KB instead of 947 KB, Kalshi shows in about half a second, pages no longer jump while they load, sentences are 15 px and every button is at least 44 px.",
+   "money": "",
+   "href": "../kalshi/index.html",
+   "label": "Kalshi"
+  },
+  {
+   "day": "2026-11-20",
    "status": "you",
    "title": "Holidays: never stop the bot with a trade open",
    "what": "Thu Nov 26 (halt 13:00 ET), Fri Nov 27 and Thu Dec 24 (halt 13:15 ET): MFFU does not close an open trade at a half-day halt, so an open trade at the halt fails the account. The bot is flat 5 min before; if your phone says CLOSE THE TRADE NOW, close it in NinjaTrader.",
