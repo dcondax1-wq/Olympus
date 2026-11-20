@@ -604,7 +604,7 @@ void main() {
   float t = texture2D(uText, vec2((floor(q.x) + 0.5) / cells.x, (vB2.y + 1.0 - (floor(q.y) + 0.5) / cells.y) / uRows)).r;   // one sample per LED
   float edge = smoothstep(0.0, 0.06, vUv.y) * smoothstep(0.0, 0.06, 1.0 - vUv.y);
   vec3 col = vec3(0.006, 0.008, 0.014) + vC * 0.035 * dotm;                    // dark glass, faint unlit LEDs
-  col += vC * t * dotm * 3.2 * edge;
+  col += vC * mix(0.42, t * dotm, detail) * 3.2 * edge;                         // far away: the band's average glow, not a dark ring
   col += vC * (1.0 - edge) * 0.6;                                               // the bright frame lines
   col = fogged(col, vW);
   gl_FragColor = vec4(min(col, vec3(12.0)), 1.0);
