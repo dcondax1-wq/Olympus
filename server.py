@@ -1257,6 +1257,14 @@ try:
 except Exception as _ps_err:
     print(f"[phone_safety] /safety disabled: {_ps_err.__class__.__name__}: {_ps_err}", flush=True)
 # ---- END ZEUS PHONE SAFETY ----
+# ---- ADD ACCOUNT BOX ---- (engine/account_box.py): /add-account/ = pick the plan + type the NinjaTrader Name, the same checks as
+# ADD_ACCOUNT.bat (engine/account_cli.add). PC itself or the private Tailscale link only, same-origin, never arms.
+try:
+    from engine import account_box as _ab
+    _ab.install(app)
+except Exception as _ab_err:
+    print(f"[account_box] /add-account disabled: {_ab_err.__class__.__name__}: {_ab_err}", flush=True)
+# ---- END ADD ACCOUNT BOX ----
 _static = StaticFiles(directory=WEB)
 _static.all_directories = list(UI_DIRS)       # first directory that has the file wins
 app.mount("/", _static, name="web")

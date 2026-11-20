@@ -5,7 +5,7 @@ One Rapid at a time (a 25K or a 50K). Checked end to end on a test PC 2026-11-20
 
 ## 1. Add it (1 minute)
 
-Copy the account Name from NinjaTrader (Accounts tab). Double-click **ADD_ACCOUNT.bat**, type **5**, paste the Name.
+Copy the account Name from NinjaTrader (Accounts tab). Double-click **ADD_ACCOUNT.bat**, type **5**, paste the Name. Or type it on the page **http://localhost:8766/add-account/** (on the phone: your Tailscale link + `/add-account/`): pick Rapid EOD 25K, type or tap the Name, Add. Same checks, added disarmed.
 
 Good: the window says
 `[OK] Rapid EOD 25K = <Name> ... NOT armed` and

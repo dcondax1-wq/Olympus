@@ -11,7 +11,7 @@ if defined LE_PYTHON set "PY=%LE_PYTHON%"
 echo.
 echo  ==== What NinjaTrader shows ====
 "%PY%" -X utf8 -m engine.onboard
-echo  (Easiest: the PC dashboard Start page has one button per new account.)
+echo  (Easiest: type it on the page http://localhost:8766/add-account/ - on the PC, or your Tailscale link + /add-account/ on the phone.)
 echo.
 echo  ==== Add an account ====
 echo   1  New Builder 25K eval      (Zlarior trades it)
