@@ -17,6 +17,7 @@ an area; the old long brief is its last section).
   and `python tools/model_versions.py`. Owner-approved sizing: eval two_week room_f 0.4 kept to session 80.
 - **Stops** 1 tick beyond the sweep extreme, size follows the stop; one target (VIX band, banked at 8R).
 - Prop prices: owner's real prices (Builder 50K $91.80, 25K $63 / $43), never list prices.
+- MFFU sim-funded accounts START AT $0: MFFU shows profit as the balance (ATLAS funded "$401", not $25,401); show them that way. Every account's rules: `docs/ACCOUNT_RULES.md` (source `research/lit/mffu_rules.json`). First payout goal = the max request ($1,000 on a 25K at $2,100), only 5 sim payouts.
 - Helpers never edit `sw.js`, `tools/build_web_dashboard.py`, `jarvis/apps.js`, the `olympus.js` APPS table; the lead wires.
 
 ## Saving usage (owner 2026-11-15)

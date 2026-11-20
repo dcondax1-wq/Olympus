@@ -354,6 +354,40 @@ def waterfall(received, pot=30, reserve=10, retire=10, live=20, live_banked=0.0,
             "yours": round(r - tax_amt - res - ret - lv, 2)}
 
 
+# ---- 2027 Saver's Match dial (IRS Notice 2026-48, Aug 7 2026): 50% of up to $2,000 a year, single MAGI $20,500 -> $35,500
+# (sliding, no cliff; modelled linear). Deposited into a traditional IRA / pre-tax 401(k); Roth contributions count toward
+# the $2,000 but do not lower MAGI. Traditional Solo 401(k) money lowers MAGI and so can pull income into the band.
+SM_LO, SM_HI, SM_MAX_CONTRIB = 20500.0, 35500.0, 2000.0
+
+
+def savers_match(magi, contributed):
+    rate = 0.5 if magi <= SM_LO else (0.0 if magi >= SM_HI else 0.5 * (SM_HI - magi) / (SM_HI - SM_LO))
+    return round(rate * min(contributed, SM_MAX_CONTRIB), 2)
+
+
+def magi_dial(profit, y=2027, state=None, step=500):
+    """For a year with `profit` (no other income): the traditional Solo 401(k) amount that gives the most match + tax saved
+    per $ locked away, vs Roth $2,000 (match at the unchanged MAGI)."""
+    state = MD_HIGH if state is None else state
+    se = se_tax(profit, 0.0, y)
+    magi0 = profit - se / 2
+    room = solo401k(profit, y)["solo401k_max"]
+    roth = {"put_in": 2000.0, "match": savers_match(magi0, 2000.0), "tax_saved": 0.0}
+    best = None
+    put = 0.0
+    while put <= room:
+        saved = retire_saving(profit, put, 0.0, state, y) if put else 0.0
+        m = savers_match(magi0 - put, put)
+        row = {"put_in": put, "magi": round(magi0 - put), "match": m, "tax_saved": saved, "gain": round(m + saved, 2)}
+        if put and (best is None or row["gain"] > best["gain"] + 1e-9) and m >= (best or {"match": 0})["match"]:
+            best = row
+        if m >= 1000:
+            best = row
+            break
+        put += step
+    return {"profit": profit, "magi_before": round(magi0), "roth_2000": roth, "full_match_at": best}
+
+
 def main(argv):
     quick = "--quick" in argv
     out = {
@@ -373,6 +407,7 @@ def main(argv):
         "live": live_table(quick),
         "waterfall": {"1000": waterfall(800), "5000": waterfall(4000), "1000_buckets_full": waterfall(800, live_banked=LIVE_TARGET, reserve_banked=RESERVE_TARGET)},
     }
+    out["savers_match_2027"] = [magi_dial(p) for p in (20000, 25000, 30000, 40000, 50000)]
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w", encoding="utf-8") as fh:
         json.dump(out, fh, indent=1)
@@ -387,3 +422,4 @@ if __name__ == "__main__":
         print(k, [(r["bank"], r["lost_half_pct"], r["down_after_year_pct"], r["median_year"], r["bad_10pct_year"]) for r in v])
     for r in o["s1256"]:
         print("1256", r)
+

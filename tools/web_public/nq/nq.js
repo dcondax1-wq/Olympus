@@ -7,6 +7,7 @@ import * as C from './nqcore.js?v=d4';   // d1 (polish2 2026-11-19): the CME tra
 import * as T from '../olympus/truth.js';
 import * as D from './nqdesk.js?v=6';
 import { unpack as unpackBars } from './nqbars.js?v=b1';     // nqdash3: the accounts strip, the bots' thinking, the quality checks
+import * as G from './nqgoals.js?v=5';                       // v4: the goals strip, the numbers card, the bursts
 
 const O = window.OLYMPUS || null;
 const $ = (id) => document.getElementById(id);
@@ -35,6 +36,7 @@ async function withPost(home) {
     if (!F || !F.fetchLatest || !F.homeOver) return home;
     const lite = await Promise.race([F.fetchLatest({ feedUrl: new URL('../status_feed.json', import.meta.url).href }), new Promise((r) => setTimeout(() => r(null), 15000))]);
     if (!lite) return home;
+    S.lite = lite;                                // v4: the funded tracker (mf) for the goals
     return F.homeOver(home, lite, Date.now() / 1000, window.PAYOUT_COACH || null);
   } catch (_) { return home; }
 }
@@ -244,6 +246,7 @@ function renderDesk() {
     const dl = $('dayLine'); if (dl) D.draw.day(dl, D.dayLine(home, nowS));
   } catch (_) { /* nothing */ }
   watchPast();
+  try { renderV4(home, file, nowS); } catch (_) { /* the rest of the page still draws */ }
   try {
     const Q = D.quality(home, file, S.news, nowS, S.edge, deskChart()), box = $('qual');
     if (box) D.draw.quality(box, Q);
@@ -260,8 +263,126 @@ function render() {
   { const el = $('src'); if (el) el.textContent = srcLine(); }
   S.ready = true;
   try { if (O && O.ready) O.ready(); } catch (_) { /* the veil lifts by itself */ }
-  tryScene();
+  tryScene(); tryLand();
 }
+
+// ------------------------------------------------------------------------------------------------ v4: goals, numbers, the 3D landscape
+const EQ_IDS = { zlarior: ['mffu50k_eval', 'lit'], fresh25: ['b25k_2'], atlas: ['atlas', 'acct_b'], rapid1: ['rapid'] };
+const V4 = { open: null, wins: null, fracs: null, land: 'none', vault: null, pay: null, payP: null };
+function renderV4(home, file, nowS) {
+  const chart = deskChart(), A = D.accounts(home, S.biz, nowS, chart);
+  // the funded tracker's rules (payready.js, the same as the Board / Trading) come with the PC's post, after the first paint (a later import:
+  // the page's eager JS budget); until then the goal uses MFFU's plan numbers and the chips say the rule without a tick
+  let pay = [];
+  if (S.lite && window.PAYOUT_COACH) {
+    if (V4.pay) { try { pay = V4.pay(S.lite, home, S.biz, window.PAYOUT_COACH, D.etParts(nowS).day); } catch (_) { pay = []; } }
+    else if (window.NQ_PAYREADY) { V4.pay = window.NQ_PAYREADY; try { pay = V4.pay(S.lite, home, S.biz, window.PAYOUT_COACH, D.etParts(nowS).day); } catch (_) { pay = []; } }
+    else if (!V4.payP) {
+      V4.payP = true;
+      window.addEventListener('nq-payready', () => { V4.pay = window.NQ_PAYREADY || null; if (S.ready) renderDesk(); }, { once: true });
+      const t = document.createElement('script'); t.type = 'module'; t.src = new URL('./payready_late.js?v=1', import.meta.url).href; document.head.appendChild(t);
+    }
+  }
+  const rows = (S.lite && S.lite.mf && Array.isArray(S.lite.mf.a)) ? S.lite.mf.a : [], eq = {};
+  for (const k in EQ_IDS) { const r = rows.find((x) => x && EQ_IDS[k].includes(x.id)); if (r) eq[k] = r.eq; }
+  const list = G.goals(A, pay, S.goals, nowS, eq, window.PC_FEED && window.PC_FEED.mffuView);   // MFFU's own view of a funded account when pc_feed.js has it
+  const box = $('goals');
+  if (box) G.drawGoals(box, list, $('goalDetail'), { open: V4.open, onOpen: (k) => { V4.open = k; } });
+  const fa = D.feedAge(home, nowS), age = $('goalAge');
+  if (age) { age.textContent = S.demo ? 'DEMO' : fa.fromPc ? D.updated(fa.report) : 'plan + cloud copy'; age.className = 'pill ' + (S.demo ? 'warn' : fa.fromPc ? D.ageLevel(fa.report, 'pc') : 'warn'); }
+  const real = G.realRows(file, chart);
+  // below the first screen: the numbers card and the landscape draw when the main thread is free (perf: one long task less at load)
+  later(() => {
+    const nb = $('nums'); if (nb) G.drawNumbers(nb, G.numbers(A, real, nowS), G.clock(nowS), G.vixLine(S.brief), G.opens(A));
+    const np = $('numPill'); if (np) { np.textContent = S.demo ? 'DEMO' : 'REAL FILLS'; np.className = 'pill ' + (S.demo ? 'warn' : 'ok'); }
+    drawLand(chart, list);
+  });
+  // bursts: a new winning real trade, or a goal ring crossing a quarter, since the page opened (never on the first draw)
+  const wins = real.filter((r) => r.usd > 0.5).length, fr = Object.fromEntries(list.map((g) => [g.key, Math.floor(g.frac * 4)]));
+  const FX = window.OLYMPUS_NQFX || null;               // DESIGN's kit (olympus/nqfx.js): its sparks + toast; our own canvas burst without it
+  if (V4.wins !== null && wins > V4.wins) {
+    const last = real.filter((r) => r.usd > 0.5).slice(-1)[0];
+    try { if (FX && FX.win) FX.win($('goalCard'), { usd: last ? last.usd : 0 }); else G.burst($('goalCard'), 'win'); } catch (_) { /* nothing */ }
+    try { if (window.NQLAND) window.NQLAND.burst('win'); } catch (_) { /* nothing */ }
+  } else if (V4.fracs) for (const k in fr) if (fr[k] > (V4.fracs[k] ?? 9)) {
+    const el = box && box.querySelector(`[data-key="${k}"]`), g = list.find((x) => x.key === k);
+    try { if (FX && FX.milestone) FX.milestone(el, { text: `${g ? g.name : ''}: ${Math.round((g ? g.frac : 0) * 100)}% of the goal` }); else G.burst(el, 'goal'); } catch (_) { /* nothing */ }
+    try { if (window.NQLAND) window.NQLAND.burst('goal'); } catch (_) { /* nothing */ }
+    break;
+  }
+  V4.wins = wins; V4.fracs = fr;
+  drawVault(list.find((g) => g.kind === 'payout'));
+}
+// ATLAS's first payout as DESIGN's vault (NQFX.vault): value = MFFU's profit / the $2,100 goal; the kit draws a 2D vault at once and
+// brings the 3D door after load + idle (never on the first paint), still under reduced motion. Without the kit: the card says the numbers.
+function drawVault(g) {
+  const host = $('vault'), pill = $('vaultPill'), note = $('vaultNote');
+  if (!host) return;
+  if (!g || !g.has) { $('vaultCard').hidden = true; return; }
+  $('vaultCard').hidden = false;
+  const label = `${G.usd(g.balance)} of ${G.usd(g.goalAt)}`;
+  if (pill) { pill.textContent = g.left <= 0 ? 'READY' : `${Math.round(g.frac * 100)}%`; pill.className = 'pill ' + (g.left <= 0 ? 'ok' : 'warn'); }
+  if (note) note.textContent = `MFFU shows ${G.usd(g.balance)} of profit. Goal: ask $1,000 at ${G.usd(g.goalAt)} ($800 to you), ${G.usd(g.left)} to go. ${g.when}.`;
+  fxKit().then((FX) => {
+    if (!FX) return;
+    try {
+      if (V4.vault) { V4.vault.call('set', g.frac, label); return; }
+      V4.vault = FX.vault(host, { value: g.frac, label, aria: `ATLAS first payout goal: ${label}` });
+    } catch (_) { /* the note says it */ }
+  }).catch(() => { /* the note says it */ });
+}
+// DESIGN's NQ effects kit (olympus/nqfx.js: bursts, toasts, the vault) is not a page tag: it comes after the first paint, when the browser is idle
+// (perf: the page's eager JS stays under its 600 KB budget). Resolves to OLYMPUS_NQFX or null (no kit: our own canvas burst, the vault note).
+let fxP = null;
+function fxKit() {
+  if (fxP) return fxP;
+  fxP = new Promise((res) => {
+    if (window.OLYMPUS_NQFX) { res(window.OLYMPUS_NQFX); return; }
+    later(() => {
+      const t = document.createElement('script'); t.src = '../olympus/nqfx.js?v=n3'; t.async = true;
+      t.onload = () => { const F = window.OLYMPUS_NQFX; if (!F || !F.ready) { res(null); return; } F.ready().then(() => res(F), () => res(null)); };
+      t.onerror = () => res(null);
+      document.head.appendChild(t);
+    });
+  });
+  return fxP;
+}
+const later = (fn) => { const run = () => { try { fn(); } catch (_) { /* the rest of the page still draws */ } };
+  if (typeof requestIdleCallback === 'function') requestIdleCallback(run, { timeout: 1200 }); else setTimeout(run, 60); };
+function landData(list) {
+  const M = window.NQCHART && window.NQCHART.S && window.NQCHART.S.model;
+  const candles = M && Array.isArray(M.candles) ? M.candles : [], close = new Map(candles.map((c) => [c.time, c.close]));
+  const mk = M && Array.isArray(M.markers) ? M.markers : [], exits = new Set(mk.filter((m) => m.kind === 'exit').map((m) => String(m.id).slice(1)));
+  const trades = mk.filter((m) => m.kind === 'exit' || (m.kind === 'entry' && !exits.has(String(m.id).slice(1))))
+    .map((m) => ({ time: m.time, price: m.price ?? close.get(m.time) ?? null, usd: m.kind === 'exit' ? (/^-/.test(m.text || '') ? -1 : 1) : 0, side: /Up/.test(m.shape || '') ? 1 : -1, open: m.kind === 'entry' }));
+  const g = list.find((x) => x.key === 'atlas') || list[0];
+  return { candles, trades, goal: g ? g.frac : 0 };
+}
+function drawLand(chart, list) {
+  const d = landData(list);
+  if (V4.land === 'webgl') { try { window.NQLAND.update(d); } catch (_) { /* the picture stays */ } return; }
+  const svg = $('landFb'); if (!svg) return;
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+  const c = d.candles.length > 1 ? d.candles.map((x) => x.close) : Array.from({ length: 60 }, (_, i) => 50 + Math.sin(i / 6) * 12 + Math.sin(i / 2.3) * 4);
+  const lo = Math.min(...c), hi = Math.max(...c), W = 360, H = 240, y = (v) => H - 30 - ((v - lo) / Math.max(1e-9, hi - lo)) * (H - 80);
+  const pts = c.map((v, i) => `${((i / (c.length - 1)) * W).toFixed(1)},${y(v).toFixed(1)}`).join(' L');
+  const defs = sv('defs', {}), gr = sv('linearGradient', { id: 'landG', x1: 0, y1: 0, x2: 0, y2: 1 });
+  gr.appendChild(sv('stop', { offset: '0', 'stop-color': '#e0b060', 'stop-opacity': '0.45' })); gr.appendChild(sv('stop', { offset: '1', 'stop-color': '#e0b060', 'stop-opacity': '0' }));
+  defs.appendChild(gr); svg.appendChild(defs);
+  svg.appendChild(sv('path', { class: 'a', d: `M0,${H} L${pts} L${W},${H} Z` }));
+  svg.appendChild(sv('path', { class: 'l', d: `M${pts}` }));
+}
+let landTried = false;
+function tryLand() {
+  if (landTried || !S.ready) return;
+  const M = window.NQLAND; if (!M) return;
+  let lite = false; try { lite = !!(O && O.lite && O.lite()); } catch (_) { /* nothing */ }
+  if (lite || new URLSearchParams(location.search).get('flat') === '1') return;
+  landTried = true;
+  const box = $('land3d');
+  try { box.hidden = false; if (M.mount(box, landData(G.goals(D.accounts(deskHome(), S.biz, Date.now() / 1000, deskChart()), [], S.goals, Date.now() / 1000)))) { V4.land = 'webgl'; $('landFb').style.visibility = 'hidden'; } else box.hidden = true; } catch (_) { box.hidden = true; }
+}
+window.addEventListener('nqland', tryLand);
 
 // ------------------------------------------------------------------------------------------------ the optional 3D columns
 let tried = false;
@@ -275,7 +396,8 @@ function tryScene() {
   try { if (M.mount($('scene3d'), S.view.columns)) { S.scene = 'webgl'; $('scene3d').hidden = false; $('fallback').style.visibility = 'hidden'; renderScene(); } } catch (_) { S.scene = '2d'; }
 }
 window.addEventListener('nq3d', tryScene);
-window.addEventListener('nq-bars', () => { if (S.ready) renderDesk(); });   // a new chart post (the live chart module): the open trade's stop and $ now
+window.addEventListener('nq-bars', () => { if (S.ready) renderDesk(); });
+window.addEventListener('nq-bars', () => { if (S.ready) try { tryLand(); } catch (_) { /* nothing */ } });   // a new chart post (the live chart module): the open trade's stop and $ now
 
 async function refresh() {
   if (S.forced || document.hidden) return;
@@ -289,9 +411,9 @@ async function boot() {
   for (const b of document.querySelectorAll('[data-howto]')) b.addEventListener('click', () => openSheet(b));
   $('sheetClose').addEventListener('click', closeSheet); $('veil').addEventListener('click', closeSheet);
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSheet(); else if (e.key === 'Tab' && S.sheet) { e.preventDefault(); try { $('sheetClose').focus(); } catch (_) { /* nothing */ } } });   // the sheet has one control: focus stays on it
-  const [fx, home, howto, news, learned, biz, tfile, edge, brief] = await Promise.all([getJSON('./fixture.json'), S.forced ? null : getJSON('../home.json'), getJSON('./howto.json'), getJSON('./news_week.json'), S.forced ? null : getJSON('../hub/learned.json'),
-    getJSON('../business/accounts.json'), getJSON('../trading/trades.json'), getJSON('../edge.json'), getJSON('./brief.json')]);
-  S.fixture = fx; S.howto = howto; S.news = news; S.learned = learned; S.biz = biz; S.tfile = tfile; S.edge = edge; S.brief = brief;   // brief.json: the day-brief helper's pre-market brief (optional)
+  const [fx, home, howto, news, learned, biz, tfile, edge, brief, goals] = await Promise.all([getJSON('./fixture.json'), S.forced ? null : getJSON('../home.json'), getJSON('./howto.json'), getJSON('./news_week.json'), S.forced ? null : getJSON('../hub/learned.json'),
+    getJSON('../business/accounts.json'), getJSON('../trading/trades.json'), getJSON('../edge.json'), getJSON('./brief.json'), getJSON('../business/goals.json')]);
+  S.fixture = fx; S.howto = howto; S.news = news; S.learned = learned; S.biz = biz; S.tfile = tfile; S.edge = edge; S.brief = brief; S.goals = goals;   // brief.json: the day-brief helper's pre-market brief (optional)
   // the PC's 15-minute status (no GitHub) first, up to 3.5 s, so the first numbers on screen are the real ones; when it is later than
   // that the cloud's copy shows (its source line says so) and the post is laid over it when it arrives, however long ntfy takes
   const post = home ? withPost(home) : Promise.resolve(home);

@@ -36,7 +36,7 @@ Data: apps only read published JSON (and bundled `fixture.json` / demo fallbacks
 | Trading (`trading`) | ZEUS Trading | trading | Every trade: today, calendar, stats, payout rules | `../status_feed.json`, `../why/why.json`, `../odeon/trades.json`, `../home.json`, `fixture.json`, ... | `tests.test_trading_page` |
 | Why (`why`) | ZEUS Trading | trading | Why our trades win and lose, per bot | `why.json` | `tests.test_why_page` |
 | Zenith (`zenith`) | ZEUS Trading | trading | NQ bots · Zlarior · ATLAS | data.json, home.json, live.json (the bot feeds) | `tests.test_zenith_mode` |
-| Agency (`agency`) | Money | money | Website agency: leads, demo sites, calls and the | `fixture.json`, `my_leads.json`, `leads.json`, `callrules.json`, `callscript.json`, ... | `tests.test_agency` |
+| Websites (`agency`) | Money | money | Website business HQ: next step, leads, audits, 3D | `fixture.json`, `my_leads.json`, `leads.json`, `callrules.json`, `callscript.json`, ... | `tests.test_agency` |
 | Arbiter (`arbiter`) | Money | money | Paper-only spreads and funding: net yearly return after | `fixture.json`, `../money/arbiter.json` | `tests.test_arbiter_page` |
 | Argo (`argo`) | Money | money | The voyage: your money goals as islands, honest | `fixture.json`, `../home.json`, `../ledger/rules.json` | `tests.test_argo_page` |
 | Business (`business`) | Money | money | Every money model: next step, what is missing | `accounts.json`, `../home.json`, `business.json`, `fixture.json`, `dash.json`, ... | `tests.test_business` |
@@ -96,7 +96,7 @@ The Doors page, the launcher and Jarvis's switcher show a door's visible apps fi
 | Door | Open first | Archive (folded) |
 |---|---|---|
 | ZEUS Trading | Aegis, Board, Demeter, Fates, Kronos, Mnemosyne, NQ, Pnyx, Trading, Zenith | Apollo, Ares, Argus, Chronos, Delphi, Epilogue, Forum, Kairos, Kratos, Labyrinth, Moirai, Nemesis, Odeon, Oracle, Pantheon, Pheme, Pythia, Why |
-| Money | Agency, Business, Chrysos, Hera, Ledger, Mercury, Oikos, Widget | Arbiter, Argo, Harmonia, Hermes, Mint, Mint City, Plutus |
+| Money | Business, Chrysos, Hera, Ledger, Mercury, Oikos, Websites, Widget | Arbiter, Argo, Harmonia, Hermes, Mint, Mint City, Plutus |
 | Kalshi | Dionysus, Kalshi, Tyche | Kalshi City, Sibyl |
 | More | Atlas, Cities, Clio, Compass, Helios, Inbox, Planner, Settings | Agora Gallery, Archive, Arena, Athena, Bridge, Colosseum, Daphne, Data City, Ergasterion, Hephaestus, Herald, Hestia, Lyceum, Mind, Nike, Observatory, Pinakes, Polis, Prometheus, Stoa, Symposium |
 

@@ -71,7 +71,7 @@ import(process.argv[2]).then((P) => {
     accounts: { lit50k: { plan: 'builder_50k', price: 91.8 }, atlas25k: { plan: 'builder_25k', price: 43 } } };
   const m = P.model({ home, trades, rules, ledger: null }, now);
   o.n = m.accts.length; o.today = m.today; o.tight = m.tight && m.tight.name; o.pass = m.pass && [m.pass.name, m.pass.toTarget];
-  o.pay = m.pay && [m.pay.a.name, m.pay.p.ready, m.pay.p.need, m.pay.p.line];
+  o.pay = m.pay && [m.pay.a.name, m.pay.p.ready, m.pay.p.need, m.pay.p.line, m.pay.p.goal.need, m.pay.p.goal.at, m.pay.p.goal.toYou];
   o.fees = m.fees; o.bots = m.bots.map((b) => [b.key, b.busy, b.open, b.text]);
   o.stats = { streak: m.stats.streak, last: m.stats.last && m.stats.last.usd, basis: m.stats.basis, best: m.stats.bySetup[0] && [m.stats.bySetup[0].key, m.stats.bySetup[0].win], dow: m.stats.byDow.map((d) => d.key + ':' + d.n) };
   o.heroes = ['room', 'today', 'pass', 'payout', 'net', 'last'].map((k) => P.hero(m, k));
@@ -96,7 +96,8 @@ def test_core():
     check("b. three real accounts (Zlarior, ATLAS, Zlarior 25K #2); today = their sum (-120 + 45 + 0 = -75)", o["n"] == 3 and abs(o["today"] + 75) < 0.01, o["n"], o["today"])
     check("b. drawdown left: the tightest account by share left: Zlarior (51% of $2,000) before ATLAS (89% of $1,000)", o["tight"] == "Zlarior", o["tight"])
     check("b. to pass: the nearest eval in $ (Zlarior 25K #2: $1,500 < Zlarior's $3,807)", o["pass"] == ["Zlarior 25K #2", 1500], o["pass"])
-    check("b. the funded payout: ATLAS needs $1,463 more ($25,000 + $1,100 buffer + $250 min = $26,350)", o["pay"] == ["ATLAS", False, 1463, 26350], o["pay"])
+    check("b. the funded payout in MFFU's terms (a sim-funded account starts at $0: balance -$113): earliest = $1,463 more to $1,350 ($1,100 buffer + $250 min); GOAL = the full $1,000 at $2,100 ($800 to you), $2,213 to go",
+          o["pay"] == ["ATLAS", False, 1463, 1350, 2213, 2100, 800], o["pay"])
     check("b. fees from the price list when the Ledger is empty: $91.80 + $43 + the 25K #2 at $63 = $197.80; net -$197.80",
           abs(o["fees"]["fees"] - 197.8) < 0.01 and o["fees"]["payouts"] == 0 and abs(o["fees"]["net"] + 197.8) < 0.01 and "price list" in o["fees"]["src"], o["fees"])
     check("b. the phone's Ledger wins: fees + resets $141.80 (expenses are not fees), payouts $800, net $658.20",
@@ -109,8 +110,8 @@ def test_core():
     check("b. too few real trades: setups and weekdays come from the 2026 replay, and the page says so", "replay" in st["basis"] and "not money made" in st["basis"]
           and st["best"] == ["LIT sweep", 0.6] and st["dow"] == ["Mon:3", "Tue:2", "Wed:2", "Thu:2", "Fri:1"], st)
     H = {h["label"].split(" ")[0]: h for h in o["heroes"]}
-    check("b. hero words: drawdown $1,025, today -$75, to pass $1,500, payout needs $1,463, net -$198, last trade -$437",
-          [h["value"] for h in o["heroes"]] == ["$1,025", "-$75", "$1,500", "$1,463", "-$198", "-$437"], [h["value"] for h in o["heroes"]])
+    check("b. hero words: drawdown $1,025, today -$75, to pass $1,500, payout goal $2,213 to go, net -$198, last trade -$437",
+          [h["value"] for h in o["heroes"]] == ["$1,025", "-$75", "$1,500", "$2,213 to go", "-$198", "-$437"], [h["value"] for h in o["heroes"]])
     check("b. junk in (null, numbers, broken home / trades): no throw", o["junk"] == 0, o["junk"])
     _ = H
 
@@ -137,9 +138,9 @@ RULES_FIXTURE = {"plans": {"builder_50k": {"price_owner": 91.8, "payout": {"buff
 # what each mounted part must show from those feeds (exact, in page order). Zlarior: $1,025 of $2,000 left, $3,807 to pass; ATLAS funded at
 # $24,887: the payout needs $1,463 more; fees $91.80 + $43 = $135 (no Ledger on a fresh phone); trades: 1 real loss of $437, LIT 60%, ATLAS EMA 20%.
 # A bare '-' is allowed only where the card has no number yet by design ("To you" before a payout is ready).
-EXPECT = {"strip": ["$0", "$1,025", "$3,807"], "hero:room": ["$1,025"], "hero:pass": ["$3,807"], "hero:payout": ["$1,463"], "hero:net": ["-$135"],
+EXPECT = {"strip": ["$0", "$1,025", "$3,807"], "hero:room": ["$1,025"], "hero:pass": ["$3,807"], "hero:payout": ["$2,213 to go"], "hero:net": ["-$135"],
           "hero:last": ["-$437"], "hero:today": ["$0"], "accounts": ["$0", "$0"], "bots": [],
-          "money": ["needs $1,463", "-", "$135", "-$135"], "stats": ["1 loss", "-$437", "60%", "20%"]}
+          "money": ["$2,213 to go", "-", "$135", "-$135"], "stats": ["1 loss", "-$437", "60%", "20%"]}
 
 
 def test_browser():
