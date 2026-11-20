@@ -21,3 +21,6 @@ For the lead's merge:
   FUNDED_ON all None). On the owner's YES: `git apply` the patch, flip the one FUNDED_ON line, run the 3 suites listed there, ship.
   New suite tests/test_atlas_funded_switches.py (35/35): consider adding "atlas_funded_switches" to the nq area in tests/run_area.py
   once the patch is in (before that it applies the patch to a temp copy, ~2 min).
+- ROUND 3 (ideas #8 / #14): tools/cost_alarm.py (alarm only) -> research/lab/costs.json. To run nightly: add
+  `subprocess.run([sys.executable, "-X", "utf8", "tools/cost_alarm.py"])` (or import tools.cost_alarm and call main([])) to the
+  nightly job (tools/learn_night.py), and show `bots.<id>.line` on the ZEUS card next to the fills line. tests/test_cost_alarm.py 9/9.

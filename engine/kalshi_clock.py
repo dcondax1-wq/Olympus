@@ -453,6 +453,15 @@ def paper_like_live(rs, cfg) -> list:
     return [r for r in rs if r.get("leg") in cfg["live_legs"] and (r.get("cost") is None or KL._f(r.get("cost"), 0.0) <= cap)]
 
 
+def pnl_now(rs, now) -> list:
+    """[$ today, $ this week, $ since the start] of the settled rows (the K8 home's top line)."""
+    day = KL.et_day(now)
+    wk = week_of(day)
+    done = [r for r in rs if r.get("result") in ("won", "lost")]
+    f = lambda sel: round(sum(KL._f(r.get("pnl"), 0.0) for r in sel), 2)   # noqa: E731
+    return [f(r for r in done if r.get("day") == day), f(r for r in done if wk <= str(r.get("day") or "") <= day), f(done)]
+
+
 def setup_flag(what, env=None):
     """1 / 0 / None: a Kalshi key id + key file are on this PC ('key'; never read past existence) / the phone alert topic is set ('alerts')."""
     try:
@@ -492,7 +501,8 @@ def bet_log(rs, k=5) -> list:
     out = []
     for r in sorted(x, key=lambda r: KL._f(r.get("open_t"), 0.0))[-k:]:
         p = KL._f(r.get("price"))
-        out.append([LEG_CODE.get(r.get("leg"), "?"), str(r.get("day") or "")[5:10], r.get("n"), round(100 * p) if p else None,
+        n = r.get("n")
+        out.append([LEG_CODE.get(r.get("leg"), "?"), str(r.get("day") or "")[5:10], int(n) if isinstance(n, (int, float)) and float(n).is_integer() else n, round(100 * p) if p else None,
                     round(KL._f(r.get("pnl"), 0.0), 2) if r.get("result") else None,
                     "W" if r.get("result") == "won" else "L" if r.get("result") == "lost" else "o"])
     return out
@@ -525,7 +535,9 @@ def card_k8(state_dir=None, cfg=None, now=None) -> dict | None:
                 # each live leg's own last-20 record and the pause rule (engine/kalshi_legswitch): [code, won, of, paused 0/1, obeyed 0/1]
                 "ls": leg_switch(P, cfg),
                 # the Monday checklist (day-kalshi, Olympus 2): a key is saved on the PC (yes/no only, never the key) and the phone alerts are set
-                "kk": setup_flag("key"), "al": setup_flag("alerts")}
+                "kk": setup_flag("key"), "al": setup_flag("alerts"),
+                # P&L in $ of the shown ledger: [today, this week (Mon-Fri), since the start] (the phone's top line, Olympus 2)
+                "pn": pnl_now(rs, now)}
     except Exception:  # noqa: BLE001
         return None
 

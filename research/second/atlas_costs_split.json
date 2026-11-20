@@ -1,0 +1,1056 @@
+{
+ "date": "2026-11-20",
+ "design": "research/second/atlas_costs_split_design.md",
+ "live": {
+  "stuck": 0.0,
+  "pct": 0.4,
+  "streak_shrink": 2
+ },
+ "rows": {
+  "E1/X1 backtest": {
+   "entry_ticks": 1,
+   "stop_ticks": 1,
+   "fixed": {
+    "H1": {
+     "n": 104,
+     "tpw": 4.06,
+     "pf": 2.92,
+     "net": 18362,
+     "per_month": 3012,
+     "max_dd": -1062
+    },
+    "H2": {
+     "n": 46,
+     "tpw": 2.95,
+     "pf": 2.55,
+     "net": 5256,
+     "per_month": 1415,
+     "max_dd": -876
+    },
+    "2025": {
+     "n": 222,
+     "tpw": 4.3,
+     "pf": 1.17,
+     "net": 4466,
+     "per_month": 364,
+     "max_dd": -4871
+    },
+    "2021-24": {
+     "n": 772,
+     "tpw": 4.71,
+     "pf": 1.06,
+     "net": 5927,
+     "per_month": 152,
+     "max_dd": -11403
+    }
+   },
+   "funded": {
+    "now $1,401 room": {
+     "live_40": {
+      "H1": {
+       "usd_m": 603,
+       "first": "2026-12-14",
+       "first_k": 16,
+       "second": "2027-01-14",
+       "second_k": 37,
+       "no_pay_6m": 2.5,
+       "lost_6m": 3.0,
+       "lost_before_1st": 2.5,
+       "payouts": 4.58
+      },
+      "H2": {
+       "usd_m": 487,
+       "first": "2026-12-28",
+       "first_k": 25,
+       "second": "2027-02-09",
+       "second_k": 55,
+       "no_pay_6m": 2.5,
+       "lost_6m": 2.4,
+       "lost_before_1st": 1.7,
+       "payouts": 3.71
+      },
+      "REF": {
+       "usd_m": 62,
+       "first": null,
+       "first_k": null,
+       "second": null,
+       "second_k": null,
+       "no_pay_6m": 67.5,
+       "lost_6m": 81.4,
+       "lost_before_1st": 65.4,
+       "payouts": 0.48
+      }
+     }
+    },
+    "morning $887 room": {
+     "live_40": {
+      "H1": {
+       "usd_m": 583,
+       "first": "2026-12-23",
+       "first_k": 23,
+       "second": "2027-01-25",
+       "second_k": 44,
+       "no_pay_6m": 4.0,
+       "lost_6m": 4.2,
+       "lost_before_1st": 4.0,
+       "payouts": 4.43
+      },
+      "H2": {
+       "usd_m": 448,
+       "first": "2027-01-12",
+       "first_k": 35,
+       "second": "2027-02-23",
+       "second_k": 65,
+       "no_pay_6m": 4.1,
+       "lost_6m": 3.8,
+       "lost_before_1st": 3.1,
+       "payouts": 3.41
+      },
+      "REF": {
+       "usd_m": 43,
+       "first": null,
+       "first_k": null,
+       "second": null,
+       "second_k": null,
+       "no_pay_6m": 77.9,
+       "lost_6m": 87.0,
+       "lost_before_1st": 76.6,
+       "payouts": 0.33
+      }
+     }
+    }
+   },
+   "eval25k": {
+    "H1": {
+     "p10": 61.3,
+     "f10": 0.0,
+     "s10": 0.0,
+     "p15": 76.3,
+     "pass_med": 6.0,
+     "slow_pass": 3.2,
+     "tpw": 3.32
+    },
+    "H2": {
+     "p10": 43.5,
+     "f10": 0.0,
+     "s10": 0.0,
+     "p15": 56.2,
+     "pass_med": 7.0,
+     "slow_pass": 16.7,
+     "tpw": 1.6
+    },
+    "2025": {
+     "p10": 24.9,
+     "f10": 0.0,
+     "s10": 6.8,
+     "p15": 31.1,
+     "pass_med": 5.0,
+     "slow_pass": 5.0,
+     "tpw": 3.0
+    },
+    "2021-24": {
+     "p10": 19.3,
+     "f10": 0.0,
+     "s10": 11.3,
+     "p15": 23.8,
+     "pass_med": 4.0,
+     "slow_pass": 5.5,
+     "tpw": 3.66
+    }
+   }
+  },
+  "E10/X10 stress (all studies)": {
+   "entry_ticks": 10,
+   "stop_ticks": 10,
+   "fixed": {
+    "H1": {
+     "n": 104,
+     "tpw": 4.06,
+     "pf": 2.39,
+     "net": 15932,
+     "per_month": 2614,
+     "max_dd": -1476
+    },
+    "H2": {
+     "n": 46,
+     "tpw": 2.95,
+     "pf": 2.07,
+     "net": 4351,
+     "per_month": 1172,
+     "max_dd": -1177
+    },
+    "2025": {
+     "n": 222,
+     "tpw": 4.3,
+     "pf": 0.9,
+     "net": -3310,
+     "per_month": -269,
+     "max_dd": -8781
+    },
+    "2021-24": {
+     "n": 772,
+     "tpw": 4.71,
+     "pf": 0.8,
+     "net": -24898,
+     "per_month": -638,
+     "max_dd": -34062
+    }
+   },
+   "funded": {
+    "now $1,401 room": {
+     "live_40": {
+      "H1": {
+       "usd_m": 514,
+       "first": "2026-12-22",
+       "first_k": 22,
+       "second": "2027-01-29",
+       "second_k": 48,
+       "no_pay_6m": 5.6,
+       "lost_6m": 6.9,
+       "lost_before_1st": 5.6,
+       "payouts": 3.92
+      },
+      "H2": {
+       "usd_m": 436,
+       "first": "2027-01-04",
+       "first_k": 29,
+       "second": "2027-02-18",
+       "second_k": 62,
+       "no_pay_6m": 4.9,
+       "lost_6m": 5.7,
+       "lost_before_1st": 4.2,
+       "payouts": 3.33
+      },
+      "REF": {
+       "usd_m": 32,
+       "first": null,
+       "first_k": null,
+       "second": null,
+       "second_k": null,
+       "no_pay_6m": 80.7,
+       "lost_6m": 91.6,
+       "lost_before_1st": 79.4,
+       "payouts": 0.25
+      }
+     }
+    },
+    "morning $887 room": {
+     "live_40": {
+      "H1": {
+       "usd_m": 478,
+       "first": "2027-01-06",
+       "first_k": 31,
+       "second": "2027-02-11",
+       "second_k": 57,
+       "no_pay_6m": 8.5,
+       "lost_6m": 10.1,
+       "lost_before_1st": 8.5,
+       "payouts": 3.64
+      },
+      "H2": {
+       "usd_m": 394,
+       "first": "2027-01-20",
+       "first_k": 41,
+       "second": "2027-03-08",
+       "second_k": 74,
+       "no_pay_6m": 7.7,
+       "lost_6m": 7.7,
+       "lost_before_1st": 6.4,
+       "payouts": 3.0
+      },
+      "REF": {
+       "usd_m": 18,
+       "first": null,
+       "first_k": null,
+       "second": null,
+       "second_k": null,
+       "no_pay_6m": 89.6,
+       "lost_6m": 94.9,
+       "lost_before_1st": 88.8,
+       "payouts": 0.14
+      }
+     }
+    }
+   },
+   "eval25k": {
+    "H1": {
+     "p10": 57.1,
+     "f10": 0.0,
+     "s10": 2.5,
+     "p15": 73.7,
+     "pass_med": 6.0,
+     "slow_pass": 4.3,
+     "tpw": 2.85
+    },
+    "H2": {
+     "p10": 39.1,
+     "f10": 0.0,
+     "s10": 0.0,
+     "p15": 51.6,
+     "pass_med": 7.0,
+     "slow_pass": 17.8,
+     "tpw": 2.95
+    },
+    "2025": {
+     "p10": 20.5,
+     "f10": 0.0,
+     "s10": 21.3,
+     "p15": 28.3,
+     "pass_med": 5.0,
+     "slow_pass": 4.2,
+     "tpw": 3.02
+    },
+    "2021-24": {
+     "p10": 16.4,
+     "f10": 0.0,
+     "s10": 28.0,
+     "p15": 19.4,
+     "pass_med": 4.0,
+     "slow_pass": 3.1,
+     "tpw": 3.66
+    }
+   }
+  },
+  "E10/X1": {
+   "entry_ticks": 10,
+   "stop_ticks": 1,
+   "fixed": {
+    "H1": {
+     "n": 104,
+     "tpw": 4.06,
+     "pf": 2.62,
+     "net": 16958,
+     "per_month": 2782,
+     "max_dd": -1188
+    },
+    "H2": {
+     "n": 46,
+     "tpw": 2.95,
+     "pf": 2.26,
+     "net": 4725,
+     "per_month": 1272,
+     "max_dd": -1033
+    },
+    "2025": {
+     "n": 222,
+     "tpw": 4.3,
+     "pf": 1.01,
+     "net": 299,
+     "per_month": 24,
+     "max_dd": -6927
+    },
+    "2021-24": {
+     "n": 772,
+     "tpw": 4.71,
+     "pf": 0.91,
+     "net": -10503,
+     "per_month": -269,
+     "max_dd": -22961
+    }
+   },
+   "funded": {
+    "now $1,401 room": {
+     "live_40": {
+      "H1": {
+       "usd_m": 542,
+       "first": "2026-12-18",
+       "first_k": 20,
+       "second": "2027-01-27",
+       "second_k": 46,
+       "no_pay_6m": 4.7,
+       "lost_6m": 5.4,
+       "lost_before_1st": 4.7,
+       "payouts": 4.12
+      },
+      "H2": {
+       "usd_m": 463,
+       "first": "2026-12-30",
+       "first_k": 27,
+       "second": "2027-02-15",
+       "second_k": 59,
+       "no_pay_6m": 2.5,
+       "lost_6m": 2.7,
+       "lost_before_1st": 1.9,
+       "payouts": 3.53
+      },
+      "REF": {
+       "usd_m": 43,
+       "first": null,
+       "first_k": null,
+       "second": null,
+       "second_k": null,
+       "no_pay_6m": 75.1,
+       "lost_6m": 86.3,
+       "lost_before_1st": 73.9,
+       "payouts": 0.33
+      }
+     },
+     "room60_streak": {
+      "H1": {
+       "usd_m": 545,
+       "first": "2026-12-17",
+       "first_k": 19,
+       "second": "2027-01-22",
+       "second_k": 43,
+       "no_pay_6m": 5.0,
+       "lost_6m": 6.6,
+       "lost_before_1st": 5.0,
+       "payouts": 4.13
+      },
+      "H2": {
+       "usd_m": 474,
+       "first": "2026-12-24",
+       "first_k": 24,
+       "second": "2027-02-08",
+       "second_k": 54,
+       "no_pay_6m": 3.6,
+       "lost_6m": 4.8,
+       "lost_before_1st": 3.4,
+       "payouts": 3.59
+      },
+      "REF": {
+       "usd_m": 43,
+       "first": null,
+       "first_k": null,
+       "second": null,
+       "second_k": null,
+       "no_pay_6m": 74.7,
+       "lost_6m": 88.2,
+       "lost_before_1st": 73.5,
+       "payouts": 0.34
+      }
+     }
+    },
+    "morning $887 room": {
+     "live_40": {
+      "H1": {
+       "usd_m": 509,
+       "first": "2027-01-04",
+       "first_k": 29,
+       "second": "2027-02-05",
+       "second_k": 53,
+       "no_pay_6m": 6.3,
+       "lost_6m": 7.5,
+       "lost_before_1st": 6.3,
+       "payouts": 3.87
+      },
+      "H2": {
+       "usd_m": 418,
+       "first": "2027-01-15",
+       "first_k": 38,
+       "second": "2027-03-02",
+       "second_k": 70,
+       "no_pay_6m": 5.2,
+       "lost_6m": 5.0,
+       "lost_before_1st": 4.1,
+       "payouts": 3.18
+      },
+      "REF": {
+       "usd_m": 26,
+       "first": null,
+       "first_k": null,
+       "second": null,
+       "second_k": null,
+       "no_pay_6m": 84.4,
+       "lost_6m": 89.5,
+       "lost_before_1st": 82.7,
+       "payouts": 0.2
+      }
+     }
+    }
+   },
+   "eval25k": {
+    "H1": {
+     "p10": 58.0,
+     "f10": 0.0,
+     "s10": 0.0,
+     "p15": 71.9,
+     "pass_med": 6.0,
+     "slow_pass": 5.4,
+     "tpw": 2.19
+    },
+    "H2": {
+     "p10": 40.6,
+     "f10": 0.0,
+     "s10": 0.0,
+     "p15": 51.6,
+     "pass_med": 8.0,
+     "slow_pass": 17.8,
+     "tpw": 2.95
+    },
+    "2025": {
+     "p10": 24.1,
+     "f10": 0.0,
+     "s10": 15.3,
+     "p15": 29.5,
+     "pass_med": 5.0,
+     "slow_pass": 6.5,
+     "tpw": 3.1
+    },
+    "2021-24": {
+     "p10": 17.4,
+     "f10": 0.0,
+     "s10": 20.4,
+     "p15": 20.9,
+     "pass_med": 4.5,
+     "slow_pass": 9.2,
+     "tpw": 3.61
+    }
+   }
+  },
+  "E10/X2": {
+   "entry_ticks": 10,
+   "stop_ticks": 2,
+   "fixed": {
+    "H1": {
+     "n": 104,
+     "tpw": 4.06,
+     "pf": 2.59,
+     "net": 16844,
+     "per_month": 2763,
+     "max_dd": -1220
+    },
+    "H2": {
+     "n": 46,
+     "tpw": 2.95,
+     "pf": 2.24,
+     "net": 4683,
+     "per_month": 1261,
+     "max_dd": -1049
+    },
+    "2025": {
+     "n": 222,
+     "tpw": 4.3,
+     "pf": 1.0,
+     "net": -102,
+     "per_month": -8,
+     "max_dd": -7133
+    },
+    "2021-24": {
+     "n": 772,
+     "tpw": 4.71,
+     "pf": 0.89,
+     "net": -12102,
+     "per_month": -310,
+     "max_dd": -24194
+    }
+   },
+   "funded": {
+    "now $1,401 room": {
+     "live_40": {
+      "H1": {
+       "usd_m": 539,
+       "first": "2026-12-18",
+       "first_k": 20,
+       "second": "2027-01-27",
+       "second_k": 46,
+       "no_pay_6m": 4.7,
+       "lost_6m": 5.4,
+       "lost_before_1st": 4.7,
+       "payouts": 4.1
+      },
+      "H2": {
+       "usd_m": 459,
+       "first": "2026-12-31",
+       "first_k": 28,
+       "second": "2027-02-16",
+       "second_k": 60,
+       "no_pay_6m": 3.3,
+       "lost_6m": 3.6,
+       "lost_before_1st": 2.6,
+       "payouts": 3.49
+      },
+      "REF": {
+       "usd_m": 42,
+       "first": null,
+       "first_k": null,
+       "second": null,
+       "second_k": null,
+       "no_pay_6m": 75.3,
+       "lost_6m": 87.2,
+       "lost_before_1st": 74.4,
+       "payouts": 0.33
+      }
+     },
+     "room60_streak": {
+      "H1": {
+       "usd_m": 541,
+       "first": "2026-12-17",
+       "first_k": 19,
+       "second": "2027-01-25",
+       "second_k": 44,
+       "no_pay_6m": 5.4,
+       "lost_6m": 6.9,
+       "lost_before_1st": 5.4,
+       "payouts": 4.11
+      },
+      "H2": {
+       "usd_m": 470,
+       "first": "2026-12-24",
+       "first_k": 24,
+       "second": "2027-02-09",
+       "second_k": 55,
+       "no_pay_6m": 4.3,
+       "lost_6m": 5.5,
+       "lost_before_1st": 4.1,
+       "payouts": 3.56
+      },
+      "REF": {
+       "usd_m": 42,
+       "first": null,
+       "first_k": null,
+       "second": null,
+       "second_k": null,
+       "no_pay_6m": 74.8,
+       "lost_6m": 88.8,
+       "lost_before_1st": 73.8,
+       "payouts": 0.33
+      }
+     }
+    },
+    "morning $887 room": {
+     "live_40": {
+      "H1": {
+       "usd_m": 505,
+       "first": "2027-01-04",
+       "first_k": 29,
+       "second": "2027-02-08",
+       "second_k": 54,
+       "no_pay_6m": 6.6,
+       "lost_6m": 8.0,
+       "lost_before_1st": 6.6,
+       "payouts": 3.84
+      },
+      "H2": {
+       "usd_m": 416,
+       "first": "2027-01-15",
+       "first_k": 38,
+       "second": "2027-03-02",
+       "second_k": 70,
+       "no_pay_6m": 5.6,
+       "lost_6m": 5.3,
+       "lost_before_1st": 4.5,
+       "payouts": 3.17
+      },
+      "REF": {
+       "usd_m": 25,
+       "first": null,
+       "first_k": null,
+       "second": null,
+       "second_k": null,
+       "no_pay_6m": 85.2,
+       "lost_6m": 90.6,
+       "lost_before_1st": 83.8,
+       "payouts": 0.19
+      }
+     }
+    }
+   },
+   "eval25k": {
+    "H1": {
+     "p10": 59.7,
+     "f10": 0.0,
+     "s10": 0.0,
+     "p15": 71.9,
+     "pass_med": 6.0,
+     "slow_pass": 4.4,
+     "tpw": 3.36
+    },
+    "H2": {
+     "p10": 40.6,
+     "f10": 0.0,
+     "s10": 0.0,
+     "p15": 51.6,
+     "pass_med": 8.0,
+     "slow_pass": 17.8,
+     "tpw": 2.95
+    },
+    "2025": {
+     "p10": 22.1,
+     "f10": 0.0,
+     "s10": 16.5,
+     "p15": 30.3,
+     "pass_med": 6.0,
+     "slow_pass": 6.3,
+     "tpw": 2.91
+    },
+    "2021-24": {
+     "p10": 17.4,
+     "f10": 0.0,
+     "s10": 20.4,
+     "p15": 20.9,
+     "pass_med": 5.0,
+     "slow_pass": 8.7,
+     "tpw": 3.77
+    }
+   }
+  },
+  "E10/X3": {
+   "entry_ticks": 10,
+   "stop_ticks": 3,
+   "fixed": {
+    "H1": {
+     "n": 104,
+     "tpw": 4.06,
+     "pf": 2.56,
+     "net": 16730,
+     "per_month": 2745,
+     "max_dd": -1252
+    },
+    "H2": {
+     "n": 46,
+     "tpw": 2.95,
+     "pf": 2.22,
+     "net": 4642,
+     "per_month": 1250,
+     "max_dd": -1065
+    },
+    "2025": {
+     "n": 222,
+     "tpw": 4.3,
+     "pf": 0.98,
+     "net": -503,
+     "per_month": -41,
+     "max_dd": -7339
+    },
+    "2021-24": {
+     "n": 772,
+     "tpw": 4.71,
+     "pf": 0.88,
+     "net": -13702,
+     "per_month": -351,
+     "max_dd": -25428
+    }
+   },
+   "funded": {
+    "now $1,401 room": {
+     "live_40": {
+      "H1": {
+       "usd_m": 538,
+       "first": "2026-12-21",
+       "first_k": 21,
+       "second": "2027-01-27",
+       "second_k": 46,
+       "no_pay_6m": 4.6,
+       "lost_6m": 5.3,
+       "lost_before_1st": 4.6,
+       "payouts": 4.09
+      },
+      "H2": {
+       "usd_m": 456,
+       "first": "2026-12-31",
+       "first_k": 28,
+       "second": "2027-02-16",
+       "second_k": 60,
+       "no_pay_6m": 3.2,
+       "lost_6m": 3.7,
+       "lost_before_1st": 2.6,
+       "payouts": 3.47
+      },
+      "REF": {
+       "usd_m": 40,
+       "first": null,
+       "first_k": null,
+       "second": null,
+       "second_k": null,
+       "no_pay_6m": 76.4,
+       "lost_6m": 88.1,
+       "lost_before_1st": 75.2,
+       "payouts": 0.31
+      }
+     },
+     "room60_streak": {
+      "H1": {
+       "usd_m": 538,
+       "first": "2026-12-17",
+       "first_k": 19,
+       "second": "2027-01-25",
+       "second_k": 44,
+       "no_pay_6m": 5.6,
+       "lost_6m": 7.1,
+       "lost_before_1st": 5.6,
+       "payouts": 4.08
+      },
+      "H2": {
+       "usd_m": 464,
+       "first": "2026-12-24",
+       "first_k": 24,
+       "second": "2027-02-09",
+       "second_k": 55,
+       "no_pay_6m": 5.0,
+       "lost_6m": 6.4,
+       "lost_before_1st": 4.5,
+       "payouts": 3.52
+      },
+      "REF": {
+       "usd_m": 40,
+       "first": null,
+       "first_k": null,
+       "second": null,
+       "second_k": null,
+       "no_pay_6m": 76.0,
+       "lost_6m": 90.0,
+       "lost_before_1st": 75.0,
+       "payouts": 0.32
+      }
+     }
+    },
+    "morning $887 room": {
+     "live_40": {
+      "H1": {
+       "usd_m": 504,
+       "first": "2027-01-05",
+       "first_k": 30,
+       "second": "2027-02-08",
+       "second_k": 54,
+       "no_pay_6m": 6.5,
+       "lost_6m": 7.9,
+       "lost_before_1st": 6.5,
+       "payouts": 3.83
+      },
+      "H2": {
+       "usd_m": 413,
+       "first": "2027-01-18",
+       "first_k": 39,
+       "second": "2027-03-03",
+       "second_k": 71,
+       "no_pay_6m": 6.2,
+       "lost_6m": 5.8,
+       "lost_before_1st": 4.8,
+       "payouts": 3.14
+      },
+      "REF": {
+       "usd_m": 23,
+       "first": null,
+       "first_k": null,
+       "second": null,
+       "second_k": null,
+       "no_pay_6m": 86.5,
+       "lost_6m": 91.0,
+       "lost_before_1st": 84.7,
+       "payouts": 0.18
+      }
+     }
+    }
+   },
+   "eval25k": {
+    "H1": {
+     "p10": 59.7,
+     "f10": 0.0,
+     "s10": 0.0,
+     "p15": 71.9,
+     "pass_med": 6.0,
+     "slow_pass": 4.4,
+     "tpw": 3.01
+    },
+    "H2": {
+     "p10": 40.6,
+     "f10": 0.0,
+     "s10": 0.0,
+     "p15": 51.6,
+     "pass_med": 9.0,
+     "slow_pass": 17.8,
+     "tpw": 2.95
+    },
+    "2025": {
+     "p10": 21.3,
+     "f10": 0.0,
+     "s10": 18.1,
+     "p15": 29.1,
+     "pass_med": 5.0,
+     "slow_pass": 7.8,
+     "tpw": 2.93
+    },
+    "2021-24": {
+     "p10": 17.0,
+     "f10": 0.0,
+     "s10": 20.6,
+     "p15": 20.9,
+     "pass_med": 4.0,
+     "slow_pass": 5.1,
+     "tpw": 3.65
+    }
+   }
+  },
+  "E13/X1 measured entry": {
+   "entry_ticks": 13,
+   "stop_ticks": 1,
+   "fixed": {
+    "H1": {
+     "n": 104,
+     "tpw": 4.06,
+     "pf": 2.53,
+     "net": 16490,
+     "per_month": 2705,
+     "max_dd": -1294
+    },
+    "H2": {
+     "n": 46,
+     "tpw": 2.95,
+     "pf": 2.18,
+     "net": 4548,
+     "per_month": 1224,
+     "max_dd": -1086
+    },
+    "2025": {
+     "n": 222,
+     "tpw": 4.3,
+     "pf": 0.97,
+     "net": -1090,
+     "per_month": -89,
+     "max_dd": -7612
+    },
+    "2021-24": {
+     "n": 772,
+     "tpw": 4.71,
+     "pf": 0.86,
+     "net": -15979,
+     "per_month": -410,
+     "max_dd": -27107
+    }
+   },
+   "funded": {
+    "now $1,401 room": {
+     "live_40": {
+      "H1": {
+       "usd_m": 533,
+       "first": "2026-12-21",
+       "first_k": 21,
+       "second": "2027-01-27",
+       "second_k": 46,
+       "no_pay_6m": 4.6,
+       "lost_6m": 5.8,
+       "lost_before_1st": 4.6,
+       "payouts": 4.06
+      },
+      "H2": {
+       "usd_m": 451,
+       "first": "2026-12-31",
+       "first_k": 28,
+       "second": "2027-02-16",
+       "second_k": 60,
+       "no_pay_6m": 3.8,
+       "lost_6m": 4.1,
+       "lost_before_1st": 2.9,
+       "payouts": 3.44
+      },
+      "REF": {
+       "usd_m": 38,
+       "first": null,
+       "first_k": null,
+       "second": null,
+       "second_k": null,
+       "no_pay_6m": 77.6,
+       "lost_6m": 89.4,
+       "lost_before_1st": 76.6,
+       "payouts": 0.29
+      }
+     }
+    },
+    "morning $887 room": {
+     "live_40": {
+      "H1": {
+       "usd_m": 500,
+       "first": "2027-01-05",
+       "first_k": 30,
+       "second": "2027-02-09",
+       "second_k": 55,
+       "no_pay_6m": 6.7,
+       "lost_6m": 8.0,
+       "lost_before_1st": 6.7,
+       "payouts": 3.8
+      },
+      "H2": {
+       "usd_m": 408,
+       "first": "2027-01-18",
+       "first_k": 39,
+       "second": "2027-03-04",
+       "second_k": 72,
+       "no_pay_6m": 6.5,
+       "lost_6m": 5.9,
+       "lost_before_1st": 4.9,
+       "payouts": 3.1
+      },
+      "REF": {
+       "usd_m": 22,
+       "first": null,
+       "first_k": null,
+       "second": null,
+       "second_k": null,
+       "no_pay_6m": 87.5,
+       "lost_6m": 92.3,
+       "lost_before_1st": 86.0,
+       "payouts": 0.17
+      }
+     }
+    }
+   },
+   "eval25k": {
+    "H1": {
+     "p10": 54.6,
+     "f10": 0.0,
+     "s10": 0.8,
+     "p15": 71.9,
+     "pass_med": 6.0,
+     "slow_pass": 3.3,
+     "tpw": 3.12
+    },
+    "H2": {
+     "p10": 37.7,
+     "f10": 0.0,
+     "s10": 0.0,
+     "p15": 50.0,
+     "pass_med": 8.0,
+     "slow_pass": 20.0,
+     "tpw": 2.95
+    },
+    "2025": {
+     "p10": 21.3,
+     "f10": 0.0,
+     "s10": 19.7,
+     "p15": 29.5,
+     "pass_med": 5.0,
+     "slow_pass": 6.5,
+     "tpw": 3.0
+    },
+    "2021-24": {
+     "p10": 16.9,
+     "f10": 0.0,
+     "s10": 22.2,
+     "p15": 20.5,
+     "pass_med": 5.0,
+     "slow_pass": 5.2,
+     "tpw": 3.51
+    }
+   }
+  }
+ },
+ "sizing_verdict": {
+  "E10/X1": {
+   "room60_better": false,
+   "why": [
+    "H1 lost 5.4->6.6",
+    "H2 lost 2.7->4.8",
+    "REF worse"
+   ]
+  },
+  "E10/X2": {
+   "room60_better": false,
+   "why": [
+    "H1 lost 5.4->6.9",
+    "H2 lost 3.6->5.5",
+    "REF worse"
+   ]
+  },
+  "E10/X3": {
+   "room60_better": false,
+   "why": [
+    "H1 lost 5.3->7.1",
+    "H2 lost 3.7->6.4",
+    "REF worse"
+   ]
+  }
+ },
+ "card": false,
+ "took_s": 86
+}

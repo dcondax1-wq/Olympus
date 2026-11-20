@@ -57,7 +57,7 @@ def part_a():
     html, css = rd(PAGE, "index.html"), rd(PAGE, "forum.css")
     js = {n: rd(PAGE, n) for n in files if n.endswith(".js")}
     check("a. the kit first (olympus.css, themes.js, olympus.js ?v=o2 with data-app), viewport-fit=cover, theme-color, dark, manifest, icon, apple-touch-icon",
-          '<link rel="stylesheet" href="../olympus/olympus.css?v=o7">' in html and 'src="../olympus/themes.js?v=o9"' in html and 'src="../olympus/olympus.js?v=o18" data-app="forum"' in html
+          '<link rel="stylesheet" href="../olympus/olympus.css?v=o7">' in html and 'src="../olympus/themes.js?v=o9"' in html and 'src="../olympus/olympus.js?v=o20" data-app="forum"' in html
           and "viewport-fit=cover" in html and 'name="theme-color"' in html and 'content="dark"' in html and 'rel="manifest" href="manifest.webmanifest"' in html
           and 'rel="icon" href="icon.svg"' in html and 'rel="apple-touch-icon"' in html)
     check("a. no CDN, no outside script / font / image: every src and href is local", not re.search(r'(src|href)="https?://', html) and not any(re.search(r"import[^;]*['\"]https?://", s) for s in js.values()))
@@ -71,7 +71,7 @@ def part_a():
           fetched == {"../pantheon/pantheon.json", "../home.json", "fixture.json"} and not any(re.search(r"WebSocket|sendBeacon|XMLHttpRequest|EventSource", s) for s in js.values())
           and "const KEY = 'forum.v1'" in js["forum.js"] and set(re.findall(r"localStorage\.\w+Item\(([A-Za-z'\"\.]+)", js["forum.js"])) <= {"KEY", "'forum.opt"}, fetched)   # + the 30-minute "this optional file is not there" note (forum.opt404.<url>)
     check("a. the OLYMPUS effects library (fx-core, ui, text, burst ?v=f1) is linked after olympus.js; forumdesk.js draws the desk / shrine / ritual with textContent only and reads the Planner only through its own helper",
-          all(f"../olympus/fx-{n}.js?v=f1" in html for n in ("core", "ui", "text", "burst")) and html.find("fx-core.js") > html.find("olympus.js?v=o18") and "forumdesk.js" in js
+          all(f"../olympus/fx-{n}.js?v=f1" in html for n in ("core", "ui", "text", "burst")) and html.find("fx-core.js") > html.find("olympus.js?v=o20") and "forumdesk.js" in js
           and not re.search(r"innerHTML", js["forumdesk.js"]) and "planner.v1" not in js["forum.js"] and "fxTarget" in js["scene.js"] and "id=\"desk\"" in html and "id=\"shrine\"" in html)
     check("a. the core has no clock, no network and no storage of its own (pure: the page passes the date in)", not re.search(r"fetch\(|XMLHttpRequest|localStorage|Date\.now|new Date\(\)", js["forumcore.js"]))
     check("a. safe areas on every edge, the orb's corner (the card and the step bar stop 96 px from the right), dvh after vh, reduced motion",
