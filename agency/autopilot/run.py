@@ -134,6 +134,18 @@ def notify_owner(text: str) -> bool:
         return False
 
 
+def never_add(lead_id: str, email_addr: str = "") -> None:
+    """%USERPROFILE%\\.olympus\\agency_never.json: lead ids + emails that never get an email or a postcard again (tools/postcards.py reads it)"""
+    p = path("agency_never.json")
+    n = read_json(p, {}) or {}
+    ids, ems = set(n.get("lead_ids") or []), set(n.get("emails") or [])
+    if lead_id:
+        ids.add(str(lead_id))
+    if email_addr and core.valid_email(email_addr):
+        ems.add(core.norm_email(email_addr))
+    write_json(p, {"v": 1, "lead_ids": sorted(ids), "emails": sorted(ems)})
+
+
 # ------------------------------------------------------------------------------------------------ one pass
 def run_once(cfg: dict, state: dict, leads: list, words: dict, offers: dict, sites: dict, now: dt.datetime | None = None,
              smtp_factory=None, imap_factory=None, push=None, outbox=None, notify=notify_owner, public=post_public, sleep=time.sleep) -> dict:
@@ -164,10 +176,20 @@ def run_once(cfg: dict, state: dict, leads: list, words: dict, offers: dict, sit
         cls = core.classify(m["subject"], m["from"] + " " + m.get("from_name", ""), m["text"])
         addr = core.bounced_address(m["text"], set(to_lead)) if cls == "bounce" else m["from"]
         lid = to_lead.get(core.norm_email(addr))
+        if not lid and cls == "optout":                   # a "STOP + business name" email about a postcard: that business never again
+            body = (m.get("subject", "") + " " + core.trim(m["text"], mask=False)).lower()
+            for L in leads:
+                nm = str(L.get("name") or "").lower()
+                if len(nm) >= 5 and nm in body:
+                    never_add(L.get("id"), m["from"])
+                    res["inbox"].append({"id": f"r{m['uid']}", "lead_id": L.get("id"), "business": L.get("name"), "class": "optout", "words": "", "subject": "", "t": int(time.time())})
+                    break
+            continue
         if not lid:
             continue                                      # not a reply to the autopilot: never read further, never stored
         if cls in ("optout", "bounce"):
             core.suppress(state, addr)
+            never_add(lid, addr)                          # the ONE never-again list the postcards read too
         state["replied"][lid] = cls
         core.day_counts(state, day)["replies_in"] += 1
         item = {"id": f"r{m['uid']}", "lead_id": lid, "business": (byid.get(lid) or {}).get("name", ""), "class": cls,
@@ -348,6 +370,19 @@ def main(argv=None) -> int:
                    push=(lambda files, msg: bridge.write_and_push(url, wd, files, msg)) if cfg.get("mode") != "off" else None,
                    outbox=(lambda: (bridge.sync(url, wd) or True) and bridge.read_outbox(wd)) if cfg.get("mode") != "off" else None)
     write_json(path("agency_mail_state.json"), state, private=True)
+    try:                                                  # the postcards ride the same task (tools/postcards.py; OFF unless POSTCARD_SETUP.bat)
+        sys.path.insert(0, ROOT)
+        from tools import postcards as PC
+        pc = PC.norm_cfg(read_json(path("postcards.json"), {}))
+        if pc["mode"] != "off":
+            pst = read_json(path("postcards_state.json"), {}) or {}
+            pl, ps = PC.leads_and_sites()
+            pr = PC.run_once(pc, pst, pl, ps)
+            write_json(path("postcards_state.json"), pst)
+            res["errors"] += ["postcards: " + e for e in pr["errors"][:3]]
+            res["postcards"] = len(pr["sent"])
+    except Exception as e:  # noqa: BLE001
+        res["errors"].append("postcards: " + str(e)[:120])
     log(cfg, {"t": int(time.time()), "ev": "run", "mode": res["mode"], "sent": len(res["sent"]), "in": len(res["inbox"]), "outbox": len(res["outbox"]), "errors": res["errors"][:5]})
     print(redact(f"  mode {res['mode']}: sent {len(res['sent'])}, replies {len(res['inbox'])}, drafts {len(res['outbox'])}" + (f", problems: {res['errors'][:2]}" if res["errors"] else ""), cfg))
     return 0

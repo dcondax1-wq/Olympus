@@ -1,7 +1,7 @@
 <#
 AGENCY MAIL task (EMAIL_SETUP.bat installs it, EMAIL_STOP.bat removes it; agency\autopilot\run.py).
 
-  default   installs (or replaces) the Windows task "OlympusAgencyMail": every 30 minutes while you are signed in it runs
+  default   installs (or replaces) the Windows task "OlympusAgencyMail" (email + postcards): every 30 minutes while you are signed in it runs
             "python -m agency.autopilot run" with pythonw (no window), at most one at a time. The autopilot itself only sends
             Mon-Fri 9:00-16:00 ET, max 20 new businesses a day, and nothing at all unless EMAIL_SETUP.bat saved the phrase SEND EMAILS
             (else DRY RUN: your own test address only).
