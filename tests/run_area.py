@@ -276,6 +276,7 @@ def table(rows: list) -> str:
                  f"{sum(1 for r in rows if r['state'] == 'PASS')}/{len(rows)} suites pass |")
     return "\n".join(lines)
 AREAS["board"].append("payready"); AREAS["trading"] += ["payready", "nq_desk", "trading_merged", "alert_audit"]   # nqdash3 2026-11-20: payout readiness, the NQ desk, the merged Odeon / Why cards, the alert audit; its own line
+AREAS["trading"] += ["nq_goals"]   # day-nqdash3 v4 2026-11-20: the NQ money goals strip, the numbers card, the 3D price landscape (tools/web_public/nq/nqgoals.js, nqland.js)
 AREAS["pc"].append("alert_audit"); AREAS["pc"].append("ntfy_budget")   # 2026-11-20 ntfy cap: tools/pc_report.py ext_hash + ntfy_quota
 AREAS["trading"].append("truth_check"); AREAS["board"].append("truth_check")   # Olympus 2 data truth (tools/truth_check.py, age.js), offline
 AREAS["nq"].append("premarket_brief")       # day-brief 2026-11-20: nq/brief.json contract + pre-registered bias (tools/premarket_brief.py)
