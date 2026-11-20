@@ -94,6 +94,9 @@ def test_locks(tmp):
           and all(os.path.exists(p) for p in (lk, sc, ref)), r)
     r = SH.fix_git_locks(ctx(root, now, procs=[(7, "git.exe")]))
     check("a. git running: nothing removed (info)", statuses(r) == ["info"] and os.path.exists(lk), r)
+    r = SH.fix_git_locks(ctx(root, now, apply=True, procs=[]))
+    check("a. the running programs cannot be read: nothing removed (a long git may be at work; redteam)",
+          statuses(r) == ["info"] and all(os.path.exists(p) for p in (lk, sc, ref)), r)
     r = SH.fix_git_locks(ctx(root, now, apply=True))
     check("a. apply: index.lock, refs/heads/main.lock and the scratch dir's lock removed", statuses(r) == ["fixed"]
           and not any(os.path.exists(p) for p in (lk, sc, ref)), r)

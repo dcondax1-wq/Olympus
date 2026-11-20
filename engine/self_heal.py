@@ -376,6 +376,9 @@ def fix_git_locks(ctx) -> list:
     if not locks:
         return []
     names = [_rel(ctx.root, p) for p in locks]
+    if not ctx.procs():
+        return [item("git_lock", "git_lock", "info", f"{len(locks)} old git lock(s) ({', '.join(names[:3])}) but the running "
+                     "programs cannot be read: left as they are (never guessed)", paths=names)]
     if git_running(ctx):
         return [item("git_lock", "git_lock", "info", f"{len(locks)} old git lock(s) ({', '.join(names[:3])}) but git is running now: "
                      "left for the next run", paths=names)]
