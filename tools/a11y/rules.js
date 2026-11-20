@@ -248,6 +248,18 @@
     return out;
   }
 
+  function truncated() {   // a headline or button label cut with an ellipsis / clipped on one line
+    var out = [], list = document.querySelectorAll('h1,h2,h3,h4,button,a,[role=button],.ag-row-title,.ag-hero-label,.ag-stat-label,b,strong,dt,th,label');
+    for (var i = 0; i < list.length && out.length < 10; i++) {
+      var el = list[i]; if (!vis(el) || el.closest('[aria-hidden="true"]')) continue;
+      var s = getComputedStyle(el), t = (el.innerText || '').trim();
+      if (!t || t.length < 3) continue;
+      if ((s.textOverflow === 'ellipsis' || s.overflow === 'hidden' || s.overflowX === 'hidden') && el.scrollWidth > el.clientWidth + 2 && s.whiteSpace !== 'normal')
+        out.push({ sel: sel(el), text: t.slice(0, 50), detail: 'cut: ' + el.scrollWidth + 'px of text in ' + el.clientWidth + 'px' });
+    }
+    return out;
+  }
+
   window.__olyA11y = {
     vis: vis, sel: sel,
     snapshotSizes: function () {
@@ -276,6 +288,7 @@
         r['h-scroll'] = hScroll(opts.vw);
         r['bottom-bar'] = bottomBars();
       }
+      r.truncated = truncated();
       if (opts.motion) r.motion = motion(opts.rafPerSec || 0);
       if (opts.color !== false) r['color-only'] = colorOnly();
       return { rules: r, meta: { texts: ts.els.length, controls: document.querySelectorAll(CLICK).length, title: document.title, w: innerWidth, h: innerHeight, theme: document.documentElement.getAttribute('data-oly-theme') || '', scheme: document.documentElement.getAttribute('data-oly-scheme') || '', bg: getComputedStyle(document.body).backgroundColor } };
