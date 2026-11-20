@@ -585,6 +585,9 @@ class Public:
                     return None
             if status in (400, 401, 403, 404):
                 return None
+            if status == 429:                        # Kalshi's "slow down" (a shared address): wait longer; not a broken-network error
+                self.sleep(5.0 * (attempt + 1))
+                continue
             self.errors += 1
             self.sleep(2.0 * (attempt + 1))
         return None

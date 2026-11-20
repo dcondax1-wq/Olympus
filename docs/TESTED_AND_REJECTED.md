@@ -317,3 +317,13 @@
   a VIX jump; ATLAS x1.25 after Zlarior was stopped on the other side, x0.5 on a two-way day: all 8 rejected (best: old level +$138 /
   +$125 a month at the LIT size but eval path Jul-Oct -$34). The loop re-checks them on new bars.
 
+- **Kalshi K8 better edge (2026-11-20 night-kalshi8, `research/writeups/kalshi-k8-monday-2026-11-20.md`, `research/kalshi_k8_monday/edge.py`,
+  84 variants, one-sided Bonferroni t >= 3.24 found on Aug 3-Oct 21, checked on the held-out Oct 22-Nov 19, $2.50 bets, the +20 s tape
+  price, verify.py fees): NOTHING passed. Entry +10 s pays 0.15-0.5c MORE than +20 s (-2% to -3% per $1), +40 s pays 0.8c more and
+  misses 19% of fills: +20 s stays. Price caps 50-60c per leg (30): the skipped dearer bets still made +19% to +53% per $1 in the find
+  weeks (only gold 16:15 above 60c lost, 8 bets). Leg filters from the metals' own path on Kalshi's settles (48: previous quarter hour,
+  4-hour move, the session before, 8-hour volatility vs its 20-day median, skip either side): every skipped group made money (+6% to
+  +76% per $1), so every filter costs money. Pause a leg after 2 / 3 losses in a row: the next bet won 19 of 22 (+70%) / 3 of 3 in
+  the find weeks, 10 of 15 held out. Roll days: natural gas UP 17:00-17:15 won 15 of 15 but now costs 93c (+7% held out, loss-rate
+  bound 39% vs 15% break-even, about $2 a month at $2.50); WTI DOWN 17 of 20, +43% / +50% but t 2.41 on 20 bets (about $6 a month).
+  CME holiday / early-close skips are a safety rule, not testable (Labor Day was the only US holiday: the evening legs won that day).

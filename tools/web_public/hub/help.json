@@ -248,9 +248,9 @@
    "words": "kalshi status paused paper rewards bets on off prediction k1 rewards card paper test live go live phrase key api key stop flatten k8 gold silver clock phone page kalshi-live bet size",
    "where": "The Kalshi page (the Kalshi door)",
    "steps": [
-    "Kalshi is PAUSED for real money: ready to go live when you type the phrase. The K8 clock bets (gold / silver 15-minute markets) run on paper every weekday meanwhile.",
+    "Kalshi is PAUSED for real money: ready to go live when you type the phrase. The K8 clock bets (gold / silver 15-minute markets) run on paper every weekday meanwhile. With $55: $2.50 a bet, at most 3 a day, a bad week loses at most $13.75.",
     "On the iPhone: kalshi.com > your account > Profile Settings > API Keys > Create New API Key; keep the page open (Key ID + the private key text). Never paste the key in a chat.",
-    "Open your PC link (the same address as ZEUS Safety) with /kalshi-live/ at the end: paste the Key ID and the key, Save (it shows Key OK and your balance), pick the bet size, type I ACCEPT KALSHI LIVE RISK, Start.",
+    "Open your PC link with :8444/kalshi-live/ at the end (the same address as ZEUS Safety; the link without :8444 is your old Jarvis app): paste the Key ID and the key, Save (it shows Key OK and your balance), pick the bet size ($2.50 for $55), type I ACCEPT KALSHI LIVE RISK, Start.",
     "STOP on that page (one tap) or KILL on ZEUS Safety turns it off at once. A phone push for each bet, each result and the day."
    ],
    "copy": "",

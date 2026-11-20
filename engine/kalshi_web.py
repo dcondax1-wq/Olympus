@@ -1,7 +1,8 @@
 """KALSHI K8 phone page (owner 2026-11-19: "I have no access to my PC right now, we have to find a way on my phone very quick").
 
-The whole Kalshi set-up and arming from the iPhone, over the PC's PRIVATE Tailscale link only (the same host as the phone
-dashboard and the ZEUS Safety page: https://<pc>.<tailnet>.ts.net/kalshi-live/). Installed by engine/phone_safety.install (which
+The whole Kalshi set-up and arming from the iPhone, over the PC's PRIVATE Tailscale link only: the bot server's own port
+https://<pc>.<tailnet>.ts.net:8444/kalshi-live/ (engine/phone_link.py; :443 belongs to the owner's old Jarvis app). Installed by
+engine/phone_safety.install (which
 server.py already calls), so server.py is untouched. It never touches the futures bot, NinjaTrader or any futures setting.
 
   GET  /kalshi-live/         the one-screen page
@@ -10,7 +11,8 @@ server.py already calls), so server.py is untouched. It never touches the future
   POST /kalshi-live/key      {"key_id", "private_key"} -> saved OUTSIDE the repo in OLYMPUS_HOME\\kalshi\\ (kalshi_key.pem + key_id.txt,
                              locked to the Windows user), never logged, never echoed; checked at once with ONE signed read (the balance)
   POST /kalshi-live/arm      {"phrase", "stake"} -> the exact phrase (engine/kalshi_live.PHRASE) arms K8 live at the bet size picked
-                             ($5 / $8 / $10 / $15); the clock loop is started if it is not running. Nothing else can arm
+                             ($1 / $2.50 / $5 / $8 / $10 / $15; the bankroll rule says $2.50 for $55); the clock loop is started if
+                             it is not running. Nothing else can arm
   POST /kalshi-live/stop     {} -> OFF at once, no second tap: disarm + the kill switch; resting orders cancelled in the background
 Every POST must pass check(): the private link (engine/live_site.private_why: the owner's tailnet, signed in, never Funnel), sent by
 this page (engine/phone_safety.origin_why: X-Zeus-Safety header, JSON, same Origin, Sec-Fetch-Site), body <= 8 KB, at most 10
@@ -195,22 +197,22 @@ def key_status(env=None) -> dict:
 
 # ------------------------------------------------------------------------------------------------ the presses
 def bankroll_warn(stake, balance) -> str:
+    """The bankroll rule (engine/kalshi_clock.bankroll_rule: about 4.5% of the account a bet): a warning when the bet is bigger."""
     from engine import kalshi_clock as KC
     b = KL._f(balance)
-    if b is None:
+    if b is None or KC.fits(stake, b):
         return ""
-    need = KC.BANKROLL_PER_15 * stake / 15.0
-    if b < need - 1e-9:
-        return (f"Bet size {KL.money(stake)} needs about {KL.money(need)} on Kalshi; you have {KL.money(b)}. "
-                f"With $100 use $5-8 a bet.")
-    return ""
+    r = KC.bankroll_rule(b)
+    need = stake / KC.BANKROLL["bet_share"]
+    return (f"Bet size {KL.money(stake)} needs about {KL.money(need)} on Kalshi; you have {KL.money(b)}: "
+            f"use {KL.money(r['stake_usd'])} a bet ({r['contracts_at_52c']} contracts).")
 
 
 def do_arm(body) -> dict:
     from engine import kalshi_clock as KC
     stake = KL._f(body.get("stake"))
     if stake not in KC.STAKES:
-        return {"ok": False, "said": "pick a bet size: $5, $8, $10 or $15"}
+        return {"ok": False, "said": "pick a bet size: " + ", ".join(KL.money(x) for x in KC.STAKES)}
     ks = key_status()
     if not ks["ok"]:
         return {"ok": False, "said": "save and check your Kalshi key first (step 1)"}
@@ -262,10 +264,15 @@ def status_view() -> dict:
     A = KL.load_all(state_dir=_S["state_dir"])
     live, why = KL.arm_state(P=P, sha=A["sha"], env=_env())
     nt = s.get("next")
+    bal = KL._f(ks.get("balance"))
+    rule = KC.bankroll_rule(bal if bal is not None else cfg.get("bankroll_usd") or 55.0)
     return {"ok": True, "t": int(now), "phrase": KL.PHRASE, "key": ks, "live": live, "why": why, "stake": cfg["stake_usd"],
             "stakes": list(KC.STAKES), "warn": bankroll_warn(cfg["stake_usd"], ks.get("balance")),
+            "bankroll": {"balance": bal, "configured": cfg.get("bankroll_usd"), "rule": rule, "fits": KC.fits(cfg["stake_usd"], bal)},
+            "dist": KC.kill_distances(_S["state_dir"], cfg, now), "next_t": int(nt) if nt else None, "now_t": int(now),
             "legs": [{"name": KC.LEG[x]["name"], "live": x in cfg["live_legs"]} for x in cfg["paper_legs"]],
             "caps": {"price_cap": cfg["price_cap"], "max_bets_per_day": cfg["max_bets_per_day"], "daily_loss_stop_usd": cfg["daily_loss_stop_usd"],
+                     "week_loss_stop_usd": cfg.get("week_loss_stop_usd"),
                      "kill_after_bets": cfg["kill_after_bets"], "kill_min_win_rate": cfg["kill_min_win_rate"],
                      "kill_drawdown_usd": cfg["kill_drawdown_usd"], "kill_avg_price": cfg["kill_avg_price"],
                      "kill_avg_price_bets": cfg["kill_avg_price_bets"]}, "red_team": KC.RED_TEAM,
@@ -294,10 +301,16 @@ button.stop{background:var(--bad);border-color:var(--bad);color:#fff;font-size:2
 .sizes{display:flex;gap:8px}.sizes label{flex:1;text-align:center;border:2px solid var(--line);border-radius:10px;padding:12px 0;font-weight:600}
 .sizes input{display:none}.sizes input:checked+span{color:var(--ok)}.phr{font:700 17px ui-monospace,Menlo,monospace;letter-spacing:.02em}
 #said{font-weight:600}ul{margin:4px 0 0;padding-left:18px}li{margin:2px 0;font-size:14px}
+.big{font-size:28px;font-weight:700;letter-spacing:-.01em}.chips{display:flex;gap:4px;flex-wrap:wrap;margin:4px 0 2px}
+.chip{width:22px;height:22px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font:700 12px/1 system-ui;color:#fff}
+.chip.w{background:var(--ok)}.chip.l{background:var(--bad)}.bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden;margin:2px 0 8px}
+.bar i{display:block;height:100%;background:var(--ok)}.bar i.hot{background:var(--warn)}.bar i.red{background:var(--bad)}
+.kv{display:grid;grid-template-columns:1fr auto;gap:2px 10px;font-size:15px}.kv b{text-align:right}
+.sizes label.rec{border-color:var(--ok)}.sizes small{display:block;font-weight:400;font-size:11px;color:var(--mute)}
 </style></head><body><main>
 <h1>Kalshi K8</h1>
 <button id="b-stop" class="stop">STOP (off now)</button>
-<div class="card" id="st"><div class="mute">Loading...</div></div>
+<div class="card" id="st"><h2>K8 status</h2><div class="mute">Loading...</div></div>
 <div class="card" id="said" hidden></div>
 <div class="card"><h2>1. Your Kalshi key</h2><div id="keyst" class="mute"></div>
 <input id="kid" placeholder="Key ID (from kalshi.com, API Keys)" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
@@ -314,35 +327,42 @@ button.stop{background:var(--bad);border-color:var(--bad);color:#fff;font-size:2
 <p class="mute">Only this typed phrase starts real money. STOP turns it off at once. It never touches the futures bot.</p></div>
 <div class="card"><h2>Last bets</h2><ul id="last"><li class="mute">none yet</li></ul></div>
 </main><script>
-var S=null,STAKE=null;
+var S=null,STAKE=null,NEXT=null,SKEW=0;
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 function usd(x,sg){var v=Number(x||0);return (v<0?"-":(sg&&v>0?"+":""))+"$"+Math.abs(v).toFixed(2)}
 function rec(s){return s&&s.n?(s.n+" bets, "+s.won+" won, "+usd(s.net,1)):"no bets yet"}
 function say(t,bad){var e=document.getElementById("said");e.hidden=!t;e.textContent=t||"";e.className="card "+(bad?"bad":"ok")}
 function load(){fetch("status",{cache:"no-store"}).then(function(r){return r.json()}).then(function(s){S=s;if(!s.ok){document.getElementById("st").innerHTML='<div class="bad">'+esc(s.error||"not available")+'</div>';return}
- var h='<div class="row"><span>Kalshi</span><b class="'+(s.live?"ok":"warnt")+'">'+(s.live?"LIVE":"PAPER only")+'</b></div>';
- if(!s.live)h+='<div class="mute">'+esc(s.why)+'</div>';
- h+='<div class="row"><span>Next window</span><b>'+esc(s.next||"-")+'</b></div>';
- h+='<div class="row"><span>Today live</span><b>'+esc(rec(s.live_today))+'</b></div><div class="row"><span>Today paper</span><b>'+esc(rec(s.paper_today))+'</b></div>';
- h+='<div class="row"><span>All live</span><b>'+esc(rec(s.live_all))+'</b></div><div class="row"><span>All paper</span><b>'+esc(rec(s.paper_all))+'</b></div>';
- h+='<div class="mute">'+esc(s.kill)+(s.loop?"":" &middot; the clock loop is not running yet")+(s.paused?" &middot; PAUSED":"")+'</div>';
+ var d=s.dist||{},bk=s.bankroll||{},r=(bk.rule||{}),led=d.ledger==="live"?"live":"paper",td=led==="live"?s.live_today:s.paper_today;
+ var h='<h2>K8 status</h2><div class="row"><span class="big '+(s.live?"ok":"warnt")+'">'+(s.live?"LIVE":"PAPER")+'</span><span class="mute" style="text-align:right">'+(s.live?"real bets, "+esc(usd(s.stake))+" each":"no real money: "+esc(s.why))+'</span></div>';
+ h+='<div class="kv"><span>Bankroll</span><b>'+(bk.balance!=null?esc(usd(bk.balance))+" on Kalshi":esc(usd(bk.configured))+" (planned)")+'</b>';
+ h+='<span>Bet size</span><b>'+esc(usd(s.stake))+(bk.fits===false?' <span class="bad">too big</span>':'')+'</b>';
+ h+='<span>Today ('+led+')</span><b>'+esc(rec(td))+'</b>';
+ h+='<span>Next window</span><b id="cd">'+esc(s.next||"-")+'</b><span></span><b class="mute" style="font-weight:400">'+esc((s.next_legs||[]).join(", "))+'</b></div>';
+ var l10=d.last10||[];h+='<div class="mute" style="margin-top:8px">Last '+l10.length+' results ('+led+'), oldest first</div><div class="chips">'+(l10.length?l10.map(function(x){return '<span class="chip '+(x.result==="won"?"w":"l")+'" title="'+esc(x.day+" "+x.name+" "+usd(x.pnl,1))+'">'+(x.result==="won"?"W":"L")+'</span>'}).join(""):'<span class="mute">none yet</span>')+'</div>';
+ function bar(lbl,used,stop){var f=stop?Math.min(1,Math.max(0,used/stop)):0;return '<div class="row"><span>'+lbl+'</span><b>'+esc(usd(-used))+' of '+esc(usd(-stop))+'</b></div><div class="bar"><i class="'+(f>.8?"red":f>.5?"hot":"")+'" style="width:'+Math.round(100*f)+'%"></i></div>'}
+ h+='<div class="mute" style="margin-top:6px">How far each stop is</div>'+bar("Today",(d.day||{}).used||0,(d.day||{}).stop||0)+bar("This week",(d.week||{}).used||0,(d.week||{}).stop||0)+bar("From the peak (OFF)",(d.drawdown||{}).used||0,(d.drawdown||{}).stop||0);
+ var wr=d.win_rate||{},ap=d.avg_price||{};h+='<div class="kv"><span>Won</span><b>'+(wr.n?Math.round(100*wr.rate)+'% of '+wr.n+' (OFF under '+Math.round(100*(wr.min||0))+'% after '+wr.of+')':'no bets yet')+'</b><span>Average price</span><b>'+(ap.avg!=null?Math.round(100*ap.avg)+'c (OFF over '+Math.round(100*(ap.max||0))+'c on '+ap.of+')':'-')+'</b></div>';
+ h+='<div class="mute" style="margin-top:6px">'+esc(s.kill)+(s.loop?"":" &middot; the clock loop is not running yet")+(s.paused?" &middot; PAUSED":"")+'</div>';
+ NEXT=s.next_t;SKEW=(s.now_t||0)*1000-Date.now();
  document.getElementById("st").innerHTML=h;
  var k=s.key||{};document.getElementById("keyst").innerHTML=k.ok?'<span class="ok">Key OK &middot; balance '+esc(usd(k.balance))+'</span>':(k.saved?'<span class="bad">'+esc(k.why||"saved, not checked yet")+'</span>':'No key saved yet.');
  var c=s.caps||{};document.getElementById("strat").innerHTML='<ul>'+(s.legs||[]).map(function(l){return "<li>"+esc(l.name)+(l.live?"":" (paper only)")+"</li>"}).join("")+'</ul>'
-  +'<p>'+esc(usd(s.stake))+' a bet at the best ask, 20 s after the window opens; skipped above '+Math.round((c.price_cap||0)*100)+'c. At most '+esc(c.max_bets_per_day)+' bets a day, stop at '+esc(usd(-(c.daily_loss_stop_usd||0)))+' a day, OFF under '+Math.round((c.kill_min_win_rate||0)*100)+'% won after '+esc(c.kill_after_bets)+' bets, at '+esc(usd(-(c.kill_drawdown_usd||0)))+' from the peak, or above '+Math.round((c.kill_avg_price||0)*100)+'c paid on average over the last '+esc(c.kill_avg_price_bets)+' bets.</p>';
+  +'<p>'+esc(usd(s.stake))+' a bet at the best ask, 20 s after the window opens; skipped above '+Math.round((c.price_cap||0)*100)+'c. At most '+esc(c.max_bets_per_day)+' bets a day, stop at '+esc(usd(-(c.daily_loss_stop_usd||0)))+' a day and '+esc(usd(-(c.week_loss_stop_usd||0)))+' a week, OFF under '+Math.round((c.kill_min_win_rate||0)*100)+'% won after '+esc(c.kill_after_bets)+' bets, at '+esc(usd(-(c.kill_drawdown_usd||0)))+' from the peak, or above '+Math.round((c.kill_avg_price||0)*100)+'c paid on average over the last '+esc(c.kill_avg_price_bets)+' bets.</p>';
  document.getElementById("redteam").textContent=s.red_team||"";
- if(STAKE===null)STAKE=s.stake;document.getElementById("sizes").innerHTML=(s.stakes||[]).map(function(v){return '<label><input type="radio" name="sz" value="'+v+'"'+(v==STAKE?" checked":"")+'><span>$'+v+'</span></label>'}).join("");
+ if(STAKE===null)STAKE=s.stake;var rs=((s.bankroll||{}).rule||{}).stake_usd;document.getElementById("sizes").innerHTML=(s.stakes||[]).filter(function(v){return v<=Math.max(5,rs||0)}).map(function(v){return '<label'+(v==rs?' class="rec"':'')+'><input type="radio" name="sz" value="'+v+'"'+(v==STAKE?" checked":"")+'><span>$'+v+(v==rs?'<small>the rule</small>':'')+'</span></label>'}).join("");
  [].forEach.call(document.querySelectorAll('#sizes input'),function(i){i.onchange=function(){STAKE=Number(i.value);warn()}});
  document.getElementById("phr").textContent=s.phrase;warn();
  document.getElementById("last").innerHTML=(s.last||[]).slice().reverse().map(function(r){return "<li>"+esc(r.day)+" &middot; "+esc(r.leg)+" &middot; "+esc(r.status)+(r.result?" &middot; "+esc(r.result)+" "+esc(usd(r.pnl,1)):"")+"</li>"}).join("")||'<li class="mute">none yet</li>';
 }).catch(function(){document.getElementById("st").innerHTML='<div class="bad">The PC does not answer. Use STOP again later or the Kalshi app.</div>'})}
-function warn(){var k=(S&&S.key)||{},b=Number(k.balance),need=250*STAKE/15,w="";if(k.ok&&b<need-1e-9)w="Bet size $"+STAKE+" needs about $"+need.toFixed(0)+" on Kalshi; you have "+usd(b)+". With $100 use $5-8 a bet.";document.getElementById("warn").textContent=w}
+function warn(){var k=(S&&S.key)||{},b=Number(k.balance),fit=Math.min(15,Math.max(1,Math.round(b*0.045/0.5)*0.5)),w="";if(k.ok&&isFinite(b)&&STAKE>fit+1e-9)w="Bet size $"+STAKE+" needs about $"+(STAKE/0.045).toFixed(0)+" on Kalshi; you have "+usd(b)+": use $"+fit+" a bet.";document.getElementById("warn").textContent=w}
+function tick(){var e=document.getElementById("cd");if(!e||!NEXT)return;var x=Math.round((NEXT*1000-(Date.now()+SKEW))/1000);if(x<=0){e.textContent="now";return}var h=Math.floor(x/3600),m=Math.floor(x%3600/60),q=x%60;e.textContent=(h?h+"h ":"")+(h||m?m+"m ":"")+(h?"":q+"s")+" ("+S.next+")"}
 function post(a,body,btn){btn.disabled=true;say("Sending...");fetch(a,{method:"POST",headers:{"Content-Type":"application/json","X-Zeus-Safety":"1"},body:JSON.stringify(body)})
  .then(function(r){return r.json()}).then(function(j){say(j.said||j.error||"",!j.ok);load()}).catch(function(){say("NOT SENT: the PC does not answer.",1)}).then(function(){btn.disabled=false})}
 document.getElementById("b-key").onclick=function(){var kid=document.getElementById("kid"),pk=document.getElementById("pk");post("key",{key_id:kid.value,private_key:pk.value},this);pk.value=""};
 document.getElementById("b-arm").onclick=function(){var p=document.getElementById("phrase");post("arm",{phrase:p.value,stake:STAKE},this);p.value=""};
 document.getElementById("b-stop").onclick=function(){post("stop",{},this)};
-load();setInterval(load,15000);
+load();setInterval(load,15000);setInterval(tick,1000);
 </script></body></html>"""
 
 
