@@ -72,6 +72,12 @@ def test_browser():
             p.wait_for_timeout(500)
             check("b. Gate: and wakes when it is back", state(p)["running"])
             check("b. Gate: no page error", not errs, errs)
+            # olympus2 2026-11-20 (owner bar: "intro ... never on repeat visits the same day"): the first open had the intro, a second open that day has none
+            first = p.evaluate("document.documentElement.classList.contains('hfx-intro')")
+            p.reload(); p.wait_for_function("window.GATE && window.GATE.ready()", timeout=60000, polling=200)
+            again = p.evaluate("[document.documentElement.classList.contains('hfx'), document.documentElement.classList.contains('hfx-intro'), localStorage.getItem('oly.homefx.day')]")
+            check("b. Gate: the intro plays on the first open of the day and not on a repeat visit the same day (oly.homefx.day = today in New York)",
+                  first and again[0] and not again[1] and re.fullmatch(r"\d{4}-\d{2}-\d{2}", again[2] or ""), (first, again))
             ctx.close()
 
             ctx, p, errs, seen, off = AK.page(br, origin, reduced=True)
