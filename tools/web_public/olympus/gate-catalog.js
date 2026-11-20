@@ -232,6 +232,7 @@
     ['act-kill', 'Stop everything now', 'The kill switch: flatten every account, stop the bot', 'hub/manual.html#sos-8', 'stop kill everything halt flatten close all bot bots shut off switch out', 'bot bots'],
     ['act-manual', 'Owner manual', 'Who is who, a normal day, money, every word explained', 'hub/manual.html', 'manual guide who is explain meaning means glossary words word mean define definition'],
     ['act-web', 'Website business HQ', 'Next step, pipeline, leads, audits, 3D demos, offers', 'agency/index.html#hq', 'website websites web 3d site sites marketing leads audit proposal proposals clients client agency business hq retainer'],
+    ['act-setup', 'Set up your iPhone', 'Home Screen icons, the widget, notifications, Siri', 'hub/setup.html', 'setup set up iphone phone home screen icon icons install add widget notifications siri shortcuts'],
     ['act-new', "What's new", 'What changed in Olympus and the bots, newest first', 'hub/whatsnew.html', 'new changed changes change updates latest recent whats week'],
     ['act-steps', 'Your steps', 'What you still have to do, in order', 'hub/steps.html', 'steps todo to-do waiting owner list next need'],
     ['act-add', 'Add an account', 'Pick the plan, the Name, your phrase: 3 steps', 'hub/manual.html#sos-9', 'add new account accounts buy bought rapid builder eval start'],

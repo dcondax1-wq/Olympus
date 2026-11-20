@@ -70,8 +70,8 @@ def test_static():
           '<html lang="en" data-theme="agora" data-oly-page="gate">' in html and "viewport-fit=cover" in html and 'name="theme-color"' in html and 'name="color-scheme" content="dark"' in html
           and html.count("<h1") == 1 and 'role="status"' in html and 'aria-live="polite"' in html and 'role="dialog"' not in html)
     check("a. one base-path line: gate/ -> '../', the site root (olympus-live.html) -> ''; agora.css + gate.css, then themes, the catalog, hub-status and gate.js load from GATE_BASE, in order (async = false)",
-          r"/\/gate\/(index\.html)?$/.test(p) ? '../' : ''" in html and "window.GATE_BASE = b" in html and "b + 'gate/gate.css?v=g18'" in html and "b + 'olympus/agora.css" in html
-          and "['olympus/themes.js?v=o9', 'pc_feed.js?v=n5', 'olympus/gate-catalog.js?v=nv7', 'olympus/hub-status.js?v=h2', 'age.js?v=1', 'business/payoutcoach.js?v=1', 'gate/gate.js?v=g18', 'olympus/home-fx.js?v=x2', 'olympus/a11y.js']" in html and "s.async = false" in html)
+          r"/\/gate\/(index\.html)?$/.test(p) ? '../' : ''" in html and "window.GATE_BASE = b" in html and "b + 'gate/gate.css?v=g20'" in html and "b + 'olympus/agora.css" in html
+          and "['olympus/themes.js?v=o9', 'pc_feed.js?v=n5', 'olympus/gate-catalog.js?v=nv9', 'olympus/hub-status.js?v=h2', 'age.js?v=1', 'business/payoutcoach.js?v=1', 'gate/gate.js?v=g18', 'olympus/home-fx.js?v=x2', 'olympus/a11y.js']" in html and "s.async = false" in html)
     tiles = re.findall(r'class="g-hub[^"]*" data-hub="(\w+)" data-to="hub/index.html\?h=(\w+)"', html)
     check("a. the hub tiles are plain links in the page (they work even if gate.js fails), in the owner's order (night A 2026-11-16): Bots & Evals (wide) and My Money (wide) first, Kalshi and Worlds near the end, Settings & Help last",
           [t[0] for t in tiles] == HUBS and all(a == b for a, b in tiles) and 'class="g-hub g-wide" data-hub="bots"' in html and 'class="g-hub g-wide" data-hub="money"' in html and html.count('class="g-hline"') == len(HUBS))
@@ -90,7 +90,8 @@ def test_static():
           < html.index('id="hubsH"') < html.index('id="azWide"') < html.index('id="lookSec"') < html.index('class="g-foot"'))
     six = re.findall(r'class="g-q" data-app="([a-z]+)" data-to="([a-z]+)/index.html"', html)
     check("a. Your six are plain links in the page (one tap, they work without gate.js), the owner's order (olympus2): Cities, Kalshi, the NQ bot, Jarvis, then My day (Planner) and Business",
-          [x[0] for x in six] == ["cities", "kalshi", "nq", "jarvis", "planner", "business"] and all(a == b for a, b in six) and "Zlarior · ATLAS" in html, six)
+          [x[0] for x in six] == ["cities", "kalshi", "nq", "jarvis", "planner", "business", "agency"] and all(a == b for a, b in six) and "Zlarior · ATLAS" in html
+          and 'class="g-q g-setup" data-to="hub/setup.html"' in html and html.count('<i class="g-ic"') == 12, six)   # + Websites, Set up iPhone, 12 app icons (day-manual 2026-11-20: the iOS home grid)
     check("a. retired apps never show on the Home (search, A to Z, recent, pins): one RETIRED list in gate.js with the owner's 26",
           all(("%s: 1" % x) in js for x in ("delphi", "stoa", "hestia", "plutus", "argo", "mint", "harmonia", "kairos", "chronos", "lyceum", "polis", "atlascity", "gallery", "mintcity",
                                            "nike", "arena", "mind", "symposium", "herald", "ergasterion", "observatory", "pheme", "bridge", "arbiter", "hermes", "hephaestus"))
@@ -121,7 +122,7 @@ def test_static():
           css.count("min-height: 44px") >= 2 and "safe-area-inset" in css and "176px" in css and "prefers-reduced-motion: reduce" in css and 'data-oly-lite="1"' in css and "overflow-x: hidden" in css)
     # night-gate: gate-nav.js keeps its catalog URL ?v=nv2 (bumping it re-versions agora-ui.js in ~50 apps); the site worker bump refreshes the catalog on the phone
     check("a. gate-nav: one classic script, nothing when framed (inside Jarvis), the Home link + breadcrumb + 'Go to' (44 px), the catalog from its own folder (apps-list.js as a fallback)",
-          "if (framed) return;" in nav and "'Go to'" in nav and "min-height:44px" in nav and "olympus/gate-catalog.js?v=nv8" in nav and "olympus/apps-list.js" in nav and "aria-modal" in nav)
+          "if (framed) return;" in nav and "'Go to'" in nav and "min-height:44px" in nav and "olympus/gate-catalog.js?v=nv9" in nav and "olympus/apps-list.js" in nav and "aria-modal" in nav)
     tagged = {}
     for app in TEN:
         h = AK.read(os.path.join(AK.WEB, app, "index.html"))
@@ -344,7 +345,7 @@ def test_page():
                   vis[0] < 160 and vis[4] < 240 and vis[2] <= 844 and vis[3] < 844, vis)
             six = p.evaluate("() => [...document.querySelectorAll('#quick .g-q')].map((a) => [a.dataset.app, a.href.replace(location.origin, ''), a.querySelector('.g-qline').textContent])")
             check("c. Your six, one tap each (Cities, Kalshi, NQ bot, Jarvis, My day, Business), the NQ bot's live line 'Bots on · today +$272'",
-                  [x[1] for x in six] == ["/cities/index.html", "/kalshi/index.html", "/nq/index.html", "/jarvis/index.html", "/planner/index.html", "/business/index.html"]
+                  [x[1] for x in six] == ["/cities/index.html", "/kalshi/index.html", "/nq/index.html", "/jarvis/index.html", "/planner/index.html", "/business/index.html", "/agency/index.html", "/hub/setup.html"]
                   and six[2][2] == "Bots on · today +$272", six)
             p.click('#workshopLink')
             p.wait_for_url("**/hub/index.html?h=settings&t=workshop", timeout=30000)
