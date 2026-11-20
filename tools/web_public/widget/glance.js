@@ -11,6 +11,7 @@
   const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
   const sgn = (v) => (typeof v === 'number' && v < 0 ? 'down' : typeof v === 'number' && v > 0 ? 'up' : 'soft');
   let last = null;
+  const cap = (t) => (t ? t.charAt(0).toUpperCase() + t.slice(1) + (/[.!?]$/.test(t) ? '' : '.') : '');
 
   function ring(frac) {
     const r = 26, C = 2 * Math.PI * r, f = typeof frac === 'number' ? Math.max(0, Math.min(1, frac)) : 0;
@@ -46,7 +47,7 @@
     const pct = c.progress != null ? Math.round(c.progress * 100) : 0;
     b.setAttribute('aria-valuenow', String(pct)); b.setAttribute('aria-valuemin', '0'); b.setAttribute('aria-valuemax', '100');
     const i = el('i'); i.style.setProperty('--w', pct + '%'); b.append(i);
-    body.append(b, el('p', 'wait', (c.progress != null ? pct + '% of the way ' + c.to_label.replace('to ', 'to the ') + '. ' : '') + (c.window || c.waiting || '')));
+    body.append(b, el('p', 'wait', (c.progress != null ? pct + '% of the way ' + c.to_label.replace('to ', 'to the ') + '. ' : '') + cap(c.window || c.waiting || '')));
     row.append(body);
     return row;
   }

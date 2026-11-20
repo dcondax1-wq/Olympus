@@ -22,6 +22,8 @@
   const FEED_DEFAULT = { ntfy: 'https://ntfy.sh', topic: 'olympus-nq-status-dec434bd8a54f135' };   // public, the same as status_feed.json
   const FRESH_S = 20 * 60;          // the PC posts every 15 minutes: older than 20 min = stale (red)
   const VERSION = 'w1';
+  // Scriptable has ListWidget; a browser also has a global Request (the Fetch API), so Request alone does not mean Scriptable
+  const IS_SCRIPTABLE = typeof ListWidget !== 'undefined' && typeof Request !== 'undefined';
 
   const isObj = (x) => !!x && typeof x === 'object' && !Array.isArray(x);
   const okN = (v) => typeof v === 'number' && Number.isFinite(v);
@@ -213,7 +215,7 @@
   // ------------------------------------------------------------------ fetch (Scriptable Request or browser fetch)
   async function getText(url, timeoutS) {
     try {
-      if (typeof Request !== 'undefined') { const r = new Request(url); r.timeoutInterval = timeoutS || 12; return await r.loadString(); }
+      if (IS_SCRIPTABLE) { const r = new Request(url); r.timeoutInterval = timeoutS || 12; return await r.loadString(); }
       if (typeof fetch !== 'undefined') { const r = await fetch(url, { cache: 'no-store' }); return r.ok ? await r.text() : null; }
     } catch (_) { /* offline */ }
     return null;
@@ -236,7 +238,7 @@
   if (root && typeof root === 'object') root.OLY_WIDGET = API;
 
   // ================================================================== Scriptable: draw the widget
-  if (typeof ListWidget === 'undefined' || typeof Request === 'undefined') return;
+  if (!IS_SCRIPTABLE) return;
 
   const dyn = (l, d) => (Color.dynamic ? Color.dynamic(new Color(l), new Color(d)) : new Color(d));
   const P = (() => {
