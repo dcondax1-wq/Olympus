@@ -71,8 +71,9 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 
 ## Rejected idea families
 
-49 entries from docs/TESTED_AND_REJECTED.md, newest first.
+51 entries from docs/TESTED_AND_REJECTED.md, newest first.
 
+- **Zlarior edge, 5 pre-registered ideas** · [[Zlarior (LIT)]] · [[lit-edge-2026-11-20|Zlarior]]
 - **ATLAS edge at real fills** · [[ATLAS]] · [[atlas-edge-2026-11-20|ATLAS edge at real fills]]
 - **ATLAS real-fill fixes** · [[ATLAS]] · [[atlas-fills-2026-11-20|ATLAS real fills]]
 - **Payday levers + cross-bot loss cuts** · [[ATLAS]] · [[payday-plan-2026-11-20|Payday plan]]
@@ -88,6 +89,7 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 - **ATLAS new members** · [[ATLAS]] · [[atlas-members-2026-11-18|ATLAS new members]]
 - **New-strategy hunt** · [[new-strategy-hunt-2026-11-17|New-strategy hunt]]
 - **Market-regime warning features** · [[Zlarior (LIT)]] · [[edge-health-2026-11-17|Edge health, 2026-11-17]]
+- **Regime guard** · [[Zlarior (LIT)]], [[ATLAS]] · [[regime-guard-2026-11-20|Regime guard]]
 - **Famous published strategies** · [[public-strategies-2026-11-17|Famous published strategies on CME NQ]]
 - **Drift switch** · [[Zlarior (LIT)]] · [[drift-switch-2026-11-17|"Edge stopped working" switch]]
 - **Walk-forward re-tuning** · [[lit-walkforward-2026-11-17|LIT walk-forward re-tuning]]
@@ -125,7 +127,11 @@ _Built 2026-11-19 01:42, research/anatomy/explain.json._
 
 ## Rejected in the write-ups
 
+- 2026-11-20 [[regime-guard-2026-11-20|Regime guard]] ([[Family filters|filters]])
+- 2026-11-20 [[premarket-brief-2026-11-20|Premarket brief]] ([[Family bias|bias]])
 - 2026-11-20 [[newstrat-ict-smt-2026-11-20|New strategy for the extra accounts]] ([[Family other|other]])
+- 2026-11-20 [[lit-eval-rescue-2026-11-20|Zlarior eval rescue]] ([[Family risk|risk]])
+- 2026-11-20 [[lit-edge-2026-11-20|Zlarior]] ([[Family other|other]])
 - 2026-11-20 [[atlas-edge-2026-11-20|ATLAS edge at real fills]] ([[Family second|second]])
 - 2026-11-19 [[third-strategy-2026-11-18|Third strategy hunt]] ([[Family other|other]])
 - 2026-11-19 [[lit-more-money-2026-11-19|Zlarior]] ([[Family other|other]])

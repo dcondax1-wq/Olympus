@@ -95,6 +95,10 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 > 29 pre-declared versions, 5m NQ RTH, stop 1 tick beyond structure, 2R or VIX-band target, $250 a trade, costs in: VWAP pullback with trend (8; all lose Jul-Oct), opening-drive continuation on a 1m trigger (8; 2021-25 = 5m proxy), prior-day value-area re-entry = 80% rule re-measure (1; stops too wide for $250), 15m Keltner squeeze (8; 0.1-0.4 a week), prior-day POC first touch (4). 0 hold H1/H2/2025/2021-24 (coin-flip 0). Picks as a 4th member on the funded 25K ($250 / 30% room): opening drive $541/$353 -> $578/$253 a month, no-pay 15 -> 34% Jul-Oct, 4.49/wk; POC $521/$279; with S/R out both ~-$90/mo. ZEUS Lab: atlas_member_* Rejected. Nothing changed.
 > Write-ups: [[atlas-members-2026-11-18|ATLAS new members]]
 
+> [!failure]- Regime guard
+> VRP (RV20 > VIX), 1-year ATR20 / ER20 bottom-third, 2-of-3 vote, half / out for LIT + ATLAS: 0 of 8. None is more common in 2021-25 than 2026 (G1/G4 fire most in Jul-Oct); LIT's 2021-25 $ is made on the flagged days (+$2,065 -> -$1.8k..-$5.9k). Post-hoc lead: ATLAS worse on chop days in all 3 periods; out = ATLAS Jan-Jun -$4,746, funded 2021-25 lost 94.5 -> 85.7%. NQ/ES correlation not testable (ES daily from 2025-04).
+> Write-ups: [[regime-guard-2026-11-20|Regime guard]]
+
 > [!failure]- B-holds
 > while ATLAS (account B) holds a trade, skip LIT's opposite entry instead of closing B (HEDGE). Both accounts 2026 +$52.3k -> +$53.6k, 2021-25 -$3.2k -> -$5.0k; ATLAS 25K 2-week pass H1 65.5 -> 60.5 (stuck 0.8 -> 3.4); 9 clashes in 2026, 35 in 2021-25. Rejected: LIT priority stays.
 > Write-ups: [[b-holds-vs-lit-priority|B-holds vs LIT priority]]
@@ -131,6 +135,8 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-20 | [[skeptic-atlas-streak-2026-11-20\|Skeptic check of Decide card atlas-funded-streak-1micro]] | research |
+| 2026-11-20 | [[regime-guard-2026-11-20\|Regime guard]] | rejected |
 | 2026-11-20 | [[atlas-risk-real-fills-2026-11-20\|ATLAS funded 25K at real fills]] | finding |
 | 2026-11-20 | [[atlas-fills-2026-11-20\|ATLAS real fills]] | finding |
 | 2026-11-20 | [[atlas-edge-2026-11-20\|ATLAS edge at real fills]] | rejected |
@@ -169,10 +175,8 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 | 2026-10-27 | [[b-holds-vs-lit-priority\|B-holds vs LIT priority]] | rejected |
 | 2026-10-26 | [[atlas-funded\|ATLAS's funded account]] | adopt-candidate |
 | 2026-10-25 | [[live-learning\|Live learning]] | info |
-| 2026-10-25 | [[atlas-v2\|ATLAS v2]] | promising |
-| 2026-10-24 | [[atlas-chatgpt-breakouts\|ChatGPT's 10 ATLAS breakout templates]] | rejected |
 
-... and 15 older (see the families).
+... and 17 older (see the families).
 
 ## Links
 
