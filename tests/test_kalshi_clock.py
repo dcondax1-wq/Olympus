@@ -500,6 +500,11 @@ def part_sizing(tmp):
            r55["kill_drawdown_usd"]) == (2.5, 4, 3, 8, 13.75, 19.25) and r20["stake_usd"] == 1.0 and r100["stake_usd"] == 4.5
           and r999["stake_usd"] == 15.0 and KC.fits(2.5, 55) and not KC.fits(5, 55) and KC.fits(5, None), (r55, r20, r100))
     real = KC.load_config(REAL_CFG)[0]
+    sd15 = os.path.join(tmp, "pick15")
+    KL._jwrite(KC.stake_path(sd15), {"stake": 15})
+    c15, p15 = KC.load_config(REAL_CFG, sd15)
+    check("s1b. a $15 pick on the $55 settings is a settings problem (live refuses, with the size to use), never a silent no-bet",
+          c15["stake_usd"] == 15 and p15 and "use $2.50" in p15[0] and not KC.load_config(REAL_CFG)[1], p15)
     o = order(count=4, cost=2.08, worst=0.52, stake=2.5)
     v0 = view(cfg=real, balance=55.0)
     ok0 = KC.check_order(o, v0)

@@ -142,6 +142,9 @@ def load_config(path=None, state_dir=None) -> tuple:
     for k, hi in HARD.items():
         if cfg[k] > hi:
             probs.append(f"{k} = {cfg[k]:g} is above the code's ceiling {hi:g}")
+    if cfg["stake_usd"] > KL._f(cfg.get("week_loss_stop_usd"), HARD["week_loss_stop_usd"]) - 0.5:
+        probs.append(f"the bet size {KL.money(cfg['stake_usd'])} does not fit the {KL.money(cfg['week_loss_stop_usd'])} week stop "
+                     f"(bankroll {KL.money(cfg.get('bankroll_usd') or 0)}: use {KL.money(bankroll_rule(cfg.get('bankroll_usd') or 0)['stake_usd'])})")
     if not 0.02 <= cfg["price_cap"] <= HARD["price_cap"]:
         probs.append("price_cap must be 0.02-0.80")
     if not 5 <= cfg["entry_delay_s"] <= 30 or not cfg["entry_delay_s"] < cfg["expire_after_s"] <= 60:
