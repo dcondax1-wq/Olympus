@@ -1,6 +1,6 @@
 # FX / OLYMPUS NIGHT: what only the lead wires (DESIGN, day-arenas 1419c927+)
 
-## 1. The one-frame AGORA flash on the pages whose engine loads late (13 files)
+## 1. The one-frame AGORA flash on the pages whose engine loads late (12 files)
 
 OLYMPUS NIGHT is the default look but is never saved as a choice (so Classic Jarvis stays on). The FIRST PAINT copy in each page's <head>
 therefore paints nothing when no look is chosen, and the page shows AGORA until themes.js arrives. Fix: put this ONE line right AFTER the
