@@ -329,7 +329,7 @@
     "no",
     "later"
    ],
-   "status": "open",
+   "status": "done",
    "source": "research/writeups/money-ideas-2026-11-20.md",
    "applies": "the K8 page's own bet pick ($5 / $8 / $10 / $15): pick $8 Monday, move up by the ladder (no code change); an automatic ladder in engine/kalshi_clock.py only after your yes",
    "added": "2026-11-20",
@@ -342,7 +342,8 @@
    "risk": "If the edge is real you grow a bit slower in week 1-2 (about $37 less after 4 weeks); if it fades you lose $10-20 instead of the whole $55",
    "recommend": "yes",
    "recommend_why": "Same money within 8% when it works, about 25-40x less chance of being wiped out before it can work. The pot is too small for $15 bets.",
-   "valued": "2026-11-20 tools/money/kalshi_bankroll.py (the 105 held-out + 128 earlier K8 bets of the 3 live legs, whole days resampled, 20,000 paths of 20 trading days, fees and real prices in)"
+   "valued": "2026-11-20 tools/money/kalshi_bankroll.py (the 105 held-out + 128 earlier K8 bets of the 3 live legs, whole days resampled, 20,000 paths of 20 trading days, fees and real prices in)",
+   "closed_note": "Replaced the same night by the K8 bot's own sizing (night-kalshi8, engine/kalshi_clock.py BANKROLL): each bet = 4.5% of the cash ($2.50 at $55, grows by itself as the cash grows), with stops at 15% a day, 25% a week and 35% from the peak. An $8 bet would trip the day stop after one loss, so the bot itself would refuse a second $8 bet."
   }
  ]
 }
