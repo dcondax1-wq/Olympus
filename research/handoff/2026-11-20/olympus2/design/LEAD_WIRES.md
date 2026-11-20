@@ -6,3 +6,6 @@
 2. `jarvis/apps.js`, the `olympus.js` APPS table, `tools/build_web_dashboard.py`: no change. New static files publish as they are:
    `olympus/kit.html` (the live design-system page), `settings/extras.js`, `tools/design_audit.py` (a tool, not on the site).
 3. Optional: a door / hub link "Design system" -> `olympus/kit.html` (for you and helpers; the owner never needs it).
+4. Kit versions for the other slices' pages (optional, housekeeping): `olympus/agora.css?v=a7` -> `a8` everywhere (ASKS 8); `olympus/olympus.js` stays
+   `?v=o15` (the shared test kit pins it; the veil change reaches phones through the normal 10-minute cache).
+5. New kit files publish as they are: `olympus/age.js`, `olympus/age.css` (DATA's age component, the kit copy), `olympus/kit.html`.

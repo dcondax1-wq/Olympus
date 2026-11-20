@@ -47,7 +47,7 @@ function renderMonth(v) {
   $('mH').textContent = `Month ${info.m || S.month}: ${info.label}`; $('mText').textContent = info.text;
   const tiles = $('mTiles'); clear(tiles);
   const tile = (k, val, cls) => { const t = h('div', 'tile'); t.appendChild(h('small', '', k)); t.appendChild(h('b', cls || '', val)); tiles.appendChild(t); };
-  tile('Cash in', '+' + C.money(info.in), 'pos'); tile('Cash out (fees)', '\u2212' + C.money(info.out), 'neg');   // a sign, not colour alone (A11Y K8) tile('Running total', C.money(info.cum));
+  tile('Cash in', '+' + C.money(info.in), 'pos'); tile('Cash out (fees)', '\u2212' + C.money(info.out), 'neg'); tile('Running total', C.money(info.cum));   // a sign, not colour alone (A11Y K8)
   sl.setAttribute('aria-valuetext', `Month ${info.m || S.month}, running total ${C.money(info.cum)}`);
 }
 

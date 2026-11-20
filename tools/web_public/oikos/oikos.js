@@ -70,7 +70,7 @@ function renderLeaks(a) {
   $('leakPill').textContent = nWatch ? `${nWatch} to watch` : 'All fine'; $('leakPill').className = 'pill ' + (nWatch ? 'warn' : 'ok');
   if (!a.leaks.length) { const li = h('li', 'empty', 'No leaks yet. Add your eval fees, resets, payouts and monthly costs in the Ledger and they are checked here.'); ul.appendChild(li); return; }
   for (const x of a.leaks.slice(0, 14)) {
-    const li = h('li', 'leak ' + x.risk), t = h('div', 't'); t.appendChild(h('b', '', x.title)); t.appendChild(h('span', 'usd ' + (x.risk === 'low' ? '' : 'neg'), C.money(x.usd)));
+    const li = h('li', 'leak ' + x.risk), t = h('div', 't'); t.appendChild(h('b', '', x.title)); t.appendChild(h('span', 'usd ' + (x.risk === 'low' ? '' : 'neg'), (x.risk === 'low' ? '' : '\u2212') + C.money(x.usd)));   /* a sign, not colour alone (A11Y K8) */
     li.appendChild(t); li.appendChild(h('p', '', x.detail));
     const m = h('div', 'meta'); m.appendChild(h('span', 'pill ' + RISK[x.risk][0], RISK[x.risk][1])); m.appendChild(bar(x.score / 100, x.risk === 'high' ? 'red' : x.risk === 'med' ? 'amber' : 'green')); m.appendChild(h('span', 'note', `${x.score}/100`));
     li.appendChild(m); ul.appendChild(li);
