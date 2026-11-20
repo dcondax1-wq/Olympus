@@ -50,7 +50,7 @@
   function iconOf(a) { return /\/$/.test(a.path) ? base + a.path + 'icon.svg' : null; }
   function recentIds() { var r = lsGet(LS_RECENT); return r instanceof Array ? r.filter(function (x) { return typeof x === 'string'; }) : []; }
   function remember(id) { var r = recentIds().filter(function (x) { return x !== id; }); r.unshift(id); lsSet(LS_RECENT, r.slice(0, 8)); }
-  function pinIds() { var r = lsGet(LS_PINS); return r instanceof Array ? r.filter(function (x) { return typeof x === 'string' && (!C || C.byId(x)); }) : []; }
+  function pinIds() { var r = lsGet(LS_PINS); return r instanceof Array ? r.filter(function (x) { return typeof x === 'string' && !RETIRED[x] && (!C || C.byId(x)); }) : []; }
   function isPinned(id) { return pinIds().indexOf(id) >= 0; }
   function togglePin(id) { var r = pinIds(), i = r.indexOf(id); if (i >= 0) r.splice(i, 1); else r.push(id); lsSet(LS_PINS, r.slice(0, 12)); drawPins(); syncStars(); }
   /* a star next to a row: pin or unpin that app (44 x 44, aria-pressed) */
@@ -110,7 +110,7 @@
   function drawRecent() {
     var box = $('recent'), sec = $('recentSec'); if (!box || !sec || !C) return;
     clear(box);
-    var list = recentIds().map(C.byId).filter(function (a) { return a && a.section !== 'workshop'; }).slice(0, 6);
+    var list = recentIds().map(C.byId).filter(function (a) { return live(a) && a.section !== 'workshop'; }).slice(0, 6);
     sec.hidden = !list.length;
     list.forEach(function (a) {
       var c = el('a', 'g-chip'); c.href = hrefOf(a); c.setAttribute('data-app', a.id);
@@ -188,7 +188,7 @@
   }
   function fillAZ() {
     var body = AZ.el.body, q = C.norm(AZ.el.inp.value || ''), letter = '', list = null, n = 0; clear(body);
-    C.az().forEach(function (a) {
+    C.az().filter(live).forEach(function (a) {
       if (q && C.norm(a.label + ' ' + a.name + ' ' + a.line + ' ' + a.words).indexOf(q) < 0) return;
       var L = a.section === 'workshop' ? 'Workshop' : C.norm(a.label).charAt(0).toUpperCase();
       if (/[0-9]/.test(L)) L = '#';
@@ -222,6 +222,10 @@
     t.appendChild(el('b', '', label)); t.appendChild(el('small', '', line)); t.appendChild(el('span', 'g-where', where));
     r.appendChild(ic); r.appendChild(t); r.appendChild(chevron()); return r;
   }
+  /* olympus2 2026-11-20 (owner): retired apps never show on the Home (search, A to Z, recent, pins); their pages still open from an old link */
+  var RETIRED = { delphi: 1, stoa: 1, hestia: 1, plutus: 1, argo: 1, mint: 1, harmonia: 1, kairos: 1, chronos: 1, lyceum: 1, polis: 1, atlascity: 1, gallery: 1, mintcity: 1, nike: 1,
+    arena: 1, mind: 1, symposium: 1, herald: 1, ergasterion: 1, observatory: 1, pheme: 1, bridge: 1, arbiter: 1, hermes: 1, hephaestus: 1 };
+  function live(a) { return !!a && !RETIRED[a.id]; }
   function drawResults() {
     var box = $('results'), q = ($('q').value || '').replace(/^\s+|\s+$/g, ''); clear(box);
     if (!q || !C) return;
@@ -235,7 +239,7 @@
       if (x.id === 'act-az') r.addEventListener('click', function (e) { if (openAZ(r)) e.preventDefault(); });
       box.appendChild(r);
     });
-    F.apps.forEach(function (a) { box.appendChild(withStar(row(a), a)); });
+    F.apps.filter(live).forEach(function (a) { box.appendChild(withStar(row(a), a)); });
     F.tabs.forEach(function (t) {   // a hub tab ("Bots & Evals > Risk"): every app for that job, best first
       box.appendChild(plainRow(base + t.path, t.label, t.line, 'a hub tab', '\u2261', 'data-tab', t.id));
     });

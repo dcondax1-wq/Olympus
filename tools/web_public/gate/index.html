@@ -58,7 +58,7 @@
     if (!again) localStorage.setItem('oly.homefx.day', dk);
   } } catch (e) { /* private mode: plain */ }
   var i = d.createElement('link'); i.rel = 'icon'; i.href = b + 'gate/icon.svg'; h.appendChild(i);
-  ['olympus/themes.js?v=o9', 'pc_feed.js?v=n5', 'olympus/gate-catalog.js?v=nv5', 'olympus/hub-status.js?v=h2', 'age.js?v=1', 'business/payoutcoach.js?v=1', 'gate/gate.js?v=g16', 'olympus/home-fx.js?v=x2', 'olympus/a11y.js'].forEach(function (src) { var s = d.createElement('script'); s.src = b + src; s.async = false; h.appendChild(s); });
+  ['olympus/themes.js?v=o9', 'pc_feed.js?v=n5', 'olympus/gate-catalog.js?v=nv5', 'olympus/hub-status.js?v=h2', 'age.js?v=1', 'business/payoutcoach.js?v=1', 'gate/gate.js?v=g17', 'olympus/home-fx.js?v=x2', 'olympus/a11y.js'].forEach(function (src) { var s = d.createElement('script'); s.src = b + src; s.async = false; h.appendChild(s); });
 })();</script>
 <script>(function () {   /* the Launch card + first-day checklist (gate/launch.js, docs/LAUNCH_DAY.md): only when the PC serves the site (/site/) */
   if (!/^\/site\//.test(location.pathname || '')) return;
@@ -114,13 +114,13 @@
 
   <section class="g-quick" aria-labelledby="quickH">
     <h2 class="g-h2" id="quickH">Your six</h2>
-    <nav class="g-qgrid" id="quick" aria-labelledby="quickH">
-      <a class="g-q" data-app="nq" data-to="nq/index.html" href="nq/index.html"><b>Zlarior · ATLAS</b><small class="g-qline">Bots right now</small></a>
-      <a class="g-q" data-app="compass" data-to="compass/index.html" href="compass/index.html"><b>Today</b><small class="g-qline">What to do next</small></a>
-      <a class="g-q" data-app="ledger" data-to="ledger/index.html" href="ledger/index.html"><b>Money</b><small class="g-qline">Your real money</small></a>
-      <a class="g-q" data-app="aegis" data-to="aegis/index.html" href="aegis/index.html"><b>Drawdown</b><small class="g-qline">Risk guard</small></a>
-      <a class="g-q" data-app="planner" data-to="planner/index.html" href="planner/index.html"><b>My day</b><small class="g-qline">Day and week plan</small></a>
+    <nav class="g-qgrid" id="quick" aria-labelledby="quickH"><!-- olympus2 2026-11-20 (owner): Cities, Kalshi, the NQ bot, Jarvis first, then the Planner and Business -->
+      <a class="g-q" data-app="cities" data-to="cities/index.html" href="cities/index.html"><b>Cities</b><small class="g-qline">World, Data City, Kalshi, Atlas, Mint</small></a>
       <a class="g-q" data-app="kalshi" data-to="kalshi/index.html" href="kalshi/index.html"><b>Kalshi</b><small class="g-qline">Kalshi bot</small></a>
+      <a class="g-q" data-app="nq" data-to="nq/index.html" href="nq/index.html"><b>NQ bot</b><small class="g-qline">Zlarior · ATLAS right now</small></a>
+      <a class="g-q" data-app="jarvis" data-to="jarvis/index.html" href="jarvis/index.html"><b>Jarvis</b><small class="g-qline">Ask anything</small></a>
+      <a class="g-q" data-app="planner" data-to="planner/index.html" href="planner/index.html"><b>My day</b><small class="g-qline">Day and week plan</small></a>
+      <a class="g-q" data-app="business" data-to="business/index.html" href="business/index.html"><b>Business</b><small class="g-qline">Accounts, payouts, plan</small></a>
     </nav>
   </section>
 
