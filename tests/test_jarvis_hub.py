@@ -265,7 +265,7 @@ def part_a():
           and "background:#000" in sw and "location.reload()" in sw)
     check("a. worker v14: data.js, jarvis.css, the fonts, every separate part, switcher.js, the new brain's obsidian.js / memory.js / "
           "assist-ui.js and voice-mode.js in SHELL, each saved on its own (a missing part is skipped)",
-          "const CACHE = 'jarvis-v71';" in sw and all(f"'./{f}'" in sw for f in ("data.js", "switcher.js", "obsidian.js", "memory.js", "assist-ui.js", "voice-mode.js", "tools.js", "voice-out.js") + PARTS + FONTS)
+          "const CACHE = 'jarvis-v72';" in sw and all(f"'./{f}'" in sw for f in ("data.js", "switcher.js", "obsidian.js", "memory.js", "assist-ui.js", "voice-mode.js", "tools.js", "voice-out.js") + PARTS + FONTS)
           and f"'./{JCSS}'" in sw and "SHELL.map((u) => c.add(new Request(u, { cache: 'reload' })).catch(() => null))" in sw)
     shell = re.search(r"const SHELL = \[([^\]]*)\]", sw)
     shell_files = re.findall(r"'\./([^'?]+)", shell.group(1)) if shell else []
@@ -353,7 +353,10 @@ def feeds(ctx, kal):
     ctx.route(re.compile(r"^https?://(?!127\.0\.0\.1[:/])"), lambda r: r.abort())       # nothing leaves the machine
     ctx.route("https://api.github.com/**", feed)
     ctx.route("https://raw.githubusercontent.com/**", feed)
-    ctx.route(re.compile(r"^http://(127\.0\.0\.1|localhost):\d+/kalshi\.json(\?.*)?$"), feed)     # Jarvis reads this site's own copy only
+    # Jarvis (../kalshi.json) and the Kalshi page read this site's own copy only: <site>/kalshi.json, next to jarvis/ and kalshi/. The test
+    # sites live at /<variant>/nq-dashboard/ (site()), so the stub answers there (night-jarvisfix 2026-11-20: the route night-bugsweep added
+    # on 2026-11-19, 1b66c7e6, matched only /kalshi.json at the server root, so the published feed never reached the page here)
+    ctx.route(re.compile(r"^http://(127\.0\.0\.1|localhost):\d+/(?:[\w-]+/nq-dashboard/)?kalshi\.json(\?.*)?$"), feed)
     ctx.route("https://api.coingecko.com/**", lambda r: r.fulfill(status=200, content_type="application/json", body=json.dumps(CRYPTO),
                                                                   headers={"Access-Control-Allow-Origin": "*"}))
 
@@ -841,7 +844,7 @@ def run_c(br, url):
         const reg = await Promise.race([navigator.serviceWorker.ready, new Promise((ok) => setTimeout(() => ok(null), 6000))]);
         if (!reg) return 'no worker';
         for (let i = 0; i < 30; i++) {
-          const c = await caches.open('jarvis-v71');
+          const c = await caches.open('jarvis-v72');
           const got = await Promise.all(['./index.html', './data.js', './%s', './orbitron.woff2', './rajdhani-500.woff2'].map((u) => c.match(u)));
           if (got.every(Boolean)) return 'ok';
           await new Promise((ok) => setTimeout(ok, 200));

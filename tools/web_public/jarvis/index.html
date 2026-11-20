@@ -110,12 +110,14 @@ window.addEventListener('error', function (e) {
 </script>
 <link rel="stylesheet" id="jcss" href="jarvis.css?v=j24">
 <link rel="stylesheet" id="jhome" href="home3d.css?v=h4">
-<!-- quiet-net, no data-fresh (night-bugsweep 2026-11-19): Kalshi's state comes from the PC feed (data.js); the old kalshi-feed repo is on the
-     suspended account and is never asked; this site's kalshi.json, when missing, is a 404 remembered for the session (it was asked afresh,
-     and logged, on every load); a tap (Refresh) still asks the real file at once.
+<!-- quiet-net (night-bugsweep 2026-11-19): Kalshi's state comes from the PC feed first (data.js: when the PC carries Kalshi, kalshi.json
+     is not asked at all); the old kalshi-feed repo is on the suspended account and is never asked. data-fresh="site:kalshi.json"
+     (night-jarvisfix 2026-11-20): otherwise this site's kalshi.json is asked once per Jarvis load, as data.js promises ("opening Jarvis
+     again asks once more: that is how a newly linked bot shows up"); without it a 404 seen earlier in the session (Jarvis, the Kalshi
+     page) was remembered for up to 6 h and Jarvis kept saying "not connected" after the bot published. A tap (Refresh) asks at once too.
      async: the file lives in ../olympus/, outside Jarvis's worker, so its saved copy cannot answer for it; a blocking tag made a slow
      network hold the whole start one more round trip (6-12 s). A fetch before it arrives is just one real try, as before quiet-net. -->
-<script src="../olympus/quiet-net.js?v=q9" async></script>
+<script src="../olympus/quiet-net.js?v=q9" data-fresh="site:kalshi.json" async></script>
 <!-- the PC feed (night A sync): the bots' numbers straight from the PC (ntfy, tools/pc_report.py), the same feed the Gate, the hubs and Zenith use;
      data.js lays it over live.json when it is newer. Async: never waited on by the start (a slow network must not hold Jarvis); the next refresh uses it. -->
 <script src="../pc_feed.js?v=n4" id="pcFeedJs" async></script>
