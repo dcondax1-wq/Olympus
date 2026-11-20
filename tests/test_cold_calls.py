@@ -51,8 +51,8 @@ def test_static():
     check("a. the PC twin: agency/calls/__init__.py, core.py, build.py, .gitignore", all(os.path.isfile(p) for p in pc))
     html, js, core, css = (AK.read(os.path.join(D, n)) for n in ("call.html", "call.js", "callcore.js", "call.css"))
     lines = html.splitlines()
-    i = next((n for n, ln in enumerate(lines) if "../olympus/olympus.js?v=o20" in ln), -1)
-    check('a. the kit: olympus.css?v=o7, agora.css after it, call.css last; themes.js; olympus.js?v=o20 data-app="agency" with the intro tag on the next line; a11y, agora-ui, gate-nav, sfx',
+    i = next((n for n, ln in enumerate(lines) if "../olympus/olympus.js?v=o21" in ln), -1)
+    check('a. the kit: olympus.css?v=o7, agora.css after it, call.css last; themes.js; olympus.js?v=o18 data-app="agency" with the intro tag on the next line; a11y, agora-ui, gate-nav, sfx',
           html.index("../olympus/olympus.css?v=o7") < html.index("../olympus/agora.css") < html.index("call.css") and "../olympus/themes.js?v=o9" in html
           and i >= 0 and 'data-app="agency"' in lines[i] and lines[i + 1].strip() == AK.INCLUDE and html.count("intro-app.js") == 1
           and all(x in html for x in ("../olympus/a11y.js", "../olympus/agora-ui.js", "../olympus/gate-nav.js", "../olympus/sfx.js?v=s4")))

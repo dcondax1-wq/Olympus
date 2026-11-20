@@ -58,7 +58,7 @@ def test_static():
     check("a. no markup is ever built from data: no innerHTML / outerHTML / insertAdjacentHTML / document.write / eval / dynamic import", not bad, bad)
     fetches = set(re.findall(r"getJSON\('([^']+)'\)", js))
     check("a. it reads only the site's own files (./edge.json, ../trading/trades.json, ../odeon/trades.json) and the PC feed through ../pc_feed.js; it sends nothing (no XHR / WebSocket / beacon / POST / web address)",
-          fetches == {"./edge.json", "../trading/trades.json", "../odeon/trades.json"} and "../pc_feed.js?v=" in js and "'../status_feed.json'" in js
+          fetches == {"./edge.json", "../trading/trades.json", "../odeon/trades_lite.json", "../odeon/trades.json"} and "../pc_feed.js?v=" in js and "'../status_feed.json'" in js
           and not re.search(r"XMLHttpRequest|WebSocket|sendBeacon|method:\s*['\"]POST|https?://(?!www\.w3\.org)", js + core), fetches)
     check("a. one storage key (journal.edge.v1: the chosen bot / set / grouping), every access in try / catch; no cookies / sessionStorage / indexedDB",
           "const KEY = 'journal.edge.v1'" in js and len(re.findall(r"localStorage\.(?:setItem|getItem)\(", js)) == 2 and not re.search(r"document\.cookie|sessionStorage|indexedDB", js + core)

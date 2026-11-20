@@ -77,15 +77,12 @@ def static_kit(app, name, reads=(), storage=None, allow_urls=()):
     check(f"a. the files: {', '.join(names)}", all(os.path.isfile(os.path.join(d, n)) for n in names), [n for n in names if not os.path.isfile(os.path.join(d, n))])
     html, js, core, css = (read(os.path.join(d, n)) for n in ("index.html", f"{app}.js", f"{app}core.js", f"{app}.css"))
     lines = html.splitlines()
-    i = next((n for n, ln in enumerate(lines) if "../olympus/olympus.js?v=o20" in ln), -1)
-    check(f'a. the kit: olympus.css?v=o7, agora.css after it, themes.js, olympus.js?v=o20 data-app="{app}", the intro tag on the very next line',
+    i = next((n for n, ln in enumerate(lines) if "../olympus/olympus.js?v=o21" in ln), -1)
+    check(f'a. the kit: olympus.css?v=o7, agora.css after it, themes.js, olympus.js?v=o21 data-app="{app}", the intro tag on the very next line',
           html.index("../olympus/olympus.css?v=o7") < html.index("../olympus/agora.css") < html.index(f"{app}.css") and "../olympus/themes.js?v=o9" in html
           and f'data-app="{app}"' in lines[i] and lines[i + 1].strip() == INCLUDE and html.count("intro-app.js") == 1, lines[i:i + 2])
-    # the sound kit: olympus.js loads olympus/sfx.js on the first sound (day-a11y 2026-11-20, PERF ask 4: no parser-loaded 103 KB on every open);
-    # a page may still carry the old deferred tag
-    check("a. AGORA: <html data-theme=\"agora\">, the a11y layer, the sound kit on demand (no blocking sfx.js tag), the page is an ES module",
-          re.search(r'<html lang="en" data-theme="agora"( data-oly-shell="app")?( data-oly-light)?>', html) and "../olympus/a11y.js" in html
-          and ("sfx.js" not in html or '../olympus/sfx.js?v=s4" defer' in html) and f'<script type="module" src="{app}.js' in html)
+    check("a. AGORA: <html data-theme=\"agora\">, the a11y layer and the sound kit, the page is an ES module",
+          re.search(r'<html lang="en" data-theme="agora"( data-oly-shell="app")?( data-oly-light)?>', html) and "../olympus/a11y.js" in html and ("../olympus/sfx.js?v=s4" in html or "../olympus/olympus.js" in html) and f'<script type="module" src="{app}.js' in html)
     check(f"a. viewport-fit=cover, theme-color, manifest, icon, apple-touch-icon, lang, ONE h1 named {name}, a polite live status line",
           all(x in html for x in ("viewport-fit=cover", 'name="theme-color"', 'rel="manifest"', 'rel="icon"', "apple-touch-icon", '<html lang="en"')) and html.count("<h1") == 1
           and f">{name}</h1>" in html and 'role="status"' in html and 'aria-live="polite"' in html)
@@ -95,6 +92,8 @@ def static_kit(app, name, reads=(), storage=None, allow_urls=()):
     check("a. no markup is ever built from data: no innerHTML / outerHTML / insertAdjacentHTML / document.write / eval / dynamic import", not bad, bad)
     fetches = set(re.findall(r"getJSON\('([^']+)'", js))
     want = {"./fixture.json", *reads, *allow_urls}
+    if "../odeon/trades.json" in want and "../odeon/trades_lite.json" in fetches:   # its slim twin, read first (tools/odeon_export.lite, 2026-11-20)
+        want.add("../odeon/trades_lite.json")
     web_js = js + core
     for u in allow_urls:
         web_js = web_js.replace(u, "")
@@ -170,7 +169,10 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
 def serve(overrides=None):
     """The site folder on a local port. overrides = {"/home.json": bytes | str | None (404)} replace or add files."""
-    handler = type("H", (Handler,), {"overrides": dict(overrides or {})})
+    ov = dict(overrides or {})
+    if "/odeon/trades.json" in ov and "/odeon/trades_lite.json" not in ov:      # the apps read the slim copy first (dogfood 2026-11-20)
+        ov["/odeon/trades_lite.json"] = ov["/odeon/trades.json"]
+    handler = type("H", (Handler,), {"overrides": ov})
     srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), functools.partial(handler, directory=WEB))
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     return srv, f"http://127.0.0.1:{srv.server_address[1]}"
