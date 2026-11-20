@@ -342,6 +342,40 @@ def part_data():
           and "data/kalshi_live/" in doc and "PRIVATE KEY" not in doc and "@" not in doc.replace("`", ""), len(steps))
 
 
+# ================================================================================================ p. the paper card on the PC (lead, 05:36 ET 2026-11-20)
+def part_paper_card(tmp):
+    """The phone showed 'From the peak (OFF) -$30.65 of -$19.25' and 'Next window 4:00 PM ET': the paper ledger held the old $15
+    paper bets of Nov 19 (and the paper-only legs). Display only: no stop reads paper. Now the card shows the live legs at today's
+    stake, the next LIVE window, paper keeps recording, and the live ledger starts clean."""
+    cfg = real()
+    w = TC.World(tmp, "pcard", cash=55.0)
+    P = KC.paths(w.sd)
+    d19 = dt.date(2026, 11, 19)
+    old = []
+    for i, lid in enumerate(["gold_0530_down", "silver_0530_down", "silver_1615_down", "gold_1700_up", "silver_1700_up"]):
+        o = KC.leg_open(KC.LEG[lid], d19)
+        r = live_row(str(d19), lid, o, n=28, price=0.53, result="lost")
+        r["pnl"] = round(-r["cost"] - r["fee"], 4)
+        old.append(r)
+    os.makedirs(P["dir"], exist_ok=True)
+    KC.save_rows(P["clock_paper"], old)
+    raw_dd = KC.drawdown(old)
+    now = KC.london_epoch(dt.date(2026, 11, 20), 10, 14)
+    k = KC.card_k8(w.sd, cfg, now)
+    check(f"p1. old $15 paper bets (a raw paper drop of ${raw_dd:.2f}) no longer show on the $55 card: from the peak $0 of $19.25",
+          raw_dd > 19.25 and k and k["m"] == "P" and k["dd"][0] == 0 and k["wk"][0] == 0, (raw_dd, k))
+    nx_pm = KC.card_k8(w.sd, cfg, KC.et_epoch(dt.date(2026, 11, 20), 5, 36))["nx"]
+    check("p2. at 05:36 ET the card's next window is 16:45 ET (the live gold/silver UP), not the paper-only 16:00 silver",
+          nx_pm == int(KC.et_epoch(dt.date(2026, 11, 20), 16, 45)), (nx_pm, KC.et_epoch(dt.date(2026, 11, 20), 16, 45)))
+    T = R.tape()
+    o = morning(w, T)
+    w.run_until(w.loop(), o + 60)
+    new = [r for r in w.paper() if r.get("day") == str(MON)]
+    check("p3. paper is never stopped by a paper drop: Monday 05:15 records gold + silver DOWN on paper, no order, the live ledger is empty "
+          "(no stop reads paper: the live record starts clean)", len(new) == 2 and not w.posts() and not w.live()
+          and not KC.kill_state(w.sd, cfg)[0], (new, KC.kill_state(w.sd, cfg)))
+
+
 def main():
     tmp = tempfile.mkdtemp(prefix="k8day-")
     try:
@@ -351,6 +385,7 @@ def main():
         part_fees(tmp)
         part_orders(tmp)
         part_data()
+        part_paper_card(tmp)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     print(f"\n{sum(RES)}/{len(RES)} passed")

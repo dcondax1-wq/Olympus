@@ -417,7 +417,7 @@ def kill_distances(state_dir=None, cfg=None, now=None) -> dict:
     now = time.time() if now is None else now
     P = paths(state_dir)
     lr = rows(P["clock_live"])
-    led, rs = ("live", lr) if lr else ("paper", rows(P["clock_paper"]))
+    led, rs = ("live", lr) if lr else ("paper", paper_like_live(rows(P["clock_paper"]), cfg))
     day = KL.et_day(now)
     wk = week_of(day)
 
@@ -443,6 +443,14 @@ def kill_distances(state_dir=None, cfg=None, now=None) -> dict:
 
 
 LEG_CODE = {"gold_0530_down": "g5", "silver_0530_down": "s5", "silver_1615_down": "s16", "gold_1700_up": "g17", "silver_1700_up": "s17"}
+
+
+def paper_like_live(rs, cfg) -> list:
+    """The paper rows the phone shows while nothing is live: only the live legs, only bets the size of today's stake (the old $15
+    paper rows of Nov 19 and the paper-only legs gave a -$30 'from the peak' on a $55 card; day-kalshi 2026-11-20). Display only:
+    no stop ever reads the paper ledger (kill_state and the order gate read clock_live.json)."""
+    cap = KL._f(cfg.get("stake_usd"), 2.5) + 1e-6
+    return [r for r in rs if r.get("leg") in cfg["live_legs"] and (r.get("cost") is None or KL._f(r.get("cost"), 0.0) <= cap)]
 
 
 def edge_health(rs) -> list:
@@ -481,9 +489,9 @@ def card_k8(state_dir=None, cfg=None, now=None) -> dict | None:
         if not (alive or os.path.exists(P["clock_paper"]) or os.path.exists(P["clock_live"])):
             return None
         k = kill_distances(state_dir, cfg, now)
-        rs = rows(P["clock_live"] if k["ledger"] == "live" else P["clock_paper"])
+        rs = rows(P["clock_live"]) if k["ledger"] == "live" else paper_like_live(rows(P["clock_paper"]), cfg)
         td = stats(rs, KL.et_day(now))
-        nx, _ = next_window(now, cfg)
+        nx, _ = next_window(now, dict(cfg, paper_legs=list(cfg["live_legs"])))     # the next LIVE window (05:15 / 16:45 ET), not paper-only 16:00
         wr = k["win_rate"]
         return {"m": "L" if k["ledger"] == "live" else "P", "nx": int(nx) if nx else None, "b": cfg.get("bankroll_usd"), "s": cfg["stake_usd"],
                 "td": [td["n"], td["won"], td["net"]], "l": "".join("W" if r["result"] == "won" else "L" for r in k["last10"]),

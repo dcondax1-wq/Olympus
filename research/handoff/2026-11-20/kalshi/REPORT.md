@@ -22,7 +22,7 @@ patch in a still-working edge. If the next 20 live bets win under ~55%, Claude s
 1. **Monday rehearsal through the real bot** (`research/kalshi_k8_day/rehearsal.py` -> rehearsal.json): Monday's real tickers,
    books rebuilt from recorded public trades of 6 real days, paper + live (fake key, no network), bot restarted at 12:00 ET.
    Live: exactly 3 orders a day, right side, 4-6 contracts within $2.50, good till +40 s; results match the Nov 16-19 dry run to the cent.
-2. **Tests** `tests/test_kalshi_k8_day.py` 40/40: every stop on the $55 settings fires at the right cent (day -$8, week -$13.75,
+2. **Tests** `tests/test_kalshi_k8_day.py` 43/43: every stop on the $55 settings fires at the right cent (day -$8, week -$13.75,
    peak -$19.25, 3 a day, one per market, 70c cap, $2.50 max, win-rate 58% after 60 / not before, price creep 58c on 30 / not under 30);
    fees (4 contracts 7c = 1.75c each, 1-3 contracts 2c each); restarts mid-day and mid-window keep the counters and never send twice;
    no order with a wrong/lower-case phrase, a hand-made arm file, no key, the kill switch, or LE_KALSHI_LIVE=0; one order call in the code, behind the gate.
@@ -34,7 +34,12 @@ patch in a still-working edge. If the next 20 live bets win under ~55%, Claude s
 5. **Audit 404s**: forward.json / scan.json came from the retired kalshi-feed: the page no longer requests them (forward strip says
    retired). kit.json is written by the site build (exists on the real site; a source copy is forbidden by test_kalshi_page): no change.
 6. **One doc**: `docs/KALSHI.md` (what runs where, files, 3 Monday steps + the phrase line, what each push says, calendar).
-7. Small fix: pushes said "on 1 bets" -> "on 1 bet".
+7. **Lead's 05:36 ET finding fixed** ("From the peak (OFF) -$30.65 of -$19.25", "Next window 4:00 PM"): display only. While nothing
+   is live the card showed the PAPER ledger, which still held the old $15 paper bets of Nov 19 + the 2 paper-only legs. No stop ever
+   reads paper (kill_state and the order gate read clock_live.json, which is empty): paper never stopped and live starts clean Monday.
+   Now the paper card shows only the 3 live legs at today's $2.50 size, and the next window is the next LIVE one (16:45, not the
+   paper-only 16:00). Tests p1-p3. Owner action: none (no reset needed).
+8. Small fix: pushes said "on 1 bets" -> "on 1 bet".
 
 ## Tests
 `python tests/run_area.py kalshi`: 756 passed, 1 failed. The 1 = test_kalshi_page "sw.js CACHE == ?v" (clears with the lead's sw.js
