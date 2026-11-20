@@ -101,21 +101,22 @@ const HTML = { status: 200, contentType: 'text/html', body: '<!doctype html><p>n
     await p.waitForFunction('window.OLYMPUS_NQFX && window.DIONYSUS.fx().started', null, { timeout: 30000 }).catch(() => {});
     await p.waitForTimeout(600);
     const look = await p.evaluate(() => {
-      const gold = (c) => { for (const m of String(c).matchAll(/rgba?\(([\d.]+), ([\d.]+), ([\d.]+)(?:, ([\d.]+))?\)/g)) { const r = +m[1], g = +m[2], b = +m[3], a = m[4] == null ? 1 : +m[4]; if (a < 0.15) continue;
+      // OLYMPUS NIGHT (owner 2026-11-20): no cyan / sky blue / navy anywhere on the desk (gold is allowed, as a small accent)
+      const off = (c) => { for (const m of String(c).matchAll(/rgba?\(([\d.]+), ([\d.]+), ([\d.]+)(?:, ([\d.]+))?\)/g)) { const r = +m[1], g = +m[2], b = +m[3], a = m[4] == null ? 1 : +m[4]; if (a < 0.15) continue;
         const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 510, sat = mx === mn ? 0 : (mx - mn) / (255 - Math.abs(mx + mn - 255)); let h = 0;
         if (mx !== mn) { h = mx === r ? ((g - b) / (mx - mn)) % 6 : mx === g ? (b - r) / (mx - mn) + 2 : (r - g) / (mx - mn) + 4; h = (h * 60 + 360) % 360; }
-        if (h >= 25 && h <= 60 && sat > 0.3 && l > 0.2 && l < 0.85) return m[0]; } return null; };
+        if (h >= 175 && h <= 225 && sat > 0.3 && l > 0.06) return m[0]; } return null; };
       const bad = [];
       for (const e of document.querySelectorAll('main#app, main#app *')) { if (!e.getClientRects().length) continue; const cs = getComputedStyle(e);
-        for (const k of ['color', 'backgroundColor', 'borderTopColor', 'backgroundImage', 'boxShadow', 'outlineColor']) { const g = gold(cs[k]); if (g) bad.push(`${e.id || e.className || e.tagName} ${k} ${g}`); } }
+        for (const k of ['color', 'backgroundColor', 'borderTopColor', 'backgroundImage', 'boxShadow', 'outlineColor']) { const g = off(cs[k]); if (g) bad.push(`${e.id || e.className || e.tagName} ${k} ${g}`); } }
       const k8 = getComputedStyle(document.getElementById('k8Card')), hero = getComputedStyle(document.getElementById('heroCard'));
       const pt = performance.getEntriesByType('paint').find((x) => x.name === 'first-contentful-paint') || performance.getEntriesByType('paint')[0];
       const fx = performance.getEntriesByType('resource').find((r) => /\/olympus\/nqfx\.js/.test(r.name));
-      return { bad: bad.slice(0, 6), n: bad.length, bg: getComputedStyle(document.body).backgroundColor, glow: k8.boxShadow, edge: hero.backgroundImage.slice(0, 160),
+      return { bad: bad.slice(0, 6), n: bad.length, bg: getComputedStyle(document.body).backgroundColor, glow: k8.boxShadow, edge: hero.backgroundImage.slice(0, 400),
         paint: pt ? pt.startTime : null, fx: fx ? fx.startTime : null, tag: !!document.querySelector('script[src*="nqfx.js"][data-fx="dionysus"]'), running: document.getAnimations().filter((a) => a.playState === 'running').length };
     });
-    step('FX look: no gold computed anywhere on the desk (cards, pills, tiles, text); navy base #070b14 (the page sky); K8 card lit cyan; the cards have a cyan -> violet gradient edge',
-      look.n === 0 && look.bg === 'rgb(7, 11, 20)' && /rgba\(34, 211, 238/.test(look.glow) && /rgba\(34, 211, 238/.test(look.edge) && /rgba\(139, 92, 246/.test(look.edge), look);
+    step('FX look OLYMPUS NIGHT: no cyan / navy computed anywhere on the desk (cards, pills, tiles, text); black base; K8 card lit violet #9d59ee; the cards have a violet #4d2e76 / #3e255e edge',
+      look.n === 0 && look.bg === 'rgb(0, 0, 0)' && /rgba\(157, 89, 238/.test(look.glow) && /rgb\(77, 46, 118\)/.test(look.edge) && /rgb\(62, 37, 94\)/.test(look.edge), look);
     step('FX: olympus/nqfx.js is added by the page only after the first paint (load + idle), and it ran', look.tag && look.paint != null && look.fx != null && look.fx > look.paint, [look.paint, look.fx, look.tag]);
     step('FX: with motion welcome the hero sheen runs', look.running >= 1, look.running);
     await ctx.close();

@@ -189,12 +189,12 @@ async function boot() {
   fxLater();
 }
 // ------------------------------------------------------------------------------------------------ FX (day-kalshi 2026-11-20, owner: "it needs some 3D, some effects")
-// olympus/nqfx.js (the NQ effects kit) is added only AFTER the first paint: after load + idle, so the page paints exactly as before. Terminal colours
-// (no gold), the balance and K8's pool numbers roll up (the real text is already written and comes back when the roll ends), and a K8 leg whose last
+// olympus/nqfx.js (the NQ effects kit) is added only AFTER the first paint: after load + idle, so the page paints exactly as before. OLYMPUS NIGHT colours
+// (black, violet), the balance and K8's pool numbers roll up (the real text is already written and comes back when the roll ends), and a K8 leg whose last
 // result is a win from today gets the green sparks once per page view. Reduced motion / FX off: the kit shows the final state still. No kit = nothing.
 const FX_SRC = '../olympus/nqfx.js?v=n4';
-const FX_COLORS = { base: '#070b14', cyan: '#22d3ee', cyanHi: '#67e8f9', blue: '#3b82f6', violet: '#8b5cf6', win: '#22c55e', loss: '#f43f5e', steel: '#9aa4b2' };
-const FX = { started: false, won: false, loaded: null };
+const FX_COLORS = { base: '#000000', cyan: '#9d59ee', cyanHi: '#dacbf0', blue: '#4d2e76', violet: '#9d59ee', win: '#77db89', loss: '#ef4444' };   // OLYMPUS NIGHT (owner 2026-11-20)
+const FX = { started: false, won: false, loaded: null, done: false, busyUntil: 0 };   // done + busyUntil: the test hook waits for the rolls to land
 function fxScript() {
   if (FX.loaded) return FX.loaded;
   FX.loaded = new Promise((res) => {
@@ -210,17 +210,18 @@ async function runFx() {
   try { if (!(await NQ.ready())) return; } catch (_) { return; }
   try { NQ.theme(FX_COLORS); } catch (_) { /* default palette */ }
   // a number rolls once, when it first comes into view (an off-screen roll would only sit half-way: the kit's loop sleeps off screen)
-  const go = (el, to) => { const t = el.textContent; try { NQ.roll(el, { to, duration: 1.1 }); } catch (_) { el.textContent = t; } };
+  const go = (el, to) => { const t = el.textContent; FX.busyUntil = Math.max(FX.busyUntil, performance.now() + 1600); try { NQ.roll(el, { to, duration: 1.1 }); } catch (_) { el.textContent = t; } };
   const io = typeof IntersectionObserver === 'function' ? new IntersectionObserver((es) => { for (const e of es) if (e.isIntersecting) { io.unobserve(e.target); go(e.target, +e.target.dataset.to); } }, { threshold: 0.9 }) : null;
   const roll = (el, to) => { if (!el || !Number.isFinite(to)) return; if (io) { el.dataset.to = String(to); io.observe(el); } else go(el, to); };
   if (S.book && !$('heroCard').hidden) roll($('bal'), S.book.balance > 0 ? S.book.balance : NaN);
   for (const b of $('k8Pool').querySelectorAll('b')) { const n = parseFloat(b.textContent); if (Number.isFinite(n)) roll(b, n); }
   const leg = $('k8Legs').querySelector('li[data-win="today"]');
   if (leg && !FX.won) { FX.won = true; try { NQ.win(leg, { usd: +leg.dataset.usd || 0, bigAt: 1e9, text: 'K8 won today, 1 contract' }); } catch (_) { /* no sparks */ } }
+  await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); FX.done = true;
 }
 function fxLater() {                        // after load + idle: never on the first paint
   const go = () => { const idle = window.requestIdleCallback || ((f) => setTimeout(f, 300)); idle(() => { runFx(); }, { timeout: 2500 }); };
   if (document.readyState === 'complete') go(); else window.addEventListener('load', go, { once: true });
 }
-window.DIONYSUS = { S, C, ready: () => S.ready, render, fx: () => FX };
+window.DIONYSUS = { S, C, ready: () => S.ready, render, fx: () => FX, settled: () => !FX.started || (FX.done && performance.now() > FX.busyUntil) };
 boot().catch(() => { say(`${offWord()}Dionysus could not show the numbers right now. Try again later.`); S.ready = true; try { if (O && O.ready) O.ready(); } catch (_) { /* nothing */ } });
