@@ -18,6 +18,9 @@ goes this way, on request, with no new sign-in and nothing for the owner to do:
                                                 src / bot / acct / mode; account names cut to the last 4, no balances, no paths
            days/<day>/manifest.json             rows, sha256, chart contract, partial (an unfinished session), code version
            days/<day>/review.json, proposals.jsonl   when the nightly run (engine/datapipe) made them
+           days/<day>/gaps.json         (2026-11-20) the bot's own "NOT routed" lines, held-back entries and uptime samples
+                                        of the day (logs/exec_audit/notes.json, ids cut): why a backtest trade did not reach
+                                        the account, readable from the cloud (day_gaps)
          Oldest day first, at most MAX_ZIP bytes: a longer gap says "more" and the cloud asks again from where it stopped.
 ntfy.sh anonymous limits, measured 2026-11-18: an attachment up to 2 MB (1.9 MB accepted, 2.6 MB refused with HTTP 413), kept
 3 hours; messages kept 12 hours; 250 messages a day per IP. The PC's status posts already use ~210 a day, so an answer is ONE

@@ -149,6 +149,13 @@ def t_not_routed():
         check("nightly verdict carries the day's NOT routed lines", len(S.get("not_routed") or []) == 3, S.get("not_routed"))
         saved = json.load(open(os.path.join(d, "nightly", "2026-11-18.json"), encoding="utf-8"))
         check("... and the nightly file keeps them", len(saved.get("not_routed") or []) == 3)
+        from engine import zeus_review as ZR
+        bundle = {"day": "2026-11-18", "trades": [], "twin": {"nightly": saved},
+                  "manifest": {"files": {"bars/MNQ_1m.csv.gz": {"rows": 900}}}}
+        R = ZR.review([bundle], now=ts(2026, 11, 18, 17, 5))
+        it = [i for i in R["items"] if i["key"] == "not_routed"]
+        check("ZEUS daily review: one info line 'N entries NOT routed today, first HH:MM ET: why'",
+              len(it) == 1 and it[0]["level"] == "info" and "3 entries NOT routed" in it[0]["text"], R["items"])
         # the PC's day files (engine/datafeed): gaps.json
         g = DF.day_gaps("2026-11-18", N)
         gj = json.loads(g)
