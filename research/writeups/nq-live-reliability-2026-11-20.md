@@ -127,7 +127,7 @@ What would settle it: 10+ ATLAS fills. If the median stays above ~4 ticks, re-ru
   no ATLAS account; `--min-room default` puts the $100 line back. In force once ATLAS is flat or after a restart.
   tests/test_account_b_min_room.py 21/21.
 - Stale tests fixed (expected numbers only, room_f 0.4 = CLAUDE.md "eval two_week room_f 0.4"): test_account_b_funded 20 -> 17
-  micros; test_second_account_b 25K 20 -> 17 and the 30-pt stop 8 -> 6. STALE_RESULT
+  micros; test_second_account_b 25K 20 -> 17 and the 30-pt stop 8 -> 6. Now 67/67 and 47/47 (--quick).
 
 ## Files
 
