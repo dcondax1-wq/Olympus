@@ -90,7 +90,7 @@ instead of the clock: it wakes at +0.15 s and polls the moment the new minute's 
 files (checked every 50 ms), at the latest at the usual +2 s. Same bars, same open, same decisions, only earlier: up to
 ~1.8 s on an active minute. Switch: `python -X utf8 -m engine.fast_entry --on` (or the start cfg "poll_on_tick", or env
 LE_POLL_ON_TICK=1). tests/test_fast_entry.py 21/21; OFF = engine/live._sleep_s byte-for-byte today's wait. Not turned on:
-the $ it saves cannot be measured from 1-minute bars (no tick data), so it needs a Sim day first. LIVE == BACKTEST_RESULT
+the $ it saves cannot be measured from 1-minute bars (no tick data), so it needs a Sim day first. Live = backtest after all of tonight's changes: tests.test_lit_live --quick 120/120 trades identical, 489 intraday polls 0 differences, LiveBot 1/1 entries + exits, 0 errors (the poll itself is untouched; only the sleep between polls has the OFF switch).
 
 Not changed: ATLAS (account B) is routed after LIT, the state save, account C, the ES learning refresh and the Bot Brain in
 each poll (engine/live.poll_once). In the harness the ES refresh and the Bot Brain take 0-3 ms, so moving ATLAS earlier
