@@ -362,7 +362,7 @@ export class CityScene {
     const fogD = F.d.setHex(FOG.night, F.lin).lerp(F.t.setHex(FOG.day, F.lin), sun.day).lerp(F.t.setHex(FOG.dusk, F.lin), sun.dusk * 0.6 * (1 - sun.day * 0.5));
     if (w.storm || w.rain > 0) fogD.lerp(F.t.setHex(FOG.storm, F.lin), 0.35 + w.rain * 0.2);
     U.uFog.value.copy(fogD);
-    const fog = new THREE.Color().setRGB(fogD.r, fogD.g, fogD.b, THREE.SRGBColorSpace);
+    const fog = (F.out || (F.out = new THREE.Color())).setRGB(fogD.r, fogD.g, fogD.b, THREE.SRGBColorSpace);   // reused: no allocation per sky step
     U.uFogD.value = (DENSITY.night + (DENSITY.day - DENSITY.night) * sun.day) * (1 + w.haze * 0.5);
     this.scene.background = fog;
     this.scene.fog.color.copy(fog);
