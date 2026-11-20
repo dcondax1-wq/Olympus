@@ -169,6 +169,14 @@
   });
   var DNAME = {};
   HUBS.forEach(function (h) { DNAME[h.id] = h.name.toLowerCase(); });
+  /* the owner's order (2026-11-20, lead): Cities, Kalshi, the NQ bot, Jarvis first; then Planner and Business; then the rest. RETIRED apps
+     (day-archive's list + Hephaestus + the city apps that live inside Cities) never show in search or A to Z; their URLs still open. */
+  var FIRST = { cities: 60, kalshi: 60, nq: 60, jarvis: 60, planner: 30, business: 30 };
+  var RETIRED = ['delphi', 'stoa', 'hestia', 'plutus', 'argo', 'mint', 'harmonia', 'kairos', 'chronos', 'lyceum', 'polis', 'atlascity',
+    'gallery', 'mintcity', 'nike', 'arena', 'mind', 'symposium', 'herald', 'ergasterion', 'observatory', 'pheme', 'bridge', 'arbiter', 'hermes',
+    'hephaestus', 'datacity', 'kalshicity'];
+  var RET = {}; RETIRED.forEach(function (id) { RET[id] = 1; });
+  function retired(id) { return !!RET[id]; }
   function norm(s) { return String(s || '').toLowerCase().replace(/[’']/g, '').replace(/[^a-z0-9&$]+/g, ' ').replace(/^\s+|\s+$/g, ''); }
   function wordStarts(text, t) { var w = text.split(' '); for (var i = 0; i < w.length; i++) if (w[i].indexOf(t) === 0) return true; return false; }
   function isBest(a) { return !!a && BEST[a.hub + '/' + a.section] === a.id; }
@@ -178,6 +186,7 @@
     if (!toks.length) return [];
     var hits = [];
     apps.forEach(function (a) {
+      if (RET[a.id]) return;
       var label = norm(a.label), name = norm(a.name), line = norm(a.line), words = norm(a.words + ' ' + a.id), score = 0;
       for (var i = 0; i < toks.length; i++) {
         var t = toks[i], s = 0;
@@ -190,6 +199,7 @@
         score += s;
       }
       if (isBest(a)) score += 10;
+      score += FIRST[a.id] || 0;
       if (a.fold) score -= 3;
       if (a.section === 'workshop') score -= 12;
       hits.push({ a: a, s: score });
@@ -327,7 +337,7 @@
   }
   /** every app A to Z by its plain label (the Workshop labs at the end) */
   function az() {
-    return apps.slice().sort(function (x, y) {
+    return apps.filter(function (a) { return !RET[a.id]; }).sort(function (x, y) {
       var wx = x.section === 'workshop' ? 1 : 0, wy = y.section === 'workshop' ? 1 : 0;
       return wx - wy || (norm(x.label) < norm(y.label) ? -1 : norm(x.label) > norm(y.label) ? 1 : 0);
     });
@@ -353,7 +363,7 @@
     return { hub: h.id, hubName: h.name, section: a.section, sectionName: sec ? sec[1] : '', path: 'hub/index.html?h=' + h.id + '&t=' + a.section, app: a.label };
   }
   var out = Object.freeze({ v: 3, apps: Object.freeze(apps), districts: HUBS, hubs: HUBS, start: ['nq', 'today', 'jarvis'], actions: Object.freeze(ACTIONS), quick: QUICK,
-    find: find, findHubs: findHubs, findActions: findActions, findTabs: findTabs, findAll: findAll, az: az, byId: byId, norm: norm, hub: hub, hubOf: hubOf, layout: layout, crumbOf: crumbOf, isBest: isBest, mixOf: function (id) { var h = hubOf(id); return h ? h.id : ''; } });
+    find: find, retired: retired, RETIRED: RETIRED, FIRST: FIRST, findHubs: findHubs, findActions: findActions, findTabs: findTabs, findAll: findAll, az: az, byId: byId, norm: norm, hub: hub, hubOf: hubOf, layout: layout, crumbOf: crumbOf, isBest: isBest, mixOf: function (id) { var h = hubOf(id); return h ? h.id : ''; } });
   g.OLYMPUS_GATE = out;
   if (typeof module !== 'undefined' && module.exports) module.exports = out;
 }(typeof window !== 'undefined' ? window : globalThis));

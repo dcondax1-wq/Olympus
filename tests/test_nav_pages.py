@@ -65,6 +65,14 @@ def part_wn():
     check("w. whatsnew.js: textContent only, one GET, no storage, nothing sent", not re.search(r"innerHTML|outerHTML|insertAdjacentHTML|localStorage|method:", js)
           and js.count("fetch(") == 1)
     check("w. linked from Help", 'href="whatsnew.html"' in rd("help.html"))
+    cat = open(os.path.join(WEB, "olympus", "gate-catalog.js"), encoding="utf-8").read()
+    grab = lambda src, name: re.search(r"var " + name + r" = (\[[^\]]*\]|\{[^}]*\});", src).group(1).replace("\n", " ").replace("  ", " ")
+    dj, dh = rd("doors.js"), rd("doors.html")
+    check("o. the Doors page and the search share one RETIRED list and one FIRST order", re.sub(r"\s+", "", grab(dj, "RETIRED")) == re.sub(r"\s+", "", grab(cat, "RETIRED"))
+          and re.sub(r"\s+", "", grab(dj, "FIRST")) == re.sub(r"\s+", "", grab(cat, "FIRST")))
+    st = re.findall(r'data-first="([a-z]+)"', dh)
+    check("o. Doors 'Start here': Cities, Kalshi, NQ bot, Jarvis, Planner, Business, before the four doors", st == ["cities", "kalshi", "nq", "jarvis", "planner", "business"]
+          and dh.index('id="startHere"') < dh.index('id="doorGrid"'), st)
 
 
 def part_a():

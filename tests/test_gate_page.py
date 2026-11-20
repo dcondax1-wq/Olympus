@@ -117,7 +117,7 @@ def test_static():
           css.count("min-height: 44px") >= 2 and "safe-area-inset" in css and "176px" in css and "prefers-reduced-motion: reduce" in css and 'data-oly-lite="1"' in css and "overflow-x: hidden" in css)
     # night-gate: gate-nav.js keeps its catalog URL ?v=nv2 (bumping it re-versions agora-ui.js in ~50 apps); the site worker bump refreshes the catalog on the phone
     check("a. gate-nav: one classic script, nothing when framed (inside Jarvis), the Home link + breadcrumb + 'Go to' (44 px), the catalog from its own folder (apps-list.js as a fallback)",
-          "if (framed) return;" in nav and "'Go to'" in nav and "min-height:44px" in nav and "olympus/gate-catalog.js?v=nv6" in nav and "olympus/apps-list.js" in nav and "aria-modal" in nav)
+          "if (framed) return;" in nav and "'Go to'" in nav and "min-height:44px" in nav and "olympus/gate-catalog.js?v=nv7" in nav and "olympus/apps-list.js" in nav and "aria-modal" in nav)
     tagged = {}
     for app in TEN:
         h = AK.read(os.path.join(AK.WEB, app, "index.html"))
@@ -159,8 +159,8 @@ def test_catalog():
     check("b. every app has a plain label (<= 28 characters) and a one-line purpose (<= 60)", not long, long)
     check("b. start (the fallback 'start here' list) = Bots (nq), the dashboard, Jarvis", C["start"] == ["nq", "today", "jarvis"])
     q = C["q"]
-    check("b. the search finds plain words: money -> Mint and Ledger, drawdown -> Aegis, kalshi -> Kalshi first, journal -> the journal first, news -> Pheme / Pythia / Herald",
-          {"mint", "ledger"} <= set(q["money"]) and "aegis" in q["drawdown"] and q["kalshi"][0] == "kalshi" and q["journal"][0] == "journal" and {"pheme", "pythia", "herald"} <= set(q["news"]), q)
+    check("b. the search finds plain words (Mint, Pheme, Herald retired 2026-11-20): money -> Business first + Ledger, drawdown -> Aegis, kalshi -> Kalshi first, journal -> the journal first, news -> Pheme / Pythia / Herald",
+          q["money"][0] == "business" and "ledger" in q["money"] and "aegis" in q["drawdown"] and q["kalshi"][0] == "kalshi" and q["journal"][0] == "journal" and "pythia" in q["news"] and not {"mint", "pheme", "herald"} & set(q["money"] + q["news"]), q)
     check("b. synonyms and AND: discount -> Mercury, chatgpt -> Bridge, 'risk stop' -> Aegis first, nonsense and an empty box find nothing",
           q["discount"][0] == "mercury" and q["chatgpt"][0] == "bridge" and q["risk stop"][:1] == ["aegis"] and q["zzzz"] == [] and q[""] == [], q)
     A = C["all"]
@@ -347,7 +347,7 @@ def test_page():
                 p.wait_for_timeout(120)
                 res[q] = p.evaluate("() => [[...document.querySelectorAll('#results a.g-row')].map((a) => a.dataset.app), document.querySelector('#results').textContent]")
             check("c. the search box: money -> Mint + Ledger, drawdown -> Aegis, kalshi -> Kalshi first, journal -> the journal first, nonsense -> a plain 'Nothing found' line",
-                  {"mint", "ledger"} <= set(res["money"][0]) and "aegis" in res["drawdown"][0] and res["kalshi"][0][0] == "kalshi" and res["journal"][0][0] == "journal"
+                  "ledger" in set(res["money"][0]) and "aegis" in res["drawdown"][0] and res["kalshi"][0][0] == "kalshi" and res["journal"][0][0] == "journal"
                   and not res["qqqzz"][0] and "Nothing found" in res["qqqzz"][1], {k: v[0] for k, v in res.items()})
             check("c. each result says which hub it lives in ('in Bots & Evals')", "in Bots & Evals" in p.evaluate("() => { document.querySelector('#q').value = 'journal'; document.querySelector('#q').dispatchEvent(new Event('input')); return document.querySelector('#results').textContent; }"))
             p.fill("#q", "risk guard")
