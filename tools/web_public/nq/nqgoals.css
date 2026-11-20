@@ -47,12 +47,11 @@
 .nm-h { margin: 10px 0 4px; font-size: 13px; color: var(--ag-muted, #c9bca8); }
 .nm-last { display: flex; align-items: flex-end; gap: 4px; height: 96px; padding: 4px 0; }
 .nm-bar { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; min-width: 0; }
-.nm-bar i { width: 70%; height: var(--h); border-radius: 6px 6px 2px 2px; background: linear-gradient(180deg, #ffe39a, #c8a24a); box-shadow: 0 0 10px rgba(224, 176, 96, .5); }
+.nm-bar i { width: 70%; height: var(--h); border-radius: 6px 6px 2px 2px; }
 .nm-bar em, .nm-bar small { font-style: normal; font-size: 10px; white-space: nowrap; color: var(--ag-muted, #c9bca8); }
 .nm-clock { display: flex; gap: 12px; align-items: center; margin-top: 12px; }
 .nm-dial { --p: 0%; flex: none; width: 76px; height: 76px; border-radius: 50%; display: grid; place-items: center;
-  background: radial-gradient(circle, var(--ag-surface, #1d1914) 58%, transparent 59%), conic-gradient(from 0deg, #e0b060 var(--p), rgba(var(--oly-accent-rgb, 200, 162, 74), .14) 0);
-  box-shadow: 0 0 16px rgba(224, 176, 96, .3); }
+  }
 .nm-dial b { font-size: 13px; }
 .nm-ct p { margin: 0 0 3px; }
 .nm-ph { font-weight: 700; } .nm-who { font-size: 13px; color: var(--ag-muted, #c9bca8); }
@@ -69,9 +68,7 @@
 @media (max-width: 520px) { .chartbox, .chartbox.empty { height: clamp(300px, 35vh, 440px); } .nm-stats { grid-template-columns: repeat(2, 1fr); } .land { height: 240px; } }
 #acctStrip .dk-kv { grid-template-columns: minmax(0, 1fr) auto; gap: 3px 6px; }
 #acctStrip .dk-kv dd { white-space: nowrap; overflow-wrap: normal; }
-.nm-open { display: grid; grid-template-columns: auto 1fr auto; gap: 2px 8px; align-items: center; margin-bottom: 10px; padding: 10px 12px; border-radius: 14px;
-  border: 1px solid rgba(240, 180, 80, .55); background: radial-gradient(120% 160% at 0% 0%, rgba(240, 180, 80, .16), transparent 60%), var(--ag-surface-2, rgba(255, 255, 255, .04));
-  box-shadow: 0 0 16px rgba(240, 180, 80, .25); }
+.nm-open { display: grid; grid-template-columns: auto 1fr auto; gap: 2px 8px; align-items: center; margin-bottom: 10px; padding: 10px 12px; border-radius: 14px; }
 .nm-otag { font-size: 11px; font-weight: 800; letter-spacing: .08em; padding: 2px 7px; border-radius: 999px; background: rgba(240, 180, 80, .2); color: #f5c46a; animation: nm-pulse 1.6s ease-in-out infinite; }
 .nm-oname { font-size: 15px; min-width: 0; }
 .nm-onow { font-size: 19px; text-align: right; }
