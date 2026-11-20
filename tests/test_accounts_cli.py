@@ -128,10 +128,13 @@ def main():
                ("a Name used twice", AC.add("builder25k", N25)),
                ("Zlarior's own Name", AC.add("builder50k", L50)),
                ("a Name that says 25K on a 50K plan", AC.add("builder50k", "MFFU25K-EVAL-9")),
-               ("a 2nd Rapid", AC.add("rapideod", "MFFUEVRPD500000005")),
                ("an empty Name", AC.add("builder25k", "  "))]
+        r2 = AC.add("rapideod", "MFFUEVRPD500000005")          # day-multirapid: a 2nd Rapid = slot 2, a 3rd is refused
+        bad.append(("a 3rd Rapid (both slots taken)", AC.add("rapideod", "MFFUEVRPD500000007")))
         for what, rr in bad:
             check(f"refused: {what}", rr.get("ok") is False and rr.get("error"), rr)
+        check("a 2nd Rapid is added as Rapid #2, disarmed", r2.get("ok") is True and r2.get("slot") == "rapid2", r2)
+        AC.remove("MFFUEVRPD500000005")
 
         # c. MFFU limits
         s = AC.slots()

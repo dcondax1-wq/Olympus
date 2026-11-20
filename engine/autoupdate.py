@@ -268,7 +268,7 @@ def extra_flat_reason(bot) -> str | None:
     open NinjaTrader bracket there also keeps an update / restart away (before, only LIT's own position and legs were checked,
     so an hourly update could restart the server under an open ATLAS trade). Never raises; None = flat."""
     try:
-        for nm, lab in (("acct_b", "ATLAS"), ("acct_c", "account C"), ("acct_r", "the Rapid lane")):
+        for nm, lab in (("acct_b", "ATLAS"), ("acct_c", "account C"), ("acct_r", "the Rapid lane"), ("acct_r2", "the 2nd Rapid lane")):
             a = getattr(bot, nm, None)
             if a is None:
                 continue

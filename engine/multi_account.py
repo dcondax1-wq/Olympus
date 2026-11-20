@@ -249,6 +249,8 @@ def normalize(spec: dict, primary: dict | None = None, seen_ids=(), seen_names=(
            "lit_sizing": dict(s.get("lit_sizing") or {}), "problem": None}
     if s.get("lane"):
         out["lane"] = str(s.get("lane"))     # "rapid": LIT's lane of the Rapid EOD (engine/rapid.py: ATLAS shares the account)
+    if s.get("slot") == "rapid2" and out.get("lane") == "rapid":
+        out["slot"] = "rapid2"               # the 2nd Rapid (engine/rapid.py, data/rapid2.json): its own ATLAS / lifecycle key
     if s.get("lit_bank") is True and out.get("lane") == "rapid":
         out["lit_bank"] = True               # the Rapid 25K's "bank at the room" option (engine/rapid.lit_bank; OFF by default)
     pre = PRESETS.get(out["preset"])
@@ -542,7 +544,8 @@ class Account:
             return ab if getattr(ab, "shared_lane", None) == "lit25" and getattr(ab, "name", None) == self.spec.get("nt_account") else None
         if self.spec.get("lane") != "rapid":
             return None
-        return getattr(getattr(self.router, "bot", None), "acct_r", None)
+        bot = getattr(self.router, "bot", None)          # the 2nd Rapid's lane ("slot": "rapid2") shares only its own ATLAS
+        return getattr(bot, "acct_r2" if self.spec.get("slot") == "rapid2" else "acct_r", None)
 
     def _shared_holds(self) -> str | None:
         """Why the other strategy on this SAME account holds it now (a position, or a NinjaTrader bracket still open / pending /
@@ -1172,7 +1175,8 @@ class AccountRouter:
         b = self.bot
         mine = str(((acc.spec if acc is not None else {}) or {}).get("nt_account") or "").strip()
         same = acc.shared() if acc is not None else None
-        for attr, who in (("acct_b", "ATLAS's 25K"), ("acct_r", "ATLAS on the Rapid EOD"), ("acct_c", "BLITZ (account C)")):
+        for attr, who in (("acct_b", "ATLAS's 25K"), ("acct_r", "ATLAS on the Rapid EOD"), ("acct_r2", "ATLAS on the Rapid EOD #2"),
+                          ("acct_c", "BLITZ (account C)")):
             o = getattr(b, attr, None)
             if o is None or o is same or getattr(o, "open_t", None) is None:
                 continue

@@ -154,13 +154,15 @@ def inventory() -> list:
             stage="funded" if n["mode"] == "funded" else "eval", bots=cli.get("bots") or "lit", role="extra", id=n["id"],
             armed=n["armed"], enabled=n["enabled"], mffu=n["firm"] == "MFFU", cli=bool(cli),
             atlas_when_funded=bool(cli.get("atlas_when_funded")))
-    try:
-        blk = _rapid().read()
-    except Exception:
-        blk = None
-    if blk:
-        add(name=blk["account"], plan="rapideod25" if blk.get("plan") == PLANS["rapideod25"]["preset"] else "rapideod", stage="funded" if blk.get("stage") == "funded" else "eval",
-            bots="lit+atlas", role="rapid", id="rapid", armed=blk.get("armed") is True)
+    for sl in ("rapid", "rapid2"):            # the Rapid EOD (data/rapid.json) and the 2nd Rapid (data/rapid2.json)
+        try:
+            rp = _rapid()
+            blk = rp.read() if sl == "rapid" else rp.read(rp.slot_path(sl))
+        except Exception:
+            blk = None
+        if blk:
+            add(name=blk["account"], plan="rapideod25" if blk.get("plan") == PLANS["rapideod25"]["preset"] else "rapideod", stage="funded" if blk.get("stage") == "funded" else "eval",
+                bots="lit+atlas", role="rapid", id=sl, armed=blk.get("armed") is True)
     try:
         c = go._c() or {}
     except Exception:
@@ -335,34 +337,55 @@ def _add_atlas(name, start, funded, rows) -> dict:
 
 
 def _add_rapid(name, start, funded, rows, plan="rapideod") -> dict:
+    """A Rapid EOD 25K / 50K: LIT + ATLAS on one account (engine/rapid.py). Two at a time (day-multirapid 2026-11-20): the 1st
+    in data/rapid.json exactly as before, the 2nd in data/rapid2.json. Added DISARMED; only START BOT's typed phrase arms."""
     rp, P = _rapid(), PLANS[plan]
     lbl = "Rapid EOD" if plan == "rapideod" else P["label"]
-    cur = rp.read()
+    nm = str(name or "").strip()
+    blks = {sl: rp.read(rp.slot_path(sl)) for sl in rp.SLOTS}
+    if funded:
+        # the eval this funded account comes from: a slot with the same plan still in its eval (else a free slot)
+        sl = next((k for k, b in blks.items() if b is not None and str(b.get("plan") or rp.PRESET) == P["preset"]
+                   and b.get("stage") != "funded"), None)
+        if sl is None:
+            sl = next((k for k, b in blks.items() if b is not None and b["account"] == nm), None) or \
+                 next((k for k, b in blks.items() if b is None), None)
+    else:
+        sl = next((k for k, b in blks.items() if b is not None and b["account"] == nm), None) or \
+             next((k for k, b in blks.items() if b is None), None)
+    if sl is None:
+        held = ", ".join(f"{b['account']} ({rp.plan_info(b)['label']})" for b in blks.values() if b)
+        return {"ok": False, "error": f"both Rapid slots are taken ({held}): remove one first: "
+                                      f"python -X utf8 -m engine.accounts remove --name \"<Name>\""}
+    cur = blks[sl]
+    p = rp.slot_path(sl)
+    two = sl == "rapid2"
     others = {f"{r['role']} {r['id']}": r["name"] for r in rows if r["role"] != "rapid"}
+    for k, b in blks.items():
+        if k != sl and b is not None:
+            others["the other Rapid"] = b["account"]          # two Rapids never share a Name
     if cur is not None and str(cur.get("plan") or rp.PRESET) != P["preset"]:
-        return {"ok": False, "error": f"the Rapid EOD is already {cur['account']} ({rp.plan_info(cur)['label']}): one Rapid only. "
+        return {"ok": False, "error": f"{cur['account']} is already the {rp.plan_info(cur)['label']}: a Name keeps its plan. "
                                       f"Remove it first: python -X utf8 -m engine.accounts remove --name \"{cur['account']}\""}
+    tag = " (Rapid #2)" if two else ""
     if funded:
         if cur is None:
-            r = rp.set_account(name, start, others=others, allow=_allow_raise, preset=P["preset"])
+            r = rp.set_account(nm, start, p, others=others, allow=_allow_raise, preset=P["preset"])
             if not r.get("ok"):
                 return {"ok": False, "error": r.get("error")}
-        r = rp.to_funded(name, start, others=others, allow=_allow_raise)
+        r = rp.to_funded(nm, start, p, others=others, allow=_allow_raise)
         if not r.get("ok"):
             return {"ok": False, "error": r.get("error")}
-        return {"ok": True, "notes": [x for x in [r.get("note")] if x],
-                "say": f"[OK] {lbl} funded {name} from {start} (LIT + ATLAS), NOT armed. START BOT + you type the phrase."}
-    if cur is not None and cur["account"] != name and cur.get("stage") != "funded":
-        return {"ok": False, "error": f"the Rapid EOD is already {cur['account']} (one Rapid only: \"I'll stick with 1 rapid\"). "
-                                      f"Remove it first: python -X utf8 -m engine.accounts remove --name \"{cur['account']}\""}
+        return {"ok": True, "slot": sl, "notes": [x for x in [r.get("note")] if x],
+                "say": f"[OK] {lbl}{tag} funded {nm} from {start} (LIT + ATLAS), NOT armed. START BOT + you type the phrase."}
     if cur is not None and cur.get("stage") == "funded":
-        return {"ok": False, "error": f"the Rapid EOD {cur['account']} is funded: one Rapid only (\"I'll stick with 1 rapid\")"}
-    r = rp.set_account(name, start, others=others, allow=_allow_raise, preset=P["preset"])
+        return {"ok": False, "error": f"the Rapid EOD {cur['account']} is funded already"}
+    r = rp.set_account(nm, start, p, others=others, allow=_allow_raise, preset=P["preset"])
     if not r.get("ok"):
         return {"ok": False, "error": r.get("error")}
     b = r["block"]
-    return {"ok": True, "notes": [x for x in [r.get("note"), _rules_line(rp, b), _rules_line(rp, b, more=True)] if x],
-            "say": f"[OK] {P['label']} = {b['account']} (LIT + ATLAS), eval from {b['eval_start']}, NOT armed. It joins at the "
+    return {"ok": True, "slot": sl, "notes": [x for x in [r.get("note"), _rules_line(rp, b), _rules_line(rp, b, more=True)] if x],
+            "say": f"[OK] {P['label']}{tag} = {b['account']} (LIT + ATLAS), eval from {b['eval_start']}, NOT armed. It joins at the "
                    "next START BOT (you type I ACCEPT LIVE RISK)."}
 
 
@@ -388,7 +411,8 @@ def remove(name: str) -> dict:
         return {"ok": False, "error": f"no account {name!r} (python -X utf8 -m engine.accounts list)"}
     go = _go()
     if r["role"] == "rapid":
-        _rapid().off()
+        rp = _rapid()
+        rp.off(rp.slot_path("rapid2") if r.get("id") == "rapid2" else None)
         if not any(x["name"] == r["name"] for x in inventory()):
             _allow(r["name"], remove=True)
         return {"ok": True, "say": f"Removed {r['name']} (the Rapid EOD): no new trades on it after the next START BOT."}
@@ -420,7 +444,17 @@ def arm(phrase: str) -> list:
             done.append(str(r.get("name") or r.get("id")))
     if done:
         ma.save_file(rows, path)
-    return [f"Added accounts armed: {', '.join(done)}"] if done else []
+    out = [f"Added accounts armed: {', '.join(done)}"] if done else []
+    try:                                     # the 2nd Rapid (data/rapid2.json; the 1st is armed by go.step_arm itself)
+        rp = _rapid()
+        rr = rp.arm(phrase, rp.slot_path("rapid2"))
+        if not rr.get("off"):
+            b2 = rp.read(rp.slot_path("rapid2")) or {}
+            out.append(f"{rp.plan_info(b2)['label']} #2 (LIT + ATLAS): "
+                       + (f"armed {rr.get('account')}" if rr.get("ok") else f"NOT armed: {str(rr.get('error'))[:160]}"))
+    except Exception as e:
+        out.append(f"Rapid #2: NOT armed ({e.__class__.__name__}: {e})")
+    return out
 
 
 def resume_optin(phrase: str) -> list:
@@ -470,7 +504,7 @@ def status_lines() -> list:
         line = _label(r)
         try:
             if r["role"] == "rapid":
-                line += " | " + _rapid().status()["text"]
+                line += " | " + _rapid().status(slot="rapid2" if r.get("id") == "rapid2" else "rapid")["text"]
             elif r["plan"] in PLANS and r["plan"] not in RAPID_PLANS:
                 m = go._money(r["name"], PLANS[r["plan"]]["preset"], r["role"] == "main", bals)
                 line += f" | ${float(m['balance']):,.2f}, floor ${float(m['floor']):,.2f} ({m['source']})"
