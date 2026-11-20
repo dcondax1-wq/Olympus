@@ -83,14 +83,16 @@ LINK = ("margin-left:auto;flex:none;display:inline-flex;align-items:center;min-h
         "white-space:nowrap")
 # 1) a full-screen page (html/body overflow hidden, its own HUD pinned at top 0): the strip moves out of <body> and the page is
 #    pushed down under it (body becomes the box its fixed parts sit in), so nothing of the page is covered;
-# 2) reads the first date-ish field of the page's own data file -> "Archived · its data: Oct 28, 23 days old" (amber when > 2 days).
+# 2) ?demo=1 (the page's own sample mode, which promises to read no real file): says 'sample data' and fetches nothing; else
+#    reads the first date-ish field of the page's own data file -> "Archived · its data: Oct 28, 23 days old" (amber when > 2 days).
 JS = ("(function(){var b=document.currentScript.parentNode,h=document.documentElement,d=document.body;try{"
       "var y=function(e){return getComputedStyle(e).overflowY};if(d&&(y(h)==='hidden'||y(d)==='hidden')){h.insertBefore(b,d);"
       "b.style.position='fixed';b.style.left='0';b.style.right='0';var ov=b.getAttribute('data-overlay');var fit=function(){var H=b.offsetHeight;"
       "if(ov){h.style.setProperty(ov,H+'px');return;}h.style.paddingTop=H+'px';"
       "h.style.boxSizing='border-box';d.style.transform='translateZ(0)';d.style.height=d.style.minHeight=d.style.maxHeight=(innerHeight-H)+'px';if(getComputedStyle(d).position==='fixed')d.style.top=H+'px';};"
       "fit();addEventListener('resize',fit);}}catch(e){}"
-      "var s=b.getAttribute('data-src'),o=b.querySelector('[data-age]');if(!s||!o||!window.fetch)return;"
+      "var s=b.getAttribute('data-src'),o=b.querySelector('[data-age]');if(!o)return;"
+      "if(/[?&#]demo(=1)?(&|$)/.test(location.search)||/^#demo\\b/.test(location.hash)){o.textContent=' · sample data';return;}if(!s||!window.fetch)return;"
       "fetch(s,{cache:'no-cache'}).then(function(r){return r.ok?r.json():null}).then(function(j){if(!j||typeof j!=='object')return;"
       "var v=j.upto||j.asof||j.as_of||j.built||j.updated||j.date||j.generated_at||j.t,ms=null;"
       "if(typeof v==='number')ms=v<1e12?v*1000:v;else if(typeof v==='string'){var m=v.match(/^(\\d{4})-(\\d\\d)-(\\d\\d)(?:[ T](\\d\\d):(\\d\\d))?/);"
