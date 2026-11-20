@@ -36,6 +36,9 @@ ROWS = {"R1_lit_only": "lit", "R2_atlas_only": "atlas", "R3_both": "both", "R4_b
 LABEL = {"R1_lit_only": "LIT only", "R2_atlas_only": "ATLAS only ($250)", "R3_both": "LIT + ATLAS $250 (as built)",
          "R4_both_bank": "LIT + ATLAS + LIT bank lane"}
 DLL = 500.0
+OUT50 = os.path.join(ROOT, "research", "lab", "rapid50_launch.json")
+ROWS50 = {"F1_50k_lit": ("lit", "50k", False), "F2_50k_atlas": ("atlas", "50k", False), "F3_50k_both": ("both", "50k", False),
+          "F4_50k_both_slip10": ("both", "50k", True), "C1_25k_both": ("both", "25k", False), "C2_25k_both_slip10": ("both", "25k", True)}
 
 
 def _AR():
@@ -43,21 +46,23 @@ def _AR():
     return AR
 
 
-def spec(kind):
+def spec(kind, size="25k"):
     import rapid25 as R25
     import rapid_levers as RL
     import uprisk as U
     if kind == "bank":
         import rapid25_lit_lane as RLL
         return RLL.spec("bank1")
-    sp = dict(R25.acct("25k", ("cushion", 500.0)))
+    pol = ("cushion", 500.0) if size == "25k" else ("cushion", 1000.0)
+    sp = dict(R25.acct(size, pol))
     if kind == "both":
         return sp
     mix = ("LIT",) if kind == "lit" else ("ATLAS",)
-    E, F = R25.rules("25k")
-    ec, z, pol = sp["ecfg"], ({} if kind == "lit" else sp["z"]), ("cushion", 500.0)
+    E, F = R25.rules(size)
+    ec, z = sp["ecfg"], ({} if kind == "lit" else sp["z"])
+    up = U.UP25 if size == "25k" else U.UP50
     sp.update(z=z, BYe=RL.mix_by(mix), BYf=RL.mix_by(mix, news=True), mix_f=mix,
-              fund=lambda: RL.Rapid(U.UP25, F, z, pol), ev=lambda: RL.Ev(ec, E, z, "guard"))
+              fund=lambda: RL.Rapid(up, F, z, pol), ev=lambda: RL.Ev(ec, E, z, "guard"))
     return sp
 
 
@@ -77,7 +82,7 @@ def pct_date(firsts, q):
     return None if v >= 10 ** 6 else cal[int(v) - 1]
 
 
-def life_row(sp, n):
+def life_row(sp, n, dll=DLL):
     import money_plan as MP
     import rapid_levers as RL
     AR = _AR()
@@ -103,7 +108,7 @@ def life_row(sp, n):
             fail_first.append((evals_at_first or st.s.evals) > 1)
             d = [x for x in st.s.days if abs(x) > 1e-9]
             traded += len(d)
-            dll_days += sum(1 for x in d if x < -DLL)
+            dll_days += sum(1 for x in d if x < -dll)
         k, dt, nop = AR.first_stats(firsts)
         out[s] = {"usd_m": round(float(np.mean(net)) / MP.MO), "owner_6m": round(float(np.mean(owner6))),
                   "first_date": dt, "first_p25": pct_date(firsts, 25), "first_p75": pct_date(firsts, 75),
@@ -204,13 +209,82 @@ def cmd_sizing(n=1000, log=print):
     return r
 
 
+class slip10:
+    """ATLAS sized on a 10-tick stop (engine/rapid.stack_qty slip 2.5), only inside the with-block."""
+
+    def __enter__(self):
+        import stack_one_account as SOA
+        self.SOA, self.orig = SOA, SOA.stack_q
+
+        def q10(t, z, room, cum, maxq, dll=SOA.SOFT_DLL):
+            s = z.get(t["strat"])
+            if not s:
+                return 0
+            slip = 2.5 if t["strat"] == "ATLAS" else SOA.SLIP
+            loss1 = (t["risk"] + slip) * SOA.PV + SOA.COMM
+            usd = min(float(s["usd"]), float(s["f"]) * max(0.0, room), dll + min(0.0, cum))
+            return max(0, min(int(maxq), int(usd // loss1)))
+        SOA.stack_q = q10
+        return self
+
+    def __exit__(self, *a):
+        self.SOA.stack_q = self.orig
+
+
+def cmd_r50(n=1000, log=print):
+    """research/second/rapid50_launch_design.md: the 5th slot, Rapid EOD 50K vs a 2nd Rapid 25K, and the 50K's lanes / size."""
+    AR = _AR()
+    t0 = time.time()
+    AR.rapid_patch(AR.T_at(COSTS[0]))
+    PE = eval_paths(n)
+    res = {"date": DATE, "design": "research/second/rapid50_launch_design.md", "n_paths": n, "costs": list(COSTS),
+           "rows": {k: {} for k in ROWS50}}
+    for c in COSTS:
+        AR.rapid_patch(AR.T_at(c))
+        for nm, (kind, size, s10) in ROWS50.items():
+            if kind == "lit" and c != COSTS[0]:
+                res["rows"][nm][f"{c}t"] = res["rows"][nm][f"{COSTS[0]}t"]
+                continue
+            if s10 and c != 10:
+                continue
+            sp = spec(kind, size)
+            dll = 500.0 if size == "25k" else 1000.0
+            if s10:
+                with slip10():
+                    r = {"eval": eval_row(sp, PE), "life": life_row(sp, n, dll)}
+            else:
+                r = {"eval": eval_row(sp, PE), "life": life_row(sp, n, dll)}
+            res["rows"][nm][f"{c}t"] = r
+            log(f"{nm:20s} {c:2d}t " + " | ".join(
+                f"{s} ${r['life'][s]['usd_m']}/mo pass {r['eval'][s]['p60']}% in~{r['eval'][s]['pass_med']} fail {r['eval'][s]['f60']}% "
+                f"1st {r['life'][s]['first_date']} lost {r['life'][s]['lost_6m']}% ff {r['life'][s]['fail_before_pay']}% dll {r['life'][s]['dll_per_100']}"
+                for s in SPANS) + f"  [{time.time() - t0:.0f}s]")
+    R = {k: v["10t"] for k, v in res["rows"].items()}
+    L = lambda k, s: R[k]["life"][s]["usd_m"]  # noqa: E731
+    H = ("H1", "H2")
+    j = {"slot_50k": all(L("F3_50k_both", s) > L("C1_25k_both", s) for s in H),
+         "lanes_both": all(L("F3_50k_both", s) > max(L("F1_50k_lit", s), L("F2_50k_atlas", s)) for s in H)}
+    f3, f4 = R["F3_50k_both"]["life"], R["F4_50k_both_slip10"]["life"]
+    j["size_slip10"] = (all(f4[s]["lost_6m"] <= f3[s]["lost_6m"] - 0.5 and f4[s]["usd_m"] >= 0.9 * f3[s]["usd_m"] for s in H)
+                        and f4["REF"]["usd_m"] >= f3["REF"]["usd_m"] - 10)
+    j["usd_month_h2_10t"] = {"rapideod50": L("F3_50k_both", "H2"), "rapideod25": L("C1_25k_both", "H2")}
+    res["judge"], res["took_s"] = j, round(time.time() - t0)
+    with open(OUT50, "w", encoding="utf-8") as fh:
+        json.dump(res, fh, indent=1, default=float)
+    log(json.dumps(j))
+    log(f"wrote {os.path.relpath(OUT50, ROOT)}")
+    return res
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser()
-    ap.add_argument("cmd", choices=("run", "sizing", "show"))
+    ap.add_argument("cmd", choices=("run", "sizing", "r50", "show"))
     ap.add_argument("--n", type=int, default=1000)
     a = ap.parse_args(argv)
     if a.cmd == "run":
         cmd_run(a.n)
+    elif a.cmd == "r50":
+        cmd_r50(a.n)
     elif a.cmd == "sizing":
         cmd_sizing(a.n)
     else:
