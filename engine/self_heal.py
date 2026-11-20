@@ -980,7 +980,10 @@ def tiny(state: dict, now) -> dict:
     big = sorted(((k, v) for k, v in sz.items() if k in ("logs", "data", "runs", "zips", "pycache", "research", "nt") and isinstance(v, (int, float))),
                  key=lambda x: -x[1])[:3]
     free = state.get("free")
-    line = ("Self-heal: " + ("needs you: " + ", ".join(need) if need else "all fine") + f" · fixed {fixed} this week"
+    words = {"update_blocked": "the update is blocked", "server": "the bot server is down", "disk": "the disk is nearly full",
+             "pip": "a package will not install", "clock": "the clock will not sync", "git_lock": "a git lock is stuck",
+             "oif_stuck": "an old order file is stuck", "pid": "a pid file is stuck"}
+    line = ("Self-heal: " + ("needs you: " + ", ".join(words.get(k, k) for k in need) if need else "all fine") + f" · fixed {fixed} this week"
             + (f" · {free:.0f} GB free" if isinstance(free, (int, float)) else "")
             + (f" · bot folder {sz.get('bot')} GB" if sz.get("bot") is not None else "")
             + (" (" + ", ".join(f"{k} {v:.2f}" for k, v in big) + ")" if big else "")
