@@ -292,7 +292,7 @@ export function mountSwitcher(opts = {}) {
   const rootEl = doc.createElement('div');
   rootEl.className = 'nx-root'; rootEl.id = 'nxRoot'; rootEl.setAttribute('role', 'dialog'); rootEl.setAttribute('aria-modal', 'true');
   rootEl.setAttribute('aria-label', 'Switch apps'); rootEl.setAttribute('aria-hidden', 'true');
-  rootEl.innerHTML = '<div class="nx-head"><div><h2>OLYMPUS</h2><small>Six arenas, then More \u00b7 swipe, or hold the orb</small></div>'
+  rootEl.innerHTML = '<div class="nx-head"><div><h2>OLYMPUS</h2><small>Six arenas, then More \u00b7 swipe</small></div>'
     + '<button class="nx-x" type="button" aria-label="Close">×</button></div>'
     + '<div class="nx-find"><input id="nxFind" type="search" autocomplete="off" autocapitalize="off" placeholder="Search every app" aria-label="Search apps by name or what they do">'
     + '<button class="nx-mapb" id="nxMapBtn" type="button" aria-pressed="false" aria-label="Show all apps on one screen">MAP</button></div>'
