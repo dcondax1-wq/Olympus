@@ -540,7 +540,7 @@ function wire() {
   });
   document.addEventListener('pointerdown', () => { if (S.sound && !S.padOn && O && O.sfx) { S.padOn = true; O.sfx('pad'); } }, { once: true });
   $('scan').addEventListener('click', () => { runScan(true); });
-  $('show3d').addEventListener('click', () => { startScene(); });
+  $('show3d').addEventListener('click', () => { if (S.model) startScene(); else S.want3d = true; });   // tapped before the data came: start once it is in
   $('remember3d').addEventListener('change', (e) => { store.write({ ...store.read(), city3d: !!e.currentTarget.checked }); });
   $('to2d').addEventListener('click', () => { store.write({ ...store.read(), city3d: false }); location.reload(); });   // a clean 2D page: the GPU and the frame loop are freed
   $('cityMini').addEventListener('click', () => { if (S.scene) S.scene.setMode('map'); else openSheet('worlds'); });
@@ -568,6 +568,7 @@ function noData(why) {
   for (const id of ['pBestS', 'pWorstS']) $(id).textContent = 'No data';
   $('tkText').textContent = 'No data'; $('districtStatus').textContent = 'No data';
   const sel = $('districtSelect'); if (sel && sel.options[0]) sel.options[0].textContent = 'No data'; $('miniCount').textContent = 'No data';
+  if ($('city3d')) $('city3d').hidden = true;                             // nothing to draw in 3D either
   document.body.dataset.ready = '1'; S.ready = true;
   try { if (O && O.ready) O.ready(); } catch (_) { /* the veil lifts by itself */ }
 }
@@ -601,7 +602,7 @@ async function main() {
   postCard();
   if (!S.startedDemo) { greetNew(); setInterval(refresh, 5 * 60 * 1000); }
   S.ready = true;
-  if (auto3d()) await startScene();                                     // this phone opted in (and does not ask for reduced motion)
+  if (auto3d() || S.want3d) await startScene();                                     // this phone opted in (and does not ask for reduced motion)
 }
 
 window.KC = {
