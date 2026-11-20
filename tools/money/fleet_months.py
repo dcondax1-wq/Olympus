@@ -46,7 +46,7 @@ OUT = os.path.join(ROOT, "research", "lab", "fleet_months.json")
 PHONE = os.path.join(ROOT, "tools", "web_public", "business", "fleet_plan.json")
 TODAY = START = "2026-11-20"
 END = "2027-06-30"
-TAX = 0.35                       # placeholder (Maryland-inclusive); day-taxes publishes the exact %
+TAX = 0.35                       # placeholder: day-taxes (2026-11-20) says 30% with no day job, 40% with one; owner to say
 BANK_LAG = 3                     # sessions from the payout request to the bank
 SEED = 2611
 SPANS = ("H2", "HALF", "REF")
@@ -113,23 +113,45 @@ def paths(span, n, length):
 
 
 # ================================================================================================ the seats (today's)
-def a25(ask=None, pct=None, lit=False):
-    """payday_plan.a25_seat (today's ATLAS funded 25K) with the option of LIT next to ATLAS (the zlarior-funded25 card)."""
-    if not lit:
+class GFS(BL.GF):
+    """builder_levers.GF + the atlas-funded-streak-1micro rule (tools/atlas_edge E3): after `streak` losing ATLAS trades in a
+    row, ATLAS trades 1 micro until its next winner. The streak counts trades taken before the decision (no look-ahead)."""
+
+    streak_n = 2
+
+    def __init__(self, *a, **k):
+        super().__init__(*a, **k)
+        self.streak = 0
+
+    def qty(self, t, st):
+        q = super().qty(t, st)
+        if t.get("strat") != "ATLAS" or q <= 0:
+            return q
+        if self.streak >= self.streak_n and q > 1:
+            q = 1
+        self.streak = self.streak + 1 if t["pts"] * U.PV * q - U.COMM * q < 0 else 0
+        return q
+
+
+def a25(ask=None, pct=None, lit=False, streak=False):
+    """payday_plan.a25_seat (today's ATLAS funded 25K) with the option of LIT next to ATLAS (the zlarior-funded25 card)
+    or the 2-loss 1-micro rule (atlas-funded-streak-1micro)."""
+    if not lit and not streak:
         return PD.a25_seat(ask=ask, pct=pct)
     B = MP.by()
-    z = {"LIT": ("fq", None), "ATLAS": ("stack", 250.0, 0.3)}
+    z = {"LIT": ("fq", None), "ATLAS": ("stack", 250.0, 0.3)} if lit else {"ATLAS": ("fq", None)}
+    G = GFS if streak else BL.GF
     cfg = dict(U.UP25)
     if pct:
         cfg["pct"] = pct
-    s = BL.Seat(lambda _=None: BL.GEv(BL.E25, BL.Zatlas25(), stuck=200.0), lambda: BL.GF("builder25k", cfg, z, ask=ask),
+    s = BL.Seat(lambda _=None: BL.GEv(BL.E25, BL.Zatlas25(), stuck=200.0), lambda: G("builder25k", cfg, z, ask=ask),
                 MP.P25, [])
-    f = BL.GF("builder25k", cfg, z, ask=ask)
+    f = G("builder25k", cfg, z, ask=ask)
     f.bal = f.trade_pnl = MP.A25_PNL
     f.cyc = [MP.A25_PNL]
     f.first_trade, f.elig_from = "2027-01-01", U.cal(0)
     s.evals, s.f, s.wait = [], f, 0
-    return MP.BSeat(s, B["A"], B["S"])
+    return MP.BSeat(s, B["A"], B["S"] if lit else B["A"])
 
 
 def z50(atlas=False, parallel=False):
@@ -156,6 +178,7 @@ CARDS = {
     "rapid25-lit-bank": ("Rapid 25K: LIT 1 micro banked at the day's room", {"R25": lambda: r25(lane="bank1")}),
     "zlarior-funded25": ("ATLAS's funded 25K: LIT trades it too", {"A25": lambda: a25(lit=True)}),
     "atlas-funded-room-40": ("ATLAS's funded 25K at 40% of the room", {"A25": lambda: a25(pct=0.4)}),
+    "atlas-funded-streak-1micro": ("ATLAS's funded 25K: 1 micro after 2 losses in a row", {"A25": lambda: a25(streak=True)}),
     "payout-ping-1000": ("Ask at $1,000 instead of $750 (both 25Ks)", {"A25": lambda: a25(ask=1000.0),
                                                                         "N25": lambda: PD.n25_seat(ask=1000.0)}),
     "keep-1000-rapid": ("Keep $1,000 in each Rapid at payouts", {"R25": lambda: r25(keep=1000.0)}),
@@ -357,7 +380,7 @@ def study(n=600, workers=4, log=print):
     jobs = [(sp, "real", n, True) for sp in SPANS] + [(sp, "stress", n, False) for sp in SPANS]
     cal = calendar()
     res = {"v": 1, "date": TODAY, "start": START, "end": cal[-1], "sessions": len(cal), "n": n, "months": months(cal),
-           "markets": MKT, "tax": TAX, "tax_note": "35% is a placeholder (Maryland-inclusive); day-taxes publishes the exact %",
+           "markets": MKT, "tax": TAX, "tax_note": "35% set aside = the middle of day-taxes' Maryland pot (30% with no day job, 40% with one) until you say which",
            "bank_lag_sessions": BANK_LAG, "seed": SEED, "names": NAMES, "built_by": "tools/money/fleet_months.py",
            "fills": {"real": "ATLAS 10 ticks a side (its measured fills), LIT as stored (1 + 1 tick)",
                      "stress": "LIT at 10 ticks a side too"},
@@ -415,7 +438,7 @@ def phone(res):
     return {"v": 1, "date": res["date"], "source": "research/lab/fleet_months.json (tools/money/fleet_months.py)",
             "tax": res["tax"], "tax_note": res["tax_note"], "n": res["n"],
             "markets": {"H2": MKT["H2"], "HALF": MKT["HALF"], "REF": MKT["REF"]},
-            "months": [{"m": r["month"], "median": r["median"], "bad": r["bad_1_in_10"],
+            "months": [{"m": r["month"], "month": r["month"], "median": r["median"], "bad": r["bad_1_in_10"],
                         "median_half": h["median"], "median_ref": f["median"]}
                        for r, h, f in zip(s2["months"], sh["months"], sr["months"])],
             "total": {"median": s2["total_median"], "bad": s2["total_bad"], "median_half": sh["total_median"],
@@ -423,8 +446,13 @@ def phone(res):
             "next_buy": {"what": s2["next_buy"]["what"], "price": s2["next_buy"]["price"], "code": s2["next_buy"]["code"],
                          "when_med": s2["next_buy"]["date_med"], "when_p10": s2["next_buy"]["date_p10"],
                          "when_p90": s2["next_buy"]["date_p90"], "chance": s2["next_buy"]["p_bought"],
-                         "from": "kept payout money only (after MFFU's cut, the tax set-aside and fees)"},
-            "top_cards": top}
+                         "from": "kept payout money only (after MFFU's cut, the tax set-aside and fees)",
+                         "when": s2["next_buy"]["date_med"], "usd": s2["next_buy"]["price"],
+                         "why": (f"5th funded slot, the biggest earner (median ${s2['accounts']['R2']['total_median']:,} by June); "
+                                 f"8 in 10 runs between {s2['next_buy']['date_p10']} and {s2['next_buy']['date_p90']}, "
+                                 f"paid from payouts in the bank")},
+            "top_cards": top,
+            "top_decide": [{"id": c["id"], "title": c["what"], "usd": c["yes_usd_month"]} for c in top]}
 
 
 def main(argv=None):

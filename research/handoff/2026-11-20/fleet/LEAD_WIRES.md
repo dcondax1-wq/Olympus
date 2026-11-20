@@ -17,6 +17,8 @@ Read `../business/fleet_plan.json` (relative to hera/). The fields are stable (v
   $total.bad)", with a small line under it: "if the edge halves $median_half, 2021-25-like $median_ref".
 - `next_buy`: `{what, price, code, when_med, when_p10, when_p90, chance, from}`. Line: "Next buy: Rapid EOD 50K $165
   (CLUB), about Jan 5 (Dec 14 - Feb 12), from payouts only".
+- hera/fleet.js keys (lead 2026-11-20): `months[].month/median/bad`, `next_buy.what/when/usd/why`, `top_decide[].title/usd`
+  are all in the file (extra keys kept).
 - `top_cards[]`: `{id, what, yes_usd_month, yes_usd_month_half, yes_usd_month_ref}`. Show the 3 rows with links to the
   Decide card id.
 - `tax_note`: always print it under the table (the 35% is a placeholder).
@@ -24,7 +26,7 @@ If hera/ has a service worker cache list, it needs a bump so phones fetch the ne
 file, not mine).
 
 ## For day-taxes
-When the exact Maryland-inclusive % is published: set `TAX` in tools/money/fleet_months.py (today 0.35), then run
+day-taxes says 30% (no day job) / 40% (day job). The plan uses 35% until the owner answers. Then set `TAX` in tools/money/fleet_months.py (today 0.35), then run
 `python -X utf8 tools/money/fleet_months.py` (~5 min) and `python -X utf8 -m tests.test_fleet_months`. The test follows
 `FM.TAX`, so no test edit is needed.
 

@@ -2,8 +2,8 @@
 
 ## Owner summary (read this)
 
-**Cash to you each month, after MFFU's cut, every fee and a 35% tax set-aside** (35% is a placeholder; day-taxes will
-publish the real Maryland-inclusive %). All 5 MFFU slots + Kalshi K8 on 1,000 paths, from today's balances.
+**Cash to you each month, after MFFU's cut, every fee and a 35% tax set-aside** (35% = the middle of day-taxes' Maryland
+pot: 30% if you have no day job, 40% if you do; tell Claude which and the plan is re-run). All 5 MFFU slots + Kalshi K8 on 1,000 paths, from today's balances.
 
 | Month | Normal (median) | Bad (1 in 10) | If the edge halves (median) | 2021-25-like (median) |
 |---|---|---|---|---|
@@ -37,7 +37,9 @@ In a 2021-25-like market you lose about $1,350 over the 7 months, all of it on e
 | zlarior-funded25 (LIT also on ATLAS's funded 25K) | **+$159** / +$89 / +$27 | about the same (fewer when the edge is weak) |
 | zlarior-atlas-50k (ATLAS on the 50K once funded) | **+$209** / -$22 / -$13 | about the same |
 
-Everything else is under $55 a month either way. cloud-alerts and drop-lucid-account4 change $0.
+Everything else is under $55 a month either way. cloud-alerts and drop-lucid-account4 change $0. The new
+atlas-funded-streak-1micro card (1 micro after 2 ATLAS losses in a row) is cheap insurance: -$27 a month in a normal
+market, +$21 / +$19 in the weak ones, and fewer ATLAS accounts lost.
 
 ## The numbers behind it
 
@@ -52,7 +54,7 @@ Per account, Nov 20 - Jun 30, normal market, after tax (median total; first payo
 | Zlarior 25K #2 eval | $1,560 | -$63 | Feb 2 | 89% |
 | Kalshi K8 ($2.50 a bet) | about $300 (average) | | | |
 
-All 8 Decide cards (YES minus NO, $ a month to you after the 35% set-aside, Nov 20 - Jun 30 average; real fills):
+All 9 Decide cards (YES minus NO, $ a month to you after the 35% set-aside, Nov 20 - Jun 30 average; real fills):
 
 | Card | Normal | Half edge | 2021-25 | YES better in | Accounts lost (change) |
 |---|---|---|---|---|---|
@@ -64,6 +66,7 @@ All 8 Decide cards (YES minus NO, $ a month to you after the 35% set-aside, Nov 
 | keep-1000-rapid | +$15 | $0 | $0 | 32% | -0.17 |
 | payout-ping-1000 | -$25 | -$9 | $0 | 40% | -0.03 |
 | atlas-funded-room-40 | -$54 | -$14 | +$6 | 31% | -0.12 |
+| atlas-funded-streak-1micro (new, day-atlasedge) | -$27 | +$21 | +$19 | 36% / 65% / 79% | -0.15 / -0.88 / -0.71 |
 | cloud-alerts, drop-lucid-account4 | $0 | $0 | $0 | | |
 
 Notes for the lead:
