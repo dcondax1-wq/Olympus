@@ -13,6 +13,7 @@ Offline: a FICTIONAL Overpass answer (tests/fixtures/web_leads_overpass.json) an
 from __future__ import annotations
 
 import json
+import urllib.parse
 import os
 import subprocess
 import sys
@@ -60,12 +61,22 @@ def part_polite(tmp):
         if "overpass-api.de" in url:
             return 504, b""
         return 200, json.dumps({"elements": [{"type": "node", "id": len(calls), "tags": {"name": f"X{len(calls)}", "craft": "roofer", "phone": "301-555-0199"}}]}).encode()
-    j = W.fetch("Frederick", W.TOWNS["Frederick"], http=http, sleep=sleeps.append, say=lambda *a: None)
+    j = W.fetch("Frederick", W.TOWNS["Frederick"], http=http, sleep=sleeps.append, say=lambda *a: None, backoff=(20,))
     parts = len(W.parts(W.TOWNS["Frederick"]))
-    check(f"p1. {parts} small queries for a town (one per business type; one big union times out on the public gateways), each tried on the main server first, "
-          "the next server only after a failure, >= 1 s between any two requests",
-          j and j["_parts_ok"] == parts and calls.count("overpass-api.de") == parts and calls.count("maps.mail.ru") == parts
-          and "overpass.kumi.systems" not in calls and len(sleeps) == 2 * parts - 1 and min(sleeps) >= 1.0, (calls, sleeps))
+    check(f"p1. {parts} small queries for a town (the 6 business types, the big ones split: one union times out on the public gateways); "
+          "a busy main server (504) is asked once more after a 20 s wait, then the mirror; >= 1 s between any two requests",
+          j and j["_parts_ok"] == parts and calls.count("overpass-api.de") == 2 * parts and calls.count("maps.mail.ru") == parts
+          and "overpass.kumi.systems" not in calls and sleeps.count(20) == parts and min(sleeps) >= 1.0 and j["_failed"] == [], (calls[:6], sleeps[:6]))
+    calls.clear()
+
+    def http2(url, body):
+        calls.append(url.split("/")[2])
+        if '"craft"' in urllib.parse.unquote_plus(body.decode()):
+            return 200, b'{"elements": []}'
+        raise ConnectionResetError()
+    j2 = W.fetch("Frederick", W.TOWNS["Frederick"], http=http2, sleep=lambda s: None, say=lambda *a: None, backoff=(20,))
+    check("p1b. a refused connection is not asked again (no backoff); the kinds no server answered are listed (the PC run fills them)",
+          j2 and j2["_parts_ok"] == 1 and len(j2["_failed"]) == parts - 1 and "trades" not in j2["_failed"] and len(calls) == 1 + 3 * (parts - 1), (j2 and j2["_failed"], len(calls)))
     check("p2. the User-Agent names the tool only: no person, no email, no repository", "olympus-web-leads" in W.UA and "@" not in W.UA
           and "github" not in W.UA.lower() and "dcondax" not in W.UA.lower(), W.UA)
     out = os.path.join(tmp, "leads.json")
@@ -108,10 +119,77 @@ def part_page(tmp):
         check("w. " + name, ok, info)
 
 
+def part_run(tmp):
+    out = os.path.join(tmp, "run", "leads.json")
+    fx = json.load(open(FX, encoding="utf-8"))
+    W.main(["--town", "Frederick", "--from-file", FX, "--out", out])
+    fx2 = {"elements": [dict(e, id=e["id"] + 9000) for e in fx["elements"]] + [{"type": "node", "id": 5001, "tags": {"name": "Hagerstown Roofing (fictional)", "craft": "roofer", "phone": "301-555-0150"}}]}
+    f2 = os.path.join(tmp, "fx2.json")
+    json.dump(fx2, open(f2, "w"))
+    W.main(["--town", "Hagerstown", "--from-file", f2, "--out", out])
+    j = W.load(out)
+    by = {t["town"]: t for t in j["towns"]}
+    check("r1. town by town: Hagerstown is added and Frederick kept; the same businesses (same name + phone) are not listed twice (5 leads, not 9)",
+          set(by) == {"Frederick", "Hagerstown"} and len(j["leads"]) == 5 and by["Hagerstown"]["leads"] == 5 and sum(1 for x in j["leads"] if x["town"] == "Frederick") == 4, (by, len(j["leads"])))
+    W.main(["--town", "Frederick", "--from-file", FX, "--out", out])
+    j = W.load(out)
+    check("r2. running a town again replaces only that town (still 2 towns, Frederick's 4 back)", len(j["towns"]) == 2 and sum(1 for x in j["leads"] if x["town"] == "Frederick") == 4, [t["town"] for t in j["towns"]])
+    t = W.counts(j)
+    check("r3. the counts table: one row per town + All, a column per niche, the kinds still missing", "| Frederick |" in t and "| Hagerstown |" in t and "**All**" in t
+          and "Contractor / trades" in t and "Kinds missing" in t, t)
+    big = {"v": 1, "kind": "web_leads", "towns": [{"town": "A"}, {"town": "B"}], "skipped": {}, "leads": [{"id": f"x{i}", "name": "N" * 200, "town": "A" if i % 2 else "B", "score": 1} for i in range(2000)]}
+    bp = os.path.join(tmp, "big", "leads.json")
+    W.save(big, bp)
+    idx = json.load(open(bp))
+    back = W.load(bp)
+    check("r4. over 300 KB: leads.json becomes an index with one file per town (towns/a.json, towns/b.json), read back whole",
+          idx.get("files") == ["towns/a.json", "towns/b.json"] and idx["leads"] == [] and idx["count"] == 2000 and len(back["leads"]) == 2000
+          and os.path.getsize(bp) < 300_000, (idx.get("files"), os.path.getsize(bp)))
+    W.main(["--town", "Frederick", "--from-file", FX, "--out", out])
+    tt = next(x for x in W.load(out)["towns"] if x["town"] == "Frederick")
+    check("r5. each town records the kinds answered / missing (offline file = all answered by convention: parts_ok None -> not 'done')", "missing" in tt and "parts" in tt, tt)
+
+
+def part_post(tmp):
+    """Postcards (lead 2026-11-20): chains dropped (tags + names), email kept, the map point kept, missing streets filled by
+    Nominatim reverse (1 a second, cached), mailable = house number + street + town + ZIP."""
+    els = [{"type": "node", "id": 1, "lat": 39.41, "lon": -77.41, "tags": {"name": "Glory Days Grill", "amenity": "restaurant"}},
+           {"type": "node", "id": 2, "lat": 39.41, "lon": -77.41, "tags": {"name": "Sample Cafe (fictional)", "amenity": "cafe", "operator": "Starbucks"}},
+           {"type": "node", "id": 3, "lat": 39.4143, "lon": -77.4105, "tags": {"name": "Example Bakery (fictional)", "shop": "bakery", "contact:email": "hi@example.com"}},
+           {"type": "way", "id": 4, "center": {"lat": 39.42, "lon": -77.42}, "tags": {"name": "Demo Tailor (fictional)", "shop": "tailor", "addr:housenumber": "5",
+            "addr:street": "Main Street", "addr:city": "Frederick", "addr:postcode": "21701-1234", "contact:phone": "301-555-0177"}}]
+    out = W.build({"Frederick": {"elements": els}})
+    by = {L["name"]: L for L in out["leads"]}
+    check("q1. chains dropped by name (Glory Days) and by operator (a cafe run by Starbucks); counted per town",
+          set(by) == {"Example Bakery (fictional)", "Demo Tailor (fictional)"} and out["towns"][0]["chains"] == 2, (sorted(by), out["towns"][0]))
+    b, t = by["Example Bakery (fictional)"], by["Demo Tailor (fictional)"]
+    check("q2. contact:email kept (+1 score), contact:phone kept, the map point kept (way = its center); a full map address with ZIP = mailable",
+          b["email"] == "hi@example.com" and "an email on the map" in b["why"] and b["lat"] == 39.4143 and t["lat"] == 39.42 and t["phone"] == "(301) 555-0177"
+          and t["mailable"] is True and t["zip"] == "21701" and t["address"] == "5 Main Street, Frederick MD 21701" and b["mailable"] is False, (b, t))
+    calls, sleeps = [], []
+
+    def http(url, body):
+        calls.append(url)
+        return 200, json.dumps({"address": {"house_number": "9", "road": "East Patrick Street", "city": "Frederick", "postcode": "21701", "state": "Maryland"}}).encode()
+    cache = os.path.join(tmp, "geo.json")
+    st = W.geocode(out["leads"], cache, http=http, sleep=sleeps.append, say=lambda *a: None)
+    check("q3. Nominatim reverse only for the lead with no street (1 call, nearest address marked, now mailable); the tailor's own address untouched",
+          st["asked"] == 1 and len(calls) == 1 and "nominatim.openstreetmap.org/reverse" in calls[0] and "lat=39.414300" in calls[0]
+          and b["street"] == "9 East Patrick Street" and b["addr_src"] == "nearest" and b["mailable"] and t["addr_src"] == "map", (st, b))
+    b2 = dict(b, street="", mailable=False, addr_src="")
+    st2 = W.geocode([b2, dict(b2, id="z", lat=39.5, lon=-77.5)], cache, http=http, sleep=sleeps.append, say=lambda *a: None)
+    check("q4. the cache: the same point is not asked again; a new point waits until 1.1 s after the previous request, across runs (Nominatim: max 1 a second)",
+          st2["cached"] == 1 and st2["asked"] == 1 and len(calls) == 2 and len(sleeps) == 1 and sleeps[0] >= 1.0, (st2, sleeps))
+    t3 = W.counts({"towns": out["towns"], "leads": out["leads"]})
+    check("q5. the counts table has Chains dropped, Phone, Email, Mailable", all(w in t3 for w in ("Chains dropped", "| Phone |", "| Email |", "| Mailable |")) and "| Frederick | 2 | 2 |" in t3, t3)
+
+
 def main():
     tmp = tempfile.mkdtemp(prefix="webleads-")
     part_finder()
     part_polite(tmp)
+    part_run(tmp)
+    part_post(tmp)
     part_page(tmp)
     print(f"\n{sum(RES)}/{len(RES)} passed")
     return 0 if all(RES) else 1
