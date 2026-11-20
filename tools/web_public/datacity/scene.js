@@ -17,7 +17,7 @@ import { River, Ships } from './water.js?v=dcgfx16';
 import { Signs } from './signs.js?v=dcgfx16';
 import { Fireworks } from './fireworks.js?v=dcgfx15';
 import { KitFx } from './kitfx.js?v=dcgfx15';
-import { PROFILES, phoneHint, profileOf } from './caps.js?v=dcgfx2';
+import { PROFILES, phoneHint, profileOf } from './caps.js?v=dcgfx3';
 import { Link } from './links.js';
 import { NEON } from './look-mode.js';   // the two looks of the Data City (look-mode.js): neon night (default) or AGORA marble
 import { ARCH } from './kinds.js';
