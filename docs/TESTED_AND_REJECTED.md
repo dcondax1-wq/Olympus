@@ -4,7 +4,7 @@
   9 single versions, LIT $/month H1 / H2 / 2021-25 vs today $5,562 / $2,670 / $25: ES (MES) LIT filler on days NQ has not
   traded yet, NQ preempts (4.5 trades/wk) $4,478 / $3,026 / -$66, eval 2-week pass 44.5 -> 43.7, funded $929 -> $642 a month;
   breakeven at clip(0.25 x target R, 0.5-2R) $5,194 / $2,429 / $209; LIMIT entry at the 1m CISD close (1 tick through, else
-  market) $5,554 / $2,583 / $26 (the open + 1 tick market fill is already better than the close); NY setups only on London's
+  market) $5,554 / $2,583 / $26 (fills 112/119 at the same price on average; the 7 misses are runners, chase ~5 pts); NY setups only on London's
   discount side $5,482 / $2,770 / $51; Tier-1 news day: only setups after the release $4,277 / $2,736 / $54; out on a 5m close
   back through the CISD level before +0.5R $4,738 / $532 / -$75; ES closes beyond its own sweep-window extreme before +0.5R ->
   out $5,562 / $2,771 / $30 (0 cuts in Jan-Jun, 4 in Jul-Oct: nearest miss, paper only); keep only SMT setups (ES held) 0.8 /

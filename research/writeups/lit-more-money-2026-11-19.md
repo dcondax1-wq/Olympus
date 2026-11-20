@@ -19,7 +19,7 @@ Jul-Oct, $25 in 2021-25**). "Funded" = what a funded Builder 50K pays you a mont
 |---|---:|---:|---:|---:|---|
 | Extra ES (S&P micro) trades on days Zlarior has not traded yet | $4,478 | $3,026 | -$66 | $642 / $639 | No: more trades (4.5 a week), less money |
 | Breakeven later on far targets, sooner on near ones | $5,194 | $2,429 | $209 | $931 / $854 | No |
-| Limit order at the signal candle's close instead of market | $5,554 | $2,583 | $26 | $917 / $885 | No: the market fill is already better |
+| Limit order at the signal candle's close instead of market | $5,554 | $2,583 | $26 | $917 / $885 | No: same price on average, misses the runners |
 | NY trades only from London's cheap / expensive side (bias) | $5,482 | $2,770 | $51 | $935 / $993 | No: loses Jan-Jun |
 | Big-news days: only setups after the release | $4,277 | $2,736 | $54 | $792 / $908 | No: -$1,284 a month Jan-Jun |
 | Out when price falls back through the shift level | $4,738 | $532 | -$75 | $869 / $313 | No: cuts the winners |
@@ -30,8 +30,8 @@ Jul-Oct, $25 in 2021-25**). "Funded" = what a funded Builder 50K pays you a mont
 **Why the live bot "missed" Oct 26 / 27 / 28 and Nov 3:** it mostly did not. Oct 28 WAS traded (5 micros, -$437); the
 checker just has no records before Nov 3. Oct 27's order was refused because the account name lacked an "R" (already fixed
 in the bot; that miss saved ~$965). Oct 26 was a real miss during a bot / feed gap ($0 trade). Nov 3: no record. Two more
-real misses came on Nov 10-11 while the PC was silent. Every one of these backtest trades lost money or scratched, so the
-misses cost $0 so far, by luck. **Next for you: nothing.** The fix for the checker is a proposal for Claude's lead.
+real misses came on Nov 10-11 while the PC was silent. Every backtest trade that did not reach the account lost money or
+scratched (Nov 3, +$28, is unknown), so the misses cost $0 so far, by luck. **Next for you: nothing.** The fix for the checker is a proposal for Claude's lead.
 
 ## Why live missed trades (job d)
 
@@ -97,18 +97,20 @@ SMT as a size tilt, the fill-model study, conditional pullback limits.
 No 2-week fails anywhere (0.0% in every row, as today). In plain words:
 - **Fills.** The two real Zlarior fills we have: Oct 28 short filled exactly at the model price (29,945.00), Nov 16 long
   filled 3 ticks worse than the model (27,799.50 vs 27,798.75). The backtest's market fill at the next bar's open + 1 tick
-  is fair. A limit at the signal candle's close is usually *worse* than that open (after a 1m CISD close the next bar
-  often opens back a little), and when it misses, the chase costs more. Checked too: the backtest fills a target on a
+  is fair. A limit at the signal candle's close fills 112 of 119 times in 2026 (1 tick through), on average at the same
+  price as today's market fill (0.01 pt; the close beats the open + 1 tick 64 times, loses 46). The 7 times it does not
+  fill, price ran away on the best trades (+1.6R each, 11R in all) and the chase costs ~5 pts each. Checked too: the backtest fills a target on a
   touch; requiring 1 tick through it changes **0** trades (targets are not tick prices and price always went through).
 - **Bias.** London's discount side changes 2-3 trades a half: noise; Jan-Jun loses.
 - **News.** On big-news days the setups before the release are mostly London trades that work: skipping them costs
   Jan-Jun -$7.8k (12 trades changed).
 - **Through the trade.** The shift-failure cut fires on 67 trades in 2026 and kills the winners that dip first (Jul-Oct
   $2,670 -> $532 a month). The ES-confirmation cut is the night's nearest miss: it never acted in Jan-Jun, cut 4 trades in
-  Jul-Oct (+$374) and 2 in 2025. Too few to call; the gate needs both halves better. Watch only.
+  Jul-Oct (+$374) and a few in 2025 (+$244). Too few to call; the gate needs both halves better. Watch only.
 - **SMT.** ES did not make the same new low/high on only 22% of Zlarior's trades since 2025-04 (46 of 207). Keeping only
-  those leaves ~1 trade a week. Trading ES instead on those 46 made +$10.1k in Jul-Oct but lost $3.8k in Jan-Jun: the
-  Jul-Oct gain is a handful of ES trades that ran to a bigger VIX band; it fails the pick half. Not a rule.
+  those leaves ~1 trade a week. Trading ES instead on those days (30 trades in 2026) made +$10.1k in Jul-Oct but lost
+  $3.8k in Jan-Jun at the LIT size (eval path -$4.5k / +$3.7k, funded $929 / $915 -> $823 / $884): it fails the pick half,
+  and ES runs on 5m bars without the 15-minute check, so it is not like for like. Not a rule.
 
 ## Method
 
