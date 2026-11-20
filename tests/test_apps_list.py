@@ -48,7 +48,10 @@ def read(*p, mode="r"):
 def _ntiles():
     import re as _re
     t = open(os.path.join(ROOT, "tools", "web_public", "olympus", "apps-list.js"), encoding="utf-8").read()
-    return len(set(_re.findall(r'"id":\s*"([a-z0-9]+)"', t)) - {"zenith"})
+    d = open(os.path.join(ROOT, "tools", "web_public", "olympus", "doors.js"), encoding="utf-8").read()
+    m = _re.search(r"var RETIRED = \[([^\]]*)\]", d)              # 2026-11-20: retired apps are shown nowhere (owner: "the forges and stuff we don't need")
+    ret = set(_re.findall(r"'([a-z0-9]+)'", m.group(1))) if m else set()
+    return len(set(_re.findall(r'"id":\s*"([a-z0-9]+)"', t)) - {"zenith"} - ret)
 
 
 NTILES = _ntiles()
@@ -234,12 +237,12 @@ def test_phone(br, origin):
     p.fill(".oly-l .oly-sr input", "zzzz"); p.wait_for_timeout(150)
     check("c. phone: no match = a plain line, never an empty sheet", p.is_visible(".oly-l .oly-em") and "No app matches" in p.inner_text(".oly-l .oly-em"))
     p.fill(".oly-l .oly-sr input", ""); p.wait_for_timeout(100)
-    p.evaluate("document.querySelector('.oly-l .oly-tile[data-app=mind]').addEventListener('click', (e) => e.preventDefault(), true)")
-    tap(p, ".oly-l .oly-tile[data-app=mind]"); p.wait_for_timeout(200)
+    p.evaluate("document.querySelector('.oly-l .oly-tile[data-app=tree]').addEventListener('click', (e) => e.preventDefault(), true)")
+    tap(p, ".oly-l .oly-tile[data-app=tree]"); p.wait_for_timeout(200)
     rec = p.evaluate("JSON.parse(localStorage.getItem('oly.launcher.recent'))")
-    check("c. phone: opening an app records it in oly.launcher.recent (newest first, 4 kept) and closes the sheet", rec[:1] == ["mind"] and not p.evaluate("OLYMPUS_LAUNCHER.isOpen()"), rec)
+    check("c. phone: opening an app records it in oly.launcher.recent (newest first, 4 kept) and closes the sheet", rec[:1] == ["tree"] and not p.evaluate("OLYMPUS_LAUNCHER.isOpen()"), rec)
     p.focus("#olyLauncherBtn"); tap(p, "#olyLauncherBtn"); until(p, OPEN_FULL + " && !!document.querySelector('.oly-l .oly-rc .oly-chip')")
-    check("c. phone: 'Recent' shows it first the next time", p.locator(".oly-l .oly-rc .oly-chip").first.get_attribute("data-app") == "mind")
+    check("c. phone: 'Recent' shows it first the next time", p.locator(".oly-l .oly-rc .oly-chip").first.get_attribute("data-app") == "tree")
     until(p, IN_SHEET, 10000)                                  # the sheet moves the focus inside itself 30 ms after it opens; Escape is heard there
     p.keyboard.press("Escape"); until(p, "!OLYMPUS_LAUNCHER.isOpen()", 10000)
     esc = p.evaluate("[OLYMPUS_LAUNCHER.isOpen(), document.activeElement && (document.activeElement.id || document.activeElement.className || document.activeElement.tagName)]")
@@ -269,7 +272,7 @@ def test_phone(br, origin):
 
 
 def test_gone(br, origin):
-    """night-bugsweep 2026-11-19: an app folder that is not on this site (mind/ on the public site: its jarvis.json is a 404) is asked once, then
+    """night-bugsweep 2026-11-19: an app folder that is not on this site (tree/ on the public site: its jarvis.json is a 404) is asked once, then
     not again for a day (a 404 in the console on every Refresh before); its dot stays grey ('none'); the other dots are asked as usual."""
     ctx, p, errs = page(br, origin)
     asked = []
@@ -277,20 +280,20 @@ def test_gone(br, origin):
     def r404(r):
         asked.append(r.request.url)
         return r.fulfill(status=404, content_type="text/plain", body="404: Not Found")
-    ctx.route(re.compile(r".*/mind/jarvis\.json(\?.*)?$"), r404)                # later routes win over page()'s own
+    ctx.route(re.compile(r".*/tree/jarvis\.json(\?.*)?$"), r404)                # later routes win over page()'s own
     p.goto(origin + "/", wait_until="commit")
     p.wait_for_selector("#olyLauncherBtn", timeout=120000, state="attached")
     tap(p, "#olyLauncherBtn"); until(p, OPEN_FULL)
-    ok1 = until(p, "(() => { const s = JSON.parse(localStorage.getItem('oly.launcher.status') || '{}'); return !!(s.mind && s.mind.gone) && !!s.oracle; })()")
+    ok1 = until(p, "(() => { const s = JSON.parse(localStorage.getItem('oly.launcher.status') || '{}'); return !!(s.tree && s.tree.gone) && !!s.oracle; })()")
     first = len(asked)
-    p.evaluate("(() => { const s = JSON.parse(localStorage.getItem('oly.launcher.status')); for (const k in s) if (k !== 'mind') s[k].at = 1; localStorage.setItem('oly.launcher.status', JSON.stringify(s)); })()")
+    p.evaluate("(() => { const s = JSON.parse(localStorage.getItem('oly.launcher.status')); for (const k in s) if (k !== 'tree') s[k].at = 1; localStorage.setItem('oly.launcher.status', JSON.stringify(s)); })()")
     p.reload(wait_until="commit")
     p.wait_for_selector("#olyLauncherBtn", timeout=120000, state="attached")
     tap(p, "#olyLauncherBtn"); until(p, OPEN_FULL)
     ok2 = until(p, "(() => { const s = JSON.parse(localStorage.getItem('oly.launcher.status') || '{}'); return !!s.oracle && s.oracle.at > 1; })()")
     p.wait_for_timeout(300)
-    dot = p.evaluate("(document.querySelector('.oly-l .oly-tile[data-app=mind]') || {dataset: {}}).dataset.status || ''")
-    check("c. phone: a folder not on the site (mind/jarvis.json 404) is asked once, then not again for a day while the other dots refresh; its dot stays grey",
+    dot = p.evaluate("(document.querySelector('.oly-l .oly-tile[data-app=tree]') || {dataset: {}}).dataset.status || ''")
+    check("c. phone: a folder not on the site (tree/jarvis.json 404) is asked once, then not again for a day while the other dots refresh; its dot stays grey",
           ok1 and ok2 and first == 1 and len(asked) == 1 and dot == "none" and not [e for e in errs if "launcher" in e.lower()], (ok1, ok2, first, len(asked), dot))
     ctx.close()
 
