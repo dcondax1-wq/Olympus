@@ -37,9 +37,9 @@ def read(*p):
 
 def part_a():
     page = read(JV, "index.html")
-    check("a. the kit (olympus/dashfx) and jfx.css after the first paint (media=print, swapped on load), the scripts deferred: the start is not held",
-          '<link rel="stylesheet" id="jfx" href="jfx.css?v=3" media="print" onload="this.media=\'all\'">' in page and '<script src="jfx.js?v=2" defer></script>' in page
-          and 'href="../olympus/dashfx.css?v=d1" media="print"' in page and '<script src="../olympus/dashfx.js?v=d1" defer></script>' in page)
+    check("a. the kit (olympus/dashfx) and jfx.css after the first paint (media=print, swapped on load), the scripts async (never defer: a slow line must not hold the start)",
+          '<link rel="stylesheet" id="jfx" href="jfx.css?v=3" media="print" onload="this.media=\'all\'">' in page and '<script src="jfx.js?v=2" async></script>' in page
+          and 'href="../olympus/dashfx.css?v=d1" media="print"' in page and '<script src="../olympus/dashfx.js?v=d1" async></script>' in page)
     css, js = read(JV, "jfx.css"), read(JV, "jfx.js")
     check("a. OLYMPUS NIGHT in jfx.css: bright gold, violet ring, violet outlines, mint; no cyan / navy left over",
           all(x in css for x in ("#f1c14b", "#9d59ee", "#3e255e", "#16131e", "#020204", "#77db89", "#ef4444")) and not re.search(r"#22d3ee|#3b82f6|#8b5cf6|--oly-th-a\d+:", css))

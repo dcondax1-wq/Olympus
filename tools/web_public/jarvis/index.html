@@ -111,8 +111,8 @@ window.addEventListener('error', function (e) {
 <link rel="stylesheet" id="jcss" href="jarvis.css?v=j24">
 <link rel="stylesheet" id="jhome" href="home3d.css?v=h4">
 <!-- JARVIS FX (day-jarvis 2026-11-20, owner: "3D, effects, no gold"): after the first paint, never holding the start -->
-<link rel="stylesheet" href="../olympus/dashfx.css?v=d1" media="print" onload="this.media='all'"><script src="../olympus/dashfx.js?v=d1" defer></script><!-- the DESIGN kit (OLYMPUS NIGHT glass) -->
-<link rel="stylesheet" id="jfx" href="jfx.css?v=3" media="print" onload="this.media='all'"><script src="jfx.js?v=2" defer></script>
+<link rel="stylesheet" href="../olympus/dashfx.css?v=d1" media="print" onload="this.media='all'"><script src="../olympus/dashfx.js?v=d1" async></script><!-- the DESIGN kit (OLYMPUS NIGHT glass); async, never defer: outside Jarvis's saved copy, a slow line must not hold the start -->
+<link rel="stylesheet" id="jfx" href="jfx.css?v=3" media="print" onload="this.media='all'"><script src="jfx.js?v=2" async></script>
 <!-- quiet-net (night-bugsweep 2026-11-19): Kalshi's state comes from the PC feed first (data.js: when the PC carries Kalshi, kalshi.json
      is not asked at all); the old kalshi-feed repo is on the suspended account and is never asked. data-fresh="site:kalshi.json"
      (night-jarvisfix 2026-11-20): otherwise this site's kalshi.json is asked once per Jarvis load, as data.js promises ("opening Jarvis
