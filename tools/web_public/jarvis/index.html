@@ -127,9 +127,8 @@ window.addEventListener('error', function (e) {
 /* the start note works without jarvis.css (the stylesheet may be what did not arrive) */
 [hidden]{display:none!important}
 /* the business chips (day-jarvis 2026-11-20): one scrolling row of the owner's daily questions, in the HTML so they are there at first paint */
-.bizchips{display:flex;gap:8px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;padding:2px 2px 10px;margin:0 -2px;-webkit-overflow-scrolling:touch}
-.bizchips::-webkit-scrollbar{display:none}
-.bchip{flex:0 0 auto;min-height:44px;padding:6px 15px;border-radius:999px;border:1px solid var(--oly-th-gold,rgba(200,162,74,.55));background:rgba(20,16,10,.55);color:var(--oly-th-n10,#f3ece0);font:600 15px/1.1 var(--fb,system-ui,sans-serif);white-space:nowrap;cursor:pointer;touch-action:manipulation}
+.bizchips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 10px}
+.bchip{min-width:0;min-height:44px;padding:6px 8px;border-radius:12px;border:1px solid var(--oly-th-gold,rgba(200,162,74,.55));background:rgba(20,16,10,.55);color:var(--oly-th-n10,#f3ece0);font:600 15px/1.1 var(--fb,system-ui,sans-serif);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;touch-action:manipulation}
 .bchip:active{transform:scale(.97);background:rgba(200,162,74,.22)}
 .boot{position:fixed;left:16px;right:16px;bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:95;padding:12px 14px;border-radius:14px;background:rgba(29,25,20,.96);border:1px solid rgba(200,162,74,.5);color:#f3ece0;font:15px/1.35 -apple-system,system-ui,sans-serif;display:flex;gap:10px;align-items:center;justify-content:space-between}
 .boot small{display:block;margin-top:4px;color:#9a8f7d;font-size:12px;word-break:break-word}
@@ -1114,7 +1113,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
         <button class="pillb" id="vset" type="button" title="Voice settings">Voice ⚙</button>
       </div>
       <p class="hint2">Tap to talk · hold for voice mode</p>
-      <div class="bizchips" id="bizchips" role="group" aria-label="Ask about the business"><button class="bchip" type="button" data-say="How are my accounts?">My accounts</button><button class="bchip" type="button" data-say="Is ATLAS in a trade?">In a trade?</button><button class="bchip" type="button" data-say="How much room does Zlarior have?">Room left</button><button class="bchip" type="button" data-say="When is my first payout?">First payout</button><button class="bchip" type="button" data-say="What did the bots do today?">Bots today</button><button class="bchip" type="button" data-say="What did the bots do this week?">This week</button><button class="bchip" type="button" data-say="What&#39;s on the news today?">News today</button><button class="bchip" type="button" data-say="What should I do today?">My to-do</button><button class="bchip" type="button" data-say="How&#39;s Kalshi?">Kalshi</button></div>
+      <div class="bizchips" id="bizchips" role="group" aria-label="Ask about the business"><button class="bchip" type="button" data-say="How are my accounts?">Accounts</button><button class="bchip" type="button" data-say="Is ATLAS in a trade?">In a trade?</button><button class="bchip" type="button" data-say="How much room does Zlarior have?">Room left</button><button class="bchip" type="button" data-say="When is my first payout?">Payout</button><button class="bchip" type="button" data-say="What did the bots do today?">Today</button><button class="bchip" type="button" data-say="What did the bots do this week?">This week</button><button class="bchip" type="button" data-say="What&#39;s on the news today?">News</button><button class="bchip" type="button" data-say="What should I do today?">To-do</button><button class="bchip" type="button" data-say="How&#39;s Kalshi?">Kalshi</button></div>
       <div class="sugs" id="sugs"></div>
       <div class="talk" id="talk" aria-live="polite"></div>
       <div id="brainp"></div>
@@ -3714,7 +3713,7 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 <!-- the home backdrop and the portal jump on the OLYMPUS render core (docs/OLYMPUS_RENDER.md): each self-contained, each optional -->
-<script type="module" src="./backdrop.js?v=b5"></script>
+<script type="module" src="./backdrop.js?v=b6"></script>
 <script type="module" src="./portal.js?v=p2"></script>
 <script src="./welcome.js?v=w1" defer></script>
 <script type="module" src="./transitions.js?v=t7"></script>

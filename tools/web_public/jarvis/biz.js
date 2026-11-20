@@ -42,6 +42,14 @@ export function usd(x, sign) {
   const a = Math.abs(Math.round(v)), s = v < 0 && a !== 0 ? '-' : sign && a !== 0 ? '+' : '';
   return s + '$' + String(a).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
+export function usd2(x) { const v = num(x); if (v == null) return '$?'; if (Math.abs(v) >= 100) return usd(v, true); const a = Math.abs(v).toFixed(2).replace(/\.00$/, ''); return (v < 0 ? '-' : v > 0 ? '+' : '') + '$' + a; }
+export function whenText(tS, nowD) {
+  try {
+    const d = new Date(tS * 1000), et = etNow(d), today = etNow(nowD).ymd;
+    const hm = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hour: 'numeric', minute: '2-digit' }).format(d);
+    return `${dayText(et.ymd, today)} ${hm} ET`;
+  } catch (_) { return ''; }
+}
 const plural = (n, w, p) => `${n} ${n === 1 ? w : p || w + 's'}`;
 export function ageWords(sec) {
   const s = Math.max(0, Math.round(num(sec) || 0));
@@ -72,7 +80,7 @@ const weekStart = (ymd, dow) => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ymd
 // ------------------------------------------------------------------------------------------------ intents
 const RX = [
   ['intrade', /\b(in a trade|in trade|any trades? open|open (trade|position)s?|positions?|holding|in the market right now|trade on now)\b/],
-  ['room', /\b(room|drawdown|max loss|how much (can|could) (i|we|it|he|she|zlarior|atlas) lose|loss limit|daily limit|cushion|buffer)\b/],
+  ['room', /\b(zlarior|atlas|lit)\b.*\b(room|drawdown|cushion|buffer|lose)\b|\b(room|drawdown|cushion|buffer)\b.*\b(zlarior|atlas|lit|all (my )?accounts|each account|left)\b/],
   ['payout', /\b(pay ?outs?|pay ?day|get paid|paid out|withdraw(al)?|cash out|first check)\b/],
   ['news', /\b(news|economic calendar|econ(omic)? (data|news|calendar)|cpi|fomc|nfp|payrolls|data (today|release)|big releases?|market movers?)\b/],
   ['steps', /\b(what should i do|what do i (need to )?do|my (to-?do|steps)|to-?do list|my list|anything for me|need(s)? me|waiting on me)\b/],
@@ -148,6 +156,8 @@ export function accountsOf(L) {
   card(L.lit, 'lit', `Zlarior ${size(L.lit, '50K')}`);
   card(L.atlas, 'atlas', `ATLAS ${size(L.atlas, '25K')}`);
   for (const e of arr(L.extra)) card({ ...e, plan: e.plan || e.size }, e.key || e.id, txt(e.name, 40) || e.id);
+  const hid = (() => { try { return !globalThis.OLY_HIDDEN || globalThis.OLY_HIDDEN.has('blitz'); } catch (_) { return true; } })();
+  if (!hid) card(L.blitz, 'blitz', 'BLITZ 25K');                     // hidden on the owner's phone (dashboard_view.json); shown where it is on
   return out;
 }
 
@@ -188,8 +198,13 @@ A.intrade = async (deps, nowD, text) => {
     const p = a.position || (chart ? chart.open.find((r) => r && r.k === ck[a.key]) : null);
     if (p) {
       const e = num(p.entry != null ? p.entry : p.e), sl = num(p.stop != null ? p.stop : p.sl), tp = num(p.target != null ? p.target : p.tp), q2 = num(p.qty != null ? p.qty : p.q);
-      const ur = num(p.unrealized_r);
-      rows.push(`${a.name}: YES, ${sideOf(p)}${q2 ? ' ' + plural(q2, 'micro') : ''}${e != null ? ' from ' + e.toLocaleString('en-US') : ''}${sl != null ? ', stop ' + sl.toLocaleString('en-US') : ''}${tp != null ? ', target ' + tp.toLocaleString('en-US') : ''}${ur != null ? ` (now ${ur >= 0 ? '+' : ''}${ur.toFixed(1)}R)` : ''}${p.be ? ', stop at break-even' : ''}.`);
+      const sd = sideOf(p) === 'short' ? -1 : 1, px = num(L.price), tr = arr(L.trades).find((t) => t && t.open && (t.acct === a.key || (a.key === 'lit' && t.acct === 'lit')));
+      const ur = num(p.unrealized_r) != null ? num(p.unrealized_r) : tr ? num(tr.r) : null;
+      const openUsd = px != null && e != null && q2 ? (px - e) * sd * q2 * 2 : null;        // MNQ micros: $2 a point
+      const locked = sl != null && e != null && (sd > 0 ? sl >= e : sl <= e);
+      const f = (x) => x.toLocaleString('en-US', { maximumFractionDigits: 2 });
+      rows.push(`${a.name}: YES, ${sideOf(p)}${q2 ? ' ' + plural(q2, 'micro') : ''}${e != null ? ' from ' + f(e) : ''}${openUsd != null ? `, about ${usd(openUsd, true)} open right now` : ''}${ur != null ? ` (${ur >= 0 ? '+' : ''}${ur.toFixed(1)}R)` : ''}.`
+        + `${sl != null ? ` Stop ${f(sl)}${locked ? ' (past the entry: this trade can no longer lose)' : ''}` : ''}${tp != null ? `, target ${f(tp)}` : ''}${sl != null || tp != null ? '.' : ''}`);
     } else rows.push(`${a.name}: no, flat.${a.waiting ? ' ' + a.waiting : a.window && a.window.text ? ' ' + txt(a.window.text, 80)[0].toUpperCase() + txt(a.window.text, 80).slice(1) + '.' : ''}`);
   }
   if (!rows.length) return { text: want === 'atlas' ? 'I have no ATLAS card from the PC yet.' : 'I have no account cards from the PC yet.', src: liveSrc(L, +nowD) };
@@ -227,12 +242,15 @@ A.bots = async (deps, nowD, text) => {
   if (!L) return { text: 'I have no report from the PC yet, so I cannot say what the bots did.', src: liveSrc(L, +nowD) };
   const week = /\bweek\b/.test(q), from = week ? weekStart(et.ymd, et.dow) : et.ymd;
   const tr = arr(L.trades).filter((t) => t && String(t.day || '') >= from && t.acct !== 'blitz');
-  const done = tr.filter((t) => !t.open), open = tr.filter((t) => t.open), sum = done.reduce((s, t) => s + (num(t.usd) || 0), 0);
+  const done = tr.filter((t) => !t.open), open = tr.filter((t) => t.open), sum = done.filter((t) => t.src !== 'paper').reduce((s, t) => s + (num(t.usd) || 0), 0);
   const per = list.map((a) => (week ? (a.week != null ? `${a.name} ${usd(a.week, true)}` : '') : a.today != null ? `${a.name} ${usd(a.today, true)}` : '')).filter(Boolean);
   const lines = [];
-  if (done.length || open.length) lines.push(`${week ? 'This week' : 'Today'}: ${plural(done.length, 'closed trade')}${done.length ? ` for ${usd(sum, true)}` : ''}${open.length ? `, ${open.length} still open` : ''}.`);
+  if (done.length || open.length) lines.push(`${week ? 'This week' : 'Today'}: ${plural(done.length, 'closed trade')}${done.length ? ` for ${usd(sum, true)}${done.some((t) => t.src === 'paper') ? ' real money' : ''}` : ''}${open.length ? `, ${open.length} still open` : ''}.`);
   else lines.push(`${week ? 'This week' : 'Today'}: no trades yet. Quiet days are normal; the plan is 2 to 4 trades a week.`);
-  for (const t of done.slice(-4)) lines.push(`${t.acct === 'atlas' ? 'ATLAS' : 'Zlarior'} ${String(t.side || '').toLowerCase()} ${dayText(t.day, et.ymd)}: ${usd(t.usd, true)}${t.exit ? ' (' + String(t.exit).toLowerCase() + ')' : ''}.`);
+  const who = (t) => (t.acct === 'atlas' ? 'ATLAS' : /25k/i.test(String(t.acct)) ? 'Zlarior 25K #2' : 'Zlarior') + (t.member ? ' ' + txt(t.member, 12) : '');
+  const why = { STOP: 'stop', TARGET: 'target', BE: 'break-even', EOD: 'flat at the close', TIME: 'time exit' };
+  for (const t of open.slice(-2)) lines.push(`${who(t)} ${String(t.side || '').toLowerCase()} ${dayText(t.day, et.ymd)}: still open${num(t.r) != null ? ` (${num(t.r) >= 0 ? '+' : ''}${num(t.r).toFixed(1)}R)` : ''}.`);
+  for (const t of done.slice(-4)) lines.push(`${who(t)} ${String(t.side || '').toLowerCase()} ${dayText(t.day, et.ymd)}: ${num(t.usd) != null ? usd(t.usd, true) : (num(t.r) != null ? num(t.r).toFixed(1) + 'R' : '?')}${t.exit ? ' (' + (why[String(t.exit).toUpperCase()] || String(t.exit).toLowerCase()) + ')' : ''}${t.src === 'paper' ? ', paper' : ''}.`);
   if (per.length) lines.push(`P&L ${week ? 'this week' : 'today'}: ${per.join(', ')}.`);
   const vd = isObj(L.verdict) && L.verdict.label ? txt(L.verdict.label, 80) : '';
   if (vd) lines.push(`Bots now: ${vd}.`);
@@ -274,22 +292,25 @@ A.kalshi = async (deps, nowD) => {
   const L = await freshLive(deps), lines = [];
   if (deps.refreshKalshi) { try { await Promise.race([deps.refreshKalshi(), new Promise((ok) => setTimeout(ok, 5000))]); } catch (_) { /* offline */ } }
   let kj = null; try { kj = deps.kalshiView ? deps.kalshiView() : null; } catch (_) { kj = null; }
-  const kl = L && isObj(L.klive) ? L.klive : null, kp = L && isObj(L.kpaper) ? L.kpaper : null, k8 = isObj(kj) && isObj(kj.k8) ? kj.k8 : null;
-  if (kl) {
+  // the PC report's K8 card (kalshi_live: st paper | live | paused | stopped | idle, with its k8 block); data.js's klive drops 'paper', so the raw post
+  let kr = L && isObj(L.raw) && isObj(L.raw.kalshi_live) ? L.raw.kalshi_live : null;
+  if (kr) keep(deps, 'k8card', kr); else { const k = kept(deps, 'k8card'); kr = k ? { ...k.j, savedAt: k.at } : null; }
+  const kl = L && isObj(L.klive) ? L.klive : null, kp = L && isObj(L.kpaper) ? L.kpaper : null;
+  const k8 = kr && isObj(kr.k8) ? kr.k8 : isObj(kj) && isObj(kj.k8) ? kj.k8 : null;
+  const mode = kr ? (kr.st === 'paper' || (k8 && k8.m === 'P') ? 'paper' : kr.st) : kl ? kl.st : '';
+  if (k8) {
+    const td = arr(k8.td), wr = arr(k8.wr), nx = num(k8.nx);
+    lines.push(mode === 'paper' ? 'Kalshi K8 is on PAPER: practice bets, no real money.' : mode === 'live' ? 'Kalshi K8 is LIVE with real money.' : `Kalshi K8 is ${mode || 'on'}.`);
+    if (td.length >= 3) lines.push(`Today: ${plural(num(td[0]) || 0, 'bet')}, ${num(td[1]) || 0} won, ${usd2(td[2])}.`);
+    if (wr.length >= 2) lines.push(`So far: ${plural(num(wr[0]) || 0, 'bet')}, ${Math.round(num(wr[1]) || 0)}% won${k8.l ? ` (last: ${txt(k8.l, 12)})` : ''}.`);
+    if (num(k8.b) != null) lines.push(`Bankroll ${usd(k8.b)}, ${usd2(k8.s).replace('+', '')} a bet${nx ? `; next window ${whenText(nx, nowD)}` : ''}.`);
+  } else if (kl) {
     const st = { live: 'LIVE', paused: 'paused', stopped: 'stopped', idle: 'on, waiting for its window' }[kl.st] || kl.st;
     lines.push(`K8 is ${st}${kl.net != null ? `: ${usd(kl.net, true)} so far` : ''}${kl.fills != null ? `, ${plural(kl.fills, 'fill')}` : ''}${kl.cap != null ? `, cap ${usd(kl.cap)}` : ''}${kl.stop != null ? `, stops at ${usd(-Math.abs(kl.stop))}` : ''}.${kl.why ? ' ' + kl.why + '.' : ''}`);
   }
-  if (k8) {
-    const td = arr(k8.td), wr = arr(k8.wr);
-    if (td.length >= 3) lines.push(`Today: ${plural(num(td[0]) || 0, 'bet')}, ${num(td[1]) || 0} won, ${usd(td[2], true)}.`);
-    if (wr.length >= 2) lines.push(`All time: ${plural(num(wr[0]) || 0, 'bet')}, ${Math.round(num(wr[1]) || 0)}% won.`);
-    if (num(k8.b) != null) lines.push(`Bankroll ${usd(k8.b)}${num(k8.s) != null ? `, ${usd(k8.s)} a bet` : ''}.`);
-  } else if (isObj(kj) && (num(kj.balance) != null || num(kj.today_pnl) != null)) {
-    lines.push(`Kalshi balance ${usd(kj.balance)}, today ${usd(kj.today_pnl, true)}.`);
-  }
-  if (kp && num(kp.net) != null && !kl) lines.push(`Paper tests on the PC: ${usd(kp.net, true)} so far (paper only, no real money).`);
-  if (!lines.length) lines.push('Kalshi has nothing new: real-money Kalshi is paused and no K8 card has come from the PC yet.');
-  return { text: lines.join('\n'), src: liveSrc(L, +nowD).replace('PC report', 'PC report (K8 card)') };
+  if (!k8 && !kl) return null;                                       // no K8 card: the brain answers from kalshi.json (balance, positions) or says it is not connected
+  const ksrc = !L && kr && kr.savedAt ? `Source: K8 card, saved copy from ${ageWords((+nowD - kr.savedAt) / 1000)} (offline).` : liveSrc(L, +nowD).replace('PC report', 'PC report (K8 card)');
+  return { text: lines.join('\n'), src: ksrc };
 };
 
 export async function answer(id, deps = {}, text = '') {
@@ -297,6 +318,7 @@ export async function answer(id, deps = {}, text = '') {
   if (!fn) return null;
   let r;
   try { r = await fn(deps, nowD, text); } catch (e) { r = { text: 'I could not read that just now. Try again in a moment.', src: 'Source: error reading the feeds.' }; }
+  if (!r) return null;                                               // not this module's question after all: the brain answers
   const text2 = `${r.text}\n${r.src}`;
   return { text: text2, speak: r.text, intent: 'biz_' + id, src: r.src, offline: /offline/.test(r.src || '') };
 }
