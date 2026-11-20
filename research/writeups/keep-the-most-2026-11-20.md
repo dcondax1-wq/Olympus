@@ -2,8 +2,8 @@
 title: Keep the most of every payout - taxes, the payout waterfall, and when to open a live account (2026-11-20)
 family: money
 date: 2026-11-20
-status: info - education, not tax advice. Federal 2026 + 2027 numbers checked on IRS.gov 2026-11-20; state unknown (two-column tables). Paper only, nothing live changed.
-summary: Owner 2026-11-20 "maximize on our money, how much we keep". Set aside 15-40% of each payout by the year's profit, day job and state (30% if unknown); 10% eval reserve until $320, 10% retirement (Roth IRA under $15k, Solo 401(k) from $15k), 20% live fund until $5,000, rest yours ($1,000 request = $800 landed -> $240 yours; $5,000 -> $1,280). Open a live futures account at $5,000 from payouts + 4 payouts received, 1 MNQ per bot (lose half in a year 0% 2026-like / 9% 2021-25-like); live gains are 60/40 with no SE tax ($30k: ~$0 federal with no job vs ~$5,180 as prop income). S-corp only from ~$50-60k steady profit (saves ~$1,300 at $60k, ~$2,500 at $100k). Built on taxes-2026-11-17.md. Page tools/web_public/business/taxes.html; math tools/money/keep_most.py -> research/lab/keep_most.json.
+status: info - education, not tax advice. Federal 2026 + 2027 numbers checked on IRS.gov 2026-11-20; MARYLAND (owner's state, lead 2026-11-20) checked on the Comptroller / SDAT / DOL sites the same day; county not known (range 2.25%-3.30%). Paper only, nothing live changed.
+summary: Owner 2026-11-20 "maximize on our money, how much we keep". Maryland: set aside 15-35% of each payout by the year's profit (30% for the expected ~$30-60k year), 35-45% with a day job; 10% eval reserve until $320, 10% retirement (Roth IRA under $15k, Solo 401(k) from $15k), 20% live fund until $5,000, rest yours ($1,000 request = $800 landed -> $240 yours; $5,000 -> $1,280). Open a live futures account at $5,000 from payouts + 4 payouts received, 1 MNQ per bot (lose half in a year 0% 2026-like / 9% 2021-25-like); live gains are 60/40 federally with no SE tax but ordinary in Maryland ($30k: ~$1,840 all Maryland vs ~$6,850 as prop income). S-corp only from ~$50-60k steady profit (Maryland break-even ~$49k; saves ~$1,460 at $60k, ~$2,580 at $100k). Built on taxes-2026-11-17.md. Page tools/web_public/business/taxes.html; math tools/money/keep_most.py -> research/lab/keep_most.json.
 runs: python -X utf8 tools/money/keep_most.py (~2 s); tests: python -X utf8 -m tests.test_business_taxes [--browser] (money area)
 ---
 
@@ -12,42 +12,61 @@ runs: python -X utf8 tools/money/keep_most.py (~2 s); tests: python -X utf8 -m t
 **Education, not tax advice.** General US federal rules for a single filer, checked on IRS.gov on 2026-11-20. Where the
 law is unsettled it says so and uses the safe default. The base (how payouts are taxed, deductions, records, VITA) is
 `research/writeups/taxes-2026-11-17.md`; this note adds the money plan on top. Owner's state and job status are unknown:
-every state-dependent number is shown for a no-income-tax state and a typical flat 5% state.
+**Maryland** (lead, 2026-11-20: the owner lives there; nothing more specific is stored). The county is not known, so
+county-dependent $ are a range: 2.25% (lowest, Worcester) to 3.30% (highest, Dorchester / Kent); the % uses the highest.
 
 ## For the owner
 
 | What | Result |
 |---|---|
-| Tax pot per payout | **30% until you tell me your state and whether you have a day job.** Then 15-40% (table 1) |
+| Tax pot per payout (Maryland) | **30%** for the expected year (~$30-60k, no day job); **40%** with a day job (table 1) |
 | The day a payout lands | 30% tax pot, 10% eval reserve (until $320), 10% retirement, 20% live fund (until $5,000), rest yours |
 | First ATLAS payout ($1,000 asked = $800 landed) | $240 tax, $80 reserve, $80 retirement, $160 live fund, **$240 yours** |
 | A $5,000 request ($4,000 landed) | $1,200 tax, $320 reserve, $400 retirement, $800 live fund, **$1,280 yours** |
 | Retirement | Under $15k a year: Roth IRA. From $15k: free Solo 401(k) (Roth while in the 12% bracket) |
-| S-corp | Not yet. Worth asking a CPA at about $60k+ steady profit (saves ~$1,300 at $60k, ~$2,500 at $100k) |
+| S-corp | Not yet. Worth asking a CPA at about $60k+ steady profit (Maryland: ~$1,460 at $60k, ~$2,580 at $100k) |
 | Live futures account | Open at **$5,000 in the live fund + 4 payouts received**, 1 MNQ per bot, stop at $2,500 |
-| Why live is worth it later | Own futures gains = 60/40, no 15.3% SE tax: $30k gains ~ $0 federal vs ~$5,180 as prop payouts (no other job) |
+| Why live is worth it later | Own futures gains = 60/40 federally, no 15.3% SE tax: $30k gains ~$1,840 (all Maryland) vs ~$6,850 as prop payouts (no other job) |
 
 ## 1. The tax money plan
 
-### How much each payout costs in tax (2026; 2027 within 0.5 point)
-Federal income tax + self-employment tax, single, standard deduction, **QBI left out on purpose** (safe default: whether a
-prop payout is QBI from a "specified service" is not settled; below $201,750 taxable income (2026; $208,300 in 2027) an
-SSTB gets the full deduction anyway, so if it applies you get 2-5 points back at filing). Profit = payouts minus fees.
+### How much each payout costs in tax - Maryland, 2026 (2027 within 1 point)
+Federal income tax + self-employment tax + Maryland state + county tax, single, standard deductions, **QBI left out on
+purpose** (safe default: whether a prop payout is QBI from a "specified service" is not settled; below $201,750 taxable
+income (2026; $208,300 in 2027) an SSTB gets the full deduction anyway, so if it applies you get 2-5 points back at filing).
+Profit = payouts minus fees. $ range = county 2.25% to 3.30%.
 
-| Profit a year (after fees) | Only trading: no-tax state / 5% state | + $50k day job: no-tax state / 5% state | Pot % (rounded up) |
-|---|---|---|---|
-| $5,000 | $706 (14.1%) / $706 | $1,264 (25.3%) / $1,496 (29.9%) | 15 / 30 |
-| $15,000 | $2,119 (14.1%) / $2,119 | $3,792 (25.3%) / $4,489 (29.9%) | 15 / 30 |
-| $30,000 | $5,417 (18.1%) / $6,006 (20.0%) | $8,723 (29.1%) / $10,117 (33.7%) | 20 / 30-35 |
-| $60,000 | $12,989 (21.6%) / $14,972 (25.0%) | $19,095 (31.8%) / $21,883 (36.5%) | 25 / 35-40 |
-| $100,000 | $25,745 (25.7%) / $29,587 (29.6%) | $33,348 (33.3%) / $37,995 (38.0%) | 30 / 35-40 |
+| Profit a year (after fees) | Only trading | Pot % | + $50k day job | Pot % |
+|---|---|---|---|---|
+| $5,000 | $706 (14.1%) | 15 | $1,589 - $1,638 (31.8 - 32.8%) | 35 |
+| $15,000 | $2,584 - $2,662 (17.2 - 17.7%) | 20 | $4,768 - $4,914 (31.8 - 32.8%) | 35 |
+| $30,000 | $6,858 - $7,082 (22.9 - 23.6%) | 25 | $10,674 - $10,967 (35.6 - 36.6%) | 40 |
+| $60,000 | $16,381 - $16,898 (27.3 - 28.2%) | 30 | $23,112 - $23,715 (38.5 - 39.5%) | 40 |
+| $100,000 | $31,740 - $32,647 (31.7 - 32.6%) | 35 | $40,153 - $41,154 (40.2 - 41.2%) | 45 |
 
 SE tax is 15.3% on 92.35% of profit (12.4% only up to the Social Security base: $184,500 in 2026, $192,300 in 2027).
-The 5% state is modelled as 5% of (AGI minus the federal standard deduction); real states differ.
+Maryland model (keep_most.md_tax): Maryland starts from federal AGI; standard deduction $3,350 flat; personal exemption
+$3,200 (AGI <= $100k; $1,600 to $125k, $800 to $150k, $0 above); state brackets 2% / 3% / 4% to $3,000, 4.75% to
+$100,000, 5% / 5.25% / 5.5% / 5.75% to $125k / $150k / $250k / $500k, 6.25% to $1M, 6.5% above (2025 law, HB 352); county
+tax on the same base. Anne Arundel and Frederick use banded county rates (the range covers them).
 
-**The rule kept from Nov 17: 30% of every payout.** It covers every case up to ~$30k a year and every no-job case up to
-$100k; with a day job in an income-tax state above $30k a year, go to 35-40%. The pot over-holds by ~30% of every fee
-(money_book.tax_true_up): keep the overage until the quarter's estimate is paid.
+**The 30% rule from Nov 17 still fits** the expected year (fleet plan ~$40k a year, no day job: 25-30%). With a day job it
+must be **40%**. The pot over-holds by ~35% of every fee (money_book.tax_true_up): keep the overage until the quarter's
+estimates are paid.
+
+### Maryland specifics (checked 2026-11-20)
+| Item | Rule | Source |
+|---|---|---|
+| Schedule C income | same state + county rates; no Maryland self-employment tax | 2026 PV worksheet (starts from federal AGI) |
+| Estimated tax | Form 502D / PV voucher or online; Apr 15, Jun 15, Sep 15, Jan 15 (same as IRS); required when tax due over withholding > $500 | 2026 PV worksheet |
+| No-penalty rule | **110% of last year's Maryland tax or 90% of this year's** (no income tier, unlike the IRS 100% / 110%); interest ~0.90% a month | PV worksheet, Form 502UP |
+| 60/40 futures | no lower capital-gains rate: taxed as ordinary state + county income | TB-58 |
+| 2% capital-gains surcharge | on net capital gain when federal AGI > $350,000 (from 2025). Unsettled for 1256: TB-58 uses the federal definition (only the 60% long part) but Form 502CG line 1 takes total capital gain - safe default: the full gain | TB-58, Form 502CG |
+| Retirement / HSA | traditional Solo 401(k), SEP, IRA, HSA deductions carry into Maryland (it starts from federal AGI) | PV worksheet |
+| LLC | $100 articles + **$300 annual report every Apr 15** (Form 1), owed even with no income | SDAT fees |
+| S-corp | follows the federal S election; same $300 report; optional pass-through entity tax 8.75% for individuals (Form 511) | Comptroller Tax Alert, PTE booklet |
+| Unemployment tax (S-corp salary) | new employer 1.0% - 2.6% of the first $8,500 (max ~$221) | MD Labor |
+| Pending | HB 411 (2026) would raise the standard deduction to $4,100; the Comptroller's 2026 worksheet still says $3,350 (used here) | - |
 
 ### Deductions (Schedule C) and the record for each
 | Cost | 2026-27 amount for this business | Record to keep |
@@ -67,7 +86,7 @@ paid before the business "starts" can be start-up costs instead - a preparer dec
 - Due dates for 2026 tax: Apr 15, Jun 15, Sep 15, 2026, **Jan 15, 2027** (IRS Form 1040-ES 2026). For 2027 tax (the usual
   schedule; the 2027 1040-ES is not posted yet): Apr 15, Jun 15, Sep 15, 2027, Jan 18, 2028 (Jan 15 is a Saturday, then MLK Day).
 - Safe harbor (Pub 505): no penalty if what you paid on time is at least **90% of this year's tax or 100% of last year's**
-  (**110%** if last year's AGI was over $150,000).
+  (**110%** if last year's AGI was over $150,000). **Maryland: 110% of last year's or 90% of this year's**, always.
 - **Biggest free win for 2027:** the first real payouts are in 2027. If his 2026 total tax is $0 (a full year), there is
   **no 2027 underpayment penalty at all**; if he had tax in 2026 (a day job), paying 100% of the 2026 tax in four parts
   (or raising W-4 withholding at the job, which counts as paid evenly through the year) makes any 2027 size penalty-free.
@@ -81,10 +100,10 @@ paid before the business "starts" can be start-up costs instead - a preparer dec
 | Any | Separate tax-pot savings; save every receipt; write down business % | ~15-30% of every fee back |
 | Under $15,000 | **Roth IRA** ($7,500 a year 2026 and 2027, +$1,100 at 50+); income tax is ~$0 so a deduction saves nothing | traditional would save $0 here (no job) |
 | $15,000 - $30,000 | Free **Solo 401(k)** (Fidelity / Schwab / E*TRADE, no fee). Roth while in the 10-12% bracket | up to ~93% of profit can go in ($27,881 at $30k) |
-| $30,000 - $60,000 | Solo 401(k), traditional on the part taxed at 22% | 10% of $60k in saves $576 ($1,056 with a day job); maxed $3,239 |
+| $30,000 - $60,000 | Solo 401(k), traditional on the part taxed at 22% | 10% of $60k in saves $1,059 federal + Maryland ($1,670 with a day job); maxed $6,073 |
 | HSA (any level) | only with a high-deductible health plan (2026 min deductible $1,700 single); $4,400 / $4,500 (2026 / 2027) | deduction + tax-free growth |
-| ~$60,000+, steady 12 months | CPA + **S-corp** election | break-even ~$51,000; +$1,270 at $60k, +$2,144 at $80k, +$2,506 at $100k, +$4,226 at $150k |
-| LLC | liability only; a one-member LLC is taxed exactly like now (IRS "single member LLC") | $0 tax change; state fee $50-$800 a year |
+| ~$60,000+, steady 12 months | CPA + **S-corp** election | Maryland break-even ~$49,000; +$1,464 at $60k, +$2,270 at $80k, +$2,580 at $100k, +$4,152 at $150k |
+| LLC | liability only; a one-member LLC is taxed exactly like now (IRS "single member LLC") | $0 tax change; Maryland $100 + $300 a year |
 
 Retirement limits (IRS Notice 2025-67 / 2026-66): 401(k) employee deferral **$24,500 (2026) / $25,500 (2027)**, catch-up
 50+ $8,000 / $8,500 (60-63: $11,250 / $11,750), total additions **$72,000 / $75,000**; a sole proprietor's employer share
@@ -97,8 +116,8 @@ be taxed at 22%+. Traditional money also lowers AGI, which raises ACA marketplac
 
 S-corp model (keep_most.scorp): salary = the larger of $30,000 or 50% of profit (IRS: a "reasonable salary" is required;
 distributions can be reclassified as wages), 15.3% payroll tax on the salary, QBI shrinks (salary is not QBI), extra costs
-$600 payroll service + $1,000 extra return + $420 unemployment tax + $300 state fee = $2,320 a year (California: $800
-minimum franchise tax; check the state). **Unsettled / check first:** whether MFFU (and Rise) will pay a business (W-9
+$600 payroll service + $1,000 extra return + $221 Maryland unemployment tax (2.6% of $8,500) + $300 SDAT report = $2,121 a
+year; Maryland state + county tax is the same on salary and K-1 income (in the model on both sides). **Unsettled / check first:** whether MFFU (and Rise) will pay a business (W-9
 with an EIN) rather than the person on the account - if not, the S-corp cannot receive the payouts. Safe default: stay a
 sole proprietor until a CPA confirms both.
 
@@ -118,15 +137,16 @@ QBI. It lowers income tax only. Prop payouts as QBI: likely, not certain (safe d
 | Margin | none | 1 MNQ $100 intraday at NinjaTrader / AMP ($1,000 NQ); overnight ~$4,600 MNQ / ~$46,000 NQ (checked 2026-11-20) |
 | PDT rule | n/a | never applied to futures (FINRA's rule was for securities margin accounts and is being retired: Notice 26-10) |
 
-Tax on the same $ (federal, single; keep_most.compare_1256; QBI on for prop):
+Tax on the same $ (federal + Maryland at the highest county rate 3.30%, single; keep_most.compare_1256; QBI on for prop):
 | $ a year | Prop, no job | Live 60/40, no job | Prop + $50k job | Live 60/40 + $50k job |
 |---|---|---|---|---|
-| $15,000 | $2,119 | $0 | $3,458 | $720 |
-| $30,000 | $5,181 | $0 | $7,496 | $3,608 |
-| $60,000 | $12,037 | $790 | $16,642 | $9,030 |
-| $100,000 | $22,365 | $7,788 | $28,887 | $16,150 |
-(60% of the gain at the long-term rate - 0% up to $49,450 taxable in 2026, $51,050 in 2027 - and 40% ordinary; NIIT 3.8%
-above $200k MAGI; most states tax it as ordinary income.)
+| $15,000 | $2,662 | $628 | $4,580 | $1,928 |
+| $30,000 | $6,846 | $1,835 | $9,740 | $6,022 |
+| $60,000 | $15,946 | $5,040 | $21,261 | $14,001 |
+| $100,000 | $29,266 | $15,258 | $36,693 | $24,560 |
+(Federal: 60% of the gain at the long-term rate - 0% up to $49,450 taxable in 2026, $51,050 in 2027 - and 40% ordinary;
+NIIT 3.8% above $200k MAGI. Maryland: all of it at ordinary state + county rates; the 2% surcharge only above $350k AGI.
+At $30k with no job the whole $1,835 is Maryland tax.)
 
 ### Sizing the live account - risk of ruin at 1 MNQ (the repo's real trades)
 Trades: research/anatomy (costs in), $ per 1 micro. Week-block bootstrap, 52 weeks, 4,000 paths; "lose half" = the balance
@@ -172,7 +192,7 @@ Then: pay the pot to the IRS by the next 1040-ES date (Jan 15, 2027 for anything
 ## 5. On the phone
 `tools/web_public/business/taxes.html`: the calculator (type the payout, pick your year, tick day job / state -> the %,
 the five buckets in $ and the next due date), the set-aside table, "Never pay a penalty", the ladder, "When to open a live
-account", "Tell Claude your state". 390 px, CLS 0, no sideways scroll at 320 px, textContent only. Shots in
+account", "Your state: Maryland" (tell Claude your county). 390 px, CLS 0, no sideways scroll at 320 px, textContent only. Shots in
 research/handoff/2026-11-20/taxes/. (The business pages render in the AGORA dark look; a saved light theme does not change
 them, same as the other business pages.)
 
@@ -191,3 +211,9 @@ them, same as the other business pages.)
 - Margins: NinjaTrader https://ninjatrader.com/pricing/margins/ (table dated 2026-08-31), AMP https://www.ampfutures.com/trading-info/margins ; CME page unavailable (503) on 2026-11-20
 - FINRA Regulatory Notice 26-10 (PDT rule replaced; securities only): https://www.finra.org/rules-guidance/notices/26-10
 - MFFU rules: research/lit/mffu_rules.json (help center, checked 2026-11-17)
+- Maryland 2026 PV worksheet (rates, deduction, exemption, dates, 110% / 90%): https://www.marylandcomptroller.gov/content/dam/mdcomp/tax/forms/worksheets/2026-pv-worksheet.pdf
+- Maryland Tax Alert, 2025 session changes (rev. 12/22/2025): https://www.marylandcomptroller.gov/content/dam/mdcomp/tax/legal-publications/alerts/tax-alert-changes-to-standard-and-itemized-deductions-and-to-state-and-local-income-tax-rates-from-the-2025-legislative-session.pdf
+- Maryland TB-58 (capital gains, 2% surcharge): https://www.marylandcomptroller.gov/content/dam/mdcomp/tax/legal-publications/technical-bulletins/tb-58.pdf ; Form 502CG: https://www.marylandcomptroller.gov/content/dam/mdcomp/tax/forms/2025/502cg.pdf
+- Maryland 2026 county rates: https://www.marylandcomptroller.gov/content/dam/mdcomp/md/state-payroll/memos/2026/2026-maryland-state-and-local-withholding-information.pdf
+- Maryland Form 502UP (underpayment interest): https://www.marylandcomptroller.gov/content/dam/mdcomp/tax/forms/2025/502up.pdf
+- SDAT fees: https://dat.maryland.gov/businesses/Documents/FEES.pdf ; MD Labor UI rates: https://www.labor.maryland.gov/unemployment-insurance/employer-agent/tax-rate.shtml

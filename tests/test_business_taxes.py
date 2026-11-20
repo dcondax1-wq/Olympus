@@ -153,10 +153,10 @@ def part_e():
     m = K.md_tax(30000 - 2119.5, 0.032)
     check("e. Maryland on $27,880 AGI, county 3.20%: state $961 + county $683 (std $3,350, exemption $3,200)", abs(m - 1643.3) < 1, m)
     f2 = K.s1256(30000, 0, 2026, K.MD_HIGH)
-    check("e. Maryland taxes 60/40 futures gains as ordinary income: $30,000 -> ~$1,812 (state + county), $0 federal", 1700 < f2["total"] < 1900, f2)
+    check("e. Maryland taxes 60/40 futures gains as ordinary income: $30,000 -> ~$1,835 (state + county 3.30%), $0 federal", 1700 < f2["total"] < 1900, f2)
     w = K.waterfall(800)
     check("e. waterfall($800) = 240 / 80 / 80 / 160 / 240", (w["tax_pot"], w["eval_reserve"], w["retirement"], w["live_fund"], w["yours"]) == (240, 80, 80, 160, 240), w)
-    check("e. S-corp break-even near $50,000 profit", 40000 <= K.scorp_break_even() <= 60000, K.scorp_break_even())
+    check("e. S-corp break-even near $49,000 profit (Maryland)", 40000 <= K.scorp_break_even() <= 60000, K.scorp_break_even())
 
 
 class Quiet(http.server.SimpleHTTPRequestHandler):

@@ -56,7 +56,7 @@
   }
 
   // keep-the-most (2026-11-20, tools/money/keep_most.py -> research/lab/keep_most.json): the set-aside % in MARYLAND
-  // (federal + SE + state + the highest county rate, 3.20%) by the year's profit after fees, rounded UP to the next 5,
+  // (federal + SE + state + the highest county rate, 3.30%) by the year's profit after fees, rounded UP to the next 5,
   // safe default = no QBI. [up to $ a year, only trading, + a $50k day job]
   const POT_TABLE = [[5000, 15, 35], [15000, 20, 35], [30000, 25, 40], [60000, 30, 40], [Infinity, 35, 45]];
   function potPct(yearProfit, dayJob) {
@@ -100,7 +100,7 @@
     $('wfPot').textContent = usd(w.pot); $('wfRes').textContent = usd(w.reserve); $('wfRet').textContent = usd(w.retire);
     $('wfLive').textContent = usd(w.live); $('wfYours').textContent = usd(w.yours);
     const d = dueDates(new Date(), 1)[0];
-    if (d && $('wfDue')) $('wfDue').textContent = 'Pay the ' + usd(w.pot) + ' tax pot to the IRS by ' + fmtDate(d.due) + ' (1040-ES, ' + d.period + ').';
+    if (d && $('wfDue')) $('wfDue').textContent = 'Pay the ' + usd(w.pot) + ' tax pot to the IRS and Maryland by ' + fmtDate(d.due) + ' (1040-ES, ' + d.period + ').';
   }
   function suggest() {
     const y = $('year'), j = $('job'); if (!y || !$('pct')) return;

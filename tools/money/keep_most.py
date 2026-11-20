@@ -62,8 +62,8 @@ MD = {
     "std": 3350.0,
     "exemption": [(100000, 3200.0), (125000, 1600.0), (150000, 800.0), (None, 0.0)],   # by federal AGI, single
     "cg_surcharge": 0.02, "cg_surcharge_at": 350000.0,
-    "local_low": 0.0225, "local_high": 0.032,
-    "src": "Maryland Comptroller (marylandtaxes.gov) 2026 rates + HB 352 (2025)",
+    "local_low": 0.0225, "local_high": 0.033,
+    "src": "Maryland Comptroller 2026 PV worksheet, Tax Alert rev. 12/22/2025, TB-58, 2026 withholding memo (county 2.25% Worcester - 3.30% Dorchester, Kent); HB 352 (2025)",
 }
 
 
@@ -93,8 +93,8 @@ def state_tax(state, agi, y, cap_gain=0.0):
 
 LEVELS = [5000, 15000, 30000, 60000, 100000]
 DAY_JOB = 50000.0          # the "with a day job" case: $50,000 W-2 wages
-STATE = {"Maryland, county 2.25%": ("MD", 0.0225), "Maryland, county 3.20%": ("MD", 0.032)}
-MD_LOW, MD_HIGH = STATE["Maryland, county 2.25%"], STATE["Maryland, county 3.20%"]
+STATE = {"Maryland, county 2.25%": ("MD", 0.0225), "Maryland, county 3.30%": ("MD", 0.033)}
+MD_LOW, MD_HIGH = STATE["Maryland, county 2.25%"], STATE["Maryland, county 3.30%"]
 
 
 def bracket_tax(taxable, y):
@@ -186,7 +186,7 @@ def retire_saving(profit, put_in, wages=0.0, state=0.0, y=2026):
 
 
 SCORP_COSTS = {"payroll_service": 600.0, "extra_return_prep": 1000.0, "state_fees_low": 100.0, "state_fees_high": 800.0,
-               "unemployment_tax": 420.0}
+               "unemployment_tax": 221.0}
 
 
 def scorp(profit, salary_share=0.5, min_salary=30000.0, state_fee=300.0, y=2026, state=None):
