@@ -420,12 +420,12 @@ def part_a():
           and "env(safe-area-inset-left" in css and "env(safe-area-inset-bottom" in css and "viewport-fit=cover" in html
           and "@media (prefers-reduced-motion: no-preference)" in css and "animation:" not in pre)
     agora = css
-    check("a. its own look: the AGORA tokens underneath, then the owner's 2026-11-20 terminal layer on top (navy #070b14, violet #a78bfa lead, no gold), no neon green, no HUD clip",
+    check("a. its own look: the AGORA tokens underneath, then OLYMPUS NIGHT on top (owner 2026-11-20: black, violet #9d59ee, lavender, gold only as small accents, no cyan), no neon green, no HUD clip",
           ':root, :root[data-theme="kalshi"]' in css and "--bg: var(--oly-th-n3, #14110e);" in css and "--c: var(--oly-th-a8, #c8a24a);" in css and "--cy: var(--oly-th-info, #4b7a99);" in css
           and "#1fe5a6" not in css + agora and "#38e1ff" not in css + agora and "clip-path" not in css + agora
-          and "AGORA layer" in css and "Olympus 2 FX" in css and "--c: #a78bfa;" in css and "--bg: #070b14;" in css)
+          and "AGORA layer" in css and "OLYMPUS NIGHT" in css and "--c: #9d59ee;" in css and "--bg: #000000;" in css and "#22d3ee" not in css)
     check("a. its own top colour = its background (Jarvis's status-bar strip takes it); the theme set before paint, never Jarvis's 'jtheme'",
-          '<meta name="theme-color" content="#070b14">' in html and "d.setAttribute('data-theme', 'kalshi')" in html
+          '<meta name="theme-color" content="#000000">' in html and "d.setAttribute('data-theme', 'kalshi')" in html
           and html.index("data-theme', 'kalshi'") < html.index('href="kalshi.css') and "jtheme" not in html + js)
     check("a. its own header: a column mark and the plain name Kalshi; no ticker tape, no aurora, no 3D orb",
           'class="mark"' in html and "<h1>Kalshi</h1>" in html and 'id="tape"' not in html and 'class="aurora"' not in html and "korb.js" not in html)
@@ -605,8 +605,8 @@ def run_browser(url, tmp):
         rb, rtr = realbot(time.time())
         open_("ok", rb)
         body = p.locator("#body").text_content()
-        check("d. LIVE · real money: a calm badge (the terminal violet / green, not red)", " ".join(p.locator("#mode").text_content().split()) == "LIVE · real money"
-              and p.evaluate("getComputedStyle(document.getElementById('mode')).color") in ("rgb(196, 181, 253)", "rgb(167, 139, 250)", "rgb(34, 197, 94)"), (p.inner_text("#mode"), p.evaluate("getComputedStyle(document.getElementById('mode')).color")))
+        check("d. LIVE · real money: a calm badge (OLYMPUS NIGHT lavender / violet / mint / gold, not red)", " ".join(p.locator("#mode").text_content().split()) == "LIVE · real money"
+              and p.evaluate("getComputedStyle(document.getElementById('mode')).color") in ("rgb(218, 203, 240)", "rgb(157, 89, 238)", "rgb(119, 219, 137)", "rgb(241, 193, 75)"), (p.inner_text("#mode"), p.evaluate("getComputedStyle(document.getElementById('mode')).color")))
         today = dt.datetime.now(NY).date().isoformat()
         tw = sum(1 for x in rtr if x["pnl"] is not None and x["pnl"] > 0 and et_day(x["t"]) == today)
         tl = sum(1 for x in rtr if x["pnl"] is not None and x["pnl"] < 0 and et_day(x["t"]) == today)
@@ -922,13 +922,13 @@ def run_browser(url, tmp):
         open_("ok", sample(time.time()))
         acc = lambda: p.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--c').trim()")  # noqa: E731
         bg = lambda: p.evaluate("getComputedStyle(document.body).backgroundColor")  # noqa: E731
-        check("h. the Kalshi theme (the terminal violet #a78bfa, owner 2026-11-20: no gold) on its navy background", p.get_attribute("html", "data-theme") == "kalshi"
-              and acc() == "#a78bfa" and bg() == "rgb(7, 11, 20)", (acc(), bg()))
+        check("h. the Kalshi theme (OLYMPUS NIGHT violet #9d59ee) on its black background", p.get_attribute("html", "data-theme") == "kalshi"
+              and acc() == "#9d59ee" and bg() == "rgb(0, 0, 0)", (acc(), bg()))
         for val in ("reactor", '"reactor-ice"', "eclipse"):
             p.evaluate(f"localStorage.setItem('jtheme', {json.dumps(val)})")
             p.reload()
             ready(p)
-            check(f"h. Jarvis's jtheme {val} leaves it as it is", p.get_attribute("html", "data-theme") == "kalshi" and acc() == "#a78bfa")
+            check(f"h. Jarvis's jtheme {val} leaves it as it is", p.get_attribute("html", "data-theme") == "kalshi" and acc() == "#9d59ee")
         p.evaluate("localStorage.removeItem('jtheme')")
 
         # ---- v3. alerts, live edge, Kelly, by market, by price, calibration (contract v3, 2026-11-03)
@@ -1061,7 +1061,7 @@ def run_browser(url, tmp):
             const a = [r.getPropertyValue('--c').trim(), r.getPropertyValue('--cr').trim(), r.getPropertyValue('--cy').trim(), JSON.stringify(o)];
             window.applyTheme(null); return a.concat([getComputedStyle(document.documentElement).getPropertyValue('--c').trim()]); }""")
         check("x. applyTheme(tokens): hex colours only (a CSS-looking value is dropped), null = the Kalshi colours again",
-              th[0] == "#ff00aa" and th[1] == "255,0,170" and th[2] == "#4b7a99" and "accent2" not in th[3] and th[4] == "#a78bfa", th)
+              th[0] == "#ff00aa" and th[1] == "255,0,170" and th[2] == "#4b7a99" and "accent2" not in th[3] and th[4] == "#9d59ee", th)
         check("x. the header mark is the plain SVG column: no 3D orb canvas (AGORA)", p.evaluate("!document.querySelector('canvas.orb') && !!document.querySelector('.mark svg')"))
         # a v2 feed: the same sections from the recent trades list, said so; no alerts list -> a losing run is found
         lose = [{"t": n3 - 600 * i, "ticker": f"KXHYPE15M-X{i}", "title": "HYPE up or down", "side": "yes", "action": "buy", "contracts": 10,

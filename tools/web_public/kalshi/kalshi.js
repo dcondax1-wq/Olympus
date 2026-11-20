@@ -1633,7 +1633,7 @@
   // ---- K8 FX (Olympus 2 FX): the orb hero, the $ roll-up, a win spark / a calm loss toast. Loaded after load + idle; reduced motion = still.
   const FXK = { on: false, nq: null, raf: 0, t0: 0, seen: null, vis: true, pn: null };
   const fxStill = () => { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (_) { return false; } };
-  const FXC = { w: '#22c55e', l: '#f43f5e', o: '#22d3ee', p: '#8b5cf6', sk: '#64748b' };
+  const FXC = { w: '#77db89', l: '#ef4444', o: '#dacbf0', p: '#9d59ee', sk: '#6b6478' };   // OLYMPUS NIGHT
   function k8FxDraw(t) {
     const cv = $('#k8fx-c'), host = $('#k8fx');
     if (!cv || !host) return;
@@ -1645,12 +1645,12 @@
     g.clearRect(0, 0, W, H);
     const cx = W / 2, cy = H / 2 + 4, rx = Math.min(W * 0.36, 150), ry = H * 0.26, legs = (K8T.legs && K8T.legs.length ? K8T.legs : [{ s: 'p' }, { s: 'p' }, { s: 'p' }]);
     // the orbit ring (a tilted ellipse) + a faint grid floor
-    g.strokeStyle = 'rgba(34,211,238,.22)'; g.lineWidth = 1; g.beginPath(); g.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2); g.stroke();
-    g.strokeStyle = 'rgba(139,92,246,.14)'; g.beginPath(); g.ellipse(cx, cy, rx * 0.62, ry * 0.62, 0, 0, Math.PI * 2); g.stroke();
+    g.strokeStyle = 'rgba(157,89,238,.30)'; g.lineWidth = 1; g.beginPath(); g.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2); g.stroke();
+    g.strokeStyle = 'rgba(218,203,240,.12)'; g.beginPath(); g.ellipse(cx, cy, rx * 0.62, ry * 0.62, 0, 0, Math.PI * 2); g.stroke();
     // sparks drifting up (seeded, so a still frame is the same each time)
     for (let i = 0; i < 26; i++) {
       const a = (i * 137.5) % 360, x = cx + Math.cos(a) * rx * (0.3 + (i % 7) / 9), life = ((t / 4200) + i / 26) % 1, y = cy + ry - life * H * 0.9;
-      g.fillStyle = `rgba(${i % 3 ? '34,211,238' : '139,92,246'},${(0.5 * (1 - life)).toFixed(3)})`; g.beginPath(); g.arc(x, y, 1.2 + (i % 3) * 0.4, 0, Math.PI * 2); g.fill();
+      g.fillStyle = `rgba(${i % 5 === 0 ? '241,193,75' : i % 3 ? '157,89,238' : '218,203,240'},${(0.5 * (1 - life)).toFixed(3)})`; g.beginPath(); g.arc(x, y, 1.2 + (i % 3) * 0.4, 0, Math.PI * 2); g.fill();
     }
     // the 3 orbs on the orbit, depth-sorted, bigger + brighter in front
     const orbs = legs.map((L, i) => { const a = t / 5200 + i * (Math.PI * 2 / legs.length); return { L, x: cx + Math.cos(a) * rx, y: cy + Math.sin(a) * ry, z: Math.sin(a) }; }).sort((u, v) => u.z - v.z);
@@ -1676,7 +1676,7 @@
   }
   async function k8FxKit() {
     try { FXK.nq = await window.OLYMPUS_NQFX.ready() ? window.OLYMPUS_NQFX : null; } catch (_) { FXK.nq = null; }
-    if (FXK.nq) { try { FXK.nq.theme({ base: '#070b14', cyan: '#22d3ee', blue: '#3b82f6', violet: '#8b5cf6', win: '#22c55e', loss: '#f43f5e' }); } catch (_) { /* default look */ } }
+    if (FXK.nq) { try { FXK.nq.theme({ base: '#000000', cyan: '#9d59ee', cyanHi: '#dacbf0', blue: '#4d2e76', violet: '#9d59ee', win: '#77db89', loss: '#ef4444' }); } catch (_) { /* default look */ } }
     k8FxNews();
   }
   function k8FxNews() {                            // a still frame for reduced motion; the $ roll-up; a spark for a new win, a calm toast for a new loss

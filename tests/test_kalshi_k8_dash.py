@@ -40,8 +40,8 @@ def part_static():
     check("a. the old K8 card ids stay (#k8s, #k8s-g, #k8s-x, #k8s-cd, #k8s-m) and the new parts have their own (#k8s-w windows, #k8s-y price / log / health)",
           all(f'id="{i}"' in html for i in ("k8s", "k8s-g", "k8s-x", "k8s-cd", "k8s-m", "k8s-w", "k8s-y")))
     v = re.findall(r'kalshi\.(?:css|js)\?v=(\w+)', html)
-    check("a. kalshi.css and kalshi.js carry the same ?v= (k55); the worker's CACHE / SHELL are the lead's (research/handoff/2026-11-20/kalshi/LEAD_WIRES_dashboard.md)",
-          v == ["k55", "k55"], v)
+    check("a. kalshi.css and kalshi.js carry the same ?v= (k56); the worker's CACHE / SHELL are the lead's (research/handoff/2026-11-20/kalshi/LEAD_WIRES_dashboard.md)",
+          v == ["k56", "k56"], v)
     code = re.sub(r"//[^\n]*", "", re.sub(r"/\*.*?\*/", "", js, flags=re.S))
     risky = [w for w in ("(?<=", "(?<!", ".toSorted(", ".findLast(", "AbortSignal.timeout", "structuredClone", ".at(-") if w in code]
     check("a. Safari 16 safe (no lookbehind, findLast, AbortSignal.timeout, .at(-1))", not risky, risky)

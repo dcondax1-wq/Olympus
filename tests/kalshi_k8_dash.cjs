@@ -248,7 +248,7 @@ const card = (st, k8, u) => ({ kind: 'kalshi_live_pub', v: 1, st, net: 0, f: 0, 
         bg: getComputedStyle(document.body).backgroundColor, role: h.getAttribute('role'), label: h.getAttribute('aria-label') }; });
     step('fx1. the orb hero sits right AFTER the K8 today card (140 px, kept from the first paint), runs after load (KALSHI_FX.on), draws (lit pixels), role img + a label',
       fx.on && fx.after && fx.h === 140 && fx.px > 200 && fx.role === 'img' && /K8/.test(fx.label), fx);
-    step('fx2. the terminal look: navy page, no gold on the K8 cards (borders / text / backgrounds)', !fx.gold && /rgb\(7, 11, 20\)/.test(fx.bg), fx);
+    step('fx2. OLYMPUS NIGHT: a black page, no gold on the K8 cards (borders / text / backgrounds; gold only as small accents)', !fx.gold && fx.bg.indexOf('rgb(0, 0, 0)') === 0, fx);
     await p.waitForTimeout(1600);
     const nq = await p.evaluate(() => ({ kit: !!window.OLYMPUS_NQFX, nq: !!(window.KALSHI_FX && window.KALSHI_FX.nq), seen: sessionStorage.getItem('kalshi.fx.seen'), pnl: document.getElementById('k8top-pnl').textContent }));
     step('fx3. the effects kit (olympus/nqfx.js) arrives after the hero; today\'s gold DOWN win gets its spark once (remembered for the visit); the $ line ends right after the roll',

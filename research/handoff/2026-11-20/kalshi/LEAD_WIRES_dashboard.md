@@ -47,3 +47,6 @@ Same one-liner with k54 (sed -E on CACHE + both SHELL entries), or `python tools
 
 ## Update 6 (Olympus 2 FX: terminal look + orb hero): kalshi.css / kalshi.js are now ?v=k55; theme-color #070b14
 `python tools/bump_versions.py --apply` (or the sed -E one-liner with k55). kalshi.js loads ../olympus/nqfx.js?v=n4 by itself after load + idle.
+
+## Update 7 (OLYMPUS NIGHT): kalshi.css / kalshi.js are now ?v=k56; theme-color #000000
+`python tools/bump_versions.py --apply` (or the sed -E one-liner with k56).

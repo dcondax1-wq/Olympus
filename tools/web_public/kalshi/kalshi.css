@@ -1078,27 +1078,28 @@ main > a.olyback { display: flex; align-items: center; min-height: 44px; margin-
 .k8t-p { margin: 6px 0 2px; font-size: .9375rem; font-variant-numeric: tabular-nums; }
 .k8t-c { display: flex; align-items: center; justify-content: space-between; min-height: 44px; font-size: .9375rem; color: var(--txt); text-decoration: none; border-top: 1px solid var(--dim2); }
 .k8t-c b { color: var(--warn); }
-/* ===== Olympus 2 FX (owner 2026-11-20 "it needs some 3D, some effects", NO GOLD): the trading-terminal look, violet-led.
-   Navy base, electric cyan + blue glows, violet accents, green only for a win. The engine's chosen look (inline vars) still wins. */
+/* ===== Olympus 2 FX, OLYMPUS NIGHT (owner 2026-11-20 16:00 ET, the Jarvis app-switcher colours; replaces the cyan terminal look):
+   black base, cards #16131e -> #020204, violet outlines + glows, lavender highlights, bright gold ONLY as small live / active accents,
+   mint for a win, red for a loss. The engine's chosen look (inline vars) still wins. */
 :root[data-theme="kalshi"] {
-  --bg: #070b14; --bg2: #0e1626; --pr: 14, 22, 38; --txt: #e6edf7; --mut: #9fb0c8; --dim: #111b2e; --dim2: #1f2c45; --dim3: #2f4163;
-  --c: #a78bfa; --c2: #8b5cf6; --c3: #c4b5fd; --cr: 167, 139, 250; --cr2: 139, 92, 246; --tint: #ddd6fe;
-  --ok: #22c55e; --bad: #f43f5e; --warn: #fb923c; --ok-rgb: 34, 197, 94; --bad-rgb: 244, 63, 94; --warn-rgb: 251, 146, 60;
-  --cyan: #22d3ee; --cyan-rgb: 34, 211, 238; --blue: #3b82f6; --blue-rgb: 59, 130, 246;
+  --bg: #000000; --bg2: #16131e; --pr: 22, 19, 30; --txt: #ebe9f1; --mut: #898497; --dim: #0b0910; --dim2: #3e255e; --dim3: #4d2e76;
+  --c: #9d59ee; --c2: #7c3aed; --c3: #dacbf0; --cr: 157, 89, 238; --cr2: 77, 46, 118; --tint: #dacbf0;
+  --ok: #77db89; --bad: #ef4444; --warn: #ebbf4f; --ok-rgb: 119, 219, 137; --bad-rgb: 239, 68, 68; --warn-rgb: 235, 191, 79;
+  --gold: #f1c14b; --gold-rgb: 241, 193, 75; --lav: #dacbf0; --lav-rgb: 218, 203, 240; --vio: #9d59ee; --vio-rgb: 157, 89, 238;
 }
-:root[data-theme="kalshi"] body { background: radial-gradient(120% 60% at 50% -10%, rgba(var(--cr2), .22), transparent 60%), radial-gradient(90% 50% at 100% 30%, rgba(var(--cyan-rgb), .08), transparent 60%), var(--bg); }
-:root[data-theme="kalshi"] .top h1::after { background: linear-gradient(90deg, var(--cyan), var(--c2), transparent); }
-/* glowing K8 cards: a thin cyan -> violet edge and a soft blue glow */
-.k8top, .k8d, .k8s, .kgo { position: relative; border: 1px solid rgba(var(--cyan-rgb), .28); background: linear-gradient(180deg, rgba(var(--pr), .96), rgba(7, 11, 20, .96));
-  box-shadow: 0 0 0 1px rgba(var(--cr2), .14) inset, 0 10px 32px rgba(var(--blue-rgb), .14), 0 0 24px rgba(var(--cyan-rgb), .06); }
-.k8top::before { content: ""; position: absolute; inset: 0 0 auto; height: 2px; border-radius: inherit; background: linear-gradient(90deg, transparent, var(--cyan), var(--c2), transparent); opacity: .9; }
-.k8t-m { color: var(--c); border-color: rgba(var(--cr), .7); box-shadow: 0 0 12px rgba(var(--cr), .25); }
-.k8t-m.live { box-shadow: 0 0 14px rgba(var(--ok-rgb), .45); }
-.k8t-n, .k8d .k8d-big { color: #f1f7ff; text-shadow: 0 0 18px rgba(var(--cyan-rgb), .35); }
-.k8t-l li.o em { color: var(--cyan); } .k8t-c b, .kgo .kgo-n { color: var(--c); } .kgo .kgo-n.ok { color: var(--ok); }
+:root[data-theme="kalshi"] body { background: radial-gradient(120% 55% at 50% -10%, rgba(var(--vio-rgb), .16), transparent 60%), #000000; }
+:root[data-theme="kalshi"] .top h1::after { background: linear-gradient(90deg, var(--gold), var(--vio), transparent); }
+/* glowing K8 cards: a violet edge and a soft violet glow on the night gradient */
+.k8top, .k8d, .k8s, .kgo { position: relative; border: 1px solid #462a6a; background: linear-gradient(180deg, #16131e, #020204);
+  box-shadow: 0 0 0 1px rgba(var(--vio-rgb), .12) inset, 0 10px 32px rgba(var(--vio-rgb), .16), 0 0 22px rgba(var(--lav-rgb), .05); }
+.k8top::before { content: ""; position: absolute; inset: 0 0 auto; height: 2px; border-radius: inherit; background: linear-gradient(90deg, transparent, var(--gold), var(--vio), transparent); opacity: .95; }
+.k8t-m { color: var(--lav); border-color: #4d2e76; box-shadow: 0 0 12px rgba(var(--vio-rgb), .3); }
+.k8t-m.live, #k8sub b.live { color: var(--gold); border-color: var(--gold); box-shadow: 0 0 14px rgba(var(--gold-rgb), .4); }
+.k8t-n, .k8d .k8d-big { color: #f4f1fa; text-shadow: 0 0 18px rgba(var(--vio-rgb), .45); }
+.k8t-l li.o em { color: var(--lav); } .k8t-c b, .kgo .kgo-n { color: var(--gold); } .kgo .kgo-n.ok { color: var(--ok); }
 /* the orb hero: its height is kept from the first paint */
 .k8fx { position: relative; height: 140px; margin: -2px 0 0; border-radius: var(--rs, 12px); overflow: hidden;
-  background: radial-gradient(70% 90% at 50% 60%, rgba(var(--blue-rgb), .16), transparent 70%), linear-gradient(180deg, rgba(7, 11, 20, 0), rgba(var(--cr2), .08)); }
+  background: radial-gradient(70% 90% at 50% 60%, rgba(var(--vio-rgb), .18), transparent 70%), linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(77, 46, 118, .16)); }
 .k8fx canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 @media (prefers-reduced-motion: no-preference) {
   .k8top::before { background-size: 200% 100%; animation: k8sheen 6s linear infinite; }
