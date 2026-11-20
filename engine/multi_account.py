@@ -1119,6 +1119,11 @@ class Account:
         if not b or b.get("nt_account") != self.spec.get("nt_account"):
             return
         self.closes = [list(c) for c in (b.get("closes") or []) if isinstance(c, (list, tuple)) and len(c) >= 3]
+        try:                         # engine/keepalive: the saved ledger's CONFIRMED fill days outlive an earlier day's ledger
+            from . import keepalive as _ka
+            self._ka_seed = _ka.seed_days(b.get("ledger") or [])
+        except Exception:
+            pass
         if b.get("day") != today:
             return
         self.ledger = list(b.get("ledger") or [])

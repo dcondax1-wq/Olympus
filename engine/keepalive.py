@@ -6,19 +6,26 @@ The rule. MFFU Terms section 7 "Dormant Accounts" (myfundedfutures.com/terms, up
 EXECUTED trade in every 7 consecutive calendar days, weekends and holidays included. Without one, MFFU may close the account
 and count the closure as a breach, and a Sim Funded account also loses ALL its profits. No warning is promised. A filled trade
 counts. A login, or an order that never fills, does not. Live accounts have no such rule. MFFU sets no minimum size and no
-minimum hold time, and nothing bans a small trade made only to stay active. The one soft rule is Terms 12.4: position size and
-trade frequency should stay close to your usual pattern ("substantially smaller ... positions than typical" is named there),
-so MFFU support is asked in writing before the owner switches one on (research/lit/mffu_rules.json inactivity.terms_12_4).
+minimum hold time, and nothing bans a small trade made only to stay active. The one soft rule is Terms 12.4 (consistency in
+position sizing, trade frequency and risk exposure): 12.4.1 names "substantially larger position sizes", 12.4.2 "open
+substantially smaller or larger numbers of positions than typical", 12.4.3 "inconsistent or erratic trading activity". So
+MFFU support is asked in writing before the owner switches one on (research/lit/mffu_rules.json inactivity.terms_12_4).
 The keep-alive is an ordinary 1-micro trade: front-month MNQ, the liquid last half hour of RTH, held about 2 minutes, never
 inside a Tier-1 news window, never opposite another account, no tight bracket, flat long before the close.
 
 Which days count (account_days()). Only CONFIRMED fills, by their ET calendar date: an entry the broker took (the ledger row's
-result ok True: the NinjaTrader adapter says ok only after the fill and its bracket), an adapter leg with filled > 0, a
-keep-alive that filled, and the owner's --traded notes. Never a booked $ day (LiveBot.eval_days), an exit row or a close: those
-also exist for entries NinjaTrader never took ($0 'not placed' rows, voided days, a kill with no position). In doubt this
-counts FEWER days: an extra keep-alive costs about $2.40, a missed one can cost the account. An account with no fill yet
-counts from the day before its start (the start day is day 1); its start = the EARLIEST start of its lanes, moved earlier by
-an MFFU start override (data/keepalive.json "start", START_DEFAULTS: the 25K #2 went on the PC Tue 11-17 evening).
+result ok True: the NinjaTrader adapter says ok only after the fill and its bracket), an adapter leg with filled > 0, an
+"Execution=" line for that account in NinjaTrader's own Log (<NinjaTrader 8>/log, the format engine/eval_fix reads: the
+bot's fills AND the owner's hand trades, nothing to type), a keep-alive that filled, and the owner's --traded notes. Every
+confirmed day is also kept in the state file (acc.<key>.fills, the last FILLS_KEEP), so a restart on a later day (the ledger
+of LiveBot / an extra account is restored only on its own day; the adapter keeps no history) forgets none; the saved
+ledger's fills are read once at the restart too (LiveBot._restore, multi_account Account.restore: obj._ka_seed). Never a
+booked $ day (LiveBot.eval_days), an exit row or a close: those also exist for entries NinjaTrader never took ($0 'not
+placed' rows, voided days, a kill with no position). In doubt this counts FEWER days: an extra keep-alive costs about
+$2.40, a missed one can cost the account. An account with no fill yet counts from the day before its start (the start
+day is day 1); its start = the EARLIEST start of its lanes, moved earlier by an MFFU start override (data/keepalive.json
+"start", START_DEFAULTS: the 25K #2 went on the PC Tue 11-17 evening, the Rapid EOD 25K was bought Thu 11-19 evening); a
+start in the future is ignored.
 
 When (plan()). D = the account's last traded day (or its start). The cautious deadline is D + 6, because day 7 is read as too
 late, as in engine/cme_calendar.idle_plan. The keep-alive acts on the LAST full CME session on or before that deadline
@@ -28,8 +35,9 @@ anyway, because a late trade beats none.
 
 Where in the day (window()). A full day: 15:33-15:48 ET. That is after LIT's last entry (15:30) and ATLAS's (12:00), before
 the bot's flat time (15:55), before MFFU's 16:10, and before the 15:50 closing imbalance. A CME half day: from 12 to 2 minutes
-before the entry cut (the adapters refuse entries from 15 minutes before the halt), e.g. 12:33-12:43 ET for a 13:00 halt.
-Never 16:10-18:00, never after a half day's halt, never in the Sunday or overnight session.
+before the entry cut (the adapters refuse entries from 15 minutes before the halt), e.g. 12:33-12:43 ET for a 13:00 halt;
+that window lies inside LIT's entry hours (its cut is 12:45 then), so a LIT entry can come during the hold (before_entry
+below closes the keep-alive first). Never 16:10-18:00, never after a half day's halt, never in the Sunday or overnight session.
 
 What (tick()). ONE MNQ market order on that account's own NinjaTrader adapter (the one its strategy already uses, under the
 owner's own arming), with a hard OCO stop and target 10 points (40 ticks, $20) away. It is closed at market after hold_s
@@ -38,7 +46,9 @@ Expected cost: $1.90 commission + 1 tick of spread = about $2.40. Worst case: th
 $22.90. At most MAX_TRIES attempts a day, and only one keep-alive open on the PC at a time.
 Every gate must pass, or nothing is sent (the reason is logged once a day):
   the owner's switch for that account is ON; the bot is not killed; the adapter is enabled and not read-only; the owner's
-  pause (engine/entry_pause, phone / dashboard) and the remote flatten's "no new entries today" (LiveBot._no_entries_day);
+  stops (guards._owner_blocks: the pause of engine/entry_pause from the phone / dashboard, the presence check-in, ai_watch's
+  anomaly pause and combined-loss stop), LIT's own soft daily loss and the combo day stop (guards entry_problems), the remote
+  flatten's "no new entries today" (LiveBot._no_entries_day);
   the startup reconcile (guards.startup_problems, AccountB.startup_block), the PC clock guard, each lane's own lock /
   entry block / MFFU lock (lifecycle.block, multi_account Account.entry_block); the account is
   not passed / failed / locked / lost / stuck / locked out today (engine/lifecycle + the strategy's own status); no trade on
@@ -48,13 +58,15 @@ Every gate must pass, or nothing is sent (the reason is logged once a day):
   NinjaTrader shows FLAT; no other account opposite (the keep-alive takes the side an open account already holds, else long;
   two sides or an unknown side = skip); and engine/firms.check passes (contracts, the max-loss floor at the stop, the daily
   loss left, the eval best-day rule, the firm's flat time, hedging across ALL accounts).
-Strategies are never disturbed. LIT and ATLAS cannot enter in that window (LIT stops at 15:30). The keep-alive never writes to
-a strategy's ledger, so no stats, sizing or audits change. It only closes its own bracket (by its entry time), never a
-CLOSEPOSITION on a guess. The kill switch and the adapter's flat-time safety close it like any trade. Every strategy entry asks
-before_entry() right before its order goes out (LiveBot._route, AccountB.route, multi_account Account.route and the
-hedging guard AccountRouter.opposite_open): a keep-alive on the SAME NinjaTrader account (any side) or the other way on any
-account is closed at market first, so a real trade is never refused for it. guards.reconcile_tick / startup_problems count
-an open keep-alive leg as expected (never a "Position mismatch" close).
+Strategies are never disturbed. On a full day LIT (last entry 15:30) and ATLAS (12:00) do not enter in that window; on a
+half day LIT can (see above). The keep-alive never writes to a strategy's ledger, so no stats, sizing or audits change. It
+only closes its own bracket (by its entry time), never a CLOSEPOSITION on a guess. The kill switch and the adapter's
+flat-time safety close it like any trade. Every strategy entry asks before_entry() right before its order goes out
+(LiveBot._route, AccountB.route, multi_account Account.route and the hedging guard AccountRouter.opposite_open): a
+keep-alive on the SAME NinjaTrader account (any side) or the other way on any account is closed at market first. The real
+entry then goes out; only when NinjaTrader has not confirmed that close yet is it refused ("hedging guard: the keep-alive
+trade ... is closing"), like any hedge refusal. guards.reconcile_tick / startup_problems count an open keep-alive leg as
+expected (never a "Position mismatch" close).
 
 Restart safety. The state file next to the bot's state (data/keepalive_state.json) is written BEFORE the order goes out. After
 a restart, the adapter restores its bracket from its own state file and the next tick closes it. A keep-alive that filled
@@ -65,13 +77,15 @@ live loop's lock; a key is recorded only once ntfy took it, else retried every A
   heads-up the morning of the act day (from 09:30 ET): "Keep-alive today on Zlarior 50K ... about -$2.40, at most -$23"
   the entry ("Keep-alive on Zlarior 50K: BUY 1 MNQ @ ...") and the result ("... closed LONG about -$2.40"), straight to ntfy,
   plus the normal trade alert labelled "Keep-alive on <account>" (engine/push.pc_notify)
-  a refusal that leaves no attempt today: "place 1 MNQ by hand before 15:50 ET" (with why: e.g. "your pause blocks it")
+  a refusal that leaves no attempt today: "place 1 MNQ by hand before 16:05 ET" (with why: e.g. "your pause blocks it"),
+  retried every 5 min until then when ntfy does not take it
   switch OFF (the owner's hand trade): the session before the act day "the next session is the last safe day", then on the
   act day "TODAY is the last safe day: place 1 MNQ by hand", each once.
 The 25K #2 and the Rapid get these too (they had no phone warning before). ONE inactivity warning per account and day, from
 one place: while the bot runs (the heartbeat's "keepalive" block, cover), engine/ops_checks.inactivity_notice, tools/pc_guard,
-tools/morning_brief and account_b's own idle push leave the warning to the keep-alive and count its days (last_day()); with
-the bot down they warn as before.
+tools/morning_brief and account_b's own idle push leave the warning to the keep-alive and count its days (last_day()). The
+cover counts only while it is fresh (its "t" at most COVER_FRESH_S old for the reader: hb_covers(block, lane, now), the
+board card's cover, ops_checks' fresh heartbeat): with the bot down they warn as before.
 
 Config: data/keepalive.json (gitignored; the start cfg's "keepalive" block in test harnesses; a harness never reads the file)
   {"accounts": {"lit": false, "atlas": false, "x:b25k_2": false, "rapid": false}, "start": {"x:b25k_2": "2026-11-17"}}
@@ -82,12 +96,16 @@ Config: data/keepalive.json (gitignored; the start cfg's "keepalive" block in te
   python -X utf8 -m engine.keepalive --skip lit                  no keep-alive on lit today
   python -X utf8 -m engine.keepalive --traded lit [yyyy-mm-dd]   you traded it by hand (default today, the ET date; never a
                                                                  future day or more than 7 days back): prints the new deadline
-  python -X utf8 -m engine.keepalive --start x:b25k_2 2026-11-17 the day MFFU's account started (only moves the start earlier)
+                                                                 (only needed when NinjaTrader's Log is not where the bot reads)
+  python -X utf8 -m engine.keepalive --start x:b25k_2 2026-11-17 the day MFFU's account started (only moves the start earlier;
+                                                                 never a future day)
+  Every KEY must be a known account: lit, atlas, rapid or x:<id> of data/accounts.json (a typo is refused, not "noted").
 Tests: python -X utf8 -m tests.test_keepalive
 """
 from __future__ import annotations
 
 import datetime as _dt
+import glob
 import json
 import os
 import sys
@@ -132,14 +150,21 @@ COVER_FRESH_S = 1200            # the keep-alive "covers" an account's inactivit
 COVER_EVERY_S = 300
 TRADED_BACK_DAYS = 7            # --traded: never a future day, never more than this many days back (a phone typo)
 START_PULL_DAYS = 7             # an MFFU start override only moves an account's start EARLIER, by at most this many days
-START_DEFAULTS = {"x:b25k_2": "2026-11-17"}    # STATE.md 2026-11-17: the 25K #2 went on the PC ~20:30 ET (its bot start: 11-18)
+START_DEFAULTS = {"x:b25k_2": "2026-11-17",    # STATE.md 2026-11-17: the 25K #2 went on the PC ~20:30 ET (its bot start: 11-18)
+                  "rapid": "2026-11-19"}       # STATE.md 2026-11-19 20:15 ET: the Rapid EOD 25K bought (MFFU may count from then)
 ACTIVE = ("sending", "open", "closing")
+FILLS_KEEP = 10                 # confirmed fill days kept per account in the state file (they survive a restart)
+EXEC_SCAN_S = 120               # NinjaTrader's Log is read for new "Execution=" lines at most this often (bot clock)
+EXEC_BACK_DAYS = LIMIT_DAYS + 2  # ... over this many calendar days of log files
+EXEC_MAX_BYTES = 64 << 20       # at most this much log read per scan (the rest on the next scans)
+HAND_BY = 16 * 60 + 5           # "place 1 MNQ by hand before 16:05 ET" (MFFU's flat 16:10; a half day: 5 min before the halt)
 
 ALERT_HOOK = None               # tests: fn(kind, payload) instead of the phone ("problem" | "trade")
 SYNC_ALERTS = False             # tests: deliver in the caller's thread (the hook does too)
 _MX = threading.RLock()
 _TRIED: dict = {}               # (state path, alert key) -> the bot clock of the last try (the retry throttle)
 _LAST_THREAD = None
+_EXEC: dict = {}                # NinjaTrader folder -> {"t": last scan, "files": {path: bytes read}, "hits": {Name: {days}}}
 
 
 # ------------------------------------------------------------------------------------------------ small helpers
@@ -388,8 +413,21 @@ def _book(bot) -> dict:
 
 
 def _save_book(bot, b):
-    save_state(b["st"], b["_path"])
-    b["_mt"] = _mtime(b["_path"])
+    """Write the bot's book. When the file changed since the bot read it (the owner's --traded from a command window while a
+    tick ran), its hand-trade notes are merged in first, so the bot's save never drops them."""
+    with _MX:
+        if _mtime(b["_path"]) != b.get("_mt"):
+            try:
+                disk = load_state(b["_path"])
+                for k, a in (disk.get("acc") or {}).items():
+                    m = (a or {}).get("marked") if isinstance(a, dict) else None
+                    if m:
+                        cur = b["st"].setdefault("acc", {}).setdefault(k, {})
+                        cur["marked"] = max(str(cur.get("marked") or ""), str(m))
+            except Exception:
+                pass
+        save_state(b["st"], b["_path"])
+        b["_mt"] = _mtime(b["_path"])
 
 
 _LAST: dict = {}
@@ -409,12 +447,13 @@ def _file_state(bot=None, path: str | None = None) -> dict:
 
 
 def last_day(bot, key: str, path: str | None = None) -> str | None:
-    """The newest day a keep-alive FILLED on account `key`, or the owner marked a hand trade (--traded), else None. The idle
-    counters (engine/account_b.idle_days, ops_checks, the board's quiet days via the heartbeat) add it so their warnings stop
-    after a keep-alive. bot None = the PC's own data/ folder. Never raises."""
+    """The newest day account `key` had a CONFIRMED fill the keep-alive knows of: a keep-alive that filled, a hand trade
+    seen in NinjaTrader's Log or noted (--traded), a strategy fill it kept (acc.<key>.fills), else None. The idle counters
+    (engine/account_b.idle_days, ops_checks, the board's quiet days via the heartbeat) add it so their warnings stop after a
+    keep-alive / a hand trade. bot None = the PC's own data/ folder. Never raises."""
     try:
         a = (_file_state(bot, path).get("acc") or {}).get(key) or {}
-        ds = [d for d in (a.get("last"), a.get("marked")) if d]
+        ds = [str(d)[:10] for d in [a.get("last"), a.get("marked")] + list(a.get("fills") or []) if d]
         return max(ds) if ds else None
     except Exception:
         return None
@@ -471,10 +510,23 @@ def hb_last(block, lane: str) -> str | None:
         return None
 
 
-def hb_covers(block, lane: str) -> bool:
+def cover_fresh(t, now=None) -> bool:
+    """A cover stamped at `t` still holds at `now` (at most COVER_FRESH_S old). A dead bot's last heartbeat keeps its block
+    for days: its cover must not keep the other warners quiet then."""
+    try:
+        t = float(t or 0)
+        now = time.time() if now is None else float(now)
+        return t > 0 and abs(now - t) <= COVER_FRESH_S
+    except Exception:
+        return False
+
+
+def hb_covers(block, lane: str, now=None) -> bool:
+    """The heartbeat block says the bot's keep-alive sends the warnings of the account `lane` trades, and that block is
+    fresh at `now` (default: the wall clock). A stale block (the bot down) never covers. Never raises."""
     try:
         b = block if isinstance(block, dict) else {}
-        return (b.get("lane") or {}).get(lane, lane) in (b.get("cover") or [])
+        return (b.get("lane") or {}).get(lane, lane) in (b.get("cover") or []) and cover_fresh(b.get("t"), now)
     except Exception:
         return False
 
@@ -496,15 +548,124 @@ def _fill_days(rows) -> set:
     return out
 
 
-def _lane_days(kind, obj, bot) -> set:
-    """ET calendar days with a CONFIRMED fill on one lane: the entries the broker took (the ledger's buy / sell rows with
-    result ok True; the NinjaTrader adapter answers ok only once the entry filled and its bracket is in). Never a booked $
-    day (LiveBot.eval_days), an exit row or a close: those also exist for entries NinjaTrader never took ($0 'not placed'
-    exits, days voided as refused, a kill with no position) and would move the deadline past MFFU's."""
+def seed_days(rows) -> set:
+    """The confirmed fill days of a SAVED ledger, read at a restart before the bot drops an earlier day's ledger
+    (engine/live.LiveBot._restore, engine/multi_account.Account.restore keep them as obj._ka_seed). Never raises."""
     try:
-        return _fill_days(getattr(bot, "ledger", None) if kind == "lit" else getattr(obj, "ledger", None))
+        return _fill_days(rows if isinstance(rows, list) else [])
     except Exception:
         return set()
+
+
+def _lane_days(kind, obj, bot) -> set:
+    """ET calendar days with a CONFIRMED fill on one lane: the entries the broker took (the ledger's buy / sell rows with
+    result ok True; the NinjaTrader adapter answers ok only once the entry filled and its bracket is in), plus those of the
+    ledger saved before a restart (obj._ka_seed). Never a booked $ day (LiveBot.eval_days), an exit row or a close: those
+    also exist for entries NinjaTrader never took ($0 'not placed' exits, days voided as refused, a kill with no position)
+    and would move the deadline past MFFU's."""
+    try:
+        o = bot if kind == "lit" else obj
+        seed = getattr(o, "_ka_seed", None)
+        return _fill_days(getattr(o, "ledger", None)) | {str(d)[:10] for d in (seed or ()) if d}
+    except Exception:
+        return set()
+
+
+def _exec_line(line: str):
+    """(NinjaTrader account Name, ET calendar day) of one NinjaTrader Log line with an "Execution=" (a fill), else None.
+    The line starts with the PC's local time ("2026-10-28 04:01:27:342|1|8|Execution='...' Instrument='MNQ 12-26'
+    Account='...' Price=... Time='10/28/2026 4:01:27 AM' ..."). The day = the earliest of the log line's local date, its ET
+    date and the execution's own Time= (when NinjaTrader writes one and it reads as a date up to 3 days before the line: an
+    execution logged again at a reconnect after midnight keeps its own day). Never a later day than the fill's."""
+    i = line.find("Account='")
+    if i < 0 or "Execution=" not in line:
+        return None
+    j = line.find("'", i + 9)
+    if j <= i + 9:
+        return None
+    try:
+        loc = _dt.datetime.strptime(line[:19], "%Y-%m-%d %H:%M:%S")
+    except ValueError:
+        return None
+    day = loc.date().isoformat()
+    try:
+        day = min(day, _cal(time.mktime(loc.timetuple())))
+    except Exception:
+        pass
+    k = line.find("Time='")
+    if k >= 0:
+        raw = line[k + 6:line.find("'", k + 6)].strip()
+        for fmt in ("%m/%d/%Y %I:%M:%S %p", "%m/%d/%Y %H:%M:%S", "%Y-%m-%d %H:%M:%S", "%d/%m/%Y %H:%M:%S", "%d.%m.%Y %H:%M:%S"):
+            try:
+                x = _dt.datetime.strptime(raw, fmt).date()
+            except ValueError:
+                continue
+            if 0 <= (loc.date() - x).days <= 3:
+                day = min(day, x.isoformat())
+                break
+    return line[i + 9:j], day
+
+
+def nt_exec_days(folder, account, now=None) -> set:
+    """ET calendar days with a fill on NinjaTrader account `account` in NinjaTrader's own Log (<folder>/log/
+    log.YYYYMMDD.*.txt): the bot's fills AND the owner's hand trades, on disk across restarts. The last EXEC_BACK_DAYS of
+    files, read incrementally (only new bytes), at most every EXEC_SCAN_S of the bot clock and EXEC_MAX_BYTES a scan.
+    Read-only; never raises (no folder / no log = nothing)."""
+    try:
+        if not folder or not account:
+            return set()
+        now = float(time.time() if now is None else now)
+        c = _EXEC.setdefault(os.path.abspath(str(folder)), {"t": None, "files": {}, "hits": {}})
+        if c["t"] is None or now - c["t"] >= EXEC_SCAN_S or now < c["t"]:
+            c["t"] = now
+            _exec_scan(os.path.join(str(folder), "log"), c, now)
+        return set(c["hits"].get(str(account)) or ())
+    except Exception:
+        return set()
+
+
+def _exec_scan(logd, c, now):
+    cut = (_et(now).date() - _dt.timedelta(days=EXEC_BACK_DAYS)).strftime("%Y%m%d")
+    names = []
+    for p in glob.glob(os.path.join(logd, "log.*.txt")):
+        parts = os.path.basename(p).split(".")
+        if len(parts) >= 3 and parts[1].isdigit() and len(parts[1]) == 8 and parts[1] >= cut:
+            names.append(p)
+    budget = EXEC_MAX_BYTES
+    for p in sorted(names):
+        try:
+            size = os.path.getsize(p)
+        except OSError:
+            continue
+        off = int(c["files"].get(p) or 0)
+        if size < off:
+            off = 0                                      # a new file under the same name: read it again
+        if size == off or budget <= 0:
+            c["files"][p] = off
+            continue
+        try:                                             # (NinjaTrader keeps today's file open: shared read)
+            with open(p, "rb") as fh:
+                fh.seek(off)
+                raw = fh.read(min(size - off, budget))
+        except OSError:
+            continue
+        k = raw.rfind(b"\n")
+        if k < 0:
+            c["files"][p] = off                          # no whole line yet
+            continue
+        raw = raw[:k + 1]
+        c["files"][p] = off + len(raw)
+        budget -= len(raw)
+        if b"Execution=" not in raw:
+            continue
+        for ln in raw.decode("utf-8", "replace").splitlines():
+            if "Execution=" in ln:
+                x = _exec_line(ln)
+                if x:
+                    c["hits"].setdefault(x[0], set()).add(x[1])
+    old = (_et(now).date() - _dt.timedelta(days=EXEC_BACK_DAYS + 2)).isoformat()
+    c["hits"] = {a: {d for d in ds if d >= old} for a, ds in c["hits"].items()}
+    c["files"] = {p: v for p, v in c["files"].items() if p in names}
 
 
 def _adapter_days(ad) -> set:
@@ -673,16 +834,17 @@ def _funded(g) -> bool:
     return False
 
 
-def _start_override(C, key, start):
+def _start_override(C, key, start, now=None):
     """The account's MFFU start when it is earlier than the bot's (an evening purchase, a lane switched on later): the owner's
     data/keepalive.json "start" (--start), else START_DEFAULTS. Only ever moves the start EARLIER, by at most
-    START_PULL_DAYS (a stale override can not pull a new account's clock back weeks)."""
+    START_PULL_DAYS (a stale override can not pull a new account's clock back weeks); never a start after today (ET, `now`;
+    a future one would drop every earlier fill and push the warnings into the future)."""
     v = ((C or {}).get("start") or {}).get(key) or START_DEFAULTS.get(key)
     try:
         v = _date(v).isoformat() if v else None
     except Exception:
         return start
-    if not v:
+    if not v or (now is not None and v > _cal(now)):
         return start
     if not start:
         return v
@@ -691,22 +853,67 @@ def _start_override(C, key, start):
     return start
 
 
-def account_days(bot, g, C=None) -> tuple:
-    """(confirmed fill days set, start day) of a target: every lane's confirmed fills + the adapters' filled legs + its
-    keep-alive fills and hand-trade notes, from its start. start = the EARLIEST lane start (a lane switched on later, e.g. the
-    Rapid's LIT lane or lit25, never hides an earlier trade on the account), moved earlier by an MFFU start override."""
-    days, starts = set(), []
+def _bot_now(bot, now=None) -> float:
+    if now is not None:
+        return float(now)
+    try:
+        clk = getattr(bot, "clock", None)
+        return float(clk() if callable(clk) else time.time())
+    except Exception:
+        return time.time()
+
+
+def _exact_days(bot, g, now=None) -> set:
+    """Every CONFIRMED fill day the bot can see now on a target: the lanes' ledgers (+ the restart seed), the adapters'
+    filled legs, NinjaTrader's Log for the account's Name (hand trades too). These are kept (acc.<key>.fills)."""
+    days, seen = set(), set()
     for ln in g["lanes"]:
         days |= _lane_days(ln["kind"], ln["obj"], bot)
         days |= _adapter_days(ln["adapter"])
+        ad = ln["adapter"]
+        k = (getattr(ad, "folder", None), ln["nt"] or getattr(ad, "account", None))
+        if k[0] and k[1] and k not in seen:
+            seen.add(k)
+            days |= nt_exec_days(k[0], k[1], _bot_now(bot, now))
+    return days
+
+
+def account_days(bot, g, C=None, now=None) -> tuple:
+    """(confirmed fill days set, start day) of a target: _exact_days + the days the state file kept (acc.<key>.fills: they
+    outlive a restart) + its keep-alive fills and hand-trade notes, from its start. start = the EARLIEST lane start (a lane
+    switched on later, e.g. the Rapid's LIT lane or lit25, never hides an earlier trade on the account), moved earlier by an
+    MFFU start override. g["_exact"] = the confirmed days seen now (_plan_all keeps them)."""
+    now = _bot_now(bot, now)
+    days = _exact_days(bot, g, now)
+    try:
+        g["_exact"] = set(days)
+    except Exception:
+        pass
+    starts = []
+    for ln in g["lanes"]:
         s = _lane_start(ln["kind"], ln["obj"], bot)
         if s:
             starts.append(str(s)[:10])
     start = min(starts) if starts else None
-    start = _start_override(C if C is not None else load_config(bot), g["key"], start)
+    start = _start_override(C if C is not None else load_config(bot), g["key"], start, now)
     a = (_book(bot)["st"].get("acc") or {}).get(g["key"]) or {}
-    days |= {d for d in (a.get("last"), a.get("marked")) if d}
+    days |= {str(d)[:10] for d in [a.get("last"), a.get("marked")] + list(a.get("fills") or []) if d}
     return ({d for d in days if not start or d >= start}, start)
+
+
+def _remember(st, key, days) -> bool:
+    """Keep a target's confirmed fill days in the state file (the newest FILLS_KEEP): a restart on a later day forgets the
+    in-memory ledgers, never these. True = changed."""
+    ds = {str(d)[:10] for d in (days or ()) if d}
+    if not ds:
+        return False
+    a = st.setdefault("acc", {}).setdefault(key, {})
+    old = [str(d)[:10] for d in (a.get("fills") or [])]
+    new = sorted(set(old) | ds)[-FILLS_KEEP:]
+    if new == old:
+        return False
+    a["fills"] = new
+    return True
 
 
 def last_of(days, start) -> tuple:
@@ -956,14 +1163,15 @@ def _due(st: dict, bot, key: str, now) -> bool:
     return t is None or float(now) - float(t) >= ALERT_RETRY_S
 
 
-def _queue(Q, st, bot, kind, p, now, row=None, once=False) -> bool:
+def _queue(Q, st, bot, kind, p, now, row=None, once=False, until=None) -> bool:
     """Queue one alert for delivery after the tick (outside the lock). False = sent already / tried too recently.
-    once: a one-shot alert (the entry / result) that is kept in st["retry"] when ntfy refuses it."""
+    once: a one-shot alert (the entry / result / a refusal) that is kept in st["retry"] when ntfy refuses it (until: the bot
+    clock after which a retry no longer makes sense, default RETRY_MAX_S after the first try)."""
     k = str(p.get("key") or "")
     if not _due(st, bot, k, now):
         return False
     _TRIED[(state_path_for(bot), k)] = float(now)
-    Q.append({"kind": kind, "p": dict(p), "k": k, "row": row, "once": once, "t": float(now)})
+    Q.append({"kind": kind, "p": dict(p), "k": k, "row": row, "once": once, "t": float(now), "until": until})
     if row is not None:
         row["alert"] = "queued"
     return True
@@ -1005,7 +1213,8 @@ def _deliver(bot, Q):
             keep = [x for x in st.get("retry") or [] if x.get("k") not in {it["k"] for it, _ in done}]
             for it, r in failed:
                 if it.get("once") and it["k"] and not any(x.get("k") == it["k"] for x in keep):
-                    keep.append({"k": it["k"], "kind": it["kind"], "p": it["p"], "t0": it["t"], "why": str(r)[:80]})
+                    keep.append({"k": it["k"], "kind": it["kind"], "p": it["p"], "t0": it["t"], "why": str(r)[:80],
+                                 **({"until": float(it["until"])} if it.get("until") else {})})
             st["retry"] = keep
             _save_book(bot, b)
     except Exception as e:  # noqa: BLE001
@@ -1016,10 +1225,11 @@ def _retry_due(bot, st, now, Q):
     """Re-queue the one-shot alerts ntfy refused earlier (ALERT_RETRY_S apart, for at most RETRY_MAX_S)."""
     keep = []
     for x in st.get("retry") or []:
-        if not isinstance(x, dict) or x.get("k") in st["sent"] or float(now) - float(x.get("t0") or 0) > RETRY_MAX_S:
+        if not isinstance(x, dict) or x.get("k") in st["sent"] or float(now) - float(x.get("t0") or 0) > RETRY_MAX_S \
+                or (x.get("until") and float(now) > float(x["until"])):
             continue
         keep.append(x)
-        _queue(Q, st, bot, x.get("kind") or "problem", x.get("p") or {}, now, once=True)
+        _queue(Q, st, bot, x.get("kind") or "problem", x.get("p") or {}, now, once=True, until=x.get("until"))
     st["retry"] = keep
 
 
@@ -1060,7 +1270,7 @@ def tick(bot, now=None, px=None, bar_t=None, may_open: bool = True) -> list:
             T = targets(bot)
             dirty = _manage(bot, st, C, T, now, px, out, Q, late=not may_open) if active else False
             if may_open:
-                dirty = _plan_all(bot, st, C, T, now, px, bar_t, out, Q) or dirty
+                dirty = _plan_all(bot, st, C, T, now, px, bar_t, out, Q, book=book) or dirty
                 n = len(Q)
                 _retry_due(bot, st, now, Q)
                 dirty = dirty or len(Q) > n
@@ -1189,18 +1399,37 @@ def _manage(bot, st, C, T, now, px, out, Q, late: bool = False) -> bool:
     return dirty
 
 
+def hand_by(day) -> int:
+    """ET minute a hand trade should be done by on trading date `day`: 16:05 (MFFU's flat 16:10), a half day 5 minutes
+    before the halt."""
+    try:
+        from . import cme_calendar as CC
+        return int(CC.flat_cut(_date(day), HAND_BY))
+    except Exception:
+        return HAND_BY
+
+
+def _hand_note(key) -> str:
+    """How the bot learns of a hand trade: NinjaTrader's own Log (no PC step); --traded only as a fallback at the PC."""
+    return (f"The bot sees the fill in NinjaTrader's log by itself within a few minutes (at the PC you can also send: "
+            f"python -X utf8 -m engine.keepalive --traded {key}).")
+
+
 def _final_refusal(bot, st, C, a, key, now, why, out, Q, force: bool = False):
     """The last attempt of the day failed (or the window ran out with the keep-alive blocked: force): tell the owner to place
-    it by hand (once a day, retried until ntfy took it)."""
+    it by hand (once a day; when ntfy does not take it, retried every ALERT_RETRY_S until the hand-trade time)."""
     if not force and int(a.get("tries") or 0) < MAX_TRIES and in_window(now + RETRY_S) and fits(now + RETRY_S, C["hold_s"]):
         return                                           # a retry is still possible today
-    k = f"ka:refused:{key}:{trading_day(now)}"
-    w = window(trading_day(now)) or FULL_WINDOW
+    day = trading_day(now)
+    k = f"ka:refused:{key}:{day}"
+    hb = hand_by(day)
+    e = _et(now)
+    until = _dt.datetime(e.year, e.month, e.day, hb // 60, hb % 60, tzinfo=ET).timestamp()
     p = {"key": k, "code": "keepalive", "title": f"Keep-alive on {a.get('label') or key} did not go through",
-         "body": f"{str(why)[:160]}. Place 1 MNQ by hand on this account before {_hm(w[1] + HALF_WINDOW[1])} ET (in and out), "
-                 f"then send: python -X utf8 -m engine.keepalive --traded {key}"}
+         "body": f"{str(why)[:160]}. Place 1 MNQ by hand on this account before {_hm(hb)} ET (in and out, about "
+                 f"-{money(EXPECTED_COST)}). {_hand_note(key)}"}
     row = {"key": key, "do": "refused_alert"}
-    if _queue(Q, st, bot, "problem", p, now, row=row):
+    if _queue(Q, st, bot, "problem", p, now, row=row, once=True, until=until):
         out.append(row)
 
 
@@ -1223,7 +1452,7 @@ def _set_cover(st, keys, now) -> bool:
     return True
 
 
-def _plan_all(bot, st, C, T, now, px, bar_t, out, Q) -> bool:
+def _plan_all(bot, st, C, T, now, px, bar_t, out, Q, book=None) -> bool:
     dirty = False
     acc = st.setdefault("acc", {})
     busy_any = any(a.get("phase") in ACTIVE for a in acc.values())
@@ -1232,12 +1461,13 @@ def _plan_all(bot, st, C, T, now, px, bar_t, out, Q) -> bool:
     for g in T:
         key = g["key"]
         on = C["accounts"].get(key) is True
-        a = acc.get(key) or {}
         pid = _plan_id(g)
         if pid is None:
             continue
         sim = bool(getattr(g["adapter"], "sim", False)) and is_real(bot)
-        days, start = account_days(bot, g, C)
+        days, start = account_days(bot, g, C, now)
+        dirty = _remember(st, key, g.get("_exact")) or dirty      # the fill days outlive a restart
+        a = acc.get(key) or {}
         last, never = last_of(days, start)
         if not last:
             if on:
@@ -1284,11 +1514,11 @@ def _plan_all(bot, st, C, T, now, px, bar_t, out, Q) -> bool:
         stop = round((ref - d * STOP_PTS) / TICK) * TICK
         target = round((ref + d * TARGET_PTS) / TICK) * TICK
         tries = (int(a.get("tries") or 0) if a.get("day") == today else 0) + 1
-        a = {**{k: v for k, v in a.items() if k in ("last", "marked")}, "day": today, "phase": "sending", "tries": tries,
+        a = {**{k: v for k, v in a.items() if k in ("last", "marked", "fills")}, "day": today, "phase": "sending", "tries": tries,
              "entry_t": int(now), "sent_at": int(now), "side": side, "dir": d, "ref": ref, "stop": stop, "target": target,
              "label": g["label"], "plan": P, "idle_days": P["idle_days"]}
         acc[key] = a
-        _save_book(bot, _book(bot))                      # write-ahead: a crash after the order file still knows it
+        _save_book(bot, book if book is not None else _book(bot))   # write-ahead: a crash after the order file still knows it
         ad = g["adapter"]
         label = g["label"]
         action = {"sym": (getattr(bot, "cfg", None) or {}).get("sym", "NQ"), "side": side, "qty": QTY, "entry": ref,
@@ -1338,10 +1568,12 @@ def may_trade_today(C, key, today) -> bool:
 
 def _system_block(bot, g, now) -> str | None:
     """The owner's stops and the entry guards LIT / ATLAS / the extra accounts obey (None = none blocks):
-    the phone / dashboard pause (engine/entry_pause), the remote flatten's "no new entries today" (LiveBot._no_entries_day),
-    the PC clock guard (guards.clock_problem), the startup reconcile (guards.startup_problems for the bot's own account,
-    AccountB.startup_block), each lane's MFFU lock (lifecycle.block), lock-out and entry block (multi_account
-    Account.entry_block). A check that fails blocks (the keep-alive is optional; the owner is told to trade by hand)."""
+    the phone / dashboard pause (engine/entry_pause) and the rest of guards._owner_blocks (presence check-in, ai_watch's
+    anomaly pause and combined-loss stop: OFF by default), the remote flatten's "no new entries today"
+    (LiveBot._no_entries_day), the PC clock guard (guards.clock_problem), the startup reconcile (guards.startup_problems for
+    the bot's own account, AccountB.startup_block), LIT's soft daily loss + the combo day stop on LIT's own account, each
+    lane's MFFU lock (lifecycle.block), lock-out and entry block (multi_account Account.entry_block). A check that fails
+    blocks (the keep-alive is optional; the owner is told to trade by hand)."""
     today = trading_day(now)
     try:
         from . import entry_pause
@@ -1357,11 +1589,14 @@ def _system_block(bot, g, now) -> str | None:
         from . import guards as G
         from . import lifecycle as LC
         c = G.config(bot)
+        ob = G._owner_blocks(bot, c, now)                # the pause again + presence check-in + ai_watch's stops (OFF by default)
+        if ob:
+            return "your stop blocks the keep-alive (" + "; ".join(str(x) for x in ob)[:160] + ")"
         cp = G.clock_problem(bot, c)
         if cp:
             return cp
     except Exception as e:  # noqa: BLE001
-        return f"the clock check failed ({e.__class__.__name__})"
+        return f"the owner-stop / clock check failed ({e.__class__.__name__})"
     for ln in g["lanes"]:
         o = ln["obj"]
         try:
@@ -1372,6 +1607,13 @@ def _system_block(bot, g, now) -> str | None:
                 lb = LC.block(bot, "lit", now)
                 if lb:
                     return lb
+                dp = getattr(bot, "day_pnl_routed", None)
+                pnl = float(dp()) if callable(dp) else None
+                if pnl is not None and c.get("daily_loss") and pnl <= -float(c.get("daily_loss_usd") or 1000.0):
+                    return (f"LIT's soft daily loss: today's routed P&L ${pnl:,.0f} reached -$"
+                            f"{float(c.get('daily_loss_usd') or 1000.0):,.0f}")
+                if pnl is not None and c.get("combo_day_stop") is not None and pnl <= -float(c["combo_day_stop"]):
+                    return f"combo eval day stop: today's closed ${pnl:,.0f} <= -${float(c['combo_day_stop']):,.0f}"
             elif ln["kind"] == "acct":
                 why = o.startup_block(now) if callable(getattr(o, "startup_block", None)) else None
                 why = why or (o.life_block(now) if callable(getattr(o, "life_block", None)) else None)
@@ -1484,17 +1726,17 @@ def _warn(bot, st, g, P, on, now, out, Q, C) -> bool:
         if on:
             p = {"key": k, "code": "keepalive", "soft": True, "title": f"Keep-alive today on {label}",
                  "body": f"{_idle_words(P)} (MFFU can close an account after {LIMIT_DAYS} days; its limit {P['hard']}). If "
-                         f"nothing trades by then, the bot buys 1 MNQ at {win} and sells it about {hold_min} min later: about "
-                         f"-{money(EXPECTED_COST)}, at most -{money(WORST_COST)}. Skip today: python -X utf8 -m engine.keepalive "
-                         f"--skip {key}"}
+                         f"nothing trades by then, the bot buys 1 MNQ at {win} (or sells, the side an open account holds) and "
+                         f"closes it about {hold_min} min later: about -{money(EXPECTED_COST)}, at most -{money(WORST_COST)}. "
+                         f"Skip today: python -X utf8 -m engine.keepalive --skip {key}"}
         else:
             late = ("" if left > 0 else " MFFU's 7 days end TODAY." if left == 0
                     else f" MFFU's 7 days ran out on {P['hard']}: trade it today and check the MFFU dashboard.")
             p = {"key": k, "code": "keepalive", "title": f"{label}: TODAY is the last safe day to trade",
                  "body": f"{_idle_words(P)}. MFFU can close the account after {LIMIT_DAYS} days without a "
                          f"trade{' and a funded one loses ALL its profits' if _funded(g) else ''}.{late} Place 1 MNQ by hand "
-                         f"before {_hm((w or FULL_WINDOW)[1] + HALF_WINDOW[1])} ET (in and out, about -{money(EXPECTED_COST)}), "
-                         f"then send: python -X utf8 -m engine.keepalive --traded {key}"}
+                         f"before {_hm((w or FULL_WINDOW)[1] + HALF_WINDOW[1])} ET (in and out, about -{money(EXPECTED_COST)}). "
+                         f"{_hand_note(key)}"}
         row = {"key": key, "do": "headsup" if on else "warn_today"}
         if not _queue(Q, st, bot, "problem", p, now, row=row):
             return False
@@ -1507,7 +1749,8 @@ def _warn(bot, st, g, P, on, now, out, Q, C) -> bool:
         nd = _date(P["act_day"])
         p = {"key": k, "code": "keepalive", "soft": True, "title": f"{label}: the next session is the last safe day to trade",
              "body": f"{_idle_words(P)}; MFFU's limit is {P['hard']} ({left} days). If the bot does not trade it first, place "
-                     f"1 MNQ by hand on {nd:%a} {nd:%m-%d} (in and out), or turn on its keep-alive trade."}
+                     f"1 MNQ by hand on {nd:%a} {nd:%m-%d} (in and out), or turn on its keep-alive trade once MFFU support "
+                     f"says a 1-micro trade is OK."}
         row = {"key": key, "do": "warn_eve"}
         if not _queue(Q, st, bot, "problem", p, now, row=row):
             return False
@@ -1533,7 +1776,7 @@ def status(bot=None, now=None) -> dict:
         except Exception as e:  # noqa: BLE001
             rows.append({"error": f"{e.__class__.__name__}: {e}"})
     return {"accounts": C["accounts"], "skip": C["skip"], "start": C["start"], "hold_s": C["hold_s"], "rows": rows,
-            "last": {k: {x: a.get(x) for x in ("day", "phase", "usd", "exit", "tries", "error", "last", "marked")}
+            "last": {k: {x: a.get(x) for x in ("day", "phase", "usd", "exit", "tries", "error", "last", "marked", "fills")}
                      for k, a in (st.get("acc") or {}).items()},
             "cost": {"expected": EXPECTED_COST, "worst": WORST_COST}}
 
@@ -1552,14 +1795,59 @@ def check_traded_day(day, now=None) -> str:
     return d.isoformat()
 
 
+def known_keys(path: str | None = None) -> set:
+    """The account keys the keep-alive knows: lit, atlas, rapid, x:<id> of every extra account in data/accounts.json, the
+    START_DEFAULTS keys and the keys the bot itself wrote to its state file. Never raises."""
+    ks = {"lit", "atlas", "rapid"} | set(START_DEFAULTS)
+    try:
+        from .multi_account import load_file
+        for sp in load_file():
+            if sp.get("id"):
+                ks.add("rapid" if sp.get("lane") == "rapid" else f"x:{sp['id']}")
+    except Exception:
+        pass
+    try:
+        ks |= {str(k) for k in (load_state(path or state_path_for(None)).get("acc") or {})}
+    except Exception:
+        pass
+    return ks
+
+
+def check_key(key, path: str | None = None) -> str:
+    """`key` when it is a known account key, else ValueError (a typo like x:b25k2 must not print 'noted' and change
+    nothing)."""
+    k = str(key or "").strip()
+    ks = known_keys(path)
+    if k not in ks:
+        raise ValueError(f"unknown account {k!r} (known: {', '.join(sorted(ks))})")
+    return k
+
+
+def check_start_day(day, now=None) -> str:
+    """--start: a real date, never after today (ET)."""
+    d = _date(day)
+    today = _et(time.time() if now is None else float(now)).date()
+    if d > today:
+        raise ValueError(f"{d} is in the future (today is {today} ET)")
+    return d.isoformat()
+
+
 def mark_traded(key: str, day: str | None = None, path: str | None = None, now=None) -> dict:
     """The owner traded an account by hand: its idle clock restarts from `day` (default today, the ET date). Raises
-    ValueError for a day in the future / too far back."""
+    ValueError for a day in the future / too far back. The file is re-read right before the write and the write retried
+    when the bot saved it in between (the bot's own save merges these notes too: _save_book)."""
     d = check_traded_day(day, now)
     p = path or state_path_for(None)
-    st = load_state(p)
-    a = st["acc"].setdefault(key, {})
-    a["marked"] = max(d, str(a.get("marked") or ""))
+    for _ in range(5):
+        mt = _mtime(p)
+        st = load_state(p)
+        a = st["acc"].setdefault(key, {})
+        a["marked"] = max(d, str(a.get("marked") or ""))
+        if _mtime(p) != mt:
+            time.sleep(0.05)
+            continue                                     # the bot wrote it meanwhile: read its newer file again
+        save_state(st, p)
+        return a
     save_state(st, p)
     return a
 
@@ -1583,6 +1871,13 @@ def main(argv=None) -> int:
               f"{p['act_day'] or '-'}" + (f" {_hm(w[0])}-{_hm(w[1])} ET" if w else "") + f" (today {p['today']}: due {p['due']}).")
         print(f"cost: about {money(EXPECTED_COST)} (commission ${COMM:.2f} + 1 tick), at most {money(WORST_COST)} (stop {STOP_PTS:g} pts)")
         return 0
+    try:
+        for k in (a.on, a.off, a.skip, (a.start or [None])[0], (a.traded or [None])[0]):
+            if k is not None:
+                check_key(k)
+    except ValueError as e:
+        print(f"NOT changed: {e}.")
+        return 2
     if a.on or a.off:
         C = load_config(None)
         key = a.on or a.off
@@ -1601,7 +1896,10 @@ def main(argv=None) -> int:
         return 0
     if a.start:
         try:
-            d = _date(a.start[1]).isoformat()
+            d = check_start_day(a.start[1])
+        except ValueError as e:
+            print(f"NOT changed: {e} (yyyy-mm-dd, never a future day)")
+            return 2
         except Exception:
             print(f"not a date: {a.start[1]!r} (yyyy-mm-dd)")
             return 2

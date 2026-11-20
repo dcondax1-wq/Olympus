@@ -151,9 +151,11 @@ LIT stays alone on its 50K. Try it on a Sim account first.
 ## Rules that never change
 - The bot never arms a real account by itself. You start the eval bot yourself (dashboard, your phrase).
 - **No trade for 5 days** (MFFU's 7-day rule: one FILLED trade in every 7 calendar days, or MFFU can close the account and a
-  funded one loses its profits): place 1 MNQ by hand (in and out, before 15:50 ET), then
-  `python -X utf8 -m engine.keepalive --traded <account>` (lit, atlas, x:b25k_2, rapid; add the date `yyyy-mm-dd` if it was
-  not today: never a future day, at most 7 days back; it prints the new deadline). Or let the bot do it: the keep-alive
+  funded one loses its profits): place 1 MNQ by hand (in and out, before 15:50 ET). Nothing to type after it: the bot reads
+  the fill from NinjaTrader's own Log within a few minutes (an "Execution" line for that account) and its warnings stop.
+  Only if a warning still comes the next day, at the PC: `python -X utf8 -m engine.keepalive --traded <account>` (lit, atlas,
+  x:b25k_2, rapid; add the date `yyyy-mm-dd` if it was not today: never a future day, at most 7 days back, an unknown
+  account name is refused; it prints the new deadline). Or let the bot do it: the keep-alive
   trade (`engine/keepalive.py`, OFF until you say yes: `python -X utf8 -m engine.keepalive --on <account> --yes`; ask MFFU
   support first, in writing, if a 1-micro in-and-out trade is OK for the 7-day rule).
 - **On a keep-alive day (switch ON), do not trade that account by hand between 15:33 and 15:50 ET**: the bot's close is a

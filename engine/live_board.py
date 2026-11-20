@@ -131,17 +131,24 @@ def quiet_days(trade_ts, start, now) -> int | None:
         return None
 
 
-def _ka_card(pc: dict, lane: str) -> dict | None:
+KA_COVER_FRESH_S = 1200               # engine/keepalive.COVER_FRESH_S: a cover older than this (the bot down) never counts
+
+
+def _ka_card(pc: dict, lane: str, now=None) -> dict | None:
     """The heartbeat's "keepalive" block (engine/keepalive.hb_block) for the account a lane ("lit", "atlas") trades:
-    {"last": keep-alive / hand-trade day, "cover": True while the bot's keep-alive sends this account's inactivity warning
-    (tools/pc_guard + tools/morning_brief stay quiet then), "on": its switch}. None without the block (as before)."""
+    {"last": keep-alive / hand-trade / kept fill day, "cover": True while the RUNNING bot's keep-alive sends this account's
+    inactivity warning (tools/pc_guard + tools/morning_brief stay quiet then): only when the block's "t" is at most
+    KA_COVER_FRESH_S old at `now` (a dead bot's last heartbeat keeps its block), "t", "on": its switch}. None without the
+    block (as before)."""
     b = _d(pc.get("keepalive"))
     if not b:
         return None
     k = _d(b.get("lane")).get(lane, lane)
     last = _d(b.get("last")).get(k)
-    return {"key": k, "last": str(last)[:10] if last else None, "cover": k in _l(b.get("cover")),
-            "on": bool(_d(b.get("on")).get(k))}
+    t = _f(b.get("t")) or 0.0
+    fresh = t > 0 and now is not None and abs(float(now) - t) <= KA_COVER_FRESH_S
+    return {"key": k, "last": str(last)[:10] if last else None, "cover": bool(fresh and k in _l(b.get("cover"))),
+            "t": int(t) or None, "on": bool(_d(b.get("on")).get(k))}
 
 
 def trading_day(t) -> str:
@@ -331,7 +338,7 @@ def lit_now(pc: dict, accounts, now: int, brain: dict | None = None) -> dict:
     out["stages"] = [[s[0], s[1]] for s in _l(br.get("stages")) if isinstance(s, (list, tuple)) and len(s) >= 2]
     out["waiting"] = _waiting_lit(br, pc)
     pa = _d(pc.get("acct"))                  # the PC's own ledger of the 50K: its trades (day) and the eval's start
-    ka = _ka_card(pc, "lit")                 # engine/keepalive: a keep-alive / hand trade noted restarts the quiet days too
+    ka = _ka_card(pc, "lit", now)            # engine/keepalive: a keep-alive / hand trade noted restarts the quiet days too
     out["quiet_days"] = quiet_days([t.get("day") for t in _l(pa.get("trades")) if isinstance(t, dict)]
                                    + ([ka["last"]] if ka and ka.get("last") else []),
                                    _d(pa.get("eval")).get("start"), now) if pa else None
@@ -547,7 +554,7 @@ def atlas_now(pc: dict, now: int, second: dict | None = None) -> dict:
     members = [_member_line(k, _d(strat.get(k)), now) for k in keys]
     bal = _f(ev.get("balance"))
     room = _f(ev.get("room"))
-    ka = _ka_card(pc, "atlas")               # engine/keepalive: a keep-alive / hand trade noted restarts the quiet days too
+    ka = _ka_card(pc, "atlas", now)          # engine/keepalive: a keep-alive / hand trade noted restarts the quiet days too
     out = {"id": "atlas", "name": "ATLAS", "plan": ab.get("plan_label") or "MFFU Builder 25K", "method": "EMA · MACD · S/R",
            "broker": ab.get("account"), "badge": ab.get("kind"), "configured": bool(ab),
            "source": "PC bot (account B)" if ab else "none",

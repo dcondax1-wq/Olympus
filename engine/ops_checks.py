@@ -1098,8 +1098,9 @@ def inactivity_notice(view: dict, now) -> dict | None:
     ka = view.get("keepalive") if isinstance(view.get("keepalive"), dict) else None
     try:
         from . import keepalive as KA
-        if ka and KA.hb_covers(ka, "lit"):
-            return None             # the bot's keep-alive sends this account's ONE inactivity warning a day (and counts it)
+        if ka and view.get("fresh") and KA.hb_covers(ka, "lit", now):
+            return None             # the RUNNING bot's keep-alive sends this account's ONE inactivity warning a day (and counts
+        #                             it); a stale heartbeat (the bot down) never covers: then this warns as before
         kd = KA.hb_last(ka, "lit") if ka else None
     except Exception:
         kd = None

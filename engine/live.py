@@ -1172,6 +1172,11 @@ class LiveBot:
             self._log("warn", f"live_state.json unreadable ({e}) - starting clean")
             return
         today = trading_day(self.clock())
+        try:                         # engine/keepalive: the saved ledger's CONFIRMED fill days outlive an earlier day's ledger
+            from . import keepalive as _ka
+            self._ka_seed = _ka.seed_days(s.get("ledger") or [])
+        except Exception:
+            pass
         if s.get("sym") == self.cfg.get("sym"):
             # kept across days: the LIT weekly stop needs this week's earlier stop-outs, safe_eval the eval's daily P&L
             from .lit import iso_week

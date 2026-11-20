@@ -5,7 +5,7 @@
 
   a. the plan: the last full CME session on or before last trade + 6 (Zlarior 50K last traded Mon 11-16 -> Fri 11-20),
      Thanksgiving / Christmas weeks, past the deadline (the next session), the windows (15:33-15:48, half days before the cut)
-  b. replay, switch ON, quiet since Mon 11-16: exactly ONE keep-alive (1 MNQ at 15:33, closed ~30 s later, flat, nothing
+  b. replay, switch ON, quiet since Mon 11-16: exactly ONE keep-alive (1 MNQ at 15:33, closed 120 s later, flat, nothing
      working), the heads-up + entry + result alerts, the idle clock restarts (nothing more the next days)
   c. a real trade today / a LIT position open / the eval passed / the kill switch / skip today: nothing
   d. OFF: no order ever; the warnings: the session before ("next session is the last safe day"), the act day ("TODAY")
@@ -18,6 +18,12 @@
   h. MFFU rule checks: room under $100, the daily loss used up -> nothing
   i. lanes on one NinjaTrader account (the Rapid's LIT + ATLAS lanes) are ONE target; account_b's idle counter counts a
      keep-alive; LiveBot wiring; the CLI switch needs --yes; the exit alert words
+  j-r. round 1 (owner stops, confirmed fills, --traded, a new account's start, alert thread + retry, the keep-alive's own
+     key, a real LiveBot, one warning a day, entry / result straight to ntfy)
+  s-z. round 2: a restart on a later day keeps the fill days (real LiveBot, an extra account); a stale heartbeat never
+     covers (ops_checks, the board card, the morning brief); hand trades seen in NinjaTrader's Log; the refusal push is
+     retried until 16:05; the CLI refuses unknown keys / a future --start, the bot's save keeps a --traded written meanwhile;
+     the rest of the owner's stops + LIT's soft daily loss; the push words
 """
 from __future__ import annotations
 
@@ -743,6 +749,7 @@ def t_start():
         bot = Bot(env.tmp, env.adapter(), env.now, ka={"accounts": {}})
         bot.accts = types.SimpleNamespace(accounts=[x_lane(env)])
         g = next(g for g in K.targets(bot) if g["key"] == "x:b25k_2")
+        env.now[0] = ts(2026, 11, 20, 9)                 # (the bot's clock: a start after "today" is ignored)
         lk = K.last_known(bot, g, K.load_config(bot))
         replay(env, bot, ts(2026, 11, 20, 9), ts(2026, 11, 20, 10))
         t2 = [p for k, p in env.alerts if p.get("title", "").startswith("Zlarior 25K #2: TODAY is the last safe day")]
@@ -952,7 +959,7 @@ def t_one_place():
         today = [p for k, p in env.alerts if "TODAY" in p.get("title", "")]
         now = ts(2026, 11, 20, 10)
         view = {"is_live": True, "eval": {"status": "open", "start": "2026-10-19"}, "trades": [{"day": "2026-11-14"}],
-                "position": None, "keepalive": hb}
+                "position": None, "fresh": True, "keepalive": hb}
         n_ops = OC.inactivity_notice(view, now)
         n_ops_down = OC.inactivity_notice({k: v for k, v in view.items() if k != "keepalive"}, now)
         card = {"id": "lit", "name": "Zlarior", "plan": "MFFU Builder 50K", "badge": "LIVE", "configured": True, "status": "open",
@@ -1034,6 +1041,329 @@ def t_instant():
         env.done()
 
 
+# ------------------------------------------------------------------------------------------------ s. a restart on a later day
+def restart_bot(env, ad, ka, t, ledger=None, eval_start="2026-10-19"):
+    """A real LiveBot started at `t` on the same state file (a new process: the state file + keepalive_state.json only)."""
+    env.now[0] = t
+    b = live_bot(env.tmp, env.now, ad, ka=ka)
+    b.cfg["eval_start"] = eval_start
+    if ledger is not None:
+        b.ledger = ledger
+        b._save_state()
+        return b
+    b._restore()
+    b.state["eval_life"] = {"status": "open", "balance": 49193.0, "floor": 48168.0, "room": 1025.0, "target_balance": 53000.0,
+                            "days_traded": 5}
+    b._startup_ok = 1
+    return b
+
+
+def t_restart_days():
+    print("s. a restart on a later day keeps the fill days (skeptic round 2, HIGH)", flush=True)
+    for on in (False, True):
+        env = Env()
+        hook(env)
+        try:
+            ad = env.adapter()
+            ka = {"accounts": {"lit": on}}
+            restart_bot(env, ad, ka, ts(2026, 11, 18, 16, 30), ledger=fill_rows("2026-11-18", -50.0))   # Wed: LIT filled
+            b2 = restart_bot(env, ad, ka, ts(2026, 11, 19, 9))                  # Thu 09:00: START BOT / PC update / crash
+            g = K.targets(b2)[0]
+            last = K.last_known(b2, g)
+            out = replay(env, b2, ts(2026, 11, 19, 9, 25), ts(2026, 11, 19, 16, 10))
+            check(f"switch {'ON' if on else 'OFF'}: LIT filled Wed 11-18, the bot restarted Thu 11-19 (its ledger is not restored "
+                  "on a new day): the last trade is still 11-18 (the saved ledger's fills, LiveBot._ka_seed), no 'TODAY is the "
+                  "last safe day' push, no keep-alive order on Thu (was: 'no trade for 32 days' + a REAL BUY 1 MNQ)",
+                  last[0] == "2026-11-18" and not last[2] and not env.entries() and not out
+                  and not [p for _, p in env.alerts if "TODAY" in p.get("title", "") or "Keep-alive" in p.get("title", "")],
+                  (last, out, env.entries(), [p.get("title") for _, p in env.alerts]))
+        finally:
+            K.ALERT_HOOK = None
+            env.done()
+    env = Env()
+    hook(env)
+    try:
+        ad = env.adapter()
+        ka = {"accounts": {}}
+        b1 = restart_bot(env, ad, ka, ts(2026, 11, 18, 16, 30), ledger=fill_rows("2026-11-18", -50.0))
+        b1.state["eval_life"] = {"status": "open", "balance": 49193.0, "floor": 48168.0, "room": 1025.0}
+        K.tick(b1, env.now[0], px=PX, bar_t=env.now[0] - 62)          # one poll after the fill: kept in keepalive_state.json
+        kept = K.load_state(K.state_path_for(b1))["acc"].get("lit", {}).get("fills")
+        restart_bot(env, ad, ka, ts(2026, 11, 19, 9), ledger=[])          # Thu: a restart, then the bot saved an empty ledger
+        b3 = restart_bot(env, ad, ka, ts(2026, 11, 20, 9))                # Fri: a 2nd restart: the saved ledger has no fill now
+        last = K.last_known(b3, K.targets(b3)[0])
+        out = replay(env, b3, ts(2026, 11, 20, 9, 25), ts(2026, 11, 20, 16, 10))
+        check("two restarts (Thu, Fri) after the Wed fill: the state file kept the fill day (acc.lit.fills), last trade 11-18, "
+              "no warning Fri (MFFU's limit Wed 11-25)", kept == ["2026-11-18"] and last[0] == "2026-11-18" and not out
+              and not env.alerts, (kept, last, out, [p.get("title") for _, p in env.alerts]))
+        check("... and the heartbeat block / the other warners see it: last_day('lit') = 2026-11-18",
+              K.last_day(b3, "lit") == "2026-11-18" and K.hb_block(b3)["last"].get("lit") == "2026-11-18", K.hb_block(b3))
+    finally:
+        K.ALERT_HOOK = None
+        env.done()
+    from engine import multi_account as MA
+    a = types.SimpleNamespace(spec={"nt_account": "Sim104"}, closes=[], ledger=[], lock=None)
+    t = ts(2026, 11, 24, 10)
+    blob = {"nt_account": "Sim104", "day": "2026-11-24", "ledger": [{"t": t, "side": "buy", "entry_t": t - 60, "result": {"ok": True}}],
+            "closes": [["2026-11-24", t, -40.0]]}
+    MA.Account.restore(a, blob, "2026-11-30")                             # the bot restarted on Mon 11-30
+    check("an extra account (the 25K #2) restored on a later day: its ledger is not, its fill day is (Account._ka_seed)",
+          a.ledger == [] and K._lane_days("extra", a, None) == {"2026-11-24"}, (a.ledger, getattr(a, "_ka_seed", None)))
+
+
+# ------------------------------------------------------------------------------------------------ t. a stale heartbeat
+def t_stale_cover():
+    print("t. a stale heartbeat never covers: with the bot down the old warnings come back (skeptic round 2, HIGH)", flush=True)
+    from engine import live_board as LB, ops_checks as OC
+    from tools import morning_brief as MB
+    from tests import test_ops as TO
+    last_hb = ts(2026, 11, 20, 16, 0)                       # the bot's last heartbeat: Fri 16:00 (down after the update)
+    now = ts(2026, 11, 23, 8, 0)                            # Mon 08:00, 7 days after the last trade Mon 11-16
+    blk = {"t": last_hb - 60, "on": {}, "last": {}, "cover": ["lit"], "lane": {"lit": "lit"}}
+    h = TO.hb(last_hb + 60, trades=[{"day": "2026-11-16", "entry_t": ts(2026, 11, 16, 10), "pnl": -129.4}], start="2026-10-19")
+    h["keepalive"] = blk
+    v = OC.account_view(h, now)
+    n_stale = OC.inactivity_notice(v, now)
+    h2 = dict(h, keepalive=dict(blk, t=now - 120))
+    n_fresh = OC.inactivity_notice({**OC.account_view(h2, now), "fresh": True}, now)
+    check("ops_checks (its own 5-min task): the heartbeat block is 2.7 days old -> 'No trade for 7 days (MFFU closes an "
+          "account at 7)' as before (was: silent); a fresh block from a running bot still covers",
+          n_stale is not None and "No trade for 7 days" in n_stale["title"] and n_fresh is None, (v.get("fresh"), n_stale, n_fresh))
+    check("hb_covers: the same block covers 'lit' at 16:05 Fri, not at 08:00 Mon",
+          K.hb_covers(blk, "lit", last_hb + 300) and not K.hb_covers(blk, "lit", now))
+    card = LB._ka_card({"keepalive": blk}, "lit", now)
+    card_live = LB._ka_card({"keepalive": blk}, "lit", last_hb + 300)
+    lit = LB.lit_now({"acct": {"trades": [{"day": "2026-11-16"}], "eval": {"start": "2026-10-19"}}, "keepalive": blk}, [], now)
+    check("the board card (pc_guard, the morning brief): cover False on Mon (block 2.7 days old), True while the bot runs",
+          card["cover"] is False and card_live["cover"] is True and lit["keepalive"]["cover"] is False, (card, card_live))
+    src = {"id": "lit", "quiet_days": 7, "keepalive": {"key": "lit", "cover": True}}
+    row = {"key": "zlarior", "label": "Zlarior 50K", "name": "Zlarior 50K", "stage": "eval", "balance": 49000.0, "_src": src}
+    down = [n for n in MB.accounts_line([row], hb_fresh=False)[1] if "without a trade" in n]
+    up = [n for n in MB.accounts_line([row], hb_fresh=True)[1] if "without a trade" in n]
+    check("the morning brief with the bot's last report old: 'Zlarior 50K 7 days without a trade: 1 MNQ by hand' again "
+          "(was: dropped); with a fresh report the keep-alive's cover still holds", len(down) == 1 and not up, (down, up))
+
+
+# ------------------------------------------------------------------------------------------------ u. hand trades in NinjaTrader's Log
+def nt_log(env, day, lines):
+    d = os.path.join(env.folder, "log")
+    os.makedirs(d, exist_ok=True)
+    with open(os.path.join(d, f"log.{day.replace('-', '')}.00000.txt"), "a", encoding="utf-8") as fh:
+        for ln in lines:
+            fh.write(ln + "\n")
+
+
+def exec_line(day, hhmm, acct, px=PX):
+    return (f"{day} {hhmm}:11:123|1|8|Execution='{abs(hash((day, hhmm, acct))) % 10 ** 12}_1' Instrument='MNQ 12-26' "
+            f"Account='{acct}' Exchange=Globex Price={px} Quantity=1 Market position=Long Operation=Operation_Add")
+
+
+def t_hand_trades():
+    print("u. the owner's hand trades are seen in NinjaTrader's Log, nothing to type (skeptic rounds 1 + 2, LOW)", flush=True)
+    env = Env()
+    hook(env)
+    try:
+        bot = Bot(env.tmp, env.adapter(), env.now)                       # switch ON, last fill Mon 11-16: due Fri 11-20
+        nt_log(env, "2026-11-20", ["2026-11-20 10:05:00:001|1|8|OIF, 'PLACE;Sim101;MNQ 12-26;BUY;1;MARKET' (not a fill)",
+                                   exec_line("2026-11-20", "10:05", "Sim999"),          # another account
+                                   exec_line("2026-11-20", "13:20", "Sim101")])         # the owner's hand trade at 13:20
+        out = replay(env, bot, ts(2026, 11, 20, 13, 30), ts(2026, 11, 20, 16, 20))
+        g = K.targets(bot)[0]
+        days, _ = K.account_days(bot, g)
+        check("an 'Execution=' line for Sim101 at 13:20 Fri (the owner's 1 MNQ by hand): counted, so NO keep-alive at 15:33; "
+              "another account's line and an order line count nothing",
+              "2026-11-20" in days and not env.entries() and not [x for x in out if x.get("do") == "open"]
+              and K.nt_exec_days(env.folder, "Sim999", env.now[0]) == {"2026-11-20"}, (sorted(days), out))
+        st = K.load_state(K.state_path_for(bot))
+        check("... kept in the state file (it survives a restart) and the heartbeat block carries it (the board's quiet days, "
+              "ops_checks)", "2026-11-20" in st["acc"]["lit"].get("fills", []) and K.hb_block(bot)["last"]["lit"] == "2026-11-20",
+              st["acc"].get("lit"))
+    finally:
+        K.ALERT_HOOK = None
+        env.done()
+    env = Env()
+    hook(env)
+    try:
+        bot = Bot(env.tmp, env.adapter(), env.now, ka={"accounts": {}})
+        nt_log(env, "2026-11-20", ["2026-11-20 08:00:00:001|1|0|startup line"])
+        replay(env, bot, ts(2026, 11, 20, 9, 25), ts(2026, 11, 20, 10))
+        n1 = len([p for _, p in env.alerts if "TODAY" in p.get("title", "")])
+        nt_log(env, "2026-11-20", [exec_line("2026-11-20", "10:01", "Sim101")])      # appended later: read incrementally
+        replay(env, bot, ts(2026, 11, 20, 10), ts(2026, 11, 21, 10))
+        p = K.plan(K.last_known(bot, K.targets(bot)[0])[0], ts(2026, 11, 21, 10))
+        check("switch OFF: the 09:30 'TODAY is the last safe day' (once), the hand trade 10:01 appended to the log is read on a "
+              "later scan; the next act day moves to Thu 11-26's week (MFFU's limit Fri 11-27), no more warnings",
+              n1 == 1 and p["hard"] == "2026-11-27" and len([x for _, x in env.alerts if "TODAY" in x.get("title", "")]) == 1, p)
+        body = next(x["body"] for _, x in env.alerts if "TODAY" in x.get("title", ""))
+        check("the push says no PC step is needed (the bot reads NinjaTrader's log); --traded only as the PC fallback",
+              "NinjaTrader's log by itself" in body and "--traded lit" in body, body)
+    finally:
+        K.ALERT_HOOK = None
+        env.done()
+    relog = ("2026-11-23 10:31:02:004|1|8|Execution='9_1' Instrument='MNQ 12-26' Account='Sim101' Price=26380 Quantity=1 "
+             "Market position=Long Operation=Operation_Add Time='11/22/2026 7:05:11 PM' Statement date='2026-11-23'")
+    check("a log line's day is never later than its ET date; an execution logged again the next day (a reconnect) keeps "
+          "its own day (Time='11/22/2026 7:05:11 PM' -> 11-22); a malformed line counts nothing",
+          K._exec_line(exec_line("2026-11-20", "10:01", "Sim101"))[0] == "Sim101"
+          and K._exec_line(exec_line("2026-11-20", "10:01", "Sim101"))[1] <= "2026-11-20"
+          and K._exec_line(relog) == ("Sim101", "2026-11-22")
+          and K._exec_line("garbage Execution= Account='x'") is None, K._exec_line(relog))
+
+
+# ------------------------------------------------------------------------------------------------ v. the refusal push is retried
+def t_refusal_retry():
+    print("v. 'did not go through: place 1 MNQ by hand' is retried until 16:05 when ntfy refuses it (skeptic round 2, LOW)",
+          flush=True)
+    from engine import entry_pause
+    old_alert = K._alert
+    for answers, want in ((["ntfy refused"], [947.5, 952.5]), ([], None)):
+        env = Env()
+        tries = []
+        try:
+            def flaky(bot, kind, p, answers=answers):
+                if str(p.get("key", "")).startswith("ka:refused:"):
+                    tries.append(K._mod(env.now[0]) + (env.now[0] % 60) / 60.0)
+                    if want is None:
+                        return "ntfy refused"
+                    return answers.pop(0) if answers else "sent"
+                return "sent"
+            K._alert = flaky
+            K.SYNC_ALERTS = True
+            bot = Bot(env.tmp, env.adapter(), env.now)                    # ON, due today; the owner's pause blocks it
+            entry_pause.set_pause("tomorrow", now=ts(2026, 11, 20, 9), path=entry_pause.path_for(bot))
+            for t in range(ts(2026, 11, 20, 15, 30), ts(2026, 11, 20, 16, 20), 30):
+                poll(env, bot, t)
+            st = K.load_state(K.state_path_for(bot))
+            if want is not None:
+                check("ntfy refuses the 15:47:30 push: kept for a retry, sent 5 min later (15:52:30), recorded, never again",
+                      tries == want and "ka:refused:lit:2026-11-20" in st["sent"] and not st.get("retry"), (tries, st.get("retry")))
+            else:
+                check("ntfy refuses every try: 15:47:30, 15:52:30, 15:57:30, 16:02:30, then no more (16:05 is the hand-trade "
+                      "time); no order", tries == [947.5, 952.5, 957.5, 962.5] and not env.entries(), tries)
+        finally:
+            K._alert = old_alert
+            K.SYNC_ALERTS = False
+            env.done()
+    env = Env()
+    hook(env)
+    try:
+        bot = Bot(env.tmp, env.adapter(), env.now)
+        entry_pause.set_pause("tomorrow", now=ts(2026, 11, 20, 9), path=entry_pause.path_for(bot))
+        replay(env, bot, ts(2026, 11, 20, 15), ts(2026, 11, 20, 16, 20))
+        told = [p for _, p in env.alerts if "did not go through" in p.get("title", "")]
+        check("the push: 'Place 1 MNQ by hand on this account before 16:05 ET' (a half day: 5 min before the halt)",
+              len(told) == 1 and "before 16:05 ET" in told[0]["body"] and K.hand_by("2026-11-26") == 12 * 60 + 55,
+              [p.get("body") for p in told])
+    finally:
+        K.ALERT_HOOK = None
+        env.done()
+
+
+# ------------------------------------------------------------------------------------------------ w. the CLI + the bot's save
+def t_cli_safety():
+    print("w. the CLI refuses an unknown key / a future --start; the bot's save keeps a --traded written meanwhile (round 2, LOW)",
+          flush=True)
+    tmp = tempfile.mkdtemp(prefix="le_keepalive_cli_")
+    old_sp, old_cp = K.state_path_for, K.CONFIG_PATH
+    try:
+        p = os.path.join(tmp, "keepalive_state.json")
+        K.state_path_for = lambda bot=None: p
+        K.CONFIG_PATH = os.path.join(tmp, "keepalive.json")
+        outs = []
+        for argv in (["--traded", "x:b25k2"], ["--on", "zlarior", "--yes"], ["--start", "x:b25k_2", "2099-01-01"]):
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                outs.append((K.main(argv), buf.getvalue()))
+        check("refused, nothing written: --traded x:b25k2 (a typo of x:b25k_2), --on zlarior, --start with a future day",
+              all(rc == 2 and "NOT changed" in o for rc, o in outs) and not os.path.exists(p)
+              and not os.path.exists(K.CONFIG_PATH), outs)
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            rc = K.main(["--traded", "x:b25k_2"])
+        check("a known key still works (x:b25k_2, lit, atlas, rapid)", rc == 0 and {"lit", "atlas", "rapid", "x:b25k_2"} <= K.known_keys(p),
+              buf.getvalue())
+    finally:
+        K.state_path_for, K.CONFIG_PATH = old_sp, old_cp
+        shutil.rmtree(tmp, ignore_errors=True)
+    now = ts(2026, 11, 20, 10)
+    check("a future MFFU start is ignored even with no lane start of its own (it would drop every earlier fill); the Rapid "
+          "counts from its purchase Thu 11-19 (START_DEFAULTS) when added within 7 days",
+          K._start_override({"start": {"x:new": "2026-11-25"}}, "x:new", None, now) is None
+          and K._start_override({}, "rapid", "2026-11-23", ts(2026, 11, 23, 10)) == "2026-11-19"
+          and K._start_override({}, "rapid", "2026-12-01", ts(2026, 12, 1, 10)) == "2026-12-01")
+    env = Env()
+    try:
+        bot = Bot(env.tmp, env.adapter(), env.now)
+        sp = K.state_path_for(bot)
+        K.save_state({"v": 1, "acc": {}, "sent": [], "notes": {}, "log": []}, sp)
+        b = K._book(bot)
+        b["st"]["acc"]["lit"] = {"fills": ["2026-11-16"]}                 # the bot's tick, in memory
+        K.mark_traded("lit", "2026-11-19", path=sp, now=ts(2026, 11, 20, 10))   # the owner's --traded in another window
+        K._save_book(bot, b)                                               # the bot saves its tick
+        st = K.load_state(sp)
+        check("--traded written while a bot tick ran: the bot's save keeps it (marked 11-19) and its own change (fills)",
+              st["acc"]["lit"].get("marked") == "2026-11-19" and st["acc"]["lit"].get("fills") == ["2026-11-16"], st["acc"])
+    finally:
+        env.done()
+
+
+# ------------------------------------------------------------------------------------------------ x. the rest of the owner's stops
+def t_more_stops():
+    print("x. the rest of the owner's stops (presence check-in, ai_watch) and LIT's soft daily loss block it (round 2, LOW)",
+          flush=True)
+    env = Env()
+    try:
+        t_in = ts(2026, 11, 20, 15, 33, 2)
+        res = []
+        for mut in (lambda b: b.cfg.update(guards={"presence_required": True, "presence_hours": 12}),
+                    lambda b: setattr(b, "day_pnl_routed", lambda: -1200.0),
+                    lambda b: None):
+            bot = Bot(env.tmp, env.adapter(), env.now)
+            bot._note_error = lambda *a, **k: None
+            mut(bot)
+            g = K.targets(bot)[0]
+            env.now[0] = t_in
+            res.append(K._gate(bot, g, "mffu_builder_50k", t_in, PX, t_in - 62, K.load_config(bot)))
+        check("presence_required with no check-in -> 'your stop blocks the keep-alive (no check-in ...)'; today's routed P&L "
+              "-$1,200 -> 'LIT's soft daily loss'; neither -> the gate passes",
+              "your stop blocks the keep-alive (no check-in" in str(res[0]) and "LIT's soft daily loss" in str(res[1])
+              and isinstance(res[2], dict), res)
+    finally:
+        env.done()
+
+
+# ------------------------------------------------------------------------------------------------ y. the push words
+def t_words():
+    print("y. the push words (round 2, LOW)", flush=True)
+    env = Env()
+    hook(env)
+    try:
+        bot = Bot(env.tmp, env.adapter(), env.now)
+        replay(env, bot, ts(2026, 11, 20, 9, 25), ts(2026, 11, 20, 9, 40))
+        hu = next((p for _, p in env.alerts if "Keep-alive today" in p.get("title", "")), {})
+        check("ON heads-up: 'buys 1 MNQ at 15:33 ET (or sells, the side an open account holds)'",
+              "(or sells, the side an open account holds)" in hu.get("body", ""), hu)
+    finally:
+        K.ALERT_HOOK = None
+        env.done()
+    env = Env()
+    hook(env)
+    try:
+        bot = Bot(env.tmp, env.adapter(), env.now, ka={"accounts": {}})
+        replay(env, bot, ts(2026, 11, 19, 9, 25), ts(2026, 11, 19, 9, 40))
+        eve = next((p for _, p in env.alerts if "next session" in p.get("title", "")), {})
+        check("OFF 'the next session is the last safe day': '... or turn on its keep-alive trade once MFFU support says a "
+              "1-micro trade is OK'", "once MFFU support says a 1-micro trade is OK" in eve.get("body", ""), eve)
+    finally:
+        K.ALERT_HOOK = None
+        env.done()
+    doc = " ".join((K.__doc__ or "").split())
+    check("the docstring quotes Terms 12.4 as written (12.4.2 'smaller or larger numbers of positions') and qualifies the "
+          "half day + 'never refused'", "12.4.2" in doc and "smaller or larger numbers of positions" in doc
+          and "substantially smaller ... positions" not in doc and "a real trade is never refused" not in doc
+          and "on a half day LIT can" in doc)
+
+
 def main() -> int:
     t_plan()
     t_one()
@@ -1053,6 +1383,13 @@ def main() -> int:
     t_live_bot()
     t_one_place()
     t_instant()
+    t_restart_days()
+    t_stale_cover()
+    t_hand_trades()
+    t_refusal_retry()
+    t_cli_safety()
+    t_more_stops()
+    t_words()
     bad = [n for n, ok in RESULTS if not ok]
     print(f"\n{len(RESULTS) - len(bad)}/{len(RESULTS)} passed" + (f"; FAILED: {bad}" if bad else ""))
     return 1 if bad else 0
