@@ -8,8 +8,8 @@ One settings file: notify_settings.json (repo root; a missing or broken file = D
                        problems (bot down, FEED STALE, NinjaTrader closed, fill check, trade watch), other (roll, quiet bot, ...).
                        Default (owner 2026-11-18, "important only" + every entry): ON = trade_opened, trade_closed,
                        account_status, daily_summary, morning_brief, pc_silent, problems; the rest OFF. Entries go out the
-                       moment the bot routes them (instant_entry, via engine/push.pc_notify; the 15-minute report then skips
-                       the same entry), closes with the next report ($, day, room).
+                       moment NinjaTrader fills them (instant_entry, via engine/push.pc_notify; the 15-minute report then skips
+                       the same entry), closes the moment they close (instant_exit, 2026-11-20: $, today, balance, $ to pass).
   quiet_hours          ET; inside them trade pushes and ordinary ones arrive without sound (ntfy priority "low"), the guard's
                        summaries / milestones wait for the end; ring_in_quiet_hours kinds keep their sound
   milestones_pct       eval progress pushes (% of the profit target made), once per level per eval
@@ -20,15 +20,16 @@ One settings file: notify_settings.json (repo root; a missing or broken file = D
   pc_silent_after_min  the cloud says "Your PC stopped reporting" when neither its heartbeat nor its status feed is newer
   pc_silent_remind_after_min   one reminder after this; at most 2 pushes per outage per trading day, never every run
 
-Messages (examples):
-  Zlarior 50K SHORT opened | risk $368 | target +$1,432
-  Zlarior 50K closed +$605 | day +$605 | room $1,750
+Messages (examples; docs/TRADE_ALERTS.md):
+  Zlarior 50K: LONG 4 MNQ @ 21,034.25       stop 21,012.00 (-$178), target 21,090.50 (+$450) · 10:31 AM ET.   (instant, at the fill)
+  Zlarior 50K: closed LONG +$312 (target)   today +$312, balance $49,505, $3,495 to pass · +1.4R · 4 MNQ · 10:58 AM ET.
+  Zlarior 50K SHORT opened | risk $368 | target +$1,432   (the 15-minute report's own words, tools/pc_report, when no instant push went)
   Zlarior 50K: 50% of the target made ($1,500 of $3,000)
   ATLAS 25K: room getting low, $250 left of $1,000
   Day Mon Nov 16: +$310                     (each account: $ today, $ to pass, room; tomorrow's big US news)
   ZEUS - Wed Nov 18 - PC ok                 (07:30 ET: accounts, overnight, today's hours + news, edge, needs you)
   PC stopped reporting                      Your PC stopped reporting at 09:14 ET. Check it: STOP BOT, START BOT.
-Tests: python -X utf8 -m tests.test_notify
+Tests: python -X utf8 -m tests.test_notify, tests.test_trade_alerts (every account route: one entry + one exit, name, $)
 """
 from __future__ import annotations
 

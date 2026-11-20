@@ -86,7 +86,7 @@ class Box:
         shutil.rmtree(self.dir, ignore_errors=True)
 
 
-def nt_adapter(account="MFFUEVBLDR1234566016", push_as=None, real=True):
+def nt_adapter(account="MFFUEVBLDR000006016", push_as=None, real=True):
     """A NinjaTrader adapter without NinjaTrader: only what its phone notices use."""
     from engine import ninjatrader as NT
     ad = object.__new__(NT.NinjaTraderAdapter)
@@ -114,7 +114,7 @@ def split(posts):
 # ------------------------------------------------------------------------------------------------ a. LIT primary
 def part_a(b: Box):
     b.live(T0 - 600, [{"id": "mffu50k_eval", "name": "MFFU 50K", "plan": "MFFU Builder 50K", "kind": "eval", "source": "pc",
-                       "broker_account": "MFFUEVBLDR1234566016", "eval": {"balance": 49193.0, "today": 0.0, "to_target": 3807.0}}])
+                       "broker_account": "MFFUEVBLDR000006016", "eval": {"balance": 49193.0, "today": 0.0, "to_target": 3807.0}}])
     ad = nt_adapter()
     ad._push_fill(leg())
     ad._push_fill(leg())                               # NinjaTrader reports the same fill twice (two legs, a retry)
@@ -131,7 +131,7 @@ def part_a(b: Box):
           and ex[0]["body"].startswith("today +$312, balance $49,505, $3,495 to pass"), ex)
     check("a. the entry rings (high), the exit is a normal push; no account id anywhere",
           ent and ex and ent[0]["priority"] == "high" and ex[0]["priority"] == "default"
-          and not any("1234566016" in m["title"] + m["body"] for m in ent + ex))
+          and not any("000006016" in m["title"] + m["body"] for m in ent + ex))
 
 
 # ------------------------------------------------------------------------------------------------ b. an extra account
@@ -151,9 +151,9 @@ class Acc:
 
 def part_b(b: Box):
     b.live(T0 - 600, [{"id": "b25k_2", "name": "Zlarior Builder 25K #2", "plan": "MFFU Builder 25K", "kind": "eval", "source": "pc",
-                       "broker_account": "MFFUEVBLDR9999992222", "eval": {"balance": 25120.0, "today": 40.0, "to_target": 1380.0}}])
+                       "broker_account": "MFFUEVBLDR000002222", "eval": {"balance": 25120.0, "today": 40.0, "to_target": 1380.0}}])
     r = router()
-    acc = Acc("b25k_2", "MFFUEVBLDR9999992222")
+    acc = Acc("b25k_2", "MFFUEVBLDR000002222")
     acc.adapter = nt_adapter(acc.name, real=False)
     r._wire_push(acc)
     check("b. the router gives the account's NinjaTrader adapter its own name + key (push_as)",
@@ -176,7 +176,7 @@ def part_b(b: Box):
 
 
 # ------------------------------------------------------------------------------------------------ c. account B (ATLAS)
-def atlas(cls=None, label="ATLAS 25K", account="MFFUSFBLDR7777776018"):
+def atlas(cls=None, label="ATLAS 25K", account="MFFUSFBLDR000006018"):
     from engine import account_b as AB
     from engine import live as L
     cls = cls or AB.AccountB
@@ -191,7 +191,7 @@ def atlas(cls=None, label="ATLAS 25K", account="MFFUSFBLDR7777776018"):
 
 
 def part_c(b: Box):
-    b.live(T0 - 600, [], atlas={"balance": 26050.0, "profit": 1050.0, "today": 0.0, "status": "funded", "broker": "MFFUSFBLDR7777776018",
+    b.live(T0 - 600, [], atlas={"balance": 26050.0, "profit": 1050.0, "today": 0.0, "status": "funded", "broker": "MFFUSFBLDR000006018",
                                 "funded": {"max_request": 0}})
     a = atlas()
     check("c. ATLAS: account B now gives its adapter its own name + key (before: neither sent a NinjaTrader fill)",
@@ -219,13 +219,13 @@ def part_c(b: Box):
 # ------------------------------------------------------------------------------------------------ d. the Rapid EOD
 def part_d(b: Box):
     from engine import rapid as RP
-    b.live(T0 - 600, [{"id": "rapid", "name": "MFFURPDEOD8888885555", "plan": "MFFU Rapid EOD 25K", "kind": "eval", "source": "pc",
-                       "broker_account": "MFFURPDEOD8888885555", "eval": {"balance": 25300.0, "today": 0.0, "to_target": 1200.0}}])
+    b.live(T0 - 600, [{"id": "rapid", "name": "MFFURPDEOD000005555", "plan": "MFFU Rapid EOD 25K", "kind": "eval", "source": "pc",
+                       "broker_account": "MFFURPDEOD000005555", "eval": {"balance": 25300.0, "today": 0.0, "to_target": 1200.0}}])
     r = router()
-    lane = Acc("rapid", "MFFURPDEOD8888885555")
+    lane = Acc("rapid", "MFFURPDEOD000005555")
     lane.adapter = nt_adapter(lane.name, real=False)
     r._wire_push(lane)
-    ar = atlas(RP.RapidAtlas, label="ATLAS Rapid MFFURPDEOD8888885555", account="MFFURPDEOD8888885555")
+    ar = atlas(RP.RapidAtlas, label="ATLAS Rapid MFFURPDEOD000005555", account="MFFURPDEOD000005555")
     t = T0 + 300
     lane.adapter._push_fill(leg(t=t, q=2))
     ar.adapter._push_fill(leg(t=t, q=1))
