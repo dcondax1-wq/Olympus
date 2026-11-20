@@ -64,14 +64,14 @@ STAKES = (1.0, 2.5, 5.0, 8.0, 10.0, 15.0)   # the bet sizes the phone page offer
 # research/kalshi_k8_monday/size55.py): a quarter of Kelly at a planning win rate 10 points under the friend's months
 # (63% vs 73%, price + fee 53.5c: full Kelly 20%) = about 4.5% of the bankroll a bet; a WEEK stop of 25% of the bankroll
 # (worst case: settled $ this week + every open bet, before every order) so a bad week can never lose more than that.
-BANKROLL = {"bet_share": 0.045, "day_share": 0.15, "week_share": 0.25, "dd_share": 0.30, "min_stake": 1.0, "step": 0.5}
+BANKROLL = {"bet_share": 0.045, "day_share": 0.15, "week_share": 0.25, "dd_share": 0.35, "min_stake": 1.0, "step": 0.5}
 RED_TEAM = ("Red team: paper first (about 4 weeks). Live with $55: $2.50 a bet (4 contracts), a bad week can lose at most "
-            "25% ($13.75); OFF at -$16.50 from the peak.")
+            "25% ($13.75); OFF at -$19.25 from the peak (35%).")
 LEG = {x["id"]: x for x in LEGS}
 DEFAULT = {"version": 1, "strategy": "clock", "source": "research/lab/kalshi_candidates/K8.json", "stake_usd": 2.5, "price_cap": 0.70,
            "entry_delay_s": 20, "expire_after_s": 40, "max_bets_per_day": 3, "daily_loss_stop_usd": 8.0, "week_loss_stop_usd": 13.75,
            "bankroll_usd": 55.0,
-           "kill_after_bets": 60, "kill_min_win_rate": 0.58, "kill_drawdown_usd": 16.5, "min_fill_share": 0.5,
+           "kill_after_bets": 60, "kill_min_win_rate": 0.58, "kill_drawdown_usd": 19.25, "min_fill_share": 0.5,
            "kill_avg_price_bets": 30, "kill_avg_price": 0.58,
            # red team 2026-11-19 final: silver 05:15 is too thin for $15 at +20 s (36% of days fill by 30 s): paper only
            "live_legs": ["gold_0530_down", "gold_1700_up", "silver_1700_up"],
@@ -93,7 +93,7 @@ PLAIN = {"KILL": "the kill switch is on", "NOT_ARMED": "not armed (paper only)",
          "STOPPED": "stopped: type the phrase again", "KILL_RULE": "the kill rule (under 58% won after 60 live bets, too far below the peak, or over 58c paid on the last 30)",
          "SLOT": "outside the 10-45 s after the open", "PRICE": "the ask is above the price cap", "STAKE": "over the $ per bet",
          "BETS_DAY": "the day's bets are used", "ONE_BET": "already a bet on this market", "DAY_STOP": "today's loss stop",
-         "WEEK_STOP": "this week's loss stop (25% of the bankroll)", "DD_STOP": "the drawdown stop (30% of the bankroll from the peak)",
+         "WEEK_STOP": "this week's loss stop (25% of the bankroll)", "DD_STOP": "the drawdown stop (35% of the bankroll from the peak)",
          "BALANCE": "not enough cash on Kalshi for the bet", "STALE_BOOK": "the prices are too old", "MARKET": "the market is not open",
          "BAD_ORDER": "the order is not valid", "ERROR": "the check hit an error (blocked to be safe)"}
 
@@ -155,7 +155,7 @@ def load_config(path=None, state_dir=None) -> tuple:
 
 def bankroll_rule(bankroll) -> dict:
     """The sizing + stops for a bankroll of `bankroll` $ (BANKROLL above; $55 -> $2.50 a bet, day stop $8, week stop $13.75,
-    OFF at -$16.50 from the peak, 3 bets a day). Pure; the phone page shows it and research/lab/kalshi_clock.json holds the values."""
+    OFF at -$19.25 from the peak, 3 bets a day). Pure; the phone page shows it and research/lab/kalshi_clock.json holds the values."""
     b = max(0.0, KL._f(bankroll, 0.0) or 0.0)
     R = BANKROLL
     stake = max(R["min_stake"], round(b * R["bet_share"] / R["step"]) * R["step"])

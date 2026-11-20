@@ -21,7 +21,7 @@
  "week_loss_stop_usd": 13.75,
  "kill_after_bets": 60,
  "kill_min_win_rate": 0.58,
- "kill_drawdown_usd": 16.5,
+ "kill_drawdown_usd": 19.25,
  "kill_avg_price_bets": 30,
  "kill_avg_price": 0.58,
  "live_legs": [

@@ -4,7 +4,8 @@
    friend's own months (Aug 3 - Nov 19), so the PLAN uses a haircut q (in-sample minus 10 points), and a quarter of that Kelly.
 2. The rule, from the bankroll B (engine/kalshi_clock.bankroll_rule): stake = B x 4.5% rounded to $0.50 (at least $1 = 1
    contract), at most 3 bets a day (the 3 live legs), day stop 15% of B, WEEK stop 25% of B (worst-case: settled $ this week +
-   every open bet, checked before every order, so a week can never lose more), drawdown kill 30% of B from the peak.
+   every open bet, checked before every order, so a week can never lose more), drawdown stop 35% of B from the peak (the same
+   worst-case gate; OFF when not even one bet fits), the 58%-after-60 kill. The simulation applies exactly these gates.
 3. Four weeks (20 weekdays), 20,000 paths, resampling whole real days (the 3 live legs of one day stay together), the exact fee per
    order (verify.py), the +20 s walk price. Three worlds: as tested; half the edge (some wins turned into losses at random until
    the win rate is 10 points lower); edge gone (win rate = the price paid + fee: about 53.5%).
@@ -76,6 +77,10 @@ def simulate(days, rule, world="tested", paths=PATHS, seed=SEED, base_q=None):
                         if wk - open_cost - c < -rule["week_loss_stop_usd"] - 1e-9:
                             continue
                         if dset - open_cost - c < -rule["daily_loss_stop_usd"] - 1e-9:
+                            continue
+                        if (peak - eq) + open_cost + c > rule["kill_drawdown_usd"] + 1e-9:     # the engine's drawdown gate (DD_STOP)
+                            if not placed:
+                                killed = True                                                  # no room for one bet: OFF
                             continue
                         open_cost += c
                         placed.append((n, c, won))

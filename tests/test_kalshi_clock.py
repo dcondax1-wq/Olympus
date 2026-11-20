@@ -13,7 +13,7 @@ No network, no real key, no real order; Claude never arms (every arm here is the
   f. stops      kill rule (under 58% after 60), drawdown -$75 from the peak, 3 errors in a row, 401, a thin book (tried at +20/+30/+40
                 then skipped), cash below the bet, the phone STOP: each = no order / OFF + one push; paper keeps recording
   g. clock      the PC clock 12 s fast: Kalshi's Date header corrects it, the entry lands at +20 s Kalshi time
-  s. $55         the bankroll rule ($2.50 a bet, -$8 a day, -$13.75 a week, OFF at -$16.50): the order gate's week and drawdown
+  s. $55         the bankroll rule ($2.50 a bet, -$8 a day, -$13.75 a week, OFF at -$19.25): the order gate's week and drawdown
                 stops, then a whole week where every bet loses on the real settings: the week never passes -25%, the total never -30%
   w. phone page private Tailscale link only (WiFi refused), this page's header + JSON + same origin; the key pasted on the phone is
                 saved OUTSIDE the repo, checked with one balance read ("Key OK · balance $X"), never echoed or logged; wrong phrase
@@ -163,10 +163,10 @@ def part_calendar():
     real = KC.load_config(REAL_CFG)[0]
     rule = KC.bankroll_rule(55)
     check("a0. the REAL settings (research/lab/kalshi_clock.json) = the $55 bankroll rule: $2.50 a bet, 3 bets a day, -$8 a day, "
-          "-$13.75 a week (25%), OFF at -$16.50 from the peak; the same 3 live legs; no problems",
+          "-$13.75 a week (25%), OFF at -$19.25 from the peak (35%); the same 3 live legs; no problems",
           real["bankroll_usd"] == 55 and real["stake_usd"] == rule["stake_usd"] == 2.5 and real["max_bets_per_day"] == rule["max_bets_per_day"] == 3
           and real["daily_loss_stop_usd"] == rule["daily_loss_stop_usd"] == 8 and real["week_loss_stop_usd"] == rule["week_loss_stop_usd"] == 13.75
-          and real["kill_drawdown_usd"] == rule["kill_drawdown_usd"] == 16.5 and real["live_legs"] == ["gold_0530_down", "gold_1700_up", "silver_1700_up"]
+          and real["kill_drawdown_usd"] == rule["kill_drawdown_usd"] == 19.25 and real["live_legs"] == ["gold_0530_down", "gold_1700_up", "silver_1700_up"]
           and not KC.load_config(REAL_CFG)[1], (real, rule))
     w = KC.windows(DAY, cfg)
     hm = [KL.et_dt(t).strftime("%H:%M") for t, _ in w]
@@ -494,10 +494,10 @@ def lose_window(w, loop, open_t, ids):
 
 def part_sizing(tmp):
     r55, r20, r100, r999 = KC.bankroll_rule(55), KC.bankroll_rule(20), KC.bankroll_rule(100), KC.bankroll_rule(9999)
-    check("s1. the bankroll rule: $55 -> $2.50 a bet (4 contracts at 52c), 3 a day, -$8 a day, -$13.75 a week (25%), OFF at -$16.50 (30%); "
+    check("s1. the bankroll rule: $55 -> $2.50 a bet (4 contracts at 52c), 3 a day, -$8 a day, -$13.75 a week (25%), OFF at -$19.25 (35%); "
           "$20 -> the $1 minimum (1 contract); $100 -> $4.50; never above the $15 ceiling",
           (r55["stake_usd"], r55["contracts_at_52c"], r55["max_bets_per_day"], r55["daily_loss_stop_usd"], r55["week_loss_stop_usd"],
-           r55["kill_drawdown_usd"]) == (2.5, 4, 3, 8, 13.75, 16.5) and r20["stake_usd"] == 1.0 and r100["stake_usd"] == 4.5
+           r55["kill_drawdown_usd"]) == (2.5, 4, 3, 8, 13.75, 19.25) and r20["stake_usd"] == 1.0 and r100["stake_usd"] == 4.5
           and r999["stake_usd"] == 15.0 and KC.fits(2.5, 55) and not KC.fits(5, 55) and KC.fits(5, None), (r55, r20, r100))
     real = KC.load_config(REAL_CFG)[0]
     o = order(count=4, cost=2.08, worst=0.52, stake=2.5)
@@ -505,11 +505,11 @@ def part_sizing(tmp):
     ok0 = KC.check_order(o, v0)
     wk = KC.check_order(o, dict(v0, week_worst=-11.70))
     wk_ok = KC.check_order(o, dict(v0, week_worst=-11.50))
-    dd = KC.check_order(o, dict(v0, dd_now=12.5, open_all=2.2))
-    dd_ok = KC.check_order(o, dict(v0, dd_now=12.5, open_all=0.0))
+    dd = KC.check_order(o, dict(v0, dd_now=15.0, open_all=2.2))
+    dd_ok = KC.check_order(o, dict(v0, dd_now=15.0, open_all=0.0))
     big = KC.check_order(order(count=9, cost=4.68, worst=0.52, stake=5.0), v0)
     check("s2. the order gate at $55: 4 contracts at 52c pass; the WEEK stop blocks a bet that could take the week past -$13.75 "
-          "(-$11.70 + $2.15 = -$13.85) but not at -$11.50; the drawdown stop blocks when the peak gap + open bets + this bet pass $16.50; "
+          "(-$11.70 + $2.15 = -$13.85) but not at -$11.50; the drawdown stop blocks when the peak gap + open bets + this bet pass $19.25; "
           "a $5 bet is over the $2.50 a bet", ok0[0] and wk[1] == "WEEK_STOP" and wk_ok[0] and dd[1] == "DD_STOP" and dd_ok[0] and big[1] == "STAKE",
           (ok0, wk, wk_ok, dd, dd_ok, big))
     # end to end: a whole week where EVERY bet loses, on the real $55 settings, armed (the test types the phrase; fake Kalshi)
@@ -536,12 +536,13 @@ def part_sizing(tmp):
               "no day loses more than $8; the week stops at -$13.75 or less (WEEK_STOP logged); paper keeps recording every leg",
               armed[0] and sizes == {(4, 0.52)} and min(day_loss.values()) >= -8.0 - 1e-9 and -13.75 - 1e-9 <= week < -10
               and '"code":"WEEK_STOP"' in logs and paper_n == 5 * 5, (armed, sizes, day_loss, week, n_week, paper_n))
-        # the next Monday: the week stop resets; the morning bet goes in and loses; then the drawdown stop (-$16.50) turns live OFF
-        nxt = mon + dt.timedelta(days=7)
-        day_books(w, nxt)
+        # the next week: the week stop resets; Monday's bets go in and lose; then the drawdown stop (-$19.25) turns live OFF
         pushes0 = len(w.pushes)
-        for t, ids in KC.windows(nxt, real):
-            lose_window(w, loop, t, ids)
+        for k in range(2):
+            nxt = mon + dt.timedelta(days=7 + k)
+            day_books(w, nxt)
+            for t, ids in KC.windows(nxt, real):
+                lose_window(w, loop, t, ids)
         total = round(sum(r.get("pnl") or 0 for r in w.live()), 2)
         stops = [p for p in w.pushes[pushes0:] if "STOPPED" in p["title"]]
         live_now = KL.arm_state(P=KC.paths(w.sd), env=w.env)[0]
@@ -550,11 +551,11 @@ def part_sizing(tmp):
         check("s5. the PC's public card carries the K8 status block (live ledger, bankroll $55, $2.50 a bet, today, the last 10 as W/L, week + "
               "drawdown used vs the stop, the next window) inside the card budget; no ticker, no order id",
               k8.get("m") == "L" and k8.get("b") == 55 and k8.get("s") == 2.5 and set(k8.get("l") or "") == {"L"} and len(k8.get("l") or "") == min(10, len([r for r in w.live() if r.get("status") == "settled"]))
-              and k8["wk"][1] == 13.75 and k8["dd"][1] == 16.5 and k8.get("nx") and len(json.dumps(card, separators=(",", ":"))) <= KL.CARD_MAX
+              and k8["wk"][1] == 13.75 and k8["dd"][1] == 19.25 and k8.get("nx") and len(json.dumps(card, separators=(",", ":"))) <= KL.CARD_MAX
               and "KXGOLD" not in json.dumps(card) and "ord" not in json.dumps(card), card)
-        check("s4. the next week: the week stop resets (Monday's bet goes in), then the drawdown stop turns live OFF before the record can "
-              "pass -$16.50 from the peak (one STOPPED push); the total loss never passes 30% of $55",
-              total >= -16.5 - 1e-9 and total < week and stops and not live_now and "drawdown" in stops[0]["title"], (total, week, [p["title"] for p in w.pushes[pushes0:]], live_now))
+        check("s4. the next week: the week stop resets (Monday's bets go in), then the drawdown stop turns live OFF before the record can "
+              "pass -$19.25 from the peak (one STOPPED push); the total loss never passes 35% of $55",
+              total >= -19.25 - 1e-9 and total < week and stops and not live_now and "drawdown" in stops[0]["title"], (total, week, [p["title"] for p in w.pushes[pushes0:]], live_now))
     finally:
         KC.CFG_PATH, KL.CLOCK_PATH = FIX15, FIX15
 
