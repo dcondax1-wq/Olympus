@@ -10,7 +10,7 @@
 | Dataview | numbers are real numbers in the front matter (pnl, r, trades), so Dataview can sum them; the queries live only in `ZEUS Dataview`; Home and every other note read fine without plugins |
 | Refresh | already wired: the cloud night (`tools/learn_night.py`) rebuilds `vault/`, the PC sync (`tools/obsidian_sync.py`) rebuilds `<your vault>/OLYMPUS/ZEUS Brain` once an hour. 1 s a build, same input = same bytes, only changed notes are rewritten |
 | iPhone | `docs/OBSIDIAN.md`: 3 steps, free (Obsidian app + the Git plugin you already use for Jarvis) |
-| Tests | `tests.test_obsidian_brain` **39/39** (14 new checks: every new note kind, reason codes, recounting, size < 30 MB, real build idempotent, no clock/network); smoke 7/8 (the red one is `test_zenith_mode`: no Python Playwright in this container, same as last night); area pc: see below |
+| Tests | `tests.test_obsidian_brain` **39/39** (14 new checks: every new note kind, reason codes, recounting, size < 30 MB, real build idempotent, no clock/network); smoke 7/8 (the red one is `test_zenith_mode`: no Python Playwright in this container, same as last night); area pc: obsidian_brain 39/39, learn_night 64/64, 43/53 suites pass; the 10 red suites (phone_link, pc_selftest, calendar_sync, account_box ...) fail on `No module named 'fastapi'` in this container and never touch Obsidian |
 | Bot safety | nothing under engine/, server.py, live_model*, accounts, scripts touched. Only `tools/obsidian_brain.py`, new `tools/obsidian_more.py`, its test, `vault/`, `docs/OBSIDIAN.md` |
 
 Honest numbers on Home today: real trades (live + paper) = 4, all losers, -$1,975 (3 "worked then turned", 1 "never worked").
