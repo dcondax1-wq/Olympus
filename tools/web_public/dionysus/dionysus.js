@@ -209,7 +209,10 @@ async function runFx() {
   const NQ = await fxScript(); if (!NQ) return;
   try { if (!(await NQ.ready())) return; } catch (_) { return; }
   try { NQ.theme(FX_COLORS); } catch (_) { /* default palette */ }
-  const roll = (el, to) => { if (!el || !Number.isFinite(to)) return; const t = el.textContent; try { NQ.roll(el, { to, duration: 1.1 }); } catch (_) { el.textContent = t; } };
+  // a number rolls once, when it first comes into view (an off-screen roll would only sit half-way: the kit's loop sleeps off screen)
+  const go = (el, to) => { const t = el.textContent; try { NQ.roll(el, { to, duration: 1.1 }); } catch (_) { el.textContent = t; } };
+  const io = typeof IntersectionObserver === 'function' ? new IntersectionObserver((es) => { for (const e of es) if (e.isIntersecting) { io.unobserve(e.target); go(e.target, +e.target.dataset.to); } }, { threshold: 0.9 }) : null;
+  const roll = (el, to) => { if (!el || !Number.isFinite(to)) return; if (io) { el.dataset.to = String(to); io.observe(el); } else go(el, to); };
   if (S.book && !$('heroCard').hidden) roll($('bal'), S.book.balance > 0 ? S.book.balance : NaN);
   for (const b of $('k8Pool').querySelectorAll('b')) { const n = parseFloat(b.textContent); if (Number.isFinite(n)) roll(b, n); }
   const leg = $('k8Legs').querySelector('li[data-win="today"]');

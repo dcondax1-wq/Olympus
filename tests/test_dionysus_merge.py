@@ -53,6 +53,17 @@ def part_static():
           and not re.search(r"<script[^>]+src=\"https?:", html))
     check("a. a junk file hides only its own card (try / hide per card)", "$(id).hidden = true" in js)
     check("a. the old folders are still there (sibyl/, kalshicity/ index pages)", os.path.isfile(os.path.join(WEB, "sibyl", "index.html")) and os.path.isfile(os.path.join(WEB, "kalshicity", "index.html")))
+    fx_tag = re.search(r'<script[^>]+nqfx\.js', html)
+    check("a. FX (owner 2026-11-20 'some 3D, some effects'): the kit olympus/nqfx.js?v=n4 is added by dionysus.js after load + idle (no tag in the HTML, so the first paint is unchanged), themed navy / cyan / blue / violet",
+          not fx_tag and "const FX_SRC = '../olympus/nqfx.js?v=n4';" in js and "requestIdleCallback" in js and "NQ.theme(FX_COLORS)" in js and "'#22d3ee'" in js and "NQ.roll(" in js and "NQ.win(" in js)
+    golds = re.findall(r"#(?:c8a24a|e0b060|dcbd6e|9c6b3c|b77a8a)\b", css.split("TERMINAL look")[1] if "TERMINAL look" in css else css, re.I)
+    check("a. FX look: no gold in the terminal block; the gold / bronze / sun tokens are re-pointed to cyan / blue / violet for this page; the html accent is cyan, theme-color navy",
+          "TERMINAL look" in css and not golds and "--ag-gold: #22d3ee" in css and "--ag-sun: #a78bfa" in css and "--ag-bronze: #3b82f6" in css and "'--oly-accent', '#22d3ee'" in html and 'content="#070b14"' in html, golds)
+    motion = css.split("TERMINAL look")[1] if "TERMINAL look" in css else ""
+    anims = [m.start() for m in re.finditer(r"animation:", motion)]
+    np_ = motion.find("@media (prefers-reduced-motion: no-preference)")
+    check("a. FX: every CSS animation of the terminal look sits under prefers-reduced-motion: no-preference (reduced motion = nothing moves); no WebGL of its own",
+          anims and np_ >= 0 and all(a > np_ and a < motion.find("@media (prefers-reduced-motion: reduce)") for a in anims) and "webgl" not in js.lower(), anims)
     check("a. no sw.js of Dionysus's own (nothing for the lead's worker list)", not os.path.exists(os.path.join(D, "sw.js")))
 
 

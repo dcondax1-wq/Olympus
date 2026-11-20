@@ -125,7 +125,7 @@ html:root[data-theme="agora"] {
 html { background: #070b14; }
 html[data-theme="agora"] body { background: radial-gradient(120% 60% at 50% -12%, #13254a 0%, #0b1220 38%, #070b14 72%) fixed, #070b14; }
 /* the 3D floor: a still perspective grid of faint cyan lines fading into the dark (one fixed layer, painted once, never animated) */
-body::before { content: ""; position: fixed; left: -50%; right: -50%; bottom: -10vh; height: 62vh; z-index: 0; pointer-events: none;
+body::before { content: ""; position: fixed; left: -50%; right: -50%; bottom: 0; height: 62vh; z-index: 0; pointer-events: none;
   background: linear-gradient(rgba(34, 211, 238, .10) 1px, transparent 1px) 0 0 / 56px 56px, linear-gradient(90deg, rgba(59, 130, 246, .10) 1px, transparent 1px) 0 0 / 56px 56px;
   transform: perspective(420px) rotateX(62deg); transform-origin: 50% 100%;
   -webkit-mask-image: linear-gradient(to top, rgba(0, 0, 0, .9), transparent 78%); mask-image: linear-gradient(to top, rgba(0, 0, 0, .9), transparent 78%); }
@@ -180,3 +180,5 @@ main#app .big { background: linear-gradient(90deg, #67e8f9, #22d3ee 35%, #3b82f6
 /* the shared header's "Go to" button and the page icon in the same navy / cyan (this page only) */
 html[data-theme="agora"] .gn-go { background: rgba(11, 18, 32, .86); border-color: rgba(34, 211, 238, .35); }
 .brand img { filter: hue-rotate(180deg) saturate(1.2); }
+/* found on the way (2026-11-20): framed in Jarvis, agora.css's ask-button rule (body.oly-has-ask #app: 72 px) beat the 176 px seat, so the last links sat under the orb */
+html.framed body.oly-has-ask main#app { padding-bottom: calc(176px + var(--sb)); }
