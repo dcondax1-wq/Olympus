@@ -85,3 +85,11 @@ Tests: gate 88/88, widget 37/37, cities 257/257, datacity 194/194. Tags: gate.js
   between the title and the badge; the plain sentence stays. Glance: "PC report updated 2 min ago" in the same chip.
 - Tags: gate.js g16, gate.css g18, the Home's script list + age.js (+ age.css link); glance.js 4.
 - Tests: test_gate_page 89/89 (+ chip text/level), test_home_fx 19/19, test_live_link 78/78, test_widget 38/38 (+ static pin).
+
+## Round 7 (lead, ~13:30 ET): test_world_build 38/43 -> 43/43, world.json rebuilt
+- tools/world_build.py: an account's stage comes from accounts.json once it says funded (the Board copy still said ATLAS "passed"); "planned" =
+  the plan says waiting / buying, or plan-only on the Board with no balance -> Zlarior 50K (eval), ATLAS 25K (funded), Zlarior 25K #2 (eval),
+  Rapid EOD 25K (planned). Answered decisions are no longer places (only the open ones, as scaffolding).
+- Tests follow the data, not frozen counts: the Kalshi district has at least its door's apps (7 now); Money's decision places = the open
+  decisions in decisions.json; the World page's Kalshi card count = world.json's.
+- world.json rebuilt: 452 places (94 apps + 358 learning), 4,490 data buildings. test_world_build 43/43, test_world_page 30/30.

@@ -162,7 +162,8 @@ def test_page():
             p.wait_for_timeout(300)
             k = p.evaluate("""() => ({ title: document.querySelector('#cardName').textContent, apps: [...document.querySelectorAll('#cardBody .applist')][0].querySelectorAll('button').length,
               pressed: document.querySelector('.dch[aria-pressed=true]').dataset.d, sc: OWORLD.state().scene })""")
-            check("b. the Kalshi district button flies there (a warp) and its card lists its 5 apps and its learning quarters", k["title"] == "Kalshi" and k["apps"] == 5 and k["pressed"] == "kalshi"
+            n_k = sum(1 for x in json.load(open(os.path.join(D, "world.json"), encoding="utf-8"))["places"] if x.get("district") == "kalshi" and x.get("kind") == "app")
+            check("b. the Kalshi district button flies there (a warp) and its card lists its %d apps (world.json) and its learning quarters" % n_k, k["title"] == "Kalshi" and k["apps"] == n_k and k["pressed"] == "kalshi"
                   and (k["sc"]["tween"] or k["sc"]["warp"] >= 0), k)
             p.wait_for_function("() => !OWORLD.state().scene.tween", timeout=60000, polling=250)
             pose = p.evaluate("() => OWORLD.pose()")

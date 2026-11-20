@@ -84,15 +84,17 @@ def test_build():
     check("a. the Archive's stored backtests are buildings of research places (2,000+), adopted runs bright (3), rejected ones ruins (0)",
           runs >= 2000 and any(3 in p["b"][1::3] for p in res) and sum(p["b"][1::3].count(0) for p in res) > 1000, runs)
     k = [p for p in ps if p["district"] == "kalshi"]
-    check("a. the Kalshi district: its 5 apps, the bets studied (strategies, markets, bands, hypotheses), the K8 gold & silver legs and the Kalshi write-ups",
-          sum(1 for p in k if p["kind"] == "app") == 5 and any(p["quarter"] == "kbets" for p in k) and any(p["id"].startswith("k8:") for p in k)
+    check("a. the Kalshi district: its door's apps (one tower each), the bets studied (strategies, markets, bands, hypotheses), the K8 gold & silver legs and the Kalshi write-ups",
+          sum(1 for p in k if p["kind"] == "app") >= len({it["href"] for dd in WB.doors() if dd["id"] == "kalshi" for it in dd["items"]}) and any(p["quarter"] == "kbets" for p in k) and any(p["id"].startswith("k8:") for p in k)
           and any(p["quarter"] == "kresearch" for p in k), sorted({p["quarter"] for p in k}))
     k8 = next((p for p in k if p["id"] == "k8:a-gold"), None)
     check("a. a K8 leg's card: bets and $ on the months it was learned on and checked on", k8 is not None and any("bets" in v and "$" in v for _, v in k8["facts"]), k8 and k8["facts"])
     dc = [p for p in ps if p["quarter"] == "datacity"]
     check("a. Data City's nine quarters live in More next to the Data City app, one building per tested combo (1,000+)", len(dc) == 9 and sum(len(p["b"]) // 3 for p in dc) >= 1000, len(dc))
     dec = [p for p in ps if p["quarter"] == "decisions"]
-    check("a. Money: the open decisions waiting for a yes are scaffolding with a link to the Board", dec and all(p["state"] == "planned" and p.get("href") == "board/" for p in dec), len(dec))
+    n_open = sum(1 for x in (WB.load("tools/web_public/business/decisions.json", {}) or {}).get("items") or [] if isinstance(x, dict) and x.get("id") and str(x.get("status") or "open") == "open")
+    check("a. Money: the open decisions waiting for a yes (only those: an answered one is no longer a place) are scaffolding with a link to the Board (%d open)" % n_open,
+          len(dec) == n_open and all(p["state"] == "planned" and p.get("href") == "board/" for p in dec), len(dec))
     check("a. every card is plain words: a name, a one-line 'what it is', facts, a 'how to read it' line; no markup", all(p["name"] and p["line"] and isinstance(p["facts"], list) and isinstance(p["how"], int) for p in ps)
           and not re.search(r"<[a-z/]", json.dumps(w)), "")
     feed = w["feed"]
