@@ -1,7 +1,7 @@
 {
  "v": 1,
  "title": "ZEUS this week",
- "built": "2026-11-20 17:10 ET",
+ "built": "2026-11-20 17:38 ET",
  "built_by": "tools/weekly_review.py",
  "week": {
   "from": "2026-11-16",
@@ -10,7 +10,7 @@
   "complete": true,
   "sessions_done": 5
  },
- "pc": "PC last reported Nov 20 17:00 ET",
+ "pc": "PC last reported Nov 20 17:30 ET",
  "accounts": [
   {
    "key": "zlarior",
@@ -18,7 +18,7 @@
    "plan": "MFFU Builder 50K",
    "stage": "eval",
    "end": 49192.78,
-   "src": "PC live, Nov 20 16:57 ET",
+   "src": "PC live, Nov 20 17:27 ET",
    "room": 1024.58,
    "to_pass": 3807.22,
    "trades": 1,
@@ -47,7 +47,7 @@
    "plan": "MFFU Builder 25K (funded)",
    "stage": "funded",
    "end": 25401.38,
-   "src": "PC live, Nov 20 16:57 ET",
+   "src": "PC live, Nov 20 17:27 ET",
    "room": 1401.38,
    "to_pass": null,
    "trades": 2,
@@ -75,7 +75,7 @@
    "plan": "MFFU Rapid EOD 25K",
    "stage": "eval",
    "end": 25000.0,
-   "src": "PC live, Nov 20 16:57 ET",
+   "src": "PC live, Nov 20 17:27 ET",
    "room": 1000.0,
    "to_pass": 1500.0,
    "trades": 0,
@@ -101,7 +101,7 @@
    "plan": "MFFU Builder 25K",
    "stage": "eval",
    "end": 25000.0,
-   "src": "PC live, Nov 20 16:57 ET",
+   "src": "PC live, Nov 20 17:27 ET",
    "room": 1000.0,
    "to_pass": 1500.0,
    "trades": 0,
@@ -173,14 +173,14 @@
  "changes": {
   "n": 200,
   "items": [
-   "Huge idea B deep dive: NT8 prop-rule add-on - crowded (free MIT Risk Guardian, $29.99-49/mo and...",
-   "Decide card copilot-test (owner's 'something huge' ask): free 30-day Prop Slot Planner test,...",
-   "Huge-idea check: Prop Co-Pilot (crowded; test only the payout/slot planner, $0 30-day kill test),...",
-   "Ledger: Rapid added but refused 'not armed' after START BOT (16:42 report)",
-   "Findings ledger: dedupe, + ATLAS fill slippage, update-gate SAME, old-account polls fixed, Jarvis...",
-   "Land DESIGN kit (dashfx d1, OLYMPUS NIGHT default look, Zenith speed) + NQ MFFU-terms strip / no...",
-   "Owner answers 16:30 ET: keep-alive YES (lands OFF this weekend; KEEPALIVE_ON.bat on wf-keepalive),...",
-   "DESIGN kit: OLYMPUS NIGHT painted by the engine (agora.css / gate-nav keep their AGORA fallbacks,..."
+   "Plan: receptionist is voice-only (no texting until 10DLC)",
+   "Plan + STATE: postcards built (Lob $0.909/card); privacy blocker - concept sites must move to a...",
+   "Client plan: inbound-only AI receptionist (no PC address on public pages)",
+   "Plan: how we get website clients without cold calls (postcards + their own site's call-me / claim...",
+   "Landing fixes from QA triage: re-add trading/index.html panelfx.js (dropped by the theirs-hunks...",
+   "Ledger: finder round 16:38 (4 lenses, 13 findings, 11 real): PC update blocked by '?' names...",
+   "Guard: tools/win_paths.py (no :\"|?* / reserved / trailing dot-space / case-twin file names) in...",
+   "Unblock the PC auto-update: rename 2 screenshots whose names held \"?\""
   ]
  },
  "next": {
@@ -201,7 +201,9 @@
   ],
   "decisions": [
    "Rapid 25K: Sat STOP BOT, START BOT, type your phrase (skip if Claude says it fixed itself)",
-   "Before ATLAS's first payout: open a free brokerage + Treasury fund for the tax pot (20 min)"
+   "Sat at the PC: make the GitHub repo olympus private, then double-click GITHUB_SIGNIN.bat",
+   "Before ATLAS's first payout: open a free brokerage + Treasury fund for the tax pot (20 min)",
+   "Ask parents: is your health plan HSA / high-deductible? Do they claim you as a dependent?"
   ],
   "steps": []
  },
@@ -327,10 +329,10 @@
   "mode": "paper",
   "loss_used": 0.0,
   "loss_stop": 13.75,
-  "last": "WWWLLLLW",
-  "bets_total": 8,
-  "won_pct": 50,
-  "line": "K8 (paper): $0 of the $13.75 weekly loss stop used; last 8 bets WWWLLLLW; 8 bets so far, 50% won."
+  "last": "WWWLLLLWWW",
+  "bets_total": 10,
+  "won_pct": 60,
+  "line": "K8 (paper): $0 of the $13.75 weekly loss stop used; last 10 bets WWWLLLLWWW; 10 bets so far, 60% won."
  },
  "calendar": [
   {
@@ -381,6 +383,6 @@
  "sources": {
   "trades": "PC status post",
   "plan_updated": "2026-11-20",
-  "board_pc": "Nov 20 17:00 ET"
+  "board_pc": "Nov 20 17:30 ET"
  }
 }

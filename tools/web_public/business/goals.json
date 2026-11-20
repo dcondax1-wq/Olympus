@@ -198,7 +198,9 @@
  ],
  "decisions": [
   "Rapid 25K: Sat STOP BOT, START BOT, type your phrase (skip if Claude says it fixed itself)",
-  "Before ATLAS's first payout: open a free brokerage + Treasury fund for the tax pot (20 min)"
+  "Sat at the PC: make the GitHub repo olympus private, then double-click GITHUB_SIGNIN.bat",
+  "Before ATLAS's first payout: open a free brokerage + Treasury fund for the tax pot (20 min)",
+  "Ask parents: is your health plan HSA / high-deductible? Do they claim you as a dependent?"
  ],
  "sources": [
   "research/lab/money_plan.json (2026-11-18) + research/lab/payday_plan.json (2026-11-20)",
