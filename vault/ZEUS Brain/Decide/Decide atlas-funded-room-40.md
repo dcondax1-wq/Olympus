@@ -1,10 +1,10 @@
 ---
 tags:
   - zeus/decide
-  - decide/open
+  - decide/yes
 type: "decide"
 id: "atlas-funded-room-40"
-status: "open"
+status: "yes"
 added: "2026-11-19"
 usd_month: -9
 recommend: "yes"
@@ -12,12 +12,12 @@ recommend: "yes"
 
 # Decide: ATLAS's funded 25K: risk 40% of the room a trade instead of 60% (safer, but the first payout comes later)?
 
-> [!question] OPEN · -$9 a month
+> [!success] YES · -$9 a month
 > Answer it on the Decide card (Business app): YES / NO / LATER.
 
 |  |  |
 |---|---|
-| Status | open |
+| Status | yes |
 | Added | 2026-11-19 |
 | $ a month | -$9 |
 | Claude recommends | yes |

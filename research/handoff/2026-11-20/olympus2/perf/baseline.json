@@ -1,0 +1,1519 @@
+{
+ "zenith": {
+  "fcp_ms": 1692,
+  "kb_fcp": 78.9,
+  "req_fcp": 7,
+  "req": 82,
+  "kb": 812.6,
+  "js_kb": 2091.1,
+  "three": false,
+  "gl": 0,
+  "gl_page": 0,
+  "lcp_ms": 1820,
+  "ready_ms": 0,
+  "heap_mb": 5.5,
+  "lt_n": 4,
+  "lt_max": 115,
+  "tbt": 112,
+  "img_kb": 4.2,
+  "font_kb": 0.0,
+  "css_kb": 58.6,
+  "data_kb": 7.7,
+  "cls": 0.28,
+  "sideways": false,
+  "errors": 0,
+  "error_list": [],
+  "shifts": [
+   [
+    8827,
+    0.164,
+    "#page > div.skel + #page > div.skel"
+   ],
+   [
+    8528,
+    0.052,
+    "div > main#page.page"
+   ],
+   [
+    5847,
+    0.037,
+    "div > main#page.page.entering"
+   ]
+  ],
+  "top3": [
+   "/main.js 134 KB",
+   "/hub.js 33 KB",
+   "/olympus/polis-life.js 27 KB"
+  ],
+  "built_404": [
+   "/data.json",
+   "/home.json"
+  ],
+  "offline": "ok",
+  "offline_sw": true,
+  "offline_age": false,
+  "wall_s": 28.0
+ },
+ "fates": {
+  "fcp_ms": 2900,
+  "kb_fcp": 93.7,
+  "req_fcp": 13,
+  "req": 40,
+  "kb": 579.7,
+  "js_kb": 1252.3,
+  "three": true,
+  "gl": 1,
+  "gl_page": 1,
+  "lcp_ms": 9460,
+  "ready_ms": 0,
+  "heap_mb": 15.3,
+  "lt_n": 14,
+  "lt_max": 1832,
+  "tbt": 4210,
+  "img_kb": 0.0,
+  "font_kb": 0.0,
+  "css_kb": 31.3,
+  "data_kb": 172.2,
+  "cls": 0.073,
+  "sideways": false,
+  "errors": 0,
+  "error_list": [],
+  "shifts": [
+   [
+    7615,
+    0.073,
+    "#ui > section#hud.hud"
+   ]
+  ],
+  "top3": [
+   "/fates/fates.json 171 KB",
+   "/jarvis/three.module.min.js 163 KB",
+   "/olympus/sfx.js 31 KB"
+  ],
+  "built_404": [],
+  "offline": "error Page.reload: net::ERR_INTERNET_DISCONNECTED",
+  "offline_sw": true,
+  "offline_age": false,
+  "wall_s": 21.7
+ },
+ "cities": {
+  "fcp_ms": 1656,
+  "kb_fcp": 32.1,
+  "req_fcp": 5,
+  "req": 33,
+  "kb": 493.7,
+  "js_kb": 1182.9,
+  "three": true,
+  "gl": 2,
+  "gl_page": 1,
+  "lcp_ms": 1656,
+  "ready_ms": 0,
+  "heap_mb": 14.4,
+  "lt_n": 5,
+  "lt_max": 4114,
+  "tbt": 8035,
+  "img_kb": 64.0,
+  "font_kb": 0.0,
+  "css_kb": 13.3,
+  "data_kb": 67.1,
+  "cls": 0.006,
+  "sideways": false,
+  "errors": 0,
+  "error_list": [],
+  "shifts": [],
+  "top3": [
+   "/jarvis/three.module.min.js 163 KB",
+   "/cities/world/poster.jpg 63 KB",
+   "/cities/world/world.json 52 KB"
+  ],
+  "built_404": [],
+  "offline": "error Page.reload: net::ERR_INTERNET_DISCONNECTED",
+  "offline_sw": true,
+  "offline_age": false,
+  "wall_s": 24.3
+ },
+ "journal": {
+  "fcp_ms": 2220,
+  "kb_fcp": 87.8,
+  "req_fcp": 12,
+  "req": 24,
+  "kb": 345.6,
+  "js_kb": 485.8,
+  "three": false,
+  "gl": 0,
+  "gl_page": 0,
+  "lcp_ms": 4368,
+  "ready_ms": 0,
+  "heap_mb": 4.1,
+  "lt_n": 2,
+  "lt_max": 112,
+  "tbt": 99,
+  "img_kb": 0.0,
+  "font_kb": 0.0,
+  "css_kb": 31.3,
+  "data_kb": 148.9,
+  "cls": 0.196,
+  "sideways": false,
+  "errors": 0,
+  "error_list": [],
+  "shifts": [
+   [
+    3782,
+    0.12,
+    "#app > section.pulse + section > div.pu-part.pu-hero"
+   ],
+   [
+    4781,
+    0.076,
+    "#app > section#hero.hero.card + #app > section.pl-place.pl-piece"
+   ]
+  ],
+  "top3": [
+   "/odeon/trades.json 128 KB",
+   "/olympus/sfx.js 31 KB",
+   "/olympus/polis-life.js 27 KB"
+  ],
+  "built_404": [
+   "/home.json"
+  ],
+  "offline": "error Page.reload: net::ERR_INTERNET_DISCONNECTED",
+  "offline_sw": true,
+  "offline_age": false,
+  "wall_s": 17.0
+ },
+ "ledger": {
+  "fcp_ms": 2740,
+  "kb_fcp": 108.9,
+  "req_fcp": 16,
+  "req": 52,
+  "kb": 492.2,
+  "js_kb": 1420.8,
+  "three": true,
+  "gl": 1,
+  "gl_page": 1,
+  "lcp_ms": 5320,
+  "ready_ms": 0,
+  "heap_mb": 10.4,
+  "lt_n": 17,
+  "lt_max": 1342,
+  "tbt": 3407,
+  "img_kb": 0.6,
+  "font_kb": 0.0,
+  "css_kb": 33.4,
+  "data_kb": 23.3,
+  "cls": 0.097,
+  "sideways": false,
+  "errors": 0,
+  "error_list": [],
+  "shifts": [
+   [
+    3457,
+    0.052,
+    "#app > section#hero.ag-card.hero + section > div.pu-part.pu-money"
+   ],
+   [
+    4864,
+    0.033,
+    "section > div.pu-part.pu-money + #hero > div.pair"
+   ]
+  ],
+  "top3": [
+   "/jarvis/three.module.min.js 163 KB",
+   "/olympus/sfx.js 31 KB",
+   "/olympus/themes.js 24 KB"
+  ],
+  "built_404": [
+   "/home.json",
+   "/kalshi.json",
+   "/money/scoreboard.json"
+  ],
+  "offline": "error Page.reload: net::ERR_INTERNET_DISCONNECTED",
+  "offline_sw": true,
+  "offline_age": false,
+  "wall_s": 19.7
+ },
+ "inbox": {
+  "fcp_ms": 2244,
+  "kb_fcp": 92.6,
+  "req_fcp": 13,
+  "req": 38,
+  "kb": 209.2,
+  "js_kb": 501.4,
+  "three": false,
+  "gl": 0,
+  "gl_page": 0,
+  "lcp_ms": 3884,
+  "ready_ms": 0,
+  "heap_mb": 3.0,
+  "lt_n": 1,
+  "lt_max": 63,
+  "tbt": 13,
+  "img_kb": 0.6,
+  "font_kb": 0.0,
+  "css_kb": 25.7,
+  "data_kb": 9.2,
+  "cls": 0.713,
+  "sideways": false,
+  "errors": 0,
+  "error_list": [],
+  "shifts": [
+   [
+    5153,
+    0.347,
+    "#app > section#mutes.ag-card.card + #hero > div.acts"
+   ],
+   [
+    3347,
+    0.285,
+    "#app > section#mutes.ag-card.card + #hero > div.acts"
+   ],
+   [
+    2928,
+    0.043,
+    "#app > section#hero.ag-card.hero + #app > section#mutes.ag-card.card"
+   ],
+   [
+    5855,
+    0.033,
+    "#app > ul#list.list + #list > li.it.warn"
+   ]
+  ],
+  "top3": [
+   "/olympus/sfx.js 31 KB",
+   "/olympus/themes.js 24 KB",
+   "/olympus/olympus.js 15 KB"
+  ],
+  "built_404": [
+   "/kalshi.json"
+  ],
+  "offline": "error Page.reload: net::ERR_INTERNET_DISCONNECTED",
+  "offline_sw": true,
+  "offline_age": false,
+  "wall_s": 18.6
+ },
+ "settings": {
+  "fcp_ms": 2848,
+  "kb_fcp": 108.7,
+  "req_fcp": 15,
+  "req": 24,
+  "kb": 212.7,
+  "js_kb": 521.6,
+  "three": false,
+  "gl": 0,
+  "gl_page": 0,
+  "lcp_ms": 3196,
+  "ready_ms": 0,
+  "heap_mb": 2.9,
+  "lt_n": 3,
+  "lt_max": 234,
+  "tbt": 255,
+  "img_kb": 0.6,
+  "font_kb": 0.0,
+  "css_kb": 30.5,
+  "data_kb": 0.0,
+  "cls": 0.06,
+  "sideways": false,
+  "errors": 0,
+  "error_list": [],
+  "shifts": [
+   [
+    3870,
+    0.058,
+    "#app > section#moneyread.ag-card.card + #app > section#hero.ag-card.hero"
+   ]
+  ],
+  "top3": [
+   "/olympus/sfx.js 31 KB",
+   "/olympus/themes.js 24 KB",
+   "/olympus/olympus.js 15 KB"
+  ],
+  "built_404": [],
+  "offline": "error Page.reload: net::ERR_INTERNET_DISCONNECTED",
+  "offline_sw": true,
+  "offline_age": false,
+  "wall_s": 18.5
+ },
+ "planner": {
+  "fcp_ms": 2216,
+  "kb_fcp": 101.9,
+  "req_fcp": 11,
+  "req": 28,
+  "kb": 259.9,
+  "js_kb": 605.7,
+  "three": false,
+  "gl": 0,
+  "gl_page": 0,
+  "lcp_ms": 5416,
+  "ready_ms": 0,
+  "heap_mb": 3.3,
+  "lt_n": 4,
+  "lt_max": 119,
+  "tbt": 92,
+  "img_kb": 0.6,
+  "font_kb": 0.0,
+  "css_kb": 30.9,
+  "data_kb": 22.1,
+  "cls": 0.291,
+  "sideways": false,
+  "errors": 0,
+  "error_list": [],
+  "shifts": [
+   [
+    4843,
+    0.215,
+    "#app > form#qForm.ag-card.card + #app > section.pulse.ready"
+   ],
+   [
+    2966,
+    0.059,
+    "#app > section.pulse + #app > form#qForm.ag-card.card"
+   ]
+  ],
+  "top3": [
+   "/olympus/sfx.js 31 KB",
+   "/planner/plannercore.js 25 KB",
+   "/olympus/themes.js 24 KB"
+  ],
+  "built_404": [
+   "/home.json"
+  ],
+  "offline": "error Page.reload: net::ERR_INTERNET_DISCONNECTED",
+  "offline_sw": true,
+  "offline_age": false,
+  "wall_s": 17.5
+ },
+ "demeter": {
+  "fcp_ms": 2144,
+  "kb_fcp": 80.8,
+  "req_fcp": 11,
+  "req": 27,
+  "kb": 213.7,
+  "js_kb": 462.4,
+  "three": false,
+  "gl": 0,
+  "gl_page": 0,
+  "lcp_ms": 4188,
+  "ready_ms": 0,
+  "heap_mb": 3.1,
+  "lt_n": 2,
+  "lt_max": 97,
+  "tbt": 60,
+  "img_kb": 0.6,
+  "font_kb": 0.0,
+  "css_kb": 28.7,
+  "data_kb": 23.2,
+  "cls": 0.849,
+  "sideways": false,
+  "errors": 0,
+  "error_list": [],
+  "shifts": [
+   [
+    4156,
+    0.791,
+    "#app > section#dialCard.ag-card.card + #app > section.ag-card.card"
+   ],
+   [
+    2889,
+    0.058,
+    "#app > section#payCard.ag-card.card + #app > section#wiCard.ag-card.card"
+   ]
+  ],
+  "top3": [
+   "/olympus/sfx.js 31 KB",
+   "/olympus/themes.js 24 KB",
+   "/trading/trades.json 16 KB"
+  ],
+  "built_404": [
+   "/home.json"
+  ],
+  "offline": "error Page.reload: net::ERR_INTERNET_DISCONNECTED",
+  "offline_sw": true,
+  "offline_age": false,
+  "wall_s": 17.9
+ },
+ "hera": {
+  "fcp_ms": 2276,
+  "kb_fcp": 83.4,
+  "req_fcp": 12,
+  "req": 28,
+  "kb": 216.4,
+  "js_kb": 463.7,
+  "three": false,
+  "gl": 0,
+  "gl_page": 0,
+  "lcp_ms": 4056,
+  "ready_ms": 0,
+  "heap_mb": 3.2,
+  "lt_n": 1,
+  "lt_max": 73,
+  "tbt": 23,
+  "img_kb": 0.6,
+  "font_kb": 0.0,
+  "css_kb": 28.9,
+  "data_kb": 24.8,
+  "cls": 0.244,
+  "sideways": false,
+  "errors": 0,
+  "error_list": [],
+  "shifts": [
+   [
+    4011,
+    0.186,
+    "#app > section.ag-card.card + #app > section.pulse"
+   ],
+   [
+    2891,
+    0.058,
+    "#app > section.ag-card.card + #app > section.pulse"
+   ]
+  ],
+  "top3": [
+   "/olympus/sfx.js 31 KB",
+   "/olympus/themes.js 24 KB",
+   "/trading/trades.json 16 KB"
+  ],
+  "built_404": [
+   "/home.json"
+  ],
+  "offline": "error Page.reload: net::ERR_INTERNET_DISCONNECTED",
+  "offline_sw": true,
+  "offline_age": false,
+  "wall_s": 17.7
+ },
+ "dionysus": {
+  "fcp_ms": 2248,
+  "kb_fcp": 75.8,
+  "req_fcp": 9,
+  "req": 25,
+  "kb": 195.2,
+  "js_kb": 444.6,
+  "three": false,
+  "gl": 0,
+  "gl_page": 0,
+  "lcp_ms": 2648,
+  "ready_ms": 0,
+  "heap_mb": 2.9,
+  "lt_n": 3,
+  "lt_max": 135,
+  "tbt": 131,
+  "img_kb": 0.6,
+  "font_kb": 0.0,
+  "css_kb": 23.8,
+  "data_kb": 15.4,
+  "cls": 0.898,
+  "sideways": false,
+  "errors": 0,
+  "error_list": [],
+  "shifts": [
+   [
+    4576,
+    0.839,
+    "#app > section.ag-card.card + #app > section.ag-card.card"
+   ],
+   [
+    2903,
+    0.059,
+    "#app > section.ag-card.card + #app > section.ag-card.card"
+   ]
+  ],
+  "top3": [
+   "/olympus/sfx.js 31 KB",
+   "/olympus/themes.js 24 KB",
+   "/olympus/olympus.js 15 KB"
+  ],
+  "built_404": [
+   "/kalshi.json",
+   "/money/sibyl.json",
+   "/money/sibyl_forward.json"
+  ],
+  "offline": "error Page.reload: net::ERR_INTERNET_DISCONNECTED",
+  "offline_sw": true,
+  "offline_age": false,
+  "wall_s": 18.0
+ },
+ "pnyx": {
+  "fcp_ms": 2228,
+  "kb_fcp": 83.8,
+  "req_fcp": 12,
+  "req": 31,
+  "kb": 227.8,
+  "js_kb": 505.9,
+  "three": false,
+  "gl": 0,
+  "gl_page": 0,
+  "lcp_ms": 2716,
+  "ready_ms": 0,
+  "heap_mb": 3.1,
+  "lt_n": 4,
+  "lt_max": 115,
+  "tbt": 143,
+  "img_kb": 0.6,
+  "font_kb": 0.0,
+  "css_kb": 28.8,
+  "data_kb": 20.1,
+  "cls": 0.209,
+  "sideways": false,
+  "errors": 0,
+  "error_list": [],
+  "shifts": [
+   [
+    4188,
+    0.151,
+    "#app > section#inCard.ag-card.card + #app > section.ag-card.card"
+   ],
+   [
+    2927,
+    0.058,
+    "#app > section#inCard.ag-card.card + #app > section#answer.ag-card.card"
+   ]
+  ],
+  "top3": [
+   "/olympus/sfx.js 31 KB",
+   "/olympus/themes.js 24 KB",
+   "/trading/trades.json 16 KB"
+  ],
+  "built_404": [
+   "/home.json"
+  ],
+  "offline": "error Page.reload: net::ERR_INTERNET_DISCONNECTED",
+  "offline_sw": true,
+  "offline_age": false,
+  "wall_s": 17.9
+ },
+ "mercury": {
+  "fcp_ms": 2256,
+  "kb_fcp": 83.2,
+  "req_fcp": 12,
+  "req": 27,
+  "kb": 373.3,
+  "js_kb": 1114.0,
+  "three": true,
+  "gl": 1,
+  "gl_page": 1,
+  "lcp_ms": 4056,
+  "ready_ms": 0,
+  "heap_mb": 7.6,
+  "lt_n": 54,
+  "lt_max": 492,
+  "tbt": 993,
+  "img_kb": 0.7,
+  "font_kb": 0.0,
+  "css_kb": 28.4,
+  "data_kb": 20.3,
+  "cls": 0.09,
+  "sideways": false,
+  "errors": 0,
+  "error_list": [],
+  "shifts": [
+   [
+    2937,
+    0.058,
+    "#app > section.ag-card.card + #app > section#pickCard.ag-card.card"
+   ],
+   [
+    4008,
+    0.032,
+    "#app > section#pickCard.ag-card.card + #pickCard > p.note"
+   ]
+  ],
+  "top3": [
+   "/jarvis/three.module.min.js 163 KB",
+   "/olympus/sfx.js 31 KB",
+   "/olympus/themes.js 24 KB"
+  ],
+  "built_404": [
+   "/home.json",
+   "/money/mercury.json"
+  ],
+  "offline": "error Page.reload: net::ERR_INTERNET_DISCONNECTED",
+  "offline_sw": true,
+  "offline_age": false,
+  "wall_s": 19.8
+ },
+ "chrysos": {
+  "fcp_ms": 2248,
+  "kb_fcp": 82.8,
+  "req_fcp": 11,
+  "req": 44,
+  "kb": 464.1,
+  "js_kb": 1361.7,
+  "three": true,
+  "gl": 1,
+  "gl_page": 1,
+  "lcp_ms": 4264,
+  "ready_ms": 0,
+  "heap_mb": 6.4,
+  "lt_n": 3,
+  "lt_max": 323,
+  "tbt": 466,
+  "img_kb": 0.6,
+  "font_kb": 0.0,
+  "css_kb": 29.1,
+  "data_kb": 23.7,
+  "cls": 0.756,
+  "sideways": false,
+  "errors": 0,
+  "error_list": [],
+  "shifts": [
+   [
+    4207,
+    0.697,
+    "#app > section.ag-card.card + section > div.pu-part.pu-money"
+   ],
+   [
+    2903,
+    0.059,
+    "#app > section.ag-card.card + section > div.pu-part.pu-money"
+   ]
+  ],
+  "top3": [
+   "/jarvis/three.module.min.js 163 KB",
+   "/olympus/sfx.js 31 KB",
+   "/olympus/themes.js 24 KB"
+  ],
+  "built_404": [
+   "/home.json",
+   "/money/chrysos.json"
+  ],
+  "offline": "error Page.reload: net::ERR_INTERNET_DISCONNECTED",
+  "offline_sw": true,
+  "offline_age": false,
+  "wall_s": 17.8
+ },
+ "oikos": {
+  "fcp_ms": 2320,
+  "kb_fcp": 88.6,
+  "req_fcp": 12,
+  "req": 30,
+  "kb": 387.6,
+  "js_kb": 1146.3,
+  "three": true,
+  "gl": 1,
+  "gl_page": 1,
+  "lcp_ms": 6332,
+  "ready_ms": 0,
+  "heap_mb": 7.9,
+  "lt_n": 21,
+  "lt_max": 508,
+  "tbt": 653,
+  "img_kb": 0.6,
+  "font_kb": 0.0,
+  "css_kb": 29.4,
+  "data_kb": 20.0,
+  "cls": 0.202,
+  "sideways": false,
+  "errors": 0,
+  "error_list": [],
+  "shifts": [
+   [
+    6077,
+    0.144,
+    "#app > section.ag-card.card + #app > a.ag-card.card"
+   ],
+   [
+    2925,
+    0.059,
+    "#app > section.ag-card.card + #app > a.ag-card.card"
+   ]
+  ],
+  "top3": [
+   "/jarvis/three.module.min.js 163 KB",
+   "/olympus/sfx.js 31 KB",
+   "/olympus/themes.js 24 KB"
+  ],
+  "built_404": [
+   "/home.json",
+   "/money/household.json",
+   "/money/oikos.json"
+  ],
+  "offline": "error Page.reload: net::ERR_INTERNET_DISCONNECTED",
+  "offline_sw": true,
+  "offline_age": false,
+  "wall_s": 18.4
+ },
+ "aegis": {
+  "fcp_ms": 2132,
+  "kb_fcp": 82.4,
+  "req_fcp": 11,
+  "req": 46,
+  "kb": 489.5,
+  "js_kb": 1458.2,
+  "three": true,
+  "gl": 1,
+  "gl_page": 1,
+  "lcp_ms": 4480,
+  "ready_ms": 0,
+  "heap_mb": 6.4,
+  "lt_n": 4,
+  "lt_max": 374,
+  "tbt": 407,
+  "img_kb": 0.6,
+  "font_kb": 0.0,
+  "css_kb": 29.0,
+  "data_kb": 19.7,
+  "cls": 0.362,
+  "sideways": false,
+  "errors": 0,
+  "error_list": [],
+  "shifts": [
+   [
+    4427,
+    0.304,
+    "#app > section.ag-card.card + #app > section.ag-card.card"
+   ],
+   [
+    3161,
+    0.058,
+    "#app > section.ag-card.card + #app > section.pulse"
+   ]
+  ],
+  "top3": [
+   "/jarvis/three.module.min.js 163 KB",
+   "/olympus/sfx.js 31 KB",
+   "/olympus/polis-life.js 27 KB"
+  ],
+  "built_404": [
+   "/home.json"
+  ],
+  "offline": "error Page.reload: net::ERR_INTERNET_DISCONNECTED",
+  "offline_sw": true,
+  "offline_age": false,
+  "wall_s": 17.3
+ },
+ "kronos": {
+  "fcp_ms": 2200,
+  "kb_fcp": 86.4,
+  "req_fcp": 12,
+  "req": 47,
+  "kb": 646.6,
+  "js_kb": 1457.2,
+  "three": true,
+  "gl": 1,
+  "gl_page": 1,
+  "lcp_ms": 5848,
+  "ready_ms": 0,
+  "heap_mb": 11.6,
+  "lt_n": 90,
+  "lt_max": 1438,
+  "tbt": 4200,
+  "img_kb": 29.6,
+  "font_kb": 0.0,
+  "css_kb": 28.9,
+  "data_kb": 149.8,
+  "cls": 0.83,
+  "sideways": false,
+  "errors": 0,
+  "error_list": [],
+  "shifts": [
+   [
+    5820,
+    0.771,
+    "#app > section.ag-card.card + #app > section.ag-card.card"
+   ],
+   [
+    3178,
+    0.059,
+    "#app > section.ag-card.card + #app > section.ag-card.card"
+   ]
+  ],
+  "top3": [
+   "/jarvis/three.module.min.js 163 KB",
+   "/odeon/trades.json 128 KB",
+   "/olympus/sfx.js 31 KB"
+  ],
+  "built_404": [
+   "/home.json"
+  ],
+  "offline": "error Page.reload: net::ERR_INTERNET_DISCONNECTED",
+  "offline_sw": true,
+  "offline_age": false,
+  "wall_s": 23.3
+ },
+ "compass": {
+  "fcp_ms": 2140,
+  "kb_fcp": 82.5,
+  "req_fcp": 12,
+  "req": 45,
+  "kb": 589.3,
+  "js_kb": 1366.2,
+  "three": true,
+  "gl": 1,
+  "gl_page": 1,
+  "lcp_ms": 7892,
+  "ready_ms": 0,
+  "heap_mb": 7.7,
+  "lt_n": 1,
+  "lt_max": 344,
+  "tbt": 294,
+  "img_kb": 0.5,
+  "font_kb": 0.0,
+  "css_kb": 28.9,
+  "data_kb": 148.9,
+  "cls": 0.457,
+  "sideways": false,
+  "errors": 0,
+  "error_list": [],
+  "shifts": [
+   [
+    7850,
+    0.398,
+    "#app > section.ag-card.card + #app > section.ag-card.card"
+   ],
+   [
+    2870,
+    0.058,
+    "#app > section.ag-card.card + #app > section.ag-card.card"
+   ]
+  ],
+  "top3": [
+   "/jarvis/three.module.min.js 163 KB",
+   "/odeon/trades.json 128 KB",
+   "/olympus/sfx.js 31 KB"
+  ],
+  "built_404": [
+   "/home.json",
+   "/money/index.json"
+  ],
+  "offline": "error Page.reload: net::ERR_INTERNET_DISCONNECTED",
+  "offline_sw": true,
+  "offline_age": false,
+  "wall_s": 19.3
+ },
+ "helios": {
+  "fcp_ms": 2236,
+  "kb_fcp": 87.0,
+  "req_fcp": 13,
+  "req": 52,
+  "kb": 511.4,
+  "js_kb": 1485.2,
+  "three": true,
+  "gl": 1,
+  "gl_page": 1,
+  "lcp_ms": 4888,
+  "ready_ms": 0,
+  "heap_mb": 6.8,
+  "lt_n": 3,
+  "lt_max": 229,
+  "tbt": 261,
+  "img_kb": 0.6,
+  "font_kb": 0.0,
+  "css_kb": 29.6,
+  "data_kb": 28.8,
+  "cls": 0.273,
+  "sideways": false,
+  "errors": 0,
+  "error_list": [],
+  "shifts": [
+   [
+    4843,
+    0.214,
+    "#app > section.ag-card.card + #app > section.pulse"
+   ],
+   [
+    3159,
+    0.058,
+    "#app > section.ag-card.card + #app > section.pulse"
+   ]
+  ],
+  "top3": [
+   "/jarvis/three.module.min.js 163 KB",
+   "/olympus/sfx.js 31 KB",
+   "/olympus/polis-life.js 27 KB"
+  ],
+  "built_404": [
+   "/home.json",
+   "/money/index.json"
+  ],
+  "offline": "error Page.reload: net::ERR_INTERNET_DISCONNECTED",
+  "offline_sw": true,
+  "offline_age": false,
+  "wall_s": 17.5
+ },
+ "nq": {
+  "fcp_ms": 2220,
+  "kb_fcp": 103.8,
+  "req_fcp": 13,
+  "req": 50,
+  "kb": 946.8,
+  "js_kb": 1757.7,
+  "three": true,
+  "gl": 2,
+  "gl_page": 1,
+  "lcp_ms": 6484,
+  "ready_ms": 0,
+  "heap_mb": 12.1,
+  "lt_n": 13,
+  "lt_max": 803,
+  "tbt": 1999,
+  "img_kb": 233.8,
+  "font_kb": 0.0,
+  "css_kb": 30.9,
+  "data_kb": 27.0,
+  "cls": 0.58,
+  "sideways": false,
+  "errors": 0,
+  "error_list": [],
+  "shifts": [
+   [
+    6349,
+    0.382,
+    "#chartCard > div#chartBox.chartbox + #app > section#acctCard.ag-card.card"
+   ],
+   [
+    3805,
+    0.106,
+    "#app > section#acctCard.ag-card.card + #chartCard > p.note"
+   ],
+   [
+    2981,
+    0.059,
+    "#app > section#chartCard.ag-card.card + header > div.brand"
+   ],
+   [
+    5205,
+    0.034,
+    "header > div.tags + #acctCard > p.dk-legend"
+   ]
+  ],
+  "top3": [
+   "/assets/tex/paving_c.webp 165 KB",
+   "/jarvis/three.module.min.js 163 KB",
+   "/assets/env/hdri/dusk.hdr 128 KB"
+  ],
+  "built_404": [
+   "/home.json",
+   "/hub/learned.json"
+  ],
+  "offline": "error Page.reload: net::ERR_INTERNET_DISCONNECTED",
+  "offline_sw": true,
+  "offline_age": false,
+  "wall_s": 19.1
+ },
+ "agency": {
+  "fcp_ms": 2252,
+  "kb_fcp": 83.8,
+  "req_fcp": 9,
+  "req": 20,
+  "kb": 184.3,
+  "js_kb": 431.5,
+  "three": false,
+  "gl": 0,
+  "gl_page": 0,
+  "lcp_ms": 3852,
+  "ready_ms": 0,
+  "heap_mb": 2.8,
+  "lt_n": 3,
+  "lt_max": 104,
+  "tbt": 82,
+  "img_kb": 0.6,
+  "font_kb": 0.0,
+  "css_kb": 23.6,
+  "data_kb": 10.3,
+  "cls": 0.948,
+  "sideways": false,
+  "errors": 0,
+  "error_list": [],
+  "shifts": [
+   [
+    3807,
+    0.889,
+    "#app > section.ag-card.card + #app > section.ag-card.card"
+   ],
+   [
+    2844,
+    0.059,
+    "#app > section.ag-card.card + #app > section.ag-card.card"
+   ]
+  ],
+  "top3": [
+   "/olympus/sfx.js 31 KB",
+   "/olympus/themes.js 24 KB",
+   "/olympus/olympus.js 15 KB"
+  ],
+  "built_404": [],
+  "offline": "error Page.reload: net::ERR_INTERNET_DISCONNECTED",
+  "offline_sw": true,
+  "offline_age": false,
+  "wall_s": 17.4
+ },
+ "business": {
+  "fcp_ms": 2732,
+  "kb_fcp": 107.1,
+  "req_fcp": 14,
+  "req": 32,
+  "kb": 277.7,
+  "js_kb": 628.8,
+  "three": false,
+  "gl": 0,
+  "gl_page": 0,
+  "lcp_ms": 3056,
+  "ready_ms": 0,
+  "heap_mb": 3.3,
+  "lt_n": 4,
+  "lt_max": 112,
+  "tbt": 121,
+  "img_kb": 0.6,
+  "font_kb": 0.0,
+  "css_kb": 32.7,
+  "data_kb": 28.8,
+  "cls": 0.101,
+  "sideways": false,
+  "errors": 0,
+  "error_list": [],
+  "shifts": [
+   [
+    3370,
+    0.058,
+    "#app > section.ag-card.card + #app > section.pulse"
+   ],
+   [
+    5464,
+    0.043,
+    "#app > section.pulse.ready + header > div.tags"
+   ]
+  ],
+  "top3": [
+   "/olympus/sfx.js 31 KB",
+   "/olympus/sfx.js 31 KB",
+   "/olympus/themes.js 24 KB"
+  ],
+  "built_404": [
+   "/home.json",
+   "/kalshi.json"
+  ],
+  "offline": "error Page.reload: net::ERR_INTERNET_DISCONNECTED",
+  "offline_sw": true,
+  "offline_age": false,
+  "wall_s": 17.5
+ },
+ "trading": {
+  "fcp_ms": 2584,
+  "kb_fcp": 97.4,
+  "req_fcp": 15,
+  "req": 49,
+  "kb": 344.2,
+  "js_kb": 795.1,
+  "three": false,
+  "gl": 0,
+  "gl_page": 0,
+  "lcp_ms": 5796,
+  "ready_ms": 0,
+  "heap_mb": 4.1,
+  "lt_n": 4,
+  "lt_max": 290,
+  "tbt": 495,
+  "img_kb": 0.6,
+  "font_kb": 0.0,
+  "css_kb": 33.3,
+  "data_kb": 32.5,
+  "cls": 0.032,
+  "sideways": false,
+  "errors": 0,
+  "error_list": [],
+  "shifts": [
+   [
+    3303,
+    0.032,
+    "#app > section#banner.banner + header > div.brand"
+   ]
+  ],
+  "top3": [
+   "/olympus/sfx.js 31 KB",
+   "/olympus/sfx.js 31 KB",
+   "/olympus/themes.js 24 KB"
+  ],
+  "built_404": [
+   "/home.json"
+  ],
+  "offline": "error Page.reload: net::ERR_INTERNET_DISCONNECTED",
+  "offline_sw": true,
+  "offline_age": false,
+  "wall_s": 17.9
+ },
+ "board": {
+  "fcp_ms": 2380,
+  "kb_fcp": 68.3,
+  "req_fcp": 14,
+  "req": 29,
+  "kb": 141.2,
+  "js_kb": 264.3,
+  "three": false,
+  "gl": 0,
+  "gl_page": 0,
+  "lcp_ms": 2596,
+  "ready_ms": 0,
+  "heap_mb": 2.4,
+  "lt_n": 1,
+  "lt_max": 66,
+  "tbt": 16,
+  "img_kb": 0.0,
+  "font_kb": 0.0,
+  "css_kb": 25.9,
+  "data_kb": 15.4,
+  "cls": 0.66,
+  "sideways": false,
+  "errors": 0,
+  "error_list": [],
+  "shifts": [
+   [
+    5367,
+    0.585,
+    "#app > section.ag-card.notebox + #app > div#edgeChip.edge-chip"
+   ],
+   [
+    3676,
+    0.075,
+    "#app > section.ag-card.notebox + #app > section#payReadyCard.ag-card"
+   ]
+  ],
+  "top3": [
+   "/olympus/themes.js 24 KB",
+   "/olympus/warp.js 13 KB",
+   "/pc_feed.js 11 KB"
+  ],
+  "built_404": [],
+  "offline": "error Page.reload: net::ERR_INTERNET_DISCONNECTED",
+  "offline_sw": true,
+  "offline_age": false,
+  "wall_s": 16.5
+ },
+ "widget": {
+  "fcp_ms": 1316,
+  "kb_fcp": 5.9,
+  "req_fcp": 2,
+  "req": 3,
+  "kb": 14.7,
+  "js_kb": 24.7,
+  "three": false,
+  "gl": 0,
+  "gl_page": 0,
+  "lcp_ms": 1316,
+  "ready_ms": 0,
+  "heap_mb": 1.2,
+  "lt_n": 1,
+  "lt_max": 94,
+  "tbt": 44,
+  "img_kb": 0.0,
+  "font_kb": 0.0,
+  "css_kb": 3.2,
+  "data_kb": 0.0,
+  "cls": 0.0,
+  "sideways": false,
+  "errors": 0,
+  "error_list": [],
+  "shifts": [],
+  "top3": [
+   "/widget/olympus-widget.js 8 KB",
+   "/widget/widget.css 3 KB"
+  ],
+  "built_404": [],
+  "offline": "error Page.reload: net::ERR_INTERNET_DISCONNECTED",
+  "offline_sw": true,
+  "offline_age": false,
+  "wall_s": 14.3
+ },
+ "clio": {
+  "fcp_ms": 2052,
+  "kb_fcp": 72.9,
+  "req_fcp": 10,
+  "req": 21,
+  "kb": 175.5,
+  "js_kb": 417.6,
+  "three": false,
+  "gl": 0,
+  "gl_page": 0,
+  "lcp_ms": 2520,
+  "ready_ms": 0,
+  "heap_mb": 2.5,
+  "lt_n": 1,
+  "lt_max": 51,
+  "tbt": 1,
+  "img_kb": 0.6,
+  "font_kb": 0.0,
+  "css_kb": 29.0,
+  "data_kb": 1.7,
+  "cls": 0.707,
+  "sideways": false,
+  "errors": 0,
+  "error_list": [],
+  "shifts": [
+   [
+    4141,
+    0.658,
+    "#app > section.ag-card.card + #app > section.card"
+   ],
+   [
+    2775,
+    0.049,
+    "#app > section.ag-card.card + #app > section.ag-card.card"
+   ]
+  ],
+  "top3": [
+   "/olympus/sfx.js 31 KB",
+   "/olympus/themes.js 24 KB",
+   "/olympus/olympus.js 15 KB"
+  ],
+  "built_404": [
+   "/data.json"
+  ],
+  "offline": "error Page.reload: net::ERR_INTERNET_DISCONNECTED",
+  "offline_sw": true,
+  "offline_age": false,
+  "wall_s": 17.3
+ },
+ "atlas": {
+  "fcp_ms": 1332,
+  "kb_fcp": 10.0,
+  "req_fcp": 3,
+  "req": 36,
+  "kb": 56.9,
+  "js_kb": 98.9,
+  "three": false,
+  "gl": 0,
+  "gl_page": 0,
+  "lcp_ms": 1332,
+  "ready_ms": 0,
+  "heap_mb": 2.0,
+  "lt_n": 1,
+  "lt_max": 96,
+  "tbt": 46,
+  "img_kb": 0.0,
+  "font_kb": 0.0,
+  "css_kb": 3.5,
+  "data_kb": 14.9,
+  "cls": 0.007,
+  "sideways": false,
+  "errors": 0,
+  "error_list": [],
+  "shifts": [],
+  "top3": [
+   "/olympus/warp.js 13 KB",
+   "/atlas/atlas.js 6 KB",
+   "/olympus/doors.js 5 KB"
+  ],
+  "built_404": [
+   "/home.json"
+  ],
+  "offline": "error Page.reload: net::ERR_INTERNET_DISCONNECTED",
+  "offline_sw": true,
+  "offline_age": false,
+  "wall_s": 15.1
+ },
+ "kalshi": {
+  "fcp_ms": 1472,
+  "kb_fcp": 33.2,
+  "req_fcp": 4,
+  "req": 18,
+  "kb": 179.1,
+  "js_kb": 438.6,
+  "three": false,
+  "gl": 0,
+  "gl_page": 0,
+  "lcp_ms": 1472,
+  "ready_ms": 0,
+  "heap_mb": 2.5,
+  "lt_n": 2,
+  "lt_max": 125,
+  "tbt": 117,
+  "img_kb": 0.0,
+  "font_kb": 0.0,
+  "css_kb": 23.6,
+  "data_kb": 3.2,
+  "cls": 0.229,
+  "sideways": false,
+  "errors": 0,
+  "error_list": [],
+  "shifts": [
+   [
+    2738,
+    0.219,
+    "#k8d > div#k8d-help.k8d-help + #k8d > div.k8d-cd"
+   ]
+  ],
+  "top3": [
+   "/kalshi/kalshi.js 66 KB",
+   "/olympus/themes.js 24 KB",
+   "/kalshi/kalshi.css 20 KB"
+  ],
+  "built_404": [
+   "/kalshi.json"
+  ],
+  "offline": "ok",
+  "offline_sw": true,
+  "offline_age": true,
+  "wall_s": 19.1
+ },
+ "tyche": {
+  "fcp_ms": 2192,
+  "kb_fcp": 100.3,
+  "req_fcp": 13,
+  "req": 53,
+  "kb": 454.8,
+  "js_kb": 1385.9,
+  "three": true,
+  "gl": 1,
+  "gl_page": 1,
+  "lcp_ms": 11240,
+  "ready_ms": 0,
+  "heap_mb": 11.9,
+  "lt_n": 8,
+  "lt_max": 3341,
+  "tbt": 6881,
+  "img_kb": 0.0,
+  "font_kb": 0.0,
+  "css_kb": 26.1,
+  "data_kb": 0.0,
+  "cls": 0.025,
+  "sideways": false,
+  "errors": 0,
+  "error_list": [],
+  "shifts": [
+   [
+    7881,
+    0.025,
+    "body > section#dock.hud + #top > div.chips"
+   ]
+  ],
+  "top3": [
+   "/jarvis/three.module.min.js 163 KB",
+   "/olympus/sfx.js 31 KB",
+   "/olympus/themes.js 24 KB"
+  ],
+  "built_404": [
+   "/kalshi.json"
+  ],
+  "offline": "error Page.reload: net::ERR_INTERNET_DISCONNECTED",
+  "offline_sw": true,
+  "offline_age": false,
+  "wall_s": 32.9
+ },
+ "jarvis": {
+  "fcp_ms": 1664,
+  "kb_fcp": 144.3,
+  "req_fcp": 6,
+  "req": 198,
+  "kb": 1568.9,
+  "js_kb": 2750.2,
+  "three": true,
+  "gl": 2,
+  "gl_page": 2,
+  "lcp_ms": 1664,
+  "ready_ms": 0,
+  "heap_mb": 19.0,
+  "lt_n": 58,
+  "lt_max": 2012,
+  "tbt": 5908,
+  "img_kb": 18.1,
+  "font_kb": 48.7,
+  "css_kb": 35.3,
+  "data_kb": 472.3,
+  "cls": 0.052,
+  "sideways": false,
+  "errors": 0,
+  "error_list": [],
+  "shifts": [
+   [
+    19050,
+    0.029,
+    "div > div#zeusCard.zeus-host + #sec-system > div.hpanel"
+   ]
+  ],
+  "top3": [
+   "/jarvis/three.module.min.js 163 KB",
+   "/odeon/trades.json 128 KB",
+   "/odeon/trades.json 128 KB"
+  ],
+  "built_404": [
+   "/home.json",
+   "/kalshi.json",
+   "/money/index.json"
+  ],
+  "offline": "ok",
+  "offline_sw": true,
+  "offline_age": true,
+  "wall_s": 37.0
+ },
+ "gate": {
+  "fcp_ms": 2204,
+  "kb_fcp": 99.3,
+  "req_fcp": 11,
+  "req": 15,
+  "kb": 134.0,
+  "js_kb": 279.1,
+  "three": false,
+  "gl": 0,
+  "gl_page": 0,
+  "lcp_ms": 3104,
+  "ready_ms": 0,
+  "heap_mb": 2.3,
+  "lt_n": 4,
+  "lt_max": 77,
+  "tbt": 66,
+  "img_kb": 0.0,
+  "font_kb": 0.0,
+  "css_kb": 29.6,
+  "data_kb": 1.2,
+  "cls": 0.0,
+  "sideways": false,
+  "errors": 0,
+  "error_list": [],
+  "shifts": [],
+  "top3": [
+   "/olympus/themes.js 24 KB",
+   "/gate/gate.js 19 KB",
+   "/olympus/warp.js 13 KB"
+  ],
+  "built_404": [
+   "/home.json",
+   "/kalshi.json",
+   "/me/me.json",
+   "/money/scoreboard.json"
+  ],
+  "offline": "error Page.reload: net::ERR_INTERNET_DISCONNECTED",
+  "offline_sw": true,
+  "offline_age": false,
+  "wall_s": 15.6
+ },
+ "hub": {
+  "fcp_ms": 2068,
+  "kb_fcp": 69.6,
+  "req_fcp": 9,
+  "req": 15,
+  "kb": 115.7,
+  "js_kb": 246.8,
+  "three": false,
+  "gl": 0,
+  "gl_page": 0,
+  "lcp_ms": 2780,
+  "ready_ms": 0,
+  "heap_mb": 2.3,
+  "lt_n": 0,
+  "lt_max": 0,
+  "tbt": 0,
+  "img_kb": 0.0,
+  "font_kb": 0.0,
+  "css_kb": 25.8,
+  "data_kb": 0.0,
+  "cls": 0.041,
+  "sideways": false,
+  "errors": 0,
+  "error_list": [],
+  "shifts": [
+   [
+    2682,
+    0.028,
+    "#hub > nav#hubIndex.hb-index + #hub > header#hubHead.hb-head"
+   ]
+  ],
+  "top3": [
+   "/olympus/themes.js 24 KB",
+   "/olympus/warp.js 13 KB",
+   "/olympus/gate-catalog.js 11 KB"
+  ],
+  "built_404": [],
+  "offline": "error Page.reload: net::ERR_INTERNET_DISCONNECTED",
+  "offline_sw": true,
+  "offline_age": false,
+  "wall_s": 16.1
+ }
+}

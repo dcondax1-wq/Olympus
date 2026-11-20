@@ -1,10 +1,10 @@
 ---
 tags:
   - zeus/decide
-  - decide/open
+  - decide/no
 type: "decide"
 id: "rapid25-lit-bank"
-status: "open"
+status: "no"
 added: "2026-11-18"
 usd_month: 101
 recommend: "no"
@@ -12,12 +12,12 @@ recommend: "no"
 
 # Decide: Rapid 25K: Zlarior trades 1 micro and takes profit at the day's room (instead of skipping most trades)?
 
-> [!question] OPEN · +$101 a month
+> [!failure] NO · +$101 a month
 > Answer it on the Decide card (Business app): YES / NO / LATER.
 
 |  |  |
 |---|---|
-| Status | open |
+| Status | no |
 | Added | 2026-11-18 |
 | $ a month | +$101 |
 | Claude recommends | no |

@@ -61,3 +61,32 @@ Tests: pulse 128/128 (14 apps, dark + Ivory), kronos 54/54, pnyx 51/51, chrysos 
 planner 170/170, clio 47/47, atlas_ui 36/36 + node atlas hub 4/4.
 Shots: `shots/before-<app>-*.jpg` and `shots/after-<app>-*.jpg` for kronos, pnyx, chrysos, mercury, oikos, planner, clio, settings, atlas.
 LEAD_WIRES: nothing new for round 2 (every folder is in the root worker's OTHER_APPS; `?v=` tags bumped; `pulse.css` / `pulse.js` are now `?v=p2` everywhere).
+
+## Round 3: "Answer these first" (business/plan.html, the Decide cards)
+- The top of the Money Plan page is now **Answer these first (N open)**: the open Decide cards ranked by $ a month, using the fleet plan's
+  whole-fleet number (`business/fleet_plan.json` top_decide, day-fleet) when it is there, else the card's own `usd_month`.
+- The top 3 are marked **Answer now**, each with: $ a month, the question, one plain sentence ("Yes = +$390 a month (fleet plan); risk: a funded
+  Rapid lost in 6 months 38.0% with ATLAS vs 14.1% without"), Claude's call in one line, a **Checked twice** badge when a skeptic write-up is named on the card,
+  the full why / numbers / risk / source folded under "Why and the numbers", and the same Yes / No / Later taps.
+- The rest sit under **Later (8)**, answered or closed cards under **Done (3)** with what you said.
+- The taps are unchanged: same `send()`, one POST to `/inbox/board` from the PC link only; the public site shows "Open on your PC link to answer".
+  The Board and ZEUS Decide boxes look and work exactly as before (the ranked view only turns on with `data-decide-mode="rank"`).
+- Today's ranking with the fleet plan: Rapid ATLAS next to Zlarior +$390, ATLAS on Zlarior's 50K +$209, LIT on the funded 25K +$159 (Claude says NO on that one).
+- No card names the skeptic write-up yet (`atlas-funded-streak-1micro` still cites `atlas-edge-2026-11-20.md`), so no "Checked twice" badge shows today;
+  add the skeptic file to that card's `source` or `notes` and it appears.
+- Also fixed: plan.html never applied a light look (it has no kit engine); it now paints the chosen look itself.
+- Tests: test_decide 31/31 (4 new ranking checks + the page wiring), business_pages 40/40. Shots: `before-plan-*`, `after-plan-*` (public site) and
+  `after-plan-pc-*` (the PC link, with the taps), dark and light. Layout shift 0.
+
+## Round 4: Decide card drop-lucid-account4 (owner said YES: MFFU only)
+- The Business page's "Account #4: buy the LucidPro 50K ..." line is now **"Next buys (MFFU only): the Rapid EOD 25K now (added today), then the
+  Rapid EOD 50K about <the first payout's bank date>, ($165 with code CLUB; adds about $1,969 a month, estimate), then a fresh Builder 50K."**
+  Today's plan dates the Rapid EOD 50K at Dec 30 to Jan 4 (business/fleet_plan.json says about Jan 5). The total row reads "With the Rapid EOD 50K too: $2,853 a month" (was $1,694 with the Lucid line).
+- Changed together: `business/businesscore.js` ACCOUNT4 and its Python twin `engine/payout_plan.py` (a planner the money tools use; not the bot),
+  `money_machines/money_door.json` next buys (Rapid EOD 25K $97.20 now; Rapid EOD 50K $165 then a Builder 50K from payouts), `tools/biz_publish.py`
+  (the money move "Next buy after the Rapid EOD 25K ..." and the rule line), the regenerated `business/fixture.json` (0 "Lucid" left), and the
+  Zenith money screens (`hub.js` "what to buy next" fallback, `scalecore.js` ladder rule, `features.js` list): MFFU only.
+- The Business research table was priced at $134.40 an account (the old plan); its notes now say the MFFU Rapid EOD 50K costs $165, about $31 more a buy.
+- Left as is: the archived Plutus app (folded under Archive) still lists a Lucid plan in its old study; the research write-ups keep their history.
+- Tests: money area 18/18 suites, 658 checks (money_door 48/48 with the browser, pins updated: $2,853, the MFFU line, no Lucid, no sale claim);
+  business 85/85, decide 31/31. Shot: `shots/after-business-nextbuys-dark|light.jpg`.

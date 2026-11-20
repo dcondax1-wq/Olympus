@@ -12,7 +12,8 @@
   "subscriptions": [],
   "note": "Evals from research/props/roadmap.json paid_already ($197.80). No monthly subscription is on the money plan: every business account is a free plan. Add a line here if you start paying for one (name, $ a month).",
   "next_buys": [
-   {"what": "LucidPro 50K (account #4, copies Zlarior)", "usd": [120, 135], "when": "the day the first MFFU payout is in your bank (docs/ACCOUNT_4.md)"},
+   {"what": "MFFU Rapid EOD 25K (added today)", "usd": [97.2, 97.2], "when": "now (code CLUB, your price)"},
+   {"what": "MFFU Rapid EOD 50K, then a fresh Builder 50K", "usd": [165, 165], "when": "from the first payout in your bank, about Jan 5 (business/fleet_plan.json; code CLUB)"},
    {"what": "A new MFFU eval after a failed one", "usd": [63, 91.80], "when": "only if an eval fails (25K $63, 50K $91.80 at your prices)"},
    {"what": "Etsy listing fee (only if you list there)", "usd": [0.20, 1.60], "when": "$0.20 per listing; Payhip and Gumroad cost $0 up front"}
   ]

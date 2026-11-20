@@ -34,8 +34,8 @@ def test_static():
     have = [f for f in FILES if os.path.isfile(os.path.join(D, f))]
     check("a. the files are there (%s)" % ", ".join(FILES), len(have) == len(FILES), sorted(set(FILES) - set(have)))
     html, main, scene, core, sh = (AK.read(os.path.join(D, f)) for f in ("index.html", "ow-main.js", "ow-scene.js", "ow-core.js", "ow-shaders.js"))
-    check("a. the kit: olympus.js as the Cities app, gate-nav (Home + Go to), the page's own module last", 'src="../../olympus/olympus.js?v=o15" data-app="cities"' in html
-          and "../../olympus/gate-nav.js" in html and html.rindex('src="ow-main.js?v=w3"') > html.index("olympus.js"))
+    check("a. the kit: olympus.js as the Cities app, gate-nav (Home + Go to), the page's own module last", 'src="../../olympus/olympus.js?v=o18" data-app="cities"' in html
+          and "../../olympus/gate-nav.js" in html and html.rindex('src="ow-main.js?v=w5"') > html.index("olympus.js"))
     check("a. three.js r160 from the site (../../jarvis/three.module.min.js, vendored, MIT) and the OLYMPUS render core; no CDN, no http(s) address in the code",
           "from '../../jarvis/three.module.min.js'" in scene and "from '../../olympus/render.js'" in scene and not re.search(r"https?://", main + scene + core + sh))
     check("a. instanced: one InstancedBufferGeometry per kind (buildings, halos, traffic, beams, rings, streaks), never a mesh per building",
@@ -45,20 +45,39 @@ def test_static():
     check("a. phone-safe: the render core caps the pixel ratio at 2 (maxDpr: 2), tiers (onTier: no mirror and fewer lights on low), reduced motion = no flyover",
           "maxDpr: 2" in scene and "rc.onTier(applyTier)" in scene and "mirror.visible = !lowT" in scene and "prefers-reduced-motion" in main and "reduced ? 1 : " in scene)
     # revamp-cities 2026-11-20 (owner: "looks like a 2000's computer built it"): the look's parts stay in (research/handoff/2026-11-20/revamp-cities/LOOK.md)
-    check("a. revamp look: one prism for shaped towers (chamfer / taper, a box batch of 10 triangles), lit floors with a far fallback, the market-clock sky (uDusk), "
+    check("a. revamp look: one prism for shaped towers (chamfer / taper, a box batch of 10 triangles), lit floors with a far fallback, the sky (uDusk + uNoon daylight), "
           "clouds, the far shore, satellite towns, LED bands, aircraft, light-streak traffic",
-          "function prism(box)" in scene and "iShape" in scene and "onFar" in sh and "uDusk" in sh and "FAR_FS" in sh and "uTowns" in sh and "BAND_FS" in sh
+          "function prism(box)" in scene and "iShape" in scene and "onFar" in sh and "uDusk" in sh and "uNoon" in sh and "FAR_FS" in sh and "uTowns" in sh and "BAND_FS" in sh
           and "PLANE_FS" in sh and "setDisplay" in scene and "towns" in core and "setDisplay(0, l.text)" in main)
     check("a. the reflection pass never takes exp() of a big positive (the NaN bloom blobs of the first try): heights are abs()'d", "float wy = abs(vW.y);" in sh and "exp(-vW.y" not in sh)
     check("a. reduced motion: the LED text stands still, no aircraft", "reduced ? 0 : 0.035 / rep" in scene and "planes.visible = !reduced" in scene)
     try:
+        # cities3 2026-11-20 (owner: "sky from real ET time (day/dusk/night)"): the real sun over New York replaced the market clock
         out = subprocess.run(["node", "--input-type=module", "-e", "import {skyFor} from './ow-core.js'; const t = (s) => skyFor('auto', new Date(s));"
-                              "console.log(JSON.stringify([t('2026-11-20T15:00:00Z'), t('2026-11-20T14:00:00Z'), t('2026-11-21T15:00:00Z'), t('2026-11-20T03:00:00Z'), skyFor('night'), skyFor('dusk')]))"],
+                              "console.log(JSON.stringify([t('2026-11-20T17:00:00Z'), t('2026-11-20T21:20:00Z'), t('2026-11-20T21:55:00Z'), t('2026-11-21T03:00:00Z'), skyFor('night'), skyFor('blue'), skyFor('dusk'), skyFor('day')].map((x) => Math.round(x * 100) / 100)))"],
                              cwd=D, capture_output=True, text=True, timeout=60).stdout.strip()
-        check("a. the sky follows the market clock (ET): Fri 10:00 golden hour, 9:00 blue hour, Saturday night, 22:00 night; ?sky= forces it (%s)" % out, out == "[1,0.5,0,0,0,1]", out)
+        check("a. the sky follows the real sun over New York: Nov 20 noon day (2), 16:20 ET sunset (1), 16:55 ET dusk (~0.5), 22:00 night (0); ?sky= night/blue/dusk/day forces it (%s)" % out,
+              out == "[2,1,0.47,0,0,0.5,1,2]", out)
     except (OSError, subprocess.SubprocessError) as e:
         check("a. the market-clock sky (node not found: skipped)", True, str(e))
     cities = AK.read(os.path.join(AK.WEB, "cities", "index.html"))
+    # cities3 2026-11-20: live district billboards, the sound switch, the frame safe area, the LED colour line out of its comment
+    check("a. cities3: district billboards from the PC feed + kalshi.json (C.billboards -> #bills), every sound asks the Settings switch (soundOn), "
+          "frame-safe.js loaded, the LED bands get their colour (dC.set on its own line)",
+          "C.billboards(lite, kal, now)" in main and "function placeBills()" in main and "function soundOn()" in main and "st.sound === true" in main
+          and "OLYMPUS_SFX.cue(" not in main and "frame-safe.js" in html and re.search(r"\n\s*dC\.set\(b\.col, k \* 3\)", scene))
+    try:
+        fx = os.path.join(AK.ROOT, "tests", "fixtures", "widget", "lite.ndjson")
+        js = ("import {billboards} from './ow-core.js'; import fs from 'fs'; let l = null;"
+              "for (const x of fs.readFileSync(%s, 'utf8').split('\\n')) { try { const m = JSON.parse(JSON.parse(x).message); if (m.kind === 'le-live' && (!l || m.t > l.t)) l = m; } catch (e) {} }"
+              "console.log(JSON.stringify([billboards(l, {balance: 55.2, today_pnl: 1.25, running: true}), billboards(null, null)]))") % json.dumps(fx)
+        out = json.loads(subprocess.run(["node", "--input-type=module", "-e", js], cwd=D, capture_output=True, text=True, timeout=60).stdout.strip() or "null")
+        b0, b1 = out
+        check("a. cities3 billboards: NQ price + every account balance, Kalshi $55.20 today +$1, Money room per account + to pass; nothing = empty lines (%s)" % b0,
+              b0["nq"].startswith("NQ 26,431.00") and "$49,193" in b0["nq"] and "$24,887" in b0["nq"] and "$25,000" in b0["nq"] and b0["kalshi"].startswith("KALSHI $55.20  ·  today +$1")
+              and "room $1,025 / $887 / $1,000" in b0["money"] and "to pass $3,807 / $1,500" in b0["money"] and b1 == {"nq": "NQ", "kalshi": "", "money": ""}, out)
+    except (OSError, subprocess.SubprocessError, ValueError, TypeError) as e:
+        check("a. cities3 billboards (node: %s)" % e, False)
     check("a. the Cities app's front screen links Olympus World (world/), as a card with a real frame of the 3D city (world-card.jpg)", 'href="world/"' in cities
           and "world-card.jpg" in cities and os.path.isfile(os.path.join(AK.WEB, "cities", "world-card.jpg")) and os.path.isfile(os.path.join(D, "poster.jpg")))
     w = json.load(open(os.path.join(D, "world.json"), encoding="utf-8"))
@@ -126,6 +145,8 @@ def test_page():
                 pass
             check("b. frame rate in headless (software GL, no GPU, 390 x 844, low tier): %.1f fps and %.2f ms of JavaScript a frame (median); it keeps drawing (the phone's GPU is far faster, the JS is the part a phone pays the same)" % (fps, s2["scene"]["jsMs"]),
                   fps >= 0.5 / mult and s2["scene"]["jsMs"] < 8 * mult, (fps, s2["scene"]))
+            check("b. olympus2: JavaScript per frame at the slow end (p95 %.2f ms) stays far under a 60 Hz frame (16.7 ms); triangles %d under the phone cap (400,000)" % (s2["scene"].get("jsP95", -1), s2["scene"]["triangles"]),
+                  0 <= s2["scene"].get("jsP95", -1) < 16.7 * mult and s2["scene"]["triangles"] < 400_000, s2["scene"])
             check("b. labels over the city (%d) and the learning ticker has a dated line" % s2["labels"], s2["labels"] >= 3 and re.match(r"^[A-Z][a-z]{2} \d+ · ", s2["ticker"] or ""), (s2["labels"], s2["ticker"]))
             AK.shot(p, "world-low-home")
             s3 = tap_place(p, "app:hub-zeus-html")
@@ -141,7 +162,8 @@ def test_page():
             p.wait_for_timeout(300)
             k = p.evaluate("""() => ({ title: document.querySelector('#cardName').textContent, apps: [...document.querySelectorAll('#cardBody .applist')][0].querySelectorAll('button').length,
               pressed: document.querySelector('.dch[aria-pressed=true]').dataset.d, sc: OWORLD.state().scene })""")
-            check("b. the Kalshi district button flies there (a warp) and its card lists its 5 apps and its learning quarters", k["title"] == "Kalshi" and k["apps"] == 5 and k["pressed"] == "kalshi"
+            n_k = sum(1 for x in json.load(open(os.path.join(D, "world.json"), encoding="utf-8"))["places"] if x.get("district") == "kalshi" and x.get("kind") == "app")
+            check("b. the Kalshi district button flies there (a warp) and its card lists its %d apps (world.json) and its learning quarters" % n_k, k["title"] == "Kalshi" and k["apps"] == n_k and k["pressed"] == "kalshi"
                   and (k["sc"]["tween"] or k["sc"]["warp"] >= 0), k)
             p.wait_for_function("() => !OWORLD.state().scene.tween", timeout=60000, polling=250)
             pose = p.evaluate("() => OWORLD.pose()")

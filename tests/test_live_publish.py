@@ -321,9 +321,9 @@ def ext_open_trade_day():
     new_runs, new_posts = day(R.ext_hash)
     import hashlib
     old_runs, _ = day(lambda e: hashlib.sha1(json.dumps([{k: v for k, v in x["x"].items()} for x in e], sort_keys=True, default=str).encode()).hexdigest())
-    check(f"a trade open all day: the ext goes every 2nd run again ({new_runs} ext runs of 96, was {old_runs}); the day's posts {new_posts} stay well under "
+    check(f"a trade open all day: the ext goes every 3rd run (EXT_EVERY_S) again ({new_runs} ext runs of 96, was {old_runs}); the day's posts {new_posts} stay well under "
           f"NTFY_DAY_CAP - TRADE_ALERT_RESERVE = {R.NTFY_DAY_CAP - R.TRADE_ALERT_RESERVE} (room for the chart + the trade alerts)",
-          old_runs >= 60 + 18 and new_runs <= 50 and new_posts <= R.NTFY_DAY_CAP - R.TRADE_ALERT_RESERVE - 30, (new_runs, old_runs, new_posts))
+          old_runs >= 60 + 12 and new_runs <= 40 and new_posts <= R.NTFY_DAY_CAP - R.TRADE_ALERT_RESERVE - 30, (new_runs, old_runs, new_posts))
 
 
 def main(argv=None) -> int:

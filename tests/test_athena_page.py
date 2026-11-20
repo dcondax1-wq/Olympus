@@ -42,7 +42,7 @@ def rd(name):
 def part_a():
     html = rd("index.html")
     check("a. the OLYMPUS kit: olympus.css, themes.js, olympus.js (data-app) all at ?v=o2",
-          all(s in html for s in ('../olympus/olympus.css?v=o7', '../olympus/themes.js?v=o9', '../olympus/olympus.js?v=o15" data-app="athena"')))
+          all(s in html for s in ('../olympus/olympus.css?v=o7', '../olympus/themes.js?v=o9', '../olympus/olympus.js?v=o18" data-app="athena"')))
     check("a. title Athena, a description, theme-color = the page colour, the Jarvis icon like the siblings",
           "<title>Athena</title>" in html and 'name="description"' in html and 'content="#14110e"' in html and "../jarvis/icon-192.png" in html)
     srcs = re.findall(r'(?:src|href)="([^"]+)"', html)
@@ -58,7 +58,7 @@ def part_a():
           "no timers or animation loop (a screen is drawn once per tap: cheap on LITE)",
           not re.search(r"innerHTML|outerHTML|insertAdjacentHTML|document\.write|localStorage|sessionStorage|indexedDB|document\.cookie|sendBeacon|XMLHttpRequest|fetch\(|requestAnimationFrame|setInterval|setTimeout|eval\(|new Function", tr)
           and "from './athenastore.js'" in rd("athenatrain.js") and "load(KEY" in rd("athenatrain.js") and "const KEY = 'train.v1';" in rd("athenatrain.js"))
-    check("a. the Train tab is in the dock (data-tab=train, badge) with its pane, and the Jarvis files stay the same", 'data-tab="train"' in html and 'id="p-train"' in html and 'id="bd-train"' in html and 'athena.js?v=a8' in html and 'athena.css?v=a5c' in html)  # designqa 2026-11-19: athena.css bumped for the HUD v2 look
+    check("a. the Train tab is in the dock (data-tab=train, badge) with its pane, and the Jarvis files stay the same", 'data-tab="train"' in html and 'id="p-train"' in html and 'id="bd-train"' in html and 'athena.js?v=a10' in html and 'athena.css?v=a5c' in html)  # designqa 2026-11-19: athena.css bumped for the HUD v2 look
     check("a. the 3D library is built on the render core (createRenderer) and not a bare WebGLRenderer", "createRenderer(" in js and "new THREE.WebGLRenderer" not in js)
     store = rd("athenastore.js") + rd("athenaplus.js") + rd("athenabrain.js")
     check("a. the reader's memory lives in athenastore.js only, every key under 'athena.' (nothing else is written, no cookies, no network in the new modules)",

@@ -68,7 +68,8 @@ MAX_STATUS_BYTES = 3800          # ntfy turns a message over 4,096 bytes into a 
 # the split (owner 2026-11-18): the core "le-live" post every run, the extras in "le-live-ext" posts (tools/pc_feed.py merges them)
 EXT_KIND = "le-live-ext"
 EXT_PARTS = 2                    # at most 2 ext posts a run (ntfy.sh free: a few hundred messages a day per IP)
-EXT_EVERY_S = 1740               # the ext goes every 2nd 15-minute run (29 min), or at once when its news changed (ext_hash)
+EXT_EVERY_S = 2640               # the ext goes every 3rd 15-minute run (44 min), or at once when its news changed (ext_hash). Was every 2nd (29 min) until
+                                 # 2026-11-20: 96 core + 96 ext + 24 chart posts a day left no room under ntfy's 250 for the other programs and the alerts
 EXT_ORDER = ("brd", "life", "mf", "board_trades", "at", "fq", "zl", "learn", "lab", "glance", "kalshi_rewards", "kalshi_k1", "kalshi_live")   # "at": engine/feed_trades
 # "zl": ZEUS learned, the nightly line (engine/zeus_learn.read_tiny, <= 220 bytes) -> the ZEUS page's "ZEUS learned" card
 CORE_KEYS = ("eh", "v", "kind", "lite", "src", "t", "every_s", "host", "model_state", "price", "day_pnl", "pc_verdict", "pc", "reporter",
@@ -332,6 +333,29 @@ def ntfy_post(base, topic, body, title=None, priority=None, tags=None, http=None
     if st == 429:
         return False, "ntfy.sh rate limit (too many messages today): next run tries again"
     return False, f"ntfy answered {st or 'nothing'} {str(txt)[:60]}".strip()
+
+
+def ntfy_quota(base, http=None) -> dict | None:
+    """ntfy.sh's OWN count for this PC's internet address today (GET <base>/v1/account, anonymous: limits.messages, stats.messages /
+    messages_remaining). Every program on the PC that posts to ntfy (the report, trade alerts, Kalshi, the data feed, learning, self-heal ...)
+    is in it, which this file's own counter cannot see. A GET is not a message. None when ntfy does not say. Never raises."""
+    try:
+        st, txt = (http or default_http)("GET", f"{str(base or NTFY_DEFAULT).rstrip('/')}/v1/account", None, {"Accept": "application/json"}, 8)
+        if int(st or 0) != 200:
+            return None
+        j = json.loads(txt)
+        stats, lim = _d(j.get("stats")), _d(j.get("limits"))
+        used, left = num(stats.get("messages")), num(stats.get("messages_remaining"))
+        if used is None or left is None:
+            return None
+        return {"used": int(used), "remaining": int(left), "limit": int(num(lim.get("messages")) or used + left), "reset_at": num(stats.get("reset_at"))}
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def quota_holds(q: dict | None, n_posts: int) -> bool:
+    """True when n_posts more (+ this run's core status post) would eat into the reserve kept for trade alerts, by ntfy's own count."""
+    return bool(q) and int(q.get("remaining") or 0) - int(n_posts) - 1 < TRADE_ALERT_RESERVE
 
 
 def server_up(port=PORT_DEFAULT, http=None) -> bool:
@@ -813,7 +837,18 @@ def _news_of(k, v):
     if k == "board_trades" and isinstance(v, list):
         return [({x: y for x, y in t.items() if x not in LIVE_KEYS} if isinstance(t, dict) and (t.get("open") is True or str(t.get("exit") or "").upper() == "OPEN") else t)
                 for t in v]
-    return {a: b for a, b in v.items() if a != "t"} if isinstance(v, dict) else v
+    if isinstance(v, dict):
+        drop = CLOCK_KEYS | (ACCRUAL_KEYS.get(k) or set())
+        return {a: b for a, b in v.items() if a not in drop}
+    return v
+
+
+# 2026-11-20 09:45 ET (the PC went silent: ntfy's per-IP day cap spent): the Kalshi blocks carry a clock ("updated" / "u") and paper sums that
+# grow every 15 minutes, so every run was an ext run (2 posts) all night and morning. A clock is never news; a paper accrual is not either
+# (a new fill is: "fills" / "fill_pnl" stay in). The ext still refreshes every 2nd run (EXT_EVERY_S) with the newest numbers.
+CLOCK_KEYS = {"t", "updated", "u", "built", "rt"}
+ACCRUAL_KEYS = {"kalshi_rewards": {"days", "net", "reward", "per100_day", "fill_pnl"}, "kalshi_k1": {"days"}, "kalshi_live": {"days"},
+                "sh": {"free", "line"}}       # paper marks, free disk space: never news on their own
 
 
 def ext_hash(exts) -> str:
@@ -1272,7 +1307,7 @@ def _bars_hashes(post) -> tuple:
     return h([p.get(k) for k in ("t0", "p0", "n", "b", "g", "f", "sym")]), h([p.get(k) for k in ("ac", "open", "closed")])
 
 
-def bars_due(state: dict | None, post: dict | None, now: int, market_open_now: bool, busy_run: bool = False) -> tuple:
+def bars_due(state: dict | None, post: dict | None, now: int, market_open_now: bool, busy_run: bool = False, remaining=None) -> tuple:
     """(due, why): whether the chart post goes now (the budget in the block comment above; why "a trade changed" = a trade-level
     post, "hourly candles" = a candle post). busy_run: this run already sent an ext post (candles wait; trade levels never do)."""
     st = _d(state)
@@ -1286,6 +1321,8 @@ def bars_due(state: dict | None, post: dict | None, now: int, market_open_now: b
         return False, f"{BARS_DAY_MAX} chart posts today (the daily share)"
     if int(num(cnt.get("all")) or 0) + int(num(cnt.get("inst")) or 0) >= min(BARS_DAY_ALL_MAX, NTFY_DAY_CAP - TRADE_ALERT_RESERVE):
         return False, f"{min(BARS_DAY_ALL_MAX, NTFY_DAY_CAP - TRADE_ALERT_RESERVE)} posts today: the status and the pushes first"
+    if remaining is not None and int(remaining) - 1 < TRADE_ALERT_RESERVE:
+        return False, f"ntfy says {int(remaining)} posts left today: the rest is kept for trade alerts"
     if not post:
         return False, "no NinjaTrader bars on this PC"
     age = int(now) - int(num(post.get("t")) or 0)
@@ -1322,7 +1359,7 @@ def _nt_folder(root: str, env=None):
 
 def bars_step(work: str, cfg: dict, L: dict | None, now: int, market_open_now: bool, dry: bool = False, http=None, say=print,
               root: str = ROOT, nt_folder: str | None = None, other_posts: int = 0, limited: bool = False,
-              feed_path: str | None = None, busy_run: bool = False) -> dict:
+              feed_path: str | None = None, busy_run: bool = False, remaining=None) -> dict:
     """One chart turn of a report run: count this run's other posts, build the post, post it to the chart topic when due (bars_due;
     busy_run = this run sent an ext post), keep the state (data/pc_report/bars.json: the last post, per UTC day the counts "all" (every
     post of this PC), "bars" (chart posts), "candles" (the candle-only ones)). -> {"posted", "why", "bytes", "n"}. Never raises; never
@@ -1347,7 +1384,7 @@ def bars_step(work: str, cfg: dict, L: dict | None, now: int, market_open_now: b
             res["why"] = "no status topic"
         else:
             post = bars_post(L, int(now), root, nt_folder) if market_open_now else None
-            due, why = bars_due(st, post, int(now), market_open_now, busy_run=bool(busy_run))
+            due, why = bars_due(st, post, int(now), market_open_now, busy_run=bool(busy_run), remaining=remaining)
             res["why"] = why
             if due:
                 body = json.dumps(post, separators=(",", ":"), ensure_ascii=False)
@@ -1864,8 +1901,10 @@ def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, n
     if cfg["status_topic"] and status.get("t"):
         h = ext_hash(exts)
         due = bool(exts) and (h != last.get("ext_h") or not num(last.get("ext_t")) or snap["t"] - float(last["ext_t"]) >= EXT_EVERY_S)
-        if due and not dry and day_used(work, snap["t"]) + len(exts) > NTFY_DAY_CAP - TRADE_ALERT_RESERVE:
-            due = False                               # the last room of ntfy's day stays for the trade alerts
+        quota = None if dry else ntfy_quota(cfg["ntfy"], http=http)
+        rec["ntfy_quota"] = quota
+        if due and not dry and (day_used(work, snap["t"]) + len(exts) > NTFY_DAY_CAP - TRADE_ALERT_RESERVE or quota_holds(quota, len(exts))):
+            due = False                               # the last room of ntfy's day stays for the trade alerts (this file's count OR ntfy's own)
             rec["ext_held"] = "ntfy budget: the last posts of the day are kept for trade alerts"
         for e in exts if due else []:
             body = json.dumps(e, separators=(",", ":"), default=str, ensure_ascii=False)
@@ -1942,7 +1981,7 @@ def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, n
         rec["bars"] = bars_step(work, cfg, snap.get("live") if isinstance(snap.get("live"), dict) else {}, snap["t"],
                                 bool(snap.get("market_open")), dry=dry, http=http, say=say, root=root, nt_folder=_nt_folder(root, env),
                                 other_posts=0 if dry else posted + sent, limited=any("rate limit" in str(e) for e in rec["errors"]),
-                                feed_path=feed_path, busy_run=ext_n > 0)
+                                feed_path=feed_path, busy_run=ext_n > 0, remaining=(rec.get("ntfy_quota") or {}).get("remaining"))
     except Exception as e:  # noqa: BLE001
         rec["bars"] = {"posted": False, "why": f"chart failed softly: {e.__class__.__name__}"}
     rec.update(sent=sent, queued=len(msgs), ok=not rec["errors"])

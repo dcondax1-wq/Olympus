@@ -1,10 +1,10 @@
 ---
 tags:
   - zeus/decide
-  - decide/open
+  - decide/no
 type: "decide"
 id: "payout-ping-1000"
-status: "open"
+status: "no"
 added: "2026-11-17"
 usd_month: -9
 recommend: "no"
@@ -12,12 +12,12 @@ recommend: "no"
 
 # Decide: Funded 25K: ask for the full $1,000 payout (at balance $27,100) instead of pinging you at $750?
 
-> [!question] OPEN · -$9 a month
+> [!failure] NO · -$9 a month
 > Answer it on the Decide card (Business app): YES / NO / LATER.
 
 |  |  |
 |---|---|
-| Status | open |
+| Status | no |
 | Added | 2026-11-17 |
 | $ a month | -$9 |
 | Claude recommends | no |

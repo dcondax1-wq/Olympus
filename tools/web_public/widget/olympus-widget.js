@@ -21,7 +21,7 @@
   const SITE = 'https://dcondax1-wq.github.io/';
   const FEED_DEFAULT = { ntfy: 'https://ntfy.sh', topic: 'olympus-nq-status-dec434bd8a54f135' };   // public, the same as status_feed.json
   const FRESH_S = 20 * 60;          // the PC posts every 15 minutes: older than 20 min = stale (red)
-  const VERSION = 'w1';
+  const VERSION = 'w3';   // cities3 2026-11-20: every account (compact rows past 3), Kalshi's real balance + today, extra-large (iPad) up to 6
   // Scriptable has ListWidget; a browser also has a global Request (the Fetch API), so Request alone does not mean Scriptable
   const IS_SCRIPTABLE = typeof ListWidget !== 'undefined' && typeof Request !== 'undefined';
 
@@ -71,7 +71,20 @@
   }
 
   // ------------------------------------------------------------------ one account row, the same shape from either source
-  function card(c, src, badge) {
+  // the payout coach on one funded card (the same inputs as pc_feed.js payoutLines: balance, room, the PC's mf row for this account) -> need_more | null
+  function coachNeed(c, cx) {
+    const PC = root && root.PAYOUT_COACH;
+    if (!PC || typeof PC.coach !== 'function' || !okN(c.balance)) return null;
+    const lite = cx && cx.lite, id = cx && cx.id;
+    const mf = isObj(lite) && isObj(lite.mf) && Array.isArray(lite.mf.a) ? lite.mf.a : [];
+    const row = mf.find((r) => isObj(r) && r.id === id), f = row && isObj(row.f) ? row.f : null, n = (v) => (v != null && v !== '' && okN(+v) ? +v : null);
+    const st = { balance: c.balance, cycle_start_balance: f && n(f.cp) != null ? Math.round((c.balance - n(f.cp)) * 100) / 100 : null, best_day: f ? n(f.bd) : null,
+      cycle_days: f ? n(f.cd) : null, payouts_n: f ? n(f.pn) : null, eligible_from: f && f.ef ? f.ef : null, room: okN(c.room) ? c.room : null };
+    const p = etParts((cx && cx.now) || Date.now() / 1000), day = p.y + '-' + pad(p.m) + '-' + pad(p.d);
+    try { const r = PC.coach(st, /50K/i.test(String(c.plan || '')) || +c.mll >= 2000 ? 'builder50k' : 'builder25k', day); return r && r.ok && okN(r.need_more) ? Math.max(0, r.need_more) : null; } catch (e) { return null; }
+  }
+  function goalText(c) { return c.to_go == null && c.funded ? 'payout: see Olympus' : usd(c.to_go) + ' ' + c.to_label; }
+  function card(c, src, badge, cx) {
     if (!isObj(c)) return null;
     const funded = /funded/i.test(String(c.status || '')) || /funded/i.test(String(c.plan || ''));
     const bal = okN(c.balance) ? c.balance : null;
@@ -84,14 +97,20 @@
     return {
       name: String(c.name || 'Account'), plan: String(c.plan || ''), short: shortPlan(c.plan), funded,
       balance: bal, today: okN(c.today_pnl) ? c.today_pnl : null, week: okN(c.week_pnl) ? c.week_pnl : null,
-      to_go: okN(c.to_target) ? Math.max(0, c.to_target) : null, to_label: funded ? 'to payout' : 'to pass',
-      room, mll, room_frac: room != null && mll ? Math.max(0, Math.min(1, room / mll)) : null, progress: done,
+      // funded (olympus2 DATA TRUTH ask): the payout coach's need_more (business/payoutcoach.js, the number NQ / Trading / Board show), never the PC's
+      // raw $750-ping line; no coach here (Scriptable) = no number ('payout: see Olympus')
+      to_go: funded ? coachNeed(c, cx) : okN(c.to_target) ? Math.max(0, c.to_target) : null, to_label: funded ? 'to payout' : 'to pass',
+      room, mll, room_frac: room != null && mll ? Math.max(0, Math.min(1, room / mll)) : null, progress: funded ? null : done,   // funded: the coach's number has no 'way to go' bar
       waiting: typeof c.waiting === 'string' ? c.waiting.slice(0, 120) : '', window: isObj(c.window) ? String(c.window.text || '') : '',
       src, badge: badge || (c.badge === 'LIVE' ? 'LIVE' : 'PAPER'),
     };
   }
   function shortPlan(p) { const m = String(p || '').match(/(\d+)K/i); return m ? m[1] + 'K' : ''; }
-  function sameAcct(a, b) { return okN(a.balance) && okN(b.balance) && Math.abs(a.balance - b.balance) < 0.01 && a.target_balance === b.target_balance; }
+  function sameAcct(a, b) {
+    if (okN(a.balance) && okN(b.balance) && Math.abs(a.balance - b.balance) < 0.01 && a.target_balance === b.target_balance) return true;
+    // cities3: the same drawdown floor AND room to the cent = the same account even when one copy's balance is off (a bot card mid-update)
+    return okN(a.floor) && okN(b.floor) && okN(a.room) && okN(b.room) && Math.abs(a.floor - b.floor) < 0.01 && Math.abs(a.room - b.room) < 0.01 && a.target_balance === b.target_balance;
+  }
 
   // the extra eval / funded cards of the PC post (Zlarior 25K #2 ...) in the board-card keys
   function extraCards(list, seen) {
@@ -99,7 +118,7 @@
     for (const a of Array.isArray(list) ? list : []) {
       if (!isObj(a) || !isObj(a.eval) || !/eval|funded/.test(String(a.kind || ''))) continue;
       const e = a.eval, p = isObj(a.pnl) ? a.pnl : {};
-      const c = { name: a.name, plan: a.plan, status: e.status === 'open' ? (a.kind === 'funded' ? 'funded' : 'open') : e.status, balance: e.balance,
+      const c = { id: a.id, name: a.name, plan: a.plan, status: e.status === 'open' ? (a.kind === 'funded' ? 'funded' : 'open') : e.status, balance: e.balance,
         floor: e.floor, room: e.room, mll: e.mll, to_target: e.to_target, target_balance: e.target_balance, profit: e.profit,
         today_pnl: okN(p.today) ? p.today : e.today, week_pnl: p.week, badge: a.badge };
       if (seen.some((s) => sameAcct(s, c))) continue;
@@ -119,10 +138,10 @@
       const c = b[k];
       if (!isObj(c) || c.configured === false) continue;
       seen.push(c);
-      const x = card(c, 'PC', c.badge === 'LIVE' ? 'LIVE' : 'PAPER');
+      const x = card(c, 'PC', c.badge === 'LIVE' ? 'LIVE' : 'PAPER', { lite, id: k, now });
       if (x) { if (k === 'lit' && x.short) x.name = x.name + ' ' + x.short; cards.push(x); }
     }
-    for (const c of extraCards(lite.accounts, seen)) { const x = card(c, 'PC', c.badge === 'LIVE' ? 'LIVE' : 'PAPER'); if (x) { x.name = tidyName(x.name); cards.push(x); } }
+    for (const c of extraCards(lite.accounts, seen)) { const x = card(c, 'PC', c.badge === 'LIVE' ? 'LIVE' : 'PAPER', { lite, id: c.id, now }); if (x) { x.name = tidyName(x.name); cards.push(x); } }
     const v = isObj(lite.pc_verdict) ? lite.pc_verdict : {}, pc = isObj(lite.pc) ? lite.pc : {};
     const age = rt ? now - rt : null;
     const stale = age == null || age > FRESH_S;
@@ -213,6 +232,12 @@
   }
 
   // ------------------------------------------------------------------ fetch (Scriptable Request or browser fetch)
+  // kalshi.json (the site's copy of the Kalshi bot's feed): balance + today's $ when it has them, with its age; else null (never made up)
+  function kalshiBal(k, now) {
+    if (!isObj(k) || !okN(k.balance)) return null;
+    const t = okN(k.t) ? k.t : null;
+    return { balance: k.balance, today: okN(k.today_pnl) ? k.today_pnl : null, running: k.running === true, age_s: t != null && okN(now) ? Math.max(0, now - t) : null };
+  }
   async function getText(url, timeoutS) {
     try {
       if (IS_SCRIPTABLE) { const r = new Request(url); r.timeoutInterval = timeoutS || 12; return await r.loadString(); }
@@ -228,12 +253,12 @@
   async function load(opt) {
     const o = opt || {}, site = o.site || SITE, now = o.now || Date.now() / 1000;
     const feed = await getJSON(site + 'status_feed.json');
-    const [nd, home, rw] = await Promise.all([getText(feedUrl(feed)), getJSON(site + 'home.json'), getJSON(site + 'kalshi/rewards.json')]);
+    const [nd, home, rw, kj] = await Promise.all([getText(feedUrl(feed)), getJSON(site + 'home.json'), getJSON(site + 'kalshi/rewards.json'), getJSON(site + 'kalshi.json')]);
     const m = pick(parseLite(nd), home, o.cached || null, now);
-    return { m, kalshi: kalshiNext(now), kpaper: kalshiPaper(rw), now };
+    return { m, kalshi: kalshiNext(now), kpaper: kalshiPaper(rw), kbal: kalshiBal(kj, now), now };
   }
 
-  const API = { VERSION, SITE, FRESH_S, usd, ago, etHM, parseLite, fromLite, fromHome, pick, kalshiNext, kalshiPaper, feedUrl, load, card };
+  const API = { VERSION, SITE, FRESH_S, usd, goalText, coachNeed, ago, etHM, parseLite, fromLite, fromHome, pick, kalshiNext, kalshiPaper, kalshiBal, feedUrl, load, card };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   if (root && typeof root === 'object') root.OLY_WIDGET = API;
 
@@ -289,7 +314,7 @@
     txt(f, srcTag + ' · ' + (m && m.t ? ago(d.now - m.t) : '—'), small ? 8 : 9, m && !m.stale ? P.muted : P.warn, { semi: true });
     f.addSpacer();
     const rd = new Date(d.now * 1000), hm = pad(rd.getHours()) + ':' + pad(rd.getMinutes());
-    txt(f, '↻ ' + hm, small ? 8 : 9, P.muted);
+    txt(f, (small ? '↻ ' : 'Updated ') + hm, small ? 8 : 9, P.muted);   // olympus2: a plain 'last updated' line (the phone's clock when the widget drew)
   }
   function acctRow(w, c, wide, big) {
     const r = w.addStack(); r.layoutVertically(); r.spacing = 2;
@@ -300,7 +325,7 @@
     const mid = r.addStack(); mid.centerAlignContent();
     txt(mid, 'today ' + usd(c.today, true), 10, money(c.today), { semi: true });
     mid.addSpacer(6);
-    txt(mid, usd(c.to_go) + ' ' + c.to_label, 10, P.gold, { semi: true });
+    txt(mid, goalText(c), 10, P.gold, { semi: true });
     mid.addSpacer();
     txt(mid, 'room ' + usd(c.room), 10, c.room_frac != null && c.room_frac < 0.35 ? P.bad : P.soft);
     if (wide) {
@@ -315,9 +340,22 @@
       }
     }
   }
+  // one compact line per account (when more accounts than rich rows fit): name + stage, today, goal, balance
+  function acctLine(w, c, size) {
+    const r = w.addStack(); r.centerAlignContent();
+    const dot = r.addText('●'); dot.font = Font.systemFont(size - 3); dot.textColor = c.room_frac != null && c.room_frac < 0.35 ? P.bad : P.good;
+    r.addSpacer(4);
+    txt(r, c.name, size, P.ink, { semi: true }); r.addSpacer(4);
+    txt(r, usd(c.today, true), size - 1, money(c.today), { semi: true });
+    r.addSpacer();
+    txt(r, goalText(c), size - 2, P.gold);
+    r.addSpacer(6);
+    txt(r, usd(c.balance), size, P.ink, { bold: true });
+  }
   function kalshiLine(w, d, size) {
-    const k = d.kalshi, kp = d.kpaper, r = w.addStack(); r.centerAlignContent();
+    const k = d.kalshi, kp = d.kpaper, kb = d.kbal, r = w.addStack(); r.centerAlignContent();
     txt(r, 'Kalshi', size, P.gold, { semi: true }); r.addSpacer(5);
+    if (kb) { txt(r, '$' + kb.balance.toFixed(2), size, P.ink, { semi: true }); r.addSpacer(4); if (kb.today != null) { txt(r, usd(kb.today, true), size, money(kb.today)); r.addSpacer(5); } }
     txt(r, k ? 'next ' + k.text + (k.soon ? ' (' + Math.max(1, Math.round(k.in_s / 60)) + ' min)' : '') : 'no window this week', size, k && k.soon ? P.warn : P.soft);
     r.addSpacer();
     if (kp) txt(r, 'paper ' + usd(kp.net, true), size, money(kp.net));
@@ -337,7 +375,7 @@
       txt(w, usd(m ? m.today : null, true), 24, money(m && m.today), { bold: true, scale: 0.5 });
       w.addSpacer(4);
       const a = accts[0];
-      if (a) { txt(w, a.name, 10, P.soft, { semi: true }); txt(w, usd(a.to_go) + ' ' + a.to_label, 11, P.gold, { semi: true }); }
+      if (a) { txt(w, a.name, 10, P.soft, { semi: true }); txt(w, goalText(a), 11, P.gold, { semi: true }); }
       else txt(w, 'No account numbers yet', 10, P.soft, { lines: 2 });
       w.addSpacer();
       footer(w, d, true);
@@ -353,10 +391,12 @@
     top.addSpacer();
     if (big && m && m.price) { const tr = top.addStack(); tr.layoutVertically(); txt(tr, 'NQ', 9, P.muted); txt(tr, m.price.toFixed(2), 13, P.soft, { mono: true }); }
     w.addSpacer(big ? 8 : 4);
-    const n = big ? 3 : 2;
+    const xl = F === 'extraLarge' || F === 'extralarge';
+    const rich = big ? 3 : 2, max = xl ? 6 : big ? 5 : 4;
     if (!accts.length) txt(w, 'No account numbers yet: the PC has not posted and the site has none.', 11, P.soft, { lines: 2 });
-    accts.slice(0, n).forEach((c, i) => { if (i) w.addSpacer(big ? 8 : 5); acctRow(w, c, true, big); });
-    if (accts.length > n) { w.addSpacer(2); txt(w, '+' + (accts.length - n) + ' more: tap to open', 9, P.muted); }
+    if (accts.length <= rich || xl) accts.slice(0, max).forEach((c, i) => { if (i) w.addSpacer(big ? 8 : 5); acctRow(w, c, true, big); });
+    else accts.slice(0, max).forEach((c, i) => { if (i) w.addSpacer(big ? 6 : 3); acctLine(w, c, big ? 12 : 11); });   // every account, one line each
+    if (accts.length > max) { w.addSpacer(2); txt(w, '+' + (accts.length - max) + ' more: tap to open', 9, P.muted); }
     w.addSpacer();
     if (big && m && m.pc.model) { txt(w, m.pc.model, 9, P.muted, { lines: 1 }); w.addSpacer(4); }
     kalshiLine(w, d, big ? 10 : 9);

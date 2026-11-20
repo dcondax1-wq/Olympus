@@ -50,7 +50,7 @@ def static():
     check("move_bot.ps1: -Fresh switch and menu choice 3", "[switch]$Fresh" in ps and "3 = No old PC: start fresh here" in ps)
     check("move_bot.ps1: refuses with the plain message", "shut the Surface down first, wait 3 minutes, run this again" in ps)
     check("move_bot.ps1: 6-minute rule and -Force override", "$BeatFreshS = 360" in ps and "if ($Force)" in ps)
-    check("move_bot.ps1: reads the published heartbeat (live.pc.host / t)", "live.pc.t" in ps and "live.pc.host" in ps and "demetrades2000-coder.github.io/nq-dashboard/home.json" in ps)
+    check("move_bot.ps1: reads the published heartbeat (live.pc.host / t)", "live.pc.t" in ps and "live.pc.host" in ps and "dcondax1-wq.github.io/home.json" in ps)
     check("move_bot.ps1: eval numbers step and NO_CHART_MODE, then ONE_TIME_SETUP",
           ps.index("--anchor-from-site") < ps.index("no_chart_mode.ps1") < ps.index("ONE_TIME_SETUP.bat", ps.index("no_chart_mode.ps1")))
     new = ps[ps.index("# ================================================================== new PC: set up"):]
@@ -71,7 +71,7 @@ def static():
             ok = raw.startswith(b"\xef\xbb\xbf")
         check(f"{f}: ASCII (or BOM)", ok)
     bat = open(os.path.join(ROOT, "FRESH_START.bat"), "rb").read()
-    check("FRESH_START.bat: CRLF, runs the one line", b"\n" not in bat.replace(b"\r\n", b"") and b"irm https://demetrades2000-coder.github.io/nq-dashboard/pc/FRESH_START.ps1 | iex" in bat)
+    check("FRESH_START.bat: CRLF, runs the one line", b"\n" not in bat.replace(b"\r\n", b"") and b"irm https://dcondax1-wq.github.io/pc/FRESH_START.ps1 | iex" in bat)
     b = read("tools/build_web_dashboard.py")
     check("build: copies pc/ and move_bot.ps1 to the site", 'os.path.join(WEB, "pc")' in b and '"move_bot.ps1"' in b)
     sw = read("tools/web_public/sw.js")

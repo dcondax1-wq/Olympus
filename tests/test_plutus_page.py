@@ -41,7 +41,7 @@ def rd(name):
 def part_a():
     html = rd("index.html")
     check("a. the OLYMPUS kit: olympus.css, themes.js, olympus.js (data-app) all at ?v=o2",
-          all(s in html for s in ('../olympus/olympus.css?v=o7', '../olympus/themes.js?v=o9', '../olympus/olympus.js?v=o15" data-app="plutus"')))
+          all(s in html for s in ('../olympus/olympus.css?v=o7', '../olympus/themes.js?v=o9', '../olympus/olympus.js?v=o18" data-app="plutus"')))
     check("a. title Plutus, a description, theme-color = the page colour, the Jarvis icon like the siblings",
           "<title>Plutus</title>" in html and 'name="description"' in html and 'content="#14110e"' in html and "../jarvis/icon-192.png" in html and "#14110e" in rd("plutus.css") + html)
     srcs = re.findall(r'(?:src|href)="([^"]+)"', html)
@@ -58,7 +58,7 @@ def part_a():
           card["v"] == 1 and card["name"] == "Plutus" and card["open"] == "#plan" and card["theme"] == "#06100a" and len(card["kpis"]) >= 2 and card["stale_after"] > 0, card)
     fxs = rd("plutusfx.js")
     check("a. the OLYMPUS effects library (fx-core, ui, text, burst at ?v=f1) is linked after olympus.js; plutusfx.js is the screen of the extras and only imports the core + the library's own 3D files",
-          all(f'../olympus/fx-{n}.js?v=f1' in html for n in ("core", "ui", "text", "burst")) and html.find("fx-core.js") > html.find("olympus.js?v=o15")
+          all(f'../olympus/fx-{n}.js?v=f1' in html for n in ("core", "ui", "text", "burst")) and html.find("fx-core.js") > html.find("olympus.js?v=o18")
           and "from './plutuscore.js'" in fxs and set(re.findall(r"import\('([^']+)'", fxs)) == {"../olympus/"} and "fetch(" not in fxs and "plutusfx.js" in rd("plutus.js"))
     check("a. every extras block has a static container (goal ring, milestones, calendar, waterfall, what-if) and a never-blank empty line",
           all(f'id="{i}"' in html for i in ("goalring", "miles", "cal", "fall", "whatif")) and fxs.count("Pick at least one account") >= 2 and "Add one account first" in fxs)
@@ -212,8 +212,13 @@ def part_d(tmp, doc):
             br = browser(pw)
             errs = []
             ctx, p = open_page(br, url, errs, "__plutus")
-            check("d. loads at 390 x 844: the 3D vault is up (WebGL), plans.json read, no OFFLINE tag, PUBLISHED DATA tag shown",
-                  p.evaluate("window.__plutus.ready3d") and p.evaluate("window.__plutus.src") == "file" and not p.is_visible("#demo") and p.is_visible("#livetag") and p.is_hidden("#nogl"))
+            check("d. loads at 390 x 844: the 3D vault is up (WebGL), plans.json read, no OFFLINE tag; the ~9 MB data.json is NOT asked on open (day-archive)",
+                  p.evaluate("window.__plutus.ready3d") and p.evaluate("window.__plutus.src") == "file" and not p.is_visible("#demo") and p.is_hidden("#nogl")
+                  and not p.evaluate("performance.getEntriesByType('resource').some((e) => /data\\.json/.test(e.name))"))
+            tab(p, "notes")
+            try: p.wait_for_function("window.__plutus.live", timeout=8000)
+            except Exception: pass
+            check("d. the Notes tab loads data.json: PUBLISHED DATA tag shown", p.is_visible("#livetag"))
             check("d. no sideways scroll", p.evaluate("document.documentElement.scrollWidth <= innerWidth"))
             for t in ("plan", "money", "risk", "notes"):
                 tab(p, t)

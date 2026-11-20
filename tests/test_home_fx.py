@@ -50,13 +50,13 @@ def test_browser():
             ctx, p, errs, seen, off = AK.page(br, origin)
             p.goto(f"{origin}/gate/?now={GP.NOW}&hfx=1")
             p.wait_for_function("window.GATE && window.GATE.ready()", timeout=60000, polling=200)
-            mid = p.evaluate("[...document.querySelectorAll('#nowFacts .g-fv')].map((e) => e.textContent)")
+            mid = p.evaluate("[...document.querySelectorAll('#nowFacts .g-fv, #money .g-mv, #money .g-mtv')].map((e) => e.textContent)")
             p.wait_for_timeout(1600)
-            end = p.evaluate("[...document.querySelectorAll('#nowFacts .g-fv')].map((e) => e.textContent)")
+            end = p.evaluate("[...document.querySelectorAll('#nowFacts .g-fv, #money .g-mv, #money .g-mtv')].map((e) => e.textContent)")
             s = state(p)
             check("b. Gate: the hero canvas draws, the loop runs, nothing frozen", s and s["hero"] and s["draws"] > 5 and not s["still"] and p.locator(".hfx-hero canvas").count() == 1, s)
-            check("b. Gate: Right now money counts up and lands on the exact text ($1,420 drawdown left, +$272 today)",
-                  "$1,420" in end and "+$272" in end and mid != end, (mid, end))
+            check("b. Gate: the money row counts up and lands on the exact text ($49,420 Zlarior's balance, +$272 today; cities3)",
+                  "$49,420" in end and "+$272" in end and mid != end, (mid, end))
             ring = p.evaluate("(() => { const r = document.querySelector('#nowFacts .hfx-ring'); return r && { win: r.getAttribute('data-win'), off: +r.querySelector('.hfx-rv').getAttribute('stroke-dashoffset') }; })()")
             check("b. Gate: the trade-window ring sits on the open window (part used)", ring and ring["win"] == "open" and 0 < ring["off"] < 76, ring)
             check("b. Gate: the 'Bots on' badge pulses (live)", p.evaluate("getComputedStyle(document.querySelector('#nowBadge'), '::after').animationName") == "hfx-ping")
@@ -72,6 +72,12 @@ def test_browser():
             p.wait_for_timeout(500)
             check("b. Gate: and wakes when it is back", state(p)["running"])
             check("b. Gate: no page error", not errs, errs)
+            # olympus2 2026-11-20 (owner bar: "intro ... never on repeat visits the same day"): the first open had the intro, a second open that day has none
+            first = p.evaluate("document.documentElement.classList.contains('hfx-intro')")
+            p.reload(); p.wait_for_function("window.GATE && window.GATE.ready()", timeout=60000, polling=200)
+            again = p.evaluate("[document.documentElement.classList.contains('hfx'), document.documentElement.classList.contains('hfx-intro'), localStorage.getItem('oly.homefx.day')]")
+            check("b. Gate: the intro plays on the first open of the day and not on a repeat visit the same day (oly.homefx.day = today in New York)",
+                  first and again[0] and not again[1] and re.fullmatch(r"\d{4}-\d{2}-\d{2}", again[2] or ""), (first, again))
             ctx.close()
 
             ctx, p, errs, seen, off = AK.page(br, origin, reduced=True)

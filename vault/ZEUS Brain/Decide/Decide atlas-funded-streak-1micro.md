@@ -1,10 +1,10 @@
 ---
 tags:
   - zeus/decide
-  - decide/open
+  - decide/yes
 type: "decide"
 id: "atlas-funded-streak-1micro"
-status: "open"
+status: "yes"
 added: "2026-11-20"
 usd_month: -22
 recommend: "yes"
@@ -12,12 +12,12 @@ recommend: "yes"
 
 # Decide: ATLAS's funded 25K: after 2 losing trades in a row, trade 1 micro until the next win?
 
-> [!question] OPEN · -$22 a month
+> [!success] YES · -$22 a month
 > Answer it on the Decide card (Business app): YES / NO / LATER.
 
 |  |  |
 |---|---|
-| Status | open |
+| Status | yes |
 | Added | 2026-11-20 |
 | $ a month | -$22 |
 | Claude recommends | yes |
