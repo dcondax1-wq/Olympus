@@ -357,6 +357,15 @@ def t_fast_alarm():
             os.environ.pop("LE_FAST_ALARM", None)
         else:
             os.environ["LE_FAST_ALARM"] = old
+    # redteam 2026-11-20: the 15-minute report's own "Bot stopped" condition is quiet on CME holidays too (it used weekday hours)
+    from tools import pc_report as PR
+    for lab, t, want in (("Wed 10:00", ts(2026, 11, 18, 10, 0), True), ("Thanksgiving 14:00 (after the 13:00 halt)", ts(2026, 11, 26, 14, 0), False),
+                         ("Christmas 10:00", ts(2026, 12, 25, 10, 0), False), ("New Year's Day 10:00", ts(2027, 1, 1, 10, 0), False),
+                         ("Thanksgiving 10:00 (open until 13:00)", ts(2026, 11, 26, 10, 0), True)):
+        check(f"pc_report.entry_hours {lab}: {want}", PR.entry_hours(t) is want, PR.entry_hours(t))
+    cond = PR.conditions({"market_open": False, "hb_age": 60, "server": True, "entry_hours": PR.entry_hours(ts(2026, 12, 25, 10, 0)),
+                          "hb": {"running": False}})
+    check("... a bot stopped on Christmas Day: no 'Bot stopped' alarm", "bot_stopped" not in cond, cond)
     w_fake = WD.Watchdog(b, send=lambda t: None, clock=lambda: now)
     check("watchdog with a fake clock (tests): no fast alarm (never pushes to the phone)", w_fake.fast is None)
     w_real = WD.Watchdog(SimpleNamespace(running=False, health={}), send=lambda t: None)
