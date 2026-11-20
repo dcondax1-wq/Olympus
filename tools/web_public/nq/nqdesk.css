@@ -86,3 +86,9 @@
 @keyframes dk-blink { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
 @media (prefers-reduced-motion: reduce) { .dk-gate { animation: none; } .dk-now { animation: none; } }
 .dk-ctx { color: var(--ag-muted); } .dk-ctx b { color: var(--ag-muted); } .dk-brief { color: var(--ag-text); font-weight: 600; } .dk-note.warn { color: var(--ag-sun, #d9a441); }
+
+/* perf 2026-11-20: the accounts card keeps the strip's filled height from the first frame (4 tiles at 390 px), the GO card its rows */
+#acctCard { min-height: 560px; } #gateCard { min-height: 330px; } #dayCard { min-height: 210px; }
+@media (min-width: 600px) { #acctCard { min-height: 330px; } }
+#chartChips { min-height: 52px; }     /* perf: the chips row is there from the first frame (it filled at 6.5 s) */
+#chartAsOf[hidden] { display: block !important; visibility: hidden; min-height: 2.9em; }   /* the "As of" line above the chart: its place kept */

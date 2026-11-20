@@ -19,6 +19,8 @@ const clear = (el) => { while (el.firstChild) el.removeChild(el.firstChild); };
 const S = { file: null, home: null, lite: null, rules: null, biz: null, fixture: null, demo: false, forced: false, rows: [], bot: 'all', src: 'backtest', acct: 'all', month: '', ready: false, sheet: false, last: null };
 
 async function getJSON(url, ms) {
+  const E = window.TR_EARLY;                            // perf: the page head started these fetches already (index.html); used once
+  if (E && E[url]) { const p = E[url]; delete E[url]; try { return await p; } catch (_) { return null; } }
   const ac = typeof AbortController === 'function' ? new AbortController() : null, timer = ac ? setTimeout(() => ac.abort(), ms || 6000) : 0;
   try { const r = await fetch(url, { cache: 'no-cache', ...(ac ? { signal: ac.signal } : {}) }); return r.ok ? await r.json() : null; } catch (_) { return null; } finally { clearTimeout(timer); }
 }
@@ -457,5 +459,7 @@ async function boot() {
   const A = window.AGORA;
   if (A && A.pull) A.pull(async () => { await refresh(); if (A.toast) A.toast(S.forced ? 'Demo numbers: nothing to refresh' : 'Up to date'); });
 }
+// async module (perf): the kit's deferred scripts (the deep-dive charts nqdeep.js among them) may arrive after the first draw: draw those parts again then
+window.addEventListener('load', () => { try { if (S.ready) renderFiltered(); } catch (_) { /* nothing */ } });
 window.TRADING = { S, C, DK, ready: () => S.ready, render, openDay, closeSheet, stepMonth };
 boot().catch((e) => { say('Something went wrong: ' + (e && e.message ? e.message : e)); try { if (O && O.fail) O.fail('Trading could not start'); } catch (_) { /* nothing */ } });

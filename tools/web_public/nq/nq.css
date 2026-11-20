@@ -129,7 +129,7 @@ html[data-oly-lite="1"] .s2d .flame, html[data-oly-lite="1"] .sheet { animation:
 .chip[aria-pressed="true"] .cn { color: var(--ag-gold-hi, #dcbd6e); }
 .chartbox { position: relative; height: clamp(300px, 56vh, 440px); border-radius: var(--ag-radius-s, 12px); border: 1px solid var(--ag-line); overflow: hidden; touch-action: pan-y;
   background: linear-gradient(180deg, var(--oly-th-n4, #1b1712), var(--oly-th-n3, #14110e)); }
-.chartbox.empty { height: auto; min-height: 120px; }
+.chartbox.empty { height: clamp(300px, 56vh, 440px); }   /* perf 2026-11-20: the empty state keeps the box's height (CLS 0.38 when it shrank late) */
 .chart { position: absolute; inset: 0; }
 .chartmsg { position: absolute; inset: 0; margin: 0; display: grid; place-items: center; padding: 18px; text-align: center; font-size: 15px; line-height: 1.4; color: var(--ag-soft); }
 .chartbox.empty .chartmsg { position: relative; }

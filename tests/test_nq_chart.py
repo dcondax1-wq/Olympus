@@ -329,9 +329,10 @@ def test_page(shots=False):
             ctx, p, errs, seen, off = page(br, mock={bars_url: "{}", core_url: "{}"})
             open_chart(p, origin)
             n = p.evaluate(SNAP)
-            check("c. the PC has not sent bars: 'Waiting for the PC', the plain sentence, no candles drawn, the chips without counts, no list, a small box",
+            check("c. the PC has not sent bars: 'Waiting for the PC', the plain sentence, no candles drawn, the chips without counts, no list; the box keeps "
+                  "its height (300-441 px: perf 2026-11-20, a late shrink was a 0.38 layout shift)",
                   n["state"] == "none" and n["pill"] == "Waiting for the PC" and n["msg"].startswith("The PC has not sent chart bars yet") and n["data"] == 0 and n["marks"] == 0
-                  and all(c[3] == "" for c in n["chips"]) and not n["rows"] and n["empty"] and n["box"] < 260 and not n["asOf"] and not errs, (errs[:3], n))
+                  and all(c[3] == "" for c in n["chips"]) and not n["rows"] and n["empty"] and 300 <= n["box"] <= 441 and not n["asOf"] and not errs, (errs[:3], n))
             check("c. ... taps >= 44 px, no sideways scroll", not AK.taps(p) and AK.no_sideways(p), AK.taps(p)[:3])
             shot(p, "nq-chart-waiting", shots)
             ctx.close()
