@@ -12,6 +12,10 @@ What one day is (days/YYYY-MM-DD/ on branch `data`; small gzip files; the CME da
                        paper, one "src" / "bot" / "acct" / "mode" each; from data/live_state*.json + logs/exec_audit/ledger.jsonl
                        + this pipe's own archive (logs/datapipe/ledger_archive.jsonl, collected every 15 minutes, because the
                        state files keep today only)
+  fills.jsonl.gz       (day-speed 2026-11-20) every MARKET entry order of the day, every account: when the bot sent it (the OIF
+                       file name's millisecond stamp in logs/ninjatrader_oif.log), when NinjaTrader filled it (its own order-state
+                       file time, logs/exec_audit/orders.jsonl), the fill price, + the adapter leg's sent_at / fill_mtime when kept
+                       (logs/exec_audit/legs.json). Read-only: nothing in the trade path writes anything new for it
   decisions.jsonl.gz   the Bot Brain's thought log (data/brain/<day>.jsonl: "why no trade") + the entries the bot held back
                        (logs/exec_audit/notes.json "blocked": feed stale, sizer, late, refused)
   twin.json.gz         live vs the backtest twin: engine/fill_audit's nightly verdict + rows (logs/exec_audit/nightly/<day>.json,
@@ -547,6 +551,74 @@ def day_trades(day: str, rows: list, names=()) -> list:
     return sorted(out, key=lambda r: (int(r.get("t") or 0), str(r.get("src"))))
 
 
+# ================================================================================================ fills (send / fill times)
+_OIF_NAME = re.compile(r"oif_le_([A-Za-z0-9_]*?)(\d{13})_\d+\.txt")
+_ENTRY_ID = re.compile(r"^LE(\d{9,11})[A-Za-z0-9]*E$")
+
+
+def _book(tag: str) -> str:
+    t = (tag or "").strip("_").lower()
+    return {"": "zlarior", "acctb": "atlas", "acctc": "account_c"}.get(t, t or "zlarior")
+
+
+def day_fills(day: str, root: str | None = None, exec_store: str | None = None, names=(), oif_log: str | None = None) -> list:
+    """Every MARKET entry order of `day` (all accounts) with its send time, NinjaTrader's fill time and price. From files the
+    PC already writes (the OIF audit log, the archived outgoing order states, the fill audit's legs). Never raises."""
+    root = root or ROOT
+    es = exec_store or os.path.join(root, "logs", "exec_audit")
+    rows = {}
+    try:
+        with open(oif_log or os.path.join(root, "logs", "ninjatrader_oif.log"), encoding="utf-8", errors="replace") as fh:
+            for ln in fh:
+                if "PLACE;" not in ln or ";MARKET;" not in ln:
+                    continue
+                m = _OIF_NAME.search(ln)
+                f = ln[ln.index("PLACE;"):].strip().split(";")
+                if not m or len(f) < 11:
+                    continue
+                oid = f[10]                  # PLACE;ACCOUNT;INSTRUMENT;ACTION;QTY;TYPE;LIMIT;STOP;TIF;OCO;ORDER ID
+                e = _ENTRY_ID.match(oid)
+                if not e or trading_day(int(e.group(1))) != day:
+                    continue
+                try:
+                    qty = int(float(f[4] or 0))
+                except ValueError:
+                    qty = None
+                rows[oid] = {"order_id": oid, "entry_t": int(e.group(1)), "book": _book(m.group(1)), "account": mask(f[1]),
+                             "instrument": f[2], "action": f[3], "qty": qty, "sent_t": int(m.group(2)) / 1000.0}
+    except (OSError, ValueError):
+        pass
+    states = {}
+    for r in _jl_read(os.path.join(es, "orders.jsonl")):
+        oid = r.get("id")
+        if oid in rows or (oid and _ENTRY_ID.match(str(oid)) and trading_day(int(_ENTRY_ID.match(str(oid)).group(1))) == day):
+            old = states.get(oid)
+            if old is None or str(r.get("state")) == "FILLED" or str(old.get("state")) != "FILLED":
+                states[oid] = r
+    legs = {k: v for k, v in (_read_json(os.path.join(es, "legs.json"), {}) or {}).items() if isinstance(v, dict)}
+    out = []
+    try:
+        return _fill_rows(rows, states, legs, names)
+    except Exception:                                    # a bad state / leg value: the day packs without fill rows
+        return out
+
+
+def _fill_rows(rows, states, legs, names) -> list:
+    out = []
+    for oid in sorted(set(rows) | set(states)):
+        r = dict(rows.get(oid) or {"order_id": oid, "entry_t": int(_ENTRY_ID.match(oid).group(1))})
+        st, lg = states.get(oid) or {}, legs.get(oid) or {}
+        r.update({"state": st.get("state"), "filled": st.get("filled") if st.get("filled") is not None else lg.get("filled"),
+                  "fill_px": st.get("avg") or lg.get("fill_px"), "fill_t": st.get("mtime") or lg.get("fill_mtime")})
+        if lg.get("sent_at") is not None:
+            r["leg_sent_t"] = float(lg["sent_at"])
+        sent = r.get("sent_t") if r.get("sent_t") is not None else r.get("leg_sent_t")
+        r["sent_s_after_open"] = None if sent is None else round(float(sent) - r["entry_t"], 3)
+        r["fill_s_after_sent"] = None if sent is None or r.get("fill_t") is None else round(float(r["fill_t"]) - float(sent), 3)
+        out.append(scrub(r, names))
+    return sorted(out, key=lambda r: (r["entry_t"], str(r.get("book")), str(r.get("order_id"))))
+
+
 # ================================================================================================ decisions + twin
 def day_decisions(day: str, root: str = ROOT, exec_store: str | None = None, names=()) -> list:
     out = []
@@ -602,13 +674,15 @@ def pack_day(day: str, frames: dict, rows: list, names=(), root: str = ROOT, exe
     files = dict(day_bars(day, frames))
     tr = day_trades(day, rows, names)
     files["trades.jsonl.gz"] = gz(jsonl_bytes(tr))
+    fl = day_fills(day, root, exec_store, names)
+    files["fills.jsonl.gz"] = gz(jsonl_bytes(fl))
     dc = day_decisions(day, root, exec_store, names)
     files["decisions.jsonl.gz"] = gz(jsonl_bytes(dc))
     tw = day_twin(day, root, exec_store, learn_store, names, build=build_twin)
     files["twin.json.gz"] = gz(json.dumps(tw, sort_keys=True, default=str).encode("utf-8"))
     close = int(dt.datetime.combine(dt.date.fromisoformat(day), dt.time(17, 0), ET).timestamp())
     files["manifest.json"] = manifest(day, files, now, partial=now < close, contracts=contracts,
-                                      counts={"trades": len(tr), "decisions": len(dc),
+                                      counts={"trades": len(tr), "decisions": len(dc), "fills": len(fl),
                                               "entries": sum(1 for r in tr if r.get("side") in ("buy", "sell")),
                                               "twin_rows": len(((tw.get("nightly") or {}).get("rows")) or []),
                                               "reviews": len(tw.get("reviews") or [])}, root=root)
@@ -668,6 +742,7 @@ def load_day(path: str) -> dict:
         review = None
     return {"day": man.get("day") or os.path.basename(path.rstrip("/\\")), "manifest": man,
             "trades": jsonl_rows(rb("trades.jsonl.gz")), "decisions": jsonl_rows(rb("decisions.jsonl.gz")), "twin": twin,
+            "fills": jsonl_rows(rb("fills.jsonl.gz")),
             "review": review, "proposals": jsonl_rows(rb("proposals.jsonl"))}
 
 
