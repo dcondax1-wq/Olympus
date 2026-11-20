@@ -16,7 +16,10 @@ models or pictures to licence); three.js r160 (MIT) is the copy already in `jarv
 **Make it theirs** (the part most agencies don't do): on the gallery the owner types the prospect's business name, town and phone, picks a
 demo, then "Open their demo" or "Copy the link" (to text it to them). The demo opens with THEIR name in the logo, title and footer, their
 town, and their number on every Call button. It's marked "Sample site for <name>" and the reviews say "samples: yours go here".
-Everything is in the link (`?biz=&city=&tel=`): nothing is saved or sent. Text only and capped at 40 characters, so typed HTML stays plain text (tested).
+Everything is in the link (`?biz=` or `?name=`, `&city=&tel=`): nothing is saved or sent. Text only and capped at 40 characters, so typed HTML stays plain text (tested).
+Honesty (lead review): with a real name on the page, every made-up number turns into a placeholder ("Sample: your star rating here",
+the roofer's warranty / licence lines). The roofer's "1,200+ roofs, 25 yr" strip is hidden. Review credits always read "(sample review)",
+never a platform name.
 
 Prices from the research team's `offers.json` (day-archive 3110fc34), in `data-price` attributes (10). `summary.json` feeds the Agency HQ tile (n 5, label, next step).
 
@@ -44,7 +47,7 @@ stage: drag to turn with pan-y scroll, eye / orbit cameras, flyTo, pause off scr
 `tests/test_web_demos.py` (40 checks) + its line in `tests/run_area.py` (AREAS 'agency').
 
 ## Tests
-`web_demos` 51/51 · `smoke` 10/10 · `public_build_privacy` 59/59 (it first caught the made-up house numbers; removed).
+`web_demos` 53/53 · `smoke` 10/10 · `public_build_privacy` 59/59 (it first caught the made-up house numbers; removed).
 
 ## Not done / next
 - Next step after Make it theirs: their logo colour (one `?c=` accent) and their photo on the hero.

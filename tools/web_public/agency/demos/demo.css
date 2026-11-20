@@ -130,3 +130,4 @@ dialog.sheet::backdrop { background: rgba(0, 0, 0, .5); }
   .hero .show .stage { margin-top: 0; }
   .hero { padding-top: 40px; }
 }
+[hidden] { display: none !important; }

@@ -25,8 +25,8 @@
 .agent { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 12px; align-items: center; }
 .agent .av { width: 56px; height: 56px; border-radius: 50%; background: #2f5d50; color: #fff; display: grid; place-items: center; font: 700 1.25rem/1 system-ui; }
 </style>
-<link rel="stylesheet" href="../demo.css?v=d2">
-<script src="../demo.js?v=d2" defer></script>
+<link rel="stylesheet" href="../demo.css?v=d3">
+<script src="../demo.js?v=d3" defer></script>
 <script src="../../../olympus/lazy3d.js?v=l2" data-src="scene.js?v=e1" data-near="#stage" data-event="demo3d" defer></script>
 </head>
 <body>
@@ -94,9 +94,9 @@
     <p class="eyebrow" data-reviews>Reviews</p>
     <h2>Buyers on the agent</h2>
     <div class="reviews">
-      <article class="card review"><span class="stars" aria-label="5 stars">★★★★★</span><p>"We walked through three flats in 3D on the train and only viewed the one we bought."</p><span class="who">Hannah &amp; Leo · Google</span></article>
-      <article class="card review"><span class="stars" aria-label="5 stars">★★★★★</span><p>"Sold our place in 9 days. The virtual tour got twice the viewing requests."</p><span class="who">Rob D. · Zillow</span></article>
-      <article class="card review"><span class="stars" aria-label="5 stars">★★★★★</span><p>"Clear, quick and honest. Every question answered the same day."</p><span class="who">Mei L. · Google</span></article>
+      <article class="card review"><span class="stars" aria-label="5 stars">★★★★★</span><p>"We walked through three flats in 3D on the train and only viewed the one we bought."</p><span class="who">Hannah &amp; Leo (sample review)</span></article>
+      <article class="card review"><span class="stars" aria-label="5 stars">★★★★★</span><p>"Sold our place in 9 days. The virtual tour got twice the viewing requests."</p><span class="who">Rob D. (sample review)</span></article>
+      <article class="card review"><span class="stars" aria-label="5 stars">★★★★★</span><p>"Clear, quick and honest. Every question answered the same day."</p><span class="who">Mei L. (sample review)</span></article>
     </div>
   </div></section>
 
@@ -112,7 +112,7 @@
         <path d="M190 112c-9 0-16 7-16 16 0 12 16 26 16 26s16-14 16-26c0-9-7-16-16-16z" fill="#2f5d50"/><circle cx="190" cy="128" r="6" fill="#fff"/></svg>
     </div>
     <div class="grid two">
-      <div class="card agent"><span class="av" aria-hidden="true">SR</span><div><h3>Sam Rivera, listing agent</h3><p>Willow Row Realty · replies within the hour</p></div></div>
+      <div class="card agent"><span class="av" aria-hidden="true">SR</span><div><h3 data-sample="Your agent here (sample)">Sam Rivera, listing agent</h3><p>Willow Row Realty · replies within the hour</p></div></div>
       <div class="card"><h3>Open house</h3><p>Saturday 11 am - 1 pm and Sunday 2 - 4 pm, or book a private viewing any day.</p>
         <div class="visit-cta"><a class="btn ghost small" href="https://maps.apple.com/?q=Riverside">Directions</a><a class="btn ghost small" href="tel:+15550100163">(555) 010-0163</a></div></div>
     </div>

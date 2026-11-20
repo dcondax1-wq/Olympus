@@ -59,7 +59,9 @@ def static():
         if not st: probs.append("2D picture in the stage")
         if not re.search(r'<script src="\.\./\.\./\.\./olympus/lazy3d\.js\?v=l2" data-src="scene\.js\?v=\w+" data-near="#stage" data-event="demo3d" defer>', t): probs.append("lazy3d")
         if re.search(r'(?:src|@import)\s*=?\s*["\(]?https?://', t): probs.append("outside src")
-        if not re.search(r'<p class="lead">', t): probs.append("lead")
+        if not re.search(r'<p class="lead"', t): probs.append("lead")
+        if t.count("(sample review)") != 3 or re.search(r'class="who">[^<]*·', t): probs.append("review credits not marked as samples")
+        if 'class="rating"' in t and not re.search(r'<p class="rating">.*?<span data-sample="Sample: [^"]+">', t): probs.append("rating has no sample placeholder")
         if probs: bad[d] = probs
     check("a. each demo: one h1, noindex, the 'Demo site · fictional' strip, 555 numbers, the booking sheet (says nothing is sent), 3 reviews, the map, "
           "the drawn picture inside the stage, the 3D through lazy3d after paint, no outside src", not bad, bad)
@@ -281,10 +283,18 @@ def browser():
         t = p.evaluate("""() => ({ path: location.pathname, logo: document.querySelector('.logo [data-biz]').textContent, strip: document.querySelector('[data-strip]').textContent,
           city: [...document.querySelectorAll('[data-city]')].map(e => e.textContent), imgs: document.querySelectorAll('main img, header img').length,
           tels: [...new Set([...document.querySelectorAll('a[href^="tel:"]')].map(a => a.getAttribute('href')))], shown: [...document.querySelectorAll('a[href^="tel:"]')].some(a => a.textContent.includes('(555) 010-0199')),
-          fict: document.querySelector('[data-fict]').textContent, rev: document.querySelector('[data-reviews]').textContent })""")
+          fict: document.querySelector('[data-fict]').textContent, rev: document.querySelector('[data-reviews]').textContent,
+          rating: document.querySelector('.rating span:last-child').textContent, trust: !!document.querySelector('.trust').getClientRects().length,
+          claims: [...document.querySelectorAll('main')].map(m => m.innerText).join(' ') })""")
         check("b. Make it theirs: the roofer demo opens with their name (markup stripped, 40 characters max), town, phone on every Call link; marked as a sample with sample reviews",
               t["path"].endswith("/roofer/") and t["logo"].startswith("Rosa's") and len(t["logo"]) <= 40 and "<" not in t["logo"] and t["imgs"] == 0 and t["strip"].startswith("Sample site for Rosa's")
               and set(t["city"]) == {"Springfield"} and t["tels"] == ["tel:+15550100199"] and t["shown"] and t["fict"] == "(sample site)" and "samples" in t["rev"], t)
+        made_up = [w for w in ("318 homeowners", "1,200+", "25-year", "25 yr", "$2M", "Google", "Nextdoor") if w in t["claims"]]
+        check("b. Make it theirs: no made-up rating, trust number, warranty, licence or review platform next to the real name (placeholders, trust strip hidden)",
+              t["rating"].startswith("Sample:") and not t["trust"] and not made_up, (t["rating"], t["trust"], made_up))
+        p.goto(base + "shed/?name=Bo%27s%20Barns", wait_until="load")
+        alias = p.evaluate("() => [document.querySelector('.logo [data-biz]').textContent, document.querySelector('.rating span:last-child').textContent]")
+        check("b. Make it theirs: ?name= works like ?biz=", alias[0] == "Bo's Barns" and alias[1].startswith("Sample:"), alias)
         ctx.close()
         b.close()
     srv.shutdown()

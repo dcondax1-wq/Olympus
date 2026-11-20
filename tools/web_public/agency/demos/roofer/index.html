@@ -29,8 +29,8 @@ h1, h2 { font-weight: 800; letter-spacing: -.02em; }
 .trust b { display: block; font: 800 1.5rem/1.1 var(--display); color: var(--ink); }
 .trust span { font-size: .8125rem; color: var(--soft); }
 </style>
-<link rel="stylesheet" href="../demo.css?v=d2">
-<script src="../demo.js?v=d2" defer></script>
+<link rel="stylesheet" href="../demo.css?v=d3">
+<script src="../demo.js?v=d3" defer></script>
 <script src="../../../olympus/lazy3d.js?v=l2" data-src="scene.js?v=f1" data-near="#stage" data-event="demo3d" defer></script>
 </head>
 <body>
@@ -47,12 +47,12 @@ h1, h2 { font-weight: 800; letter-spacing: -.02em; }
   <section class="hero"><div class="wrap">
     <p class="eyebrow">Storm damage · Re-roofs · Repairs</p>
     <h1>See your new roof before we lay a single shingle.</h1>
-    <p class="lead">Free roof check in 48 hours. Insurance paperwork done for you. 25-year workmanship warranty.</p>
+    <p class="lead" data-sample="Free roof check. Insurance paperwork done for you. Your warranty here (sample text).">Free roof check in 48 hours. Insurance paperwork done for you. 25-year workmanship warranty.</p>
     <div class="cta">
       <a class="btn primary" href="#book" data-book="Free roof check">Book a free check</a>
       <a class="btn ghost" href="tel:+15550100177">Call (555) 010-0177</a>
     </div>
-    <p class="rating"><span class="stars" aria-hidden="true">★★★★★</span><span>4.9 from 318 homeowners</span></p>
+    <p class="rating"><span class="stars" aria-hidden="true">★★★★★</span><span data-sample="Sample: your star rating here">4.9 from 318 homeowners</span></p>
 
     <div class="show">
     <div id="stage" class="stage" style="--stage-ratio: 4 / 3.3" role="img" aria-label="A house: the old storm-worn roof on one side, the new roof on the other. Use the slider to compare.">
@@ -84,7 +84,7 @@ h1, h2 { font-weight: 800; letter-spacing: -.02em; }
   </div></section>
 
   <section><div class="wrap">
-    <div class="trust"><div><b>1,200+</b><span>roofs done</span></div><div><b>48 h</b><span>to your free check</span></div><div><b>25 yr</b><span>warranty</span></div></div>
+    <div class="trust" data-hide-personal><div><b>1,200+</b><span>roofs done</span></div><div><b>48 h</b><span>to your free check</span></div><div><b>25 yr</b><span>warranty</span></div></div>
   </div></section>
 
   <section id="how"><div class="wrap">
@@ -111,9 +111,9 @@ h1, h2 { font-weight: 800; letter-spacing: -.02em; }
     <p class="eyebrow" data-reviews>Reviews</p>
     <h2>Homeowners after the storm</h2>
     <div class="reviews">
-      <article class="card review"><span class="stars" aria-label="5 stars">★★★★★</span><p>"They showed us the hail hits on a tablet, handled the insurance and finished in one day."</p><span class="who">Kevin M. · Google</span></article>
-      <article class="card review"><span class="stars" aria-label="5 stars">★★★★★</span><p>"Picking the colour on the 3D house made it easy. It looks exactly like that now."</p><span class="who">Linda O. · Google</span></article>
-      <article class="card review"><span class="stars" aria-label="5 stars">★★★★★</span><p>"Fair price, no upsell, and the yard was cleaner than before they came."</p><span class="who">James W. · Nextdoor</span></article>
+      <article class="card review"><span class="stars" aria-label="5 stars">★★★★★</span><p>"They showed us the hail hits on a tablet, handled the insurance and finished in one day."</p><span class="who">Kevin M. (sample review)</span></article>
+      <article class="card review"><span class="stars" aria-label="5 stars">★★★★★</span><p>"Picking the colour on the 3D house made it easy. It looks exactly like that now."</p><span class="who">Linda O. (sample review)</span></article>
+      <article class="card review"><span class="stars" aria-label="5 stars">★★★★★</span><p>"Fair price, no upsell, and the yard was cleaner than before they came."</p><span class="who">James W. (sample review)</span></article>
     </div>
   </div></section>
 
@@ -129,7 +129,7 @@ h1, h2 { font-weight: 800; letter-spacing: -.02em; }
     <div class="grid two">
       <div class="card"><h3>Yard: Quarry Road, <span data-city>Millbrook</span></h3><p>Mon - Sat 7 am - 6 pm · 24/7 storm line</p>
         <div class="visit-cta"><a class="btn ghost small" href="https://maps.apple.com/?q=Quarry+Road">Directions</a><a class="btn ghost small" href="tel:+15550100177">(555) 010-0177</a></div></div>
-      <div class="card"><h3>Licensed &amp; insured</h3><p>State contractor licence, $2M liability cover, manufacturer-certified installers.</p></div>
+      <div class="card"><h3>Licensed &amp; insured</h3><p data-sample="Sample: your licence number and insurance details here.">State contractor licence, $2M liability cover, manufacturer-certified installers.</p></div>
     </div>
   </div></section>
 

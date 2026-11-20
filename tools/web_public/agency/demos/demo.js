@@ -4,9 +4,10 @@
  *                     window 'demo:pick' {group, value} for the 3D scene; window.DEMO_PICKS holds the current choices
  *  - input[data-ba]   the before / after slider: --ba on the stage (0..1, the 2D picture's clip) + window 'demo:ba' {value}
  *  - [data-note]      a pick's one-line note goes into the row's .pick-note
- *  - ?biz=&city=&tel=  "Make it theirs" (the gallery builds the link): the prospect's business name, town and phone replace the made-up
+ *  - ?biz= (or ?name=)&city=&tel=  "Make it theirs" (the gallery builds the link): the prospect's business name, town and phone replace the made-up
  *                     ones ([data-biz], [data-city], every tel: link); the strip then says "Sample site for <name>", reviews are marked as
- *                     samples. Text only (textContent), lengths capped, nothing stored or sent.
+ *                     samples, made-up ratings / trust numbers / licence lines become "Sample: ..." placeholders
+ *                     ([data-sample], [data-hide-personal]). Text only (textContent), lengths capped, nothing stored or sent.
  */
 (function () {
   'use strict';
@@ -15,13 +16,16 @@
   (function personalise() {
     var q; try { q = new URLSearchParams(location.search); } catch (e) { return; }
     var clean = function (v, n) { return String(v || '').replace(/[\u0000-\u001f<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, n); };
-    var biz = clean(q.get('biz'), 40), city = clean(q.get('city'), 30), tel = String(q.get('tel') || '').replace(/[^0-9+]/g, '').slice(0, 16);
+    var biz = clean(q.get('biz') || q.get('name'), 40), city = clean(q.get('city'), 30), tel = String(q.get('tel') || '').replace(/[^0-9+]/g, '').slice(0, 16);
     var each = function (sel, f) { var l = D.querySelectorAll(sel); for (var i = 0; i < l.length; i++) f(l[i]); };
     if (biz) {
       each('[data-biz]', function (e) { e.textContent = biz; });
       each('[data-fict]', function (e) { e.textContent = '(sample site)'; });
       each('[data-strip]', function (e) { e.textContent = 'Sample site for ' + biz; });
       each('[data-reviews]', function (e) { e.textContent = 'Reviews (samples: yours go here)'; });
+      // made-up numbers and claims never sit next to a real business's name: placeholders instead, the trust strip hidden
+      each('[data-sample]', function (e) { e.textContent = e.getAttribute('data-sample'); });
+      each('[data-hide-personal]', function (e) { e.hidden = true; });
       D.title = biz + ' · sample site';
       each('.logo[aria-label]', function (e) { e.setAttribute('aria-label', biz + ', top of page'); });
       D.documentElement.setAttribute('data-personal', '1');
