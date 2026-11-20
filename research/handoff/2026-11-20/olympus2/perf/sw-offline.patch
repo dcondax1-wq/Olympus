@@ -1,10 +1,10 @@
 --- a/tools/web_public/sw.js	2026-11-20 14:47:29.208833488 +0000
-+++ b/tools/web_public/sw.js	2026-11-20 14:54:04.953376636 +0000
++++ b/tools/web_public/sw.js	2026-11-20 15:54:54.765109198 +0000
 @@ -97,6 +97,15 @@
  const COPY_CLIENTS = new Map();   // a page (client id) answered from the saved copy -> until when its data.json / home.json are too
  const BADGE = 'le-badge', BADGE_URL = './__badge';
  const OTHER_APPS = ['gate/', 'hub/', 'jarvis/', 'planner/', 'kalshi/', 'datacity/', 'mind/', 'tree/', 'oracle/', 'odeon/', 'fates/', 'hermes/', 'prometheus/', 'tyche/', 'pantheon/', 'olympus/', 'arena/', 'bridge/', 'ares/', 'plutus/', 'athena/', 'forum/', 'labyrinth/', 'argus/', 'nemesis/', 'chronos/', 'hephaestus/', 'cities/', 'kalshicity/', 'settings/', 'inbox/', 'ledger/', 'journal/', 'observatory/', 'atlascity/', 'delphi/', 'pnyx/', 'pc/', 'atlas/', 'hestia/', 'demeter/', 'apollo/', 'hera/', 'dionysus/', 'clio/', 'mint/', 'mintcity/', 'mercury/', 'chrysos/', 'sibyl/', 'oikos/', 'arbiter/', 'stoa/', 'aegis/', 'lyceum/', 'nike/', 'kronos/', 'moirai/', 'epilogue/', 'argo/', 'kratos/', 'pythia/', 'gallery/', 'kairos/', 'compass/', 'pheme/', 'harmonia/', 'helios/', 'ergasterion/', 'archive/', 'pinakes/', 'colosseum/', 'nq/', 'symposium/', 'herald/', 'polis/', 'agency/', 'business/', 'trading/', 'assets/', 'board/', 'why/', 'widget/']; // own folders (own workers or none): never handled or cached here
-+const OWN_WORKER = ['jarvis/', 'kalshi/', 'planner/', 'hub/manual'];   // these folders have their own service worker
++const OWN_WORKER = ['jarvis/', 'kalshi/', 'hub/manual'];   // these folders have their own service worker (a worker a folder registers itself takes over its own scope anyway)
 +const APP_CACHE = 'le-apps-v1', APP_MAX = 400;                          // not 'le-public-*': a cache-name bump keeps the apps' last copies
 +const appNetFirst = (req) => fetch(req).then((r) => {
 +  if (r && r.ok && r.type === 'basic') { const c = r.clone(); caches.open(APP_CACHE).then((x) => x.put(req, c).then(() => x.keys()).then((ks) => {

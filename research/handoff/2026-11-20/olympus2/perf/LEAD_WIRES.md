@@ -6,12 +6,15 @@
 one visit only Zenith, Jarvis and Kalshi open offline; the other 29 visible apps show the browser's "no internet" page (measured:
 BASELINE.md, offline column).
 **What the patch does (20 lines, the only change):** for a request inside an `OTHER_APPS` folder that has no worker of its own
-(`OWN_WORKER` = jarvis/, kalshi/, planner/, hub/manual), answer **network first** (online: exactly as today, always fresh, no wait
+(`OWN_WORKER` = jarvis/, kalshi/, hub/manual; planner is covered too: a worker a folder registers itself takes over its own scope anyway), answer **network first** (online: exactly as today, always fresh, no wait
 added) and keep the good answer in a separate cache `le-apps-v1` (max 400 entries, oldest dropped); when the network fails, answer
 the last copy (exact URL, else the same path with any `?v=`), else the existing `offlinePage()` for a page. `le-apps-v1` is not a
 `le-public-*` name, so a CACHE bump keeps the apps' last copies; nothing else in the worker changes.
-**Proof:** a copy of the site with the patch, 11 apps through tools/perf_sweep.py's offline pass (Zenith once, the app once, network
-cut, reload): zenith, fates, ledger, inbox, demeter, aegis, nq, kalshi, jarvis, gate, hub = all `ok` (today: 3 of 11).
+**Proof:** a copy of the site with the patch, all 32 visible apps through tools/perf_sweep.py's offline pass (Zenith once, the app
+once, network cut, reload): **32 of 32 `ok`** (today: 3 of 32). 13 of them also show their data age offline (board, compass, dionysus,
+helios, hera, inbox, jarvis, kalshi, mercury, nq, settings, trading, widget); the others open with their last data but no visible age
+(ASKS: each app prints "as of <time>"). Permanent test: `tests.test_offline_apps` (area olympus) requires all 32 once `appNetFirst`
+is in sw.js.
 **Then:** `const CACHE = 'le-public-v<N>'` +1 (the worker file changed) or `python tools/bump_versions.py --apply --base <base>`;
 `python -X utf8 tools/perf_sweep.py --pages nq,ledger,inbox` must say `ok` in the offline column.
 
