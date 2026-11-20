@@ -296,6 +296,8 @@ AREAS["agency"].append("web_research")   # day-web-research 2026-11-20: the webs
 AREAS["agency"].append("web_leads")  # day-web-leads 2026-11-20: OpenStreetMap lead finder + agency/leads/ phone list (tools/web_leads.py); its own line
 
 
+AREAS["agency"].append("web_showcase")   # day-web 2026-11-20: the owner's agency website (tools/web_public/agency/showcase/)
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("area", nargs="?", choices=sorted(list(AREAS) + ["all"]))
