@@ -14,34 +14,135 @@
   "hours": "Mo-Fr 09:00-18:00",
   "accent": "#7c5cff",
   "offers": [
-    { "id": "starter", "name": "Starter", "price": 499, "per": "one time", "monthly": 29,
-      "points": ["1-page site that loads fast on a phone", "Google Business profile set up", "Click-to-call and map", "Hosting + SSL for the first year"] },
-    { "id": "growth", "name": "Growth", "price": 999, "per": "one time", "monthly": 49, "best": true,
-      "points": ["Up to 5 pages: services, reviews, gallery", "Booking or quote form to your phone", "Local SEO: city pages + structured data", "Monthly speed + uptime check"] },
-    { "id": "signature", "name": "3D Signature", "price": 1999, "per": "one time", "monthly": 79,
-      "points": ["Everything in Growth", "A 3D hero that people remember", "Short promo video loop", "Two rounds of changes"] }
+    {
+      "id": "starter",
+      "name": "Starter site",
+      "price": 1500,
+      "per": "one time",
+      "monthly": 79,
+      "points": [
+        "Up to 5 pages that load fast on a phone",
+        "Click-to-call, map and a quote form to your phone",
+        "Local SEO: your city pages + structured data",
+        "Care plan: hosting, updates, backups"
+      ]
+    },
+    {
+      "id": "engine",
+      "name": "Call engine",
+      "price": 500,
+      "per": "setup",
+      "monthly": 299,
+      "best": true,
+      "points": [
+        "Your site + your Google Business profile, kept fresh",
+        "Review requests after every job",
+        "Every review answered within a day",
+        "A monthly report: calls, reviews, ranking"
+      ]
+    },
+    {
+      "id": "signature",
+      "name": "3D Signature",
+      "price": 2500,
+      "from": true,
+      "per": "one time",
+      "monthly": 79,
+      "points": [
+        "Everything in the Starter site",
+        "A 3D tour of your place or 3D product pages",
+        "Works in AR on phones",
+        "Two rounds of changes"
+      ]
+    }
   ],
   "week": [
-    ["Day 1", "15-minute call: your goals, your customers, your look."],
-    ["Day 2", "Draft homepage on a private link you can open on your phone."],
-    ["Day 3-4", "Your words, photos and reviews in place; booking set up."],
-    ["Day 5", "Speed, phone and Google checks; your notes go in."],
-    ["Day 6", "Domain, email and Google Business connected."],
-    ["Day 7", "Live. You get a 1-page guide and a 30-day check-in."]
+    [
+      "Day 1",
+      "15-minute call: your goals, your customers, your look."
+    ],
+    [
+      "Day 2",
+      "Draft homepage on a private link you can open on your phone."
+    ],
+    [
+      "Day 3-4",
+      "Your words, photos and reviews in place; booking set up."
+    ],
+    [
+      "Day 5",
+      "Speed, phone and Google checks; your notes go in."
+    ],
+    [
+      "Day 6",
+      "Domain, email and Google Business connected."
+    ],
+    [
+      "Day 7",
+      "Live. You get a 1-page guide and a 30-day check-in."
+    ]
   ],
   "cases": [
-    { "name": "Case study coming soon", "kind": "Restaurant", "result": "Your first client's result goes here (calls, bookings, reviews).", "demo": "restaurant" },
-    { "name": "Case study coming soon", "kind": "Home services", "result": "Before / after: speed score, calls from the site, Google ranking.", "demo": "home-services" },
-    { "name": "Case study coming soon", "kind": "Salon / barber", "result": "Online bookings in the first month.", "demo": "salon" }
+    {
+      "name": "Case study coming soon",
+      "kind": "Restaurant",
+      "result": "Your first client's result goes here (calls, bookings, reviews).",
+      "demo": "restaurant"
+    },
+    {
+      "name": "Case study coming soon",
+      "kind": "Home services",
+      "result": "Before / after: speed score, calls from the site, Google ranking.",
+      "demo": "home-services"
+    },
+    {
+      "name": "Case study coming soon",
+      "kind": "Salon / barber",
+      "result": "Online bookings in the first month.",
+      "demo": "salon"
+    }
   ],
   "demos": [
-    { "slug": "restaurant", "label": "Restaurant", "color": "#ff8a5c" },
-    { "slug": "salon", "label": "Salon / barber", "color": "#ff5ca8" },
-    { "slug": "home-services", "label": "Plumber / HVAC", "color": "#5cc8ff" },
-    { "slug": "dentist", "label": "Dentist", "color": "#7cffd1" },
-    { "slug": "gym", "label": "Gym / coach", "color": "#ffd25c" },
-    { "slug": "real-estate", "label": "Real estate", "color": "#b49cff" },
-    { "slug": "landscaping", "label": "Landscaping", "color": "#8dff7c" },
-    { "slug": "auto", "label": "Auto shop", "color": "#ff6b6b" }
-  ]
+    {
+      "slug": "restaurant",
+      "label": "Restaurant",
+      "color": "#ff8a5c"
+    },
+    {
+      "slug": "salon",
+      "label": "Salon / barber",
+      "color": "#ff5ca8"
+    },
+    {
+      "slug": "home-services",
+      "label": "Plumber / HVAC",
+      "color": "#5cc8ff"
+    },
+    {
+      "slug": "dentist",
+      "label": "Dentist",
+      "color": "#7cffd1"
+    },
+    {
+      "slug": "gym",
+      "label": "Gym / coach",
+      "color": "#ffd25c"
+    },
+    {
+      "slug": "real-estate",
+      "label": "Real estate",
+      "color": "#b49cff"
+    },
+    {
+      "slug": "landscaping",
+      "label": "Landscaping",
+      "color": "#8dff7c"
+    },
+    {
+      "slug": "auto",
+      "label": "Auto shop",
+      "color": "#ff6b6b"
+    }
+  ],
+  "_prices_note": "Starting prices from the research (offers.json, Nov 20): care plans run $79-299 a month. Change any number here."
 }

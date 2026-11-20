@@ -102,7 +102,7 @@ footer .wrap{display:grid;gap:6px}
 
 .sticky-cta[hidden]{display:none!important}
 </style>
-<script type="application/ld+json" id="ld">{"@context":"https://schema.org","@type":"LocalBusiness","@id":"https://example.com/#business","name":"Your Studio","description":"Fast, phone-first websites for local businesses, live in 7 days.","url":"https://example.com/","telephone":"+1-555-0100","email":"hello@example.com","image":"og.jpg","priceRange":"$499-$1999","areaServed":"Your City and nearby towns","address":{"@type":"PostalAddress","addressLocality":"Your City","addressRegion":"ST","addressCountry":"US"},"openingHours":"Mo-Fr 09:00-18:00","makesOffer":[{"@type":"Offer","name":"Starter","price":"499","priceCurrency":"USD"},{"@type":"Offer","name":"Growth","price":"999","priceCurrency":"USD"},{"@type":"Offer","name":"3D Signature","price":"1999","priceCurrency":"USD"}]}</script>
+<script type="application/ld+json" id="ld">{"@context":"https://schema.org","@type":"LocalBusiness","@id":"https://example.com/#business","name":"Your Studio","description":"Fast, phone-first websites for local businesses, live in 7 days.","url":"https://example.com/","telephone":"+1-555-0100","email":"hello@example.com","image":"og.jpg","priceRange":"$500-$2,500","areaServed":"Your City and nearby towns","address":{"@type":"PostalAddress","addressLocality":"Your City","addressRegion":"ST","addressCountry":"US"},"openingHours":"Mo-Fr 09:00-18:00","makesOffer":[{"@type":"Offer","name":"Starter site","price":"1500","priceCurrency":"USD"},{"@type":"Offer","name":"Call engine","price":"500","priceCurrency":"USD"},{"@type":"Offer","name":"3D Signature","price":"2500","priceCurrency":"USD"}]}</script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to the content</a>
@@ -134,11 +134,11 @@ footer .wrap{display:grid;gap:6px}
 
   <section id="prices" aria-labelledby="ph">
     <h2 id="ph">Simple prices</h2>
-    <p class="sub">One-time build, then a small monthly care plan (hosting, updates, backups). Cancel any time.</p>
+    <p class="sub">A one-time build or setup, then a monthly plan (care plans $79-299 a month). Cancel any time.</p>
     <div class="grid three" id="offerList">
-      <article class="card price"><h3>Starter</h3><p class="amt">$499</p><p class="per">one time · then $29 a month</p><ul><li>1-page site that loads fast on a phone</li><li>Google Business profile set up</li><li>Click-to-call and map</li><li>Hosting + SSL for the first year</li></ul><a class="btn ghost" href="#contact" data-offer="starter">Choose Starter</a></article>
-      <article class="card price best"><span class="flag">Most picked</span><h3>Growth</h3><p class="amt">$999</p><p class="per">one time · then $49 a month</p><ul><li>Up to 5 pages: services, reviews, gallery</li><li>Booking or quote form to your phone</li><li>Local SEO: city pages + structured data</li><li>Monthly speed + uptime check</li></ul><a class="btn primary" href="#contact" data-offer="growth">Choose Growth</a></article>
-      <article class="card price"><h3>3D Signature</h3><p class="amt">$1,999</p><p class="per">one time · then $79 a month</p><ul><li>Everything in Growth</li><li>A 3D hero that people remember</li><li>Short promo video loop</li><li>Two rounds of changes</li></ul><a class="btn ghost" href="#contact" data-offer="signature">Choose 3D Signature</a></article>
+      <article class="card price"><h3>Starter site</h3><p class="amt">$1,500</p><p class="per">one time · then $79 a month</p><ul><li>Up to 5 pages that load fast on a phone</li><li>Click-to-call, map and a quote form to your phone</li><li>Local SEO: your city pages + structured data</li><li>Care plan: hosting, updates, backups</li></ul><a class="btn ghost" href="#contact" data-offer="starter">Choose Starter site</a></article>
+      <article class="card price best"><span class="flag">Most picked</span><h3>Call engine</h3><p class="amt">$500</p><p class="per">setup · then $299 a month</p><ul><li>Your site + your Google Business profile, kept fresh</li><li>Review requests after every job</li><li>Every review answered within a day</li><li>A monthly report: calls, reviews, ranking</li></ul><a class="btn primary" href="#contact" data-offer="engine">Choose Call engine</a></article>
+      <article class="card price"><h3>3D Signature</h3><p class="amt">From $2,500</p><p class="per">one time · then $79 a month</p><ul><li>Everything in the Starter site</li><li>A 3D tour of your place or 3D product pages</li><li>Works in AR on phones</li><li>Two rounds of changes</li></ul><a class="btn ghost" href="#contact" data-offer="signature">Choose 3D Signature</a></article>
     </div>
   </section>
 
@@ -167,7 +167,7 @@ footer .wrap{display:grid;gap:6px}
       <label>Your name<input name="name" autocomplete="name" required></label>
       <label>Business name<input name="biz" autocomplete="organization" required></label>
       <label>Type of business<select name="kind" id="kindSel"><option>Restaurant</option><option>Salon / barber</option><option>Plumber / HVAC</option><option>Dentist</option><option>Gym / coach</option><option>Real estate</option><option>Landscaping</option><option>Auto shop</option><option>Other</option></select></label>
-      <label>Plan<select name="offer" id="offerSel"><option value="starter">Starter</option><option value="growth" selected>Growth</option><option value="signature">3D Signature</option><option value="unsure">Not sure yet</option></select></label>
+      <label>Plan<select name="offer" id="offerSel"><option value="starter">Starter site ($1,500)</option><option value="engine" selected>Call engine ($500)</option><option value="signature">3D Signature ($2,500)</option><option value="unsure">Not sure yet</option></select></label>
       <label>What do you need? <textarea name="msg" placeholder="e.g. online booking, a menu, more calls from Google"></textarea></label>
       <div class="how-send"><button class="btn primary" type="submit" data-via="email">Send by email</button><button class="btn ghost" type="submit" data-via="sms">Send by text</button></div>
       <p class="note" id="formNote" role="status" aria-live="polite">Or call <a href="tel:+15550100" data-b="phone-link">+1-555-0100</a>.</p>

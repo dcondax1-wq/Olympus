@@ -42,7 +42,7 @@
       B.offers.forEach(function (o) {
         var a = el('article', 'card price' + (o.best ? ' best' : ''));
         if (o.best) a.appendChild(el('span', 'flag', 'Most picked'));
-        a.appendChild(el('h3', '', o.name)); a.appendChild(el('p', 'amt', money(o.price)));
+        a.appendChild(el('h3', '', o.name)); a.appendChild(el('p', 'amt', (o.from ? 'From ' : '') + money(o.price)));
         a.appendChild(el('p', 'per', (o.per || 'one time') + (o.monthly ? ' · then ' + money(o.monthly) + ' a month' : '')));
         var ul = el('ul'); (o.points || []).forEach(function (p) { ul.appendChild(el('li', '', p)); }); a.appendChild(ul);
         var b = el('a', 'btn ' + (o.best ? 'primary' : 'ghost'), 'Choose ' + o.name); b.href = '#contact'; b.setAttribute('data-offer', o.id); a.appendChild(b);

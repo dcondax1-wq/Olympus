@@ -6,7 +6,7 @@
 - **Hero:** "Websites that win local customers, live in 7 days." + two buttons (free mockup / prices) + a **small glowing 3D night city**:
   one tower per demo (8: restaurant, salon, plumber/HVAC, dentist, gym, real estate, landscaping, auto), each in its colour with a floating
   name; a tap on a tower or its name opens that demo (`../demos/#<slug>`). Filler blocks = one InstancedMesh; three.js r160 from the site.
-- **Prices:** Starter $499 (+$29/mo), Growth $999 (+$49/mo, "most picked"), 3D Signature $1,999 (+$79/mo); each card's button picks that plan in the form.
+- **Prices (from the research offers.json, Nov 20):** Starter site $1,500 + $79/mo care; Call engine (site + Google profile + review requests + every review answered) $500 setup + $299/mo, "most picked"; 3D Signature (3D tour or 3D product pages) from $2,500 + $79/mo. Each card's button picks that plan in the form.
 - **What you get in 7 days:** six plain steps. **Results:** 3 case-study placeholders (each links a demo). **Questions:** 4 FAQs.
 - **Contact form, no backend:** name, business, type, plan, what you need -> "Send by email" opens the phone's mail app (mailto: with subject +
   body filled), "Send by text" opens Messages (sms: body=...). Nothing is stored or sent by the page. Missing name -> a plain prompt.
@@ -22,10 +22,11 @@ brand.json repeats the same defaults (no jump); the 3D is a dynamic import after
 < 3 GB memory or no WebGL (a drawn SVG skyline stays). Pixel ratio <= 1.75, ~40 fps cap, sleeps off screen and in a hidden tab.
 
 ## Tests
-`python -X utf8 -m tests.test_web_showcase` = **21/21** (static: files, brand.json, content-first, share card 1200 x 630, JSON-LD, no backend,
+`python -X utf8 -m tests.test_web_showcase` = **23/23** (static: files, brand.json, content-first, share card 1200 x 630, JSON-LD, no backend,
 stores nothing, text only, 3D rules; browser: brand applied incl. JSON-LD, demo list, mailto / sms messages, missing name, 44 px taps, no sideways
 scroll, 3D live, no console error / nothing off the site; 4x CPU FCP + CLS; reduced motion = still, three.js never fetched). Added to
 `tests/run_area.py` AREAS["agency"].
 
 ## Files
 index.html, showcase.js, city.js, brand.json, og.jpg, icon.svg. Shots: showcase-1-hero-dark/light, -2-prices, -3-week, -4-contact; video showcase.webm.
+- Agency HQ tile: `agency/showcase/summary.json` = {"n": 3, "label": "offers on your website", "next": "Put your name, phone and email in brand.json", "t": ...}.

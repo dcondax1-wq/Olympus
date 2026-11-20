@@ -49,9 +49,13 @@ def test_static():
           B.get("name") and B.get("tagline") and B.get("phone") and B.get("email") and len(B["offers"]) == 3 and all(isinstance(o["price"], (int, float)) for o in B["offers"])
           and sum(1 for o in B["offers"] if o.get("best")) == 1 and len(B["week"]) == 6 and len(B["demos"]) == 8
           and all(re.fullmatch(r"[a-z0-9-]+", x["slug"]) and re.fullmatch(r"#[0-9a-fA-F]{6}", x["color"]) for x in B["demos"]), B.get("name"))
+    check("a. prices follow the research (offers.json, Nov 20): Starter site $1,500 + $79/mo, Call engine $500 setup + $299/mo (most picked), 3D Signature from $2,500",
+          [(o["id"], o["price"], o["monthly"]) for o in B["offers"]] == [("starter", 1500, 79), ("engine", 500, 299), ("signature", 2500, 79)] and B["offers"][1].get("best") and B["offers"][2].get("from"))
+    S = json.load(open(os.path.join(D, "summary.json"), encoding="utf-8"))
+    check("a. summary.json for the Agency HQ tile: n, a short label, the next step, a time", isinstance(S.get("n"), int) and 0 < len(S["label"].split()) <= 6 and "next" in S and S.get("t", 0) > 1.7e9, S)
     check("a. no real contact data shipped: example.com email, a 555 phone, placeholders the owner fills", B["email"].endswith("@example.com") and "555" in B["phone"])
     check("a. content first: the words, prices, the 7-day plan and the form are in the HTML itself (readable with no script); one h1; skip link",
-          html.count("<h1") == 1 and "$999" in html and "Day 7" in html and 'id="form"' in html and 'class="skip"' in html and "Websites that" in html)
+          html.count("<h1") == 1 and "$1,500" in html and "$299 a month" in html and "Day 7" in html and 'id="form"' in html and 'class="skip"' in html and "Websites that" in html)
     check("a. share card: og:title / og:description / og:image (og.jpg, 1200 x 630) + twitter large card + canonical",
           all(x in html for x in ('property="og:title"', 'property="og:description"', 'property="og:image" content="og.jpg"', 'name="twitter:card" content="summary_large_image"', 'rel="canonical"'))
           and jpeg_size(os.path.join(D, "og.jpg")) == (1200, 630), jpeg_size(os.path.join(D, "og.jpg")))
@@ -99,7 +103,7 @@ def test_page():
           week: document.querySelectorAll('#weekList li').length, sel: [...document.querySelectorAll('#offerSel option')].map((o) => o.value) })""")
         check("b. brand.json applied: the name in the header and title, the changed price ($1,234), JSON-LD follows, the plan picker lists the offers",
               r["name"] == "Bright Pixel Studio" and r["title"].startswith("Bright Pixel Studio") and "$1,234" in r["prices"] and r["ld"]["name"] == "Bright Pixel Studio"
-              and r["sel"] == ["starter", "growth", "signature", "unsure"] and r["week"] == 6, r)
+              and r["sel"] == ["starter", "engine", "signature", "unsure"] and r["week"] == 6, r)
         check("b. the demo list: one card per demo, each opening ../demos/#<slug>", r["demos"] == 8 and r["href"] == "../demos/#restaurant", r)
         # the contact form
         p.click("#offerList [data-offer=signature]")
