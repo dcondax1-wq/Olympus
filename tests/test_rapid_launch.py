@@ -104,6 +104,17 @@ def main() -> int:
                 worst.append(cum - q * loss1)
         check("f. ATLAS's Rapid size: a full stop (1 tick) never takes the day under -$500, whatever LIT lost first",
               min(worst) >= -500.0 - 1e-6, min(worst))
+        # owner YES 2026-11-20 (card rapid-atlas-size-10t): the 25K's ATLAS lane sizes on stop + 10 ticks (its real fills)
+        slip = float(rapid.PLANS["mffu_rapid_eod_25k"].get("atlas_slip") or 0)
+        worst10 = []
+        for cum in (0.0, -150.0, -400.0, -499.0):
+            for risk in (3.0, 8.0, 20.0, 60.0):
+                q, usd, loss1 = rapid.stack_qty(risk, 1000.0, cum, 20, 500.0, 250.0, slip)
+                worst10.append(cum - q * ((risk + 2.5) * 2 + 1.9))
+                q1, _, _ = rapid.stack_qty(risk, 1000.0, cum, 20, 500.0, 250.0)
+                worst10.append(-1e9 if q > q1 else 0)        # never bigger than the 1-tick size
+        check("f. 10-tick sizing (atlas_slip 2.5 on the 25K): a REAL-fill full stop keeps the day >= -$500, never above the old size",
+              slip == 2.5 and min(worst10) >= -500.0 - 1e-6, (slip, min(worst10)))
     finally:
         rapid.PATH = keep_path
         MA.ADAPTER_FACTORY = None
