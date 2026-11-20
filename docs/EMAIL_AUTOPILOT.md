@@ -37,6 +37,10 @@ Everything stays in `%USERPROFILE%\.olympus\`:
   A message missing one of these is refused, not sent. The words are `tools/web_public/agency/outreach/scripts.json`, the same as the manual page.
 
 ## The reply bridge: the private branch `agency-inbox`
+**H1 gate (2026-11-20): nothing is pushed while the repo is public.** Before any push the PC asks the GitHub API (`bridge.repo_private`, day-caller's
+`tools.caller.export.repo_private` when installed; `GITHUB_TOKEN` if set). Only `"private": true` opens the gate; a public repo, a 404 or an error keeps
+the replies, the caller files and the postcard results on the PC (the state file, `postcards_results.json`). The owner makes the repo private, then it flows.
+
 The PC keeps its own clone in `%USERPROFILE%\.olympus\agency_inbox` and pushes plain commits. It never force-pushes and never touches another branch.
 
 | File | Who writes it | What |

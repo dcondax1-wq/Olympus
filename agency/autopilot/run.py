@@ -337,7 +337,11 @@ def run_once(cfg: dict, state: dict, leads: list, words: dict, offers: dict, sit
     files["status.json"] = dict(counts, kind="agency-mail-status", needs_owner=held[:20])
     if push:
         err = push(files, f"agency mail {day}: {len(res['inbox'])} in, {len(res['sent'])} out")
-        if err:
+        if err == bridge.PUBLIC_MSG:
+            res["held_local"] = True                      # not an error: H1, the repo is public (the owner makes it private)
+            for k in [k for k in files if k.startswith("caller/")]:
+                state["caller_pushed"].pop(k, None)
+        elif err:
             res["errors"].append("branch: " + redact(err, cfg))
             for k in [k for k in files if k.startswith("caller/")]:
                 state["caller_pushed"].pop(k, None)       # not on the branch yet: try those again next run
@@ -457,7 +461,7 @@ def main(argv=None) -> int:
             write_json(path("postcards_results.json"), rr)
             if url and rr["rows"]:
                 e2 = bridge.write_and_push(url, wd, {"postcards/results.json": rr}, "postcard results")
-                res["errors"] += ["postcards branch: " + e2] if e2 else []
+                res["errors"] += ["postcards branch: " + e2] if e2 and e2 != bridge.PUBLIC_MSG else []
             res["errors"] += ["postcards: " + e for e in pr["errors"][:3]]
             res["postcards"] = len(pr["sent"])
     except Exception as e:  # noqa: BLE001

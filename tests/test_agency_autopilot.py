@@ -249,6 +249,27 @@ def main():
         # ---------------------------------------------------------------- h. the private branch (a local bare repo as the remote)
         bare = os.path.join(tmp, "remote.git")
         subprocess.run(["git", "init", "-q", "--bare", bare], check=True)
+        # H1: nothing is pushed unless GitHub says the repo is private (a public repo, a 404, an error, a non-GitHub address = held on the PC)
+        class Resp(io.BytesIO):
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *a):
+                return False
+        pub = lambda req, timeout=15: Resp(b'{"private": false}')  # noqa: E731
+        prv = lambda req, timeout=15: Resp(b'{"private": true}')  # noqa: E731
+
+        def e404(req, timeout=15):
+            raise OSError("HTTP Error 404: Not Found")
+        gh = "https://github.com/someone/somerepo.git"
+        check("h. H1 gate: private only when the API says private: true (public, 404, error, a non-GitHub address = not private)",
+              bridge.repo_private(gh, opener=prv) and not bridge.repo_private(gh, opener=pub) and not bridge.repo_private(gh, opener=e404)
+              and not bridge.repo_private(bare, opener=prv) and bridge.repo_of("git@github.com:a-b/c.d.git") == "a-b/c.d")
+        wd0 = os.path.join(tmp, "clone0")
+        e0 = bridge.write_and_push(bare, wd0, {"inbox/r1.json": {"id": "r1", "words": "Yes"}}, "test")
+        ls0 = subprocess.run(["git", "--git-dir", bare, "branch", "--list"], capture_output=True, text=True).stdout.strip()
+        check("h. H1: while the repo is not proven private, nothing is pushed (no branch, no words) and it says why", e0 == bridge.PUBLIC_MSG and not ls0, (e0, ls0))
+        bridge.PRIVATE = lambda url: True                 # the bare test repo stands in for a private GitHub repo from here on
         wd = os.path.join(tmp, "wd")
         err = bridge.write_and_push(bare, wd, {"inbox/r3.json": {"id": "r3", "class": "interested", "words": "Yes"}, "status.json": {"kind": "agency-mail-status"}}, "test")
         ls = subprocess.run(["git", "--git-dir", bare, "ls-tree", "-r", "--name-only", bridge.BRANCH], capture_output=True, text=True).stdout.split()

@@ -10,11 +10,43 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
+import urllib.request
 
 BRANCH = "agency-inbox"
 README = ("# agency-inbox (private)\n\nThe Website Factory's email autopilot: the PC writes inbox/ (trimmed replies) and status.json,\n"
           "Claude writes outbox/ (draft answers), the PC writes sent/. No passwords, no full email addresses of the businesses' people.\n")
+
+
+def repo_of(url: str) -> str:
+    m = re.search(r"github\.com[:/]+([\w.-]+)/([\w.-]+?)(?:\.git)?/?$", str(url or ""))
+    return f"{m.group(1)}/{m.group(2)}" if m else ""
+
+
+def repo_private(url: str, opener=None) -> bool:
+    """H1 (lead 2026-11-20): nothing goes to agency-inbox while the repo is public. True only when the GitHub API answers "private": true
+    (day-caller's tools.caller.export.repo_private when installed, else the same check here). A 404, an error, or not a GitHub repo = False"""
+    repo, token = repo_of(url), os.environ.get("GITHUB_TOKEN", "")
+    if not repo:
+        return False
+    try:
+        from tools.caller.export import repo_private as rp   # day-caller's gate, the one source of truth
+        return bool(rp(repo, opener=opener, token=token))
+    except ImportError:
+        pass
+    hdr = {"Accept": "application/vnd.github+json", "User-Agent": "olympus-agency"}
+    if token:
+        hdr["Authorization"] = "Bearer " + token
+    try:
+        with (opener or urllib.request.urlopen)(urllib.request.Request(f"https://api.github.com/repos/{repo}", headers=hdr), timeout=15) as r:
+            return json.loads(r.read().decode()).get("private") is True
+    except Exception:  # noqa: BLE001
+        return False
+
+
+PRIVATE = repo_private      # tests swap this for a fake; nothing is pushed unless it returns True
+PUBLIC_MSG = "held on the PC: the repo is not private, so nothing goes to agency-inbox (H1)"
 
 
 def git(args, cwd, timeout=90) -> subprocess.CompletedProcess:
@@ -47,6 +79,8 @@ def sync(url: str, wd: str) -> str:
         git(["reset", "-q", "--hard", "FETCH_HEAD"], wd)
         return ""
     if "couldn't find remote ref" in (f.stderr or "").lower() or "not found" in (f.stderr or "").lower():
+        if not PRIVATE(url):
+            return PUBLIC_MSG
         git(["checkout", "-q", "--orphan", BRANCH], wd)
         with open(os.path.join(wd, "README.md"), "w", encoding="utf-8") as fh:
             fh.write(README)
@@ -78,6 +112,8 @@ def read_outbox(wd: str) -> list:
 
 def write_and_push(url: str, wd: str, files: dict, message: str) -> str:
     """files = {relative path: dict}; commit on top of the remote tip and push (once more after a re-fetch). '' = ok"""
+    if not PRIVATE(url):
+        return PUBLIC_MSG                                 # replies, caller files and results stay on the PC (state + the local files)
     for attempt in range(2):
         err = sync(url, wd)
         if err:
