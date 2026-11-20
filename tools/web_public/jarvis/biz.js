@@ -185,6 +185,27 @@ export function accountsOf(L) {
   return out;
 }
 
+// the PC's post (pc_feed.js fetchLatest: the core with its extras merged) as the live view data.js gives Jarvis, for a page without data.js
+// (jarvis/ask.js, the Ask Jarvis button on every app). The same rules as data.js extraAccounts: a cloud / paper / BLITZ row is never an
+// account, and a row with the Zlarior or ATLAS card's own balance + floor IS that card.
+export function liveFromLite(j, cached) {
+  if (!isObj(j)) return null;
+  const b = isObj(j.board) ? j.board : {};
+  const same = (c, e) => isObj(c) && num(c.balance) != null && num(c.balance) === num(e.balance) && num(c.floor) === num(e.floor);
+  const extra = [];
+  for (const a of arr(j.accounts)) {
+    if (!isObj(a) || !a.id || a.error || !['eval', 'funded'].includes(String(a.kind))) continue;
+    if (/^(lit|atlas|acct_?b|acct_?c|cloud_paper)$/i.test(a.id) || /cloud|blitz|scalp/i.test(`${a.id} ${a.name || ''} ${a.source || ''}`) || /^paper$/i.test(String(a.badge || ''))) continue;
+    const e = isObj(a.eval) ? a.eval : isObj(a.funded) ? a.funded : null;
+    if (!e || num(e.balance) == null || same(b.lit, e) || same(b.atlas, e)) continue;
+    extra.push({ ...e, id: a.id, key: a.id, name: txt(a.name, 40).replace(/\bBuilder\s+/i, '').replace(/^MFFU\s+/i, ''), plan: txt(a.plan, 40), stage: a.kind === 'funded' ? 'funded' : 'eval',
+      status: a.kind === 'funded' ? 'funded' : e.status, today_pnl: isObj(a.pnl) && num(a.pnl.today) != null ? num(a.pnl.today) : num(e.today) });
+  }
+  const trades = arr(b.trades).filter(isObj).slice(-12).map((x) => ({ acct: x.acct, side: x.side, qty: x.qty, exit: x.exit, usd: num(x.usd), r: num(x.r), day: x.day, open: !!x.open,
+    src: x.src === 'paper' ? 'paper' : undefined, member: typeof x.member === 'string' ? x.member.slice(0, 12) : undefined }));
+  return { lit: b.lit || null, atlas: b.atlas || null, extra, trades, price: num(j.price), t: num(j.t), verdict: isObj(j.pc_verdict) ? j.pc_verdict : null, raw: cached ? null : j, cached: !!cached };
+}
+
 // ------------------------------------------------------------------------------------------------ the answers
 const A = {};
 A.accounts = async (deps, nowD) => {
