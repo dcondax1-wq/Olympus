@@ -191,6 +191,10 @@ class FastAlarm:
                     done.append((key, r))
             for code in [c for c in self.active if c not in cur]:
                 a = self.active.pop(code)
+                if a.get("sent") and code in ("bot_down", "feed_stale") and not running:
+                    # cleared because the bot was STOPPED (the owner's STOP / kill, often his answer to this alarm): never a
+                    # "Back to normal: the bot polls again" (redteam 2026-11-20); a stop that should not be is "Bot stopped"
+                    continue
                 if a.get("sent"):
                     key = f"fast:{code}:back:{int(now)}"
                     r = self.send({"key": key, "code": code, "cond": COND[code], "back": True, "title": "Back to normal",

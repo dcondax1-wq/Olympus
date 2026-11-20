@@ -24,6 +24,10 @@ runs: tests.test_lit_live (full, heavy.sh), tests.test_nq_live_reliability, test
 | C9 | medium | **False 'Bot stopped' alarm on CME holidays.** tools/pc_report.entry_hours (its "Bot stopped" condition) was weekday 01:50-15:30 only: a bot stopped on Christmas Day, New Year's Day or Thanksgiving afternoon (after the 13:00 halt; next Thursday) alarmed. Now a holiday closure / early halt (engine/cme_calendar.halted) is never entry hours. The fast alarm already used engine/live.market_open. | abb2d0d0 |
 | P5 | (proposal) | night-selfheal's proposal landed: engine/autoupdate.fast_forward clears untracked files the update brings right before `git merge --ff-only` (same bytes: removed; other bytes: snapshot + copy kept), puts them back when the merge still fails or the update rolls back, and keeps git's FULL merge error (it was cut to its last 200 characters: the file names git lists first were lost, and self_heal reads them from that reason). | 9529550b |
 
+**Timing (for the lead):** the PC's HOURLY auto-update stops at 01:20 ET (engine/autoupdate HOURLY_MARGIN: 30 min before the
+01:50 blackout), so a ship after ~01:20 reaches the PC only with the phone's "Update now" (or UPDATE.bat) before 01:50, else after
+16:00 ET Friday.
+
 Not critical, checked and fine: phone_link (Windows only, daemon thread, every Tailscale call has a 20 s timeout, never 443 / Funnel, its
 failure cannot reach the server start); remote_ctl control_source (the expired no-op on olympus/control is "blank" = silent; an
 invalid id is never re-notified; update / restart stay gated to flat + outside 01:50-16:00); account_box arming (the typed phrase
@@ -37,6 +41,7 @@ runs); the alerts are fire-and-forget (pc_notify only builds the payload and sta
 | Self-heal deleted `logs/supervisor.pid` when the pid ran but its name could not be read (psutil access denied read as "another program") | e2d03d91 |
 | Self-heal deleted old git locks when the running programs could not be read at all (it assumed "no git running": a long git could be at work) | 0ea883ad |
 | A self-heal "needs you" push rang at night (the hourly run also runs 16:00-01:50 ET, priority high): now silent in the quiet hours | b61e1756 |
+| The fast alarm sent "Back to normal: the bot polls again" when the owner answered it with STOP BOT | 4162e940 |
 
 ## Checked, not changed (and why)
 
@@ -73,3 +78,23 @@ Not fixed (low, named for the lead):
   never re-arms a bot that is not running (C5).
 - The phone remote's control fetch (every 60 s) and the hourly update's fetch can overlap in the same checkout: that hour's update then
   skips ("git fetch failed") and the next hour retries.
+
+## Tests run (final code, night-redteam)
+
+| Test | Result |
+|---|---|
+| tests.test_lit_live (full, under heavy.sh) | OK: 120/120 day-end trades identical, intraday 9,923 polls 0 differences (+29 on the known 2026-04-03), LiveBot 2/2 entries + exits, 0 errors |
+| python -m engine.ninjatrader --selftest | 79/79 PASS |
+| tests.test_combo_50k --quick (heavy.sh) | 46/46 |
+| tests.test_multi_account (full) / --quick | 55/55 / 49/49 |
+| tests.test_nq_live_reliability (+ 36 new red-team checks) | 119/119 |
+| tests.test_self_heal_pc (+ 14 new) | 90/90 |
+| tests.test_remote_ctl (+1) / tests.test_account_box (+1) | 74/74 / 40/40 |
+| guards, notify, trade_alerts, fast_entry, fill_audit, phone_link, autorun, autoupdate_source, update_from_zip, rapid, rapid25, lit25, datafeed, pc_doctor, pc_silent, report_keeper, alerts_plus, launch_kit, pc_bars, pc_health, pc_selftest | all green |
+| tests/smoke.py | 8/8 green |
+
+Each fix's new check was run against the old code first and failed there (the old code: re-armed after STOP; stopped the bot on a
+5-day-old pending stop; "No good poll for 180 min" after a START; CLOSEPOSITION with ATLAS holding the Rapid; 30 pushes for a flapping
+hour; reset a bot-made file at Tue 10:00; MISSED TRADE ringing at 03:05 for a weekly stop; "Bot stopped" on Christmas). Not run:
+test_win_scripts (never), browser suites (no screen changed). tests.test_writeups_index's "every write-up has a title and a date" is red
+before this branch too (six older write-ups), this one has both.
