@@ -1,7 +1,7 @@
 # Lead wires for the 6 arenas (files helpers may not touch)
 
 1. **sw.js**: nothing needed. `gate/` and `olympus/` are in its OTHER_APPS list (never cached there); the new files ride on
-   version pins: `gate/arenas.js?v=2`, `gate.css?v=g21`, `navfx.css?v=5`, `navfx.js?v=2`, `olympus/doors.js?v=d12`,
+   version pins: `gate/arenas.js?v=2`, `gate.css?v=g22`, `navfx.css?v=5`, `navfx.js?v=2`, `olympus/doors.js?v=d12`,
    `hub/doors.js?v=d5`, catalog `nv10`, `olympus/dashfx.css?v=d1` / `dashfx.js?v=d1` (now also on Home).
 2. **jarvis/apps.js / olympus.js APPS**: untouched. Jarvis has no row in the generated app list, so the launcher's Arenas row makes
    its Jarvis tile from doors.js ARENAS (`jarvis/`). If you want it from the list instead, add a `jarvis` row there and rebuild
