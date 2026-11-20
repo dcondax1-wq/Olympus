@@ -81,7 +81,8 @@
   }
  ],
  "decisions": [
-  "Ask MFFU support: may you run a 2nd Builder 50K and a 2nd 25K eval while the current ones run? (you said yes to asking, Nov 20)"
+  "Tell Claude: health cover for 2027 (job / parent / spouse / none), and are you under 34? (Maryland deadline Dec 31 for Jan 1)",
+  "Before the first ATLAS payout: open a free brokerage account with a Treasury money fund for the tax pot (Fidelity, Schwab or Vanguard, ~20 min)"
  ],
  "limits": "MFFU lets you hold 5 funded accounts: 1 Builder 50K, 2 Builder 25K, 3 Rapid EOD 50K, 3 Rapid EOD 25K (5 in all). Up to 10 evals.",
  "rules": [
