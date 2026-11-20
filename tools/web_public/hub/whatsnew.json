@@ -13,6 +13,15 @@
   {
    "day": "2026-11-20",
    "status": "site",
+   "title": "Website business HQ",
+   "what": "The Agency app is now your website business HQ: today's next step, the pipeline (leads, called, proposals, paid), care plans against a $1,000 a month goal, 7 big tiles (Expert, Leads, Audit, Demos, Showcase, Offers, Calls) and a 4-hours-a-week plan around your day job. Search 'website', 'audit' or 'proposal' to get there.",
+   "money": "Care plans: Starter $49, Growth $79, Pro $129 a month per client; about 12 Growth clients = $1,000 a month.",
+   "href": "../agency/index.html#hq",
+   "label": "Website business HQ"
+  },
+  {
+   "day": "2026-11-20",
+   "status": "site",
    "title": "Your apps in your order, clutter gone",
    "what": "Cities, Kalshi, NQ bot and Jarvis come first everywhere (Home, the Jarvis switcher, search, the Doors page), then Planner and Business, then the rest. 28 apps you don't use (the forges, old duplicates) are hidden; their links still open. Cities is one entry with the World, Data City, Kalshi City, Atlas City and Mint City inside.",
    "money": "",
