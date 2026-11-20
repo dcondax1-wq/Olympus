@@ -204,7 +204,7 @@ export function createWorld(opts) {
   rings.renderOrder = 3; rings.frustumCulled = false;
   scene.add(rings);
   // ---- LED displays: ticker bands round the tallest towers (the Gate, ZEUS, the Kalshi bot, Business); text = setDisplay(row, line)
-  const ROWS = 4, TXW = 1024, TXH = 128;
+  const ROWS = 4, TXW = 2048, TXH = 128;
   const txt = document.createElement('canvas'); txt.width = TXW; txt.height = TXH * ROWS;
   const tg = txt.getContext('2d');
   tg.fillStyle = '#000'; tg.fillRect(0, 0, TXW, TXH * ROWS);
@@ -212,16 +212,16 @@ export function createWorld(opts) {
   const bandSpec = [];
   const byHref = (h) => plan.places.findIndex((p) => p.href === h);
   const gold = [1.0, 0.72, 0.32];
-  bandSpec.push({ x: 0, y: 29.0, z: 0, r: 3.05, h: 2.0, row: 0, col: gold, place: N });
+  bandSpec.push({ x: 0, y: 29.0, z: 0, r: 3.8, h: 2.0, row: 0, col: gold, place: N });   // clear of the corners (a 5.2 square: 3.68)
   for (const [href, row] of [['hub/zeus.html', 1], ['kalshi/', 2], ['business/', 3]]) {
     const i = byHref(href);
     if (i < 0) continue;
     const p = plan.places[i], fw = 2.7 + 1.5 * clamp(((p.raw.b || [])[0] || 120) / 255, 0, 1);
-    bandSpec.push({ x: p.x, y: p.top * 0.42, z: p.z, r: fw * 0.64, h: Math.max(1.2, p.top * 0.06), row, col: p.hue.map((v) => Math.min(1, v * 1.25 + 0.1)), place: i });
+    bandSpec.push({ x: p.x, y: p.top * 0.42, z: p.z, r: fw * 0.74, h: Math.max(1.2, p.top * 0.06), row, col: p.hue.map((v) => Math.min(1, v * 1.25 + 0.1)), place: i });
   }
   const dn = bandSpec.length, dA = new Float32Array(dn * 4), dB = new Float32Array(dn * 4), dC = new Float32Array(dn * 3), dP = new Float32Array(dn);
   bandSpec.forEach((b, k) => {
-    const circ = 2 * Math.PI * b.r, rep = Math.max(1, Math.round(circ / (b.h * 8)));
+    const circ = 2 * Math.PI * b.r, rep = Math.max(1, Math.round(circ / (b.h * 16)));
     dA.set([b.x, b.y, b.z, b.r], k * 4); dB.set([b.h, b.row, rep, 0.035 / rep], k * 4); dC.set(b.col, k * 3); dP[k] = b.place;
   });
   const bandGeo = new THREE.CylinderGeometry(1, 1, 1, 32, 1, true).translate(0, 0.5, 0);
@@ -231,14 +231,18 @@ export function createWorld(opts) {
   scene.add(bands);
   const shown = new Array(ROWS).fill('');
   function setDisplay(row, text) {
-    const r = Math.max(0, Math.min(ROWS - 1, row | 0)), t = String(text || '').replace(/\s+/g, ' ').trim().toUpperCase().slice(0, 160);
+    const r = Math.max(0, Math.min(ROWS - 1, row | 0));
+    let t = String(text || '').replace(/\s+/g, ' ').trim().toUpperCase();
+    if (t.length > 48) t = t.slice(0, 48).replace(/\s+\S*$/, '') + ' \u2026';                // one row holds about 48 letters
     if (!t || shown[r] === t) return false;
     shown[r] = t;
     tg.fillStyle = '#000'; tg.fillRect(0, r * TXH, TXW, TXH);
-    tg.font = '700 76px -apple-system, "SF Pro Display", system-ui, "Helvetica Neue", Arial, sans-serif';
+    tg.font = '700 72px -apple-system, "SF Pro Display", system-ui, "Helvetica Neue", Arial, sans-serif';
     tg.textBaseline = 'middle'; tg.fillStyle = '#fff';
-    const unit = t + '   \u2022   ', w = Math.max(1, tg.measureText(unit).width);
-    for (let x = 0; x < TXW; x += w) tg.fillText(unit, x, r * TXH + TXH * 0.54);
+    const unit = t + '   \u2022   ', w = Math.max(1, tg.measureText(unit).width), n = Math.max(1, Math.round(TXW / w));
+    tg.save(); tg.setTransform(TXW / (n * w), 0, 0, 1, 0, 0);                   // a whole number of repeats, stretched a little: a seamless loop
+    for (let k = 0; k < n; k++) tg.fillText(unit, k * w, r * TXH + TXH * 0.54);
+    tg.restore();
     txtTex.needsUpdate = true;
     return true;
   }
@@ -253,6 +257,16 @@ export function createWorld(opts) {
     scene.add(shock, pillar);
     pool.push({ shock, pillar, su, pu, t: 1, dur: 1, r: 10, h: 60 });
   }
+  // ---- aircraft: a few nav-light pairs and strobes crossing the sky on slow orbits (revamp-cities)
+  const pn = opts.tier === 'low' ? 3 : 6, pA = new Float32Array(pn * 3 * 4), pK = new Float32Array(pn * 3), pr = rng(77);
+  for (let k = 0; k < pn; k++) {
+    const pl = [R + 120 + pr() * 700, 90 + pr() * 170, (pr() < 0.5 ? -1 : 1) * (0.012 + pr() * 0.02), pr() * 6.28];
+    for (let j = 0; j < 3; j++) { pA.set(pl, (k * 3 + j) * 4); pK[k * 3 + j] = j; }
+  }
+  const planes = new THREE.Mesh(instanced(new THREE.PlaneGeometry(1, 1), [['aPlane', pA, 4], ['aKind', pK, 1]], pn * 3),
+    new THREE.ShaderMaterial({ vertexShader: SH.PLANE_VS, fragmentShader: SH.PLANE_FS, uniforms: { ...U }, ...additive }));
+  planes.renderOrder = 6; planes.frustumCulled = false;
+  scene.add(planes);
   // ---- warp streaks (view space)
   const wn = opts.tier === 'low' ? 220 : 480, wS = new Float32Array(wn * 4), wC = new Float32Array(wn * 3), wr = rng(5);
   for (let k = 0; k < wn; k++) {

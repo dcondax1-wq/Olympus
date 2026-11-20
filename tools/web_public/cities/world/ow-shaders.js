@@ -595,8 +595,8 @@ uniform sampler2D uText; uniform float uRows;
 varying vec2 vUv; varying vec4 vB2; varying vec3 vC; varying vec3 vW; varying float vG;
 void main() {
   if (vG < 0.02) discard;
-  float u = fract((1.0 - vUv.x) * vB2.z - uTime * vB2.w);                      // seen from outside the band, left to right
-  vec2 cells = vec2(1024.0 * 0.25, 128.0 * 0.25);                              // one LED per 4 x 4 canvas pixels
+  float u = fract(vUv.x * vB2.z + uTime * vB2.w);                              // reads left to right from outside, scrolls right to left
+  vec2 cells = vec2(2048.0 * 0.25, 128.0 * 0.25);                              // one LED per 4 x 4 canvas pixels
   vec2 q = vec2(u, vUv.y) * cells;
   vec2 fw = fwidth(q);
   float detail = 1.0 - smoothstep(0.35, 0.9, max(fw.x, fw.y));
@@ -611,4 +611,30 @@ void main() {
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
 }
+`;
+
+// ------------------------------------------------------------------------------------------------ aircraft: nav lights crossing the sky
+// aPlane = orbit radius, altitude, angular speed (signed), phase; aKind = 0 the white strobe, 1 the red (left) wing, 2 the green (right) wing
+export const PLANE_VS = /* glsl */`
+attribute vec4 aPlane; attribute float aKind;
+uniform float uTime;
+varying vec3 vC; varying vec2 vUv;
+void main() {
+  float a = aPlane.w + uTime * aPlane.z;
+  vec3 c = vec3(cos(a) * aPlane.x, aPlane.y, sin(a) * aPlane.x * 0.7);
+  vec3 dir = normalize(vec3(-sin(a), 0.0, cos(a) * 0.7) * sign(aPlane.z));
+  vec3 wing = normalize(cross(dir, vec3(0.0, 1.0, 0.0)));
+  c += wing * (aKind < 0.5 ? 0.0 : aKind < 1.5 ? -1.6 : 1.6);
+  float blink = aKind < 0.5 ? step(0.93, fract(uTime * 0.9 + aPlane.w)) * 1.0 : 0.55 + 0.45 * step(0.5, fract(uTime * 0.5 + aPlane.w * 3.0));
+  vC = (aKind < 0.5 ? vec3(3.5, 3.5, 3.8) : aKind < 1.5 ? vec3(2.4, 0.15, 0.1) : vec3(0.15, 2.2, 0.5)) * blink;
+  vec3 right = vec3(viewMatrix[0][0], viewMatrix[1][0], viewMatrix[2][0]);
+  vec3 up = vec3(viewMatrix[0][1], viewMatrix[1][1], viewMatrix[2][1]);
+  float s = max(0.5, distance(cameraPosition, c) * 0.0045);
+  vUv = position.xy;
+  gl_Position = projectionMatrix * viewMatrix * vec4(c + (right * position.x + up * position.y) * s, 1.0);
+}
+`;
+export const PLANE_FS = /* glsl */`
+varying vec3 vC; varying vec2 vUv;
+void main() { float d = length(vUv) * 2.0; gl_FragColor = vec4(vC * exp(-d * d * 6.0), 1.0); }
 `;
