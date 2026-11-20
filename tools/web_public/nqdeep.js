@@ -141,7 +141,8 @@
   /** learned.json bots[] (tools/fill_cost.py): the bot's "Real fills so far" line, or '' (never a made-up number) */
   function fillLine(learned, bot) {
     const B = arr(isObj(learned) ? learned.bots : null);
-    const b = B.find((x) => isObj(x) && String(x.bot || x.name || '').toUpperCase().indexOf(String(bot).toUpperCase()) >= 0);
+    const want = String(bot || '').toLowerCase(), rx = want === 'lit' ? /\blit\b|zlarior/ : want === 'atlas' ? /atlas/ : null;
+    const b = rx ? B.find((x) => isObj(x) && rx.test(`${x.key || ''} ${x.bot || ''} ${x.name || ''}`.toLowerCase())) : null;
     const f = b && isObj(b.fills) ? b.fills : null;
     if (!f) return { line: '', n: 0 };
     return { line: str(f.line, 200), n: num(f.n) || 0, med: num(f.entry_slip_med), worst: num(f.worst) };
@@ -194,7 +195,9 @@
     }
     rows.sort((a, b) => (a.day + a.hm < b.day + b.hm ? -1 : 1));
     const days = [0, 1, 2, 3, 4].map((i) => { const d = addDays(mon, i); return { day: d, label: shortDay(d), today: d === nowDay, events: rows.filter((r) => r.day === d) }; });
-    return { days, n: rows.length, from: mon, to: fri };
+    let next = null;
+    for (const e of E) { const d = isObj(e) ? String(e.date || e.day || '').slice(0, 10) : ''; if (isDay(d) && d > fri && (!next || d < next.day)) next = { day: d, label: shortDay(d), hm: String(e.time || e.hm || '').slice(0, 5), title: str(e.title || e.name || e.event, 70) }; }
+    return { days, n: rows.length, from: mon, to: fri, next, built: str(N.built, 10) };
   }
   function addDays(day, n) { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(day); return new Date(Date.UTC(+m[1], +m[2] - 1, +m[3] + n)).toISOString().slice(0, 10); }
 
@@ -359,7 +362,9 @@
       for (const e of d.events) { const s = el('span', e.past ? 'ev past' : 'ev', `${e.hm ? e.hm + ' ET ' : ''}${e.title}`); li.appendChild(s); }
       ol.appendChild(li);
     }
-    box.appendChild(ol); return N;
+    box.appendChild(ol);
+    if (N.next) box.appendChild(el('p', 'nqd-note', `Next after this week: ${N.next.label}${N.next.hm ? ' ' + N.next.hm + ' ET' : ''}, ${N.next.title}.`));
+    return N;
   }
   const draw = { underwater: drawUnderwater, twin: drawTwin, dist: drawDist, heat: drawHeat, streaks: drawStreaks, extremes: drawExtremes, timeline: drawTimeline, payout: drawPayout, news: drawNews };
 

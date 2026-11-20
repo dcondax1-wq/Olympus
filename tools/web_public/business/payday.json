@@ -1,6 +1,6 @@
 {
  "v": 1,
- "src": "research/lab/payday_plan.json (tools/money/payday_plan.py), copied by tools/nqdash_payday.py",
+ "src": "research/lab/payday_plan.json (tools/money/payday_plan.py), copied by tools/nqdash_export.py",
  "what": "ESTIMATES: the first payout date per account from 1,000 simulated runs of each market kind. Not a promise.",
  "date": "2026-11-20",
  "n": 1000,
