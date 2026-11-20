@@ -393,9 +393,9 @@
     var cards = from === 'none' ? [] : (N.cards || (N.accts || []).map(function (a) {   // a copy this phone saved before the money row: the drawdown it knew
       return { key: a.key, name: a.name, size: '', kind: 'eval', balance: null, room: num(a.room), mll: num(a.mll), toPass: null, toAsk: null, today: null };
     }));
-    var strip = el('div', 'g-mstrip'); strip.setAttribute('role', 'list');
+    var strip = el('div', 'g-mstrip');
     cards.forEach(function (c) {
-      var a = el('a', 'g-acct g-acct-' + c.kind); a.setAttribute('role', 'listitem');
+      var a = el('a', 'g-acct g-acct-' + c.kind);
       a.href = base + (c.kind === 'funded' ? 'business/mffu.html' : 'aegis/index.html'); a.setAttribute('data-go', c.key);
       a.setAttribute('aria-label', acctName(c) + ', ' + (c.kind === 'funded' ? 'funded' : 'eval') + ': balance ' + (c.balance != null ? money(c.balance) : 'unknown') + '. Drawdown left ' + money(c.room) + ' of ' + money(c.mll) + ' max loss, ' + c.name + '.' + (c.today != null ? ' Today ' + moneyS(c.today) + '.' : ''));
       var top = el('span', 'g-atop'); top.appendChild(el('b', 'g-an', acctName(c))); top.appendChild(el('i', 'g-ak', c.kind === 'funded' ? 'Funded' : 'Eval')); a.appendChild(top);
@@ -409,7 +409,7 @@
     });
     var X = S.extra, K = X && X.K;
     if (K && K.has) {
-      var k = el('a', 'g-acct g-acct-kalshi'); k.setAttribute('role', 'listitem'); k.href = base + 'kalshi/index.html'; k.setAttribute('data-go', 'kalshi');
+      var k = el('a', 'g-acct g-acct-kalshi'); k.href = base + 'kalshi/index.html'; k.setAttribute('data-go', 'kalshi');
       var kt = el('span', 'g-atop'); kt.appendChild(el('b', 'g-an', 'Kalshi')); kt.appendChild(el('i', 'g-ak', K.paper === false ? 'Live' : 'Bot')); k.appendChild(kt);
       k.appendChild(el('span', 'g-mv g-abal', K.balance != null ? money(K.balance) : 'Bot on'));
       k.appendChild(el('span', 'g-aln', K.age != null && HSok() ? 'updated ' + w.OLYMPUS_HUB_STATUS.shortAge(K.age) : 'gold + silver clock bets'));

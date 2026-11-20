@@ -392,3 +392,18 @@ html[data-oly-scheme="light"] .g-nk8 b { color: #2e5fb8; }
 .g-tdot { flex: none; }
 .g-now[data-many="true"] .g-facts .g-fl { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; color: var(--ag-text); }
 .g-now[data-many="true"] .g-trow small { display: none; }
+/* ---- olympus2 A11Y (research/handoff/2026-11-20/olympus2/a11y/FOR_home.md): 44 px taps, a focus ring, no text under 12 px, body text 15 px ---- */
+.g-now:has(#money) .g-facts .g-fact, .g-now[data-many="true"] .g-facts .g-fact { min-height: 44px; }
+.g-main :is(a, button, input, [tabindex]):focus-visible { outline: 3px solid var(--ag-gold, #c8a24a); outline-offset: 2px; }
+#q:focus-visible { outline: 3px solid var(--ag-gold, #c8a24a); outline-offset: 2px; }
+.g-qline { font-size: .9375rem; }
+.g-hint { font-size: .9375rem; }
+.g-now:has(#money) .g-nowfoot, .g-nowfoot { font-size: .9375rem; }
+.g-now:has(#money) .g-facts .g-fsub { font-size: .75rem; }
+.g-sw small { font-size: .8125rem; }
+.g-hline, .g-hub.g-wide .g-hline { font-size: .9375rem; }
+.g-lknow-t span { font-size: .9375rem; }
+.g-quiet { font-size: .9375rem; }
+.g-aln, .g-an { font-size: .8125rem; }
+.g-ak { font-size: .75rem; letter-spacing: 0; padding: 2px 5px; }
+.g-nrow span, .g-aempty .g-an, .g-aempty .g-aln, .g-foot p, .g-sw small { font-size: .9375rem; }

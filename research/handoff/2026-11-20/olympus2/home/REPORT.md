@@ -66,3 +66,16 @@ phone-size canvas ~33 times a second forever. Fixes (agoramap.js g7):
 - 3 s after the last touch / flight the map holds still (the sea and boats are decoration) until the next touch, flight or data.
 Result (15 s after open, 4x CPU): long tasks 99 -> 26, their total 10.7 s -> 2.7 s, full repaints 45 -> 3. Left: two ~0.35 s tasks at boot
 (three.js parse + building the 3D hub), not changed today. test_cities_page 257/257.
+
+## Round 5 (A11Y FOR_home.md, ~12:30 ET): all 7 items
+A11Y sweep (`tools/a11y_sweep.py --quick`, their branch, my files): **gate 82 -> 100, widget 82 -> 96, cities 85 -> 92** (datacity 85, not in the list).
+1. cities live chip contrast: dark ink on the olive fill, light ink on the Ivory dark-green fill (both >= 4.5:1).
+2. gate facts 44 px tall (compact mode too).
+3. gate focus ring (`:focus-visible` on every link / button / the search) + gate now loads olympus/a11y.js (Dynamic Type, labels).
+4. money strip: no list roles (they were half set).
+5. cities `#chips` and widget `#code`: `tabindex="0"` + a name; #chips 44 px tall.
+6. small text: gate door lines / hints / footer / hub lines / look names / cockpit lines 15 px, sub-lines >= 12 px; widget body in rem,
+   code 12 px, FREE tag 12 px; cities dock labels (and Data City's) 12 px, World card subtitle 15 px, network labels 12 px.
+7. Dynamic Type: the gate loads a11y.js; widget text moved to rem.
+Left: cities filter chips' 13 px labels (short labels), the quality button's "LITE" 11.3 px (drawn by the kit), widget code block 12 px.
+Tests: gate 88/88, widget 37/37, cities 257/257, datacity 194/194. Tags: gate.js g15, gate.css g17 (+ olympus/a11y.js in the Home's list).
