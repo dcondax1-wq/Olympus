@@ -143,6 +143,7 @@ def main() -> int:
         calls.clear()
         AB._S["rearm"] = lambda ph: calls.append(ph) or seq[min(len(calls) - 1, len(seq) - 1)]
         AB._S["sleep"] = lambda s: _t.sleep(0.02)
+        AB._S["running"] = lambda: True                 # the bot runs (in a trade) while it waits
         r6 = pc.post("/add-account/start", headers=pc_h, json={"confirm": "I ACCEPT LIVE RISK"}).json()
         for _ in range(200):
             if AB._W["state"] != "waiting":
@@ -166,6 +167,28 @@ def main() -> int:
               == (403, 403, 403) and len(calls) == n, (r7.status_code, r8.status_code, r9.status_code))
         st3 = pc.get("/add-account/status").json()
         check("f. status shows the wait state + the START job line", st3.get("wait", {}).get("state") == "cancelled" and "job" in st3, st3.get("wait"))
+        # redteam 2026-11-20: the owner presses STOP BOT / HOLD TO KILL while it waits -> the bot is not running any more: the
+        # wait must NOT re-arm (onboard.rearm arms at once when no bot runs = trading again against his own stop)
+        calls.clear()
+        run_state = {"on": True}
+        AB._S["running"] = lambda: run_state["on"]
+        AB._S["rearm"] = lambda ph: calls.append(ph) or (seq[0] if run_state["on"] else {"ok": True, "say": "Re-arming (stub)"})
+        AB._S["sleep"] = lambda s: _t.sleep(0.03)
+        pc.post("/add-account/start", headers=pc_h, json={"confirm": "I ACCEPT LIVE RISK"})
+        for _ in range(100):
+            if len(calls) >= 2:
+                break
+            _t.sleep(0.01)
+        run_state["on"] = False                         # STOP BOT / kill: the bot is stopped (and flat)
+        for _ in range(100):
+            if AB._W["state"] != "waiting":
+                break
+            _t.sleep(0.02)
+        n2 = len(calls)
+        _t.sleep(0.15)
+        check("f. the owner stops / kills the bot while it waits: dropped, never re-armed (no start against his stop)",
+              AB._W["state"] == "dropped" and len(calls) == n2 and n2 >= 2, (AB._W, len(calls)))
+        AB._S["running"] = None
         AB._S.update(rearm=None, sleep=_t.sleep)
         st2 = c.get("/add-account/status", headers=link).json()
         check("d. status after: the Rapid row shows, not armed; nothing left to add", any(a["role"] == "rapid" and not a["armed"]
@@ -184,7 +207,7 @@ def main() -> int:
         for k, v in keep.items():
             setattr(G, k, v)
         rapid.PATH = keep_rp
-        AB._S.update(log=None, rearm=None, sleep=__import__("time").sleep)
+        AB._S.update(log=None, rearm=None, sleep=__import__("time").sleep, running=None)
         AB._W["gen"] += 1
         AB._HITS.clear()
         if env_nt is None:
