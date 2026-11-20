@@ -834,6 +834,16 @@ The long list moved on 2026-11-18 to `docs/TESTED_AND_REJECTED.md` (heading "## 
   (20 s in the test). Jarvis always starts on its own screen (the address never keeps #zenith; an old #hash is cleaned at
   start), keeps one dashboard loaded at a time (one iPhone web process), shows a Reload note if its script has not started in
   8 s, and the manifest has no #shortcuts. Recovery on the phone: delete the Home Screen icon, re-add from Safari.
+- **Jarvis business answers (day-jarvis 2026-11-20, `jarvis/biz.js`, test `node tests/test_jarvis_biz.mjs`):** the owner's daily
+  questions answered BEFORE the brain (think() in index.html asks biz.match first): accounts, in a trade (board card position + the
+  chart feed's open trades, $ from the price at $2/pt), room (only when an account is named; generic room/target stays with the
+  brain's BLITZ rules), first payout (business/payday.json H2 row), bots today/week (PC report trades, paper ones labelled, not in
+  the $), news (nq/news_week.json + pythia/events.json), to-do (hub/steps.json + its Done ticks 'oly-steps-done-v1' + open
+  decisions), Kalshi (the PC report's kalshi_live.k8 card; none = null = the brain). Every reply ends with one `Source: ..., <age>`
+  line (voice reads the answer without it); files kept slimmed in localStorage 'jarvis.biz.<name>' for offline. 9 chips = a 3x3
+  grid `#bizchips` in the HTML (first paint). Phone speed: the 3D sky (backdrop.js) and the 3D core wait for 6 s after the start
+  + 2.5 s without input on a coarse-pointer phone (re-checked before each heavy step), the sky is never built with effects off,
+  app status cards load 6 per idle slice, the star loop's layout read is once a second.
 - **Jarvis v2 (2026-11-01 sprint, owner: "the same sick looking Jarvis with all the features it had before ... switch
   between that mode, zenith mode"):** it rebuilds the owner's old PC voice assistant on the phone (spec, look and features:
   `docs/JARVIS_OLD_LOOK.md`). Modules in `tools/web_public/jarvis/`:
