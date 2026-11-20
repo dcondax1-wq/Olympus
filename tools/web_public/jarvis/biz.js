@@ -248,7 +248,7 @@ A.intrade = async (deps, nowD, text) => {
       const openUsd = px != null && e != null && q2 ? (px - e) * sd * q2 * 2 : null;        // MNQ micros: $2 a point
       const locked = sl != null && e != null && (sd > 0 ? sl >= e : sl <= e);
       const f = (x) => x.toLocaleString('en-US', { maximumFractionDigits: 2 });
-      rows.push(`${a.name}: YES, ${sideOf(p)}${q2 ? ' ' + plural(q2, 'micro') : ''}${e != null ? ' from ' + f(e) : ''}${openUsd != null ? `, about ${usd(openUsd, true)} open right now` : ''}${ur != null ? ` (${ur >= 0 ? '+' : ''}${ur.toFixed(1)}R)` : ''}.`
+      rows.push(`${a.name}: YES, ${sideOf(p)}${q2 ? ' ' + plural(q2, 'micro') : ''}${e != null ? ' from ' + f(e) : ''}${openUsd != null ? `, about ${usd(openUsd, true)} open ${num(L.t) && +nowD / 1000 - num(L.t) > 20 * 60 ? "at the PC's last report" : 'right now'}` : ''}${ur != null ? ` (${ur >= 0 ? '+' : ''}${ur.toFixed(1)}R)` : ''}.`
         + `${sl != null ? ` Stop ${f(sl)}${locked ? ' (past the entry: this trade can no longer lose)' : ''}` : ''}${tp != null ? `, target ${f(tp)}` : ''}${sl != null || tp != null ? '.' : ''}`);
     } else rows.push(`${a.name}: no, flat.${a.waiting ? ' ' + a.waiting : a.window && a.window.text ? ' ' + txt(a.window.text, 80)[0].toUpperCase() + txt(a.window.text, 80).slice(1) + '.' : ''}`);
   }

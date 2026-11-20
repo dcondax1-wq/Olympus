@@ -106,6 +106,7 @@ ok(/cannot read the payout plan/.test(none.text), 'offline, no saved copy: says 
 const nolive = await B2.ask('How are my accounts?', { ...deps, facts: () => ({ live: null }) });
 ok(/no account numbers from the PC yet/.test(nolive.text), 'no PC report: says so, no made-up numbers');
 // the new answers (team JARVIS)
+ok(/about \+\$181 open at the PC's last report/.test((await B.ask('Is ATLAS in a trade?', { ...deps, facts: () => ({ live: { ...live, t: NOW / 1000 - 3600 } }) })).text), 'in a trade: an hour-old report never says "right now"');
 offline = false;
 const ask = async (q) => (await B.ask(q, deps)).text;
 const pcA = await ask('is the pc ok'); console.log('   > ' + pcA.replace(/\n/g, '\n     '));
