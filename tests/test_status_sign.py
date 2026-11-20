@@ -130,7 +130,7 @@ def part_d(priv, vk):
             lite = board.fetch_lite(get=lambda url: (200, body))
         finally:
             board.STATUS_FEED = old
-        ok(isinstance(lite, dict) and lite.get("_signed") is True, "with a pinned vk the board marks the feed signed")
+        ok(board.signed(lite) and "_signed" not in lite, "with a pinned vk the board marks the feed signed (beside the post, not in it)")
         ok(isinstance(lite, dict) and lite["brd"]["ac"][0][2] == 49193.0 and not lite["brd"]["ev"], "the forged newer post never reaches the board")
         b2 = board.gather(hb={"present": False, "reason": "test"}, lite=lite, now=NOW)
         ok("NOT signed yet" not in "\n".join(board.lines(b2, now=NOW)), "no unsigned warning once the feed is signed")

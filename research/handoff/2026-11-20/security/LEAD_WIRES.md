@@ -199,3 +199,10 @@ which is why the owner step "make the repo private" (REPORT.md) is the real fix.
 
 `tools/web_public/pc_feed.js` changed. Bump `CACHE` in `tools/web_public/sw.js` (le-public-v167 -> v168) when landing, as usual,
 so phones load the new check.
+Also run `python tools/archive_build.py` when landing. `tests.test_archive_page` was already 46/47 (stale index, 203 vs 210
+write-ups) before this branch added `research/writeups/security-2026-11-20.md`.
+
+## Trade-off to know (tools/board.py, already on this branch)
+Until the vk is pinned (W3), every event that reaches Claude only through the public status channel is labelled `[ntfy-unsigned]`
+and not counted under "OWNER NOTES NOT ANSWERED". That includes the owner's real notes from the phone: they still show in
+NEWEST EVENTS. To relax this, count them again but keep the label. Do not drop the label.

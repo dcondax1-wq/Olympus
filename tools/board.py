@@ -67,9 +67,16 @@ def fetch_lite(get=None) -> dict | None:
     from tools import status_sign as S             # day-security 2026-11-20: anyone can post to the public topic
     vk = S.feed_vk(STATUS_FEED)
     lite = pc_feed.pick(S.filter_msgs(msgs, vk)) if ok else None    # never a future-dated post; with a pinned vk only signed ones
-    if isinstance(lite, dict):
-        lite["_signed"] = bool(vk)
+    if isinstance(lite, dict) and vk:
+        _SIGNED[id(lite)] = lite                   # kept beside the post, never in it (the post's own keys stay exactly as posted)
     return lite
+
+
+_SIGNED: dict = {}                                 # posts fetch_lite checked against the pinned vk (held, so an id is never reused)
+
+
+def signed(lite) -> bool:
+    return isinstance(lite, dict) and _SIGNED.get(id(lite)) is lite
 
 
 UNSIGNED = "ntfy-unsigned"
@@ -148,7 +155,7 @@ def gather(offline: bool = False, hb=None, lite=None, now=None) -> dict:
     pcb = B._d(hb.get("board")) if hb.get("present") else {}
     ev_hb = pcb.get("events") or []
     ev_nt, live_nt = B.from_status(B._d(B._d(lite).get("brd")))
-    if lite is not None and not B._d(lite).get("_signed"):
+    if lite is not None and not signed(lite):
         ev_nt = _unsigned(ev_nt)
         notes.append(UNSIGNED_NOTE)
     live = {}
