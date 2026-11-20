@@ -5,6 +5,7 @@ neither data/combo_50k.json nor research/lab/combo_50k.json is written (the star
     python -X utf8 -m tests.test_combo_50k            # units + the parity replay (2 eval segments, 9 sessions) + d (~15-25 min)
     python -X utf8 -m tests.test_combo_50k --quick    # units + one segment (5 sessions)
     python -X utf8 -m tests.test_combo_50k --units    # unit checks only (~20 s)
+    python -X utf8 -m tests.test_combo_50k --extra    # units + e only (the extra accounts, ~4 min)
     python -X utf8 -m tests.test_combo_50k --full     # + Aug 18 - Sep 1 (a 3rd eval, 9 more sessions)
     python -X utf8 -m tests.test_combo_50k --seg 2026-10-02 [--scenario]   # units + that segment (+ d); run_area nq: by parts
 
@@ -28,6 +29,11 @@ neither data/combo_50k.json nor research/lab/combo_50k.json is written (the star
     is then re-run without that one ATLAS trade (the cascade included).
  d. close_on_opposite on Sep 4: ATLAS's long is closed at market (LIT PRIORITY) before Zlarior's short goes out; the fake
     50K never holds more than one trade.
+ e. (every replay mode but the run_area "sep" part) the multi_account router's extra accounts (Zlarior 25K #2, Rapid EOD 25K, paper): ATLAS's combo
+    entry on the 50K never reaches them, only Zlarior's own LIT signals do (Oct 2: the same-side one skipped on the 50K is
+    routed there, as today; Sep 4: the opposite one is refused on every account).
+ f. (units) the fleet: a Zlarior follower copies Zlarior's own trades only, never ATLAS's combo trade on the 50K (the
+    'zlarior' lead snapshot drops ledger rows "combo"); the 50K's ATLAS position still counts for the no-hedge view.
 Results -> research/lab/combo_50k_check.json.
 """
 from __future__ import annotations
@@ -132,7 +138,8 @@ class Reference:
 
 # ================================================================================================ unit checks
 def units():
-    print("unit checks: rules, switch, ATLAS stream, sizing, conflict rules, locks, alert text", flush=True)
+    print("unit checks: rules, switch, ATLAS stream, sizing, conflict rules, locks, alert text, fleet", flush=True)
+    fleet_checks()
     tmp = tempfile.mkdtemp(prefix="le_combo_units_")
     try:
         # a. off = today
@@ -391,6 +398,53 @@ def units():
           [p["title"] for p in sent] == ["SHORT · MFFU 50K", "Zlarior on its 50K: SHORT opened"], [p.get("title") for p in sent])
 
 
+def fleet_checks():
+    """The fleet (engine/fleet.py, OFF by default): Zlarior's followers copy Zlarior's OWN trades on the 50K, never ATLAS's
+    combo trades there (ledger rows "combo"); the 50K's ATLAS position still counts for the no-hedge rule."""
+    from engine import fleet as FL
+    day = "2026-10-02"
+    t_a, x_a = at(day, 3, 10), at(day, 8, 35)          # ATLAS EMA LONG on the 50K (combo)
+    t_z, x_z = at(day, 9, 35), at(day, 10, 20)         # a later Zlarior LONG on the 50K
+    bot = FL._DryBot()
+    snap0 = FL.lead_snapshot(bot, "zlarior")
+    tmp = tempfile.mkdtemp(prefix="le_combo_fleet_")
+    try:
+        fl = FL.Fleet(bot, {"accounts": [{"id": "f1", "lead": "zlarior", "plan": "mffu_builder_50k", "start": day}]},
+                      state_path=os.path.join(tmp, "live_state_fleet.json"), parallel=False, sleep=lambda s_: None,
+                      notify=lambda *a_: None).start()
+        row = lambda t_, side, **kw: {"t": t_, "sym": "NQ", "side": side, "entry_t": kw.pop("et", t_), "result": {"ok": True}, **kw}
+        bot.now = t_a
+        bot.ledger.append(row(t_a, "buy", qty=4, entry=24800.0, stop=24780.0, target=24960.0, src="ema_lon_vix", combo="atlas50k", who=CB.LABEL))
+        bot._open_routed = t_a
+        snap_a = FL.lead_snapshot(bot, "zlarior")
+        pos_a = FL.lead_positions(bot)
+        fl.tick("NQ", t_a + 5)
+        bot.now = x_a
+        bot.ledger.append(row(x_a, "exit", et=t_a, qty=4, reason="TARGET", pnl=1270.0, exit_t=x_a, src="ema_lon_vix", combo="atlas50k", who=CB.LABEL))
+        bot._open_routed = None
+        fl.tick("NQ", x_a + 5)
+        bot.now = t_z
+        bot.ledger.append(row(t_z, "buy", qty=5, entry=24900.0, stop=24885.0, target=25020.0, who=CB.ZLABEL))
+        bot._open_routed = t_z
+        snap_z = FL.lead_snapshot(bot, "zlarior")
+        fl.tick("NQ", t_z + 5)
+        bot.now = x_z
+        bot.ledger.append(row(x_z, "exit", et=t_z, qty=5, reason="TARGET", pnl=1190.5, exit_t=x_z, who=CB.ZLABEL))
+        bot._open_routed = None
+        fl.tick("NQ", x_z + 5)
+        f = fl.followers[0]
+        ents = [int(r["entry_t"]) for r in f.ledger if r.get("side") in ("buy", "sell")]
+        snap_end = FL.lead_snapshot(bot, "zlarior")
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+    check("f. fleet: while ATLAS holds Zlarior's 50K the 'zlarior' lead shows NO open trade and no ATLAS close; the no-hedge "
+          "view still sees the 50K's LONG", snap0 is not None and snap_a["open"] is None and t_a not in snap_a["closes"]
+          and any(p["dir"] == 1 for p in pos_a) and t_a not in snap_end["closes"] and t_z in snap_end["closes"]
+          and (snap_z["open"] or {}).get("entry_t") == t_z, (snap_a, pos_a, snap_end))
+    check("f. fleet: a Zlarior follower copied Zlarior's own 09:35 trade only, never ATLAS's 03:10 combo trade",
+          ents == [t_z], [(hm(e), r.get("side")) for e, r in zip(ents, f.ledger)])
+
+
 def _stream_parity():
     """combo50k.atlas_pick on the stored member trades (second_mix.units: the research trades engine/second.py reproduces) for
     every 2026 5m open with a signal == the reference's ATLAS rows."""
@@ -427,7 +481,7 @@ def lit_sizing():
     return {k: v for k, v in ls.items() if k not in ("eval_prior_pnl", "eval_start")}
 
 
-def day_bot(H, seg_dir, day, eval_start, combo_cfg):
+def day_bot(H, seg_dir, day, eval_start, combo_cfg, extra=None):
     """A LiveBot started at 01:45 ET on `day` (the PC bot's morning start) on the segment's state file (yesterday's eval days
     carry over), a fresh fake NinjaTrader folder for the day, Sim101 = the one 50K."""
     d = os.path.join(H.tmp, seg_dir)
@@ -448,6 +502,7 @@ def day_bot(H, seg_dir, day, eval_start, combo_cfg):
            "eval_start": eval_start}
     if combo_cfg is not None:
         cfg["combo_50k"] = combo_cfg
+    cfg.update(extra or {})
     r = b.start(cfg, spawn=False)
     assert r.get("ok"), r
     ad = b.adapter
@@ -590,7 +645,49 @@ def scenario_close_on_opposite(H, R, day="2026-09-04"):
             "seconds": round(time.time() - t0)}
 
 
-def replay(segments, do_scenario=False):
+EXTRA = [{"id": "z25b", "name": "Zlarior 25K #2", "adapter": "paper", "preset": "mffu_builder_25k", "mode": "two_week"},
+         {"id": "reod", "name": "Rapid EOD 25K", "adapter": "paper", "preset": "mffu_rapid_eod_25k", "mode": "two_week"}]
+
+
+def scenario_extra_accounts(H, R, days=("2026-10-02", "2026-09-04")):
+    """e. the multi_account router's extra accounts (the owner's Zlarior 25K #2 and the Rapid EOD 25K): an ATLAS combo entry
+    on the 50K is NEVER routed to them; only Zlarior's own LIT signals go there, as today, and never against the 50K's
+    ATLAS position (Oct 2: ATLAS long 03:10 holds the 50K, Zlarior's long 03:34 skipped there but routed on the extra
+    accounts; Sep 4: ATLAS long 03:10, Zlarior's short 03:26 refused on every account)."""
+    out = {}
+    for day in days:
+        label = f"e. extra accounts {day}"
+        accts = [{**a, "eval_start": day} for a in EXTRA]
+        b, fake = day_bot(H, f"sc_extra_{day}", day, day, research_cfg(), extra={"accounts": accts})
+        cs = R.segment(day, day)[1].get(day) or []
+        errs = []
+        H.run(b, fake, poll_times(day, cs), errs)
+        A = {int(r["entry_t"]) for r in b.ledger if r.get("side") in ("buy", "sell") and r.get("combo")}
+        lit = {int(t["entry_t"]): int(t["dir"]) for t in H.ref.lit.get(day, [])}
+        rows = {}
+        for acc in (getattr(b.accts, "accounts", None) or []):
+            rows[acc.id] = [(int(r["entry_t"]), 1 if r["side"] == "buy" else -1) for r in acc.ledger if r.get("side") in ("buy", "sell")]
+        leak = [(k, hm(et_)) for k, rs in rows.items() for et_, _ in rs if et_ in A or et_ not in lit]
+        check(f"{label}: ATLAS's combo entry on the 50K ({', '.join(hm(x) for x in sorted(A)) or 'none'}) is on NO extra account; "
+              "every extra-account entry is one of Zlarior's own LIT signals", bool(A) and len(rows) == 2 and not leak, (rows, A, leak))
+        dirs = {et_: d for et_, d in ((int(r["entry_t"]), 1 if r["side"] == "buy" else -1) for r in b.ledger
+                                     if r.get("side") in ("buy", "sell") and r.get("combo"))}
+        a_dir = next(iter(dirs.values()), 0)
+        opp = [(k, hm(et_)) for k, rs in rows.items() for et_, d in rs if d == -a_dir]
+        if day == "2026-10-02":
+            same = [k for k, rs in rows.items() if any(et_ in lit and d == a_dir for et_, d in rs)]
+            check(f"{label}: Zlarior's same-side LIT signal (skipped on the 50K while ATLAS holds it) still went to the extra "
+                  "accounts, as today", bool(same) and not opp, (rows, same))
+        else:
+            check(f"{label}: no extra account went against ATLAS's 50K LONG (Zlarior's opposite signal refused there too)",
+                  not opp and not any(rs for rs in rows.values()), rows)
+        check(f"{label}: no error", not errs, errs[:3])
+        out[day] = {"atlas_50k": sorted(hm(x) for x in A), "extra": {k: [(hm(e), d) for e, d in v] for k, v in rows.items()}}
+        b.stop()
+    return out
+
+
+def replay(segments, do_scenario=False, do_extra=True):
     print("parity replay: the real LiveBot (Zlarior + ATLAS on one fake Sim 50K) vs tools/money/combo_account.Eval", flush=True)
     R = Reference()
     ref = TR.Ref()
@@ -614,6 +711,8 @@ def replay(segments, do_scenario=False):
                       bool(half), half)
             print(f"   {label}: {out[k]['live']} live / {out[k]['ref']} reference trades, masked {det['masked']}, eval end {det['end']}, "
                   f"{det['seconds']} s", flush=True)
+        if do_extra:
+            out["extra_accounts"] = scenario_extra_accounts(H, R)
         if do_scenario:
             out["close_on_opposite"] = scenario_close_on_opposite(H, R)
     finally:
@@ -629,12 +728,15 @@ def main(argv=None) -> int:
     if "--units" not in argv:
         mode = "full" if "--full" in argv else "quick" if "--quick" in argv else "default"
         segs = SEGMENTS[mode]
+        if "--extra" in argv:                     # only e (the extra accounts), no eval segment
+            segs = []
         if "--seg" in argv:                       # one segment (tests/run_area.py runs the default ones as parts)
             day = argv[argv.index("--seg") + 1]
             case = argv[argv.index("--case") + 1] if "--case" in argv else None
             segs = [x for x in SEGMENTS["full"] if x[0] == day and (case is None or x[2] == case)][:1] if case else \
                 [x for x in SEGMENTS["default"] if x[0] == day][:1]
-        out = replay(segs, do_scenario=(mode != "quick" and ("--seg" not in argv or "--scenario" in argv)))
+        part = "--seg" not in argv or "--scenario" in argv          # run_area: e + d ride with the oct part only
+        out = replay(segs, do_scenario=(mode != "quick" and part and "--extra" not in argv), do_extra=part)
     n_ok = sum(1 for _, ok in RESULTS if ok)
     print(f"\n{n_ok}/{len(RESULTS)} checks passed ({time.time() - t0:.0f} s)")
     if out:
