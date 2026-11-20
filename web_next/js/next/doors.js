@@ -21,13 +21,13 @@
     { id: 'zeus', title: 'ZEUS Trading', line: 'Zlarior and ATLAS: accounts, live bots, trades, brain, rules, payouts', colour: '#c8a24a',
       home: 'hub/zeus.html',   // the door's landing (night-zeushub 2026-11-18): live accounts, today, the big buttons; the Doors page links it first
       items: [
+        { label: 'Room left on each account', greek: 'MFFU view', href: 'business/mffu.html', app: '', words: 'room drawdown left lose floor open trade live' },
+        { label: 'Decide cards', greek: 'Board · Decide', href: 'board/index.html#decide', app: '', words: 'decide decisions yes no questions' },
         { label: 'My accounts', greek: 'Business · My Accounts', href: 'business/accounts.html', app: 'business', words: 'accounts evals funded mffu builder 50k 25k rapid balance pass target floor' },
         { label: 'Bots right now', greek: 'NQ', href: 'nq/', app: 'nq', words: 'bots live on off running pc zlarior atlas lit status drawdown ninjatrader' },
-        { label: 'Full dashboard', greek: 'Zenith', href: 'index.html', app: 'zenith', words: 'dashboard home main today results zenith' },
         { label: "Bot's brain", greek: 'Zenith · Brain', href: 'index.html#/brain', app: '', words: 'brain thinking setups levels sweep why waiting' },
         { label: 'Trades', greek: 'Trading', href: 'trading/', app: 'trading', words: 'trades history calendar stats fills today pnl p&l' },
         { label: 'Drawdown left', greek: 'Aegis', href: 'aegis/', app: 'aegis', words: 'risk drawdown stop loss max loss limit room guard dll mll' },
-        { label: 'Rules', greek: 'Pnyx', href: 'pnyx/', app: 'pnyx', words: 'rules prop firm mffu calculator micros contracts size stop' },
         { label: 'Payout rules', greek: 'Trading · payout check', href: 'trading/#rulesCard', app: '', words: 'payout payouts withdraw request rules consistency best day payout ready readiness when request how much days left' }
       ],
       ids: ['zenith', 'nq', 'board', 'why', 'trading', 'aegis', 'pnyx', 'demeter', 'labyrinth', 'fates', 'moirai', 'odeon', 'nemesis', 'kronos', 'apollo', 'journal',
@@ -56,12 +56,12 @@
     { id: 'more', title: 'More', line: 'Research, my day, Jarvis, settings and everything else', colour: '#9c6b3c',
       items: [
         { label: 'Olympus World: every app in one giant city', greek: 'World', href: 'cities/world/', app: 'cities', words: 'world city cities giant map districts 3d all apps find' },
-        { label: 'What to do next', greek: 'Compass', href: 'compass/', app: 'compass', words: 'todo to do today next actions priorities' },
         { label: 'My day', greek: 'Planner', href: 'planner/', app: 'planner', words: 'day week plan calendar tasks habits shift' },
         { label: 'Ask Jarvis', greek: 'Jarvis', href: 'jarvis/', app: '', words: 'jarvis ask assistant voice talk' },
-        { label: 'Morning brief', greek: 'Helios', href: 'helios/', app: 'helios', words: 'morning brief briefing today plan news' },
-        { label: 'Research library', greek: 'Clio', href: 'clio/', app: 'clio', words: 'research studies writeups library tested backtest' },
         { label: 'Help: how do I...', greek: 'Help', href: 'hub/help.html', app: '', words: 'help how do i questions faq guide lost stuck find steps payout taxes account restart update pause flatten silent holidays kalshi cloudflare address' },
+        { label: 'Owner manual: SOS, who is who, money, words', greek: 'Manual', href: 'hub/manual.html', app: '', words: 'manual sos emergency kill stop everything glossary words room drawdown dll eod pf twin edge who accounts bots hours payout tax' },
+        { label: 'Your steps: what is left to do', greek: 'Steps', href: 'hub/steps.html', app: '', words: 'steps todo to do waiting list next need' },
+        { label: "What's new: what changed today and this week", greek: "What's new", href: 'hub/whatsnew.html', app: '', words: 'whats new changed changes updates latest recent week today' },
         { label: 'Me: health, home', greek: 'Me hub', href: 'hub/index.html?h=me', app: '', words: 'me health wifi cards home car dates personal' },
       ],
       ids: ['compass', 'helios', 'herald', 'stoa', 'hestia', 'inbox', 'planner', 'mind', 'arena', 'athena', 'lyceum', 'nike', 'gallery', 'polis', 'symposium',
