@@ -32,6 +32,31 @@ def fetch(url: str = LIVE_URL, timeout: float = 8.0) -> dict | None:
         return None
 
 
+STATUS_FEED = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "tools", "web_public", "status_feed.json")
+
+
+def fetch_pc_status(feed_path: str = STATUS_FEED, timeout: float = 15.0) -> dict | None:
+    """day-archive 2026-11-20: the PC's newest status post (the public ntfy topic in status_feed.json, the same feed the site's pages
+    read; the last 12 hours, all ntfy keeps). LIVE_URL is the retired old repo and only ever gave the fallback numbers."""
+    try:
+        feed = json.load(open(feed_path, encoding="utf-8"))
+        url = f"{str(feed.get('ntfy') or 'https://ntfy.sh').rstrip('/')}/{feed['topic']}/json?poll=1&since=12h"
+        with urllib.request.urlopen(url, timeout=timeout) as r:
+            lines = r.read().decode("utf-8").splitlines()
+        best = None
+        for ln in lines:
+            try:
+                m = json.loads(ln)
+                j = json.loads(m.get("message") or "") if m.get("event") == "message" else None
+            except Exception:
+                continue
+            if isinstance(j, dict) and j.get("kind") != "le-live-ext" and isinstance(j.get("board"), dict) and (best is None or (_num(j.get("t")) or 0) > (_num(best.get("t")) or 0)):
+                best = j
+        return best
+    except Exception:
+        return None
+
+
 def _num(x):
     try:
         v = float(x)
@@ -48,6 +73,8 @@ def bot_state(bot: str, card: dict | None, fallback: dict, today: dt.date) -> di
     src = "live" if room is not None and to_t is not None else "fallback"
     if src == "fallback":
         room, to_t = fallback["room"], fallback["to_target"]
+    if str(c.get("status") or "").lower() == "funded":      # day-archive 2026-11-20: a funded account passed its eval (its to_target is the payout's)
+        to_t = 0.0
     profit = R.target - to_t
     floor = profit - room
     # the floor trails the best end-of-day balance by the max loss until it locks at start + $100
@@ -78,10 +105,13 @@ def calendar(start: dt.date, n: int) -> list[dt.date]:
 def read_live(path: str | None = None, url: str | None = LIVE_URL) -> dict:
     """path = a saved live.json (tests, offline builds); else the published feed; else the fallbacks."""
     j = None
+    src = "live.json"
     if path and os.path.exists(path):
         j = json.load(open(path, encoding="utf-8"))
     elif url:
-        j = fetch(url)
+        j = fetch_pc_status() if url == LIVE_URL else None
+        src = "pc status post" if j else src
+        j = j or fetch(url)
     t = _num((j or {}).get("t"))
     feed_day = dt.datetime.fromtimestamp(t, NY).date() if t else dt.datetime.now(NY).date()
     board = (j or {}).get("board") or {}
@@ -92,5 +122,5 @@ def read_live(path: str | None = None, url: str | None = LIVE_URL) -> dict:
         if isinstance(x, dict) and x.get("src") == "live" and x.get("acct") in ("lit", "atlas") and _num(x.get("usd")) is not None:
             trades.append({"bot": "zlarior" if x["acct"] == "lit" else "atlas", "day": str(x.get("day"))[:10], "side": x.get("side"),
                            "usd": round(float(x["usd"]), 2), "exit": x.get("exit"), "qty": x.get("qty")})
-    return {"source": "live.json" if j else "fallback", "t": int(t) if t else None, "feed_day": feed_day.isoformat(),
+    return {"source": src if j else "fallback", "t": int(t) if t else None, "feed_day": feed_day.isoformat(),
             "first_session": first_session(t).isoformat(), "bots": bots, "trades": trades}
