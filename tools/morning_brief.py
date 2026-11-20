@@ -224,8 +224,9 @@ def accounts_line(rs: list) -> tuple:
         else:
             tp = _f(r.get("to_pass"))
             parts.append(f"{lab} {bal}" + (f" ({money(tp)} to pass)" if tp is not None and tp > 0 else ""))
-        q = _f(_d(r.get("_src")).get("quiet_days"))
-        if q is not None and q >= 6 and st in ("eval", "funded") and not r.get("locked"):
+        q = _f(_d(r.get("_src")).get("quiet_days"))      # (counts a keep-alive / hand trade noted: engine/keepalive)
+        ka_cover = bool(_d(_d(r.get("_src")).get("keepalive")).get("cover"))   # the keep-alive warns for it itself
+        if q is not None and q >= 6 and st in ("eval", "funded") and not r.get("locked") and not ka_cover:
             needs.append(f"{label(r)} {int(q)} days without a trade: 1 MNQ by hand")
     return (" · ".join(parts) if parts else "No account numbers in the last report"), needs
 

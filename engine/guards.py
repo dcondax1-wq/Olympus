@@ -442,7 +442,7 @@ def startup_problems(bot, c: dict | None = None, now: int | None = None) -> list
         except Exception as e:                   # fails CLOSED: the startup reconcile never lets an entry through on a bug
             out.append(f"NinjaTrader startup check failed ({e.__class__.__name__}: {e})")
         try:
-            exp = _expected(bot)
+            exp = _expected(bot) + _keepalive_net(ad)      # + an open keep-alive leg (engine/keepalive.py)
             net, held = _broker_net(ad)
             if net != exp and not any(lg.get("status") != "protected" for lg in getattr(ad, "legs", []) or []):
                 out.append(f"NinjaTrader {getattr(ad, 'account', '')} shows {', '.join(held) or 'flat'}, the bot's ledger {_txt(exp)}")
@@ -629,6 +629,27 @@ def _expected(bot) -> int:
     return q if row["side"] == "buy" else -q
 
 
+def _keepalive_net(ad) -> int:
+    """Signed micros of an open keep-alive leg on this adapter (engine/keepalive.py, OFF by default): NinjaTrader holds it on
+    purpose for about 2 minutes, so the reconcile and the startup check count it as expected (never a "Position mismatch",
+    never a RECONCILE close through the strategy's own route). Its legs carry "keepalive" / who "Keep-alive on ...". 0 on
+    any doubt."""
+    try:
+        from .ninjatrader import OPEN_STATUSES
+        mini = (ad._instruments() or {}).get("mini") if callable(getattr(ad, "_instruments", None)) else None
+        n = 0
+        for lg in getattr(ad, "legs", None) or []:
+            if not isinstance(lg, dict) or lg.get("status") not in OPEN_STATUSES:
+                continue
+            if not (lg.get("keepalive") or str(lg.get("who") or "").startswith("Keep-alive")):
+                continue
+            q = int(lg.get("filled") or 0) * (10 if mini and lg.get("instrument") == mini else 1)
+            n += q if int(lg.get("dir") or (1 if lg.get("side") == "BUY" else -1)) == 1 else -q
+        return n
+    except Exception:
+        return 0
+
+
 def _broker_net(ad) -> tuple[int, list]:
     from .ninjatrader import same_instrument      # 'MNQ 12-26 Globex' / 'MNQ DEC26 Globex' = 'MNQ 12-26'
     insts = ad._instruments()
@@ -660,7 +681,7 @@ def reconcile_tick(bot, c, now: int):
     busy = [lg for lg in getattr(ad, "legs", []) if lg.get("status") != "protected"] or \
         [w for w in getattr(ad, "watch", []) if (w.get("watch") or {}).get("leftover")]
     recent = any(now - int(r.get("t") or 0) < int(c["reconcile_grace_s"]) for r in bot.ledger[-10:])
-    exp = _expected(bot)
+    exp = _expected(bot) + _keepalive_net(ad)          # an open keep-alive leg is expected (engine/keepalive.py)
     net, held = _broker_net(ad)
     if busy or recent or net == exp:
         bot._recon = None

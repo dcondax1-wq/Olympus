@@ -25,8 +25,8 @@ The older icons (LE START BOT, LE UPDATE, LE DASHBOARD, LE HEALTH CHECK) are gon
 | 16:05 | **Day summary**: trades, P&L, $ to go, session X of 10 |
 | Sunday evening | **Week** report: trades, P&L, eval, PC health |
 | when it happens | internet back after a drop, NinjaTrader disconnected / reconnected, **Surface offline since HH:MM ET** (once per outage, 01:30-16:00 ET) and **Surface back online** |
-| day 5 without a trade | MFFU inactivity: place 1 MNQ by hand (MFFU can close the account after 7 days) |
-| the last safe day | **Keep-alive today on ...** (switch ON: the bot buys 1 MNQ at 15:33 ET, out 30 s later, about -$2.40) or **TODAY is the last safe day** (switch OFF: place it by hand), and the session before: **the next session is the last safe day** |
+| day 5 without a trade | MFFU inactivity: place 1 MNQ by hand (MFFU can close the account after 7 days). Only when the bot is down: while it runs, the keep-alive's own notices below are the ONE warning a day per account |
+| the last safe day | **Keep-alive today on ...** (switch ON: the bot buys 1 MNQ at 15:33 ET, out about 2 minutes later, about -$2.40; then **Keep-alive on ...: BUY 1 MNQ** and **... closed LONG about -$2.40**) or **TODAY is the last safe day** (switch OFF: place it by hand), and the session before: **the next session is the last safe day** |
 | eval passed / failed | what to do next |
 | a week + a day before a roll | switch the NinjaTrader chart to the new contract (steps in the notice) |
 
@@ -152,8 +152,12 @@ LIT stays alone on its 50K. Try it on a Sim account first.
 - The bot never arms a real account by itself. You start the eval bot yourself (dashboard, your phrase).
 - **No trade for 5 days** (MFFU's 7-day rule: one FILLED trade in every 7 calendar days, or MFFU can close the account and a
   funded one loses its profits): place 1 MNQ by hand (in and out, before 15:50 ET), then
-  `python -X utf8 -m engine.keepalive --traded <account>` (lit, atlas, x:b25k_2, rapid). Or let the bot do it: the keep-alive
-  trade (`engine/keepalive.py`, OFF until you say yes: `python -X utf8 -m engine.keepalive --on <account> --yes`).
+  `python -X utf8 -m engine.keepalive --traded <account>` (lit, atlas, x:b25k_2, rapid; add the date `yyyy-mm-dd` if it was
+  not today: never a future day, at most 7 days back; it prints the new deadline). Or let the bot do it: the keep-alive
+  trade (`engine/keepalive.py`, OFF until you say yes: `python -X utf8 -m engine.keepalive --on <account> --yes`; ask MFFU
+  support first, in writing, if a 1-micro in-and-out trade is OK for the 7-day rule).
+- **On a keep-alive day (switch ON), do not trade that account by hand between 15:33 and 15:50 ET**: the bot's close is a
+  CLOSEPOSITION of the whole account, so it would close your trade too.
 - **Eval passed**: the bot stops on that account. Tell Claude before trading the funded account (sizing changes).
 - **Eval failed**: buy a new MFFU Builder 50K with your discount code (you paid $91.80; look for a current code), tell
   Claude the new account name and its first day.

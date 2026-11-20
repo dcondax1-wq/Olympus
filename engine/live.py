@@ -825,8 +825,10 @@ class LiveBot:
     def _route(self, action):
         if self.adapter is None:
             self.adapter = ADAPTERS["paper"](self.cfg)
-        hedge = self.accts.opposite_open(1 if action.get("side") == "buy" else -1) \
-            if self.accts is not None and action.get("side") in ("buy", "sell") else None
+        hedge = self._keepalive_yield(action, self)       # an open keep-alive here / the other way closes first (OFF by default)
+        if not hedge:
+            hedge = self.accts.opposite_open(1 if action.get("side") == "buy" else -1) \
+                if self.accts is not None and action.get("side") in ("buy", "sell") else None
         if not hedge and getattr(self, "fleet", None) is not None and action.get("side") in ("buy", "sell"):
             try:                                          # engine/fleet.py: no hedge vs a follower (an error fails closed)
                 hedge = self.fleet.opposite_open(1 if action.get("side") == "buy" else -1)
@@ -2973,6 +2975,19 @@ class LiveBot:
         except Exception as e:
             self.fleet, self._fleet_sig = None, None
             self._note_error(f"fleet not started yet: {e.__class__.__name__}: {e}")
+
+    def _keepalive_yield(self, action, who):
+        """engine/keepalive.before_entry right before a strategy entry goes out: a keep-alive trade open on the same
+        NinjaTrader account (any side) or the other way on any account is closed at market first, so the real entry is never
+        refused for it. None = send; a reason = not confirmed flat yet. Nothing open (the default) = None at once."""
+        if action.get("side") not in ("buy", "sell") or action.get("keepalive"):
+            return None
+        try:
+            from . import keepalive as _ka
+            return _ka.before_entry(self, 1 if action.get("side") == "buy" else -1, who)
+        except Exception as e:
+            self._note_error(f"keep-alive entry check failed: {e.__class__.__name__}: {e}")
+            return None
 
     def _keepalive_tick(self, df1, now, may_open=True):
         """engine/keepalive.py, OFF by default (data/keepalive.json, the owner's switch per account): MFFU's 7-day rule, one

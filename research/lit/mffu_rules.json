@@ -300,7 +300,10 @@
      "vacation": "tell support before a break of more than 7 days",
      "terms": "Terms section 7 Dormant Accounts: 'If a User does not execute at least one (1) trade per seven (7) consecutive calendar day period, whether in an Evaluation Account or a Sim Trading Account, the Company may, in its sole discretion, deem the applicable account dormant, close it, and treat such closure as a breach of these Terms.' No warning step is promised.",
      "counts": "an EXECUTED (filled) trade; no page says a login or an unfilled order counts; no minimum size or hold time",
-     "keep_alive": "a 1-micro trade only to stay active is not forbidden anywhere; Terms 12.4 asks size / frequency close to your usual pattern -> engine/keepalive.py (OFF by default): 1 MNQ, 15:33-15:48 ET, news-free, never opposite another account, hard 40-tick bracket, out in 30 s"
+     "keep_alive": "a 1-micro trade only to stay active is not forbidden anywhere -> engine/keepalive.py (OFF by default): 1 MNQ, 15:33-15:48 ET, news-free, never opposite another account, hard 40-tick bracket, out in about 2 minutes (flat by 15:50)",
+     "terms_12_4": "CAVEAT (skeptic review 2026-11-20): Terms 12.4 asks for 'consistency in position sizing, trade frequency, and overall risk exposure' and 12.4.2 names 'substantially smaller or larger numbers of positions than typical'. A weekly 1-micro, 2-minute trade on accounts that usually hold several micros for minutes could be read as inconsistent. The help article does not say when the 7 days start or what counts as a trade, and the Simulated Trader Agreement was not checked.",
+     "ask_support": "PENDING (owner to-do, STATE.md): ask MFFU support in writing 'Is a 1-micro in-and-out trade OK to meet the 7-day activity rule?'; record the answer here. The keep-alive switch stays OFF on every account until then (the owner's yes/no).",
+     "day_count": "unknown whether MFFU counts the trading date or the calendar date, or from the purchase evening: the bot counts the ET calendar date of each FILLED entry, a new account from the day before its start (the start = day 1), and acts / warns on the last full session on or before last + 6"
     },
     "status": "confirmed",
     "source": [

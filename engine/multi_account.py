@@ -502,7 +502,9 @@ class Account:
 
     def route(self, action: dict) -> dict:
         try:
-            res = self.adapter.send(action) if self.adapter is not None else {"ok": False, "error": "no adapter"}
+            ka = self._keepalive_yield(action)             # an open keep-alive on this account / the other way closes first
+            res = {"ok": False, "error": "REFUSED: " + ka} if ka else \
+                self.adapter.send(action) if self.adapter is not None else {"ok": False, "error": "no adapter"}
         except Exception as e:
             res = {"ok": False, "error": f"{e.__class__.__name__}: {e}"}
         with self.mx:
@@ -512,6 +514,17 @@ class Account:
         self._life_routed(action, res)
         self.router.save()
         return res
+
+    def _keepalive_yield(self, action):
+        """engine/keepalive.before_entry (OFF by default = None at once): a keep-alive trade open on this NinjaTrader account
+        (any side) or the other way on any account is closed at market before this entry goes out. Never raises."""
+        if action.get("side") not in ("buy", "sell"):
+            return None
+        try:
+            from . import keepalive as _ka
+            return _ka.before_entry(getattr(self.router, "bot", None), 1 if action.get("side") == "buy" else -1, self)
+        except Exception:
+            return None
 
     # ---- MFFU lifecycle (engine/lifecycle.py): passed / failed / locked = stand down, the other accounts keep trading
     def life_key(self) -> str:
@@ -1149,10 +1162,11 @@ class AccountRouter:
         """MFFU (and most firms) forbid long and short on the same underlying at the same time, also across your own
         accounts. Copy trading is always the same side; this refuses an order of direction d while any OTHER account
         (an extra one, or the bot's own: exclude=None means the caller is the bot's own account) holds the opposite side.
-        Returns why, or None. A keep-alive trade the other way (engine/keepalive.py, OFF by default) is closed first."""
+        Returns why, or None. A keep-alive trade (engine/keepalive.py, OFF by default) the other way, or on the entering
+        account itself, is closed first."""
         try:
             from . import keepalive as _ka
-            h = _ka.opposite(self.bot, d)
+            h = _ka.before_entry(self.bot, d, self.bot if exclude is None else exclude)
             if h:
                 return h
         except Exception:

@@ -248,14 +248,16 @@ def account_pushes(snap: dict, sent: dict, now: int) -> list:
                         + ". The bot keeps its own stops; this alert changes nothing.")
                 out.append({"key": key, "title": f"{name}: daily loss limit near ({loss / dll * 100:.0f}%)", "body": body,
                             "priority": "high", "tags": "warning"})
-        q = c.get("quiet_days")
-        if isinstance(q, (int, float)) and q >= QUIET_DAYS and live_eval and not quiet(now) and not c.get("position"):
+        q = c.get("quiet_days")             # (the board counts a keep-alive / hand trade noted: engine/keepalive)
+        ka_cover = bool(_d(c.get("keepalive")).get("cover"))   # the bot's keep-alive sends this account's ONE warning a day
+        if isinstance(q, (int, float)) and q >= QUIET_DAYS and live_eval and not quiet(now) and not c.get("position") \
+                and not ka_cover:
             rl = real(k, c, snap)
             late = rl and q >= MFFU_IDLE_DAYS - 1
             body = (f"No {name} trade for {int(q)} days (normal: 2-4 a week). "
                     + (f"MFFU can close an eval after {MFFU_IDLE_DAYS} days without a trade. " if rl else "")
-                    # day 6+ on a real eval (2026-11-14 drill): the bot has no keep-alive trade; the owner's fix is MFFU's own
-                    # (the same advice as engine/ops_checks.inactivity_notice and the LIT plan page, engine/lit_brief.mffu_notes)
+                    # day 6+ on a real eval (2026-11-14 drill), the bot down (else engine/keepalive warns): the owner's fix is
+                    # MFFU's own (the same advice as engine/ops_checks.inactivity_notice and the LIT plan page)
                     + ("Check in the MFFU dashboard that the account is still active, then place 1 MNQ by hand today (in and "
                        "out) while the bot is flat. " if late else "")
                     + "Check the bot runs (HEALTH CHECK on the PC) and what it waits for on the Start page.")

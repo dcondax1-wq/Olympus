@@ -52,25 +52,36 @@ def ts(y, m, d, hh, mm=0, ss=0) -> int:
 
 
 # ------------------------------------------------------------------------------------------------ the harness
-class Bot:
-    """What engine/keepalive reads from engine/live.LiveBot (the primary LIT account = Zlarior 50K eval)."""
+def fill_rows(day, pnl=0.0, ok=True, hh=10):
+    """A LIT trade the ledger way: the entry row (result ok = the broker took it) at hh:00 ET and its exit row."""
+    y, m, d = map(int, day.split("-"))
+    t = ts(y, m, d, hh)
+    return [{"t": t, "sym": "NQ", "side": "buy", "qty": 2, "entry_t": t - 60, "result": {"ok": bool(ok)}},
+            {"t": t + 1800, "sym": "NQ", "side": "exit", "qty": 2, "entry_t": t - 60, "reason": "STOP", "pnl": float(pnl)}]
 
-    def __init__(self, tmp, ad, now, ka=None, days=None, name="Sim101"):
+
+class Bot:
+    """What engine/keepalive reads from engine/live.LiveBot (the primary LIT account = Zlarior 50K eval). days = the booked
+    P&L per day (eval_days) AND, for each, a filled trade in the ledger (fills = False: only the booked $, no fill)."""
+
+    def __init__(self, tmp, ad, now, ka=None, days=None, name="Sim101", fills=True):
         self.cfg = {"sym": "NQ", "adapter": "ninjatrader", "nt_account": name, "model": "lit",
                     "keepalive": {"accounts": {"lit": True}} if ka is None else ka}
         self.state_path = os.path.join(tmp, "live_state.json")
         self.state = {"model": "lit", "eval_life": {"status": "open", "balance": 49193.0, "floor": 48168.0, "room": 1025.0,
                                                     "target_balance": 53000.0, "days_traded": 5}}
         self.adapter = ad
-        self.ledger = []
         self.kill = False
         self.health = {}
         self.bars_tail = [{"time": 0, "close": PX}]
         self.days = dict({"2026-11-16": -129.4} if days is None else days)
+        self.ledger = [r for d, v in sorted(self.days.items()) for r in fill_rows(d, v)] if fills else []
         self._now = now
         self.logs = []
         self.acct_b = self.acct_r = self.acct_c = self.accts = self.fleet = None
         self._open_routed = None
+        self._startup_ok = 1                       # a running bot latched its startup reconcile (guards.startup_tick)
+        self._no_entries_day = None
 
     def clock(self):
         return self._now[0]
@@ -205,8 +216,10 @@ def t_one():
               and env.fake.orders[ents[0][0]]["qty"] == 1, (ents, opens))
         closes = [x for x in out if x.get("do") == "close"]
         dn = [x for x in out if x.get("do") == "done"]
-        check("closed at market 30 s later (CLOSEPOSITION), NinjaTrader flat, no stop / target left working",
-              len(closes) == 1 and closes[0]["t"] - opens[0]["t"] == 30 and env.flat(ad) and not env.working("Sim101")
+        check("closed at market 2 minutes later (CLOSEPOSITION, hold 120 s, inside the 15:33-15:50 window), NinjaTrader flat, "
+              "no stop / target left working",
+              len(closes) == 1 and closes[0]["t"] - opens[0]["t"] == 120 and K.HOLD_S == 120 and K._mod(closes[0]["t"]) < 950
+              and env.flat(ad) and not env.working("Sim101")
               and len(dn) == 1, (closes, dn, env.working("Sim101")))
         lg = next((h for h in ad.history if h.get("keepalive")), {})
         check("the bracket at NinjaTrader: stop 26,370.00 / target 26,390.00 (40 ticks), never a tight one",
@@ -221,7 +234,8 @@ def t_one():
               len(heads) == 1 and "-$2.40" in heads[0]["body"] and "-$22.90" in heads[0]["body"] and "--skip lit" in heads[0]["body"]
               and len(res) == 1 and res[0]["kind"] == "outcome" and res[0]["usd"] == -2.40 and res[0]["exit"] == "KEEP-ALIVE"
               and res[0]["who"] == "Keep-alive on Zlarior 50K" and res[0]["key"] == f"out:{opens[0]['t']}", kinds)
-        check("the keep-alive never wrote to the strategy's ledger (no stats, no sizing, no audit change)", bot.ledger == [], bot.ledger)
+        check("the keep-alive never wrote to the strategy's ledger (no stats, no sizing, no audit change)",
+              bot.ledger == fill_rows("2026-11-16", -129.4), bot.ledger[2:])
         out2 = replay(env, bot, ts(2026, 11, 20, 17), ts(2026, 11, 25, 9))
         check("the next days (Sat 11-21 .. Wed 11-25 morning): nothing more (the clock restarted on 11-20; next act day "
               "Wed 11-25)", len(env.entries("Sim101")) == 1 and not [x for x in out2 if x.get("do") == "open"]
@@ -234,7 +248,7 @@ def t_one():
 # ------------------------------------------------------------------------------------------------ c. nothing when ...
 def t_nothing():
     print("c. a real trade / a position / passed / kill / skip: nothing", flush=True)
-    cases = [("a real trade today (LIT exit booked 11-20)", lambda b: b.days.update({"2026-11-20": 312.0})),
+    cases = [("a real trade today (LIT's entry filled 11-20 10:00)", lambda b: b.ledger.extend(fill_rows("2026-11-20", 312.0))),
              ("a LIT position open through the window", lambda b: b.state.update(position={"entry_t": ts(2026, 11, 20, 15, 20), "dir": 1})),
              ("the eval passed", lambda b: b.state["eval_life"].update(status="passed")),
              ("the kill switch", lambda b: setattr(b, "kill", True)),
@@ -507,16 +521,22 @@ def t_misc():
                                      all_closes=lambda: [["2026-11-17", 0, 10.0, 0]])
         n = AB.AccountB.idle_days(fake, ts(2026, 11, 25, 10))
         check("account_b.idle_days: last close 11-17 but a keep-alive filled 11-24 -> 1 idle day (its 7-day push stops)", n == 1, n)
-        r = K.mark_traded("x:b25k_2", "2026-11-23", path=K.state_path_for(b))
+        r = K.mark_traded("x:b25k_2", "2026-11-23", path=K.state_path_for(b), now=ts(2026, 11, 23, 16))
         check("--traded x:b25k_2 2026-11-23 notes a hand trade (the clock restarts from it)",
               r["marked"] == "2026-11-23" and K.last_day(b, "x:b25k_2") == "2026-11-23", r)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     src = open(os.path.join(ROOT, "engine", "live.py"), encoding="utf-8").read()
+    ma = open(os.path.join(ROOT, "engine", "multi_account.py"), encoding="utf-8").read()
+    ab = open(os.path.join(ROOT, "engine", "account_b.py"), encoding="utf-8").read()
     check("LiveBot wiring: _keepalive_tick after the routing (with the poll's 1m close) and a manage-only call after the "
-          "adapters' ticks; multi_account.opposite_open asks keepalive.opposite",
+          "adapters' ticks; every entry route asks keepalive.before_entry first (LiveBot._route, AccountB.route, multi_account "
+          "Account.route, AccountRouter.opposite_open)",
           "self._keepalive_tick(df1, now)" in src and "self._keepalive_tick(None, now, may_open=False)" in src
-          and "_ka.opposite(self.bot, d)" in open(os.path.join(ROOT, "engine", "multi_account.py"), encoding="utf-8").read())
+          and "hedge = self._keepalive_yield(action, self)" in src and "_ka.before_entry(self, 1 if" in src
+          and "_ka.before_entry(self.bot, d, self.bot if exclude is None else exclude)" in ma
+          and ma.count("ka = self._keepalive_yield(action)") == 1 and ab.count("ka = self._keepalive_yield(action)") == 1
+          and "_ka.before_entry(self.bot, 1 if" in ab)
     from engine import live as L
     bot = types.SimpleNamespace(_note_error=lambda m: (_ for _ in ()).throw(AssertionError(m)), state_path="/nonexistent/x.json",
                                 cfg={"keepalive": {"accounts": {}}}, clock=lambda: 0)
@@ -558,6 +578,462 @@ def t_misc():
           and not notify.real_trade(dict(p, account="Sim101")))
 
 
+# ------------------------------------------------------------------------------------------------ j. the owner's stops (round 1)
+def t_owner_stops():
+    print("j. the owner's stops + the entry guards LIT / ATLAS obey (skeptic round 1, HIGH)", flush=True)
+    from engine import entry_pause, guards as G
+    keep_clock = G.clock_problem
+
+    def pause(b, env):
+        entry_pause.set_pause("tomorrow", now=ts(2026, 11, 20, 9), path=entry_pause.path_for(b))
+
+    def startup(b, env):
+        b._startup_ok = None
+        b.adapter.startup_problems = lambda: ["NinjaTrader connection not confirmed yet"]
+
+    def clock(b, env):
+        G.clock_problem = lambda bot, c: "PC clock 9.0 s behind internet time (max 5 s)"
+
+    cases = [("the phone / dashboard pause ('pause until tomorrow')", pause, "your pause blocks the keep-alive"),
+             ("the remote flatten ('no new entries today', LiveBot._no_entries_day)",
+              lambda b, env: setattr(b, "_no_entries_day", "2026-11-20"), "you flattened remotely today"),
+             ("the startup reconcile not passed yet (STARTUP DISARMED)", startup, "STARTUP DISARMED"),
+             ("the PC clock guard (clock off by 9 s)", clock, "PC clock")]
+    for name, mut, words in cases:
+        env = Env()
+        hook(env)
+        try:
+            bot = Bot(env.tmp, env.adapter(), env.now)
+            mut(bot, env)
+            replay(env, bot, ts(2026, 11, 20, 15), ts(2026, 11, 20, 16, 20))
+            told = [p for k, p in env.alerts if "did not go through" in p.get("title", "")]
+            check(f"{name}: NO order, and the 15:47 'place 1 MNQ by hand' push says why ('{words}')",
+                  not env.entries() and len(told) == 1 and words in told[0]["body"], (env.entries(), [p.get("body") for p in told]))
+        finally:
+            G.clock_problem = keep_clock
+            K.ALERT_HOOK = None
+            env.done()
+    env = Env()
+    try:
+        lane = types.SimpleNamespace(spec={"lane": "rapid", "nt_account": "Sim103", "adapter": "ninjatrader", "preset": "mffu_rapid_eod_25k"},
+                                     id="rapid", adapter=env.adapter("Sim103", "rapid_"), problem=None, mode="two_week", lock=None,
+                                     closes=[], ledger=[], open_t=None, start_day=lambda: "2026-11-16",
+                                     entry_block=lambda now: None)
+        ra = types.SimpleNamespace(name="Sim103", adapter=env.adapter("Sim103", "acctr_"), problem=None, open_t=None, prov={},
+                                   closes=[], ledger=[], spec={"eval_start": "2026-11-16"}, label="ATLAS Rapid",
+                                   startup_block=lambda now: "STARTUP DISARMED until reconciled: chart on the wrong contract")
+        bot = Bot(env.tmp, env.adapter(), env.now)
+        bot.accts = types.SimpleNamespace(accounts=[lane])
+        bot.acct_r = ra
+        g = next(g for g in K.targets(bot) if g["key"] == "rapid")
+        t_in, C = ts(2026, 11, 20, 15, 33, 2), K.load_config(bot)
+        w1 = K._gate(bot, g, "mffu_rapid_eod_25k", t_in, PX, t_in - 62, C)
+        ra.startup_block = lambda now: None
+        ra.lock = {"day": "2026-11-20", "reason": "soft daily loss"}
+        w2 = K._gate(bot, g, "mffu_rapid_eod_25k", t_in, PX, t_in - 62, C)
+        ra.lock = None
+        lane.entry_block = lambda now: "news ban: Tier-1 release at 15:40 ET"
+        w3 = K._gate(bot, g, "mffu_rapid_eod_25k", t_in, PX, t_in - 62, C)
+        lane.entry_block = lambda now: "already traded today (1 trade a day)"
+        w4 = K._gate(bot, g, "mffu_rapid_eod_25k", t_in, PX, t_in - 62, C)
+        check("lane guards: ATLAS's STARTUP DISARMED, its lock-out, the extra lane's entry block (news ban) each block; the lane's "
+              "'already traded today' count does not (its confirmed fills decide that)",
+              "STARTUP DISARMED" in str(w1) and "locked out today" in str(w2) and "news ban" in str(w3)
+              and not (isinstance(w4, str) and "already traded" in w4), (w1, w2, w3, w4))
+    finally:
+        env.done()
+
+
+# ------------------------------------------------------------------------------------------------ k. confirmed fills only
+def t_fills():
+    print("k. only CONFIRMED fills count (skeptic round 1, HIGH)", flush=True)
+    env = Env()
+    hook(env)
+    try:
+        ad = env.adapter()
+        bot = Bot(env.tmp, ad, env.now)
+        bot.days.update({"2026-11-18": 0.0, "2026-11-19": 0.0})          # booked $0 days, nothing filled
+        bot.ledger += fill_rows("2026-11-18", 0.0, ok=False)             # an entry NinjaTrader refused + its $0 'not placed' exit
+        g = K.targets(bot)[0]
+        last = K.last_known(bot, g, K.load_config(bot))
+        replay(env, bot, ts(2026, 11, 20, 15), ts(2026, 11, 20, 16, 20))
+        check("last real fill Mon 11-16 + a refused entry Wed 11-18 ($0 exit row) + a $0 eval day Thu 11-19: the last trade "
+              "is still 11-16, and the keep-alive acts TODAY Fri 11-20 (MFFU's limit Mon 11-23)",
+              last[0] == "2026-11-16" and not last[2] and len(env.entries()) == 1, (last, env.entries()))
+    finally:
+        K.ALERT_HOOK = None
+        env.done()
+    env = Env()
+    hook(env)
+    try:
+        bot = Bot(env.tmp, env.adapter(), env.now, days={"2026-11-16": -129.4, "2026-11-19": 85.0})
+        replay(env, bot, ts(2026, 11, 20, 15), ts(2026, 11, 20, 16, 20))
+        check("control: a REAL fill Thu 11-19 -> no keep-alive Fri (next act day Wed 11-25)",
+              not env.entries() and K.plan(K.last_known(bot, K.targets(bot)[0])[0], ts(2026, 11, 20, 10))["act_day"] == "2026-11-25")
+    finally:
+        K.ALERT_HOOK = None
+        env.done()
+    t_ev = ts(2026, 11, 15, 19, 5)                       # Sunday 19:05 ET = trading day Mon 11-16
+    rows = [{"t": t_ev, "side": "sell", "entry_t": t_ev - 60, "result": {"ok": True}}]
+    x = types.SimpleNamespace(closes=[["2026-11-19", ts(2026, 11, 19, 10), 0.0, ts(2026, 11, 19, 9)]], ledger=[])
+    check("an evening fill counts on its ET calendar date (Sun 11-15, not the trading day 11-16); an extra lane's $0 close "
+          "with no filled entry counts nothing",
+          K._fill_days(rows) == {"2026-11-15"} and K._lane_days("extra", x, None) == set())
+
+
+# ------------------------------------------------------------------------------------------------ l. --traded
+def t_traded():
+    print("l. --traded: no future day, at most 7 days back, the ET date (skeptic round 1, HIGH + LOW)", flush=True)
+    tmp = tempfile.mkdtemp(prefix="le_keepalive_traded_")
+    try:
+        p = os.path.join(tmp, "keepalive_state.json")
+        now = ts(2026, 11, 20, 19)
+        bad = []
+        for day in ("2026-12-20", "2026-11-21", "2026-11-12"):
+            try:
+                K.mark_traded("atlas", day, path=p, now=now)
+                bad.append(day)
+            except ValueError:
+                pass
+        check("refused: 2026-12-20 (a typo for 11-20), tomorrow 11-21, 8 days back 11-12; nothing written",
+              not bad and not os.path.exists(p), bad)
+        r = K.mark_traded("atlas", "2026-11-13", path=p, now=now)
+        check("accepted: 7 days back (11-13)", r["marked"] == "2026-11-13", r)
+        r = K.mark_traded("lit", None, path=p, now=ts(2026, 11, 24, 19))
+        check("no date, typed Tue 11-24 at 19:00 ET (after the 18:00 roll): noted Tue 11-24 (the ET date), not Wed 11-25",
+              r["marked"] == "2026-11-24" and K.trading_day(ts(2026, 11, 24, 19)) == "2026-11-25", r)
+        old = K.state_path_for
+        K.state_path_for = lambda bot=None: p
+        try:
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                rc_bad = K.main(["--traded", "atlas", "2099-01-01"])
+            out_bad = buf.getvalue()
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                rc_ok = K.main(["--traded", "x:b25k_2"])
+            out_ok = buf.getvalue()
+        finally:
+            K.state_path_for = old
+        check("CLI: a future day -> 'NOT noted' (exit 2); today -> noted, and it prints MFFU's new limit and the last safe day",
+              rc_bad == 2 and "NOT noted" in out_bad and rc_ok == 0 and "MFFU's 7 days now end" in out_ok
+              and "last safe day" in out_ok, (out_bad, out_ok))
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
+# ------------------------------------------------------------------------------------------------ m. a new account's start
+def x_lane(env, start="2026-11-18", key_id="b25k_2", name="Sim104"):
+    return types.SimpleNamespace(spec={"id": key_id, "nt_account": name, "adapter": "ninjatrader", "preset": "mffu_builder_25k",
+                                       "name": "Zlarior 25K #2"},
+                                 id=key_id, adapter=env.adapter(name, f"{key_id}_"), problem=None, mode="two_week", lock=None,
+                                 closes=[], ledger=[], open_t=None, start_day=lambda: start, entry_block=lambda now: None)
+
+
+def t_start():
+    print("m. an account with no trade yet: day 1 = its start; the earliest lane start (skeptic round 1, HIGH + LOW)", flush=True)
+    check("no fill yet, start Wed 11-18: counted from Tue 11-17 (the start day is day 1) -> acts Mon 11-23, MFFU's limit "
+          "Tue 11-24 (was Tue 11-24 / limit 11-25)",
+          K.last_of(set(), "2026-11-18") == ("2026-11-17", True)
+          and K.plan("2026-11-17", ts(2026, 11, 20, 10))["act_day"] == "2026-11-23"
+          and K.plan("2026-11-17", ts(2026, 11, 20, 10))["hard"] == "2026-11-24")
+    env = Env()
+    hook(env)
+    try:
+        bot = Bot(env.tmp, env.adapter(), env.now, ka={"accounts": {}})
+        bot.accts = types.SimpleNamespace(accounts=[x_lane(env)])
+        g = next(g for g in K.targets(bot) if g["key"] == "x:b25k_2")
+        lk = K.last_known(bot, g, K.load_config(bot))
+        replay(env, bot, ts(2026, 11, 20, 9), ts(2026, 11, 20, 10))
+        t2 = [p for k, p in env.alerts if p.get("title", "").startswith("Zlarior 25K #2: TODAY is the last safe day")]
+        check("the 25K #2 (bot start Wed 11-18, on the PC Tue 11-17 evening: START_DEFAULTS): start 11-17, counted from 11-16 "
+              "-> TODAY Fri 11-20 is its last safe day: ONE push 'Zlarior 25K #2: TODAY is the last safe day', 'since it "
+              "started (2026-11-17)'",
+              lk == ("2026-11-16", "2026-11-17", True) and len(t2) == 1 and "since it started (2026-11-17)" in t2[0]["body"]
+              and "--traded x:b25k_2" in t2[0]["body"], (lk, [p.get("title") for _, p in env.alerts]))
+        C = {"start": {"x:b25k_2": "2026-11-01"}}
+        check("an override only moves the start EARLIER and by at most 7 days (a stale 11-01 is ignored; a later one too)",
+              K._start_override(C, "x:b25k_2", "2026-11-18") == "2026-11-18"
+              and K._start_override({"start": {"x:b25k_2": "2026-11-19"}}, "x:b25k_2", "2026-11-18") == "2026-11-18"
+              and K._start_override({}, "x:other", "2026-11-18") == "2026-11-18")
+    finally:
+        K.ALERT_HOOK = None
+        env.done()
+    env = Env()
+    try:
+        lane = types.SimpleNamespace(spec={"lane": "rapid", "nt_account": "Sim103", "adapter": "ninjatrader", "preset": "mffu_rapid_eod_25k"},
+                                     id="rapid", adapter=env.adapter("Sim103", "rapid_"), problem=None, mode="two_week", lock=None,
+                                     closes=[], ledger=[], open_t=None, start_day=lambda: "2026-11-20")
+        t12 = ts(2026, 11, 12, 10)
+        ra = types.SimpleNamespace(name="Sim103", adapter=env.adapter("Sim103", "acctr_"), problem=None, open_t=None, prov={},
+                                   closes=[], ledger=[{"t": t12, "side": "buy", "entry_t": t12 - 60, "result": {"ok": True}}],
+                                   spec={"eval_start": "2026-11-10"}, label="ATLAS Rapid")
+        bot = Bot(env.tmp, env.adapter(), env.now)
+        bot.accts = types.SimpleNamespace(accounts=[lane])
+        bot.acct_r = ra
+        g = next(g for g in K.targets(bot) if g["key"] == "rapid")
+        days, start = K.account_days(bot, g)
+        check("two lanes on one account (ATLAS from 11-10, the LIT lane switched on 11-20): start = 11-10 (the earliest), so "
+              "ATLAS's 11-12 fill still counts", start == "2026-11-10" and days == {"2026-11-12"}, (days, start))
+    finally:
+        env.done()
+
+
+# ------------------------------------------------------------------------------------------------ n. alerts: thread + retry
+def t_alerts():
+    print("n. alerts: a background thread outside the lock; a key only after ntfy took it, retried 5 min apart (round 1, LOW)",
+          flush=True)
+    import threading
+    import time as _time
+    env = Env()
+    old_alert = K._alert
+    go = threading.Event()
+    seen = []
+    try:
+        def slow(bot, kind, p):
+            seen.append(threading.current_thread().name)
+            go.wait(5)
+            return "sent"
+        K._alert = slow
+        bot = Bot(env.tmp, env.adapter(), env.now, ka={"accounts": {}})
+        env.now[0] = ts(2026, 11, 20, 9, 30, 2)
+        t0 = _time.time()
+        K.tick(bot, env.now[0], px=PX, bar_t=env.now[0] - 62)
+        took = _time.time() - t0
+        free = K._MX.acquire(timeout=0.5)
+        if free:
+            K._MX.release()
+        pending = not (K.load_state(K.state_path_for(bot)).get("sent"))
+        go.set()
+        if K._LAST_THREAD is not None:
+            K._LAST_THREAD.join(5)
+        st = K.load_state(K.state_path_for(bot))
+        check("a slow ntfy (the push hangs): the tick returns at once, the keep-alive's lock is free, the push goes out from "
+              "the 'keepalive-alerts' thread; its key is recorded only after it was sent",
+              took < 3.0 and free and seen == ["keepalive-alerts"] and pending and "ka:today:lit:2026-11-20" in st["sent"],
+              (took, free, seen, st["sent"]))
+    finally:
+        go.set()
+        K._alert = old_alert
+        env.done()
+    env = Env()
+    answers = ["ntfy did not take it (the 15-minute report sends it instead)", "sent"]
+    tries = []
+    try:
+        def flaky(bot, kind, p):
+            tries.append((K._mod(env.now[0]), p.get("key")))
+            return answers.pop(0) if answers else "sent"
+        K._alert = flaky
+        K.SYNC_ALERTS = True
+        bot = Bot(env.tmp, env.adapter(), env.now, ka={"accounts": {}})
+        for t in range(ts(2026, 11, 20, 9, 30, 2), ts(2026, 11, 20, 9, 50), 30):
+            env.now[0] = t
+            K.tick(bot, t, px=PX, bar_t=t - 62)
+        st = K.load_state(K.state_path_for(bot))
+        lit = [m for m, k in tries if k == "ka:today:lit:2026-11-20"]
+        check("ntfy refuses 'TODAY is the last safe day' at 09:30: NOT marked sent, tried again at 09:35 (not every poll), "
+              "taken then, recorded, never again", lit == [570, 575] and "ka:today:lit:2026-11-20" in st["sent"], (tries, st["sent"]))
+    finally:
+        K._alert = old_alert
+        K.SYNC_ALERTS = False
+        env.done()
+
+
+# ------------------------------------------------------------------------------------------------ o. the keep-alive's own key
+def t_key_for():
+    print("o. account_b's idle counter reads the keep-alive's OWN key of its account (round 1, LOW)", flush=True)
+    from engine import account_b as AB
+    tmp = tempfile.mkdtemp(prefix="le_keepalive_key_")
+    try:
+        b = types.SimpleNamespace(state_path=os.path.join(tmp, "live_state.json"))
+        K.save_state({"v": 1, "acc": {"rapid": {"last": "2026-11-24"}}, "sent": [], "notes": {}, "log": []}, K.state_path_for(b))
+        fake = types.SimpleNamespace(bot=b, spec={"eval_start": "2026-11-10"}, prov={}, funded=lambda: False, problem=None,
+                                     adapter=None, yield_to_lit=lambda *a: None, all_closes=lambda: [["2026-11-17", 0, 10.0, 0]])
+        b.acct_b = fake                                    # ATLAS's funded 25K, with lit25 on: SharedAtlas (yield_to_lit)
+        n = AB.AccountB.idle_days(fake, ts(2026, 11, 25, 10))
+        check("ATLAS (a SharedAtlas: lifecycle.key_of says 'rapid'): the Rapid's keep-alive on 11-24 does NOT reset ATLAS's "
+              "clock (key 'atlas'): 8 idle days, its 7-day push still comes", K.key_for(b, fake) == "atlas" and n == 8, n)
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
+# ------------------------------------------------------------------------------------------------ p. a real LiveBot
+def live_bot(tmp, now, ad, ka=None):
+    from engine import live
+    b = live.LiveBot()
+    b.clock = lambda: now[0]
+    b.state_path = os.path.join(tmp, "live_state.json")
+    b._remember = lambda *a, **kw: None
+    b._journal = lambda *a, **kw: None
+    b.pushes = []
+    b._push_send = lambda p: b.pushes.append(p)
+    b.cfg = {"sym": "NQ", "tf": "5m", "adapter": "ninjatrader", "nt_account": "Sim101", "params": {"max_micros": 40},
+             "model": "lit", "keepalive": ka if ka is not None else {"accounts": {"lit": True}}}
+    b.state = {"model": "lit"}
+    b.adapter = ad
+    b.started_at = int(now[0]) - 6 * 3600
+    return b
+
+
+def open_keepalive(env, bot, ad, t_in, label="Zlarior 50K"):
+    """A keep-alive LONG 1 MNQ open the keep-alive's way (its bracket at NinjaTrader + its book 'open')."""
+    env.now[0] = t_in
+    r = ad.send({"sym": "NQ", "side": "buy", "qty": 1, "entry": PX, "stop": PX - 10, "target": PX + 10, "entry_t": t_in,
+                 "who": f"Keep-alive on {label}", "reason": "KEEP-ALIVE", "keepalive": True})
+    lg = K._leg_of(ad, t_in)
+    if lg is not None:
+        lg["keepalive"] = True
+    b = K._book(bot)
+    b["st"]["acc"]["lit"] = {"day": K.trading_day(t_in), "phase": "open", "tries": 1, "entry_t": t_in, "sent_at": t_in,
+                             "side": "buy", "dir": 1, "ref": PX, "label": label, "fill": (lg or {}).get("fill_px")}
+    K._save_book(bot, b)
+    return r
+
+
+def t_live_bot():
+    print("p. a real LiveBot: the reconcile guard and LIT's own entry during the 2-minute hold (round 1, LOW)", flush=True)
+    from engine import guards as G
+    env = Env()
+    try:
+        ad = env.adapter()
+        bot = live_bot(env.tmp, env.now, ad)
+        t_in = ts(2026, 11, 20, 15, 33, 2)
+        r = open_keepalive(env, bot, ad, t_in)
+        k = len(env.fake.files)
+        for dt_ in (0, 30, 60, 90, 120):
+            env.now[0] = t_in + 1 + dt_
+            env.fake.process()
+            G.reconcile_tick(bot, G.DEFAULTS, int(env.now[0]))
+        lines = [ln for _, ls in env.fake.files[k:] for ln in ls]
+        probs = G.startup_problems(bot, G.DEFAULTS, int(env.now[0]))
+        check("NinjaTrader LONG 1 (the keep-alive) for 2 minutes, LIT's ledger flat: no 'Position mismatch' push, no RECONCILE "
+              "close, nothing logged as a manual trade; the startup check counts it too",
+              r.get("ok") and not env.flat(ad) and not bot.pushes and not any(ln.startswith("CLOSEPOSITION") for ln in lines)
+              and not any(x.get("reason") == "RECONCILE" for x in bot.ledger) and G._keepalive_net(ad) == 1
+              and not any("shows LONG" in p for p in probs), (bot.pushes, lines, probs))
+    finally:
+        env.done()
+    env = Env()
+    try:
+        ad = env.adapter()
+        bot = live_bot(env.tmp, env.now, ad)
+        t_in = ts(2026, 11, 20, 15, 33, 2)
+        open_keepalive(env, bot, ad, t_in)
+        env.now[0] = t_in + 70
+        res = bot._route({"sym": "NQ", "side": "buy", "qty": 2, "entry": PX, "stop": PX - 20, "target": PX + 60,
+                          "entry_t": t_in + 60})
+        kal = [h for h in ad.history if h.get("keepalive")]
+        mine = [lg for lg in ad.legs if lg.get("entry_t") == t_in + 60]
+        check("a LIT entry the SAME way during the hold: the keep-alive is closed first (CLOSEPOSITION, flat), then LIT's entry "
+              "goes out and fills (never 'the bracket of the entry at 15:33 is still open')",
+              res.get("ok") and kal and mine and mine[0].get("filled") == 2
+              and K.load_state(K.state_path_for(bot))["acc"]["lit"]["phase"] == "closing", (res, kal, ad.legs))
+        out = K.tick(bot, env.now[0] + 30, px=PX, bar_t=env.now[0] - 30)
+        check("... the next tick books the keep-alive (done, MFFU's clock restarts); the strategy's ledger has only LIT's own "
+              "entry", any(x.get("do") == "done" for x in out) and [x.get("side") for x in bot.ledger] == ["buy"], (out, bot.ledger))
+    finally:
+        env.done()
+
+
+# ------------------------------------------------------------------------------------------------ q. one warning a day, one place
+def t_one_place():
+    print("q. ONE inactivity warning per account and day, from one place; the counters count keep-alive days (round 1, LOW)",
+          flush=True)
+    from engine import live_board as LB, ops_checks as OC
+    from tools import pc_guard as PG, morning_brief as MB
+    env = Env()
+    hook(env)
+    try:
+        bot = Bot(env.tmp, env.adapter(), env.now, ka={"accounts": {}})
+        replay(env, bot, ts(2026, 11, 20, 9), ts(2026, 11, 20, 10))
+        hb = K.hb_block(bot)
+        check("the heartbeat block: the keep-alive covers 'lit' (its warnings), lane lit -> account lit, no names",
+              hb and hb["cover"] == ["lit"] and hb["lane"] == {"lit": "lit"} and K.covered("lit", env.now[0], bot=bot), hb)
+        today = [p for k, p in env.alerts if "TODAY" in p.get("title", "")]
+        now = ts(2026, 11, 20, 10)
+        view = {"is_live": True, "eval": {"status": "open", "start": "2026-10-19"}, "trades": [{"day": "2026-11-14"}],
+                "position": None, "keepalive": hb}
+        n_ops = OC.inactivity_notice(view, now)
+        n_ops_down = OC.inactivity_notice({k: v for k, v in view.items() if k != "keepalive"}, now)
+        card = {"id": "lit", "name": "Zlarior", "plan": "MFFU Builder 50K", "badge": "LIVE", "configured": True, "status": "open",
+                "balance": 49000.0, "floor": 48000.0, "room": 1000.0, "mll": 2000.0, "today_pnl": 0.0, "quiet_days": 6,
+                "eval_start": "2026-10-19", "position": None, "keepalive": {"key": "lit", "cover": True}}
+        snap = {"t": now, "hb_age": 60, "mode": "LIVE", "live": {"board": {"lit": card}}}
+        q_cov = [m for m in PG.account_pushes(snap, {}, now) if ":quiet:" in m["key"]]
+        snap["live"]["board"]["lit"] = {**card, "keepalive": {"key": "lit", "cover": False}}
+        q_down = [m for m in PG.account_pushes(snap, {}, now) if ":quiet:" in m["key"]]
+        check("Fri 11-20, 6 days quiet: the keep-alive sends ONE 'TODAY is the last safe day'; ops_checks and pc_guard stay "
+              "quiet while it covers the account, and warn as before when it does not (the bot down)",
+              len(today) == 1 and n_ops is None and n_ops_down is not None and not q_cov and len(q_down) == 1,
+              (len(today), n_ops, n_ops_down, q_cov, q_down))
+        row = {"key": "zlarior", "label": "Zlarior 50K", "name": "Zlarior 50K", "stage": "eval", "balance": 49000.0, "_src": card}
+        need_cov = [n for n in MB.accounts_line([row])[1] if "without a trade" in n]
+        need_down = [n for n in MB.accounts_line([{**row, "_src": {**card, "keepalive": {"cover": False}}}])[1]
+                     if "without a trade" in n]
+        check("the morning brief: no '6 days without a trade: 1 MNQ by hand' line while the keep-alive covers the account, "
+              "the line as before without it", not need_cov and len(need_down) == 1, (need_cov, need_down))
+        blk = {"t": now, "on": {}, "last": {"lit": "2026-11-20"}, "cover": [], "lane": {"lit": "lit"}}
+        lit = LB.lit_now({"acct": {"trades": [{"day": "2026-11-14"}], "eval": {"start": "2026-10-19"}}, "keepalive": blk}, [],
+                         ts(2026, 11, 22, 10))
+        lit0 = LB.lit_now({"acct": {"trades": [{"day": "2026-11-14"}], "eval": {"start": "2026-10-19"}}}, [], ts(2026, 11, 22, 10))
+        n2 = OC.inactivity_notice({**view, "keepalive": blk, "trades": [{"day": "2026-11-14"}]}, ts(2026, 11, 22, 10))
+        check("after a keep-alive Fri 11-20 (last strategy trade 11-14): the board's quiet days say 2 (not 8; the morning brief "
+              "and pc_guard read them), ops_checks says nothing on Sun 11-22; without the block: 8 as before",
+              lit["quiet_days"] == 2 and lit["keepalive"]["last"] == "2026-11-20" and lit0["quiet_days"] == 8
+              and "keepalive" not in lit0 and n2 is None, (lit.get("quiet_days"), lit0.get("quiet_days"), n2, need_cov))
+    finally:
+        K.ALERT_HOOK = None
+        env.done()
+    from engine import account_b as AB
+    tmp = tempfile.mkdtemp(prefix="le_keepalive_cover_")
+    try:
+        b = types.SimpleNamespace(state_path=os.path.join(tmp, "live_state.json"))
+        pushes = []
+        fake = types.SimpleNamespace(bot=b, spec={"eval_start": "2026-11-10"}, prov={}, funded=lambda: True, problem=None,
+                                     adapter=None, notified=[], name="Sim102", label="ATLAS 25K",
+                                     idle_days=lambda now: 6, eval_view=lambda now=None: {"status": "funded"},
+                                     log=lambda *a, **k: None, _push_text=lambda *a: pushes.append(a))
+        b.acct_b = fake
+        now = ts(2026, 11, 20, 10)
+        K.save_state({"v": 1, "acc": {}, "sent": [], "notes": {}, "log": [], "cover": {"t": now, "keys": ["atlas"]}},
+                     K.state_path_for(b))
+        AB.AccountB._idle_check(fake, now)
+        n_cov = len(pushes)
+        K.save_state({"v": 1, "acc": {}, "sent": [], "notes": {}, "log": [], "cover": {"t": now - 3600, "keys": ["atlas"]}},
+                     K.state_path_for(b))
+        fake.notified = []
+        AB.AccountB._idle_check(fake, now)
+        check("account_b's own 7-day push: quiet while the keep-alive covers ATLAS, sent as before when its cover is an hour "
+              "old (the bot's keep-alive stopped)", n_cov == 0 and len(pushes) == 1, (n_cov, pushes))
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
+# ------------------------------------------------------------------------------------------------ r. the entry / result straight to ntfy
+def t_instant():
+    print("r. the keep-alive's entry and result also go straight to ntfy (round 1, LOW)", flush=True)
+    env = Env()
+    hook(env)
+    try:
+        bot = Bot(env.tmp, env.adapter(), env.now)
+        replay(env, bot, ts(2026, 11, 20, 15, 30), ts(2026, 11, 20, 15, 40))
+        pr = [p for k, p in env.alerts if k == "problem"]
+        ent = [p for p in pr if p.get("title", "").startswith("Keep-alive on Zlarior 50K: BUY 1 MNQ @")]
+        res = [p for p in pr if p.get("title", "").startswith("Keep-alive on Zlarior 50K: closed LONG about -$2.40")]
+        check("engine/notify.instant_problem gets 'Keep-alive on Zlarior 50K: BUY 1 MNQ @ 26,380.00' (stop / target, closes in "
+              "about 2 min) and '... closed LONG about -$2.40' (next trade due by 11-27), each once, besides the trade alert",
+              len(ent) == 1 and "about 2 min" in ent[0]["body"] and len(res) == 1 and "due by 2026-11-27" in res[0]["body"]
+              and ent[0]["key"].startswith("ka:entry:lit:") and res[0]["key"].startswith("ka:result:lit:")
+              and len([1 for k, p in env.alerts if k == "trade"]) == 1, [p.get("title") for p in pr])
+        check("the hold fits the window: an entry at 15:47:00 fits (flat by 15:50), 15:47:30 does not; a half day "
+              "(Thanksgiving, cut 12:45): 12:42:00 fits, 12:42:30 not",
+              K.fits(ts(2026, 11, 20, 15, 47), 120) and not K.fits(ts(2026, 11, 20, 15, 47, 31), 120)
+              and K.fits(ts(2026, 11, 26, 12, 42), 120) and not K.fits(ts(2026, 11, 26, 12, 42, 31), 120))
+    finally:
+        K.ALERT_HOOK = None
+        env.done()
+
+
 def main() -> int:
     t_plan()
     t_one()
@@ -568,6 +1044,15 @@ def main() -> int:
     t_hedge()
     t_rules()
     t_misc()
+    t_owner_stops()
+    t_fills()
+    t_traded()
+    t_start()
+    t_alerts()
+    t_key_for()
+    t_live_bot()
+    t_one_place()
+    t_instant()
     bad = [n for n, ok in RESULTS if not ok]
     print(f"\n{len(RESULTS) - len(bad)}/{len(RESULTS)} passed" + (f"; FAILED: {bad}" if bad else ""))
     return 1 if bad else 0

@@ -687,7 +687,9 @@ class AccountB:
 
     def route(self, action: dict) -> dict:
         try:
-            res = self.adapter.send(action) if self.adapter is not None else {"ok": False, "error": "no adapter"}
+            ka = self._keepalive_yield(action)             # an open keep-alive on this account / the other way closes first
+            res = {"ok": False, "error": "REFUSED: " + ka} if ka else \
+                self.adapter.send(action) if self.adapter is not None else {"ok": False, "error": "no adapter"}
         except Exception as e:
             res = {"ok": False, "error": f"{e.__class__.__name__}: {e}"}
         with self.mx:
@@ -698,6 +700,17 @@ class AccountB:
         self._life_routed(action, res)
         self.save()
         return res
+
+    def _keepalive_yield(self, action):
+        """engine/keepalive.before_entry (OFF by default = None at once): a keep-alive trade open on this NinjaTrader account
+        (any side) or the other way on any account is closed at market before this entry goes out. Never raises."""
+        if action.get("side") not in ("buy", "sell"):
+            return None
+        try:
+            from . import keepalive as _ka
+            return _ka.before_entry(self.bot, 1 if action.get("side") == "buy" else -1, self)
+        except Exception:
+            return None
 
     # ---- MFFU lifecycle (engine/lifecycle.py): passed / failed / locked = stand down, the other accounts keep trading
     def life_key(self) -> str:
@@ -922,8 +935,8 @@ class AccountB:
         start = (self.spec.get("funded") or {}).get("start") if self.funded() else self.spec.get("eval_start")
         days = [str(c[0]) for c in self.all_closes() if c and (not start or str(c[0]) >= str(start))]
         try:                                # a keep-alive trade / a hand trade noted (engine/keepalive.py) restarts the clock too
-            from . import keepalive as KA, lifecycle as LC
-            k = KA.last_day(self.bot, LC.key_of(self))
+            from . import keepalive as KA      # (the keep-alive's OWN key of this account: "atlas" for acct_b, never the Rapid's)
+            k = KA.last_day(self.bot, KA.key_for(self.bot, self) or ("rapid" if self is getattr(self.bot, "acct_r", None) else "atlas"))
             if k and (not start or k >= str(start)):
                 days.append(k)
         except Exception:
@@ -953,6 +966,12 @@ class AccountB:
         key = f"acctb:idle:{trading_day(now)}:{self.name}"
         if key in self.notified:
             return
+        try:                                    # the bot's keep-alive sends this account's ONE inactivity warning a day itself
+            from . import keepalive as KA
+            if KA.covered(KA.key_for(self.bot, self) or "atlas", now, bot=self.bot):
+                return
+        except Exception:
+            pass
         if status is None:
             status = self.eval_view(now).get("status")
         if status in STOP_STATUSES:
