@@ -26,7 +26,7 @@
       if (p.hasAttribute('inert') || p.hidden) return false;
     }
     var r = el.getBoundingClientRect();
-    return r.width > 0 && r.height > 0;
+    return r.width > 1 && r.height > 1;   // a 1 px screen-reader-only box (.sr / .visually-hidden) is not on screen
   }
 
   function sel(el) {
@@ -231,7 +231,7 @@
     if (h >= 85 && h < 165) return 'green';
     return null;
   }
-  var MONEY = /^\(?\$\s?\d[\d,]*(\.\d+)?k?\)?$/i, SIGNED = /[+\-−–]|\(\$/, WORDS = /\b(up|down|loss|lost|losses|gain|gained|profit|won|win|red|green|over|under|behind|ahead|left|owed|fee|cost|paid|spent|need|to go|short)\b/i;
+  var MONEY = /^\(?\$\s?\d[\d,]*(\.\d+)?k?\)?$/i, SIGNED = /[+\-−–]|\(\$/, WORDS = /\b(up|down|loss|lost|losses|gain|gained|profit|won|win|red|green|over|under|behind|ahead|left|owed|fee|cost|paid|spent|need|to go|short|fees|out|in|payouts?|income|refund|saved|tax|net)\b/i;
   function colorOnly() {
     var out = [], els = textEls();
     for (var i = 0; i < els.length && out.length < 8; i++) {

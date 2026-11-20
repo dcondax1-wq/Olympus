@@ -196,11 +196,15 @@ def fix_for(rule, it):
 SRC_JS = r"""(args) => {            // the CSS rule that sets `prop` on the element: 'file :: selector { prop: value }'
   const [q, prop] = args; let el = null; try { el = document.querySelector(q); } catch (e) { return ''; }
   if (!el) return '';
-  let best = '';
+  let best = '', bestSpec = -1;
+  // the WINNING rule: highest specificity of the matching selector, the later one on a tie (:where() counts 0; :is/:not/:has count roughly)
+  const spec = (sel) => { const t = sel.replace(/:where\((?:[^()]|\([^()]*\))*\)/g, '').replace(/::?[\w-]+\(/g, m => m.startsWith('::') ? ' ' : ' ');
+    const ids = (t.match(/#[\w-]+/g) || []).length, cls = (t.match(/\.[\w-]+|\[[^\]]*\]|:(?!:)[\w-]+/g) || []).length,
+      tags = (t.replace(/\[[^\]]*\]/g, '').match(/(^|[\s>+~(])[a-zA-Z][\w-]*/g) || []).length; return ids * 10000 + cls * 100 + tags; };
   const walk = (list, href) => { for (const r of list) { if (r.cssRules && !r.selectorText) { try { walk(r.cssRules, href); } catch (e) {} continue; }
     if (!r.selectorText || !r.style) continue; const v = r.style.getPropertyValue(prop); if (!v) continue;
-    let ok = false; try { ok = el.matches(r.selectorText); } catch (e) {}
-    if (ok) best = (href ? new URL(href).pathname.replace(/^\//, '') + (new URL(href).search) : 'inline <style>') + ' :: ' + r.selectorText.slice(0, 90) + ' { ' + prop + ': ' + v + ' }'; } };
+    let sp = -1; for (const part of r.selectorText.split(/,(?![^(]*\))/)) { let ok = false; try { ok = el.matches(part); } catch (e) {} if (ok) sp = Math.max(sp, spec(part) + (r.style.getPropertyPriority(prop) ? 1e6 : 0)); }
+    if (sp >= 0 && sp >= bestSpec) { bestSpec = sp; best = (href ? new URL(href).pathname.replace(/^\//, '') + (new URL(href).search) : 'inline <style>') + ' :: ' + r.selectorText.slice(0, 90) + ' { ' + prop + ': ' + v + ' }'; } } };
   for (const s of document.styleSheets) { try { walk(s.cssRules, s.href); } catch (e) {} }
   if (el.style && el.style.getPropertyValue(prop)) best = 'style="" :: ' + prop + ': ' + el.style.getPropertyValue(prop);
   return best;
