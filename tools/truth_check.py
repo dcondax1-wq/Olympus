@@ -111,10 +111,34 @@ def pc_post(feed_cfg: dict | None, feed_file: str | None = None):
 
 
 # ------------------------------------------------------------------------------------------------ the truth
+def bot_stopped(L: dict | None) -> str:
+    """'' when the PC's bot is running live; else why its numbers are NOT the account's truth (finder round 2026-11-20: at 16:27 ET the bot
+    was stopped on the paper adapter and the 50K's room read $1,771 against the real $1,025). pc.running false, or the paper adapter."""
+    pc = _d(_d(L).get("pc"))
+    if not pc:
+        return ""
+    if pc.get("running") is False:
+        return "bot stopped: paper numbers"
+    if str(pc.get("adapter") or "").lower() == "paper":
+        return "bot on the paper adapter: paper numbers"
+    return ""
+
+
 def truth_of(L: dict | None, now: float) -> dict:
     """{key: {name, balance, room, to_target, today, last: {day, usd} | None, t, age}} from the PC post. Empty without a post."""
     out = {}
     if not isinstance(L, dict):
+        return out
+    stop = bot_stopped(L)
+    if stop:                               # the stopped bot's numbers are its paper twin's: the truth stays the last LIVE balances (life.acc)
+        life = _d(_d(L.get("life")).get("acc"))
+        rt0 = _f(_d(L.get("reporter")).get("t")) or _f(L.get("t")) or 0
+        for k, spec in ACCTS.items():
+            li = next((_d(life.get(i)) for i in (*spec["pc"], "x:" + spec["pc"][0]) if _d(life.get(i)).get("bal") is not None), None)
+            if li:
+                out[k] = {"name": spec["name"], "balance": _f(li.get("bal")), "room": None, "to_target": None, "today": None,
+                          "funded": str(li.get("stage") or "") == "funded", "t": rt0, "age": now - rt0 if rt0 else None,
+                          "stopped": stop, "src": "the last LIVE balance (life)"}
         return out
     t = _f(L.get("t")) or 0
     rt = _f(_d(L.get("reporter")).get("t")) or _f(L.get("rt")) or t
@@ -169,6 +193,9 @@ def feed_checks(site: str, now: float, feed_file: str | None = None) -> dict:
 
     if not L:
         flag("bad", "PC status post (ntfy)", f"no truth to compare with: {why}")
+    elif bot_stopped(L):
+        flag("warn", "PC status post", f"{bot_stopped(L)}: the bot is not running live, so its room / today / to-pass are NOT the accounts' truth; "
+                                       "only the last LIVE balances are checked")
     else:
         a = now - (T[next(iter(T))]["t"] if T else (_f(L.get("t")) or now))
         if a > MAX_AGE["pc"]:
@@ -324,7 +351,7 @@ def report_md(R: dict, now: float) -> str:
              "## The truth now (PC report)", "", "| account | balance | room | to pass | to payout (coach) | today | last trade | age |", "|---|---|---|---|---|---|---|---|"]
     for k, r in T.items():
         last = r.get("last")
-        lines.append(f"| {r['name']} | {money(r['balance'])} | {money(r['room'])} | {'-' if r['funded'] else money(r['to_target'])} | {money(r.get('to_payout')) if r['funded'] else '-'} | {money(r['today'])} | "
+        lines.append(f"| {r['name']}{' (' + r['stopped'] + ' ignored; ' + r.get('src', '') + ')' if r.get('stopped') else ''} | {money(r['balance'])} | {money(r['room'])} | {'-' if r['funded'] else money(r['to_target'])} | {money(r.get('to_payout')) if r['funded'] else '-'} | {money(r['today'])} | "
                      f"{(last['day'] + ' ' + money(last['usd'])) if last else '-'} | {age_words(r['age'])} |")
     lines += ["", f"## Problems ({len(R['problems'])})", "", "| level | where | what | shown | should be |", "|---|---|---|---|---|"]
     for p in R["problems"]:

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>NQ</title>
 <meta name="description" content="OLYMPUS NQ: the NQ bots, right now. Zlarior (LIT 50K), ATLAS 25K and BLITZ 25K: status with the exact age of the last report, drawdown left, today's P&L in $ with R, eval progress, the last 10 trades and the rule that closed each, and how to bring reporting back.">
-<meta name="theme-color" content="#060a14">
+<meta name="theme-color" content="#000000">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="NQ">
@@ -40,12 +40,12 @@
 <script src="../olympus/a11y.js" defer></script>
 <script src="../olympus/agora-ui.js?v=6" defer></script>
 <script src="../olympus/gate-nav.js?v=g8" defer></script><!-- the way back to the Gate + Go to (olympus/gate-nav.js) -->
-<script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#c8a24a'); r.setProperty('--oly-accent-rgb', '200, 162, 74'); })();</script>
-<link rel="stylesheet" href="nq.css?v=a4r">
-<link rel="stylesheet" href="../nqdeep.css?v=2">
+<script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#f1c14b'); r.setProperty('--oly-accent-rgb', '241, 193, 75'); })();</script>
+<link rel="stylesheet" href="nq.css?v=a5">
+<link rel="stylesheet" href="../nqdeep.css?v=2" media="print" onload="this.media='all'"><!-- perf: the deep views (.nqd-*) are far below the first screen: not render-blocking -->
 <link rel="stylesheet" href="nqdesk.css?v=10">
-<link rel="stylesheet" href="nqgoals.css?v=8">
-<link rel="stylesheet" href="nqtheme.css?v=5"><!-- owner 2026-11-20 15:15 ET: the NQ terminal look (navy, cyan / blue glows, violet), last so it wins -->
+<link rel="stylesheet" href="nqgoals.css?v=9">
+<link rel="stylesheet" href="nqtheme.css?v=6"><!-- owner 2026-11-20 15:15 ET: the NQ terminal look (navy, cyan / blue glows, violet), last so it wins -->
 <style>/* the status lines above the chart fill in a moment after the page shows (3 + 2 lines on a phone): held from the start so the chart card never jumps (phone QA 2026-11-19) */
 @media (max-width: 520px) { #status { min-height: 3lh; } #src:empty { min-height: 2lh; } }</style>
 </head>
@@ -74,10 +74,12 @@
 
   <!-- the live chart (owner 2026-11-18, nqchart.js + nqbars.js): the PC's NinjaTrader 5-minute bars with every entry, stop and target; its own module -->
   <section class="ag-card card" id="chartCard" aria-labelledby="chartH">
-    <div class="row"><h2 id="chartH">Live chart</h2><span class="pill" id="chartPill">Loading</span></div>
+    <div class="row"><h2 id="chartH">Live chart</h2><span class="ctools"><button type="button" class="btn ctog" id="chart3dBtn" aria-pressed="false" hidden>3D</button><span class="pill" id="chartPill">Loading</span></span></div>
     <p class="note" id="chartAsOf" hidden></p>
     <div class="chartbox" id="chartBox" role="img" aria-label="The NQ chart with our trades">
       <div class="chart" id="chart"></div>
+      <span class="cpulse" id="chartPulse" aria-hidden="true" hidden></span>
+      <div class="c3d" id="chart3d" hidden></div>
       <p class="chartmsg" id="chartMsg">Loading the PC's chart...</p>
     </div>
     <div class="chips" id="chartChips" role="group" aria-label="Show the trades of"></div>
@@ -207,10 +209,10 @@
   <div class="sheetbody" id="sheetBody"></div>
 </section>
 <script src="../nqdeep.js?v=1" defer></script>
-<script type="module" src="nq.js?v=r25"></script>
-<script type="module" src="nqchart.js?v=c6"></script>
+<script type="module" src="nq.js?v=r29"></script>
+<script type="module" src="nqchart.js?v=c8"></script>
 <!-- QA round 6: the 3D loads after the first paint, and not at all on LITE (olympus/lazy3d.js) -->
-<script src="../olympus/lazy3d.js?v=l2" data-src="nqscene.js?v=q6e" data-near="#sceneCard" data-skip="lite" data-event="nq3d" defer></script>
-<script src="../olympus/lazy3d.js?v=l2" data-src="nqland.js?v=2" data-near="#landCard" data-skip="lite" data-event="nqland" defer></script>
+<script src="../olympus/lazy3d.js?v=l2" data-src="nqscene.js?v=q6f" data-near="#sceneCard" data-skip="lite" data-event="nq3d" defer></script>
+<script src="../olympus/lazy3d.js?v=l2" data-src="nqland.js?v=3" data-near="#landCard" data-skip="lite" data-event="nqland" defer></script>
 </body>
 </html>

@@ -13,8 +13,8 @@ import * as THREE from '../jarvis/three.module.min.js';
 
 // owner 2026-11-20 15:15 ET: the NQ terminal look: a navy night, the ridge cyan (up) / blue / violet (down), the light trail + goal arc cyan (GOLD keeps its
 // name: the accent), beacons green (a win) / red (a loss) / bright cyan (open): green and red only where it is $
-const BG = 0x050912, GOLD = new THREE.Color('#22d3ee'), UP = new THREE.Color('#22d3ee'), UPG = new THREE.Color('#3b82f6'), DN = new THREE.Color('#8b5cf6');
-const WIN = new THREE.Color('#22c55e'), LOSS = new THREE.Color('#ef4444'), OPEN = new THREE.Color('#67e8f9');
+const BG = 0x000000, GOLD = new THREE.Color('#9d59ee'), UP = new THREE.Color('#dacbf0'), UPG = new THREE.Color('#9d59ee'), DN = new THREE.Color('#4d2e76');
+const WIN = new THREE.Color('#77db89'), LOSS = new THREE.Color('#ef4444'), OPEN = new THREE.Color('#f1c14b');
 const W = 12, HMAX = 2.6, ROWS = 14, DEPTH = 3.2;
 let R = null;
 
@@ -25,7 +25,7 @@ const reduced = () => media('(prefers-reduced-motion: reduce)');
 function glowTex() {                                   // a soft round dot, drawn here (nothing downloaded)
   const c = document.createElement('canvas'); c.width = c.height = 64;
   const g = c.getContext('2d'), r = g.createRadialGradient(32, 32, 0, 32, 32, 32);
-  r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(0.25, 'rgba(200,245,255,.75)'); r.addColorStop(1, 'rgba(120,200,255,0)');
+  r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(0.25, 'rgba(225,205,255,.75)'); r.addColorStop(1, 'rgba(157,89,238,0)');
   g.fillStyle = r; g.fillRect(0, 0, 64, 64);
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
 }
@@ -78,12 +78,12 @@ function mount(box, data) {
   box.appendChild(cv);
   const scene = new THREE.Scene(); scene.fog = new THREE.Fog(BG, 14, 34);
   const camera = new THREE.PerspectiveCamera(36, 1.6, 0.1, 60);
-  scene.add(new THREE.HemisphereLight(0xd8f4ff, 0x0b1430, 1.3));
-  const sun = new THREE.DirectionalLight(0xbfe9ff, 1.6); sun.position.set(-4, 6, 5); scene.add(sun);
+  scene.add(new THREE.HemisphereLight(0xece4ff, 0x140a24, 1.3));
+  const sun = new THREE.DirectionalLight(0xdacbf0, 1.6); sun.position.set(-4, 6, 5); scene.add(sun);
   const tex = glowTex(), NP = phone ? 150 : 400;
   // the floor: a faint gold grid, and the goal arc on it
-  const grid = new THREE.GridHelper(26, 26, 0x1e3a5f, 0x111d33); grid.material.transparent = true; grid.material.opacity = 0.5; scene.add(grid);
-  const ridgeMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.55, metalness: 0.25, flatShading: true, emissive: 0x0a1630, emissiveIntensity: 1 });
+  const grid = new THREE.GridHelper(26, 26, 0x4d2e76, 0x1e1230); grid.material.transparent = true; grid.material.opacity = 0.5; scene.add(grid);
+  const ridgeMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.55, metalness: 0.25, flatShading: true, emissive: 0x160a2a, emissiveIntensity: 1 });
   const ridge = new THREE.Mesh(new THREE.BufferGeometry(), ridgeMat); scene.add(ridge);
   const line = new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: GOLD, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false })); scene.add(line);
   const beaconG = new THREE.CylinderGeometry(0.035, 0.07, 1, 8, 1, true); beaconG.translate(0, 0.5, 0);
@@ -184,7 +184,7 @@ function frame(now, force) {
     if (R.still) { ec[i * 3] = ec[i * 3 + 1] = ec[i * 3 + 2] = 0; continue; }
     R.eL[i] += dt * 0.18; ep[i * 3 + 1] += R.eV[i] * dt; ep[i * 3] += Math.sin(t + i) * dt * 0.08;
     if (R.eL[i] > 1) { R.seed(i); R.eL[i] = 0; }
-    const a = Math.sin(Math.PI * R.eL[i]) * 0.55, v = i % 3 === 0; ec[i * 3] = (v ? 0.55 : 0.13) * a; ec[i * 3 + 1] = (v ? 0.36 : 0.83) * a; ec[i * 3 + 2] = (v ? 0.96 : 0.93) * a;   // cyan + violet sparks
+    const a = Math.sin(Math.PI * R.eL[i]) * 0.55, v = i % 3 === 0; ec[i * 3] = (v ? 0.95 : 0.62) * a; ec[i * 3 + 1] = (v ? 0.76 : 0.35) * a; ec[i * 3 + 2] = (v ? 0.29 : 0.93) * a;   // violet sparks, a few gold
   }
   R.embers.geometry.attributes.position.needsUpdate = R.embers.geometry.attributes.color.needsUpdate = true;
   // the burst sparks: gravity, fade

@@ -1,6 +1,6 @@
 /* NQ v4: goals strip, the numbers card, the 3D landscape + vault boxes (colours: nqtheme.css). Reduced motion: no sweep. */
 
-#goalCard { padding-block: 6px 4px; }
+#goalCard { padding-block: 4px 2px; }
 #goalCard .row { margin-bottom: 2px; }
 #goalCard .row h2 { font-size: 15px; line-height: 1.2; margin: 0; }
 #goalCard .row .pill { font-size: 12px; padding-block: 1px; }
