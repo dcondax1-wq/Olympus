@@ -199,7 +199,7 @@ def part_b(shots: bool):
                     pg.wait_for_function("window.NAV_FX && window.NAV_FX.ready", timeout=20000)
                     pg.wait_for_timeout(1500)
                     r = pg.evaluate("""(() => { const a = document.querySelector('.nfx-aurora i'); const st = a ? getComputedStyle(a) : null;
-                        const bb = getComputedStyle(document.body).backgroundColor, bg = /rgba\(0, 0, 0, 0\)/.test(bb) ? getComputedStyle(document.documentElement).backgroundColor : bb;
+                        const bb = getComputedStyle(document.body).backgroundColor, bg = bb === "rgba(0, 0, 0, 0)" ? getComputedStyle(document.documentElement).backgroundColor : bb;
                         return { nfx: document.documentElement.classList.contains('nfx'), aurora: !!a, anim: st ? st.animationName : '', bg,
                           tilt: document.querySelectorAll('[data-nfx-tilt]').length, rolling: document.querySelectorAll('.nfx-rolling').length,
                           leads: (document.getElementById('hqPLeads') || {}).textContent || '', cls: window.__cls }; })()""")
