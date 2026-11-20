@@ -128,12 +128,13 @@ export function payoutNow(accts) {
     if (a.kind === 'funded') {
       const toGo = profit == null ? null : Math.max(0, need - profit);
       const line = toGo === 0 ? `${name} (funded): ${money(profit)} profit, past the ${money(need)} the first payout needs. Ask for ${money(P.min)} to ${money(P.max)} (you keep 80%).`
-        : `${name} (funded): ${money(profit)} profit of the ${money(need)} the first payout needs (${money(P.buffer)} buffer + ${money(P.min)} minimum): ${money(toGo)} to go, ask at a ${money(start + need)} balance.`;
-      out.push({ key: a.key, name, kind: 'funded', line, toGo, askAt: start + need });
+        : `${name} (funded): goal ${money(P.max)} at ${money(start + P.buffer + P.max)} (you get ${money(P.max * 0.8)}), ${money(Math.max(0, P.buffer + P.max - profit))} to go. Earliest: ${money(P.min)} at ${money(start + need)} (${money(toGo)} to go).`;
+      // goal = the full max request (only 5 sim payouts before live, owner 2026-11-20); earliest = buffer + minimum
+      out.push({ key: a.key, name, kind: 'funded', line, toGo, askAt: start + need, goalAt: start + P.buffer + P.max, goalToGo: profit == null ? null : Math.max(0, P.buffer + P.max - profit) });
     } else {
       const toPass = num(a.toTarget) != null ? Math.max(0, num(a.toTarget)) : profit != null ? Math.max(0, P.target - profit) : null;
       out.push({ key: a.key, name, kind: 'eval', toGo: toPass, askAt: null,
-        line: `${name} (eval): ${toPass == null ? 'the target' : money(toPass)} to pass, then ${money(need)} of funded profit for the first payout (${money(P.buffer)} buffer + ${money(P.min)} minimum).` });
+        line: `${name} (eval): ${toPass == null ? 'the target' : money(toPass)} to pass, then the payout goal: ${money(P.max)} once funded profit reaches ${money(P.buffer + P.max)} (earliest ${money(P.min)} at ${money(need)}).` });
     }
   }
   return out;
