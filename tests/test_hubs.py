@@ -7,7 +7,7 @@ tools/web_public/hub/ (hub/?h=<hub>&t=<tab>); breadcrumbs + Go to are olympus/ga
   b. node: every app in exactly one hub and tab, each tab has one best app, every fold points at the best of its own tab, the breadcrumb of every app,
      the hub lines (bots fresh / old / missing, Kalshi, money, my shift, research), demo cards never shown as live
   c. Chromium 390 x 844: every hub page (title, tabs, best card, folded duplicates, breadcrumb Home > Hub), every app reachable home -> hub -> app (2 taps),
-     ?t= deep links, "Show it here" embeds the app, the live strip of Bots & Evals / Kalshi / My Money / Plan & Day, Settings & Help lists every app (83),
+     ?t= deep links, "Show it here" embeds the app, the live strip of Bots & Evals / Kalshi / My Money / Plan & Day, Settings & Help lists every app (N_APPS),
      an unknown hub = the list of hubs, gate-nav on an AGORA app without its own tag, 375 x 667 reduced motion; taps >= 44 px, no sideways scroll
     python -X utf8 -m tests.test_hubs            (--static: parts a and b only; screenshots with AGORA_SHOTS=<dir>)
 """
