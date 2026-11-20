@@ -8,7 +8,7 @@
 .dk-sub { margin: 2px 0 8px; font-size: 13px; color: var(--ag-muted, #a89c88); overflow-wrap: anywhere; }
 .dk-foot { margin: 8px 0 0; font-size: 13px; color: var(--ag-soft, #cfc4b2); overflow-wrap: anywhere; }
 .dk-empty { margin: 6px 0; font-size: 14px; color: var(--ag-muted, #a89c88); }
-.dk-tag { display: inline-flex; align-items: center; white-space: nowrap; font: 700 10px/1 var(--ag-sans, system-ui); letter-spacing: .06em; padding: 4px 6px;
+.dk-tag { display: inline-flex; align-items: center; white-space: nowrap; font: 700 12px/1 var(--ag-sans, system-ui); letter-spacing: .03em; padding: 4px 6px;
   border-radius: 6px; border: 1px solid currentColor; color: var(--ag-muted, #a89c88); }
 .dk-tag small { font-weight: 600; letter-spacing: 0; text-transform: none; opacity: .9; }
 .dk-tag.live { color: var(--ag-olive-text, #a0ac6e); } .dk-tag.paper, .dk-tag.cached, .dk-tag.offline { color: var(--oly-th-warn, #e0b25a); }
@@ -36,13 +36,13 @@
   font-size: 12px; box-shadow: 0 6px 18px rgba(0,0,0,.3); opacity: 0; transform: translateY(-4px); transition: opacity .15s, transform .15s; }
 .dk-tip.on { opacity: 1; transform: none; }
 .dk-tip span { color: var(--ag-soft, #cfc4b2); }
-.dk-xaxis { display: flex; justify-content: space-between; font: 500 10px var(--ag-num, system-ui); color: var(--ag-muted, #a89c88); margin: 2px 0 0; }
+.dk-xaxis { display: flex; justify-content: space-between; font: 500 12px var(--ag-num, system-ui); color: var(--ag-muted, #a89c88); margin: 2px 0 0; }
 
 .dk-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 10px 0 0; }
 .dk-tile { background: var(--ag-s3, #2b241d); border-radius: 12px; padding: 8px 9px; min-width: 0; }
-.dk-tile small { display: block; font-size: 10.5px; letter-spacing: .04em; text-transform: uppercase; color: var(--ag-muted, #a89c88); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dk-tile small { display: block; font-size: 12px; letter-spacing: .02em; text-transform: uppercase; color: var(--ag-muted, #a89c88); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dk-tile b { display: block; font: 700 16px/1.25 var(--ag-num, system-ui); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.dk-tile span { display: block; font-size: 11px; color: var(--ag-muted, #a89c88); }
+.dk-tile span { display: block; font-size: 12px; color: var(--ag-muted, #a89c88); }
 
 .dk-accts { display: grid; gap: 0; margin-top: 8px; }
 .dk-acct { display: grid; grid-template-columns: 60px minmax(0, 1fr); gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--ag-line-soft, rgba(243,236,224,.07)); }
@@ -73,7 +73,7 @@
 .dk-lane .ps { width: 3px; margin-left: -1px; background: var(--ag-aegean-text, #7fa7c2); border-radius: 2px; }
 .dk-nowwrap { position: absolute; top: 0; bottom: 0; left: 100px; right: 0; pointer-events: none; }
 .dk-now { position: absolute; top: 0; bottom: 0; width: 0; border-left: 1px dashed var(--ag-soft, #cfc4b2); }
-.dk-now span { position: absolute; top: 0; left: 4px; font-size: 10px; color: var(--ag-muted, #a89c88); }
+.dk-now span { position: absolute; top: 0; left: 4px; font-size: 12px; color: var(--ag-muted, #a89c88); }
 .dk-legend { margin: 6px 0 0; font-size: 11.5px; color: var(--ag-muted, #a89c88); line-height: 1.8; }
 .dk-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; vertical-align: -1px; }
 .k-dt { background: var(--ag-gold, #c8a24a); border-radius: 50% !important; } .k-rg { background: rgba(var(--ag-gold-rgb, 200, 162, 74), .35); } .k-ps { background: var(--ag-aegean-text, #7fa7c2); width: 3px !important; }
@@ -88,7 +88,7 @@
 .dk-two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
 .dk-tcard { background: var(--ag-s3, #2b241d); border-radius: 12px; padding: 9px 10px; display: grid; gap: 3px; min-width: 0; border-left: 3px solid var(--ag-line, #3a3228); }
 .dk-tcard.pos { border-left-color: var(--ag-olive, #7f8a52); color: inherit; } .dk-tcard.neg { border-left-color: var(--ag-terra, #c96a4a); color: inherit; }
-.dk-tcard small { font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--ag-muted, #a89c88); }
+.dk-tcard small { font-size: 12px; text-transform: uppercase; letter-spacing: .03em; color: var(--ag-muted, #a89c88); }
 .dk-tcard b { font: 700 15px var(--ag-num, system-ui); }
 .dk-tcard span { font-size: 11.5px; color: var(--ag-soft, #cfc4b2); overflow-wrap: anywhere; }
 .dk-hbars { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 6px; }

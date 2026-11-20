@@ -231,6 +231,8 @@ export async function mountAll(force) {
   const roots = Array.from(document.querySelectorAll('[data-pulse]'));
   if (!roots.length) return;
   const inp = await load(force), m = model(inp); m._rules = inp.rules;
+  // remember how old the numbers were (Settings > Data, settings/extras.js, reads it offline; nothing else is kept)
+  try { if (m.ages) localStorage.setItem('olympus.pulse.ages', JSON.stringify({ pcT: m.ages.pc.t, cloudT: m.ages.cloud.t, seen: Math.round(Date.now() / 1000) })); } catch (e) { /* private mode */ }
   for (const r of roots) {
     try { render(r, m, String(r.dataset.pulse).split(',').map((s) => s.trim()).filter(Boolean), r.dataset.pulseApp || ''); r.classList.add('ready'); r.removeAttribute('aria-busy'); }
     catch (e) { r.classList.add('ready'); }
