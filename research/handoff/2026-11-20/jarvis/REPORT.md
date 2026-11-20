@@ -147,5 +147,5 @@ memoise listApps() in remember()), the first status-card batch). On a real iPhon
 | tests.test_jarvis_brain / test_jarvis_skills | 177/177, 85/85 |
 | tests.test_jarvis_talk / voice / engines | 27/27 / 47/47 / 18/18 (twice) |
 | tests.test_jarvis_apps / test_fit_edge | 97/97 / 62/62 |
-| tests.test_jarvis_hub | HUB_RESULT |
+| tests.test_jarvis_hub | 272/272 (the intro "slow phone" check now subtracts the blocked main-thread time, like the fade check beside it) |
 | python tests/smoke.py | 8/9: site_checks flags jarvis/sw.js precaching biz.js?v=b1 while the page loads b2: fixed by LEAD_WIRES (lead-only sw.js) |
