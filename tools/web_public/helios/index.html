@@ -19,6 +19,7 @@
 <script>(function () { var d = document.documentElement; try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
 <link rel="stylesheet" href="../olympus/olympus.css?v=o7">
 <link rel="stylesheet" href="../olympus/agora.css?v=a7">
+<link rel="stylesheet" href="../olympus/pulse.css?v=p1">
 <script src="../olympus/themes.js?v=o9"></script>
 <script src="../olympus/olympus.js?v=o15" data-app="helios"></script>
 <script src="../olympus/intro-app.js?v=i10" defer></script>
@@ -51,6 +52,7 @@
     <p class="note" id="signs"></p>
   </section>
 
+  <section class="pulse" data-pulse="strip,bots,stats" data-pulse-app="helios" aria-label="Today, the bots, the trades" aria-busy="true"><div class="pu-part pu-strip"></div><div class="pu-part pu-bots"></div><div class="pu-part pu-stats"></div><p class="pu-note pu-age"></p></section><!-- day-arenas: olympus/pulse.js -->
   <section class="ag-card card" aria-labelledby="accH">
     <h2 id="accH">Drawdown left</h2>
     <ul class="cards" id="accts"></ul>
@@ -89,5 +91,6 @@
 <!-- QA round 6: the 3D loads after the first paint, and not at all on LITE (olympus/lazy3d.js) -->
 <script src="../olympus/lazy3d.js?v=l1" data-src="sunload.js?v=a1" data-skip="lite" data-event="helios-sun" defer></script>
 <script type="module" src="helios.js?v=r7"></script>
+<script type="module" src="../olympus/pulse.js?v=p1"></script>
 </body>
 </html>

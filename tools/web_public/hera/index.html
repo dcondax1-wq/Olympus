@@ -19,6 +19,7 @@
 <script>(function () { var d = document.documentElement; try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
 <link rel="stylesheet" href="../olympus/olympus.css?v=o7">
 <link rel="stylesheet" href="../olympus/agora.css?v=a7">
+<link rel="stylesheet" href="../olympus/pulse.css?v=p1">
 <script src="../olympus/themes.js?v=o9"></script>
 <script src="../olympus/olympus.js?v=o15" data-app="hera"></script>
 <script src="../olympus/intro-app.js?v=i10" defer></script>
@@ -42,6 +43,7 @@
     <div class="seg" id="vers" role="group" aria-label="Which half of 2026 the plan is based on"></div>
     <p class="note" id="bigNote"></p>
   </section>
+  <section class="pulse" data-pulse="hero:payout,money" data-pulse-app="hera" aria-label="Next payout, fees vs payouts" aria-busy="true"><div class="pu-part pu-hero"></div><div class="pu-part pu-money"></div></section><!-- day-arenas: olympus/pulse.js -->
   <section class="ag-card card" aria-labelledby="chartH">
     <h2 id="chartH">The 12 months</h2>
     <svg id="chart" class="chart" viewBox="0 0 360 220" role="img" aria-label="Cash to you over 12 months"></svg>
@@ -76,5 +78,6 @@
   <p class="foot" id="foot">Hera reads the site's roadmap file and sends nothing. The plan is a study of 2026 paper results: not a promise and not advice. Prices are your real ones ($91.80 / $63 / $43, one-time).</p>
 </main>
 <script type="module" src="hera.js?v=a1"></script>
+<script type="module" src="../olympus/pulse.js?v=p1"></script>
 </body>
 </html>

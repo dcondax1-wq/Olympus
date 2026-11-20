@@ -20,6 +20,7 @@
 <script>(function () { var d = document.documentElement; try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
 <link rel="stylesheet" href="../olympus/olympus.css?v=o7">
 <link rel="stylesheet" href="../olympus/agora.css?v=a7">
+<link rel="stylesheet" href="../olympus/pulse.css?v=p1">
 <script src="../olympus/themes.js?v=o9"></script>
 <script src="../olympus/olympus.js?v=o15" data-app="business"></script>
 <script src="../olympus/intro-app.js?v=i10" defer></script>
@@ -38,6 +39,7 @@
     <div class="tags"><span id="demo" class="tag demo" hidden>DEMO</span><span id="snap" class="tag demo" hidden>SNAPSHOT</span></div>
   </header>
   <p id="status" class="note" role="status" aria-live="polite">Loading...</p>
+  <section class="pulse" data-pulse="strip,money" data-pulse-app="business" aria-label="Today, payouts and fees" aria-busy="true"><div class="pu-part pu-strip"></div><div class="pu-part pu-money"></div></section><!-- day-arenas: olympus/pulse.js -->
   <section class="ag-card card" data-dash="cockpit" aria-label="Your accounts now (live)"></section>
 
   <a class="ag-card card door2 mffu-top" href="mffu.html" style="display:grid;margin:0 0 12px"><h2>My accounts (MFFU view) &rarr;</h2><p class="note">Every MFFU account the way MFFU shows it: status, start date, balance, floor, target, days, payout. Live from your PC.</p></a>
@@ -137,5 +139,6 @@
 <script type="module" src="business.js?v=4"></script>
 <script src="../widget/olympus-widget.js?v=w1"></script><!-- live accounts: the PC post, else the site copy -->
 <script src="dashkit.js?v=1"></script>
+<script type="module" src="../olympus/pulse.js?v=p1"></script>
 </body>
 </html>

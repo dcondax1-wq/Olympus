@@ -20,6 +20,7 @@
 <script>(function () { var d = document.documentElement; try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
 <link rel="stylesheet" href="../olympus/olympus.css?v=o7">
 <link rel="stylesheet" href="../olympus/agora.css?v=a7"><link rel="stylesheet" href="../olympus/agora-apps.css?v=g2">
+<link rel="stylesheet" href="../olympus/pulse.css?v=p1">
 <script src="../olympus/themes.js?v=o9"></script>
 <script src="../olympus/olympus.js?v=o15" data-app="journal"></script>
 <script src="../olympus/intro-app.js?v=i10" defer></script>
@@ -56,6 +57,7 @@
   </section>
   <section class="pl-place" data-polis-life="stoic" aria-label="A line from the Stoics for today" hidden></section>
 
+  <section class="pulse" data-pulse="hero:last,stats" data-pulse-app="journal" aria-label="Last trade, streak, win rate by setup and weekday" aria-busy="true"><div class="pu-part pu-hero"></div><div class="pu-part pu-stats"></div></section><!-- day-arenas: olympus/pulse.js -->
   <section class="card" id="week" aria-labelledby="weekH">
     <h2 id="weekH">Your week, in plain words</h2>
     <div id="weekLines"></div>
@@ -106,5 +108,6 @@
   </div>
 </div>
 <script type="module" src="journal.js?v=j1g"></script>
+<script type="module" src="../olympus/pulse.js?v=p1"></script>
 </body>
 </html>

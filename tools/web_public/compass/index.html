@@ -19,6 +19,7 @@
 <script>(function () { var d = document.documentElement; try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
 <link rel="stylesheet" href="../olympus/olympus.css?v=o7">
 <link rel="stylesheet" href="../olympus/agora.css?v=a7">
+<link rel="stylesheet" href="../olympus/pulse.css?v=p1">
 <script src="../olympus/themes.js?v=o9"></script>
 <script src="../olympus/olympus.js?v=o15" data-app="compass"></script>
 <script src="../olympus/intro-app.js?v=i10" defer></script>
@@ -36,6 +37,7 @@
   </header>
   <p id="status" class="note" role="status" aria-live="polite">Loading...</p>
 
+  <section class="pulse" data-pulse="strip" data-pulse-app="compass" aria-label="Today, drawdown left, to pass" aria-busy="true"><div class="pu-part pu-strip"></div></section><!-- day-arenas: olympus/pulse.js -->
   <section class="ag-card card hero" aria-labelledby="firstH">
     <div class="row"><h2 id="firstH">Do this first</h2><span class="pill" id="pill">...</span></div>
     <div class="stage">
@@ -58,6 +60,7 @@
     <ul class="acts" id="quiet"></ul>
   </section>
 
+  <section class="pulse" data-pulse="bots,accounts" data-pulse-app="compass" aria-label="The bots and every account" aria-busy="true"><div class="pu-part pu-bots"></div><div class="pu-part pu-accounts"></div><p class="pu-note pu-age"></p></section><!-- day-arenas: olympus/pulse.js -->
   <section class="ag-card card" aria-labelledby="howH">
     <h2 id="howH">How Compass decides</h2>
     <p class="note">Every rule has a tag: a dollar figure (an estimate) or free. Urgency decides the order, dollars break ties. At most five actions are shown.</p>
@@ -69,5 +72,6 @@
 </main>
 <script type="module" src="needleload.js?v=a1"></script>
 <script type="module" src="compass.js?v=q6c"></script>
+<script type="module" src="../olympus/pulse.js?v=p1"></script>
 </body>
 </html>
