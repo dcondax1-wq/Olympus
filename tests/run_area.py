@@ -286,6 +286,7 @@ AREAS["pc"].append("redteam2_live")       # day-redteam2 2026-11-20: half-day ha
 AREAS["nq"].append("redteam2_live")
 AREAS["pc"].append("redteam2_wires")      # day-redteam2 2026-11-20: L2 rapid._other_names covers the extra accounts
 AREAS["agency"].append("web_research")   # day-web-research 2026-11-20: the website-business research (RESEARCH.md, writeup, offers.json); its own line
+AREAS["olympus"].append("site_refresh")   # day-archive 2026-11-20: tools/site_refresh.py, the CRONOS-era builders at site-build time (never fatal); its own line
 
 
 def main(argv=None) -> int:
