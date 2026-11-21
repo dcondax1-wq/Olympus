@@ -2,7 +2,7 @@
  "v": 1,
  "kind": "web_leads",
  "demo": false,
- "fetched": "2026-11-21T19:27:04Z",
+ "fetched": "2026-11-21T19:43:34Z",
  "source": "OpenStreetMap via the public Overpass API (a few small queries per town)",
  "license": "Data (c) OpenStreetMap contributors, ODbL (openstreetmap.org/copyright)",
  "about": "Businesses on OpenStreetMap with no website tag. OSM can be out of date: check the business before you call.",
@@ -45,24 +45,6 @@
    "missing": [],
    "chains": 306,
    "with_site": 165
-  },
-  {
-   "town": "Westminster",
-   "state": "MD",
-   "businesses": 98,
-   "leads": 35,
-   "hot": 2,
-   "server": "maps.mail.ru",
-   "parts_ok": 5,
-   "parts": 9,
-   "missing": [
-    "healthcare",
-    "gyms",
-    "food places",
-    "other shops"
-   ],
-   "chains": 25,
-   "with_site": 24
   },
   {
    "town": "Mount Airy",
@@ -253,12 +235,27 @@
    ],
    "chains": 121,
    "with_site": 144
+  },
+  {
+   "town": "Westminster",
+   "state": "MD",
+   "businesses": 165,
+   "leads": 62,
+   "hot": 2,
+   "server": "maps.mail.ru, overpass.kumi.systems",
+   "parts_ok": 8,
+   "parts": 9,
+   "missing": [
+    "food places"
+   ],
+   "chains": 71,
+   "with_site": 37
   }
  ],
  "skipped": {
-  "has_site": 1415,
-  "chain": 2469,
-  "other": 511,
+  "has_site": 1452,
+  "chain": 2540,
+  "other": 525,
   "duplicate": 209,
   "closed": 1
  },
@@ -267,7 +264,6 @@
   "towns/frederick.json",
   "towns/gaithersburg.json",
   "towns/columbia.json",
-  "towns/westminster.json",
   "towns/mount-airy.json",
   "towns/urbana.json",
   "towns/middletown.json",
@@ -279,7 +275,8 @@
   "towns/hagerstown.json",
   "towns/germantown.json",
   "towns/rockville.json",
-  "towns/ellicott-city.json"
+  "towns/ellicott-city.json",
+  "towns/westminster.json"
  ],
- "count": 1550
+ "count": 1577
 }

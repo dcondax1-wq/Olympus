@@ -1,4 +1,4 @@
-# Website leads: counts (OpenStreetMap, updated 2026-11-21 19:27 UTC)
+# Website leads: counts (OpenStreetMap, updated 2026-11-21 19:43 UTC)
 
 Mailable = house number + street + town + ZIP (postcard-ready). Leads after removing businesses in two town boxes.
 
@@ -19,5 +19,5 @@ Mailable = house number + street + town + ZIP (postcard-ready). Leads after remo
 | Thurmont | 24 | 17 | 0 | 1 | 0 | 11 | 1 | 0 | 1 | 1 | 7 | 3 | 0 | 9 | 2 | offices, beauty + auto shops |
 | Urbana | 22 | 5 | 1 | 1 | 0 | 9 | 1 | 8 | 0 | 7 | 1 | 5 | 0 | 0 | 0 | offices, food places, other shops |
 | Walkersville | 4 | 8 | 3 | 3 | 0 | 3 | 0 | 0 | 0 | 0 | 2 | 0 | 0 | 1 | 1 | offices, gyms, beauty + auto shops |
-| Westminster | 35 | 25 | 2 | 3 | 0 | 17 | 7 | 11 | 0 | 0 | 4 | 4 | 3 | 0 | 6 | healthcare, gyms, food places, other shops |
-| **All** | **1550** | **1487** | **85** | **138** | **5** | **808** | **100** | **236** | **26** | **64** | **536** | **135** | **32** | **353** | **68** | |
+| Westminster | 62 | 71 | 2 | 5 | 0 | 28 | 7 | 11 | 0 | 4 | 4 | 6 | 3 | 21 | 6 | food places |
+| **All** | **1577** | **1533** | **85** | **140** | **5** | **819** | **100** | **236** | **26** | **68** | **536** | **137** | **32** | **374** | **68** | |
