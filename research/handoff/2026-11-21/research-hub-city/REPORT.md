@@ -14,3 +14,7 @@
 Clio's `../cities/?fly=<id>` is forwarded to the World. Rejected figures show as "Test quoted", never as profit. A street per family with 4+ entries
 (today: Other 104, Risk 27, Filters 4; the rest on Other) and never thinner than 6 degrees; a hub file that cannot fit = the city without the hub
 (never a broken nightly build). Shots 4-5 are REAL data. Tip for the hub: real family values (not 'other') give more streets.
+
+**Update 2** (hub families fixed, day-litedge 5823f76b): 9 streets (lit, ops, risk, atlas, kalshi, filters, money, management, sessions), all 146 placed.
+Lab & Research gets its need share + 6 degrees per extra street, so the city stays at radius 173 (not 236): 14,165 buildings on a phone
+(13,477 without the hub), low tier 10,983.

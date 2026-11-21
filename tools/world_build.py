@@ -656,7 +656,7 @@ def concepts(W):
 # Decide cards beacons that pulse until answered. No hub.json = nothing here (never example data in the owner's city).
 HUB_STATE = {"live": ("live", CROWN), "lead": ("testing", SCAFFOLD), "rejected": ("ruin", RUIN), "decide": ("decide", BRIGHT)}
 HUB_WORD = {"live": "Live", "lead": "Open lead", "rejected": "Rejected", "decide": "Decide"}
-HUB_FAMILIES = 5
+HUB_FAMILIES = 10
 LAB_QUARTERS = list(QUARTERS["lab"])
 
 
@@ -772,6 +772,10 @@ def plan_city(W):
     tot = sum(dneed.values()) or 1
     # the wedges: proportional to need, at least 46 degrees each; ZEUS Trading centred on north (-90 degrees: the first view looks north)
     share = {d: max(math.radians(46), 2 * math.pi * dneed[d] / tot) for d, *_ in DISTRICTS}
+    # Lab & Research holds the Research Hub's family streets: room for each at 6 degrees + a margin, so the city does not have to grow
+    # outward to fit thin wedges (the phone's instance budget)
+    nlab = sum(1 for q, _ in QUARTERS["lab"] if q not in DOWNTOWN and ("lab", q) in need)
+    share["lab"] = share["lab"] + math.radians(6 * max(0, nlab - 2))
     k = 2 * math.pi / sum(share.values())
     # quantized to 3 degree steps (the remainder goes to ZEUS Trading): a few new places never move a district border
     share = {d: math.radians(3) * round(math.degrees(v * k) / 3) for d, v in share.items()}
