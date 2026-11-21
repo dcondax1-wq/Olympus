@@ -1,7 +1,7 @@
 // AGENCY · OUTREACH page (day-a11y 2026-11-20). The logic is outreachcore.js; the words are scripts.json. Text only via textContent.
 // Saved on this phone: the status marks in 'agency.leads.status.v1' (shared with the Leads page: { id: { s, t } }) and the owner's details,
 // the touches (day 0 / 3 / 7) and the delivery ticks in 'agency.outreach.v1'. Nothing is sent: tel: / mailto: / the clipboard only.
-import * as C from './outreachcore.js?v=1';
+import * as C from './outreachcore.js?v=2';
 
 const KEY = 'agency.outreach.v1', MARK_KEY = 'agency.leads.status.v1', SUM_KEY = 'agency.outreach.summary';
 const $ = (id) => document.getElementById(id);
