@@ -213,10 +213,20 @@ async function mount() {
     if (slow >= SLOW_HITS) {
       slow = 0; slowLvl++; state.slow = slowLvl;
       if (slowLvl === 1) { if (rc.quality() !== 'low' && rc.quality() !== 'off') { rc.setQuality('low'); state.quality = 'low'; } }
-      else { if (raf) cancelAnimationFrame(raf); raf = 0; state.still = 'slow'; }   // keeps the last frame on screen
+      else { if (raf) cancelAnimationFrame(raf); raf = 0; state.still = 'slow'; stillTick(); }   // the last frame stays; a fresh one every 3 s
     }
   }
   const live = () => onHome() && !document.hidden && !still() && !scrolling && slowLvl < 2;
+  // too slow for motion: still, but not frozen: one frame every 3 s keeps the sky on the New York clock, the VIX weather and the mode's colour
+  let stillT = 0, stillLast = 0;
+  function stillTick() {
+    clearTimeout(stillT);
+    stillT = setTimeout(() => {
+      if (slowLvl < 2) return;
+      if (onHome() && !document.hidden && !scrolling) { const n = performance.now(); step(stillLast ? Math.min(3, (n - stillLast) / 1000) : 0); stillLast = n; draw(); }
+      stillTick();
+    }, STILL_MS);
+  }
   // an app open over Jarvis (the home is hidden): release the composer's buffers and the environment, not just the loop
   function kick() {
     if (!onHome()) { if (raf) cancelAnimationFrame(raf); raf = 0; rc.suspend(); state.asleep = true; return; }
@@ -256,7 +266,7 @@ const QUIET_MS = 2500, START_MS = 1500;
 // QA 2026-11-21 (lead): the sky must be cheap at start. Until it is ready the page shows its poster: .bgfx's CSS sky (jarvis.css), there
 // from the first frame, the 3D fading in over it. The scene's shaders compile one object per idle slice (compileStepwise), never all at
 // once on the first frame; and a frame that costs more than 50 ms twice drops to 15 fps and the low tier, then (twice more) to a still frame.
-const SLOW_MS = 50, SLOW_HITS = 2;
+const SLOW_MS = 50, SLOW_HITS = 2, STILL_MS = 3000;
 let lastInput = Date.now();
 const COARSE = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
 const phoneNow = () => COARSE && Math.min(innerWidth, innerHeight) < 600;
