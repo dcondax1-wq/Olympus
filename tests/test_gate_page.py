@@ -234,8 +234,8 @@ def nav_checks(p, origin):
     p.wait_for_timeout(400)
     g = p.evaluate("() => ({ secs: [...document.querySelectorAll('.gn-body .gn-sec')].map((h) => h.textContent), pinned: [...document.querySelectorAll('.gn-body .gn-list')][0] ? [...[...document.querySelectorAll('.gn-body .gn-list')][0].querySelectorAll('a[data-app]')].map((a) => a.dataset.app) : [],"
                    " pin: (document.querySelector('.gn-pin') || {}).textContent, az: (document.querySelector('a[data-gn=\"az\"]') || {}).href })")
-    check("c. Go to on NQ (empty box): Pinned first (Risk guard, Kalshi bot), a 'Pin this app' star for NQ, then the hubs, and All apps A to Z (-> gate/#az)",
-          g["secs"][:2] == ["Pinned", "Hubs"] and g["pinned"] == ["aegis", "kalshi"] and g["pin"] == "\u2606Pin this app to Home" and g["az"] == f"{origin}/gate/index.html#az", g)
+    check("c. Go to on NQ (empty box): Pinned first (Risk guard, Kalshi bot), a 'Pin this app' star for NQ, then the arenas, and All apps A to Z (-> gate/#az)",
+          g["secs"][:2] == ["Pinned", "Arenas"] and g["pinned"] == ["aegis", "kalshi"] and g["pin"] == "\u2606Pin this app to Home" and g["az"] == f"{origin}/gate/index.html#az", g)
     p.click(".gn-pin")
     p.wait_for_timeout(150)
     p.fill("#gnQ", "theme")
@@ -503,8 +503,8 @@ def test_page():
             ctx.close()
             s5.shutdown()
 
-            # gate-nav on the apps: Home > Hub > app
-            for app, sel, hub in (("nq", "header.top .ag-navback", "Bots & Evals"), ("kalshi", "a.olyback", "Kalshi"), ("cities", "a.gn-back", "Worlds"), ("polis", "a.gn-back", "Worlds")):
+            # gate-nav on the apps: Home > ARENA > app (ORGANIZE 2026-11-21: the arena crumb opens hub/arena.html; an arena's front page shows no own name)
+            for app, sel, hub in (("nq", "header.top .ag-navback", "NQ Bot"), ("kalshi", "a.olyback", "Kalshi"), ("cities", "a.gn-back", "Cities"), ("polis", "a.gn-back", "Cities")):
                 ctx, p, errs, seen, off = AK.page(br, origin)
                 p.goto(f"{origin}/{app}/")
                 p.wait_for_function("window.OLYMPUS_GATE_NAV && window.OLYMPUS_GATE_NAV.placed() && document.querySelector('.gn-crumb') && document.querySelector('.gn-crumb').textContent", timeout=60000)
@@ -513,8 +513,8 @@ def test_page():
                                " return { text: a && a.textContent.trim(), href: a && a.href, go: !!g, top: ra && Math.round(ra.top), goTop: rg && Math.round(rg.top), goR: rg && Math.round(rg.right), h: rg && Math.round(rg.height),"
                                " hub: c && c.textContent, hubHref: c && c.href, cur: (document.querySelector('.gn-cur') || {}).textContent, inNav: !!a.closest('nav.gn-crumbs'),"
                                " rec: JSON.parse(localStorage.getItem('gate.recent.v1') || '[]')[0] }; }", sel)
-                check(f"c. {app}: the breadcrumb reads Home > {hub} > its name (Home -> gate/, {hub} -> its hub tab), 'Go to' (44 px) on the right of the top row, remembered for Recent",
-                      r["text"] in ("Home", "← Home") and r["href"] == f"{origin}/gate/index.html" and r["inNav"] and r["hub"] == hub and "/hub/index.html?h=" in (r["hubHref"] or "") and r["cur"]
+                check(f"c. {app}: the breadcrumb reads Home > {hub} (> its name) (Home -> gate/, {hub} -> its arena page), 'Go to' (44 px) on the right of the top row, remembered for Recent",
+                      r["text"] in ("Home", "← Home") and r["href"] == f"{origin}/gate/index.html" and r["inNav"] and r["hub"] == hub and "/hub/arena.html?a=" in (r["hubHref"] or "") and (r["cur"] or app != "polis")
                       and r["go"] and r["h"] >= 44 and r["goTop"] < 140 and r["goR"] <= 390 and r["rec"] == app, r)
                 check(f"c. {app} with gate-nav: no sideways scroll, no console error", AK.no_sideways(p) and not errs, errs[:3])
                 if app == "nq":
@@ -527,7 +527,8 @@ def test_page():
                     p.fill("#gnQ", "")
                     p.wait_for_timeout(150)
                     dl = p.evaluate("() => ({ hubs: [...document.querySelectorAll('.gn-dist')].map((a) => a.href.replace(location.origin, '')), first: document.querySelector('.gn-body .gn-sec').textContent, here: (document.querySelector('.gn-dist.gn-here') || {}).dataset })")
-                    check("c. Go to with an empty box: the HUBS first (each opens its hub page), this app's hub marked", dl["hubs"] == [f"/hub/index.html?h={h}" for h in HUBS] and dl["first"] == "Hubs" and dl["here"] == {"hub": "bots"}, dl)
+                    ARENAS = ["nq", "kalshi", "business", "agency", "jarvis", "cities", "else"]      # ORGANIZE 2026-11-21: the same top level as Home
+                    check("c. Go to with an empty box: the ARENAS first (each opens its arena page), this app's arena marked", dl["hubs"] == [f"/hub/arena.html?a={h}" for h in ARENAS] and dl["first"] == "Arenas" and dl["here"] == {"arena": "nq"}, dl)
                     t = AK.taps(p)
                     check("c. the Go to sheet: every tap >= 44 px", not t, t[:4])
                     p.keyboard.press("Escape")
