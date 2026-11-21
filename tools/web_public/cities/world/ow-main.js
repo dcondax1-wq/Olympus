@@ -72,7 +72,7 @@ async function boot() {
   else {
     try {
       S.plan = C.planWorld(w, { tier: O() && O().lite && O().lite() ? 'low' : 'high', phone: (() => { try { return matchMedia('(pointer: coarse)').matches; } catch (e) { return false; } })() });
-      const M = await import('./ow-scene.js?v=w6');
+      const M = await import('./ow-scene.js?v=w7');
       S.scene = M.createWorld({ canvas: $('#c'), world: w, plan: S.plan, reduced, sky: qs.get('sky') || 'auto', manual: qs.get('clock') === 'manual', tier: O() && O().lite && O().lite() ? 'low' : 'high',
         onTap, onFrame, onUser: () => { hideHint(); if (S.tour) setTour(false); }, onIntroDone: () => { showHint(); snd('chime'); cityBed(); } });
       S.mode = '3d';
