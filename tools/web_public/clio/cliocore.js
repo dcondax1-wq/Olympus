@@ -105,7 +105,7 @@ export function jarvisCard(list, usingFixture) {
 // Owner view: four tabs (what works now, tried and rejected, open leads, money decisions waiting), each item one plain line with its $,
 // a tap opens the write-up (slug) or the item's own text. Everything is cleaned and capped here too: the page never trusts the file.
 export const HUB_TABS = [['works', 'What works now'], ['rejected', 'Tried and rejected'], ['leads', 'Open leads'], ['decide', 'Money decisions']];
-export const FAMS = ['baseline', 'risk', 'stops', 'targets', 'management', 'bias', 'filters', 'timing', 'sessions', 'data', 'other'];
+export const FAMS = ['lit', 'atlas', 'kalshi', 'money', 'ops', 'baseline', 'risk', 'stops', 'targets', 'management', 'bias', 'filters', 'timing', 'sessions', 'data', 'other'];
 function hubRow(r, tab) {
   if (!isObj(r)) return null;
   const title = str(r.title, 140); if (!title) return null;

@@ -45,6 +45,23 @@ OUT = os.path.join(ROOT, "tools", "web_public", "clio", "hub.json")
 OUT_FLAT = os.path.join(ROOT, "tools", "web_public", "research", "hub.json")      # the Cities "Lab & Research" district (flat records)
 STATUS_OF = {"works": "live", "leads": "lead", "rejected": "rejected", "decide": "decide"}
 FAMILIES = ("baseline", "risk", "stops", "targets", "management", "bias", "filters", "timing", "sessions", "data", "other")
+# 'other' is too broad for a street a family (Cities, 2026-11-21): guess one from the words, first match wins
+GUESS = (("kalshi", r"\bkalshi|\bk8\b|prediction.market"), ("atlas", r"\batlas\b"), ("lit", r"zlarior|\blit\b|liquidity"),
+         ("money", r"payout|funded|eval|mffu|rapid|builder|prop|account|fee|seat|business|income"), ("risk", r"siz(e|ing)|risk|drawdown|room"),
+         ("management", r"breakeven|exit|trail|partial|target|stop"), ("filters", r"filter|bias|news|vix|regime|skip"),
+         ("sessions", r"session|london|asia|new york|hours|timing|minute"))
+FAM_ALL = FAMILIES + tuple(k for k, _ in GUESS) + ("ops",)
+
+
+def fam_guess(fam: str, *texts) -> str:
+    fam = (fam or "other").lower()
+    if fam in FAMILIES and fam != "other":
+        return fam
+    t = " ".join(str(x or "") for x in texts).lower()
+    for k, rx in GUESS:
+        if re.search(rx, t):
+            return k
+    return "other"
 LIVE = {"LIT": ("Zlarior (LIT)", "zlarior", "lit-strategy"), "ATLAS": ("ATLAS", "atlas", "atlas")}
 MONEY_RX = re.compile(r"(-|−|\+)?\$\s?(\d[\d,]*(?:\.\d+)?)(k)?")
 PM_RX = re.compile(r"(-|−|\+)?\s?\$\s?(\d[\d,]*(?:\.\d+)?)\s*(?:/\s*mo(?:nth)?\b|a month\b|per month\b)", re.I)
@@ -126,7 +143,7 @@ def writeups():
         summary = meta.get("summary") or ""
         out.append({"slug": slugify(stem), "stem": stem.lower(), "title": clean(meta.get("title") or (h1.group(1) if h1 else stem), 140),
                     "date": date if re.match(r"^\d{4}-\d{2}-\d{2}$", date or "") else "",
-                    "family": fam if fam in FAMILIES else "other", "status": clean(status, 160).lower(),
+                    "family": fam_guess(fam if fam in FAMILIES else "other", meta.get("title") or stem, summary), "status": clean(status, 160).lower(),
                     "summary": clean(summary, 420), "usd_month": per_month(summary)})
     out.sort(key=lambda w: (w["date"], w["title"]), reverse=True)
     return out
@@ -282,7 +299,7 @@ def build():
              for w in W if group_of(w["status"]) == "rejected" and w["slug"] not in linked]
     fam_of = {w["slug"]: w["family"] for w in W}
     for r in tested:
-        r["family"] = fam_of.get(r["slug"], "other")
+        r["family"] = fam_guess(fam_of.get(r["slug"], "other"), r["title"], r["text"])
     rejected = sorted(tested + rej_w, key=lambda r: r["date"], reverse=True)
     leads_w = [{"title": w["title"], "date": w["date"], "line": first_sentence(w["summary"] or w["status"], 180), "usd_month": w["usd_month"],
                 "slug": w["slug"], "text": w["summary"], "src": "writeup", "kind": "PAPER LEAD", "family": w["family"]}
@@ -320,9 +337,18 @@ def flat(hub: dict) -> dict:
                 k, n = f"{i}-{n}", n + 1
             seen.add(k)
             r["id"] = k                                    # the Clio hub row carries the same id (the city's ?fly=<id>)
-            items.append({"id": k, "title": r["title"], "family": r.get("family") or "other", "status": STATUS_OF[tab],
+            if tab == "works":
+                r["family"] = {"LIT": "lit", "ATLAS": "atlas"}.get(r.get("bot"), "other")
+            elif r.get("src") == "ledger":                    # findings on the bots / pages: their own street unless Kalshi
+                r["family"] = "kalshi" if re.search(GUESS[0][1], (r["title"] + " " + r.get("text", "")).lower()) else "ops"
+            else:
+                r["family"] = fam_guess(r.get("family"), r["title"], r.get("line"), r.get("text"))
+            items.append({"id": k, "title": r["title"], "family": r["family"], "status": STATUS_OF[tab],
                           "usd_month": r.get("usd_month"), "date": r.get("date") or r.get("since") or "", "summary": r.get("line") or "",
                           "url": f"../clio/?read={r['slug']}" if r.get("slug") else f"../clio/?item={k}"})
+    FOLD = {"targets": "management", "stops": "management", "bias": "filters", "timing": "sessions", "data": "ops", "baseline": "lit"}
+    for x in items:                                        # a street needs 4+ items: fold the tiny families into their neighbours
+        x["family"] = FOLD.get(x["family"], x["family"])
     return {"v": 1, "built": hub["built"], "schema": "id, title, family, status (live | lead | rejected | decide), usd_month (null = none quoted), "
                                                     "date (YYYY-MM-DD or ''), summary (one plain line), url (the rendered write-up in Clio)",
             "counts": dict(collections.Counter(x["status"] for x in items)), "items": items}
