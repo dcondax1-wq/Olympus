@@ -50,3 +50,8 @@ Same one-liner with k54 (sed -E on CACHE + both SHELL entries), or `python tools
 
 ## Update 7 (OLYMPUS NIGHT): kalshi.css / kalshi.js are now ?v=k56; theme-color #000000
 `python tools/bump_versions.py --apply` (or the sed -E one-liner with k56).
+
+## Update 8 (NIGHT labels, lead QA 2026-11-21): kalshi.css / kalshi.js are now ?v=k57
+`python tools/bump_versions.py --apply` (or the sed -E one-liner with k57). The header state word (#k8sub-m), the checklist count
+(#k8top-gon / .kgo-n) and the paper box edge were gold-brown on every theme; now lavender / violet, gold only on LIVE.
+theme_leftovers on /kalshi/: midnight 0, terminal 0 (was 3 each). kalshi.css defines no --oly-th-* slot (it only reads them with fallbacks).
