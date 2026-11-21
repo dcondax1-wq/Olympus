@@ -264,10 +264,13 @@ SIDEWAYS = "() => document.documentElement.scrollWidth <= innerWidth + 1"
 # Jarvis's orb corner is measured as the page looks INSIDE Jarvis (html.framed: the 176 px seat). Alone, a page ends 96 px + the home bar
 # under its last line (night-siteqa 2026-11-20: no empty band at the end; only the 44 px OLYMPUS seal sits in the corner then)
 CORNER = """() => { const W = innerWidth, H = innerHeight, bad = [], de = document.documentElement, was = de.classList.contains('framed');
+  // in Jarvis's frame the kit never mounts the Ask Jarvis button (olympus.js), so its 72 px pad (body.oly-has-ask) is not there either
+  const ask = document.body.classList.contains('oly-has-ask'); document.body.classList.remove('oly-has-ask');
   de.classList.add('framed'); void de.offsetHeight; window.scrollTo(0, document.documentElement.scrollHeight);
   for (const e of document.querySelectorAll('button, input, select, textarea, summary, a[href]')) { if (/oly-/.test(e.className + ' ' + e.id)) continue; const r = e.getBoundingClientRect(); if (!r.width) continue;
     if (r.right > W - 80 && r.bottom > H - 160 && r.left < W && r.top < H) bad.push(e.id || e.className || e.tagName); }
   if (!was) de.classList.remove('framed');
+  if (ask) document.body.classList.add('oly-has-ask');
   return bad; }"""
 
 
