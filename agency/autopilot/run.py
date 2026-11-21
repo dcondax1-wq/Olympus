@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import getpass
+import hashlib
 import json
 import os
 import random
@@ -89,6 +90,9 @@ def mask_addr(a: str) -> str:
     return re.sub(r"^(.).*(@.*)$", r"\1***\2", a) if "@" in a else ""
 
 
+CODE_RE = re.compile(r"\b([A-Z]{2}-\d{1,4})\b")   # the postcard / concept-site code (FR-27, day-cities3's tools/site_factory_codes.json)
+
+
 def site_data() -> tuple:
     leads = (read_json(os.path.join(WEB, "agency", "leads", "leads.json"), {}) or {}).get("leads") or []
     extra = read_json(path("agency_leads_private.json"), {}) or {}     # the owner's own additions (emails he found), never in the repo
@@ -107,6 +111,11 @@ def site_data() -> tuple:
     words = read_json(os.path.join(WEB, "agency", "outreach", "scripts.json"), {}) or {}
     offers = read_json(os.path.join(WEB, "agency", "offers", "offers.json"), {}) or {}
     sites = read_json(os.path.join(WEB, "agency", "sites", "index.json"), {}) or {}
+    codes = dict(read_json(os.path.join(ROOT, "tools", "site_factory_codes.json"), {}) or {})
+    codes.update(sites.get("codes") if isinstance(sites, dict) and isinstance(sites.get("codes"), dict) else {})
+    for L in leads:
+        if isinstance(L, dict) and codes.get(L.get("id")):
+            L["_code"] = str(codes[L["id"]])
     s = sites.get("sites") if isinstance(sites, dict) else None
     if isinstance(s, list):
         s = {x.get("id"): x.get("url") for x in s if isinstance(x, dict)}
@@ -147,8 +156,49 @@ def never_add(lead_id: str, email_addr: str = "") -> None:
 
 
 # ------------------------------------------------------------------------------------------------ one pass
+def caller_share(h: str | None = None) -> dict:
+    """day-caller's <home>/caller/share/ (tools/caller): consent/<id>.json (a business asked for the assistant's call), outbox/<id>.json
+    (an email the caller promised: demo / booking / payment, "to" = the address said on the call), status/<lead_id>.json ({lead_id, s, t, outcome}).
+    files = the copies the PC pushes to agency-inbox as caller/... ("to" masked: no business address in the repo)"""
+    base = os.path.join(h or home(), "caller", "share")
+    out = {"files": {}, "consent": set(), "outbox": [], "status": {}}
+    for sub in ("consent", "outbox", "status"):
+        d = os.path.join(base, sub)
+        if not os.path.isdir(d):
+            continue
+        for n in sorted(os.listdir(d)):
+            j = read_json(os.path.join(d, n), None) if n.endswith(".json") else None
+            if not isinstance(j, dict):
+                continue
+            out["files"][f"caller/{sub}/{n}"] = dict(j, to=mask_addr(j["to"])) if j.get("to") else j
+            if sub == "consent" and j.get("lead_id"):
+                out["consent"].add(str(j["lead_id"]))
+            elif sub == "outbox":
+                out["outbox"].append(dict(j, id=str(j.get("id") or "call-" + n[:-5]), from_app="caller"))
+            elif sub == "status" and j.get("lead_id"):
+                out["status"][str(j["lead_id"])] = j
+    return out
+
+
+def caller_stop(L: dict | None) -> None:
+    """an email opt-out also goes on the caller's do-not-call list and revokes any call consent (tools/caller, when it is installed)"""
+    ph = str((L or {}).get("phone") or "")
+    if not ph:
+        return
+    try:
+        from tools.caller import compliance as G, consent as K   # day-caller's package; absent = nothing to do
+    except Exception:  # noqa: BLE001
+        return
+    for fn in (G.add_dnc, K.revoke):
+        try:
+            fn(ph, "email stop")
+        except Exception:  # noqa: BLE001
+            pass
+
+
 def run_once(cfg: dict, state: dict, leads: list, words: dict, offers: dict, sites: dict, now: dt.datetime | None = None,
-             smtp_factory=None, imap_factory=None, push=None, outbox=None, notify=notify_owner, public=post_public, sleep=time.sleep) -> dict:
+             smtp_factory=None, imap_factory=None, push=None, outbox=None, notify=notify_owner, public=post_public, sleep=time.sleep,
+             caller=None) -> dict:
     """returns {sent: [...], inbox: [...], outbox: [...], errors: [...]}; state is changed in place"""
     res = {"sent": [], "inbox": [], "outbox": [], "errors": [], "mode": cfg.get("mode")}
     if cfg.get("mode") not in ("dry", "live"):
@@ -161,11 +211,23 @@ def run_once(cfg: dict, state: dict, leads: list, words: dict, offers: dict, sit
     day = core.day_of(now)
     files = {}
     # 1. replies (any time): classify, trim, stop the sequence, suppress opt-outs and bounces
+    # 0. the AI caller's share: a business that asked for the call (or was called) leaves the email sequence; its files ride the push
+    cs = (caller or caller_share)()
+    for lid in cs["consent"]:
+        state["replied"].setdefault(lid, "call_me")
+    for lid, x in cs["status"].items():
+        state["replied"].setdefault(lid, "call_" + str(x.get("s") or "called"))
+    for k, v in cs["files"].items():
+        h = hashlib.sha1(json.dumps(v, sort_keys=True).encode("utf-8")).hexdigest()[:12]
+        if state["caller_pushed"].get(k) != h:
+            files[k] = v
+            state["caller_pushed"][k] = h
     to_lead = {}
     for lid, log_ in state["sent"].items():
         for x in log_:
             to_lead[core.norm_email(x.get("to"))] = lid
     byid = {L.get("id"): L for L in leads if isinstance(L, dict)}
+    code_to = {str(L["_code"]): L.get("id") for L in leads if isinstance(L, dict) and L.get("_code")}
     try:
         msgs = mailer.fetch_new(cfg, int(state.get("last_uid") or 0), factory=imap_factory)
     except Exception as e:  # noqa: BLE001
@@ -176,12 +238,17 @@ def run_once(cfg: dict, state: dict, leads: list, words: dict, offers: dict, sit
         cls = core.classify(m["subject"], m["from"] + " " + m.get("from_name", ""), m["text"])
         addr = core.bounced_address(m["text"], set(to_lead)) if cls == "bounce" else m["from"]
         lid = to_lead.get(core.norm_email(addr))
+        mc = CODE_RE.search(m.get("subject", "") + " " + m["text"]) if not lid and cls != "bounce" else None
+        if mc and mc.group(1) in code_to and core.valid_email(m["from"]):   # a postcard reply naming its code (FR-27): that business
+            lid = code_to[mc.group(1)]
+            state["pc_from"][lid] = core.norm_email(m["from"])
         if not lid and cls == "optout":                   # a "STOP + business name" email about a postcard: that business never again
             body = (m.get("subject", "") + " " + core.trim(m["text"], mask=False)).lower()
             for L in leads:
                 nm = str(L.get("name") or "").lower()
                 if len(nm) >= 5 and nm in body:
                     never_add(L.get("id"), m["from"])
+                    caller_stop(L)
                     res["inbox"].append({"id": f"r{m['uid']}", "lead_id": L.get("id"), "business": L.get("name"), "class": "optout", "words": "", "subject": "", "t": int(time.time())})
                     break
             continue
@@ -190,6 +257,7 @@ def run_once(cfg: dict, state: dict, leads: list, words: dict, offers: dict, sit
         if cls in ("optout", "bounce"):
             core.suppress(state, addr)
             never_add(lid, addr)                          # the ONE never-again list the postcards read too
+            caller_stop(byid.get(lid))                    # and the caller's do-not-call list
         state["replied"][lid] = cls
         core.day_counts(state, day)["replies_in"] += 1
         item = {"id": f"r{m['uid']}", "lead_id": lid, "business": (byid.get(lid) or {}).get("name", ""), "class": cls,
@@ -200,13 +268,17 @@ def run_once(cfg: dict, state: dict, leads: list, words: dict, offers: dict, sit
     # 2. Claude's drafts: the allowed kinds go out, the rest wait for the owner (one push)
     allowed = {u for u in (cfg.get("booking_link"), cfg.get("payment_link"), cfg.get("site_base") or SITE_BASE) if u}
     held = []
-    for d in (outbox or (lambda: []))():
+    for d in list((outbox or (lambda: []))()) + cs["outbox"]:
         did = str(d.get("id") or "")
         if not did or did in state["outbox_done"]:
             continue
         lid = d.get("lead_id")
         log_ = state["sent"].get(lid) or []
         to = core.norm_email(log_[0]["to"]) if log_ else ""
+        if not to and d.get("from_app") == "caller" and not d.get("inbox_id") and core.valid_email(d.get("to") or ""):
+            to = core.norm_email(d["to"])                 # the caller's promised email: the address the business said on the call
+        if not to and state["pc_from"].get(lid):
+            to = state["pc_from"][lid]                     # a business that wrote in about its postcard
         ok, why = core.draft_ok(d, cfg, allowed)
         body = core.ensure_footer(str(d.get("body") or ""), cfg)
         subj = str(d.get("subject") or "Re: your website")[:150]
@@ -265,8 +337,14 @@ def run_once(cfg: dict, state: dict, leads: list, words: dict, offers: dict, sit
     files["status.json"] = dict(counts, kind="agency-mail-status", needs_owner=held[:20])
     if push:
         err = push(files, f"agency mail {day}: {len(res['inbox'])} in, {len(res['sent'])} out")
-        if err:
+        if err == bridge.PUBLIC_MSG:
+            res["held_local"] = True                      # not an error: H1, the repo is public (the owner makes it private)
+            for k in [k for k in files if k.startswith("caller/")]:
+                state["caller_pushed"].pop(k, None)
+        elif err:
             res["errors"].append("branch: " + redact(err, cfg))
+            for k in [k for k in files if k.startswith("caller/")]:
+                state["caller_pushed"].pop(k, None)       # not on the branch yet: try those again next run
     if public:
         public(counts)                                    # the PC report's tiny card (agency/autopilot/card.py), never an ntfy post of its own
     want = [x for x in res["inbox"] if x["class"] in ("interested", "question")]
@@ -379,6 +457,11 @@ def main(argv=None) -> int:
             pl, ps = PC.leads_and_sites()
             pr = PC.run_once(pc, pst, pl, ps)
             write_json(path("postcards_state.json"), pst)
+            rr = PC.results(pst, pl)                       # the results table by code (responded / call me / claimed): `postcards.py results`
+            write_json(path("postcards_results.json"), rr)
+            if url and rr["rows"]:
+                e2 = bridge.write_and_push(url, wd, {"postcards/results.json": rr}, "postcard results")
+                res["errors"] += ["postcards branch: " + e2] if e2 and e2 != bridge.PUBLIC_MSG else []
             res["errors"] += ["postcards: " + e for e in pr["errors"][:3]]
             res["postcards"] = len(pr["sent"])
     except Exception as e:  # noqa: BLE001

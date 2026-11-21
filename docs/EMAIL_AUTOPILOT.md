@@ -37,6 +37,10 @@ Everything stays in `%USERPROFILE%\.olympus\`:
   A message missing one of these is refused, not sent. The words are `tools/web_public/agency/outreach/scripts.json`, the same as the manual page.
 
 ## The reply bridge: the private branch `agency-inbox`
+**H1 gate (2026-11-20): nothing is pushed while the repo is public.** Before any push the PC asks the GitHub API (`bridge.repo_private`, day-caller's
+`tools.caller.export.repo_private` when installed; `GITHUB_TOKEN` if set). Only `"private": true` opens the gate; a public repo, a 404 or an error keeps
+the replies, the caller files and the postcard results on the PC (the state file, `postcards_results.json`). The owner makes the repo private, then it flows.
+
 The PC keeps its own clone in `%USERPROFILE%\.olympus\agency_inbox` and pushes plain commits. It never force-pushes and never touches another branch.
 
 | File | Who writes it | What |
@@ -45,6 +49,15 @@ The PC keeps its own clone in `%USERPROFILE%\.olympus\agency_inbox` and pushes p
 | `status.json` | the PC | the day's counts and `needs_owner` (drafts that wait) |
 | `outbox/<id>.json` | **Claude** (the scheduled cloud session) | a draft answer: `{"id", "inbox_id", "lead_id", "kind": "price" \| "demo" \| "payment" \| "booking" \| "other", "subject", "body", "approved": false}` |
 | `sent/<id>.json` | the PC | `{id, status: sent \| refused, why, t}` |
+| `caller/consent/<id>.json`, `caller/status/<lead_id>.json`, `caller/outbox/<id>.json` | the PC, copied from the AI caller's `<home>\caller\share\` (day-caller) | consent = the business asked for the call; status = `{lead_id, s, t, outcome}`; outbox = an email the caller promised (`"to"` masked in the copy) |
+| `postcards/results.json` | the PC | the postcard results table by code (FR-27): card 1, the day-10 card, responded / call me / claimed. No addresses. |
+
+**The AI caller and the postcards (2026-11-20):**
+- A lead in `caller/consent` or `caller/status` leaves the email sequence (no more follow-ups).
+- A caller draft (`kind` demo / booking / payment, `inbox_id` empty) goes to the `"to"` the business said on the call, under the same rules as Claude's drafts (our own links only, never a suppressed address, once).
+- An email opt-out also calls the caller's `compliance.add_dnc(phone, "email stop")` and `consent.revoke(phone, "email stop")` when `tools/caller` is installed.
+- A reply that names a postcard code (`FR-27`) counts as that business's reply, and Claude's answer goes back to the person who wrote.
+- The phone's lead status (`agency.leads.status.v1`) lives in the phone's browser: the PC cannot write it. The caller status files on `agency-inbox` are where a page could read it.
 
 **Claude, when answering:**
 - Read `inbox/` for items with no `sent/` result yet. Write one `outbox/<id>.json` per reply. Sign it with the owner's name exactly as on the first email; the PC adds the postal address and the no-thanks line when missing.

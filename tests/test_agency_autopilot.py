@@ -249,6 +249,27 @@ def main():
         # ---------------------------------------------------------------- h. the private branch (a local bare repo as the remote)
         bare = os.path.join(tmp, "remote.git")
         subprocess.run(["git", "init", "-q", "--bare", bare], check=True)
+        # H1: nothing is pushed unless GitHub says the repo is private (a public repo, a 404, an error, a non-GitHub address = held on the PC)
+        class Resp(io.BytesIO):
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *a):
+                return False
+        pub = lambda req, timeout=15: Resp(b'{"private": false}')  # noqa: E731
+        prv = lambda req, timeout=15: Resp(b'{"private": true}')  # noqa: E731
+
+        def e404(req, timeout=15):
+            raise OSError("HTTP Error 404: Not Found")
+        gh = "https://github.com/someone/somerepo.git"
+        check("h. H1 gate: private only when the API says private: true (public, 404, error, a non-GitHub address = not private)",
+              bridge.repo_private(gh, opener=prv) and not bridge.repo_private(gh, opener=pub) and not bridge.repo_private(gh, opener=e404)
+              and not bridge.repo_private(bare, opener=prv) and bridge.repo_of("git@github.com:a-b/c.d.git") == "a-b/c.d")
+        wd0 = os.path.join(tmp, "clone0")
+        e0 = bridge.write_and_push(bare, wd0, {"inbox/r1.json": {"id": "r1", "words": "Yes"}}, "test")
+        ls0 = subprocess.run(["git", "--git-dir", bare, "branch", "--list"], capture_output=True, text=True).stdout.strip()
+        check("h. H1: while the repo is not proven private, nothing is pushed (no branch, no words) and it says why", e0 == bridge.PUBLIC_MSG and not ls0, (e0, ls0))
+        bridge.PRIVATE = lambda url: True                 # the bare test repo stands in for a private GitHub repo from here on
         wd = os.path.join(tmp, "wd")
         err = bridge.write_and_push(bare, wd, {"inbox/r3.json": {"id": "r3", "class": "interested", "words": "Yes"}, "status.json": {"kind": "agency-mail-status"}}, "test")
         ls = subprocess.run(["git", "--git-dir", bare, "ls-tree", "-r", "--name-only", bridge.BRANCH], capture_output=True, text=True).stdout.split()
@@ -287,6 +308,56 @@ def main():
             sx["replied"].pop("L07", None)
             run.run_once(live, sx, leads, words, offers, {}, now=T(2026, 12, 1, 18, k), smtp_factory=FakeSMTP, imap_factory=FakeIMAP, notify=nn.append, public=None)
         check("j. at most 4 phone pushes a day (the PC shares ntfy's per-IP budget with the bot's alerts)", len(nn) == 4, len(nn))
+
+        # ---------------------------------------------------------------- k. the AI caller (day-caller) + postcard codes
+        import types
+        H = os.environ["OLYMPUS_HOME"]
+        for sub, n, j in (("consent", "k1.json", {"id": "k1", "lead_id": "L20", "business": "Shop 20", "asked_t": 1, "window": "9-12", "phone_source": "form", "version": 1}),
+                          ("status", "L21.json", {"lead_id": "L21", "s": "interested", "t": "2026-12-01", "outcome": "booked"}),
+                          ("outbox", "call-1.json", {"id": "call-1", "inbox_id": "", "lead_id": "L22", "kind": "booking", "subject": "Your booking",
+                                                     "body": "As promised on the call, book here: https://cal.example/sam\n\nSam Test", "approved": False,
+                                                     "to": "boss@shop22.example", "from_app": "caller", "caller_kind": "booking", "t": 1})):
+            os.makedirs(os.path.join(H, "caller", "share", sub), exist_ok=True)
+            json.dump(j, open(os.path.join(H, "caller", "share", sub, n), "w"))
+        dnc = []
+        fake = types.ModuleType("tools.caller")
+        fake.compliance = types.SimpleNamespace(add_dnc=lambda ph, why, *a: dnc.append(("dnc", ph, why)))
+        fake.consent = types.SimpleNamespace(revoke=lambda ph, why, *a: dnc.append(("revoke", ph, why)))
+        sys.modules["tools.caller"], sys.modules["tools.caller.compliance"], sys.modules["tools.caller.consent"] = fake, fake.compliance, fake.consent
+        kl = [dict(L) for L in leads]
+        for L in kl:
+            if L["id"] == "L23":
+                L["phone"], L["_code"] = "(301) 555-0123", "FR-23"
+            if L["id"] == "L24":
+                L["_code"] = "FR-24"
+                L.pop("email", None)
+        sk = core.norm_state(json.loads(json.dumps(st)))
+        sk["sent"].setdefault("L23", [{"to": "owner23@shop23.example", "step": "d0", "d": "2026-11-23"}])
+        FakeIMAP.box = [(2001, raw_mail("Owner 23 <owner23@shop23.example>", "Re: draft", "Please stop emailing us.")),
+                        (2002, raw_mail("Pat <pat@gmail.example>", "Postcard FR-24", "Got your card, how much would it cost?"))]
+        FakeSMTP.sent, kp = [], []
+        res = run.run_once(cfgb, sk, kl, words, offers, {}, now=T(2026, 12, 1, 18), smtp_factory=FakeSMTP, imap_factory=FakeIMAP,
+                           push=lambda files, msg: kp.append(dict(files)) or "", notify=None, public=None)
+        pushed = set().union(*[set(x) for x in kp]) if kp else set()
+        check("k. caller/share is pushed to agency-inbox as caller/ (consent, status, outbox), the business address masked",
+              {"caller/consent/k1.json", "caller/status/L21.json", "caller/outbox/call-1.json"} <= pushed
+              and "boss@shop22.example" not in json.dumps(kp), sorted(pushed))
+        check("k. a lead that asked for the call (consent) or was called (status) leaves the email sequence", sk["replied"].get("L20") == "call_me" and sk["replied"].get("L21") == "call_interested", sk["replied"])
+        out = {x["id"]: x for x in res["outbox"]}
+        check("k. the caller's promised booking email goes to the address said on the call (inbox_id empty -> 'to')",
+              out.get("call-1", {}).get("status") == "sent" and any("shop22" in str(m.get("to", "")) or "shop22" in json.dumps(m, default=str) for m in FakeSMTP.sent), (out, len(FakeSMTP.sent)))
+        check("k. an email opt-out also puts the phone on the caller's do-not-call list and revokes its consent",
+              ("dnc", "(301) 555-0123", "email stop") in dnc and ("revoke", "(301) 555-0123", "email stop") in dnc, dnc)
+        cls = {x["lead_id"]: x["class"] for x in res["inbox"]}
+        check("k. a reply naming a postcard code (FR-24) is that business's reply, and its answer can go back to the writer",
+              cls.get("L24") == "question" and sk["pc_from"].get("L24") == "pat@gmail.example", (cls, sk["pc_from"]))
+        kp.clear()
+        run.run_once(cfgb, sk, kl, words, offers, {}, now=T(2026, 12, 1, 18, 30), smtp_factory=FakeSMTP, imap_factory=FakeIMAP,
+                     push=lambda files, msg: kp.append(dict(files)) or "", notify=None, public=None)
+        check("k. unchanged caller files are not pushed again; the caller draft is never sent twice", not any(k.startswith("caller/") for x in kp for k in x)
+              and len([m for m in FakeSMTP.sent if "shop22" in json.dumps(m, default=str)]) == 1)
+        for k_ in ("tools.caller", "tools.caller.compliance", "tools.caller.consent"):
+            sys.modules.pop(k_, None)
 
         # ---------------------------------------------------------------- i. the Windows side
         bs, bt = open(os.path.join(ROOT, "EMAIL_SETUP.bat"), "rb").read(), open(os.path.join(ROOT, "EMAIL_STOP.bat"), "rb").read()

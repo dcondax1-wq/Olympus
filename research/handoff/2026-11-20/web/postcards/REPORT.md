@@ -37,7 +37,15 @@ Break-even: one Starter site ($1,500) pays for about 1,650 Lob cards. At a 0.5 %
   - **Back:** an honest note naming the business, the link and the call-me button; the sender; the return address (a **P.O. box: owner step**); and "Don't want mail from us? Email … with STOP and your business name, and we'll never send another." The address and postage block is left blank for the printer.
   - Samples: `card1..3-front/back.png` + `sample-cards.pdf` in this folder.
 - **Who gets a card:** businesses with their **own concept site built** and a full street address. The leads team's structured `addr` with a ZIP comes first; otherwise the map's one-line address is cleaned. A business never gets a second card, and never one after a 'no'.
-  - Today: 23 of 67 leads have a street address and none has a ZIP or a built site yet, so until the factory publishes `agency/sites/index.json` the run sends nothing and says why.
+  - Today on pc: no built sites yet, so the run sends nothing and says why. With day-cities3's factory (67 sites + codes) landed: **19 mailable** (39 have no street address on the map, 9 chains skipped), led by Pearlfection Dentistry FR-27, Advanced Urgent Care FR-56, Kopit Dental FR-35. No ZIPs yet: Lob accepts city + state and verifies the address.
+- **The code (FR-27):** both sides print the business's code from day-cities3's `tools/site_factory_codes.json` (the same code shown on its concept site,
+  2 town letters + a number, never changes). The QR opens `agency/f/<id>/`, the factory's own site for that business. A reply that names the code is matched to it.
+- **Batch order:** trades / contractors, dentists / health, salons, auto, restaurants, then the rest. Mailable only. Chains are skipped (the factory's chain list).
+- **Day-10 card:** anyone who got card 1 ten or more days ago and has not answered in any way (an email reply, a call request, a 'no', a claim) gets one
+  second card ("your website is still waiting"). There is never a third. It counts toward the 20-a-day and 100-a-week limits.
+- **Results by code:** `python tools/postcards.py results` prints the table (code, business, card 1, day 10, responded / call me / claimed). The PC also pushes it
+  as `postcards/results.json` to the private `agency-inbox` branch after each run. The owner can mark a result by hand in `%USERPROFILE%\.olympus\postcards_responses.json`
+  (`{"FR-27": "claimed"}`).
 - **The gate:** OFF by default. **POSTCARD_SETUP.bat** installs Pillow + segno and asks for the Lob key (getpass, saved to `%USERPROFILE%\.olympus\postcards.json` only), the name, business, the "no more mail" email and the return address. Then the phrase:
   - `SEND POSTCARDS` + a `live_` key = LIVE;
   - anything else = TEST (a `test_` key: 3 a day, nothing printed or mailed or charged).
@@ -46,7 +54,7 @@ Break-even: one Starter site ($1,500) pays for about 1,650 Lob cards. At a 0.5 %
 - **One never-again list**, shared with email: `%USERPROFILE%\.olympus\agency_never.json`, plus the email autopilot's opt-outs, bounces and suppressed addresses. An email reply saying STOP that names a business blocks that business for both channels.
 - **The email autopilot stays** for leads that have an email.
 
-Tests: `python -X utf8 -m tests.test_postcards` 27/27 (a fake Lob, never the network: art size, a blank address block, the QR, address cleaning, the never list, OFF / TEST / LIVE gate, caps, Lob's form, no key in any file or error, the .bat chain). `test_agency_autopilot` 43/43.
+Tests: `python -X utf8 -m tests.test_postcards` 36/36 (a fake Lob, never the network: art size, a blank address block, the QR, address cleaning, the never list, OFF / TEST / LIVE gate, caps, Lob's form, no key in any file or error, the .bat chain). `test_agency_autopilot` 49/49.
 
 ## Owner steps (only when he says yes to real postage)
 1. A P.O. box for the return address (about $20-40 for 3 months at the post office).

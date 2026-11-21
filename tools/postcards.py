@@ -11,6 +11,9 @@ ever rings them.
                                                   nothing mailed, nothing charged)
   python tools/postcards.py run                   one batch (weekdays, after 10:00 ET, once a day): up to 20 cards a day, 100 a week
   python tools/postcards.py stop | status         off / the counts (never the key)
+  python tools/postcards.py results               the results table by code (FR-27): card 1, the day-10 card, responded / call me / claimed
+Batch order: trades / contractors, dentists / health, salons, auto, restaurants, then the rest; mailable only (a street address and the
+business's own built concept site), chains skipped. A day-10 card goes to anyone who has not answered (email, the caller, a 'no').
 Provider: Lob (https://docs.lob.com, 4x6 First-Class $0.909 a card on the free Developer plan, 11/2026; test keys are free).
 Never again: the list the email autopilot keeps (agency_never.json + its opt-outs) is the same list here. Every card carries the sender,
 the return address and a way to say "no more mail". The art is a clean agency brand (not the OLYMPUS look). Stdlib + Pillow + segno
@@ -133,6 +136,9 @@ def mail_address(L: dict):
             raw = raw[: -len(city) - 2]
         m = re.match(r"^(\d+\w?),\s*((?:suite|unit|ste|apt)\s+\S+)\s+(.+)$", raw, re.I)
         line1 = f"{m.group(1)} {m.group(3)} {m.group(2).title()}" if m else raw.replace(", ", " ", 1) if re.match(r"^\d+\w?,", raw) else raw
+        m2 = re.match(r"^(\d+\w?)\s+((?:suite|unit|ste|apt)\s+\w+)\s+(.+)$", line1, re.I)     # "221 Unit A Shorebird Street" -> "221 Shorebird Street Unit A"
+        if m2:
+            line1 = f"{m2.group(1)} {m2.group(3)} {m2.group(2).title()}"
     if not re.match(r"^\d+\w?\s+\S+", line1):
         return None, "no street address on the map yet"
     if not city or not re.fullmatch(r"[A-Z]{2}", state):
@@ -146,19 +152,45 @@ def mail_address(L: dict):
 def demo_url(L: dict, sites: dict, base: str) -> tuple:
     own = (sites or {}).get(L.get("id")) or L.get("demo_url")
     b = str(base or SITE_BASE).rstrip("/")
-    if isinstance(own, str) and re.match(r"^(https://|sites/|/|\.\./)", own):
+    if isinstance(own, str) and re.match(r"^(https://|sites/|/|\.\./|f/[a-z2-9]{8}/)", own):
         return (own if own.startswith("https://") else b + "/agency/" + re.sub(r"^(\.\./)+|^/?agency/", "", own.lstrip("/"))), True
     d = {"food": "restaurant", "auto": "detailer", "trades": "roofer", "home": "roofer", "realestate": "estate", "outdoor": "shed"}.get(L.get("niche") or "", "")
     return b + "/agency/demos/" + (d + "/" if d else ""), False
 
 
+# the best niches first (lead 2026-11-20): trades / contractors, dentists / health, salons, auto, restaurants; the rest after
+NICHE_RANK = {"trades": 0, "home": 0, "outdoor": 0, "health": 1, "beauty": 2, "auto": 3, "food": 4}
+# national / regional chains (the same list as day-cities3's tools/site_factory.py): they have a website already, so no card
+CHAINS = ["bonefish", "glory days", "crunch fitness", "bruster", "exxon", "ymca", "america's best wings", "medstar", "med star",
+          "anchor bar", "planet fitness", "anytime fitness", "orangetheory", "subway", "mcdonald",
+          "burger king", "wendy", "taco bell", "domino", "papa john", "pizza hut", "starbucks", "dunkin", "chick-fil-a", "chipotle",
+          "panera", "applebee", "olive garden", "red robin", "buffalo wild", "jiffy lube", "valvoline", "midas", "meineke", "firestone",
+          "great clips", "supercuts", "sport clips", "aspen dental"]
+CODE_RE = re.compile(r"\b([A-Z]{2}-\d{1,4})\b")
+
+
+def chain_of(L: dict) -> bool:
+    if L.get("_chain") is True:
+        return True
+    n = str(L.get("name") or "").lower()
+    return any(c in n for c in CHAINS)
+
+
+def niche_of(L: dict) -> str:
+    return str(L.get("_niche") or L.get("niche") or "")
+
+
 def pick(leads: list, sent: dict, never: dict, sites: dict, n: int, require_own_site: bool = True) -> tuple:
-    """(cards to send [(lead, address, url)], skipped {reason: count}); hot leads first, never twice, never a 'no'"""
+    """(cards to send [(lead, address)], skipped {reason: count}): the best niches first, then hot before cold; mailable only, chains
+    skipped, never twice, never a 'no'"""
     out, skip = [], {}
     heat = {"hot": 0, "warm": 1, "cold": 2}
-    for L in sorted([x for x in leads if isinstance(x, dict) and x.get("id")], key=lambda x: (heat.get(x.get("heat"), 3), -(float(x.get("score") or 0)), str(x.get("name")))):
+    key = lambda x: (NICHE_RANK.get(niche_of(x), 9), heat.get(x.get("heat"), 3), -(float(x.get("score") or 0)), str(x.get("name")))  # noqa: E731
+    for L in sorted([x for x in leads if isinstance(x, dict) and x.get("id")], key=key):
         why = ""
-        if L["id"] in sent:
+        if chain_of(L):
+            why = "a chain (has a website already)"
+        elif L["id"] in sent:
             why = "already sent"
         elif L["id"] in never["lead_ids"] or (str(L.get("email") or "").lower() in never["emails"]):
             why = "said no (never again)"
@@ -224,11 +256,14 @@ def qr_image(url: str, px: int):
     return Image.open(buf).convert("RGB").resize((px, px), Image.NEAREST)
 
 
-def render(L: dict, cfg: dict, url: str):
-    """(front, back) PIL images, 1875 x 1275 (4x6 + bleed at 300 dpi)"""
+def render(L: dict, cfg: dict, url: str, follow: bool = False):
+    """(front, back) PIL images, 1875 x 1275 (4x6 + bleed at 300 dpi). follow = the day-10 card to a business that has not answered.
+    Both sides print the lead's code (FR-27: day-cities3's tools/site_factory_codes.json, the same code shown on the concept site)"""
     from PIL import Image, ImageDraw
     B = BRAND
     biz = str(L.get("name") or "Your business")
+    code = str(L.get("_code") or "")
+    head = f"{biz}, your website is still waiting for you." if follow else f"{biz}, your new website is already built."
     # FRONT: the headline + the QR
     fr = Image.new("RGB", (W, H), B["paper"])
     d = ImageDraw.Draw(fr)
@@ -240,22 +275,24 @@ def render(L: dict, cfg: dict, url: str):
     colw = qx - 30 - left - int(0.2 * DPI)
     size = 120
     f = font("serif", size)
-    lines = wrap(d, f"{biz}, your new website is already built.", f, colw)
+    lines = wrap(d, head, f, colw)
     while len(lines) > 4 and size > 70:
         size -= 8
         f = font("serif", size)
-        lines = wrap(d, f"{biz}, your new website is already built.", f, colw)
+        lines = wrap(d, head, f, colw)
     y = top
     for ln in lines:
         d.text((left, y), ln, font=f, fill=B["ink"])
         y += int(size * 1.15)
     y += 30
-    for ln in wrap(d, "Scan the code to see it. It's free to look.", font("reg", 50), colw):
+    for ln in wrap(d, "We saved it for you. Scan to take a look." if follow else "Scan the code to see it. It's free to look.", font("reg", 50), colw):
         d.text((left, y), ln, font=font("reg", 50), fill=B["muted"])
         y += 62
     d.rounded_rectangle([qx - 30, qy - 30, qx + q + 30, qy + q + 30], radius=40, fill=B["soft"])
     fr.paste(qr_image(url, q), (qx, qy))
     d.text((qx + q // 2, qy + q + 70), "Scan me", font=font("bold", 54), fill=B["accent"], anchor="mm")
+    if code:
+        d.text((left, H - int(0.45 * DPI)), f"Your code: {code}", font=font("bold", 46), fill=B["ink"], anchor="ls")
     # BACK: the honest message across the top, the sender / return address / "no more mail" bottom left, the address block bottom right blank
     bk = Image.new("RGB", (W, H), B["paper"])
     d = ImageDraw.Draw(bk)
@@ -264,9 +301,15 @@ def render(L: dict, cfg: dict, url: str):
     y = int(0.38 * DPI)
     d.text((x0, y), f"Hi {biz},", font=font("bold", 48), fill=B["ink"])
     y += 72
-    msg = (f"When people search for you online, there's no website to find. So we built you a draft, free to look at: scan the code on the "
-           f"front or visit {short}. If you like it, it can be yours this week, with your photos and your own domain. Prefer a call? On the site, "
-           f"tap \"Have our assistant call me\".")
+    say = f" and mention your code {code}" if code else ""
+    if follow:
+        msg = (f"A few days ago we sent you a card about the website draft we built for you. It's still there, free to look at: scan the code on "
+               f"the front or visit {short}. It can be live this week, with your photos and your own domain. Questions? Reply by email{say}, "
+               f"or tap \"Have our assistant call me\" on the site. This is our last card unless you ask for more.")
+    else:
+        msg = (f"When people search for you online, there's no website to find. So we built you a draft, free to look at: scan the code on the "
+               f"front or visit {short}. If you like it, it can be yours this week, with your photos and your own domain. Prefer a call? On the site, "
+               f"tap \"Have our assistant call me\"{say and ', or email us' + say}.")
     fm, lh = font("reg", 36), 46
     for ln in wrap(d, msg, fm, full):
         if y + lh > ADDR_ZONE[1] - 10:
@@ -358,14 +401,32 @@ def run_once(cfg: dict, state: dict, leads: list, sites: dict, now=None, send=No
         return res
     sent_week = sum(1 for x in state.get("sent", {}).values() if x.get("week") == week and not x.get("test"))
     room = min(cfg["cap_day"], cfg["cap_week"] - sent_week) if cfg["mode"] == "live" else min(3, cfg["cap_day"])   # test mode: 3 a day
-    todo, res["skipped"] = pick(leads, {k: v for k, v in state.get("sent", {}).items() if not v.get("test")}, never_list(), sites, max(0, room))
-    for L, addr in todo:
+    real = {k: v for k, v in state.get("sent", {}).items() if not v.get("test")}
+    nev = never_list()
+    # the day-10 card first (they already know us): a business that got card 1 ten or more days ago and has not answered in any way
+    answered = responses(state, leads)
+    byid = {L.get("id"): L for L in leads if isinstance(L, dict)}
+    due = []
+    for lid, v in sorted(real.items(), key=lambda kv: kv[1].get("d", "")):
+        if "#" in lid or (lid + "#f10") in real or lid in answered or lid in nev["lead_ids"] or lid not in byid or chain_of(byid[lid]):
+            continue
+        try:
+            age = (dt.date.fromisoformat(day) - dt.date.fromisoformat(v.get("d", day))).days
+        except ValueError:
+            continue
+        addr, _ = mail_address(byid[lid])
+        if age >= FOLLOW_DAYS and addr:
+            due.append((byid[lid], addr, True))
+    todo, res["skipped"] = pick(leads, real, nev, sites, max(0, room - len(due)))
+    for L, addr, follow in (due[:max(0, room)] + [(a, b, False) for a, b in todo])[:max(0, room)]:
         url, _ = demo_url(L, sites, cfg.get("site_base"))
         try:
-            fr, bk = render(L, cfg, url)
+            fr, bk = render(L, cfg, url, follow=follow)
             r = (send or lob_send)(cfg, addr, png(fr), png(bk), L["id"])
-            state.setdefault("sent", {})[L["id"] + ("#test" + day if r.get("test") else "")] = {"d": day, "week": week, "id": r.get("id", ""), "test": bool(r.get("test"))}
-            res["sent"].append({"lead": L.get("name"), "test": bool(r.get("test"))})
+            key = L["id"] + ("#f10" if follow else "") + ("#test" + day if r.get("test") else "")
+            state.setdefault("sent", {})[key] = {"d": day, "week": week, "id": r.get("id", ""), "test": bool(r.get("test")), "step": "day10" if follow else "first",
+                                                 "code": str(L.get("_code") or "")}
+            res["sent"].append({"lead": L.get("name"), "test": bool(r.get("test")), "step": "day10" if follow else "first"})
         except Exception as ex:  # noqa: BLE001
             msg = str(ex)[:160].replace(str(cfg.get("api_key") or "~"), "[secret]")
             res["errors"].append(f"{L.get('name')}: {msg}")
@@ -373,13 +434,109 @@ def run_once(cfg: dict, state: dict, leads: list, sites: dict, now=None, send=No
     return res
 
 
+# ------------------------------------------------------------------------------------------------ who answered (the results table)
+FOLLOW_DAYS = 10
+
+
+def caller_dirs() -> list:
+    """day-caller's share folder on this PC, and the copy on the agency-inbox branch clone"""
+    return [os.path.join(home(), "caller", "share"), os.path.join(home(), "agency_inbox", "caller")]
+
+
+def responses(state: dict, leads: list) -> dict:
+    """{lead id: {"responded", "call_me", "claimed"}} from every channel: an email reply (the autopilot's state, or a reply naming the card's
+    code), a 'no' (never list), the caller's consent + status files, and the owner's own marks in postcards_responses.json
+    ({"<lead id or code>": "responded" | "call_me" | "claimed"})"""
+    out: dict = {}
+    code_to = {str(L.get("_code")): L.get("id") for L in leads if isinstance(L, dict) and L.get("_code")}
+
+    def mark(lid, what):
+        if lid:
+            out.setdefault(code_to.get(lid, lid), set()).add(what)
+    st = rj(os.path.join(home(), "agency_mail_state.json"), {}) or {}
+    for lid, c in (st.get("replied") or {}).items():
+        mark(lid, "responded")
+        if str(c).startswith("call_"):
+            mark(lid, "call_me")
+    for lid in (st.get("pc_from") or {}):
+        mark(lid, "responded")
+    for lid in never_list()["lead_ids"]:
+        mark(lid, "responded")
+    for base in caller_dirs():
+        for sub in ("consent", "status"):
+            d = os.path.join(base, sub)
+            for n in (sorted(os.listdir(d)) if os.path.isdir(d) else []):
+                j = rj(os.path.join(d, n), {}) if n.endswith(".json") else {}
+                if isinstance(j, dict) and j.get("lead_id"):
+                    mark(j["lead_id"], "call_me")
+                    mark(j["lead_id"], "responded")
+                    if sub == "status" and j.get("outcome") in ("payment_link", "booked", "claimed", "won"):
+                        mark(j["lead_id"], "claimed")
+    for k, v in (rj(os.path.join(home(), "postcards_responses.json"), {}) or {}).items():
+        for w in (v if isinstance(v, list) else [v]):
+            if w in ("responded", "call_me", "claimed"):
+                mark(k, w)
+                mark(k, "responded")
+    return out
+
+
+def results(state: dict, leads: list) -> dict:
+    """the results table by code: one row per business that got a card (no address, no key)"""
+    byid = {L.get("id"): L for L in leads if isinstance(L, dict)}
+    ans = responses(state, leads)
+    rows = {}
+    for k, v in (state.get("sent") or {}).items():
+        if v.get("test"):
+            continue
+        lid = k.split("#")[0]
+        L = byid.get(lid) or {}
+        r = rows.setdefault(lid, {"code": v.get("code") or str(L.get("_code") or ""), "business": str(L.get("name") or lid)[:60],
+                                  "niche": niche_of(L), "card1": "", "day10": ""})
+        r["day10" if k.endswith("#f10") else "card1"] = v.get("d", "")
+    for lid, r in rows.items():
+        a = ans.get(lid, set())
+        r.update(responded="responded" in a, call_me="call_me" in a, claimed="claimed" in a)
+    lst = sorted(rows.values(), key=lambda r: (r["code"] or "~", r["business"]))
+    tot = {"cards": sum(1 + bool(r["day10"]) for r in lst), "businesses": len(lst), "responded": sum(r["responded"] for r in lst),
+           "call_me": sum(r["call_me"] for r in lst), "claimed": sum(r["claimed"] for r in lst)}
+    return {"v": 1, "kind": "postcard-results", "totals": tot, "rows": lst}
+
+
+def results_text(res: dict) -> str:
+    t = res["totals"]
+    out = [f"  {t['businesses']} businesses, {t['cards']} cards: {t['responded']} responded, {t['call_me']} asked for a call, {t['claimed']} claimed",
+           "  code     business                         card 1      day 10      responded  call me  claimed"]
+    for r in res["rows"]:
+        out.append(f"  {r['code'] or '-':<8} {r['business'][:32]:<32} {r['card1'] or '-':<11} {r['day10'] or '-':<11} "
+                   f"{'yes' if r['responded'] else '-':<10} {'yes' if r['call_me'] else '-':<8} {'yes' if r['claimed'] else '-'}")
+    return "\n".join(out)
+
+
 # ------------------------------------------------------------------------------------------------ commands
 def leads_and_sites() -> tuple:
+    """the leads, annotated with day-cities3's factory data (_code FR-27, _niche, _chain), and {lead id: its concept site path}"""
     leads = (rj(os.path.join(WEB, "agency", "leads", "leads.json"), {}) or {}).get("leads") or []
-    s = (rj(os.path.join(WEB, "agency", "sites", "index.json"), {}) or {}).get("sites")
+    idx = rj(os.path.join(WEB, "agency", "sites", "index.json"), {}) or {}
+    s = idx.get("sites") if isinstance(idx, dict) else None
     if isinstance(s, list):
-        s = {x.get("id"): x.get("url") for x in s if isinstance(x, dict)}
-    return leads, s if isinstance(s, dict) else {}
+        s = {x.get("id"): x.get("url") or x.get("path") for x in s if isinstance(x, dict)}
+    s = s if isinstance(s, dict) else {}
+    codes = dict(rj(os.path.join(ROOT, "tools", "site_factory_codes.json"), {}) or {})
+    codes.update((idx.get("codes") if isinstance(idx, dict) and isinstance(idx.get("codes"), dict) else {}))
+    fac = {x.get("id"): x for x in ((rj(os.path.join(WEB, "agency", "factory", "sites.json"), {}) or {}).get("sites") or []) if isinstance(x, dict)}
+    for L in leads:
+        if not isinstance(L, dict):
+            continue
+        f = fac.get(L.get("id")) or {}
+        if codes.get(L.get("id")) or f.get("code"):
+            L["_code"] = str(codes.get(L.get("id")) or f.get("code"))
+        if f.get("niche"):
+            L["_niche"] = f["niche"]
+        if f.get("chain"):
+            L["_chain"] = True
+        if f.get("path") and L.get("id") not in s:
+            s[L["id"]] = f["path"]
+    return leads, s
 
 
 def samples(out_dir: str, cfg: dict | None = None) -> list:
@@ -443,7 +600,7 @@ def cmd_setup(ask=input, secret=getpass.getpass, out=print) -> int:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="Personalised postcards (OFF until POSTCARD_SETUP.bat; live only after SEND POSTCARDS)")
-    ap.add_argument("cmd", choices=["samples", "setup", "run", "stop", "status"])
+    ap.add_argument("cmd", choices=["samples", "setup", "run", "stop", "status", "results"])
     ap.add_argument("--out", default=os.path.join(ROOT, "scratch", "postcards"))
     a = ap.parse_args(argv)
     p, sp = os.path.join(home(), "postcards.json"), os.path.join(home(), "postcards_state.json")
@@ -461,6 +618,11 @@ def main(argv=None) -> int:
         return 0
     st = rj(sp, {}) or {}
     leads, sites = leads_and_sites()
+    if a.cmd == "results":
+        r = results(st, leads)
+        wj(os.path.join(home(), "postcards_results.json"), r)
+        print(results_text(r))
+        return 0
     if a.cmd == "status":
         _, skip = pick(leads, {k: v for k, v in st.get("sent", {}).items() if not v.get("test")}, never_list(), sites, 0)
         real = sum(1 for v in st.get("sent", {}).values() if not v.get("test"))
