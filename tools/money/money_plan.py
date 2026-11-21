@@ -715,7 +715,8 @@ def page(res):
 
 
 REAL_FILLS_TOOL = "tools/atlas_risk.py"   # items it valued (ATLAS at 10 ticks a side, research/writeups/atlas-risk-real-fills-2026-11-20.md)
-REAL_FILLS_TOOLS = (REAL_FILLS_TOOL, "tools/money/rapid25_launch.py", "tools/money/rapid25_pass.py")   # + the Rapid 25K launch check (rapid-launch-2026-11-20.md)
+REAL_FILLS_TOOLS = (REAL_FILLS_TOOL, "tools/money/rapid25_launch.py", "tools/money/rapid25_pass.py",
+                    "tools/money/rapid_funded_refit.py")   # + the Rapid 25K launch check (rapid-launch-2026-11-20.md)
 # keep their values: re-run that tool to refresh them, or drop its name from the item's "valued" to hand the item back here
 
 
