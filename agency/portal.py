@@ -82,7 +82,8 @@ def chain(name) -> bool:
 
 # ------------------------------------------------------------------------------------------------ the list
 def build(web: str = WEB, out: str = LIST) -> dict:
-    leads = list((rj(os.path.join(web, "leads", "leads.json"), {}) or {}).get("leads") or [])
+    from agency import leadsfile
+    leads = leadsfile.load(web)                     # leads.json, or its per-town files ("files": ["towns/<town>.json"])
     leads += [L for L in (rj(ADDED, {}) or {}).get("leads") or [] if isinstance(L, dict)]
     fac = {x.get("id"): x for x in ((rj(os.path.join(web, "factory", "sites.json"), {}) or {}).get("sites") or []) if isinstance(x, dict)}
     codes = rj(os.path.join(ROOT, "tools", "site_factory_codes.json"), {}) or {}
