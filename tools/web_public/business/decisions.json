@@ -61,29 +61,29 @@
   {
    "id": "rapid25-lit-bank",
    "question": "Rapid 25K: Zlarior trades 1 micro and takes profit at the day's room (instead of skipping most trades)?",
-   "why": "Today the 30% best-day guard skips 60-65% of Zlarior's trades there. Banking at the room passes and pays sooner, but fails a little more.",
-   "impact": "At real fills (ATLAS 10 ticks a side): +$101 a month in a Jul-Oct-like market (+$24 Jan-Jun-like, +$1 2021-25-like); first payout about 6-9 days sooner. At backtest fills it was +$83.",
-   "impact_usd": 101,
+   "why": "MFFU closes a Rapid that goes 7 days without a trade, and the 30% best-day guard makes the Rapid 25K skip most trades: the red team's replay of Nov 6-19 traded it on 1 day in 10. With this lane on, the same days traded on 4. In the simulation 56% / 44% of evals (Jan-Jun / Jul-Oct-like) hit 5 trading days without a trade as built; 22% / 9% with it.",
+   "impact": "With MFFU's 7-day inactivity close counted: +$164 a month in a Jul-Oct-like market (+$363 Jan-Jun-like, +$4 2021-25-like); the eval passes in 71% / 90% of runs instead of 41% / 54%; first payout about 3 weeks sooner (Feb 5-9 vs Feb 24-26).",
+   "impact_usd": 164,
    "options": [
     "yes",
     "no",
     "later"
    ],
-   "status": "no",
-   "source": "research/writeups/rapid-launch-2026-11-20.md",
+   "status": "open",
+   "source": "research/writeups/rapid25-pass-2026-11-21.md",
    "applies": "python -X utf8 -m engine.rapid --lit-bank on (built OFF)",
    "added": "2026-11-18",
-   "usd_month": 101,
+   "usd_month": 164,
    "usd_month_by": {
-    "jan_jun": 24,
-    "jul_oct": 101,
-    "y2021_25": 1
+    "jan_jun": 363,
+    "jul_oct": 164,
+    "y2021_25": 4
    },
-   "risk": "At real fills: Rapid 25K eval fails within 60 trading days 0.5% -> 3.1% (Jan-Jun-like) and 2.0% -> 2.7% (Jul-Oct-like); funded Rapid lost in 6 months 27.2% -> 28.7% / 38.0% -> 39.1%; eval passes in about 21-30 trading days instead of 26-33.",
-   "recommend": "no",
-   "recommend_why": "Not yet: the money is real (+$101 a month Jul-Oct-like) but at real fills the eval fails 6x as often in a Jan-Jun-like market (0.5% -> 3.1%), over the 1-point limit set before the test. A yes is fine if you prefer a faster pass; it stays built OFF.",
-   "valued": "2026-11-20 tools/money/rapid25_launch.py (real fills: ATLAS 10 ticks a side, LIT unchanged; Rapid 25K LIT + ATLAS $250, keep $500, 1,000 paths; $ a month after fees and MFFU's split, before the 30% tax pot; design research/second/rapid25_launch_design.md)",
-   "answered": "2026-11-20 ~08:00 ET in chat (\"Yes to whatever you think it should be ... make sure your choice is good\"): Claude's pick from the data",
+   "risk": "Trades more: without the inactivity close it fails the eval a bit more often (0.5% -> 3.1% Jan-Jun-like, 2.0% -> 2.7% Jul-Oct-like) and loses a funded Rapid a bit more often (27% -> 29%, 38% -> 39%). In Nov 6-19 its 3 extra trades (1 micro each) lost $288 in a cold week.",
+   "recommend": "yes",
+   "recommend_why": "Turn it on: as built the Rapid 25K hardly trades and risks MFFU's 7-day inactivity close; this lane passes much more often and sooner for slightly more eval risk. The pre-set test (which did not model the inactivity close) said no; with the close counted it wins in both 2026 halves.",
+   "valued": "2026-11-21 tools/money/rapid25_pass.py posthoc (ATLAS 10 ticks a side, LIT unchanged, MFFU's 7-day inactivity close = 5 idle trading days in the eval; 1,000 paths; $ a month after fees and MFFU's split, before the 30% tax pot; design research/second/rapid25_pass_design.md)",
+   "answered": "2026-11-20 ~08:00 ET in chat (\"Yes to whatever you think it should be ... make sure your choice is good\"): Claude's pick from the data | reopened 2026-11-21: new evidence (MFFU's inactivity close), recommendation changed to yes",
    "checked": "research/writeups/skeptic-atlas-streak-2026-11-20.md"
   },
   {

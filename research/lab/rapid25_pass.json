@@ -1260,5 +1260,16 @@
     }
    }
   }
+ },
+ "cards": {
+  "rapid25-lit-bank": {
+   "recommend": "yes",
+   "usd_month_by": {
+    "jan_jun": 363,
+    "jul_oct": 164,
+    "y2021_25": 4
+   },
+   "usd_month": 164
+  }
  }
 }

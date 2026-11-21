@@ -112,6 +112,8 @@ def part_b():
         v = lab.get(did) or {}
         if "tools/atlas_risk.py" in str(it.get("valued") or ""):     # valued at ATLAS's real fills (2026-11-20, night-atlasrisk)
             v = (json.loads(rd(ROOT, "research", "second", "atlas_risk.json")).get("cards") or {}).get(did) or {}
+        elif "tools/money/rapid25_pass.py" in str(it.get("valued") or ""):     # the Rapid 25K fastest-pass study (2026-11-21, day-rapid)
+            v = (json.loads(rd(ROOT, "research", "lab", "rapid25_pass.json")).get("cards") or {}).get(did) or {}
         elif "tools/money/rapid25_launch.py" in str(it.get("valued") or ""):   # the Rapid 25K launch check (2026-11-20, day-rapid)
             v = (json.loads(rd(ROOT, "research", "lab", "rapid25_launch.json")).get("cards") or {}).get(did) or {}
         if v.get("usd_month") != it.get("usd_month") or v.get("recommend") != it.get("recommend"):
