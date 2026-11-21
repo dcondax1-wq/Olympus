@@ -2814,7 +2814,8 @@ class LiveBot:
             sig = json.dumps(ab, sort_keys=True) if ab else None
             if sig == self._acct_b_sig:
                 return
-            if self.acct_b is not None and self.acct_b.open_t is not None:
+            if self.acct_b is not None and self.acct_b.open_t is not None and not getattr(self.acct_b, "start_missing", False):
+                # (an ATLAS stopped for no start day never manages its trade: the fixed block is applied at once, wf-atlas-start)
                 self._snote(("acctb", "wait"), "risk", "account B changed in second_model.json: applied once its open trade is closed")
                 return
             self._acct_b_sig = sig

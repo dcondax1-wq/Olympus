@@ -454,6 +454,9 @@ def _open_leg(ad, d=None):
 class RapidAtlas(AB.AccountB):
     """ATLAS on the Rapid EOD (LiveBot.acct_r): account B's code on the SAME NinjaTrader account as LIT's lane."""
     PUSH_SUFFIX = ":acctr"          # its own trade-notice keys (account B's are ":acctb"): both can enter on the same bar
+    # no start day in data/rapid.json (AccountB.no_start): the Rapid's own commands, never account B's (that would move ATLAS's 25K)
+    START_CMDS = {"eval": 'python -X utf8 -m engine.rapid --account "{name}" --start <first eval day yyyy-mm-dd>',
+                  "funded": 'python -X utf8 -m engine.rapid --to-funded --account "{name}" --start <first funded day yyyy-mm-dd>'}
 
     def __init__(self, bot, spec, state_path=None, adapter_factory=None):
         super().__init__(bot, spec, state_path=state_path or _state_path(getattr(bot, "state_path", None)),

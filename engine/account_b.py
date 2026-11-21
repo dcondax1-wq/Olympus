@@ -107,6 +107,7 @@ FUNDED_ON = {"funded_room_pct": 0.4, "streak_shrink": 2}   # owner YES 2026-11-2
 CLOSE_RETRY_S = 10              # an unconfirmed close of B's position is re-sent at most this often (pre-launch audit A4)
 TICK, PV, COMM = 0.25, 2.0, 1.90
 ADAPTER_FACTORY = None          # tests: (spec, adapter cfg) -> adapter; None = engine/live.ADAPTERS
+PROBLEM_SENDER = None           # tests: (problem payload) -> why; None = engine/notify.instant_problem in a thread (AccountB.no_start)
 VERSION = 1
 STAGES = ("eval", "funded")
 # the funded stage's keys in the block (kept by every other switch on the same account Name: set_account_b)
@@ -596,6 +597,7 @@ class AccountB:
         self.view_key = None
         self.last_size = None
         self._startup_ok = None           # startup_block: set once B's own NinjaTrader account reconciled (entries allowed)
+        self.start_missing = False        # start(): stopped for no start day (no_start); LiveBot applies a fixed block at once
         self.mx = threading.RLock()
 
     # ---- plumbing
@@ -645,8 +647,64 @@ class AccountB:
         except Exception:
             return False
 
+    # code review 2026-11-20 (day-speed helper): start() raised TypeError on an eval block without "eval_start" (the start log
+    # formatted the view's room None), LiveBot._sync_account_b caught it and ATLAS silently did not start. Now no start day = a
+    # plain problem (logged, one push a day), never an adapter, never a trade; LIT and the other accounts are not touched.
+    # The fix the owner runs, per stage ({name} / {plan} filled in; engine/rapid.RapidAtlas has its own):
+    START_CMDS = {"eval": 'python -X utf8 -m engine.second --account-b "{name}" --plan {plan} --start <first eval day yyyy-mm-dd>',
+                  "funded": 'python -X utf8 -m engine.account_b --to-funded --account "{name}" --start <first funded day yyyy-mm-dd>'}
+
+    def no_start(self) -> str | None:
+        """The plain problem when this account's stage has no start day (eval: "eval_start", funded: "funded_start"), else None.
+        Without one its eval / funded state is unknown (eval_view status "no eval_start" / "no funded_start"): never traded."""
+        funded = str(self.spec.get("stage") or "eval").strip().lower() == "funded"
+        day = (self.spec.get("funded") or {}).get("start") if funded else self.spec.get("eval_start")
+        if str(day or "").strip():
+            return None
+        plan = self.spec.get("plan") if self.spec.get("plan") in ("builder25k", "builder50k") else "builder25k"
+        nm = self.name if self.name and not any(c in self.name for c in ';\r\n|"') else "<Name>"
+        cmd = self.START_CMDS["funded" if funded else "eval"].format(name=nm, plan=plan)
+        return (f"its account block has no {'funded' if funded else 'eval'} start day "
+                f"({'funded_start' if funded else 'eval_start'}): run {cmd}")
+
+    def _push_no_start(self, text):
+        """One push a day per account for a start without a start day: the app notice (as every ATLAS notice) and, on the real
+        NinjaTrader bot, the private alert topic's "problems" push (engine/notify.instant_problem, soft: no sound in quiet hours).
+        Never raises, never blocks the bot's start (the alert goes in a thread)."""
+        try:
+            now = int(self.clock())
+            key = f"{self.PUSH_SUFFIX.strip(':')}:nostart:{trading_day(now)}:{self.name}"
+            if key in self.notified:
+                return
+            self.notified.append(key)
+            title = f"{self.label} did not start"
+            body = f"{text[:1].upper()}{text[1:]}. No trade on this account until then; LIT and the other accounts are not affected."
+            self._push_text(title, body, key)
+            send = PROBLEM_SENDER
+            if send is None:
+                if not (self.real_bot() and (self.bot.cfg or {}).get("adapter") == "ninjatrader"):
+                    return                     # a harness / paper bot: the log and the app notice only
+                from . import notify
+
+                def send(p):
+                    threading.Thread(target=notify.instant_problem, args=(p,), name="atlas_nostart", daemon=True).start()
+                    return "queued"
+            send({"key": key, "code": "atlas_no_start", "bot": "atlas", "soft": True, "tags": "warning",
+                  "title": title, "body": body})
+        except Exception:
+            pass
+
     def start(self):
         self._load()
+        miss = self.no_start()
+        if miss:
+            self.problem, self.start_missing = miss, True
+            try:
+                self.bot._note_error(f"{self.label} did not start: {miss}")
+            except Exception:
+                self.log("risk", f"did not start: {miss}")
+            self._push_no_start(miss)
+            return self
         if self.problem:
             self.log("risk", f"NOT trading: {self.problem}")
             return self
@@ -673,7 +731,7 @@ class AccountB:
             return self
         self.log("system" if not dis else "risk",
                  f"{self.kind()} {self.name} {self.spec['plan_label']}, strategies {', '.join(self.spec['keys'])}, size {self.spec['sizing']}, "
-                 f"eval from {self.spec['eval_start'] or '?'} (balance ${ev.get('balance', 0):,.0f}, room ${ev.get('room', 0):,.0f}): "
+                 f"eval from {self.spec['eval_start'] or '?'} (balance ${ev.get('balance') or 0:,.0f}, room ${ev.get('room') or 0:,.0f}): "
                  + (f"DISABLED ({dis})" if dis else "ready"))
         self.save()
         return self
