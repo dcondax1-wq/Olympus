@@ -5,7 +5,7 @@
 1. **Home** (`gate/`) shows **the 6 arenas** (NQ Bot, Kalshi, Business, Websites, Jarvis, Cities) and **Everything else**. Each arena tile opens the
    arena's **front page** (its main app), and the row under the tiles ("All apps in ...") opens the arena's page `hub/arena.html?a=<arena>`: every live app
    of that arena grouped by job. So **every app is at most 2 taps from Home**.
-2. **Every page has the same way back:** `Home > arena > app` at the top (plain names, not Greek ones), plus "Go to" (search). One tap on Home goes Home.
+2. **Every page has the same way back:** `Home > arena > app` at the top (plain names, not Greek ones), plus "Go to" (search, then the same 7 arenas). One tap on Home goes Home.
    It comes from `olympus/gate-nav.js`, loaded by the AGORA shell (`agora-ui.js`), by the a11y kit (`a11y.js`) or directly; the public client pages
    (agency demos, audits, showcase, factory, caller portal, concept sites) never get it.
 3. **Retired apps redirect** to their replacement (`?stay=1` keeps the old page; nothing is deleted). Table below.
@@ -187,7 +187,7 @@ Retired apps are not on Home, in search or in A to Z. Their old links open the r
 | The breadcrumb Home > arena > app, Go to, the retired redirect, the Main copy chips | `tools/web_public/olympus/gate-nav.js` (loaded by `agora-ui.js`, `a11y.js` or the page) | `tests.test_olympus_nav` |
 | The arena pages | `tools/web_public/hub/arena.html` + `arena.js` + `arena.css` | `tests.test_olympus_nav` |
 | Home: the 6 arenas, Everything else, the All apps row | `tools/web_public/gate/index.html`, `gate/arenas.js`, `gate/gate.js` | `tests.test_gate_page` |
-| The hubs (an older grouping, still reachable from Go to) | `tools/web_public/hub/` | `tests.test_hubs` |
+| The hubs (an older grouping; their tabs still show in search) | `tools/web_public/hub/` | `tests.test_hubs` |
 | App registry (Jarvis switcher, launcher) | `tools/web_public/jarvis/apps.js` -> `olympus/apps-list.js` | `tests.test_apps_list` |
 | The four doors (2026-11-18; hidden on Home since the arenas, kept for old links) | `tools/web_public/olympus/doors.js`, `hub/doors.html` | `tests.test_apps_list` (part d) |
 | This map | `tools/olympus_map_build.py` -> `docs/OLYMPUS_MAP.md` | `tests.test_olympus_map` |

@@ -234,8 +234,8 @@ def nav_checks(p, origin):
     p.wait_for_timeout(400)
     g = p.evaluate("() => ({ secs: [...document.querySelectorAll('.gn-body .gn-sec')].map((h) => h.textContent), pinned: [...document.querySelectorAll('.gn-body .gn-list')][0] ? [...[...document.querySelectorAll('.gn-body .gn-list')][0].querySelectorAll('a[data-app]')].map((a) => a.dataset.app) : [],"
                    " pin: (document.querySelector('.gn-pin') || {}).textContent, az: (document.querySelector('a[data-gn=\"az\"]') || {}).href })")
-    check("c. Go to on NQ (empty box): Pinned first (Risk guard, Kalshi bot), a 'Pin this app' star for NQ, then the hubs, and All apps A to Z (-> gate/#az)",
-          g["secs"][:2] == ["Pinned", "Hubs"] and g["pinned"] == ["aegis", "kalshi"] and g["pin"] == "\u2606Pin this app to Home" and g["az"] == f"{origin}/gate/index.html#az", g)
+    check("c. Go to on NQ (empty box): Pinned first (Risk guard, Kalshi bot), a 'Pin this app' star for NQ, then the arenas, and All apps A to Z (-> gate/#az)",
+          g["secs"][:2] == ["Pinned", "Arenas"] and g["pinned"] == ["aegis", "kalshi"] and g["pin"] == "\u2606Pin this app to Home" and g["az"] == f"{origin}/gate/index.html#az", g)
     p.click(".gn-pin")
     p.wait_for_timeout(150)
     p.fill("#gnQ", "theme")
@@ -527,7 +527,8 @@ def test_page():
                     p.fill("#gnQ", "")
                     p.wait_for_timeout(150)
                     dl = p.evaluate("() => ({ hubs: [...document.querySelectorAll('.gn-dist')].map((a) => a.href.replace(location.origin, '')), first: document.querySelector('.gn-body .gn-sec').textContent, here: (document.querySelector('.gn-dist.gn-here') || {}).dataset })")
-                    check("c. Go to with an empty box: the HUBS first (each opens its hub page), this app's hub marked", dl["hubs"] == [f"/hub/index.html?h={h}" for h in HUBS] and dl["first"] == "Hubs" and dl["here"] == {"hub": "bots"}, dl)
+                    ARENAS = ["nq", "kalshi", "business", "agency", "jarvis", "cities", "else"]      # ORGANIZE 2026-11-21: the same top level as Home
+                    check("c. Go to with an empty box: the ARENAS first (each opens its arena page), this app's arena marked", dl["hubs"] == [f"/hub/arena.html?a={h}" for h in ARENAS] and dl["first"] == "Arenas" and dl["here"] == {"arena": "nq"}, dl)
                     t = AK.taps(p)
                     check("c. the Go to sheet: every tap >= 44 px", not t, t[:4])
                     p.keyboard.press("Escape")

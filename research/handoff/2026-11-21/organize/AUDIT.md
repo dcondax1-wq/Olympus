@@ -22,17 +22,16 @@ Owner: "more organized". Base `olympus/pc` 7adf312d. Map: `docs/OLYMPUS_MAP.md` 
 - **Home:** the 6 arena tiles (unchanged) + Everything else + a new row "All apps in: NQ Bot · Kalshi · Business · Websites · Jarvis · Cities · Everything else" (in the Everything else card, so the 6 tiles still fit the first screen).
 - **Arena page** `hub/arena.html?a=<arena>`: "Open <arena> (the front page)", then the arena's live apps grouped by job (plain name, one line, the Greek name small on the right), then the other arenas.
   - Counts: NQ Bot 30, Kalshi 4, Business 8, Websites 1, Jarvis 4, Cities 2, Everything else 11.
-- **Every page:** "< Home › Arena › Plain name" + Go to. The Home link is always one tap. An arena's front page shows "Home › Arena".
+- **Every page:** "< Home › Arena › Plain name" + Go to (search, then the same 7 arenas instead of the 9 hubs). The Home link is always one tap. An arena's front page shows "Home › Arena".
 - **Every app ≤ 2 taps from Home:** Home > arena page > app (or Home > the tile, for the 6 fronts).
 
 ## Tests
 - `test_olympus_nav` 22/22 (new): crawler, structure (node), reachability, browser (crumbs, real taps, redirect, arena page, 390 px).
-- `test_gate_page` 90/90: its crumb check now expects the arena.
+- `test_gate_page` 90/90: its crumb and Go to checks now expect the arenas. `test_hubs` 99/100 (Compass crumb = Home > Jarvis > What to do next). `test_nav_pages` 45/45, `test_nav_search` 6/6.
 - `test_olympus_map` 7/7: the column is Arena; the doc has the arenas, retired -> replacement and one place per fact.
 - `test_delphi_page` 43/43: a retired page keeps working for its own test (automated browsers are never redirected).
-- `test_hubs`: one failure, which fails on 7adf312d too (colour literals in gate.css from the night palette).
+- `test_hubs`: the one failure also fails on 7adf312d (colour literals in gate.css from the night palette). `test_me_hub` can't run in the cloud (it needs fastapi).
 - `test_ares_page`: "every local file exists" fails on 7adf312d too (it wants the published `../home.json`).
 
 ## Next (not done today)
 - One copy of the account cards: Board, Widget and NQ draw their own. They could all use `business/mffucenter.js` (the MFFU page's model), so the numbers can never disagree.
-- "Go to" still lists the 9 hubs first. Swap to the 7 arenas (`gate-nav.js` openSheet + `tests.test_gate_page` part c "HUBS first").

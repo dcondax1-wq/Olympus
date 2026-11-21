@@ -301,7 +301,7 @@
       }
       if (!(hits.length || F.hubs.length || F.actions.length || F.tabs.length)) body.appendChild(el('p', 'gn-empty', C ? 'Nothing found for "' + q + '". Try a plain word like money, risk or news.' : 'The app list did not load. Home below has every hub.'));
     }
-    var home = function () { var g = el('div', 'gn-list'); g.style.marginTop = '12px'; g.appendChild(item({ id: 'gate', path: 'gate/', label: 'Home', name: '', line: 'Right now, and your hubs' }, 'gn-gate')); body.appendChild(g); };
+    var home = function () { var g = el('div', 'gn-list'); g.style.marginTop = '12px'; g.appendChild(item({ id: 'gate', path: 'gate/', label: 'Home', name: '', line: 'Right now, and your arenas' }, 'gn-gate')); body.appendChild(g); };
     if (q) { home(); return; }
     var here = appId === 'hub' ? hubParam() : (C && C.hubOf && C.hubOf(appId) ? C.hubOf(appId).id : '');
     var hubs = C && C.hubs ? C.hubs : [];
@@ -316,7 +316,20 @@
         body.appendChild(pb);
       }
     }
-    if (hubs.length) {
+    var arenas = C && C.arenas ? C.arenas : [];
+    if (arenas.length) {   // ORGANIZE 2026-11-21: the same top level as Home: the 6 arenas + Everything else, each opens its page (hub/arena.html)
+      var hereA = appId === 'arena-page' ? ((/[?&]a=([a-z]+)/.exec(w.location.search || '') || [])[1] || '') : (C.arenaOf && C.arenaOf(appId) ? C.arenaOf(appId).id : '');
+      body.appendChild(el('h3', 'gn-sec', 'Arenas'));
+      var dsa = el('div', 'gn-dists');
+      arenas.forEach(function (x) {
+        var a = el('a', 'gn-dist' + (x.id === hereA ? ' gn-here' : ''), x.name); a.href = root + 'hub/arena.html?a=' + x.id; a.setAttribute('data-arena', x.id);
+        if (x.id === hereA) a.setAttribute('aria-current', 'page');
+        a.appendChild(el('small', '', x.count + ' app' + (x.count === 1 ? '' : 's')));
+        a.addEventListener('click', closeSheet);
+        dsa.appendChild(a);
+      });
+      body.appendChild(dsa);
+    } else if (hubs.length) {   // an older catalog without arenas
       body.appendChild(el('h3', 'gn-sec', 'Hubs'));
       var ds = el('div', 'gn-dists');
       hubs.forEach(function (h) {

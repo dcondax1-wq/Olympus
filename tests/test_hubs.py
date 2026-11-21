@@ -323,8 +323,8 @@ def test_page():
             p.goto(f"{origin}/compass/")
             p.wait_for_function("window.OLYMPUS_GATE_NAV && window.OLYMPUS_GATE_NAV.placed() && document.querySelector('.gn-crumb') && document.querySelector('.gn-crumb').textContent", timeout=60000)
             r = p.evaluate("() => ({ own: !!document.querySelector('head script[src*=\"gate-nav.js\"][defer]'), crumbs: [...document.querySelectorAll('nav.gn-crumbs a, nav.gn-crumbs .gn-cur')].map((e) => e.textContent.trim()), hub: document.querySelector('.gn-crumb').href.replace(location.origin, '') })")
-            check("c. Compass (no gate-nav tag of its own): agora-ui.js loads it; the breadcrumb reads Home > Today > What to do next, Today -> its Do now tab",
-                  r["crumbs"] == ["Home", "Today", "What to do next"] and r["hub"] == "/hub/index.html?h=today&t=now" and AK.no_sideways(p) and not errs, (r, errs[:2]))
+            check("c. Compass (no gate-nav tag of its own): agora-ui.js loads it; the breadcrumb reads Home > Jarvis > What to do next (ORGANIZE 2026-11-21: the arena), Jarvis -> its arena page",
+                  r["crumbs"] == ["Home", "Jarvis", "What to do next"] and r["hub"] == "/hub/arena.html?a=jarvis" and AK.no_sideways(p) and not errs, (r, errs[:2]))
             if shots:
                 AK.shot(p, "app-compass")
             ctx.close()
