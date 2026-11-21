@@ -33,6 +33,7 @@ ROWS = {"A0_today": ("skip", "guard"), "A1_lit_bank1": ("bank1", "guard"), "A2_l
         "A6_no_guard": ("none", "none"), "A7_atlas_only": ("atlas", "guard"),
         "A8_balance_aware": ("skip", "loose")}       # amendment: the guard on both lanes balance-aware (rapid_levers "loose")
 INACTIVE = 5                 # trading days in a row without a trade = MFFU's 7-calendar-day inactivity rule
+CLOSE_IDLE = False           # post-hoc (posthoc cmd): MFFU closes the eval at INACTIVE idle sessions = a fail + a re-buy
 
 
 def _mods():
@@ -68,6 +69,8 @@ def make_ev_class():
             else:
                 self.gap += 1
                 self.maxgap = max(self.maxgap, self.gap)
+            if CLOSE_IDLE and self.gap >= INACTIVE and out[0] is None:
+                return "fail", out[1]
             return out
 
         def _atlas_bank(self, t):
@@ -117,6 +120,8 @@ def spec(row):
                 out = super().step(ts, keep)
                 self.gap = 0 if self.dtr > d0 else self.gap + 1
                 self.maxgap = max(self.maxgap, self.gap)
+                if CLOSE_IDLE and self.gap >= INACTIVE and out[0] is None:
+                    return "fail", out[1]
                 return out
         sp["ev"] = lambda: LooseEv(ec, E, z, "loose")
         return sp
@@ -198,12 +203,41 @@ def cmd_run(n=1000, log=print):
     return res
 
 
+def cmd_posthoc(n=1000, log=print):
+    """POST-HOC (not in the design): the same rows with MFFU's 7-day inactivity close modelled in the eval (5 trading days
+    without a trade = the eval is closed: a fail and a $97.20 re-buy). -> rapid25_pass.json "posthoc_idle"."""
+    global CLOSE_IDLE
+    import rapid25_launch as RLA
+    AR = RLA._AR()
+    with open(OUT, encoding="utf-8") as fh:
+        res = json.load(fh)
+    AR.rapid_patch(AR.T_at(1))
+    PE = RLA.eval_paths(n)
+    AR.rapid_patch(AR.T_at(10))
+    CLOSE_IDLE = True
+    out = {}
+    try:
+        for k in ROWS:
+            sp = spec(k)
+            r = {"eval": eval_row(sp, PE), "life": RLA.life_row(sp, n)}
+            out[k] = r
+            log(f"{k:16s} " + " | ".join(f"{s} pass {r['eval'][s]['p60']}% in~{r['eval'][s]['pass_med']} closed/fail {r['eval'][s]['f60']}% "
+                                         f"${r['life'][s]['usd_m']}/mo 1st {r['life'][s]['first_date']} none {r['life'][s]['no_pay_6m']}%"
+                                         for s in SPANS))
+    finally:
+        CLOSE_IDLE = False
+    res["posthoc_idle"] = out
+    with open(OUT, "w", encoding="utf-8") as fh:
+        json.dump(res, fh, indent=1, default=float)
+    return out
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser()
-    ap.add_argument("cmd", choices=("run",))
+    ap.add_argument("cmd", choices=("run", "posthoc"))
     ap.add_argument("--n", type=int, default=1000)
     a = ap.parse_args(argv)
-    cmd_run(a.n)
+    cmd_run(a.n) if a.cmd == "run" else cmd_posthoc(a.n)
     return 0
 
 

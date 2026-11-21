@@ -320,6 +320,10 @@ def build_pc(rig, day: str, F: Findings, quiet=True) -> dict:
         a2 = lit25.to_funded(NBF, day)
         # 4. --rapid: ADD_ACCOUNT.bat item 5, the Rapid EOD 25K (LIT + ATLAS)
         a3 = account_cli.add("rapideod25", NR, start=day) if rig.rapid else None
+        if a3 and a3.get("ok") and os.environ.get("RH_LIT_BANK") == "1":     # the Rapid 25K's OFF "bank at the room" lane, on
+            rb_ = rapid.load()                                                  # (research: tools/money/rapid25_pass.py A1)
+            rb_["lit_bank"] = True
+            rapid.save(rb_)
         # 4b. --rapid2: the add box again, Rapid EOD 50K -> Rapid #2 (data/rapid2.json)
         a4 = account_cli.add("rapideod", NR2, start=day) if getattr(rig, "rapid2", False) else None
         # 5. START BOT + the typed phrase (engine/go.step_arm): ATLAS's 25K, the Rapid, the added accounts, then --start
