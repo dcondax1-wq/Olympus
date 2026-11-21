@@ -308,7 +308,9 @@ def test_gpu(br, origin):
     p.wait_for_timeout(int(BK.limit_ms(800, "gpu settle")))
     f2 = p.evaluate("() => __jarvisBackdrop.frames")
     check("i. back home: the same buffers are restored (framebuffers, MSAA, textures as before) and it draws again",
-          back["msaa"] == home["msaa"] and back["fb"] == home["fb"] and abs(back["tex"] - home["tex"]) <= 2 and f2 > f1
+          back["msaa"] == home["msaa"] and back["fb"] == home["fb"] and abs(back["tex"] - home["tex"]) <= 2
+          # moving: more frames; too slow for motion (this software GL, QA 2026-11-21): its still frame was drawn again on return, then every 3 s
+          and (f2 > f1 or (p.evaluate("() => __jarvisBackdrop.still") == "slow" and f1 > f0))
           and p.evaluate("() => __jarvisBackdrop.asleep") is False, (home, back, f1, f2))
     for _ in range(3):                                 # three more round trips: still no growth
         p.evaluate(CLICK, "oracle")
