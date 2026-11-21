@@ -310,6 +310,11 @@ def _signed(body, core: bool = False, real: bool = True) -> str:
             SIGN_STATE["why"] = "too big to sign"
             return b
         SIGN_STATE["why"] = None
+        pin = _ss.feed_vk() if real else None
+        if pin and _ss.vk_of(k) != pin:
+            # redteam 2026-11-21: a new key (new PC / Windows profile) under a pinned vk: every post is signed but the phone and
+            # board.py drop them all. Still posted; the run record says why (rec["unsigned"]).
+            SIGN_STATE["why"] = "this PC's key is not the pinned vk: the phone drops these posts (re-pin: python tools/status_sign.py check)"
         return out
     except Exception as e:  # noqa: BLE001
         SIGN_STATE["why"] = e.__class__.__name__
@@ -476,6 +481,7 @@ def gather(now=None, root: str = ROOT, env=None, http=None, port=PORT_DEFAULT, f
         except Exception as e:
             snap["live_error"] = f"{e.__class__.__name__}: {str(e)[:120]}"
     snap["alerts_pc"] = _telegram_on(root)
+    snap["alert_bus"] = _bus_active()       # Telegram / Discord through engine/alert_bus (ALERTS_SETUP.bat): a route of its own
     try:                                    # self-heal (engine/self_heal.py, night-selfheal): fixed / needs you + what grows on disk, <= 300 bytes
         from engine import self_heal as _sh
         snap["sh"] = _sh.read_tiny(root, now)
@@ -525,6 +531,14 @@ def gather(now=None, root: str = ROOT, env=None, http=None, port=PORT_DEFAULT, f
     except Exception:
         snap["zl"] = None
     return snap
+
+
+def _bus_active() -> bool:
+    try:
+        from engine import alert_bus as _ab
+        return bool(_ab.active())
+    except Exception:  # noqa: BLE001
+        return False
 
 
 def _telegram_on(root) -> bool:
@@ -1792,7 +1806,9 @@ def card(snap: dict, cfg: dict | None = None, last: dict | None = None) -> list:
         rp.append("GitHub off" if gh else "GitHub pushes still on (double-click BOTS_BACK.bat)")
     if snap.get("alerts_pc"):
         rp.append("Telegram on")
-    if "wp" in snap and not cfg.get("topic") and not _d(snap.get("wp")).get("d"):     # a real run knows the phones (engine/push.app_block)
+    if snap.get("alert_bus"):
+        rp.append("alerts via Telegram / Discord first (alert bus)")
+    if "wp" in snap and not cfg.get("topic") and not _d(snap.get("wp")).get("d") and not snap.get("alert_bus"):     # a real run knows the phones (engine/push.app_block)
         rp.insert(0, "NO PHONE ALERT ROUTE: no Olympus phone and no ntfy alert topic, so trade alerts reach nobody "
                      "(check: python -X utf8 -m engine.alert_check)")
     rep_ok = bool(cfg.get("topic")) and last.get("ok") is not False

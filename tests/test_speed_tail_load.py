@@ -181,6 +181,30 @@ def main():
     if keep_cls is not None:
         NinjaTraderBars.TAIL_FULL_EVERY_S = keep_cls
     check("f. rewrite in place, same head + length, a bar 10 lines back corrected: read by the 15-min full read", ok, info)
+    # f2 (redteam 2026-11-21): the same kind of same-size in-place correction, a bar in the MIDDLE, with the 15-min backstop NOT due:
+    # engine.ninjatrader's reader checks the whole prefix (CRC32), so it reads the corrected bar at once (research's copy may not)
+    ok, info = P.same(p)
+    with open(p) as fh:
+        L = fh.readlines()
+    mid = len(L) // 2
+    old = L[mid]
+    f1 = old.split(",")[2]
+    L[mid] = old.replace(f1, (str(round(float(f1) + 3.0, 10)) + "0" * 12)[:len(f1)], 1)
+    assert len(L[mid]) == len(old) and L[mid] != old, (L[mid], old)
+    L.append(line(t0 + 60 * n, 27000))
+    n += 1
+    with open(p, "w") as fh:
+        fh.writelines(L)
+    bump(p)
+    xa, xc = legacy_load(P.a, p), P.c.load(p)
+    try:
+        assert_frame_equal(xa, xc, check_dtype=True)
+        ok2, info2 = True, ""
+    except AssertionError as e:
+        ok2, info2 = False, str(e)[:300]
+    check("f2. a middle bar corrected in place at the same size, backstop not due: the engine reader has it at once", ok and ok2,
+          info or info2)
+    P.same(p)                                             # the research copy catches up (full read) before g.
     with open(p, "w") as fh:                              # g. empty file
         pass
     bump(p)

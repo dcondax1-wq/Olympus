@@ -6,7 +6,8 @@
   d. de-dupe by key, across a restart (the state file)
   e. backoff: 3 retries, 2 / 8 / 30 s
   f. no secret in any file / log / print / tracked file (the branch)
-  g. quiet hours: silent for a summary, entries / exits / stopped always ring
+  g. quiet hours: silent for a summary; entries / exits follow ring_in_quiet_hours (silent at night until the owner says yes,
+     redteam 2026-11-21), "bot stopped" and the dual emergencies always ring
   h. the texts (golden)
   i. the .bat chain: CRLF, getpass, nothing echoed; setup + test flows with fakes
   j. the trading loop never waits on it (send returns at once, never raises)
@@ -241,12 +242,28 @@ def part_g(b):
     s = N.merge({"quiet_hours": {"from": "00:00", "to": "23:59"}})
     now = time.time()
     check("g. a summary in quiet hours: silent", AB.is_silent({"kind": "daily"}, now=now, s=s))
-    check("g. entries / exits / stopped always ring", not any(AB.is_silent({"kind": k}, now=now, s=s) for k in AB.DUAL))
+    check("g. entries / exits in quiet hours: silent while TRADE_RING is not in ring_in_quiet_hours (the owner's yes / no)",
+          all(AB.is_silent({"kind": k}, now=now, s=s) for k in ("entry", "exit")))
+    ring = N.merge({"quiet_hours": {"from": "00:00", "to": "23:59"},
+                    "ring_in_quiet_hours": list(s["ring_in_quiet_hours"]) + list(N.TRADE_RING)})
+    check("g. ... and they ring once TRADE_RING is there", not any(AB.is_silent({"kind": k}, now=now, s=ring) for k in ("entry", "exit")))
+    check("g. 'bot stopped' and the dual emergencies (hedge risk, halt / no stop) always ring",
+          not AB.is_silent({"kind": "bot_stopped"}, now=now, s=s) and not AB.is_silent({"kind": "hedge_risk", "dual": True}, now=now, s=s)
+          and not AB.is_silent(AB.from_problem({"code": "no_stop", "key": "x"}, {"title": "t", "body": "b"}), now=now, s=s))
+    real = N.merge(json.load(open(os.path.join(ROOT, "notify_settings.json"), encoding="utf-8")))
+    import datetime as dt
+    from zoneinfo import ZoneInfo
+    two_am = dt.datetime(2026, 11, 19, 2, 5, tzinfo=ZoneInfo("America/New_York")).timestamp()
+    check("g. the repo's notify_settings.json: a 02:05 ET LIT entry comes WITHOUT sound, as on the old path",
+          AB.is_silent(dict(ENTRY), now=two_am, s=real) and AB.is_silent({"kind": "exit"}, now=two_am, s=real)
+          and not AB.is_silent({"kind": "bot_stopped"}, now=two_am, s=real))
     check("g. ring_in_quiet_hours kinds ring (pc_silent)", not AB.is_silent({"kind": "pc_silent"}, now=now, s=s))
     AB.deliver(dict(REPORT, key="g:1", kind="daily"), now=now, s=s)
     AB.deliver(dict(ENTRY, key="g:2"), now=now, s=s)
+    AB.deliver(dict(ENTRY, key="g:2b"), now=now, s=ring)
     tg = [json.loads(c[3]) for c in b.net.calls if c[0] == "telegram"]
-    check("g. Telegram: disable_notification on the summary only", [x["disable_notification"] for x in tg] == [True, False], str(tg))
+    check("g. Telegram: disable_notification on the summary and the night entry; the entry rings with TRADE_RING",
+          [x["disable_notification"] for x in tg] == [True, True, False], str(tg))
     b.net.mode["telegram"] = 500
     AB.deliver(dict(REPORT, key="g:3", kind="daily"), now=now, s=s)
     dc = [json.loads(c[3]) for c in b.net.calls if c[0] == "discord"]
@@ -400,6 +417,25 @@ def part_k(b):
     AB.drain(5)
     check("k. ... and records it so the 15-minute report skips its copy", N.instant_sent(1795060000))
     check("k. paper / BLITZ never go through the bus (old path)", P._bus_send(dict(p, account="Paper1", key="fill:3")) is None)
+    saved = (P._bus_send, P.app_send, N.instant_entry, P._PC["notifier"])
+    P._PC["notifier"] = P.Notifier(path=os.path.join(b.dir, "data", "push_sent_k.json"), relay=None, src="pc")   # never data/
+    seen = []
+    try:                                  # redteam 2026-11-21: the bus did NOT take it ("off": a race with ALERTS_OFF / "bad"): old path
+        P.app_send = lambda payload, **kw: (seen.append("app"), {"sent": 1})[1]
+        N.instant_entry = lambda payload, **kw: (seen.append("ntfy"), "sent")[1]
+        outs = []
+        for i, word in enumerate(("off", "bad")):
+            P._bus_send = lambda payload, w=word: {"bus": w}
+            outs.append(P._pc_send(dict(p, key=f"fill:{1795070000 + i}:k", t=1795070000 + i)))
+        P._bus_send = lambda payload: {"bus": "queued"}
+        n0 = len(seen)
+        outs.append(P._pc_send(dict(p, key="fill:1795070009:k", t=1795070009)))
+    finally:
+        P._bus_send, P.app_send, N.instant_entry, P._PC["notifier"] = saved
+    check("k. the bus answered 'off' / 'bad': the entry still takes the old path (app + ntfy), never lost",
+          seen[:4] == ["app", "ntfy", "app", "ntfy"] and not any("bus" in o for o in outs[:2]), (seen, outs))
+    check("k. the bus took it ('queued'): the old path does not run (no double alert)", len(seen) == n0 and outs[2].get("bus") == "queued",
+          (seen, outs[2:]))
     open(os.path.join(b.home, AB.OFF_NAME), "w").close()
     check("k. switch file: bus off -> old path exactly", not AB.active() and P._bus_send(dict(p, key="fill:4")) is None)
     os.remove(os.path.join(b.home, AB.OFF_NAME))

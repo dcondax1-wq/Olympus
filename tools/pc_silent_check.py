@@ -189,11 +189,14 @@ def run(out: str, now=None, env=None, get=None, post=None, hb=None, dry=False, s
     st, msgs = notify.silent_step(prev, seen, now, s, fetched=bool(f_ok or hb.get("present")), sent_today=sent_today(back, now))
     sent = []
     bus = _bus(env) if not dry and post is http_post else None
+    # the bus's own state / failure log: the runner's temp folder, never `out` (cloud-monitor commits dash/ to the PUBLIC dashboard
+    # branch with git add -A; redteam 2026-11-21)
+    bus_dir = (os.environ if env is None else env).get("RUNNER_TEMP") or out
     for m in msgs:
         if bus is not None:                       # engine/alert_bus (repo secrets LE_TG_TOKEN + LE_TG_CHAT / LE_DISCORD_WEBHOOK)
             r = bus.deliver({"kind": "report", "key": "", "title": m["title"], "body": m["body"], "notify_type": "pc_silent",
-                             "report": True, "dual": True}, cfg=_bus_cfg(bus, env), path=os.path.join(out, "alert_bus_sent.json"),
-                            log_path=os.path.join(out, "alert_bus.jsonl"))
+                             "report": True, "dual": True}, cfg=_bus_cfg(bus, env), path=os.path.join(bus_dir, "alert_bus_sent.json"),
+                            log_path=os.path.join(bus_dir, "alert_bus.jsonl"))
             if r.get("ok"):
                 sent.append({"key": m["key"], "ok": True, "via": ",".join(r["receipts"])})
                 continue

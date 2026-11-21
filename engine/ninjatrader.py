@@ -58,6 +58,7 @@ import secrets
 import sys
 import threading
 import time
+import zlib
 from collections import deque
 from zoneinfo import ZoneInfo
 
@@ -2722,9 +2723,11 @@ class NinjaTraderBars:
 
     def load(self, path):
         """The bar file as a frame. LE_BarFeed / LE_Feed append one line per closed bar; a file that only GREW since the
-        last read (same file id, same first 256 bytes, same 64 bytes before the old end, < 16 KB more, a full read in the
-        last 15 min) is parsed from the last complete line on (~5 ms instead of ~70 ms for 21,000 1m lines); a trim,
-        rewrite or replace is a full read exactly as before. Same frame either way (tests/test_speed_tail_load.py)."""
+        last read (everything up to the old end byte-identical: CRC32 of that prefix, < 16 KB more, a full read in the last
+        15 min) is parsed from the last complete line on (~7 ms instead of ~70 ms for 21,000 1m lines); a trim, rewrite or
+        replace is a full read exactly as before. Same frame either way (tests/test_speed_tail_load.py). redteam 2026-11-21:
+        the whole prefix is checked (reading it is ~1 ms; only the parse is slow), so a same-size rewrite in place (LE_Feed's
+        File.Copy fallback) that corrects a middle bar is read at once, not up to 15 min later."""
         import io
         import pandas as pd
         try:
@@ -2740,21 +2743,15 @@ class NinjaTraderBars:
         prev = tails.get(path)
         try:
             with open(path, "rb") as fh:
-                head = fh.read(256)
-                same = bool(prev) and st.st_ino == prev["ino"] and prev["off"] <= st.st_size <= prev["off"] + self.TAIL_MAX_GROWTH \
-                    and time.time() - prev["full_t"] < self.TAIL_FULL_EVERY_S \
-                    and len(head) >= len(prev["head"]) and head[:len(prev["head"])] == prev["head"]
-                if same and prev["off"] > 0:
-                    fh.seek(max(0, prev["off"] - 64))
-                    same = fh.read(prev["off"] - max(0, prev["off"] - 64)) == prev["tailfp"]
-                if same:
-                    fh.seek(prev["off"])
-                    new, base, off0 = fh.read(), prev["raw"], prev["off"]
-                else:
-                    fh.seek(0)
-                    new, base, off0 = fh.read(), None, 0
+                data = fh.read()                       # the whole file (~1 MB, ~1 ms): only the parse below is slow
         except OSError:
             return None
+        o = int(prev["off"]) if prev else -1
+        if prev and o <= len(data) <= o + self.TAIL_MAX_GROWTH and time.time() - prev["full_t"] < self.TAIL_FULL_EVERY_S \
+                and zlib.crc32(memoryview(data)[:o]) == prev["crc"]:
+            new, base, off0 = data[o:], prev["raw"], o    # byte-identical up to the old end: only appended since the last read
+        else:
+            new, base, off0 = data, None, 0
         # (2026-11-03) every line LE_Feed / LE_BarFeed writes ends with "\n": a last line without it is still being
         # appended, and a cut number ("21000.5" read as "2100") would parse as a valid but wrong close. Not parsed; the
         # next read (the file's size changes, so the cache misses) has it whole.
@@ -2770,8 +2767,7 @@ class NinjaTraderBars:
         part = part.dropna(subset=["time", "open", "high", "low", "close"])          # header row, junk line
         part["volume"] = part["volume"].fillna(0.0)
         raw = part if base is None else pd.concat([base, part], ignore_index=True)
-        tails[path] = {"off": off0 + cut, "head": head, "raw": raw, "ino": st.st_ino,
-                       "tailfp": ((prev["tailfp"] if base is not None else b"") + body)[-64:],
+        tails[path] = {"off": off0 + cut, "crc": zlib.crc32(memoryview(data)[:off0 + cut]), "raw": raw,
                        "full_t": prev["full_t"] if base is not None else time.time()}
         df = raw.copy()
         df["time"] = df["time"].astype("int64")

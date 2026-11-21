@@ -44,15 +44,23 @@ updating the files every time we make changes, so do it now."
 ## The update gate (2026-11-20, `engine/autoupdate.py`; tests `tests.test_autoupdate_paths`)
 - `needs_restart(changed)`: restart unless EVERY changed path is on `SITE_ONLY` (`tools/web_public/`, `docs/`, `research/`, `tests/`,
   `handoff/`, `vault/`, `.github/`, root `*.md`). Unknown or empty = restart. A site-only update still runs the self-tests, sets no
-  restart marker and no crash guard, and the DailyUpdater does not exit.
+  restart marker and no crash guard, and the DailyUpdater does not exit. The paths come from `git diff --no-renames`, so a bot file
+  moved into `research/` still lists its old `engine/` path (restart). `RESTART_DATA` (research/lit/mffu_rules.json,
+  research/props/firm_rules.json: the running bot caches them) restarts too.
 - `import_check(sh)`: before a restart, `import server` runs in engine/pc_selftest's sealed child. A failure rolls the update back,
   like a failed self-test (`bad_sha`, held = "Bot server starts (imports)").
 - `crash_check()`: an update that restarted the bot arms `crash_guard` in data/autoupdate.json ({new, old, t, starts}).
-  `DailyUpdater.start()` counts every server start; with `LE_CRASH_CHECK=supervisor`, run_bot.ps1 counts instead through
-  `python -m engine.autoupdate --crash-check`. If it reaches `CRASH_RUNS` + 1 starts within `CRASH_WINDOW_S` (10 min) of the
-  update, it runs `git reset --keep <old>`, sets bad_sha = new, sends one push, and the server restarts (75) on the old code. Past
-  10 min the guard is cleared. It never touches git when HEAD is no longer the updated commit.
-- Known limit: two manual restarts within 10 minutes of an update count as short runs too, so an otherwise good update can be
-  rolled back. The PC then stays on the version before it until a newer `pc` commit lands. Nothing worse happens: the old code is
-  the version that last ran fine.
+  server.py calls `DailyUpdater.crash_start()` FIRST in its startup (before the bot resumes or any watcher starts), so every start
+  is counted, and on a rollback nothing resumes on the bad code. With `LE_CRASH_CHECK=supervisor`, run_bot.ps1 counts instead
+  through `python -m engine.autoupdate --crash-check` (not wired yet). The 10-minute window (`CRASH_WINDOW_S`) starts at the
+  FIRST start after the update, not when the check began (pip + tests can take minutes). `CRASH_RUNS` + 1 starts in it =
+  `git reset --keep <old>` (bot-made tracked files the bad code rewrote go back to HEAD first, else git refuses), bad_sha = crash_sha
+  = new, one push (sent synchronously: the process exits right after), and the server restarts (75) on the old code. A run past
+  the window clears the guard. It never touches git when HEAD is no longer the updated commit.
+- Owner restarts are not crashes (2026-11-21): Bot Control's Restart, the phone's `restart` and a new supervisor (`--on-start`:
+  START BOT, a reboot) call `mark_deliberate_restart`, so the next start (within `DELIBERATE_S`, 5 min) is not counted. The net
+  stays armed for the starts after it. An `update` restart is not marked (its own restart is the first counted start).
+- After a crash rollback the bad code stays out: START BOT / UPDATE.bat (`pull`) skip bad_sha ("Kept the version that works"), and
+  a newer `pc` that only adds site / docs commits on top of crash_sha is not taken either (it would bring the same crash back
+  every hour). The first newer `pc` that changes bot code after it is tried again, with the net armed; that clears crash_sha.
 

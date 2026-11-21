@@ -8,6 +8,9 @@ stranger could subscribe to the owner's trade alerts and push his phone off the 
   e. the owner's phones all gone: still no stranger joins; the code goes to the private alert topic
   f. a PC that never had a phone: the first phone joins without a code (nothing to send it to yet), the next needs one
   g. a stranger's notice or bad code never breaks the intake (no error), the intake never posts to the relay
+  a-g run with the code switched ON (engine/push.PAIR_CODE_ON, the day the phone side ships); h runs the default:
+  h. (redteam 2026-11-21) THE CODE IS OFF until push-ui.js can type it: the owner's phone with a new endpoint joins at once, no
+     code notice is sent, and a full list of recent phones still pushes none out
     python -X utf8 -m tests.test_push_pairing
 """
 from __future__ import annotations
@@ -46,8 +49,53 @@ def seed_owner(now):
     return wp, sub
 
 
+def part_h(now):
+    print("h. the default: the code is OFF until the phone side ships")
+    ok(P.PAIR_CODE_ON is False, "engine/push.PAIR_CODE_ON is False (push-ui.js has no code input yet, LEAD_WIRES W4)")
+    sb = Sandbox()
+    try:
+        relay = FakeRelay()
+        R = P.Relay(base="https://ntfy.sh", topic="le-test", http=relay)
+        wp, owner = seed_owner(now)
+        oid = P.endpoint_id(owner["endpoint"])
+        sent, send = recorder()
+        told = []
+        _, _, readded = phone(200)                       # the owner re-added the Home Screen app: a new endpoint, no code to type
+        relay.add(sealed("sub", {"sub": readded, "key": wp["k"], "ua": "iPhone"}, wp["b"]))
+        r = P.intake(R.read(), now, sender=send, ntfy=lambda p: told.append(p) or True)
+        nid = P.endpoint_id(readded["endpoint"])
+        ok(r["added"] == [nid] and {d["id"] for d in cfg()["devices"]} == {oid, nid} and not r.get("unpaired"),
+           "a new endpoint of the owner's phone joins without a code", r)
+        ok(not told and not any(x["data"]["title"] == "New phone wants your alerts" for x in sent),
+           "no 'New phone wants your alerts' notice with a code nobody can type", (told, sent))
+        f = cfg()
+        f["devices"] = [dict(d, seen=now) for d in f["devices"]] + [
+            {"id": P.endpoint_id(phone(210 + i)[2]["endpoint"]), "sub": phone(210 + i)[2], "key": wp["k"], "since": now, "seen": now - 60,
+             "ua": "x"} for i in range(P.MAX_DEVICES - 2)]
+        P._write_private(P.CONFIG_PATH, f)
+        before = {d["id"] for d in cfg()["devices"]}
+        relay.add(sealed("sub", {"sub": phone(230)[2], "key": wp["k"]}, wp["b"], t=now + 5))
+        r = P.intake(R.read(), now + 60, sender=send, ntfy=lambda p: told.append(p) or True)
+        ok(len(before) == P.MAX_DEVICES and {d["id"] for d in cfg()["devices"]} == before and r.get("full") == 1 and oid in before,
+           "a list full of recent phones still pushes none out for a newcomer (the no-eviction guard stays ON)", r)
+    finally:
+        sb.close()
+
+
 def main():
     now = int(time.time())
+    code_on, P.PAIR_CODE_ON = P.PAIR_CODE_ON, True        # a-g: the code mechanism as it will run once the phone side ships
+    try:
+        rc = _main_code_on(now)
+    finally:
+        P.PAIR_CODE_ON = code_on
+    part_h(now)
+    n = sum(RES)
+    print(f"\npush_pairing: {n}/{len(RES)} " + ("ALL PASS" if n == len(RES) else "FAILED"))
+    return 0 if n == len(RES) and rc == 0 else 1
+
+
+def _main_code_on(now):
     sb = Sandbox()
     try:
         relay = FakeRelay()
@@ -140,9 +188,7 @@ def main():
         ok(not r["added"] and r.get("unpaired") == 1 and cfg().get("pair_on"), "the second one needs the code", r)
     finally:
         sb.close()
-    n = sum(RES)
-    print(f"\npush_pairing: {n}/{len(RES)} " + ("ALL PASS" if n == len(RES) else "FAILED"))
-    return 0 if n == len(RES) else 1
+    return 0
 
 
 if __name__ == "__main__":

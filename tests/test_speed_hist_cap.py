@@ -2,7 +2,8 @@
     python -X utf8 -m tests.test_speed_hist_cap
 a. NQ 5m / 1m: only the last 150 days of the bot's clock; b. the newest rows are exactly today's (uncapped) rows;
 c. cfg hist_keep_days 0 = all rows (today's behaviour); d. ES 5m and NQ 1h are never cut;
-e. the LIT window (engine/lit_live.window_start) is always inside the kept 150 days, every day of 2026.
+e. the LIT window (engine/lit_live.window_start) is always inside the kept 150 days, every day of 2026;
+f. a bad hist_keep_days ("0", 30, junk, NaN, inf) never empties or shortens LIT's history and never raises.
 """
 from __future__ import annotations
 
@@ -60,6 +61,16 @@ def main():
         check("b. the kept rows are exactly today's newest rows", tail.equals(capped.reset_index(drop=True)))
         check("c. hist_keep_days 0 = every row (today)", len(full) == n, f"{len(full)}")
         check("d. ES 5m and NQ 1h are never cut", len(b._read_hist("ES", "5m")) == n and len(b._read_hist("NQ", "1h")) == n)
+        # redteam 2026-11-21: a bad start cfg never empties / shortens LIT's history and never makes a poll raise
+        check("f. hist_keep_days \"0\" (a string) = every row, never an empty history", len(bot(hist_keep_days="0")._read_hist("NQ", "5m")) == n)
+        h30 = bot(hist_keep_days=30)._read_hist("NQ", "5m")
+        floor = now - live.HIST_MIN_DAYS * 86400
+        check(f"f. hist_keep_days 30 is floored at {live.HIST_MIN_DAYS} days (LIT's window)",
+              int(h30["time"].min()) >= floor and int(h30["time"].min()) < floor + 300, f"{h30['time'].min()} vs {floor}")
+        hj = bot(hist_keep_days="junk")._read_hist("NQ", "5m")
+        check("f. a junk value falls back to the default cap", int(hj["time"].min()) >= cut and int(hj["time"].min()) < cut + 300)
+        check("f. NaN / inf: no cut, no exception", len(bot(hist_keep_days=float("nan"))._read_hist("NQ", "5m")) == n
+              and len(bot(hist_keep_days=float("inf"))._read_hist("NQ", "5m")) == n)
         worst = 0
         d = dt.date(2026, 1, 2)
         while d <= dt.date(2026, 12, 31):
