@@ -64,28 +64,59 @@ def score(L: dict, s: dict) -> tuple:
     return pts, od
 
 
+OPENER = {
+    "no_site": "I noticed {name} doesn't show a website on the map, so we built a sample one for you. It's free to look at. Can I text or email you the link?",
+    "site_down": "I tried to open {name}'s website and it didn't load for me. Did you know it's down? We fix that, and we already built a fresh sample site you can look at.",
+}
+
+
+def blocked() -> tuple:
+    """the do-not-call scrub: 'no' / 'do not call' from the caller portal (agency_never.json), the opt-outs and the registry-listed
+    numbers of agency/calls (optouts.json, dnc_checked.json). They live only on the PC (git-ignored): in the cloud this is empty."""
+    ids, phones = set(), set()
+    try:
+        from agency import portal as AP
+        ids |= set(AP.never_ids())
+    except Exception:                            # noqa: BLE001 - no PC files here: nothing blocked by them
+        pass
+    out = os.path.join(ROOT, "agency", "calls", "out")
+    for fn, key in (("optouts.json", "phones"), ("dnc_checked.json", "numbers")):
+        try:
+            d = json.load(open(os.path.join(out, fn), encoding="utf-8")).get(key) or {}
+        except (OSError, ValueError, AttributeError):
+            continue
+        if isinstance(d, dict):
+            d = [p for p, v in d.items() if isinstance(v, dict) and v.get("dnc") == "listed"]
+        phones |= {re.sub(r"\D", "", str(p))[-10:] for p in d}
+    return ids, phones
+
+
 def build(n: int = 100) -> dict:
     sites = {s["id"]: s for s in json.load(open(os.path.join(F.WEB, "factory", "sites.json"), encoding="utf-8"))["sites"]}
-    rows = []
+    rows, (never, dnc) = [], blocked()
     for L in F.load_leads():
         s = sites.get(L["id"])
         ph = re.sub(r"\D", "", str(L.get("phone") or ""))
-        if not s or s.get("chain") or len(ph) not in (10, 11):
+        if not s or s.get("chain") or len(ph) not in (10, 11) or L["id"] in never or ph[-10:] in dnc:
             continue
+        lane = "site_down" if (L.get("web") or {}).get("verdict") == "site_down" else "no_site"
         pts, od = score(L, s)
         why = [w for w, ok in (("hot lead", L.get("heat") == "hot"), (f"open {od} weekdays in calling hours", od > 0),
                                (F.NICHES[s["niche"]]["label"].lower() + " (buys sites)", WEIGHT.get(s["niche"], 1) >= 2),
                                ("storefront address", F.ready(L) and bool(L.get("address")))) if ok]
         rows.append({"id": L["id"], "name": s["name"][:80], "phone": ph[-10:], "town": s["town"][:40], "state": str(L.get("state") or "MD")[:2].upper(),
                      "niche": PORTAL_NICHE.get(s["niche"], s["niche"]), "kind": s["kind"][:40], "code": s.get("code", ""), "site": s["path"],
-                     "heat": str(L.get("heat") or ""), "score": round(pts, 1), "open_weekdays": od, "why": why})
+                     "heat": str(L.get("heat") or ""), "score": round(pts, 1), "open_weekdays": od, "why": why,
+                     "lane": lane, "opener": OPENER[lane].format(name=s["name"][:80]), "src": "overture" if L.get("source") == "overture" or L.get("phone_src") == "overture" else "osm"})
     nophone = sum(1 for L in F.load_leads() if len(re.sub(r"\D", "", str(L.get("phone") or ""))) not in (10, 11))
     rows.sort(key=lambda r: (-r["score"], -r["open_weekdays"], r["town"], r["name"].lower()))
     rows = rows[:n]
     for i, r in enumerate(rows, 1):
         r["rank"] = i
     return {"v": 1, "kind": "caller-portal-list", "list": "first-100", "built": time.strftime("%Y-%m-%d"), "count": len(rows),
-            "note": "public map data only (OpenStreetMap); ranked: hot, open in calling hours, trade, storefront. A person dials; never an auto-dialer.",
+            "note": "public map data only; ranked: hot, open in calling hours, trade, storefront. A person dials; never an auto-dialer. "
+                    "Lanes: no_site (we built you one) / site_down (your website is down). Leads with a working site are not here (agency/leads/redesign.json).",
+            "credit": "Data (c) OpenStreetMap contributors (ODbL) and Overture Maps Foundation (CDLA-Permissive-2.0 / ODbL), overturemaps.org",
             "skipped": {"no phone": nophone},
             "leads": rows}
 

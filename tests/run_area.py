@@ -340,6 +340,7 @@ AREAS["agency"].append("dnc_scrub")      # day-caller2 2026-11-21: the free Nati
 AREAS["agency"].append("intake_page")      # day-caller2 2026-11-21: the client intake page (mailto only)
 AREAS["nq"].append("shadow_leads")      # day-edge2 2026-11-21: paper-lead shadow log, observe only
 AREAS["nq"].append("reconcile_live")      # day-atlasedge 2026-11-21: live vs model reconciliation
+AREAS["agency"].append("leads_overture")  # day-cities3 2026-11-21: Overture website check of the leads (fixture parquet)
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])

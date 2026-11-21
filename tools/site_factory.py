@@ -313,6 +313,7 @@ def icon(name: str, size=24, extra="") -> str:
             f'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"{extra}>{ICONS[name]}</svg>')
 
 
+CSS_V = "s1"     # the concept sites share one stylesheet (agency/f/site.css): 4,500 sites x 7 KB of the same CSS was 30 MB
 CSS = """*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}body{margin:0;background:var(--bg);color:var(--ink);
 font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
 a{color:var(--brand)}.wrap{max-width:640px;margin:0 auto;padding:0 18px}
@@ -485,8 +486,7 @@ def page(lead: dict, ids: dict, client: dict | None = None) -> str:
 <meta name="description" content="{esc(desc)}">
 <meta name="generator" content="site-factory {VERSION}">
 <link rel="icon" href="data:image/svg+xml,{quote(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="{brand}"/><g fill="none" stroke="{on}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" transform="translate(3 3) scale(.75)">{ICONS[N["icon"]]}</g></svg>')}">
-<style>:root{{--bg:{bg};--ink:{ink};--soft:{soft};--brand:{brand};--brand2:{brand2};--on:{on};--card:#ffffff;--line:color-mix(in srgb,{ink} 11%,transparent)}}
-{CSS}</style>
+<style>:root{{--bg:{bg};--ink:{ink};--soft:{soft};--brand:{brand};--brand2:{brand2};--on:{on};--card:#ffffff;--line:color-mix(in srgb,{ink} 11%,transparent)}}{(chr(10) + CSS) if client else ""}</style>{"" if client else '<link rel="stylesheet" href="../site.css?v=' + CSS_V + '">'}
 </head>
 <body data-niche="{niche}">
 <header class="bar"><div class="wrap">{('<img class="logo" src="' + esc(cl["logo"]) + '" alt="" width="34" height="34" style="object-fit:cover;background:none">') if cl.get("logo") else '<span class="logo">' + icon(N["icon"], 20) + '</span>'}<b>{esc(name)}</b>{call.replace('class="call"', 'class="call" style="min-height:38px;padding:0 13px;font-size:.9rem"', 1) if t else ""}</div></header>
@@ -660,6 +660,8 @@ def build(web=WEB, ids_path=IDS, write_ids=True):
         p = os.path.join(fdir, x)
         if x not in keep and os.path.isdir(p) and re.fullmatch(r"[a-z2-9]{8}", x):
             shutil.rmtree(p)
+    with open(os.path.join(fdir, "site.css"), "w", encoding="utf-8", newline="\n") as f:
+        f.write(CSS + "\n")
     with open(os.path.join(fdir, "index.html"), "w", encoding="utf-8") as f:   # no folder listing at agency/f/
         f.write('<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex, nofollow"><title>Not found</title><p>Not found.</p>\n')
     sites.sort(key=lambda s: (not s["ready"], s["chain"], s["town"], s["niche"], s["name"].lower()))   # sendable first
@@ -756,6 +758,7 @@ def export(out_dir: str, web: str = WEB) -> int:
         print(f"note: agency site not added ({e}); the minimal landing is used", file=sys.stderr)
     files["404.html"] = '<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Not found</title><p style="font:17px system-ui;padding:40px 20px">Not found.</p>\n'
     files["f/index.html"] = files["404.html"]
+    files["f/site.css"] = read_text(os.path.join(src, "site.css"))
     named = bool(c["agency_name"].strip())
     files["robots.txt"] = ("User-agent: *\nDisallow: /f/\nDisallow: /portal/\nSitemap: " + base + "sitemap.xml\n" if named else "User-agent: *\nDisallow: /\n")
     # Cloudflare Pages reads _headers (GitHub Pages ignores it; the pages' own noindex meta covers that host)
