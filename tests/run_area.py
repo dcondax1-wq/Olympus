@@ -331,6 +331,7 @@ AREAS["olympus"].append("brain3d")       # day-arenas 2026-11-21: the bot brain 
 
 AREAS["agency"].append("site_factory")   # day-cities3 2026-11-21: Website Factory (tools/site_factory.py -> agency/f/<id>/ + agency/factory/)
 AREAS["agency"].append("factory2")       # day-cities3 2026-11-21: agency launch site, client delivery, first 100 calls
+AREAS["agency"].append("dnc_scrub")      # day-caller2 2026-11-21: the free National DNC scrub before any dial (agency/dnc_scrub.py)
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
