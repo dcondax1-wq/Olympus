@@ -52,6 +52,18 @@ def main():
           "Rapid EOD 25K is not in the PC's report (plan says 'buying')" in notes and "the 2026-11-20 trade ($514.18) is not in the file yet" in notes, notes)
     R2 = TC.feed_checks(os.path.join(FX, "site"), now + 3600, os.path.join(FX, "pc_post.json"))
     check("b. an hour later the PC post itself is flagged stale (it posts every 15 min)", any(p["where"] == "PC status post" and "old" in p["what"] for p in R2["problems"]), R2["problems"])
+    # finder round 2026-11-20: a STOPPED bot (pc.running false / the paper adapter) posts its paper twin's numbers (the 50K's room $1,771 vs the
+    # real $1,025): they are not the truth; the last LIVE balances (life.acc) are, and the report says why
+    import copy
+    stp = copy.deepcopy(post)
+    stp["pc"]["running"] = False; stp["pc"]["adapter"] = "paper"
+    for a0 in stp["accounts"]:
+        if a0.get("id") == "mffu50k_eval":
+            a0["eval"]["room"] = 1771.0; a0["eval"]["balance"] = 49938.2
+    TS = TC.truth_of(stp, now)
+    check("b. a stopped bot (running false, paper adapter): its paper $49,938 / room $1,771 are NOT the truth; the last LIVE balance $49,192.78 is, labelled 'bot stopped: paper numbers'",
+          TC.bot_stopped(stp) == "bot stopped: paper numbers" and TS["z50k"]["balance"] == 49192.78 and TS["z50k"]["room"] is None and TS["z50k"]["stopped"]
+          and TS["atlas"]["balance"] == 25401.38 and TC.bot_stopped(post) == "", TS)
     md = TC.report_md(R, now)
     check("b. the report: the truth table + problems with shown / should be", "| ATLAS 25K | $25,401.38 | $1,401.38 |" in md and "| warn | home.json accounts[id=mffu50k_eval]" in md, md[:600])
     # c. the scanner's patterns (no browser: the same regexes on text)

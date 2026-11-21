@@ -204,3 +204,39 @@ Note: `nq/brief.json` 404s (one console line) until day-brief's file is built; t
 - `recap.traded` in "After"
 The bot's own live words (brain glance / board card) still win over the brief. Tested on day-brief's own examples, copied to
 tests/fixtures/brief/ (test_nq_desk 32/32). Screens: nq_brief_dark/light.png (today's example placed by hand for the shot, not committed).
+
+## M. ZEUS card: a STOPPED bot turns the card amber / red, ATLAS shows funded $401 (finder round 2026-11-20, lead ask 3)
+
+`tools/web_public/olympus/zeus_core.js` is DESIGN's kit file, so the change is a patch for the lead to apply:
+**`research/handoff/2026-11-20/nqdash3/zeus_core_stopped.patch`** (74 lines; `git apply --check` passes on day-nqdash3).
+
+```
+git apply research/handoff/2026-11-20/nqdash3/zeus_core_stopped.patch
+```
+
+- `pcLine(BM, res, nowS, lite)`: `pc.running === false` or the paper adapter -> `stopped: true`.
+  - Text: "BOT STOPPED: PC reported 7 min ago, the bot is not trading. On the PC: START BOT."
+  - Level `bad` (red) in the bots' hours (weekdays 01:50-16:10 ET), `warn` (amber) outside them.
+  - `summary` passes `o.lite`. `draw` uses `pc.level` for the card / line class.
+  - Live: unchanged, "PC reported 10 min ago", green.
+- `acctRow`: a funded row's balance goes through `PC_FEED.mffuView`, so ATLAS shows $401 and not $25,401.
+- The DEPS tag `mffumodel.js?v=2` becomes `v=3`. The model itself is already changed on day-nqdash3 (see below).
+- Already applied on day-nqdash3, in `business/mffumodel.js` `card()` (tags v=3 in board/, business/mffu.html, accounts.html, hub/zeus.html):
+  - When the plan says funded and the PC sends no live card (the bot stopped), the board's old "PASSED $26,946" row no longer makes ATLAS an unfunded passed eval.
+  - It stays funded at the PC's last LIVE balance (`lite.life.acc`).
+- Checked in node with the real 2026-11-20 post.
+  - Before: stopped = green "PC reported 10 min ago" + ATLAS passed $26,946.
+  - After: red "BOT STOPPED ..." + ATLAS funded $401.
+  - Live: green + ATLAS funded $401.
+- test_zeus_hub 52/52 and test_mffu_center 40/40 pass with the patch applied.
+
+## N. The weekly ATLAS number (+$2,193 in Friday's push) counts the passed-eval trade (finder round 2026-11-20, lead ask 1)
+
+The weekly figure is the PC's `pnl.week` / `week_pnl` (`engine/firms.py:314`, summed over the account's days), so this is on the PC side.
+- It includes 2026-11-17's +$1,792.50 pass trade on the eval, before the account was funded.
+- Fix (engine, the lead's call): for a funded account, sum only the days after its funded start: `life.acc[id].since` / `mf.a[].sd`, 2026-11-17 for ATLAS.
+- Funded-era week = -$112.80 + $514.18 = **+$401.38**.
+- The site side is done on day-nqdash3:
+  - The Trading page books those trades under "ATLAS eval 25K, before funded" (`tradingcore.splitEras`), so the funded consistency check uses funded trades only.
+  - The NQ numbers card counts ATLAS's week from its funded trades only (`nqgoals.realRows(..., fundedSince(lite))`).
+  - The payout coach already reads the PC's mf tracker (cp $401, 2 days): correct.

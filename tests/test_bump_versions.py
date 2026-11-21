@@ -320,7 +320,7 @@ class BumpVersions(unittest.TestCase):
 
     # ---- m. the Gate's script array
     def test_m_gate_script_array_tags(self):
-        root = make_site({"tools/web_public/gate/index.html": "<script>var b = '../';\n['olympus/themes.js?v=o9', 'gate/gate.js?v=g9'].forEach(function (src) {});\n"
+        root = make_site({"tools/web_public/gate/index.html": "<script>var b = '../';\n['olympus/themes.js?v=o10', 'gate/gate.js?v=g9'].forEach(function (src) {});\n"
                                                               "k.href = b + 'gate/gate.css?v=g11';</script>\n",
                           "tools/web_public/gate/gate.js": "//g\n", "tools/web_public/gate/gate.css": "a{}\n",
                           "tools/web_public/olympus/themes.js": "//t\n"})

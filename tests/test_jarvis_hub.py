@@ -265,7 +265,7 @@ def part_a():
           and "background:#000" in sw and "location.reload()" in sw)
     check("a. worker v14: data.js, jarvis.css, the fonts, every separate part, switcher.js, the new brain's obsidian.js / memory.js / "
           "assist-ui.js and voice-mode.js in SHELL, each saved on its own (a missing part is skipped)",
-          "const CACHE = 'jarvis-v85';" in sw and all(f"'./{f}'" in sw for f in ("data.js", "switcher.js", "obsidian.js", "memory.js", "assist-ui.js", "voice-mode.js", "tools.js", "voice-out.js") + PARTS + FONTS)
+          "const CACHE = 'jarvis-v86';" in sw and all(f"'./{f}'" in sw for f in ("data.js", "switcher.js", "obsidian.js", "memory.js", "assist-ui.js", "voice-mode.js", "tools.js", "voice-out.js") + PARTS + FONTS)
           and f"'./{JCSS}'" in sw and "SHELL.map((u) => c.add(new Request(u, { cache: 'reload' })).catch(() => null))" in sw)
     shell = re.search(r"const SHELL = \[([^\]]*)\]", sw)
     shell_files = re.findall(r"'\./([^'?]+)", shell.group(1)) if shell else []
@@ -844,7 +844,7 @@ def run_c(br, url):
         const reg = await Promise.race([navigator.serviceWorker.ready, new Promise((ok) => setTimeout(() => ok(null), 6000))]);
         if (!reg) return 'no worker';
         for (let i = 0; i < 30; i++) {
-          const c = await caches.open('jarvis-v85');
+          const c = await caches.open('jarvis-v86');
           const got = await Promise.all(['./index.html', './data.js', './%s', './orbitron.woff2', './rajdhani-500.woff2'].map((u) => c.match(u)));
           if (got.every(Boolean)) return 'ok';
           await new Promise((ok) => setTimeout(ok, 200));
@@ -1187,7 +1187,7 @@ def _registry():
                          cwd=JV, capture_output=True, text=True, timeout=60, check=True).stdout
     reg = json.loads(out)
     sw = subprocess.run(["node", "--input-type=module", "-e", "import { createRequire } from 'module'; const d = createRequire(process.cwd() + '/')('../olympus/doors.js');"
-                         "import('./switcher.js').then((m) => console.log(JSON.stringify({ first: m.FIRST, hide: [...m.HIDE], parts: [...m.CITY_PARTS], archive: d.ARCHIVE || [] })))"],
+                         "import('./switcher.js').then((m) => console.log(JSON.stringify({ first: m.FIRST, more_first: m.MORE_FIRST || [], hide: [...m.HIDE], parts: [...m.CITY_PARTS], archive: d.ARCHIVE || [] })))"],
                         cwd=JV, capture_output=True, text=True, timeout=60, check=True).stdout
     reg["sw"] = json.loads(sw)
     return reg
@@ -1220,24 +1220,27 @@ D_DATACITY = next(a["dist"] for a in _REG["apps"] if a["id"] == "datacity")
 D_NAMES_ORDER = [NX_LABEL.get(i, next((a["name"] for a in _REG["apps"] if a["id"] == i), i).upper()) for i in D_ORDER]
 D_ON = [i for i in D_ORDER if i in ON_SITE]
 D_MONEY_FIRST = next(a["id"] for a in D_SORTED if a["dist"] == "money")
-# the switcher since 2026-11-20 (owner: "funky"): switcher.js FIRST (Cities, Kalshi, NQ, Jarvis, ZEUS, Planner, Business) as the "daily" group,
-# then the doors; HIDE + CITY_PARTS left out (except the app on screen); no vertical group headings. Read from switcher.js, never typed here.
+# the switcher since 2026-11-20 17:00 ET (owner: "6 arenas, that's it, then a separate area for the smaller stuff"): switcher.js FIRST (Cities,
+# Kalshi, NQ, Jarvis, Websites, Business) as the "daily" group (Arenas), then ONE "more" group: MORE_FIRST (Planner, Zenith), the rest in door
+# order, the archived apps (olympus/doors.js ARCHIVE) at its end; HIDE + CITY_PARTS left out (except the app on screen); no vertical group
+# headings. Read from switcher.js, never typed here.
 _SWH = set(_REG["sw"]["hide"]) | set(_REG["sw"]["parts"])
 def sw_view(active="home"):
     vis = ["home"] + [a["id"] for a in D_SORTED if a["id"] == active or a["id"] not in _SWH]
     first = [i for i in _REG["sw"]["first"] if i in vis]
-    arc = set(_REG["sw"]["archive"])                             # olympus/doors.js ARCHIVE: one Archive group at the very end
+    mf = [i for i in _REG["sw"]["more_first"] if i in vis and i not in first]
+    arc = set(_REG["sw"]["archive"])
     dist = {a["id"]: a["dist"] for a in _REG["apps"]}
-    doors = [d["id"] for d in _REG["dists"] if any(dist.get(i) == d["id"] for i in vis if i not in first and i not in arc)]
-    rest = [i for d in doors for i in vis if i not in first and i not in arc and dist.get(i) == d]
+    doors = [d["id"] for d in _REG["dists"]]
+    rest = [i for d in doors for i in vis if i not in first and i not in mf and i not in arc and dist.get(i) == d]
     vs = set(vis)
-    archived = [a["id"] for a in SORTED_APPS if a["id"] in vs and a["id"] not in first and a["id"] in arc]   # the Archive group keeps apps.js order
-    return {"order": first + rest + archived, "chips": (["daily"] if first else []) + doors + (["archive"] if archived else []),
-            "first_money": next((i for i in rest if dist.get(i) == "money"), None)}
+    archived = [a["id"] for a in SORTED_APPS if a["id"] in vs and a["id"] not in first and a["id"] not in mf and a["id"] in arc]   # apps.js order
+    more = mf + rest + archived
+    return {"order": first + more, "chips": (["daily"] if first else []) + (["more"] if more else []), "first_more": more[0] if more else None}
 SW_HOME, SW_DC = sw_view("home"), sw_view("datacity")
 SW_NAMES_HOME = [NX_LABEL.get(i, next((a["name"] for a in _REG["apps"] if a["id"] == i), i).upper()) for i in SW_HOME["order"]]
 SW_ON = [i for i in SW_HOME["order"] if i in ON_SITE]
-SW_DC_LIT = "archive" if "datacity" in set(_REG["sw"]["archive"]) else D_DATACITY        # the open Data City's group chip
+SW_DC_LIT = "daily" if "datacity" in _REG["sw"]["first"] else "more"        # the open Data City's group chip
 MONEY_FIRST = next(a["id"] for a in SORTED_APPS if a["group"] == "money")       # the first MONEY app: the group chip glides its card to the middle
 # each tile's colour: its accent in apps.js as "r,g,b" (read, never typed: the AGORA accents of 2026-11, commit 45637b2, replaced the old neon)
 ACR = {a["id"]: ",".join(str(int(a["accent"][k:k + 2], 16)) for k in (1, 3, 5)) for a in _REG["apps"] if re.fullmatch(r"#[0-9a-fA-F]{6}", a["accent"] or "")}
@@ -1305,20 +1308,20 @@ def run_olympus(br, url):
           off: [...document.querySelectorAll('#nxTrack .nx-card.off')].map((c) => c.dataset.nx), now: (document.querySelector('#nxTrack .nx-card.now') || {}).dataset,
           q: [...row.querySelectorAll('.nx-qb')].map((b) => [b.dataset.nx, Math.round(b.getBoundingClientRect().height)]), seps: row.querySelectorAll('.nx-qs').length,
           scroll: [row.scrollWidth, row.clientWidth, getComputedStyle(row).overflowX], sw: document.documentElement.scrollWidth }; })()""")
-    check("p. the orb is organised by the four doors: headings and chips (ZEUS Trading, Money, Kalshi, More; Data City's door, More, lit), the not-yet apps dimmed, Data City NOW",
+    check("p. the orb is two groups: the six arenas, then More (chips Arenas, More; Data City's, More, lit), the not-yet apps dimmed, Data City NOW",
           o["heads"] == [] and [c[0] for c in o["chips"]] == SW_DC["chips"] and [c[0] for c in o["chips"] if c[1]] == [SW_DC_LIT] and all(c[2] >= 44 for c in o["chips"])
           and sorted(o["off"]) == sorted(i for i in SW_DC["order"] if i not in ON_SITE) and o["now"] and o["now"].get("nx") == "datacity", o)
     check("p. the quick row: every app in group order with separators, 44 px+ buttons, one scrollable line (no page sideways scroll)",
           [x[0] for x in o["q"]] == SW_DC["order"] and o["seps"] == len(SW_DC["chips"]) - 1 and all(x[1] >= 44 for x in o["q"])
           and o["scroll"][2] == "auto" and o["sw"] <= 390, o)
-    p.click('#nxGroups [data-nx-jump="money"]')
+    p.click('#nxGroups [data-nx-jump="more"]')
     try:
         p.wait_for_function("""(id) => { const t = document.getElementById('nxTrack'), c = t.querySelector('.nx-card[data-nx="' + id + '"]');
-            return Math.abs(c.offsetLeft + c.offsetWidth / 2 - (t.scrollLeft + t.clientWidth / 2)) < 45; }""", arg=SW_DC["first_money"], timeout=20000, polling=50)      # a long smooth scroll over many cards (the list grows)
+            return Math.abs(c.offsetLeft + c.offsetWidth / 2 - (t.scrollLeft + t.clientWidth / 2)) < 45; }""", arg=SW_DC["first_more"], timeout=20000, polling=50)      # a long smooth scroll over many cards (the list grows)
         jumped = True
     except Exception:                                   # noqa: BLE001 - reported below
         jumped = False
-    check("p. a district chip glides the cards to that district (Money: its first app in the middle), the switcher stays open",
+    check("p. a group chip glides the cards to that group (More: the Planner, its first app, in the middle), the switcher stays open",
           jumped and p.evaluate("document.getElementById('nxRoot').classList.contains('on')"))
     p.click('#nxRow .nx-qb[data-nx="home"]')
     p.wait_for_function("window.__jarvis.active() === 'home'", timeout=5000)
@@ -1482,7 +1485,7 @@ def run_switcher(br, url):
       name: (c.querySelector('.nx-nm b') || {}).textContent, val: (c.querySelector('.nx-val') || {}).textContent || '', now: c.classList.contains('now'),
       lines: [...c.querySelectorAll('.nx-ln')].map((l) => l.textContent) }))""")
     names = [c["name"] for c in cards]
-    check("n. tap: the switcher opens with the daily apps first (switcher.js FIRST: Cities, Kalshi, NQ, Jarvis, Planner, Business, ZEUS), then every shown app of apps.js in its door order, and + ADD, Jarvis's card marked NOW",
+    check("n. tap: the switcher opens with the six arenas first (switcher.js FIRST: Cities, Kalshi, NQ, Jarvis, Websites, Business), then More (Planner, Zenith, the rest in door order), and + ADD, Jarvis's card marked NOW",
           names == SW_NAMES_HOME + ["ADD"] and [c["now"] for c in cards].count(True) == 1 and cards[names.index("JARVIS")]["now"], (names, SW_NAMES_HOME, cards[:2]))
     nq = next((c for c in cards if c["id"] == "zenith"), {})
     cal = next((c for c in cards if c["id"] == "planner"), {})

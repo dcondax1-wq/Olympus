@@ -227,6 +227,18 @@ def _payday(L: list, P: dict | None = None) -> None:
                        f"{_range(a25)}. " + m["detail"]) if a25.get("first_pay_med") else m["detail"]
     if "buy_r50" in by and "pay1" in by:                          # bought from payouts: the session after the first one at the earliest
         by["buy_r50"]["date"] = max(by["buy_r50"]["date"], after(by["pay1"]["date"], 1))
+    # 2026-11-20 (lead finding): the pass dates came from money_plan.json and the payout dates from payday_plan.json, two
+    # different runs - the passes read 9-14 days early. Pass = funded date of the SAME payday run as the payouts.
+    for key, mid in (("N25", "z25_pass"), ("Z50", "z50_pass"), ("R25", "r25_pass")):
+        a = A.get(key) or {}
+        if a.get("funded_med") and mid in by:
+            by[mid]["date"] = a["funded_med"]
+            if a.get("p_funded_by_dec31") is not None:
+                by[mid]["detail"] = (f"Middle case of the payday plan (the same runs as the payout dates): funded about "
+                                     f"{when(a['funded_med'], False)}; {a['p_funded_by_dec31']:.0f} in 100 runs by Dec 31. " + by[mid]["detail"])
+    if "all5" in by:
+        last = max([by[m]["date"] for m in ("z25_pass", "z50_pass", "r25_pass", "r50_pass") if m in by and by[m].get("date")] or [by["all5"]["date"]])
+        by["all5"]["date"] = max(by["all5"]["date"], last)
     for key, mid, what in (("Z50", "z50_pay", "First payout: Zlarior's funded 50K"), ("N25", "n25_pay", "First payout: Zlarior's 25K #2"),
                            ("R25", "r25_pay", "First payout: Rapid EOD 25K")):
         a = A.get(key) or {}
@@ -380,6 +392,43 @@ def _finish(L, bad, src, mkt_name, n_runs, today, rows, plan_by, pc, acc) -> dic
     }
 
 
+PAYDAY_KEYS = {"Z50": "zlarior", "A25": "atlas", "R25": "rapid1", "N25": "fresh25"}
+
+
+def payout_lines(P: dict | None = None) -> dict:
+    """accounts.json 'payout' text per account, from the SAME payday run as the Goals ladder (2026-11-20: they disagreed)."""
+    P = P if P is not None else _load(PAYDAY)
+    A = (((P.get("rows") or {}).get(MKT) or {}).get("accounts")) or {}
+    out = {}
+    for k, acct in PAYDAY_KEYS.items():
+        a = A.get(k) or {}
+        if not a.get("first_pay_med"):
+            continue
+        fund = f"funded {when(a['funded_med'])}, " if a.get("funded_med") else ""
+        out[acct] = (f"{fund}1st payout {when(a['first_pay_med'])} (~{usd(a['first_pay_usd'])} to you; {_range(a)}) - payday plan "
+                     f"{P.get('date')}, middle case")
+    return out
+
+
+def sync_accounts(path: str = ACCOUNTS, P: dict | None = None) -> int:
+    """Write payout_lines() into business/accounts.json (only the 'payout' text of the 4 accounts). Returns lines changed."""
+    lines = payout_lines(P)
+    if not lines or not os.path.exists(path):
+        return 0
+    doc = json.load(open(path, encoding="utf-8"))
+    n = 0
+    for a in doc.get("accounts") or []:
+        t = lines.get(a.get("key"))
+        if t and a.get("payout") != t:
+            a["payout"] = t
+            n += 1
+    if n:
+        with open(path + ".tmp", "w", encoding="utf-8") as fh:
+            fh.write(json.dumps(doc, ensure_ascii=False, indent=1) + "\n")
+        os.replace(path + ".tmp", path)
+    return n
+
+
 def write(doc: dict, path: str = OUT) -> str:
     try:
         from tools import site_privacy
@@ -399,6 +448,8 @@ def main(argv=None) -> int:
     ap.add_argument("--print", action="store_true", help="print the JSON, do not write it")
     ap.add_argument("--today", default=None)
     a = ap.parse_args(argv)
+    if not a.print:
+        print("accounts.json payout lines synced:", sync_accounts())
     doc = build(offline=a.offline, today=a.today)
     if a.print:
         print(json.dumps(doc, ensure_ascii=False, indent=1))

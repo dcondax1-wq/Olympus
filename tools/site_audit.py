@@ -36,13 +36,16 @@ import urllib.parse
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 sys.path.insert(0, os.path.join(ROOT, "tools"))
+from agency.audit import ROBOT_NAME as _AGENCY_ROBOT, robots_ok  # noqa: E402  (top level: an ImportError must fail loudly)
+
 OUT = os.path.join(ROOT, "tools", "web_public", "agency", "audit")
 AXE = os.path.join(ROOT, "tools", "a11y", "axe.min.js")
 W, H = 390, 844
 LINE = {"offline": False, "latency": 562.5, "downloadThroughput": 1.6e6 * 0.9 / 8, "uploadThroughput": 750e3 * 0.9 / 8}
 SETTLE_MS = 8000
+ROBOT_NAME = _AGENCY_ROBOT     # one name: the robots.txt rules checked (agency.audit) are the ones for the token this tool sends
 UA_PHONE = ("Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 "
-            "Safari/604.1 OLYMPUS-site-audit/1 (one-time look at one page)")
+            f"Safari/604.1 {ROBOT_NAME}/1 (site audit: one-time look at one page)")
 
 # where every number in the report comes from (shown at the bottom of each report)
 SOURCES = {
@@ -60,8 +63,11 @@ SOURCES = {
                "https://www.thinkwithgoogle.com/consumer-insights/consumer-trends/mobile-search-trends-consumers-to-stores/"),
     "vitals": ("Google web.dev, Core Web Vitals: good = largest paint within 2.5 s, layout shift under 0.1, quick response to taps; "
                "Google uses these for search ranking.", "https://web.dev/articles/vitals"),
-    "ada": ("UsableNet and Level Access lawsuit tracking, 2025: about 3,100-3,900 federal website accessibility (ADA) lawsuits, over "
-            "5,000 counting state courts; about 2 in 3 were against companies under $50M revenue.", "https://www.usablenet.com/"),
+    "ada": ("UsableNet, 2025 Year-End Digital Accessibility Lawsuit Report: over 5,000 website accessibility (ADA) lawsuits in federal "
+            "and state courts in 2025; about 2 in 3 were against companies under $50M revenue.",
+            "https://info.usablenet.com/2025-year-end-report-on-web-accessibility-lawsuits"),
+    "ada_fed": ("Level Access, web accessibility lawsuits 2025 (citing Seyfarth Shaw): 3,117 federal ADA Title III website lawsuits in "
+                "2025, up 27 % on 2024.", "https://www.levelaccess.com/blog/web-accessibility-lawsuits"),
     "webaim": ("WebAIM Million, 2024: 95.9 % of the top one million home pages had detectable accessibility (WCAG) failures.",
                "https://webaim.org/projects/million/"),
 }
@@ -242,7 +248,7 @@ def losses(m: dict, visitors: int | None = None, value: float | None = None) -> 
                     "why": "Low contrast, unlabeled buttons or tiny tap targets: older customers and screen-reader users struggle, and "
                            "these are the problems website accessibility lawsuits cite.",
                     "money": "Over 5,000 website accessibility (ADA) lawsuits were filed in 2025, about 2 in 3 against companies under "
-                             "$50M revenue; about 96 % of top home pages fail basic checks.", "src": ["ada", "webaim"]})
+                             "$50M revenue; about 96 % of top home pages fail basic checks.", "src": ["ada", "ada_fed", "webaim"]})
     if m.get("zoom_blocked") or m.get("sideways") or (m.get("small_taps") or 0) >= 10:
         bits = [x for x, on in (("pinch-zoom is blocked", m.get("zoom_blocked")), ("the page scrolls sideways", m.get("sideways")),
                                 (f"{m.get('small_taps')} buttons / links are smaller than a fingertip", (m.get("small_taps") or 0) >= 10)) if on]
@@ -331,7 +337,7 @@ lawsuits were filed in 2025, about 2 in 3 against companies under $50M revenue.<
 
 <h2>Speed on a phone</h2><div class="card"><table>{sp}</table></div>
 <h2>On a phone</h2><div class="card"><ul class="chk">{ph}</ul></div>
-<h2>The basics a customer looks for</h2><div class="card"><ul class="chk">{bl}</ul></div>
+<h2>The basics a customer looks for, on the home page</h2><div class="card"><ul class="chk">{bl}</ul></div>
 <h2>What a phone visitor sees first</h2><img class="shot" src="{e(png)}" alt="The page on a phone screen, as it looked during the check" width="390" height="844">
 
 <h2>Where the numbers come from</h2><ol class="src">{src}</ol>
@@ -478,7 +484,6 @@ def audit(url: str, out: str = OUT, slug: str | None = None, name: str | None = 
         url = "https://" + url
     if robots:
         try:
-            from agency.audit import robots_ok
             if not robots_ok(url):
                 raise SystemExit(f"robots.txt of {url} does not allow a tool to open this page: not checked (polite).")
         except SystemExit:

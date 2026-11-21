@@ -54,8 +54,8 @@ def part_static():
     check("a. a junk file hides only its own card (try / hide per card)", "$(id).hidden = true" in js)
     check("a. the old folders are still there (sibyl/, kalshicity/ index pages)", os.path.isfile(os.path.join(WEB, "sibyl", "index.html")) and os.path.isfile(os.path.join(WEB, "kalshicity", "index.html")))
     fx_tag = re.search(r'<script[^>]+nqfx\.js', html)
-    check("a. FX (owner 2026-11-20 'some 3D, some effects'): the kit olympus/nqfx.js?v=n4 is added by dionysus.js after load + idle (no tag in the HTML, so the first paint is unchanged), themed OLYMPUS NIGHT (black, violet, lavender; owner 2026-11-20)",
-          not fx_tag and "const FX_SRC = '../olympus/nqfx.js?v=n4';" in js and "requestIdleCallback" in js and "NQ.theme(FX_COLORS)" in js and "cyan: '#9d59ee'" in js and "#22d3ee" not in js and "NQ.roll(" in js and "NQ.win(" in js)
+    check("a. FX (owner 2026-11-20 'some 3D, some effects'): the kit olympus/nqfx.js?v=n5 is added by dionysus.js after load + idle (no tag in the HTML, so the first paint is unchanged), themed OLYMPUS NIGHT (black, violet, lavender; owner 2026-11-20)",
+          not fx_tag and "const FX_SRC = '../olympus/nqfx.js?v=n5';" in js and "requestIdleCallback" in js and "NQ.theme(FX_COLORS)" in js and "cyan: '#9d59ee'" in js and "#22d3ee" not in js and "NQ.roll(" in js and "NQ.win(" in js)
     night = css.split("TERMINAL look")[1] if "TERMINAL look" in css else ""
     cyan = re.findall(r"#(?:22d3ee|67e8f9|3b82f6|070b14|0b1220)\b|34, 211, 238|59, 130, 246", night, re.I)
     check("a. OLYMPUS NIGHT look (owner 2026-11-20): no cyan / navy in the page's block; black base, violet edges (#3e255e / #4d2e76) and light #9d59ee, mint win, red loss; the html accent is violet, theme-color black",

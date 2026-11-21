@@ -3,7 +3,7 @@ title: Keep the most, part 2 - 2027 health cover, the MFFU question list, Saver'
 family: money
 date: 2026-11-20
 status: info - education, not tax or insurance advice. Research + plain owner steps only; nothing filed, no account opened, nothing live changed. Ideas #6, #7, #19, #20, #25 of research/handoff/2026-11-20/TOP25_IDEAS.txt.
-summary: Maryland. (6) Health cover for 2027 - Maryland Health Connection open enrollment Nov 1 2026 - Jan 15 2027, enroll by Dec 31 for Jan 1; enhanced federal credits expired, Maryland Premium Assistance replaces them (100% under 200% FPL = $31,920) and the Young Adult Subsidy (18-33, fades to 37); Medicaid at <= $1,835 a month current income. Worth ~$1,500-4,000 a year if he has no cover. (7) MFFU's 5 questions answered from its public pages (owner won't contact MFFU): live move = other accounts dormant; bots allowed on live; likely two 1099s (Rise + MFFU) for your 80/90% only; payouts to an LLC likely not possible (S-corp on hold); 10 evals at once OK. (19) 2027 Saver's Match: at $30k profit, $7,500 traditional Solo 401(k) gets the full $1,000 match + ~$1,204 tax saved vs ~$508 with Roth only. (20) Close 2026: log ~$315+ of 2026 evals, Claude plan, PC share; keep 2026 tax $0 -> no 2027 penalty; buy gear in January. (25) Tax pot in a Treasury money fund (~3.5-3.9%, mostly Maryland-tax-free) at a big broker, Rise -> bank the same day. Math: tools/money/keep_most.py magi_dial / savers_match -> research/lab/keep_most.json.
+summary: Maryland. (6) Health cover for 2027 - Maryland Health Connection open enrollment Nov 1 2026 - Jan 15 2027, enroll by Dec 31 for Jan 1; enhanced federal credits expired, Maryland Premium Assistance replaces them (100% under 200% FPL = $31,920) and the Young Adult Subsidy (18-33, fades to 37); Medicaid at <= $1,835 a month current income. Worth ~$1,500-4,000 a year if he has no cover. (7) MFFU's 5 questions answered from its public pages (owner won't contact MFFU): live move = other accounts dormant; bots allowed on live; likely two 1099s (Rise + MFFU) for your 80/90% only; payouts to an LLC likely not possible (S-corp on hold); 10 evals at once OK. (19) 2027 Saver's Match: at $30k profit, $7,500 traditional Solo 401(k) gets the full $1,000 match + ~$1,204 tax saved vs ~$508 with Roth only. (20) Close 2026: log ~$315+ of 2026 evals, Claude plan, PC share; take a late-December payout in December (~$100-175 per $800); buy gear in January. (25) Tax pot in a Treasury money fund (~3.5-3.9%, mostly Maryland-tax-free) at a big broker, Rise -> bank the same day. Math: tools/money/keep_most.py magi_dial / savers_match -> research/lab/keep_most.json.
 ---
 
 # Keep the most, part 2 (2026-11-20)
@@ -15,17 +15,26 @@ Nothing here opens an account or files anything; the owner does each step himsel
 
 | What | $ | Do it by |
 |---|---|---|
-| **Health cover for 2027** (only if you have none from a job / parent / spouse) | about $1,500 - $4,000 a year of help, or free Medicaid | **Dec 31** for Jan 1 (last day Jan 15 for Feb 1) |
+| **Health: on your parents' plan** (answered 2026-11-20) | $0 needed now; if it is an HSA plan and you are not their dependent: up to $9,000 a year into your own HSA (~$2,700 less tax) | ask them |
 | **2027 Saver's Match** (free federal money) | **up to $1,000 a year**: at $30k profit put $7,500 in a *traditional* Solo 401(k) -> $1,000 match + ~$1,204 less tax; Roth-only gets ~$508 | open the Solo 401(k) in 2027; claim on the 2027 return |
-| **Close 2026 on purpose** | keeps 2026 tax at $0 -> no 2027 penalty at all; ~$80 - $150 by buying gear in January | **Dec 31** |
+| **Close 2026 on purpose** | log every 2026 cost; a payout possible Dec 24-31 = take it in December (~$100 - $175 more kept per $800); ~$80 - $150 by buying gear in January | **Dec 31** |
 | **Tax pot in a Treasury money fund** | about $120 - $200 a year, mostly free of Maryland tax | before the first payout |
 | **MFFU questions, answered from its public pages** | plan the 5th Builder payout: going live parks the other sim accounts (about $1,500 - $2,500 a month at stake); S-corp step on hold | nothing to send |
 
 **Owner to-do (max 3):**
-1. Tell Claude: do you have health cover for 2027 (job / parent / spouse / none), and are you under 34?
+1. Ask your parents: is your health plan an HSA / high-deductible plan, and do they claim you as a dependent?
 2. Before the first payout: open a free brokerage account with a Treasury money fund for the tax pot (Fidelity, Schwab or Vanguard; 20 minutes).
 
 ## 6. 2027 health cover (Maryland)
+
+**Update 2026-11-20 16:30 ET: the owner is on his PARENTS' health plan**, so the Medicaid / Health Connection $ below is
+$0 for now (kept for the day that cover ends: a parent's plan must keep a child to **age 26**, ACA dependent coverage).
+New lever instead - **HSA**: if the parents' plan is a high-deductible (HSA-eligible) plan and he is **not** their tax
+dependent, he can open his own HSA and contribute up to the **family** limit himself ($8,750 in 2026, $9,000 in 2027;
+IRS Pub 969: a non-dependent adult child on a family HDHP is treated as having family coverage), fully deductible from
+federal and Maryland income (lowers MAGI for the Saver's Match too). At ~30% marginal that is up to ~$2,700 a year of
+tax saved. Owner question added to business/accounts.json decisions: "Ask parents: is your health plan HSA /
+high-deductible? Do they claim you as a dependent?"
 
 | Fact | Value | Source (checked 2026-11-20) |
 |---|---|---|
@@ -95,8 +104,11 @@ Goal: 2026 ends with **$0 total tax** (if he has no day job), which makes **ever
   NinjaTrader, the business share of the Claude plan, of internet and of the PC. Tonight's four accounts alone are ~$315.
 - **A December payout** (payday plan: 8 in 10 runs Dec 8 - Feb 26) is 2026 income. With the fees logged, $800 minus
   ~$315+ leaves under ~$485 of profit: SE tax applies only from $400 of SE earnings (~$68 at $485), income tax $0 under the
-  standard deduction. If a request becomes possible in the last days of December, asking on Jan 1 instead moves it to 2027
-  and keeps 2026 at exactly $0 (his choice; it costs a few days).
+  standard deduction. **Correction (lead, 2026-11-20): a payout that becomes possible Dec 24-31 should be TAKEN IN
+  DECEMBER.** In 2026 it sits against the 2026 fees and an empty standard deduction (~$69 of SE tax on $800 - $315); in
+  January it is 2027 income at ~30% marginal (federal + SE + Maryland): keep_most.tax 2027 at $15k / $30k / $60k profit =
+  $173 / $232 / $244 vs $69 -> **~$100-175 better per $800 payout in December** (no day job). The small 2026 tax only
+  raises the 2027 safe-harbor target from $0 to ~$69 (100% of last year's tax), which the pot covers easily.
 - **Buy deductible gear in January** (e.g. the mini PC): a 2026 deduction is worth ~$0 in a $0-tax year, the same buy in
   2027 is worth ~25-30% (federal + SE + Maryland), about $80-150 on a $249-500 item.
 - **The Claude plan**: the business-use share is a software cost (Schedule C line "other expenses"); keep the monthly
@@ -107,7 +119,7 @@ Goal: 2026 ends with **$0 total tax** (if he has no day job), which makes **ever
 
 | Bucket | Where it lives | Why |
 |---|---|---|
-| Landing | Rise (USDC balance) or MFFU ACH -> checking | Rise -> US bank by ACH is free, usually 1 business day (Rise help center; its older blog says $20 - check the screen). **Sweep the same day**: a Rise balance is a stablecoin, not FDIC-insured; never keep tax money there or in "Rise Earn" |
+| Landing | Rise (USDC balance) or MFFU ACH -> checking. **Digital-asset question:** a Rise payout arrives as USDC, so he likely answers **Yes** to the Form 1040 "digital assets" question for that year (receiving a digital asset as pay counts); MFFU's ACH / Plaid route avoids it. Income is the same either way | Rise -> US bank by ACH is free, usually 1 business day (Rise help center; its older blog says $20 - check the screen). **Sweep the same day**: a Rise balance is a stablecoin, not FDIC-insured; never keep tax money there or in "Rise Earn" |
 | Tax pot (30-40%) | **Treasury money fund** at a free brokerage: Vanguard VUSXX (~3.8-3.9% Oct 2026, $3,000 min), Fidelity FDLXX/SPAXX (~3.5%, $0), Schwab SNSXX (~3.5%, $0) | the US-government share of its dividends is subtracted on Maryland Form 502SU (no 50% test), so ~3.8% there ~ a 4.1% savings account after Maryland tax; pay IRS / Maryland straight from it |
 | Eval reserve ($320) | checking | buys and re-buys the same night |
 | Retirement (10%) | Roth IRA / Solo 401(k) at the same brokerage | one login |

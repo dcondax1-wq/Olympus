@@ -41,7 +41,7 @@ def rd(name):
 def part_a():
     html = rd("index.html")
     check("a. the OLYMPUS kit: olympus.css, themes.js, olympus.js (data-app) all at ?v=o2",
-          all(s in html for s in ('../olympus/olympus.css?v=o7', '../olympus/themes.js?v=o9', '../olympus/olympus.js?v=o21" data-app="ares"')))
+          all(s in html for s in ('../olympus/olympus.css?v=o7', '../olympus/themes.js?v=o10', '../olympus/olympus.js?v=o22" data-app="ares"')))
     check("a. title Ares, a description, theme-color = the page colour, the Jarvis icon like the siblings",
           "<title>Ares</title>" in html and 'name="description"' in html and 'content="#14110e"' in html and "../jarvis/icon-192.png" in html
           and "#14110e" in rd("ares.css") + html)
@@ -64,7 +64,7 @@ def part_a():
     css = rd("ares.css")
     desk, fxm = rd("aresdesk.js"), rd("aresfx.js")
     check("a. the OLYMPUS effects library (fx-core, ui, text, burst ?v=f1) is linked after olympus.js; aresdesk.js is the screen of the journal / ritual / scenarios / share card, aresfx.js dresses the room",
-          all(f"../olympus/fx-{n}.js?v=f1" in html for n in ("core", "ui", "text", "burst")) and html.find("fx-core.js") > html.find("olympus.js?v=o21")
+          all(f"../olympus/fx-{n}.js?v=f1" in html for n in ("core", "ui", "text", "burst")) and html.find("fx-core.js") > html.find("olympus.js?v=o22")
           and "from './aresdesk.js'" in rd("ares.js") and "from './aresfx.js'" in rd("ares.js") and "ares.journal.v1" in desk and "fetch('../home.json'" in desk
           and "RoomEnvironment" in fxm and "ACESFilmicToneMapping" in fxm and not re.search(r"ninjatrader|place_?order|websocket", desk + fxm, re.I))
     check("a. static containers for the scenarios, drawdown bar, ritual ring, journal and the rules-you-broke tracker; the journal never touches the other keys",

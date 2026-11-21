@@ -70,8 +70,8 @@ def test_static():
           '<html lang="en" data-theme="agora" data-oly-page="gate">' in html and "viewport-fit=cover" in html and 'name="theme-color"' in html and 'name="color-scheme" content="dark"' in html
           and html.count("<h1") == 1 and 'role="status"' in html and 'aria-live="polite"' in html and 'role="dialog"' not in html)
     check("a. one base-path line: gate/ -> '../', the site root (olympus-live.html) -> ''; agora.css + gate.css, then themes, the catalog, hub-status and gate.js load from GATE_BASE, in order (async = false)",
-          r"/\/gate\/(index\.html)?$/.test(p) ? '../' : ''" in html and "window.GATE_BASE = b" in html and "b + 'gate/gate.css?v=g20'" in html and "b + 'olympus/agora.css" in html
-          and "['olympus/themes.js?v=o9', 'pc_feed.js?v=n6', 'olympus/gate-catalog.js?v=nv9', 'olympus/hub-status.js?v=h3', 'age.js?v=1', 'business/payoutcoach.js?v=2', 'gate/gate.js?v=g19', 'olympus/home-fx.js?v=x2', 'olympus/a11y.js']" in html and "s.async = false" in html)
+          r"/\/gate\/(index\.html)?$/.test(p) ? '../' : ''" in html and "window.GATE_BASE = b" in html and "b + 'gate/gate.css?v=g22'" in html and "b + 'olympus/agora.css" in html
+          and "['olympus/themes.js?v=o10', 'pc_feed.js?v=n7', 'olympus/gate-catalog.js?v=nv10', 'olympus/hub-status.js?v=h4', 'age.js?v=1', 'business/payoutcoach.js?v=2', 'gate/gate.js?v=g20', 'olympus/home-fx.js?v=x2', 'olympus/a11y.js']" in html and "s.async = false" in html)
     tiles = re.findall(r'class="g-hub[^"]*" data-hub="(\w+)" data-to="hub/index.html\?h=(\w+)"', html)
     check("a. the hub tiles are plain links in the page (they work even if gate.js fails), in the owner's order (night A 2026-11-16): Bots & Evals (wide) and My Money (wide) first, Kalshi and Worlds near the end, Settings & Help last",
           [t[0] for t in tiles] == HUBS and all(a == b for a, b in tiles) and 'class="g-hub g-wide" data-hub="bots"' in html and 'class="g-hub g-wide" data-hub="money"' in html and html.count('class="g-hline"') == len(HUBS))
@@ -113,7 +113,7 @@ def test_static():
           and "lsSet(LS_PLAN" not in js and not re.search(r"sessionStorage|indexedDB", js + nav)
           and all("try {" in ln for ln in (js + nav).splitlines() if "localStorage." in ln), ls)
     check("a. truth.js is the one source for drawdown and data age (a module tag), with a light copy of its rules only when it does not load; 6 h = old, 20 min = fresh",
-          "olympus/truth.js?v=r12" in js and "T.agesOf(home, t)" in js and "T.accountsOf(home)" in js and "lightAges" in js and "STALE_S = 6 * 3600" in js and "FRESH_S = 20 * 60" in js)
+          "olympus/truth.js?v=r13" in js and "T.agesOf(home, t)" in js and "T.accountsOf(home)" in js and "lightAges" in js and "STALE_S = 6 * 3600" in js and "FRESH_S = 20 * 60" in js)
     check("a. the words: 'Drawdown left' with 'of $X max loss', 'Bring the bots back' -> nq/ with its 5 steps (?howto=1), 'Old numbers', 'Not hearing from your PC for'",
           "'Drawdown left'" in js and "' max loss, '" in js and 'data-to="nq/index.html?howto=1"' in html and ">Bring the bots back<" in html and "'Old numbers'" in js and "'Not hearing from your PC for '" in js)
     check("a. the AGORA look: its tokens (night #14110e, gold #c8a24a, serif titles, tabular numbers; each one a theme slot's fallback), no neon / glow / techno font in the Gate or gate-nav",
@@ -122,11 +122,11 @@ def test_static():
           css.count("min-height: 44px") >= 2 and "safe-area-inset" in css and "176px" in css and "prefers-reduced-motion: reduce" in css and 'data-oly-lite="1"' in css and "overflow-x: hidden" in css)
     # night-gate: gate-nav.js keeps its catalog URL ?v=nv2 (bumping it re-versions agora-ui.js in ~50 apps); the site worker bump refreshes the catalog on the phone
     check("a. gate-nav: one classic script, nothing when framed (inside Jarvis), the Home link + breadcrumb + 'Go to' (44 px), the catalog from its own folder (apps-list.js as a fallback)",
-          "if (framed) return;" in nav and "'Go to'" in nav and "min-height:44px" in nav and "olympus/gate-catalog.js?v=nv9" in nav and "olympus/apps-list.js" in nav and "aria-modal" in nav)
+          "if (framed) return;" in nav and "'Go to'" in nav and "min-height:44px" in nav and "olympus/gate-catalog.js?v=nv10" in nav and "olympus/apps-list.js" in nav and "aria-modal" in nav)
     tagged = {}
     for app in TEN:
         h = AK.read(os.path.join(AK.WEB, app, "index.html"))
-        tagged[app] = h.count('<script src="../olympus/gate-nav.js?v=g8" defer></script>') == 1 and ("agora-ui.js" not in h or h.index("agora-ui.js") < h.index("gate-nav.js")) and h.index("gate-nav.js") < (h.index("</body>") if app == "kalshi" else h.index("</head>"))
+        tagged[app] = h.count('<script src="../olympus/gate-nav.js?v=g9" defer></script>') == 1 and ("agora-ui.js" not in h or h.index("agora-ui.js") < h.index("gate-nav.js")) and h.index("gate-nav.js") < (h.index("</body>") if app == "kalshi" else h.index("</head>"))
     check("a. the gate-nav tag (once, deferred, in <head> (Kalshi: its body, since 11-12), after agora-ui.js) in the 10 busiest apps (agora-ui.js adds it to every other AGORA app): " + ", ".join(TEN), all(tagged.values()), tagged)
 
 
@@ -209,7 +209,7 @@ def nav_checks(p, origin):
                     " first: (document.querySelector('#azList a.g-row') || {}).dataset, h: Math.round(document.querySelector('#azList a.g-row').getBoundingClientRect().height) })")
     RET = {"datacity", "kalshicity", "delphi", "stoa", "hestia", "plutus", "argo", "mint", "harmonia", "kairos", "chronos", "lyceum", "polis", "atlascity", "gallery", "mintcity", "nike",
            "arena", "mind", "symposium", "herald", "ergasterion", "observatory", "pheme", "bridge", "arbiter", "hermes", "hephaestus"}
-    n_apps = len([a for a in cat_apps() if a["id"] not in RET])   # every catalog app but the retired ones (olympus2), counted from the catalog
+    n_apps = len([a for a in cat_apps() if a["id"] not in RET and a["id"] != "prometheus"])   # every catalog app but the retired ones and the Strategy forge (off the Home, lead 2026-11-20)
     check(f"c. the A-Z button opens All apps A to Z: every app ({n_apps}) in big rows (>= 56 px) under a letter each, the labs at the end under Workshop",
           az["open"] and az["rows"] == n_apps and az["letters"][0] in ("1", "#", "A") and az["letters"][-1] == "Workshop" and az["h"] >= 56, az)
     t = AK.taps(p)
@@ -339,10 +339,10 @@ def test_page():
             check("c. every tap target >= 44 x 44, no sideways scroll, Jarvis's corner free at the end, no console error, nothing off the origin but the PC feed",
                   not t and AK.no_sideways(p) and not AK.corner(p) and not errs and not off, (t[:4], AK.corner(p), errs[:3], off[:3]))
             p.evaluate("() => window.scrollTo(0, 0)")
-            vis = p.evaluate("() => { const r = (s) => document.querySelector(s).getBoundingClientRect(); return [r('#q').top, r('#q').bottom, r('#now').bottom, r('#doors4').top, r('#now').top]; }")
-            # olympus2 2026-11-20 (owner: "money first on the home page"): the cockpit sits right under the search, the four doors start on the first screen below it
-            check("c. at 390 x 844 the big search is near the top (one thumb), the Right now cockpit right under it and whole on the first screen, the four doors start on it",
-                  vis[0] < 160 and vis[4] < 240 and vis[2] <= 844 and vis[3] < 844, vis)
+            vis = p.evaluate("() => { const r = (s) => document.querySelector(s).getBoundingClientRect(); return [r('#q').top, r('#arenas').top, r('#arenas').bottom, r('#now').top]; }")
+            # 2026-11-20 17:00 ET (owner: "I want like 6 arenas, that's it, then a separate area for the smaller stuff"): search, then the 6 arenas whole on the first screen; Right now (details) below
+            check("c. at 390 x 844 the big search is near the top (one thumb), the 6 arenas right under it and whole on the first screen, Right now (details) below them",
+                  vis[0] < 160 and vis[1] < 260 and vis[2] <= 844 and vis[3] > vis[2], vis)
             six = p.evaluate("() => [...document.querySelectorAll('#quick .g-q')].map((a) => [a.dataset.app, a.href.replace(location.origin, ''), a.querySelector('.g-qline').textContent])")
             check("c. Your six, one tap each (Cities, Kalshi, NQ bot, Jarvis, My day, Business), the NQ bot's live line 'Bots on · today +$272'",
                   [x[1] for x in six] == ["/cities/index.html", "/kalshi/index.html", "/nq/index.html", "/jarvis/index.html", "/planner/index.html", "/business/index.html", "/agency/index.html", "/hub/setup.html"]
@@ -425,9 +425,9 @@ def test_page():
             f4 = p.evaluate("() => ({ trades: [...document.querySelectorAll('#nowTrade .g-trow b')].map((e) => e.textContent), cards: [...document.querySelectorAll('#money .g-an')].map((e) => e.textContent),"
                             " facts: [...document.querySelectorAll('#nowFacts .g-fact')].map((f) => f.textContent), many: document.querySelector('#now').dataset.many,"
                             " bottom: document.querySelector('#nowFacts').getBoundingClientRect().bottom })")
-            check("c. 4 accounts + 3 open trades: every trade line (Zlarior LONG, ATLAS SHORT, Rapid EOD 25K LONG), 4 cards, a drawdown tile per account named on top, Today for 4 accounts, compact, all money on the first screen",
+            check("c. 4 accounts + 3 open trades: every trade line (Zlarior LONG, ATLAS SHORT, Rapid EOD 25K LONG), 4 cards, a drawdown tile per account named on top, Today for 4 accounts, compact, all money in Right now (under the 6 arenas)",
                   f4["trades"] == ["Zlarior LONG 2 micros", "ATLAS SHORT 1 micro", "Rapid EOD 25K LONG 1 micro"] and f4["cards"] == ["Zlarior 50K", "ATLAS 25K", "Zlarior 25K #2", "Rapid EOD 25K"]
-                  and f4["facts"][3] == "Rapid EOD 25K$1,000drawdown left of $1,000" and f4["facts"][4].startswith("Today+$392") and f4["many"] == "true" and f4["bottom"] <= 844 and not errs, (f4, errs[:2]))
+                  and f4["facts"][3] == "Rapid EOD 25K$1,000drawdown left of $1,000" and f4["facts"][4].startswith("Today+$392") and f4["many"] == "true" and not errs, (f4, errs[:2]))   # Right now sits under the 6 arenas now (owner 2026-11-20)
             ctx.close()
             s6.shutdown()
 

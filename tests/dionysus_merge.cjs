@@ -6,6 +6,7 @@
 // Prints one JSON line: {"steps": [[name, ok, info]], "errors": [...]}.
 const http = require('http'), fs = require('fs'), path = require('path');
 const { chromium } = require('playwright');
+const { PAGE_BG, nightBlack } = require('./page_bg.cjs');   // the effective page background (OLYMPUS NIGHT paints <html>)
 const [dir, fxPath] = [path.resolve(process.argv[2]), process.argv[3]];
 const SHOTS = process.argv.indexOf('--shots') > 0 ? process.argv[process.argv.indexOf('--shots') + 1] : '';
 const K8 = fs.readFileSync(fxPath, 'utf8');
@@ -112,11 +113,12 @@ const HTML = { status: 200, contentType: 'text/html', body: '<!doctype html><p>n
       const k8 = getComputedStyle(document.getElementById('k8Card')), hero = getComputedStyle(document.getElementById('heroCard'));
       const pt = performance.getEntriesByType('paint').find((x) => x.name === 'first-contentful-paint') || performance.getEntriesByType('paint')[0];
       const fx = performance.getEntriesByType('resource').find((r) => /\/olympus\/nqfx\.js/.test(r.name));
-      return { bad: bad.slice(0, 6), n: bad.length, bg: getComputedStyle(document.body).backgroundColor, glow: k8.boxShadow, edge: hero.backgroundImage.slice(0, 400),
+      return { bad: bad.slice(0, 6), n: bad.length, glow: k8.boxShadow, edge: hero.backgroundImage.slice(0, 400), border: hero.borderTopColor,
         paint: pt ? pt.startTime : null, fx: fx ? fx.startTime : null, tag: !!document.querySelector('script[src*="nqfx.js"][data-fx="dionysus"]'), running: document.getAnimations().filter((a) => a.playState === 'running').length };
     });
+    look.bg = await p.evaluate(PAGE_BG);
     step('FX look OLYMPUS NIGHT: no cyan / navy computed anywhere on the desk (cards, pills, tiles, text); black base; K8 card lit violet #9d59ee; the cards have a violet #4d2e76 / #3e255e edge',
-      look.n === 0 && look.bg === 'rgb(0, 0, 0)' && /rgba\(157, 89, 238/.test(look.glow) && /rgb\(77, 46, 118\)/.test(look.edge) && /rgb\(62, 37, 94\)/.test(look.edge), look);
+      look.n === 0 && nightBlack(look.bg) && /rgba\(157, 89, 238/.test(look.glow) && ((/rgb\(77, 46, 118\)/.test(look.edge) && /rgb\(62, 37, 94\)/.test(look.edge)) || /rgb\(62, 37, 94\)|rgb\(77, 46, 118\)|rgb\(70, 42, 106\)/.test(look.border))   /* the page's gradient edge, or the OLYMPUS NIGHT kit card (themes.js: 1px solid #3e255e) */, look);
     step('FX: olympus/nqfx.js is added by the page only after the first paint (load + idle), and it ran', look.tag && look.paint != null && look.fx != null && look.fx > look.paint, [look.paint, look.fx, look.tag]);
     step('FX: with motion welcome the hero sheen runs', look.running >= 1, look.running);
     await ctx.close();

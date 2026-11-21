@@ -61,6 +61,7 @@ AREAS["money"] += ["widget", "money_dash"]      # night-revamp-dash 2026-11-20: 
 AREAS["olympus"].append("olympus_shell")  # night-revamp-main 2026-11-20: the main pages: no sideways scroll, nothing under the bottom bar, keys above the home bar (tools/olympus_shell_audit.py)
 AREAS["agency"].append("web_expert")       # team web-expert 2026-11-20: agency/expert/ (the playbook, the 5-tap diagnosis) + Jarvis 'web' answers
 AREAS["jarvis"].append("jarvis_shortcuts")  # team JARVIS 2026-11-20: the Siri / Shortcuts page + the "Add to Home Screen" hint
+AREAS["jarvis"].append("jarvis_fx")  # owner 2026-11-20 "3D, effects, no gold": jfx.css / jfx.js, the switcher without gold
 AREAS["olympus"].append("pulse")         # day-arenas 2026-11-20: the shared prop-trader cards in the main apps (olympus/pulse.js), CLS 0, light + dark
 AREAS["olympus"].append("archive_banners")  # day-archive 2026-11-20: the "Archived · data <date>, N days old -> live app" strip on every archived page (tools/archive_banners.py)
 AREAS["olympus"].insert(0, "site_sweep")  # night-siteqa 2026-11-20: every href / src of the main pages + doors.js points at a real file (no browser, 1 s); its own line
@@ -69,7 +70,11 @@ AREAS["pc"].append("account_box")     # 2026-11-20: the Add account box (engine/
 AREAS["pc"].append("phone_link")      # 2026-11-20: the bot server's own private Tailscale port :8444 (engine/phone_link.py)
 AREAS["pc"].append("self_heal_pc")    # night-selfheal 2026-11-20: the PC self-heal (engine/self_heal.py, docs/SELF_HEAL.md); its own line
 AREAS["pc"].append("remote_ctl")      # night-phonectl 2026-11-20: phone remote through the backup repo (olympus/control, engine/remote_ctl.py)
-AREAS["agency"].append("web_offers")   # day-web-offers 2026-11-20: Agency Offers (agency/offers/): packages, proposal, terms, invoices + retainers, goal
+AREAS["agency"].append("web_offers")
+AREAS["agency"].append("web_outreach")
+AREAS["agency"].append("agency_autopilot")
+AREAS["agency"].append("postcards")       # day-a11y 2026-11-20: personalised postcards (tools/postcards.py, POSTCARD_SETUP.bat), a fake Lob   # day-a11y 2026-11-20: the PC email autopilot (agency/autopilot/, EMAIL_SETUP.bat), fake Gmail, never the network   # day-a11y 2026-11-20: the Website Factory outreach + close kit (agency/outreach/)
+AREAS["trading"].append("panelfx")      # day-a11y 2026-11-20: the effects layer on Trading / Business / Planner (trading/panelfx.js)   # day-web-offers 2026-11-20: Agency Offers (agency/offers/): packages, proposal, terms, invoices + retainers, goal
 AREAS["pc"].append("obsidian_brain")    # night-obsidian 2026-11-20: ZEUS Brain, the generated Obsidian vault (tools/obsidian_brain.py, vault/); its own line
 AREAS["nq"].append("why_page")          # night-anatomy 2026-11-18: why we win / lose (tools/win_loss_anatomy.py, tools/web_public/why/); its own line
 AREAS["nq"].append("learn_night")       # night-learnloop 2026-11-19: ZEUS learned (engine/zeus_learn.py) + tools/learn_night.py + metals feed + speed; its own line
@@ -304,6 +309,10 @@ AREAS["agency"].append("web_leads")  # day-web-leads 2026-11-20: OpenStreetMap l
 
 
 AREAS["agency"].append("web_showcase")   # day-web 2026-11-20: the owner's agency website (tools/web_public/agency/showcase/)
+AREAS["zenith"].append("zenith_settle")  # day-arenas 2026-11-20: Home start-up without jumps (zenith_settle.js, home.json first, the NQ strip slot)
+AREAS["olympus"].append("dashfx")        # day-arenas 2026-11-20: the dashboard FX layer (olympus/dashfx.js + dashfx.css, dashfx-lab.html); its own line
+
+AREAS["agency"].append("site_factory")   # day-cities3 2026-11-21: Website Factory (tools/site_factory.py -> agency/f/<id>/ + agency/factory/)
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])

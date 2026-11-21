@@ -207,7 +207,8 @@ class SoundSwitchTest(unittest.TestCase):
             for i in ids:
                 m = re.search(r'<button[^>]*id="%s"[^>]*>' % i, html)
                 self.assertTrue(m and "data-oly-cue=" in m.group(0), (app, i))
-            self.assertIn("../olympus/sfx.js", html, app)       # the cue only sounds with the kit's sfx.js on the page
+            # the cue sounds with the kit's sfx.js: a page tag, or the kit (olympus.js) loading it at idle / on the first cue (dogfood 2026-11-20)
+            self.assertTrue("../olympus/sfx.js" in html or "../olympus/olympus.js" in html, app)
         self.assertGreaterEqual((WEB / "bridge/index.html").read_text(encoding="utf-8").count("data-oly-cue', 'success'"), 3)      # the Copy prompt buttons
         valid = {"open", "close", "success", "warning", "tap"}
         for app in ("ledger", "inbox", "bridge", "settings", "jarvis"):

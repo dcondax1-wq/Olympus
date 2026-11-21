@@ -53,6 +53,9 @@ const brief = require(path.join(W, 'nq', 'brief.json'));
   console.log(JSON.stringify({ A: A.map((a) => [a.key, a.stage, a.has, a.balance, a.goal, a.today]), goals, noPlan, N, real, clocks, vix: G.vixLine(brief), none: G.vixLine({}),
     when: [G.when(0, null, '2026-11-20', ''), G.when(1000, { per: 200, days: 4 }, '2026-11-20', ''), G.when(1000, { per: -10, days: 4 }, '2026-11-20', '~Dec 10'), G.when(1000, null, '2026-11-20', '')],
     span: [G.span('2026-12-18', '2026-12-31'), G.span('2026-12-29', '2027-01-06')],
+    eras: (() => { const f = { trades: [{ src: 'live', ak: 'atlas25f', day: '2026-11-17', t: 1794950000, xt: 1794951000, usd: 1792.5 }, { src: 'live', ak: 'atlas25f', day: '2026-11-18', t: 1794995400, xt: 1794996480, usd: -112.8 }] };
+      const lite = { life: { acc: { atlas: { stage: 'funded', since: 1794965203 } } } };
+      return { nq: G.realRows(f, { closed: [{ k: 'atlas25f', xt: 1795165000, usd: 514.18, r: 2 }] }, G.fundedSince(lite)).map((r) => [r.key, r.usd]), noPc: G.realRows(f, null, G.fundedSince(null)).map((r) => r.key) }; })(),
     opens: G.opens([{ key: 'zlarior', name: 'Zlarior 50K', open: { side: 'SHORT', qty: 6, entry: 21555.5, stop: 21574, target_usd: 735, now: 315, stopMoved: false } },
       { key: 'atlas', name: 'ATLAS 25K', open: { side: 'LONG', qty: 2, entry: 100, stop: 101, now: 40, stopMoved: true, locked: 4 } }, { key: 'fresh25', name: 'x' }]) }));
 })().catch((e) => { console.log(JSON.stringify({ err: String(e && e.stack || e) })); });
@@ -88,8 +91,8 @@ def test_node():
     check("a. ... the rules as chips: traded days (the PC's tracker) and the best day <= 50%",
           len(a.get("chips", [])) == 2 and a["chips"][0]["label"].startswith("Traded days") and "Best day <= 50%" in a["chips"][1]["label"], a.get("chips"))
     check("a. ... the date: the ATLAS cost study's simulated 'about Dec 18-31 (estimate, 2026-like market)' (a 3-day pace over-promised); evals: the plan's dates",
-          a.get("when") == "about Dec 18-31 (estimate, 2026-like market)" and G["zlarior"]["when"] == "plan: about Dec 10 (estimate)"
-          and G["fresh25"]["when"] == "plan: about Nov 30 (estimate)", (a.get("when"), G["zlarior"].get("when"), G["fresh25"].get("when")))
+          a.get("when") == "about Dec 18-31 (estimate, 2026-like market)" and G["zlarior"]["when"] == "plan: about Dec 24 (estimate)"
+          and G["fresh25"]["when"] == "plan: about Dec 9 (estimate)", (a.get("when"), G["zlarior"].get("when"), G["fresh25"].get("when")))
     z, f, rp, fl = G.get("zlarior", {}), G.get("fresh25", {}), G.get("rapid1", {}), G.get("fleet", {})
     check("a. Zlarior 50K: +$3,807 to pass at $53,000, 0% (the balance is under the $50,000 start), drawdown left $1,025 in its line",
           z.get("big") == "+$3,807" and z.get("goal") == "Pass at $53,000" and z.get("frac") == 0 and "Drawdown left $1,025" in z["lines"][0], z)
@@ -130,6 +133,10 @@ def test_node():
     check("b. ... Wed 17:00 ET: next London 02:00 ET in 9 h 0 min; Mon 03:00 London open; Fri 16:00 and Saturday: the window is on Monday, weekend said",
           C["wed1700"]["next"]["text"] == "Next entry window: London 02:00 ET (in 9 h 0 min)" and C["mon0300"]["next"]["open"] and C["mon0300"]["windows"][0]["on"]
           and C["fri1600"]["next"]["text"].endswith("on Monday") and C["sat1200"]["phase"] == "Weekend: no trading" and C["sat1200"]["next"]["text"].endswith("on Monday"), C)
+    e = o["eras"]
+    check("b. eval vs funded era (finder 2026-11-20): ATLAS's passed-eval +$1,792.50 (closed before it was funded, life.acc.since) is the eval's, not the funded account's; "
+          "funded = -$112.80 + $514.18 = $401.38 (MFFU's $401); without the PC the plan's day (2026-11-17) splits the same",
+          e["nq"] == [["atlas_eval", 1792.5], ["atlas", -112.8], ["atlas", 514.18]] and e["noPc"] == ["atlas_eval", "atlas"], e)
     op = o["opens"]
     check("b. the open trade, live: SHORT 6 @ 21,555.50 = +$315 = +1.42R (risk 18.5 pts x 6 x $2 = $222), target +$735; a moved stop says what is locked in, no R",
           len(op) == 2 and op[0]["r"] == 1.42 and op[0]["text"] == "SHORT 6 @ 21,555.50" and op[0]["sub"] == "target +$735" and op[1]["r"] is None

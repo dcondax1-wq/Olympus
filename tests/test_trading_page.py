@@ -490,8 +490,8 @@ def test_browser():
                         rows: [...document.querySelectorAll('#liveStats tr[data-acct]')].map((r) => r.dataset.acct), later: [...document.querySelectorAll('#trades .later')].map((x) => x.textContent),
                         links: [...document.querySelectorAll('#trades a.tlink')].map((a) => a.getAttribute('href')), banner: document.getElementById('banner').dataset.level, src: window.TRADING.S.src,
                         text: document.body.innerText })""")
-                    check("c. 390px LIVE per account: the Account filter (Zlarior 50K / 25K #2 / ATLAS funded 25K), the LIVE table, a fresh feed turns the banner green",
-                          st["box"] and st["src"] == "live" and any(x.startswith("Zlarior 25K #2") for x in st["acc"]) and st["rows"] == ["z50k", "z25k2", "atlas25f"] and st["banner"] == "ok"
+                    check("c. 390px LIVE per account: the Account filter (Zlarior 50K / 25K #2 / ATLAS funded 25K / ATLAS's eval before it was funded, finder 2026-11-20), the LIVE table, a fresh feed turns the banner green",
+                          st["box"] and st["src"] == "live" and any(x.startswith("Zlarior 25K #2") for x in st["acc"]) and st["rows"] == ["z50k", "z25k2", "atlas25f", "atlas25e"] and any(x.startswith("ATLAS eval 25K, before funded") for x in st["acc"]) and st["banner"] == "ok"
                           and "blitz" not in st["text"].lower() and FULL_A not in st["text"] and FULL_B not in st["text"], {k: v for k, v in st.items() if k != "text"})
                     p.click("#fAcct button[data-k=z25k2]")
                     p.wait_for_timeout(250)

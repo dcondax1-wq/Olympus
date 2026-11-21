@@ -70,3 +70,17 @@ The shots use the PC's real 2026-11-20 post (`tests/fixtures/truth/pc_post.json`
 | Still open | The accounts strip (nqdesk) still shows ATLAS as $25,401. It will switch with `PC_FEED.mffuView` across pages (archive team). |
 
 Tests: nq_goals 34, nq_page 70, nq_chart 45, nq_desk 32, truth_check 11, nqfx 15, smoke 10/10, site_checks fine.
+
+## Round 4: the NQ terminal look (owner 15:15 ET: "I don't like the gold-ish theme for the NQ, change all of that")
+
+| What | Result |
+|---|---|
+| New look on `nq/` | Deep navy / near-black base (#060a14) with a faint cyan / violet aurora. Electric cyan (#22d3ee) + blue (#3b82f6) glows, violet (#8b5cf6) accents. Green / red only for $ and R. One file, `nq/nqtheme.css`, loaded last; it re-points the AGORA tokens and overrides the themed card / app-bar colours. Both looks: dark, and the light one (Athena, any `data-oly-scheme="light"`). |
+| No gold left on the page | Goal rings: cyan -> blue gradient, violet when done. Chart: cyan light trail, cyan entry lines, account colours cyan / blue / violet. 3D landscape: cyan / blue / violet ridge, cyan trail, cyan + violet embers, green / red / cyan beacons. 3D columns: a cyan flame. Bursts: cyan / violet, green on a win. OPEN tag, tiles, borders, meters: cyan. |
+| Not changed | The app icon (shared asset). DESIGN's kit (vault / toasts) is re-coloured on day-arenas; merge when it lands. |
+| AA contrast | a11y_sweep nq: score 92, 0 contrast issues in both looks. The light chip "All" was 3.68:1; the light accent is now #0e7490. |
+| Budgets | `perf_sweep --static`: block 300 KB (budget 300), eager JS 597 KB (budget 600). Smoke 10/10. |
+| mffuView | day-archive is merged. The goals use `PC_FEED.mffuView` (ATLAS $401, goal $2,100 / $1,699, earliest $1,350 / $949). |
+
+Shots: `gold-*` = the gold v4 before the change, `after-*` = the terminal look (phone, athena = light, desktop), `before-*` = the page before v4.
+Tests: nq_goals 34, nq_page 70 (the look check now expects the navy body), nq_chart 45, nq_desk 32, nqfx 15, smoke 10/10.
