@@ -132,7 +132,7 @@ def main() -> int:
     hits = []
     for base, _dirs, files in os.walk(os.path.join(ROOT, "tools", "web_public")):
         rel = os.path.relpath(base, AG)
-        if rel == "f" or rel.startswith("f" + os.sep) or rel in ("factory", "sites", "portal"):   # portal = the caller tool (rides in the export)
+        if rel == "f" or rel.startswith("f" + os.sep) or rel in ("factory", "sites", "portal", "launch") or rel.startswith("launch" + os.sep):   # portal = the caller tool (rides in the export)
             continue
         for fn in files:
             if fn.endswith((".html", ".js", ".json", ".xml", ".txt", ".webmanifest")):
