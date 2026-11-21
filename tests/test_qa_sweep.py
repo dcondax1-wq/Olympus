@@ -73,7 +73,7 @@ def static():
           not arch and "background:var(--oly-th-n5,#16131e)" in open(os.path.join(ROOT, "tools", "archive_banners.py"), encoding="utf-8").read(), arch[:5])
     ag, za = rd("olympus", "agora.css"), rd("zenith_agora.css")
     check("a. sticky tab bars are violet glass in OLYMPUS NIGHT (kit tablists, Zenith's top bar and bottom tabs), not a near-black slab",
-          'html[data-oly-theme="night"] main#app > [role="tablist"]' in ag and "rgba(22, 13, 42, .84)" in ag
+          'html[data-oly-theme="night"] main#app > [role="tablist"]' in ag and 'html[data-oly-theme="night"] .ag-appbar {' in ag and "rgba(22, 13, 42, .84)" in ag
           and 'html[data-oly-style="night"]:not([data-theme="light"]) nav#tabs.tabs' in za and "rgba(22, 13, 42, .84)" in za)
     th = rd("olympus", "themes.js")
     check("a. a light phone gets OLYMPUS NIGHT on an app without a light mode (only Zenith's Home / a 'light dark' page follows the phone)",
@@ -144,7 +144,7 @@ def browser():
                     ctx.close()
                 check(f"b. {scheme} phone: no brown card and no near-black sticky bar on " + ", ".join(pages), not bad, bad)
                 if scheme == "light":
-                    check("b. a light phone paints OLYMPUS NIGHT on the kit apps (no AGORA brown)", all(themes[u] == "night" for u in pages if u not in ("/",)), themes)
+                    check("b. a light phone paints OLYMPUS NIGHT on the kit apps (no AGORA brown)", all(themes[u] == "night" for u in pages if u not in ("/", "/board/")), themes)   # Board styles itself (nqtheme), no theme engine
             br.close()
     finally:
         srv.shutdown()
