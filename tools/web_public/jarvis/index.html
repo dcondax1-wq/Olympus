@@ -3330,13 +3330,31 @@ const fx = (() => {
       if (t - t0 > 2500) {
         probe = false;
         if (frames / ((t - t0) / 1000) < 18 && (level() === 'high' || level() === 'ultra') && !root.dataset.fxSet) {
-          root.dataset.fxAuto = '1'; setFx('low', false); toast('Effects lowered to keep Jarvis smooth on this phone. Change it under ⋯ → 3D.', '3D'); return;
+          root.dataset.fxAuto = '1'; setFx('low', false); toast('Effects lowered to keep Jarvis smooth on this phone. Change it under ⋯ → 3D.', '3D'); setTimeout(reprobe, 20000); return;
         }
       }
     }
     if (t - last >= 1000 / fps()) { last = t; drawStars(t); }
     if (level() === 'high' || level() === 'ultra') raf = requestAnimationFrame(frame);
   }
+  // the auto-low is never stored and never final (lead QA 2026-11-21: a slow first second, e.g. a busy phone, must not cost the 3D sky the
+  // whole launch): 20 s later, then every minute, 2 s of frames; 50 fps or more = this phone keeps up after all: back to High (unsaved), and
+  // the backdrop builds its sky then (backdrop.js watches data-fx). The owner's own pick (fxSet) always wins.
+  function reprobe() {
+    if (!root.dataset.fxAuto || root.dataset.fxSet || level() !== 'low') return;
+    if (document.hidden || active !== 'home') { setTimeout(reprobe, 60000); return; }
+    let n = 0, a0 = 0;
+    const f = (t) => {
+      if (!a0) a0 = t;
+      n++;
+      if (t - a0 < 2000) { requestAnimationFrame(f); return; }
+      const fps = n / ((t - a0) / 1000);
+      if (fps >= 50 && root.dataset.fxAuto && !root.dataset.fxSet) { delete root.dataset.fxAuto; setFx('high', false); restart(); }
+      else setTimeout(reprobe, 60000);
+    };
+    requestAnimationFrame(f);
+  }
+  window.__jarvisReprobe = reprobe;                          // tests
   function restart() {
     cancelAnimationFrame(raf); raf = 0;
     if (level() === 'off') { const g = starC.getContext('2d'); if (g) g.clearRect(0, 0, starC.width, starC.height); return; }
