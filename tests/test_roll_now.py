@@ -32,7 +32,13 @@ if ROOT not in sys.path:
 os.environ["LE_PR_NO_NET"] = "1"
 
 from engine import roll_watch  # noqa: E402
-from engine.ninjatrader import ET, nt_instrument  # noqa: E402
+from engine.ninjatrader import ET, feed_instruments, nt_instrument  # noqa: E402
+
+
+def _want(t) -> str:
+    """feed_instruments.txt as the bot writes it on the day of `t` (the MNQ contract, + the ES research contract once
+    engine/ninjatrader.feed_instruments carries it: data health 2026-11-20)."""
+    return "".join(f"{n}\n" for n in feed_instruments({"nt_account": "Sim101"}, dt.datetime.fromtimestamp(t, ET).date()))
 from tools import pc_guard as G  # noqa: E402
 from tools import roll_now as RN  # noqa: E402
 
@@ -269,19 +275,19 @@ def roll_now():
         with open(os.path.join(b.nt, "le_feed", "le_feed_status.txt"), "w") as fh:
             fh.write(f"{eve - 30},source=addon,instruments=MNQ 12-26,last_1m={eve - 90},resubs=0,connected=1\n")
         with open(os.path.join(b.nt, "le_feed", "feed_instruments.txt"), "w") as fh:
-            fh.write("MNQ 12-26\n")
+            fh.write(_want(eve))
         b.autostart({"nt_account": "Sim101"})
         out.clear()
         rc = RN.run(b.facts(eve), say=say, wait_s=0)
         check("C: add-on mode on the eve: no click, 'Roll ready', the contract list left to the bot",
               rc == 0 and not any("Instrument >" in x for x in out) and any("Roll ready" in x for x in out)
-              and open(os.path.join(b.nt, "le_feed", "feed_instruments.txt")).read() == "MNQ 12-26\n", out)
+              and open(os.path.join(b.nt, "le_feed", "feed_instruments.txt")).read() == _want(eve), out)
         with open(os.path.join(b.nt, "le_feed", "le_feed_status.txt"), "w") as fh:
             fh.write(f"{thu - 30},source=addon,instruments=MNQ 12-26,last_1m={thu - 90},resubs=0,connected=1\n")
         out.clear()
         rc = RN.run(b.facts(thu), say=say, wait_s=0)
         check("C: add-on mode after the roll with the bot not running: feed_instruments.txt -> MNQ 03-27 (the bot's own rule)",
-              rc == 0 and open(os.path.join(b.nt, "le_feed", "feed_instruments.txt")).read() == "MNQ 03-27\n"
+              rc == 0 and open(os.path.join(b.nt, "le_feed", "feed_instruments.txt")).read() == _want(thu)
               and any("told the LE_Feed add-on: MNQ 03-27" in x for x in out), out)
         # ---- chart mode, the chart's contract unreadable (older LE_BarFeed / continuous): the click text, no endless wait
         os.remove(os.path.join(b.nt, "le_feed", "le_feed_status.txt"))
