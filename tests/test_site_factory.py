@@ -132,7 +132,7 @@ def main() -> int:
     hits = []
     for base, _dirs, files in os.walk(os.path.join(ROOT, "tools", "web_public")):
         rel = os.path.relpath(base, AG)
-        if rel == "f" or rel.startswith("f" + os.sep) or rel in ("factory", "sites"):
+        if rel == "f" or rel.startswith("f" + os.sep) or rel in ("factory", "sites", "portal"):   # portal = the caller tool (rides in the export)
             continue
         for fn in files:
             if fn.endswith((".html", ".js", ".json", ".xml", ".txt", ".webmanifest")):
@@ -173,6 +173,30 @@ def main() -> int:
     check("h. once the agency is named: the landing is indexable, the concept sites stay blocked (robots Disallow: /f/)",
           rc == 0 and '"index, follow"' in fx["index.html"] and "Main Street Web" in fx["index.html"] and "Disallow: /f/" in fx["robots.txt"]
           and all('content="noindex' in v for k, v in fx.items() if k.startswith("f/") and k.endswith(".html") and k != "f/index.html"))
+    # i. day-a11y wires: the caller portal rides along in the export; businesses a caller adds by hand get a site
+    rc, fx, err = exp({"public_base": "https://neutral-sites.pages.dev/", "phone": "+13015550123", "phone_label": "(301) 555-0123"})
+    if os.path.isdir(os.path.join(AG, "portal")):
+        pj = json.loads(fx.get("portal/portal.json", "{}"))
+        core = fx.get("portal/portalcore.js", "")
+        check("i. export carries the caller portal (6 files), public_base + agency number filled, site links at <base>/f/<id>/, no owner handle / notes",
+              rc == 0 and all("portal/" + n in fx for n in F.PORTAL_FILES) and pj.get("public_base") == "https://neutral-sites.pages.dev"
+              and pj.get("agency_number") == "(301) 555-0123" and "b + '/' + p" in core and "export const BANNED = [];" in core
+              and not re.search(r"dcondax|olympus|/agency/", "".join(v for k, v in fx.items() if k.startswith("portal/")), re.I)
+              and "Disallow: /" in fx["robots.txt"] and "/portal/*" in fx["_headers"], (rc, err[-200:], pj))
+    with tempfile.TemporaryDirectory() as t:
+        ap = os.path.join(t, "added.json")
+        with open(ap, "w") as f:
+            json.dump({"leads": [{"id": "add-1", "name": "Hand Added Bakery", "niche": "food", "category": "bakery", "town": "Frederick", "state": "MD",
+                                  "phone": "(301) 555-0199"},
+                                 {"id": leads[0]["id"], "name": "dupe"}, {"id": "add-2", "name": "Has Site", "website": "https://x.example"}]}, f)
+        os.environ["SITE_FACTORY_ADDED"] = ap
+        try:
+            got = F.load_leads()
+        finally:
+            del os.environ["SITE_FACTORY_ADDED"]
+    ids_got = [L["id"] for L in got]
+    check("i. hand-added leads (tools/agency_added_leads.json) get a site; duplicates and ones with a website are skipped",
+          "add-1" in ids_got and "add-2" not in ids_got and ids_got.count(leads[0]["id"]) == 1 and len(got) == len(leads) + 1, ids_got[-3:])
     # f. the hours reader: simple OSM forms in, unclear ones -> 'call to ask' (never a wrong time)
     ph = F.parse_hours
     check("f. hours: 'Mo-Fr 09:00-17:00; Sa 09:00-14:00; Su off' -> 9 am - 5 pm ... Closed",

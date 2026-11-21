@@ -50,3 +50,8 @@
 | Leads today | origin/pc still has the 67 Frederick leads; the 812-lead run is not pushed yet (day-kalshi's branch only has its geocode cache). When it lands: `python tools/site_factory.py`. Of the 67: **20 ready to send** (phone or street address, not a chain). |
 | Host setup | `HOST_SETUP.md`: Option A, a neutral GitHub org `<name>.github.io` (iPhone, Claude pushes updates); Option B, Cloudflare Pages upload (PC once per update). |
 | Tests | test_site_factory 26/26 (new h.: 3 refusals, full export, named-agency mode). |
+
+## day-a11y wires (caller portal, merged origin/day-a11y)
+- `load_leads()` also reads `tools/agency_added_leads.json` (businesses a caller adds by hand): skips duplicates and ones with a website.
+- `--export` carries `agency/portal/` to `<base>/portal/`: comments stripped (they name Olympus), `portal.json` gets `public_base` + `agency_number` (from `phone_label`/`phone`), site links rewritten to `<base>/f/<id>/` (the portal built `<base>/agency/f/...`, which does not exist on the neutral host), the runtime `BANNED` list emptied (it spelled out the owner's handle; the base is checked at export). Fails loudly if portalcore.js changes shape. robots/_headers keep `/portal/` noindex. Checked in a browser: portal, landing and a site load with no error at 390 px.
+- test_site_factory 28/28.

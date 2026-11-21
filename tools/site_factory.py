@@ -612,6 +612,15 @@ def load_leads(only_ready: bool = False):
         if not L.get("id") or not str(L.get("name", "")).strip():
             continue
         out.append(L)
+    added = os.environ.get("SITE_FACTORY_ADDED") or os.path.join(ROOT, "tools", "agency_added_leads.json")    # day-a11y caller portal: businesses a caller found by hand (public facts)
+    if os.path.exists(added):
+        try:
+            extra = json.load(open(added, encoding="utf-8")).get("leads", [])
+        except (OSError, ValueError, AttributeError):
+            extra = []
+        have = {L["id"] for L in out}
+        out += [L for L in extra if isinstance(L, dict) and isinstance(L.get("id"), str) and L["id"] not in have
+                and str(L.get("name", "")).strip() and not L.get("website") and (not only_ready or ready(L))]
     return out
 
 
@@ -674,7 +683,7 @@ def build(web=WEB, ids_path=IDS, write_ids=True):
 # Before any postcard is mailed the concept sites move OFF the owner's GitHub Pages to a neutral host (a free Cloudflare Pages project or a
 # separate GitHub org). --export <dir> writes the f/ tree as a standalone static site: its own landing page, robots, 404 and headers;
 # nothing that points back at Olympus, the owner's handle or any PC address (checked before it writes, so a leak is never published).
-FORBIDDEN = [r"github\.io", r"\bolympus\b", r"jarvis", r"dcondax", r"demetrades", r"\.ts\.net\b", r"\b100\.\d{1,3}\.\d{1,3}\.\d{1,3}\b",
+FORBIDDEN = [r"github\.io/jarvis", r"\bolympus\b", r"jarvis", r"dcondax", r"demetrades", r"\.ts\.net\b", r"\b100\.\d{1,3}\.\d{1,3}\.\d{1,3}\b",
              r"tailscale", r"ntfy", r"/agency/", r"\.\./"]
 
 
@@ -733,11 +742,17 @@ def export(out_dir: str, web: str = WEB) -> int:
     files["404.html"] = '<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Not found</title><p style="font:17px system-ui;padding:40px 20px">Not found.</p>\n'
     files["f/index.html"] = files["404.html"]
     named = bool(c["agency_name"].strip())
-    files["robots.txt"] = ("User-agent: *\nDisallow: /f/\n" if named else "User-agent: *\nDisallow: /\n")
+    files["robots.txt"] = ("User-agent: *\nDisallow: /f/\nDisallow: /portal/\n" if named else "User-agent: *\nDisallow: /\n")
     # Cloudflare Pages reads _headers (GitHub Pages ignores it; the pages' own noindex meta covers that host)
-    files["_headers"] = "/f/*\n  X-Robots-Tag: noindex, nofollow, noarchive\n  Referrer-Policy: no-referrer\n" + \
+    files["_headers"] = ("/f/*\n  X-Robots-Tag: noindex, nofollow, noarchive\n  Referrer-Policy: no-referrer\n"
+                         "/portal/*\n  X-Robots-Tag: noindex, nofollow, noarchive\n  Referrer-Policy: no-referrer\n") + \
         ("" if named else "/*\n  X-Robots-Tag: noindex, nofollow\n")
     files[".nojekyll"] = ""
+    pf, perr = portal_files(c, base)
+    if perr:
+        print("refused: " + perr, file=sys.stderr)
+        return 3
+    files.update(pf)
     leaks = [(k, m.group(0)) for k, v in files.items() for m in [re.search("|".join(FORBIDDEN), v, re.I)] if m]
     if leaks:
         print("refused: these files point back at Olympus / the owner / a PC: " + ", ".join(f"{k} ({w})" for k, w in leaks[:8]), file=sys.stderr)
@@ -756,6 +771,49 @@ def export(out_dir: str, web: str = WEB) -> int:
     n = sum(1 for k in files if k.startswith("f/") and k != "f/index.html")
     print(f"exported {n} sites to {out_dir} for {base} (landing {'indexed' if named else 'noindex until the agency is named'})")
     return 0
+
+
+PORTAL = os.path.join(WEB, "portal")
+PORTAL_FILES = ["index.html", "portal.css", "portal.js", "portalcore.js", "portal.json", "calllist.json"]
+
+
+def _strip_comments(name: str, t: str) -> str:
+    """the portal's notes name Olympus / the plan files: published copies keep the code only"""
+    t = re.sub(r"<!--.*?-->", "", t, flags=re.S) if name.endswith(".html") else t
+    if name.endswith((".css", ".js")):
+        t = re.sub(r"/\*.*?\*/", "", t, flags=re.S)
+    if name.endswith(".js"):
+        t = "\n".join(ln for ln in t.split("\n") if not ln.lstrip().startswith("//"))
+        t = re.sub(r"(?<=[;{}),\]])\s*//[^'\"`\n]*$", "", t, flags=re.M)      # trailing // notes after code (not inside strings with quotes)
+    return t
+
+
+def portal_files(c: dict, base: str):
+    """day-a11y's caller portal (agency/portal/) for the neutral host at portal/: comments out, public_base + agency_number filled in
+    portal.json, the site links pointed at <base>/f/<id>/ (on the neutral host the sites sit at the root, not under /agency/), and the
+    runtime 'banned' list emptied (it spells out the owner's handle; the base was already checked here)."""
+    if not os.path.isdir(PORTAL):
+        return {}, ""
+    out = {}
+    for fn in PORTAL_FILES:
+        p = os.path.join(PORTAL, fn)
+        if not os.path.isfile(p):
+            return {}, f"portal file missing: {fn}"
+        t = read_text(p)
+        if fn == "portal.json":
+            j = json.loads(t)
+            j["public_base"] = base.rstrip("/")
+            j["agency_number"] = c.get("phone_label") or c.get("phone") or ""
+            if c.get("agency_name"):
+                j["agency"] = j.get("agency") or c["agency_name"]
+            t = json.dumps(j, indent=1) + "\n"
+        elif fn == "portalcore.js":
+            t, n1 = re.subn(r"b \+ '/agency/' \+ p", "b + '/' + p", t)
+            t, n2 = re.subn(r"export const BANNED = \[[^\]]*\];", "export const BANNED = [];", t)
+            if not (n1 and n2):
+                return {}, "portalcore.js changed shape (siteUrl / BANNED): update site_factory.portal_files"
+        out["portal/" + fn] = _strip_comments(fn, t)
+    return out, ""
 
 
 def read_text(p: str) -> str:
