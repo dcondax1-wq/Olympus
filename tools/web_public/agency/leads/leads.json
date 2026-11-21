@@ -2,27 +2,11 @@
  "v": 1,
  "kind": "web_leads",
  "demo": false,
- "fetched": "2026-11-21T00:08:10Z",
+ "fetched": "2026-11-21T14:20:27Z",
  "source": "OpenStreetMap via the public Overpass API (a few small queries per town)",
  "license": "Data (c) OpenStreetMap contributors, ODbL (openstreetmap.org/copyright)",
  "about": "Businesses on OpenStreetMap with no website tag. OSM can be out of date: check the business before you call.",
  "towns": [
-  {
-   "town": "Frederick",
-   "state": "MD",
-   "businesses": 578,
-   "leads": 180,
-   "hot": 7,
-   "server": "maps.mail.ru",
-   "parts_ok": 7,
-   "parts": 9,
-   "missing": [
-    "trades",
-    "offices"
-   ],
-   "chains": 257,
-   "with_site": 141
-  },
   {
    "town": "Hagerstown",
    "state": "MD",
@@ -110,23 +94,36 @@
    ],
    "chains": 207,
    "with_site": 72
+  },
+  {
+   "town": "Frederick",
+   "state": "MD",
+   "businesses": 578,
+   "leads": 185,
+   "hot": 7,
+   "server": "maps.mail.ru",
+   "parts_ok": 9,
+   "parts": 9,
+   "missing": [],
+   "chains": 257,
+   "with_site": 141
   }
  ],
  "skipped": {
-  "has_site": 406,
-  "chain": 843,
-  "other": 188,
+  "has_site": 521,
+  "chain": 981,
+  "other": 233,
   "duplicate": 27,
   "closed": 1
  },
  "leads": [],
  "files": [
-  "towns/frederick.json",
   "towns/hagerstown.json",
   "towns/germantown.json",
   "towns/gaithersburg.json",
   "towns/rockville.json",
-  "towns/columbia.json"
+  "towns/columbia.json",
+  "towns/frederick.json"
  ],
- "count": 812
+ "count": 817
 }
