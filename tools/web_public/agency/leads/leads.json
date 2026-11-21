@@ -2,28 +2,11 @@
  "v": 1,
  "kind": "web_leads",
  "demo": false,
- "fetched": "2026-11-21T14:33:55Z",
+ "fetched": "2026-11-21T14:53:23Z",
  "source": "OpenStreetMap via the public Overpass API (a few small queries per town)",
  "license": "Data (c) OpenStreetMap contributors, ODbL (openstreetmap.org/copyright)",
  "about": "Businesses on OpenStreetMap with no website tag. OSM can be out of date: check the business before you call.",
  "towns": [
-  {
-   "town": "Germantown",
-   "state": "MD",
-   "businesses": 139,
-   "leads": 52,
-   "hot": 5,
-   "server": "maps.mail.ru",
-   "parts_ok": 6,
-   "parts": 9,
-   "missing": [
-    "offices",
-    "healthcare",
-    "food places"
-   ],
-   "chains": 64,
-   "with_site": 22
-  },
   {
    "town": "Gaithersburg",
    "state": "MD",
@@ -103,23 +86,38 @@
    ],
    "chains": 87,
    "with_site": 37
+  },
+  {
+   "town": "Germantown",
+   "state": "MD",
+   "businesses": 139,
+   "leads": 53,
+   "hot": 5,
+   "server": "maps.mail.ru",
+   "parts_ok": 8,
+   "parts": 9,
+   "missing": [
+    "food places"
+   ],
+   "chains": 64,
+   "with_site": 22
   }
  ],
  "skipped": {
-  "has_site": 558,
-  "chain": 1068,
-  "other": 245,
+  "has_site": 567,
+  "chain": 1083,
+  "other": 259,
   "duplicate": 27,
   "closed": 1
  },
  "leads": [],
  "files": [
-  "towns/germantown.json",
   "towns/gaithersburg.json",
   "towns/rockville.json",
   "towns/columbia.json",
   "towns/frederick.json",
-  "towns/hagerstown.json"
+  "towns/hagerstown.json",
+  "towns/germantown.json"
  ],
- "count": 914
+ "count": 915
 }
