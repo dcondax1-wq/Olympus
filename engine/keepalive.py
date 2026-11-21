@@ -1400,7 +1400,7 @@ def _manage(bot, st, C, T, now, px, out, Q, late: bool = False) -> bool:
             out.append(row)
             _queue(Q, st, bot, "trade", p, now, row=row)
             # the same result straight to ntfy (engine/notify.instant_problem): it never waits on the web-push route
-            _queue(Q, st, bot, "problem", {"key": f"ka:result:{key}:{et_}", "code": "keepalive", "soft": True,
+            _queue(Q, st, bot, "problem", {"key": f"ka:result:{key}:{et_}", "code": "keepalive", "soft": True, "dup_of": p["key"],
                                            "tags": "white_check_mark", "bot": "atlas" if key == "atlas" else "lit",
                                            "title": f"Keep-alive on {label}: closed {side} about {money(usd)}",
                                            "body": f"1 MNQ, {exit_reason.lower()} (expected about -{money(EXPECTED_COST)}, at most "

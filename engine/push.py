@@ -1263,6 +1263,13 @@ def _pc_send(payload, sender=None, ntfy=None, ntfy_exit=None, retry_s=None) -> d
     if not trade:
         if app_ok:
             res = _app()
+        if k == "risk" and str(payload.get("key") or "").startswith("hedge"):
+            try:                                 # drill 2026-11-21: HEDGE BLOCKED reached no phone without LE_PUSH_EXTRA (the app took
+                from . import notify             # only trades); now the private ntfy topic too (problems: rings at night)
+                res["ntfy"] = notify.instant_problem({"key": str(payload["key"]), "code": "hedge", "title": payload.get("title"),
+                                                      "body": payload.get("body")})
+            except Exception:  # noqa: BLE001
+                pass
     else:
         try:
             from . import notify

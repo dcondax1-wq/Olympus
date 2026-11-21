@@ -953,6 +953,9 @@ def instant_problem(p: dict, now=None, path=None, cfg=None, poster=None) -> str:
             return "already sent"
         if poster is None and cfg is None and _bus_on():   # engine/alert_bus: Telegram / Discord first, ntfy + the app as fallbacks
             from . import alert_bus
+            if p.get("dup_of"):                         # drill 2026-11-21: the same news as a trade alert the bus already carries
+                _record_problem(p, key, path, now, count=False)   # (the keep-alive's close): one alert on the phone, not two
+                return "sent"
             r = alert_bus.send(alert_bus.from_problem(p, problem_message(p, now=now, s=s)),
                                on_done=lambda res: res.get("ok") and _record_problem(p, key, path, now, count=False))
             return "sent" if r in ("queued", "sent") else f"alert bus: {r}"
