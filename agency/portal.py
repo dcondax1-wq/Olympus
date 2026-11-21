@@ -237,8 +237,20 @@ def commissions(store: dict, c: dict | None = None) -> list:
             r[k] += 1
         if k in ("no", "dnc"):
             r["no"] += 1
+    # owed per (caller, business): $300 when it became a sale, else $40 once a booked call showed, never both for the same business
+    # (the plan is "$300 per sale OR $40 per booked call that shows"; 2026-11-21: a booked call that showed and then bought was paid $340)
+    best: dict = {}
+    for e in store.get("log") or []:
+        k, lid = e.get("k"), e.get("id")
+        if k in ("showed", "won") and lid:
+            key = (e.get("caller") or "?", lid)
+            best[key] = "won" if (k == "won" or best.get(key) == "won") else "showed"
     for r in rows.values():
-        r["owed"] = r["won"] * int(rate.get("sale", 300)) + r["showed"] * int(rate.get("booked_show", 40))
+        r["owed"] = 0
+    for (caller, _lid), k in best.items():
+        rows[caller]["owed"] += int(rate.get("sale", 300)) if k == "won" else int(rate.get("booked_show", 40))
+    for r in rows.values():         # outcomes logged without a business id (older exports) keep the old per-row count
+        r["owed"] = r["owed"] or (r["won"] * int(rate.get("sale", 300)) + r["showed"] * int(rate.get("booked_show", 40)))
     return sorted(rows.values(), key=lambda r: -r["owed"])
 
 

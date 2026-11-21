@@ -82,7 +82,7 @@ import urllib.parse
 import urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-EXEC_VERSION = "2026-11-19.1"          # bump when the trading logic changes: an armed PC then needs the phrase again
+EXEC_VERSION = "2026-11-21.1"          # bump when the trading logic changes: an armed PC then needs the phrase again
 PHRASE = "I ACCEPT KALSHI LIVE RISK"
 PLAN_PATH = os.path.join(ROOT, "research", "lab", "kalshi_live_plan.json")
 CAND_DIR = os.path.join(ROOT, "research", "lab", "kalshi_candidates")
@@ -1752,7 +1752,16 @@ def card(P, ex=None, now=None) -> dict:
         if k8:
             c["k8"] = k8
             c["u"] = iso(now)
-            if state == "off":
+            # day-kalshi QA 2026-11-21: K8's own stop / pause (the clock writes arm.json + clock_state.json, not the maker's state):
+            # a K8 that stopped itself showed PAPER with no reason; the phone's pause showed LIVE
+            rec = _jread(P["arm"], {}) or {}
+            cst = _jread(KC.paths(P["dir"] if P["dir"] != STATE_DIR else None)["clock_state"], {}) or {}
+            if state == "live" and _f(cst.get("paused_until"), 0.0) > now:
+                state = c["st"] = "paused"
+            if state == "off" and (rec.get("stopped") or os.path.exists(P["kill"])):
+                c["st"] = "stopped"
+                c["why"] = re.sub(r"[^A-Za-z0-9 $+.,:()%-]", "", str(rec.get("stopped") or "the kill switch is on").replace(": type the phrase again", ""))[:40]
+            elif state == "off":
                 c["st"] = "paper"           # not armed, but the K8 paper loop runs / has a ledger: the phone shows it (was dropped as 'off')
     except Exception:  # noqa: BLE001
         pass
@@ -1773,6 +1782,11 @@ def read_card(now=None, state_dir=None):
     try:
         P = paths(state_dir)
         now = time.time() if now is None else now
+        k = card(P, now=now) if not loop_alive(P, now) else {}   # day-kalshi QA 2026-11-21: no maker loop (retired) + K8 present = K8's own state + its own loop
+        if k.get("k8"):
+            if k.get("st") in ("live", "paused") and not k["k8"].get("lp"):
+                k["st"] = "idle"                    # armed, but the K8 loop is not running on the PC right now
+            return k
         c = _jread(P["card"], None)
         if isinstance(c, dict) and c.get("kind") == "kalshi_live_pub" and now - (os.path.getmtime(P["card"])) < 2 * 86400:
             live, _ = arm_state(P=P)

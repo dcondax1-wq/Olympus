@@ -66,8 +66,17 @@ def part_h(now):
         nid = P.endpoint_id(readded["endpoint"])
         ok(r["added"] == [nid] and {d["id"] for d in cfg()["devices"]} == {oid, nid} and not r.get("unpaired"),
            "a new endpoint of the owner's phone joins without a code", r)
-        ok(not told and not any(x["data"]["title"] == "New phone wants your alerts" for x in sent),
+        ok(not any(x["data"]["title"] == "New phone wants your alerts" for x in sent)
+           and not any("type" in str(t.get("body")) and "code" in str(t.get("body")) for t in told),
            "no 'New phone wants your alerts' notice with a code nobody can type", (told, sent))
+        joined = [x for x in sent if x["data"]["title"] == "New phone added to your alerts"]
+        ok(len(joined) == 1 and joined[0]["ep"] == owner["endpoint"] and ("--forget " + nid[:8]) in joined[0]["data"]["body"]
+           and len(told) == 1 and "--forget" in told[0]["body"],
+           "day-security3: the owner's existing phone + the private topic hear of the new phone, with the command that removes it", (joined, told))
+        ok(P.forget(nid[:8]) == [nid] and {d["id"] for d in cfg()["devices"]} == {oid} and P.forget("zz") == [] and P.forget(oid[:3]) == [],
+           "python -m engine.push --forget <id>: removes exactly that phone (6+ hex characters, nothing else)")
+        relay.add(sealed("sub", {"sub": readded, "key": wp["k"], "ua": "iPhone"}, wp["b"], t=now + 1))
+        P.intake(R.read(), now + 2, sender=send, ntfy=lambda p: True)
         f = cfg()
         f["devices"] = [dict(d, seen=now) for d in f["devices"]] + [
             {"id": P.endpoint_id(phone(210 + i)[2]["endpoint"]), "sub": phone(210 + i)[2], "key": wp["k"], "since": now, "seen": now - 60,

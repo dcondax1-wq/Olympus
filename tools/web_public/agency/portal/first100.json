@@ -1,0 +1,1999 @@
+{
+ "v": 1,
+ "kind": "caller-portal-list",
+ "list": "first-100",
+ "built": "2026-11-21",
+ "count": 100,
+ "note": "public map data only (OpenStreetMap); ranked: hot, open in calling hours, trade, storefront. A person dials; never an auto-dialer.",
+ "skipped": {
+  "no phone": 1433
+ },
+ "leads": [
+  {
+   "id": "osm-n7487728010",
+   "name": "Asian Healing Spa",
+   "phone": "4105088995",
+   "town": "Columbia",
+   "state": "MD",
+   "niche": "beauty",
+   "kind": "Beauty salon",
+   "code": "CO-86",
+   "site": "f/zak5pkxa/",
+   "heat": "hot",
+   "score": 8,
+   "open_weekdays": 5,
+   "why": [
+    "hot lead",
+    "open 5 weekdays in calling hours",
+    "salon / beauty (buys sites)",
+    "storefront address"
+   ],
+   "rank": 1
+  },
+  {
+   "id": "osm-n10606629991",
+   "name": "Beauty N Go",
+   "phone": "4107721500",
+   "town": "Columbia",
+   "state": "MD",
+   "niche": "beauty",
+   "kind": "Beauty salon",
+   "code": "CO-11",
+   "site": "f/wc6mdwed/",
+   "heat": "hot",
+   "score": 8,
+   "open_weekdays": 5,
+   "why": [
+    "hot lead",
+    "open 5 weekdays in calling hours",
+    "salon / beauty (buys sites)",
+    "storefront address"
+   ],
+   "rank": 2
+  },
+  {
+   "id": "osm-n12000690624",
+   "name": "Chilled Life Gym",
+   "phone": "4435429859",
+   "town": "Columbia",
+   "state": "MD",
+   "niche": "fitness",
+   "kind": "Fitness center",
+   "code": "CO-21",
+   "site": "f/vdphyjzp/",
+   "heat": "hot",
+   "score": 8,
+   "open_weekdays": 5,
+   "why": [
+    "hot lead",
+    "open 5 weekdays in calling hours",
+    "gym / fitness (buys sites)",
+    "storefront address"
+   ],
+   "rank": 3
+  },
+  {
+   "id": "osm-n11892544471",
+   "name": "Columbia Squash & Athletic Club",
+   "phone": "8665778274",
+   "town": "Columbia",
+   "state": "MD",
+   "niche": "fitness",
+   "kind": "Fitness center",
+   "code": "CO-19",
+   "site": "f/xdrkxgmm/",
+   "heat": "hot",
+   "score": 8,
+   "open_weekdays": 5,
+   "why": [
+    "hot lead",
+    "open 5 weekdays in calling hours",
+    "gym / fitness (buys sites)",
+    "storefront address"
+   ],
+   "rank": 4
+  },
+  {
+   "id": "osm-n10606629990",
+   "name": "Nail Center",
+   "phone": "3018543424",
+   "town": "Columbia",
+   "state": "MD",
+   "niche": "beauty",
+   "kind": "Beauty salon",
+   "code": "CO-10",
+   "site": "f/fgetm5wr/",
+   "heat": "hot",
+   "score": 8,
+   "open_weekdays": 5,
+   "why": [
+    "hot lead",
+    "open 5 weekdays in calling hours",
+    "salon / beauty (buys sites)",
+    "storefront address"
+   ],
+   "rank": 5
+  },
+  {
+   "id": "osm-n13325488701",
+   "name": "Pro Finish Nail Salon",
+   "phone": "4105316441",
+   "town": "Columbia",
+   "state": "MD",
+   "niche": "beauty",
+   "kind": "Beauty salon",
+   "code": "CO-37",
+   "site": "f/ewtf66wn/",
+   "heat": "hot",
+   "score": 8,
+   "open_weekdays": 5,
+   "why": [
+    "hot lead",
+    "open 5 weekdays in calling hours",
+    "salon / beauty (buys sites)",
+    "storefront address"
+   ],
+   "rank": 6
+  },
+  {
+   "id": "osm-n10091491272",
+   "name": "Talento Latino Unisex Hair Salon",
+   "phone": "4435429229",
+   "town": "Columbia",
+   "state": "MD",
+   "niche": "beauty",
+   "kind": "Hair salon",
+   "code": "CO-1",
+   "site": "f/9vuwuhyf/",
+   "heat": "hot",
+   "score": 8,
+   "open_weekdays": 5,
+   "why": [
+    "hot lead",
+    "open 5 weekdays in calling hours",
+    "salon / beauty (buys sites)",
+    "storefront address"
+   ],
+   "rank": 7
+  },
+  {
+   "id": "osm-n10865644107",
+   "name": "C.A.R.P. Auto Service",
+   "phone": "3013305999",
+   "town": "Gaithersburg",
+   "state": "MD",
+   "niche": "auto",
+   "kind": "Car repair",
+   "code": "GA-6",
+   "site": "f/egyxyyba/",
+   "heat": "hot",
+   "score": 8,
+   "open_weekdays": 5,
+   "why": [
+    "hot lead",
+    "open 5 weekdays in calling hours",
+    "auto (buys sites)",
+    "storefront address"
+   ],
+   "rank": 8
+  },
+  {
+   "id": "osm-n12001166795",
+   "name": "Donna Bella Laser Medspa",
+   "phone": "3014174975",
+   "town": "Gaithersburg",
+   "state": "MD",
+   "niche": "beauty",
+   "kind": "Beauty salon",
+   "code": "GA-139",
+   "site": "f/trghsvue/",
+   "heat": "hot",
+   "score": 8,
+   "open_weekdays": 5,
+   "why": [
+    "hot lead",
+    "open 5 weekdays in calling hours",
+    "salon / beauty (buys sites)",
+    "storefront address"
+   ],
+   "rank": 9
+  },
+  {
+   "id": "osm-w1236156054",
+   "name": "Glamorous Nails & Spa",
+   "phone": "3019779555",
+   "town": "Gaithersburg",
+   "state": "MD",
+   "niche": "beauty",
+   "kind": "Beauty salon",
+   "code": "GA-215",
+   "site": "f/5ux974r7/",
+   "heat": "hot",
+   "score": 8,
+   "open_weekdays": 5,
+   "why": [
+    "hot lead",
+    "open 5 weekdays in calling hours",
+    "salon / beauty (buys sites)",
+    "storefront address"
+   ],
+   "rank": 10
+  },
+  {
+   "id": "osm-w1236019810",
+   "name": "Ideal Image",
+   "phone": "2403889696",
+   "town": "Gaithersburg",
+   "state": "MD",
+   "niche": "beauty",
+   "kind": "Beauty salon",
+   "code": "GA-211",
+   "site": "f/vdsgfzce/",
+   "heat": "hot",
+   "score": 8,
+   "open_weekdays": 5,
+   "why": [
+    "hot lead",
+    "open 5 weekdays in calling hours",
+    "salon / beauty (buys sites)",
+    "storefront address"
+   ],
+   "rank": 11
+  },
+  {
+   "id": "osm-n10863550547",
+   "name": "Master Tech",
+   "phone": "3012089399",
+   "town": "Gaithersburg",
+   "state": "MD",
+   "niche": "auto",
+   "kind": "Car repair",
+   "code": "GA-4",
+   "site": "f/q4m2sua6/",
+   "heat": "hot",
+   "score": 8,
+   "open_weekdays": 5,
+   "why": [
+    "hot lead",
+    "open 5 weekdays in calling hours",
+    "auto (buys sites)",
+    "storefront address"
+   ],
+   "rank": 12
+  },
+  {
+   "id": "osm-n1144402551",
+   "name": "Ann's Barber & Stylist",
+   "phone": "3018699676",
+   "town": "Germantown",
+   "state": "MD",
+   "niche": "beauty",
+   "kind": "Hair salon",
+   "code": "GE-4",
+   "site": "f/x4464kpv/",
+   "heat": "hot",
+   "score": 8,
+   "open_weekdays": 5,
+   "why": [
+    "hot lead",
+    "open 5 weekdays in calling hours",
+    "salon / beauty (buys sites)",
+    "storefront address"
+   ],
+   "rank": 13
+  },
+  {
+   "id": "osm-n3753130025",
+   "name": "Cochran Automotive Service Center",
+   "phone": "3019724120",
+   "town": "Germantown",
+   "state": "MD",
+   "niche": "auto",
+   "kind": "Car repair",
+   "code": "GE-37",
+   "site": "f/gpwktab8/",
+   "heat": "hot",
+   "score": 8,
+   "open_weekdays": 5,
+   "why": [
+    "hot lead",
+    "open 5 weekdays in calling hours",
+    "auto (buys sites)",
+    "storefront address"
+   ],
+   "rank": 14
+  },
+  {
+   "id": "osm-n13988680461",
+   "name": "Ntaps",
+   "phone": "8336968277",
+   "town": "Hagerstown",
+   "state": "MD",
+   "niche": "other",
+   "kind": "Tax advisor",
+   "code": "HA-15",
+   "site": "f/9xyc3yty/",
+   "heat": "hot",
+   "score": 8,
+   "open_weekdays": 5,
+   "why": [
+    "hot lead",
+    "open 5 weekdays in calling hours",
+    "professional services (buys sites)",
+    "storefront address"
+   ],
+   "rank": 15
+  },
+  {
+   "id": "osm-n13252840931",
+   "name": "Seven Locks Barber",
+   "phone": "3017622200",
+   "town": "Rockville",
+   "state": "MD",
+   "niche": "beauty",
+   "kind": "Hair salon",
+   "code": "RO-233",
+   "site": "f/yxze3w7p/",
+   "heat": "hot",
+   "score": 8,
+   "open_weekdays": 5,
+   "why": [
+    "hot lead",
+    "open 5 weekdays in calling hours",
+    "salon / beauty (buys sites)",
+    "storefront address"
+   ],
+   "rank": 16
+  },
+  {
+   "id": "osm-n11838862599",
+   "name": "Caples Car Care",
+   "phone": "4108480748",
+   "town": "Westminster",
+   "state": "MD",
+   "niche": "auto",
+   "kind": "Car repair",
+   "code": "WE-2",
+   "site": "f/pja6r4t4/",
+   "heat": "hot",
+   "score": 8,
+   "open_weekdays": 5,
+   "why": [
+    "hot lead",
+    "open 5 weekdays in calling hours",
+    "auto (buys sites)",
+    "storefront address"
+   ],
+   "rank": 17
+  },
+  {
+   "id": "osm-n10575607898",
+   "name": "Salons by JC",
+   "phone": "4109973076",
+   "town": "Columbia",
+   "state": "MD",
+   "niche": "beauty",
+   "kind": "Hair salon",
+   "code": "CO-8",
+   "site": "f/gxj5fm9q/",
+   "heat": "hot",
+   "score": 8,
+   "open_weekdays": 4,
+   "why": [
+    "hot lead",
+    "open 4 weekdays in calling hours",
+    "salon / beauty (buys sites)",
+    "storefront address"
+   ],
+   "rank": 18
+  },
+  {
+   "id": "osm-n2110402666",
+   "name": "The Esquire and the Lady Salon",
+   "phone": "4108488000",
+   "town": "Westminster",
+   "state": "MD",
+   "niche": "beauty",
+   "kind": "Hair salon",
+   "code": "WE-10",
+   "site": "f/hmsaatrf/",
+   "heat": "hot",
+   "score": 8,
+   "open_weekdays": 4,
+   "why": [
+    "hot lead",
+    "open 4 weekdays in calling hours",
+    "salon / beauty (buys sites)",
+    "storefront address"
+   ],
+   "rank": 19
+  },
+  {
+   "id": "osm-n14305072776",
+   "name": "Abby's Market Cafe",
+   "phone": "4103812579",
+   "town": "Columbia",
+   "state": "MD",
+   "niche": "food",
+   "kind": "Quick food",
+   "code": "CO-138",
+   "site": "f/k8yztz9v/",
+   "heat": "hot",
+   "score": 7,
+   "open_weekdays": 5,
+   "why": [
+    "hot lead",
+    "open 5 weekdays in calling hours",
+    "storefront address"
+   ],
+   "rank": 20
+  },
+  {
+   "id": "osm-n4250690244",
+   "name": "K-Manna Fusion",
+   "phone": "4435464279",
+   "town": "Columbia",
+   "state": "MD",
+   "niche": "food",
+   "kind": "Restaurant",
+   "code": "CO-151",
+   "site": "f/j6dvkb3e/",
+   "heat": "hot",
+   "score": 7,
+   "open_weekdays": 5,
+   "why": [
+    "hot lead",
+    "open 5 weekdays in calling hours",
+    "storefront address"
+   ],
+   "rank": 21
+  },
+  {
+   "id": "osm-n12706061001",
+   "name": "Kokee Kitchen",
+   "phone": "4435464883",
+   "town": "Columbia",
+   "state": "MD",
+   "niche": "food",
+   "kind": "Restaurant",
+   "code": "CO-134",
+   "site": "f/apr5tfe9/",
+   "heat": "hot",
+   "score": 7,
+   "open_weekdays": 5,
+   "why": [
+    "hot lead",
+    "open 5 weekdays in calling hours",
+    "storefront address"
+   ],
+   "rank": 22
+  },
+  {
+   "id": "osm-n10660393005",
+   "name": "Oakland Mills Liquors",
+   "phone": "4109970932",
+   "town": "Columbia",
+   "state": "MD",
+   "niche": "food",
+   "kind": "Alcohol",
+   "code": "CO-15",
+   "site": "f/2knw8mpx/",
+   "heat": "hot",
+   "score": 7,
+   "open_weekdays": 5,
+   "why": [
+    "hot lead",
+    "open 5 weekdays in calling hours",
+    "storefront address"
+   ],
+   "rank": 23
+  },
+  {
+   "id": "osm-n10660390677",
+   "name": "Owen Brown Cleaners",
+   "phone": "4102903996",
+   "town": "Columbia",
+   "state": "MD",
+   "niche": "home",
+   "kind": "Dry cleaning",
+   "code": "CO-14",
+   "site": "f/dhcqdmpj/",
+   "heat": "hot",
+   "score": 7,
+   "open_weekdays": 5,
+   "why": [
+    "hot lead",
+    "open 5 weekdays in calling hours",
+    "storefront address"
+   ],
+   "rank": 24
+  },
+  {
+   "id": "osm-n13325484402",
+   "name": "Wardrobe Valet Cleaners",
+   "phone": "4105316977",
+   "town": "Columbia",
+   "state": "MD",
+   "niche": "home",
+   "kind": "Laundry",
+   "code": "CO-36",
+   "site": "f/ksetmsvm/",
+   "heat": "hot",
+   "score": 7,
+   "open_weekdays": 5,
+   "why": [
+    "hot lead",
+    "open 5 weekdays in calling hours",
+    "storefront address"
+   ],
+   "rank": 25
+  },
+  {
+   "id": "osm-n7125992708",
+   "name": "Casey's Coffee",
+   "phone": "4109975682",
+   "town": "Ellicott City",
+   "state": "MD",
+   "niche": "food",
+   "kind": "Caf\u00e9",
+   "code": "EL-110",
+   "site": "f/t9uvsgx7/",
+   "heat": "hot",
+   "score": 7,
+   "open_weekdays": 5,
+   "why": [
+    "hot lead",
+    "open 5 weekdays in calling hours",
+    "storefront address"
+   ],
+   "rank": 26
+  },
+  {
+   "id": "osm-w136690866",
+   "name": "Uno Chicago Grill",
+   "phone": "4104801400",
+   "town": "Ellicott City",
+   "state": "MD",
+   "niche": "food",
+   "kind": "Restaurant",
+   "code": "EL-142",
+   "site": "f/qxqadzg9/",
+   "heat": "hot",
+   "score": 7,
+   "open_weekdays": 5,
+   "why": [
+    "hot lead",
+    "open 5 weekdays in calling hours",
+    "storefront address"
+   ],
+   "rank": 27
+  },
+  {
+   "id": "osm-n4906433897",
+   "name": "Black Hog BBQ & Bar",
+   "phone": "3016629600",
+   "town": "Frederick",
+   "state": "MD",
+   "niche": "food",
+   "kind": "Restaurant",
+   "code": "FR-38",
+   "site": "f/rmdb3re9/",
+   "heat": "hot",
+   "score": 7,
+   "open_weekdays": 5,
+   "why": [
+    "hot lead",
+    "open 5 weekdays in calling hours",
+    "storefront address"
+   ],
+   "rank": 28
+  },
+  {
+   "id": "osm-w177929215",
+   "name": "Frederick Fudge & Ice Cream",
+   "phone": "3016315333",
+   "town": "Frederick",
+   "state": "MD",
+   "niche": "food",
+   "kind": "Ice cream",
+   "code": "FR-54",
+   "site": "f/53p4jucw/",
+   "heat": "hot",
+   "score": 7,
+   "open_weekdays": 5,
+   "why": [
+    "hot lead",
+    "open 5 weekdays in calling hours",
+    "storefront address"
+   ],
+   "rank": 29
+  },
+  {
+   "id": "osm-n13140207698",
+   "name": "Ba Le Sandwiches",
+   "phone": "3019666550",
+   "town": "Rockville",
+   "state": "MD",
+   "niche": "food",
+   "kind": "Restaurant",
+   "code": "RO-82",
+   "site": "f/a48xnsm7/",
+   "heat": "hot",
+   "score": 7,
+   "open_weekdays": 5,
+   "why": [
+    "hot lead",
+    "open 5 weekdays in calling hours",
+    "storefront address"
+   ],
+   "rank": 30
+  },
+  {
+   "id": "osm-n14293358555",
+   "name": "Bread Corner",
+   "phone": "2403286547",
+   "town": "Rockville",
+   "state": "MD",
+   "niche": "food",
+   "kind": "Bakery",
+   "code": "RO-108",
+   "site": "f/7c3zw228/",
+   "heat": "hot",
+   "score": 7,
+   "open_weekdays": 5,
+   "why": [
+    "hot lead",
+    "open 5 weekdays in calling hours",
+    "storefront address"
+   ],
+   "rank": 31
+  },
+  {
+   "id": "osm-n13144736427",
+   "name": "Hulu Skewer House",
+   "phone": "3013028989",
+   "town": "Rockville",
+   "state": "MD",
+   "niche": "food",
+   "kind": "Restaurant",
+   "code": "RO-85",
+   "site": "f/pqek2hpn/",
+   "heat": "hot",
+   "score": 7,
+   "open_weekdays": 5,
+   "why": [
+    "hot lead",
+    "open 5 weekdays in calling hours",
+    "storefront address"
+   ],
+   "rank": 32
+  },
+  {
+   "id": "osm-n8073094732",
+   "name": "Walkersville Wine & Spirits",
+   "phone": "3018452222",
+   "town": "Walkersville",
+   "state": "MD",
+   "niche": "food",
+   "kind": "Alcohol",
+   "code": "WA-3",
+   "site": "f/rgg6ezf2/",
+   "heat": "hot",
+   "score": 7,
+   "open_weekdays": 5,
+   "why": [
+    "hot lead",
+    "open 5 weekdays in calling hours",
+    "storefront address"
+   ],
+   "rank": 33
+  },
+  {
+   "id": "osm-n1728556444",
+   "name": "Hang Ari",
+   "phone": "4109888102",
+   "town": "Ellicott City",
+   "state": "MD",
+   "niche": "food",
+   "kind": "Restaurant",
+   "code": "EL-50",
+   "site": "f/xeqyt9m9/",
+   "heat": "hot",
+   "score": 7,
+   "open_weekdays": 4,
+   "why": [
+    "hot lead",
+    "open 4 weekdays in calling hours",
+    "storefront address"
+   ],
+   "rank": 34
+  },
+  {
+   "id": "osm-n11280376597",
+   "name": "Jang Su",
+   "phone": "4436914130",
+   "town": "Ellicott City",
+   "state": "MD",
+   "niche": "food",
+   "kind": "Restaurant",
+   "code": "EL-26",
+   "site": "f/gkfxc236/",
+   "heat": "hot",
+   "score": 7,
+   "open_weekdays": 4,
+   "why": [
+    "hot lead",
+    "open 4 weekdays in calling hours",
+    "storefront address"
+   ],
+   "rank": 35
+  },
+  {
+   "id": "osm-n6648268924",
+   "name": "Kim Bob Na Ra",
+   "phone": "4104659166",
+   "town": "Ellicott City",
+   "state": "MD",
+   "niche": "food",
+   "kind": "Restaurant",
+   "code": "EL-101",
+   "site": "f/3fjksy6p/",
+   "heat": "hot",
+   "score": 7,
+   "open_weekdays": 4,
+   "why": [
+    "hot lead",
+    "open 4 weekdays in calling hours",
+    "storefront address"
+   ],
+   "rank": 36
+  },
+  {
+   "id": "osm-n12143282041",
+   "name": "Green Bamboo Asian Bistro",
+   "phone": "3017700658",
+   "town": "Rockville",
+   "state": "MD",
+   "niche": "food",
+   "kind": "Restaurant",
+   "code": "RO-62",
+   "site": "f/t75wu2ap/",
+   "heat": "hot",
+   "score": 7,
+   "open_weekdays": 4,
+   "why": [
+    "hot lead",
+    "open 4 weekdays in calling hours",
+    "storefront address"
+   ],
+   "rank": 37
+  },
+  {
+   "id": "osm-n14132238592",
+   "name": "Louie's Famous Fried Chicken",
+   "phone": "3013040384",
+   "town": "Walkersville",
+   "state": "MD",
+   "niche": "food",
+   "kind": "Restaurant",
+   "code": "WA-2",
+   "site": "f/8cvjxyn8/",
+   "heat": "hot",
+   "score": 7,
+   "open_weekdays": 4,
+   "why": [
+    "hot lead",
+    "open 4 weekdays in calling hours",
+    "storefront address"
+   ],
+   "rank": 38
+  },
+  {
+   "id": "osm-w929413491",
+   "name": "Main Street Groomers",
+   "phone": "3018456888",
+   "town": "Walkersville",
+   "state": "MD",
+   "niche": "home",
+   "kind": "Pet grooming",
+   "code": "WA-4",
+   "site": "f/n3tqs2kb/",
+   "heat": "hot",
+   "score": 7,
+   "open_weekdays": 4,
+   "why": [
+    "hot lead",
+    "open 4 weekdays in calling hours",
+    "storefront address"
+   ],
+   "rank": 39
+  },
+  {
+   "id": "osm-n13533555683",
+   "name": "Advanced Root Canal Specialists",
+   "phone": "4107729600",
+   "town": "Columbia",
+   "state": "MD",
+   "niche": "health",
+   "kind": "Dental office",
+   "code": "CO-41",
+   "site": "f/javu2pgk/",
+   "heat": "hot",
+   "score": 7,
+   "open_weekdays": 0,
+   "why": [
+    "hot lead",
+    "health (buys sites)",
+    "storefront address"
+   ],
+   "rank": 40
+  },
+  {
+   "id": "osm-w128366867",
+   "name": "Excel Dental Care",
+   "phone": "4104651214",
+   "town": "Ellicott City",
+   "state": "MD",
+   "niche": "health",
+   "kind": "Dental office",
+   "code": "EL-140",
+   "site": "f/mqgcen9c/",
+   "heat": "hot",
+   "score": 7,
+   "open_weekdays": 0,
+   "why": [
+    "hot lead",
+    "health (buys sites)",
+    "storefront address"
+   ],
+   "rank": 41
+  },
+  {
+   "id": "osm-n3712918480",
+   "name": "Pearlfection Dentistry",
+   "phone": "3016635550",
+   "town": "Frederick",
+   "state": "MD",
+   "niche": "health",
+   "kind": "Dental office",
+   "code": "FR-27",
+   "site": "f/kmppefnu/",
+   "heat": "hot",
+   "score": 7,
+   "open_weekdays": 0,
+   "why": [
+    "hot lead",
+    "health (buys sites)",
+    "storefront address"
+   ],
+   "rank": 42
+  },
+  {
+   "id": "osm-n608960258",
+   "name": "Mount Airy Health Services",
+   "phone": "3018295800",
+   "town": "Mount Airy",
+   "state": "MD",
+   "niche": "health",
+   "kind": "Clinic",
+   "code": "MO-5",
+   "site": "f/6qrghn5z/",
+   "heat": "hot",
+   "score": 7,
+   "open_weekdays": 0,
+   "why": [
+    "hot lead",
+    "health (buys sites)",
+    "storefront address"
+   ],
+   "rank": 43
+  },
+  {
+   "id": "osm-w444051417",
+   "name": "Adventist HealthCare Physical Health & Rehabilitation",
+   "phone": "2408646000",
+   "town": "Rockville",
+   "state": "MD",
+   "niche": "health",
+   "kind": "Hospital",
+   "code": "RO-270",
+   "site": "f/r4d55cjs/",
+   "heat": "hot",
+   "score": 7,
+   "open_weekdays": 0,
+   "why": [
+    "hot lead",
+    "health (buys sites)",
+    "storefront address"
+   ],
+   "rank": 44
+  },
+  {
+   "id": "osm-n5002338705",
+   "name": "B & B Air Conditioning Service Co., Inc.",
+   "phone": "3018812700",
+   "town": "Rockville",
+   "state": "MD",
+   "niche": "trades",
+   "kind": "Hvac",
+   "code": "RO-127",
+   "site": "f/4v4qk5cz/",
+   "heat": "hot",
+   "score": 7,
+   "open_weekdays": 0,
+   "why": [
+    "hot lead",
+    "trades / contractor (buys sites)",
+    "storefront address"
+   ],
+   "rank": 45
+  },
+  {
+   "id": "osm-n12363567938",
+   "name": "Family Dentistry",
+   "phone": "3013402309",
+   "town": "Rockville",
+   "state": "MD",
+   "niche": "health",
+   "kind": "Dental office",
+   "code": "RO-221",
+   "site": "f/t4afqs2v/",
+   "heat": "hot",
+   "score": 7,
+   "open_weekdays": 0,
+   "why": [
+    "hot lead",
+    "health (buys sites)",
+    "storefront address"
+   ],
+   "rank": 46
+  },
+  {
+   "id": "osm-n2991114802",
+   "name": "Rockville Locksmithing",
+   "phone": "3019719324",
+   "town": "Rockville",
+   "state": "MD",
+   "niche": "trades",
+   "kind": "Locksmith",
+   "code": "RO-115",
+   "site": "f/zvr558gk/",
+   "heat": "hot",
+   "score": 7,
+   "open_weekdays": 0,
+   "why": [
+    "hot lead",
+    "trades / contractor (buys sites)",
+    "storefront address"
+   ],
+   "rank": 47
+  },
+  {
+   "id": "osm-w315691648",
+   "name": "Doc Taylor's Toy Emporium",
+   "phone": "4106309052",
+   "town": "Ellicott City",
+   "state": "MD",
+   "niche": "retail",
+   "kind": "Toys",
+   "code": "EL-165",
+   "site": "f/fmtvhxy8/",
+   "heat": "hot",
+   "score": 6.5,
+   "open_weekdays": 5,
+   "why": [
+    "hot lead",
+    "open 5 weekdays in calling hours",
+    "storefront address"
+   ],
+   "rank": 48
+  },
+  {
+   "id": "osm-n5178525326",
+   "name": "Common Market",
+   "phone": "3016633416",
+   "town": "Frederick",
+   "state": "MD",
+   "niche": "retail",
+   "kind": "Supermarket",
+   "code": "FR-142",
+   "site": "f/bq7jfbzv/",
+   "heat": "hot",
+   "score": 6.5,
+   "open_weekdays": 5,
+   "why": [
+    "hot lead",
+    "open 5 weekdays in calling hours",
+    "storefront address"
+   ],
+   "rank": 49
+  },
+  {
+   "id": "osm-n13180558146",
+   "name": "The Common Market",
+   "phone": "3016633416",
+   "town": "Frederick",
+   "state": "MD",
+   "niche": "retail",
+   "kind": "Supermarket",
+   "code": "FR-96",
+   "site": "f/nz9xutwx/",
+   "heat": "hot",
+   "score": 6.5,
+   "open_weekdays": 5,
+   "why": [
+    "hot lead",
+    "open 5 weekdays in calling hours",
+    "storefront address"
+   ],
+   "rank": 50
+  },
+  {
+   "id": "osm-n10267818645",
+   "name": "Donation Nation",
+   "phone": "8553629253",
+   "town": "Gaithersburg",
+   "state": "MD",
+   "niche": "retail",
+   "kind": "Second hand",
+   "code": "GA-2",
+   "site": "f/pfrex25v/",
+   "heat": "hot",
+   "score": 6.5,
+   "open_weekdays": 5,
+   "why": [
+    "hot lead",
+    "open 5 weekdays in calling hours",
+    "storefront address"
+   ],
+   "rank": 51
+  },
+  {
+   "id": "osm-n10276036271",
+   "name": "Patton Printing Supplies",
+   "phone": "3012581100",
+   "town": "Gaithersburg",
+   "state": "MD",
+   "niche": "retail",
+   "kind": "Printer ink",
+   "code": "GA-3",
+   "site": "f/debxgwbe/",
+   "heat": "hot",
+   "score": 6.5,
+   "open_weekdays": 5,
+   "why": [
+    "hot lead",
+    "open 5 weekdays in calling hours",
+    "storefront address"
+   ],
+   "rank": 52
+  },
+  {
+   "id": "osm-n6910356200",
+   "name": "Wonder Book",
+   "phone": "3019779166",
+   "town": "Gaithersburg",
+   "state": "MD",
+   "niche": "retail",
+   "kind": "Books",
+   "code": "GA-194",
+   "site": "f/a6r9852t/",
+   "heat": "hot",
+   "score": 6.5,
+   "open_weekdays": 5,
+   "why": [
+    "hot lead",
+    "open 5 weekdays in calling hours",
+    "storefront address"
+   ],
+   "rank": 53
+  },
+  {
+   "id": "osm-n10247315187",
+   "name": "Trible's",
+   "phone": "3012519611",
+   "town": "Rockville",
+   "state": "MD",
+   "niche": "retail",
+   "kind": "Appliance",
+   "code": "RO-172",
+   "site": "f/kuycnfhd/",
+   "heat": "hot",
+   "score": 6.5,
+   "open_weekdays": 5,
+   "why": [
+    "hot lead",
+    "open 5 weekdays in calling hours",
+    "storefront address"
+   ],
+   "rank": 54
+  },
+  {
+   "id": "osm-n10575682088",
+   "name": "Precious Gifts",
+   "phone": "4104616813",
+   "town": "Ellicott City",
+   "state": "MD",
+   "niche": "retail",
+   "kind": "Gift",
+   "code": "EL-2",
+   "site": "f/f82tbfyg/",
+   "heat": "hot",
+   "score": 6.5,
+   "open_weekdays": 4,
+   "why": [
+    "hot lead",
+    "open 4 weekdays in calling hours",
+    "storefront address"
+   ],
+   "rank": 55
+  },
+  {
+   "id": "osm-n3952635874",
+   "name": "Village Nail Bar",
+   "phone": "4107402579",
+   "town": "Columbia",
+   "state": "MD",
+   "niche": "beauty",
+   "kind": "Beauty salon",
+   "code": "CO-58",
+   "site": "f/deztvp67/",
+   "heat": "hot",
+   "score": 6,
+   "open_weekdays": 0,
+   "why": [
+    "hot lead",
+    "salon / beauty (buys sites)",
+    "storefront address"
+   ],
+   "rank": 56
+  },
+  {
+   "id": "osm-n2878834301",
+   "name": "Clips & Cutz",
+   "phone": "4104616200",
+   "town": "Ellicott City",
+   "state": "MD",
+   "niche": "beauty",
+   "kind": "Hair salon",
+   "code": "EL-62",
+   "site": "f/je3cx334/",
+   "heat": "hot",
+   "score": 6,
+   "open_weekdays": 0,
+   "why": [
+    "hot lead",
+    "salon / beauty (buys sites)",
+    "storefront address"
+   ],
+   "rank": 57
+  },
+  {
+   "id": "osm-n13180643637",
+   "name": "Rosemont Service Station",
+   "phone": "3016623063",
+   "town": "Frederick",
+   "state": "MD",
+   "niche": "auto",
+   "kind": "Car repair",
+   "code": "FR-101",
+   "site": "f/b3psxfx7/",
+   "heat": "hot",
+   "score": 6,
+   "open_weekdays": 0,
+   "why": [
+    "hot lead",
+    "auto (buys sites)",
+    "storefront address"
+   ],
+   "rank": 58
+  },
+  {
+   "id": "osm-w642888578",
+   "name": "The Lube Center",
+   "phone": "3018464380",
+   "town": "Frederick",
+   "state": "MD",
+   "niche": "auto",
+   "kind": "Car repair",
+   "code": "FR-186",
+   "site": "f/ue3g7m73/",
+   "heat": "hot",
+   "score": 6,
+   "open_weekdays": 0,
+   "why": [
+    "hot lead",
+    "auto (buys sites)",
+    "storefront address"
+   ],
+   "rank": 59
+  },
+  {
+   "id": "osm-n13953072429",
+   "name": "Auto Zone",
+   "phone": "3013374421",
+   "town": "Gaithersburg",
+   "state": "MD",
+   "niche": "auto",
+   "kind": "Car parts",
+   "code": "GA-181",
+   "site": "f/qeex7xcd/",
+   "heat": "hot",
+   "score": 6,
+   "open_weekdays": 0,
+   "why": [
+    "hot lead",
+    "auto (buys sites)",
+    "storefront address"
+   ],
+   "rank": 60
+  },
+  {
+   "id": "osm-n11696501462",
+   "name": "Infinite Brazilian Jiu-Jitsu",
+   "phone": "3015258371",
+   "town": "Gaithersburg",
+   "state": "MD",
+   "niche": "fitness",
+   "kind": "Martial arts",
+   "code": "GA-123",
+   "site": "f/68c822mm/",
+   "heat": "hot",
+   "score": 6,
+   "open_weekdays": 0,
+   "why": [
+    "hot lead",
+    "gym / fitness (buys sites)",
+    "storefront address"
+   ],
+   "rank": 61
+  },
+  {
+   "id": "osm-n13186690838",
+   "name": "Rockville Vehicle Emissions Testing Station",
+   "phone": "4107687000",
+   "town": "Gaithersburg",
+   "state": "MD",
+   "niche": "auto",
+   "kind": "Vehicle inspection",
+   "code": "GA-177",
+   "site": "f/3ads4dz3/",
+   "heat": "hot",
+   "score": 6,
+   "open_weekdays": 0,
+   "why": [
+    "hot lead",
+    "auto (buys sites)",
+    "storefront address"
+   ],
+   "rank": 62
+  },
+  {
+   "id": "osm-n6855324177",
+   "name": "Hollywood Nail Spa",
+   "phone": "3015271801",
+   "town": "Germantown",
+   "state": "MD",
+   "niche": "beauty",
+   "kind": "Beauty salon",
+   "code": "GE-42",
+   "site": "f/nu9xrc5x/",
+   "heat": "hot",
+   "score": 6,
+   "open_weekdays": 0,
+   "why": [
+    "hot lead",
+    "salon / beauty (buys sites)",
+    "storefront address"
+   ],
+   "rank": 63
+  },
+  {
+   "id": "osm-w641669722",
+   "name": "Lovell Auto Repair",
+   "phone": "2402914956",
+   "town": "Hagerstown",
+   "state": "MD",
+   "niche": "auto",
+   "kind": "Car repair",
+   "code": "HA-112",
+   "site": "f/8w65yx33/",
+   "heat": "hot",
+   "score": 6,
+   "open_weekdays": 0,
+   "why": [
+    "hot lead",
+    "auto (buys sites)",
+    "storefront address"
+   ],
+   "rank": 64
+  },
+  {
+   "id": "osm-w1575886480",
+   "name": "Rick's Auto Service",
+   "phone": "2403139066",
+   "town": "Hagerstown",
+   "state": "MD",
+   "niche": "auto",
+   "kind": "Car repair",
+   "code": "HA-107",
+   "site": "f/jhmzrqyp/",
+   "heat": "hot",
+   "score": 6,
+   "open_weekdays": 0,
+   "why": [
+    "hot lead",
+    "auto (buys sites)",
+    "storefront address"
+   ],
+   "rank": 65
+  },
+  {
+   "id": "osm-n12363567957",
+   "name": "Blue Moon Foot Spa",
+   "phone": "3016930529",
+   "town": "Rockville",
+   "state": "MD",
+   "niche": "beauty",
+   "kind": "Beauty salon",
+   "code": "RO-223",
+   "site": "f/6zyzsrdd/",
+   "heat": "hot",
+   "score": 6,
+   "open_weekdays": 0,
+   "why": [
+    "hot lead",
+    "salon / beauty (buys sites)",
+    "storefront address"
+   ],
+   "rank": 66
+  },
+  {
+   "id": "osm-n9878729456",
+   "name": "Conlon's Automotive",
+   "phone": "3018160355",
+   "town": "Rockville",
+   "state": "MD",
+   "niche": "auto",
+   "kind": "Car repair",
+   "code": "RO-267",
+   "site": "f/333738da/",
+   "heat": "hot",
+   "score": 6,
+   "open_weekdays": 0,
+   "why": [
+    "hot lead",
+    "auto (buys sites)",
+    "storefront address"
+   ],
+   "rank": 67
+  },
+  {
+   "id": "osm-n6255913685",
+   "name": "Rising Sun Motors & Tires",
+   "phone": "3016032575",
+   "town": "Rockville",
+   "state": "MD",
+   "niche": "auto",
+   "kind": "Tyres",
+   "code": "RO-262",
+   "site": "f/jtar5m9z/",
+   "heat": "hot",
+   "score": 6,
+   "open_weekdays": 0,
+   "why": [
+    "hot lead",
+    "auto (buys sites)",
+    "storefront address"
+   ],
+   "rank": 68
+  },
+  {
+   "id": "osm-n6255902250",
+   "name": "Star Hair Design",
+   "phone": "3019841010",
+   "town": "Rockville",
+   "state": "MD",
+   "niche": "beauty",
+   "kind": "Hair salon",
+   "code": "RO-259",
+   "site": "f/sjufvy5n/",
+   "heat": "hot",
+   "score": 6,
+   "open_weekdays": 0,
+   "why": [
+    "hot lead",
+    "salon / beauty (buys sites)",
+    "storefront address"
+   ],
+   "rank": 69
+  },
+  {
+   "id": "osm-n6255902252",
+   "name": "Tea Spa",
+   "phone": "2406697761",
+   "town": "Rockville",
+   "state": "MD",
+   "niche": "beauty",
+   "kind": "Beauty salon",
+   "code": "RO-260",
+   "site": "f/wtsnpfc3/",
+   "heat": "hot",
+   "score": 6,
+   "open_weekdays": 0,
+   "why": [
+    "hot lead",
+    "salon / beauty (buys sites)",
+    "storefront address"
+   ],
+   "rank": 70
+  },
+  {
+   "id": "osm-n13546278850",
+   "name": "Towing by TRP",
+   "phone": "3015881322",
+   "town": "Rockville",
+   "state": "MD",
+   "niche": "auto",
+   "kind": "Car repair",
+   "code": "RO-241",
+   "site": "f/a2g2fd25/",
+   "heat": "hot",
+   "score": 6,
+   "open_weekdays": 0,
+   "why": [
+    "hot lead",
+    "auto (buys sites)",
+    "storefront address"
+   ],
+   "rank": 71
+  },
+  {
+   "id": "osm-w454495718",
+   "name": "Dynamic Automotive",
+   "phone": "3018748803",
+   "town": "Urbana",
+   "state": "MD",
+   "niche": "auto",
+   "kind": "Car repair",
+   "code": "UR-18",
+   "site": "f/k8hvy6js/",
+   "heat": "hot",
+   "score": 6,
+   "open_weekdays": 0,
+   "why": [
+    "hot lead",
+    "auto (buys sites)",
+    "storefront address"
+   ],
+   "rank": 72
+  },
+  {
+   "id": "osm-n10271900254",
+   "name": "Dan's Fan City",
+   "phone": "3014244383",
+   "town": "Rockville",
+   "state": "MD",
+   "niche": "retail",
+   "kind": "Electrical",
+   "code": "RO-174",
+   "site": "f/tcdt82jq/",
+   "heat": "hot",
+   "score": 5.5,
+   "open_weekdays": 3,
+   "why": [
+    "hot lead",
+    "open 3 weekdays in calling hours",
+    "storefront address"
+   ],
+   "rank": 73
+  },
+  {
+   "id": "osm-n13930194214",
+   "name": "Pen Boutique Ltd",
+   "phone": "4109923272",
+   "town": "Columbia",
+   "state": "MD",
+   "niche": "retail",
+   "kind": "Art",
+   "code": "CO-43",
+   "site": "f/hpza7zyt/",
+   "heat": "hot",
+   "score": 5.5,
+   "open_weekdays": 2,
+   "why": [
+    "hot lead",
+    "open 2 weekdays in calling hours",
+    "storefront address"
+   ],
+   "rank": 74
+  },
+  {
+   "id": "osm-n10171630218",
+   "name": "Cafe Columbia",
+   "phone": "4106003788",
+   "town": "Columbia",
+   "state": "MD",
+   "niche": "food",
+   "kind": "Caf\u00e9",
+   "code": "CO-127",
+   "site": "f/ytv7gubf/",
+   "heat": "warm",
+   "score": 5,
+   "open_weekdays": 5,
+   "why": [
+    "open 5 weekdays in calling hours",
+    "storefront address"
+   ],
+   "rank": 75
+  },
+  {
+   "id": "osm-n7026752752",
+   "name": "Michael\u2019s Deli Caf\u00e9",
+   "phone": "4107726080",
+   "town": "Columbia",
+   "state": "MD",
+   "niche": "food",
+   "kind": "Quick food",
+   "code": "CO-156",
+   "site": "f/j7hjj25m/",
+   "heat": "warm",
+   "score": 5,
+   "open_weekdays": 5,
+   "why": [
+    "open 5 weekdays in calling hours",
+    "storefront address"
+   ],
+   "rank": 76
+  },
+  {
+   "id": "osm-n9044369660",
+   "name": "Sabor Casero Bakery",
+   "phone": "3016682888",
+   "town": "Frederick",
+   "state": "MD",
+   "niche": "food",
+   "kind": "Restaurant",
+   "code": "FR-47",
+   "site": "f/8kwt3bvp/",
+   "heat": "warm",
+   "score": 5,
+   "open_weekdays": 5,
+   "why": [
+    "open 5 weekdays in calling hours",
+    "storefront address"
+   ],
+   "rank": 77
+  },
+  {
+   "id": "osm-n13291144521",
+   "name": "Memories Charcoal House",
+   "phone": "3018292264",
+   "town": "Mount Airy",
+   "state": "MD",
+   "niche": "food",
+   "kind": "Restaurant",
+   "code": "MO-1",
+   "site": "f/pkz2c5mn/",
+   "heat": "warm",
+   "score": 5,
+   "open_weekdays": 5,
+   "why": [
+    "open 5 weekdays in calling hours",
+    "storefront address"
+   ],
+   "rank": 78
+  },
+  {
+   "id": "osm-n9795576808",
+   "name": "Pupuseria Mam\u00e1 Emilia",
+   "phone": "3016057063",
+   "town": "Rockville",
+   "state": "MD",
+   "niche": "food",
+   "kind": "Restaurant",
+   "code": "RO-152",
+   "site": "f/fy8dkjhy/",
+   "heat": "warm",
+   "score": 5,
+   "open_weekdays": 5,
+   "why": [
+    "open 5 weekdays in calling hours",
+    "storefront address"
+   ],
+   "rank": 79
+  },
+  {
+   "id": "osm-n13141074677",
+   "name": "Jumak Cafe & Bistro",
+   "phone": "4109888902",
+   "town": "Ellicott City",
+   "state": "MD",
+   "niche": "food",
+   "kind": "Restaurant",
+   "code": "EL-36",
+   "site": "f/kuckfh8m/",
+   "heat": "hot",
+   "score": 5,
+   "open_weekdays": 0,
+   "why": [
+    "hot lead",
+    "storefront address"
+   ],
+   "rank": 80
+  },
+  {
+   "id": "osm-n11060439970",
+   "name": "Seoul Sushi, Chicken, & Beer",
+   "phone": "4104189600",
+   "town": "Ellicott City",
+   "state": "MD",
+   "niche": "food",
+   "kind": "Restaurant",
+   "code": "EL-25",
+   "site": "f/hhaqgt96/",
+   "heat": "hot",
+   "score": 5,
+   "open_weekdays": 0,
+   "why": [
+    "hot lead",
+    "storefront address"
+   ],
+   "rank": 81
+  },
+  {
+   "id": "osm-n8613760509",
+   "name": "Zephyr Lounge",
+   "phone": "4106962916",
+   "town": "Ellicott City",
+   "state": "MD",
+   "niche": "food",
+   "kind": "Caf\u00e9",
+   "code": "EL-118",
+   "site": "f/dq86xuvq/",
+   "heat": "hot",
+   "score": 5,
+   "open_weekdays": 0,
+   "why": [
+    "hot lead",
+    "storefront address"
+   ],
+   "rank": 82
+  },
+  {
+   "id": "osm-n11889541628",
+   "name": "Beers & Cheers Too",
+   "phone": "3019474440",
+   "town": "Germantown",
+   "state": "MD",
+   "niche": "food",
+   "kind": "Alcohol",
+   "code": "GE-7",
+   "site": "f/79dhp5wv/",
+   "heat": "hot",
+   "score": 5,
+   "open_weekdays": 0,
+   "why": [
+    "hot lead",
+    "storefront address"
+   ],
+   "rank": 83
+  },
+  {
+   "id": "osm-w1215190006",
+   "name": "Zebop",
+   "phone": "3016948743",
+   "town": "Frederick",
+   "state": "MD",
+   "niche": "retail",
+   "kind": "Clothes",
+   "code": "FR-155",
+   "site": "f/s9e7n3nv/",
+   "heat": "warm",
+   "score": 4.5,
+   "open_weekdays": 5,
+   "why": [
+    "open 5 weekdays in calling hours",
+    "storefront address"
+   ],
+   "rank": 84
+  },
+  {
+   "id": "osm-n3565807227",
+   "name": "Sergio's Jewelers",
+   "phone": "4104614400",
+   "town": "Ellicott City",
+   "state": "MD",
+   "niche": "retail",
+   "kind": "Jewelry",
+   "code": "EL-74",
+   "site": "f/kwmyab6e/",
+   "heat": "hot",
+   "score": 4.5,
+   "open_weekdays": 0,
+   "why": [
+    "hot lead",
+    "storefront address"
+   ],
+   "rank": 85
+  },
+  {
+   "id": "osm-n3481703930",
+   "name": "Mervis",
+   "phone": "3012310030",
+   "town": "Rockville",
+   "state": "MD",
+   "niche": "retail",
+   "kind": "Jewelry",
+   "code": "RO-249",
+   "site": "f/9dbyx8ec/",
+   "heat": "hot",
+   "score": 4.5,
+   "open_weekdays": 0,
+   "why": [
+    "hot lead",
+    "storefront address"
+   ],
+   "rank": 86
+  },
+  {
+   "id": "osm-n7487728014",
+   "name": "Elegant Touch Nail Salon",
+   "phone": "4103129037",
+   "town": "Columbia",
+   "state": "MD",
+   "niche": "beauty",
+   "kind": "Beauty salon",
+   "code": "CO-88",
+   "site": "f/p2acgx83/",
+   "heat": "warm",
+   "score": 4,
+   "open_weekdays": 0,
+   "why": [
+    "salon / beauty (buys sites)",
+    "storefront address"
+   ],
+   "rank": 87
+  },
+  {
+   "id": "osm-n7487728013",
+   "name": "Eliz Hair Salon",
+   "phone": "4103123177",
+   "town": "Columbia",
+   "state": "MD",
+   "niche": "beauty",
+   "kind": "Hair salon",
+   "code": "CO-87",
+   "site": "f/zfq8kqdj/",
+   "heat": "warm",
+   "score": 4,
+   "open_weekdays": 0,
+   "why": [
+    "salon / beauty (buys sites)",
+    "storefront address"
+   ],
+   "rank": 88
+  },
+  {
+   "id": "osm-n6441801571",
+   "name": "Pearl Nails",
+   "phone": "4107150027",
+   "town": "Columbia",
+   "state": "MD",
+   "niche": "beauty",
+   "kind": "Beauty salon",
+   "code": "CO-70",
+   "site": "f/uhtytbrz/",
+   "heat": "warm",
+   "score": 4,
+   "open_weekdays": 0,
+   "why": [
+    "salon / beauty (buys sites)",
+    "storefront address"
+   ],
+   "rank": 89
+  },
+  {
+   "id": "osm-n7487728008",
+   "name": "Pro Clip",
+   "phone": "4102905434",
+   "town": "Columbia",
+   "state": "MD",
+   "niche": "beauty",
+   "kind": "Hair salon",
+   "code": "CO-84",
+   "site": "f/kxmvm5rb/",
+   "heat": "warm",
+   "score": 4,
+   "open_weekdays": 0,
+   "why": [
+    "salon / beauty (buys sites)",
+    "storefront address"
+   ],
+   "rank": 90
+  },
+  {
+   "id": "osm-w314033456",
+   "name": "Triangle Motors",
+   "phone": "3016621067",
+   "town": "Frederick",
+   "state": "MD",
+   "niche": "auto",
+   "kind": "Car repair",
+   "code": "FR-174",
+   "site": "f/v2f46kka/",
+   "heat": "warm",
+   "score": 4,
+   "open_weekdays": 0,
+   "why": [
+    "auto (buys sites)",
+    "storefront address"
+   ],
+   "rank": 91
+  },
+  {
+   "id": "osm-n4198048594",
+   "name": "Salon Tech",
+   "phone": "3014249492",
+   "town": "Rockville",
+   "state": "MD",
+   "niche": "beauty",
+   "kind": "Beauty salon",
+   "code": "RO-251",
+   "site": "f/tamv69et/",
+   "heat": "warm",
+   "score": 4,
+   "open_weekdays": 0,
+   "why": [
+    "salon / beauty (buys sites)",
+    "storefront address"
+   ],
+   "rank": 92
+  },
+  {
+   "id": "osm-n13651118400",
+   "name": "Timeless Beauty",
+   "phone": "4433402213",
+   "town": "Westminster",
+   "state": "MD",
+   "niche": "beauty",
+   "kind": "Beauty salon",
+   "code": "WE-7",
+   "site": "f/b9nsakct/",
+   "heat": "warm",
+   "score": 4,
+   "open_weekdays": 0,
+   "why": [
+    "salon / beauty (buys sites)",
+    "storefront address"
+   ],
+   "rank": 93
+  },
+  {
+   "id": "osm-w142211897",
+   "name": "Walrus Oyster & Ale House",
+   "phone": "4439735700",
+   "town": "Columbia",
+   "state": "MD",
+   "niche": "food",
+   "kind": "Restaurant",
+   "code": "CO-168",
+   "site": "f/xrrg877p/",
+   "heat": "warm",
+   "score": 3,
+   "open_weekdays": 0,
+   "why": [
+    "storefront address"
+   ],
+   "rank": 94
+  },
+  {
+   "id": "osm-n9559408694",
+   "name": "Beyond Ramen & Kabob",
+   "phone": "4107749820",
+   "town": "Ellicott City",
+   "state": "MD",
+   "niche": "food",
+   "kind": "Restaurant",
+   "code": "EL-124",
+   "site": "f/6rjhh7gt/",
+   "heat": "warm",
+   "score": 3,
+   "open_weekdays": 0,
+   "why": [
+    "storefront address"
+   ],
+   "rank": 95
+  },
+  {
+   "id": "osm-n3144618429",
+   "name": "K-Pocha Chicken & Beer",
+   "phone": "4104619100",
+   "town": "Ellicott City",
+   "state": "MD",
+   "niche": "food",
+   "kind": "Restaurant",
+   "code": "EL-69",
+   "site": "f/yj476xz5/",
+   "heat": "warm",
+   "score": 3,
+   "open_weekdays": 0,
+   "why": [
+    "storefront address"
+   ],
+   "rank": 96
+  },
+  {
+   "id": "osm-n12861757001",
+   "name": "Wo Ri Jib",
+   "phone": "4102031400",
+   "town": "Ellicott City",
+   "state": "MD",
+   "niche": "food",
+   "kind": "Restaurant",
+   "code": "EL-32",
+   "site": "f/67jw9hfb/",
+   "heat": "warm",
+   "score": 3,
+   "open_weekdays": 0,
+   "why": [
+    "storefront address"
+   ],
+   "rank": 97
+  },
+  {
+   "id": "osm-n3931514269",
+   "name": "Amber Meadows Liquors",
+   "phone": "3016946678",
+   "town": "Frederick",
+   "state": "MD",
+   "niche": "food",
+   "kind": "Alcohol",
+   "code": "FR-131",
+   "site": "f/dam5uwxz/",
+   "heat": "warm",
+   "score": 3,
+   "open_weekdays": 0,
+   "why": [
+    "storefront address"
+   ],
+   "rank": 98
+  },
+  {
+   "id": "osm-n3720726507",
+   "name": "Cameron's Seafood",
+   "phone": "3016959005",
+   "town": "Frederick",
+   "state": "MD",
+   "niche": "food",
+   "kind": "Seafood",
+   "code": "FR-130",
+   "site": "f/z6euw3k7/",
+   "heat": "warm",
+   "score": 3,
+   "open_weekdays": 0,
+   "why": [
+    "storefront address"
+   ],
+   "rank": 99
+  },
+  {
+   "id": "osm-n3989088999",
+   "name": "Chicken Basket",
+   "phone": "3016629733",
+   "town": "Frederick",
+   "state": "MD",
+   "niche": "food",
+   "kind": "Restaurant",
+   "code": "FR-30",
+   "site": "f/qw6rvmnr/",
+   "heat": "warm",
+   "score": 3,
+   "open_weekdays": 0,
+   "why": [
+    "storefront address"
+   ],
+   "rank": 100
+  }
+ ]
+}

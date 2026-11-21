@@ -4,7 +4,7 @@
 // the four doors; every app is a tower you tap to open; every learning place is real data. Live: the PC feed (../../pc_feed.js: a bot
 // in a trade pulses), the Board's events, the edge light and the Lab's newest verdicts. Read only: GET only, nothing armed, no orders,
 // text only through textContent, no browser storage. No WebGL (or 3D switched off): a plain list of the same city, never blank.
-import * as C from './ow-core.js?v=w5';
+import * as C from './ow-core.js?v=w6';
 
 const d = document, $ = (s) => d.querySelector(s);
 const O = () => window.OLYMPUS || null;
@@ -14,7 +14,8 @@ const ROOT = '../../';
 const S = { world: null, plan: null, scene: null, mode: 'loading', sel: -1, dist: null, feed: [], tick: -1, liveLines: [], live: {}, err: null, byId: new Map(),
   tour: false, history: false, t0: performance.now(), firstFrameMs: null, labelsAt: 0, labelKeys: [] };
 const el = (tag, cls, text) => { const e = d.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = String(text); return e; };
-const DSHORT = { zeus: 'NQ', kalshi: 'Kalshi', money: 'Money', more: 'More' };
+const saveData = () => { try { return !!(navigator.connection && navigator.connection.saveData); } catch (e) { return false; } };
+const DSHORT = { zeus: 'NQ', kalshi: 'Kalshi', sites: 'Websites', lab: 'Lab', life: 'Life', money: 'Money', more: 'More' };
 
 // ------------------------------------------------------------------------------------------------ boot
 function fixSeal() {
@@ -28,6 +29,24 @@ async function getJSON(u, ms) {
 }
 function webgl() {
   try { const c = d.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch (e) { return false; }
+}
+/** after the first paint and an idle slice (or ms at most): the poster is on screen before any heavy work starts */
+function idle(ms) {
+  return new Promise((ok) => requestAnimationFrame(() => requestAnimationFrame(() => {
+    if (typeof requestIdleCallback === 'function') requestIdleCallback(() => ok(), { timeout: ms }); else setTimeout(ok, 60);
+  })));
+}
+/** when to build the 3D (lead 2026-11-21, jarvis/backdrop.js's rule): a phone waits for the first touch or 6.5 s after load with an idle slice,
+ *  the photo poster of the city on screen meanwhile; a desktop builds at the first idle slice. Never before the first paint. */
+function startWhen() {
+  const phone = (() => { try { return matchMedia('(pointer: coarse)').matches || innerWidth < 700; } catch (e) { return true; } })();
+  if (!phone) return idle(1500);
+  return new Promise((ok) => {
+    let done = false;
+    const go = () => { if (done) return; done = true; removeEventListener('pointerdown', go, true); removeEventListener('keydown', go, true); idle(800).then(ok); };
+    addEventListener('pointerdown', go, true); addEventListener('keydown', go, true);
+    setTimeout(go, Math.max(0, 6500 - performance.now()));                       // backdrop.js: never in the first 6 s on a phone
+  });
 }
 async function boot() {
   fixSeal();
@@ -43,12 +62,17 @@ async function boot() {
   w.places.forEach((p, i) => S.byId.set(p.id, i));
   header();
   setInterval(() => { if (!d.hidden && S.world) $('#sub').textContent = $('#sub').textContent.replace(/^[^·]*· \d{1,2}:\d{2} ET · /, '').replace(/^/, skyLine()); }, 60000);
-  const flat = qs.get('flat') === '1' || !webgl() || (O() && O().fx && O().fx() === 'off' && !qs.get('q'));
+  // the phone's budget (lead 2026-11-21, like jarvis/backdrop.js): Save-Data or the Low setting = the list (a button builds the 3D anyway);
+  // otherwise the poster first and the 3D city only once the page is idle (no long task fighting the first taps)
+  const fxNow = O() && O().fx ? O().fx() : '';
+  S.lite3d = (saveData() || fxNow === 'low') && !qs.get('q') && qs.get('city') !== '3d';
+  const flat = qs.get('flat') === '1' || !webgl() || (fxNow === 'off' && !qs.get('q')) || S.lite3d;
+  if (!flat && qs.get('clock') !== 'manual') await startWhen();
   if (flat) { renderFlat(); }
   else {
     try {
-      S.plan = C.planWorld(w, { tier: O() && O().lite && O().lite() ? 'low' : 'high' });
-      const M = await import('./ow-scene.js?v=w5');
+      S.plan = C.planWorld(w, { tier: O() && O().lite && O().lite() ? 'low' : 'high', phone: (() => { try { return matchMedia('(pointer: coarse)').matches; } catch (e) { return false; } })() });
+      const M = await import('./ow-scene.js?v=w6');
       S.scene = M.createWorld({ canvas: $('#c'), world: w, plan: S.plan, reduced, sky: qs.get('sky') || 'auto', manual: qs.get('clock') === 'manual', tier: O() && O().lite && O().lite() ? 'low' : 'high',
         onTap, onFrame, onUser: () => { hideHint(); if (S.tour) setTour(false); }, onIntroDone: () => { showHint(); snd('chime'); cityBed(); } });
       S.mode = '3d';
@@ -496,7 +520,7 @@ async function live() {
   const pcl = C.pcLine(lite || (board && board.pc && board.pc.t ? { t: board.pc.t } : null), now);
   const pc = $('#pc');
   pc.className = 'pc ' + (lite ? (pcl.silent ? 'bad' : 'ok') : '');
-  $('#pcText').textContent = lite ? pcl.text : board && board.pc && board.pc.t ? 'Board · ' + C.ago(now - board.pc.t) : 'PC: not live here';
+  $('#pcText').textContent = lite ? pcl.text : board && board.pc && board.pc.t ? 'PC silent · last data ' + C.ago(now - board.pc.t) : 'PC silent · no data here yet';
   // the bots in a trade
   const pos = C.positions(lite);
   const chip = $('#liveChip'), parts = [];
@@ -517,7 +541,9 @@ async function live() {
     fillBills(bb);
     S.scene.setDisplay(1, parts.length ? parts.join(' · ') : (bb.nq && bb.nq !== 'NQ' ? bb.nq : 'ZEUS · NQ · ' + $('#pcText').textContent));
     S.scene.setDisplay(2, bb.kalshi || 'KALSHI · ' + (dist('kalshi').apps || 0) + ' apps · ' + learn('kalshi') + ' places learning');
-    S.scene.setDisplay(3, bb.money || 'MONEY · ' + (dist('money').apps || 0) + ' apps · ' + learn('money') + ' places learning');
+    const pi = S.scene.payoutPlace ? S.scene.payoutPlace() : -1, pp = pi >= 0 ? S.world.places[pi] : null;   // the payout beacon's account
+    S.scene.setDisplay(3, bb.money || (pp ? 'PAYOUT GOAL · ' + pp.name + ' · ' + Math.round((+pp.progress || 0) * 100) + '% of the way'
+      : 'MONEY · ' + (dist('money').apps || 0) + ' apps · ' + learn('money') + ' places learning'));
   }
   chip.textContent = parts.join(' · ');
   chip.classList.toggle('on', parts.length > 0);
@@ -558,6 +584,11 @@ function renderFlat() {
   const m = $('#flat');
   m.hidden = false; m.textContent = '';
   const w = S.world;
+  if (S.lite3d && webgl()) {                                                   // Save-Data / Low: the 3D is one tap away, never forced
+    const go = el('a', 'show3d', 'Show the 3D city');
+    go.href = '?city=3d';
+    m.append(el('p', 'lite-note', saveData() ? 'Data saver is on, so this is the light list.' : 'Quality is on Low, so this is the light list.'), go);
+  }
   for (const dd of w.districts || []) {
     const sec = el('section'); sec.dataset.d = dd.id; sec.style.setProperty('--c', dd.hue);
     sec.append(el('h2', '', dd.name), el('p', '', dd.line));

@@ -24,3 +24,6 @@ For the lead's merge:
 - ROUND 3 (ideas #8 / #14): tools/cost_alarm.py (alarm only) -> research/lab/costs.json. To run nightly: add
   `subprocess.run([sys.executable, "-X", "utf8", "tools/cost_alarm.py"])` (or import tools.cost_alarm and call main([])) to the
   nightly job (tools/learn_night.py), and show `bots.<id>.line` on the ZEUS card next to the fills line. tests/test_cost_alarm.py 9/9.
+- 2026-11-21 reconcile: tools/reconcile_live.py (read-only) -> research/lab/reconcile.json. Nightly: in tools/learn_night.py, after the
+  data pull, `from tools import reconcile_live; reconcile_live.main([])` (it reads data/pc_days or, on the PC, logs/datapipe/days).
+  tests/test_reconcile_live.py 12/12; consider adding it and tests/test_cost_alarm.py to the nq area in tests/run_area.py.

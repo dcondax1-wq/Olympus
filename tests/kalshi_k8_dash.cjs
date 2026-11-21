@@ -234,7 +234,7 @@ const card = (st, k8, u) => ({ kind: 'kalshi_live_pub', v: 1, st, net: 0, f: 0, 
       tp2.next.includes('Tue') && tp2.next.includes('05:15') && tp2.hd && tp2.hd.includes('Tue') && tp2.pnl.includes('Paper $: today −$0.98'), tp2);
     await ctx.close();
     ({ ctx, p } = await open({ at: '2026-11-23T05:20:00-05:00', k8: 'fx' }));
-    step('top3. no PC card: "no PC data yet", "Paper $: no settled bets yet", the 3 legs from the clock', (await T(p, '#k8top-age')) === 'no PC data yet'
+    step('top3. no PC card: "no PC data yet", "Paper $: no settled bets yet", the 3 legs from the clock', (await T(p, '#k8top-age')).includes('no PC data')
       && (await T(p, '#k8top-pnl')).includes('no settled bets yet') && (await p.$$('#k8top-legs li[data-leg]')).length === 3, await T(p, '#k8top'));
     await ctx.close();
 
@@ -304,6 +304,36 @@ const card = (st, k8, u) => ({ kind: 'kalshi_live_pub', v: 1, st, net: 0, f: 0, 
           && c.innerText.includes('not on this site right now') && !!c.querySelector('a[href="../kalshi/"]') && document.getElementById('bal').textContent.startsWith('$'); }));
       await ctx.close();
     }
+    // q. QA for Monday's LIVE day (day-kalshi 2026-11-21): every live number from the PC card, PC silent / stopped states, no paper
+    // numbers passing for live, the Monday checklist one tap away
+    const lgC = [['g5', '11-23', 4, 52, 1.84, 'W'], ['g17', '11-23', 4, 53, null, 'c'], ['s17', '11-23', 4, 55, null, 'o']];
+    ({ ctx, p } = await open({ at: '2026-11-23T16:50:00-05:00', card: card('live', k8new({ m: 'L', td: [1, 1, 1.84], pn: [1.84, 1.84, 3.5], lg: lgC, dy: [3.06, 8], wk: [0.6, 13.75], dd: [1.2, 19.25] }), '2026-11-23T21:49:00Z'), k8: 'fx' }));
+    let q = await p.evaluate(() => ({ m: document.getElementById('k8top-m').textContent, sub: (document.getElementById('k8sub-m') || {}).textContent,
+      g: document.getElementById('k8s-g').innerText, legs: document.getElementById('k8top-legs').innerText, pl: document.getElementById('k8top-pnl').textContent,
+      live: (document.getElementById('kpaused-live') || {}).textContent || '', go: (document.getElementById('k8top-go') || {}).getAttribute('href'), kgo: !!document.getElementById('kgo') }));
+    step('q1. LIVE Monday 16:50: LIVE everywhere, bankroll $58.50 (started $55.00) from the live P&L, live $ line, the bet whose answer was lost reads "counted as in"',
+      q.m === 'LIVE' && q.sub === 'LIVE' && q.g.includes('$58.50') && q.g.includes('started $55.00') && q.pl.startsWith('Live $: today +$1.84') && q.legs.includes('counted as in, result 17:00'), q);
+    step('q2. the status line is K8\'s own: stops used today / week / from the best point, no maker words (fills, resting orders, -$25)',
+      q.live.includes('Stops used: $3.06 of $8.00 today') && q.live.includes('$1.20 of $19.25 from the best point') && !/resting|fill/.test(q.live), q.live);
+    step('q3. the Monday checklist is one tap from the top card (#kgo)', q.go === '#kgo' && q.kgo, q);
+    await shot(p, 'qa-live.png', '#k8top');
+    await ctx.close();
+    ({ ctx, p } = await open({ at: '2026-11-23T16:50:00-05:00', card: card('live', k8new({ m: 'L', lg: lgC }), '2026-11-23T19:40:00Z'), k8: 'fx' }));
+    q = await p.evaluate(() => ({ m: document.getElementById('k8top-m').textContent, age: document.getElementById('k8top-age').textContent, sub: (document.getElementById('k8sub-m') || {}).textContent,
+      live: (document.getElementById('kpaused-live') || {}).textContent || '' }));
+    step('q4. the PC silent for 2 h while LIVE: "PC SILENT" (never a current-looking LIVE), "last news 2 h ago", the status line asks if the PC is on',
+      q.m === 'PC SILENT' && q.age.includes('last news 2 h ago') && q.sub.startsWith('PC SILENT') && q.live.includes('is it on?'), q);
+    await shot(p, 'qa-silent.png', '#k8top');
+    await ctx.close();
+    ({ ctx, p } = await open({ at: '2026-11-23T16:50:00-05:00', card: Object.assign(card('stopped', k8new({ m: 'L', lg: lgC }), '2026-11-23T21:49:00Z'), { why: 'the drawdown stop' }), k8: 'fx' }));
+    q = await p.evaluate(() => ({ m: document.getElementById('k8top-m').textContent, age: document.getElementById('k8top-age').textContent }));
+    step('q5. K8 stopped itself: STOPPED + the reason on the top card', q.m === 'STOPPED' && q.age.includes('drawdown stop'), q);
+    await ctx.close();
+    ({ ctx, p } = await open({ at: '2026-11-23T16:30:00-05:00', card: card('live', k8new({ m: 'P', pn: [0.5, 1.1, 9.9] }), '2026-11-23T21:29:00Z'), k8: 'fx' }));
+    q = await p.evaluate(() => ({ pl: document.getElementById('k8top-pnl').textContent, g: document.getElementById('k8s-g').innerText, live: (document.getElementById('kpaused-live') || {}).textContent || '' }));
+    step('q6. armed but no live bet yet: the $ line says "No live bets yet · paper", the bankroll stays $55.00 (paper $ never added), the status line says no live bets yet',
+      q.pl.startsWith('No live bets yet · paper') && q.g.includes('$55.00') && !q.g.includes('started') && q.live.includes('no live bets yet'), q);
+    await ctx.close();
   } catch (e) {
     step('harness error', false, String(e && e.stack || e).slice(0, 600));
   }

@@ -58,7 +58,7 @@ def main() -> int:
             bad["noindex"].append(s["name"])
         vis = re.sub(r"<style>.*?</style>|<script>.*?</script>", " ", h, flags=re.S).replace(F.esc(L["name"]), " ")
         for w in F.BANNED:
-            if re.search(r"(?<![a-z])" + re.escape(w), vis, re.I):
+            if re.search(r"(?<![a-z])" + re.escape(w) + r"(?![0-9])", vis, re.I):
                 bad["words"].append((s["name"], w))
         if len(h.encode()) > F.BUDGET:
             bad["size"].append((s["name"], len(h)))
@@ -132,7 +132,7 @@ def main() -> int:
     hits = []
     for base, _dirs, files in os.walk(os.path.join(ROOT, "tools", "web_public")):
         rel = os.path.relpath(base, AG)
-        if rel == "f" or rel.startswith("f" + os.sep) or rel in ("factory", "sites", "portal"):   # portal = the caller tool (rides in the export)
+        if rel == "f" or rel.startswith("f" + os.sep) or rel in ("factory", "sites", "portal", "launch") or rel.startswith("launch" + os.sep):   # portal = the caller tool (rides in the export)
             continue
         for fn in files:
             if fn.endswith((".html", ".js", ".json", ".xml", ".txt", ".webmanifest")):

@@ -43,6 +43,7 @@ PRIVATE_NAMES = {"household.json", "agency.json", "day.json", "inbox.json", "cal
                  "health.json", "cards.json", "card_tracker.json", "heartbeat_last.json", "heartbeat.json", ".env",
                  "me.json",                                    # the Me hub (tools/me_hub.py -> data/me/, 2026-11-15: its name was missing)
                  "status_sign.json",                           # the PC's status-topic signing key (tools/status_sign.py, day-security 2026-11-20)
+                 "alerts.json",                                # the alert bus keys: Telegram token + chat id, Discord webhook (day-security3)
                  "caller.json", "linetype.json", "dnc.txt"}    # the AI caller's keys / looked-up numbers / do-not-call list (caller review 2026-11-20)
 DATA_EXT = (".json", ".jsonl", ".csv", ".txt", ".md")
 PRIVATE_PREFIXES = ("household", "health_", "cards_", "card_tracker", "bank_", "statement_")      # data files only
@@ -275,6 +276,9 @@ def _private_json(doc) -> str | None:
         bad = sorted(x for x in doc if str(x).lower() in SECRET_KEYS and doc.get(x))
         if bad:
             return "holds " + ", ".join(bad)
+        tg, dc = doc.get("telegram"), doc.get("discord")      # engine/alert_bus's alerts.json shape (day-security3 2026-11-21)
+        if (isinstance(tg, dict) and (tg.get("token") or tg.get("chat_id"))) or (isinstance(dc, dict) and dc.get("webhook")):
+            return "holds alert keys (telegram / discord)"
     return None
 
 
@@ -292,7 +296,7 @@ def private_file(rel: str, raw: bytes | None = None) -> str | None:
     return None
 
 
-JSON_HINTS = (b'"kind"', b'"private"') + tuple(b'"%s"' % k.encode() for k in sorted(SECRET_KEYS))
+JSON_HINTS = (b'"kind"', b'"private"', b'"telegram"', b'"discord"') + tuple(b'"%s"' % k.encode() for k in sorted(SECRET_KEYS))
 
 
 def _strings(raw: bytes, n: int = 8) -> str:

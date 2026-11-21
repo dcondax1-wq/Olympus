@@ -187,7 +187,7 @@ def test_static(data):
         test_reach_data(data)
     for app in APPS:
         html = read(WEB, app, "index.html")
-        i_th, i_js = html.find('<script src="../olympus/themes.js?v=o10"></script>'), html.find(f'../olympus/olympus.js?v=o22" data-app="{app}"')
+        i_th, i_js = html.find('<script src="../olympus/themes.js?v=o11"></script>'), html.find(f'../olympus/olympus.js?v=o23" data-app="{app}"')
         check(f"a. {app}: loads the theme engine just before the kit", 0 < i_th < i_js, (i_th, i_js))
     for app in THREE_APPS:
         code = "".join(read(p) for p in glob.glob(os.path.join(WEB, app, "*.js")))
@@ -196,10 +196,10 @@ def test_static(data):
               or ("onTheme(" in code and ("applyTheme" in code or "setAccent" in code)))   # 2026-11-03 day: the apps' own hooks
     jv = read(WEB, "jarvis", "index.html")
     check("a. Jarvis: the engine loads async (never part of the start), the <head> paints its copy, the Look sheet has the tiles",
-          '<script src="../olympus/themes.js?v=o10" id="olyThemesJs" async></script>' in jv and "('jarvis', 'page');" in jv
+          '<script src="../olympus/themes.js?v=o11" id="olyThemesJs" async></script>' in jv and "('jarvis', 'page');" in jv
           and 'id="olyThemes"' in jv and "function setOlyTheme(" in jv and "t.apply('page', { jarvis: true, cache: true })" in jv)
     check("a. Zenith and Kalshi load the engine (async) and apply the tokens on their own surfaces",
-          "s.src = 'olympus/themes.js?v=o10'" in read(WEB, "index.html") and "s.src = '../olympus/themes.js?v=o10'" in read(WEB, "kalshi", "index.html"))
+          "s.src = 'olympus/themes.js?v=o11'" in read(WEB, "index.html") and "s.src = '../olympus/themes.js?v=o11'" in read(WEB, "kalshi", "index.html"))
 
 
 # ------------------------------------------------------------------ b. contrast
@@ -905,7 +905,7 @@ def test_night_default(br, origin):
     p.wait_for_timeout(2500)
     out["jarvis"] = p.evaluate("() => [document.documentElement.getAttribute('data-oly-theme') || '', localStorage.getItem('olympus.theme'), document.documentElement.getAttribute('data-jlook') || '']")
     ctx.close()
-    # a light phone: the automatic default steps aside (a page with its own light mode keeps following the phone)
+    # a light phone: every app has no light mode of its own, so night too (DESIGN QA 2026-11-21: it got AGORA's brown); only Zenith's Home steps aside
     ctx = br.new_context(viewport={"width": 390, "height": 844}, service_workers="block", color_scheme="light")
     ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith(origin) else r.abort())
     ctx.add_init_script("if (!sessionStorage.getItem('t.n')) { sessionStorage.setItem('t.n', '1'); try { localStorage.clear(); } catch (e) {} }")
@@ -915,9 +915,9 @@ def test_night_default(br, origin):
     out["light"] = p.evaluate("() => document.documentElement.getAttribute('data-oly-theme') || ''")
     ctx.close()
     check("n. OLYMPUS NIGHT is the default look (painted, page black) but never saved as a choice; an AGORA saved before 2026-11-20 shows night too; "
-          "an Agora picked after stays; the Jarvis page keeps the default, so Classic Jarvis stays on; a light phone keeps its light pages",
+          "an Agora picked after stays; the Jarvis page keeps the default, so Classic Jarvis stays on; a light phone gets night too on every app (only Zenith's Home, which has its own light mode, follows the phone)",
           out["empty"][:2] == ["night", None] and out["agora before"][:2] == ["night", "agora"] and dark(out["empty"][2])
-          and out["agora after"][1] == "agora" and out["agora after"][0] in ("", "agora") and out["jarvis"][0] in ("", "agora") and out["jarvis"][1:] == [None, "classic"] and out["light"] in ("", "agora"), out)
+          and out["agora after"][1] == "agora" and out["agora after"][0] in ("", "agora") and out["jarvis"][0] in ("", "agora") and out["jarvis"][1:] == [None, "classic"] and out["light"] == "night", out)
 
 
 def test_first_frame(br, origin):

@@ -147,3 +147,7 @@ opacity:0;transform:scale(1.08);animation:owPosterIn 1.1s ease .05s forwards,owP
 #bills .bt{font:800 12px/1.1 var(--disp,system-ui);letter-spacing:.06em;color:var(--c);text-transform:uppercase;white-space:nowrap}
 #bills .bl{font:600 11px/1.32 var(--ui,system-ui);color:#eef1ff;white-space:pre;font-variant-numeric:tabular-nums}
 @media (prefers-reduced-transparency:reduce){#bills .bill{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(10,12,24,.95)}}
+/* the light list on Save-Data / Low (lead 2026-11-21): the 3D city stays one tap away */
+.flat .lite-note{margin:0 4px 8px;color:var(--sub);font-size:13px}
+.flat .show3d{display:flex;align-items:center;justify-content:center;min-height:48px;margin:0 4px 14px;border-radius:14px;border:1px solid rgba(255,206,120,.55);
+background:rgba(255,198,90,.1);color:#ffe2a6;font-weight:700;text-decoration:none}

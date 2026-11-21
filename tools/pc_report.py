@@ -70,7 +70,7 @@ EXT_KIND = "le-live-ext"
 EXT_PARTS = 2                    # at most 2 ext posts a run (ntfy.sh free: a few hundred messages a day per IP)
 EXT_EVERY_S = 2640               # the ext goes every 3rd 15-minute run (44 min), or at once when its news changed (ext_hash). Was every 2nd (29 min) until
                                  # 2026-11-20: 96 core + 96 ext + 24 chart posts a day left no room under ntfy's 250 for the other programs and the alerts
-EXT_ORDER = ("brd", "life", "mf", "board_trades", "at", "fq", "zl", "learn", "lab", "glance", "kalshi_rewards", "kalshi_k1", "kalshi_live")   # "at": engine/feed_trades
+EXT_ORDER = ("brd", "life", "mf", "k7", "board_trades", "at", "fq", "zl", "learn", "lab", "glance", "kalshi_rewards", "kalshi_k1", "kalshi_live")   # "at": engine/feed_trades
 EXT_LAST = ("glog",)   # red-team 2026-11-21: the Brain's long thought stream takes only the room every other block left (cut 5/3, then out)
 # "zl": ZEUS learned, the nightly line (engine/zeus_learn.read_tiny, <= 220 bytes) -> the ZEUS page's "ZEUS learned" card
 CORE_KEYS = ("eh", "v", "kind", "lite", "src", "t", "every_s", "host", "model_state", "price", "day_pnl", "pc_verdict", "pc", "reporter",
@@ -662,6 +662,13 @@ def full(snap: dict) -> dict:
             out["mf"] = mf
     except Exception:  # noqa: BLE001
         pass
+    try:                                           # the MFFU 7-day clock per account (engine/clock7: last fill, MFFU's last day,
+        from engine import clock7                  # keep-alive on / off) for the NQ page's clock card and Jarvis; no "t" (the
+        k7 = clock7.build(out.get("mf"), hb.get("keepalive"), snap.get("t"))   # post's own t dates it; ext_hash stays still)
+        if k7:
+            out["k7"] = {"a": [{k: v for k, v in r.items() if v is not None} for r in k7["a"]]}
+    except Exception:  # noqa: BLE001
+        pass
     try:                                           # every real account's last trades (engine/feed_trades: the Trading page's LIVE rows)
         from engine import feed_trades
         at = feed_trades.compact(L)
@@ -746,6 +753,11 @@ def _cuts(key: str) -> list:
             from engine import brain_glance
             brain_glance.fit(v, n)
         return f
+    def k7cut(v):                          # the 7-day clock: the plan's act day and the cautious deadline go first
+        for r in (v.get("a") or []) if isinstance(v, dict) else []:
+            if isinstance(r, dict):
+                r.pop("act", None)
+                r.pop("dl", None)
     def glog(n):
         def f(v):
             from engine import brain_glance
@@ -776,7 +788,7 @@ def _cuts(key: str) -> list:
                 for key in keys:
                     v["k8"].pop(key, None)
         return f
-    return {"kalshi_live": [k8("lg", "ls"), k8("e", "dy", "kk", "al", "pn")], "glance": [glance(1000), glance(600)], "glog": [glog(5), glog(3)], "mf": [eq(4), eq(0)], "brd": [ev(3), ev(1), ev(0)], "life": [ev(0)],
+    return {"kalshi_live": [k8("lg", "ls"), k8("e", "dy", "kk", "al", "pn")], "glance": [glance(1000), glance(600)], "glog": [glog(5), glog(3)], "k7": [k7cut], "mf": [eq(4), eq(0)], "brd": [ev(3), ev(1), ev(0)], "life": [ev(0)],
             "board_trades": [first(1)], "at": [at(2), at(1)], "fq": [fq(2), fq(0)]}.get(key, [])
 
 

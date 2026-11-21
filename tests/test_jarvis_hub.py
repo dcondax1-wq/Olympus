@@ -243,7 +243,7 @@ def part_a():
     check("a. manifest: Olympus, standalone, the whole site in scope (../), black like the old Jarvis, icons j5 (the gold temple, 2026-11-18)",
           m["name"] == "Olympus" and m["short_name"] == "Olympus" and m["display"] == "standalone" and m["scope"] == "../"
           and m["start_url"] == "./" and m["id"] == "./"
-          and m["theme_color"] == "#14110e" and all(i["src"].endswith("?v=j5") for i in m["icons"]), m)
+          and m["theme_color"] == "#000000" and all(i["src"].endswith("?v=j5") for i in m["icons"]), m)
     b = open(os.path.join(ROOT, "tools", "build_web_dashboard.py"), encoding="utf-8").read()
     tup = re.search(r'for app in \(([^)]*)\):', b)
     published = set(re.findall(r'"([a-z0-9-]+)"', tup.group(1))) if tup else set()
@@ -268,7 +268,7 @@ def part_a():
           and "background:#000" in sw and "location.reload()" in sw)
     check("a. worker v14: data.js, jarvis.css, the fonts, every separate part, switcher.js, the new brain's obsidian.js / memory.js / "
           "assist-ui.js and voice-mode.js in SHELL, each saved on its own (a missing part is skipped)",
-          "const CACHE = 'jarvis-v89';" in sw and all(f"'./{f}'" in sw for f in ("data.js", "switcher.js", "obsidian.js", "memory.js", "assist-ui.js", "voice-mode.js", "tools.js", "voice-out.js") + PARTS + FONTS)
+          "const CACHE = 'jarvis-v90';" in sw and all(f"'./{f}'" in sw for f in ("data.js", "switcher.js", "obsidian.js", "memory.js", "assist-ui.js", "voice-mode.js", "tools.js", "voice-out.js") + PARTS + FONTS)
           and f"'./{JCSS}'" in sw and "SHELL.map((u) => c.add(new Request(u, { cache: 'reload' })).catch(() => null))" in sw)
     shell = re.search(r"const SHELL = \[([^\]]*)\]", sw)
     shell_files = re.findall(r"'\./([^'?]+)", shell.group(1)) if shell else []
@@ -531,7 +531,7 @@ def run_a(br, url):
     a5 = ask("is the market open")
     check("d. the market, and when it opens or closes next", "NQ market" in a5 and re.search(r"(Opens|Closes) in \d", a5), a5)
     check("d. status / room / target carry BLITZ next to Zlarior and ATLAS",
-          "BLITZ 25K" in a1 and "$612" in a1 and "BLITZ 25K: drawdown left $612" in a2 and "BLITZ: $1,388 to the target" in a3,
+          "BLITZ 25K" in a1 and "$612" in a1 and re.search(r"BLITZ 25K: (drawdown left )?\$612", a2) and "BLITZ: $1,388 to the target" in a3,   # room: biz.js since QA 2026-11-21 ("BLITZ 25K: $612 of ... drawdown left")
           (a1, a2, a3))
     a8 = ask("today's p&l")
     check("d. P&L: Zlarior, ATLAS and BLITZ (today and this week)", "Zlarior today +$213" in a8 and "ATLAS today" in a8
@@ -855,7 +855,7 @@ def run_c(br, url):
         const reg = await Promise.race([navigator.serviceWorker.ready, new Promise((ok) => setTimeout(() => ok(null), 6000))]);
         if (!reg) return 'no worker';
         for (let i = 0; i < 30; i++) {
-          const c = await caches.open('jarvis-v89');
+          const c = await caches.open('jarvis-v90');
           const got = await Promise.all(['./index.html', './data.js', './%s', './orbitron.woff2', './rajdhani-500.woff2'].map((u) => c.match(u)));
           if (got.every(Boolean)) return 'ok';
           await new Promise((ok) => setTimeout(ok, 200));

@@ -77,9 +77,9 @@ def static_kit(app, name, reads=(), storage=None, allow_urls=()):
     check(f"a. the files: {', '.join(names)}", all(os.path.isfile(os.path.join(d, n)) for n in names), [n for n in names if not os.path.isfile(os.path.join(d, n))])
     html, js, core, css = (read(os.path.join(d, n)) for n in ("index.html", f"{app}.js", f"{app}core.js", f"{app}.css"))
     lines = html.splitlines()
-    i = next((n for n, ln in enumerate(lines) if "../olympus/olympus.js?v=o22" in ln), -1)
-    check(f'a. the kit: olympus.css?v=o7, agora.css after it, themes.js, olympus.js?v=o22 data-app="{app}", the intro tag on the very next line',
-          html.index("../olympus/olympus.css?v=o7") < html.index("../olympus/agora.css") < html.index(f"{app}.css") and "../olympus/themes.js?v=o10" in html
+    i = next((n for n, ln in enumerate(lines) if "../olympus/olympus.js?v=o23" in ln), -1)
+    check(f'a. the kit: olympus.css?v=o7, agora.css after it, themes.js, olympus.js?v=o23 data-app="{app}", the intro tag on the very next line',
+          html.index("../olympus/olympus.css?v=o7") < html.index("../olympus/agora.css") < html.index(f"{app}.css") and "../olympus/themes.js?v=o11" in html
           and f'data-app="{app}"' in lines[i] and lines[i + 1].strip() == INCLUDE and html.count("intro-app.js") == 1, lines[i:i + 2])
     check("a. AGORA: <html data-theme=\"agora\">, the a11y layer and the sound kit, the page is an ES module",
           re.search(r'<html lang="en" data-theme="agora"( data-oly-shell="app")?( data-oly-light)?>', html) and "../olympus/a11y.js" in html and ("../olympus/sfx.js?v=s4" in html or "../olympus/olympus.js" in html) and f'<script type="module" src="{app}.js' in html)
@@ -216,6 +216,10 @@ def is_status_feed(u):
 def page(br, origin, w=390, h=844, reduced=False, lite=False, storage=None, mock=None):
     ctx = br.new_context(viewport={"width": w, "height": h}, device_scale_factor=2, is_mobile=True, has_touch=True, reduced_motion="reduce" if reduced else "no-preference", accept_downloads=True)
     init = "try { localStorage.setItem('jfx', '%s'); } catch (e) {}" % ("low" if lite else "high")
+    # these suites check the AGORA look: pick it as a saved choice (OLYMPUS NIGHT is the default on every phone since QA 2026-11-21;
+    # before, Playwright's default light phone fell back to AGORA by accident)
+    if "olympus.theme" not in (storage or {}):
+        init += " try { localStorage.setItem('olympus.theme', 'agora'); localStorage.setItem('olympus.theme.night', '1'); } catch (e) {}"
     for k, v in (storage or {}).items():
         init += " try { localStorage.setItem(%s, %s); } catch (e) {}" % (json.dumps(k), json.dumps(v))
     ctx.add_init_script(init)
