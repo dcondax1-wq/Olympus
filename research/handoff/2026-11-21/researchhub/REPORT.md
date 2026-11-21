@@ -15,13 +15,23 @@
 Rules kept: rejected ideas' $ is shown neutral (the figure the test quotes, never green); BLITZ is not listed under What
 works (hidden, paper); account numbers masked by tools/site_privacy, the build stops on any privacy finding.
 
+## Cities link (owner: "combined with the cities")
+- `tools/web_public/research/hub.json` (flat, for the Cities Lab & Research district): 146 items {id, title, family, status
+  live|lead|rejected|decide, usd_month, date, summary, url}; ids live-zlarior, live-atlas, decide-<id>, lead-/rejected-<slug>.
+  Pushed 73561b86, schema sent to the lead and the Cities session.
+- Clio: "See it in the city" in every hub item's sheet (../cities/?fly=<id>); deep links ?read=<slug> and ?item=<id> (e3c8eae9).
+
 ## Tests
-- tests/test_research_hub.py: 26/26 (generator on the real repo, parsers on a temp repo, cliocore hub maths in node, the page in
+- tests/test_research_hub.py: 30/30 (generator on the real repo, parsers on a temp repo, cliocore hub maths in node, the page in
   Chromium at 390x844: tabs, search, tap -> reader fetch, own-text sheet, decisions, DEMO hub when hub.json is missing, no
   sideways scroll, no console error).
 - tests/test_clio_page.py: 47/47 (updated: OLYMPUS NIGHT instead of AGORA; hub.json in the allowed reads; hub 404 in the demo cases).
 - tests/test_learn_night.py: 64/64 (the new "hub" step). tests/smoke.py: 11/11.
 - Python Playwright 1.63 + numba were pip-installed in this container to run the browser / money suites.
+
+- tests/test_olympus_kit.py: not finished here (over 20 minutes twice in this container); please run on pc.
+- privacy area: public_build_privacy 59/59 PASS; repo_secrets 1 FAIL pre-existing on pc (tests/test_rapid_arm.py, 50a9105d:
+  a full-looking MFFU id); private_link / phone_safety cannot start here (no fastapi).
 
 ## Screenshots (390x844, deviceScaleFactor 2)
 top-390-works.png, top-390-rejected.png, top-390-leads.png, top-390-decide.png, top-390-reader.png (the reader shows "could

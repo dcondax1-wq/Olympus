@@ -26,3 +26,7 @@ Already wired on this branch (not lead-only): tools/learn_night.py step "hub" (a
 `olympus` += clio_page, research_hub.
 
 After merging: `python tools/writeups_index.py` (adds lit-edge-2026-11-20 + lit-eval-rescue-2026-11-20).
+
+New site folder `tools/web_public/research/` (only hub.json, fetched by the Cities page as ../research/hub.json). If the root
+sw.js should not handle it, add 'research/' to OTHER_APPS (sw.js line 99) and bump the root cache name; the build copies
+tools/web_public wholesale, so no build line is needed.
