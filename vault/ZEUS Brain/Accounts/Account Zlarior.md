@@ -27,7 +27,7 @@ stage: "eval"
 ## Plan
 
 - **bots**: Zlarior only (eval). Once funded: Zlarior + ATLAS + BLITZ (if you say yes)
-- **payout**: about early Jan (with ATLAS once funded)
+- **payout**: funded ~Dec 24, 1st payout ~Feb 10 (~$1,600 to you; 8 in 10 runs between Dec 30 and May 18) - payday plan 2026-11-20, middle case
 - **usd_month**: $1,200
 - **cost**: paid
 

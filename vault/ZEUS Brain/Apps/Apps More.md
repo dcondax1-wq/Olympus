@@ -22,7 +22,7 @@ door: "More"
 | Data City (`datacity`) | trading | Every combo tested, as a city | `fixture.json`, `city.json`, `jarvis.json`, `../data.json`, `../pantheon/pantheon.json` | `tests.test_datacity` |
 | Ergasterion (`ergasterion`) | trading | The workshop: every AI worker, what it does | `builders.json`, `fixture.json`, `queue.json`, `../home.json`, `../money/index.json`, ... | `tests.test_ergasterion_page` |
 | Agora Gallery (`gallery`) | life | Every 3D shape of the Agora on a | `fixture.json` | covered by `tests.test_olympus_kit` |
-| Helios (`helios`) | trading | The morning briefing: today, drawdown, deals, plan | `fixture.json`, `../pythia/events.json`, `../home.json`, `../money/index.json` | `tests.test_helios_page` |
+| Helios (`helios`) | trading | The morning briefing: today, drawdown, deals, plan | `../nq/brief.json`, `fixture.json`, `../pythia/events.json`, `../home.json`, `../money/index.json` | `tests.test_helios_page` |
 | Hephaestus (`hephaestus`) | trading | The forge: tune the dials | `data.json`, `fixture.json` | `tests.test_hephaestus_page` |
 | Herald (`herald`) | life | The daily paper: who built what, the day | `edition.json`, `editions/index.json`, `fixture.json`, `editions/${date}.json` | `tests.test_herald_page` |
 | Hestia (`hestia`) | trading | Today at home: what to do right now | `fixture.json`, `../home.json`, `../odeon/trades.json` | `tests.test_hestia_page` |
