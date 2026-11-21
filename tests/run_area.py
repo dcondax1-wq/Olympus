@@ -297,6 +297,7 @@ AREAS["money"].append("week_more")          # day-brief 2026-11-20: weekly revie
 AREAS["privacy"].append("cross_site")   # day-security 2026-11-20: the bot server refuses POSTs from other web sites (engine/cross_site.py)
 AREAS["pc"].append("cross_site")
 AREAS["pc"].append("redteam2_live")       # day-redteam2 2026-11-20: half-day halt alarm + TRADE HAS NO STOP alarm (engine/fast_alarm.py)
+AREAS["pc"].append("alert_bus")         # day-alerts 2026-11-21: engine/alert_bus.py (Telegram / Discord first, ntfy + Web Push fallbacks)
 AREAS["nq"].append("redteam2_live")
 AREAS["pc"].append("redteam2_wires")      # day-redteam2 2026-11-20: L2 rapid._other_names covers the extra accounts
 AREAS["agency"].append("web_research")   # day-web-research 2026-11-20: the website-business research (RESEARCH.md, writeup, offers.json); its own line

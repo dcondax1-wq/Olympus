@@ -793,20 +793,41 @@ def instant_problem(p: dict, now=None, path=None, cfg=None, poster=None) -> str:
         s = settings()
         if not on("problems", s):
             return "problems is off"
-        cfg = cfg if cfg is not None else alert_cfg()
-        if not cfg.get("topic"):
-            return "no private alert topic on this PC"
         path = path or INSTANT_PATH
         st = _instant_state(path)
-        keys, probs = _d(st.get("keys")), _d(st.get("problems"))
         key = str(p.get("key") or "")
         if not key:
             return "no key"
-        if key in keys:
+        if key in _d(st.get("keys")):
             return "already sent"
+        if poster is None and cfg is None and _bus_on():   # engine/alert_bus: Telegram / Discord first, ntfy + the app as fallbacks
+            from . import alert_bus
+            r = alert_bus.send(alert_bus.from_problem(p, problem_message(p, now=now, s=s)),
+                               on_done=lambda res: res.get("ok") and _record_problem(p, key, path, now, count=False))
+            return "sent" if r in ("queued", "sent") else f"alert bus: {r}"
+        cfg = cfg if cfg is not None else alert_cfg()
+        if not cfg.get("topic"):
+            return "no private alert topic on this PC"
         ok = (poster or _post)(cfg["ntfy"], cfg["topic"], problem_message(p, now=now, s=s))
         if not ok:
             return "ntfy did not take it (the 15-minute report sends it instead)"
+        _record_problem(p, key, path, now)
+        return "sent"
+    except Exception as e:
+        return f"failed: {e.__class__.__name__}"
+
+
+def _bus_on() -> bool:
+    """engine/alert_bus is set up (Telegram / Discord) and not switched off. Never raises."""
+    try:
+        from . import alert_bus
+        return alert_bus.active()
+    except Exception:
+        return False
+
+
+def _record_problem(p: dict, key: str, path, now, count: bool = True) -> None:
+    try:
         t_now = time.time() if now is None else float(now)
         with _INSTANT_LOCK:
             st = _instant_state(path)                   # re-read: another thread may have written meanwhile
@@ -815,11 +836,11 @@ def instant_problem(p: dict, now=None, path=None, cfg=None, poster=None) -> str:
             probs[key] = {"t": t_now, "code": p.get("code"), "cond": p.get("cond"), "back": bool(p.get("back")),
                           "entry_t": _f(p.get("entry_t")), "bot": str(p.get("bot") or "lit")}
             st.update(keys=keys, problems=probs)
-            _count_ntfy(st, t_now)                      # redteam 2026-11-20: a problem push uses ntfy's daily room too
+            if count:
+                _count_ntfy(st, t_now)                  # redteam 2026-11-20: a problem push uses ntfy's daily room too
             _save_instant(st, path, t_now)
-        return "sent"
-    except Exception as e:
-        return f"failed: {e.__class__.__name__}"
+    except Exception:
+        pass
 
 
 def problem_dup(m: dict, now=None, path=None) -> bool:
@@ -847,6 +868,18 @@ def problem_dup(m: dict, now=None, path=None) -> bool:
 
 def _utc_day(t) -> str:
     return dt.datetime.fromtimestamp(int(t), dt.timezone.utc).strftime("%Y-%m-%d")
+
+
+def count_ntfy_post(now=None, path=None) -> None:
+    """One ntfy post by engine/alert_bus (its ntfy fallback) counts in this PC's day like an instant alert. Never raises."""
+    try:
+        t_now = time.time() if now is None else float(now)
+        with _INSTANT_LOCK:
+            st = _instant_state(path or INSTANT_PATH)
+            _count_ntfy(st, t_now)
+            _save_instant(st, path or INSTANT_PATH, t_now)
+    except Exception:
+        pass
 
 
 def ntfy_today(now=None, path=None) -> int:

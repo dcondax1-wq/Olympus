@@ -1815,6 +1815,45 @@ def run_unlock(p):
             pass
 
 
+_NO_BUS = object()
+
+
+def _forget(new_state: dict, m: dict) -> None:
+    """An alert that did not go: forget it so the next run tries again (conditions keep their state; a trade key is retried)."""
+    if m["key"].startswith(("open:", "close:", "fill:", "watch:")):
+        for k in m.get("keys") or [m["key"]]:
+            new_state["seen"].pop(k, None)
+    elif m["key"].startswith("guard:"):
+        _d(_d(new_state.get("guard")).get("sent")).pop(m["key"], None)
+
+
+def _bus_alerts(msgs, rec: dict, snap: dict, new_state: dict):
+    """engine/alert_bus (owner 2026-11-21): the report's alerts go Telegram / Discord first (ntfy's private topic and the phone
+    app are its fallbacks), so they never use the ntfy room the status posts need. None = the bus is off / not set up: the
+    old loop runs, exactly. Waits up to 90 s for the deliveries (this is a 15-minute script, not the trading loop)."""
+    try:
+        from engine import alert_bus as AB
+        if not AB.active():
+            return None
+    except Exception:  # noqa: BLE001
+        return None
+    done: dict = {}
+    for m in msgs:
+        r = AB.send(AB.from_report(m), on_done=lambda res, k=m["key"]: done.__setitem__(k, res))
+        if r in ("dup", "sent"):
+            done.setdefault(m["key"], {"ok": True, "receipts": {"bus": r}})
+    AB.drain(90)
+    for m in msgs:
+        res = done.get(m["key"]) or {}
+        if res.get("ok"):
+            rec["sent_n"] = int(rec.get("sent_n") or 0) + 1
+            rec["alerts_last"] = {"t": snap["t"], "title": m["title"], "via": ",".join(_d(res.get("receipts")))}
+        else:
+            rec["errors"].append("alert: the alert bus could not deliver it (data/alert_bus.jsonl)")
+            _forget(new_state, m)
+    return True
+
+
 def _app_push(m: dict) -> bool:
     """One report alert to the phone app (Olympus, engine/push.app_send with the PC's own key): True = a phone took it."""
     try:
@@ -1898,7 +1937,8 @@ def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, n
     state = read_json(os.path.join(work, "state.json"), {}) or {}
     new_state, msgs = events(state, snap)
     sent = 0
-    for m in msgs:
+    bus_ok = _bus_alerts(msgs, rec, snap, new_state) if (not dry and http is None and app_push is not _NO_BUS) else None
+    for m in (msgs if bus_ok is None else []):
         if dry:
             if app_push is not None:
                 say(f"[dry] push -> the phone app (Olympus), else {cfg['topic'] or 'nothing'}: {m['title']}: {m['body']}")
@@ -1923,12 +1963,7 @@ def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, n
             rec["alerts_last"] = {"t": snap["t"], "title": m["title"]}
         else:
             rec["errors"].append("alert: " + why)
-            # not sent: forget it so the next run tries again (conditions keep their state; a trade key is retried)
-            if m["key"].startswith(("open:", "close:", "fill:", "watch:")):
-                for k in m.get("keys") or [m["key"]]:
-                    new_state["seen"].pop(k, None)
-            elif m["key"].startswith("guard:"):
-                _d(_d(new_state.get("guard")).get("sent")).pop(m["key"], None)
+            _forget(new_state, m)                   # not sent: the next run tries again
     if not dry:
         write_json(os.path.join(work, "state.json"), new_state)
     # the NQ page's live chart (le-bars, its own topic): after the core and the pushes, so it never takes their room; soft, and its
@@ -1940,7 +1975,7 @@ def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, n
                                 feed_path=feed_path, busy_run=ext_n > 0, remaining=(rec.get("ntfy_quota") or {}).get("remaining"))
     except Exception as e:  # noqa: BLE001
         rec["bars"] = {"posted": False, "why": f"chart failed softly: {e.__class__.__name__}"}
-    rec.update(sent=sent, queued=len(msgs), ok=not rec["errors"])
+    rec.update(sent=sent + int(rec.pop("sent_n", 0) or 0), queued=len(msgs), ok=not rec["errors"])
     if not dry:
         write_json(os.path.join(work, "last.json"), rec)
         log_line(work, {k: rec.get(k) for k in ("t", "ok", "hb_t", "server", "problems", "sent", "errors")})
