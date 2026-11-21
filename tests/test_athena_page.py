@@ -45,7 +45,7 @@ def part_a():
           all(s in html for s in ('../olympus/olympus.css?v=o7', '../olympus/themes.js?v=o11', '../olympus/olympus.js?v=o23" data-app="athena"')))
     check("a. title Athena, a description, theme-color = the page colour, the Jarvis icon like the siblings",
           "<title>Athena</title>" in html and 'name="description"' in html and 'content="#000000"' in html and "../jarvis/icon-192.png" in html)
-    srcs = re.findall(r'(?:src|href)="([^"]+)"', html)
+    srcs = re.findall(r'(?<![\w-])(?:src|href)="([^"]+)"', html)   # not data-src (the archive banner's feed)
     check("a. only local files (no external script, font or stylesheet)", all(not s.startswith(("http:", "https:", "//")) for s in srcs), srcs)
     check("a. every local file the page links exists",
           all(os.path.exists(os.path.normpath(os.path.join(PAGE, s.split("?")[0]))) for s in srcs if not s.startswith("#")), srcs)
@@ -298,7 +298,7 @@ def part_b2(lib):
           and all(any(e["body"][0].startswith(w) for w in B.STATUS_WORDS.values()) for e in learned), len(learned))
     check("b. every write-up that is an adopt-candidate, adopted, promising or a finding is on the shelf (none left out)",
           {os.path.basename(f) for f in files} == {os.path.basename(f) for f in __import__("glob").glob(os.path.join(ROOT, "research", "writeups", "*.md"))
-                                                    if re.match(r"---\n.*?\nstatus: (adopt-candidate|adopted|promising|finding)", open(f, encoding="utf-8").read(), re.S)
+                                                    if re.match(r"---\n.*?\nstatus: (adopt-candidate|adopted|promising|finding)\b", open(f, encoding="utf-8").read(), re.S)
                                                     and re.search(r"^summary: ", open(f, encoding="utf-8").read(), re.M)})
     R = lib["rules"]
     check("b. 'My rules': 18 checklist lines in 5 groups, each pointing at a real entry, with the rule file's numbers ($48,000, $1,000, 40 micros, $3,000, 7 days)",

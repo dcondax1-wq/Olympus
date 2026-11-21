@@ -273,10 +273,10 @@ def part_f(tmp):
     w(root, "tools/web_public/hub/index.html", '<link rel="stylesheet" href="../olympus/shell.css?v=s6">\n')     # what the bump wrote
     w(root, LB.GATE, gate_html("o10", "g9"))
     notes = LB.check_gate(root, LB.Git(root), base, set(LB.Git(root).changed_since(base)))
-    check("f. gate: gate.js changed, ?v not moved -> the next tag (g10); shell.css -> s5 as the other pages (never s4, an old copy's tag);"
+    check("f. gate: gate.js changed, ?v not moved -> the next tag (g10); shell.css -> s6 as the other pages (never an old copy's tag);"
           " themes.js moved and pc_feed.js unchanged: quiet",
           len(notes) == 2 and any("'gate/gate.js?v=g9'" in n and "?v=g10 " in n for n in notes)
-          and any("'olympus/shell.css?v=s3'" in n and "?v=s5 in gate/index.html, as the other pages" in n for n in notes), notes)
+          and any("'olympus/shell.css?v=s3'" in n and "?v=s6 in gate/index.html, as the other pages" in n for n in notes), notes)
     apply_t = ("what  where  change\n----  -----  ------\nquery  tools/web_public/dionysus/index.html  dionysus.css?v=a2 -> ?v=a3\n"
                "worker  tools/web_public/sw.js  cache le-public-v1 -> le-public-v2  (phone root)\napplied: 2 file(s) written, 2 change(s).\n")
     loop = LB.rebump_loop(apply_t, ["query  tools/web_public/dionysus/index.html  dionysus.css?v=a3 -> ?v=a4", "pin  tests/t.py:3  x"])

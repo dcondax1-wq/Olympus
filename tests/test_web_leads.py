@@ -105,8 +105,12 @@ def part_page(tmp):
     W.main(["--town", "Frederick", "--from-file", FX, "--out", out])
     js = os.path.join(ROOT, "tests", "web_leads_page.cjs")
     try:
-        r = subprocess.run(["flock", "-w", "2400", "/tmp/olympus_browser.lock", "node", js, os.path.join(ROOT, "tools", "web_public"), out],
-                           capture_output=True, text=True, timeout=600)
+        # tests/browser_lock: run_area already holds the lock around this suite (an outer `flock` here waited on its own parent until the
+        # 600 s timeout: QUALITY 2026-11-21); by hand it takes the lock itself
+        sys.path.insert(0, os.path.join(ROOT, "tests"))
+        import browser_lock
+        with browser_lock.hold(browser_lock.DEFAULT, 2400):
+            r = subprocess.run(["node", js, os.path.join(ROOT, "tools", "web_public"), out], capture_output=True, text=True, timeout=600)
     except Exception as e:  # noqa: BLE001
         check("w. the browser harness ran", False, e)
         return

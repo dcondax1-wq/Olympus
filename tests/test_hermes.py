@@ -224,6 +224,7 @@ def make_site(tmp, w, peers=False, title="Tuesdays pay the most"):
     os.makedirs(os.path.join(site, "jarvis"))
     for f in glob.glob(os.path.join(ROOT, "tools", "web_public", "jarvis", "*.woff2")):
         shutil.copy(f, os.path.join(site, "jarvis"))
+    shutil.copy(os.path.join(ROOT, "tools", "web_public", "jarvis", "ask.js"), os.path.join(site, "jarvis"))   # the kit's Ask Jarvis button (olympus.js)
     shutil.copytree(os.path.join(ROOT, "tools", "web_public", "olympus"), os.path.join(site, "olympus"))   # the OLYMPUS kit
     shutil.copytree(os.path.join(ROOT, "tools", "web_public", "assets", "audio"), os.path.join(site, "assets", "audio"))   # the kit's sound files (olympus/sfx.js reads ../assets/audio/)
     if w is not None:

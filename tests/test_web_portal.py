@@ -43,7 +43,7 @@ def static():
     html, js, core, css = read("index.html"), read("portal.js"), read("portalcore.js"), read("portal.css")
     allsrc = html + js + core + css
     check("a. noindex + no referrer", 'name="robots" content="noindex, nofollow"' in html and 'name="referrer" content="no-referrer"' in html)
-    refs = re.findall(r'(?:src|href)="([^"#]+)"', html) + re.findall(r"from '([^']+)'", js + core) + re.findall(r"getJSON\('([^']+)'\)", js)
+    refs = re.findall(r'(?<![\w-])(?:src|href)="([^"#]+)"', html) + re.findall(r"from '([^']+)'", js + core) + re.findall(r"getJSON\('([^']+)'\)", js)
     check("a. self-contained: every file it loads sits in its own folder (no ../, no Olympus kit, no CDN)",
           refs and all(not r.startswith(("../", "/", "http")) or r.startswith("data:") for r in refs) and "olympus" not in html.lower().replace("no olympus file", ""), refs)
     handle = "dcon" + "dax"                      # the owner's GitHub handle: no shipped agency file names it (the check lives in agency/public.py)

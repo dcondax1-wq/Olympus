@@ -636,7 +636,8 @@ def test_page():
             check("d. Do not call asks twice ('Tap again: never call ...'), then locks the business for good; the DEMO list is never saved",
                   armed.startswith("Tap again: never call Glow Nail Studio") and "+12135550181" in g["opt"] and g["locked"] == "Locked: do not call" and g["saved"] is None, (armed, g))
             p.locator("#cClose").click()
-            check("d. no sideways scroll; Jarvis's corner is free; no console error", AK.no_sideways(p) and not AK.corner(p) and not errs, errs[:3])
+            side, crn = AK.no_sideways(p), AK.corner(p)
+            check("d. no sideways scroll; Jarvis's corner is free; no console error", side and not crn and not errs, (side, crn, errs[:3]))
             t = AK.taps(p)
             check("d. the main page: every tap target is at least 44 x 44 px", not t, t[:5])
             agency = [u.split("?")[0] for u in seen if "/agency/" in u and u.split("?")[0].endswith(".json")]
