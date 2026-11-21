@@ -70,7 +70,7 @@ EXT_KIND = "le-live-ext"
 EXT_PARTS = 2                    # at most 2 ext posts a run (ntfy.sh free: a few hundred messages a day per IP)
 EXT_EVERY_S = 2640               # the ext goes every 3rd 15-minute run (44 min), or at once when its news changed (ext_hash). Was every 2nd (29 min) until
                                  # 2026-11-20: 96 core + 96 ext + 24 chart posts a day left no room under ntfy's 250 for the other programs and the alerts
-EXT_ORDER = ("brd", "life", "mf", "board_trades", "at", "fq", "zl", "learn", "lab", "glance", "kalshi_rewards", "kalshi_k1", "kalshi_live")   # "at": engine/feed_trades
+EXT_ORDER = ("brd", "life", "mf", "board_trades", "at", "fq", "zl", "learn", "lab", "glance", "glog", "kalshi_rewards", "kalshi_k1", "kalshi_live")   # "at": engine/feed_trades
 # "zl": ZEUS learned, the nightly line (engine/zeus_learn.read_tiny, <= 220 bytes) -> the ZEUS page's "ZEUS learned" card
 CORE_KEYS = ("eh", "v", "kind", "lite", "src", "t", "every_s", "host", "model_state", "price", "day_pnl", "pc_verdict", "pc", "reporter",
              "board", "accounts", "trimmed", "wp")   # wp: the phone app's push set-up (engine/push.app_block: public keys, ~230 bytes)
@@ -628,6 +628,13 @@ def full(snap: dict) -> dict:
         out["brd"] = board_events.status_block(max_bytes=BRD_BYTES)
     except Exception:  # noqa: BLE001
         pass
+    try:                                           # the Brain page's longer thought stream (engine/brain_glance.logs: 8 lines a bot)
+        from engine import brain_glance
+        gl = brain_glance.logs(hb)
+        if gl:
+            out["glog"] = gl
+    except Exception:  # noqa: BLE001
+        pass
     life = _life(hb.get("life"))
     if life:
         out["life"] = life
@@ -724,6 +731,11 @@ def _cuts(key: str) -> list:
             from engine import brain_glance
             brain_glance.fit(v, n)
         return f
+    def glog(n):
+        def f(v):
+            from engine import brain_glance
+            brain_glance.cut_logs(v, n)
+        return f
     def eq(n):
         def f(v):
             from engine import mffu_view
@@ -749,7 +761,7 @@ def _cuts(key: str) -> list:
                 for key in keys:
                     v["k8"].pop(key, None)
         return f
-    return {"kalshi_live": [k8("lg", "ls"), k8("e", "dy", "kk", "al", "pn")], "glance": [glance(1000), glance(600)], "mf": [eq(4), eq(0)], "brd": [ev(3), ev(1), ev(0)], "life": [ev(0)],
+    return {"kalshi_live": [k8("lg", "ls"), k8("e", "dy", "kk", "al", "pn")], "glance": [glance(1000), glance(600)], "glog": [glog(5), glog(3)], "mf": [eq(4), eq(0)], "brd": [ev(3), ev(1), ev(0)], "life": [ev(0)],
             "board_trades": [first(1)], "at": [at(2), at(1)], "fq": [fq(2), fq(0)]}.get(key, [])
 
 
@@ -855,7 +867,7 @@ def ext_hash(exts) -> str:
     """The ext's news (block times, the brain glance and an open trade's live $ / R left out: _news_of): a new hash = post the ext now, not at
     the next EXT_EVERY_S."""
     import hashlib
-    keep = [{k: _news_of(k, v) for k, v in _d(e.get("x")).items() if k not in ("glance",)} for e in exts or []]
+    keep = [{k: _news_of(k, v) for k, v in _d(e.get("x")).items() if k not in ("glance", "glog")} for e in exts or []]
     return hashlib.sha1(json.dumps(keep, sort_keys=True, default=str).encode("utf-8")).hexdigest()[:16]
 
 
