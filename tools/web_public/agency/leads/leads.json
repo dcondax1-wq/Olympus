@@ -2,7 +2,7 @@
  "v": 1,
  "kind": "web_leads",
  "demo": false,
- "fetched": "2026-11-21T18:32:35Z",
+ "fetched": "2026-11-21T18:47:54Z",
  "source": "OpenStreetMap via the public Overpass API (a few small queries per town)",
  "license": "Data (c) OpenStreetMap contributors, ODbL (openstreetmap.org/copyright)",
  "about": "Businesses on OpenStreetMap with no website tag. OSM can be out of date: check the business before you call.",
@@ -19,22 +19,6 @@
    "missing": [],
    "chains": 257,
    "with_site": 141
-  },
-  {
-   "town": "Hagerstown",
-   "state": "MD",
-   "businesses": 257,
-   "leads": 121,
-   "hot": 3,
-   "server": "maps.mail.ru",
-   "parts_ok": 7,
-   "parts": 9,
-   "missing": [
-    "healthcare",
-    "health + auto places"
-   ],
-   "chains": 87,
-   "with_site": 37
   },
   {
    "town": "Germantown",
@@ -263,19 +247,31 @@
    ],
    "chains": 70,
    "with_site": 5
+  },
+  {
+   "town": "Hagerstown",
+   "state": "MD",
+   "businesses": 257,
+   "leads": 123,
+   "hot": 3,
+   "server": "maps.mail.ru",
+   "parts_ok": 9,
+   "parts": 9,
+   "missing": [],
+   "chains": 87,
+   "with_site": 37
   }
  ],
  "skipped": {
-  "has_site": 1145,
-  "chain": 2051,
-  "other": 405,
+  "has_site": 1176,
+  "chain": 2096,
+  "other": 408,
   "duplicate": 111,
   "closed": 1
  },
  "leads": [],
  "files": [
   "towns/frederick.json",
-  "towns/hagerstown.json",
   "towns/germantown.json",
   "towns/gaithersburg.json",
   "towns/rockville.json",
@@ -289,7 +285,8 @@
   "towns/brunswick.json",
   "towns/walkersville.json",
   "towns/damascus.json",
-  "towns/clarksburg.json"
+  "towns/clarksburg.json",
+  "towns/hagerstown.json"
  ],
- "count": 1450
+ "count": 1452
 }
