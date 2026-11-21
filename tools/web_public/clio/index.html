@@ -26,22 +26,32 @@
 <script src="../olympus/a11y.js" defer></script>
 <script src="../olympus/agora-ui.js?v=7" defer></script>
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#d8c9a8'); r.setProperty('--oly-accent-rgb', '216, 201, 168'); })();</script>
-<link rel="stylesheet" href="clio.css?v=a1qdef">
+<link rel="stylesheet" href="clio.css?v=h1">
 <link rel="stylesheet" href="../olympus/shell.css?v=s6"><!-- day-arenas: the one design layer, loaded last -->
+<link rel="stylesheet" href="../nq/nqtheme.css?v=9"><link rel="stylesheet" href="../olympus/moneyfx.css?v=3"><!-- day-litedge 2026-11-21: OLYMPUS NIGHT (black, violet glow, gold accents, mint / red $), loaded last like board/ and ledger/ -->
 </head>
 <body>
 <main id="app">
   <header class="top">
-    <div class="brand"><img src="icon.svg" alt="" width="44" height="44"><div><h1 class="ag-title">Clio</h1><p class="sub">Every test we ran, in plain words. Search, or tap one to read.</p></div></div>
+    <div class="brand"><img src="icon.svg" alt="" width="44" height="44"><div><h1 class="ag-title">Clio</h1><p class="sub">The Research Hub: every test we ran, in plain words, with its $.</p></div></div>
     <div class="tags"><span id="demo" class="tag demo" hidden>DEMO</span><span id="lite" class="tag" hidden>LITE</span></div>
   </header>
   <p id="status" class="note" role="status" aria-live="polite">Loading...</p>
+  <section class="ag-card card hub" id="hub" aria-labelledby="hubH"><!-- day-litedge 2026-11-21: the Research Hub (clio/hub.json, tools/research_hub.py) -->
+    <h2 id="hubH">Research Hub</h2>
+    <p class="note" id="hubNote">What works, what we tried, what is still open, and the money calls waiting for you.</p>
+    <div class="seg" id="hubTabs" role="group" aria-label="Research Hub sections"></div>
+    <ul class="hlist" id="hubList"></ul>
+    <button type="button" class="btn" id="hubMore" hidden>Show more</button>
+  </section>
   <section class="ag-card card" aria-labelledby="findH">
     <h2 id="findH">Find a study</h2>
     <label class="sr" for="q">Search the write-ups</label>
     <input id="q" class="search" type="search" inputmode="search" placeholder="Search: size, Friday, slippage..." autocomplete="off" maxlength="80">
     <div class="seg" id="groups" role="group" aria-label="Verdict"></div>
     <div class="seg" id="sorts" role="group" aria-label="Order"></div>
+    <label class="sr" for="fam">Family</label>
+    <div class="selrow"><select id="fam" class="search sel" aria-label="Family"></select><select id="since" class="search sel" aria-label="Date"></select></div>
   </section>
   <section class="ag-card card" aria-labelledby="ideasH">
     <h2 id="ideasH">Best and worst ideas, in $ a month (past trades)</h2>
@@ -64,6 +74,6 @@
   <p class="foot" id="foot">Clio only reads; it sends and keeps nothing. Each $ a month is copied from the write-up itself: past trades, not a promise.</p>
   <nav class="folded" aria-label="Libraries folded into Clio"><a href="../archive/">Archive: every test</a><a href="../pinakes/">Pinakes: tables</a></nav><!-- day-arenas: the audit's MERGE verdicts -->
 </main>
-<script type="module" src="clio.js?v=a1d"></script>
+<script type="module" src="clio.js?v=h1"></script>
 </body>
 </html>
