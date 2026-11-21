@@ -2,7 +2,7 @@
  "v": 1,
  "kind": "web_leads",
  "demo": false,
- "fetched": "2026-11-21T17:44:43Z",
+ "fetched": "2026-11-21T18:01:31Z",
  "source": "OpenStreetMap via the public Overpass API (a few small queries per town)",
  "license": "Data (c) OpenStreetMap contributors, ODbL (openstreetmap.org/copyright)",
  "about": "Businesses on OpenStreetMap with no website tag. OSM can be out of date: check the business before you call.",
@@ -214,11 +214,28 @@
    ],
    "chains": 3,
    "with_site": 2
+  },
+  {
+   "town": "Walkersville",
+   "state": "MD",
+   "businesses": 25,
+   "leads": 4,
+   "hot": 3,
+   "server": "maps.mail.ru",
+   "parts_ok": 6,
+   "parts": 9,
+   "missing": [
+    "offices",
+    "gyms",
+    "beauty + auto shops"
+   ],
+   "chains": 8,
+   "with_site": 13
   }
  ],
  "skipped": {
-  "has_site": 1126,
-  "chain": 1954,
+  "has_site": 1139,
+  "chain": 1962,
   "other": 404,
   "duplicate": 111,
   "closed": 1
@@ -237,7 +254,8 @@
   "towns/urbana.json",
   "towns/middletown.json",
   "towns/thurmont.json",
-  "towns/brunswick.json"
+  "towns/brunswick.json",
+  "towns/walkersville.json"
  ],
- "count": 1388
+ "count": 1392
 }

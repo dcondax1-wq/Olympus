@@ -1,4 +1,4 @@
-# Website leads: counts (OpenStreetMap, updated 2026-11-21 17:44 UTC)
+# Website leads: counts (OpenStreetMap, updated 2026-11-21 18:01 UTC)
 
 Mailable = house number + street + town + ZIP (postcard-ready). Leads after removing businesses in two town boxes.
 
@@ -16,5 +16,6 @@ Mailable = house number + street + town + ZIP (postcard-ready). Leads after remo
 | Rockville | 220 | 219 | 9 | 22 | 0 | 87 | 0 | 0 | 15 | 9 | 139 | 0 | 2 | 50 | 5 | healthcare, health + auto places, beauty + auto shops |
 | Thurmont | 24 | 17 | 0 | 1 | 0 | 11 | 1 | 0 | 1 | 1 | 7 | 3 | 0 | 9 | 2 | offices, beauty + auto shops |
 | Urbana | 22 | 5 | 1 | 1 | 0 | 9 | 1 | 8 | 0 | 7 | 1 | 5 | 0 | 0 | 0 | offices, food places, other shops |
+| Walkersville | 4 | 8 | 3 | 3 | 0 | 3 | 0 | 0 | 0 | 0 | 2 | 0 | 0 | 1 | 1 | offices, gyms, beauty + auto shops |
 | Westminster | 35 | 25 | 2 | 3 | 0 | 17 | 7 | 11 | 0 | 0 | 4 | 4 | 3 | 0 | 6 | healthcare, gyms, food places, other shops |
-| **All** | **1388** | **1318** | **70** | **121** | **5** | **729** | **78** | **204** | **25** | **60** | **488** | **101** | **32** | **334** | **66** | |
+| **All** | **1392** | **1326** | **73** | **124** | **5** | **732** | **78** | **204** | **25** | **60** | **490** | **101** | **32** | **335** | **67** | |
