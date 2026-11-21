@@ -27,3 +27,30 @@ show the funded balance from $0 too. PC_FEED.mffuView when the page has it, else
 
 ## Tests
 jarvis_skills 85/85, jarvis_zeus 125/125 (+ the +$401 example pinned), jarvis_hub 272/272, smoke 11/11.
+
+## 3. The 3D sky made cheap at start (lead's decision, jarvis/backdrop.js only; render.js untouched)
+- Poster: `.bgfx`'s CSS sky (jarvis.css) is there from the first frame; the 3D fades in over it (no layout shift, no new image).
+- Not before 1.5 s + idle on any screen (a phone: 6 s + 2.5 s without a touch, as before).
+- Shaders: one top-level object per idle slice (`renderer.compile` + each new program's `getUniforms()`, so the driver's link wait
+  lands in that slice, not on the first frame; lights stay on so the programs match). `__jarvisBackdrop.compiled` = 8 objects.
+- First frames at the low tier (no bloom); the chosen tier after 30 fast frames in a row.
+- Cap: a frame over 50 ms (its own work, or the gap after it) twice -> 15 fps + low; twice more -> still: the last frame stays and a fresh
+  one every 3 s (it keeps following the New York clock, the VIX weather, the mode colour). Back from an app it draws again.
+- `__jarvisBackdrop.ms` = what each step took ({renderer, scene, first}).
+
+perf_sweep --pages jarvis --cpu 4 (Fast-3G), 3 runs each:
+
+| | before (yesterday's head) | trades_lite only | + the sky changes |
+|---|---|---|---|
+| total blocking time | 7.2 / 7.8 / 8.4 s | 4.5 / 7.0 / 8.4 s | 3.8 / 3.8 / 4.4 s |
+| longest task | 2.0 / 2.4 / 2.5 s | 1.3 / 2.4 / 2.6 s | 1.22 / 1.24 / 1.24 s |
+| bytes | 1,323-1,327 KB | 1,184-1,216 KB | 1,189-1,192 KB |
+| first paint | 1.6-2.0 s | 1.6-1.7 s | 1.6-1.7 s |
+
+What is left of the 1.2 s: the browser putting the first 3D frame on screen (software GL here: "(program)" in the profile, not JS;
+our JS for that frame is 20-60 ms). A real GPU does this in a fraction.
+
+Tests: test_olympus_render 56/56 (g now accepts the low start tier: 2 passes, or high: 3), test_jarvis_home 66/66, jarvis_hub 272/272
+(before the sky change), jarvis_skills 85/85, jarvis_zeus 125/125, smoke 11/11. test_jarvis_home_v2 40/41: 'e. reduced motion ... no
+transitions on the tiles' fails the SAME on origin/pc (olympus/a11y.css sets transition-duration .001s !important under reduced motion;
+the test wants 0s): not Jarvis, for the a11y kit owner or the test.
