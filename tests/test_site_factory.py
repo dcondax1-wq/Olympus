@@ -58,7 +58,7 @@ def main() -> int:
             bad["noindex"].append(s["name"])
         vis = re.sub(r"<style>.*?</style>|<script>.*?</script>", " ", h, flags=re.S).replace(F.esc(L["name"]), " ")
         for w in F.BANNED:
-            if re.search(r"(?<![a-z])" + re.escape(w), vis, re.I):
+            if re.search(r"(?<![a-z])" + re.escape(w) + r"(?![0-9])", vis, re.I):
                 bad["words"].append((s["name"], w))
         if len(h.encode()) > F.BUDGET:
             bad["size"].append((s["name"], len(h)))

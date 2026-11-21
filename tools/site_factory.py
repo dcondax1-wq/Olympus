@@ -611,6 +611,8 @@ def load_leads(only_ready: bool = False):
             continue
         if not L.get("id") or not str(L.get("name", "")).strip():
             continue
+        if chain_of(L.get("name")):              # chains have their own sites: no concept site (lead 2026-11-21)
+            continue
         out.append(L)
     added = os.environ.get("SITE_FACTORY_ADDED") or os.path.join(ROOT, "tools", "agency_added_leads.json")    # day-a11y caller portal: businesses a caller found by hand (public facts)
     if os.path.exists(added):
