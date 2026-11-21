@@ -964,6 +964,32 @@ def pair_payload(code: str, ua: str, now=None, full: bool = False) -> dict:
     return p
 
 
+def joined_payload(rows: list, now=None) -> dict:
+    """'A new phone now gets your trade alerts' (PAIR_CODE_ON off): who (the browser words, 8-hex id) and how to remove it."""
+    now = int(now or time.time())
+    who = "; ".join(f"{str(r.get('ua') or 'a phone')[:30]} (id {str(r.get('id'))[:8]})" for r in rows[:3]) + (" ..." if len(rows) > 3 else "")
+    body = (f"New phone(s) now get your trade alerts: {who}. If one is not yours, on the PC run: "
+            f"python -m engine.push --forget {str(rows[0].get('id'))[:8] if rows else '<id>'}")
+    p = text_payload("PC", "test", "New phone added to your alerts", body, key=f"joined:{now}", t=now, url="#board")
+    p["tag"] = "le-joined"
+    return p
+
+
+def forget(id8: str, path: str | None = None) -> list:
+    """Remove the phone(s) whose id starts with id8 (at least 6 hex characters) from data/push.json. -> the ids removed."""
+    path = path or CONFIG_PATH
+    k = re.sub(r"[^0-9a-f]", "", str(id8 or "").lower())
+    if len(k) < 6:
+        return []
+    f = _read_json(path)
+    devs = [d for d in f.get("devices") or [] if isinstance(d, dict)]
+    gone = [d["id"] for d in devs if str(d.get("id", "")).startswith(k)]
+    if gone:
+        f["devices"] = [d for d in devs if d.get("id") not in gone]
+        _write_private(path, f)
+    return gone
+
+
 def _tell_owner(p: dict, c: dict, rows: list, sender=None, path=None, ntfy=None) -> int:
     """The pairing notice to the phones already on the list and (on the real PC only) the private ntfy alert topic. Never raises."""
     n = 0
@@ -1080,12 +1106,19 @@ def intake(msgs, now=None, path: str | None = None, key_path: str | None = None,
         now_ids = {d["id"] for d in _devices(path)}
         f["devices"] = [d for d in keep if d["id"] in now_ids or d["id"] not in before]
         f["done"] = done
+        had_phones = bool(before) or bool(f.get("pair_on"))
         if pair_on:
             f["pair_on"] = f.get("pair_on") or now
         told = None
         if asked and now - int(pf["pair"].get("told") or 0) >= PAIR_TELL_S:   # no phone left: the private topic still gets it
             told = pair_payload(code, asked[-1][0], now, full=asked[-1][1])
             pf["pair"]["told"] = now
+        elif not PAIR_CODE_ON and had_phones and out["added"]:
+            # day-security3 2026-11-21: while the code is OFF a stranger who taps Allow on the public site joins and gets every
+            # trade alert. The owner hears of EVERY new phone at once (his phones + the private topic), with the one command that
+            # removes it; a flood of joins is one notice per run.
+            new_rows = [d for d in f["devices"] if d["id"] in out["added"]]
+            told = joined_payload(new_rows, now)
         f["pair"] = pf["pair"]
         _write_private(path, f)
         rows = {d["id"]: d for d in f["devices"]}
@@ -1431,3 +1464,28 @@ def save_pc_config(patch: dict, path: str | None = None) -> dict:
     with open(path, "w", encoding="utf-8") as fh:
         json.dump(cur, fh, indent=1)
     return status(config(path=path))
+
+
+def main(argv=None) -> int:
+    """python -m engine.push --devices          the phones that get the app's alerts (8-hex id, browser, since, last seen)
+       python -m engine.push --forget <id>      remove one (the first 6+ characters of its id); it stops getting alerts at once"""
+    import sys as _sys
+    a = list(_sys.argv[1:] if argv is None else argv)
+    if a[:1] == ["--devices"]:
+        rows = _devices(CONFIG_PATH)
+        for d in rows:
+            print(f"{str(d.get('id'))[:8]}  {str(d.get('ua') or '?')[:30]:<30}  since {time.strftime('%Y-%m-%d', time.gmtime(int(d.get('since') or 0)))}"
+                  f"  seen {time.strftime('%Y-%m-%d %H:%M', time.gmtime(int(d.get('seen') or 0)))} UTC")
+        print(f"{len(rows)} phone(s)")
+        return 0
+    if a[:1] == ["--forget"] and len(a) == 2:
+        gone = forget(a[1])
+        print(f"[OK] removed {len(gone)} phone(s)" if gone else "[FIX] no phone with that id (python -m engine.push --devices)")
+        return 0 if gone else 1
+    print(main.__doc__)
+    return 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+

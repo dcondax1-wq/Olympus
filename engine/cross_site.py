@@ -77,13 +77,50 @@ def why(method: str, path: str, headers, env=None) -> str | None:
     return None
 
 
+# 4. (day-security3 2026-11-21) WHO is asking, by network. The server listens on 0.0.0.0 (scripts/run_bot.ps1; HOST=127.0.0.1 waits for
+#    the owner's yes), so any device on the home WiFi - a guest, a roommate, a hacked smart TV - could read GET /api/live/state (the
+#    full NinjaTrader account names), POST /api/live/stop / kill, and POST /api/live/start armed with the public phrase and that name.
+#    W1 does not stop it: a script sends no Origin and the Host is a bare IP. Now /api/* (read or write) and every state-changing
+#    request answer only the PC itself (loopback, which includes the tailscale serve proxy) or a Tailscale address (100.64.0.0/10,
+#    fd7a:115c:a1e0::/48). The peer is the socket's own address: uvicorn rewrites it from X-Forwarded-For only for a proxy on
+#    127.0.0.1 (forwarded_allow_ips), so a WiFi device cannot fake it with a header. Pages and pictures still open on the WiFi.
+#    LE_ALLOW_LAN=1 turns this part off (the old behaviour).
+_PRIVATE_NETS = [ipaddress.ip_network(n) for n in ("127.0.0.0/8", "::1/128", "100.64.0.0/10", "fd7a:115c:a1e0::/48")]
+
+
+def peer_ok(peer: str) -> bool:
+    try:
+        ip = ipaddress.ip_address(str(peer or "").strip().strip("[]"))
+    except ValueError:
+        return False
+    if getattr(ip, "ipv4_mapped", None):
+        ip = ip.ipv4_mapped
+    return any(ip in n for n in _PRIVATE_NETS)
+
+
+def peer_why(method: str, path: str, peer: str, env=None) -> str | None:
+    """None = this device may ask; else why not (a device on the home WiFi / the internet asking for the bot's API or a change)."""
+    env = os.environ if env is None else env
+    if env.get("LE_CLOUD") == "1" or env.get("LE_ALLOW_LAN") == "1" or env.get("LE_CROSS_SITE_GUARD") == "0":
+        return None
+    p = str(path or "")
+    if p.startswith(EXEMPT):
+        return None
+    if str(method or "").upper() in SAFE_METHODS and not p.startswith("/api/"):
+        return None
+    if peer_ok(peer):
+        return None
+    return "refused: only this PC or your own Tailscale devices (not another device on the WiFi)"
+
+
 def install(app):
     """server.py: from engine import cross_site as _xs; _xs.install(app)   (right after the CLOUD GUARD block)."""
     from starlette.responses import JSONResponse
 
     @app.middleware("http")
     async def cross_site_guard(request, call_next):
-        w = why(request.method, request.url.path, request.headers)
+        peer = getattr(getattr(request, "client", None), "host", None) or ""
+        w = peer_why(request.method, request.url.path, peer) or why(request.method, request.url.path, request.headers)
         if w:
             return JSONResponse({"ok": False, "error": w}, status_code=403)
         return await call_next(request)

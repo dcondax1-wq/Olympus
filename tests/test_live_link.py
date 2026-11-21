@@ -389,7 +389,7 @@ sys.path.insert(0, os.getcwd())
 os.environ["LE_PREWARM"] = "0"
 import server
 from fastapi.testclient import TestClient
-c = TestClient(server.app, follow_redirects=False)
+c = TestClient(server.app, follow_redirects=False, client=("127.0.0.1", 50000))   # over the link the peer is the tailscale serve proxy (127.0.0.1)
 L = json.loads(sys.argv[1])
 out = {}
 out["link_root"] = [c.get("/", headers=L).status_code, c.get("/", headers=L).headers.get("location")]
