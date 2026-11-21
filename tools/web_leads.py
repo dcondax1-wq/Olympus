@@ -453,9 +453,28 @@ def merge(old: dict | None, new: dict) -> dict:
     """The new towns replace their old rows; every other town is kept; one lead per business (OSM id, then name + phone / address)."""
     if not old:
         return new
+    # A re-asked town ADDS to what it had (a busy server answers different kinds each time): new rows win on the same business,
+    # old businesses the new answer missed stay, and a kind counts as missing only if both runs missed it.
     redo = {t["town"] for t in new.get("towns") or []}
-    towns = [t for t in old.get("towns") or [] if t.get("town") not in redo] + list(new.get("towns") or [])
-    keep = [x for x in old.get("leads") or [] if x.get("town") not in redo]
+    oldt = {t.get("town"): t for t in old.get("towns") or []}
+    newids = {x.get("id") for x in new.get("leads") or []}
+    newkeys = {(str(x.get("name", "")).lower(), x.get("phone") or x.get("address")) for x in new.get("leads") or []}
+    keep = [x for x in old.get("leads") or [] if x.get("town") not in redo
+            or (x.get("id") not in newids and (str(x.get("name", "")).lower(), x.get("phone") or x.get("address")) not in newkeys)]
+    towns = [t for t in old.get("towns") or [] if t.get("town") not in redo]
+    for t in new.get("towns") or []:
+        o = oldt.get(t.get("town"))
+        if o:
+            t = dict(t)
+            if "missing" in o or "missing" in t:
+                t["missing"] = [k for k in (t.get("missing") or []) if k in (o.get("missing") or [])]
+            if isinstance(o.get("parts_ok"), int) and isinstance(t.get("parts_ok"), int):
+                t["parts_ok"] = max(t["parts_ok"], o["parts_ok"], (t.get("parts") or 0) - len(t.get("missing") or []))
+            t["_again"] = True
+            for k in ("businesses", "chains", "with_site"):
+                if isinstance(o.get(k), int) and isinstance(t.get(k), int):
+                    t[k] = max(t[k], o[k])
+        towns.append(t)
     ids = {x.get("id") for x in keep}
     keys = {(str(x.get("name", "")).lower(), x.get("phone") or x.get("address")) for x in keep}
     add, dup = [], 0
@@ -466,6 +485,12 @@ def merge(old: dict | None, new: dict) -> dict:
             continue
         ids.add(x.get("id")); keys.add(k); add.append(x)
     leads = sorted(keep + add, key=lambda x: (-x.get("score", 0), x.get("town", ""), x.get("name", "")))
+    for t in towns:
+        if t.pop("_again", False):
+            mine = [x for x in leads if x.get("town") == t.get("town")]
+            t["leads"] = len(mine)
+            if "hot" in t:
+                t["hot"] = sum(1 for x in mine if x.get("heat") == "hot")
     sk = dict(old.get("skipped") or {})
     for k, v in (new.get("skipped") or {}).items():
         sk[k] = sk.get(k, 0) + v

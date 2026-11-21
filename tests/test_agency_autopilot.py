@@ -100,6 +100,9 @@ def main():
     tmp = tempfile.mkdtemp(prefix="autopilot-")
     os.environ["OLYMPUS_HOME"] = os.path.join(tmp, "home")
     from agency.autopilot import bridge, core, run
+    from agency import public as PUB
+    PUB.CFG = os.path.join(tmp, "site_factory_agency.json")      # the public settings file (tools/site_factory_agency.json) for this test
+    json.dump({"public_base": "https://example.org/site"}, open(PUB.CFG, "w"))
     words = json.load(open(os.path.join(ROOT, "tools", "web_public", "agency", "outreach", "scripts.json"), encoding="utf-8"))
     offers = json.load(open(os.path.join(ROOT, "tools", "web_public", "agency", "offers", "offers.json"), encoding="utf-8"))
     leads = [{"id": f"L{i:02d}", "name": f"Shop {i}", "email": f"owner{i}@shop{i}.example", "heat": "hot" if i < 3 else "cold", "score": 10 - i % 10,
@@ -165,8 +168,28 @@ def main():
               m["subject"] == "A free website draft for Shop 5" and "https://example.org/site/agency/demos/restaurant/" in m["body"] and "$1,500" in m["body"]
               and "Sam Test" in m["body"] and "PO Box 12, Frederick MD 21701" in m["body"] and "no thanks" in m["body"] and not core.compliant(m["body"], live, m["subject"]))
         check("c. no unfilled [placeholder] in a live email", "[" not in m["body"].replace("[phone]", ""), m["body"][:200])
-        check("c. the 'Have our assistant call me' line only when the business has its own built site (the button lives there)",
-              core.CALL_LINE not in m["body"] and core.CALL_LINE in core.message(words, leads[5], "first", live, offers, {"L05": "sites/shop-5/"})["body"])
+        CL = "Questions? Call (301) 555-0142: our AI assistant answers."
+        m2 = core.message(words, leads[5], "first", dict(live, agency_number="(301) 555-0142"), offers, {"L05": "f/abcdefgh/"})
+        check("c. the inbound-only line 'Call <agency number>: our AI assistant answers' (no 'or text', no 'any time', no call-me button); none until the number is set",
+              CL in m2["body"] and "https://example.org/site/f/abcdefgh/" in m2["body"] and "Questions? Call" not in m["body"]
+              and not any(w in (m["body"] + m2["body"]).lower() for w in ("have our assistant call me", "or text", "any time")), m2["body"][:400])
+        json.dump({"public_base": "https://example.org/site", "agency_number": "(301) 555-0142"}, open(PUB.CFG, "w"))
+        check("c. the agency number can come from the public settings file too", CL in core.message(words, leads[5], "first", live, offers, {})["body"])
+        json.dump({"public_base": "https://example.org/site"}, open(PUB.CFG, "w"))
+        # privacy (lead 2026-11-21): no default public address, never the owner's handle / personal dashboards
+        nob = dict(live, site_base="")
+        json.dump({}, open(PUB.CFG, "w"))
+        try:
+            core.message(words, leads[5], "first", nob, offers, {})
+            raised = False
+        except ValueError:
+            raised = True
+        check("c. no public_base = nothing is sent (no default; setup names it)", raised and any("public web address" in p for p in core.cfg_problems(nob)))
+        bad = [PUB.public_base(u) for u in ("https://dcondax1-wq.github.io/jarvis", "https://x.github.io/jarvis", "https://box.tail1234.ts.net", "http://plain.example")]
+        check("c. public_base refuses the owner's handle, github.io/jarvis, ts.net and plain http", bad == ["", "", "", ""] and PUB.public_base("https://sites.example.com/") == "https://sites.example.com", bad)
+        check("c. compliant() refuses any message showing dcondax / github.io/jarvis / ts.net",
+              all(any("private address" in p for p in core.compliant(m["body"] + " " + u, live, m["subject"])) for u in ("dcondax1-wq", "see x.github.io/jarvis/agency", "pc.ts.net")))
+        json.dump({"public_base": "https://example.org/site"}, open(PUB.CFG, "w"))
         check("c. compliant() refuses a message without the postal address or the way to say no",
               "no postal address" in core.compliant("Hi from Sam Test. Reply no thanks.", live) and "no way to say no" in core.compliant("Sam Test, PO Box 12, Frederick MD 21701", live))
         check("c. every sent message carries List-Unsubscribe", all(x["lu"] and "unsubscribe" in x["lu"] for x in FakeSMTP.sent))
