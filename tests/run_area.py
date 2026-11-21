@@ -311,6 +311,8 @@ AREAS["pc"].append("cross_site")
 AREAS["pc"].append("redteam2_live")       # day-redteam2 2026-11-20: half-day halt alarm + TRADE HAS NO STOP alarm (engine/fast_alarm.py)
 AREAS["pc"].append("alert_bus")         # day-alerts 2026-11-21: engine/alert_bus.py (Telegram / Discord first, ntfy + Web Push fallbacks)
 AREAS["pc"].append("alerts_box")        # alerts-phone 2026-11-21: /alerts/ = ALERTS_SETUP Telegram from the phone (engine/alerts_box.py); its own line
+AREAS["pc"].append("alerts_start_code")   # day-security3 2026-11-21: the /alerts/ page's one-time START code; its own line
+AREAS["privacy"] += ["alerts_start_code", "cross_site"]
 AREAS["nq"].append("redteam2_live")
 AREAS["pc"].append("redteam2_wires")      # day-redteam2 2026-11-20: L2 rapid._other_names covers the extra accounts
 AREAS["agency"].append("web_research")   # day-web-research 2026-11-20: the website-business research (RESEARCH.md, writeup, offers.json); its own line
@@ -394,5 +396,3 @@ def main(argv=None) -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
-AREAS["pc"].append("alerts_start_code")   # day-security3 2026-11-21: the /alerts/ page's one-time START code; its own line
-AREAS["privacy"] += ["alerts_start_code", "cross_site"]
