@@ -26,11 +26,11 @@ import sys
 import time
 import urllib.request
 
+from .. import public as PUB
 from . import bridge, core, mailer
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 WEB = os.path.join(ROOT, "tools", "web_public")
-SITE_BASE = "https://dcondax1-wq.github.io/jarvis"
 
 
 def home(env=None) -> str:
@@ -266,7 +266,7 @@ def run_once(cfg: dict, state: dict, leads: list, words: dict, offers: dict, sit
         files[f"inbox/{item['id']}.json"] = item
         res["inbox"].append(item)
     # 2. Claude's drafts: the allowed kinds go out, the rest wait for the owner (one push)
-    allowed = {u for u in (cfg.get("booking_link"), cfg.get("payment_link"), cfg.get("site_base") or SITE_BASE) if u}
+    allowed = {u for u in (cfg.get("booking_link"), cfg.get("payment_link"), PUB.public_base(cfg.get("site_base"))) if u}
     held = []
     for d in list((outbox or (lambda: []))()) + cs["outbox"]:
         did = str(d.get("id") or "")
