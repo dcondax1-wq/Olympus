@@ -531,7 +531,7 @@ def run_a(br, url):
     a5 = ask("is the market open")
     check("d. the market, and when it opens or closes next", "NQ market" in a5 and re.search(r"(Opens|Closes) in \d", a5), a5)
     check("d. status / room / target carry BLITZ next to Zlarior and ATLAS",
-          "BLITZ 25K" in a1 and "$612" in a1 and "BLITZ 25K: drawdown left $612" in a2 and "BLITZ: $1,388 to the target" in a3,
+          "BLITZ 25K" in a1 and "$612" in a1 and re.search(r"BLITZ 25K: (drawdown left )?\$612", a2) and "BLITZ: $1,388 to the target" in a3,   # room: biz.js since QA 2026-11-21 ("BLITZ 25K: $612 of ... drawdown left")
           (a1, a2, a3))
     a8 = ask("today's p&l")
     check("d. P&L: Zlarior, ATLAS and BLITZ (today and this week)", "Zlarior today +$213" in a8 and "ATLAS today" in a8
