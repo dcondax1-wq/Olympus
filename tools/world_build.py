@@ -632,9 +632,15 @@ def concepts(W):
         warm = sum(1 for x in xs if x.get("heat") == "warm")
         ready = sum(1 for x in xs if x.get("ready"))
         blds = []
-        for x in sorted(xs, key=lambda x: ({"hot": 0, "warm": 1}.get(x.get("heat"), 2), str(x.get("id")))):
+        # ~4k sites (Overture leads, 2026-11-21): one building per GROUP of k sites so the district stays ~400 buildings (the 300 KB budget,
+        # the phone); a group takes its warmest site's look, in the order hot, warm, cold, not ready
+        k = max(1, math.ceil(len(sites) / 400))
+        ordered = sorted(xs, key=lambda x: ({"hot": 0, "warm": 1}.get(x.get("heat"), 2) if x.get("ready", True) else 3, str(x.get("id"))))
+        xs_groups = [ordered[i:i + k] for i in range(0, len(ordered), k)]
+        for grp in xs_groups:
+            x = grp[0]
             heat = x.get("heat")
-            if not x.get("ready"):
+            if x.get("ready") is False:
                 blds.append((60, SCAFFOLD, None))
             elif heat == "hot":
                 blds.append((200 + fnv(str(x.get("id"))) % 50, BRIGHT, None))
@@ -644,7 +650,7 @@ def concepts(W):
                 blds.append((70 + fnv(str(x.get("id"))) % 40, LIT, None))
         name = NICHE.get(niche, niche.title())
         W.add("sites:" + slug(niche), name, "sites", "sites", "concepts", "bright" if hot else "growing",
-              f"{len(xs)} concept sites for {name.lower()}: {hot} hot, {warm} warm leads, {ready} ready to show",
+              f"{len(xs)} concept sites for {name.lower()}: {hot} hot, {warm} warm leads, {ready} ready to show" + (f" (a building = {k} sites)" if k > 1 else ""),
               [["Concept sites", str(len(xs))], ["Hot leads", str(hot)], ["Warm leads", str(warm)], ["Ready", str(ready)]], blds,
               href="agency/", how="A block of the website business: one building per concept site. Taller and brighter = a warmer lead.")
 
@@ -865,6 +871,13 @@ def try_plan(W, by_q, need, arcs, R):
                 if grab(p, need_cells(p), slice_, taken) is None:
                     return False, None
             a += w
+    # never a place outside its district (lead 2026-11-21: Decide cards spilled over the Money border on a crowded plan): such a plan is
+    # refused, and the city grows a ring instead
+    arc_of = {d: arcs[d] for d, *_ in DISTRICTS}
+    for p in W.places:
+        a0, a1 = arc_of[p["district"]]
+        if any(not in_arc(angle_of(i * CELL, j * CELL), a0, a1) for i, j in p.get("cells", []) if (i, j) in taken and taken[(i, j)] == p["id"]):
+            return False, None
     return True, taken
 
 
