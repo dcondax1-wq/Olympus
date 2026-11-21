@@ -34,11 +34,15 @@ CELL = 7.0          # one street cell (3 x 3 building lots) in world units (abou
 PLAZA = 26.0        # the central plaza's radius: no cells inside it
 LOTS = 9            # building lots in one cell
 
-# the four districts = the four doors, clockwise from north (the first view looks north at ZEUS Trading)
+# the six districts = the owner's six arenas (lead 2026-11-21: "one huge 3D city where each district is an arena"), clockwise from north
+# (the first view looks north at ZEUS Trading). The four doors still feed them: the More door splits into Lab & Research and Life, the
+# Money door gives its website apps to Websites, which also holds every concept site (one lit building each, no names).
 DISTRICTS = [
     ("zeus", "ZEUS Trading · NQ", "Zlarior and ATLAS: accounts, live bots, trades, the Lab and every NQ idea tested", "#ffc65a"),
     ("kalshi", "Kalshi", "The Kalshi bot, its edges and the series studied. Paused: paper only", "#6fa8ff"),
-    ("more", "More", "Research, Jarvis, your day, settings and the 3D worlds", "#c58cff"),
+    ("sites", "Websites", "The website business: every concept site built, lit by how warm its lead is", "#ff8f6b"),
+    ("lab", "Lab & Research", "Research, the Data City, the 3D worlds and every study", "#c58cff"),
+    ("life", "Life", "Jarvis, your day, the planner, the inbox and settings", "#7fd6c8"),
     ("money", "Money", "Business, payouts, taxes, the fleet plan and the household", "#5fe3a1"),
 ]
 DNAME = {d[0]: d[1] for d in DISTRICTS}
@@ -48,7 +52,9 @@ QUARTERS = {
     "zeus": [("apps", "Apps"), ("core", "Live bots & accounts"), ("lab", "ZEUS Lab"), ("lit", "LIT research"), ("risk", "Risk & sizing"),
              ("filters", "Filters & timing"), ("ideas", "New ideas"), ("markets", "Market data")],
     "kalshi": [("apps", "Apps"), ("kbets", "Kalshi bets"), ("k8", "Gold & silver (K8)"), ("kresearch", "Kalshi research")],
-    "more": [("apps", "Apps"), ("datacity", "Data City quarters"), ("mresearch", "Research notes")],
+    "sites": [("apps", "Apps"), ("concepts", "Concept sites")],
+    "lab": [("apps", "Apps"), ("datacity", "Data City quarters"), ("mresearch", "Research notes")],
+    "life": [("apps", "Apps")],
     "money": [("apps", "Apps"), ("decisions", "Open decisions"), ("money", "Money research")],
 }
 QNAME = {(d, q): n for d, qs in QUARTERS.items() for q, n in qs}
@@ -70,8 +76,19 @@ EXTRA_PAGES = {
              ("business/lab.html", "ZEUS Lab page", "Business · Lab", "What the Lab tested last night, in plain words", "#7fe0ff"),
              ("business/week.html", "This week", "Business · Week", "The Friday review: each account's week in $", "#ffe2a0"),
              ("atlascity/", "Atlas City", "Atlas City", "ATLAS's strategy as a city", "#59d6ff")],
-    "more": [("hub/doors.html", "The four doors", "Doors", "Every app, filed in its door", "#d79a5c")],
+    "life": [("hub/doors.html", "The four doors", "Doors", "Every app, filed in its door", "#d79a5c")],
 }
+# where a door's app lives in the six districts (the More door splits; the website apps leave Money)
+LIFE = {"planner", "jarvis", "compass", "helios", "herald", "stoa", "hestia", "inbox", "settings", "mind"}
+SITES = {"agency"}
+
+
+def district_of(door_id, app_id, href):
+    if app_id in SITES or str(href).startswith("agency/"):
+        return "sites"
+    if door_id == "more":
+        return "life" if (app_id in LIFE or str(href).startswith(("hub/", "planner/", "jarvis/"))) else "lab"
+    return door_id if door_id in DNAME else "lab"
 
 
 # ------------------------------------------------------------------------------------------------ small helpers
@@ -230,7 +247,7 @@ def apps(W):
     rows = {r["id"]: r for r in apps_list()}
     seen_href = set()
     for door in doors():
-        d = door["id"] if door["id"] in DNAME else "more"
+        dd = door["id"]
         rank = 0
         for it in door["items"]:
             href = it["href"]
@@ -238,6 +255,7 @@ def apps(W):
             if href in seen_href:
                 continue
             seen_href.add(href)
+            d = district_of(dd, it["app"], href)
             purpose = app["purpose"] if app and app.get("path") == href else it["greek"]
             hue = app["colour"] if app else dict((x[0], x[3]) for x in DISTRICTS)[d]
             W.add("app:" + (it["app"] if app and app.get("path") == href else slug(href)), it["label"], "app", d, "apps", "app",
@@ -245,6 +263,7 @@ def apps(W):
                   [["App", it["greek"]], ["Door", door["title"]]], [(200 - rank * 6, CROWN, None)], hue=hue, href=href, fill=0,
                   how="An app: tap Open to go there.", extra={"glyph": (app or {}).get("glyph"), "rank": rank, "shortcut": True})
             rank += 1
+        d = "life" if dd == "more" else dd if dd in DNAME else "lab"
         for x, (href, name, greek, line, hue) in enumerate(EXTRA_PAGES.get(d, [])):
             if href in seen_href or not os.path.exists(os.path.join(WEB, href.split("#")[0].split("?")[0].rstrip("/") or ".")):
                 continue
@@ -259,6 +278,7 @@ def apps(W):
             if href in seen_href:
                 continue
             seen_href.add(href)
+            d = district_of(dd, aid, href)
             W.add("app:" + aid, a["name"], "app", d, "apps", "app", a.get("purpose") or a["name"], [["App", a["name"]], ["Door", door["title"]]],
                   [(110 + fnv(aid) % 60, CROWN, None)], hue=a.get("colour"), href=href, fill=0, how="An app: tap Open to go there.",
                   extra={"glyph": a.get("glyph"), "rank": 50 + len(seen_href)})
@@ -516,7 +536,7 @@ def datacity(W):
         if best and best.get("e") is not None:
             facts.append(["Best", f"{usd(best['e'], True)} a trade per micro"])
         n_gold, n_green = sum(1 for b in mine if b.get("cls") == "gold"), sum(1 for b in mine if b.get("cls") == "green")
-        W.add("dc:" + s["key"], str(s.get("name") or s["key"]).title(), "datacity", "more", "datacity", "bright" if n_gold else "growing" if n_green else "testing",
+        W.add("dc:" + s["key"], str(s.get("name") or s["key"]).title(), "datacity", "lab", "datacity", "bright" if n_gold else "growing" if n_green else "testing",
               short(s.get("blurb"), 120), facts, [(max(20, h255(abs(b.get("e") or 0), 0, emax)), code.get(b.get("cls"), LIT), None) for b in mine],
               hue=str(s.get("color") or "#4fe0d0"), fill=2,
               how="One building per tested combo: gold spire = passed every guard, bright = it made money, scaffold = maybe, dark = no edge.")
@@ -593,6 +613,40 @@ def kalshi(W):
     for e in (log.get("entries") or [])[-12:]:
         if isinstance(e, dict) and e.get("d"):
             W.event(iso(e["d"]), None, "Kalshi: " + short(e.get("text"), 90))
+
+
+NICHE = {"food": "Restaurants & cafes", "retail": "Shops", "beauty": "Salons & beauty", "health": "Health & care", "auto": "Car repair",
+         "gym": "Gyms & fitness", "services": "Services", "trades": "Trades", "pro": "Professional offices"}
+
+
+def concepts(W):
+    """the Websites district: one block per trade, one building per concept site (counts and lead warmth only, never a business name):
+    hot = a bright tower, warm = lit, cold = low and dim, not ready yet = scaffolding"""
+    data = load("tools/web_public/agency/factory/sites.json", {}) or {}
+    sites = [x for x in (data.get("sites") or []) if isinstance(x, dict)]
+    by = {}
+    for x in sites:
+        by.setdefault(str(x.get("niche") or "services"), []).append(x)
+    for niche, xs in sorted(by.items(), key=lambda kv: -len(kv[1])):
+        hot = sum(1 for x in xs if x.get("heat") == "hot")
+        warm = sum(1 for x in xs if x.get("heat") == "warm")
+        ready = sum(1 for x in xs if x.get("ready"))
+        blds = []
+        for x in sorted(xs, key=lambda x: ({"hot": 0, "warm": 1}.get(x.get("heat"), 2), str(x.get("id")))):
+            heat = x.get("heat")
+            if not x.get("ready"):
+                blds.append((60, SCAFFOLD, None))
+            elif heat == "hot":
+                blds.append((200 + fnv(str(x.get("id"))) % 50, BRIGHT, None))
+            elif heat == "warm":
+                blds.append((140 + fnv(str(x.get("id"))) % 40, LIT, None))
+            else:
+                blds.append((70 + fnv(str(x.get("id"))) % 40, LIT, None))
+        name = NICHE.get(niche, niche.title())
+        W.add("sites:" + slug(niche), name, "sites", "sites", "concepts", "bright" if hot else "growing",
+              f"{len(xs)} concept sites for {name.lower()}: {hot} hot, {warm} warm leads, {ready} ready to show",
+              [["Concept sites", str(len(xs))], ["Hot leads", str(hot)], ["Warm leads", str(warm)], ["Ready", str(ready)]], blds,
+              href="agency/", how="A block of the website business: one building per concept site. Taller and brighter = a warmer lead.")
 
 
 def decisions(W):
@@ -784,6 +838,7 @@ def build(now=None):
     datacity(W)
     kalshi(W)
     decisions(W)
+    concepts(W)
     R, arcs, filler = plan_city(W)
     d0 = _dt.date.fromisoformat(W.start) if W.start else None
     nb, counts = 0, {"ruin": 0, "scaffold": 0, "lit": 0, "bright": 0}
@@ -830,7 +885,7 @@ def build(now=None):
         "v": 2, "kind": "olympus-world", "built": now.strftime("%Y-%m-%dT%H:%MZ"), "start": W.start,
         "days": 0 if not d0 else max(0, (now.date() - d0).days), "hidden_bots": list(hide),
         "cell": CELL, "plaza": PLAZA, "R": R,
-        "about": "One city of everything: four districts, one per door. Every app is a downtown tower you can open; every learning place is real data "
+        "about": "One city of everything: six districts, one per arena (ZEUS Trading, Kalshi, Websites, Lab & Research, Life, Money). Every app is a downtown tower you can open; every learning place is real data "
                  "(a live bot, an account, a market, a Kalshi bet, a ZEUS Lab idea or a group of stored backtests): lit towers work, scaffolds are being "
                  "tested, ruins were tested and rejected. Money is after costs; backtests are history, not a forecast.",
         "legend": [["Gold crown", "an app or a live bot: tap to open"], ["Bright tower", "works: adopted, a winner, promising"],

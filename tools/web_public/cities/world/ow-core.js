@@ -11,7 +11,7 @@ export const S = Object.freeze({ RUIN: 0, SCAFFOLD: 1, LIT: 2, BRIGHT: 3, CROWN:
 export const LOT = 1.75, FOOT = 1.45;
 export const STATE_WORD = Object.freeze({ live: 'Live', app: 'App', bright: 'Working', growing: 'Growing', testing: 'Being tested', planned: 'Planned',
   ruin: 'Rejected', data: 'Data', paused: 'Paused' });
-const HMAX = { app: 34, bot: 21, account: 19, lab: 10, research: 14, datacity: 13, market: 13, kalshi: 9, decision: 7 };
+const HMAX = { app: 34, bot: 21, account: 19, sites: 15, lab: 10, research: 14, datacity: 13, market: 13, kalshi: 9, decision: 7 };
 const LITF = [0, 0.1, 0.4, 0.62, 0.6, 0.2];
 
 // ------------------------------------------------------------------------------------------------ small helpers
@@ -199,7 +199,7 @@ export function planWorld(w, opts) {
   // revamp-cities (2026-11-20): the wider world round the island: satellite towns across the water (owner: "dozens and hundreds of
   // cities"), each a small downtown that falls away to low streets, in its district's light. Part of the plaza's growth (index N).
   const towns = [];
-  const tr = rng(4242), nT = low ? 9 : 18;
+  const tr = rng(4242), lean = low || o.phone, nT = low ? 9 : o.phone ? 12 : 18;          // a phone: fewer, lighter towns (heap budget)
   for (let t = 0; t < nT; t++) {
     const ang = (t / nT) * Math.PI * 2 + (tr() - 0.5) * 0.25, rad = R + 150 + tr() * 520 + (t % 3) * 90;
     const tx = Math.cos(ang) * rad, tz = Math.sin(ang) * rad, trad = 22 + tr() * 30 + rad * 0.03;
@@ -209,7 +209,7 @@ export function planWorld(w, opts) {
     for (let i = -kk; i <= kk; i++) for (let j = -kk; j <= kk; j++) {
       const x = tx + i * step + (tr() - 0.5) * 0.6, z = tz + j * step + (tr() - 0.5) * 0.6;
       const dd = Math.hypot(x - tx, z - tz) / trad;
-      if (dd > 1 || tr() > (low ? 0.14 : 0.2) * (1.15 - dd * 0.5)) continue;
+      if (dd > 1 || tr() > (lean ? 0.14 : 0.2) * (1.15 - dd * 0.5)) continue;
       const core = Math.exp(-dd * dd * 5);
       const h = (0.8 + Math.pow(tr(), 2) * 2.5) * (1 + core * (4 + tr() * 7));
       const c = mixc(warm[(((i + j) % 3) + 3) % 3], dh, 0.2);
@@ -402,7 +402,7 @@ export function pcLine(lite, nowS) {
   const t = isObj(lite) && +lite.t > 0 ? +lite.t : null;
   const age = t ? Math.max(0, nowS - t) : null;
   const silent = age == null || age > 1800;
-  return { silent, age_s: age, text: t == null ? 'PC: no live report here' : silent ? 'PC silent · ' + ago(age) : 'PC live · ' + ago(age) };
+  return { silent, age_s: age, text: t == null ? 'PC: no live report here' : silent ? 'PC silent · last data ' + ago(age) : 'PC live · ' + ago(age) };
 }
 /** the open trades of the bots from the PC feed: {lit: {side} | null, atlas: ...} (the core board card's position) */
 export function positions(lite) {

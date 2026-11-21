@@ -35,7 +35,7 @@ def test_static():
     check("a. the files are there (%s)" % ", ".join(FILES), len(have) == len(FILES), sorted(set(FILES) - set(have)))
     html, main, scene, core, sh = (AK.read(os.path.join(D, f)) for f in ("index.html", "ow-main.js", "ow-scene.js", "ow-core.js", "ow-shaders.js"))
     check("a. the kit: olympus.js as the Cities app, gate-nav (Home + Go to), the page's own module last", 'src="../../olympus/olympus.js?v=o22" data-app="cities"' in html
-          and "../../olympus/gate-nav.js" in html and html.rindex('src="ow-main.js?v=w5"') > html.index("olympus.js"))
+          and "../../olympus/gate-nav.js" in html and html.rindex('src="ow-main.js?v=w8"') > html.index("olympus.js"))
     check("a. three.js r160 from the site (../../jarvis/three.module.min.js, vendored, MIT) and the OLYMPUS render core; no CDN, no http(s) address in the code",
           "from '../../jarvis/three.module.min.js'" in scene and "from '../../olympus/render.js'" in scene and not re.search(r"https?://", main + scene + core + sh))
     check("a. instanced: one InstancedBufferGeometry per kind (buildings, halos, traffic, beams, rings, streaks), never a mesh per building",
@@ -81,7 +81,7 @@ def test_static():
     check("a. the Cities app's front screen links Olympus World (world/), as a card with a real frame of the 3D city (world-card.jpg)", 'href="world/"' in cities
           and "world-card.jpg" in cities and os.path.isfile(os.path.join(AK.WEB, "cities", "world-card.jpg")) and os.path.isfile(os.path.join(D, "poster.jpg")))
     w = json.load(open(os.path.join(D, "world.json"), encoding="utf-8"))
-    check("a. world.json: 'olympus-world', 4 districts, hundreds of places (%d)" % len(w.get("places", [])), w.get("kind") == "olympus-world" and len(w["districts"]) == 4 and len(w["places"]) > 300)
+    check("a. world.json: 'olympus-world', 6 arena districts (lead 2026-11-21), hundreds of places (%d)" % len(w.get("places", [])), w.get("kind") == "olympus-world" and len(w["districts"]) == 6 and len(w["places"]) > 300)
 
 
 def feed_body(lite):
@@ -129,7 +129,9 @@ def test_page():
             sc = st.get("scene") or {}
             check("b. 3D: the city renders in %.1f s (first frame %s ms after the module), hundreds of places (%d), %d districts, %d instanced buildings in %s draw calls (%s triangles)" % (
                 time.time() - t0, st.get("firstFrameMs"), st["places"], st["districts"], sc.get("instances", 0), sc.get("calls"), sc.get("triangles")),
-                st["mode"] == "3d" and st["places"] > 300 and st["districts"] == 4 and sc.get("instances", 0) > 6000 and 0 < sc.get("calls", 99) < 40 and sc.get("tier") == "low", st)
+                st["mode"] == "3d" and st["places"] > 300 and st["districts"] == 6 and sc.get("instances", 0) > 6000 and 0 < sc.get("calls", 99) <= 60 and sc.get("tier") == "low", st)
+            check("b. a phone gets the poster first: no 3D frame before 6 s after load unless touched (jarvis/backdrop.js's rule, the TBT budget); %s ms" % st.get("firstFrameMs"),
+                  (st.get("firstFrameMs") or 0) >= 6000, st.get("firstFrameMs"))
             p.evaluate("() => OWORLD.skip()")
             p.wait_for_timeout(1500)
             f0 = p.evaluate("() => OWORLD.state().scene.frames")
@@ -188,8 +190,8 @@ def test_page():
             ctx, p, errs, seen, off = AK.page(br, origin)
             wait_ready(p, origin, "?flat=1")
             f = p.evaluate("() => ({ mode: OWORLD.state().mode, secs: document.querySelectorAll('#flat section').length, links: [...document.querySelectorAll('#flat a[href]')].map((a) => a.getAttribute('href')), canvas: getComputedStyle(document.querySelector('#c')).opacity })")
-            check("d. ?flat=1 (no WebGL): a list of the four districts with every app's link (%d), the 3D canvas hidden, never blank" % len(f["links"]),
-                  f["mode"] == "2d" and f["secs"] == 4 and len(f["links"]) > 80 and "../../hub/zeus.html" in f["links"] and f["canvas"] == "0", {k: v for k, v in f.items() if k != "links"})
+            check("d. ?flat=1 (no WebGL): a list of the six districts with every app's link (%d), the 3D canvas hidden, never blank" % len(f["links"]),
+                  f["mode"] == "2d" and f["secs"] == 6 and len(f["links"]) > 80 and "../../hub/zeus.html" in f["links"] and f["canvas"] == "0", {k: v for k, v in f.items() if k != "links"})
             check("d. no console error in the list", not errs, errs[:3])
             ctx.close()
             ctx, p, errs, seen, off = AK.page(br, origin, reduced=True)

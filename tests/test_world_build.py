@@ -47,8 +47,9 @@ def test_build():
     w = WB.build()
     ps = w["places"]
     ids = [p["id"] for p in ps]
-    check("a. a world: v2 'olympus-world', four districts in door order (ZEUS Trading, Kalshi, More, Money), every district has apps",
-          w["v"] == 2 and w["kind"] == "olympus-world" and [d["id"] for d in w["districts"]] == ["zeus", "kalshi", "more", "money"] and all(d["apps"] > 0 for d in w["districts"]),
+    # lead 2026-11-21 ("one huge 3D city where each district is an arena"): six districts, the More door split, Websites its own arena
+    check("a. a world: v2 'olympus-world', six arena districts in order (ZEUS Trading, Kalshi, Websites, Lab & Research, Life, Money), every district has apps",
+          w["v"] == 2 and w["kind"] == "olympus-world" and [d["id"] for d in w["districts"]] == ["zeus", "kalshi", "sites", "lab", "life", "money"] and all(d["apps"] > 0 for d in w["districts"]),
           [(d["id"], d["apps"]) for d in w["districts"]])
     check("a. hundreds of places (> 300), unique ids, 4,000+ real tests as buildings", len(ps) > 300 and len(set(ids)) == len(ids) and w["counts"]["buildings"] >= 4000, (len(ps), w["counts"]))
     rows = WB.apps_list()
@@ -57,10 +58,15 @@ def test_build():
     check("a. every app of apps-list.js is a building that opens its own page (%d apps)" % len(rows), rows and not missing, missing)
     doors = {dd["id"]: dd for dd in WB.doors()}
     wrong = [p["id"] for p in ps if p["kind"] == "app" and p["id"].startswith("app:") and p["id"][4:] in {i for dd in doors.values() for i in dd["ids"]}
-             and p["district"] != next(k for k, dd in doors.items() if p["id"][4:] in dd["ids"])]
-    check("a. each app sits in the district of its door (doors.js is the one filing): Kalshi apps in Kalshi, Mint in Money, Data City in More",
+             and p["district"] != WB.district_of(next(k for k, dd in doors.items() if p["id"][4:] in dd["ids"]), p["id"][4:], p.get("href") or "")]
+    check("a. each app sits in its door's district (doors.js files it; More splits into Lab and Life, websites go to Websites): Kalshi apps in Kalshi, Mint in Money, Data City in Lab",
           not wrong and next(p for p in ps if p["id"] == "app:kalshicity")["district"] == "kalshi" and next(p for p in ps if p["id"] == "app:mintcity")["district"] == "money"
-          and next(p for p in ps if p["id"] == "app:datacity")["district"] == "more", wrong)
+          and next(p for p in ps if p["id"] == "app:datacity")["district"] == "lab" and next(p for p in ps if p["id"] == "app:jarvis")["district"] == "life"
+          and next(p for p in ps if p["id"] == "app:agency")["district"] == "sites", wrong)
+    cs = [p for p in ps if p["district"] == "sites" and p["kind"] == "sites"]
+    nsites = len((json.load(open(os.path.join(WB.WEB, "agency", "factory", "sites.json"), encoding="utf-8")).get("sites") or []))
+    check("a. Websites: one block per trade, one building per concept site (%d of %d), no business name anywhere" % (sum(len(p["b"]) // 3 for p in cs), nsites),
+          cs and sum(len(p["b"]) // 3 for p in cs) == nsites and all(p["name"] in WB.NICHE.values() or p["name"].istitle() for p in cs))
     shortcut = [p["name"] for p in ps if p["kind"] == "app" and p["district"] == "zeus"][:8]
     check("a. ZEUS Trading's downtown starts with the owner's own shortcuts, plain names first (My accounts, Bots right now, ...)", shortcut[:2] == ["My accounts", "Bots right now"], shortcut)
     extra = {p["href"] for p in ps if p["kind"] == "app"}
@@ -259,7 +265,7 @@ def test_core(w):
     check("f. planWorld: thousands of instances (%d high, %d low), every number finite, sizes positive, the same city every time, all six building states used" % (p["n"], p["low"]),
           p["n"] > 6000 and p["low"] < p["n"] and p["nan"] == 0 and p["neg"] == 0 and p["same"] and p["states"] == [0, 1, 2, 3, 4, 5] and p["places"] == len(w["places"]), p)
     check("f. the Gate spire (46) is the tallest thing; halos only where the light is (live, bright, shortcuts) + the plaza; rings and searchlights on the live parts",
-          44 <= p["maxH"] <= 60 and len(w["places"]) // 8 <= p["halos"] <= len(w["places"]) // 2 + 1 and p["rings"] >= 5 and p["beams"] >= 6 and p["slots"] == len(w["places"]) + 5, p)
+          44 <= p["maxH"] <= 60 and len(w["places"]) // 8 <= p["halos"] <= len(w["places"]) // 2 + 1 and p["rings"] >= 5 and p["beams"] >= 6 and p["slots"] == len(w["places"]) + 1 + len(w["districts"]), p)
     c = o["cam"]
     check("f. the first view looks north from the south at the NQ district; the overview is high above; every pose finite", c["home"][2] > 0 and c["look"][2] < 0 and c["over"] and c["finite"], c)
     check("f. poses blend the short way round and in log distance; a wild pose is clamped (inside the city, pitch 0.1-1.45, NaN healed)",
