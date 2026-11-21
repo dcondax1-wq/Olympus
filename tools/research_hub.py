@@ -42,6 +42,8 @@ DECIDE = os.path.join(ROOT, "tools", "web_public", "business", "decisions.json")
 TRADES = os.path.join(ROOT, "tools", "web_public", "trading", "trades.json")
 LAB = os.path.join(ROOT, "research", "lab")
 OUT = os.path.join(ROOT, "tools", "web_public", "clio", "hub.json")
+OUT_FLAT = os.path.join(ROOT, "tools", "web_public", "research", "hub.json")      # the Cities "Lab & Research" district (flat records)
+STATUS_OF = {"works": "live", "leads": "lead", "rejected": "rejected", "decide": "decide"}
 FAMILIES = ("baseline", "risk", "stops", "targets", "management", "bias", "filters", "timing", "sessions", "data", "other")
 LIVE = {"LIT": ("Zlarior (LIT)", "zlarior", "lit-strategy"), "ATLAS": ("ATLAS", "atlas", "atlas")}
 MONEY_RX = re.compile(r"(-|−|\+)?\$\s?(\d[\d,]*(?:\.\d+)?)(k)?")
@@ -297,6 +299,35 @@ def build():
     return hub
 
 
+def item_id(tab: str, r: dict) -> str:
+    """Stable id: <status>-<write-up slug or slugified title> (+ the date when there is no write-up), <= 90 chars."""
+    if tab == "works":
+        return "live-" + {"LIT": "zlarior"}.get(r.get("bot"), slugify(r.get("bot") or r["title"]))
+    base = r.get("slug") or slugify((r.get("id") or r.get("bot") or r.get("title") or "item") + ("-" + r["date"] if r.get("date") and not r.get("slug") else ""))
+    return f"{STATUS_OF[tab]}-{base}"[:90]
+
+
+def flat(hub: dict) -> dict:
+    """tools/web_public/research/hub.json: one record per hub item for the Cities district.
+    {id, title, family, status live|lead|rejected|decide, usd_month, date, summary, url}; url = the rendered write-up in Clio
+    (../clio/?read=<slug>) or the item itself (../clio/?item=<id>)."""
+    items, seen = [], set()
+    for tab in ("works", "decide", "leads", "rejected"):
+        for r in hub[tab]:
+            i = item_id(tab, r)
+            k, n = i, 2
+            while k in seen:
+                k, n = f"{i}-{n}", n + 1
+            seen.add(k)
+            r["id"] = k                                    # the Clio hub row carries the same id (the city's ?fly=<id>)
+            items.append({"id": k, "title": r["title"], "family": r.get("family") or "other", "status": STATUS_OF[tab],
+                          "usd_month": r.get("usd_month"), "date": r.get("date") or r.get("since") or "", "summary": r.get("line") or "",
+                          "url": f"../clio/?read={r['slug']}" if r.get("slug") else f"../clio/?item={k}"})
+    return {"v": 1, "built": hub["built"], "schema": "id, title, family, status (live | lead | rejected | decide), usd_month (null = none quoted), "
+                                                    "date (YYYY-MM-DD or ''), summary (one plain line), url (the rendered write-up in Clio)",
+            "counts": dict(collections.Counter(x["status"] for x in items)), "items": items}
+
+
 def privacy_findings(blob: str):
     return [f for f in SP.scan_text(blob, "clio/hub.json") if f.get("kind") not in ("note",)]
 
@@ -305,10 +336,13 @@ def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--check", action="store_true")
     ap.add_argument("--out", default=OUT)
+    ap.add_argument("--flat-out", default=None, help="the flat Cities file (default tools/web_public/research/hub.json with the default --out)")
     a = ap.parse_args(argv)
     hub = build()
+    fl = flat(hub)                                         # also stamps r["id"] on the hub rows
     blob = json.dumps(hub, separators=(",", ":"), ensure_ascii=False)
-    bad = privacy_findings(blob)
+    blob2 = json.dumps(fl, separators=(",", ":"), ensure_ascii=False)
+    bad = privacy_findings(blob) + privacy_findings(blob2)
     print("research hub:", hub["counts"], f"{len(blob) / 1024:.0f} KB", "privacy findings:", len(bad))
     if bad:
         for f in bad[:10]:
@@ -319,6 +353,12 @@ def main(argv=None):
         with open(a.out, "w", encoding="utf-8") as fh:
             fh.write(blob)
         print("wrote", os.path.relpath(a.out, ROOT))
+        if a.out == OUT or a.flat_out:
+            fo = a.flat_out or OUT_FLAT
+            os.makedirs(os.path.dirname(fo), exist_ok=True)
+            with open(fo, "w", encoding="utf-8") as fh:
+                fh.write(blob2)
+            print("wrote", os.path.relpath(fo, ROOT), fl["counts"])
     return 0
 
 
