@@ -11,7 +11,7 @@ Numbers below are from the PC's report on Nov 20, 6:00 ET. Live numbers: the ZEU
 | Account | Plan | Stage | Who trades it | Money now (Nov 20) |
 |---|---|---|---|---|
 | Zlarior 50K | Builder 50K ($91.80) | Eval | Zlarior | $49,193. Needs +$3,807 to pass. $1,025 room |
-| ATLAS 25K | Builder 25K ($63) | **Funded** | ATLAS | $24,887. First $1,000 payout at about $27,100. $887 room |
+| ATLAS 25K | Builder 25K ($63) | **Funded** | ATLAS | $24,887. First $1,000 payout at about $27,100 ($2,100 profit as MFFU shows it; a push tells you, N5). $887 room |
 | Zlarior 25K #2 | Builder 25K ($63) | Eval | Zlarior | $25,000. Needs +$1,500 to pass. $1,000 room |
 | Rapid EOD 25K | Rapid EOD 25K ($97.20) | Bought, not added yet | Zlarior + ATLAS (when added) | Not on the PC yet: add it (card 9 below) |
 
@@ -151,7 +151,7 @@ python -X utf8 -m engine.phone_safety --on
 ### 9. Add an account
 1. Buy it at MFFU with the CLUB code. Open NinjaTrader: the new account shows in the Accounts tab.
 2. Open `http://localhost:8766/add-account/` on the PC (or your PC link + `/add-account/` on the phone). Pick the plan, type or tap the Name, type I ACCEPT LIVE RISK.
-3. Tap Add. It starts trading once the bot is flat. Check it at the PC:
+3. Tap Add. It starts trading once the bot is flat (or: START_BOT.bat + your phrase, N1 below). Check it at the PC:
 ```
 python -X utf8 -m engine.accounts status
 ```
@@ -160,6 +160,74 @@ python -X utf8 -m engine.accounts status
 1. Kalshi is paper right now: no real money moves until you type the Kalshi phrase.
 2. Live and you want it off: your PC link + `:8444/kalshi-live/` > **STOP** (one tap). Phone KILL (card 8) also stops it.
 3. At the PC: double-click **KALSHI_STOP.bat**, type Y. It cancels every resting Kalshi order and switches Kalshi OFF.
+
+## 7. New this week (landed Nov 21)
+
+Each: what it does, when to use it, what to tap or type, what you should see. Phone: manual > **New**.
+
+### N1. Start the bot (and arm a new account like the Rapid)
+- **What:** START BOT now also arms every account you added (the Rapid EOD 25K too) when you type your phrase.
+- **When:** After you add an account, after STOP BOT, or on a new PC.
+1. At the PC: double-click START_BOT.bat.
+2. Check the names it lists against NinjaTrader's Accounts tab.
+3. Type I ACCEPT LIVE RISK, then Enter.
+- **You see:** "Rapid EOD 25K (LIT + ATLAS): armed" and your account name, then "[OK] Running." A "NOT armed" line: send Claude a photo (privately: it shows your account name). The Start page (http://localhost:8766, PC only) does the same: when an account is not armed its Armed row is red ("Rapid EOD 25K ..xxxx not armed") and the button says Arm and start trading. Type I ACCEPT LIVE RISK in its box, then tap it.
+
+### N2. The bot skipped a trade because of my hand trade
+- **What:** While you hold a hand trade on any account, the bot will not open the opposite side on ANY account (that would be a hedge, against MFFU rules). Same side is allowed. Exits and stops are never blocked.
+- **When:** Rule: hand-trade only when EVERY account is flat.
+1. Push "Entry blocked" ("hedging guard ... a hand trade?"): nothing to do. Close your hand trade and the bot can enter again.
+2. Push "Hand trade: wait": an account is not flat. Wait.
+3. Push "HEDGE BLOCKED: ATLAS close not confirmed" (bot vs bot): open NinjaTrader, check that account, flatten it by hand if it is still open.
+- **Optional:** to keep a hand trade on a bot account without the bot closing it, run the line below at the PC (60 minutes, max 240). A "Position mismatch ... Left alone (your hand-trade window)." push is then normal.
+```
+python -X utf8 -m engine.hand_hedge --hand-trade 60
+```
+Off early: the same line with --off instead of --hand-trade 60.
+
+### N3. Keep-alive: no account closed for 7 days without a trade
+- **What:** MFFU can close an account with no trade for 7 days. With keep-alive ON, the bot places ONE 1-MNQ trade on that account on day 6 (15:33-15:48 ET, out about 2 min later). Cost about -$2.40, at most -$22.90. Your own trades reset the clock. It arrived OFF.
+- **When:** Once: Sunday before 18:00 ET (you said yes on Nov 20).
+1. At the PC: double-click KEEPALIVE_ON.bat.
+2. Type KEEP ALIVE ON, then Enter.
+3. See "[OK] Keep-alive is ON." No restart needed.
+- **You see:** pushes "Keep-alive today on ...", the entry, then "closed ... about -$2.40". "Keep-alive ... did not go through" = place 1 MNQ by hand on that account before 16:05 ET, in and out. Off: KEEPALIVE_OFF.bat (no phrase): "[OK] Keep-alive is OFF on every account."
+```
+python -X utf8 -m engine.keepalive --status
+```
+Check it any time at the PC: which accounts are on, the last result, the next planned day.
+
+### N4. Phone alerts: set up Telegram, send a test
+- **What:** Every alert goes to Telegram first, then Discord, ntfy and the Olympus app as backups. Entries, exits and "bot stopped" go to 2 of them.
+- **When:** Set up once (2 minutes, from the phone). Test any time.
+1. On the phone: your PC link + :8444/alerts/ (at the PC: http://localhost:8766/alerts/).
+2. Make your bot: Open BotFather, send /newbot, copy the token. Paste it, tap Connect.
+3. Tap Open your bot and START within 3 minutes.
+- **You see:** "Connected: test delivered", and Telegram gets "Olympus alerts are ON". Test later: that page's Send a test alert, or TEST_ALERT.bat at the PC: the phone gets "TEST: Zlarior 50K LONG opened ..." (no trade placed). At the PC instead: ALERTS_SETUP.bat (1 = Telegram, 2 = Discord, 3 = both). Back to the old way: ALERTS_OFF.bat (ALERTS_ON.bat undoes it). 23:00-07:00 ET alerts come silent; "bot stopped" and hedge alarms still ring. No sound at all: iPhone Settings > Notifications > Telegram > Allow + Sounds.
+
+### N5. Payout push: when to ask MFFU for money
+- **What:** When a funded account reaches your plan line you get ONE push: "PAYOUT READY: request $1,000". 25K: $1,000 at $2,100 profit. 50K: $2,000 at $4,100 profit (MFFU shows funded accounts from $0). It also needs 2+ traded days and no day over half the profit.
+- **When:** The day the push comes, after the close.
+1. Request the amount in the MFFU dashboard. The bot never asks MFFU for you.
+2. Record it at the PC with the line printed in the push.
+3. When the money lands: 30% to the tax pot ($1,000 asked = $800 to you = $240 to the pot).
+- **You see:** on payout 5 the push adds "WAIT: this is payout 5 of 5 ... Ask Claude before you request it." MFFU allows only 5 sim payouts; after the 5th it moves that account to live and your other sim accounts go dormant.
+
+### N6. Olympus full screen on the iPhone
+- **What:** Opened from its Home Screen icon, Olympus now shows every app full screen: no Safari bars when you go from ZEUS to NQ to Kalshi.
+- **When:** Once. Again if your old icon still shows Safari bars.
+1. In Safari (not Chrome), open your Olympus link.
+2. Tap Share (the square with the arrow) > Add to Home Screen > Add. Old icon? Delete it first.
+3. Always open Olympus from that icon: phone alerts only work that way.
+- **You see:** no address bar and no bottom bar. Step by step with pictures: Set up your iPhone.
+
+### N7. An update was rolled back
+- **What:** If a new update makes the bot keep stopping (4 starts in 10 minutes), the PC goes back by itself to the last version that worked and skips the bad one.
+- **When:** Only when that push comes.
+1. Nothing urgent: the version that worked is running again.
+2. Look at ZEUS: bot running? If it says stopped, at the PC: START_BOT.bat + your phrase (it keeps the good version).
+3. Tell Claude, so the bad update gets fixed.
+- **You see:** push "Update rolled back": "The new code ... kept stopping (4 starts in 10 min). Back on ..., the version that ran fine; the bad one is skipped." "Update crash loop: ROLLBACK FAILED" = send Claude that text now. An open trade's stop and target still sit at the broker.
 
 ## Where things are
 
