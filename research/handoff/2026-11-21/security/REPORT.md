@@ -70,4 +70,7 @@ detectors (keys / tokens / private ntfy topic / key assignments / broker ids / t
 - cross_site 24/24 (7 new), push_pairing 24/24, webpush 50/50, push 41/41, trade_alerts 83/83, notify 99/99, alerts_box 64/64,
   alerts_start_code 5/5 (new), alert_bus 86/86, rapid_arm 19/19, repo_secrets 14/14, public_build_privacy --fast 56/56.
 - Suites that drive the real server through Starlette's TestClient (the new peer check sees its client): account_c 167/167,
-  alerts_box 64/64, autopilot 7/7, board 59/59, brain 47/47, calendar_sync 143/143; the rest: see the lead message.
+  alerts_box 64/64, autopilot 7/7, board 59/59, brain 47/47, calendar_sync 143/143, fleet 131/131, kalshi_clock 40/40, launch_kit 129/129,
+  live_link 72/72 (its link client now reports 127.0.0.1, as the tailscale serve proxy does), liveview_api 37/37, mind 67/67,
+  money_goal 86/86, pc_command_center 60/60, phone_safety 28/28, presence 59/59, private_link 35/35, run_switch 50/50,
+  start_api 117/117. Red on base 7adf312d too, not this branch: holo_api 52/53, pcdash_api 129/130.
