@@ -15,7 +15,8 @@ import threading
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB = os.path.join(ROOT, "tools", "web_public")
 FIX = os.path.join(ROOT, "tests", "fixtures", "olympus_money", "data_min.json")
-JARVIS_FILES = ("three.module.min.js", "orbitron.woff2", "rajdhani-400.woff2", "rajdhani-500.woff2", "rajdhani-600.woff2", "rajdhani-700.woff2", "icon-192.png")
+JARVIS_FILES = ("three.module.min.js", "orbitron.woff2", "rajdhani-400.woff2", "rajdhani-500.woff2", "rajdhani-600.woff2", "rajdhani-700.woff2", "icon-192.png",
+                "ask.js")   # the kit adds the Ask Jarvis button (jarvis/ask.js) to every kit app since 2026-11-20 (olympus.js)
 RES = []
 
 
