@@ -84,6 +84,16 @@ def main(argv=None) -> int:
             base_walk(self, t_bar)
             feed(self, int(t_bar))
         RD.Rig.__init__, RD.Rig.walk = __init__, walk
+    if os.environ.get("FD_LOGS"):                 # every lane's risk / skip line of the day, full text
+        base_tp = RD.trades_print
+
+        def trades_print(bot, base_tp=base_tp):
+            base_tp(bot)
+            pat = os.environ["FD_LOGS"].lower()
+            for e in reversed(list(getattr(bot, "log", []) or [])):
+                if pat in str(e.get("text", "")).lower():
+                    print(f"    LOG {RD.hm(e.get('t') or 0)} {e.get('type')}: {e.get('text')}")
+        RD.trades_print = trades_print
     buf = io.StringIO()
     rc = 0
     argv2 = ["--days", a.days, "--scenarios", "none"] + (["--rapid"] if a.rapid else []) + (["--quick"] if a.quick else []) + \
