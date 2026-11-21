@@ -184,8 +184,8 @@ def part_a(tmp: Path):
           raw["agency_name"] == "YOUR AGENCY" and raw["city"] == "YOUR CITY" and build.digits(raw["phone"]).startswith("555")
           and raw["email"].endswith(".example") and raw["brand_color"] in build.PRESETS, {k: raw[k] for k in build.SHARED_KEYS})
     pk = raw["packages"]
-    check("a. three plans with the placeholder prices (Starter $499 + $49, Growth $999 + $79, Pro $1,999 + $129), one popular",
-          [(p["name"], p["setup_usd"], p["monthly_usd"]) for p in pk] == [("Starter", 499, 49), ("Growth", 999, 79), ("Pro", 1999, 129)]
+    check("a. three plans at the ONE price book's numbers (Starter site $1,500 + $79, Call engine $500 + $299, 3D Signature $2,500 + $79), one popular",
+          [(p["name"], p["setup_usd"], p["monthly_usd"]) for p in pk] == [("Starter site", 1500, 79), ("Call engine", 500, 299), ("3D Signature", 2500, 79)]
           and sum(1 for p in pk if p.get("popular")) == 1, [(p["name"], p["setup_usd"], p["monthly_usd"]) for p in pk])
     names = {a["name"] for a in raw["addons"]}
     check("a. the upsells are add-ons (review booster, website chat, Google profile help), each saying which plans include it",
@@ -404,7 +404,7 @@ def part_a(tmp: Path):
     allt = "".join(docs[p] for p in PAGES)
     check("a. config tokens are all filled ({city}, {from_setup}, ... never reach a page) and the prices come from the config",
           not re.search(r"\{(city|agency|launch_days|demo_days|from_setup|from_monthly|reply_time|phone|email)\}", allt)
-          and "$499" in docs["index.html"] and "$1,999" in docs["pricing.html"] and "$129" in docs["pricing.html"])
+          and "$500" in docs["index.html"] and "$2,500" in docs["pricing.html"] and "$299" in docs["pricing.html"] and "$1,500" in docs["pricing.html"])
     check("a. click-to-call everywhere: the header, the phone dock and the footer call the config phone (tel:+15555550100)",
           all(docs[p].count('href="tel:+15555550100"') >= 3 for p in ("index.html", "pricing.html", "contact.html")))
     check("a. no booking link set yet: the Book button falls back to the contact form (never a dead link)",
@@ -555,8 +555,8 @@ def part_b(tmp: Path):
     check("b. the report: valid HTML, the agency's name and phone, the grade, top fixes, 14 checked rows, print CSS (@page), under 40 KB, no external file",
           not d2.errors and "YOUR AGENCY" in rep_bad and "(555) 555-0100" in rep_bad and "Grade F" in rep_bad and rep_bad.count("<tr") == 14
           and "@page" in rep_bad and len(rep_bad) < 40_000 and not re.search(r'(src|href)="https?:', rep_bad), d2.errors[:3])
-    check("b. the report offers the plan that fixes it (Growth when the Google profile is missing) at the config's prices",
-          "Growth</b> plan: $999 setup + $79 a month" in rep_bad, re.findall(r"offer-main\">[^<]+<b>[^<]+</b>[^<]+", rep_bad))
+    check("b. the report offers the plan that fixes it (the Call engine when the Google profile is missing) at the config's prices",
+          "Call engine</b> plan: $500 setup + $299 a month" in rep_bad, re.findall(r"offer-main\">[^<]+<b>[^<]+</b>[^<]+", rep_bad))
     for raw, want in (("joes.com", "https://joes.com/"), ("HTTP://Joes.COM/menu", "http://joes.com/menu"), (" https://a.b.example ", "https://a.b.example/")):
         check(f"b. normalize_url({raw!r}) -> {want}", grade.normalize_url(raw) == want, grade.normalize_url(raw))
     for raw in ("", "not a website", "joes"):

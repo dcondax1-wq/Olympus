@@ -28,7 +28,7 @@
   ],
   "assumptions": {
     "_about": "The funnel the money math uses. They are ESTIMATES for a phone-first, demo-first approach to owner-run local shops (higher reach than the corporate B2B benchmarks above). Replace them with your own numbers after 2 weeks: the Agency page counts them for you.",
-    "package_mix": {"starter": 0.6, "growth": 0.3, "pro": 0.1},
+    "package_mix": {"starter": 0.9, "growth": 0.1, "pro": 0.0},
     "dials_per_conversation": 4,
     "conversations_per_demo_view": 2,
     "demo_views_per_sale": 4,

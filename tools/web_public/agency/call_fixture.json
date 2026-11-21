@@ -1,7 +1,7 @@
 {
   "demo": true,
   "note": "Example businesses, not real: every number is a fictional 555-01xx number (never dialed) and every web address is example.com. Shown until you import your own leads; nothing here is saved.",
-  "settings": { "me": "Sam Rivera", "biz": "Bright Sites", "city": "Tampa", "phone": "(813) 555-0100", "email": "sam@example.com", "address": "PO Box 100, Tampa, FL 33601", "price": "$499", "defaultState": "FL" },
+  "settings": { "me": "Sam Rivera", "biz": "Bright Sites", "city": "Tampa", "phone": "(813) 555-0100", "email": "sam@example.com", "address": "PO Box 100, Tampa, FL 33601", "price": "$1,500", "defaultState": "FL" },
   "leads": [
     { "id": "d-taco", "name": "Taco Town", "phone": "(813) 555-0142", "contact": "Maria Lopez", "email": "maria@example.com", "city": "Tampa", "state": "FL", "category": "restaurant", "demo": "https://example.com/demo/taco-town", "issue": "your menu is a PDF that is hard to read on a phone", "source": "Google Maps", "dnc": "clear", "dncChecked": "2026-11-10", "lineConfirmed": "2026-11-10" },
     { "id": "d-smile", "name": "Bright Smile Dental", "phone": "(512) 555-0117", "contact": "Dr. Anita Patel", "email": "office@example.com", "city": "Austin", "state": "TX", "category": "dentist", "demo": "https://example.com/demo/bright-smile", "issue": "new patients cannot book online", "stage": "calling", "lineConfirmed": "2026-11-10" },

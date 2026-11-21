@@ -23,9 +23,8 @@ calling days). Week 2 is full speed (5 days). Each business gets at most 1 call 
 | Interested (link emailed) | 3 | 10 | 20 |
 | Booked calls (show) | 1 (1) | 4 (3) | 10 (8) |
 | **Sales** | **0** | **1** | **3** |
-| Commission paid ($300 per sale) | $0 | $300 | $900 |
-| **To you, first payment** | **$0** | **$1,200 + $79/mo** | **$3,600 + $237/mo** |
-| Same, if the caller picked $40 per booked call that shows | -$40 | $1,380 + $79/mo | $4,180 + $237/mo |
+| Commission paid ($300 per sale, else $40 per show; one per business) | $40 | $380 | $1,100 |
+| **To you, after the commission** | **-$40** | **$1,120 + $79/mo** | **$3,400 + $237/mo** |
 | Your time | 0 | ~10 min (1 booked call) | ~30-80 min (booked calls) |
 
 **Per caller per month after that (middle):** about 1,000 dials -> ~2-3 sales -> **about $3,000 + $200/mo recurring** to you. Each sale's

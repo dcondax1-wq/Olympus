@@ -215,14 +215,40 @@ def pcside():
         ids2 = [r["id"] for r in d2["leads"]]
         check("c. the next build: the 'no' is gone, the number found by hand is used, the added business is on the list",
               "d" not in ids2 and next(r for r in d2["leads"] if r["id"] == "f")["phone"] == "2405550123" and "add-x" in ids2, ids2)
-        com = {r["caller"]: r for r in PT.commissions(store, {"commission": {"sale": 300, "booked_show": 40}})}
-        check("c. commissions per caller: $300 a sale; $40 a booked call only once it showed", com["Ann"]["owed"] == 300 and com["Ann"]["booked"] == 1
-              and com["Bo"]["owed"] == 40 and "$300" in PT.table(list(com.values())), com)
+        rate = {"commission": {"sale": 300, "booked_show": 40, "clawback_days": 30}}
+        com = {r["caller"]: r for r in PT.commissions(store, rate, paid=[])}
+        check("c. commissions (pricebook 2026-11-21): a caller's own 'Won' is only PENDING until the client's money clears; one commission per "
+              "business, to the first caller who logged it (Ann booked f, so Bo's 'showed' pays Ann $40)",
+              com["Ann"]["owed"] == 40 and com["Ann"]["pending"] == 300 and com["Ann"]["booked"] == 1 and com["Bo"]["owed"] == 0
+              and "pending" in PT.table(list(com.values())), com)
+        cleared = [{"id": "a", "kind": "deposit", "t": "2026-11-23"}, {"id": "a", "kind": "launch", "t": "2026-11-30"}]
+        com2 = {r["caller"]: r for r in PT.commissions(store, rate, paid=cleared)}
+        check("c. once the deposit AND the launch payment cleared: $300 owed (the deposit alone is not enough)",
+              com2["Ann"]["owed"] == 340 and com2["Ann"]["pending"] == 0
+              and {r["caller"]: r for r in PT.commissions(store, rate, paid=cleared[:1])}["Ann"]["pending"] == 300, com2)
+        refunded = cleared + [{"id": "a", "kind": "refund", "t": "2026-12-20"}]
+        late = cleared + [{"id": "a", "kind": "refund", "t": "2027-01-15"}]
+        c3 = {r["caller"]: r for r in PT.commissions(store, rate, paid=refunded)}["Ann"]
+        c4 = {r["caller"]: r for r in PT.commissions(store, rate, paid=late)}["Ann"]
+        check("c. a refund within 30 days of clearing claws the $300 back; a refund after 30 days does not",
+              c3["owed"] == 40 and c3["clawback"] == 300 and c4["owed"] == 340 and c4["clawback"] == 0, (c3, c4))
         both = {"log": [{"t": 1, "id": "z1", "k": "booked", "caller": "Cy"}, {"t": 2, "id": "z1", "k": "showed", "caller": "Cy"},
-                        {"t": 3, "id": "z1", "k": "won", "caller": "Cy"}, {"t": 4, "id": "z2", "k": "showed", "caller": "Cy"}]}
-        cy = PT.commissions(both, {"commission": {"sale": 300, "booked_show": 40}})[0]
-        check("c. a booked call that showed AND bought is paid $300 once, never $340; another that only showed adds $40",
-              cy["owed"] == 340 and cy["won"] == 1 and cy["showed"] == 2, cy)
+                        {"t": 3, "id": "z1", "k": "won", "caller": "Cy"}, {"t": 4, "id": "z2", "k": "showed", "caller": "Cy"},
+                        {"t": 5, "id": "z1", "k": "won", "caller": "Di"}]}
+        mon = [{"id": "z1", "kind": "monthly", "t": d} for d in ("2026-11-23", "2026-12-23", "2027-01-23")]
+        cy = {r["caller"]: r for r in PT.commissions(both, rate, paid=mon)}
+        check("c. a booked call that showed AND bought is paid $300 once, never $340 (nothing upfront: after the 3rd $149 cleared); "
+              "a second caller's 'Won' on the same business earns nothing",
+              cy["Cy"]["owed"] == 300 + 40 and cy["Cy"]["won"] == 1 and cy["Cy"]["showed"] == 2 and cy["Di"]["owed"] == 0 and cy["Di"]["pending"] == 0, cy)
+        old = os.environ.get("OLYMPUS_HOME")
+        e = PT.mark_paid("z9", "deposit", "2026-11-24")
+        check("c. `paid` records cleared money in the owner's ledger (and refuses a bad kind or date)",
+              e == {"id": "z9", "kind": "deposit", "t": "2026-11-24"} and PT.paid_ledger()[-1] == e and old)
+        try:
+            PT.mark_paid("z9", "won", "2026-11-24")
+            check("c. `paid` refuses a kind that is not money", False)
+        except ValueError:
+            check("c. `paid` refuses a kind that is not money", True)
         try:
             json.dump({"app": "other"}, open(lg + "3", "w"))
             PT.merge_logs([lg + "3"])

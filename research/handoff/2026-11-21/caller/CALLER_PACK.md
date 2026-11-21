@@ -15,7 +15,7 @@ Read this once (10 minutes). Questions: email <agency email>.
 | **"No" means never again.** "Not interested", "don't call", "take me off": say "Understood, sorry to bother you, have a good day", hang up, log **No** or **Do not call** that second. | It also stops our emails to them, forever. |
 | **No lies, no pressure.** No fake deadlines ("only today"), no made-up clients, no "Google will penalise you". The site is free to look at; nothing is owed. | The FTC rule on business calls bans misrepresentations (16 CFR 310.3, B2B since 2024). |
 | **Show a real number.** Call from your own phone or a free Google Voice number. Never hide your caller ID or fake another number. | Maryland and the FCC require a caller ID that can be called back. |
-| **Only the agency's words about price.** Starter $1,500 + $79/month, or $149/month for 12 months with nothing upfront. No discounts or promises; "<Owner> will confirm that by email". | Only the owner sets prices and terms. |
+| **Only the agency's words about price.** "The Starter site is $1,500 once plus $79 a month for hosting and small changes, or $149 a month for 12 months with nothing upfront." No discounts or promises; "<Owner> will confirm that by email". | Only the owner sets prices and terms. |
 
 ## 2. The script (20 seconds to the question)
 
@@ -35,7 +35,7 @@ have a website, so we built one for you, free to look at. Can I email you the li
 
 | They say | You say |
 |---|---|
-| 1. "How much?" | "The starter site is $1,500 once plus $79 a month for hosting and small changes, or $149 a month for a year with nothing upfront. Can I email you the link and the prices together?" |
+| 1. "How much?" | "The Starter site is $1,500 once plus $79 a month for hosting and small changes, or $149 a month for 12 months with nothing upfront. Can I email you the link and the prices together?" |
 | 2. "We already have a website." | "Sorry, I didn't see one on Google. Could you tell me the address? ... Thanks, I'll make a note." (log **No**, note the address). |
 | 3. "My nephew / a friend does that." | "That's great. The preview is already built, so it might give them ideas. Want me to email it anyway?" |
 | 4. "I get my customers from word of mouth." | "That's the best kind. Most people still look you up on their phone before they call; the site is there for that moment. Want the link?" |
@@ -86,11 +86,11 @@ If the list header says **"not scrubbed"** or **"STALE"**, don't dial. Email the
 
 ## 7. Commission: how it is counted and paid (free tools only)
 
-- **Your choice when you start:** $300 when a business you booked or emailed **pays**, or $40 for every **booked call that shows up**.
+- **One commission per business: $300 OR $40, never both.** $40 when a call you booked shows up; if that business then pays, it becomes $300 instead (not $340). The $300 is owed only once the client's money has **cleared** (the deposit and the launch payment, or the 3rd $149 payment on the nothing-upfront plan): never at "yes" and never just because you logged **Won**. Paid within 3 days after it clears. If the client is refunded within 30 days of clearing, that commission is clawed back (taken off your next payment). If two callers logged the same business, the first one to log it gets it.
 - **Counted from the portal log:** each Interested / Booked / Won line carries your name and the business code. The agency runs
-  `python -m agency.portal commissions` and sends you the table every Friday (it lists both kinds; you are paid the one you chose; a booked call counts once the agency marks it "showed"). A sale counts for you if you logged that business within 30
+  `python -m agency.portal commissions` and sends you the table every Friday (columns: owed = cleared, pending = a Won still waiting for the client's money, clawback = refunded within 30 days). A sale counts for you if you logged that business within 30
   days before it paid.
-- **Paid within 3 days of the client's payment**, by **Zelle** (free, bank to bank) or PayPal Friends & Family (free from a balance or a bank).
+- **Paid within 3 days after the client's money has cleared**, by **Zelle** (free, bank to bank) or PayPal Friends & Family (free from a balance or a bank).
 - **Taxes:** you are an independent contractor and pay your own. Send a W-9 before your first payment (free form at irs.gov). If you earn
   **$2,000 or more in 2026**, you get a 1099-NEC in January. That threshold rose from $600 under the 2025 tax law, and the agency files it
   free through the IRS's IRIS system.

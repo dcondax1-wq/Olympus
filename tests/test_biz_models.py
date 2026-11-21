@@ -98,7 +98,8 @@ def test_prices():
     from agency import config as CFG
     from agency.billing import store as S
     pr = CFG.prices()
-    want = {"starter": (499.0, 49.0), "growth": (999.0, 79.0), "pro": (1999.0, 129.0)}
+    from agency import pricebook as PB
+    want = {p["config_id"]: (float(p["setup"]), float(p["monthly"])) for p in PB.load()["packages"]}      # the ONE price book (2026-11-21)
     check("c. the one source: agency.config.prices() = the example's packages", {k: (v["setup"], v["monthly"]) for k, v in pr.items()} == want, pr)
     raw = json.load(open(os.path.join(ROOT, "agency", "billing", "packages.json"), encoding="utf-8"))
     check("c. agency/billing/packages.json holds only wording (no setup_usd / monthly_usd) and says where the prices are",
@@ -119,7 +120,7 @@ def test_prices():
     sc = sf.load_config(shared_path=None, local_path=None)
     check("c. the storefront's plans are the same prices", {p["id"]: (float(p["setup_usd"]), float(p["monthly_usd"])) for p in sc["packages"]} == want, sc["packages"])
     core = AK.read(os.path.join(AK.WEB, "agency", "agencycore.js"))
-    got = {m[0]: (float(m[1]), float(m[2])) for m in re.findall(r"\{ id: '(\w+)', name: '\w+', setup: (\d+), monthly: (\d+) \}", core)}
+    got = {m[0]: (float(m[1]), float(m[2])) for m in re.findall(r"\{ id: '(\w+)', name: '[^']+', setup: (\d+), monthly: (\d+) \}", core)}
     check("c. the Agency page's built-in defaults are the same prices", got == want, got)
     from agency import pitch as P
     cfg = CFG.load()
@@ -144,7 +145,7 @@ def test_publish():
           f"**${t['usd_m1'][0]}-{t['usd_m1'][1]:,}**" in doc and f"**${t['usd_m3'][0]}-{t['usd_m3'][1]:,}**" in doc
           and all(f"${m['usd_m3'][0]}-{m['usd_m3'][1]:,}" in doc or m["usd_m3"] == [0, 0] for m in d["models"]), t)
     check("d. the 7-day plan: days 1-7 in the page data and in docs/BUSINESS.md", [w["day"] for w in d["week"]] == list(range(1, 8)) and all(f"**Day {i}," in doc for i in range(1, 8)))
-    check("d. the prices on the page come from the one source", [(p["id"], p["setup"], p["monthly"]) for p in d["prices"]] == [("starter", 499.0, 49.0), ("growth", 999.0, 79.0), ("pro", 1999.0, 129.0)])
+    check("d. the prices on the page come from the one source", [(p["id"], p["setup"], p["monthly"]) for p in d["prices"]] == [("starter", 1500.0, 79.0), ("growth", 500.0, 299.0), ("pro", 2500.0, 79.0)])
     real = BP.build(sample=False)
     check("d. the PC's own file: progress is counts and flags only (no names, phones or emails), real $ only from the billing ledger",
           all(isinstance(v, (int, float, bool)) or v is None for v in real["progress"].values()) and not real["sample"] and real["total"]["real_usd_month"] >= 0, real["progress"])
@@ -188,7 +189,7 @@ def test_day():
     check("f. agency.day on the demo batch: exit 0, the call list written to its own folder, TODAY.txt made", rc == 0 and os.path.isfile(os.path.join(calls, "call_list.json")) and sheet, out[-400:])
     run = json.load(open(os.path.join(batch, "run.json"), encoding="utf-8"))
     check("f. TODAY.txt: the one price list, every demo site with its folder, at least one lead to call, the rules, the email status",
-          "Starter $499 + $49/mo" in sheet and all(s["name"] in sheet for s in run["sites"]) and "CALL FIRST" in sheet and "Dial by hand" in sheet and "Emails:" in sheet, sheet[:600])
+          "Starter site $1,500 + $79/mo" in sheet and all(s["name"] in sheet for s in run["sites"]) and "CALL FIRST" in sheet and "Dial by hand" in sheet and "Emails:" in sheet, sheet[:600])
     cl = json.load(open(os.path.join(calls, "call_list.json"), encoding="utf-8"))
     rows = D.call_rows({"rows": [{"lead": {"name": "A", "phone": "+19705550123"}, "block": {"lock": True, "code": "optout"}, "win": None},
                                  {"lead": {"name": "B", "phone": ""}, "block": None, "win": None},

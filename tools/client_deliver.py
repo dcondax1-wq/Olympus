@@ -149,7 +149,7 @@ CARE = """# Care plan for {name} (https://{domain}/) - $79 / month
 Monthly (first week of the month, about 20 minutes):
 - [ ] Open the site on a phone: it loads fast, nothing broken, HTTPS valid.
 - [ ] Hours, phone and address still match the Google Business Profile (holiday hours too).
-- [ ] Do the client's small edits (up to ~30 minutes: text, hours, a photo swap). Bigger changes are quoted first, in writing.
+- [ ] Do the client's small edits (up to 30 minutes: text, hours, a photo swap). Bigger changes are quoted first, in writing.
 - [ ] Check the domain renewal date ({domain}); remind the client 30 days before it renews (it is in their name).
 - [ ] Check the host still shows the latest deploy; keep a copy of `site/` in the agency's records.
 - [ ] One line to the client: what changed this month.
@@ -160,7 +160,7 @@ Quarterly:
 - [ ] Ask for new photos / news / seasonal hours.
 
 Never: write reviews, add awards or claims the client cannot prove, or put the client's private data on the site.
-Stop: either side, 30 days notice. On stop, hand over the `site/` folder (the client owns their words, photos, logo and domain).
+Term: a 12-month term from launch day, then month to month; either side stops it with 30 days notice. Edits up to 30 minutes a month. On stop, hand over the `site/` folder (the client owns their words, photos, logo and domain).
 """
 
 

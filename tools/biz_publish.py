@@ -32,7 +32,7 @@ MODELS = [
      "first_dollar": ["Your name, phone, email, postal address and city in agency/config.json", "Free Netlify account (to put demo sites online)",
                       "Free Stripe account + one payment link per plan", "About 60 calls by hand to find the first yes"],
      "usd_m1": [0, 550], "usd_m3": [0, 2000], "hours": [5, 7],
-     "why": "One Starter sale is $499 + $49 a month. Month 3 assumes 0-2 sales a month (the docs' plan of 4 a month needs 6 calls a working day)."},
+     "why": "One Starter sale is $1,500 + $79 a month (agency/pricebook.json). Month 3 assumes 0-2 sales a month (the docs' plan of 4 a month needs 6 calls a working day)."},
     {"id": "gigs", "name": "Freelance gigs", "rank": 2, "doc": "docs/GIG_PACK.md",
      "what": "8 ready gigs (websites, logos, Google profile, reviews, posts...) on Fiverr first; the tools make the work, you deliver.",
      "built": ["8 gig texts with prices, tags, FAQ", "Logo + brand kit maker", "Google profile checklist", "Order -> agency tools in one line"],
@@ -207,7 +207,7 @@ def ready() -> list:
                 "file": "money_machines/plans/", "steps": ["On the PC: python -m money_machines.content_plan --all --render (the images + posting sheet)",
                                                            "New Instagram, switch to Professional", "Meta Business Suite > Planner: schedule week 1 from the posting sheet",
                                                            "Shop link in the bio once the products are up"]})
-    out.append({"id": "demo-sites", "kind": "sites", "name": "Demo websites to sell", "usd": 499.0, "minutes": 30, "where": "Netlify Drop (free)",
+    out.append({"id": "demo-sites", "kind": "sites", "name": "Demo websites to sell", "usd": 1500.0, "minutes": 30, "where": "Netlify Drop (free)",
                 "file": "agency/out/", "steps": ["Double-click AGENCY_DAY.bat (fill agency/config.json the first time)",
                                                   "Drop each site folder on app.netlify.com/drop, press Publish", "Call the owners on Call today, by hand, business hours"]})
     return out
@@ -230,7 +230,7 @@ def moves(tr: dict, models: list, rd: list) -> list:
                     "minutes": 60, "usd": [0, 100], "where": "Business > Ready to upload"})
     out.append({"id": "m-ai-apply", "what": "Apply to 2 AI-training sites and take the assessment (your own words).", "minutes": 90, "usd": [0, 400], "where": "AI training tasks"})
     out.append({"id": "m-fiverr", "what": "Publish the logo and Google-profile gigs on Fiverr (texts are ready).", "minutes": 60, "usd": [0, 100], "where": "Business > Ready to upload"})
-    out.append({"id": "m-agency", "what": "AGENCY_DAY.bat, then 10 calls by hand (one Starter sale = $499 + $49 a month).", "minutes": 75, "usd": [0, 548], "where": "Website agency"})
+    out.append({"id": "m-agency", "what": "AGENCY_DAY.bat, then 10 calls by hand (one Starter sale = $1,500 + $79 a month).", "minutes": 75, "usd": [0, 1579], "where": "Website agency"})
     if len(prod) > 4:
         out.append({"id": "m-shop-rest", "what": f"Upload the other {len(prod) - 4} products (site templates, social kit, agency kit, planner).", "minutes": 60, "usd": [0, 50],
                     "where": "Business > Ready to upload"})

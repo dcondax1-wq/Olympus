@@ -35,56 +35,56 @@
   "packages": [
     {
       "id": "starter",
-      "name": "Starter",
-      "setup_usd": 499,
-      "monthly_usd": 49,
+      "name": "Starter site",
+      "setup_usd": 1500,
+      "monthly_usd": 79,
       "popular": false,
       "for": "Get found and get calls.",
-      "pages": "1 page",
+      "pages": "Up to 5 pages",
       "edits": "30 min of edits a month",
       "features": [
-        "One-page website, made for phones first",
-        "Tap-to-call button, map, hours and services",
-        "Quote form that lands in your email",
-        "Hosting, padlock (SSL) and daily backups",
-        "30 minutes of edits every month",
-        "Linked to your Google Business Profile"
+        "Up to 5 pages: home, services, about, reviews, contact",
+        "Tap-to-call and a contact form that emails them",
+        "Their logo, photos and words",
+        "Works great on phones; loads in about a second",
+        "Their own domain set up (in their name)",
+        "Google Business Profile linked"
       ]
     },
     {
       "id": "growth",
-      "name": "Growth",
-      "setup_usd": 999,
-      "monthly_usd": 79,
+      "name": "Call engine",
+      "setup_usd": 500,
+      "monthly_usd": 299,
       "popular": true,
-      "for": "Win more of the calls.",
-      "pages": "Up to 5 pages",
-      "edits": "1 hour of edits a month",
+      "for": "More calls from the map.",
+      "pages": "A one-page call site or a tune-up",
+      "edits": "Google profile + every review answered",
       "features": [
-        "Everything in Starter",
-        "Up to 5 pages: services, about, gallery, contact",
-        "Online booking or quote requests",
-        "Google Business Profile set up and tuned",
-        "Review booster: QR card and one-tap review link",
-        "1 hour of edits every month"
+        "A one-page call site (or a tune-up of their current one)",
+        "Google Business Profile set up and kept fresh (posts, photos, hours)",
+        "Review requests by text after every job (they approve the wording)",
+        "Every review answered within 2 days",
+        "A one-page proof report each month: calls, reviews, map views in plain words",
+        "Works for any local service: trades, salons, clinics, shops"
       ]
     },
     {
       "id": "pro",
-      "name": "Pro",
-      "setup_usd": 1999,
-      "monthly_usd": 129,
+      "name": "3D Signature",
+      "setup_usd": 2500,
+      "monthly_usd": 79,
       "popular": false,
-      "for": "Run it on autopilot.",
-      "pages": "Up to 10 pages",
-      "edits": "2 hours of edits a month",
+      "for": "Stand out with a 3D look.",
+      "pages": "Starter + a 3D tour",
+      "edits": "30 min of edits a month",
       "features": [
-        "Everything in Growth",
-        "Up to 10 pages, with a page for each town you serve",
-        "Website chat that answers questions and takes messages",
-        "Monthly Google profile posts and photo updates",
-        "2 hours of edits a month, same day when urgent",
-        "A short monthly report: visits, calls and leads"
+        "Everything in Starter",
+        "A 3D tour of their space (venues, gyms, studios, salons) or 3D product pages for 5-10 products (makers, dealers)",
+        "View in your room (AR) on iPhone and Android",
+        "A still-image fallback for old phones and reduced motion",
+        "Speed checked on a real phone before launch",
+        "Care plan: hosting, updates, small edits"
       ]
     }
   ],

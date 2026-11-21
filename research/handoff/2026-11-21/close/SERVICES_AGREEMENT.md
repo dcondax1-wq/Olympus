@@ -41,7 +41,9 @@ The package you chose, as listed on our offer page on the date above:
 - Includes hosting, security updates, backups, uptime checks, and **small edits up to about 30 minutes a month** (text, hours, a photo swap).
   Unused time does not roll over. Bigger changes are quoted first.
 - Billed on the same day each month, starting on launch day.
-- **Cancel any time with 30 days' notice** by email. When it ends, we give you a full copy of your site (the files) to host anywhere, or
+- **A 12-month term** from launch day, then month to month. After the 12 months, **cancel any time with 30 days' notice** by email.
+  (If you stop during the 12 months, the rest of the term is due, or we switch the site off and you keep your domain and content.)
+- When it ends, we give you a full copy of your site (the files) to host anywhere, or
   switch it off after 30 days. Your domain stays yours either way.
 
 ## 7. No guarantees of results
