@@ -166,6 +166,30 @@ def part_f(priv, vk, priv2):
     ok(sc.get(fk, {}).get("n") == 1, "a forger's own key: 1 post (easy to tell apart)")
 
 
+def part_g(priv, vk):
+    print("g. a phone that cannot check works as before; the pinned vk is a real key")
+    good = S.sign_text(core(), priv)
+    nd = "\n".join([ntfy_line(good, NOW, "g"), ntfy_line(json.dumps(core()), NOW, "u")])
+    rc, out, err = node("const F=require('./tools/web_public/pc_feed.js');(async()=>{const s=globalThis.crypto;"
+                        "Object.defineProperty(globalThis,'crypto',{value:{},configurable:true});"
+                        "const a=(await F.keepSigned(%s,%s)).split('\\n').length;"
+                        "Object.defineProperty(globalThis,'crypto',{value:s,configurable:true});"
+                        "const b=(await F.keepSigned(%s,%s)).split('\\n').length;console.log(a+','+b)})()"
+                        % (json.dumps(nd), json.dumps(vk), json.dumps(nd), json.dumps(vk)))
+    ok(out.endswith("2,1"), "no WebCrypto: both lines kept (as before); with WebCrypto: only the signed one (" + out[-10:] + " " + err[-80:] + ")")
+    pinned = S.feed_vk()
+    if pinned:
+        from cryptography.hazmat.primitives.asymmetric import ec
+        try:
+            ec.EllipticCurvePublicKey.from_encoded_point(ec.SECP256R1(), S.unb64u(pinned))
+            good_pt = True
+        except ValueError:
+            good_pt = False
+        ok(good_pt, "the vk pinned in status_feed.json is a valid P-256 key (a typo would switch the check off)")
+    else:
+        ok(True, "no vk pinned yet (status_feed.json): nothing to check")
+
+
 def main():
     priv, vk = S.keygen()
     priv2, _ = S.keygen()
@@ -175,6 +199,7 @@ def main():
     part_d(priv, vk)
     part_e()
     part_f(priv, vk, priv2)
+    part_g(priv, vk)
     n = sum(RES)
     print(f"\nstatus_sign: {n}/{len(RES)} " + ("ALL PASS" if n == len(RES) else "FAILED"))
     return 0 if n == len(RES) else 1

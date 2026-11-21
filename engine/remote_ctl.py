@@ -553,6 +553,12 @@ class RemoteControl:
                     except Exception:
                         pass
                     out.append((cid, cmd, "done", msg))
+                    if cmd == "restart":         # the owner's own restart is not a crash: engine/autoupdate.crash_check skips it
+                        try:
+                            from .autoupdate import mark_deliberate_restart
+                            (self.hooks.get("deliberate") or mark_deliberate_restart)("the phone's restart")
+                        except Exception:  # noqa: BLE001
+                            pass
                     self._hook("beat")
                     time.sleep(0 if self.hooks.get("exit") else 2)
                     fn = self.hooks.get("exit") or (lambda code: os._exit(code))

@@ -16,6 +16,18 @@ proposed today.**
 Next: nothing for you. The lead wires the 2 speed-ups (no trade changes). Fast entry stays OFF unless you want to try it
 as a test (your yes/no, through the lead).
 
+## Round 2 (afternoon, for the lead)
+
+| What | Result |
+|---|---|
+| The 2 speed-ups, now in the bot files on day-speed | same trades and same state on every replayed poll, LIT and ATLAS; full LIT test 120/120; bot's poll 504 -> 206 ms |
+| Fast entry | Decide card added (open): ~$100 a month central, $0-$161 range, recommend a 2-week test |
+| Today's ATLAS 03:45 short through old vs new code (PC's own bars of today) | SAME: SELL 1, stop 26,419.50, target 26,122.75, target hit +$514.28 (PC booked +$514.18) in both; poll 413 -> 237 ms |
+| Today's real fill | ATLAS SELL 1 at 26,375.50 vs the bar's open 26,381.00: 22 ticks worse (backtest counts 1): $10.50 on 1 micro. ATLAS's 4 fills now median 14 ticks |
+| Exact send / fill seconds | NOT in the PC's day files (only the ledger stamp, taken after fill + bracket: 3-5 s). The legs' sent_at / fill_mtime stay on the PC (logs/exec_audit/legs.json); adding them to the day bundle is an engine/datapipe.py change for the lead |
+
+Details: LEAD_WIRES.md "ROUND 2". Nothing merges until the lead reviews and a red team checks it.
+
 ## 1. The live loop, measured (job 1)
 
 Order of events on the PC for an entry (engine/live.py `_loop` / `poll_once`, engine/ninjatrader.py `send`):
@@ -70,7 +82,7 @@ is likely larger in ms. Worth ~$10-25 a month at ATLAS's measured drift (~4 tick
 
 | Bot | Order type | Fills | vs the bar open | vs backtest (1 tick) | Timing part | Price part |
 |---|---|---:|---|---|---|---|
-| ATLAS | MARKET entry at the 5m open | 3 | 10 / 12 / 16 ticks | +9 / +11 / +15 ticks = $9 / $11 / $15 (2 micros) | ~9-15 ticks | ~1 tick (spread) |
+| ATLAS | MARKET entry at the 5m open | 4 | 10 / 12 / 16 / 22 ticks (Nov 20 03:45, 1 micro) | +9 / +11 / +15 / +21 ticks = $9 / $11 / $15 / $10.50 | ~9-21 ticks | ~1 tick (spread) |
 | Zlarior (LIT) | MARKET entry at the 1m open | 1 | 4 ticks | +3 ticks = $1.50 (1 micro) | ~3 ticks | ~1 tick |
 | both | exits: bracket STOPMARKET + LIMIT, CLOSEPOSITION | 0 priced | unknown (no exit fill prices in the rows) | - | - | - |
 

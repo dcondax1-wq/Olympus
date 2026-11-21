@@ -124,7 +124,7 @@ def other_checks():
     check("scorecard: ready", g2["scorecard"]["level"] == "good" and "ready" in g2["scorecard"]["sentence"], g2["scorecard"])
     check("payout: not funded yet", g["payout"]["stage"] == "eval" and g["payout"]["frac"] == 0, g["payout"])
     p = G.build(fixture(funded=52000), now=ts(2026, 10, 27, 10))["payout"]
-    check("payout: funded, $1,600 before the ask at $53,600", p["stage"] == "funded" and p["ask_at"] == 53600 and "$1,600" in p["sentence"], p)
+    check("payout: funded, $2,100 before the ask at $54,100 (the max $2,000 above the $2,100 buffer)", p["stage"] == "funded" and p["ask_at"] == 54100 and "$2,100" in p["sentence"], p)
     check("scale: step + progress", g["scale"]["step"] == 0 and g["scale"]["frac"] == 0.5, g["scale"])
     check("lines: accounts first, every part present", [x["k"] for x in g["lines"]][:2] == ["lit50k", "atlas25k"] and len(g["lines"]) == 8, g["lines"])
     c = g["calendar"]

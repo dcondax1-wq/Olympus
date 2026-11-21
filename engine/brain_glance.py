@@ -287,12 +287,13 @@ def cut_logs(g, n: int) -> None:
                 g[k] = g[k][:n]
 
 
-def rapid(hb: dict) -> dict | None:
-    """The Rapid EOD 50K (engine/rapid.py): only when its lane (an extra account, lane / id "rapid") is configured."""
+def rapid(hb: dict, rid: str = "rapid") -> dict | None:
+    """The Rapid EOD 25K / 50K (engine/rapid.py): only when its lane (an extra account, lane / id "rapid") is configured;
+    rid "rapid2" = the 2nd Rapid (data/rapid2.json, day-multirapid)."""
     hb = _d(hb)
     subs = _l(_d(hb.get("acct")).get("accounts"))
-    hrow = next((r for r in _l(_d(hb.get("health")).get("accounts")) if isinstance(r, dict) and r.get("id") == "rapid"), None)
-    row = next((r for r in subs if isinstance(r, dict) and r.get("id") == "rapid"), None)
+    hrow = next((r for r in _l(_d(hb.get("health")).get("accounts")) if isinstance(r, dict) and r.get("id") == rid), None)
+    row = next((r for r in subs if isinstance(r, dict) and r.get("id") == rid), None)
     if not row and not hrow:
         return None
     row, hrow = _d(row), _d(hrow)
@@ -304,7 +305,7 @@ def rapid(hb: dict) -> dict | None:
     room = (bal - floor) if bal is not None and floor is not None else None
     lk = row.get("locked") or hrow.get("locked")
     dis = _d(row.get("account")).get("disabled") or hrow.get("disabled")
-    out = {"id": "rapid", "name": "Rapid EOD",
+    out = {"id": rid, "name": "Rapid EOD" + (" #2" if rid == "rapid2" else ""),
            "what": "LIT + ATLAS · MFFU Rapid EOD " + ("25K" if _f(pr.get("start")) == 25000.0 else "50K"),
            "on": bool(hrow.get("enabled", row.get("enabled"))) and bool(row.get("running", hb.get("running"))),
            "armed": bool(hrow.get("armed")), "mode": hrow.get("label") or _d(row.get("account")).get("label"),
@@ -323,9 +324,10 @@ def build(hb: dict | None, board: dict | None = None, now=None, max_bytes: int =
             return None
         bd = _d(board)
         bots = [lit(hb, bd.get("lit")), atlas(hb, bd.get("atlas"))]
-        r = rapid(hb)
-        if r:
-            bots.append(r)
+        for rid in ("rapid", "rapid2"):
+            r = rapid(hb, rid)
+            if r:
+                bots.append(r)
         out = {"v": VERSION, "t": int(_f(hb.get("t"), now or time.time())), "bots": [{k: v for k, v in b.items() if v not in (None, [], "")} for b in bots]}
         return fit(out, max_bytes)
     except Exception as e:  # noqa: BLE001

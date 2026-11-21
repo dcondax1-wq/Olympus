@@ -3,8 +3,9 @@ Read-only on engine/: re-runs every account route of tests/test_trade_alerts.py 
 delivery paths of engine/push._pc_send and checks each route's ENTRY and CLOSE notice carries: the account name, the side, the $ and
 (close) the result in $ and R.
 
-  web push: a phone takes it (app_send stubbed to sent=1): the Olympus app notice (title/body from app_payload), ntfy stays quiet
-  ntfy:     no phone (app_send -> sent=0): the private ntfy alert topic gets it instead
+  web push: a phone takes it (app_send stubbed to sent=1): the Olympus app notice (title/body from app_payload), and since 2026-11-20
+            the private ntfy topic gets the same entry and close too (a push service's "accepted" is not proof the phone showed it)
+  ntfy:     no phone (app_send -> sent=0): the private ntfy alert topic gets it
 
 Routes: a. LIT on Zlarior 50K, b. Zlarior 25K #2 (extra account), c. ATLAS 25K funded (account B), d. Rapid EOD 25K (LIT lane + ATLAS lane),
 e. ATLAS on Zlarior 50K (combo).
@@ -67,7 +68,7 @@ def part_real(b):
     """the lead's live case (2026-11-20): ATLAS short 1 MNQ @ 26,380.75 at 03:45 ET, stop moved to 26,379.50 (break-even), target 26,122.75.
     Its close comes from NinjaTrader's bracket: here the target fills (+$516). stop0 = the stop it was routed with (a 40-point stop, as an example:
     the chart feed only carries the moved one), so R = 258 / 40 = +6.45R."""
-    b.live(T.T0 - 600, [], atlas={"balance": 24887.0, "profit": -113.0, "today_pnl": 0.0, "status": "funded", "broker": "MFFUSFBLDR000006018",
+    b.live(T.T0 - 600, [], atlas={"balance": 24887.0, "profit": -113.0, "today_pnl": 0.0, "status": "funded", "broker": "MFFUSFBLDR000009999",
                                   "funded": {"max_request": 0}})
     a = T.atlas()
     t = T.T0 + 60
@@ -79,7 +80,7 @@ def part_real(b):
 
 def part_c_time(b):
     """ATLAS's own time-exit close with the provenance the bot really stores (engine/account_b.py line ~1192: risk_pts, qty)"""
-    b.live(T.T0 - 600, [], atlas={"balance": 26050.0, "profit": 1050.0, "today_pnl": 0.0, "status": "funded", "broker": "MFFUSFBLDR000006018",
+    b.live(T.T0 - 600, [], atlas={"balance": 26050.0, "profit": 1050.0, "today_pnl": 0.0, "status": "funded", "broker": "MFFUSFBLDR000009999",
                                   "funded": {"max_request": 0}})
     a = T.atlas()
     a.adapter = object()
@@ -175,9 +176,12 @@ def _main(table, today) -> int:
             via = "web push" if phone else "ntfy"
             rows = app if phone else ntfy
             ok, ne, nc = audit(rows, names, via, part)
-            other_quiet = (not ntfy) if phone else True
+            # 2026-11-20 (owner: "I never got one from today"): a phone that took it no longer silences ntfy; every entry and close
+            # reaches the private ntfy topic too, the same words and $
+            n_ok, n_e, n_c = audit(ntfy, names, "ntfy", part) if phone else (True, ne, nc)
+            other_too = n_ok and (n_e, n_c) == (ne, nc)
             check(f"{part} {names[0]} via {via}: {ne} entry + {nc} close, each with account, side, $; close with $ and R; no account id"
-                  + ("; ntfy quiet when the phone took it" if phone else ""), ok and other_quiet, rows if not ok else ntfy)
+                  + ("; ntfy gets the same entries and closes too" if phone else ""), ok and other_too, rows if not ok else ntfy)
             ex = next((r for r in rows if r[0] == "close"), ("", "", ""))
             en = next((r for r in rows if r[0] == "entry"), ("", "", ""))
             table.append({"route": names[0], "via": via, "entries": ne, "closes": nc, "entry": en[1], "close": ex[1], "close_body": ex[2], "ok": ok})

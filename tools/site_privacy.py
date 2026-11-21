@@ -42,7 +42,8 @@ PRIVATE_NAMES = {"household.json", "agency.json", "day.json", "inbox.json", "cal
                  "push.json", "push_pc_key.json", "push_sent.json", "memory.db", "goals_money.json", "money_rules.json", "fleet.json",
                  "health.json", "cards.json", "card_tracker.json", "heartbeat_last.json", "heartbeat.json", ".env",
                  "me.json",                                    # the Me hub (tools/me_hub.py -> data/me/, 2026-11-15: its name was missing)
-                 "status_sign.json"}                           # the PC's status-topic signing key (tools/status_sign.py, day-security 2026-11-20)
+                 "status_sign.json",                           # the PC's status-topic signing key (tools/status_sign.py, day-security 2026-11-20)
+                 "caller.json", "linetype.json", "dnc.txt"}    # the AI caller's keys / looked-up numbers / do-not-call list (caller review 2026-11-20)
 DATA_EXT = (".json", ".jsonl", ".csv", ".txt", ".md")
 PRIVATE_PREFIXES = ("household", "health_", "cards_", "card_tracker", "bank_", "statement_")      # data files only
 PRIVATE_SUFFIXES = (".ics", ".ofx", ".qfx", ".qbo", ".pem", ".key", ".p12", ".pfx", ".env", ".jsonl", ".db", ".sqlite", ".kdbx")

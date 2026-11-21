@@ -238,8 +238,11 @@ def part_a():
               "data.js", "jarvis.css", "OFL.txt") + FONTS:
         check(f"a. jarvis/{f} exists", os.path.exists(os.path.join(JV, f)))
     m = json.load(open(os.path.join(JV, "manifest.webmanifest"), encoding="utf-8"))
-    check("a. manifest: Jarvis, standalone, own scope, black like the old Jarvis, icons j5 (the gold temple, 2026-11-18)",
-          m["name"] == "Olympus" and m["short_name"] == "Olympus" and m["display"] == "standalone" and m["scope"] == "./"
+    # scope ../ = the whole site (owner phone 2026-11-21: ZEUS at ../hub/ opened in iOS's browser layer, an X + the web address on
+    # top and buttons at the bottom, because it was outside the app's ./ scope); start_url and id stay ./ (Jarvis opens first)
+    check("a. manifest: Olympus, standalone, the whole site in scope (../), black like the old Jarvis, icons j5 (the gold temple, 2026-11-18)",
+          m["name"] == "Olympus" and m["short_name"] == "Olympus" and m["display"] == "standalone" and m["scope"] == "../"
+          and m["start_url"] == "./" and m["id"] == "./"
           and m["theme_color"] == "#14110e" and all(i["src"].endswith("?v=j5") for i in m["icons"]), m)
     b = open(os.path.join(ROOT, "tools", "build_web_dashboard.py"), encoding="utf-8").read()
     tup = re.search(r'for app in \(([^)]*)\):', b)
@@ -265,7 +268,7 @@ def part_a():
           and "background:#000" in sw and "location.reload()" in sw)
     check("a. worker v14: data.js, jarvis.css, the fonts, every separate part, switcher.js, the new brain's obsidian.js / memory.js / "
           "assist-ui.js and voice-mode.js in SHELL, each saved on its own (a missing part is skipped)",
-          "const CACHE = 'jarvis-v86';" in sw and all(f"'./{f}'" in sw for f in ("data.js", "switcher.js", "obsidian.js", "memory.js", "assist-ui.js", "voice-mode.js", "tools.js", "voice-out.js") + PARTS + FONTS)
+          "const CACHE = 'jarvis-v89';" in sw and all(f"'./{f}'" in sw for f in ("data.js", "switcher.js", "obsidian.js", "memory.js", "assist-ui.js", "voice-mode.js", "tools.js", "voice-out.js") + PARTS + FONTS)
           and f"'./{JCSS}'" in sw and "SHELL.map((u) => c.add(new Request(u, { cache: 'reload' })).catch(() => null))" in sw)
     shell = re.search(r"const SHELL = \[([^\]]*)\]", sw)
     shell_files = re.findall(r"'\./([^'?]+)", shell.group(1)) if shell else []
@@ -462,6 +465,10 @@ def run_a(br, url):
     hello = p.text_content("#hello")
     when = p.text_content("#when")
     check("b. Jarvis screen: greeting and the market line", hello in ("Late night", "Good morning", "Good afternoon", "Good evening") and "NQ market" in when, (hello, when))
+    try:                                               # the bots' numbers arrive with the live feed, a moment after the start (QA 2026-11-21:
+        p.wait_for_function("(document.getElementById('cards').textContent || '').includes('$1,106')", timeout=10000, polling=100)   # 0.7 s was a race)
+    except Exception:                                  # noqa: BLE001 - reported below
+        pass
     cards = p.text_content("#cards")
     check("b. Zenith card: the bots' status and numbers from the live feed",
           "RUNNING: bot trading" in cards and "$1,106" in cards and "+$213" in cards and "$750" in cards, cards[:400])
@@ -700,6 +707,10 @@ def run_b(br, url):
     check("h. apps.js: a card posted by an open app (listen) replaces it", "StubApp · Posted" in p.text_content("#cards"), p.text_content("#cards")[-200:])
     check("h. brain.js: its suggestions", "Stub suggestion" in p.inner_text("#sugs"), p.inner_text("#sugs"))
     check("h. CONNECT MY BRAIN shows while the brain can use a key and has none", p.locator("#brainF").is_visible())
+    try:                                               # the live feed (room 1105.6) first: asking before it lands answers "room none" (a race)
+        p.wait_for_function("(document.getElementById('cards').textContent || '').includes('$1,106')", timeout=10000, polling=100)
+    except Exception:                                  # noqa: BLE001 - reported below
+        pass
     ask = asker(p)
     a = ask("anything")
     check("h. brain.js answers with getFacts() (market, live, apps) and its cards show", a.startswith("STUB NQ market") and "room 1105.6" in a
@@ -844,7 +855,7 @@ def run_c(br, url):
         const reg = await Promise.race([navigator.serviceWorker.ready, new Promise((ok) => setTimeout(() => ok(null), 6000))]);
         if (!reg) return 'no worker';
         for (let i = 0; i < 30; i++) {
-          const c = await caches.open('jarvis-v86');
+          const c = await caches.open('jarvis-v89');
           const got = await Promise.all(['./index.html', './data.js', './%s', './orbitron.woff2', './rajdhani-500.woff2'].map((u) => c.match(u)));
           if (got.every(Boolean)) return 'ok';
           await new Promise((ok) => setTimeout(ok, 200));

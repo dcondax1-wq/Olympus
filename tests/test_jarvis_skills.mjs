@@ -95,7 +95,7 @@ check('router is pure ES, no imports', !/^\s*import\s/m.test(fs.readFileSync(pat
   check('drawdown has $ and R and source', /\$1,420 \(3\.2R\) of \$2,000/.test(r.text) && /From home\.json, 6 min ago/.test(r.text) && r.sources[0] === 'home.json, 6 min ago', r.text);
   check('drawdown names every account', /ATLAS 25K/.test(r.text) && /BLITZ 25K/.test(r.text));
   r = await say('daily loss left'); check('daily loss', /daily loss left/.test(r.text) && /\$1,000/.test(r.text), r.text);
-  r = await say('what is my worst weekday'); check('worst weekday with n, $ and R', /Monday/.test(r.text) && /-\$623/.test(r.text) && /10 trades/.test(r.text) && /R\)/.test(r.text) && /odeon\/trades\.json/.test(r.text), r.text);
+  r = await say('what is my worst weekday'); check('worst weekday with n, $ and R', /Monday/.test(r.text) && /-\$623/.test(r.text) && /10 trades/.test(r.text) && /R\)/.test(r.text) && /odeon\/trades(_lite)?\.json/.test(r.text), r.text);   // the slim copy since QA 2026-11-21
   r = await say('what is my best weekday'); check('best weekday', /Thursday|Friday|Tuesday|Wednesday/.test(r.text) && /Based on 60 trades/.test(r.text), r.text);
   r = await say('how did I do on fridays'); check('a named weekday (router sees it)', r === null || true);
   r = await say('what did Sibyl pick'); check('sibyl pick: n, win rate, break-even, stake = 1R', /n=640/.test(r.text) && /98\.1% won vs 96\.3%/.test(r.text) && /\$3\.41 = 1R/.test(r.text) && /Sibyl places no bet/.test(r.text), r.text);
@@ -256,7 +256,8 @@ check('router is pure ES, no imports', !/^\s*import\s/m.test(fs.readFileSync(pat
   const hits = [];
   const f = async (u) => { hits.push(u); return u.endsWith('home.json') ? { ok: true, json: async () => ({ accounts: [], t: 1 }) } : { ok: false }; };
   const S = await D.loadSources({ fetch: f, now: () => NOW });
-  check('loader: one GET per file, relative, no keys, a missing file is null', hits.length === 13 && hits.includes('../fates/jarvis.json') && hits.includes('../day/day.json') && hits.includes('../money/household.json') && hits.includes('../me/health.json') && hits.every((u) => /^\.\.\//.test(u)) && S.home && S.odeon === null && S.at.home === NOW);
+  // odeon: the slim trades_lite.json first, the full trades.json only when it is missing (QA 2026-11-21): 13 files + that one fallback
+  check('loader: one GET per file (the trades: lite, then the full copy when missing), relative, no keys, a missing file is null', hits.length === 14 && hits.indexOf('../odeon/trades_lite.json') >= 0 && hits.indexOf('../odeon/trades_lite.json') < hits.indexOf('../odeon/trades.json') && hits.includes('../fates/jarvis.json') && hits.includes('../day/day.json') && hits.includes('../money/household.json') && hits.includes('../me/health.json') && hits.every((u) => /^\.\.\//.test(u)) && S.home && S.odeon === null && S.at.home === NOW);
   const bad = await D.loadSources({ fetch: async () => { throw new Error('offline'); } }); check('loader: offline never throws', bad.home === null);
   check('zones list matches the Atlas districts', (() => { const src = fs.readFileSync(path.join(WP, 'atlas/atlas.js'), 'utf8'); return Object.entries(K.ZONES).every(([id, ids]) => ids.every((i) => src.includes("'" + i + "'"))) && Object.keys(K.ZONES).every((id) => src.includes("id:'" + id + "'")); })());
   check('et time helper', D.etParts(NOW).h === 10 && D.etParts(NOW).day === '2026-11-10' && D.etParts(NOW).dow === 2);

@@ -255,7 +255,7 @@ def status_view(bot, env=None, now=None, state_path: str | None = None, log_path
     try:
         for acc in list(getattr(getattr(bot, "accts", None), "accounts", None) or []):
             n += getattr(acc, "open_t", None) is not None
-        for name in ("acct_b", "acct_r"):
+        for name in ("acct_b", "acct_r", "acct_r2"):
             a = getattr(bot, name, None)
             n += a is not None and getattr(a, "open_t", None) is not None
     except Exception:  # noqa: BLE001
@@ -314,6 +314,7 @@ that stays on the PC with the typed phrase. FLATTEN and KILL need a second tap. 
 in NinjaTrader or the MFFU app.</p>
 <div class="card"><b>What happened</b><ul id="trail"><li class="mute">-</li></ul></div>
 <p class="mute"><a href="/kalshi-live/">Kalshi K8 (key, bet size, start / STOP)</a></p>
+<p class="mute"><a href="/alerts/">Phone alerts (Telegram setup + test)</a></p>
 </main><script>
 var primed=null,timer=null,ON=false;
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}

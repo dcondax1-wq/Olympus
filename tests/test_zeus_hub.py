@@ -214,9 +214,9 @@ def part_c():
     check("c. ATLAS funded: chip Sim Funded, the payout coach's sentence, today -$40", a.get("cls") == "funded" and a.get("chip") == "Sim Funded"
           and re.search(r"PAYOUT READY|Not yet|MFFU would pay|Type the balance", str(a.get("goal"))) and a.get("todayText") == "Today: -$40", a)
     fr, old, nev = r2.get("fresh") or {}, r2.get("old") or {}, r2.get("never") or {}
-    check("c. PC line: 'PC reported 4 min ago' (fresh feed), red PC SILENT on a 10-day-old copy, 'never reported' with nothing",
+    check("c. PC line: 'PC reported 4 min ago' (fresh feed), red PC SILENT on a 10-day-old copy, 'no report ... in the last 12 hours' with nothing",
           fr.get("text") == "PC reported 4 min ago" and fr.get("silent") is False and old.get("silent") is True and "10 days ago" in str(old.get("text"))
-          and nev.get("silent") is True and "never" in str(nev.get("text")), (fr, old, nev))
+          and nev.get("silent") is True and "no report from your PC in the last 12 hours" in str(nev.get("text")), (fr, old, nev))
 
 
 class Quiet(http.server.SimpleHTTPRequestHandler):

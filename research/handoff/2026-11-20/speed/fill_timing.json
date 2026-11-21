@@ -1,0 +1,107 @@
+{
+ "rows": [
+  {
+   "src": "pc_days trades (ledger stamp after fill + bracket)",
+   "bot": "ATLAS",
+   "entry_t": 1793955600,
+   "day": "2026-11-06",
+   "et": "04:00",
+   "dir": -1,
+   "qty": 2,
+   "ledger_s_after_open": 5,
+   "open": 27038.0,
+   "model": 27037.75,
+   "fill": 27035.5,
+   "ticks_vs_open": 10.0,
+   "ticks_vs_model": 9.0,
+   "price_part_ticks": 1.0,
+   "timing_part_ticks": 9.0,
+   "usd_vs_backtest": 9.0
+  },
+  {
+   "src": "pc_days trades (ledger stamp after fill + bracket)",
+   "bot": "Zlarior",
+   "entry_t": 1794827760,
+   "day": "2026-11-16",
+   "et": "06:16",
+   "dir": 1,
+   "qty": 1,
+   "ledger_s_after_open": 4,
+   "open": 27798.5,
+   "model": 27798.75,
+   "fill": 27799.5,
+   "ticks_vs_open": 4.0,
+   "ticks_vs_model": 3.0,
+   "price_part_ticks": 1.0,
+   "timing_part_ticks": 3.0,
+   "usd_vs_backtest": 1.5
+  },
+  {
+   "src": "pc_days trades (ledger stamp after fill + bracket)",
+   "bot": "ATLAS",
+   "entry_t": 1794921600,
+   "day": "2026-11-17",
+   "et": "08:20",
+   "dir": -1,
+   "qty": 2,
+   "ledger_s_after_open": 4,
+   "open": 27367.75,
+   "model": 27367.5,
+   "fill": 27364.75,
+   "ticks_vs_open": 12.0,
+   "ticks_vs_model": 11.0,
+   "price_part_ticks": 1.0,
+   "timing_part_ticks": 11.0,
+   "usd_vs_backtest": 11.0
+  },
+  {
+   "src": "pc_days trades (ledger stamp after fill + bracket)",
+   "bot": "ATLAS",
+   "entry_t": 1794995400,
+   "day": "2026-11-18",
+   "et": "04:50",
+   "dir": -1,
+   "qty": 2,
+   "ledger_s_after_open": 3,
+   "open": 27395.75,
+   "model": 27395.5,
+   "fill": 27391.75,
+   "ticks_vs_open": 16.0,
+   "ticks_vs_model": 15.0,
+   "price_part_ticks": 1.0,
+   "timing_part_ticks": 15.0,
+   "usd_vs_backtest": 15.0
+  },
+  {
+   "src": "pc_days trades (ledger stamp after fill + bracket)",
+   "bot": "ATLAS",
+   "entry_t": 1795164300,
+   "day": "2026-11-20",
+   "et": "03:45",
+   "dir": -1,
+   "qty": 1,
+   "ledger_s_after_open": 3,
+   "open": 26381.0,
+   "model": 26380.75,
+   "fill": 26375.5,
+   "ticks_vs_open": 22.0,
+   "ticks_vs_model": 21.0,
+   "price_part_ticks": 1.0,
+   "timing_part_ticks": 21.0,
+   "usd_vs_backtest": 10.5
+  }
+ ],
+ "by_bot": {
+  "ATLAS": {
+   "n": 4,
+   "median_ticks_vs_open": 14.0,
+   "order_type": "MARKET (entry), bracket STOPMARKET + LIMIT (exits: no fill prices recorded)"
+  },
+  "Zlarior": {
+   "n": 1,
+   "median_ticks_vs_open": 4.0,
+   "order_type": "MARKET (entry), bracket STOPMARKET + LIMIT (exits: no fill prices recorded)"
+  }
+ },
+ "pc_legs": 0
+}

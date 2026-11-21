@@ -88,11 +88,41 @@ def analyse(pc_days=None):
                          "qty": lg.get("filled") or lg.get("qty"), "bar_open_t": b, "sent_s_after_open": round(sent - b, 3),
                          "fill_s_after_sent": None if fm is None else round(fm - sent, 3), "open": op,
                          "fill": float(lg["fill_px"]), "ticks_vs_open": slip})
+    # the PC's day files: live entry rows with NinjaTrader fill legs (trades.jsonl.gz), bar open from the day's own bars
+    import glob
+    import pandas as pd
+    days_dir = pc_days or os.path.join(ROOT, "data", "pc_days")
+    have0 = {r["entry_t"] for r in rows}
+    o1 = {}
+    for f in sorted(glob.glob(os.path.join(days_dir, "*", "bars", "*NQ_1m.csv.gz"))):
+        try:
+            b = pd.read_csv(f)
+            o1.update(dict(zip(b["time"].astype("int64"), b["open"].astype(float))))
+        except Exception:
+            pass
+    for f in sorted(glob.glob(os.path.join(days_dir, "*", "trades.jsonl.gz"))):
+        with gzip.open(f, "rt", encoding="utf-8") as fh:
+            for ln in fh:
+                r = json.loads(ln)
+                legs = [lg for lg in ((r.get("result") or {}).get("legs") or []) if lg.get("fill_px") and lg.get("filled")]
+                if r.get("side") not in ("buy", "sell") or r.get("mode") != "live" or not legs or int(r["entry_t"]) in have0:
+                    continue
+                d = 1 if r["side"] == "buy" else -1
+                q = sum(int(lg["filled"]) for lg in legs)
+                px = sum(float(lg["fill_px"]) * int(lg["filled"]) for lg in legs) / q
+                op = o1.get(int(r["entry_t"]))
+                rows.append({"src": "pc_days trades (ledger stamp after fill + bracket)", "bot": "ATLAS" if r.get("bot") == "atlas" else "Zlarior",
+                             "entry_t": int(r["entry_t"]), "day": os.path.basename(os.path.dirname(f)),
+                             "et": __import__("datetime").datetime.fromtimestamp(int(r["entry_t"]), __import__("zoneinfo").ZoneInfo("America/New_York")).strftime("%H:%M"),
+                             "dir": d, "qty": q, "ledger_s_after_open": int(r["t"]) - int(r["entry_t"]), "open": op, "model": r.get("entry"),
+                             "fill": px, "ticks_vs_open": None if op is None else round((px - op) * d / TICK, 1),
+                             "ticks_vs_model": None if r.get("entry") is None else round((px - float(r["entry"])) * d / TICK, 1)})
+                have0.add(int(r["entry_t"]))
     known = os.path.join(ROOT, "research", "second", "atlas_fills_why.json")
     have = {r["entry_t"] for r in rows}
     if os.path.exists(known):
         for f in json.load(open(known, encoding="utf-8"))["fills"]:
-            if int(f["entry_t"]) in have:
+            if int(f["entry_t"]) in have or int(f["entry_t"]) in have0:
                 continue
             rows.append({"src": "ledger stamp (after fill + bracket)", "bot": f["bot"], "member": f.get("member"),
                          "entry_t": int(f["entry_t"]), "et": f["et"], "day": f["day"], "dir": 1 if f["side"] == "BUY" else -1,

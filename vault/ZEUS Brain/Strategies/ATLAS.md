@@ -141,6 +141,7 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 | 2026-11-20 | [[atlas-risk-real-fills-2026-11-20\|ATLAS funded 25K at real fills]] | finding |
 | 2026-11-20 | [[atlas-fills-2026-11-20\|ATLAS real fills]] | finding |
 | 2026-11-20 | [[atlas-edge-2026-11-20\|ATLAS edge at real fills]] | rejected |
+| 2026-11-20 | [[atlas-costs-split-2026-11-20\|ATLAS with split costs]] | info |
 | 2026-11-19 | [[one-account-combo-redteam-2026-11-19\|Red team]] | research |
 | 2026-11-19 | [[one-account-combo-final-2026-11-19\|One account, Zlarior + ATLAS on the Builder 50K]] | research |
 | 2026-11-19 | [[one-account-combo-2026-11-19\|ONE account, several bots]] | research |
@@ -174,9 +175,8 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 | 2026-10-29 | [[mind\|Mind]] | finding |
 | 2026-10-28 | [[scalp-na-mffu\|BLITZ]] | promising |
 | 2026-10-27 | [[b-holds-vs-lit-priority\|B-holds vs LIT priority]] | rejected |
-| 2026-10-26 | [[atlas-funded\|ATLAS's funded account]] | adopt-candidate |
 
-... and 18 older (see the families).
+... and 19 older (see the families).
 
 ## Links
 

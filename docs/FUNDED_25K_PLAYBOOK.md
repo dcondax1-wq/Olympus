@@ -15,7 +15,7 @@ Short version: **upgrade in MFFU, run one line, START BOT, trade every week, ask
 | Size | 2 minis / 20 micros | 2 minis / 20 micros |
 | Payouts | none | above the **$1,100 buffer**, $250 min, **$1,000 max**, you keep **80%**, 5 sim payouts then live |
 | Payout rules | | 2 traded days in the cycle; best day **no more than half** the cycle's profit; first one 2 days after the first trade |
-| Inactivity | 7 days | **7 calendar days without a trade wipes the profits** |
+| Inactivity | 7 days | **7 calendar days without a filled trade: MFFU can close the account (a breach) and the profits are lost** |
 
 ## 2. The one line (on the PC, bot stopped)
 

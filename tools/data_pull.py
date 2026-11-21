@@ -168,6 +168,119 @@ def gather(out_dir: str, sym: str, days: list | None = None, data_dir: str = DAT
     return out, notes
 
 
+# ------------------------------------------------------------------------------------------------ the quarterly roll (day-brief 2026-11-20)
+NEXT = {"H": ("M", 0), "M": ("U", 0), "U": ("Z", 0), "Z": ("H", 1)}
+ROLL_STEADY_PTS = 1.0                                   # 1m and 5m must agree on the offset to this many points
+
+
+def _next_code(anchor3: str) -> str | None:
+    """'Z26' -> 'H27' (the contract after the anchor)."""
+    try:
+        m, dy = NEXT[anchor3[0]]
+        return f"{m}{(int(anchor3[1:]) + dy) % 100:02d}"
+    except (KeyError, ValueError, IndexError):
+        return None
+
+
+def roll_from_pc(sym: str, out_dir: str = OUT, data_dir: str = DATA, days: list | None = None, dry: bool = False) -> tuple:
+    """The December (any quarterly) roll from the PC's own bars: when pulled days are on the contract AFTER data/<sym>_rolls.json's
+    anchor and they share bars with data/<sym>_5m.csv (a day the PC re-sent on the new contract, e.g. the Wednesday of the
+    switch), the offset between the two is measured with engine/pcbars.basis_shift (constant, or roll-sized and steady over the
+    last shared bars; noise is never taken for a roll). Steady on 5m (and on 1m when both have 1m, within 1 pt) -> the roll is
+    recorded (from, to, switch_t = just after the newest bar on file, gap, method pc_merge_basis), the anchor moves to the new
+    contract and every data/<sym>_{1m,5m,15m,1h}.csv bar before the switch gets +gap (a backup first, as tools/import_tv.py
+    --roll does). Not steady / no shared bars -> nothing written, one line saying why. -> (lines, recorded roll or None)."""
+    import pandas as pd
+    from engine import pcbars
+    sys.path.insert(0, os.path.join(ROOT, "tools"))
+    import import_tv as TV
+    anchor = anchor_code(sym, data_dir)
+    nxt = _next_code(anchor) if anchor else None
+    if not nxt:
+        return [], None
+    frames = {"1m": [], "5m": []}
+    roll_days = []
+    for day in sorted(days if days is not None else complete_days(out_dir)):
+        d = os.path.join(out_dir, day)
+        try:
+            man = json.load(open(os.path.join(d, "manifest.json"), encoding="utf-8"))
+        except Exception:
+            continue
+        files = man.get("files") or {}
+        for tf in ("1m", "5m"):
+            root = next((r for r in PREFER[sym] if (files.get(f"bars/{r}_{tf}.csv.gz") or {}).get("rows")), None)
+            if root is None or _contract_code((man.get("chart") or {}).get(root)) != nxt:
+                continue
+            with open(os.path.join(d, "bars", f"{root}_{tf}.csv.gz"), "rb") as fh:
+                frames[tf].append(pcbars.decode(fh.read()))
+            if day not in roll_days:
+                roll_days.append(day)
+    if not frames["5m"]:
+        return [], None
+    new5 = pcbars.tidy(pd.concat(frames["5m"]))
+    p5 = os.path.join(data_dir, f"{sym}_5m.csv")
+    if not os.path.exists(p5):
+        return [f"{sym}: chart on {nxt} (new contract) but no data/{sym}_5m.csv: roll not recorded"], None
+    old5 = pd.read_csv(p5)
+    shared = int(old5["time"].isin(new5["time"]).sum())
+    sh5 = pcbars.basis_shift(old5, new5)
+    sh1 = None
+    if frames["1m"] and os.path.exists(os.path.join(data_dir, f"{sym}_1m.csv")):
+        new1 = pcbars.tidy(pd.concat(frames["1m"]))
+        old1 = pd.read_csv(os.path.join(data_dir, f"{sym}_1m.csv"))
+        if int(old1["time"].isin(new1["time"]).sum()) >= 20:
+            sh1 = pcbars.basis_shift(old1, new1)
+    full_old, full_new = f"{sym}{anchor}", f"{sym}{nxt}"
+    if abs(sh5) < pcbars.ROLL_MIN or (sh1 is not None and abs(sh1 - sh5) > ROLL_STEADY_PTS):
+        why = ("no bars shared with data/ yet (the PC must re-send a day it already sent, on the new contract)" if shared < 20
+               else f"the offset is not steady (5m {sh5:+.2f}" + (f", 1m {sh1:+.2f}" if sh1 is not None else "") + ")")
+        return [f"{sym}: chart on {full_new} (days {', '.join(roll_days)}) but the roll {full_old} -> {full_new} is NOT recorded: "
+                f"{why}. Nothing imported for those days; or record it with a TradingView export (tools/import_tv.py --roll)."], None
+    m = old5.merge(new5[["time", "close"]], on="time", suffixes=("_o", "_n"))
+    d = (m["close_n"] - m["close_o"]).tail(pcbars.ROLL_TAIL)
+    unc = round(float((d - sh5).abs().quantile(0.9)), 2) if len(d) else None
+    # every bar on file is on the old contract (gather refuses new-contract days until the roll is recorded), so the whole
+    # history moves by the gap: the switch is right after the newest bar on file, the PC's bars from there on are March
+    ends = [int(old5["time"].max())]
+    if os.path.exists(os.path.join(data_dir, f"{sym}_1m.csv")):
+        ends.append(int(pd.read_csv(os.path.join(data_dir, f"{sym}_1m.csv"), usecols=["time"])["time"].max()))
+    t0 = max(ends) + 60
+    roll = {"from": full_old, "to": full_new, "switch_t": t0,
+            "switch_et": str(pd.Timestamp(t0, unit="s", tz="UTC").tz_convert("America/New_York")),
+            "switch_day": trading_day_str(t0),
+            "source_at_switch": "pc-ninjatrader", "check": "ok", "method": "pc_merge_basis", "gap": float(sh5),
+            "uncertainty": unc, "shared_bars_5m": shared, "gap_1m": sh1, "days": roll_days}
+    line = (f"{sym}: NEW roll {full_old} -> {full_new} from the PC's bars, gap {sh5:+.2f} pts (5m, {shared} shared bars"
+            + (f"; 1m {sh1:+.2f}" if sh1 is not None else "") + f"; +-{unc}): the {sym} history is re-anchored on {full_new}")
+    if dry:
+        return ["would record: " + line], roll
+    import shutil
+    stamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
+    bdir = os.path.join(data_dir, "_import_backup", stamp)
+    os.makedirs(bdir, exist_ok=True)
+    rp = os.path.join(data_dir, f"{sym}_rolls.json")
+    shutil.copy2(rp, os.path.join(bdir, f"{sym}_rolls.json"))
+    for tf in ("1m", "5m", "15m", "1h"):
+        fp = os.path.join(data_dir, f"{sym}_{tf}.csv")
+        if not os.path.exists(fp):
+            continue
+        shutil.copy2(fp, os.path.join(bdir, f"{sym}_{tf}.csv"))
+        df = TV.shift_before(pd.read_csv(fp), t0, float(sh5))
+        df.assign(time=df["time"].astype("int64")).to_csv(fp, index=False)
+    doc = json.load(open(rp, encoding="utf-8"))
+    doc["rolls"] = (doc.get("rolls") or []) + [roll]
+    doc["anchor"] = full_new
+    with open(rp, "w", encoding="utf-8") as fh:
+        json.dump(doc, fh, indent=1, default=str)
+    return [line + f" (backup {os.path.relpath(bdir, ROOT)})"], roll
+
+
+def trading_day_str(t) -> str:
+    """CME trading day of a unix time (18:00 ET starts the next day)."""
+    from zoneinfo import ZoneInfo
+    return (dt.datetime.fromtimestamp(int(t), ZoneInfo("America/New_York")) + dt.timedelta(hours=6)).strftime("%Y-%m-%d")
+
+
 def import_bars(out_dir: str = OUT, data_dir: str = DATA, days: list | None = None, dry: bool = False) -> list:
     """Append the PC's bars newer than data/<SYM>_1m / _5m.csv. -> one line per symbol."""
     import pandas as pd
@@ -175,6 +288,11 @@ def import_bars(out_dir: str = OUT, data_dir: str = DATA, days: list | None = No
     import import_futures as IF
     lines = []
     for sym in ("NQ", "ES"):
+        try:                                # a new contract on the PC's chart: record the roll first when the offset is steady
+            rl, _roll = roll_from_pc(sym, out_dir, data_dir, days, dry=dry)
+            lines += rl
+        except Exception as e:  # noqa: BLE001
+            lines.append(f"{sym}: roll check failed ({e.__class__.__name__}: {e}); nothing recorded")
         F, notes = gather(out_dir, sym, days, data_dir)
         lines += notes
         for tf in ("5m", "1m"):             # 5m first: the PC's whole 5m bar is on file before 1m rebuilds the coarser files

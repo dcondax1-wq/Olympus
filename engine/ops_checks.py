@@ -908,6 +908,8 @@ def account_view(hb: dict, now) -> dict:
     out = {"name": scrub(a.get("name") or ak.get("name") or "?", 40), "label": label, "is_live": label == "LIVE",
            "trades": [t for t in acct.get("trades") or [] if isinstance(t, dict)], "day_pnl": float(acct.get("day_pnl") or 0.0),
            "position": acct.get("position"), "fresh": _hb_fresh(hb, now, 30 * 60), "eval": None}
+    if isinstance(hb.get("keepalive"), dict):          # engine/keepalive.hb_block: its days + the accounts it warns for
+        out["keepalive"] = hb["keepalive"]
     ev = acct.get("eval") or {}
     if ev.get("days") is not None:
         try:
@@ -1093,13 +1095,25 @@ def inactivity_notice(view: dict, now) -> dict | None:
     ev = view.get("eval") or {}
     if not view.get("is_live") or ev.get("status") in ("passed", "failed"):
         return None
+    ka = view.get("keepalive") if isinstance(view.get("keepalive"), dict) else None
+    try:
+        from . import keepalive as KA
+        if ka and view.get("fresh") and KA.hb_covers(ka, "lit", now):
+            return None             # the RUNNING bot's keep-alive sends this account's ONE inactivity warning a day (and counts
+        #                             it); a stale heartbeat (the bot down) never covers: then this warns as before
+        kd = KA.hb_last(ka, "lit") if ka else None
+    except Exception:
+        kd = None
+    if kd:                          # a keep-alive / a hand trade noted (--traded) restarts the clock like a trade
+        view = {**view, "trades": list(view.get("trades") or []) + [{"day": str(kd)[:10]}]}
     n = days_since_trade(view, now, ev.get("start"))
     sq = _idle_squeeze(now, n)                 # a holiday week: at most 1 CME session left before the 7-day mark (cme_calendar)
     if n is None or (n < PLAN["warn_days"] and not sq):
         return None
     left = PLAN["inactivity_days"] - n
     title = f"No trade for {n} days (MFFU closes an account at {PLAN['inactivity_days']})"
-    body = ("Place 1 MNQ by hand today (in and out, a few dollars), or let the min-days 1-micro trade run. "
+    body = ("Place 1 MNQ by hand today (in and out, a few dollars) while EVERY account is flat (a hand trade against another "
+            "account's open trade is a hedge), or switch on the bot's keep-alive trade (KEEPALIVE_ON.bat). "
             + (f"{left} day{'s' if left != 1 else ''} left." if left > 0 else "Do it today.")
             + (f" Holiday week: the last CME session before the 7-day mark is {sq['last_session']}." if sq and sq.get("last_session") else ""))
     return _payload("idle", title, body, f"ops:idle:{trading_day(now)}", now)
@@ -1116,8 +1130,8 @@ def eval_result_notice(view: dict, now) -> dict | None:
         body = ("Next: 1) the bot stops trading this eval by itself; do not trade it more. 2) Next morning check MFFU shows "
                 "it passed; if not, place one 1-MNQ trade (minimum days). 3) Sign MFFU's funded agreement. 4) Note the funded "
                 "account Name in NinjaTrader. 5) Add it with funded sizing: python -X utf8 -m engine.eval_life --to-funded "
-                "--account \"<Name>\" --start <first funded day>, restart the bot. 6) Payouts: ask once the balance is $53,600+ "
-                "($1,500 above the $2,100 buffer), up to $2,000.")
+                "--account \"<Name>\" --start <first funded day>, restart the bot. 6) Payouts: ask the max $2,000 once the balance is $54,100+ "
+                "($4,100 MFFU profit: $2,000 above the $2,100 buffer).")
         return _payload("eval", f"EVAL PASSED: {_money(ev.get('profit'))}", body, f"ops:eval:passed:{start}", now)
     if failed:
         body = (f"Next: 1) Stop the bot on this account. 2) Buy a new MFFU Builder 50K with your discount code (you paid "
@@ -1463,6 +1477,7 @@ def due(now) -> dict:
             "eod": wd < 5 and 965 <= mod <= 1020,                   # 16:05-17:00 ET
             "weekly": wd == 6 and 1020 <= mod <= 1439,              # Sunday 17:00-23:59 ET
             "mffu_check": wd < 5 and 1025 <= mod <= 1075,           # 17:05-17:55 ET: "Check MFFU: bot thinks ..."
+            "preflight": wd == 6 and 1050 <= mod <= 1095,           # Sunday 17:30-18:15 ET: engine/preflight ("Ready" or the fix)
             "daily": (wd < 5 and (100 <= mod <= 135 or 965 <= mod <= 1020)) or (wd == 6 and 1020 <= mod <= 1439)}
 
 
@@ -1500,11 +1515,25 @@ def tick(now=None, ctx=None, state=None, sender=None, state_path: str = STATE_PA
     try:
         notes = watch(ctx, state, now)
         view = account_view(ctx["hb"], now)
-        if D["presession"] or D["eod"] or D["weekly"]:
+        if D["presession"] or D["eod"] or D["weekly"] or D.get("preflight"):
             checks = run_checks(ctx)
             state["last_checks"] = {"t": int(now), **summary(checks)}
             if D["presession"]:
-                notes.append(presession_notice(checks, view, now))
+                p = presession_notice(checks, view, now)
+                try:                   # engine/preflight (2026-11-21): the MFFU 7-day clock's amber / red accounts on the same push
+                    from . import preflight
+                    cl = preflight.clock_line(ctx.get("hb"), now)
+                    if cl:
+                        p["body"] = scrub(p["body"] + cl, 600, paths=True)
+                except Exception as e:
+                    ops_log(f"preflight clock failed: {e.__class__.__name__}")
+                notes.append(p)
+            if D.get("preflight"):     # Sunday 17:30 ET: ONE "Ready for Sunday's open" or the exact fix (engine/preflight)
+                try:
+                    from . import preflight
+                    notes.append(preflight.notice(checks, ctx.get("hb"), now))
+                except Exception as e:
+                    ops_log(f"preflight failed: {e.__class__.__name__}")
             if D["eod"]:
                 notes.append(eod_notice(view, now))
             if D["weekly"]:

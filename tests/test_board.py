@@ -339,7 +339,7 @@ def part_e():
     check("e. source order: PC fresh > ntfy fresh (laid over the copy) > published copy > PLAN > demo; ?demo=1 forces the fixture",
           r.get("a") == "pcpc" and r.get("b") == "pc" and r.get("c") == "copy" and r.get("d") == "plan" and r.get("e") == "demo" and r.get("f") == "demo", r)
     check("e. the ntfy cut lays ATLAS PASSED + the event in, BLITZ never", r.get("bAt") == "PASSED" and r.get("bBl") is False and r.get("bEv") == 1, r)
-    check("e. silent: an old copy and never-reported are silent, a fresh PC is not", r.get("cSil") is True and r.get("aSil") is False and "never" in str(r.get("nS")), r)
+    check("e. silent: an old copy and never-reported are silent, a fresh PC is not", r.get("cSil") is True and r.get("aSil") is False and "no report from your PC in the last 12 hours" in str(r.get("nS")), r)
     check("e. PLAN rows: ATLAS over target = PASSED, owner date kept, a not-bought account planned", r.get("d0") == "PASSED" and r.get("dS") == "PLAN (owner, Nov 17)"
           and r.get("rp") == "planned", r)
 

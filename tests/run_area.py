@@ -47,7 +47,7 @@ AREAS = {
     "kalshi": ["kalshi_edges", "kalshi_red_team", "kalshi_research", "kalshi_publish", "kalshi_guard", "kalshi_live", "kalshi_clock", "kalshi_vm_update", "kalshi_rewards_paper", "kalshi_best_shot", "kalshi_page", "kalshicity_page"],
     "cities": ["world_build", "cities_page", "kalshicity_page", "datacity", "world_page"],
     "nq": ["lit_live", "risk_monitors", "no_yahoo", "risk_invariants", "mffu_rules", "holidays", "holiday_replay", "guards", "sizing_caps", "second", "eval_lifecycle", "lifecycle", "live_board", "live_publish", "mffu_view", "heartbeat",
-           "lit_scale_in", "lit_learn", "learn_loop", "zeus_lab", "setup_grade", "other_markets"],
+           "lit_scale_in", "lit_learn", "learn_loop", "zeus_lab", "setup_grade", "other_markets", "keepalive"],
     "pc": ["autoupdate_source", "pc_doctor", "obsidian_sync", "autorun", "update_from_zip", "pc_publish", "pc_publish_cloudflare", "gh_publish", "cloudflare_setup", "public_build_privacy", "bots_back", "report_keeper", "trade_watch_atlas", "setup_everything", "calendar_sync", "me_hub", "live_link", "roll_now", "pc_guard", "launch_kit", "second_backup", "clean_pc", "clean_storage", "lite", "win_scripts", "fresh_start", "pc_health", "pc_selftest", "pc_silent", "notify", "pc_command_center", "one_time_setup", "board", "phone_safety", "kalshi_live", "kalshi_clock", "datapipe", "datafeed", "risk_monitors", "pc_bars"],
     "agency": ["agency", "agency_billing", "cold_calls", "agency_storefront", "agency_upsells", "biz_models"],
     "privacy": ["public_build_privacy", "private_link", "repo_secrets", "phone_safety"],       # team Q2 2026-11-14, docs/PRIVACY.md
@@ -70,6 +70,7 @@ AREAS["pc"].append("account_box")     # 2026-11-20: the Add account box (engine/
 AREAS["pc"].append("phone_link")      # 2026-11-20: the bot server's own private Tailscale port :8444 (engine/phone_link.py)
 AREAS["pc"].append("self_heal_pc")    # night-selfheal 2026-11-20: the PC self-heal (engine/self_heal.py, docs/SELF_HEAL.md); its own line
 AREAS["pc"].append("remote_ctl")      # night-phonectl 2026-11-20: phone remote through the backup repo (olympus/control, engine/remote_ctl.py)
+AREAS["pc"] += ["nqops", "pc_always_on"]   # day-nqops 2026-11-21: Sunday/daily preflight, cloud pre-open push, the MFFU 7-day clock (engine/preflight.py, engine/clock7.py, nq/clock7.js); the PC always-on tool (tools/pc_always_on.py)
 AREAS["agency"].append("web_offers")
 AREAS["agency"].append("web_outreach")
 AREAS["agency"].append("agency_autopilot")
@@ -118,16 +119,27 @@ AREAS["olympus"].append("site_checks")
 AREAS["pc"].append("run_area_fast")       # day-quality round 2: --changed mapper (tests/suite_map.py), parallel lanes, the per-suite browser lock
 AREAS["privacy"].append("status_sign")   # day-security 2026-11-20: signed status posts + no future-dated post (tests/test_status_sign.py); its own line
 AREAS["board"].append("status_sign")
+AREAS["pc"] += ["status_sign", "pc_report_sign", "push_pairing", "datafeed_sign", "nqbars_sign"]   # day-security2 2026-11-20: W3 W4 W6 W7; its own line
+AREAS["privacy"] += ["pc_report_sign", "push_pairing", "datafeed_sign", "nqbars_sign"]
+AREAS["nq"].append("nqbars_sign")
+AREAS["pc"].append("autoupdate_paths")   # updategate 2026-11-20: site-only updates never restart the bot, import check, crash-loop rollback; its own line
 AREAS["pc"].append("pc_watch")            # day-quality round 3: the cloud PC watch (.github/workflows/pc-watch.yml, docs/PC_WATCH.md)
+AREAS["nq"].append("data_health")      # day-brief 2026-11-20: data health + the ES feed (MES with MNQ) in the live engine
 AREAS["olympus"].append("perf_sweep")      # day-quality Olympus v2: tools/perf_sweep.py (phone sweep + offline pass, budgets tools/perf_budgets.json)
 AREAS["privacy"].append("scrub_cache")      # day-quality 2026-11-20: site_privacy.scrub's clean-file cache (warm build 67 s -> 29 s)
 AREAS["olympus"].append("offline_apps")    # day-quality Olympus v2: every visible app opens offline after one visit (browser)
+for _a in ("pc", "nq"):                   # wf-atlas-start 2026-11-20: ATLAS without a start day = a plain problem + push, never a TypeError
+    if "account_b_start" not in AREAS[_a]:
+        AREAS[_a].append("account_b_start")
 # suites too long for one budget run BY PARTS, each its own row and budget (night team D 2026-11-16: the whole kit walk, every app +
 # power + tiers + more in one browser, is the longest browser suite); a part is "<suite>:<label>" = python -m tests.test_<suite> <args>
 PARTS = {"olympus_kit": [("a", ["datacity", "mind", "tree"]), ("b", ["oracle", "odeon", "fates"]), ("c", ["hermes", "prometheus", "tyche"]),
                          ("power", ["power", "tiers"]), ("more", ["more"])]}
 PARTS["combo_50k"] = [("sep", ["--seg", "2026-09-02"]), ("oct", ["--seg", "2026-10-02", "--scenario"])]   # night-combolive: one eval segment each
 AREAS["fleet"].append("rapid_launch")       # day-rapid 2026-11-20: Rapid EOD 25K launch check (tools/money/rapid25_launch.py)
+for _a in ("fleet", "pc"):                  # fix-trade 2026-11-21: an added Rapid / account armed by Start trading's phrase (engine/go.py)
+    if "rapid_arm" not in AREAS[_a]:
+        AREAS[_a].append("rapid_arm")
 SLOW = {"olympus_shell", "fit_edge", "jarvis_hub", "phone_e2e", "olympus_kit", "olympus_themes", "olympus_render", "zenith_mode", "ui_polish", "datacity", "jarvis_home"}
 
 
@@ -298,6 +310,8 @@ AREAS["money"].append("week_more")          # day-brief 2026-11-20: weekly revie
 AREAS["privacy"].append("cross_site")   # day-security 2026-11-20: the bot server refuses POSTs from other web sites (engine/cross_site.py)
 AREAS["pc"].append("cross_site")
 AREAS["pc"].append("redteam2_live")       # day-redteam2 2026-11-20: half-day halt alarm + TRADE HAS NO STOP alarm (engine/fast_alarm.py)
+AREAS["pc"].append("alert_bus")         # day-alerts 2026-11-21: engine/alert_bus.py (Telegram / Discord first, ntfy + Web Push fallbacks)
+AREAS["pc"].append("alerts_box")        # alerts-phone 2026-11-21: /alerts/ = ALERTS_SETUP Telegram from the phone (engine/alerts_box.py); its own line
 AREAS["nq"].append("redteam2_live")
 AREAS["pc"].append("redteam2_wires")      # day-redteam2 2026-11-20: L2 rapid._other_names covers the extra accounts
 AREAS["agency"].append("web_research")   # day-web-research 2026-11-20: the website-business research (RESEARCH.md, writeup, offers.json); its own line

@@ -132,6 +132,87 @@ def accounts():
     check("03:10 ET: 75% and daily loss near go out at once (high)", sorted(keys(m)) == ["guard:dd:lit:2026-11-02:75", "guard:dll:lit:2026-11-17"], m)
 
 
+# ============================================================================================== extra accounts (7-day rule)
+def sub_block(now, ident="b25k_2", name="Zlarior Builder 25K #2", plan="MFFU Builder 25K", start="2026-11-10", closes=(),
+              label="LIVE", kind="eval", position=None, nt="MFFUEVBLDR000002222"):
+    """an engine/multi_account.AccountRouter.summary row (heartbeat acct.accounts): the 25K #2 / the Rapid's LIT lane"""
+    trades = [{"day": d, "exit_t": int(now) - 86400 * 3, "pnl": p} for d, p in closes]
+    days = {}
+    for d, p in closes:
+        days[d] = days.get(d, 0.0) + p
+    return {"v": 1, "id": ident, "name": name, "firm": "MFFU", "plan": plan, "kind": kind, "mode": kind,
+            "account": {"name": nt, "adapter": "ninjatrader", "kind": label.lower(), "label": "LIVE ACCOUNT" if label == "LIVE" else label,
+                        "disabled": ""},
+            "enabled": True, "locked": None, "running": True, "kill": False, "position": position, "orders": [], "trades": trades,
+            "eval": {"start": start, "days": days},
+            "plan_rules": {"start": 25000.0, "target": 1500.0, "mll": 1000.0, "lock": 25100.0, "dll": 500.0, "sessions": 10},
+            "day_pnl": 0.0, "size": None,
+            **({"funded": {"start": start, "preset": "x", "payouts": {}}} if kind == "funded" else {})}
+
+
+def extras():
+    """round-2 skeptics 2026-11-20 (HIGH): the 7-day alert covered only the board's cards (the 50K, ATLAS, BLITZ). The 25K #2 eval
+    ('no trade yet') and the Rapid EOD had none, while the docs promised 'no trade for 5+ days on an account'. Now each extra account
+    of the heartbeat (acct.accounts, through the REAL live view: engine/live_publish.build) gets its own once-a-day alert."""
+    from engine import live_publish
+    from tests.test_live_publish import hb_payload
+    t = at(2026, 11, 16, 10, 0)                 # Monday: the 25K #2's eval started Tue Nov 10, no trade since = 6 days
+    hb = hb_payload(t - 60, position=False)
+    hb["acct"]["trades"][-1]["day"] = "2026-11-16"
+    hb["acct"]["accounts"] = [sub_block(t), sub_block(t, ident="rapid", name="Rapid EOD 25K", plan="MFFU Rapid EOD 25K",
+                                                      start="2026-11-09", closes=[("2026-11-13", 42.0)], nt="MFFUEVRPD000005555")]
+    L = live_publish.build(hb, now=t)
+    secs = [a for a in L.get("accounts") or [] if a.get("extra")]
+    s0 = {"t": t, "hb_age": 60, "mode": "LIVE", "live": {**L, "board": {"lit": lit(quiet_days=0)}}}
+    _s, m = run({}, s0)
+    q = [x for x in m if ":quiet:" in x["key"]]
+    check("extra accounts reach the guard through the real live view (2 sections, extra=True)", len(secs) == 2, [a.get("id") for a in secs])
+    check("the 25K #2, no trade since its eval start 6 days ago: 'Zlarior 25K #2: no trade for 6 days', high, MFFU's 7-day rule, "
+          "place 1 MNQ by hand (before: no alert at all)",
+          [x["key"] for x in q] == ["guard:quiet:b25k_2:2026-11-16"] and q[0]["title"] == "Zlarior 25K #2: no trade for 6 days"
+          and q[0]["priority"] == "high" and "MFFU can close an eval after 7 days" in q[0]["body"] and "place 1 MNQ by hand" in q[0]["body"]
+          and "only the bot's own trades" in q[0]["body"], q)
+    check("no account id in the alert (title, body, key)", not re.search(r"MFFU[A-Z]*\d|2222|5555", json.dumps(q)), q)
+    check("the Rapid traded 3 days ago (Fri, its P&L days count both lanes): no alert", not [x for x in q if ":rapid:" in x["key"]], q)
+    _s2, m2 = run(_s, s0)
+    check("once a day: the next run repeats nothing", not [x for x in m2 if ":quiet:" in x["key"]], m2)
+    # the Rapid quiet too (Fri Nov 6 last), funded: the funded words
+    hb["acct"]["accounts"] = [sub_block(t, ident="rapid", name="Rapid EOD 25K", plan="MFFU Rapid EOD 25K", start="2026-11-02",
+                                        closes=[("2026-11-10", 42.0)], nt="MFFUSFRPD000005555", kind="funded")]
+    L = live_publish.build(hb, now=t)
+    _s, m = run({}, {"t": t, "hb_age": 60, "mode": "LIVE", "live": {**L, "board": {"lit": lit(quiet_days=0)}}})
+    q = [x for x in m if ":quiet:" in x["key"]]
+    check("a funded extra account 6 days quiet: 'MFFU can close a funded account after 7 days ... loses ALL its profits'",
+          len(q) == 1 and q[0]["title"].startswith("Rapid EOD 25K") and "funded account after 7 days" in q[0]["body"]
+          and "ALL its profits" in q[0]["body"], q)
+    for why, sb in (("on Sim", sub_block(t, label="SIM", nt="Sim101")), ("in a trade", sub_block(t, position={"side": "LONG", "entry_t": t - 60})),
+                    ("4 days only", sub_block(t, start="2026-11-12"))):
+        hb["acct"]["accounts"] = [sb]
+        L = live_publish.build(hb, now=t)
+        _s, m = run({}, {"t": t, "hb_age": 60, "mode": "LIVE", "live": {**L, "board": {"lit": lit(quiet_days=0)}}})
+        check(f"extra account {why}: no quiet alert", not [x for x in m if ":quiet:" in x["key"]], m)
+    hb["acct"]["accounts"] = [sub_block(t)]
+    L = live_publish.build(hb, now=t)
+    for st_ in ("passed", "failed"):
+        L2 = copy.deepcopy(L)
+        for a in L2["accounts"]:
+            if a.get("extra"):
+                a["eval"]["status"] = st_
+        _s, m = run({}, {"t": t, "hb_age": 60, "mode": "LIVE", "live": {**L2, "board": {"lit": lit(quiet_days=0)}}})
+        check(f"extra eval {st_} (its eval clock): no quiet alert", not [x for x in m if ":quiet:" in x["key"]], m)
+    night = at(2026, 11, 17, 3, 10)
+    _s, m = run({}, {"t": night, "hb_age": 60, "mode": "LIVE", "live": {**L, "board": {"lit": lit(quiet_days=0)}}})
+    check("03:10 ET: the extra account's alert waits for the day (never in quiet hours)", not [x for x in m if ":quiet:" in x["key"]], m)
+    from engine import notify as N
+    check("the alert's kind is account_status (on by default, both apps)", N.kind_of("guard:quiet:b25k_2:2026-11-16") == "account_status"
+          and N.on("account_status", N.merge({})))
+    # ATLAS's funded card: the funded words too (round-2 skeptic: 'MFFU can close an eval' was wrong for a funded account)
+    _s, m = run({}, snap(t, {"atlas": atlas(quiet_days=6, badge="LIVE", real=True, stage="funded")}))
+    q = [x for x in m if ":quiet:" in x["key"]]
+    check("ATLAS funded, 6 days: 'MFFU can close a funded account after 7 days ... ALL its profits' (not 'an eval')",
+          q and "funded account after 7 days" in q[0]["body"] and "ALL its profits" in q[0]["body"] and "close an eval" not in q[0]["body"], q)
+
+
 # ============================================================================================== day summary
 def summary():
     day = at(2026, 11, 16, 16, 20)          # Monday, after the 16:15 summary time
@@ -224,6 +305,7 @@ def static():
 
 def main() -> int:
     accounts()
+    extras()
     summary()
     reporter()
     static()

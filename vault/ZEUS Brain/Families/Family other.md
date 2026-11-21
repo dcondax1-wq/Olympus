@@ -7,11 +7,12 @@ type: "family"
 
 # Research family: other
 
-> [!abstract] 97 write-ups
-> adopt-candidate 15, finding 14, info 16, promising 14, rejected 33, research 5
+> [!abstract] 98 write-ups
+> adopt-candidate 15, finding 14, info 16, promising 14, rejected 33, research 6
 
 | Date | Write-up | Verdict |
 |---|---|---|
+| 2026-11-20 | [[web-business-2026-11-20\|The website business for local businesses]] | research |
 | 2026-11-20 | [[security-2026-11-20\|Security check]] | finding |
 | 2026-11-20 | [[redteam-live2-2026-11-20\|Red team 2 of the live bot]] | finding |
 | 2026-11-20 | [[redteam-live-2026-11-20\|Red team of tonight's live code]] | finding |

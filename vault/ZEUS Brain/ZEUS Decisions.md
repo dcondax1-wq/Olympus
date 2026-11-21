@@ -6,8 +6,22 @@ type: "decisions"
 
 # ZEUS Decisions
 
-> [!question] 0 open
+> [!question] 2 open
 > Answer on the Decide card (Business app). A yes means Claude tests it; nothing live changes without proof.
+
+## Open
+
+> [!question] Big idea: run a free 30-day test of a 'Prop Slot Planner' page for other prop traders (faceless brand, no name), plus 1 short video a day?
+> **Why:** Bot income depends on the market (about $0 in a 2021-25-like market). The one thing no prop tool sells yet is our planner: which account to buy next, when, and what you keep after tax.
+> **Impact:** Bear $0, base ~$600/mo by month 6, bull ~$3,900/mo by month 12; 3-6 of your hours a week (the videos). Kill it if there are under 300 visits, 30 emails or 3 pre-orders in 30 days; go at 10+ pre-orders.
+> Added 2026-11-20 · write-up [[huge-idea-2026-11-20|The "huge idea" check]] · id `copilot-test`
+> Card: [[Decide copilot-test|open the card note]]
+
+> [!question] Fast entry: send Zlarior's and ATLAS's orders on the minute's first trade instead of waiting 2 seconds?
+> **Why:** Every real entry so far filled worse than the backtest (ATLAS 10-16 ticks, Zlarior 4) because price runs in the 2.7 s before the order arrives; 2.0 s of that is a built-in wait. Fast entry cuts it to ~0.85 s. Same trades, same sizes, only sooner.
+> **Impact:** $0 to ~$160 a month (central ~$100: ATLAS ~5 ticks and Zlarior ~1 tick better per entry); not provable from 1-minute bars, so it is a 2-week test that the fills will settle.
+> Added 2026-11-20 · write-up [[nq-speed-fills-2026-11-20|NQ bot speed and fills]] · id `fast-entry`
+> Card: [[Decide fast-entry|open the card note]]
 
 ## Yes
 
