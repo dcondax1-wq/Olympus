@@ -172,7 +172,7 @@ def from_track(t: dict) -> dict:
     ok = bool(t.get("eligible"))
     return {"ok": ok, "amount": float(t.get("max_request") or 0.0) if ok else 0.0, "to_you": float(t.get("to_you") or 0.0) if ok else 0.0,
             "split": float(t.get("split") or 0.8), "checks": checks, "cycle": t.get("cycle_start"), "why": list(t.get("why") or [])[:3],
-            "habit_ready": t.get("status") == "ready"}
+            "habit_ready": t.get("status") == "ready", "plan_ask": t.get("ask_amount"), "plan_goal": t.get("ask_goal")}
 
 
 def detect(f: dict) -> dict:
@@ -193,6 +193,11 @@ def detect(f: dict) -> dict:
             return {**out, "stage": "lost", "why": f"balance {money(bal)} reached the floor {money(floor)}"}
         p = f.get("payout") or {}
         if p.get("ok") and float(p.get("amount") or 0) > 0:
+            if "habit_ready" in p and not p.get("habit_ready"):
+                # a Builder (engine/funded_life): MFFU would pay, but the owner's plan is the max request ($1,000 at $2,100 on a 25K;
+                # weekend landing 2026-11-21: "PAYOUT READY up to $250" at $1,350 contradicted it). Not a payout stage, no push.
+                return {**out, "stage": "funded", "why": f"MFFU would pay {money(p['amount'])}; your plan waits for "
+                        f"{money(p.get('plan_ask'))} at {money(p.get('plan_goal'))}", "payout": p}
             return {**out, "stage": "payout_ready", "why": f"up to {money(p['amount'])} allowed", "payout": p}
         return {**out, "stage": "funded", "why": "; ".join(p.get("why") or []) or "building to the payout line", "payout": p or None}
     if floor is not None and bal <= floor + 1e-9:

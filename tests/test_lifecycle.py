@@ -248,15 +248,21 @@ def fail_and_payout(tmp):
           bk.stage("x:b25") == "failed" and len(fp) == 1 and "$63" in fp[0]["body"] and "FAILED" in str(by["b25"].entry_block(clock.t)),
           (bk.rows.get("x:b25"), [p.get("title") for p in pushes]))
     pp = [p for p in pushes if "PAYOUT READY" in p.get("title", "")]
-    check("e. PAYOUT READY: the funded 50K at $52,800 -> 'Funded 50K PAYOUT READY: up to $700', $560 to you, the rules listed",
-          bk.stage("x:f50") == "payout_ready" and len(pp) == 1 and pp[0]["title"] == "Funded 50K PAYOUT READY: up to $700"
-          and "$560 to you" in pp[0]["body"] and "buffer" in pp[0]["body"] and "best day" in pp[0]["body"]
+    # weekend landing 2026-11-21: the owner's plan is the max request ($2,000 on a 50K at $4,100 MFFU profit, engine/funded_life);
+    # $700 above the buffer is MFFU-eligible but NOT a payout stage, and no "PAYOUT READY up to $700" push contradicts the plan
+    row = bk.rows.get("x:f50") or {}
+    check("e. the funded 50K at $52,800: MFFU would pay $700, the plan waits for $2,000 at $4,100 -> stage funded, no payout push",
+          bk.stage("x:f50") == "funded" and not pp and "MFFU would pay $700; your plan waits for $2,000 at $4,100" in str(row.get("why"))
           and "PAYOUT" not in str(by["f50"].entry_block(clock.t)) and "stood down" not in str(by["f50"].entry_block(clock.t)),
-          (bk.rows.get("x:f50"), [p.get("title") for p in pushes]))
+          (row, [p.get("title") for p in pushes]))
+    by["f50"].closes.append(["2026-11-14", ts(2026, 11, 14, 10, 0), 1400.0, 6])          # $54,200: $2,100 above the buffer
     clock.t += 3600
     LC.tick(bot, clock.t, force=True)
-    check("e. the same cycle: no second payout push; the eval failure is not repeated",
-          len([p for p in pushes if "PAYOUT READY" in p.get("title", "")]) == 1 and len([p for p in pushes if "FAILED" in p.get("title", "")]) == 1)
+    lc_pp = [p for p in pushes if p.get("title", "").startswith("Funded 50K PAYOUT READY")]
+    check("e. at $54,200 (the plan's line): PAYOUT READY stage, lifecycle sends no push of its own (engine/funded_life's 'request "
+          "$2,000' is the one); the eval failure is not repeated",
+          bk.stage("x:f50") == "payout_ready" and not lc_pp and len([p for p in pushes if "FAILED" in p.get("title", "")]) == 1,
+          (bk.rows.get("x:f50"), [p.get("title") for p in pushes]))
     return bot
 
 

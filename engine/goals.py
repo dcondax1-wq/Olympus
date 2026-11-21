@@ -38,8 +38,8 @@ PLANS = {
     "atlas25k": {"label": "MFFU Builder 25K", "strategy": "ATLAS", "start": 25000.0, "target": 1500.0, "mll": 1000.0, "min_days": 2,
                  "price": 63.00},
 }
-PAYOUT_BUFFER = 2100.0             # engine/eval_life: ask for a payout only once $1,500+ sits above the $2,100 buffer
-PAYOUT_ASK_ABOVE = 1500.0
+PAYOUT_BUFFER = 2100.0             # engine/eval_life: ask the max $2,000 payout once it sits above the $2,100 buffer (owner plan 2026-11-21)
+PAYOUT_ASK_ABOVE = 2000.0
 
 
 # ------------------------------------------------------------------------------------------------ small helpers

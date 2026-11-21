@@ -53,7 +53,7 @@ Common to every MFFU account
 | Split | **80%** to you ($1,000 asked = $800 lands) | 2026-11-20 |
 | Payouts | **5 sim payouts, then MFFU moves you to live**; your other sim accounts go **dormant** (see 6) | 2026-11-20 |
 | News / inactivity | allowed / 7 days | 2026-11-20 |
-| Bot extras | asks at the full $1,000 above the buffer (~$26,850 on NinjaTrader with the -$113 so far); ATLAS 1 micro under $100 room (owner yes) | - |
+| Bot extras | the payout push waits for the max request: **$1,000 at $2,100 MFFU profit** ($27,100 on NinjaTrader; MFFU may allow less earlier, the bot says "MFFU would pay $X; your plan waits for $1,000 at $2,100"); ATLAS 1 micro under $100 room (owner yes) | - |
 
 ## 4. Builder 50K SIM FUNDED (when Zlarior passes)
 | Rule | Value |
@@ -64,7 +64,7 @@ Common to every MFFU account
 | First payout | **$500 above the buffer**, 48 h after the first trade |
 | Every payout | **$500 - $2,000**, 2 traded days a cycle, best day <= 50%, every 2 days |
 | Split / count | 80% / 5 sim payouts then live |
-| Bot extras | funded sizing 60% of the room, <= $1,500 a trade, a winner <= $2,000 |
+| Bot extras | funded sizing 60% of the room, <= $1,500 a trade, a winner <= $2,000; the payout push waits for the max request: **$2,000 at $4,100 MFFU profit** ($54,100 on NinjaTrader) |
 All checked 2026-11-20 ([Builder 50K guide](https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide)).
 
 ## 5. Rapid EOD 25K: EVAL and SIM FUNDED (LIT + ATLAS lanes)

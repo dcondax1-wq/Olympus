@@ -2,7 +2,7 @@
 (notify_settings.json type morning_brief, ON by default; morning_brief_at = the time). Four lines, phone-sized:
 
   ZEUS - Wed Nov 18 - PC ok                                                  (the title)
-  Zlarior 50K $49,193 ($3,807 to pass) · 25K #2 $25,000 ($1,500 to pass) · ATLAS 25K funded $25,000 ($2,100 to payout)
+  Zlarior 50K $49,193 ($3,807 to pass) · 25K #2 $25,000 ($1,500 to pass) · ATLAS 25K funded $401 ($1,699 to payout: $1,000 at $2,100)
   Overnight: no trades · Today: Zlarior till 15:30, ATLAS till 12:00 · CPI 08:30
   Edge: GREEN · Needs you: none
 

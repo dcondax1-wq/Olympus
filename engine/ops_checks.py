@@ -1130,8 +1130,8 @@ def eval_result_notice(view: dict, now) -> dict | None:
         body = ("Next: 1) the bot stops trading this eval by itself; do not trade it more. 2) Next morning check MFFU shows "
                 "it passed; if not, place one 1-MNQ trade (minimum days). 3) Sign MFFU's funded agreement. 4) Note the funded "
                 "account Name in NinjaTrader. 5) Add it with funded sizing: python -X utf8 -m engine.eval_life --to-funded "
-                "--account \"<Name>\" --start <first funded day>, restart the bot. 6) Payouts: ask once the balance is $53,600+ "
-                "($1,500 above the $2,100 buffer), up to $2,000.")
+                "--account \"<Name>\" --start <first funded day>, restart the bot. 6) Payouts: ask the max $2,000 once the balance is $54,100+ "
+                "($4,100 MFFU profit: $2,000 above the $2,100 buffer).")
         return _payload("eval", f"EVAL PASSED: {_money(ev.get('profit'))}", body, f"ops:eval:passed:{start}", now)
     if failed:
         body = (f"Next: 1) Stop the bot on this account. 2) Buy a new MFFU Builder 50K with your discount code (you paid "
