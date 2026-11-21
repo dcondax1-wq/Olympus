@@ -1,4 +1,4 @@
-# Website leads: counts (OpenStreetMap, updated 2026-11-21 15:05 UTC)
+# Website leads: counts (OpenStreetMap, updated 2026-11-21 15:30 UTC)
 
 Mailable = house number + street + town + ZIP (postcard-ready). Leads after removing businesses in two town boxes.
 
@@ -9,5 +9,5 @@ Mailable = house number + street + town + ZIP (postcard-ready). Leads after remo
 | Gaithersburg | 352 | 186 | 11 | 14 | 0 | 143 | 19 | 70 | 5 | 13 | 106 | 51 | 10 | 61 | 17 | - |
 | Germantown | 53 | 64 | 5 | 5 | 0 | 26 | 9 | 12 | 0 | 4 | 8 | 6 | 0 | 12 | 2 | food places |
 | Hagerstown | 121 | 87 | 3 | 6 | 1 | 48 | 6 | 13 | 0 | 2 | 55 | 0 | 1 | 38 | 6 | healthcare, health + auto places |
-| Rockville | 170 | 117 | 6 | 17 | 0 | 66 | 0 | 0 | 15 | 9 | 139 | 0 | 2 | 0 | 5 | healthcare, health + auto places, beauty + auto shops, other shops |
-| **All** | **1006** | **918** | **46** | **83** | **4** | **466** | **54** | **146** | **22** | **45** | **380** | **81** | **17** | **217** | **44** | |
+| Rockville | 220 | 219 | 9 | 22 | 0 | 87 | 0 | 0 | 15 | 9 | 139 | 0 | 2 | 50 | 5 | healthcare, health + auto places, beauty + auto shops |
+| **All** | **1056** | **1020** | **49** | **88** | **4** | **487** | **54** | **146** | **22** | **45** | **380** | **81** | **17** | **267** | **44** | |
