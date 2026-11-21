@@ -489,7 +489,7 @@ def _site(tmp, mode, plugin=False):
     shutil.copytree(PAGE, site)
     # the site layout around it: Jarvis's three.js and fonts (../jarvis/) and the OLYMPUS kit (../olympus/)
     os.makedirs(os.path.join(tmp, mode, "jarvis"))
-    for f in ["three.module.min.js"] + glob.glob(os.path.join(os.path.dirname(PAGE), "jarvis", "*.woff2")):
+    for f in ["three.module.min.js", "ask.js"] + glob.glob(os.path.join(os.path.dirname(PAGE), "jarvis", "*.woff2")):   # ask.js: the kit's Ask Jarvis button
         shutil.copy(os.path.join(os.path.dirname(PAGE), "jarvis", os.path.basename(f)), os.path.join(tmp, mode, "jarvis"))
     shutil.copytree(os.path.join(os.path.dirname(PAGE), "olympus"), os.path.join(tmp, mode, "olympus"))
     from tests.olympus_money_kit import link_assets

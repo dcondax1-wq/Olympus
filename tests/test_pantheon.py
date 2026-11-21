@@ -340,7 +340,7 @@ def _site(tmp, name, with_data):
     shutil.copytree(PAGE, os.path.join(base, "pantheon"))
     os.makedirs(os.path.join(base, "jarvis"))
     for f in ("three.module.min.js", "orbitron.woff2", "rajdhani-400.woff2", "rajdhani-500.woff2", "rajdhani-600.woff2",
-              "rajdhani-700.woff2", "icon-192.png"):
+              "rajdhani-700.woff2", "icon-192.png", "ask.js"):          # ask.js: the kit's Ask Jarvis button (olympus.js)
         if os.path.exists(os.path.join(ROOT, "tools", "web_public", "jarvis", f)):
             shutil.copy(os.path.join(ROOT, "tools", "web_public", "jarvis", f), os.path.join(base, "jarvis", f))
     shutil.copytree(os.path.join(ROOT, "tools", "web_public", "olympus"), os.path.join(base, "olympus"))
