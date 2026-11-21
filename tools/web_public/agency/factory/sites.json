@@ -2,7 +2,7 @@
  "v": 1,
  "kind": "site-factory",
  "version": "f1",
- "count": 1574,
+ "count": 1571,
  "sites": [
   {
    "id": "osm-w186412851",
@@ -3785,21 +3785,6 @@
    "ready": true
   },
   {
-   "id": "osm-n13707841702",
-   "path": "f/m38pmyp7/",
-   "name": "Advanced Radiology",
-   "niche": "health",
-   "kind": "Clinic",
-   "town": "Ellicott City",
-   "phone": true,
-   "hours": true,
-   "bytes": 11675,
-   "heat": "hot",
-   "chain": false,
-   "code": "EL-43",
-   "ready": true
-  },
-  {
    "id": "osm-w128366876",
    "path": "f/5qftj5my/",
    "name": "All Care MD",
@@ -3992,21 +3977,6 @@
    "heat": "warm",
    "chain": false,
    "code": "EL-91",
-   "ready": true
-  },
-  {
-   "id": "osm-n4538879409",
-   "path": "f/u3gsgaa7/",
-   "name": "Alice Kwon: State Farm Insurence Agent",
-   "niche": "pro",
-   "kind": "Insurance",
-   "town": "Ellicott City",
-   "phone": false,
-   "hours": false,
-   "bytes": 10013,
-   "heat": "cold",
-   "chain": false,
-   "code": "EL-85",
    "ready": true
   },
   {
@@ -12107,21 +12077,6 @@
    "heat": "cold",
    "chain": false,
    "code": "GE-33",
-   "ready": true
-  },
-  {
-   "id": "osm-n6855260566",
-   "path": "f/5wp3mhjz/",
-   "name": "Children's National Pediatricians & Associates",
-   "niche": "health",
-   "kind": "Doctor's office",
-   "town": "Germantown",
-   "phone": true,
-   "hours": true,
-   "bytes": 11867,
-   "heat": "hot",
-   "chain": false,
-   "code": "GE-41",
    "ready": true
   },
   {
