@@ -595,6 +595,9 @@ def part_redteam(tmp):
           "(1 bet today, today's worst case = its cost + fee) and by one-bet-per-market",
           len(w.posts()) == 1 and len(lr) == 1 and lr[0]["status"] == "check" and v["bets_today"] == 1 and lr[0]["ticker"] in v["tickers_today"]
           and abs(v["day_worst"] + lr[0]["cost"] + lr[0]["fee"]) < 1e-6, (len(w.posts()), lr, v["bets_today"], v["day_worst"]))
+    c = KL.read_card(state_dir=w.sd, now=w.clock())
+    check("r1b. the phone card while it is 'check': LIVE, the bet log marks it 'c' (sent, answer lost, counted as placed), today's stop counts it",
+          c and c["st"] == "live" and c["k8"]["lg"][-1][5] == "c" and c["k8"]["dy"][0] > 0, c and (c["st"], c["k8"].get("lg"), c["k8"].get("dy")))
     w.fake.lose = None
     loop2 = w.loop()
     w.run_until(loop2, OPEN_AM + 44)
@@ -624,6 +627,30 @@ def part_redteam(tmp):
     w.run_until(loop2, OPEN_AM + 17 * 60)
     g = w.live()[0]
     check("r5. ... and it settles from the fills: LOST its real cost + fee", g["result"] == "lost" and abs(g["pnl"] + g["cost"] + g["fee"]) < 0.011, g)
+
+    loop2.st["paused_until"] = w.clock() + 3600
+    loop2.save()
+    cp = KL.read_card(state_dir=w.sd, now=w.clock())
+    loop2.st["paused_until"] = None
+    loop2.stop_live("the drawdown stop: test")
+    loop2.save()
+    cs = KL.read_card(state_dir=w.sd, now=w.clock())
+    w.clock.add(600)
+    ci = KL.read_card(state_dir=w.sd, now=w.clock())
+    check("r7. the phone card follows K8 itself: the phone PAUSE = PAUSED; a stop K8 made itself = STOPPED with the reason (was PAPER, no reason); "
+          "the K8 loop silent = never LIVE",
+          cp["st"] == "paused" and cs["st"] == "stopped" and "drawdown stop" in cs.get("why", "") and ci["st"] in ("stopped", "paper", "idle"),
+          (cp["st"], cs["st"], cs.get("why"), ci["st"]))
+
+    w = World(tmp, "silent")
+    w.arm()
+    loop = w.loop()
+    w.run_until(loop, OPEN_AM - 30)
+    c1 = KL.read_card(state_dir=w.sd, now=w.clock())
+    w.clock.add(900)
+    c2 = KL.read_card(state_dir=w.sd, now=w.clock())
+    check("r8. armed with the loop running = LIVE; the loop silent 15 min = 'ARMED, PC not running it' (idle), never LIVE", c1["st"] == "live" and c2["st"] == "idle",
+          (c1["st"], c2["st"]))
 
     w = World(tmp, "refused")
     w.arm()

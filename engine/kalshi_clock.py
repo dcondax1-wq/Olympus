@@ -497,7 +497,8 @@ def edge_health(rs) -> list:
 
 
 def bet_log(rs, k=5) -> list:
-    """The last k bets (settled or open), oldest first: [leg code, MM-DD, contracts, price c, $ (None while open), W | L | o]."""
+    """The last k bets (settled or open), oldest first: [leg code, MM-DD, contracts, price c, $ (None while open), W | L | o | c]
+    (c = sent but Kalshi's answer was lost: counted as placed, booked from the fills after the result)."""
     x = [r for r in rs if r.get("result") in ("won", "lost") or (r.get("result") is None and r.get("status") in OPEN_ST)]
     out = []
     for r in sorted(x, key=lambda r: KL._f(r.get("open_t"), 0.0))[-k:]:
@@ -505,7 +506,7 @@ def bet_log(rs, k=5) -> list:
         n = r.get("n")
         out.append([LEG_CODE.get(r.get("leg"), "?"), str(r.get("day") or "")[5:10], int(n) if isinstance(n, (int, float)) and float(n).is_integer() else n, round(100 * p) if p else None,
                     round(KL._f(r.get("pnl"), 0.0), 2) if r.get("result") else None,
-                    "W" if r.get("result") == "won" else "L" if r.get("result") == "lost" else "o"])
+                    "W" if r.get("result") == "won" else "L" if r.get("result") == "lost" else "c" if r.get("status") in ("posting", "check") else "o"])
     return out
 
 
@@ -519,8 +520,8 @@ def card_k8(state_dir=None, cfg=None, now=None) -> dict | None:
         now = time.time() if now is None else now
         P = paths(state_dir)
         alive = loop_alive(P, now)
-        if not (alive or os.path.exists(P["clock_paper"]) or os.path.exists(P["clock_live"])):
-            return None
+        if not (alive or os.path.exists(P["clock_paper"]) or os.path.exists(P["clock_live"]) or os.path.exists(P["arm"])):
+            return None                                  # (an arm record alone counts: armed + a silent loop must read 'idle', never LIVE)
         k = kill_distances(state_dir, cfg, now)
         rs = rows(P["clock_live"]) if k["ledger"] == "live" else paper_like_live(rows(P["clock_paper"]), cfg)
         td = stats(rs, KL.et_day(now))
