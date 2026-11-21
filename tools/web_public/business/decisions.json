@@ -15,7 +15,7 @@
     "no",
     "later"
    ],
-   "status": "no",
+   "status": "yes",
    "source": "research/writeups/payout-policy-funded25-2026-11-17.md",
    "applies": "engine/funded_life builder25k ask_above 750 -> 1000 (push line only)",
    "added": "2026-11-17",
@@ -26,8 +26,8 @@
     "y2021_25": -6
    },
    "risk": "25K #2 no payout in 6 months 16.9% -> 18.5%; in a 2021-25-like market it costs $6 a month",
-   "recommend": "no",
-   "recommend_why": "Keep the $750 ping: waiting for $1,000 pays the same or a little less and each payout comes 2-5 trading days later. At real fills it is a little safer on ATLAS's 25K, but room 40% does that job much better; on the 25K #2 it still costs about $5 a month.",
+   "recommend": "yes",
+   "recommend_why": "Superseded 2026-11-21: the payout plan is the max request ($1,000 at $2,100 MFFU profit on a 25K, $2,000 at $4,100 on a 50K; CLAUDE.md). The PAYOUT READY push now fires at that line.",
    "valued": "2026-11-18 tools/money/money_plan.py (same paths for every account; $ a month to you after fees and MFFU's cut, before the 30% tax pot)",
    "answered": "2026-11-20 ~08:00 ET in chat (\"Yes to whatever you think it should be ... make sure your choice is good\"): Claude's pick from the data"
   },
