@@ -49,6 +49,9 @@ ledgers (the counters come from these, so a restart keeps them), `clock_state.js
 
 ## Your Monday steps (only you can do these)
 
+The one-page version with what you should see at each step: `docs/KALSHI_MONDAY.md`. The executor moved to 2026-11-21.1 (a
+safety fix: a bet whose answer from Kalshi is lost is never forgotten), so type the phrase AFTER the PC has updated.
+
 1. On kalshi.com: Account > Profile Settings > API Keys > Create New API Key. Keep the page open (Key ID + the private key).
 2. On your phone open your PC link with `:8444/kalshi-live/` at the end. Paste the Key ID and the key, tap Save: it must say
    "Key OK · balance $55.00".

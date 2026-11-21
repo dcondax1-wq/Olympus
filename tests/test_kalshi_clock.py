@@ -55,15 +55,32 @@ def check(name, cond, info=""):
     return bool(cond)
 
 
+class Died(BaseException):
+    """the PC dying mid-send (not an Exception: nothing in the executor catches it)"""
+
+
 class Fake(TL.FakeKalshi):
     """+ fills filtered by order_id; a GTC limit that crosses the book fills at once (taker), the rest rests until it expires."""
+
+    lose = None           # red team 2026-11-21: "502" = Kalshi takes the order but the answer is lost; "die" = the PC dies mid-send
 
     def route(self, method, path, q, body):
         if method == "GET" and path == "/portfolio/fills" and q.get("order_id"):
             return 200, {"cursor": "", "fills": [f for f in self.fills if f["order_id"] == q["order_id"]]}
+        if method == "GET" and path == "/portfolio/fills" and q.get("ticker"):
+            return 200, {"cursor": "", "fills": [f for f in self.fills if f["ticker"] == q["ticker"] and f["ts"] >= float(q.get("min_ts") or 0)]}
         return super().route(method, path, q, body)
 
     def place(self, b):
+        if self.lose:
+            st, j = self._place(b)
+            if self.lose == "die":
+                self.lose = None
+                raise Died()
+            return 502, {"error": {"code": "bad_gateway", "message": "fake: the answer was lost"}}
+        return self._place(b)
+
+    def _place(self, b):
         if b.get("time_in_force") == "good_till_canceled" and not b.get("post_only"):
             t, side, n, p = b["ticker"], b["side"], float(b["count"]), float(b["price"])
             mk = self.markets.get(t)
@@ -565,6 +582,58 @@ def part_sizing(tmp):
         KC.CFG_PATH, KL.CLOCK_PATH = FIX15, FIX15
 
 
+# ================================================================================================ r. red team 2026-11-21: never forget a bet
+def part_redteam(tmp):
+    w = World(tmp, "lost_answer")
+    w.arm()
+    w.fake.lose = "502"
+    loop = w.loop()
+    w.run_until(loop, OPEN_AM + 25)
+    lr = w.live()
+    v = loop.live_view(w.clock())
+    check("r1. Kalshi takes the order but the answer is lost (502): the bet is KEPT as 'check' (not forgotten), counted by the stops "
+          "(1 bet today, today's worst case = its cost + fee) and by one-bet-per-market",
+          len(w.posts()) == 1 and len(lr) == 1 and lr[0]["status"] == "check" and v["bets_today"] == 1 and lr[0]["ticker"] in v["tickers_today"]
+          and abs(v["day_worst"] + lr[0]["cost"] + lr[0]["fee"]) < 1e-6, (len(w.posts()), lr, v["bets_today"], v["day_worst"]))
+    w.fake.lose = None
+    loop2 = w.loop()
+    w.run_until(loop2, OPEN_AM + 44)
+    check("r2. a restart inside the same window: NO second order on that market", len(w.posts()) == 1, len(w.posts()))
+    w.settle(OPEN_AM, {"KXGOLD15M": "no", "KXSILVER15M": "yes"})
+    w.run_until(loop2, OPEN_AM + 17 * 60)
+    g = w.live()[0]
+    check("r3. after the settle it is booked from Kalshi's own fills for the market: WON, the real contracts, cost and fee",
+          g["result"] == "won" and g["status"] == "settled" and g["n"] == int(lr[0]["n"]) and abs(g["pnl"] - round(g["n"] - g["cost"] - g["fee"], 2)) < 0.011, g)
+
+    w = World(tmp, "died")
+    w.arm()
+    w.fake.lose = "die"
+    loop = w.loop()
+    try:
+        w.run_until(loop, OPEN_AM + 25)
+    except Died:
+        pass
+    on_disk = w.live()
+    loop2 = w.loop()
+    w.run_until(loop2, OPEN_AM + 44)
+    check("r4. the PC dies in the middle of sending (Kalshi has the order): the row was saved BEFORE the send ('posting'); "
+          "after the restart no second order, and it is still counted",
+          len(on_disk) == 1 and on_disk[0]["status"] == "posting" and len(w.posts()) == 1 and loop2.live_view(w.clock())["bets_today"] == 1,
+          (on_disk, len(w.posts())))
+    w.settle(OPEN_AM, {"KXGOLD15M": "yes", "KXSILVER15M": "yes"})
+    w.run_until(loop2, OPEN_AM + 17 * 60)
+    g = w.live()[0]
+    check("r5. ... and it settles from the fills: LOST its real cost + fee", g["result"] == "lost" and abs(g["pnl"] + g["cost"] + g["fee"]) < 0.011, g)
+
+    w = World(tmp, "refused")
+    w.arm()
+    w.fake.fail[("POST", "/portfolio/events/orders")] = (400, "invalid_parameters")
+    loop = w.loop()
+    w.run_until(loop, OPEN_AM + 25)
+    check("r6. a CLEAR refusal (HTTP 400): no live row left (nothing to count), one error", len(w.posts()) == 1 and not w.live()
+          and int(loop.st.get("err") or 0) == 1, (w.live(), loop.st.get("err")))
+
+
 def main():
     global TL_LINK_H, TL_PAGE_H
     from tests import test_phone_safety as TPS
@@ -580,6 +649,7 @@ def main():
         part_clock(tmp)
         part_web(tmp)
         part_sizing(tmp)
+        part_redteam(tmp)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     bad = RES.count(False)
