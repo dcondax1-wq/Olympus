@@ -238,8 +238,11 @@ def part_a():
               "data.js", "jarvis.css", "OFL.txt") + FONTS:
         check(f"a. jarvis/{f} exists", os.path.exists(os.path.join(JV, f)))
     m = json.load(open(os.path.join(JV, "manifest.webmanifest"), encoding="utf-8"))
-    check("a. manifest: Jarvis, standalone, own scope, black like the old Jarvis, icons j5 (the gold temple, 2026-11-18)",
-          m["name"] == "Olympus" and m["short_name"] == "Olympus" and m["display"] == "standalone" and m["scope"] == "./"
+    # scope ../ = the whole site (owner phone 2026-11-21: ZEUS at ../hub/ opened in iOS's browser layer, an X + the web address on
+    # top and buttons at the bottom, because it was outside the app's ./ scope); start_url and id stay ./ (Jarvis opens first)
+    check("a. manifest: Olympus, standalone, the whole site in scope (../), black like the old Jarvis, icons j5 (the gold temple, 2026-11-18)",
+          m["name"] == "Olympus" and m["short_name"] == "Olympus" and m["display"] == "standalone" and m["scope"] == "../"
+          and m["start_url"] == "./" and m["id"] == "./"
           and m["theme_color"] == "#14110e" and all(i["src"].endswith("?v=j5") for i in m["icons"]), m)
     b = open(os.path.join(ROOT, "tools", "build_web_dashboard.py"), encoding="utf-8").read()
     tup = re.search(r'for app in \(([^)]*)\):', b)
@@ -265,7 +268,7 @@ def part_a():
           and "background:#000" in sw and "location.reload()" in sw)
     check("a. worker v14: data.js, jarvis.css, the fonts, every separate part, switcher.js, the new brain's obsidian.js / memory.js / "
           "assist-ui.js and voice-mode.js in SHELL, each saved on its own (a missing part is skipped)",
-          "const CACHE = 'jarvis-v86';" in sw and all(f"'./{f}'" in sw for f in ("data.js", "switcher.js", "obsidian.js", "memory.js", "assist-ui.js", "voice-mode.js", "tools.js", "voice-out.js") + PARTS + FONTS)
+          "const CACHE = 'jarvis-v87';" in sw and all(f"'./{f}'" in sw for f in ("data.js", "switcher.js", "obsidian.js", "memory.js", "assist-ui.js", "voice-mode.js", "tools.js", "voice-out.js") + PARTS + FONTS)
           and f"'./{JCSS}'" in sw and "SHELL.map((u) => c.add(new Request(u, { cache: 'reload' })).catch(() => null))" in sw)
     shell = re.search(r"const SHELL = \[([^\]]*)\]", sw)
     shell_files = re.findall(r"'\./([^'?]+)", shell.group(1)) if shell else []
@@ -844,7 +847,7 @@ def run_c(br, url):
         const reg = await Promise.race([navigator.serviceWorker.ready, new Promise((ok) => setTimeout(() => ok(null), 6000))]);
         if (!reg) return 'no worker';
         for (let i = 0; i < 30; i++) {
-          const c = await caches.open('jarvis-v86');
+          const c = await caches.open('jarvis-v87');
           const got = await Promise.all(['./index.html', './data.js', './%s', './orbitron.woff2', './rajdhani-500.woff2'].map((u) => c.match(u)));
           if (got.every(Boolean)) return 'ok';
           await new Promise((ok) => setTimeout(ok, 200));
