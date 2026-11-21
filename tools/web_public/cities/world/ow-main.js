@@ -4,7 +4,7 @@
 // the four doors; every app is a tower you tap to open; every learning place is real data. Live: the PC feed (../../pc_feed.js: a bot
 // in a trade pulses), the Board's events, the edge light and the Lab's newest verdicts. Read only: GET only, nothing armed, no orders,
 // text only through textContent, no browser storage. No WebGL (or 3D switched off): a plain list of the same city, never blank.
-import * as C from './ow-core.js?v=w5';
+import * as C from './ow-core.js?v=w6';
 
 const d = document, $ = (s) => d.querySelector(s);
 const O = () => window.OLYMPUS || null;
@@ -72,7 +72,7 @@ async function boot() {
   else {
     try {
       S.plan = C.planWorld(w, { tier: O() && O().lite && O().lite() ? 'low' : 'high', phone: (() => { try { return matchMedia('(pointer: coarse)').matches; } catch (e) { return false; } })() });
-      const M = await import('./ow-scene.js?v=w5');
+      const M = await import('./ow-scene.js?v=w6');
       S.scene = M.createWorld({ canvas: $('#c'), world: w, plan: S.plan, reduced, sky: qs.get('sky') || 'auto', manual: qs.get('clock') === 'manual', tier: O() && O().lite && O().lite() ? 'low' : 'high',
         onTap, onFrame, onUser: () => { hideHint(); if (S.tour) setTour(false); }, onIntroDone: () => { showHint(); snd('chime'); cityBed(); } });
       S.mode = '3d';
