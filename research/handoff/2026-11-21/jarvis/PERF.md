@@ -55,3 +55,13 @@ Tests (final head): test_olympus_render 56/56 (g: the low start tier 2 passes or
 return), test_jarvis_home 66/66, jarvis_hub 272/272 (b / h now wait for the live feed instead of a fixed 0.7 s: a race, old and new sky alike), jarvis_fx 14/14, jarvis_skills 85/85, jarvis_zeus 125/125, smoke 11/11. test_jarvis_home_v2 40/41: 'e. reduced motion ... no
 transitions on the tiles' fails the SAME on origin/pc (olympus/a11y.css sets transition-duration .001s !important under reduced motion;
 the test wants 0s): not Jarvis, for the a11y kit owner or the test.
+
+## 4. Combined with DESIGN's sky pass (olympus/pc f20cf6eb merged; backdrop.js b8)
+DESIGN's sky-poster.webp + skip gating (Off / Low / reduced motion / Save-Data / 2G-3G / <= 2 GB phone: no 3D) + the 6 s from load,
+with day-jarvis's data-ready + calm start, idle-slice compile, low tier first, frame cap / still mode (a frame every 3 s), redraw on return.
+
+perf_sweep --pages jarvis --cpu 4, 3 runs: TBT 2.6 / 3.1 / 2.6 s; longest task 1.02 / 1.23 / 1.06 s; bytes ~1,183 KB; FCP 1.67 s; CLS 0.054-0.056
+(before today: TBT 7.2-8.4 s, longest 2.0-2.5 s, 1,323 KB).
+
+Tests at the merge: jarvis_hub 272/272, jarvis_sky 8/8, jarvis_home 66/66, olympus_render 56/56 (i. low now = DESIGN's no-3D: state off,
+why 'effects low', 0 frames, no MSAA), jarvis_home_v2 41/41, smoke 10/11 (site_checks: sw.js backdrop b7 vs b8, the lead's wire).

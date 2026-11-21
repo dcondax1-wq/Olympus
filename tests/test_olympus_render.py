@@ -268,6 +268,10 @@ def jarvis_gpu(br, origin, fx):
     errs: list = []
     p.on("pageerror", lambda e: errs.append(str(e)))
     p.goto(origin + "/jarvis/")
+    if fx == "low":                                    # DESIGN 2026-11-21: effects Low builds no 3D sky at all (the poster stays)
+        p.wait_for_function("() => window.__jarvisBackdrop && __jarvisBackdrop.state === 'off'", timeout=60000)
+        p.wait_for_timeout(int(BK.limit_ms(2500, "gpu settle")))
+        return ctx, p, errs
     p.wait_for_function("() => window.__jarvisBackdrop && __jarvisBackdrop.frames > 3", timeout=240000)
     if fx == "high":                                   # the core's composer comes up after the backdrop on a slow machine: wait for its 2 MSAA buffers
         settle(p, 2)
@@ -326,10 +330,11 @@ def test_gpu(br, origin):
     check("i. no page error through the trips", not errs, errs[:3])
     ctx.close()
     ctx, p, errs = jarvis_gpu(br, origin, "low")
-    bd = p.evaluate("() => __jarvisBackdrop.stats()")
+    bd = p.evaluate("() => ({ state: __jarvisBackdrop.state, why: __jarvisBackdrop.why, frames: __jarvisBackdrop.frames, bg3d: document.documentElement.dataset.bg3d || '' })")
     g = p.evaluate(GPU)
-    check("i. low: no bloom (2 passes), no MSAA anywhere, backdrop pixel ratio <= 1.25",
-          bd["names"] == ["scene", "finish"] and not bd["bloom"] and bd["dpr"] <= 1.25 and g["msaa"] == 0, (bd, g))
+    # DESIGN 2026-11-21: Low = no 3D sky at all (the poster stays, 0 frames); the core's own composer then has no MSAA either
+    check("i. low: no 3D sky (why 'effects low', no frame, the poster stays), no MSAA anywhere",
+          bd["state"] == "off" and bd["why"] == "effects low" and bd["frames"] == 0 and bd["bg3d"] != "on" and g["msaa"] == 0, (bd, g))
     ctx.close()
 
 
