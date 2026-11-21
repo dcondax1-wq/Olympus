@@ -1,7 +1,8 @@
 """tools/update_gate.py (day-speed 2026-11-20): the update gate's verdicts, its session picker and one real replay.
     python -X utf8 -m tests.test_update_gate [--quick]      (--quick skips d., the real two-worktree replay, ~3 min)
 a. compare + verdict: identical -> SAME; a route-time-only change -> SAME; a size change without a model file -> HOLD;
-   the same with live_model.json changed -> EXPLAINED; an extra ATLAS entry -> HOLD; a candidate that raises -> ERROR
+   the same with live_model.json changed -> EXPLAINED; an extra ATLAS entry -> HOLD; the same entry / exit sent twice -> HOLD;
+   a candidate that raises -> ERROR
 b. model / sizing files are recognised (live_model*.json, second_model.json, accounts/*.json, engine/sizing.py), code is not
 c. last_sessions: weekdays with bars 01:30-12:00 ET only (weekend / evening-only days skipped), the newest n
 d. HEAD vs HEAD through two real worktrees, 1 session, 60 polls: SAME, exit 0, worktrees removed
@@ -57,6 +58,14 @@ def main(argv=None):
     ce = G.compare(base, extra)
     check("a. an extra ATLAS entry -> HOLD ('only in candidate')", G.verdict(ce, [])[0] == "HOLD"
           and ce["trades"][0]["what"] == "only in candidate" and ce["trades"][0]["book"] == "ATLAS", str(ce["trades"]))
+    twice = res([e, x, copy.deepcopy(e), copy.deepcopy(x)], [a1])         # redteam 2026-11-21: the same entry + exit sent twice
+    ct = G.compare(base, twice)
+    vt = G.verdict(ct, [])
+    check("a. the candidate sends the same entry and exit TWICE (double orders) -> HOLD, the 2nd ones 'only in candidate'",
+          vt[0] == "HOLD" and len(ct["trades"]) == 2 and all(d["what"] == "only in candidate" for d in ct["trades"])
+          and {d["kind"] for d in ct["trades"]} == {"entry #2", "exit #2"}, str(vt) + str(ct["trades"]))
+    check("a. ... and a doubled base against a single candidate -> HOLD too ('only in base')",
+          G.verdict(G.compare(twice, base), [])[0] == "HOLD")
     boom = res([e, x], [a1], errors=5)
     check("a. the candidate's poll raises -> ERROR, exit 1", G.verdict(G.compare(base, boom), [])[:2] == ("ERROR", 1))
     st = res([e, x], [a1], states=("a", "c"))

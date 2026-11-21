@@ -324,7 +324,7 @@ def api_push_test():
     a, rt = r.get("app") or {}, r.get("routes") or {}
     if r.get("cooldown"):
         return J({"ok": False, "error": r.get("say") or "one test a minute", "cooldown": r["cooldown"]}, 429)
-    if not rt.get("phones") and not rt.get("ntfy"):
+    if not rt.get("phones") and not rt.get("ntfy") and not rt.get("bus"):    # Telegram / Discord (engine/alert_bus) count too
         return J({"ok": False, "error": "no alert route on this PC: open Olympus from the iPhone's Home Screen and tap Allow notifications, "
                                         "and/or run python tools/pc_report.py --setup", "warn": rt.get("warn")}, 400)
     return J({"ok": bool(a.get("sent")) or r.get("ntfy") == "sent", **{k: a.get(k) for k in ("sent", "devices", "gone", "errors")},
@@ -908,6 +908,11 @@ def _poll_timing():
 
 def _autostart_startup():
     WATCHDOG.server_started_at = int(time.time())
+    # the crash-loop net FIRST (engine/autoupdate.DailyUpdater.crash_start, redteam 2026-11-21): this start is counted before any
+    # bot code runs (a watcher that throws on the new code still counts), and on a rollback nothing resumes on the bad code: the
+    # push goes out and the server exits (75), the supervisor starts the old code
+    if AUTOUPDATE.crash_start() == "rolled_back":
+        return
     _poll_timing()                       # before the bot can start
     if os.environ.get("LE_NO_AUTOSTART") == "1":
         WATCHDOG.autostart_info = {"disabled": "LE_NO_AUTOSTART=1"}

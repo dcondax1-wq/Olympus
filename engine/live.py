@@ -160,6 +160,7 @@ STATE_PATH = os.path.join(DATA_DIR, "live_state.json")
 # day-speed 2026-11-20: the bot's own NQ 1m / 5m history is cut to the last 150 days before the per-poll archive merge,
 # de-duplicate, sort and clean (LIT and ATLAS read from lit_live.window_start: <= ~70 days). Start cfg "hist_keep_days": 0 = all.
 HIST_KEEP_DAYS = 150
+HIST_MIN_DAYS = 75           # a start cfg can never cut inside LIT's ~70-day window (engine/lite.MIN_HIST_DAYS, the same floor)
 ET_TZ = ZoneInfo("America/New_York")
 LIVE_DEFAULTS = {
     "sym": "NQ", "tf": "5m", "poll_sec": 60, "adapter": "paper", "params": {}, "armed": False,
@@ -418,11 +419,17 @@ class LiveBot:
                 if self.no_yahoo:
                     df = pcbars.tidy(df)
                     self._hist_cache = {**getattr(self, "_hist_cache", {}), path: ((st_.st_mtime_ns, st_.st_size), df)}
-        keep = self.cfg.get("hist_keep_days", HIST_KEEP_DAYS)
-        if keep and tf in ("1m", "5m") and sym == self.cfg.get("sym", "NQ") and len(df):
-            cut = int(self.clock()) - int(float(keep) * 86400)
-            if int(df["time"].min()) < cut:
-                df = df[df["time"] >= cut]
+        try:                                             # redteam 2026-11-21: a string ("0"), NaN or tiny value never empties or
+            keep = float(self.cfg.get("hist_keep_days", HIST_KEEP_DAYS) or 0)     # shortens the window; a bad time never raises
+        except (TypeError, ValueError):
+            keep = float(HIST_KEEP_DAYS)
+        if keep == keep and keep > 0 and tf in ("1m", "5m") and sym == self.cfg.get("sym", "NQ") and len(df):
+            try:
+                cut = int(self.clock()) - int(max(keep, HIST_MIN_DAYS) * 86400)
+                if float(df["time"].min()) < cut:
+                    df = df[df["time"] >= cut]
+            except (TypeError, ValueError, OverflowError):
+                pass                                     # not cut: the whole history, as before the cap
         if self.no_yahoo and tf in ("1m", "5m"):
             # TradingView export + the bot's own NinjaTrader archive (bridges the export's end once LE_BarFeed's 30 days move on)
             arc = self._archive(sym, tf)

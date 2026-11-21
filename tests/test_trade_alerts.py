@@ -455,6 +455,20 @@ def part_h3(b: Box):
     r = AC.routes(ntfy_cfg={})
     check("h3. the self-check: NO ROUTE, in plain words, with the fix", not r["ok"] and r["phones"] == 0 and not r["ntfy"]
           and r["warn"] and r["warn"][0].startswith("NO ROUTE") and "Allow notifications" in r["warn"][0], r)
+    from engine import alert_bus as AB
+    saved_active = AB.active
+    try:                                  # redteam 2026-11-21: only Telegram / Discord set up (the alert bus) is a route, not NO ROUTE
+        AB.active = lambda env=None, cfg=None: True
+        rb = AC.routes(ntfy_cfg={})
+    finally:
+        AB.active = saved_active
+    check("h3. only Telegram / Discord (the alert bus): a route, ok, no NO ROUTE line; the console line names it",
+          rb["ok"] and rb["bus"] and not any(w.startswith("NO ROUTE") for w in rb["warn"])
+          and any("Telegram / Discord" in w for w in rb["warn"]) and "alert bus" in " ".join(AC.describe(rb)), rb)
+    from tools import pc_report as PR
+    rep = {on: " ".join(t for _k, lab, t in PR.card({"t": T0, "wp": {}, "alert_bus": on}, {}, {}) if lab == "REPORT") for on in (False, True)}
+    check("h3. the PC card: 'NO PHONE ALERT ROUTE' without any route, not when the alert bus is set up",
+          "NO PHONE ALERT ROUTE" in rep[False] and "NO PHONE ALERT ROUTE" not in rep[True] and "Telegram / Discord" in rep[True], rep)
     b.set_settings(json.load(open(os.path.join(ROOT, "notify_settings.json"), encoding="utf-8")))
     r2 = AC.routes(ntfy_cfg={"ntfy": "https://ntfy.sh", "topic": "nq-test-topic-0000"})
     check("h3. with the ntfy topic and the shipped settings: ok, entries + results on, silent at night (still shown), both routes",

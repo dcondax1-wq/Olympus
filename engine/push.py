@@ -928,6 +928,13 @@ def test_payload(now=None) -> dict:
 #     the first time an unknown phone asks (then at most every PAIR_TELL_S), with "type it only on a phone you are holding"
 #   * the very first phone of a PC that never had one joins without a code (nothing to send the code to yet); after that, never
 #   * a list full of phones heard from in the last RECENT_S never pushes one out for a newcomer (the newcomer waits)
+# THE CODE IS OFF until the phone side ships (redteam 2026-11-21): tools/web_public/jarvis/push-ui.js has no way to type it yet
+# (LEAD_WIRES W4: the sealed body's "pair" field + the input on the 'waiting' card). Until then the owner's own phone with a new
+# endpoint (Home Screen app re-added, notification permission reset, a new VAPID key) would be a "new phone" that can never join,
+# and lose every app-only notice. Off = a new phone joins as before the code existed; the no-eviction guard below stays ON either
+# way (a list full of phones heard from in RECENT_S never pushes one out for a newcomer). Flip to True IN THE SAME PUBLISH as the
+# push-ui.js pair input (and its jarvis / sw cache bump).
+PAIR_CODE_ON = False
 PAIR_DIGITS = 8
 PAIR_TELL_S = 6 * 3600
 PAIR_BAD_MAX = 30                    # wrong codes in one UTC day; then no new phone joins until tomorrow
@@ -1033,9 +1040,10 @@ def intake(msgs, now=None, path: str | None = None, key_path: str | None = None,
                     continue
                 sid = endpoint_id(subs[0]["endpoint"])
                 ua = re.sub(r"[^A-Za-z0-9 .()/-]", "", str(body.get("ua") or ""))[:40]
-                if sid not in devs and pair_on:          # a NEW phone: the one-time code, a free place
+                if sid not in devs and pair_on:          # a NEW phone: the one-time code (PAIR_CODE_ON), a free place
                     given = re.sub(r"\D", "", str(body.get("pair") or ""))
-                    if int(pf["pair"].get("bad") or 0) >= PAIR_BAD_MAX or not given or not _hmac.compare_digest(given, code):
+                    if PAIR_CODE_ON and (int(pf["pair"].get("bad") or 0) >= PAIR_BAD_MAX or not given
+                                         or not _hmac.compare_digest(given, code)):
                         if given:
                             pf["pair"]["bad"] = int(pf["pair"].get("bad") or 0) + 1
                         out["ignored"] += 1
@@ -1048,7 +1056,8 @@ def intake(msgs, now=None, path: str | None = None, key_path: str | None = None,
                         out["full"] = out.get("full", 0) + 1
                         asked.append((ua, True))
                         continue
-                    code = pair_code(pf, now, fresh=True)  # one time: the next new phone needs a new code
+                    if PAIR_CODE_ON:
+                        code = pair_code(pf, now, fresh=True)  # one time: the next new phone needs a new code
                 row = devs.get(sid) or {"id": sid, "since": now}
                 if sid not in devs and sid not in out["added"]:
                     out["added"].append(sid)
@@ -1247,7 +1256,7 @@ def _pc_send(payload, sender=None, ntfy=None, ntfy_exit=None, retry_s=None) -> d
         # engine/alert_bus (day-alerts 2026-11-21): when the owner set it up (ALERTS_SETUP.bat), a real trade's entry / exit and a hedge
         # notice go to Telegram / Discord first, with ntfy and this app as its fallbacks; off / not set up = the path below, exactly
         bus = _bus_send(payload) if (ntfy is None and ntfy_exit is None and sender is None) else None
-        if bus:
+        if bus and bus.get("bus") in ("queued", "sent", "dup"):   # the bus took it; "off" / "bad" = the old path below (redteam 2026-11-21)
             return bus
     except Exception as e:
         res, app_ok = {"sent": 0, "errors": [e.__class__.__name__]}, False

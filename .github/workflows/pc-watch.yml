@@ -55,9 +55,8 @@ jobs:
         continue-on-error: true
         env:
           LE_NTFY_TOPIC: ${{ secrets.LE_NTFY_TOPIC }}
-          LE_TG_TOKEN: ${{ secrets.LE_TG_TOKEN }}          # engine/alert_bus: Telegram / Discord first (empty = ntfy only)
-          LE_TG_CHAT: ${{ secrets.LE_TG_CHAT }}
-          LE_DISCORD_WEBHOOK: ${{ secrets.LE_DISCORD_WEBHOOK }}
+          # no LE_TG_* / LE_DISCORD_WEBHOOK here (redteam 2026-11-21): only cloud-monitor's PC-silent step uses the alert bus. A bus
+          # send posts nothing to ntfy, so this job's read-back de-dupe (and a lost cache) would repeat "PC stopped reporting".
           DRY: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '--dry-run' || '' }}
         run: |
           mkdir -p pcw

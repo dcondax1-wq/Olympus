@@ -31,8 +31,8 @@ def routes(ntfy_cfg=None) -> dict:
     """{"phones", "crypto", "ntfy", "trade_opened", "trade_closed", "ring_at_night", "trade_routes", "warn": [plain sentences], "ok"}. ntfy_cfg: the
     private topic {"ntfy", "topic"} (tests); None = this PC's (engine/notify.alert_cfg). Never raises."""
     from . import notify, push
-    out = {"phones": 0, "crypto": False, "ntfy": False, "trade_opened": True, "trade_closed": True, "ring_at_night": False,
-           "trade_routes": "both", "warn": [], "ok": False}
+    out = {"phones": 0, "crypto": False, "ntfy": False, "bus": False, "trade_opened": True, "trade_closed": True,
+           "ring_at_night": False, "trade_routes": "both", "warn": [], "ok": False}
     try:
         out["crypto"] = push.crypto_ok()
         if push.own_key(make=False):                 # no key yet = no phone; a look never makes one (sending does)
@@ -44,6 +44,11 @@ def routes(ntfy_cfg=None) -> dict:
         out["ntfy"] = bool((notify.alert_cfg() if ntfy_cfg is None else ntfy_cfg or {}).get("topic"))
     except Exception:
         pass
+    try:                                             # engine/alert_bus set up (ALERTS_SETUP.bat) and not switched off: Telegram /
+        from . import alert_bus                      # Discord are a route too (redteam 2026-11-21: was "NO ROUTE" with only those)
+        out["bus"] = bool(alert_bus.active())
+    except Exception:
+        pass
     try:
         s = notify.settings()
         out["trade_opened"], out["trade_closed"] = notify.on("trade_opened", s), notify.on("trade_closed", s)
@@ -52,13 +57,16 @@ def routes(ntfy_cfg=None) -> dict:
     except Exception:
         pass
     w = out["warn"]
-    if not out["phones"] and not out["ntfy"]:
+    if out["bus"]:
+        w.append("Telegram / Discord are set up (ALERTS_SETUP.bat): trades and alerts go there first, ntfy and the Olympus app are "
+                 "the fallbacks. TEST_ALERT.bat tests them.")
+    if not out["phones"] and not out["ntfy"] and not out["bus"]:
         w.append("NO ROUTE: this PC has no Olympus phone and no private ntfy alert topic, so trade alerts reach nobody. Fix: on the "
                  "iPhone open Olympus from the Home Screen and tap Allow notifications; and on the PC run "
                  "python tools/pc_report.py --setup, then follow that topic in the ntfy app.")
-    elif not out["ntfy"]:
+    elif not out["ntfy"] and not out["bus"]:
         w.append("Only the Olympus app: no ntfy backup topic on this PC (python tools/pc_report.py --setup adds one).")
-    elif not out["phones"]:
+    elif not out["phones"] and not out["bus"]:
         w.append("Only ntfy: no Olympus phone yet (open Olympus from the iPhone's Home Screen, tap Allow notifications).")
     if not out["crypto"]:
         w.append("The Python package 'cryptography' is missing: no Olympus app alerts (ntfy still works).")
@@ -74,7 +82,7 @@ def routes(ntfy_cfg=None) -> dict:
     if out.get("trade_routes") in ("olympus", "ntfy"):
         w.append(f"trade_routes is '{out['trade_routes']}': trades and the important alerts go to that app first, the other app "
                  "only when that one did not take it.")
-    out["ok"] = bool(out["phones"] or out["ntfy"]) and out["trade_opened"] and out["trade_closed"]
+    out["ok"] = bool(out["phones"] or out["ntfy"] or out["bus"]) and out["trade_opened"] and out["trade_closed"]
     return out
 
 
@@ -185,7 +193,8 @@ def describe(r: dict) -> list:
         lines.append("[OK]  ntfy: the TEST entry and close went to your private alert topic (the ntfy app shows them)" if n == "sent"
                      else f"[..]  ntfy: {n}")
     rt = r.get("routes") or r
-    lines.append(f"      routes: {rt.get('phones', 0)} Olympus phone(s), ntfy topic {'set' if rt.get('ntfy') else 'NOT set'}; entries "
+    lines.append(f"      routes: {'Telegram / Discord (alert bus), ' if rt.get('bus') else ''}{rt.get('phones', 0)} Olympus phone(s), "
+                 f"ntfy topic {'set' if rt.get('ntfy') else 'NOT set'}; entries "
                  f"{'on' if rt.get('trade_opened') else 'OFF'}, results {'on' if rt.get('trade_closed') else 'OFF'}"
                  f"{', ring at night' if rt.get('ring_at_night') else ', silent at night (still shown)'}"
                  f"; routes {rt.get('trade_routes') or 'both'}")

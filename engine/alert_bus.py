@@ -14,8 +14,9 @@ Entries, exits and "bot stopped" ALSO go to the next channel that gives a receip
   * 3 retries with backoff 2 / 8 / 30 s on a worker thread (each pass walks the channels in order).
   * Failures -> data/alert_bus.jsonl (gitignored; tokens, webhook URLs, chat ids and topics are redacted). A failing channel
     is reported through the channel that worked: "Alerts: Telegram is not delivering", at most once an hour per channel.
-  * Quiet hours = notify_settings.json (engine/notify.quiet): silent delivery, except entries, exits and "bot stopped",
-    which always ring (plus the settings' own ring_in_quiet_hours kinds).
+  * Quiet hours = notify_settings.json (engine/notify.quiet): silent delivery, except "bot stopped" and the dual emergencies
+    (hedge risk, an open trade at the halt / with no stop), which always ring, plus the settings' own ring_in_quiet_hours kinds.
+    Entries and exits follow ring_in_quiet_hours like the old path (redteam 2026-11-21: the owner's yes / no is still open).
   * The status posts never touch this: they stay on ntfy's PUBLIC status topic. Alerts go Telegram / Discord first, so they
     no longer eat ntfy's 250-a-day cap.
   * INBOUND messages to the bot are ignored completely: this module only SENDS (ALERTS_SETUP.bat alone reads the bot's
@@ -52,7 +53,10 @@ KEEP_S = 3 * 86400
 DOWN_WARN_S = 3600                   # one "channel X down" warning an hour per channel
 LOG_MAX_LINES = 2000
 DUAL = ("entry", "exit", "bot_stopped")          # also to a second channel
-ALWAYS_RING = DUAL                               # ring in quiet hours whatever the settings say
+# ring in quiet hours whatever the settings say: "bot stopped" only. Entries / exits follow notify_settings.json ring_in_quiet_hours
+# (TRADE_RING: the owner's pending yes / no on STATE.md; until he says yes they arrive WITHOUT sound 23:00-07:00 ET, as on the old
+# path). Still dual (two channels). An open trade at the halt / with no stop and a hedge risk ring through their own "dual" flag.
+ALWAYS_RING = ("bot_stopped",)
 TG_API = "https://api.telegram.org"
 MINUS = "-"
 
@@ -511,7 +515,8 @@ def _one(ch: str, cfg: dict, ev: dict, title: str, body: str, silent: bool) -> t
 
 # ------------------------------------------------------------------------------------------------ quiet hours
 def is_silent(ev: dict, now=None, s: dict | None = None) -> bool:
-    """No sound: inside the quiet hours, unless the kind always rings (entries, exits, stopped) or is in ring_in_quiet_hours."""
+    """No sound: inside the quiet hours, unless the kind always rings (bot stopped, the dual emergencies) or is in
+    ring_in_quiet_hours (entries / exits only when the owner put TRADE_RING there)."""
     k = ev.get("kind")
     if k in ALWAYS_RING or ev.get("dual"):
         return False

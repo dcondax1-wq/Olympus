@@ -15,6 +15,8 @@ Verdict (exit code):  0 SAME              no trade differs (route seconds may)
                       0 EXPLAINED         trades differ AND a model / sizing file changed (MODEL_FILES): expected, review
                       2 HOLD              trades differ and no model / sizing file changed: do not take this commit
                       1 ERROR             a replay failed (also: a poll raised in one version only)
+Not exercised: the news ban (the harness stubs news.guard to "allowed", tests/test_live_dryrun.install_globals), so a news-rule
+regression reads SAME; only LIT's poll state is compared (ATLAS through its trade ledger only).
 Tests: python -X utf8 -m tests.test_update_gate
 """
 from __future__ import annotations
@@ -58,13 +60,16 @@ def last_sessions(times, n: int, end_day: str | None = None) -> list:
 
 
 def _rows(ledger) -> dict:
-    """(book, entry_t, side-kind) -> the trade fields (route time 't' left out: speed changes may move it)."""
-    out = {}
+    """(book, entry_t, side-kind, n) -> the trade fields (route time 't' left out: speed changes may move it). n counts the rows
+    with the same (book, entry_t, kind): a 2nd entry / exit / add for one trade is its own line, so a candidate that sends an
+    order twice differs (redteam 2026-11-21: one dict key per trade made a doubled entry read SAME)."""
+    out, seen = {}, {}
     for book, rows in ledger.items():
         for r in rows or []:
             kind = "exit" if r.get("side") == "exit" else ("entry" if r.get("side") in ("buy", "sell") else str(r.get("side")))
-            k = (book, int(r.get("entry_t") or 0), kind)
-            out[k] = {f: r.get(f) for f in TRADE_KEYS}
+            k0 = (book, int(r.get("entry_t") or 0), kind)
+            seen[k0] = seen.get(k0, 0) + 1
+            out[(*k0, seen[k0])] = {f: r.get(f) for f in TRADE_KEYS}
     return out
 
 
@@ -73,14 +78,15 @@ def compare(base: dict, cand: dict) -> dict:
     a = _rows({"LIT": base.get("ledger"), "ATLAS": base.get("ledger_atlas")})
     b = _rows({"LIT": cand.get("ledger"), "ATLAS": cand.get("ledger_atlas")})
     diffs = []
-    for k in sorted(set(a) | set(b), key=lambda x: (x[1], x[0], x[2])):
+    for k in sorted(set(a) | set(b), key=lambda x: (x[1], x[0], x[2], x[3])):
         ra, rb = a.get(k), b.get(k)
         if ra == rb:
             continue
         et = dt.datetime.fromtimestamp(k[1], ET).strftime("%Y-%m-%d %H:%M ET") if k[1] else "?"
         what = "only in candidate" if ra is None else "only in base" if rb is None else \
             ", ".join(f"{f} {ra.get(f)} -> {rb.get(f)}" for f in TRADE_KEYS if ra.get(f) != rb.get(f))
-        diffs.append({"book": k[0], "entry": et, "kind": k[2], "what": what, "base": ra, "candidate": rb})
+        diffs.append({"book": k[0], "entry": et, "kind": k[2] if k[3] == 1 else f"{k[2]} #{k[3]}", "what": what, "base": ra,
+                      "candidate": rb})
     sa = [r.get("state") for r in base.get("rows") or []]
     sb = [r.get("state") for r in cand.get("rows") or []]
     state_diff = sum(1 for x, y in zip(sa, sb) if x != y) + abs(len(sa) - len(sb))

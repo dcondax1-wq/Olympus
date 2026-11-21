@@ -5,6 +5,7 @@
   c. never a dropped post: no key, a broken key file, LE_STATUS_SIGN=0 -> the same posts go out unsigned, the run record says why
   d. a test's fake http never uses the PC's own key (only LE_STATUS_SIGN_KEY); ensure_key never makes a key in the cloud / CI
   e. the biggest status the reporter allows (MAX_STATUS_BYTES) still fits once signed with svk
+  f. a key that is not the pinned vk: still posted, the run record names it (the phone would drop every post)
     python -X utf8 -m tests.test_pc_report_sign
 """
 from __future__ import annotations
@@ -154,12 +155,36 @@ def part_e(d):
        "a %d-byte core signs with svk to %d bytes (<= 4,000)" % (len(body.encode()), len(out.encode())))
 
 
+def part_f(d):
+    print("f. a key that is not the pinned vk (new PC / profile) is named in the run record (redteam 2026-11-21)")
+    kp, vk = keyfile(d)
+    os.makedirs(os.path.join(d, "other"), exist_ok=True)
+    _p2, other = keyfile(os.path.join(d, "other"))          # the key a pinned vk would name (another file: kp stays)
+    real_pin = S.feed_vk
+    os.environ["LE_STATUS_SIGN_KEY"] = kp
+    try:
+        S.feed_vk = lambda path=None: other
+        out = R._signed('{"v":1,"kind":"le-live","t":1}', core=True, real=True)
+        why = R.SIGN_STATE.get("why")
+        ok(S.verify_text(out, vk) and why and "pinned vk" in why, "still posted and signed; the run record says the key is not the pinned one", why)
+        S.feed_vk = lambda path=None: vk
+        R._signed('{"v":1,"kind":"le-live","t":2}', core=True, real=True)
+        ok(R.SIGN_STATE.get("why") is None, "the pinned key itself: nothing to say")
+        S.feed_vk = lambda path=None: None
+        R._signed('{"v":1,"kind":"le-live","t":3}', core=True, real=True)
+        ok(R.SIGN_STATE.get("why") is None, "no vk pinned yet: nothing to say (as today)")
+    finally:
+        S.feed_vk = real_pin
+        os.environ.pop("LE_STATUS_SIGN_KEY", None)
+
+
 def main():
     with tempfile.TemporaryDirectory() as d:
         posts = part_a_b(d)
         part_c(d, posts)
         part_d(d)
         part_e(d)
+        part_f(d)
     n = sum(RES)
     print(f"\npc_report_sign: {n}/{len(RES)} " + ("ALL PASS" if n == len(RES) else "FAILED"))
     return 0 if n == len(RES) else 1
