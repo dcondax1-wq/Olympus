@@ -32,7 +32,7 @@ IDS = os.path.join(ROOT, "tools", "site_factory_ids.json")
 # the agency band at the bottom of every concept page (lead 2026-11-20). Maryland bans cold AI calls: the assistant (day-caller) may
 # only call a business that ASKS, so the page carries a consent form whose markup / text / endpoint day-caller supplies. Until then
 # AGENCY["caller_html"] is empty and the page holds a clearly marked slot. No third-party form service, no secret in the page.
-AGENCY = {"phone": "", "phone_label": "", "caller_html": "", "pay_url": "", "public_base": "", "agency_name": ""}
+AGENCY = {"phone": "", "phone_label": "", "caller_html": "", "pay_url": "", "public_base": "", "agency_name": "", "agency_email": ""}
 # the offer on every concept page (research/writeups/client-plan-2026-11-20.md); pay_url = the owner's payment link (owner step)
 OFFER = "Starter $1,500 + $79/mo, or $149/mo with nothing upfront."
 CODES = os.path.join(ROOT, "tools", "site_factory_codes.json")   # lead id -> short code (FR-27): printed on the postcards too, never changes
@@ -686,7 +686,7 @@ def build(web=WEB, ids_path=IDS, write_ids=True):
 # separate GitHub org). --export <dir> writes the f/ tree as a standalone static site: its own landing page, robots, 404 and headers;
 # nothing that points back at Olympus, the owner's handle or any PC address (checked before it writes, so a leak is never published).
 FORBIDDEN = [r"github\.io/jarvis", r"\bolympus\b", r"jarvis", r"dcondax", r"demetrades", r"\.ts\.net\b", r"\b100\.\d{1,3}\.\d{1,3}\.\d{1,3}\b",
-             r"tailscale", r"ntfy", r"/agency/", r"\.\./"]
+             r"tailscale", r"ntfy", r"/agency/", r"\.\./\.\./"]   # ../../ = reaching outside the exported site
 
 
 def landing(c: dict) -> str:
@@ -741,10 +741,16 @@ def export(out_dir: str, web: str = WEB) -> int:
         if re.fullmatch(r"[a-z2-9]{8}", d) and os.path.isfile(p):
             files[f"f/{d}/index.html"] = read_text(p)
     files["index.html"] = landing(c)
+    try:                                         # the agency's own launch site (tools/agency_site.py) replaces the minimal landing
+        sys.path.insert(0, ROOT)
+        from tools import agency_site as AS
+        files.update(AS.build_files(c, prefix="", base=base))
+    except (ImportError, OSError, ValueError, KeyError) as e:
+        print(f"note: agency site not added ({e}); the minimal landing is used", file=sys.stderr)
     files["404.html"] = '<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Not found</title><p style="font:17px system-ui;padding:40px 20px">Not found.</p>\n'
     files["f/index.html"] = files["404.html"]
     named = bool(c["agency_name"].strip())
-    files["robots.txt"] = ("User-agent: *\nDisallow: /f/\nDisallow: /portal/\n" if named else "User-agent: *\nDisallow: /\n")
+    files["robots.txt"] = ("User-agent: *\nDisallow: /f/\nDisallow: /portal/\nSitemap: " + base + "sitemap.xml\n" if named else "User-agent: *\nDisallow: /\n")
     # Cloudflare Pages reads _headers (GitHub Pages ignores it; the pages' own noindex meta covers that host)
     files["_headers"] = ("/f/*\n  X-Robots-Tag: noindex, nofollow, noarchive\n  Referrer-Policy: no-referrer\n"
                          "/portal/*\n  X-Robots-Tag: noindex, nofollow, noarchive\n  Referrer-Policy: no-referrer\n") + \
