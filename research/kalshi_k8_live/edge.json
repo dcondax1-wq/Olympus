@@ -1,0 +1,965 @@
+{
+ "prereg": "research/kalshi_k8_live/PREREG.md",
+ "tape_rows": 400,
+ "first": "2026-08-03",
+ "last": "2026-11-20",
+ "in_sample_note": "everything through 2026-11-18 is in-sample (the friend picked the windows from it); Nov 19 was seen by the Nov 20 write-up; only Nov 20 is unseen",
+ "settings": {
+  "2.50_3legs": {
+   "full": {
+    "bets": 236,
+    "won": 172,
+    "win_rate": 0.7288,
+    "avg_price": 0.515,
+    "avg_first_trade_price": 0.5142,
+    "usd_per_bet": 0.894,
+    "usd_per_bet_95": [
+     0.596,
+     1.19
+    ],
+    "net_usd": 210.91,
+    "fees_usd": 18.63,
+    "bets_week_actual": 15.02,
+    "bets_week_planned": 13.92,
+    "fill_share": 0.983,
+    "usd_week": 12.23,
+    "usd_week_95": [
+     8.15,
+     16.29
+    ],
+    "unfilled": 4
+   },
+   "last4w": {
+    "bets": 60,
+    "won": 44,
+    "win_rate": 0.7333,
+    "avg_price": 0.52,
+    "avg_first_trade_price": 0.5198,
+    "usd_per_bet": 0.885,
+    "usd_per_bet_95": [
+     0.25,
+     1.491
+    ],
+    "net_usd": 53.12,
+    "fees_usd": 4.72,
+    "bets_week_actual": 16.15,
+    "bets_week_planned": 13.92,
+    "fill_share": 1.0,
+    "usd_week": 12.32,
+    "usd_week_95": [
+     3.48,
+     20.76
+    ],
+    "unfilled": 0
+   },
+   "oos": {
+    "bets": 6,
+    "won": 3,
+    "win_rate": 0.5,
+    "avg_price": 0.5017,
+    "avg_first_trade_price": 0.5017,
+    "usd_per_bet": 0.088,
+    "usd_per_bet_95": [
+     -0.683,
+     0.86
+    ],
+    "net_usd": 0.53,
+    "fees_usd": 0.5,
+    "bets_week_actual": 6.0,
+    "bets_week_planned": 13.92,
+    "fill_share": 1.0,
+    "usd_week": 1.23,
+    "usd_week_95": [
+     -9.51,
+     11.97
+    ],
+    "unfilled": 0
+   },
+   "haircut": {
+    "win_rate": 0.6288,
+    "usd_per_bet": 0.451,
+    "flip_prob": 0.1372,
+    "usd_week": 6.17
+   },
+   "per_leg_full": {
+    "gold_0530_down": {
+     "bets": 77,
+     "won": 58,
+     "win_rate": 0.7532,
+     "avg_price": 0.5248,
+     "avg_first_trade_price": 0.5232,
+     "usd_per_bet": 0.97,
+     "usd_per_bet_95": [
+      0.538,
+      1.398
+     ],
+     "net_usd": 74.67,
+     "fees_usd": 5.94,
+     "bets_week_actual": 4.9,
+     "bets_week_planned": 4.75,
+     "fill_share": 0.963,
+     "usd_week": 4.43,
+     "usd_week_95": [
+      2.46,
+      6.39
+     ],
+     "unfilled": 3
+    },
+    "gold_1700_up": {
+     "bets": 79,
+     "won": 55,
+     "win_rate": 0.6962,
+     "avg_price": 0.5066,
+     "avg_first_trade_price": 0.5062,
+     "usd_per_bet": 0.795,
+     "usd_per_bet_95": [
+      0.325,
+      1.262
+     ],
+     "net_usd": 62.84,
+     "fees_usd": 6.42,
+     "bets_week_actual": 5.03,
+     "bets_week_planned": 4.58,
+     "fill_share": 0.988,
+     "usd_week": 3.6,
+     "usd_week_95": [
+      1.47,
+      5.71
+     ],
+     "unfilled": 1
+    },
+    "silver_1700_up": {
+     "bets": 80,
+     "won": 59,
+     "win_rate": 0.7375,
+     "avg_price": 0.5138,
+     "avg_first_trade_price": 0.5134,
+     "usd_per_bet": 0.918,
+     "usd_per_bet_95": [
+      0.464,
+      1.345
+     ],
+     "net_usd": 73.4,
+     "fees_usd": 6.27,
+     "bets_week_actual": 5.09,
+     "bets_week_planned": 4.58,
+     "fill_share": 1.0,
+     "usd_week": 4.2,
+     "usd_week_95": [
+      2.13,
+      6.16
+     ],
+     "unfilled": 0
+    }
+   },
+   "monte_carlo": {
+    "full": {
+     "4w": {
+      "weeks": 4,
+      "p_week_stop": 0.082,
+      "avg_week_stops": 0.08,
+      "p_dd_refused_a_bet": 0.055,
+      "p_off_drawdown": 0.037,
+      "p_off_winrate": 0.0,
+      "p_off_price": 0.0,
+      "p_off_any": 0.037,
+      "p_below_30": 0.0,
+      "p_down": 0.019,
+      "median_end": 104.42,
+      "p5_end": 70.39,
+      "mean_end": 103.31,
+      "expected_gain": 48.31,
+      "expected_gain_4w": 48.31,
+      "avg_bets": 53.9
+     },
+     "12w": {
+      "weeks": 12,
+      "p_week_stop": 0.215,
+      "avg_week_stops": 0.23,
+      "p_dd_refused_a_bet": 0.191,
+      "p_off_drawdown": 0.138,
+      "p_off_winrate": 0.015,
+      "p_off_price": 0.0,
+      "p_off_any": 0.153,
+      "p_below_30": 0.0,
+      "p_down": 0.02,
+      "median_end": 199.34,
+      "p5_end": 73.91,
+      "mean_end": 189.55,
+      "expected_gain": 134.55,
+      "expected_gain_4w": 48.19,
+      "avg_bets": 150.9
+     }
+    },
+    "last4w": {
+     "4w": {
+      "weeks": 4,
+      "p_week_stop": 0.064,
+      "avg_week_stops": 0.06,
+      "p_dd_refused_a_bet": 0.048,
+      "p_off_drawdown": 0.035,
+      "p_off_winrate": 0.0,
+      "p_off_price": 0.0,
+      "p_off_any": 0.035,
+      "p_below_30": 0.0,
+      "p_down": 0.015,
+      "median_end": 105.83,
+      "p5_end": 71.91,
+      "mean_end": 104.9,
+      "expected_gain": 49.9,
+      "expected_gain_4w": 49.9,
+      "avg_bets": 55.0
+     },
+     "12w": {
+      "weeks": 12,
+      "p_week_stop": 0.165,
+      "avg_week_stops": 0.18,
+      "p_dd_refused_a_bet": 0.179,
+      "p_off_drawdown": 0.139,
+      "p_off_winrate": 0.009,
+      "p_off_price": 0.001,
+      "p_off_any": 0.15,
+      "p_below_30": 0.0,
+      "p_down": 0.016,
+      "median_end": 201.03,
+      "p5_end": 80.92,
+      "mean_end": 192.82,
+      "expected_gain": 137.82,
+      "expected_gain_4w": 49.73,
+      "avg_bets": 154.5
+     }
+    },
+    "haircut": {
+     "4w": {
+      "weeks": 4,
+      "p_week_stop": 0.195,
+      "avg_week_stops": 0.2,
+      "p_dd_refused_a_bet": 0.213,
+      "p_off_drawdown": 0.168,
+      "p_off_winrate": 0.0,
+      "p_off_price": 0.0,
+      "p_off_any": 0.168,
+      "p_below_30": 0.0,
+      "p_down": 0.146,
+      "median_end": 79.29,
+      "p5_end": 42.1,
+      "mean_end": 77.99,
+      "expected_gain": 22.99,
+      "expected_gain_4w": 22.99,
+      "avg_bets": 50.5
+     },
+     "12w": {
+      "weeks": 12,
+      "p_week_stop": 0.352,
+      "avg_week_stops": 0.39,
+      "p_dd_refused_a_bet": 0.499,
+      "p_off_drawdown": 0.413,
+      "p_off_winrate": 0.212,
+      "p_off_price": 0.0,
+      "p_off_any": 0.624,
+      "p_below_30": 0.0,
+      "p_down": 0.148,
+      "median_end": 94.4,
+      "p5_end": 42.2,
+      "mean_end": 102.84,
+      "expected_gain": 47.84,
+      "expected_gain_4w": 22.91,
+      "avg_bets": 105.9
+     }
+    }
+   },
+   "fills": {
+    "gold_0530_down": {
+     "days": 80,
+     "filled_by_30s": 0.912,
+     "filled_by_45s": 0.988,
+     "median_contracts_20_30s": 263.0,
+     "walk_filled": 0.963
+    },
+    "gold_1700_up": {
+     "days": 80,
+     "filled_by_30s": 1.0,
+     "filled_by_45s": 1.0,
+     "median_contracts_20_30s": 1330.3,
+     "walk_filled": 0.988
+    },
+    "silver_1700_up": {
+     "days": 80,
+     "filled_by_30s": 0.938,
+     "filled_by_45s": 0.988,
+     "median_contracts_20_30s": 167.9,
+     "walk_filled": 1.0
+    }
+   },
+   "by_week": {
+    "2026-W32": {
+     "from": "2026-08-03",
+     "bets": 14,
+     "won": 9,
+     "avg_price": 0.5036,
+     "net_usd": 7.1
+    },
+    "2026-W33": {
+     "from": "2026-08-10",
+     "bets": 15,
+     "won": 9,
+     "avg_price": 0.5085,
+     "net_usd": 4.81
+    },
+    "2026-W34": {
+     "from": "2026-08-17",
+     "bets": 14,
+     "won": 10,
+     "avg_price": 0.5186,
+     "net_usd": 12.67
+    },
+    "2026-W35": {
+     "from": "2026-08-24",
+     "bets": 15,
+     "won": 8,
+     "avg_price": 0.5203,
+     "net_usd": -1.19
+    },
+    "2026-W36": {
+     "from": "2026-08-31",
+     "bets": 14,
+     "won": 12,
+     "avg_price": 0.5321,
+     "net_usd": 18.75
+    },
+    "2026-W37": {
+     "from": "2026-09-07",
+     "bets": 15,
+     "won": 11,
+     "avg_price": 0.5401,
+     "net_usd": 9.91
+    },
+    "2026-W38": {
+     "from": "2026-09-14",
+     "bets": 15,
+     "won": 12,
+     "avg_price": 0.5002,
+     "net_usd": 19.5
+    },
+    "2026-W39": {
+     "from": "2026-09-21",
+     "bets": 15,
+     "won": 13,
+     "avg_price": 0.5047,
+     "net_usd": 23.93
+    },
+    "2026-W40": {
+     "from": "2026-09-28",
+     "bets": 14,
+     "won": 7,
+     "avg_price": 0.5084,
+     "net_usd": 1.11
+    },
+    "2026-W41": {
+     "from": "2026-10-05",
+     "bets": 15,
+     "won": 11,
+     "avg_price": 0.5113,
+     "net_usd": 14.98
+    },
+    "2026-W42": {
+     "from": "2026-10-12",
+     "bets": 15,
+     "won": 12,
+     "avg_price": 0.4987,
+     "net_usd": 17.14
+    },
+    "2026-W43": {
+     "from": "2026-10-19",
+     "bets": 15,
+     "won": 14,
+     "avg_price": 0.5136,
+     "net_usd": 29.08
+    },
+    "2026-W44": {
+     "from": "2026-10-26",
+     "bets": 15,
+     "won": 10,
+     "avg_price": 0.554,
+     "net_usd": 4.86
+    },
+    "2026-W45": {
+     "from": "2026-11-02",
+     "bets": 15,
+     "won": 14,
+     "avg_price": 0.488,
+     "net_usd": 31.87
+    },
+    "2026-W46": {
+     "from": "2026-11-09",
+     "bets": 15,
+     "won": 14,
+     "avg_price": 0.5492,
+     "net_usd": 22.93
+    },
+    "2026-W47": {
+     "from": "2026-11-16",
+     "bets": 15,
+     "won": 6,
+     "avg_price": 0.4887,
+     "net_usd": -6.54
+    }
+   },
+   "oos_bets": [
+    {
+     "day": "2026-11-19",
+     "leg": "gold_0530_down",
+     "won": true,
+     "n": 5,
+     "price": 0.5,
+     "pnl": 2.41
+    },
+    {
+     "day": "2026-11-19",
+     "leg": "gold_1700_up",
+     "won": false,
+     "n": 4,
+     "price": 0.53,
+     "pnl": -2.19
+    },
+    {
+     "day": "2026-11-19",
+     "leg": "silver_1700_up",
+     "won": false,
+     "n": 4,
+     "price": 0.55,
+     "pnl": -2.27
+    },
+    {
+     "day": "2026-11-20",
+     "leg": "gold_0530_down",
+     "won": false,
+     "n": 5,
+     "price": 0.49,
+     "pnl": -2.54
+    },
+    {
+     "day": "2026-11-20",
+     "leg": "gold_1700_up",
+     "won": true,
+     "n": 5,
+     "price": 0.48,
+     "pnl": 2.51
+    },
+    {
+     "day": "2026-11-20",
+     "leg": "silver_1700_up",
+     "won": true,
+     "n": 5,
+     "price": 0.46,
+     "pnl": 2.61
+    }
+   ]
+  },
+  "2.50_gold_only": {
+   "full": {
+    "bets": 156,
+    "won": 113,
+    "win_rate": 0.7244,
+    "avg_price": 0.5156,
+    "avg_first_trade_price": 0.5146,
+    "usd_per_bet": 0.881,
+    "usd_per_bet_95": [
+     0.563,
+     1.191
+    ],
+    "net_usd": 137.51,
+    "fees_usd": 12.36,
+    "bets_week_actual": 9.93,
+    "bets_week_planned": 9.33,
+    "fill_share": 0.975,
+    "usd_week": 8.02,
+    "usd_week_95": [
+     5.13,
+     10.83
+    ],
+    "unfilled": 4
+   },
+   "last4w": {
+    "bets": 40,
+    "won": 32,
+    "win_rate": 0.8,
+    "avg_price": 0.5264,
+    "avg_first_trade_price": 0.5262,
+    "usd_per_bet": 1.146,
+    "usd_per_bet_95": [
+     0.537,
+     1.724
+    ],
+    "net_usd": 45.84,
+    "fees_usd": 3.15,
+    "bets_week_actual": 10.77,
+    "bets_week_planned": 9.33,
+    "fill_share": 1.0,
+    "usd_week": 10.69,
+    "usd_week_95": [
+     5.01,
+     16.08
+    ],
+    "unfilled": 0
+   },
+   "oos": {
+    "bets": 4,
+    "won": 2,
+    "win_rate": 0.5,
+    "avg_price": 0.5,
+    "avg_first_trade_price": 0.5,
+    "usd_per_bet": 0.047,
+    "usd_per_bet_95": [
+     -0.015,
+     0.11
+    ],
+    "net_usd": 0.19,
+    "fees_usd": 0.34,
+    "bets_week_actual": 4.0,
+    "bets_week_planned": 9.33,
+    "fill_share": 1.0,
+    "usd_week": 0.44,
+    "usd_week_95": [
+     -0.14,
+     1.03
+    ],
+    "unfilled": 0
+   },
+   "haircut": {
+    "win_rate": 0.6244,
+    "usd_per_bet": 0.436,
+    "flip_prob": 0.1381,
+    "usd_week": 3.97
+   },
+   "per_leg_full": {
+    "gold_0530_down": {
+     "bets": 77,
+     "won": 58,
+     "win_rate": 0.7532,
+     "avg_price": 0.5248,
+     "avg_first_trade_price": 0.5232,
+     "usd_per_bet": 0.97,
+     "usd_per_bet_95": [
+      0.524,
+      1.392
+     ],
+     "net_usd": 74.67,
+     "fees_usd": 5.94,
+     "bets_week_actual": 4.9,
+     "bets_week_planned": 4.75,
+     "fill_share": 0.963,
+     "usd_week": 4.43,
+     "usd_week_95": [
+      2.39,
+      6.36
+     ],
+     "unfilled": 3
+    },
+    "gold_1700_up": {
+     "bets": 79,
+     "won": 55,
+     "win_rate": 0.6962,
+     "avg_price": 0.5066,
+     "avg_first_trade_price": 0.5062,
+     "usd_per_bet": 0.795,
+     "usd_per_bet_95": [
+      0.314,
+      1.274
+     ],
+     "net_usd": 62.84,
+     "fees_usd": 6.42,
+     "bets_week_actual": 5.03,
+     "bets_week_planned": 4.58,
+     "fill_share": 0.988,
+     "usd_week": 3.6,
+     "usd_week_95": [
+      1.42,
+      5.76
+     ],
+     "unfilled": 1
+    }
+   },
+   "monte_carlo": {
+    "full": {
+     "4w": {
+      "weeks": 4,
+      "p_week_stop": 0.012,
+      "avg_week_stops": 0.01,
+      "p_dd_refused_a_bet": 0.006,
+      "p_off_drawdown": 0.006,
+      "p_off_winrate": 0.0,
+      "p_off_price": 0.0,
+      "p_off_any": 0.006,
+      "p_below_30": 0.0,
+      "p_down": 0.009,
+      "median_end": 88.13,
+      "p5_end": 66.84,
+      "mean_end": 87.72,
+      "expected_gain": 32.72,
+      "expected_gain_4w": 32.72,
+      "avg_bets": 36.9
+     },
+     "12w": {
+      "weeks": 12,
+      "p_week_stop": 0.036,
+      "avg_week_stops": 0.04,
+      "p_dd_refused_a_bet": 0.025,
+      "p_off_drawdown": 0.025,
+      "p_off_winrate": 0.011,
+      "p_off_price": 0.0,
+      "p_off_any": 0.036,
+      "p_below_30": 0.0,
+      "p_down": 0.006,
+      "median_end": 151.45,
+      "p5_end": 110.59,
+      "mean_end": 149.6,
+      "expected_gain": 94.6,
+      "expected_gain_4w": 32.71,
+      "avg_bets": 107.4
+     }
+    },
+    "last4w": {
+     "4w": {
+      "weeks": 4,
+      "p_week_stop": 0.003,
+      "avg_week_stops": 0.0,
+      "p_dd_refused_a_bet": 0.001,
+      "p_off_drawdown": 0.001,
+      "p_off_winrate": 0.0,
+      "p_off_price": 0.0,
+      "p_off_any": 0.001,
+      "p_below_30": 0.0,
+      "p_down": 0.001,
+      "median_end": 99.59,
+      "p5_end": 79.1,
+      "mean_end": 99.18,
+      "expected_gain": 44.18,
+      "expected_gain_4w": 44.18,
+      "avg_bets": 38.0
+     },
+     "12w": {
+      "weeks": 12,
+      "p_week_stop": 0.009,
+      "avg_week_stops": 0.01,
+      "p_dd_refused_a_bet": 0.005,
+      "p_off_drawdown": 0.005,
+      "p_off_winrate": 0.0,
+      "p_off_price": 0.001,
+      "p_off_any": 0.006,
+      "p_below_30": 0.0,
+      "p_down": 0.001,
+      "median_end": 184.02,
+      "p5_end": 148.85,
+      "mean_end": 183.48,
+      "expected_gain": 128.48,
+      "expected_gain_4w": 44.06,
+      "avg_bets": 111.7
+     }
+    },
+    "haircut": {
+     "4w": {
+      "weeks": 4,
+      "p_week_stop": 0.055,
+      "avg_week_stops": 0.06,
+      "p_dd_refused_a_bet": 0.069,
+      "p_off_drawdown": 0.069,
+      "p_off_winrate": 0.0,
+      "p_off_price": 0.0,
+      "p_off_any": 0.069,
+      "p_below_30": 0.0,
+      "p_down": 0.128,
+      "median_end": 71.36,
+      "p5_end": 45.92,
+      "mean_end": 70.9,
+      "expected_gain": 15.9,
+      "expected_gain_4w": 15.9,
+      "avg_bets": 36.0
+     },
+     "12w": {
+      "weeks": 12,
+      "p_week_stop": 0.11,
+      "avg_week_stops": 0.11,
+      "p_dd_refused_a_bet": 0.202,
+      "p_off_drawdown": 0.202,
+      "p_off_winrate": 0.252,
+      "p_off_price": 0.0,
+      "p_off_any": 0.454,
+      "p_below_30": 0.0,
+      "p_down": 0.113,
+      "median_end": 96.32,
+      "p5_end": 44.96,
+      "mean_end": 92.92,
+      "expected_gain": 37.92,
+      "expected_gain_4w": 15.85,
+      "avg_bets": 86.7
+     }
+    }
+   }
+  },
+  "1.00_3legs": {
+   "full": {
+    "bets": 239,
+    "won": 175,
+    "win_rate": 0.7322,
+    "avg_price": 0.5152,
+    "avg_first_trade_price": 0.5146,
+    "usd_per_bet": 0.291,
+    "usd_per_bet_95": [
+     0.185,
+     0.392
+    ],
+    "net_usd": 69.45,
+    "fees_usd": 6.95,
+    "bets_week_actual": 15.21,
+    "bets_week_planned": 13.92,
+    "fill_share": 0.996,
+    "usd_week": 4.03,
+    "usd_week_95": [
+     2.56,
+     5.43
+    ],
+    "unfilled": 1
+   },
+   "last4w": {
+    "bets": 60,
+    "won": 44,
+    "win_rate": 0.7333,
+    "avg_price": 0.5199,
+    "avg_first_trade_price": 0.5198,
+    "usd_per_bet": 0.283,
+    "usd_per_bet_95": [
+     0.076,
+     0.489
+    ],
+    "net_usd": 16.97,
+    "fees_usd": 1.73,
+    "bets_week_actual": 16.15,
+    "bets_week_planned": 13.92,
+    "fill_share": 1.0,
+    "usd_week": 3.94,
+    "usd_week_95": [
+     1.05,
+     6.8
+    ],
+    "unfilled": 0
+   },
+   "oos": {
+    "bets": 6,
+    "won": 3,
+    "win_rate": 0.5,
+    "avg_price": 0.5017,
+    "avg_first_trade_price": 0.5017,
+    "usd_per_bet": 0.143,
+    "usd_per_bet_95": [
+     -0.053,
+     0.34
+    ],
+    "net_usd": 0.86,
+    "fees_usd": 0.2,
+    "bets_week_actual": 6.0,
+    "bets_week_planned": 13.92,
+    "fill_share": 1.0,
+    "usd_week": 2.0,
+    "usd_week_95": [
+     -0.74,
+     4.73
+    ],
+    "unfilled": 0
+   },
+   "haircut": {
+    "win_rate": 0.6322,
+    "usd_per_bet": 0.148,
+    "flip_prob": 0.1366,
+    "usd_week": 2.05
+   },
+   "per_leg_full": {
+    "gold_0530_down": {
+     "bets": 79,
+     "won": 60,
+     "win_rate": 0.7595,
+     "avg_price": 0.5232,
+     "avg_first_trade_price": 0.5225,
+     "usd_per_bet": 0.3,
+     "usd_per_bet_95": [
+      0.144,
+      0.435
+     ],
+     "net_usd": 23.73,
+     "fees_usd": 2.14,
+     "bets_week_actual": 5.03,
+     "bets_week_planned": 4.75,
+     "fill_share": 0.988,
+     "usd_week": 1.41,
+     "usd_week_95": [
+      0.68,
+      2.04
+     ],
+     "unfilled": 1
+    },
+    "gold_1700_up": {
+     "bets": 80,
+     "won": 56,
+     "win_rate": 0.7,
+     "avg_price": 0.5083,
+     "avg_first_trade_price": 0.508,
+     "usd_per_bet": 0.261,
+     "usd_per_bet_95": [
+      0.092,
+      0.42
+     ],
+     "net_usd": 20.85,
+     "fees_usd": 2.4,
+     "bets_week_actual": 5.09,
+     "bets_week_planned": 4.58,
+     "fill_share": 1.0,
+     "usd_week": 1.19,
+     "usd_week_95": [
+      0.42,
+      1.92
+     ],
+     "unfilled": 0
+    },
+    "silver_1700_up": {
+     "bets": 80,
+     "won": 59,
+     "win_rate": 0.7375,
+     "avg_price": 0.5142,
+     "avg_first_trade_price": 0.5134,
+     "usd_per_bet": 0.311,
+     "usd_per_bet_95": [
+      0.146,
+      0.464
+     ],
+     "net_usd": 24.87,
+     "fees_usd": 2.41,
+     "bets_week_actual": 5.09,
+     "bets_week_planned": 4.58,
+     "fill_share": 1.0,
+     "usd_week": 1.42,
+     "usd_week_95": [
+      0.67,
+      2.13
+     ],
+     "unfilled": 0
+    }
+   },
+   "monte_carlo": {
+    "full": {
+     "4w": {
+      "weeks": 4,
+      "p_week_stop": 0.0,
+      "avg_week_stops": 0.0,
+      "p_dd_refused_a_bet": 0.0,
+      "p_off_drawdown": 0.0,
+      "p_off_winrate": 0.0,
+      "p_off_price": 0.0,
+      "p_off_any": 0.0,
+      "p_below_30": 0.0,
+      "p_down": 0.005,
+      "median_end": 71.34,
+      "p5_end": 61.15,
+      "mean_end": 71.24,
+      "expected_gain": 16.24,
+      "expected_gain_4w": 16.24,
+      "avg_bets": 55.7
+     },
+     "12w": {
+      "weeks": 12,
+      "p_week_stop": 0.0,
+      "avg_week_stops": 0.0,
+      "p_dd_refused_a_bet": 0.0,
+      "p_off_drawdown": 0.0,
+      "p_off_winrate": 0.026,
+      "p_off_price": 0.0,
+      "p_off_any": 0.026,
+      "p_below_30": 0.0,
+      "p_down": 0.004,
+      "median_end": 103.34,
+      "p5_end": 83.36,
+      "mean_end": 102.45,
+      "expected_gain": 47.45,
+      "expected_gain_4w": 16.12,
+      "avg_bets": 163.7
+     }
+    },
+    "last4w": {
+     "4w": {
+      "weeks": 4,
+      "p_week_stop": 0.0,
+      "avg_week_stops": 0.0,
+      "p_dd_refused_a_bet": 0.0,
+      "p_off_drawdown": 0.0,
+      "p_off_winrate": 0.0,
+      "p_off_price": 0.0,
+      "p_off_any": 0.0,
+      "p_below_30": 0.0,
+      "p_down": 0.004,
+      "median_end": 71.19,
+      "p5_end": 61.1,
+      "mean_end": 71.15,
+      "expected_gain": 16.15,
+      "expected_gain_4w": 16.15,
+      "avg_bets": 56.0
+     },
+     "12w": {
+      "weeks": 12,
+      "p_week_stop": 0.0,
+      "avg_week_stops": 0.0,
+      "p_dd_refused_a_bet": 0.0,
+      "p_off_drawdown": 0.0,
+      "p_off_winrate": 0.021,
+      "p_off_price": 0.001,
+      "p_off_any": 0.022,
+      "p_below_30": 0.0,
+      "p_down": 0.003,
+      "median_end": 102.38,
+      "p5_end": 83.44,
+      "mean_end": 101.84,
+      "expected_gain": 46.84,
+      "expected_gain_4w": 16.09,
+      "avg_bets": 164.8
+     }
+    },
+    "haircut": {
+     "4w": {
+      "weeks": 4,
+      "p_week_stop": 0.0,
+      "avg_week_stops": 0.0,
+      "p_dd_refused_a_bet": 0.0,
+      "p_off_drawdown": 0.0,
+      "p_off_winrate": 0.0,
+      "p_off_price": 0.0,
+      "p_off_any": 0.0,
+      "p_below_30": 0.0,
+      "p_down": 0.092,
+      "median_end": 63.38,
+      "p5_end": 53.08,
+      "mean_end": 63.33,
+      "expected_gain": 8.33,
+      "expected_gain_4w": 8.33,
+      "avg_bets": 55.7
+     },
+     "12w": {
+      "weeks": 12,
+      "p_week_stop": 0.0,
+      "avg_week_stops": 0.0,
+      "p_dd_refused_a_bet": 0.0,
+      "p_off_drawdown": 0.0,
+      "p_off_winrate": 0.394,
+      "p_off_price": 0.0,
+      "p_off_any": 0.395,
+      "p_below_30": 0.0,
+      "p_down": 0.087,
+      "median_end": 76.37,
+      "p5_end": 53.17,
+      "mean_end": 74.09,
+      "expected_gain": 19.09,
+      "expected_gain_4w": 8.23,
+      "avg_bets": 129.3
+     }
+    }
+   }
+  }
+ }
+}

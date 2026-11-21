@@ -1,7 +1,7 @@
 {
  "v": 1,
  "kind": "olympus-decisions",
- "updated": "2026-11-20",
+ "updated": "2026-11-21",
  "note": "The Decide card (business/decide.js on the Board + ZEUS pages). Claude keeps this list. A tap only posts an owner note (POST /inbox/board on the PC link); Claude applies it next session by the CLAUDE.md rules, then sets status to yes / no / later / done. Nothing here changes a live setting.",
  "items": [
   {
@@ -463,6 +463,27 @@
    "recommend": "yes",
    "recommend_why": "Free to try and undo; the only way to measure it. Check ATLAS's next ~8 fills: if they are not clearly better than 10-16 ticks, switch it off.",
    "valued": "2026-11-20 4 real fills, research/speed/fast_entry_value.py (jump / sqrt / linear price paths)"
+  },
+  {
+   "id": "kalshi-k8-gold-only",
+   "question": "Kalshi K8 live from Monday: bet only the 2 gold windows (drop silver 4:45 PM) to make the bot switching itself off rarer?",
+   "why": "The newest week (Nov 16-20) was the worst of 16 (6 of 15 won). Gold-only trips the stops about 4x less often, but silver also made money in the history (74% won, +$0.92 a bet).",
+   "impact": "About -$4 a week: +$12.23 -> +$8.02 a week as in the history (+$6.17 -> +$3.97 if the edge is 10 points weaker); after 4 weeks $103 -> $88 on average.",
+   "impact_usd": -4,
+   "options": [
+    "yes",
+    "no",
+    "later"
+   ],
+   "status": "open",
+   "source": "research/writeups/kalshi-k8-live-2026-11-21.md",
+   "applies": "research/lab/kalshi_clock.json live_legs without silver_1700_up (silver stays on paper); you type the phrase again after the change",
+   "added": "2026-11-21",
+   "usd_month": -17,
+   "risk": "Bot switches itself off within 4 weeks 4% -> 1% (planning case 17% -> 7%); within 12 weeks 14% -> 3%; no run of either setting falls below $30.",
+   "recommend": "no",
+   "recommend_why": "Keep all 3 legs: the edge has not weakened (no price creep, every leg positive), and 3 legs make about 50% more. The stops already cap a bad week at -$13.75. Say yes if a calm start matters more than ~$4 a week.",
+   "valued": "2026-11-21 research/kalshi_k8_live/edge.py (236 real bets of the 3 live legs Aug 3-Nov 20, exact fees, the $2.50 fill price; 20,000 runs from $55 with every stop and the real calendar)"
   }
  ]
 }
