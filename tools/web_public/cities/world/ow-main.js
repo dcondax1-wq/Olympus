@@ -4,7 +4,7 @@
 // the four doors; every app is a tower you tap to open; every learning place is real data. Live: the PC feed (../../pc_feed.js: a bot
 // in a trade pulses), the Board's events, the edge light and the Lab's newest verdicts. Read only: GET only, nothing armed, no orders,
 // text only through textContent, no browser storage. No WebGL (or 3D switched off): a plain list of the same city, never blank.
-import * as C from './ow-core.js?v=w6';
+import * as C from './ow-core.js?v=w7';
 
 const d = document, $ = (s) => d.querySelector(s);
 const O = () => window.OLYMPUS || null;
@@ -83,6 +83,8 @@ async function boot() {
       renderFlat();
     }
   }
+  // Research Hub Decide cards pulse until they are answered (the hub rebuilds them as live / lead / rejected)
+  if (S.scene) S.world.places.forEach((p, i) => { if (p.kind === 'hub' && p.state === 'decide') S.scene.setTrading(i, true); });
   startTicker();
   live();
   setInterval(() => { if (!d.hidden) live(); }, 60000);
@@ -115,7 +117,7 @@ function skyLine() {
 function pressDistrict(id) { for (const b of d.querySelectorAll('.dch')) b.setAttribute('aria-pressed', String(b.dataset.d === id)); }
 
 // ------------------------------------------------------------------------------------------------ the card
-const STATE_C = { live: '#ffc65a', app: '#ffd98a', bright: '#7ee08a', growing: '#62e8ff', testing: '#ffb347', planned: '#ffb347', ruin: '#ff7a5e', data: '#8fb4ff', paused: '#9aa3c0' };
+const STATE_C = { decide: '#f1c14b', live: '#ffc65a', app: '#ffd98a', bright: '#7ee08a', growing: '#62e8ff', testing: '#ffb347', planned: '#ffb347', ruin: '#ff7a5e', data: '#8fb4ff', paused: '#9aa3c0' };
 function place(i) { return S.world.places[i]; }
 function districtOf(id) { return (S.world.districts || []).find((x) => x.id === id) || null; }
 function quarterName(p) { const dd = districtOf(p.district); const q = dd && (dd.quarters || []).find((x) => x.id === p.quarter); return q ? q.name : p.quarter; }
@@ -160,7 +162,7 @@ function openPlace(i, o) {
   if (how) body.append(el('p', 'how', how));
   const acts = el('div', 'acts');
   if (p.href) {
-    const a = el('button', 'btn go', p.kind === 'app' ? 'Open ' + p.name : p.kind === 'decision' ? 'Answer on the Board' : 'Open');
+    const a = el('button', 'btn go', p.kind === 'app' ? 'Open ' + p.name : p.kind === 'decision' ? 'Answer on the Board' : p.kind === 'hub' ? 'Read' : 'Open');
     a.type = 'button'; a.onclick = () => go(p.href, i);
     acts.append(a);
   }
@@ -601,8 +603,22 @@ function renderFlat() {
       a.append(b); list.append(a);
     });
     sec.append(list);
+    // the Research Hub in the light list: every entry with its status, $ a month and a Read link (live, Decide, leads, then rejected)
+    const hub = w.places.filter((p) => p.district === dd.id && p.kind === 'hub');
+    if (hub.length) {
+      const order = { live: 0, decide: 1, testing: 2, ruin: 3 };
+      const hl = el('ul', 'hublist');
+      for (const p of hub.slice().sort((a, b) => (order[a.state] ?? 9) - (order[b.state] ?? 9))) {
+        const li = el('li'); li.style.setProperty('--c', STATE_C[p.state] || '#ffc65a');
+        const money = (p.facts || []).find((f) => f[0] === '$ a month');
+        li.append(el('b', '', p.name), el('small', '', `${C.STATE_WORD[p.state] || p.state}${money ? ' · ' + money[1] : ''} · ${p.why || p.line || ''}`));
+        if (p.href) { const a = el('a', '', 'Read'); a.href = ROOT + p.href; li.append(a); }
+        hl.append(li);
+      }
+      sec.append(el('h3', '', 'Research Hub'), hl);
+    }
     for (const q of dd.quarters || []) {
-      if (q.id === 'apps') continue;
+      if (q.id === 'apps' || q.id.startsWith('rh-')) continue;
       const ps = w.places.filter((p) => p.district === dd.id && p.quarter === q.id);
       const ruins = ps.filter((p) => p.state === 'ruin').length, ok = ps.filter((p) => ['bright', 'growing', 'live'].includes(p.state)).length;
       sec.append(el('p', '', `${q.name}: ${ps.length} places · ${ok} working · ${ruins} rejected`));
@@ -616,6 +632,14 @@ function deepLink() {
   const h = decodeURIComponent(location.hash || '');
   const mp = /#p=(.+)$/.exec(h), md = /#d=(\w+)/.exec(h);
   const later = (fn) => setTimeout(fn, S.scene && !reduced ? 400 : 0);
+  // ?fly=<id> (the Research Hub page's "See it in the city"): a hub entry by its id, any place by its id, else the best search hit
+  const fly = qs.get('fly');
+  if (fly) {
+    const ids = ['hub:' + fly, fly];
+    let i = ids.map((k) => S.byId.get(k)).find((x) => x != null);
+    if (i == null) { const hit = C.search(S.world.places.map((p, k) => ({ raw: p, i: k })), fly)[0]; i = hit ? hit.i : null; }
+    if (i != null) { later(() => { if (S.scene) S.scene.skipIntro(); openPlace(i); }); return; }
+  }
   if (mp && S.byId.has(mp[1])) later(() => { if (S.scene) S.scene.skipIntro(); openPlace(S.byId.get(mp[1])); });
   else if (md && districtOf(md[1])) later(() => { if (S.scene) S.scene.skipIntro(); goDistrict(md[1]); });
 }

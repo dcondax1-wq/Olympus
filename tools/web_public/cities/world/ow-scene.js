@@ -5,7 +5,7 @@
 import * as THREE from '../../jarvis/three.module.min.js';
 import { createRenderer } from '../../olympus/render.js';
 import * as SH from './ow-shaders.js?v=w5';
-import { poseToCam, lerpPose, ease, warpCurve, clampPose, homePose, overviewPose, districtPose, placePose, clamp, hex, rng, skyFor } from './ow-core.js?v=w6';
+import { poseToCam, lerpPose, ease, warpCurve, clampPose, homePose, overviewPose, districtPose, placePose, clamp, hex, rng, skyFor } from './ow-core.js?v=w7';
 
 const MOON = new THREE.Vector3(0.28, 0.2, -1).normalize();
 

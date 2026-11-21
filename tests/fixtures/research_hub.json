@@ -1,0 +1,167 @@
+{
+ "v": 1,
+ "kind": "research-hub",
+ "note": "TEST FIXTURE (tests/test_world_build.py): example rows in research/hub.json's schema, never shipped",
+ "items": [
+  {
+   "id": "lit",
+   "title": "LIT: sweep then target",
+   "family": "LIT",
+   "status": "live",
+   "usd_month": 2670,
+   "date": "2026-07-01",
+   "summary": "The live NQ strategy: a liquidity sweep, a stop one tick past it, one VIX-band target.",
+   "url": "research/lit.html"
+  },
+  {
+   "id": "atlas",
+   "title": "ATLAS second strategy",
+   "family": "ATLAS",
+   "status": "live",
+   "usd_month": 940,
+   "date": "2026-09-12",
+   "summary": "Runs on the funded 25K: a session-open continuation, small size.",
+   "url": "research/atlas.html"
+  },
+  {
+   "id": "k8",
+   "title": "Kalshi K8 gold and silver clock",
+   "family": "Kalshi",
+   "status": "live",
+   "usd_month": 120,
+   "date": "2026-10-20",
+   "summary": "Paper only: the K8 clock bets on gold and silver closes.",
+   "url": "research/k8.html"
+  },
+  {
+   "id": "holiday",
+   "title": "Holiday half-days filter",
+   "family": "Filters",
+   "status": "lead",
+   "usd_month": null,
+   "date": "2026-11-18",
+   "summary": "Shadow log: skip the half-day sessions before US holidays; 6 weeks of data so far.",
+   "url": "research/holiday.html"
+  },
+  {
+   "id": "vix-band",
+   "title": "VIX band targets v2",
+   "family": "LIT",
+   "status": "lead",
+   "usd_month": null,
+   "date": "2026-11-10",
+   "summary": "Shadow log: wider target when the VIX is above 22.",
+   "url": "research/vix-band.html"
+  },
+  {
+   "id": "asia-open",
+   "title": "Asia open sweeps",
+   "family": "Sessions",
+   "status": "lead",
+   "usd_month": null,
+   "date": "2026-11-02",
+   "summary": "Open lead: sweeps of the Asia range at 20:00 ET.",
+   "url": "research/asia.html"
+  },
+  {
+   "id": "scale-in",
+   "title": "Scale in on the retest",
+   "family": "Risk",
+   "status": "decide",
+   "usd_month": 410,
+   "date": "2026-11-19",
+   "summary": "Backtest +$410 a month after costs on both 2026 halves; needs your yes to paper-trade it.",
+   "url": "research/scale-in.html"
+  },
+  {
+   "id": "trail",
+   "title": "Trailing stop after 4R",
+   "family": "Risk",
+   "status": "decide",
+   "usd_month": -60,
+   "date": "2026-11-17",
+   "summary": "Slightly worse in 2021-25; your call whether to keep testing.",
+   "url": "research/trail.html"
+  },
+  {
+   "id": "rej0",
+   "title": "RSI divergence entries",
+   "family": "Indicators",
+   "status": "rejected",
+   "usd_month": -210,
+   "date": "2026-08-15",
+   "summary": "Lost money in both 2026 halves after costs.",
+   "url": "research/rejected-0.html"
+  },
+  {
+   "id": "rej1",
+   "title": "Friday-only trading",
+   "family": "Timing",
+   "status": "rejected",
+   "usd_month": -95,
+   "date": "2026-09-15",
+   "summary": "Too few trades: 0.8 a week.",
+   "url": "research/rejected-1.html"
+  },
+  {
+   "id": "rej2",
+   "title": "Double target",
+   "family": "LIT",
+   "status": "rejected",
+   "usd_month": -140,
+   "date": "2026-10-15",
+   "summary": "Banking half at 2R cut the winners.",
+   "url": "research/rejected-2.html"
+  },
+  {
+   "id": "rej3",
+   "title": "London open fade",
+   "family": "Sessions",
+   "status": "rejected",
+   "usd_month": -330,
+   "date": "2026-11-15",
+   "summary": "Profit factor 0.71 in 2021-25.",
+   "url": "research/rejected-3.html"
+  },
+  {
+   "id": "rej4",
+   "title": "Moving-average cross",
+   "family": "Indicators",
+   "status": "rejected",
+   "usd_month": -260,
+   "date": "2026-08-15",
+   "summary": "Lags the sweep, late entries.",
+   "url": "research/rejected-4.html"
+  },
+  {
+   "id": "rej5",
+   "title": "News-day skip",
+   "family": "Filters",
+   "status": "rejected",
+   "usd_month": -40,
+   "date": "2026-09-15",
+   "summary": "Skipped more winners than losers.",
+   "url": "research/rejected-5.html"
+  },
+  {
+   "id": "rej6",
+   "title": "Tight stop 0.5 ATR",
+   "family": "Risk",
+   "status": "rejected",
+   "usd_month": -410,
+   "date": "2026-10-15",
+   "summary": "Stopped out by noise, PF 0.64.",
+   "url": "research/rejected-6.html"
+  },
+  {
+   "id": "rej7",
+   "title": "Gap fill",
+   "family": "Timing",
+   "status": "rejected",
+   "usd_month": -75,
+   "date": "2026-11-15",
+   "summary": "No edge after costs.",
+   "url": "research/rejected-7.html"
+  }
+ ]
+}
