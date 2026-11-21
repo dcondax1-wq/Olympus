@@ -251,7 +251,8 @@ def run():
               court: document.documentElement.dataset.court || '', art: getComputedStyle(document.getElementById('courtArt')).opacity, doors: document.querySelectorAll('#courtArt .c-door').length,
               lit: [...document.querySelectorAll('#courtArt .c-door')].map((d) => d.dataset.need || ''), light: [...document.querySelectorAll('#courtArt .c-door .d-l')].map((d) => getComputedStyle(d).opacity),
               cols: [...document.querySelectorAll('#courtArt .c-door')].map((d, i) => Math.abs((d.getBoundingClientRect().left + d.getBoundingClientRect().right) / 2 - (document.querySelectorAll('.dgate')[i].getBoundingClientRect().left + document.querySelectorAll('.dgate')[i].getBoundingClientRect().right) / 2)) })""")
-            check("e. reduced motion: no skeleton sheen, no transitions on the tiles or the pull line", sk in ("none", "gone") and rm["tile"].replace("0s", "").replace(",", "").strip() == "" and rm["ptr"] == "0s", (sk, rm["tile"], rm["ptr"]))
+            # olympus/a11y.css sets transition-duration .001s !important under reduced motion (deliberate: transitionend still fires): <= 0.001 s counts as none
+            check("e. reduced motion: no skeleton sheen, no transitions on the tiles or the pull line (<= 0.001 s, the a11y kit's value)", sk in ("none", "gone") and all(float(x.strip().rstrip("s") or 0) <= 0.001 for x in rm["tile"].split(",")) and float(rm["ptr"].rstrip("s") or 0) <= 0.001, (sk, rm["tile"], rm["ptr"]))
             check("e. LITE (software GL): the painted courtyard is showing: a gradient sky and five SVG doorways, each over its own name; the doorways that need you are lit (Market, Life), the others dim",
                   rm["court"] in ("lite", "") and rm["art"] == "1" and rm["doors"] == 5 and rm["lit"] == ["warn", "", "", "", "warn"] and rm["light"][0] == "1" and float(rm["light"][1]) < 0.5 and max(rm["cols"]) < 2, rm)
             check("e. no page errors", not errs, errs)
