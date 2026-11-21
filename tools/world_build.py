@@ -657,6 +657,7 @@ def concepts(W):
 HUB_STATE = {"live": ("live", CROWN), "lead": ("testing", SCAFFOLD), "rejected": ("ruin", RUIN), "decide": ("decide", BRIGHT)}
 HUB_WORD = {"live": "Live", "lead": "Open lead", "rejected": "Rejected", "decide": "Decide"}
 HUB_FAMILIES = 10
+HUB_STATES = ["live", "testing", "ruin", "decide"]
 LAB_QUARTERS = list(QUARTERS["lab"])
 
 
@@ -680,7 +681,9 @@ def hub_usd(r):
 
 def research_hub(W, path=None):
     QUARTERS["lab"] = list(LAB_QUARTERS)                    # idempotent: the family streets are rebuilt every time
-    rows = hub_items(path)
+    hide = [h.lower() for h in hidden_bots()]
+    # a hidden bot (dashboard_view.json) never appears: any row naming one in its id, title, family or summary is dropped whole
+    rows = [r for r in hub_items(path) if not any(re.search(r"\b" + re.escape(h) + r"\b", " ".join(str(r.get(k) or "") for k in ("id", "title", "family", "summary")).lower()) for h in hide)]
     if not rows:
         return 0
     fams = {}
@@ -711,7 +714,7 @@ def research_hub(W, path=None):
         url = re.sub(r"^(\.\./|\./|/)+", "", str(r.get("url") or "")) or None   # hub.json links from research/ ('../clio/?read=x'): from the site root
         if url and re.match(r"^[a-z]+:", url):
             url = None                                        # the site's own pages only
-        blds = [(h, bstate, r.get("date"))] + [(max(20, h // 3), bstate if st != "live" else LIT, r.get("date")) for _ in range(2 if st == "live" else 1)]
+        blds = [(h, bstate, r.get("date"))] + ([(max(20, h // 3), LIT, r.get("date"))] if st == "live" else [])   # one building each (a live tower: + a podium)
         W.add("hub:" + str(r["id"]), str(r["title"]), "hub", "lab", "rh-" + slug(fam), state, summ or HUB_WORD.get(st, st),
               [["Status", HUB_WORD.get(st, st)], [label, money], ["Family", fam.title() if fam.islower() else fam], ["Date", str(r.get("date") or "")[:10]]], blds,
               born=(str(r.get("date"))[:10] if r.get("date") else None), href=url,
@@ -775,7 +778,7 @@ def plan_city(W):
     # Lab & Research holds the Research Hub's family streets: room for each at 6 degrees + a margin, so the city does not have to grow
     # outward to fit thin wedges (the phone's instance budget)
     nlab = sum(1 for q, _ in QUARTERS["lab"] if q not in DOWNTOWN and ("lab", q) in need)
-    share["lab"] = share["lab"] + math.radians(6 * max(0, nlab - 2))
+    share["lab"] = share["lab"] + math.radians(3 * max(0, nlab - 2))
     k = 2 * math.pi / sum(share.values())
     # quantized to 3 degree steps (the remainder goes to ZEUS Trading): a few new places never move a district border
     share = {d: math.radians(3) * round(math.degrees(v * k) / 3) for d, v in share.items()}
@@ -847,8 +850,8 @@ def try_plan(W, by_q, need, arcs, R):
         a = a0
         widths = [math.radians(1.5) * max(1, round(math.degrees(span * bk[q] / tot) / 1.5)) for q in learn]
         widths[-1] = span - sum(widths[:-1])                    # quantized slices too (3 degrees), the last takes the rest
-        if d == "lab" and len(widths) > 1:                      # the Research Hub's family streets: never thinner than a block (6 degrees),
-            lo = math.radians(6)                                # the room taken from the widest street
+        if len(widths) > 1:                                     # every slice (the Research Hub's family streets, ZEUS's markets): never
+            lo = min(math.radians(6), span / len(widths))       # thinner than a block (6 degrees), the room taken from the widest one
             for k in range(len(widths)):
                 if widths[k] < lo:
                     big = max(range(len(widths)), key=lambda j: widths[j])
@@ -944,6 +947,10 @@ def build(now=None):
             nb += 1
             counts[{0: "ruin", 1: "scaffold", 2: "lit"}.get(s, "bright")] += 1
         p["b"] = flat
+        if p["kind"] == "sites":                            # the concept sites: one letter a building (h hot, w warm, c cold, s not ready);
+            p["bs"] = "".join("s" if flat[k + 1] == SCAFFOLD else "h" if flat[k + 1] == BRIGHT else "w" if flat[k] >= 140 else "c"
+                              for k in range(0, len(flat), 3))   # the page rebuilds the heights (ow-core siteBuildings): the 300 KB budget
+            del p["b"]
         p["day"] = 0 if not p["born"] or not d0 else max(0, (_dt.date.fromisoformat(p["born"]) - d0).days)
         p.pop("fill", None)
     now = now or _dt.datetime.now(_dt.timezone.utc)
@@ -988,7 +995,12 @@ def build(now=None):
                    ["Vault", "an account: fills with light as it nears its goal"]],
         "counts": {"places": len(W.places), "apps": len(W.places) - len(learning), "learning": len(learning), "buildings": nb, **counts,
                    "live": sum(1 for p in W.places if p["state"] == "live"), "districts": len(districts), "filler": len(filler)},
-        "districts": districts, "places": W.places, "filler": filler, "feed": feed, "hows": hows,
+        "districts": districts, "places": [p for p in W.places if p["kind"] != "hub"], "filler": filler, "feed": feed, "hows": hows,
+        # the Research Hub as compact rows (the 300 KB budget): [id, street, state, x, z, r, cells (flat), buildings (flat), day]; its titles,
+        # summaries, $ and links come from research/hub.json in the page (ow-main hubPlaces), merged by id
+        "hubq": [q for q, _ in QUARTERS["lab"] if q.startswith("rh-")], "hubs": HUB_STATES,
+        "hub": [[p["id"][4:], [q for q, _ in QUARTERS["lab"] if q.startswith("rh-")].index(p["quarter"]), HUB_STATES.index(p["state"]), round(p["x"]), round(p["z"]), round(p["r"], 1),
+                 [v for c in p.get("cells", []) for v in c], p["b"], p["day"]] for p in W.places if p["kind"] == "hub"],
     }
 
 

@@ -51,18 +51,30 @@ def test_build():
         wh = WB.build()
     finally:
         WB.HUB_PATH = None
-    hub = [p for p in wh["places"] if p["kind"] == "hub"]
-    fx = json.load(open(WB.HUB_PATH or os.path.join(WB.ROOT, "tests", "fixtures", "research_hub.json"), encoding="utf-8"))["items"]
-    by = {p["id"][4:]: p for p in hub}
-    live = sorted((p for p in hub if p["state"] == "live"), key=lambda p: -(p.get("usd") or 0))
-    check("a. Research Hub: every hub.json row is a place in Lab & Research (%d), on its family's street (a quarter per family)" % len(hub),
-          len(hub) == len(fx) and all(p["district"] == "lab" and p["quarter"].startswith("rh-") for p in hub)
-          and {q["id"] for q in next(d for d in wh["districts"] if d["id"] == "lab")["quarters"]} >= {"rh-filters", "rh-other"})   # a street per family of 4+ entries, the rest on Other
-    check("a. Research Hub: live = tall bright towers ordered by the real $ a month; leads under scaffolding; rejected = ruins whose card says why + $; Decide = 'decide'",
-          [p["b"][0] for p in live] == sorted([p["b"][0] for p in live], reverse=True) and all(p["b"][1] == WB.CROWN for p in live)
-          and by["holiday"]["state"] == "testing" and by["holiday"]["b"][1] == WB.SCAFFOLD
-          and by["rej3"]["state"] == "ruin" and "the test quoted -$330" in by["rej3"]["why"] and "PF" in by["rej3"]["why"].replace("Profit factor", "PF")
-          and by["scale-in"]["state"] == "decide" and by["lit"]["href"] == "research/lit.html", [(p["id"], p["state"], p["b"][:2]) for p in hub[:6]])
+    rows = wh.get("hub") or []
+    fx = json.load(open(os.path.join(WB.ROOT, "tests", "fixtures", "research_hub.json"), encoding="utf-8"))["items"]
+    st = {r[0]: wh["hubs"][r[2]] for r in rows}
+    q = {r[0]: wh["hubq"][r[1]] for r in rows}
+    live = sorted((r for r in rows if wh["hubs"][r[2]] == "live"), key=lambda r: -next(x["usd_month"] for x in fx if x["id"] == r[0]))
+    check("a. Research Hub: every hub.json row is a compact row of Lab & Research (%d; ids, streets, buildings only: the words come from research/hub.json in the page)" % len(rows),
+          len(rows) == len(fx) and not [p for p in wh["places"] if p["kind"] == "hub"] and all(v.startswith("rh-") for v in q.values())
+          and {x["id"] for x in next(d for d in wh["districts"] if d["id"] == "lab")["quarters"]} >= {"rh-filters", "rh-other"})   # a street per family of 4+ entries
+    check("a. Research Hub: live = tall crowned towers ordered by the real $ a month; leads under scaffolding; rejected = ruins; Decide = 'decide'",
+          [r[7][0] for r in live] == sorted([r[7][0] for r in live], reverse=True) and all(r[7][1] == WB.CROWN for r in live)
+          and st["holiday"] == "testing" and st["rej3"] == "ruin" and st["scale-in"] == "decide", [(r[0], st[r[0]], r[7][:2]) for r in rows[:6]])
+    js = ("import * as C from './ow-core.js'; import fs from 'fs'; const w = JSON.parse(fs.readFileSync(process.argv[1])); const fx = JSON.parse(fs.readFileSync(process.argv[2]));"
+          "const ps = C.hubPlaces(w); const n = C.hubText(ps, fx); const r = ps.find((p) => p.id === 'hub:rej3'), l = ps.find((p) => p.id === 'hub:lit');"
+          "console.log(JSON.stringify({ n, ps: ps.length, why: r.why, href: l.href, name: l.name, cells: l.cells.length, facts: r.facts.map((f) => f[0]) }))")
+    tmp = os.path.join(tempfile.mkdtemp(), "w.json")
+    json.dump(wh, open(tmp, "w", encoding="utf-8"))
+    try:
+        out = json.loads(subprocess.run(["node", "--input-type=module", "-e", js, tmp, os.path.join(WB.ROOT, "tests", "fixtures", "research_hub.json")],
+                                        cwd=os.path.join(WB.WEB, "cities", "world"), capture_output=True, text=True, timeout=60).stdout or "{}")
+    except (OSError, ValueError, subprocess.SubprocessError) as e:
+        out = {"err": str(e)}
+    check("a. the page merges the words by id: titles, Read links from the site root, a rejected figure says 'Test quoted' / 'the test quoted -$330' (never profit)",
+          out.get("n") == len(fx) and out.get("ps") == len(fx) and "the test quoted -$330" in (out.get("why") or "") and out.get("href") == "research/lit.html"
+          and out.get("name") == "LIT: sweep then target" and out.get("cells", 0) >= 1 and "Test quoted" in (out.get("facts") or []), out)
     w2 = WB.build()                                     # again without the fixture: no hub, the streets gone
     check("a. no hub.json = no hub places (never example data in the owner's city); the family streets reset between builds",
           os.path.exists(os.path.join(WB.WEB, "research", "hub.json"))
@@ -87,8 +99,8 @@ def test_build():
           and next(p for p in ps if p["id"] == "app:agency")["district"] == "sites", wrong)
     cs = [p for p in ps if p["district"] == "sites" and p["kind"] == "sites"]
     nsites = len((json.load(open(os.path.join(WB.WEB, "agency", "factory", "sites.json"), encoding="utf-8")).get("sites") or []))
-    check("a. Websites: one block per trade, one building per concept site (%d of %d), no business name anywhere" % (sum(len(p["b"]) // 3 for p in cs), nsites),
-          cs and sum(len(p["b"]) // 3 for p in cs) == nsites and all(p["name"] in WB.NICHE.values() or p["name"].istitle() for p in cs))
+    check("a. Websites: one block per trade, one building per concept site (%d of %d), no business name anywhere" % (sum(len(p["bs"]) for p in cs), nsites),
+          cs and sum(len(p["bs"]) for p in cs) == nsites and all(p["name"] in WB.NICHE.values() or p["name"].istitle() for p in cs))
     shortcut = [p["name"] for p in ps if p["kind"] == "app" and p["district"] == "zeus"][:8]
     check("a. ZEUS Trading's downtown starts with the owner's own shortcuts, plain names first (My accounts, Bots right now, ...)", shortcut[:2] == ["My accounts", "Bots right now"], shortcut)
     extra = {p["href"] for p in ps if p["kind"] == "app"}
@@ -208,7 +220,8 @@ def test_file(w):
     check("e. deterministic: two builds are the same (but the build time)", json.dumps(strip(w)) == json.dumps(strip(w2)))
     raw = json.dumps(w, separators=(",", ":"), ensure_ascii=False).encode()
     check("e. compact: under 300 KB (%d KB); buildings are [height 0-255, state 0-5, day] triples" % (len(raw) // 1024),
-          len(raw) < 300_000 and all(len(p["b"]) % 3 == 0 and all(0 <= v <= 255 for v in p["b"][0::3]) and set(p["b"][1::3]) <= set(range(6)) for p in w["places"]))
+          len(raw) < 300_000 and all(len(p["b"]) % 3 == 0 and all(0 <= v <= 255 for v in p["b"][0::3]) and set(p["b"][1::3]) <= set(range(6)) for p in w["places"] if "b" in p)
+          and all(set(p["bs"]) <= set("hwcs") for p in w["places"] if p["kind"] == "sites"))   # the concept sites: a letter a building (ow-core siteBuildings)
     shipped = WB.load(os.path.join(WORLD_DIR, "world.json"), {})
     check("e. the shipped cities/world/world.json is this tool's output (same places, districts and counts)", shipped.get("kind") == "olympus-world"
           and [p["id"] for p in shipped.get("places", [])] == [p["id"] for p in w["places"]] and shipped.get("counts") == w["counts"],

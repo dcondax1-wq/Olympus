@@ -455,3 +455,52 @@ export function feedLines(w, extra) {
   for (const f of (w && w.feed) || []) lines.push({ d: f.d, id: f.id || null, text: (f.d ? dateText(f.d) + ' · ' : '') + f.text });
   return lines;
 }
+
+// ------------------------------------------------------------------------------------------------ the Research Hub (research-hub-city 2026-11-21)
+// world.json keeps each hub entry as a compact row (the 300 KB budget): [id, street, state, x, z, r, cells flat, buildings flat, day];
+// the words (title, summary, $ a month, link) come from research/hub.json, merged by id after the 3D has started (hubText).
+const HUB_WORD = { live: 'Live', lead: 'Open lead', rejected: 'Rejected', decide: 'Decide' };
+const titleOf = (id) => String(id).replace(/^(live|lead|rejected|decide)-/, '').replace(/-\d{4}-\d{2}-\d{2}$/, '').replace(/[-_]+/g, ' ').replace(/^./, (c) => c.toUpperCase());
+export function hubPlaces(w) {
+  const qs = Array.isArray(w && w.hubq) ? w.hubq : [], ss = Array.isArray(w && w.hubs) ? w.hubs : ['live', 'testing', 'ruin', 'decide'];
+  const out = [];
+  for (const r of (w && Array.isArray(w.hub) ? w.hub : [])) {
+    if (!Array.isArray(r) || r.length < 9) continue;
+    const cells = []; for (let k = 0; k + 1 < (r[6] || []).length; k += 2) cells.push([r[6][k], r[6][k + 1]]);
+    out.push({ id: 'hub:' + r[0], name: titleOf(r[0]), kind: 'hub', district: 'lab', quarter: qs[r[1]] || 'rh-other', state: ss[r[2]] || 'testing',
+      line: '', facts: [], how: -1, x: +r[3] || 0, z: +r[4] || 0, r: +r[5] || 4, cells, b: Array.isArray(r[7]) ? r[7] : [], day: +r[8] || 0, hubId: String(r[0]) });
+  }
+  return out;
+}
+/** research/hub.json -> the hub places' words (text only; links to the site's own pages only). Returns how many were filled. */
+export function hubText(places, doc) {
+  const rows = doc && Array.isArray(doc.items) ? doc.items : Array.isArray(doc) ? doc : [];
+  const by = new Map(rows.filter((x) => x && x.id != null).map((x) => [String(x.id), x]));
+  let n = 0;
+  for (const p of places || []) {
+    const x = p && p.kind === 'hub' ? by.get(p.hubId) : null;
+    if (!x) continue;
+    const st = String(x.status || ''), m = +x.usd_month, money = isFinite(m) && x.usd_month !== null && x.usd_month !== '' ? usd(m) + ' a month' : null;
+    p.name = String(x.title || p.name).slice(0, 46);
+    p.line = String(x.summary || '').slice(0, 160);
+    p.facts = [[st === 'rejected' ? 'Test quoted' : '$ a month', money], ['Family', String(x.family || '').replace(/^./, (c) => c.toUpperCase())], ['Date', String(x.date || '').slice(0, 10)]].filter((f) => f[1]);
+    if (st === 'rejected') p.why = p.line + (money ? ' (the test quoted ' + money + ')' : '');   // a quoted figure, never a gain
+    const u = String(x.url || '').replace(/^(\.\.\/|\.\/|\/)+/, '');
+    if (u && !/^[a-z]+:/i.test(u)) p.href = u;
+    p.hubWord = HUB_WORD[st] || st;
+    n++;
+  }
+  return n;
+}
+/** a concept-site block's buildings from its letters (world.json "bs": h hot, w warm, c cold, s not ready): [height 0-255, state, day] triples,
+ *  the same heights tools/world_build.py concepts() gives (hot 200-249 bright, warm 140-179 lit, cold 70-109 lit, not ready 60 scaffold) */
+export function siteBuildings(p) {
+  if (!p || typeof p.bs !== 'string' || Array.isArray(p.b)) return p;
+  const b = [];
+  for (let k = 0; k < p.bs.length; k++) {
+    const c = p.bs[k], h = fnv(p.id + ':' + k);
+    if (c === 's') b.push(60, 1, 0); else if (c === 'h') b.push(200 + (h % 50), 3, 0); else if (c === 'w') b.push(140 + (h % 40), 2, 0); else b.push(70 + (h % 40), 2, 0);
+  }
+  p.b = b;
+  return p;
+}
