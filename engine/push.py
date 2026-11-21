@@ -1192,42 +1192,161 @@ def pc_notifier() -> Notifier:
     return _PC["notifier"]
 
 
-def _pc_send(payload, sender=None, ntfy=None, ntfy_exit=None) -> dict:
-    """pc_notify's worker thread: the phone app first; for an entry / an exit the private ntfy alert topic (engine/notify.instant_entry /
-    instant_exit) only when no phone took it (one alert, one phone). A phone that took an entry / exit is recorded (engine/notify.instant_record)
-    so the 15-minute report does not send its own copy. -> what happened (tests). Never raises."""
+NO_TOPIC = "no private alert topic"         # engine/notify._instant_send's answer on a PC without OLYMPUS_HOME/ntfy.json
+# One more try of an instant ntfy trade alert the 15-minute report cannot send under the account's own name (skeptic 2026-11-20):
+# an extra LIT account (":<id>": the 25K #2, the Rapid's LIT lane; the report's one "lit" row is titled the 50K) or the Rapid's ATLAS
+# lane (":acctr": the report has no row for it). The 50K (no suffix) and ATLAS (":acctb") get the report's own ntfy copy instead.
+NTFY_RETRY_S = 60
+NTFY_RETRY_ACCTS = ("", "acctb", "acctc")   # key_acct values NOT retried here (the report covers them; BLITZ is never a real trade)
+
+
+def _retry_owed(payload: dict, said) -> bool:
+    """Whether an instant ntfy trade alert gets one more try (NTFY_RETRY_S later, _pc_send): ntfy refused it or the post failed
+    (never "no topic", "... is off" or "already sent") and its key belongs to an extra LIT account or the Rapid's ATLAS lane."""
+    try:
+        from . import notify
+        s = str(said or "")
+        if not s.startswith(("failed", "ntfy did not take it")):
+            return False
+        return notify.key_acct((payload or {}).get("key")) not in NTFY_RETRY_ACCTS
+    except Exception:
+        return False
+
+
+def _pc_send(payload, sender=None, ntfy=None, ntfy_exit=None, retry_s=None) -> dict:
+    """pc_notify's worker thread. A real trade's ENTRY and EXIT go to BOTH routes: the phone app (Web Push) AND the private ntfy alert
+    topic (engine/notify.instant_entry / instant_exit). Until 2026-11-20 ntfy got them only when no phone took them, and "took" only
+    meant Apple / Google accepted the push, not that the phone showed it; that "accepted" also made the 15-minute report skip its
+    copy. ATLAS's 03:45 ET entry and 07:10 ET +$514 close that day reached no phone, most likely that way (unconfirmed: the PC's push
+    logs were not read). A phone-only delivery is recorded (engine/notify.instant_record app_only) so the report sends just its ntfy
+    copy (or nothing, without a topic). notify_settings.json trade_routes (engine/notify.trade_routes): "both" (default), "olympus"
+    (the app first, ntfy only when no phone took it) or "ntfy" (ntfy first, the app only when ntfy did not take it).
+    retry_s (pc_notify: NTFY_RETRY_S; None = no retry, the tests' default): an extra account's instant ntfy alert that ntfy refused is
+    tried once more after retry_s seconds in this same worker thread (order routing never waits on it), _retry_owed.
+    Every other notice: the phone app only, as before. Each trade alert's answers -> logs/notify/trade_alerts.jsonl. -> what happened
+    (tests). Never raises."""
     res: dict = {}
+    n = None
+    k = payload.get("kind")
+    trade = k in ("fill", "outcome")
+    app_ok = True
+
+    tried = []
+
+    def _app() -> dict:
+        tried.append(1)
+        try:
+            return app_send(app_payload(payload), sender=sender) if pc_app_ok(payload) else {"sent": 0, "skipped": "not for the phone"}
+        except Exception as e:  # noqa: BLE001
+            return {"sent": 0, "errors": [e.__class__.__name__]}
+
     try:
         n = pc_notifier()
         if not n.claim(payload):                 # another path / thread already has this notice (same key)
             return {"dup": True}
-        res = app_send(app_payload(payload), sender=sender) if pc_app_ok(payload) else {"sent": 0, "skipped": "not for the phone"}
-        n.log.append({"t": int(time.time()), "key": payload.get("key"), **{x: res.get(x) for x in ("sent", "gone", "errors", "skipped")}})
-        del n.log[:-50]
     except Exception as e:
-        res = {"sent": 0, "errors": [e.__class__.__name__]}
+        res, app_ok = {"sent": 0, "errors": [e.__class__.__name__]}, False
+    if not trade:
+        if app_ok:
+            res = _app()
+    else:
+        try:
+            from . import notify
+            what = "entry" if k == "fill" else "exit"
+            mode = notify.trade_routes()
+
+            def _ntfy() -> str:                  # owner 2026-11-18 entries, 2026-11-20 exits ("and closed, results of it"): at once
+                return ((ntfy or notify.instant_entry) if k == "fill" else (ntfy_exit or notify.instant_exit))(dict(payload))
+
+            def _ntfy_retry() -> str:            # the same alert once more: an app-only record does not count as "already sent"
+                return ((ntfy or notify.instant_entry) if k == "fill" else (ntfy_exit or notify.instant_exit))(dict(payload, retry=True))
+            if mode == "ntfy":                   # ntfy first; the app only when ntfy did not take it
+                said = _ntfy()
+                if said == "sent":
+                    if app_ok:
+                        res = {"sent": 0, "skipped": "ntfy has it (trade_routes ntfy)"}
+                else:
+                    if app_ok:
+                        res = _app()
+                    if res.get("sent"):
+                        notify.instant_record(payload, what, app_only=True)
+                res["ntfy"] = said
+            else:
+                if app_ok:
+                    res = _app()
+                if mode == "olympus" and res.get("sent"):
+                    notify.instant_record(payload, what)      # one route asked for: the report skips it entirely (the old rule)
+                    res["ntfy"] = "skipped: the phone app has it (trade_routes olympus)"
+                else:
+                    res["ntfy"] = _ntfy()
+                    if res.get("sent") and res["ntfy"] != "sent":
+                        # the phone app has it, ntfy not (refused, or no topic in THIS process): the report sends only its ntfy copy, if
+                        # its own config has a topic (the 15-minute task may see one the server does not), never the app copy again
+                        notify.instant_record(payload, what, app_only=True)
+            if retry_s is not None and _retry_owed(payload, res.get("ntfy")):
+                # the report cannot send this ntfy copy under the account's own name: one more try in this worker thread (the
+                # instant record above already tells the report what the app got). Success records "entries" / "exits"
+                # (notify._instant_send's retry flag), so the report skips the row entirely.
+                time.sleep(max(0.0, float(retry_s)))
+                again = _ntfy_retry()
+                res["ntfy_first"], res["ntfy"] = res.get("ntfy"), again
+        except Exception:
+            if app_ok and not tried:             # never lose the phone app copy to a fault on the ntfy side
+                res = _app()
     try:
-        from . import notify
-        k = payload.get("kind")
-        if k in ("fill", "outcome") and res.get("sent"):
-            notify.instant_record(payload, "entry" if k == "fill" else "exit")
-            res["ntfy"] = "skipped: the phone app has it"
-        elif k == "fill":                        # owner 2026-11-18: every entry on any real account -> phone, at once
-            res["ntfy"] = (ntfy or notify.instant_entry)(dict(payload))
-        elif k == "outcome":                     # owner 2026-11-20: ... "and closed, results of it": the exit too, at once
-            res["ntfy"] = (ntfy_exit or notify.instant_exit)(dict(payload))
+        if n is not None:
+            from . import notify as _n
+            n.log.append({"t": int(time.time()), "key": _n.mask_ids(payload.get("key")),
+                          **{x: res.get(x) for x in ("sent", "gone", "errors", "skipped", "ntfy")},
+                          **({"ntfy_first": res["ntfy_first"]} if res.get("ntfy_first") else {})})
+            del n.log[:-50]
     except Exception:
         pass
+    if trade:
+        _trade_log(payload, res)
     return res
 
 
+TRADE_LOG_MAX_BYTES = 256 * 1024
+
+
+def _trade_log(payload: dict, res: dict) -> None:
+    """One line per trade alert in logs/notify/trade_alerts.jsonl (next to engine/notify.INSTANT_PATH, gitignored): the owner's
+    account name, the masked key and what each route answered (app: sent / devices / gone / errors / skipped; ntfy: sent or why
+    not). "warn" when it reached NO route. Until 2026-11-20 these answers lived only in the server's memory. No topic, no endpoint,
+    no account id. Kept under TRADE_LOG_MAX_BYTES. Never raises."""
+    try:
+        from . import notify
+        path = os.path.join(os.path.dirname(notify.INSTANT_PATH), notify.TRADE_LOG_NAME)
+        row = {"t": int(time.time()), "kind": payload.get("kind"), "key": notify.mask_ids(payload.get("key")),
+               "who": notify.display_name(payload) if notify.real_trade(payload) else "not a real account",
+               "app": {x: res.get(x) for x in ("sent", "devices", "gone", "errors", "skipped") if res.get(x) not in (None, [], "")},
+               "ntfy": res.get("ntfy"), **({"ntfy_first": res["ntfy_first"]} if res.get("ntfy_first") else {})}
+        if notify.real_trade(payload) and not res.get("sent") and res.get("ntfy") != "sent" and "off" not in str(res.get("ntfy")):
+            row["warn"] = "this trade alert reached NO phone (no Olympus phone took it and ntfy did not)"
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        try:
+            if os.path.getsize(path) > TRADE_LOG_MAX_BYTES:
+                with open(path, encoding="utf-8") as fh:
+                    keep = fh.readlines()[-300:]
+                with open(path, "w", encoding="utf-8") as fh:
+                    fh.writelines(keep)
+        except OSError:
+            pass
+        with open(path, "a", encoding="utf-8") as fh:
+            fh.write(json.dumps(row, default=str) + "\n")
+    except Exception:
+        pass
+
+
 def pc_notify(payload: dict) -> dict | None:
-    """PC side, in a background thread (the push service never delays order routing): pc_app_ok notices to the phone app, every
-    real-account entry to the ntfy alert topic when the app did not take it. Never raises."""
+    """PC side, in a background thread (the push service never delays order routing): pc_app_ok notices to the phone app; every
+    real-account entry and exit also to the private ntfy alert topic (_pc_send, since 2026-11-20 whatever the app said; trade_routes
+    in notify_settings.json can pick one route first). Never raises."""
     try:
         if pc_notifier().seen(payload):
             return {"dup": True}
-        threading.Thread(target=_pc_send, args=(dict(payload),), name="push", daemon=True).start()
+        threading.Thread(target=_pc_send, args=(dict(payload),), kwargs={"retry_s": NTFY_RETRY_S}, name="push", daemon=True).start()
         return {"queued": True}
     except Exception:
         return None

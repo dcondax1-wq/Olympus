@@ -87,14 +87,16 @@ def settings():
                                         "guard:goal:lit:2026-11-02:100", "life:passed:atlas:a", "life:locked:atlas:a",
                                         "life:payout_ready:x:f50:abc:2026-11-13", "pc_silent:2026-11-16:1", "guard:brief:2026-11-18")}
     check("a. push keys -> types", list(kinds.values()) == ["trade_opened", "trade_closed", "eval_milestones", "room_low", "room_low",
-                                                             "daily_summary", "problems", "problems", "other", "other",
+                                                             "daily_summary", "problems", "problems", "other", "account_status",
                                                              "account_status", "account_status", "account_status", "account_status",
                                                              "pc_silent", "morning_brief"], kinds)
     every = [{"key": k, "priority": "default"} for k in kinds]
     kept = [m["key"] for m in N.apply(every, at(2026, 11, 17, 10, 0), N.merge({}))]
     check("a. 'important only' defaults: entries (owner 2026-11-18 evening), trade results, target reached, PASSED / LOCKED / payout READY, the day "
-          "summary, the morning brief, PC silent + problems (bot down, fill size) are kept; 25-75 %, room low, other are dropped",
-          kept == ["open:lit:1", "close:atlas:2", "guard:day:2026-11-16", "cond:bot_down:1", "fill:lit:1:size", "guard:goal:lit:2026-11-02:100", "life:passed:atlas:a",
+          "summary, the morning brief, PC silent + problems (bot down, fill size), a quiet eval (MFFU's 7-day rule, account_status since "
+          "2026-11-20: as 'other' it was dropped) are kept; 25-75 %, room low, other are dropped",
+          kept == ["open:lit:1", "close:atlas:2", "guard:day:2026-11-16", "cond:bot_down:1", "fill:lit:1:size", "guard:quiet:lit:d",
+                   "guard:goal:lit:2026-11-02:100", "life:passed:atlas:a",
                    "life:locked:atlas:a", "life:payout_ready:x:f50:abc:2026-11-13", "pc_silent:2026-11-16:1", "guard:brief:2026-11-18"], kept)
     night, day = at(2026, 11, 17, 3, 10), at(2026, 11, 17, 10, 0)
     check("a. quiet hours over midnight: 03:10 and 23:30 quiet, 07:00 and 10:00 not", N.quiet(night, S) and N.quiet(at(2026, 11, 17, 23, 30), S)
@@ -102,9 +104,15 @@ def settings():
     msgs = [{"key": "open:lit:1", "priority": "high"}, {"key": "cond:bot_down:1", "priority": "high"}, {"key": "guard:dd:lit:x:75", "priority": "high"},
             {"key": "guard:roll:late", "priority": "high"}, {"key": "guard:quiet:lit:d", "priority": "default"}, {"key": "guard:ready", "priority": "low", "night": True}]
     q = {m["key"]: m["priority"] for m in N.apply(msgs, night, ALL)}
-    check("a. 03:10: the trade and an ordinary push lose their sound; problems, room low and a high 'other' keep it",
+    check("a. 03:10: the trade and an ordinary push lose their sound (they still show); problems, room low, account status (a quiet "
+          "eval; tools/pc_guard never sends it in quiet hours) and a high 'other' keep it",
           q == {"open:lit:1": "low", "cond:bot_down:1": "high", "guard:dd:lit:x:75": "high", "guard:roll:late": "high",
-                "guard:quiet:lit:d": "low", "guard:ready": "low"}, q)
+                "guard:quiet:lit:d": "default", "guard:ready": "low"}, q)
+    ring = N.merge({**ALL, "ring_in_quiet_hours": ["pc_silent", "account_status", "room_low", "problems", *N.TRADE_RING]})
+    check("a. trade_opened put in ring_in_quiet_hours: the 03:10 entry rings (the owner's yes / no, STATE.md)",
+          {m["key"]: m["priority"] for m in N.apply(msgs, night, ring)}["open:lit:1"] == "high")
+    check("a. the defaults do NOT ring trade entries and results at night (lead 2026-11-20: nights stay silent as before)",
+          not N.rings("trade_opened", S) and not N.rings("trade_closed", S))
     check("a. 10:00: nothing changed", [m["priority"] for m in N.apply(msgs, day, ALL)] == [m["priority"] for m in msgs])
     off = N.merge({"alerts": {**ALL["alerts"], "trade_opened": False, "problems": False}})
     check("a. a type switched off is dropped", [m["key"] for m in N.apply(msgs, day, off)] == ["guard:dd:lit:x:75", "guard:roll:late", "guard:quiet:lit:d", "guard:ready"])
@@ -483,7 +491,7 @@ def instant():
     try:
         path = os.path.join(tmp, "instant.json")
         N.settings = lambda path=None: N.merge({})
-        p = {"kind": "fill", "key": "fill:1795050000", "t": 1795050000, "account": "MFFUEVBLDR123456016", "side": "LONG", "qty": 6,
+        p = {"kind": "fill", "key": "fill:1795050000", "t": 1795050000, "account": "MFFUEVBLDR123459998", "side": "LONG", "qty": 6,
              "entry": 24980.25, "stop": 24955, "target": 25360, "body": "Entered 6 MNQ", "title": "LONG · x"}
         sent = []
         poster = lambda base, topic, msg: sent.append((base, topic, msg)) or True
@@ -492,7 +500,7 @@ def instant():
         why = N.instant_entry(p, now=day, path=path, cfg=cfg, poster=poster)
         msg = sent[0][2] if sent else {}
         check("g. a real entry goes out at once to the private topic, $ first, ids masked, sound on in the day",
-              why == "sent" and len(sent) == 1 and sent[0][1] == cfg["topic"] and msg["title"] == "Zlarior ...6016: LONG 6 MNQ @ 24,980.25"
+              why == "sent" and len(sent) == 1 and sent[0][1] == cfg["topic"] and msg["title"] == "Zlarior ...9998: LONG 6 MNQ @ 24,980.25"
               and "MFFUEVBLDR" not in msg["title"] + msg["body"] and msg["body"].startswith("stop 24,955.00 (-$303), target 25,360.00 (+$4,557)") and msg["priority"] == "high", (why, msg))
         check("g. the same entry twice: one push", N.instant_entry(p, now=day, path=path, cfg=cfg, poster=poster) == "already sent" and len(sent) == 1)
         check("g. the 15-minute report then skips that entry (90 s match), keeps other trades",
@@ -513,7 +521,10 @@ def instant():
               and sent[1][2]["tags"] == "chart_with_downwards_trend", sent[-1])
         night = at(2026, 11, 18, 3, 10)
         N.instant_entry(dict(p, key="fill:1795060000", t=1795060000), now=night, path=path, cfg=cfg, poster=poster)
-        check("g. inside quiet hours it still arrives, without sound", len(sent) == 3 and sent[2][2]["priority"] == "low")
+        check("g. inside quiet hours it still arrives, without sound", len(sent) == 3 and sent[2][2]["priority"] == "low", sent[-1])
+        ring = N.merge({"ring_in_quiet_hours": ["pc_silent", "account_status", "room_low", "problems", *N.TRADE_RING]})
+        check("g. trade_opened put in ring_in_quiet_hours: a night entry rings (priority high), a day entry rings either way",
+              N.entry_message(p, now=night, s=ring)["priority"] == "high" and N.entry_message(p, now=day)["priority"] == "high")
         for bad, why_word in ((dict(p, key="fill:9", account="Paper"), "not a real"), (dict(p, key="fill:10", account="Sim101"), "not a real"),
                               (dict(p, key="fill:11", strategy="BLITZ"), "not a real"), (dict(p, key="fill:12", kind="outcome"), "not a real")):
             check(f"g. never for paper / sim / BLITZ / an outcome ({bad.get('account')}, {bad.get('strategy')}, {bad.get('kind')})",
@@ -531,10 +542,10 @@ def instant():
               and len(sent) == 3)
         import engine.push as P
         src = open(P.__file__, encoding="utf-8").read()
-        check("g. engine/push.pc_notify hands every fill to its own daemon thread (never delays routing): the phone app first, "
-              "instant_entry (ntfy) when no phone took it (tests.test_webpush proves it)",
-              'threading.Thread(target=_pc_send, args=(dict(payload),), name="push", daemon=True)' in src
-              and '(ntfy or notify.instant_entry)(dict(payload))' in src)
+        check("g. engine/push.pc_notify hands every fill to its own daemon thread (never delays routing): the phone app AND "
+              "instant_entry (ntfy), whatever the app said (2026-11-20; tests.test_webpush + test_trade_alerts prove it)",
+              'threading.Thread(target=_pc_send, args=(dict(payload),), kwargs={"retry_s": NTFY_RETRY_S}, name="push", daemon=True)' in src
+              and '(ntfy or notify.instant_entry) if k == "fill"' in src)
         home = os.path.join(tmp, "olympus")
         os.makedirs(home)
         with open(os.path.join(home, "ntfy.json"), "w") as fh:
