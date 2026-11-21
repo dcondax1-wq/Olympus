@@ -42,6 +42,8 @@ function quiet() {
       if (root.dataset.ready !== '1' && performance.now() < 20000) { setTimeout(chk, 200); return; }
       if (!readyAt) readyAt = performance.now();
       if (performance.now() - readyAt < START_MS) { setTimeout(chk, START_MS - (performance.now() - readyAt) + 50); return; }
+      const calm = QUIET_MS - (Date.now() - lastInput);               // any screen: 2.5 s without a tap, a key or a scroll (the owner first)
+      if (calm > 0) { setTimeout(chk, calm + 50); return; }
       if (window.requestIdleCallback) requestIdleCallback(() => (phoneNow() && Date.now() - lastInput < QUIET_MS ? chk() : ok()), { timeout: 2000 }); else setTimeout(ok, 30);
     };
     chk();
@@ -58,6 +60,8 @@ async function compileStepwise(rc, scene, camera) {
   const done = new Set((R.info && R.info.programs) || []);
   for (const o of kids) {
     o.visible = true;
+    // a slice may hold the page while the driver links (software GL): never right after a tap, a key or a scroll (the owner's action first)
+    while (Date.now() - lastInput < INPUT_GAP_MS) await new Promise((ok) => setTimeout(ok, 250));
     await new Promise((ok) => (window.requestIdleCallback ? requestIdleCallback(ok, { timeout: 500 }) : setTimeout(ok, 16)));
     try {
       const prev = R.getRenderTarget(), c = rc.composer;
@@ -271,11 +275,11 @@ let readyAt = 0;
 // QA 2026-11-21 (lead): the sky must be cheap at start. Until it is ready the page shows its poster: .bgfx's CSS sky (jarvis.css), there
 // from the first frame, the 3D fading in over it. The scene's shaders compile one object per idle slice (compileStepwise), never all at
 // once on the first frame; and a frame that costs more than 50 ms twice drops to 15 fps and the low tier, then (twice more) to a still frame.
-const SLOW_MS = 50, SLOW_HITS = 2, STILL_MS = 3000;
+const SLOW_MS = 50, SLOW_HITS = 2, STILL_MS = 3000, INPUT_GAP_MS = 1500;
 let lastInput = Date.now();
 const COARSE = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
 const phoneNow = () => COARSE && Math.min(innerWidth, innerHeight) < 600;
-for (const ev of ['pointerdown', 'keydown', 'wheel', 'touchmove']) window.addEventListener(ev, () => { lastInput = Date.now(); }, { passive: true, capture: true });
+for (const ev of ['pointerdown', 'keydown', 'wheel', 'touchmove', 'input', 'click']) window.addEventListener(ev, () => { lastInput = Date.now(); }, { passive: true, capture: true });
 const booted = () => !document.getElementById('bootfx') && (!window.__olyIntro || window.__olyIntro.done);
 const idle = () => (window.requestIdleCallback ? requestIdleCallback(start, { timeout: 2500 }) : setTimeout(start, 600));
 let waited = 0;
