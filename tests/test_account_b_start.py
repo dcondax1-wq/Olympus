@@ -89,6 +89,9 @@ class FakeBot:
     def _push_send(self, p):
         self.pushed.append(p)
 
+    def _rapid_atlases(self):             # LiveBot's (day-multirapid): no Rapid on this harness bot
+        return []
+
 
 def eval_block(name=NAME, **kw):
     return {"account": name, "plan": "builder25k", "strategies": list(KEYS), "sizing": "need", **kw}
