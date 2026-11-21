@@ -31,3 +31,9 @@ Decision (fixed now): among A1-A7, the winner is the one with the lowest median 
 (i) $/month >= 95% of A0's in H1 and H2, (ii) eval fail in 60 <= A0 + 1 pt in H1 and H2, (iii) REF $/month >= A0 - $10,
 (iv) it passes at least 2 sessions faster than A0 in both halves OR cuts inactivity risk by >= 5 pts in both. None qualifies =
 A0 stays, report the best trade-off. A winner -> Decide card (recommend yes) + OFF code; never live.
+
+## Amendment (2026-11-21, after a 100-path pilot of A0-A7, BEFORE the full run; disclosed in the write-up)
+  A8 balance-aware guard ("loose", rapid_levers.Ev): a winning day may reach max(30% x $1,500, 30/70 x the profit already
+     made) x 0.95, so the best day stays <= 30% of the total at every close (no pass delay). Tested once on the Rapid 50K at
+     1 tick (rapid-levers-2026-11-16: +$45 / +$7 a month, "noise", TESTED_AND_REJECTED line 277); re-tested here because the
+     25K's cap ($428) bites twice as hard as the 50K's ($855). Same decision rule as A1-A7.
