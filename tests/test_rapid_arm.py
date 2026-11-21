@@ -37,7 +37,7 @@ from engine.tradovate import LIVE_PHRASE  # noqa: E402
 from tests import test_accounts_cli as TC  # noqa: E402
 
 RES = []
-NR, NR2 = "MFFUEVRPD250009021", "MFFUEVRPD500009022"         # made-up Rapid EOD 25K / 50K Names
+NR, NR2 = "MFFUEVRPD2500009021", "MFFUEVRPD500009022"         # made-up Rapid EOD 25K / 50K Names
 
 
 def check(name, ok, info=""):

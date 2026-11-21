@@ -218,7 +218,9 @@ def part_b():
               and rs[5].get("full") == 1 and rs[6].get("full") == 1, (len(dv), len(sent) - n0, rs[5:]))
         check("b. the owner's phones are told once that the list is full (then at most every 6 h)",
               rs[5].get("told") == P.MAX_DEVICES and not rs[6].get("told")
-              and all(x["data"]["title"] == "New phone wants your alerts" for x in sent[n0 + P.MAX_DEVICES:]), rs[5:])
+              and sum(1 for x in sent[n0:] if x["data"]["title"] == "New phone wants your alerts") == P.MAX_DEVICES
+              and all(x["data"]["title"] in ("New phone wants your alerts", "New phone added to your alerts", "Olympus notifications are on")
+                      for x in sent[n0:]), rs[5:])
         gone_ep = subs[4]["endpoint"]
         out, send410 = recorder(lambda sub: 410 if sub["endpoint"] == gone_ep else 201)
         res = P.app_send(P.text_payload("PC", "test", "t", "b", key="k1"), sender=send410)
