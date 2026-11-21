@@ -82,7 +82,7 @@ import urllib.parse
 import urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-EXEC_VERSION = "2026-11-19.1"          # bump when the trading logic changes: an armed PC then needs the phrase again
+EXEC_VERSION = "2026-11-21.1"          # bump when the trading logic changes: an armed PC then needs the phrase again
 PHRASE = "I ACCEPT KALSHI LIVE RISK"
 PLAN_PATH = os.path.join(ROOT, "research", "lab", "kalshi_live_plan.json")
 CAND_DIR = os.path.join(ROOT, "research", "lab", "kalshi_candidates")
