@@ -60,16 +60,16 @@ function renderIdeas() {
 // ------------------------------------------------------------------------------------------------ the Research Hub (owner view)
 const TAB_NOTE = {
   works: 'The live strategies: the 2026 backtest at the live size, and the real trades so far.',
-  rejected: 'Tried and rejected: do not redo these without a new idea. Search to find one.',
+  rejected: 'Tried and rejected: do not redo these without a new idea. The $ is the figure the test quotes, not a gain.',
   leads: 'Open leads: paper leads still being watched, and open findings on the bots.',
   decide: 'Money decisions waiting for your yes or no (answer on the Board).',
 };
 function hubRowEl(r) {
   const li = h('li', 'hi'), b = h('button', 'hrow'); b.type = 'button';
   const m = r.tab === 'works' ? (r.pm != null ? `${C.moneyS(r.pm)} a month` : '') : C.hubMoney(r);
-  b.appendChild(h('span', 'ht', r.title)); b.appendChild(h('b', 'hm ' + (r.pm != null && r.pm < 0 ? 'neg' : 'pos'), m));
+  b.appendChild(h('span', 'ht', r.title)); b.appendChild(h('b', 'hm ' + (r.tab === 'rejected' ? 'q' : r.pm != null && r.pm < 0 ? 'neg' : 'pos'), m));  // rejected: the $ they quote, never green
   if (r.line) b.appendChild(h('span', 'hl', r.line));
-  const d = [r.date ? C.dayWord(r.date) : '', r.kind, r.slug ? 'tap to read' : ''].filter(Boolean).join(' · '); if (d) b.appendChild(h('span', 'hd', d));
+  const d = [r.date ? C.dayWord(r.date) : '', r.tab === 'decide' && r.kind ? `Recommended: ${r.kind}` : r.kind, r.slug ? 'tap to read' : 'tap for details'].filter(Boolean).join(' · '); if (d) b.appendChild(h('span', 'hd', d));
   b.setAttribute('aria-label', `${r.title}${m ? ', ' + m : ''}. Open`);
   b.addEventListener('click', () => openReader({ slug: r.slug, title: r.title, summary: r.text, body: r.text, hub: !r.slug }, b));
   li.appendChild(b); return li;
@@ -115,11 +115,11 @@ function render() {
 // ------------------------------------------------------------------------------------------------ the reader
 function closeReader() { const s = $('sheet'); s.hidden = true; $('scrim').hidden = true; S.open = null; if (S.last && S.last.focus) { try { S.last.focus(); } catch (_) { /* gone */ } } }
 async function openReader(r, from) {
-  S.open = r.slug; S.last = from;
+  const key = r.slug || ('hub:' + r.title); S.open = key; S.last = from;
   $('shTitle').textContent = r.title; const body = $('shBody'); clear(body); body.appendChild(h('p', 'note', 'Loading...'));
   $('sheet').hidden = false; $('scrim').hidden = false; $('shClose').focus();
   let text = (S.demo || r.hub) ? r.body : await getText(r.slug);
-  if (S.open !== r.slug) return;
+  if (S.open !== key) return;
   clear(body);
   const blocks = text ? C.plainMd(text, 6000) : [];
   if (r.hub && !blocks.length && r.summary) blocks.push({ k: 'p', t: r.summary });

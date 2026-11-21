@@ -92,3 +92,6 @@ html:not(.framed) #app { padding-bottom: calc(96px + var(--sb)); }
 .selrow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
 .sel { appearance: auto; }
 .rd-src { margin: 8px 0 0; font-size: 12px; color: var(--ag-muted); }
+#hubTabs.htabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+#hubTabs.htabs .ag-chip { width: 100%; font-size: 14px; line-height: 1.2; padding: 6px 8px; }
+.hrow .hm.q { color: var(--ag-soft); font-weight: 600; }
