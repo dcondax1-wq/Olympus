@@ -62,6 +62,7 @@ AREAS["olympus"].append("olympus_shell")  # night-revamp-main 2026-11-20: the ma
 AREAS["agency"].append("web_expert")       # team web-expert 2026-11-20: agency/expert/ (the playbook, the 5-tap diagnosis) + Jarvis 'web' answers
 AREAS["jarvis"].append("jarvis_shortcuts")  # team JARVIS 2026-11-20: the Siri / Shortcuts page + the "Add to Home Screen" hint
 AREAS["jarvis"].append("jarvis_fx")  # owner 2026-11-20 "3D, effects, no gold": jfx.css / jfx.js, the switcher without gold
+AREAS["jarvis"].append("jarvis_money_answers")  # lead QA 2026-11-21: the 60 money questions, live + PC-silent
 AREAS["olympus"].append("pulse")         # day-arenas 2026-11-20: the shared prop-trader cards in the main apps (olympus/pulse.js), CLS 0, light + dark
 AREAS["olympus"].append("archive_banners")  # day-archive 2026-11-20: the "Archived · data <date>, N days old -> live app" strip on every archived page (tools/archive_banners.py)
 AREAS["olympus"].insert(0, "site_sweep")  # night-siteqa 2026-11-20: every href / src of the main pages + doors.js points at a real file (no browser, 1 s); its own line
