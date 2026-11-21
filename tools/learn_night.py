@@ -49,8 +49,8 @@ WHY = os.path.join(ROOT, "tools", "web_public", "why", "why.json")
 LAB = os.path.join(ROOT, "tools", "web_public", "business", "lab.json")
 REPORT = os.path.join(ROOT, "research", "learn", "night_cloud.json")
 PROTECTED = ("live_model.json", "live_model_lit.json", "live_model_engine.json", "second_model.json", "data/account_b.json")
-STEPS = ("pull", "edge", "anatomy", "lab", "learned", "decide")
-LIMIT_S = {"pull": 1500, "edge": 1200, "anatomy": 2400, "lab": 2400}
+STEPS = ("pull", "edge", "costs", "anatomy", "lab", "learned", "decide")
+LIMIT_S = {"pull": 1500, "edge": 1200, "costs": 900, "anatomy": 2400, "lab": 2400}
 CARD_MAX_BYTES = 6000
 DECIDE_MAX_NEW = 3                       # proposals added per night at most (the owner's card stays short)
 _ID = re.compile(r"[a-z0-9][a-z0-9_-]{1,39}")
@@ -161,6 +161,8 @@ def plan(a) -> list:
         out.append(("pull", [["tools/data_pull.py", "--latest"] + (["--wait", str(a.wait)] if a.wait is not None else [])]))
     if "edge" not in skip:
         out.append(("edge", [["tools/edge_health.py"] + (["--fetch"] if a.fetch else [])]))
+    if "costs" not in skip:                # day-atlasedge (TOP25 #8 + #14): still profitable at the real measured fill costs? ALARM ONLY
+        out.append(("costs", [["tools/cost_alarm.py"]]))     # -> research/lab/costs.json; never changes a bot, a size or a setting
     if "anatomy" not in skip:
         out.append(("anatomy", [["tools/win_loss_anatomy.py", c] for c in (("build", "explain", "rules", "page") if a.full
                                                                              else ("build", "explain", "page"))]))
