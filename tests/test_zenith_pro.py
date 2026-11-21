@@ -201,7 +201,7 @@ def part_c(F, tmp, shots):
             pg.route(host, lambda r: r.fulfill(status=404, body="{}"))
         pg.goto(base + "?fxoff#/today")
         pg.wait_for_selector(".pl-home", timeout=30000)
-        pg.wait_for_selector(".pr-home", timeout=15000)
+        pg.wait_for_selector(".pr-home:not(.pr-home-wait)", timeout=15000)   # the placeholder until data.json is there (pro.js 2026-11-21)
         hc = pg.evaluate("() => { const h = document.querySelector('.pr-home'), q = document.querySelector('.pl-quick'); return { after: !!q && q.nextElementSibling && q.nextElementSibling.contains(h), text: h.textContent, hgt: h.getBoundingClientRect().height }; }")
         check("c. Home: the Scorecard card right under the quick tiles (score, $ a trade, $/mo)", hc["after"] and "Grade" in hc["text"] and "/mo" in hc["text"] and hc["hgt"] >= 44, hc)
         for part in ("score", "pace", "risk", "playbook", "sim", "tags"):

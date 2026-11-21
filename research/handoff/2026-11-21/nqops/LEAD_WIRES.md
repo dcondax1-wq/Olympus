@@ -63,3 +63,21 @@ already lays it on top (`lite.k7`), so no pc_feed change. If Jarvis has a status
 
 Not covered: `--check` and `--apply` of tools/pc_always_on.py have never run on a real Windows PC. The Linux tests cover the
 plan, the time conversion and a fake PC.
+
+## E. test_zenith_pro red (2026-11-21 evening): the Home Scorecard card never showed
+
+The cause is not an empty scorecard. In the browser the fixture's model has 120 trades, grade and H2 check present, and `ProUI.home()` returns
+the card. The cause is main.js's dogfood rule (2026-11-20): Home is drawn from the small home.json, and when data.json is the SAME build,
+Home is not redrawn, to avoid a layout shift. pro.js's Home hook needs the trades (D), so it returned nothing on that first draw and was
+never called again. The same happens on the owner's phone: no Scorecard card on Home since 11-20.
+
+Fix (tools/web_public/pro.js only, `pro.js?v=2` in tools/web_public/index.html): a placeholder of the same height ("Scorecard · Loading
+the trades…", class `pr-home-wait`) goes under the quick tiles. It is filled in place once data.json is there (a 500 ms check, max 2 min,
+stops when Home is left), so there is no layout shift. If there is still no scorecard (fewer than 5 trades), it shows an honest "No scorecard
+yet" line that still taps through. test_zenith_pro now waits for `.pr-home:not(.pr-home-wait)`: 41/41.
+
+web_next: no tag to change. web_next/js/next/pro.js has no Home card (the PC dashboard's Scorecard is its own page), and procore.js
+is untouched (it stays byte-identical in both apps).
+
+Lead-only, if the phone keeps the old index.html: bump the phone shell cache in `tools/web_public/sw.js` (its SHELL/version constant)
+so `pro.js?v=2` is fetched.
