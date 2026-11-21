@@ -15,6 +15,7 @@ from __future__ import annotations
 import functools
 import glob
 import http.server
+import datetime as dt
 import json
 import os
 import re
@@ -240,6 +241,12 @@ def run_browser():
                     return route.abort()
                 ctx.route("**/*", guard)
                 p = ctx.new_page()
+                # a fixed WEEKDAY (Wed 2026-11-18, noon ET): ?t= sets only the hour, the date is the machine's, and on a Saturday or a holiday
+                # the market cards rightly say 'closed' (QUALITY 2026-11-21: red every weekend); Date fixed, the timers keep running
+                try:
+                    p.clock.set_fixed_time(dt.datetime(2026, 11, 18, 17, 0, tzinfo=dt.timezone.utc))
+                except Exception:  # noqa: BLE001  (an old Playwright: the real date)
+                    pass
                 p.set_default_timeout(120000)
                 p.errs = []
                 p.on("pageerror", lambda e: p.errs.append(str(e)))
