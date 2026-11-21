@@ -35,7 +35,7 @@ def test_static():
     check("a. the files are there (%s)" % ", ".join(FILES), len(have) == len(FILES), sorted(set(FILES) - set(have)))
     html, main, scene, core, sh = (AK.read(os.path.join(D, f)) for f in ("index.html", "ow-main.js", "ow-scene.js", "ow-core.js", "ow-shaders.js"))
     check("a. the kit: olympus.js as the Cities app, gate-nav (Home + Go to), the page's own module last", 'src="../../olympus/olympus.js?v=o22" data-app="cities"' in html
-          and "../../olympus/gate-nav.js" in html and html.rindex('src="ow-main.js?v=w5"') > html.index("olympus.js"))
+          and "../../olympus/gate-nav.js" in html and html.rindex('src="ow-main.js?v=w7"') > html.index("olympus.js"))
     check("a. three.js r160 from the site (../../jarvis/three.module.min.js, vendored, MIT) and the OLYMPUS render core; no CDN, no http(s) address in the code",
           "from '../../jarvis/three.module.min.js'" in scene and "from '../../olympus/render.js'" in scene and not re.search(r"https?://", main + scene + core + sh))
     check("a. instanced: one InstancedBufferGeometry per kind (buildings, halos, traffic, beams, rings, streaks), never a mesh per building",
