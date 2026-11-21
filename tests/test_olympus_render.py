@@ -212,8 +212,10 @@ def test_jarvis(br, origin):
         pass
     b = p.evaluate("() => Object.assign({}, window.__jarvisBackdrop, { stats: null, bg3d: document.documentElement.dataset.bg3d,"
                    " stars: getComputedStyle(document.getElementById('stars')).display })")
-    check("g. Jarvis home: the 3D backdrop is up on the render core (3 passes at high) and the flat 2D layers step aside",
-          b.get("state") == "on" and b.get("passes") == 3 and b.get("bg3d") == "on" and b.get("stars") == "none", b)
+    # QA 2026-11-21: the sky starts at the low tier (2 passes: its first frames cost least) and earns the chosen tier (high: 3 passes)
+    # after 30 fast frames; a slow machine (this software GL) keeps low, or holds a still frame
+    check("g. Jarvis home: the 3D backdrop is up on the render core (the low tier's 2 passes at start / on a slow machine, 3 at high) and the flat 2D layers step aside",
+          b.get("state") == "on" and (b.get("quality"), b.get("passes")) in (("low", 2), ("high", 3)) and b.get("bg3d") == "on" and b.get("stars") == "none", b)
     p.evaluate("() => window.jarvisPortal.warm()")
     p.evaluate("() => document.querySelector('[data-app=\"oracle\"]').click()")
     s0 = p.evaluate("() => Object.assign({}, window.__jarvisPortal, { overlay: !!document.querySelector('.jportal') })")
@@ -266,6 +268,10 @@ def jarvis_gpu(br, origin, fx):
     errs: list = []
     p.on("pageerror", lambda e: errs.append(str(e)))
     p.goto(origin + "/jarvis/")
+    if fx == "low":                                    # DESIGN 2026-11-21: effects Low builds no 3D sky at all (the poster stays)
+        p.wait_for_function("() => window.__jarvisBackdrop && __jarvisBackdrop.state === 'off'", timeout=60000)
+        p.wait_for_timeout(int(BK.limit_ms(2500, "gpu settle")))
+        return ctx, p, errs
     p.wait_for_function("() => window.__jarvisBackdrop && __jarvisBackdrop.frames > 3", timeout=240000)
     if fx == "high":                                   # the core's composer comes up after the backdrop on a slow machine: wait for its 2 MSAA buffers
         settle(p, 2)
@@ -306,7 +312,9 @@ def test_gpu(br, origin):
     p.wait_for_timeout(int(BK.limit_ms(800, "gpu settle")))
     f2 = p.evaluate("() => __jarvisBackdrop.frames")
     check("i. back home: the same buffers are restored (framebuffers, MSAA, textures as before) and it draws again",
-          back["msaa"] == home["msaa"] and back["fb"] == home["fb"] and abs(back["tex"] - home["tex"]) <= 2 and f2 > f1
+          back["msaa"] == home["msaa"] and back["fb"] == home["fb"] and abs(back["tex"] - home["tex"]) <= 2
+          # moving: more frames; too slow for motion (this software GL, QA 2026-11-21): its still frame was drawn again on return, then every 3 s
+          and (f2 > f1 or (p.evaluate("() => __jarvisBackdrop.still") == "slow" and f1 > f0))
           and p.evaluate("() => __jarvisBackdrop.asleep") is False, (home, back, f1, f2))
     for _ in range(3):                                 # three more round trips: still no growth
         p.evaluate(CLICK, "oracle")
@@ -322,10 +330,11 @@ def test_gpu(br, origin):
     check("i. no page error through the trips", not errs, errs[:3])
     ctx.close()
     ctx, p, errs = jarvis_gpu(br, origin, "low")
-    bd = p.evaluate("() => __jarvisBackdrop.stats()")
+    bd = p.evaluate("() => ({ state: __jarvisBackdrop.state, why: __jarvisBackdrop.why, frames: __jarvisBackdrop.frames, bg3d: document.documentElement.dataset.bg3d || '' })")
     g = p.evaluate(GPU)
-    check("i. low: no bloom (2 passes), no MSAA anywhere, backdrop pixel ratio <= 1.25",
-          bd["names"] == ["scene", "finish"] and not bd["bloom"] and bd["dpr"] <= 1.25 and g["msaa"] == 0, (bd, g))
+    # DESIGN 2026-11-21: Low = no 3D sky at all (the poster stays, 0 frames); the core's own composer then has no MSAA either
+    check("i. low: no 3D sky (why 'effects low', no frame, the poster stays), no MSAA anywhere",
+          bd["state"] == "off" and bd["why"] == "effects low" and bd["frames"] == 0 and bd["bg3d"] != "on" and g["msaa"] == 0, (bd, g))
     ctx.close()
 
 

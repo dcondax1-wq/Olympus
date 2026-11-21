@@ -121,3 +121,15 @@ bright accent, mint `#77db89` profit, red `#ef4444` loss. Demo: `/olympus/dashfx
 
 API `OLYMPUS_DASHFX`: `wire`, `bar`, `theme`, `palette`, `chart.svg / canvas / lwc`, `stats`, `stop`. Rules: transforms / opacity only (layout shift
 0), reduced motion = nothing moves, no WebGL, no long task, everything stoppable (tests/test_dashfx.py).
+
+## 8. Brain 3D (olympus/brain3d.js)
+
+Each bot's brain (owner 2026-11-20: "a brain for each bot, very 3D, very high quality, lots of effects; the steps in order for a trade"):
+a glass brain with one glowing region per pipeline stage, synapse particles along the path, a risk ring of MFFU rules around the stem, bloom,
+slow orbit, drag / pinch / tap. `brain3d.css` + `brain3d.js` (classic, in `<head>`, mount in the body = no shift) draw a 2D first paint at once
+(a schematic + the steps in order + the ring chips); `brain3d-scene.js` (three.js r160, local) is imported only once the box is on screen and
+the page is idle, never with no WebGL / Save-Data / 2G-3G. States: passed mint, current pulsing violet + gold, waiting lavender, blocked red;
+ring ok mint / warn gold / bad red. 30 fps, pixel ratio <= 2, paused off screen, reduced motion = a still frame redrawn on each update.
+API `Brain3D.mount(el, {stages, ring, layout: 'path' | 'lobes', palette})` -> `.update({stageStates, ringStates, currentId, reasons, ringValues, now, pulse})`,
+`.on('tap', (id, kind) => ...)`, `.where(id, kind)`, `.dispose()`. Demo `/olympus/brain3d-lab.html`; guide `research/handoff/2026-11-21/brain3d/API.md`;
+tests `tests/test_brain3d.py`.

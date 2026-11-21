@@ -1,0 +1,692 @@
+diff --git a/tests/test_caller.py b/tests/test_caller.py
+index a548f6ef..ae7b7abe 100644
+--- a/tests/test_caller.py
++++ b/tests/test_caller.py
+@@ -83,10 +83,15 @@ def new_home(keys=True, on=True, registry=True, cap=20):
+     return h
+ 
+ 
+-def sign(h, phone=NUM, now=None):
++def sign(h, phone=NUM, now=None, confirm=True):
++    """A signed consent; confirm=True also confirms it (security review 2026-11-20: a consent counts only once confirmed)."""
+     s = C.settings(h)
+-    return K.record({"phone": phone, "business": LEAD["name"], "signed_name": "Tom Harbor", "agree": True, "version": K.CONSENT_VERSION,
+-                     "email": "tom@example.com"}, s, h, now=now or dt.datetime(2026, 11, 20, 16, 0, tzinfo=UTC))
++    t = now or dt.datetime(2026, 11, 20, 16, 0, tzinfo=UTC)
++    r = K.record({"phone": phone, "business": LEAD["name"], "signed_name": "Tom Harbor", "agree": True, "version": K.CONSENT_VERSION,
++                  "email": "tom@example.com"}, s, h, now=t)
++    if confirm and r[0]:
++        K.confirm(phone, "owner", h, now=t + dt.timedelta(seconds=1))
++    return r
+ 
+ 
+ def gate(h, now=TUE_10ET, line="landline", lead=None, calls=None):
+@@ -354,9 +359,16 @@ def main() -> int:
+         return r.status, r.read().decode()
+     st, body = call("GET", "/health")
+     check("j. /health answers and says nothing about calls", st == 200 and json.loads(body) == {"ok": True, "kind": "olympus-caller", "on": True})
+-    form = json.dumps({"phone": "(301) 555-0142", "business": LEAD["name"], "signed_name": "Tom Harbor", "agree": True, "version": K.CONSENT_VERSION}).encode()
++    form = json.dumps({"phone": "(301) 555-0142", "business": LEAD["name"], "signed_name": "Tom Harbor", "agree": True, "version": K.CONSENT_VERSION,
++                       "lead_id": LEAD["id"]}).encode()
++    real_leads = SV.R.leads_by_phone
++    SV.R.leads_by_phone = lambda *a, **k: {NUM: dict(LEAD)}         # this test's lead list
+     st, body = call("POST", "/consent", form, {"Content-Type": "application/json", "Content-Length": str(len(form))})
+-    check("j. POST /consent stores a signed consent", st == 200 and K.valid_for(NUM, TUE_10ET, C.settings(h), h)[0], body)
++    pend = K.valid_for(NUM, TUE_10ET, C.settings(h), h)
++    SV.R.leads_by_phone = real_leads
++    K.confirm(NUM, "owner", h, now=dt.datetime.now(dt.timezone.utc))
++    check("j. POST /consent stores a signed consent: pending until confirmed (security review), then valid",
++          st == 200 and not pend[0] and "not confirmed" in pend[1] and K.valid_for(NUM, dt.datetime.now(dt.timezone.utc), C.settings(h), h)[0], (body, pend))
+     st, _ = call("POST", "/consent", b"x" * 5000, {"Content-Length": "5000"})
+     check("j. a body over 4 KB is refused", st == 413)
+     params = {"CallSid": "CA" + "1" * 32, "From": "+13015550142", "To": "+13015550100"}
+diff --git a/tests/test_caller_security.py b/tests/test_caller_security.py
+new file mode 100644
+index 00000000..f891b64c
+--- /dev/null
++++ b/tests/test_caller_security.py
+@@ -0,0 +1,255 @@
++"""AI caller red-team checks (security review 2026-11-20, research/handoff/2026-11-20/caller/SECURITY_REVIEW.md). Offline, no keys.
++  a. forged consent: a stranger's number (not one of our leads), another lead's id, a valid form never confirmed -> no call;
++     confirmed by the business calling in (inbound) or by the owner -> the gate passes
++  b. the consent endpoint: per-sender limit (the LAST X-Forwarded-For entry, a forged first entry cannot dodge it), daily cap,
++     an Origin outside consent_origins refused, a broken Content-Length refused
++  c. email: a comma list / newline / name from the form or the model never reaches the outbox
++  d. webhooks: a replayed signed /voice/inbound (same CallSid) never mints a second relay token; over the inbound caps = the cheap
++     message; a relay token expires; a WebSocket message built from fragments past the limit is refused
++  e. kill switch: OFF during an outbound call ends it at the next turn
++    python -X utf8 -m tests.test_caller_security
++"""
++from __future__ import annotations
++
++import base64
++import datetime as dt
++import hashlib
++import hmac
++import http.client
++import json
++import os
++import socket
++import struct
++import sys
++import threading
++import time
++
++ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
++sys.path.insert(0, ROOT)
++
++from tests.test_caller import FAKE_KEYS, LEAD, NUM, TUE_10ET, new_home  # noqa: E402
++from tools.caller import actions as A  # noqa: E402
++from tools.caller import brain as B  # noqa: E402
++from tools.caller import compliance as G  # noqa: E402
++from tools.caller import config as C  # noqa: E402
++from tools.caller import consent as K  # noqa: E402
++from tools.caller import run as R  # noqa: E402
++from tools.caller import server as SV  # noqa: E402
++from tools.caller import telephony as T  # noqa: E402
++
++RES = []
++UTC = dt.timezone.utc
++LEADS = {NUM: dict(LEAD)}
++
++
++def ok(cond, name, info=""):
++    RES.append(bool(cond))
++    print(("  PASS " if cond else "  FAIL ") + name + ("" if cond or not info else f"  -> {str(info)[:400]}"))
++
++
++def form(phone="(301) 555-0142", lead_id="t1", **kw):
++    return {"phone": phone, "business": LEAD["name"], "signed_name": "Tom Harbor", "agree": True, "version": K.CONSENT_VERSION,
++            "lead_id": lead_id, **kw}
++
++
++def part_a():
++    print("a. forged consent")
++    h = new_home()
++    s = C.settings(h)
++    t0 = dt.datetime(2026, 11, 20, 16, 0, tzinfo=UTC)
++    r1 = K.record(form(phone="(240) 555-0177"), s, h, now=t0, leads=LEADS)
++    ok(not r1[0], "a stranger's number (not one of our leads) is refused", r1[1])
++    r2 = K.record(form(lead_id="t9"), s, h, now=t0, leads=LEADS)
++    ok(not r2[0], "our lead's number with another lead's id is refused", r2[1])
++    r3 = K.record(form(), s, h, now=t0, leads=LEADS)
++    v = K.valid_for(NUM, TUE_10ET, s, h)
++    ok(r3[0] and not v[0] and "not confirmed" in v[1] and "call us once" in r3[1], "a valid form is only PENDING (the reply says: call us once)", (r3[1], v))
++    dec = G.check_outbound(dict(LEAD), TUE_10ET, "landline", v, h, s)
++    ok(not dec.ok and dec.blocked_by == "consent", "the gate refuses a pending consent", dec.blocked_by)
++    ok(not K.confirm(NUM, "website", h), "only inbound_call / owner can confirm")
++    ok(not K.confirm("+13015559999", "owner", h), "nothing to confirm for a number with no consent")
++    ok(K.pending(NUM, h), "pending() sees it")
++    K.confirm(NUM, "inbound_call", h, now=t0 + dt.timedelta(minutes=5), detail="TN-Validation-Passed-A")
++    v2 = K.valid_for(NUM, TUE_10ET, s, h)
++    ok(v2[0] and G.check_outbound(dict(LEAD), TUE_10ET, "landline", v2, h, s).ok, "confirmed by the business calling in: the gate passes", v2)
++    K.record(form(), s, h, now=t0 + dt.timedelta(days=1), leads=LEADS)
++    ok(not K.valid_for(NUM, TUE_10ET, s, h)[0], "a NEW form after the confirm needs its own confirm")
++
++
++def part_b():
++    print("b. the consent endpoint")
++    h = new_home()
++    app = SV.Caller(h, None, public_base="https://pc.example.ts.net:10000")
++    real = SV.R.leads_by_phone
++    SV.R.leads_by_phone = lambda *a, **k: dict(LEADS)
++    try:
++        codes = [app.consent_post(form(), "203.0.113.9", "ua")[0] for _ in range(6)]
++        ok(codes[:5] == [200] * 5 and codes[5] == 429, "5 an hour per sender, the 6th refused", codes)
++        fake = {"X-Forwarded-For": "1.2.3.%d, 203.0.113.9" % 7}
++        ok(SV.client_ip(fake, "127.0.0.1") == "203.0.113.9", "the LAST X-Forwarded-For entry is used (Funnel appends the real client)")
++        ok(app.consent_post(form(), SV.client_ip(fake, "127.0.0.1"), "ua")[0] == 429, "a forged first entry does not reset the limit")
++        f = {"ok": 0}
++        app.day_hits = {"day": time.strftime("%Y-%m-%d", time.gmtime()), "n": int(C.settings(h)["limits"]["consent_per_day"])}
++        ok(app.consent_post(form(), "198.51.100.1", "ua")[0] == 429, "the daily cap holds for every sender")
++        s = C.settings(h)
++        with open(os.path.join(h, "caller", "settings.json"), encoding="utf-8") as fh:
++            mine = json.load(fh)
++        mine["consent_origins"] = ["https://demo.example.com"]
++        with open(os.path.join(h, "caller", "settings.json"), "w", encoding="utf-8") as fh:
++            json.dump(mine, fh)
++        app.day_hits = {"day": "", "n": 0}
++        ok(app.consent_post(form(), "198.51.100.2", "ua", "https://evil.example")[0] == 403, "an Origin outside consent_origins is refused")
++        ok(app.consent_post(form(), "198.51.100.3", "ua", "https://demo.example.com")[0] == 200, "the demo site's own Origin passes")
++        del f, s
++    finally:
++        SV.R.leads_by_phone = real
++
++
++def part_c():
++    print("c. email addresses")
++    for bad in ("a@b.com, c@d.com", "a@b.com\nBcc: x@y.com", "Tom <a@b.com>", "a@b", "", "x" * 200 + "@b.com"):
++        if A.valid_email(bad):
++            ok(False, "a bad address is refused: " + repr(bad))
++            break
++    else:
++        ok(True, "a list, a newline, a display name, no domain, too long: all refused")
++    ok(A.valid_email(" tom@example.com ") == "tom@example.com", "one plain address passes")
++    h = new_home()
++    act = A.Actions(h, C.settings(h))
++    act.queue_email("demo_link", "a@b.com,\nvictim@x.com", "s", "b", LEAD)
++    p = os.path.join(h, "caller", "outbox.jsonl")
++    ok(not os.path.exists(p) or "victim" not in open(p, encoding="utf-8").read(), "the outbox never gets the injected list")
++
++    class Fake:
++        class beta:
++            class messages:
++                @staticmethod
++                def create(**kw):
++                    tu = type("B", (), {"type": "tool_use", "name": "send_email", "input": {"kind": "demo", "email": "a@b.com, spam@x.com"}})()
++                    tx = type("B", (), {"type": "text", "text": "Sure."})()
++                    return type("R", (), {"content": [tx, tu], "stop_reason": "tool_use"})()
++    cs = B.CallSession(dict(LEAD), C.settings(h), B.ClaudeBrain("x", client=Fake()), act, TUE_10ET)
++    cs.start()
++    cs.hear("send it to a@b.com comma spam@x.com")
++    ok("spam@x.com" not in (cs.email or "") and "spam" not in (open(p, encoding="utf-8").read() if os.path.exists(p) else ""),
++       "an injected list from the model (prompt injection) never becomes the email", cs.email)
++
++
++def sig(token, url, params):
++    return base64.b64encode(hmac.new(token.encode(), (url + "".join(k + params[k] for k in sorted(params))).encode(), hashlib.sha1).digest()).decode()
++
++
++def ws_client(port, path):
++    s = socket.create_connection(("127.0.0.1", port), timeout=5)
++    key = base64.b64encode(os.urandom(16)).decode()
++    s.sendall((f"GET {path} HTTP/1.1\r\nHost: x\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: {key}\r\n"
++               "Sec-WebSocket-Version: 13\r\n\r\n").encode())
++    head = b""
++    while b"\r\n\r\n" not in head:
++        head += s.recv(1)
++    return s, head.decode()
++
++
++def frame(text, fin=True, op=1):
++    data = text.encode()
++    mask = os.urandom(4)
++    n = len(data)
++    hdr = bytes([(0x80 if fin else 0) | op]) + (bytes([0x80 | n]) if n < 126 else bytes([0x80 | 126]) + struct.pack(">H", n))
++    return hdr + mask + bytes(c ^ mask[i % 4] for i, c in enumerate(data))
++
++
++def part_d_e():
++    print("d. webhooks, tokens, frames")
++    h = new_home()
++    pub = "https://pc.example.ts.net:10000"
++    app = SV.Caller(h, None, public_base=pub, clock=lambda: TUE_10ET)
++    httpd = SV.serve(0, app, dial_every=3600)
++    port = httpd.server_address[1]
++    threading.Thread(target=httpd.serve_forever, daemon=True).start()
++
++    def post(path, params):
++        body = __import__("urllib.parse").parse.urlencode(params).encode()
++        c = http.client.HTTPConnection("127.0.0.1", port, timeout=10)
++        c.request("POST", path, body=body, headers={"Content-Type": "application/x-www-form-urlencoded", "Content-Length": str(len(body)),
++                                                    "X-Twilio-Signature": sig(FAKE_KEYS["twilio_token"], pub + path, params)})
++        r = c.getresponse()
++        return r.status, r.read().decode()
++    p1 = {"CallSid": "CA" + "7" * 32, "From": "+13015550142", "To": "+13015550100"}
++    st1, x1 = post("/voice/inbound", p1)
++    st2, x2 = post("/voice/inbound", p1)
++    ok(st1 == 200 and "/relay?t=" in x1 and st2 == 200 and "/relay?t=" not in x2 and "<Hangup/>" in x2,
++       "a replayed signed webhook (same CallSid) gets no second relay token", (x1[:80], x2[:80]))
++    outs = [post("/voice/inbound", {**p1, "CallSid": "CA" + str(i) * 32})[1] for i in range(1, 4)]
++    ok("/relay?t=" in outs[0] and "/relay?t=" in outs[1] and "/relay?t=" not in outs[2],
++       "one number: 3 conversations a day (the replay was not counted), then the cheap message", [("/relay" in o) for o in outs])
++    tok = "tok-expired"
++    app.register(tok, {"lead": dict(LEAD), "call_id": "CAX", "email": "", "inbound": False})
++    app.pending[tok]["_t"] -= 10_000
++    s, head = ws_client(port, f"/relay?t={tok}")
++    ok(" 403 " in head.split("\r\n")[0], "an expired relay token is refused", head.split("\r\n")[0])
++    s.close()
++    tok2 = "tok-frag"
++    app.register(tok2, {"lead": dict(LEAD), "call_id": "CAY", "email": "", "inbound": True})
++    s, head = ws_client(port, f"/relay?t={tok2}")
++    try:
++        for _ in range(3):
++            s.sendall(frame("x" * 30000, fin=False))
++        time.sleep(0.5)
++        s.settimeout(3)
++        closed = s.recv(10) == b""
++    except (ConnectionError, OSError):
++        closed = True
++    ok(" 101 " in head and closed, "fragments past the 64 KB limit: the server drops the socket", head.split("\r\n")[0])
++    s.close()
++
++    held = []
++    for _ in range(SV.MAX_CONNECTIONS + 4):                 # idle connections: each holds a slot until its read times out
++        c = socket.create_connection(("127.0.0.1", port), timeout=3)
++        held.append(c)
++    time.sleep(0.5)
++    c = http.client.HTTPConnection("127.0.0.1", port, timeout=3)
++    try:
++        c.request("GET", "/health")
++        refused = False
++        c.getresponse().read()
++    except (ConnectionError, OSError, http.client.HTTPException):
++        refused = True
++    ok(refused, "past %d open connections a new one is closed (a flood never takes the trading PC's CPU)" % SV.MAX_CONNECTIONS)
++    for c2 in held:
++        c2.close()
++    time.sleep(0.5)
++
++    print("e. the kill switch mid-call")
++    tok3 = "tok-kill"
++    app.register(tok3, {"lead": dict(LEAD), "call_id": "CAZ", "email": "", "inbound": False})
++    s, head = ws_client(port, f"/relay?t={tok3}")
++    with open(os.path.join(h, "caller", "state.json"), "w", encoding="utf-8") as fh:
++        json.dump({"on": False}, fh)
++    s.sendall(frame(json.dumps({"type": "prompt", "voicePrompt": "hello who is this", "last": True})))
++    s.settimeout(5)
++    got = b""
++    try:
++        while b'"end"' not in got:
++            part = s.recv(4096)
++            if not part:
++                break
++            got += part
++    except OSError:
++        pass
++    ok(b"goodbye" in got and b'"end"' in got, "OFF during an outbound call: a goodbye and the end, at the next turn", got[:120])
++    s.close()
++    httpd.shutdown()
++
++
++def main():
++    part_a()
++    part_b()
++    part_c()
++    part_d_e()
++    n = sum(RES)
++    print(f"\ncaller_security: {n}/{len(RES)} " + ("ALL PASS" if n == len(RES) else "FAILED"))
++    return 0 if n == len(RES) else 1
++
++
++if __name__ == "__main__":
++    sys.exit(main())
+diff --git a/tools/caller/actions.py b/tools/caller/actions.py
+index e021e9a9..8ea78d9c 100644
+--- a/tools/caller/actions.py
++++ b/tools/caller/actions.py
+@@ -22,6 +22,16 @@ except ImportError:  # pragma: no cover
+     import config as C  # type: ignore
+ 
+ 
++EMAIL_RX = __import__("re").compile(r"[A-Za-z0-9._%+\-]{1,64}@[A-Za-z0-9\-]{1,63}(?:\.[A-Za-z0-9\-]{1,63})*\.[A-Za-z]{2,24}")
++
++
++def valid_email(x) -> str:
++    """ONE plain address or '' (security review 2026-11-20: a name, a comma list or a newline from the form or the model never
++    reaches the email autopilot's To: line)."""
++    t = str(x or "").strip()
++    return t if len(t) <= 120 and EMAIL_RX.fullmatch(t) else ""
++
++
+ def lead_tz(lead: dict) -> ZoneInfo:
+     return ZoneInfo((G.STATE_TZ.get(str(lead.get("state", "")).upper()) or ["America/New_York"])[0])
+ 
+@@ -64,9 +74,10 @@ class Actions:
+                   "Reply STOP or 'unsubscribe' and we will never email or call again.")
+         rec = {"v": 1, "id": uuid.uuid4().hex[:12], "kind": kind, "to": to, "subject": subject, "body": body + footer,
+                "lead_id": lead.get("id", ""), "ts": dt.datetime.now(dt.timezone.utc).isoformat(), "from_app": "caller", "status": "queued"}
++        to = rec["to"] = valid_email(to)
+         if to:
+             self._append("outbox.jsonl", rec)
+-        self.done.append(("email:" + kind, to or "(no email yet)"))
++        self.done.append(("email:" + kind, to or "(no valid email yet)"))
+         return rec
+ 
+     def demo_url(self, lead: dict) -> str:
+diff --git a/tools/caller/brain.py b/tools/caller/brain.py
+index b5ca17d5..8805bac1 100644
+--- a/tools/caller/brain.py
++++ b/tools/caller/brain.py
+@@ -274,8 +274,8 @@ class ClaudeBrain:
+                 text += b.text
+             elif b.type == "tool_use":
+                 inp = b.input if isinstance(b.input, dict) else json.loads(b.input or "{}")
+-                if inp.get("email"):
+-                    cs.email = str(inp["email"])[:120]
++                if A.valid_email(inp.get("email")):        # one plain address only (a list / newline never reaches the outbox)
++                    cs.email = A.valid_email(inp["email"])
+                 if b.name == "book_slot" and cs.email:
+                     action = f"book:{int(inp.get('slot', 0))}"
+                 elif b.name == "send_email":
+diff --git a/tools/caller/consent.py b/tools/caller/consent.py
+index 449980c0..b7c1b69c 100644
+--- a/tools/caller/consent.py
++++ b/tools/caller/consent.py
+@@ -54,10 +54,21 @@ def _all(h=None) -> list:
+     return out
+ 
+ 
+-def record(form: dict, s: dict, h=None, now: dt.datetime | None = None, ip: str = "", ua: str = "") -> tuple:
+-    """(ok, message, rec). form = {phone, business, signed_name, email?, lead_id?, agree: true, version}. Refuses anything incomplete."""
++CONFIRM_VIAS = ("inbound_call", "owner")
++
++
++def record(form: dict, s: dict, h=None, now: dt.datetime | None = None, ip: str = "", ua: str = "", leads: dict | None = None) -> tuple:
++    """(ok, message, rec). form = {phone, business, signed_name, email?, lead_id?, agree: true, version}. Refuses anything incomplete.
++    SECURITY REVIEW 2026-11-20: anyone on the internet can post this form, for any number. So (1) with `leads` (run.leads_by_phone)
++    the number must be one of OUR leads and lead_id must be that lead's own id (no stranger's number, no other business); (2) a
++    consent is only PENDING: valid_for() needs a confirm row first (the business calls our number from that line = inbound_call, or
++    the owner checks it himself = owner). A forged form therefore never makes a call."""
+     now = now or dt.datetime.now(dt.timezone.utc)
+     num = G.e164(form.get("phone", ""))
++    if leads is not None and num:
++        lead = leads.get(num)
++        if not lead or str(lead.get("id", "")) != str(form.get("lead_id", "")):
++            return False, ("We could not match this number to your preview. Please call us instead: " + str(s.get("callback_number", ""))), None
+     name = re.sub(r"\s+", " ", str(form.get("signed_name", ""))).strip()[:80]
+     biz = re.sub(r"\s+", " ", str(form.get("business", ""))).strip()[:120]
+     if not num:
+@@ -69,12 +80,35 @@ def record(form: dict, s: dict, h=None, now: dt.datetime | None = None, ip: str
+     if form.get("version") != CONSENT_VERSION:
+         return False, "This form is out of date; please reload the page.", None
+     text = text_for(s, num, biz)
++    try:
++        from .actions import valid_email
++    except ImportError:  # pragma: no cover
++        from actions import valid_email  # type: ignore
+     rec = {"id": uuid.uuid4().hex[:12], "kind": "consent", "phone": num, "business": biz, "signed_name": name,
+-           "email": str(form.get("email", ""))[:120], "lead_id": str(form.get("lead_id", ""))[:40], "version": CONSENT_VERSION,
++           "email": valid_email(form.get("email", "")), "lead_id": str(form.get("lead_id", ""))[:40], "version": CONSENT_VERSION,
+            "text_sha256": hashlib.sha256(text.encode()).hexdigest(), "text": text, "ts": now.isoformat(), "ip": ip[:64], "ua": ua[:200]}
+     with open(_path(h), "a", encoding="utf-8") as f:
+         f.write(json.dumps(rec, sort_keys=True) + "\n")
+-    return True, "Thank you. Our AI assistant will call you on a weekday between 9 and 5.", rec
++    return True, ("Thank you. To confirm it is really your line, call us once from it: " + str(s.get("callback_number", ""))
++                  + ". Then our AI assistant can call you on a weekday between 9 and 5."), rec
++
++
++def confirm(phone: str, via: str, h=None, now: dt.datetime | None = None, detail: str = "") -> bool:
++    """A pending consent becomes valid: via inbound_call (this number called us; detail = Twilio's StirVerstat) or owner (checked
++    by hand: python -m tools.caller.consent approve <number>). False when there is no consent to confirm."""
++    num = G.e164(phone)
++    if not num or via not in CONFIRM_VIAS or not any(r.get("kind") == "consent" and r.get("phone") == num for r in _all(h)):
++        return False
++    with open(_path(h), "a", encoding="utf-8") as f:
++        f.write(json.dumps({"kind": "confirm", "phone": num, "via": via, "detail": str(detail)[:60],
++                            "ts": (now or dt.datetime.now(dt.timezone.utc)).isoformat()}) + "\n")
++    return True
++
++
++def pending(phone: str, h=None) -> bool:
++    """A consent for this number that is not confirmed yet."""
++    ok, why = valid_for(phone, dt.datetime.now(dt.timezone.utc), {"limits": {"consent_max_age_days": 10 ** 6}}, h)
++    return not ok and why.startswith("not confirmed")
+ 
+ 
+ def revoke(phone: str, why: str, h=None, now: dt.datetime | None = None) -> None:
+@@ -101,6 +135,9 @@ def valid_for(phone: str, now: dt.datetime, s: dict, h=None) -> tuple:
+         return False, "consent was given on an old form wording"
+     if last_consent.get("text_sha256") != hashlib.sha256(str(last_consent.get("text", "")).encode()).hexdigest():
+         return False, "consent record does not match its text"
++    confirmed = [r for r in rows if r.get("kind") == "confirm" and r.get("via") in CONFIRM_VIAS and r["ts"] >= last_consent["ts"]]
++    if not confirmed:
++        return False, "not confirmed yet (the business calls our number once from that line, or the owner approves it)"
+     age = (now - dt.datetime.fromisoformat(last_consent["ts"])).days
+     if age > int(s["limits"]["consent_max_age_days"]):
+         return False, f"consent is {age} days old"
+@@ -137,3 +174,25 @@ def consent_form_html(s: dict, lead: dict, post_url: str) -> str:
+   var b={{phone:f.phone.value,signed_name:f.signed_name.value,email:f.email.value,business:f.business.value,lead_id:f.lead_id.value,agree:f.agree.checked,version:f.dataset.version}};
+   try{{var r=await fetch({json.dumps(post_url)},{{method:"POST",headers:{{"Content-Type":"application/json"}},body:JSON.stringify(b)}});o.textContent=(await r.json()).message}}catch(e){{o.textContent="Could not send. Please call us instead."}}}});</script>
+ </section>"""
++
++
++def main(argv=None) -> int:
++    """python -m tools.caller.consent approve <number>   the owner checked this consent himself (e.g. he called them)
++       python -m tools.caller.consent list               every consent, pending or confirmed (on this PC only)"""
++    import sys
++    a = list(sys.argv[1:] if argv is None else argv)
++    if a[:1] == ["approve"] and len(a) == 2:
++        ok = confirm(a[1], "owner")
++        print("[OK] confirmed: the caller may call this number." if ok else "[FIX] no consent for that number.")
++        return 0 if ok else 1
++    if a[:1] == ["list"]:
++        for r in consented_numbers():
++            print(("PENDING  " if pending(r["phone"]) else "OK       ") + f"{r['phone'][-4:]}  {r.get('business', '')[:40]}  {r['ts'][:10]}")
++        return 0
++    print(main.__doc__)
++    return 2
++
++
++if __name__ == "__main__":
++    raise SystemExit(main())
++
+diff --git a/tools/caller/onoff.py b/tools/caller/onoff.py
+index 9d787213..88e9176f 100644
+--- a/tools/caller/onoff.py
++++ b/tools/caller/onoff.py
+@@ -48,7 +48,8 @@ def turn_off(h=None) -> str:
+     st = C.read_json(os.path.join(C.state_dir(h), "state.json"), {}) or {}
+     st.update({"on": False, "off_at": dt.datetime.now(dt.timezone.utc).isoformat()})
+     _write(st, h)
+-    return "Caller OFF. No call will start. (A call already talking finishes its goodbye.)"
++    return ("Caller OFF. No call will start; a call already talking says goodbye at its next turn. The public address (Funnel :10000)"
++            " stays open until CALLER_STOP.bat, which also closes it.")
+ 
+ 
+ def main(argv=None) -> int:
+diff --git a/tools/caller/server.py b/tools/caller/server.py
+index e54ffa3c..8a3c0364 100644
+--- a/tools/caller/server.py
++++ b/tools/caller/server.py
+@@ -86,6 +86,8 @@ def ws_recv(sock, limit: int = 65536):
+         if op in (1, 2):
+             op0 = op
+         out += payload
++        if len(out) > limit:                         # security review: fragments can never add up past the limit either
++            raise ConnectionError("message too big")
+         if fin:
+             return op0 or op, out.decode("utf-8", "replace")
+ 
+@@ -102,6 +104,10 @@ class Caller:
+         self.pending = {}            # token -> {"lead", "call_id", "email", "inbound"}
+         self.lock = threading.Lock()
+         self.hits = []               # consent rate limit
++        self.ip_hits = {}            # security review 2026-11-20: consent posts per client address (last hour)
++        self.day_hits = {"day": "", "n": 0}
++        self.seen_calls = {}         # inbound CallSid -> t (a replayed signed webhook never mints a second relay token)
++        self.inbound_day = {"day": "", "n": 0, "by": {}}
+         self.token = C.load_keys(h).get("twilio_token", "")
+ 
+     def s(self):
+@@ -112,11 +118,18 @@ class Caller:
+ 
+     def register(self, token, info):
+         with self.lock:
+-            self.pending[token] = info
++            self.pending[token] = {**info, "_t": time.time()}
++            ttl = int(self.s()["limits"].get("relay_token_s", 180))
++            for k in [k for k, v in self.pending.items() if time.time() - v.get("_t", 0) > ttl]:
++                self.pending.pop(k, None)          # tokens of calls that never connected die too
+ 
+     def take(self, token):
++        """The call's info for a one-time relay token, None when unknown, used or older than relay_token_s."""
+         with self.lock:
+-            return self.pending.pop(token, None)
++            info = self.pending.pop(token, None)
++        if info and time.time() - info.get("_t", 0) > int(self.s()["limits"].get("relay_token_s", 180)):
++            return None
++        return info
+ 
+     # -- Twilio webhooks
+     def inbound_twiml(self, params: dict) -> str:
+@@ -126,6 +139,27 @@ class Caller:
+                    f"Please email us, or call back on a weekday between 9 and 5. Goodbye.")
+             return f'<?xml version="1.0" encoding="UTF-8"?><Response><Say>{T.quoteattr(msg)[1:-1]}</Say><Hangup/></Response>'
+         frm = G.e164(params.get("From", ""))
++        sid = str(params.get("CallSid", ""))
++        lim = s["limits"]
++        with self.lock:
++            now = time.time()
++            self.seen_calls = {k: v for k, v in self.seen_calls.items() if now - v < 86400}
++            replay = not sid or sid in self.seen_calls
++            self.seen_calls[sid] = now
++            day = time.strftime("%Y-%m-%d", time.gmtime(now))
++            if self.inbound_day["day"] != day:
++                self.inbound_day = {"day": day, "n": 0, "by": {}}
++            busy = (self.inbound_day["n"] >= int(lim.get("inbound_per_day", 40))
++                    or self.inbound_day["by"].get(frm, 0) >= int(lim.get("inbound_per_number_day", 3)))
++            if not replay and not busy:
++                self.inbound_day["n"] += 1
++                self.inbound_day["by"][frm] = self.inbound_day["by"].get(frm, 0) + 1
++        if replay or busy:                           # a replayed webhook / a caller over today's cap: the short, cheap message
++            msg = (f"Thanks for calling {s.get('agency_name')}. This is an automated message. Please email us, or call back "
++                   f"tomorrow on a weekday between 9 and 5. Goodbye.")
++            return f'<?xml version="1.0" encoding="UTF-8"?><Response><Say>{T.quoteattr(msg)[1:-1]}</Say><Hangup/></Response>'
++        if frm and K.pending(frm, self.h):            # the business confirms its "Call me" form by calling from that line
++            K.confirm(frm, "inbound_call", self.h, detail=str(params.get("StirVerstat", "")))
+         lead = dict(R.leads_by_phone().get(frm) or {"phone": frm, "name": "", "state": R.AREA_STATE.get(G.area_code(frm), "MD")})
+         tok = secrets.token_urlsafe(18)
+         self.register(tok, {"lead": lead, "call_id": params.get("CallSid", ""), "email": "", "inbound": True})
+@@ -153,6 +187,10 @@ class Caller:
+                            call_id=info.get("call_id", ""))
+         cs.start()                                    # the greeting itself was spoken by Twilio (welcomeGreeting = this same line)
+         started = time.time()
++        try:
++            sock.settimeout(int(s["limits"].get("ws_idle_s", 60)))   # a silent socket never holds a thread forever
++        except OSError:
++            pass
+         try:
+             while not cs.ended:
+                 op, txt = ws_recv(sock)
+@@ -163,6 +201,10 @@ class Caller:
+                 except ValueError:
+                     continue
+                 if m.get("type") == "prompt" and m.get("last", True):
++                    if not self.is_on() and not info.get("inbound"):     # CALLER_STOP / onoff off: the call ends at the next turn
++                        ws_send(sock, json.dumps({"type": "text", "token": "I have to go now. We'll email you. Thanks, goodbye!", "last": True}))
++                        ws_send(sock, json.dumps({"type": "end", "handoffData": json.dumps({"outcome": "stopped"})}))
++                        break
+                     r = cs.hear(str(m.get("voicePrompt", ""))[:1000])
+                     if r.text:
+                         ws_send(sock, json.dumps({"type": "text", "token": r.text, "last": True}))
+@@ -185,19 +227,41 @@ class Caller:
+         act.inbox({**rec, "summary": " / ".join(t["text"][:80] for t in cs.transcript if t["who"] == "biz")[:400],
+                    "transcript_file": os.path.basename(tpath)})
+ 
+-    def consent_post(self, body: dict, ip: str, ua: str) -> tuple:
++    def consent_post(self, body: dict, ip: str, ua: str, origin: str = "") -> tuple:
++        s = self.s()
++        allow = [str(o).rstrip("/").lower() for o in (s.get("consent_origins") or [])]
++        if allow and origin and origin.rstrip("/").lower() not in allow:
++            return 403, {"ok": False, "message": "Please use the form on your preview page."}
+         now = time.time()
+-        self.hits = [t for t in self.hits if now - t < 60]
+-        if len(self.hits) >= 30:
+-            return 429, {"ok": False, "message": "Too many requests, please try again in a minute."}
+-        self.hits.append(now)
+-        ok, msg, _ = K.record(body, self.s(), self.h, ip=ip, ua=ua)
++        lim = s["limits"]
++        with self.lock:
++            self.hits = [t for t in self.hits if now - t < 60]
++            mine = self.ip_hits[ip] = [t for t in self.ip_hits.get(ip, []) if now - t < 3600]
++            day = time.strftime("%Y-%m-%d", time.gmtime(now))
++            if self.day_hits["day"] != day:
++                self.day_hits = {"day": day, "n": 0}
++            if len(self.hits) >= 30 or len(mine) >= int(lim.get("consent_per_ip_hour", 5)) or self.day_hits["n"] >= int(lim.get("consent_per_day", 200)):
++                return 429, {"ok": False, "message": "Too many requests, please try again later."}
++            self.hits.append(now)
++            mine.append(now)
++            self.day_hits["n"] += 1
++            if len(self.ip_hits) > 5000:
++                self.ip_hits = {k: v for k, v in self.ip_hits.items() if v and now - v[-1] < 3600}
++        ok, msg, _ = K.record(body, s, self.h, ip=ip, ua=ua, leads=R.leads_by_phone())
+         return (200 if ok else 400), {"ok": ok, "message": msg}
+ 
+ 
++def client_ip(headers, peer: str) -> str:
++    """The sender's address. Tailscale Funnel's proxy APPENDS the real client to X-Forwarded-For, so the LAST entry is the one a
++    sender cannot choose (the first ones are whatever the request carried). Not behind a proxy = the socket's peer."""
++    xff = [x.strip() for x in str(headers.get("X-Forwarded-For", "") or "").split(",") if x.strip()]
++    return (xff[-1] if xff else peer)[:64]
++
++
+ def make_handler(app: Caller):
+     class H(BaseHTTPRequestHandler):
+         server_version = "OlympusCaller/1"
++        timeout = 15                             # a slow / idle sender loses its slot after 15 s (the relay sets its own ws_idle_s)
+ 
+         def log_message(self, fmt, *args):      # no request lines (numbers) in the console
+             return
+@@ -212,7 +276,10 @@ def make_handler(app: Caller):
+             self.wfile.write(data)
+ 
+         def _body(self):
+-            n = int(self.headers.get("Content-Length") or 0)
++            try:
++                n = int(self.headers.get("Content-Length") or 0)
++            except ValueError:
++                return None
+             if n <= 0 or n > MAX_BODY:
+                 return None
+             return self.rfile.read(n)
+@@ -253,8 +320,8 @@ def make_handler(app: Caller):
+                     body = json.loads(raw.decode())
+                 except ValueError:
+                     return self._send(400, {"ok": False, "message": "bad form"})
+-                code, out = app.consent_post(body if isinstance(body, dict) else {}, self.headers.get("X-Forwarded-For", self.client_address[0]),
+-                                             self.headers.get("User-Agent", ""))
++                code, out = app.consent_post(body if isinstance(body, dict) else {}, client_ip(self.headers, self.client_address[0]),
++                                             self.headers.get("User-Agent", ""), self.headers.get("Origin", ""))
+                 return self._send(code, out)
+             if u.path in ("/voice/inbound", "/voice/status"):
+                 params = {k: v[0] for k, v in urllib.parse.parse_qs(raw.decode(), keep_blank_values=True).items()}
+@@ -269,10 +336,39 @@ def make_handler(app: Caller):
+     return H
+ 
+ 
++MAX_CONNECTIONS = 16
++
++
++class BoundedServer(ThreadingHTTPServer):
++    """At most MAX_CONNECTIONS requests at once (security review 2026-11-20): Funnel is public and has no rate limit, and this runs on
++    the TRADING PC; a flood of connections gets closed instead of one thread each eating the bot's CPU and memory."""
++    daemon_threads = True
++
++    def __init__(self, *a, **kw):
++        self._slots = threading.BoundedSemaphore(MAX_CONNECTIONS)
++        super().__init__(*a, **kw)
++
++    def process_request(self, request, client_address):
++        if not self._slots.acquire(blocking=False):
++            self.shutdown_request(request)
++            return
++        try:
++            super().process_request(request, client_address)
++        except Exception:
++            self._slots.release()
++            raise
++
++    def process_request_thread(self, request, client_address):
++        try:
++            super().process_request_thread(request, client_address)
++        finally:
++            self._slots.release()
++
++
+ def serve(port: int, app: Caller, host: str = "127.0.0.1", dial_every: int = 60):
+     if host not in ("127.0.0.1", "localhost"):
+         raise SystemExit("the caller listens on this PC only (127.0.0.1); Tailscale Funnel forwards the public address")
+-    httpd = ThreadingHTTPServer((host, port), make_handler(app))
++    httpd = BoundedServer((host, port), make_handler(app))
+ 
+     def dialer():
+         while True:
+diff --git a/tools/caller/settings.json b/tools/caller/settings.json
+index 55c4a68d..2666475d 100644
+--- a/tools/caller/settings.json
++++ b/tools/caller/settings.json
+@@ -10,9 +10,12 @@
+   "price_line": "The starter site is a one-time setup plus a small monthly fee for hosting and edits; I can text or email the exact price sheet.",
+   "slots": {"times_local": ["10:00", "14:00"], "days_ahead_min": 1, "days_ahead_max": 5, "length_min": 15},
+   "hours": {"start": "09:00", "end": "17:00", "weekdays_only": true, "no_federal_holidays": true},
+-  "limits": {"daily_cap": 20, "daily_cap_max": 100, "max_attempts": 2, "follow_up_min_business_days": 2, "max_call_seconds": 300, "consent_max_age_days": 365},
++  "limits": {"daily_cap": 20, "daily_cap_max": 100, "max_attempts": 2, "follow_up_min_business_days": 2, "max_call_seconds": 300, "consent_max_age_days": 365,
++             "consent_per_ip_hour": 5, "consent_per_day": 200, "inbound_per_number_day": 3, "inbound_per_day": 40, "relay_token_s": 180,
++             "ws_idle_s": 60},
+   "line_types_allowed": ["landline"],
+   "outbound_mode": "consent_only",
++  "consent_origins": [],
+   "port": 8790,
+   "public_port": 10000,
+   "model": "claude-opus-5-5",

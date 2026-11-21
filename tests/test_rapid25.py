@@ -75,11 +75,18 @@ def cli_checks(tmp):
         inv = [x for x in AC.inventory() if x["role"] == "rapid"]
         check("a. inventory: the Rapid row is a Rapid EOD 25K eval", [(x["plan"], x["stage"]) for x in inv] == [("rapideod25", "eval")], inv)
         check("a. slots line shows the Rapid EOD 25K", "Rapid EOD 25K 0/3" in AC.slots_text(), AC.slots_text())
-        for what, rr in (("a 2nd Rapid 25K", AC.add("rapideod25", "MFFUEVRPD250000002")),
-                         ("a Rapid 50K next to the 25K (one Rapid only)", AC.add("rapideod", "MFFUEVRPD500000009")),
+        r2 = AC.add("rapideod25", "MFFUEVRPD250000002")      # day-multirapid: a 2nd Rapid goes to slot 2 (data/rapid2.json)
+        b2 = rapid.read(rapid.slot_path("rapid2")) or {}
+        check("a. a 2nd Rapid 25K is added as Rapid #2 (data/rapid2.json), DISARMED; the 1st is untouched",
+              r2.get("ok") and r2.get("slot") == "rapid2" and b2.get("account") == "MFFUEVRPD250000002" and b2.get("armed") is False
+              and (rapid.read() or {}).get("account") == NR, (r2, b2))
+        for what, rr in (("a 3rd Rapid (both slots taken)", AC.add("rapideod", "MFFUEVRPD500000009")),
                          ("the same Name again", AC.add("rapideod25", NR)),
                          ("--bots lit on the Rapid 25K", AC.add("rapideod25", "MFFUEVRPD250000003", bots="lit"))):
             check(f"a. refused: {what}", rr.get("ok") is False and rr.get("error"), rr)
+        AC.remove("MFFUEVRPD250000002")                       # back to one Rapid for the checks below
+        check("a. removing Rapid #2 turns only slot 2 off", rapid.read(rapid.slot_path("rapid2")) is None
+              and (rapid.read() or {}).get("account") == NR)
         check("a. the Rapid 25K stays disarmed (only START BOT's rapid.arm with the phrase arms it)",
               rapid.read()["armed"] is False and rapid.arm("i accept")["ok"] is False and rapid.read()["armed"] is False)
         rows = AC.inventory()
@@ -141,7 +148,8 @@ def ready_checks(tmp):
         check("i. START BOT step 3 lists the Rapid EOD 25K (Zlarior + ATLAS, its Name) before the phrase",
               any("Zlarior + ATLAS" in x and "Rapid EOD 25K" in x and "MFFUEVRPD250000004" in x for x in lines), lines)
         out = io.StringIO()
-        with contextlib.redirect_stdout(out):
+        from unittest import mock
+        with contextlib.redirect_stdout(out), mock.patch.object(G, "market_open", lambda *_a, **_k: True):   # a weekend run reaches 3/4 too
             rc = G.run(dry=True, inp=lambda *_a: "no", pull=False)
         txt = out.getvalue()
         check("i. START BOT dry run, phrase NOT typed: the Rapid is listed at 3/4 and stays DISARMED",

@@ -16,7 +16,7 @@ logic, a fake vault, the brain) and in Chromium (SwiftShader).
      brief", "read my notes", "log: ..." (daily note), every write confirmed first
   h. voice commands through the brain: open <app>, switch to <mode> mode, go home, what's next, read my notes, mute / unmute, "hey Jarvis"
   i. Chromium: the home with everything on (sky, shafts, reflections, orbs with badges, constellation lines, the marble dock), the clock and
-     VIX change the world, state and mode colour the light, Tilt moves the camera (only when on), LITE has no rain and fewer shafts,
+     VIX change the world, state and mode colour the light, Tilt moves the camera (only when on), LITE (effects Low) builds no 3D sky (the poster stays),
      one multisampled composer, no page error
   j. Chromium: the briefing card (first open, spoken from 7:00 ET, quiet hours = card only, once a day, Save to Obsidian asks first) and
      the settings sheet (one Jarvis section: voice, speak alerts, briefing, quiet hours, brain key; saved)
@@ -365,8 +365,12 @@ SNAP = """() => { const h = __jarvisBackdrop.ext.state.home; return { phase: h.s
   cons: h.constellation, draws: h.constellationDraws || 0, energy: +h.energy.toFixed(3), stateTint: h.stateTint, modeTint: h.modeTint, px: +h.parallax.x.toFixed(3), src: h.parallax.src, open: h.open, flashes: h.flashes }; }"""
 
 
-def boot(p, timeout=300000):
+def boot(p, timeout=300000, sky=True):
     p.goto(ORIGIN + "/jarvis/?gpu=1")                 # the tests run on software GL: ?gpu=1 lifts the LITE hold so the full world is drawn
+    if not sky:                                       # effects Low / Off (LITE): the 3D sky is never built, the CSS poster stays (DESIGN 2026-11-21)
+        p.wait_for_function("() => window.__jarvisBackdrop && /^effects (low|off)$/.test(__jarvisBackdrop.why || '')", timeout=timeout)
+        p.wait_for_timeout(1800)
+        return
     p.wait_for_function("() => window.__jarvisBackdrop && __jarvisBackdrop.frames > 3", timeout=timeout)
     p.wait_for_function("() => { const e = window.__jarvisBackdrop.ext; return e && e.state.home && e.state.home.ready; }", timeout=timeout)
     p.wait_for_timeout(1800)
@@ -377,8 +381,9 @@ def opened(br, origin, *a, **kw):
     last = None
     for _ in range(3):
         ctx, p, errs = page(br, origin, *a, **kw)
+        fx = a[0] if a else kw.get("fx", "high")
         try:
-            boot(p)
+            boot(p, sky=fx not in ("low", "off"))
             return ctx, p, errs
         except Exception as e:  # noqa: BLE001
             last = e
@@ -493,10 +498,11 @@ def test_chromium():
 
         # ---- C: LITE
         ctx, p, errs3 = opened(br, ORIGIN, "low", (12, 0), extra="window.__homeVix = 40;" + GPU_COUNT, said=False)
-        lo = p.evaluate(SNAP)
-        g = p.evaluate(GPU)
-        check("i. LITE (3D effects Low): at most 3 shafts, no rain even in a severe storm, one still constellation, no multisample anywhere, no error",
-              0 < lo["rays"] <= 3 and lo["rain"] == 0 and lo["weather"] == "severe" and lo["cons"] >= 3 and g["msaa"] == 0 and not errs3, (lo, g, errs3[:2]))
+        lo = p.evaluate("() => ({ why: __jarvisBackdrop.why, st: __jarvisBackdrop.state, bg: document.documentElement.dataset.bg3d || '', gl: document.querySelectorAll('canvas.jbackdrop').length,"
+                        " poster: getComputedStyle(document.querySelector('.bgfx > .jposter')).backgroundImage })")
+        # DESIGN 2026-11-21 (lead: phone TBT 5.1 s): LITE no longer builds a still 3D sky; the CSS poster of the sky is all there is
+        check("i. LITE (3D effects Low): no 3D sky is built (no WebGL backdrop canvas, why 'effects low'), the sky's poster stays, no error",
+              lo["why"] == "effects low" and lo["st"] == "off" and lo["bg"] == "" and lo["gl"] == 0 and "sky-poster.webp" in lo["poster"] and not errs3, (lo, errs3[:2]))
         ctx.close()
 
         # ---- D: the briefing at 7:30 ET (cached live feed: Zlarior's room), spoken, saved to Obsidian

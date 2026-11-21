@@ -861,6 +861,14 @@ class AccountC:
                     return h
             except Exception:
                 pass
+        else:                                          # no extra accounts: the hand-trade check still runs (fix-trade 2026-11-21)
+            try:
+                from . import hand_hedge
+                h = hand_hedge.opposite_hand(d, b, None, own=self.name, now=self.clock())
+                if h:
+                    return h
+            except Exception:
+                pass
         fl = getattr(b, "fleet", None)                 # engine/fleet.py (off = None): any follower holding the other side
         if fl is not None:
             try:

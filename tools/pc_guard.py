@@ -8,8 +8,11 @@ LE_BarFeed contract file. It never blocks, places, changes or cancels an order, 
   drawdown        per eval account (Zlarior / LIT 50K, ATLAS 25K, BLITZ 25K; the board cards of engine/live_board): 50% and 75%
                   of the max loss used (1 - room / mll), once per level per eval; re-armed when it falls 10 points back.
   daily loss      today's loss (realized + the open trade's unrealized) at 70% of the account's daily loss limit, once a day.
-  quiet bot       no trade for 5+ calendar days (normal: 2-4 a week; MFFU can close an eval after 7), once a day in the
-                  daytime. Feed and bot silence were already pushed by pc_report (FEED STALE after 5 min, bot down after 15).
+  quiet bot       no trade for 5+ calendar days (normal: 2-4 a week; MFFU can close an account after 7, a funded one then loses
+                  ALL its profits), once a day in the daytime, per account: the 50K, ATLAS and BLITZ from their board cards, the
+                  extra accounts (the 25K #2, the Rapid EOD: both its lanes) from the live view's account sections (2026-11-20).
+                  The count knows only the bot's own trades. Feed and bot silence were already pushed by pc_report (FEED STALE
+                  after 5 min, bot down after 15).
   milestones      eval progress 25 / 50 / 75 / 100% of the profit target (notify_settings.json milestones_pct), once per level.
   day summary     16:15 ET on CME trading days (daily_summary_at, first report run up to 16:59): $ today, $ to pass, room left per
                   account, tomorrow's big US news (engine/notify.news_line).
@@ -248,20 +251,101 @@ def account_pushes(snap: dict, sent: dict, now: int) -> list:
                         + ". The bot keeps its own stops; this alert changes nothing.")
                 out.append({"key": key, "title": f"{name}: daily loss limit near ({loss / dll * 100:.0f}%)", "body": body,
                             "priority": "high", "tags": "warning"})
-        q = c.get("quiet_days")
-        if isinstance(q, (int, float)) and q >= QUIET_DAYS and live_eval and not quiet(now) and not c.get("position"):
-            rl = real(k, c, snap)
-            late = rl and q >= MFFU_IDLE_DAYS - 1
-            body = (f"No {name} trade for {int(q)} days (normal: 2-4 a week). "
-                    + (f"MFFU can close an eval after {MFFU_IDLE_DAYS} days without a trade. " if rl else "")
-                    # day 6+ on a real eval (2026-11-14 drill): the bot has no keep-alive trade; the owner's fix is MFFU's own
-                    # (the same advice as engine/ops_checks.inactivity_notice and the LIT plan page, engine/lit_brief.mffu_notes)
-                    + ("Check in the MFFU dashboard that the account is still active, then place 1 MNQ by hand today (in and "
-                       "out) while the bot is flat. " if late else "")
-                    + "Check the bot runs (HEALTH CHECK on the PC) and what it waits for on the Start page.")
-            out.append({"key": f"{PREFIX}quiet:{k}:{day}", "title": f"{name}: no trade for {int(q)} days", "body": body,
-                        "priority": "high" if rl and q >= MFFU_IDLE_DAYS - 1 else "default", "tags": "hourglass"})
+        q = c.get("quiet_days")             # (the board counts a keep-alive / hand trade noted: engine/keepalive)
+        ka_cover = bool(_d(c.get("keepalive")).get("cover"))   # the bot's keep-alive sends this account's ONE warning a day
+        if isinstance(q, (int, float)) and q >= QUIET_DAYS and live_eval and not quiet(now) and not c.get("position") \
+                and not ka_cover:
+            out.append(quiet_push(k, name, int(q), real(k, c, snap), funded_card(c), day, busy_others(snap, k)))
+    # the extra accounts (the 25K #2, the Rapid EOD; skeptic 2026-11-20: the board's cards cover only the 50K, ATLAS and BLITZ, so
+    # these two had no 7-day alert at all)
+    for k, a in extra_cards(snap):
+        q = extra_quiet_days(a, now)
+        funded = a.get("kind") == "funded"
+        # an eval's own clock says passed / failed (engine/accounts.eval_view); a funded account has no eval clock (its eval numbers
+        # would read "passed" once its profit tops the eval target), so only an eval is filtered by it
+        status = "open" if funded else str(_d(a.get("eval")).get("status") or "open").lower()
+        if (q is None or q < QUIET_DAYS or status in STOP_STATUSES or quiet(now) or a.get("position")
+                or str(a.get("badge") or "").upper() != "LIVE" or _d(a.get("keepalive")).get("cover")):
+            continue
+        out.append(quiet_push(k, extra_name(a), int(q), True, funded, day, busy_others(snap, k)))
     return out
+
+
+STOP_STATUSES = ("passed", "failed", "lost", "graduated", "stuck")
+
+
+def funded_card(c: dict) -> bool:
+    """A board card of a funded account (ATLAS's funded 25K: engine/live_board.atlas_now stage "funded")."""
+    return str(c.get("stage") or "").lower() == "funded" or str(c.get("status") or "").lower() == "funded"
+
+
+def busy_others(snap: dict, k: str) -> list:
+    """Names of the OTHER accounts (board cards + extra accounts) that hold an open trade now. day-alerts 2026-11-21 (wf-alert-fix
+    HIGH): "place 1 MNQ by hand" is said only when EVERY account is flat: a hand trade against another account's open bot trade is a
+    hedge (MFFU rule) and can end both accounts. Never raises."""
+    try:
+        out = [label(k2, c2) for k2, c2 in cards(snap) if k2 != k and c2.get("position")]
+        out += [extra_name(a) for k2, a in extra_cards(snap) if k2 != k and a.get("position")]
+        return out
+    except Exception:  # noqa: BLE001
+        return []
+
+
+def quiet_push(k: str, name: str, q: int, rl: bool, funded: bool, day: str, busy=()) -> dict:
+    """The "no trade for N days" push of one account (key guard:quiet:<id>:<day>, once a day; notify kind account_status: both apps).
+    MFFU's rule (mffu_rules.json inactivity): 7 calendar days without a trade and the account can be closed; a sim-funded one then
+    loses ALL its profits."""
+    busy = list(busy or [])
+    late = rl and q >= MFFU_IDLE_DAYS - 1 and not busy
+    rule = (f"MFFU can close a funded account after {MFFU_IDLE_DAYS} days without a trade, and it then loses ALL its profits. " if funded
+            else f"MFFU can close an eval after {MFFU_IDLE_DAYS} days without a trade. ")
+    body = (f"No {name} trade for {q} days (normal: 2-4 a week). "
+            + (rule if rl else "")
+            # day 6+ on a real account (2026-11-14 drill): the bot has no keep-alive trade; the owner's fix is MFFU's own (the same
+            # advice as engine/ops_checks.inactivity_notice and the LIT plan page, engine/lit_brief.mffu_notes)
+            + ("Check in the MFFU dashboard that the account is still active, then place 1 MNQ by hand today (in and "
+               "out) while EVERY account is flat. " if late else "")
+            + (f"Do NOT place a hand trade yet: {', '.join(busy)} has an open trade (a hand trade now is a hedge). "
+               "Wait until every account is flat. " if rl and busy and q >= MFFU_IDLE_DAYS - 1 else "")
+            # the count knows only the bot's own trades on this account (its ledger): a trade placed by hand may not reset it
+            + ("This count knows only the bot's own trades (for one you placed yourself, MFFU's dashboard is the truth). " if rl else "")
+            + "Check the bot runs (HEALTH CHECK on the PC) and what it waits for on the Start page.")
+    return {"key": f"{PREFIX}quiet:{k}:{day}", "title": f"{name}: no trade for {q} days", "body": body,
+            "priority": "high" if rl and q >= MFFU_IDLE_DAYS - 1 else "default", "tags": "hourglass",
+            **({"kind": "account_status"} if rl else {})}     # the 7-day rule on a real account: on + rings (day 5 / 6; day-alerts)
+
+
+def extra_cards(snap: dict) -> list:
+    """[(id, section)] of the PC's extra accounts (engine/multi_account: the 25K #2, the Rapid EOD's LIT lane ...): the live view's
+    account sections with extra=True (engine/accounts.build_accounts). ids are the bot's own ("b25k_2", "rapid"), never a broker id."""
+    out = []
+    for a in _d(snap.get("live")).get("accounts") or []:
+        if isinstance(a, dict) and a.get("extra") and a.get("id") and not a.get("error"):
+            out.append((str(a["id"]), a))
+    return out
+
+
+def extra_quiet_days(a: dict, now: int):
+    """Calendar days (ET) without a trade on an extra account (engine/live_board.quiet_days): its trades' days and its P&L days (on
+    the Rapid both lanes: engine/multi_account.eval_days adds ATLAS's lane), counted from its eval / funded start when it has none.
+    None when nothing is known."""
+    try:
+        from engine import live_board
+        start = (_d(a.get("funded")).get("start") if a.get("kind") == "funded" else None) or _d(a.get("eval")).get("start")
+        days = [t.get("day") for t in a.get("trades") or [] if isinstance(t, dict)]
+        days += [d[0] for d in a.get("days") or [] if isinstance(d, (list, tuple)) and d]
+        return live_board.quiet_days(days, start, now)
+    except Exception:
+        return None
+
+
+def extra_name(a: dict) -> str:
+    """The owner's name of an extra account ("Zlarior 25K #2", "Rapid EOD 25K"; engine/mffu_view.owner_name, words only), ids masked."""
+    try:
+        from engine import mffu_view, notify
+        return notify.mask_ids(mffu_view.owner_name(a.get("id"), a.get("name"), a.get("plan"), a.get("kind")))[:40]
+    except Exception:
+        return "Extra account"
 
 
 def day_summary(snap: dict, now: int) -> list:

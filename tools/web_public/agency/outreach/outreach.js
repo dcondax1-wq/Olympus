@@ -1,7 +1,7 @@
 // AGENCY · OUTREACH page (day-a11y 2026-11-20). The logic is outreachcore.js; the words are scripts.json. Text only via textContent.
 // Saved on this phone: the status marks in 'agency.leads.status.v1' (shared with the Leads page: { id: { s, t } }) and the owner's details,
 // the touches (day 0 / 3 / 7) and the delivery ticks in 'agency.outreach.v1'. Nothing is sent: tel: / mailto: / the clipboard only.
-import * as C from './outreachcore.js?v=1';
+import * as C from './outreachcore.js?v=2';
 
 const KEY = 'agency.outreach.v1', MARK_KEY = 'agency.leads.status.v1', SUM_KEY = 'agency.outreach.summary';
 const $ = (id) => document.getElementById(id);
@@ -44,8 +44,9 @@ function wordsFor(L) {
   const W = S.words, v = C.varsFor(L, meVars(), { sites: S.sites, base: S.base, offers: S.offers }), p = C.plan(L, S.marks[L.id], S.st.touches[L.id], today());
   const step = C.emailStep(p), mail = W.email.find((e) => e.id === step) || W.email[0];
   let body = C.fill(mail.body, v);
-  // the business's own concept site has the "Have our assistant call me" button (day-caller: the AI calls only those who asked, Maryland law)
-  if (step === 'first' && v.demo_own && !body.includes(C.CALL_LINE)) body = body.replace('\n\nWould a 10-minute call', '\n\n' + C.CALL_LINE + '\n\nWould a 10-minute call');
+  // the AI assistant only ANSWERS (inbound): 'Call <agency number>: our AI assistant answers' once the agency number is known (S.agencyNumber)
+  const cl = C.callLine(S.agencyNumber);
+  if (step === 'first' && cl && !body.includes(cl)) body = body.replace('\n\nWould a 10-minute call', '\n\n' + cl + '\n\nWould a 10-minute call');
   return { v, p, opener: C.fill(W.phone.opener, v), vm: C.fill(W.phone.voicemail, v), subject: C.fill(mail.subject, v), body, mailLabel: mail.label };
 }
 function btn(text, cls, fn, label) { const b = h('button', 'ag-btn ' + (cls || ''), text); b.type = 'button'; b.addEventListener('click', fn); if (label) b.setAttribute('aria-label', label); return b; }
@@ -206,13 +207,24 @@ function autoTiles(a) {
   }
 }
 async function getJSON(u) { try { const r = await fetch(u, { cache: 'no-cache' }); return r.ok ? await r.json() : null; } catch (_) { return null; } }
+// leads.json holds the list, or (a big list) "leads": [] + "files": ["towns/<town>.json", ...]: merged here, first row per id wins (as leads.js)
+async function allLeads(L) {
+  let rows = L && Array.isArray(L.leads) ? L.leads.slice() : [];
+  if (L && Array.isArray(L.files) && L.files.length) {
+    const parts = await Promise.all(L.files.filter((f) => /^towns\/[a-z0-9-]+\.json$/.test(f)).map((f) => getJSON('../leads/' + f)));
+    for (const x of parts) if (x && Array.isArray(x.leads)) rows = rows.concat(x.leads);
+  }
+  const seen = new Set();
+  return rows.filter((x) => x && x.id && !seen.has(x.id) && seen.add(x.id));
+}
 async function start() {
   load(); wire();
-  S.base = new URL('../../', location.href).href;
-  const [W, L, O, sites] = await Promise.all([getJSON('scripts.json'), getJSON('../leads/leads.json'), getJSON('../offers/offers.json'), getJSON('../sites/index.json')]);
+  const [W, L, O, sites, pub] = await Promise.all([getJSON('scripts.json'), getJSON('../leads/leads.json'), getJSON('../offers/offers.json'), getJSON('../sites/index.json'), getJSON('../portal/portal.json')]);
+  S.base = (pub && pub.public_base) || '';          // the neutral public host only (never this page's own address: privacy, lead 2026-11-21)
+  S.agencyNumber = (pub && pub.agency_number) || '';
   const lift = () => { try { const K = window.OLYMPUS; if (K && K.ready) K.ready(); } catch (_) { /* the veil lifts by itself */ } };
   if (!W || !Array.isArray(W.email)) { $('status').textContent = 'The scripts (scripts.json) did not load. Reload the page to try again.'; lift(); return; }
-  S.words = W; S.offers = O; S.leads = (L && Array.isArray(L.leads) ? L.leads : []);
+  S.words = W; S.offers = O; S.leads = await allLeads(L);
   // the factory's built sites: { sites: { <lead id>: "<url or path>" } } or { sites: [{ id, url }] }
   if (sites && sites.sites) S.sites = Array.isArray(sites.sites) ? Object.fromEntries(sites.sites.filter((x) => x && x.id && x.url).map((x) => [x.id, x.url])) : sites.sites;
   const dl = clear($('bizList')); for (const x of S.leads.slice(0, 300)) { const o = document.createElement('option'); o.value = x.name; dl.appendChild(o); }

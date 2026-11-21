@@ -165,6 +165,7 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 | 2026-11-20 | [[regime-guard-2026-11-20\|Regime guard]] | rejected |
 | 2026-11-20 | [[lit-eval-rescue-2026-11-20\|Zlarior eval rescue]] | rejected |
 | 2026-11-20 | [[lit-edge-2026-11-20\|Zlarior]] | rejected |
+| 2026-11-20 | [[atlas-costs-split-2026-11-20\|ATLAS with split costs]] | info |
 | 2026-11-19 | [[one-account-combo-redteam-2026-11-19\|Red team]] | research |
 | 2026-11-19 | [[one-account-combo-final-2026-11-19\|One account, Zlarior + ATLAS on the Builder 50K]] | research |
 | 2026-11-19 | [[one-account-combo-2026-11-19\|ONE account, several bots]] | research |
@@ -200,9 +201,8 @@ _backtest = the bot's rules replayed on futures data (costs in); paper / live = 
 | 2026-11-03 | [[2026-11-03-money-plan\|The money plan on today's settings]] | adopt-candidate |
 | 2026-11-03 | [[2026-11-03-fates\|FATES]] | info |
 | 2026-11-03 | [[2026-11-03-eval-dp\|Zlarior eval size worked out state by state]] | promising |
-| 2026-10-30 | [[lit-edge-2026-10-30\|Zlarior edge night]] | adopt-candidate |
 
-... and 67 older (see the families).
+... and 68 older (see the families).
 
 ## Links
 

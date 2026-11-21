@@ -21,10 +21,12 @@ import re
 import sys
 import time
 
-VERSION = 1
+VERSION = 2                  # v2 (day-nqdash3 2026-11-21, the NQ Brain page): px, chk, blk (LIT); lobes, dll, dll_used, lv distances (ATLAS)
 MAX_BYTES = 1700
 USD_PT = 2.0                 # MNQ: $2 a point a micro
 ARMED_ST = ("armed", "tapped", "entering")
+LOBE_ST = {"waiting": "window", "armed": "armed", "in_trade": "trade", "done": "done", "off": "off", "error": "off"}
+LOG_N = 8                    # the longer thought stream (pc_report ext block "glog"; the glance itself keeps 4 a bot)
 
 
 def _d(x) -> dict:
@@ -157,16 +159,48 @@ def lit(hb: dict, card: dict | None) -> dict:
            "wait": _t(st.get("waiting") or c.get("waiting"), 170) or None,
            "why": _lit_why(br) if br else None, "lv": _lit_levels(br), "arm": _lit_armed(br),
            "pos": _pos(c.get("position") or br.get("trade")), "day": _usd(_f(c.get("today_pnl"), _f(br.get("day_pnl")))),
-           "room": _usd(c.get("room")), "mll": _usd(c.get("mll")), "log": _log(br.get("log")), "at": br.get("at")}
+           "room": _usd(c.get("room")), "mll": _usd(c.get("mll")), "log": _log(br.get("log")), "at": br.get("at"),
+           "px": _f(br.get("price")), "chk": _lit_checks(br), "blk": [_t(x, 60) for x in _l(_d(br.get("guards")).get("blocking"))[:2]]}
     return out
 
 
-def _sec_levels(S, keys) -> list:
+def _lit_checks(br) -> list | None:
+    """[passed, total] of the latest setup's checks (what the Brain's setup card shows; the engine has no A-D grade)."""
+    for s in reversed(_l(br.get("setups"))):
+        ch = [c for c in _l(_d(s).get("checks")) if isinstance(c, (list, tuple)) and len(c) >= 2]
+        if ch:
+            return [sum(1 for c in ch if c[1]), len(ch)]
+    return None
+
+
+def _price(hb) -> float | None:
+    hb = _d(hb)
+    return _f(_d(hb.get("brain")).get("price"), _f(hb.get("price")))
+
+
+def _lobe(k) -> str | None:
+    k = str(k or "")
+    return next((x for x in ("ema", "macd", "sr") if k == x or k.startswith(x + "_")), None)
+
+
+def _lobes(S, keys) -> list:
+    """ATLAS's 3 lobes from second.compact's per-strategy state: [{id, st, text}] (st: window armed trade done off)."""
+    out = []
+    for k in keys:
+        lid = _lobe(k)
+        st = _d(_d(S.get(k)).get("state"))
+        if lid and lid not in [x["id"] for x in out] and st:
+            out.append({"id": lid, "st": LOBE_ST.get(str(st.get("stage")), "window"), "text": _t(st.get("text"), 70)})
+    return out
+
+
+def _sec_levels(S, keys, px=None) -> list:
     rows = []
     for k in keys:
         for x in _l(_d(_d(_d(S.get(k)).get("brain"))).get("levels"))[:4]:
             if isinstance(x, dict) and _f(x.get("px")) is not None and x.get("stage") not in ("taken", "used"):
-                rows.append([_t(f"{_d(S.get(k)).get('short') or k} {x.get('name') or ''}", 28), round(_f(x["px"]), 2), None])
+                rows.append([_t(f"{_d(S.get(k)).get('short') or k} {x.get('name') or ''}", 28), round(_f(x["px"]), 2),
+                             round(_f(x["px"]) - px, 1) if px is not None else None])
     return rows[:6]
 
 
@@ -202,17 +236,64 @@ def atlas(hb: dict, card: dict | None) -> dict:
            "on": bool(hb.get("running")) and bool(ab.get("enabled", bool(ab))), "armed": bool(ab.get("armed")),
            "mode": ab.get("label") or (str(ab.get("kind") or "").upper() or None),
            "wait": _t(c.get("waiting"), 170) or None, "why": _t(" · ".join(why), 220) or None,
-           "lv": _sec_levels(S, keys), "arm": arm[:2], "pos": _pos(c.get("position")), "day": _usd(c.get("today_pnl")),
-           "room": _usd(c.get("room")), "mll": _usd(c.get("mll")), "log": [x[1] for x in logs[:4]]}
+           "lv": _sec_levels(S, keys, _price(hb)), "arm": arm[:2], "pos": _pos(c.get("position")), "day": _usd(c.get("today_pnl")),
+           "room": _usd(c.get("room")), "mll": _usd(c.get("mll")), "log": [x[1] for x in logs[:4]],
+           "px": _price(hb), "lobes": _lobes(S, keys), "dll": _usd(c.get("dll")), "dll_used": _dll_used(c)}
     return out
 
 
-def rapid(hb: dict) -> dict | None:
-    """The Rapid EOD 50K (engine/rapid.py): only when its lane (an extra account, lane / id "rapid") is configured."""
+def _dll_used(c) -> int | None:
+    """$ of the daily loss used today: the card's dll_used, else today's loss (0 on a green day)."""
+    u = _f(_d(c).get("dll_used"))
+    if u is None:
+        d = _f(_d(c).get("today_pnl"))
+        u = None if d is None else max(0.0, -d)
+    return _usd(u)
+
+
+def _atlas_log(hb, n) -> list:
+    sec = _d(_d(hb).get("second"))
+    S = _d(sec.get("strategies"))
+    rows = []
+    for k, s in S.items():
+        s = _d(s)
+        if not _d(s.get("brain")) or not (s.get("route") or _lobe(k)):
+            continue
+        for x in _l(_d(s.get("brain")).get("log")):
+            if isinstance(x, dict) and x.get("text"):
+                tm = x.get("t")
+                hm = time.strftime("%H:%M", time.localtime(int(tm))) if isinstance(tm, (int, float)) and tm > 0 else ""
+                rows.append((tm or 0, [hm, _t(f"{s.get('short') or k}: {x['text']}", 120)]))
+    rows.sort(key=lambda z: -z[0])
+    return [r[1] for r in rows[:n]]
+
+
+def logs(hb: dict | None, n: int = LOG_N) -> dict | None:
+    """The longer thought stream for the Brain page (pc_report ext block "glog"): the last n lines a bot, newest first. Never raises."""
+    try:
+        hb = _d(hb)
+        out = {"lit": _log(_d(hb.get("brain")).get("log"), n), "atlas": _atlas_log(hb, n)}
+        out = {k: v for k, v in out.items() if v}
+        return out or None
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def cut_logs(g, n: int) -> None:
+    """pc_report's cut for "glog": keep the newest n lines a bot."""
+    if isinstance(g, dict):
+        for k in list(g):
+            if isinstance(g[k], list):
+                g[k] = g[k][:n]
+
+
+def rapid(hb: dict, rid: str = "rapid") -> dict | None:
+    """The Rapid EOD 25K / 50K (engine/rapid.py): only when its lane (an extra account, lane / id "rapid") is configured;
+    rid "rapid2" = the 2nd Rapid (data/rapid2.json, day-multirapid)."""
     hb = _d(hb)
     subs = _l(_d(hb.get("acct")).get("accounts"))
-    hrow = next((r for r in _l(_d(hb.get("health")).get("accounts")) if isinstance(r, dict) and r.get("id") == "rapid"), None)
-    row = next((r for r in subs if isinstance(r, dict) and r.get("id") == "rapid"), None)
+    hrow = next((r for r in _l(_d(hb.get("health")).get("accounts")) if isinstance(r, dict) and r.get("id") == rid), None)
+    row = next((r for r in subs if isinstance(r, dict) and r.get("id") == rid), None)
     if not row and not hrow:
         return None
     row, hrow = _d(row), _d(hrow)
@@ -224,7 +305,7 @@ def rapid(hb: dict) -> dict | None:
     room = (bal - floor) if bal is not None and floor is not None else None
     lk = row.get("locked") or hrow.get("locked")
     dis = _d(row.get("account")).get("disabled") or hrow.get("disabled")
-    out = {"id": "rapid", "name": "Rapid EOD",
+    out = {"id": rid, "name": "Rapid EOD" + (" #2" if rid == "rapid2" else ""),
            "what": "LIT + ATLAS · MFFU Rapid EOD " + ("25K" if _f(pr.get("start")) == 25000.0 else "50K"),
            "on": bool(hrow.get("enabled", row.get("enabled"))) and bool(row.get("running", hb.get("running"))),
            "armed": bool(hrow.get("armed")), "mode": hrow.get("label") or _d(row.get("account")).get("label"),
@@ -243,9 +324,10 @@ def build(hb: dict | None, board: dict | None = None, now=None, max_bytes: int =
             return None
         bd = _d(board)
         bots = [lit(hb, bd.get("lit")), atlas(hb, bd.get("atlas"))]
-        r = rapid(hb)
-        if r:
-            bots.append(r)
+        for rid in ("rapid", "rapid2"):
+            r = rapid(hb, rid)
+            if r:
+                bots.append(r)
         out = {"v": VERSION, "t": int(_f(hb.get("t"), now or time.time())), "bots": [{k: v for k, v in b.items() if v not in (None, [], "")} for b in bots]}
         return fit(out, max_bytes)
     except Exception as e:  # noqa: BLE001
@@ -258,7 +340,7 @@ def size(o) -> int:
 
 def fit(g: dict, max_bytes: int = MAX_BYTES) -> dict:
     """Cut the least needed parts first: log lines, then levels, then the trigger texts, until it fits."""
-    steps = [("log", 2), ("lv", 4), ("log", 1), ("lv", 2), ("arm", 1), ("log", 0), ("lv", 0)]
+    steps = [("log", 2), ("lv", 4), ("log", 1), ("lv", 2), ("arm", 1), ("blk", 1), ("log", 0), ("lv", 0), ("blk", 0)]
     for key, n in steps:
         if size(g) <= max_bytes:
             break
@@ -275,6 +357,8 @@ def fit(g: dict, max_bytes: int = MAX_BYTES) -> dict:
         for b in g.get("bots") or []:
             b.pop("what", None)
             b.pop("why", None)
+            for k in ("lobes", "chk", "blk", "lv", "arm"):
+                b.pop(k, None)
             if isinstance(b.get("pos"), dict):
                 b["pos"] = {k: v for k, v in b["pos"].items() if k in ("side", "qty", "risk_usd", "tgt_usd", "now_usd")}
     return g

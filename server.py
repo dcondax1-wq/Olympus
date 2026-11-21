@@ -315,14 +315,20 @@ async def api_push_save(req: Request):
 
 @app.post("/api/push/test")
 def api_push_test():
-    from engine import push
-    cfg = push.pc_config()
-    if not push.enabled(cfg):
-        return J({"ok": False, "error": "no phone yet: open Olympus from the iPhone's Home Screen and tap Allow notifications (the PC picks it up within 5 minutes)"}, 400)
-    n = push.pc_notifier()
-    n.cfg = cfg
-    r = n.notify(push.text_payload("PC", "test", "Test · PC bot", "Notifications from the PC bot work.", key=f"test:{int(time.time())}"))
-    return J({"ok": bool(r.get("sent")), **{k: r.get(k) for k in ("sent", "devices", "gone", "errors")}})
+    # 2026-11-20 (owner: "notifications for trade entries I never got one from today. And results"): a TEST entry + TEST close, the
+    # real trade alerts' words, on EVERY route (the Olympus phones + the private ntfy topic), with what each answered
+    # (engine/alert_check; never recorded as a trade). One test a minute (no login here: a repeated tap or a script on the home
+    # network must not spend ntfy's day); the ntfy half waits when the day's room is down to the trade alerts' reserve.
+    from engine import alert_check
+    r = alert_check.send_test()
+    a, rt = r.get("app") or {}, r.get("routes") or {}
+    if r.get("cooldown"):
+        return J({"ok": False, "error": r.get("say") or "one test a minute", "cooldown": r["cooldown"]}, 429)
+    if not rt.get("phones") and not rt.get("ntfy") and not rt.get("bus"):    # Telegram / Discord (engine/alert_bus) count too
+        return J({"ok": False, "error": "no alert route on this PC: open Olympus from the iPhone's Home Screen and tap Allow notifications, "
+                                        "and/or run python tools/pc_report.py --setup", "warn": rt.get("warn")}, 400)
+    return J({"ok": bool(a.get("sent")) or r.get("ntfy") == "sent", **{k: a.get(k) for k in ("sent", "devices", "gone", "errors")},
+              "ntfy": r.get("ntfy"), "say": r.get("say"), "warn": rt.get("warn")})
 
 
 @app.get("/api/gamma")
@@ -902,6 +908,11 @@ def _poll_timing():
 
 def _autostart_startup():
     WATCHDOG.server_started_at = int(time.time())
+    # the crash-loop net FIRST (engine/autoupdate.DailyUpdater.crash_start, redteam 2026-11-21): this start is counted before any
+    # bot code runs (a watcher that throws on the new code still counts), and on a rollback nothing resumes on the bad code: the
+    # push goes out and the server exits (75), the supervisor starts the old code
+    if AUTOUPDATE.crash_start() == "rolled_back":
+        return
     _poll_timing()                       # before the bot can start
     if os.environ.get("LE_NO_AUTOSTART") == "1":
         WATCHDOG.autostart_info = {"disabled": "LE_NO_AUTOSTART=1"}
@@ -1282,6 +1293,14 @@ try:
 except Exception as _ab_err:
     print(f"[account_box] /add-account disabled: {_ab_err.__class__.__name__}: {_ab_err}", flush=True)
 # ---- END ADD ACCOUNT BOX ----
+# ---- PHONE ALERTS BOX ---- (engine/alerts_box.py, docs/ALERTS.md): /alerts/ = ALERTS_SETUP option 1 (Telegram) from the phone: paste
+# the BotFather token, tap START in the bot, test delivered. PC itself or the private Tailscale link only, same-origin, never trading.
+try:
+    from engine import alerts_box as _alb
+    _alb.install(app)
+except Exception as _alb_err:
+    print(f"[alerts_box] /alerts disabled: {_alb_err.__class__.__name__}: {_alb_err}", flush=True)
+# ---- END PHONE ALERTS BOX ----
 _static = StaticFiles(directory=WEB)
 _static.all_directories = list(UI_DIRS)       # first directory that has the file wins
 app.mount("/", _static, name="web")

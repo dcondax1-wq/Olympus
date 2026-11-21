@@ -74,6 +74,12 @@ def main() -> int:
     env = next(s for s in steps if "pc_silent_check" in str(s.get("run", ""))).get("env", {})
     check("a. the secret only as LE_NTFY_TOPIC from secrets, never echoed", env.get("LE_NTFY_TOPIC") == "${{ secrets.LE_NTFY_TOPIC }}"
           and "echo $LE_NTFY_TOPIC" not in text and "LE_NTFY_TOPIC" not in runs, env)
+    check("a. no Telegram / Discord secrets here: only cloud-monitor's step uses the alert bus (its sends post nothing to ntfy, so this "
+          "job's read-back de-dupe would repeat 'PC stopped reporting'; redteam 2026-11-21)",
+          not any(k in env for k in ("LE_TG_TOKEN", "LE_TG_CHAT", "LE_DISCORD_WEBHOOK")), env)
+    src = open(os.path.join(ROOT, "tools", "pc_silent_check.py"), encoding="utf-8").read()
+    check("a. the bus's state / failure log go to the runner's temp folder, never --out (cloud-monitor commits dash/ to the public "
+          "dashboard branch)", 'get("RUNNER_TEMP") or out' in src and 'path=os.path.join(out, "alert_bus_sent.json")' not in src)
     check("a. a 3-minute cap and a manual run that is a dry run by default",
           wf["jobs"]["watch"]["timeout-minutes"] <= 3 and on["workflow_dispatch"]["inputs"]["dry_run"]["default"] is True)
     crons = [c["cron"] for c in on["schedule"]]

@@ -1,3 +1,30 @@
+# Security round 2, 2026-11-20 (day-security2)
+
+## For the owner
+
+| What | Result |
+|---|---|
+| The PC signs its public status, chart and data posts | Built and tested. Once it has signed for 6 h, the phone and Claude ignore fake posts |
+| Strangers getting your trade alerts / pushing your phone off | Built. Your phone stays with no action; a new phone needs a code your PC sends to you |
+| If signing ever fails | Everything works as today: posts go out unsigned, trade alerts are never touched |
+| Bot answers your home WiFi (W2) | Not changed yet: one question for you below |
+
+1. Nothing to do now.
+2. Later, if you want it: "Yes, close the WiFi door." The bot then opens on your phone only with your PC link (the :8444 one).
+3. A new phone or iPad later: your current phone gets an 8-digit code. Type it on the new one.
+
+## Detail (for the lead)
+See LEAD_WIRES.md, round 2 (top). Tests run on this branch:
+- New: status_sign 31/31, pc_report_sign 18/18, push_pairing 18/18, nqbars_sign 5/5, datafeed_sign 8/8.
+- Asked for: trade_alerts 21/21, notify 96/96, pc_bars 75/75, live_publish 86/86 (and push 41/41, webpush 49/49, datafeed 42/42).
+- pc area, all 61 suites except win_scripts (BOARD_NO_BROWSER=1): **60/61, 2,919 passed / 1 failed**. The 1 is
+  obsidian_brain g ("the committed vault/ matches a fresh build": 4 Day notes + 1 Decide note are stale). It fails the same way on
+  base origin/pc 69218831 without this branch, so it is not this branch's. Fix: `python tools/obsidian_brain.py` when landing.
+- Also already red on base (not this branch's): test_nq_chart 26/27 (a stylesheet bump check); test_archive_page (stale index).
+- Not run: test_win_scripts (rule), browser suites (no screen changed; the pairing input in push-ui.js is still to be wired).
+
+---
+
 # Security check, 2026-11-20 (day-security)
 
 ## For the owner (read this part)

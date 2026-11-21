@@ -107,6 +107,7 @@ FUNDED_ON = {"funded_room_pct": 0.4, "streak_shrink": 2}   # owner YES 2026-11-2
 CLOSE_RETRY_S = 10              # an unconfirmed close of B's position is re-sent at most this often (pre-launch audit A4)
 TICK, PV, COMM = 0.25, 2.0, 1.90
 ADAPTER_FACTORY = None          # tests: (spec, adapter cfg) -> adapter; None = engine/live.ADAPTERS
+PROBLEM_SENDER = None           # tests: (problem payload) -> why; None = engine/notify.instant_problem in a thread (AccountB.no_start)
 VERSION = 1
 STAGES = ("eval", "funded")
 # the funded stage's keys in the block (kept by every other switch on the same account Name: set_account_b)
@@ -596,6 +597,7 @@ class AccountB:
         self.view_key = None
         self.last_size = None
         self._startup_ok = None           # startup_block: set once B's own NinjaTrader account reconciled (entries allowed)
+        self.start_missing = False        # start(): stopped for no start day (no_start); LiveBot applies a fixed block at once
         self.mx = threading.RLock()
 
     # ---- plumbing
@@ -645,8 +647,64 @@ class AccountB:
         except Exception:
             return False
 
+    # code review 2026-11-20 (day-speed helper): start() raised TypeError on an eval block without "eval_start" (the start log
+    # formatted the view's room None), LiveBot._sync_account_b caught it and ATLAS silently did not start. Now no start day = a
+    # plain problem (logged, one push a day), never an adapter, never a trade; LIT and the other accounts are not touched.
+    # The fix the owner runs, per stage ({name} / {plan} filled in; engine/rapid.RapidAtlas has its own):
+    START_CMDS = {"eval": 'python -X utf8 -m engine.second --account-b "{name}" --plan {plan} --start <first eval day yyyy-mm-dd>',
+                  "funded": 'python -X utf8 -m engine.account_b --to-funded --account "{name}" --start <first funded day yyyy-mm-dd>'}
+
+    def no_start(self) -> str | None:
+        """The plain problem when this account's stage has no start day (eval: "eval_start", funded: "funded_start"), else None.
+        Without one its eval / funded state is unknown (eval_view status "no eval_start" / "no funded_start"): never traded."""
+        funded = str(self.spec.get("stage") or "eval").strip().lower() == "funded"
+        day = (self.spec.get("funded") or {}).get("start") if funded else self.spec.get("eval_start")
+        if str(day or "").strip():
+            return None
+        plan = self.spec.get("plan") if self.spec.get("plan") in ("builder25k", "builder50k") else "builder25k"
+        nm = self.name if self.name and not any(c in self.name for c in ';\r\n|"') else "<Name>"
+        cmd = self.START_CMDS["funded" if funded else "eval"].format(name=nm, plan=plan)
+        return (f"its account block has no {'funded' if funded else 'eval'} start day "
+                f"({'funded_start' if funded else 'eval_start'}): run {cmd}")
+
+    def _push_no_start(self, text):
+        """One push a day per account for a start without a start day: the app notice (as every ATLAS notice) and, on the real
+        NinjaTrader bot, the private alert topic's "problems" push (engine/notify.instant_problem, soft: no sound in quiet hours).
+        Never raises, never blocks the bot's start (the alert goes in a thread)."""
+        try:
+            now = int(self.clock())
+            key = f"{self.PUSH_SUFFIX.strip(':')}:nostart:{trading_day(now)}:{self.name}"
+            if key in self.notified:
+                return
+            self.notified.append(key)
+            title = f"{self.label} did not start"
+            body = f"{text[:1].upper()}{text[1:]}. No trade on this account until then; LIT and the other accounts are not affected."
+            self._push_text(title, body, key)
+            send = PROBLEM_SENDER
+            if send is None:
+                if not (self.real_bot() and (self.bot.cfg or {}).get("adapter") == "ninjatrader"):
+                    return                     # a harness / paper bot: the log and the app notice only
+                from . import notify
+
+                def send(p):
+                    threading.Thread(target=notify.instant_problem, args=(p,), name="atlas_nostart", daemon=True).start()
+                    return "queued"
+            send({"key": key, "code": "atlas_no_start", "bot": "atlas", "soft": True, "tags": "warning",
+                  "title": title, "body": body})
+        except Exception:
+            pass
+
     def start(self):
         self._load()
+        miss = self.no_start()
+        if miss:
+            self.problem, self.start_missing = miss, True
+            try:
+                self.bot._note_error(f"{self.label} did not start: {miss}")
+            except Exception:
+                self.log("risk", f"did not start: {miss}")
+            self._push_no_start(miss)
+            return self
         if self.problem:
             self.log("risk", f"NOT trading: {self.problem}")
             return self
@@ -673,7 +731,7 @@ class AccountB:
             return self
         self.log("system" if not dis else "risk",
                  f"{self.kind()} {self.name} {self.spec['plan_label']}, strategies {', '.join(self.spec['keys'])}, size {self.spec['sizing']}, "
-                 f"eval from {self.spec['eval_start'] or '?'} (balance ${ev.get('balance', 0):,.0f}, room ${ev.get('room', 0):,.0f}): "
+                 f"eval from {self.spec['eval_start'] or '?'} (balance ${ev.get('balance') or 0:,.0f}, room ${ev.get('room') or 0:,.0f}): "
                  + (f"DISABLED ({dis})" if dis else "ready"))
         self.save()
         return self
@@ -687,7 +745,9 @@ class AccountB:
 
     def route(self, action: dict) -> dict:
         try:
-            res = self.adapter.send(action) if self.adapter is not None else {"ok": False, "error": "no adapter"}
+            ka = self._keepalive_yield(action)             # an open keep-alive on this account / the other way closes first
+            res = {"ok": False, "error": "REFUSED: " + ka} if ka else \
+                self.adapter.send(action) if self.adapter is not None else {"ok": False, "error": "no adapter"}
         except Exception as e:
             res = {"ok": False, "error": f"{e.__class__.__name__}: {e}"}
         with self.mx:
@@ -698,6 +758,17 @@ class AccountB:
         self._life_routed(action, res)
         self.save()
         return res
+
+    def _keepalive_yield(self, action):
+        """engine/keepalive.before_entry (OFF by default = None at once): a keep-alive trade open on this NinjaTrader account
+        (any side) or the other way on any account is closed at market before this entry goes out. Never raises."""
+        if action.get("side") not in ("buy", "sell"):
+            return None
+        try:
+            from . import keepalive as _ka
+            return _ka.before_entry(self.bot, 1 if action.get("side") == "buy" else -1, self)
+        except Exception:
+            return None
 
     # ---- MFFU lifecycle (engine/lifecycle.py): passed / failed / locked = stand down, the other accounts keep trading
     def life_key(self) -> str:
@@ -921,6 +992,13 @@ class AccountB:
         """Calendar days (ET) since the last traded day on this account (or since the eval / funded start without one)."""
         start = (self.spec.get("funded") or {}).get("start") if self.funded() else self.spec.get("eval_start")
         days = [str(c[0]) for c in self.all_closes() if c and (not start or str(c[0]) >= str(start))]
+        try:                                # a keep-alive trade / a hand trade noted (engine/keepalive.py) restarts the clock too
+            from . import keepalive as KA      # (the keep-alive's OWN key of this account: "atlas" for acct_b, never the Rapid's)
+            k = KA.last_day(self.bot, KA.key_for(self.bot, self) or ("rapid" if self is getattr(self.bot, "acct_r", None) else "atlas"))
+            if k and (not start or k >= str(start)):
+                days.append(k)
+        except Exception:
+            pass
         last = max(days) if days else start
         if not last:
             return None
@@ -946,6 +1024,12 @@ class AccountB:
         key = f"acctb:idle:{trading_day(now)}:{self.name}"
         if key in self.notified:
             return
+        try:                                    # the bot's keep-alive sends this account's ONE inactivity warning a day itself
+            from . import keepalive as KA
+            if KA.covered(KA.key_for(self.bot, self) or "atlas", now, bot=self.bot):
+                return
+        except Exception:
+            pass
         if status is None:
             status = self.eval_view(now).get("status")
         if status in STOP_STATUSES:
@@ -1053,11 +1137,19 @@ class AccountB:
                     return h
             except Exception:
                 pass
-        ar = getattr(b, "acct_r", None)                # engine/rapid.py (off = None): ATLAS on the Rapid EOD holds the other side
-        if ar is not None and ar is not self and ar.open_t is not None:
-            pv = ar.prov.get(int(ar.open_t)) or {}
-            if int(pv.get("dir") or 0) == -d:
-                return f"ATLAS on the Rapid EOD holds a {side(-d)} position"
+        else:                                          # no extra accounts: the hand-trade check still runs (fix-trade 2026-11-21)
+            try:
+                from . import hand_hedge
+                h = hand_hedge.opposite_hand(d, b, None, own=self.name, now=self.clock())
+                if h:
+                    return h
+            except Exception:
+                pass
+        for ar in (getattr(b, "acct_r", None), getattr(b, "acct_r2", None)):   # engine/rapid.py (off = None): ATLAS on a Rapid EOD
+            if ar is not None and ar is not self and ar.open_t is not None:
+                pv = ar.prov.get(int(ar.open_t)) or {}
+                if int(pv.get("dir") or 0) == -d:
+                    return f"ATLAS on the Rapid EOD holds a {side(-d)} position"
         fl = getattr(b, "fleet", None)                 # engine/fleet.py (off = None): a Zlarior follower holds the other side
         if fl is not None:
             try:
@@ -1096,10 +1188,29 @@ class AccountB:
         return self.open_t is None or int(self.open_t) != et_
 
     # ---- one poll
+    def _price_limit(self, now) -> str | None:
+        """MFFU's 2% price-limit rule (engine/price_limit.py): this account's FUNDED stage only. None = may trade."""
+        try:
+            if not self.funded():
+                return None
+            from . import price_limit as _pl
+            return _pl.blocked(int(now))
+        except Exception:
+            return None
+
     def tick(self, df5, df1, sym, now):
         """After LIT's routing and state save: manage B's open position, then maybe a new entry. Never raises."""
         if self.problem or self.adapter is None:
             return
+        try:                                              # MFFU's 2% price-limit rule, funded only: an open position is closed
+            pl = self._price_limit(now) if self.open_t is not None else None
+            if pl:
+                pv = self.prov.get(int(self.open_t)) or {}
+                if not ((pv.get("closing") or {}) and not pv["closing"].get("done")):
+                    self.log("risk", f"{pl}: flattening")
+                    self.flatten(int(self.open_t), "PRICE LIMIT", sym, now)
+        except Exception as e:
+            self.log("error", f"price-limit flatten failed: {e.__class__.__name__}: {e}")
         try:
             from . import second as _second
             self.reconcile_unplaced(now)                  # an entry the broker never took is not a position
@@ -1458,6 +1569,9 @@ class AccountB:
                 if h:
                     out.append(f"Tier-1 news within {int(c.get('news_min') or 2)} min: {h}")
             out += G._owner_blocks(self.bot, c, int(now))
+            pl = self._price_limit(now)
+            if pl:
+                out.append(pl)
             return "GUARD " + "; ".join(out) if out else None
         except Exception as e:
             self.log("error", f"guards failed ({e.__class__.__name__}: {e}): entry NOT routed (account B fails closed)")

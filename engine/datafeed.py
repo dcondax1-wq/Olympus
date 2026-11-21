@@ -211,9 +211,42 @@ def parse_request(m, now) -> dict | None:
     return {"id": rid, "since": max(since, lo), "t": int(t)}
 
 
-def parse_answer(m, now=None, base: str | None = None) -> dict | None:
+def _pinned_vk():
+    """The PC's public verify key pinned in tools/web_public/status_feed.json (tools/status_sign.py), or None. Never raises."""
+    try:
+        from tools import status_sign as _ss
+        return _ss.feed_vk()
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def _sign_msg(msg: str) -> str:
+    """The PC's signature on the answer's meta (day-security2 2026-11-20, LEAD_WIRES W7): Claude then knows the bars came from this
+    PC, not from a stranger who posted to the public topic. No key / no `cryptography` / too big = the message as before."""
+    try:
+        from tools import status_sign as _ss
+        k = _ss.load_key()
+        if not k:
+            return msg
+        out = _ss.sign_text(msg, k)
+        return out if len(out.encode("utf-8")) <= 4000 else msg
+    except Exception:  # noqa: BLE001
+        return msg
+
+
+def parse_answer(m, now=None, base: str | None = None, vk="pinned") -> dict | None:
     """An answer: its meta + the attachment {"url", "size", "expires"}; None when it is not one, is expired, or points to
-    another server than `base`. A "days": 0 answer (the PC has nothing) has no attachment."""
+    another server than `base`. A "days": 0 answer (the PC has nothing) has no attachment. With the PC's key pinned
+    (status_feed.json "vk"; vk=None = do not check), an answer the PC did not sign is None (a stranger's fake bars)."""
+    if vk == "pinned":                               # the real ntfy.sh only (a test's local fake server checks with vk=...)
+        vk = _pinned_vk() if str(base or BASE).rstrip("/") == BASE else None
+    if vk:
+        try:
+            from tools import status_sign as _ss
+            if not _ss.verify_text((m or {}).get("message"), vk):
+                return None
+        except Exception:  # noqa: BLE001
+            return None
     j = body_of(m)
     if j.get("kind") != ANS_KIND or j.get("v") != VERSION or not _ID.match(str(j.get("req") or "")):
         return None
@@ -340,6 +373,12 @@ def pack_day(day: str, picked: dict, rows: list, names, contracts: dict, now, co
         files.update(DP.day_bars(day, {(root, tf): f}))
     tr = DP.day_trades(day, rows, names)
     files["trades.jsonl.gz"] = DP.gz(DP.jsonl_bytes(tr))
+    try:                                         # day-speed 2026-11-20: send / fill times of every entry order (read-only)
+        fl = DP.day_fills(day, names=names)
+        if fl:
+            files["fills.jsonl.gz"] = DP.gz(DP.jsonl_bytes(fl))
+    except Exception:
+        pass
     g = day_gaps(day, notes)
     if g is not None and len(g) < 200_000:
         files["gaps.json"] = g
@@ -427,6 +466,7 @@ def send(blob: bytes, meta: dict, env=None, http_fn=None) -> tuple:
     if len(msg.encode("utf-8")) > 3900:
         msg = json.dumps({k: meta.get(k) for k in ("v", "kind", "req", "made_t", "since", "days", "from", "to", "more",
                                                     "bytes", "sha256", "code")}, separators=(",", ":"), sort_keys=True)
+    msg = _sign_msg(msg)
     if blob:
         h = {"Filename": f"pcdata-{meta.get('from')}-{meta.get('to')}.zip", "Message": msg, "Priority": "1"}
         st, b = (http_fn or http)("PUT", f"{base}/{topic}", blob, h, PUT_TIMEOUT_S)

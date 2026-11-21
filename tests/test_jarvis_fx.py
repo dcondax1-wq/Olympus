@@ -61,8 +61,10 @@ def site_copy(tmp):
     return H, v
 
 
-def page(H, br, host, v, ivory=False, reduce=False):
+def page(H, br, host, v, ivory=False, reduce=False, block=None):
     ctx, p, errs, kal = H.new_page(br, reduced_motion="reduce" if reduce else "no-preference")
+    if block:
+        ctx.route(re.compile(block), lambda r: r.abort())
     live = json.loads(json.dumps(H.LIVE))
     live["t"] = int(time.time()) - 60
     if isinstance(live.get("pc_health"), dict):
@@ -139,6 +141,21 @@ def main():
             check("c. a switcher card leans in 3D under the finger (rotateX + rotateY, a glare) and lets go on lift",
                   tilt and "rotateX(" in tilt["t"] and tilt["on"] and tilt["glare"] and not after["on"] and "rotateX(" not in after["t"], (tilt, box))
             check("b-c. no page errors", not errs, errs[:3])
+            ctx.close()
+            # the auto-low is not final (lead QA 2026-11-21): a screen that keeps up (here: the 3D sky and core left out, so frames are free)
+            ctx, p, errs = page(H, br, host, v, block=r".*/(backdrop|core-visual)\.js.*")
+            # the auto-low is not final (lead QA 2026-11-21): a fast screen gets High back (unsaved), the owner's own pick is never touched
+            p.evaluate("() => { const r = document.documentElement; r.dataset.fxAuto = '1'; delete r.dataset.fxSet; r.dataset.fx = 'low'; window.__jarvisReprobe(); }")
+            try:
+                p.wait_for_function("document.documentElement.dataset.fx === 'high'", timeout=8000)
+            except Exception:                           # noqa: BLE001 - reported below
+                pass
+            back = p.evaluate("[document.documentElement.dataset.fx, document.documentElement.dataset.fxAuto || '', localStorage.getItem('jfx')]")
+            p.evaluate("() => { const r = document.documentElement; r.dataset.fxAuto = '1'; r.dataset.fxSet = '1'; r.dataset.fx = 'low'; window.__jarvisReprobe(); }")
+            p.wait_for_timeout(3000)
+            kept = p.evaluate("document.documentElement.dataset.fx")
+            check("c. an automatic Low is not final: fast frames bring High back (not saved); the owner's own pick is never overridden",
+                  back[0] == "high" and back[1] == "" and back[2] is None and kept == "low", (back, kept))
             ctx.close()
             # d. reduced motion, Ivory
             ctx, p, errs = page(H, br, host, v, reduce=True)

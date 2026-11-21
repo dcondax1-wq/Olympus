@@ -1,8 +1,8 @@
 """PERSONALISED POSTCARDS for the Website Factory (day-a11y 2026-11-20): "<Business>, your new website is already built - scan to see it".
 
 Why mail: the map leads have no email and most have no phone; cold AI calls need signed consent in Maryland. A postcard is legal to send
-to a business, and its QR code opens the business's own concept site, where "Have our assistant call me" is the only way the AI caller
-ever rings them.
+to a business, and its QR code opens the business's own concept site. The AI assistant only answers calls (inbound): "Call <agency number>:
+our AI assistant answers." PARKED: the owner chose cold calling by a real person (2026-11-20); this stays OFF.
 
   python tools/postcards.py samples [--out DIR]   3 sample cards (front + back PNG, and one PDF of all six sides): no key, nothing sent
   python tools/postcards.py setup                 POSTCARD_SETUP.bat: the provider's API key (typed hidden) -> %USERPROFILE%\\.olympus\\
@@ -34,6 +34,11 @@ import time
 import urllib.request
 import uuid
 
+ROOT_ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if ROOT_ not in sys.path:
+    sys.path.insert(0, ROOT_)
+from agency import public as PUB  # noqa: E402  (the one public address + the banned list, shared with the email autopilot)
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 WEB = os.path.join(ROOT, "tools", "web_public")
@@ -43,7 +48,7 @@ DPI = 300
 W, H = int(6.25 * DPI), int(4.25 * DPI)              # 4x6 with the 1/8" bleed on every side (Lob's 4x6 template)
 ADDR_ZONE = (W - int(3.55 * DPI), H - int(2.65 * DPI), W, H)   # the back's ink-free address + postage block (Lob 4x6: 3.2835" x 2.375", bottom right) + margin, kept blank
 LOB_URL = "https://api.lob.com/v1/postcards"
-SITE_BASE = "https://dcondax1-wq.github.io/jarvis"
+SAMPLE_BASE = "https://your-agency.example"        # samples only (a preview, never mailed): the real base is public_base, no default
 BRAND = {"ink": (17, 24, 39), "muted": (75, 85, 99), "accent": (37, 99, 235), "paper": (255, 255, 255), "soft": (239, 246, 255)}   # a clean agency look
 
 
@@ -78,7 +83,6 @@ def norm_cfg(raw) -> dict:
     c["provider"] = "lob"
     c["cap_day"] = max(1, min(CAP_DAY, int(c.get("cap_day") or CAP_DAY)))
     c["cap_week"] = max(1, min(CAP_WEEK, int(c.get("cap_week") or CAP_WEEK)))
-    c.setdefault("site_base", SITE_BASE)
     return c
 
 
@@ -97,6 +101,8 @@ def cfg_problems(c: dict) -> list:
     for k, label in (("from_name", "your name"), ("business_name", "your business name"), ("reply_email", "the email for 'no more mail'")):
         if not c.get(k):
             p.append(label)
+    if not PUB.public_base(c.get("site_base")):
+        p.append("the agency's public web address (tools/site_factory_agency.json public_base, a neutral host)")
     return p
 
 
@@ -151,8 +157,12 @@ def mail_address(L: dict):
 
 def demo_url(L: dict, sites: dict, base: str) -> tuple:
     own = (sites or {}).get(L.get("id")) or L.get("demo_url")
-    b = str(base or SITE_BASE).rstrip("/")
-    if isinstance(own, str) and re.match(r"^(https://|sites/|/|\.\./|f/[a-z2-9]{8}/)", own):
+    b = str(base or "").rstrip("/")
+    if not b:
+        raise ValueError("no public web address (public_base)")
+    if isinstance(own, str) and re.fullmatch(r"f/[a-z2-9]{8}/", own):
+        return b + "/" + own, True                      # the neutral host serves the concept sites at <public_base>/f/<id>/
+    if isinstance(own, str) and re.match(r"^(https://|sites/|/|\.\./)", own):
         return (own if own.startswith("https://") else b + "/agency/" + re.sub(r"^(\.\./)+|^/?agency/", "", own.lstrip("/"))), True
     d = {"food": "restaurant", "auto": "detailer", "trades": "roofer", "home": "roofer", "realestate": "estate", "outdoor": "shed"}.get(L.get("niche") or "", "")
     return b + "/agency/demos/" + (d + "/" if d else ""), False
@@ -194,7 +204,7 @@ def pick(leads: list, sent: dict, never: dict, sites: dict, n: int, require_own_
             why = "already sent"
         elif L["id"] in never["lead_ids"] or (str(L.get("email") or "").lower() in never["emails"]):
             why = "said no (never again)"
-        url, own = demo_url(L, sites, "")
+        url, own = demo_url(L, sites, SAMPLE_BASE)        # only "is their own site built?" here; the real link uses public_base
         addr = None
         if not why and require_own_site and not own:
             why = "their own concept site is not built yet"
@@ -302,14 +312,18 @@ def render(L: dict, cfg: dict, url: str, follow: bool = False):
     d.text((x0, y), f"Hi {biz},", font=font("bold", 48), fill=B["ink"])
     y += 72
     say = f" and mention your code {code}" if code else ""
+    cl = PUB.call_line(PUB.agency_number(cfg.get("agency_number")))
     if follow:
         msg = (f"A few days ago we sent you a card about the website draft we built for you. It's still there, free to look at: scan the code on "
-               f"the front or visit {short}. It can be live this week, with your photos and your own domain. Questions? Reply by email{say}, "
-               f"or tap \"Have our assistant call me\" on the site. This is our last card unless you ask for more.")
+               f"the front or visit {short}. It can be live this week, with your photos and your own domain. {cl or 'Questions?'} Or reply by email{say}. "
+               f"This is our last card unless you ask for more.")
     else:
         msg = (f"When people search for you online, there's no website to find. So we built you a draft, free to look at: scan the code on the "
-               f"front or visit {short}. If you like it, it can be yours this week, with your photos and your own domain. Prefer a call? On the site, "
-               f"tap \"Have our assistant call me\"{say and ', or email us' + say}.")
+               f"front or visit {short}. If you like it, it can be yours this week, with your photos and your own domain. {cl or 'Questions?'} "
+               f"Or email us{say}.")
+    for t in (msg, url, biz, cfg.get("business_name"), cfg.get("reply_email")):
+        if PUB.banned(t):
+            raise ValueError("refused: the card would show the owner's private address (" + PUB.banned(t) + ")")
     fm, lh = font("reg", 36), 46
     for ln in wrap(d, msg, fm, full):
         if y + lh > ADDR_ZONE[1] - 10:
@@ -419,7 +433,7 @@ def run_once(cfg: dict, state: dict, leads: list, sites: dict, now=None, send=No
             due.append((byid[lid], addr, True))
     todo, res["skipped"] = pick(leads, real, nev, sites, max(0, room - len(due)))
     for L, addr, follow in (due[:max(0, room)] + [(a, b, False) for a, b in todo])[:max(0, room)]:
-        url, _ = demo_url(L, sites, cfg.get("site_base"))
+        url, _ = demo_url(L, sites, PUB.public_base(cfg.get("site_base")))
         try:
             fr, bk = render(L, cfg, url, follow=follow)
             r = (send or lob_send)(cfg, addr, png(fr), png(bk), L["id"])
@@ -515,7 +529,8 @@ def results_text(res: dict) -> str:
 # ------------------------------------------------------------------------------------------------ commands
 def leads_and_sites() -> tuple:
     """the leads, annotated with day-cities3's factory data (_code FR-27, _niche, _chain), and {lead id: its concept site path}"""
-    leads = (rj(os.path.join(WEB, "agency", "leads", "leads.json"), {}) or {}).get("leads") or []
+    from agency import leadsfile
+    leads = leadsfile.load(os.path.join(WEB, "agency"))   # leads.json, or its per-town files
     idx = rj(os.path.join(WEB, "agency", "sites", "index.json"), {}) or {}
     s = idx.get("sites") if isinstance(idx, dict) else None
     if isinstance(s, list):
@@ -548,7 +563,7 @@ def samples(out_dir: str, cfg: dict | None = None) -> list:
     os.makedirs(out_dir, exist_ok=True)
     pages, files = [], []
     for i, L in enumerate(pickd, 1):
-        url, _ = demo_url(L, sites, cfg.get("site_base") or SITE_BASE)
+        url, _ = demo_url(L, sites, PUB.public_base(cfg.get("site_base")) or SAMPLE_BASE)
         fr, bk = render(L, cfg, url)
         for side, im in (("front", fr), ("back", bk)):
             p = os.path.join(out_dir, f"card{i}-{side}.png")

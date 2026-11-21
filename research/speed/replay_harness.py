@@ -26,8 +26,9 @@ if ROOT not in sys.path:
 
 import pandas as pd  # noqa: E402
 
-DATA = os.path.join(ROOT, "data")
-ET = dt.timezone(dt.timedelta(hours=-5))          # November: EST
+DATA = os.environ.get("SPEED_DATA_DIR") or os.path.join(ROOT, "data")   # tools/update_gate.py: both code versions read ONE data dir
+from zoneinfo import ZoneInfo  # noqa: E402
+ET = ZoneInfo("America/New_York")
 MAX1, MAX5, TRIM = 20000, 8000, 1000
 
 
@@ -120,7 +121,7 @@ def build(days, tmp):
     return feed, nt_dir, arc_dir, start
 
 
-def run(days, patches=(), quiet=False, offset=2.0, cfg_extra=None):
+def run(days, patches=(), quiet=False, offset=2.0, cfg_extra=None, max_polls=None):
     from engine import live, poll_timing
     from tests.test_live_dryrun import Replay
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -146,7 +147,7 @@ def run(days, patches=(), quiet=False, offset=2.0, cfg_extra=None):
         r = bot.start(cfg, spawn=False)
         assert r.get("ok"), r
         rows, errors = [], []
-        for t in poll_times(days, offset):
+        for t in poll_times(days, offset)[:max_polls]:
             clock["now"] = int(t)
             feed.advance(int(t))
             w0 = time.perf_counter()
@@ -160,9 +161,11 @@ def run(days, patches=(), quiet=False, offset=2.0, cfg_extra=None):
                          "stages": {s["name"]: s["ms"] for s in ps.get("stages") or []}})
         led = [{k: r.get(k) for k in ("side", "qty", "stop", "target", "entry_t", "pnl", "t", "reason", "px")}
                for r in bot.ledger]
+        led_b = [{k: r.get(k) for k in ("side", "qty", "stop", "target", "entry_t", "pnl", "t", "reason", "key")}
+                 for r in (getattr(bot.acct_b, "ledger", None) or [])] if getattr(bot, "acct_b", None) is not None else None
         sig = [l["text"] for l in reversed(list(bot.log)) if l.get("type") in ("order", "signal", "trade", "risk")]
         return {"days": list(days), "patches": list(patches), "polls": len(rows), "errors": errors[:10], "n_errors": len(errors),
-                "ledger": led, "signals": sig, "rows": rows}
+                "ledger": led, "ledger_atlas": led_b, "signals": sig, "rows": rows}
     finally:
         for u in undo:
             u()
@@ -192,12 +195,20 @@ def main(argv=None):
     ap.add_argument("--days", default="2026-11-16,2026-11-17,2026-11-18")
     ap.add_argument("--patch", action="append", default=[])
     ap.add_argument("--out")
+    ap.add_argument("--atlas-funded", action="store_true", help="ATLAS in the funded stage (as on the PC since 2026-11-18)")
+    ap.add_argument("--atlas", action="store_true", help="also ATLAS (account B, paper, its 3 live members, builder25k)")
+    ap.add_argument("--max-polls", type=int, default=None, help="tests: only the first N polls")
     ap.add_argument("--offset", type=float, default=2.0, help="seconds after each minute the poll runs (2.0 = today; 0.2 = fast entry)")
     a = ap.parse_args(argv)
-    res = run(a.days.split(","), a.patch, offset=a.offset)
+    extra = {"account_b": {"account": "SimATLAS", "plan": "builder25k", "strategies": ["ema_lon_vix", "macd_sweep", "sr_nyreclaim"],
+                           "sizing": "need", "eval_start": "2026-11-02",
+                           **({"stage": "funded", "funded_start": "2026-11-02", "funded_balance": 25000.0} if a.atlas_funded else {})}} \
+        if (a.atlas or a.atlas_funded) else None
+    res = run(a.days.split(","), a.patch, offset=a.offset, cfg_extra=extra, max_polls=a.max_polls)
     s = summary(res)
     print(json.dumps({"polls": s["polls"], "errors": res["n_errors"], "wall_median_ms": s["wall_median_ms"],
-                      "wall_p90_ms": s["wall_p90_ms"], "lit_median_ms": s["lit_median_ms"], "ledger": len(res["ledger"])}))
+                      "wall_p90_ms": s["wall_p90_ms"], "lit_median_ms": s["lit_median_ms"], "ledger": len(res["ledger"]),
+                      "ledger_atlas": None if res.get("ledger_atlas") is None else len(res["ledger_atlas"])}))
     for st in s["stages"][:14]:
         print(f"  {st['median_ms']:>7} ms med  {st['p90_ms']:>7} p90  x{st['n']:<5} {st['name']}")
     if a.out:
