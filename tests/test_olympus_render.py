@@ -212,8 +212,10 @@ def test_jarvis(br, origin):
         pass
     b = p.evaluate("() => Object.assign({}, window.__jarvisBackdrop, { stats: null, bg3d: document.documentElement.dataset.bg3d,"
                    " stars: getComputedStyle(document.getElementById('stars')).display })")
-    check("g. Jarvis home: the 3D backdrop is up on the render core (3 passes at high) and the flat 2D layers step aside",
-          b.get("state") == "on" and b.get("passes") == 3 and b.get("bg3d") == "on" and b.get("stars") == "none", b)
+    # QA 2026-11-21: the sky starts at the low tier (2 passes: its first frames cost least) and earns the chosen tier (high: 3 passes)
+    # after 30 fast frames; a slow machine (this software GL) keeps low, or holds a still frame
+    check("g. Jarvis home: the 3D backdrop is up on the render core (the low tier's 2 passes at start / on a slow machine, 3 at high) and the flat 2D layers step aside",
+          b.get("state") == "on" and (b.get("quality"), b.get("passes")) in (("low", 2), ("high", 3)) and b.get("bg3d") == "on" and b.get("stars") == "none", b)
     p.evaluate("() => window.jarvisPortal.warm()")
     p.evaluate("() => document.querySelector('[data-app=\"oracle\"]').click()")
     s0 = p.evaluate("() => Object.assign({}, window.__jarvisPortal, { overlay: !!document.querySelector('.jportal') })")

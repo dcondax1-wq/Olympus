@@ -223,7 +223,7 @@ async function mount() {
     if (rc.asleep()) { rc.resume(); state.asleep = false; themeKey = ''; theme(); }
     if (live()) { if (!raf) { last = 0; raf = requestAnimationFrame(frame); } return; }
     if (raf) { cancelAnimationFrame(raf); raf = 0; }
-    if (onHome() && !document.hidden && still()) { step(0); draw(); }      // off / low / reduced motion: one still frame
+    if (onHome() && !document.hidden && (still() || slowLvl >= 2)) { step(0); draw(); }      // off / low / reduced motion / too slow: one still frame (again after an app: its buffers were freed)
   }
   // follow the effects level, the theme and the home screen (attributes the shell already sets)
   new MutationObserver(() => {
