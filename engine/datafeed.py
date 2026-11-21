@@ -340,6 +340,12 @@ def pack_day(day: str, picked: dict, rows: list, names, contracts: dict, now, co
         files.update(DP.day_bars(day, {(root, tf): f}))
     tr = DP.day_trades(day, rows, names)
     files["trades.jsonl.gz"] = DP.gz(DP.jsonl_bytes(tr))
+    try:                                         # day-speed 2026-11-20: send / fill times of every entry order (read-only)
+        fl = DP.day_fills(day, names=names)
+        if fl:
+            files["fills.jsonl.gz"] = DP.gz(DP.jsonl_bytes(fl))
+    except Exception:
+        pass
     g = day_gaps(day, notes)
     if g is not None and len(g) < 200_000:
         files["gaps.json"] = g
