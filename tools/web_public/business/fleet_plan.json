@@ -121,19 +121,101 @@
  ],
  "top_decide": [
   {
-   "id": "atlas-on-rapid",
-   "title": "Rapid: ATLAS next to Zlarior (built ON; NO = LIT alone)",
-   "usd": 391
+   "id": "buy-rapid50-now",
+   "title": "Buy: Rapid EOD 50K (your 5th funded slot) ($165.00, now (Mon Nov 23))",
+   "usd": 554
   },
   {
-   "id": "zlarior-funded25",
-   "title": "ATLAS's funded 25K: LIT trades it too",
-   "usd": 166
+   "id": "refill-25k-with-rapid50",
+   "title": "Buy: Rapid EOD 50K instead of a new Builder 25K ($165.00, the night a Builder 25K dies)",
+   "usd": 249
   },
   {
-   "id": "zlarior-atlas-50k",
-   "title": "ATLAS on Zlarior's 50K once funded (LIT + ATLAS $500)",
-   "usd": 216
+   "id": "second-50k-eval-now",
+   "title": "Buy: 2nd Builder 50K eval ($91.80, this week)",
+   "usd": 63
   }
- ]
+ ],
+ "ninety": {
+  "date": "2026-11-21",
+  "tax": 0.3,
+  "source": "research/lab/fleet_90day.json (tools/money/fleet_90day.py)",
+  "months": [
+   {
+    "m": "2026-12",
+    "today": 0,
+    "with_buys": 0,
+    "good": 1680,
+    "half": 0,
+    "ref": -257
+   },
+   {
+    "m": "2027-01",
+    "today": 743,
+    "with_buys": 1583,
+    "good": 6776,
+    "half": -92,
+    "ref": -330
+   },
+   {
+    "m": "2027-02",
+    "today": 1680,
+    "with_buys": 3025,
+    "good": 9202,
+    "half": 0,
+    "ref": -330
+   }
+  ],
+  "totals": {
+   "today": 3055,
+   "with_buys": 5561,
+   "good": 15932,
+   "bad": 468,
+   "half": -51,
+   "ref": -873,
+   "jun_today": 22117,
+   "jun_with_buys": 28833,
+   "jun_if_dormant": 17196
+  },
+  "buys": [
+   {
+    "id": "buy-rapid50-now",
+    "what": "Rapid EOD 50K (your 5th funded slot)",
+    "when": "now (Mon Nov 23)",
+    "price": 165.0,
+    "gain_feb": 2673,
+    "gain_jun": 4435,
+    "half_jun": 1310,
+    "worst_jun": -639,
+    "usd_month": 554
+   },
+   {
+    "id": "refill-25k-with-rapid50",
+    "what": "Rapid EOD 50K instead of a new Builder 25K",
+    "when": "the night a Builder 25K dies",
+    "price": 165.0,
+    "gain_feb": 43,
+    "gain_jun": 1993,
+    "half_jun": 1005,
+    "worst_jun": -573,
+    "usd_month": 249
+   },
+   {
+    "id": "second-50k-eval-now",
+    "what": "2nd Builder 50K eval",
+    "when": "this week",
+    "price": 91.8,
+    "gain_feb": 479,
+    "gain_jun": 507,
+    "half_jun": 62,
+    "worst_jun": -39,
+    "usd_month": 63
+   }
+  ],
+  "risk": {
+   "live_move_med": "2027-04-28",
+   "p_by_mar31": 27.7,
+   "jun_drop_pct": 40
+  }
+ }
 }

@@ -43,7 +43,7 @@ MP, PD, MB, np = FM.MP, FM.PD, FM.MB, FM.np
 ROOT = FM.ROOT
 OUT = os.path.join(ROOT, "research", "lab", "fleet_90day.json")
 TAX = 0.30                      # the owner's pot rule (STATE: 30% of every payout); day-taxes: 40% if he has a day job
-FM.TAX = TAX
+                                # (set on fleet_months only inside job(): importing this module never changes fleet_months)
 SPANS = FM.SPANS
 WINDOW = ("2026-12", "2027-01", "2027-02")
 PLAN = {"Z50": "builder50k", "Z50b": "builder50k", "N25": "builder25k", "A25": "builder25k", "R25": "rapideod25",
@@ -257,6 +257,7 @@ def job(a):
     import logging
     logging.getLogger("engine.sizing").setLevel(logging.ERROR)
     t0 = time.time()
+    FM.TAX = TAX                                 # this worker's fleet_months.monthly() uses the 30% pot
     FM.set_fills("real")
     cal = FM.calendar()
     P = FM.paths(span, n, len(cal))

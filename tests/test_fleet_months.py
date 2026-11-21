@@ -94,8 +94,28 @@ def part_e():
     check("e. phone file is small (< 6 KB)", os.path.getsize(FM.PHONE) < 6000, os.path.getsize(FM.PHONE))
 
 
+def part_f():
+    """the 90-day block (day-fleet 2026-11-21): numbers from research/lab/fleet_90day.json, the page script is text only"""
+    import re
+    import subprocess
+    n = PHONE.get("ninety") or {}
+    r9 = json.load(open(FM.NINETY, encoding="utf-8"))
+    check("f. ninety: Dec-Feb today / with the 3 buys = fleet_90day.json", n.get("totals", {}).get("today") == r9["rows"]["base"]["H2"]["totals"]["dec_feb_median"]
+          and n["totals"]["with_buys"] == r9["rows"]["all3"]["H2"]["totals"]["dec_feb_median"] and len(n.get("buys") or []) == 3, n.get("totals"))
+    check("f. top_decide = the 3 open buy cards", [c["id"] for c in PHONE["top_decide"]] == [b["id"] for b in n["buys"]])
+    js = open(os.path.join(ROOT, "tools", "web_public", "business", "ninety.js"), encoding="utf-8").read()
+    html = open(os.path.join(ROOT, "tools", "web_public", "business", "plan.html"), encoding="utf-8").read()
+    check("f. ninety.js: textContent only, no outside address, on plan.html", not re.search(r"innerHTML|insertAdjacentHTML|document\.write|\beval\(|https?://", js)
+          and 'id="ninety"' in html and 'src="ninety.js?v=' in html)
+    try:
+        r = subprocess.run(["node", "--check", os.path.join(ROOT, "tools", "web_public", "business", "ninety.js")], capture_output=True, text=True, timeout=60)
+        check("f. node: ninety.js parses", r.returncode == 0, r.stderr[-300:])
+    except FileNotFoundError:
+        print("  (node not found: parse check skipped)")
+
+
 if __name__ == "__main__":
-    for f in (part_a, part_b, part_c, part_d, part_e):
+    for f in (part_a, part_b, part_c, part_d, part_e, part_f):
         f()
     print(f"\n{sum(RES)}/{len(RES)} passed")
     sys.exit(0 if all(RES) else 1)

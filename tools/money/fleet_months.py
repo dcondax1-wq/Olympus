@@ -452,7 +452,50 @@ def phone(res):
                                  f"8 in 10 runs between {s2['next_buy']['date_p10']} and {s2['next_buy']['date_p90']}, "
                                  f"paid from payouts in the bank")},
             "top_cards": top,
-            "top_decide": [{"id": c["id"], "title": c["what"], "usd": c["yes_usd_month"]} for c in top]}
+            "top_decide": [{"id": c["id"], "title": c["what"], "usd": c["yes_usd_month"]} for c in top],
+            **ninety_block()}
+
+
+NINETY = os.path.join(ROOT, "research", "lab", "fleet_90day.json")
+
+
+def ninety_block():
+    """The 90-day plan (tools/money/fleet_90day.py) for the phone, when it exists: Dec-Feb today's plan vs with the 3 buys, the
+    buys with their $, and the live-move risk. Its 3 purchase cards replace top_decide (the older cards are answered)."""
+    if not os.path.exists(NINETY):
+        return {}
+    r = json.load(open(NINETY, encoding="utf-8"))
+    import fleet_90day as F9
+    B, A = r["rows"]["base"], r["rows"]["all3"]
+    vb = r["vs_base"]
+    months = []
+    for i, m in enumerate(r["window"]):
+        months.append({"m": m, "today": B["H2"]["months"][i]["median"], "with_buys": A["H2"]["months"][i]["median"],
+                       "good": A["H2"]["months"][i]["good_1_in_10"], "half": A["HALF"]["months"][i]["median"],
+                       "ref": A["REF"]["months"][i]["median"]})
+    tot = {"today": B["H2"]["totals"]["dec_feb_median"], "with_buys": A["H2"]["totals"]["dec_feb_median"],
+           "good": A["H2"]["totals"]["dec_feb_good"], "bad": A["H2"]["totals"]["dec_feb_bad"],
+           "half": A["HALF"]["totals"]["dec_feb_median"], "ref": A["REF"]["totals"]["dec_feb_median"],
+           "jun_today": B["H2"]["totals"]["to_jun_mean"], "jun_with_buys": A["H2"]["totals"]["to_jun_mean"],
+           "jun_if_dormant": A["H2"]["live_move"]["to_jun_mean_if_dormant"]}
+    when = {"buy-rapid50-now": "now (Mon Nov 23)", "second-50k-eval-now": "this week",
+            "refill-25k-with-rapid50": "the night a Builder 25K dies"}
+    what = {"buy-rapid50-now": "Rapid EOD 50K (your 5th funded slot)", "second-50k-eval-now": "2nd Builder 50K eval",
+            "refill-25k-with-rapid50": "Rapid EOD 50K instead of a new Builder 25K"}
+    buys = []
+    for cid, C in F9.CARDS.items():
+        v = vb[C["plan"]]
+        buys.append({"id": cid, "what": what[cid], "when": when[cid], "price": C["price"],
+                     "gain_feb": v["H2"]["dec_feb_mean"], "gain_jun": v["H2"]["to_jun_mean"],
+                     "half_jun": v["HALF"]["to_jun_mean"], "worst_jun": v["REF"]["to_jun_mean"],
+                     "usd_month": round(v["H2"]["to_jun_mean"] / F9.NMONTHS)})
+    lm = A["H2"]["live_move"]
+    return {"ninety": {"date": r["date"], "tax": r["tax"], "source": "research/lab/fleet_90day.json (tools/money/fleet_90day.py)",
+                       "months": months, "totals": tot, "buys": buys,
+                       "risk": {"live_move_med": lm["median"], "p_by_mar31": lm["p_by_mar31"],
+                                "jun_drop_pct": round(100.0 * (1 - tot["jun_if_dormant"] / tot["jun_with_buys"])) if tot["jun_with_buys"] else None}},
+            "top_decide": [{"id": b["id"], "title": f"Buy: {b['what']} (${b['price']:.2f}, {b['when']})", "usd": b["usd_month"]}
+                           for b in buys]}
 
 
 def main(argv=None):
