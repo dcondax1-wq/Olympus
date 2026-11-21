@@ -6,7 +6,8 @@ Why: the bot's biggest money leak is the PC being off or asleep in market hours.
   python -X utf8 tools/pc_always_on.py            DRY RUN (default): prints each command and why. Changes nothing.
   python -X utf8 tools/pc_always_on.py --check    reads the PC's settings, prints GREEN / RED lines, one fix per RED.
   python -X utf8 tools/pc_always_on.py --apply    runs the commands (Windows, Administrator window). Elsewhere: "Windows only", exit 0.
-  --keep-hibernation   you keep scripts\\schedule_pc.ps1's nightly hibernation: also add Sunday 17:30 ET + daily 01:15 ET wake tasks.
+  --keep-hibernation   you keep scripts\\schedule_pc.ps1's hibernation (by design: nothing trades Sun 18:00 - Mon 02:00 ET): also add a
+                       weekday 01:15 ET second-chance wake before its 01:30 ET wake.
   --tz America/Chicago  pretend the PC lives in this zone (dry run / tests). Default: this PC's own clock.
 
 Stdlib only, no network, no secrets, no passwords. It never starts, stops or arms the bot and never places an order.
@@ -34,7 +35,11 @@ CARE_TASK = "LiquidityEngine-WeeklyCare"
 SUN_WAKE_TASK = "OlympusWakeSunday"
 DAILY_WAKE_TASK = "OlympusWakeDaily"
 
-SUN_ET = (17, 30)    # Sunday: 30 min before the 18:00 ET open
+SUN_ET = (17, 30)    # Sunday 17:30 ET (kept for wake_times(); no Sunday wake task: nothing trades before Monday 02:00 ET, lead 2026-11-21)
+# Why the weekend hibernation is fine (lead check 2026-11-21): every LIVE lane enters at 02:00 ET or later. LIT / Zlarior and the extra LIT
+# accounts: live_model.json window 02:00-15:30; ATLAS (engine/account_b default keys): EMA 03:00-09:30, MACD 02:00-05:00 + 09:30-11:00,
+# S/R 09:30-12:00; the Rapid EOD = the same LIT + ATLAS lanes; LIT+Asia (18:00-02:00) is cloud_only paper. tests/test_nqops guards it.
+EARLIEST_ENTRY_ET = (2, 0)
 DAILY_ET = (1, 15)   # 15 min before schedule_pc's 01:30 ET wake, 45 before the 02:00 entry window
 USB_SUB, USB_SET = "2a737441-1930-4402-8d77-b2bebba308a3", "48e6b7a6-50f5-4782-a5d4-53bb8f07e226"
 STARTUP_LNK = "NinjaTrader 8 (Liquidity Engine).lnk"   # scripts/one_time_setup.ps1 puts this in the Startup folder
@@ -133,14 +138,7 @@ def plan(now: dt.datetime, tz, keep_hibernation: bool = False, have: set | None 
     ]
     if keep_hibernation:
         w = wake_times(now, tz)
-        sl, dl = w["sunday_local"], w["daily_local"]
-        p.append({"cmd": _ps(
-            f"Register-ScheduledTask -TaskName '{SUN_WAKE_TASK}' -Force "
-            "-Action (New-ScheduledTaskAction -Execute 'cmd.exe' -Argument '/c exit') "
-            f"-Trigger (New-ScheduledTaskTrigger -Weekly -DaysOfWeek {sl.strftime('%A')} -At '{sl.strftime('%H:%M')}') "
-            "-Settings (New-ScheduledTaskSettingsSet -WakeToRun -StartWhenAvailable -AllowStartIfOnBatteries) | Out-Null"),
-            "why": (f"wake the PC from hibernation Sunday 17:30 ET ({sl.strftime('%A %H:%M')} on this PC), "
-                    "30 min before the 18:00 ET open; schedule_pc.ps1 only wakes Mon-Fri 01:30 ET")})
+        dl = w["daily_local"]
         p.append({"cmd": _ps(
             f"Register-ScheduledTask -TaskName '{DAILY_WAKE_TASK}' -Force "
             "-Action (New-ScheduledTaskAction -Execute 'cmd.exe' -Argument '/c exit') "
@@ -158,12 +156,13 @@ def plan(now: dt.datetime, tz, keep_hibernation: bool = False, have: set | None 
 def notes(keep_hibernation: bool) -> list[str]:
     n = []
     if keep_hibernation:
-        n.append("You keep schedule_pc.ps1: it hibernates the PC at 16:35 ET Mon-Fri (also Friday) and wakes it only Mon-Fri 01:30 ET. "
-                 "The two wake tasks above cover Sunday 17:30 ET and 01:15 ET. Hibernation keeps NinjaTrader and the bot closed in between.")
+        n.append("You keep schedule_pc.ps1: it hibernates the PC at 16:35 ET Mon-Fri (also Friday) and wakes it Mon-Fri 01:30 ET. "
+                 "That is by design: no live lane trades before 02:00 ET (the weekend too). The 01:15 ET task above is a second chance "
+                 "if the 01:30 wake is missed; wake timers must be ON (the RTCWAKE line).")
     else:
-        n.append("Never-sleep makes the Sunday / 01:15 ET wake tasks unnecessary, so none are added. But schedule_pc.ps1's "
-                 f"task {SLEEP_TASK} still HIBERNATES the PC at 16:35 ET: remove it (powershell -File scripts\\schedule_pc.ps1 -Uninstall) "
-                 "or add --keep-hibernation.")
+        n.append("Never-sleep on AC: the PC stays on. If schedule_pc.ps1's task "
+                 f"{SLEEP_TASK} exists it still hibernates the PC 16:35 ET Mon-Fri and wakes it 01:30 ET: that is fine (nothing trades "
+                 "before 02:00 ET); add --keep-hibernation for the 01:15 ET second-chance wake.")
     n.append("Guidance only (steps in docs/PC_ALWAYS_ON.md): auto-login (netplwiz) and BIOS 'restore on AC power loss'. "
              "Nothing here writes a password or logon value.")
     n.append("Windows Update: use --check; the fix is scripts\\one_time_setup.ps1 (active hours, no restart while signed in).")
@@ -230,13 +229,16 @@ def check(run=_run, startup=startup_shortcut_present) -> list[tuple[bool, str, s
     r.append((startup(), "NinjaTrader Startup shortcut present" if startup() else "NinjaTrader Startup shortcut missing",
               r"scripts\one_time_setup.ps1 adds it ('NinjaTrader 8 (Liquidity Engine).lnk' in shell:startup)"))
     hib = tasks[SLEEP_TASK] is not None
-    sun = tasks[SUN_WAKE_TASK] is not None
-    if hib and not sun:
-        r.append((False, f"Task {SLEEP_TASK} hibernates the PC 16:35 ET Mon-Fri and nothing wakes it Sunday (schedule_pc wakes Mon-Fri 01:30 ET only): "
-                  "the likely cause of a silent weekend",
-                  "python -X utf8 tools/pc_always_on.py --apply --keep-hibernation  (or remove it: scripts\\schedule_pc.ps1 -Uninstall)"))
-    elif hib and sun:
-        r.append((True, "Hibernation kept, Sunday wake task present", ""))
+    wake = tasks[WAKE_TASK] is not None
+    if hib and not wake:
+        r.append((False, f"Task {SLEEP_TASK} hibernates the PC 16:35 ET Mon-Fri but the 01:30 ET wake task {WAKE_TASK} is missing: "
+                  "nothing wakes it for the 02:00 ET entries",
+                  r"powershell -ExecutionPolicy Bypass -File scripts\schedule_pc.ps1  (puts the wake + sleep tasks back)"))
+    elif hib:
+        r.append((True, f"Hibernation by design (16:35 ET, the weekend too: nothing trades before Mon 02:00 ET); {WAKE_TASK} wakes it 01:30 ET"
+                  + ("; 01:15 ET second-chance wake present" if tasks[DAILY_WAKE_TASK] else ""), ""))
+        if not tasks[DAILY_WAKE_TASK]:
+            r.append((True, "Optional: a 01:15 ET second-chance wake (python -X utf8 tools/pc_always_on.py --apply --keep-hibernation)", ""))
     else:
         r.append((True, "No nightly hibernation task: the PC just stays on", ""))
     au = reg_value(r"HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU", "NoAutoRebootWithLoggedOnUsers", run)
@@ -292,8 +294,8 @@ def main(argv=None, is_windows: bool | None = None, run=_run, now: dt.datetime |
     have = None
     if win:
         have = {n for n in (BOT_TASK, OPS_TASK, SLEEP_TASK) if task_info(n, run) is not None}
-        if SLEEP_TASK in have and not keep and a.apply:
-            keep = True   # the owner already has the hibernation task: wake tasks are needed, do not remove anything silently
+        if SLEEP_TASK in have and not keep:
+            keep = True   # the owner keeps schedule_pc's hibernation (by design): add the 01:15 ET second-chance wake, remove nothing
     steps = plan(now, tz, keep, have)
     out(("APPLY" if a.apply else "DRY RUN (nothing is changed; add --apply in an Administrator window)") + f" - PC zone {tz}")
     for s in steps:

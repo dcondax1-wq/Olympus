@@ -3,10 +3,11 @@
   a. clock7     engine/clock7.py: per account last fill, MFFU's last day (base + 7), sessions left, red / amber / ok, keep-alive switch;
                 the pc_post fixture: Zlarior 50K last fill Mon 11-16 -> MFFU last day Mon 11-23 (the lead's "hard day")
   b. preflight  engine/preflight.py: "Ready" with all green, the exact first fix otherwise (NinjaTrader, an unarmed account, a red clock),
-                the Sunday 17:30 ET window in engine/ops_checks.due and its tick (one push, key ops:sun:<day>), the weekday pre-session
-                notice carries the clock line, never raises
-  c. cloud      tools/pc_silent_check.preopen_step: Sunday 17:00-18:00 ET and weekdays 01:00-01:30 ET, ONE "PC is off: market opens in N
-                min" when the PC's last post is stale, none when fresh, none twice (state or read back), none on Saturday; run() wired
+                the Monday 01:35-01:50 ET window (just after the 01:30 wake) in engine/ops_checks.due and its tick (ONE push with the
+                pre-session's key), the weekday pre-session notice carries the clock line, never raises
+  c. cloud      tools/pc_silent_check.preopen_step: Sunday 17:00-18:00 ET only; a quiet "asleep until the Mon 01:30 ET wake" note, or ONE
+                loud push with what to do when a 7-day clock is red; none when fresh, none twice; run() wired
+  lanes         no live lane enters between Sun 18:00 and Mon 02:00 ET (the weekend hibernation is by design only while this holds)
   d. post       tools/pc_report: the ext block "k7" (no "t": ext_hash stays still), every post <= 3,900 bytes
   e. page       tools/web_public/nq/clock7.js = engine/clock7.py on the same post (node); the NQ page's 7-day clock card + window.NQ_K7
                 (Chromium, the pc_post fixture)
@@ -93,31 +94,35 @@ def test_preflight():
     p = PF.build(_checks(), HB, SUN, {"mf": PC["mf"]})
     check("b. Zlarior's 7-day clock red on Sunday (MFFU last day Mon 11-23) = the first fix, with what to do",
           not p["ready"] and p["fixes"] and p["fixes"][0].startswith("Zlarior 50K: last fill Mon 11-16, MFFU last day Mon 11-23") and "by hand" in p["fixes"][0], p["fixes"])
-    p = PF.build(_checks(), {}, ts(2026, 11, 23, 1, 45), ext_ok)
-    check("b. a weekday: 'today's session' wording", p["title"].startswith("Ready for today's session"), p)
+    p = PF.build(_checks(), {}, ts(2026, 11, 24, 1, 45), ext_ok)
+    check("b. Tuesday: 'today's session' wording", p["title"].startswith("Ready for today's session"), p)
     check("b. never raises on junk", isinstance(PF.build(None, "x", SUN, 3), dict))
-    du = [OC.due(t).get("preflight") for t in (ts(2026, 11, 22, 17, 29), ts(2026, 11, 22, 17, 30), ts(2026, 11, 22, 18, 15),
-                                                ts(2026, 11, 22, 18, 16), ts(2026, 11, 21, 17, 30), ts(2026, 11, 23, 17, 30))]
-    check("b. ops_checks.due: preflight only Sunday 17:30-18:15 ET", du == [False, True, True, False, False, False], du)
+    du = [OC.due(t).get("preflight") for t in (ts(2026, 11, 23, 1, 34), ts(2026, 11, 23, 1, 35), ts(2026, 11, 23, 1, 50),
+                                                ts(2026, 11, 23, 1, 51), ts(2026, 11, 22, 17, 30), ts(2026, 11, 24, 1, 40))]
+    check("b. ops_checks.due: preflight only Monday 01:35-01:50 ET (just after the 01:30 wake; not Sunday, not Tuesday)", du == [False, True, True, False, False, False], du)
     st, sent = {"sent": {}}, []
     tmpd = os.path.join(AK.ROOT, "tests", "fixtures", "_nqops_ops")
     os.makedirs(tmpd, exist_ok=True)
     sp = os.path.join(tmpd, "ops_state.json")
-    ctx = {"now": SUN, "folder": tmpd, "ping": None, "hb": HB, "net": {"up": True, "n": 3, "drift_s": 0.2}, "state": st, "light": True}
+    MON = ts(2026, 11, 23, 1, 40)
+    ctx = {"now": MON, "folder": tmpd, "ping": None, "hb": HB, "net": {"up": True, "n": 3, "drift_s": 0.2}, "state": st, "light": True}
     real_rc, real_ext = OC.run_checks, PF.last_ext
     OC.run_checks = lambda c: _checks()
     PF.last_ext = lambda path=None: ext_ok
     try:
-        OC.tick(now=SUN, ctx=ctx, state=st, sender=lambda p: sent.append(p) or {"sent": True}, state_path=sp, do_backup=False)
-        OC.tick(now=SUN + 300, ctx=ctx, state=st, sender=lambda p: sent.append(p) or {"sent": True}, state_path=sp, do_backup=False)
+        OC.tick(now=MON, ctx=ctx, state=st, sender=lambda p: sent.append(p) or {"sent": True}, state_path=sp, do_backup=False)
+        OC.tick(now=MON + 300, ctx=ctx, state=st, sender=lambda p: sent.append(p) or {"sent": True}, state_path=sp, do_backup=False)
     except Exception as e:  # noqa: BLE001
         sent.append({"err": repr(e)})
     finally:
         OC.run_checks, PF.last_ext = real_rc, real_ext
         shutil.rmtree(tmpd, ignore_errors=True)
-    pre = [p for p in sent if str(p.get("key", "")).startswith("ops:sun:")]
-    check("b. ops_checks.tick on Sunday 17:30: ONE preflight push (key ops:sun:2026-11-22), not repeated 5 min later",
-          len(pre) == 1 and pre[0]["key"] == "ops:sun:2026-11-22" and pre[0]["title"].startswith("Ready for Sunday"), [(p.get("key"), p.get("title"), p.get("err")) for p in sent])
+    pre = [p for p in sent if str(p.get("key", "")).startswith("ops:pre:")]
+    check("b. ops_checks.tick Monday 01:40 (preflight + pre-session windows both open): ONE push, the preflight's 'Ready for the week', not repeated",
+          len(pre) == 1 and pre[0]["key"] == "ops:pre:2026-11-23" and pre[0]["title"] == "Ready for the week (entries from 02:00 ET)",
+          [(p.get("key"), p.get("title"), p.get("err")) for p in sent])
+    p = PF.build(_checks(nt_conn="DISCONNECTED"), HB, ts(2026, 11, 23, 1, 36), ext_ok)
+    check("b. Monday 01:36 with NinjaTrader down: 'Fix before 02:00 ET: NinjaTrader connection'", p["title"] == "Fix before 02:00 ET: NinjaTrader connection", p["title"])
     cl = PF.clock_line({}, ts(2026, 11, 23, 1, 45), {"mf": PC["mf"]})
     check("b. the weekday pre-session line: the red / amber accounts", cl.startswith(" 7-day clock: Zlarior 50K") and "TODAY" in cl, cl)
 
@@ -129,17 +134,20 @@ def test_cloud():
     fri = ts(2026, 11, 20, 21, 0)
     clock = [{"nm": "Zlarior 50K", "lf": "2026-11-16", "hard": "2026-11-23", "left": 1, "on": False, "lvl": "bad"}]
     st, m = P.preopen_step({}, fri, SUN, s, clock=clock)
-    check("c. Sunday 17:30 ET, PC silent since Fri 21:00: ONE 'PC is off: market opens in 30 min' with the red clock",
-          len(m) == 1 and m[0]["title"] == "PC is off: market opens in 30 min" and "Fri Nov 20 21:00 ET" in m[0]["body"] and "Mon 11-23" in m[0]["body"], m)
+    check("c. Sunday 17:30 ET, PC asleep since Fri 21:00 and Zlarior's clock RED: ONE loud push saying exactly what to do",
+          len(m) == 1 and m[0]["priority"] == "high" and m[0]["title"].startswith("PC is off - Zlarior 50K: must trade by 2026-11-23")
+          and "01:30 ET" in m[0]["body"] and "by hand" in m[0]["body"] and "Mon 11-23" in m[0]["body"], m)
+    _q, mq = P.preopen_step({}, fri, SUN, s, clock=[{**clock[0], "lvl": "warn"}])
+    check("c. no red clock: ONE quiet note 'asleep until the Mon 01:30 ET wake (as scheduled)', nothing to do (the weekend hibernation is by design)",
+          len(mq) == 1 and mq[0]["priority"] == "low" and mq[0]["title"] == "PC is off: asleep until the Mon 01:30 ET wake (as scheduled)"
+          and "nothing trades before 02:00 ET" in mq[0]["body"], mq)
     _st2, m2 = P.preopen_step(st, fri, SUN + 600, s)
     _st3, m3 = P.preopen_step({}, fri, SUN + 600, s, sent=[SUN])
     check("c. not twice the same day (state, or the push read back from the topic)", not m2 and not m3, (m2, m3))
     check("c. none when the PC reported 5 min ago", not P.preopen_step({}, SUN - 300, SUN, s)[1])
-    check("c. none on Saturday 17:30 or Sunday 18:05 (the PC-silent check owns market hours)",
-          not P.preopen_step({}, fri, ts(2026, 11, 21, 17, 30), s)[1] and not P.preopen_step({}, fri, ts(2026, 11, 22, 18, 5), s)[1])
-    _s, mw = P.preopen_step({}, fri, ts(2026, 11, 23, 1, 10), s)
-    check("c. Monday 01:10 ET: 'the bot's day starts in 50 min'; 01:30 is the PC-silent window's",
-          len(mw) == 1 and mw[0]["title"] == "PC is off: the bot's day starts in 50 min" and not P.preopen_step({}, fri, ts(2026, 11, 23, 1, 30), s)[1], mw)
+    check("c. none on Saturday 17:30, Sunday 18:05 or Monday 01:10 (asleep until 01:30 by design; the PC-silent check owns 01:30+)",
+          not P.preopen_step({}, fri, ts(2026, 11, 21, 17, 30), s)[1] and not P.preopen_step({}, fri, ts(2026, 11, 22, 18, 5), s)[1]
+          and not P.preopen_step({}, fri, ts(2026, 11, 23, 1, 10), s)[1])
     check("c. network trouble: nothing", not P.preopen_step({}, fri, SUN, s, fetched=False)[1])
     ext = {"v": 1, "kind": "le-live-ext", "x": {"mf": PC["mf"]}}
     msgs = [{"event": "message", "time": fri, "message": json.dumps(ext)}]
@@ -156,6 +164,33 @@ def test_cloud():
         shutil.rmtree(tmp, ignore_errors=True)
     check("c. run(): the pre-open push goes with the PC-silent check's (dry run prints it)",
           any(x["key"] == "pc_preopen:2026-11-22" for x in r["msgs"]) and any("PC is off" in str(x) for x in out), (r["msgs"], out[-2:]))
+
+
+def test_lanes():
+    """The weekend hibernation is by design only while NO live lane enters between Sun 18:00 and Mon 02:00 ET (lead 2026-11-21)."""
+    sys.path.insert(0, os.path.join(AK.ROOT, "tools"))
+    import pc_silent_check as P
+    from engine import preflight as PF
+    lm = json.load(open(os.path.join(AK.ROOT, "live_model.json"), encoding="utf-8"))
+    lit = lm.get("lit", lm)
+    wins = [w for w in lit.get("window") or [] if isinstance(w, (list, tuple))]
+    check("lanes. LIT (Zlarior, the extra LIT accounts, the Rapid's LIT lane): entries 02:00 ET or later, not all hours",
+          wins and min(w[0] for w in wins) >= PF.ENTRY_HM and not lit.get("all_hours"), (wins, lit.get("all_hours")))
+    sm = json.load(open(os.path.join(AK.ROOT, "second_model.json"), encoding="utf-8"))
+    S = sm.get("strategies") or {}
+    import re as _re
+    from engine import account_b as AB
+    keys = [k for k in (["ema_lon_vix", "macd_sweep", "sr_nyreclaim"]) if isinstance(S.get(k), dict)]
+    starts = {}
+    for k in keys:
+        txt = str(S[k].get("summary") or "")
+        hm = [int(a) * 60 + int(b) for a, b in _re.findall(r"\b(\d{2}):(\d{2})-\d{2}:\d{2}", txt)]
+        starts[k] = min(hm) if hm else None
+    check("lanes. ATLAS's routed lanes (EMA, MACD, S/R): every entry window starts 02:00 ET or later; none is cloud-only Asia",
+          keys and all(v is not None and v >= PF.ENTRY_HM for v in starts.values()) and not any(S[k].get("cloud_only") for k in keys), starts)
+    asia = [k for k, v in S.items() if isinstance(v, dict) and "asia" in k and not v.get("cloud_only") and not v.get("candidate")]
+    check("lanes. no live Asia lane (LIT+Asia is cloud-only paper; sh_asia a candidate), so the cloud's SUNDAY_EVENING_LANES stays empty",
+          not asia and P.SUNDAY_EVENING_LANES == (), asia)
 
 
 def test_post():
@@ -255,6 +290,7 @@ if __name__ == "__main__":
     test_clock7()
     test_preflight()
     test_cloud()
+    test_lanes()
     test_post()
     test_node()
     if "--static" not in sys.argv:

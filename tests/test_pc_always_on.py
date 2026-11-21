@@ -30,7 +30,10 @@ def test_plan():
     check("plan: no wake tasks without hibernation", P.SUN_WAKE_TASK not in text)
     keep = P.plan(now, NY, True)
     kt = "\n".join(s["cmd"] for s in keep)
-    check("plan: wake tasks when hibernation kept", P.SUN_WAKE_TASK in kt and P.DAILY_WAKE_TASK in kt and "WakeToRun" in kt)
+    check("plan: hibernation kept = the weekday 01:15 ET second-chance wake only; no Sunday wake (nothing trades before Mon 02:00 ET)",
+          P.SUN_WAKE_TASK not in kt and P.DAILY_WAKE_TASK in kt and "WakeToRun" in kt)
+    nt = " ".join(P.notes(False) + P.notes(True))
+    check("notes: never tell the owner to remove the hibernation", "-Uninstall" not in nt and "by design" in nt and "nothing trades" in nt, nt[:300])
     allt = kt + "\n" + "\n".join(s["cmd"] for s in P.plan(now, NY, True, set()))
     bad = [r"password", r"AutoAdminLogon", r"DefaultPassword", r"stop_bot", r"start_bot", r"run_bot", r"Stop-", r"Start-ScheduledTask",
            r"taskkill", r"\barm\b", r"--start", r"reg add", r"Set-ItemProperty", r"order"]

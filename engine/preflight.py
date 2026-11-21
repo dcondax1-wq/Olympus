@@ -1,6 +1,7 @@
 """PREFLIGHT (day-nqops 2026-11-21, lead: "the bot's biggest leak is the PC being OFF or asleep in market hours"): ONE phone
-summary before the week opens (Sunday 17:30 ET) and before each session (the weekday pre-session check, 01:40 ET): "Ready" or
-the exact fix first.
+summary when the week starts (Monday 01:35 ET, just after scripts/schedule_pc.ps1's 01:30 ET wake: the PC hibernates Fri 16:35 ->
+Mon 01:30 by design, no live lane enters before 02:00 ET) and the clock + news line on every weekday pre-session check (01:40 ET):
+"Ready" or the exact fix first.
 
 What it checks (all read-only, all from facts engine/ops_checks already gathers; nothing new runs in the bot):
   1. the PC side: dashboard server up, bot running, heartbeat fresh (ops_checks keys server / bot / heartbeat)
@@ -14,8 +15,8 @@ What it checks (all read-only, all from facts engine/ops_checks already gathers;
     python -X utf8 -m engine.preflight            prints the summary now (nothing sent)
     python -X utf8 -m engine.preflight --send     also pushes it (the same path as every ops notice: engine/ops_checks.send)
 
-The scheduled push is engine/ops_checks.tick: due()["preflight"] (Sunday 17:30-18:15 ET, key ops:sun:<day>) and the weekday
-pre-session notice (01:40-02:15 ET) which carries the same clock + news line. Never starts, stops, arms or places anything.
+The scheduled push is engine/ops_checks.tick: due()["preflight"] (Monday 01:35-01:50 ET, the pre-session's key ops:pre:<day>, so
+Monday gets ONE push, not two) and the weekday pre-session notice (01:40-02:15 ET), which carries the same clock line. Never starts, stops, arms or places anything.
 """
 from __future__ import annotations
 
@@ -29,6 +30,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 EXT_PATH = os.path.join(ROOT, "data", "pc_report", "status_ext.json")    # tools/pc_report: the last ext posts (x.mf, x.k7)
 PC_KEYS = ("server", "bot", "heartbeat", "nt_folder", "nt_conn", "feed_1m", "feed_5m", "internet", "clock", "disk", "kill")
 OPEN_HM = 18 * 60                     # Sunday: CME opens 18:00 ET
+ENTRY_HM = 2 * 60                     # the first live entry of any lane: 02:00 ET (LIT; ATLAS's MACD; tests/test_nqops guards it)
 
 
 def _d(x) -> dict:
@@ -133,12 +135,14 @@ def build(checks: list, hb: dict | None, now, ext: dict | None = None, sunday: b
                              "every account is flat, or KEEPALIVE_ON.bat.")
         news = news_line(now)
         ready = not fixes
-        when = "Sunday's open (18:00 ET)" if sunday else "today's session"
+        monday = e.weekday() == 0 and e.hour * 60 + e.minute < ENTRY_HM
+        when = "Sunday's open (18:00 ET)" if sunday else "the week (entries from 02:00 ET)" if monday else "today's session"
         if ready:
             title = f"Ready for {when}"
             body = "PC, NinjaTrader and the feed OK. " + ("; ".join(f"{n}: {t}" for n, _ok, t in A) + ". " if A else "")
         else:
-            title = ("Fix before 18:00 ET: " if sunday and e.hour * 60 + e.minute < OPEN_HM else "Fix now: ") + fixes[0].split(":")[0]
+            mod = e.hour * 60 + e.minute
+            title = ("Fix before 18:00 ET: " if sunday and mod < OPEN_HM else "Fix before 02:00 ET: " if mod < ENTRY_HM else "Fix now: ") + fixes[0].split(":")[0]
             body = fixes[0] + (f" (+{len(fixes) - 1} more: double-click HEALTH CHECK)" if len(fixes) > 1 else "") + " "
         warn = [clock7.line(r) for r in rows if r.get("lvl") == "warn"]
         if warn:
@@ -165,10 +169,10 @@ def clock_line(hb, now, ext: dict | None = None) -> str:
 
 
 def notice(checks: list, hb, now, ext: dict | None = None) -> dict:
-    """The ops payload (engine/ops_checks._payload) for the Sunday preflight: key ops:sun:<ET date>, sent once."""
-    from .ops_checks import _payload
+    """The ops payload (engine/ops_checks._payload) for the Monday preflight: the pre-session's key ops:pre:<trading day>, sent once."""
+    from .ops_checks import _payload, trading_day
     p = build(checks, hb, now, last_ext() if ext is None else ext)
-    return _payload("sun", p["title"], p["body"], f"ops:sun:{_et(now).date().isoformat()}", now)
+    return _payload("pre", p["title"], p["body"], f"ops:pre:{trading_day(now)}", now)
 
 
 def main(argv=None) -> int:

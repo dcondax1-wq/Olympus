@@ -41,13 +41,13 @@ UA = "olympus-pc-silent/1"
 TOPIC_RX = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
 MARK = ("PC stopped reporting", "PC still silent")
 PRE_MARK = "PC is off"
-# PRE-OPEN (day-nqops 2026-11-21, lead: "the same from the cloud side when the PC is silent: 'PC is off: market opens in 30 min'"):
-# the PC-silent window (engine/notify.silent_window) starts at 01:30 ET on weekdays and never runs on Sunday, so a PC that slept
-# through the weekend (scripts/schedule_pc.ps1 hibernates Fri 16:35 ET, its wake task is Mon-Fri 01:30) was first noticed after
-# the open. Two short windows before it, ONE push each when the PC's last post is older than pc_silent_after_min:
-PRE_WINDOWS = ((6, 17 * 60, 18 * 60, 18 * 60, "market opens"),)        # Sunday 17:00-18:00 ET: CME opens 18:00
-PRE_WINDOWS += tuple((wd, 60, 90, 120, "the bot's day starts") for wd in range(5))   # weekdays 01:00-01:30 ET (the PC-silent
-#                                                                                   window takes over at 01:30; entries from 02:00)
+# SUNDAY (day-nqops 2026-11-21, lead): the PC-silent window (engine/notify.silent_window) is weekdays 01:30-16:00 ET and never runs on
+# Sunday. scripts/schedule_pc.ps1 hibernates the PC Fri 16:35 ET and wakes it Mon 01:30 ET, and that is by design: no LIVE lane enters
+# before 02:00 ET (LIT 02:00-15:30; ATLAS EMA 03:00, MACD 02:00, S/R 09:30; the Rapid = the same lanes; LIT+Asia is cloud-only paper;
+# tests/test_nqops guards it). So a silent PC on Sunday evening is normal: ONE quiet note "asleep until the Mon 01:30 ET wake", unless a
+# 7-day clock is red, then ONE loud push with exactly what to do. A missed Monday wake is the PC-silent check's (01:30 + 20 min).
+SUNDAY_EVENING_LANES = ()            # live lanes that enter between Sun 18:00 and Mon 01:30 ET: none (see above)
+PRE_WINDOWS = ((6, 17 * 60, 18 * 60, 18 * 60, "market opens"),)        # Sunday 17:00-18:00 ET
 
 
 def http_get(url, timeout=20, limit=3_000_000) -> tuple:
@@ -203,16 +203,24 @@ def preopen_step(prev: dict | None, seen_t, now, s: dict | None = None, fetched:
             return st, []
         mins, words = w
         last = notify.since_text(seen_t, now) if seen_t else "never seen"
-        urgent = [r for r in clock or () if isinstance(r, dict) and r.get("lvl") in ("bad", "warn")]
-        tail = ""
-        if urgent:
-            from engine import clock7
-            tail = " " + clock7.line(urgent[0]) + "."
-        body = (f"Your PC's last report: {last}. Wake it / turn it on, open NinjaTrader and connect, then START BOT."
-                f" ({words.capitalize()} at {'18:00' if words == 'market opens' else '02:00'} ET.){tail}")
+        red = [r for r in clock or () if isinstance(r, dict) and r.get("lvl") == "bad"]
         st.update(day=day, t=now)
-        return st, [{"key": f"pc_preopen:{day}", "title": f"{PRE_MARK}: {words} in {mins} min", "body": body[:600],
-                     "priority": "high", "tags": "warning,computer"}]
+        if red or SUNDAY_EVENING_LANES:
+            from engine import clock7
+            r = red[0] if red else None
+            body = (clock7.line(r) + ". " if r else "")
+            body += ("The PC wakes Mon 01:30 ET (as scheduled) and the bot trades from 02:00 ET: at 02:00 check the phone shows the PC "
+                     "reporting. If it is not, turn the PC on, open NinjaTrader, connect, START BOT. If there is no fill by 15:30 ET "
+                     "Monday, place 1 MNQ by hand while every account is flat (or switch on the keep-alive: KEEPALIVE_ON.bat).")
+            if SUNDAY_EVENING_LANES and not r:
+                body = f"PC asleep (last report {last}) but {', '.join(SUNDAY_EVENING_LANES)} trades Sunday evening: turn the PC on now."
+            title = (f"{r['nm']}: must trade by {r['hard']}" if r else f"{PRE_MARK}: {words} in {mins} min")
+            return st, [{"key": f"pc_preopen:{day}", "title": f"{PRE_MARK} - {title}" if r else title, "body": body[:600],
+                         "priority": "high", "tags": "warning,computer"}]
+        body = (f"Last report {last}. As scheduled it wakes Mon 01:30 ET; nothing trades before 02:00 ET. No 7-day clock is red. "
+                "Nothing to do.")
+        return st, [{"key": f"pc_preopen:{day}", "title": f"{PRE_MARK}: asleep until the Mon 01:30 ET wake (as scheduled)", "body": body[:600],
+                     "priority": "low", "tags": "zzz"}]
     except Exception:  # noqa: BLE001
         return dict(_d(prev)), []
 
