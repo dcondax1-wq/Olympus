@@ -147,6 +147,23 @@ def read_hb(now):
         return {"present": False, "reason": e.__class__.__name__}
 
 
+def _bus(env=None):
+    """engine/alert_bus when the cloud has a Telegram / Discord secret (never the PC's own file here), else None (ntfy only)."""
+    try:
+        from engine import alert_bus
+        e = os.environ if env is None else env
+        c = alert_bus.config({k: v for k, v in e.items() if k.startswith(("LE_TG_", "LE_DISCORD_", "LE_ALERT_BUS"))} | {"OLYMPUS_HOME": "/nonexistent"})
+        return alert_bus if (c.get("telegram") or c.get("discord")) and not alert_bus.switched_off(e) else None
+    except Exception:
+        return None
+
+
+def _bus_cfg(bus, env=None) -> dict:
+    e = os.environ if env is None else env
+    c = bus.config({k: v for k, v in e.items() if k.startswith(("LE_TG_", "LE_DISCORD_"))} | {"OLYMPUS_HOME": "/nonexistent"})
+    return {**c, "ntfy": False, "webpush": False}          # the cloud: Telegram / Discord only; ntfy stays the old post below
+
+
 def run(out: str, now=None, env=None, get=None, post=None, hb=None, dry=False, say=print, feed: dict | None = None,
         s: dict | None = None) -> dict:
     now = int(now or time.time())
@@ -171,7 +188,15 @@ def run(out: str, now=None, env=None, get=None, post=None, hb=None, dry=False, s
         _ok, back = poll(d["base"], d["topic"], get=get)
     st, msgs = notify.silent_step(prev, seen, now, s, fetched=bool(f_ok or hb.get("present")), sent_today=sent_today(back, now))
     sent = []
+    bus = _bus(env) if not dry and post is http_post else None
     for m in msgs:
+        if bus is not None:                       # engine/alert_bus (repo secrets LE_TG_TOKEN + LE_TG_CHAT / LE_DISCORD_WEBHOOK)
+            r = bus.deliver({"kind": "report", "key": "", "title": m["title"], "body": m["body"], "notify_type": "pc_silent",
+                             "report": True, "dual": True}, cfg=_bus_cfg(bus, env), path=os.path.join(out, "alert_bus_sent.json"),
+                            log_path=os.path.join(out, "alert_bus.jsonl"))
+            if r.get("ok"):
+                sent.append({"key": m["key"], "ok": True, "via": ",".join(r["receipts"])})
+                continue
         if not d["topic"]:
             say("pc silent: no ntfy topic to send to")
             break

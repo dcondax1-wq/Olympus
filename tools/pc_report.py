@@ -1866,6 +1866,45 @@ def run_unlock(p):
             pass
 
 
+_NO_BUS = object()
+
+
+def _forget(new_state: dict, m: dict) -> None:
+    """An alert that did not go: forget it so the next run tries again (conditions keep their state; a trade key is retried)."""
+    if m["key"].startswith(("open:", "close:", "fill:", "watch:")):
+        for k in m.get("keys") or [m["key"]]:
+            new_state["seen"].pop(k, None)
+    elif m["key"].startswith("guard:"):
+        _d(_d(new_state.get("guard")).get("sent")).pop(m["key"], None)
+
+
+def _bus_alerts(msgs, rec: dict, snap: dict, new_state: dict):
+    """engine/alert_bus (owner 2026-11-21): the report's alerts go Telegram / Discord first (ntfy's private topic and the phone
+    app are its fallbacks), so they never use the ntfy room the status posts need. None = the bus is off / not set up: the
+    old loop runs, exactly. Waits up to 90 s for the deliveries (this is a 15-minute script, not the trading loop)."""
+    try:
+        from engine import alert_bus as AB
+        if not AB.active():
+            return None
+    except Exception:  # noqa: BLE001
+        return None
+    done: dict = {}
+    for m in msgs:
+        r = AB.send(AB.from_report(m), on_done=lambda res, k=m["key"]: done.__setitem__(k, res))
+        if r in ("dup", "sent"):
+            done.setdefault(m["key"], {"ok": True, "receipts": {"bus": r}})
+    AB.drain(90)
+    for m in msgs:
+        res = done.get(m["key"]) or {}
+        if res.get("ok"):
+            rec["sent_n"] = int(rec.get("sent_n") or 0) + 1
+            rec["alerts_last"] = {"t": snap["t"], "title": m["title"], "via": ",".join(_d(res.get("receipts")))}
+        else:
+            rec["errors"].append("alert: the alert bus could not deliver it (data/alert_bus.jsonl)")
+            _forget(new_state, m)
+    return True
+
+
 def _app_push(m: dict) -> bool:
     """One report alert to the phone app (Olympus, engine/push.app_send with the PC's own key): True = a phone took it."""
     try:
@@ -2029,7 +2068,9 @@ def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, n
     sent = nposted = 0                              # every delivery / the alert posts that used ntfy's day (the chart's share)
     mode = _routes_mode()
     ntfy_on = bool(cfg["topic"]) and bool(cfg["on"])
-    for m in msgs:
+    # engine/alert_bus (day-alerts 2026-11-21): set up = Telegram / Discord first (ntfy + the app its fallbacks); off = this loop, exactly
+    bus_ok = _bus_alerts(msgs, rec, snap, new_state) if (not dry and http is None and app_push is not _NO_BUS) else None
+    for m in (msgs if bus_ok is None else []):
         # 2026-11-20: a trade's entry / result and the important alerts (_dual_alert: PASSED / FAILED / LOCKED / payout ready, room
         # low, problems, PC silent) go to the phone app AND to ntfy (a push service's "accepted" is not proof the phone showed it);
         # every other alert: the phone app first, the ntfy copy only when no phone took it (as before). notify_settings.json
@@ -2083,7 +2124,7 @@ def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, n
                                 feed_path=feed_path, busy_run=ext_n > 0, remaining=(rec.get("ntfy_quota") or {}).get("remaining"))
     except Exception as e:  # noqa: BLE001
         rec["bars"] = {"posted": False, "why": f"chart failed softly: {e.__class__.__name__}"}
-    rec.update(sent=sent, queued=len(msgs), ok=not rec["errors"])
+    rec.update(sent=sent + int(rec.pop("sent_n", 0) or 0), queued=len(msgs), ok=not rec["errors"])
     if not dry:
         write_json(os.path.join(work, "last.json"), rec)
         log_line(work, {k: rec.get(k) for k in ("t", "ok", "hb_t", "server", "problems", "sent", "errors")})

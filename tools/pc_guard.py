@@ -255,7 +255,7 @@ def account_pushes(snap: dict, sent: dict, now: int) -> list:
         ka_cover = bool(_d(c.get("keepalive")).get("cover"))   # the bot's keep-alive sends this account's ONE warning a day
         if isinstance(q, (int, float)) and q >= QUIET_DAYS and live_eval and not quiet(now) and not c.get("position") \
                 and not ka_cover:
-            out.append(quiet_push(k, name, int(q), real(k, c, snap), funded_card(c), day))
+            out.append(quiet_push(k, name, int(q), real(k, c, snap), funded_card(c), day, busy_others(snap, k)))
     # the extra accounts (the 25K #2, the Rapid EOD; skeptic 2026-11-20: the board's cards cover only the 50K, ATLAS and BLITZ, so
     # these two had no 7-day alert at all)
     for k, a in extra_cards(snap):
@@ -267,7 +267,7 @@ def account_pushes(snap: dict, sent: dict, now: int) -> list:
         if (q is None or q < QUIET_DAYS or status in STOP_STATUSES or quiet(now) or a.get("position")
                 or str(a.get("badge") or "").upper() != "LIVE" or _d(a.get("keepalive")).get("cover")):
             continue
-        out.append(quiet_push(k, extra_name(a), int(q), True, funded, day))
+        out.append(quiet_push(k, extra_name(a), int(q), True, funded, day, busy_others(snap, k)))
     return out
 
 
@@ -279,11 +279,24 @@ def funded_card(c: dict) -> bool:
     return str(c.get("stage") or "").lower() == "funded" or str(c.get("status") or "").lower() == "funded"
 
 
-def quiet_push(k: str, name: str, q: int, rl: bool, funded: bool, day: str) -> dict:
+def busy_others(snap: dict, k: str) -> list:
+    """Names of the OTHER accounts (board cards + extra accounts) that hold an open trade now. day-alerts 2026-11-21 (wf-alert-fix
+    HIGH): "place 1 MNQ by hand" is said only when EVERY account is flat: a hand trade against another account's open bot trade is a
+    hedge (MFFU rule) and can end both accounts. Never raises."""
+    try:
+        out = [label(k2, c2) for k2, c2 in cards(snap) if k2 != k and c2.get("position")]
+        out += [extra_name(a) for k2, a in extra_cards(snap) if k2 != k and a.get("position")]
+        return out
+    except Exception:  # noqa: BLE001
+        return []
+
+
+def quiet_push(k: str, name: str, q: int, rl: bool, funded: bool, day: str, busy=()) -> dict:
     """The "no trade for N days" push of one account (key guard:quiet:<id>:<day>, once a day; notify kind account_status: both apps).
     MFFU's rule (mffu_rules.json inactivity): 7 calendar days without a trade and the account can be closed; a sim-funded one then
     loses ALL its profits."""
-    late = rl and q >= MFFU_IDLE_DAYS - 1
+    busy = list(busy or [])
+    late = rl and q >= MFFU_IDLE_DAYS - 1 and not busy
     rule = (f"MFFU can close a funded account after {MFFU_IDLE_DAYS} days without a trade, and it then loses ALL its profits. " if funded
             else f"MFFU can close an eval after {MFFU_IDLE_DAYS} days without a trade. ")
     body = (f"No {name} trade for {q} days (normal: 2-4 a week). "
@@ -291,12 +304,14 @@ def quiet_push(k: str, name: str, q: int, rl: bool, funded: bool, day: str) -> d
             # day 6+ on a real account (2026-11-14 drill): the bot has no keep-alive trade; the owner's fix is MFFU's own (the same
             # advice as engine/ops_checks.inactivity_notice and the LIT plan page, engine/lit_brief.mffu_notes)
             + ("Check in the MFFU dashboard that the account is still active, then place 1 MNQ by hand today (in and "
-               "out) while the bot is flat. " if late else "")
+               "out) while EVERY account is flat. " if late else "")
+            + (f"Do NOT place a hand trade yet: {', '.join(busy)} has an open trade (a hand trade now is a hedge). "
+               "Wait until every account is flat. " if rl and busy and q >= MFFU_IDLE_DAYS - 1 else "")
             # the count knows only the bot's own trades on this account (its ledger): a trade placed by hand may not reset it
             + ("This count knows only the bot's own trades (for one you placed yourself, MFFU's dashboard is the truth). " if rl else "")
             + "Check the bot runs (HEALTH CHECK on the PC) and what it waits for on the Start page.")
     return {"key": f"{PREFIX}quiet:{k}:{day}", "title": f"{name}: no trade for {q} days", "body": body,
-            "priority": "high" if late else "default", "tags": "hourglass"}
+            "priority": "high" if rl and q >= MFFU_IDLE_DAYS - 1 else "default", "tags": "hourglass"}
 
 
 def extra_cards(snap: dict) -> list:

@@ -55,6 +55,9 @@ jobs:
         continue-on-error: true
         env:
           LE_NTFY_TOPIC: ${{ secrets.LE_NTFY_TOPIC }}
+          LE_TG_TOKEN: ${{ secrets.LE_TG_TOKEN }}          # engine/alert_bus: Telegram / Discord first (empty = ntfy only)
+          LE_TG_CHAT: ${{ secrets.LE_TG_CHAT }}
+          LE_DISCORD_WEBHOOK: ${{ secrets.LE_DISCORD_WEBHOOK }}
           DRY: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '--dry-run' || '' }}
         run: |
           mkdir -p pcw

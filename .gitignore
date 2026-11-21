@@ -296,3 +296,7 @@ tools/web_public/icon_options/
 
 # the email autopilot's tiny card for the PC report (agency/autopilot/card.py)
 data/agency_mail/
+# engine/alert_bus.py: keys sent + the failure log (redacted), machine-local
+data/alert_bus_sent.json
+data/alert_bus.jsonl
+data/alert_bus_sent.json.*.tmp

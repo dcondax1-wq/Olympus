@@ -1244,6 +1244,11 @@ def _pc_send(payload, sender=None, ntfy=None, ntfy_exit=None, retry_s=None) -> d
         n = pc_notifier()
         if not n.claim(payload):                 # another path / thread already has this notice (same key)
             return {"dup": True}
+        # engine/alert_bus (day-alerts 2026-11-21): when the owner set it up (ALERTS_SETUP.bat), a real trade's entry / exit and a hedge
+        # notice go to Telegram / Discord first, with ntfy and this app as its fallbacks; off / not set up = the path below, exactly
+        bus = _bus_send(payload) if (ntfy is None and ntfy_exit is None and sender is None) else None
+        if bus:
+            return bus
     except Exception as e:
         res, app_ok = {"sent": 0, "errors": [e.__class__.__name__]}, False
     if not trade:
@@ -1337,6 +1342,30 @@ def _trade_log(payload: dict, res: dict) -> None:
             fh.write(json.dumps(row, default=str) + "\n")
     except Exception:
         pass
+
+
+def _bus_send(payload: dict) -> dict | None:
+    """engine/alert_bus (owner 2026-11-21: Telegram / Discord first; ntfy and this app are its fallbacks): a real-account entry /
+    exit, or a HEDGE BLOCKED risk notice, goes to the bus, which records the entry / exit once delivered (so the 15-minute report
+    skips its copy). None = the bus is off / not set up: the old path below, exactly. Never raises."""
+    try:
+        from . import alert_bus as AB
+        if not AB.active():
+            return None
+        from . import notify
+        k = payload.get("kind")
+        if k in ("fill", "outcome") and notify.real_trade(payload):
+            what = "entry" if k == "fill" else "exit"
+            p = dict(payload)
+            r = AB.send(AB.from_trade(p, what), on_done=lambda res: res.get("ok") and notify.instant_record(p, what))
+            return {"bus": r}
+        if k == "risk" and str(payload.get("key") or "").startswith("hedge"):
+            r = AB.send({"kind": "hedge_risk", "key": str(payload.get("key")), "title": payload.get("title"),
+                         "body": payload.get("body"), "report": True, "dual": True})
+            return {"bus": r}
+    except Exception:
+        return None
+    return None
 
 
 def pc_notify(payload: dict) -> dict | None:
