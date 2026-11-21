@@ -26,7 +26,7 @@ W = os.path.join(ROOT, "tools", "web_public")
 FAILS: list = []
 N = [0]
 SKIP_DIRS = {"node_modules", "three-addons", "f", "towns"}
-PUBLIC = re.compile(r"^agency/(demos|audit|showcase|factory|portal|f)/")
+PUBLIC = re.compile(r"^agency/(demos|audit|showcase|factory|portal|f|launch|intake)/")   # + launch / intake: client-facing (2026-11-21)
 LINK = re.compile(r"""(?:href|src|data-to)\s*=\s*["']([^"'#?]+?)(?:[?#][^"']*)?["']""")
 
 
