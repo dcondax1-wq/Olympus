@@ -32,8 +32,8 @@ def static():
     p = os.path.join(JV, "sky-poster.webp")
     check("a. sky-poster.webp exists and is small (<= 60 KB)", os.path.exists(p) and os.path.getsize(p) <= 60 * 1024, os.path.exists(p) and os.path.getsize(p))
     check("a. the poster is painted by CSS alone, first layer of .bgfx, faded out once the 3D is on",
-          '<div class="bgfx" aria-hidden="true"><div class="jposter"></div><canvas id="stars"></canvas></div>' in h and "url(sky-poster.webp)" in h
-          and 'html[data-bg3d="on"] .bgfx > .jposter { opacity: 0; }' in h and h.index("url(sky-poster.webp)") < h.index('<div class="bgfx"'))
+          '<div class="bgfx" aria-hidden="true"><div class="jposter"></div><canvas id="stars"></canvas></div>' in h and "url(sky-poster.webp" in h
+          and 'html[data-bg3d="on"] .bgfx > .jposter { opacity: 0; }' in h and h.index("url(sky-poster.webp") < h.index('<div class="bgfx"'))
     check("a. backdrop.js skips the 3D for Off / Low, reduced motion, Save-Data, 2G / 3G, <= 2 GB phones; a phone's 6 s count from load; Low -> High builds it",
           all(k in b for k in ("return 'effects off'", "return 'effects low'", "return 'reduced motion'", "return 'save-data'", "return 'slow line'", "return 'small memory'",
                                "loadAt + 6000 - performance.now()", "if (!started && !skipWhy()) idle();")))
