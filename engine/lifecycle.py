@@ -466,8 +466,9 @@ def after_route(bot, key: str, label: str, adapter, action: dict, res: dict, acc
 def label_of(key: str, obj=None) -> str:
     if key == "lit":
         return "Zlarior 50K"
-    if key == "rapid":
-        return "Rapid EOD 25K" if "25k" in str(((getattr(obj, "spec", None) or {}).get("preset")) or "") else "Rapid EOD 50K"
+    if key in ("rapid", "rapid2"):
+        lab = "Rapid EOD 25K" if "25k" in str(((getattr(obj, "spec", None) or {}).get("preset")) or "") else "Rapid EOD 50K"
+        return lab + (" (#2)" if key == "rapid2" else "")
     if key == "atlas":
         plan = str(((getattr(obj, "spec", None) or {}).get("plan")) or "")
         return "ATLAS " + ("50K" if "50k" in plan else "25K")
@@ -478,7 +479,8 @@ def key_of(obj) -> str:
     """The lifecycle key of an account object: RapidAtlas / the rapid lane -> "rapid", AccountB -> "atlas", extra -> x:<id>."""
     spec = getattr(obj, "spec", None) or {}
     if spec.get("lane") == "rapid" or callable(getattr(obj, "yield_to_lit", None)):
-        return "rapid"
+        # the 2nd Rapid (engine/rapid slot "rapid2") has its own key: one Rapid passing / failing never stands the other down
+        return "rapid2" if (spec.get("slot") == "rapid2" or getattr(obj, "slot", None) == "rapid2") else "rapid"
     if hasattr(obj, "prov"):
         return "atlas"
     return f"x:{getattr(obj, 'id', None) or spec.get('id') or '?'}"
@@ -651,11 +653,15 @@ def tick(bot, now=None, force: bool = False) -> list:
         jobs.append(("atlas", ab, lambda: atlas_facts(ab, now)))
     ra = getattr(bot, "acct_r", None)
     accts = list(getattr(getattr(bot, "accts", None), "accounts", None) or [])
-    lane = next((a for a in accts if (a.spec or {}).get("lane") == "rapid"), None)
+    lane = next((a for a in accts if (a.spec or {}).get("lane") == "rapid" and (a.spec or {}).get("slot") != "rapid2"), None)
     if ra is not None or lane is not None:
         jobs.append(("rapid", ra or lane, lambda: rapid_facts(ra, lane, now)))
+    ra2 = getattr(bot, "acct_r2", None)              # the 2nd Rapid (data/rapid2.json): its own key "rapid2"
+    lane2 = next((a for a in accts if (a.spec or {}).get("lane") == "rapid" and (a.spec or {}).get("slot") == "rapid2"), None)
+    if ra2 is not None or lane2 is not None:
+        jobs.append(("rapid2", ra2 or lane2, lambda: rapid_facts(ra2, lane2, now)))
     for a in accts:
-        if a is not lane and not getattr(a, "problem", None):
+        if a is not lane and a is not lane2 and not getattr(a, "problem", None):
             jobs.append((f"x:{a.id}", a, (lambda a=a: extra_facts(a, now))))
     for key, obj, fn in jobs:
         try:

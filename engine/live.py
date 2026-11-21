@@ -373,6 +373,7 @@ class LiveBot:
         self._brain_log = None           # engine/brain.BrainLog: today's thought log (data/brain/YYYY-MM-DD.jsonl for the real bot)
         self.acct_b = None               # engine/account_b.AccountB: the second strategies on their own account (None = off)
         self.acct_r = None               # engine/rapid.RapidAtlas: ATLAS on the Rapid EOD next to LIT's lane (None = off)
+        self.acct_r2 = None              # the same on the 2nd Rapid (engine/rapid slot "rapid2", data/rapid2.json; None = off)
         self._acct_b_sig = None          # the account_b block it was built from (rebuilt when it changes and B is flat)
         self.acct_c = None               # engine/account_c.AccountC: BLITZ, the scalper, on its own account (None = off)
         self._acct_c_sig = None          # the account_c block it was built from (rebuilt when it changes and C is flat)
@@ -682,7 +683,8 @@ class LiveBot:
         # engine/ninjatrader: each NinjaTrader account lock goes back when the bot stops (a Sim check or the next start may
         # take it); while the bot runs, a second process on the same account is refused
         for ad in [self.adapter, getattr(self.acct_b, "adapter", None), getattr(getattr(self, "acct_c", None), "adapter", None),
-                   getattr(getattr(self, "acct_r", None), "adapter", None)] + \
+                   getattr(getattr(self, "acct_r", None), "adapter", None),
+                   getattr(getattr(self, "acct_r2", None), "adapter", None)] + \
                 [getattr(a, "adapter", None) for a in (getattr(self.accts, "accounts", None) or [])]:
             try:
                 if callable(getattr(ad, "release_lock", None)):
@@ -726,8 +728,8 @@ class LiveBot:
             self.accts.kill(self.cfg.get("sym", "NQ"))
         if self.acct_b is not None:                 # and account B (engine/account_b.py)
             self.acct_b.kill(self.cfg.get("sym", "NQ"))
-        if getattr(self, "acct_r", None) is not None:   # and ATLAS on the Rapid EOD (engine/rapid.py)
-            self.acct_r.kill(self.cfg.get("sym", "NQ"))
+        for ar in self._rapid_atlases():             # and ATLAS on each Rapid EOD (engine/rapid.py)
+            ar.kill(self.cfg.get("sym", "NQ"))
         if getattr(self, "acct_c", None) is not None:   # and account C (engine/account_c.py, BLITZ)
             self.acct_c.kill(self.cfg.get("sym", "NQ"))
         if getattr(self, "fleet", None) is not None:    # and every fleet follower (engine/fleet.py)
@@ -776,10 +778,11 @@ class LiveBot:
         if self.acct_b is not None and self.acct_b.open_t is not None:     # account B (engine/account_b.py)
             r = self.acct_b.kill(sym)
             extras.append({"id": "account_b", "ok": bool(r.get("ok")), "error": r.get("error")})
-        ar = getattr(self, "acct_r", None)
-        if ar is not None and ar.open_t is not None:                       # ATLAS on the Rapid EOD (engine/rapid.py)
-            r = ar.kill(sym)
-            extras.append({"id": "rapid_atlas", "ok": bool(r.get("ok")), "error": r.get("error")})
+        for ar in self._rapid_atlases():                                    # ATLAS on each Rapid EOD (engine/rapid.py)
+            if ar.open_t is not None:
+                r = ar.kill(sym)
+                extras.append({"id": "rapid2_atlas" if getattr(ar, "slot", "rapid") == "rapid2" else "rapid_atlas",
+                               "ok": bool(r.get("ok")), "error": r.get("error")})
         ac = getattr(self, "acct_c", None)
         if ac is not None and ac.open_t is not None:                       # account C (engine/account_c.py, BLITZ)
             r = ac.kill(sym)
@@ -860,8 +863,9 @@ class LiveBot:
             self.accts.tick()                       # the extra accounts' adapters (never raises)
         if self.acct_b is not None and not self.kill:
             self.acct_b.adapter_tick()              # account B's adapter (never raises)
-        if getattr(self, "acct_r", None) is not None and not self.kill:
-            self.acct_r.adapter_tick()              # ATLAS on the Rapid EOD (never raises)
+        if not self.kill:
+            for ar in self._rapid_atlases():
+                ar.adapter_tick()                   # ATLAS on each Rapid EOD (never raises)
         if getattr(self, "acct_c", None) is not None and not self.kill:
             self.acct_c.adapter_tick()              # account C's adapter (never raises)
         if getattr(self, "fleet", None) is not None and not self.kill:
@@ -1357,6 +1361,12 @@ class LiveBot:
             self._combo_sync()                # the owner's combo switch (OFF: no file = nothing changes)
             if self.combo is not None or self._combo_live():
                 self._combo_frames = (df_full, df1, int(now))   # _combo_refresh: ATLAS's trade on this poll's bars
+        if model == "lit":                    # MFFU's 2% price-limit rule (engine/price_limit.py): one reading per poll, before
+            try:                              # any account routes; only FUNDED accounts act on it (no entry, flatten)
+                from . import price_limit as _pl
+                self.health["price_limit"] = _pl.update(df_full, df1, now) or None
+            except Exception as e:
+                self._note_error(f"price-limit reading failed: {e.__class__.__name__}: {e}")
         self._route_signals(res, sym, now, secs)
         self.health["lit_ms"] = int((time.perf_counter() - t0) * 1000)   # poll start -> LIT decided and routed
         self._guards_tick(now)
@@ -2068,8 +2078,9 @@ class LiveBot:
                     return h
             except Exception:
                 return "the extra accounts' state is unreadable (fails closed)"
-        ar = getattr(self, "acct_r", None)
-        if ar is not None and getattr(ar, "open_t", None) is not None:
+        for ar in self._rapid_atlases():
+            if getattr(ar, "open_t", None) is None:
+                continue
             try:
                 if int((ar.prov.get(int(ar.open_t)) or {}).get("dir") or 0) == -d:
                     return f"ATLAS on the Rapid EOD holds a {side(-d)} position"
@@ -2752,15 +2763,46 @@ class LiveBot:
             self._note_error(f"Rapid EOD settings unreadable: {e.__class__.__name__}: {e}")
             return None
 
+    def _rapid_block2(self):
+        """data/rapid2.json (the 2nd Rapid, engine/rapid slot "rapid2"); the start cfg's "rapid2" in test harnesses. None = off.
+        Never the same Name as the 1st Rapid (that one wins)."""
+        try:
+            from . import rapid as _rp
+            if "rapid2" in (self.cfg or {}):
+                b = self.cfg.get("rapid2")
+                b = b if isinstance(b, dict) and str(b.get("account") or "").strip() and b.get("enabled") is not False else None
+            elif self.state_path != STATE_PATH:
+                return None                   # test harnesses: off unless their start cfg carries the block
+            else:
+                b = _rp.read(_rp.slot_path("rapid2"))
+            b1 = getattr(self, "_rapid_blk", None)
+            if b and b1 and str(b["account"]).strip() == str(b1.get("account") or "").strip():
+                self._note_error(f"Rapid #2 NOT started: {b['account']} is already the 1st Rapid")
+                return None
+            return b
+        except Exception as e:
+            self._note_error(f"Rapid #2 settings unreadable: {e.__class__.__name__}: {e}")
+            return None
+
+    def _rapid_atlases(self) -> list:
+        """ATLAS's lanes on the Rapids that run (1st, then 2nd)."""
+        return [x for x in (getattr(self, "acct_r", None), getattr(self, "acct_r2", None)) if x is not None]
+
     def _start_rapid(self):
-        """ATLAS's lane of the Rapid EOD (LIT's lane is an extra account, _start_accounts). Never raises."""
+        """ATLAS's lane of each Rapid EOD (LIT's lanes are extra accounts, _start_accounts). Never raises."""
         self.acct_r = None
-        blk = getattr(self, "_rapid_blk", None)
+        self.acct_r2 = None
+        self._start_rapid_slot("rapid", getattr(self, "_rapid_blk", None))
+        self._start_rapid_slot("rapid2", getattr(self, "_rapid_blk2", None))
+
+    def _start_rapid_slot(self, slot, blk):
+        attr = "acct_r2" if slot == "rapid2" else "acct_r"
         if not blk:
             return
         try:
             from . import rapid as _rp
-            if self.accts is None or not any(a.spec.get("lane") == "rapid" for a in self.accts.accounts):
+            if self.accts is None or not any(a.spec.get("lane") == "rapid" and _rp.slot_of(a.spec) == slot
+                                             for a in self.accts.accounts):
                 self._log("risk", "Rapid EOD: LIT's lane did not start, so ATLAS does not trade it either")
                 return
             nm = str(blk.get("account") or "").strip()
@@ -2768,13 +2810,13 @@ class LiveBot:
             if ab is not None and str(getattr(ab, "name", "") or "").strip() == nm:
                 # review 2026-11-17: the Rapid's Name must never be ATLAS's 25K (set_account checks it once; this at every start)
                 for a in self.accts.accounts:
-                    if a.spec.get("lane") == "rapid":
+                    if a.spec.get("lane") == "rapid" and _rp.slot_of(a.spec) == slot:
                         a.problem = f"{nm} is ATLAS's 25K account: the Rapid EOD needs its own (python -m engine.rapid --account)"
                 self._note_error(f"Rapid EOD NOT started: {nm} is ATLAS's 25K account")
                 return
-            self.acct_r = _rp.build_atlas(self, blk)
+            setattr(self, attr, _rp.build_atlas(self, blk) if slot == "rapid" else _rp.build_atlas(self, blk, slot="rapid2"))
         except Exception as e:
-            self.acct_r = None
+            setattr(self, attr, None)
             self._note_error(f"Rapid EOD ATLAS NOT started: {e.__class__.__name__}: {e}")
 
     def _start_accounts(self):
@@ -2782,12 +2824,20 @@ class LiveBot:
         The Rapid EOD (engine/rapid.py, data/rapid.json) adds LIT's lane on that account to the list."""
         self.accts = None
         self._rapid_blk = self._rapid_block()
+        self._rapid_blk2 = self._rapid_block2()
         cfg = self.cfg
         if self._rapid_blk:
             from . import rapid as _rp
             lane = _rp.lane_spec(self._rapid_blk, self.cfg)
             cfg = {**self.cfg, "accounts": [r for r in (self.cfg.get("accounts") or []) if isinstance(r, dict)
                                             and r.get("id") != lane["id"] and r.get("nt_account") != lane["nt_account"]] + [lane]}
+        if self._rapid_blk2:                            # the 2nd Rapid (data/rapid2.json): its own LIT lane, id "rapid2"
+            from . import rapid as _rp
+            b1 = self._rapid_blk or {}
+            dup = bool(b1) and _rp.plan_info(b1)["preset"] == _rp.plan_info(self._rapid_blk2)["preset"]
+            lane2 = _rp.lane_spec(self._rapid_blk2, self.cfg, slot="rapid2", dup=dup)
+            cfg = {**cfg, "accounts": [r for r in (cfg.get("accounts") or []) if isinstance(r, dict)
+                                       and r.get("id") != lane2["id"] and r.get("nt_account") != lane2["nt_account"]] + [lane2]}
         try:                                            # LIT on ATLAS's funded 25K (engine/lit25.py, OFF: no data/lit25.json)
             from . import lit25 as _l25
             cfg = _l25.add_lane(self, cfg)
@@ -2846,11 +2896,11 @@ class LiveBot:
                 self.acct_b.tick(df5, df1, sym, now)
         except Exception as e:
             self._note_error(f"account B failed: {e.__class__.__name__}: {e}")
-        try:
-            if getattr(self, "acct_r", None) is not None:      # ATLAS on the Rapid EOD (engine/rapid.py)
-                self.acct_r.tick(df5, df1, sym, now)
-        except Exception as e:
-            self._note_error(f"Rapid EOD ATLAS failed: {e.__class__.__name__}: {e}")
+        for ar in self._rapid_atlases():                        # ATLAS on each Rapid EOD (engine/rapid.py)
+            try:
+                ar.tick(df5, df1, sym, now)
+            except Exception as e:
+                self._note_error(f"Rapid EOD ATLAS failed: {e.__class__.__name__}: {e}")
 
     # ------------------------------------------------------------------ account C (engine/account_c.py, off by default)
     def _account_c_block(self):
@@ -3192,20 +3242,21 @@ class LiveBot:
         and route LIT only once that close is CONFIRMED flat (pre-launch audit A4, 2026-10-25). True = route LIT now; False =
         wait (this poll routes nothing; the entry deadline decides on later polls). An error while B holds a position fails
         closed (LIT's opposite entry is not routed); with B flat or off, LIT is never held back."""
-        ar = getattr(self, "acct_r", None)
-        if ar is not None:                              # ATLAS on the Rapid EOD holds the other side: closed first
-            try:
+        wait_r = False
+        for ar in self._rapid_atlases():               # ATLAS on each Rapid EOD holds the other side: closed first
+            try:                                        # (every Rapid is asked in the same poll; LIT waits for all of them)
                 ok_r = ar.yield_to_lit(1 if int(ent.get("dir") or 1) == 1 else -1, sym, now, px=ent.get("entry")) is not False
             except Exception as e:
                 self._note_error(f"Rapid EOD ATLAS hedge close failed: {e.__class__.__name__}: {e}")
                 ok_r = getattr(ar, "open_t", None) is None
-            if not ok_r:
-                et_r = int(ent["entry_t"])
-                if et_r not in self._hedge_wait:
-                    self._log("risk", f"HEDGE WAIT: LIT at {_et(et_r):%H:%M} ET is NOT routed until ATLAS's opposite position on the "
-                                      "Rapid EOD is confirmed flat")
-                self._hedge_wait.setdefault(et_r, int(now))
-                return False
+            wait_r = wait_r or not ok_r
+        if wait_r:
+            et_r = int(ent["entry_t"])
+            if et_r not in self._hedge_wait:
+                self._log("risk", f"HEDGE WAIT: LIT at {_et(et_r):%H:%M} ET is NOT routed until ATLAS's opposite position on the "
+                                  "Rapid EOD is confirmed flat")
+            self._hedge_wait.setdefault(et_r, int(now))
+            return False
         ab = self.acct_b
         if ab is None:
             return self._hedge_clear_c(ent, sym, now)   # account C (BLITZ): off = True at once
@@ -3265,6 +3316,14 @@ class LiveBot:
         lb = self._life_block(now)
         if lb:
             return lb
+        try:                                    # MFFU's 2% price-limit rule (engine/price_limit.py): Zlarior's own account once FUNDED
+            if self._combo_stage() == "funded":
+                from . import price_limit as _pl
+                pl = _pl.blocked(now)
+                if pl:
+                    return pl
+        except Exception as e:
+            self._note_error(f"price-limit check failed: {e.__class__.__name__}: {e}")
         try:
             from . import guards
             return guards.entry_block(self, ent, self._entry_action(ent, q, sym), q, now)

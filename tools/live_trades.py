@@ -33,6 +33,7 @@ ACCOUNTS = {
     "z25k2": ("Zlarior 25K #2", "LIT", ("b25k_2",)),
     "atlas25f": ("ATLAS funded 25K", "ATLAS", ("atlas", "acctb", "account_b")),
     "rapid25": ("Rapid 25K", None, ("rapid", "acctr", "rapid25k", "rapid_25k", "rapideod", "rapid_eod")),
+    "rapid2": ("Rapid #2", None, ("rapid2", "acctr2")),     # the 2nd Rapid (engine/rapid slot "rapid2"): its own row, never the 1st's
 }
 HIDDEN = re.compile(r"blitz|acctc|acct_c|atlas_v2", re.I)      # BLITZ is hidden (owner 2026-11-15); ATLAS v2 is paper only
 
@@ -43,7 +44,7 @@ def acct_key(acct, bot=None) -> str | None:
         return None
     a = a.split("/")[-1]
     for k, (_n, _b, ids) in ACCOUNTS.items():
-        if a in ids or (k == "rapid25" and a.startswith("rapid")):
+        if a in ids or (k == "rapid25" and a.startswith("rapid") and a != "rapid2"):
             return k
     if re.fullmatch(r"[a-z0-9_]{2,24}", a):
         return a                                # a new account the PC added: its own key (the page names it by its id)

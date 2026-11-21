@@ -1105,7 +1105,13 @@ def _chart_accounts(L: dict) -> list:
         if any(r[0] == k for r in out):
             continue
         bot = bot or ("ATLAS" if "atlas" in str(a.get("strategy") or "").lower() else "LIT")
+        if k in ("rapid25", "rapid2"):              # a Rapid is named by its size (the 1st / 2nd Rapid may be a 25K or a 50K)
+            m = re.search(r"(25|50)K", f"{a.get('plan') or ''} {a.get('name') or ''}")
+            if m:
+                label = f"Rapid {m.group(1)}K"
         out.append((k, label, bot, _badge(a.get("badge")), a))
+    r1 = next((r for r in out if r[0] == "rapid25"), None)
+    out = [(r[0], r[1] + " #2", *r[2:]) if r[0] == "rapid2" and r1 is not None and r1[1] == r[1] else r for r in out]
     if not any(r[0] == "atlas25f" for r in out):
         bd = _d(_d(L).get("board"))
         card = _d(bd.get("atlas"))
