@@ -35,7 +35,7 @@ def test_static():
     check("a. the files are there (%s)" % ", ".join(FILES), len(have) == len(FILES), sorted(set(FILES) - set(have)))
     html, main, scene, core, sh = (AK.read(os.path.join(D, f)) for f in ("index.html", "ow-main.js", "ow-scene.js", "ow-core.js", "ow-shaders.js"))
     check("a. the kit: olympus.js as the Cities app, gate-nav (Home + Go to), the page's own module last", 'src="../../olympus/olympus.js?v=o23" data-app="cities"' in html
-          and "../../olympus/gate-nav.js" in html and html.rindex('src="ow-main.js?v=w8"') > html.index("olympus.js"))
+          and "../../olympus/gate-nav.js" in html and html.rindex('src="ow-main.js?v=w9"') > html.index("olympus.js"))
     check("a. three.js r160 from the site (../../jarvis/three.module.min.js, vendored, MIT) and the OLYMPUS render core; no CDN, no http(s) address in the code",
           "from '../../jarvis/three.module.min.js'" in scene and "from '../../olympus/render.js'" in scene and not re.search(r"https?://", main + scene + core + sh))
     check("a. instanced: one InstancedBufferGeometry per kind (buildings, halos, traffic, beams, rings, streaks), never a mesh per building",
@@ -60,6 +60,9 @@ def test_static():
               out == "[2,1,0.47,0,0,0.5,1,2]", out)
     except (OSError, subprocess.SubprocessError) as e:
         check("a. the market-clock sky (node not found: skipped)", True, str(e))
+    check("a. Research Hub: ?fly=<id> flies to a hub entry (else any place, else the best search hit), a hub card's button says Read, Decide beacons pulse, the light list lists the hub",
+          "qs.get('fly')" in main and "'hub:' + fly" in main and "p.kind === 'hub' ? 'Read'" in main and "p.state === 'decide') S.scene.setTrading(i, true)" in main
+          and "hublist" in main and "p.kind === 'hub' && p.state === 'decide'" in core)
     cities = AK.read(os.path.join(AK.WEB, "cities", "index.html"))
     # cities3 2026-11-20: live district billboards, the sound switch, the frame safe area, the LED colour line out of its comment
     check("a. cities3: district billboards from the PC feed + kalshi.json (C.billboards -> #bills), every sound asks the Settings switch (soundOn), "

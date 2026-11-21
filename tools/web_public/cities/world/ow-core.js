@@ -9,9 +9,9 @@
 export const VERSION = 'w1';
 export const S = Object.freeze({ RUIN: 0, SCAFFOLD: 1, LIT: 2, BRIGHT: 3, CROWN: 4, VAULT: 5 });
 export const LOT = 1.75, FOOT = 1.45;
-export const STATE_WORD = Object.freeze({ live: 'Live', app: 'App', bright: 'Working', growing: 'Growing', testing: 'Being tested', planned: 'Planned',
+export const STATE_WORD = Object.freeze({ decide: 'Your call', live: 'Live', app: 'App', bright: 'Working', growing: 'Growing', testing: 'Being tested', planned: 'Planned',
   ruin: 'Rejected', data: 'Data', paused: 'Paused' });
-const HMAX = { app: 34, bot: 21, account: 19, sites: 15, lab: 10, research: 14, datacity: 13, market: 13, kalshi: 9, decision: 7 };
+const HMAX = { app: 34, bot: 21, account: 19, sites: 15, hub: 30, lab: 10, research: 14, datacity: 13, market: 13, kalshi: 9, decision: 7 };
 const LITF = [0, 0.1, 0.4, 0.62, 0.6, 0.2];
 
 // ------------------------------------------------------------------------------------------------ small helpers
@@ -169,6 +169,10 @@ export function planWorld(w, opts) {
     if (p.kind === 'bot') {
       rings.push([p.x, kindTop + 4, p.z, Math.max(6, p.r * 0.4), 1, 0.35, 0.14, 0.12, hue, 0.9, pi]);
       beams.push([p.x, kindTop, p.z, 1.0, 140, 3.2, 0.21 + r() * 0.1, r() * 6.28, hue, pi]);
+    } else if (p.kind === 'hub' && p.state === 'decide') {
+      // a Research Hub card waiting for the owner's answer: a beacon (a ring and a searchlight) that pulses until it is answered
+      rings.push([p.x, kindTop + 2.5, p.z, 3.2, 1, 0.6, 0.18, 0, hex('#f1c14b'), 1.8, pi]);
+      beams.push([p.x, kindTop, p.z, 1.0, 120, 2.2, 0.0, r() * 6.28, hex('#f1c14b'), pi]);
     } else if (p.kind === 'account' && p.state !== 'planned') {
       rings.push([p.x, kindTop + 2.2, p.z, 3.4, p.progress != null ? clamp(p.progress, 0.02, 1) : 0.02, 0.0, 0.3, 0, hex('#ffd27a'), 1.6, pi]);
     } else if (p.kind === 'app' && p.href === 'hub/zeus.html') {

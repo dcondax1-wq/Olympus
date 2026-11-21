@@ -649,6 +649,77 @@ def concepts(W):
               href="agency/", how="A block of the website business: one building per concept site. Taller and brighter = a warmer lead.")
 
 
+# ------------------------------------------------------------------------------------------------ the Research Hub (lead 2026-11-21)
+# research/hub.json (the Research Hub session): [{id, title, family, status live|lead|rejected|decide, usd_month, date, summary, url}].
+# The Lab & Research district becomes the 3D hub: each family a street (its own slice of the district), live strategies tall bright
+# towers (height = the real $ a month), open leads lit under scaffolding, rejected ideas a field of ruins (tap: the one-line why + $),
+# Decide cards beacons that pulse until answered. No hub.json = nothing here (never example data in the owner's city).
+HUB_STATE = {"live": ("live", CROWN), "lead": ("testing", SCAFFOLD), "rejected": ("ruin", RUIN), "decide": ("decide", BRIGHT)}
+HUB_WORD = {"live": "Live", "lead": "Open lead", "rejected": "Rejected", "decide": "Decide"}
+HUB_FAMILIES = 10
+LAB_QUARTERS = list(QUARTERS["lab"])
+
+
+def hub_items(path=None):
+    """the hub's rows (a list), from research/hub.json (a list, or {items: [...]}) or the given path; [] when there is none"""
+    data = load(path or "tools/web_public/research/hub.json", None)
+    rows = data.get("items") or data.get("hub") or [] if isinstance(data, dict) else data if isinstance(data, list) else []
+    return [r for r in rows if isinstance(r, dict) and r.get("id") and r.get("title")]
+
+
+def hub_usd(r):
+    for k in ("usd_month", "$/month", "usd", "per_month", "month_usd"):
+        v = r.get(k)
+        try:
+            if v is not None and v != "":
+                return float(str(v).replace("$", "").replace(",", ""))
+        except ValueError:
+            continue
+    return None
+
+
+def research_hub(W, path=None):
+    QUARTERS["lab"] = list(LAB_QUARTERS)                    # idempotent: the family streets are rebuilt every time
+    rows = hub_items(path)
+    if not rows:
+        return 0
+    fams = {}
+    for r in rows:
+        fams[str(r.get("family") or "Other").strip() or "Other"] = fams.get(str(r.get("family") or "Other").strip() or "Other", 0) + 1
+    # a street per family with at least 4 entries (at most HUB_FAMILIES streets): smaller families share the Other street, so every
+    # street is wide enough to hold real blocks
+    top = [f for f, n in sorted(fams.items(), key=lambda kv: (-kv[1], kv[0])) if n >= 4][:HUB_FAMILIES]
+    for f in top + (["Other"] if len(fams) > len(top) and not {"Other", "other"} & set(top) else []):
+        q = "rh-" + slug(f)
+        name = f.title() if f.islower() else f
+        QNAME[("lab", q)] = name
+        QUARTERS["lab"].append((q, name))
+    top_usd = max([abs(hub_usd(r) or 0) for r in rows] + [1.0])
+    for r in rows:
+        fam = str(r.get("family") or "Other").strip() or "Other"
+        fam = fam if fam in top else ("other" if "other" in top else "Other")
+        st = str(r.get("status") or "lead").lower()
+        state, bstate = HUB_STATE.get(st, HUB_STATE["lead"])
+        pm = hub_usd(r)
+        h = h255(max(0.0, pm or 0), 0, top_usd, log=True) if st == "live" else 90 if st == "decide" else 70 if st == "lead" else 50
+        if st == "live":
+            h = max(120, h)
+        money = (usd(pm) + " a month") if pm is not None else None
+        # a rejected idea's figure is what its test quoted, never a gain (the hub helper's note): said so, never as profit
+        label = "Test quoted" if st == "rejected" else "$ a month"
+        summ = short(str(r.get("summary") or ""), 120)
+        url = re.sub(r"^(\.\./|\./|/)+", "", str(r.get("url") or "")) or None   # hub.json links from research/ ('../clio/?read=x'): from the site root
+        if url and re.match(r"^[a-z]+:", url):
+            url = None                                        # the site's own pages only
+        blds = [(h, bstate, r.get("date"))] + [(max(20, h // 3), bstate if st != "live" else LIT, r.get("date")) for _ in range(2 if st == "live" else 1)]
+        W.add("hub:" + str(r["id"]), str(r["title"]), "hub", "lab", "rh-" + slug(fam), state, summ or HUB_WORD.get(st, st),
+              [["Status", HUB_WORD.get(st, st)], [label, money], ["Family", fam.title() if fam.islower() else fam], ["Date", str(r.get("date") or "")[:10]]], blds,
+              born=(str(r.get("date"))[:10] if r.get("date") else None), href=url,
+              how="A Research Hub entry: tap Read for the write-up.",
+              extra={"why": (summ + (" (the test quoted " + money + ")" if money else "")) if st == "rejected" else None, "hub": st, "usd": pm})
+    return len(rows)
+
+
 def decisions(W):
     D = load("tools/web_public/business/decisions.json", {}) or {}
     for x in D.get("items") or []:
@@ -701,6 +772,10 @@ def plan_city(W):
     tot = sum(dneed.values()) or 1
     # the wedges: proportional to need, at least 46 degrees each; ZEUS Trading centred on north (-90 degrees: the first view looks north)
     share = {d: max(math.radians(46), 2 * math.pi * dneed[d] / tot) for d, *_ in DISTRICTS}
+    # Lab & Research holds the Research Hub's family streets: room for each at 6 degrees + a margin, so the city does not have to grow
+    # outward to fit thin wedges (the phone's instance budget)
+    nlab = sum(1 for q, _ in QUARTERS["lab"] if q not in DOWNTOWN and ("lab", q) in need)
+    share["lab"] = share["lab"] + math.radians(6 * max(0, nlab - 2))
     k = 2 * math.pi / sum(share.values())
     # quantized to 3 degree steps (the remainder goes to ZEUS Trading): a few new places never move a district border
     share = {d: math.radians(3) * round(math.degrees(v * k) / 3) for d, v in share.items()}
@@ -715,6 +790,8 @@ def plan_city(W):
         if ok:
             break
         R += CELL
+    if not ok:
+        raise RuntimeError("the city plan did not fit")
     taken = plan
     # filler: every free cell inside R (the city fabric), and a ragged ring of outskirts beyond it
     filler = []
@@ -770,6 +847,13 @@ def try_plan(W, by_q, need, arcs, R):
         a = a0
         widths = [math.radians(1.5) * max(1, round(math.degrees(span * bk[q] / tot) / 1.5)) for q in learn]
         widths[-1] = span - sum(widths[:-1])                    # quantized slices too (3 degrees), the last takes the rest
+        if d == "lab" and len(widths) > 1:                      # the Research Hub's family streets: never thinner than a block (6 degrees),
+            lo = math.radians(6)                                # the room taken from the widest street
+            for k in range(len(widths)):
+                if widths[k] < lo:
+                    big = max(range(len(widths)), key=lambda j: widths[j])
+                    widths[big] -= lo - widths[k]
+                    widths[k] = lo
         for q, w in zip(learn, widths):
             if w <= 0:
                 return False, None
@@ -827,6 +911,9 @@ def grab(p, k, pool, taken):
 
 
 # ------------------------------------------------------------------------------------------------ the whole world
+HUB_PATH = None                                         # tests / --hub: another hub.json
+
+
 def build(now=None):
     hide = hidden_bots()
     W = World(hide)
@@ -839,7 +926,15 @@ def build(now=None):
     kalshi(W)
     decisions(W)
     concepts(W)
-    R, arcs, filler = plan_city(W)
+    research_hub(W, HUB_PATH)
+    try:
+        R, arcs, filler = plan_city(W)
+    except RuntimeError:
+        # a hub.json the district cannot hold must never break the nightly city: the city without the hub, said in the build line
+        W.places = [p for p in W.places if p["kind"] != "hub"]
+        QUARTERS["lab"] = list(LAB_QUARTERS)
+        print("world: the Research Hub did not fit the Lab & Research district; built without it", file=sys.stderr)
+        R, arcs, filler = plan_city(W)
     d0 = _dt.date.fromisoformat(W.start) if W.start else None
     nb, counts = 0, {"ruin": 0, "scaffold": 0, "lit": 0, "bright": 0}
     for p in W.places:
@@ -918,7 +1013,10 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description="Olympus World: the repo's data as one giant city (world.json)")
     ap.add_argument("--check", action="store_true", help="build in memory, print the counts, write nothing")
     ap.add_argument("--out", default=OUT)
+    ap.add_argument("--hub", default=None, help="another research hub file (tests, previews); default tools/web_public/research/hub.json")
     a = ap.parse_args(argv)
+    global HUB_PATH
+    HUB_PATH = a.hub
     w = build()
     if a.check:
         print(summary(w))
