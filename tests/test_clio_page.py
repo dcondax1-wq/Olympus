@@ -20,7 +20,7 @@ check = AK.check
 
 
 def test_static():
-    AK.static_kit(APP, NAME, reads=("../writeups/index.json", "../data.json"))
+    AK.static_kit(APP, NAME, reads=("../writeups/index.json", "../data.json", "./hub.json"))
     js = AK.read(os.path.join(AK.WEB, APP, "clio.js"))
     check("a. the reader fetches only ../writeups/<slug>.md, only after the slug check (a-z, 0-9, hyphens) and with the slug URL-encoded; nothing else is fetched by a built address",
           js.count("fetch(") == 2 and "'../writeups/' + encodeURIComponent(slug) + '.md'" in js and "if (!C.isSlug(slug)) return null;" in js)
@@ -129,7 +129,7 @@ def test_page():
     except ImportError:
         check("c. page tests skipped: no Playwright", True)
         return
-    srv, origin = AK.serve({"/writeups/index.json": None, "/data.json": None})
+    srv, origin = AK.serve({"/writeups/index.json": None, "/data.json": None, "/clio/hub.json": None})
     try:
         with AK.browser() as br:
             ctx, p, errs, seen, off = AK.page(br, origin)
@@ -138,7 +138,7 @@ def test_page():
               worst: document.querySelector('#worst li').textContent, note: document.querySelector('#ideasNote').textContent, first: document.querySelector('#list .wu h3').textContent, font: getComputedStyle(document.querySelector('h1')).fontFamily, bg: getComputedStyle(document.body).backgroundColor, h1: document.querySelectorAll('h1').length }) """)
             check("c. no index on the site: the DEMO library appears by itself (never blank): 10 example write-ups, verdict chips with counts, the best five and the worst five by $ a month, the newest first",
                   d["demo"] and d["items"] == 10 and d["count"] == "10 write-ups" and d["chips"][0] == "All 10" and "Adopted or ready 2" in d["chips"] and len(d["best"]) == 5 and d["best"][0].startswith("+$2,100 a month") and d["worst"].startswith("-$1,200 a month") and d["first"] == "Example: size follows the stop" and "10 of 10" in d["note"], d)
-            check("c. AGORA look: serif title, warm dark body, one h1", any(f in d["font"] for f in ("Palatino", "Iowan", "Georgia")) and d["bg"] == "rgb(20, 17, 14)" and d["h1"] == 1, d)
+            check("c. OLYMPUS NIGHT look (day-litedge 2026-11-21, was AGORA): black body, one h1", d["bg"] in ("rgb(0, 0, 0)", "rgba(0, 0, 0, 0)") and d["h1"] == 1, (d["bg"], d["font"], d["h1"]))
             AK.shot(p, "clio-demo")
             p.locator("#q").fill("friday")
             p.wait_for_timeout(200)
@@ -183,7 +183,7 @@ def test_page():
             ctx.close()
             srv2.shutdown()
             # ---- the data.json fallback
-            srv3, origin3 = AK.serve({"/writeups/index.json": None, "/data.json": json.dumps({"docs": json.loads(real_index())})})
+            srv3, origin3 = AK.serve({"/writeups/index.json": None, "/clio/hub.json": None, "/data.json": json.dumps({"docs": json.loads(real_index())})})
             ctx, p, errs, seen, off = AK.page(br, origin3)
             AK.open_app(p, origin3, APP, "")
             f = p.evaluate("() => [!document.querySelector('#demo').hidden, document.querySelectorAll('#list .wu').length]")
