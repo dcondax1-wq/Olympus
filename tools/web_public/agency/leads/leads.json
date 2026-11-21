@@ -2,7 +2,7 @@
  "v": 1,
  "kind": "web_leads",
  "demo": false,
- "fetched": "2026-11-21T17:28:44Z",
+ "fetched": "2026-11-21T17:44:43Z",
  "source": "OpenStreetMap via the public Overpass API (a few small queries per town)",
  "license": "Data (c) OpenStreetMap contributors, ODbL (openstreetmap.org/copyright)",
  "about": "Businesses on OpenStreetMap with no website tag. OSM can be out of date: check the business before you call.",
@@ -196,12 +196,30 @@
    ],
    "chains": 17,
    "with_site": 5
+  },
+  {
+   "town": "Brunswick",
+   "state": "MD",
+   "businesses": 13,
+   "leads": 7,
+   "hot": 0,
+   "server": "maps.mail.ru",
+   "parts_ok": 5,
+   "parts": 9,
+   "missing": [
+    "offices",
+    "food places",
+    "beauty + auto shops",
+    "other shops"
+   ],
+   "chains": 3,
+   "with_site": 2
   }
  ],
  "skipped": {
-  "has_site": 1124,
-  "chain": 1951,
-  "other": 403,
+  "has_site": 1126,
+  "chain": 1954,
+  "other": 404,
   "duplicate": 111,
   "closed": 1
  },
@@ -218,7 +236,8 @@
   "towns/mount-airy.json",
   "towns/urbana.json",
   "towns/middletown.json",
-  "towns/thurmont.json"
+  "towns/thurmont.json",
+  "towns/brunswick.json"
  ],
- "count": 1381
+ "count": 1388
 }

@@ -1,9 +1,10 @@
-# Website leads: counts (OpenStreetMap, updated 2026-11-21 17:28 UTC)
+# Website leads: counts (OpenStreetMap, updated 2026-11-21 17:44 UTC)
 
 Mailable = house number + street + town + ZIP (postcard-ready). Leads after removing businesses in two town boxes.
 
 | Town | Leads | Chains dropped | Hot | Phone | Email | Mailable | Auto | Salon / beauty | Contractor / trades | Gym / fitness | Restaurant / food | Health | Professional services | Shop | Local services | Kinds missing |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Brunswick | 7 | 3 | 0 | 0 | 0 | 4 | 0 | 0 | 0 | 1 | 4 | 1 | 0 | 0 | 1 | offices, food places, beauty + auto shops, other shops |
 | Columbia | 173 | 306 | 19 | 25 | 1 | 139 | 6 | 34 | 1 | 12 | 54 | 19 | 0 | 38 | 9 | - |
 | Ellicott City | 155 | 121 | 12 | 18 | 1 | 130 | 8 | 30 | 1 | 2 | 37 | 0 | 8 | 58 | 11 | healthcare, health + auto places |
 | Frederick | 185 | 257 | 7 | 22 | 2 | 83 | 15 | 17 | 1 | 7 | 57 | 11 | 4 | 68 | 5 | - |
@@ -16,4 +17,4 @@ Mailable = house number + street + town + ZIP (postcard-ready). Leads after remo
 | Thurmont | 24 | 17 | 0 | 1 | 0 | 11 | 1 | 0 | 1 | 1 | 7 | 3 | 0 | 9 | 2 | offices, beauty + auto shops |
 | Urbana | 22 | 5 | 1 | 1 | 0 | 9 | 1 | 8 | 0 | 7 | 1 | 5 | 0 | 0 | 0 | offices, food places, other shops |
 | Westminster | 35 | 25 | 2 | 3 | 0 | 17 | 7 | 11 | 0 | 0 | 4 | 4 | 3 | 0 | 6 | healthcare, gyms, food places, other shops |
-| **All** | **1381** | **1315** | **70** | **121** | **5** | **725** | **78** | **204** | **25** | **59** | **484** | **100** | **32** | **334** | **65** | |
+| **All** | **1388** | **1318** | **70** | **121** | **5** | **729** | **78** | **204** | **25** | **60** | **488** | **101** | **32** | **334** | **66** | |
