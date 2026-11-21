@@ -503,8 +503,8 @@ def test_page():
             ctx.close()
             s5.shutdown()
 
-            # gate-nav on the apps: Home > Hub > app
-            for app, sel, hub in (("nq", "header.top .ag-navback", "Bots & Evals"), ("kalshi", "a.olyback", "Kalshi"), ("cities", "a.gn-back", "Worlds"), ("polis", "a.gn-back", "Worlds")):
+            # gate-nav on the apps: Home > ARENA > app (ORGANIZE 2026-11-21: the arena crumb opens hub/arena.html; an arena's front page shows no own name)
+            for app, sel, hub in (("nq", "header.top .ag-navback", "NQ Bot"), ("kalshi", "a.olyback", "Kalshi"), ("cities", "a.gn-back", "Cities"), ("polis", "a.gn-back", "Cities")):
                 ctx, p, errs, seen, off = AK.page(br, origin)
                 p.goto(f"{origin}/{app}/")
                 p.wait_for_function("window.OLYMPUS_GATE_NAV && window.OLYMPUS_GATE_NAV.placed() && document.querySelector('.gn-crumb') && document.querySelector('.gn-crumb').textContent", timeout=60000)
@@ -513,8 +513,8 @@ def test_page():
                                " return { text: a && a.textContent.trim(), href: a && a.href, go: !!g, top: ra && Math.round(ra.top), goTop: rg && Math.round(rg.top), goR: rg && Math.round(rg.right), h: rg && Math.round(rg.height),"
                                " hub: c && c.textContent, hubHref: c && c.href, cur: (document.querySelector('.gn-cur') || {}).textContent, inNav: !!a.closest('nav.gn-crumbs'),"
                                " rec: JSON.parse(localStorage.getItem('gate.recent.v1') || '[]')[0] }; }", sel)
-                check(f"c. {app}: the breadcrumb reads Home > {hub} > its name (Home -> gate/, {hub} -> its hub tab), 'Go to' (44 px) on the right of the top row, remembered for Recent",
-                      r["text"] in ("Home", "← Home") and r["href"] == f"{origin}/gate/index.html" and r["inNav"] and r["hub"] == hub and "/hub/index.html?h=" in (r["hubHref"] or "") and r["cur"]
+                check(f"c. {app}: the breadcrumb reads Home > {hub} (> its name) (Home -> gate/, {hub} -> its arena page), 'Go to' (44 px) on the right of the top row, remembered for Recent",
+                      r["text"] in ("Home", "← Home") and r["href"] == f"{origin}/gate/index.html" and r["inNav"] and r["hub"] == hub and "/hub/arena.html?a=" in (r["hubHref"] or "") and (r["cur"] or app != "polis")
                       and r["go"] and r["h"] >= 44 and r["goTop"] < 140 and r["goR"] <= 390 and r["rec"] == app, r)
                 check(f"c. {app} with gate-nav: no sideways scroll, no console error", AK.no_sideways(p) and not errs, errs[:3])
                 if app == "nq":

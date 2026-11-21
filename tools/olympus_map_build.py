@@ -28,23 +28,36 @@ WEB = os.path.join(ROOT, "tools", "web_public")
 OUT = os.path.join(ROOT, "docs", "OLYMPUS_MAP.md")
 HEAD = """# OLYMPUS map
 
-Every app, behind one of the FOUR DOORS (ZEUS Trading, Money, Kalshi, More: `tools/web_public/olympus/doors.js`, `docs/ORGANIZATION.md`, 2026-11-18; the same lists as the Atlas command center `tools/web_public/atlas/`). The door is the way you find it (column District); the **group** column is the older registry group (`jarvis/apps.js`: trading / money / life) that the launcher and the Jarvis switcher use. **This file is generated: `python tools/olympus_map_build.py` (do not edit the table by hand; `tests.test_olympus_map` fails when it is stale).**
+**How Olympus is organized (2026-11-21, owner: "more organized").** One structure, everywhere:
 
-Finding things: Atlas has search (names and plain words), pinned rooms (long-press a room or tap the star), recent rooms, a "what needs me now" strip and an all-apps-on-one-screen view. The Zenith launcher button and the Jarvis orb have the same search, favourites (long-press a tile), recent apps and a MAP view.
+1. **Home** (`gate/`) shows **the 6 arenas** (NQ Bot, Kalshi, Business, Websites, Jarvis, Cities) and **Everything else**. Each arena tile opens the
+   arena's **front page** (its main app), and the row under the tiles ("All apps in ...") opens the arena's page `hub/arena.html?a=<arena>`: every live app
+   of that arena grouped by job. So **every app is at most 2 taps from Home**.
+2. **Every page has the same way back:** `Home > arena > app` at the top (plain names, not Greek ones), plus "Go to" (search). One tap on Home goes Home.
+   It comes from `olympus/gate-nav.js`, loaded by the AGORA shell (`agora-ui.js`), by the a11y kit (`a11y.js`) or directly; the public client pages
+   (agency demos, audits, showcase, factory, caller portal, concept sites) never get it.
+3. **Retired apps redirect** to their replacement (`?stay=1` keeps the old page; nothing is deleted). Table below.
+4. **One place per fact:** every account, its payout and its 7-day clocks live on **My MFFU Accounts** (`business/mffu.html`); Ledger keeps the real cash.
+   A page that repeats one of them shows a "Main copy" chip linking there.
 
-Data: apps only read published JSON (and bundled `fixture.json` / demo fallbacks). No app places orders. Look: AGORA (`docs/DESIGN_AGORA.md`). Wiring a new app: `tools/wire_new_apps.py` + `tools/new_apps.json` (`docs/NEW_APPS_WIRING.md`).
+The arenas, the retired list and the fact owners are DATA in `tools/web_public/olympus/gate-catalog.js` (ARENAS, REPLACE, FACTS). **This file is generated:
+`python tools/olympus_map_build.py` (do not edit by hand; `tests.test_olympus_map` fails when it is stale).** The link crawler and the nav checks:
+`tests.test_olympus_nav`.
+
+Data: apps only read published JSON (and bundled `fixture.json` / demo fallbacks). No app places orders. Look: OLYMPUS NIGHT (`docs/DESIGN_AGORA.md`).
 """
 FOOT = """
 ## Where the organizing code lives
 
 | Piece | File | Test |
 |---|---|---|
-| The four doors (ZEUS Trading, Money, Kalshi, More: each door's shortcuts in plain words + every app in exactly one door) | `tools/web_public/olympus/doors.js` (= `web_next/js/next/doors.js`); the page `hub/doors.html` + `hub/doors.js`; the Gate's four door tiles; docs/ORGANIZATION.md | `tests.test_apps_list` (part d) |
-| Atlas command center (districts, search, pins, recent, needs-me strip, one-screen map) | `tools/web_public/atlas/` (`atlas.js`, `hub.js`, `atlas.css`) | `node --test tests/test_atlas_standalone_hub.mjs`, `tests/test_atlas_intro.mjs` |
-| Zenith launcher sheet (favourites, search, recent, MAP) | `tools/web_public/launcher.js` = `web_next/js/next/launcher.js` (byte-identical) | `tests.test_apps_list` |
-| Jarvis switcher (search, MAP, favourites, recent) | `tools/web_public/jarvis/switcher.js` | `tests.test_jarvis_hub` (parts n, p, s) |
-| World-to-world jump (hyperspace out of the page you tap, each world's arrival signature through a View Transition; reduced motion = a fade) | `tools/web_public/olympus/warp.js` + `warp.css` (themes.js loads it and reads the arrival in `<head>`; agora.css / jarvis.css / kalshi.css / zenith_agora.css @import warp.css) | `tests.test_warp` |
-| App registry | `tools/web_public/jarvis/apps.js` -> `olympus/apps-list.js` | `tests.test_apps_list` |
+| The arenas, retired -> replacement, one place per fact, every app's plain name and hub | `tools/web_public/olympus/gate-catalog.js` (ARENAS, REPLACE, FACTS, R) | `tests.test_olympus_nav`, `tests.test_gate_page`, `tests.test_hubs` |
+| The breadcrumb Home > arena > app, Go to, the retired redirect, the Main copy chips | `tools/web_public/olympus/gate-nav.js` (loaded by `agora-ui.js`, `a11y.js` or the page) | `tests.test_olympus_nav` |
+| The arena pages | `tools/web_public/hub/arena.html` + `arena.js` + `arena.css` | `tests.test_olympus_nav` |
+| Home: the 6 arenas, Everything else, the All apps row | `tools/web_public/gate/index.html`, `gate/arenas.js`, `gate/gate.js` | `tests.test_gate_page` |
+| The hubs (an older grouping, still reachable from Go to) | `tools/web_public/hub/` | `tests.test_hubs` |
+| App registry (Jarvis switcher, launcher) | `tools/web_public/jarvis/apps.js` -> `olympus/apps-list.js` | `tests.test_apps_list` |
+| The four doors (2026-11-18; hidden on Home since the arenas, kept for old links) | `tools/web_public/olympus/doors.js`, `hub/doors.html` | `tests.test_apps_list` (part d) |
 | This map | `tools/olympus_map_build.py` -> `docs/OLYMPUS_MAP.md` | `tests.test_olympus_map` |
 """
 FALLBACK_DATA = "bundled fixture / its own files"
@@ -172,19 +185,73 @@ def shown_part(apps, zones):
     return "\n".join(out) + "\n"
 
 
+CAT_JS = r"""
+const C = require(process.argv[1]);
+const o = { arenas: C.arenas.map((x) => ({ id: x.id, name: x.name, front: x.front, line: x.line, count: x.count })), app: {}, label: {}, replace: {}, facts: {}, retired: C.RETIRED };
+C.apps.forEach((a) => { const x = C.arenaOf(a.id); o.app[a.id] = x ? x.id : 'else'; o.label[a.id] = a.label; });
+C.RETIRED.forEach((id) => { const r = C.replacementOf(id); if (r) o.replace[id] = r.id; });
+Object.keys(C.FACTS).forEach((k) => { o.facts[k] = { app: C.FACTS[k].app, path: C.FACTS[k].path || '', name: C.FACTS[k].name || '', label: C.FACTS[k].label, also: C.FACTS[k].also }; });
+console.log(JSON.stringify(o));
+"""
+ALIAS = {"zenith": "today"}     # apps.js id -> its catalog id
+
+
+def catalog():
+    """the arenas from olympus/gate-catalog.js (node); None without node"""
+    import json
+    import shutil
+    import subprocess
+    node = shutil.which("node")
+    if not node:
+        return None
+    r = subprocess.run([node, "-e", CAT_JS, os.path.join(WEB, "olympus", "gate-catalog.js")], capture_output=True, text=True, timeout=60)
+    return json.loads(r.stdout) if r.returncode == 0 else None
+
+
+def arena_parts(apps, cat):
+    names = {a[0]: a[1] for a in apps}
+    lab = cat["label"]
+    nm = lambda i: lab.get(i) or names.get(i) or i  # noqa: E731
+    out = ["", "## The arenas", "", "| Arena | Front page (the Home tile) | Live apps | Its page |", "|---|---|---|---|"]
+    for x in cat["arenas"]:
+        front = f"{nm(x['front'])} (`{x['front']}/`)" if x["front"] else "-"
+        out.append(f"| **{x['name']}** | {front} | {x['count']} | `hub/arena.html?a={x['id']}` |")
+    out += ["", "## Retired: where each old app sends you now", "",
+            "Retired apps are not on Home, in search or in A to Z. Their old links open the replacement (`?stay=1` keeps the old page).", "",
+            "| Retired | Opens |", "|---|---|"]
+    for i in sorted(cat["replace"]):
+        out.append(f"| {names.get(i, i)} (`{i}`) | {nm(cat['replace'][i])} (`{cat['replace'][i]}`) |")
+    out += ["", "## One place per fact", "", "| Fact | The one place | Also shown on (a 'Main copy' chip links back) |", "|---|---|---|"]
+    for k, f in cat["facts"].items():
+        out.append(f"| {f['label']} | {f.get('name') or nm(f['app'])} (`{f.get('path') or f['app']}`) | {', '.join(sorted(f['also']))} |")
+    out += ["", "## Merged earlier: where a folded app's content lives now", "", "| Old app | Now on | What is there |", "|---|---|---|"]
+    for aid, where, what in MERGED:
+        if aid in names:
+            out.append(f"| {names[aid]} | {where} | {what} |")
+    return "\n".join(out) + "\n"
+
+
 def build():
     apps = parse_apps(read(os.path.join(WEB, "jarvis", "apps.js")))
-    zones = parse_zones(read(os.path.join(WEB, "atlas", "atlas.js")))
-    order = {t: i for i, (_, t, _) in enumerate(zones)}
+    cat = catalog()
+    if cat is None:      # no node: the old door view, so the file still builds
+        zones = parse_zones(read(os.path.join(WEB, "atlas", "atlas.js")))
+        cat = {"arenas": [{"id": z, "name": t, "front": "", "line": "", "count": len(ids)} for z, t, ids in zones], "app": {}, "label": {}, "replace": {}, "facts": {}}
+        arena_name = lambda aid, group: zone_of(aid, group, zones)  # noqa: E731
+    else:
+        an = {x["id"]: x["name"] for x in cat["arenas"]}
+        arena_name = lambda aid, group: an.get(cat["app"].get(ALIAS.get(aid, aid), "else"), "Everything else")  # noqa: E731
+    order = {x["name"]: i for i, x in enumerate(cat["arenas"])}
     rows = []
     for aid, name, group, sub in apps:
-        dist = zone_of(aid, group, zones)
-        rows.append((order.get(dist, 99), aid, f"| {name} (`{aid}`) | {dist} | {group} | {words8(sub)} | {reads_of(aid)} | {test_of(aid)} |"))
+        ar = arena_name(aid, group)
+        ret = " (retired)" if aid in set(cat.get("retired") or []) else ""
+        rows.append((order.get(ar, 99), aid, f"| {name} (`{aid}`){ret} | {ar} | {group} | {words8(sub)} | {reads_of(aid)} | {test_of(aid)} |"))
     rows.sort(key=lambda r: (r[0], r[1]))
-    table = ["| App (id) | District | Group | What it is | Data it reads | Test |", "|---|---|---|---|---|---|"] + [r[2] for r in rows]
+    table = ["## Every app", "", "| App (id) | Arena | Group | What it is | Data it reads | Test |", "|---|---|---|---|---|---|"] + [r[2] for r in rows]
     n = len(apps)
     foot = f"\n{n} apps. Rebuild the registry list after editing `jarvis/apps.js` or `olympus.js`: `python tools/apps_list_build.py`; recount: `python tools/apps_list_build.py --check`.\n"
-    return HEAD + "\n" + "\n".join(table) + "\n" + foot + shown_part(apps, zones) + FOOT
+    return HEAD + arena_parts(apps, cat) + "\n" + "\n".join(table) + "\n" + foot + FOOT
 
 
 def main(argv=None):
@@ -223,10 +290,10 @@ def selftest():
     ck("the unknown app has the fallbacks (bundled data, the kit test)", reads_of("zzz-none") == FALLBACK_DATA and test_of("zzz-none") == "covered by `tests.test_olympus_kit`")
     real = build()
     n = len(parse_apps(read(os.path.join(WEB, "jarvis", "apps.js"))))
-    ck("the real map has one row per BUILT_INS app and the four doors", real.count("\n| ") >= n and n > 30 and all(f"| {d} |" in real for d in ("ZEUS Trading", "Money", "Kalshi", "More")), n)
+    ck("the real map has one row per BUILT_INS app and the arenas", real.count("\n| ") >= n and n > 30 and all(f"| {d} |" in real for d in ("NQ Bot", "Business", "Kalshi", "Everything else")), n)
     ck("deterministic", build() == real)
-    ck("archive: parsed from doors.js; the map has the Open first / Archive table and the merged list",
-       parse_archive("var ARCHIVE = ['a', 'b',\n 'c'];") == ["a", "b", "c"] and "| Door | Open first | Archive (folded) |" in real and "| Odeon | trading/#reelsCard |" in real)
+    ck("the map has the arenas, retired -> replacement, one place per fact and the merged list",
+       "## The arenas" in real and "| Delphi (`delphi`) |" in real and "## One place per fact" in real and "| Odeon | trading/#reelsCard |" in real)
     print(f"\n{'ALL PASS' if not bad else str(len(bad)) + ' FAILED'}")
     return 0 if not bad else 1
 
