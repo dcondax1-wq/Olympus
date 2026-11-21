@@ -52,7 +52,7 @@ Extra runs (both versions):
 | Sunday open, every minute from 18:00 Sun 11-15 (Mon 11-16) | 17/17, LIT 06:16 long x2, -$388.20 x2 | identical |
 | Fri 11-13 as a 13:15 half day | ATLAS 03:40 long, stop -$76.40, 08:05 long, BE | identical |
 | Hand LONG 1 MNQ planted on ATLAS's locked eval, 11-17 | ATLAS short 08:20, target +$895.95 (a cross-account hedge) | refused 08:20 on both ATLAS lanes ("hedging guard: NinjaTrader shows LONG 1 MNQ ... ..RH03"); ATLAS long 10:15 (same side, allowed), stop -$110.40 |
-| Every-minute 11-10 + 11-17 | see the end | see the end |
+| Every-minute polls 11-10 + 11-17 (the PC's 60 s loop) | 11-10: LIT long 03:33 on both evals (3 + 2 micros), ATLAS long 03:55, all stopped: -$347.70 / -$231.80 / -$99.40; 11-17: ATLAS short 08:20, target +$895.95; 17/17 + 17/17 | identical, 17/17 + 17/17 |
 
 ## Bugs found
 
