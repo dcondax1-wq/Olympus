@@ -2,7 +2,7 @@
  "v": 1,
  "kind": "web_leads",
  "demo": false,
- "fetched": "2026-11-21T16:34:02Z",
+ "fetched": "2026-11-21T16:48:58Z",
  "source": "OpenStreetMap via the public Overpass API (a few small queries per town)",
  "license": "Data (c) OpenStreetMap contributors, ODbL (openstreetmap.org/copyright)",
  "about": "Businesses on OpenStreetMap with no website tag. OSM can be out of date: check the business before you call.",
@@ -143,11 +143,28 @@
    ],
    "chains": 24,
    "with_site": 12
+  },
+  {
+   "town": "Urbana",
+   "state": "MD",
+   "businesses": 30,
+   "leads": 22,
+   "hot": 1,
+   "server": "maps.mail.ru",
+   "parts_ok": 6,
+   "parts": 9,
+   "missing": [
+    "offices",
+    "food places",
+    "other shops"
+   ],
+   "chains": 5,
+   "with_site": 3
   }
  ],
  "skipped": {
-  "has_site": 1114,
-  "chain": 1925,
+  "has_site": 1117,
+  "chain": 1930,
   "other": 401,
   "duplicate": 111,
   "closed": 1
@@ -162,7 +179,8 @@
   "towns/columbia.json",
   "towns/ellicott-city.json",
   "towns/westminster.json",
-  "towns/mount-airy.json"
+  "towns/mount-airy.json",
+  "towns/urbana.json"
  ],
- "count": 1331
+ "count": 1353
 }
