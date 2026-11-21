@@ -96,7 +96,7 @@
   {
    "id": "rej1",
    "title": "Friday-only trading",
-   "family": "Timing",
+   "family": "Filters",
    "status": "rejected",
    "usd_month": -95,
    "date": "2026-09-15",
@@ -156,7 +156,7 @@
   {
    "id": "rej7",
    "title": "Gap fill",
-   "family": "Timing",
+   "family": "Filters",
    "status": "rejected",
    "usd_month": -75,
    "date": "2026-11-15",

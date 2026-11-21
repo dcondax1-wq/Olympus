@@ -9,3 +9,8 @@
 6. **Light list** (Low / Save-Data / no WebGL): the hub entries with status, $ and Read. Same phone rules (poster first, 3D after the first touch or 6.5 s).
 7. **No hub.json = no hub places**: example rows never reach the owner's city. Shots marked EXAMPLE were made with `tests/fixtures/research_hub.json`.
 8. Tests: test_world_build 47/47 (3 new hub checks on the fixture), test_world_page 32/32.
+
+**Update with the real file** (day-litedge 73561b86, 146 items): all 146 placed (612 places). Links `../clio/?...` are read from the site root;
+Clio's `../cities/?fly=<id>` is forwarded to the World. Rejected figures show as "Test quoted", never as profit. A street per family with 4+ entries
+(today: Other 104, Risk 27, Filters 4; the rest on Other) and never thinner than 6 degrees; a hub file that cannot fit = the city without the hub
+(never a broken nightly build). Shots 4-5 are REAL data. Tip for the hub: real family values (not 'other') give more streets.

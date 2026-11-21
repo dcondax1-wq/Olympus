@@ -57,11 +57,11 @@ def test_build():
     live = sorted((p for p in hub if p["state"] == "live"), key=lambda p: -(p.get("usd") or 0))
     check("a. Research Hub: every hub.json row is a place in Lab & Research (%d), on its family's street (a quarter per family)" % len(hub),
           len(hub) == len(fx) and all(p["district"] == "lab" and p["quarter"].startswith("rh-") for p in hub)
-          and {q["id"] for q in next(d for d in wh["districts"] if d["id"] == "lab")["quarters"]} >= {"rh-lit", "rh-risk", "rh-filters"})
+          and {q["id"] for q in next(d for d in wh["districts"] if d["id"] == "lab")["quarters"]} >= {"rh-filters", "rh-other"})   # a street per family of 4+ entries, the rest on Other
     check("a. Research Hub: live = tall bright towers ordered by the real $ a month; leads under scaffolding; rejected = ruins whose card says why + $; Decide = 'decide'",
           [p["b"][0] for p in live] == sorted([p["b"][0] for p in live], reverse=True) and all(p["b"][1] == WB.CROWN for p in live)
           and by["holiday"]["state"] == "testing" and by["holiday"]["b"][1] == WB.SCAFFOLD
-          and by["rej3"]["state"] == "ruin" and "$330" in by["rej3"]["why"] and "PF" in by["rej3"]["why"].replace("Profit factor", "PF")
+          and by["rej3"]["state"] == "ruin" and "the test quoted -$330" in by["rej3"]["why"] and "PF" in by["rej3"]["why"].replace("Profit factor", "PF")
           and by["scale-in"]["state"] == "decide" and by["lit"]["href"] == "research/lit.html", [(p["id"], p["state"], p["b"][:2]) for p in hub[:6]])
     w2 = WB.build()                                     # again without the fixture: no hub, the streets gone
     check("a. no hub.json = no hub places (never example data in the owner's city); the family streets reset between builds",
