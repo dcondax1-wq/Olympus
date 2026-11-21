@@ -202,8 +202,8 @@ def part_c(shots):
             cards = pg.eval_on_selector_all(".pl-home :is(.su-acct, .cl-hero)", "els => els.map(e => e.innerText)")
             check("c. Home: one account card per bot, Zlarior then ATLAS then BLITZ (big $ to the target, SIM / REAL tag)", len(cards) == 3 and cards[0].upper().startswith("ZLARIOR")
                   and cards[1].upper().startswith("ATLAS") and cards[2].upper().startswith("BLITZ") and "TARGET" in cards[0].upper() and "SIM" in cards[1].upper(), cards)
-            check("c. Home: the status bar comes first, then the account cards", pg.evaluate(
-                "() => { const h = document.querySelector('#page > .pl-home'); const K = [...h.children].filter((c) => !c.classList.contains('pl-hi')); return K[0].classList.contains('su-bar') && /(su-accts|cl-heroes)/.test(K[1].className); }"))
+            check("c. Home: the status bar comes first, then the account cards (the dated market-closed banner su-sun between them is skipped)", pg.evaluate(
+                "() => { const h = document.querySelector('#page > .pl-home'); const K = [...h.children].filter((c) => !c.classList.contains('pl-hi') && !c.classList.contains('su-sun')); return K[0].classList.contains('su-bar') && /(su-accts|cl-heroes)/.test(K[1].className); }"))
             check("c. Home: the old Home (goals, 'Is the bot trading my eval?') is one tap away on #/homefull",
                   pg.evaluate("() => !!document.querySelector('#page [data-go=homefull]') && !document.querySelector('#page .hb-hero')"))
             box = pg.evaluate("() => [...document.querySelectorAll('.pl-home :is(.su-acct, .cl-hero)')].map(e => { const r = e.getBoundingClientRect(); return [Math.round(r.top), Math.round(r.width)]; })")
