@@ -462,6 +462,10 @@ def run_a(br, url):
     hello = p.text_content("#hello")
     when = p.text_content("#when")
     check("b. Jarvis screen: greeting and the market line", hello in ("Late night", "Good morning", "Good afternoon", "Good evening") and "NQ market" in when, (hello, when))
+    try:                                               # the bots' numbers arrive with the live feed, a moment after the start (QA 2026-11-21:
+        p.wait_for_function("(document.getElementById('cards').textContent || '').includes('$1,106')", timeout=10000, polling=100)   # 0.7 s was a race)
+    except Exception:                                  # noqa: BLE001 - reported below
+        pass
     cards = p.text_content("#cards")
     check("b. Zenith card: the bots' status and numbers from the live feed",
           "RUNNING: bot trading" in cards and "$1,106" in cards and "+$213" in cards and "$750" in cards, cards[:400])
@@ -700,6 +704,10 @@ def run_b(br, url):
     check("h. apps.js: a card posted by an open app (listen) replaces it", "StubApp · Posted" in p.text_content("#cards"), p.text_content("#cards")[-200:])
     check("h. brain.js: its suggestions", "Stub suggestion" in p.inner_text("#sugs"), p.inner_text("#sugs"))
     check("h. CONNECT MY BRAIN shows while the brain can use a key and has none", p.locator("#brainF").is_visible())
+    try:                                               # the live feed (room 1105.6) first: asking before it lands answers "room none" (a race)
+        p.wait_for_function("(document.getElementById('cards').textContent || '').includes('$1,106')", timeout=10000, polling=100)
+    except Exception:                                  # noqa: BLE001 - reported below
+        pass
     ask = asker(p)
     a = ask("anything")
     check("h. brain.js answers with getFacts() (market, live, apps) and its cards show", a.startswith("STUB NQ market") and "room 1105.6" in a

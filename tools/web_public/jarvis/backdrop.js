@@ -37,7 +37,11 @@ function quiet() {
     const chk = () => {
       const w = Math.max(QUIET_MS - (Date.now() - lastInput), 6000 - performance.now());   // a phone: never in the first 6 s (the first taps)
       if (phoneNow() && w > 0) { setTimeout(chk, w + 50); return; }
-      if (performance.now() < START_MS) { setTimeout(chk, START_MS - performance.now() + 50); return; }   // any screen: not before 1.5 s (QA 2026-11-21)
+      // any screen (QA 2026-11-21): not before Jarvis's own start is done (data-ready) and 1.5 s more, so the sky never competes with the
+      // page's first data (the bots' numbers, the cards)
+      if (root.dataset.ready !== '1' && performance.now() < 20000) { setTimeout(chk, 200); return; }
+      if (!readyAt) readyAt = performance.now();
+      if (performance.now() - readyAt < START_MS) { setTimeout(chk, START_MS - (performance.now() - readyAt) + 50); return; }
       if (window.requestIdleCallback) requestIdleCallback(() => (phoneNow() && Date.now() - lastInput < QUIET_MS ? chk() : ok()), { timeout: 2000 }); else setTimeout(ok, 30);
     };
     chk();
@@ -263,6 +267,7 @@ const start = () => {
   mount().catch((e) => { state.state = 'off'; state.error = String((e && (e.stack || e.message)) || e); delete root.dataset.bg3d; });
 };
 const QUIET_MS = 2500, START_MS = 1500;
+let readyAt = 0;
 // QA 2026-11-21 (lead): the sky must be cheap at start. Until it is ready the page shows its poster: .bgfx's CSS sky (jarvis.css), there
 // from the first frame, the 3D fading in over it. The scene's shaders compile one object per idle slice (compileStepwise), never all at
 // once on the first frame; and a frame that costs more than 50 ms twice drops to 15 fps and the low tier, then (twice more) to a still frame.
