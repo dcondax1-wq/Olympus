@@ -136,6 +136,9 @@ PARTS = {"olympus_kit": [("a", ["datacity", "mind", "tree"]), ("b", ["oracle", "
                          ("power", ["power", "tiers"]), ("more", ["more"])]}
 PARTS["combo_50k"] = [("sep", ["--seg", "2026-09-02"]), ("oct", ["--seg", "2026-10-02", "--scenario"])]   # night-combolive: one eval segment each
 AREAS["fleet"].append("rapid_launch")       # day-rapid 2026-11-20: Rapid EOD 25K launch check (tools/money/rapid25_launch.py)
+for _a in ("fleet", "pc"):                  # fix-trade 2026-11-21: an added Rapid / account armed by Start trading's phrase (engine/go.py)
+    if "rapid_arm" not in AREAS[_a]:
+        AREAS[_a].append("rapid_arm")
 SLOW = {"olympus_shell", "fit_edge", "jarvis_hub", "phone_e2e", "olympus_kit", "olympus_themes", "olympus_render", "zenith_mode", "ui_polish", "datacity", "jarvis_home"}
 
 

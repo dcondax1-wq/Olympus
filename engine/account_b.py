@@ -1137,6 +1137,14 @@ class AccountB:
                     return h
             except Exception:
                 pass
+        else:                                          # no extra accounts: the hand-trade check still runs (fix-trade 2026-11-21)
+            try:
+                from . import hand_hedge
+                h = hand_hedge.opposite_hand(d, b, None, own=self.name, now=self.clock())
+                if h:
+                    return h
+            except Exception:
+                pass
         for ar in (getattr(b, "acct_r", None), getattr(b, "acct_r2", None)):   # engine/rapid.py (off = None): ATLAS on a Rapid EOD
             if ar is not None and ar is not self and ar.open_t is not None:
                 pv = ar.prov.get(int(ar.open_t)) or {}

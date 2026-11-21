@@ -236,8 +236,10 @@ def _new_id(plan: str, rows_file: list) -> str:
 
 
 # ---------------------------------------------------------------------------------------------------------------- add
-def add(plan: str, name: str, bots: str | None = None, start: str | None = None, funded: bool = False) -> dict:
-    """The owner's one line. Returns {"ok", "say" | "error", "notes": [...]}; never arms."""
+def add(plan: str, name: str, bots: str | None = None, start: str | None = None, funded: bool = False,
+        from_eval: str | None = None) -> dict:
+    """The owner's one line. Returns {"ok", "say" | "error", "notes": [...]}; never arms. from_eval (a funded Rapid only): the
+    Name of the eval that passed, needed when two Rapid evals of that size run."""
     plan = str(plan or "").lower().replace(" ", "").replace("_", "").replace("-", "")
     if plan == "rapideod25k":
         plan = "rapideod25"
@@ -267,7 +269,7 @@ def add(plan: str, name: str, bots: str | None = None, start: str | None = None,
     if stage == "eval" and not _is_sim(name) and s[plan] >= L[plan]:
         notes.append(f"MFFU already has your {L[plan]} funded {P['label']}: a pass of this eval cannot be activated until one goes")
     if plan in RAPID_PLANS:
-        r = _add_rapid(name, start, funded, rows, plan)
+        r = _add_rapid(name, start, funded, rows, plan, from_eval=from_eval)
     elif bots == "atlas":
         r = _add_atlas(name, start, funded, rows)
     else:
@@ -336,7 +338,7 @@ def _add_atlas(name, start, funded, rows) -> dict:
     return {"ok": bool(r.get("ok")), "say": (r.get("say") or "") + " It joins at the next START BOT.", "error": r.get("error")}
 
 
-def _add_rapid(name, start, funded, rows, plan="rapideod") -> dict:
+def _add_rapid(name, start, funded, rows, plan="rapideod", from_eval=None) -> dict:
     """A Rapid EOD 25K / 50K: LIT + ATLAS on one account (engine/rapid.py). Two at a time (day-multirapid 2026-11-20): the 1st
     in data/rapid.json exactly as before, the 2nd in data/rapid2.json. Added DISARMED; only START BOT's typed phrase arms."""
     rp, P = _rapid(), PLANS[plan]
@@ -344,9 +346,20 @@ def _add_rapid(name, start, funded, rows, plan="rapideod") -> dict:
     nm = str(name or "").strip()
     blks = {sl: rp.read(rp.slot_path(sl)) for sl in rp.SLOTS}
     if funded:
-        # the eval this funded account comes from: a slot with the same plan still in its eval (else a free slot)
-        sl = next((k for k, b in blks.items() if b is not None and str(b.get("plan") or rp.PRESET) == P["preset"]
-                   and b.get("stage") != "funded"), None)
+        # the eval this funded account comes from: the slot of the same plan still in its eval (else a free slot). Two such
+        # evals: the owner names the one that passed (--from), never a guess (a guess replaced the eval still trading)
+        ev = [k for k, b in blks.items() if b is not None and str(b.get("plan") or rp.PRESET) == P["preset"]
+              and b.get("stage") != "funded"]
+        fe = str(from_eval or "").strip()
+        if fe:
+            ev = [k for k in ev if blks[k]["account"] == fe]
+            if not ev:
+                return {"ok": False, "error": f"no {P['label']} eval named {fe} (python -X utf8 -m engine.accounts list)"}
+        elif len(ev) > 1:
+            return {"ok": False, "error": f"two {P['label']} evals run ({', '.join(blks[k]['account'] for k in ev)}): say which one "
+                                          f"PASSED: python -X utf8 -m engine.accounts add --plan {plan} --name \"{nm}\" --funded "
+                                          f"--start {start} --from \"<the eval that passed>\""}
+        sl = ev[0] if ev else None
         if sl is None:
             sl = next((k for k, b in blks.items() if b is not None and b["account"] == nm), None) or \
                  next((k for k, b in blks.items() if b is None), None)
@@ -526,6 +539,8 @@ def main(argv=None) -> int:
     a_add.add_argument("--bots", default=None, help="lit | atlas | lit+atlas (default: what the research picked)")
     a_add.add_argument("--start", default=None, help="first session yyyy-mm-dd (default: today's session)")
     a_add.add_argument("--funded", action="store_true", help="a funded account MFFU issued (needs --start = first funded day)")
+    a_add.add_argument("--from", dest="from_eval", default=None,
+                       help="a funded Rapid: the Name of the eval that passed (needed when two Rapid evals of that size run)")
     a_rm = sub.add_parser("remove", help="take one account off")
     a_rm.add_argument("--name", required=True)
     sub.add_parser("list")
@@ -535,7 +550,7 @@ def main(argv=None) -> int:
         if a.funded and not a.start:
             print("--funded needs --start yyyy-mm-dd (the first funded day)")
             return 1
-        r = add(a.plan, a.name, a.bots, a.start, a.funded)
+        r = add(a.plan, a.name, a.bots, a.start, a.funded, from_eval=a.from_eval)
         if not r.get("ok"):
             print(f"[NOT ADDED] {r.get('error')}")
             return 1

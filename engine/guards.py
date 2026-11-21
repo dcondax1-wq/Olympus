@@ -549,6 +549,16 @@ def entry_block(bot, ent: dict, action: dict, plan_qty, now: int) -> str | None:
     except Exception as e:
         bot._note_error(f"guards: entry check failed ({e.__class__.__name__}: {e}); the adapter's own caps still apply")
         return None
+    try:            # hand trades (engine/hand_hedge.py) HERE, before LiveBot._hedge_clear / _second_preempt close ATLAS, BLITZ,
+        from . import hand_hedge    # a follower or a second-strategy trade at market for an entry this check refuses anyway
+        if action.get("side") in ("buy", "sell"):   # (fix-trade 2026-11-21); also the one-account bot (no extra accounts)
+            hh = hand_hedge.opposite_hand(1 if action["side"] == "buy" else -1, bot, getattr(bot, "accts", None),
+                                          own=getattr(getattr(bot, "adapter", None), "account", None), now=now,
+                                          notify=lambda t, b, k: _notify(bot, k, t, b))
+            if hh:
+                probs = list(probs or []) + [hh]
+    except Exception:
+        pass
     if not probs:
         return None
     why = "; ".join(probs)
@@ -703,9 +713,15 @@ def reconcile_tick(bot, c, now: int):
     if now - rc["since"] < wait:
         return
     day = trading_day(now)
+    try:                                         # the owner's own hand-trade window (engine/hand_hedge.py): no close of his trade
+        from . import hand_hedge
+        hw = hand_hedge.window(now=now) if exp == 0 and net != 0 else None
+    except Exception:
+        hw = None
     if not rc["pushed"]:
         rc["pushed"] = True
-        act = " Closing it (CLOSEPOSITION)." if exp == 0 and c.get("reconcile_flatten") else " Check NinjaTrader by hand."
+        act = (" Left alone (your hand-trade window)." if hw else
+               " Closing it (CLOSEPOSITION)." if exp == 0 and c.get("reconcile_flatten") else " Check NinjaTrader by hand.")
         _notify(bot, f"recon:{day}:{exp}:{net}", "Position mismatch",
                 f"NinjaTrader {getattr(ad, 'account', '')} shows {', '.join(held) or 'flat'}; the bot's ledger says "
                 f"{_txt(exp)}.{act}")
@@ -715,17 +731,13 @@ def reconcile_tick(bot, c, now: int):
                             f"account {', '.join(held) or 'flat'}, bot ledger {_txt(exp)}", now=now, path=handsoff.path_for(bot))
         except Exception:
             pass
-    try:                                         # the owner's own hand-trade window (engine/hand_hedge.py): no close of his trade
-        from . import hand_hedge
-        hw = hand_hedge.window(now=now) if exp == 0 and net != 0 else None
-    except Exception:
-        hw = None
     if hw:
         if not rc.get("hand_said"):
             rc["hand_said"] = True
             _notify(bot, f"recon-window:{day}:{net}", "Hand trade left alone",
                     f"NinjaTrader {getattr(ad, 'account', '')} shows {', '.join(held)}: your hand-trade window is open until "
-                    f"{_dt_hm(hw.get('until'))}, so the bot does not close it. It never takes the other side on another account.")
+                    f"{_dt_hm(hw.get('until'))}, so the bot does not close it. It never takes the other side of it on any account "
+                    "NinjaTrader is connected to.")
         return
     if exp == 0 and net != 0 and c.get("reconcile_flatten") and now - rc["flat_at"] >= 60:
         if rc["flat_tries"] >= 3:

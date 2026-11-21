@@ -101,6 +101,9 @@ class FakeBot:
     def _snote(self, key, kind, text):
         self.logs.append((kind, text))
 
+    def _rapid_atlases(self):                       # LiveBot's (day-multirapid): no Rapid on this fake bot
+        return []
+
 
 class Paper:
     name = "paper"

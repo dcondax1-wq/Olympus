@@ -1259,6 +1259,12 @@ class AccountRouter:
             if not any(("entry", ent["entry_t"]) not in a.seen and ent["entry_t"] >= ctx["start"] - ctx["secs"]
                        and not a.entry_block(ctx["now"]) and self.others_opposite(d, a) for a in live):
                 return
+            try:                       # a hand trade refuses this entry on every account (opposite_open): never close ATLAS /
+                from . import hand_hedge   # BLITZ at market for an entry nobody may take (fix-trade 2026-11-21)
+                if hand_hedge.opposite_hand(d, self.bot, self, now=ctx["now"], notify=self.notify):
+                    return
+            except Exception:
+                pass
             hc = getattr(self.bot, "_hedge_clear", None)
             if callable(hc):
                 hc(ent, ctx["sym"], ctx["now"])

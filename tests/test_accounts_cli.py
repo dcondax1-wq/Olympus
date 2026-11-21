@@ -173,8 +173,10 @@ def main():
               n25["armed"] and n25["confirm"] == LIVE_PHRASE and n25["problem"] is None, n25)
         check("the Rapid stays disarmed until START BOT's own rapid.arm", rapid.read().get("armed") is False)
         src = open(os.path.join(ROOT, "engine", "go.py"), encoding="utf-8").read()
-        i_arm, i_start = src.find("account_cli.arm(phrase)"), src.find('ninjatrader.main(["--start", "--account", cfg["lit"], "--confirm", phrase')
-        check("START BOT (engine/go.step_arm) arms them after the typed phrase, before the bot starts", 0 < i_arm < i_start)
+        i_arm, i_start = src.find("account_cli.arm(phrase)"), src.find('start = ["--start", "--account", cfg["lit"], "--confirm", phrase')
+        i_srv = src.find("if not server_up() and not start_server()", src.find("def step_arm"))
+        check("START BOT (engine/go.step_arm) arms them after the typed phrase, before any server (re)start (its boot resume "
+              "reads the files) and before the bot starts (fix-trade 2026-11-21)", 0 < i_arm < i_srv < i_start, (i_arm, i_srv, i_start))
 
         # e. no hedging across accounts
         class Bot:

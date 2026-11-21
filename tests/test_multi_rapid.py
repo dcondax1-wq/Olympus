@@ -258,6 +258,24 @@ def part_f_g(tmp):
         check("f. old code's view: data/rapid.json alone, unchanged by the 2nd Rapid", open(rapid.path(), "rb").read() == raw1)
         AC.remove(N2)
         check("g. removing Rapid #2 leaves the 1st on", rapid.read(rapid.slot_path("rapid2")) is None and (rapid.read() or {}).get("account") == N1)
+        # fix-trade 2026-11-21: two Rapid evals of ONE size, the 2nd passes: its funded account never replaces the 1st (still trading)
+        AC.remove(N1)
+        AC.add("rapideod", "Sim207")
+        AC.add("rapideod", "Sim208")
+        before = (rapid.read() or {}).get("account"), (rapid.read(rapid.slot_path("rapid2")) or {}).get("account")
+        r5 = AC.add("rapideod", "Sim209", start="2026-12-01", funded=True)
+        check("g. two Rapid EOD 50K evals + a funded one without --from -> refused with the copy-paste line, nothing replaced",
+              r5.get("ok") is False and "--from" in str(r5.get("error")) and "Sim207" in str(r5.get("error"))
+              and before == ("Sim207", "Sim208") and (rapid.read() or {}).get("account") == "Sim207"
+              and (rapid.read(rapid.slot_path("rapid2")) or {}).get("account") == "Sim208", (r5, before))
+        r6 = AC.add("rapideod", "Sim209", start="2026-12-01", funded=True, from_eval="Sim208")
+        s1, s2 = rapid.read() or {}, rapid.read(rapid.slot_path("rapid2")) or {}
+        check("g. --from the eval that passed (slot 2) -> slot 2 funded from it, the 1st eval keeps trading in slot 1",
+              r6.get("ok") and r6.get("slot") == "rapid2" and s2.get("account") == "Sim209" and s2.get("stage") == "funded"
+              and s2.get("eval_account") == "Sim208" and s2.get("armed") is False and s1.get("account") == "Sim207"
+              and s1.get("stage") != "funded", (r6, s1, s2))
+        r7 = AC.add("rapideod", "Sim210", start="2026-12-01", funded=True, from_eval="Sim299")
+        check("g. --from a Name that is no Rapid eval -> refused", r7.get("ok") is False and "Sim299" in str(r7.get("error")), r7)
     finally:
         rapid.PATH = keep_r
         for k, v in keep.items():
