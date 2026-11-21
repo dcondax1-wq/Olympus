@@ -61,7 +61,7 @@ def part_a():
           and "'Last report from your PC: ' + ageWords(age) + ' ago.'" in js)
     rule = re.search(r"\.zn-nq-a \{[^}]*\}", css)
     check("a. the strip's CSS is in the AGORA layer: a 44 px link, serif title, warm colours, hidden off Home", bool(rule) and "min-height: 44px" in rule.group(0) and ".zn-nq[hidden] { display: none; }" in css and "Iowan Old Style" in css.split(".zn-nq-t {")[1][:200]
-          and not cold(css[css.index("/* ---- the NQ note above Home"):]))
+          and not cold(css[css.index("/* ---- the NQ note above Home"):css.index("/* ---- AGORA v2")]))   # the note's own block (the OLYMPUS NIGHT style block further down is violet by design)
     hero = rd("zenith_hero.js")
     # OLYMPUS NIGHT (owner 2026-11-20) replaced AGORA's bronze: the curve runs violet into mint / red, the target line is violet
     check("a. the Home curve (zenith_hero.js) wears OLYMPUS NIGHT: violet to mint / red line, a violet target, no AGORA bronze",
@@ -136,10 +136,15 @@ def part_c(tmp, shots):
             br = TB.launch(p)
             errs = []
             ctx, pg = TB.phone_ctx(br, F, lvp, "off", errs)
+            pg.emulate_media(color_scheme="dark")   # OLYMPUS NIGHT is the default on a dark phone (a light phone keeps its light look, 2026-11-20)
             pg.goto(base + "#/today")
             pg.wait_for_selector(".pl-home .su-accts", timeout=30000)
             pg.wait_for_selector("#znNq", timeout=15000)
             pg.wait_for_timeout(900)
+            try:   # a first visit: the look arrives with themes.js (a returning phone paints it from the first frame)
+                pg.wait_for_function("document.documentElement.getAttribute('data-oly-theme')", timeout=15000)
+            except Exception:  # noqa: BLE001
+                pass
             if pg.query_selector("#moInstX"):
                 pg.click("#moInstX")
             A = pg.evaluate(SNAP)

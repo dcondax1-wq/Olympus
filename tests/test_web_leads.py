@@ -180,6 +180,16 @@ def part_post(tmp):
     st2 = W.geocode([b2, dict(b2, id="z", lat=39.5, lon=-77.5)], cache, http=http, sleep=sleeps.append, say=lambda *a: None)
     check("q4. the cache: the same point is not asked again; a new point waits until 1.1 s after the previous request, across runs (Nominatim: max 1 a second)",
           st2["cached"] == 1 and st2["asked"] == 1 and len(calls) == 2 and len(sleeps) == 1 and sleeps[0] >= 1.0, (st2, sleeps))
+    o = {"towns": [{"town": "A", "leads": 2, "hot": 0, "missing": ["food places"], "parts": 9, "parts_ok": 8, "businesses": 10}],
+         "leads": [{"id": "x1", "town": "A", "name": "One", "phone": "1", "heat": "warm"}, {"id": "x2", "town": "A", "name": "Two", "phone": "2", "heat": "hot"}]}
+    n = {"towns": [{"town": "A", "leads": 1, "hot": 0, "missing": ["trades"], "parts": 9, "parts_ok": 8, "businesses": 4}],
+         "leads": [{"id": "x1", "town": "A", "name": "One", "phone": "1", "heat": "hot"}, {"id": "x3", "town": "A", "name": "Three", "phone": "3", "heat": "warm"}]}
+    m = W.merge(o, n)
+    ta = m["towns"][0]
+    check("q6. asking a town again ADDS (the 2026-11-20 run shrank Frederick 180 -> 75): old business kept, new one added, the same one updated, "
+          "a kind missing only if both runs missed it, counts recounted",
+          sorted(x["id"] for x in m["leads"]) == ["x1", "x2", "x3"] and next(x for x in m["leads"] if x["id"] == "x1")["heat"] == "hot"
+          and ta["missing"] == [] and ta["leads"] == 3 and ta["hot"] == 2 and ta["businesses"] == 10 and ta["parts_ok"] == 9, (m["leads"], ta))
     t3 = W.counts({"towns": out["towns"], "leads": out["leads"]})
     check("q5. the counts table has Chains dropped, Phone, Email, Mailable", all(w in t3 for w in ("Chains dropped", "| Phone |", "| Email |", "| Mailable |")) and "| Frederick | 2 | 2 |" in t3, t3)
 

@@ -46,6 +46,8 @@ def static():
           0 < i < j and "Open the new NQ page</a><script>" in h and "</script></section>\n    <main class=\"page\" id=\"page\">" in h)
     check("a. the settle script: only Home, only start-up (25 s), text-only changes never hold, a tap / focus / page change releases",
           all(k in z for k in ("STARTUP = 25000", "function home()", "function moves(", "'pointerdown', release", "'focusin', release", "hashchange")))
+    check("a. LCP: the greeting (Home's main content) is shown the moment it lands under a copy, the copy never clips it (contain: layout, not paint), 1.5 s cap",
+          "MAIN = '.pl-hi'" in z and "mainShown = true; release(); return;" in z and "contain: layout; }" in z and "contain: layout paint" not in z and "MAX_HOLD = 1500" in z)
     f = read("zenith_fx.js")
     check("a. Zenith wears the dashboard FX layer (dashfx.js + zenith_fx.js deferred; the stylesheet fetched after start-up, never render-blocking), tagged after start-up, glass only where ::before is free",
           "l.href = 'olympus/dashfx.css?v=" in f and 'href="olympus/dashfx.css' not in h and '<script src="olympus/dashfx.js?v=' in h and '<script src="zenith_fx.js?v=' in h and "function settled()" in f and "freeBefore(el)" in f)
@@ -85,7 +87,7 @@ def browser():
               ghosts: document.querySelectorAll('.zs-ghost').length, held: !!document.querySelector('#page.zs-hold'), pages: document.querySelectorAll('#page').length })""")
             check(f"b. Home's first draw comes from home.json, before data.json is drawn (first draw {r['home']} ms, data {r['d']} ms)", r["home"] and (not r["d"] or r["home"] <= r["d"]), r)
             check(f"b. start-up layout shift under 0.1 on a phone line + 4x CPU (got {r['cls']})", r["cls"] < 0.1, r)
-            check("b. the start-up changes were held behind a still copy, each released (3 s cap; none past 5 s even with 4x CPU timers late), nothing left behind",
+            check("b. the start-up changes were held behind a still copy, each released (1.5 s cap; none past 5 s even with 4x CPU timers late), nothing left behind",
                   r["S"] and r["S"]["holds"] >= 1 and r["S"]["holds"] == r["S"]["released"] and r["S"]["longest"] <= 5000 and r["ghosts"] == 0 and not r["held"] and r["pages"] == 1, r)
             check("b. no page error on Home", not errs, errs[:3])
             # the dashboard FX layer on Home (zenith_fx.js -> olympus/dashfx.js), after start-up: glass cards, the hero's tilt, the aurora layer

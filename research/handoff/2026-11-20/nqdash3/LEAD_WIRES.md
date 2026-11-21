@@ -240,3 +240,17 @@ The weekly figure is the PC's `pnl.week` / `week_pnl` (`engine/firms.py:314`, su
   - The Trading page books those trades under "ATLAS eval 25K, before funded" (`tradingcore.splitEras`), so the funded consistency check uses funded trades only.
   - The NQ numbers card counts ATLAS's week from its funded trades only (`nqgoals.realRows(..., fundedSince(lite))`).
   - The payout coach already reads the PC's mf tracker (cp $401, 2 days): correct.
+
+## O. The Bot Brain (nq/brain.html, 2026-11-21): PC-side additions it would use (pc.glance bots; bot code only after a red-team)
+
+The Brain shows everything the PC already posts (glance stage n/10, wait, why, lv, arm, log, day, room/mll; board, mf, at, life, zl, edge.json). What it cannot show yet, and the one field each needs:
+
+| Module | Missing | Suggested field (in `pc.glance.bots[i]`, engine/brain_glance.py) |
+|---|---|---|
+| Setup grade | the engine's setup grade for the armed setup | `grade: "A"\|"B"\|"C"\|"D"` + `grade_why` (short text) |
+| ATLAS lobes | the S/R lobe's state; lobe states are parsed from the `wait` / `why` text | `lobes: [{id: "ema"\|"macd"\|"sr", state: "window"\|"signal"\|"armed"\|"trade"\|"done", text}]` |
+| Risk ring | the 2% price-limit state, the hedge guard (cross-account / hand-trade) | `limits: {price_limit: "ok"\|"near"\|"halt", hedge: "ok"\|"blocked", hedge_why}` |
+| Risk ring | DLL used on the funded 25K (ATLAS's account row has none) | `dll`, `dll_used` on the ATLAS board card / account |
+| Thought stream | the log is 1 line per bot (trimmed to fit 4 KB) | the last 6-8 lines in the ext post (`glance_log` part) |
+| What I watch | ATLAS's level distances are null (`lv[i][2]`), and `price` is missing from the post when no chart bars | fill `lv[i][2]` (points from the last price) and post `price` every run |
+| Fill quality | ticks past the backtest per trade | `fq` exists (tools/fill_cost); the Brain can show it in v2 |
