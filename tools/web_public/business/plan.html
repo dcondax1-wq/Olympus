@@ -53,6 +53,7 @@
   .dec .w { margin: 4px 0 0; font: 700 18px var(--ag-num, var(--ag-sans, system-ui)); color: var(--ag-gold-hi, #dcbd6e); }
   .dec .r, .dec .k { margin: 4px 0 0; font-size: 13px; color: var(--ag-soft, #cbbfa8); overflow-wrap: anywhere; }
   .dec .say { margin: 4px 0 0; font-size: 14px; overflow-wrap: anywhere; }
+  #ninety .nn-body { min-height: 420px; } #ninety ol.buy b { font-weight: 700; }
   .pill.yes { border-color: #8fbf6a; color: #a6d47f; } .pill.no { border-color: #ff8a7a; color: #ff9d8f; }
 </style>
 <link rel="stylesheet" href="../olympus/shell.css?v=s6"><!-- day-arenas DESIGN: the one design layer, loaded last -->
@@ -63,6 +64,10 @@
   <header class="top"><div class="brand"><div><h1 class="ag-title">Money Plan</h1><p class="sub">Your accounts tonight, the next 6 months, in dollars</p></div></div></header>
   <p id="status" class="note" role="status" aria-live="polite">Loading...</p>
   <section class="ag-card card" id="decide" data-decide data-decide-mode="rank" data-decide-src="decisions.json" data-decide-fleet="fleet_plan.json" aria-label="Answer these first: the open decisions by dollars a month"></section><!-- day-arenas: decide.js ranked view -->
+  <section class="ag-card card" id="ninety" aria-labelledby="nnH"><!-- day-fleet: the next 90 days (ninety.js, fleet_plan.json "ninety") -->
+    <div class="row"><h2 id="nnH">The next 90 days</h2><span class="pill warn">ESTIMATE</span></div>
+    <div class="nn-body"><p class="note">Loading...</p></div>
+  </section>
 
   <section class="ag-card card" aria-labelledby="mktH">
     <h2 id="mktH">If the market is like...</h2>
@@ -122,6 +127,7 @@
 </main>
 <script src="decide.js?v=5"></script>
 <script src="plan.js?v=3"></script>
+<script src="ninety.js?v=1"></script>
 <script>(function () { var d = document.documentElement, t0 = Date.now();   /* show the cards once plan.js and decide.js are done (or 8 s) */
   (function check() { var P = window.MONEY_PLAN, D = window.DECIDE; if ((P && P.ok != null && D && D.last) || Date.now() - t0 > 8000) { d.removeAttribute('data-oly-veil'); return; } setTimeout(check, 100); })(); })();</script>
 </body>

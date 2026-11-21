@@ -38,14 +38,15 @@ def part_a():
     check("a. DEMO: both evals planned, pass < first request < bank date, slow dates later",
           len(rows) == 2 and all(r["pass_typical"] < r["payout_typical"] < r["bank_typical"] and r["pass_slow"] >= r["pass_typical"]
                                  and r["payout_slow"] >= r["payout_typical"] for r in rows), [r["text"] for r in rows])
-    check("a. the first ask: $1,500 -> $1,200 to you (50K), $750 -> $600 (25K); funded $546 + $338 a month (roadmap H2)",
-          [(r["request"], r["to_you"]) for r in rows] == [(1500.0, 1200.0), (750.0, 600.0)] and d["funded_month"] == 884.0 and d["funded_month_with_4"] == 2853.0)   # + the Rapid EOD 50K ~$1,969 a month (drop-lucid-account4, 2026-11-20)
+    # owner's plan 2026-11-21 (d3b50744): the first ask is the max request: $2,000 at $4,100 (50K), $1,000 at $2,100 (25K)
+    check("a. the first ask: $2,000 -> $1,600 to you (50K), $1,000 -> $800 (25K); funded $546 + $338 a month (roadmap H2)",
+          [(r["request"], r["to_you"]) for r in rows] == [(2000.0, 1600.0), (1000.0, 800.0)] and d["funded_month"] == 884.0 and d["funded_month_with_4"] == 2853.0)   # + the Rapid EOD 50K ~$1,969 a month (drop-lucid-account4, 2026-11-20)
     check("a. sessions skip weekends and the Thanksgiving closure (Wed 11-25 + 1 session = Fri 11-27; Fri 11-20 + 1 = Mon 11-23)",
           PP.sessions_after("2026-11-25", 1) == "2026-11-27" and PP.sessions_after("2026-11-20", 1) == "2026-11-23" and PP.business_after("2026-11-20", 4) == "2026-11-26")
     lost = PP.plan([{"name": "X", "plan": "builder25k", "room": 0, "to_target": 900}], "2026-11-16")
     check("a. a lost eval: state lost, no payout, account #4 waits", lost["accounts"][0]["state"] == "lost" and lost["first"] is None and lost["account4"]["buy_on"] is None)
     f = PP.plan([{"name": "Z", "plan": "builder50k", "stage": "funded", "profit": 3000, "room": 2000}], "2026-11-16")["accounts"][0]
-    check("a. a funded account at $3,000: 2 sessions to the $3,600 ask line (the 2-day minimum)", f["state"] == "funded" and f["sessions_to_payout"] == 2 and f["pass_typical"] is None, f)
+    check("a. a funded account at $3,000: 4 sessions to the $4,100 ask line ($1,100 at ~$300 a day)", f["state"] == "funded" and f["sessions_to_payout"] == 4 and f["pass_typical"] is None, f)
     check("a. account #4 is bought on the earliest bank date of a first payout", d["account4"]["buy_on"] == min(r["bank_typical"] for r in rows))
     fast = PP.plan([{"name": "A", "plan": "builder25k", "stage": "funded", "profit": 1850, "room": 900}], "2026-11-16")
     # owner 2026-11-20 (Decide drop-lucid-account4: YES, MFFU only): the line is the MFFU next buys, never a LucidPro; no sale is claimed
