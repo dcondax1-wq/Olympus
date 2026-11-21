@@ -2,7 +2,7 @@
  "v": 1,
  "kind": "web_leads",
  "demo": false,
- "fetched": "2026-11-21T19:43:34Z",
+ "fetched": "2026-11-21T20:00:35Z",
  "source": "OpenStreetMap via the public Overpass API (a few small queries per town)",
  "license": "Data (c) OpenStreetMap contributors, ODbL (openstreetmap.org/copyright)",
  "about": "Businesses on OpenStreetMap with no website tag. OSM can be out of date: check the business before you call.",
@@ -45,22 +45,6 @@
    "missing": [],
    "chains": 306,
    "with_site": 165
-  },
-  {
-   "town": "Mount Airy",
-   "state": "MD",
-   "businesses": 73,
-   "leads": 37,
-   "hot": 1,
-   "server": "maps.mail.ru",
-   "parts_ok": 7,
-   "parts": 9,
-   "missing": [
-    "health + auto places",
-    "other shops"
-   ],
-   "chains": 24,
-   "with_site": 12
   },
   {
    "town": "Urbana",
@@ -250,11 +234,27 @@
    ],
    "chains": 71,
    "with_site": 37
+  },
+  {
+   "town": "Mount Airy",
+   "state": "MD",
+   "businesses": 73,
+   "leads": 37,
+   "hot": 1,
+   "server": "maps.mail.ru, overpass-api.de, overpass.kumi.systems",
+   "parts_ok": 7,
+   "parts": 9,
+   "missing": [
+    "health + auto places",
+    "other shops"
+   ],
+   "chains": 24,
+   "with_site": 12
   }
  ],
  "skipped": {
-  "has_site": 1452,
-  "chain": 2540,
+  "has_site": 1463,
+  "chain": 2561,
   "other": 525,
   "duplicate": 209,
   "closed": 1
@@ -264,7 +264,6 @@
   "towns/frederick.json",
   "towns/gaithersburg.json",
   "towns/columbia.json",
-  "towns/mount-airy.json",
   "towns/urbana.json",
   "towns/middletown.json",
   "towns/thurmont.json",
@@ -276,7 +275,8 @@
   "towns/germantown.json",
   "towns/rockville.json",
   "towns/ellicott-city.json",
-  "towns/westminster.json"
+  "towns/westminster.json",
+  "towns/mount-airy.json"
  ],
  "count": 1577
 }
