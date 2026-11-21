@@ -1,7 +1,7 @@
 {
  "v": 1,
  "kind": "olympus-decisions",
- "updated": "2026-11-20",
+ "updated": "2026-11-21",
  "note": "The Decide card (business/decide.js on the Board + ZEUS pages). Claude keeps this list. A tap only posts an owner note (POST /inbox/board on the PC link); Claude applies it next session by the CLAUDE.md rules, then sets status to yes / no / later / done. Nothing here changes a live setting.",
  "items": [
   {
@@ -463,6 +463,84 @@
    "recommend": "yes",
    "recommend_why": "Free to try and undo; the only way to measure it. Check ATLAS's next ~8 fills: if they are not clearly better than 10-16 ticks, switch it off.",
    "valued": "2026-11-20 4 real fills, research/speed/fast_entry_value.py (jump / sqrt / linear price paths)"
+  },
+  {
+   "id": "buy-rapid50-now",
+   "question": "Buy the 5th funded slot (Rapid EOD 50K, $165 with CLUB) now from your pocket, instead of waiting for ATLAS's first payout (about Jan 13)?",
+   "why": "MFFU allows 5 funded accounts; you hold 4. The Rapid EOD 50K is the biggest earner in the plan, and every week it waits is a week it is not passing its eval.",
+   "options": [
+    "yes",
+    "no",
+    "later"
+   ],
+   "status": "open",
+   "source": "research/writeups/fleet-90day-2026-11-21.md",
+   "applies": "You buy it (Claude never buys); then ADD_ACCOUNT -> Rapid EOD 50K goes in Rapid slot 2 (multi-Rapid, landed on pc, OFF until added + your phrase; Sim check first). $165 is $15 over your $150 a round.",
+   "added": "2026-11-21",
+   "recommend": "yes",
+   "usd_month": 554,
+   "impact_usd": 554,
+   "usd_month_by": {
+    "jul_oct": 554,
+    "half_edge": 164,
+    "y2021_25": -80
+   },
+   "impact": "After MFFU's cut, fees and the 30% tax pot: +$554 a month to Jun 30 in a Jul-Oct-like market (+$164 if the edge halves, -$80 2021-25-like); Dec-Feb in total +$2,673 / +$514 / -$225.",
+   "risk": "Accounts lost by June: +0.08 / +0.64 / +0.34 (Jul-Oct / half edge / 2021-25-like). In a 2021-25-like market it costs $639 by June.",
+   "recommend_why": "+$2,673 Dec-Feb and +$4,435 by June in a Jul-Oct-like market for $165.00; still +$514 Dec-Feb if the edge halves; the 2021-25-like market costs $639 by June.",
+   "valued": "2026-11-21 tools/money/fleet_90day.py (whole fleet, 1,000 paths a market, real fills; $ after MFFU's split, fees and the 30% tax pot)"
+  },
+  {
+   "id": "refill-25k-with-rapid50",
+   "question": "When a Builder 25K dies (ATLAS's funded 25K lost, or the 25K #2 eval fails), put a Rapid EOD 50K ($165) in that slot instead of a new $63 Builder 25K?",
+   "why": "A Builder 25K slot earns a few hundred a month; a Rapid EOD 50K slot earns several times that. MFFU allows 3 Rapid EOD 50Ks, so the swap fits the caps.",
+   "options": [
+    "yes",
+    "no",
+    "later"
+   ],
+   "status": "open",
+   "source": "research/writeups/fleet-90day-2026-11-21.md",
+   "applies": "A buying rule for the night an account dies (money_book.dead_eval would say the Rapid EOD 50K); you buy, Claude adds it OFF; at most 3 Rapid EOD 50Ks in all.",
+   "added": "2026-11-21",
+   "recommend": "yes",
+   "usd_month": 249,
+   "impact_usd": 249,
+   "usd_month_by": {
+    "jul_oct": 249,
+    "half_edge": 126,
+    "y2021_25": -72
+   },
+   "impact": "After MFFU's cut, fees and the 30% tax pot: +$249 a month to Jun 30 in a Jul-Oct-like market (+$126 if the edge halves, -$72 2021-25-like); Dec-Feb in total +$43 / +$12 / -$173.",
+   "risk": "Accounts lost by June: +0.02 / +0.19 / -0.98 (Jul-Oct / half edge / 2021-25-like). In a 2021-25-like market it costs $573 by June.",
+   "recommend_why": "+$43 Dec-Feb and +$1,993 by June in a Jul-Oct-like market for $165.00; still +$12 Dec-Feb if the edge halves; the 2021-25-like market costs $573 by June.",
+   "valued": "2026-11-21 tools/money/fleet_90day.py (whole fleet, 1,000 paths a market, real fills; $ after MFFU's split, fees and the 30% tax pot)"
+  },
+  {
+   "id": "second-50k-eval-now",
+   "question": "Buy a 2nd Builder 50K eval now ($91.80) next to Zlarior's, running the same LIT signal (only the first to pass becomes the funded 50K)?",
+   "why": "MFFU's public pages allow parallel evals (10 at once; the funded caps apply on the pass), so you don't need the written yes. Two tries at the 50K = it is funded sooner.",
+   "options": [
+    "yes",
+    "no",
+    "later"
+   ],
+   "status": "open",
+   "source": "research/writeups/fleet-90day-2026-11-21.md",
+   "applies": "You buy it; ADD_ACCOUNT -> Builder 50K eval, LIT alone (same as Zlarior's), added OFF + your phrase. If one passes, the other is dropped (MFFU funds one Builder 50K).",
+   "added": "2026-11-21",
+   "recommend": "yes",
+   "usd_month": 63,
+   "impact_usd": 63,
+   "usd_month_by": {
+    "jul_oct": 63,
+    "half_edge": 8,
+    "y2021_25": -5
+   },
+   "impact": "After MFFU's cut, fees and the 30% tax pot: +$63 a month to Jun 30 in a Jul-Oct-like market (+$8 if the edge halves, -$5 2021-25-like); Dec-Feb in total +$479 / +$115 / +$32.",
+   "risk": "Accounts lost by June: +0.01 / +0.10 / +0.08 (Jul-Oct / half edge / 2021-25-like). In a 2021-25-like market it costs $39 by June.",
+   "recommend_why": "+$479 Dec-Feb and +$507 by June in a Jul-Oct-like market for $91.80; still +$115 Dec-Feb if the edge halves; the 2021-25-like market costs $39 by June.",
+   "valued": "2026-11-21 tools/money/fleet_90day.py (whole fleet, 1,000 paths a market, real fills; $ after MFFU's split, fees and the 30% tax pot)"
   }
  ]
 }
