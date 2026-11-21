@@ -45338,5 +45338,1425 @@
     }
    ]
   }
+ },
+ "A": {
+  "base": {
+   "6t": {
+    "fixed": {
+     "H1": {
+      "n": 104,
+      "tpw": 4.06,
+      "pf": 2.61,
+      "net": 17012,
+      "per_month": 2791,
+      "max_dd": -1206
+     },
+     "H2": {
+      "n": 46,
+      "tpw": 2.95,
+      "pf": 2.26,
+      "net": 4753,
+      "per_month": 1280,
+      "max_dd": -1043
+     },
+     "2025": {
+      "n": 222,
+      "tpw": 4.3,
+      "pf": 1.0,
+      "net": 146,
+      "per_month": 12,
+      "max_dd": -7043
+     },
+     "2021-24": {
+      "n": 772,
+      "tpw": 4.71,
+      "pf": 0.9,
+      "net": -11198,
+      "per_month": -287,
+      "max_dd": -23600
+     }
+    },
+    "B60": {
+     "H1": {
+      "usd_m": 543,
+      "first": "2026-12-24",
+      "first_k": 24,
+      "second": "2027-01-26",
+      "second_k": 45,
+      "no_pay_6m": 10.8,
+      "lost_6m": 12.3,
+      "lost_before_1st": 10.8,
+      "payouts": 4.07
+     },
+     "H2": {
+      "usd_m": 434,
+      "first": "2027-01-07",
+      "first_k": 32,
+      "second": "2027-02-19",
+      "second_k": 63,
+      "no_pay_6m": 13.5,
+      "lost_6m": 16.3,
+      "lost_before_1st": 13.4,
+      "payouts": 3.25
+     },
+     "REF": {
+      "usd_m": 25,
+      "first": null,
+      "first_k": null,
+      "second": null,
+      "second_k": null,
+      "no_pay_6m": 87.6,
+      "lost_6m": 97.4,
+      "lost_before_1st": 87.6,
+      "payouts": 0.19
+     }
+    },
+    "B40": {
+     "H1": {
+      "usd_m": 556,
+      "first": "2026-12-30",
+      "first_k": 27,
+      "second": "2027-01-28",
+      "second_k": 47,
+      "no_pay_6m": 7.5,
+      "lost_6m": 8.2,
+      "lost_before_1st": 7.5,
+      "payouts": 4.17
+     },
+     "H2": {
+      "usd_m": 430,
+      "first": "2027-01-19",
+      "first_k": 40,
+      "second": "2027-03-02",
+      "second_k": 70,
+      "no_pay_6m": 9.0,
+      "lost_6m": 8.6,
+      "lost_before_1st": 7.8,
+      "payouts": 3.22
+     },
+     "REF": {
+      "usd_m": 23,
+      "first": null,
+      "first_k": null,
+      "second": null,
+      "second_k": null,
+      "no_pay_6m": 88.4,
+      "lost_6m": 96.3,
+      "lost_before_1st": 88.2,
+      "payouts": 0.18
+     }
+    }
+   },
+   "10t": {
+    "fixed": {
+     "H1": {
+      "n": 104,
+      "tpw": 4.06,
+      "pf": 2.39,
+      "net": 15932,
+      "per_month": 2614,
+      "max_dd": -1476
+     },
+     "H2": {
+      "n": 46,
+      "tpw": 2.95,
+      "pf": 2.07,
+      "net": 4351,
+      "per_month": 1172,
+      "max_dd": -1177
+     },
+     "2025": {
+      "n": 222,
+      "tpw": 4.3,
+      "pf": 0.9,
+      "net": -3310,
+      "per_month": -269,
+      "max_dd": -8781
+     },
+     "2021-24": {
+      "n": 772,
+      "tpw": 4.71,
+      "pf": 0.8,
+      "net": -24898,
+      "per_month": -638,
+      "max_dd": -34062
+     }
+    },
+    "B60": {
+     "H1": {
+      "usd_m": 511,
+      "first": "2026-12-28",
+      "first_k": 25,
+      "second": "2027-01-28",
+      "second_k": 47,
+      "no_pay_6m": 14.0,
+      "lost_6m": 16.0,
+      "lost_before_1st": 14.0,
+      "payouts": 3.83
+     },
+     "H2": {
+      "usd_m": 401,
+      "first": "2027-01-12",
+      "first_k": 35,
+      "second": "2027-02-24",
+      "second_k": 66,
+      "no_pay_6m": 17.4,
+      "lost_6m": 20.7,
+      "lost_before_1st": 17.1,
+      "payouts": 3.01
+     },
+     "REF": {
+      "usd_m": 17,
+      "first": null,
+      "first_k": null,
+      "second": null,
+      "second_k": null,
+      "no_pay_6m": 91.5,
+      "lost_6m": 98.5,
+      "lost_before_1st": 91.5,
+      "payouts": 0.13
+     }
+    },
+    "B40": {
+     "H1": {
+      "usd_m": 529,
+      "first": "2026-12-31",
+      "first_k": 28,
+      "second": "2027-02-02",
+      "second_k": 50,
+      "no_pay_6m": 9.3,
+      "lost_6m": 10.6,
+      "lost_before_1st": 9.3,
+      "payouts": 3.97
+     },
+     "H2": {
+      "usd_m": 392,
+      "first": "2027-01-22",
+      "first_k": 43,
+      "second": "2027-03-09",
+      "second_k": 75,
+      "no_pay_6m": 13.4,
+      "lost_6m": 13.1,
+      "lost_before_1st": 11.9,
+      "payouts": 2.94
+     },
+     "REF": {
+      "usd_m": 15,
+      "first": null,
+      "first_k": null,
+      "second": null,
+      "second_k": null,
+      "no_pay_6m": 92.3,
+      "lost_6m": 98.0,
+      "lost_before_1st": 92.3,
+      "payouts": 0.12
+     }
+    }
+   }
+  },
+  "A1": {
+   "pass": false,
+   "why": [
+    "6t B60 H1 $543->$347/mo (needs +$10)",
+    "6t B60 H2 $434->$160/mo (needs +$10)",
+    "6t B60 REF $25->$2",
+    "6t B60 H1 lost 12.3->23.9%",
+    "6t B60 H2 lost 16.3->37.1%",
+    "6t B60 REF lost 97.4->98.7%",
+    "6t B40 H1 $556->$344/mo (needs +$10)",
+    "6t B40 H2 $430->$87/mo (needs +$10)",
+    "6t B40 REF $23->$3",
+    "6t B40 H1 lost 8.2->19.8%",
+    "6t B40 H2 lost 8.6->34.3%",
+    "6t H1 PF 2.61->2.25",
+    "6t H2 PF 2.26->1.32",
+    "6t H1 fixed $2791->$1774/mo",
+    "6t H2 fixed $1280->$282/mo",
+    "6t 2025 fixed $12->$-128/mo",
+    "6t 2021-24 fixed $-287->$-592/mo",
+    "10t B60 H1 $511->$325/mo (needs +$10)",
+    "10t B60 H2 $401->$145/mo (needs +$10)",
+    "10t B60 REF $17->$2",
+    "10t B60 H1 lost 16.0->28.3%",
+    "10t B60 H2 lost 20.7->42.1%",
+    "10t B60 REF lost 98.5->99.1%",
+    "10t B40 H1 $529->$329/mo (needs +$10)",
+    "10t B40 H2 $392->$75/mo (needs +$10)",
+    "10t B40 REF $15->$2",
+    "10t B40 H1 lost 10.6->23.0%",
+    "10t B40 H2 lost 13.1->40.2%",
+    "10t H1 PF 2.39->2.16",
+    "10t H2 PF 2.07->1.26",
+    "10t H1 fixed $2614->$1707/mo",
+    "10t H2 fixed $1172->$239/mo",
+    "10t 2021-24 fixed $-638->$-662/mo"
+   ],
+   "notes": {
+    "6t": {
+     "unfilled": 702,
+     "missed_usd": 38993,
+     "filled": 586
+    },
+    "10t": {
+     "unfilled": 702,
+     "missed_usd": 26823,
+     "filled": 586
+    }
+   },
+   "6t": {
+    "fixed": {
+     "H1": {
+      "n": 87,
+      "tpw": 3.4,
+      "pf": 2.25,
+      "net": 10815,
+      "per_month": 1774,
+      "max_dd": -1317
+     },
+     "H2": {
+      "n": 38,
+      "tpw": 2.44,
+      "pf": 1.32,
+      "net": 1047,
+      "per_month": 282,
+      "max_dd": -1047
+     },
+     "2025": {
+      "n": 97,
+      "tpw": 1.88,
+      "pf": 0.88,
+      "net": -1572,
+      "per_month": -128,
+      "max_dd": -6062
+     },
+     "2021-24": {
+      "n": 337,
+      "tpw": 2.06,
+      "pf": 0.53,
+      "net": -23099,
+      "per_month": -592,
+      "max_dd": -23249
+     }
+    },
+    "B60": {
+     "H1": {
+      "usd_m": 347,
+      "first": "2027-01-18",
+      "first_k": 39,
+      "second": "2027-03-15",
+      "second_k": 79,
+      "no_pay_6m": 20.5,
+      "lost_6m": 23.9,
+      "lost_before_1st": 20.4,
+      "payouts": 2.6
+     },
+     "H2": {
+      "usd_m": 160,
+      "first": "2027-03-31",
+      "first_k": 91,
+      "second": null,
+      "second_k": null,
+      "no_pay_6m": 43.0,
+      "lost_6m": 37.1,
+      "lost_before_1st": 33.6,
+      "payouts": 1.2
+     },
+     "REF": {
+      "usd_m": 2,
+      "first": null,
+      "first_k": null,
+      "second": null,
+      "second_k": null,
+      "no_pay_6m": 98.6,
+      "lost_6m": 98.7,
+      "lost_before_1st": 98.0,
+      "payouts": 0.02
+     }
+    },
+    "B40": {
+     "H1": {
+      "usd_m": 344,
+      "first": "2027-01-22",
+      "first_k": 43,
+      "second": "2027-03-18",
+      "second_k": 82,
+      "no_pay_6m": 17.5,
+      "lost_6m": 19.8,
+      "lost_before_1st": 16.9,
+      "payouts": 2.58
+     },
+     "H2": {
+      "usd_m": 87,
+      "first": null,
+      "first_k": null,
+      "second": null,
+      "second_k": null,
+      "no_pay_6m": 62.8,
+      "lost_6m": 34.3,
+      "lost_before_1st": 33.2,
+      "payouts": 0.65
+     },
+     "REF": {
+      "usd_m": 3,
+      "first": null,
+      "first_k": null,
+      "second": null,
+      "second_k": null,
+      "no_pay_6m": 98.4,
+      "lost_6m": 96.6,
+      "lost_before_1st": 96.0,
+      "payouts": 0.02
+     }
+    }
+   },
+   "10t": {
+    "fixed": {
+     "H1": {
+      "n": 87,
+      "tpw": 3.4,
+      "pf": 2.16,
+      "net": 10403,
+      "per_month": 1707,
+      "max_dd": -1385
+     },
+     "H2": {
+      "n": 38,
+      "tpw": 2.44,
+      "pf": 1.26,
+      "net": 889,
+      "per_month": 239,
+      "max_dd": -1117
+     },
+     "2025": {
+      "n": 97,
+      "tpw": 1.88,
+      "pf": 0.84,
+      "net": -2274,
+      "per_month": -185,
+      "max_dd": -6584
+     },
+     "2021-24": {
+      "n": 337,
+      "tpw": 2.06,
+      "pf": 0.5,
+      "net": -25809,
+      "per_month": -662,
+      "max_dd": -25843
+     }
+    },
+    "B60": {
+     "H1": {
+      "usd_m": 325,
+      "first": "2027-01-20",
+      "first_k": 41,
+      "second": "2027-03-18",
+      "second_k": 82,
+      "no_pay_6m": 23.8,
+      "lost_6m": 28.3,
+      "lost_before_1st": 23.3,
+      "payouts": 2.44
+     },
+     "H2": {
+      "usd_m": 145,
+      "first": "2027-04-22",
+      "first_k": 107,
+      "second": null,
+      "second_k": null,
+      "no_pay_6m": 47.4,
+      "lost_6m": 42.1,
+      "lost_before_1st": 37.7,
+      "payouts": 1.08
+     },
+     "REF": {
+      "usd_m": 2,
+      "first": null,
+      "first_k": null,
+      "second": null,
+      "second_k": null,
+      "no_pay_6m": 98.6,
+      "lost_6m": 99.1,
+      "lost_before_1st": 98.2,
+      "payouts": 0.02
+     }
+    },
+    "B40": {
+     "H1": {
+      "usd_m": 329,
+      "first": "2027-01-25",
+      "first_k": 44,
+      "second": "2027-03-25",
+      "second_k": 87,
+      "no_pay_6m": 19.9,
+      "lost_6m": 23.0,
+      "lost_before_1st": 19.3,
+      "payouts": 2.46
+     },
+     "H2": {
+      "usd_m": 75,
+      "first": null,
+      "first_k": null,
+      "second": null,
+      "second_k": null,
+      "no_pay_6m": 67.0,
+      "lost_6m": 40.2,
+      "lost_before_1st": 39.3,
+      "payouts": 0.56
+     },
+     "REF": {
+      "usd_m": 2,
+      "first": null,
+      "first_k": null,
+      "second": null,
+      "second_k": null,
+      "no_pay_6m": 98.6,
+      "lost_6m": 97.6,
+      "lost_before_1st": 97.0,
+      "payouts": 0.01
+     }
+    }
+   }
+  },
+  "A2": {
+   "pass": false,
+   "why": [
+    "6t B60 H1 $543->$285/mo (needs +$10)",
+    "6t B60 H2 $434->$202/mo (needs +$10)",
+    "6t B60 REF $25->$3",
+    "6t B60 H1 lost 12.3->31.0%",
+    "6t B60 H2 lost 16.3->23.1%",
+    "6t B40 H1 $556->$281/mo (needs +$10)",
+    "6t B40 H2 $430->$121/mo (needs +$10)",
+    "6t B40 REF $23->$3",
+    "6t B40 H1 lost 8.2->23.3%",
+    "6t B40 H2 lost 8.6->21.9%",
+    "6t H1 PF 2.61->2.21",
+    "6t H2 PF 2.26->1.47",
+    "6t H1 fixed $2791->$1578/mo",
+    "6t H2 fixed $1280->$385/mo",
+    "6t 2021-24 fixed $-287->$-492/mo",
+    "10t B60 H1 $511->$270/mo (needs +$10)",
+    "10t B60 H2 $401->$186/mo (needs +$10)",
+    "10t B60 REF $17->$3",
+    "10t B60 H1 lost 16.0->33.6%",
+    "10t B60 H2 lost 20.7->29.1%",
+    "10t B40 H1 $529->$263/mo (needs +$10)",
+    "10t B40 H2 $392->$107/mo (needs +$10)",
+    "10t B40 REF $15->$2",
+    "10t B40 H1 lost 10.6->27.6%",
+    "10t B40 H2 lost 13.1->27.1%",
+    "10t H1 PF 2.39->2.13",
+    "10t H2 PF 2.07->1.4",
+    "10t H1 fixed $2614->$1517/mo",
+    "10t H2 fixed $1172->$343/mo"
+   ],
+   "notes": {
+    "6t": {
+     "unfilled": 802,
+     "missed_usd": 36552,
+     "filled": 486
+    },
+    "10t": {
+     "unfilled": 802,
+     "missed_usd": 22296,
+     "filled": 486
+    }
+   },
+   "6t": {
+    "fixed": {
+     "H1": {
+      "n": 81,
+      "tpw": 3.16,
+      "pf": 2.21,
+      "net": 9620,
+      "per_month": 1578,
+      "max_dd": -1181
+     },
+     "H2": {
+      "n": 38,
+      "tpw": 2.44,
+      "pf": 1.47,
+      "net": 1431,
+      "per_month": 385,
+      "max_dd": -927
+     },
+     "2025": {
+      "n": 74,
+      "tpw": 1.43,
+      "pf": 1.12,
+      "net": 1095,
+      "per_month": 89,
+      "max_dd": -2790
+     },
+     "2021-24": {
+      "n": 277,
+      "tpw": 1.69,
+      "pf": 0.5,
+      "net": -19200,
+      "per_month": -492,
+      "max_dd": -19475
+     }
+    },
+    "B60": {
+     "H1": {
+      "usd_m": 285,
+      "first": "2027-01-28",
+      "first_k": 47,
+      "second": "2027-04-09",
+      "second_k": 98,
+      "no_pay_6m": 26.4,
+      "lost_6m": 31.0,
+      "lost_before_1st": 25.1,
+      "payouts": 2.13
+     },
+     "H2": {
+      "usd_m": 202,
+      "first": "2027-03-04",
+      "first_k": 72,
+      "second": null,
+      "second_k": null,
+      "no_pay_6m": 31.8,
+      "lost_6m": 23.1,
+      "lost_before_1st": 20.9,
+      "payouts": 1.52
+     },
+     "REF": {
+      "usd_m": 3,
+      "first": null,
+      "first_k": null,
+      "second": null,
+      "second_k": null,
+      "no_pay_6m": 98.2,
+      "lost_6m": 97.4,
+      "lost_before_1st": 96.5,
+      "payouts": 0.02
+     }
+    },
+    "B40": {
+     "H1": {
+      "usd_m": 281,
+      "first": "2027-02-05",
+      "first_k": 53,
+      "second": "2027-04-14",
+      "second_k": 101,
+      "no_pay_6m": 23.3,
+      "lost_6m": 23.3,
+      "lost_before_1st": 20.5,
+      "payouts": 2.11
+     },
+     "H2": {
+      "usd_m": 121,
+      "first": "2027-05-19",
+      "first_k": 126,
+      "second": null,
+      "second_k": null,
+      "no_pay_6m": 49.9,
+      "lost_6m": 21.9,
+      "lost_before_1st": 21.1,
+      "payouts": 0.91
+     },
+     "REF": {
+      "usd_m": 3,
+      "first": null,
+      "first_k": null,
+      "second": null,
+      "second_k": null,
+      "no_pay_6m": 98.5,
+      "lost_6m": 92.7,
+      "lost_before_1st": 92.1,
+      "payouts": 0.02
+     }
+    }
+   },
+   "10t": {
+    "fixed": {
+     "H1": {
+      "n": 81,
+      "tpw": 3.16,
+      "pf": 2.13,
+      "net": 9248,
+      "per_month": 1517,
+      "max_dd": -1249
+     },
+     "H2": {
+      "n": 38,
+      "tpw": 2.44,
+      "pf": 1.4,
+      "net": 1273,
+      "per_month": 343,
+      "max_dd": -987
+     },
+     "2025": {
+      "n": 74,
+      "tpw": 1.43,
+      "pf": 1.07,
+      "net": 639,
+      "per_month": 52,
+      "max_dd": -3104
+     },
+     "2021-24": {
+      "n": 277,
+      "tpw": 1.69,
+      "pf": 0.47,
+      "net": -21260,
+      "per_month": -545,
+      "max_dd": -21479
+     }
+    },
+    "B60": {
+     "H1": {
+      "usd_m": 270,
+      "first": "2027-02-01",
+      "first_k": 49,
+      "second": "2027-04-15",
+      "second_k": 102,
+      "no_pay_6m": 28.9,
+      "lost_6m": 33.6,
+      "lost_before_1st": 28.0,
+      "payouts": 2.02
+     },
+     "H2": {
+      "usd_m": 186,
+      "first": "2027-03-11",
+      "first_k": 77,
+      "second": null,
+      "second_k": null,
+      "no_pay_6m": 36.4,
+      "lost_6m": 29.1,
+      "lost_before_1st": 26.1,
+      "payouts": 1.4
+     },
+     "REF": {
+      "usd_m": 3,
+      "first": null,
+      "first_k": null,
+      "second": null,
+      "second_k": null,
+      "no_pay_6m": 98.3,
+      "lost_6m": 98.7,
+      "lost_before_1st": 97.6,
+      "payouts": 0.02
+     }
+    },
+    "B40": {
+     "H1": {
+      "usd_m": 263,
+      "first": "2027-02-09",
+      "first_k": 55,
+      "second": "2027-04-22",
+      "second_k": 107,
+      "no_pay_6m": 27.3,
+      "lost_6m": 27.6,
+      "lost_before_1st": 24.4,
+      "payouts": 1.97
+     },
+     "H2": {
+      "usd_m": 107,
+      "first": null,
+      "first_k": null,
+      "second": null,
+      "second_k": null,
+      "no_pay_6m": 55.2,
+      "lost_6m": 27.1,
+      "lost_before_1st": 26.2,
+      "payouts": 0.8
+     },
+     "REF": {
+      "usd_m": 2,
+      "first": null,
+      "first_k": null,
+      "second": null,
+      "second_k": null,
+      "no_pay_6m": 98.7,
+      "lost_6m": 94.6,
+      "lost_before_1st": 94.0,
+      "payouts": 0.02
+     }
+    }
+   }
+  },
+  "A3": {
+   "pass": false,
+   "why": [
+    "6t B60 H2 $434->$427/mo (needs +$10)",
+    "6t B60 H2 lost 16.3->18.2%",
+    "6t B40 H2 $430->$425/mo (needs +$10)",
+    "6t B40 H2 lost 8.6->9.5%",
+    "6t 2025 fixed $12->$-62/mo",
+    "10t B60 H2 $401->$398/mo (needs +$10)",
+    "10t B60 H2 lost 20.7->23.5%"
+   ],
+   "notes": {
+    "6t": {
+     "fill": 943,
+     "nofill": 312,
+     "skipped_usd": -32084,
+     "both": 30,
+     "avoided": 3
+    },
+    "10t": {
+     "fill": 943,
+     "nofill": 312,
+     "skipped_usd": -38686,
+     "both": 30,
+     "avoided": 3
+    }
+   },
+   "6t": {
+    "fixed": {
+     "H1": {
+      "n": 84,
+      "tpw": 3.28,
+      "pf": 3.75,
+      "net": 19842,
+      "per_month": 3255,
+      "max_dd": -967
+     },
+     "H2": {
+      "n": 43,
+      "tpw": 2.76,
+      "pf": 2.35,
+      "net": 4800,
+      "per_month": 1292,
+      "max_dd": -1183
+     },
+     "2025": {
+      "n": 186,
+      "tpw": 3.6,
+      "pf": 0.97,
+      "net": -762,
+      "per_month": -62,
+      "max_dd": -4371
+     },
+     "2021-24": {
+      "n": 569,
+      "tpw": 3.47,
+      "pf": 1.04,
+      "net": 3029,
+      "per_month": 78,
+      "max_dd": -10177
+     }
+    },
+    "B60": {
+     "H1": {
+      "usd_m": 635,
+      "first": "2026-12-21",
+      "first_k": 21,
+      "second": "2027-01-14",
+      "second_k": 37,
+      "no_pay_6m": 2.4,
+      "lost_6m": 2.8,
+      "lost_before_1st": 2.4,
+      "payouts": 4.76
+     },
+     "H2": {
+      "usd_m": 427,
+      "first": "2027-01-08",
+      "first_k": 33,
+      "second": "2027-02-18",
+      "second_k": 62,
+      "no_pay_6m": 14.6,
+      "lost_6m": 18.2,
+      "lost_before_1st": 14.5,
+      "payouts": 3.21
+     },
+     "REF": {
+      "usd_m": 33,
+      "first": null,
+      "first_k": null,
+      "second": null,
+      "second_k": null,
+      "no_pay_6m": 84.1,
+      "lost_6m": 95.0,
+      "lost_before_1st": 84.1,
+      "payouts": 0.25
+     }
+    },
+    "B40": {
+     "H1": {
+      "usd_m": 638,
+      "first": "2026-12-24",
+      "first_k": 24,
+      "second": "2027-01-19",
+      "second_k": 40,
+      "no_pay_6m": 1.6,
+      "lost_6m": 1.7,
+      "lost_before_1st": 1.6,
+      "payouts": 4.78
+     },
+     "H2": {
+      "usd_m": 425,
+      "first": "2027-01-19",
+      "first_k": 40,
+      "second": "2027-03-02",
+      "second_k": 70,
+      "no_pay_6m": 9.9,
+      "lost_6m": 9.5,
+      "lost_before_1st": 8.3,
+      "payouts": 3.19
+     },
+     "REF": {
+      "usd_m": 31,
+      "first": null,
+      "first_k": null,
+      "second": null,
+      "second_k": null,
+      "no_pay_6m": 85.1,
+      "lost_6m": 92.0,
+      "lost_before_1st": 84.3,
+      "payouts": 0.23
+     }
+    }
+   },
+   "10t": {
+    "fixed": {
+     "H1": {
+      "n": 84,
+      "tpw": 3.28,
+      "pf": 3.6,
+      "net": 19526,
+      "per_month": 3204,
+      "max_dd": -999
+     },
+     "H2": {
+      "n": 43,
+      "tpw": 2.76,
+      "pf": 2.26,
+      "net": 4648,
+      "per_month": 1251,
+      "max_dd": -1266
+     },
+     "2025": {
+      "n": 186,
+      "tpw": 3.6,
+      "pf": 0.93,
+      "net": -1880,
+      "per_month": -153,
+      "max_dd": -4863
+     },
+     "2021-24": {
+      "n": 569,
+      "tpw": 3.47,
+      "pf": 0.99,
+      "net": -989,
+      "per_month": -25,
+      "max_dd": -13429
+     }
+    },
+    "B60": {
+     "H1": {
+      "usd_m": 631,
+      "first": "2026-12-21",
+      "first_k": 21,
+      "second": "2027-01-14",
+      "second_k": 37,
+      "no_pay_6m": 2.8,
+      "lost_6m": 3.2,
+      "lost_before_1st": 2.8,
+      "payouts": 4.73
+     },
+     "H2": {
+      "usd_m": 398,
+      "first": "2027-01-12",
+      "first_k": 35,
+      "second": "2027-02-23",
+      "second_k": 65,
+      "no_pay_6m": 19.9,
+      "lost_6m": 23.5,
+      "lost_before_1st": 19.9,
+      "payouts": 2.98
+     },
+     "REF": {
+      "usd_m": 28,
+      "first": null,
+      "first_k": null,
+      "second": null,
+      "second_k": null,
+      "no_pay_6m": 86.0,
+      "lost_6m": 95.8,
+      "lost_before_1st": 86.0,
+      "payouts": 0.21
+     }
+    },
+    "B40": {
+     "H1": {
+      "usd_m": 634,
+      "first": "2026-12-24",
+      "first_k": 24,
+      "second": "2027-01-20",
+      "second_k": 41,
+      "no_pay_6m": 1.7,
+      "lost_6m": 1.8,
+      "lost_before_1st": 1.7,
+      "payouts": 4.75
+     },
+     "H2": {
+      "usd_m": 408,
+      "first": "2027-01-19",
+      "first_k": 40,
+      "second": "2027-03-04",
+      "second_k": 72,
+      "no_pay_6m": 12.0,
+      "lost_6m": 12.5,
+      "lost_before_1st": 10.9,
+      "payouts": 3.06
+     },
+     "REF": {
+      "usd_m": 26,
+      "first": null,
+      "first_k": null,
+      "second": null,
+      "second_k": null,
+      "no_pay_6m": 87.0,
+      "lost_6m": 94.1,
+      "lost_before_1st": 86.6,
+      "payouts": 0.2
+     }
+    }
+   }
+  },
+  "A4": {
+   "pass": false,
+   "why": [
+    "6t B60 H2 $434->$380/mo (needs +$10)",
+    "6t B60 H2 lost 16.3->26.9%",
+    "6t B40 H2 $430->$369/mo (needs +$10)",
+    "6t B40 H2 lost 8.6->21.4%",
+    "6t H2 PF 2.26->2.25",
+    "6t H2 fixed $1280->$1183/mo",
+    "10t B60 H2 $401->$365/mo (needs +$10)",
+    "10t B60 H2 lost 20.7->30.1%",
+    "10t B40 H2 $392->$350/mo (needs +$10)",
+    "10t B40 H2 lost 13.1->24.7%",
+    "10t H2 fixed $1172->$1147/mo"
+   ],
+   "notes": {
+    "6t": {
+     "fill": 806,
+     "nofill": 455,
+     "skipped_usd": -39602,
+     "both": 20,
+     "avoided": 7
+    },
+    "10t": {
+     "fill": 806,
+     "nofill": 455,
+     "skipped_usd": -49274,
+     "both": 20,
+     "avoided": 7
+    }
+   },
+   "6t": {
+    "fixed": {
+     "H1": {
+      "n": 80,
+      "tpw": 3.12,
+      "pf": 3.89,
+      "net": 19833,
+      "per_month": 3254,
+      "max_dd": -1031
+     },
+     "H2": {
+      "n": 39,
+      "tpw": 2.5,
+      "pf": 2.25,
+      "net": 4395,
+      "per_month": 1183,
+      "max_dd": -1531
+     },
+     "2025": {
+      "n": 162,
+      "tpw": 3.14,
+      "pf": 1.0,
+      "net": 68,
+      "per_month": 6,
+      "max_dd": -4473
+     },
+     "2021-24": {
+      "n": 476,
+      "tpw": 2.91,
+      "pf": 1.04,
+      "net": 2571,
+      "per_month": 66,
+      "max_dd": -9902
+     }
+    },
+    "B60": {
+     "H1": {
+      "usd_m": 628,
+      "first": "2026-12-21",
+      "first_k": 21,
+      "second": "2027-01-14",
+      "second_k": 37,
+      "no_pay_6m": 3.0,
+      "lost_6m": 3.4,
+      "lost_before_1st": 3.0,
+      "payouts": 4.71
+     },
+     "H2": {
+      "usd_m": 380,
+      "first": "2027-01-12",
+      "first_k": 35,
+      "second": "2027-03-01",
+      "second_k": 69,
+      "no_pay_6m": 22.3,
+      "lost_6m": 26.9,
+      "lost_before_1st": 22.2,
+      "payouts": 2.85
+     },
+     "REF": {
+      "usd_m": 29,
+      "first": null,
+      "first_k": null,
+      "second": null,
+      "second_k": null,
+      "no_pay_6m": 85.5,
+      "lost_6m": 94.7,
+      "lost_before_1st": 85.3,
+      "payouts": 0.21
+     }
+    },
+    "B40": {
+     "H1": {
+      "usd_m": 634,
+      "first": "2026-12-24",
+      "first_k": 24,
+      "second": "2027-01-20",
+      "second_k": 41,
+      "no_pay_6m": 1.7,
+      "lost_6m": 1.9,
+      "lost_before_1st": 1.7,
+      "payouts": 4.75
+     },
+     "H2": {
+      "usd_m": 369,
+      "first": "2027-01-22",
+      "first_k": 43,
+      "second": "2027-03-11",
+      "second_k": 77,
+      "no_pay_6m": 19.4,
+      "lost_6m": 21.4,
+      "lost_before_1st": 18.7,
+      "payouts": 2.77
+     },
+     "REF": {
+      "usd_m": 26,
+      "first": null,
+      "first_k": null,
+      "second": null,
+      "second_k": null,
+      "no_pay_6m": 86.1,
+      "lost_6m": 92.2,
+      "lost_before_1st": 84.5,
+      "payouts": 0.2
+     }
+    }
+   },
+   "10t": {
+    "fixed": {
+     "H1": {
+      "n": 80,
+      "tpw": 3.12,
+      "pf": 3.74,
+      "net": 19543,
+      "per_month": 3206,
+      "max_dd": -1063
+     },
+     "H2": {
+      "n": 39,
+      "tpw": 2.5,
+      "pf": 2.16,
+      "net": 4259,
+      "per_month": 1147,
+      "max_dd": -1609
+     },
+     "2025": {
+      "n": 162,
+      "tpw": 3.14,
+      "pf": 0.97,
+      "net": -822,
+      "per_month": -67,
+      "max_dd": -5095
+     },
+     "2021-24": {
+      "n": 476,
+      "tpw": 2.91,
+      "pf": 0.99,
+      "net": -541,
+      "per_month": -14,
+      "max_dd": -11826
+     }
+    },
+    "B60": {
+     "H1": {
+      "usd_m": 624,
+      "first": "2026-12-21",
+      "first_k": 21,
+      "second": "2027-01-15",
+      "second_k": 38,
+      "no_pay_6m": 3.5,
+      "lost_6m": 3.9,
+      "lost_before_1st": 3.5,
+      "payouts": 4.68
+     },
+     "H2": {
+      "usd_m": 365,
+      "first": "2027-01-13",
+      "first_k": 36,
+      "second": "2027-03-02",
+      "second_k": 70,
+      "no_pay_6m": 24.5,
+      "lost_6m": 30.1,
+      "lost_before_1st": 24.4,
+      "payouts": 2.74
+     },
+     "REF": {
+      "usd_m": 25,
+      "first": null,
+      "first_k": null,
+      "second": null,
+      "second_k": null,
+      "no_pay_6m": 87.3,
+      "lost_6m": 95.7,
+      "lost_before_1st": 87.2,
+      "payouts": 0.18
+     }
+    },
+    "B40": {
+     "H1": {
+      "usd_m": 627,
+      "first": "2026-12-24",
+      "first_k": 24,
+      "second": "2027-01-21",
+      "second_k": 42,
+      "no_pay_6m": 2.2,
+      "lost_6m": 2.5,
+      "lost_before_1st": 2.2,
+      "payouts": 4.7
+     },
+     "H2": {
+      "usd_m": 350,
+      "first": "2027-01-26",
+      "first_k": 45,
+      "second": "2027-03-15",
+      "second_k": 79,
+      "no_pay_6m": 22.0,
+      "lost_6m": 24.7,
+      "lost_before_1st": 21.6,
+      "payouts": 2.63
+     },
+     "REF": {
+      "usd_m": 24,
+      "first": null,
+      "first_k": null,
+      "second": null,
+      "second_k": null,
+      "no_pay_6m": 87.3,
+      "lost_6m": 93.7,
+      "lost_before_1st": 86.5,
+      "payouts": 0.18
+     }
+    }
+   }
+  }
+ },
+ "A3_posthoc": {
+  "add2": {
+   "fixed": {
+    "H1": {
+     "n": 84,
+     "tpw": 3.28,
+     "pf": 3.6,
+     "net": 19526,
+     "per_month": 3204,
+     "max_dd": -999
+    },
+    "H2": {
+     "n": 43,
+     "tpw": 2.76,
+     "pf": 2.26,
+     "net": 4648,
+     "per_month": 1251,
+     "max_dd": -1266
+    },
+    "2025": {
+     "n": 186,
+     "tpw": 3.6,
+     "pf": 0.93,
+     "net": -1880,
+     "per_month": -153,
+     "max_dd": -4863
+    },
+    "2021-24": {
+     "n": 569,
+     "tpw": 3.47,
+     "pf": 0.99,
+     "net": -989,
+     "per_month": -25,
+     "max_dd": -13429
+    }
+   },
+   "skipped_R": {
+    "2021": [
+     14,
+     -0.291
+    ],
+    "2022": [
+     63,
+     -0.499
+    ],
+    "2023": [
+     85,
+     -0.477
+    ],
+    "2024": [
+     78,
+     -0.643
+    ],
+    "2025": [
+     47,
+     -0.218
+    ],
+    "H1": [
+     24,
+     -0.656
+    ],
+    "H2": [
+     4,
+     -0.629
+    ]
+   }
+  },
+  "add6": {
+   "fixed": {
+    "H1": {
+     "n": 84,
+     "tpw": 3.28,
+     "pf": 3.44,
+     "net": 19040,
+     "per_month": 3124,
+     "max_dd": -1031
+    },
+    "H2": {
+     "n": 43,
+     "tpw": 2.76,
+     "pf": 2.15,
+     "net": 4426,
+     "per_month": 1192,
+     "max_dd": -1362
+    },
+    "2025": {
+     "n": 186,
+     "tpw": 3.6,
+     "pf": 0.88,
+     "net": -3340,
+     "per_month": -272,
+     "max_dd": -5668
+    },
+    "2021-24": {
+     "n": 569,
+     "tpw": 3.47,
+     "pf": 0.93,
+     "net": -5981,
+     "per_month": -153,
+     "max_dd": -17383
+    }
+   },
+   "skipped_R": {
+    "2021": [
+     14,
+     -0.291
+    ],
+    "2022": [
+     63,
+     -0.499
+    ],
+    "2023": [
+     85,
+     -0.477
+    ],
+    "2024": [
+     78,
+     -0.643
+    ],
+    "2025": [
+     47,
+     -0.218
+    ],
+    "H1": [
+     24,
+     -0.656
+    ],
+    "H2": [
+     4,
+     -0.629
+    ]
+   }
+  },
+  "add10": {
+   "fixed": {
+    "H1": {
+     "n": 84,
+     "tpw": 3.28,
+     "pf": 3.29,
+     "net": 18554,
+     "per_month": 3044,
+     "max_dd": -1063
+    },
+    "H2": {
+     "n": 43,
+     "tpw": 2.76,
+     "pf": 2.06,
+     "net": 4204,
+     "per_month": 1132,
+     "max_dd": -1458
+    },
+    "2025": {
+     "n": 186,
+     "tpw": 3.6,
+     "pf": 0.84,
+     "net": -4800,
+     "per_month": -391,
+     "max_dd": -6640
+    },
+    "2021-24": {
+     "n": 569,
+     "tpw": 3.47,
+     "pf": 0.88,
+     "net": -10973,
+     "per_month": -281,
+     "max_dd": -21355
+    }
+   },
+   "skipped_R": {
+    "2021": [
+     14,
+     -0.291
+    ],
+    "2022": [
+     63,
+     -0.499
+    ],
+    "2023": [
+     85,
+     -0.477
+    ],
+    "2024": [
+     78,
+     -0.643
+    ],
+    "2025": [
+     47,
+     -0.218
+    ],
+    "H1": [
+     24,
+     -0.656
+    ],
+    "H2": [
+     4,
+     -0.629
+    ]
+   }
+  }
  }
 }
