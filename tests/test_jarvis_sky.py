@@ -62,8 +62,11 @@ def browser():
                 ctx = br.new_context(viewport={"width": 1280, "height": 800}, service_workers="block", **kw)
                 return ctx, ctx.new_page()
 
-            # first paint: the poster is there before any script ran
+            # first paint: the poster is there before any script ran. Effects High as the owner's own choice (data-fx-set): Jarvis's
+            # frame-rate probe lowers an unset level to Low on a slow frame rate, and a busy test machine is that by chance (QUALITY
+            # 2026-11-21: the flaky 'effects low'); the probe itself is not what this checks
             ctx, p = page()
+            p.add_init_script("try { localStorage.setItem('jfx', 'high'); } catch (e) {}")
             p.goto(url, wait_until="commit")
             p.wait_for_selector(".bgfx > .jposter", state="attached", timeout=30000)
             r = p.evaluate(BD)
