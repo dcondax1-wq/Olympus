@@ -15,6 +15,8 @@ from __future__ import annotations
 import datetime as dt
 import re
 
+from .. import public as PUB
+
 CAP_NEW = 20                     # new businesses a day (warm-up); follow-ups are on top but bounded by MAX_DAY
 MAX_DAY = 60                     # every message of any kind in one ET day: a hard ceiling
 MAX_RUN = 5                      # messages one run may send (the task runs every 30 minutes: spread over the day)
@@ -64,7 +66,7 @@ def norm_email(a) -> str:
 
 # ------------------------------------------------------------------------------------------------ config + state
 CFG_KEYS = ("from_address", "app_password", "from_name", "business_name", "phone", "postal_address", "test_address", "booking_link",
-            "payment_link", "site_base", "smtp_host", "smtp_port", "imap_host", "mode", "t_set")
+            "payment_link", "site_base", "agency_number", "smtp_host", "smtp_port", "imap_host", "mode", "t_set")
 
 
 def norm_cfg(raw) -> dict:
@@ -92,6 +94,8 @@ def cfg_problems(c: dict) -> list:
         p.append("your postal address (CAN-SPAM: required in every email)")
     if not valid_email(c.get("test_address")):
         p.append("a test address (dry run)")
+    if not PUB.public_base(c.get("site_base")):
+        p.append("the agency's public web address (tools/site_factory_agency.json public_base: a neutral https host, never the owner's own)")
     return p
 
 
@@ -224,7 +228,9 @@ def price_line(offers: dict) -> str:
             "or no upfront: $149 a month for 12 months.")
 
 
-CALL_LINE = "Prefer a quick call? On your draft site, tap \"Have our assistant call me\" and pick a time that suits you."
+def call_line(cfg: dict) -> str:
+    """inbound only: 'Questions? Call <agency number>: our AI assistant answers.' ('' until the agency number is set)"""
+    return PUB.call_line(PUB.agency_number(cfg.get("agency_number")))
 
 
 def message(words: dict, L: dict, step: str, cfg: dict, offers: dict, sites: dict) -> dict:
@@ -232,15 +238,19 @@ def message(words: dict, L: dict, step: str, cfg: dict, offers: dict, sites: dic
     tpl = next((e for e in words.get("email", []) if e.get("id") == step), None)
     if not tpl:
         raise ValueError(f"no email for step {step}")
-    demo, own = demo_for(L, sites, cfg.get("site_base") or "")
+    base = PUB.public_base(cfg.get("site_base"))
+    if not base:
+        raise ValueError("no public web address (public_base): nothing is sent")
+    demo, own = demo_for(L, sites, base)
+    cl = call_line(cfg)
     v = {"business": L.get("name") or "your business", "town": L.get("town") or L.get("city") or "your town", "niche": niche_words(L),
          "demo": demo, "demo_short": re.sub(r"^https?://", "", demo), "offer_line": price_line(offers),
          "your_name": cfg.get("from_name"), "your_business": cfg.get("business_name"), "your_phone": cfg.get("phone") or "",
          "your_email": cfg.get("from_address"), "postal_address": cfg.get("postal_address"),
-         "call_line": CALL_LINE if (own and step == "first") else ""}
+         "call_line": cl if step == "first" else ""}
     body = fill(tpl["body"], v)
-    if step == "first" and own and CALL_LINE not in body:
-        body = body.replace("\n\nWould a 10-minute call", "\n\n" + CALL_LINE + "\n\nWould a 10-minute call", 1)
+    if step == "first" and cl and cl not in body:
+        body = body.replace("\n\nWould a 10-minute call", "\n\n" + cl + "\n\nWould a 10-minute call", 1)
     body = ensure_footer(body, cfg)
     return {"subject": fill(tpl["subject"], v), "body": body, "demo": demo}
 
@@ -270,6 +280,8 @@ def compliant(body: str, cfg: dict, subject: str = "") -> list:
         p.append("a 'Re:' subject on a first message")
     if re.search(r"\[(your name|business name|postal address|your phone)", b, re.I):
         p.append("an unfilled [placeholder]")
+    if PUB.banned(b + " " + (subject or "")):
+        p.append("the owner's private address (" + PUB.banned(b + " " + (subject or "")) + ")")
     return p
 
 
