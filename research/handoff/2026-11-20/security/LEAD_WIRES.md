@@ -1,3 +1,70 @@
+# LEAD_WIRES: day-security2 (round 2, 2026-11-20)
+
+Branch `day-security2` (from origin/pc 69218831 + my 4 round-1 commits re-applied). Built for real this round: W3, W4, W6, W7.
+W2 is NOT shipped: see W2 below, it needs the owner's yes. The round-1 notes are further down; W1, W5 and W8 have already landed.
+
+| W | Files (bot side, review these) | Test |
+|---|---|---|
+| W3 the PC signs its public posts | `tools/pc_report.py` (`_signed`, 3 call sites, `MAX_STATUS_BYTES` 3900 -> 3800), `tools/status_sign.py` (`ensure_key`) | `tests.test_pc_report_sign` 18/18 |
+| W4 phone pairing | `engine/push.py` (`pair_code`, `pair_payload`, `_tell_owner`, `intake(..., ntfy=None)`) | `tests.test_push_pairing` 18/18, `tests.test_webpush` 49/49 (2 checks updated: they pinned the old "newest 5 win") |
+| W6 NQ chart | `tools/web_public/nq/nqbars.js` (`parse(text, nowS)` future guard, `verifyText`, `parseVerified`) | `tests.test_nqbars_sign` 5/5 |
+| W7 data pipe | `engine/datafeed.py` (`_sign_msg` in `send`, `parse_answer(..., vk="pinned")`) | `tests.test_datafeed_sign` 8/8 |
+| site / board (round 1 + a fallback) | `tools/web_public/pc_feed.js` (`canVerify`: a phone without WebCrypto works as before) | `tests.test_status_sign` 31/31 |
+
+**Hard requirements, how each is met:**
+1. No paid service, no secret in the repo. The key is made on the PC by `status_sign.ensure_key`, which runs on Windows only and
+   never under LE_CLOUD or GITHUB_ACTIONS. The file is `<home>/.olympus/status_sign.json`, mode 0600, created with O_EXCL. The
+   public key travels as `svk` in the PC's own signed core posts. Pin it with `python tools/status_sign.py check` after about 6 h.
+2. Nothing stops working when something fails:
+   - pc_report: no key, no `cryptography`, a broken key file or a too-big post means the post goes out exactly as before (tested).
+     The run record gets `unsigned: <why>`, never an error, so a post is never dropped.
+   - Trade alerts (private topic, phone app) are never signed or touched (tested).
+   - Phone: no vk pinned, no WebCrypto, or a vk that will not import means it reads as before (tested).
+   - Data pipe: unsigned answers are accepted until a vk is pinned, and a test's fake server is never checked.
+3. W4: phones already in `data/push.json devices` stay, and keep re-sending their own subscription without a code. The owner does
+   nothing (tested on an upgrade-shaped push.json). A new phone needs the one-time 8-digit code. The PC sends it to the owner's
+   phones and to the private alert topic the first time an unknown phone asks, then at most every 6 h. At most 30 wrong codes a
+   UTC day; after that no new phone joins until tomorrow. A full list (5 phones heard from in 14 days) never pushes one out.
+4. Tests: trade_alerts 21/21, notify 96/96, pc_bars 75/75, live_publish 86/86, push 41/41, webpush 49/49, datafeed 42/42, and the
+   pc area (all but win_scripts): see the REPORT, round 2.
+
+**Still to wire (not my files):**
+- **W4, phone side (`tools/web_public/jarvis/push-ui.js`, the jarvis owner).** Without this, a NEW phone cannot pair. The owner's
+  current phone is not affected.
+  In `postSub` add the code to the sealed body:
+  `await sendSealed('sub', { sub: {...}, key: wp.k, ua: env().device, pair: String(store.get().pair || '').replace(/\D/g, '') || undefined }, wp);`
+  Add `async function pair(code) { store.set(Object.assign({}, store.get(), { pair: String(code || '').replace(/\D/g, '').slice(0, 8) })); return check({ repost: true }); }`
+  and export it on `window.OLY_PUSH`.
+  In the 'waiting' card, once 2 minutes have passed since `posted`, show one numeric input: "Your PC sent a code to your other phone
+  (or your alert topic). Type it here", which calls `OLY_PUSH.pair(value)`. Bump the jarvis cache (`jarvis-vNN`) and `sw.js`.
+- **W6, one line in `tools/web_public/nq/nqchart.js` `fetchPost()`:** `const p = await B.parseVerified(t, S.feed);` in place of
+  `const p = B.parse(t);`. `parse` already ignores a future-dated chart with no change there. Bump `nqbars.js?v=b1` to `?v=b2` in
+  nq.js and nqchart.js, and the sw cache.
+- **`engine/alerts_plus.py:664` (optional):** add `"unpaired", "full", "told"` to the logged keys, so the ops log shows strangers.
+- **The VAPID key changing** (rare: only when data/push.json is lost) gives the owner's phone a new endpoint, so it needs the code
+  once. The code goes to his private alert topic, because his old subscription no longer works under the new key.
+- **Pinning order:** land W3, let the PC run 6 h, run `python tools/status_sign.py check`, pin the key with about 4 posts an hour
+  for 6 h+ as `"vk"` in `tools/web_public/status_feed.json`, then publish. `tests.test_status_sign` g checks that the pinned vk is a
+  real P-256 key.
+
+## W2 (HIGH, NOT shipped: needs the owner's yes): the bot server answers the home WiFi
+
+Checked what uses the bot by a non-localhost address:
+- add-account and kalshi-live go through Tailscale serve to 127.0.0.1: fine.
+- The iPhone Shortcuts (`/inbox/day`, `/inbox/board`) use `https://<pc>.<tailnet>.ts.net`, a serve proxy to 127.0.0.1: fine.
+- NinjaTrader talks through files (LE_BarFeed.cs / LE_Feed.cs), and engine/ninjatrader uses 127.0.0.1: fine.
+- TradingView webhooks have no public route to the PC and are not in use: fine.
+- **But the PC dashboard's Settings card "Open on your phone"** (`web/js/page-settings.js` <- `/api/net`, server.py:454) hands out
+  `http://<LAN / Tailscale IP>:8766` links, and docs/LIVE_DASHBOARD.md:60 still calls that path "unchanged". If the owner saved one
+  of those on a phone, `HOST=127.0.0.1` breaks it. I cannot confirm he never did, so it is not shipped.
+Patch, once he says yes. In `scripts/run_bot.ps1`, before the `command :` line:
+`if (-not $env:HOST) { $env:HOST = '127.0.0.1' }   # the phone uses the Tailscale link (:8444), never the WiFi`.
+Change the Settings card to show the `https://<pc>.<tailnet>.ts.net:8444/` link (engine/phone_link) in place of the IP links.
+Owner one-liner: "From now on, open the bot on your phone only with your PC link (the :8444 one). The old plain number address stops
+working, so anyone on your WiFi can no longer press start/stop."
+
+---
+
 # LEAD_WIRES: day-security 2026-11-20
 
 These are fixes in files a helper may not edit (engine/*, server.py, scripts/*.ps1, *.bat, nq/, jarvis/, sw.js). Each one has the

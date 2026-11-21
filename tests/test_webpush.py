@@ -205,14 +205,21 @@ def part_b():
         check("b. 'Turn off' with a wrong secret keeps the phone; with its own secret removes it",
               kept == 1 and r8["removed"] == [ida] and json.load(open(P.CONFIG_PATH))["devices"] == [], r8)
         subs = [phone(10 + i)[2] for i in range(7)]
-        for i, s in enumerate(subs):
-            relay.add(sealed("sub", {"sub": s, "key": wp["k"]}, wp["b"], t=now + 2500 + i))
         n0 = len(sent)
-        r9 = P.intake(R.read(), now + 2700, sender=send_one)
+        rs = []
+        for i, s in enumerate(subs):                     # day-security2 (W4): a new phone joins with the PC's one-time code
+            code = json.load(open(P.CONFIG_PATH))["pair"]["code"]
+            relay.add(sealed("sub", {"sub": s, "key": wp["k"], "pair": code}, wp["b"], t=now + 2500 + i))
+            rs.append(P.intake(R.read(), now + 2700 + i, sender=send_one))
         dv = json.load(open(P.CONFIG_PATH))["devices"]
-        check("b. at most 5 phones (the newest heard from); each new one gets its welcome", len(dv) == P.MAX_DEVICES and len(sent) - n0 == P.MAX_DEVICES
-              and {d["id"] for d in dv} == {P.endpoint_id(s["endpoint"]) for s in subs[-5:]}, (len(dv), len(sent) - n0, r9))
-        gone_ep = subs[-1]["endpoint"]
+        check("b. at most 5 phones: with the code the first 5 join (each gets its welcome); a full list of recent phones pushes none out",
+              len(dv) == P.MAX_DEVICES and sum(1 for x in sent[n0:] if x["data"]["title"] == "Olympus notifications are on") == P.MAX_DEVICES
+              and {d["id"] for d in dv} == {P.endpoint_id(s["endpoint"]) for s in subs[:5]}
+              and rs[5].get("full") == 1 and rs[6].get("full") == 1, (len(dv), len(sent) - n0, rs[5:]))
+        check("b. the owner's phones are told once that the list is full (then at most every 6 h)",
+              rs[5].get("told") == P.MAX_DEVICES and not rs[6].get("told")
+              and all(x["data"]["title"] == "New phone wants your alerts" for x in sent[n0 + P.MAX_DEVICES:]), rs[5:])
+        gone_ep = subs[4]["endpoint"]
         out, send410 = recorder(lambda sub: 410 if sub["endpoint"] == gone_ep else 201)
         res = P.app_send(P.text_payload("PC", "test", "t", "b", key="k1"), sender=send410)
         check("b. a phone the push service calls gone (410: deleted, or another key) is dropped; the others got it",

@@ -921,7 +921,65 @@ def test_payload(now=None) -> dict:
     return p
 
 
-def intake(msgs, now=None, path: str | None = None, key_path: str | None = None, sender=None) -> dict:
+# PAIRING (day-security2 2026-11-20, LEAD_WIRES W4). The PC's box key and VAPID key are public (every status post's "wp"), so before
+# this anyone could seal a "sub" and get every real-account trade alert, and five of them pushed the owner's phone off the list.
+#   * the phones already on the list stay, with no code (the owner does nothing); a phone sending its own subscription again stays
+#   * a NEW phone needs the one-time 8-digit code: the PC sends it to the phones already on the list and the private alert topic
+#     the first time an unknown phone asks (then at most every PAIR_TELL_S), with "type it only on a phone you are holding"
+#   * the very first phone of a PC that never had one joins without a code (nothing to send the code to yet); after that, never
+#   * a list full of phones heard from in the last RECENT_S never pushes one out for a newcomer (the newcomer waits)
+PAIR_DIGITS = 8
+PAIR_TELL_S = 6 * 3600
+PAIR_BAD_MAX = 30                    # wrong codes in one UTC day; then no new phone joins until tomorrow
+RECENT_S = 14 * 86400
+
+
+def pair_code(f: dict, now: int, fresh: bool = False) -> str:
+    """The current one-time code in f["pair"] (made when missing or when fresh). Mutates f; the caller writes it."""
+    import secrets as _sec
+    p = f.get("pair") if isinstance(f.get("pair"), dict) else {}
+    if fresh or not re.fullmatch(r"\d{%d}" % PAIR_DIGITS, str(p.get("code") or "")):
+        p = {"code": str(_sec.randbelow(10 ** PAIR_DIGITS)).zfill(PAIR_DIGITS), "made": now, "told": 0, **{k: p.get(k) for k in ("bad", "bad_day") if p.get(k)}}
+    f["pair"] = p
+    return p["code"]
+
+
+def pair_payload(code: str, ua: str, now=None, full: bool = False) -> dict:
+    now = int(now or time.time())
+    if full:
+        body = ("A new phone asked for your trade alerts, but your list is full (%d phones heard from in the last 14 days). "
+                "Turn one off in its Olympus app first." % MAX_DEVICES)
+    else:
+        body = (f"A new phone ({ua or 'unknown'}) asked for your trade alerts. If it is yours, type {code} on it. "
+                "Type it only on a phone you are holding; if it is not yours, ignore this and nothing happens.")
+    p = text_payload("PC", "test", "New phone wants your alerts", body, key=f"pair:{now}", t=now, url="#board")
+    p["tag"] = "le-pair"
+    return p
+
+
+def _tell_owner(p: dict, c: dict, rows: list, sender=None, path=None, ntfy=None) -> int:
+    """The pairing notice to the phones already on the list and (on the real PC only) the private ntfy alert topic. Never raises."""
+    n = 0
+    try:
+        if rows:
+            n += int(app_send(p, cfg=dict(c, subs=[r["sub"] for r in rows]), sender=sender, path=path).get("sent") or 0)
+    except Exception:
+        pass
+    try:
+        if ntfy is None and sender is None:          # the real PC: also the private topic (only the owner knows its name)
+            from . import notify as _n
+            cfg = _n.alert_cfg()
+            if cfg:
+                n += int(bool(_n._post(cfg["ntfy"], cfg["topic"], {"title": p.get("title") or "New phone", "body": p.get("body") or "",
+                                                                   "priority": "high", "tags": "iphone"})))
+        elif callable(ntfy):
+            n += int(bool(ntfy(p)))
+    except Exception:
+        pass
+    return n
+
+
+def intake(msgs, now=None, path: str | None = None, key_path: str | None = None, sender=None, ntfy=None) -> dict:
     """The ops task's relay read (every 5 min): the phones' sealed {"le": "sub" | "unsub" | "test", "v": 2, "box"} requests.
     sub    a subscription made with the PC's own key joins data/push.json "devices" (the newest MAX_DEVICES phones heard from)
            and that phone alone gets ONE welcome push;
@@ -947,6 +1005,13 @@ def intake(msgs, now=None, path: str | None = None, key_path: str | None = None,
         before = {d["id"] for d in _devices(path)}
         devs = {d["id"]: dict(d) for d in _devices(path)}
         done = {k: v for k, v in (f.get("done") or {}).items() if isinstance(v, (int, float)) and now - v < DONE_KEEP_S}
+        pair_on = bool(f.get("pair_on")) or bool(devs)  # a PC that has (or had) a phone: new phones need the code
+        pf = {"pair": f.get("pair")}
+        code = pair_code(pf, now)
+        day = time.strftime("%Y-%m-%d", time.gmtime(now))
+        if (pf["pair"].get("bad_day") or "") != day:
+            pf["pair"].update(bad=0, bad_day=day)
+        asked = []                                       # unknown phones that asked without the right code: (ua, full?)
         for m in sorted(reqs, key=lambda x: x.get("_t", 0)):
             h = hashlib.sha256(m["box"].encode()).hexdigest()[:16]
             if h in done:
@@ -967,10 +1032,28 @@ def intake(msgs, now=None, path: str | None = None, key_path: str | None = None,
                     out["ignored"] += 1                  # junk, or made for an old key (the phone subscribes again by itself)
                     continue
                 sid = endpoint_id(subs[0]["endpoint"])
+                ua = re.sub(r"[^A-Za-z0-9 .()/-]", "", str(body.get("ua") or ""))[:40]
+                if sid not in devs and pair_on:          # a NEW phone: the one-time code, a free place
+                    given = re.sub(r"\D", "", str(body.get("pair") or ""))
+                    if int(pf["pair"].get("bad") or 0) >= PAIR_BAD_MAX or not given or not _hmac.compare_digest(given, code):
+                        if given:
+                            pf["pair"]["bad"] = int(pf["pair"].get("bad") or 0) + 1
+                        out["ignored"] += 1
+                        out["unpaired"] = out.get("unpaired", 0) + 1
+                        asked.append((ua, False))
+                        continue
+                    recent = [d for d in devs.values() if now - int(d.get("seen") or 0) < RECENT_S]
+                    if len(recent) >= MAX_DEVICES:
+                        out["ignored"] += 1
+                        out["full"] = out.get("full", 0) + 1
+                        asked.append((ua, True))
+                        continue
+                    code = pair_code(pf, now, fresh=True)  # one time: the next new phone needs a new code
                 row = devs.get(sid) or {"id": sid, "since": now}
                 if sid not in devs and sid not in out["added"]:
                     out["added"].append(sid)
-                row.update(sub=subs[0], key=c["public"], seen=now, ua=re.sub(r"[^A-Za-z0-9 .()/-]", "", str(body.get("ua") or ""))[:40])
+                    pair_on = True
+                row.update(sub=subs[0], key=c["public"], seen=now, ua=ua)
                 devs[sid] = row
                 continue
             sid, row = str(body.get("id") or ""), devs.get(str(body.get("id") or ""))
@@ -988,8 +1071,17 @@ def intake(msgs, now=None, path: str | None = None, key_path: str | None = None,
         now_ids = {d["id"] for d in _devices(path)}
         f["devices"] = [d for d in keep if d["id"] in now_ids or d["id"] not in before]
         f["done"] = done
+        if pair_on:
+            f["pair_on"] = f.get("pair_on") or now
+        told = None
+        if asked and now - int(pf["pair"].get("told") or 0) >= PAIR_TELL_S:   # no phone left: the private topic still gets it
+            told = pair_payload(code, asked[-1][0], now, full=asked[-1][1])
+            pf["pair"]["told"] = now
+        f["pair"] = pf["pair"]
         _write_private(path, f)
         rows = {d["id"]: d for d in f["devices"]}
+        if told:
+            out["told"] = _tell_owner(told, c, [d for d in f["devices"] if d["id"] not in out["added"]], sender=sender, path=path, ntfy=ntfy)
         todo = [(i, welcome_payload(now)) for i in out["added"] if i in rows] + [(i, test_payload(now)) for i in out["tests"] if i in rows]
         for sid, p in todo:
             r = app_send(p, cfg=dict(c, subs=[rows[sid]["sub"]]), sender=sender, path=path)

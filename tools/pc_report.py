@@ -63,7 +63,8 @@ STATUS_FEED = os.path.join(ROOT, "tools", "web_public", "status_feed.json")
 NTFY_DEFAULT = "https://ntfy.sh"
 PORT_DEFAULT = int(os.environ.get("PORT") or 8766)
 KALSHI_RW_LITE = ("kind", "paper_only", "updated", "days", "reward", "fill_pnl", "net", "fills", "markets", "per100_day")   # the card's keys
-MAX_STATUS_BYTES = 3900          # ntfy turns a message over 4,096 bytes into a file attachment: stay under it
+MAX_STATUS_BYTES = 3800          # ntfy turns a message over 4,096 bytes into a file attachment: stay under it, with room for the
+                                 # signature + public key (_signed: ~190 bytes, day-security2 2026-11-20; was 3900)
 # the split (owner 2026-11-18): the core "le-live" post every run, the extras in "le-live-ext" posts (tools/pc_feed.py merges them)
 EXT_KIND = "le-live-ext"
 EXT_PARTS = 2                    # at most 2 ext posts a run (ntfy.sh free: a few hundred messages a day per IP)
@@ -272,6 +273,47 @@ def default_http(method, url, body=None, headers=None, timeout=HTTP_TIMEOUT_S):
         return e.code, ""
     except Exception as e:
         return 0, e.__class__.__name__
+
+
+# ---- STATUS SIGN ---- (tools/status_sign.py, day-security2 2026-11-20): every PUBLIC post (status core, ext, chart bars) carries the
+# PC's ECDSA signature, so the site and Claude's board can tell the PC's posts from a stranger's. Trade alerts (private topic, phone
+# app) are never touched. Anything wrong (no `cryptography`, no key, a write error, too big) = the body goes out exactly as before.
+SIGN_MAX_BYTES = 4000            # a signed post stays a message (ntfy: 4,096); over it the post goes unsigned, as before
+SIGN_STATE = {"why": None}       # the last reason a public post went unsigned (shown in the run record), None = signed
+
+
+def _signed(body, core: bool = False, real: bool = True) -> str:
+    """The exact text + ,"sg":"..."}; the core also carries "svk" (the public key, so it can be pinned once from the PC's own
+    posts). real=False (a test's fake http): only with LE_STATUS_SIGN_KEY set, never the PC's own key. Never raises."""
+    b = str(body)
+    try:
+        if os.environ.get("LE_STATUS_SIGN", "1") == "0":
+            SIGN_STATE["why"] = "off (LE_STATUS_SIGN=0)"
+            return b
+        if not real and not os.environ.get("LE_STATUS_SIGN_KEY"):
+            return b
+        from tools import status_sign as _ss
+        k = _ss.load_key()
+        if not k and real and not os.environ.get("LE_STATUS_SIGN_KEY"):
+            _ss.ensure_key()                         # once: <home>/.olympus/status_sign.json (0600); prints only the public key
+            k = _ss.load_key()
+        if not k or not (b.startswith("{") and b.endswith("}")):
+            SIGN_STATE["why"] = "no key" if not k else "not a JSON object"
+            return b
+        t = b
+        if core:
+            t = b[:-1] + ',"svk":"' + _ss.vk_of(k) + '"}'
+        out = _ss.sign_text(t, k)
+        if len(out.encode("utf-8")) > SIGN_MAX_BYTES:
+            out = _ss.sign_text(b, k)                # without svk (the ext / an earlier core carried it)
+        if len(out.encode("utf-8")) > SIGN_MAX_BYTES:
+            SIGN_STATE["why"] = "too big to sign"
+            return b
+        SIGN_STATE["why"] = None
+        return out
+    except Exception as e:  # noqa: BLE001
+        SIGN_STATE["why"] = e.__class__.__name__
+        return b
 
 
 def ntfy_post(base, topic, body, title=None, priority=None, tags=None, http=None) -> tuple:
@@ -1351,7 +1393,7 @@ def bars_step(work: str, cfg: dict, L: dict | None, now: int, market_open_now: b
                     say(f"[dry] chart bars ({post.get('n')} bars, {len(post.get('open') or [])} open, {len(post.get('closed') or [])} closed, "
                         f"{res['bytes']} bytes) -> {cfg.get('ntfy')}/{topic}")
                 else:
-                    ok, w = ntfy_post(cfg.get("ntfy") or NTFY_DEFAULT, topic, body, priority="min", http=http)
+                    ok, w = ntfy_post(cfg.get("ntfy") or NTFY_DEFAULT, topic, _signed(body, real=http is None), priority="min", http=http)
                     if ok:
                         hb, ht = _bars_hashes(post)
                         st.update(t=int(now), hb=hb, ht=ht, n=post.get("n"), bytes=res["bytes"])
@@ -1869,7 +1911,7 @@ def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, n
             if dry:
                 say(f"[dry] status ext {e.get('part')} ({len(body.encode('utf-8'))} bytes: {', '.join(_d(e.get('x')))}) -> {cfg['ntfy']}/{cfg['status_topic']}")
                 continue
-            ok, why = ntfy_post(cfg["ntfy"], cfg["status_topic"], body, priority="min", http=http)
+            ok, why = ntfy_post(cfg["ntfy"], cfg["status_topic"], _signed(body, real=http is None), priority="min", http=http)
             if not ok:
                 rec["errors"].append("status ext: " + why)
                 due = False
@@ -1884,7 +1926,9 @@ def run_once(work: str = WORK_DEFAULT, dry: bool = False, http=None, env=None, n
         if dry:
             say(f"[dry] status ({len(body.encode('utf-8'))} bytes) -> {cfg['ntfy']}/{cfg['status_topic']}")
         else:
-            ok, why = ntfy_post(cfg["ntfy"], cfg["status_topic"], body, priority="min", http=http)
+            ok, why = ntfy_post(cfg["ntfy"], cfg["status_topic"], _signed(body, core=True, real=http is None), priority="min", http=http)
+            if SIGN_STATE.get("why") and SIGN_STATE["why"] != "off (LE_STATUS_SIGN=0)":
+                rec["unsigned"] = SIGN_STATE["why"]  # posted all the same; the run record says why it went unsigned
             if ok:
                 rec["status_t"] = snap["t"]
                 posted += 1

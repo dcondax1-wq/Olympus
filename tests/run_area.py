@@ -118,6 +118,10 @@ AREAS["olympus"].append("site_checks")
 AREAS["pc"].append("run_area_fast")       # day-quality round 2: --changed mapper (tests/suite_map.py), parallel lanes, the per-suite browser lock
 AREAS["privacy"].append("status_sign")   # day-security 2026-11-20: signed status posts + no future-dated post (tests/test_status_sign.py); its own line
 AREAS["board"].append("status_sign")
+AREAS["pc"] += ["status_sign", "pc_report_sign", "push_pairing", "datafeed_sign", "nqbars_sign"]   # day-security2 2026-11-20: W3 W4 W6 W7; its own line
+AREAS["privacy"] += ["pc_report_sign", "push_pairing", "datafeed_sign", "nqbars_sign"]
+AREAS["nq"].append("nqbars_sign")
+AREAS["pc"].append("autoupdate_paths")   # updategate 2026-11-20: site-only updates never restart the bot, import check, crash-loop rollback; its own line
 AREAS["pc"].append("pc_watch")            # day-quality round 3: the cloud PC watch (.github/workflows/pc-watch.yml, docs/PC_WATCH.md)
 AREAS["olympus"].append("perf_sweep")      # day-quality Olympus v2: tools/perf_sweep.py (phone sweep + offline pass, budgets tools/perf_budgets.json)
 AREAS["privacy"].append("scrub_cache")      # day-quality 2026-11-20: site_privacy.scrub's clean-file cache (warm build 67 s -> 29 s)
