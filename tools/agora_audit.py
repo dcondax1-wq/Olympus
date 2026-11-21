@@ -15,7 +15,7 @@ ROOTS = [os.path.join(ROOT, "tools", "web_public"), os.path.join(ROOT, "web_next
 SKIP_DIRS = {"fx", "icon_options", "brand", "node_modules", "vendor", "fonts", "jarvis_legacy"}
 SKIP_FILE = re.compile(r"(\.min\.|(^|/)sw\.js$|three(\.module)?\.js$|OFL\.txt|/lib/|/vendor/)")
 EXTS = (".css", ".js", ".mjs", ".html")
-THEME = "#14110e"
+THEME = "#000000"   # OLYMPUS NIGHT: the address bar / status bar black (DESIGN QA 2026-11-21; was AGORA #14110e)
 
 HEX = re.compile(r"#([0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{4}|[0-9a-fA-F]{3})\b")   # 8 / 4 digits: with alpha (the alpha is dropped)
 # old purple/blue accents found by grep (named explicitly so they always show up, whatever the HSL says)

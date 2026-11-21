@@ -649,7 +649,7 @@
     } catch (e) { /* no worker on this browser */ }
     try {
       if (base && !framed && id !== 'jarvis' && !d.querySelector('script[src*="jarvis/ask.js"]') && d.body) {
-        var s = d.createElement('script'); s.src = base + 'jarvis/ask.js?v=6'; s.defer = true; if (id) s.setAttribute('data-app', id);
+        var s = d.createElement('script'); s.src = base + 'jarvis/ask.js?v=7'; s.defer = true; if (id) s.setAttribute('data-app', id);
         d.body.appendChild(s); d.body.classList.add('oly-has-ask');   // agora.css: the last lines scroll clear of the fixed button
       }
     } catch (e) { /* the page works without the button */ }

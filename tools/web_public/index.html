@@ -1252,7 +1252,7 @@ document.addEventListener('DOMContentLoaded', function () { var Z = window.ZEUS_
   if (Z && Z.keep && pg) Z.keep(pg, { when: function () { return typeof PAGE === 'undefined' || PAGE == null ? !/^#\/(?!today\b)[a-z]/.test(location.hash) : PAGE === 'today'; } }); });</script>
 <script>/* POLIS life on the Zenith home (QA round 6): the herald's banner under the status and the accounts, put back after every live redraw; hidden when the city file has no news */
 /* speed (2026-11-18): the herald's library (28 KB gzipped) arrives after the page has loaded, never in the deferred chain the first view waits on */
-addEventListener('load', function () { setTimeout(function () { var s = document.createElement('script'); s.src = 'olympus/polis-life.js?v=pl4'; s.async = true;
+addEventListener('load', function () { setTimeout(function () { var s = document.createElement('script'); s.src = 'olympus/polis-life.js?v=pl5'; s.async = true;
   s.onload = function () { var L = window.OLYMPUS_POLIS_LIFE, pg = document.getElementById('page'); if (L && L.keep && pg) L.keep(pg, 'herald', { label: 'The herald cries the latest news', when: function () { return typeof PAGE !== 'undefined' && PAGE === 'today'; } }); };
   document.head.appendChild(s); }, 0); });</script>
 </body>
