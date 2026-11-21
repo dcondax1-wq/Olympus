@@ -23,8 +23,8 @@ you to sponsor it. If that happens, don't pay: post on the other two and tell Cl
 
 **Text:**
 
-> **Pay: commission only.** $300 for every business that buys (our Starter site is $1,500), or $40 for every booked call that shows up.
-> You choose one when you start. Paid within 3 days of the client's payment, by Zelle or PayPal. No base pay.
+> **Pay: commission only.** $300 for every business that buys (our Starter site is $1,500), or $40 for a booked call that shows up but
+> doesn't buy (one per business). Paid within 3 days after the client's payment clears, by Zelle or PayPal. No base pay.
 >
 > <Agency> builds websites for small local businesses in Maryland. Before we call anyone, we have already built that business a free
 > concept site. Your job: call businesses that have no website, tell them we made them one, email them the link, and book a short call

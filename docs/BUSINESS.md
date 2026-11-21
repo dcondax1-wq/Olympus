@@ -16,7 +16,7 @@ Owner: "how are the other business models doing, build those". All $ are **ESTIM
 | Kalshi | bot, page, research | paused: no proven edge | $0 | $0 | 0 |
 | **All** | | | **$0-1,160** | **$0-3,250** | **20-32** |
 
-Why the agency month 3 is $0-2,000: one Starter sale is $499 + $49 a month; the range assumes 0-2 sales a month. The docs'
+Why the agency month 3 is $0-2,000: one Starter sale is $1,500 + $79 a month; the range assumes 0-2 sales a month. The docs'
 plan (4 sales a month, $5,000 a month by month 8) needs about 6 calls every working day and call rates that are still guesses.
 
 ## The ONE money place (night team B, 2026-11-16)
@@ -41,7 +41,7 @@ and the DEMO fixture there. Tests: `python -X utf8 -m tests.test_money_door`.
 Prices live in ONE place: `packages` in `agency/config.example.json` (your copy `agency/config.json` wins), read through
 `agency.config.prices()`. The pitch, the email, the storefront, the Agency page, the money math, the billing kit (proposal,
 agreement, invoice) and the Business page all read it. `agency/billing/packages.json` now holds only the wording of each plan.
-Default: Starter $499 + $49 a month, Growth $999 + $79, Pro $1,999 + $129 (change them in your `agency/config.json`).
+Default (agency/pricebook.json, 2026-11-21): Starter site $1,500 + $79 a month (or $149 a month for 12 months, nothing upfront), Call engine $500 + $299 a month (3-month minimum), 3D Signature from $2,500 + $79 a month (one price book: agency/pricebook.json).
 
 ## What is new
 | What | How |

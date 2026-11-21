@@ -65,9 +65,9 @@ def part_a():
     plan = d.get("plan") or {}
     lad = " ".join(" ".join(r) for r in plan.get("ladder") or [])
     st, gr = pk["starter"], pk["growth"]
-    check("a. the $1,000 plan uses the owner's agency prices (Starter $499 + $49, Growth $999 + $79) and reaches $1,000 (2 Starters + one $149 fix)",
-          f"${st['setup']} + ${st['monthly']}" in lad and f"${gr['setup']} + ${gr['monthly']}" in lad and "$149" in lad
-          and 2 * st["setup"] + 149 >= 1000 and gr["setup"] >= 999 and "$1,000" in plan.get("goal", ""), lad)
+    check("a. the $1,000 plan uses the ONE price book's prices (Starter $1,500 + $79, Call engine $500 + $299) and reaches $1,000 (1 Starter)",
+          f"${st['setup']:,} + ${st['monthly']}" in lad and f"${gr['setup']:,} + ${gr['monthly']}" in lad and "$149" in lad
+          and st["setup"] >= 1000 and "$1,000" in plan.get("goal", ""), lad)
     check("a. the plan says how many a day, gives 4 weeks, and the walk-in / DM / follow-up / price lines",
           "15 contacts a weekday" in plan.get("pace", "") and len(plan.get("weeks") or []) == 4
           and [r[0] for r in plan.get("say") or []] == ["Walk in", "DM", "Follow-up", "How much?"], plan.get("pace"))

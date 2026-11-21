@@ -9,7 +9,7 @@ only on results ($300 per sale or $40 per booked call that shows), and Claude do
 | `CALLER_PACK.md` | what the caller reads: the rules, the script + 10 objections, voicemail, follow-up email (CAN-SPAM), the portal, how commission is paid |
 | `CONTRACTOR_TERMS.md` | one page the caller answers "I agree" to by email (1099 contractor, commission only, the rules, privacy) |
 | `DNC.md` | the free registry (5 area codes: 301, 240, 227, 410, 443; 667 is the 6th at $85/yr), the sign-up, the scrub step, business vs personal lines |
-| `TARGETS.md` | 2-week model with sources: middle case 340 dials -> ~1 sale = **$1,200 + $79/mo** to you; low 0, high 3 sales |
+| `TARGETS.md` | 2-week model with sources: middle case 340 dials -> ~1 sale = **$1,120 + $79/mo** to you after the commission; low 0, high 3 sales |
 | `agency/dnc_scrub.py` + `tests/test_dnc_scrub.py` | the new scrub step (9/9) |
 
 ## Your time (honest count)

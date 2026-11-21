@@ -14,6 +14,8 @@ that must also work on the neutral public host (day-cities3's public_base export
                                            every channel, new businesses go to tools/agency_added_leads.json (the factory builds their
                                            sites), and the commission table per caller is printed ($300 a sale, $40 a booked call that shows)
   python -m agency.portal commissions      the table again from %USERPROFILE%\\.olympus\\portal_log.json
+  python -m agency.portal paid ID KIND [DATE]   the owner records client money that CLEARED (deposit / launch / monthly / refund):
+                                           a commission is owed only after that (agency/pricebook.json "commission")
 """
 from __future__ import annotations
 
@@ -121,7 +123,7 @@ def build(web: str = WEB, out: str = LIST) -> dict:
 # ------------------------------------------------------------------------------------------------ the page's public facts + passphrase
 DEFAULT_CONF = {"v": 1, "agency": "", "agency_email": "", "postal": "", "public_base": "", "agency_number": "", "pass": {"salt": "", "sha256": ""},
                 "prices": {"starter": "$1,500 + $79/month", "monthly": "$149/month for 12 months, nothing upfront"},
-                "commission": {"sale": 300, "booked_show": 40}, "hours": [540, 1020], "tz": "America/New_York"}
+                "commission": {"sale": 300, "booked_show": 40, "clawback_days": 30}, "hours": [540, 1020], "tz": "America/New_York"}
 
 
 def conf() -> dict:
@@ -224,49 +226,121 @@ def add_leads(store: dict, path: str | None = None) -> int:
     return len(add)
 
 
-def commissions(store: dict, c: dict | None = None) -> list:
-    """per caller: dials, talks, interested, booked, won, and what is owed ($300 a sale; $40 a booked call only once the owner marks it 'showed')"""
+PAID_KINDS = ("deposit", "launch", "monthly", "refund")
+
+
+def paid_ledger(h: str | None = None) -> list:
+    """The owner's record of client money that has CLEARED (%USERPROFILE%\\.olympus\\agency_paid.json), written only by
+    `python -m agency.portal paid <lead id or code> deposit|launch|monthly|refund [YYYY-MM-DD]`. A caller's own 'Won' is only a claim."""
+    d = rj(os.path.join(h or home(), "agency_paid.json"), {}) or {}
+    return [e for e in d.get("payments") or [] if isinstance(e, dict) and e.get("kind") in PAID_KINDS and e.get("id")]
+
+
+def mark_paid(lead_id: str, kind: str, day: str, h: str | None = None) -> dict:
+    if kind not in PAID_KINDS or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(day)):
+        raise ValueError("kind must be deposit / launch / monthly / refund, the date YYYY-MM-DD")
+    codes = {str(v).upper(): k for k, v in (rj(os.path.join(ROOT, "tools", "site_factory_codes.json"), {}) or {}).items()}
+    lid = codes.get(str(lead_id).upper(), str(lead_id))[:40]
+    p = os.path.join(h or home(), "agency_paid.json")
+    d = rj(p, {}) or {}
+    e = {"id": lid, "kind": kind, "t": day}
+    d = {"v": 1, "payments": (d.get("payments") or []) + [e]}
+    wj(p, d)
+    return e
+
+
+def sale_cleared(pays: list, lid: str) -> str:
+    """The date the sale counts as paid for commission ('' if not yet): deposit AND launch cleared, or the 3rd monthly payment."""
+    mine = [e for e in pays if e["id"] == lid]
+    dep = sorted(e["t"] for e in mine if e["kind"] == "deposit")
+    lau = sorted(e["t"] for e in mine if e["kind"] == "launch")
+    mon = sorted(e["t"] for e in mine if e["kind"] == "monthly")
+    if dep and lau:
+        return max(dep[0], lau[0])
+    return mon[2] if len(mon) >= 3 else ""
+
+
+def _days(a: str, b: str) -> int:
+    import datetime as _dt
+    return (_dt.date.fromisoformat(b) - _dt.date.fromisoformat(a)).days
+
+
+def commissions(store: dict, c: dict | None = None, paid: list | None = None) -> list:
+    """per caller: dials, talks, interested, booked, won, and the money (agency/pricebook.json "commission"):
+    - ONE commission per business, to the first caller who logged it interested / booked / won;
+    - $300 a sale only once the client's money has CLEARED (deposit + launch, or the 3rd $149 payment: the owner's `paid` ledger),
+      never at 'yes' or at a caller's own 'Won' (that is 'pending');
+    - a refund within clawback_days (30) of clearing = $0 for that sale ('clawback' shows what to take back if it was already paid);
+    - $40 when the owner marks a booked call 'showed' and the business did not (yet) buy; a later cleared sale replaces it: $300, never $340."""
     c = c or conf()
     rate = c.get("commission") or {}
+    sale, show = int(rate.get("sale", 300)), int(rate.get("booked_show", 40))
+    claw = int(rate.get("clawback_days", 30))
+    pays = paid_ledger() if paid is None else paid
     rows: dict = {}
-    for e in store.get("log") or []:
-        r = rows.setdefault(e.get("caller") or "?", {"caller": e.get("caller") or "?", "calls": 0, "interested": 0, "booked": 0, "showed": 0, "won": 0, "no": 0})
-        k = e.get("k")
+    first: dict = {}
+    showed, claimed = set(), set()
+    for e in sorted(store.get("log") or [], key=lambda e: (e.get("t") or 0)):
+        caller = e.get("caller") or "?"
+        r = rows.setdefault(caller, {"caller": caller, "calls": 0, "interested": 0, "booked": 0, "showed": 0, "won": 0, "no": 0,
+                                     "owed": 0, "pending": 0, "clawback": 0})
+        k, lid = e.get("k"), e.get("id")
         if k in ("called", "voicemail", "interested", "booked", "no", "dnc", "won"):
             r["calls"] += 1
         if k in ("interested", "booked", "showed", "won"):
             r[k] += 1
         if k in ("no", "dnc"):
             r["no"] += 1
-    # owed per (caller, business): $300 when it became a sale, else $40 once a booked call showed, never both for the same business
-    # (the plan is "$300 per sale OR $40 per booked call that shows"; 2026-11-21: a booked call that showed and then bought was paid $340)
-    best: dict = {}
-    for e in store.get("log") or []:
-        k, lid = e.get("k"), e.get("id")
-        if k in ("showed", "won") and lid:
-            key = (e.get("caller") or "?", lid)
-            best[key] = "won" if (k == "won" or best.get(key) == "won") else "showed"
-    for r in rows.values():
-        r["owed"] = 0
-    for (caller, _lid), k in best.items():
-        rows[caller]["owed"] += int(rate.get("sale", 300)) if k == "won" else int(rate.get("booked_show", 40))
-    for r in rows.values():         # outcomes logged without a business id (older exports) keep the old per-row count
-        r["owed"] = r["owed"] or (r["won"] * int(rate.get("sale", 300)) + r["showed"] * int(rate.get("booked_show", 40)))
-    return sorted(rows.values(), key=lambda r: -r["owed"])
+        if lid and k in ("interested", "booked", "won"):
+            first.setdefault(lid, caller)
+        if lid and k == "showed":
+            showed.add(lid)
+            first.setdefault(lid, caller)         # no earlier interested / booked line: the caller on the 'showed' line
+        if lid and k == "won":
+            claimed.add(lid)
+    for lid, caller in first.items():
+        r = rows[caller]
+        clear = sale_cleared(pays, lid)
+        refunds = sorted(e["t"] for e in pays if e["id"] == lid and e["kind"] == "refund")
+        if clear:
+            if any(_days(clear, t) <= claw and t >= clear for t in refunds) or any(t < clear for t in refunds):
+                r["clawback"] += sale
+            else:
+                r["owed"] += sale
+        elif lid in claimed:
+            r["pending"] += sale
+        elif lid in showed:
+            r["owed"] += show
+    return sorted(rows.values(), key=lambda r: (-r["owed"], -r["pending"]))
 
 
 def table(rows: list) -> str:
-    out = ["  caller               calls  interested  booked  showed  won  no   owed"]
+    out = ["  caller               calls  interested  booked  showed  won  no   owed  pending  clawback"]
     for r in rows:
-        out.append(f"  {r['caller'][:20]:<20} {r['calls']:>5}  {r['interested']:>10}  {r['booked']:>6}  {r['showed']:>6}  {r['won']:>3}  {r['no']:>2}  ${r['owed']:,}")
+        out.append(f"  {r['caller'][:20]:<20} {r['calls']:>5}  {r['interested']:>10}  {r['booked']:>6}  {r['showed']:>6}  {r['won']:>3}  {r['no']:>2}  "
+                   f"${r['owed']:,}  ${r.get('pending', 0):,}  ${r.get('clawback', 0):,}")
+    out.append("  owed = the client's money has cleared; pending = a 'Won' waiting for the deposit + launch payment; clawback = refunded within 30 days")
     return "\n".join(out)
 
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="The caller portal's PC side (build the list, the passphrase, import a caller's log)")
-    ap.add_argument("cmd", choices=["build", "pass", "setup", "import", "commissions"])
+    ap.add_argument("cmd", choices=["build", "pass", "setup", "import", "commissions", "paid"])
     ap.add_argument("files", nargs="*")
     a = ap.parse_args(argv)
+    if a.cmd == "paid":
+        import datetime as _dt
+        if len(a.files) not in (2, 3):
+            print("  [FIX] python -m agency.portal paid <lead id or code> deposit|launch|monthly|refund [YYYY-MM-DD]  (only once the money CLEARED)")
+            return 1
+        try:
+            e = mark_paid(a.files[0], a.files[1], a.files[2] if len(a.files) == 3 else _dt.date.today().isoformat())
+        except ValueError as x:
+            print("  [FIX] " + str(x))
+            return 1
+        print(f"  [OK] {e['kind']} for {e['id']} on {e['t']}")
+        print(table(commissions(rj(os.path.join(home(), "portal_log.json"), {}) or {})))
+        return 0
     if a.cmd == "build":
         d = build()
         print(f"  [OK] {d['count']} businesses on the list ({sum(1 for r in d['leads'] if r['phone'])} with a phone); left out: {d['skipped']}")
