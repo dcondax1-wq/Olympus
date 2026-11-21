@@ -91,8 +91,8 @@ def test_node():
     check("a. ... the rules as chips: traded days (the PC's tracker) and the best day <= 50%",
           len(a.get("chips", [])) == 2 and a["chips"][0]["label"].startswith("Traded days") and "Best day <= 50%" in a["chips"][1]["label"], a.get("chips"))
     check("a. ... the date: the ATLAS cost study's simulated 'about Dec 18-31 (estimate, 2026-like market)' (a 3-day pace over-promised); evals: the plan's dates",
-          a.get("when") == "about Dec 18-31 (estimate, 2026-like market)" and G["zlarior"]["when"] == "plan: about Dec 10 (estimate)"
-          and G["fresh25"]["when"] == "plan: about Nov 30 (estimate)", (a.get("when"), G["zlarior"].get("when"), G["fresh25"].get("when")))
+          a.get("when") == "about Dec 18-31 (estimate, 2026-like market)" and G["zlarior"]["when"] == "plan: about Dec 24 (estimate)"
+          and G["fresh25"]["when"] == "plan: about Dec 9 (estimate)", (a.get("when"), G["zlarior"].get("when"), G["fresh25"].get("when")))
     z, f, rp, fl = G.get("zlarior", {}), G.get("fresh25", {}), G.get("rapid1", {}), G.get("fleet", {})
     check("a. Zlarior 50K: +$3,807 to pass at $53,000, 0% (the balance is under the $50,000 start), drawdown left $1,025 in its line",
           z.get("big") == "+$3,807" and z.get("goal") == "Pass at $53,000" and z.get("frac") == 0 and "Drawdown left $1,025" in z["lines"][0], z)

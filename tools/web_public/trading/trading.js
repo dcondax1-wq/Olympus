@@ -3,7 +3,7 @@
 // createElementNS. window.TRADING is the test hook. ?demo=1 = the example; ?src=live|paper|backtest and ?bot=LIT|ATLAS open on that filter; ?month=2026-10 on that month;
 // ?acct=z25k2 opens LIVE on one account. LIVE rows per account: trades.json (the PC's data branch, tools/trading_export.py) + the PC's 15-minute ntfy feed
 // (../pc_feed.js: board_trades + "at", read here once per refresh, used for trades only while it is fresh: C.feedRows).
-import * as C from './tradingcore.js?v=4';
+import * as C from './tradingcore.js?v=5';
 import * as T from '../olympus/truth.js';
 import * as DK from '../nq/nqdesk.js?v=7';
 import * as NB from '../nq/nqbars.js?v=b1';
