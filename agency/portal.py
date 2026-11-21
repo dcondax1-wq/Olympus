@@ -108,7 +108,8 @@ def build(web: str = WEB, out: str = LIST) -> dict:
         rows.append({"id": lid, "name": str(L["name"]).strip()[:80], "phone": digits(L.get("phone")) or digits(found.get(lid)), "town": str(L.get("town") or L.get("city") or "")[:40],
                      "state": str(L.get("state") or "MD")[:2].upper(), "niche": str(f.get("niche") or L.get("niche") or "other")[:20],
                      "kind": str(f.get("kind") or L.get("kind") or L.get("niche_name") or "")[:40], "code": str(f.get("code") or codes.get(lid) or ""),
-                     "site": str(f.get("path") or ""), "heat": str(L.get("heat") or "")})
+                     "site": str(f.get("path") or ""), "heat": str(L.get("heat") or ""),
+                     "lane": "site_down" if (L.get("web") or {}).get("verdict") == "site_down" else "no_site"})   # Overture check (tools/web_leads_overture.py)
     rank = {"trades": 0, "home": 0, "health": 1, "beauty": 2, "auto": 3, "food": 4}
     rows.sort(key=lambda r: (not r["phone"], rank.get(r["niche"], 9), r["name"].lower()))
     doc = {"v": 1, "kind": "caller-portal-list", "built": time.strftime("%Y-%m-%d"), "count": len(rows),
