@@ -2,7 +2,7 @@
  "v": 1,
  "kind": "web_leads",
  "demo": false,
- "fetched": "2026-11-21T16:48:58Z",
+ "fetched": "2026-11-21T17:13:17Z",
  "source": "OpenStreetMap via the public Overpass API (a few small queries per town)",
  "license": "Data (c) OpenStreetMap contributors, ODbL (openstreetmap.org/copyright)",
  "about": "Businesses on OpenStreetMap with no website tag. OSM can be out of date: check the business before you call.",
@@ -160,11 +160,31 @@
    ],
    "chains": 5,
    "with_site": 3
+  },
+  {
+   "town": "Middletown",
+   "state": "MD",
+   "businesses": 10,
+   "leads": 4,
+   "hot": 0,
+   "server": "maps.mail.ru",
+   "parts_ok": 3,
+   "parts": 9,
+   "missing": [
+    "trades",
+    "healthcare",
+    "gyms",
+    "health + auto places",
+    "beauty + auto shops",
+    "other shops"
+   ],
+   "chains": 4,
+   "with_site": 2
   }
  ],
  "skipped": {
-  "has_site": 1117,
-  "chain": 1930,
+  "has_site": 1119,
+  "chain": 1934,
   "other": 401,
   "duplicate": 111,
   "closed": 1
@@ -180,7 +200,8 @@
   "towns/ellicott-city.json",
   "towns/westminster.json",
   "towns/mount-airy.json",
-  "towns/urbana.json"
+  "towns/urbana.json",
+  "towns/middletown.json"
  ],
- "count": 1353
+ "count": 1357
 }
