@@ -40,6 +40,14 @@ STATE_NAME = "pc_silent.json"
 UA = "olympus-pc-silent/1"
 TOPIC_RX = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
 MARK = ("PC stopped reporting", "PC still silent")
+PRE_MARK = "PC is off"
+# PRE-OPEN (day-nqops 2026-11-21, lead: "the same from the cloud side when the PC is silent: 'PC is off: market opens in 30 min'"):
+# the PC-silent window (engine/notify.silent_window) starts at 01:30 ET on weekdays and never runs on Sunday, so a PC that slept
+# through the weekend (scripts/schedule_pc.ps1 hibernates Fri 16:35 ET, its wake task is Mon-Fri 01:30) was first noticed after
+# the open. Two short windows before it, ONE push each when the PC's last post is older than pc_silent_after_min:
+PRE_WINDOWS = ((6, 17 * 60, 18 * 60, 18 * 60, "market opens"),)        # Sunday 17:00-18:00 ET: CME opens 18:00
+PRE_WINDOWS += tuple((wd, 60, 90, 120, "the bot's day starts") for wd in range(5))   # weekdays 01:00-01:30 ET (the PC-silent
+#                                                                                   window takes over at 01:30; entries from 02:00)
 
 
 def http_get(url, timeout=20, limit=3_000_000) -> tuple:
@@ -139,6 +147,76 @@ def sent_today(msgs, now) -> list:
             and notify._et(m["time"]).date() == day]
 
 
+def pre_window(now):
+    """(minutes to the open, words) inside a pre-open window, else None (a CME full closure: None)."""
+    e = notify._et(now)
+    mod = e.hour * 60 + e.minute
+    for wd, a, b, at, words in PRE_WINDOWS:
+        if e.weekday() == wd and a <= mod < b:
+            try:
+                from engine.cme_calendar import full_closure
+                import datetime as _dt
+                day = e.date() + _dt.timedelta(days=1 if wd == 6 else 0)
+                if full_closure(day):
+                    return None
+            except Exception:
+                pass
+            return at - mod, words
+    return None
+
+
+def feed_clock(msgs, now) -> list:
+    """The MFFU 7-day clock rows (engine/clock7) from the newest PC ext post on the status topic that carries mf / k7."""
+    best, bt = None, -1
+    for m in msgs:
+        try:
+            j = json.loads(m.get("message") or "")
+        except Exception:
+            continue
+        x = _d(_d(j).get("x"))
+        if _d(j).get("kind") == "le-live-ext" and (x.get("k7") or x.get("mf")):
+            t = int(notify._f(m.get("time")) or 0)
+            if t > bt:
+                best, bt = x, t
+    if not best:
+        return []
+    try:
+        from engine import clock7
+        k = clock7.build(best.get("mf"), None, now) if best.get("mf") else {"a": _d(best.get("k7")).get("a") or []}
+        return list(_d(k).get("a") or [])
+    except Exception:
+        return []
+
+
+def preopen_step(prev: dict | None, seen_t, now, s: dict | None = None, fetched: bool = True, sent=(), clock=()) -> tuple:
+    """-> (state, [push]): ONE "PC is off" push per pre-open window and day while the PC's last post is stale. Never raises."""
+    try:
+        s = s or notify.settings()
+        now = int(now)
+        st = dict(_d(prev))
+        w = pre_window(now)
+        if not w or not fetched or not notify.on("pc_silent", s):
+            return st, []
+        stale = not seen_t or now - int(seen_t) > int(s.get("pc_silent_after_min", 20)) * 60
+        day = notify._et(now).date().isoformat()
+        if not stale or st.get("day") == day or any(notify._et(t).date().isoformat() == day for t in sent or ()):
+            return st, []
+        mins, words = w
+        last = notify.since_text(seen_t, now) if seen_t else "never seen"
+        urgent = [r for r in clock or () if isinstance(r, dict) and r.get("lvl") in ("bad", "warn")]
+        tail = ""
+        if urgent:
+            from engine import clock7
+            tail = " " + clock7.line(urgent[0]) + "."
+        body = (f"Your PC's last report: {last}. Wake it / turn it on, open NinjaTrader and connect, then START BOT."
+                f" ({words.capitalize()} at {'18:00' if words == 'market opens' else '02:00'} ET.){tail}")
+        st.update(day=day, t=now)
+        return st, [{"key": f"pc_preopen:{day}", "title": f"{PRE_MARK}: {words} in {mins} min", "body": body[:600],
+                     "priority": "high", "tags": "warning,computer"}]
+    except Exception:  # noqa: BLE001
+        return dict(_d(prev)), []
+
+
 def read_hb(now):
     try:
         from engine import heartbeat
@@ -187,6 +265,10 @@ def run(out: str, now=None, env=None, get=None, post=None, hb=None, dry=False, s
     else:
         _ok, back = poll(d["base"], d["topic"], get=get)
     st, msgs = notify.silent_step(prev, seen, now, s, fetched=bool(f_ok or hb.get("present")), sent_today=sent_today(back, now))
+    pre_sent = [int(m["time"]) for m in back if str(m.get("title") or "").startswith(PRE_MARK) and notify._f(m.get("time"))]
+    st["pre"], pre = preopen_step(_d(prev.get("pre")), seen, now, s, fetched=bool(f_ok or hb.get("present")), sent=pre_sent,
+                                  clock=feed_clock(f_msgs, now))
+    msgs = list(msgs) + pre
     sent = []
     bus = _bus(env) if not dry and post is http_post else None
     # the bus's own state / failure log: the runner's temp folder, never `out` (cloud-monitor commits dash/ to the PUBLIC dashboard

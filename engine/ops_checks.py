@@ -1477,6 +1477,7 @@ def due(now) -> dict:
             "eod": wd < 5 and 965 <= mod <= 1020,                   # 16:05-17:00 ET
             "weekly": wd == 6 and 1020 <= mod <= 1439,              # Sunday 17:00-23:59 ET
             "mffu_check": wd < 5 and 1025 <= mod <= 1075,           # 17:05-17:55 ET: "Check MFFU: bot thinks ..."
+            "preflight": wd == 6 and 1050 <= mod <= 1095,           # Sunday 17:30-18:15 ET: engine/preflight ("Ready" or the fix)
             "daily": (wd < 5 and (100 <= mod <= 135 or 965 <= mod <= 1020)) or (wd == 6 and 1020 <= mod <= 1439)}
 
 
@@ -1514,11 +1515,25 @@ def tick(now=None, ctx=None, state=None, sender=None, state_path: str = STATE_PA
     try:
         notes = watch(ctx, state, now)
         view = account_view(ctx["hb"], now)
-        if D["presession"] or D["eod"] or D["weekly"]:
+        if D["presession"] or D["eod"] or D["weekly"] or D.get("preflight"):
             checks = run_checks(ctx)
             state["last_checks"] = {"t": int(now), **summary(checks)}
             if D["presession"]:
-                notes.append(presession_notice(checks, view, now))
+                p = presession_notice(checks, view, now)
+                try:                   # engine/preflight (2026-11-21): the MFFU 7-day clock's amber / red accounts on the same push
+                    from . import preflight
+                    cl = preflight.clock_line(ctx.get("hb"), now)
+                    if cl:
+                        p["body"] = scrub(p["body"] + cl, 600, paths=True)
+                except Exception as e:
+                    ops_log(f"preflight clock failed: {e.__class__.__name__}")
+                notes.append(p)
+            if D.get("preflight"):     # Sunday 17:30 ET: ONE "Ready for Sunday's open" or the exact fix (engine/preflight)
+                try:
+                    from . import preflight
+                    notes.append(preflight.notice(checks, ctx.get("hb"), now))
+                except Exception as e:
+                    ops_log(f"preflight failed: {e.__class__.__name__}")
             if D["eod"]:
                 notes.append(eod_notice(view, now))
             if D["weekly"]:
