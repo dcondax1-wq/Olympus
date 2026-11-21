@@ -62,7 +62,16 @@ const COACH = require(path.join(W, 'business', 'payoutcoach.js')), PC = require(
   const z = BC.brain('lit', src, NOW), a = BC.brain('atlas', src, NOW);
   const stopped = JSON.parse(JSON.stringify(PC)); stopped.pc.running = false;
   const zs = BC.brain('lit', { ...src, lite: stopped }, NOW), none = BC.brain('lit', { home: {}, biz: src.biz }, NOW);
-  console.log(JSON.stringify({ z, a, zs: { stopped: zs.stopped, states: zs.steps.map((s) => s.state) }, none: { has: none.has, steps: none.steps.length, health: none.health },
+  // glance v2 (engine/brain_glance v2 + the ext block glog, day-nqdash3 2026-11-21)
+  const P2 = JSON.parse(JSON.stringify(PC)), gb = P2.pc.glance.bots; P2.pc.glance.v = 2; delete P2.price;
+  const L2 = gb.find((b) => b.id === 'lit'), A2 = gb.find((b) => b.id === 'atlas');
+  Object.assign(L2, { chk: [6, 9], blk: ['Daily loss guard: -$1,000 reached'], px: 26000.25 });
+  Object.assign(A2, { lobes: [{ id: 'ema', st: 'off', text: 'No trades on Mondays (rule)' }, { id: 'macd', st: 'trade', text: 'In a paper short from 09:40 ET' }, { id: 'sr', st: 'window', text: 'Waiting for a pullback' }], dll: 600, dll_used: 150, px: 26000.25 });
+  P2.glog = { lit: Array.from({ length: 8 }, (_, i) => ['10:' + String(20 - i).padStart(2, '0'), 'line ' + i]), atlas: [['10:01', 'MACD: one']] };
+  const z2 = BC.brain('lit', { ...src, lite: P2 }, NOW), a2 = BC.brain('atlas', { ...src, lite: P2 }, NOW);
+  const v2 = { grade: z2.grade, think: z2.thoughts, athink: a2.thoughts, regions: a2.regions, steps: a2.steps.filter((s) => s.lobe === 'ema').map((s) => s.state),
+    cur: a2.current && a2.current.label, dll: a2.risk.find((r) => r.k === 'dll'), lpx: z2.watch.length && z2.watch[0].dist };
+  console.log(JSON.stringify({ v2, z, a, zs: { stopped: zs.stopped, states: zs.steps.map((s) => s.state) }, none: { has: none.has, steps: none.steps.length, health: none.health },
     n: [BC.stageN('5m CISD (5/10)'), BC.stageN('Sweep'), BC.stageN(''), BC.stageN('In trade (9/10)')] }));
 })().catch((e) => console.log(JSON.stringify({ err: String(e && e.stack || e) })));
 """
@@ -95,6 +104,16 @@ def test_node():
     check("b. ATLAS: three lobes in order (EMA done for today, MACD armed, S/R), 5 steps each, the NOW step is 'MACD · Armed'",
           [r["id"] for r in a["regions"]] == ["ema", "macd", "sr"] and a["regions"][0]["state"] == "done" and a["regions"][1]["state"] == "armed"
           and len(a["steps"]) == 15 and a["current"]["label"] == "MACD · Armed", (a["regions"], a["current"]))
+    v = o["v2"]
+    check("b. glance v2: Zlarior's setup checks (6 of 9 passed) and what blocks a trade come from the PC; no made-up A-D grade",
+          v["grade"]["gradeText"] == "Latest setup: 6 of 9 checks passed" and v["grade"]["blocks"] == ["Daily loss guard: -$1,000 reached"] and v["grade"]["grade"] is None, v["grade"])
+    check("b. glance v2: the thought stream = the ext 'glog' (8 lines, oldest first) when it is longer than the glance's",
+          len(v["think"]) == 8 and v["think"][0]["text"] == "line 7" and v["think"][-1]["text"] == "line 0", v["think"])
+    check("b. glance v2: ATLAS's lobes from the PC's states (EMA off, MACD in trade = the NOW step, S/R window); the off lobe's steps read off",
+          [r["state"] for r in v["regions"]] == ["off", "trade", "window"] and v["steps"] == ["off"] * 5 and v["cur"] == "MACD · In trade", (v["regions"], v["steps"], v["cur"]))
+    check("b. glance v2: ATLAS's daily loss node = $150 of $600 (ok) from the glance (its account row has none)",
+          v["dll"]["value"] == "$150 of $600" and v["dll"]["level"] == "ok", v["dll"])
+    check("b. glance v2: with no top-level price, the level distances still come (the glance's own lv points or px)", v["lpx"] is not None, v["lpx"])
     w = z["watch"]
     check("b. what I watch: the PC's levels with distance in points and $ a micro (NY 08:30 high 142.5 pts = $285 a micro) and what a sweep would mean",
           w[0]["name"] == "NY 08:30 high" and w[0]["distText"] == "142.5 pts ($285 a micro)" and "I look for a" in w[0]["ifTouch"], w[:1])
