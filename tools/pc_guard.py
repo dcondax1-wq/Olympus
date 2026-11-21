@@ -311,7 +311,8 @@ def quiet_push(k: str, name: str, q: int, rl: bool, funded: bool, day: str, busy
             + ("This count knows only the bot's own trades (for one you placed yourself, MFFU's dashboard is the truth). " if rl else "")
             + "Check the bot runs (HEALTH CHECK on the PC) and what it waits for on the Start page.")
     return {"key": f"{PREFIX}quiet:{k}:{day}", "title": f"{name}: no trade for {q} days", "body": body,
-            "priority": "high" if rl and q >= MFFU_IDLE_DAYS - 1 else "default", "tags": "hourglass"}
+            "priority": "high" if rl and q >= MFFU_IDLE_DAYS - 1 else "default", "tags": "hourglass",
+            **({"kind": "account_status"} if rl else {})}     # the 7-day rule on a real account: on + rings (day 5 / 6; day-alerts)
 
 
 def extra_cards(snap: dict) -> list:
