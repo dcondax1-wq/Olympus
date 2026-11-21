@@ -37,7 +37,7 @@ from engine.tradovate import LIVE_PHRASE  # noqa: E402
 from tests import test_accounts_cli as TC  # noqa: E402
 
 RES = []
-NR, NR2 = "MFFUEVRPD250009021", "MFFUEVRPD500009022"         # made-up Rapid EOD 25K / 50K Names
+NR, NR2 = "MFFUEVRPD250000021", "MFFUEVRPD500000022"         # made-up Rapid EOD 25K / 50K Names
 
 
 def check(name, ok, info=""):
@@ -81,7 +81,7 @@ def main() -> int:
         check("a. ADD_ACCOUNT 5: the Rapid EOD 25K is added DISARMED", r.get("ok") and (rapid.read() or {}).get("armed") is False, r)
         why = G.resume_problem()
         check("a. resume_problem names it, masked to its last 4 (never the full Name)",
-              why and "Rapid EOD 25K ..9021" in why and "not armed" in why and NR not in why, why)
+              why and "Rapid EOD 25K ..0021" in why and "not armed" in why and NR not in why, why)
 
         st = {"running": False, "cfg": None}
         calls = []
@@ -137,14 +137,14 @@ def main() -> int:
         d = G.status(state={"running": False}, connected=lambda: True, feed=lambda: None)
         arm = next(s for s in d["steps"] if s["key"] == "armed")
         check("a. Start page: the phrase box shows (need_phrase) and the Armed row is red naming the Rapid",
-              d["need_phrase"] is True and "..9021" in (d["resume_why"] or "") and not arm["done"]
-              and "Rapid EOD 25K ..9021 not armed" in arm["detail"] and "NOT armed" in d["say"], (d["resume_why"], arm, d["say"]))
+              d["need_phrase"] is True and "..0021" in (d["resume_why"] or "") and not arm["done"]
+              and "Rapid EOD 25K ..0021 not armed" in arm["detail"] and "NOT armed" in d["say"], (d["resume_why"], arm, d["say"]))
         r = G.resume_now(start_fn, connected=True, live_state={}, env={"NINJATRADER_LIVE": "1"}, state_fn=lambda: {})
         check("a. resume_now (Start trading without the phrase, in the server) is refused with need=phrase, nothing started",
-              not r["ok"] and r.get("need") == "phrase" and "..9021" in r["error"] and not starts, r)
+              not r["ok"] and r.get("need") == "phrase" and "..0021" in r["error"] and not starts, r)
         rc, j, _ = job("")
         check("a. Start trading, no phrase typed -> rc 3, need=phrase, the Rapid named, nothing started, still disarmed",
-              rc == 3 and j.get("need") == "phrase" and "..9021" in j.get("say", "") and not starts and not calls
+              rc == 3 and j.get("need") == "phrase" and "..0021" in j.get("say", "") and not starts and not calls
               and (rapid.read() or {}).get("armed") is False, (rc, j, starts, calls))
         rc, j, out = job("i accept live risk")
         cfg = (starts[-1][1] if starts else {})
@@ -164,7 +164,7 @@ def main() -> int:
             r2 = AC.add("rapideod", NR2)
         why = G.resume_problem() or ""
         check("c. the 2nd Rapid (slot rapid2) is added DISARMED and both Rapids are named", r2.get("ok") and r2.get("slot") == "rapid2"
-              and "Rapid EOD 25K ..9021" in why and "Rapid EOD 50K ..9022" in why, (r2, why))
+              and "Rapid EOD 25K ..0021" in why and "Rapid EOD 50K ..0022" in why, (r2, why))
         st.update(running=False, cfg=None)
         starts.clear()
         calls.clear()
@@ -235,8 +235,8 @@ def main() -> int:
         rapid.arm = lambda phrase, p=None: {"ok": False, "error": "test: could not write data/rapid.json"}
         st.update(running=False, cfg=None)
         rc, j, out = job(LIVE_PHRASE)
-        check("e. the 1st Rapid could not be armed -> 'NOT armed, so NOT trading: Rapid EOD 25K ..9021' on the page, the reason "
-              "in the lines", rc == 0 and "NOT armed, so NOT trading" in j.get("say", "") and "..9021" in j.get("say", "")
+        check("e. the 1st Rapid could not be armed -> 'NOT armed, so NOT trading: Rapid EOD 25K ..0021' on the page, the reason "
+              "in the lines", rc == 0 and "NOT armed, so NOT trading" in j.get("say", "") and "..0021" in j.get("say", "")
               and "NOT armed: test: could not write" in out, (j, out[-400:]))
         rapid.arm = keep_mod[2]
 
