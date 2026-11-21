@@ -1,0 +1,797 @@
+{
+ "date": "2026-11-21",
+ "design": "research/second/rapid_funded_refit_design.md",
+ "n_paths": 1000,
+ "cost": "ATLAS 10 ticks a side, ATLAS sized on a 10-tick stop",
+ "rows": {
+  "25k": {
+   "cap1000_keep500_room60": {
+    "H1": {
+     "usd_m": 1742,
+     "owner_6m": 10576,
+     "first_date": "2027-02-10",
+     "first_p25": "2027-01-21",
+     "first_p75": "2027-03-17",
+     "no_pay_6m": 8.6,
+     "lost_6m": 24.0,
+     "fail_before_pay": 11.1,
+     "dll_per_100": 0.0
+    },
+    "H2": {
+     "usd_m": 769,
+     "owner_6m": 4750,
+     "first_date": "2027-02-18",
+     "first_p25": "2027-01-25",
+     "first_p75": "2027-04-09",
+     "no_pay_6m": 14.9,
+     "lost_6m": 34.5,
+     "fail_before_pay": 23.6,
+     "dll_per_100": 0.0
+    },
+    "REF": {
+     "usd_m": -46,
+     "owner_6m": 57,
+     "first_date": null,
+     "first_p25": null,
+     "first_p75": null,
+     "no_pay_6m": 97.0,
+     "lost_6m": 17.1,
+     "fail_before_pay": 97.7,
+     "dll_per_100": 0.02
+    }
+   },
+   "cap1000_keep500_room40": {
+    "H1": {
+     "usd_m": 1716,
+     "owner_6m": 10417,
+     "first_date": "2027-02-10",
+     "first_p25": "2027-01-21",
+     "first_p75": "2027-03-17",
+     "no_pay_6m": 8.7,
+     "lost_6m": 23.4,
+     "fail_before_pay": 11.1,
+     "dll_per_100": 0.0
+    },
+    "H2": {
+     "usd_m": 705,
+     "owner_6m": 4365,
+     "first_date": "2027-02-24",
+     "first_p25": "2027-01-27",
+     "first_p75": "2027-04-19",
+     "no_pay_6m": 17.1,
+     "lost_6m": 32.8,
+     "fail_before_pay": 24.4,
+     "dll_per_100": 0.0
+    },
+    "REF": {
+     "usd_m": -46,
+     "owner_6m": 58,
+     "first_date": null,
+     "first_p25": null,
+     "first_p75": null,
+     "no_pay_6m": 96.8,
+     "lost_6m": 16.8,
+     "fail_before_pay": 97.4,
+     "dll_per_100": 0.02
+    }
+   },
+   "cap1000_keep1000_room60": {
+    "H1": {
+     "usd_m": 1791,
+     "owner_6m": 10859,
+     "first_date": "2027-02-15",
+     "first_p25": "2027-01-25",
+     "first_p75": "2027-03-23",
+     "no_pay_6m": 9.3,
+     "lost_6m": 14.2,
+     "fail_before_pay": 11.3,
+     "dll_per_100": 0.0
+    },
+    "H2": {
+     "usd_m": 751,
+     "owner_6m": 4636,
+     "first_date": "2027-03-01",
+     "first_p25": "2027-02-02",
+     "first_p75": "2027-04-20",
+     "no_pay_6m": 16.9,
+     "lost_6m": 24.8,
+     "fail_before_pay": 23.6,
+     "dll_per_100": 0.0
+    },
+    "REF": {
+     "usd_m": -48,
+     "owner_6m": 44,
+     "first_date": null,
+     "first_p25": null,
+     "first_p75": null,
+     "no_pay_6m": 97.8,
+     "lost_6m": 17.0,
+     "fail_before_pay": 98.2,
+     "dll_per_100": 0.02
+    }
+   },
+   "cap1000_keep1000_room40": {
+    "H1": {
+     "usd_m": 1768,
+     "owner_6m": 10720,
+     "first_date": "2027-02-15",
+     "first_p25": "2027-01-25",
+     "first_p75": "2027-03-24",
+     "no_pay_6m": 9.4,
+     "lost_6m": 14.4,
+     "fail_before_pay": 11.4,
+     "dll_per_100": 0.0
+    },
+    "H2": {
+     "usd_m": 707,
+     "owner_6m": 4372,
+     "first_date": "2027-03-04",
+     "first_p25": "2027-02-04",
+     "first_p75": "2027-04-28",
+     "no_pay_6m": 19.1,
+     "lost_6m": 24.8,
+     "fail_before_pay": 24.7,
+     "dll_per_100": 0.0
+    },
+    "REF": {
+     "usd_m": -48,
+     "owner_6m": 47,
+     "first_date": null,
+     "first_p25": null,
+     "first_p75": null,
+     "no_pay_6m": 97.8,
+     "lost_6m": 16.6,
+     "fail_before_pay": 98.0,
+     "dll_per_100": 0.02
+    }
+   },
+   "cap2000_keep500_room60": {
+    "H1": {
+     "usd_m": 2143,
+     "owner_6m": 12991,
+     "first_date": "2027-02-09",
+     "first_p25": "2027-01-19",
+     "first_p75": "2027-03-15",
+     "no_pay_6m": 8.3,
+     "lost_6m": 32.7,
+     "fail_before_pay": 11.5,
+     "dll_per_100": 0.54
+    },
+    "H2": {
+     "usd_m": 1015,
+     "owner_6m": 6235,
+     "first_date": "2027-02-18",
+     "first_p25": "2027-01-20",
+     "first_p75": "2027-04-14",
+     "no_pay_6m": 17.1,
+     "lost_6m": 42.0,
+     "fail_before_pay": 26.5,
+     "dll_per_100": 0.0
+    },
+    "REF": {
+     "usd_m": -45,
+     "owner_6m": 63,
+     "first_date": null,
+     "first_p25": null,
+     "first_p75": null,
+     "no_pay_6m": 97.1,
+     "lost_6m": 17.7,
+     "fail_before_pay": 97.9,
+     "dll_per_100": 0.02
+    }
+   },
+   "cap2000_keep500_room40": {
+    "H1": {
+     "usd_m": 2101,
+     "owner_6m": 12736,
+     "first_date": "2027-02-09",
+     "first_p25": "2027-01-20",
+     "first_p75": "2027-03-16",
+     "no_pay_6m": 7.9,
+     "lost_6m": 28.9,
+     "fail_before_pay": 11.4,
+     "dll_per_100": 0.3
+    },
+    "H2": {
+     "usd_m": 810,
+     "owner_6m": 4998,
+     "first_date": "2027-02-25",
+     "first_p25": "2027-01-28",
+     "first_p75": "2027-04-23",
+     "no_pay_6m": 18.6,
+     "lost_6m": 35.5,
+     "fail_before_pay": 25.8,
+     "dll_per_100": 0.0
+    },
+    "REF": {
+     "usd_m": -45,
+     "owner_6m": 61,
+     "first_date": null,
+     "first_p25": null,
+     "first_p75": null,
+     "no_pay_6m": 96.9,
+     "lost_6m": 16.7,
+     "fail_before_pay": 97.5,
+     "dll_per_100": 0.03
+    }
+   },
+   "cap2000_keep1000_room60": {
+    "H1": {
+     "usd_m": 2283,
+     "owner_6m": 13819,
+     "first_date": "2027-02-11",
+     "first_p25": "2027-01-21",
+     "first_p75": "2027-03-18",
+     "no_pay_6m": 8.9,
+     "lost_6m": 18.3,
+     "fail_before_pay": 11.7,
+     "dll_per_100": 0.64
+    },
+    "H2": {
+     "usd_m": 1083,
+     "owner_6m": 6636,
+     "first_date": "2027-02-23",
+     "first_p25": "2027-01-25",
+     "first_p75": "2027-04-21",
+     "no_pay_6m": 18.6,
+     "lost_6m": 31.8,
+     "fail_before_pay": 27.0,
+     "dll_per_100": 0.0
+    },
+    "REF": {
+     "usd_m": -47,
+     "owner_6m": 52,
+     "first_date": null,
+     "first_p25": null,
+     "first_p75": null,
+     "no_pay_6m": 97.6,
+     "lost_6m": 17.5,
+     "fail_before_pay": 98.3,
+     "dll_per_100": 0.03
+    }
+   },
+   "cap2000_keep1000_room40": {
+    "H1": {
+     "usd_m": 2246,
+     "owner_6m": 13594,
+     "first_date": "2027-02-12",
+     "first_p25": "2027-01-21",
+     "first_p75": "2027-03-23",
+     "no_pay_6m": 8.9,
+     "lost_6m": 16.6,
+     "fail_before_pay": 11.6,
+     "dll_per_100": 0.49
+    },
+    "H2": {
+     "usd_m": 949,
+     "owner_6m": 5823,
+     "first_date": "2027-03-04",
+     "first_p25": "2027-02-03",
+     "first_p75": "2027-05-03",
+     "no_pay_6m": 20.6,
+     "lost_6m": 28.3,
+     "fail_before_pay": 26.2,
+     "dll_per_100": 0.0
+    },
+    "REF": {
+     "usd_m": -47,
+     "owner_6m": 51,
+     "first_date": null,
+     "first_p25": null,
+     "first_p75": null,
+     "no_pay_6m": 97.2,
+     "lost_6m": 16.7,
+     "fail_before_pay": 97.7,
+     "dll_per_100": 0.03
+    }
+   }
+  },
+  "50k": {
+   "cap2000_keep1000_room60": {
+    "H1": {
+     "usd_m": 4944,
+     "owner_6m": 29870,
+     "first_date": "2027-01-19",
+     "first_p25": "2027-01-04",
+     "first_p75": "2027-02-11",
+     "no_pay_6m": 1.7,
+     "lost_6m": 19.4,
+     "fail_before_pay": 9.2,
+     "dll_per_100": 0.63
+    },
+    "H2": {
+     "usd_m": 2274,
+     "owner_6m": 13858,
+     "first_date": "2027-01-29",
+     "first_p25": "2027-01-08",
+     "first_p75": "2027-03-05",
+     "no_pay_6m": 7.5,
+     "lost_6m": 22.7,
+     "fail_before_pay": 16.0,
+     "dll_per_100": 0.0
+    },
+    "REF": {
+     "usd_m": -87,
+     "owner_6m": 223,
+     "first_date": null,
+     "first_p25": null,
+     "first_p75": null,
+     "no_pay_6m": 94.3,
+     "lost_6m": 26.9,
+     "fail_before_pay": 97.5,
+     "dll_per_100": 0.08
+    }
+   },
+   "cap2000_keep1000_room40": {
+    "H1": {
+     "usd_m": 4953,
+     "owner_6m": 29915,
+     "first_date": "2027-01-20",
+     "first_p25": "2027-01-04",
+     "first_p75": "2027-02-10",
+     "no_pay_6m": 1.6,
+     "lost_6m": 15.3,
+     "fail_before_pay": 8.7,
+     "dll_per_100": 0.64
+    },
+    "H2": {
+     "usd_m": 2106,
+     "owner_6m": 12839,
+     "first_date": "2027-02-04",
+     "first_p25": "2027-01-12",
+     "first_p75": "2027-03-11",
+     "no_pay_6m": 8.6,
+     "lost_6m": 18.2,
+     "fail_before_pay": 15.1,
+     "dll_per_100": 0.0
+    },
+    "REF": {
+     "usd_m": -85,
+     "owner_6m": 232,
+     "first_date": null,
+     "first_p25": null,
+     "first_p75": null,
+     "no_pay_6m": 94.3,
+     "lost_6m": 25.9,
+     "fail_before_pay": 97.6,
+     "dll_per_100": 0.08
+    }
+   },
+   "cap2000_keep2000_room60": {
+    "H1": {
+     "usd_m": 5206,
+     "owner_6m": 31422,
+     "first_date": "2027-01-21",
+     "first_p25": "2027-01-06",
+     "first_p75": "2027-02-12",
+     "no_pay_6m": 1.7,
+     "lost_6m": 10.0,
+     "fail_before_pay": 9.2,
+     "dll_per_100": 0.72
+    },
+    "H2": {
+     "usd_m": 2353,
+     "owner_6m": 14315,
+     "first_date": "2027-02-05",
+     "first_p25": "2027-01-15",
+     "first_p75": "2027-03-11",
+     "no_pay_6m": 8.2,
+     "lost_6m": 15.2,
+     "fail_before_pay": 16.4,
+     "dll_per_100": 0.0
+    },
+    "REF": {
+     "usd_m": -92,
+     "owner_6m": 195,
+     "first_date": null,
+     "first_p25": null,
+     "first_p75": null,
+     "no_pay_6m": 95.1,
+     "lost_6m": 26.9,
+     "fail_before_pay": 97.8,
+     "dll_per_100": 0.08
+    }
+   },
+   "cap2000_keep2000_room40": {
+    "H1": {
+     "usd_m": 5156,
+     "owner_6m": 31120,
+     "first_date": "2027-01-21",
+     "first_p25": "2027-01-06",
+     "first_p75": "2027-02-12",
+     "no_pay_6m": 1.8,
+     "lost_6m": 8.2,
+     "fail_before_pay": 8.7,
+     "dll_per_100": 0.72
+    },
+    "H2": {
+     "usd_m": 2210,
+     "owner_6m": 13455,
+     "first_date": "2027-02-11",
+     "first_p25": "2027-01-19",
+     "first_p75": "2027-03-22",
+     "no_pay_6m": 9.5,
+     "lost_6m": 13.1,
+     "fail_before_pay": 15.2,
+     "dll_per_100": 0.0
+    },
+    "REF": {
+     "usd_m": -90,
+     "owner_6m": 200,
+     "first_date": null,
+     "first_p25": null,
+     "first_p75": null,
+     "no_pay_6m": 95.1,
+     "lost_6m": 25.7,
+     "fail_before_pay": 98.0,
+     "dll_per_100": 0.08
+    }
+   },
+   "cap4000_keep1000_room60": {
+    "H1": {
+     "usd_m": 5964,
+     "owner_6m": 36001,
+     "first_date": "2027-01-19",
+     "first_p25": "2026-12-31",
+     "first_p75": "2027-02-10",
+     "no_pay_6m": 1.6,
+     "lost_6m": 25.3,
+     "fail_before_pay": 11.1,
+     "dll_per_100": 0.53
+    },
+    "H2": {
+     "usd_m": 2630,
+     "owner_6m": 16009,
+     "first_date": "2027-02-01",
+     "first_p25": "2027-01-07",
+     "first_p75": "2027-03-05",
+     "no_pay_6m": 8.1,
+     "lost_6m": 31.0,
+     "fail_before_pay": 18.4,
+     "dll_per_100": 0.0
+    },
+    "REF": {
+     "usd_m": -79,
+     "owner_6m": 271,
+     "first_date": null,
+     "first_p25": null,
+     "first_p75": null,
+     "no_pay_6m": 93.4,
+     "lost_6m": 26.9,
+     "fail_before_pay": 97.5,
+     "dll_per_100": 0.08
+    }
+   },
+   "cap4000_keep1000_room40": {
+    "H1": {
+     "usd_m": 5938,
+     "owner_6m": 35827,
+     "first_date": "2027-01-19",
+     "first_p25": "2026-12-31",
+     "first_p75": "2027-02-10",
+     "no_pay_6m": 1.4,
+     "lost_6m": 17.5,
+     "fail_before_pay": 8.7,
+     "dll_per_100": 0.32
+    },
+    "H2": {
+     "usd_m": 2247,
+     "owner_6m": 13689,
+     "first_date": "2027-02-05",
+     "first_p25": "2027-01-12",
+     "first_p75": "2027-03-17",
+     "no_pay_6m": 9.2,
+     "lost_6m": 20.0,
+     "fail_before_pay": 15.8,
+     "dll_per_100": 0.0
+    },
+    "REF": {
+     "usd_m": -80,
+     "owner_6m": 260,
+     "first_date": null,
+     "first_p25": null,
+     "first_p75": null,
+     "no_pay_6m": 93.8,
+     "lost_6m": 26.0,
+     "fail_before_pay": 97.7,
+     "dll_per_100": 0.08
+    }
+   },
+   "cap4000_keep2000_room60": {
+    "H1": {
+     "usd_m": 6404,
+     "owner_6m": 38620,
+     "first_date": "2027-01-20",
+     "first_p25": "2027-01-04",
+     "first_p75": "2027-02-12",
+     "no_pay_6m": 1.7,
+     "lost_6m": 15.3,
+     "fail_before_pay": 11.3,
+     "dll_per_100": 0.66
+    },
+    "H2": {
+     "usd_m": 2921,
+     "owner_6m": 17736,
+     "first_date": "2027-02-05",
+     "first_p25": "2027-01-12",
+     "first_p75": "2027-03-17",
+     "no_pay_6m": 9.6,
+     "lost_6m": 21.6,
+     "fail_before_pay": 19.0,
+     "dll_per_100": 0.0
+    },
+    "REF": {
+     "usd_m": -83,
+     "owner_6m": 249,
+     "first_date": null,
+     "first_p25": null,
+     "first_p75": null,
+     "no_pay_6m": 94.5,
+     "lost_6m": 26.9,
+     "fail_before_pay": 97.8,
+     "dll_per_100": 0.09
+    }
+   },
+   "cap4000_keep2000_room40": {
+    "H1": {
+     "usd_m": 6376,
+     "owner_6m": 38447,
+     "first_date": "2027-01-21",
+     "first_p25": "2027-01-05",
+     "first_p75": "2027-02-12",
+     "no_pay_6m": 1.7,
+     "lost_6m": 10.1,
+     "fail_before_pay": 8.8,
+     "dll_per_100": 0.52
+    },
+    "H2": {
+     "usd_m": 2591,
+     "owner_6m": 15744,
+     "first_date": "2027-02-11",
+     "first_p25": "2027-01-18",
+     "first_p75": "2027-03-24",
+     "no_pay_6m": 10.8,
+     "lost_6m": 15.3,
+     "fail_before_pay": 16.1,
+     "dll_per_100": 0.0
+    },
+    "REF": {
+     "usd_m": -84,
+     "owner_6m": 237,
+     "first_date": null,
+     "first_p25": null,
+     "first_p75": null,
+     "no_pay_6m": 94.6,
+     "lost_6m": 25.6,
+     "fail_before_pay": 98.0,
+     "dll_per_100": 0.08
+    }
+   },
+   "cap7500_keep1000_room60": {
+    "H1": {
+     "usd_m": 6888,
+     "owner_6m": 41546,
+     "first_date": "2027-01-18",
+     "first_p25": "2026-12-31",
+     "first_p75": "2027-02-10",
+     "no_pay_6m": 1.4,
+     "lost_6m": 27.0,
+     "fail_before_pay": 11.5,
+     "dll_per_100": 0.52
+    },
+    "H2": {
+     "usd_m": 2529,
+     "owner_6m": 15405,
+     "first_date": "2027-02-03",
+     "first_p25": "2027-01-08",
+     "first_p75": "2027-03-10",
+     "no_pay_6m": 9.1,
+     "lost_6m": 31.8,
+     "fail_before_pay": 19.3,
+     "dll_per_100": 0.0
+    },
+    "REF": {
+     "usd_m": -76,
+     "owner_6m": 289,
+     "first_date": null,
+     "first_p25": null,
+     "first_p75": null,
+     "no_pay_6m": 93.6,
+     "lost_6m": 27.0,
+     "fail_before_pay": 97.6,
+     "dll_per_100": 0.07
+    }
+   },
+   "cap7500_keep1000_room40": {
+    "H1": {
+     "usd_m": 6591,
+     "owner_6m": 39745,
+     "first_date": "2027-01-19",
+     "first_p25": "2026-12-31",
+     "first_p75": "2027-02-10",
+     "no_pay_6m": 1.4,
+     "lost_6m": 17.6,
+     "fail_before_pay": 8.7,
+     "dll_per_100": 0.32
+    },
+    "H2": {
+     "usd_m": 2207,
+     "owner_6m": 13453,
+     "first_date": "2027-02-08",
+     "first_p25": "2027-01-12",
+     "first_p75": "2027-03-17",
+     "no_pay_6m": 9.6,
+     "lost_6m": 20.2,
+     "fail_before_pay": 15.9,
+     "dll_per_100": 0.0
+    },
+    "REF": {
+     "usd_m": -79,
+     "owner_6m": 270,
+     "first_date": null,
+     "first_p25": null,
+     "first_p75": null,
+     "no_pay_6m": 93.9,
+     "lost_6m": 26.0,
+     "fail_before_pay": 97.8,
+     "dll_per_100": 0.08
+    }
+   },
+   "cap7500_keep2000_room60": {
+    "H1": {
+     "usd_m": 7551,
+     "owner_6m": 45507,
+     "first_date": "2027-01-20",
+     "first_p25": "2027-01-04",
+     "first_p75": "2027-02-12",
+     "no_pay_6m": 1.7,
+     "lost_6m": 16.5,
+     "fail_before_pay": 11.7,
+     "dll_per_100": 0.66
+    },
+    "H2": {
+     "usd_m": 2888,
+     "owner_6m": 17546,
+     "first_date": "2027-02-08",
+     "first_p25": "2027-01-12",
+     "first_p75": "2027-03-19",
+     "no_pay_6m": 10.4,
+     "lost_6m": 23.1,
+     "fail_before_pay": 19.8,
+     "dll_per_100": 0.0
+    },
+    "REF": {
+     "usd_m": -80,
+     "owner_6m": 267,
+     "first_date": null,
+     "first_p25": null,
+     "first_p75": null,
+     "no_pay_6m": 94.4,
+     "lost_6m": 26.9,
+     "fail_before_pay": 97.8,
+     "dll_per_100": 0.08
+    }
+   },
+   "cap7500_keep2000_room40": {
+    "H1": {
+     "usd_m": 7397,
+     "owner_6m": 44568,
+     "first_date": "2027-01-21",
+     "first_p25": "2027-01-04",
+     "first_p75": "2027-02-12",
+     "no_pay_6m": 1.6,
+     "lost_6m": 10.3,
+     "fail_before_pay": 8.8,
+     "dll_per_100": 0.52
+    },
+    "H2": {
+     "usd_m": 2573,
+     "owner_6m": 15636,
+     "first_date": "2027-02-12",
+     "first_p25": "2027-01-18",
+     "first_p75": "2027-03-25",
+     "no_pay_6m": 11.1,
+     "lost_6m": 15.5,
+     "fail_before_pay": 16.4,
+     "dll_per_100": 0.0
+    },
+    "REF": {
+     "usd_m": -82,
+     "owner_6m": 250,
+     "first_date": null,
+     "first_p25": null,
+     "first_p75": null,
+     "no_pay_6m": 94.5,
+     "lost_6m": 25.7,
+     "fail_before_pay": 98.0,
+     "dll_per_100": 0.08
+    }
+   }
+  }
+ },
+ "judge": {
+  "25k": {
+   "base": "cap1000_keep500_room60",
+   "candidates": [
+    "cap2000_keep1000_room60",
+    "cap2000_keep1000_room40"
+   ],
+   "winner": "cap2000_keep1000_room60",
+   "cap_only": [
+    "cap2000_keep500_room60"
+   ],
+   "keep_only": "cap1000_keep1000_room60"
+  },
+  "50k": {
+   "base": "cap2000_keep1000_room60",
+   "candidates": [
+    "cap2000_keep2000_room60",
+    "cap4000_keep2000_room60",
+    "cap4000_keep2000_room40",
+    "cap7500_keep2000_room60",
+    "cap7500_keep2000_room40"
+   ],
+   "winner": "cap7500_keep2000_room60",
+   "cap_only": [
+    "cap4000_keep1000_room60",
+    "cap7500_keep1000_room60"
+   ],
+   "keep_only": "cap2000_keep2000_room60"
+  }
+ },
+ "took_s": 90,
+ "cards": {
+  "keep-1000-rapid": {
+   "recommend": "yes",
+   "usd_month_by": {
+    "jan_jun": 49,
+    "jul_oct": -18,
+    "y2021_25": -2
+   },
+   "usd_month": -18
+  },
+  "rapid-funded-refit": {
+   "recommend": "yes",
+   "usd_month_by": {
+    "jan_jun": 541,
+    "jul_oct": 314,
+    "y2021_25": -1
+   },
+   "usd_month": 314,
+   "r50": {
+    "jan_jun": 1460,
+    "jul_oct": 647,
+    "y2021_25": 4
+   }
+  }
+ },
+ "safety_50k": {
+  "cap7500_keep2000_room60": {
+   "max_day": {
+    "H1": 8798,
+    "H2": 4697,
+    "REF": 9621
+   },
+   "days_over_7500_paths": {
+    "H1": 720,
+    "H2": 0,
+    "REF": 4
+   }
+  },
+  "cap4000_keep2000_room60": {
+   "max_day": {
+    "H1": 7229,
+    "H2": 3667,
+    "REF": 7220
+   }
+  },
+  "cap2000_keep1000_room60": {
+   "max_day": {
+    "H1": 5282,
+    "H2": 2963,
+    "REF": 5154
+   }
+  },
+  "note": "max single day ($ booked that day, both lanes) over 1,000 paths; MFFU moves a Rapid to LIVE at $10,000 in one day"
+ }
+}
