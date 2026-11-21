@@ -1,10 +1,11 @@
-# Website leads: counts (OpenStreetMap, updated 2026-11-21 18:16 UTC)
+# Website leads: counts (OpenStreetMap, updated 2026-11-21 18:32 UTC)
 
 Mailable = house number + street + town + ZIP (postcard-ready). Leads after removing businesses in two town boxes.
 
 | Town | Leads | Chains dropped | Hot | Phone | Email | Mailable | Auto | Salon / beauty | Contractor / trades | Gym / fitness | Restaurant / food | Health | Professional services | Shop | Local services | Kinds missing |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Brunswick | 7 | 3 | 0 | 0 | 0 | 4 | 0 | 0 | 0 | 1 | 4 | 1 | 0 | 0 | 1 | offices, food places, beauty + auto shops, other shops |
+| Clarksburg | 27 | 70 | 0 | 0 | 0 | 9 | 0 | 0 | 0 | 0 | 11 | 2 | 0 | 14 | 0 | gyms, beauty + auto shops |
 | Columbia | 173 | 306 | 19 | 25 | 1 | 139 | 6 | 34 | 1 | 12 | 54 | 19 | 0 | 38 | 9 | - |
 | Damascus | 31 | 19 | 0 | 1 | 0 | 20 | 1 | 4 | 1 | 4 | 10 | 6 | 0 | 4 | 1 | trades, healthcare |
 | Ellicott City | 155 | 121 | 12 | 18 | 1 | 130 | 8 | 30 | 1 | 2 | 37 | 0 | 8 | 58 | 11 | healthcare, health + auto places |
@@ -19,4 +20,4 @@ Mailable = house number + street + town + ZIP (postcard-ready). Leads after remo
 | Urbana | 22 | 5 | 1 | 1 | 0 | 9 | 1 | 8 | 0 | 7 | 1 | 5 | 0 | 0 | 0 | offices, food places, other shops |
 | Walkersville | 4 | 8 | 3 | 3 | 0 | 3 | 0 | 0 | 0 | 0 | 2 | 0 | 0 | 1 | 1 | offices, gyms, beauty + auto shops |
 | Westminster | 35 | 25 | 2 | 3 | 0 | 17 | 7 | 11 | 0 | 0 | 4 | 4 | 3 | 0 | 6 | healthcare, gyms, food places, other shops |
-| **All** | **1423** | **1345** | **73** | **125** | **5** | **752** | **79** | **208** | **26** | **64** | **500** | **107** | **32** | **339** | **68** | |
+| **All** | **1450** | **1415** | **73** | **125** | **5** | **761** | **79** | **208** | **26** | **64** | **511** | **109** | **32** | **353** | **68** | |

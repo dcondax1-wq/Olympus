@@ -2,7 +2,7 @@
  "v": 1,
  "kind": "web_leads",
  "demo": false,
- "fetched": "2026-11-21T18:16:34Z",
+ "fetched": "2026-11-21T18:32:35Z",
  "source": "OpenStreetMap via the public Overpass API (a few small queries per town)",
  "license": "Data (c) OpenStreetMap contributors, ODbL (openstreetmap.org/copyright)",
  "about": "Businesses on OpenStreetMap with no website tag. OSM can be out of date: check the business before you call.",
@@ -247,11 +247,27 @@
    ],
    "chains": 19,
    "with_site": 1
+  },
+  {
+   "town": "Clarksburg",
+   "state": "MD",
+   "businesses": 102,
+   "leads": 27,
+   "hot": 0,
+   "server": "maps.mail.ru",
+   "parts_ok": 7,
+   "parts": 9,
+   "missing": [
+    "gyms",
+    "beauty + auto shops"
+   ],
+   "chains": 70,
+   "with_site": 5
   }
  ],
  "skipped": {
-  "has_site": 1140,
-  "chain": 1981,
+  "has_site": 1145,
+  "chain": 2051,
   "other": 405,
   "duplicate": 111,
   "closed": 1
@@ -272,7 +288,8 @@
   "towns/thurmont.json",
   "towns/brunswick.json",
   "towns/walkersville.json",
-  "towns/damascus.json"
+  "towns/damascus.json",
+  "towns/clarksburg.json"
  ],
- "count": 1423
+ "count": 1450
 }
