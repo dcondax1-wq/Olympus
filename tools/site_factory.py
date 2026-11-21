@@ -32,11 +32,11 @@ IDS = os.path.join(ROOT, "tools", "site_factory_ids.json")
 # the agency band at the bottom of every concept page (lead 2026-11-20). Maryland bans cold AI calls: the assistant (day-caller) may
 # only call a business that ASKS, so the page carries a consent form whose markup / text / endpoint day-caller supplies. Until then
 # AGENCY["caller_html"] is empty and the page holds a clearly marked slot. No third-party form service, no secret in the page.
-AGENCY = {"phone": "", "phone_label": "", "caller_html": "", "pay_url": ""}
+AGENCY = {"phone": "", "phone_label": "", "caller_html": "", "pay_url": "", "public_base": "", "agency_name": ""}
 # the offer on every concept page (research/writeups/client-plan-2026-11-20.md); pay_url = the owner's payment link (owner step)
 OFFER = "Starter $1,500 + $79/mo, or $149/mo with nothing upfront."
 CODES = os.path.join(ROOT, "tools", "site_factory_codes.json")   # lead id -> short code (FR-27): printed on the postcards too, never changes
-AGENCY_FILE = os.path.join(ROOT, "tools", "site_factory_agency.json")     # optional: {"phone": "+1...", "caller_html": "<form ...>"}
+AGENCY_FILE = os.environ.get("SITE_FACTORY_AGENCY") or os.path.join(ROOT, "tools", "site_factory_agency.json")     # optional: {"phone": "+1...", "caller_html": "<form ...>"}
 BUDGET = 100 * 1024
 VERSION = "f1"
 
@@ -63,6 +63,10 @@ NICHES = {
                  "cta": "Call to book", "icon": "sparkle"},
     "retail": {"label": "Retail", "pal": [("#f8f7fc", "#1b1730", "#55506e", "#4338ca", "#fb7185", "#ffffff")],
                "cta": "Call the store", "icon": "bag"},
+    "pro": {"label": "Professional services", "pal": [("#f7f7f5", "#17202b", "#4f5966", "#1e3a5f", "#c8a45a", "#ffffff")],
+            "cta": "Call the office", "icon": "brief"},
+    "services": {"label": "Local services", "pal": [("#f5f9f7", "#13261f", "#4a5f57", "#17624a", "#9fd8b8", "#ffffff")],
+                 "cta": "Call us", "icon": "sparkle"},
 }
 
 # category -> (niche, what we call it, sections). Sections are things that are true of ANY business of that kind, worded so
@@ -122,13 +126,17 @@ GENERIC = {
     "trades": [("Get a quote", "Call to describe the job."), ("Service area", "Call to ask if they cover your street."),
                ("Find us", "The address and a map link are below.")],
     "cleaning": [("Cleaning", "Call to describe what needs cleaning."), ("Find us", "The address and a map link are below.")],
+    "pro": [("Appointments", "Call the office to set up a time."), ("Questions", "Call to ask whether they can help with yours."),
+            ("Find us", "The address and a map link are below.")],
+    "services": [("How it works", "Call to describe what you need."), ("Find us", "The address and a map link are below.")],
     "retail": [("Shop", "Stop in: hours are below."), ("Questions", "Call to ask if something is in stock."),
                ("Find us", "The address and a map link are below.")],
 }
 CAT_ICON = {"clinic": "cross", "doctors": "cross", "pharmacy": "cross", "veterinary": "paw", "cafe": "cup", "bar": "glass",
             "ice cream": "cone", "dojo": "dumbbell"}
 NICHE_ALIAS = {"fitness": "gym", "health": "health", "food": "food", "auto": "auto", "beauty": "beauty", "salon": "beauty",
-               "trades": "trades", "contractor": "trades", "cleaning": "cleaning", "retail": "retail", "shop": "retail"}
+               "trades": "trades", "contractor": "trades", "cleaning": "cleaning", "retail": "retail", "shop": "retail",
+               "pro": "pro", "professional": "pro", "services": "services", "local": "services"}
 
 # simple line icons (24x24, stroke = currentColor): the only "art" (no photos)
 ICONS = {
@@ -140,6 +148,7 @@ ICONS = {
     "wrench": '<path d="M14.7 6.3a4 4 0 0 0 5 5L22 14l-8 8-2.3-2.3a4 4 0 0 0-5-5L2 10l8-8 2.3 2.3a4 4 0 0 0 2.4 2z"/>',
     "sparkle": '<path d="M12 2l2 6 6 2-6 2-2 6-2-6-6-2 6-2 2-6zM19 15l1 3 3 1-3 1-1 3-1-3-3-1 3-1 1-3z"/>',
     "bag": '<path d="M5 8h14l-1 13H6L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>',
+    "brief": '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 13h18"/>',
     "cross": '<path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6V3z"/>',
     "paw": '<circle cx="5.5" cy="10" r="2"/><circle cx="9.5" cy="5.5" r="2"/><circle cx="14.5" cy="5.5" r="2"/><circle cx="18.5" cy="10" r="2"/><path d="M12 12c-3 0-6 4-6 6.5 0 2 2 2.5 3 2.5s1.8-.6 3-.6 2 .6 3 .6 3-.5 3-2.5C18 16 15 12 12 12z"/>',
     "cup": '<path d="M4 8h13v5a6 6 0 0 1-6 6h-1a6 6 0 0 1-6-6V8zM17 10h1.5a2.5 2.5 0 0 1 0 5H17M8 2v3M12 2v3"/>',
@@ -186,7 +195,8 @@ def niche_of(lead: dict) -> str:
 def sections_of(lead: dict, niche: str):
     cat = str(lead.get("category") or "").lower()
     c = CATS.get(cat)
-    kind = (c[1] if c else (str(lead.get("category") or "").strip().capitalize() or NICHES[niche]["label"]))
+    raw = re.sub(r"[_]+", " ", str(lead.get("category") or "")).strip()
+    kind = (c[1] if c else (raw[:1].upper() + raw[1:] if raw else NICHES[niche]["label"]))
     return kind, (c[2] if c and c[2] else GENERIC[niche])
 
 
@@ -510,7 +520,7 @@ main{max-width:1100px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 16px
 .c h2{font-size:1rem;margin:0;overflow-wrap:anywhere}.m{color:#666;font-size:.85rem}
 .pv{position:relative;width:100%;aspect-ratio:390/700;overflow:hidden;border-radius:12px;border:1px solid #e3e3df;background:#fafafa}
 .pv iframe{position:absolute;left:0;top:0;width:390px;height:700px;border:0;transform-origin:0 0;pointer-events:none}
-.w{font-size:.82rem;color:#8a4b00;background:#fff4e0;border-radius:8px;padding:6px 8px}.r{display:flex;gap:6px;flex-wrap:wrap}.r a,.r button{font:inherit;font-size:.85rem;min-height:36px;display:inline-flex;align-items:center;
+.ok{font-size:.78rem;font-weight:700;color:#14612f}.w{font-size:.82rem;color:#8a4b00;background:#fff4e0;border-radius:8px;padding:6px 8px}.r{display:flex;gap:6px;flex-wrap:wrap}.r a,.r button{font:inherit;font-size:.85rem;min-height:36px;display:inline-flex;align-items:center;
 padding:0 12px;border-radius:999px;border:1px solid #1d1d1b;background:#fff;color:#1d1d1b;text-decoration:none;cursor:pointer}
 .r .p{background:#1d1d1b;color:#fff}.u{font:12px/1.3 ui-monospace,Menlo,monospace;color:#555;overflow-wrap:anywhere}
 .toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 18px);transform:translateX(-50%);background:#1d1d1b;color:#fff;
@@ -527,8 +537,8 @@ var f=document.createElement('iframe');f.src=p.getAttribute('data-src');f.title=
 f.setAttribute('loading','lazy');f.setAttribute('sandbox','allow-scripts');p.appendChild(f);fit()}})},{rootMargin:'400px'}):null;
 function copy(s){if(navigator.clipboard&&navigator.clipboard.writeText)return navigator.clipboard.writeText(s).then(function(){return true},function(){return false});return Promise.resolve(false)}
 function draw(){list.textContent='';var s=(q.value||'').toLowerCase(),k=0;
-D.forEach(function(x){if(cur!=='all'&&x.niche!==cur)return;if(s&&(x.name+' '+x.town+' '+x.kind).toLowerCase().indexOf(s)<0)return;k++;
-var url=BASE+x.path,c=el('article','c');c.appendChild(el('h2',null,x.name+(x.code?'  ·  '+x.code:'')));c.appendChild(el('div','m',x.kind+' · '+x.town+(x.hours?' · hours':'')+(x.phone?' · phone':' · no phone on file')));
+D.forEach(function(x){if(cur==='ready'?!(x.ready&&!x.chain):(cur!=='all'&&x.niche!==cur))return;if(s&&(x.name+' '+x.town+' '+x.kind).toLowerCase().indexOf(s)<0)return;k++;
+var url=BASE+x.path,c=el('article','c');c.appendChild(el('h2',null,x.name+(x.code?'  ·  '+x.code:'')));if(x.ready&&!x.chain)c.appendChild(el('div','ok','Ready to send: phone or street address'));c.appendChild(el('div','m',x.kind+' · '+x.town+(x.hours?' · hours':'')+(x.phone?' · phone':' · no phone on file')));
 if(x.chain)c.appendChild(el('div','w','Probably a chain: it likely has a website. Check before you send.'));
 var p=el('div','pv');p.setAttribute('data-src','../'+x.path);p.setAttribute('data-name',x.name);c.appendChild(p);if(io)io.observe(p);
 c.appendChild(el('div','u',url));var r=el('div','r'),o=el('a','p','Open');o.href='../'+x.path;o.target='_blank';o.rel='noopener noreferrer';r.appendChild(o);
@@ -544,7 +554,7 @@ fetch('sites.json',{cache:'no-store'}).then(function(r){return r.json()}).then(f
 
 def gallery(sites) -> str:
     niches = sorted({s["niche"] for s in sites})
-    chips = '<button type="button" data-n="all" aria-pressed="true">All</button>' + "".join(
+    chips = '<button type="button" data-n="all" aria-pressed="true">All</button><button type="button" data-n="ready" aria-pressed="false">Ready to send</button>' + "".join(
         f'<button type="button" data-n="{n}" aria-pressed="false">{esc(NICHES[n]["label"])}</button>' for n in niches)
     return f"""<!doctype html>
 <html lang="en">
@@ -572,13 +582,34 @@ def gallery(sites) -> str:
 """
 
 
-def load_leads():
-    d = json.load(open(LEADS, encoding="utf-8"))
-    out = []
-    for L in d.get("leads", []):
+def ready(L: dict) -> bool:
+    """worth a site now (lead 2026-11-21): a phone, or a full street address (house number + street) to mail a postcard to"""
+    return bool(tel(L.get("phone"))) or bool(L.get("mailable")) or bool(re.match(r"\d+\w?,?\s+[A-Za-z]", str(L.get("street") or L.get("address") or "")))
+
+
+def load_leads(only_ready: bool = False):
+    """leads.json + the per-town files the leads team writes (agency/leads/towns/*.json), one row per id; only_ready = a phone or a
+    full address (the rest get a site once the leads team finds one)."""
+    rows = []
+    for p in [LEADS] + sorted(__import__("glob").glob(os.path.join(os.path.dirname(LEADS), "towns", "*.json"))):
+        try:
+            d = json.load(open(p, encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        rows += d.get("leads", []) if isinstance(d, dict) else []
+    out, seen = [], set()
+    for L in rows:
+        if not isinstance(L, dict) or L.get("id") in seen:
+            continue
+        if isinstance(L.get("id"), str):
+            seen.add(L["id"])
+        if only_ready and not ready(L):
+            continue
         if not isinstance(L, dict) or not L.get("id") or not str(L.get("name", "")).strip():
             continue
         if L.get("website"):                     # the factory is only for businesses with no website
+            continue
+        if not L.get("id") or not str(L.get("name", "")).strip():
             continue
         out.append(L)
     return out
@@ -606,14 +637,14 @@ def build(web=WEB, ids_path=IDS, write_ids=True):
         sites.append({"id": L["id"], "path": f"f/{h}/", "name": L["name"].strip(), "niche": n, "kind": sections_of(L, n)[0],
                       "town": (L.get("town") or L.get("city") or "").strip(), "phone": bool(tel(L.get("phone"))),
                       "hours": parse_hours(L.get("hours")) is not None, "bytes": len(txt.encode("utf-8")), "heat": L.get("heat", ""),
-                      "chain": chain_of(L["name"]), "code": codes[L["id"]]})
+                      "chain": chain_of(L["name"]), "code": codes[L["id"]], "ready": ready(L)})
     for x in os.listdir(fdir):                   # a lead that left the list: its site goes too
         p = os.path.join(fdir, x)
         if x not in keep and os.path.isdir(p) and re.fullmatch(r"[a-z2-9]{8}", x):
             shutil.rmtree(p)
     with open(os.path.join(fdir, "index.html"), "w", encoding="utf-8") as f:   # no folder listing at agency/f/
         f.write('<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex, nofollow"><title>Not found</title><p>Not found.</p>\n')
-    sites.sort(key=lambda s: (s["town"], s["niche"], s["name"].lower()))
+    sites.sort(key=lambda s: (not s["ready"], s["chain"], s["town"], s["niche"], s["name"].lower()))   # sendable first
     gdir = os.path.join(web, "factory")
     os.makedirs(gdir, exist_ok=True)
     # lead id -> its concept site, relative to agency/ (the outreach page + email autopilot link each lead to its own site)
@@ -639,7 +670,106 @@ def build(web=WEB, ids_path=IDS, write_ids=True):
     return sites
 
 
+# ---------------------------------------------------------------- the neutral-host export (lead 2026-11-21)
+# Before any postcard is mailed the concept sites move OFF the owner's GitHub Pages to a neutral host (a free Cloudflare Pages project or a
+# separate GitHub org). --export <dir> writes the f/ tree as a standalone static site: its own landing page, robots, 404 and headers;
+# nothing that points back at Olympus, the owner's handle or any PC address (checked before it writes, so a leak is never published).
+FORBIDDEN = [r"github\.io", r"\bolympus\b", r"jarvis", r"dcondax", r"demetrades", r"\.ts\.net\b", r"\b100\.\d{1,3}\.\d{1,3}\.\d{1,3}\b",
+             r"tailscale", r"ntfy", r"/agency/", r"\.\./"]
+
+
+def landing(c: dict) -> str:
+    named = bool(c["agency_name"].strip())
+    name = esc(c["agency_name"].strip() or "Local web studio")
+    t = tel(c["phone"])
+    call = (f'<a class="call" href="tel:{t}">Call {esc(c["phone_label"] or c["phone"])}</a>' if t else "")
+    robots = "index, follow" if named else "noindex, nofollow"
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="{robots}">
+<meta name="referrer" content="no-referrer">
+<meta name="color-scheme" content="light">
+<title>{name}</title>
+<meta name="description" content="Simple, fast websites for local businesses.">
+<style>*{{box-sizing:border-box}}body{{margin:0;background:#f6f5f1;color:#1d1d1b;font:17px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}}
+main{{max-width:620px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 48px) 20px 48px}}h1{{font-size:clamp(2rem,8vw,2.8rem);line-height:1.08;margin:0 0 12px;letter-spacing:-.02em}}
+p{{color:#55534d;margin:0 0 14px}}.call{{display:inline-flex;align-items:center;min-height:48px;padding:0 20px;border-radius:999px;background:#1d1d1b;color:#fff;text-decoration:none;font-weight:700}}
+ul{{padding-left:20px;color:#55534d}}footer{{margin-top:40px;font-size:.85rem;color:#8a877f}}</style>
+</head>
+<body>
+<main>
+<h1>{name}</h1>
+<p>We build simple, fast, phone-first websites for local businesses: your hours, your phone, your address and a map, done for you.</p>
+<ul><li>Made to read well on a phone</li><li>Click-to-call and directions</li><li>You see it finished before you decide</li></ul>
+{call}
+<footer>Got a link to a sample site made for your business? It was made by us as a free concept. Nothing goes live without you.</footer>
+</main>
+</body>
+</html>
+"""
+
+
+def export(out_dir: str, web: str = WEB) -> int:
+    """--export <dir>: the standalone site for the neutral host. Refuses (exit 2, writes nothing) without an https public_base."""
+    c = agency_cfg()
+    base = (c.get("public_base") or "").strip()
+    # a neutral GitHub org's own <org>.github.io is fine; the owner's handle, Olympus or a PC address is not
+    bad_base = r"dcondax|demetrades|olympus|jarvis|\.ts\.net|tailscale|\b100\.\d+\.\d+\.\d+"
+    if not re.fullmatch(r"https://[a-z0-9.-]+\.[a-z]{2,}(/[\w.-]*)*/?", base, re.I) or re.search(bad_base, base, re.I):
+        print("refused: set public_base (the neutral host, e.g. https://example-sites.pages.dev/) in tools/site_factory_agency.json first; "
+              "it must be https and must not be a github.io / Olympus / PC address", file=sys.stderr)
+        return 2
+    base = base.rstrip("/") + "/"
+    src = os.path.join(web, "f")
+    files = {}
+    for d in sorted(os.listdir(src)):
+        p = os.path.join(src, d, "index.html")
+        if re.fullmatch(r"[a-z2-9]{8}", d) and os.path.isfile(p):
+            files[f"f/{d}/index.html"] = read_text(p)
+    files["index.html"] = landing(c)
+    files["404.html"] = '<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Not found</title><p style="font:17px system-ui;padding:40px 20px">Not found.</p>\n'
+    files["f/index.html"] = files["404.html"]
+    named = bool(c["agency_name"].strip())
+    files["robots.txt"] = ("User-agent: *\nDisallow: /f/\n" if named else "User-agent: *\nDisallow: /\n")
+    # Cloudflare Pages reads _headers (GitHub Pages ignores it; the pages' own noindex meta covers that host)
+    files["_headers"] = "/f/*\n  X-Robots-Tag: noindex, nofollow, noarchive\n  Referrer-Policy: no-referrer\n" + \
+        ("" if named else "/*\n  X-Robots-Tag: noindex, nofollow\n")
+    files[".nojekyll"] = ""
+    leaks = [(k, m.group(0)) for k, v in files.items() for m in [re.search("|".join(FORBIDDEN), v, re.I)] if m]
+    if leaks:
+        print("refused: these files point back at Olympus / the owner / a PC: " + ", ".join(f"{k} ({w})" for k, w in leaks[:8]), file=sys.stderr)
+        return 3
+    if os.path.isdir(out_dir):
+        for x in os.listdir(out_dir):                 # a clean tree each time (keep a .git folder if the owner exports into a repo)
+            if x == ".git":
+                continue
+            p = os.path.join(out_dir, x)
+            shutil.rmtree(p) if os.path.isdir(p) else os.remove(p)
+    for k, v in files.items():
+        p = os.path.join(out_dir, *k.split("/"))
+        os.makedirs(os.path.dirname(p), exist_ok=True)
+        with open(p, "w", encoding="utf-8", newline="\n") as f:
+            f.write(v)
+    n = sum(1 for k in files if k.startswith("f/") and k != "f/index.html")
+    print(f"exported {n} sites to {out_dir} for {base} (landing {'indexed' if named else 'noindex until the agency is named'})")
+    return 0
+
+
+def read_text(p: str) -> str:
+    with open(p, encoding="utf-8") as f:
+        return f.read()
+
+
 def main(argv) -> int:
+    if "--export" in argv:
+        i = argv.index("--export")
+        if i + 1 >= len(argv):
+            print("usage: python tools/site_factory.py --export <dir>", file=sys.stderr)
+            return 2
+        return export(argv[i + 1])
     if "--check" in argv:
         with tempfile.TemporaryDirectory() as t:
             ip = os.path.join(t, "ids.json")

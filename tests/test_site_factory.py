@@ -143,6 +143,36 @@ def main() -> int:
                 if re.search(r"agency/f/[a-z2-9]{8}|agency/factory", txt) or any(v in txt for v in list(ids.values())[:20]):
                     hits.append(os.path.relpath(os.path.join(base, fn), ROOT))
     check("e. no page, apps list, sitemap or sw.js links to the factory or a site", not hits, hits)
+    # h. the neutral-host export (lead 2026-11-21): refuses without public_base (or with an Olympus / github.io one), else a standalone site
+    def exp(cfg):
+        with tempfile.TemporaryDirectory() as t:
+            ag, out = os.path.join(t, "ag.json"), os.path.join(t, "out")
+            if cfg is not None:
+                with open(ag, "w") as f:
+                    json.dump(cfg, f)
+            r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "site_factory.py"), "--export", out], capture_output=True, text=True,
+                               timeout=120, env={**os.environ, "SITE_FACTORY_AGENCY": ag})
+            files = {}
+            for b, _d, fs in os.walk(out):
+                for fn in fs:
+                    files[os.path.relpath(os.path.join(b, fn), out).replace(os.sep, "/")] = read(os.path.join(b, fn))
+            return r.returncode, files, r.stderr
+    rc0, f0, e0 = exp(None)
+    rc1, f1, _ = exp({"public_base": "https://dcondax1-wq.github.io/sites/"})
+    rc2, f2, _ = exp({"public_base": "http://plain.example.com/"})
+    check("h. export refuses (and writes nothing) without public_base, with a github.io base, or with plain http",
+          rc0 == 2 and not f0 and "public_base" in e0 and rc1 == 2 and not f1 and rc2 == 2 and not f2, (rc0, rc1, rc2, e0[:200]))
+    rc, fx, err = exp({"public_base": "https://neutral-sites.pages.dev/"})
+    sites_x = [k for k in fx if re.fullmatch(r"f/[a-z2-9]{8}/index\.html", k)]
+    leak = [(k, m.group(0)) for k, v in fx.items() for m in [re.search("|".join(F.FORBIDDEN), v, re.I)] if m]
+    check("h. export: every site + landing, 404, robots (Disallow: / until the agency is named), _headers noindex, nothing pointing at Olympus",
+          rc == 0 and len(sites_x) == len(S) and {"index.html", "404.html", "robots.txt", "_headers", "f/index.html"} <= set(fx)
+          and fx["robots.txt"].strip().endswith("Disallow: /") and "noindex" in fx["index.html"] and "X-Robots-Tag: noindex" in fx["_headers"]
+          and not leak, (rc, len(sites_x), leak[:5], err[-200:]))
+    rc, fx, _ = exp({"public_base": "https://neutral-sites.pages.dev/", "agency_name": "Main Street Web"})
+    check("h. once the agency is named: the landing is indexable, the concept sites stay blocked (robots Disallow: /f/)",
+          rc == 0 and '"index, follow"' in fx["index.html"] and "Main Street Web" in fx["index.html"] and "Disallow: /f/" in fx["robots.txt"]
+          and all('content="noindex' in v for k, v in fx.items() if k.startswith("f/") and k.endswith(".html") and k != "f/index.html"))
     # f. the hours reader: simple OSM forms in, unclear ones -> 'call to ask' (never a wrong time)
     ph = F.parse_hours
     check("f. hours: 'Mo-Fr 09:00-17:00; Sa 09:00-14:00; Su off' -> 9 am - 5 pm ... Closed",

@@ -41,3 +41,12 @@
 ## Final for 2026-11-20 (lead decision: no PC address on public pages)
 - The consent form is OFF on every concept page (code `caller_form()` kept, unused). The band is now: offer + "Claim this site" + "Call <agency number>: our AI assistant answers" (voice only, a tel: button once `phone` is set in `tools/site_factory_agency.json`; "number coming" until then) + "Your code: FR-n".
 - Test d2 now fails any page with a form, `.ts.net` or a 100.x.y.z (Tailscale) address. test_site_factory 24/24 with browser.
+
+## Saturday 2026-11-21 (resume after merging origin/pc)
+| what | result |
+|---|---|
+| Neutral-host export | `python tools/site_factory.py --export <dir>`: standalone site (all `f/<id>/`, a neutral "Local web studio" landing, 404, robots, `_headers`, `.nojekyll`). Reads `public_base` from `tools/site_factory_agency.json`; **refuses (exit 2, writes nothing)** without it, with plain http, or with the owner's github.io / Olympus / PC address. Scans every file for Olympus / github.io / owner handle / Jarvis / ntfy / ts.net / 100.x / `../` and stops if any appear. Landing + robots stay noindex/`Disallow: /` until `agency_name` is set; concept sites always noindex. |
+| Bigger lead list | Reads `agency/leads/leads.json` + `agency/leads/towns/*.json` (day-kalshi's per-town files), dedupes by id, new niches `pro` (Professional services) and `services` (Local services), `contractor` -> trades. Each site marked `ready` (phone or full street address); the gallery lists ready + non-chain first and has a **Ready to send** filter. |
+| Leads today | origin/pc still has the 67 Frederick leads; the 812-lead run is not pushed yet (day-kalshi's branch only has its geocode cache). When it lands: `python tools/site_factory.py`. Of the 67: **20 ready to send** (phone or street address, not a chain). |
+| Host setup | `HOST_SETUP.md`: Option A, a neutral GitHub org `<name>.github.io` (iPhone, Claude pushes updates); Option B, Cloudflare Pages upload (PC once per update). |
+| Tests | test_site_factory 26/26 (new h.: 3 refusals, full export, named-agency mode). |
