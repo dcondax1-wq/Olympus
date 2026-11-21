@@ -6,7 +6,7 @@
 No account ids, no balances, no network.
 
     python tools/nqdash_export.py            # rewrite both
-    python tools/nqdash_export.py --check    # exit 1 when a public copy is out of date (the news copy is checked for today's window)
+    python tools/nqdash_export.py --check    # exit 1 when a public copy is out of date (the news copy is checked for the window of the day it was built)
 """
 from __future__ import annotations
 
@@ -71,6 +71,14 @@ def main(argv: list[str]) -> int:
     with open(SRC, encoding="utf-8") as fh:
         ok = _write(OUT, build(json.load(fh)), check)
     today = dt.datetime.now(ZoneInfo("America/New_York")).date()
+    if check:
+        # the news window moves every day and the publish build rewrites it (tools/build_web_dashboard.py): --check asks "is the copy
+        # what the source gives for the day it was built", so a calendar edit not exported is caught, and a new day alone is not a red
+        try:
+            with open(NEWS_OUT, encoding="utf-8") as fh:
+                today = dt.date.fromisoformat(json.load(fh)["built"])
+        except (OSError, ValueError, KeyError, TypeError):
+            pass
     ok = _write(NEWS_OUT, news(NEWS_SRC, today), check) and ok
     return 0 if ok else 1
 

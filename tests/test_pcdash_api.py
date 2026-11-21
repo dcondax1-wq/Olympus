@@ -661,10 +661,21 @@ def main() -> int:
 
         # ---- /api/next/pc/trade/<entry_t>
         e1 = ts(2026, 10, 20, 3, 5)
-        r = cl.get(f"/api/next/pc/trade/{e1}")
+        # the bot's feed is the source when no bar file covers that day (a stub: the repo's data/NQ_5m.csv grows past the fixture's
+        # 2026-10-20 over time, and then the fuller file is rightly preferred, checked just below)
+        real_file_bars, pcdash_api.file_bars = pcdash_api.file_bars, (lambda *a, **k: ([], []))
+        try:
+            r = cl.get(f"/api/next/pc/trade/{e1}")
+        finally:
+            pcdash_api.file_bars = real_file_bars
         t = r.json()
         check("trade: today's routed trade with bars from the bot's feed", r.status_code == 200 and t["trade"]["entry_t"] == e1 and t["chart"] is None
               and len(t["bars5"]) > 0 and t["bars_source"] == "bot feed", {k: v for k, v in t.items() if k not in ("bars5", "bars1")})
+        f5_day = pcdash_api.file_bars("NQ", e1 - 6 * 3600, e1 + 3600)[0]
+        r = cl.get(f"/api/next/pc/trade/{e1}")
+        t = r.json()
+        check("trade: the bar file fills in when the bot's feed starts after the trade (only when the file covers that day)",
+              r.status_code == 200 and t["bars_source"] == ("data/NQ_5m.csv" if f5_day else "bot feed") and len(t["bars5"]) > 0, t.get("bars_source"))
         if chart_rec:
             r = cl.get(f"/api/next/pc/trade/{chart_rec[2]}")
             check("trade: a routed trade the LIT replay has links its chart id", r.status_code == 200 and r.json().get("chart") == chart_rec[0], r.text[:200])
