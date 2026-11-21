@@ -1,0 +1,2443 @@
+{
+ "v": 1,
+ "date": "2026-11-21",
+ "n": 1000,
+ "tax": 0.3,
+ "markets": {
+  "H2": "Jul-Oct 2026-like",
+  "HALF": "half that edge",
+  "REF": "2021-25-like"
+ },
+ "window": [
+  "2026-12",
+  "2027-01",
+  "2027-02"
+ ],
+ "plans": [
+  "base",
+  "r2-now",
+  "refill-r50",
+  "both",
+  "par50",
+  "all3"
+ ],
+ "built_by": "tools/money/fleet_90day.py",
+ "seed": 2611,
+ "rows": {
+  "base": {
+   "H2": {
+    "span": "H2",
+    "plan": "base",
+    "months": [
+     {
+      "month": "2026-12",
+      "median": 0,
+      "bad_1_in_10": -92,
+      "good_1_in_10": 1032,
+      "mean": 297,
+      "payouts_median": 0,
+      "fees_mean": 68.2
+     },
+     {
+      "month": "2027-01",
+      "median": 743,
+      "bad_1_in_10": -92,
+      "good_1_in_10": 3360,
+      "mean": 1302,
+      "payouts_median": 1300,
+      "fees_mean": 98.01
+     },
+     {
+      "month": "2027-02",
+      "median": 1680,
+      "bad_1_in_10": 0,
+      "good_1_in_10": 5829,
+      "mean": 2375,
+      "payouts_median": 2400,
+      "fees_mean": 59.37
+     }
+    ],
+    "totals": {
+     "dec_feb_median": 3055,
+     "dec_feb_bad": 240,
+     "dec_feb_good": 9074,
+     "dec_feb_mean": 3973,
+     "to_jun_median": 21589,
+     "to_jun_bad": 8582,
+     "to_jun_mean": 22117,
+     "fees_out_of_pocket_dec_feb_mean": 225.76
+    },
+    "accounts": {
+     "Z50": {
+      "dec_feb_mean": 1587,
+      "to_jun_mean": 5475,
+      "lost_mean": 0.12
+     },
+     "N25": {
+      "dec_feb_mean": 506,
+      "to_jun_mean": 1721,
+      "lost_mean": 0.19
+     },
+     "A25": {
+      "dec_feb_mean": 673,
+      "to_jun_mean": 2057,
+      "lost_mean": 0.09
+     },
+     "R25": {
+      "dec_feb_mean": 910,
+      "to_jun_mean": 4708,
+      "lost_mean": 0.52
+     },
+     "R2": {
+      "dec_feb_mean": 297,
+      "to_jun_mean": 8156,
+      "lost_mean": 0.24
+     }
+    },
+    "live_move": {
+     "p_by_feb28": 2.9,
+     "p_by_mar31": 16.9,
+     "p_by_jun30": 80.5,
+     "median": "2027-05-17",
+     "to_jun_mean_if_dormant": 14255,
+     "to_jun_median_if_dormant": 13935
+    },
+    "next3": [
+     [
+      {
+       "plan": "rapideod50",
+       "share": 71.0,
+       "date_med": "2027-01-07"
+      },
+      {
+       "plan": "builder50k",
+       "share": 18.9,
+       "date_med": "2026-12-21"
+      },
+      {
+       "plan": "builder25k",
+       "share": 6.2,
+       "date_med": "2027-01-04"
+      }
+     ],
+     [
+      {
+       "plan": "builder50k",
+       "share": 40.7,
+       "date_med": "2027-03-30"
+      },
+      {
+       "plan": "rapideod50",
+       "share": 22.5,
+       "date_med": "2027-02-04"
+      },
+      {
+       "plan": "rapideod25",
+       "share": 19.2,
+       "date_med": "2027-02-16"
+      }
+     ],
+     [
+      {
+       "plan": "builder25k",
+       "share": 34.9,
+       "date_med": "2027-04-28"
+      },
+      {
+       "plan": "builder50k",
+       "share": 26.6,
+       "date_med": "2027-04-30"
+      },
+      {
+       "plan": "rapideod50",
+       "share": 16.3,
+       "date_med": "2027-03-05"
+      }
+     ]
+    ],
+    "r2": {
+     "p": 99.7,
+     "date_med": "2027-01-13"
+    },
+    "lost_all_mean": 1.16,
+    "secs": 16
+   },
+   "HALF": {
+    "span": "HALF",
+    "plan": "base",
+    "months": [
+     {
+      "month": "2026-12",
+      "median": 0,
+      "bad_1_in_10": -160,
+      "good_1_in_10": 395,
+      "mean": 21,
+      "payouts_median": 0,
+      "fees_mean": 81.66
+     },
+     {
+      "month": "2027-01",
+      "median": -63,
+      "bad_1_in_10": -223,
+      "good_1_in_10": 955,
+      "mean": 194,
+      "payouts_median": 0,
+      "fees_mean": 126.9
+     },
+     {
+      "month": "2027-02",
+      "median": 0,
+      "bad_1_in_10": -252,
+      "good_1_in_10": 1515,
+      "mean": 349,
+      "payouts_median": 0,
+      "fees_mean": 133.19
+     }
+    ],
+    "totals": {
+     "dec_feb_median": -63,
+     "dec_feb_bad": -441,
+     "dec_feb_good": 2447,
+     "dec_feb_mean": 564,
+     "to_jun_median": 1745,
+     "to_jun_bad": -819,
+     "to_jun_mean": 3600,
+     "fees_out_of_pocket_dec_feb_mean": 342.8
+    },
+    "accounts": {
+     "Z50": {
+      "dec_feb_mean": 252,
+      "to_jun_mean": 1267,
+      "lost_mean": 0.83
+     },
+     "N25": {
+      "dec_feb_mean": 128,
+      "to_jun_mean": 569,
+      "lost_mean": 0.4
+     },
+     "A25": {
+      "dec_feb_mean": 148,
+      "to_jun_mean": 539,
+      "lost_mean": 1.0
+     },
+     "R25": {
+      "dec_feb_mean": 98,
+      "to_jun_mean": 627,
+      "lost_mean": 0.93
+     },
+     "R2": {
+      "dec_feb_mean": -61,
+      "to_jun_mean": 599,
+      "lost_mean": 0.4
+     }
+    },
+    "live_move": {
+     "p_by_feb28": 0.0,
+     "p_by_mar31": 0.6,
+     "p_by_jun30": 6.2,
+     "median": "after Jun 30",
+     "to_jun_mean_if_dormant": 3451,
+     "to_jun_median_if_dormant": 1745
+    },
+    "next3": [
+     [
+      {
+       "plan": "builder50k",
+       "share": 35.6,
+       "date_med": "2026-12-23"
+      },
+      {
+       "plan": "builder25k",
+       "share": 28.9,
+       "date_med": "2026-12-23"
+      },
+      {
+       "plan": "rapideod50",
+       "share": 24.5,
+       "date_med": "2027-01-08"
+      }
+     ],
+     [
+      {
+       "plan": "builder25k",
+       "share": 33.1,
+       "date_med": "2027-01-14"
+      },
+      {
+       "plan": "rapideod25",
+       "share": 27.8,
+       "date_med": "2027-01-26"
+      },
+      {
+       "plan": "builder50k",
+       "share": 22.2,
+       "date_med": "2027-01-20"
+      }
+     ],
+     [
+      {
+       "plan": "builder25k",
+       "share": 35.2,
+       "date_med": "2027-02-01"
+      },
+      {
+       "plan": "rapideod25",
+       "share": 24.5,
+       "date_med": "2027-02-15"
+      },
+      {
+       "plan": "rapideod50",
+       "share": 21.2,
+       "date_med": "2027-02-24"
+      }
+     ]
+    ],
+    "r2": {
+     "p": 83.3,
+     "date_med": "2027-02-15"
+    },
+    "lost_all_mean": 3.57,
+    "secs": 17
+   },
+   "REF": {
+    "span": "REF",
+    "plan": "base",
+    "months": [
+     {
+      "month": "2026-12",
+      "median": -97,
+      "bad_1_in_10": -315,
+      "good_1_in_10": 0,
+      "mean": -117,
+      "payouts_median": 0,
+      "fees_mean": 142.98
+     },
+     {
+      "month": "2027-01",
+      "median": -155,
+      "bad_1_in_10": -316,
+      "good_1_in_10": 0,
+      "mean": -150,
+      "payouts_median": 0,
+      "fees_mean": 176.79
+     },
+     {
+      "month": "2027-02",
+      "median": -160,
+      "bad_1_in_10": -378,
+      "good_1_in_10": 0,
+      "mean": -149,
+      "payouts_median": 0,
+      "fees_mean": 195.51
+     }
+    ],
+    "totals": {
+     "dec_feb_median": -470,
+     "dec_feb_bad": -756,
+     "dec_feb_good": -79,
+     "dec_feb_mean": -416,
+     "to_jun_median": -1226,
+     "to_jun_bad": -1708,
+     "to_jun_mean": -1038,
+     "fees_out_of_pocket_dec_feb_mean": 518.0
+    },
+    "accounts": {
+     "Z50": {
+      "dec_feb_mean": -104,
+      "to_jun_mean": -207,
+      "lost_mean": 0.83
+     },
+     "N25": {
+      "dec_feb_mean": -20,
+      "to_jun_mean": -54,
+      "lost_mean": 0.44
+     },
+     "A25": {
+      "dec_feb_mean": -145,
+      "to_jun_mean": -376,
+      "lost_mean": 2.2
+     },
+     "R25": {
+      "dec_feb_mean": -119,
+      "to_jun_mean": -302,
+      "lost_mean": 0.26
+     },
+     "R2": {
+      "dec_feb_mean": -27,
+      "to_jun_mean": -100,
+      "lost_mean": 0.05
+     }
+    },
+    "live_move": {
+     "p_by_feb28": 0.0,
+     "p_by_mar31": 0.0,
+     "p_by_jun30": 0.0,
+     "median": "after Jun 30",
+     "to_jun_mean_if_dormant": -1038,
+     "to_jun_median_if_dormant": -1226
+    },
+    "next3": [
+     [
+      {
+       "plan": "builder25k",
+       "share": 45.3,
+       "date_med": "2026-12-17"
+      },
+      {
+       "plan": "builder50k",
+       "share": 34.3,
+       "date_med": "2026-12-18"
+      },
+      {
+       "plan": "rapideod25",
+       "share": 15.6,
+       "date_med": "2026-12-21"
+      }
+     ],
+     [
+      {
+       "plan": "builder25k",
+       "share": 53.9,
+       "date_med": "2026-12-30"
+      },
+      {
+       "plan": "builder50k",
+       "share": 23.0,
+       "date_med": "2026-12-31"
+      },
+      {
+       "plan": "rapideod25",
+       "share": 20.1,
+       "date_med": "2027-01-04"
+      }
+     ],
+     [
+      {
+       "plan": "builder25k",
+       "share": 52.4,
+       "date_med": "2027-01-12"
+      },
+      {
+       "plan": "rapideod25",
+       "share": 26.3,
+       "date_med": "2027-01-12"
+      },
+      {
+       "plan": "builder50k",
+       "share": 17.5,
+       "date_med": "2027-01-15"
+      }
+     ]
+    ],
+    "r2": {
+     "p": 19.9,
+     "date_med": "2027-02-15"
+    },
+    "lost_all_mean": 3.78,
+    "secs": 18
+   }
+  },
+  "r2-now": {
+   "H2": {
+    "span": "H2",
+    "plan": "r2-now",
+    "months": [
+     {
+      "month": "2026-12",
+      "median": 0,
+      "bad_1_in_10": -92,
+      "good_1_in_10": 1680,
+      "mean": 455,
+      "payouts_median": 0,
+      "fees_mean": 21.67
+     },
+     {
+      "month": "2027-01",
+      "median": 1120,
+      "bad_1_in_10": -92,
+      "good_1_in_10": 6607,
+      "mean": 2385,
+      "payouts_median": 1600,
+      "fees_mean": 34.32
+     },
+     {
+      "month": "2027-02",
+      "median": 2801,
+      "bad_1_in_10": 0,
+      "good_1_in_10": 9168,
+      "mean": 3806,
+      "payouts_median": 4004,
+      "fees_mean": 33.63
+     }
+    ],
+    "totals": {
+     "dec_feb_median": 5113,
+     "dec_feb_bad": 405,
+     "dec_feb_good": 15065,
+     "dec_feb_mean": 6646,
+     "to_jun_median": 25896,
+     "to_jun_bad": 11083,
+     "to_jun_mean": 26552,
+     "fees_out_of_pocket_dec_feb_mean": 254.8
+    },
+    "accounts": {
+     "Z50": {
+      "dec_feb_mean": 1587,
+      "to_jun_mean": 5475,
+      "lost_mean": 0.12
+     },
+     "N25": {
+      "dec_feb_mean": 506,
+      "to_jun_mean": 1721,
+      "lost_mean": 0.19
+     },
+     "A25": {
+      "dec_feb_mean": 673,
+      "to_jun_mean": 2057,
+      "lost_mean": 0.09
+     },
+     "R25": {
+      "dec_feb_mean": 910,
+      "to_jun_mean": 4708,
+      "lost_mean": 0.52
+     },
+     "R2": {
+      "dec_feb_mean": 2970,
+      "to_jun_mean": 12591,
+      "lost_mean": 0.33
+     }
+    },
+    "live_move": {
+     "p_by_feb28": 2.9,
+     "p_by_mar31": 16.9,
+     "p_by_jun30": 80.5,
+     "median": "2027-05-17",
+     "to_jun_mean_if_dormant": 18630,
+     "to_jun_median_if_dormant": 19003
+    },
+    "next3": [
+     [
+      {
+       "plan": "rapideod50 (now, from pocket)",
+       "share": 100.0,
+       "date_med": "2026-11-23"
+      }
+     ],
+     [
+      {
+       "plan": "builder50k",
+       "share": 55.6,
+       "date_med": "2027-03-10"
+      },
+      {
+       "plan": "rapideod25",
+       "share": 21.2,
+       "date_med": "2027-02-10"
+      },
+      {
+       "plan": "builder25k",
+       "share": 17.3,
+       "date_med": "2027-02-05"
+      }
+     ],
+     [
+      {
+       "plan": "builder25k",
+       "share": 36.5,
+       "date_med": "2027-04-26"
+      },
+      {
+       "plan": "builder50k",
+       "share": 27.9,
+       "date_med": "2027-04-28"
+      },
+      {
+       "plan": "rapideod25",
+       "share": 13.6,
+       "date_med": "2027-03-15"
+      }
+     ]
+    ],
+    "r2": {
+     "p": 100.0,
+     "date_med": "2026-11-23"
+    },
+    "lost_all_mean": 1.24,
+    "secs": 14
+   },
+   "HALF": {
+    "span": "HALF",
+    "plan": "r2-now",
+    "months": [
+     {
+      "month": "2026-12",
+      "median": 0,
+      "bad_1_in_10": -325,
+      "good_1_in_10": 560,
+      "mean": 31,
+      "payouts_median": 0,
+      "fees_mean": 102.94
+     },
+     {
+      "month": "2027-01",
+      "median": -63,
+      "bad_1_in_10": -354,
+      "good_1_in_10": 1680,
+      "mean": 398,
+      "payouts_median": 0,
+      "fees_mean": 134.82
+     },
+     {
+      "month": "2027-02",
+      "median": 0,
+      "bad_1_in_10": -354,
+      "good_1_in_10": 2668,
+      "mean": 649,
+      "payouts_median": 0,
+      "fees_mean": 141.6
+     }
+    ],
+    "totals": {
+     "dec_feb_median": 0,
+     "dec_feb_bad": -737,
+     "dec_feb_good": 4694,
+     "dec_feb_mean": 1078,
+     "to_jun_median": 2599,
+     "to_jun_bad": -1251,
+     "to_jun_mean": 4910,
+     "fees_out_of_pocket_dec_feb_mean": 545.92
+    },
+    "accounts": {
+     "Z50": {
+      "dec_feb_mean": 252,
+      "to_jun_mean": 1267,
+      "lost_mean": 0.83
+     },
+     "N25": {
+      "dec_feb_mean": 128,
+      "to_jun_mean": 569,
+      "lost_mean": 0.4
+     },
+     "A25": {
+      "dec_feb_mean": 148,
+      "to_jun_mean": 539,
+      "lost_mean": 1.0
+     },
+     "R25": {
+      "dec_feb_mean": 98,
+      "to_jun_mean": 627,
+      "lost_mean": 0.93
+     },
+     "R2": {
+      "dec_feb_mean": 452,
+      "to_jun_mean": 1909,
+      "lost_mean": 1.04
+     }
+    },
+    "live_move": {
+     "p_by_feb28": 0.0,
+     "p_by_mar31": 0.6,
+     "p_by_jun30": 6.2,
+     "median": "after Jun 30",
+     "to_jun_mean_if_dormant": 4758,
+     "to_jun_median_if_dormant": 2599
+    },
+    "next3": [
+     [
+      {
+       "plan": "rapideod50 (now, from pocket)",
+       "share": 100.0,
+       "date_med": "2026-11-23"
+      }
+     ],
+     [
+      {
+       "plan": "builder50k",
+       "share": 36.7,
+       "date_med": "2026-12-24"
+      },
+      {
+       "plan": "builder25k",
+       "share": 28.1,
+       "date_med": "2026-12-24"
+      },
+      {
+       "plan": "rapideod25",
+       "share": 20.4,
+       "date_med": "2027-01-28"
+      }
+     ],
+     [
+      {
+       "plan": "rapideod50",
+       "share": 30.6,
+       "date_med": "2027-01-15"
+      },
+      {
+       "plan": "builder25k",
+       "share": 27.0,
+       "date_med": "2027-01-19"
+      },
+      {
+       "plan": "rapideod25",
+       "share": 21.9,
+       "date_med": "2027-02-01"
+      }
+     ]
+    ],
+    "r2": {
+     "p": 100.0,
+     "date_med": "2026-11-23"
+    },
+    "lost_all_mean": 4.21,
+    "secs": 15
+   },
+   "REF": {
+    "span": "REF",
+    "plan": "r2-now",
+    "months": [
+     {
+      "month": "2026-12",
+      "median": -226,
+      "bad_1_in_10": -480,
+      "good_1_in_10": 0,
+      "mean": -204,
+      "payouts_median": 0,
+      "fees_mean": 233.9
+     },
+     {
+      "month": "2027-01",
+      "median": -252,
+      "bad_1_in_10": -521,
+      "good_1_in_10": 0,
+      "mean": -228,
+      "payouts_median": 0,
+      "fees_mean": 271.17
+     },
+     {
+      "month": "2027-02",
+      "median": -262,
+      "bad_1_in_10": -543,
+      "good_1_in_10": 0,
+      "mean": -209,
+      "payouts_median": 0,
+      "fees_mean": 285.11
+     }
+    ],
+    "totals": {
+     "dec_feb_median": -771,
+     "dec_feb_bad": -1222,
+     "dec_feb_good": 38,
+     "dec_feb_mean": -641,
+     "to_jun_median": -2061,
+     "to_jun_bad": -2866,
+     "to_jun_mean": -1677,
+     "fees_out_of_pocket_dec_feb_mean": 958.88
+    },
+    "accounts": {
+     "Z50": {
+      "dec_feb_mean": -104,
+      "to_jun_mean": -207,
+      "lost_mean": 0.83
+     },
+     "N25": {
+      "dec_feb_mean": -20,
+      "to_jun_mean": -54,
+      "lost_mean": 0.44
+     },
+     "A25": {
+      "dec_feb_mean": -145,
+      "to_jun_mean": -376,
+      "lost_mean": 2.2
+     },
+     "R25": {
+      "dec_feb_mean": -119,
+      "to_jun_mean": -302,
+      "lost_mean": 0.26
+     },
+     "R2": {
+      "dec_feb_mean": -252,
+      "to_jun_mean": -739,
+      "lost_mean": 0.4
+     }
+    },
+    "live_move": {
+     "p_by_feb28": 0.0,
+     "p_by_mar31": 0.0,
+     "p_by_jun30": 0.0,
+     "median": "after Jun 30",
+     "to_jun_mean_if_dormant": -1677,
+     "to_jun_median_if_dormant": -2061
+    },
+    "next3": [
+     [
+      {
+       "plan": "rapideod50 (now, from pocket)",
+       "share": 100.0,
+       "date_med": "2026-11-23"
+      }
+     ],
+     [
+      {
+       "plan": "builder25k",
+       "share": 38.9,
+       "date_med": "2026-12-16"
+      },
+      {
+       "plan": "builder50k",
+       "share": 31.2,
+       "date_med": "2026-12-17"
+      },
+      {
+       "plan": "rapideod50",
+       "share": 19.5,
+       "date_med": "2026-12-16"
+      }
+     ],
+     [
+      {
+       "plan": "builder25k",
+       "share": 35.6,
+       "date_med": "2026-12-28"
+      },
+      {
+       "plan": "rapideod50",
+       "share": 34.1,
+       "date_med": "2026-12-22"
+      },
+      {
+       "plan": "builder50k",
+       "share": 15.5,
+       "date_med": "2026-12-29"
+      }
+     ]
+    ],
+    "r2": {
+     "p": 100.0,
+     "date_med": "2026-11-23"
+    },
+    "lost_all_mean": 4.12,
+    "secs": 16
+   }
+  },
+  "refill-r50": {
+   "H2": {
+    "span": "H2",
+    "plan": "refill-r50",
+    "months": [
+     {
+      "month": "2026-12",
+      "median": 0,
+      "bad_1_in_10": -92,
+      "good_1_in_10": 1032,
+      "mean": 292,
+      "payouts_median": 0,
+      "fees_mean": 72.34
+     },
+     {
+      "month": "2027-01",
+      "median": 743,
+      "bad_1_in_10": -92,
+      "good_1_in_10": 3377,
+      "mean": 1300,
+      "payouts_median": 1300,
+      "fees_mean": 105.63
+     },
+     {
+      "month": "2027-02",
+      "median": 1680,
+      "bad_1_in_10": 0,
+      "good_1_in_10": 5967,
+      "mean": 2423,
+      "payouts_median": 2400,
+      "fees_mean": 65.55
+     }
+    ],
+    "totals": {
+     "dec_feb_median": 3098,
+     "dec_feb_bad": 206,
+     "dec_feb_good": 9212,
+     "dec_feb_mean": 4016,
+     "to_jun_median": 22985,
+     "to_jun_bad": 9350,
+     "to_jun_mean": 24110,
+     "fees_out_of_pocket_dec_feb_mean": 243.7
+    },
+    "accounts": {
+     "Z50": {
+      "dec_feb_mean": 1587,
+      "to_jun_mean": 5475,
+      "lost_mean": 0.12
+     },
+     "N25": {
+      "dec_feb_mean": 537,
+      "to_jun_mean": 3062,
+      "lost_mean": 0.19
+     },
+     "A25": {
+      "dec_feb_mean": 684,
+      "to_jun_mean": 2704,
+      "lost_mean": 0.11
+     },
+     "R25": {
+      "dec_feb_mean": 910,
+      "to_jun_mean": 4708,
+      "lost_mean": 0.52
+     },
+     "R2": {
+      "dec_feb_mean": 297,
+      "to_jun_mean": 8162,
+      "lost_mean": 0.24
+     }
+    },
+    "live_move": {
+     "p_by_feb28": 3.7,
+     "p_by_mar31": 20.2,
+     "p_by_jun30": 84.6,
+     "median": "2027-05-07",
+     "to_jun_mean_if_dormant": 13814,
+     "to_jun_median_if_dormant": 13341
+    },
+    "next3": [
+     [
+      {
+       "plan": "rapideod50",
+       "share": 76.2,
+       "date_med": "2027-01-07"
+      },
+      {
+       "plan": "builder50k",
+       "share": 19.8,
+       "date_med": "2026-12-21"
+      },
+      {
+       "plan": "rapideod25",
+       "share": 4.0,
+       "date_med": "2027-01-06"
+      }
+     ],
+     [
+      {
+       "plan": "builder50k",
+       "share": 41.8,
+       "date_med": "2027-03-31"
+      },
+      {
+       "plan": "rapideod50",
+       "share": 36.5,
+       "date_med": "2027-02-05"
+      },
+      {
+       "plan": "rapideod25",
+       "share": 19.7,
+       "date_med": "2027-02-16"
+      }
+     ],
+     [
+      {
+       "plan": "rapideod50",
+       "share": 50.2,
+       "date_med": "2027-04-13"
+      },
+      {
+       "plan": "builder50k",
+       "share": 26.8,
+       "date_med": "2027-05-03"
+      },
+      {
+       "plan": "rapideod25",
+       "share": 13.3,
+       "date_med": "2027-03-23"
+      }
+     ]
+    ],
+    "r2": {
+     "p": 99.8,
+     "date_med": "2027-01-13"
+    },
+    "lost_all_mean": 1.18,
+    "secs": 15
+   },
+   "HALF": {
+    "span": "HALF",
+    "plan": "refill-r50",
+    "months": [
+     {
+      "month": "2026-12",
+      "median": 0,
+      "bad_1_in_10": -257,
+      "good_1_in_10": 395,
+      "mean": -2,
+      "payouts_median": 0,
+      "fees_mean": 105.75
+     },
+     {
+      "month": "2027-01",
+      "median": 0,
+      "bad_1_in_10": -262,
+      "good_1_in_10": 955,
+      "mean": 171,
+      "payouts_median": 0,
+      "fees_mean": 152.63
+     },
+     {
+      "month": "2027-02",
+      "median": 0,
+      "bad_1_in_10": -354,
+      "good_1_in_10": 1680,
+      "mean": 407,
+      "payouts_median": 0,
+      "fees_mean": 166.85
+     }
+    ],
+    "totals": {
+     "dec_feb_median": -92,
+     "dec_feb_bad": -616,
+     "dec_feb_good": 2720,
+     "dec_feb_mean": 576,
+     "to_jun_median": 2043,
+     "to_jun_bad": -1363,
+     "to_jun_mean": 4605,
+     "fees_out_of_pocket_dec_feb_mean": 426.43
+    },
+    "accounts": {
+     "Z50": {
+      "dec_feb_mean": 252,
+      "to_jun_mean": 1267,
+      "lost_mean": 0.83
+     },
+     "N25": {
+      "dec_feb_mean": 105,
+      "to_jun_mean": 936,
+      "lost_mean": 0.54
+     },
+     "A25": {
+      "dec_feb_mean": 183,
+      "to_jun_mean": 1182,
+      "lost_mean": 1.05
+     },
+     "R25": {
+      "dec_feb_mean": 98,
+      "to_jun_mean": 627,
+      "lost_mean": 0.93
+     },
+     "R2": {
+      "dec_feb_mean": -61,
+      "to_jun_mean": 593,
+      "lost_mean": 0.4
+     }
+    },
+    "live_move": {
+     "p_by_feb28": 0.5,
+     "p_by_mar31": 2.1,
+     "p_by_jun30": 16.5,
+     "median": "after Jun 30",
+     "to_jun_mean_if_dormant": 3636,
+     "to_jun_median_if_dormant": 2043
+    },
+    "next3": [
+     [
+      {
+       "plan": "rapideod50",
+       "share": 51.1,
+       "date_med": "2026-12-31"
+      },
+      {
+       "plan": "builder50k",
+       "share": 36.9,
+       "date_med": "2026-12-23"
+      },
+      {
+       "plan": "rapideod25",
+       "share": 12.0,
+       "date_med": "2027-01-07"
+      }
+     ],
+     [
+      {
+       "plan": "rapideod50",
+       "share": 40.5,
+       "date_med": "2027-01-21"
+      },
+      {
+       "plan": "rapideod25",
+       "share": 32.8,
+       "date_med": "2027-01-25"
+      },
+      {
+       "plan": "builder50k",
+       "share": 26.3,
+       "date_med": "2027-01-22"
+      }
+     ],
+     [
+      {
+       "plan": "rapideod50",
+       "share": 51.4,
+       "date_med": "2027-02-15"
+      },
+      {
+       "plan": "rapideod25",
+       "share": 28.0,
+       "date_med": "2027-02-18"
+      },
+      {
+       "plan": "builder50k",
+       "share": 19.1,
+       "date_med": "2027-02-10"
+      }
+     ]
+    ],
+    "r2": {
+     "p": 80.3,
+     "date_med": "2027-02-12"
+    },
+    "lost_all_mean": 3.76,
+    "secs": 16
+   },
+   "REF": {
+    "span": "REF",
+    "plan": "refill-r50",
+    "months": [
+     {
+      "month": "2026-12",
+      "median": -165,
+      "bad_1_in_10": -354,
+      "good_1_in_10": 0,
+      "mean": -164,
+      "payouts_median": 0,
+      "fees_mean": 190.6
+     },
+     {
+      "month": "2027-01",
+      "median": -189,
+      "bad_1_in_10": -519,
+      "good_1_in_10": 0,
+      "mean": -206,
+      "payouts_median": 0,
+      "fees_mean": 233.33
+     },
+     {
+      "month": "2027-02",
+      "median": -257,
+      "bad_1_in_10": -519,
+      "good_1_in_10": 0,
+      "mean": -218,
+      "payouts_median": 0,
+      "fees_mean": 269.64
+     }
+    ],
+    "totals": {
+     "dec_feb_median": -616,
+     "dec_feb_bad": -1106,
+     "dec_feb_good": -165,
+     "dec_feb_mean": -589,
+     "to_jun_median": -1887,
+     "to_jun_bad": -2668,
+     "to_jun_mean": -1611,
+     "fees_out_of_pocket_dec_feb_mean": 696.48
+    },
+    "accounts": {
+     "Z50": {
+      "dec_feb_mean": -104,
+      "to_jun_mean": -207,
+      "lost_mean": 0.83
+     },
+     "N25": {
+      "dec_feb_mean": -108,
+      "to_jun_mean": -449,
+      "lost_mean": 0.41
+     },
+     "A25": {
+      "dec_feb_mean": -231,
+      "to_jun_mean": -561,
+      "lost_mean": 1.26
+     },
+     "R25": {
+      "dec_feb_mean": -119,
+      "to_jun_mean": -302,
+      "lost_mean": 0.26
+     },
+     "R2": {
+      "dec_feb_mean": -27,
+      "to_jun_mean": -92,
+      "lost_mean": 0.04
+     }
+    },
+    "live_move": {
+     "p_by_feb28": 0.0,
+     "p_by_mar31": 0.0,
+     "p_by_jun30": 0.1,
+     "median": "after Jun 30",
+     "to_jun_mean_if_dormant": -1613,
+     "to_jun_median_if_dormant": -1887
+    },
+    "next3": [
+     [
+      {
+       "plan": "rapideod50",
+       "share": 44.0,
+       "date_med": "2026-12-18"
+      },
+      {
+       "plan": "builder50k",
+       "share": 38.1,
+       "date_med": "2026-12-18"
+      },
+      {
+       "plan": "rapideod25",
+       "share": 17.9,
+       "date_med": "2026-12-21"
+      }
+     ],
+     [
+      {
+       "plan": "rapideod50",
+       "share": 41.1,
+       "date_med": "2027-01-06"
+      },
+      {
+       "plan": "rapideod25",
+       "share": 31.4,
+       "date_med": "2027-01-04"
+      },
+      {
+       "plan": "builder50k",
+       "share": 27.5,
+       "date_med": "2027-01-06"
+      }
+     ],
+     [
+      {
+       "plan": "rapideod50",
+       "share": 44.1,
+       "date_med": "2027-01-20"
+      },
+      {
+       "plan": "rapideod25",
+       "share": 29.8,
+       "date_med": "2027-01-20"
+      },
+      {
+       "plan": "builder50k",
+       "share": 26.1,
+       "date_med": "2027-01-21"
+      }
+     ]
+    ],
+    "r2": {
+     "p": 18.7,
+     "date_med": "2027-02-12"
+    },
+    "lost_all_mean": 2.8,
+    "secs": 16
+   }
+  },
+  "both": {
+   "H2": {
+    "span": "H2",
+    "plan": "both",
+    "months": [
+     {
+      "month": "2026-12",
+      "median": 0,
+      "bad_1_in_10": -92,
+      "good_1_in_10": 1680,
+      "mean": 451,
+      "payouts_median": 0,
+      "fees_mean": 25.81
+     },
+     {
+      "month": "2027-01",
+      "median": 1120,
+      "bad_1_in_10": -92,
+      "good_1_in_10": 6607,
+      "mean": 2384,
+      "payouts_median": 1600,
+      "fees_mean": 41.78
+     },
+     {
+      "month": "2027-02",
+      "median": 2861,
+      "bad_1_in_10": 0,
+      "good_1_in_10": 9210,
+      "mean": 3854,
+      "payouts_median": 4119,
+      "fees_mean": 40.3
+     }
+    ],
+    "totals": {
+     "dec_feb_median": 5140,
+     "dec_feb_bad": 395,
+     "dec_feb_good": 15102,
+     "dec_feb_mean": 6688,
+     "to_jun_median": 27741,
+     "to_jun_bad": 12453,
+     "to_jun_mean": 28540,
+     "fees_out_of_pocket_dec_feb_mean": 273.07
+    },
+    "accounts": {
+     "Z50": {
+      "dec_feb_mean": 1587,
+      "to_jun_mean": 5475,
+      "lost_mean": 0.12
+     },
+     "N25": {
+      "dec_feb_mean": 537,
+      "to_jun_mean": 3062,
+      "lost_mean": 0.19
+     },
+     "A25": {
+      "dec_feb_mean": 684,
+      "to_jun_mean": 2704,
+      "lost_mean": 0.11
+     },
+     "R25": {
+      "dec_feb_mean": 910,
+      "to_jun_mean": 4708,
+      "lost_mean": 0.52
+     },
+     "R2": {
+      "dec_feb_mean": 2970,
+      "to_jun_mean": 12591,
+      "lost_mean": 0.33
+     }
+    },
+    "live_move": {
+     "p_by_feb28": 3.7,
+     "p_by_mar31": 20.2,
+     "p_by_jun30": 84.6,
+     "median": "2027-05-07",
+     "to_jun_mean_if_dormant": 18078,
+     "to_jun_median_if_dormant": 18039
+    },
+    "next3": [
+     [
+      {
+       "plan": "rapideod50 (now, from pocket)",
+       "share": 100.0,
+       "date_med": "2026-11-23"
+      }
+     ],
+     [
+      {
+       "plan": "builder50k",
+       "share": 58.3,
+       "date_med": "2027-03-10"
+      },
+      {
+       "plan": "rapideod25",
+       "share": 21.7,
+       "date_med": "2027-02-10"
+      },
+      {
+       "plan": "rapideod50",
+       "share": 17.7,
+       "date_med": "2027-02-09"
+      }
+     ],
+     [
+      {
+       "plan": "rapideod50",
+       "share": 49.1,
+       "date_med": "2027-04-12"
+      },
+      {
+       "plan": "builder50k",
+       "share": 27.1,
+       "date_med": "2027-04-30"
+      },
+      {
+       "plan": "rapideod25",
+       "share": 13.8,
+       "date_med": "2027-03-15"
+      }
+     ]
+    ],
+    "r2": {
+     "p": 100.0,
+     "date_med": "2026-11-23"
+    },
+    "lost_all_mean": 1.26,
+    "secs": 15
+   },
+   "HALF": {
+    "span": "HALF",
+    "plan": "both",
+    "months": [
+     {
+      "month": "2026-12",
+      "median": 0,
+      "bad_1_in_10": -422,
+      "good_1_in_10": 560,
+      "mean": 8,
+      "payouts_median": 0,
+      "fees_mean": 126.87
+     },
+     {
+      "month": "2027-01",
+      "median": -92,
+      "bad_1_in_10": -427,
+      "good_1_in_10": 1680,
+      "mean": 375,
+      "payouts_median": 0,
+      "fees_mean": 160.71
+     },
+     {
+      "month": "2027-02",
+      "median": 0,
+      "bad_1_in_10": -451,
+      "good_1_in_10": 3095,
+      "mean": 707,
+      "payouts_median": 0,
+      "fees_mean": 175.26
+     }
+    ],
+    "totals": {
+     "dec_feb_median": -54,
+     "dec_feb_bad": -924,
+     "dec_feb_good": 5011,
+     "dec_feb_mean": 1089,
+     "to_jun_median": 2884,
+     "to_jun_bad": -1863,
+     "to_jun_mean": 5920,
+     "fees_out_of_pocket_dec_feb_mean": 629.55
+    },
+    "accounts": {
+     "Z50": {
+      "dec_feb_mean": 252,
+      "to_jun_mean": 1267,
+      "lost_mean": 0.83
+     },
+     "N25": {
+      "dec_feb_mean": 105,
+      "to_jun_mean": 936,
+      "lost_mean": 0.54
+     },
+     "A25": {
+      "dec_feb_mean": 183,
+      "to_jun_mean": 1182,
+      "lost_mean": 1.05
+     },
+     "R25": {
+      "dec_feb_mean": 98,
+      "to_jun_mean": 627,
+      "lost_mean": 0.93
+     },
+     "R2": {
+      "dec_feb_mean": 452,
+      "to_jun_mean": 1909,
+      "lost_mean": 1.04
+     }
+    },
+    "live_move": {
+     "p_by_feb28": 0.5,
+     "p_by_mar31": 2.1,
+     "p_by_jun30": 16.5,
+     "median": "after Jun 30",
+     "to_jun_mean_if_dormant": 4814,
+     "to_jun_median_if_dormant": 2884
+    },
+    "next3": [
+     [
+      {
+       "plan": "rapideod50 (now, from pocket)",
+       "share": 100.0,
+       "date_med": "2026-11-23"
+      }
+     ],
+     [
+      {
+       "plan": "rapideod50",
+       "share": 39.9,
+       "date_med": "2026-12-28"
+      },
+      {
+       "plan": "builder50k",
+       "share": 38.3,
+       "date_med": "2026-12-24"
+      },
+      {
+       "plan": "rapideod25",
+       "share": 21.2,
+       "date_med": "2027-01-27"
+      }
+     ],
+     [
+      {
+       "plan": "rapideod50",
+       "share": 53.6,
+       "date_med": "2027-01-18"
+      },
+      {
+       "plan": "rapideod25",
+       "share": 24.9,
+       "date_med": "2027-02-02"
+      },
+      {
+       "plan": "builder50k",
+       "share": 20.0,
+       "date_med": "2027-01-22"
+      }
+     ]
+    ],
+    "r2": {
+     "p": 100.0,
+     "date_med": "2026-11-23"
+    },
+    "lost_all_mean": 4.4,
+    "secs": 14
+   },
+   "REF": {
+    "span": "REF",
+    "plan": "both",
+    "months": [
+     {
+      "month": "2026-12",
+      "median": -257,
+      "bad_1_in_10": -592,
+      "good_1_in_10": 0,
+      "mean": -252,
+      "payouts_median": 0,
+      "fees_mean": 281.51
+     },
+     {
+      "month": "2027-01",
+      "median": -330,
+      "bad_1_in_10": -684,
+      "good_1_in_10": 0,
+      "mean": -286,
+      "payouts_median": 0,
+      "fees_mean": 328.21
+     },
+     {
+      "month": "2027-02",
+      "median": -330,
+      "bad_1_in_10": -684,
+      "good_1_in_10": 0,
+      "mean": -277,
+      "payouts_median": 0,
+      "fees_mean": 359.4
+     }
+    ],
+    "totals": {
+     "dec_feb_median": -941,
+     "dec_feb_bad": -1534,
+     "dec_feb_good": -97,
+     "dec_feb_mean": -814,
+     "to_jun_median": -2780,
+     "to_jun_bad": -3851,
+     "to_jun_mean": -2257,
+     "fees_out_of_pocket_dec_feb_mean": 1138.02
+    },
+    "accounts": {
+     "Z50": {
+      "dec_feb_mean": -104,
+      "to_jun_mean": -207,
+      "lost_mean": 0.83
+     },
+     "N25": {
+      "dec_feb_mean": -108,
+      "to_jun_mean": -449,
+      "lost_mean": 0.41
+     },
+     "A25": {
+      "dec_feb_mean": -231,
+      "to_jun_mean": -561,
+      "lost_mean": 1.26
+     },
+     "R25": {
+      "dec_feb_mean": -119,
+      "to_jun_mean": -302,
+      "lost_mean": 0.26
+     },
+     "R2": {
+      "dec_feb_mean": -252,
+      "to_jun_mean": -739,
+      "lost_mean": 0.4
+     }
+    },
+    "live_move": {
+     "p_by_feb28": 0.0,
+     "p_by_mar31": 0.0,
+     "p_by_jun30": 0.1,
+     "median": "after Jun 30",
+     "to_jun_mean_if_dormant": -2261,
+     "to_jun_median_if_dormant": -2780
+    },
+    "next3": [
+     [
+      {
+       "plan": "rapideod50 (now, from pocket)",
+       "share": 100.0,
+       "date_med": "2026-11-23"
+      }
+     ],
+     [
+      {
+       "plan": "rapideod50",
+       "share": 54.6,
+       "date_med": "2026-12-16"
+      },
+      {
+       "plan": "builder50k",
+       "share": 33.8,
+       "date_med": "2026-12-17"
+      },
+      {
+       "plan": "rapideod25",
+       "share": 11.6,
+       "date_med": "2026-12-22"
+      }
+     ],
+     [
+      {
+       "plan": "rapideod50",
+       "share": 64.2,
+       "date_med": "2026-12-28"
+      },
+      {
+       "plan": "rapideod25",
+       "share": 18.3,
+       "date_med": "2026-12-28"
+      },
+      {
+       "plan": "builder50k",
+       "share": 17.5,
+       "date_med": "2027-01-04"
+      }
+     ]
+    ],
+    "r2": {
+     "p": 100.0,
+     "date_med": "2026-11-23"
+    },
+    "lost_all_mean": 3.15,
+    "secs": 15
+   }
+  },
+  "par50": {
+   "H2": {
+    "span": "H2",
+    "plan": "par50",
+    "months": [
+     {
+      "month": "2026-12",
+      "median": 0,
+      "bad_1_in_10": -63,
+      "good_1_in_10": 1515,
+      "mean": 460,
+      "payouts_median": 0,
+      "fees_mean": 70.27
+     },
+     {
+      "month": "2027-01",
+      "median": 955,
+      "bad_1_in_10": -63,
+      "good_1_in_10": 3667,
+      "mean": 1507,
+      "payouts_median": 1600,
+      "fees_mean": 93.51
+     },
+     {
+      "month": "2027-02",
+      "median": 1680,
+      "bad_1_in_10": 0,
+      "good_1_in_10": 6006,
+      "mean": 2485,
+      "payouts_median": 2400,
+      "fees_mean": 53.3
+     }
+    ],
+    "totals": {
+     "dec_feb_median": 3195,
+     "dec_feb_bad": 298,
+     "dec_feb_good": 10193,
+     "dec_feb_mean": 4452,
+     "to_jun_median": 22175,
+     "to_jun_bad": 8707,
+     "to_jun_mean": 22624,
+     "fees_out_of_pocket_dec_feb_mean": 308.88
+    },
+    "accounts": {
+     "Z50": {
+      "dec_feb_mean": 2004,
+      "to_jun_mean": 5768,
+      "lost_mean": 0.13
+     },
+     "N25": {
+      "dec_feb_mean": 506,
+      "to_jun_mean": 1721,
+      "lost_mean": 0.19
+     },
+     "A25": {
+      "dec_feb_mean": 673,
+      "to_jun_mean": 2057,
+      "lost_mean": 0.09
+     },
+     "R25": {
+      "dec_feb_mean": 910,
+      "to_jun_mean": 4708,
+      "lost_mean": 0.52
+     },
+     "R2": {
+      "dec_feb_mean": 359,
+      "to_jun_mean": 8370,
+      "lost_mean": 0.24
+     }
+    },
+    "live_move": {
+     "p_by_feb28": 5.0,
+     "p_by_mar31": 24.7,
+     "p_by_jun30": 83.8,
+     "median": "2027-05-04",
+     "to_jun_mean_if_dormant": 13526,
+     "to_jun_median_if_dormant": 13131
+    },
+    "next3": [
+     [
+      {
+       "plan": "builder50k",
+       "share": 100.0,
+       "date_med": "2026-11-20"
+      }
+     ],
+     [
+      {
+       "plan": "rapideod50",
+       "share": 78.3,
+       "date_med": "2027-01-05"
+      },
+      {
+       "plan": "builder50k",
+       "share": 11.4,
+       "date_med": "2026-12-29"
+      },
+      {
+       "plan": "builder25k",
+       "share": 7.0,
+       "date_med": "2027-01-04"
+      }
+     ],
+     [
+      {
+       "plan": "builder50k",
+       "share": 45.9,
+       "date_med": "2027-03-29"
+      },
+      {
+       "plan": "rapideod25",
+       "share": 21.0,
+       "date_med": "2027-02-10"
+      },
+      {
+       "plan": "rapideod50",
+       "share": 16.5,
+       "date_med": "2027-02-05"
+      }
+     ]
+    ],
+    "r2": {
+     "p": 99.7,
+     "date_med": "2027-01-11"
+    },
+    "lost_all_mean": 1.17,
+    "secs": 15
+   },
+   "HALF": {
+    "span": "HALF",
+    "plan": "par50",
+    "months": [
+     {
+      "month": "2026-12",
+      "median": 0,
+      "bad_1_in_10": -160,
+      "good_1_in_10": 395,
+      "mean": 70,
+      "payouts_median": 0,
+      "fees_mean": 74.95
+     },
+     {
+      "month": "2027-01",
+      "median": -63,
+      "bad_1_in_10": -223,
+      "good_1_in_10": 1023,
+      "mean": 224,
+      "payouts_median": 0,
+      "fees_mean": 126.85
+     },
+     {
+      "month": "2027-02",
+      "median": 0,
+      "bad_1_in_10": -257,
+      "good_1_in_10": 1618,
+      "mean": 386,
+      "payouts_median": 0,
+      "fees_mean": 129.44
+     }
+    ],
+    "totals": {
+     "dec_feb_median": -32,
+     "dec_feb_bad": -441,
+     "dec_feb_good": 3036,
+     "dec_feb_mean": 679,
+     "to_jun_median": 1749,
+     "to_jun_bad": -843,
+     "to_jun_mean": 3662,
+     "fees_out_of_pocket_dec_feb_mean": 423.55
+    },
+    "accounts": {
+     "Z50": {
+      "dec_feb_mean": 366,
+      "to_jun_mean": 1303,
+      "lost_mean": 0.92
+     },
+     "N25": {
+      "dec_feb_mean": 128,
+      "to_jun_mean": 569,
+      "lost_mean": 0.4
+     },
+     "A25": {
+      "dec_feb_mean": 148,
+      "to_jun_mean": 539,
+      "lost_mean": 1.0
+     },
+     "R25": {
+      "dec_feb_mean": 98,
+      "to_jun_mean": 627,
+      "lost_mean": 0.93
+     },
+     "R2": {
+      "dec_feb_mean": -61,
+      "to_jun_mean": 624,
+      "lost_mean": 0.41
+     }
+    },
+    "live_move": {
+     "p_by_feb28": 0.1,
+     "p_by_mar31": 0.6,
+     "p_by_jun30": 7.9,
+     "median": "after Jun 30",
+     "to_jun_mean_if_dormant": 3469,
+     "to_jun_median_if_dormant": 1749
+    },
+    "next3": [
+     [
+      {
+       "plan": "builder50k",
+       "share": 100.0,
+       "date_med": "2026-11-20"
+      }
+     ],
+     [
+      {
+       "plan": "builder25k",
+       "share": 33.1,
+       "date_med": "2026-12-23"
+      },
+      {
+       "plan": "rapideod50",
+       "share": 29.5,
+       "date_med": "2027-01-07"
+      },
+      {
+       "plan": "builder50k",
+       "share": 26.3,
+       "date_med": "2026-12-30"
+      }
+     ],
+     [
+      {
+       "plan": "builder25k",
+       "share": 33.0,
+       "date_med": "2027-01-18"
+      },
+      {
+       "plan": "rapideod25",
+       "share": 31.8,
+       "date_med": "2027-01-28"
+      },
+      {
+       "plan": "builder50k",
+       "share": 20.7,
+       "date_med": "2027-01-20"
+      }
+     ]
+    ],
+    "r2": {
+     "p": 81.4,
+     "date_med": "2027-02-12"
+    },
+    "lost_all_mean": 3.67,
+    "secs": 16
+   },
+   "REF": {
+    "span": "REF",
+    "plan": "par50",
+    "months": [
+     {
+      "month": "2026-12",
+      "median": -97,
+      "bad_1_in_10": -286,
+      "good_1_in_10": 0,
+      "mean": -100,
+      "payouts_median": 0,
+      "fees_mean": 130.26
+     },
+     {
+      "month": "2027-01",
+      "median": -155,
+      "bad_1_in_10": -349,
+      "good_1_in_10": 0,
+      "mean": -146,
+      "payouts_median": 0,
+      "fees_mean": 179.56
+     },
+     {
+      "month": "2027-02",
+      "median": -160,
+      "bad_1_in_10": -350,
+      "good_1_in_10": 0,
+      "mean": -139,
+      "payouts_median": 0,
+      "fees_mean": 187.62
+     }
+    ],
+    "totals": {
+     "dec_feb_median": -441,
+     "dec_feb_bad": -727,
+     "dec_feb_good": -22,
+     "dec_feb_mean": -384,
+     "to_jun_median": -1283,
+     "to_jun_bad": -1793,
+     "to_jun_mean": -1077,
+     "fees_out_of_pocket_dec_feb_mean": 590.76
+    },
+    "accounts": {
+     "Z50": {
+      "dec_feb_mean": -73,
+      "to_jun_mean": -260,
+      "lost_mean": 0.91
+     },
+     "N25": {
+      "dec_feb_mean": -20,
+      "to_jun_mean": -54,
+      "lost_mean": 0.44
+     },
+     "A25": {
+      "dec_feb_mean": -145,
+      "to_jun_mean": -376,
+      "lost_mean": 2.2
+     },
+     "R25": {
+      "dec_feb_mean": -119,
+      "to_jun_mean": -302,
+      "lost_mean": 0.26
+     },
+     "R2": {
+      "dec_feb_mean": -28,
+      "to_jun_mean": -86,
+      "lost_mean": 0.04
+     }
+    },
+    "live_move": {
+     "p_by_feb28": 0.0,
+     "p_by_mar31": 0.0,
+     "p_by_jun30": 0.0,
+     "median": "after Jun 30",
+     "to_jun_mean_if_dormant": -1077,
+     "to_jun_median_if_dormant": -1283
+    },
+    "next3": [
+     [
+      {
+       "plan": "builder50k",
+       "share": 100.0,
+       "date_med": "2026-11-20"
+      }
+     ],
+     [
+      {
+       "plan": "builder25k",
+       "share": 54.0,
+       "date_med": "2026-12-18"
+      },
+      {
+       "plan": "builder50k",
+       "share": 20.7,
+       "date_med": "2026-12-24"
+      },
+      {
+       "plan": "rapideod25",
+       "share": 19.3,
+       "date_med": "2026-12-21"
+      }
+     ],
+     [
+      {
+       "plan": "builder25k",
+       "share": 53.4,
+       "date_med": "2026-12-31"
+      },
+      {
+       "plan": "rapideod25",
+       "share": 22.3,
+       "date_med": "2027-01-04"
+      },
+      {
+       "plan": "builder50k",
+       "share": 20.5,
+       "date_med": "2027-01-06"
+      }
+     ]
+    ],
+    "r2": {
+     "p": 18.5,
+     "date_med": "2027-02-10"
+    },
+    "lost_all_mean": 3.86,
+    "secs": 18
+   }
+  },
+  "all3": {
+   "H2": {
+    "span": "H2",
+    "plan": "all3",
+    "months": [
+     {
+      "month": "2026-12",
+      "median": 0,
+      "bad_1_in_10": -92,
+      "good_1_in_10": 1680,
+      "mean": 623,
+      "payouts_median": 0,
+      "fees_mean": 19.29
+     },
+     {
+      "month": "2027-01",
+      "median": 1583,
+      "bad_1_in_10": -92,
+      "good_1_in_10": 6776,
+      "mean": 2577,
+      "payouts_median": 2400,
+      "fees_mean": 39.76
+     },
+     {
+      "month": "2027-02",
+      "median": 3025,
+      "bad_1_in_10": 0,
+      "good_1_in_10": 9202,
+      "mean": 3905,
+      "payouts_median": 4363,
+      "fees_mean": 39.84
+     }
+    ],
+    "totals": {
+     "dec_feb_median": 5561,
+     "dec_feb_bad": 468,
+     "dec_feb_good": 15932,
+     "dec_feb_mean": 7105,
+     "to_jun_median": 27881,
+     "to_jun_bad": 12755,
+     "to_jun_mean": 28833,
+     "fees_out_of_pocket_dec_feb_mean": 355.69
+    },
+    "accounts": {
+     "Z50": {
+      "dec_feb_mean": 2004,
+      "to_jun_mean": 5768,
+      "lost_mean": 0.13
+     },
+     "N25": {
+      "dec_feb_mean": 537,
+      "to_jun_mean": 3062,
+      "lost_mean": 0.19
+     },
+     "A25": {
+      "dec_feb_mean": 684,
+      "to_jun_mean": 2704,
+      "lost_mean": 0.11
+     },
+     "R25": {
+      "dec_feb_mean": 910,
+      "to_jun_mean": 4708,
+      "lost_mean": 0.52
+     },
+     "R2": {
+      "dec_feb_mean": 2970,
+      "to_jun_mean": 12591,
+      "lost_mean": 0.33
+     }
+    },
+    "live_move": {
+     "p_by_feb28": 5.8,
+     "p_by_mar31": 27.7,
+     "p_by_jun30": 87.3,
+     "median": "2027-04-28",
+     "to_jun_mean_if_dormant": 17196,
+     "to_jun_median_if_dormant": 17207
+    },
+    "next3": [
+     [
+      {
+       "plan": "builder50k",
+       "share": 100.0,
+       "date_med": "2026-11-20"
+      }
+     ],
+     [
+      {
+       "plan": "rapideod50 (now, from pocket)",
+       "share": 100.0,
+       "date_med": "2026-11-23"
+      }
+     ],
+     [
+      {
+       "plan": "builder50k",
+       "share": 55.2,
+       "date_med": "2027-03-19"
+      },
+      {
+       "plan": "rapideod25",
+       "share": 23.1,
+       "date_med": "2027-02-10"
+      },
+      {
+       "plan": "rapideod50",
+       "share": 19.8,
+       "date_med": "2027-02-04"
+      }
+     ]
+    ],
+    "r2": {
+     "p": 100.0,
+     "date_med": "2026-11-23"
+    },
+    "lost_all_mean": 1.27,
+    "secs": 15
+   },
+   "HALF": {
+    "span": "HALF",
+    "plan": "all3",
+    "months": [
+     {
+      "month": "2026-12",
+      "median": 0,
+      "bad_1_in_10": -354,
+      "good_1_in_10": 560,
+      "mean": 61,
+      "payouts_median": 0,
+      "fees_mean": 116.87
+     },
+     {
+      "month": "2027-01",
+      "median": -92,
+      "bad_1_in_10": -422,
+      "good_1_in_10": 1680,
+      "mean": 401,
+      "payouts_median": 0,
+      "fees_mean": 161.81
+     },
+     {
+      "month": "2027-02",
+      "median": 0,
+      "bad_1_in_10": -495,
+      "good_1_in_10": 3169,
+      "mean": 742,
+      "payouts_median": 0,
+      "fees_mean": 172.51
+     }
+    ],
+    "totals": {
+     "dec_feb_median": -51,
+     "dec_feb_bad": -849,
+     "dec_feb_good": 5304,
+     "dec_feb_mean": 1204,
+     "to_jun_median": 3109,
+     "to_jun_bad": -1889,
+     "to_jun_mean": 5957,
+     "fees_out_of_pocket_dec_feb_mean": 709.14
+    },
+    "accounts": {
+     "Z50": {
+      "dec_feb_mean": 366,
+      "to_jun_mean": 1303,
+      "lost_mean": 0.92
+     },
+     "N25": {
+      "dec_feb_mean": 105,
+      "to_jun_mean": 936,
+      "lost_mean": 0.54
+     },
+     "A25": {
+      "dec_feb_mean": 183,
+      "to_jun_mean": 1182,
+      "lost_mean": 1.05
+     },
+     "R25": {
+      "dec_feb_mean": 98,
+      "to_jun_mean": 627,
+      "lost_mean": 0.93
+     },
+     "R2": {
+      "dec_feb_mean": 452,
+      "to_jun_mean": 1909,
+      "lost_mean": 1.04
+     }
+    },
+    "live_move": {
+     "p_by_feb28": 0.6,
+     "p_by_mar31": 2.1,
+     "p_by_jun30": 17.7,
+     "median": "after Jun 30",
+     "to_jun_mean_if_dormant": 4811,
+     "to_jun_median_if_dormant": 3100
+    },
+    "next3": [
+     [
+      {
+       "plan": "builder50k",
+       "share": 100.0,
+       "date_med": "2026-11-20"
+      }
+     ],
+     [
+      {
+       "plan": "rapideod50 (now, from pocket)",
+       "share": 100.0,
+       "date_med": "2026-11-23"
+      }
+     ],
+     [
+      {
+       "plan": "rapideod50",
+       "share": 46.2,
+       "date_med": "2026-12-29"
+      },
+      {
+       "plan": "builder50k",
+       "share": 28.8,
+       "date_med": "2027-01-04"
+      },
+      {
+       "plan": "rapideod25",
+       "share": 24.5,
+       "date_med": "2027-01-28"
+      }
+     ]
+    ],
+    "r2": {
+     "p": 100.0,
+     "date_med": "2026-11-23"
+    },
+    "lost_all_mean": 4.49,
+    "secs": 15
+   },
+   "REF": {
+    "span": "REF",
+    "plan": "all3",
+    "months": [
+     {
+      "month": "2026-12",
+      "median": -257,
+      "bad_1_in_10": -592,
+      "good_1_in_10": 0,
+      "mean": -234,
+      "payouts_median": 0,
+      "fees_mean": 268.29
+     },
+     {
+      "month": "2027-01",
+      "median": -330,
+      "bad_1_in_10": -684,
+      "good_1_in_10": 0,
+      "mean": -281,
+      "payouts_median": 0,
+      "fees_mean": 330.32
+     },
+     {
+      "month": "2027-02",
+      "median": -330,
+      "bad_1_in_10": -684,
+      "good_1_in_10": 0,
+      "mean": -268,
+      "payouts_median": 0,
+      "fees_mean": 352.33
+     }
+    ],
+    "totals": {
+     "dec_feb_median": -873,
+     "dec_feb_bad": -1533,
+     "dec_feb_good": -56,
+     "dec_feb_mean": -783,
+     "to_jun_median": -2804,
+     "to_jun_bad": -3915,
+     "to_jun_mean": -2310,
+     "fees_out_of_pocket_dec_feb_mean": 1210.45
+    },
+    "accounts": {
+     "Z50": {
+      "dec_feb_mean": -73,
+      "to_jun_mean": -260,
+      "lost_mean": 0.91
+     },
+     "N25": {
+      "dec_feb_mean": -108,
+      "to_jun_mean": -449,
+      "lost_mean": 0.41
+     },
+     "A25": {
+      "dec_feb_mean": -231,
+      "to_jun_mean": -561,
+      "lost_mean": 1.26
+     },
+     "R25": {
+      "dec_feb_mean": -119,
+      "to_jun_mean": -302,
+      "lost_mean": 0.26
+     },
+     "R2": {
+      "dec_feb_mean": -252,
+      "to_jun_mean": -739,
+      "lost_mean": 0.4
+     }
+    },
+    "live_move": {
+     "p_by_feb28": 0.0,
+     "p_by_mar31": 0.0,
+     "p_by_jun30": 0.1,
+     "median": "after Jun 30",
+     "to_jun_mean_if_dormant": -2314,
+     "to_jun_median_if_dormant": -2804
+    },
+    "next3": [
+     [
+      {
+       "plan": "builder50k",
+       "share": 100.0,
+       "date_med": "2026-11-20"
+      }
+     ],
+     [
+      {
+       "plan": "rapideod50 (now, from pocket)",
+       "share": 100.0,
+       "date_med": "2026-11-23"
+      }
+     ],
+     [
+      {
+       "plan": "rapideod50",
+       "share": 65.3,
+       "date_med": "2026-12-17"
+      },
+      {
+       "plan": "builder50k",
+       "share": 21.8,
+       "date_med": "2026-12-24"
+      },
+      {
+       "plan": "rapideod25",
+       "share": 12.9,
+       "date_med": "2026-12-21"
+      }
+     ]
+    ],
+    "r2": {
+     "p": 100.0,
+     "date_med": "2026-11-23"
+    },
+    "lost_all_mean": 3.24,
+    "secs": 15
+   }
+  }
+ },
+ "vs_base": {
+  "r2-now": {
+   "H2": {
+    "dec_feb_mean": 2673,
+    "to_jun_mean": 4435,
+    "lost": 0.08
+   },
+   "HALF": {
+    "dec_feb_mean": 514,
+    "to_jun_mean": 1310,
+    "lost": 0.64
+   },
+   "REF": {
+    "dec_feb_mean": -225,
+    "to_jun_mean": -639,
+    "lost": 0.34
+   }
+  },
+  "refill-r50": {
+   "H2": {
+    "dec_feb_mean": 43,
+    "to_jun_mean": 1993,
+    "lost": 0.02
+   },
+   "HALF": {
+    "dec_feb_mean": 12,
+    "to_jun_mean": 1005,
+    "lost": 0.19
+   },
+   "REF": {
+    "dec_feb_mean": -173,
+    "to_jun_mean": -573,
+    "lost": -0.98
+   }
+  },
+  "both": {
+   "H2": {
+    "dec_feb_mean": 2715,
+    "to_jun_mean": 6423,
+    "lost": 0.1
+   },
+   "HALF": {
+    "dec_feb_mean": 525,
+    "to_jun_mean": 2320,
+    "lost": 0.83
+   },
+   "REF": {
+    "dec_feb_mean": -398,
+    "to_jun_mean": -1219,
+    "lost": -0.63
+   }
+  },
+  "par50": {
+   "H2": {
+    "dec_feb_mean": 479,
+    "to_jun_mean": 507,
+    "lost": 0.01
+   },
+   "HALF": {
+    "dec_feb_mean": 115,
+    "to_jun_mean": 62,
+    "lost": 0.1
+   },
+   "REF": {
+    "dec_feb_mean": 32,
+    "to_jun_mean": -39,
+    "lost": 0.08
+   }
+  },
+  "all3": {
+   "H2": {
+    "dec_feb_mean": 3132,
+    "to_jun_mean": 6716,
+    "lost": 0.11
+   },
+   "HALF": {
+    "dec_feb_mean": 640,
+    "to_jun_mean": 2357,
+    "lost": 0.92
+   },
+   "REF": {
+    "dec_feb_mean": -367,
+    "to_jun_mean": -1272,
+    "lost": -0.54
+   }
+  }
+ }
+}
