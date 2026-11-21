@@ -141,7 +141,8 @@ def ready_checks(tmp):
         check("i. START BOT step 3 lists the Rapid EOD 25K (Zlarior + ATLAS, its Name) before the phrase",
               any("Zlarior + ATLAS" in x and "Rapid EOD 25K" in x and "MFFUEVRPD250000004" in x for x in lines), lines)
         out = io.StringIO()
-        with contextlib.redirect_stdout(out):
+        from unittest import mock
+        with contextlib.redirect_stdout(out), mock.patch.object(G, "market_open", lambda *_a, **_k: True):   # a weekend run reaches 3/4 too
             rc = G.run(dry=True, inp=lambda *_a: "no", pull=False)
         txt = out.getvalue()
         check("i. START BOT dry run, phrase NOT typed: the Rapid is listed at 3/4 and stays DISARMED",
