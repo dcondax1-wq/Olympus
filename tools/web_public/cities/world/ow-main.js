@@ -4,7 +4,7 @@
 // the four doors; every app is a tower you tap to open; every learning place is real data. Live: the PC feed (../../pc_feed.js: a bot
 // in a trade pulses), the Board's events, the edge light and the Lab's newest verdicts. Read only: GET only, nothing armed, no orders,
 // text only through textContent, no browser storage. No WebGL (or 3D switched off): a plain list of the same city, never blank.
-import * as C from './ow-core.js?v=w7';
+import * as C from './ow-core.js?v=w8';
 
 const d = document, $ = (s) => d.querySelector(s);
 const O = () => window.OLYMPUS || null;
@@ -59,6 +59,8 @@ async function boot() {
     return;
   }
   S.world = w;
+  w.places.forEach(C.siteBuildings);                                         // the concept sites' letters -> buildings
+  w.places.push(...C.hubPlaces(w));                                          // the Research Hub's compact rows -> places (their words load later)
   w.places.forEach((p, i) => S.byId.set(p.id, i));
   header();
   setInterval(() => { if (!d.hidden && S.world) $('#sub').textContent = $('#sub').textContent.replace(/^[^·]*· \d{1,2}:\d{2} ET · /, '').replace(/^/, skyLine()); }, 60000);
@@ -85,6 +87,7 @@ async function boot() {
   }
   // Research Hub Decide cards pulse until they are answered (the hub rebuilds them as live / lead / rejected)
   if (S.scene) S.world.places.forEach((p, i) => { if (p.kind === 'hub' && p.state === 'decide') S.scene.setTrading(i, true); });
+  hubWords();
   startTicker();
   live();
   setInterval(() => { if (!d.hidden) live(); }, 60000);
@@ -628,6 +631,13 @@ function renderFlat() {
   if (S.err) m.append(el('p', 'how', '3D could not start here (' + S.err.slice(0, 80) + '): this is the same city as a list.'));
 }
 
+/** the Research Hub's words (research/hub.json, ~60 KB) after the city has started: titles, summaries, $ a month, Read links */
+async function hubWords() {
+  if (!S.world.places.some((p) => p.kind === 'hub')) return;
+  await idle(3000);
+  const doc = await getJSON(ROOT + 'research/hub.json', 10000);
+  if (C.hubText(S.world.places, doc) && S.mode === '2d') renderFlat();
+}
 function deepLink() {
   const h = decodeURIComponent(location.hash || '');
   const mp = /#p=(.+)$/.exec(h), md = /#d=(\w+)/.exec(h);
