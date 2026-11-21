@@ -202,8 +202,8 @@ def funded_part(r: dict) -> tuple:
     return (f" ({money(ta)} to payout)" if ta is not None and ta > 0 else ""), None
 
 
-def accounts_line(rs: list) -> tuple:
-    """(line, [needs you])."""
+def accounts_line(rs: list, hb_fresh: bool = True) -> tuple:
+    """(line, [needs you]). hb_fresh False (the bot's last report is old): a keep-alive "cover" never hides the 7-day line."""
     parts, needs = [], []
     for r, lab in zip(rs, short_labels(rs)):
         bal = money(r.get("balance"))
@@ -224,8 +224,10 @@ def accounts_line(rs: list) -> tuple:
         else:
             tp = _f(r.get("to_pass"))
             parts.append(f"{lab} {bal}" + (f" ({money(tp)} to pass)" if tp is not None and tp > 0 else ""))
-        q = _f(_d(r.get("_src")).get("quiet_days"))
-        if q is not None and q >= 6 and st in ("eval", "funded") and not r.get("locked"):
+        q = _f(_d(r.get("_src")).get("quiet_days"))      # (counts a keep-alive / hand trade noted: engine/keepalive)
+        ka_cover = hb_fresh and bool(_d(_d(r.get("_src")).get("keepalive")).get("cover"))   # the RUNNING bot's keep-alive
+        #                                                    warns for it itself (the board card's cover is fresh-checked too)
+        if q is not None and q >= 6 and st in ("eval", "funded") and not r.get("locked") and not ka_cover:
             needs.append(f"{label(r)} {int(q)} days without a trade: 1 MNQ by hand")
     return (" · ".join(parts) if parts else "No account numbers in the last report"), needs
 
@@ -402,7 +404,8 @@ def build(snap: dict, now: int | None = None, plan_doc=None, events=None, root: 
     except Exception as x:  # noqa: BLE001
         rs = []
         needs.append(f"brief: accounts not readable ({x.__class__.__name__})")
-    acc, n2 = accounts_line(rs)
+    age = snap.get("hb_age")
+    acc, n2 = accounts_line(rs, hb_fresh=age is not None and age <= HB_FRESH_S)
     if not rs and snap.get("hb_age") is not None:
         acc = "No account numbers in the last report"
     try:

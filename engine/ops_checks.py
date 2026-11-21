@@ -908,6 +908,8 @@ def account_view(hb: dict, now) -> dict:
     out = {"name": scrub(a.get("name") or ak.get("name") or "?", 40), "label": label, "is_live": label == "LIVE",
            "trades": [t for t in acct.get("trades") or [] if isinstance(t, dict)], "day_pnl": float(acct.get("day_pnl") or 0.0),
            "position": acct.get("position"), "fresh": _hb_fresh(hb, now, 30 * 60), "eval": None}
+    if isinstance(hb.get("keepalive"), dict):          # engine/keepalive.hb_block: its days + the accounts it warns for
+        out["keepalive"] = hb["keepalive"]
     ev = acct.get("eval") or {}
     if ev.get("days") is not None:
         try:
@@ -1093,13 +1095,25 @@ def inactivity_notice(view: dict, now) -> dict | None:
     ev = view.get("eval") or {}
     if not view.get("is_live") or ev.get("status") in ("passed", "failed"):
         return None
+    ka = view.get("keepalive") if isinstance(view.get("keepalive"), dict) else None
+    try:
+        from . import keepalive as KA
+        if ka and view.get("fresh") and KA.hb_covers(ka, "lit", now):
+            return None             # the RUNNING bot's keep-alive sends this account's ONE inactivity warning a day (and counts
+        #                             it); a stale heartbeat (the bot down) never covers: then this warns as before
+        kd = KA.hb_last(ka, "lit") if ka else None
+    except Exception:
+        kd = None
+    if kd:                          # a keep-alive / a hand trade noted (--traded) restarts the clock like a trade
+        view = {**view, "trades": list(view.get("trades") or []) + [{"day": str(kd)[:10]}]}
     n = days_since_trade(view, now, ev.get("start"))
     sq = _idle_squeeze(now, n)                 # a holiday week: at most 1 CME session left before the 7-day mark (cme_calendar)
     if n is None or (n < PLAN["warn_days"] and not sq):
         return None
     left = PLAN["inactivity_days"] - n
     title = f"No trade for {n} days (MFFU closes an account at {PLAN['inactivity_days']})"
-    body = ("Place 1 MNQ by hand today (in and out, a few dollars), or let the min-days 1-micro trade run. "
+    body = ("Place 1 MNQ by hand today (in and out, a few dollars), or switch on the bot's keep-alive trade "
+            "(python -X utf8 -m engine.keepalive --status). "
             + (f"{left} day{'s' if left != 1 else ''} left." if left > 0 else "Do it today.")
             + (f" Holiday week: the last CME session before the 7-day mark is {sq['last_session']}." if sq and sq.get("last_session") else ""))
     return _payload("idle", title, body, f"ops:idle:{trading_day(now)}", now)

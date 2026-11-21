@@ -288,8 +288,10 @@ def main() -> int:
         v = oc.account_view(hb(idle_now, trades=[{"day": "2026-10-16", "entry_t": int(ts(2026, 10, 16, 9)), "pnl": 100.0}],
                                days={"2026-10-16": 100.0}), idle_now)
         p = oc.inactivity_notice(v, idle_now)
-        check("MFFU inactivity: day 5 without a trade -> 'place 1 MNQ by hand or let the min-days trade run'", p is not None and "5 days" in p["title"]
-              and "1 MNQ by hand" in p["body"] and "min-days" in p["body"], p)
+        # 2026-11-20 (wf-keepalive): the old 'or let the min-days 1-micro trade run' was wrong (that trade only fires after the
+        # target): the notice now names the keep-alive trade (engine/keepalive.py, OFF until the owner's yes)
+        check("MFFU inactivity: day 5 without a trade -> 'place 1 MNQ by hand or switch on the keep-alive trade'", p is not None
+              and "5 days" in p["title"] and "1 MNQ by hand" in p["body"] and "engine.keepalive" in p["body"] and "min-days" not in p["body"], p)
         v4 = oc.account_view(hb(idle_now, trades=[{"day": "2026-10-17", "entry_t": int(ts(2026, 10, 17, 9)), "pnl": 1.0}]), idle_now)
         check("MFFU inactivity: day 4 -> nothing; Sim account -> nothing", oc.inactivity_notice(v4, idle_now) is None
               and oc.inactivity_notice(oc.account_view(hb(idle_now, "SIM", trades=[{"day": "2026-10-16", "pnl": 1}]), idle_now), idle_now) is None)

@@ -251,8 +251,10 @@ def account_pushes(snap: dict, sent: dict, now: int) -> list:
                         + ". The bot keeps its own stops; this alert changes nothing.")
                 out.append({"key": key, "title": f"{name}: daily loss limit near ({loss / dll * 100:.0f}%)", "body": body,
                             "priority": "high", "tags": "warning"})
-        q = c.get("quiet_days")
-        if isinstance(q, (int, float)) and q >= QUIET_DAYS and live_eval and not quiet(now) and not c.get("position"):
+        q = c.get("quiet_days")             # (the board counts a keep-alive / hand trade noted: engine/keepalive)
+        ka_cover = bool(_d(c.get("keepalive")).get("cover"))   # the bot's keep-alive sends this account's ONE warning a day
+        if isinstance(q, (int, float)) and q >= QUIET_DAYS and live_eval and not quiet(now) and not c.get("position") \
+                and not ka_cover:
             out.append(quiet_push(k, name, int(q), real(k, c, snap), funded_card(c), day))
     # the extra accounts (the 25K #2, the Rapid EOD; skeptic 2026-11-20: the board's cards cover only the 50K, ATLAS and BLITZ, so
     # these two had no 7-day alert at all)
@@ -263,7 +265,7 @@ def account_pushes(snap: dict, sent: dict, now: int) -> list:
         # would read "passed" once its profit tops the eval target), so only an eval is filtered by it
         status = "open" if funded else str(_d(a.get("eval")).get("status") or "open").lower()
         if (q is None or q < QUIET_DAYS or status in STOP_STATUSES or quiet(now) or a.get("position")
-                or str(a.get("badge") or "").upper() != "LIVE"):
+                or str(a.get("badge") or "").upper() != "LIVE" or _d(a.get("keepalive")).get("cover")):
             continue
         out.append(quiet_push(k, extra_name(a), int(q), True, funded, day))
     return out
