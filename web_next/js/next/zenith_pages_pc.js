@@ -31,7 +31,7 @@
       const tg = m.target;
       if (tg.closest && tg.closest('.zp-peek, .zp-skel')) continue;
       if (m.type === 'childList' && [...m.addedNodes, ...m.removedNodes].length && [...m.addedNodes, ...m.removedNodes].every((n) => n.nodeType === 1 && (n.classList.contains('zp-peek') || n.classList.contains('zp-skel')))) continue;
-      if (tg.closest && !tg.closest('.page')) continue;
+      if (tg.closest && !tg.closest('.page.active')) continue;     // only the page on screen: a hidden page's live redraws never hold its sample card back (QUALITY 2026-11-21)
       soon(); return;
     }
   }).observe(root, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
