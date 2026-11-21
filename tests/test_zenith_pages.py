@@ -182,20 +182,23 @@ def part_c(shots):
           if (!e) { e = document.createElement('section'); e.className = 'page'; e.id = 'page-zptest'; document.querySelector('.nx .main').appendChild(e); }
           e.classList.add('active'); if (e.dataset.zp !== html) { e.innerHTML = html; e.dataset.zp = html; } }"""
 
-        def show(html, sel):
+        def show(html, sel, text=""):
+            # the card and (when given) its text in ONE wait: the app may re-render and switch the active page between two separate
+            # reads, which read an empty text now and then (QUALITY 2026-11-21: the flaky sample-card check)
+            cond = ("(a) => { const e = document.querySelector('.page.active ' + a[0]); return !!e && (!a[1] || e.innerText.toLowerCase().includes(a[1])); }")
             for _ in range(14):
                 pg.evaluate(SHOW, html)
                 try:
-                    pg.wait_for_selector(".page.active " + sel, timeout=2200)
+                    pg.wait_for_function(cond, arg=[sel, text], timeout=2200)
                     return True
                 except Exception:
                     pass
             return False
         ok = show('<div class="muted">Loading…</div>', ".zp-skel")
         check("c. PC: a loading page shows ghost cards", ok)
-        ok = show('<div class="empty"><b>No data yet.</b>It fills after the first trade.</div>', ".zp-peek")
+        ok = show('<div class="empty"><b>No data yet.</b>It fills after the first trade.</div>', ".zp-peek", "not your data")
         txt = pg.evaluate("() => { const e = document.querySelector('.page.active .zp-peek'); return e ? e.innerText : ''; }")
-        check("c. PC: an empty page shows the sample card, marked as a sample", ok and "not your data" in txt.lower(), txt[:200])
+        check("c. PC: an empty page shows the sample card, marked as a sample", ok, txt[:200])
         check("c. PC: no sideways scroll", pg.evaluate("() => document.documentElement.scrollWidth - innerWidth") <= 0)
         if shots:
             pg.screenshot(path=os.path.join(shots, "zp_study_pc.png"))
