@@ -25,7 +25,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 WEB = os.path.join(ROOT, "tools", "web_public")
 KIT = os.path.join(WEB, "olympus")
-INCLUDE = '<script src="../olympus/intro-app.js?v=i11" defer></script>'
+INCLUDE = '<script src="../olympus/intro-app.js?v=i12" defer></script>'
 KNOWN_UNWIRED = {"cities", "kalshicity"}      # load the kit, built by another job (2026-11-04): they add the one line; bridge / kalshi / pc do not load the kit at
 RES: list = []
 
@@ -100,7 +100,7 @@ def test_static():
           all(x in js for x in ("q=off", "intro=0", "ls('oly.intro') === 'off'", "O.reduced()", "navigator.webdriver && !forced", "intro=1")))
     check("a. it never blocks: a tap / Esc / Enter / Space skips (70 ms, the overlay waits for the finger), a hard timer, a hidden tab and any error remove it",
           all(x in js for x in ("'pointerdown'", "e.key !== 'Escape'", "finish('deadline')", "finish('hidden')", "} catch (err) { fail(err); }", "holdUp")))
-    check("a. its overlay sits above the loading veil (z-index 70 > 60 / 61)", "z-index:70" in js)
+    check("a. its overlay sits above the loading veil and the archived banner (z-index 2147483001), mounted on <html> (an archived body has a transform)", "z-index:2147483001" in js and "root.appendChild(el);" in js)
 
 
 def jarvis_intro_js():
