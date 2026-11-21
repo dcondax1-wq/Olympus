@@ -2,99 +2,11 @@
  "v": 1,
  "kind": "web_leads",
  "demo": false,
- "fetched": "2026-11-21T14:20:27Z",
+ "fetched": "2026-11-21T20:00:35Z",
  "source": "OpenStreetMap via the public Overpass API (a few small queries per town)",
  "license": "Data (c) OpenStreetMap contributors, ODbL (openstreetmap.org/copyright)",
  "about": "Businesses on OpenStreetMap with no website tag. OSM can be out of date: check the business before you call.",
  "towns": [
-  {
-   "town": "Hagerstown",
-   "state": "MD",
-   "businesses": 54,
-   "leads": 24,
-   "hot": 1,
-   "server": "maps.mail.ru",
-   "parts_ok": 3,
-   "parts": 9,
-   "missing": [
-    "trades",
-    "healthcare",
-    "food places",
-    "health + auto places",
-    "beauty + auto shops",
-    "other shops"
-   ],
-   "chains": 12,
-   "with_site": 9
-  },
-  {
-   "town": "Germantown",
-   "state": "MD",
-   "businesses": 139,
-   "leads": 52,
-   "hot": 5,
-   "server": "maps.mail.ru",
-   "parts_ok": 6,
-   "parts": 9,
-   "missing": [
-    "offices",
-    "healthcare",
-    "food places"
-   ],
-   "chains": 64,
-   "with_site": 22
-  },
-  {
-   "town": "Gaithersburg",
-   "state": "MD",
-   "businesses": 594,
-   "leads": 270,
-   "hot": 15,
-   "server": "maps.mail.ru, overpass-api.de",
-   "parts_ok": 6,
-   "parts": 9,
-   "missing": [
-    "trades",
-    "healthcare",
-    "food places"
-   ],
-   "chains": 186,
-   "with_site": 55
-  },
-  {
-   "town": "Rockville",
-   "state": "MD",
-   "businesses": 485,
-   "leads": 187,
-   "hot": 6,
-   "server": "maps.mail.ru, overpass.kumi.systems",
-   "parts_ok": 5,
-   "parts": 9,
-   "missing": [
-    "healthcare",
-    "health + auto places",
-    "beauty + auto shops",
-    "other shops"
-   ],
-   "chains": 117,
-   "with_site": 107
-  },
-  {
-   "town": "Columbia",
-   "state": "MD",
-   "businesses": 427,
-   "leads": 125,
-   "hot": 14,
-   "server": "maps.mail.ru",
-   "parts_ok": 7,
-   "parts": 9,
-   "missing": [
-    "food places",
-    "health + auto places"
-   ],
-   "chains": 207,
-   "with_site": 72
-  },
   {
    "town": "Frederick",
    "state": "MD",
@@ -107,23 +19,264 @@
    "missing": [],
    "chains": 257,
    "with_site": 141
+  },
+  {
+   "town": "Gaithersburg",
+   "state": "MD",
+   "businesses": 594,
+   "leads": 352,
+   "hot": 11,
+   "server": "maps.mail.ru",
+   "parts_ok": 9,
+   "parts": 9,
+   "missing": [],
+   "chains": 186,
+   "with_site": 80
+  },
+  {
+   "town": "Columbia",
+   "state": "MD",
+   "businesses": 645,
+   "leads": 173,
+   "hot": 19,
+   "server": "maps.mail.ru",
+   "parts_ok": 9,
+   "parts": 9,
+   "missing": [],
+   "chains": 306,
+   "with_site": 165
+  },
+  {
+   "town": "Urbana",
+   "state": "MD",
+   "businesses": 30,
+   "leads": 22,
+   "hot": 1,
+   "server": "maps.mail.ru",
+   "parts_ok": 6,
+   "parts": 9,
+   "missing": [
+    "offices",
+    "food places",
+    "other shops"
+   ],
+   "chains": 5,
+   "with_site": 3
+  },
+  {
+   "town": "Middletown",
+   "state": "MD",
+   "businesses": 10,
+   "leads": 4,
+   "hot": 0,
+   "server": "maps.mail.ru",
+   "parts_ok": 3,
+   "parts": 9,
+   "missing": [
+    "trades",
+    "healthcare",
+    "gyms",
+    "health + auto places",
+    "beauty + auto shops",
+    "other shops"
+   ],
+   "chains": 4,
+   "with_site": 2
+  },
+  {
+   "town": "Thurmont",
+   "state": "MD",
+   "businesses": 48,
+   "leads": 24,
+   "hot": 0,
+   "server": "maps.mail.ru, overpass.kumi.systems",
+   "parts_ok": 7,
+   "parts": 9,
+   "missing": [
+    "offices",
+    "beauty + auto shops"
+   ],
+   "chains": 17,
+   "with_site": 5
+  },
+  {
+   "town": "Brunswick",
+   "state": "MD",
+   "businesses": 13,
+   "leads": 7,
+   "hot": 0,
+   "server": "maps.mail.ru",
+   "parts_ok": 5,
+   "parts": 9,
+   "missing": [
+    "offices",
+    "food places",
+    "beauty + auto shops",
+    "other shops"
+   ],
+   "chains": 3,
+   "with_site": 2
+  },
+  {
+   "town": "Walkersville",
+   "state": "MD",
+   "businesses": 25,
+   "leads": 4,
+   "hot": 3,
+   "server": "maps.mail.ru",
+   "parts_ok": 6,
+   "parts": 9,
+   "missing": [
+    "offices",
+    "gyms",
+    "beauty + auto shops"
+   ],
+   "chains": 8,
+   "with_site": 13
+  },
+  {
+   "town": "Damascus",
+   "state": "MD",
+   "businesses": 52,
+   "leads": 31,
+   "hot": 0,
+   "server": "maps.mail.ru",
+   "parts_ok": 7,
+   "parts": 9,
+   "missing": [
+    "trades",
+    "healthcare"
+   ],
+   "chains": 19,
+   "with_site": 1
+  },
+  {
+   "town": "Clarksburg",
+   "state": "MD",
+   "businesses": 102,
+   "leads": 27,
+   "hot": 0,
+   "server": "maps.mail.ru",
+   "parts_ok": 7,
+   "parts": 9,
+   "missing": [
+    "gyms",
+    "beauty + auto shops"
+   ],
+   "chains": 70,
+   "with_site": 5
+  },
+  {
+   "town": "Hagerstown",
+   "state": "MD",
+   "businesses": 257,
+   "leads": 123,
+   "hot": 3,
+   "server": "maps.mail.ru",
+   "parts_ok": 9,
+   "parts": 9,
+   "missing": [],
+   "chains": 87,
+   "with_site": 37
+  },
+  {
+   "town": "Germantown",
+   "state": "MD",
+   "businesses": 276,
+   "leads": 78,
+   "hot": 5,
+   "server": "maps.mail.ru",
+   "parts_ok": 9,
+   "parts": 9,
+   "missing": [],
+   "chains": 136,
+   "with_site": 42
+  },
+  {
+   "town": "Rockville",
+   "state": "MD",
+   "businesses": 589,
+   "leads": 279,
+   "hot": 18,
+   "server": "maps.mail.ru",
+   "parts_ok": 9,
+   "parts": 9,
+   "missing": [],
+   "chains": 219,
+   "with_site": 122
+  },
+  {
+   "town": "Ellicott City",
+   "state": "MD",
+   "businesses": 436,
+   "leads": 169,
+   "hot": 15,
+   "server": "maps.mail.ru",
+   "parts_ok": 8,
+   "parts": 9,
+   "missing": [
+    "health + auto places"
+   ],
+   "chains": 121,
+   "with_site": 144
+  },
+  {
+   "town": "Westminster",
+   "state": "MD",
+   "businesses": 165,
+   "leads": 62,
+   "hot": 2,
+   "server": "maps.mail.ru, overpass.kumi.systems",
+   "parts_ok": 8,
+   "parts": 9,
+   "missing": [
+    "food places"
+   ],
+   "chains": 71,
+   "with_site": 37
+  },
+  {
+   "town": "Mount Airy",
+   "state": "MD",
+   "businesses": 73,
+   "leads": 37,
+   "hot": 1,
+   "server": "maps.mail.ru, overpass-api.de, overpass.kumi.systems",
+   "parts_ok": 7,
+   "parts": 9,
+   "missing": [
+    "health + auto places",
+    "other shops"
+   ],
+   "chains": 24,
+   "with_site": 12
   }
  ],
  "skipped": {
-  "has_site": 521,
-  "chain": 981,
-  "other": 233,
-  "duplicate": 27,
+  "has_site": 1463,
+  "chain": 2561,
+  "other": 525,
+  "duplicate": 209,
   "closed": 1
  },
  "leads": [],
  "files": [
+  "towns/frederick.json",
+  "towns/gaithersburg.json",
+  "towns/columbia.json",
+  "towns/urbana.json",
+  "towns/middletown.json",
+  "towns/thurmont.json",
+  "towns/brunswick.json",
+  "towns/walkersville.json",
+  "towns/damascus.json",
+  "towns/clarksburg.json",
   "towns/hagerstown.json",
   "towns/germantown.json",
-  "towns/gaithersburg.json",
   "towns/rockville.json",
-  "towns/columbia.json",
-  "towns/frederick.json"
+  "towns/ellicott-city.json",
+  "towns/westminster.json",
+  "towns/mount-airy.json"
  ],
- "count": 817
+ "count": 1577
 }

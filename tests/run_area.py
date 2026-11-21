@@ -329,6 +329,7 @@ AREAS["olympus"].append("dashfx")        # day-arenas 2026-11-20: the dashboard 
 AREAS["olympus"].append("brain3d")       # day-arenas 2026-11-21: the bot brain in 3D (olympus/brain3d.js + brain3d-scene.js, brain3d-lab.html); its own line
 
 AREAS["agency"].append("site_factory")   # day-cities3 2026-11-21: Website Factory (tools/site_factory.py -> agency/f/<id>/ + agency/factory/)
+AREAS["agency"].append("factory2")       # day-cities3 2026-11-21: agency launch site, client delivery, first 100 calls
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
