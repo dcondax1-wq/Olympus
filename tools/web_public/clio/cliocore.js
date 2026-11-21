@@ -110,7 +110,8 @@ function hubRow(r, tab) {
   if (!isObj(r)) return null;
   const title = str(r.title, 140); if (!title) return null;
   const slug = isSlug(r.slug) ? r.slug : '';
-  return { tab, title, line: str(r.line, 200), text: str(r.text, 1600) || str(r.line, 200), slug, date: /^\d{4}-\d{2}-\d{2}$/.test(String(r.date || r.since || '')) ? String(r.date || r.since) : '',
+  const id = typeof r.id === 'string' && /^[a-z0-9][a-z0-9-]{0,99}$/.test(r.id) ? r.id : '';
+  return { tab, id, title, line: str(r.line, 200), text: str(r.text, 1600) || str(r.line, 200), slug, date: /^\d{4}-\d{2}-\d{2}$/.test(String(r.date || r.since || '')) ? String(r.date || r.since) : '',
     pm: num(r.usd_month), real: num(r.real_usd), realN: num(r.real_n), kind: str(r.kind || r.recommend, 30), family: FAMS.includes(String(r.family || '').toLowerCase()) ? String(r.family).toLowerCase() : 'other', src: str(r.src, 12) };
 }
 /** hub.json -> { works, rejected, leads, decide, writeups (normIndex), lab, built } or null */
@@ -150,3 +151,7 @@ export function viewX(list, opts) {
   const o = opts || {};
   return view(list, o).filter((r) => (!o.family || o.family === 'all' || r.family === o.family) && (!o.since || (r.date && r.date >= o.since)));
 }
+/** the city link of a hub row (../cities/?fly=<id>), or '' when the row has no safe id */
+export function cityHref(r) { return r && typeof r.id === 'string' && /^[a-z0-9][a-z0-9-]{0,99}$/.test(r.id) ? '../cities/?fly=' + encodeURIComponent(r.id) : ''; }
+/** a hub row by id (deep link ?item=<id>) */
+export function hubFind(hub, id) { if (!hub || typeof id !== 'string') return null; for (const [t] of HUB_TABS) { const r = (hub[t] || []).find((x) => x.id === id); if (r) return r; } return null; }

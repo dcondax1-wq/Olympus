@@ -39,6 +39,12 @@ def test_real():
           and all(not r["slug"] or AK_slug(r["slug"]) for r in h["rejected"] + h["leads"]))
     p = os.path.join(AK.WEB, APP, "hub.json")
     d = json.load(open(p, encoding="utf-8"))
+    fl = json.load(open(os.path.join(AK.WEB, "research", "hub.json"), encoding="utf-8"))
+    ok = all(set(x) == {"id", "title", "family", "status", "usd_month", "date", "summary", "url"} and x["status"] in ("live", "lead", "rejected", "decide")
+             and (x["url"].startswith("../clio/?read=") or x["url"].startswith("../clio/?item=")) for x in fl["items"])
+    ids = [x["id"] for x in fl["items"]]
+    check("a. research/hub.json (the Cities district): one record per item with the agreed 8 fields, unique ids, live-zlarior + live-atlas, urls into Clio",
+          ok and len(ids) == len(set(ids)) and {"live-zlarior", "live-atlas"} <= set(ids) and len(ids) == sum(fl["counts"].values()), fl["counts"])
     check("a. clio/hub.json on disk parses (v 1) with the four sections and the library", d.get("v") == 1 and all(k in d for k in ("works", "rejected", "leads", "decide", "writeups")), list(d)[:8])
 
 
@@ -102,6 +108,7 @@ import(process.argv[2]).then((C) => {
   o.since = [C.sinceOf('30', '2026-11-21'), C.sinceOf('all', '2026-11-21'), C.sinceOf('7', 'x')];
   o.none = [C.normHub(null), C.normHub({}), C.normHub({ works: [] })];
   o.lib = [h.writeups.length, h.lab.lit];
+  o.city = [C.cityHref({ id: 'live-zlarior' }), C.cityHref({ id: '../x' }), C.cityHref(null), C.hubFind(C.normHub({ works: [{ title: 'Z', id: 'live-z' }] }), 'live-z').title];
   const lib = C.normIndex({ writeups: [{ slug: 'a', title: 'A', family: 'risk', date: '2026-11-20', status: 'info' }, { slug: 'b', title: 'B', family: 'timing', date: '2026-01-01', status: 'info' }] });
   o.vx = [C.viewX(lib, { family: 'risk' }).map((r) => r.slug), C.viewX(lib, { since: '2026-11-01' }).map((r) => r.slug), C.viewX(lib, {}).length];
   console.log(JSON.stringify(o));
@@ -122,6 +129,7 @@ def test_core():
     check("c. no hub / empty hub -> null (the page falls back to the demo hub, labelled)", o["none"] == [None, None, None], o["none"])
     check("c. the hub carries the library and the edge light; viewX filters the library by family and date",
           o["lib"] == [1, "GREEN"] and o["vx"] == [["a"], ["a"], 2], (o["lib"], o["vx"]))
+    check("c. city links: ../cities/?fly=<id> only for a safe id; hubFind finds a row by id", o["city"] == ["../cities/?fly=live-zlarior", "", "", "Z"], o["city"])
 
 
 def test_page():
@@ -167,6 +175,9 @@ def test_page():
             sh = p.evaluate("() => ({ open: !document.querySelector('#sheet').hidden, text: document.querySelector('#shBody').innerText, active: document.activeElement.id })")
             check("d. tap a row with a write-up: the reader sheet opens and fetches writeups/<slug>.md, focus on Close",
                   sh["open"] and sh["active"] == "shClose" and any("/writeups/" in u and u.endswith(".md") for u in seen), (sh["text"][:120], seen[-2:]))
+            ch = p.evaluate("() => [!document.querySelector('#shCity').hidden, document.querySelector('#shCity').getAttribute('href')]")
+            check("d. the sheet has 'See it in the city' -> ../cities/?fly=<the item's id> (the Cities Lab & Research district)",
+                  ch[0] and ch[1].startswith("../cities/?fly=rejected-"), ch)
             AK.shot(p, "research-hub-reader")
             check("d. every tap target is at least 44 x 44 px (sheet open)", not AK.taps(p), AK.taps(p)[:5])
             p.keyboard.press("Escape")
@@ -185,6 +196,12 @@ def test_page():
             check("d. Money decisions: the open Decide cards", dd == len(hub["decide"]), dd)
             check("d. OLYMPUS NIGHT (black), no sideways scroll, Jarvis's corner free, no console error, nothing off the origin",
                   d["bg"] in ("rgb(0, 0, 0)", "rgba(0, 0, 0, 0)") and AK.no_sideways(p) and not AK.corner(p) and not errs and not off, (d["bg"], errs[:3], off[:3]))
+            ctx.close()
+            ctx, p, errs, seen, off = AK.page(br, origin)
+            AK.open_app(p, origin, APP, "?item=live-zlarior")
+            p.wait_for_timeout(400)
+            dl = p.evaluate("() => [!document.querySelector('#sheet').hidden, document.querySelector('#shTitle').textContent, document.querySelector('#shCity').getAttribute('href')]")
+            check("d. deep link ?item=live-zlarior (the city's link back) opens that item with its city link", dl[0] and dl[1] == "Zlarior (LIT)" and dl[2] == "../cities/?fly=live-zlarior", dl)
             ctx.close()
             srv2, origin2 = AK.serve({"/writeups/index.json": None, "/data.json": None, "/clio/hub.json": None})
             ctx, p, errs, seen, off = AK.page(br, origin2)

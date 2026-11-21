@@ -71,7 +71,7 @@ function hubRowEl(r) {
   if (r.line) b.appendChild(h('span', 'hl', r.line));
   const d = [r.date ? C.dayWord(r.date) : '', r.tab === 'decide' && r.kind ? `Recommended: ${r.kind}` : r.kind, r.slug ? 'tap to read' : 'tap for details'].filter(Boolean).join(' · '); if (d) b.appendChild(h('span', 'hd', d));
   b.setAttribute('aria-label', `${r.title}${m ? ', ' + m : ''}. Open`);
-  b.addEventListener('click', () => openReader({ slug: r.slug, title: r.title, summary: r.text, body: r.text, hub: !r.slug }, b));
+  b.addEventListener('click', () => openReader({ slug: r.slug, title: r.title, summary: r.text, body: r.text, hub: !r.slug, id: r.id }, b));
   li.appendChild(b); return li;
 }
 function renderHub() {
@@ -117,6 +117,7 @@ function closeReader() { const s = $('sheet'); s.hidden = true; $('scrim').hidde
 async function openReader(r, from) {
   const key = r.slug || ('hub:' + r.title); S.open = key; S.last = from;
   $('shTitle').textContent = r.title; const body = $('shBody'); clear(body); body.appendChild(h('p', 'note', 'Loading...'));
+  { const c = $('shCity'), href = C.cityHref(r); c.hidden = !href; if (href) c.href = href; }   // the Cities Lab & Research district
   $('sheet').hidden = false; $('scrim').hidden = false; $('shClose').focus();
   let text = (S.demo || r.hub) ? r.body : await getText(r.slug);
   if (S.open !== key) return;
@@ -155,6 +156,10 @@ async function boot() {
   $('shClose').addEventListener('click', closeReader); $('scrim').addEventListener('click', closeReader);
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && S.open) closeReader(); });
   render();
+  // deep links: ?read=<slug> opens that write-up, ?item=<id> opens that hub row (the city district's links)
+  const rd = q.get('read'), it = q.get('item');
+  if (rd && C.isSlug(rd)) { const w = S.all.find((x) => x.slug === rd); openReader({ slug: rd, title: w ? w.title : rd, summary: w ? w.summary : '', body: w ? w.body : '' }, null); }
+  else if (it && S.hub) { const r = C.hubFind(S.hub, it); if (r) { S.tab = r.tab; render(); openReader({ slug: r.slug, title: r.title, summary: r.text, body: r.text, hub: !r.slug, id: r.id }, null); } }
 }
 window.CLIO = { S, C, ready: () => S.ready, render };
 boot().catch((e) => { say('Something went wrong: ' + (e && e.message ? e.message : e)); try { if (O && O.fail) O.fail('Clio could not start'); } catch (_) { /* nothing */ } });

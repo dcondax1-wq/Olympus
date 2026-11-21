@@ -95,3 +95,4 @@ html:not(.framed) #app { padding-bottom: calc(96px + var(--sb)); }
 #hubTabs.htabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 #hubTabs.htabs .ag-chip { width: 100%; font-size: 14px; line-height: 1.2; padding: 6px 8px; }
 .hrow .hm.q { color: var(--ag-soft); font-weight: 600; }
+.city { justify-self: start; margin: 0 0 8px; text-decoration: none; border-color: var(--nq-cyan, #9d59ee); color: var(--nq-cyan-hi, #dacbf0); }
