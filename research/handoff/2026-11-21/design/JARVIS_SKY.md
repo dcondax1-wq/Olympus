@@ -27,7 +27,7 @@ On the sweep's Fast 3G line the 3D is skipped (a 3G line). On 4G (no line limit,
 
 ## LEAD_WIRES (jarvis/sw.js is yours)
 
-In `SHELL`: `'./backdrop.js?v=b6'` -> `'./backdrop.js?v=b7'`, add `'./sky-poster.webp'`, bump `CACHE` (`jarvis-v86` -> next).
+In `SHELL`: `'./backdrop.js?v=b6'` -> `'./backdrop.js?v=b7'`, add `'./sky-poster.webp?v=2'`, bump `CACHE` (`jarvis-v86` -> next).
 
 ## Tests
 
